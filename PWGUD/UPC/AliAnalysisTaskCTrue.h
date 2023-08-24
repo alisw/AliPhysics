@@ -702,6 +702,8 @@ private:
     Double_t                    fZPCTDC[4];       //!
     Double_t                    fZNATime;         //!
     Double_t                    fZNCTime;         //!
+    Bool_t 			fV0AOfflineTrigger[32]; //!
+    Bool_t 			fV0COfflineTrigger[32]; //! 
 
                                 /**
                                  * V0 stuff:
@@ -768,7 +770,7 @@ private:
      * If I happen to encounter it again in the future, I will make sure to
      * record it!
      */
-    ClassDef(AliAnalysisTaskCTrue, 6);
+    ClassDef(AliAnalysisTaskCTrue, 7);
 };
 
 #endif

@@ -19,11 +19,9 @@
 
 #include "AliEMCalTriggerTaskGroup.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerTaskGroup)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerTaskGroup)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Dummy constructor, not to be used
@@ -168,5 +166,3 @@ void AliEMCalTriggerTaskGroup::Copy(TObject& other) const {
     target.fAnalysisComponents->Add(*compIter);
   }
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

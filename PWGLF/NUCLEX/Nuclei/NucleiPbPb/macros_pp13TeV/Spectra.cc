@@ -28,7 +28,8 @@ const bool bNewGeantTOF = false;
 
 int contatore = 0;
 
-const float kNormalisation[10] = {0.999663,0.999173,0.999429,0.9988205,0.996784,0.992304,0.982828,0.953767,0.785473,0.7448};
+const float kNormalisation[10] = {0.999663,0.999173,0.999429,0.9988205,0.996784,0.992304,0.982828,0.953767,0.785473,0.921028};
+const float kTriggerEff = 0.7448;
 
 void Divide(TH1* h, TGraphAsymmErrors* gr, bool printStuff = false) {
   for (int i = 1; i <= h->GetNbinsX(); ++i) {
@@ -415,10 +416,15 @@ void Spectra() {
         double n_vtx = fNormMultClass->GetBinContent(4);
         double n_rec = fNormMultClass->GetBinContent(3);
         double n_sel = fNormMultClass->GetBinContent(2); // Number of selected events
-        double n_norm = (iC==9) ? (n_sel * n_vtx / n_rec) : n_vtx;
+        double n_norm = (iC==9 && !kUseIntegratedForMB) ? (n_sel * n_vtx / n_rec) : n_vtx;
         //printf("Centrality: %d  hNormalisationHist: %f Integral: %f\n", iC, n_vtx, vNevents[iC] );
-        spectraTOF->Scale(kNormalisation[iC]/n_norm,"width"); //0.7448
-        spectraTPC->Scale(kNormalisation[iC]/n_norm,"width");
+        if(iC == 9 && !kUseIntegratedForMB){
+          spectraTOF->Scale(kTriggerEff/n_norm,"width");
+          spectraTPC->Scale(kTriggerEff/n_norm,"width");
+        } else {
+          spectraTOF->Scale(kNormalisation[iC]/n_norm,"width");
+          spectraTPC->Scale(kNormalisation[iC]/n_norm,"width");
+        }
 
         TDirectory* cut_dir = nullptr;
         TDirectory* particle_width_dir = nullptr;
@@ -510,8 +516,14 @@ void Spectra() {
               Multiply(spectraTPC_width,hTotMeanSignalLoss[iC]);
               Multiply(spectraTOF_width,hTotMeanSignalLoss[iC]);
             }
-            spectraTOF_width->Scale(kNormalisation[iC]/n_vtx,"width"); //0.7448
-            spectraTPC_width->Scale(kNormalisation[iC]/n_vtx,"width");
+
+            if(iC == 9 && !kUseIntegratedForMB){
+              spectraTOF_width->Scale(kTriggerEff/n_norm,"width");
+              spectraTPC_width->Scale(kTriggerEff/n_norm,"width");
+            } else {
+              spectraTOF_width->Scale(kNormalisation[iC]/n_norm,"width");
+              spectraTPC_width->Scale(kNormalisation[iC]/n_norm,"width");
+            }
 
             output_file.cd(Form("%swidth%i/%s/%i/TOF",kFilterListNames.data(),iCut,kNames[iS].data(),iC));
             spectraTOF_width->Write(Form("TOFspectra%c%i",kLetter[iS],iC));
@@ -618,8 +630,15 @@ void Spectra() {
               Multiply(spectraTPC_shift,hTotMeanSignalLoss[iC]);
               Multiply(spectraTOF_shift,hTotMeanSignalLoss[iC]);
             }
-            spectraTOF_shift->Scale(kNormalisation[iC]/n_vtx,"width"); //0.7448
-            spectraTPC_shift->Scale(kNormalisation[iC]/n_vtx,"width");
+
+            if(iC == 9 && !kUseIntegratedForMB){
+              spectraTOF_shift->Scale(kTriggerEff/n_norm,"width");
+              spectraTPC_width->Scale(kTriggerEff/n_norm,"width");
+            } else {
+              spectraTOF_shift->Scale(kNormalisation[iC]/n_norm,"width");
+              spectraTPC_shift->Scale(kNormalisation[iC]/n_norm,"width");
+            }
+
             output_file.cd(Form("%sshift%i/%s/%i/TOF",kFilterListNames.data(),iCut,kNames[iS].data(),iC));
             spectraTOF_shift->Write(Form("TOFspectra%c%i",kLetter[iS],iC));
             output_file.cd(Form("%sshift%i/%s/%i/TPC",kFilterListNames.data(),iCut,kNames[iS].data(),iC));

@@ -92,6 +92,25 @@ AliDielectronPair::AliDielectronPair(const AliKFParticle * const particle1,
   SetTracks(particle1, particle2,refParticle1,refParticle2);
 }
 
+
+//______________________________________________
+AliDielectronPair::AliDielectronPair(const AliDielectronPair &pair) :
+  fType(pair.fType),
+  fLabel(pair.fLabel),
+  fPdgCode(pair.fPdgCode),
+  fPair(pair.fPair),
+  fD1(pair.fD1),
+  fD2(pair.fD2),
+  fRefD1(pair.fRefD1),
+  fRefD2(pair.fRefD2),
+  fKFUsage(pair.fKFUsage)
+{
+  //
+  // Constructor with tracks
+  //
+  //SetTracks(particle1, particle2,refParticle1,refParticle2);
+}
+
 //______________________________________________
 AliDielectronPair::~AliDielectronPair()
 {

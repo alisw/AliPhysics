@@ -8,6 +8,7 @@
 #include <TObjArray.h>
 #include <TCollection.h>
 
+#include <TMD5.h>
 #include <TBrowser.h>
 #include <TPad.h>
 #include <TROOT.h>
@@ -1158,6 +1159,21 @@ namespace std {
 ULong_t
 AliFemtoConfigObject::Hash() const
 {
+  const TString as_string = Stringify();
+
+  TMD5 md5;
+
+  auto *data = reinterpret_cast<const UChar_t*>(as_string.Data());
+  md5.Update(data, as_string.Length());
+
+  UChar_t digest[16];
+  md5.Final(digest);
+
+  ULong_t hash = reinterpret_cast<ULong_t&>(digest);
+  return hash;
+
+
+  // below lies the old implementation
   static const ULong_t MAGIC_HASH_NUMBER = 3527539;
 
   ULong_t result = MAGIC_HASH_NUMBER ^ std::hash<int>{}(fTypeTag);

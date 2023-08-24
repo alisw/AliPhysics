@@ -264,15 +264,15 @@ void AliConversionSelection::CalculatePi0Candidates(){
 
 				if(fMCEvent){
 
-                    TParticle *mcgam0=gamma0->GetMCParticle(fMCEvent);
-                    TParticle *mcgam1=gamma1->GetMCParticle(fMCEvent);
+                    AliVParticle *mcgam0=gamma0->GetMCParticle(fMCEvent);
+                    AliVParticle *mcgam1=gamma1->GetMCParticle(fMCEvent);
 
 					if(mcgam0&&mcgam1){
 					// Have same Mother?
 
-					if(mcgam0->GetMother(0)==mcgam1->GetMother(0)){
+                    if(mcgam0->GetMother()==mcgam1->GetMother()){
 
-						pi0cand.SetMCLabel(mcgam0->GetMother(0));
+                        pi0cand.SetMCLabel(mcgam0->GetMother());
 					}
 					}
 				}

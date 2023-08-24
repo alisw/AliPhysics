@@ -57,6 +57,7 @@ void BinLogAxis(TH1 *h) {
 ///
 AliAnalysisTaskNucleiPIDqa::AliAnalysisTaskNucleiPIDqa(TString taskname) :  AliAnalysisTaskSE(taskname.Data()),
   fEventCut{false},
+  fFilterBit{BIT(4)},
   fNsigmaITS{3.5f},
   fNsigmaTPC{3.5f},
   fNsigmaTOF{3.5f},
@@ -97,7 +98,7 @@ void AliAnalysisTaskNucleiPIDqa::UserCreateOutputObjects() {
   fList->SetOwner(kTRUE);
 
   fTPCperformance = new TH2D("fTPCperformance",";#it{p}/ |#it{z}| (GeV/#it{c});TPC d#it{E}/d#it{x} (arb. units);Entries",600,0.1,11.,1400,0,1400);
-  fTPCperformanceTwoCharges = new TH2D("fTPCperformanceTwoCharges",";#it{p}/ #it{z} (GeV/#it{c});TPC d#it{E}/d#it{x} (arb. units);Entries",600,-3,3,1400,0,1400);
+  fTPCperformanceTwoCharges = new TH2D("fTPCperformanceTwoCharges",";#it{p}/ #it{z} (GeV/#it{c});TPC d#it{E}/d#it{x} (arb. units);Entries",600 * 2,-3,3,1000,0,1400);
   BinLogAxis(fTPCperformance);
   fList->Add(fTPCperformance);
   fList->Add(fTPCperformanceTwoCharges);
@@ -116,7 +117,7 @@ void AliAnalysisTaskNucleiPIDqa::UserCreateOutputObjects() {
                                                     490,0.2,10.,700,0,1400);
         fTPCsignalSelected[iC][iS][iPid] = new TH2F(Form("fTPCsignalSelected%c%s_%s",kLetter[iC],kNames[iS].data(),kPIDmethod[iPid].data()),
                                                     ";#it{p} (GeV/#it{c});TPC d#it{E}/d#it{x} (a.u.);Entries",
-                                                    490,0.2,10.,1000,0,2000.);
+                                                    290 * 2,0.1,3.,1000,0,1400.);
         fTOFsignalSelected[iC][iS][iPid] = new TH2F(Form("fTOFsignalSelected%c%s_%s",kLetter[iC],kNames[iS].data(),kPIDmethod[iPid].data()),
                                                     ";#it{p} (GeV/#it{c});#beta;Entries",
                                                     490,0.2,10.,550,0.,1.1);
@@ -166,7 +167,7 @@ void AliAnalysisTaskNucleiPIDqa::UserExec(Option_t *) {
     AliAODTrack *track = dynamic_cast<AliAODTrack*>(ev->GetTrack(iT));
 
     if (track->GetID() <= 0) continue;
-    if (!track->TestFilterBit(4)) continue;
+    if (!track->TestFilterBit(fFilterBit)) continue;
     if (track->GetTPCsignalN() < fTPCsignalN) continue;
     const float beta = AliAnalysisTaskNucleiYield::HasTOF(track,fPID);
     const int hasTOF = beta > 1.e-24 ? 1 : 0;

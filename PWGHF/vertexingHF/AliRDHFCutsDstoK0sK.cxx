@@ -341,7 +341,51 @@ void AliRDHFCutsDstoK0sK::GetCutVarsForOpt(AliAODRecoDecayHF* obj, Float_t* vars
 }
 
 
+//--------------------------------------------------------------------------
+Bool_t AliRDHFCutsDstoK0sK::PreSelect(TObject* obj, AliAODv0 *v0, AliVTrack *bachelorTrack){
+  //
+  // Apply pre-selections, used in the AOD filtering
+  //
+  
+  if (!fCutsRD) {
+    AliFatal("Cut matrix not inizialized. Exit...");
+    return 0;
+  }
 
+  AliAODRecoCascadeHF* d = (AliAODRecoCascadeHF*)obj;
+  if (!d) {
+    AliDebug(2,"AliAODRecoCascadeHF null");
+    return 0;
+  }
+  
+  Double_t pt = d->Pt();
+  Int_t ptbin = PtBin(pt);
+  if (ptbin<0) return 0;
+  
+  if ( v0 && ((v0->GetOnFlyStatus() == kTRUE  && GetV0Type() == AliRDHFCuts::kOnlyOfflineV0s) ||
+	      (v0->GetOnFlyStatus() == kFALSE && GetV0Type() == AliRDHFCuts::kOnlyOnTheFlyV0s)) ) return 0;
+
+  // cut on V0 pT min
+  if (v0->Pt() < fCutsRD[GetGlobalIndex(8,ptbin)]) return 0;
+  
+  // cut on the minimum pt of the bachelor
+  if (bachelorTrack->Pt() < fCutsRD[GetGlobalIndex(7,ptbin)]) return 0;
+
+  // Cut on the K0s invariant mass
+  Double_t  mk0s   = v0->MassK0Short();
+  Double_t mk0sPDG   = TDatabasePDG::Instance()->GetParticle(310)->Mass();
+  if (TMath::Abs(mk0s-mk0sPDG) > fCutsRD[GetGlobalIndex(1,ptbin)]) return 0;
+    
+  // cut on the D+ invariant mass
+  Double_t  mDs  = d->InvMassDstoK0sK();
+  Double_t mDsPDG  = TDatabasePDG::Instance()->GetParticle(431)->Mass();
+  if (TMath::Abs(mDs - mDsPDG) > fCutsRD[GetGlobalIndex(0,ptbin)]) return 0;
+
+  // - Cut on V0-daughters DCA (prong-to-prong)
+  if (TMath::Abs(v0->GetDCA()) > fCutsRD[GetGlobalIndex(3,ptbin)]) return 0;
+  
+  return kTRUE;
+}
 
 //--------------------------------------------------------------------------
 Int_t AliRDHFCutsDstoK0sK::IsSelected(TObject* obj, Int_t selectionLevel, AliAODEvent* aod)
@@ -560,7 +604,7 @@ Int_t AliRDHFCutsDstoK0sK::IsSelected(TObject* obj, Int_t selectionLevel, AliAOD
       //_________________________________________________
 
       // - Cut on bachelor pT
-      if (TMath::Abs(bachelorTrack->Pt()) < fCutsRD[GetGlobalIndex(7,ptbin)] && fExcludedCut!=7) {
+      if (bachelorTrack->Pt() < fCutsRD[GetGlobalIndex(7,ptbin)] && fExcludedCut!=7) {
          AliDebug(4, Form(" bachelor track Pt=%2.2e < %2.2e", bachelorTrack->Pt(), fCutsRD[GetGlobalIndex(7,ptbin)]));
          CleanOwnPrimaryVtx(d, aod, origownvtx);
          return 0;
@@ -568,7 +612,7 @@ Int_t AliRDHFCutsDstoK0sK::IsSelected(TObject* obj, Int_t selectionLevel, AliAOD
 
 
       // - Cut on V0 pT
-      if (TMath::Abs(v0->Pt()) < fCutsRD[GetGlobalIndex(8,ptbin)] && fExcludedCut!=8) {
+      if (v0->Pt() < fCutsRD[GetGlobalIndex(8,ptbin)] && fExcludedCut!=8) {
          AliDebug(4, Form(" V0 track Pt=%2.2e < %2.2e", v0->Pt(), fCutsRD[GetGlobalIndex(8,ptbin)]));
          CleanOwnPrimaryVtx(d, aod, origownvtx);
          return 0;

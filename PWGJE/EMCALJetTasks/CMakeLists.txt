@@ -20,6 +20,7 @@ add_definitions(-D_MODULE_="${MODULE}")
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
                     ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks/UserTasks
+		    ${AliPhysics_SOURCE_DIR}/PWGJE/FlowVectorCorrections
                    )
 
 # Additional include folders in alphabetical order except ROOT
@@ -39,7 +40,9 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
                              )
-                             
+
+
+
 # Sources in alphabetical order
 set(SRCS
     AliAnalysisTaskDeltaPt.cxx
@@ -61,6 +64,7 @@ set(SRCS
     AliAnalysisTaskRhoBaseDev.cxx
     AliAnalysisTaskRhoDev.cxx
     AliAnalysisTaskRhoTransDev.cxx
+    AliAnalysisTaskRhoPerpCone.cxx
     AliAnalysisTaskScale.cxx
     AliEmcalJetByJetCorrection.cxx
     AliEmcalJetTaggerTaskFast.cxx
@@ -155,9 +159,12 @@ set(SRCS
     Tracks/AliAnalysisTaskEmcalHighEClusterTree.cxx
     Tracks/AliAnalysisTaskEmcalEG1Correlation.cxx
     Tracks/AliAnalysisTaskEmcalTriggerBackground.cxx
+    Tracks/AliAnalysisTaskEmcalQoverPtShift.cxx
     Tracks/AliAnalysisTaskEmcalJetIterativeDeclustering.cxx
     Tracks/AliAnalysisTaskEmcalFastorMultiplicity.cxx
     Tracks/AliAnalysisTaskEmcalTriggerSelectionTest.cxx
+    Tracks/AliAnalysisTaskEmcalRawSTU.cxx
+    Tracks/AliEmcalTRDTrackingTask.cxx
     UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
@@ -175,16 +182,19 @@ set(SRCS
     UserTasks/AliAnalysisTaskEmcalDiJetResponse.cxx
     UserTasks/AliAnalysisTaskEmcalDijetImbalance.cxx
     UserTasks/AliAnalysisTaskEmcalVsPhos.cxx
+    UserTasks/AliAnalysisTaskEmcalJetEnergyFlow.cxx
     UserTasks/AliAnalysisTaskEmcalJetPerformance.cxx
     UserTasks/AliAnalysisTaskGenerateThermalBackgroundMC.cxx
     UserTasks/AliAnalysisTaskEmcalHighMultTrigger.cxx
     UserTasks/AliAnalysisTaskEmcalHJetMass.cxx
-    UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
     UserTasks/AliAnalysisTaskEmcalJetCorrection.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadCorQA.cxx
     UserTasks/AliAnalysisTaskEmcalJetHadEPpid.cxx
+    UserTasks/AliAnalysisTaskEmcalJetHdEdxPerformance.cxx
+    UserTasks/AliAnalysisTaskEmcalJetHdEdxCorrelations.cxx
     UserTasks/AliAnalysisTaskEmcalJetHUtils.cxx
     UserTasks/AliAnalysisTaskEmcalJetHPerformance.cxx
+    UserTasks/AliAnalysisTaskEmcalJetHPerformanceConstits.cxx
     UserTasks/AliAnalysisTaskEmcalJetHCorrelations.cxx
     UserTasks/AliAnalysisTaskEmcalJetMassBkg.cxx
     UserTasks/AliAnalysisTaskEmcalJetMass.cxx
@@ -219,13 +229,14 @@ set(SRCS
     UserTasks/AliAnalysisTaskJetShapeGR.cxx
     UserTasks/AliAnalysisTaskJetV2.cxx
     UserTasks/AliAnalysisTaskJetV3.cxx
-    UserTasks/AliAnalysisTaskPID.cxx
+    UserTasks/AliAnalysisTaskJetVn.cxx
+    UserTasks/AliAnalysisTaskMTFPID.cxx
     UserTasks/AliAnalysisTaskPIDV0base.cxx
     UserTasks/AliAnalysisTaskPSHFE.cxx
     UserTasks/AliAnalysisTaskPrepareInputForEmbedding.cxx
     UserTasks/AliAnalysisTaskRhoMassScale.cxx
     UserTasks/AliAnalysisTaskSOH.cxx
-    
+    UserTasks/AliAnalysisTaskTrackSkim.cxx
     UserTasks/AliAnalysisTaskTriggerRejection.cxx
     UserTasks/AliAnalysisTaskV0sInJetsEmcal.cxx
     UserTasks/AliEmcalPicoTrackFromJetMaker.cxx
@@ -234,7 +245,14 @@ set(SRCS
     UserTasks/AliJetEmbeddingSelRhoTask.cxx
     UserTasks/AliTrackContainerV0.cxx
     UserTasks/AliTrackContainerToyModel.cxx
-    UserTasks/AliMCParticleContainerToyModel.cxx)
+    UserTasks/AliMCParticleContainerToyModel.cxx
+    UserTasks/AliAnalysisTaskEPCalibForJet.cxx
+    UserTasks/AliAnalysisTaskRawJetWithEP.cxx
+    UserTasks/AliAnalysisTaskEmbeddingJetWithEP.cxx
+    UserTasks/AliPieceWisePoly.cxx
+    UserTasks/AliAnalysisTaskEmcalJetProperties.cxx
+    FlowVectorCorrections/AliAnalysisTaskFlowVectorCorrectionsPWGJE.cxx
+)
 
 # Tasks that need direct access to RooUnfold
 if(RooUnfold_FOUND)
@@ -242,6 +260,13 @@ if(RooUnfold_FOUND)
     include_directories(${ROOUNFOLD_INCLUDE_DIR})
     add_definitions("-DWITH_ROOUNFOLD")
 endif(RooUnfold_FOUND)
+
+if(KFParticle_FOUND)
+    get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
+    include_directories(${KFPARTICLE_INCLUDE_DIR})
+    add_definitions("-DWITH_KFPARTICLE")
+endif(KFParticle_FOUND)
+
 
 # Tasks that need direct access to Fastjet
 if(FASTJET_FOUND)
@@ -258,8 +283,20 @@ if(FASTJET_FOUND)
 	    AliJetEmbeddingFromPYTHIATask.cxx
         AliJetShape.cxx
         AliLundPlaneHelper.cxx
+      AliAnalysisTaskJetCharge.cxx
+      AliAnalysisTaskJetChargeFlavourTemplates.cxx
+      AliAnalysisTaskJetChargeFlavourPb.cxx
+      UserTasks/AliAnalysisJetHadro.cxx
 	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
 	    UserTasks/AliAnalysisTaskNewJetSubstructure.cxx
+            UserTasks/AliAnalysisTaskJetPull.cxx
+	    UserTasks/AliAnalysisTaskCheckDeadCone.cxx
+	    UserTasks/AliAnalysisTaskJetPull.cxx
+	    UserTasks/AliAnalysisTaskJetQnVectors.cxx
+	    UserTasks/AliAnalysisTaskLundPlane.cxx
+            UserTasks/AliAnalysisTaskJetsEEC.cxx
+	    UserTasks/AliAnalysisTaskJetDynamicalGrooming.cxx
+	    UserTasks/AliAnalysisTaskJetHardestKt.cxx
 	    UserTasks/AliAnalysisTaskHardestBranch.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapesMC.cxx
         UserTasks/AliAnalysisTaskEmcalJetShapeExtra.cxx
@@ -267,11 +304,16 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskFullppJet.cxx
         UserTasks/AliAnalysisTaskHJetDphi.cxx
         UserTasks/AliAnalysisTaskHJetSpectra.cxx
+        UserTasks/AliAnalysisTaskIDFragmentationFunction.cxx
+        UserTasks/AliHelperClassFastSimulation.cxx
+        UserTasks/AliJEQnVectorHandler.cxx
         UserTasks/AliAnalysisTaskJetExtractor.cxx
         UserTasks/AliAnalysisTaskJetPP.cxx
         UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
         UserTasks/AliAnalysisTaskEA.cxx
+        UserTasks/AliAnalysisTaskRevEA.cxx
         UserTasks/AliAnalysisEmcalJetHelperEA.cxx
+        UserTasks/AliAnalysisTaskJetPlanarFlow.cxx
         UserTasks/AliAnalysisTaskPythiaBranchEA.cxx
         UserTasks/AliAnalysisTaskSubJetFraction.cxx
 	    UserTasks/AliAnalysisTaskRecoilJetYield.cxx
@@ -284,10 +326,13 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskEmcalSubjet.cxx
 	    UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
         UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
+        UserTasks/AliAnalysisTaskEmcalJetValidation.cxx
+        Tracks/AliAnalysisTaskEmcalJetSpectrumSDPart.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
         Tracks/AliAnalysisTaskTracksInJet.cxx
 	    Tracks/AliAnalysisTaskEmcalJetSubstructureTree.cxx
+        Tracks/AliAnalysisEmcalSoftdropHelper.cxx
         Tracks/AliAnalysisTaskEmcalSoftDropData.cxx
         )
     # Tasks that need both Fastjet and RooUnfold
@@ -312,7 +357,11 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
+  if(ROOT_VERSION_MINOR LESS_EQUAL 20)
     set(ROOT_DEPENDENCIES PyROOT)
+  else()
+    set(ROOT_DEPENDENCIES ROOTTPython)
+  endif()
 else()
     set(ROOT_DEPENDENCIES)
 endif()
@@ -342,6 +391,10 @@ if(RooUnfold_FOUND)
     set(LIBDEPS ${LIBDEPS} ${ROOUNFOLD_LIBRARY})
     set(ROOUNFOLD_DEPENDENCIES ${ROOUNFOLD_LIBRARY})
 endif(RooUnfold_FOUND)
+if(KFParticle_FOUND)
+    get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
+    set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
+endif(KFParticle_FOUND)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library. Note the extra includes ("Tracks UserTasks")
@@ -352,7 +405,7 @@ add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS
 add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES} ${ROOUNFOLD_DEPENDENCIES})
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
@@ -391,3 +444,4 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Installing the macros
 install (DIRECTORY macros DESTINATION PWGJE/EMCALJetTasks)
+install (DIRECTORY FlowVectorCorrections/macros DESTINATION PWGJE/EMCALJetTasks/FlowVectorCorrections)

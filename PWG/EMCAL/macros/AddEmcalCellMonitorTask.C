@@ -1,7 +1,7 @@
 PWG::EMCAL::AliEmcalCellMonitorTask *AddEmcalCellMonitorTask(const char *dummy = "", const char *subwagonname = "cellMonitor") {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  PWG::EMCAL::AliEmcalCellMonitorTask *mon = new AliEmcalCellMonitorTask(subwagonname);
+  PWG::EMCAL::AliEmcalCellMonitorTask *mon = new PWG::EMCAL::AliEmcalCellMonitorTask(subwagonname);
   mgr->AddTask(mon);
 
   TString contname(mgr->GetCommonFileName());

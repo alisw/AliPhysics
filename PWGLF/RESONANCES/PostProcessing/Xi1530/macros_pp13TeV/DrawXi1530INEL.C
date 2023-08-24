@@ -145,6 +145,7 @@ BSRanger bin_range(const std::vector<T>& t, int begin = 1, int end = min_int) {
 //====================================
 class BSTHnSparseHelper {
    public:
+    BSTHnSparseHelper();
     BSTHnSparseHelper(THnSparse* h) : fH(h) { LoadBinFromHist(); }
     BSTHnSparseHelper(TObject* o);
     THnSparse* operator->() { return fH; }
@@ -200,7 +201,8 @@ BSTHnSparseHelper::BSTHnSparseHelper(TObject* o) {
             Form("%s is not THnSparse but %s", o->GetName(), o->ClassName()));
     LoadBinFromHist();
 }
-
+//__________________________________________________________
+BSTHnSparseHelper::BSTHnSparseHelper() {}
 //__________________________________________________________
 TAxis* BSTHnSparseHelper::GetAxis(int i) {
     if (i < 0 || i >= GetNdim())
@@ -369,24 +371,20 @@ const float inf = 1e20;
 const float zero = 1e-20;
 
 // Input files
-//char const* datafile = "LHC15678_1288_1289"; //LHC16 no vertexer
-char const* datafile = "AOD439_441"; //LHC16 no vertexer
-//char const* datafile = "LHC16q_pass1_CENT_wSDD";  //pPb
+// TString datafile = "ESD1517_1519";  // ESD
+TString datafile = "AOD439_441";  // AOD
 
-//char const* rsnmcfile = "LHC17f2b_cent"; // pPb
+// char const* rsnmcfile = "LHC17f2b_cent"; // pPb
 
-char const* rsnmcfile = "LHC18c6b4_298"; //LHC16 pass2
-char const* rsnmcfile2 = "LHC18c6b_part1_298"; //LHC16
-char const* rsnmcfile3 = "LHC18c6b_part2_298"; // LHC16
-char const* rsnmcfile4 = "LHC18c6a_part1_298"; // LHC17
-char const* rsnmcfile5 = "LHC18c6a_part2_298"; // LHC17
-char const* rsnmcfile6 = "LHC18c6a_part3_298"; // LHC17
-char const* rsnmcfile7 = "LHC18c6c_298"; // LHC15
+TString rsnmcfile = "LHC18c6b4_298";        // LHC16 pass2
+TString rsnmcfile2 = "LHC18c6b_part1_298";  // LHC16
+TString rsnmcfile3 = "LHC18c6b_part2_298";  // LHC16
+TString rsnmcfile4 = "LHC18c6a_part1_298";  // LHC17
+TString rsnmcfile5 = "LHC18c6a_part2_298";  // LHC17
+TString rsnmcfile6 = "LHC18c6a_part3_298";  // LHC17
+TString rsnmcfile7 = "LHC18c6c_298";        // LHC15
 
-char const* genmcfile = "LHC161718_GenMC_AOD308309310"; 
-//char const* genmcfile = "LHC16_GenMC_FINAL";
-//char const* genmcfile = "LHC15g3a3_novertexer";
-//char const* genmcfile = "LHC17f2b_cent";  // pPb
+TString genmcfile = "LHC161718_GenMC_AOD308309310";
 
 TString inputDirectory = "Xi1530INEL";
 
@@ -479,18 +477,28 @@ void DrawXi1530INEL(const int sys = 1,
     bool isVertexCutEnd = false;
     bool fpPb = false;
     bool fAA = false;
+    bool is5TeV = false;
+    bool useFurtherMC = true;
     // Reaction to the option
     TString Options = inputOptions;
 
     // For fit systematics
     // NOT USING NOW -> Replaced to FitVar, BinCount, NormVar
+    if (Options.Contains("5TeV")) {
+        is5TeV = true;
+        useFurtherMC = false;
+        datafile = "17qp_wSDD";
+        rsnmcfile = "17pq_RSN";
+        genmcfile = "LHC17q_GenMC";
+        inputDirectory = "Xi1530INEL";
+    }
     if (Options.Contains("FitRange"))
         FitRange = {1.49, 1.57};
     if (Options.Contains("NormRange"))
         NormalizeRange_L = {1.48, 1.49};
     if (Options.Contains("BinCount"))
         bincount = true;
-    if (Options.Contains("LikeSignBkg")){
+    if (Options.Contains("LikeSignBkg")) {
         fix_2nd[1] = 1;
         bkgtype = 2;
     }
@@ -503,102 +511,109 @@ void DrawXi1530INEL(const int sys = 1,
         normright = 1;
     }
     // Fit variation check
-    if (Options.Contains("FitVarLm")){
-        FitRange[0] = FitRange[0]-lstep*rebin*OptionNumber;
+    if (Options.Contains("FitVarLm")) {
+        FitRange[0] = FitRange[0] - lstep * rebin * OptionNumber;
     }
-    if (Options.Contains("FitVarLp")){
-        FitRange[0] = FitRange[0]+rstep*OptionNumber;
+    if (Options.Contains("FitVarLp")) {
+        FitRange[0] = FitRange[0] + rstep * OptionNumber;
     }
-    if (Options.Contains("FitVarRm")){
-        FitRange[1] = FitRange[1]-lstep*rebin*OptionNumber;
+    if (Options.Contains("FitVarRm")) {
+        FitRange[1] = FitRange[1] - lstep * rebin * OptionNumber;
     }
-    if (Options.Contains("FitVarRp")){
-        FitRange[1] = FitRange[1]+rstep*OptionNumber;
+    if (Options.Contains("FitVarRp")) {
+        FitRange[1] = FitRange[1] + rstep * OptionNumber;
     }
-    if (Options.Contains("FitVarBothm")){
-        FitRange[0] = FitRange[0]-lstep*rebin*OptionNumber;
-        FitRange[1] = FitRange[1]+rstep*OptionNumber;
+    if (Options.Contains("FitVarBothm")) {
+        FitRange[0] = FitRange[0] - lstep * rebin * OptionNumber;
+        FitRange[1] = FitRange[1] + rstep * OptionNumber;
     }
-    if (Options.Contains("FitVarBothp")){
-        FitRange[0] = FitRange[0]+lstep*rebin*OptionNumber;
-        FitRange[1] = FitRange[1]-rstep*OptionNumber;
+    if (Options.Contains("FitVarBothp")) {
+        FitRange[0] = FitRange[0] + lstep * rebin * OptionNumber;
+        FitRange[1] = FitRange[1] - rstep * OptionNumber;
     }
     // Norm change
-    if (Options.Contains("NormVarm")){
-        NormalizeRange_L[0] = NormalizeRange_L[0]-lstep*rebin*OptionNumber;
-        NormalizeRange_L[1] = NormalizeRange_L[1]-lstep*rebin*OptionNumber;
-        NormalizeRange_R[0] = NormalizeRange_R[0]-rstep*OptionNumber;
-        NormalizeRange_R[1] = NormalizeRange_R[1]-rstep*OptionNumber;
+    if (Options.Contains("NormVarm")) {
+        NormalizeRange_L[0] =
+            NormalizeRange_L[0] - lstep * rebin * OptionNumber;
+        NormalizeRange_L[1] =
+            NormalizeRange_L[1] - lstep * rebin * OptionNumber;
+        NormalizeRange_R[0] = NormalizeRange_R[0] - rstep * OptionNumber;
+        NormalizeRange_R[1] = NormalizeRange_R[1] - rstep * OptionNumber;
     }
-    if (Options.Contains("NormVarp")){
-        NormalizeRange_L[0] = NormalizeRange_L[0]+lstep*rebin*OptionNumber;
-        NormalizeRange_L[1] = NormalizeRange_L[1]+lstep*rebin*OptionNumber;
-        NormalizeRange_R[0] = NormalizeRange_R[0]+rstep*OptionNumber;
-        NormalizeRange_R[1] = NormalizeRange_R[1]+rstep*OptionNumber;
+    if (Options.Contains("NormVarp")) {
+        NormalizeRange_L[0] =
+            NormalizeRange_L[0] + lstep * rebin * OptionNumber;
+        NormalizeRange_L[1] =
+            NormalizeRange_L[1] + lstep * rebin * OptionNumber;
+        NormalizeRange_R[0] = NormalizeRange_R[0] + rstep * OptionNumber;
+        NormalizeRange_R[1] = NormalizeRange_R[1] + rstep * OptionNumber;
     }
-    if (Options.Contains("NormVarLp")){
-        NormalizeRange_L[1] = NormalizeRange_L[1]+lstep*rebin*OptionNumber;
+    if (Options.Contains("NormVarLp")) {
+        NormalizeRange_L[1] =
+            NormalizeRange_L[1] + lstep * rebin * OptionNumber;
     }
-    if (Options.Contains("NormVarLm")){
-        NormalizeRange_L[0] = NormalizeRange_L[0]-lstep*rebin*OptionNumber;
+    if (Options.Contains("NormVarLm")) {
+        NormalizeRange_L[0] =
+            NormalizeRange_L[0] - lstep * rebin * OptionNumber;
     }
-    if (Options.Contains("NormVarRp")){
-        NormalizeRange_R[1] = NormalizeRange_R[1]+rstep*OptionNumber;
+    if (Options.Contains("NormVarRp")) {
+        NormalizeRange_R[1] = NormalizeRange_R[1] + rstep * OptionNumber;
     }
-    if (Options.Contains("NormVarRm")){
-        NormalizeRange_R[0] = NormalizeRange_R[0]-rstep*OptionNumber;
+    if (Options.Contains("NormVarRm")) {
+        NormalizeRange_R[0] = NormalizeRange_R[0] - rstep * OptionNumber;
     }
-    //Bin count varation
-    if (Options.Contains("BinCountLm")){
-        IntegralRange[0] = IntegralRange[0]-0.001*rebin*OptionNumber;
+    // Bin count varation
+    if (Options.Contains("BinCountLm")) {
+        IntegralRange[0] = IntegralRange[0] - 0.001 * rebin * OptionNumber;
     }
-    if (Options.Contains("BinCountLp")){
-        IntegralRange[0] = IntegralRange[0]+0.001*rebin*OptionNumber;
+    if (Options.Contains("BinCountLp")) {
+        IntegralRange[0] = IntegralRange[0] + 0.001 * rebin * OptionNumber;
     }
-    if (Options.Contains("BinCountRm")){
-        IntegralRange[1] = IntegralRange[1]-0.001*rebin*OptionNumber;
+    if (Options.Contains("BinCountRm")) {
+        IntegralRange[1] = IntegralRange[1] - 0.001 * rebin * OptionNumber;
     }
-    if (Options.Contains("BinCountRp")){
-        IntegralRange[1] = IntegralRange[1]+0.001*rebin*OptionNumber;
+    if (Options.Contains("BinCountRp")) {
+        IntegralRange[1] = IntegralRange[1] + 0.001 * rebin * OptionNumber;
     }
-    if (Options.Contains("BinCountBothm")){
-        IntegralRange[0] = IntegralRange[0]+0.001*rebin*OptionNumber;
-        IntegralRange[1] = IntegralRange[1]-0.001*rebin*OptionNumber;
+    if (Options.Contains("BinCountBothm")) {
+        IntegralRange[0] = IntegralRange[0] + 0.001 * rebin * OptionNumber;
+        IntegralRange[1] = IntegralRange[1] - 0.001 * rebin * OptionNumber;
     }
-    if (Options.Contains("BinCountBothp")){
-        IntegralRange[0] = IntegralRange[0]-0.001*rebin*OptionNumber;
-        IntegralRange[1] = IntegralRange[1]+0.001*rebin*OptionNumber;
+    if (Options.Contains("BinCountBothp")) {
+        IntegralRange[0] = IntegralRange[0] - 0.001 * rebin * OptionNumber;
+        IntegralRange[1] = IntegralRange[1] + 0.001 * rebin * OptionNumber;
     }
-    if (Options.Contains("BkgFit")){
+    if (Options.Contains("BkgFit")) {
         fbkgfit = true;
-        //fix_2nd[1] = 1;
-        formula = "[0] + [1]*x + [2]*TMath::Sqrt( abs(x - 1.46) )"; // 1.321+0.139
-        //formula = "pol2(0)";
-        //FitRange={1.496,1.572};
-        //FitRange[1] = 1.496;
+        // fix_2nd[1] = 1;
+        formula =
+            "[0] + [1]*x + [2]*TMath::Sqrt( abs(x - 1.46) )";  // 1.321+0.139
+        // formula = "pol2(0)";
+        // FitRange={1.496,1.572};
+        // FitRange[1] = 1.496;
         FitRange[1] = 1.6;
     }
-    if (Options.Contains("BkgFitLm")){
-        FitRange[0] = FitRange[0]-lstep*rebin*OptionNumber;
+    if (Options.Contains("BkgFitLm")) {
+        FitRange[0] = FitRange[0] - lstep * rebin * OptionNumber;
     }
-    if (Options.Contains("BkgFitLp")){
-        FitRange[0] = FitRange[0]+lstep*rebin*OptionNumber;
+    if (Options.Contains("BkgFitLp")) {
+        FitRange[0] = FitRange[0] + lstep * rebin * OptionNumber;
     }
-    if (Options.Contains("BkgFitRm")){
-        FitRange[1] = FitRange[1]-rstep*OptionNumber;
+    if (Options.Contains("BkgFitRm")) {
+        FitRange[1] = FitRange[1] - lstep * rebin * OptionNumber;
     }
-    if (Options.Contains("BkgFitRp")){
-        FitRange[1] = FitRange[1]+rstep*OptionNumber;
+    if (Options.Contains("BkgFitRp")) {
+        FitRange[1] = FitRange[1] + lstep * rebin * OptionNumber;
     }
-    if (Options.Contains("BkgFitBothm")){
-        FitRange[0] = FitRange[0]-lstep*rebin*OptionNumber;
-        FitRange[1] = FitRange[1]+rstep*OptionNumber;
+    if (Options.Contains("BkgFitBothm")) {
+        FitRange[0] = FitRange[0] - lstep * rebin * OptionNumber;
+        FitRange[1] = FitRange[1] + lstep * rebin * OptionNumber;
     }
-    if (Options.Contains("BkgFitBothp")){
-        FitRange[0] = FitRange[0]+lstep*rebin*OptionNumber;
-        FitRange[1] = FitRange[1]-rstep*OptionNumber;
+    if (Options.Contains("BkgFitBothp")) {
+        FitRange[0] = FitRange[0] + lstep * rebin * OptionNumber;
+        FitRange[1] = FitRange[1] - lstep * rebin * OptionNumber;
     }
-    if (Options.Contains("vertexcut")){
+    if (Options.Contains("vertexcut")) {
         isVertexCutEnd = true;
     }
     if (Options.Contains("pPb"))
@@ -656,15 +671,15 @@ void DrawXi1530INEL(const int sys = 1,
     double vertexeffi_e = zero;
 
     // Load DATA
-    auto clist = LoadXi1530ResultList(datafile, "Xi1530INEL");
+    auto clist = LoadXi1530ResultList(datafile, inputDirectory);
     auto hInvMass = BSTHnSparseHelper::Load("hInvMass", clist);
     auto clist_MC = LoadXi1530ResultList(
-        rsnmcfile, "Xi1530INEL");  // From Resonance Injected MC
+        rsnmcfile, inputDirectory);  // From Resonance Injected MC
     auto hInvMass_MC = BSTHnSparseHelper::Load("hInvMass", clist_MC);
     auto hInvMass_MC_MB = BSTHnSparseHelper::Load("hInvMass", clist_MC);
     auto clist_MC_General = LoadXi1530ResultList(
-         genmcfile, "Xi1530INEL");  // From General Purpose MC
-         //genmcfile, "Xi1530test");  // From General Purpose MC
+        genmcfile, inputDirectory);  // From General Purpose MC
+    // genmcfile, "Xi1530test");  // From General Purpose MC
     auto hInvMass_MC_General =
         BSTHnSparseHelper::Load("hInvMass", clist_MC_General);
     auto hInvMass_MC_General_MB =
@@ -678,44 +693,59 @@ void DrawXi1530INEL(const int sys = 1,
     hInvMass_MC_General_MB.SetBin("Pt", ptbin);
     
     //further RsnMC
-    
-    auto clist_MC2 = LoadXi1530ResultList(
-        rsnmcfile2, "Xi1530INEL");  // From Resonance Injected MC
-    auto clist_MC3 = LoadXi1530ResultList(
-        rsnmcfile3, "Xi1530INEL");  // From Resonance Injected MC
-    auto clist_MC4 = LoadXi1530ResultList(
-        rsnmcfile4, "Xi1530INEL");  // From Resonance Injected MC
-    auto clist_MC5 = LoadXi1530ResultList(
-        rsnmcfile5, "Xi1530INEL");  // From Resonance Injected MC
-    auto clist_MC6 = LoadXi1530ResultList(
-        rsnmcfile6, "Xi1530INEL");  // From Resonance Injected MC
-    auto clist_MC7 = LoadXi1530ResultList(
-        rsnmcfile7, "Xi1530INEL");  // From Resonance Injected MC
-    auto hInvMass_MC2 = BSTHnSparseHelper::Load("hInvMass", clist_MC2);
-    auto hInvMass_MC3 = BSTHnSparseHelper::Load("hInvMass", clist_MC3);
-    auto hInvMass_MC4 = BSTHnSparseHelper::Load("hInvMass", clist_MC4);
-    auto hInvMass_MC5 = BSTHnSparseHelper::Load("hInvMass", clist_MC5);
-    auto hInvMass_MC6 = BSTHnSparseHelper::Load("hInvMass", clist_MC6);
-    auto hInvMass_MC7 = BSTHnSparseHelper::Load("hInvMass", clist_MC7);
-    auto hInvMass_MC_MB2 = BSTHnSparseHelper::Load("hInvMass", clist_MC2);
-    auto hInvMass_MC_MB3 = BSTHnSparseHelper::Load("hInvMass", clist_MC3);
-    auto hInvMass_MC_MB4 = BSTHnSparseHelper::Load("hInvMass", clist_MC4);
-    auto hInvMass_MC_MB5 = BSTHnSparseHelper::Load("hInvMass", clist_MC5);
-    auto hInvMass_MC_MB6 = BSTHnSparseHelper::Load("hInvMass", clist_MC6);
-    auto hInvMass_MC_MB7 = BSTHnSparseHelper::Load("hInvMass", clist_MC7);
+    BSTHnSparseHelper hInvMass_MC2;
+    BSTHnSparseHelper hInvMass_MC3;
+    BSTHnSparseHelper hInvMass_MC4;
+    BSTHnSparseHelper hInvMass_MC5;
+    BSTHnSparseHelper hInvMass_MC6;
+    BSTHnSparseHelper hInvMass_MC7;
 
-    hInvMass_MC2.SetBin("Pt", ptbin);
-    hInvMass_MC3.SetBin("Pt", ptbin);
-    hInvMass_MC4.SetBin("Pt", ptbin);
-    hInvMass_MC5.SetBin("Pt", ptbin);
-    hInvMass_MC6.SetBin("Pt", ptbin);
-    hInvMass_MC7.SetBin("Pt", ptbin);
-    hInvMass_MC_MB2.SetBin("Pt", ptbin);
-    hInvMass_MC_MB3.SetBin("Pt", ptbin);
-    hInvMass_MC_MB4.SetBin("Pt", ptbin);
-    hInvMass_MC_MB5.SetBin("Pt", ptbin);
-    hInvMass_MC_MB6.SetBin("Pt", ptbin);
-    hInvMass_MC_MB7.SetBin("Pt", ptbin);
+    BSTHnSparseHelper hInvMass_MC_MB2;
+    BSTHnSparseHelper hInvMass_MC_MB3;
+    BSTHnSparseHelper hInvMass_MC_MB4;
+    BSTHnSparseHelper hInvMass_MC_MB5;
+    BSTHnSparseHelper hInvMass_MC_MB6;
+    BSTHnSparseHelper hInvMass_MC_MB7;
+
+    if (useFurtherMC) {
+        auto clist_MC2 = LoadXi1530ResultList(
+            rsnmcfile2.Data(), "Xi1530MB");  // From Resonance Injected MC
+        auto clist_MC3 = LoadXi1530ResultList(
+            rsnmcfile3.Data(), "Xi1530MB");  // From Resonance Injected MC
+        auto clist_MC4 = LoadXi1530ResultList(
+            rsnmcfile4.Data(), "Xi1530MB");  // From Resonance Injected MC
+        auto clist_MC5 = LoadXi1530ResultList(
+            rsnmcfile5.Data(), "Xi1530MB");  // From Resonance Injected MC
+        auto clist_MC6 = LoadXi1530ResultList(
+            rsnmcfile6.Data(), "Xi1530MB");  // From Resonance Injected MC
+        auto clist_MC7 = LoadXi1530ResultList(
+            rsnmcfile7.Data(), "Xi1530MB");  // From Resonance Injected MC
+        hInvMass_MC2 = BSTHnSparseHelper::Load("hInvMass", clist_MC2);
+        hInvMass_MC3 = BSTHnSparseHelper::Load("hInvMass", clist_MC3);
+        hInvMass_MC4 = BSTHnSparseHelper::Load("hInvMass", clist_MC4);
+        hInvMass_MC5 = BSTHnSparseHelper::Load("hInvMass", clist_MC5);
+        hInvMass_MC6 = BSTHnSparseHelper::Load("hInvMass", clist_MC6);
+        hInvMass_MC7 = BSTHnSparseHelper::Load("hInvMass", clist_MC7);
+        hInvMass_MC_MB2 = BSTHnSparseHelper::Load("hInvMass", clist_MC2);
+        hInvMass_MC_MB3 = BSTHnSparseHelper::Load("hInvMass", clist_MC3);
+        hInvMass_MC_MB4 = BSTHnSparseHelper::Load("hInvMass", clist_MC4);
+        hInvMass_MC_MB5 = BSTHnSparseHelper::Load("hInvMass", clist_MC5);
+        hInvMass_MC_MB6 = BSTHnSparseHelper::Load("hInvMass", clist_MC6);
+        hInvMass_MC_MB7 = BSTHnSparseHelper::Load("hInvMass", clist_MC7);
+
+        hInvMass_MC2.SetBin("Pt", ptbin);
+        hInvMass_MC3.SetBin("Pt", ptbin);
+        hInvMass_MC4.SetBin("Pt", ptbin);
+        hInvMass_MC5.SetBin("Pt", ptbin);
+        hInvMass_MC6.SetBin("Pt", ptbin);
+        hInvMass_MC7.SetBin("Pt", ptbin);
+        hInvMass_MC_MB2.SetBin("Pt", ptbin);
+        hInvMass_MC_MB3.SetBin("Pt", ptbin);
+        hInvMass_MC_MB4.SetBin("Pt", ptbin);
+        hInvMass_MC_MB5.SetBin("Pt", ptbin);
+        hInvMass_MC_MB6.SetBin("Pt", ptbin);
+        hInvMass_MC_MB7.SetBin("Pt", ptbin);
+    }
 
     cout << "DATA AXES " << endl;
     hInvMass.PrintAxis("all");
@@ -734,6 +764,10 @@ void DrawXi1530INEL(const int sys = 1,
     TH1D* hNumberofEvent = (TH1D*)clist->FindObject(
         "fNormalisationHist");  // N of Event through event cuts
     hNumberofEvent->Write("hNumberofEvent");
+    TH1D* hEventCuts =
+        (TH1D*)clist->FindObject("fCutStats");  // N of Event through event cuts
+    hEventCuts->Write("hCutStats");
+    //TList* QAlist = (TList*)clist->FindObject("EventQA");
     TH1D* hMultQA = (TH1D*)clist->FindObject(
         "hMult_QA");  // Multiplicty distribution after all event cuts
     hMultQA->Rebin(10);
@@ -748,6 +782,10 @@ void DrawXi1530INEL(const int sys = 1,
     Double1D tempbin = {0, 100};
     triggereffi=0.7401; // https://alice-notes.web.cern.ch/node/665
     triggereffi_e = 0.0325;
+    if(is5TeV){
+        triggereffi = 0.7574;  // https://alice-notes.web.cern.ch/node/665
+        triggereffi_e = 0.0190;
+    }
     
     TH1D* htriggereffi =
         new TH1D("TrigEffi", "Trigger Efficiency", 1, &tempbin[0]);
@@ -854,18 +892,20 @@ void DrawXi1530INEL(const int sys = 1,
         // My reconstruction in All event cut
         auto hReco = hInvMass_MC_MB.GetTH1("recon", 4, {sys, 4, -1, j, -1});
 
-        hInput->Add(hInvMass_MC_MB2.GetTH1("input", 4, {1, 6, -1, j, -1}));
-        hInput->Add(hInvMass_MC_MB3.GetTH1("input", 4, {1, 6, -1, j, -1}));
-        hInput->Add(hInvMass_MC_MB4.GetTH1("input", 4, {1, 6, -1, j, -1}));
-        hInput->Add(hInvMass_MC_MB5.GetTH1("input", 4, {1, 6, -1, j, -1}));
-        hInput->Add(hInvMass_MC_MB6.GetTH1("input", 4, {1, 6, -1, j, -1}));
-        hInput->Add(hInvMass_MC_MB7.GetTH1("input", 4, {1, 6, -1, j, -1}));
-        hReco->Add(hInvMass_MC_MB2.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
-        hReco->Add(hInvMass_MC_MB3.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
-        hReco->Add(hInvMass_MC_MB4.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
-        hReco->Add(hInvMass_MC_MB5.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
-        hReco->Add(hInvMass_MC_MB6.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
-        hReco->Add(hInvMass_MC_MB7.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
+        if (useFurtherMC) {
+            hInput->Add(hInvMass_MC_MB2.GetTH1("input", 4, {1, 6, -1, j, -1}));
+            hInput->Add(hInvMass_MC_MB3.GetTH1("input", 4, {1, 6, -1, j, -1}));
+            hInput->Add(hInvMass_MC_MB4.GetTH1("input", 4, {1, 6, -1, j, -1}));
+            hInput->Add(hInvMass_MC_MB5.GetTH1("input", 4, {1, 6, -1, j, -1}));
+            hInput->Add(hInvMass_MC_MB6.GetTH1("input", 4, {1, 6, -1, j, -1}));
+            hInput->Add(hInvMass_MC_MB7.GetTH1("input", 4, {1, 6, -1, j, -1}));
+            hReco->Add(hInvMass_MC_MB2.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
+            hReco->Add(hInvMass_MC_MB3.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
+            hReco->Add(hInvMass_MC_MB4.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
+            hReco->Add(hInvMass_MC_MB5.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
+            hReco->Add(hInvMass_MC_MB6.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
+            hReco->Add(hInvMass_MC_MB7.GetTH1("recon", 4, {sys, 4, -1, j, -1}));
+        }
         
         Double_t Input_number_Gen = hInput_Gen->Integral(
             hInput_Gen->GetXaxis()->FindBin(IntegralRangeMC[0]),

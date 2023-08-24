@@ -12,6 +12,7 @@
 AliFemtoCutMonitorEventSphericity::AliFemtoCutMonitorEventSphericity():
   fEvSpher(NULL),
   fEvSpherMult(NULL),
+  fEvSpherPtmax(NULL),
   fMultSumPt(NULL)
 {
   // Default constructor
@@ -19,6 +20,11 @@ AliFemtoCutMonitorEventSphericity::AliFemtoCutMonitorEventSphericity():
   fEvSpherMult = new TH2D("EvSpherMult","EvSpher vs Mult",
 			100, 0., 1.0,
                         5001, -0.5, 5000.5);
+
+  fEvSpherPtmax = new TH2D("EvSpherPtmax","EvSpher vs Ptmax",
+			100, 0., 1.0,
+                        100, 0., 50.);
+
   fMultSumPt = new TH2D("EvMultSumPt",
                         "Event Multiplicity vs Total pT",
                         5001, -0.5, 5000.5,
@@ -29,6 +35,7 @@ AliFemtoCutMonitorEventSphericity::AliFemtoCutMonitorEventSphericity(const char 
   AliFemtoCutMonitor(),
   fEvSpher(NULL),
   fEvSpherMult(NULL),
+  fEvSpherPtmax(NULL),
   fMultSumPt(NULL)
 {
   TString name(aName);
@@ -50,6 +57,10 @@ AliFemtoCutMonitorEventSphericity::AliFemtoCutMonitorEventSphericity(const char 
                         501, -0.5, 500.5,
                         1000, 0.0, 100.0);
 
+  fEvSpherPtmax = new TH2D("EvSpherPtMax"+ name, "EvSpher vs Ptmax",
+			100, 0., 1.0,
+                        100 , 0.0, 50.0);
+
 
 }
 
@@ -57,13 +68,15 @@ AliFemtoCutMonitorEventSphericity::AliFemtoCutMonitorEventSphericity(const AliFe
   AliFemtoCutMonitor(aCut),
   fEvSpher(NULL),
   fEvSpherMult(NULL),
+  fEvSpherPtmax(NULL),
   fMultSumPt(NULL)
 {
   // copy constructor
   fEvSpher = new TH1D(*aCut.fEvSpher);
   fEvSpherMult = new TH2D(*aCut.fEvSpherMult);
+  fEvSpherPtmax = new TH2D(*aCut.fEvSpherPtmax);
   fMultSumPt = new TH2D(*aCut.fMultSumPt);
-
+  
 }
 
 AliFemtoCutMonitorEventSphericity::~AliFemtoCutMonitorEventSphericity()
@@ -71,6 +84,7 @@ AliFemtoCutMonitorEventSphericity::~AliFemtoCutMonitorEventSphericity()
   // Destructor
   delete fEvSpher;
   delete fEvSpherMult;
+  delete fEvSpherPtmax;
   delete fMultSumPt;
 }
 
@@ -85,6 +99,9 @@ AliFemtoCutMonitorEventSphericity& AliFemtoCutMonitorEventSphericity::operator=(
 
   if (fEvSpherMult) delete fEvSpherMult;
   fEvSpherMult = new TH2D(*aCut.fEvSpherMult);
+
+  if (fEvSpherPtmax) delete fEvSpherPtmax;
+  fEvSpherPtmax = new TH2D(*aCut.fEvSpherPtmax);
  
   if (fMultSumPt) delete fMultSumPt;
   fMultSumPt = new TH2D(*aCut.fMultSumPt);
@@ -116,6 +133,7 @@ void AliFemtoCutMonitorEventSphericity::Fill(const AliFemtoEvent* aEvent)
   Double_t Lambda1 = 0;
   Double_t Lambda2 = 0;
   Double_t St = 0;
+  Double_t Ptmax=0;
 
    AliFemtoTrackCollection * tracks = aEvent->TrackCollection(); 
    
@@ -127,6 +145,7 @@ void AliFemtoCutMonitorEventSphericity::Fill(const AliFemtoEvent* aEvent)
     Double_t NewPt =  (*iter)->Pt();
     Double_t NewEta = (*iter)->P().PseudoRapidity();
    
+    if(NewPt>Ptmax)Ptmax=NewPt;
     
     if(TMath::Abs(NewEta)>0.8 || NewPt<0.5){continue;}
     
@@ -144,7 +163,7 @@ void AliFemtoCutMonitorEventSphericity::Fill(const AliFemtoEvent* aEvent)
     
   }  	// end of track loop
 
-    if(SumPt==0){St=0; goto M1;}
+    if(SumPt==0){St=-1000; goto M1;}
       
   S00 = S00/SumPt; // normalize
   S11 = S11/SumPt;
@@ -157,13 +176,14 @@ void AliFemtoCutMonitorEventSphericity::Fill(const AliFemtoEvent* aEvent)
 	{
 		St = 2*Lambda2/(Lambda1+Lambda2);
 	}
-     else{St=0; goto M1;};
+     else{St=-1000; goto M1;};
   
 
  M1: // cout<<"St  = "<< St << " " <<mult<<" "<<SumPt<<endl;
 
   fEvSpher->Fill(St);
   fEvSpherMult->Fill(St,mult);
+  fEvSpherPtmax->Fill(St,Ptmax);
   fMultSumPt->Fill(mult,SumPt);
 
 
@@ -175,6 +195,7 @@ void AliFemtoCutMonitorEventSphericity::Write()
   // Write out the relevant histograms
   fEvSpher->Write();
   fEvSpherMult->Write();
+  fEvSpherPtmax->Write();
   fMultSumPt->Write();
 
 }
@@ -184,6 +205,7 @@ TList *AliFemtoCutMonitorEventSphericity::GetOutputList()
   TList *tOutputList = new TList();
   tOutputList->Add(fEvSpher);
   tOutputList->Add(fEvSpherMult);
+  tOutputList->Add(fEvSpherPtmax);
   tOutputList->Add(fMultSumPt);
 
   return tOutputList;

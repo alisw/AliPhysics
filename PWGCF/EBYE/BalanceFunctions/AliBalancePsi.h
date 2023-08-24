@@ -219,12 +219,12 @@ class AliBalancePsi : public TObject {
   TH3D *GetQAHistConversionafter() {return fHistConversionafter;}
   TH2D *GetQAHistPsiMinusPhi() {return fHistPsiMinusPhi;}
   TH3D *GetQAHistResonancesBefore() {return fHistResonancesBefore;}
-  TH2D *GetQAHistResonancesPhiBeforeUS() {return fHistResonancesPhiBeforeUS;}
-  TH2D *GetQAHistResonancesPhiBeforeLS() {return fHistResonancesPhiBeforeLS;}
+  TH3D *GetQAHistResonancesPhiBeforeUS() {return fHistResonancesPhiBeforeUS;}
+  TH3D *GetQAHistResonancesPhiBeforeLS() {return fHistResonancesPhiBeforeLS;}
   TH3D *GetQAHistResonancesRho() {return fHistResonancesRho;}
   TH3D *GetQAHistResonancesK0() {return fHistResonancesK0;}
   TH3D *GetQAHistResonancesLambda() {return fHistResonancesLambda;}
-  TH2D *GetQAHistResonancesPhi() {return fHistResonancesPhi;}
+  TH3D *GetQAHistResonancesPhi() {return fHistResonancesPhi;}
   TH3D *GetQAHistQbefore() {return fHistQbefore;}
   TH3D *GetQAHistQafter() {return fHistQafter;}
 
@@ -276,12 +276,12 @@ class AliBalancePsi : public TObject {
   TH3D *fHistConversionafter; // 3D histogram (Deta,Dphi,Invmass) before Conversion cuts
   TH2D *fHistPsiMinusPhi;// psi - phi QA histogram
   TH3D *fHistResonancesBefore; // 3D histogram (Deta,Dphi,Invmass) before resonance cuts
-  TH2D *fHistResonancesPhiBeforeUS; //2D histogram (Pt,Invmass) for unlike-sign kaon pairs before removing phi
-  TH2D *fHistResonancesPhiBeforeLS; //2D histogram (Pt,Invmass) for like-sign kaon pairs before removing phi
+  TH3D *fHistResonancesPhiBeforeUS; //2D histogram (Pt,Invmass) for unlike-sign kaon pairs before removing phi
+  TH3D *fHistResonancesPhiBeforeLS; //2D histogram (Pt,Invmass) for like-sign kaon pairs before removing phi
   TH3D *fHistResonancesRho;    // 3D histogram (Deta,Dphi,Invmass) after removing rho 
   TH3D *fHistResonancesK0;     // 3D histogram (Deta,Dphi,Invmass) after removing rho, K0 
   TH3D *fHistResonancesLambda; // 3D histogram (Deta,Dphi,Invmass) after removing rho, K0, and Lambda
-  TH2D *fHistResonancesPhi;// 2D histogram (Pt,Invmass) for unlike-sign kaon pairs after removing phi
+  TH3D *fHistResonancesPhi;// 2D histogram (Pt,Invmass) for unlike-sign kaon pairs after removing phi
   TH3D *fHistQbefore; // Delta Eta vs. Delta Phi before cut on momentum difference
   TH3D *fHistQafter; // Delta Eta vs. Delta Phi after cut on momentum difference
 

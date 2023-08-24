@@ -25,11 +25,9 @@
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerAnaTriggerDecision.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerTracksAnalysisComponent)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerTracksAnalysisComponent)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Dummy (I/O) constructor, not to be used
@@ -125,7 +123,7 @@ void AliEMCalTriggerTracksAnalysisComponent::GetAllTriggerNamesAndTitles(std::ma
  * \param triggernames Selected trigger names
  * \param componentName Name of the component responsible for the printout
  */
-void EMCalTriggerPtAnalysis::AliEMCalTriggerTracksAnalysisComponent::PrintTriggerNames(
+void AliEMCalTriggerTracksAnalysisComponent::PrintTriggerNames(
     const std::vector<std::string>& triggernames, const std::string& componentName) const {
 
     std::cout << componentName << ", Triggers found: " << std::endl;
@@ -140,5 +138,3 @@ void EMCalTriggerPtAnalysis::AliEMCalTriggerTracksAnalysisComponent::PrintTrigge
     }
     std::cout << std::endl;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

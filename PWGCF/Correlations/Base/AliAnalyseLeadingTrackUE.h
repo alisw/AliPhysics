@@ -58,7 +58,7 @@ class AliAnalyseLeadingTrackUE : public TObject {
   AliVParticle*  ParticleWithCuts(TObject* obj, Int_t ipart, Bool_t onlyprimaries = kTRUE, Int_t particleSpecies = -1, Bool_t onlyCharged = kTRUE);                     // Returns track or MC particle at position "ipart" if passes selection criteria
   void  	 QSortTracks(TObjArray &a, Int_t first, Int_t last);               // Sort by pT an array of AliVParticles 
   TObjArray*     SortRegions(const AliVParticle* leading, TObject* obj, TObject* arrayMC, Bool_t onlyprimaries = kTRUE); // Assign particles to towards, away or transverse regions
-  TObjArray*     GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries = kTRUE, Int_t particleSpecies = -1, Bool_t useEtaPtCuts = kFALSE, Bool_t speciesOnTracks = kTRUE, Double_t evtPlane = -999., Bool_t onlyCharged = kTRUE); 
+  TObjArray*     GetAcceptedParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries = kTRUE, Int_t particleSpecies = -1, Bool_t useEtaPtCuts = kFALSE, Bool_t speciesOnTracks = kTRUE, Double_t evtPlane = -999., Bool_t onlyCharged = kTRUE, ULong64_t generatorIndexMask = 0ull); 
   TObjArray*     GetFakeParticles(TObject* obj, TObject* arrayMC, Bool_t onlyprimaries, Int_t particleSpecies, Bool_t useEtaPtCuts);
   Bool_t         TriggerSelection(const TObject* obj);                                   // Select good triggers with AliPhysicsSelection class
   Bool_t         VertexSelection(const TObject* obj, Int_t ntracks, Double_t zed);       // Vertex selection: see implementation
@@ -73,6 +73,7 @@ class AliAnalyseLeadingTrackUE : public TObject {
   void		 NextEvent() { fEventCounter++; }
   UInt_t	 GetEventCounter() { return fEventCounter; }
   void		 SetDCAXYCut(TFormula* value) { fDCAXYCut = value; }
+  void		 SetDCAZCut(TFormula* value) { fDCAZCut = value; }
   void		 SetSharedClusterCut(Double_t value) { fSharedClusterCut = value; }
   void		 SetCrossedRowsCut(Int_t value) { fCrossedRowsCut = value; }
   void		 SetFoundFractionCut(Double_t value) { fFoundFractionCut = value; }
@@ -95,6 +96,7 @@ private:
   Double_t       fTrackPtMin;        // pt limit for selecting particles
   UInt_t         fEventSelection;    // bit for physics selection
   TFormula*      fDCAXYCut;          // additional pt dependent cut on DCA XY (only for AOD)
+  TFormula*      fDCAZCut;           // additional pt dependent cut on DCA Z (only for AOD)
   Double_t       fSharedClusterCut;  // cut on shared clusters (only for AOD)
   Int_t		 fCrossedRowsCut;   // cut on crossed rows (only for AOD)
   Double_t	 fFoundFractionCut;     // cut on crossed rows/findable clusters (only for AOD)

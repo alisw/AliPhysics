@@ -15,7 +15,11 @@ AliGenerator *AddMCGenAmpt(
                           Bool_t stringMelting = kTRUE,   // string melting option
                           Bool_t useART        = kTRUE,   // use hadronic rescattering phase (ART)
                           Bool_t pAcollisions  = kFALSE,  // pA instead of AA collisions
-                          Bool_t ppcollisions  = kFALSE   // pp instead of AA collisions
+                          Bool_t ppcollisions  = kFALSE,  // pp instead of AA collisions
+                          Bool_t Xecollisions  = kFALSE,  // XeXe instead of PbPb collisions
+                          Double_t mu          = 3.2264,  // parton screening mass in fm^(-1) (Default = 3.2264)
+                          Double_t a           = 0.5,     //Lund string fragmentation parameter a
+                          Double_t b           = 0.9      //Lund string fragmentation parameter b
                            )
 {
   AliGenAmpt *genAMPT = new AliGenAmpt(-1);
@@ -24,8 +28,7 @@ AliGenerator *AddMCGenAmpt(
 
   // User settings
   Int_t Flag_SM    = 4;       // flag for string melting: 1 = default, 4 = String Melting
-  Int_t NTmax      = 150;     // NTMAX: number of timesteps (Default = 150), to turn off ART set it to 3
-  Double_t mu      = 3.2264;  // parton screening mass in fm^(-1) (Default = 3.2264)
+  Int_t NTmax      = 150;     // NTMAX: number of timesteps (Default = 150), to turn off ART set it to 3  
   Double_t alpha_s = 1./3.;   // change mu and alpha_s (Default = 1./3.) to vary scattering cross-section
                               // mu = 3.2 fm^-1 and alpha_s = 0.33 ==> sigma_{partonic} = 1.5mb
   if(!stringMelting)
@@ -55,6 +58,10 @@ AliGenerator *AddMCGenAmpt(
   else if (pAcollisions){
     genAMPT->SetProjectile("A", 208, 82);
     genAMPT->SetTarget("P", 1, 1);
+  } 
+  else if (Xecollisions){
+    genAMPT->SetProjectile("A", 129, 54);
+    genAMPT->SetTarget("A", 129, 54);
   } else {
     genAMPT->SetProjectile("A", 208, 82);
     genAMPT->SetTarget("A", 208, 82);
@@ -72,7 +79,7 @@ AliGenerator *AddMCGenAmpt(
   genAMPT->SetXmu(mu);             // parton xsection
   genAMPT->SetNtMax(NTmax);        // time bins
   genAMPT->SetAlpha(alpha_s);      // alpha =0.333
-  genAMPT->SetStringFrag(0.5,0.9); // string fragmentation parameters
+  genAMPT->SetStringFrag(a,b); // string fragmentation parameters
   genAMPT->SetIpop(1);             // enable popcorn mechanism (net-baryon stopping)
   //=========================================================================
 

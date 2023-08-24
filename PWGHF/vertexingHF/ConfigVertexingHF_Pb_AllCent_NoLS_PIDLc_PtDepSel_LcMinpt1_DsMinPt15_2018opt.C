@@ -234,7 +234,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
     cutsArrayDstoKKpi[iv]=new Float_t[nptbinsDp];
   }
   //0-4
-  cutsArrayDstoKKpi[0][0]=0.25;  
+  cutsArrayDstoKKpi[0][0]=0.22;
   cutsArrayDstoKKpi[1][0]=0.3;
   cutsArrayDstoKKpi[2][0]=0.3;
   cutsArrayDstoKKpi[3][0]=0.;
@@ -243,7 +243,7 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   cutsArrayDstoKKpi[6][0]=0.06;
   cutsArrayDstoKKpi[7][0]=0.02;
   cutsArrayDstoKKpi[8][0]=0.;
-  cutsArrayDstoKKpi[9][0]=0.92;
+  cutsArrayDstoKKpi[9][0]=0.94;
   cutsArrayDstoKKpi[10][0]=0.;
   cutsArrayDstoKKpi[11][0]=100000.;
   cutsArrayDstoKKpi[12][0]=0.02;
@@ -371,10 +371,10 @@ AliAnalysisVertexingHF* ConfigVertexingHF() {
   //--------------------------------------------------------
 
   AliRDHFCutsLctoV0 *cutsLctoV0 = new AliRDHFCutsLctoV0("CutsLctoV0");
-  Float_t cutsArrayLctoV0[21]={0.2,0.,0.05,0.05,0.5,0.0,0.0,1000.,1000.,0.99,3.,1000.,0.,0.,0.,0.5,9999.,-9999.,-9999.,-9999.,1};
+  Float_t cutsArrayLctoV0[23]={0.2,0.,0.05,0.05,0.5,0.0,0.0,1000.,1000.,0.99,3.,1000.,0.,0.,0.,0.5,9999.,-9999.,-9999.,-9999.,0.0,1000.,1};
   cutsLctoV0->SetUseTrackSelectionWithFilterBits(kFALSE);
   cutsLctoV0->SetMinPtCandidate(1.);
-  cutsLctoV0->SetCuts(21,cutsArrayLctoV0);
+  cutsLctoV0->SetCuts(23,cutsArrayLctoV0);
   cutsLctoV0->AddTrackCuts(esdTrackCuts);
 
   AliESDtrackCuts *esdV0daughterTrackCuts = new AliESDtrackCuts("AliESDtrackCutsForV0D","default cuts for V0 daughters");

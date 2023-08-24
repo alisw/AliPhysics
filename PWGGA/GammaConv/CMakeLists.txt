@@ -43,51 +43,70 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources in alphabetical order
 set(SRCS
-    AliAnaConvCorrBase.cxx
-    AliAnaConvCorrPhoton.cxx
-    AliAnaConvCorrPion.cxx
-    AliAnaConvIsolation.cxx
-    AliAnalysisTaskConvCaloCalibration.cxx
+    #helper classes
+    AliCutHandlerPCM.cxx
+    AliIdentifiedPrimaryCuts.cxx
+    AliIdentifiedPrimarySelector.cxx
+    AliGammaConversionAODBGHandler.cxx
+    AliAnalysisTaskJetOutlierRemoval.cxx
+    # user tasks
+    AliAnalysisTaskPi0v2.cxx
+    AliAnalysisTaskConvJet.cxx
+    AliConversionAodSkimTask.cxx
+    AliAnalysisTaskGammaIsoTree.cxx
+    AliAnalysisTaskGammaCaloMix.cxx
+    AliAnalysisTaskGammaConvFlow.cxx
+    # QA tasks
     AliAnalysisTaskConversionQA.cxx
     AliAnalysisTaskConversionTree.cxx
-    AliAnalysisTaskConvJet.cxx
     AliAnalysisTaskClusterQA.cxx
-    AliAnalysisTaskdPhi.cxx
-    AliAnalysisTaskEtaToPiPlPiMiGamma.cxx
-    AliAnalysisTaskGammaCalo.cxx
-    AliAnalysisTaskGammaCaloIso.cxx
-    AliAnalysisTaskGammaCaloMerged.cxx
-    AliAnalysisTaskGammaConvCalo.cxx
-    AliAnalysisTaskGammaConvCaloIso.cxx
-    AliAnalysisTaskGammaConvDalitzV1.cxx
-    AliAnalysisTaskGammaConvFlow.cxx
-    AliAnalysisTaskGammaConvV1.cxx
-    AliAnalysisTaskGammaConvDtrue.cxx
-    AliAnalysisTaskGCPartToPWG4Part.cxx
     AliAnalysisTaskMaterial.cxx
     AliAnalysisTaskMaterialHistos.cxx
-    AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero.cxx
-    AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson.cxx
+    AliAnalysisTaskResolution.cxx
+    AliAnalysisTaskConvCaloTree.cxx
+    AliAnalysisTaskQA.cxx
+    AliAnalysisTaskGammaTriggerQA.cxx
+    AliAnalysisTaskConvCaloCalibration.cxx
+    AliAnalysisTaskTrackQA.cxx
+    AliAnalysisTRDEfficiency.cxx
+    AliAnalysisTaskElectronStudies.cxx
+    # MC and cocktail tasks
+    AliAnalysisTaskGammaPureMC.cxx
+    AliAnalysisTaskGammaCocktailMC.cxx
+    AliAnalysisTaskHadronicCocktailMC.cxx
+    AliAnalysisTaskOmegaMCStudies.cxx
+    # main pion, eta and photon tasks
+    AliAnalysisTaskGammaConvV1.cxx
+    AliAnalysisTaskGammaConvDalitzV1.cxx
+    AliAnalysisTaskGammaCaloMerged.cxx
+    AliAnalysisTaskGammaCaloMergedML.cxx
+    AliAnalysisTaskGammaConvCalo.cxx
+    AliAnalysisTaskGammaCalo.cxx
+    AliAnalysisTaskGammaCaloDalitzV1.cxx
+    AliAnalysisTaskGammaConvCaloIso.cxx
+    AliAnalysisTaskGammaCaloIso.cxx
+    # heavier resonances
     AliAnalysisTaskOmegaToPiZeroGamma.cxx
     AliAnalysisTaskHeavyNeutralMesonToGG.cxx
     AliAnalysisTaskK0toPi0Pi0.cxx
-    AliAnalysisTaskPi0v2.cxx
-    AliAnalysisTaskTrackQA.cxx	
-    AliAnalysisTRDEfficiency.cxx
-    AliIdentifiedPrimaryCuts.cxx
-    AliIdentifiedPrimarySelector.cxx
-    AliAnalysisTaskResolution.cxx
-    AliAnalysisTaskGammaCaloDalitzV1.cxx
-    AliAnalysisTaskGammaPureMC.cxx
-    AliAnalysisTaskOmegaMCStudies.cxx
-    AliAnalysisTaskGammaCocktailMC.cxx
-    AliAnalysisTaskGammaTriggerQA.cxx
-    AliAnalysisTaskHadronicCocktailMC.cxx
-    AliGammaConversionAODBGHandler.cxx
+    AliAnalysisTaskGammaConvDtrue.cxx
+    AliAnalysisTaskSigmaPlToProtonPiZero.cxx
+    AliAnalysisTaskSigmaPlToProtonPiZeroAOD.cxx
+    AliAnalysisTaskEtaToPiPlPiMiGamma.cxx
+    AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson.cxx 
+    # meson jet correlation
+    AliAnalysisTaskMesonJetCorrelation.cxx  
+    AliAnalysisTaskCorrelationTree.cxx   
+#     AliAnalysisTaskGCPartToPWG4Part.cxx
+#     AliAnaConvCorrBase.cxx
+#     AliAnaConvCorrPhoton.cxx
+#     AliAnaConvCorrPion.cxx
+#     AliAnaConvIsolation.cxx
     AliPrimaryPionCuts.cxx
     AliPrimaryPionSelector.cxx
-    AliConversionCutHandler.cxx
-    AliCutHandlerPCM.cxx
+#     AliConversionCutHandler.cxx
+#     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero.cxx
+#     AliAnalysisTaskdPhi.cxx
    )
 
 # Headers from sources
@@ -100,7 +119,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG GenVector Geom Gpad Hist MathCore Matrix Net Physics RIO Tree TMVA)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD EMCALbase EMCALUtils ESD STEERBase PWGTRD PWGflowTasks Tender TenderSupplies PWGEMCALbase PWGEMCALtasks PWGEMCALtrigger PWGCaloTrackCorrBase PWGGAUtils PWGJETFW )
-set(ALIPHYSICS_DEPENDENCIES PWGCocktail PWGGAGammaConvBase)
+set(ALIPHYSICS_DEPENDENCIES PWGCocktail PWGGAGammaConvBase PWGEMCALtasks PWGEMCALbase PWGEMCALtrigger)
 
 # Generate the ROOT map
 # Dependecies

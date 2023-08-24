@@ -48,12 +48,14 @@ public:
     kTPCpidMatchPPB2011, //Match with nsigma = fNsigmaTPC
     kTPCpidTOFveto4s, //TPC n sigma + 4.0 sigma TOF veto
     kTPCpidTOFveto3s, //TPC n sigma + 3.0 sigma TOF veto
+    kTPCpidTOFveto, //TPC n sigma +  n sigma TOF veto
     kCombinedPidBestPtDep, //combined TPC-TOF cut
     kTPCPidPtDep,     //basic PID cuts with pt dependence
     kTOFPidPtDep,
     kTPCRejPtDepTOFNsigma,
     kTPCNsigmaTOFVetoPtDep,
     kTPCTOFpidLstar,         //cuts for L* in pPb
+    kTPCTOFpidLstar_test1,         //cuts for L* in pPb
     kTPCTOFpidLstar13ppTeV, // cuts for L* pp 13 tev
     kTPCTOFpidLstar13ppTeV_test, // cuts for L* pp 13 tev
     kTPCTOFpidLstar13ppTeV_test1, // cuts for L* pp 13 tev with 3 sigma TOF veto

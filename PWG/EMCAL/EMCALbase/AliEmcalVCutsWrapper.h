@@ -53,6 +53,9 @@ public:
 private:
   AliVCuts              *fCutObject;        ///<  Object on which cuts are performed 
 
+  AliEmcalVCutsWrapper(const AliEmcalVCutsWrapper &);
+  AliEmcalVCutsWrapper &operator=(const AliEmcalVCutsWrapper &);
+
   ClassDef(AliEmcalVCutsWrapper, 1);
 };
 

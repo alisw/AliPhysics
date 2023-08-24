@@ -1,119 +1,186 @@
-#ifndef ALIANALYSISTASKHYPERTRITON3_H
-#define ALIANALYSISTASKHYPERTRITON3_H
-
-/**************************************************************************
- *                                                                        *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
- **************************************************************************/
-
-///////////////////////////////////////////////////////////////////////////
-//
-// Class generating the tree of findable hypertritons in the 3 body
-// channel. This class reimplements the hypertriton 3 case of the
-// PWGLF/STRANGENESS/Cascades/Run2/AliAnalysisTaskStrEffStudy class
-// with some improvements for this specific analysis.
-//
-// Author:
-// P. Fecchio,  pfecchio@cern.ch
-///////////////////////////////////////////////////////////////////////////
+#ifndef AliAnalysisTaskHypertriton3_H
+#define AliAnalysisTaskHypertriton3_H
 
 #include "AliAnalysisTaskSE.h"
+#include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
 #include "AliEventCuts.h"
-#include "AliPID.h"
-#include "AliVertexerTracks.h"
+#include "Math/Vector4D.h"
+#include "DCAFitterN.h"
+#include "Hypertriton3structures.h"
 
-#include <TMath.h>
+#include <TString.h>
+#include <AliMCEvent.h>
 
-class AliPIDResponse;
-class AliESDtrackCuts;
-class AliExternalTrackParam;
-class TTree;
+#include <list>
+#include <map>
+#include <string>
+#include <vector>
+#include <utility>
+
 class TH1D;
-class TH3D;
+class TH2D;
 class TList;
 class TTree;
+class TFile;
+class TSpline3;
 
-/// Define bit flags for datacompression
-const unsigned char g = 0x1; // on if is a good candidate
-const unsigned char r = 0x2; // on if is reflection candidate
-/// if is not good and not reflection is a fake
+class AliPIDResponse;
+class AliESDtrack;
+
+typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
+
+constexpr float kHyperTritonMass{2.99131};
+/// helper functions
+template <typename T>
+double Sq(T a) { return a * a; }
+template <typename F>
+double Hypot(F a, F b, F c) { return std::sqrt(Sq(a) + Sq(b) + Sq(c)); }
+template <typename F>
+double Hypot(F a, F b, F c, F d) { return std::sqrt(Sq(a) + Sq(b) + Sq(c) + Sq(d)); }
+
+struct EventMixingTrack {
+  EventMixingTrack(AliESDtrack *t, float tpc, float tof, int us) : track{*t}, nSigmaTPC{tpc}, nSigmaTOF{tof}, used{us} {} 
+  AliESDtrack track = AliESDtrack();
+  float nSigmaTPC = -10.;
+  float nSigmaTOF = -10.;
+  int used = 0;
+};
 
 class AliAnalysisTaskHypertriton3 : public AliAnalysisTaskSE {
 
 public:
-  AliAnalysisTaskHypertriton3(TString taskname = "Hypertriton3Task");
+  enum kReducedTrigger { kINT7 = BIT(0), kCentral = BIT(1), kSemiCentral = BIT(2), kPositiveB = BIT(3), kHighMultV0 = BIT(4) };
+
+  AliAnalysisTaskHypertriton3(bool mc = false, std::string name = "HyperTriton3O2");
   virtual ~AliAnalysisTaskHypertriton3();
 
   virtual void UserCreateOutputObjects();
-  virtual void UserExec(Option_t *);
-  virtual void Terminate(Option_t *);
+  virtual void UserExec(Option_t *option);
+  virtual void Terminate(Option_t *) {}
 
-  AliEventCuts fEventCuts; /// event cuts class
+  static AliAnalysisTaskHypertriton3 *AddTask(bool isMC = false, TString suffix = "");
+
+  void SetDownscaling(bool down) { fDownscaling = down; }
+
+  void SetDownscalingFactorByEvent(float fraction) { fDownscalingFactorByEvent = fraction; }
+  void SetDownscalingFactorByCandidate(float fraction) { fDownscalingFactorByCandidate = fraction; }
+
+  void SetEnableEventMixing(bool enableEM) { fEnableEventMixing = enableEM; }
+  void SetEventMixingPoolDepth(int maxDepth) { fEventMixingPoolDepth = maxDepth; }
+  void SetEventMixingPoolMaxReuse(int maxDepth) { fEventMixingPoolMaxReuse = maxDepth; }
+
+  int CheckPionCharge(std::vector<AliESDtrack *> tracks[2][2], AliESDv0 v0);
+
+  AliEventCuts fEventCuts;                  /// Event cuts class
+  AliESDtrackCuts fTrackCuts = *AliESDtrackCuts::GetStandardV0DaughterCuts(); /// Track cuts Object
+  int fCounter;
+  o2::vertexing::DCAFitter3 fVertexer;
+  o2::vertexing::DCAFitter2 fVertexerLambda;
+  enum kProng { kDeuteron = 0, kProton = 1, kPion = 2 };
+  bool  fSwapSign = false;
+  int   fMixingTrack = 0;
+  float fMassWindow[2] = {2.94f, 3.06f};
+  float  fRequireTOFpid[3] = {10.,10.,10.}; /// momentum after which the TOF matching is required
+  int   fMinTPCpidClusters[3] = {70, 70, 50};
+  float fMinTrackDCA[3] = {0., 0., 0.};
+  float fMaxTrack2TrackDCA[3] = {8.,8.,8.};
+  float fMaxTrack2SVDCA[3] = {8.,8.,8.};
+  float fTPCsigmas[3] = {3.f, 3.f, 3.f};
+  float fTOFsigmas[3] = {4.f, 4.f, 4.f};
+  float fCandidateCtRange[2] = {0.f, 35.f};
+  float fCandidatePtRange[2] = {1.f, 9.f};
+  float fTrackPtRange[3][2] = {{0.f, 7.f},{0.f, 4.f},{0.f, 1.f}};
+  float fMinCosPA = 0.99;
+  bool  fUseAbsCosPAcut = true;
+  bool  fOnlyTrueCandidates = false;
+  bool  fLambdaCheck = true;
+  bool  fUseCovarianceCut = false;
+  std::string fCosPAsplineName = "PWGLF/NUCLEX/HypertritonAnalysis/Cuts/spline3.root";
+  int fTrackRotations = 0;
+
 
 private:
-  AliAnalysisTaskHypertriton3(const AliAnalysisTaskHypertriton3 &);            // not implemented
-  AliAnalysisTaskHypertriton3 &operator=(const AliAnalysisTaskHypertriton3 &); // not implemented
+  template<class T>
+  void FillGenHypertriton(T* ptr, int id, bool reco, AliMCEvent* mcEv);
+  int FindEventMixingCentBin(const float centrality);
+  int FindEventMixingZBin(const float zVtx);
+  void FillEventMixingPool(const float centrality, const float xVtx, const std::vector<EventMixingTrack> &tracks);
+  std::vector<EventMixingTrack*> GetEventMixingTracks(const float centrality, const float zvtx);
 
-  AliPIDResponse *fPIDResponse;   // PID response object
-  AliESDtrackCuts *fESDtrackCuts; // ESD track cuts
-  AliESDVertex *fPrimaryVertex;   // Primary vertex of the current event
+  AliInputEventHandler* fInputHandler = nullptr; //!
+  AliPIDResponse*       fPIDResponse = nullptr;  //!
 
-  // Settings
-  float fCosPoiningAngleLimit;
+  TList *fListHist = nullptr;    //! List of Cascade histograms
+  TTree *fTreeHyp3 = nullptr;    //! Output Tree, V0s
 
-  // output object
-  TList *fOutputList; //! Output list
-  TTree *fTree;       //!
+  TFile *fCosPAsplineFile = nullptr;  //! Pointer to the spline file
+  TSpline3 *fCosPAspline = nullptr;   //! Pointer to the cosPA cut spline
 
-  // Findable Tree
-  AliExternalTrackParam *fTreeHyp3BodyVarTracks[3];
-  
-  Int_t fTreeHyp3BodyVarNclsTPC[3];
-  Int_t fTreeHyp3BodyVarNclsITS[3];
-  Float_t fTreeHyp3BodyVarGlobalChi2[3];
-  Float_t fTreeHyp3BodyVarNsigmaTPC[3];
-  Float_t fTreeHyp3BodyVarNsigmaTOF[3];
-  ULong64_t fTreeHyp3BodyVarFlags[3];
+  bool fMC = false;
+  bool fDownscaling = false;
+  bool fEnableEventMixing = false;
 
-  Int_t fTreeHyp3BodyVarPDGcodes[3];
+  /// Control histograms to monitor the filtering
+  TH2D *fHistNSigmaDeu = nullptr;    //! # sigma TPC for the deuteron
+  TH2D *fHistNSigmaP = nullptr;      //! # sigma TPC proton for the positive prong
+  TH2D *fHistNSigmaPi = nullptr;     //! # sigma TPC pion for the negative prong
+  TH2D *fHistInvMass = nullptr;      //! # Invariant mass histogram
+  TH1D *fHistDecVertexRes = nullptr; //! # decay vertex resolution
 
-  ULong64_t fTreeHyp3BodyVarEventId;
-  Int_t fTreeHyp3BodyVarMotherId;
-  UChar_t fTreeHyp3BodyVarCandStat;
+  float fDownscalingFactorByEvent = 1.;        // fraction of the events saved in the tree
+  float fDownscalingFactorByCandidate = 1.;    // fraction of the candidates saved in the tree
 
-  Float_t fTreeHyp3BodyVarTruePx;
-  Float_t fTreeHyp3BodyVarTruePy;
-  Float_t fTreeHyp3BodyVarTruePz;
+  std::list<EventMixingTrack> fEventMixingPool[10][10];        //! container for the ESD used fot event mixing
+  unsigned int fEventMixingPoolDepth = 10;                     /// max depth of the event mixing pool
+  int fEventMixingPoolMaxReuse = 2;
 
-  Float_t fTreeHyp3BodyVarDecayVx;
-  Float_t fTreeHyp3BodyVarDecayVy;
-  Float_t fTreeHyp3BodyVarDecayVz;
-  Float_t fTreeHyp3BodyVarDecayT;
+  SHyperTriton3O2*   fGenHypO2 = nullptr;
+  RHyperTriton3O2*   fRecHyp = nullptr;
 
-  Float_t fTreeHyp3BodyVarPVx;
-  Float_t fTreeHyp3BodyVarPVy;
-  Float_t fTreeHyp3BodyVarPVz;
-  Float_t fTreeHyp3BodyVarPVt;
+  AliAnalysisTaskHypertriton3(const AliAnalysisTaskHypertriton3 &);               // not implemented
+  AliAnalysisTaskHypertriton3 &operator=(const AliAnalysisTaskHypertriton3 &);    // not implemented
 
-  Float_t fTreeHyp3BodyVarMagneticField;
-
-  TH1D *fHistEventCounter; //!
-  TH1D *fHistCentrality;   //!
-
-  TH3D *fHistGeneratedPtVsYVsCentralityHypTrit;     //!
-  TH3D *fHistGeneratedPtVsYVsCentralityAntiHypTrit; //!
-
-  /// \cond CLASSDEF
-  ClassDef(AliAnalysisTaskHypertriton3, 1); // analysisclass
-  /// \endcond
+  ClassDef(AliAnalysisTaskHypertriton3, 1);
 };
+
+template<class T>
+void AliAnalysisTaskHypertriton3::FillGenHypertriton(T* ptr, int id, bool reco, AliMCEvent *mcEvent)
+{
+
+  double mcVtx[3];
+  mcEvent->GetPrimaryVertex()->GetXYZ(mcVtx);
+  AliVParticle *part = mcEvent->GetTrack(id);
+
+  if (!part)
+  {
+    ::Warning("AliAnalysisTaskHypertriton3::FillGenHypertriton",
+              "Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skipping.", id);
+    return;
+  }
+
+  double decayVtx[4]{0.0, 0.0, 0.0, 0.0};
+
+  for (int iD = part->GetDaughterFirst(); iD <= part->GetDaughterLast(); ++iD)
+  {
+    AliVParticle *daughter = mcEvent->GetTrack(iD);
+
+    if (mcEvent->IsSecondaryFromWeakDecay(iD) && daughter && std::abs(daughter->PdgCode()) != 11)
+    {
+      decayVtx[0] = daughter->Xv();
+      decayVtx[1] = daughter->Yv();
+      decayVtx[2] = daughter->Zv();
+      decayVtx[3] = daughter->Tv() - part->Tv();
+      break;
+    }
+  }
+  ptr->gCt = Hypot(mcVtx[0] - decayVtx[0], mcVtx[1] - decayVtx[1], mcVtx[2] - decayVtx[2]) * kHyperTritonMass / part->P();
+  ptr->gPt = part->Pt();
+  ptr->gPhi = std::atan2(part->Py(), part->Px());
+  ptr->gPz = part->Pz();
+  ptr->gT = decayVtx[3];
+  ptr->gPositive = part->PdgCode() > 0;
+  ptr->gReconstructed = reco;
+}
 
 #endif

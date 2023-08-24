@@ -99,6 +99,9 @@ public:
   void SetEnablePairMonitors(Bool_t aEnable);
   Bool_t EnablePairMonitors();
 
+  void SetEnablePairMonitorsMixEv(Bool_t aEnable);
+  Bool_t EnablePairMonitorsMixEv();
+  
   unsigned int NumEventsToMix() const;
   void SetNumEventsToMix(const unsigned int& NumberOfEventsToMix);
   AliFemtoPicoEvent* CurrentPicoEvent();
@@ -142,6 +145,8 @@ public:
 
   /// Calls Finish method on all correlation functions
   virtual void Finish();
+  
+  void SetReverseParticleVariables(bool value);
 
 protected:
 
@@ -177,7 +182,8 @@ protected:
   Bool_t fVerbose;
   Bool_t fPerformSharedDaughterCut;
   Bool_t fEnablePairMonitors;
-
+  Bool_t fEnablePairMonitorsMixEv;                    //to use also mixing events -- to fill pair monitors (by default is false)
+    
 #ifdef __ROOT__
   /// \cond CLASSIMP
   ClassDef(AliFemtoSimpleAnalysis, 0);
@@ -242,6 +248,10 @@ inline bool AliFemtoSimpleAnalysis::EnablePairMonitors()
   return fEnablePairMonitors;
 }
 
+inline bool AliFemtoSimpleAnalysis::EnablePairMonitorsMixEv()
+{
+  return fEnablePairMonitorsMixEv;
+}
 // Sets
 inline void AliFemtoSimpleAnalysis::SetPairCut(AliFemtoPairCut* x)
 {
@@ -305,4 +315,9 @@ inline void AliFemtoSimpleAnalysis::SetEnablePairMonitors(Bool_t aEnable)
   fEnablePairMonitors = aEnable;
 }
 
+inline void AliFemtoSimpleAnalysis::SetEnablePairMonitorsMixEv(Bool_t aEnable)
+{
+  fEnablePairMonitorsMixEv = aEnable;
+}
 #endif
+

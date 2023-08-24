@@ -32,6 +32,7 @@ class AliAnalysisTaskFemtoDreamPion : public AliAnalysisTaskSE {
   void SetTrackCutsNegPion(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsNegPion=trkCuts;};
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {fConfig=config;};
   void SetTrigger(UInt_t trigger) { fTrigger = trigger;};
+  void SetIsMC(bool isMC) { fIsMC = isMC;};
  private:
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);

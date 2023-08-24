@@ -35,11 +35,9 @@
 #include "AliVMultiplicity.h"
 #include "AliVVZERO.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalTriggerMultiplicity)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerMultiplicity)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalTriggerMultiplicity::AliAnalysisTaskEmcalTriggerMultiplicity():
     AliAnalysisTaskEmcalTriggerBase(),
@@ -88,7 +86,7 @@ void AliAnalysisTaskEmcalTriggerMultiplicity::CreateUserObjects(){
 
 void AliAnalysisTaskEmcalTriggerMultiplicity::UserFillHistosAfterEventSelection(){
   for(const auto &t : fSelectedTriggers){
-    Double_t weight = GetTriggerWeight(t);
+    Double_t weight = GetTriggerWeight(t.Data());
     fHistos->FillTH1(Form("hEventCount%s", t.Data()), 1, weight);
     fHistos->FillTH1(Form("hVertexZ%s", t.Data()), fVertex[2], weight);
   }
@@ -147,7 +145,7 @@ bool AliAnalysisTaskEmcalTriggerMultiplicity::Run(){
   // all quantities available
   // fill histograms
   for(const auto &t : fSelectedTriggers){
-    Double_t weight = GetTriggerWeight(t);
+    Double_t weight = GetTriggerWeight(t.Data());
     fHistos->FillTH1(Form("VZEROAmult%s", t.Data()), vzerodata->GetMTotV0A(), weight);
     fHistos->FillTH1(Form("VZEROCmult%s", t.Data()), vzerodata->GetMTotV0C(), weight);
     fHistos->FillTH1(Form("TrackletMult%s", t.Data()), ntracklets, weight);
@@ -193,5 +191,3 @@ AliAnalysisTaskEmcalTriggerMultiplicity *AliAnalysisTaskEmcalTriggerMultiplicity
 
   return task;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

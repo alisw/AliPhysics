@@ -1,12 +1,12 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesMCTriggerMimic * AddTaskChargedParticlesMCTriggerMimic(const char *dummy = "", const char *suffix= ""){
+PWGJE::EMCALJetTasks::AliAnalysisTaskChargedParticlesMCTriggerMimic * AddTaskChargedParticlesMCTriggerMimic(const char *dummy = "", const char *suffix= ""){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesMCTriggerMimic * triggertask = new EMCalTriggerPtAnalysis::AliAnalysisTaskChargedParticlesMCTriggerMimic(Form("chargedParticlesMCtrigger_%s", suffix));
+  PWGJE::EMCALJetTasks::AliAnalysisTaskChargedParticlesMCTriggerMimic * triggertask = new PWGJE::EMCALJetTasks::AliAnalysisTaskChargedParticlesMCTriggerMimic(Form("chargedParticlesMCtrigger_%s", suffix));
   mgr->AddTask(triggertask);
   triggertask->SetJetPtFactor(4.);
   triggertask->SetTrackPtFactor(1.5);
   triggertask->SetEmcalTrackSelection(
-      EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackCutsFactory(
+      PWGJE::EMCALJetTasks::AliEmcalAnalysisFactory::TrackCutsFactory(
           "standard",
           mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()
       )

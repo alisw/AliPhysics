@@ -14,7 +14,9 @@ class THistManager;
 class AliAnalysisUtils;
 class AliESDtrackCuts;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliAnalysisTaskEtaPhiEfficiency : public AliAnalysisTaskSE {
 public:
@@ -39,6 +41,8 @@ private:
 
   ClassDef(AliAnalysisTaskEtaPhiEfficiency, 1);
 };
+
+}
 
 }
 

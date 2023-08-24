@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKSEXICPLUS2XIPIPIFROMAODTRACKS_H
-#define ALIANALYSISTASKSEXICPLUS2XIPIPIFROMAODTRACKS_H
+#ifndef AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks_H
+#define AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks_H
 
 /**************************************************************************
  * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
@@ -24,6 +24,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAODEvent.h"
 #include "AliPID.h"
+#include "AliRDHFCuts.h" //jcho
 #include "AliRDHFCutsXicPlustoXiPiPifromAODtracks.h"
 
 /// \class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks
@@ -31,18 +32,22 @@
 class THnSparse;
 class TH1F;
 class TH2F;
+class TH3F;
 class TClonesArray;
 class AliAODRecoCascadeHF3Prong;
 class AliAODPidHF;
 class AliESDtrackCuts;
 class AliESDVertex;
 class AliAODMCParticle;
+class AliNormalizationCounter;
 
 class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE 
 {
  public:
+  enum ECandStatus {kGenLimAcc,kGenAccMother,kGenAccMother08,kGenAcc,kGenAcc08,kReco,kReco08,kRecoCuts,kRecoCuts08,kRecoPID,kRecoPID08};
+  
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks();
-  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks(const Char_t* name, AliRDHFCutsXicPlustoXiPiPifromAODtracks* cuts, Bool_t writeVariableTree=kTRUE);
+  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks(const Char_t* name, AliRDHFCutsXicPlustoXiPiPifromAODtracks* cuts, Bool_t writeVariableTree=kTRUE, Bool_t fillSparse=kFALSE, Bool_t HMTrigOn=kFALSE, Bool_t EvtInfo=kFALSE);
   virtual ~AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks();
 
   /// Implementation of interface methods
@@ -52,8 +57,8 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
 
-  void FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdau1, AliAODMCParticle *mcdau2, AliAODMCParticle *mcdauxi, Int_t mcnused, Bool_t isXiC);
-  void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray);
+  void FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdau1, AliAODMCParticle *mcdau2, AliAODMCParticle *mcdauxi, Int_t mcnused, Bool_t isXiC, Int_t checkOrigin, AliAODTrack *cptrack, AliAODTrack *cntrack, AliAODTrack *cbtrack, AliAODMCParticle *mcdaughterPionFromLambda, AliAODMCParticle *mcdaughterProtonFromLambda, AliAODMCParticle *mcdaughterPionFromXi);	// jcho, add cascade daughter tracks 
+  void MakeAnalysis(AliAODEvent *aod, TClonesArray *mcArray, AliAODMCHeader *mcHeader);
 
   
   /// set MC usage
@@ -67,9 +72,22 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   void   SetReconstructPrimVert(Bool_t a) { fReconstructPrimVert=a; }
   void SelectCascade( const AliVEvent *event,Int_t nCascades,Int_t &nSeleCasc, Bool_t *seleCascFlags);
   void SelectTrack( const AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks,Bool_t *seleFlags);
+  void SelectTrackForUpgradeITS3( const AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks, Bool_t *seleFlags, TClonesArray *mcArray, AliAODMCHeader *mcHeader );
   Bool_t SelectLikeSign(AliAODTrack *trk1, AliAODTrack *trk2);
   AliAODRecoCascadeHF3Prong* MakeCascadeHF3Prong(AliAODcascade *casc, AliAODTrack *trk1, AliAODTrack *trk2, AliAODEvent *aod, AliAODVertex *secvert, Double_t dispersion);
+
+  void LoopOverGenParticles(TClonesArray *mcArray);
+  Int_t CheckXic2XiPiPi(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
+
+  void SetITS3UpgradeAnalysis(Bool_t isITS3Upgrade) {fIsXicPlusUpgradeITS3=isITS3Upgrade;}
+  void SetRejFactorBkgUpgrade(Double_t rejFactor){fRejFactorBkgUpgrade=rejFactor;}
   
+  // For HM analysis (Refer to Semileptonic Xic0)---------------------------- jcho
+  void UseTrig_kINT7(void) { fUsekINT7 = kTRUE; }	
+  void UseTrig_kHMV0(void) { fUsekHMV0 = kTRUE; }
+  void UseTrig_kHMSPD(void) { fUsekHMVSPD = kTRUE; }
+  
+
  private:
   
   AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks(const AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks &source);
@@ -79,9 +97,13 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   void DefineGeneralHistograms();
   void DefineAnalysisHistograms();
 
+  void FillGenParticleTree();
+  void DefineGenParticleTree();
+
   AliAODVertex *CallPrimaryVertex(AliAODcascade *casc, AliAODTrack *trk1, AliAODTrack *trk2, AliAODEvent *evt);
   AliAODVertex* PrimaryVertex(const TObjArray *trkArray,AliVEvent *event);
   AliAODVertex* CallReconstructSecondaryVertex(AliAODTrack *trk1, AliAODTrack *trk2,Double_t &disp);
+  
   AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray, Double_t &dispersion,Bool_t useTRefArray=kTRUE);
   
   Bool_t fUseMCInfo;          /// Use MC info
@@ -93,31 +115,58 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F *fCEvents;             /// Histogram to check selected events
   TH1F *fHTrigger;            /// Histograms to check trigger
   TH1F *fHCentrality;         /// histogram to check centrality
+  TH1F *fHCentralSPD;		  ///jcho
+  TH1F *fHNSPDTracklets;	  ///jcho
+  TH1F *fHntracklet;
+
+  TTree    *fGenTree;		///!<! Tree for gen ptl.
+  Float_t *fVarGenTree;		//!<! generated ptl. tree
+  Float_t fGenpT;
+  Float_t fLevFlag;
+  Float_t foriginFlag;
+  Float_t fntracklet;
+  Float_t fGenNtracklet;
+
   AliRDHFCutsXicPlustoXiPiPifromAODtracks *fAnalCuts;      /// Cuts - sent to output slot 2
+  AliRDHFCutsXicPlustoXiPiPifromAODtracks *fAnalCuts_HM;   //jcho
   Bool_t fIsEventSelected;           /// flag for event selected
   Bool_t    fWriteVariableTree;       /// flag to decide whether to write the candidate variables on a tree variables
+  Bool_t fFillSparse;                 /// flag to decide whether fill the THnSparse
+  Bool_t fHMTrigOn;					  /// jcho, flag for HM Trig check
+  Bool_t fEvtInfo;					  /// jcho, flag for Event tree
   TTree    *fVariablesTree;           //!<! tree of the candidate variables after track selection on output slot 4
+  TTree	   *fEventTree;				///!<! jcho, Event variables tree
   Bool_t fReconstructPrimVert;            /// Reconstruct primary vertex excluding candidate tracks
   Bool_t fIsMB;            /// Is MB event
   Bool_t fIsSemi;          /// is semi-central trigger event
   Bool_t fIsCent;          /// is central trigger event
   Bool_t fIsINT7;          /// is int7 trigger event
   Bool_t fIsEMC7;          /// is emc7 trigger event
+
+  Bool_t fIsINEL;
+  Bool_t fIsHMV0;		   /// jcho
+  Bool_t fIsHMSPD;		   /// jcho
+
   Float_t *fCandidateVariables;     //!<! variables to be written to the tree
+  Float_t *fEventTreeVariables;		//!<! jcho, Event variables to be written to the (event variables) tree
   AliAODVertex *fVtx1;              /// primary vertex
   AliESDVertex *fV1;                /// primary vertex
   Double_t fBzkG;                   /// magnetic field value [kG]
   Float_t  fCentrality;             /// centrality
-  Float_t  fTriggerCheck;           /// Trigger information
-  
+
   //--------------------- My histograms ------------------
   THnSparse*  fHistoXicMass;        //!<! xic mass spectra
+  THnSparse*  fSparseXicMass;       //!<! xic sparse to study cut variation
   
+  TH3F*  fHistoMCSpectrumAccXic;    //!<! Spectrum of generated particles
+  TH1F* fdummy;
+
   TH1F*  fHistoDcaPi1Pi2;                    //!<!  DCA between pions
-  TH1F*  fHistoDcaPiCasc;                    //!<! DCA between pi and cascade
+  TH1F*  fHistoDcaPi1Casc;                    //!<! DCA between pi and cascade
+  TH1F*  fHistoDcaPi2Casc;                    //!<! DCA between pi and cascade
   TH1F*  fHistoLikeDecayLength;              //!<! Decay length
   TH1F*  fHistoLikeDecayLengthXY;            //!<! Decay length in XY
-  TH1F*  fHistoXicCosPAXY;                   //!<! Xic cosine pointing angle
+  TH1F*  fHistoXicCosPA;                   //!<! Xic cosine pointing angle
   
   TH1F*  fHistoXiMass;                       //!<! mass of xi
   TH1F*  fHistoCascDcaXiDaughters;           //!<! DCA of xi daughgers
@@ -135,29 +184,59 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F*  fHistonSigmaTOFpi;                  //!<! nSigma of TOF pion
   TH1F*  fHistoProbPion;                     //!<! Probability to be pion
 
-  TH2F*  fHistoXiMassvsPtRef1;                    //!<! Reference Xi mass spectra 
-  TH2F*  fHistoXiMassvsPtRef2;                    //!<! Reference Xi mass spectra 
-  TH2F*  fHistoXiMassvsPtRef3;                    //!<! Reference Xi mass spectra 
-  TH2F*  fHistoXiMassvsPtRef4;                    //!<! Reference Xi mass spectra 
-  TH2F*  fHistoXiMassvsPtRef5;                    //!<! Reference Xi mass spectra 
-  TH2F*  fHistoXiMassvsPtRef6;                    //!<! Reference Xi mass spectra 
+  TH2F*  fHistoXiMassvsPtRef1;               //!<! Reference Xi mass spectra 
+  TH2F*  fHistoXiMassvsPtRef2;               //!<! Reference Xi mass spectra 
+  TH2F*  fHistoXiMassvsPtRef3;               //!<! Reference Xi mass spectra 
+  TH2F*  fHistoXiMassvsPtRef4;               //!<! Reference Xi mass spectra 
+  TH2F*  fHistoXiMassvsPtRef5;               //!<! Reference Xi mass spectra 
+  TH2F*  fHistoXiMassvsPtRef6;               //!<! Reference Xi mass spectra 
   TH1F*  fHistoPiPtRef;                      //!<! Reference pi spectra
+  TH1F*  fHistoPiEtaRef;                      //!<! Reference eta distribution of pi 
   TH1F*  fQAHistoNSelectedTracks;            //!<! QA histo for number of selected tracks/event
-  TH1F*  fQAHistoNSelectedCasc;            //!<! QA histo for number of selected Cascades/event
-  TH1F*  fQAHistoDCApi1pi2;                         //!<! QA histo for dca betwen two pions from XiC
-  TH1F*  fQAHistoAODPrimVertX;                   //!<! Coordinates of the primary vertex
-  TH1F*  fQAHistoAODPrimVertY;                   //!<! Coordinates of the primary vertex
-  TH1F*  fQAHistoAODPrimVertZ;                   //!<! Coordinates of the primary vertex
-  TH1F*  fQAHistoRecoPrimVertX;                   //!<! Coordinates of the reconstructed primary vertex without XiC decay tracks
-  TH1F*  fQAHistoRecoPrimVertY;                   //!<! Coordinates of the reconstructed primary vertex without XiC decay tracks
-  TH1F*  fQAHistoRecoPrimVertZ;                   //!<! Coordinates of the reconstructed primary vertex without XiC decay tracks
-  TH1F*  fQAHistoSecondaryVertexX;               //!<! Coordinates of the reconstructed secondary vertex
-  TH1F*  fQAHistoSecondaryVertexY;               //!<! Coordinates of the reconstructed secondary vertex
-  TH1F*  fQAHistoSecondaryVertexZ;               //!<! Coordinates of the reconstructed secondary vertex
-  TH1F*  fQAHistoSecondaryVertexXY;               //!<! Coordinates of the reconstructed secondary vertex
-  
+  TH1F*  fQAHistoNSelectedCasc;              //!<! QA histo for number of selected Cascades/event
+  TH1F*  fQAHistoDCApi1pi2;                  //!<! QA histo for dca betwen two pions from XiC
+  TH1F*  fQAHistoAODPrimVertX;               //!<! Coordinates of the primary vertex
+  TH1F*  fQAHistoAODPrimVertY;               //!<! Coordinates of the primary vertex
+  TH1F*  fQAHistoAODPrimVertZ;               //!<! Coordinates of the primary vertex
+  TH1F*  fQAHistoRecoPrimVertX;              //!<! Coordinates of the reconstructed primary vertex without XiC decay tracks
+  TH1F*  fQAHistoRecoPrimVertY;              //!<! Coordinates of the reconstructed primary vertex without XiC decay tracks
+  TH1F*  fQAHistoRecoPrimVertZ;              //!<! Coordinates of the reconstructed primary vertex without XiC decay tracks
+  TH1F*  fQAHistoSecondaryVertexX;           //!<! Coordinates of the reconstructed secondary vertex
+  TH1F*  fQAHistoSecondaryVertexY;           //!<! Coordinates of the reconstructed secondary vertex
+  TH1F*  fQAHistoSecondaryVertexZ;           //!<! Coordinates of the reconstructed secondary vertex
+  TH1F*  fQAHistoSecondaryVertexXY;          //!<! Coordinates of the reconstructed secondary vertex
+  AliNormalizationCounter *fCounter;         //!<!Counter for normalization slot 4
+  Bool_t fIsXicPlusUpgradeITS3;              ///flag to identify if the analysis is for the ITS3 upgrade
+  Double_t fRejFactorBkgUpgrade;             // rejection factor for background reconstruction in upgrade studies
+
+  //---for Multiplicity dependent analysis--------------------// jcho
+  AliNormalizationCounter *fCounter_MB_0to100  = nullptr;
+  AliNormalizationCounter *fCounter_MB_0p1to30 = nullptr;
+  AliNormalizationCounter *fCounter_MB_30to100 = nullptr;
+  AliNormalizationCounter *fCounter_HMV0_0to0p1 = nullptr;
+  AliNormalizationCounter *fCounter_HMV0_0to100 = nullptr;
+
+  AliNormalizationCounter *fCounter_MB_0to100_INEL = nullptr;
+  AliNormalizationCounter *fCounter_MB_0p1to30_INEL = nullptr;
+  AliNormalizationCounter *fCounter_MB_30to100_INEL = nullptr;
+  AliNormalizationCounter *fCounter_HMV0_0to100_INEL = nullptr;
+  AliNormalizationCounter *fCounter_HMV0_0to0p1_INEL = nullptr;
+
+  Float_t fNewCentrality = 9999; 
+  Float_t fCentralSPD = 9999;
+  Float_t fNSPDTracklets = 9999;
+
+  TH1F* hCentrality; //Centrality
+
+  vector<UInt_t> fTargetTriggers; //jcho, Container for trigger bit
+  UInt_t fEventTreeVarTrig = 0; //jcho, To write the trigger info. into the event tree
+  Bool_t fUsekINT7 = kFALSE;
+  Bool_t fUsekHMV0 = kFALSE;  
+  Bool_t fUsekHMVSPD = kFALSE; 
+  TH1F* fCentralityOfEvt; //jcho 
+
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,7); /// class for Xic->Xipipi
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,21); /// class for Xic->Xipipi
   /// \endcond
 };
 #endif

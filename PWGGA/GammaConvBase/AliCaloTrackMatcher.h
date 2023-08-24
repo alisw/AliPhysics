@@ -50,7 +50,7 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
     vector<Int_t> GetMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, TF1* fFuncPtDepEta, TF1* fFuncPtDepPhi);
     vector<Int_t> GetMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, Float_t dEtaMax, Float_t dEtaMin, Float_t dPhiMax, Float_t dPhiMin);
     vector<Int_t> GetMatchedClusterIDsForTrack(AliVEvent *event, Int_t trackID, Float_t dR);
-    
+
     // for cluster <-> V0-track matching
     Bool_t PropagateV0TrackToClusterAndGetMatchingResidual(AliVTrack* inSecTrack, AliVCluster* cluster, AliVEvent* event, Float_t &dEta, Float_t &dPhi);
     Bool_t IsSecTrackClusterAlreadyTried(Int_t trackID, Int_t clusterID);
@@ -75,6 +75,11 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
     //general methods
     Float_t SumTrackEtAroundCluster(AliVEvent* event, Int_t clusterID, Float_t dR);
 
+    void               SetLightOutput( Bool_t flag )                    { fDoLightOutput = flag                       ;}
+    Bool_t             GetLightOutput()                                 { return fDoLightOutput                       ;}
+    void               SetMassHypothesis( Double_t mass)                {fMassHypothesis = mass;}
+    Int_t              GetRunningMode() {return fRunningMode;}
+    Bool_t             GetNegativeIDAllowed() {return fNegativeTrackIDAllowed;}
   private:
     //typedefs
     typedef pair<Int_t, Int_t> pairInt;
@@ -92,6 +97,8 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
     // debug methods
     void DebugMatching();
     void DebugV0Matching();
+    void FillfHistControlMatches(Double_t fill, Double_t weight){if(fHistControlMatches) fHistControlMatches->Fill(fill,weight);}
+    void FillfSecHistControlMatches(Double_t fill, Double_t weight){if(fSecHistControlMatches) fSecHistControlMatches->Fill(fill,weight);}
 
     // basic variables/objects
     Int_t                 fClusterType;            // EMCal(1), PHOS(2) or not running (0)
@@ -100,39 +107,45 @@ class AliCaloTrackMatcher : public AliAnalysisTaskSE {
                                                    // (1) matching of all tracks (dedicated for run 1), was standard until Feb 15, 2018
                                                    // (2) ITS matching mode
                                                    // (5) testing mode, (1) + some more restrictions
-                                                   // (6) testing mode, (5) + TrackCuts (primary+secondary)
+                                                   // (6) testing mode, (5) + TrackCuts (primary+secondary) 
+    Bool_t                fNegativeTrackIDAllowed;     // where negative IDs allowed when doing TM?
     TString               fV0ReaderName;           // Name of V0Reader
     TString               fCorrTaskSetting;        // Name of Corr Task Setting
     TString               fAnalysisTrainMode;      // AnalysisTrainMode: Grid or GSI //Grid by default
     Double_t              fMatchingWindow;         // matching window to prevent unnecessary propagations
     Float_t               fMatchingResidual;       // matching residual below which track <-> cluster associations should be stored
-    Int_t                 fRunNumber;              // current run number
+    Int_t                 fRunNumber;              //! current run number
 
-    AliEMCALGeometry*     fGeomEMCAL;              // pointer to EMCAL geometry
-    AliPHOSGeometry*      fGeomPHOS;               // pointer to PHOS geometry
+    AliEMCALGeometry*     fGeomEMCAL;              //! pointer to EMCAL geometry
+    AliPHOSGeometry*      fGeomPHOS;               //! pointer to PHOS geometry
 
-    multimap<Int_t,Int_t> fMapTrackToCluster;      // connects a given track ID with all associated cluster IDs
-    multimap<Int_t,Int_t> fMapClusterToTrack;      // connects a given cluster ID with all associated track IDs
+    TClonesArray*         fArrClusters;            //! array with clusters
 
-    Int_t                 fNEntries;               // number of current TrackID/ClusterID -> Eta/Phi connections
-    vector<pairFloat>     fVectorDeltaEtaDeltaPhi; // vector of all matching residuals for a specific TrackID/ClusterID
-    mapT                  fMap_TrID_ClID_ToIndex;  // map tuple of (trackID,clusterID) to index in vector fVectorDeltaEtaDeltaPhi
+    multimap<Int_t,Int_t> fMapTrackToCluster;      //! connects a given track ID with all associated cluster IDs
+    multimap<Int_t,Int_t> fMapClusterToTrack;      //! connects a given cluster ID with all associated track IDs
+
+    Int_t                 fNEntries;               //! number of current TrackID/ClusterID -> Eta/Phi connections
+    vector<pairFloat>     fVectorDeltaEtaDeltaPhi; //! vector of all matching residuals for a specific TrackID/ClusterID
+    mapT                  fMap_TrID_ClID_ToIndex;  //! map tuple of (trackID,clusterID) to index in vector fVectorDeltaEtaDeltaPhi
 
     // for cluster <-> V0-track matching (running with different mass hypthesis)
-    multimap<Int_t,Int_t> fSecMapTrackToCluster;      // connects a given secondary track ID with all associated cluster IDs
-    multimap<Int_t,Int_t> fSecMapClusterToTrack;      // connects a given cluster ID with all associated secondary track IDs
+    multimap<Int_t,Int_t> fSecMapTrackToCluster;      //! connects a given secondary track ID with all associated cluster IDs
+    multimap<Int_t,Int_t> fSecMapClusterToTrack;      //! connects a given cluster ID with all associated secondary track IDs
 
-    Int_t                 fSecNEntries;               // number of current V0-trackIDs/clusterID -> Eta/Phi connections
-    vector<pairFloat>     fSecVectorDeltaEtaDeltaPhi; // vector of all matching residuals for a specific V0-trackIDs/clusterID
-    mapT                  fSecMap_TrID_ClID_ToIndex;  // map tuple of (V0-trackID,clusterID) to index in vector fSecVectorDeltaEtaDeltaPhi
-    mapT                  fSecMap_TrID_ClID_AlreadyTried;  // map tuple of (V0-trackID,clusterID) to matching outcome, successful or not
+    Int_t                 fSecNEntries;               //! number of current V0-trackIDs/clusterID -> Eta/Phi connections
+    vector<pairFloat>     fSecVectorDeltaEtaDeltaPhi; //! vector of all matching residuals for a specific V0-trackIDs/clusterID
+    mapT                  fSecMap_TrID_ClID_ToIndex;  //! map tuple of (V0-trackID,clusterID) to index in vector fSecVectorDeltaEtaDeltaPhi
+    mapT                  fSecMap_TrID_ClID_AlreadyTried; //! map tuple of (V0-trackID,clusterID) to matching outcome, successful or not
 
     //histos
-    TList*                fListHistos;             // list with histogram(s)
-    TH2F*                 fHistControlMatches;     // bookkeeping for processed tracks/clusters and succesful matches
-    TH2F*                 fSecHistControlMatches;  // bookkeeping for processed V0-tracks/clusters and succesful matches
+    TList*                fListHistos;             //! list with histogram(s)
+    TH2F*                 fHistControlMatches;     //! bookkeeping for processed tracks/clusters and succesful matches
+    TH2F*                 fSecHistControlMatches;  //! bookkeeping for processed V0-tracks/clusters and succesful matches
 
-    ClassDef(AliCaloTrackMatcher,5)
+    Bool_t                fDoLightOutput;          // switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+
+    Double_t              fMassHypothesis;          // mass used for track propagation to calorimeter surface
+    ClassDef(AliCaloTrackMatcher,11)
 };
 
 #endif

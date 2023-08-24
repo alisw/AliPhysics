@@ -8,14 +8,11 @@
 #include "AliFemtoDreamTrackMCHist.h"
 #include "AliLog.h"
 AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist()
-    : fpTmin(0.5),
-      fpTmax(4.05),
-      fpTbins(20),
-      fMultRangeLow(27),
-      fMultRangeHigh(55),
+    : fpTbins(20),
       fDoSplitting(false),
       fDoDCAPlots(false),
-      fDoMultiplicityBinning(false),
+      fpTmin(0),
+      fpTmax(0),
       fMCList(nullptr),
       fDCAPlots(nullptr),
       fMCCorrPt(nullptr),
@@ -33,17 +30,18 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist()
       fMCSecondaryDCAXYPtBins(nullptr),
       fMCSecLambdaDCAXYPtBins(nullptr),
       fMCSecSigmaDCAXYPtBins(nullptr),
+      fMCSecSigmaPlusDCAXYPtBins(nullptr),
+      fMCSecSigmaMinusDCAXYPtBins(nullptr),
+      fMCSecXiDCAXYPtBins(nullptr),
+      fMCSecOmegaDCAXYPtBins(nullptr),
+      fMCSecKlongDCAXYPtBins(nullptr),
+      fMCSecKshortDCAXYPtBins(nullptr),
+      fMCSecKchDCAXYPtBins(nullptr),
+      fMCSecpichDCAXYPtBins(nullptr),
       fPtResolution(nullptr),
       fThetaResolution(nullptr),
       fPhiResolution(nullptr) {
   for (int i = 0; i < 4; ++i) {
-    if (i < 3) {
-      fMCPrimDCAXYPtBinsMult[i] = 0;
-      fMCMaterialDCAXYPtBinsMult[i] = 0;
-      fMCSecondaryDCAXYPtBinsMult[i] = 0;
-      fMCSecLambdaDCAXYPtBinsMult[i] = 0;
-      fMCSecSigmaDCAXYPtBinsMult[i] = 0;
-    }
     fMCQAPlots[i] = 0;
     fMCpTPCDist[i] = 0;
     fMCetaDist[i] = 0;
@@ -68,16 +66,13 @@ AliFemtoDreamTrackMCHist::~AliFemtoDreamTrackMCHist() {
 
 AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
                                                    bool DCADist,
-                                                   bool DoMultBinning,
-                                                   bool checkMother)
-    : fpTmin(0.5),
-      fpTmax(4.05),
-      fpTbins(20),
-      fMultRangeLow(27),
-      fMultRangeHigh(55),
+                                                   bool checkMother,
+                                                   float pTmin, float pTmax)
+    : fpTbins(200),
       fDoSplitting(contribSplitting),
       fDoDCAPlots(DCADist),
-      fDoMultiplicityBinning(DoMultBinning),
+      fpTmin(pTmin),
+      fpTmax(pTmax),
       fMCList(nullptr),
       fDCAPlots(nullptr),
       fMCCorrPt(nullptr),
@@ -95,6 +90,14 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
       fMCSecondaryDCAXYPtBins(nullptr),
       fMCSecLambdaDCAXYPtBins(nullptr),
       fMCSecSigmaDCAXYPtBins(nullptr),
+      fMCSecSigmaPlusDCAXYPtBins(nullptr),
+      fMCSecSigmaMinusDCAXYPtBins(nullptr),
+      fMCSecXiDCAXYPtBins(nullptr),
+      fMCSecOmegaDCAXYPtBins(nullptr),
+      fMCSecKlongDCAXYPtBins(nullptr),
+      fMCSecKshortDCAXYPtBins(nullptr),
+      fMCSecKchDCAXYPtBins(nullptr),
+      fMCSecpichDCAXYPtBins(nullptr),
       fPtResolution(nullptr),
       fThetaResolution(nullptr),
       fPhiResolution(nullptr) {
@@ -181,18 +184,18 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
       fMCQAPlots[i]->SetOwner();
       fMCList->Add(fMCQAPlots[i]);
 
-      TString MCpTPCName = Form("MCpTPCDist%s", MCModes[i].Data());
-      TString MCetaName = Form("MCEtaDist%s", MCModes[i].Data());
-      TString MCphiName = Form("MCphiDist%s", MCModes[i].Data());
-      TString MCTPCName = Form("MCTPCCls%s", MCModes[i].Data());
-      TString MCDCAXYName = Form("MCMCDCAXY%s", MCModes[i].Data());
-      TString MCDCAZName = Form("MCDCAZ%s", MCModes[i].Data());
-      TString MCTPCCRName = Form("MCCrossedRows%s", MCModes[i].Data());
-      TString MCTPCratioName = Form("MCTPCRatio%s", MCModes[i].Data());
-      TString MCTPCdedxName = Form("MCTPCdedx%s", MCModes[i].Data());
-      TString MCTOFbetaName = Form("MCTOFbeta%s", MCModes[i].Data());
-      TString MCNSigTPCName = Form("MCNSigTPC%s", MCModes[i].Data());
-      TString MCNSigTOFName = Form("MCNSigTOF%s", MCModes[i].Data());
+      TString MCpTPCName = TString::Format("MCpTPCDist%s", MCModes[i].Data());
+      TString MCetaName = TString::Format("MCEtaDist%s", MCModes[i].Data());
+      TString MCphiName = TString::Format("MCphiDist%s", MCModes[i].Data());
+      TString MCTPCName = TString::Format("MCTPCCls%s", MCModes[i].Data());
+      TString MCDCAXYName = TString::Format("MCMCDCAXY%s", MCModes[i].Data());
+      TString MCDCAZName = TString::Format("MCDCAZ%s", MCModes[i].Data());
+      TString MCTPCCRName = TString::Format("MCCrossedRows%s", MCModes[i].Data());
+      TString MCTPCratioName = TString::Format("MCTPCRatio%s", MCModes[i].Data());
+      TString MCTPCdedxName = TString::Format("MCTPCdedx%s", MCModes[i].Data());
+      TString MCTOFbetaName = TString::Format("MCTOFbeta%s", MCModes[i].Data());
+      TString MCNSigTPCName = TString::Format("MCNSigTPC%s", MCModes[i].Data());
+      TString MCNSigTOFName = TString::Format("MCNSigTOF%s", MCModes[i].Data());
 
       fMCpTPCDist[i] = new TH1F(MCpTPCName.Data(), MCpTPCName.Data(), ptBins,
                                 ptmin, ptmax);
@@ -266,143 +269,112 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
     fDCAPlots->SetName("DCAPtBinning");
     fDCAPlots->SetOwner();
     fMCList->Add(fDCAPlots);
-    TString MCPridcaPtBinName = Form("DCAPtBinningPri");
-    TString MCMatdcaPtBinName = Form("DCAPtBinningMat");
-    TString MCSecdcaPtBinName = Form("DCAPtBinningSec");
-    TString MCSecLamdcaPtBinName = Form("DCAPtBinningSecLam");
-    TString MCSecSigdcaPtBinName = Form("DCAPtBinningSecSig");
+    TString MCPridcaPtBinName = TString::Format("DCAPtBinningPri");
+    TString MCMatdcaPtBinName = TString::Format("DCAPtBinningMat");
+    TString MCSecdcaPtBinName = TString::Format("DCAPtBinningSec");
+    TString MCSecLamdcaPtBinName = TString::Format("DCAPtBinningSecLam");
+    TString MCSecSigdcaPtBinName = TString::Format("DCAPtBinningSecSig");
+    TString MCSecSigPldcaPtBinName = TString::Format("DCAPtBinningSecSigPl");
+    TString MCSecSigMindcaPtBinName = TString::Format("DCAPtBinningSecSigMin");
+    TString MCSecXidcaPtBinName = TString::Format("DCAPtBinningSecXi");
+    TString MCSecOmegadcaPtBinName = TString::Format("DCAPtBinningSecOmega");
+    TString MCSecKlcaPtBinName = TString::Format("DCAPtBinningSecKl");
+    TString MCSecKsdcaPtBinName = TString::Format("DCAPtBinningSecKs");
+    TString MCSecKchdcaPtBinName = TString::Format("DCAPtBinningSecKch");
+    TString MCSecpichdcaPtBinName = TString::Format("DCAPtBinningSecpich");
+
 
     fMCPrimDCAXYPtBins = new TH2F(MCPridcaPtBinName.Data(),
                                   MCPridcaPtBinName.Data(), fpTbins, fpTmin,
-                                  fpTmax, 500, -5, 5);
-    fMCPrimDCAXYPtBins->GetXaxis()->SetTitle("dca_{XY}");
-    fMCPrimDCAXYPtBins->GetYaxis()->SetTitle("dca_{Z}");
+                                  fpTmax, 5000, -5, 5);
+    fMCPrimDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCPrimDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCPrimDCAXYPtBins);
 
     fMCMaterialDCAXYPtBins = new TH2F(MCMatdcaPtBinName.Data(),
                                       MCMatdcaPtBinName.Data(), fpTbins, fpTmin,
-                                      fpTmax, 500, -5, 5);
-    fMCMaterialDCAXYPtBins->GetXaxis()->SetTitle("dca_{XY}");
-    fMCMaterialDCAXYPtBins->GetYaxis()->SetTitle("dca_{Z}");
+                                      fpTmax, 5000, -5, 5);
+    fMCMaterialDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCMaterialDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCMaterialDCAXYPtBins);
 
     fMCSecondaryDCAXYPtBins = new TH2F(MCSecdcaPtBinName.Data(),
                                        MCSecdcaPtBinName.Data(), fpTbins,
-                                       fpTmin, fpTmax, 500, -5, 5);
-    fMCSecondaryDCAXYPtBins->GetXaxis()->SetTitle("dca_{XY}");
-    fMCSecondaryDCAXYPtBins->GetYaxis()->SetTitle("dca_{Z}");
+                                       fpTmin, fpTmax, 5000, -5, 5);
+    fMCSecondaryDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecondaryDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCSecondaryDCAXYPtBins);
 
     fMCSecLambdaDCAXYPtBins = new TH2F(MCSecLamdcaPtBinName.Data(),
                                        MCSecLamdcaPtBinName.Data(), fpTbins,
-                                       fpTmin, fpTmax, 500, -5, 5);
-    fMCSecLambdaDCAXYPtBins->GetXaxis()->SetTitle("dca_{XY}");
-    fMCSecLambdaDCAXYPtBins->GetYaxis()->SetTitle("dca_{Z}");
+                                       fpTmin, fpTmax, 5000, -5, 5);
+    fMCSecLambdaDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecLambdaDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCSecLambdaDCAXYPtBins);
 
     fMCSecSigmaDCAXYPtBins = new TH2F(MCSecSigdcaPtBinName.Data(),
                                       MCSecSigdcaPtBinName.Data(), fpTbins,
-                                      fpTmin, fpTmax, 500, -5, 5);
-    fMCSecSigmaDCAXYPtBins->GetXaxis()->SetTitle("dca_{XY}");
-    fMCSecSigmaDCAXYPtBins->GetYaxis()->SetTitle("dca_{Z}");
+                                      fpTmin, fpTmax, 5000, -5, 5);
+    fMCSecSigmaDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecSigmaDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCSecSigmaDCAXYPtBins);
 
-    if (fDoMultiplicityBinning) {
-      TString name1 = "DCAPtBinningPriMult_0_";
-      name1 += fMultRangeLow;
-      TString name2 = "DCAPtBinningPriMult_";
-      name2 += fMultRangeLow;
-      name2 += "_";
-      name2 += fMultRangeHigh;
-      TString name3 = "DCAPtBinningPriMult_";
-      name3 += fMultRangeHigh;
-      name3 += "_inf";
-      TString primPtBinName[3] = { name1, name2, name3 };
+    fMCSecSigmaPlusDCAXYPtBins = new TH2F(MCSecSigPldcaPtBinName.Data(),
+                                      MCSecSigPldcaPtBinName.Data(), fpTbins,
+                                      fpTmin, fpTmax, 5000, -5, 5);
+    fMCSecSigmaPlusDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecSigmaPlusDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
+    fDCAPlots->Add(fMCSecSigmaPlusDCAXYPtBins);
 
-      name1 = "DCAPtBinningMatMult_0_";
-      name1 += fMultRangeLow;
-      name2 = "DCAPtBinningMatMult_";
-      name2 += fMultRangeLow;
-      name2 += "_";
-      name2 += fMultRangeHigh;
-      name3 = "DCAPtBinningMatMult_";
-      name3 += fMultRangeHigh;
-      name3 += "_inf";
-      TString matPtBinName[3] = { name1, name2, name3 };
+    fMCSecSigmaMinusDCAXYPtBins = new TH2F(MCSecSigMindcaPtBinName.Data(),
+                                      MCSecSigMindcaPtBinName.Data(), fpTbins,
+                                      fpTmin, fpTmax, 5000, -5, 5);
+    fMCSecSigmaMinusDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecSigmaMinusDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
+    fDCAPlots->Add(fMCSecSigmaMinusDCAXYPtBins);
 
-      name1 = "DCAPtBinningSecMult_0_";
-      name1 += fMultRangeLow;
-      name2 = "DCAPtBinningSecMult_";
-      name2 += fMultRangeLow;
-      name2 += "_";
-      name2 += fMultRangeHigh;
-      name3 = "DCAPtBinningSecMult_";
-      name3 += fMultRangeHigh;
-      name3 += "_inf";
-      TString secPtBinName[3] = { name1, name2, name3 };
+    fMCSecXiDCAXYPtBins = new TH2F(MCSecXidcaPtBinName.Data(),
+                                   MCSecXidcaPtBinName.Data(), fpTbins,
+                                       fpTmin, fpTmax, 5000, -5, 5);
+    fMCSecXiDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecXiDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
+    fDCAPlots->Add(fMCSecXiDCAXYPtBins);
 
-      name1 = "DCAPtBinningSecLambdaMult_0_";
-      name1 += fMultRangeLow;
-      name2 = "DCAPtBinningSecLambdaMult_";
-      name2 += fMultRangeLow;
-      name2 += "_";
-      name2 += fMultRangeHigh;
-      name3 = "DCAPtBinningSecLambdaMult_";
-      name3 += fMultRangeHigh;
-      name3 += "_inf";
-      TString secLambdaPtBinName[3] = { name1, name2, name3 };
+    fMCSecOmegaDCAXYPtBins = new TH2F(MCSecOmegadcaPtBinName.Data(),
+                                      MCSecOmegadcaPtBinName.Data(), fpTbins,
+                                       fpTmin, fpTmax, 5000, -5, 5);
+    fMCSecOmegaDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecOmegaDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
+    fDCAPlots->Add(fMCSecOmegaDCAXYPtBins);
 
-      name1 = "DCAPtBinningSecSigmaMult_0_";
-      name1 += fMultRangeLow;
-      name2 = "DCAPtBinningSecSigmaMult_";
-      name2 += fMultRangeLow;
-      name2 += "_";
-      name2 += fMultRangeHigh;
-      name3 = "DCAPtBinningSecSigmaMult_";
-      name3 += fMultRangeHigh;
-      name3 += "_inf";
-      TString secSigmaPtBinName[3] = { name1, name2, name3 };
+    fMCSecKlongDCAXYPtBins = new TH2F(MCSecKlcaPtBinName.Data(),
+                                      MCSecKlcaPtBinName.Data(), fpTbins,
+                                       fpTmin, fpTmax, 5000, -5, 5);
+    fMCSecKlongDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecKlongDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
+    fDCAPlots->Add(fMCSecKlongDCAXYPtBins);
 
-      name1 = "0 < mult < ";
-      name1 += fMultRangeLow;
-      name1 += ";P#_{T};dca_{XY}";
-      name2 = "";
-      name2 += fMultRangeLow;
-      name2 += " < mult < ";
-      name2 += fMultRangeHigh;
-      name2 += ";P#_{T};dca_{XY}";
-      name3 = "mult > ";
-      name3 += fMultRangeHigh;
-      name3 += ";P#_{T};dca_{XY}";
-      TString axisRange[3] = { name1, name2, name3 };
+    fMCSecKshortDCAXYPtBins = new TH2F(MCSecKsdcaPtBinName.Data(),
+                                       MCSecKsdcaPtBinName.Data(), fpTbins,
+                                       fpTmin, fpTmax, 5000, -5, 5);
+    fMCSecKshortDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecKshortDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
+    fDCAPlots->Add(fMCSecKshortDCAXYPtBins);
 
-      for (int i = 0; i < 3; ++i) {
-        fMCPrimDCAXYPtBinsMult[i] = new TH2F(primPtBinName[i].Data(),
-                                             axisRange[i].Data(), fpTbins,
-                                             fpTmin, fpTmax, 500, -5, 5);
-        fDCAPlots->Add(fMCPrimDCAXYPtBinsMult[i]);
+    fMCSecKchDCAXYPtBins = new TH2F(MCSecKchdcaPtBinName.Data(),
+                                    MCSecKchdcaPtBinName.Data(), fpTbins,
+                                       fpTmin, fpTmax, 5000, -5, 5);
+    fMCSecKchDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecKchDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
+    fDCAPlots->Add(fMCSecKchDCAXYPtBins);
 
-        fMCMaterialDCAXYPtBinsMult[i] = new TH2F(matPtBinName[i].Data(),
-                                                 axisRange[i].Data(), fpTbins,
-                                                 fpTmin, fpTmax, 500, -5, 5);
-        fDCAPlots->Add(fMCMaterialDCAXYPtBinsMult[i]);
+    fMCSecpichDCAXYPtBins = new TH2F(MCSecpichdcaPtBinName.Data(),
+                                    MCSecpichdcaPtBinName.Data(), fpTbins,
+                                       fpTmin, fpTmax, 5000, -5, 5);
+    fMCSecpichDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecpichDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
+    fDCAPlots->Add(fMCSecpichDCAXYPtBins);
 
-        fMCSecondaryDCAXYPtBinsMult[i] = new TH2F(secPtBinName[i].Data(),
-                                                  axisRange[i].Data(), fpTbins,
-                                                  fpTmin, fpTmax, 500, -5, 5);
-        fDCAPlots->Add(fMCSecondaryDCAXYPtBinsMult[i]);
-
-        fMCSecLambdaDCAXYPtBinsMult[i] = new TH2F(secLambdaPtBinName[i].Data(),
-                                                  axisRange[i].Data(), fpTbins,
-                                                  fpTmin, fpTmax, 500, -5, 5);
-        fDCAPlots->Add(fMCSecLambdaDCAXYPtBinsMult[i]);
-
-        fMCSecSigmaDCAXYPtBinsMult[i] = new TH2F(secSigmaPtBinName[i].Data(),
-                                                 axisRange[i].Data(), fpTbins,
-                                                 fpTmin, fpTmax, 500, -5, 5);
-        fDCAPlots->Add(fMCSecSigmaDCAXYPtBinsMult[i]);
-      }
-    }
   } else {
     fDCAPlots = 0;
     fMCPrimDCAXYPtBins = 0;
@@ -410,75 +382,56 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
     fMCSecondaryDCAXYPtBins = 0;
     fMCSecLambdaDCAXYPtBins = 0;
     fMCSecSigmaDCAXYPtBins = 0;
+    fMCSecSigmaMinusDCAXYPtBins = 0;
+    fMCSecSigmaPlusDCAXYPtBins = 0;
+    fMCSecXiDCAXYPtBins = 0;
+    fMCSecOmegaDCAXYPtBins = 0;
+    fMCSecKlongDCAXYPtBins = 0;
+    fMCSecKshortDCAXYPtBins = 0;
+    fMCSecKchDCAXYPtBins = 0;
+    fMCSecpichDCAXYPtBins = 0;
   }
 }
 void AliFemtoDreamTrackMCHist::FillMCDCAXYPtBins(
     AliFemtoDreamBasePart::PartOrigin org, int PDGCodeMoth, float pT,
-    float dcaxy, int multiplicity) {
+    float dcaxy) {
   if (!fDoDCAPlots) {
     AliFatal("FullBooking not set for SPCutHistograms! Cannot use this method");
   }
   if (org == AliFemtoDreamBasePart::kPhysPrimary) {
     fMCPrimDCAXYPtBins->Fill(pT, dcaxy);
-    if (fDoMultiplicityBinning) {
-      FillMultiplicityHistos(multiplicity, pT, dcaxy, fMCPrimDCAXYPtBinsMult[0],
-                             fMCPrimDCAXYPtBinsMult[1],
-                             fMCPrimDCAXYPtBinsMult[2]);
-    }
   } else if (org == AliFemtoDreamBasePart::kWeak) {
     fMCSecondaryDCAXYPtBins->Fill(pT, dcaxy);
-    if (fDoMultiplicityBinning) {
-      FillMultiplicityHistos(multiplicity, pT, dcaxy,
-                             fMCSecondaryDCAXYPtBinsMult[0],
-                             fMCSecondaryDCAXYPtBinsMult[1],
-                             fMCSecondaryDCAXYPtBinsMult[2]);
-    }
-    if (TMath::Abs(PDGCodeMoth) == 3222) {
+    if (TMath::Abs(PDGCodeMoth) == 3212) {
       fMCSecSigmaDCAXYPtBins->Fill(pT, dcaxy);
-      if (fDoMultiplicityBinning) {
-        FillMultiplicityHistos(multiplicity, pT, dcaxy,
-                               fMCSecSigmaDCAXYPtBinsMult[0],
-                               fMCSecSigmaDCAXYPtBinsMult[1],
-                               fMCSecSigmaDCAXYPtBinsMult[2]);
-      }
+    } else if (TMath::Abs(PDGCodeMoth) == 3222) {
+      fMCSecSigmaPlusDCAXYPtBins->Fill(pT, dcaxy);
+    } else if (TMath::Abs(PDGCodeMoth) == 3112) {
+      fMCSecSigmaMinusDCAXYPtBins->Fill(pT, dcaxy);
     } else if (TMath::Abs(PDGCodeMoth) == 3122) {
       fMCSecLambdaDCAXYPtBins->Fill(pT, dcaxy);
-      if (fDoMultiplicityBinning) {
-        FillMultiplicityHistos(multiplicity, pT, dcaxy,
-                               fMCSecLambdaDCAXYPtBinsMult[0],
-                               fMCSecLambdaDCAXYPtBinsMult[1],
-                               fMCSecLambdaDCAXYPtBinsMult[2]);
-      }
+    } else if (TMath::Abs(PDGCodeMoth) == 3312) {
+      fMCSecXiDCAXYPtBins->Fill(pT, dcaxy);
+    } else if (TMath::Abs(PDGCodeMoth) == 3334) {
+      fMCSecOmegaDCAXYPtBins->Fill(pT, dcaxy);
+    } else if (TMath::Abs(PDGCodeMoth) == 130) {
+      fMCSecKlongDCAXYPtBins->Fill(pT, dcaxy);
+    } else if (TMath::Abs(PDGCodeMoth) == 310) {
+      fMCSecKshortDCAXYPtBins->Fill(pT, dcaxy);
+    } else if (TMath::Abs(PDGCodeMoth) == 321) {
+      fMCSecKchDCAXYPtBins->Fill(pT, dcaxy);
+    } else if (TMath::Abs(PDGCodeMoth) == 211) {
+      fMCSecpichDCAXYPtBins->Fill(pT, dcaxy);
     } else {
-      TString ErrHistSP = Form("Feeddown for %d not implemented", PDGCodeMoth);
+      TString ErrHistSP = TString::Format("Feeddown for %d not implemented", PDGCodeMoth);
       AliWarning(ErrHistSP.Data());
     }
   } else if (org == AliFemtoDreamBasePart::kMaterial) {
     fMCMaterialDCAXYPtBins->Fill(pT, dcaxy);
-    if (fDoMultiplicityBinning) {
-      FillMultiplicityHistos(multiplicity, pT, dcaxy,
-                             fMCMaterialDCAXYPtBinsMult[0],
-                             fMCMaterialDCAXYPtBinsMult[1],
-                             fMCMaterialDCAXYPtBinsMult[2]);
-    }
   } else {
     AliFatal("Particle Origin not implemented");
   }
   return;
-}
-
-void AliFemtoDreamTrackMCHist::FillMultiplicityHistos(int multiplicity,
-                                                      float pT, float dcaxy,
-                                                      TH2F *histo1,
-                                                      TH2F *histo2,
-                                                      TH2F *histo3) {
-  if (multiplicity < fMultRangeLow) {
-    histo1->Fill(pT, dcaxy);
-  } else if (multiplicity >= fMultRangeLow && multiplicity < fMultRangeHigh) {
-    histo2->Fill(pT, dcaxy);
-  } else {
-    histo3->Fill(pT, dcaxy);
-  }
 }
 
 void AliFemtoDreamTrackMCHist::FillMCPtResolution(float pTTrue, float pTReco) {

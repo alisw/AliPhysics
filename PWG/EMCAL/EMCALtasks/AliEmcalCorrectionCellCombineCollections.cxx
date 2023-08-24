@@ -29,6 +29,7 @@ AliEmcalCorrectionCellCombineCollections::AliEmcalCorrectionCellCombineCollectio
   fCreatedCellsBranchName("emcalCellsCombined"),
   fVerifyCombinedCells(true),
   fInitializedCombinedCells(false),
+  fMergeCells(false),
   fCombinedCells(0)
 {
   // Default constructor
@@ -61,6 +62,7 @@ Bool_t AliEmcalCorrectionCellCombineCollections::Initialize()
   GetProperty("externalCellsBranchName", fExternalCellsBranchName);
   GetProperty("combinedCellsBranchName", fCreatedCellsBranchName);
   GetProperty("verifyCombinedCells", fVerifyCombinedCells);
+  GetProperty("mergeCells", fMergeCells);
 
   // Check for "usedefault"
   if (fExternalCellsBranchName == "usedefault") {
@@ -167,6 +169,8 @@ void AliEmcalCorrectionCellCombineCollections::CreateCombinedCells()
   AddCellsToCombinedCellObject(fCaloCells, 0);
   AddCellsToCombinedCellObject(externalCells, fCaloCells->GetNumberOfCells());
 
+  
+  
   if (fVerifyCombinedCells) {
     VerifyCombinedCells({fCaloCells, externalCells});
   }
@@ -187,7 +191,9 @@ void AliEmcalCorrectionCellCombineCollections::AddCellsToCombinedCellObject(AliV
   Int_t mcLabel;
   Bool_t cellHighGain;
   Bool_t getCellResult = kFALSE;
-
+  Int_t j0 = 0;
+  Int_t nMerged = 0;
+  
   AliDebugStream(3) << "Adding caloCells \"" << inputCells->GetName() << "\" of type \"" << inputCells->GetType() << "\" with " << inputCells->GetNumberOfCells() << " cells to the combined cells" << std::endl;
 
   // Loop over the input cells and add them to the combined cells
@@ -200,10 +206,79 @@ void AliEmcalCorrectionCellCombineCollections::AddCellsToCombinedCellObject(AliV
     // Get high gain attribute in addition to cell
     // NOTE: GetCellHighGain() uses the cell position, not cell index, and thus should _NOT_ be used!
     cellHighGain = inputCells->GetHighGain(i);
-
+           
+    Bool_t newCell = kTRUE;
+    // Check if the cell to be added already exists in the list of combined cells
+    //
+    if ( fMergeCells && indexOffset > 0 )
+    {
+      // If input data, no signal fraction
+      if ( indexOffset == 0 ) eFrac = 0;
+      else                    eFrac = amplitude; // not the fraction just signal energy as in other places
+      
+      // Differenciate MC noise with no label and data cell also with no label.
+      if ( mcLabel == -1 )
+        mcLabel = -2; 
+    
+      Short_t cellNumberCo;
+      Double_t amplitudeCo, timeCo, eFracCo;
+      Int_t mcLabelCo;
+      Bool_t cellHighGainCo;
+      Bool_t getCellResultCo = kFALSE;
+      for (unsigned int j = j0; j < static_cast<unsigned int>(fCombinedCells->GetNumberOfCells()); j++)
+      {
+        getCellResultCo = fCombinedCells->GetCell(j, cellNumberCo, amplitudeCo, timeCo, mcLabelCo, eFracCo);
+        if (!getCellResultCo) {
+          AliWarning(TString::Format("Could not get cell %i from cell collection %s", j, fCombinedCells->GetName()));
+        }
+        cellHighGainCo = fCombinedCells->GetHighGain(j);
+        
+        // Cell already exists
+        if ( cellNumberCo == cellNumber )
+        {
+          //printf("Merge cell ID %d\n",cellNumberCo);
+          
+          // Assign time and highGain, the value for the highest energy cell of the two
+          if ( amplitude > amplitudeCo )
+          {
+            timeCo = time;
+            cellHighGainCo = cellHighGain;
+          }
+          
+          // Update existing cell
+          fCombinedCells->SetCell(j, cellNumber, amplitude+amplitudeCo, timeCo, mcLabel, eFrac, cellHighGainCo);
+          
+          // Next time, start from index j+1 to avoid too many searches, since lists are ordered by absId
+          j0 = j+1;
+          
+          newCell = kFALSE;
+          
+          nMerged++;
+          
+          break;
+        } // already existing cell
+      } // combined cells loop
+    }  // merge cells
+    
     // Set the properties in the combined cell
-    fCombinedCells->SetCell(i + indexOffset, cellNumber, amplitude, time, mcLabel, eFrac, cellHighGain);
+    if ( newCell )
+      fCombinedCells->SetCell(i + indexOffset - nMerged, cellNumber, amplitude, time, mcLabel, eFrac, cellHighGain);
   }
+  
+//  if ( fMergeCells && indexOffset > 0 )
+//  {
+//    printf("Merged cells %d\n",nMerged);
+//    
+//    for (unsigned int i = 0; i < static_cast<unsigned int>(fCombinedCells->GetNumberOfCells()); i++)
+//    {
+//      bool getCellResultCo = fCombinedCells->GetCell(i, cellNumber, amplitude, time, mcLabel, eFrac);
+//      if (!getCellResultCo) {
+//        printf("Could not get cell %i from cell collection %s", i, fCombinedCells->GetName());
+//      }
+//      
+//      printf("cell %d, id %d, amp %2.3f mc %d, eFrac %2.3f\n",i,cellNumber,amplitude,mcLabel,eFrac);
+//    }
+//  }
 }
 
 /**

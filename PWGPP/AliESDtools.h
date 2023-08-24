@@ -10,6 +10,8 @@ class TH1F;
 class AliExternalTrackParam;
 class AliESDEvent;
 class AliESDfriend;
+class AliTriggerAnalysis;
+class AliMCEvent;
 //class TVectorF;
 #include "TNamed.h"
 
@@ -19,16 +21,21 @@ class AliESDtools : public TNamed {
   void Init(TTree* tree, AliESDEvent *event= nullptr);
   void SetStreamer(TTreeSRedirector *streamer){fStreamer=streamer;}
   static Double_t LoadESD(Int_t entry, Int_t verbose=0);
+  void SetMCEvent(AliMCEvent*event){fMCEvent=event;}
+  Bool_t IsPileup(Int_t index);
   /// caching
   Int_t  CacheTPCEventInformation();
   Int_t  CacheITSVertexInformation(Bool_t doReset=1, Double_t dcaCut=0.05,  Double_t dcaZcut=0.15);
   Int_t  CacheTOFEventInformation(Bool_t dumpStreamer=0);
   Int_t CalculateEventVariables();
+  Int_t  FillTrackCounters();
+  Int_t  FillMCCounters();
   void TPCVertexFit(TH1F *hisVertex);
   Int_t  GetNearestTrack(const AliExternalTrackParam * trackMatch, Int_t indexSkip, AliESDEvent*event, Int_t trackType, Int_t paramType, AliExternalTrackParam & paramNearest);
   void   ProcessITSTPCmatchOut(AliESDEvent *const esdEvent, AliESDfriend *const esdFriend, TTreeStream *pcstream);
   Double_t CachePileupVertexTPC(Int_t entry, Int_t doReset=0, Int_t verbose=0);
   //
+  void FindTPCSPDtracks(Float_t dcaCut, Float_t dcaCutZ, Float_t dcaChi2Cut);
   Int_t DumpEventVariables();
   static Int_t SDumpEventVariables(){return fgInstance->DumpEventVariables();}
   // static functions for querying cached variables in TTree formula
@@ -52,7 +59,9 @@ class AliESDtools : public TNamed {
   Int_t fVerbose;                                 // verbosity flag
   TTree *fESDtree;                                //! esd Tree pointer - class is not owner
   AliESDEvent * fEvent;                           //! esd event pointer - class is not owner
+  AliMCEvent *       fMCEvent;                    //! pointer to MCevent if available
   AliPIDResponse   * fPIDResponse;                //! PID response object
+  AliTriggerAnalysis *fTriggerAnalysis;           //! tigger analysis
   Bool_t   fTaskMode;                             // analysis task mode
   TH1F *fHisITSVertex;                            // ITS z vertex histogram
   TH1F *fHisTPCVertexA;                           // TPC z vertex A side
@@ -69,6 +78,13 @@ class AliESDtools : public TNamed {
   TH1F             * fHistPhiTPCCounterCITS;      // helper histogram phi counters
   TH1F             * fHistPhiITSCounterA;         // helper histogram phi counters
   TH1F             * fHistPhiITSCounterC;         // helper histogram phi counters
+  //
+  TH2S             * fHist2DTrackletsCounter;     // 2D tracklet Phi x tgl norm histogram
+  TH2S             * fHist2DTrackCounter;         // 2D track Phi x tgl histogram
+  TH2F             * fHist2DTrackSumPt;           // 2D track Phi x tgl sum pt histogram
+  TH2S             * fHist2DMCCounter;            // 2D MC primary Phi x tgl histogram  - filled optionaly if MC available
+  TH2F             * fHist2DMCSumPt;              // 2D MC primary Phi x tgl sum pt histogram - filled optionaly if MC available
+  //
   TVectorF         * fCacheTrackCounters;         // track counter
   TVectorF         * fCacheTrackTPCCountersZ;     // track counter with DCA z cut
   TVectorF         * fCacheTrackdEdxRatio;        // dEdx info counter

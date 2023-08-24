@@ -4,7 +4,9 @@
 #include <AliAnalysisTaskEmcal.h>
 class THistManager;
 
-namespace EmcalTriggerJets { 
+namespace PWGJE {
+    
+namespace EMCALJetTasks { 
 
 class AliAnalysisTaskEmcalTriggerBackground : public AliAnalysisTaskEmcal {
 public:
@@ -25,6 +27,8 @@ private:
     ClassDef(AliAnalysisTaskEmcalTriggerBackground, 1);
 
 };
+
+}
 
 }
 

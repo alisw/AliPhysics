@@ -37,8 +37,9 @@ public:
   enum SystemForNsigmaDataCorr {
     kNone=-1,
     kPbPb010,
+    kPbPb1030,
     kPbPb3050,
-    kPbPb6080
+    kPbPb5080
   };
 
   static const int kMaxEtaBins=5;
@@ -238,12 +239,12 @@ public:
   void SetIdCompAsymmetricPID();
   
   ///Set Nsigma data-driven correction
-  void EnableNsigmaTPCDataCorr(Int_t run, Int_t system);
+  void EnableNsigmaTPCDataCorr(Int_t run, Int_t system, Bool_t isPass1=kFALSE);
 
   //method to get parameters for NsigmaTPC correction
   static void SetNsigmaTPCDataDrivenCorrection(Int_t run, Int_t system, Int_t &nPbins, Float_t Plims[kMaxPBins+1], Int_t &nEtabins, Float_t absEtalims[kMaxEtaBins+1], 
   vector<vector<Float_t> > &meanNsigmaTPCpion, vector<vector<Float_t> > &meanNsigmaTPCkaon, vector<vector<Float_t> > &meanNsigmaTPCproton, 
-  vector<vector<Float_t> > &sigmaNsigmaTPCpion, vector<vector<Float_t> > &sigmaNsigmaTPCkaon, vector<vector<Float_t> > &sigmaNsigmaTPCproton);
+  vector<vector<Float_t> > &sigmaNsigmaTPCpion, vector<vector<Float_t> > &sigmaNsigmaTPCkaon, vector<vector<Float_t> > &sigmaNsigmaTPCproton, Bool_t isPass1=kFALSE);
 
 protected:
   

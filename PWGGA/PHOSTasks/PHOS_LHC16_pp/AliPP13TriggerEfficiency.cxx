@@ -104,7 +104,7 @@ void AliPP13TriggerEfficiency::InitSelectionHistograms()
 	for (Int_t i = 0; i < 2; ++i)
 	{
 		const char * sf = (i == 0) ? "" : "Mix";
-		const char * title = "(M_{#gamma#gamma}, E_{probe}); M_{#gamma#gamma}, GeV; E_{probe}, GeV";
+		const char * title = "(M_{#gamma#gamma}, E_{probe}); M_{#gamma#gamma} (GeV/#it{c}^{2}); E_{probe}, GeV";
 
 		TH1 * hist1 = new TH2F(Form("h%sMassEnergyAll_", sf), title, nM, mMin, mMax, nE, eMin, eMax);
 		TH1 * hist2 = new TH2F(Form("h%sMassEnergyTrg_", sf), title, nM, mMin, mMax, nE, eMin, eMax);
@@ -119,7 +119,7 @@ void AliPP13TriggerEfficiency::InitSelectionHistograms()
 	// 	for (Int_t i = 0; i < 2; ++i)
 	// 	{
 	// 		const char * sf = (i == 0) ? "" : "Mix";
-	// 		const char * title = Form("(M_{#gamma#gamma}, E_{probe}) TRU #%d ; M_{#gamma#gamma}, GeV; E_{probe}, GeV", tru);
+	// 		const char * title = Form("(M_{#gamma#gamma}, E_{probe}) TRU #%d ; M_{#gamma#gamma} (GeV/#it{c}^{2}); E_{probe}, GeV", tru);
 	// 		TH2F * hist1 = new TH2F(Form("h%sMassEnergyAll_TRU_%d_", sf, tru), title, nM, mMin, mMax, nE, eMin, eMax);
 	// 		TH2F * hist2 = new TH2F(Form("h%sMassEnergyTrg_TRU_%d_", sf, tru), title, nM, mMin, mMax, nE, eMin, eMax);
 

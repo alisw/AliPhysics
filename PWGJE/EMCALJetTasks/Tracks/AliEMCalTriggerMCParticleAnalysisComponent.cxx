@@ -37,9 +37,9 @@
 #include "AliEMCalTriggerWeightHandler.h"
 
 
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerMCParticleAnalysisComponent)
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerMCParticleAnalysisComponent)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 //______________________________________________________________________________
 AliEMCalTriggerMCParticleAnalysisComponent::AliEMCalTriggerMCParticleAnalysisComponent() :
@@ -117,5 +117,3 @@ bool AliEMCalTriggerMCParticleAnalysisComponent::IsPhysicalPrimary(const AliVPar
 	}
 	return mcev->IsPhysicalPrimary(part->GetLabel());                 // No abs value since default value is -1
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

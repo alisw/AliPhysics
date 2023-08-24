@@ -13,7 +13,8 @@ class AliUniFlowCorrTask : public TObject
             Bool_t doRFPs,
             Bool_t doPOIs,
             std::vector<Int_t> harms,
-            std::vector<Double_t> gaps = std::vector<Double_t>());
+            std::vector<Double_t> gaps = std::vector<Double_t>(),
+            std::vector<Int_t> maxPowVec = std::vector<Int_t>());
         virtual ~AliUniFlowCorrTask() { fiHarm.clear(); fdGaps.clear(); }
 
         Bool_t      HasGap() const { return (Bool_t) fiNumGaps; }; // check if Gap
@@ -21,6 +22,7 @@ class AliUniFlowCorrTask : public TObject
 
         Bool_t                fbDoRefs; // which particles are procesed (RFPs / POIs / both )
         Bool_t                fbDoPOIs; // which particles are procesed (RFPs / POIs / both )
+        Bool_t                fbUsePowerVector; // flag for using fiMaxPow
         Int_t                 fiNumHarm; // correlation order <M>
         Int_t                 fiNumGaps; // number of subevents
         Int_t                 fMaxWeightPower; //max power in q vector filling
@@ -29,10 +31,11 @@ class AliUniFlowCorrTask : public TObject
         TString               fsLabel; // automatically generated label see Init() for format
         std::vector<Int_t>    fiHarm; // harmonics n1,n2,...,nM
         std::vector<Double_t> fdGaps; // gaps between subevents (standard GF notation)
+        std::vector<Int_t>    fiMaxPow; // maximum power
     protected:
     private:
 
-    ClassDef(AliUniFlowCorrTask, 2);
+    ClassDef(AliUniFlowCorrTask, 3);
 };
 
 

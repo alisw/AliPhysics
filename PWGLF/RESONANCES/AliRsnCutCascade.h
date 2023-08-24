@@ -31,10 +31,12 @@ class AliRsnCutCascade : public AliRsnCut {
     void           SetHypothesis(Int_t code);
     void           SetMassTolerance(Double_t value)         {fMassTolerance = value;}
     void           SetMassToleranceVeto(Double_t value)     {fMassToleranceVeto = value;}
+    void           SetV0MassTolerance(Double_t value)       {fV0MassTolerance = value;}
     void           SetSwitch(Bool_t value)                  {fSwitch = value;}
 
     void           SetV0LowRadius(Double_t value)           {fV0LowRadius = value;}
     void           SetV0HighRadius(Double_t value)          {fV0HighRadius = value;}
+    void           SetV0Life(Double_t value)                {fV0Life = value;}
 
     void           SetCascadeLowRadius(Double_t value)      {fCascadeLowRadius = value;}
     void           SetCascadeHighRadius(Double_t value)     {fCascadeHighRadius = value;}
@@ -52,6 +54,7 @@ class AliRsnCutCascade : public AliRsnCut {
 
     void           SetMinTPCcluster(Int_t value)            {fMinTPCcluster = value;}
     void           SetMaxRapidity(Double_t value)           {fMaxRapidity = value;}
+    void           SetMaxPseudorapidity(Double_t value)     {fMaxPseudorapidity = value;}
 
     void           SetPIDCutV0Proton(Double_t value)        {fPIDCutV0Proton = value;}
     void           SetPIDCutV0Pion(Double_t value)          {fPIDCutV0Pion = value;}
@@ -68,16 +71,19 @@ protected:
 
     Bool_t      CheckESD(AliESDcascade *track);
     Bool_t      CheckAOD(AliAODcascade *track);
+    Bool_t      AODTrackAccepted(AliAODTrack* t);
 
     Int_t            fHypothesis;              // PDG code corresponding to expected Cascade hypothesis
     Double_t         fMass;                    // mass corresponding to hypothesis
     Double_t         fMassTolerance;           // tolerance in the difference between computed and expected mass for Cascade
     Double_t         fMassToleranceVeto;       // Competing Cascade Rejection. Read the note in AliRsnCutCascade.cxx for more info.
+    Double_t         fV0MassTolerance;         // tolerance in the difference between computed and expected mass for Cascade
     Bool_t           fSwitch;                  // Switch for using Competing V0 Rejection
     Double_t         fV0LowRadius;             // Lower Limit on Fiducial Volume for V0
     Double_t         fV0HighRadius;            // Higher Limit on Fiducial Volume for V0
     Double_t         fCascadeLowRadius;        // Lower Limit on Fiducial Volume for Cascade
     Double_t         fCascadeHighRadius;       // Higher Limit on Fiducial Volume for Cascade
+    Double_t         fV0Life;                  // Higher Limit on Lifetime for V0
     Double_t         fV0MinDCAVertex;          // min allowed DCA from primary vertex of V0
     Double_t         fCascadeMinDCAVertex;     // min allowed DCA from primary vertex of Cascade
     Double_t         fV0MaxDCAVertex;          // max allowed DCA from primary vertex of V0
@@ -88,6 +94,7 @@ protected:
     Double_t         fCascadeMaxDaughtersDCA;  // max allowed DCA between the two Cascade daughers
     Int_t            fMinTPCcluster;           // min allowed TPC cluster
     Double_t         fMaxRapidity;             // max allowed Cascade rapidity
+    Double_t         fMaxPseudorapidity;       // max allowed Cascade pseudorapidity
     
     AliPID::EParticleType fPID;                // PID for track
     AliPID::EParticleType fPID2;               // PID for track

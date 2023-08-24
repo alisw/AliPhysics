@@ -49,9 +49,9 @@
 
 #include "AliAnalysisTaskTracksInJet.h"
 
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskTracksInJet)
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskTracksInJet)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Constructor
@@ -156,8 +156,6 @@ Bool_t AliAnalysisTaskTracksInJet::UserNotify()
 
     TChain *chain = dynamic_cast<TChain*>(tree);
     if (chain) tree = chain->GetTree();
-
-    Int_t nevents = tree->GetEntriesFast();
 
     PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
 
@@ -534,5 +532,3 @@ Bool_t AliAnalysisTaskTracksInJet::IsOutlier(AliGenPythiaEventHeader * const hea
   }
   return hasOutlier;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

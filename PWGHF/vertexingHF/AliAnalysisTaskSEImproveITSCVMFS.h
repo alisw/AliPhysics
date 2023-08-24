@@ -40,10 +40,17 @@ public:
   void SetUpdateSecVertCovMat(Bool_t flag=kTRUE) { fUpdateSecVertCovMat=flag; return; }
   void SetUpdateSTCovMatrix(Bool_t opt=kTRUE){fUpdateSTCovMatrix=opt;}
   void SetUpdatePulls(Bool_t opt=kTRUE){fUpdatePulls=opt;}
-  void SetMimicData(Bool_t opt=kFALSE){fMimicData=opt;}
+  void SetMimicData(Bool_t opt=kTRUE){fMimicData=opt;}
   void SetAOD(Bool_t flag=kTRUE) { fIsAOD=flag; return; }
   void SetSmearOnlySignal(Bool_t opt=kTRUE) {fSmearOnlySignal=opt;}
-
+  void SetImproverSuffix(TString suffix="central") {fImproverSuffix=suffix;}
+  void SetScalingFactorRPhiResol(Double_t scalFact){fRescaledd0rphi=scalFact;}
+  void SetUseSeparateOverrideDataMC(Bool_t flag, TString str_data, TString str_MC){
+    fUseSeparateOverrideDataMC = flag;
+    fOverridePeriodNameData = str_data;
+    fOverridePeriodNameMC = str_MC;
+  }
+  
 private:
   AliAnalysisTaskSEImproveITSCVMFS(const AliAnalysisTaskSEImproveITSCVMFS&);
   AliAnalysisTaskSEImproveITSCVMFS& operator=(const AliAnalysisTaskSEImproveITSCVMFS&); 
@@ -266,9 +273,13 @@ private:
   Int_t   fNDebug;       /// Max number of debug entries into Ntuple
   TString fImproverSuffix; /// suffix for path of correction file on grid 
   TString fOverridePeriodName; /// custom name for overriding auto period name
+  Bool_t fUseSeparateOverrideDataMC; /// separately override data and MC periods to retrieve parametrizations
+  TString fOverridePeriodNameData; /// custom name for overriding auto period name for data parametrization
+  TString fOverridePeriodNameMC; /// custom name for overriding auto period name for MC parametrization
   Bool_t fFilesOpen; 	 /// check to ensure improver files from CVMFS are accessed only once
+  Double_t fRescaledd0rphi; /// scaling factor that can be used for fast checks also for systematic uncertainties
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSEImproveITSCVMFS,13);
+  ClassDef(AliAnalysisTaskSEImproveITSCVMFS,15);
   /// \endcond
 };
 

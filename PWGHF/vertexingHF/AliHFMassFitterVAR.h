@@ -107,6 +107,7 @@ class AliHFMassFitterVAR : public AliHFMassFitter {
   Double_t BackFitFuncPolHelper(Double_t *x,Double_t *par);
   Bool_t PrepareHighPolFit(TF1 *fback);
   void SetParticlePdgMass(Double_t mass){fMassParticle=mass;}
+  void SetAcceptValidFit(){fAcceptValidFit=kTRUE;}
   Double_t GetParticlePdgMass(){return fMassParticle;}
   Double_t FitFunction4MassDistr (Double_t* x, Double_t* par);
   Double_t FitFunction4Sgn (Double_t* x, Double_t* par);
@@ -189,9 +190,10 @@ class AliHFMassFitterVAR : public AliHFMassFitter {
 /*   Int_t     fSideBandr;        // right side band limit (bin number) */
 /*   Int_t     fcounter;          // internal counter */
 /*   TList*    fContourGraph;     // TList of TGraph containing contour plots */
+  Bool_t    fAcceptValidFit;       /// accept a fit when IsValid() gives true, nevertheless the status code
 
   /// \cond CLASSIMP
-  ClassDef(AliHFMassFitterVAR,2); /// class for invariant mass fit
+  ClassDef(AliHFMassFitterVAR,3); /// class for invariant mass fit
   /// \endcond
 };
 

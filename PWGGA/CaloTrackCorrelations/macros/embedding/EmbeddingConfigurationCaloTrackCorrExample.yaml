@@ -1,0 +1,13 @@
+name: "Embedding configuration example"
+
+# May also want to provide a run list here
+#runList: [123456, 234567, ...]
+
+# Configure internal event selection.
+internalEventSelection:
+    enabled: true
+    centralityRange: [0, 80]
+    physicsSelection:
+        - "kAnyINT"
+        - "kCentral"
+        - "kSemiCentral"

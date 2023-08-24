@@ -10,6 +10,23 @@
 #ifndef ALIANALYSISTASKRIDGE_H
 #define ALIANALYSISTASKRIDGE_H
 
+using namespace std;
+
+class AliMultSelection;
+class AliVMultiplicity;
+class TClonesArray;
+class AliJJetTask;
+class AliJCorrectionMapTask;
+class AliDirList;
+class AliJetContainer;
+class AliParticleContainer;
+class AliClusterContainer;
+class AliEmcalTrackSelection;
+class AliAnalysisUtils;
+class AliCalorimeterUtils;
+class AliMultSelection;
+class TLorentzVector;
+
 #include "TFile.h"
 #include <TSystem.h>
 #include <TGrid.h>
@@ -30,16 +47,11 @@
 #include <TVector.h>
 #include <TRandom.h>
 #include <TString.h>
+#include <TLorentzVector.h>
 #include "AliJJetTask.h"
-
-using namespace std;
-
-class AliMultSelection;
-class AliVMultiplicity;
-class TClonesArray;
-class AliJJetTask;
-class AliDirList;
-
+#include "AliAnalysisTaskEmcalJet.h"
+#include "AliJCorrectionMapTask.h"
+#include "AliJetContainer.h"
 
 class AliAnalysisTaskRidgeRunTable {
     public:
@@ -62,12 +74,13 @@ class AliAnalysisTaskRidgeRunTable {
 };
 
 
-class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
+class AliAnalysisTaskRidge : public AliAnalysisTaskEmcalJet {
     public:
       typedef std::vector<Bool_t> Bool_1d;
       typedef std::vector<Double_t> Double1D;
       typedef std::vector<int>      Int1D;
       typedef std::vector<Double1D> Double2D;
+      typedef std::vector<TLorentzVector>   TLorentzVector1D;
 
         enum {  kSD=0, kDD, kND, kCD, kAllProc};
         //PN = unlike sign, PP and NN are like signs
@@ -99,17 +112,12 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
 
         void SetOption(char * option) {fOption = option;}
         void SetFilterBit(UInt_t filterbit) {fFilterBit = filterbit;}
-//	void SetEfficiencyFile(char * fname) { TGrid::Connect("alien://"); fefficiencyFile = new TFile(fname,"READ"); cout << "setter check " << endl; }
-//	void SetEfficiency3DFile(char * fname) { TGrid::Connect("alien://"); fefficiency3DFile = new TFile(fname,"READ"); }
 
-	void SetEfficiencyFile(char* fname) { TGrid::Connect("alien://"); fefficiencyFile = TFile::Open(fname,"READ"); }
-//	void SetEfficiencyFile(char* fname) { TGrid::Connect("alien://"); fefficiencyFile  = new TFile(fname,"READ"); }
-	void SetEfficiency3DFile(char* fname) { TGrid::Connect("alien://"); fefficiency3DFile = TFile::Open(fname,"READ"); }
-//	void SetEfficiencyFile(char* fname) { fefficiencyFile = (TFile*)TFile::Open(fname,"READ"); }
-//	void SetEfficiency3DFile(char* fname) { fefficiency3DFile = (TFile*)TFile::Open(fname,"READ"); }
-//	void SetEfficiencyFile(char* fname) { fefficiencyFile = TFile::Open(fname); }
-//	void SetEfficiency3DFile(char* fname) { fefficiency3DFile = TFile::Open(fname); }
+	/*void SetEfficiencyFile(char* fname) { TGrid::Connect("alien://"); fefficiencyFile = TFile::Open(fname,"READ"); }
+	void SetEfficiencyFilepPb(char* fname) { TGrid::Connect("alien://"); fefficiencyFilepPb = TFile::Open(fname,"READ"); }
+	void SetEfficiency3DFile(char* fname) { TGrid::Connect("alien://"); fefficiency3DFile = TFile::Open(fname,"READ"); }*/
 
+		double GetEfficiency(double pt, double eta, bool bITS = false);
         Bool_t  GoodTracksSelection(int trk);
         Bool_t  GoodTrackletSelection();
 	Bool_t  GoodTracksSelectionMC();
@@ -121,6 +129,7 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
         void SetMixing (Bool_t setmixing) {fsetmixing = setmixing;}
         void SetIsAA (Bool_t isaa) {IsAA = isaa;}
         void SetIsMC (Bool_t ismc) {IsMC = ismc;}
+        void EnableJetTask (Bool_t enable) {jetTaskEnabled = enable;}
         void SetParticleType(Int_t partype) {fParticleType = partype;}
         TAxis AxisFix( TString name, int nbin, Double_t xmin, Double_t xmax);
         TAxis AxisVar( TString name, std::vector<Double_t> bin );
@@ -148,11 +157,12 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
 		Int_t IsTrackRecon;
 	};
 
-//	TFile* fefficiencyFile=nullptr; //
+	void RhoSparse(AliJetContainer *ktContainer, AliJetContainer *aktContainer, Int_t numberofexcludingjets);
 
-//	TFile* fefficiencyFile=0; //
-//	TFile* fefficiency3DFile=0; //
-
+    protected:
+	void MeasureBgDensity(AliJetContainer* ktContainer);
+	Bool_t isOverlapping(AliEmcalJet* jet1, AliEmcalJet* jet2);
+	
     private:
         typedef std::vector<AliVTrack*> tracklist;
         typedef std::deque<tracklist>  eventpool;
@@ -169,28 +179,15 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
       
         TString                         fOption;
 	AliDirList*				fOutput=nullptr; //!
-//        AliDirList*                          fOutput=nullptr; //!
-//	TFile*				fefficiencyFile=nullptr; //!
-//	TFile*				fefficiency3DFile=nullptr; //!
-//	TFile*                          fefficiencyFile=nullptr; //
-//	TFile*                          fefficiency3DFile=nullptr; //
-//	TFile*				fefficiencyFile=0; //
-//	TFile*				fefficiencyFile = new TFile("EffOut.root","read"); //
 
-	TFile*				fefficiencyFile= TFile::Open("EffOut.root","read"); //
-	TFile*				fefficiency3DFile=nullptr; //
-//	TFile*				fefficiencyFile=0; //!
-//	TFile*				fefficiency3DFile=0; //!
-
-//	TFile*				fefficiencyFile = TFile::Open("EffOut.root","read"); //
-//	TFile*				fefficiency3DFile=nullptr; //!
-
-//	TFile				fefficiencyFile;
-//	TFile				fefficiency3DFile;
+	//TFile*				fefficiencyFile=nullptr; //
+	//TFile*                          fefficiencyFilepPb=nullptr; //
+	//TFile*				fefficiency3DFile=nullptr; //
 
         AliTriggerAnalysis*             fTrigger=nullptr; //!
         AliESDtrackCuts*                fTrackCuts=nullptr; //!
         AliVEvent*                      fEvt=nullptr; //!
+	AliJCorrectionMapTask *fJCorMapTask=nullptr; //!
 	AliJJetTask*			fJetTask=nullptr; //!
 
         UInt_t                          fFilterBit=0x300;
@@ -200,34 +197,46 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
         Float_t                         fCent;
         Double_t                        fZ;
 	Double_t			fZ_gen;
+ 
         std::vector < UInt_t >          goodtrackindices; //!
         std::vector < UInt_t >          goodtrackindicesMCALICE; //!
 	std::vector < UInt_t >          goodtrackindicesMCCMS; //!
 
-
 	std::vector < Double_t > 	NTracksPerPtBin;
+	std::vector < Double_t >        NTracksPerPtBinLP;
 	std::vector < Double_t >        NTracksPerPtBinMCALICE;
 	std::vector < Double_t >        NTracksPerPtBinMCCMS;
 
-//        AliPIDCombined                 *fPIDCombined=nullptr; //!
-        //Histograms below are main
-        std::vector< std::vector< TH2D* > > fMass2D; //! signbins, centbins
-        //Histograms for pT_pair amd pT
-
         mixingpool                      fEMpool; //!
         mixingpooltracklet              fEMpooltracklet; //!
-	mixingpoolMC			fEMpoolMCALICE;
-	mixingpoolMC                    fEMpoolMCCMS;        
+	mixingpoolMC			fEMpoolMCALICE; //!
+	mixingpoolMC                    fEMpoolMCCMS; //!  
 
         TAxis                           binCent; //! 
         TAxis                           binZ; //!
-	TAxis				binTPt;
-	TAxis				binPt;
-	TAxis				binPt1;
-	TAxis				binNtrig;
-	TAxis				binLtpt;
-	TAxis				binJetpT;
-	TAxis				binEta;
+	TAxis				binTPt; //!
+	TAxis				binAPt; //!
+	TAxis				binTPt_forLP; //!
+	TAxis				binAPt_forLP; //!
+	TAxis				binPhi; //!
+	TAxis				binEta; //!
+	TAxis				binMCEta; //!
+	TAxis				binLtpt; //!
+	TAxis				binJetpT; //!
+	TAxis				binRho; //!
+
+	TAxis				binUnipT; //!
+	TAxis				binTrig; //!
+	TAxis				binV0Amp; //!
+	TAxis				binTrkEff; //!
+
+	TAxis				binPt; //!
+	TAxis				binPt1; //!
+	TAxis				binNtrig; //!
+
+	TAxis				binPhiTrack; //!
+	TAxis				binEtaTrack; //!
+
 
         Int_t                           centbin = -1 ;
         Int_t                           zbin = -1 ;
@@ -237,13 +246,14 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
 	Double_t			fLT_pT_MCALICE;
 	Double_t			fLT_pT_MCCMS;
 	Double_t			fJetPt;
-
+	Double_t			fJetPtMC;
 
 	Bool_t                          fsetmixing = kTRUE;
         Bool_t                          IsDGV0=kFALSE;
         Bool_t                          IsDGV0FMD=kFALSE;
         Bool_t                          IsAA=kFALSE;
         Bool_t                          IsMC=kFALSE;
+        Bool_t                          jetTaskEnabled=kFALSE;
         THistManager*                   fHistos=nullptr; //!
         TClonesArray*                   fMCArray=nullptr; //!
         Int_t                           fParticleType = 99999;
@@ -252,10 +262,11 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
         Int_t                           bookingsize = 7;
         AliVMultiplicity*               fMultiplicity=nullptr;//!
 	Int_t				bookingsizeMC = 7;
-	std::vector< std::vector< double > > Eff;
-	std::vector< std::vector< std::vector< double > > > Eff3D;
+	//std::vector< std::vector< double > > Eff;
+	//std::vector< std::vector< std::vector< double > > > Eff3D;
 
-	Double1D EffpT;
+	TH1 *peffHist; //!
+	//Double1D EffpT;
 
 	Int_t fEff_npT_step = 40;
 	Double_t fEff_pT_min = 0.2;
@@ -274,8 +285,11 @@ class AliAnalysisTaskRidge : public AliAnalysisTaskSE {
         Double_t ITS_fEff_eta_max = 1.3;
         Double_t ITS_fEff_eta_l = 0.1;
 
-
 	Double_t AbsZmax = 8.0;
+	Double_t V0M_mean;
+
+	Double_t RHO;
+	Double_t RHOM;
 
 
     ClassDef(AliAnalysisTaskRidge, 1);

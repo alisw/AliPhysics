@@ -11,18 +11,20 @@
 #include "AliCFDataGrid.h"
 #include "AliPID.h"
 
+#include "TSystem.h"
+
 #include <iostream>
 
 #include "THnSparseDefinitions.h"
 
-enum type { kTrackPt = 0, kZ = 1, kXi = 2, kDistance = 3, kJT = 4, kNtypes = 5 };
+enum type { kTrackPt = 0, kZ = 1, kXi = 2, kR = 3, kjT = 4, kNtypes};
 enum typeMCSysErrors { kNoErrors = 0, kErrorsWithoutMultDep = 1, kErrorsIncludingMultDep = 2, kErrorsOnlyMultDep = 3, kErrorsForMerging = 4,
-                       kErrorsForMergingOnlyMultDep = 5 };
+                       kErrorsForMergingOnlyMultDep = 5, kErrorsForMergingWithoutMultDep = 6, kNMCSysErrorTypes };
 
 const Int_t numParamsMult = 3;
 
-const TString obsString[kNtypes] = {"Pt", "z", "#xi", "R", "Jt"};
-const TString obsStringMCsysError[kNtypes] = {"Pt", "Z", "Xi", "R", "Jt"};
+const TString obsString[kNtypes] = {"Pt", "z", "#xi", "#Delta r", "jT"};
+const TString obsStringMCsysError[kNtypes] = {"TrackPt", "Z", "Xi", "R", "jT"};
 
 Int_t iPt     = 0;
 Int_t iMCid   = 0;
@@ -33,7 +35,7 @@ Int_t iJetPt  = 0;
 Int_t iZ = 0;
 Int_t iXi = 0;
 Int_t iDistance = 0;
-Int_t iJt = 0;
+Int_t ijT = 0;
 
 Int_t iObsAxis = 0;
 
@@ -81,6 +83,7 @@ const Double_t secCorrRelSysErrPtInclusive[AliPID::kSPECIES] = { 0.045, 0.045, 0
 //**** Inclusive with track bit 528
 //const Double_t secCorrRelSysErrPtInclusive[AliPID::kSPECIES] = { 0.035, 0.035, 0.282, 0.282, 0.101 };
 
+
 //**** Jets with track bit 528 (corr with 14b6)
 const Double_t secCorrRelSysErrPtJets[AliPID::kSPECIES]      = { 0.006, 0.006, 0.269, 0.269, 0.163 };
 const Double_t secCorrRelSysErrZ[AliPID::kSPECIES]           = { 0.006, 0.006, 0.269, 0.269, 0.163 };
@@ -93,10 +96,6 @@ const Double_t secCorrRelSysErrZ[AliPID::kSPECIES]           = { 0.006, 0.006, 0
 
 
 const Double_t secCorrRelSysErrXi[AliPID::kSPECIES] = { 0.22, 0.22, 0.22, 0.22, 0.22};// No fits from my side, just stick to Oliver's values
-
-//TODO FULLJETS determine secondary correction rel errors. At the moment (since no serious data set used), just take dummy z values
-const Double_t secCorrRelSysErrDistance[AliPID::kSPECIES]           = { 0.006, 0.006, 0.269, 0.269, 0.163 };
-const Double_t secCorrRelSysErrJt[AliPID::kSPECIES]                 = { 0.006, 0.006, 0.269, 0.269, 0.163 };
 
 /*OLD
 const Double_t secCorrRelSysErrPtInclusive[AliPID::kSPECIES] = { 0.031, 0.031, 0.667, 0.667, 0.172 };
@@ -123,6 +122,8 @@ const Double_t binsPtType2[nPtBinsType2+1] = {0., 0.05, 0.1, 0.15, 0.2, 0.25, 0.
           28.0, 32.0, 36.0, 45.0, 50.0 };
 
 //___________________________________________________________________
+          
+  
 void setupHist(TH1* h, TString histName, TString histTitle, TString xAxisTitle, TString yAxisTitle, Int_t color)
 {
   if (histName != "")
@@ -210,8 +211,6 @@ void InitialiseRelSysErrOfSecCorr(Bool_t inclusive)
     secCorrRelSysError[kTrackPt][species] = inclusive ? secCorrRelSysErrPtInclusive[species] : secCorrRelSysErrPtJets[species];
     secCorrRelSysError[kZ][species] = secCorrRelSysErrZ[species];
     secCorrRelSysError[kXi][species] = secCorrRelSysErrXi[species];
-    secCorrRelSysError[kDistance][species] = secCorrRelSysErrDistance[species];
-    secCorrRelSysError[kJT][species] = secCorrRelSysErrJt[species];
   }
 }
 
@@ -428,14 +427,14 @@ TCanvas* plotSysErrorsStacked(Int_t selectSp, TH1D* hSysErrEff[], TH1D* hSysErrR
   if (iObs == kZ)
     histForAxis->GetXaxis()->SetRangeUser(0., 1.);
 
-  TString drawStr = "";
+  TString drawStr = "hist";
   
   if (hSysErrAccMu) {
     hSysErrAccMu->SetLineWidth(lineWidthStacked);
     hSysErrAccMu->SetFillColor(kGray);
     hSysErrAccMu->SetLineColor(kBlack);
     hSysErrAccMu->Draw(drawStr.Data());
-    drawStr = "same";
+    drawStr = "hist same";
   }
   
   if (hSysErrAccGFL[selectSp]) {
@@ -443,7 +442,7 @@ TCanvas* plotSysErrorsStacked(Int_t selectSp, TH1D* hSysErrEff[], TH1D* hSysErrR
     hSysErrAccGFL[selectSp]->SetFillColor(9);
     hSysErrAccGFL[selectSp]->SetLineColor(kBlack);
     hSysErrAccGFL[selectSp]->Draw(drawStr.Data());
-    drawStr = "same";
+    drawStr = "hist same";
   }
 
 
@@ -452,7 +451,7 @@ TCanvas* plotSysErrorsStacked(Int_t selectSp, TH1D* hSysErrEff[], TH1D* hSysErrR
     hSysErrAccSS[selectSp]->SetFillColor(3);
     hSysErrAccSS[selectSp]->SetLineColor(kBlack);
     hSysErrAccSS[selectSp]->Draw(drawStr.Data());
-    drawStr = "same";
+    drawStr = "hist same";
   }
   
   if (hSysErrAccSecMultDep[selectSp]) {
@@ -460,7 +459,7 @@ TCanvas* plotSysErrorsStacked(Int_t selectSp, TH1D* hSysErrEff[], TH1D* hSysErrR
     hSysErrAccSecMultDep[selectSp]->SetFillColor(kOrange - 3);
     hSysErrAccSecMultDep[selectSp]->SetLineColor(kBlack);
     hSysErrAccSecMultDep[selectSp]->Draw(drawStr.Data());
-    drawStr = "same";
+    drawStr = "hist same";
   }
   
   if (hSysErrAccSec[selectSp]) {
@@ -468,7 +467,7 @@ TCanvas* plotSysErrorsStacked(Int_t selectSp, TH1D* hSysErrEff[], TH1D* hSysErrR
     hSysErrAccSec[selectSp]->SetFillColor(5);
     hSysErrAccSec[selectSp]->SetLineColor(kBlack);
     hSysErrAccSec[selectSp]->Draw(drawStr.Data());
-    drawStr = "same";
+    drawStr = "hist same"; 
   }
   
   if (hSysErrAccBbB[selectSp]) {
@@ -476,7 +475,7 @@ TCanvas* plotSysErrorsStacked(Int_t selectSp, TH1D* hSysErrEff[], TH1D* hSysErrR
     hSysErrAccBbB[selectSp]->SetFillColor(7);
     hSysErrAccBbB[selectSp]->SetLineColor(kBlack);
     hSysErrAccBbB[selectSp]->Draw(drawStr.Data());
-    drawStr = "same";
+    drawStr = "hist same";
   }
   
   if (hSysErrAccRes[selectSp]) {
@@ -484,7 +483,7 @@ TCanvas* plotSysErrorsStacked(Int_t selectSp, TH1D* hSysErrEff[], TH1D* hSysErrR
     hSysErrAccRes[selectSp]->SetFillColor(4);
     hSysErrAccRes[selectSp]->SetLineColor(kBlack);
     hSysErrAccRes[selectSp]->Draw(drawStr.Data());
-    drawStr = "same";
+    drawStr = "hist same";
   }
   
   if (hSysErrAccEffMultDep[selectSp]) {
@@ -492,7 +491,7 @@ TCanvas* plotSysErrorsStacked(Int_t selectSp, TH1D* hSysErrEff[], TH1D* hSysErrR
     hSysErrAccEffMultDep[selectSp]->SetFillColor(kMagenta);
     hSysErrAccEffMultDep[selectSp]->SetLineColor(kBlack);
     hSysErrAccEffMultDep[selectSp]->Draw(drawStr.Data());
-    drawStr = "same";
+    drawStr = "hist same";
   }
   
   if (hSysErrAccEff10d10e[selectSp]) {
@@ -500,7 +499,7 @@ TCanvas* plotSysErrorsStacked(Int_t selectSp, TH1D* hSysErrEff[], TH1D* hSysErrR
     hSysErrAccEff10d10e[selectSp]->SetFillColor(kCyan);
     hSysErrAccEff10d10e[selectSp]->SetLineColor(kBlack);
     hSysErrAccEff10d10e[selectSp]->Draw(drawStr.Data());
-    drawStr = "same";
+    drawStr = "hist same";
   }
   
   if (hSysErrAccEff[selectSp]) {
@@ -508,7 +507,7 @@ TCanvas* plotSysErrorsStacked(Int_t selectSp, TH1D* hSysErrEff[], TH1D* hSysErrR
     hSysErrAccEff[selectSp]->SetFillColor(2);
     hSysErrAccEff[selectSp]->SetLineColor(kBlack);
     hSysErrAccEff[selectSp]->Draw(drawStr.Data());
-    drawStr = "same";
+    drawStr = "hist same";
   }
   
   for (Int_t i = 1; i <= histForAxis->GetNbinsX(); i++) {
@@ -666,7 +665,7 @@ void setupYaxisEffBbB(TH1* h, Bool_t isJet)
 
 
 //___________________________________________________________________
-TCanvas* createCanvasForCorrFactor(const TString name, const TString title, Int_t wtopx = 0, Int_t wtopy = 300, Int_t ww = 900, Int_t wh = 900)
+TCanvas* createCanvasForCorrFactor(const TString name, const TString title, Int_t iObs = kTrackPt, Int_t wtopx = 0, Int_t wtopy = 300, Int_t ww = 900, Int_t wh = 900)
 {
   TCanvas* c = new TCanvas(name.Data(), title.Data(), wtopx, wtopy, ww, wh);
   c->SetTopMargin(0.02);
@@ -674,12 +673,15 @@ TCanvas* createCanvasForCorrFactor(const TString name, const TString title, Int_
   c->SetRightMargin(0.03);
   c->SetBottomMargin(0.14);
   
+  if (iObs == kTrackPt)
+    c->SetLogx(1);
+  
   return c;
 }
 
 
 //___________________________________________________________________
-void setupHistCorrFactor(TH1D* h)
+void setupHistCorrFactor(TH1D* h, const Int_t iObs = kTrackPt)
 {
   if (!h)
     return;
@@ -692,11 +694,19 @@ void setupHistCorrFactor(TH1D* h)
   h->GetXaxis()->SetLabelSize(0.05);
   h->GetXaxis()->SetTitleSize(0.06);
   h->GetXaxis()->SetTitleOffset(1.0);
+  h->GetXaxis()->SetRangeUser(0.15, 50);
   
   h->GetYaxis()->SetLabelSize(0.05);
   h->GetYaxis()->SetTitleSize(0.06);
   h->GetYaxis()->SetTitleOffset(1.1);
+  h->GetYaxis()->SetRangeUser(0, 2.0);
   
+  if (iObs == kZ) 
+    h->GetXaxis()->SetTitle("z = p_{T}^{track} / p_{T}^{jet}");
+  else if (iObs == kR)
+    h->GetXaxis()->SetTitle("R");
+  else if (iObs == kjT)
+    h->GetXaxis()->SetTitle("j_{T}");
   setAxisTitlesItalic(h);
 }
 
@@ -868,9 +878,16 @@ const Double_t* getBins(Int_t type, Int_t& nBins)
 
 
 //___________________________________________________________________
-Double_t trackingPtGeantFlukaCorrectionPrMinus(Double_t pTmc)
+Double_t trackingPtGeantFlukaCorrectionPrMinus(Double_t pT, Bool_t newGeantFluka = kFALSE)
 {
-  return (1. - 0.129758 * TMath::Exp(-pTmc * 0.679612));
+  if (newGeantFluka) {
+    const Double_t p0 = 2.59929574279004982e-01;
+    const Double_t p1 = 3.27138141344326883e+00;
+    return (1. + p0 * TMath::Exp(-p1 * pT) ); 
+  }
+  else {
+    return (1. - 0.129758 * TMath::Exp(-pT * 0.679612));
+  }
 }
 
 
@@ -882,12 +899,14 @@ Double_t trackingPtGeantFlukaCorrectionKaMinus(Double_t pTmc)
 
 
 //___________________________________________________________________
-Bool_t geantFlukaCorrection(AliCFContainer* data, Int_t genStepToDownscale)
+Bool_t geantFlukaCorrection(AliCFContainer* data, Int_t genStepToDownscale, Int_t recStepToScale, Bool_t newGeantFluka)
 {
   // Issue: GEANT/FLUKA correction factor is for MC_pT. 
   // Finally the effeciency should be DIVIDED by this correction factor.
   // To include resolution effects, it is therefore the best way to just
   // multiply the generated step with the correction factor.
+  
+  //Correction for protons required reconstructed pT
   
   if (!data) {
     printf("No CFContainer for GEANT/FLUKA correction!\n");
@@ -920,7 +939,7 @@ Bool_t geantFlukaCorrection(AliCFContainer* data, Int_t genStepToDownscale)
     if (binCenterCoord[iCharge] < 0) {
       Double_t corrFactor = 1.;
       
-      if (binCenterCoord[iMCid] - 0.5 == AliPID::kProton) 
+      if (!newGeantFluka && (binCenterCoord[iMCid] - 0.5 == AliPID::kProton)) 
         corrFactor = trackingPtGeantFlukaCorrectionPrMinus(binCenterCoord[iPt]);
       else if (binCenterCoord[iMCid] - 0.5 == AliPID::kKaon)
         corrFactor = trackingPtGeantFlukaCorrectionKaMinus(binCenterCoord[iPt]);
@@ -931,6 +950,36 @@ Bool_t geantFlukaCorrection(AliCFContainer* data, Int_t genStepToDownscale)
       data->GetGrid(genStepToDownscale)->GetGrid()->SetBinError(iBin, binError * corrFactor);
     }
   }
+  
+  if (!newGeantFluka)
+    return kTRUE;
+  
+  if (!data->GetGrid(recStepToScale)) {
+    printf("Step for reconstructed scaling (GEANT/FLUKA) not found!\n");
+    return kFALSE;
+  }
+  
+  nBinsGrid = data->GetGrid(recStepToScale)->GetGrid()->GetNbins();
+  
+  for (Long64_t iBin = 0; iBin < nBinsGrid; iBin++) {
+    Double_t binContent = data->GetGrid(recStepToScale)->GetGrid()->GetBinContent(iBin, coord);
+    Double_t binError  = data->GetGrid(recStepToScale)->GetGrid()->GetBinError(iBin);
+    
+    for (Int_t iDim = 0; iDim < nDim; iDim++) 
+      binCenterCoord[iDim] = data->GetBinCenter(iDim, coord[iDim]);
+
+    if (binCenterCoord[iCharge] < 0) {
+      Double_t corrFactor = 1.;
+      
+      if (binCenterCoord[iMCid] - 0.5 == AliPID::kProton) 
+        corrFactor = trackingPtGeantFlukaCorrectionPrMinus(binCenterCoord[iPt], newGeantFluka);
+      else
+        continue;
+      
+      data->GetGrid(recStepToScale)->GetGrid()->SetBinContent(iBin, binContent * corrFactor);
+      data->GetGrid(recStepToScale)->GetGrid()->SetBinError(iBin, binError * corrFactor);
+    }
+  }  
   
   return kTRUE;
 }
@@ -1123,6 +1172,7 @@ TH1D* getRelErrorHist(TH1D* h, TString histName, TString yTitle)
 }
 
 
+
 //___________________________________________________________________
 TH1D* getSysErrorHisto(const TH1D* h)
 {
@@ -1293,7 +1343,7 @@ void convertMuCorrForToPiRatio(TH1D* hMuCorr, TH1D** hMuCorrToPiRatio)
 
 
 //___________________________________________________________________
-Bool_t extractEfficiencies(AliCFContainer* data, TFile* saveFile, TString suffixGF, Int_t iObs, Int_t genStepEff,
+Bool_t extractEfficiencies(AliCFContainer* data, TFile* saveFile, TString suffixGF, Int_t iObs, Int_t genStepEff, Int_t recStepEff,
                            Bool_t restrictJetPtAxis, Double_t actualUpperJetPt, Double_t nJetsGen, Double_t nJetsRec,
                            TH1D* hYield[AliPID::kSPECIES],
                            TH1D* hEffBinByBinCorr[AliPID::kSPECIES], TH1D* hEffBinByBinCorrToPiRatio[AliPID::kSPECIES],
@@ -1326,7 +1376,7 @@ Bool_t extractEfficiencies(AliCFContainer* data, TFile* saveFile, TString suffix
     AliCFEffGrid* effSingleTrack = new AliCFEffGrid(Form("effSingleTrack%s", suffixGF.Data()), "Efficiency x Acceptance",
                                                     *dataForSingleTrackEff);
     
-    effSingleTrack->CalculateEfficiency(kStepRecWithRecCutsPrimaries, genStepEff);
+    effSingleTrack->CalculateEfficiency(kStepRecWithRecCutsMeasuredObsPrimaries, genStepEff);
     
     // If the jet axis is restricted (i.e. jet input), scale with the corresponding number of jets.
     // Note: Since this is supposed to be a real scaling, set the error of the scale factor to zero
@@ -1346,13 +1396,11 @@ Bool_t extractEfficiencies(AliCFContainer* data, TFile* saveFile, TString suffix
       hSingleTrackEfficiency[species] = hEffSingleTrackID2Pt->ProjectionX(Form("hSingleTrackEfficiency%s_%s", suffixGF.Data(), 
                                                                               AliPID::ParticleShortName(species)), species + 1,
                                                                               species + 1, "e");
+      setupHistCorrFactor(hSingleTrackEfficiency[species], iObs);
       hSingleTrackEfficiency[species]->SetTitle(Form("%s", AliPID::ParticleLatexName(species)));
       hSingleTrackEfficiency[species]->SetLineColor(hYield[species]->GetLineColor());
       hSingleTrackEfficiency[species]->SetMarkerColor(hYield[species]->GetLineColor());
-      hSingleTrackEfficiency[species]->GetXaxis()->SetRangeUser(0.15, 50);
-      hSingleTrackEfficiency[species]->GetYaxis()->SetRangeUser(0., 1.01);
       hSingleTrackEfficiency[species]->GetYaxis()->SetTitle("Efficiency x Acceptance");
-      setupHistCorrFactor(hSingleTrackEfficiency[species]);
       cleanUpHistEntriesForJets(hSingleTrackEfficiency[species], kTRUE, -1);
     }
     
@@ -1360,10 +1408,9 @@ Bool_t extractEfficiencies(AliCFContainer* data, TFile* saveFile, TString suffix
     hEffSingleTrackID2Pt = 0x0;
     
     
-    cEffSingleTrack = createCanvasForCorrFactor(Form("cEffSingleTrack%s", suffixGF.Data()), "Efficiency x Acceptance for different species");
+    cEffSingleTrack = createCanvasForCorrFactor(Form("cEffSingleTrack%s", suffixGF.Data()), "Efficiency x Acceptance for different species", iObs);
     cEffSingleTrack->SetGridx(0);
     cEffSingleTrack->SetGridy(1);
-    cEffSingleTrack->SetLogx(1);
     
     hSingleTrackEfficiency[0]->Draw("E1");
     
@@ -1389,15 +1436,14 @@ Bool_t extractEfficiencies(AliCFContainer* data, TFile* saveFile, TString suffix
   AliCFContainer* dataForEff = new AliCFContainer(*data);
   dataForEff->SetName(Form("dataForEff%s", suffixGF.Data()));
   AliCFEffGrid* eff = new AliCFEffGrid(Form("eff%s", suffixGF.Data()), "Efficiency x Acceptance x pT Resolution", *dataForEff);
-  
-  // Either one can take kStepRecWithGenCutsMeasuredObs or, what I prefer, one can take
-  // kStepRecWithRecCutsMeasuredObsPrimaries => The difference is only the eta cut, which is on the rec level
-  // in the latter case, i.e. one corrects for eta resolution (although the effect should be very small)
-  eff->CalculateEfficiency(kStepRecWithRecCutsMeasuredObsPrimaries, genStepEff);
+
+  eff->CalculateEfficiency(recStepEff, genStepEff);
+
   
   // If the jet axis is restricted (i.e. jet input), scale with the corresponding number of jets.
   // Note: Since this is supposed to be a real scaling, set the error of the scale factor to zero
   // (second element of factor array)
+
   if (restrictJetPtAxis) {
     Double_t factor_Numerator[2] = { nJetsRec > 0 ? 1. / nJetsRec : 0., 0.  };
     Double_t factor_Denominator[2] = { nJetsGen > 0 ? 1. / nJetsGen : 0., 0.  };
@@ -1417,13 +1463,13 @@ Bool_t extractEfficiencies(AliCFContainer* data, TFile* saveFile, TString suffix
   if (iObs == kTrackPt)
     (*hEffAll)->GetXaxis()->SetRangeUser(0.15, 50.);
   setupYaxisEff((*hEffAll), restrictJetPtAxis);
-  setupHistCorrFactor(*hEffAll);
+  setupHistCorrFactor(*hEffAll, iObs);
   (*hEffAll)->Draw("E1");
   cEff->cd(2);
   TH1D* hEffEta = (TH1D*)eff->Project(iEta); //the efficiency vs eta
   hEffEta->SetName(Form("hEfficiencyEta%s_all", suffixGF.Data()));
   setupYaxisEff(hEffEta, restrictJetPtAxis);
-  setupHistCorrFactor(hEffEta);
+  setupHistCorrFactor(hEffEta, iObs);
   hEffEta->Draw("E1");
   TH2D* hEffID2 = (TH2D*)eff->Project(iObsAxis, iMCid);
 
@@ -1431,12 +1477,12 @@ Bool_t extractEfficiencies(AliCFContainer* data, TFile* saveFile, TString suffix
   for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
     hEfficiency[species] = hEffID2->ProjectionX(Form("hEfficiency%s_%s", suffixGF.Data(), AliPID::ParticleShortName(species)),
                                                 species + 1, species + 1, "e");
+    setupHistCorrFactor(hEfficiency[species], iObs);
     hEfficiency[species]->SetTitle(Form("%s", AliPID::ParticleLatexName(species)));
     hEfficiency[species]->SetLineColor(hYield[species]->GetLineColor());
     hEfficiency[species]->SetMarkerColor(hYield[species]->GetLineColor());
     if (iObs == kTrackPt)
       hEfficiency[species]->GetXaxis()->SetRangeUser(0.15, actualUpperJetPt > 0 ? TMath::Max(30., actualUpperJetPt) : 50.);
-    setupHistCorrFactor(hEfficiency[species]);
     setupYaxisEff(hEfficiency[species], restrictJetPtAxis);
     cleanUpHistEntriesForJets(hEfficiency[species], iObs == kTrackPt, actualUpperJetPt);
   }
@@ -1484,6 +1530,8 @@ Bool_t extractEfficiencies(AliCFContainer* data, TFile* saveFile, TString suffix
     // Samples for different species are independent, so just divide correction factors
     hEfficiencyToPiRatio[species]->Divide(hEfficiency[species], hEfficiency[AliPID::kPion], 1., 1., ""); 
     hEfficiencyToPiRatio[species]->GetYaxis()->SetRangeUser(0., 2.0);
+    if (iObs == kZ) 
+      hEfficiencyToPiRatio[species]->GetXaxis()->SetTitle("z = p_{T}^{track} / p_{T}^{jet}");
   }
   
   TCanvas* cEffToPiRatio = createCanvasForCorrFactor(Form("cEffToPiRatio%s", suffixGF.Data()),
@@ -1612,12 +1660,65 @@ Bool_t extractEfficiencies(AliCFContainer* data, TFile* saveFile, TString suffix
   return kTRUE;
 }
 
+void RebinContainer(AliCFContainer* dataRebinned, AliCFContainer* data, Int_t iObs, TArrayD* binsNew, TAxis* axis) {
+const Int_t nEffDims = dataRebinned->GetNVar();  
+  
+for (Int_t iDim = 0; iDim < nEffDims; iDim++) {
+    dataRebinned->SetVarTitle(iDim, data->GetVarTitle(iDim));
+    
+    if (iDim == iPt && iObs == kTrackPt) {
+      if (binsNew->fN == 0)
+        dataRebinned->SetBinLimits(iDim, axis->GetXmin(), axis->GetXmax());
+      else
+        dataRebinned->SetBinLimits(iDim, binsNew->fArray);
+    }
+    else if (iDim == iZ && iObs == kZ) {
+      if (binsNew->fN == 0)
+        dataRebinned->SetBinLimits(iDim, axis->GetXmin(), axis->GetXmax());
+      else
+        dataRebinned->SetBinLimits(iDim, binsNew->fArray);
+    }
+    else if (iDim == iXi && iObs == kXi) {
+      if (binsNew->fN == 0)
+        dataRebinned->SetBinLimits(iDim, axis->GetXmin(), axis->GetXmax());
+      else
+        dataRebinned->SetBinLimits(iDim, binsNew->fArray);
+    }
+    else {
+      dataRebinned->SetBinLimits(iDim, data->GetBinLimits(iDim));
+    }
+  }
+  
+  for (Int_t iStep = 0; iStep < data->GetNStep(); iStep++)
+    dataRebinned->SetStepTitle(iStep, data->GetStepTitle(iStep));
+  
+  Int_t coord[nEffDims];
+  Double_t binCenterCoord[nEffDims];
+  
+  // Fill content from old grid into the new grid with proper binning
+  for (Int_t iStep = 0; iStep < data->GetNStep(); iStep++) {
+    Long64_t nBinsGrid = data->GetGrid(iStep)->GetGrid()->GetNbins();
+    
+    for (Long64_t iBin = 0; iBin <= nBinsGrid + 1; iBin++) {
+      Double_t binContent = data->GetGrid(iStep)->GetGrid()->GetBinContent(iBin, coord);
+      Double_t binError2  = data->GetGrid(iStep)->GetGrid()->GetBinError2(iBin);
+      
+      for (Int_t iDim = 0; iDim < nEffDims; iDim++) {
+        binCenterCoord[iDim] = data->GetBinCenter(iDim, coord[iDim]);
+      }
+
+      Long64_t iBinRebinned = dataRebinned->GetGrid(iStep)->GetGrid()->GetBin(binCenterCoord);
+      dataRebinned->GetGrid(iStep)->GetGrid()->AddBinContent(iBinRebinned, binContent);
+      dataRebinned->GetGrid(iStep)->GetGrid()->AddBinError2(iBinRebinned, binError2);
+    }
+  }
+}
 
 //___________________________________________________________________
 // Efficiency for inclusive spectra vs. pT (or also jets, but without using the generation)
 // E.g. a 'calcEfficiency.C+("finalCuts/MC_pp/7TeV/LHC10f6a/corrected/finalisedSplines/analytical/Jets/nclCut/noMCidForGen/bhess_PID_Jets_efficiency.root", "finalCuts/pp/7TeV/10d_10e_merged.pass2/finalisedSplines/finalMapsAndTail/Jets/nclCut/outputSystematicsTotal_SummedSystematicErrors__2014_02_12.root", "OliversMacros/sysErr/files", kTRUE, kTRUE, kTRUE, 0, -2, -2, -2, -2, -1, -1, 0, -100, 1, 0.9, 0.852, kTRUE)' -b -q
 Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString pathMCsysErrors, 
-                     Bool_t correctGeantFluka, Bool_t scaleStrangeness,
+                     Bool_t correctGeantFluka, Bool_t newGeantFluka, Bool_t scaleStrangeness,
                      Bool_t applyMuonCorrection,
                      Int_t chargeMode /*kNegCharge = -1, kAllCharged = 0, kPosCharge = 1*/,
                      Double_t lowerCentralityData /*= -2*/, Double_t upperCentralityData /*= -2*/,
@@ -1628,19 +1729,39 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
                      Int_t rebinEfficiencyObs,
                      Double_t etaAbsCut /*= 0.9*/,
                      Double_t eps_trigger /*= 0.852*/,
-                     typeMCSysErrors sysErrorTypeMC,
+                     Int_t sysErrorTypeMCInput,
                      Bool_t normaliseToNInel = kTRUE,
+                     TString pathMCUEFile = "",
                      Bool_t correctMCID = kFALSE, // Load results from MC ID instead of fit and correct+compare them. NOTE: Do not use the systematics and other histograms in this case. Only the corrected results and the generated MC truth
                      Bool_t individualMultCorr = kFALSE,
                      TString multCorrPathName = "",
                      Bool_t correctEff10d10e = kFALSE,
-                     Bool_t isLowestMultBin = kFALSE)
+                     Bool_t isLowestMultBin = kFALSE
+                    )
+
 {
+  
+  cout << "Start Efficiency calculation" << endl;
+  
+  if (sysErrorTypeMCInput >= kNMCSysErrorTypes) {
+    std::cout << "sysErrorTypeMCInput " << sysErrorTypeMCInput << " too high!." << std::endl;
+    return 1;
+  }
+  typeMCSysErrors sysErrorTypeMC = static_cast<typeMCSysErrors>(sysErrorTypeMCInput);
+  
+  Bool_t drawElectrons = kFALSE;
+  Bool_t drawMuons = kFALSE;
+  
+  if (!correctGeantFluka && newGeantFluka) {
+    newGeantFluka = kFALSE;
+    printf("Geant-Fluka-Correction not set, setting therefore newGeantFluka to kFALSE\n");
+  }
+  
   PrintSettingsAxisRangeForMultiplicityAxisForMB();
   
   Bool_t addMCsysErrors = sysErrorTypeMC != kNoErrors;
   
-  if (iObs < 0 || iObs >= kNtypes) {
+  if (iObs != kTrackPt && iObs != kZ && iObs != kXi && iObs != kR && iObs != kjT) {
     printf("Unknown observable: %d\n", iObs);
     return -1;
   }
@@ -1652,12 +1773,14 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   TString subDir = "";
   if (sysErrorTypeMC == kErrorsOnlyMultDep)
     subDir = "/results_divided_by_MB";
-  else if (sysErrorTypeMC == kErrorsForMerging)
+  else if (sysErrorTypeMC == kErrorsForMerging || sysErrorTypeMC == kErrorsForMergingWithoutMultDep)
     subDir = "/results_for_merging";
   else if (sysErrorTypeMC == kErrorsForMergingOnlyMultDep)
     subDir = "/results_for_merging/results_divided_by_MB";
   
   TString pathSaveData = Form("%s%s", pathData.Data(), subDir.Data());
+  
+  gSystem->Exec((TString("mkdir -p ") + pathSaveData).Data());
   
   TFile* fileEff = TFile::Open(pathNameEfficiency.Data());
   if (!fileEff) {
@@ -1695,26 +1818,24 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   iJetPt  = 0;
   iZ = 0;
   iXi = 0;
-  iDistance = 0;
-  iJt = 0;
   
   iObsAxis = iPt; // To be set to other values later;
   
   if (lowerJetPt >= 0 && upperJetPt >= 0) {
-    iJetPt    = data->GetVar(Form("%s_{T}^{jet} (GeV/c)", momentumString.Data()));
-    iZ        = data->GetVar(Form("z = %s_{T}^{track} / %s_{T}^{jet}", momentumString.Data(), momentumString.Data()));
-    iXi       = data->GetVar(Form("#xi = ln(%s_{T}^{jet} / %s_{T}^{track})", momentumString.Data(), momentumString.Data()));
+    iJetPt = data->GetVar(Form("%s_{T}^{jet} (GeV/c)", momentumString.Data()));
+    iZ     = data->GetVar(Form("z = %s_{T}^{track} / %s_{T}^{jet}", momentumString.Data(), momentumString.Data()));
+    iXi    = data->GetVar(Form("#xi = ln(%s_{T}^{jet} / %s_{T}^{track})", momentumString.Data(), momentumString.Data()));
     iDistance = data->GetVar("R");
-    iJt       = data->GetVar("j_{T} (GeV/c)");
+    ijT = data->GetVar("j_{T} (GeV/c)");
     
     if (iObs == kZ)
       iObsAxis = iZ;
     else if (iObs == kXi)
       iObsAxis = iXi;
-    else if (iObs == kDistance)
+    else if (iObs == kR)
       iObsAxis = iDistance;
-    else if (iObs == kJT)
-      iObsAxis = iJt;
+    else if (iObs == kjT)
+      iObsAxis = ijT;
   }
   
   TFile* fileData = TFile::Open(pathNameData.Data());
@@ -1893,29 +2014,69 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     const TArrayD* binsPtCurrent = axis->GetXbins();
     binsNew = new TArrayD(*binsPtCurrent);
   }
-  else {
-    TH1D hDummyObs(*hYield[AliPID::kPion]);
-    hDummyObs.SetName("hDummyObs");
+  else if (iObs == kZ) {
+    TH1D hDummyZ(*hYield[AliPID::kPion]);
+    hDummyZ.SetName("hDummyZ");
     
     if (rebinEfficiencyObs > 1)
-      axis = hDummyObs.Rebin(rebinEfficiencyObs, "", 0)->GetXaxis();
+      axis = hDummyZ.Rebin(rebinEfficiencyObs, "", 0)->GetXaxis();
     else
-      axis = hDummyObs.GetXaxis();
+      axis = hDummyZ.GetXaxis();
 
-    const TArrayD* binsObsCurrent = axis->GetXbins();
-    binsNew = new TArrayD(*binsObsCurrent);
+    const TArrayD* binsZCurrent = axis->GetXbins();
+    binsNew = new TArrayD(*binsZCurrent);
   }
+  else if (iObs == kXi) {
+    TH1D hDummyXi(*hYield[AliPID::kPion]);
+    hDummyXi.SetName("hDummyXi");
+    
+    if (rebinEfficiencyObs > 1)
+      axis = hDummyXi.Rebin(rebinEfficiencyObs, "", 0)->GetXaxis();
+    else
+      axis = hDummyXi.GetXaxis();
+
+    const TArrayD* binsXiCurrent = axis->GetXbins();
+    binsNew = new TArrayD(*binsXiCurrent);
+  }
+  else if (iObs == kR) {
+    TH1D hDummyR(*hYield[AliPID::kPion]);
+    hDummyR.SetName("hDummyR");
+    
+    if (rebinEfficiencyObs > 1)
+      axis = hDummyR.Rebin(rebinEfficiencyObs, "", 0)->GetXaxis();
+    else
+      axis = hDummyR.GetXaxis();
+
+    const TArrayD* binsRCurrent = axis->GetXbins();
+    binsNew = new TArrayD(*binsRCurrent);
+  }
+  else if (iObs == kjT) {
+    TH1D hDummyjT(*hYield[AliPID::kPion]);
+    hDummyjT.SetName("hDummyjT");
+    
+    if (rebinEfficiencyObs > 1)
+      axis = hDummyjT.Rebin(rebinEfficiencyObs, "", 0)->GetXaxis();
+    else
+      axis = hDummyjT.GetXaxis();
+
+    const TArrayD* binsjTCurrent = axis->GetXbins();
+    binsNew = new TArrayD(*binsjTCurrent);
+  }  
   
   
   const Int_t nEffDims = data->GetNVar();
   Int_t nEffBins[nEffDims];
   
   for (Int_t iDim = 0; iDim < nEffDims; iDim++) {
-    if ((iDim == iPt && iObs == kTrackPt) ||
-        (iDim == iZ && iObs == kZ) ||
-        (iDim == iXi && iObs == kXi) ||
-        (iDim == iDistance && iObs == kDistance) ||
-        (iDim == iJt && iObs == kJT))
+    if (iDim == iPt && iObs == kTrackPt)
+      nEffBins[iDim] = axis->GetNbins();
+    else if (iDim == iZ && iObs == kZ)
+      nEffBins[iDim] = axis->GetNbins();
+    else if (iDim == iXi && iObs == kXi)
+      nEffBins[iDim] = axis->GetNbins();
+    else if (iDim == iDistance && iObs == kR)
+      nEffBins[iDim] = axis->GetNbins();
+    else if (iDim == ijT && iObs == kjT)
       nEffBins[iDim] = axis->GetNbins();
     else 
       nEffBins[iDim] = data->GetNBins(iDim);
@@ -1969,49 +2130,45 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   AliCFContainer *dataRebinned = new AliCFContainer(Form("%s_rebinned", data->GetName()), Form("%s (rebinned)", data->GetTitle()),
                                                     data->GetNStep(), nEffDims, nEffBins);
   
-  for (Int_t iDim = 0; iDim < nEffDims; iDim++) {
-    dataRebinned->SetVarTitle(iDim, data->GetVarTitle(iDim));
+  RebinContainer(dataRebinned, data, iObs, binsNew, axis);
+  
+  
+  AliCFContainer* dataRebinnedUE = 0x0;
+  if (pathMCUEFile) {
+    TFile* fileEffUE = TFile::Open(pathMCUEFile.Data());
+    if (fileEffUE) {
+      AliCFContainer* dataUE = (AliCFContainer*)(fileEffUE->Get("containerEff"));
+      if (dataUE) { 
+        const Int_t nEffDimsUE = dataUE->GetNVar();
+        Int_t nEffBinsUE[nEffDimsUE];
     
-    if ((iDim == iPt && iObs == kTrackPt) ||
-        (iDim == iZ && iObs == kZ) ||
-        (iDim == iXi && iObs == kXi) ||
-        (iDim == iDistance && iObs == kDistance) ||
-        (iDim == iJt && iObs == kJT)) {
-      if (binsNew->fN == 0)
-        dataRebinned->SetBinLimits(iDim, axis->GetXmin(), axis->GetXmax());
-      else
-        dataRebinned->SetBinLimits(iDim, binsNew->fArray);
+        for (Int_t iDim = 0; iDim < nEffDimsUE; iDim++) {
+          if (iDim == iPt && iObs == kTrackPt)
+            nEffBinsUE[iDim] = axis->GetNbins();
+          else if (iDim == iZ && iObs == kZ)
+            nEffBinsUE[iDim] = axis->GetNbins();
+          else if (iDim == iXi && iObs == kXi)
+            nEffBinsUE[iDim] = axis->GetNbins();
+          else 
+            nEffBinsUE[iDim] = data->GetNBins(iDim);
+        }
+        dataRebinnedUE = new AliCFContainer(Form("%s_rebinned", dataUE->GetName()), Form("%s (rebinned)", dataUE->GetTitle()),
+                                                    dataUE->GetNStep(), nEffDimsUE, nEffBinsUE);
+        RebinContainer(dataRebinnedUE, dataUE, iObs, binsNew, axis);
+      }
+      else {
+        printf("Could not retrieve AliCFContainer of %s",pathMCUEFile.Data());
+      }
     }
     else {
-      dataRebinned->SetBinLimits(iDim, data->GetBinLimits(iDim));
+      printf("Could not open UE MC file %s",pathMCUEFile.Data());
     }
   }
-  
-  for (Int_t iStep = 0; iStep < data->GetNStep(); iStep++)
-    dataRebinned->SetStepTitle(iStep, data->GetStepTitle(iStep));
-  
-  Int_t coord[nEffDims];
-  Double_t binCenterCoord[nEffDims];
-  
-  // Fill content from old grid into the new grid with proper binning
-  for (Int_t iStep = 0; iStep < data->GetNStep(); iStep++) {
-    Long64_t nBinsGrid = data->GetGrid(iStep)->GetGrid()->GetNbins();
-    
-    for (Long64_t iBin = 0; iBin <= nBinsGrid + 1; iBin++) {
-      Double_t binContent = data->GetGrid(iStep)->GetGrid()->GetBinContent(iBin, coord);
-      Double_t binError2  = data->GetGrid(iStep)->GetGrid()->GetBinError2(iBin);
-      
-      for (Int_t iDim = 0; iDim < nEffDims; iDim++) {
-        binCenterCoord[iDim] = data->GetBinCenter(iDim, coord[iDim]);
-      }
-
-      Long64_t iBinRebinned = dataRebinned->GetGrid(iStep)->GetGrid()->GetBin(binCenterCoord);
-      dataRebinned->GetGrid(iStep)->GetGrid()->AddBinContent(iBinRebinned, binContent);
-      dataRebinned->GetGrid(iStep)->GetGrid()->AddBinError2(iBinRebinned, binError2);
-    }
+  else {
+    dataRebinnedUE = dataRebinned;
   }
   
-  // If desired, restrict centrality axis
+   // If desired, restrict centrality axis
   Int_t lowerCentralityBinLimit = -1;
   Int_t upperCentralityBinLimit = -2; // Integral(lowerCentBinLimit, uppCentBinLimit) will not be restricted if these values are kept. In particular, under- and overflow bin will be used!
   Bool_t restrictCentralityAxis = kFALSE;
@@ -2035,10 +2192,13 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     }
   }
   
-  if (!restrictCentralityAxis) 
-    GetAxisRangeForMultiplicityAxisForMB(dataRebinned->GetAxis(iMult, 0), lowerCentralityBinLimit, upperCentralityBinLimit);
+//   if (!restrictCentralityAxis) 
+//     GetAxisRangeForMultiplicityAxisForMB(dataRebinned->GetAxis(iMult, 0), lowerCentralityBinLimit, upperCentralityBinLimit);
   
   dataRebinned->SetRangeUser(iMult, lowerCentralityBinLimit, upperCentralityBinLimit, kTRUE);
+  if (dataRebinnedUE)
+    dataRebinnedUE->SetRangeUser(iMult, lowerCentralityBinLimit, upperCentralityBinLimit, kTRUE);
+  
   actualLowerCentrality = dataRebinned->GetAxis(iMult, 0)->GetBinLowEdge(dataRebinned->GetAxis(iMult, 0)->GetFirst());
   actualUpperCentrality = dataRebinned->GetAxis(iMult, 0)->GetBinUpEdge(dataRebinned->GetAxis(iMult, 0)->GetLast());
   
@@ -2082,6 +2242,8 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   if (restrictJetPtAxis) {
     std::cout << actualLowerJetPt << " - " << actualUpperJetPt << std::endl;
     dataRebinned->SetRangeUser(iJetPt, lowerJetPtBinLimit, upperJetPtBinLimit, kTRUE);
+    if (dataRebinnedUE)
+      dataRebinnedUE->SetRangeUser(iJetPt, lowerJetPtBinLimit, upperJetPtBinLimit, kTRUE);
   }
   else {
     std::cout << "All" << std::endl;
@@ -2144,10 +2306,12 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     }
     
     dataRebinned->SetRangeUser(iCharge, lowerChargeBinLimit, upperChargeBinLimit, kTRUE);
+    if (dataRebinnedUE)
+      dataRebinnedUE->SetRangeUser(iCharge, lowerChargeBinLimit, upperChargeBinLimit, kTRUE);
     data->SetRangeUser(iCharge, lowerChargeBinLimit, upperChargeBinLimit, kTRUE);
   }
   
-  // If desired, lowed files with multiplicity dependence of correction factors (only pT at the moment!)
+  // If desired, load files with multiplicity dependence of correction factors (only pT at the moment!)
   TH1D* hMultParaSec[AliPID::kSPECIES][numParamsMult];
   for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
     for (Int_t iPara = 0; iPara < numParamsMult; iPara++)
@@ -2210,28 +2374,30 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   TH2D* hNjetsGen = 0x0;
   TH2D* hNjetsRec = 0x0;
 
+  TString pathNameDataMC = pathNameEfficiency;
+  pathNameDataMC.ReplaceAll("_efficiency", "");
+  
+  TFile* fDataMC = TFile::Open(pathNameDataMC.Data());
+  if (!fDataMC && restrictJetPtAxis)  {
+    std::cout << std::endl;
+    std::cout << "Failed to open file \"" << pathNameDataMC.Data() << "\" to obtain num of rec/gen jets!" << std::endl;   
+    return -1;
+  }
+  
+  TString listName = pathNameDataMC;
+  listName.Replace(0, listName.Last('/') + 1, "");
+  listName.ReplaceAll(".root", "");
+    
+  TObjArray* histList = (TObjArray*)(fDataMC->Get(listName.Data()));
+  if (!histList && restrictJetPtAxis) {
+    std::cout << std::endl;
+    std::cout << "Failed to load list \"" << listName.Data() << "\" to obtain num of rec/gen jets!" << std::endl;
+    return -1;
+  }  
+  
+  TH1* fhEventsProcessedMC = (TH1*)histList->FindObject("fhEventsProcessed");
+
   if (restrictJetPtAxis) {
-    TString pathNameDataMC = pathNameEfficiency;
-    pathNameDataMC.ReplaceAll("_efficiency", "");
-    
-    TFile* fDataMC = TFile::Open(pathNameDataMC.Data());
-    if (!fDataMC)  {
-      std::cout << std::endl;
-      std::cout << "Failed to open file \"" << pathNameDataMC.Data() << "\" to obtain num of rec/gen jets!" << std::endl;
-      
-      return -1;
-    }
-    
-    TString listName = pathNameDataMC;
-    listName.Replace(0, listName.Last('/') + 1, "");
-    listName.ReplaceAll(".root", "");
-      
-    TObjArray* histList = (TObjArray*)(fDataMC->Get(listName.Data()));
-    if (!histList) {
-      std::cout << std::endl;
-      std::cout << "Failed to load list \"" << listName.Data() << "\" to obtain num of rec/gen jets!" << std::endl;
-      return -1;
-    }
     
     hNjetsGen = (TH2D*)histList->FindObject("fh2FFJetPtGen");
     hNjetsRec = (TH2D*)histList->FindObject("fh2FFJetPtRec");
@@ -2289,7 +2455,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
                                                             upperJetPtBinLimit) : 1.;
   const Double_t nJetsRec = hNjetsRec ? hNjetsRec->Integral(lowerCentralityBinLimit, upperCentralityBinLimit, lowerJetPtBinLimit,
                                                             upperJetPtBinLimit) : 1.;
-  
+  const Int_t nMCEvents = fhEventsProcessedMC ? fhEventsProcessedMC->Integral(lowerCentralityBinLimit, upperCentralityBinLimit) : 1;
   
   // Save results to file
   TString saveFileName = pathNameData;
@@ -2337,17 +2503,17 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     cSec->GetPad(1)->SetLogx(kTRUE);
   cSec->cd(1);
   TH1D* hSecAll = (TH1D*)sec->Project(iObsAxis); 
+  setupHistCorrFactor(hSecAll, iObs);
   hSecAll->SetName("hSecAll");
   if (iObs == kTrackPt)
     hSecAll->GetXaxis()->SetRangeUser(0.15, 50.);
   hSecAll->GetYaxis()->SetTitle("Primary Fraction");
-  setupHistCorrFactor(hSecAll);
   hSecAll->Draw("E1");
   cSec->cd(2);
   TH1D* hEtaSec = (TH1D*)sec->Project(iEta);
+  setupHistCorrFactor(hEtaSec, iObs);
   hEtaSec->SetName("hEtaSec");
   hEtaSec->GetYaxis()->SetTitle("Primary Fraction");
-  setupHistCorrFactor(hEtaSec);
   hEtaSec->Draw("E1");
   TH2D* hSecID2 = (TH2D*)sec->Project(iObsAxis, iMCid);
   hSecID2->SetName("hSecID2");
@@ -2356,13 +2522,13 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   TH1D* hSec[AliPID::kSPECIES];
   for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
     hSec[species] = hSecID2->ProjectionX(Form("hSec_%s", AliPID::ParticleShortName(species)), species + 1, species + 1, "e");
+    setupHistCorrFactor(hSec[species], iObs);
     hSec[species]->SetTitle(Form("%s", AliPID::ParticleLatexName(species)));
     hSec[species]->SetLineColor(hYield[species]->GetLineColor());
     hSec[species]->SetMarkerColor(hYield[species]->GetLineColor());
     if (iObs == kTrackPt)
       hSec[species]->GetXaxis()->SetRangeUser(0.15, actualUpperJetPt > 0 ? TMath::Max(30., actualUpperJetPt) : 50);
     hSec[species]->GetYaxis()->SetRangeUser(0., 1.01);
-    setupHistCorrFactor(hSec[species]);
     cleanUpHistEntriesForJets(hSec[species], iObs == kTrackPt, upperJetPt);
     hSec[species]->GetYaxis()->SetTitle("Primary Fraction");
   }
@@ -2376,7 +2542,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   hSec[0]->DrawCopy("E1");
   
   for (Int_t i = 1; i < AliPID::kSPECIES; i++) {
-    if (i == AliPID::kMuon)
+    if (i == AliPID::kMuon && !drawMuons)
         continue;
     
     hSec[i]->DrawCopy("E1 same");
@@ -2398,7 +2564,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     hSec[0]->Draw("E1");
     
     for (Int_t i = 1; i < AliPID::kSPECIES; i++) {
-      if (i == AliPID::kMuon)
+      if (i == AliPID::kMuon && !drawMuons)
           continue;
       
       hSec[i]->Draw("E1 same");
@@ -2414,17 +2580,17 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     cSecSS->GetPad(1)->SetLogx(kTRUE);
   cSecSS->cd(1);
   TH1D* hSecSSall = (TH1D*)secStrangeScale->Project(iObsAxis); 
+  setupHistCorrFactor(hSecSSall, iObs); 
   hSecSSall->SetName("hSecSSall");
   if (iObs == kTrackPt)
     hSecSSall->GetXaxis()->SetRangeUser(0.15, 50.);
   hSecSSall->GetYaxis()->SetTitle("Primary Fraction");
-  setupHistCorrFactor(hSecSSall);
   hSecSSall->Draw("E1");
   cSecSS->cd(2);
   TH1D* hEtaSecSS = (TH1D*)secStrangeScale->Project(iEta);
+  setupHistCorrFactor(hEtaSecSS, iObs);
   hEtaSecSS->SetName("hEtaSecSS");
   hEtaSecSS->GetYaxis()->SetTitle("Primary Fraction");
-  setupHistCorrFactor(hEtaSecSS);
   hEtaSecSS->Draw("E1");
   TH2D* hSecSSID2 = (TH2D*)secStrangeScale->Project(iObsAxis, iMCid);
   hSecSSID2->SetName("hSecSSID2");
@@ -2433,13 +2599,13 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   TH1D* hSecSS[AliPID::kSPECIES];
   for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
     hSecSS[species] = hSecSSID2->ProjectionX(Form("hSecSS_%s", AliPID::ParticleShortName(species)), species + 1, species + 1, "e");
+    setupHistCorrFactor(hSecSS[species], iObs);
     hSecSS[species]->SetTitle(Form("%s", AliPID::ParticleLatexName(species)));
     hSecSS[species]->SetLineColor(hYield[species]->GetLineColor());
     hSecSS[species]->SetMarkerColor(hYield[species]->GetLineColor());
     if (iObs == kTrackPt)
       hSecSS[species]->GetXaxis()->SetRangeUser(0.15, actualUpperJetPt > 0 ? TMath::Max(30., actualUpperJetPt) : 50);
     hSecSS[species]->GetYaxis()->SetRangeUser(0., 1.01);
-    setupHistCorrFactor(hSecSS[species]);
     cleanUpHistEntriesForJets(hSecSS[species], iObs == kTrackPt, upperJetPt);
     hSecSS[species]->GetYaxis()->SetTitle("Primary Fraction");
   }
@@ -2453,7 +2619,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   hSecSS[0]->DrawCopy("E1");
   
   for (Int_t i = 1; i < AliPID::kSPECIES; i++) {
-    if (i == AliPID::kMuon)
+    if (i == AliPID::kMuon && !drawMuons)
         continue;
     
     hSecSS[i]->DrawCopy("E1 same");
@@ -2475,7 +2641,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     hSecSS[0]->Draw("E1");
     
     for (Int_t i = 1; i < AliPID::kSPECIES; i++) {
-      if (i == AliPID::kMuon)
+      if (i == AliPID::kMuon && !drawMuons)
           continue;
       
       hSecSS[i]->Draw("E1 same");
@@ -2523,7 +2689,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     if (i == AliPID::kPion)
       continue;
     
-    if (i == AliPID::kMuon)
+    if (i == AliPID::kMuon && !drawMuons)
         continue;
     
     hSecToPiRatio[i]->DrawCopy(Form("E1%s", i == 0 ? "" : " same"));
@@ -2546,7 +2712,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
       if (i == AliPID::kPion)
         continue;
       
-      if (i == AliPID::kMuon)
+      if (i == AliPID::kMuon && !drawMuons)
           continue;
       
       hSecToPiRatio[i]->DrawCopy(Form("E1%s", i == 0 ? "" : " same"));
@@ -2568,7 +2734,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     if (i == AliPID::kPion)
       continue;
     
-    if (i == AliPID::kMuon)
+    if (i == AliPID::kMuon && !drawMuons)
         continue;
     
     hSecSSToPiRatio[i]->DrawCopy(Form("E1%s", i == 0 ? "" : " same"));
@@ -2593,7 +2759,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
       if (i == AliPID::kPion)
         continue;
       
-      if (i == AliPID::kMuon)
+      if (i == AliPID::kMuon && !drawMuons)
           continue;
       
       hSecSSToPiRatio[i]->Draw(Form("E1%s", i == 0 ? "" : " same"));
@@ -2607,6 +2773,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   
   // Efficiency
   const Int_t genStepEff = kStepGenWithGenCuts;
+  const Int_t recStepEff = kStepRecWithRecCutsMeasuredObsPrimaries; 
   
   TH1D* hEfficiency[AliPID::kSPECIES] = { 0x0, };
   TH1D* hEfficiencyToPiRatio[AliPID::kSPECIES] = { 0x0, };
@@ -2621,22 +2788,21 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   TH1D* hEfficiencyAllNoPIDWithGF = 0x0;
 
   // Extract efficiency without GEANT-FLUKA correction
-  extractEfficiencies(dataRebinned, saveFile, "_noGF", iObs, genStepEff, restrictJetPtAxis, actualUpperJetPt, nJetsGen, nJetsRec, hYield, 
+  extractEfficiencies(dataRebinned, saveFile, "_noGF", iObs, genStepEff, recStepEff, restrictJetPtAxis, actualUpperJetPt, nJetsGen, nJetsRec, hYield, 
                       hEfficiencyNoGF, hEfficiencyToPiRatioNoGF, &hEfficiencyAllNoPIDNoGF);
-
   
   // If desired, apply the GEANT/FLUKA correction first
-  // NOTE: This will change dataRebinned! If anything else should also be calculated, it must be done before.
-  // Otherwise, the GEANT/FLUKA correction factor for the efficiency will also affect it!
+//   NOTE: This will change dataRebinned! If anything else should also be calculated, it must be done before.
+//   Otherwise, the GEANT/FLUKA correction factor for the efficiency will also affect it!
   if (correctGeantFluka) {
     printf("Applying GEANT/FLUKA correction...\n");
-    if (!geantFlukaCorrection(dataRebinned, genStepEff)) {
+    if (!geantFlukaCorrection(dataRebinned, genStepEff, recStepEff, newGeantFluka)) {
       printf("GEANT/FLUKA correction could not be applied!\n");
       return kFALSE;
     }
     
     // Extract efficiency with GEANT-FLUKA correction
-    extractEfficiencies(dataRebinned, saveFile, "_GF", iObs, genStepEff, restrictJetPtAxis, actualUpperJetPt, nJetsGen, nJetsRec, hYield, 
+    extractEfficiencies(dataRebinned, saveFile, "_GF", iObs, genStepEff, recStepEff, restrictJetPtAxis, actualUpperJetPt, nJetsGen, nJetsRec, hYield, 
                         hEfficiencyWithGF, hEfficiencyToPiRatioWithGF, &hEfficiencyAllNoPIDWithGF);
     
     for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
@@ -2739,21 +2905,25 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   TH1D* hMCRelSysErrorToPiRatioSecMultDep[AliPID::kSPECIES] = { 0x0, };
   
   if (addMCsysErrors) {
+    cout << "Adding MC systematic errors" << endl;
     // Efficiency
-    TH1F* hMCsysErrorEffTmp[AliPID::kSPECIES] = { 0x0, };
-    TH1F* hMCsysErrorResTmp[AliPID::kSPECIES] = { 0x0, };
-    TH1F* hMCsysErrorShapeTmp[AliPID::kSPECIES] = { 0x0, };
+    TH1D* hMCsysErrorEffTmp[AliPID::kSPECIES] = { 0x0, };
+    TH1D* hMCsysErrorResTmp[AliPID::kSPECIES] = { 0x0, };
+    TH1D* hMCsysErrorShapeTmp[AliPID::kSPECIES] = { 0x0, };
     
     if (restrictJetPtAxis) { // In case of jets, load rel. sys. errors from corresponding file
       // Note no error for "noGF" required, since errors not used anyway in that case
-      TString pathNameMCeff = Form("%s/outSysErr_eff.root", pathMCsysErrors.Data());
+      
+//       gSystem->Exec(Form("mkdir -p %s",pathMCsysErrors.Data()));
+      
+      TString pathNameMCeff = Form("%s/outSysErr_Eff.root", pathMCsysErrors.Data());
       fMCsys_eff = TFile::Open(pathNameMCeff.Data(), "READ");
       if (!fMCsys_eff) {
         printf("Failed to load file with MC sys errors: %s\n!", pathNameMCeff.Data());
         return -1;
       }
       
-      TString pathNameMCres = Form("%s/outSysErr_res.root", pathMCsysErrors.Data());
+      TString pathNameMCres = Form("%s/outSysErr_Res.root", pathMCsysErrors.Data());
       fMCsys_res = TFile::Open(pathNameMCres.Data(), "READ");
       if (!fMCsys_res) {
         printf("Failed to load file with MC sys errors: %s\n!", pathNameMCres.Data());
@@ -2764,17 +2934,70 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
       fMCsys_shape = TFile::Open(pathNameMCshape.Data(), "READ");
       if (!fMCsys_shape) {
         printf("Failed to load file with MC sys errors: %s\n!", pathNameMCshape.Data());
-        return -1;
+//         return -1;
       }
       
-      
       for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
-        hMCsysErrorEffTmp[species] = (TH1F*)fMCsys_eff->Get(Form("hSysErrEff%s_%02.0f_%2.0f_%s", obsStringMCsysError[iObs].Data(), lowerJetPt,
+        if (species == AliPID::kMuon)
+            continue;
+        
+        hMCsysErrorEffTmp[species] = (TH1D*)fMCsys_eff->Get(Form("hSysErrEff%s_%02.0f_%2.0f_%s", obsStringMCsysError[iObs].Data(), lowerJetPt,
                                                                 upperJetPt, AliPID::ParticleShortName(species)));
-        hMCsysErrorResTmp[species] = (TH1F*)fMCsys_res->Get(Form("hSysErrRes%s_%02.0f_%2.0f_%s", obsStringMCsysError[iObs].Data(), lowerJetPt,
+        hMCsysErrorResTmp[species] = (TH1D*)fMCsys_res->Get(Form("hSysErrRes%s_%02.0f_%2.0f_%s", obsStringMCsysError[iObs].Data(), lowerJetPt,
                                                                 upperJetPt, AliPID::ParticleShortName(species)));
-        hMCsysErrorShapeTmp[species] = (TH1F*)fMCsys_shape->Get(Form("hSysErrBbB%s_%02.0f_%2.0f_%s", obsStringMCsysError[iObs].Data(),
+        hMCsysErrorShapeTmp[species] = (TH1D*)fMCsys_shape->Get(Form("hSysErrBbB%s_%02.0f_%2.0f_%s", obsStringMCsysError[iObs].Data(),
                                                                     lowerJetPt, upperJetPt, AliPID::ParticleShortName(species)));
+        
+        TAxis* xAxis = hEfficiencySys[species]->GetXaxis();
+        const TArrayD* arrBins = xAxis->GetXbins();
+        Int_t nGroups = arrBins->GetSize() -1;
+        const Double_t* bins = arrBins->GetArray();
+        
+        if (hMCsysErrorEffTmp[species]) {
+          hMCsysErrorEffTmp[species] = dynamic_cast<TH1D*>(hMCsysErrorEffTmp[species]->Rebin(nGroups, "hnew", bins));
+        }
+        
+        if (hMCsysErrorResTmp[species]) {
+          hMCsysErrorResTmp[species] = dynamic_cast<TH1D*>(hMCsysErrorResTmp[species]->Rebin(nGroups, hMCsysErrorResTmp[species]->GetName(), bins));
+        }
+        
+        if (hMCsysErrorShapeTmp[species]) {
+          hMCsysErrorShapeTmp[species] = dynamic_cast<TH1D*>(hMCsysErrorShapeTmp[species]->Rebin(nGroups, hMCsysErrorShapeTmp[species]->GetName(), bins));
+        }
+        
+//                 TH1D* rebinned = 0x0;
+//         
+//         if (hMCsysErrorEffTmp[species]) {
+//           TString nameHisto = hMCsysErrorEffTmp[species]->GetName();
+//           rebinned = hMCsysErrorEffTmp[species]->Rebin(nGroups, "hnew", bins);
+//           delete hMCsysErrorEffTmp[species];
+//           hMCsysErrorEffTmp[species] = rebinned;
+//           hMCsysErrorEffTmp[species]->SetName(nameHisto);
+//         }
+//         
+//         if (hMCsysErrorResTmp[species]) {
+//           TString nameHisto = hMCsysErrorResTmp[species]->GetName();
+//           rebinned = hMCsysErrorResTmp[species]->Rebin(nGroups, "hnew", bins);
+//           delete hMCsysErrorResTmp[species];
+//           hMCsysErrorResTmp[species] = rebinned;
+//           hMCsysErrorResTmp[species]->SetName(nameHisto);
+//         }
+//         
+//         if (hMCsysErrorShapeTmp[species]) {
+//           TString nameHisto = hMCsysErrorShapeTmp[species]->GetName();
+//           rebinned = hMCsysErrorShapeTmp[species]->Rebin(nGroups, "hnew", bins);
+//           delete hMCsysErrorShapeTmp[species];
+//           hMCsysErrorShapeTmp[species] = rebinned;
+//           hMCsysErrorShapeTmp[species]->SetName(nameHisto);
+//         }
+        
+        if (!hMCsysErrorShapeTmp[species]) {
+            hMCsysErrorShapeTmp[species] = (TH1D*)hMCsysErrorEffTmp[species]->Clone("dummy_shape_histogram");
+            for (Int_t i=0;i<=hMCsysErrorShapeTmp[species]->GetNbinsX();++i) {
+                hMCsysErrorShapeTmp[species]->SetBinContent(i,0.0);
+                hMCsysErrorShapeTmp[species]->SetBinError(i,0.0);
+            }
+        }
         if (!hMCsysErrorEffTmp[species] || !hMCsysErrorResTmp[species] || !hMCsysErrorShapeTmp[species]) {
           printf("ERROR: No MC sys error for %s found!\n", AliPID::ParticleShortName(species));
           for (Int_t i = 1; i <= hEfficiencySys[species]->GetNbinsX(); i++)
@@ -2803,9 +3026,8 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
             // For the merging, only keep the error from the resolution
             if (sysErrorTypeMC == kErrorsOnlyMultDep || sysErrorTypeMC == kErrorsForMergingOnlyMultDep)
               relSysErr = 0.;
-            else if (sysErrorTypeMC == kErrorsForMerging)
+            else if (sysErrorTypeMC == kErrorsForMerging || sysErrorTypeMC == kErrorsForMergingWithoutMultDep)
               relSysErr = relSysErrRes;
-            
             
             // Multiply with correction factor to obtain absolute sys error and set it for the efficiency histo
             hEfficiencySys[species]->SetBinError(i, hEfficiencySys[species]->GetBinContent(i) * relSysErr);
@@ -2844,7 +3066,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
         for (Int_t i = 1; i <= hEfficiencySys[species]->GetNbinsX(); i++) {
           // Set rel. errors for eff and res (none of these errors for onlyMultDep, only efficiency for the merging)
           hMCRelSysErrorEff_eff[species]->SetBinContent(i, (sysErrorTypeMC == kErrorsOnlyMultDep || sysErrorTypeMC == kErrorsForMerging ||
-                                                            sysErrorTypeMC == kErrorsForMergingOnlyMultDep) 
+                                                            sysErrorTypeMC == kErrorsForMergingOnlyMultDep || sysErrorTypeMC == kErrorsForMergingWithoutMultDep) 
                                                            ? 0. : relMCSysErrEffInclusive);
           hMCRelSysErrorEff_res[species]->SetBinContent(i, (sysErrorTypeMC == kErrorsOnlyMultDep ||
                                                             sysErrorTypeMC == kErrorsForMergingOnlyMultDep)
@@ -2926,6 +3148,10 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     
     // Sum them up in quadrature and obtain the total systematic error from these sources
     for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
+        
+      if (species == AliPID::kMuon)
+          continue;
+      
       if (!hEfficiencyToPiRatioSys[species])
         continue;
       
@@ -2945,7 +3171,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
         // For the merging, only take the error from the resolution
         if (sysErrorTypeMC == kErrorsOnlyMultDep || sysErrorTypeMC == kErrorsForMergingOnlyMultDep)
           errTot = 0.;
-        else if (sysErrorTypeMC == kErrorsForMerging)
+        else if (sysErrorTypeMC == kErrorsForMerging || sysErrorTypeMC == kErrorsForMergingWithoutMultDep)
           errTot = corrFactorToPiRatio * relErrRes;
          
           
@@ -3005,6 +3231,9 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     // Systematics of the secondary correction:
     // Assume independent sys errors and just propagate the individual sys errors of the yields to the to-pion ratios.
     for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
+      if (species == AliPID::kMuon)
+        continue;
+      
       if (hSecToPiRatioSys[species]) {
         for (Int_t i = 1; i <= hSecToPiRatioSys[species]->GetNbinsX(); i++) {
           const Double_t corrFactorToPiRatio = hSecToPiRatioSys[species]->GetBinContent(i);
@@ -3168,7 +3397,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     // Similarly as for strangeness scaling....
     
     if (correctGeantFluka &&
-        sysErrorTypeMC != kErrorsOnlyMultDep && sysErrorTypeMC != kErrorsForMerging && sysErrorTypeMC != kErrorsForMergingOnlyMultDep) {
+        sysErrorTypeMC != kErrorsOnlyMultDep && sysErrorTypeMC != kErrorsForMerging && sysErrorTypeMC != kErrorsForMergingOnlyMultDep && sysErrorTypeMC != kErrorsForMergingWithoutMultDep) {
       // Although only K and p are affected, just loop over all species...
       for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
         if (!hEfficiencySys[species])
@@ -3219,8 +3448,10 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     
     
     // Multiplicity dependencies, efficiency
-    if (sysErrorTypeMC != kErrorsWithoutMultDep && sysErrorTypeMC != kErrorsForMerging && sysErrorTypeMC != kErrorsForMergingOnlyMultDep) {
+    if (sysErrorTypeMC != kErrorsWithoutMultDep && sysErrorTypeMC != kErrorsForMerging && sysErrorTypeMC != kErrorsForMergingOnlyMultDep && sysErrorTypeMC != kErrorsForMergingWithoutMultDep) {
       for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
+        if (species == AliPID::kMuon)
+          continue;          
         if (!hEfficiencySys[species])
           continue;
         
@@ -3244,7 +3475,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
       
     
     // Sys. error of mult. dep., secondaries, protons only!
-    if (sysErrorTypeMC != kErrorsWithoutMultDep /* && sysErrorTypeMC != kErrorsForMerging && sysErrorTypeMC != kErrorsForMergingOnlyMultDep*/) {
+    if (sysErrorTypeMC != kErrorsWithoutMultDep && sysErrorTypeMC != kErrorsForMergingWithoutMultDep /* && sysErrorTypeMC != kErrorsForMerging && sysErrorTypeMC != kErrorsForMergingOnlyMultDep*/) {
       Int_t species = AliPID::kProton;
       
       if (hSecSys[species]) {
@@ -3275,6 +3506,9 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     if (scaleStrangeness &&
         sysErrorTypeMC != kErrorsOnlyMultDep && sysErrorTypeMC != kErrorsForMergingOnlyMultDep) {
       for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
+        if (species == AliPID::kMuon)
+          continue;  
+        
         if (!hSecToPiRatioSys[species])
           continue;
         
@@ -3299,7 +3533,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     // Sys error of GEANT-FLUKA correction.
     // Similarly as for strangeness scaling....
     if (correctGeantFluka &&
-        sysErrorTypeMC != kErrorsOnlyMultDep && sysErrorTypeMC != kErrorsForMerging && sysErrorTypeMC != kErrorsForMergingOnlyMultDep) {
+        sysErrorTypeMC != kErrorsOnlyMultDep && sysErrorTypeMC != kErrorsForMerging && sysErrorTypeMC != kErrorsForMergingOnlyMultDep && sysErrorTypeMC != kErrorsForMergingWithoutMultDep) {
       // Although only K and p are affected, just loop over all species...
       for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
         if (!hEfficiencyToPiRatioSys[species])
@@ -3353,7 +3587,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   */
   
   // Sys. error of mult. dep., secondaries, protons only (identical to yield, since pions do not really change)!
-  if (sysErrorTypeMC != kErrorsWithoutMultDep /* && sysErrorTypeMC != kErrorsForMerging && sysErrorTypeMC != kErrorsForMergingOnlyMultDep*/) {
+  if (sysErrorTypeMC != kErrorsWithoutMultDep && sysErrorTypeMC != kErrorsForMergingWithoutMultDep /* && sysErrorTypeMC != kErrorsForMerging && sysErrorTypeMC != kErrorsForMergingOnlyMultDep*/) {
     Int_t species = AliPID::kProton;
     
     if (hSecToPiRatioSys[species]) {
@@ -3392,8 +3626,11 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     hMCcorrTotal[species] = new TH1D(*hEfficiency[species]);
     hMCcorrTotal[species]->SetName(Form("hMCcorrTotal_%s", AliPID::ParticleShortName(species)));
     
+    if (species == AliPID::kProton)
+    
     // Sec
     multiplyHistsDifferentBinning(hMCcorrTotal[species], scaleStrangeness ? hSecSS[species] : hSec[species], 1., 1.);
+    if (species == AliPID::kProton)
     
     // Mu corr
     if (applyMuonCorrection && species == AliPID::kPion)
@@ -3478,7 +3715,10 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     printf("\n**********************\nChecking validity of bins:\n");
     
     for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
-      if (!hMCcorrTotalRelSysError[species] || !hMCcorrTotalSysError[species]) {
+        if (species == AliPID::kMuon)
+          continue;          
+      
+        if (!hMCcorrTotalRelSysError[species] || !hMCcorrTotalSysError[species]) {
         printf("Skipping species %s due to lacking histograms for MC!\n", AliPID::ParticleShortName(species));
         continue;
       }
@@ -3529,6 +3769,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   
   TH1D* hYieldCorrected[AliPID::kSPECIES] = { 0x0, };
   TH1D* hYieldCorrectedSysError[AliPID::kSPECIES] = { 0x0, };
+  
   for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
     hYieldCorrected[species] = new TH1D(*hYield[species]);
     hYieldCorrected[species]->SetName(Form("%s_corrected", hYield[species]->GetName()));
@@ -3980,6 +4221,13 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   hYield[AliPID::kPion]->Draw("E1");
   
   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+    
+    if (i == AliPID::kMuon && !drawMuons)
+      continue;
+    
+    if (i == AliPID::kElectron && !drawElectrons)
+      continue;
+    
     if (hYieldSysError[i])
       hYieldSysError[i]->Draw("E2 same");
     
@@ -3993,16 +4241,14 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   hYieldCorrectedTotal->GetYaxis()->SetTitleOffset(1.4);
   hYieldCorrectedTotal->GetXaxis()->SetMoreLogLabels(kTRUE);
   hYieldCorrectedTotal->GetXaxis()->SetNoExponent(kTRUE);
-  hYieldCorrectedTotal->GetYaxis()->SetRangeUser(hYieldCorrected[AliPID::kMuon]->GetBinContent(hYieldCorrected[AliPID::kMuon]->FindLastBinAbove(0.)) * 0.1,
-                                                 hYieldCorrectedTotal->GetBinContent(hYieldCorrectedTotal->GetMaximumBin()) * 10.);
+  hYieldCorrectedTotal->GetYaxis()->SetRangeUser(hYieldCorrected[AliPID::kElectron]->GetBinContent(hYieldCorrected[AliPID::kElectron]->FindLastBinAbove(0.)) * 0.1, hYieldCorrectedTotal->GetBinContent(hYieldCorrectedTotal->GetMaximumBin()) * 10.);
   
   if (hMCgenPrimYieldTotal) {
     hMCgenPrimYieldTotal->GetYaxis()->SetTitleOffset(1.4);
     hMCgenPrimYieldTotal->GetXaxis()->SetMoreLogLabels(kTRUE);
     hMCgenPrimYieldTotal->GetXaxis()->SetNoExponent(kTRUE);
     hMCgenPrimYieldTotal->GetXaxis()->SetTitle(hYieldCorrectedTotal->GetXaxis()->GetTitle());
-    hMCgenPrimYieldTotal->GetYaxis()->SetRangeUser(hYieldCorrected[AliPID::kMuon]->GetBinContent(hYieldCorrected[AliPID::kMuon]->FindLastBinAbove(0.)) * 0.1,
-                                                   hYieldCorrectedTotal->GetBinContent(hYieldCorrectedTotal->GetMaximumBin()) * 10.);
+    hMCgenPrimYieldTotal->GetYaxis()->SetRangeUser(hYieldCorrected[AliPID::kElectron]->GetBinContent(hYieldCorrected[AliPID::kElectron]->FindLastBinAbove(0.)) * 0.1, hYieldCorrectedTotal->GetBinContent(hYieldCorrectedTotal->GetMaximumBin()) * 10.);
   }
   
   if (hMCgenPrimYieldTotal) {
@@ -4013,6 +4259,9 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     hYieldCorrectedTotal->Draw("E1");
   
   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+    if ((!drawElectrons && (i == AliPID::kElectron)) || (!drawMuons && (i == AliPID::kMuon)))
+      continue;
+    
     if (hMCgenPrimYield[i])
       hMCgenPrimYield[i]->Draw("E1 same");
     hYieldCorrected[i]->Draw("E1 same");
@@ -4024,6 +4273,13 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   
   // Do not include in legend
   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+        
+    if (i == AliPID::kMuon && !drawMuons)
+      continue;
+    
+    if (i == AliPID::kElectron && !drawElectrons)
+      continue;
+    
     if (hYieldCorrectedSysError[i])
       hYieldCorrectedSysError[i]->Draw("E2 same");
   }
@@ -4060,13 +4316,15 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     cCorrYieldsRatio->SetGridx(0);
     cCorrYieldsRatio->SetGridy(1);
     if (iObs == kTrackPt)
-    cCorrYieldsRatio->SetLogx(1);
+      cCorrYieldsRatio->SetLogx(1);
     
     hYieldCorrectedTotalRatioToMC->GetYaxis()->SetRangeUser(0.8, 1.2);
     hYieldCorrectedTotalRatioToMC->GetYaxis()->SetTitleOffset(0.85);
     hYieldCorrectedTotalRatioToMC->Draw("E1");
     
     for (Int_t species = 0; species < AliPID::kSPECIES; species++) {
+      if ((!drawElectrons && (species == AliPID::kElectron)) || (!drawMuons && (species == AliPID::kMuon)))
+        continue;      
       if (applyMuonCorrection && species == AliPID::kMuon)
         continue;
       hYieldCorrectedRatioToMC[species]->Draw("E1 same");
@@ -4084,12 +4342,21 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   TCanvas* cCorrFractions = new TCanvas("cCorrFractions", "Corrected particleFractions", 0, 300, 900, 900);
   if (iObs == kTrackPt)
     cCorrFractions->SetLogx(1);
-  hFractionCorrected[0]->GetYaxis()->SetRangeUser(0., 1.);
-  hFractionCorrected[0]->Draw("E1");
-  if (hMCgenPrimFraction[0])
-    hMCgenPrimFraction[0]->Draw("E1 same");
+  hFractionCorrected[AliPID::kPion]->GetYaxis()->SetRangeUser(0., 1.);
+  hFractionCorrected[AliPID::kPion]->Draw("E1");
+  if (hMCgenPrimFraction[AliPID::kPion])
+    hMCgenPrimFraction[AliPID::kPion]->Draw("E1 same");
   
-  for (Int_t i = 1; i < AliPID::kSPECIES; i++) {
+  for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+    if (i==AliPID::kPion)
+      continue;
+    
+    if (i == AliPID::kMuon && !drawMuons)
+      continue;
+    
+    if (i == AliPID::kElectron && !drawElectrons)
+      continue;
+    
     hFractionCorrected[i]->Draw("E1 same");
     if (hMCgenPrimFraction[i])
       hMCgenPrimFraction[i]->Draw("E1 same");
@@ -4099,17 +4366,18 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   
   // Do not include in legend!!
   for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+    if (i == AliPID::kMuon && !drawMuons)
+      continue;
+    
+    if (i == AliPID::kElectron && !drawElectrons)
+      continue;
+    
     if (hFractionCorrectedSysError[i])
       hFractionCorrectedSysError[i]->Draw("E2 same");
   }
   
   
   ClearTitleFromHistoInCanvas(cCorrFractions);
-  
-  
-  
-  
-  
   
   TCanvas* cCorrDataToPiRatio = 0x0;
   if (hRatioToPi[AliPID::kKaon]) {
@@ -4132,6 +4400,13 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     hRatioToPi[AliPID::kKaon]->Draw("E1");
     
     for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+    
+    if (i == AliPID::kMuon && !drawMuons)
+      continue;
+    
+    if (i == AliPID::kElectron && !drawElectrons)
+      continue;
+    
       if (hRatioToPiSysError[i]) {
         hRatioToPiSysError[i]->GetYaxis()->SetRangeUser(0, 0.7);
         hRatioToPiSysError[i]->Draw("E2 same");
@@ -4148,6 +4423,8 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     cCorrDataToPiRatio->cd(2); // corrected
     
     for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+      if ((!drawElectrons && (i == AliPID::kElectron)) || (!drawMuons && (i == AliPID::kMuon)))
+        continue;     
       if (hRatioToPiCorrected[i]) {
         hRatioToPiCorrected[i]->GetYaxis()->SetRangeUser(0, 0.7);
         hRatioToPiCorrected[i]->GetYaxis()->SetTitleOffset(1.4);
@@ -4162,6 +4439,8 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
     
     // Do not include in legend
     for (Int_t i = 0; i < AliPID::kSPECIES; i++) {
+      if ((!drawElectrons && (i == AliPID::kElectron)) || (!drawMuons && (i == AliPID::kMuon)))
+        continue;   
       if (hRatioToPiCorrectedSysError[i]) {
         hRatioToPiCorrectedSysError[i]->GetYaxis()->SetRangeUser(0, 0.7);
         hRatioToPiCorrectedSysError[i]->Draw("E2 same");
@@ -4184,6 +4463,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
   TH1D* hRatioToPiCorrectedSysErrorRapidity[AliPID::kSPECIES] = { 0x0, };
   
   // Only do the following for inclusive
+  
   if (!restrictJetPtAxis) {
     // Normalise to 1/N_inel
     // The yields are already normalised to 1/N_ev_trigger&vtx&zvtx. Just need to apply correction factor N_ev_trigger&vtx / N_ev_trigger
@@ -4232,7 +4512,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
       }
       
       if (!restrictCentralityAxisData) {
-        GetAxisRangeForMultiplicityAxisForMB(hNumEventsTriggerSel->GetXaxis(), lowerCentralityBinLimitData, upperCentralityBinLimitData);
+//         GetAxisRangeForMultiplicityAxisForMB(hNumEventsTriggerSel->GetXaxis(), lowerCentralityBinLimitData, upperCentralityBinLimitData);
         actualLowerCentralityData = hNumEventsTriggerSel->GetXaxis()->GetBinLowEdge(TMath::Max(0, lowerCentralityBinLimitData));
         actualUpperCentralityData = hNumEventsTriggerSel->GetXaxis()->GetBinUpEdge(upperCentralityBinLimitData);
       }
@@ -4257,6 +4537,7 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
       
       Double_t numEventsTriggerSel = hNumEventsTriggerSel->Integral(lowerCentralityBinLimitData, upperCentralityBinLimitData);
       Double_t numEventsTriggerSelVtxCut = hNumEventsTriggerSelVtxCut->Integral(lowerCentralityBinLimitData, upperCentralityBinLimitData);
+      Double_t numEventsProcessed = hNumEventsTriggerSelVtxCutZPileUpRejected->Integral(lowerCentralityBinLimitData, upperCentralityBinLimitData);
       
       printf("Found events: trigger sel %f, trigger sel + vtx cut %f\n", numEventsTriggerSel, numEventsTriggerSelVtxCut);
       
@@ -4264,8 +4545,9 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
         printf("Error: Something is wrong with these event numbers!\n");
         return kFALSE;
       }
-      else
+      else 
         nEventCorrFactor = numEventsTriggerSelVtxCut / numEventsTriggerSel;
+        
       
       if (extractPileUpSysError) {
         hPileUpFraction = new TH1D(*((TH1D*)hNumEventsTriggerSelVtxCutZPileUpRejected));
@@ -4367,6 +4649,64 @@ Int_t calcEfficiency(TString pathNameEfficiency, TString pathNameData, TString p
       hRatioToPiCorrectedRapidity[i] = convertToPionRatioHistFromEtaToY(hRatioToPiCorrected[i], i, etaAbsCut);
       hRatioToPiCorrectedSysErrorRapidity[i] = convertToPionRatioHistFromEtaToY(hRatioToPiCorrectedSysError[i], i, etaAbsCut);
     }
+  }
+  
+  if (dataRebinnedUE) {
+    saveFile->mkdir("MC truth");
+    saveFile->cd("MC truth");
+    
+    Double_t inclnormfactor = 1.0;
+    if (!restrictJetPtAxis)
+      inclnormfactor = nMCEvents * 2.0 * etaAbsCut;
+    
+    TCanvas* cMCYields = new TCanvas("cMCYields","MC truth yields");
+    cMCYields->SetLogy(kTRUE);
+    cMCYields->SetLogx(kTRUE);
+    TH1D* hmcYields[5] = {0x0, };
+    TH1D* hmcYieldTotal = 0x0;
+    for (Int_t species=0;species<5;species++) {
+      dataRebinnedUE->SetRangeUser(iMCid,species+1,species+1,kTRUE);
+      hmcYields[species] = (TH1D*)dataRebinnedUE->Project(0,1);
+      normaliseHist(hmcYields[species],1.0/(nJetsGen * inclnormfactor));
+      setupHist(hmcYields[species], Form("hMCYield_%s", AliPID::ParticleShortName(species)), Form("MC truth yield %s", AliPID::ParticleLatexName(species)), hYield[species]->GetXaxis()->GetTitle(), hYield[species]->GetYaxis()->GetTitle(), hYield[species]->GetLineColor());
+      hmcYields[species]->SetMarkerStyle(hYield[species]->GetMarkerStyle() + species==AliPID::kProton ? 1 : 4);
+      hmcYields[species]->Write();
+      if (species==0) 
+        hmcYieldTotal = (TH1D*)hmcYields[0]->Clone("hMCYieldTotal");
+      else
+        hmcYieldTotal->Add(hmcYields[species]);
+    }
+    
+    hmcYieldTotal->Write();
+    
+    for (Int_t species=0;species<5;species++) {
+      hmcYields[species]->GetYaxis()->SetRangeUser(hmcYields[AliPID::kElectron]->GetBinContent(hmcYields[AliPID::kElectron]->FindLastBinAbove(0.)) * 0.1, hmcYieldTotal->GetBinContent(hmcYieldTotal->GetMaximumBin()) * 10.);
+      hmcYields[species]->Draw(species==0 ? "E1" : "E1 same");
+      if (hYieldCorrectedSysError[species]) {
+        hYieldCorrected[species]->Draw("E1 same");
+        hYieldCorrectedSysError[species]->Draw("E2 same");
+      }
+    }
+    dataRebinnedUE->SetRangeUser(iMCid,-1,-1,kTRUE);
+    cMCYields->Write();
+    
+    TCanvas* cMCToPiRatios = new TCanvas("cMCToPiRatios", "MC truth ratios");
+    cMCToPiRatios->SetLogx(kTRUE); 
+    TH1D* hMCToPiRatios[5] = {0x0, };
+    for (Int_t species=3;species<5;species++) {
+      hMCToPiRatios[species]=(TH1D*)hmcYields[species]->Clone(Form("hMCtoPi_%s", AliPID::ParticleShortName(species)));
+      hMCToPiRatios[species]->Divide(hmcYields[AliPID::kPion]);
+      hMCToPiRatios[species]->GetYaxis()->SetTitle(hRatioToPi[species]->GetYaxis()->GetTitle());
+      hMCToPiRatios[species]->GetYaxis()->SetRangeUser(0.0,1.0);
+      hMCToPiRatios[species]->Write();
+      hMCToPiRatios[species]->Draw(species==0 ? "E1" : "E1 same");
+      if (hRatioToPiCorrectedSysError[species]) {
+        hRatioToPiCorrected[species]->Draw("E1 same");
+        hRatioToPiCorrectedSysError[species]->Draw("E2 same");
+      }
+    }
+    
+    cMCToPiRatios->Write();             
   }
   
   // Save results to file

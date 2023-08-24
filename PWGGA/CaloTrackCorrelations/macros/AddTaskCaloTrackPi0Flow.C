@@ -14,7 +14,7 @@ TString kCalorimeter   = "EMCAL";                               ///< Use main an
 Bool_t  kSimulation    = kFALSE;                                ///< Declare the analysis simulation
 Bool_t  kEventSelection= kFALSE;                                ///< Remove bad events
 Bool_t  kExotic        = kTRUE;                                 ///< Remove exotic clusters
-Bool_t  kNonLinearity  = kFALSE;                                ///< Correct cluster non linearity
+Int_t   kNonLinearity  = 0;                                ///< Correct cluster non linearity
 Int_t   kYears         = 2011;                                  ///< Declare the year of the data
 TString kCollisions    = "PbPb";                                ///< Declare the collision type of the data
 TString kClusterArray  = "V1_Ecell150_Eseed300_DT0_WT0";        ///< Name of branch with clusters, from AliAnalysisTaskEMCALClusterize
@@ -46,7 +46,7 @@ AliAnalysisTaskCaloTrackCorrelation *AddTaskCaloTrackPi0Flow(const TString  data
                                                              const Bool_t   simulation    = kFALSE,
                                                              const Bool_t   eventsel      = kFALSE,
                                                              const Bool_t   exotic        = kTRUE,
-                                                             const Bool_t   nonlin        = kFALSE,
+                                                             const Int_t    nonlin        = 0,
                                                              const Int_t    year          = 2011,
                                                              const TString  col           = "PbPb", 
                                                              AliVEvent::EOfflineTriggerTypes trig = AliVEvent::kCentral + AliVEvent::kSemiCentral + AliVEvent::kMB + AliVEvent::kEMCEGA,
@@ -450,7 +450,7 @@ AliCalorimeterUtils* ConfigureCaloUtils()
   ConfigureEMCALRecoUtils(recou,
                           kSimulation,                             
                           kExotic,
-                          kTRUE,//kNonLinearity,
+                          kNonLinearity,
                           kCalibE, 
                           kBadMap,
                           kCalibT);

@@ -19,30 +19,6 @@ add_definitions(-D_MODULE_="${MODULE}")
 
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/AutoTrendQA
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CaloCellQA
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CaloCellQA/phys/
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/omega3pi
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/ClusterSelection
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/CPVperf
-		    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOSCalib
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Correlation
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_embedding
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Run2embedding
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_EpRatio
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_GAFlow
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_NeutralMeson
-		    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb_MC
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPbQA
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_pp_pi0
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Tagging
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_TriggerQA
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_pp_8TeV_2012
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Run2
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_LHC16_pp
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/UserTasks
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_Resonances
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
@@ -53,7 +29,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/TENDER/Tender
                     ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
                     ${AliPhysics_SOURCE_DIR}/OADB
-		    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
+		            ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase/
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv/
@@ -69,17 +45,21 @@ set(SRCS
     CaloCellQA/phys/AliAnalysisTaskCaloCellsPhysQA.cxx
     CaloCellQA/phys/AliCaloCellsPhysQA.cxx
     ClusterSelection/AliPHOSTriggerUtils.cxx
+    ClusterSelection/AliCaloTriggerMimicHelper.cxx
     CPVperf/AliAnalysisTaskCPV.cxx
     omega3pi/AliAnalysisTaskOmegaPi0PiPi.cxx
     PHOSCalib/AliAnalysisTaskEmeanCalib.cxx
     PHOSCalib/AliAnalysisTaskPHOSTimeCalib.cxx
+    PHOSCorrectionFW/AliPHOSCorrectionFW.cxx
     PHOS_Correlation/AliPHOSCorrelations.cxx
     PHOS_embedding/AliAnalysisTaskPi0DiffEfficiency.cxx
     PHOS_embedding/AliAnalysisTaskPi0Efficiency.cxx
     PHOS_embedding/AliPHOSEmbedding.cxx
     PHOS_Run2embedding/AliPHOSEmbeddingRun2.cxx
     PHOS_Run2embedding/AliPHOSEventCounter.cxx
+    PHOS_Run2embedding/AliPHOSEmbedggHBT.cxx
     PHOS_EpRatio/AliAnalysisTaskEpRatio.cxx
+    PHOS_Fluctuations/AliAnalysisPHOSFluctuations.cxx
     PHOS_GAFlow/AliAnalysisTaskThermalGAFlow.cxx
     PHOS_GAFlow/AliAnalysisTaskThermalGAFlowMC.cxx
     PHOS_LHC16_pp/AliAnalysisTaskPP13.cxx
@@ -115,7 +95,6 @@ set(SRCS
     PHOS_PbPb/AliAnalysisTaskggMC.cxx
     PHOS_PbPb/AliAnalysisTaskPHOSPCMgg.cxx
     PHOS_PbPb/AliAnalysisTaskEtaPhigg.cxx
-    PHOS_PbPb/AliAnalysisTaskEtaPhiMultgg.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMCAOD.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMC.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMCHijing.cxx
@@ -140,6 +119,7 @@ set(SRCS
     PHOS_Run2/AliAnalysisTaskPHOSEmbeddingEfficiency.cxx
     PHOS_Run2/AliAnalysisTaskPHOSSingleSim.cxx
     PHOS_Tagging/AliAnalysisTaskTaggedPhotons.cxx
+    PHOS_Tagging/AliAnalysisPhotonDDA.cxx
     PHOS_TriggerQA/AliAnalysisTaskPHOSTriggerQA.cxx
     UserTasks/AliAnalysisTaskSEPHOSpPbPi0.cxx
     UserTasks/AliCaloClusterInfo.cxx
@@ -147,6 +127,9 @@ set(SRCS
     UserTasks/AliAnalysisTaskPHOSCluster.cxx
     UserTasks/AliCaloClusterContent.cxx
     PHOS_Resonances/AliAnalysisPHOSResonances.cxx
+    PHOS_Nbar/AliAnalysisSigmaBarCharged.cxx
+    PHOS_gamma/AliAnalysisTaskGammaPHOSPP.cxx
+    PHOS_gamma/AliAnalysisTaskPHOSPbPbQARun2.cxx
    )
 
 # Headers from sources
@@ -219,7 +202,6 @@ install(FILES PHOS_PbPb/AddTaskPHOSPCMgg.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb
 install(FILES PHOS_PbPb/AddTaskPHOSPi0Flow.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
 install(FILES PHOS_PbPb/AddTaskPHOSPi0FlowMC.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
 install(FILES PHOS_PbPb/AddTaskPHOSEtaPhi.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
-install(FILES PHOS_PbPb/AddTaskPHOSEtaPhiMult.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
 install(DIRECTORY PHOSCalib/macros          DESTINATION  PWGGA/PHOSTasks/PHOSCalib)
 install(DIRECTORY UserTasks/macros          DESTINATION  PWGGA/PHOSTasks/UserTasks)
 install(DIRECTORY CaloCellQA/macros         DESTINATION PWGGA/PHOSTasks/CaloCellQA)
@@ -227,11 +209,13 @@ install(DIRECTORY CaloCellQA/phys/macros    DESTINATION PWGGA/PHOSTasks/CaloCell
 install(DIRECTORY PHOS_PbPbQA/macros        DESTINATION PWGGA/PHOSTasks/PHOS_PbPbQA)
 install(DIRECTORY PHOS_TriggerQA/macros     DESTINATION PWGGA/PHOSTasks/PHOS_TriggerQA)
 install(DIRECTORY PHOS_pPb                  DESTINATION PWGGA/PHOSTasks)
+install(FILES PHOS_Run2embedding/AddTaskPHOSEmbedding.C DESTINATION PWGGA/PHOSTasks/PHOS_Run2embedding)
 install(DIRECTORY PHOS_Run2embedding/macros DESTINATION PWGGA//PHOSTasks/PHOS_Run2embedding)
 install(DIRECTORY CPVperf/macros            DESTINATION PWGGA/PHOSTasks/CPVperf)
 install(DIRECTORY PHOS_pp_8TeV_2012/macros  DESTINATION PWGGA/PHOSTasks/PHOS_pp_8TeV_2012)
 install(DIRECTORY PHOS_Run2/macros          DESTINATION PWGGA/PHOSTasks/PHOS_Run2)
 install(DIRECTORY PHOS_LHC16_pp/macros      DESTINATION PWGGA/PHOSTasks/PHOS_LHC16_pp)
+install(DIRECTORY PHOS_gamma/macros         DESTINATION	PWGGA/PHOSTasks/PHOS_gamma)
 install(FILES PHOS_pp_pi0/AddTaskPHOSpp.C   DESTINATION PWGGA/PHOSTasks/PHOS_pp_pi0)
 install(FILES PHOS_pp_pi0/AddTaskPHOSpi0Conversion.C DESTINATION PWGGA/PHOSTasks/PHOS_pp_pi0)
 install(FILES PHOSCalib/AddTaskEmeanCalib.C DESTINATION PWGGA/PHOSTasks/PHOSCalib)
@@ -245,4 +229,6 @@ install(FILES PHOS_Tagging/AddTaskPHOSTagging.C DESTINATION PWGGA/PHOSTasks/PHOS
 install(FILES PHOS_Resonances/AddTaskPHOSResonances.C DESTINATION PWGGA/PHOSTasks/PHOS_Resonances)
 install(FILES AutoTrendQA/MakeTrendingPHOSQA.C DESTINATION PWGGA/PHOSTasks/AutoTrendQA)
 install(FILES AutoTrendQA/DrawTrendingPHOSQA.C DESTINATION PWGGA/PHOSTasks/AutoTrendQA)
-install(FILES AutoTrendQA/DrawTrends.C DESTINATION PWGGA/PHOSTasks/AutoTrendQA)
+install(FILES PHOS_Nbar/AddTaskPHOSSigmaBar.C DESTINATION PWGGA/PHOSTasks/PHOS_Nbar)
+install(FILES PHOS_gamma/AddTaskGammaPHOSPP.C DESTINATION PWGGA/PHOSTasks/PHOS_gamma)
+install(FILES PHOS_gamma/AddTaskPHOSPbPbQARun2.C DESTINATION PWGGA/PHOSTasks/PHOS_gamma)

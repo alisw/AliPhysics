@@ -52,6 +52,7 @@ set(SRCS
     AliAnalysisTaskHadronPhiCorr.cxx
     AliAnalysisTaskLeadingTrackUE.cxx
     AliAnalysisTaskLongRangeCorrelations.cxx
+    AliAnalysisTaskLongFluctuations2PC.cxx
     AliAnalysisTaskMinijet.cxx
     AliAnalysisTaskMinijetV2.cxx
     AliAnalysisTaskPhiCorrelations.cxx
@@ -64,14 +65,36 @@ set(SRCS
     AliAnalysisTaskPythiaMpi.cxx
     AliAnalysisTaskpzpz.cxx
     AliAnalysisTaskpzpz.cxx
+    AliAnalysisTaskR2P2.cxx
+    AliAnalysisTaskR2P2multClassGen.cxx
+    AliAnalysisTaskR2P2Base.cxx
+    AliAnalysisTaskR2P2Corr.cxx
+    AliAnalysisTaskR2P2CorrGen.cxx
+    AliAnalysisTaskR2P2multClass.cxx
+    AliAnalysisTaskR2P2multClassGen.cxx
+    AliAnalysisTaskR2P2multEff.cxx
+    AliAnalysisTaskR2P2highMult.cxx
+    AliAnalysisTaskR2P2highMultpp.cxx
+    AliAnalysisTaskR2P2pp.cxx
+    AliAnalysisTaskBFR2.cxx
+    AliAnalysisTaskBFR2sphero.cxx
     AliAnalysisTaskSEpPbCorrelationsYS.cxx
     AliAnalysisTaskSEpPbCorrelationsMCYS.cxx
+    AliAnalysisTaskSEpPbCorrelationsMCLEGOYS.cxx	
+    AliTrigAssoPairST.cxx
+    AliAnalysisTaskSEpPbCorrelationsJetV2.cxx
+    AliAnalysisTaskSEpPbCorrelationsJetV2Kine.cxx
+    AliAnalysisTaskSEPbPbCorrelationsJetV2.cxx
     AliAnaTaskMomScan.cxx
     AliAnalysisTaskTwoPlusOne.cxx
     AliDptDptInMC.cxx
     AliLeadingV0Correlation.cxx
     AliAnalysisTaskV0ChCorrelation.cxx
     AliAnalysisTaskV0ChCorrelationpp.cxx
+    AliAnalysisTaskV0ChCorrelationppsys.cxx
+    AliAnalysisTaskV0ChCorrelationsys.cxx
+    AliAnalysisTaskCorrelGen.cxx
+    AliAnalysisTaskLambdaK0s.cxx
     AliPhiCorrelationsQATask.cxx
     AliAnalysisTaskDiJetCorrelationsAllb2b.cxx
     AliAnalysisTaskEPCorrPP.cxx
@@ -80,6 +103,7 @@ set(SRCS
     AliAnalysisTaskPIDBFDptDpt.cxx
     AliAnalysisTaskGeneralBF.cxx
     AliCorrelationAnalysis.cxx
+    AliEPDependentDiHadronOnTheFlyMCTask.cxx
     DiHadronPID/AliAnalysisTaskCompareAODTrackCuts.cxx
     DiHadronPID/AliAnalysisTaskDiHadronPID.cxx
     DiHadronPID/AliAODEventCutsDiHadronPID.cxx
@@ -108,6 +132,8 @@ set(SRCS
     Unfoldedhistos/AliCSTrackMaps.cxx
     Unfoldedhistos/AliCSTrackSelection.cxx
     Unfoldedhistos/AliDptDptCorrelations.cxx
+    Unfoldedhistos/Ali2PCorrelations.cxx
+    Unfoldedhistos/AliTwoParticleCorrelationsBase.cxx
    )
 
 # Headers from sources

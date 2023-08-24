@@ -173,7 +173,7 @@ class AliAnalysisKinkTaskPbPb2018 : public AliAnalysisTaskSE {
    TH1F        *fhPS;       // multi vtx
    TH1F        *fhvtxP;       // multi vtx
    AliESDtrackCuts * fESDtrackCuts;
-   
+   TH1F        *fpercentile; // percentile distribution   
    
    AliAnalysisKinkTaskPbPb2018(const AliAnalysisKinkTaskPbPb2018&); // not implemented
    AliAnalysisKinkTaskPbPb2018& operator=(const AliAnalysisKinkTaskPbPb2018&); // not implemented

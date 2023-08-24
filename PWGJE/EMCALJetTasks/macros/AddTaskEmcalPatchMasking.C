@@ -1,7 +1,7 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchMasking *AddTaskEmcalPatchMasking(const char *dummy, const char *suffix){
+PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalPatchMasking *AddTaskEmcalPatchMasking(const char *dummy, const char *suffix){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchMasking *maskingtask = new EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchMasking(Form("MaskingTask%s", suffix));
+  PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalPatchMasking *maskingtask = new PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalPatchMasking(Form("MaskingTask%s", suffix));
   mgr->AddTask(maskingtask);
 
   TString outputcont = mgr->GetCommonFileName();

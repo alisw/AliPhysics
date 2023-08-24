@@ -103,9 +103,15 @@ set(SRCS
   AliRsnMiniTaskPhiVn.cxx
   AliRsnCutPIDkink.cxx
   PostProcessing/Xi1530/AliAnalysisTaskXi1530.cxx
+  PostProcessing/Xi1530/AliAnalysisTaskXi1530PbPb.cxx
   PostProcessing/Xi1530/NanoCheck/AliAnalysisTaskNanoCheck.cxx
   PostProcessing/Sigma1385/AliAnalysisTaskSigma1385PM.cxx
+  PostProcessing/Sigma1385/AliAnalysisTaskTrackMixer.cxx
+  PostProcessing/Xi1820/AliAnalysisTaskXi1820BH.cxx
   PostProcessing/f0980/AliAnalysisTaskInclusivef0f2.cxx
+  PostProcessing/fnreso/AliAnalysisTaskfn.cxx
+  PostProcessing/fnreso/AliAnalysisTaskfnAOD.cxx
+  PostProcessing/fnreso/AliAnalysisTaskSA.cxx			
   )
 
 # Headers from sources
@@ -122,7 +128,11 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 # Generate the ROOT map
 # Dependecies
 if(ROOT_VERSION_MAJOR EQUAL 6)
+  if(ROOT_VERSION_MINOR LESS_EQUAL 20)
     set(ROOT_DEPENDENCIES PyROOT)
+  else()
+    set(ROOT_DEPENDENCIES ROOTTPython)
+  endif()
 else()
     set(ROOT_DEPENDENCIES)
 endif()

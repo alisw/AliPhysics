@@ -3,7 +3,8 @@ AliAnalysisTask *AddTask_rbailhac_lowmass(Bool_t getFromAlien=kFALSE,
 					  Char_t* outputFileName="LMEE.root",
 					  ULong64_t triggerMask = AliVEvent::kINT7,
 					  Bool_t pileupon = kFALSE,
-					  Int_t wagon = 0
+					  Int_t wagon = 0,
+					  TString cAlienUserBasePath = "r/rbailhac/PWGDQ/dielectron/macrosLMEE"
                                              )
 {
 
@@ -16,7 +17,7 @@ AliAnalysisTask *AddTask_rbailhac_lowmass(Bool_t getFromAlien=kFALSE,
 
   //Base Directory for GRID / LEGO Train
   TString configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
-  if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/r/rbailhac/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) ){
+  if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/%s/%s .",cAlienUserBasePath.Data(),cFileName.Data()))) ){
     configBasePath=Form("%s/",gSystem->pwd());
   }
 

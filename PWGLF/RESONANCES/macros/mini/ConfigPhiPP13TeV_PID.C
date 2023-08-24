@@ -8,8 +8,6 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 *** Configuration script for phi analysis of 2015-2016 pp 13-TeV data ***
 ****************************************************************************/
 
-// Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t
-// customQualityCutsID = 0, Int_t customFilterBit = 0);
 Bool_t SetCustomQualityCut(AliRsnCutTrackQuality* trkQualityCut,
                            Int_t customQualityCutsID = 0,
                            Int_t customFilterBit = 0);
@@ -179,6 +177,32 @@ Bool_t ConfigPhiPP13TeV_PID(
             nmult++;
         }
     }
+    
+    Double_t ptbins1[1000];
+    Int_t npt1=0;
+    for(j=0;j<100;j++){
+        ptbins1[npt1]=0.1*j;
+        npt1++;
+    }
+    for(j=20;j<=80;j++){
+        ptbins1[npt1]=0.5*j;
+        npt1++;
+    }
+    
+    Double_t ptbins2[1000];
+    Int_t npt2=0;
+    for(j=0;j<300;j++){
+        ptbins2[npt2]=0.01*j;
+        npt2++;
+    }
+    for(j=30;j<100;j++){
+        ptbins2[npt2]=0.1*j;
+        npt2++;
+    }
+    for(j=20;j<=80;j++){
+        ptbins2[npt2]=0.5*j;
+        npt2++;
+    }
 
     // -- Create all needed outputs
     // ----------------------------------------------------------------- use an
@@ -188,32 +212,37 @@ Bool_t ConfigPhiPP13TeV_PID(
     // [2] = like ++
     // [3] = like --
 
-    Bool_t use[11] = {!IsMcTrueOnly, !IsMcTrueOnly, !IsMcTrueOnly,
-                      !IsMcTrueOnly, isMC,          isMC,
-                      isMC,          isMC,          isMC,
-                      useMixLS,      useMixLS};
-    Int_t useIM[11] = {1, 1, 1, 1, 1, 1, 2, 2, 0, 1, 1};
-    TString name[11] = {"Unlike", "Mixing",    "LikePP",  "LikeMM",
-                        "Trues",  "TruesFine", "TruesMM", "TruesFineMM",
-                        "Res",    "MixingPP",  "MixingMM"};
-    TString comp[11] = {"PAIR", "MIX",  "PAIR", "PAIR", "TRUE", "TRUE",
-                        "TRUE", "TRUE", "TRUE", "MIX",  "MIX"};
-    TString output[11] = {"HIST", "HIST", "HIST", "HIST", "HIST", "HIST",
-                          "HIST", "HIST", "HIST", "HIST", "HIST"};
-    Int_t pdgCode[11] = {333, 333, 333, 333, 333, 333, 333, 333, 333, 333, 333};
-    Char_t charge1[11] = {'+', '+', '+', '-', '+', '+',
-                          '+', '+', '+', '+', '-'};
-    Char_t charge2[11] = {'-', '-', '+', '-', '-', '-',
-                          '-', '-', '-', '+', '-'};
+    Bool_t use[10] = {!IsMcTrueOnly, !IsMcTrueOnly, !IsMcTrueOnly, !IsMcTrueOnly, !IsMcTrueOnly,
+        isMC,          isMC,          isMC, !IsMcTrueOnly,  !IsMcTrueOnly};
+    Int_t useIM[10] = {1, 1, 1, 1, 1, 1, 2, 0, 1, 1};
+    Int_t usePt[10] = {0, 0, 0, 0, 0, 1, 1, 0, 0, 0};
+    TString name[10] = {"Unlike", "Mixing", "Rotated",    "LikePP",  "LikeMM",
+                        "Trues", "TruesMM", "Res",    "MixingPP",  "MixingMM"};
+    TString comp[10] = {"PAIR", "MIX", "ROTATE1",  "PAIR", "PAIR", "TRUE", "TRUE", "TRUE", "MIX",  "MIX"};
+    TString output[10] = {"HIST", "HIST", "HIST", "HIST", "HIST", "HIST", "HIST", "HIST", "HIST", "HIST"};
+    Int_t pdgCode[10] = {333, 333, 333, 333, 333, 333, 333, 333, 333, 333};
+    Char_t charge1[10] = {'+', '+', '+', '+', '-', '+', '+', '+', '+', '-'};
+    Char_t charge2[10] = {'-', '-', '-', '+', '-', '-', '-', '-', '+', '-'};
+    TString hname;
+    
+    AliRsnMiniOutput* out;
 
-    for (Int_t i = 0; i < 9; i++) {
+    for(j=0;j<2;j++) for (Int_t i = 0; i < 10; i++) {
         if (!use[i])
             continue;
-        AliRsnMiniOutput* out =
-            task->CreateOutput(Form("phi_%s%s", name[i].Data(), suffix),
-                               output[i].Data(), comp[i].Data());
-        out->SetCutID(0, iCutK);
-        out->SetCutID(1, iCutK);
+        
+        hname.Form("phi_%s",name[i].Data());
+        if(!j) hname.Append("_Q");
+        hname.Append(suffix);
+
+        out = task->CreateOutput(hname.Data(), output[i].Data(), comp[i].Data());
+        if(!j){
+            out->SetCutID(0, iCutQ);
+            out->SetCutID(1, iCutQ);
+        }else{
+            out->SetCutID(0, iCutK);
+            out->SetCutID(1, iCutK);
+        }
         out->SetDaughter(0, AliRsnDaughter::kKaon);
         out->SetDaughter(1, AliRsnDaughter::kKaon);
         out->SetCharge(0, charge1[i]);
@@ -224,7 +253,7 @@ Bool_t ConfigPhiPP13TeV_PID(
 
         // axis X: invmass (or resolution)
         if (useIM[i] == 1)
-            out->AddAxis(imID, 215, 0.985, 1.2);
+            out->AddAxis(imID, 115, 0.985, 1.1);
         else if (useIM[i] == 2)
             out->AddAxis(mmID, 75, 0.985, 1.06);
         else
@@ -239,11 +268,10 @@ Bool_t ConfigPhiPP13TeV_PID(
             out->AddAxis(fdp, 100, 0., 10.);
         else if (yaxisVar == AliRsnMiniValue::kSecondDaughterP)
             out->AddAxis(sdp, 100, 0., 10.);
-        else if (isMC && (i == 5 || i == 7))
-            out->AddAxis(ptID, 300, 0.,
-                         3.);  // fine binning for efficiency weighting
+        else if (usePt[i])
+            out->AddAxis(ptID, npt2, ptbins2);  // fine binning for efficiency weighting
         else
-            out->AddAxis(ptID, 200, 0., 20.);  // default use mother pt
+            out->AddAxis(ptID, npt1, ptbins1);  // default use mother pt
 
         // axis Z: centrality-multiplicity
         if (!isPP || MultBins)
@@ -265,67 +293,48 @@ Bool_t ConfigPhiPP13TeV_PID(
 
     if (isMC) {
         // get mothers for phi PDG = 333
-        AliRsnMiniOutput* outm =
-            task->CreateOutput(Form("phi_Mother%s", suffix), "HIST", "MOTHER");
-        outm->SetDaughter(0, AliRsnDaughter::kKaon);
-        outm->SetDaughter(1, AliRsnDaughter::kKaon);
-        outm->SetMotherPDG(333);
-        outm->SetMotherMass(1.019461);
-        outm->SetPairCuts(cutsPair);
-        outm->AddAxis(imID, 215, 0.985, 1.2);
-        outm->AddAxis(ptID, 200, 0., 20.);
-        outm->AddAxis(centID, nmult, multbins);
+        out = task->CreateOutput(Form("phi_Mother%s", suffix), "HIST", "MOTHER");
+        out->SetDaughter(0, AliRsnDaughter::kKaon);
+        out->SetDaughter(1, AliRsnDaughter::kKaon);
+        out->SetMotherPDG(333);
+        out->SetMotherMass(1.019461);
+        out->SetPairCuts(cutsPair);
+        out->AddAxis(imID, 115, 0.985, 1.1);
+        out->AddAxis(ptID, npt2, ptbins2);
+        out->AddAxis(centID, nmult, multbins);
         // if(!isPP || MultBins) outm->AddAxis(centID,100,0.,100.);
         // else outm->AddAxis(centID,161,-0.5,160.5);
         if (polarizationOpt.Contains("J"))
-            outm->AddAxis(ctjmID, 21, -1., 1.);
+            out->AddAxis(ctjmID, 21, -1., 1.);
         if (polarizationOpt.Contains("T"))
-            outm->AddAxis(cttmID, 21, -1., 1.);
-
-        AliRsnMiniOutput* outmf = task->CreateOutput(
-            Form("phi_MotherFine%s", suffix), "HIST", "MOTHER");
-        outmf->SetDaughter(0, AliRsnDaughter::kKaon);
-        outmf->SetDaughter(1, AliRsnDaughter::kKaon);
-        outmf->SetMotherPDG(333);
-        outmf->SetMotherMass(1.019461);
-        outmf->SetPairCuts(cutsPair);
-        outmf->AddAxis(imID, 215, 0.985, 1.2);
-        outmf->AddAxis(ptID, 300, 0.,
-                       3.);  // fine binning for efficiency weighting
-        // outmf->AddAxis(centID,nmult,multbins);
-        // if(!isPP || MultBins) outmf->AddAxis(centID,100,0.,100.);
-        // else outmf->AddAxis(centID,161,-0.5,160.5);
-        if (polarizationOpt.Contains("J"))
-            outmf->AddAxis(ctjmID, 21, -1., 1.);
-        if (polarizationOpt.Contains("T"))
-            outmf->AddAxis(cttmID, 21, -1., 1.);
+            out->AddAxis(cttmID, 21, -1., 1.);
 
         // get phase space of the decay from mothers
-        AliRsnMiniOutput* outps = task->CreateOutput(
+        out = task->CreateOutput(
             Form("phi_phaseSpace%s", suffix), "HIST", "TRUE");
-        outps->SetDaughter(0, AliRsnDaughter::kKaon);
-        outps->SetDaughter(1, AliRsnDaughter::kKaon);
-        outps->SetCutID(0, iCutK);
-        outps->SetCutID(1, iCutK);
-        outps->SetMotherPDG(333);
-        outps->SetMotherMass(1.019461);
-        outps->SetPairCuts(cutsPair);
-        outps->AddAxis(fdpt, 100, 0., 10.);
-        outps->AddAxis(sdpt, 100, 0., 10.);
-        outps->AddAxis(ptID, 200, 0., 20.);
+        out->SetDaughter(0, AliRsnDaughter::kKaon);
+        out->SetDaughter(1, AliRsnDaughter::kKaon);
+        out->SetCutID(0, iCutK);
+        out->SetCutID(1, iCutK);
+        out->SetMotherPDG(333);
+        out->SetMotherMass(1.019461);
+        out->SetPairCuts(cutsPair);
+        out->AddAxis(fdpt, 100, 0., 10.);
+        out->AddAxis(sdpt, 100, 0., 10.);
+        out->AddAxis(ptID, npt1, ptbins1);
 
-        AliRsnMiniOutput* outpsf = task->CreateOutput(
+        out = task->CreateOutput(
             Form("phi_phaseSpaceFine%s", suffix), "HIST", "TRUE");
-        outpsf->SetDaughter(0, AliRsnDaughter::kKaon);
-        outpsf->SetDaughter(1, AliRsnDaughter::kKaon);
-        outpsf->SetCutID(0, iCutK);
-        outpsf->SetCutID(1, iCutK);
-        outpsf->SetMotherPDG(333);
-        outpsf->SetMotherMass(1.019461);
-        outpsf->SetPairCuts(cutsPair);
-        outpsf->AddAxis(fdpt, 30, 0., 3.);
-        outpsf->AddAxis(sdpt, 30, 0., 3.);
-        outpsf->AddAxis(ptID, 300, 0., 3.);
+        out->SetDaughter(0, AliRsnDaughter::kKaon);
+        out->SetDaughter(1, AliRsnDaughter::kKaon);
+        out->SetCutID(0, iCutK);
+        out->SetCutID(1, iCutK);
+        out->SetMotherPDG(333);
+        out->SetMotherMass(1.019461);
+        out->SetPairCuts(cutsPair);
+        out->AddAxis(fdpt, 30, 0., 3.);
+        out->AddAxis(sdpt, 30, 0., 3.);
+        out->AddAxis(ptID, 300, 0., 3.);
 
         // get reflections
         if (checkReflex) {
@@ -509,7 +518,7 @@ Bool_t ConfigPhiPP13TeV_PID(
     // record baryons: temporary modification for signal-loss corrections of
     // other particles
 
-    if (isMC) {
+    if (0 && isMC) {
         for (Int_t i = 0; i < 7; i++) {
             if (!i) {
                 mName.Form("K0S");

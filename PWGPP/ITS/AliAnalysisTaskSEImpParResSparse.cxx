@@ -123,6 +123,7 @@ fUseGeneratedPt(kFALSE)
 ,fCountTracks(0)
 ,fNumTracksperEv(0)
 ,fNumContributors(0)
+,fUseOnlyPrimPartMC(kTRUE)
 
 {
     //
@@ -194,6 +195,7 @@ fUseGeneratedPt(kFALSE)
 ,fCountTracks(0)
 ,fNumTracksperEv(0)
 ,fNumContributors(0)
+,fUseOnlyPrimPartMC(kTRUE)
 {
     //
     // Default constructor
@@ -954,7 +956,7 @@ void AliAnalysisTaskSEImpParResSparse::UserExec(Option_t */*option*/)
         fCountTracks->Fill(6);
         
         // Select primary particle if MC event (for ESD event), Rprod < 1 micron
-        if(fReadMC){
+        if(fReadMC && fUseOnlyPrimPartMC){
             if(fIsAOD){
                 if(AODpart &&
 		   (AODpart->Xv()-vtxTrue[0])*(AODpart->Xv()-vtxTrue[0])+

@@ -48,6 +48,7 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   Bool_t PassesTrackCuts(AliAODTrack *track);
   Bool_t PassesTrackCutsNoFirst(AliAODTrack *track);
   Bool_t PassesElectronPID(AliAODTrack *track, AliPIDResponse *pid);
+  Bool_t PassesWeakerElectronPID(AliAODTrack *track, AliPIDResponse *pid);
   Bool_t PassesPionPID(AliAODTrack *track, AliPIDResponse *pid);
   Bool_t PassesKaonPID(AliAODTrack *track, AliPIDResponse *pid);
   Bool_t PassesMinimalTrackCuts(AliAODTrack *track);
@@ -67,12 +68,17 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   
   TH2D * fIPData;
   
+  TH1D * fCentrality;
   TH1D * EP2040;
   TH1D * EP2040Corrected;
   TH1D * EP2040V0A;
   TH1D * EP2040V0C;
   
   TH2D * TPCnSigma;
+  TH3D * fTPCnSigmaCentIP;
+  TH3D * fTPCnSigmaCentOOP;
+  TH3D * fEleV0TPCnSigmaCentIP;
+  TH3D * fEleV0TPCnSigmaCentOOP;
 
   TH2D * EPCent;
   TH2D * EPCentUncorrected;
@@ -86,6 +92,8 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TH2D * fpTIP2040OOP;
   TH2D * fpTIP3050IP;
   TH2D * fpTIP3050OOP;
+  TH2D * fpTIP3050IPAlternativeCut; // TPC cut of -1 instead of -0.5 to combat
+  TH2D * fpTIP3050OOPAlternativeCut; // loss of efficiency due to shifted center
   
   TH1D * EventSelectionSteps;
 
@@ -99,7 +107,7 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TH2D * fPionV0pTTPCWithCuts;
   TH2D * fPionV0pTTPCIP;
   TH2D * fPionV0pTTPCOOP;
-  TH2D * fPionV0pTTPCIPWTOF;
+  TH2D * fPionV0pTTPCIPWTOF; // These are actually electron V0s
   TH2D * fPionV0pTTPCOOPWTOF;
   TH2D * fPionV0pTTPCIPnoFirst;
   TH2D * fPionV0pTTPCOOPnoFirst;
@@ -141,7 +149,7 @@ class AliAnalysisTaskHFEIPCorrection : public AliAnalysisTaskSE {
   TRandom3 * fRd;
   TSpline3 * fSplineCorr;
   
-  ClassDef(AliAnalysisTaskHFEIPCorrection, 2);
+  ClassDef(AliAnalysisTaskHFEIPCorrection, 5);
 };
 
 #endif

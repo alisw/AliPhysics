@@ -53,6 +53,9 @@ class AliTPCPIDEtaTree : public AliTPCPIDBase {
   
   Double_t GetPtpcPionCut() const { return fPtpcPionCut; };
   void SetPtpcPionCut(Double_t pTPCpionCut) { fPtpcPionCut = pTPCpionCut; };
+
+  Bool_t GetUseFilteredTreeCuts() const { return fUseFilteredTreeCuts; };
+  void SetUseFilteredTreeCuts(Bool_t useFilteredTreeCuts = kFALSE) { fUseFilteredTreeCuts = useFilteredTreeCuts; };
   
  private:
   Short_t fNumEtaCorrReqErrorsIssued;  // Number of times the error about eta correction issues have been displayed
@@ -62,6 +65,7 @@ class AliTPCPIDEtaTree : public AliTPCPIDBase {
   Bool_t fStoreNumOfSubthresholdclusters; // Store number of subthreshold clusters in tree?
   Bool_t fStoreNumClustersInActiveVolume; // Store number of clusters in active volume in tree?
   Bool_t fDoAdditionalQA; // Save output for additional QA, like TOF QA?
+  Bool_t fUseFilteredTreeCuts; // Apply cuts used in the filtered tree analysis
   Double_t fPtpcPionCut; // Cut on pions with lower tpc momentum
   
   Double_t fPtpc; // TPC momentum

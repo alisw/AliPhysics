@@ -12,17 +12,17 @@
 // --- ROOT system ---
 
 #include "TMath.h"
-#include "AliKFParticle.h"
+#include "AliGAKFParticle.h"
 #include "AliKFConversionPhoton.h"
 
-class AliKFConversionMother : public AliKFParticle {
+class AliKFConversionMother : public AliGAKFParticle {
 
  public:
 
   //Constructors
   AliKFConversionMother();
-  //AliKFConversionMother(AliKFParticle &kfparticle);
- // AliKFConversionMother(const AliKFParticle &d1,const AliKFParticle &d2);
+  //AliKFConversionMother(AliGAKFParticle &kfparticle);
+ // AliKFConversionMother(const AliGAKFParticle &d1,const AliGAKFParticle &d2);
   AliKFConversionMother(const AliKFConversionPhoton &d1,const AliKFConversionPhoton &d2);
 
 
@@ -56,9 +56,9 @@ class AliKFConversionMother : public AliKFParticle {
 
  private:
     Double_t fOpeningAngle; // of decay gammas
-    Double_t fAlpha; // of the meson
-    Int_t fLabel[2]; // Labels of two decay gammas
-    Int_t fMCLabel; // MC label
+    Double_t fAlpha;        // of the meson
+    Int_t fLabel[2];        // Labels of two decay gammas
+    Int_t fMCLabel;         // MC label
 
   ClassDef(AliKFConversionMother,2)
 };

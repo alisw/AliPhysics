@@ -164,11 +164,11 @@ class AliAnalysisTaskGenUeSpherocity : public AliAnalysisTaskSE { //
 		TH1F * fNchRec[3];
 		TH1F * fNchSoSelRec[3];
 
-		TH2D * hDphiSoIS[78];
-		TH2D * hPtVsSoIS[78];
-		TH2D * hPtVsSoNS[78];
-		TH2D * hPtVsSoAS[78];
-		TH2D * hPtVsSoTS[78];
+		TH2D * hDphiSoIS[122];
+		TH2D * hPtVsSoIS[122];
+		TH2D * hPtVsSoNS[122];
+		TH2D * hPtVsSoAS[122];
+		TH2D * hPtVsSoTS[122];
 
 		TList* fListOfObjects;	//!<! Output list of objects
 

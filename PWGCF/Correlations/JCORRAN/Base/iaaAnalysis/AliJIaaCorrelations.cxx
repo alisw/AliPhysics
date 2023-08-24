@@ -15,10 +15,10 @@
 
 // Implementation for correlation analysis
 
-#include "AliJIaaCorrelations.h"
+#include <AliJIaaCorrelations.h>
 
-#include "../AliJBaseTrack.h"
-#include "../AliJCard.h"
+#include <AliJBaseTrack.h>
+#include <AliJCard.h>
 
 double DeltaPhi(double phi1, double phi2) {
 	// dphi

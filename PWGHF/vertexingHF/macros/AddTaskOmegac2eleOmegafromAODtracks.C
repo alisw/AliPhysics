@@ -1,9 +1,9 @@
 AliAnalysisTaskSEOmegac2eleOmegafromAODtracks *AddTaskOmegac2eleOmegafromAODtracks(TString finname="",
 								   Bool_t theMCon=kFALSE,
-									 Bool_t ispp= kFALSE,
+                                   Bool_t ispp= kTRUE,
 								   Bool_t writeVariableTree=kTRUE,
-									 Bool_t domixing=kFALSE,
-									 Bool_t reconstructPrimVert=kFALSE,
+                                   Bool_t domixing=kFALSE,
+                                   Bool_t reconstructPrimVert=kFALSE,
 								   Bool_t writeEachVariableTree=kFALSE,
 								   Bool_t writeMCVariableTree=kFALSE,
 								   Int_t nTour=0
@@ -24,7 +24,7 @@ AliAnalysisTaskSEOmegac2eleOmegafromAODtracks *AddTaskOmegac2eleOmegafromAODtrac
   } else {
     filecuts=TFile::Open(finname.Data());
     if(!filecuts ||(filecuts&& !filecuts->IsOpen())){
-      AliFatal("Input file not found : check your cut object");
+      printf("Input file not found : check your cut object");
     }
   }
 
@@ -36,13 +36,13 @@ AliAnalysisTaskSEOmegac2eleOmegafromAODtracks *AddTaskOmegac2eleOmegafromAODtrac
   RDHFCutsOmegac2eleOmegaanal->SetMaxPtCandidate(10000.);
   if (!RDHFCutsOmegac2eleOmegaanal) {
     cout << "Specific AliRDHFCutsOmegac2eleOmegaanal not found\n";
-    return;
+    return NULL;
   }
 
 
   //CREATE THE TASK
 
-  printf("CREATE TASK\n");
+  printf("+++++++++++++++++++++++++++++++++++CREATE TASK\n");
   AliAnalysisTaskSEOmegac2eleOmegafromAODtracks *task = new AliAnalysisTaskSEOmegac2eleOmegafromAODtracks("AliAnalysisTaskSEOmegac2eleOmegafromAODtracks",RDHFCutsOmegac2eleOmegaanal,writeVariableTree);
   task->SetMC(theMCon);
 	if(ispp)
@@ -105,7 +105,17 @@ AliAnalysisTaskSEOmegac2eleOmegafromAODtracks *AddTaskOmegac2eleOmegafromAODtrac
   mgr->ConnectOutput(task,7,coutputLc7);
   AliAnalysisDataContainer *coutputLc8 = mgr->CreateContainer(Form("eleOmegaCounter%1d",nTour),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data()); //counter
   mgr->ConnectOutput(task,8,coutputLc8);
+    
+    AliAnalysisDataContainer *coutputLc9 = mgr->CreateContainer(Form("eleOmega_correlationvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
+    mgr->ConnectOutput(task,9,coutputLc9);
+    
+    AliAnalysisDataContainer *coutputLc10 = mgr->CreateContainer(Form("eleOmega_mcelevariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
+    mgr->ConnectOutput(task,10,coutputLc10);
+    AliAnalysisDataContainer *coutputLc11 = mgr->CreateContainer(Form("eleOmega_mccascvariables%1d",nTour),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // variables tree
+    mgr->ConnectOutput(task,11,coutputLc11);
 
+    
+    
   return task;
 
 }

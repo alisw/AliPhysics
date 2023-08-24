@@ -1,3 +1,8 @@
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS);
+#include <PWG/EMCAL/macros/AddTaskMCTrackSelector.C>
+#include <PWGJE/EMCALJetTasks/macros/AddTaskEmcalJet.C>
+#include <PWGJE/EMCALJetTasks/macros/AddTaskRhoNew.C>
+
 /*************************************************************************************************
 ***  Add Fragmentation Function Task ***
 **************************************************************************************************
@@ -25,194 +30,107 @@ Typical parameters to run on 11a1* (MC_pp@7TeV):
 
 ***************************************************************************************************/
 
-void postConfig(AliAnalysisTaskIDFragmentationFunction* task, TString suffixPIDtaskJets1, TString suffixPIDtaskJets2,
-                TString suffixPIDtaskInclusive1, TString suffixPIDtaskInclusive2) {
+void SetEfficiencyFunctionsFastSimulation(AliAnalysisTaskIDFragmentationFunction *task = 0x0, TString fastSimParamFile = "", Double_t effFactor = 1.0, Double_t resFactor = 1.0, Int_t ffChange = 0) {
+  if (!task || !task->GetUseFastSimulations())
+    return;
 
-  task->SetBckgType(AliAnalysisTaskIDFragmentationFunction::kBckgPerp2,
-        AliAnalysisTaskIDFragmentationFunction::kBckgPerp,
-          AliAnalysisTaskIDFragmentationFunction::kBckgPerp2Area,
-            AliAnalysisTaskIDFragmentationFunction::kBckgOutAJStat,
-            AliAnalysisTaskIDFragmentationFunction::kBckgOut2J);
+  TF1** effFunctions = new TF1*[2*AliPID::kSPECIES];
+  
+  //effFactor: Multiplied with the parametrized efficiency
+	//resFactor: Multiplied with the observed resolution
+  //ffChange: 0 for normal Fragmentation, 1 for low-Pt enhancement, 2 for low-Pt depletion
+  
+  const Double_t kObsResolution = 0.002;  //Only change if the observed resolution is changing (external study)
+  
+  TString parameterString = AliPieceWisePoly::ReadFSParameters(fastSimParamFile.Data(), effFunctions);                                                        
+	
+  task->SetEfficiencyFunctions(effFunctions);
+  task->SetFastSimulationParameters(parameterString);    // Set string with joined parameters additionally, because the functions are transient and will not be copied. Functions are initialized again at the start of the run
+  task->SetFastSimEffFactor(effFactor);
+  task->SetFastSimRes(kObsResolution);   
+  task->SetFastSimResFactor(resFactor);
+  task->SetFFChange(static_cast<AliAnalysisTaskIDFragmentationFunction::FragmentationFunctionChange>(ffChange));
+  return;
+}
 
-  task->SetBranchRecBackClusters("");
+void postConfig(AliAnalysisTaskIDFragmentationFunction* task, TString namesOfInclusivePIDtasks, TString namesOfJetPIDtasks,
+                TString namesOfJetUEPIDtasks, TString namesOfJetUEMethods) {
+	
+	TObjArray* nameArrayInclusive = namesOfInclusivePIDtasks.Tokenize(";");
+	Int_t numInclusivePIDtasks = nameArrayInclusive->GetEntriesFast();
+	TString* namesOfInclusiveTasks = new TString[numInclusivePIDtasks];
+	for (Int_t i=0;i<numInclusivePIDtasks;i++) {
+		namesOfInclusiveTasks[i] = (((TObjString*)(nameArrayInclusive->At(i)))->GetString());
+	}
+	task->SetNamesOfInclusivePIDtasks(numInclusivePIDtasks, namesOfInclusiveTasks);  
 
-   // Define histo bins
-   //task->SetFFHistoBins(23, 5, 120, 480, 0., 120.,70,  0., 7., 52, 0.,  1.3);
-   task->SetQATrackHistoBins(2400,0,120); // 50 MeV binning for comp to track dN/dpt prel. plot
-   
-   // JS on
-   task->SetJSMode();
-   
-   task->SetEffMode(0);
+	
+	TObjArray* nameArrayJets = namesOfJetPIDtasks.Tokenize(";");
+	Int_t numJetPIDtasks = nameArrayJets->GetEntriesFast();
+	TString* namesOfJetTasks = new TString[numJetPIDtasks];
+	for (Int_t i=0;i<numJetPIDtasks;i++) {
+		namesOfJetTasks[i] = (((TObjString*)(nameArrayJets->At(i)))->GetString());
+	}
+	task->SetNamesOfJetPIDtasks(numJetPIDtasks, namesOfJetTasks);  
+	
+	
+	TObjArray* nameArrayJetsUE = namesOfJetUEPIDtasks.Tokenize(";");
+	Int_t numJetUEPIDtasks = nameArrayJetsUE->GetEntriesFast();
+    TObjArray* nameArrayJetsUEMethods = namesOfJetUEMethods.Tokenize(";");
+    //TODO: Check if length is same for both, if not exit (or take shorter one with warning?)
+	TString* namesOfJetUETasks = new TString[numJetUEPIDtasks];
+    TString* namesOfJetUEMethodsArray = new TString[numJetUEPIDtasks];
+	for (Int_t i=0;i<numJetUEPIDtasks;i++) {
+		namesOfJetUETasks[i] = (((TObjString*)(nameArrayJetsUE->At(i)))->GetString());
+        namesOfJetUEMethodsArray[i] = (((TObjString*)(nameArrayJetsUEMethods->At(i)))->GetString());
+	}
+	task->SetNamesOfJetUEPIDtasks(numJetUEPIDtasks, namesOfJetUETasks, namesOfJetUEMethodsArray);  
   
-  // Set name of PID framework tasks
-   
-  // Invalid: Second suffix set, but first one not set -> No PID tasks set
-  const Int_t numJetPIDtasks = (suffixPIDtaskJets1 != "") * ((suffixPIDtaskJets1 != "") + (suffixPIDtaskJets2 != ""));
-  if (numJetPIDtasks > 0) {
-    TString namesJetPIDtasks[numJetPIDtasks];
-    namesJetPIDtasks[0] = suffixPIDtaskJets1;
-    if (numJetPIDtasks > 1)
-      namesJetPIDtasks[1] = suffixPIDtaskJets2;
-    task->SetNamesOfJetPIDtasks(numJetPIDtasks, namesJetPIDtasks);
-  }
-  else
-    task->SetNamesOfJetPIDtasks(numJetPIDtasks, 0x0);
-  
-  // Same for inclusive
-  const Int_t numInclusivePIDtasks = (suffixPIDtaskInclusive1 != "") *
-                                      ((suffixPIDtaskInclusive1 != "") + (suffixPIDtaskInclusive2 != ""));
-  if (numInclusivePIDtasks > 0) {
-    TString namesInclusivePIDtasks[numInclusivePIDtasks];
-    namesInclusivePIDtasks[0] = suffixPIDtaskInclusive1;
-    if (numInclusivePIDtasks > 1)
-      namesInclusivePIDtasks[1] = suffixPIDtaskInclusive2;
-    task->SetNamesOfInclusivePIDtasks(numInclusivePIDtasks, namesInclusivePIDtasks);
-  }
-  else
-    task->SetNamesOfInclusivePIDtasks(numInclusivePIDtasks, 0x0);
-  
+	
   printf("PID framework:\n");
   printf("Jet PID tasks: ");
   for (Int_t i = 0; i < numJetPIDtasks; i++)
     printf("%s ", task->GetNamesOfJetPIDtasks()[i].Data());
   printf("\n");
-  printf("Inclusive PID task: ");
-  for (Int_t i = 0; i < numInclusivePIDtasks; i++)
-    printf("%s ", task->GetNamesOfInclusivePIDtasks()[i].Data());
-  printf("\n");
-}
-
-
-AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(UInt_t iFlag=1, UInt_t filterMask=32, Int_t eventClass=0){
-        
-        AliAnalysisTaskIDFragmentationFunction *ff=0;
-
-        // UA1 Jets
-        // only reconstructed (default)
-  if(iFlag&(1<<0)) ff = AddTaskIDFragmentationFunction("jetsAOD_UA1", "", "", "", "", filterMask, 0.4,0,1000., eventClass);
-        // charged MC tracks and jets
-  if(iFlag&(1<<1)) ff = AddTaskIDFragmentationFunction("jetsAOD_UA1", "", "jetsAODMC2_UA1", "AODMC", "AODMC2", filterMask, 0.4,0,1000., eventClass);
-        // charged MC tracks and jets with acceptance cuts
-  if(iFlag&(1<<2)) ff = AddTaskIDFragmentationFunction("jetsAOD_UA1", "", "jetsAODMC2_UA1", "AODMCb", "AODMC2b", filterMask, 0.4,0,1000., eventClass);
-        // kine tracks in acceptance, pythia jets in acceptance
-  if(iFlag&(1<<3)) ff = AddTaskIDFragmentationFunction("jetsAOD_UA1", "", "", "KINEb", "KINEb", filterMask, 0.4,0,1000., eventClass);
-        // reconstructed charged tracks after cuts, MC jets in acceptance 
-  if(iFlag&(1<<4)) ff = AddTaskIDFragmentationFunction("jetsAOD_UA1", "", "jetsMC2b", "AODMCb", "AOD2b", filterMask, 0.4,0,1000., eventClass);
-  // reconstruction efficiency: pointing with rec jet axis into gen tracks 
-  if(iFlag&(1<<5)) ff = AddTaskIDFragmentationFunction("jetsAOD_UA1", "", "jetsAODMC2_UA1", "AODb", "AODMC2b", filterMask, 0.4,0,1000., eventClass);
-
-
-
-      // Jet background subtracted
-  // anti-kt, pt cut 1 GeV
-  if(iFlag&(1<<20)) ff = AddTaskIDFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,2,1000.,eventClass, "_Skip00");
-  // anti-kt, pt cut 2 GeV
-  if(iFlag&(1<<21)) ff = AddTaskIDFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,2,2000.,eventClass, "_Skip00");
-  // anti-kt, pt cut 150 MeV
-  if(iFlag&(1<<22)) ff = AddTaskIDFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.2,2,150.,eventClass, "_Skip00");
-
-  
-  // Jet background subtracted
-  if(iFlag&(1<<23)) ff = AddTaskIDFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,2,150.,eventClass, "_Skip00");
-        // charged MC tracks and jets
-  if(iFlag&(1<<24)) ff = AddTaskIDFragmentationFunction("clustersAOD_ANTIKT", "", "jetsAODMC2_FASTJET", "AODMC", "AODMC2", filterMask, 0.4,2,150.,eventClass, "_Skip00");
-        // charged MC tracks and jets with acceptance cuts
-  if(iFlag&(1<<25)) ff = AddTaskIDFragmentationFunction("clustersAOD_ANTIKT", "", "jetsAODMC2_FASTJET", "AODMCb", "AODMC2b", filterMask, 0.4,2,150., eventClass, "_Skip00");
-
-       if(iFlag&(1<<26)) ff = AddTaskIDFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,1,150.,eventClass, "_Skip00");
-
-       if(iFlag&(1<<27)) ff = AddTaskIDFragmentationFunction("clustersAOD_ANTIKT", "", "", "", "", filterMask, 0.4,3,150.,eventClass, "_Skip00"); 
-
-      // SISCONE 
-      if(iFlag&(1<<28)) ff = AddTaskIDFragmentationFunction("jetsAOD_SISCONE", "", "", "", "", filterMask, 0.4,1,150.,eventClass);
-      if(iFlag&(1<<29)) ff = AddTaskIDFragmentationFunction("jetsAOD_SISCONE", "", "", "", "", filterMask, 0.4,2,150.,eventClass);
-      if(iFlag&(1<<30)) ff = AddTaskIDFragmentationFunction("jetsAOD_SISCONE", "", "", "", "", filterMask, 0.4,3,150.,eventClass);
-
-  return ff;
-}
-
-// _______________________________________________________________________________________
-
-AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunctionAllCent(
-        const char* recJetsBranch,
-  const char* recJetsBackBranch,
-  const char* genJetsBranch,
-  const char* jetType,
-  const char* trackType,
-  UInt_t filterMask,
-        Float_t radius,
-        int kBackgroundMode,
-        Int_t PtTrackMin,
-        TString BrOpt="",
-        TString BrOpt2="",
-        TString BrOpt3="",
-        Float_t radiusBckg=0.4,
-  Int_t   FFMaxTrackPt = -1,
-  Float_t FFMinNTracks = 0,
-  TString suffixPIDtaskJets1 = "",
-  TString suffixPIDtaskJets2 = "",
-  TString suffixPIDtaskInclusive1 = "",
-  TString suffixPIDtaskInclusive2 = "")
-{
-
-  // adds task with  given configuration for all centralities
-  
-  AliAnalysisTaskIDFragmentationFunction *ff=0;
-
-  for(Int_t eventClass=1; eventClass<=4; eventClass++){
-    
-    ff = AddTaskIDFragmentationFunction(recJetsBranch,
-              recJetsBackBranch,
-              genJetsBranch,
-              jetType,
-              trackType,
-              filterMask,
-              radius,
-              kBackgroundMode,
-              PtTrackMin,
-              eventClass,
-              BrOpt,
-              BrOpt2,
-              BrOpt3,
-              radiusBckg
-              FFMaxTrackPt,
-              FFMinNTracks,
-              suffixPIDtaskJets1,
-              suffixPIDtaskJets2,
-              suffixPIDtaskInclusive1,
-              suffixPIDtaskInclusive2);
+  printf("Jet Underlying Event PID tasks: ");
+  for (Int_t i = 0; i < numJetUEPIDtasks; i++) {
+    printf("%s ", task->GetNamesOfJetUEPIDtasks()[i].Data());
+    cout << ";  Underlying event subtraction method: " << task->GetUEMethods()[i] << endl; 
   }
-  
-  return ff;
+  printf("\n");  
+  printf("Inclusive PID task: ");
+  for (Int_t i = 0; i < numInclusivePIDtasks; i++) {
+    printf("%s ", task->GetNamesOfInclusivePIDtasks()[i].Data());
+  }
 }
 
 // _______________________________________________________________________________________
 
 AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
-        const char* recJetsBranch,
-  const char* recJetsBackBranch,
-  const char* genJetsBranch,
-  const char* jetType,
-  const char* trackType,
-  UInt_t filterMask,
-  Float_t radius,
-  Int_t kBackgroundMode,
-  Int_t PtTrackMin,
-  Int_t eventClass=0,
-  TString BrOpt="",
-  TString BrOpt2="",
-  TString BrOpt3="",
-  Float_t radiusBckg=0.4,
+  const char* recJetsBranch = "clustersAOD_ANTIKT",
+  const char* recJetsBackBranch = "",
+  const char* genJetsBranch = "clustersAODMC2_ANTIKT",
+  const char* jetType = "AODMCb",
+  const char* trackType = "AODMC2b",
+  Float_t radius = -0.4,
+  Int_t PtTrackMin = 150.0,
+  Int_t eventClass=-1,
   Int_t FFMaxTrackPt = -1,
   Int_t FFMinNTracks = 0,
   UInt_t filterMaskTracks = 0,
   Bool_t onlyConsiderLeadingJets = kFALSE,
-  TString suffixPIDtaskJets1 = "",
-  TString suffixPIDtaskJets2 = "",
-  TString suffixPIDtaskInclusive1 = "",
-  TString suffixPIDtaskInclusive2 = "",
-  Float_t MC_pThard_cut = -1.)
+  Float_t MC_pThard_cut = -1.,
+  TString namesOfInclusivePIDtasks = "",
+  TString namesOfJetPIDtasks = "",
+  TString namesOfJetUEPIDtasks = "",
+  TString namesOfJetUEMethods = "",
+  AliAnalysisTaskEmcal::BeamType iBeamType = AliAnalysisTaskEmcal::kpp,
+  Int_t nJetContainer = 1,
+  AliEmcalJet::JetAcceptanceType* jetAcceptanceRegion = 0x0,
+  AliJetContainer::EJetType_t* typeOfJet = 0x0,
+  TString correctionTaskFileName = "",
+  TString period = "lhc13c",
+  TString fastSimParamFile = "")
 {
    // Creates a fragmentation function task,
    // configures it and adds it to the analysis manager.
@@ -221,22 +139,99 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
    //*** Configuration Parameter **************************************************
    //******************************************************************************
 
-   // space for configuration parameter: histo bin, cuts, ...
-   // so far only default parameter used
-
-   Int_t debug = -1; // debug level, -1: not set here
-
-   //******************************************************************************
-
-
-   
-   // Get the pointer to the existing analysis manager via the static access method.
+	// space for configuration parameter: histo bin, cuts, ...
+	// so far only default parameter used
+  
+     // Get the pointer to the existing analysis manager via the static access method.
    //==============================================================================
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
     ::Error("AddTaskIDFragmentationFunction", "No analysis manager to connect to.");
     return NULL;
    }
+
+	Int_t debug = -1; // debug level, -1: not set here
+	UInt_t kPhysSel = AliVEvent::kMB | AliVEvent::kINT8 | AliVEvent::kINT7;
+	AliEmcalTrackSelection::ETrackFilterType_t trackFilterType = AliEmcalTrackSelection::kHybridTracks2011woNoRefit;
+	
+	Bool_t subtractBackgroundPt = kFALSE;
+	UInt_t kNumberExcludeJetsInBackground = 2;
+  
+	Double_t trackPtCut = PtTrackMin/1000.0;
+	Double_t ghostArea = 0.005;
+	Double_t clustPtCut = 0.5;
+	Double_t jetMinPt = 1.0;
+	Float_t kEtaMin = -0.9;
+	Float_t kEtaMax = 0.9;
+	
+	Int_t kMinMultiplicity = -1;
+	Int_t kMaxMultiplicity = -1;
+	
+  //Calculated parameters
+	Bool_t useJets = nJetContainer > 0;
+	
+	Bool_t useFastSimulation = fastSimParamFile != "";
+	
+	Double_t absRadiusCut = TMath::Abs(radius);
+	
+	AliTrackContainer::SetDefTrackCutsPeriod(period);  
+	
+  if (!jetAcceptanceRegion) {
+    jetAcceptanceRegion = new AliEmcalJet::JetAcceptanceType[nJetContainer];
+    for (Int_t i=0;i<nJetContainer;i++) {
+      jetAcceptanceRegion[i] = AliEmcalJet::kTPC;
+    }
+  }
+  
+  if (!typeOfJet) {
+    typeOfJet = new AliJetContainer::EJetType_t[nJetContainer];
+    for (Int_t i=0;i<nJetContainer;i++) {
+      typeOfJet[i] = AliJetContainer::kChargedJet;
+    }
+  }
+  
+  Bool_t bDoFullJets = kFALSE;
+	for (Int_t i=0;i<nJetContainer;i++) {
+		bDoFullJets = bDoFullJets || (typeOfJet[i] == AliJetContainer::kFullJet);
+  }
+
+   //******************************************************************************
+	
+	Bool_t isMC = mgr->GetMCtruthEventHandler() != 0x0;
+
+	if (isMC) {
+    std::cout << "MCtruthEventHandler found" << std::endl;
+    AddTaskMCTrackSelector("mcparticles", "usedefault", kFALSE, kFALSE, 1, kFALSE);   
+	}	
+  
+	//Create jet Finder
+	if (useJets) {
+		AliEmcalJetTask** jetFinderTask = new AliEmcalJetTask*[nJetContainer];
+			
+		if (bDoFullJets) {
+			AliEmcalCorrectionTask* correctionTask = AliEmcalCorrectionTask::AddTaskEmcalCorrectionTask();
+			correctionTask->SelectCollisionCandidates(kPhysSel);
+			correctionTask->SetUserConfigurationFilename(correctionTaskFileName.Data());
+			correctionTask->Initialize();
+		}
+		
+		for (Int_t i=0;i<nJetContainer;++i) {
+			Bool_t isChargedJet = (typeOfJet[i] == AliJetContainer::kChargedJet);
+			const char* particleName = "usedefault";
+			const char* clustName = isChargedJet ? "" : "usedefault";
+			Double_t clustCut = isChargedJet ? 0.0 : clustPtCut;
+			jetFinderTask[i] = AddTaskEmcalJet(particleName, clustName, AliJetContainer::antikt_algorithm, absRadiusCut, typeOfJet[i], trackPtCut, clustCut, ghostArea, AliJetContainer::pt_scheme, "Jet", jetMinPt, kFALSE, kFALSE);
+			jetFinderTask[i]->SelectCollisionCandidates(kPhysSel);
+			jetFinderTask[i]->SetForceBeamType(iBeamType);
+		}
+
+		AliEmcalJetTask* jetFinderTaskMC = 0x0;
+		if (isMC) {
+			AliEmcalJetTask* jetFinderTaskMC = AddTaskEmcalJet("mcparticles", "", AliJetContainer::antikt_algorithm, absRadiusCut, AliJetContainer::kChargedJet, trackPtCut, clustPtCut, ghostArea, AliJetContainer::pt_scheme, "Jet", jetMinPt, kFALSE, kFALSE );  
+			jetFinderTaskMC->SelectCollisionCandidates(kPhysSel);
+			jetFinderTaskMC->SetForceBeamType(iBeamType);    
+		}
+	}  
    
    // Check the analysis type using the event handlers connected to the analysis manager.
    //==============================================================================
@@ -267,132 +262,166 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
         Form("Fragmentation_Function_%s_%s_%s_%s_filterMaskTracks%d", branchRecJets.Data(), branchGenJets.Data(), typeJets.Data(),
              typeTracks.Data(), filterMaskTracks));
    
-   if(debug>=0) task->SetDebugLevel(debug);
-   
-   Printf("Rec Jets %s", branchRecJets.Data());
-   Printf("Back Rec Jets %s", branchRecBackJets.Data());
-   Printf("Gen Jets %s", branchGenJets.Data());
-   Printf("Jet Type %s", typeJets.Data());
-   Printf("Track Type %s", typeTracks.Data());
-   
-   Printf("Radius cut: %f", radius);
-   Printf("FilterMaskTracks: %d", filterMaskTracks);
-   Printf("MC_pThard_cut: %f", MC_pThard_cut);
-   
-   // attach the filter mask and options
-   TString cAdd = "";
-   cAdd += Form("%02d",(int)((TMath::Abs(radius)+0.01)*10.));
-   cAdd += Form("_B%d",(int)((kBackgroundMode)));
-   cAdd += Form("_Filter%05d",filterMask);
-   cAdd += Form("_Cut%05d",PtTrackMin);
-   cAdd += Form("%s",BrOpt.Data());
-   cAdd += Form("%s",BrOpt2.Data());
+   if (debug>=0) 
+		 task->SetDebugLevel(debug);
 
-   Printf("%s",cAdd.Data());
-
-   TString cAddb = "";
-   cAddb += Form("%02d",(int)((radiusBckg+0.01)*10.));
-   cAddb += Form("_B%d",(int)((kBackgroundMode)));
-   cAddb += Form("_Filter%05d",filterMask);
-   cAddb += Form("_Cut%05d",PtTrackMin);
-   cAddb += Form("%s",BrOpt.Data());
-   cAddb += Form("%s",BrOpt2.Data());
-
-   Printf("%s",cAddb.Data());
-
-   TString cAddmc = "";
-   cAddmc += Form("%02d",(int)((TMath::Abs(radius)+0.01)*10.));
-   cAddmc += Form("_B%d",(int)((kBackgroundMode)));
-   cAddmc += Form("_Filter%05d",filterMask);
-   cAddmc += Form("_Cut%05d",PtTrackMin);
-   cAddmc += Form("%s",BrOpt3.Data());
-
-   Printf("%s",cAddmc.Data());
-
-
-   if(branchRecJets.Contains("AOD")&&branchRecJets.Contains("jets")&&!branchRecJets.Contains("MC"))branchRecJets = branchRecJets + cAdd;
-   if(branchRecJets.Contains("AOD")&&branchRecJets.Contains("cluster")&&!branchRecJets.Contains("MC"))branchRecJets = branchRecJets + cAdd;
-
-   if(branchRecBackJets.Contains("back")&&branchRecBackJets.Contains("cluster")&&!branchRecBackJets.Contains("MC"))branchRecBackJets = branchRecBackJets + cAddb; 
-
-   if(branchGenJets.Contains("AOD")&&branchGenJets.Contains("MC"))branchGenJets = branchGenJets + cAddmc;
-
-   Printf("Gen jets branch %s: ", branchGenJets.Data());
-   Printf("Rec jets branch %s: ", branchRecJets.Data());
-   Printf("Jet backg branch %s: ", branchRecBackJets.Data());
-
-   if(!branchRecJets.Contains("noRecJets")) task->SetBranchRecJets(branchRecJets);
-   if(!branchRecBackJets.Contains("noRecBackJets")) task->SetBranchRecBackJets(branchRecBackJets);
-   if(!branchGenJets.Contains("noGenJets")) task->SetBranchGenJets(branchGenJets);
-
-
-   if(typeTracks.Contains("AODMC2b"))      task->SetTrackTypeGen(AliAnalysisTaskIDFragmentationFunction::kTrackAODMCChargedAcceptance);
-   else if(typeTracks.Contains("AODMC2"))  task->SetTrackTypeGen(AliAnalysisTaskIDFragmentationFunction::kTrackAODMCCharged);
-   else if(typeTracks.Contains("AODMC"))   task->SetTrackTypeGen(AliAnalysisTaskIDFragmentationFunction::kTrackAODMCAll);
-   else if(typeTracks.Contains("KINE2b"))  task->SetTrackTypeGen(AliAnalysisTaskIDFragmentationFunction::kTrackKineChargedAcceptance);
-   else if(typeTracks.Contains("KINE2"))   task->SetTrackTypeGen(AliAnalysisTaskIDFragmentationFunction::kTrackKineCharged);
-   else if(typeTracks.Contains("KINE"))    task->SetTrackTypeGen(AliAnalysisTaskIDFragmentationFunction::kTrackKineAll);
-   else if(typeTracks.Contains("AODb"))    task->SetTrackTypeGen(AliAnalysisTaskIDFragmentationFunction::kTrackAODCuts);
-   else if(typeTracks.Contains("AOD"))     task->SetTrackTypeGen(AliAnalysisTaskIDFragmentationFunction::kTrackAOD);
-   else if(typeTracks.Contains("trackTypeUndef")) task->SetTrackTypeGen(0); // undefined
-   else Printf("trackType %s not found", typeTracks.Data());
-
-   if(typeJets.Contains("AODMCb"))         task->SetJetTypeGen(AliAnalysisTaskIDFragmentationFunction::kJetsGenAcceptance);
-   else if(typeJets.Contains("AODMC"))     task->SetJetTypeGen(AliAnalysisTaskIDFragmentationFunction::kJetsGen);
-   else if(typeJets.Contains("KINEb"))     task->SetJetTypeGen(AliAnalysisTaskIDFragmentationFunction::kJetsKineAcceptance);
-   else if(typeJets.Contains("KINE"))      task->SetJetTypeGen(AliAnalysisTaskIDFragmentationFunction::kJetsKine);
-   else if(typeJets.Contains("AODb"))      task->SetJetTypeGen(AliAnalysisTaskIDFragmentationFunction::kJetsRecAcceptance);
-   else if(typeJets.Contains("AOD"))       task->SetJetTypeGen(AliAnalysisTaskIDFragmentationFunction::kJetsRec);
-   else if(typeJets.Contains("jetTypeUndef")) task->SetJetTypeGen(0); // undefined
-   else Printf("jetType %s not found", typeJets.Data());
-   
-   if(typeJets.Contains("AODMCb")) task->SetJetTypeRecEff(AliAnalysisTaskIDFragmentationFunction::kJetsGenAcceptance); // kJetsRecAcceptance
-   else if(typeJets.Contains("AODb")) task->SetJetTypeRecEff(AliAnalysisTaskIDFragmentationFunction::kJetsRecAcceptance); 
-   else task->SetJetTypeRecEff(0);
-
-   if(!filterMaskTracks) task->SetFilterMask(filterMask);
-   else task->SetFilterMask(filterMaskTracks);
-
-   task->SetEventSelectionMask(AliVEvent::kMB);
+   task->SetUseNewCentralityEstimation(kTRUE);
+   task->SetEventSelectionMask(kPhysSel);
    task->SetEventClass(eventClass);
-  
+	 
    // Set default parameters 
    // Cut selection 
-
-   if(PtTrackMin == 150)       task->SetTrackCuts();  // default : pt > 0.150 GeV, |eta|<0.9, full phi acc
-   else if(PtTrackMin == 1000) task->SetTrackCuts(1.0, -0.9, 0.9, 0., 2*TMath::Pi());
-   else if(PtTrackMin == 2000) task->SetTrackCuts(2.0, -0.9, 0.9, 0., 2*TMath::Pi());
-   else                        task->SetTrackCuts(0.001*PtTrackMin,-0.9, 0.9, 0., 2*TMath::Pi());
-
-
-   task->SetJetCuts();          // default: jet pt > 5 GeV, |eta|<0.5, full phi acc
    task->SetFFRadius(radius); 
-   task->SetFFBckgRadius();     // default: R = 0.7
-   task->SetQAMode();           // default: qaMode = 3
-   task->SetFFMode();           // default: ffMode = 1
-   task->SetIDFFMode(0);        // default: IDffMode = 0
-   task->SetEffMode(0);         // default: effMode = 1
-   task->SetHighPtThreshold();  // default: pt > 5 Gev
-
-   task->SetBckgMode(1);        // default: bgMode = 1 
-   task->SetBckgType();
-   task->SetBranchRecBackClusters(Form("clustersAOD_KT04_B0_Filter%05d_Cut00150_Skip00",filterMask));
+	 task->SelectCollisionCandidates(kPhysSel);
    
    task->SetOnlyLeadingJets(onlyConsiderLeadingJets); // default: kFALSE
    
    task->SetMCPtHardCut(MC_pThard_cut);
+	//Set Centrality Estimator (V0M ist default, V0A should be used for pPb). NoCentrality doesn't store the centrality information
+	if (iBeamType != AliAnalysisTaskEmcal::kpA)
+		task->SetCentralityEstimator("V0M");
+	else
+		task->SetCentralityEstimator("V0A");
    
-   // Define histo bins
-   task->SetFFHistoBins(23, 5, 120, 480, 0., 120.,70,  0., 7.,22,  0.,  1.1);
- 
-   task->SetQAJetHistoBins();
-   task->SetQATrackHistoBins();
-
-   if(FFMaxTrackPt>0) task->SetFFMaxTrackPt(FFMaxTrackPt);
-   if(FFMinNTracks>0) task->SetFFMinNTracks(FFMinNTracks);
+   //TODO For PbPb: Search for Centrality estimator  
+  
+   task->SetUseFastSimulations(useFastSimulation);	
+   if (useFastSimulation) {
+    SetEfficiencyFunctionsFastSimulation(task, fastSimParamFile);
+   }
+// 	 task->SetDoGroomedJets(bDoJetGrooming);
+// 	 task->SetStudyTransversalJetStructure(bStudyTransversalJetStructure);
+// 	 task->SetMinMaxMultiplicity(kMinMultiplicity,kMaxMultiplicity);
 
    mgr->AddTask(task);
+	 
+	 	 
+//   -------------------------------------------------------
+//   Init track and cluster EMCAL containers
+//   -------------------------------------------------------
+	 
+	//Setting up EMCAL jet framework
+	 
+	TString trackName;
+	TString clusName;
 
+	if (type == "ESD") {
+		trackName = "Tracks";
+		clusName = "CaloClusters";
+	}
+	else if (type == "AOD") {
+		trackName = "tracks";
+		clusName = "caloClusters";
+	}
+	else {
+		trackName = "";
+	} 
+		
+	task->SetVzRange(-10,10);
+	task->SetNeedEmcalGeom(bDoFullJets);
+	
+	//Add Track Container to jet Task
+
+	AliTrackContainer* trackCont = task->AddTrackContainer(trackName);
+	trackCont->SetEtaLimits(kEtaMin,kEtaMax);
+	trackCont->SetName("ReconstructedTracks");
+	task->SetNameTrackContainer("ReconstructedTracks");
+	
+	trackCont->SetParticlePtCut(trackPtCut);
+	trackCont->SetTrackFilterType(trackFilterType);
+	trackCont->SetAODFilterBits(filterMaskTracks);
+	
+	AliClusterContainer* clusCont = 0x0;
+	if (bDoFullJets) {
+		clusCont = task->AddClusterContainer(clusName);
+		clusCont->SetClusECut(clustPtCut);
+		clusCont->SetExoticCut(kTRUE);
+		clusCont->SetClusECut(0.);
+		clusCont->SetClusPtCut(0.);
+		clusCont->SetClusNonLinCorrEnergyCut(0.);
+		clusCont->SetClusHadCorrEnergyCut(clustPtCut);
+		clusCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr); 
+	}
+	 
+	 AliJetContainer** jetContainer = new AliJetContainer*[nJetContainer];
+	
+	if (useJets) {
+		TString jetContainerNames[nJetContainer];
+		for (Int_t i=0;i<nJetContainer;++i) {
+			Bool_t isChargedJet = (typeOfJet[i] == AliJetContainer::kChargedJet);
+			jetContainer[i] = task->AddJetContainer(typeOfJet[i], AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, absRadiusCut, jetAcceptanceRegion[i], trackCont, isChargedJet ? 0x0 : clusCont);
+			jetContainer[i]->SetMinPt(jetMinPt);
+//       jetContainer[i]->SetEtaLimits(kEtaMin, kEtaMax); //Normally not needed, handled by the *fid region
+			jetContainer[i]->SetPhiLimits(-10.0, 10.0);   //Full acceptance  
+			jetContainer[i]->PrintCuts();
+			jetContainerNames[i] = jetContainer[i]->GetName();
+		}
+		
+		task->SetNameJetContainer(jetContainerNames[0]);
+	}
+		
+	AliJetContainer* jetMCContainer = 0x0;
+		
+	AliTrackContainer* trackContainerEfficiency = 0x0;
+	
+	if (isMC) {
+		AliMCParticleContainer* mcPartCont = task->AddMCParticleContainer("mcparticles");
+		
+		mcPartCont->SetParticlePtCut(trackPtCut);
+		mcPartCont->SetParticleEtaLimits(kEtaMin,kEtaMax);
+		mcPartCont->SetParticlePhiLimits(-10.0,10.0);
+		mcPartCont->SetCharge(AliParticleContainer::kCharged);
+		task->SetNameMCParticleContainer(mcPartCont->GetName());  
+		
+		trackContainerEfficiency = task->AddTrackContainer(trackName);
+		trackContainerEfficiency->SetAODFilterBits(filterMaskTracks);
+		trackContainerEfficiency->SetFilterHybridTracks(kTRUE);
+		trackContainerEfficiency->SetParticlePtCut(0.0);
+		trackContainerEfficiency->SetParticleEtaLimits(-100.0,100.0);
+		trackContainerEfficiency->SetParticlePhiLimits(-10.0,10.0);
+		trackContainerEfficiency->SetName("ReconstructedTracksEfficiency");
+		task->SetNameTrackContainerEfficiency(trackContainerEfficiency->GetName());
+		
+		if (useJets) {
+			jetMCContainer = task->AddJetContainer(AliJetContainer::kChargedJet, AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, absRadiusCut, AliJetContainer::kTPCfid, mcPartCont,0x0);
+			task->SetNameMCParticleJetContainer(jetMCContainer->GetName());
+			jetMCContainer->SetMinPt(jetMinPt);
+			jetMCContainer->SetEtaLimits(kEtaMin,kEtaMax);
+			jetMCContainer->SetPhiLimits(-10.0,10.0);
+		}
+	}
+		
+	// Background
+	if (subtractBackgroundPt && useJets && jetContainer[0]) {
+		if (iBeamType != AliAnalysisTaskEmcal::kpp) {
+			TString sRhoChName = "Rho";
+			TString sRhoFuName = "Rho_Scaled";
+
+			AliEmcalJetTask *pKtChJetTask = AddTaskEmcalJet("usedefault", "", AliJetContainer::kt_algorithm, absRadiusCut, AliJetContainer::kChargedJet, trackPtCut, 0, ghostArea, AliJetContainer::pt_scheme, "Jet", 1.0, kFALSE, kFALSE);
+			pKtChJetTask->SelectCollisionCandidates(kPhysSel);
+			
+			AliAnalysisTaskRho* pRhoTask = AddTaskRhoNew("usedefault", "usedefault", sRhoChName, 0.4);
+			pRhoTask->SetExcludeLeadJets(kNumberExcludeJetsInBackground);
+			pRhoTask->SelectCollisionCandidates(kPhysSel);
+
+//       if (bDoFullJets) {
+//         TString sFuncPath = "alien:///alice/cern.ch/user/s/saiola/LHC11h_ScaleFactorFunctions.root";
+//         TString sFuncName = "LHC11h_HadCorr20_ClustersV2";
+//         pRhoTask->LoadRhoFunction(sFuncPath, sFuncName);
+//       }
+			
+			for (Int_t i=0;i<nJetContainer;++i) {
+				jetContainer[i]->SetRhoName(sRhoChName);
+				jetContainer[i]->SetPercAreaCut(0.6);
+			}
+			if (jetMCContainer) {
+				jetMCContainer->SetRhoName(sRhoChName);
+				jetMCContainer->SetPercAreaCut(0.6);
+			}
+			
+		}
+	}
+		
    // Create ONLY the output containers for the data produced by the task.
    // Get and connect other common input/output containers via the manager as below
    //==============================================================================
@@ -421,17 +450,19 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
      strList += Form("_TrackFilter%05d",filterMaskTracks);
      strDir  += Form("_TrackFilter%05d",filterMaskTracks);
    }
-
-
+   
    AliAnalysisDataContainer *coutput_FragFunc = mgr->CreateContainer(strList,TList::Class(),
                      AliAnalysisManager::kOutputContainer,
-                     strDir);
-
-   mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
-   mgr->ConnectOutput (task, 0, mgr->GetCommonOutputContainer());// Comment to run locally
-   mgr->ConnectOutput (task, 1, coutput_FragFunc);
+                     strDir);   
    
-   postConfig(task, suffixPIDtaskJets1, suffixPIDtaskJets2, suffixPIDtaskInclusive1, suffixPIDtaskInclusive2);
+   mgr->ConnectInput  (task, 0, mgr->GetCommonInputContainer());
+  if (mgr->GetCommonOutputContainer()) {
+    //Not present for local runs
+    mgr->ConnectOutput (task,  0, mgr->GetCommonOutputContainer());
+  }
+   mgr->ConnectOutput (task, 1, coutput_FragFunc);   
+   
+   postConfig(task, namesOfInclusivePIDtasks, namesOfJetPIDtasks, namesOfJetUEPIDtasks, namesOfJetUEMethods);
    
    return task;
 }

@@ -4,9 +4,9 @@
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 //#include <PWGDQ/dielectron/macrosLMEE/LMEECutLib_acapon.C>
 #endif
-void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, Int_t whichDetPlots, Bool_t v0plots, Bool_t plots3D, Bool_t useRun1binning, TString cutDefinition);
+void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, Int_t whichDetPlots, Bool_t v0plots, Bool_t plots3D, TString cutDefinition);
 TVectorD* BinsToVector(Int_t nbins, Double_t min, Double_t max);
-TVectorD* GetVector(Int_t var, Bool_t useRun1binning = kFALSE);
+TVectorD* GetVector(Int_t var);
 enum {kMee = 0, kPtee, kPt, kRuns, kPhiV, kOpAng, kEta2D, kEta3D, kSigmaEle, kSigmaOther, kTPCdEdx, kCent, kPhi2D};
 
 AliDielectron* Config_acapon(TString cutDefinition,
@@ -21,8 +21,7 @@ AliDielectron* Config_acapon(TString cutDefinition,
                              Bool_t setITScorr,
                              Bool_t setTPCcorr,
                              Bool_t setTOFcorr,
-                             Bool_t plots3D,
-                             Bool_t useRun1binning)
+                             Bool_t plots3D)
 {
   // Setup the instance of AliDielectron
   LMEECutLib*  LMcutlib = new LMEECutLib(SDDstatus);
@@ -102,269 +101,30 @@ AliDielectron* Config_acapon(TString cutDefinition,
   else if(cutDefinition == "kMCpdgSel"){
     die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(LMEECutLib::kMCsel, LMEECutLib::kPdgSel) );
   }
-
-  // ########## "STANDARD" ANALYSIS CUT  #####################
+  // Standard analysis withSDD analysis cuts and MVA ePID
   else if(cutDefinition == "kCutSet1"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-  // No fITSshared cluster cut w.r.t to kCutSet1
-  else if(cutDefinition == "kCutSet2"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet2, LMEECutLib::kCutSet1));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  // kCutSet1 with low pt cut at 10 GeV
+  // Standard noSDD analysis cuts using MVA ePID(req. ITS PID)
   else if(cutDefinition == "kCutSet3"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet3, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kScheidCuts, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-
-  // ######## PID Cut variation settings #################
-  // These variations use the kCutSet1 track cuts and only vary PID
-  else if(cutDefinition == "kPIDcut1"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut1));
+  // Standard analysis cuts with hadron rejection ePID
+  else if(cutDefinition == "kScheidCuts"){
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kScheidCuts, LMEECutLib::kHadRej));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-  else if(cutDefinition == "kPIDcut2"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut2));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut3"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut3));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut4"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut4));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut5"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut5));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut6"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut6));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut7"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut7));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut8"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut8));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut9"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut9));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut10"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut10));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut11"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut11));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut12"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut12));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut13"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut13));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut14"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut14));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut15"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut15));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut16"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut16));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut17"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut17));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut18"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut18));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut19"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut19));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kPIDcut20"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kPIDcut20));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  // ######## Track+ePID Cut variation settings #################
-  // These variations all use the same PhiV cut
-  else if(cutDefinition == "kCutVar1"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar1, LMEECutLib::kCutVar1));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar2"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar2, LMEECutLib::kCutVar2));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar3"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar3, LMEECutLib::kCutVar3));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar4"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar4, LMEECutLib::kCutVar4));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar5"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar5, LMEECutLib::kCutVar5));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar6"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar6, LMEECutLib::kCutVar6));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar7"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar7, LMEECutLib::kCutVar7));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar8"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar8, LMEECutLib::kCutVar8));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar9"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar9, LMEECutLib::kCutVar9));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar10"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar10, LMEECutLib::kCutVar10));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar11"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar11, LMEECutLib::kCutVar11));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar12"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar12, LMEECutLib::kCutVar12));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar13"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar13, LMEECutLib::kCutVar13));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar14"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar14, LMEECutLib::kCutVar14));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar15"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar15, LMEECutLib::kCutVar15));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar16"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar16, LMEECutLib::kCutVar16));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar17"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar17, LMEECutLib::kCutVar17));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar18"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar18, LMEECutLib::kCutVar18));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar19"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar19, LMEECutLib::kCutVar19));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
-  else if(cutDefinition == "kCutVar20"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutVar20, LMEECutLib::kCutVar20));
+  // Standard analysis cuts with 7TeV diElec ePID scheme
+  else if(cutDefinition == "k7TeVpaper"){
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::k7TeVtrack, LMEECutLib::k7TeVPID));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -392,28 +152,17 @@ AliDielectron* Config_acapon(TString cutDefinition,
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-  // Cut set to imitate pPb FAST+woSDD analysis
-  else if(cutDefinition == "kScheidCuts"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kScheidCuts, LMEECutLib::kScheidCuts));
-    if(applyPairCuts){
-      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
-    }
-  }
   // Two cut settings to check PID efficiency using V0 electrons
   // (does not work for MC, checked 2019.05.08)
   else if(cutDefinition == "kV0_TTreeCutPID"){
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kV0_trackCuts, LMEECutLib::kTTreeCuts));
   }
   else if(cutDefinition == "kV0_MVAePID"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kV0_trackCuts, LMEECutLib::kCutSet1));
-  }
-  // Cut set to check V0 features in MC (for testing)
-  else if(cutDefinition == "kV0_allAcc"){
-    die->GetTrackFilter().AddCuts( LMcutlib->GetTrackCuts(LMEECutLib::kV0_allAcc, LMEECutLib::kV0_allAcc) );
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kV0_trackCuts, LMEECutLib::kMVA1));
   }
   // ######## Different R factor bin mixing schemes #################
   else if(cutDefinition == "kMixScheme1"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -421,7 +170,7 @@ AliDielectron* Config_acapon(TString cutDefinition,
     mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme1);
   }
   else if(cutDefinition == "kMixScheme2"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -429,7 +178,7 @@ AliDielectron* Config_acapon(TString cutDefinition,
     mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme2);
   }
   else if(cutDefinition == "kMixScheme3"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -437,7 +186,7 @@ AliDielectron* Config_acapon(TString cutDefinition,
     mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme3);
   }
   else if(cutDefinition == "kMixScheme4"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -445,7 +194,7 @@ AliDielectron* Config_acapon(TString cutDefinition,
     mix = LMcutlib->GetMixingHandler(LMEECutLib::kMixScheme4);
   }
   else if(cutDefinition == "kMixScheme5"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kCutSet1));
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kCutSet1, LMEECutLib::kMVA1));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -458,15 +207,39 @@ AliDielectron* Config_acapon(TString cutDefinition,
     die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kTTreeCuts, LMEECutLib::kTheoPID));
     LMcutlib->SetSignalsMC(die);
   }
-  // Cut designed to only use "good" eta/phi regions
-  else if(cutDefinition == "kGoodEtaPhiRegions"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kGoodEtaPhi, LMEECutLib::kTheoPID));
+  // Cut sets to to vary fITSshared cut
+  else if(cutDefinition == "kITSshared1"){ // One shared hits in ITS
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared1, LMEECutLib::kHadRej));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
   }
-  else if(cutDefinition == "kBadEtaPhiRegions"){
-    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kBadEtaPhi, LMEECutLib::kTheoPID));
+  else if(cutDefinition == "kITSshared2"){ // Two shared hits in ITS
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared2, LMEECutLib::kHadRej));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
+  else if(cutDefinition == "kITSshared3"){ // Three shared hits in ITS
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared3, LMEECutLib::kHadRej));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
+  else if(cutDefinition == "kITSshared4"){ // Four shared hits in ITS
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared4, LMEECutLib::kHadRej));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
+  else if(cutDefinition == "kITSshared5"){ // Five shared hits in ITS
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared5, LMEECutLib::kHadRej));
+    if(applyPairCuts){
+      die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
+    }
+  }
+  else if(cutDefinition == "kITSshared6"){ // Six shared hits in ITS
+    die->GetTrackFilter().AddCuts(LMcutlib->GetTrackCuts(LMEECutLib::kITSshared6, LMEECutLib::kHadRej));
     if(applyPairCuts){
       die->GetPairFilter().AddCuts(LMcutlib->GetPairCuts(LMEECutLib::kCutSet1));
     }
@@ -489,14 +262,14 @@ AliDielectron* Config_acapon(TString cutDefinition,
     die->SetMixingHandler(mix);
   }
 
-  InitHistograms(die, doPairing, trackVarPlots, whichDetPlots, v0plots, plots3D, useRun1binning, cutDefinition);
+  InitHistograms(die, doPairing, trackVarPlots, whichDetPlots, v0plots, plots3D, cutDefinition);
 
   return die;
 }
 
 //______________________________________________________________________________________
 
-void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, Int_t whichDetPlots, Bool_t v0plots, Bool_t plots3D, Bool_t useRun1binning, TString cutDefinition){
+void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, Int_t whichDetPlots, Bool_t v0plots, Bool_t plots3D, TString cutDefinition){
 
     // Setup histogram Manager
     AliDielectronHistos *histos = new AliDielectronHistos(die->GetName(),die->GetTitle());
@@ -631,7 +404,7 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
 
       // Track cut variables for trackQA
       // ITS
-      histos->UserHistogram("Track","ITSnCls",";ITS number clusters;#tracks",6,-0.5,6.5,AliDielectronVarManager::kNclsITS);
+      histos->UserHistogram("Track","ITSnCls",";ITS number clusters;#tracks",7,-0.5,6.5,AliDielectronVarManager::kNclsITS);
       histos->UserHistogram("Track","ITSnClsClusterMap",";ITS cluster map;#tracks",100, 0.0, 100.0,AliDielectronVarManager::kITSclusterMap);
       histos->UserHistogram("Track","ITSchi2",";ITS chi2/Cl;#tracks",110,0.,11.,AliDielectronVarManager::kITSchi2Cl);
       histos->UserHistogram("Track","nITSshared","#shared ITS clusters", 7, 0, 7, AliDielectronVarManager::kNclsSITS);
@@ -772,37 +545,24 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
     }
 
     if(doPairing){
-        // Add histograms to Pair classes
-        /* histos->UserHistogram("Pair","InvMass","", GetVector(kMee, useRun1binning),AliDielectronVarManager::kM); */
-        /* histos->UserHistogram("Pair","PairPt","",GetVector(kPtee, useRun1binning), AliDielectronVarManager::kPt); */
-        /* histos->UserHistogram("Pair","Rapidity","",200,-2.,2.,AliDielectronVarManager::kY); */
-        /* histos->UserHistogram("Pair","OpeningAngle","",240,0.,TMath::Pi(),AliDielectronVarManager::kOpeningAngle); */
-        /* histos->UserHistogram("Pair","PhiV","", GetVector(kPhiV), AliDielectronVarManager::kPhivPair); */
+      // Add histograms to Pair classes (all 3D histograms)
+      histos->UserHistogram("Pair","InvMass_PairPt_PhivPair",";Inv. Mass (GeV);Pair Pt (GeV);PhiV",
+                            GetVector(kMee), GetVector(kPtee), GetVector(kPhiV),
+                            AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);
+      /* histos->UserHistogram("Pair","InvMass_PairPt_Rapdity",";Inv. Mass (GeV);Pair Pt (GeV);Y_{ee}", */
+      /*                       GetVector(kMee), GetVector(kPtee), BinsToVector(200, -2, 2), */
+      /*                       AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kY); */
 
-        // 3D histograms
-        histos->UserHistogram("Pair","InvMass_PairPt_PhivPair",";Inv. Mass (GeV);Pair Pt (GeV);PhiV",
-                              GetVector(kMee, useRun1binning), GetVector(kPtee, useRun1binning), GetVector(kPhiV),
-                              AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);
-        /* histos->UserHistogram("Pair","InvMass_PairPt_OpeningAngle",";Inv. Mass (GeV);Pair Pt (GeV);Opening Angle", */
-        /*                       GetVector(kMee, useRun1binning), GetVector(kPtee, useRun1binning), GetVector(kOpAng), */
-        /*                       AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kOpeningAngle); */
-        histos->UserHistogram("Pair","InvMass_PairPt_Rapdity",";Inv. Mass (GeV);Pair Pt (GeV);Y_{ee}",
-                              GetVector(kMee, useRun1binning), GetVector(kPtee, useRun1binning), BinsToVector(200, -2, 2),
-                              AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kY);
-        histos->UserHistogram("Pair","InvMass_PairPt_pseudoRapdity",";Inv. Mass (GeV);Pair Pt (GeV);#eta_{ee}",
-                              GetVector(kMee, useRun1binning), GetVector(kPtee, useRun1binning), BinsToVector(200, -2, 2),
-                              AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kEta);
-
-        // Multiplicity
-        histos->UserHistogram("Pair", "InvMass_PairPt_CentralityV0M", ";Inv. Mass (GeV);Pair Pt (GeV);CentralityV0M",
-                              GetVector(kMee, useRun1binning), GetVector(kPtee, useRun1binning), GetVector(kCent),
-                              AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityNew);
-        histos->UserHistogram("Pair", "InvMass_PairPt_CentralityV0A", ";Inv. Mass (GeV);Pair Pt (GeV);CentralityV0A",
-                              GetVector(kMee, useRun1binning), GetVector(kPtee, useRun1binning), GetVector(kCent),
-                              AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityV0A);
-        histos->UserHistogram("Pair", "InvMass_PairPt_CentralityV0C", ";Inv. Mass (GeV);Pair Pt (GeV);CentralityV0C",
-                              GetVector(kMee, useRun1binning), GetVector(kPtee, useRun1binning), GetVector(kCent),
-                              AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityV0C);
+      // Multiplicity
+      histos->UserHistogram("Pair", "InvMass_PairPt_CentralityV0M", ";Inv. Mass (GeV);Pair Pt (GeV);CentralityV0M",
+                            GetVector(kMee), GetVector(kPtee), GetVector(kCent),
+                            AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityNew);
+      histos->UserHistogram("Pair", "InvMass_PairPt_CentralityV0A", ";Inv. Mass (GeV);Pair Pt (GeV);CentralityV0A",
+                            GetVector(kMee), GetVector(kPtee), GetVector(kCent),
+                            AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityV0A);
+      histos->UserHistogram("Pair", "InvMass_PairPt_CentralityV0C", ";Inv. Mass (GeV);Pair Pt (GeV);CentralityV0C",
+                            GetVector(kMee), GetVector(kPtee), GetVector(kCent),
+                            AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kCentralityV0C);
     }// End doPairing histograms
 
     // V0 feature histograms
@@ -820,9 +580,7 @@ void InitHistograms(AliDielectron *die, Bool_t doPairing, Bool_t trackVarPlots, 
     die->SetHistogramManager(histos);
 }
 
-
-
-TVectorD* GetVector(Int_t var, Bool_t useRun1binning){
+TVectorD* GetVector(Int_t var){
 
   switch(var){
 
@@ -841,42 +599,23 @@ TVectorD* GetVector(Int_t var, Bool_t useRun1binning){
 
     // Mass bins.
     case kMee:
-      if(!useRun1binning){
-        return AliDielectronHelper::MakeArbitraryBinning("0.00,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,"
-                                                         "0.10,0.11,0.12,0.13,0.14,0.15,0.16,0.17,0.18,0.19,"
-                                                         "0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,"
-                                                         "0.30,0.31,0.32,0.33,0.34,0.35,0.36,0.37,0.38,0.39,"
-                                                         "0.40,0.41,0.42,0.43,0.44,0.45,0.46,0.47,0.48,0.49,"
-                                                         "0.50,0.51,0.52,0.53,0.54,0.55,0.56,0.57,0.58,0.59,"
-                                                         "0.60,0.61,0.62,0.63,0.64,0.65,0.66,0.67,0.68,0.69,"
-                                                         "0.70,0.71,0.72,0.73,0.74,0.75,0.76,0.77,0.78,0.79,"
-                                                         "0.80,0.81,0.82,0.83,0.84,0.85,0.86,0.87,0.88,0.89,"
-                                                         "0.90,0.91,0.92,0.93,0.94,0.95,0.96,0.97,0.98,0.99,"
-                                                         "1.00,1.01,1.02,1.03,1.04,1.05,1.06,1.07,1.08,1.09,"
-                                                         "1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,"
-                                                         "2.10,2.20,2.30,2.40,2.50,2.60,2.70,2.80,2.90,3.00,"
-                                                         "3.01,3.02,3.03,3.04,3.05,3.06,3.07,3.08,3.09,3.10,"
-                                                         "3.11,3.12,3.30,3.50,4.00,4.50,5.00");
-      }else{
-        return AliDielectronHelper::MakeArbitraryBinning("0.00, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09,"
-                                                         "0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19,"
-                                                         "0.20, 0.21, 0.22, 0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29,"
-                                                         "0.30, 0.31, 0.32, 0.33, 0.34, 0.35, 0.36, 0.37, 0.38, 0.39,"
-                                                         "0.40, 0.41, 0.42, 0.43, 0.44, 0.45, 0.46, 0.47, 0.48, 0.49,"
-                                                         "0.50, 0.51, 0.52, 0.53, 0.54, 0.55, 0.56, 0.57, 0.58, 0.59,"
-                                                         "0.60, 0.61, 0.62, 0.63, 0.64, 0.65, 0.66, 0.67, 0.68, 0.69,"
-                                                         "0.70, 0.71, 0.72, 0.73, 0.74, 0.75, 0.76, 0.77, 0.78, 0.79,"
-                                                         "0.80, 0.81, 0.82, 0.83, 0.84, 0.85, 0.86, 0.87, 0.88, 0.89,"
-                                                         "0.90, 0.91, 0.92, 0.93, 0.94, 0.95, 0.96, 0.97, 0.98, 0.99,"
-                                                         "1.00, 1.01, 1.02, 1.03, 1.04, 1.05, 1.06, 1.07, 1.08, 1.09,"
-                                                         "1.10, 1.20, 1.30, 1.40, 1.50, 1.60, 1.70, 1.80, 1.90, 2.00,"
-                                                         "2.20, 2.30, 2.40, 2.60, 2.80, 2.90, 3.00, 3.01, 3.02, 3.03,"
-                                                         "3.04, 3.05, 3.06, 3.07, 3.08, 3.09, 3.10, 3.12, 3.20, 3.30,"
-                                                         "3.50, 4.00, 4.50, 5.00");
-      }
+      return AliDielectronHelper::MakeArbitraryBinning("0.00,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,"
+                                                        "0.10,0.11,0.12,0.13,0.14,0.15,0.16,0.17,0.18,0.19,"
+                                                        "0.20,0.21,0.22,0.23,0.24,0.25,0.26,0.27,0.28,0.29,"
+                                                        "0.30,0.31,0.32,0.33,0.34,0.35,0.36,0.37,0.38,0.39,"
+                                                        "0.40,0.41,0.42,0.43,0.44,0.45,0.46,0.47,0.48,0.49,"
+                                                        "0.50,0.51,0.52,0.53,0.54,0.55,0.56,0.57,0.58,0.59,"
+                                                        "0.60,0.61,0.62,0.63,0.64,0.65,0.66,0.67,0.68,0.69,"
+                                                        "0.70,0.71,0.72,0.73,0.74,0.75,0.76,0.77,0.78,0.79,"
+                                                        "0.80,0.81,0.82,0.83,0.84,0.85,0.86,0.87,0.88,0.89,"
+                                                        "0.90,0.91,0.92,0.93,0.94,0.95,0.96,0.97,0.98,0.99,"
+                                                        "1.00,1.01,1.02,1.03,1.04,1.05,1.06,1.07,1.08,1.09,"
+                                                        "1.10,1.20,1.30,1.40,1.50,1.60,1.70,1.80,1.90,2.00,"
+                                                        "2.10,2.20,2.30,2.40,2.50,2.60,2.70,2.80,2.90,3.00,"
+                                                        "3.01,3.02,3.03,3.04,3.05,3.06,3.07,3.08,3.09,3.10,"
+                                                        "3.11,3.12,3.30,3.50,4.00,4.50,5.00");
     // Pair pt bins
     case kPtee:
-      if(!useRun1binning){
       return AliDielectronHelper::MakeArbitraryBinning("0.000,0.025,0.050,0.075,0.100,0.125,0.150,0.175,0.200,0.225,0.250,"
                                                        "0.275,0.300,0.325,0.350,0.375,0.400,0.425,0.450,0.475,0.500,0.550,"
                                                        "0.600,0.650,0.700,0.750,0.800,0.850,0.900,0.950,1.000,1.050,1.100,"
@@ -885,21 +624,6 @@ TVectorD* GetVector(Int_t var, Bool_t useRun1binning){
                                                        "2.250,2.300,2.350,2.400,2.450,2.500,2.600,2.700,2.800,2.900,3.000,"
                                                        "3.100,3.200,3.300,3.400,3.500,3.600,3.700,3.800,3.900,4.000,4.100,"
                                                        "4.200,4.300,4.400,4.500,5.000,5.500,6.000,6.500,7.000,8.000,10.00");
-      }else{
-      return AliDielectronHelper::MakeArbitraryBinning("0.00, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09,"
-                                                       "0.10, 0.11, 0.12, 0.13, 0.14, 0.15, 0.16, 0.17, 0.18, 0.19,"
-                                                       "0.20, 0.21, 0.22, 0.23, 0.24, 0.25, 0.26, 0.27, 0.28, 0.29,"
-                                                       "0.30, 0.31, 0.32, 0.33, 0.34, 0.35, 0.36, 0.37, 0.38, 0.39,"
-                                                       "0.40, 0.41, 0.42, 0.43, 0.44, 0.45, 0.46, 0.47, 0.48, 0.49,"
-                                                       "0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95,"
-                                                       "1.00, 1.05, 1.10, 1.15, 1.20, 1.25, 1.30, 1.35, 1.40, 1.45,"
-                                                       "1.50, 1.55, 1.60, 1.65, 1.70, 1.75, 1.80, 1.85, 1.90, 1.95,"
-                                                       "2.00, 2.05, 2.10, 2.15, 2.20, 2.25, 2.30, 2.35, 2.40, 2.45,"
-                                                       "2.50, 2.60, 2.70, 2.80, 2.90, 3.00, 3.10, 3.20, 3.30, 3.40,"
-                                                       "3.50, 3.60, 3.70, 3.80, 3.90, 4.00, 4.10, 4.20, 4.30, 4.40,"
-                                                       "4.50, 5.00, 6.00, 7.00, 8.00, 10.0" );
-      }
-
     // Single leg pt bins
     case kPt:
       return AliDielectronHelper::MakeArbitraryBinning("0.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45,"

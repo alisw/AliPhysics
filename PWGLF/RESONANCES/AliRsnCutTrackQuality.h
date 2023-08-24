@@ -68,6 +68,7 @@ public:
    AliESDtrackCuts  *GetESDtrackCuts() {return fESDtrackCuts;}
    Double_t   GetPtRange(Bool_t max) {return fPt[max];}
    Double_t   GetEtaRange(Bool_t max) {return fEta[max];}
+   void      SetAODTrackCuts(Bool_t useTPCCrossedRows = kTRUE);
    
    virtual Bool_t IsSelected(TObject *obj);
    virtual void   Print(const Option_t *option = "") const;

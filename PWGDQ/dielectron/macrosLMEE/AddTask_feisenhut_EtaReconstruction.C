@@ -1,4 +1,3 @@
-
 AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString name = "name",
                                                                 Bool_t isAOD,
                                                                 Bool_t getFromAlien = kFALSE,
@@ -8,6 +7,7 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
                                                                 Int_t wagonnr = 0,
                                                                 Int_t centrality = 4) {
 
+
   std::cout << "########################################\nADDTASK of ANALYSIS started\n########################################" << std::endl;
 
   // #########################################################
@@ -15,7 +15,9 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // Configuring Analysis Manager
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   TString fileName = AliAnalysisManager::GetCommonFileName();
+
   fileName = "AnalysisResults.root"; // create a subfolder in the file
+
 
   // #########################################################
   // #########################################################
@@ -26,14 +28,23 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
       && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/f/feisenhu/PWGDQ/dielectron/macrosLMEE/%s .",configFile.Data())))
+      && (!gSystem->Exec("alien_cp alien:///alice/cern.ch/user/f/feisenhu/PWGDQ/dielectron/macrosLMEE/LMEECutLib_feisenhut.C ."))
       ) {
     configBasePath=Form("%s/",gSystem->pwd());
   }
   TString configFilePath(configBasePath+configFile);
+  TString configLMEECutLib("LMEECutLib_feisenhut.C");
+  TString configLMEECutLibPath(configBasePath+configLMEECutLib);
+
+  // Loading config and cutlib
+  // err |= gROOT->LoadMacro(configLMEECutLibPath.Data());
+  // err |= gROOT->LoadMacro(configFilePath.Data());
+  // if (err) { Error("AddTask_caklein_ElectronEfficiency_v2","Config(s) could not be loaded!"); return 0x0; }
 
   Bool_t err=kFALSE;
   if (!cutlibPreloaded) { // should not be needed but seems to be...
     std::cout << "Cutlib was not preloaded" << std::endl;
+    err |= gROOT->LoadMacro(configLMEECutLibPath.Data());
     err |= gROOT->LoadMacro(configFilePath.Data());
   }
   else{
@@ -68,6 +79,11 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
 
   // #########################################################
   // #########################################################
+  // Set debug variable for debugging code
+  task->SetDebug(debug);
+
+  // #########################################################
+  // #########################################################
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
   // Do not set here your analysis pt-cuts
   task->SetMinPtGen(minGenPt);
@@ -79,7 +95,30 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // #########################################################
   // #########################################################
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
-  task->SetKinematicCuts(minPtCut, maxPtCut, minEtaCut, maxEtaCut);
+  task->SetKinematicCutsPrim(minPtCutPrim, maxPtCutPrim, minEtaCut, maxEtaCut);
+  task->SetKinematicCutsSec(minPtCutSec, maxPtCutSec, minEtaCut, maxEtaCut);
+
+  // #########################################################
+  // #########################################################
+  // Set mass cuts for primary and secondary pairs
+  task->SetMassCut(DoMassCut);
+  task->SetPhotonMass(photonMass);
+  task->SetUpperMassCutPrimaries(upperMassCutPrimaries);
+  task->SetLowerMassCutPrimaries(lowerMassCutPrimaries);
+  task->SetUpperPrimSecPreFilterMass(upperPrimSecPreFilterMass);
+  task->SetLowerPrimSecPreFilterMass(lowerPrimSecPreFilterMass);
+  task->SetUpperSecSecPreFilterMass(upperSecSecPreFilterMass);
+  task->SetLowerSecSecPreFilterMass(lowerSecSecPreFilterMass);
+  task->SetMassCutSecondaries(massCutSecondaries);
+
+  task->SetAnalyseDalitz(analyseDalitz);
+  task->SetAnalyseGammaGamma(analyseGammaGamma);
+  task->SetAnalyseGenAndGenSmeared(analyseGenAndGenSmeared);
+  task->SetAnalyseReconstructed(analyseRec);
+
+  task->SetDrawPIDSupportHists(drawPIDsupportHits);
+
+
 
   // #########################################################
   // #########################################################
@@ -103,12 +142,16 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // Resolution File, If resoFilename = "" no correction is applied
   task->SetResolutionFile(resoFilename);
   task->SetResolutionFileFromAlien(resoFilenameFromAlien);
-  task->SetSmearGenerated(SetGeneratedSmearingHistos);
+  task->SetResolutionDeltaPtBinsLinear   (DeltaMomMin, DeltaMomMax, NbinsDeltaMom);
+  task->SetResolutionRelPtBinsLinear   (RelMomMin, RelMomMax, NbinsRelMom);
+  task->SetResolutionEtaBinsLinear  (DeltaEtaMin, DeltaEtaMax, NbinsDeltaEta);
+  task->SetResolutionPhiBinsLinear  (DeltaPhiMin, DeltaPhiMax, NbinsDeltaPhi);
+  task->SetResolutionThetaBinsLinear(DeltaThetaMin, DeltaThetaMax, NbinsDeltaTheta);
 
   // #########################################################
   // #########################################################
   // Set centrality correction. If resoFilename = "" no correction is applied
-  // task->SetCentralityFile(centralityFilename);
+  task->SetCentralityFile(centralityFilename);
 
   // #########################################################
   // #########################################################
@@ -127,41 +170,111 @@ AliAnalysisTaskEtaReconstruction* AddTask_feisenhut_EtaReconstruction(TString na
   // Pairing related config
   task->SetDoPairing(DoPairing);
   task->SetDoFourPairing(DoFourPairing);
-  task->SetULSandLS(DoULSLS);
+  // task->SetULSandLS(DoULSLS);
+  task->SetV0FinderStatus(V0OnFlyStatus); // used to define 'OnFlyStatus' of V0's
+  task->SetUsePreFilter(UsePreFilter);
+  task->SetUseSecPreFilter(UseSecPreFilter);
 
   // #########################################################
   // #########################################################
   // Add MCSignals. Can be set to see differences of:
   // e.g. secondaries and primaries. or primaries from charm and resonances
-  AddSingleLegMCSignal(task);
-  AddPairMCSignal(task);
-  AddFourPairMCSignal(task);
-  std::vector<bool> DielectronsPairNotFromSameMother = AddSingleLegMCSignal(task);
-  task->AddMCSignalsWhereDielectronPairNotFromSameMother(DielectronsPairNotFromSameMother);
+  AddSinglePrimaryLegMCSignal(task);
+  AddSingleSecondaryLegMCSignal(task);
+  AddPrimaryPairMCSignal(task);
+  AddSecondaryPairMCSignal(task);
+  AddFourPairMCSignal_PrimSec(task);
+  AddFourPairMCSignal_SecSec(task);
 
-  // #########################################################
-  // #########################################################
-  // Write Tree with electrons from pair
-  // task->SetWriteTreeLegFromPair(true);
 
   // #########################################################
   // #########################################################
   // Set mean and width correction for ITS, TPC and TOF
 
 
-  // // #########################################################
-  // // #########################################################
-  // // Adding cutsettings
-  // // TObjArray*  arrNames=names.Tokenize(";");
-  // // const Int_t nDie=arrNames->GetEntriesFast();
+  // #########################################################
+  // #                set track cutsettings                  #
+  // #########################################################
+  // Adding PreFilter primary electron track cutsettings
+  TObjArray*  arrNames_prim=names_Prim_Track_PreFilter_Cuts.Tokenize(";");
+  const Int_t nDie=arrNames_prim->GetEntriesFast();
+
+  for (int iCut = 0; iCut < nDie; ++iCut){
+    TString cutDefinition(arrNames_prim->At(iCut)->GetName());
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+    task->AddTrackCuts_primary_PreFilter(filter);
+    DoAdditionalWork(task);
+  }
+
+  // // Adding PreFilter secondary electron track cutsettings
+  // TObjArray*  arrNames_sec_PreFilter=names_Sec_Track_PreFilter_Cuts.Tokenize(";");
+  // const Int_t nDie=arrNames_sec_PreFilter->GetEntriesFast();
   //
   // for (int iCut = 0; iCut < nDie; ++iCut){
-  //   TString cutDefinition(arrNames->At(iCut)->GetName());
-  //   // AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
-  //   AliAnalysisFilter* filter = SetupTrackCutsAndSettings(iCut);
-  //   task->AddTrackCuts(filter);
-  //   // DoAdditionalWork(task);
+  //   TString cutDefinition(arrNames_sec_PreFilter->At(iCut)->GetName());
+  //   AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+  //   task->AddTrackCuts_secondary_PreFilter(filter);
+  //   DoAdditionalWork(task);
   // }
+
+  // Adding standard primary electron track cutsettings
+  TObjArray*  arrNames_prim=names_Prim_Track_standard_Cuts.Tokenize(";");
+
+  const Int_t nDie=arrNames_prim->GetEntriesFast();
+  for (int iCut = 0; iCut < nDie; ++iCut){
+    TString cutDefinition(arrNames_prim->At(iCut)->GetName());
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+    task->AddTrackCuts_primary_standard(filter);
+    DoAdditionalWork(task);
+  }
+
+  // Adding standard secondary electron track cutsettings
+  TObjArray*  arrNames_sec_track=names_Sec_Track_standard_Cuts.Tokenize(";");
+
+  const Int_t nDie=arrNames_sec_track->GetEntriesFast();
+  for (int iCut = 0; iCut < nDie; ++iCut){
+    TString cutDefinition(arrNames_sec_track->At(iCut)->GetName());
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+    task->AddTrackCuts_secondary_standard(filter);
+    DoAdditionalWork(task);
+  }
+
+  // #########################################################
+  // #                 set pair cutsettings                  #
+  // #########################################################
+  // Adding primary pair cutsettings
+  TObjArray*  arrNames_prim=names_Prim_Pair_Cuts.Tokenize(";");
+  const Int_t nDie=arrNames_prim->GetEntriesFast();
+
+  for (int iCut = 0; iCut < nDie; ++iCut){
+    TString cutDefinition(arrNames_prim->At(iCut)->GetName());
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+    task->AddPairCuts_primary(filter);
+    DoAdditionalWork(task);
+  }
+
+  // Adding standard secondary pair cutsettings
+  TObjArray*  arrNames_sec=names_Sec_Pair_standard_Cuts.Tokenize(";");
+  const Int_t nDie=arrNames_sec->GetEntriesFast();
+
+  for (int iCut = 0; iCut < nDie; ++iCut){
+    TString cutDefinition(arrNames_sec->At(iCut)->GetName());
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+    task->AddPairCuts_secondary_standard(filter);
+    DoAdditionalWork(task);
+  }
+
+  // Adding PreFilter secondary pair cutsettings
+  TObjArray*  arrNames_sec_PreFilter=names_Sec_Pair_PreFilter_Cuts.Tokenize(";");
+  const Int_t nDie=arrNames_sec_PreFilter->GetEntriesFast();
+
+  for (int iCut = 0; iCut < nDie; ++iCut){
+    TString cutDefinition(arrNames_sec_PreFilter->At(iCut)->GetName());
+    AliAnalysisFilter* filter = SetupTrackCutsAndSettings(cutDefinition, isAOD);
+    task->AddPairCuts_secondary_PreFilter(filter);
+    DoAdditionalWork(task);
+  }
+
 
 
   mgr->AddTask(task);

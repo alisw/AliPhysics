@@ -262,7 +262,7 @@ cutSetPi=new AliRsnCutSetDaughterParticle(Form("cutPi%i_%2.1fsigma",AliRsnCutSet
     //out->SetMotherMass(1.272);
     if(i<=0) out->SetPairCuts(cutsPairSame);
     else out->SetPairCuts(cutsPairMix);
-    out->AddAxis(imID, 500, 1.0, 2.0);
+    out->AddAxis(imID, 500, 0.8, 1.8);
     out->AddAxis(ptID, 100, 0.0, 10.0);
     out->AddAxis(centID, 100, 0.0, 100.0);
   }

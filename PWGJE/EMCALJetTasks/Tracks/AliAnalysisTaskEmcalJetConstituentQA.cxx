@@ -323,7 +323,6 @@ Bool_t AliAnalysisTaskEmcalJetConstituentQA::IsTriggerSelected(){
 }
 
 AliAnalysisTaskEmcalJetConstituentQA *AliAnalysisTaskEmcalJetConstituentQA::AddTaskEmcalJetConstituentQA(const char *trigger, AliJetContainer::EJetType_t jettype, bool partmode){
-  using AnalysisHelpers = EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory;
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) {
     std::cerr << "[AliAnalysisTaskJetConstituentQA::AddTaskEmcalJetConstituentQA(EE)] No analysis manager provided ..." << std::endl;
@@ -335,6 +334,7 @@ AliAnalysisTaskEmcalJetConstituentQA *AliAnalysisTaskEmcalJetConstituentQA::AddT
     case AliJetContainer::kFullJet:    jettypestring = "fulljets"; break;
     case AliJetContainer::kChargedJet: jettypestring = "chargedjets"; break;
     case AliJetContainer::kNeutralJet: jettypestring = "neutraljets"; break;
+    case AliJetContainer::kUndefinedJetType: break;
   };
   
   std::stringstream taskname;
@@ -353,14 +353,14 @@ AliAnalysisTaskEmcalJetConstituentQA *AliAnalysisTaskEmcalJetConstituentQA::AddT
   AliClusterContainer *clusters(nullptr);
   if(!partmode) {
     if(jettype ==  AliJetContainer::kChargedJet || jettype == AliJetContainer::kFullJet){
-      tracksname = AnalysisHelpers::TrackContainerNameFactory(isAOD);
+      tracksname = AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD);
       tracks = task->AddTrackContainer(tracksname);
       task->SetNameTrackContainer(tracksname);
       tracks->SetMinPt(0.15);
     }
 
     if(jettype == AliJetContainer::kNeutralJet || jettype == AliJetContainer::kFullJet){
-      clustername = AnalysisHelpers::ClusterContainerNameFactory(isAOD);
+      clustername = AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD);
       clusters = task->AddClusterContainer(clustername);
       task->SetNameClusterContainer(clustername);
       clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);

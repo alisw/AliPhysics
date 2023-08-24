@@ -210,7 +210,7 @@ void AliJetEmbeddingTask::Run()
        	  fTreeJet4Vect->SetBranchAddress(fBranchJDetName.Data(), &jetDet);
        	  fTreeJet4Vect->SetBranchAddress(fBranchJParName.Data(), &jetPar);
        	  
-       	  Double_t pTemb = -1, pTpar = -1;
+       	  Double_t /*pTemb = -1,*/ pTpar = -1;
        	  if(fCurrentEntry < fNTreeEntries) fTreeJet4Vect->GetEntry(fCurrentEntry);
        	  else {
        	     fCurrentEntry = 0;

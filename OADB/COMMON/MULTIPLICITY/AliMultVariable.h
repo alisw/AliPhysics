@@ -57,6 +57,9 @@ public:
     void     SetIsInteger( Bool_t lVal ){ fIsInteger = lVal; }
     Bool_t  IsInteger() const { return fIsInteger; }
     
+    void SetUseVertexZCorrection (Bool_t lVal = kTRUE) { fCorrectVertexZ = lVal; }
+    Bool_t GetUseVertexZCorrection () { return fCorrectVertexZ; } 
+  
     void Print(Option_t* option="") const;
     
 private:
@@ -64,7 +67,9 @@ private:
     Float_t fValue;    //Variable value
     Int_t   fValueInteger; //Variable value if integer
     Float_t fMean;     //Variable mean
+    Bool_t fCorrectVertexZ; // do auto-correction with vertex-Z
     
-    ClassDef(AliMultVariable, 1)
+    ClassDef(AliMultVariable, 2)
+    //2 - vertex-Z correction 
 };
 #endif

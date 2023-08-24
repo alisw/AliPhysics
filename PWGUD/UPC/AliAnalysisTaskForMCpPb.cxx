@@ -63,6 +63,7 @@
 #include "AliMuonTrackCuts.h"
 #include "AliAODVertex.h"
 
+#include <bitset>
 
 // my headers
 #include "AliAnalysisTaskForMCpPb.h"
@@ -78,6 +79,7 @@
 class AliAnalysisTaskForMCpPb;    // your analysis class
 
 using namespace std;            // std namespace: so you can do things like 'cout'
+typedef std::bitset<32> IntBits;
 
 ClassImp(AliAnalysisTaskForMCpPb) // classimp: necessary for root
 
@@ -90,6 +92,7 @@ AliAnalysisTaskForMCpPb::AliAnalysisTaskForMCpPb()
       fNumberMuonsH(0),
       fCounterH(0),
       fEtaMuonH(0),
+      fEtaDimuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
       fInvariantMassDistributionRapidityBinsH{ 0, 0, 0, 0, 0, 0},
@@ -168,6 +171,22 @@ AliAnalysisTaskForMCpPb::AliAnalysisTaskForMCpPb()
       fCounterUPCevent(0),
       fEfficiencyPerRunH(0),
       fMCEfficiencyPerRunH(0),
+      fEfficiencyPerRunRestrictedRapidityH(0),
+      fMCEfficiencyPerRunRestrictedRapidityH(0),
+      fEfficiencyPerRunRestrictedRapidity36to31H(0),
+      fMCEfficiencyPerRunRestrictedRapidity36to31H(0),
+      fEfficiencyPerRunRestrictedRapidity31to26H(0),
+      fMCEfficiencyPerRunRestrictedRapidity31to26H(0),
+      fEfficiencyPerRunWithRunTwoSettings(0),
+      fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH{0,0},
+      fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH{0,0,0},
+      fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH{0,0,0,0},
+      fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH{0,0,0,0,0},
+      fMCEfficiencyPerRunWithRunTwoSettings(0),
+      fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH{0,0},
+      fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH{0,0,0},
+      fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH{0,0,0,0},
+      fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH{0,0,0,0,0},
       fEtaAndPhi(0)
 {
     // default constructor, don't allocate memory here!
@@ -183,6 +202,7 @@ AliAnalysisTaskForMCpPb::AliAnalysisTaskForMCpPb( const char* name )
       fNumberMuonsH(0),
       fCounterH(0),
       fEtaMuonH(0),
+      fEtaDimuonH(0),
       fRAbsMuonH(0),
       fInvariantMassDistributionH(0),
       fInvariantMassDistributionRapidityBinsH{ 0, 0, 0, 0, 0, 0},
@@ -261,6 +281,22 @@ AliAnalysisTaskForMCpPb::AliAnalysisTaskForMCpPb( const char* name )
       fCounterUPCevent(0),
       fEfficiencyPerRunH(0),
       fMCEfficiencyPerRunH(0),
+      fEfficiencyPerRunRestrictedRapidityH(0),
+      fMCEfficiencyPerRunRestrictedRapidityH(0),
+      fEfficiencyPerRunRestrictedRapidity36to31H(0),
+      fMCEfficiencyPerRunRestrictedRapidity36to31H(0),
+      fEfficiencyPerRunRestrictedRapidity31to26H(0),
+      fMCEfficiencyPerRunRestrictedRapidity31to26H(0),
+      fEfficiencyPerRunWithRunTwoSettings(0),
+      fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH{0,0},
+      fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH{0,0,0},
+      fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH{0,0,0,0},
+      fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH{0,0,0,0,0},
+      fMCEfficiencyPerRunWithRunTwoSettings(0),
+      fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH{0,0},
+      fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH{0,0,0},
+      fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH{0,0,0,0},
+      fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH{0,0,0,0,0},
       fEtaAndPhi(0)
 {
     // FillGoodRunVector(fVectorGoodRunNumbers);
@@ -329,8 +365,11 @@ void AliAnalysisTaskForMCpPb::UserCreateOutputObjects()
   fCounterH = new TH1F("fCounterH", "fCounterH", 24, -0.5, 23.5);
   fOutputList->Add(fCounterH);
 
-  fEtaMuonH = new TH1F("fEtaMuonH", "fEtaMuonH", 90, -2, -5);
+  fEtaMuonH = new TH1F("fEtaMuonH", "fEtaMuonH", 160, -1, -5);
   fOutputList->Add(fEtaMuonH);
+
+  fEtaDimuonH = new TH1F("fEtaDimuonH", "fEtaDimuonH", 160, -1, -5);
+  fOutputList->Add(fEtaDimuonH);
 
   fRAbsMuonH = new TH1F("fRAbsMuonH", "fRAbsMuonH", 100, 0, 100);
   fOutputList->Add(fRAbsMuonH);
@@ -472,6 +511,157 @@ void AliAnalysisTaskForMCpPb::UserCreateOutputObjects()
   fMCEfficiencyPerRunH->LabelsDeflate();
   fOutputList->Add(fMCEfficiencyPerRunH);
 
+  fEfficiencyPerRunRestrictedRapidityH = new TH1F("fEfficiencyPerRunRestrictedRapidityH", "fEfficiencyPerRunRestrictedRapidityH", 3, 0, 3);
+  fEfficiencyPerRunRestrictedRapidityH->SetStats(0);
+  fEfficiencyPerRunRestrictedRapidityH->SetFillColor(38);
+  fEfficiencyPerRunRestrictedRapidityH->LabelsDeflate();
+  fOutputList->Add(fEfficiencyPerRunRestrictedRapidityH);
+
+  fMCEfficiencyPerRunRestrictedRapidityH = new TH1F("fMCEfficiencyPerRunRestrictedRapidityH", "fMCEfficiencyPerRunRestrictedRapidityH", 3, 0, 3);
+  fMCEfficiencyPerRunRestrictedRapidityH->SetStats(0);
+  fMCEfficiencyPerRunRestrictedRapidityH->SetFillColor(38);
+  fMCEfficiencyPerRunRestrictedRapidityH->LabelsDeflate();
+  fOutputList->Add(fMCEfficiencyPerRunRestrictedRapidityH);
+
+  fEfficiencyPerRunRestrictedRapidity36to31H = new TH1F("fEfficiencyPerRunRestrictedRapidity36to31H", "fEfficiencyPerRunRestrictedRapidity36to31H", 3, 0, 3);
+  fEfficiencyPerRunRestrictedRapidity36to31H->SetStats(0);
+  fEfficiencyPerRunRestrictedRapidity36to31H->SetFillColor(38);
+  fEfficiencyPerRunRestrictedRapidity36to31H->LabelsDeflate();
+  fOutputList->Add(fEfficiencyPerRunRestrictedRapidity36to31H);
+
+  fMCEfficiencyPerRunRestrictedRapidity36to31H = new TH1F("fMCEfficiencyPerRunRestrictedRapidity36to31H", "fMCEfficiencyPerRunRestrictedRapidity36to31H", 3, 0, 3);
+  fMCEfficiencyPerRunRestrictedRapidity36to31H->SetStats(0);
+  fMCEfficiencyPerRunRestrictedRapidity36to31H->SetFillColor(38);
+  fMCEfficiencyPerRunRestrictedRapidity36to31H->LabelsDeflate();
+  fOutputList->Add(fMCEfficiencyPerRunRestrictedRapidity36to31H);
+
+  fEfficiencyPerRunRestrictedRapidity31to26H = new TH1F("fEfficiencyPerRunRestrictedRapidity31to26H", "fEfficiencyPerRunRestrictedRapidity31to26H", 3, 0, 3);
+  fEfficiencyPerRunRestrictedRapidity31to26H->SetStats(0);
+  fEfficiencyPerRunRestrictedRapidity31to26H->SetFillColor(38);
+  fEfficiencyPerRunRestrictedRapidity31to26H->LabelsDeflate();
+  fOutputList->Add(fEfficiencyPerRunRestrictedRapidity31to26H);
+
+  fMCEfficiencyPerRunRestrictedRapidity31to26H = new TH1F("fMCEfficiencyPerRunRestrictedRapidity31to26H", "fMCEfficiencyPerRunRestrictedRapidity31to26H", 3, 0, 3);
+  fMCEfficiencyPerRunRestrictedRapidity31to26H->SetStats(0);
+  fMCEfficiencyPerRunRestrictedRapidity31to26H->SetFillColor(38);
+  fMCEfficiencyPerRunRestrictedRapidity31to26H->LabelsDeflate();
+  fOutputList->Add(fMCEfficiencyPerRunRestrictedRapidity31to26H);
+
+  fEfficiencyPerRunWithRunTwoSettings = new TH1F("fEfficiencyPerRunWithRunTwoSettings", "fEfficiencyPerRunWithRunTwoSettings", 3, 0, 3);
+  fEfficiencyPerRunWithRunTwoSettings->SetStats(0);
+  fEfficiencyPerRunWithRunTwoSettings->SetFillColor(38);
+  fEfficiencyPerRunWithRunTwoSettings->LabelsDeflate();
+  fOutputList->Add(fEfficiencyPerRunWithRunTwoSettings);
+
+  for( Int_t iLoop = 0; iLoop < 2; iLoop++ ) {
+    fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop] = new TH1F(
+      Form( "fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH_%d", iLoop),
+      Form( "fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH_%d", iLoop),
+      3, 0, 3
+      );
+    fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop]->SetStats(0);
+    fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop]->SetFillColor(38);
+    fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop]->LabelsDeflate();
+    fOutputList->Add(fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop]);
+  }
+
+  for( Int_t iLoop = 0; iLoop < 3; iLoop++ ) {
+    fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop] = new TH1F(
+      Form( "fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH_%d", iLoop),
+      Form( "fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH_%d", iLoop),
+      3, 0, 3
+      );
+    fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop]->SetStats(0);
+    fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop]->SetFillColor(38);
+    fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop]->LabelsDeflate();
+    fOutputList->Add(fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop]);
+  }
+
+  for( Int_t iLoop = 0; iLoop < 4; iLoop++ ) {
+    fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop] = new TH1F(
+      Form( "fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH_%d", iLoop),
+      Form( "fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH_%d", iLoop),
+      3, 0, 3
+      );
+    fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop]->SetStats(0);
+    fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop]->SetFillColor(38);
+    fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop]->LabelsDeflate();
+    fOutputList->Add(fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop]);
+  }
+
+  for( Int_t iLoop = 0; iLoop < 5; iLoop++ ) {
+    fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop] = new TH1F(
+      Form( "fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH_%d", iLoop),
+      Form( "fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH_%d", iLoop),
+      3, 0, 3
+      );
+    fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop]->SetStats(0);
+    fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop]->SetFillColor(38);
+    fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop]->LabelsDeflate();
+    fOutputList->Add(fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop]);
+  }
+
+
+
+
+
+  fMCEfficiencyPerRunWithRunTwoSettings = new TH1F("fMCEfficiencyPerRunWithRunTwoSettings", "fMCEfficiencyPerRunWithRunTwoSettings", 3, 0, 3);
+  fMCEfficiencyPerRunWithRunTwoSettings->SetStats(0);
+  fMCEfficiencyPerRunWithRunTwoSettings->SetFillColor(38);
+  fMCEfficiencyPerRunWithRunTwoSettings->LabelsDeflate();
+  fOutputList->Add(fMCEfficiencyPerRunWithRunTwoSettings);
+
+  for( Int_t iLoop = 0; iLoop < 2; iLoop++ ) {
+    fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop] = new TH1F(
+      Form( "fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH_%d", iLoop),
+      Form( "fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH_%d", iLoop),
+      3, 0, 3
+      );
+    fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop]->SetStats(0);
+    fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop]->SetFillColor(38);
+    fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop]->LabelsDeflate();
+    fOutputList->Add(fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[iLoop]);
+  }
+
+  for( Int_t iLoop = 0; iLoop < 3; iLoop++ ) {
+    fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop] = new TH1F(
+      Form( "fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH_%d", iLoop),
+      Form( "fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH_%d", iLoop),
+      3, 0, 3
+      );
+    fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop]->SetStats(0);
+    fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop]->SetFillColor(38);
+    fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop]->LabelsDeflate();
+    fOutputList->Add(fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[iLoop]);
+  }
+
+  for( Int_t iLoop = 0; iLoop < 4; iLoop++ ) {
+    fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop] = new TH1F(
+      Form( "fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH_%d", iLoop),
+      Form( "fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH_%d", iLoop),
+      3, 0, 3
+      );
+    fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop]->SetStats(0);
+    fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop]->SetFillColor(38);
+    fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop]->LabelsDeflate();
+    fOutputList->Add(fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[iLoop]);
+  }
+
+  for( Int_t iLoop = 0; iLoop < 5; iLoop++ ) {
+    fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop] = new TH1F(
+      Form( "fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH_%d", iLoop),
+      Form( "fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH_%d", iLoop),
+      3, 0, 3
+      );
+    fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop]->SetStats(0);
+    fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop]->SetFillColor(38);
+    fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop]->LabelsDeflate();
+    fOutputList->Add(fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[iLoop]);
+  }
+
+
+
+
   /* - Eta vs Phi dead zones per Run.
    * -
    */
@@ -552,13 +742,14 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
       PostData(1, fOutputList);
       return;
   }
+  fRunNum    = fAOD->GetRunNumber();
   if(fMCEvent) {
     fRunNum    = fAOD->GetRunNumber();
     SetLuminosityCap();
     fCounterGeneratedLevel[ fRunNum - 240000 ] += 1;
     // cout << "fCounterGeneratedLevel[ " << (fRunNum - 240000) << " ] = " << fCounterGeneratedLevel[ fRunNum - 240000 ] << endl;
     // if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( (Int_t)fLumiPerRun * (Int_t)40000 ) ) {
-    if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( fLumiPerRun * 40000 ) ) {
+    if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( fLumiPerRun * 100.0 ) ) {
           PostData(1, fOutputList);
           return;
     }
@@ -566,6 +757,11 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
     fCounterUPCevent += 1;
     fMCEfficiencyPerRunH->Fill( Form("%d", fRunNum) , 1 );
   }
+  if( fCounterGeneratedLevel[ fRunNum - 240000 ] > ( fLumiPerRun * 100.0 ) ) {
+        PostData(1, fOutputList);
+        return;
+  }
+
   /* - We are now checking if there were any tracks. If there were at least one,
      - then the histogram gets filled again. If not we are returning. There
      - would be no point in going further.
@@ -597,7 +793,7 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
      - almost unit vector roughly 2 cm between two pixels of the SPD in different
      - layers.
    */
-  fRunNum    = fAOD->GetRunNumber();
+  // fRunNum    = fAOD->GetRunNumber();
   fTracklets = fAOD->GetTracklets()->GetNumberOfTracklets();
 
   /* - Trigger Inputs:
@@ -698,19 +894,20 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
                                           266084, 266081, 266076, 266074, 266034, 266025, 266023, 266022, 265841, 265840,
                                           265797, 265795, 265792, 265789, 265788, 265787, 265785, 265756, 265754, 265746,
                                           265744, 265742, 265741, 265740, 265714, 265713, 265709, 265701, 265700, 265698,
-                                          265697, 265696, 265694, 265691, 265607, 265596, 265594 };
+                                          265697, /*265696,*/ 265694, 265691, 265607, 265596, 265594 };
   Int_t listOfGoodRunNumbersLHC16s[]  = { 267131, 267130, 267110, 267109, 267077, 267072, 267070, 267067, 267063, 267062,
                                           267022, 267020, 266998, 266997, 266994, 266993, 266988, 266944, 266943, 266942,
                                           266940, 266915, 266912, 266886, 266885, 266883, 266882, 266880, 266878, 266857,
                                           266807, 266805, 266800, 266776, 266775, 266708, 266706, 266703, 266702, 266676,
                                           266674, 266669, 266668, 266665, 266659, 266658, 266657, 266630, 266621, 266618,
-                                          266615, 266614, 266613, 266595, 266593, 266591, 266588, 266587, 266584, 266549,
+                                          /*266615,*/ 266614, 266613, 266595, 266593, 266591, 266588, 266587, 266584, 266549,
                                           266543, 266539, 266534, 266533, 266525, 266523, 266522, 266520, 266518, 266516,
-                                          266514, 266487, 266480, 266479, 266472, 266441, 266439 };
+                                          266514, 266487, 266480, 266479, 266472, 266441, 266439, 295585 };
   Bool_t checkIfGoodRun = kFALSE;
-  for( Int_t iRunLHC16r = 0; iRunLHC16r <  57; iRunLHC16r++){
-    if( fRunNum == listOfGoodRunNumbersLHC16r[iRunLHC16r] ) checkIfGoodRun = kTRUE;
-  }
+  // cout << "OK4" << endl;
+  // for( Int_t iRunLHC16r = 0; iRunLHC16r <  56; iRunLHC16r++){
+  //   if( fRunNum == listOfGoodRunNumbersLHC16r[iRunLHC16r] ) checkIfGoodRun = kTRUE;
+  // }
   for( Int_t iRunLHC16s = 0; iRunLHC16s <  77; iRunLHC16s++){
     if( fRunNum == listOfGoodRunNumbersLHC16s[iRunLHC16s] ) checkIfGoodRun = kTRUE;
   }
@@ -744,32 +941,125 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
   }
 
   // AD
+  // AliVAD *dataAD = dynamic_cast<AliVAD*>(fAOD->GetADData());
+  // if(dataAD) {
+  //       fCounterH->Fill(iSelectionCounter);
+  //       iSelectionCounter++;
+  //
+  //       fADADecision = dataAD->GetADADecision();
+  //       fADCDecision = dataAD->GetADCDecision();
+  //
+  //       // Reset event info
+  //       fBBCFlagsAD = 0;
+  //       fBGCFlagsAD = 0;
+  //       fBBAFlagsAD = 0;
+  //       fBGAFlagsAD = 0;
+  //       for(Int_t i=0; i<16; i++) {
+  //         // get array of fired pads
+  //         fBBFlagAD[i] = dataAD->GetBBFlag(i);
+  //         fBGFlagAD[i] = dataAD->GetBGFlag(i);
+  //       }
+  //
+  //       for(Int_t i=0; i<4; i++) { // loop over pairs of pads
+  //         if ( fBBFlagAD[i]   && fBBFlagAD[i+4]  ) fBBCFlagsAD++;
+  //         if ( fBGFlagAD[i]   && fBGFlagAD[i+4]  ) fBGCFlagsAD++;
+  //         if ( fBBFlagAD[i+8] && fBBFlagAD[i+12] ) fBBAFlagsAD++;
+  //         if ( fBGFlagAD[i+8] && fBGFlagAD[i+12] ) fBGAFlagsAD++;
+  //       }
+  // }
+
+
+
+
   AliVAD *dataAD = dynamic_cast<AliVAD*>(fAOD->GetADData());
+  fCounterH->Fill(19);
+  Int_t is_ADA_set = -9;
+  Int_t is_ADC_set = -9;
+  Double_t ADmultiplicities[16]   = { -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1, -1,-1,-1,-1 };
+  Double_t ADmultiplicitiesTotal  = 0;
+  Double_t ADAmultiplicitiesTotal = 0;
+  Double_t ADCmultiplicitiesTotal = 0;
+
+  Int_t ADAPastFutureBeamBeamFlags[8][21];
+  Int_t ADCPastFutureBeamBeamFlags[8][21];
+
+
+  Int_t ADAPastFutureBoolean = 0;
+  Int_t ADCPastFutureBoolean = 0;
+
   if(dataAD) {
         fCounterH->Fill(iSelectionCounter);
         iSelectionCounter++;
+        fCounterH->Fill(20);
 
         fADADecision = dataAD->GetADADecision();
         fADCDecision = dataAD->GetADCDecision();
+        fCounterH->Fill(21);
 
-        // Reset event info
-        fBBCFlagsAD = 0;
-        fBGCFlagsAD = 0;
-        fBBAFlagsAD = 0;
-        fBGAFlagsAD = 0;
-        for(Int_t i=0; i<16; i++) {
-          // get array of fired pads
-          fBBFlagAD[i] = dataAD->GetBBFlag(i);
-          fBGFlagAD[i] = dataAD->GetBGFlag(i);
+
+              // Reset event info
+              fBBCFlagsAD = 0;
+              fBGCFlagsAD = 0;
+              fBBAFlagsAD = 0;
+              fBGAFlagsAD = 0;
+              for(Int_t i=0; i<16; i++) {
+                // get array of fired pads
+                fBBFlagAD[i] = dataAD->GetBBFlag(i);
+                fBGFlagAD[i] = dataAD->GetBGFlag(i);
+              }
+
+              for(Int_t i=0; i<4; i++) { // loop over pairs of pads
+                if ( fBBFlagAD[i]   && fBBFlagAD[i+4]  ) fBBCFlagsAD++;
+                if ( fBGFlagAD[i]   && fBGFlagAD[i+4]  ) fBGCFlagsAD++;
+                if ( fBBFlagAD[i+8] && fBBFlagAD[i+12] ) fBBAFlagsAD++;
+                if ( fBGFlagAD[i+8] && fBGFlagAD[i+12] ) fBGAFlagsAD++;
+              }
+
+
+
+        is_ADA_set = IntBits( dataAD->GetTriggerBits() ).test(12);
+        is_ADC_set = IntBits( dataAD->GetTriggerBits() ).test(13);
+        // cout << "is_ADA_set = " << is_ADA_set << endl;
+        // cout << "is_ADC_set = " << is_ADC_set << endl;
+        // cout << "is_ADA_set = " << IntBits( dataAD->GetTriggerBits() ) << endl;
+        // cout << "is_ADC_set = " << dataAD->GetTriggerBits() << endl;
+        for( Int_t iChannel = 0; iChannel < 16; iChannel++ ){
+          ADmultiplicities[iChannel] = dataAD->GetMultiplicity(iChannel);
+          ADmultiplicitiesTotal     += dataAD->GetMultiplicity(iChannel);
+          if ( iChannel < 8 ) {
+            ADCmultiplicitiesTotal  += dataAD->GetMultiplicity(iChannel);
+          } else {
+            ADAmultiplicitiesTotal  += dataAD->GetMultiplicity(iChannel);
+          }
         }
 
-        for(Int_t i=0; i<4; i++) { // loop over pairs of pads
-          if ( fBBFlagAD[i]   && fBBFlagAD[i+4]  ) fBBCFlagsAD++;
-          if ( fBGFlagAD[i]   && fBGFlagAD[i+4]  ) fBGCFlagsAD++;
-          if ( fBBFlagAD[i+8] && fBBFlagAD[i+12] ) fBBAFlagsAD++;
-          if ( fBGFlagAD[i+8] && fBGFlagAD[i+12] ) fBGAFlagsAD++;
+
+        for(   Int_t iChannel = 0; iChannel < 8; iChannel++ ){
+          for( Int_t iClock   = 0; iClock   < 21; iClock++   ){
+            ADAPastFutureBeamBeamFlags[iChannel][iClock] = 0;
+            ADCPastFutureBeamBeamFlags[iChannel][iClock] = 0;
+          }
         }
+
+        for(   Int_t iChannel = 0; iChannel < 8; iChannel++ ){
+          for( Int_t iClock   = 0; iClock   < 21; iClock++   ){
+            ADAPastFutureBeamBeamFlags[iChannel][iClock] = dataAD->GetPFBBFlag(iChannel + 8, iClock);
+            ADCPastFutureBeamBeamFlags[iChannel][iClock] = dataAD->GetPFBBFlag(iChannel, iClock);
+          }
+        }
+
+        for(   Int_t iChannel = 0; iChannel < 8;  iChannel++ ){
+          for( Int_t iClock   = 0; iClock   < 21; iClock++   ){
+            if( dataAD->GetPFBBFlag(iChannel + 8, iClock) != 0 ) ADAPastFutureBoolean = 1;
+            if( dataAD->GetPFBBFlag(iChannel, iClock)     != 0 ) ADCPastFutureBoolean = 1;
+          }
+        }
+
+
   }
+
+
+
   // END EVENT DATA EXTRACTION
   //_______________________________
   // APPLY TRIGGER MC!
@@ -810,16 +1100,42 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
   }
   /* - 0 tracklets in SPD
    */
-  if(fTracklets != 0) {
-       PostData(1, fOutputList);
-       return;
-  }
+  // if(fTracklets != 0) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
   /* - Maximum 2 V0C cells fired.
    */
   if( fV0TotalNCells > 2 ) {
        PostData(1, fOutputList);
        return;
   }
+
+
+
+
+
+  //_______________________________
+  /* -
+   * - ADC multiplicity cut
+   * -
+   */
+  // if( ADCmultiplicitiesTotal != 0 ) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
+
+  //_______________________________
+  /* -
+   * - ADA multiplicity cut
+   * -
+   */
+  // if( ADAmultiplicitiesTotal != 0 ) {
+  //      PostData(1, fOutputList);
+  //      return;
+  // }
+
+
 
   /* - We are finally at the starting point. We loop over the tracks and select
      - the good muons. Later on everything should happen in this loop. Let us
@@ -858,6 +1174,16 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
         // track[nGoodMuons] = 0x0;
         continue;
     }
+
+
+    /* -
+     * - Compatibility with Run 1 analysis.
+     * -
+     */
+    // if ( !( (track[nGoodMuons]->Eta() < -2.5) && (track[nGoodMuons]->Eta() > -3.7) ) ) {
+    //   continue;
+    // }
+
 
     // MUON SELECTION
     /* - This is Eugeny Krishen's MUON selection from the talk in 14/1/2019 for
@@ -900,8 +1226,10 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
   /* - Filling the fDeadZoneEtaVsPhiPerRunH.
    * -
    */
-  ((TH2F*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunH_%d", fRunNum )) )->Fill( track[0]->Eta(), track[0]->Phi() );
-  ((TH2F*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunH_%d", fRunNum )) )->Fill( track[1]->Eta(), track[1]->Phi() );
+  if ( fRunNum < 290000 ) {
+    ((TH2F*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunH_%d", fRunNum )) )->Fill( track[0]->Eta(), track[0]->Phi() );
+    ((TH2F*) fOutputList->FindObject(Form( "fDeadZoneEtaVsPhiPerRunH_%d", fRunNum )) )->Fill( track[1]->Eta(), track[1]->Phi() );
+  }
 
   /* - Finally the core!!!
    * - What will be happening is that we will instantiate TLorentzVectors to
@@ -921,6 +1249,7 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
         possibleJPsi += muons[indexMuon];
         chargeOfMuons[indexMuon] = track[indexMuon]->Charge();
   }
+  fEtaDimuonH ->Fill( possibleJPsi.Rapidity() );
   fInvariantMassDistributionH->Fill(possibleJPsi.Mag());
   if (        possibleJPsi.Rapidity() > -4.0  && possibleJPsi.Rapidity() <= -3.75 ) {
     fInvariantMassDistributionRapidityBinsH[0]->Fill(possibleJPsi.Mag());
@@ -989,6 +1318,78 @@ void AliAnalysisTaskForMCpPb::UserExec(Option_t *)
     }
   }
 
+  if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
+      if ( (possibleJPsi.Rapidity() > -3.6) && (possibleJPsi.Rapidity() < -2.6) ) {
+          fEfficiencyPerRunRestrictedRapidityH->Fill( Form("%d", fRunNum) , 1 );
+          if ( possibleJPsi.Rapidity() < -3.1 ) {
+            fEfficiencyPerRunRestrictedRapidity36to31H->Fill( Form("%d", fRunNum) , 1 );
+          } else {
+            fEfficiencyPerRunRestrictedRapidity31to26H->Fill( Form("%d", fRunNum) , 1 );
+          }
+          // cout << "OK1" << endl;
+      }
+  }
+
+
+
+  /* -
+   * - Efficiency with Run 2 settings.
+   * -
+   */
+  if ( (possibleJPsi.Mag() > 2.85) && (possibleJPsi.Mag() < 3.35) ) {
+      if ( (possibleJPsi.Rapidity() > -4.0) && (possibleJPsi.Rapidity() < -2.5) ) {
+          fEfficiencyPerRunWithRunTwoSettings->Fill( Form("%d", fRunNum) , 1 );
+          //
+          //
+          // Two Bins
+          if ( possibleJPsi.Rapidity() <= -3.25 ) {
+            fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[0]->Fill( Form("%d", fRunNum) , 1 );
+          } else {
+            fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[1]->Fill( Form("%d", fRunNum) , 1 );
+          }
+          //
+          //
+          // Three Bins
+          if (         possibleJPsi.Rapidity() <= -3.5 ) {
+            fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[0]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -3.5) && (possibleJPsi.Rapidity() <= -3.0) ) {
+            fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[1]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -3.0) && (possibleJPsi.Rapidity() <= -2.5) ) {
+            fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[2]->Fill( Form("%d", fRunNum) , 1 );
+          }
+          //
+          //
+          // Four Bins
+          if (         possibleJPsi.Rapidity() <= -3.625 ) {
+            fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[0]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -3.625) && (possibleJPsi.Rapidity() <= -3.250) ) {
+            fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[1]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -3.250) && (possibleJPsi.Rapidity() <= -2.875) ) {
+            fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[2]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -2.875) && (possibleJPsi.Rapidity() <= -2.500) ) {
+            fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[3]->Fill( Form("%d", fRunNum) , 1 );
+          }
+          //
+          //
+          // Five Bins
+          if (         possibleJPsi.Rapidity() <= -3.7 ) {
+            fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[0]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -3.7) && (possibleJPsi.Rapidity() <= -3.4) ) {
+            fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[1]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -3.4) && (possibleJPsi.Rapidity() <= -3.1) ) {
+            fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[2]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -3.1) && (possibleJPsi.Rapidity() <= -2.8) ) {
+            fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[3]->Fill( Form("%d", fRunNum) , 1 );
+          } else if ( (possibleJPsi.Rapidity() >  -2.8) && (possibleJPsi.Rapidity() <= -2.5) ) {
+            fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[4]->Fill( Form("%d", fRunNum) , 1 );
+          }
+
+
+
+      }
+  }
+
+
 
   /* - Filling the J/Psi's polarization plots.
      -
@@ -1049,13 +1450,18 @@ Bool_t AliAnalysisTaskForMCpPb::IsTriggered()
    */
   Bool_t is0VBAfired = fBBAFlags > 0;
   Bool_t is0VBCfired = fBBCFlags > 0;
+  Bool_t is0VC5fired = fBBCFlags > 4;
+  Bool_t is0VGAfired = fBGAFlags > 0;
   Bool_t is0UBAfired = fBBAFlagsAD > 0;
   Bool_t is0UBCfired = fBBCFlagsAD > 0;
+  Bool_t is0UGCfired = fBGCFlagsAD > 0;
   // cout << "is0VBAfired = ( fBBAFlags   = " << fBBAFlags   << " ) > 0 => " << is0VBAfired << endl;
   // cout << "is0VBCfired = ( fBBCFlags   = " << fBBCFlags   << " ) > 0 => " << is0VBCfired << endl;
   // cout << "is0UBAfired = ( fBBAFlagsAD = " << fBBAFlagsAD << " ) > 0 => " << is0UBAfired << endl;
   // cout << "is0UBCfired = ( fBBCFlagsAD = " << fBBCFlagsAD << " ) > 0 => " << is0UBCfired << endl;
-  if (!is0VBAfired && !is0UBAfired && !is0UBCfired ) return kTRUE;
+  // if (!is0VBAfired && !is0UBAfired && !is0UBCfired ) return kTRUE;
+  if (!is0VBAfired && !is0VGAfired && !is0VC5fired && !is0UBCfired && !is0UGCfired ) return kTRUE;
+  // if (!is0VBAfired && !is0UBAfired ) return kTRUE;
   else return kFALSE;
 
 }
@@ -1108,8 +1514,9 @@ void AliAnalysisTaskForMCpPb::ProcessMCParticles(AliMCEvent* fMCEventArg)
       AliError(Form("Could not receive track %d", iPart));
       continue;
     }
-    if (  !mcParticle->IsPrimary()                 ) continue;
-    if (   mcParticle->Charge()              == 0  ) continue;
+    if (  !mcParticle->IsPrimary()                                ) continue;
+    if (   mcParticle->Charge()              == 0                 ) continue;
+    // if ( !(mcParticle->Eta() < -2.5 && mcParticle->Eta() > -3.7 ) ) continue;
     if (   TMath::Abs(mcParticle->PdgCode()) == 13 ) {
       if ( nGoodMuonsMC < 2 ) {
         // cout << "Ok" << nGoodMuonsMC << endl;
@@ -1149,6 +1556,79 @@ void AliAnalysisTaskForMCpPb::ProcessMCParticles(AliMCEvent* fMCEventArg)
       }
       fMCinvariantMassDistrJPsiGeneratedTruthH->Fill(possibleJPsiMC.Mag());
       fMCptDimuonGeneratedTruthH->Fill(possibleJPsiMC.Pt());
+      if ( (possibleJPsiMC.Mag() > 2.85) && (possibleJPsiMC.Mag() < 3.35) ) {
+          // cout << "OK2" << endl;
+          if ( (possibleJPsiMC.Rapidity() > -3.6) && (possibleJPsiMC.Rapidity() < -2.6) ) {
+              fMCEfficiencyPerRunRestrictedRapidityH->Fill( Form("%d", fRunNum) , 1 );
+              if ( possibleJPsiMC.Rapidity() < -3.1 ) {
+                fMCEfficiencyPerRunRestrictedRapidity36to31H->Fill( Form("%d", fRunNum) , 1 );
+              } else {
+                fMCEfficiencyPerRunRestrictedRapidity31to26H->Fill( Form("%d", fRunNum) , 1 );
+              }
+          }
+          // cout << "OK3" << endl;
+      }
+
+
+
+      /* -
+       * - Efficiency with Run 2 settings.
+       * -
+       */
+      if ( (possibleJPsiMC.Mag() > 2.85) && (possibleJPsiMC.Mag() < 3.35) ) {
+          if ( (possibleJPsiMC.Rapidity() > -4.0) && (possibleJPsiMC.Rapidity() < -2.5) ) {
+              fMCEfficiencyPerRunWithRunTwoSettings->Fill( Form("%d", fRunNum) , 1 );
+              //
+              //
+              // Two Bins
+              if ( possibleJPsiMC.Rapidity() <= -3.25 ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[0]->Fill( Form("%d", fRunNum) , 1 );
+              } else {
+                fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[1]->Fill( Form("%d", fRunNum) , 1 );
+              }
+              //
+              //
+              // Three Bins
+              if (         possibleJPsiMC.Rapidity() <= -3.5 ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[0]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -3.5) && (possibleJPsiMC.Rapidity() <= -3.0) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[1]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -3.0) && (possibleJPsiMC.Rapidity() <= -2.5) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[2]->Fill( Form("%d", fRunNum) , 1 );
+              }
+              //
+              //
+              // Four Bins
+              if (         possibleJPsiMC.Rapidity() <= -3.625 ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[0]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -3.625) && (possibleJPsiMC.Rapidity() <= -3.250) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[1]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -3.250) && (possibleJPsiMC.Rapidity() <= -2.875) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[2]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -2.875) && (possibleJPsiMC.Rapidity() <= -2.500) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[3]->Fill( Form("%d", fRunNum) , 1 );
+              }
+              //
+              //
+              // Five Bins
+              if (         possibleJPsiMC.Rapidity() <= -3.7 ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[0]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -3.7) && (possibleJPsiMC.Rapidity() <= -3.4) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[1]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -3.4) && (possibleJPsiMC.Rapidity() <= -3.1) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[2]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -3.1) && (possibleJPsiMC.Rapidity() <= -2.8) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[3]->Fill( Form("%d", fRunNum) , 1 );
+              } else if ( (possibleJPsiMC.Rapidity() >  -2.8) && (possibleJPsiMC.Rapidity() <= -2.5) ) {
+                fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[4]->Fill( Form("%d", fRunNum) , 1 );
+              }
+
+
+
+          }
+      }
+
+
       if ( (possibleJPsiMC.Mag() > 2.8) && (possibleJPsiMC.Mag() < 3.3) && (possibleJPsiMC.Pt() < 0.25) ) {
           if( charge[0] > 0 ) {
                   /* - This means that [0] is the positive muon while [1]
@@ -1197,366 +1677,287 @@ void AliAnalysisTaskForMCpPb::SetLuminosityCap()
    * - so that I am not missing anything...
    * -
    */
-  if      ( fRunNum == 244980 ) { fLumiPerRun = 0.0505; }
-  else if ( fRunNum == 244982 ) { fLumiPerRun = 0.0761; }
-  else if ( fRunNum == 244983 ) { fLumiPerRun = 0.0291; }
-  else if ( fRunNum == 245064 ) { fLumiPerRun = 0.1643; }
-  else if ( fRunNum == 245066 ) { fLumiPerRun = 0.0236; }
-  else if ( fRunNum == 245068 ) { fLumiPerRun = 0.0202; }
-  else if ( fRunNum == 245145 ) { fLumiPerRun = 1.2115; }
-  else if ( fRunNum == 245146 ) { fLumiPerRun = 1.3773; }
-  else if ( fRunNum == 245151 ) { fLumiPerRun = 0.1469; }
-  else if ( fRunNum == 245152 ) { fLumiPerRun = 0.1655; }
-  else if ( fRunNum == 245231 ) { fLumiPerRun = 0.3084; }
-  else if ( fRunNum == 245232 ) { fLumiPerRun = 1.0146; }
-  else if ( fRunNum == 245233 ) { fLumiPerRun = 0.2373; }
-  else if ( fRunNum == 245253 ) { fLumiPerRun = 0.3067; }
-  else if ( fRunNum == 245259 ) { fLumiPerRun = 0.4893; }
-  else if ( fRunNum == 245343 ) { fLumiPerRun = 0.7006; }
-  else if ( fRunNum == 245345 ) { fLumiPerRun = 2.2153; }
-  else if ( fRunNum == 245346 ) { fLumiPerRun = 0.2785; }
-  else if ( fRunNum == 245347 ) { fLumiPerRun = 1.1752; }
-  else if ( fRunNum == 245353 ) { fLumiPerRun = 1.6505; }
-  else if ( fRunNum == 245401 ) { fLumiPerRun = 0.7485; }
-  else if ( fRunNum == 245407 ) { fLumiPerRun = 2.0625; }
-  else if ( fRunNum == 245409 ) { fLumiPerRun = 0.8705; }
-  else if ( fRunNum == 245410 ) { fLumiPerRun = 0.1819; }
-  else if ( fRunNum == 245446 ) { fLumiPerRun = 0.1261; }
-  else if ( fRunNum == 245450 ) { fLumiPerRun = 0.2621; }
-  else if ( fRunNum == 245496 ) { fLumiPerRun = 1.06;   }
-  else if ( fRunNum == 245501 ) { fLumiPerRun = 1.334;  }
-  else if ( fRunNum == 245504 ) { fLumiPerRun = 0.6492; }
-  else if ( fRunNum == 245505 ) { fLumiPerRun = 0.3624; }
-  else if ( fRunNum == 245507 ) { fLumiPerRun = 1.6192; }
-  else if ( fRunNum == 245535 ) { fLumiPerRun = 1.3612; }
-  else if ( fRunNum == 245540 ) { fLumiPerRun = 0.7121; }
-  else if ( fRunNum == 245542 ) { fLumiPerRun = 1.1181; }
-  else if ( fRunNum == 245543 ) { fLumiPerRun = 2.0169; }
-  else if ( fRunNum == 245554 ) { fLumiPerRun = 1.7248; }
-  else if ( fRunNum == 245683 ) { fLumiPerRun = 4.0406; }
-  else if ( fRunNum == 245692 ) { fLumiPerRun = 1.9090; }
-  else if ( fRunNum == 245700 ) { fLumiPerRun = 1.1167; }
-  else if ( fRunNum == 245705 ) { fLumiPerRun = 0.3239; }
-  else if ( fRunNum == 245729 ) { fLumiPerRun = 1.1548; }
-  else if ( fRunNum == 245731 ) { fLumiPerRun = 3.3932; }
-  else if ( fRunNum == 245738 ) { fLumiPerRun = 1.9485; }
-  else if ( fRunNum == 245752 ) { fLumiPerRun = 1.2497; }
-  else if ( fRunNum == 245759 ) { fLumiPerRun = 1.3785; }
-  else if ( fRunNum == 245766 ) { fLumiPerRun = 1.1429; }
-  else if ( fRunNum == 245775 ) { fLumiPerRun = 1.7326; }
-  else if ( fRunNum == 245785 ) { fLumiPerRun = 0.5102; }
-  else if ( fRunNum == 245793 ) { fLumiPerRun = 0.7093; }
-  else if ( fRunNum == 245829 ) { fLumiPerRun = 1.958;  }
-  else if ( fRunNum == 245831 ) { fLumiPerRun = 1.9939; }
-  else if ( fRunNum == 245833 ) { fLumiPerRun = 0.3559; }
-  else if ( fRunNum == 245949 ) { fLumiPerRun = 0.5652; }
-  else if ( fRunNum == 245952 ) { fLumiPerRun = 3.0759; }
-  else if ( fRunNum == 245954 ) { fLumiPerRun = 1.9965; }
-  else if ( fRunNum == 245963 ) { fLumiPerRun = 2.2815; }
-  else if ( fRunNum == 245996 ) { fLumiPerRun = 0.4644; }
-  else if ( fRunNum == 246001 ) { fLumiPerRun = 3.5684; }
-  else if ( fRunNum == 246003 ) { fLumiPerRun = 0.5803; }
-  else if ( fRunNum == 246012 ) { fLumiPerRun = 0.7302; }
-  else if ( fRunNum == 246036 ) { fLumiPerRun = 0.2143; }
-  else if ( fRunNum == 246037 ) { fLumiPerRun = 1.7465; }
-  else if ( fRunNum == 246042 ) { fLumiPerRun = 4.8713; }
-  else if ( fRunNum == 246048 ) { fLumiPerRun = 0.3835; }
-  else if ( fRunNum == 246049 ) { fLumiPerRun = 3.2666; }
-  else if ( fRunNum == 246053 ) { fLumiPerRun = 1.7691; }
-  else if ( fRunNum == 246087 ) { fLumiPerRun = 14.184; }
-  else if ( fRunNum == 246089 ) { fLumiPerRun = 0.3296; }
-  else if ( fRunNum == 246113 ) { fLumiPerRun = 1.4761; }
-  else if ( fRunNum == 246115 ) { fLumiPerRun = 0.4514; }
-  else if ( fRunNum == 246148 ) { fLumiPerRun = 5.3175; }
-  else if ( fRunNum == 246151 ) { fLumiPerRun = 3.0605; }
-  else if ( fRunNum == 246152 ) { fLumiPerRun = 0.4734; }
-  else if ( fRunNum == 246153 ) { fLumiPerRun = 4.6676; }
-  else if ( fRunNum == 246178 ) { fLumiPerRun = 0.8156; }
-  else if ( fRunNum == 246181 ) { fLumiPerRun = 2.7526; }
-  else if ( fRunNum == 246182 ) { fLumiPerRun = 2.2047; }
-  else if ( fRunNum == 246217 ) { fLumiPerRun = 3.4663; }
-  else if ( fRunNum == 246220 ) { fLumiPerRun = 0.682;  }
-  else if ( fRunNum == 246222 ) { fLumiPerRun = 3.6826; }
-  else if ( fRunNum == 246225 ) { fLumiPerRun = 1.2534; }
-  else if ( fRunNum == 246272 ) { fLumiPerRun = 5.5294; }
-  else if ( fRunNum == 246275 ) { fLumiPerRun = 1.242;  }
-  else if ( fRunNum == 246276 ) { fLumiPerRun = 0.5871; }
-  else if ( fRunNum == 246390 ) { fLumiPerRun = 0.0448; }
-  else if ( fRunNum == 246391 ) { fLumiPerRun = 0.1446; }
-  else if ( fRunNum == 246392 ) { fLumiPerRun = 0.1765; }
-  else if ( fRunNum == 246424 ) { fLumiPerRun = 2.866;  }
-  else if ( fRunNum == 246428 ) { fLumiPerRun = 0.4417; }
-  else if ( fRunNum == 246431 ) { fLumiPerRun = 1.7836; }
-  else if ( fRunNum == 246433 ) { fLumiPerRun = 0.4164; }
-  else if ( fRunNum == 246434 ) { fLumiPerRun = 4.103;  }
-  else if ( fRunNum == 246487 ) { fLumiPerRun = 0.7286; }
-  else if ( fRunNum == 246488 ) { fLumiPerRun = 7.5895; }
-  else if ( fRunNum == 246493 ) { fLumiPerRun = 1.3534; }
-  else if ( fRunNum == 246495 ) { fLumiPerRun = 0.4100; }
-  else if ( fRunNum == 246675 ) { fLumiPerRun = 2.3469; }
-  else if ( fRunNum == 246676 ) { fLumiPerRun = 0.4794; }
-  else if ( fRunNum == 246750 ) { fLumiPerRun = 2.0756; }
-  else if ( fRunNum == 246751 ) { fLumiPerRun = 2.0419; }
-  else if ( fRunNum == 246755 ) { fLumiPerRun = 1.4197; }
-  else if ( fRunNum == 246757 ) { fLumiPerRun = 0.59;   }
-  else if ( fRunNum == 246758 ) { fLumiPerRun = 1.626;  }
-  else if ( fRunNum == 246759 ) { fLumiPerRun = 0.3335; }
-  else if ( fRunNum == 246760 ) { fLumiPerRun = 1.1753; }
-  else if ( fRunNum == 246763 ) { fLumiPerRun = 0.549;  }
-  else if ( fRunNum == 246765 ) { fLumiPerRun = 0.3274; }
-  else if ( fRunNum == 246804 ) { fLumiPerRun = 1.0208; }
-  else if ( fRunNum == 246805 ) { fLumiPerRun = 3.1925; }
-  else if ( fRunNum == 246806 ) { fLumiPerRun = 2.5555; }
-  else if ( fRunNum == 246807 ) { fLumiPerRun = 2.5962; }
-  else if ( fRunNum == 246808 ) { fLumiPerRun = 0.3101; }
-  else if ( fRunNum == 246809 ) { fLumiPerRun = 2.4707; }
-  else if ( fRunNum == 246844 ) { fLumiPerRun = 0.7657; }
-  else if ( fRunNum == 246845 ) { fLumiPerRun = 1.4355; }
-  else if ( fRunNum == 246846 ) { fLumiPerRun = 0.8986; }
-  else if ( fRunNum == 246847 ) { fLumiPerRun = 1.7064; }
-  else if ( fRunNum == 246851 ) { fLumiPerRun = 1.2170; }
-  else if ( fRunNum == 246855 ) { fLumiPerRun = 1.3014; }
-  else if ( fRunNum == 246859 ) { fLumiPerRun = 1.2397; }
-  else if ( fRunNum == 246864 ) { fLumiPerRun = 2.4832; }
-  else if ( fRunNum == 246865 ) { fLumiPerRun = 0.8111; }
-  else if ( fRunNum == 246867 ) { fLumiPerRun = 1.5019; }
-  else if ( fRunNum == 246871 ) { fLumiPerRun = 0.8713; }
-  else if ( fRunNum == 246930 ) { fLumiPerRun = 0.5641; }
-  else if ( fRunNum == 246937 ) { fLumiPerRun = 0.699;  }
-  else if ( fRunNum == 246942 ) { fLumiPerRun = 1.0555; }
-  else if ( fRunNum == 246945 ) { fLumiPerRun = 2.1676; }
-  else if ( fRunNum == 246948 ) { fLumiPerRun = 0.8855; }
-  else if ( fRunNum == 246949 ) { fLumiPerRun = 2.8978; }
-  else if ( fRunNum == 246980 ) { fLumiPerRun = 7.1999; }
-  else if ( fRunNum == 246982 ) { fLumiPerRun = 0.5146; }
-  else if ( fRunNum == 246984 ) { fLumiPerRun = 4.143;  }
-  else if ( fRunNum == 246989 ) { fLumiPerRun = 3.8342; }
-  else if ( fRunNum == 246991 ) { fLumiPerRun = 0.4368; }
-  else if ( fRunNum == 246994 ) { fLumiPerRun = 1.2329; }
-  else if ( fRunNum == 295585 ) { fLumiPerRun = 0.0793; }
-  else if ( fRunNum == 295586 ) { fLumiPerRun = 0.2386; }
-  else if ( fRunNum == 295587 ) { fLumiPerRun = 0.1095; }
-  else if ( fRunNum == 295588 ) { fLumiPerRun = 0.1358; }
-  else if ( fRunNum == 295589 ) { fLumiPerRun = 0.2819; }
-  else if ( fRunNum == 295612 ) { fLumiPerRun = 0.449;  }
-  else if ( fRunNum == 295615 ) { fLumiPerRun = 0.0566; }
-  else if ( fRunNum == 295665 ) { fLumiPerRun = 0.3349; }
-  else if ( fRunNum == 295666 ) { fLumiPerRun = 0.3239; }
-  else if ( fRunNum == 295667 ) { fLumiPerRun = 0.0970; }
-  else if ( fRunNum == 295668 ) { fLumiPerRun = 0.1303; }
-  else if ( fRunNum == 295671 ) { fLumiPerRun = 0.3259; }
-  else if ( fRunNum == 295673 ) { fLumiPerRun = 0.3128; }
-  else if ( fRunNum == 295675 ) { fLumiPerRun = 0.132;  }
-  else if ( fRunNum == 295676 ) { fLumiPerRun = 0.3213; }
-  else if ( fRunNum == 295677 ) { fLumiPerRun = 0.2652; }
-  else if ( fRunNum == 295714 ) { fLumiPerRun = 0.3456; }
-  else if ( fRunNum == 295716 ) { fLumiPerRun = 0.3389; }
-  else if ( fRunNum == 295717 ) { fLumiPerRun = 0.2880; }
-  else if ( fRunNum == 295718 ) { fLumiPerRun = 0.2567; }
-  else if ( fRunNum == 295719 ) { fLumiPerRun = 0.2947; }
-  else if ( fRunNum == 295723 ) { fLumiPerRun = 0.5064; }
-  else if ( fRunNum == 295725 ) { fLumiPerRun = 0.8890; }
-  else if ( fRunNum == 295753 ) { fLumiPerRun = 0.3846; }
-  else if ( fRunNum == 295754 ) { fLumiPerRun = 0.7055; }
-  else if ( fRunNum == 295755 ) { fLumiPerRun = 0.7585; }
-  else if ( fRunNum == 295758 ) { fLumiPerRun = 1.8934; }
-  else if ( fRunNum == 295759 ) { fLumiPerRun = 0.5331; }
-  else if ( fRunNum == 295762 ) { fLumiPerRun = 0.2749; }
-  else if ( fRunNum == 295763 ) { fLumiPerRun = 1.0282; }
-  else if ( fRunNum == 295786 ) { fLumiPerRun = 0.7490; }
-  else if ( fRunNum == 295788 ) { fLumiPerRun = 3.0237; }
-  else if ( fRunNum == 295791 ) { fLumiPerRun = 0.8580; }
-  else if ( fRunNum == 295816 ) { fLumiPerRun = 1.2056; }
-  else if ( fRunNum == 295818 ) { fLumiPerRun = 0.1453; }
-  else if ( fRunNum == 295819 ) { fLumiPerRun = 2.7474; }
-  else if ( fRunNum == 295822 ) { fLumiPerRun = 2.2529; }
-  else if ( fRunNum == 295825 ) { fLumiPerRun = 0.2558; }
-  else if ( fRunNum == 295826 ) { fLumiPerRun = 1.5814; }
-  else if ( fRunNum == 295829 ) { fLumiPerRun = 0.9351; }
-  else if ( fRunNum == 295831 ) { fLumiPerRun = 0.7762; }
-  else if ( fRunNum == 295854 ) { fLumiPerRun = 1.3119; }
-  else if ( fRunNum == 295855 ) { fLumiPerRun = 1.7466; }
-  else if ( fRunNum == 295856 ) { fLumiPerRun = 1.4700; }
-  else if ( fRunNum == 295859 ) { fLumiPerRun = 1.0510; }
-  else if ( fRunNum == 295860 ) { fLumiPerRun = 0.8341; }
-  else if ( fRunNum == 295861 ) { fLumiPerRun = 1.0670; }
-  else if ( fRunNum == 295863 ) { fLumiPerRun = 0.7279; }
-  else if ( fRunNum == 295881 ) { fLumiPerRun = 0.7115; }
-  else if ( fRunNum == 295908 ) { fLumiPerRun = 2.9261; }
-  else if ( fRunNum == 295909 ) { fLumiPerRun = 0.7875; }
-  else if ( fRunNum == 295910 ) { fLumiPerRun = 3.1843; }
-  else if ( fRunNum == 295913 ) { fLumiPerRun = 3.1294; }
-  else if ( fRunNum == 295936 ) { fLumiPerRun = 1.4736; }
-  else if ( fRunNum == 295937 ) { fLumiPerRun = 0.4057; }
-  else if ( fRunNum == 295941 ) { fLumiPerRun = 1.6767; }
-  else if ( fRunNum == 295942 ) { fLumiPerRun = 1.9237; }
-  else if ( fRunNum == 295943 ) { fLumiPerRun = 1.6747; }
-  else if ( fRunNum == 295945 ) { fLumiPerRun = 2.0370; }
-  else if ( fRunNum == 295947 ) { fLumiPerRun = 2.6337; }
-  else if ( fRunNum == 296061 ) { fLumiPerRun = 1.2968; }
-  else if ( fRunNum == 296062 ) { fLumiPerRun = 1.8083; }
-  else if ( fRunNum == 296063 ) { fLumiPerRun = 2.6876; }
-  else if ( fRunNum == 296065 ) { fLumiPerRun = 2.4473; }
-  else if ( fRunNum == 296066 ) { fLumiPerRun = 0.7337; }
-  else if ( fRunNum == 296068 ) { fLumiPerRun = 1.9812; }
-  else if ( fRunNum == 296123 ) { fLumiPerRun = 0.5065; }
-  else if ( fRunNum == 296128 ) { fLumiPerRun = 0.4455; }
-  else if ( fRunNum == 296132 ) { fLumiPerRun = 1.312;  }
-  else if ( fRunNum == 296133 ) { fLumiPerRun = 1.7321; }
-  else if ( fRunNum == 296134 ) { fLumiPerRun = 3.9104; }
-  else if ( fRunNum == 296135 ) { fLumiPerRun = 2.3412; }
-  else if ( fRunNum == 296142 ) { fLumiPerRun = 1.7893; }
-  else if ( fRunNum == 296143 ) { fLumiPerRun = 0.5340; }
-  else if ( fRunNum == 296191 ) { fLumiPerRun = 5.0507; }
-  else if ( fRunNum == 296192 ) { fLumiPerRun = 0.4974; }
-  else if ( fRunNum == 296194 ) { fLumiPerRun = 2.8725; }
-  else if ( fRunNum == 296195 ) { fLumiPerRun = 0.7376; }
-  else if ( fRunNum == 296196 ) { fLumiPerRun = 2.352;  }
-  else if ( fRunNum == 296197 ) { fLumiPerRun = 2.0691; }
-  else if ( fRunNum == 296198 ) { fLumiPerRun = 0.8140; }
-  else if ( fRunNum == 296241 ) { fLumiPerRun = 0.8459; }
-  else if ( fRunNum == 296242 ) { fLumiPerRun = 0.9517; }
-  else if ( fRunNum == 296243 ) { fLumiPerRun = 1.5674; }
-  else if ( fRunNum == 296244 ) { fLumiPerRun = 8.3722; }
-  else if ( fRunNum == 296246 ) { fLumiPerRun = 1.8351; }
-  else if ( fRunNum == 296247 ) { fLumiPerRun = 1.1765; }
-  else if ( fRunNum == 296269 ) { fLumiPerRun = 3.8392; }
-  else if ( fRunNum == 296270 ) { fLumiPerRun = 1.5116; }
-  else if ( fRunNum == 296273 ) { fLumiPerRun = 7.2237; }
-  else if ( fRunNum == 296279 ) { fLumiPerRun = 0.4057; }
-  else if ( fRunNum == 296280 ) { fLumiPerRun = 1.5066; }
-  else if ( fRunNum == 296303 ) { fLumiPerRun = 2.006;  }
-  else if ( fRunNum == 296304 ) { fLumiPerRun = 6.0965; }
-  else if ( fRunNum == 296307 ) { fLumiPerRun = 2.9023; }
-  else if ( fRunNum == 296309 ) { fLumiPerRun = 2.1026; }
-  else if ( fRunNum == 296312 ) { fLumiPerRun = 2.1228; }
-  else if ( fRunNum == 296377 ) { fLumiPerRun = 6.0666; }
-  else if ( fRunNum == 296378 ) { fLumiPerRun = 5.3897; }
-  else if ( fRunNum == 296379 ) { fLumiPerRun = 2.0969; }
-  else if ( fRunNum == 296380 ) { fLumiPerRun = 2.8820; }
-  else if ( fRunNum == 296381 ) { fLumiPerRun = 1.4418; }
-  else if ( fRunNum == 296383 ) { fLumiPerRun = 1.5136; }
-  else if ( fRunNum == 296414 ) { fLumiPerRun = 4.8766; }
-  else if ( fRunNum == 296419 ) { fLumiPerRun = 2.7523; }
-  else if ( fRunNum == 296420 ) { fLumiPerRun = 1.4132; }
-  else if ( fRunNum == 296423 ) { fLumiPerRun = 1.5981; }
-  else if ( fRunNum == 296424 ) { fLumiPerRun = 0.3864; }
-  else if ( fRunNum == 296433 ) { fLumiPerRun = 4.0456; }
-  else if ( fRunNum == 296472 ) { fLumiPerRun = 0.8632; }
-  else if ( fRunNum == 296509 ) { fLumiPerRun = 2.9592; }
-  else if ( fRunNum == 296510 ) { fLumiPerRun = 9.0673; }
-  else if ( fRunNum == 296511 ) { fLumiPerRun = 2.5666; }
-  else if ( fRunNum == 296514 ) { fLumiPerRun = 0.4898; }
-  else if ( fRunNum == 296516 ) { fLumiPerRun = 0.6134; }
-  else if ( fRunNum == 296547 ) { fLumiPerRun = 1.0834; }
-  else if ( fRunNum == 296548 ) { fLumiPerRun = 1.3771; }
-  else if ( fRunNum == 296549 ) { fLumiPerRun = 4.8645; }
-  else if ( fRunNum == 296550 ) { fLumiPerRun = 3.9901; }
-  else if ( fRunNum == 296551 ) { fLumiPerRun = 2.0214; }
-  else if ( fRunNum == 296552 ) { fLumiPerRun = 0.4842; }
-  else if ( fRunNum == 296553 ) { fLumiPerRun = 0.7091; }
-  else if ( fRunNum == 296615 ) { fLumiPerRun = 1.5676; }
-  else if ( fRunNum == 296616 ) { fLumiPerRun = 0.5399; }
-  else if ( fRunNum == 296618 ) { fLumiPerRun = 1.7014; }
-  else if ( fRunNum == 296619 ) { fLumiPerRun = 1.5613; }
-  else if ( fRunNum == 296622 ) { fLumiPerRun = 0.7064; }
-  else if ( fRunNum == 296623 ) { fLumiPerRun = 2.1442; }
-  else if ( fRunNum == 296690 ) { fLumiPerRun = 6.8615; }
-  else if ( fRunNum == 296691 ) { fLumiPerRun = 0.6511; }
-  else if ( fRunNum == 296694 ) { fLumiPerRun = 5.1826; }
-  else if ( fRunNum == 296749 ) { fLumiPerRun = 9.2413; }
-  else if ( fRunNum == 296750 ) { fLumiPerRun = 8.2161; }
-  else if ( fRunNum == 296781 ) { fLumiPerRun = 0.8179; }
-  else if ( fRunNum == 296784 ) { fLumiPerRun = 2.98;   }
-  else if ( fRunNum == 296785 ) { fLumiPerRun = 1.9085; }
-  else if ( fRunNum == 296786 ) { fLumiPerRun = 0.7537; }
-  else if ( fRunNum == 296787 ) { fLumiPerRun = 3.2190; }
-  else if ( fRunNum == 296791 ) { fLumiPerRun = 0.7573; }
-  else if ( fRunNum == 296793 ) { fLumiPerRun = 1.3317; }
-  else if ( fRunNum == 296794 ) { fLumiPerRun = 3.1335; }
-  else if ( fRunNum == 296799 ) { fLumiPerRun = 2.7149; }
-  else if ( fRunNum == 296836 ) { fLumiPerRun = 1.5116; }
-  else if ( fRunNum == 296838 ) { fLumiPerRun = 0.5432; }
-  else if ( fRunNum == 296839 ) { fLumiPerRun = 2.9424; }
-  else if ( fRunNum == 296848 ) { fLumiPerRun = 2.1628; }
-  else if ( fRunNum == 296849 ) { fLumiPerRun = 11.469; }
-  else if ( fRunNum == 296850 ) { fLumiPerRun = 2.7979; }
-  else if ( fRunNum == 296851 ) { fLumiPerRun = 0.1392; }
-  else if ( fRunNum == 296852 ) { fLumiPerRun = 0.9565; }
-  else if ( fRunNum == 296890 ) { fLumiPerRun = 8.0545; }
-  else if ( fRunNum == 296894 ) { fLumiPerRun = 4.6472; }
-  else if ( fRunNum == 296899 ) { fLumiPerRun = 2.1355; }
-  else if ( fRunNum == 296900 ) { fLumiPerRun = 2.7833; }
-  else if ( fRunNum == 296903 ) { fLumiPerRun = 1.0391; }
-  else if ( fRunNum == 296930 ) { fLumiPerRun = 1.4575; }
-  else if ( fRunNum == 296931 ) { fLumiPerRun = 0.5292; }
-  else if ( fRunNum == 296932 ) { fLumiPerRun = 1.1863; }
-  else if ( fRunNum == 296934 ) { fLumiPerRun = 2.5917; }
-  else if ( fRunNum == 296935 ) { fLumiPerRun = 4.4039; }
-  else if ( fRunNum == 296938 ) { fLumiPerRun = 1.6678; }
-  else if ( fRunNum == 296941 ) { fLumiPerRun = 2.9181; }
-  else if ( fRunNum == 296966 ) { fLumiPerRun = 3.3611; }
-  else if ( fRunNum == 296967 ) { fLumiPerRun = 0.8051; }
-  else if ( fRunNum == 296968 ) { fLumiPerRun = 3.1905; }
-  else if ( fRunNum == 296969 ) { fLumiPerRun = 1.8878; }
-  else if ( fRunNum == 296971 ) { fLumiPerRun = 0.6907; }
-  else if ( fRunNum == 296975 ) { fLumiPerRun = 7.3683; }
-  else if ( fRunNum == 296976 ) { fLumiPerRun = 1.1175; }
-  else if ( fRunNum == 296979 ) { fLumiPerRun = 1.0995; }
-  else if ( fRunNum == 297029 ) { fLumiPerRun = 7.2370; }
-  else if ( fRunNum == 297031 ) { fLumiPerRun = 6.0499; }
-  else if ( fRunNum == 297035 ) { fLumiPerRun = 0.5705; }
-  else if ( fRunNum == 297085 ) { fLumiPerRun = 0.9774; }
-  else if ( fRunNum == 297117 ) { fLumiPerRun = 2.3096; }
-  else if ( fRunNum == 297118 ) { fLumiPerRun = 2.43;   }
-  else if ( fRunNum == 297119 ) { fLumiPerRun = 2.6870; }
-  else if ( fRunNum == 297123 ) { fLumiPerRun = 3.2804; }
-  else if ( fRunNum == 297124 ) { fLumiPerRun = 0.6395; }
-  else if ( fRunNum == 297128 ) { fLumiPerRun = 2.411;  }
-  else if ( fRunNum == 297129 ) { fLumiPerRun = 2.8300; }
-  else if ( fRunNum == 297132 ) { fLumiPerRun = 2.8179; }
-  else if ( fRunNum == 297133 ) { fLumiPerRun = 1.1454; }
-  else if ( fRunNum == 297193 ) { fLumiPerRun = 7.5602; }
-  else if ( fRunNum == 297194 ) { fLumiPerRun = 8.8428; }
-  else if ( fRunNum == 297196 ) { fLumiPerRun = 2.1255; }
-  else if ( fRunNum == 297218 ) { fLumiPerRun = 6.42;   }
-  else if ( fRunNum == 297219 ) { fLumiPerRun = 10.531; }
-  else if ( fRunNum == 297221 ) { fLumiPerRun = 2.8309; }
-  else if ( fRunNum == 297222 ) { fLumiPerRun = 1.7175; }
-  else if ( fRunNum == 297278 ) { fLumiPerRun = 0.6019; }
-  else if ( fRunNum == 297310 ) { fLumiPerRun = 0.6701; }
-  else if ( fRunNum == 297312 ) { fLumiPerRun = 2.4002; }
-  else if ( fRunNum == 297315 ) { fLumiPerRun = 7.8271; }
-  else if ( fRunNum == 297317 ) { fLumiPerRun = 4.3148; }
-  else if ( fRunNum == 297363 ) { fLumiPerRun = 1.9122; }
-  else if ( fRunNum == 297366 ) { fLumiPerRun = 2.1293; }
-  else if ( fRunNum == 297367 ) { fLumiPerRun = 3.1548; }
-  else if ( fRunNum == 297372 ) { fLumiPerRun = 3.2003; }
-  else if ( fRunNum == 297379 ) { fLumiPerRun = 6.8050; }
-  else if ( fRunNum == 297380 ) { fLumiPerRun = 1.5488; }
-  else if ( fRunNum == 297405 ) { fLumiPerRun = 0.6007; }
-  else if ( fRunNum == 297408 ) { fLumiPerRun = 4.1021; }
-  else if ( fRunNum == 297413 ) { fLumiPerRun = 2.9907; }
-  else if ( fRunNum == 297414 ) { fLumiPerRun = 2.2140; }
-  else if ( fRunNum == 297415 ) { fLumiPerRun = 6.8227; }
-  else if ( fRunNum == 297441 ) { fLumiPerRun = 5.0556; }
-  else if ( fRunNum == 297442 ) { fLumiPerRun = 1.9878; }
-  else if ( fRunNum == 297446 ) { fLumiPerRun = 8.1326; }
-  else if ( fRunNum == 297450 ) { fLumiPerRun = 1.9518; }
-  else if ( fRunNum == 297451 ) { fLumiPerRun = 1.3327; }
-  else if ( fRunNum == 297452 ) { fLumiPerRun = 1.1512; }
-  else if ( fRunNum == 297479 ) { fLumiPerRun = 7.7463; }
-  else if ( fRunNum == 297481 ) { fLumiPerRun = 10.645; }
-  else if ( fRunNum == 297483 ) { fLumiPerRun = 1.9505; }
-  else if ( fRunNum == 297512 ) { fLumiPerRun = 1.5848; }
-  else if ( fRunNum == 297537 ) { fLumiPerRun = 1.8096; }
-  else if ( fRunNum == 297540 ) { fLumiPerRun = 0.6286; }
-  else if ( fRunNum == 297541 ) { fLumiPerRun = 4.0120; }
-  else if ( fRunNum == 297542 ) { fLumiPerRun = 1.5362; }
-  else if ( fRunNum == 297544 ) { fLumiPerRun = 7.2900; }
-  else if ( fRunNum == 297558 ) { fLumiPerRun = 0.4783; }
-  else if ( fRunNum == 297588 ) { fLumiPerRun = 5.2912; }
-  else if ( fRunNum == 297590 ) { fLumiPerRun = 3.06;   }
-  else                          { fLumiPerRun = 1.00;   }
+  // if      ( fRunNum == 267131 ) { fLumiPerRun = 359.819; }
+  // else if ( fRunNum == 267130 ) { fLumiPerRun = 163.229; }
+  // else if ( fRunNum == 267110 ) { fLumiPerRun = 348.615; }
+  // else if ( fRunNum == 267109 ) { fLumiPerRun = 618.29;  }
+  // else if ( fRunNum == 267077 ) { fLumiPerRun = 64.7591; }
+  // else if ( fRunNum == 267072 ) { fLumiPerRun = 132.145; }
+  // else if ( fRunNum == 267070 ) { fLumiPerRun = 49.2531; }
+  // else if ( fRunNum == 267067 ) { fLumiPerRun = 142.775; }
+  // else if ( fRunNum == 267063 ) { fLumiPerRun = 104.584; }
+  // else if ( fRunNum == 267062 ) { fLumiPerRun = 82.6746; }
+  // else if ( fRunNum == 267022 ) { fLumiPerRun = 113.37;  }
+  // else if ( fRunNum == 267020 ) { fLumiPerRun = 543.514; }
+  // else if ( fRunNum == 266998 ) { fLumiPerRun = 26.5804; }
+  // else if ( fRunNum == 266997 ) { fLumiPerRun = 26.7698; }
+  // else if ( fRunNum == 266994 ) { fLumiPerRun = 68.9501; }
+  // else if ( fRunNum == 266993 ) { fLumiPerRun = 30.8271; }
+  // else if ( fRunNum == 266988 ) { fLumiPerRun = 374.406; }
+  // else if ( fRunNum == 266944 ) { fLumiPerRun = 208.054; }
+  // else if ( fRunNum == 266943 ) { fLumiPerRun = 200.326; }
+  // else if ( fRunNum == 266942 ) { fLumiPerRun = 83.6478; }
+  // else if ( fRunNum == 266940 ) { fLumiPerRun = 104.177; }
+  // else if ( fRunNum == 266915 ) { fLumiPerRun = 70.9138; }
+  // else if ( fRunNum == 266912 ) { fLumiPerRun = 198.575; }
+  // else if ( fRunNum == 266886 ) { fLumiPerRun = 204.031; }
+  // else if ( fRunNum == 266885 ) { fLumiPerRun = 136.839; }
+  // else if ( fRunNum == 266883 ) { fLumiPerRun = 160.311; }
+  // else if ( fRunNum == 266882 ) { fLumiPerRun = 91.8889; }
+  // else if ( fRunNum == 266880 ) { fLumiPerRun = 41.6682; }
+  // else if ( fRunNum == 266878 ) { fLumiPerRun = 530.376; }
+  // else if ( fRunNum == 266857 ) { fLumiPerRun = 58.3583; }
+  // else if ( fRunNum == 266807 ) { fLumiPerRun = 70.9539; }
+  // else if ( fRunNum == 266805 ) { fLumiPerRun = 167.801; }
+  // else if ( fRunNum == 266800 ) { fLumiPerRun = 327.175; }
+  // else if ( fRunNum == 266776 ) { fLumiPerRun = 420.595; }
+  // else if ( fRunNum == 266775 ) { fLumiPerRun = 709.504; }
+  // else if ( fRunNum == 266708 ) { fLumiPerRun = 91.9383; }
+  // else if ( fRunNum == 266706 ) { fLumiPerRun = 235.296; }
+  // else if ( fRunNum == 266703 ) { fLumiPerRun = 61.2925; }
+  // else if ( fRunNum == 266702 ) { fLumiPerRun = 106.221; }
+  // else if ( fRunNum == 266676 ) { fLumiPerRun = 32.0462; }
+  // else if ( fRunNum == 266674 ) { fLumiPerRun = 52.7185; }
+  // else if ( fRunNum == 266669 ) { fLumiPerRun = 254.209; }
+  // else if ( fRunNum == 266668 ) { fLumiPerRun = 68.8008; }
+  // else if ( fRunNum == 266665 ) { fLumiPerRun = 131.907; }
+  // else if ( fRunNum == 266659 ) { fLumiPerRun = 190.677; }
+  // else if ( fRunNum == 266658 ) { fLumiPerRun = 58.6213; }
+  // else if ( fRunNum == 266657 ) { fLumiPerRun = 593.284; }
+  // else if ( fRunNum == 266630 ) { fLumiPerRun = 49.7633; }
+  // else if ( fRunNum == 266621 ) { fLumiPerRun = 127.857; }
+  // else if ( fRunNum == 266618 ) { fLumiPerRun = 277;     }
+  // else if ( fRunNum == 266614 ) { fLumiPerRun = 457.478; }
+  // else if ( fRunNum == 266613 ) { fLumiPerRun = 386.435; }
+  // else if ( fRunNum == 266595 ) { fLumiPerRun = 329.874; }
+  // else if ( fRunNum == 266593 ) { fLumiPerRun = 201.278; }
+  // else if ( fRunNum == 266591 ) { fLumiPerRun = 69.7556; }
+  // else if ( fRunNum == 266588 ) { fLumiPerRun = 70.7593; }
+  // else if ( fRunNum == 266587 ) { fLumiPerRun = 59.1278; }
+  // else if ( fRunNum == 266584 ) { fLumiPerRun = 121.033; }
+  // else if ( fRunNum == 266549 ) { fLumiPerRun = 56.9813; }
+  // else if ( fRunNum == 266543 ) { fLumiPerRun = 190.57;  }
+  // else if ( fRunNum == 266539 ) { fLumiPerRun = 170.217; }
+  // else if ( fRunNum == 266534 ) { fLumiPerRun = 80.2625; }
+  // else if ( fRunNum == 266533 ) { fLumiPerRun = 98.5803; }
+  // else if ( fRunNum == 266525 ) { fLumiPerRun = 84.4293; }
+  // else if ( fRunNum == 266523 ) { fLumiPerRun = 55.9541; }
+  // else if ( fRunNum == 266522 ) { fLumiPerRun = 135.808; }
+  // else if ( fRunNum == 266520 ) { fLumiPerRun = 81.0349; }
+  // else if ( fRunNum == 266518 ) { fLumiPerRun = 371.843; }
+  // else if ( fRunNum == 266516 ) { fLumiPerRun = 24.7453; }
+  // else if ( fRunNum == 266514 ) { fLumiPerRun = 25.1691; }
+  // else if ( fRunNum == 266487 ) { fLumiPerRun = 36.0792; }
+  // else if ( fRunNum == 266480 ) { fLumiPerRun = 940.67;  }
+  // else if ( fRunNum == 266479 ) { fLumiPerRun = 214.998; }
+  // else if ( fRunNum == 266472 ) { fLumiPerRun = 105.209; }
+  // else if ( fRunNum == 266441 ) { fLumiPerRun = 177.071; }
+  // else if ( fRunNum == 266439 ) { fLumiPerRun = 41.7182; }
+  // else if ( fRunNum == 266318 ) { fLumiPerRun = 66.2315; }
+  // else if ( fRunNum == 266316 ) { fLumiPerRun = 9.58106; }
+  // else if ( fRunNum == 266312 ) { fLumiPerRun = 157.511; }
+  // else if ( fRunNum == 266305 ) { fLumiPerRun = 198.184; }
+  // else if ( fRunNum == 266304 ) { fLumiPerRun = 85.8848; }
+  // else if ( fRunNum == 266300 ) { fLumiPerRun = 129.924; }
+  // else if ( fRunNum == 266299 ) { fLumiPerRun = 133.485; }
+  // else if ( fRunNum == 266296 ) { fLumiPerRun = 116.474; }
+  // else if ( fRunNum == 266235 ) { fLumiPerRun = 414.245; }
+  // else if ( fRunNum == 266234 ) { fLumiPerRun = 199.209; }
+  // else if ( fRunNum == 266208 ) { fLumiPerRun = 149.731; }
+  // else if ( fRunNum == 266197 ) { fLumiPerRun = 118.298; }
+  // else if ( fRunNum == 266196 ) { fLumiPerRun = 68.0719; }
+  // else if ( fRunNum == 266193 ) { fLumiPerRun = 88.4665; }
+  // else if ( fRunNum == 266190 ) { fLumiPerRun = 79.6631; }
+  // else if ( fRunNum == 266189 ) { fLumiPerRun = 32.3559; }
+  // else if ( fRunNum == 266187 ) { fLumiPerRun = 127.149; }
+  // else if ( fRunNum == 266117 ) { fLumiPerRun = 153.453; }
+  // else if ( fRunNum == 266086 ) { fLumiPerRun = 116.072; }
+  // else if ( fRunNum == 266085 ) { fLumiPerRun = 63.4458; }
+  // else if ( fRunNum == 266084 ) { fLumiPerRun = 22.4614; }
+  // else if ( fRunNum == 266081 ) { fLumiPerRun = 47.3174; }
+  // else if ( fRunNum == 266076 ) { fLumiPerRun = 195.23;  }
+  // else if ( fRunNum == 266074 ) { fLumiPerRun = 230.263; }
+  // else if ( fRunNum == 266034 ) { fLumiPerRun = 86.9949; }
+  // else if ( fRunNum == 266025 ) { fLumiPerRun = 658.516; }
+  // else if ( fRunNum == 266023 ) { fLumiPerRun = 133.836; }
+  // else if ( fRunNum == 266022 ) { fLumiPerRun = 340.669; }
+  // else if ( fRunNum == 265841 ) { fLumiPerRun = 210.894; }
+  // else if ( fRunNum == 265840 ) { fLumiPerRun = 3.65278; }
+  // else if ( fRunNum == 265797 ) { fLumiPerRun = 41.2853; }
+  // else if ( fRunNum == 265795 ) { fLumiPerRun = 65.9944; }
+  // else if ( fRunNum == 265792 ) { fLumiPerRun = 34.2686; }
+  // else if ( fRunNum == 265789 ) { fLumiPerRun = 168.22;  }
+  // else if ( fRunNum == 265788 ) { fLumiPerRun = 145.194; }
+  // else if ( fRunNum == 265787 ) { fLumiPerRun = 251.743; }
+  // else if ( fRunNum == 265785 ) { fLumiPerRun = 316.091; }
+  // else if ( fRunNum == 265756 ) { fLumiPerRun = 51.7427; }
+  // else if ( fRunNum == 265754 ) { fLumiPerRun = 96.0737; }
+  // else if ( fRunNum == 265746 ) { fLumiPerRun = 366.01;  }
+  // else if ( fRunNum == 265744 ) { fLumiPerRun = 168.605; }
+  // else if ( fRunNum == 265742 ) { fLumiPerRun = 184.746; }
+  // else if ( fRunNum == 265741 ) { fLumiPerRun = 80.0317; }
+  // else if ( fRunNum == 265740 ) { fLumiPerRun = 72.2736; }
+  // else if ( fRunNum == 265714 ) { fLumiPerRun = 46.912;  }
+  // else if ( fRunNum == 265713 ) { fLumiPerRun = 41.2605; }
+  // else if ( fRunNum == 265709 ) { fLumiPerRun = 48.43;   }
+  // else if ( fRunNum == 265701 ) { fLumiPerRun = 124.259; }
+  // else if ( fRunNum == 265700 ) { fLumiPerRun = 33.3219; }
+  // else if ( fRunNum == 265698 ) { fLumiPerRun = 140.203; }
+  // else if ( fRunNum == 265697 ) { fLumiPerRun = 19.0271; }
+  // else if ( fRunNum == 265694 ) { fLumiPerRun = 577.183; }
+  // else if ( fRunNum == 265691 ) { fLumiPerRun = 351.54;  }
+  // else if ( fRunNum == 265607 ) { fLumiPerRun = 0.647854;}
+  // else if ( fRunNum == 265596 ) { fLumiPerRun = 4.23135; }
+
+  //_______________________________
+  /* -
+   * - Asking for AD decisions.
+   * -
+   */
+  if      ( fRunNum == 267131 ) { fLumiPerRun = 299.488; }
+  else if ( fRunNum == 267130 ) { fLumiPerRun = 133.813; }
+  else if ( fRunNum == 267110 ) { fLumiPerRun = 293.588; }
+  else if ( fRunNum == 267109 ) { fLumiPerRun = 506.868; }
+  else if ( fRunNum == 267077 ) { fLumiPerRun = 52.7582; }
+  else if ( fRunNum == 267072 ) { fLumiPerRun = 108.475; }
+  else if ( fRunNum == 267070 ) { fLumiPerRun = 40.3772; }
+  else if ( fRunNum == 267067 ) { fLumiPerRun = 117.626; }
+  else if ( fRunNum == 267063 ) { fLumiPerRun = 122.597; }
+  else if ( fRunNum == 267062 ) { fLumiPerRun = 67.7758; }
+  else if ( fRunNum == 267022 ) { fLumiPerRun = 95.3051; }
+  else if ( fRunNum == 267020 ) { fLumiPerRun = 446.61; }
+  else if ( fRunNum == 266998 ) { fLumiPerRun = 22.3174; }
+  else if ( fRunNum == 266997 ) { fLumiPerRun = 22.4019; }
+  else if ( fRunNum == 266994 ) { fLumiPerRun = 58.4044; }
+  else if ( fRunNum == 266993 ) { fLumiPerRun = 26.0976; }
+  else if ( fRunNum == 266988 ) { fLumiPerRun = 307.71; }
+  else if ( fRunNum == 266944 ) { fLumiPerRun = 174.388; }
+  else if ( fRunNum == 266943 ) { fLumiPerRun = 164.8; }
+  else if ( fRunNum == 266942 ) { fLumiPerRun = 68.5736; }
+  else if ( fRunNum == 266940 ) { fLumiPerRun = 110.686; }
+  else if ( fRunNum == 266915 ) { fLumiPerRun = 58.1344; }
+  else if ( fRunNum == 266912 ) { fLumiPerRun = 163.755; }
+  else if ( fRunNum == 266886 ) { fLumiPerRun = 167.216; }
+  else if ( fRunNum == 266885 ) { fLumiPerRun = 111.504; }
+  else if ( fRunNum == 266883 ) { fLumiPerRun = 132.063; }
+  else if ( fRunNum == 266882 ) { fLumiPerRun = 76.5574; }
+  else if ( fRunNum == 266880 ) { fLumiPerRun = 34.1592; }
+  else if ( fRunNum == 266878 ) { fLumiPerRun = 444.15; }
+  else if ( fRunNum == 266857 ) { fLumiPerRun = 47.3076; }
+  else if ( fRunNum == 266807 ) { fLumiPerRun = 58.4043; }
+  else if ( fRunNum == 266805 ) { fLumiPerRun = 137.953; }
+  else if ( fRunNum == 266800 ) { fLumiPerRun = 277.81; }
+  else if ( fRunNum == 266776 ) { fLumiPerRun = 347.019; }
+  else if ( fRunNum == 266775 ) { fLumiPerRun = 587.711; }
+  else if ( fRunNum == 266708 ) { fLumiPerRun = 77.0559; }
+  else if ( fRunNum == 266706 ) { fLumiPerRun = 255.623; }
+  else if ( fRunNum == 266703 ) { fLumiPerRun = 47.0861; }
+  else if ( fRunNum == 266702 ) { fLumiPerRun = 121.264; }
+  else if ( fRunNum == 266676 ) { fLumiPerRun = 25.0438; }
+  else if ( fRunNum == 266674 ) { fLumiPerRun = 43.2181; }
+  else if ( fRunNum == 266669 ) { fLumiPerRun = 202.677; }
+  else if ( fRunNum == 266668 ) { fLumiPerRun = 151.058; }
+  else if ( fRunNum == 266665 ) { fLumiPerRun = 102.909; }
+  else if ( fRunNum == 266659 ) { fLumiPerRun = 147.023; }
+  else if ( fRunNum == 266658 ) { fLumiPerRun = 44.1322; }
+  else if ( fRunNum == 266657 ) { fLumiPerRun = 451.944; }
+  else if ( fRunNum == 266630 ) { fLumiPerRun = 40.7954; }
+  else if ( fRunNum == 266621 ) { fLumiPerRun = 138.065; }
+  else if ( fRunNum == 266618 ) { fLumiPerRun = 228.025; }
+  else if ( fRunNum == 266614 ) { fLumiPerRun = 372.09; }
+  else if ( fRunNum == 266613 ) { fLumiPerRun = 310.359; }
+  else if ( fRunNum == 266595 ) { fLumiPerRun = 253.44; }
+  else if ( fRunNum == 266593 ) { fLumiPerRun = 158.782; }
+  else if ( fRunNum == 266591 ) { fLumiPerRun = 57.1858; }
+  else if ( fRunNum == 266588 ) { fLumiPerRun = 60.8278; }
+  else if ( fRunNum == 266587 ) { fLumiPerRun = 123.611; }
+  else if ( fRunNum == 266584 ) { fLumiPerRun = 169.477; }
+  else if ( fRunNum == 266549 ) { fLumiPerRun = 45.4535; }
+  else if ( fRunNum == 266543 ) { fLumiPerRun = 151.764; }
+  else if ( fRunNum == 266539 ) { fLumiPerRun = 139.022; }
+  else if ( fRunNum == 266534 ) { fLumiPerRun = 65.8065; }
+  else if ( fRunNum == 266533 ) { fLumiPerRun = 80.7648; }
+  else if ( fRunNum == 266525 ) { fLumiPerRun = 67.4575; }
+  else if ( fRunNum == 266523 ) { fLumiPerRun = 45.6672; }
+  else if ( fRunNum == 266522 ) { fLumiPerRun = 111.334; }
+  else if ( fRunNum == 266520 ) { fLumiPerRun = 59.4779; }
+  else if ( fRunNum == 266518 ) { fLumiPerRun = 304.703; }
+  else if ( fRunNum == 266516 ) { fLumiPerRun = 20.191; }
+  else if ( fRunNum == 266514 ) { fLumiPerRun = 164.321; }
+  else if ( fRunNum == 266487 ) { fLumiPerRun = 28.6638; }
+  else if ( fRunNum == 266480 ) { fLumiPerRun = 738.723; }
+  else if ( fRunNum == 266479 ) { fLumiPerRun = 164.735; }
+  else if ( fRunNum == 266472 ) { fLumiPerRun = 86.2489; }
+  else if ( fRunNum == 266441 ) { fLumiPerRun = 143.532; }
+  else if ( fRunNum == 266439 ) { fLumiPerRun = 33.9646; }
+  //_______________________________
+
+
+
+  //_______________________________
+  /* -
+   * - pPb analysis
+   * -
+   */
+  else if ( fRunNum == 266318 ) { fLumiPerRun = 66.2315; }
+  else if ( fRunNum == 266316 ) { fLumiPerRun = 9.58106; }
+  else if ( fRunNum == 266312 ) { fLumiPerRun = 157.511; }
+  else if ( fRunNum == 266305 ) { fLumiPerRun = 198.184; }
+  else if ( fRunNum == 266304 ) { fLumiPerRun = 85.8848; }
+  else if ( fRunNum == 266300 ) { fLumiPerRun = 129.924; }
+  else if ( fRunNum == 266299 ) { fLumiPerRun = 133.485; }
+  else if ( fRunNum == 266296 ) { fLumiPerRun = 116.474; }
+  else if ( fRunNum == 266235 ) { fLumiPerRun = 414.245; }
+  else if ( fRunNum == 266234 ) { fLumiPerRun = 199.209; }
+  else if ( fRunNum == 266208 ) { fLumiPerRun = 149.731; }
+  else if ( fRunNum == 266197 ) { fLumiPerRun = 118.298; }
+  else if ( fRunNum == 266196 ) { fLumiPerRun = 68.0719; }
+  else if ( fRunNum == 266193 ) { fLumiPerRun = 88.4665; }
+  else if ( fRunNum == 266190 ) { fLumiPerRun = 79.6631; }
+  else if ( fRunNum == 266189 ) { fLumiPerRun = 32.3559; }
+  else if ( fRunNum == 266187 ) { fLumiPerRun = 127.149; }
+  else if ( fRunNum == 266117 ) { fLumiPerRun = 153.453; }
+  else if ( fRunNum == 266086 ) { fLumiPerRun = 116.072; }
+  else if ( fRunNum == 266085 ) { fLumiPerRun = 63.4458; }
+  else if ( fRunNum == 266084 ) { fLumiPerRun = 22.4614; }
+  else if ( fRunNum == 266081 ) { fLumiPerRun = 47.3174; }
+  else if ( fRunNum == 266076 ) { fLumiPerRun = 195.23; }
+  else if ( fRunNum == 266074 ) { fLumiPerRun = 230.263; }
+  else if ( fRunNum == 266034 ) { fLumiPerRun = 86.9949; }
+  else if ( fRunNum == 266025 ) { fLumiPerRun = 658.516; }
+  else if ( fRunNum == 266023 ) { fLumiPerRun = 133.836; }
+  else if ( fRunNum == 266022 ) { fLumiPerRun = 340.669; }
+  else if ( fRunNum == 265841 ) { fLumiPerRun = 210.894; }
+  else if ( fRunNum == 265840 ) { fLumiPerRun = 3.65278; }
+  else if ( fRunNum == 265797 ) { fLumiPerRun = 41.2853; }
+  else if ( fRunNum == 265795 ) { fLumiPerRun = 65.9944; }
+  else if ( fRunNum == 265792 ) { fLumiPerRun = 34.2686; }
+  else if ( fRunNum == 265789 ) { fLumiPerRun = 168.22; }
+  else if ( fRunNum == 265788 ) { fLumiPerRun = 145.194; }
+  else if ( fRunNum == 265787 ) { fLumiPerRun = 251.743; }
+  else if ( fRunNum == 265785 ) { fLumiPerRun = 316.091; }
+  else if ( fRunNum == 265756 ) { fLumiPerRun = 51.7427; }
+  else if ( fRunNum == 265754 ) { fLumiPerRun = 96.0737; }
+  else if ( fRunNum == 265746 ) { fLumiPerRun = 366.01; }
+  else if ( fRunNum == 265744 ) { fLumiPerRun = 168.605; }
+  else if ( fRunNum == 265742 ) { fLumiPerRun = 184.746; }
+  else if ( fRunNum == 265741 ) { fLumiPerRun = 80.0317; }
+  else if ( fRunNum == 265740 ) { fLumiPerRun = 72.2736; }
+  else if ( fRunNum == 265714 ) { fLumiPerRun = 46.912; }
+  else if ( fRunNum == 265713 ) { fLumiPerRun = 41.2605; }
+  else if ( fRunNum == 265709 ) { fLumiPerRun = 48.43; }
+  else if ( fRunNum == 265701 ) { fLumiPerRun = 124.259; }
+  else if ( fRunNum == 265700 ) { fLumiPerRun = 33.3219; }
+  else if ( fRunNum == 265698 ) { fLumiPerRun = 140.203; }
+  else if ( fRunNum == 265697 ) { fLumiPerRun = 19.0271; }
+  else if ( fRunNum == 265694 ) { fLumiPerRun = 577.183; }
+  else if ( fRunNum == 265691 ) { fLumiPerRun = 351.54; }
+  else if ( fRunNum == 265607 ) { fLumiPerRun = 0.647854; }
+  else if ( fRunNum == 265596 ) { fLumiPerRun = 4.23135; }
+  //_______________________________
+
+
+
+  else                          { fLumiPerRun = 1.00;    }
 
 }

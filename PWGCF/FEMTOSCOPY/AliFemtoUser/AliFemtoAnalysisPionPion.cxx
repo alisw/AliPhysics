@@ -88,12 +88,12 @@ struct Configuration<AliFemtoAnalysisPionPion> {
 TString AliFemtoAnalysisPionPion::make_random_string(const TString &prefix)
 {
   std::random_device rd;
-  std::uniform_int_distribution<char> dist('a', 'z');
+  std::uniform_int_distribution<uint8_t> dist(97, 122); // was using 'a' and 'z' as range, which is breaking compilation due to non-int type, temporarily replace with corresponding ASCII codes (a - 97, z - 122) which ends up in same behaviour
   TString result = prefix;
 
   int N = std::uniform_int_distribution<>(6, 12)(rd);
   for (int n = 0; n < N; ++n) {
-    result += dist(rd);
+    result += static_cast<char>(dist(rd));
   }
   return result;
 }
@@ -178,7 +178,7 @@ extern template AliFemtoBasicEventCut* AliFemtoConfigObject::Into<AliFemtoBasicE
 ///
 struct CutConfig_Pion {
 
-    RangeF_t pt = {0.2, 2.0},
+    RangeF_t pt = {0.15, 2.0},
              eta = {-0.8, 0.8},
              DCA = {0.5, 4.0},
              nSigma = {-3.0, 3.0};
@@ -191,7 +191,14 @@ struct CutConfig_Pion {
 
     /// momentum to begin using TOF sigma in sigma calculation
     Float_t tpctof_limit = 0.5,
-            tof_momentum_limit = 0.5,
+            tof_kaon_reject_pmin = 0.6,
+            tof_sigma = NAN,
+            tof_kaon_rejection_sigma = 4.0,
+            tof_kaon_rejection_pmin = 0.6,
+
+            tof_proton_reject_sigma = 5.0,
+            tof_proton_reject_pmin = 0.6,
+
             electron_rejection_sigma = 3.0;
 
     Float_t max_impact_xy = .20,
@@ -203,7 +210,10 @@ struct CutConfig_Pion {
 
     Bool_t remove_negative_label = kFALSE,
            use_tpctof = kTRUE,
+           tof_required = kTRUE,
            remove_kinks = kTRUE;
+
+    Int_t ideal_pid = 211;
 
     /// default constructor required to use default initialized members
     CutConfig_Pion(){};
@@ -213,8 +223,8 @@ struct CutConfig_Pion {
 struct CutConfig_Pair {
   Bool_t use_avgsep = { kFALSE };
   Float_t min_delta_eta = { 0.01 },
-          min_delta_phi = { 0.04 },
-          phi_star_radius = { 1.2 };
+          min_delta_phi = { 0.033 },
+          phi_star_radius = { 1.1 };
 
   Float_t min_avgsep = { 3.0 };
 
@@ -407,10 +417,17 @@ AliFemtoAnalysisPionPion::CutParams::CutParams()
   , pion_1_status(default_pion.status)
   // , default_pion.nSigma.first
   // , default_pion.nSigma.second
-  , pion_1_sigma(default_pion.sigma)
-  , pion_1_tpctof(default_pion.tpctof_limit)
-  , pion_1_tof_limit(default_pion.tof_momentum_limit)
-  , pion_1_ereject_sigma(default_pion.electron_rejection_sigma)
+  , pion_1_tpc_sigma(default_pion.sigma)
+  , pion_1_tof_sigma(default_pion.tof_sigma)
+  , pion_1_tof_required(default_pion.tof_required)
+
+  , pion_1_tof_kreject_sigma(default_pion.tof_kaon_rejection_sigma)
+  , pion_1_tof_kreject_pmin(default_pion.tof_kaon_reject_pmin)
+
+  , pion_1_tof_preject_sigma(default_pion.tof_proton_reject_sigma)
+  , pion_1_tof_preject_pmin(default_pion.tof_proton_reject_pmin)
+
+  , pion_1_tpc_ereject_sigma(default_pion.electron_rejection_sigma)
 
   , pion_1_max_impact_xy(default_pion.max_impact_xy)
   , pion_1_max_impact_z(default_pion.max_impact_z)
@@ -424,6 +441,8 @@ AliFemtoAnalysisPionPion::CutParams::CutParams()
   , pion_1_remove_kinks(default_pion.remove_kinks)
   , pion_1_rm_neg_lbl(default_pion.remove_negative_label)
   , pion_1_use_tpctof(default_pion.use_tpctof)
+
+  , pion_1_ideal_pid(default_pion.ideal_pid)
 
     // Pion 2
   , pion_2_PtMin(default_pion.pt.first)
@@ -499,14 +518,26 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
     cut->charge = charge;
     cut->max_xy = p.pion_1_max_impact_xy;
     cut->max_z = p.pion_1_max_impact_z;
-    cut->tof_cut_factor = p.pion_1_tpctof;
-    cut->tof_cut_limit = p.pion_1_tof_limit;
-    cut->tpc_sigma_pion = p.pion_1_sigma;
-    cut->electron_tpc_sigma_min = p.pion_1_ereject_sigma;
+
+    cut->tpc_sigma_pion = p.pion_1_tpc_sigma;
+    cut->tof_sigma_pion = p.pion_1_tof_sigma;
+    cut->require_tof = p.pion_1_tof_required;
+
+    cut->tof_kaon_reject_sigma = p.pion_1_tof_kreject_sigma;
+    cut->tof_kaon_momentum_limit = p.pion_1_tof_kreject_pmin;
+    // cut->tof_sigma_pion = p.pion_1_tof_sigma;
+
+    cut->tof_proton_reject_sigma = p.pion_1_tof_preject_sigma;
+    cut->tof_proton_momentum_limit = p.pion_1_tof_preject_pmin;
+    cut->electron_tpc_sigma_min = p.pion_1_tpc_ereject_sigma;
     cut->rchi2_tpc_min = p.pion_1_min_tpc_chi_ndof;
     cut->rchi2_tpc_max = p.pion_1_max_tpc_chi_ndof;
     cut->rchi2_its_max = p.pion_1_max_its_chi_ndof;
     cut->remove_neg_label = p.pion_1_rm_neg_lbl;
+
+    if (auto *ideal_cut = dynamic_cast<AliFemtoTrackCutPionPionIdealAK*>(cut)) {
+      ideal_cut->ideal_pid = p.pion_1_ideal_pid;
+    }
 
     return cut;
   }
@@ -523,7 +554,7 @@ AliFemtoAnalysisPionPion::BuildPionCut1(const CutParams &p) const
   cut->SetEta(p.pion_1_eta.first, p.pion_1_eta.second);
   cut->SetRapidity(p.pion_1_eta.first, p.pion_1_eta.second);
   cut->SetMostProbablePion();
-  cut->SetNsigma(p.pion_1_sigma);
+  cut->SetNsigma(p.pion_1_tpc_sigma);
   cut->SetNsigmaTPCTOF(p.pion_1_use_tpctof);
 //   cut->SetStatus(AliESDtrack::kTPCrefit | AliESDtrack::kITSrefit);
 

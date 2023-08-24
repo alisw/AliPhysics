@@ -80,6 +80,8 @@ class AliAnalysisTaskNanoLoton : public AliAnalysisTaskSE {
   TList *fResultsSampleQA;//!
   int fTrackBufferSize;//
   AliVTrack **fGTI;  //!
+  TH2F* fInvMassHistOne;
+  TH2F* fInvMassHistTwo; 
   ClassDef(AliAnalysisTaskNanoLoton,1)
 };
 

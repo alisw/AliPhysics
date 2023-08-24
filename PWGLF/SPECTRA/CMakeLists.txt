@@ -27,69 +27,51 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWGLF/SPECTRA/XtAnalysis
-            	    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
+                    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
                     ${AliPhysics_SOURCE_DIR}/EVENTMIX
-		    ${AliPhysics_SOURCE_DIR}/PWG/TRD
+                    ${AliPhysics_SOURCE_DIR}/PWG/TRD
   )
 
 # Sources - alphabetical order
 set(SRCS
-  ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx
-  ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
-  ChargedHadrons/dNdPt/AliMeanPtAnalysisTask.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskCutTest.cxx
-  ChargedHadrons/dNdPt/AlidNdPtUnifiedAnalysisTask.cxx
-  ChargedHadrons/dNdPt/MeanPtRaw/AliAnalysisTaskMeanPtRaw.cxx
-  ChargedHadrons/dNdPt/AlidNdPtAcceptanceCuts.cxx
-  ChargedHadrons/dNdPt/AlidNdPtAnalysis.cxx
-  ChargedHadrons/dNdPt/AlidNdPtAnalysisPbPb.cxx
-  ChargedHadrons/dNdPt/AlidNdPtAnalysisPbPb2011.cxx
-  ChargedHadrons/dNdPt/AlidNdPtAnalysisPbPbAOD.cxx
-  ChargedHadrons/dNdPt/AlidNdPtAnalysispPb.cxx
-  ChargedHadrons/dNdPt/AlidNdPtBackgroundCuts.cxx
-  ChargedHadrons/dNdPt/AlidNdPtCorrection.cxx
-  ChargedHadrons/dNdPt/AlidNdPtCutAnalysis.cxx
-  ChargedHadrons/dNdPt/AlidNdPtCutAnalysisPbPb.cxx
-  ChargedHadrons/dNdPt/AlidNdPt.cxx
-  ChargedHadrons/dNdPt/AlidNdPtEfficiency.cxx
-  ChargedHadrons/dNdPt/AlidNdPtEventCuts.cxx
-  ChargedHadrons/dNdPt/AlidNdPtHelper.cxx
-  ChargedHadrons/dNdPt/AlidNdPtTask.cxx
-  ChargedHadrons/dNdPt/AlidNdPtTools.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskMKBase.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskBaseWeights.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskMKTest.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskTPCMatchEff.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskDCArStudy.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskPtResStudy.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskEffContStudy.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskUEStudy.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskSpectra.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskSpectraV0M.cxx
-  ChargedHadrons/dNdPt/AliAnalysisTaskFilterEventTPCdEdx.cxx
-  ChargedHadrons/dNdPt/AlidNdPtTrackDumpTask.cxx
-  ChargedHadrons/dNdPt/AliPtResolAnalysis.cxx
-  ChargedHadrons/dNdPt/AliPtResolAnalysisPbPb.cxx
-  ChargedHadrons/dNdPt/AlimPtAnalysis.cxx
-  ChargedHadrons/dNdPt/AlimPtMatrix.cxx
-  ChargedHadrons/dNdPt/AlimPtMatrixZDC.cxx
-  ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
   ChargedHadrons/AliMCSpectraWeights/AliMCSpectraWeightsAnalysisTask.cxx
+  ChargedHadrons/dNdPt/Framework/AlidNdPtTools.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskMKBase.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskMKTest.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskTPCMatchEff.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskPtResStudy.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskEffContStudy.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskUEStudy.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectra.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraV0M.cxx
+  ChargedHadrons/dNdPt/Framework/AliAnalysisTaskFilterEventTPCdEdx.cxx
+  ChargedHadrons/dNdPt/AliAnalysisTaskSpectraDPhi.cxx
+  ChargedHadrons/dNdPtVsMultpp/AliAnalysisTaskPPvsMultINEL0.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectra.cxx
   PiKaPr/ITSsa/AliAnalysisTaskSEITSsaSpectraMultiplicity.cxx
+  PiKaPr/TPC/Run3/AliAnalysisTaskSpectraTPCRun3.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskQAHighPtDeDxTest.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsMult.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskSpherocity.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsRT.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskPPvsRT_TPCTOF.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskSpectraRT.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskSpectraMC.cxx
+  PiKaPr/TPC/rTPC/AliAnalysisTaskGenRT.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
+  PiKaPr/TPCTOF/AliAnalysisTaskAntiProtons_vs_Rapidity_Data.cxx
+  PiKaPr/TPCTOF/AliAnalysisTaskAntiProtons_vs_Rapidity_Simu.cxx
   PiKaPr/TPCTOFpA/AliAnalysisTPCTOFpA.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDEvent.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDParticle.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDTrack.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDV0.cxx
   PiKaPr/TPCTOFfits/AliAnalysisTaskTPCTOFPID.cxx
+  PiKaPr/TPCTOFCascades/AliAnalysisPIDCascadeEvent.cxx
+  PiKaPr/TPCTOFCascades/AliAnalysisPIDCascadeParticle.cxx
+  PiKaPr/TPCTOFCascades/AliAnalysisPIDCascadeTrack.cxx
+  PiKaPr/TPCTOFCascades/AliAnalysisPIDCascadeV0.cxx
   PiKaPr/TPCTOFCascades/AliAnalysisPIDCascade.cxx
   PiKaPr/TPCTOFCascades/AliAnalysisTaskTPCTOFCascade.cxx
   PiKaPr/TOF/pp13/AliAnalysisTaskTOFppSpectra.cxx
@@ -114,6 +96,8 @@ set(SRCS
   Kinks/AliAnalysisTaskKinksFilimon.cxx
   Kinks/AliAnalysisKinkESDat13.cxx
   Kinks/AliAnalysisKinkESDMC13.cxx
+  Kinks/AliAnalysisKinkESDat13ppHM.cxx
+  Kinks/AliAnalysisKinkESDMulPPpi.cxx
   Kinks/AliAnalysisKinkTaskMult13pp.cxx
   Kinks/AliAnalysisKinkTaskMult13ppMC.cxx
   Kinks/AliAnalysisTaskKinkpp5TeV.cxx
@@ -136,6 +120,7 @@ set(SRCS
   MultEvShape/AliMEStrackInfo.cxx
   MultEvShape/AliMESbaseTask.cxx
   MultEvShape/AliMEStender.cxx
+  MultEvShape/AliMESpp13.cxx
   MultEvShape/AliMESpidTask.cxx
   MultEvShape/AliMESchgTask.cxx
   MultEvShape/AliMESppColTask.cxx
@@ -144,14 +129,29 @@ set(SRCS
   AntiprotonToProton/train/AliAnalysisTaskProton.cxx
   AntiprotonToProton/train/AliAnalysisTaskProtonQA.cxx
   AntiprotonToProton/train/AliAnalysisTaskProtonAbsorbtion.cxx
+  Spherocity/AliAnalysisTaskS0.cxx
   Spherocity/AliTransverseEventShape.cxx
   Spherocity/AliSpherocityEstimator.cxx
   Spherocity/AliSpherocityUtils.cxx
   Spherocity/macros/AliAnalysisSphericityTask.cxx
 )
+if(${ROOT_VERSION} GREATER_EQUAL 6.0)
+  list(APPEND SRCS ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx)
+  list(APPEND SRCS ChargedHadrons/MultDepSpec/AliMultDepSpecOnTheFlyAnalysisTask.cxx)
+  list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskDCArStudy.cxx)
+  list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskCutStudies.cxx)
+  list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraEtaPhi.cxx)
+  list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraINEL0.cxx)
+  list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskBaseWeights.cxx)
+  list(APPEND SRCS ChargedHadrons/AliMCSpectraWeights/AliMCWeightsTask.cxx)
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+
+if(${ROOT_VERSION} GREATER_EQUAL 6.0)
+  list(APPEND HDRS ChargedHadrons/MultDepSpec/AliAnalysisHelpersHist.h)
+endif()
 
 # Extra files to include in the PARfile
 set(PAR_EXTRAFILES_CXX
@@ -224,7 +224,7 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
-install(FILES PiKaPr/TestAOD/HistogramsBoth.h PiKaPr/TestAOD/Histograms.h DESTINATION include)
+install(FILES PiKaPr/TestAOD/HistogramNamesBoth.h PiKaPr/TestAOD/HistogramNames.h PiKaPr/TestAOD/HistogramsBoth.h PiKaPr/TestAOD/Histograms.h DESTINATION include)
 
 # install macros
 install(DIRECTORY ChargedHadrons/MultDepSpec/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/MultDepSpec)
@@ -233,12 +233,14 @@ install(DIRECTORY ChargedHadrons/dNdPt/MeanPtRaw/macros DESTINATION
   PWGLF/SPECTRA/ChargedHadrons/dNdPt/MeanPtRaw)
 install(DIRECTORY ChargedHadrons/dNdPtVsMultpp/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/dNdPtVsMultpp)
 install(FILES ChargedHadrons/AliMCSpectraWeights/AddTask_phuhn_MCSpectraWeights.C DESTINATION PWGLF/SPECTRA/ChargedHadrons/AliMCSpectraWeights)
+install(FILES ChargedHadrons/AliMCSpectraWeights/AddTask_MCWeights.C DESTINATION PWGLF/SPECTRA/ChargedHadrons/AliMCSpectraWeights)
 install(DIRECTORY IdentifiedHighPt/train/macros DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
 install(DIRECTORY IdentifiedHighPt/train/macros1 DESTINATION  PWGLF/SPECTRA/IdentifiedHighPt/train)
 install(DIRECTORY Kinks/macros DESTINATION  PWGLF/SPECTRA/Kinks)
 install(DIRECTORY PiKaPr/TestAOD DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/ITSsa DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/TPC/rTPC DESTINATION PWGLF/SPECTRA/PiKaPr/TPC)
+install(DIRECTORY PiKaPr/TPC/Run3 DESTINATION PWGLF/SPECTRA/PiKaPr/TPC)
 install(DIRECTORY PiKaPr/TPCTOFfits DESTINATION PWGLF/SPECTRA/PiKaPr)
 install(DIRECTORY PiKaPr/TPCTOFCascades DESTINATION PWGLF/SPECTRA/PiKaPr)
 

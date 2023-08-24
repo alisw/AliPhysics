@@ -1,5 +1,6 @@
 #include "src/Common.h"
 #include "src/Utils.h"
+using namespace utils;
 #include "src/Plotting.h"
 
 #include "TFile.h"
@@ -12,6 +13,7 @@
 #include "TLine.h"
 #include "TLatex.h"
 #include "TF1.h"
+#include "TPaveText.h"
 
 constexpr int nCol = 3;
 constexpr int nRow = 3;
@@ -26,7 +28,7 @@ int place_holder[9] = {0,3,6,1,4,7,2,5,8};
 
 std::array<TPad*,9> CreatePads(TCanvas* &cv);
 
-void RatioMakerFromFile(TH1F* hRatio, const char* file_name, const char* path_num, const char* path_den);
+void RatioErrorMakerFromFile(TH1F* hRatio, const char* file_name, const char* path_num, const char* path_den);
 
 void Ratio(){
 
@@ -42,7 +44,7 @@ void Ratio(){
   text.SetTextFont(63);
   text.SetTextSize(18);
   pads[0]->cd();
-  //text.DrawText(1.,2.20,"ALICE Preliminary");
+  //text.DrawText(1.,2.20,"This work");
   pads[1]->cd();
   text.DrawLatex(1.2,2.20,"#bf{pp, #sqrt{#it{s}} = 13 TeV}");
   pads[2]->cd();
@@ -76,7 +78,7 @@ void Ratio(){
     // Bin-counting systematics   
     std::string width_sys_path = kFilterListNames + "/%s" + Form("/Systematic/C_%i/hWidenRangeSystJoined",iC) + "%c" + std::to_string(iC);
     TH1F* hRatioSyst_width = new TH1F("hRatioSyst_width",";#it{p}_{T} (GeV/#it{c});",kNPtBins,kPtBins);
-    RatioMakerFromFile(hRatioSyst_width,kSignalOutput.data(),Form(width_sys_path.data(),kNames[0].data(),kLetter[0]),Form(width_sys_path.data(),kNames[1].data(),kLetter[1]));
+    RatioErrorMakerFromFile(hRatioSyst_width,kSignalOutput.data(),Form(width_sys_path.data(),kNames[0].data(),kLetter[0]),Form(width_sys_path.data(),kNames[1].data(),kLetter[1]));
     utils::SmoothInRange(hRatioSyst_width,kPtRange[0]+0.01,kCentPtLimits[iC]-0.01);
     cent_dir->cd();
     hRatioSyst_width->SetLineColor(plotting::kHighContrastColors[1]);
@@ -84,7 +86,7 @@ void Ratio(){
 
     std::string shift_sys_path = kFilterListNames + "/%s" + Form("/Systematic/C_%i/hShiftRangeSystJoined",iC) + "%c" + std::to_string(iC);
     TH1F* hRatioSyst_shift = new TH1F("hRatioSyst_shift",";#it{p}_{T} (GeV/#it{c});",kNPtBins,kPtBins);
-    RatioMakerFromFile(hRatioSyst_shift,kSignalOutput.data(),Form(shift_sys_path.data(),kNames[0].data(),kLetter[0]),Form(shift_sys_path.data(),kNames[1].data(),kLetter[1]));
+    RatioErrorMakerFromFile(hRatioSyst_shift,kSignalOutput.data(),Form(shift_sys_path.data(),kNames[0].data(),kLetter[0]),Form(shift_sys_path.data(),kNames[1].data(),kLetter[1]));
     utils::SmoothInRange(hRatioSyst_shift,kPtRange[0]+0.01,kCentPtLimits[iC]-0.01);
     cent_dir->cd();
     hRatioSyst_shift->SetLineColor(plotting::kHighContrastColors[5]);
@@ -93,7 +95,7 @@ void Ratio(){
     // Material Budget
     string mat_sys_path = "deuterons%ctpc";
     TH1F* hRatioSyst_mat = new TH1F("hRatioSyst_mat",";#it{p}_{T} (GeV/#it{c});",kNPtBins,kPtBins);
-    RatioMakerFromFile(hRatioSyst_mat,kMaterialOutput.data(),Form(mat_sys_path.data(),kLetter[0]),Form(mat_sys_path.data(),kLetter[1]));
+    RatioErrorMakerFromFile(hRatioSyst_mat,kMaterialOutput.data(),Form(mat_sys_path.data(),kLetter[0]),Form(mat_sys_path.data(),kLetter[1]));
     utils::SmoothInRange(hRatioSyst_mat,kPtRange[0]+0.01,kCentPtLimits[iC]-0.01);
     cent_dir->cd();
     hRatioSyst_mat->SetLineColor(plotting::kHighContrastColors[2]);
@@ -110,7 +112,7 @@ void Ratio(){
     }
     TH1F* hRatioSyst_had = new TH1F("hRatioSyst_had",";#it{p}_{T} (GeV/#it{c});",kNPtBins,kPtBins);
     for(int iBin=1; iBin<=kNPtBins; iBin++){
-      auto value = TMath::Sqrt(hHadSyst[0]->GetBinContent(iBin)*hHadSyst[0]->GetBinContent(iBin)+hHadSyst[1]->GetBinContent(iBin)*hHadSyst[1]->GetBinContent(iBin));
+      auto value = TMath::Sqrt(Sq(hHadSyst[0]->GetBinContent(iBin))+ Sq(hHadSyst[1]->GetBinContent(iBin)));
       hRatioSyst_had->SetBinContent(iBin,value);
     }
     utils::SmoothInRange(hRatioSyst_had,kPtRange[0]+0.01,kCentPtLimits[iC]-0.01);
@@ -193,7 +195,7 @@ void Ratio(){
           const float value_var = hRatioVar[iCut]->GetBinContent(iBin);
           const float err_var = hRatioVar[iCut]->GetBinError(iBin);
           const float z_test = utils::zTest(value_ref,err_ref,value_var,err_var);
-          if(z_test>2){
+          if(TMath::Abs(z_test)>2){
             value_vec.push_back(value_var);
             error_vec.push_back(err_var);
           }
@@ -306,19 +308,36 @@ void Ratio(){
     line->SetLineStyle(kDashed);
     line->Draw("same");
     cRatio->Write();
-    if(iC==9) break;
+    if(iC==9) {
+      TCanvas* cRatioMB = new TCanvas("RatioMB","RatioMB");
+      cRatioMB->DrawFrame(0.4,0.1,4.0,2.1,";#it{p}_{T} (GeV/#it{c});#bar{d}/d");
+      hRatioSystFinal->Draw("e2same");
+      hRatioRef->Draw("esamex0");
+      line->Draw("same");
+      TPaveText paveMB(0.16,0.73,0.40,0.84,"blNDC");
+      paveMB.SetBorderSize(0);
+      paveMB.SetFillColor(0);
+      paveMB.SetTextSize(0.03);
+      paveMB.AddText("This work");
+      paveMB.AddText("#bf{pp, #sqrt{#it{s}} = 13 TeV}");
+      paveMB.Draw();
+      cRatioMB->Write();
+      break;
+    }
     pads[place_holder[iC]]->cd();
     text.DrawLatex(0.5,1.7,Form("#bf{%s}",kRomanLabels[iC]));
     hRatioRef->Draw("esamex0");
     hRatioSystFinal->Draw("e2same");
     l.DrawLine(0.3,1.,xAxisEdges[place_holder[iC]],1.);
+
   }
   output_file.cd();
   cRatioAll->Write();
   cRatioAll->SaveAs(Form("%sdeuteron_ratio.pdf",kFiguresFolder.data()));
+
 }
 
-void RatioMakerFromFile(TH1F* hRatio, const char* file_name, const char* path_num, const char* path_den){
+void RatioErrorMakerFromFile(TH1F* hRatio, const char* file_name, const char* path_num, const char* path_den){
   TFile file(file_name);
   TH1F* hHist[2] = {nullptr};
   hHist[0] = (TH1F*)file.Get(path_num);
@@ -328,7 +347,7 @@ void RatioMakerFromFile(TH1F* hRatio, const char* file_name, const char* path_nu
     float bin_center = hRatio->GetXaxis()->GetBinCenter(iBin);
     int bin_num = hHist[0]->FindBin(bin_center);
     int bin_den = hHist[0]->FindBin(bin_center);
-    auto value = TMath::Sqrt(hHist[0]->GetBinContent(bin_num)*hHist[0]->GetBinContent(bin_num)+hHist[1]->GetBinContent(bin_den)*hHist[1]->GetBinContent(bin_den));
+    auto value = TMath::Sqrt(Sq(hHist[0]->GetBinContent(bin_num)) + Sq(hHist[1]->GetBinContent(bin_den)));
     hRatio->SetBinContent(iBin,value);
   }
 }

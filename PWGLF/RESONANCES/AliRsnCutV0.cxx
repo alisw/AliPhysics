@@ -33,6 +33,9 @@ Lifetime cut should be quite intuitive. Set the value to a high value if not nee
 
 */
 
+//modified: Prottay Das (prottay.das@cern.ch)
+//Modification (14/12/2021): Added armentous cut for misidentification of lambda as K0s in Pb-Pb collisions
+
 #include <Riostream.h>
 #include <TFormula.h>
 #include <TBits.h>
@@ -62,8 +65,10 @@ AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis, AliPID::EParticleTy
    fMaxDCAVertex(0.3),
    fMinCosPointAngle(0.95),
    fMaxDaughtersDCA(0.5),
+   fMinArm(0.2),
    fMinTPCcluster(70),
    fMaxRapidity(0.8),
+   fMaxPseudorapidity(1e20),
    fPID(pid),
    fPID2(pid2),
    fPIDCutProton(0),
@@ -73,7 +78,8 @@ AliRsnCutV0::AliRsnCutV0(const char *name, Int_t hypothesis, AliPID::EParticleTy
    fAODTestFilterBit(5),
    fCustomTrackDCACuts(kFALSE),
    fMinDCAPositiveTrack(0.001),
-   fMinDCANegativeTrack(0.001)
+   fMinDCANegativeTrack(0.001),
+   fCheckOOBPileup(kFALSE)
 {
 //
 // Default constructor.
@@ -99,8 +105,10 @@ AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
    fMaxDCAVertex(copy.fMaxDCAVertex),
    fMinCosPointAngle(copy.fMinCosPointAngle),
    fMaxDaughtersDCA(copy.fMaxDaughtersDCA),
+   fMinArm(copy.fMinArm),
    fMinTPCcluster(copy.fMinTPCcluster),
    fMaxRapidity(copy.fMaxRapidity),
+   fMaxPseudorapidity(copy.fMaxPseudorapidity),
    fPID(copy.fPID),
    fPID2(copy.fPID2),
    fPIDCutProton(copy.fPIDCutProton),
@@ -110,7 +118,8 @@ AliRsnCutV0::AliRsnCutV0(const AliRsnCutV0 &copy) :
    fAODTestFilterBit(copy.fAODTestFilterBit),
    fCustomTrackDCACuts(copy.fCustomTrackDCACuts),
    fMinDCAPositiveTrack(copy.fMinDCAPositiveTrack),
-   fMinDCANegativeTrack(copy.fMinDCANegativeTrack)
+   fMinDCANegativeTrack(copy.fMinDCANegativeTrack),
+   fCheckOOBPileup(copy.fCheckOOBPileup)
 {
 //
 // Copy constructor.
@@ -150,8 +159,10 @@ AliRsnCutV0 &AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
    fMaxDCAVertex = copy.fMaxDCAVertex;
    fMinCosPointAngle = copy.fMinCosPointAngle;
    fMaxDaughtersDCA = copy.fMaxDaughtersDCA;
+   fMinArm=copy.fMinArm;
    fMinTPCcluster = copy.fMinTPCcluster;
    fMaxRapidity = copy.fMaxRapidity;
+   fMaxPseudorapidity = copy.fMaxPseudorapidity;
    fCutQuality = copy.fCutQuality;
    fPID = copy.fPID;
    fPID2 = copy.fPID2;
@@ -163,6 +174,7 @@ AliRsnCutV0 &AliRsnCutV0::operator=(const AliRsnCutV0 &copy)
    fCustomTrackDCACuts = copy.fCustomTrackDCACuts;
    fMinDCAPositiveTrack = copy.fMinDCAPositiveTrack;
    fMinDCANegativeTrack = copy.fMinDCANegativeTrack;
+   fCheckOOBPileup = copy.fCheckOOBPileup;
 
    return (*this);
 }
@@ -236,6 +248,12 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
       return kFALSE;
    }
 
+   if (fCheckOOBPileup) {
+      Double_t bfield = lESDEvent->GetMagneticField();
+      if(!TrackPassesOOBPileupCut(pTrack, bfield) &&
+         !TrackPassesOOBPileupCut(nTrack, bfield)) return kFALSE;
+   }
+
   // check quality cuts
    if (fESDtrackCuts) {
       AliDebugClass(2, "Checking quality cuts");
@@ -281,6 +299,13 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
      AliDebugClass(2, "Failed check on DCA to primary vertes");
      return kFALSE;
    }
+   
+   if ((v0->PtArmV0()/TMath::Abs(v0->AlphaV0())) < fMinArm) {
+   //if ((v0->GetArmCut() > fMinArm) {
+    AliDebugClass(2, "Failed check on Armentous Cut");
+     return kFALSE;
+   }
+   
    //if (TMath::Abs(v0->GetV0CosineOfPointingAngle()) < fMinCosPointAngle) {
    if ( (TMath::Abs(v0->GetV0CosineOfPointingAngle()) < fMinCosPointAngle) || (TMath::Abs(v0->GetV0CosineOfPointingAngle()) >= 1 ) ) {
      AliDebugClass(2, "Failed check on cosine of pointing angle");
@@ -288,6 +313,10 @@ Bool_t AliRsnCutV0::CheckESD(AliESDv0 *v0)
    }
    if (TMath::Abs(v0->Y(fHypothesis)) > fMaxRapidity) {
       AliDebugClass(2, "Failed check on V0 rapidity");
+      return kFALSE;
+   }
+   if (TMath::Abs(v0->Eta()) > fMaxPseudorapidity) {
+      AliDebugClass(2, "Failed check on V0 pseudorapidity");
       return kFALSE;
    }
    //
@@ -555,29 +584,36 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
    }
    */
 
+   if (!AODTrackAccepted(pTrack) || !AODTrackAccepted(nTrack)) return kFALSE;
+
    //----
    // next lines are not necessary. Just left there (commented-out) to remind that the requirement on the DCA of V0 daughters
    //      is already in the V0, so requiring dca>0.050 (with 0.050 cm the default value from the Lambda analysis)
    //      does not remove V0s candidates
-   /*
+
    Double_t dca = v0->DcaPosToPrimVertex() ;
-     AliDebugClass(2, Form("DCA of Lambda positive daughter %f",dca));
-   if(dca<0.050) {
-     AliDebugClass(2, Form("DCA of Lambda positive daughter (%f) less than 0.05",dca));
+   // AliDebugClass(2, Form("DCA of V0 positive daughter %f",dca));
+   if (fESDtrackCuts && dca < fESDtrackCuts->GetMinDCAToVertexXY()) {
+      AliDebugClass(2, Form("DCA of V0 positive daughter (%f) less than %f", dca, fESDtrackCuts->GetMinDCAToVertexXY()));
       return kFALSE;
    }
    dca = v0->DcaNegToPrimVertex();
-   if(dca<0.050) {
-     AliDebugClass(2, Form("DCA of Lambda negative daughter (%f) less than 0.05",dca));
+   if (fESDtrackCuts && dca < fESDtrackCuts->GetMinDCAToVertexXY()) {
+      AliDebugClass(2, Form("DCA of V0 negative daughter (%f) less than %f", dca, fESDtrackCuts->GetMinDCAToVertexXY()));
       return kFALSE;
    }
-   */
 
    // EF - 17/01/2014 - next check apparently not effective!? Already in V0s?
    // filter like-sign V0
    if ( TMath::Abs( ((pTrack->Charge()) - (nTrack->Charge())) ) < 0.1) {
       AliDebugClass(2, "Failed like-sign V0 check");
       return kFALSE;
+   }
+    
+   if (fCheckOOBPileup) {
+      Double_t bfield = lAODEvent->GetMagneticField();
+      if(!TrackPassesOOBPileupCut(pTrack, bfield) &&
+         !TrackPassesOOBPileupCut(nTrack, bfield)) return kFALSE;
    }
 
    // check compatibility with expected species hypothesis
@@ -596,7 +632,30 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
       return kFALSE;
    }
    AliDebugClass(2, Form("Mass: %d %f %f", fHypothesis, fMass, mass));
-
+    
+   // competing V0 rejection
+   Double_t altmass = 0.0;
+   if (fSwitch) {
+      if(fHypothesis==kLambda0 || fHypothesis==kLambda0Bar) {
+         altmass = v0->MassK0Short();
+         if ((TMath::Abs(altmass - 0.497614)) < fToleranceVeto) {
+            AliDebugClass(2, Form("Failed competing V0 rejection check  Mass: %d %f %f", fHypothesis, mass, altmass));
+            return kFALSE;
+         }
+      }
+      else if (fHypothesis==kK0Short) {
+         altmass = v0->MassLambda();
+         if ((TMath::Abs(altmass - 1.115683)) < fToleranceVeto) {
+            AliDebugClass(2, Form("Failed competing V0 rejection check  Mass: %d %f %f", fHypothesis, mass, altmass));
+            return kFALSE;
+         }
+         altmass = v0->MassAntiLambda();
+         if ((TMath::Abs(altmass - 1.115683)) < fToleranceVeto) {
+            AliDebugClass(2, Form("Failed competing V0 rejection check  Mass: %d %f %f", fHypothesis, mass, altmass));
+            return kFALSE;
+         }
+      }
+   }
 
    // topological checks
    if (TMath::Abs(v0->DcaV0ToPrimVertex()) > fMaxDCAVertex) {
@@ -618,15 +677,41 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
       return kFALSE;
    }
 
-   if (TMath::Abs(v0->RapLambda()) > fMaxRapidity) {
-      AliDebugClass(2, "Failed check on V0 rapidity");
+   // rapidity
+   if (fHypothesis==kK0Short) {
+      if (TMath::Abs(v0->RapK0Short()) > fMaxRapidity) {
+         AliDebugClass(2, "Failed check on V0 rapidity");
+         return kFALSE;
+      }
+   }
+   else if(fHypothesis==kLambda0 || fHypothesis==kLambda0Bar) {
+      if (TMath::Abs(v0->RapLambda()) > fMaxRapidity) {
+         AliDebugClass(2, "Failed check on V0 rapidity");
+         return kFALSE;
+      }
+   }
+
+   // pseudorapidity
+   if (TMath::Abs(v0->Eta()) > fMaxPseudorapidity) {
+      AliDebugClass(2, "Failed check on V0 pseusorapidity");
       return kFALSE;
    }
 
+   // radius
    Double_t radius = v0->RadiusV0();
    if ( ( radius < fLowRadius ) || ( radius > fHighRadius ) ){
      AliDebugClass(2, "Failed fiducial volume");
      return kFALSE;
+   }
+
+   // lifetime
+   Double_t mom = TMath::Sqrt(v0->Ptot2V0());
+   Double_t length = TMath::Sqrt(TMath::Power(v0->DecayVertexV0X() - xPrimaryVertex,2) +
+                                 TMath::Power(v0->DecayVertexV0Y() - yPrimaryVertex,2) +
+                                 TMath::Power(v0->DecayVertexV0Z() - zPrimaryVertex,2));
+   if( TMath::Abs(fMass*length/mom) > fLife) {
+       AliDebugClass(2, Form("Failed V0 Lifetime Cut  %d %f", fHypothesis, TMath::Abs(fMass*length/mom)));
+       return kFALSE;
    }
 
    //-----------------------------------------------------------
@@ -678,12 +763,49 @@ Bool_t AliRsnCutV0::CheckAOD(AliAODv0 *v0)
 
 }
 
-
-
 //_________________________________________________________________________________________________
 void AliRsnCutV0::Print(const Option_t *) const
 {
 //
 // Print information on this cut
 //
+}
+
+//_________________________________________________________________________________________________
+Bool_t AliRsnCutV0::TrackPassesOOBPileupCut(AliESDtrack* t, Double_t b){
+   if (!t) return true;
+   if ((t->GetStatus() & AliESDtrack::kITSrefit) == AliESDtrack::kITSrefit) return true;
+   if (t->GetTOFExpTDiff(b, true) + 2500 > 1e-6) return true;
+   return false;
+}
+
+//_________________________________________________________________________________________________
+Bool_t AliRsnCutV0::TrackPassesOOBPileupCut(AliAODTrack* t, Double_t b){
+   if (!t) return true;
+   if ((t->GetStatus() & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) return true;
+   if (t->GetTOFExpTDiff(b, true) + 2500 > 1e-6) return true;
+   return false;
+}
+
+//_________________________________________________________________________________________________
+Bool_t AliRsnCutV0::AODTrackAccepted(AliAODTrack* t){
+   if (!t || !fESDtrackCuts) return true;
+   // Implements basic quality cuts for V0 daughters.
+   // Uses ESDtrackCuts object as a container for the cut values.
+
+   Float_t etamin = -1e5, etamax = 1e5;
+   fESDtrackCuts->GetEtaRange(etamin, etamax);
+   if(t->Eta() < etamin || t->Eta() > etamax) return false;
+
+   if(t->GetTPCClusterInfo(2, 1) < fESDtrackCuts->GetMinNCrossedRowsTPC()) return false;
+   if(t->GetTPCNclsF() < fESDtrackCuts->GetMinRatioCrossedRowsOverFindableClustersTPC()) return false;
+
+   ULong64_t s = t->GetStatus();
+   if(fESDtrackCuts->GetRequireTPCRefit() && !(s & AliESDtrack::kTPCrefit)) return false;
+
+   // Disable this: being fixed by Strangeness PAG (January 2021).
+   // AliAODVertex* v = t->GetProdVertex();
+   // if(pv && !fESDtrackCuts->GetAcceptKinkDaughters() && (pv->GetType() & AliAODVertex::kKink)) return false;
+
+   return true;
 }

@@ -7,35 +7,38 @@
 class AliAnalysisDataContainer;
 
 AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
-		                 TString dataname = "dataname",
-		                 Bool_t flagEG1,
-		                 Bool_t flagEG2,
-		                 Bool_t flagDG1,
-		                 Bool_t flagDG2,
-		                 Bool_t SetFlagClsTypeEMC,
-		                 Bool_t SetFlagClsTypeDCAL,
-		                 Bool_t fMC,
-										 Double_t TrackEtaMin,
-										 Double_t TrackEtaMax,
-										 Int_t NTPCClust,
-										 Int_t NITSClust,
-										 Int_t NCrossedRow,
-										 Double_t DCAxy,
-										 Double_t DCAz,
-										 Double_t NsigmaMin,
-										 Double_t NsigmaMax,
-										 Double_t M20Min,
-										 Double_t M20Max,
-										 Double_t EopMin,
-										 Double_t EopMax,
-										 Double_t coneR,
-										 Double_t ptAsso,
-										 TString  pte = "pte",
-										 Double_t MassMin,
-										 Double_t nref,
-										 TString estimatorFilename,
-										 Int_t minNtr,
-										 Int_t maxNtr)
+		TString dataname = "dataname",
+		Bool_t flagEG1 = kTRUE,
+		Bool_t flagEG2 = kFALSE,
+		Bool_t flagDG1 = kFALSE,
+		Bool_t flagDG2 = kFALSE,
+		Bool_t SetFlagClsTypeEMC = kTRUE,
+		Bool_t SetFlagClsTypeDCAL = kFALSE,
+		Bool_t fMC = kFALSE,
+		Double_t TrackEtaMin = -0.6,
+		Double_t TrackEtaMax = 0.6,
+		Int_t NTPCClust = 80,
+		Int_t NITSClust = 3,
+		Int_t NCrossedRow = 100,
+		Double_t DCAxy = 2.4,
+		Double_t DCAz = 3.2,
+		Double_t NsigmaMin = -1.0,
+		Double_t NsigmaMax = 3.0,
+		Double_t M20Min = 0.015,
+		Double_t M20Max = 0.35,
+		Double_t EopMin = 0.85,
+		Double_t EopMax = 1.3,
+		Double_t coneR = 0.3,
+		Double_t ptAsso = 0.2,
+		Double_t mimcle = 0.2,
+		TString  pte = "pte",
+		Double_t MassMin = 0.15,
+		Double_t nref = 12,
+		Double_t nrefV0 = 258,
+		TString estimatorFilename = "alien:///alice/cern.ch/user/s/ssakai/Multiplicity_pp13/estimator.root",
+		Int_t minNtr = 0,
+		Int_t maxNtr = 200,
+                Int_t mtype = 0)
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -52,8 +55,8 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
 
 
 
-		// by default, a file is open for writing. here, we get the filename
-		TString fileName = AliAnalysisManager::GetCommonFileName();
+    // by default, a file is open for writing. here, we get the filename
+    TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":CaloHFEpp";      // create a subfolder in the file
     // now we create an instance of your task
     AliAnalysisTaskCaloHFEpp* task = new AliAnalysisTaskCaloHFEpp(name.Data());   
@@ -64,115 +67,39 @@ AliAnalysisTaskCaloHFEpp* AddTaskCaloHFEpp(TString name = "name",
     task -> SetfFlagClsTypeEMC(SetFlagClsTypeEMC);
     task -> SetfFlagClsTypeDCAL(SetFlagClsTypeDCAL);
 
-		task -> SetTrackEta(TrackEtaMin,TrackEtaMax);
-		task -> SetTrackClust(NTPCClust,NITSClust,NCrossedRow);
-		task -> SetDCA(DCAxy,DCAz);
-		task -> SetNsigma(NsigmaMin,NsigmaMax);
-		task -> SetM20(M20Min,M20Max);
-		task -> SetEop(EopMin,EopMax);
-		task -> SetConeR(coneR);
-		task -> SetptAsso(ptAsso);
-		task -> SetptCut(pte);
-		task -> SetMassMin(MassMin);
-		task -> SetNref(nref);
-		task -> SetMinNtr(minNtr);
-		task -> SetMaxNtr(maxNtr);
+    task -> SetTrackEta(TrackEtaMin,TrackEtaMax);
+    task -> SetTrackClust(NTPCClust,NITSClust,NCrossedRow);
+    task -> SetDCA(DCAxy,DCAz);
+    task -> SetNsigma(NsigmaMin,NsigmaMax);
+    task -> SetM20(M20Min,M20Max);
+    task -> SetEop(EopMin,EopMax);
+    task -> SetConeR(coneR);
+    task -> SetptAsso(ptAsso);
+    task -> SetMimClE(mimcle);
+    task -> SetptCut(pte);
+    task -> SetMassMin(MassMin);
+    task -> SetNref(nref);
+    task -> SetNrefV0(nrefV0);
+    task -> SetMinNtr(minNtr);
+    task -> SetMaxNtr(maxNtr);
+    task -> SetEstimatorFile(estimatorFilename);
+    task -> SetMultType(mtype);
 
-		TFile* fEstimator=TFile::Open(estimatorFilename.Data());
-		if(!fEstimator){
-						AliFatal("File with multiplicity estimator not found\n");
-						return;
-		}
+    /*
+    TFile* fEstimator=TFile::Open(estimatorFilename.Data());
+    if(!fEstimator){
+	    AliFatal("File with multiplicity estimator not found\n");
+	    return;
+    }
 
-		// MB get estimator file
-		if(SetFlagClsTypeEMC && !flagEG1 && !flagEG2){
-						const Char_t* profilebasename="SPDTrklMB";
-						const Char_t* periodNames[4] = {"LHC16i", "LHC16j","LHC16k","LHC16o"};
-
-						TProfile* multEstimatorAvgMB[4];
-
-						for(Int_t ip=0; ip<4; ip++) {
-										cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
-										multEstimatorAvgMB[ip] = (TProfile*)(fEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
-										if(!multEstimatorAvgMB[ip]){
-														AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-														return;
-										}
-						}
-						task->SetMultiProfileLHC16i(multEstimatorAvgMB[0]);
-						task->SetMultiProfileLHC16j(multEstimatorAvgMB[1]);
-						task->SetMultiProfileLHC16k(multEstimatorAvgMB[2]);
-						task->SetMultiProfileLHC16o(multEstimatorAvgMB[3]);
-		}
-
-		// EG1 get estimator file
-		if(SetFlagClsTypeEMC && flagEG1 && !flagEG2){
-						const Char_t* profilebasename="SPDTrklEG1";
-						const Char_t* periodNames[4] = {"LHC16i", "LHC16j","LHC16k","LHC16o"};
-
-						TProfile* multEstimatorAvgEG1[4];
-
-						for(Int_t ip=0; ip<4; ip++) {
-										cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
-										multEstimatorAvgEG1[ip] = (TProfile*)(fEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
-										if(!multEstimatorAvgEG1[ip]){
-														AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-														return;
-										}
-						}
-						task->SetMultiProfileLHC16i(multEstimatorAvgEG1[0]);
-						task->SetMultiProfileLHC16j(multEstimatorAvgEG1[1]);
-						task->SetMultiProfileLHC16k(multEstimatorAvgEG1[2]);
-						task->SetMultiProfileLHC16o(multEstimatorAvgEG1[3]);
-		}
-
-		// EG2 get estimator file
-		if(SetFlagClsTypeEMC && !flagEG1 && flagEG2){
-						const Char_t* profilebasename="SPDTrklEG2";
-						const Char_t* periodNames[4] = {"LHC16i", "LHC16j","LHC16k","LHC16o"};
-
-						TProfile* multEstimatorAvgEG2[4];
-
-						for(Int_t ip=0; ip<4; ip++) {
-										cout<< " Trying to get "<<Form("%s_%s",profilebasename,periodNames[ip])<<endl;
-										multEstimatorAvgEG2[ip] = (TProfile*)(fEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
-										if(!multEstimatorAvgEG2[ip]){
-														AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]));
-														return;
-										}
-						}
-						task->SetMultiProfileLHC16i(multEstimatorAvgEG2[0]);
-						task->SetMultiProfileLHC16j(multEstimatorAvgEG2[1]);
-						task->SetMultiProfileLHC16k(multEstimatorAvgEG2[2]);
-						task->SetMultiProfileLHC16o(multEstimatorAvgEG2[3]);
-		}
-
-
-		// MC get estimator file
-		const Char_t* profilebasenameMC="SPDTrklMC";
-		const Char_t* periodNamesMC[2] = {"LHC16k","LHC16l"};
-		TProfile* multEstimatorAvgMC[2];
-
-		for(Int_t ip=0; ip<2; ip++) {
-						cout<< " Trying to get "<<Form("%s_%s",profilebasenameMC,periodNamesMC[ip])<<endl;
-						multEstimatorAvgMC[ip] = (TProfile*)(fEstimator->Get(Form("%s_%s",profilebasenameMC,periodNamesMC[ip]))->Clone(Form("%s_%s_clone",profilebasenameMC,periodNamesMC[ip])));
-						if(!multEstimatorAvgMC[ip]){
-										AliFatal(Form("Multiplicity estimator for %s not found! Please check your estimator file",periodNamesMC[ip]));
-										return;
-						}
-		}
-		task->SetMultiProfileMCLHC16k(multEstimatorAvgMC[0]);
-		task->SetMultiProfileMCLHC16l(multEstimatorAvgMC[1]);
-
-
-		// Get weight for N_{tracklet}
-		TH1D* weightNtrkl = (TH1D*)fEstimator->Get("weightNtrkl")->Clone("weightNtrkl_clone");
-		if(!weightNtrkl){
-						AliFatal("Multiplicity estimator for weight not found! Please check your estimator file");
-						return;
-		}
-		task->SetWeightNtrkl(weightNtrkl);
-
+    // Get weight for N_{tracklet}
+    TH1D* weightNtrkl = (TH1D*)fEstimator->Get("weightNtrkl")->Clone("weightNtrkl_clone");
+    if(!weightNtrkl){
+	    AliFatal("Multiplicity estimator for weight not found! Please check your estimator file");
+	    return;
+    }
+    task->SetWeightNtrkl(weightNtrkl);
+   */
 
     if(!task) return 0x0;
 

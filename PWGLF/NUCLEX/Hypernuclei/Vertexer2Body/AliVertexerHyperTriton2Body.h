@@ -2,17 +2,22 @@
 #define AliVertexerHyperTriton2Body_H
 
 #include <TNamed.h>
-
+#include <TFile.h>
 #include <vector>
+#include <TSpline.h>
 #include <AliESDtrackCuts.h>
 #include <AliESDv0.h>
+#include "Math/Vector4D.h"
 
 class AliPIDResponse;
 class AliMCEvent;
+class TH3D;
+
+typedef ROOT::Math::LorentzVector<ROOT::Math::PxPyPzM4D<double>> LVector_t;
 
 class AliVertexerHyperTriton2Body : public TNamed
 {
-  public:
+public:
     AliVertexerHyperTriton2Body();
     virtual ~AliVertexerHyperTriton2Body() {}
 
@@ -47,6 +52,9 @@ class AliVertexerHyperTriton2Body : public TNamed
         fkDoV0Refit = lDoV0Refit;
     }
 
+    void SetUseCorrectionMaps(std::string cmap) { fkCorrectionMapLocation = cmap; }
+
+    void CreateV0(const AliESDVertex *vtxT3D, int nidx, AliESDtrack *ntrk, int pidx, AliESDtrack *ptrk, AliPID::EParticleType pParticle, AliPID::EParticleType nParticle);
     //---------------------------------------------------------------------------------------
     //Setters for the V0 Vertexer Parameters
     void SetV0VertexerMaxChisquare(Double_t lParameter)
@@ -86,6 +94,14 @@ class AliVertexerHyperTriton2Body : public TNamed
     {
         fMaxPtV0 = lMaxPt;
     }
+
+    void SetMassRange(float min, float max)
+    {
+        fMassRange[0] = min;
+        fMassRange[1] = max;
+    }
+    void SetMaxCt(float max) { fMaxCt = max; }
+
     //---------------------------------------------------------------------------------------
     void SetUseImprovedFinding()
     {
@@ -101,6 +117,14 @@ class AliVertexerHyperTriton2Body : public TNamed
         fkDoV0Refit = kFALSE;
         fkXYCase1 = kFALSE;
         fkXYCase2 = kFALSE;
+    }
+
+    //---------------------------------------------------------------------------------------
+
+    void SetSpline(std::string path)
+    {
+        TFile splFile(path.data());
+        fSpline = (TSpline3 *)splFile.Get("spl_0.9");
     }
     //---------------------------------------------------------------------------------------
     AliESDtrackCuts *SetPionTPCTrackCuts()
@@ -149,7 +173,10 @@ class AliVertexerHyperTriton2Body : public TNamed
     //Re-vertex V0s
     void SelectTracks(AliESDEvent *event, std::vector<int> indices[2][2]);
     void SelectTracksMC(AliESDEvent *event, AliMCEvent *mcEvent, std::vector<int> indices[2][2]);
-    std::vector<AliESDv0> Tracks2V0vertices(AliESDEvent *event, AliPIDResponse *pid, AliMCEvent *mcEvent = 0x0);
+
+    std::vector<AliESDv0> Tracks2V0vertices(AliESDEvent *event, AliPIDResponse *pid, AliMCEvent *mcEvent=0x0, Bool_t lambda = false);
+    std::vector<AliESDv0> Tracks2V0verticesEM(AliESDEvent *event, AliPIDResponse *pid, std::vector<AliESDtrack*>& he3, std::vector<AliESDtrack*>& antihe3);
+    std::vector<AliESDv0> Tracks2V0vertices3Body(std::vector<AliESDtrack *> tracks[2][2], const AliESDVertex *vtxT3D, float magneticField, AliPIDResponse *pid);
 
     //Helper functions
     Double_t Det(Double_t a00, Double_t a01, Double_t a10, Double_t a11) const;
@@ -166,7 +193,8 @@ class AliVertexerHyperTriton2Body : public TNamed
     Double_t GetDCAV0Dau(AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b, Double_t lNegMassForTracking = 0.139, Double_t lPosMassForTracking = 0.139);
     void GetHelixCenter(const AliExternalTrackParam *track, Double_t center[2], Double_t b);
     //---------------------------------------------------------------------------------------
-    Bool_t GetMonteCarloStatus(){
+    Bool_t GetMonteCarloStatus()
+    {
         return fMC;
     }
 
@@ -177,10 +205,12 @@ class AliVertexerHyperTriton2Body : public TNamed
 
     bool fLikeSign;
     bool fRotation;
+    AliPID::EParticleType fNucleus = AliPID::kHe3;
 
-  private:
+private:
     bool fMC;
     Bool_t fkDoV0Refit;
+    std::string fkCorrectionMapLocation;
     int fMaxIterationsWhenMinimizing;
     bool fkPreselectX;
     Bool_t fkXYCase1; //Circles-far-away case pre-optimization switch
@@ -192,19 +222,31 @@ class AliVertexerHyperTriton2Body : public TNamed
     Float_t fMinPtV0; //minimum pt above which we keep candidates in TTree output
     Float_t fMaxPtV0; //maximum pt below which we keep candidates in TTree output
 
+    Float_t fMaxTPCpionSigma;   //minimum pt above which we keep candidates in TTree output
+    Float_t fMaxTPCprotonSigma; //maximum pt below which we keep candidates in TTree output
+
     Double_t fMinXforXYtest; //min X allowed for XY-plane preopt test
 
     Double_t fV0VertexerSels[7]; // Array to store the 7 values for the different selections V0 related
+
+    float fMassRange[2];
+    float fMaxCt;
+
     double fMagneticField;
     double fPrimaryVertexX;
     double fPrimaryVertexY;
     double fPrimaryVertexZ;
-    AliPIDResponse *fPID;
+    AliPIDResponse *fPID;       //!
+    TSpline3 *fSpline;          //!
+    TFile *fCorrMapFile;        //!
+    TH3D *fCorrectionMapXX0;    //!
+    TH3D *fCorrectionMapXRho;   //!
+    std::vector<AliESDv0> fV0s; //!
 
     AliVertexerHyperTriton2Body(const AliVertexerHyperTriton2Body &);            // not implemented
     AliVertexerHyperTriton2Body &operator=(const AliVertexerHyperTriton2Body &); // not implemented
 
-    ClassDef(AliVertexerHyperTriton2Body, 2);
+    ClassDef(AliVertexerHyperTriton2Body, 6);
     //1: first implementation
 };
 

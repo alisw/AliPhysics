@@ -183,11 +183,13 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis():
   fMinSizePartCollection(0),
   fVerbose(kTRUE),
   fPerformSharedDaughterCut(kFALSE),
-  fEnablePairMonitors(kFALSE)
+  fEnablePairMonitors(kFALSE),
+  fEnablePairMonitorsMixEv(kFALSE)
 {
   // Default constructor
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
   fMixingBuffer = new AliFemtoPicoEventCollection;
+
 }
 //____________________________
 AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a):
@@ -205,7 +207,8 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a):
   fMinSizePartCollection(a.fMinSizePartCollection),
   fVerbose(a.fVerbose),
   fPerformSharedDaughterCut(a.fPerformSharedDaughterCut),
-  fEnablePairMonitors(a.fEnablePairMonitors)
+  fEnablePairMonitors(a.fEnablePairMonitors),
+  fEnablePairMonitorsMixEv(a.fEnablePairMonitorsMixEv)
 {
   /// Copy constructor
 
@@ -402,7 +405,7 @@ AliFemtoSimpleAnalysis& AliFemtoSimpleAnalysis::operator=(const AliFemtoSimpleAn
   fVerbose = aAna.fVerbose;
   fPerformSharedDaughterCut = aAna.fPerformSharedDaughterCut;
   fEnablePairMonitors = aAna.fEnablePairMonitors;
-
+  fEnablePairMonitorsMixEv = aAna.fEnablePairMonitorsMixEv;
   return *this;
 }
 //______________________
@@ -546,15 +549,15 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
 
     // If identical - only mix the first particle collections
     if (AnalyzeIdenticalParticles()) {
-      MakePairs("mixed", collection1, storedEvent->FirstParticleCollection());
+      MakePairs("mixed", collection1, storedEvent->FirstParticleCollection(), EnablePairMonitorsMixEv());
 
     // If non-identical - mix both combinations of first and second particles
     } else {
         MakePairs("mixed", collection1,
-                           storedEvent->SecondParticleCollection());
+                           storedEvent->SecondParticleCollection(), EnablePairMonitorsMixEv());
 
         MakePairs("mixed", storedEvent->FirstParticleCollection(),
-                           collection2);
+                           collection2, EnablePairMonitorsMixEv());
     }
   }
 
@@ -846,3 +849,4 @@ TList* AliFemtoSimpleAnalysis::GetOutputList()
 
   return tOutputList;
 }
+

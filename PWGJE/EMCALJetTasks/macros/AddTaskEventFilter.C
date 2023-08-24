@@ -1,6 +1,6 @@
 void AddTaskEventFilter() {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-  EMCalTriggerPtAnalysis::AliAnalysisTaskEventFilter *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskEventFilter("eventFilterTask");
+  PWGJE::EMCALJetTasks::AliAnalysisTaskEventFilter *task = new PWGJE::EMCALJetTasks::AliAnalysisTaskEventFilter("eventFilterTask");
   mgr->AddTask(task);
 
   TString outputcont = TString(mgr->GetCommonFileName()) + ":eventfilter";

@@ -19,7 +19,7 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(
     double jetradius = 0.5
 )
 {
-  //AliLog::SetClassDebugLevel("EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger", 2);
+  //AliLog::SetClassDebugLevel("PWGJE::EMCALJetTasks::AliAnalysisTaskPtEMCalTrigger", 2);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr) {
@@ -32,7 +32,7 @@ AliAnalysisTask* AddTaskPtEMCalTrigger(
     return NULL;
   }
 
-  EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger *pttriggertask = new EMCalTriggerPtAnalysis::AliAnalysisTaskPtEMCalTrigger("ptemcaltriggertask");
+  PWGJE::EMCALJetTasks::AliAnalysisTaskPtEMCalTrigger *pttriggertask = new PWGJE::EMCALJetTasks::AliAnalysisTaskPtEMCalTrigger("ptemcaltriggertask");
   //pttriggertask->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kEMC7);                          // Select both INT7 or EMC7 triggered events
   pttriggertask->SelectCollisionCandidates(AliVEvent::kAny);
   if(!TString(period).CompareTo("LHC13f")) pttriggertask->SetSwapEta();

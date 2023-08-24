@@ -245,7 +245,7 @@ void AliJEbECORRTask::UserCreateOutputObjects(){
 
 	// Add a AliJFlucAnalysis
 	fFFlucAna = new AliJFFlucAnalysis("JFFlucAnalysis");
-	fFFlucAna->SetDebugLevel(1);
+	//fFFlucAna->SetDebugLevel(1);
 	//fFFlucAna->SetIsPhiModule( kFALSE );
 	//fFFlucAna->SetIsSCptdep( kTRUE );
 	//fFFlucAna->SetSCwithQC( kTRUE );

@@ -32,7 +32,7 @@ TString strSystem[2]={"pp, 5 TeV","p-Pb, 5 TeV"};
 Color_t colSystem[2]={kBlue,kRed};
 Int_t markerStyle[2]={20,21};
 Bool_t useLegendForData=kTRUE;
-Bool_t plotv2unc=kTRUE;
+Bool_t plotv2unc=kFALSE;
 TString strFitResultPPb[2]={"./pp_5TeV/FitResults/Trends_pp","./pPb_5TeV/FitResults/Trends_pPb"}; //  "/Users/administrator/ALICE/CHARM/HFCJ/DCorrelations_Test/2015June7finalPlots/ReflectedPlots/StdRebin/AllPlots/Averages/FitResults";
 Double_t canvasheight=1000;
 Double_t resizeTextFactor=1.3;//1.*canvasheight/1200.; // size was tuned for canvasheight =1800. 

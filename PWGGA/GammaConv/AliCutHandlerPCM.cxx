@@ -23,17 +23,20 @@ fValidCutsChargedPion(kTRUE),
 fValidCutsChargedKaon(kTRUE),
 fValidCutsProton(kTRUE),
 fValidCutsDeuteron(kTRUE),
+fValidCutsSigma(kTRUE),
 fEventCutArray(0),
 fPhotonCutArray(0),
 fMesonCutArray(0),
 fClusterCutArray(0),
+fClusterCutArray2(0),
 fMergedClusterCutArray(0),
 fElectronCutArray(0),
 fNeutralDecayMesonCutArray(0),
 fChargedPionCutArray(0),
 fChargedKaonCutArray(0),
 fProtonCutArray(0),
-fDeuteronCutArray(0)
+fDeuteronCutArray(0),
+fSigmaCutArray(0)
 {
   fNCuts                     = 0;
   fNMaxCuts                  = 10;
@@ -41,6 +44,7 @@ fDeuteronCutArray(0)
   fPhotonCutArray            = new TString[fNMaxCuts];
   fMesonCutArray             = new TString[fNMaxCuts];
   fClusterCutArray           = new TString[fNMaxCuts];
+  fClusterCutArray2           = new TString[fNMaxCuts];
   fMergedClusterCutArray     = new TString[fNMaxCuts];
   fElectronCutArray          = new TString[fNMaxCuts];
   fNeutralDecayMesonCutArray = new TString[fNMaxCuts];
@@ -48,6 +52,7 @@ fDeuteronCutArray(0)
   fChargedKaonCutArray       = new TString[fNMaxCuts];
   fProtonCutArray            = new TString[fNMaxCuts];
   fDeuteronCutArray          = new TString[fNMaxCuts];
+  fSigmaCutArray             = new TString[fNMaxCuts];
 
 
   for(Int_t i=0; i<fNMaxCuts; i++) {
@@ -55,6 +60,7 @@ fDeuteronCutArray(0)
     fPhotonCutArray[i]            = "";
     fMesonCutArray[i]             = "";
     fClusterCutArray[i]           = "";
+    fClusterCutArray2[i]           = "";
     fMergedClusterCutArray[i]     = "";
     fElectronCutArray[i]          = "";
     fNeutralDecayMesonCutArray[i] = "";
@@ -62,6 +68,7 @@ fDeuteronCutArray(0)
     fChargedKaonCutArray[i]       = "";
     fProtonCutArray[i]            = "";
     fDeuteronCutArray[i]          = "";
+    fSigmaCutArray[i]             = "";
   }
 }
 
@@ -82,17 +89,20 @@ AliCutHandlerPCM::AliCutHandlerPCM(Int_t nMax) :
   fValidCutsChargedKaon(kTRUE),
   fValidCutsProton(kTRUE),
   fValidCutsDeuteron(kTRUE),
+  fValidCutsSigma(kTRUE),
   fEventCutArray(0),
   fPhotonCutArray(0),
   fMesonCutArray(0),
   fClusterCutArray(0),
+  fClusterCutArray2(0),
   fMergedClusterCutArray(0),
   fElectronCutArray(0),
   fNeutralDecayMesonCutArray(0),
   fChargedPionCutArray(0),
   fChargedKaonCutArray(0),
   fProtonCutArray(0),
-  fDeuteronCutArray(0)
+  fDeuteronCutArray(0),
+  fSigmaCutArray(0)
 {
   fNCuts                     = 0;
   fNMaxCuts                  = nMax;
@@ -100,6 +110,7 @@ AliCutHandlerPCM::AliCutHandlerPCM(Int_t nMax) :
   fPhotonCutArray            = new TString[fNMaxCuts];
   fMesonCutArray             = new TString[fNMaxCuts];
   fClusterCutArray           = new TString[fNMaxCuts];
+  fClusterCutArray2           = new TString[fNMaxCuts];
   fMergedClusterCutArray     = new TString[fNMaxCuts];
   fElectronCutArray          = new TString[fNMaxCuts];
   fNeutralDecayMesonCutArray = new TString[fNMaxCuts];
@@ -107,6 +118,7 @@ AliCutHandlerPCM::AliCutHandlerPCM(Int_t nMax) :
   fChargedKaonCutArray       = new TString[fNMaxCuts];
   fProtonCutArray            = new TString[fNMaxCuts];
   fDeuteronCutArray          = new TString[fNMaxCuts];
+  fSigmaCutArray             = new TString[fNMaxCuts];
 
 
   for(Int_t i=0; i<fNMaxCuts; i++) {
@@ -114,6 +126,7 @@ AliCutHandlerPCM::AliCutHandlerPCM(Int_t nMax) :
     fPhotonCutArray[i]            = "";
     fMesonCutArray[i]             = "";
     fClusterCutArray[i]           = "";
+    fClusterCutArray2[i]           = "";
     fMergedClusterCutArray[i]     = "";
     fElectronCutArray[i]          = "";
     fNeutralDecayMesonCutArray[i] = "";
@@ -121,6 +134,8 @@ AliCutHandlerPCM::AliCutHandlerPCM(Int_t nMax) :
     fChargedKaonCutArray[i]       = "";
     fProtonCutArray[i]            = "";
     fDeuteronCutArray[i]          = "";
+    fSigmaCutArray[i]             = "";
+
   }
 }
 
@@ -188,6 +203,29 @@ void AliCutHandlerPCM::AddCutCalo(TString eventCut, TString clusterCut, TString 
   fEventCutArray[fNCuts]    = eventCut;
   fMesonCutArray[fNCuts]    = mesonCut;
   fClusterCutArray[fNCuts]  = clusterCut;
+  fNCuts++;
+  return;
+}
+
+void AliCutHandlerPCM::AddCutCaloCalo(TString eventCut, TString clusterCut1, TString clusterCut2, TString mesonCut){
+  if(fNCuts>=fNMaxCuts) {
+    cout << "ERROR in AliCutHandlerPCM: Exceeded maximum number of cuts!" << endl;
+    fValidCuts = false;
+    return;
+  }
+  if( eventCut.Length()!=8 || clusterCut1.Length()!=19 || clusterCut2.Length()!=19 || mesonCut.Length()!=16 ) {
+    cout << "ERROR in AliCutHandlerPCM: Incorrect length of cut string!" << endl;
+    fValidCutsEvent = kFALSE;
+    fValidCutsCalo  = kFALSE;
+    fValidCutsMeson = kFALSE;
+    fValidCuts      = false;
+    return;
+  }
+  fMode                     = 2;
+  fEventCutArray[fNCuts]    = eventCut;
+  fMesonCutArray[fNCuts]    = mesonCut;
+  fClusterCutArray[fNCuts]  = clusterCut1;
+  fClusterCutArray2[fNCuts]  = clusterCut2;
   fNCuts++;
   return;
 }
@@ -406,6 +444,29 @@ void AliCutHandlerPCM::AddCutTrackQAPion(TString eventCut, TString pionCut){
   return;
 }
 
+void AliCutHandlerPCM::AddCutHeavyMesonSigma(TString eventCut, TString clusterCut, TString mesonCut, TString sigmaCut){
+  if(fNCuts>=fNMaxCuts) {
+    cout << "ERROR in AliCutHandlerPCM: Exceeded maximum number of cuts!" << endl;
+    fValidCuts = false;
+    return;
+  }
+  if( eventCut.Length()!=8 || clusterCut.Length()!=19 || mesonCut.Length()!=16  || sigmaCut.Length()!=17   ) {
+    cout << "ERROR in AliCutHandlerPCM: Incorrect length of cut string!" << endl;
+    fValidCutsEvent = kFALSE;
+    fValidCutsCalo  = kFALSE;
+    fValidCutsMeson = kFALSE;
+    fValidCutsSigma = kFALSE;
+    fValidCuts      = false;
+    return;
+  }
+  fMode                     = 2;
+  fEventCutArray[fNCuts]    = eventCut;
+  fMesonCutArray[fNCuts]    = mesonCut;
+  fClusterCutArray[fNCuts]  = clusterCut;
+  fSigmaCutArray[fNCuts] = sigmaCut;
+  fNCuts++;
+  return;
+}
 
 
 Int_t AliCutHandlerPCM::GetNCuts(){
@@ -434,6 +495,14 @@ TString AliCutHandlerPCM::GetPhotonCut(Int_t i){
 TString AliCutHandlerPCM::GetClusterCut(Int_t i){
   if(fValidCutsCalo&&i<fNMaxCuts&&i>=0)
     return fClusterCutArray[i];
+  else {
+    cout << "ERROR in AliCutHandlerPCM: GetClusterCut wrong index i" << endl;
+    return "";
+  }
+}
+TString AliCutHandlerPCM::GetClusterCut2(Int_t i){
+  if(fValidCutsCalo&&i<fNMaxCuts&&i>=0)
+    return fClusterCutArray2[i];
   else {
     cout << "ERROR in AliCutHandlerPCM: GetClusterCut wrong index i" << endl;
     return "";
@@ -509,6 +578,14 @@ TString AliCutHandlerPCM::GetDeuteronCut(Int_t i){ // Get deuteron cut
     return "";
   }
 }
+TString AliCutHandlerPCM::GetSigmaCut(Int_t i){ // Get deuteron cut
+  if(fValidCutsSigma&&i<fNMaxCuts&&i>=0)
+    return fSigmaCutArray[i];
+  else {
+    cout<<" ERROR in AliCutHandlerPCM: GetSigmaCut wrong index i "<<endl;
+    return "";
+  }
+}
 
 TString AliCutHandlerPCM::GetSpecialFileNameFromString (TString fileNameExternalInputs = "", TString configString = ""){
   TObjArray *rfileNameExternalInputs = fileNameExternalInputs.Tokenize(";");
@@ -573,6 +650,10 @@ TString AliCutHandlerPCM::GetSpecialSettingFromAddConfig (
       } else if(tempStr.BeginsWith("TM") && !configString.CompareTo("TM")){
         tempStr.Replace(0,2,"");
         cout << Form("INFO: GetSpecialSettingFromAddConfig will use running mode '%i' for the TrackMatcher!",tempStr.Atoi()) << endl;
+        return tempStr;
+      } else if(tempStr.BeginsWith("JET") && !configString.CompareTo("JET")){
+        tempStr.Replace(0,3,"");
+        cout << Form("INFO: GetSpecialSettingFromAddConfig will use running mode '%i' for the JetReader!",tempStr.Atoi()) << endl;
         return tempStr;
       }else if(tempStr.CompareTo("EPCLUSTree") == 0&& !configString.CompareTo("EPCLUSTree")){
         cout << "INFO: "<< addTaskName.Data() << " activating 'EPCLUSTree'" << endl;

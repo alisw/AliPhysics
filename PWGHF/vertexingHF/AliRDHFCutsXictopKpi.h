@@ -95,6 +95,13 @@ class AliRDHFCutsXictopKpi : public AliRDHFCuts
   using AliRDHFCuts::IsSelectedPID;
   virtual Int_t IsSelectedPID(AliAODRecoDecayHF* obj);
   Int_t IsSelectedCombinedPID(AliAODRecoDecayHF* obj);
+  void IsSelectedCombinedPID_testTOFmatching_MCsignal(AliAODRecoDecayHF* obj
+                                            ,Int_t is_pKpi_MC
+                                            ,Float_t arr_isTPCsel[3]
+                                            ,Float_t arr_isTOFok[3]
+                                            ,Float_t arr_isCombTPCTOFsel[3]
+  );
+  Int_t IsSelectedCombinedPIDOnlyProton(AliAODRecoDecayHF* obj);
   Int_t IsSelectedCombinedPIDSoft(AliAODRecoDecayHF* obj);
   Int_t IsSelectedCombinedPIDpPb(AliAODRecoDecayHF* obj);
   Int_t IsSelectedCombinedPIDpPb2(AliAODRecoDecayHF* obj);
@@ -215,11 +222,12 @@ class AliRDHFCutsXictopKpi : public AliRDHFCuts
   //-------------------------
 
 
-private:
   EPIDStrategy fPIDStrategy;                /// PIS strategy (nsigma, combined)
   Double_t fPIDThreshold[AliPID::kSPECIES]; /// PID threshold for each species
   ECutsStrategy fCutsStrategy;              /// cut strategy (standard or KF)
   Bool_t fUseSpecialCut;
+
+private:
 
   /// \cond CLASSIMP    
   ClassDef(AliRDHFCutsXictopKpi,1);  /// class for cuts on AOD reconstructed Xic->pKpi

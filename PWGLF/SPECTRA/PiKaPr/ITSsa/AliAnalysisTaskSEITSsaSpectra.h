@@ -30,10 +30,15 @@ class AliESDVertex;
 class AliESDtrack;
 class AliITSPidParams;
 class AliITSPIDResponse;
+class AliPIDResponse;
+class AliExternalTrackParam;
 class AliMCEvent;
 class AliVTrack;
 
 #include <THnSparse.h>
+#include <TFile.h>
+#include <TAxis.h>
+#include <math.h>
 
 #include "AliEventCuts.h"
 #include "AliAnalysisTaskSE.h"
@@ -76,6 +81,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
     kPassChi2Ncls,
     kIsInEta,
     kPassdEdx,
+    kPassPCut,
     kPassPtCut,
     kPassDCAzcut,
     kPassDCAxycut
@@ -96,10 +102,13 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   virtual void Terminate(Option_t *);
 
   // Setters for histo bins
-  void SetBins(const int nbins, float min, float max, float *bins);
-  void SetCentBins(int nbins, float *bins);
-  void SetDCABins(int nbins, float *bins);
-  void SetPtBins(int nbins, float *bins);
+  void SetBins(const int nbins, double min, double max, double *bins);
+  void SetCentBins(int nbins, double *bins);
+  void SetDCABins(int nbins, double *bins);
+  void SetPtBins(int nbins, double *bins);
+
+  //Setter for unfolded probability matrices
+  void SetUnfoldingProb(const char *filepath);
 
   // Setters for event selection settings
   void SetTriggerSel(UInt_t tg = AliVEvent::kMB) { fTriggerSel = tg; }
@@ -148,6 +157,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   void SetMinSPDPoints(int np = 1) { fMinSPDPts = np; }
   void SetMinNdEdxSamples(int np = 3) { fMinNdEdxSamples = np; }
   void SetAbsEtaCut(double eta = .8) { fAbsEtaCut = eta; }
+  void SetPCut(double cut = 1.5) { fPcut = cut; }
   void SetMinRapCut(double y = -.5) { fMinRapCut = y; }
   void SetMaxRapCut(double y = .5) { fMaxRapCut = y; }
   void SetCMSRapFct(double dy = .0) { fCMSRapFct = dy; }
@@ -166,7 +176,10 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   void SetITSPidParams(AliITSPidParams *pidParams) { fITSPidParams = pidParams; }
   void SetIsNominalBfield(bool flag = kTRUE) {fIsNominalBfield = flag;}
   void SetIsMC(bool flag = kTRUE) { fIsMC = flag; }
+  void SetIsDCAUnfold(bool flag = kTRUE) { fIsDCAUnfoldHistoEnabled = flag; }
   void SetFillIntDistHist() { fFillIntDistHist = kTRUE; }
+  void SetUseUnfolding(bool useUnfolding) {fUseUnfolding = useUnfolding; }
+  void SetUsePcut(bool usePcut) {fUsePcut = usePcut; }
 
   AliEventCuts *GetAliEventCuts() { return &fEventCuts; }
 
@@ -207,6 +220,8 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   int GetTrackPid(AliESDtrack *track, double *logdiff) const;
   int GetMostProbable(const double *pDens, const double *priors) const;
   void GetPriors(const AliVTrack *track, double *priors) const;
+  float GetUnfoldedP(double dedx, float p) const;
+  float interpolateP(Float_t p0, Float_t pTPC, Float_t p1, Float_t mass, Float_t X, Float_t z) const;
   void ComputeBayesProbabilities(double *probs, const double *pDens, const double *prior);
 
  private:
@@ -244,19 +259,35 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   TH2F *fHistVtxZ;          //!<! histo with the distribution of the primary vertex Z coordinate
 
   TH3F *fHistNTracks[kNchg];           //!<! histo with number of tracks vs Pt
+  TH2F *fHistDEDXGen;                  //!<! histo with dedx versus momentum (generated, before track selection)
+  TH2F *fHistDEDXGenposlabel;          //!<! histo with dedx versus momentum  with pos label (generated, before track selection)
+  TH2F *fHistDEDXGenneglabel;          //!<! histo with dedx versus momentum  with neg label (generated, before track selection)
   TH2F *fHistDEDX;                     //!<! histo with dedx versus momentum
   TH2F *fHistDEDXdouble;               //!<! histo with dedx versus signed momentum
+  TH2F *fHistDEDXposlabel;             //!<! histo with dedx versus momentum with positive label
+  TH2F *fHistDEDXneglabel;             //!<! histo with dedx versus momentum with negative label
   TH2F *fHistNSigmaSep[kNchg * kNspc]; //!<! histo nsigma separation vs momentum
   TH2F *fHistSepPowerReco[kNchg * kNspc];  //!<!
   TH2F *fHistSepPowerTrue[kNchg * kNspc];  //!<!
+  TH2F *fHistDEDXnoITSsa; //!<!
+  TH2F *fHistNSigmaSepP[4];            //!<! histo nsigma separation vs momentum
+  TH2F *fHistNsigmaSepPinterp[4];      //!<! histo nsigma separation vs momentum interpolated
 
   // MC histograms with spectra of primaries from the MC truth
   TH3F *fHistMCPart[kNchg * kNspc];            //!<! histo from events w/o gen Zvtx cut
   TH3F *fHistMCPartGoodGenVtxZ[kNchg * kNspc]; //!<! histo from events w/  gen Zvtx cut (<10cm)
+  TH3F *fHistMCGenCharged;                     //!<! histo from events w/o gen Zvtx cut (with p instead of pt)
 
   // Reconstructed
   TH2F *fHistReco[kNchg * kNspc];         //!<! NSigma histos for 6 species
-  THnSparseF *fHistRecoMC[kNchg * kNspc]; //!<! NSigma histos for 6 species
+  THnSparseF *fHistRecoMC[kNchg * kNspc]; //!<! transverse momentum correlation with nsigma PID for 6 species
+  THnSparseF *fHistRecoTrueMC[kNchg * kNspc]; //!<! transverse momentum correlation with true PID for 6 species
+  THnSparseF *fHistRecoChargedMC; //!<! momentum correlation with true PID for 6 species
+  THnSparseF *fHistMCDCA[kNchg * kNspc]; //!<! transverse momentum correlation for DCAxy unfolding
+
+  //Rapidity distributions of identified particles
+  TH3F *fHistYdist[kNchg * kNspc]; //!<! y distribution of identified (reco) particles (pt and mult dependent)
+  TH3F *fHistYdistTruth[kNchg * kNspc]; //!<! y distribution of identified (reco) particle with MC truth for PID (pt and mult dependent)
 
   // MC histograms using reco values
   TH3F *fHistTruePIDMCReco[kNchg * kNspc]; //!<! histo with spectra of primaries from the MC truth (with pt reco)
@@ -319,9 +350,9 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   TH2F *fHistMCNegPrHypKaon;    //! histo with dedx using the MC truth
   TH2F *fHistMCNegPrHypProt;    //! histo with dedx using the MC truth
 
-  TArrayF fCentBins;
-  TArrayF fDCABins;
-  TArrayF fPtBins;
+  TArrayD fCentBins;
+  TArrayD fDCABins;
+  TArrayD fPtBins;
 
   // evt sel.
   UInt_t fTriggerSel;
@@ -335,6 +366,8 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   bool fChkVtxZSep;            // enable check on proximity of the z coordinate between both vertexer
   bool fReqBothVtx;            // ask for both trk and SPD vertex
   bool fExtEventCuts;          // enable use of AliEventCuts for event selection
+  bool fUseUnfolding;          // enable if you want to use unfolding for PID
+  bool fUsePcut;                // to enable/disable cut on momentum
   // mult sel.
   unsigned int fMultMethod; // method for cent/mult values: 0=skip mult sel, 1=new cent framework, 2=old cent framework,
                             // 3=tracks+tracklets, 4=tracklets, 5=cluster on SPD
@@ -359,6 +392,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   int fMinSPDPts;       // minimum number of SPD Points
   int fMinNdEdxSamples; // minimum number of SDD+SSD points
   double fAbsEtaCut;    // limits in pseudorap
+  double fPcut;         // limit for cut on momentum
   double fMinRapCut;
   double fMaxRapCut;
   double fCMSRapFct;
@@ -375,6 +409,7 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   bool fUseDefaultPriors; // flag to use default(equal) priors
   bool fFillNtuple;       // flag to fill ntuples
   bool fIsMC;             // flag to switch on the MC analysis for the efficiency estimation
+  bool fIsDCAUnfoldHistoEnabled; //flag to enable the filling of DCA histos used for unfolding
   bool fIsNominalBfield;  // flag to select the magnetic field (nominal = 0.5 T)
   bool fFillIntDistHist;  // flag to fill histogram with information for statistic pid analysis
 
@@ -384,7 +419,10 @@ class AliAnalysisTaskSEITSsaSpectra : public AliAnalysisTaskSE
   double fSmearP;       // extra relative smearing on simulated momentum
   double fSmeardEdx;    // extra relative smearing on simulated dE/dx
 
-  ClassDef(AliAnalysisTaskSEITSsaSpectra, 12);
+  //unfolding
+  TH2F* fUnfProb[1170]; //-> histogram with unfolded matrices (probability)
+
+  ClassDef(AliAnalysisTaskSEITSsaSpectra, 13);
 };
 
 #endif

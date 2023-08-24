@@ -38,6 +38,7 @@ class AliHFDmesonCorrAverage : public TNamed {
   void SetMethod(Int_t method){fmethod=method;}
   void SetSystem(Int_t sys,Int_t year){fsys=sys;fyear=year;}
   void SetCentBin(Int_t centbin){fCentBin=centbin;}
+  void SetUncertaintyFromOnlyOneMeson(Bool_t unc){fAverUncOnlyOneMeson=unc;}
   void SetMomentumRanges(Double_t minptD,Double_t maxptD,Double_t minptAsso,Double_t maxptAsso){fptminD=minptD;fptmaxD=maxptD;fptminAsso=minptAsso;fptmaxAsso=maxptAsso;}
   void CalculateAverage();  
   TH1D *GetAverageHisto(){return fhDaverage;}
@@ -92,15 +93,16 @@ class AliHFDmesonCorrAverage : public TNamed {
   Double_t *fweightsDplusSystBkg;                       // Dplus weights used
   Int_t   fnbinsphi;                        // nbins phi
   Int_t	  fsys;					//system (0=pp, 1=pPb)
-  Int_t	  fyear;				// year  (2010 for pp@7 TeV, 2013 for pPb@5.02 TeV)
+  Int_t	  fyear;				// year  (2010 for pp@7 TeV, 2013 and 2016 for pPb@5.02 TeV, 2017 for pp 5 TeV, 2018 for pp 13 TeV)
   Int_t   fCentBin;                             // centrality bin
   Bool_t fSystAlreadySet;                       // Set it to kTRUE when systematic uncertainties from external files are set
   Bool_t fArithmeticAverage;                   // flag to perform arithmetic average
+  Bool_t fAverUncOnlyOneMeson;                  // flag to use as uncertainty that of single meson
   TH1D *fhUsedWeightsDzero;                    // histogram with final weights used for Dzero
   TH1D *fhUsedWeightsDstar;                   // histogram with final weights used for Dstar
   TH1D *fhUsedWeightsDplus;                   // histogram with final weights used for Dplus
 
-  ClassDef(AliHFDmesonCorrAverage,3); //class for averaging D meson -hadron correlations
+  ClassDef(AliHFDmesonCorrAverage,4); //class for averaging D meson -hadron correlations
 };
 
 

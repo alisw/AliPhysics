@@ -1,4 +1,4 @@
-AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString filecutsname="",Bool_t readMC=kFALSE, Bool_t simplemode=kFALSE, Int_t system=1 /*0=pp, 1=PbPb*/, TString finDirname="",Bool_t trackon=kTRUE,Bool_t pidon=kTRUE,Bool_t centralityon=kTRUE, Bool_t eventselon=kTRUE, Bool_t flowobson=kFALSE, Bool_t filldistribforeffcheckson=kFALSE){
+AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString filecutsname="",Bool_t readMC=kFALSE, Bool_t simplemode=kFALSE, Int_t system=1 /*0=pp, 1=PbPb*/, TString finDirname="",Bool_t trackon=kTRUE,Bool_t pidon=kTRUE,Bool_t centralityon=kTRUE, Bool_t eventselon=kTRUE, Bool_t filldistribforeffcheckson=kFALSE){
   //
   // Test macro for the AliAnalysisTaskSE for HF mesons quality assurance
   //Author: C.Bianchin chiara.bianchin@pd.infn.it
@@ -24,7 +24,7 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
 
   AliRDHFCuts *analysiscuts=0x0;
 
-  TString filename="",out1name="nEntriesQA",out2name="outputPid",out3name="outputTrack",out4name="cuts",out5name="countersCentrality",out6name="outputCentrCheck",out7name="outputEvSel",out8name="outputFlowObs",inname="input",suffix="",cutsobjname="",centr="";
+  TString filename="",out1name="nEntriesQA",out2name="outputPid",out3name="outputTrack",out4name="cuts",out5name="countersCentrality",out6name="outputCentrCheck",out7name="outputEvSel",inname="input",suffix="",cutsobjname="",centr="";
   filename = AliAnalysisManager::GetCommonFileName();
   filename += ":PWG3_D2H_QA";
   filename += finDirname.Data();
@@ -111,7 +111,6 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   out5name+=suffix;
   out6name+=suffix;
   out7name+=suffix;
-  out8name+=suffix;
 
   if(!analysiscuts && filecutsname!="none"){
     cout<<"Specific AliRDHFCuts not found"<<endl;
@@ -127,7 +126,6 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   out5name+=centr;
   out6name+=centr;
   out7name+=centr;
-  out8name+=centr;
   inname+= finDirname.Data();
   out1name+= finDirname.Data();
   out2name+= finDirname.Data();
@@ -136,7 +134,6 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   out5name+= finDirname.Data();
   out6name+= finDirname.Data();
   out7name+= finDirname.Data();
-  out8name+= finDirname.Data();
  
   AliAnalysisTaskSEHFQA* taskQA=new AliAnalysisTaskSEHFQA(Form("QA%s",suffix.Data()),ch,analysiscuts);
 
@@ -146,7 +143,6 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
   taskQA->SetPIDOn(pidon);
   taskQA->SetCentralityOn(centralityon);
   taskQA->SetEvSelectionOn(eventselon);
-  taskQA->SetFlowObsOn(flowobson);
   taskQA->SetFillDistributionsForTrackEffChecks(filldistribforeffcheckson);
   mgr->AddTask(taskQA);
 
@@ -175,9 +171,6 @@ AliAnalysisTaskSEHFQA* AddTaskHFQA(AliAnalysisTaskSEHFQA::DecChannel ch,TString 
 
   AliAnalysisDataContainer *coutput7 = mgr->CreateContainer(out7name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //event selection
   if(eventselon) mgr->ConnectOutput(taskQA,7,coutput7);
-
-  AliAnalysisDataContainer *coutput8 = mgr->CreateContainer(out8name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //flow observables
-  if(flowobson) mgr->ConnectOutput(taskQA,8,coutput8);
 
  return taskQA;
 }

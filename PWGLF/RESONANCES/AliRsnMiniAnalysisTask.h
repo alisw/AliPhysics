@@ -27,8 +27,10 @@
 #include "AliRsnCutPrimaryVertex.h"
 #include "AliRsnMiniResonanceFinder.h"
 
+#include "AliEventCuts.h"
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisFilter.h"
+//#include "AliPPVsMultUtils.h"
 
 class TList;
 
@@ -37,6 +39,7 @@ class AliRsnMiniEvent;
 class AliRsnCutSet;
 class AliQnCorrectionsManager;
 class AliQnCorrectionsQnVector;
+class AliTimeRangeCut;
 
 class AliRsnMiniAnalysisTask : public AliAnalysisTaskSE {
 
@@ -64,6 +67,8 @@ public:
    void                SetMaxDiffMult (Double_t val)      {fMaxDiffMult  = val;}
    void                SetMaxDiffVz   (Double_t val)      {fMaxDiffVz    = val;}
    void                SetMaxDiffAngle(Double_t val)      {fMaxDiffAngle = val;}
+   void                SetUseBuiltinEventCuts(Bool_t use = kTRUE)   {fUseBuiltinEventCuts    = use;}
+   void                SetUseTimeRangeCut(Bool_t use = kTRUE)   {fUseTimeRangeCut    = use;}
    void                SetEventCuts(AliRsnCutSet *cuts)   {fEventCuts    = cuts;}
    void                SetMixPrintRefresh(Int_t n)        {fMixPrintRefresh = n;}
    void                SetCheckDecay(Bool_t checkDecay = kTRUE) {fCheckDecay = checkDecay;}
@@ -71,14 +76,13 @@ public:
    void                SetCheckMomentumConservation(Bool_t checkP) {fCheckP = checkP;}
    void                SetCheckFeedDown(Bool_t checkFeedDown)      {fCheckFeedDown = checkFeedDown;}
    void                SetDselection(UShort_t originDselection);
-   void 	              SetRejectCandidateIfNotFromQuark(Bool_t opt){fRejectIfNoQuark=opt;}
+   void 	       SetRejectCandidateIfNotFromQuark(Bool_t opt){fRejectIfNoQuark=opt;}
    void                SetMotherAcceptanceCutMinPt(Float_t minPt)  {fMotherAcceptanceCutMinPt = minPt;}
    void                SetMotherAcceptanceCutMaxEta(Float_t maxEta){fMotherAcceptanceCutMaxEta = maxEta;}
    void                KeepMotherInAcceptance(Bool_t keepMotherInAcceptance) {fKeepMotherInAcceptance = keepMotherInAcceptance;}
    void                SaveRsnTreeInFile(Bool_t saveInFile=kTRUE) {fRsnTreeInFile = saveInFile;}
    void                SetComputeSpherocity(Bool_t doit=kTRUE) {fComputeSpherocity = doit;}
    void                SetTrackCuts(AliAnalysisFilter* fTrackFilter);
-
    Int_t               AddTrackCuts(AliRsnCutSet *cuts);
    TClonesArray       *Outputs()                          {return &fHistograms;}
    TClonesArray       *Values()                           {return &fValues;}
@@ -86,7 +90,7 @@ public:
    void                SetEventQAHist(TString type,TH1 *histo);
    void                UseBigOutput(Bool_t b=kTRUE) { fBigOutput = b; }
    Int_t               GetNumberOfTrackCuts() { return fTrackCuts.GetEntries(); }
-
+  void                 SetTrackInSpherocity(Int_t gSphTrack=10){fSpherocityTrack=gSphTrack;}
    virtual void        UserCreateOutputObjects();
    virtual void        UserExec(Option_t *);
    virtual void        Terminate(Option_t *);
@@ -99,6 +103,7 @@ public:
 
    Int_t               AddResonanceFinder(AliRsnMiniResonanceFinder* f);
    Int_t               GetNResonanceFinders() {return fResonanceFinders.GetEntries();}
+   AliEventCuts         fEventCut;        ///< AliEventCut
 
 private:
    Char_t   CheckCurrentEvent();
@@ -142,11 +147,15 @@ private:
    TH1F                *fHAEventsVsMulti; //!<! histogram of event statistics
    TH1F                *fHAEventsVsTracklets; //!<! histogram of event statistics
    TH2F                *fHAEventVzCent;       ///< histogram of vertex-z vs. multiplicity/centrality
+   TH1F                 *fHAPhiSpherocity; ///< phi distributions of tracks used in spherocity analysis
    TH2F                *fHAEventSpherocityCent; ///< histogram of spherocity vs. multiplicity/centrality
    TH2F                *fHAEventMultiCent;    ///< histogram of multiplicity vs. centrality
    TH2F                *fHAEventRefMultiCent; //!<! histogram of reference multiplicity vs. centrality
    TH2F                *fHAEventPlane;        //!<! histogram of event plane vs. multiplicity/centrality
 
+   Bool_t              fUseBuiltinEventCuts; //< use Built-in AliEventCuts
+   Bool_t              fUseTimeRangeCut; //< use time range cut
+   AliTimeRangeCut     *fTimeRangeCut; //!<! time range cut
    AliRsnCutSet        *fEventCuts;       ///< cuts on events
    TObjArray            fTrackCuts;       ///< list of single track cuts
    AliRsnEvent          fRsnEvent;        ///< interface object to the event
@@ -173,9 +182,9 @@ private:
    AliAnalysisFilter   *fTrackFilter;       //!<! track filter for spherocity estimator 
    Double_t             fSpherocity;        ///< stores value of spherocity
    TObjArray            fResonanceFinders;  ///< list of AliRsnMiniResonanceFinder objects
-
+  Int_t                fSpherocityTrack;   //no. of track used to compute spherocity
 /// \cond CLASSIMP
-   ClassDef(AliRsnMiniAnalysisTask, 20);     
+   ClassDef(AliRsnMiniAnalysisTask, 22);     
 /// \endcond
 };
 

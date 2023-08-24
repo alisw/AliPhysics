@@ -20,6 +20,7 @@
 #include <TParameter.h>
 #include <TColor.h>
 #include <TLatex.h>
+#include <TObjString.h>
 
 //====================================================================
 namespace {

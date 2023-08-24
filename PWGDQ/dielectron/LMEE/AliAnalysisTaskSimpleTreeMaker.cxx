@@ -128,6 +128,10 @@ AliAnalysisTaskSE(),
   KnSigmaITS(0),
   KnSigmaTPC(0),
   KnSigmaTOF(0),
+  storeProtonPID(0),
+  PrnSigmaITS(0),
+  PrnSigmaTPC(0),
+  PrnSigmaTOF(0),
   ITSsignal(0),
   TPCsignal(0),
   TOFsignal(0),
@@ -238,6 +242,10 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name,
   KnSigmaITS(0),
   KnSigmaTPC(0),
   KnSigmaTOF(0),
+  storeProtonPID(0),
+  PrnSigmaITS(0),
+  PrnSigmaTPC(0),
+  PrnSigmaTOF(0),
   ITSsignal(0),
   TPCsignal(0),
   TOFsignal(0),
@@ -304,7 +312,6 @@ AliAnalysisTaskSimpleTreeMaker::AliAnalysisTaskSimpleTreeMaker(const char *name,
     std::cout << "---" << temp << std::endl;
     fGeneratorHashes.push_back(temp.Hash());
   }
-
 
   // Input slot #0 works with a TChain
   DefineInput(0, TChain::Class());
@@ -390,6 +397,11 @@ void AliAnalysisTaskSimpleTreeMaker::UserCreateOutputObjects(){
     fTree->Branch("KsigITS",           &KnSigmaITS, "KsigITS/F");
     fTree->Branch("KsigTPC",           &KnSigmaTPC, "KsigTPC/F");
     fTree->Branch("KsigTOF",           &KnSigmaTOF, "KsigTOF/F");
+  }
+  if(storeProtonPID){
+    fTree->Branch("PrsigITS",           &PrnSigmaITS, "PrsigITS/F");
+    fTree->Branch("PrsigTPC",           &PrnSigmaTPC, "PrsigTPC/F");
+    fTree->Branch("PrsigTOF",           &PrnSigmaTOF, "PrsigTOF/F");
   }
   fTree->Branch("ITSsignal",         &ITSsignal,  "ITSsignal/F");
   fTree->Branch("TPCsignal",         &TPCsignal,  "TPCsignal/F");
@@ -788,7 +800,12 @@ void AliAnalysisTaskSimpleTreeMaker::UserExec(Option_t *){
         KnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
         KnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
       }
-
+      
+      if(storeProtonPID){
+        PrnSigmaITS = fPIDResponse->NumberOfSigmasITS(track, AliPID::kProton);
+        PrnSigmaTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+        PrnSigmaTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+      }
       // Get TOF start time mask
       AliTOFPIDResponse TOFresponse = fPIDResponse->GetTOFResponse();
       TOFstartMask = TOFresponse.GetStartTimeMask((Float_t)track->GetP());

@@ -66,6 +66,7 @@ public:
   void SetSquare(); // use use Square potential (only for p-p and pi+Pi-) otherwise, use spherical wave approx
   void SetT0ApproxOff();//only with  Spherical wave Approximation - this is default mode
   void SetT0ApproxOn();
+  void SetNS(int mNS);
 
 // Test Lambda parameters
   void PrintLambdas(){;}
@@ -103,6 +104,7 @@ protected:
   short     fNuclChargeSign; // sign of the 3rd body charge
   bool      fSwap;           // are particle in right order ?
   int const fLLMax;          // number of supported pairs
+  int fNS; //precision
 
   /// names of each system
   std::vector<std::string> fLLName;

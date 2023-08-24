@@ -23,18 +23,27 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGLF/QATasks)
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGLF/STRANGENESS/Cascades/lightvertexers
   )
 
+# pulled in for HF vertexing
+if(FASTJET_FOUND)
+    include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+    link_directories(${FASTJET_LIBS_DIR})
+    add_definitions(${FASTJET_DEFINITIONS})
+    list(APPEND HDRS FJ_includes.h)
+endif(FASTJET_FOUND)
+
 # Sources - alphabetical order
 set(SRCS
-  AliAnalysisTaskQAHighPtDeDx.cxx
   AliAnalysisTaskQAV0.cxx
   AliAnalysisTaskQAV0AOD.cxx
   AliAnalysisTaskQAMultistrange.cxx
   AliAnalysisTaskLFefficiencies.cxx
+  AliAnalysisTaskStrAODqa.cxx
   )
 
 # Headers from sources

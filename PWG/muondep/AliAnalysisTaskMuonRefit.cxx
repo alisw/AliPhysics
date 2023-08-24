@@ -16,6 +16,7 @@
 /* $Id$ */
 
 // ROOT includes
+#include <TObjString.h>
 #include <TString.h>
 #include <TList.h>
 #include <TGeoManager.h>

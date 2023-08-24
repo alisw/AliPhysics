@@ -1,7 +1,31 @@
+/**************************************************************************************
+ * Copyright (C) 2014, Copyright Holders of the ALICE Collaboration                   *
+ * All rights reserved.                                                               *
+ *                                                                                    *
+ * Redistribution and use in source and binary forms, with or without                 *
+ * modification, are permitted provided that the following conditions are met:        *
+ *     * Redistributions of source code must retain the above copyright               *
+ *       notice, this list of conditions and the following disclaimer.                *
+ *     * Redistributions in binary form must reproduce the above copyright            *
+ *       notice, this list of conditions and the following disclaimer in the          *
+ *       documentation and/or other materials provided with the distribution.         *
+ *     * Neither the name of the <organization> nor the                               *
+ *       names of its contributors may be used to endorse or promote products         *
+ *       derived from this software without specific prior written permission.        *
+ *                                                                                    *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND    *
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED      *
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE             *
+ * DISCLAIMED. IN NO EVENT SHALL ALICE COLLABORATION BE LIABLE FOR ANY                *
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES         *
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;       *
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND        *
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT         *
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS      *
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                       *
+ **************************************************************************************/
 #ifndef ALIEMCALTRIGGERMAKERKERNEL_H
 #define ALIEMCALTRIGGERMAKERKERNEL_H
-/* Copyright(c) 1998-2015, ALICE Experiment at CERN, All rights reserved. *
- * See cxx source for full Copyright notice                               */
 
 #include <set>
 #include <iostream>
@@ -12,6 +36,7 @@
 //#include <AliEMCALTriggerPatchInfoV1.h>
 
 class TF1;
+class TRandom;
 class TObjArray;
 class AliEMCALTriggerPatchInfo;
 class AliEMCALTriggerRawPatch;
@@ -175,6 +200,18 @@ public:
   double GetDataGridDimensionRows() const;
 
   /**
+   * @brief Check whether smear model has already been provided
+   * @return True if mean and width parameterizations are set, false otherwise
+   */
+  bool HasSmearModel() const { return fSmearModelMean && fSmearModelSigma; }
+
+  /**
+   * @brief Check whether noise settings have already been provided
+   * @return True if the noise model has been configured, false otherwise 
+   */
+  bool HasNoiseModel() const { return fAddConstantNoiseFEESmear || fAddGaussianNoiseFEESmear; }
+
+  /**
    * @brief Define whether running on MC or not (for offset)
    * @param isMC Flag for MC
    */
@@ -200,6 +237,12 @@ public:
   void SetL0TimeRange(Int_t min, Int_t max) { fL0MinTime = min; fL0MaxTime = max; }
 
   /**
+   * @brief Switch for applying the L0 time cut for L0 patch selection (default: applied)
+   * @param doApply If true the L0 time cut is applied for L0 patch selection
+   */
+  void SetApplyL0TimeCut(Bool_t doApply) { fApplyL0TimeCut = doApply; }
+
+  /**
    * @brief Set thresholds applied to FastORs and offline cells before patch reconstruction
    * @param[in] l0 Threshold for L0 FastOR amplitudes
    * @param[in] l1 Threshold for L1 FastOR amplitudes
@@ -217,7 +260,7 @@ public:
    * @brief Add a FastOR bad channel to the list
    * @param[in] absId Absolute ID of the bad channel
    */
-  void AddFastORBadChannel(Short_t absId) { fBadChannels.insert(absId); }
+  void AddFastORBadChannel(Short_t absId) { if(fBadChannels.find(absId) == fBadChannels.end()) fBadChannels.insert(absId); }
 
   /**
    * @brief Read the FastOR bad channel map from a standard stream
@@ -240,7 +283,7 @@ public:
    * @brief Add an offline bad channel to the set
    * @param[in] absId Absolute ID of the bad channel
    */
-  void AddOfflineBadChannel(Short_t absId) { fOfflineBadChannels.insert(absId); }
+  void AddOfflineBadChannel(Short_t absId) { if(fOfflineBadChannels.find(absId) == fOfflineBadChannels.end()) fOfflineBadChannels.insert(absId); }
 
   /**
    * @brief Read the offline bad channel map from a standard stream
@@ -324,6 +367,15 @@ public:
   void SetApplyOnlineBadChannelMaskingToOffline(Bool_t doApply = kTRUE) { fApplyOnlineBadChannelsToOffline = doApply; }
 
   /**
+   * @brief Apply online bad channel masking to smeared channel energies.
+   * This means that cell energies in cells within FastOrs that are masked online are
+   * ignored. By applying this the online trigger acceptance can be applied to smeared
+   * patches as well.
+   * @param[in] doApply If true the online masking is applied to smeared patch energies
+   */
+  void SetApplyOnlineBadChannelMaskingToSmeared(Bool_t doApply = kTRUE) { fApplyOnlineBadChannelsToSmeared = doApply; }
+
+  /**
    * @brief Reset all data grids and VZERO-dependent L1 thresholds
    */
   void Reset();
@@ -376,6 +428,32 @@ public:
   void SetL0TriggerAlgorithm(Int_t rowmin, Int_t rowmax, UInt_t bitmask, Int_t patchSize, Int_t subregionSize);
 
   /**
+   * @brief Specify constant noise to be added to FastOR signal generated from smeared FEE data
+   * @param noise Constant noise term (pedestal) in GeV
+   */
+  void SetConstNoiseFEESmear(double noise) { fConstNoiseFEESmear = noise; fAddConstantNoiseFEESmear = true; }
+
+  /**
+   * @brief Specify parameter for gaussian noise to be added to FastOR signal generated from smeared FEE data
+   * @param mean Mean of the gauss parameterization in GeV
+   * @param sigma Sigma of the gauss parameterization in GeV
+   */
+  void SetGaussianNoiseFEESmear(double mean, double sigma) { fMeanNoiseFEESmear = mean; fSigmaNoiseFEESmear = sigma; fAddGaussianNoiseFEESmear = true; }
+
+  /**
+   * @brief Define whether using also the negative part of the gaussian noise 
+   * 
+   * Per default the noise simulation is truncated at 0, meaning that FastORs 
+   * for which the noise value is negative the noise is set to 0. In case also
+   * the negative part of the gaussian is used the noise can be subtracted from
+   * the signal, this simulates undefluctuations of the baseline. In any case
+   * the sum of noise + signal is always truncated to 0.
+   * 
+   * @param doUse If true also the negative part of the gauss curve is used
+   */
+  void SetUseNegPartGaussNoise(bool doUse) { fUseNegPartGaussNoise = doUse; }
+
+  /**
    * @brief Set energy-dependent models for gaussian energy smearing
    * @param[in] mean Parameterization of the mean
    * @param[in] width Parameterization of the width
@@ -398,6 +476,12 @@ public:
    * @param scaleshift Constant scale shift applied to each cell. In GeV
    */
   void SetScaleShift(Double_t scaleshift) { fScaleShift = scaleshift; }
+
+  /**
+   * @brief Simulate EMCAL scale mismatch by constant multiplication factor
+   * @param scalemult Scale multiplication factor
+   */
+  void SetScaleMult(Double_t scalemult) { fScaleMult = scalemult; }
 
   /**
    * Check whether the trigger maker has been specially configured. Status has to
@@ -496,8 +580,10 @@ protected:
 
   AliEMCALTriggerPatchFinder<double>       *fPatchFinder;                 ///< The actual patch finder
   AliEMCALTriggerAlgorithm<double>         *fLevel0PatchFinder;           ///< Patch finder for Level0 patches
+  TRandom                                  *fSmearEngine;                 ///< Random engine for energy smearing
   Int_t                                     fL0MinTime;                   ///< Minimum L0 time
   Int_t                                     fL0MaxTime;                   ///< Maximum L0 time
+  Bool_t                                    fApplyL0TimeCut;              ///< Apply time cut (L0 time between fL0MinTime and fL0MaxTime) for L0 patch selection
   Int_t                                     fMinCellAmp;                  ///< Minimum offline amplitude of the cells used to generate the patches
   Int_t                                     fMinL0FastORAmp;              ///< Minimum L0 amplitude of the FastORs used to generate the patches
   Int_t                                     fMinL1FastORAmp;              ///< Minimum L1 amplitude of the FastORs used to generate the patches
@@ -510,15 +596,23 @@ protected:
   Double_t                                  fCellTimeLimits[2];           ///< Maximum allowed abs cell time (default [0] = - 10000, [1] = 10000)
   Double_t                                  fMinCellAmplitude;            ///< Minimum amplitude in cell required to be considered for filling the data grid
   Bool_t                                    fApplyOnlineBadChannelsToOffline;   ///< Apply online bad channels to offline ADC values
+  Bool_t                                    fApplyOnlineBadChannelsToSmeared;   ///< Apply online bad channels to smeared energies values
   Bool_t                                    fConfigured;                  ///< Switch specifying whether the trigger maker kernel has been configured for a given data set
   TF1                                       *fSmearModelMean;             ///< Smearing parameterization for the mean
   TF1                                       *fSmearModelSigma;            ///< Smearing parameterization for the width
   Double_t                                  fSmearThreshold;              ///< Smear threshold: Only cell energies above threshold are smeared
   Double_t                                  fScaleShift;                  ///< Scale shift simulation
+  Double_t                                  fScaleMult;                   ///< Constant EMCAL energy scale multiplicator
+  Double_t                                  fConstNoiseFEESmear;          ///< Constant noise at smeared FEE level
+  Double_t                                  fMeanNoiseFEESmear;           ///< Mean for gaussian noise model applied to smeared FEE
+  Double_t                                  fSigmaNoiseFEESmear;          ///< Sigma for gaussian noise model applied to smeared FEE
+  Bool_t                                    fAddConstantNoiseFEESmear;    ///< Switch adding constnat noise to smeared FEE data
+  Bool_t                                    fAddGaussianNoiseFEESmear;    ///< Switch adding noise to smeared FEE data using a gaussian model
+  Bool_t                                    fUseNegPartGaussNoise;        ///< Switch using also negative side of the gauss in the noise model
   Bool_t                                    fDoBackgroundSubtraction;     ///< Swtich for background subtraction (only online ADC)
 
   const AliEMCALGeometry                    *fGeometry;                   //!<! Underlying EMCAL geometry
-  AliEMCALTriggerDataGrid<double>           *fPatchAmplitudes;            //!<! TRU Amplitudes (for L0)
+  AliEMCALTriggerDataGrid<double>           *fPatchAmplitudes;            //!<! TRU Amplitudes - pure monitoring information
   AliEMCALTriggerDataGrid<double>           *fPatchADCSimple;             //!<! patch map for simple offline trigger
   AliEMCALTriggerDataGrid<double>           *fPatchADC;                   //!<! ADC values map
   AliEMCALTriggerDataGrid<double>           *fPatchEnergySimpleSmeared;   //!<! Data grid for smeared energy values from cell energies
@@ -528,9 +622,7 @@ protected:
 
   Double_t                                  fADCtoGeV;                    //!<! Conversion factor from ADC to GeV
 
-  /// \cond CLASSIMP
   ClassDef(AliEmcalTriggerMakerKernel, 4);
-  /// \endcond
 };
 
 #endif

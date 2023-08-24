@@ -35,6 +35,11 @@ class AliHFDhadronCorrSystUnc : public TNamed{
   void InitStandardUncertaintiesPPb2016in2060(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
   void InitStandardUncertaintiesPPb2016in60100(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
   void InitStandardUncertaintiesPP2017(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
+  void InitStandardUncertaintiesPP13TeV(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
+  void InitStandardUncertaintiesPP13TeVin001(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
+  void InitStandardUncertaintiesPP13TeVin0110(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
+  void InitStandardUncertaintiesPP13TeVin1030(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);
+  void InitStandardUncertaintiesPP13TeVin30100(Int_t meson,Double_t ptD,Double_t minptAss,Double_t maxptAss);  
   
   // Method with uncertainties for pp 2010, Dzero and D*+ and pt assoc> 0.3 GeV/c, with values used for HP2013
   void InitStandardUncertaintiesPP2010DzeroLowPtAss03();
@@ -489,6 +494,140 @@ class AliHFDhadronCorrSystUnc : public TNamed{
   void InitStandardUncertaintiesPP2017DplusHighPtAss2to3();
   void InitStandardUncertaintiesPP2017DplusVeryHighPtAss2to3();  
 
+  // Method with uncertainties for pp 13 TeV
+  void InitStandardUncertaintiesPP13TeVDzeroLowPtAss03to99();
+  void InitStandardUncertaintiesPP13TeVDzeroMidPtAss03to99();
+  void InitStandardUncertaintiesPP13TeVDzeroHighPtAss03to99();
+  void InitStandardUncertaintiesPP13TeVDzeroVeryHighPtAss03to99();
+  void InitStandardUncertaintiesPP13TeVDzeroExtremelyHighPtAss03to99();
+
+  void InitStandardUncertaintiesPP13TeVDzeroLowPtAss03to1();
+  void InitStandardUncertaintiesPP13TeVDzeroMidPtAss03to1();
+  void InitStandardUncertaintiesPP13TeVDzeroHighPtAss03to1();
+  void InitStandardUncertaintiesPP13TeVDzeroVeryHighPtAss03to1();
+  void InitStandardUncertaintiesPP13TeVDzeroExtremelyHighPtAss03to1();
+
+  void InitStandardUncertaintiesPP13TeVDzeroLowPtAss1to2();
+  void InitStandardUncertaintiesPP13TeVDzeroMidPtAss1to2();
+  void InitStandardUncertaintiesPP13TeVDzeroHighPtAss1to2();
+  void InitStandardUncertaintiesPP13TeVDzeroVeryHighPtAss1to2();
+  void InitStandardUncertaintiesPP13TeVDzeroExtremelyHighPtAss1to2();
+
+  void InitStandardUncertaintiesPP13TeVDzeroLowPtAss2to3();
+  void InitStandardUncertaintiesPP13TeVDzeroMidPtAss2to3();
+  void InitStandardUncertaintiesPP13TeVDzeroHighPtAss2to3();
+  void InitStandardUncertaintiesPP13TeVDzeroVeryHighPtAss2to3();
+  void InitStandardUncertaintiesPP13TeVDzeroExtremelyHighPtAss2to3();
+
+  void InitStandardUncertaintiesPP13TeVDzeroLowPtAss3to99();
+  void InitStandardUncertaintiesPP13TeVDzeroMidPtAss3to99();
+  void InitStandardUncertaintiesPP13TeVDzeroHighPtAss3to99();
+  void InitStandardUncertaintiesPP13TeVDzeroVeryHighPtAss3to99();
+  void InitStandardUncertaintiesPP13TeVDzeroExtremelyHighPtAss3to99();        
+
+  // Method with uncertainties for pp 13 TeV - 0-0.1%
+  void InitStandardUncertaintiesPP13TeVin001DzeroLowPtAss03to99();
+  void InitStandardUncertaintiesPP13TeVin001DzeroMidPtAss03to99();
+  void InitStandardUncertaintiesPP13TeVin001DzeroHighPtAss03to99();
+  void InitStandardUncertaintiesPP13TeVin001DzeroVeryHighPtAss03to99();
+
+  void InitStandardUncertaintiesPP13TeVin001DzeroLowPtAss03to1();
+  void InitStandardUncertaintiesPP13TeVin001DzeroMidPtAss03to1();
+  void InitStandardUncertaintiesPP13TeVin001DzeroHighPtAss03to1();
+  void InitStandardUncertaintiesPP13TeVin001DzeroVeryHighPtAss03to1();
+
+  void InitStandardUncertaintiesPP13TeVin001DzeroLowPtAss1to2();
+  void InitStandardUncertaintiesPP13TeVin001DzeroMidPtAss1to2();
+  void InitStandardUncertaintiesPP13TeVin001DzeroHighPtAss1to2();
+  void InitStandardUncertaintiesPP13TeVin001DzeroVeryHighPtAss1to2();
+
+  void InitStandardUncertaintiesPP13TeVin001DzeroLowPtAss2to3();
+  void InitStandardUncertaintiesPP13TeVin001DzeroMidPtAss2to3();
+  void InitStandardUncertaintiesPP13TeVin001DzeroHighPtAss2to3();
+  void InitStandardUncertaintiesPP13TeVin001DzeroVeryHighPtAss2to3();
+
+  void InitStandardUncertaintiesPP13TeVin001DzeroLowPtAss3to99();
+  void InitStandardUncertaintiesPP13TeVin001DzeroMidPtAss3to99();
+  void InitStandardUncertaintiesPP13TeVin001DzeroHighPtAss3to99();
+  void InitStandardUncertaintiesPP13TeVin001DzeroVeryHighPtAss3to99();     
+
+  // Method with uncertainties for pp 13 TeV - 0.1-10%
+  void InitStandardUncertaintiesPP13TeVin0110DzeroLowPtAss03to99();
+  void InitStandardUncertaintiesPP13TeVin0110DzeroMidPtAss03to99();
+  void InitStandardUncertaintiesPP13TeVin0110DzeroHighPtAss03to99();
+  void InitStandardUncertaintiesPP13TeVin0110DzeroVeryHighPtAss03to99();
+
+  void InitStandardUncertaintiesPP13TeVin0110DzeroLowPtAss03to1();
+  void InitStandardUncertaintiesPP13TeVin0110DzeroMidPtAss03to1();
+  void InitStandardUncertaintiesPP13TeVin0110DzeroHighPtAss03to1();
+  void InitStandardUncertaintiesPP13TeVin0110DzeroVeryHighPtAss03to1();
+
+  void InitStandardUncertaintiesPP13TeVin0110DzeroLowPtAss1to2();
+  void InitStandardUncertaintiesPP13TeVin0110DzeroMidPtAss1to2();
+  void InitStandardUncertaintiesPP13TeVin0110DzeroHighPtAss1to2();
+  void InitStandardUncertaintiesPP13TeVin0110DzeroVeryHighPtAss1to2();
+
+  void InitStandardUncertaintiesPP13TeVin0110DzeroLowPtAss2to3();
+  void InitStandardUncertaintiesPP13TeVin0110DzeroMidPtAss2to3();
+  void InitStandardUncertaintiesPP13TeVin0110DzeroHighPtAss2to3();
+  void InitStandardUncertaintiesPP13TeVin0110DzeroVeryHighPtAss2to3();
+
+  void InitStandardUncertaintiesPP13TeVin0110DzeroLowPtAss3to99();
+  void InitStandardUncertaintiesPP13TeVin0110DzeroMidPtAss3to99();
+  void InitStandardUncertaintiesPP13TeVin0110DzeroHighPtAss3to99();
+  void InitStandardUncertaintiesPP13TeVin0110DzeroVeryHighPtAss3to99();  
+
+  // Method with uncertainties for pp 13 TeV - 10-30%
+  void InitStandardUncertaintiesPP13TeVin1030DzeroLowPtAss03to99();
+  void InitStandardUncertaintiesPP13TeVin1030DzeroMidPtAss03to99();
+  void InitStandardUncertaintiesPP13TeVin1030DzeroHighPtAss03to99();
+  void InitStandardUncertaintiesPP13TeVin1030DzeroVeryHighPtAss03to99();
+
+  void InitStandardUncertaintiesPP13TeVin1030DzeroLowPtAss03to1();
+  void InitStandardUncertaintiesPP13TeVin1030DzeroMidPtAss03to1();
+  void InitStandardUncertaintiesPP13TeVin1030DzeroHighPtAss03to1();
+  void InitStandardUncertaintiesPP13TeVin1030DzeroVeryHighPtAss03to1();
+
+  void InitStandardUncertaintiesPP13TeVin1030DzeroLowPtAss1to2();
+  void InitStandardUncertaintiesPP13TeVin1030DzeroMidPtAss1to2();
+  void InitStandardUncertaintiesPP13TeVin1030DzeroHighPtAss1to2();
+  void InitStandardUncertaintiesPP13TeVin1030DzeroVeryHighPtAss1to2();
+
+  void InitStandardUncertaintiesPP13TeVin1030DzeroLowPtAss2to3();
+  void InitStandardUncertaintiesPP13TeVin1030DzeroMidPtAss2to3();
+  void InitStandardUncertaintiesPP13TeVin1030DzeroHighPtAss2to3();
+  void InitStandardUncertaintiesPP13TeVin1030DzeroVeryHighPtAss2to3();
+
+  void InitStandardUncertaintiesPP13TeVin1030DzeroLowPtAss3to99();
+  void InitStandardUncertaintiesPP13TeVin1030DzeroMidPtAss3to99();
+  void InitStandardUncertaintiesPP13TeVin1030DzeroHighPtAss3to99();
+  void InitStandardUncertaintiesPP13TeVin1030DzeroVeryHighPtAss3to99();  
+
+  // Method with uncertainties for pp 13 TeV - 30-100%
+  void InitStandardUncertaintiesPP13TeVin30100DzeroLowPtAss03to99();
+  void InitStandardUncertaintiesPP13TeVin30100DzeroMidPtAss03to99();
+  void InitStandardUncertaintiesPP13TeVin30100DzeroHighPtAss03to99();
+  void InitStandardUncertaintiesPP13TeVin30100DzeroVeryHighPtAss03to99();
+
+  void InitStandardUncertaintiesPP13TeVin30100DzeroLowPtAss03to1();
+  void InitStandardUncertaintiesPP13TeVin30100DzeroMidPtAss03to1();
+  void InitStandardUncertaintiesPP13TeVin30100DzeroHighPtAss03to1();
+  void InitStandardUncertaintiesPP13TeVin30100DzeroVeryHighPtAss03to1();
+
+  void InitStandardUncertaintiesPP13TeVin30100DzeroLowPtAss1to2();
+  void InitStandardUncertaintiesPP13TeVin30100DzeroMidPtAss1to2();
+  void InitStandardUncertaintiesPP13TeVin30100DzeroHighPtAss1to2();
+  void InitStandardUncertaintiesPP13TeVin30100DzeroVeryHighPtAss1to2();
+
+  void InitStandardUncertaintiesPP13TeVin30100DzeroLowPtAss2to3();
+  void InitStandardUncertaintiesPP13TeVin30100DzeroMidPtAss2to3();
+  void InitStandardUncertaintiesPP13TeVin30100DzeroHighPtAss2to3();
+  void InitStandardUncertaintiesPP13TeVin30100DzeroVeryHighPtAss2to3();
+
+  void InitStandardUncertaintiesPP13TeVin30100DzeroLowPtAss3to99();
+  void InitStandardUncertaintiesPP13TeVin30100DzeroMidPtAss3to99();
+  void InitStandardUncertaintiesPP13TeVin30100DzeroHighPtAss3to99();
+  void InitStandardUncertaintiesPP13TeVin30100DzeroVeryHighPtAss3to99();  
 
   /////////////
 

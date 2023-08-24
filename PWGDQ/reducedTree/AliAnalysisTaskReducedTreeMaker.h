@@ -27,7 +27,6 @@ class AliReducedPairInfo;
 class AliAnalysisUtils;
 class AliFlowTrackCuts;
 class AliMCEvent;
-//class AliFlowBayesianPID;
 
 //_________________________________________________________________________
 class AliAnalysisTaskReducedTreeMaker : public AliAnalysisTaskSE {
@@ -37,7 +36,8 @@ public:
       kBaseEventsWithBaseTracks=0,    // write basic event info and basic track info
       kBaseEventsWithFullTracks,      // write basic event info and full track info
       kFullEventsWithBaseTracks,      // write full event info and base track info
-      kFullEventsWithFullTracks       // write full event info and full track info
+      kFullEventsWithFullTracks,       // write full event info and full track info
+      kNMaxTrackFilters=32
    };
    
    enum ETreeMCwritingOptions {
@@ -71,8 +71,7 @@ public:
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
   void SetTimeRangeReject(Bool_t reject=kTRUE) {fTimeRangeReject = reject;}
   // Cuts for selecting tracks included in the tree
-  void SetTrackFilter(AliAnalysisCuts * const filter);
-  void AddTrackFilter(AliAnalysisCuts * const filter, Bool_t option=kFALSE);
+  void AddTrackFilter(AliAnalysisCuts * const filter, Bool_t option=kFALSE, Int_t minSel=-1, Int_t maxSel=-1);
   // Cuts for calorimeter clusters included in the tree
   void AddCaloClusterFilter(AliAnalysisCuts * const filter);
     
@@ -103,7 +102,7 @@ public:
   
   // Toggle on/off information branches
   void SetFillTrackInfo(Bool_t flag=kTRUE)        {fFillTrackInfo = flag;}
-  void SetFillV0Info(Bool_t flag=kTRUE)           {fFillV0Info = flag;}
+  void SetFillV0Info(Bool_t flag=kTRUE, Bool_t writeEventsWithOnlyV0s=kFALSE)    {fFillV0Info = flag; fWriteEventsWithOnlyV0s=writeEventsWithOnlyV0s;}
   void SetFillGammaConversions(Bool_t flag=kTRUE) {fFillGammaConversions = flag;}
   void SetFillK0s(Bool_t flag=kTRUE)              {fFillK0s = flag;}
   void SetFillLambda(Bool_t flag=kTRUE)           {fFillLambda = flag;}
@@ -111,7 +110,7 @@ public:
   void SetFillCaloClusterInfo(Bool_t flag=kTRUE)   {fFillCaloClusterInfo = flag;}
   void SetFillFMDInfo(Bool_t flag=kTRUE)               {fFillFMDInfo = flag;}
   //void SetFillBayesianPIDInfo(Bool_t flag=kTRUE)  {fFillBayesianPIDInfo = flag;}
-  void SetFillEventPlaneInfo(Bool_t flag=kTRUE)    {fFillEventPlaneInfo = flag;}
+  void SetFillEventPlaneInfo(Bool_t flag=kTRUE, Float_t tpcEtaGap=1.0)    {fFillEventPlaneInfo = flag; fEventPlaneTPCetaGap=tpcEtaGap;}
   void SetFlowTrackFilter(AliAnalysisCuts* const filter)  {fFlowTrackFilter=filter;}
   void SetFillMCInfo(Bool_t flag=kTRUE)               {fFillMCInfo = flag;}
   void AddMCsignal(AliSignalMC* mc, Int_t wOpt=kFullTrack) {
@@ -121,23 +120,10 @@ public:
   void SetFillHFInfo(Bool_t flag=kTRUE)               {fFillHFInfo = flag;}
   void SetFillTRDMatchedTracks(Bool_t flag1=kTRUE, Bool_t flag2=kFALSE)   {fFillTRDMatchedTracks = flag1; fFillAllTRDMatchedTracks=flag2;}
   Float_t GetInvPtDevFromBC(Int_t b, Int_t c); // calculates the sagitta value from the online tracks
-  void SetEventWritingRequirement(Int_t minSelectedTracks, Int_t minSelectedBaseTracks=0, Double_t scaleDown=0.0)   {
-     fMinSelectedTracks = minSelectedTracks;
-     fMinSelectedBaseTracks = minSelectedBaseTracks;
-     fScaleDownEvents = scaleDown;
-  }
+  void SetWriteUnbiasedEvents(Double_t scaleDown=1.0) {fScaleDownEvents=scaleDown;}
 
     
  private:
-
-  Double_t Rapidity(Double_t r, Double_t z);
-  Double_t Radius(Double_t eta, Double_t z);
-
-  Bool_t  IsTrackSelected(AliVParticle* track, Double_t* values, std::vector<Bool_t>& filterDecision);
-  Bool_t  IsSelectedTrackRequestedBaseTrack(std::vector<Bool_t> filterDecision, Bool_t usedForV0Or);
-  Bool_t  IsClusterSelected(AliVCluster* cluster, std::vector<Bool_t>& filterDecision);
-  void    SetTrackFilterQualityFlags(AliReducedBaseTrack* track, std::vector<Bool_t> filterDecision);
-  void    FillTrackStatisticsHistogram(std::vector<Bool_t> filterDecision, Bool_t usedForV0Or);
 
   AliAnalysisUtils* fAnalysisUtils;      // Analysis Utils instance (used to select p-Pb events)
   Bool_t            fUseAnalysisUtils;   // Enable using AnalysisUtils
@@ -151,14 +137,15 @@ public:
   
   Int_t     fTreeWritingOption;                 // one of the options described by ETreeWritingOptions
   Bool_t    fWriteTree;                         // if kFALSE don't write the tree, use task only to produce on the fly reduced events
-  Int_t     fMinSelectedTracks;                 // minimum number of selected full tracks (in AliReducedBaseEvent::fTracks) for the event to be written (defaults to 0)
-  Int_t     fMinSelectedBaseTracks;             // minimum number of selected base tracks (in AliReducedBaseEvent::fTracks2) for the event to be written (defaults to 0)
-  Double_t  fScaleDownEvents;                   // allow writing events which do not fulfill the minimum number of tracks criteria with scale down factor (default is zero)
+  Double_t  fScaleDownEvents;                      // allow writing events which do not fulfill the minimum number of tracks criteria with scale down factor (default is zero)
   Bool_t    fWriteSecondTrackArray;       // write second array only if full+base tracks requested
-  Bool_t    fSetTrackFilterUsed;          // specifier if SetTrackFilter method was used
-  std::vector<Bool_t>   fWriteBaseTrack;  // specifier if tracks for certain track filter are reduced or base tracks
-
-	TList* fEventsList;      						// List of event statistics histogram
+  std::vector<Bool_t> fWriteBaseTrack;  // specifier if tracks for certain track filter are reduced or base tracks
+  std::vector<Int_t>  fMinSelectedTracks;     // array of min required selected tracks for each track filter
+  std::vector<Int_t>  fMaxSelectedTracks;     // array of max required selected tracks for each track filter
+  std::vector<Int_t>  fNSelectedFullTracks;       // array of number of full (ReducedTrack) selected tracks in the current event for each track filter + for V0 prongs
+  std::vector<Int_t>  fNSelectedBaseTracks;       // array of number of selected base tracks in the current event for each track filter + for V0 prongs
+  
+  TList* fEventsList;      				// List of event statistics histogram
   TH2I*  fEventsHistogram;            // event statistics histogram
   TH2I*  fTRDEventsHistogram;         // TRD event statistics histogram
   TH2I*  fEMCalEventsHistogram;       // EMCal event statistics histogram
@@ -172,10 +159,11 @@ public:
   Bool_t fFillK0s;                  // fill the K0s V0s
   Bool_t fFillLambda;               // fill the lambda V0s
   Bool_t fFillALambda;              // fill the anti-lambda V0s
+  Bool_t fWriteEventsWithOnlyV0s;   // (default: false) if true, an event which contains just V0 legs will be written, even if no track selection criteria is met
   Bool_t fFillCaloClusterInfo;      // fill the calorimeter clusters
   Bool_t fFillFMDInfo;              // fill the FMD info
-  //Bool_t fFillBayesianPIDInfo;    // fill the bayesian PID information
   Bool_t fFillEventPlaneInfo;       // Write event plane information
+  Float_t fEventPlaneTPCetaGap;     //  Eta gap between the two TPC sub events
   Bool_t fFillMCInfo;               // Write MC truth information
   Bool_t fFillHFInfo;               // Write HF Process information
   TList   fMCsignals;               // list of AliSignalMC objects to select which particles from the Kinematics stack will be written in the tree
@@ -210,9 +198,6 @@ public:
   TString fActiveBranches;          // list of active output tree branches
   TString fInactiveBranches;        // list of inactive output tree branches
 
-  //AliFlowTrackCuts* fAliFlowTrackCuts;
-  //AliFlowBayesianPID* fBayesianResponse;
-
   TFile *fTreeFile;                  //! output file containing the tree
   TTree *fTree;                      //! Reduced event tree
   
@@ -226,7 +211,7 @@ public:
   
   void FillEventInfo();                     // fill reduced event information
   void FillTrackInfo();                     // fill reduced track information
-  void FillMCTruthInfo();                   // fill MC truth particles
+  void FillMCTruthInfo(Bool_t isAOD);                   // fill MC truth particles
   void FillV0PairInfo();                    // fill V0 reduced pair information
   AliReducedPairInfo* FillV0PairInfo(AliESDv0* v0, Int_t id, AliESDtrack* legPos, AliESDtrack* legNeg, AliKFVertex* vtxKF, Bool_t chargesAreCorrect);
   void FillV0PairInfoAOD();                    // fill V0 reduced pair information
@@ -236,14 +221,26 @@ public:
   void FillFMDInfo(Bool_t isAOD);
   Int_t GetSPDTrackletMultiplicity(AliVEvent* event, Float_t lowEta, Float_t highEta);
   
-  UInt_t MatchMCsignals(Int_t iparticle);     // check all MC signals for MC particle i and write decisions in a bit map
+  UInt_t MatchMCsignals(Int_t iparticle, Bool_t isAOD);     // check all MC signals for MC particle i and write decisions in a bit map
   Bool_t CheckMCtruthWriteFormat(UInt_t bitMap);   // make a decision on which format (base/full) to be used for the MC track
   Bool_t CheckParticleSource(AliMCEvent* event, Int_t ipart, AliSignalMC* mcSignal);
+  Bool_t CheckParticleSourceAOD(AliMCEvent* event, Int_t ipart, AliSignalMC* mcSignal);
   Bool_t CheckPDGcode(AliMCEvent* event, Int_t ipart, AliSignalMC* mcSignal);
+  
+  void   FillStatisticsHistograms(Bool_t isSelected, UInt_t physSel, UChar_t trdTrigMap, UInt_t emcalTrigMap, Double_t xbin, Double_t* percentiles, Int_t nEstimators);
+  void   FillTrackStatisticsHistogram();
+  
+  Bool_t  IsTrackSelected(AliVParticle* track, Double_t* values, std::vector<Bool_t>& filterDecision);
+  Bool_t  IsSelectedTrackRequestedBaseTrack(std::vector<Bool_t> filterDecision, Bool_t usedForV0Or);
+  Bool_t  IsClusterSelected(AliVCluster* cluster, std::vector<Bool_t>& filterDecision);
+  void    SetTrackFilterQualityFlags(AliReducedBaseTrack* track, std::vector<Bool_t> filterDecision);
+  
+  Double_t Rapidity(Double_t r, Double_t z);
+  Double_t Radius(Double_t eta, Double_t z);
   
   AliAnalysisTaskReducedTreeMaker(const AliAnalysisTaskReducedTreeMaker &c);
   AliAnalysisTaskReducedTreeMaker& operator= (const AliAnalysisTaskReducedTreeMaker &c);
 
-  ClassDef(AliAnalysisTaskReducedTreeMaker, 16); //Analysis Task for creating a reduced event information tree
+  ClassDef(AliAnalysisTaskReducedTreeMaker, 19); //Analysis Task for creating a reduced event information tree
 };
 #endif

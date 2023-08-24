@@ -37,6 +37,7 @@
 #include "AliESDVertex.h"
 #include "AliMultiplicity.h"
 #include "AliESDtrack.h"
+#include "AliESDtrackCuts.h"
 // #include "AliESDMuonTrack.h"
 // #include "AliAODMCParticle.h"
 #include "AliMCParticle.h"
@@ -46,47 +47,64 @@
 // #include "AliTriggerAnalysis.h"
 // #include "AliAODMCHeader.h"
 #include "AliDataFile.h"
+#include "AliOADBContainer.h"
 
 ClassImp(AliAnalysisTaskUpcRho0);
 
 AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0()
   : AliAnalysisTaskSE(),
-    fPIDResponse(0), isMC(0), isUsingEffi(0), fTriggerName(0),
-  	fRhoTree(0), fMCTree(0),
+    fPIDResponse(0), isMC(0), debugMode(0), isUsingEffi(0), fTriggerName(0),
+  	fRhoTree(0), fMCTree(0), fTPCNcls(50), fOption(0),
 	BunchCrossNumber_T(0), OrbitNumber_T(0), PeriodNumber_T(0),
   	RunNum_T(0), LikeSign_T(0), Mass_T(0), Pt_T(0), Rapidity_T(0), V0Adecision_T(0), 
-  	V0Cdecision_T(0), ADAdecision_T(0), ADCdecision_T(0), UBAfired_T(0), UBCfired_T(0), ZNAenergy_T(0), ZNCenergy_T(0), 
+  	V0Cdecision_T(0), ADAdecision_T(0), ADCdecision_T(0), UBAfired_T(0), UBCfired_T(0), 
+  	VBAfired_T(0), VBCfired_T(0), ZNAenergy_T(0), ZNCenergy_T(0), 
   	ZPAenergy_T(0), ZPCenergy_T(0), VtxContrib_T(0), SpdVtxContrib_T(0),
-  	VtxChi2_T(0),VtxNDF_T(0),
+  	VtxChi2_T(0),VtxNDF_T(0), TriggerTOF_T(0), TriggerSPD_T(0),
   	Ntracklets_T(0), Phi_T(0), ChipCut_T(0), GenPart_T(0),
-  	RunNum_MC_T(0), Mass_MC_T(0), Pt_MC_T(0), Rapidity_MC_T(0), Phi_MC_T(0), 
+  	RunNum_MC_T(0), Mass_MC_T(0), Pt_MC_T(0), Rapidity_MC_T(0), Phi_MC_T(0), N_MC_T(0),
+	Pt1_MC_T(0), Phi1_MC_T(0),Q1_MC_T(0), Eta1_MC_T(0),
+	Pt2_MC_T(0), Phi2_MC_T(0),Q2_MC_T(0), Eta2_MC_T(0),	 
 	fListHist(0),fSPDfile(0), hBCmod4(0), hSPDeff(0), fEfficiencyFileName(0), 
+	fTOFfile(0),fTOFFileName(0), hTOFeff(0), fTOFmask(0), isUsingTOFeff(0),
 	fHistTriggersPerRun(0),fITSmodule(0),fFOchip(0),fFOcount(0),TPCclustersP(0),
-	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0) 
+	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0),
+	fHistdEdxVsP1(0),fHistdEdxVsP2(0),fHistdEdxVsP3(0),fHistdEdxVsP4(0),fHistdEdxVsP5(0),
+	fHistdEdxVsP6(0),fHistdEdxVsP7(0),fHistdEdxVsP8(0),fHistdEdxVsP9(0) , fDeltaPhiRho(0), 
+	fDeltaPhiEe(0)
 {
 //Dummy constructor
 }
 
 AliAnalysisTaskUpcRho0::AliAnalysisTaskUpcRho0(const char *name, Bool_t _isMC)
   : AliAnalysisTaskSE(name),
-    fPIDResponse(0), isMC(0),isUsingEffi(0), fTriggerName(0),
-  	fRhoTree(0), fMCTree(0),
+    fPIDResponse(0), isMC(0), debugMode(0), isUsingEffi(0), fTriggerName(0),
+  	fRhoTree(0), fMCTree(0), fTPCNcls(50), fOption(0),
   	BunchCrossNumber_T(0), OrbitNumber_T(0), PeriodNumber_T(0),
   	RunNum_T(0), LikeSign_T(0), Mass_T(0), Pt_T(0), Rapidity_T(0), V0Adecision_T(0), 
-  	V0Cdecision_T(0), ADAdecision_T(0), ADCdecision_T(0), UBAfired_T(0), UBCfired_T(0), ZNAenergy_T(0), ZNCenergy_T(0), 
+  	V0Cdecision_T(0), ADAdecision_T(0), ADCdecision_T(0), UBAfired_T(0), UBCfired_T(0), 
+  	VBAfired_T(0), VBCfired_T(0), ZNAenergy_T(0), ZNCenergy_T(0), 
   	ZPAenergy_T(0), ZPCenergy_T(0),VtxContrib_T(0), SpdVtxContrib_T(0),
-  	VtxChi2_T(0),VtxNDF_T(0),
+  	VtxChi2_T(0),VtxNDF_T(0), TriggerTOF_T(0), TriggerSPD_T(0),
   	Ntracklets_T(0), Phi_T(0), ChipCut_T(0), GenPart_T(0),
-  	RunNum_MC_T(0), Mass_MC_T(0), Pt_MC_T(0), Rapidity_MC_T(0), Phi_MC_T(0), 
-	fListHist(0),fSPDfile(0), hBCmod4(0), hSPDeff(0), fEfficiencyFileName(0), 
+  	RunNum_MC_T(0), Mass_MC_T(0), Pt_MC_T(0), Rapidity_MC_T(0), Phi_MC_T(0), N_MC_T(0),
+	Pt1_MC_T(0), Phi1_MC_T(0),Q1_MC_T(0), Eta1_MC_T(0),
+	Pt2_MC_T(0), Phi2_MC_T(0),Q2_MC_T(0), Eta2_MC_T(0), 
+	fListHist(0),fSPDfile(0), hBCmod4(0), hSPDeff(0), fEfficiencyFileName(0),
+	fTOFfile(0), fTOFFileName(0), hTOFeff(0), fTOFmask(0), isUsingTOFeff(0),
 	fHistTriggersPerRun(0),fITSmodule(0),fFOchip(0),fFOcount(0),TPCclustersP(0),
-	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0)
+	TPCclustersN(0),dEdx(0),EtaPhiP(0),EtaPhiN(0), fFOcorr(0), fGoodTracks(0), fTrackChi2(0),
+	fHistdEdxVsP1(0),fHistdEdxVsP2(0),fHistdEdxVsP3(0),fHistdEdxVsP4(0),fHistdEdxVsP5(0),
+	fHistdEdxVsP6(0),fHistdEdxVsP7(0),fHistdEdxVsP8(0),fHistdEdxVsP9(0), fDeltaPhiRho(0), 
+	fDeltaPhiEe(0)
 {
+  if(debugMode) std::cout<<"Initialization..."<<std::endl;
   Init();
+  if(debugMode) std::cout<<"Defining output..."<<std::endl;
   DefineOutput(1, TTree::Class());
   DefineOutput(2, TList::Class());
   if (_isMC) DefineOutput(3, TTree::Class());
-
+  if(debugMode) std::cout<<"Initialization done."<<std::endl;
 }
 
 AliAnalysisTaskUpcRho0::~AliAnalysisTaskUpcRho0() 
@@ -104,6 +122,7 @@ AliAnalysisTaskUpcRho0::~AliAnalysisTaskUpcRho0()
 	delete fListHist;
 	fListHist = 0x0;
   }
+
 }
 
 void AliAnalysisTaskUpcRho0::Init()
@@ -115,6 +134,10 @@ void AliAnalysisTaskUpcRho0::Init()
 		TrackP_T[i] = -666;
 		TrackEta_T[i] = -666;
 		TrackPhi_T[i] = -666;
+		TrackQ_T[i] = 0;
+		TrackEtaGen_T[i] = -666;
+		TrackPhiGen_T[i] = -666;
+		TrackPtGen_T[i] = -666;
 	}
 	for (Int_t i=0;i<3;i++){
 		Vertex_T[i] = -666;
@@ -128,6 +151,7 @@ void AliAnalysisTaskUpcRho0::Init()
 
 void AliAnalysisTaskUpcRho0::UserCreateOutputObjects() 
 {
+	if(debugMode) std::cout<<"Starting UserCreateOutputObjects..."<<std::endl;
   	//PID response
  	AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   	AliInputEventHandler *inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
@@ -135,6 +159,7 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 
   	GenPart_T = new TClonesArray("TParticle", 1000);
 
+  	if(debugMode) std::cout<<"Defining ttree..."<<std::endl;
 	fRhoTree = new TTree("Selected","Selected Rho0 events");
 	//define branches
 	fRhoTree->Branch("RunNum_T",&RunNum_T,"RunNum_T/I");
@@ -161,6 +186,7 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	fRhoTree->Branch("TrackPx_T",&TrackPx_T,"TrackPx_T[2]/F");
 	fRhoTree->Branch("TrackPy_T",&TrackPy_T,"TrackPy_T[2]/F");
 	fRhoTree->Branch("TrackPz_T",&TrackPz_T,"TrackPz_T[2]/F");
+	fRhoTree->Branch("TrackQ_T",&TrackQ_T,"TrackQ_T[2]/S");
 	fRhoTree->Branch("VtxX_T",&Vertex_T[0],"VtxX_T/F");
 	fRhoTree->Branch("VtxY_T",&Vertex_T[1],"VtxY_T/F");
 	fRhoTree->Branch("VtxZ_T",&Vertex_T[2],"VtxZ_T/F");
@@ -177,10 +203,21 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	fRhoTree->Branch("ADCdecision_T",&ADCdecision_T,"ADCdecision_T/I");
 	fRhoTree->Branch("UBAfired_T",&UBAfired_T,"UBAfired_T/O");
 	fRhoTree->Branch("UBCfired_T",&UBCfired_T,"UBCfired_T/O");
+	fRhoTree->Branch("VBAfired_T",&VBAfired_T,"VBAfired_T/O");
+	fRhoTree->Branch("VBCfired_T",&VBCfired_T,"VBCfired_T/O");
 	fRhoTree->Branch("Ntracklets_T",&Ntracklets_T,"Ntracklets_T/I");
 	// fRhoTree->Branch("ITSModule_T",&ITSModule_T,"ITSModule_T/I");
 	fRhoTree->Branch("ChipCut_T",&ChipCut_T,"ChipCut_T/O");
+	fRhoTree->Branch("TriggerSPD_T",&TriggerSPD_T,"TriggerSPD_T/O");
+	fRhoTree->Branch("TriggerTOF_T",&TriggerTOF_T,"TriggerTOF_T/O");
+	if(isMC){
+          //Kinematics, MC gen:
+          fRhoTree->Branch("TrackEtaGen_T",&TrackEtaGen_T,"TrackEtaGen_T[2]/F");
+	  fRhoTree->Branch("TrackPhiGen_T",&TrackPhiGen_T,"TrackPhiGen_T[2]/F");
+	  fRhoTree->Branch("TrackPtGen_T",&TrackPtGen_T,"TrackPtGen_T[2]/F");
+    	  }
 
+	if(debugMode) std::cout<<"Defining MC ttree..."<<std::endl;
 	// MC tree
 	if (isMC){
 	fMCTree = new TTree("Generated","Generated Rho0 events");
@@ -190,8 +227,21 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	fMCTree->Branch("Pt_MC_T",&Pt_MC_T,"Pt_MC_T/F");
 	fMCTree->Branch("Rapidity_MC_T",&Rapidity_MC_T,"Rapidity_MC_T/F");
 	fMCTree->Branch("Phi_MC_T",&Phi_MC_T,"Phi_MC_T/F");
+	
+	fMCTree->Branch("N_MC_T",&N_MC_T,"N_MC_T/I");
+	fMCTree->Branch("Pt1_MC_T",&Pt1_MC_T,"Pt1_MC_T/F");
+	fMCTree->Branch("Phi1_MC_T",&Phi1_MC_T,"Phi1_MC_T/F");
+	fMCTree->Branch("Q1_MC_T",&Q1_MC_T,"Q1_MC_T/I");
+	fMCTree->Branch("Eta1_MC_T",&Eta1_MC_T,"Eta1_MC_T/F");
+	
+	fMCTree->Branch("Pt2_MC_T",&Pt2_MC_T,"Pt2_MC_T/F");
+	fMCTree->Branch("Phi2_MC_T",&Phi2_MC_T,"Phi2_MC_T/F");
+	fMCTree->Branch("Q2_MC_T",&Q2_MC_T,"Q2_MC_T/I");
+	fMCTree->Branch("Eta2_MC_T",&Eta2_MC_T,"Eta2_MC_T/F");
+
 	}
 
+	if(debugMode) std::cout<<"Defining TList..."<<std::endl;
 	fListHist = new TList();
   	fListHist ->SetOwner();
   
@@ -218,10 +268,33 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	// eta-phi
 	EtaPhiP = new TH2F("EtaPhiP","EtaPhiP",100,-1,1,100,0,2*3.14159); fListHist->Add(EtaPhiP);
 	EtaPhiN = new TH2F("EtaPhiN","EtaPhiN",100,-1,1,100,0,2*3.14159); fListHist->Add(EtaPhiN);
+	// phitest
+	fDeltaPhiRho = new TH1F("fDeltaPhiRho","fDeltaPhiRho",100,-6,6); fListHist->Add(fDeltaPhiRho);
+	fDeltaPhiEe = new TH1F("fDeltaPhiEe","fDeltaPhiEe",100,-6,6); fListHist->Add(fDeltaPhiEe);
+
+	fHistdEdxVsP1 = new TH2F("fHistdEdxVsP_Electron","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP1);
+	fHistdEdxVsP2 = new TH2F("fHistdEdxVsP_Muon","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP2);
+	fHistdEdxVsP3 = new TH2F("fHistdEdxVsP_Pion","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP3);
+	fHistdEdxVsP4 = new TH2F("fHistdEdxVsP_Kaon","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP4);
+	fHistdEdxVsP5 = new TH2F("fHistdEdxVsP_Proton","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP5);
+	fHistdEdxVsP6 = new TH2F("fHistdEdxVsP_Deuteron","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP6);
+	fHistdEdxVsP7 = new TH2F("fHistdEdxVsP_Triton","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP7);
+	fHistdEdxVsP8 = new TH2F("fHistdEdxVsP_He3","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP8);
+	fHistdEdxVsP9 = new TH2F("fHistdEdxVsP_Alpha","  ; p_{TPC} (GeV/c) ; dE/dx",100,0.,5.,100,0.,600.);
+	fListHist->Add(fHistdEdxVsP9);
+
 
 	// load SPD effi
 	if (isUsingEffi) {
-		std::cout<<"Using efficiency file: "<<fEfficiencyFileName<<std::endl;
+		if(debugMode) std::cout<<"Using efficiency file: "<<fEfficiencyFileName<<std::endl;
 		fSPDfile = AliDataFile::OpenOADB(fEfficiencyFileName.Data());
 		fSPDfile->Print();
 		fSPDfile->Map();
@@ -233,14 +306,26 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 		fSPDfile->Close();
 	}
 
+	// load TOF effi
+	if (isUsingTOFeff) {
+		if(debugMode) std::cout<<"Using TOF efficiency file: "<<fTOFFileName<<std::endl;
+		if(!fTOFfile)fTOFfile = AliDataFile::OpenOADB(fTOFFileName.Data());
+	    AliOADBContainer* fTOFcont = (AliOADBContainer*)fTOFfile->Get("TOFTriggerEfficiency");
+	    hTOFeff  = (TH2F*)fTOFcont->GetObject(280235,"Default");
+	    hTOFeff->SetDirectory(0);
+	    fTOFfile->Close();
+	}
+
+	if(debugMode) std::cout<<"Post data..."<<std::endl;
 	PostData(1, fRhoTree);
 	PostData(2, fListHist);
 	if (isMC) PostData(3, fMCTree);
+	if(debugMode) std::cout<<"Post data done."<<std::endl;
 }
 
 void AliAnalysisTaskUpcRho0::UserExec(Option_t *) 
 {
-
+  // if(debugMode) std::cout<<"Starting UserExec..."<<std::endl;
   //input event
   AliESDEvent *esd = (AliESDEvent*) InputEvent();
   if(!esd) return;
@@ -265,12 +350,22 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		part->SetPdgCode(mcPart->PdgCode());
 		part->SetUniqueID(imc);
 	  } // loop over mc particles
+	  N_MC_T = nmc;
 	  if(nmc == 2){
 	  	TParticle *mcp0,*mcp1;
 		TLorentzVector lv0,lv1,lvSum;
 		//load particle
 		mcp0 = (TParticle*) GenPart_T->At(0);
 		mcp1 = (TParticle*) GenPart_T->At(1);
+		//store 4 vector variables
+		Pt1_MC_T = mcp0->Pt();
+		Phi1_MC_T = mcp0->Phi();
+		Q1_MC_T = mcp0->GetPdgCode(); 
+		Eta1_MC_T = mcp0->Eta();
+		Pt2_MC_T = mcp1->Pt();
+		Phi2_MC_T = mcp1->Phi();
+		Q2_MC_T = mcp1->GetPdgCode(); 
+		Eta2_MC_T = mcp1->Eta();
 		//create fourvector
 		lv0.SetPxPyPzE(mcp0->Px(), mcp0->Py(), mcp0->Pz(), mcp0->Energy());
 		lv1.SetPxPyPzE(mcp1->Px(), mcp1->Py(), mcp1->Pz(), mcp1->Energy());
@@ -291,7 +386,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
   // triggered in data for lumi scalling
   if(!isMC && trigger.Contains(fTriggerName.Data())) {
   	fHistTriggersPerRun->Fill(esd->GetRunNumber());
-  	// cout<<trigger<<endl;
+  	if(debugMode)std::cout<<trigger<<std::endl;
   }
 
   // CCUP9-B - *0VBA *0VBC *0UBA *0UBC 0STP
@@ -306,15 +401,19 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 
   Int_t nGoodTracks=0;
   Int_t TrackIndex[2] = {-1,-1};
-// cout<<"starting track loop"<<endl;
+  if(debugMode)std::cout<<"starting track loop"<<std::endl;
   //Track loop - cuts
   for(Int_t itr=0; itr<esd ->GetNumberOfTracks(); itr++) {
     AliESDtrack *trk = esd->GetTrack(itr);
+    // geometrical cut
+    AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("AliESDtrackCuts","default");
+	if (fOption.Contains("GeoCut")) esdTrackCuts->SetCutGeoNcrNcl(3.,130.,1.5,0.85,0.7);
+
     if( !trk ) continue;
  	if( trk->IsOn(AliESDtrack::kITSpureSA) ) continue;
     if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
     if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-    if(trk->GetTPCNcls() < 50)continue;
+    if(trk->GetTPCNcls() < fTPCNcls)continue;
     // if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4)continue;
     if(!((trk->HasPointOnITSLayer(0))&&(trk->HasPointOnITSLayer(1)))) continue;
     Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
@@ -328,7 +427,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 	TrackIndex[nGoodTracks] = itr;
 
     nGoodTracks++;
-    // cout<<nGoodTracks<<" good tracks"<<endl;
+    // std::cout<<nGoodTracks<<" good tracks"<<endl;
 	if(nGoodTracks > 5) break; // just to know how many nGoodTrack are there
 
   }//Track loop end
@@ -336,7 +435,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
   	fGoodTracks->Fill(nGoodTracks);
 
   if(nGoodTracks == 2){ // fill tree variables
- // cout<<"two good tracks"<<endl;
+	if(debugMode)std::cout<<"two good tracks"<<std::endl;
   	TDatabasePDG *pdgdat = TDatabasePDG::Instance(); 
   	TParticlePDG *partPion = pdgdat->GetParticle( 211 );
   	Double_t pionMass = partPion->Mass();
@@ -374,6 +473,8 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 
 	UBAfired_T = esd->GetHeader()->IsTriggerInputFired("0UBA");
 	UBCfired_T = esd->GetHeader()->IsTriggerInputFired("0UBC");
+	VBAfired_T = esd->GetHeader()->IsTriggerInputFired("0VBA");
+	VBCfired_T = esd->GetHeader()->IsTriggerInputFired("0VBC");
 
 	// ZN energy
 	ZNAenergy_T = fZDCdata->GetZNATowerEnergy()[0];
@@ -408,6 +509,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 	// Tracklets
 	Ntracklets_T = esd->GetMultiplicity()->GetNumberOfTracklets();
 
+	Double_t PhiPlus = 0;
 	// loop over two good tracks
   	for(Int_t i=0; i<2; i++){
 	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);
@@ -415,9 +517,28 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		ITSModuleInner_T[i] = trk->GetITSModuleIndex(0)/1000000;
 		ITSModuleOuter_T[i] = trk->GetITSModuleIndex(1)/1000000;
 
+		// phi test
+		if (trk->Charge()>0) PhiPlus = trk->Phi();
+
 		// TPC PID n-sigma
 		PIDTPCElectron_T[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kElectron);
 		PIDTPCPion_T[i] = fPIDResponse->NumberOfSigmasTPC(trk,AliPID::kPion);
+
+		// separated PID
+		Double_t ptrackTPC=-999.;
+		const AliExternalTrackParam* ippar=trk->GetInnerParam();
+		if(ippar) ptrackTPC=ippar->P();
+		Double_t dedx=trk->GetTPCsignal();
+		Int_t  pidtr=trk->GetPIDForTracking();
+		if(pidtr==0) fHistdEdxVsP1->Fill(ptrackTPC,dedx);
+		if(pidtr==1) fHistdEdxVsP2->Fill(ptrackTPC,dedx);
+		if(pidtr==2) fHistdEdxVsP3->Fill(ptrackTPC,dedx);
+		if(pidtr==3) fHistdEdxVsP4->Fill(ptrackTPC,dedx);
+		if(pidtr==4) fHistdEdxVsP5->Fill(ptrackTPC,dedx);
+		if(pidtr==5) fHistdEdxVsP6->Fill(ptrackTPC,dedx);
+		if(pidtr==6) fHistdEdxVsP7->Fill(ptrackTPC,dedx);
+		if(pidtr==7) fHistdEdxVsP8->Fill(ptrackTPC,dedx);
+		if(pidtr==8) fHistdEdxVsP9->Fill(ptrackTPC,dedx);
 
 		charge[i] = trk->Charge();
 		TPCsignal_T[i] = trk->GetTPCsignal();
@@ -427,6 +548,18 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		TrackPx_T[i] = trk->Px();
 		TrackPy_T[i] = trk->Py();
 		TrackPz_T[i] = trk->Pz();
+		TrackQ_T[i] = trk->Charge();
+		
+		if(trk->GetLabel() >= 0){
+                    AliMCEvent *mc = MCEvent();
+                    if(!mc) return;
+                    AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(trk->GetLabel());
+		
+		    TrackEtaGen_T[i] = mcPart->Eta();
+		    TrackPhiGen_T[i] = mcPart->Phi();
+		    TrackPtGen_T[i] = mcPart->Pt();
+		    }
+
 
 		fTrackChi2->Fill((Float_t)trk->GetTPCchi2()/trk->GetTPCNcls());
 
@@ -451,6 +584,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		}
 
 		lv[i].SetPtEtaPhiM(trk->Pt(), trk->Eta(), trk->Phi(), pionMass);
+
   	} // end loop over two good tracks
 
   	lvSum = lv[0]+lv[1];
@@ -461,6 +595,10 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 	Pt_T = lvSum.Pt();
 	Rapidity_T = lvSum.Rapidity();
 	Phi_T = lvSum.Phi();
+
+	// phi test
+	if (!LikeSign_T && fabs(Rapidity_T)<0.8 && Pt_T<0.1 && (pow(PIDTPCPion_T[0],2)+pow(PIDTPCPion_T[1],2)<9) ) fDeltaPhiRho->Fill(Phi_T-PhiPlus);
+	if (!LikeSign_T && fabs(Rapidity_T)<0.8 && Pt_T<0.1 && (pow(PIDTPCElectron_T[0],2)+pow(PIDTPCElectron_T[1],2)<9) ) fDeltaPhiEe->Fill(Phi_T-PhiPlus);
 
 	// virtual cut on FO chip matching
 	Int_t SPDInner[20]; for (Int_t i=0; i<20; ++i) SPDInner[i]=0;
@@ -477,7 +615,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
 		|| !Is0STPfired(SPDInner,SPDOuter))) ChipCut_T = 1;
 
-	if ((fTriggerName == "CCUP2-B") &&
+	if ((fTriggerName.Contains("CCUP2-B")) &&
 		((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
 		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
 		)) ChipCut_T = 1;
@@ -485,6 +623,14 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
 		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
 		)) ChipCut_T = 1;
+	if ((fTriggerName == "C1ZED") &&
+		((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
+		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
+		)) ChipCut_T = 1;
+	if ((fTriggerName == "CCUP11-B") &&
+		((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
+		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
+		|| !Is0STPfired(SPDInner,SPDOuter))) ChipCut_T = 1;
 
     Int_t fFOcounter = 0;
   	for(Int_t chipkey=0;chipkey<1200;chipkey++){
@@ -500,7 +646,7 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
   fRhoTree ->Fill();
 
   } // end 2 good tracks
-// cout<<"saving data"<<endl;
+  if(debugMode) std::cout<<"saving data"<<std::endl;
   PostData(1, fRhoTree);
   PostData(2, fListHist);
   if (isMC) PostData(3, fMCTree);
@@ -569,7 +715,10 @@ Bool_t AliAnalysisTaskUpcRho0::IsTriggered(AliESDEvent *esd)
 	// 0SH1 - More then 6 hits on outer layer
 	// if (nOuter >= 7) SH1 = kTRUE;
 	//0SH1 2017 - Two hits on inner and outer layer
-	if (nInner >= 2 && nOuter >= 2) SH1 = kTRUE;
+	if (nInner >= 2 && nOuter >= 2) {
+		SH1 = kTRUE;
+	}
+
 	// V0
 	V0A = esd->GetHeader()->IsTriggerInputFired("0VBA");
 	V0C = esd->GetHeader()->IsTriggerInputFired("0VBC");
@@ -577,12 +726,48 @@ Bool_t AliAnalysisTaskUpcRho0::IsTriggered(AliESDEvent *esd)
 	ADA = esd->GetHeader()->IsTriggerInputFired("0UBA");
 	ADC = esd->GetHeader()->IsTriggerInputFired("0UBC");
 	// TOF
-	OM2 = esd->GetHeader()->IsTriggerInputFired("0OM2");
 	OMU = esd->GetHeader()->IsTriggerInputFired("0OMU");
-	  
+
+	// OM2
+	if (isUsingTOFeff) {
+	const AliTOFHeader *tofH = esd->GetTOFHeader();
+	fTOFmask = tofH->GetTriggerMask();
+  
+	Bool_t firedMaxiPhi[36] = {0};
+	Int_t NfiredMaxiPads = 0;
+ 
+	for(Int_t ltm=0;ltm<72;ltm++){
+		Int_t ip = ltm%36;
+		for(Int_t cttm=0;cttm<23;cttm++){
+			if(fTOFmask->IsON(ltm,cttm) && gRandom->Rndm(1.0)<hTOFeff->GetBinContent(ltm+1,cttm+1)){
+				firedMaxiPhi[ip] = kTRUE;
+				NfiredMaxiPads++;
+			}
+		}
+	}
+	if(NfiredMaxiPads >= 2) {
+		OM2 = kTRUE; //0OM2 TOF two hits
+	}
+
+	}
+	else OM2 = esd->GetHeader()->IsTriggerInputFired("0OM2");
+
+	// save spd and tof trigger decisions to tree
+	TriggerSPD_T = SH1;
+	TriggerTOF_T = OM2;
+
 	if ((fTriggerName == "CCUP9-B") && (!V0A && !V0C && !ADA && !ADC && STP)) return kTRUE; // CCUP9 is fired
-	if ((fTriggerName == "CCUP2-B") && (!V0A && !V0C && SM2 && OM2)) return kTRUE; // CCUP2 is fired works only in 2015
+	if (fOption.Contains("17n")) {
+		if ((fTriggerName.Contains("CCUP2")) && (!V0A && !V0C)) return kTRUE; // CCUP2 in 17n
+		}
+	else {
+		if ((fTriggerName.Contains("CCUP2")) && (!V0A && !V0C && SM2 && OM2)) return kTRUE; // CCUP2 is fired works only in 2015
+	}
 	if ((fTriggerName == "CCUP4-B") && (!V0A && !V0C && SM2 && OMU)) return kTRUE; // CCUP4 is fired works only in 2015
 
 	else return kFALSE;
 } // end of MC trigger
+
+
+
+

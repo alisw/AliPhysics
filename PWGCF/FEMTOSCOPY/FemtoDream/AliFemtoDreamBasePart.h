@@ -13,19 +13,19 @@
 #include "AliAODEvent.h"
 #include "Rtypes.h"
 #include "TVector3.h"
-#include "AliSigma0ParticlePhotonMother.h"
 #include "AliAODConversionPhoton.h"
+#include "AliAODRecoDecayHF.h"
 
 class AliFemtoDreamBasePart {
  public:
-  AliFemtoDreamBasePart();
+  AliFemtoDreamBasePart(const int part = 1);
   AliFemtoDreamBasePart(const AliFemtoDreamBasePart& part);
   AliFemtoDreamBasePart &operator=(const AliFemtoDreamBasePart &obj);
-  AliFemtoDreamBasePart(const AliSigma0ParticlePhotonMother &mother, const AliMCEvent *mcEvent);
-  AliFemtoDreamBasePart(const AliSigma0ParticleV0 &daughter, const AliMCEvent *mcEvent);
   AliFemtoDreamBasePart(const AliAODConversionPhoton *gamma,
                         const AliVTrack *pos, const AliVTrack *neg,
                         const AliVEvent *inputEvent);
+  AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson, const AliAODEvent *aod,
+                        const int pdgParent, std::vector<unsigned int> &pdg);
   virtual ~AliFemtoDreamBasePart();
   enum PartOrigin {
     kPhysPrimary = 0,
@@ -33,20 +33,60 @@ class AliFemtoDreamBasePart {
     kMaterial = 2,
     kFake = 3,
     kContamination = 4,
-    kUnknown = 5
+    kUnknown = 5,
+    kBeauty = 6,
   };
   void SetMCParticle(AliAODMCParticle *mcPart, AliMCEvent *evt);
+  void SetMCParticleRePart(AliAODMCParticle *mcPart);
   void ResetMCInfo();
-  void SetMomentum(TVector3 mom) { fP = mom; }
-  void SetMomentum(float px, float py, float pz) {
-    fP.SetXYZ(px, py, pz);
+  void SetMomentum(unsigned int iEntr, TVector3 mom) {
+    SetMomentum(iEntr, mom.X(), mom.Y(), mom.Z());
+  }
+  void SetMomentum(unsigned int iEntr, float px, float py, float pz) {
+    if (iEntr < fP.size()) {
+      fP.at(iEntr).SetXYZ(px, py, pz);
+    } else {
+      AliWarning("Trying to set momentum for a too small vector!");
+    }
   }
   ;
-  TVector3 GetMomentum() const {
+  size_t GetNdaughters() const {
+    return fP.size();
+  }
+  TVector3 GetMomentum(unsigned int iEntr = 0) const {
+    if (iEntr > fP.size()) {
+      std::cout << "Trying to get a momentum which is out of bounds. iEntr = "
+                << iEntr << std::endl;
+    } else {
+      return fP.at(iEntr);
+    }
+    return TVector3(-999,-999,-999);
+  }
+  ;
+  std::vector<TVector3> GetMomenta() const {
     return fP;
   }
-  ;
-  float GetP() const { return fP.Mag(); }
+  float GetP() const {
+    return GetMomentum().Mag();
+  }
+  float GetPx() const {
+    return GetMomentum().Px();
+  }
+  float GetPy() const {
+    return GetMomentum().Py();
+  }
+  float GetPz() const {
+    return GetMomentum().Pz();
+  }
+  bool IsRemovedByNewPC() const {
+    return fIsRemovedByNewPC;
+  }
+  bool IsRemovedByOldPC() const {
+    return fIsRemovedByOldPC;
+  }
+  bool IsRemovedByCrossPC() const {
+    return fIsRemovedByCrossPC;
+  }
   void SetMCMomentum(float px, float py, float pz) {
     fMCP.SetXYZ(px, py, pz);
   }
@@ -119,7 +159,9 @@ class AliFemtoDreamBasePart {
     return fPhiAtRadius;
   }
   ;
-  void ResizePhiAtRadii(size_t i) { fPhiAtRadius.resize(i); }
+  void ResizePhiAtRadii(size_t i) {
+    fPhiAtRadius.resize(i);
+  }
   float GetAveragePhiAtRadius(size_t iPart) {
     if (iPart > fPhiAtRadius.size()) {
       std::cout << "ERROR - AliFemtoDreamBasePart::GetAveragePhiAtRadius\n";
@@ -164,6 +206,18 @@ class AliFemtoDreamBasePart {
     return fCharge;
   }
   ;
+  float GetSoftPionPx() const {
+    return fSoftPionPx;
+  }
+  ;
+  float GetSoftPionPy() const {
+    return fSoftPionPy;
+  }
+  ;
+  float GetSoftPionPz() const {
+    return fSoftPionPz;
+  }
+  ;
   void SetCPA(float cpa) {
     fCPA = cpa;
   }
@@ -172,14 +226,26 @@ class AliFemtoDreamBasePart {
     return fCPA;
   }
   ;
-  void SetInvMass(float invMass) { fInvMass = invMass; }
-  float GetInvMass() const { return fInvMass; }
+  void SetInvMass(float invMass) {
+    fInvMass = invMass;
+  }
+  float GetInvMass() const {
+    return fInvMass;
+  }
   void SetParticleOrigin(PartOrigin org) {
     fOrigin = org;
   }
   ;
   PartOrigin GetParticleOrigin() const {
     return fOrigin;
+  }
+  ;
+  void SetIsPrim(bool flag) {
+    fIsPrim = flag;
+  }
+  ;
+  bool GetIsPrim() const {
+    return fIsPrim;
   }
   ;
   void SetPDGCode(int pdgCode) {
@@ -248,6 +314,35 @@ class AliFemtoDreamBasePart {
     fUse = use;
   }
   ;
+  void SetMult (int Mult) { this->fMult = Mult; };
+  void SetZVtx (float ZVtx) { fZVtx = ZVtx; };
+  void SetBkgScore (float BkgScore) { fBkgScore = BkgScore; };
+  void SetPromptScore (float PromptScore) { fPromptScore = PromptScore; };
+  void SetNSigTPC (float NSigTPC) { fNSigTPC = NSigTPC; };
+  void SetNSigTOF (float NSigTOF) { fNSigTOF = NSigTOF; };
+  void SetNCls (float NCls) { fNCls = NCls; };
+  void SetNCrossedRows (int NCrossedRows) { fNCrossedRows = NCrossedRows; };
+  void SetDCAZ (float DCAZ) { fDCAZ = DCAZ; };
+  void SetDCAXY (float DCAXY) { fDCAXY = DCAXY; };
+  void SetDzeroLabel (int label) { fDzeroLabel = label; };
+  void SetParticleMult (int mult) { fParticleMult = mult; };
+  void SetIsRemovedByOldPC (bool flag) { fIsRemovedByOldPC = flag; };
+  void SetIsRemovedByNewPC (bool flag) { fIsRemovedByNewPC = flag; };
+  void SetIsRemovedByCrossPC (bool flag) { fIsRemovedByCrossPC = flag; };
+
+  int GetMult ()  { return fMult; };
+  float GetZVtx ()  { return fZVtx; };
+  float GetBkgScore ()  { return fBkgScore; };
+  float GetPromptScore ()  { return fPromptScore; };
+  float GetNSigTPC ()  { return fNSigTPC; };
+  float GetNSigTOF ()  { return fNSigTOF; };
+  int GetNCls ()  { return fNCls; };
+  int GetNCrossedRows ()  { return fNCrossedRows; };
+  float GetDCAZ ()  { return fDCAZ; };
+  float GetDCAXY ()  { return fDCAXY; };
+  int GetDzeroLabel () { return fDzeroLabel; }
+  int GetParticleMult () { return fParticleMult; }
+  
   bool UseParticle() const {
     return fUse;
   }
@@ -260,18 +355,21 @@ class AliFemtoDreamBasePart {
     fVGTI = VGTI;
     fTrackBufferSize = size;
   }
-  int GetEventMultiplicity() const {
-    return fEvtMultiplicity;
+  void KillGlobalTrackArray() {
+    fGTI = nullptr;
+    fVGTI = nullptr;
   }
-  void SetEventMultiplicity(int evtMulti) {
-    fEvtMultiplicity = evtMulti;
+  void DumpParticleInformation();
+  TString ClassName() {
+    return "AliFemtoDreamBasePart";
   }
+  ;
  protected:
   bool fIsReset;
   AliAODTrack **fGTI;
   AliVTrack **fVGTI;
   int fTrackBufferSize;
-  TVector3 fP;
+  std::vector<TVector3> fP;
   TVector3 fMCP;
   float fPt;
   float fMCPt;
@@ -285,12 +383,33 @@ class AliFemtoDreamBasePart {
   std::vector<float> fMCPhi;
   std::vector<int> fIDTracks;
   std::vector<int> fCharge;
+  float fSoftPionPx;
+  float fSoftPionPy;
+  float fSoftPionPz;
   float fCPA;
   float fInvMass;
   PartOrigin fOrigin;
-  // pdg code as set by the track cuts, used for invariant mass calculation/mc matching in v0s
+  bool fIsPrim;
+  int fParticleMult;
+  bool fIsRemovedByOldPC;
+  bool fIsRemovedByNewPC;
+  bool fIsRemovedByCrossPC;
+
+  int fMult;
+  float fZVtx;
+  float fBkgScore;
+  float fPromptScore;
+  float fNSigTPC;
+  float fNSigTOF;
+  int fNCls;
+  int fNCrossedRows;
+  float fDCAZ;
+  float fDCAXY;
+  int fDzeroLabel;
+
+// pdg code as set by the track cuts, used for invariant mass calculation/mc matching in v0s
   int fPDGCode;
-  // pdg code as obtained from the MC for this particle
+// pdg code as obtained from the MC for this particle
   int fMCPDGCode;
   int fPDGMotherWeak;
   int fMotherID;
@@ -300,12 +419,12 @@ class AliFemtoDreamBasePart {
   bool fIsMC;
   bool fUse;    //passes cuts
   bool fIsSet;  //has all the attributes set properly
-  int fEvtMultiplicity;
  private:
   void PhiAtRadii(const AliVTrack *track, const float bfield,
                   std::vector<float> &tmpVec);
-  //  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
-  ClassDef(AliFemtoDreamBasePart, 6);
+//  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
+ClassDef(AliFemtoDreamBasePart, 14)
+  ;
 };
 
 #endif /* ALIFEMTODREAMBASEPART_H_ */

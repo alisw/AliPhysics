@@ -30,6 +30,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <TSpline.h>
 #include <THnSparse.h>
 #include <TProfile.h>
 #include "AliAnalysisManager.h"
@@ -87,6 +88,7 @@ fHistTrueSovsMeasSoEvWithCand(0),
 fHistSpheroAxisDeltaPhi(0),
 fHistSpheroAxisDeltaGenPhi(0),
 fSparseEvtShape(0),
+fTotalSparseEvtShape(0),
 fSparseEvtShapewithNoPid(0),
 fSparseEvtShapePrompt(0),
 fSparseEvtShapeFeeddown(0),
@@ -115,6 +117,9 @@ fNImpParBins(400),
 fLowerImpPar(-2000.),
 fHigherImpPar(2000.),
 fReadMC(kFALSE),
+fS0unweight(kFALSE),
+fIsS0Spline(kFALSE),
+fS0SplName(""),
 fMCOption(0),
 fisPPbData(kFALSE),
 fUseBit(kTRUE),
@@ -144,11 +149,21 @@ fptMax(10.),
 fminMult(3),
 ffiltbit1(256),
 ffiltbit2(512),
-fphiStepSizeDeg(0.1)
+fphiStepSizeDeg(0.1),
+fYearNumber(16)
+
 {
     // Default constructor
     for(Int_t i=0; i<5; i++) fHistMassPtImpPar[i]=0;
-    for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
+    for(Int_t i=0; i<14; i++) fMultEstimatorAvg[i]=0;
+    fS0SplList = nullptr;
+    fSparseEvtShapeSpline = 0;
+    fSparseEvtShapePromptSpline = 0;
+    fSparseEvtShapeFeeddownSpline = 0;
+    fMCAccGenPromptSpline = 0;
+    fMCAccGenFeeddownSpline = 0;
+    fMCRecoPromptSpline = 0;
+    fMCRecoFeeddownSpline = 0;  
 }
 
 //________________________________________________________________________
@@ -186,6 +201,7 @@ fHistTrueSovsMeasSoEvWithCand(0),
 fHistSpheroAxisDeltaPhi(0),
 fHistSpheroAxisDeltaGenPhi(0),
 fSparseEvtShape(0),
+fTotalSparseEvtShape(0),
 fSparseEvtShapewithNoPid(0),
 fSparseEvtShapePrompt(0),
 fSparseEvtShapeFeeddown(0),
@@ -214,6 +230,9 @@ fNImpParBins(400),
 fLowerImpPar(-2000.),
 fHigherImpPar(2000.),
 fReadMC(kFALSE),
+fS0unweight(kFALSE),
+fIsS0Spline(kFALSE),
+fS0SplName(""),
 fMCOption(0),
 fisPPbData(switchPPb),
 fUseBit(kTRUE),
@@ -243,14 +262,23 @@ fptMax(10.),
 fminMult(3),
 ffiltbit1(256),
 ffiltbit2(512),
-fphiStepSizeDeg(0.1)
+fphiStepSizeDeg(0.1),
+  fYearNumber(16)
 {
     //
     // Standard constructor
     //
     
     for(Int_t i=0; i<5; i++) fHistMassPtImpPar[i]=0;
-    for(Int_t i=0; i<4; i++) fMultEstimatorAvg[i]=0;
+    for(Int_t i=0; i<14; i++) fMultEstimatorAvg[i]=0;
+    fS0SplList = nullptr;
+    fSparseEvtShapeSpline = 0;
+    fSparseEvtShapePromptSpline = 0;
+    fSparseEvtShapeFeeddownSpline = 0;
+    fMCAccGenPromptSpline = 0;
+    fMCAccGenFeeddownSpline = 0;
+    fMCRecoPromptSpline = 0;
+    fMCRecoFeeddownSpline = 0;    
     if(fPdgMeson==413){
         fNMassBins=200;
         SetMassLimits(0.12,0.2);
@@ -286,7 +314,7 @@ AliAnalysisTaskSEDvsEventShapes::~AliAnalysisTaskSEDvsEventShapes()
     delete fCounterU;
     delete fCounterCandidates;
     
-    for(Int_t i=0; i<4; i++) {
+    for(Int_t i=0; i<14; i++) {
         if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
     }
     
@@ -295,6 +323,18 @@ AliAnalysisTaskSEDvsEventShapes::~AliAnalysisTaskSEDvsEventShapes()
     }
     if(fHistoMCNch) delete fHistoMCNch;
     if(fHistoMeasNch) delete fHistoMeasNch;
+    if(fIsS0Spline){
+        if(fS0SplList){
+            delete fS0SplList;
+            delete fSparseEvtShapeSpline;
+            delete fSparseEvtShapePromptSpline;
+            delete fSparseEvtShapeFeeddownSpline;
+            delete fMCAccGenPromptSpline;
+            delete fMCAccGenFeeddownSpline;
+            delete fMCRecoPromptSpline;
+            delete fMCRecoFeeddownSpline;
+        }
+    }
 }
 
 //_________________________________________________________________
@@ -354,10 +394,64 @@ void AliAnalysisTaskSEDvsEventShapes::Init(){
     
     fListProfiles = new TList();
     fListProfiles->SetOwner();
-    TString period[4];
-    Int_t nProfiles=4;
-    if (fisPPbData) {period[0]="LHC13b"; period[1]="LHC13c"; nProfiles = 2;}
-    else {period[0]="LHC10b"; period[1]="LHC10c"; period[2]="LHC10d"; period[3]="LHC10e"; nProfiles = 4;}
+    TString period[14];
+    Int_t nProfiles=14;
+    if (fisPPbData)
+      {
+	period[0]="LHC13b";
+	period[1]="LHC13c";
+	nProfiles = 2;}
+
+    else {
+    if(fYearNumber == 10){ 
+    period[0]="LHC10b";
+    period[1]="LHC10c";
+    period[2]="LHC10d";
+    period[3]="LHC10e";
+    nProfiles = 4;
+  }
+    else if(fYearNumber == 16){
+     period[0]="LHC16d";
+     period[1]="LHC16e";
+     period[2]="LHC16g";
+     period[3]="LHC16h1";
+     period[4]="LHC16h2";
+     period[5]="LHC16j";
+     period[6]="LHC16k";
+     period[7]="LHC16l";
+     period[8]="LHC16o";
+     period[9]="LHC16p";
+     nProfiles = 10;
+  }else if(fYearNumber == 17){
+    period[0]="LHC17e";
+    period[1]="LHC17f";
+    period[2]="LHC17h";
+    period[3]="LHC17i";
+    period[4]="LHC17j";
+    period[5]="LHC17k";
+    period[6]="LHC17l";
+    period[7]="LHC17m";
+    period[8]="LHC17o";
+    period[9]="LHC17r";
+    nProfiles = 10;
+  }else if(fYearNumber == 18){
+    period[0]="LHC18b";
+    period[1]="LHC18d";
+    period[2]="LHC18e";
+    period[3]="LHC18f";
+    period[4]="LHC18g";
+    period[5]="LHC18h";
+    period[6]="LHC18i";
+    period[7]="LHC18j";
+    period[8]="LHC18k";
+    period[9]="LHC18l";
+    period[10]="LHC18m";
+    period[11]="LHC18n";
+    period[12]="LHC18o";
+    period[13]="LHC18p";
+    nProfiles = 14;
+   }
+  }
     
     for(Int_t i=0; i<nProfiles; i++){
         if(fMultEstimatorAvg[i]){
@@ -460,7 +554,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     fHistNtrVsNchMCPhysicalPrimary = new TH2F("hNtrVsNchMCPhysicalPrimary",Form("N%s vs Nch (Physical Primary); Nch (Physical Primary);N_{%s};",estimatorName,estimatorName),nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //
     fHistNtrCorrVsNchMCPhysicalPrimary = new TH2F("hNtrCorrVsMCPhysicalPrimary",Form("N%s vs Nch (Physical Primary); Nch (Physical Primary);N_{%s};",estimatorName,estimatorName),nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin); //
     
-    fHistGenPrimaryParticlesInelGt0 = new TH1F("hGenPrimaryParticlesInelGt0","Multiplcity of generated charged particles ; Nparticles ; Entries",nMultBins,firstMultBin,lastMultBin);
+    fHistGenPrimaryParticlesInelGt0 = new TH1F("hGenPrimaryParticlesInelGt0","Multiplicity of generated charged particles ; Nparticles ; Entries",nMultBins,firstMultBin,lastMultBin);
     
     fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary = new TH3F("fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary", "MC: Nch (Physical Primary) vs Nch (Primary) vs Nch (Generated); Nch (Generated); Nch (Primary); Nch (Physical Primary)",nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin,nMultBins,firstMultBin,lastMultBin);
     
@@ -526,57 +620,168 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     Int_t nbinsSoSpheriwithMultUncorr[6]={48, fNMassBins, 20, nMultBins, nMultBins, 20};
     Double_t xminSoSpheriwithMultUncorr[6]={0., fLowmasslimit,0., firstMultBin, firstMultBin, 0.};
     Double_t xmaxSoSpheriwithMultUncorr[6]={24., fUpmasslimit, 1., lastMultBin, lastMultBin, 1.};
+
+    //Total
+
+    Int_t nbinstotSo[2]={1000, nMultBins};
+    Double_t xmintotSo[2]={0., firstMultBin};
+    Double_t xmaxtotSo[2]={1., lastMultBin};
+
+    Int_t nbinstotMCSo[3]={1000, nMultBins, 1000};
+    Double_t xmintotMCSo[3]={0., firstMultBin, 0.};
+    Double_t xmaxtotMCSo[3]={1., lastMultBin, 1.};
+
+
+    //Spline 
+
+    Int_t nbinsSoSpl[5]={48, fNMassBins, 20, nMultBins, 100};
+    Double_t xminSoSpl[5]={0., fLowmasslimit,0., firstMultBin, 0.};
+    Double_t xmaxSoSpl[5]={24., fUpmasslimit, 1., lastMultBin, 100.};
+    
+    Int_t nbinsSoSpheriSpl[6]={48, fNMassBins, 20, nMultBins, 20, 100};
+    Double_t xminSoSpheriSpl[6]={0., fLowmasslimit,0., firstMultBin, 0., 0.};
+    Double_t xmaxSoSpheriSpl[6]={24., fUpmasslimit, 1., lastMultBin, 1., 100.};
+    
+    Int_t nbinsSowithMultUncorrSpl[6]={48, fNMassBins, 20, nMultBins, nMultBins, 100};
+    Double_t xminSowithMultUncorrSpl[6]={0., fLowmasslimit,0., firstMultBin, firstMultBin, 0.};
+    Double_t xmaxSowithMultUncorrSpl[6]={24., fUpmasslimit, 1., lastMultBin, lastMultBin, 100.};
+    
+    Int_t nbinsSoSpheriwithMultUncorrSpl[7]={48, fNMassBins, 20, nMultBins, nMultBins, 20, 100};
+    Double_t xminSoSpheriwithMultUncorrSpl[7]={0., fLowmasslimit,0., firstMultBin, firstMultBin, 0., 0.};
+    Double_t xmaxSoSpheriwithMultUncorrSpl[7]={24., fUpmasslimit, 1., lastMultBin, lastMultBin, 1., 100.};
+
+    Int_t nbinstotSoSpline[2]={nMultBins, 100};
+    Double_t xmintotSoSpline[2]={firstMultBin, 0.};
+    Double_t xmaxtotSoSpline[2]={lastMultBin, 100.};
+
+    Int_t nbinstotMCSoSpline[3]={nMultBins, 100, 100};
+    Double_t xmintotMCSoSpline[3]={firstMultBin, 0., 0.};
+    Double_t xmaxtotMCSoSpline[3]={lastMultBin, 100., 100.};
+
     
     TString histoName = "hSparseEvtShape";
+    TString histoTotalName = "hTotalSparseEvtShape";
     TString histoNameNoPid = "hSparseEvtShapewithNoPid";
     TString parNameSo = "Spherocity";
+    TString parNameSoGen = "GenSpherocity";
     TString parNameSpheri = "Sphericity";
     TString histoNamePrompt = "hSparseEvtShapePrompt";
     TString histoNameFeeddown = "hSparseEvtShapeFeeddown";
     TString histoNameRecSphero = "hSparseEvtShapeRecSphero";
+
+    if(fIsS0Spline){
+        if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
+            if(fCalculateSphericity) fSparseEvtShapeSpline = new THnSparseD(Form("%s%s",histoName.Data(),"Quantile"), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; MultiplicityUncorr; %s; QuantSpherocity;", parNameSo.Data(), parNameSpheri.Data()), 7 , nbinsSoSpheriwithMultUncorrSpl, xminSoSpheriwithMultUncorrSpl, xmaxSoSpheriwithMultUncorrSpl);
+            else fSparseEvtShapeSpline = new THnSparseD(Form("%s%s",histoName.Data(),"Quantile"), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; MultiplicityUncorr; QuantSpherocity;", parNameSo.Data()), 6 , nbinsSowithMultUncorrSpl, xminSowithMultUncorrSpl, xmaxSowithMultUncorrSpl);
+        }
+        else{
+            if(fCalculateSphericity) fSparseEvtShapeSpline = new THnSparseD(Form("%s%s",histoName.Data(),"Quantile"), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; %s; QuantSpherocity;", parNameSo.Data(), parNameSpheri.Data()), 6 , nbinsSoSpheriSpl, xminSoSpheriSpl, xmaxSoSpheriSpl);
+            else fSparseEvtShapeSpline = new THnSparseD(Form("%s%s",histoName.Data(),"Quantile"), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; QuantSpherocity;", parNameSo.Data()), 5 , nbinsSoSpl, xminSoSpl, xmaxSoSpl);
+        }
+    }
     
-    if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
-        if(fCalculateSphericity) fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity; MultipicityUncorr; %s;", parNameSo.Data(), parNameSpheri.Data()), 6 , nbinsSoSpheriwithMultUncorr, xminSoSpheriwithMultUncorr, xmaxSoSpheriwithMultUncorr);
-        else fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity; MultipicityUncorr;", parNameSo.Data()), 5 , nbinsSowithMultUncorr, xminSowithMultUncorr, xmaxSowithMultUncorr);
+    if(fIsS0Spline){
+        if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
+            if(fCalculateSphericity) 
+                fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; MultiplicityUncorr; %s;", parNameSo.Data(), parNameSpheri.Data()), 6 , nbinsSoSpheriwithMultUncorr, xminSoSpheriwithMultUncorr, xmaxSoSpheriwithMultUncorr);
+            else
+                fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; MultiplicityUncorr;", parNameSo.Data()), 5 , nbinsSowithMultUncorr, xminSowithMultUncorr, xmaxSowithMultUncorr);
+        }
+        else{
+            if(fCalculateSphericity) 
+                fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; %s;", parNameSo.Data(), parNameSpheri.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
+            else
+                fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
+        }
+        if(fReadMC)
+            fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), "Events:; Multiplicity; QuantSpherocity; GenQuantSpherocity;", 3 , nbinstotMCSoSpline, xmintotMCSoSpline, xmaxtotMCSoSpline);
+        else    
+            fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), "Events:; Multiplicity; QuantSpherocity;", 2, nbinstotSoSpline, xmintotSoSpline, xmaxtotSoSpline);
     }
     else{
-        if(fCalculateSphericity) fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity; %s;", parNameSo.Data(), parNameSpheri.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
-        else fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
+        if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
+            if(fCalculateSphericity) 
+                fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; MultiplicityUncorr; %s;", parNameSo.Data(), parNameSpheri.Data()), 6 , nbinsSoSpheriwithMultUncorr, xminSoSpheriwithMultUncorr, xmaxSoSpheriwithMultUncorr);
+            else
+                fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; MultiplicityUncorr;", parNameSo.Data()), 5 , nbinsSowithMultUncorr, xminSowithMultUncorr, xmaxSowithMultUncorr);
+        }
+        else{
+            if(fCalculateSphericity) 
+                fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; %s;", parNameSo.Data(), parNameSpheri.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
+            else
+                fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
+        }
+        if(fReadMC)
+            fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; %s;", parNameSo.Data(), parNameSoGen.Data()), 3 , nbinstotMCSo, xmintotMCSo, xmaxtotMCSo);
+        else    
+            fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity;", parNameSo.Data()), 2 , nbinstotSo, xmintotSo, xmaxtotSo);
     }
     
     if(fFillSoSparseChecks == 2|| fFillSoSparseChecks == 3) {
-        if(fCalculateSphericity) fSparseEvtShapewithNoPid = new THnSparseD(histoNameNoPid.Data(), Form("D candidates with NoPID:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity; %s;", parNameSo.Data(), parNameSpheri.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
-        else  fSparseEvtShapewithNoPid = new THnSparseD(histoNameNoPid.Data(), Form("D candidates with NoPID:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
+        if(fCalculateSphericity) fSparseEvtShapewithNoPid = new THnSparseD(histoNameNoPid.Data(), Form("D candidates with NoPID:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; %s;", parNameSo.Data(), parNameSpheri.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
+        else  fSparseEvtShapewithNoPid = new THnSparseD(histoNameNoPid.Data(), Form("D candidates with NoPID:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
     }
     
-    if(fRecomputeSpherocity) fSparseEvtShapeRecSphero = new THnSparseD(histoNameRecSphero.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity; RecSpherocity;", parNameSo.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
+    if(fRecomputeSpherocity) fSparseEvtShapeRecSphero = new THnSparseD(histoNameRecSphero.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; RecSpherocity;", parNameSo.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
     
     fOutput->Add(fSparseEvtShape);
+    fOutput->Add(fTotalSparseEvtShape);
+    if(fIsS0Spline){
+        fOutput->Add(fSparseEvtShapeSpline);
+    }        
+
     if(fFillSoSparseChecks == 2 || fFillSoSparseChecks == 3) fOutput->Add(fSparseEvtShapewithNoPid);
     if(fRecomputeSpherocity) fOutput->Add(fSparseEvtShapeRecSphero);
     
+    Int_t nbinsPromptAcc[5]={48, nMultBins, 20, 100, 20};
     Int_t nbinsPrompt[4]={48, nMultBins, 20, 100};
     Int_t nbinsFeeddown[4]={48, nMultBins, 20, 100};
+    Double_t xminPromptAcc[5] = {0.,firstMultBin, 0., -1., 0.};
+    Double_t xmaxPromptAcc[5] = {24.,lastMultBin, 1., 1., 1.};
     Double_t xminPrompt[4] = {0.,firstMultBin, 0., -1.};
     Double_t xmaxPrompt[4] = {24.,lastMultBin, 1., 1.};
     Double_t xminFeeddown[4] = {0.,firstMultBin, 0., -1.};
     Double_t xmaxFeeddown[4] = {24.,lastMultBin, 1., 1.};
     
+    Int_t nbinsRecSpheroPromptAcc[6]={48, nMultBins, 20, 100, 20, 20};
     Int_t nbinsRecSpheroPrompt[5]={48, nMultBins, 20, 100, 20};
     Int_t nbinsRecSpheroFeeddown[5]={48, nMultBins, 20, 100, 20};
+    Double_t xminRecSpheroPromptAcc[6] = {0.,firstMultBin, 0., -1., 0., 0.};
+    Double_t xmaxRecSpheroPromptAcc[6] = {24.,lastMultBin, 1., 1., 1., 1.};
     Double_t xminRecSpheroPrompt[5] = {0.,firstMultBin, 0., -1., 0.};
     Double_t xmaxRecSpheroPrompt[5] = {24.,lastMultBin, 1., 1., 1.};
     Double_t xminRecSpheroFeeddown[5] = {0.,firstMultBin, 0., -1., 0.};
     Double_t xmaxRecSpheroFeeddown[5] = {24.,lastMultBin, 1., 1., 1.};
+
+    //Now Spline Percentage plots
+    Int_t nbinsPromptAccSpl[7]={48, nMultBins, 20, 100, 20, 100, 100};
+    Int_t nbinsPromptSpl[5]={48, nMultBins, 20, 100, 100};
+    Int_t nbinsFeeddownSpl[5]={48, nMultBins, 20, 100, 100};
+    Double_t xminPromptAccSpl[7] = {0.,firstMultBin, 0., -1., 0., 0., 0.};
+    Double_t xmaxPromptAccSpl[7] = {24.,lastMultBin, 1., 1., 1., 100., 100.};
+    Double_t xminPromptSpl[5] = {0.,firstMultBin, 0., -1., 0.};
+    Double_t xmaxPromptSpl[5] = {24.,lastMultBin, 1., 1., 100.};
+    Double_t xminFeeddownSpl[5] = {0.,firstMultBin, 0., -1., 0.};
+    Double_t xmaxFeeddownSpl[5] = {24.,lastMultBin, 1., 1., 100.};
+    
+    Int_t nbinsRecSpheroPromptAccSpl[8]={48, nMultBins, 20, 100, 20, 20, 100, 100};
+    Int_t nbinsRecSpheroPromptSpl[6]={48, nMultBins, 20, 100, 20, 100};
+    Int_t nbinsRecSpheroFeeddownSpl[6]={48, nMultBins, 20, 100, 20, 100};
+    Double_t xminRecSpheroPromptAccSpl[8] = {0.,firstMultBin, 0., -1., 0., 0., 0., 0.};
+    Double_t xmaxRecSpheroPromptAccSpl[8] = {24.,lastMultBin, 1., 1., 1., 1., 100., 100.};
+    Double_t xminRecSpheroPromptSpl[6] = {0.,firstMultBin, 0., -1., 0., 0.};
+    Double_t xmaxRecSpheroPromptSpl[6] = {24.,lastMultBin, 1., 1., 1., 100.};
+    Double_t xminRecSpheroFeeddownSpl[6] = {0.,firstMultBin, 0., -1., 0., 0.};
+    Double_t xmaxRecSpheroFeeddownSpl[6] = {24.,lastMultBin, 1., 1., 1., 100.};
     
     if(fReadMC){
         if(fRecomputeSpherocity){
-            fSparseEvtShapePrompt = new THnSparseD(histoNamePrompt.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity; RecSpherocity;", parNameSo.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
-            fSparseEvtShapeFeeddown = new THnSparseD(histoNameFeeddown.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity; RecSpherocity;", parNameSo.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
+            fSparseEvtShapePrompt = new THnSparseD(histoNamePrompt.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; RecSpherocity;", parNameSo.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
+            fSparseEvtShapeFeeddown = new THnSparseD(histoNameFeeddown.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; RecSpherocity;", parNameSo.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
         }
         else{
-            fSparseEvtShapePrompt = new THnSparseD(histoNamePrompt.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
-            fSparseEvtShapeFeeddown = new THnSparseD(histoNameFeeddown.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multipicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
+            fSparseEvtShapePrompt = new THnSparseD(histoNamePrompt.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
+            fSparseEvtShapeFeeddown = new THnSparseD(histoNameFeeddown.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
         }
         
         fOutput->Add(fSparseEvtShapePrompt);
@@ -584,38 +789,58 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
         
         //Prompt
         if(fRecomputeSpherocity){
-            fMCAccGenPrompt = new THnSparseD("hMCAccGenPrompt", "kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Spherocity; y; RecSpherocity; - promptD",5,nbinsRecSpheroPrompt,xminRecSpheroPrompt,xmaxRecSpheroPrompt);
-            fMCRecoPrompt = new THnSparseD("hMCRecoPrompt","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Spherocity; y; RecSpherocity; - promptD",5,nbinsRecSpheroPrompt,xminRecSpheroPrompt,xmaxRecSpheroPrompt);
+            fMCAccGenPrompt = new THnSparseD("hMCAccGenPrompt", "kStepMCAcceptance:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; RecSpherocity; GenSpherocity; - promptD",6,nbinsRecSpheroPromptAcc,xminRecSpheroPromptAcc,xmaxRecSpheroPromptAcc);
+            fMCRecoPrompt = new THnSparseD("hMCRecoPrompt","kStepRecoPID:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; RecSpherocity; - promptD",5,nbinsRecSpheroPrompt,xminRecSpheroPrompt,xmaxRecSpheroPrompt);
+            if(fIsS0Spline){
+                fMCAccGenPromptSpline = new THnSparseD("hMCAccGenPromptQuantile", "kStepMCAcceptance:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; RecSpherocity; GenSpherocity; GenQuantSpherocity; QuantSpherocity; - promptD",8,nbinsRecSpheroPromptAccSpl,xminRecSpheroPromptAccSpl,xmaxRecSpheroPromptAccSpl);
+                fMCRecoPromptSpline = new THnSparseD("hMCRecoPromptQuantile","kStepRecoPID:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; RecSpherocity; QuantSpherocity; - promptD",6,nbinsRecSpheroPromptSpl,xminRecSpheroPromptSpl,xmaxRecSpheroPromptSpl);
+                fSparseEvtShapePromptSpline = new THnSparseD(Form("%s%s",histoNamePrompt.Data(),"Quantile"), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; RecSpherocity; QuantSpherocity;", parNameSo.Data()), 6 , nbinsSoSpheriSpl, xminSoSpheriSpl, xmaxSoSpheriSpl);
+                fSparseEvtShapeFeeddownSpline = new THnSparseD(Form("%s%s",histoNameFeeddown.Data(),"Quantile"), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; RecSpherocity; QuantSpherocity;", parNameSo.Data()), 6 , nbinsSoSpheriSpl, xminSoSpheriSpl, xmaxSoSpheriSpl);   
+            }
         }
         else{
-            fMCAccGenPrompt = new THnSparseD("hMCAccGenPrompt","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
-            fMCRecoPrompt = new THnSparseD("hMCRecoPrompt","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
+            fMCAccGenPrompt = new THnSparseD("hMCAccGenPrompt","kStepMCAcceptance:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; GenSpherocity; - promptD",5,nbinsPromptAcc,xminPromptAcc,xmaxPromptAcc);
+            fMCRecoPrompt = new THnSparseD("hMCRecoPrompt","kStepRecoPID:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
+            if(fIsS0Spline){
+                fMCAccGenPromptSpline = new THnSparseD("hMCAccGenPromptQuantile","kStepMCAcceptance:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; GenSpherocity; GenQuantSpherocity; QuantSpherocity; - promptD",7,nbinsPromptAccSpl,xminPromptAccSpl,xmaxPromptAccSpl);
+                fMCRecoPromptSpline = new THnSparseD("hMCRecoPromptQuantile","kStepRecoPID:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; QuantSpherocity; - promptD",5,nbinsPromptSpl,xminPromptSpl,xmaxPromptSpl);
+                fSparseEvtShapePromptSpline = new THnSparseD(Form("%s%s",histoNamePrompt.Data(),"Quantile"), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; QuantSpherocity;", parNameSo.Data()), 5 , nbinsSoSpl, xminSoSpl, xmaxSoSpl);
+                fSparseEvtShapeFeeddownSpline = new THnSparseD(Form("%s%s",histoNameFeeddown.Data(),"Quantile"), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; QuantSpherocity;", parNameSo.Data()), 5 , nbinsSoSpl, xminSoSpl, xmaxSoSpl);    
+            }   
         }
         if(fCalculateSphericity){
-            fMCAccGenPromptSpheri = new THnSparseD("hMCAccGenPromptSpheri","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Sphericity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
-            fMCRecoPromptSpheri = new THnSparseD("hMCRecoPromptSpheri","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Sphericity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
+            fMCAccGenPromptSpheri = new THnSparseD("hMCAccGenPromptSpheri","kStepMCAcceptance:; p_{T} [GeV/c]; Multiplicity; Sphericity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
+            fMCRecoPromptSpheri = new THnSparseD("hMCRecoPromptSpheri","kStepRecoPID:; p_{T} [GeV/c]; Multiplicity; Sphericity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
         }
-        fMCAccGenPromptEvSel = new THnSparseD("hMCAccGenPromptEvSel","kStepMCAcceptanceEvSel:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
+        fMCAccGenPromptEvSel = new THnSparseD("hMCAccGenPromptEvSel","kStepMCAcceptanceEvSel:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; GenSpherocity; - promptD",5,nbinsPromptAcc,xminPromptAcc,xmaxPromptAcc);
         
         //Feeddown
         if(fRecomputeSpherocity){
-            fMCAccGenFeeddown = new THnSparseD("hMCAccGenBFeeddown","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Spherocity; y; RecSpherocity; - DfromB",5,nbinsRecSpheroFeeddown,xminRecSpheroFeeddown,xmaxRecSpheroFeeddown);
-            fMCRecoFeeddown = new THnSparseD("hMCRecoFeeddown","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Spherocity; y; RecSpherocity; - DfromB",5,nbinsRecSpheroFeeddown,xminRecSpheroFeeddown,xmaxRecSpheroFeeddown);
+            fMCAccGenFeeddown = new THnSparseD("hMCAccGenBFeeddown","kStepMCAcceptance:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; RecSpherocity; - DfromB",5,nbinsRecSpheroFeeddown,xminRecSpheroFeeddown,xmaxRecSpheroFeeddown);
+            fMCRecoFeeddown = new THnSparseD("hMCRecoFeeddown","kStepRecoPID:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; RecSpherocity; - DfromB",5,nbinsRecSpheroFeeddown,xminRecSpheroFeeddown,xmaxRecSpheroFeeddown);
+            if(fIsS0Spline){
+                fMCAccGenFeeddownSpline = new THnSparseD("hMCAccGenBFeeddownQuantile","kStepMCAcceptance:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; RecSpherocity; QuantSpherocity; - DfromB",6,nbinsRecSpheroFeeddownSpl,xminRecSpheroFeeddownSpl,xmaxRecSpheroFeeddownSpl);
+                fMCRecoFeeddownSpline = new THnSparseD("hMCRecoFeeddownQuantile","kStepRecoPID:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; RecSpherocity; QuantSpherocity; - DfromB",6,nbinsRecSpheroFeeddownSpl,xminRecSpheroFeeddownSpl,xmaxRecSpheroFeeddownSpl);       
+            }
         }
         else{
-            fMCAccGenFeeddown = new THnSparseD("hMCAccGenBFeeddown","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
-            fMCRecoFeeddown = new THnSparseD("hMCRecoFeeddown","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
+            fMCAccGenFeeddown = new THnSparseD("hMCAccGenBFeeddown","kStepMCAcceptance:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
+            fMCRecoFeeddown = new THnSparseD("hMCRecoFeeddown","kStepRecoPID:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
+            if(fIsS0Spline){
+                fMCAccGenFeeddownSpline = new THnSparseD("hMCAccGenBFeeddownQuantile","kStepMCAcceptance:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; QuantSpherocity; - DfromB",5,nbinsFeeddownSpl,xminFeeddownSpl,xmaxFeeddownSpl);
+                fMCRecoFeeddownSpline = new THnSparseD("hMCRecoFeeddownQuantile","kStepRecoPID:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; QuantSpherocity; - DfromB",5,nbinsFeeddownSpl,xminFeeddownSpl,xmaxFeeddownSpl);
+            }
         }
         if(fCalculateSphericity){
-            fMCAccGenFeeddownSpheri = new THnSparseD("hMCAccGenBFeeddownSpheri","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Sphericity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
-            fMCRecoFeeddownSpheri = new THnSparseD("hMCRecoFeeddownSpheri","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Sphericity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
+            fMCAccGenFeeddownSpheri = new THnSparseD("hMCAccGenBFeeddownSpheri","kStepMCAcceptance:; p_{T} [GeV/c]; Multiplicity; Sphericity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
+            fMCRecoFeeddownSpheri = new THnSparseD("hMCRecoFeeddownSpheri","kStepRecoPID:; p_{T} [GeV/c]; Multiplicity; Sphericity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
         }
-        fMCAccGenFeeddownEvSel = new THnSparseD("hMCAccGenBFeeddownEvSel","kStepMCAcceptance:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
+        fMCAccGenFeeddownEvSel = new THnSparseD("hMCAccGenBFeeddownEvSel","kStepMCAcceptance:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; - DfromB",4,nbinsFeeddown,xminFeeddown,xmaxFeeddown);
         
         //BothPromptFeeddown
-        fMCRecoBothPromptFD = new THnSparseD("hMCRecoBothPromptFD","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Spherocity; y; - BothPromptFD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
+        fMCRecoBothPromptFD = new THnSparseD("hMCRecoBothPromptFD","kStepRecoPID:; p_{T} [GeV/c]; Multiplicity; Spherocity; y; - BothPromptFD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
         
-        if(fCalculateSphericity) fMCRecoBothPromptFDSpheri = new THnSparseD("hMCRecoBothPromptFDSpheri","kStepRecoPID:; p_{T} [GeV/c]; Multipicity; Sphericity; y; - BothPromptFD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
+        if(fCalculateSphericity) fMCRecoBothPromptFDSpheri = new THnSparseD("hMCRecoBothPromptFDSpheri","kStepRecoPID:; p_{T} [GeV/c]; Multiplicity; Sphericity; y; - BothPromptFD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
         
         fOutputEffCorr->Add(fMCAccGenPrompt);
         fOutputEffCorr->Add(fMCAccGenFeeddown);
@@ -631,23 +856,40 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
         }
         fOutputEffCorr->Add(fMCAccGenPromptEvSel);
         fOutputEffCorr->Add(fMCAccGenFeeddownEvSel);
+        if(fIsS0Spline){
+            fOutput->Add(fSparseEvtShapePromptSpline);
+            fOutput->Add(fSparseEvtShapeFeeddownSpline);
+            fOutputEffCorr->Add(fMCAccGenPromptSpline);
+            fOutputEffCorr->Add(fMCAccGenFeeddownSpline);
+            fOutputEffCorr->Add(fMCRecoPromptSpline);
+            fOutputEffCorr->Add(fMCRecoFeeddownSpline);    
+        }       
     }
-    
+
     if(fDoImpPar) CreateImpactParameterHistos();
     
     fCounterC = new AliNormalizationCounter("NormCounterCorrMult");
     fCounterC->SetStudyMultiplicity(kTRUE,1.);
-    fCounterC->SetStudySpherocity(kTRUE,20.);
+    if(fIsS0Spline)
+        fCounterC->SetStudySpherocityQuant(kTRUE);
+    else
+        fCounterC->SetStudySpherocity(kTRUE,20.);    
     fCounterC->Init();
     
     fCounterU = new AliNormalizationCounter("NormCounterUnCorrMult");
     fCounterU->SetStudyMultiplicity(kTRUE,1.);
-    fCounterU->SetStudySpherocity(kTRUE,20.);
+    if(fIsS0Spline)
+        fCounterU->SetStudySpherocityQuant(kTRUE);
+    else
+        fCounterU->SetStudySpherocity(kTRUE,20.);
     fCounterU->Init();
     
     fCounterCandidates = new AliNormalizationCounter("NormCounterCorrMultCandidates");
     fCounterCandidates->SetStudyMultiplicity(kTRUE,1.);
-    fCounterCandidates->SetStudySpherocity(kTRUE,20.);
+    if(fIsS0Spline)
+        fCounterCandidates->SetStudySpherocityQuant(kTRUE);
+    else    
+        fCounterCandidates->SetStudySpherocity(kTRUE,20.);
     fCounterCandidates->Init();
     
     fOutputCounters = new TList();
@@ -770,10 +1012,28 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
     if(fCalculateSphericity){ //When kTRUE, it calculates Sphericity and THnSparse filled for sphericity
         sphericity=AliVertexingHFUtils::GetSphericity(aod, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult);
     }
-    AliVertexingHFUtils::GetSpherocity(aod, spherocity, phiRef, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg);
+    AliVertexingHFUtils::GetSpherocity(aod, spherocity, phiRef, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, 0, 0x0, fS0unweight);
     
+    TList* contShapeSpline;
+    TSpline3* ShapeSpline;
+    TSpline3* GenSpline;
+    if(fIsS0Spline){
+        if(fReadMC){
+            contShapeSpline = fS0SplList;  
+            ShapeSpline = (TSpline3*)contShapeSpline->FindObject(Form("%sMC",fS0SplName.Data()));
+            GenSpline = (TSpline3*)contShapeSpline->FindObject(Form("%sMCGen",fS0SplName.Data()));
+        }    
+        else{
+            contShapeSpline = fS0SplList;
+            ShapeSpline = (TSpline3*)contShapeSpline->FindObject(Form("%sData",fS0SplName.Data()));         
+        }       
+    }
+
     Double_t St=1;
-    fCounterU->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countMult,spherocity);
+    if(fIsS0Spline)
+        fCounterU->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countMult,ShapeSpline->Eval(spherocity));
+    else
+        fCounterU->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countMult,spherocity);    
     fHistNEvents->Fill(0); // count event
     
     Double_t countTreta1corr=countTreta1;
@@ -823,8 +1083,11 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
         }
     }
     
-    fCounterC->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countCorr,spherocity);
-    
+    if(fIsS0Spline)
+        fCounterC->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countCorr,ShapeSpline->Eval(spherocity));
+    else
+        fCounterC->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countCorr,spherocity);    
+
     Bool_t isEvSel=fRDCutsAnalysis->IsEventSelected(aod);
     
     if(fRDCutsAnalysis->GetWhyRejection()==5) fHistNEvents->Fill(3);
@@ -931,8 +1194,8 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
             AliDebug(2,Form("Using Nch weights, Mult=%f Weight=%f\n",tmpXweight,nchWeight));
         }
         
-        FillMCGenAccHistos(aod, arrayMC, mcHeader, countCorr, spherocity, sphericity, isEvSel, nchWeight);//Fill 2 separate THnSparses, one for prompt andf one for feeddown
-        AliVertexingHFUtils::GetGeneratedSpherocity(arrayMC, genspherocity, genphiRef, fetaMin, fetaMax, fptMin, fptMax, fminMult, fphiStepSizeDeg);
+        AliVertexingHFUtils::GetGeneratedSpherocity(arrayMC, genspherocity, genphiRef, fetaMin, fetaMax, fptMin, fptMax, fminMult, fphiStepSizeDeg, fS0unweight);
+        FillMCGenAccHistos(aod, arrayMC, mcHeader, countCorr, spherocity, sphericity, isEvSel, nchWeight, genspherocity);//Fill 2 separate THnSparses, one for prompt and one for feeddown
 
     }
     
@@ -989,6 +1252,27 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
         
         fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary->Fill(nChargedMC,nChargedMCPrimary,nChargedMCPhysicalPrimary,nchWeight);
     }
+
+    if(fIsS0Spline){
+        if(fReadMC){
+            Double_t arrayForSparseSo[3]={countCorr, ShapeSpline->Eval(spherocity), GenSpline->Eval(genspherocity)};
+            fTotalSparseEvtShape->Fill(arrayForSparseSo, fWeight);
+        }
+        else{
+            Double_t arrayForSparseSo[2]={countCorr, ShapeSpline->Eval(spherocity)};
+            fTotalSparseEvtShape->Fill(arrayForSparseSo, fWeight);
+        }
+    }
+    else{
+        if(fReadMC){
+            Double_t arrayForSparseSo[3]={spherocity, countCorr, genspherocity};
+            fTotalSparseEvtShape->Fill(arrayForSparseSo, fWeight);
+        }
+        else{
+            Double_t arrayForSparseSo[2]={spherocity, countCorr};
+            fTotalSparseEvtShape->Fill(arrayForSparseSo, fWeight);
+        }
+    }
     
     Int_t nCand = arrayCand->GetEntriesFast();
     Int_t nSelectedNoPID=0,nSelectedPID=0,nSelectedInMassPeak=0;
@@ -1017,7 +1301,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
         Double_t rapid=d->Y(fPdgMeson);
         Bool_t isFidAcc=fRDCutsAnalysis->IsInFiducialAcceptance(ptCand,rapid);
         if(!isFidAcc) continue;
-        
+
         Int_t passAllCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
         Int_t passTopolCuts=fRDCutsAnalysis->GetIsSelectedCuts();
         if(passTopolCuts==0) continue;
@@ -1035,9 +1319,13 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
         fWeight = nchWeight*ptWeight;
         
         if(fSubtractTrackletsFromDau){
-            // For the D* case, subtract only the D0 daughter tracks <=== FIXME !!
+            // For the D* case, subtract both D0 daughter and soft pions tracks
             AliAODRecoDecayHF2Prong* d0fromDstar = NULL;
-            if(fPdgMeson==413) d0fromDstar = (AliAODRecoDecayHF2Prong*)dCascade->Get2Prong();
+            AliAODTrack* softpifromDstar = NULL;
+            if(fPdgMeson==413){ 
+                d0fromDstar = (AliAODRecoDecayHF2Prong*)dCascade->Get2Prong();
+                softpifromDstar = (AliAODTrack*)dCascade->GetBachelor();
+            }
             
             for(Int_t iDau=0; iDau<nDau; iDau++){
                 AliAODTrack *t = NULL;
@@ -1047,6 +1335,12 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                 if(t->HasPointOnITSLayer(0) && t->HasPointOnITSLayer(1)){
                     if(multForCand>0) multForCand-=1;
                 }
+            }
+
+            if(fPdgMeson==413){
+                if(softpifromDstar->HasPointOnITSLayer(0) && softpifromDstar->HasPointOnITSLayer(1)){
+                    if(multForCand>0) multForCand-=1;
+                }            
             }
         }
         
@@ -1089,7 +1383,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                 if(!t) continue;
                 idToSkip[iDau] = t->GetID();
             }
-            AliVertexingHFUtils::GetSpherocity(aod, recSpherocity, recphiRef, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip);
+            AliVertexingHFUtils::GetSpherocity(aod, recSpherocity, recphiRef, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip, fS0unweight);
         }
         
         // remove D0 from Dstar at reconstruction !!
@@ -1110,7 +1404,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
         
         Int_t labD=-1;
         Int_t Origin = 0;
-        
+
         for(Int_t iHyp=0; iHyp<2; iHyp++){
             if(mass[iHyp]<0.) continue; // for D+ and D* we have 1 mass hypothesis
             Double_t invMass=mass[iHyp];
@@ -1193,6 +1487,29 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                     }
                 }
                 
+                if(fIsS0Spline){
+                    if(ShapeSpline){
+                        if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
+                            if(fCalculateSphericity){
+                                Double_t arrayForSparseSowithMultUnncorr[7]={ptCand, invMass, spherocity, multForCand, (Double_t)countTreta1, sphericity, ShapeSpline->Eval(spherocity)};
+                                fSparseEvtShapeSpline->Fill(arrayForSparseSowithMultUnncorr, fWeight);
+                            }else{
+                                Double_t arrayForSparseSowithMultUnncorr[6]={ptCand, invMass, spherocity, multForCand, (Double_t)countTreta1, ShapeSpline->Eval(spherocity)};
+                                fSparseEvtShapeSpline->Fill(arrayForSparseSowithMultUnncorr, fWeight);
+                            }
+                        }
+                        else{
+                            if(fCalculateSphericity){
+                                Double_t arrayForSparseSo[6]={ptCand, invMass, spherocity, multForCand, sphericity, ShapeSpline->Eval(spherocity)};
+                                fSparseEvtShapeSpline->Fill(arrayForSparseSo, fWeight);
+                            }else{
+                                Double_t arrayForSparseSo[5]={ptCand, invMass, spherocity, multForCand, ShapeSpline->Eval(spherocity)};
+                                fSparseEvtShapeSpline->Fill(arrayForSparseSo, fWeight);
+                            }
+                        }
+                    }
+                }               
+                
                 Double_t deltaPhiRef = (phiRef-phiCand);
                 Double_t deltagenPhiRef = (genphiRef-phiPart);
                 
@@ -1223,6 +1540,28 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                         if(Origin==4) fSparseEvtShapePrompt->Fill(arrayForSparseSoPromptFD, fWeight);
                         else if(Origin==5) fSparseEvtShapeFeeddown->Fill(arrayForSparseSoPromptFD, fWeight);
                     }
+                    if(fIsS0Spline){
+                        if(ShapeSpline){
+                            if(fRecomputeSpherocity){
+                                Double_t arrayForSparseSoPromptFD[6]={ptCand, invMass, spherocity, multForCand, recSpherocity, ShapeSpline->Eval(spherocity)};
+                                if(Origin==4){
+                                    fSparseEvtShapePromptSpline->Fill(arrayForSparseSoPromptFD, fWeight);
+                                } 
+                                else if(Origin==5){
+                                    fSparseEvtShapeFeeddownSpline->Fill(arrayForSparseSoPromptFD, fWeight);
+                                } 
+                            }
+                            else{
+                                Double_t arrayForSparseSoPromptFD[5]={ptCand, invMass, spherocity, multForCand, ShapeSpline->Eval(spherocity)};
+                                if(Origin==4){
+                                    fSparseEvtShapePromptSpline->Fill(arrayForSparseSoPromptFD, fWeight);
+                                } 
+                                else if(Origin==5){
+                                    fSparseEvtShapeFeeddownSpline->Fill(arrayForSparseSoPromptFD, fWeight);
+                                }
+                            }    
+                        }
+                    }
                 }
                 if(labD>=0){
                     Bool_t keepCase=kTRUE;
@@ -1240,9 +1579,15 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
     }
     if(fSubtractTrackletsFromDau && nSelCand>0){
         aveMult/=nSelCand;
-        fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)(aveMult+0.5001),spherocity);
+        if(fIsS0Spline)
+            fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)(aveMult+0.5001),ShapeSpline->Eval(spherocity));
+        else
+            fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)(aveMult+0.5001),spherocity);    
     }else{
-        fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)countCorr,spherocity);
+        if(fIsS0Spline)
+            fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)countCorr,ShapeSpline->Eval(spherocity));
+        else
+            fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)countCorr,spherocity);
     }
     
     fCounterCandidates->StoreCandidates(aod,nSelectedNoPID,kTRUE);
@@ -1331,12 +1676,51 @@ TProfile* AliAnalysisTaskSEDvsEventShapes::GetEstimatorHistogram(const AliVEvent
         if (period < 0 || period > 1) return 0;
     }
     else {
-        if(runNo>114930 && runNo<117223) period = 0;
-        if(runNo>119158 && runNo<120830) period = 1;
-        if(runNo>122373 && runNo<126438) period = 2;
-        if(runNo>127711 && runNo<130851) period = 3;
-        if(period<0 || period>3) return 0;
-    }
+    if(fYearNumber==10){
+    if(runNo>114930 && runNo<117223) period = 0;
+    if(runNo>119158 && runNo<120830) period = 1;
+    if(runNo>122373 && runNo<126438) period = 2;
+    if(runNo>127711 && runNo<130851) period = 3;
+    if(period<0 || period>3) return 0;
+    }else if(fYearNumber==16){
+    if(runNo>=252235 && runNo<=252375)period = 0;//16d
+    if(runNo>=252603 && runNo<=253591)period = 1;//16e
+    if(runNo>=254124 && runNo<=254332)period = 2;//16g
+    if(runNo>=254378  && runNo<=255469 )period = 3;//16h_1
+    if(runNo>=254418  && runNo<=254422 )period = 4;//16h_2 negative mag
+    if(runNo>=256146  && runNo<=256420 )period = 5;//16j
+    if(runNo>=256504  && runNo<=258537 )period = 6;//16k
+    if(runNo>=258883  && runNo<=260187)period = 7;//16l
+    if(runNo>=262395  && runNo<=264035 )period = 8;//16o
+    if(runNo>=264076  && runNo<=264347 )period = 9;//16p
+    }else if(fYearNumber==17){
+    if(runNo>=270822 && runNo<=270830)period = 0;//17e
+    if(runNo>=270854 && runNo<=270865)period = 1;//17f
+    if(runNo>=271868 && runNo<=273103)period = 2;//17h
+    if(runNo>=273591  && runNo<=274442)period = 3;//17i
+    if(runNo>=274593  && runNo<=274671)period = 4;//17j 
+    if(runNo>=274690  && runNo<=276508)period = 5;//17k
+    if(runNo>=276551  && runNo<=278216)period = 6;//17l
+    if(runNo>=278914  && runNo<=280140)period = 7;//17m
+    if(runNo>=280282   && runNo<=281961)period = 8;//17o
+    if(runNo>=282504  && runNo<=282704)period = 9;//17r
+    }else if(fYearNumber==18){     
+      if(runNo>=285008 && runNo<=285447)period = 0;//18b
+    if(runNo>=285978 && runNo<=286350)period = 1;//18d
+    if(runNo>=286380 && runNo<=286937)period = 2;//18e
+    if(runNo>=287000  && runNo<=287977)period = 3;//18f
+    if(runNo>=288619  && runNo<=288750)period = 4;//18g
+    if(runNo>=288804  && runNo<=288806)period = 5;//18h
+    if(runNo>=288861  && runNo<=288909 )period = 6;//18i
+    if(runNo==288943)period = 7;//18j
+    if(runNo>=289165   && runNo<=289201)period = 8;//18k
+    if(runNo>=289240  && runNo<=289971)period = 9;//18l
+    if(runNo>=290222  && runNo<=292839)period = 10;//18m
+    if(runNo>=293357   && runNo<=293359)period = 11;//18n
+    if(runNo>=293368   && runNo<=293898)period = 12;//18o
+    if(runNo>=294009  && runNo<=294925)period = 13;//18p 
+  }
+  }
     
     return fMultEstimatorAvg[period];
 }
@@ -1480,6 +1864,15 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, In
     Double_t mass = partD->M();
     Double_t pt = partD->Pt();
     Double_t rapid = partD->Y();
+
+    TList* contSpline;
+    TSpline3* ShapeSpline;
+    TSpline3* GenSpline;
+    if(fIsS0Spline){
+        contSpline = fS0SplList;     
+        ShapeSpline = (TSpline3*)contSpline->FindObject(Form("%sMC",fS0SplName.Data()));
+        GenSpline = (TSpline3*)contSpline->FindObject(Form("%sMCGen",fS0SplName.Data()));
+    }
     
     //Weight according to pt, using FONLL
     Double_t ptWeight = 1.;
@@ -1489,6 +1882,27 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, In
     Int_t orig=AliVertexingHFUtils::CheckOrigin(arrayMC,partD,fUseQuarkTag); // Prompt = 4, FeedDown = 5
     
     //for prompt
+
+    if(fIsS0Spline){
+        if(ShapeSpline && GenSpline){   
+            if(orig == 4){
+                //fill histo for prompt
+                Double_t arrayMCRecoRecSpheroPrompt[6] = {pt, countMult, spherocity, rapid, recSpherocity, ShapeSpline->Eval(spherocity)};
+                Double_t arrayMCRecoPrompt[5] = {pt, countMult, spherocity, rapid, ShapeSpline->Eval(spherocity)};
+                if(fRecomputeSpherocity) fMCRecoPromptSpline->Fill(arrayMCRecoRecSpheroPrompt, fWeight);
+                else fMCRecoPromptSpline->Fill(arrayMCRecoPrompt, fWeight);
+            }
+            //for FD
+            else if(orig == 5){
+                //fill histo for FD
+                Double_t arrayMCRecoRecSpheroFeeddown[6] = {pt, countMult, spherocity, rapid, recSpherocity, ShapeSpline->Eval(spherocity)};
+                Double_t arrayMCRecoFeeddown[5] = {pt, countMult, spherocity, rapid, ShapeSpline->Eval(spherocity)};
+                if(fRecomputeSpherocity) fMCRecoFeeddownSpline->Fill(arrayMCRecoRecSpheroFeeddown, fWeight);
+                else fMCRecoFeeddownSpline->Fill(arrayMCRecoFeeddown, fWeight);
+            }
+        }
+    }  
+
     if(orig == 4){
         //fill histo for prompt
         Double_t arrayMCRecoRecSpheroPrompt[5] = {pt, countMult, spherocity, rapid, recSpherocity};
@@ -1523,7 +1937,7 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, In
 }
 
 //__________________________________________________________________________________________________
-void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Double_t sphericity, Bool_t isEvSel, Double_t nchWeight)
+void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClonesArray *arrayMC, AliAODMCHeader *mcHeader, Double_t countMult, Double_t spherocity, Double_t sphericity, Bool_t isEvSel, Double_t nchWeight, Double_t genspherocity)
 {
     
     /// Fill MC acceptance histos at generator level
@@ -1533,6 +1947,15 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
     Int_t totTracks = aod->GetNumberOfTracks(); // number of tracks
     Double_t recSpherocity = -0.5;
     Double_t recphiRef = -1.0;
+    
+    TList* contSpline;
+    TSpline3* ShapeSpline;
+    TSpline3* GenSpline;
+    if(fIsS0Spline){
+        contSpline = fS0SplList;     
+        ShapeSpline = (TSpline3*)contSpline->FindObject(Form("%sMC",fS0SplName.Data()));
+        GenSpline = (TSpline3*)contSpline->FindObject(Form("%sMCGen",fS0SplName.Data()));
+    }
     
     const Int_t nPart = totPart;
     Int_t trkToSkip[nPart];
@@ -1607,7 +2030,7 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
                     Int_t indexDau = TMath::Abs(mcGenPart->GetDaughterLabel(iDau));  //index of daughter i.e. label
                     idToSkip[iDau] = trkToSkip[indexDau];
                 }
-                AliVertexingHFUtils::GetSpherocity(aod, recSpherocity, recphiRef, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip);
+                AliVertexingHFUtils::GetSpherocity(aod, recSpherocity, recphiRef, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, nTrkToSkip, idToSkip, fS0unweight);
             }
             if(fPdgMeson==421){
                 //Removal of D0 from Dstar at Generation !!
@@ -1632,10 +2055,32 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
             
             if(isGoodDecay && TMath::Abs(zMCVertex) < fRDCutsAnalysis->GetMaxVtxZ() && isFidAcc && isInAcc) {
                 //for prompt
+
+                if(fIsS0Spline){
+                    if(GenSpline && ShapeSpline){
+                        if(orig == 4){
+                            //fill histo for prompt
+                            Double_t arrayMCGenRecSpheroPrompt[8] = {pt, countMult, spherocity, rapid, recSpherocity, genspherocity, GenSpline->Eval(genspherocity), ShapeSpline->Eval(spherocity)};
+                            Double_t arrayMCGenPrompt[7] = {pt, countMult, spherocity, rapid, genspherocity, GenSpline->Eval(genspherocity), ShapeSpline->Eval(spherocity)};
+                            if(fRecomputeSpherocity) fMCAccGenPromptSpline->Fill(arrayMCGenRecSpheroPrompt, fWeight);
+                            else fMCAccGenPromptSpline->Fill(arrayMCGenPrompt, fWeight);
+                        }
+                        //for FD
+                        else if(orig == 5){
+                            //fill histo for FD
+                            Double_t arrayMCGenRecSpheroFeeddown[6] = {pt, countMult, spherocity, rapid, recSpherocity, ShapeSpline->Eval(spherocity)};
+                            Double_t arrayMCGenFeeddown[5] = {pt, countMult, spherocity, rapid, ShapeSpline->Eval(spherocity)};
+                            if(fRecomputeSpherocity) fMCAccGenFeeddownSpline->Fill(arrayMCGenRecSpheroFeeddown, fWeight);
+                            else fMCAccGenFeeddownSpline->Fill(arrayMCGenFeeddown, fWeight);
+                        }
+                        else
+                            continue;
+                    }    
+                }
                 if(orig == 4){
                     //fill histo for prompt
-                    Double_t arrayMCGenRecSpheroPrompt[5] = {pt, countMult, spherocity, rapid, recSpherocity};
-                    Double_t arrayMCGenPrompt[4] = {pt, countMult, spherocity, rapid};
+                    Double_t arrayMCGenRecSpheroPrompt[6] = {pt, countMult, spherocity, rapid, recSpherocity, genspherocity};
+                    Double_t arrayMCGenPrompt[5] = {pt, countMult, spherocity, rapid, genspherocity};
                     if(fRecomputeSpherocity) fMCAccGenPrompt->Fill(arrayMCGenRecSpheroPrompt, fWeight);
                     else fMCAccGenPrompt->Fill(arrayMCGenPrompt, fWeight);
                     if(isEvSel) fMCAccGenPromptEvSel->Fill(arrayMCGenPrompt, fWeight);

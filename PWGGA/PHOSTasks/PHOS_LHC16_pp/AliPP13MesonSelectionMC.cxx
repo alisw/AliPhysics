@@ -102,7 +102,7 @@ void AliPP13MesonSelectionMC::InitSelectionHistograms()
 
 	for (Int_t i = 0; i < 2; ++i)
 	{
-		fInvMass[i] = new TH2F(Form("h%sMassPt", i == 0 ? "" : "Mix") , "(M,p_{T})_{#gamma#gamma}, N_{cell}>2; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax);
+		fInvMass[i] = new TH2F(Form("h%sMassPt", i == 0 ? "" : "Mix") , "(M,p_{T})_{#gamma#gamma}, N_{cell}>2; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})", nM, mMin, mMax, nPt, ptMin, ptMax);
 		fListOfHistos->Add(fInvMass[i]);
 	}
 
@@ -124,12 +124,12 @@ void AliPP13MesonSelectionMC::InitSelectionHistograms()
 
 	// Fill Generated histograms
 	const char * np = fPartNames[kPi0];
-	TH1 * hist1 = new TH1F(Form("hPt_%s_primary_", np), "Distribution of primary #pi^{0}s from primary ; p_{T}, GeV/c", ptsize - 1, ptbins);
-	TH1 * hist2 = new TH1F(Form("hPt_%s_secondary_", np), "Distribution of secondary #pi^{0}s from secondary ; p_{T}, GeV/c", ptsize - 1, ptbins);
-	TH1 * hist3 = new TH1F(Form("hPt_%s_feeddown_", np), "Distribution of primary #pi^{0}s from secondary ; p_{T}, GeV/c", ptsize - 1, ptbins);
-	TH1 * hist4 = new TH2F(Form("hMassPt_%s_primary_", np), "(M,p_{T})_{#gamma#gamma} from primary ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax);
-	TH1 * hist5 = new TH2F(Form("hMassPt_%s_secondary_", np), "(M,p_{T})_{#gamma#gamma} from secondary ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax);
-	TH1 * hist6 = new TH2F(Form("hMassPt_%s_feeddown_", np), "(M,p_{T})_{#gamma#gamma} from secondary ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax);
+	TH1 * hist1 = new TH1F(Form("hPt_%s_primary_", np), "Distribution of primary #pi^{0}s from primary ; p_{T} (GeV/#it{c})", ptsize - 1, ptbins);
+	TH1 * hist2 = new TH1F(Form("hPt_%s_secondary_", np), "Distribution of secondary #pi^{0}s from secondary ; p_{T} (GeV/#it{c})", ptsize - 1, ptbins);
+	TH1 * hist3 = new TH1F(Form("hPt_%s_feeddown_", np), "Distribution of primary #pi^{0}s from secondary ; p_{T} (GeV/#it{c})", ptsize - 1, ptbins);
+	TH1 * hist4 = new TH2F(Form("hMassPt_%s_primary_", np), "(M,p_{T})_{#gamma#gamma} from primary ; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})", nM, mMin, mMax, nPt, ptMin, ptMax);
+	TH1 * hist5 = new TH2F(Form("hMassPt_%s_secondary_", np), "(M,p_{T})_{#gamma#gamma} from secondary ; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})", nM, mMin, mMax, nPt, ptMin, ptMax);
+	TH1 * hist6 = new TH2F(Form("hMassPt_%s_feeddown_", np), "(M,p_{T})_{#gamma#gamma} from secondary ; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})", nM, mMin, mMax, nPt, ptMin, ptMax);
 
 	fPrimaryPi0[kGenerated]       = new AliPP13ParticlesHistogram(hist1, fListOfHistos, fPi0SourcesNames);
 	fSecondaryPi0[kGenerated]     = new AliPP13ParticlesHistogram(hist2, fListOfHistos, fPi0SourcesNames);

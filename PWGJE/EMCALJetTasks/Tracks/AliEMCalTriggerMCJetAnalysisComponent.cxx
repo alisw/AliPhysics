@@ -38,11 +38,9 @@
 #include "AliEMCalTriggerMCJetAnalysisComponent.h"
 #include "AliEMCalTriggerWeightHandler.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerMCJetAnalysisComponent)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerMCJetAnalysisComponent)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Dummy (I/O) constructor, not to be used
@@ -179,4 +177,3 @@ void AliEMCalTriggerMCJetAnalysisComponent::FillJetHistogram(
   double data[4] = {TMath::Abs(recjet->Pt()), recjet->Eta(), recjet->Phi(), vz};
   fHistos->FillTHnSparse(histname.Data(), data, weight);
 }
-} /* namespace EMCalTriggerPtAnalysis */

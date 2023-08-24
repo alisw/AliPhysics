@@ -59,6 +59,8 @@ AliEmcalTrackingQATask::AliEmcalTrackingQATask(const char *name) :
   fDoSigmaPtOverPtGen(kFALSE),
   fDoSeparateTRDrefit(kFALSE),
   fUseTRDUpdateFlag(kTRUE),
+  fUseQOverPtShift(kFALSE),
+  fQOverPtShift(0),
   fIsEsd(kFALSE),
   fGeneratorLevel(nullptr),
   fDetectorLevel(nullptr),

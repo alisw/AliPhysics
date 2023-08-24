@@ -1,0 +1,1204 @@
+#if !defined(__CINT__) || defined(__CLING__)
+#include <vector>
+#include "AliAnalysisTaskSE.h"
+#include "AliAnalysisManager.h"
+//#include "AliAnalysisTaskProtonProtonKaons.h"
+#include "AliAnalysisTaskThreeBodyProtonPrimary.h"
+//#include "AliAnalysisTaskThreeBodyFemtoAOD.h"
+#include "AliFemtoDreamEventCuts.h"
+#include "AliFemtoDreamTrackCuts.h"
+#include "AliFemtoDreamCascadeCuts.h"
+#include "AliFemtoDreamCollConfig.h"
+#endif
+
+AliAnalysisTaskSE *AddTaskProtonProtonKaonsSystematics(int trigger = 0, bool fullBlastQA = true,
+                                     bool isMC = false, bool isNano = true, bool triggerOn = false, int MixingDepth = 30,
+                                     float Q3Limit = 0.6, float Q3LimitSample = 3.0,float Q3LimitSample2 = 3.0, float Q3LimitFraction = 0.5, float Q3LimitSampleFraction = 0.01, float Q3LimitSampleFraction2 = 0.01,
+                                     bool turnoffClosePairRejectionCompletely = false, bool ClosePairRejectionForAll = "false",
+                                     const char *triggerVariation = "0", bool RunPlotPt = true, bool RunPlotQ3Vsq = false, bool UseSphericityCut = false, bool DoOnlyThreeBody = false, bool RunOfficialTwoBody=false, int KaonCut = 1, bool DoTwoPrimary = false, bool StandardMixing = false,
+                                     const char *cutVariation = "0") {
+
+
+  TString suffix = TString::Format("%s", cutVariation);
+  TString suffixTrigger = TString::Format("%s", triggerVariation);
+
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    Error("AddTaskSigma0Run2()", "No analysis manager found.");
+    return 0x0;
+  }
+
+  // ================== GetInputEventHandler =============================
+  AliVEventHandler *inputHandler = mgr->GetInputEventHandler();
+  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+
+  //========= Init subtasks and start analyis ============================
+  // Event Cuts
+  AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
+  evtCuts->CleanUpMult(false, false, false, true);
+
+  if (UseSphericityCut){
+    float SpherDown = 0.7;
+    evtCuts->SetSphericityCuts(SpherDown, 1.0, 0.5); // THINK IF NEEDED FOR THREE BODY
+  }
+  // Track Cuts
+  AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
+      isMC, true, false, false);
+  TrackCuts->SetFilterBit(128);
+  TrackCuts->SetCutCharge(1);
+
+  AliFemtoDreamTrackCuts *AntiTrackCuts =
+      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
+  AntiTrackCuts->SetFilterBit(128);
+  AntiTrackCuts->SetCutCharge(-1);
+  // If  cut variation needed
+  if(suffix=="1" || suffix=="8"){
+    TrackCuts->SetEtaRange(-0.9, 0.9);
+    AntiTrackCuts->SetEtaRange(-0.9, 0.9);
+  }
+
+  //Kaon Cuts
+  AliFemtoDreamTrackCuts *KaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(
+    isMC, true, false, false);
+  KaonCuts->SetPtRange(0.15, 10);
+  KaonCuts->SetFilterBit(128);
+  KaonCuts->SetCutCharge(1);
+  if(KaonCut==0){ // cuts by Oton
+   KaonCuts->SetPIDkd(true,false,3,3,3);
+  }else if(KaonCut==1){ // cuts by Ramona
+   KaonCuts->SetPIDkd(true,true);
+  }
+
+  //AntiKaon Cuts
+  AliFemtoDreamTrackCuts *AntiKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(
+    isMC, true, false, false);
+  AntiKaonCuts->SetPtRange(0.15, 10);
+  AntiKaonCuts->SetFilterBit(128);
+  AntiKaonCuts->SetCutCharge(-1);
+  if(KaonCut==0){ // cuts by Oton
+   AntiKaonCuts->SetPIDkd(true,false,3,3,3);
+  }else if(KaonCut==1){ // cuts by Ramona
+   AntiKaonCuts->SetPIDkd(true,true);
+  }
+
+
+  if (!fullBlastQA) {
+    evtCuts->SetMinimalBooking(true);
+    TrackCuts->SetMinimalBooking(true);
+    AntiTrackCuts->SetMinimalBooking(true);
+    KaonCuts->SetMinimalBooking(true);
+    AntiKaonCuts->SetMinimalBooking(true);
+  }
+
+
+
+  AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto",
+                                                                "Femto", false);
+  // Femto Collection
+  std::vector<int> PDGParticles;
+  PDGParticles.push_back(2212);
+  PDGParticles.push_back(2212);
+  PDGParticles.push_back(321);
+  PDGParticles.push_back(321);
+
+  std::vector<int> NBins;
+  std::vector<float> kMin;
+  std::vector<float> kMax;
+  std::vector<int> pairQA;
+  std::vector<bool> closeRejection;
+
+  const int nPairs = 10;
+  for (int i = 0; i < nPairs; ++i) {
+    pairQA.push_back(0);
+    closeRejection.push_back(false);
+    NBins.push_back(1000);
+    kMin.push_back(0.);
+    kMax.push_back(1.);
+  }
+  pairQA[0] = 11;
+  pairQA[4] = 11;
+  pairQA[2] = 12;
+  pairQA[6] = 12;
+
+  closeRejection[0] = true;  // pp
+  closeRejection[4] = true;  // barp barp
+
+  config->SetPDGCodes(PDGParticles);
+  config->SetNBinsHist(NBins);
+  config->SetMinKRel(kMin);
+  config->SetMaxKRel(kMax);
+  config->SetClosePairRejection(closeRejection);
+  config->SetDeltaEtaMax(0.);
+  config->SetDeltaPhiMax(0.);
+//  config->SetDeltaEtaMax(0.017);
+//  config->SetDeltaPhiMax(0.017);
+  config->SetExtendedQAPairs(pairQA);
+  config->SetMixingDepth(MixingDepth);
+  config->SetUseEventMixing(true);
+
+  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+
+  std::vector<int> MultBins;
+  MultBins.push_back(0);
+  MultBins.push_back(4);
+  MultBins.push_back(8);
+  MultBins.push_back(12);
+  MultBins.push_back(16);
+  MultBins.push_back(20);
+  MultBins.push_back(24);
+  MultBins.push_back(28);
+  MultBins.push_back(32);
+  MultBins.push_back(36);
+  MultBins.push_back(40);
+  MultBins.push_back(44);
+  MultBins.push_back(48);
+  MultBins.push_back(52);
+  MultBins.push_back(56);
+  MultBins.push_back(60);
+  MultBins.push_back(64);
+  MultBins.push_back(68);
+  MultBins.push_back(72);
+  MultBins.push_back(76);
+  MultBins.push_back(80);
+  MultBins.push_back(84);
+  MultBins.push_back(88);
+  MultBins.push_back(92);
+  MultBins.push_back(96);
+  MultBins.push_back(100);
+
+  config->SetMultBins(MultBins);
+
+  std::vector<float> ZVtxBins;
+  ZVtxBins.push_back(-10);
+  ZVtxBins.push_back(-8);
+  ZVtxBins.push_back(-6);
+  ZVtxBins.push_back(-4);
+  ZVtxBins.push_back(-2);
+  ZVtxBins.push_back(0);
+  ZVtxBins.push_back(2);
+  ZVtxBins.push_back(4);
+  ZVtxBins.push_back(6);
+  ZVtxBins.push_back(8);
+  ZVtxBins.push_back(10);
+
+  config->SetZBins(ZVtxBins);
+
+  config->SetMultBinning(true);
+
+
+  double DeltaPhiMaxpp = 0.017;      
+  double DeltaEtaMaxpp = 0.017;
+  double DeltaPhiMaxpKplus = 0.04;
+  double DeltaEtaMaxpKplus = 0.012;
+
+  double Q3cutValue = 1.;
+
+//===================================
+  // SYSTEMATICS 
+
+  //
+
+   if (suffix == "1") {
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      KaonCuts->SetNClsTPC(90);
+      AntiKaonCuts->SetNClsTPC(90);
+    } else if (suffix == "2") {
+      TrackCuts->SetPtRange(0.6, 4.05);
+      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      KaonCuts->SetEtaRange(-0.77, 0.77);
+      AntiKaonCuts->SetEtaRange(-0.77, 0.77);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    }  else if (suffix == "3") {
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      TrackCuts->SetNClsTPC(70);
+      AntiTrackCuts->SetNClsTPC(70);
+      KaonCuts->SetEtaRange(-0.77, 0.77);
+      AntiKaonCuts->SetEtaRange(-0.77, 0.77);
+      KaonCuts->SetNClsTPC(70);
+      AntiKaonCuts->SetNClsTPC(70);
+    } else if (suffix == "4") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiTrackCuts->SetPtRange(0.4, 1.4);
+      KaonCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "5") {
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      KaonCuts->SetNClsTPC(90);
+      AntiKaonCuts->SetNClsTPC(90);
+    } else if (suffix == "6") {
+      TrackCuts->SetEtaRange(-0.83, 0.83);
+      AntiTrackCuts->SetEtaRange(-0.83, 0.83);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      KaonCuts->SetEtaRange(-0.83, 0.83);
+      AntiKaonCuts->SetEtaRange(-0.83, 0.83);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+      //config->SetDeltaEtaMax(0.015);
+      //config->SetDeltaPhiMax(0.015);
+    } else if (suffix == "7") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiKaonCuts->SetPtRange(0.1, 10);
+      KaonCuts->SetEtaRange(-0.77, 0.77);
+      AntiKaonCuts->SetEtaRange(-0.77, 0.77);
+      KaonCuts->SetNClsTPC(90);
+      AntiKaonCuts->SetNClsTPC(90);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "8") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetEtaRange(-0.83, 0.83);
+      AntiTrackCuts->SetEtaRange(-0.83, 0.83);
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiKaonCuts->SetPtRange(0.1, 10);
+      KaonCuts->SetEtaRange(-0.83, 0.83);
+      AntiKaonCuts->SetEtaRange(-0.83, 0.83);
+    } else if (suffix == "9") {
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      KaonCuts->SetEtaRange(-0.77, 0.77);
+      AntiKaonCuts->SetEtaRange(-0.77, 0.77);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+    } else if (suffix == "10") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetEtaRange(-0.83, 0.83);
+      AntiTrackCuts->SetEtaRange(-0.83, 0.83);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiKaonCuts->SetPtRange(0.1, 10);
+      KaonCuts->SetEtaRange(-0.83, 0.83);
+      AntiKaonCuts->SetEtaRange(-0.83, 0.83);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "11") {
+      TrackCuts->SetEtaRange(-0.83, 0.83);
+      AntiTrackCuts->SetEtaRange(-0.83, 0.83);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+      KaonCuts->SetEtaRange(-0.83, 0.83);
+      AntiKaonCuts->SetEtaRange(-0.83, 0.83);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      KaonCuts->SetNClsTPC(90);
+      AntiKaonCuts->SetNClsTPC(90);
+    } else if (suffix == "12") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiKaonCuts->SetPtRange(0.1, 10);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "13") {
+      TrackCuts->SetPtRange(0.6, 4.05);
+      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackCuts->SetEtaRange(-0.83, 0.83);
+      AntiTrackCuts->SetEtaRange(-0.83, 0.83);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+      KaonCuts->SetPtRange(0.2, 10);
+      AntiKaonCuts->SetPtRange(0.2, 10);
+      KaonCuts->SetEtaRange(-0.83, 0.83);
+      AntiKaonCuts->SetEtaRange(-0.83, 0.83);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      KaonCuts->SetNClsTPC(90);
+      AntiKaonCuts->SetNClsTPC(90);
+    } else if (suffix == "14") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      TrackCuts->SetNClsTPC(70);
+      AntiTrackCuts->SetNClsTPC(70);
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiKaonCuts->SetPtRange(0.1, 10);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      KaonCuts->SetNClsTPC(70);
+      AntiKaonCuts->SetNClsTPC(70);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "15") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetEtaRange(-0.83, 0.83);
+      AntiTrackCuts->SetEtaRange(-0.83, 0.83);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiKaonCuts->SetPtRange(0.1, 10);
+      KaonCuts->SetEtaRange(-0.83, 0.83);
+      AntiKaonCuts->SetEtaRange(-0.83, 0.83);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      //config->SetDeltaEtaMax(0.015);
+      //config->SetDeltaPhiMax(0.015);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "16") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetEtaRange(-0.83, 0.83);
+      AntiTrackCuts->SetEtaRange(-0.83, 0.83);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiKaonCuts->SetPtRange(0.1, 10);
+      KaonCuts->SetEtaRange(-0.83, 0.83);
+      AntiKaonCuts->SetEtaRange(-0.83, 0.83);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      KaonCuts->SetNClsTPC(90);
+      AntiKaonCuts->SetNClsTPC(90);
+    } else if (suffix == "17") {
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      TrackCuts->SetNClsTPC(70);
+      AntiTrackCuts->SetNClsTPC(70);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      KaonCuts->SetNClsTPC(70);
+      AntiKaonCuts->SetNClsTPC(70);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "18") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiKaonCuts->SetPtRange(0.1, 10);
+      KaonCuts->SetNClsTPC(90);
+      AntiKaonCuts->SetNClsTPC(90);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "19") {
+      TrackCuts->SetEtaRange(-0.83, 0.83);
+      AntiTrackCuts->SetEtaRange(-0.83, 0.83);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      TrackCuts->SetNClsTPC(70);
+      AntiTrackCuts->SetNClsTPC(70);
+      KaonCuts->SetEtaRange(-0.83, 0.83);
+      AntiKaonCuts->SetEtaRange(-0.83, 0.83);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      KaonCuts->SetNClsTPC(70);
+      AntiKaonCuts->SetNClsTPC(70);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "20") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      TrackCuts->SetNClsTPC(70);
+      AntiTrackCuts->SetNClsTPC(70);
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiKaonCuts->SetPtRange(0.1, 10);
+      KaonCuts->SetEtaRange(-0.77, 0.77);
+      AntiKaonCuts->SetEtaRange(-0.77, 0.77);
+      KaonCuts->SetNClsTPC(70);
+      AntiKaonCuts->SetNClsTPC(70);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "21") {
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      KaonCuts->SetEtaRange(-0.77, 0.77);
+      AntiKaonCuts->SetEtaRange(-0.77, 0.77);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+    } else if (suffix == "22") {
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+      KaonCuts->SetEtaRange(-0.77, 0.77);
+      AntiKaonCuts->SetEtaRange(-0.77, 0.77);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      KaonCuts->SetNClsTPC(90);
+      AntiKaonCuts->SetNClsTPC(90);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "23") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetEtaRange(-0.83, 0.83);
+      AntiTrackCuts->SetEtaRange(-0.83, 0.83);
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiKaonCuts->SetPtRange(0.1, 10);
+      KaonCuts->SetEtaRange(-0.83, 0.83);
+      AntiKaonCuts->SetEtaRange(-0.83, 0.83);
+      //config->SetDeltaEtaMax(0.015);
+      //config->SetDeltaPhiMax(0.015);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "24") {
+      TrackCuts->SetPtRange(0.6, 4.05);
+      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      KaonCuts->SetPtRange(0.2, 10);
+      AntiKaonCuts->SetPtRange(0.2, 10);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "25") {
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+      KaonCuts->SetEtaRange(-0.77, 0.77);
+      AntiKaonCuts->SetEtaRange(-0.77, 0.77);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      KaonCuts->SetNClsTPC(90);
+      AntiKaonCuts->SetNClsTPC(90);
+    } else if (suffix == "26") {
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+      KaonCuts->SetNClsTPC(90);
+      AntiKaonCuts->SetNClsTPC(90);
+    } else if (suffix == "27") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiKaonCuts->SetPtRange(0.1, 10);
+      KaonCuts->SetEtaRange(-0.77, 0.77);
+      AntiKaonCuts->SetEtaRange(-0.77, 0.77);
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "28") {
+      TrackCuts->SetEtaRange(-0.83, 0.83);
+      AntiTrackCuts->SetEtaRange(-0.83, 0.83);
+      KaonCuts->SetEtaRange(-0.83, 0.83);
+      AntiKaonCuts->SetEtaRange(-0.83, 0.83);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "29") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      TrackCuts->SetNClsTPC(70);
+      AntiTrackCuts->SetNClsTPC(70);
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiKaonCuts->SetPtRange(0.1, 10);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      KaonCuts->SetNClsTPC(70);
+      AntiKaonCuts->SetNClsTPC(70);
+      //config->SetDeltaEtaMax(0.015);
+      //config->SetDeltaPhiMax(0.015);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "30") {
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+      KaonCuts->SetEtaRange(-0.77, 0.77);
+      AntiKaonCuts->SetEtaRange(-0.77, 0.77);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      KaonCuts->SetNClsTPC(90);
+      AntiKaonCuts->SetNClsTPC(90);
+    } else if (suffix == "31") {
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      KaonCuts->SetEtaRange(-0.77, 0.77);
+      AntiKaonCuts->SetEtaRange(-0.77, 0.77);
+      //config->SetDeltaEtaMax(0.015);
+      //config->SetDeltaPhiMax(0.015);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "32") {
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      TrackCuts->SetNClsTPC(70);
+      AntiTrackCuts->SetNClsTPC(70);
+      KaonCuts->SetEtaRange(-0.77, 0.77);
+      AntiKaonCuts->SetEtaRange(-0.77, 0.77);
+      KaonCuts->SetNClsTPC(70);
+      AntiKaonCuts->SetNClsTPC(70);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "33") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      TrackCuts->SetNClsTPC(70);
+      AntiTrackCuts->SetNClsTPC(70);
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiKaonCuts->SetPtRange(0.1, 10);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      KaonCuts->SetNClsTPC(70);
+      AntiKaonCuts->SetNClsTPC(70);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "34") {
+      TrackCuts->SetPtRange(0.6, 4.05);
+      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackCuts->SetEtaRange(-0.83, 0.83);
+      AntiTrackCuts->SetEtaRange(-0.83, 0.83);
+      TrackCuts->SetNClsTPC(70);
+      AntiTrackCuts->SetNClsTPC(70);
+      KaonCuts->SetPtRange(0.2, 10);
+      AntiKaonCuts->SetPtRange(0.2, 10);
+      KaonCuts->SetEtaRange(-0.83, 0.83);
+      AntiKaonCuts->SetEtaRange(-0.83, 0.83);
+      KaonCuts->SetNClsTPC(70);
+      AntiKaonCuts->SetNClsTPC(70);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "35") {
+      TrackCuts->SetEtaRange(-0.83, 0.83);
+      AntiTrackCuts->SetEtaRange(-0.83, 0.83);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+      KaonCuts->SetEtaRange(-0.83, 0.83);
+      AntiKaonCuts->SetEtaRange(-0.83, 0.83);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      KaonCuts->SetNClsTPC(90);
+      AntiKaonCuts->SetNClsTPC(90);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "36") {
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+      KaonCuts->SetEtaRange(-0.77, 0.77);
+      AntiKaonCuts->SetEtaRange(-0.77, 0.77);
+      KaonCuts->SetNClsTPC(90);
+      AntiKaonCuts->SetNClsTPC(90);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "37") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiKaonCuts->SetPtRange(0.1, 10);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      KaonCuts->SetNClsTPC(90);
+      AntiKaonCuts->SetNClsTPC(90);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "38") {
+      TrackCuts->SetPtRange(0.6, 4.05);
+      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackCuts->SetNClsTPC(70);
+      AntiTrackCuts->SetNClsTPC(70);
+      KaonCuts->SetPtRange(0.2, 10);
+      AntiKaonCuts->SetPtRange(0.2, 10);
+      KaonCuts->SetNClsTPC(70);
+      AntiKaonCuts->SetNClsTPC(70);
+    } else if (suffix == "39") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiKaonCuts->SetPtRange(0.1, 10);
+      KaonCuts->SetEtaRange(-0.77, 0.77);
+      AntiKaonCuts->SetEtaRange(-0.77, 0.77);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      //config->SetDeltaEtaMax(0.015);
+      //config->SetDeltaPhiMax(0.015);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "40") {
+      TrackCuts->SetPtRange(0.6, 4.05);
+      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      KaonCuts->SetPtRange(0.2, 10);
+      AntiKaonCuts->SetPtRange(0.2, 10);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+    } else if (suffix == "41") {
+      TrackCuts->SetPtRange(0.6, 4.05);
+      AntiTrackCuts->SetPtRange(0.6, 4.05);
+      TrackCuts->SetEtaRange(-0.83, 0.83);
+      AntiTrackCuts->SetEtaRange(-0.83, 0.83);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      KaonCuts->SetPtRange(0.2, 10);
+      AntiKaonCuts->SetPtRange(0.2, 10);
+      KaonCuts->SetEtaRange(-0.83, 0.83);
+      AntiKaonCuts->SetEtaRange(-0.83, 0.83);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    } else if (suffix == "42") {
+      TrackCuts->SetEtaRange(-0.83, 0.83);
+      AntiTrackCuts->SetEtaRange(-0.83, 0.83);
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      KaonCuts->SetEtaRange(-0.83, 0.83);
+      AntiKaonCuts->SetEtaRange(-0.83, 0.83);
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      //config->SetDeltaEtaMax(0.019);
+      //config->SetDeltaPhiMax(0.019);
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    }else if (suffix == "43") {
+      TrackCuts->SetDCAVtxZ(0.16);
+      TrackCuts->SetDCAVtxXY(0.08);
+      TrackCuts->SetDCAVtxZ(0.16);
+      TrackCuts->SetDCAVtxXY(0.08);
+      KaonCuts->SetDCAVtxZ(0.16);
+      KaonCuts->SetDCAVtxXY(0.08);
+      KaonCuts->SetDCAVtxZ(0.16);
+      AntiKaonCuts->SetDCAVtxXY(0.08);
+    }else if (suffix == "44") {
+      TrackCuts->SetDCAVtxZ(0.24);
+      TrackCuts->SetDCAVtxXY(0.12);
+      TrackCuts->SetDCAVtxZ(0.24);
+      TrackCuts->SetDCAVtxXY(0.12);
+      KaonCuts->SetDCAVtxZ(0.24);
+      KaonCuts->SetDCAVtxXY(0.12);
+      KaonCuts->SetDCAVtxZ(0.24);
+      AntiKaonCuts->SetDCAVtxXY(0.12);
+    }else if (suffix == "45"){
+      Q3cutValue = 0.9;
+    }else if (suffix == "46"){
+      Q3cutValue = 1.1;
+    }else if (suffix == "47"){
+      DeltaPhiMaxpp = 0.019;      
+      DeltaEtaMaxpp = 0.019;
+    }else if (suffix == "48"){
+      DeltaPhiMaxpKplus = 0.045;
+      DeltaEtaMaxpKplus = 0.015;
+    }else if (suffix == "50") {
+      KaonCuts->SetPtRange(0.1, 10);
+      AntiKaonCuts->SetPtRange(0.1, 10);
+    }else if (suffix == "51") {
+      KaonCuts->SetPtRange(0.2, 10);
+      AntiKaonCuts->SetPtRange(0.2, 10);
+    }else if (suffix == "52") {
+      KaonCuts->SetEtaRange(-0.77, 0.77);
+      AntiKaonCuts->SetEtaRange(-0.77, 0.77);
+    }else if (suffix == "53") {
+      KaonCuts->SetEtaRange(-0.83, 0.83);
+      AntiKaonCuts->SetEtaRange(-0.83, 0.83);
+    }else if (suffix == "54") {
+      KaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+      AntiKaonCuts->SetPIDkd(true,false,2.7,2.7,3.3);
+    }else if (suffix == "55") {
+      KaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+      AntiKaonCuts->SetPIDkd(true,false,3.3,3.3,2.7);
+    }else if (suffix == "56") {
+      KaonCuts->SetNClsTPC(70);
+      AntiKaonCuts->SetNClsTPC(70);
+    }else if (suffix == "57") {
+      KaonCuts->SetNClsTPC(90);
+      AntiKaonCuts->SetNClsTPC(90);
+    }else if (suffix == "58") {
+      KaonCuts->SetDCAVtxZ(0.18);
+      AntiKaonCuts->SetDCAVtxZ(0.18);
+    }else if (suffix == "59") {
+      KaonCuts->SetDCAVtxZ(0.22);
+      AntiKaonCuts->SetDCAVtxZ(0.22);
+    }else if (suffix == "60") {
+      KaonCuts->SetDCAVtxXY(0.19);
+      AntiKaonCuts->SetDCAVtxXY(0.19);
+    }else if (suffix == "61") {
+      KaonCuts->SetDCAVtxXY(0.11);
+      AntiKaonCuts->SetDCAVtxXY(0.11);
+    }else if (suffix == "62") {
+      KaonCuts->SetCutTPCCrossedRows(true, 63, 0.80);
+      AntiKaonCuts->SetCutTPCCrossedRows(true, 63, 0.80);
+    }else if (suffix == "63") {
+      KaonCuts->SetCutTPCCrossedRows(true, 77, 0.80);
+      AntiKaonCuts->SetCutTPCCrossedRows(true, 77, 0.80);
+    }else if (suffix == "64") {
+      TrackCuts->SetPtRange(0.4, 4.05);
+      AntiTrackCuts->SetPtRange(0.4, 4.05);
+    } else if (suffix == "65") {
+      TrackCuts->SetPtRange(0.6, 4.05);
+      AntiTrackCuts->SetPtRange(0.6, 4.05);
+    } else if (suffix == "66") {
+      TrackCuts->SetEtaRange(-0.77, 0.77);
+      AntiTrackCuts->SetEtaRange(-0.77, 0.77);
+    } else if (suffix == "67") {
+      TrackCuts->SetEtaRange(-0.83, 0.83);
+      AntiTrackCuts->SetEtaRange(-0.83, 0.83);
+    } else if (suffix == "68") {
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 2.5);
+    } else if (suffix == "69") {
+      TrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+      AntiTrackCuts->SetPID(AliPID::kProton, 0.75, 3.5);
+    } else if (suffix == "70") {
+      TrackCuts->SetNClsTPC(70);
+      AntiTrackCuts->SetNClsTPC(70);
+    } else if (suffix == "71") {
+      TrackCuts->SetNClsTPC(90);
+      AntiTrackCuts->SetNClsTPC(90);
+    }else if (suffix == "72") {
+      TrackCuts->SetDCAVtxZ(0.18);
+      AntiTrackCuts->SetDCAVtxZ(0.18);
+    }else if (suffix == "73") {
+      TrackCuts->SetDCAVtxZ(0.22);
+      AntiTrackCuts->SetDCAVtxZ(0.22);
+    }else if (suffix == "74") {
+      TrackCuts->SetDCAVtxXY(0.19);
+      AntiTrackCuts->SetDCAVtxXY(0.19);
+    }else if (suffix == "75") {
+      TrackCuts->SetDCAVtxXY(0.11);
+      AntiTrackCuts->SetDCAVtxXY(0.11);
+    }else if (suffix == "76") {
+      TrackCuts->SetCutTPCCrossedRows(true, 63, 0.80);
+      AntiTrackCuts->SetCutTPCCrossedRows(true, 63, 0.80);
+    }else if (suffix == "77") {
+      TrackCuts->SetCutTPCCrossedRows(true, 77, 0.80);
+      AntiTrackCuts->SetCutTPCCrossedRows(true, 77, 0.80);
+    }
+
+//===================================
+
+
+
+
+
+  if (isMC) {
+    config->SetMomentumResolution(true);
+  }
+
+  if (fullBlastQA) {
+    config->SetkTBinning(true);
+    config->SetPtQA(true);
+    config->SetMassQA(true);
+  }
+
+  if (!fullBlastQA) {
+    config->SetMinimalBookingME(true);
+    config->SetMinimalBookingSample(true);
+  }
+
+  TString addon = "PK";
+  TString file = AliAnalysisManager::GetCommonFileName();
+
+  TString EvtCutsName = Form("%sEvtCuts_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputEvtCuts = mgr->CreateContainer(
+      EvtCutsName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), EvtCutsName.Data()));
+
+  TString TrackCutsName = Form("%sProtonCuts_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+  AliAnalysisDataContainer *couputTrkCuts = mgr->CreateContainer(
+      TrackCutsName.Data(), TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), TrackCutsName.Data()));
+
+  TString AntiTrackCutsName = Form("%sAntiProtonCuts_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputAntiTrkCuts = mgr->CreateContainer(
+      AntiTrackCutsName.Data(), TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
+
+  AliAnalysisDataContainer *coutputKaonCuts;
+  TString KaonCutsName = Form("%sKaonCuts_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+  coutputKaonCuts = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      KaonCutsName.Data(),
+      TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), KaonCutsName.Data()));
+
+  AliAnalysisDataContainer *coutputAntiKaonCuts;
+  TString AntiKaonCutsName = Form("%sAntiKaonCuts_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+  coutputAntiKaonCuts = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      AntiKaonCutsName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), AntiKaonCutsName.Data()));
+
+  AliAnalysisDataContainer *coutputResults;
+  TString ResultsName = Form("%sResults_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+  coutputResults = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsName.Data(),
+      TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsName.Data()));
+
+  AliAnalysisDataContainer *coutputResultsQA;
+  TString ResultsQAName = Form("%sResultsQA_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+  coutputResultsQA = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsQAName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsQAName.Data()));
+
+  AliAnalysisDataContainer *coutputResultsSample;
+  TString ResultsSampleName = Form("%sResultsSample_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+  coutputResultsSample = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsSampleName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsSampleName.Data()));
+
+  AliAnalysisDataContainer *coutputResultsSampleQA;
+  TString ResultsSampleQAName = Form("%sResultsSampleQA_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+  coutputResultsSampleQA = mgr->CreateContainer(
+      //@suppress("Invalid arguments") it works ffs
+      ResultsSampleQAName.Data(),
+      TList::Class(),
+      AliAnalysisManager::kOutputContainer,
+      Form("%s:%s", file.Data(), ResultsSampleQAName.Data()));
+
+  AliAnalysisDataContainer *coutputTrkCutsMC;
+  AliAnalysisDataContainer *coutputAntiTrkCutsMC;
+  AliAnalysisDataContainer *coutputKaonCutsMC;
+  AliAnalysisDataContainer *coutputAntiKaonCutsMC;
+  if (isMC) {
+    TString TrkCutsMCName = Form("%sProtonCutsMC_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+    coutputTrkCutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        TrkCutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
+
+    TString AntiTrkCutsMCName = Form("%sAntiProtonCutsMC_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+    coutputAntiTrkCutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        AntiTrkCutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
+
+    TString KaonCutsMCName = Form("%sKaonCutsMC_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+    coutputKaonCutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        KaonCutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), KaonCutsMCName.Data()));
+
+    TString AntiKaonCutsMCName = Form("%sAntiKaonCutsMC_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+    coutputAntiKaonCutsMC = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        AntiKaonCutsMCName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), AntiKaonCutsMCName.Data()));
+
+  }
+
+  TString ThreeBodyName = Form("%sProtonProtonKaons_%s_%s", addon.Data(), suffixTrigger.Data(), suffix.Data());
+  AliAnalysisDataContainer *coutputThreeBody = mgr->CreateContainer(
+    //@suppress("Invalid arguments") it works ffs
+    ThreeBodyName.Data(),
+    TList::Class(),
+    AliAnalysisManager::kOutputContainer,
+    Form("%s:%s", file.Data(), ThreeBodyName.Data()));
+
+
+
+//    AliAnalysisTaskProtonProtonKaons* taskNano;
+  AliAnalysisTaskThreeBodyProtonPrimary* taskNano;
+//  AliAnalysisTaskProtonProtonKaonsAOD* taskAOD;
+  if(isNano){
+//    taskNano= new AliAnalysisTaskProtonProtonKaons("femtoNanoProtonProtonKaons", isMC);
+    taskNano= new AliAnalysisTaskThreeBodyProtonPrimary("femtoNanoProtonProtonKaons", isMC);
+    if (!fullBlastQA)
+    {
+      taskNano->SetRunTaskLightWeight(true);
+    }
+
+    taskNano->SetEventCuts(evtCuts);
+    taskNano->SetProtonCuts(TrackCuts);
+    taskNano->SetAntiProtonCuts(AntiTrackCuts);
+    taskNano->SetPrimaryCuts(KaonCuts);
+    taskNano->SetAntiPrimaryCuts(AntiKaonCuts);
+    taskNano->SetCorrelationConfig(config);
+    taskNano->SetRunThreeBodyHistograms(true);
+    taskNano->SetClosePairRejectionForAll(ClosePairRejectionForAll);
+    taskNano->SetturnoffClosePairRejectionCompletely(turnoffClosePairRejectionCompletely);
+    taskNano->SetCleanWithLambdas(false);
+    taskNano->SetDoOnlyThreeBody(DoOnlyThreeBody);
+    taskNano->SetRunOfficialTwoBody(RunOfficialTwoBody);
+    taskNano->SetRunPlotOtherHistos(false);
+    //taskNano->SetDoTwoPrimary(DoTwoPrimary);
+    taskNano->SetStandardMixing(StandardMixing);
+    taskNano->SetRunPlotQ3Vsq(RunPlotQ3Vsq);
+    taskNano->SetRunPlotPt(RunPlotPt);
+    taskNano->SetDeltaPhiMaxPP(DeltaPhiMaxpp);      
+    taskNano->SetDeltaEtaMaxPP(DeltaEtaMaxpp);
+    taskNano->SetDeltaPhiMaxPPrim(DeltaPhiMaxpKplus);
+    taskNano->SetDeltaEtaMaxPPrim(DeltaEtaMaxpKplus);
+    taskNano->SetDeltaPhiMaxPAPrim(0.);
+    taskNano->SetDeltaEtaMaxPAPrim(0.);
+    taskNano->SetQ3cutValue(Q3cutValue);
+    taskNano->SetRunPlotPhiTheta(false);
+
+
+    mgr->AddTask(taskNano);
+
+    mgr->ConnectInput(taskNano, 0, cinput);
+    mgr->ConnectOutput(taskNano, 1, coutputEvtCuts);
+    mgr->ConnectOutput(taskNano, 2, couputTrkCuts);
+    mgr->ConnectOutput(taskNano, 3, coutputAntiTrkCuts);
+    mgr->ConnectOutput(taskNano, 4, coutputKaonCuts);
+    mgr->ConnectOutput(taskNano, 5, coutputAntiKaonCuts);
+    mgr->ConnectOutput(taskNano, 8, coutputResults);
+    mgr->ConnectOutput(taskNano, 9, coutputResultsQA);
+    mgr->ConnectOutput(taskNano, 10, coutputResultsSample);
+    mgr->ConnectOutput(taskNano, 11, coutputResultsSampleQA);
+    mgr->ConnectOutput(taskNano, 12, coutputThreeBody);
+    if (isMC) {
+      mgr->ConnectOutput(taskNano, 13, coutputTrkCutsMC);
+      mgr->ConnectOutput(taskNano, 14, coutputAntiTrkCutsMC);
+      mgr->ConnectOutput(taskNano, 15, coutputKaonCutsMC);
+      mgr->ConnectOutput(taskNano, 16, coutputAntiKaonCutsMC);
+    }
+  }
+
+  else{
+/*
+    taskAOD= new AliAnalysisTaskProtonProtonKaonsAOD("femtoAODProtonProtonKaons", isMC, triggerOn);
+    if (!fullBlastQA)
+    {
+      taskAOD->SetRunTaskLightWeight(true);
+    }
+
+    if (trigger == 0) {
+        taskAOD->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+      } else if (trigger == 1){
+        taskAOD->SelectCollisionCandidates(AliVEvent::kINT7);
+      }
+    taskAOD->SetEventCuts(evtCuts);
+    taskAOD->SetProtonCuts(TrackCuts);
+    taskAOD->SetAntiProtonCuts(AntiTrackCuts);
+    taskAOD->Setv0Cuts(KaonCuts);
+    taskAOD->SetAntiv0Cuts(AntiKaonCuts);
+    taskAOD->SetCorrelationConfig(config);
+    taskAOD->SetRunThreeBodyHistograms(true);
+    //taskAOD->SetTriggerOn(triggerOn);
+    taskAOD->SetIsMC(isMC);
+
+
+
+
+    taskAOD->SetQ3Limit(Q3Limit);
+    taskAOD->SetQ3LimitSample(Q3LimitSample) ;
+    taskAOD->SetQ3LimitSample2(Q3LimitSample2) ;
+    taskAOD->SetQ3LimitSampleFraction( Q3LimitSampleFraction) ;
+    taskAOD->SetQ3LimitSampleFraction2( Q3LimitSampleFraction2) ;
+    taskAOD->SetQ3LimitFraction( Q3LimitFraction) ;
+
+
+    mgr->AddTask(taskAOD);
+
+    mgr->ConnectInput(taskAOD, 0, cinput);
+    mgr->ConnectOutput(taskAOD, 1, coutputEvtCuts);
+    mgr->ConnectOutput(taskAOD, 2, couputTrkCuts);
+    mgr->ConnectOutput(taskAOD, 3, coutputAntiTrkCuts);
+    mgr->ConnectOutput(taskAOD, 4, coutputKaonCuts);
+    mgr->ConnectOutput(taskAOD, 5, coutputAntiKaonCuts);
+    mgr->ConnectOutput(taskAOD, 6, coutputResults);
+    mgr->ConnectOutput(taskAOD, 7, coutputResultsQA);
+    mgr->ConnectOutput(taskAOD, 8, coutputResultsSample);
+    mgr->ConnectOutput(taskAOD, 9, coutputResultsSampleQA);
+    mgr->ConnectOutput(taskAOD, 10, coutputThreeBody);
+    if (isMC) {
+      mgr->ConnectOutput(taskAOD, 16, coutputTrkCutsMC);
+      mgr->ConnectOutput(taskAOD, 17, coutputAntiTrkCutsMC);
+      mgr->ConnectOutput(taskAOD, 18, coutputKaonCutsMC);
+      mgr->ConnectOutput(taskAOD, 19, coutputAntiKaonCutsMC);
+    }
+*/
+  }
+
+
+  if (isNano) {
+    return taskNano;
+  } else {
+  //  return taskAOD;
+  }
+
+
+}

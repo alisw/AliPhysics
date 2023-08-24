@@ -18,11 +18,9 @@
 #include "AliEMCalTriggerAnaTriggerClass.h"
 #include "AliEMCalTriggerAnaTriggerDecision.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerAnaClassManager)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerAnaClassManager)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Dummy constructor
@@ -131,14 +129,14 @@ void AliEMCalTriggerAnaClassManager::SetTriggerDecision(AliEMCalTriggerAnaTrigge
  * \return True if among the selected classes we find a minimum bias trigger
  */
 bool AliEMCalTriggerAnaClassManager::HasMinBiasTrigger() const {
-  bool result = kFALSE;
+  Bool_t result = kFALSE;
   for(TIter clsiter = TIter(fSelected).Begin(); clsiter != TIter::End(); ++clsiter){
     if((static_cast<AliEMCalTriggerAnaTriggerClass *>(*clsiter))->IsMinBiasTrigger()){
       result = kTRUE;
       break;
     }
   }
-  return kTRUE;
+  return result;
 }
 
 /**
@@ -159,5 +157,3 @@ TObjArray * AliEMCalTriggerAnaClassManager::GetAllTriggerClasses() const {
   if(!fTriggerClasses->GetEntries()) throw TriggerManagerEmptyException();
   return fTriggerClasses;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

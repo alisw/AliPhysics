@@ -63,6 +63,13 @@ class AliFemtoDreamEventHist {
     fMultDistV0C[i]->Fill(val);
   }
   ;
+  void FillMultV0M(int i, float val) {
+    fMultDistV0M[i]->Fill(val);
+  }
+  ;
+  void FillMultPercentV0(int i, float val) {
+    fMultPercentV0[i]->Fill(val);
+  }
   void FillMultRef08(int i, float val) {
     fMultDistRef08[i]->Fill(val);
   }
@@ -83,6 +90,9 @@ class AliFemtoDreamEventHist {
   }
   void FillMagneticField(int i, float bField) {
     fBField[i]->Fill(bField);
+  }
+  void FillVZEROtiming(int i, float tV0A, float tV0C) {
+    fPileUpVZEROTime[i]->Fill(tV0A - tV0C, tV0A + tV0C);
   }
   void FillCentVsMultV0A(float cent, float mult) {
     if (fCentVsMultPlots)
@@ -117,6 +127,8 @@ class AliFemtoDreamEventHist {
   TH1F *fMultDistSPD[2];    //!
   TH1F *fMultDistV0A[2];    //!
   TH1F *fMultDistV0C[2];    //!
+  TH1F *fMultDistV0M[2];    //!
+  TH1F *fMultPercentV0[2];  //!
   TH1F *fMultDistRef08[2];  //!
   TH2F *fSPDTrklClsLy0[2];     //!
   TH2F *fSPDTrklClsLy1[2];     //!
@@ -125,13 +137,14 @@ class AliFemtoDreamEventHist {
   TH1F *fSPDTrkZVtxDispl[2];   //!
   TH1F *fBField[2];         //!
   TH1F *fEvtSpher[2];         //!
+  TH2F* fPileUpVZEROTime[2]; //!
   bool fCentVsMultPlots;    //!
   TH1F *fEvtSphero[2];      //!
   TH2F *fCentVsV0A;         //!
   TH2F *fCentVsV0M;         //!
   TH2F *fCentVsV0C;         //!
   TH2F *fCentVsRefMult;     //!
-ClassDef(AliFemtoDreamEventHist,5)
+ClassDef(AliFemtoDreamEventHist,7)
 };
 
 #endif /* ALIFEMTODREAMEVENTHIST_H_ */

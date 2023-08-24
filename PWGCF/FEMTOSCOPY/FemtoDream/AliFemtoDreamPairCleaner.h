@@ -24,8 +24,10 @@ class AliFemtoDreamPairCleaner {
   virtual ~AliFemtoDreamPairCleaner();
   void CleanTrackAndDecay(std::vector<AliFemtoDreamBasePart> *Tracks,
                           std::vector<AliFemtoDreamBasePart> *Decay,
-                          int histnumber);
+                          int histnumber, bool rejTracksInsteadOfDecays = false);
   void CleanDecay(std::vector<AliFemtoDreamBasePart> *Decay, int histnumber);
+  void CleanDecayInvMass(std::vector<AliFemtoDreamBasePart> *Decay, int PDGCode, int histnumber);
+  void CleanDecayAtRandom(std::vector<AliFemtoDreamBasePart> *Decay, int histnumber);
   void CleanDecayAndDecay(std::vector<AliFemtoDreamBasePart> *Decay1,
                           std::vector<AliFemtoDreamBasePart> *Decay2,
                           int histnumber);

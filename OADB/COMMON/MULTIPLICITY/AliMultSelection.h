@@ -90,12 +90,13 @@ private:
     Bool_t fThisEvent_IsNotIncompleteDAQ;       //!
     Bool_t fThisEvent_HasGoodVertex2016;         //!
     
-    ClassDef(AliMultSelection, 6)
+    ClassDef(AliMultSelection, 7)
     // 1 - original implementation
     // 2 - added fEvSelCode for EvSel bypass + getter changed
     // 3 - added booleans to classify which event criteria are satisfied
     // 4 - added IsEventSelected
     // 5 - added Good vertex, adjustments
     // 6 - changed to inherit from AliMultSelectionBase
+    // 7 - addition of auto-vertex-Z correction
 };
 #endif

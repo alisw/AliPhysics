@@ -51,7 +51,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  *
                                  * \param name , the name taken by the AliAnalysisTaskSE object.
                                  */
-                                AliAnalysisTaskUPCforward(const char *name);
+                                AliAnalysisTaskUPCforward( const char *name, Int_t _fSetSingleMuonPt );
 
                                 /**
                                  * Virtual destructor for the class. It will
@@ -141,6 +141,18 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         Double_t                AccEffCorrection( Double_t CosThetaToBeWeighted );
 
                                 /**
+                                 * This function sets the muon pt for the
+                                 * Trigger Efficiency computation in the
+                                 * range (0.85->1.15) GeV with 0.05 Gev steps.
+                                 *
+                                 * The aim is to check how the different
+                                 * selections change the polarisation
+                                 * parameters for now, maybe in the future
+                                 * the Neutron Emission Yield.
+                                 */
+        void                    SetSingleMuonPt( Int_t _fSetSingleMuonPt ){ fSetSingleMuonPt = _fSetSingleMuonPt; }
+
+                                /**
                                  * Use the class as a data member. It contains
                                  * the cuts for the muon track.
                                  */
@@ -162,6 +174,13 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TList*                  fOutputList;        //!
 
                                 /**
+                                 * The flag to select the single muons
+                                 * Pt for the Trigger Efficiency
+                                 * systematic source.
+                                 */
+        Int_t                   fSetSingleMuonPt;
+
+                                /**
                                  * Utility type histo. It counts the GOOD muons
                                  * per event.
                                  */
@@ -176,10 +195,16 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fCounterH;          //!
 
                                 /**
-                                 * As far as I understand, it should be the
-                                 * pseudorapidity distribution of the many muons.
+                                 * Pseudorapidity distribution of the many muons.
                                  */
         TH1F*                   fEtaMuonH;          //!
+        TH1F*                   fThetaMuonH;        //!
+        TH1F*                   fPhiMuonH;          //!
+
+                                /**
+                                 * Pt distribution of the many muons.
+                                 */
+        TH1F*                   fPtSingleMuonH;          //!
 
                                 /**
                                  *
@@ -1508,14 +1533,29 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
                                  *     emission class to suppress the
                                  *     feed-down contribution and the
                                  *     incoherent component too!!
+                                 *
+                                 * v2: range [0, 2*TMath::Pi()]
                                  */
         TH1F*                   fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsH[25];           //!
         TH1F*                   fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsH[25];      //!
         TH1F*                   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsH[25];      //!
+        TH1F*                   fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsHv2[25];         //!
+        TH1F*                   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsHv2[25];    //!
+        TH1F*                   fPtOnlyCosThetaHeFrameTwentyfiveBinsH[25];      //!
 
         TH1F*                   fInvariantMassDistributionOnlyPhiCsFrameTwentyfiveBinsH[25];           //!
         TH1F*                   fInvariantMassDistributionOnlyCosThetaCsFrameTwentyfiveBinsH[25];      //!
         TH1F*                   fInvariantMassDistributionOnlyTildePhiCsFrameTwentyfiveBinsH[25];      //!
+        TH1F*                   fInvariantMassDistributionOnlyPhiCsFrameTwentyfiveBinsHv2[25];         //!
+        TH1F*                   fInvariantMassDistributionOnlyTildePhiCsFrameTwentyfiveBinsHv2[25];    //!
+
+        TH1F*                   fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBinsIncohH[25];      //!
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBinsIncohH[25]; //!
+        TH1F*                   fInvariantMassDistributionOnlyTildePhiHeFrameTwentyfiveBinsIncohH[25]; //!
+
+        TH1F*                   fInvariantMassDistributionOnlyPhiCsFrameTwentyfiveBinsIncohH[25];      //!
+        TH1F*                   fInvariantMassDistributionOnlyCosThetaCsFrameTwentyfiveBinsIncohH[25]; //!
+        TH1F*                   fInvariantMassDistributionOnlyTildePhiCsFrameTwentyfiveBinsIncohH[25]; //!
 
         TH1F*                   fInvariantMassDistributionOnlyPhiHeFrameTwentyfiveBins0N0NH[25];       //!
         TH1F*                   fInvariantMassDistributionOnlyCosThetaHeFrameTwentyfiveBins0N0NH[25];  //!
@@ -1524,6 +1564,17 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
         TH1F*                   fInvariantMassDistributionOnlyPhiCsFrameTwentyfiveBins0N0NH[25];       //!
         TH1F*                   fInvariantMassDistributionOnlyCosThetaCsFrameTwentyfiveBins0N0NH[25];  //!
         TH1F*                   fInvariantMassDistributionOnlyTildePhiCsFrameTwentyfiveBins0N0NH[25];  //!
+
+
+
+
+
+
+        TH2F*                   fCosThetaAndPhiHelicityFrameH;                       //!
+        TH2F*                   fCosThetaAndPhiCsFrameH;                             //!
+        TH2F*                   fCosThetaAndPhiHelicityFrameRapidityH[6];            //!
+        TH2F*                   fCosThetaAndPhiCsFrameRapidityH[6];                  //!
+
 
         //_______________________________
         // CUTS
@@ -1585,7 +1636,7 @@ class AliAnalysisTaskUPCforward : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskUPCforward, 43);
+        ClassDef(AliAnalysisTaskUPCforward, 50);
 };
 
 #endif

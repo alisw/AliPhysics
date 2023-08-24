@@ -24,8 +24,11 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS    *
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
+#include "AliEmcalTriggerAlias.h"
 #include "AliEmcalTriggerDecision.h"
 #include "AliEmcalTriggerDecisionContainer.h"
+#include <string>
+#include <sstream>
 
 /// \cond CLASSIMP
 ClassImp(PWG::EMCAL::AliEmcalTriggerDecisionContainer)
@@ -56,14 +59,76 @@ void AliEmcalTriggerDecisionContainer::AddTriggerDecision(AliEmcalTriggerDecisio
   fContainer.Add(decision);
 }
 
-const AliEmcalTriggerDecision* AliEmcalTriggerDecisionContainer::FindTriggerDecision(const char* decname) const {
-  return dynamic_cast<const AliEmcalTriggerDecision *>(fContainer.FindObject(decname));
+const AliEmcalTriggerDecision* AliEmcalTriggerDecisionContainer::FindTriggerDecision(EMCAL_STRINGVIEW decname) const {
+  const AliEmcalTriggerDecision* result = nullptr, *tmp = nullptr;
+  TIter listiter(&fContainer);
+  while((tmp = static_cast<AliEmcalTriggerDecision *>(listiter()))){
+    auto alias = tmp->GetTriggerAlias();
+    if(alias) {
+      // trigger alias present, check for trigger class
+      if(alias->HasTriggerClass(decname)) {
+        result = tmp;
+        break;
+      }
+    } else {
+      // No trigger alias present, check for name of the trigger decision
+      if(TString(tmp->GetName()) == TString(decname)) {
+        result = tmp;
+        break;
+      }
+    }
+  }
+  return result;
 }
 
-bool AliEmcalTriggerDecisionContainer::IsEventSelected(const char *name)  const {
-  const AliEmcalTriggerDecision *trg = FindTriggerDecision(name);
-  if(trg) return trg->IsSelected();
+bool AliEmcalTriggerDecisionContainer::IsEventSelected(EMCAL_STRINGVIEW name)  const {
+  if(name.find("&") != std::string::npos || name.find("|") != std::string::npos) {
+    // combination or intersection of different trigger classes
+    char separator;
+    enum SeparatorMode {
+      kSetCombine,
+      kSetIntersect,
+      kUnknown
+    };
+    SeparatorMode mode = SeparatorMode::kUnknown;
+    if(name.find("&") != std::string::npos) {
+      // separator & has priority
+      separator = '&';
+      mode = SeparatorMode::kSetIntersect;
+    } else {
+      separator = '|';
+      mode = SeparatorMode::kSetCombine;
+    }
+    auto selectclasses = parseSelectionString(name, separator);
+    bool selectionStatus = (mode == SeparatorMode::kSetIntersect) ? true : false;
+    for(const auto trgclass : selectclasses) {
+      auto triggerClassResult = IsEventSelected(trgclass.data());
+      if((mode == SeparatorMode::kSetIntersect) && !triggerClassResult) {
+        // All classes required - event rejection if one class is not present
+        selectionStatus = false;
+      } else if((mode == SeparatorMode::kSetCombine) && triggerClassResult) {
+        // Any class required - event selected if at least one class is present
+        selectionStatus = true;
+      }
+    }
+    return selectionStatus;
+  } else {
+    // single trigger class requested
+    const AliEmcalTriggerDecision *trg = FindTriggerDecision(name);
+    if(trg) return trg->IsSelected();
+    return false;
+  }
   return false;
+}
+
+std::vector<std::string> AliEmcalTriggerDecisionContainer::parseSelectionString(EMCAL_STRINGVIEW selectionstring, char separator) const {
+  std::vector<std::string> result;
+  std::stringstream tokenizer(selectionstring.data());
+  std::string buffer;
+  while(std::getline(tokenizer, buffer, separator)) {
+    result.push_back(buffer);
+  }
+  return result;
 }
 
 }

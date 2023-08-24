@@ -20,25 +20,44 @@ add_definitions(-D_MODULE_="${MODULE}")
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/FemtoDream
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
-                    ${AliPhysics_SOURCE_DIR}/PWGGA/Hyperon
                     ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY/
-	)
-		  
+		    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
+)
+
+# Additional includes that work only with ROOT6 - alphabetical order except ROOT
+if(ROOT_VERSION_MAJOR EQUAL 6)
+include_directories(${AliPhysics_SOURCE_DIR}/ML
+                    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFML)
+endif()
+
+if(KFParticle_FOUND)
+    get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
+    include_directories(${KFPARTICLE_INCLUDE_DIR})
+    add_definitions("-DWITH_KFPARTICLE")
+endif(KFParticle_FOUND)
+
+# pulled in for HF vertexing
+if(FASTJET_FOUND)
+    include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+    link_directories(${FASTJET_LIBS_DIR})
+    add_definitions(${FASTJET_DEFINITIONS})
+    list(APPEND HDRS FJ_includes.h)
+endif(FASTJET_FOUND)
 
 # Sources - alphabetical order
 set(SRCS
-  AliFemtoDreamEvent.cxx  
+  AliFemtoDreamEvent.cxx
   AliFemtoDreamEventHist.cxx
   AliFemtoDreamEventCuts.cxx
   AliFemtoDreamBasePart.cxx
   AliFemtoDreamTrack.cxx
   AliFemtoDreamTrackHist.cxx
-  AliFemtoDreamTrackMCHist.cxx 
+  AliFemtoDreamTrackMCHist.cxx
   AliFemtoDreamTrackCuts.cxx
   AliFemtoDreamv0.cxx
   AliFemtoDreamv0Hist.cxx
@@ -49,28 +68,36 @@ set(SRCS
   AliFemtoDreamCascadeCuts.cxx
   AliFemtoDreamControlSample.cxx
   AliFemtoDreamPairCleanerHists.cxx
-  AliFemtoDreamPairCleaner.cxx 
-  AliFemtoDreamCollConfig.cxx 
-  AliFemtoDreamCorrHists.cxx 
-  AliFemtoDreamPartContainer.cxx 
-  AliFemtoDreamZVtxMultContainer.cxx 
-  AliFemtoDreamPartCollection.cxx 
-  AliFemtoDreamAnalysis.cxx 
+  AliFemtoDreamPairCleaner.cxx
+  AliFemtoDreamCollConfig.cxx
+  AliFemtoDreamCorrHists.cxx
+  AliFemtoDreamPartContainer.cxx
+  AliFemtoDreamZVtxMultContainer.cxx
+  AliFemtoDreamPartCollection.cxx
+  AliFemtoDreamAnalysis.cxx
   AliAnalysisTaskFemtoDream.cxx
   AliAnalysisTaskFemtoDreamDeuteron.cxx
   AliAnalysisTaskNanoPt.cxx
   AliAnalysisTaskNanoXioton.cxx
-  AliAnalysisTaskNanoXioton1530.cxx
+  AliAnalysisTaskAODXioton.cxx
   AliAnalysisTaskNanoLoton.cxx
-  AliAnalysisTaskNanoBBar.cxx  
+  AliAnalysisTaskLeuteronAOD.cxx
+  AliAnalysisTaskLeuteronNanoAOD.cxx
+  AliAnalysisTaskAODLoton.cxx
+  AliAnalysisTaskNanoBBar.cxx
   AliAnalysisTaskFemtoDreamPhi.cxx
   AliAnalysisTaskNanoAODFemtoDreamPhi.cxx
+  AliAnalysisTaskNanoAODFemtoDreamLambdaPhi.cxx
+  AliAnalysisTaskFemtoDreamRho.cxx
+  AliAnalysisTaskFemtoDreamSigPi.cxx
+  AliAnalysisTaskNanoAODFemtoDreamSigPi.cxx
   AliAnalysisTaskFemtoDreamPion.cxx
+  AliAnalysisTaskDeuteronProtonEfficiency.cxx
   AliAnalysisTaskNanoAODFemtoDreamPion.cxx
-  AliAnalysisTaskSigma0Femto.cxx
-  AliAnalysisTaskAODSigma0Femto.cxx
   AliAnalysisTaskNanoAODSigma0Femto.cxx
   AliAnalysisTaskNanoSigmaPlus.cxx
+  AliAnalysisTaskNanoLD.cxx
+  AliAnalysisTaskLD.cxx
   AliAnalysisTaskGrandma.cxx
   AliAnalysisTaskOtonOmega.cxx
   AliOtonOmegaAnalysis.cxx
@@ -79,12 +106,51 @@ set(SRCS
   AliFemtoDreamHigherPairMath.cxx
   AliAnalysisTaskNanoLX.cxx
   AliAnalysisTaskOtonOmegaNanoAOD.cxx
-
+  AliAnalysisTaskOtonkd.cxx
+  AliAnalysisTaskOtonkdAOD.cxx
+  AliAnalysisTaskGeorgiosNTuple.cxx
+  AliAnalysisTaskPOmegaPenne.cxx
+  AliFemtoDreamBaseDump.cxx
+  AliAnalysisTaskThreeBodyFemto.cxx
+  AliAnalysisTaskNanoPPCoalescence.cxx
+  AliAnalysisTaskFemtoSMI.cxx
+  AliAnalysisTaskThreeBodyFemtoAOD.cxx
+  AliAnalysisTaskThreeBodyFemtoAODPionProton.cxx
+  AliAnalysisTaskThreeBodyFemtoPionProton.cxx
+  AliAnalysisTaskThreeBodyProtonPrimary.cxx
+  AliSigma0AODPhotonMotherCuts.cxx;
+  AliSigma0PhotonCuts.cxx;
+  AliAnalysisTaskNanoTreeLPhi.cxx;
+  AliAnalysisTaskNanoLambdaKaon.cxx;
+  AliAnalysisTaskNanoLKr.cxx
+  AliAnalysisTaskThreeBodyFemtoMixedCharge.cxx;
+  AliAnalysisTaskNanoBenchmark.cxx
+  AliAnalysisTaskNanoFemtoProtonPion.cxx
+  AliAnalysisTaskFemtoProtonPion.cxx
+  AliAnalysisTaskNanoXiPi.cxx
+  AliAnalysisTaskOtonXx.cxx
+  AliAnalysisTaskNanoFemtoProtonKaonPlus.cxx
+  AliAnalysisTaskFemtoProtonKaonPlus.cxx
   )
 
+if(ROOT_VERSION_MAJOR EQUAL 6)
+set(SRCS
+    ${SRCS}
+    AliAnalysisTaskCharmingFemto.cxx
+    AliEasyFemto.cxx
+    AliAnalysisTaskPionDeuteronMC.cxx
+    AliAnalysisTaskPionDeuteron.cxx
+    AliAnalysisTaskCharmingFemto_og.cxx)
+endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+if(ROOT_VERSION_MAJOR EQUAL 6)
+	set(HDRS
+	  ${HDRS}
+      CustomQueue.h
+	)
+endif()
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
@@ -97,6 +163,18 @@ set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD PWGGAGammaConvBase PWGGAHype
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+
+# set dependecies to HF
+set(LIBDEPS ${LIBDEPS} PWGHFvertexingHF)
+if(ROOT_VERSION_MAJOR EQUAL 6)
+set(LIBDEPS ${LIBDEPS} ML PWGHFvertexingHFML)
+endif()
+
+if(KFParticle_FOUND)
+    get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
+    set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
+endif(KFParticle_FOUND)
+
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -109,7 +187,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
 
-target_link_libraries(${MODULE} ${ALIROOT_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+target_link_libraries(${MODULE} ${LIBDEPS})
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)
@@ -148,4 +226,3 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
-

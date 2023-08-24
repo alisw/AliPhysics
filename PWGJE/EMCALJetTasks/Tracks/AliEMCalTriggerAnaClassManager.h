@@ -14,7 +14,9 @@
 
 class TObjArray;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliEMCalTriggerAnaTriggerClass;
 class AliEMCalTriggerAnaTriggerDecision;
@@ -72,11 +74,11 @@ private:
   TObjArray         *fTriggerClasses;               ///< List of trigger classes
   TObjArray         *fSelected;                     ///< List of selected trigger classes
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerAnaClassManager, 1);
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGERANACLASSMANAGER_H */

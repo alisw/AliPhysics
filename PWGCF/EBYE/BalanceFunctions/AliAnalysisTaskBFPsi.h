@@ -71,6 +71,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   Double_t GetNUECorrection(Int_t gCentrality, Short_t vCharge, Double_t vPt, Int_t poi);
 
   Bool_t SetSelectPID(AliAODTrack* track, Int_t poi);  
+  Bool_t SetSelectPIDKaons(AliAODTrack* track, Int_t poi);
   Int_t GetIndexRun(Int_t runNb);
   Int_t GetIndexCentrality(Double_t gCentrality);
   
@@ -139,9 +140,11 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fDCAzCut = DCAz;
   }
 
-   void SetExtraTPCCutsAOD(Double_t maxTPCchi2, Int_t minNClustersTPC){
+  void SetExtraTPCCutsAOD(Double_t maxTPCchi2, Int_t minNClustersTPC, Int_t minNTPCCrossedRows, Float_t minNTPCFindableCls){
     fTPCchi2Cut      = maxTPCchi2;
     fNClustersTPCCut = minNClustersTPC;
+    fMinTPCCrossedRows = minNTPCCrossedRows;
+    fMinTPCRowsOverFindableCls =  minNTPCFindableCls;
   }
 
    void SetExtraTPCCutsSharedAOD(Int_t minTPCsharedCut){
@@ -314,14 +317,18 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
     fMinAcceptedPIDProbability = gMinProbabilityValue; }
   
   void SetUseNSigmaPID(Int_t gMaxNSigmaAcc, Int_t gMaxNSigmaExcl, Float_t pidMomCut) {
-        fUsePID = kTRUE; fUsePIDPropabilities = kFALSE; fUsePIDnSigma = kTRUE;
-        fPIDNSigmaAcc = gMaxNSigmaAcc;
-        fPIDNSigmaExcl = gMaxNSigmaExcl;
-        fPIDMomCut = pidMomCut;
-        fUseRapidity = kTRUE;
+    fUsePID = kTRUE; fUsePIDPropabilities = kFALSE; fUsePIDnSigma = kTRUE;
+    fPIDNSigmaAcc = gMaxNSigmaAcc;
+    fPIDNSigmaExcl = gMaxNSigmaExcl;
+    fPIDMomCut = pidMomCut;
+    fUseRapidity = kTRUE;
   } // nsigma values for PID acceptance and rejection and pT threshold to move from TPC only and TPC+TOF for both methods: Bayes and nSigma Combined. usually 0.6 for pi and p and 0.4 for K.
     
-    
+  void SetUseNSigmaPIDKaons() {
+    fUsePIDKaons = kTRUE; fUsePIDPropabilities = kFALSE;
+    fUseRapidity = kTRUE;
+  }
+  
   void SetDetectorUsedForPID(kDetectorUsedForPID detConfig) {
     fPidDetectorConfig = detConfig;}
   void SetEventClass(TString receivedEventClass){
@@ -534,6 +541,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
     
   Bool_t fUsePID; //flag to use PID
+  Bool_t fUsePIDKaons; //flag to use PID trial for kaons
   Bool_t fUsePIDMC; //flag to use PID in generated MC ("MC" analysis option)
   Bool_t fUsePIDnSigma;//flag to use nsigma method for PID
   Bool_t fUsePIDPropabilities;//flag to use probability method for PID
@@ -642,6 +650,8 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
 
   Double_t fTPCchi2Cut;//only used for AODs
   Int_t fNClustersTPCCut;//only used for AODs
+  Int_t fMinTPCCrossedRows; // only used for AODs
+  Float_t fMinTPCRowsOverFindableCls; //only used for AODs
   Int_t fTPCsharedCut;//only used for AODs
 
   Double_t fSphericityMin;//sphericity min cut (currently only for AODs)
@@ -698,7 +708,7 @@ class AliAnalysisTaskBFPsi : public AliAnalysisTaskSE {
   AliAnalysisTaskBFPsi(const AliAnalysisTaskBFPsi&); // not implemented
   AliAnalysisTaskBFPsi& operator=(const AliAnalysisTaskBFPsi&); // not implemented
   
-  ClassDef(AliAnalysisTaskBFPsi, 23); // example of analysis
+  ClassDef(AliAnalysisTaskBFPsi, 24); // example of analysis
 };
 
 

@@ -19,7 +19,7 @@ vector<int> vcolors;
 vector<double> ptbin = {0.0, 0.8, 1.2, 1.6, 2.0, 2.4,
                         3.2, 4.0, 4.8, 5.6, 8.8, 15};
 vector<vector<double>> multibincheck = {{0, 100}, {0, 10},  {10, 30},
-                                        {30, 50}, {50, 70}, {70, 100}};
+                                        {30, 50}, {50, 70}, {70, 100}, {0, 0.01}, {0.01, 0.05}, {0.05,0.1}};
 vector<int> Markerset = {20, 21, 33, 34, 29, 24, 25, 26, 27, 28,
                          30, 3,  5,  42, 43, 46, 47, 48, 49, 50,
                          51, 20, 21, 33, 34, 29, 24, 25, 26};
@@ -120,6 +120,26 @@ void PlotMiscXi1530() {
 
     ratio_mult->SaveAs(Form("%s1_Multi_0.00-100.00_Default1/MCEffi_Multi.pdf",
                             workdirectory.Data()));
+    // Temp
+    TCanvas* cMultiVert = new TCanvas("cMultiVert", "cMultiVert", 540, 960);
+    TGaxis::SetMaxDigits(3);
+    gStyle->SetOptStat(0);
+    gStyle->SetOptTitle(0);
+    gStyle->SetLegendBorderSize(0);
+    cMultiVert->SetTickx();
+    cMultiVert->SetLogy();
+    cMultiVert->SetTicky();
+    cMultiVert->SetTopMargin(0.05);
+    cMultiVert->SetLeftMargin(0.15);
+    // cSigbkg->SetBottomMargin(0.01);
+    cMultiVert->SetRightMargin(0.01);
+    cMultiVert->SetFillStyle(0);
+    cMultiVert->Draw();
+
+    hDef->Draw();
+    cMultiVert->SaveAs(Form("%s1_Multi_0.00-100.00_Default1/MCEffi_Vert.pdf",
+                            workdirectory.Data()));
+
 
     //---------------------------------------------
     // Recon.effi. trend
@@ -201,8 +221,8 @@ void PlotMiscXi1530() {
         legend_effi_mult->AddEntry(gMulti_effi[i], Form("#it{p}_{T} %.2f-%.2f, Slope: %.2f#times10^{-4}",ptbin[i],ptbin[i+1],ftemp->GetParameter(0)*1e4), "PL");
 
         double tempvalue =ftemp->GetParameter(0)*35+ftemp->GetParameter(1);
-        cout << "ptbin: " << i << ", 35.3 value: " << tempvalue << endl;
 
+        cout << "ptbin: " << i << " MB effi: " << hDef->GetBinContent(i+2) << ", [70-100] value: " << Efficiency[i][multibin.size()-1] << " (" << Form("%.2f%%",(hDef->GetBinContent(i+2)-Efficiency[i][multibin.size()-1])/Efficiency[i][multibin.size()-1]*100) << ")" <<", [0, 0.01](35.3) value:" << tempvalue << " (" << Form("%.2f%%",(hDef->GetBinContent(i+2)-tempvalue)/hDef->GetBinContent(i+2)*100) << ")" << endl;
         Efficiency[i].push_back(tempvalue);
         Efficiency_state[i].push_back(1e-10);
 
@@ -636,16 +656,17 @@ void PlotMiscXi1530() {
 
     }
 
-    bool PreliminaryCopare = false;
+    bool PreliminaryCopare = true;
     if (PreliminaryCopare) {
-        auto tempSpectra_old = (TH1D*)GetSpectrafromName(
-            Form("%sAnalysisResults_Extracted_1_Multi_0.00-100.00_Default1"
-                 "_old.root",
-                 workdirectory.Data()));
-        auto tempSpectra_fix = (TH1D*)GetSpectrafromName(
-            Form("%sAnalysisResults_Extracted_1_Multi_0.00-100.00_Default"
-                 "1.root",
-                 workdirectory.Data()));
+        std::cout << "test" <<std::endl;
+        auto tempSpectra_old = (TH1D*)GetMCEfficiencyfromName(
+            Form("%sAnalysisResults_Extracted_1_Multi_0.00-100.00_studyoff"
+                 ".root",
+                 path.Data()));
+        auto tempSpectra_fix = (TH1D*)GetMCEfficiencyfromName(
+            Form("%sAnalysisResults_Extracted_1_Multi_0.00-100.00_studyon"
+                 ".root",
+                 path.Data()));
         tempSpectra_old->SetFillColor(kBlack);
         tempSpectra_old->SetLineColor(kBlack);
         tempSpectra_old->SetMarkerColor(kBlack);
@@ -654,7 +675,7 @@ void PlotMiscXi1530() {
 
         TCanvas* ratio_pre = plotHistsAndRatio(
             tempSpectra_fix, tempSpectra_old, "", "p_{T}(GeV/c)",
-            "1/N_{event}d^{2}N/(dydp_{T}) (GeV/c)^{-1}", "7T NLOG SPECTRA FINAL");
+            "Acceptance x Efficiency x B.R.", "NLOG Efficiency FINAL");
 
         ratio_pre->cd(1);
         auto legend_fixcut = new TLegend(.18, .05, .8, .15);
@@ -815,6 +836,21 @@ void PlotMiscXi1530() {
     legend_sysError->SetBorderSize(0);
     legend_sysError->SetFillStyle(0);
 
+
+    const Int_t NRGBs = 5;
+    Double_t stops[NRGBs] = {0.00, 0.34, 0.61, 0.84, 1.00};
+    Double_t red[NRGBs] = {0.00, 0.00, 0.87, 0.9 * 1.00, 0.51};
+    Double_t green[NRGBs] = {0.00, 0.81, 0.9 * 1.00, 0.20, 0.00};
+    Double_t blue[NRGBs] = {0.51, 0.9 * 1.00, 0.12, 0.00, 0.00};
+    Int_t FIh = TColor::CreateGradientColorTable(NRGBs, stops, red, green, blue,
+                                                 multibincheck.size());
+    vcolors = {};
+    for (int color = 0; color < multibincheck.size(); color++) {
+        // histColors.push_back(FIh+color);
+        // vcolors.push_back(FIh+color);
+        vcolors.insert(vcolors.begin(), FIh + color);
+    }
+
     vector<TH1D*> SysErrorHists;
     for (int imultibin = 0; imultibin < multibincheck.size(); imultibin++) {
         SysErrorHists.push_back(GetSysError(multibincheck[imultibin][0],
@@ -858,6 +894,7 @@ vector<double> GetTrigEfficiency(double multi_start, double multi_end) {
     vector<double> trigeffi;
     trigeffi.push_back(htrigeffi->GetBinContent(1));
     trigeffi.push_back(htrigeffi->GetBinError(1));
+    inputfile->Close();
     return trigeffi;
 }
 vector<double> GetVertexEfficiency(double multi_start, double multi_end) {
@@ -874,6 +911,7 @@ vector<double> GetVertexEfficiency(double multi_start, double multi_end) {
     vector<double> vtxeffi;
     vtxeffi.push_back(htrigeffi->GetBinContent(1));
     vtxeffi.push_back(htrigeffi->GetBinError(1));
+    inputfile->Close();
     return vtxeffi;
 }
 TH1D* GetSigLoss(double multi_start, double multi_end) {
@@ -887,8 +925,10 @@ TH1D* GetSigLoss(double multi_start, double multi_end) {
              inputOptions.Data());
     TFile* inputfile = new TFile(finputfile.Data());
     TH1D* base = (TH1D*)inputfile->Get("hMCSigLoss");
-
-    return base;
+    gROOT->cd();
+    TH1D* hReturn = (TH1D*)base->Clone();
+    inputfile->Close();
+    return hReturn;
 }
 TH1D* GetMCEfficiency(double multi_start, double multi_end) {
     vector<double> multibin = {multi_start, multi_end};
@@ -901,14 +941,19 @@ TH1D* GetMCEfficiency(double multi_start, double multi_end) {
              inputOptions.Data());
     TFile* inputfile = new TFile(finputfile.Data());
     TH1D* base = (TH1D*)inputfile->Get("hMCReconEffi");
-
-    return base;
+    gROOT->cd();
+    TH1D* hReturn = (TH1D*)base->Clone();
+    inputfile->Close();
+    return hReturn;
 }
 TH1D* GetMCEfficiencyfromName(TString inputfilename) {
     TFile* inputfile = new TFile(inputfilename.Data());
     TH1D* base = (TH1D*)inputfile->Get("hMCReconEffi");
     cout << "name: " << inputfilename.Data() << endl;
-    return base;
+    gROOT->cd();
+    TH1D* hReturn = (TH1D*)base->Clone();
+    inputfile->Close();
+    return hReturn;
 }
 
 TH1D* GetSpectra(double multi_start, double multi_end) {
@@ -922,8 +967,10 @@ TH1D* GetSpectra(double multi_start, double multi_end) {
              inputOptions.Data());
     TFile* inputfile = new TFile(finputfile.Data());
     TH1D* base = (TH1D*)inputfile->Get("hXiSpectrum");
-
-    return base;
+    gROOT->cd();
+    TH1D* hReturn = (TH1D*)base->Clone();
+    inputfile->Close();
+    return hReturn;
 }
 TH1D* GetSpectrastat(double multi_start, double multi_end){
     TString bininfo = GetBinInfo(multi_start,multi_end);
@@ -935,8 +982,10 @@ TH1D* GetSpectrastat(double multi_start, double multi_end){
     else
         text = Form("hSpectra_%.2f_%.2f_stat",multi_start,multi_end);
     TH1D* hr = (TH1D*)inputfile->Get(text);
-
-    return hr;
+    gROOT->cd();
+    TH1D* hReturn = (TH1D*)hr->Clone();
+    inputfile->Close();
+    return hReturn;
 }
 TH1D* GetSysError(double multi_start, double multi_end) {
     TH1D* hr = (TH1D*)GetSpectrasys(multi_start,multi_end);
@@ -958,8 +1007,10 @@ TF1* GetFittedFunction(double multi_start, double multi_end, int fitfunction) {
              fitfuctions[fitfunction].Data()));
     TF1* Ffunc =
         (TF1*)temp->GetPrimitive(Form("%s", fitfuctions[fitfunction].Data()));
-
-    return Ffunc;
+    gROOT->cd();
+    TF1* Fr = (TF1*)Ffunc->Clone();
+    inputfile->Close();
+    return Fr;
 }
 TH1* GetExtraSpectra(double multi_start, double multi_end, int histooption) {
     cout << "intput: " << multi_start << "-" << multi_end
@@ -971,8 +1022,10 @@ TH1* GetExtraSpectra(double multi_start, double multi_end, int histooption) {
     TH1* hEx = (TH1*)temp->GetPrimitive(Form("h_%.2f-%.2f_sys_%s", multi_start,
                                              multi_end,
                                              exhistograms[histooption].Data()));
-
-    return hEx;
+    gROOT->cd();
+    TH1* hr = (TH1*)hEx->Clone();
+    inputfile->Close();
+    return hr;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -1272,8 +1325,11 @@ TH1D* GetSpectrasys(double multi_start, double multi_end){
     else
         text = Form("hSpectra_%.2f_%.2f_sys", multi_start, multi_end);
     TH1D* hr = (TH1D*)inputfile->Get(text);
+    gROOT->cd();
+    TH1D* hreturn = (TH1D*)hr->Clone();
+    inputfile->Close();
 
-    return hr;
+    return hreturn;
 }
 TString GetBinInfo(double multis, double multie){
     TString bininfo = "_";

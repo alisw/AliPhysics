@@ -104,7 +104,7 @@
 
 #include <TProfile.h>
 #include "AliKFParticle.h"
-#include "AliVertexingHFUtils.h"
+
 #include "AliAnalysisUtils.h"
 #include "AliESDUtils.h"
 #include "TRandom.h"
@@ -135,6 +135,7 @@ AliAnalysisTaskSE(),
 
 	ftrigger(AliVEvent::kINT7),
 	fTPCNclus(100),
+	fRatioCrossedRowOverFindable(0.8),
 	fITSNclus(3),
 	fTPCNclusPID(80),
 	fSPDBoth(kTRUE),
@@ -152,7 +153,9 @@ AliAnalysisTaskSE(),
 	fTPCnsigmax(3),
 	IsM20(kFALSE),
 	fCutM20Min(0.02),
-	fCutM20Max(0.6),
+	fCutM20Max1(0.9),
+	fCutM20Max2(0.7),
+	fCutM20Max3(0.5),
 	fCutEopEMin(0.8),
 	fCutEopEMax(1.2),
 
@@ -163,12 +166,15 @@ AliAnalysisTaskSE(),
 	fAssopTMin(0.1),
 	fAssoEtarange(0.9),
 	fAssoTPCnsig(3.5),
+	fdeltaeta(0.01),
+   fdeltaphi(0.01),
 
 	//-------------Analysis
 	fHistPt(0), fHistMult(0), fTPCSignal(0), feta(0), fNentries(0), fNentries2(0),
 	fVtxZ(0),fVtxZ_corr(0),
-	   fClusEtaPhi(0),
+	fClusEtaPhi(0),
    fClusT(0),
+   fTrckT(0),
    fNCells(0), 
    fClusE(0),
    fClusEvsnTracklets(0),
@@ -299,7 +305,7 @@ fRecoEtaULSeEmbWeightTrkPt(0)
 	{
 	  fvalueElectron = new Double_t[9];
 	  fPID = new AliHFEpid("hfePid");
-	  for(Int_t i=0; i<5; i++) fMultEstimatorAvg[i]=0;
+	  fMultEstimatorAvg=0;
 	}
 
 
@@ -317,6 +323,7 @@ AliAnalysisTaskHFEmultTPCEMCAL::AliAnalysisTaskHFEmultTPCEMCAL(const char *name)
 	//-----------
 	ftrigger(AliVEvent::kINT7),
 	fTPCNclus(100),
+	fRatioCrossedRowOverFindable(0.8),
 	fITSNclus(3),
 	fTPCNclusPID(80),
 	fSPDBoth(kTRUE),
@@ -334,7 +341,9 @@ AliAnalysisTaskHFEmultTPCEMCAL::AliAnalysisTaskHFEmultTPCEMCAL(const char *name)
 	fTPCnsigmax(3),
 	IsM20(kFALSE),
 	fCutM20Min(0.02),
-	fCutM20Max(0.6),
+	fCutM20Max1(0.9),
+	fCutM20Max2(0.7),
+	fCutM20Max3(0.5),
 	fCutEopEMin(0.8),
 	fCutEopEMax(1.2),
 
@@ -345,12 +354,15 @@ AliAnalysisTaskHFEmultTPCEMCAL::AliAnalysisTaskHFEmultTPCEMCAL(const char *name)
 	fAssopTMin(0.1),
 	fAssoEtarange(0.9),
 	fAssoTPCnsig(3.5),
-
+	fdeltaeta(0.01),
+   fdeltaphi(0.01),
+   
 	//-------------Analysis
 	fHistPt(0), fHistMult(0), fTPCSignal(0), feta(0),fNentries(0), fNentries2(0),
 	fVtxZ(0),fVtxZ_corr(0),
 	   fClusEtaPhi(0),
    fClusT(0),
+   fTrckT(0),
    fNCells(0), 
    fClusE(0),
    fClusEvsnTracklets(0),
@@ -490,7 +502,7 @@ fRecoEtaULSeEmbWeightTrkPt(0)
   DefineInput(0, TChain::Class());  
   DefineOutput(1, TList::Class());
   DefineOutput(2, TH1F::Class());
-  for(Int_t i=0; i<5; i++) fMultEstimatorAvg[i]=0;
+  fMultEstimatorAvg=0;
 }
 
 //_________________________Destructer_____________________________________
@@ -504,9 +516,9 @@ AliAnalysisTaskHFEmultTPCEMCAL::~AliAnalysisTaskHFEmultTPCEMCAL()
   if (fNentries){ delete fNentries; fNentries = 0;}
   if (fNentries2){ delete fNentries2; fNentries2 = 0;}
   
-     for(Int_t i=0; i<5; i++) {
-      if (fMultEstimatorAvg[i]) delete fMultEstimatorAvg[i];
-  }
+    
+      if (fMultEstimatorAvg) delete fMultEstimatorAvg;
+  
 }
 
 //_______________________________________________________________________
@@ -583,6 +595,8 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
     fOutputList->Add(fClusEtaPhi);
    fClusT     		= new TH1F( "fClusT","Cluster time distribution ; Time(ns) ; counts",500,-1000,1000);
     fOutputList->Add(fClusT);
+    fTrckT     		= new TH1F( "fTrckT","Track-Cluster time distribution ; Time(ns) ; counts",500,-1000,1000);
+    fOutputList->Add(fTrckT);
    fNCells   		= new TH1F("fNCells","ncells distribution ; cell counts ; cluster counts", 50,-10,40);
     fOutputList->Add(fNCells);
    fClusE   		= new TH1F("fClusE","Cluster Energy ; Energy(GeV); counts",200,0.,100.);
@@ -604,7 +618,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fEMCTrketa = new TH1F("fEMCTrketa","#eta distribution of tracks matched to EMCAL;#eta;counts",100,-1.5,1.5);
   fOutputList->Add(fEMCTrketa);
 
-  fEMCTrkphi = new TH1F("fEMCTrkphi","#phi distribution of tracks matched to EMCAL;#phi;counts",100,0,2*pi);
+  fEMCTrkphi = new TH1F("fEMCTrkphi","#phi distribution of tracks matched to EMCAL;#phi;counts",70,0,7);
   fOutputList->Add(fEMCTrkphi);
 
 
@@ -612,9 +626,11 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fOutputList->Add(fEMCTPCnsig);
 
   fClsEAftMatch = new TH1F("fClsEAftMatch", "EMCAL cluster energy distribution after track matching; Cluster E;counts", 100, 0.0, 50.0);
+  fClsEAftMatch->Sumw2();  
   fOutputList->Add(fClsEAftMatch);
   
    fClsEAftMatch_SPD = new TH2F("fClsEAftMatch_SPD", "EMCAL cluster energy distribution after track matching; Cluster E;counts", 100, 0.0, 50.0,300,-0.5,299.5);
+  fClsEAftMatch_SPD->Sumw2();
   fOutputList->Add(fClsEAftMatch_SPD);
   
   fClsEopAftMatch = new TH1F("fClsEopAftMatch", "EMCAL cluster energy over p distribution after track matching; Cluster E/p;counts", 100, 0.0, 2.0);
@@ -649,7 +665,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fOutputList->Add(fSparseElectron);
  */ 
 
-		Int_t binselec[5]		= {380,   180,  100,  100,    300};
+  Int_t binselec[5]		=      {380,   180,  200,  100,    300};
   Double_t xminelec[5]	=	{  2,   -10,    0,    0,       0};
   Double_t xmaxelec[5]	=	{ 40,     8,    2,    2,     300};
 
@@ -1039,7 +1055,7 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fOutputList->Add(Profile_MeanCorr);
    
   //-----------------------------------------------------------------
-  fNentries2=new TH1F("CutSet", "", 28,-0.5,26.5);
+  fNentries2=new TH1F("CutSet", "", 33,-0.5,32.5);
   fNentries2->GetXaxis()->SetBinLabel(1,"trigger");
   fNentries2->GetXaxis()->SetBinLabel(2,"TPCNclus");
   fNentries2->GetXaxis()->SetBinLabel(3,"ITSNclus");
@@ -1065,9 +1081,14 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fNentries2->GetXaxis()->SetBinLabel(23,"fUseTender");
   fNentries2->GetXaxis()->SetBinLabel(24,"IsM20");
   fNentries2->GetXaxis()->SetBinLabel(25,"fCutM20Min");
-  fNentries2->GetXaxis()->SetBinLabel(26,"fCutM20Max");
-  fNentries2->GetXaxis()->SetBinLabel(27,"fCutEopEMin");
-  fNentries2->GetXaxis()->SetBinLabel(28,"fCutEopEMax");
+  fNentries2->GetXaxis()->SetBinLabel(26,"fCutM20Max1");
+  fNentries2->GetXaxis()->SetBinLabel(27,"fCutM20Max2");
+  fNentries2->GetXaxis()->SetBinLabel(28,"fCutM20Max3");
+  fNentries2->GetXaxis()->SetBinLabel(29,"fCutEopEMin");
+  fNentries2->GetXaxis()->SetBinLabel(30,"fCutEopEMax");
+  fNentries2->GetXaxis()->SetBinLabel(31,"deltaeta");
+  fNentries2->GetXaxis()->SetBinLabel(32,"deltaphi");
+  fNentries2->GetXaxis()->SetBinLabel(33,"RatioCrossedRowOverFindable");
   fOutputList->Add(fNentries2);
   
   fNentries2->SetBinContent(1,ftrigger);
@@ -1095,9 +1116,15 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserCreateOutputObjects()
   fNentries2->SetBinContent(23,fUseTender);
   fNentries2->SetBinContent(24,IsM20);
   fNentries2->SetBinContent(25,fCutM20Min);
-  fNentries2->SetBinContent(26,fCutM20Max);
-  fNentries2->SetBinContent(27,fCutEopEMin);
-  fNentries2->SetBinContent(28,fCutEopEMax);
+  fNentries2->SetBinContent(26,fCutM20Max1);
+  fNentries2->SetBinContent(27,fCutM20Max2);
+  fNentries2->SetBinContent(28,fCutM20Max3);
+  fNentries2->SetBinContent(29,fCutEopEMin);
+  fNentries2->SetBinContent(30,fCutEopEMax);
+  fNentries2->SetBinContent(31,fdeltaeta);
+  fNentries2->SetBinContent(32,fdeltaphi);
+  fNentries2->SetBinContent(33,fRatioCrossedRowOverFindable);
+ 
  
 
    
@@ -1150,7 +1177,14 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
 
   	if(fEMCEG2 && fDCalDG2) if(!firedTrigger.Contains(TriggerEG2) && !firedTrigger.Contains(TriggerDG2)) return;
   	if(fEMCEG1 && fDCalDG1) if(!firedTrigger.Contains(TriggerEG1) && !firedTrigger.Contains(TriggerDG1)) return;
-
+  		
+  	if(fDCalDG2 && !fEMCEG2){ if(!firedTrigger.Contains(TriggerDG2))return; }
+  	if(fEMCEG1  && !fDCalDG1){ if(!firedTrigger.Contains(TriggerEG1))return;}
+       if(fEMCEG2  && !fDCalDG2){ if(!firedTrigger.Contains(TriggerEG2))return;}
+       if(fDCalDG1 && !fEMCEG1){ if(!firedTrigger.Contains(TriggerDG1))return;}
+       
+  
+       
 	//cout<<" ftrigger "<<ftrigger<<" fEMCEG1 "<<fEMCEG1<<"   fDCalDG1 "<<fDCalDG1<<"   fEMCEG2 "<<fEMCEG2<<"     fDCalDG2 "<<fDCalDG2<<endl;
 	//getchar();   
 	
@@ -1382,6 +1416,9 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
 				  energy = clu->E();
 				  ncells= clu->GetNCells();
 				  
+				  //if(clu->GetIsExotic()) continue; //remove exotic clusters
+				  //if(fEMCClsTimeCut) if(TMath::Abs(clut) > 50) continue;
+				  
 				  //fClusPhi->Fill(cluphi);
 				  //fClusEta->Fill(clueta);
 				  fClusEtaPhi->Fill(clueta,cluphi); 
@@ -1481,12 +1518,12 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
     	if(clustMatch && clustMatch->IsEMCAL())
     	{
     	 
-    	 	
+    	 	  //if(clustMatch->GetIsExotic()) continue;
 		  Double_t fPhiDiff = -999, fEtaDiff = -999;
 		  GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
 		  fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
 
-		  if(TMath::Abs(fPhiDiff) > 0.01 || TMath::Abs(fEtaDiff)> 0.01) continue;
+		  if(TMath::Abs(fPhiDiff) > fdeltaeta || TMath::Abs(fEtaDiff)> fdeltaeta) continue;
 
 		  /////////////////////////////////
 		  //Select EMCAL or DCAL clusters//
@@ -1502,12 +1539,13 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
 		  if(emcphi > 4.53 && emcphi < 5.708) fClsTypeDCAL = kTRUE;//DCAL  : 260 < phi < 327
 
 		  //----selects EMCAL+DCAL clusters when fFlagClsTypeEMC and fFlagClsTypeDCAL is kTRUE
-      if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
-		  if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
+             if(fFlagClsTypeEMC && !fFlagClsTypeDCAL)
+		         if(!fClsTypeEMC) continue; //selecting only EMCAL clusters
 
-      if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
-      if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
+             if(fFlagClsTypeDCAL && !fFlagClsTypeEMC)
+             if(!fClsTypeDCAL) continue; //selecting only DCAL clusters
 
+            fTrckT->Fill(clut);
       //Double_t clustTime = clustMatch->GetTOF()*1e+9; // ns;
 
 		  //if(fEMCClsTimeCut)
@@ -1618,8 +1656,9 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
 
 		 //if(M02trkmatch < fCutM20Min || M02trkmatch > fCutM20Max) return kFALSE;
 		
-		  if(pt<12){if(M02trkmatch < fCutM20Min || M02trkmatch > 0.9) continue;}
-		  if(pt>=12){if(M02trkmatch < fCutM20Min || M02trkmatch > 0.7) continue;}
+		  if(pt<12){if(M02trkmatch < fCutM20Min || M02trkmatch > fCutM20Max1) continue;}
+		  if(pt>=12 && pt<20){if(M02trkmatch < fCutM20Min || M02trkmatch > fCutM20Max2) continue;}
+		  if(pt>=20){if(M02trkmatch < fCutM20Min || M02trkmatch > fCutM20Max3) continue;}
 		  
 		  
 		  if(fIsMC && track->GetLabel()>=0)
@@ -1682,6 +1721,8 @@ void AliAnalysisTaskHFEmultTPCEMCAL::UserExec(Option_t *)
 				fNonHFE->SetHistMass(fInvmassULS1);
 				}
 				fNonHFE->FindNonHFE(iTracks,track,fAOD,fTracks_tender,fUseTender);
+				//fNonHFE->FindNonHFE(iTracks,track,fAOD);
+				
 			
 				Int_t fNULS = fNonHFE->GetNULS();
 				Int_t fNLS = fNonHFE->GetNLS();
@@ -1892,16 +1933,19 @@ Int_t AliAnalysisTaskHFEmultTPCEMCAL::ClassifyTrack(AliAODTrack* track,const Ali
 	//if (TMath::Abs(eta)>=0.7) return 0; 
 	
 	Double_t nclus = track->GetTPCNcls();  // TPC cluster information
-	Double_t nclusF = track->GetTPCNclsF();
- 	Double_t nclusN = track->GetTPCsignalN();  // TPC cluster information findable
- 	Double_t RatioTPCclusters=nclusN/nclusF;
+	Double_t nclusF = track->GetTPCNclsF(); // TPC cluster information findable
+ 	Double_t nclusN = track->GetTPCsignalN();
+ 	  
+ 	Double_t RatioTPCclusters= track->GetTPCCrossedRows() /nclusF;
 
  	
  	//=====TPC Cluster, TPC PID cut, ITS clsuter, RatioTPCcluster============= 
-	if(track->GetTPCNcls() < fTPCNclus) return 0; //TPC N clusters
-	if(track->GetITSNcls() < fITSNclus) return 0; // ITS N clusters
+	//if(track->GetTPCNcls() < fTPCNclus) return 0; //TPC N clusters
+	if(track->GetTPCCrossedRows() < fTPCNclus) return 0; //TPC N crossedRows
+	if(RatioTPCclusters < fRatioCrossedRowOverFindable) return 0;
 	if(nclusN< fTPCNclusPID) return 0 ;
-	if(RatioTPCclusters<0.6) return 0;
+	
+	if(track->GetITSNcls() < fITSNclus) return 0; // ITS N clusters
 	
 	//=========ITS TPC Refit=============
 	if((!(track->GetStatus()&AliESDtrack::kITSrefit)|| (!(track->GetStatus()&AliESDtrack::kTPCrefit)))) return 0; // ITS and TPC refit
@@ -1909,11 +1953,11 @@ Int_t AliAnalysisTaskHFEmultTPCEMCAL::ClassifyTrack(AliAODTrack* track,const Ali
 	
 	//=====Hits on SPD layers=============
 	
-	/*if(fSPDBoth){ if(!(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1))) return 0;} //Hit on first and second SPD layer
+       if(fSPDBoth){ if(!(track->HasPointOnITSLayer(0) && track->HasPointOnITSLayer(1))) return 0;} //Hit on first and second SPD layer
 	else if(fSPDAny){ if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) return 0;} //Hit on any layer
 	else if(fSPDFirst){ if(!(track->HasPointOnITSLayer(0))) return 0;} //Hit on first and second SPD layer
-  */
-   if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) return 0;
+  
+   //if(!(track->HasPointOnITSLayer(0) || track->HasPointOnITSLayer(1))) return 0;
     
 	//=========DCA Cut ==================
 	Double_t d0z0[2]={-999,-999}, cov[3];
@@ -2093,18 +2137,20 @@ void AliAnalysisTaskHFEmultTPCEMCAL::SelectPhotonicElectron(Int_t itrack, AliVTr
         //------track cuts applied
         //if(fAOD) {
             if(!aAssotrack->TestFilterMask(AliAODTrack::kTrkTPCOnly)) continue;
-            if(aAssotrack->GetTPCNcls() < 70) continue;
+            if(aAssotrack->GetTPCNcls() < fAssoTPCCluster) continue;
             if((!(aAssotrack->GetStatus()&AliESDtrack::kITSrefit)|| (!(aAssotrack->GetStatus()&AliESDtrack::kTPCrefit)))) continue;
             
             //if(aAssotrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
-			if(aAssotrack->PropagateToDCA(pVtx,fAOD->GetMagneticField(), 20., d0z0, cov))
-                if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
+			//if(aAssotrack->PropagateToDCA(pVtx,fAOD->GetMagneticField(), 20., d0z0, cov))
+         //       if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) continue;
         //}
         
         //-------loose cut on partner electron
-        if(ptAsso <0.150) continue;
-        if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;
-        if(nsigma < -3 || nsigma > 3) continue;
+        if(ptAsso < fAssopTMin) continue;
+		if(TMath::Abs(aAssotrack->Eta())>fAssoEtarange) continue;
+		if(TMath::Abs(nsigma) > fAssoTPCnsig ) continue;
+
+        
         
         Int_t chargeAsso = Assotrack->Charge();
         Int_t charge = track->Charge();
@@ -2698,8 +2744,8 @@ Bool_t AliAnalysisTaskHFEmultTPCEMCAL::GetNonHFEEffiULSLS(AliVTrack *track, AliV
 TProfile* AliAnalysisTaskHFEmultTPCEMCAL::GetEstimatorHistogram(const AliAODEvent* fAOD)
 {
 
-  if (fPeriod < 0 || fPeriod > 5) return 0;   
-  return fMultEstimatorAvg[fPeriod];
+  if (fPeriod < 0 || fPeriod > 15) return 0;   
+  return fMultEstimatorAvg;
 }
 /*
 TProfile* AliAnalysisTaskHFEmultTPCEMCAL::GetEstimatorHistogram(const AliAODEvent* fAOD)
@@ -2774,4 +2820,6 @@ void AliAnalysisTaskHFEmultTPCEMCAL::Terminate(Option_t *)
 	if (!fOutputList)return;
 
 }
+
+
 

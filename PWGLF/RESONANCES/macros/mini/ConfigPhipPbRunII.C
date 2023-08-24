@@ -99,7 +99,7 @@ Bool_t ConfigPhipPbRunII(AliRsnMiniAnalysisTask *task,
     //axis W: pseudorapidity
     //out->AddAxis(etaID, 20, -1.0, 1.0);
     //axis J: rapidity
-    out->AddAxis(yID, 200, -0.8, 0.2);
+    out->AddAxis(yID, 320, -0.8, 0.8);
   }
   return kTRUE;
 }

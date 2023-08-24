@@ -136,7 +136,7 @@ AliAnalysisTaskEmcalTriggerSelectionTest *AliAnalysisTaskEmcalTriggerSelectionTe
   AliAnalysisTaskEmcalTriggerSelectionTest *testtask = new AliAnalysisTaskEmcalTriggerSelectionTest(taskname);
   mgr->AddTask(testtask);
 
-  AliClusterContainer *clusters = testtask->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()));
+  AliClusterContainer *clusters = testtask->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()));
   clusters->SetClusNonLinCorrEnergyCut(0.5);
 
   mgr->ConnectInput(testtask, 0, mgr->GetCommonInputContainer());

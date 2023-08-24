@@ -1,13 +1,17 @@
 #ifndef ALIANALYSISTRACKINGUNCERTAINTIESAOT_H
 #define ALIANALYSISTRACKINGUNCERTAINTIESAOT_H
 
-//////////////////////////////////////////////////////////////////////////////
-//                                                                          //
-// Analysis task for the systematic study of the uncertainties related to   //
-// the tracking and ITS-TPC matching efficiency for different particle      //
-// species.                                                                 //
-//                                                                          //
-//////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                 //
+// Analysis task for the systematic study of the uncertainties related to                          //
+// the tracking and ITS-TPC matching efficiency for different particle  species.                   //
+//                                                                                                 //
+//                                                                                                 //
+//  This is my version 2.5 - RT                                                                    //
+//                                                                                                 //
+// - fAddPriVtxVars now is the switch to choose if vtx quallity check axes are present or not      //
+//                                                                                                 //
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 
 class TList;
 class AliESDEvent;
@@ -18,17 +22,22 @@ class AliESDpid;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliESDtrackCuts.h"
+#include "AliEventCuts.h"
+#include "AliAnalysisUtils.h"
+
 #include "THn.h"
 #include <THnSparse.h>
 #include <Rtypes.h>
 
 class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
-    
+  //
+  //
  public:
-    
   enum {
-    kNumberOfAxes = 8
+    kNumberOfAxes = 8,
+    kNumberOfAxesWvtx = 12
   };
+    
   enum ESpecies_t {
     kSpecElectron = BIT(0),
     kSpecPion     = BIT(1),
@@ -38,7 +47,23 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   };
   enum ECentrality {kCentOff,kCentV0M,kCentCL1,kCentZNA,kCentV0A,kCentInvalid};
 
-    
+  // list of possible standard ESD track cuts set
+  enum EtrkCuts {
+    kDefault=0,
+    kStdTPConlyTrkCuts=1,
+    kStdITSTPCTrkCuts2009,
+    kStdITSTPCTrkCuts2010,
+    kStdITSTPCTrkCuts2011,
+    kStdITSTPCTrkCuts2015PbPb,
+    kStdITSTPCTrkCuts2011TightChi2TPC
+    // to be implemented, if needed
+    //kStdITSSATrkCuts2009,
+    //kStdITSSATrkCuts2010,
+    //kStdITSSATrkCutsPbPb2010,
+    //kStdITSPureSATrackCuts2009,
+    //kStdITSPureSATrackCuts2010
+  };
+
   AliAnalysisTrackingUncertaintiesAOT(const char *name);
   AliAnalysisTrackingUncertaintiesAOT();
   virtual ~AliAnalysisTrackingUncertaintiesAOT();
@@ -82,8 +107,27 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
     fCutGeoNcrNclFractionNcr=fncr; fCutGeoNcrNclFractionNcl=fncl;
   }
 
+  // possibility to modify the ESD track cuts set
+  void SetStandardESDtrkCuts(UInt_t whichcuts, UInt_t option_TPCclstcut)  {fWhichCuts=whichcuts; fTPCclstCut=option_TPCclstcut;}
+
   ULong64_t GetTriggerMask() {return fTriggerMask;}
   ULong64_t GetSpecie() {return fspecie;}
+
+  // set event selections for Pb-Pb2018
+  void SetUsePbPb2018EvSel(Bool_t flag, Int_t which_PileUpcut, Bool_t keep_only_pileup){
+    fUsePbPb2018EvSel  = flag;
+    fPileUpPbPb2018cut = which_PileUpcut;
+    fKeepOnlyPileUp    = keep_only_pileup;
+  }
+  
+  // number of bins for histTpcItsMatch
+  void SetnBinsDCAxy_histTpcItsMatch(Int_t n)  {fnBinsDCAxy_histTpcItsMatch = n;}
+
+  // switch on/off MC spectra weights
+  void SetUseMCWeights()  {fUseMCWeights = kTRUE;}
+
+  // choose to add to the ThnSparse 4 more axes of primary vertex resolution and position variables
+  void SetfAddPriVtxVars()  {fAddPriVtxVars = kTRUE;}
 
  private:
     
@@ -115,12 +159,20 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
     
   TH1F *fHistNEvents;               //! histo with number of events
   TH1F *fHistCent;                  //! histo for the centrality 
+  TH1F *fHistVtxResT;               //! primary vertex resolution in bending plane
+  TH1F *fHistVtxResZ;               //! primary vertex resolution in z
+  TH1F *fHistVtxZpos;               //! primary vertex z position
+  TH1F *fHistVtxChi2;               //! primary vertex chi2/ndf
+  TH2F *fHistAllV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (all)
+  TH2F *fHistSelV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (sel)
+  TH2F *fHistMCWeights;             //! histo of MC weights per particle type
   THnSparse *fHistMC;               //! sparse of the tracks on MC and ITS-TOC matching
   THnSparse *fHistMCTPConly;        //! sparse of the tracks on MC and only TPC request
   THnSparse *fHistData;             //! sparse of the tracks on data and ITS-TPC matching
-  TH2F *fHistAllV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (all)
-  TH2F *fHistSelV0multNTPCout;      //! histo for V0mult vs #tracks TPCout (sel)
 
+
+
+  
   Bool_t   fMC;                     //flag to switch on the MC analysis for the efficiency estimation
   Bool_t   fRequireVtxTracks;       //flag to require track vertex, if false accepts also SPD
   Bool_t   fUsePtLogAxis;           //flag to use log scale on pt axis in match. eff. sparse
@@ -147,11 +199,28 @@ class AliAnalysisTrackingUncertaintiesAOT : public AliAnalysisTaskSE {
   Double_t fCutGeoNcrNclFractionNcr; /// 4th parameter of GeoNcrNcl cut
   Double_t fCutGeoNcrNclFractionNcl; /// 5th parameter of GeoNcrNcl cut
 
+  // possibility to modify the ESD track cuts set
+  UInt_t fWhichCuts;  ///
+  UInt_t fTPCclstCut; /// 0: cut on TPC clusters; 1: cuts on the number of crossed rows and on the ration crossed rows/findable clusters
+
+  /// event-cut object for centrality correlation event cuts
+  //  used for Pb-Pb2018
+  Bool_t       fUsePbPb2018EvSel;   ///
+  Bool_t       fKeepOnlyPileUp;     ///
+  Int_t        fPileUpPbPb2018cut;  /// option for additional out-of-bunch pileup cut based on ITS-TPC correlation (0=no cut, 1=tight cut, 2=intermediate cut, 3=loose cut)
+  AliEventCuts fAliEventCuts;       ///
+
+  // number of bins for histTpcItsMatch
+  Int_t fnBinsDCAxy_histTpcItsMatch; ///
+
+  // switch on (if set) MC spectra weights
+  Bool_t       fUseMCWeights;     ///
+  Bool_t       fAddPriVtxVars;    ///
+  
   AliAnalysisTrackingUncertaintiesAOT(const AliAnalysisTrackingUncertaintiesAOT&);
   AliAnalysisTrackingUncertaintiesAOT& operator=(const AliAnalysisTrackingUncertaintiesAOT&);
     
-  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 11);
+  ClassDef(AliAnalysisTrackingUncertaintiesAOT, 13);
 };
 
 #endif
-

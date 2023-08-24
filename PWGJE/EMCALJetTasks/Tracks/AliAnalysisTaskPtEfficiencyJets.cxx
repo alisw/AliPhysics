@@ -34,9 +34,9 @@
 
 #include "AliAnalysisTaskPtEfficiencyJets.h"
 
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskPtEfficiencyJets)
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskPtEfficiencyJets)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskPtEfficiencyJets::AliAnalysisTaskPtEfficiencyJets() :
     AliAnalysisTaskEmcalJet(),
@@ -111,7 +111,7 @@ Bool_t AliAnalysisTaskPtEfficiencyJets::Run() {
 }
 
 AliVTrack* AliAnalysisTaskPtEfficiencyJets::FindAssociatedTrack(AliVParticle* trueParticle) {
-  AliVTrack *result = NULL, *tmp = NULL;
+  AliVTrack *result = NULL;
   for(int itrk = 0; itrk < fInputEvent->GetNumberOfTracks(); itrk++){
     AliVTrack *trk = static_cast<AliVTrack *>(fInputEvent->GetTrack(itrk));
     if(TMath::Abs(trk->GetLabel()) != TMath::Abs(trueParticle->GetLabel())) continue;
@@ -151,5 +151,3 @@ bool AliAnalysisTaskPtEfficiencyJets::SelectTrueParticle(AliVParticle* part) {
     return kTRUE;
   }
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

@@ -5,6 +5,23 @@
 #include "AliOADBTriggerAnalysis.h"
 #endif
 
+AliOADBPhysicsSelection* DefaultPP(const char* name = "oadbDefaultPP");
+AliOADBPhysicsSelection* DefaultPbPb(const char* name = "oadbDefaultPbPb");
+AliOADBPhysicsSelection* PbPb2015_withoutZDC(const char* name = "oadbPbPbWithoutZDC");
+AliOADBPhysicsSelection* Pbp2013(const char* name = "oadbLHC13f");
+AliOADBPhysicsSelection* Pbp2016(const char* name = "oadb_Pbp_2016");
+AliOADBPhysicsSelection* PbPb2010(const char* name = "oadbLHC10h");
+AliOADBPhysicsSelection* PbPb2011(const char* name = "oadbDefaultlhc11h");
+AliOADBPhysicsSelection* pp_18c(const char* name = "oadb_pp_18c");
+AliOADBPhysicsSelection* pp2010_V0Bug(const char* name = "oadbLHC10cV0Bug");
+AliOADBPhysicsSelection* pp2010(const char* name = "oadbLHCpp2010");
+AliOADBPhysicsSelection* pp2017_5TeV(const char* name = "oadb_pp_17pq");
+AliOADBPhysicsSelection* pPb2013(const char* name = "oadbLHC13b");
+AliOADBPhysicsSelection* pPb2016(const char* name = "oadb_pPb_2016");
+AliOADBPhysicsSelection* XeXe2017(const char* name = "oadb_XeXe");
+AliOADBContainer* CreateFillingSchemeContainer();
+AliOADBContainer* CreateTriggerAnalysisContainer();
+
 void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
   TString oadbfilename("../COMMON/PHYSICSSELECTION/data/physicsSelection.root");
   if (!fill) {
@@ -49,7 +66,7 @@ void BrowseAndFillPhysicsSelectionOADB(Bool_t fill = kFALSE) {
 }
 
 
-AliOADBPhysicsSelection* DefaultPP(char* name = "oadbDefaultPP"){
+AliOADBPhysicsSelection* DefaultPP(const char* name){
   // DefaultPP (since 2012)
   AliOADBPhysicsSelection * oadbDefaultPP = new AliOADBPhysicsSelection(name);
   UInt_t triggerCount = 0;
@@ -168,7 +185,7 @@ AliOADBPhysicsSelection* DefaultPP(char* name = "oadbDefaultPP"){
   oadbDefaultPP->SetOfflineTrigger       (triggerCount,"!T0BG && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !TPCHVdip && !IncompleteEvent");
 
   triggerCount++;
-  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kEMCEJE,"+C[EMC7E|DMC7D]J[A|1|2]-[I|B|S]-NOPF-[ALL|CENT][NOTRD|]","B", triggerCount);
+  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kEMCEJE,"+C[EMC7E|DMC7D]J[E|1|2]-[I|B|S]-NOPF-[ALL|CENT][NOTRD|]","B", triggerCount);
   oadbDefaultPP->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadbDefaultPP->SetOfflineTrigger       (triggerCount,"V0A && V0C && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !TPCHVdip && !IncompleteEvent");
 
@@ -203,39 +220,44 @@ AliOADBPhysicsSelection* DefaultPP(char* name = "oadbDefaultPP"){
   oadbDefaultPP->SetOfflineTrigger       (triggerCount,"!SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !IncompleteEvent");
 
   triggerCount++;
-  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7[WU|]HJT-[B|I|S|T]-NOPF-[CENT|FAST]","B",triggerCount);
+  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7WUHJT-[B|I|S]-NOPF-[CENT|FAST]","B",triggerCount);
   oadbDefaultPP->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadbDefaultPP->SetOfflineTrigger       (triggerCount,"V0A && V0C && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !TPCHVdip && TRDHJT && !IncompleteEvent");
 
   triggerCount++;
-  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7[WU|]HSE-[B|I|S|T]-NOPF-[CENT|FAST]","B",triggerCount);
+  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7WUHSE-[B|I|S]-NOPF-[CENT|FAST]","B",triggerCount);
   oadbDefaultPP->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadbDefaultPP->SetOfflineTrigger       (triggerCount,"V0A && V0C && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !TPCHVdip && TRDHSE && !IncompleteEvent");
 
   triggerCount++;
-  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7[WU|]HQU-[B|I|S|T]-NOPF-[CENT|FAST]","B",triggerCount);
+  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7WUHQU-[B|I|S]-NOPF-[CENT|FAST]","B",triggerCount);
   oadbDefaultPP->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadbDefaultPP->SetOfflineTrigger       (triggerCount,"V0A && V0C && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !TPCHVdip && TRDHQU && !IncompleteEvent");
 
   triggerCount++;
-  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kTRD,"+CEMC7[WU|]HQU-[B|I|S|T]-NOPF-CENT","B",triggerCount);
+  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kTRD,"+CEMC7WUHQU-[B|I|S]-NOPF-CENT","B",triggerCount);
   oadbDefaultPP->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadbDefaultPP->SetOfflineTrigger       (triggerCount,"V0A && V0C && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !TPCHVdip && TRDHQU && !IncompleteEvent");
 
   triggerCount++;
-  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT8[WU|]HJT-[B|I|S|T]-NOPF-CENT","B",triggerCount);
+  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT8WUHJT-[B|I|S]-NOPF-CENT","B",triggerCount);
   oadbDefaultPP->SetHardwareTrigger      (triggerCount,"T0");
   oadbDefaultPP->SetOfflineTrigger       (triggerCount,"!T0BG && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !TPCHVdip && TRDHJT && !IncompleteEvent");
 
   triggerCount++;
-  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT8[WU|]HSE-[B|I|S|T]-NOPF-CENT","B",triggerCount);
+  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT8WUHSE-[B|I|S]-NOPF-CENT","B",triggerCount);
   oadbDefaultPP->SetHardwareTrigger      (triggerCount,"T0");
   oadbDefaultPP->SetOfflineTrigger       (triggerCount,"!T0BG && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !TPCHVdip && TRDHSE && !IncompleteEvent");
 
   triggerCount++;
-  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT8[WU|]HQU-[B|I|S|T]-NOPF-CENT","B",triggerCount);
+  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT8WUHQU-[B|I|S]-NOPF-CENT","B",triggerCount);
   oadbDefaultPP->SetHardwareTrigger      (triggerCount,"T0");
   oadbDefaultPP->SetOfflineTrigger       (triggerCount,"!T0BG && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !TPCHVdip && TRDHQU && !IncompleteEvent");
+
+  triggerCount++;
+  oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7[HJT|HSE|HQU|HNU]-[B|I|S|T]-[NOPF|SPD2]-[CENT|FAST]","B",triggerCount);
+  oadbDefaultPP->SetHardwareTrigger      (triggerCount,"V0A && V0C");
+  oadbDefaultPP->SetOfflineTrigger       (triggerCount,"V0A && V0C && !SPDClsVsTrkBG && !V0Casym && !V0C012vsTklBG && !V0MOnVsOfPileup && !SPDOnVsOfPileup && !V0PFPileup && !SPDVtxPileup && !TPCHVdip && !IncompleteEvent");
 
   triggerCount++;
   oadbDefaultPP->AddCollisionTriggerClass(AliVEvent::kMuonCalo,"+C[EMC7E|DMC7D]J[1|2]-B-NOPF-CALOFAST,C[EMC7E|DMC7D]G[1|2]-B-NOPF-CALOFAST,CPHI7-B-NOPF-CALOFAST","B",triggerCount);
@@ -251,7 +273,7 @@ AliOADBPhysicsSelection* DefaultPP(char* name = "oadbDefaultPP"){
 }
 
 
-AliOADBPhysicsSelection* DefaultPbPb(char* name = "oadbDefaultPbPb"){
+AliOADBPhysicsSelection* DefaultPbPb(const char* name){
    // DefaultPbPb (since 2015)
    AliOADBPhysicsSelection * oadbDefaultPbPb = new AliOADBPhysicsSelection(name);
    UInt_t triggerCount = 0;
@@ -343,7 +365,7 @@ AliOADBPhysicsSelection* DefaultPbPb(char* name = "oadbDefaultPbPb"){
 }
 
 
-AliOADBPhysicsSelection* PbPb2015_withoutZDC(char* name = "oadbPbPbWithoutZDC"){
+AliOADBPhysicsSelection* PbPb2015_withoutZDC(const char* name){
   // PbPb without ZDC
   AliOADBPhysicsSelection * oadbPbPbWithoutZDC = new AliOADBPhysicsSelection(name);
   UInt_t triggerCount = 0;
@@ -415,7 +437,7 @@ AliOADBPhysicsSelection* PbPb2015_withoutZDC(char* name = "oadbPbPbWithoutZDC"){
 }
 
 
-AliOADBPhysicsSelection* XeXe2017(char* name = "oadb_XeXe"){
+AliOADBPhysicsSelection* XeXe2017(const char* name){
   // Xe-Xe 2017
   AliOADBPhysicsSelection * oadb_XeXe = new AliOADBPhysicsSelection(name);
   UInt_t triggerCount = 0;
@@ -441,7 +463,7 @@ AliOADBPhysicsSelection* XeXe2017(char* name = "oadb_XeXe"){
   return oadb_XeXe;
 }
 
-AliOADBPhysicsSelection* pPb2016(char* name = "oadb_pPb_2016"){
+AliOADBPhysicsSelection* pPb2016(const char* name){
   // p-Pb 2016
   AliOADBPhysicsSelection * oadb_pPb_2016 = new AliOADBPhysicsSelection(name);
   UInt_t triggerCount = 0;
@@ -526,7 +548,7 @@ AliOADBPhysicsSelection* pPb2016(char* name = "oadb_pPb_2016"){
   return oadb_pPb_2016;
 }
 
-AliOADBPhysicsSelection* Pbp2016(char* name = "oadb_Pbp_2016"){
+AliOADBPhysicsSelection* Pbp2016(const char* name){
   // Pb-p 2016
   AliOADBPhysicsSelection * oadb_Pbp_2016 = new AliOADBPhysicsSelection(name);
   UInt_t triggerCount = 0;
@@ -617,12 +639,12 @@ AliOADBPhysicsSelection* Pbp2016(char* name = "oadb_Pbp_2016"){
   return oadb_Pbp_2016;
 }
 
-AliOADBPhysicsSelection* pp2010(char* name = "oadbLHCpp2010"){
+AliOADBPhysicsSelection* pp2010(const char* name){
   // pp2010-11
   AliOADBPhysicsSelection * oadbLHCpp2010 = new AliOADBPhysicsSelection(name);
   UInt_t triggerCount = 0;
   oadbLHCpp2010->AddCollisionTriggerClass(AliVEvent::kINT1,"+CINT1B-ABCE-NOPF-ALL,CINT1-B-NOPF-ALL[NOTRD|]","B",triggerCount);
-  oadbLHCpp2010->AddCollisionTriggerClass(AliVEvent::kINT1 | AliVEvent::kFastOnly,"+CINT1-B-NOPF-FASTNOTRD -CINT1-B-NOPF-ALLNOTRD","B",triggerCount);
+  oadbLHCpp2010->AddCollisionTriggerClass((AliVEvent::EOfflineTriggerTypes)(AliVEvent::kINT1 | AliVEvent::kFastOnly),"+CINT1-B-NOPF-FASTNOTRD -CINT1-B-NOPF-ALLNOTRD","B",triggerCount);
   oadbLHCpp2010->SetHardwareTrigger      (triggerCount,"SPDGFO >= 1 || V0A || V0C");
   oadbLHCpp2010->SetOfflineTrigger       (triggerCount,"(SPDGFO >= 1 || V0A || V0C) && !V0ABG && !V0CBG  && !TPCLaserWarmUp && !TPCHVdip");
 
@@ -693,7 +715,7 @@ AliOADBPhysicsSelection* pp2010(char* name = "oadbLHCpp2010"){
   return oadbLHCpp2010;
 }
 
-AliOADBPhysicsSelection* pp2010_V0Bug(char* name = "oadbLHC10cV0Bug"){
+AliOADBPhysicsSelection* pp2010_V0Bug(const char* name){
   // LHC10c, fill 1069 (problems with the V0 online trigger in ESD)
   AliOADBPhysicsSelection * oadbLHC10cV0Bug = new AliOADBPhysicsSelection(name);
   UInt_t triggerCount = 0;
@@ -708,7 +730,7 @@ AliOADBPhysicsSelection* pp2010_V0Bug(char* name = "oadbLHC10cV0Bug"){
   return oadbLHC10cV0Bug;
 }
 
-AliOADBPhysicsSelection* PbPb2010(char* name = "oadbLHC10h"){
+AliOADBPhysicsSelection* PbPb2010(const char* name){
   // LHC10h
   AliOADBPhysicsSelection * oadbLHC10h = new AliOADBPhysicsSelection("oadbLHC10h");
   UInt_t triggerCount = 0;
@@ -738,7 +760,7 @@ AliOADBPhysicsSelection* PbPb2010(char* name = "oadbLHC10h"){
   return oadbLHC10h;
 }
 
-AliOADBPhysicsSelection* PbPb2011(char* name = "oadbDefaultlhc11h"){
+AliOADBPhysicsSelection* PbPb2011(const char* name){
   // LHC11h
   AliOADBPhysicsSelection * oadbLHC11h = new AliOADBPhysicsSelection(name);
   UInt_t triggerCount = 0;
@@ -794,7 +816,7 @@ AliOADBPhysicsSelection* PbPb2011(char* name = "oadbDefaultlhc11h"){
 }
 
 
-AliOADBPhysicsSelection* pPb2013(char* name = "oadbLHC13b"){
+AliOADBPhysicsSelection* pPb2013(const char* name){
   // p-Pb (Pb going in A direction)
   AliOADBPhysicsSelection * oadbLHC13b = new AliOADBPhysicsSelection(name);
   UInt_t triggerCount = 0;
@@ -864,19 +886,19 @@ AliOADBPhysicsSelection* pPb2013(char* name = "oadbLHC13b"){
 
   triggerCount++;
   oadbLHC13b->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7WUHJT-B-NOPF-[ALL|CENT]","B",triggerCount);
-  oadbLHC13b->AddCollisionTriggerClass(AliVEvent::kTRD | AliVEvent::kFastOnly,"+CINT7WUHJT-B-NOPF-FAST -CINT7WUHJT-B-NOPF-[ALL|CENT]","B",triggerCount);
+  oadbLHC13b->AddCollisionTriggerClass((AliVEvent::EOfflineTriggerTypes)(AliVEvent::kTRD | AliVEvent::kFastOnly),"+CINT7WUHJT-B-NOPF-FAST -CINT7WUHJT-B-NOPF-[ALL|CENT]","B",triggerCount);
   oadbLHC13b->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadbLHC13b->SetOfflineTrigger       (triggerCount,"V0A && V0C && !ZNABG && TRDHJT && !TPCHVdip && !IncompleteEvent");
 
   triggerCount++;
   oadbLHC13b->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7WUHSE-B-NOPF-[ALL|CENT]", "B",triggerCount);
-  oadbLHC13b->AddCollisionTriggerClass(AliVEvent::kTRD | AliVEvent::kFastOnly,"+CINT7WUHSE-B-NOPF-FAST -CINT7WUHSE-B-NOPF-[ALL|CENT]","B",triggerCount);
+  oadbLHC13b->AddCollisionTriggerClass((AliVEvent::EOfflineTriggerTypes)(AliVEvent::kTRD | AliVEvent::kFastOnly),"+CINT7WUHSE-B-NOPF-FAST -CINT7WUHSE-B-NOPF-[ALL|CENT]","B",triggerCount);
   oadbLHC13b->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadbLHC13b->SetOfflineTrigger       (triggerCount,"V0A && V0C && !ZNABG && TRDHSE && !TPCHVdip && !IncompleteEvent");
 
   triggerCount++;
   oadbLHC13b->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7WUHQU-B-NOPF-[ALL|CENT]", "B",   triggerCount);
-  oadbLHC13b->AddCollisionTriggerClass(AliVEvent::kTRD | AliVEvent::kFastOnly,"+CINT7WUHQU-B-NOPF-FAST -CINT7WUHQU-B-NOPF-[ALL|CENT]","B",triggerCount);
+  oadbLHC13b->AddCollisionTriggerClass((AliVEvent::EOfflineTriggerTypes)(AliVEvent::kTRD | AliVEvent::kFastOnly),"+CINT7WUHQU-B-NOPF-FAST -CINT7WUHQU-B-NOPF-[ALL|CENT]","B",triggerCount);
   oadbLHC13b->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadbLHC13b->SetOfflineTrigger       (triggerCount,"V0A && V0C && !ZNABG && TRDHQU && !TPCHVdip && !IncompleteEvent");
 
@@ -892,7 +914,7 @@ AliOADBPhysicsSelection* pPb2013(char* name = "oadbLHC13b"){
   return oadbLHC13b;
 }
 
-AliOADBPhysicsSelection* Pbp2013(char* name = "oadbLHC13f"){
+AliOADBPhysicsSelection* Pbp2013(const char* name){
   // Pb-p (Pb going in C direction)
   AliOADBPhysicsSelection * oadbLHC13f = new AliOADBPhysicsSelection(name);
   UInt_t triggerCount = 0;
@@ -952,19 +974,19 @@ AliOADBPhysicsSelection* Pbp2013(char* name = "oadbLHC13f"){
 
   triggerCount++;
   oadbLHC13f->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7WUHJT-B-NOPF-[ALL|CENT]","B",triggerCount);
-  oadbLHC13f->AddCollisionTriggerClass(AliVEvent::kTRD | AliVEvent::kFastOnly,"+CINT7WUHJT-B-NOPF-FAST -CINT7WUHJT-B-NOPF-[ALL|CENT]","B",triggerCount);
+  oadbLHC13f->AddCollisionTriggerClass((AliVEvent::EOfflineTriggerTypes)(AliVEvent::kTRD | AliVEvent::kFastOnly),"+CINT7WUHJT-B-NOPF-FAST -CINT7WUHJT-B-NOPF-[ALL|CENT]","B",triggerCount);
   oadbLHC13f->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadbLHC13f->SetOfflineTrigger       (triggerCount,"V0A && V0C && !ZNCBG && TRDHJT && !TPCHVdip");
 
   triggerCount++;
   oadbLHC13f->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7WUHSE-B-NOPF-[ALL|CENT]","B",triggerCount);
-  oadbLHC13f->AddCollisionTriggerClass(AliVEvent::kTRD | AliVEvent::kFastOnly,"+CINT7WUHSE-B-NOPF-FAST -CINT7WUHSE-B-NOPF-[ALL|CENT]","B",triggerCount);
+  oadbLHC13f->AddCollisionTriggerClass((AliVEvent::EOfflineTriggerTypes)(AliVEvent::kTRD | AliVEvent::kFastOnly),"+CINT7WUHSE-B-NOPF-FAST -CINT7WUHSE-B-NOPF-[ALL|CENT]","B",triggerCount);
   oadbLHC13f->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadbLHC13f->SetOfflineTrigger       (triggerCount,"V0A && V0C && !ZNCBG && TRDHSE && !TPCHVdip");
 
   triggerCount++;
   oadbLHC13f->AddCollisionTriggerClass(AliVEvent::kTRD,"+CINT7WUHQU-B-NOPF-[ALL|CENT]","B",triggerCount);
-  oadbLHC13f->AddCollisionTriggerClass(AliVEvent::kTRD | AliVEvent::kFastOnly,"+CINT7WUHQU-B-NOPF-FAST -CINT7WUHQU-B-NOPF-[ALL|CENT]","B",triggerCount);
+  oadbLHC13f->AddCollisionTriggerClass((AliVEvent::EOfflineTriggerTypes)(AliVEvent::kTRD | AliVEvent::kFastOnly),"+CINT7WUHQU-B-NOPF-FAST -CINT7WUHQU-B-NOPF-[ALL|CENT]","B",triggerCount);
   oadbLHC13f->SetHardwareTrigger      (triggerCount,"V0A && V0C");
   oadbLHC13f->SetOfflineTrigger       (triggerCount,"V0A && V0C && !ZNCBG && TRDHQU && !TPCHVdip");
 
@@ -980,7 +1002,7 @@ AliOADBPhysicsSelection* Pbp2013(char* name = "oadbLHC13f"){
   return oadbLHC13f;
 }
 
-AliOADBPhysicsSelection* pp2017_5TeV(char* name = "oadb_pp_17pq"){
+AliOADBPhysicsSelection* pp2017_5TeV(const char* name){
   // high lumi p-p@5TeV LHC17pq
   AliOADBPhysicsSelection * oadb_pp_17pq = new AliOADBPhysicsSelection(name);
   UInt_t triggerCount = 0;
@@ -1051,7 +1073,7 @@ AliOADBPhysicsSelection* pp2017_5TeV(char* name = "oadb_pp_17pq"){
   return oadb_pp_17pq;
 }
 
-AliOADBPhysicsSelection* pp_18c(char* name = "oadb_pp_18c"){
+AliOADBPhysicsSelection* pp_18c(const char* name){
    // p-p@13TeV LHC18c, low B-field
    AliOADBPhysicsSelection * oadb_pp_18c = new AliOADBPhysicsSelection(name);
    UInt_t triggerCount = 0;
@@ -1430,7 +1452,7 @@ AliOADBContainer* CreateTriggerAnalysisContainer(){
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15o,244824,245725);
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15o->Clone("lhc15o2"),245794,246994);
 
-  AliOADBTriggerAnalysis * oadbTrigAnalysisLHC15o1 = oadbTrigAnalysisLHC15o->Clone("lhc15o_common_zna_tdc");
+  AliOADBTriggerAnalysis * oadbTrigAnalysisLHC15o1 = (AliOADBTriggerAnalysis *)oadbTrigAnalysisLHC15o->Clone("lhc15o_common_zna_tdc");
   oadbTrigAnalysisLHC15o1->SetZDCCorrParameters(-123.1, 123.1, 2., 2.);
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC15o1, 245726, 245793);
 
@@ -1458,6 +1480,22 @@ AliOADBContainer* CreateTriggerAnalysisContainer(){
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysis_pp2017,270531,280140);
   oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysis_pp2017->Clone("pp2017pqr"),282008,282704);
 
+  AliOADBTriggerAnalysis* oadbTrigAnalysisLHC18b1 = new AliOADBTriggerAnalysis("lhc18b_isolated_bunches");
+  oadbTrigAnalysisLHC18b1->SetV0MOnVsOfA(0.);
+  oadbTrigAnalysisLHC18b1->SetV0MOnVsOfB(0.);
+  oadbTrigAnalysisLHC18b1->SetSPDOnVsOfA(0.);
+  oadbTrigAnalysisLHC18b1->SetSPDOnVsOfB(0.);
+  oadbTrigAnalysisLHC18b1->SetVIRBBAflags(33);
+  oadbTrigAnalysisLHC18b1->SetVIRBBCflags(33);
+  oadbTrigAnalysisLHC18b1->SetV0CasymA(0);
+  oadbTrigAnalysisLHC18b1->SetV0CasymB(0);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC18b1,284706,285015);
+  
+  AliOADBTriggerAnalysis* oadbTrigAnalysisLHC18b2 = new AliOADBTriggerAnalysis("lhc18b_trains");
+  oadbTrigAnalysisLHC18b2->SetV0MOnVsOfA(-65.);
+  oadbTrigAnalysisLHC18b2->SetV0MOnVsOfB(4.3);
+  oadbContTriggerAnalysis->AppendObject(oadbTrigAnalysisLHC18b2,285064,285203);
+  
   AliOADBTriggerAnalysis* oadbTrigAnalysisLHC18q = new AliOADBTriggerAnalysis("lhc18q");
   oadbTrigAnalysisLHC18q->SetV0MOnVsOfA(0.);
   oadbTrigAnalysisLHC18q->SetV0MOnVsOfB(0.);

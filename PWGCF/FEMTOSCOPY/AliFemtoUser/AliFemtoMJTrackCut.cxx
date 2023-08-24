@@ -111,6 +111,9 @@ ClassImp(AliFemtoMJTrackCut)
     fMaxImpactXYPtOff(1000.0),
     fMaxImpactXYPtNrm(1000.0),
     fMaxImpactXYPtPow(1000.0),
+    fMaxImpactZPtOff(1000.0),
+    fMaxImpactZPtNrm(1000.0),
+    fMaxImpactZPtPow(1000.0),
     fMinPforTOFpid(0.0),
     fMaxPforTOFpid(10000.0),
     fMinPforTPCpid(0.0),
@@ -288,6 +291,13 @@ bool AliFemtoMJTrackCut::Pass(const AliFemtoTrack* track)
     }
   }
 
+  if (fMaxImpactZPtOff < 999.0) {
+    if ((fMaxImpactZPtOff + fMaxImpactZPtNrm*TMath::Power(tPt, fMaxImpactZPtPow)) < TMath::Abs(track->ImpactZ())) {
+      fNTracksFailed++;
+      return false;
+    }
+  }
+  
   if ((tRapidity<fRapidity[0])||(tRapidity>fRapidity[1]))
     {
       fNTracksFailed++;
@@ -529,6 +539,10 @@ bool AliFemtoMJTrackCut::Pass(const AliFemtoTrack* track)
 	  else if (fMostProbable == 21) { //cut on Nsigma in pT not p, EXCLUSIVE PID with different REJECTION, proton
 	    if (!IsPionNSigmaRejection(track->Pt(),track->NSigmaTPCPi(), track->NSigmaTOFPi(), track->TOFpionTime()) && !IsKaonNSigmaRejection(track->Pt(), !track->NSigmaTPCK(), track->NSigmaTOFK(), track->TOFkaonTime()) && IsProtonNSigmaAccept(track->Pt(),track->NSigmaTPCP(), track->NSigmaTOFP(), track->TOFprotonTime()))
 	      imost = 21;
+	  }
+	  else if(fMostProbable == 30) { //DEUTERONs
+	    if(IsDeuteronTPCNSigma(track->Pt(),track->TPCsignal()))
+	      imost = 30;	    
 	  }
 	}
 
@@ -1397,3 +1411,11 @@ bool AliFemtoMJTrackCut::IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float ns
    else
      return true;
 }
+
+ bool AliFemtoMJTrackCut::IsDeuteronTPCNSigma(float mom, float nsigmaTPC)
+ {   
+   if(TMath::Abs(nsigmaTPC)<fNsigma)
+     return true;
+   else
+     return false;
+ }

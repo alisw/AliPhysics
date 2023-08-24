@@ -115,7 +115,7 @@ class AliHFInvMassMultiTrialFit : public TNamed {
   Bool_t DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad=0x0);
   void SaveToRoot(TString fileName, TString option="recreate") const;
   void DrawHistos(TCanvas* cry) const;
-  void SetTemplatesForReflections(const TH1F *hTemplRefl, const TH1F *hTemplSig);
+  void SetTemplatesForReflections(const TH1F *hTemplRefl, const TH1F *hTemplSig, TString option="2gaus");
 
   void SetFixRefoS(Float_t refloS){fFixRefloS=refloS;}
 
@@ -127,7 +127,7 @@ class AliHFInvMassMultiTrialFit : public TNamed {
 
   void AddInvMassFitSaveAsFormat(std::string format) { fInvMassFitSaveAsFormats.insert(format); }
   void DisableInvMassFitSaveAs() { fInvMassFitSaveAsFormats.clear(); }
-
+  void SetAcceptValidFit() { fAcceptValidFit=kTRUE; }
 
   enum EBkgFuncCases{ kExpoBkg, kLinBkg, kPol2Bkg, kPol3Bkg, kPol4Bkg, kPol5Bkg, kPowBkg, kPowTimesExpoBkg, kNBkgFuncCases };
   enum EGausSigCases{ kFixSig, kFixSigUp, kFixSigDown, kFreeSig, kNGausSigCases};
@@ -228,7 +228,8 @@ class AliHFInvMassMultiTrialFit : public TNamed {
 
   TH1F *fhTemplRefl;        /// template of reflection contribution
   TH1F *fhTemplSign;        /// template of signal contribution
-  Float_t fFixRefloS;
+  Float_t fFixRefloS;       /// fixed value for Refl/Sig
+  TString fReflOpt;         /// option for reflection (see AliHFInvMassFitter::SetTemplateReflections)
   TNtuple* fNtupleMultiTrials; /// tree
   TNtuple* fNtupleBinCount;   /// tree
 
@@ -237,8 +238,10 @@ class AliHFInvMassMultiTrialFit : public TNamed {
 
   std::vector<AliHFInvMassFitter*> fMassFitters; //!<! Mass fitters
 
+  Bool_t fAcceptValidFit;   /// switcher to accept fits according to ROOT::Fit:FitResults::IsValid()
+
   /// \cond CLASSIMP
-  ClassDef(AliHFInvMassMultiTrialFit,7); /// class for multiple trials of invariant mass fit
+  ClassDef(AliHFInvMassMultiTrialFit,8); /// class for multiple trials of invariant mass fit
   /// \endcond
 };
 

@@ -189,6 +189,13 @@ void MakeDsuPplot(){
   pp13TeVSyst->SetName("pp13TeVSyst");
   pp13TeVSyst->SetMarkerStyle(47);
   pp13TeVSyst->SetMarkerSize(1.5);
+  TGraphErrors* pp13TeVSystCorr = (TGraphErrors*)my_file->Get("ratio_gr_syst_corr");
+  Requires(pp13TeVSystCorr,"pp13TeVSystCorr");
+  pp13TeVSystCorr->SetName("pp13TeVSystCorr");
+  pp13TeVSystCorr->SetMarkerStyle(47);
+  pp13TeVSystCorr->SetMarkerSize(1.5);
+  pp13TeVSystCorr->SetFillStyle(1001);
+
   TCanvas* cv_output = new TCanvas("cDoverPmy","cDoverPmy",800,600);
   cv_output->cd();
   cv_output->SetLeftMargin(0.14);
@@ -218,15 +225,16 @@ void MakeDsuPplot(){
   // MBpp7TeVSyst->Draw("e2same");
   pp7TeVStat->Draw("samepz");
   pp7TeVSyst->Draw("e2same");
-  pp13TeVStat->Draw("samepz");
   pp13TeVSyst->Draw("e2same");
+  pp13TeVSystCorr->Draw("e2same");
+  pp13TeVStat->Draw("samepz");
 
   TLatex text;
   text.SetTextFont(63);
   text.SetTextSize(22);
   //text.DrawText(247.573,0.00529739,"ALICE Preliminary");
 
-  TLegend* legPrel = new TLegend(0.16416,0.58087,0.305764,0.866087,NULL,"brNDC");
+  TLegend* legPrel = new TLegend(0.18,0.56,0.305764,0.88,NULL,"brNDC");
   legPrel->SetBorderSize(0);
   legPrel->SetTextSize(0.03);
   legPrel->SetLineColor(1);
@@ -234,16 +242,17 @@ void MakeDsuPplot(){
   legPrel->SetLineWidth(1);
   legPrel->SetFillColor(0);
   legPrel->SetFillStyle(0);
-  //legPrel->SetHeader("#bf{ALICE Preliminary}");
-  legPrel->AddEntry(pPb5TeVSyst,"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV (arXiv:1906.03136)","pf");
+  legPrel->SetHeader("#bf{ALICE}");
+  legPrel->AddEntry(pPb5TeVSyst,"p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV", "pf");// (arXiv:1906.03136)","pf");
   legPrel->AddEntry((TObject*)nullptr,"V0A Multiplicity Classes (Pb-side)","");
   //legPrel->AddEntry(PbPb5TeVSyst,"Pb-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV","pf");
-  legPrel->AddEntry(pp7TeVSyst,"pp, #sqrt{#it{s}} = 7 TeV (PLB (2019) 50-63)","pf");
+  legPrel->AddEntry(PbPb2d7TeVSyst,"Pb-Pb, #sqrt{#it{s}_{NN}} = 2.76 TeV", "pf");// (PRC 93 (2015) 024917)","pf");
+  legPrel->AddEntry(pp7TeVSyst,"pp, #sqrt{#it{s}} = 7 TeV", "pf");// (PLB (2019) 50-63)","pf");
   legPrel->AddEntry(pp13TeVSyst,"pp, #sqrt{#it{s}} = 13 TeV","pf");
   legPrel->AddEntry((TObject*)nullptr,"V0M Multiplicity Classes","");
   legPrel->Draw();
 
-  TLegend* legPub = new TLegend(0.466165,0.191304,0.55,0.43,NULL,"brNDC");
+  TLegend* legPub = new TLegend(0.47,0.22,0.55,0.42,NULL,"brNDC");
   legPub->SetBorderSize(0);
   legPub->SetTextSize(0.03);
   legPub->SetLineColor(1);
@@ -251,7 +260,6 @@ void MakeDsuPplot(){
   legPub->SetLineWidth(1);
   legPub->SetFillColor(0);
   legPub->SetFillStyle(0);
-  legPub->AddEntry(PbPb2d7TeVSyst,"Pb-Pb, #sqrt{#it{s}_{NN}} = 2.76 TeV (PRC 93 (2015) 024917)","pf");
   legPub->AddEntry("","Thermal-FIST CSM (PLB 785 (2018) 171-174)","");
   legPub->AddEntry(upper, "T_{ch} = 155 MeV, #it{V}_{c} = 3 d#it{V}/d#it{y}");
   legPub->AddEntry(lower, "T_{ch} = 155 MeV, #it{V}_{c} = d#it{V}/d#it{y}");

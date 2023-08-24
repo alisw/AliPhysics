@@ -110,10 +110,14 @@ void ForBin ( Int_t bin, TString listName, TString subListName )
   //
   // Calculate scaling factor
   //
-  Double_t nEve   = ((TH1F*)list->FindObject("hNEvents"))->GetBinContent(1);
+  Double_t nEve   = 1;
   Double_t xsec   = 1;
   Double_t trials = 1;
   Int_t    nfiles = 1;
+  TH1F * hNEvents = ((TH1F*)list->FindObject("hNEventsIn"));
+  if ( !hNEvents ) hNEvents = ((TH1F*)list->FindObject("hNEvents"));
+  if (  hNEvents ) nEve = hNEvents->GetBinContent(1);
+
   if((TH1F*)list->FindObject("hXsec"   ))
   {
     xsec   = ((TH1F*)list->FindObject("hXsec"   ))->GetBinContent(1);

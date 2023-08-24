@@ -33,6 +33,9 @@ AliAnalysisTaskNanoXioton::AliAnalysisTaskNanoXioton()
       fPartColl(nullptr),
       fResults(nullptr),
       fResultsQA(nullptr),
+      fProtonProtonDump(nullptr),
+      fAntiProtonAntiProtonDump(nullptr),
+      fDumpster(nullptr),
       fTrackBufferSize(2000),
       fGTI(nullptr) {
 }
@@ -63,6 +66,9 @@ AliAnalysisTaskNanoXioton::AliAnalysisTaskNanoXioton(const char* name,
       fPartColl(nullptr),
       fResults(nullptr),
       fResultsQA(nullptr),
+      fProtonProtonDump(nullptr),
+      fAntiProtonAntiProtonDump(nullptr),
+      fDumpster(nullptr),
       fTrackBufferSize(2000),
       fGTI(nullptr) {
   DefineOutput(1, TList::Class());  //Output for the Event Cuts
@@ -72,11 +78,12 @@ AliAnalysisTaskNanoXioton::AliAnalysisTaskNanoXioton(const char* name,
   DefineOutput(5, TList::Class());  //Output for the AntiXi Cuts
   DefineOutput(6, TList::Class());  //Output for the Results
   DefineOutput(7, TList::Class());  //Output for the Results QA
+  DefineOutput(8, TList::Class());  //Output for the Dumpster
   if (isMC) {
-    DefineOutput(8, TList::Class());  //Output for the Track MC
-    DefineOutput(9, TList::Class());  //Output for the Anti Track MC
-    DefineOutput(10, TList::Class());  //Output for the V0 MC
-    DefineOutput(11, TList::Class());  //Output for the Anti V0 MC
+    DefineOutput(9, TList::Class());  //Output for the Track MC
+    DefineOutput(10, TList::Class());  //Output for the Anti Track MC
+    DefineOutput(11, TList::Class());  //Output for the V0 MC
+    DefineOutput(12, TList::Class());  //Output for the Anti V0 MC
   }
 }
 
@@ -111,6 +118,17 @@ AliAnalysisTaskNanoXioton::~AliAnalysisTaskNanoXioton() {
   if (fPartColl) {
     delete fPartColl;
   }
+
+  if (fProtonProtonDump) {
+    delete fProtonProtonDump;
+  }
+  if (fAntiProtonAntiProtonDump) {
+    delete fAntiProtonAntiProtonDump;
+  }
+  if (fDumpster) {
+    delete fDumpster;
+  }
+
 }
 
 void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
@@ -179,46 +197,41 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
     fEvtList->SetName("EventCuts");
     fEvtList->SetOwner();
   }
-  if (!fProton->GetMinimalBooking()) {
-    fProtonList = fProton->GetQAHists();
-  } else {
-    fProtonList = new TList();
-    fProtonList->SetName("TrackCuts");
-    fProtonList->SetOwner();
-  }
-  if (!fAntiProton->GetMinimalBooking()) {
-    fAntiProtonList = fAntiProton->GetQAHists();
-  } else {
-    fAntiProtonList = new TList();
-    fAntiProtonList->SetName("AntiTrackCuts");
-    fAntiProtonList->SetOwner();
-  }
-  if (!fXi->GetMinimalBooking()) {
-    fXiList = fXi->GetQAHists();
-  } else {
-    fXiList = new TList();
-    fXiList->SetName("XiCuts");
-    fXiList->SetOwner();
-  }
-  if (!fAntiXi->GetMinimalBooking()) {
-    fAntiXiList = fAntiXi->GetQAHists();
-  } else {
-    fAntiXiList = new TList();
-    fAntiXiList->SetName("AntiXiCuts");
-    fAntiXiList->SetOwner();
-  }
+
+  fProtonList = fProton->GetQAHists();
+  fAntiProtonList = fAntiProton->GetQAHists();
+  fXiList = fXi->GetQAHists();
+  fAntiXiList = fAntiXi->GetQAHists();
+
   fResultsQA = new TList();
   fResultsQA->SetOwner();
   fResultsQA->SetName("ResultsQA");
-  if (!fConfig->GetMinimalBookingME()) {
+
+  fDumpster = new TList();
+  fDumpster->SetName("Dumpster");
+  fDumpster->SetOwner(kTRUE);
+
+  if (fConfig->GetUseEventMixing()) {
     fResults = fPartColl->GetHistList();
-    fResultsQA->Add(fPartColl->GetQAList());
-    fResultsQA->Add(fPairCleaner->GetHistList());
+    if (!fConfig->GetMinimalBookingME()) {
+      fResultsQA->Add(fPartColl->GetQAList());
+      fResultsQA->Add(fPairCleaner->GetHistList());
+
+      fProtonProtonDump = new AliFemtoDreamDump("pp");
+      fProtonProtonDump->SetkstarThreshold(0.1);
+      fDumpster->Add(fProtonProtonDump->GetOutput());
+
+      fAntiProtonAntiProtonDump = new AliFemtoDreamDump("apap");
+      fAntiProtonAntiProtonDump->SetkstarThreshold(0.1);
+      fDumpster->Add(fAntiProtonAntiProtonDump->GetOutput());
+    }
   } else {
     fResults = new TList();
     fResults->SetOwner();
     fResults->SetName("Results");
   }
+
+
   PostData(1, fEvtList);
   PostData(2, fProtonList);
   PostData(3, fAntiProtonList);
@@ -226,6 +239,7 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
   PostData(5, fAntiXiList);
   PostData(6, fResults);
   PostData(7, fResultsQA);
+  PostData(8, fDumpster);
 
   if (fProton->GetIsMonteCarlo()) {
     if (!fProton->GetMinimalBooking()) {
@@ -235,7 +249,7 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
       fProtonMCList->SetName("MCTrkCuts");
       fProtonMCList->SetOwner();
     }
-    PostData(8, fProtonMCList);
+    PostData(9, fProtonMCList);
   }
   if (fAntiProton->GetIsMonteCarlo()) {
     if (!fAntiProton->GetMinimalBooking()) {
@@ -245,7 +259,7 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
       fAntiProtonMCList->SetName("MCAntiTrkCuts");
       fAntiProtonMCList->SetOwner();
     }
-    PostData(9, fAntiProtonMCList);
+    PostData(10, fAntiProtonMCList);
   }
 
   if (fXi->GetIsMonteCarlo()) {
@@ -256,7 +270,7 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
       fXiMCList->SetName("MCXiCuts");
       fXiMCList->SetOwner();
     }
-    PostData(10, fXiMCList);
+    PostData(11, fXiMCList);
   }
   if (fAntiXi->GetIsMonteCarlo()) {
     if (!fAntiXi->GetMinimalBooking()) {
@@ -266,7 +280,7 @@ void AliAnalysisTaskNanoXioton::UserCreateOutputObjects() {
       fAntiXiMCList->SetName("MCAntiv0Cuts");
       fAntiXiMCList->SetOwner();
     }
-    PostData(11, fAntiXiMCList);
+    PostData(12, fAntiXiMCList);
   }
 }
 
@@ -293,11 +307,10 @@ void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
   }
   std::vector<AliFemtoDreamBasePart> Protons;
   std::vector<AliFemtoDreamBasePart> AntiProtons;
-  const int multiplicity = fEvent->GetMultiplicity();
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) {
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
-    fTrack->SetTrack(track, fInputEvent, multiplicity);
+    fTrack->SetTrack(track, fInputEvent);
     if (fProton->isSelected(fTrack)) {
       Protons.push_back(*fTrack);
     }
@@ -334,8 +347,15 @@ void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
   fPairCleaner->StoreParticle(Xis);
   fPairCleaner->StoreParticle(AntiXis);
 
-  fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(),
-                      fEvent->GetMultiplicity(), fEvent->GetV0MCentrality());
+  fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
+
+  if(fProtonProtonDump) {
+    fProtonProtonDump->SetEvent(Protons, fEvent, 2212);
+  }
+  if (fAntiProtonAntiProtonDump) {
+    fAntiProtonAntiProtonDump->SetEvent(AntiProtons, fEvent, 2212);
+  }
+
   PostData(1, fEvtList);
   PostData(2, fProtonList);
   PostData(3, fAntiProtonList);
@@ -343,17 +363,18 @@ void AliAnalysisTaskNanoXioton::UserExec(Option_t *option) {
   PostData(5, fAntiXiList);
   PostData(6, fResults);
   PostData(7, fResultsQA);
+  PostData(8, fDumpster);
   if (fProton->GetIsMonteCarlo()) {
-    PostData(8, fProtonMCList);
+    PostData(9, fProtonMCList);
   }
   if (fAntiProton->GetIsMonteCarlo()) {
-    PostData(9, fAntiProtonMCList);
+    PostData(10, fAntiProtonMCList);
   }
   if (fXi->GetIsMonteCarlo()) {
-    PostData(10, fXiMCList);
+    PostData(11, fXiMCList);
   }
   if (fAntiXi->GetIsMonteCarlo()) {
-    PostData(11, fAntiXiMCList);
+    PostData(12, fAntiXiMCList);
   }
 }
 

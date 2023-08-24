@@ -23,7 +23,6 @@
 #include "TChain.h"
 #include "TRandom.h"
 #include "AliAnalysisManager.h"
-#include "TParticle.h"
 #include "TVectorF.h"
 #include "AliPIDResponse.h"
 #include "TFile.h"
@@ -51,6 +50,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
   fTreeQA(NULL),
   fIsHeavyIon(kFALSE),
   ffillTree(-100),
+  fTreeHighPt(100.),
   ffillHistograms(kFALSE),
   fOutputList(NULL),
   fESDList(NULL),
@@ -141,6 +141,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
   fTreeQA(NULL),
   fIsHeavyIon(kFALSE),
   ffillTree(-100),
+  fTreeHighPt(100.),
   ffillHistograms(kFALSE),
   fOutputList(NULL),
   fESDList(NULL),
@@ -418,7 +419,7 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
   }
 
   if(ffillTree>=1.0){
-    fTreeQA = new TTree(Form("PhotonQA_%s_%s",(fEventCuts->GetCutNumber()).Data(),(fConversionCuts->GetCutNumber()).Data()),Form("PhotonQA_%s_%s",(fEventCuts->GetCutNumber()).Data(),(fConversionCuts->GetCutNumber()).Data()));
+    fTreeQA = new TTree(Form("PhotonQA_%s_%s",(fEventCuts->GetCutNumber()).Data(),(fConversionCuts->GetCutNumber()).Data()), Form("filled with params: ffillTree = %.2f, fTreeHighPt = %.2f GeV", ffillTree, fTreeHighPt));
 
     fTreeQA->Branch("daughterProp",&fDaughterProp);
     fTreeQA->Branch("recCords",&fGammaConvCoord);
@@ -439,7 +440,7 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
 
 
   PostData(1, fOutputList);
-  if(ffillTree>=1.0){
+  if(fTreeQA){
       OpenFile(2);
       PostData(2, fTreeQA);
   }
@@ -515,12 +516,12 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
 
   // reduce event statistics in the tree by a factor ffilltree
   Bool_t ffillTreeNew = kFALSE;
-  if(ffillTree>=1.0) {
+  if(fTreeQA) {
     ffillTreeNew = kTRUE;
     if (ffillTree>1.0) {
       gRandom->SetSeed(0);
       if(gRandom->Uniform(ffillTree)>1.0) {
-	ffillTreeNew = kFALSE;
+        ffillTreeNew = kFALSE;
       }
     }
   }
@@ -543,8 +544,12 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
     if(!fConversionCuts->PhotonIsSelected(gamma,fInputEvent)){
       continue;
     }
-
-    if(ffillTreeNew) ProcessQATree(gamma);
+    
+    if(fTreeQA){
+      if(ffillTreeNew || (gamma->GetPhotonPt() >= fTreeHighPt)){
+        ProcessQATree(gamma);
+      }
+    }
     if(ffillHistograms) ProcessQA(gamma);
   }
 
@@ -816,8 +821,8 @@ void AliAnalysisTaskConversionQA::CountTracks(){
 UInt_t AliAnalysisTaskConversionQA::IsTruePhotonESD(AliAODConversionPhoton *TruePhotonCandidate)
 {
   UInt_t kind = 9;
-  TParticle *posDaughter = TruePhotonCandidate->GetPositiveMCDaughter(fMCEvent);
-  TParticle *negDaughter = TruePhotonCandidate->GetNegativeMCDaughter(fMCEvent);
+  AliMCParticle *posDaughter = (AliMCParticle*) TruePhotonCandidate->GetPositiveMCDaughter(fMCEvent);
+  AliMCParticle *negDaughter = (AliMCParticle*) TruePhotonCandidate->GetNegativeMCDaughter(fMCEvent);
   Int_t pdgCodePos = 0;
   Int_t pdgCodeNeg = 0;
   Int_t pdgCode = 0;
@@ -832,14 +837,14 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonESD(AliAODConversionPhoton *True
     kind = 9;
     //		return kFALSE; // One particle does not exist
 
-  } else if( posDaughter->GetMother(0) != negDaughter->GetMother(0)  || (posDaughter->GetMother(0) == negDaughter->GetMother(0) && posDaughter->GetMother(0) ==-1)) {
+  } else if( posDaughter->GetMother() != negDaughter->GetMother()  || (posDaughter->GetMother() == negDaughter->GetMother() && posDaughter->GetMother() ==-1)) {
     kind = 1;
     // 	  	return 1;
-    pdgCodePos=TMath::Abs(posDaughter->GetPdgCode());
-    pdgCodeNeg=TMath::Abs(negDaughter->GetPdgCode());
+    pdgCodePos=TMath::Abs(posDaughter->PdgCode());
+    pdgCodeNeg=TMath::Abs(negDaughter->PdgCode());
     if(pdgCodePos==11 && pdgCodeNeg==11) return 10; //Electron Combinatorial
     if(pdgCodePos==11 && pdgCodeNeg==11 &&
-      (posDaughter->GetMother(0) == negDaughter->GetMother(0) && posDaughter->GetMother(0) ==-1)) return 15; //direct Electron Combinatorial
+      (posDaughter->GetMother() == negDaughter->GetMother() && posDaughter->GetMother() ==-1)) return 15; //direct Electron Combinatorial
 
     if(pdgCodePos==211 && pdgCodeNeg==211) kind = 11; //Pion Combinatorial
     if((pdgCodePos==211 && pdgCodeNeg==2212) ||(pdgCodePos==2212 && pdgCodeNeg==211))	kind = 12; //Pion, Proton Combinatorics
@@ -849,10 +854,10 @@ UInt_t AliAnalysisTaskConversionQA::IsTruePhotonESD(AliAODConversionPhoton *True
     if((pdgCodePos==211 && pdgCodeNeg==11) ||(pdgCodePos==11 && pdgCodeNeg==211)) kind = 13; //Pion, Electron Combinatorics
     if(pdgCodePos==321 && pdgCodeNeg==321) kind = 14; //Kaon,Kaon combinatorics
   }else{
-    pdgCodePos=posDaughter->GetPdgCode();
-    pdgCodeNeg=negDaughter->GetPdgCode();
-    Bool_t gammaIsPrimary = fEventCuts->IsConversionPrimaryESD( fMCEvent, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
-    if ( TruePhotonCandidate->GetMCParticle(fMCEvent)->GetPdgCode()) pdgCode = TruePhotonCandidate->GetMCParticle(fMCEvent)->GetPdgCode();
+    pdgCodePos=posDaughter->PdgCode();
+    pdgCodeNeg=negDaughter->PdgCode();
+    Bool_t gammaIsPrimary = fEventCuts->IsConversionPrimaryESD( fMCEvent, posDaughter->GetMother(), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+    if ( TruePhotonCandidate->GetMCParticle(fMCEvent)->PdgCode()) pdgCode = TruePhotonCandidate->GetMCParticle(fMCEvent)->PdgCode();
 
     if(TMath::Abs(pdgCodePos)!=11 || TMath::Abs(pdgCodeNeg)!=11) return 2; // true from hadronic decays
     else if ( !(pdgCodeNeg==pdgCodePos)){

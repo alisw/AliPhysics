@@ -12,6 +12,7 @@ AliAnalysisTaskFlowEvent *AddTaskFlowOnMC(TString fileNameBase="AnalysisResults"
 					  Double_t ptMin  = 0.05,
 					  Double_t ptMax  = 20.0,
 					  Int_t chargePOI = 0,
+					  Int_t pdgPOI = 4122,
 					  Int_t harmonic  = 2,
 					  Double_t gImpactParameterMin = 0.0,
 					  Double_t gImpactParameterMax = 100.0,
@@ -29,7 +30,8 @@ AliAnalysisTaskFlowEvent *AddTaskFlowOnMC(TString fileNameBase="AnalysisResults"
 					  Bool_t LYZEP    = kFALSE,
 					  Bool_t MH       = kFALSE,
 					  Bool_t NL       = kFALSE,
-					  Int_t side      = 0) {	  
+					  Int_t side      = 0,
+					  Bool_t kUseAfterBurner = kFALSE) {	  
   // Define the range for eta subevents (for SP method)
   Double_t minA = -etaMax;
   Double_t maxA = -0.5;
@@ -37,7 +39,7 @@ AliAnalysisTaskFlowEvent *AddTaskFlowOnMC(TString fileNameBase="AnalysisResults"
   Double_t maxB = etaMax;
 
   // AFTERBURNER
-  Bool_t useAfterBurner=kFALSE;
+  //Bool_t useAfterBurner=kFALSE;
   Double_t v1=0.0;
   Double_t v2=0.0;
   Double_t v3=0.0;
@@ -110,6 +112,8 @@ AliAnalysisTaskFlowEvent *AddTaskFlowOnMC(TString fileNameBase="AnalysisResults"
   cutsPOI->SetParamType(poitype);
   cutsPOI->SetParamMix(poimix);
   cutsPOI->SetPtRange(ptMin,ptMax);
+  cutsPOI->SetEtaRange(-etaMax,etaMax);
+  cutsPOI->SetMCPID(pdgPOI);
 
   // side A
   if(side < 0)
@@ -277,13 +281,12 @@ AliAnalysisTaskFlowEvent *AddTaskFlowOnMC(TString fileNameBase="AnalysisResults"
   //===========================================================================
   AliAnalysisTaskFlowEvent *taskFE = NULL;
 
-  if(useAfterBurner)
-    { 
-      taskFE = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent %s",outputSlotName.Data()),"",kFALSE,1);
-      taskFE->SetFlow(v1,v2,v3,v4); 
-      taskFE->SetNonFlowNumberOfTrackClones(numberOfTrackClones);
-      taskFE->SetAfterburnerOn();
-    }
+  if(kUseAfterBurner) { 
+    taskFE = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent %s",outputSlotName.Data()),"",kFALSE,1);
+    taskFE->SetFlow(v1,v2,v3,v4); 
+    taskFE->SetNonFlowNumberOfTrackClones(numberOfTrackClones);
+    taskFE->SetAfterburnerOn();
+  }
   else {taskFE = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent %s",outputSlotName.Data()),"",kFALSE); }
   if (ExcludeRegion) {
     taskFE->DefineDeadZone(excludeEtaMin, excludeEtaMax, excludePhiMin, excludePhiMax); 

@@ -90,7 +90,8 @@ AliHFMultiTrials::AliHFMultiTrials() :
   fNtupleMultiTrials(0x0),
   fMinYieldGlob(0),
   fMaxYieldGlob(0),
-  fMassFitters()
+  fMassFitters(),
+  fAcceptValidFit(kFALSE)
 {
   // constructor
   Int_t rebinStep[4]={3,4,5,6};
@@ -299,6 +300,7 @@ Bool_t AliHFMultiTrials::DoMultiTrials(TH1D* hInvMassHisto, TPad* thePad){
                 xnt[5]=0;
                 xnt[6]=1;
               }
+              if(fAcceptValidFit) fitter->SetAcceptValidFit();
               Bool_t out=kFALSE;
               Double_t chisq=-1.;
               Double_t sigma=0.;

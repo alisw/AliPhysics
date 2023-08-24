@@ -22,7 +22,9 @@ class AliVParticle;
 
 class AliEmcalTrackSelection;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliEMCalTriggerEventData;
 
@@ -71,11 +73,11 @@ protected:
   Bool_t                            fRequestMCtrue;           ///< Request MC true track
   Bool_t                            fSwapEta;                 ///< Swap eta sign on request
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerRecJetAnalysisComponent, 1);        // Analysis component for reconstructed Jets
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGERRECJETANALYSISCOMPONENT_H */

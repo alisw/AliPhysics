@@ -63,6 +63,14 @@ public:
   Double_t TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge) ;
   Int_t   FindTrackMatching(Int_t mod,TVector3 *locpos,Double_t &dx, Double_t &dz, Double_t &pttrack, Int_t &charge);
   //this returns track index with a minimum distance between a extrapolated track in current and a PHOS cluster where locpos and mod points.
+  
+  //Cross-talk emulation
+  void EmulateCrossTalk(){fEmulateCrossTalk = kTRUE;}
+  void SetTCardCorrMinAmp(Float_t a=0.01){fTCardCorrMinAmp=a;}
+  void SetTCardCorrInducedEner(Float_t a[3]){for(int i=2;i;--i)fTCardCorrInduceEner[i]=a[i];}
+  void SetTCardCorrInducedEnerFrac(Float_t a[3]){for(int i=2;i;--i)fTCardCorrInduceEnerFrac[i]=a[i];}
+  void SetTCardCorrInducedEnerFracP1(Float_t a[3]){for(int i=2;i;--i)fTCardCorrInduceEnerFracP1[i]=a[i];}
+  void SetTCardCorrInducedEnerFracWidth(Float_t a[3]){for(int i=2;i;--i)fTCardCorrInduceEnerFracWidth[i]=a[i];}
 
 protected:
   AliPHOSTenderSupply(const AliPHOSTenderSupply&c);
@@ -79,6 +87,8 @@ protected:
   Double_t EvalTOF(AliVCluster * clu,AliVCaloCells * cells); 
   Double_t CalibrateTOF(Double_t tof, Int_t absId, Bool_t isHG); 
   void DistanceToBadChannel(Int_t mod, TVector3 * locPos, Double_t &minDist) ;
+  void TCardEmulation(AliAODCaloCells * cells) ;
+  Float_t InducedAmpTCard(float amp, int dphi);
 
  
 private:
@@ -109,7 +119,17 @@ private:
   TString fMCProduction ;                    //Name of MC production
   Int_t fDRN;                                //dummy run number for single particle simulation
  
-  ClassDef(AliPHOSTenderSupply, 8); // PHOS tender task
+  Bool_t fEmulateCrossTalk ;                 // To turn on cross-talk emulation 
+  Float_t fTCardCorrMinAmp ;                 // Minimal cell amplitide to emulate cross-talk (ADC counts)
+  Float_t fTCardCorrInduceEnerFracMin;
+  Float_t fTCardCorrInduceEnerFracMax;
+  Float_t fTCardCorrInduceEner[3];
+  Float_t fTCardCorrInduceEnerFrac[3];
+  Float_t fTCardCorrInduceEnerFracP1[3];
+  Float_t fTCardCorrInduceEnerFracWidth[3];
+  
+ 
+  ClassDef(AliPHOSTenderSupply, 9); // PHOS tender task
 };
 
 

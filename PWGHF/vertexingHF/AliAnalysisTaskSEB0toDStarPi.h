@@ -80,8 +80,8 @@ class AliAnalysisTaskSEB0toDStarPi : public AliAnalysisTaskSE
   void     SetMC(Bool_t bUseMCInfo) {fUseMCInfo = bUseMCInfo;}
   Bool_t   GetMC() const {return fUseMCInfo;}
 
-  Double_t DeltaInvMassDStarKpipi(AliAODRecoDecayHF2Prong * DStar) const;
-  Double_t DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong * B0) const;
+  Double_t DeltaInvMassDStarKpipi(AliAODRecoDecayHF2Prong *DStar) const;
+  Double_t DeltaInvMassB0Kpipipi(AliAODRecoDecayHF2Prong *Bzero) const;
 
   void     SetQuickSignalAnalysis(Int_t value){fQuickSignalAnalysis = value;}
   void     SetGetCutInfo(Bool_t value){fGetCutInfo = value;}

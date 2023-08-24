@@ -13,6 +13,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliFlowTrackSimple.h"
+#include "TGrid.h"
 
 class AliCFManager;
 class AliFlowEventCuts;
@@ -51,7 +52,7 @@ public:
 
   enum kAnalysisInput{kESD=1, kAOD=2};
   AliAnalysisTaskCRCZDC();
-  AliAnalysisTaskCRCZDC(const char *name, TString RPtype = "", Bool_t QAon = kFALSE, UInt_t seed=666, Bool_t bCandidates=kFALSE);
+  AliAnalysisTaskCRCZDC(const char *name, TString RPtype = "", Bool_t QAon = kFALSE, UInt_t seed=666, Bool_t bCandidates=kFALSE, Int_t StepZDCRecenter=-1);
   virtual ~AliAnalysisTaskCRCZDC();
 
   enum DataSet { k2010,
@@ -59,7 +60,9 @@ public:
     k2015,
     k2015v6,
     k2015pidfix,
-    kAny
+    kAny,
+    k2018q,
+    k2018r //@Shi
   };
 
   enum CentrEstimator {
@@ -84,6 +87,7 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *option);
+  virtual void NotifyRun();
 
   void    SetAnalysisType(AnalysisType type) { this->fAnalysisType = type; }
 
@@ -121,6 +125,9 @@ public:
   void          SetQAOn(Bool_t kt)        {fQAon = kt; }
   Bool_t        GetQAOn()   const         {return fQAon; }
   Bool_t        SelectPileup(AliAODEvent* aod);
+  void          SetupPileUpRemovalFunctions18qPass3();
+  void          SetupPileUpRemovalFunctions18rPass3();
+
 
   void          SetShuffleTracks(Bool_t b)  {fShuffleTracks=b;}
 
@@ -180,13 +187,26 @@ public:
   TList* GetVZEROQVecRecList() const {return this->fVZEROQVecRecList;};
   void SetZDCSpectraCorrList(TList* const kList) {this->fZDCSpectraCorrList = (TList*)kList->Clone(); fUseZDCSpectraCorr=kTRUE;};
   TList* GetZDCSpectraCorrList() const {return this->fZDCSpectraCorrList;};
-
+  void SetFillZNCenDisRbR(Bool_t bFillZNCenDisRbR) {fFillZNCenDisRbR = bFillZNCenDisRbR;}; //@shi
+  
   virtual Int_t GetCenBin(Double_t Centrality);
   Double_t GetWDist(const AliVVertex* v0, const AliVVertex* v1);
   Bool_t plpMV(const AliAODEvent* aod);
   Double_t GetBadTowerResp(Double_t Et, TH2D* BadTowerCalibHist);
   void SetWhichVZERORings(int minVZC, int maxVZC, int minVZA, int maxVZA) {fMinRingVZC = minVZC; fMaxRingVZC = maxVZC; fMinRingVZA = minVZA; fMaxRingVZA = maxVZA;}
 
+  //@shi setters for the step of recentering for ZDC
+  void SetStepZDCRecenter( Int_t a ) { fStepZDCRecenter = a; }
+  void SetStoreCalibZDCRecenter( Bool_t b ) { fStoreCalibZDCRecenter = b; }
+  void SetZDCCalibList(TList* const kList) {this->fZDCCalibList = (TList*)kList->Clone();};
+  TList* GetZDCCalibList() const {return this->fZDCCalibList;};
+
+  //@shi only for last check of recentering as the whole calib file is too large
+  void SetZDCCalibListStep3CommonPart(TList* const kList) {this->fZDCCalibListStep3CommonPart = (TList*)kList->Clone();}; // run number independent calib hists
+  TList* GetZDCCalibListStep3CommonPart() const {return this->fZDCCalibListStep3CommonPart;};
+  void SetZDCCalibListStep3RunByRun(TList* const kList) {this->fZDCCalibListStep3RunByRun = (TList*)kList->Clone();}; // run number dependent
+  TList* GetZDCCalibListStep3RunByRun() const {return this->fZDCCalibListStep3RunByRun;};
+  
 private:
   AliAnalysisTaskCRCZDC(const AliAnalysisTaskCRCZDC& dud);
   AliAnalysisTaskCRCZDC& operator=(const AliAnalysisTaskCRCZDC& dud);
@@ -278,12 +298,23 @@ private:
   Bool_t   fResetNegativeZDC;
   //
   TList       *fOutput;	   	//! list send on output slot 0
+  //@Shi
+  TList       *fOutputRecenter1; //! list send to output slot 1 to store 0-29th run numbers
+  TList       *fOutputRecenter2; //! list send to output slot 2 to store 30-59th run numbers (if all stored together, max limit of a tlist is exceed)
+  TList       *fOutputRecenter3; //! list send to output slot 3 to store the rest of run numbers (if all stored together, max limit of a tlist is exceed)
+
   //
   TH1F *fhZNCPM[5];		//! ZNC PM high res.
   TH1F *fhZNAPM[5];		//! ZNA PM high res.
   //
   TH1F *fhZNCPMQiPMC[4];	//! PMQi/PMC for ZNC
   TH1F *fhZNAPMQiPMC[4];	//! PMQi/PMC for ZNA
+  //
+  TH1F *fhZPCPM[5];		//! ZPC PM high res.
+  TH1F *fhZPAPM[5];		//! ZPA PM high res.
+  //
+  TH1F *fhZPCPMQiPMC[4];	//! PMQi/PMC for ZPC
+  TH1F *fhZPAPMQiPMC[4];	//! PMQi/PMC for ZPA
   //
   TH2F *fhZNCvsZNA;		//! ZNC vs ZNA;
   TH2F *fhZDCCvsZDCCA;		//! ZDCC vs ZDCCA
@@ -293,6 +324,7 @@ private:
   TH2F *fhZNvsVZERO;		//! ZN vs VZERO;
   TH2F *fhZDCvsVZERO;		//! ZDC vs VZERO;
   TH3D *fhZNCenDis[2];		//! ZN centroid vs centrality
+
   //
   TH1F *fhAsymm;		//! ZN asymmetry
   TH2F *fhZNAvsAsymm;		//! ZNA vs asymmetry
@@ -303,10 +335,20 @@ private:
   TH2F *fhZPCvscentrality;	//! ZNC vs. centrality
   TH2F *fhZPAvscentrality;	//! ZNA vs. centrality
 
+  //@Shi define ZN and ZP corelation hists (begin)
+  TH3D *fZPAvsZNASignal; //! ZPA vs. ZNA
+  TH3D *fZPCvsZNCSignal; //! ZPC vs. ZNC
+  TProfile *fZNenergyBeforeCalibration; //! test histogram for gain equalization
+  TProfile *fZNenergyAfterCalibration; //! test histogram for gain equalization
+  //@Shi define ZN and ZP corelation hists (end)
+  
   TH3D *fhZNSpectra;   	//! ZNA vs. centrality
   TH3D *fhZNSpectraCor;   	//! ZNA vs. centrality
   TH3D *fhZNSpectraPow;   	//! ZNA vs. centrality
   TH3D *fhZNBCCorr;   	//! ZNA vs. centrality
+  
+  //@Shi add fhZPSpectra
+  TH3D *fhZPSpectra;   	//! ZP vs. centrality
 
   TH3D *fQATrackTPCNcls; //!
   TH3D *fQATrackITSNcls; //!
@@ -316,7 +358,52 @@ private:
   TH3D *fQATrackITSScls; //!
 
   const static Int_t fCRCMaxnRun = 211;
+  
+  //@Shi add run by run ZN centroid vs centrality
+  TH3D *fhZNCenDisRbR[fCRCMaxnRun][2];      //! ZN centroid vs centrality run by run
 
+  //@Shi Add run by run recentering histograms for ZDC (begin)
+  Int_t fStepZDCRecenter = -1;
+  Bool_t fStoreCalibZDCRecenter = kFALSE;
+  TList *fZDCCalibList; //
+  TList *fZDCCalibListStep3CommonPart; //
+  TList *fZDCCalibListStep3RunByRun; //
+  TArrayD fAvVtxPosX;    // Run list
+  TArrayD fAvVtxPosY;    // Run list
+  TArrayD fAvVtxPosZ;    // Run list
+  Double_t fVtxPosCor[3];
+  TProfile *fAve_VtxX; //!
+  TProfile *fAve_VtxY; //!
+  TProfile *fAve_VtxZ; //!
+  TProfile *fRun_VtxXQPreCalib[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxYQPreCalib[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxZQPreCalib[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxXQCalibStep1[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxYQCalibStep1[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxZQCalibStep1[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxXQCalibStep2[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxYQCalibStep2[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxZQCalibStep2[fCRCMaxnRun][4];  //!
+  TProfile *fRun_CentQCalib[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxXQCalib[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxYQCalib[fCRCMaxnRun][4];  //!
+  TProfile *fRun_VtxZQCalib[fCRCMaxnRun][4];  //!
+  TProfile *fRun_CentQCalib2[fCRCMaxnRun][4];  //!
+  
+  TProfile *fCorrQAReCRe;  //!
+  TProfile *fCorrQAReCIm;  //!
+  TProfile *fCorrQAImCRe;  //!
+  TProfile *fCorrQAImCIm;  //!
+  TProfile *fRun_CentQ[fCRCMaxnRun][4];  //!
+  TProfile3D *fRun_VtxXYZQ[fCRCMaxnRun][4];  //!
+  const static Int_t fnCentBinForRecentering = 20; // this means that a wider centrality bin is used {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100}
+  TProfile3D *fCent_VtxXYZQ[fnCentBinForRecentering][4];  //!
+  
+  TProfile* fAvr_Run_CentQ[4]; //!
+  TProfile3D *fAvr_Run_VtxXYZQ[4]; //!
+  TProfile3D *fAvr_Cent_VtxXYZQ[4]; //!
+  //@Shi Add run by run recentering histograms for ZDC (end)
+  
 //  TH3D *fhZNSpectraRbR[fCRCMaxnRun]; //! ZNA vs. centrality
 
   const static Int_t fCRCnTow = 5;
@@ -327,8 +414,15 @@ private:
   Int_t fRunList[fCRCMaxnRun];                   //! Run list
 //  TProfile *fhnTowerGain[fCRCnTow]; //! towers gain
   TList *fCRCQVecListRun[fCRCMaxnRun]; //! Q Vectors list per run
+  //@Shi add fRecenter1ListRunbyRun and fRecenter2ListRunbyRun and fRecenter3ListRunbyRun
+  TList *fRecenter1ListRunbyRun[fCRCMaxnRun]; //! Recenter list run by run 1
+  TList *fRecenter2ListRunbyRun[fCRCMaxnRun]; //! Recenter list run by run 2
+  TList *fRecenter3ListRunbyRun[fCRCMaxnRun]; //! Recenter list run by run 3
   TProfile *fZNCTower[fCRCMaxnRun][fCRCnTow];		//! ZNC tower spectra
   TProfile *fZNATower[fCRCMaxnRun][fCRCnTow];		//! ZNA tower spectra
+  //@Shi add fZPCTower and fZPATower
+  TProfile *fZPCTower[fCRCMaxnRun][fCRCnTow];		//! ZPC tower spectra
+  TProfile *fZPATower[fCRCMaxnRun][fCRCnTow];		//! ZPA tower spectra
   TClonesArray* fStack; //!
   TList *fSpectraMCList;   //! list with pt spectra
   TH1F *fPtSpecGen[2][10];		//! PtSpecGen
@@ -343,11 +437,16 @@ private:
   TF1 *fMultTOFLowCut; //!
   TF1 *fMultTOFHighCut; //!
   TProfile2D *fVZEROMult; //!
+  TH1F *fRecordNegativeEZNA; //! record # of event with negative EZNA value which causes Power(EZNA, fZDCGainAlpha) problem (Shi)
+  TH1F *fRecordNegativeEZNC; //! record # of event with negative EZNC value which causes Power(EZNC, fZDCGainAlpha) problem (Shi)
 
+  Bool_t fFillZNCenDisRbR; //@Shi flag for run by run ZN centroid distribution. Do not turn on for large dataset when running on grid. It takes too much memory 
   AliMultSelection* fMultSelection; //! MultSelection (RUN2 centrality estimator)
   Bool_t fUseTowerEq; //
   TList *fTowerEqList;   // list with weights
   TH1D *fTowerGainEq[2][5]; //!
+  TH1D *fHZDCCparameters; //! ZDC-C gain eq and recentering parameters using least square fit for 2018 dataset
+  TH1D *fHZDCAparameters; //! ZDC-A gain eq and recentering parameters using least square fit for 2018 dataset
   TList *fBadTowerStuffList; //! list for storing calib files
   Bool_t fUseBadTowerCalib; //
   TList *fBadTowerCalibList; // list with original calib files
@@ -362,6 +461,7 @@ private:
   TH1D *SpecCorSi[8]; //!
   TH2D *fBadTowerCalibHist[100]; //!
   TH2D *fVZEROGainEqHist; //!
+  TH2F *fHCorrectV0ChWeghts; //! V0 gain eq weight file for 2018 dataset  
   const static Int_t fkVZEROnHar = 4;
 //  TProfile3D *fVZEROQVectorRecQx[fkVZEROnHar]; //!
 //  TProfile3D *fVZEROQVectorRecQy[fkVZEROnHar]; //!
@@ -387,7 +487,14 @@ private:
   TH2D* fEbEQIm[fKNFBs][4]; //!
   TH2D* fEbEQMu[fKNFBs][4]; //!
 
-  ClassDef(AliAnalysisTaskCRCZDC,11);
+  // Functions for Pile Up Event Removal 2018 period:
+  TF1                   *fV0CutPU;      //
+  TF1                   *fSPDCutPU;     //
+  TF1                   *fMultCutPU;    //
+  TF1                   *fCenCutLowPU;  //
+  TF1                   *fCenCutHighPU; //
+  
+  ClassDef(AliAnalysisTaskCRCZDC,12);
 
 };
 

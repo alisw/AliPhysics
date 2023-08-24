@@ -32,6 +32,8 @@ AliFemtoDreamEvent::AliFemtoDreamEvent()
       fRefMult08(0),
       fV0AMult(0),
       fV0CMult(0),
+      fV0ATime(0),
+      fV0CTime(0),
       fV0MCentrality(0),
       fnContrib(0),
       fPassAliEvtSelection(false),
@@ -41,13 +43,14 @@ AliFemtoDreamEvent::AliFemtoDreamEvent()
       fisSelected(false),
       fEstimator(AliFemtoDreamEvent::kRef08),
       fspher(0),
+      fLowPtSpherCalc(),
       fsphero(0),
       fcalcsphero(false){
 
 }
 
 AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
-                                       UInt_t trigger, bool useEvtCuts)
+                                       UInt_t trigger, bool useEvtCuts, float LowPtSpherCalc)
     : fUtils(new AliAnalysisUtils()),
       fEvtCuts(nullptr),
       fuseAliEvtCuts(useEvtCuts),
@@ -64,6 +67,8 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
       fRefMult08(0),
       fV0AMult(0),
       fV0CMult(0),
+      fV0ATime(0),
+      fV0CTime(0),
       fV0MCentrality(0),
       fnContrib(0),
       fPassAliEvtSelection(false),
@@ -73,6 +78,7 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
       fisSelected(false),
       fEstimator(kRef08),
       fspher(0),
+      fLowPtSpherCalc(LowPtSpherCalc),
       fsphero(0),
       fcalcsphero(false) {
   if (fuseAliEvtCuts) {
@@ -102,6 +108,7 @@ AliFemtoDreamEvent::AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA,
   }
 }
 
+
 AliFemtoDreamEvent::~AliFemtoDreamEvent() {
   if (fEvtCuts) {
     delete fEvtCuts;
@@ -129,6 +136,8 @@ AliFemtoDreamEvent &AliFemtoDreamEvent::operator=(
   fRefMult08 = obj.fRefMult08;
   fV0AMult = obj.fV0AMult;
   fV0CMult = obj.fV0CMult;
+  fV0ATime = obj.fV0ATime;
+  fV0CTime = obj.fV0CTime;
   fV0MCentrality = obj.fV0MCentrality;
   fnContrib = obj.fnContrib;
   fPassAliEvtSelection = obj.fPassAliEvtSelection;
@@ -138,6 +147,7 @@ AliFemtoDreamEvent &AliFemtoDreamEvent::operator=(
   fisSelected = obj.fisSelected;
   fEstimator = obj.fEstimator;
   fspher = obj.fspher;
+  fLowPtSpherCalc = obj.fLowPtSpherCalc;
   fsphero = obj.fsphero;
   fcalcsphero= obj.fcalcsphero;
   return (*this);
@@ -180,7 +190,9 @@ void AliFemtoDreamEvent::SetEvent(AliAODEvent *evt) {
   this->fNSPDClusterLy1 = evt->GetNumberOfITSClusters(1);
   this->fV0AMult = vZERO->GetMTotV0A();
   this->fV0CMult = vZERO->GetMTotV0C();
-  this->fspher = CalculateSphericityEvent(evt);
+  this->fV0ATime = vZERO->GetV0ATime();
+  this->fV0CTime = vZERO->GetV0CTime();
+  this->fspher = CalculateSphericityEvent(evt, this->fLowPtSpherCalc);
   if (fcalcsphero){
        this->fsphero = CalculateSpherocityEvent(evt);
   }
@@ -302,6 +314,8 @@ void AliFemtoDreamEvent::SetEvent(AliESDEvent *evt) {
       evt, AliESDtrackCuts::kTrackletsITSTPC, 0.8, 0);
   this->fV0AMult = vZERO->GetMTotV0A();
   this->fV0CMult = vZERO->GetMTotV0C();
+  this->fV0ATime = vZERO->GetV0ATime();
+  this->fV0CTime = vZERO->GetV0CTime();
   AliMultSelection *MultSelection = 0x0;
   MultSelection = (AliMultSelection *) evt->FindListObject("MultSelection");
   if (!MultSelection) {
@@ -353,7 +367,7 @@ int AliFemtoDreamEvent::GetMultiplicity() {
   return mult;
 }
 
-double AliFemtoDreamEvent::CalculateSphericityEvent(AliAODEvent *evt) {
+double AliFemtoDreamEvent::CalculateSphericityEvent(AliAODEvent *evt, float lowerPtbound) {
 //Initializing
   double ptTot = 0.;
   double s00 = 0.;  //elements of the sphericity matrix taken form EPJC72:2124
@@ -373,7 +387,7 @@ double AliFemtoDreamEvent::CalculateSphericityEvent(AliAODEvent *evt) {
     double px = aodtrack->Px();
     double py = aodtrack->Py();
     if(!aodtrack->TestFilterBit(96)) continue;
-    if (TMath::Abs(pt) < 0.5 || TMath::Abs(eta) > 0.8) {
+    if (TMath::Abs(pt) < lowerPtbound || TMath::Abs(eta) > 0.8) {
       continue;
     }
 

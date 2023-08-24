@@ -24,7 +24,7 @@ class AliFemtoDreamEvent {
     kV0C = 4,
   };
   AliFemtoDreamEvent();
-  AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA, UInt_t trigger, bool useEvtCuts = true);
+  AliFemtoDreamEvent(bool mvPileUp, bool EvtCutQA, UInt_t trigger, bool useEvtCuts = true, float LowPtSpherCalc = 0.5);
   AliFemtoDreamEvent &operator=(const AliFemtoDreamEvent &obj);
   virtual ~AliFemtoDreamEvent();
   void SetEvent(AliAODEvent *evt);
@@ -124,6 +124,9 @@ class AliFemtoDreamEvent {
     return (fV0AMult + fV0CMult) / 2.;
   }
   ;
+  float GetV0ATime() const { return fV0ATime; }
+  float GetV0CTime() const { return fV0CTime; }
+
   float GetV0MCentrality() const {
     return fV0MCentrality;
   }
@@ -184,6 +187,10 @@ class AliFemtoDreamEvent {
     return "AliFemtoDreamEvent";
   }
   ;
+  void SetfLowPtSpherCalc(float LowPtSpherCalc) {
+    fLowPtSpherCalc = LowPtSpherCalc;
+  }
+  ;
   void SetSpher(double spher) {
     fspher = spher;
   }
@@ -205,7 +212,7 @@ class AliFemtoDreamEvent {
  private:
   AliFemtoDreamEvent(const AliFemtoDreamEvent&);
   int CalculateITSMultiplicity(AliAODEvent *evt);
-  double CalculateSphericityEvent(AliAODEvent *evt);
+  double CalculateSphericityEvent(AliAODEvent *evt, float lowerPtbound=0.5);
   double CalculateSphericityEvent(AliVEvent *evt);
   double CalculateSpherocityEvent(AliAODEvent *evt);
   double CalculateSpherocityEvent(AliVEvent *evt);
@@ -225,6 +232,8 @@ class AliFemtoDreamEvent {
   int fRefMult08;             //!
   int fV0AMult;               //!
   int fV0CMult;               //!
+  float fV0ATime;             //!
+  float fV0CTime;             //!
   float fV0MCentrality;       //!
   int fnContrib;              //!
   bool fPassAliEvtSelection;  //!
@@ -234,9 +243,10 @@ class AliFemtoDreamEvent {
   bool fisSelected;           //!
   MultEstimator fEstimator;   //!
   double fspher;            //!
+  float fLowPtSpherCalc;      //!
   double fsphero;            //!
   bool fcalcsphero;         //!
-ClassDef(AliFemtoDreamEvent,6)
+ClassDef(AliFemtoDreamEvent,7)
 };
 
 #endif /* ALIFEMTODREAMEVENT_H_ */

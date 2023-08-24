@@ -461,6 +461,8 @@ void AliAnalysisTaskCTrue::UserCreateOutputObjects()
     fAnaTree ->Branch("fZPCTDC",      &fZPCTDC[0],   "fZPCTDC[4]/D"  );
     fAnaTree ->Branch("fZNATime",     &fZNATime,     "fZNATime/D"    );
     fAnaTree ->Branch("fZNCTime",     &fZNCTime,     "fZNCTime/D"    );
+    fAnaTree ->Branch("fV0AOfflineTrigger",      &fV0AOfflineTrigger[0],   "fV0AOfflineTrigger[32]/B"  );
+    fAnaTree ->Branch("fV0COfflineTrigger",      &fV0COfflineTrigger[0],   "fV0COfflineTrigger[32]/B"  );
     fAnaTree ->Branch("fV0ADecision", &fV0ADecision, "fV0ADecision/I");
     fAnaTree ->Branch("fV0CDecision", &fV0CDecision, "fV0CDecision/I");
     fAnaTree ->Branch("fADADecision", &fADADecision, "fADADecision/I");
@@ -839,6 +841,11 @@ void AliAnalysisTaskCTrue::UserExec(Option_t *)
 
   fV0ADecision = dataVZERO->GetV0ADecision();
   fV0CDecision = dataVZERO->GetV0CDecision();
+  
+  for(Int_t i=0;i<32;i++) {
+    fV0AOfflineTrigger[i] = dataVZERO->BBTriggerV0A(i);
+    fV0COfflineTrigger[i] = dataVZERO->BBTriggerV0C(i);
+  }
 
   /* - AD: we try to find the AD object data in the nano-AOD. If we cannot,
      - we return, because there would be no way to actually select the events

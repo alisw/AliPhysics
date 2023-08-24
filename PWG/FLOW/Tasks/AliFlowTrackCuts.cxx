@@ -73,6 +73,8 @@
 #include "AliFlowCommonConstants.h"
 #include "AliAnalysisManager.h"
 #include "AliPIDResponse.h"
+#include "TRandom.h"
+#include "TF1.h"
 #include "TF2.h"
 #include "AliNanoAODHeader.h"
 #include "AliNanoAODTrack.h"
@@ -211,7 +213,9 @@ AliFlowTrackCuts::AliFlowTrackCuts():
   fMaxITSclusterShared(0),
   fCutITSChi2(kFALSE),
   fMaxITSChi2(0),
-  fRun(0)
+  fRun(0),
+  fEfficiencyParametrization(0x0),
+  fCutEfficiencyParametrization(kFALSE)
 {
   //io constructor 
   SetPriors(); //init arrays
@@ -363,7 +367,9 @@ AliFlowTrackCuts::AliFlowTrackCuts(const char* name):
   fMaxITSclusterShared(0),
   fCutITSChi2(kFALSE),
   fMaxITSChi2(0),
-  fRun(0)
+  fRun(0),
+  fEfficiencyParametrization(0x0),
+  fCutEfficiencyParametrization(kFALSE)
 {
   //constructor
   SetTitle("AliFlowTrackCuts");
@@ -518,7 +524,9 @@ AliFlowTrackCuts::AliFlowTrackCuts(const AliFlowTrackCuts& that):
   fMaxITSclusterShared(0),
   fCutITSChi2(kFALSE),
   fMaxITSChi2(0),
-  fRun(0)
+  fRun(0),
+  fEfficiencyParametrization(0x0),
+  fCutEfficiencyParametrization(kFALSE)
 {
   //copy constructor
   if (that.fTPCpidCuts) fTPCpidCuts = new TMatrixF(*(that.fTPCpidCuts));
@@ -997,6 +1005,12 @@ Bool_t AliFlowTrackCuts::PassesMCcuts(AliMCEvent* mcEvent, Int_t label)
   {
     if (mcparticle->GetNumberOfTrackReferences()<1) return kFALSE;
   }
+
+  if(fCutEfficiencyParametrization) {
+    if(fEfficiencyParametrization->Eval(mcparticle->Pt()) < gRandom->Uniform(0,1))
+      return kFALSE;
+  }
+  
   return kTRUE;
 }
 

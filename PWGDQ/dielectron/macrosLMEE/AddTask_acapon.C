@@ -13,9 +13,8 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                 Int_t usePIDcorrMaps   = 4,      // 0=None, 1=ITS,2=TPC,3=TOF,4=All Three
                                 // Option to use AliEventCuts class for additional event cuts
                                 Int_t whichAliEvtCuts  = 0,      // 0=None, 1=Use, 2=Also use correlation cuts
-                                Bool_t useRun1binning  = kFALSE, // Match run1 pPb prelim. binning
                                 Bool_t plots3D         = kFALSE,
-                                Bool_t v0plots         = kTRUE,  // Plots for PID calibration
+                                Bool_t v0plots         = kFALSE,  // Plots for PID calibration
                                 Bool_t getFromAlien    = kFALSE) // Pull config+CutLib from alien directory
 {
 
@@ -43,7 +42,7 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
     std::cout << "Wagon number    : " << wagonNum       << std::endl;
     std::cout << "Pairing         : " << doPairing      << std::endl;
     std::cout << "Pair cuts       : " << applyPairCuts  << std::endl;
-    std::cout << "Event mixing    : " << doEventMixing       << std::endl;
+    std::cout << "Event mixing    : " << doEventMixing  << std::endl;
     std::cout << "rejPileUp       : " << rejectPileUp   << std::endl;
     std::cout << "Track plots     : " << trackVarPlots  << std::endl;
     std::cout << "Which det plots : " << whichDetPlots  << std::endl;
@@ -51,7 +50,6 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
     std::cout << "Use TPCcorr     : " << useTPCcorr     << std::endl;
     std::cout << "Use TOFcorr     : " << useTOFcorr     << std::endl;
     std::cout << "Use AliEventCuts: " << whichAliEvtCuts<< std::endl;
-    std::cout << "Using Run1 bins : " << useRun1binning << std::endl;
     std::cout << "3D plots        : " << plots3D        << std::endl;
     std::cout << "v0 plots        : " << v0plots        << std::endl;
 
@@ -65,6 +63,19 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
     TString configBasePath("$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/");
     TString configLMEECutLib("LMEECutLib_acapon.C");
     TString configFile = "Config_acapon.C";
+
+    // Determine if ESDs or AODs are being analysed
+    // CutLibrary version only works/tested for AODs
+    // noCutLib version is mixed depending on cut setting
+    if(mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()){
+      ::Info("AddTask_acapon", "AOD configuration");
+    }
+    else if(mgr->GetInputEventHandler()->IsA() == AliESDInputHandler::Class()){
+      ::Info("AddTask_acapon","ESD configuration");
+      configLMEECutLib = "LMEECutLib_acapon_ESD.C";
+    }
+    ::Info("AddTask_acapon",Form("Use LMeeCutLib: %s",configLMEECutLib.Data()));
+
 
     // Load updated macros from private ALIEN path
     TString myConfig = "alien_cp alien:///alice/cern.ch/user/a/acapon/PWGDQ/dielectron/macrosLMEE/Config_acapon.C .";
@@ -85,15 +96,6 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
       gROOT->LoadMacro(configFilePath.Data());
     }
 
-    // Determine if ESDs or AODs are being analysed
-    // CutLibrary version only works/tested for AODs
-    // noCutLib version is mixed depending on cut setting
-    if(mgr->GetInputEventHandler()->IsA() == AliAODInputHandler::Class()){
-      ::Info("AddTask_acapon", "AOD configuration");
-    }
-    else if(mgr->GetInputEventHandler()->IsA() == AliESDInputHandler::Class()){
-      ::Info("AddTask_acapon","ESD configuration");
-    }
 
     // Create task and add it to the manager
     AliAnalysisTaskMultiDielectron* task = new AliAnalysisTaskMultiDielectron(::Form("DielectronTask%d", wagonNum));
@@ -135,7 +137,7 @@ AliAnalysisTask* AddTask_acapon(TString outputFileName = "AnalysisResult.root",
                                               doPairing, applyPairCuts, doEventMixing,
                                               trackVarPlots, whichDetPlots, v0plots,
                                               useITScorr, useTPCcorr, useTOFcorr,
-                                              plots3D, useRun1binning);
+                                              plots3D);
       if(!diel_low){
         continue;
       }

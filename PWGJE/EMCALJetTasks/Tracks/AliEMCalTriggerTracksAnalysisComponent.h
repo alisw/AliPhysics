@@ -20,7 +20,9 @@
 #include <TNamed.h>
 #include <THistManager.h>
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE{ 
+  
+namespace EMCALJetTasks{
 
 class AliEMCalTriggerAnaClassManager;
 class AliEMCalTriggerBinningComponent;
@@ -142,11 +144,11 @@ protected:
 
   Int_t                                         fComponentDebugLevel;     ///< Debug level for the given analysis component
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerTracksAnalysisComponent, 1)
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGERTRACKSANALYSISCOMPONENT_H */

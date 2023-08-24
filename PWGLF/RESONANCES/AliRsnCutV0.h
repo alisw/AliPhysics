@@ -36,8 +36,11 @@ public:
    void           SetMaxDCAVertex(Double_t value)          {fMaxDCAVertex = value;}
    void           SetMinCosPointingAngle(Double_t value)   {fMinCosPointAngle = value;}
    void           SetMaxDaughtersDCA(Double_t value)       {fMaxDaughtersDCA = value;}
+   void           SetMinArmentousCut(Double_t value)       {fMinArm          = value;}
+   Double_t       GetMinArmentousCut()                     {return fMinArm;}
    void           SetMinTPCcluster(Int_t value)            {fMinTPCcluster = value;}
    void           SetMaxRapidity(Double_t value)           {fMaxRapidity = value;}
+   void           SetMaxPseudorapidity(Double_t value)           {fMaxPseudorapidity = value;}
    
    void           SetPIDCutProton(Double_t value)          {fPIDCutProton = value;}
    void           SetPIDCutPion(Double_t value)            {fPIDCutPion = value;}
@@ -45,6 +48,7 @@ public:
    void           SetDifferentDCACutPosNegTrack(Bool_t doDifferentTrackDCACuts){fCustomTrackDCACuts = doDifferentTrackDCACuts;}
    void           SetMinDCAToVtxXYPositiveTrack(Double_t value) {fMinDCAPositiveTrack = value;}
    void           SetMinDCAToVtxXYNegativeTrack(Double_t value) {fMinDCANegativeTrack = value;}
+   void           SetCheckOOBPileup(Bool_t value = true)   {fCheckOOBPileup = value;}
 
    AliRsnCutTrackQuality *CutQuality()                     {return &fCutQuality;}
    void           SetAODTestFilterBit(Int_t value)         {fAODTestFilterBit = value;}
@@ -57,7 +61,9 @@ protected:
 
    Bool_t      CheckESD(AliESDv0 *track);
    Bool_t      CheckAOD(AliAODv0 *track);
-
+   Bool_t      TrackPassesOOBPileupCut(AliESDtrack* t, Double_t b);
+   Bool_t      TrackPassesOOBPileupCut(AliAODTrack* t, Double_t b);
+   Bool_t      AODTrackAccepted(AliAODTrack* t);
    
    Int_t            fHypothesis;       // PDG code corresponding to expected V0 hypothesis
    Int_t            fpT_Tolerance=0;     // Switch to set pT dependent Mass Tolerance
@@ -72,11 +78,14 @@ protected:
    Double_t         fMaxDCAVertex;     // max allowed DCA from primary vertex
    Double_t         fMinCosPointAngle; // min allowed cosine of pointing angle
    Double_t         fMaxDaughtersDCA;  // max allowed DCA between the two daughers
+   Double_t         fMinArm;           // min armentous cut value
    Int_t            fMinTPCcluster;    // min allowed TOC cluster
    Double_t         fMaxRapidity;      // max allowed V0 rapidity
+   Double_t         fMaxPseudorapidity; // max allowed V0 pseudorapidity
    Bool_t           fCustomTrackDCACuts; // Use different DCA cuts for positive and negative V0 tracks
    Double_t         fMinDCAPositiveTrack; // DCA of positive V0 track to vertex
    Double_t         fMinDCANegativeTrack; // DCA of negative V0 track to vertex
+   Bool_t           fCheckOOBPileup;   // Check out-of-bunch pileup
    
    AliPID::EParticleType fPID;         // PID for track
    AliPID::EParticleType fPID2;        // PID for track

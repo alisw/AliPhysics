@@ -165,18 +165,20 @@ AliCSPairAnalysis::~AliCSPairAnalysis() {
 
 /// \brief Establishes the binning configuration
 /// \param confstring string containing the binning configuration parameters
-void AliCSPairAnalysis::ConfigureBinning(const char *confstring) {
+Bool_t AliCSPairAnalysis::ConfigureBinning(const char *confstring) {
 
   Double_t min_pt, max_pt, width_pt;
   Double_t min_eta, max_eta, width_eta;
+  Int_t    nBins_phi = 0;
   Char_t buffer[24];
 
-  sscanf(confstring, "halfsymm:%3s;phishift:%lf;%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf",
+  /* we are a bit lazy here because the format should have been checked somewhere else */
+  sscanf(confstring, "halfsymm:%3s;phishift:%lf;%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%d",
       buffer,
       &fNBinsPhiShift,
       &fMin_vertexZ, &fMax_vertexZ, &fWidth_vertexZ,
       &min_pt, &max_pt, &width_pt,
-      &min_eta, &max_eta, &width_eta);
+      &min_eta, &max_eta, &width_eta, &nBins_phi);
 
   fMin_pt = min_pt;
   fMax_pt = max_pt;
@@ -184,20 +186,22 @@ void AliCSPairAnalysis::ConfigureBinning(const char *confstring) {
   fMin_eta = min_eta;
   fMax_eta = max_eta;
   fWidth_eta = width_eta;
+  fNBins_phi = nBins_phi;
   AliInfo("=====================================================");
   AliInfo(Form("Configured binning: %s", GetBinningConfigurationString().Data()));
   AliInfo("=====================================================");
+  return kTRUE;
 }
 
 /// \brief Build the configuration string
 /// \return the configuration string corresponding to the current configuration
 TString AliCSPairAnalysis::GetBinningConfigurationString() const {
 
-  return TString(Form("Binning:phishift:%.1f;%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f",
+  return TString(Form("Binning:phishift:%.1f;%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%d",
       fNBinsPhiShift,
       fMin_vertexZ, fMax_vertexZ, fWidth_vertexZ,
       fMin_pt, fMax_pt, fWidth_pt,
-      fMin_eta, fMax_eta, fWidth_eta));
+      fMin_eta, fMax_eta, fWidth_eta,fNBins_phi));
 }
 
 

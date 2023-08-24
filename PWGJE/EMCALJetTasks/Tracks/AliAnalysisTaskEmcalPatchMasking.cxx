@@ -36,11 +36,9 @@
 #include "AliVCaloTrigger.h"
 #include "AliVEvent.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliAnalysisTaskEmcalPatchMasking)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalPatchMasking)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalPatchMasking::AliAnalysisTaskEmcalPatchMasking() :
   AliAnalysisTaskEmcal(),
@@ -458,5 +456,3 @@ void AliAnalysisTaskEmcalPatchMasking::ProcessMaxPatch(const AliEMCALTriggerPatc
   }
 
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

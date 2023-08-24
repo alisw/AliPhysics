@@ -5,7 +5,12 @@ InputFiles:
     SuffixMC: OnlySig_010V0M_CosThSt_Pt400_SPDany_3SigPID_FidY
     AcceptanceFile: Acceptance_Toy_D0Kpi_yfidPtDep_etaDau09_ptDau100_FONLL5ptshape.root
     Meson: Dzero
-
+EfficiencyWeights:
+    MultWeiFile: 
+    HistoWeiName: 
+    PtDWei: FONLL5overLHC20g2
+    PtBWei: FONLL5overLHC20g2
+    UseAccFromToyMC: 0
 PtBins:
     NumOfPtBins: 14
     BinLimits: [ 0.,0.5,1.,1.5,2.,2.5,3.,3.5,4.,5.,6.,7.,8.,10.,12. ]
@@ -17,6 +22,7 @@ SigmaConfiguration:
     FixSigmaConf: 1
     FixSigmaPerBin: [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0 ]
     TuneSigmaOnData: -1.
+    UseSigmaManual 0
     SigmaManual: [ 0.006,0.006,0.006,0.007,0.008,0.008,0.008,0.008,0.009,0.010,0.011,0.012,0.012,0.012 ]
 
 MeanConfiguration:

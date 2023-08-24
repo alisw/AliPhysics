@@ -1831,7 +1831,7 @@ void AliAnalysisTaskQAHFE::UserExec(Option_t *)
 	////////////////////////////////////////////////////////////////
 	
 	fHistMult->Fill(num);
-	delete fListOfmotherkink;
+	delete [] fListOfmotherkink;
 }
 //--------------------END of UserExec----------------------------------
 

@@ -62,13 +62,13 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 
 AliCaloTrackReader  * ConfigureReader        (TString col,           Bool_t simulation,
                                               TString clustersArray, Bool_t tender,
-                                              TString calorimeter,   Bool_t nonLinOn,
+                                              TString calorimeter,   Int_t nonLinOn,
                                               TString trigger,       Bool_t rejectEMCTrig,
                                               Int_t   minCen,        Int_t  maxCen,
                                               Bool_t  printSettings, Int_t  debug       );
 AliCalorimeterUtils * ConfigureCaloUtils     (TString col,           Bool_t simulation,
                                               Bool_t tender,         TString calorimeter,
-                                              Bool_t  nonLinOn,      Int_t  year,
+                                              Int_t  nonLinOn,       Int_t  year,
                                               Bool_t  printSettings, Int_t  debug            );
 AliAnaPhoton        * ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
                                               TString calorimeter,   Int_t  year,  Int_t tm,
@@ -81,7 +81,7 @@ AliAnaPi0EbE        * ConfigurePi0EbEAnalysis(TString particle,      Int_t  anal
 AliAnaParticleIsolation* ConfigureIsolationAnalysis
                                              (TString particle,      Int_t   leading,
                                               Int_t partInCone,      Int_t   thresType,
-                                              Float_t cone,          Float_t pth,      Bool_t multi,
+                                              Float_t cone,          Float_t pth,      
                                               TString col,           Bool_t  simulation,
                                               TString calorimeter,   Int_t   year,      Int_t tm,
                                               Bool_t  printSettings, Int_t   debug                    );
@@ -124,7 +124,7 @@ TString kAnaGammaHadronCorr = "";
 /// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param tender : A bool indicating if the tender was running before this analysis
-/// \param nonLinOn : A bool to set the use of the non linearity correction
+/// \param nonLinOn : An integer to set the use of the non linearity correction
 /// \param shshMax : A float setting the maximum value of the shower shape of the clusters for the correlation analysis
 /// \param isoCone : A float setting the isolation cone size
 /// \param isoPtTh : A float setting the isolation pT threshold (sum of particles in cone or leading particle)
@@ -151,7 +151,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
  Int_t    rejectEMCTrig = 0,
  TString  clustersArray = "",
  Bool_t   tender        = kFALSE,
- Bool_t   nonLinOn      = kFALSE,
+ Int_t    nonLinOn      = 0,
  Float_t  shshMax       = 0.27,
  Float_t  isoCone       = 0.4,
  Float_t  isoPtTh       = 0.5,
@@ -245,7 +245,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
 //                                             col,simulation,calorimeter,year,tm,printSettings,debug), n++); // Eta out of peak event by event selection, and photon tagging from decay
   
   
-  maker->AddAnalysis(ConfigureIsolationAnalysis("Photon", leading, isoContent,isoMethod,isoCone,isoPtTh, kFALSE,
+  maker->AddAnalysis(ConfigureIsolationAnalysis("Photon", leading, isoContent,isoMethod,isoCone,isoPtTh,
                                                 col,simulation,calorimeter,year,tm,printSettings,debug), n++); // Photon isolation
   
   
@@ -261,7 +261,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
   maker->AddAnalysis(ConfigurePi0EbEAnalysis("Pi0", AliAnaPi0EbE::kSSCalo,kTRUE,kTRUE,
                                              col,simulation,calorimeter,year,tm,printSettings,debug), n++); // Pi0 event by event selection, cluster splitting
   
-  maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0SS", leading, isoContent,isoMethod,isoCone,isoPtTh, kFALSE,
+  maker->AddAnalysis(ConfigureIsolationAnalysis("Pi0SS", leading, isoContent,isoMethod,isoCone,isoPtTh,
                                                 col,simulation,calorimeter,year,tm,printSettings,debug), n++);          // Pi0 isolation, cluster splits
   
   
@@ -383,7 +383,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelation
 ///
 AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
                                      TString clustersArray, Bool_t tender,
-                                     TString calorimeter,   Bool_t nonLinOn,
+                                     TString calorimeter,   Int_t nonLinOn,
                                      TString trigger,       Bool_t rejectEMCTrig,
                                      Int_t   minCen,        Int_t  maxCen,
                                      Bool_t  printSettings, Int_t  debug         )
@@ -617,7 +617,7 @@ AliCaloTrackReader * ConfigureReader(TString col,           Bool_t simulation,
 ///
 AliCalorimeterUtils* ConfigureCaloUtils(TString col,    Bool_t simulation,
                                         Bool_t  tender, TString calorimeter,
-                                        Bool_t nonLinOn,      
+                                        Int_t nonLinOn,      
                                         Int_t   year,   Bool_t printSettings, 
                                         Int_t   debug)
 {
@@ -1031,7 +1031,7 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
 ///
 AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t  leading,
                                                     Int_t   partInCone,    Int_t   thresType,
-                                                    Float_t cone,          Float_t pth,        Bool_t multi,
+                                                    Float_t cone,          Float_t pth,        
                                                     TString col,           Bool_t  simulation,
                                                     TString calorimeter,   Int_t   year,       Int_t tm,
                                                     Bool_t  printSettings, Int_t   debug                      )
@@ -1047,9 +1047,6 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
     TString calo = "EMCAL";
     ana->SetCalorimeter(calo);
   }
-  
-  ana->SwitchOffUEBandSubtractionHistoFill();
-  ana->SwitchOffCellHistoFill() ;
   
   ana->SwitchOffLeadingOnly();
   ana->SwitchOffCheckNeutralClustersForLeading();
@@ -1071,14 +1068,6 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
   {
     ana->SwitchOffSSHistoFill();
   }
-  
-  ana->SwitchOnPtTrigBinHistoFill();
-  ana->SetNPtTrigBins(6);
-  //ana->SetPtTrigLimits(0,8); ana->SetPtTrigLimits(1,12); ana->SetPtTrigLimits(2,16); ana->SetPtTrigLimits(3,25);
-  
-  ana->SwitchOnBackgroundBinHistoFill();
-  ana->SetNBackgroundBins(11);
-  //ana->SetBackgroundLimits(0,0); ana->SetBackgroundLimits(1,0.2); ana->SetBackgroundLimits(2,3); ana->SetBackgroundLimits(3,0.4);
     
   if(!tm)  ana->SwitchOnTMHistoFill();
   else     ana->SwitchOffTMHistoFill();
@@ -1151,33 +1140,6 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
     }
   }
   
-  
-  // Do or not do isolation with previously produced AODs.
-  // No effect if use of SwitchOnSeveralIsolation()
-  ana->SwitchOffReIsolation();
-  
-  // Multiple IC
-  if(multi)
-  {
-    ic->SetConeSize(1.);    // Take all for first iteration
-    ic->SetPtThreshold(100);// Take all for first iteration
-    ana->SwitchOnSeveralIsolation() ;
-    ana->SetAODObjArrayName(Form("MultiIC%sTM%d",particle.Data(),tm));
-    
-    ana->SetNCones(3);
-    ana->SetNPtThresFrac(2);
-    ana->SetConeSizes(0,0.3);       ana->SetConeSizes(1,0.4);       ana->SetConeSizes(2,0.5);
-    ana->SetPtThresholds(0, 0.5);   ana->SetPtThresholds(1, 1);     ana->SetPtThresholds(2, 1.5);  ana->SetPtThresholds(3, 2);
-    ana->SetPtFractions (0, 0.05) ; ana->SetPtFractions (1, 0.1);   ana->SetPtFractions (2, 0.2) ;  ana->SetPtFractions (3, 0.3) ;
-    ana->SetSumPtThresholds(0, 0.5) ; ana->SetSumPtThresholds(1, 1) ; ana->SetSumPtThresholds(2, 1.5);  ana->SetSumPtThresholds(3, 2)  ;
-    //ana->SetPtThresholds(0, 0.5);
-    
-    ana->SwitchOffTMHistoFill();
-    ana->SwitchOffSSHistoFill();
-  }
-  else
-    ana->SwitchOffSeveralIsolation() ;
-  
   AliCaloPID* caloPID = ana->GetCaloPID();
  
   // Track matching 
@@ -1190,8 +1152,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
 
   //Set Histograms name tag, bins and ranges
   
-  if(!multi) ana->AddToHistogramsName(Form("AnaIsol%s_TM%d_",particle.Data(),tm));
-  else       ana->AddToHistogramsName(Form("AnaMultiIsol%s_TM%d_",particle.Data(),tm));
+  ana->AddToHistogramsName(Form("AnaIsol%s_TM%d_",particle.Data(),tm));
   
   SetAnalysisCommonParameters(ana,calorimeter,year,col,simulation,printSettings,debug); // see method below
   
@@ -1286,13 +1247,6 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   //  ana->SetAssocPtBinLimit(5, 8) ;
   //  ana->SetAssocPtBinLimit(6, 10) ;
   //  ana->SetAssocPtBinLimit(7, 100);
-  
-  ana->SetNTriggerPtBins(5); // set last bin [25,30] GeV/c
-  // See AliAnaParticleCorrelation::InitParameters();
-  // Default bins{10,12,16,20,25,30,40,50,75,100} GeV/c
-  // If you want to change it:
-  //  ana->SetTriggerPtBinLimit(0,  5) ;
-  //  ana->SetTriggerPtBinLimit(1, 10) ;
   
   ana->SelectIsolated(bIsolated); // do correlation with isolated photons
   

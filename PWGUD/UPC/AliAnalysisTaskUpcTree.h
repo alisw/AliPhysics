@@ -9,12 +9,13 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "TBits.h"
+#include <TObjString.h>
 
+class TObjString;
 class TList;
 class TTree;
 class TH1D;
 class TH2D;
-class TObjString;
 class TClonesArray;
 class AliMuonTrackCuts;
 

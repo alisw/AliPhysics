@@ -215,6 +215,7 @@ void DrawPtHardBins
         if(j==0) hTrackPt[i][k][j] = (TH1F*) f[i][k]->Get("AnaHadrons_hPt");
         if(j==1) hTrackPt[i][k][j] = (TH1F*) f[i][k]->Get("AnaHadrons_hPtSPDRefit");
         if(j==2) hTrackPt[i][k][j] = (TH1F*) f[i][k]->Get("AnaHadrons_hPtNoSPDRefit");
+        if(!hTrackPt[i][k][j]) continue;
         hTrackPt[i][k][j]->SetLineColor(color[i]);
         hTrackPt[i][k][j]->SetLineWidth(2);
         hTrackPt[i][k][j]->SetLineStyle(j);

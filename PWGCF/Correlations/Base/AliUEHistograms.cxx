@@ -36,6 +36,8 @@
 #include "TH3F.h"
 #include "TMath.h"
 #include "TLorentzVector.h"
+#include "TFormula.h"
+#include "TRandom3.h"
 
 ClassImp(AliUEHistograms)
 
@@ -64,6 +66,8 @@ AliUEHistograms::AliUEHistograms(const char* name, const char* histograms, const
   fControlConvResoncances(0),
   fEfficiencyCorrectionTriggers(0),
   fEfficiencyCorrectionAssociated(0),
+  fDeltaEtaAcceptance(0),
+  fDeltaEtaAcceptanceRNG(0),
   fSelectCharge(0),
   fTriggerSelectCharge(0),
   fAssociatedSelectCharge(0),
@@ -245,6 +249,8 @@ AliUEHistograms::AliUEHistograms(const AliUEHistograms &c) :
   fControlConvResoncances(0),
   fEfficiencyCorrectionTriggers(0),
   fEfficiencyCorrectionAssociated(0),
+  fDeltaEtaAcceptance(0),
+  fDeltaEtaAcceptanceRNG(0),
   fSelectCharge(0),
   fTriggerSelectCharge(0),
   fAssociatedSelectCharge(0),
@@ -566,7 +572,7 @@ void AliUEHistograms::Fill(AliVParticle* leadingMC, AliVParticle* leadingReco)
 }
 
 //____________________________________________________________________
-void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed, Float_t weight, Bool_t firstTime, Bool_t twoTrackEfficiencyCut, Float_t bSign, Float_t twoTrackEfficiencyCutValue, Bool_t applyEfficiency)
+void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEHist::CFStep step, TObjArray* particles, TObjArray* mixed, Float_t weight, Bool_t firstTime, Bool_t twoTrackCuts, Float_t bSign, Float_t twoTrackEfficiencyCutValue, Bool_t applyEfficiency)
 {
   // fills the fNumberDensityPhi histogram
   //
@@ -579,7 +585,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
   if (weight < 0)
     fillpT = kTRUE;
   
-  if (twoTrackEfficiencyCut && !fTwoTrackDistancePt[0])
+  if (twoTrackCuts && (twoTrackEfficiencyCutValue > 0) && !fTwoTrackDistancePt[0])
   {
     // do not add this hists to the directory
     Bool_t oldStatus = TH1::AddDirectoryStatus();
@@ -801,8 +807,16 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	    continue;
 	  }
 
+	if (fDeltaEtaAcceptance)
+	{
+	  Float_t deta = triggerEta - eta[j];
+	  
+	  if (fDeltaEtaAcceptance->Eval(deta) < fDeltaEtaAcceptanceRNG->Uniform(0,1))
+	    continue;
+	}
+	
 	// conversions
-	if (fCutConversionsV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+	if (twoTrackCuts && fCutConversionsV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
 	{
 	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.510e-3, 0.510e-3);
 	  
@@ -818,7 +832,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	}
 	
 	// K0s
-	if (fCutK0sV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+	if (twoTrackCuts && fCutK0sV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
 	{
 	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
 	  
@@ -836,7 +850,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	}
 
 	// Lambda
-	if (fCutLambdaV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+	if (twoTrackCuts && fCutLambdaV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
 	{
 	  Float_t mass1 = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.9383);
 	  Float_t mass2 = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.9383, 0.1396);
@@ -864,7 +878,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	}
 
         // Phi
-	if (fCutPhiV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+	if (twoTrackCuts && fCutPhiV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
 	{
 	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.4937, 0.4937);
 	  
@@ -882,7 +896,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	}	
 
         // Rho
-	if (fCutRhoV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+	if (twoTrackCuts && fCutRhoV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
         {
 	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), 0.1396, 0.1396);
 	  
@@ -900,7 +914,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	}
 
         // User-defined cut
-	if (fCutCustomMass > 0 && fCutCustomFirst > 0 && fCutCustomSecond > 0 && fCutCustomV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
+	if (twoTrackCuts && fCutCustomMass > 0 && fCutCustomFirst > 0 && fCutCustomSecond > 0 && fCutCustomV > 0 && particle->Charge() * triggerParticle->Charge() < 0)
         {
 	  Float_t mass = GetInvMassSquaredCheap(triggerParticle->Pt(), triggerEta, triggerParticle->Phi(), particle->Pt(), eta[j], particle->Phi(), fCutCustomFirst, fCutCustomSecond);
 	  
@@ -915,7 +929,7 @@ void AliUEHistograms::FillCorrelations(Double_t centrality, Float_t zVtx, AliUEH
 	  }
 	}
 
-	if (twoTrackEfficiencyCut)
+	if (twoTrackCuts && twoTrackEfficiencyCutValue > 0)
 	{
 	  // the variables & cuthave been developed by the HBT group 
 	  // see e.g. https://indico.cern.ch/materialDisplay.py?contribId=36&sessionId=6&materialId=slides&confId=142700
@@ -1220,7 +1234,7 @@ void AliUEHistograms::SetContaminationEnhancement(TH1F* hist)
   for (Int_t i=0; i<fgkUEHists; i++)
     if (GetUEHist(i))
       GetUEHist(i)->SetContaminationEnhancement(hist);
-}  
+}
 
 //____________________________________________________________________
 void AliUEHistograms::SetCombineMinMax(Bool_t flag)

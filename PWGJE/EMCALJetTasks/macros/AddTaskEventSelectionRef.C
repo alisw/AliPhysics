@@ -1,4 +1,4 @@
-EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef *AddTaskEventSelectionRef(
+PWGJE::EMCALJetTasks::AliAnalysisTaskEventSelectionRef *AddTaskEventSelectionRef(
     const char *clustercontainername,
     const char *dummy
     )
@@ -8,7 +8,7 @@ EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef *AddTaskEventSelectionR
   TString taskname = "EventSelectionQA_" + dummy,
       listname = "EventSelectionResults_" + dummy;
 
-  EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef *task = new EMCalTriggerPtAnalysis::AliAnalysisTaskEventSelectionRef(taskname.Data());
+  PWGJE::EMCALJetTasks::AliAnalysisTaskEventSelectionRef *task = new PWGJE::EMCALJetTasks::AliAnalysisTaskEventSelectionRef(taskname.Data());
   mgr->AddTask(task);
   task->SetClusterContainer(clustercontainername);
 

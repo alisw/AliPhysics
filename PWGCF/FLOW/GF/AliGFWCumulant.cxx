@@ -1,5 +1,11 @@
+/*
+Author: Vytautas Vislavicius
+Extention of Generic Flow (https://arxiv.org/abs/1312.3572 by A. Bilandzic et al.)
+A part of <AliGFW.cxx/h>
+A container to store Q vectors for one subevent with an extra layer to recursively calculate particle correlations.
+If used, modified, or distributed, please aknowledge the author of this code.
+*/
 #include "AliGFWCumulant.h"
-
 AliGFWCumulant::AliGFWCumulant():
   fQvector(0),
   fUsed(kBlank),
@@ -14,23 +20,26 @@ AliGFWCumulant::AliGFWCumulant():
 
 AliGFWCumulant::~AliGFWCumulant()
 {
-  //printf("Destructor (?) for some reason called?\n");
-  //DestroyComplexVectorArray();
 };
-void AliGFWCumulant::FillArray(Double_t eta, Int_t ptin, Double_t phi, Double_t weight) {
+void AliGFWCumulant::FillArray(Int_t ptin, Double_t phi, Double_t weight, Double_t SecondWeight) {
   if(!fInitialized)
     CreateComplexVectorArray(1,1,1);
   if(fPt==1) ptin=0; //If one bin, then just fill it straight; otherwise, if ptin is out-of-range, do not fill
   else if(ptin<0 || ptin>=fPt) return;
   fFilledPts[ptin] = kTRUE;
   for(Int_t lN = 0; lN<fN; lN++) {
-    Double_t lSin = TMath::Sin(lN*phi); //No need to recalculate for each power
-    Double_t lCos = TMath::Cos(lN*phi); //No need to recalculate for each power
+    Double_t lSin = sin(lN*phi); //No need to recalculate for each power
+    Double_t lCos = cos(lN*phi); //No need to recalculate for each power
     for(Int_t lPow=0; lPow<PW(lN); lPow++) {
-      Double_t lPrefactor = TMath::Power(weight, lPow); //Dont calculate it twice; multiplication is cheaper that power
+      Double_t lPrefactor = 0;
+      //Dont calculate it twice; multiplication is cheaper that power
+      //Also, if second weight is specified, then keep the first weight with power no more than 1, and us the other weight otherwise
+      //this is important when POIs are a subset of REFs and have different weights than REFs
+      if(SecondWeight>0 && lPow>1) lPrefactor = pow(SecondWeight, lPow-1)*weight;
+      else lPrefactor = pow(weight,lPow);
       Double_t qsin = lPrefactor * lSin;
       Double_t qcos = lPrefactor * lCos;
-      fQvector[ptin][lN][lPow](fQvector[ptin][lN][lPow].Re()+qcos,fQvector[ptin][lN][lPow].Im()+qsin);//+=TComplex(qcos,qsin);
+      fQvector[ptin][lN][lPow]+=complex<Double_t>(qcos,qsin);
     };
   };
   Inc();
@@ -41,7 +50,7 @@ void AliGFWCumulant::ResetQs() {
     fFilledPts[i] = kFALSE;
     for(Int_t lN=0;lN<fN;lN++) {
       for(Int_t lPow=0;lPow<PW(lN);lPow++) {
-  	       fQvector[i][lN][lPow](0.,0.);
+  	       fQvector[i][lN][lPow] = fNullQ;
       };
     };
   };
@@ -76,21 +85,29 @@ void AliGFWCumulant::CreateComplexVectorArrayVarPower(Int_t N, vector<Int_t> Pow
   fPt=Pt;
   fFilledPts = new Bool_t[Pt];
   fPowVec = PowVec;
-  fQvector = new TComplex**[fPt];
+  fQvector = new complex<Double_t>**[fPt];
   for(Int_t i=0;i<fPt;i++) {
-    fQvector[i] = new TComplex*[fN];
+    fQvector[i] = new complex<Double_t>*[fN];
   };
   for(Int_t l_n=0;l_n<fN;l_n++) {
     for(Int_t i=0;i<fPt;i++) {
-      fQvector[i][l_n] = new TComplex[PW(l_n)];
+      fQvector[i][l_n] = new complex<Double_t>[PW(l_n)];
     };
   };
   ResetQs();
   fInitialized=kTRUE;
 };
-TComplex AliGFWCumulant::Vec(Int_t n, Int_t p, Int_t ptbin) {
+complex<Double_t> AliGFWCumulant::Vec(Int_t n, Int_t p, Int_t ptbin) {
   if(!fInitialized) return 0;
   if(ptbin>=fPt || ptbin<0) ptbin=0;
   if(n>=0) return fQvector[ptbin][n][p];
-  return TComplex::Conjugate(fQvector[ptbin][-n][p]);
+  return conj(fQvector[ptbin][-n][p]);
 };
+Bool_t AliGFWCumulant::IsPtBinFilled(Int_t ptb) {
+   if(!fFilledPts) return kFALSE;
+   if(ptb>0) {
+     if(fPt==1) ptb=0;
+     else if(ptb>=fPt) return kFALSE; //This is in case we are differential and going out of range for whatever reason.
+   };
+   return fFilledPts[ptb];
+}

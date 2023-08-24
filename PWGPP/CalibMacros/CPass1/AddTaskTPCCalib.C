@@ -19,6 +19,8 @@ void SetupCalibTaskTrainCluster(TObject* task);
 
 Int_t debugLevel=0;
 Int_t streamLevel=0;
+Float_t lowtrunc = 0.02;
+Float_t hightrunc = 0.6;
 
 //_____________________________________________________________________________
 AliAnalysisTask  *AddTaskTPCCalib(Int_t runNumber)
@@ -158,8 +160,8 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, const char * name
   calibTimeGain->SetDebugLevel(0);
   calibTimeGain->SetStreamLevel(0);
   calibTimeGain->SetTriggerMask(-1,-1,kTRUE);        //reject laser
-  calibTimeGain->SetLowerTrunc(0.02);
-  calibTimeGain->SetUpperTrunc(0.6);
+  calibTimeGain->SetLowerTrunc(lowtrunc);
+  calibTimeGain->SetUpperTrunc(hightrunc);
 
   myTask->AddJob(calibTimeGain);
 
@@ -168,8 +170,8 @@ void AddCalibTimeGain(TObject* task, Bool_t isCosmic = kFALSE, const char * name
   calibGainMult->SetDebugLevel(0);
   calibGainMult->SetStreamLevel(0);
   calibGainMult->SetTriggerMask(-1,-1,kTRUE);        //reject laser
-  calibGainMult->SetLowerTrunc(0.02);
-  calibGainMult->SetUpperTrunc(0.6);
+  calibGainMult->SetLowerTrunc(lowtrunc);
+  calibGainMult->SetUpperTrunc(hightrunc);
 
   myTask->AddJob(calibGainMult);
 
@@ -400,6 +402,8 @@ void ConfigOCDB(Int_t run){
   AliTPCRecoParam * tpcRecoParam = (AliTPCRecoParam*)array->At(fluxType);
   ::Info("AddTaskTPCCalib","Beam type: %s, using fluxType=%i",beamType.Data(),fluxType);
   tpcRecoParam->Print();
+  lowtrunc = tpcRecoParam->GetMinFraction();
+  hightrunc = tpcRecoParam->GetMaxFraction();
 
   transform->SetCurrentRecoParam(tpcRecoParam);
 

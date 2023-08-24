@@ -48,17 +48,22 @@
 #include "AliCentrality.h"
 #include "AliEmcalDownscaleFactorsOCDB.h"
 #include "AliEMCALGeometry.h"
+#include "AliEmcalMCPartonInfo.h"
+#include "AliEmcalPythiaFileHandler.h"
 #include "AliEmcalPythiaInfo.h"
 #include "AliEMCALTriggerPatchInfo.h"
 #include "AliESDEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliESDInputHandler.h"
 #include "AliEventplane.h"
+#include "AliGenCocktailEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenHerwigEventHeader.h"
+#include "AliGenHepMCEventHeader.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
 #include "AliMCParticle.h"
 #include "AliMultiInputEventHandler.h"
 #include "AliMultSelection.h"
@@ -72,13 +77,12 @@
 
 Double_t AliAnalysisTaskEmcal::fgkEMCalDCalPhiDivide = 4.;
 
-/// \cond CLASSIMP
 ClassImp(AliAnalysisTaskEmcal);
-/// \endcond
 
-AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() : 
+AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   AliAnalysisTaskSE("AliAnalysisTaskEmcal"),
   fPythiaInfoName(""),
+  fNameMCPartonInfo(""),
   fForceBeamType(kNA),
   fGeneralHistograms(kFALSE),
   fLocalInitialized(kFALSE),
@@ -109,10 +113,14 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fEventPlaneVsEmcal(-1),
   fMinEventPlane(-1e6),
   fMaxEventPlane(1e6),
+  fMinPtHard(-1e10),
+  fMaxPtHard(1e10),
   fCentEst("V0M"),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
+  fIsHepMC(kFALSE),
+  fIsWeighted(kFALSE),
   fGetPtHardBinFromName(kTRUE),
   fSelectPtHardBin(-999),
   fMinMCLabel(0),
@@ -123,13 +131,15 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fClusterCollArray(),
   fTriggers(0),
   fEMCalTriggerMode(kOverlapWithLowThreshold),
-  fUseNewCentralityEstimation(kFALSE),
+  fUseNewCentralityEstimation(kTRUE),
   fGeneratePythiaInfoObject(kFALSE),
   fUsePtHardBinScaling(kFALSE),
   fUseXsecFromHeader(kFALSE),
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
   fUseBuiltinEventSelection(kFALSE),
+  fUseNoEventSelection(false),
+  fReadPyxsecFast(true),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
@@ -153,23 +163,28 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fBeamType(kNA),
   fPythiaHeader(nullptr),
   fHerwigHeader(nullptr),
+  fHepMCHeader(nullptr),
   fPtHard(0),
   fPtHardBin(0),
   fPtHardBinGlobal(-1),
   fPtHardInitialized(false),
+  fDoCheckPtHardBin(true),
   fNPtHardBins(11),
   fPtHardBinning(),
   fNTrials(0),
   fXsection(0),
   fPythiaInfo(nullptr),
+  fMCPartonInfo(nullptr),
   fOutput(nullptr),
   fHistEventCount(nullptr),
   fHistTrialsAfterSel(nullptr),
   fHistEventsAfterSel(nullptr),
   fHistXsectionAfterSel(nullptr),
+  fHistWeightsAfterSel(nullptr),
   fHistTrials(nullptr),
   fHistEvents(nullptr),
   fHistXsection(nullptr),
+  fHistWeights(nullptr),
   fHistPtHard(nullptr),
   fHistPtHardCorr(nullptr),
   fHistPtHardCorrGlobal(nullptr),
@@ -192,9 +207,10 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fClusterCollArray.SetOwner(kTRUE);
 }
 
-AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) : 
+AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   AliAnalysisTaskSE(name),
   fPythiaInfoName(""),
+  fNameMCPartonInfo(""),
   fForceBeamType(kNA),
   fGeneralHistograms(kFALSE),
   fLocalInitialized(kFALSE),
@@ -225,10 +241,14 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fEventPlaneVsEmcal(-1),
   fMinEventPlane(-1e6),
   fMaxEventPlane(1e6),
+  fMinPtHard(-1e10),
+  fMaxPtHard(1e10),
   fCentEst("V0M"),
   fIsEmbedded(kFALSE),
   fIsPythia(kFALSE),
   fIsHerwig(kFALSE),
+  fIsHepMC(kFALSE),
+  fIsWeighted(kFALSE),
   fGetPtHardBinFromName(kTRUE),
   fSelectPtHardBin(-999),
   fMinMCLabel(0),
@@ -239,13 +259,15 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fClusterCollArray(),
   fTriggers(0),
   fEMCalTriggerMode(kOverlapWithLowThreshold),
-  fUseNewCentralityEstimation(kFALSE),
+  fUseNewCentralityEstimation(kTRUE),
   fGeneratePythiaInfoObject(kFALSE),
   fUsePtHardBinScaling(kFALSE),
   fUseXsecFromHeader(kFALSE),
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
   fUseBuiltinEventSelection(kFALSE),
+  fUseNoEventSelection(false),
+  fReadPyxsecFast(true),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
   fPtHardAndTrackPtFactor(0.),
@@ -269,23 +291,28 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fBeamType(kNA),
   fPythiaHeader(nullptr),
   fHerwigHeader(nullptr),
+  fHepMCHeader(nullptr),
   fPtHard(0),
   fPtHardBin(0),
   fPtHardBinGlobal(-1),
   fPtHardInitialized(false),
+  fDoCheckPtHardBin(true),
   fNPtHardBins(11),
   fPtHardBinning(),
   fNTrials(0),
   fXsection(0),
-  fPythiaInfo(0),
+  fPythiaInfo(nullptr),
+  fMCPartonInfo(nullptr),
   fOutput(nullptr),
   fHistEventCount(nullptr),
   fHistTrialsAfterSel(nullptr),
   fHistEventsAfterSel(nullptr),
   fHistXsectionAfterSel(nullptr),
+  fHistWeightsAfterSel(nullptr),
   fHistTrials(nullptr),
   fHistEvents(nullptr),
   fHistXsection(nullptr),
+  fHistWeights(nullptr),
   fHistPtHard(nullptr),
   fHistPtHardCorr(nullptr),
   fHistPtHardCorrGlobal(nullptr),
@@ -367,7 +394,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
         fIsEsd = kTRUE;
       }
       else {
-        fIsEsd = kFALSE;        
+        fIsEsd = kFALSE;
       }
     }
     else {
@@ -376,7 +403,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   }
   else {
     AliError("Analysis manager not found!");
-  }  
+  }
 
 
   if (!fCreateHisto)
@@ -393,7 +420,7 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
   if (!fGeneralHistograms)
     return;
 
-  if (fIsPythia || fIsHerwig) {
+  if (fIsPythia || fIsHerwig || fIsHepMC) {
     fHistTrialsAfterSel = new TH1F("fHistTrialsAfterSel", "fHistTrialsAfterSel", fNPtHardBins, 0, fNPtHardBins);
     fHistTrialsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistTrialsAfterSel->GetYaxis()->SetTitle("trials");
@@ -409,6 +436,11 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fHistXsectionAfterSel->GetYaxis()->SetTitle("xsection");
     fOutput->Add(fHistXsectionAfterSel);
 
+    fHistWeightsAfterSel = new TH1F("fHistWeightsAfterSel", "fHistWeightsAfterSel", fNPtHardBins, 0, fNPtHardBins);
+    fHistWeightsAfterSel->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistWeightsAfterSel->GetYaxis()->SetTitle("integrated weights");
+    fOutput->Add(fHistWeightsAfterSel);
+
     fHistTrials = new TH1F("fHistTrials", "fHistTrials", fNPtHardBins, 0, fNPtHardBins);
     fHistTrials->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistTrials->GetYaxis()->SetTitle("trials");
@@ -423,6 +455,11 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
     fHistXsection->GetXaxis()->SetTitle("p_{T} hard bin");
     fHistXsection->GetYaxis()->SetTitle("xsection");
     fOutput->Add(fHistXsection);
+
+    fHistWeights = new TH1F("fHistWeights", "fHistWeights", fNPtHardBins, 0, fNPtHardBins);
+    fHistWeights->GetXaxis()->SetTitle("p_{T} hard bin");
+    fHistWeights->GetYaxis()->SetTitle("integrated weights");
+    fOutput->Add(fHistWeights);
 
     // Set the bin labels
     Bool_t binningAvailable = false;
@@ -448,10 +485,12 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
         fHistTrialsAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistEventsAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistXsectionAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
+        fHistWeightsAfterSel->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
 
         fHistTrials->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistXsection->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
         fHistEvents->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
+        fHistWeights->GetXaxis()->SetBinLabel(i+1, Form("%d-%d",fPtHardBinning[i],fPtHardBinning[i+1]));
       }
     } else {
       AliErrorStream() << "No suitable binning available - skipping bin labels" << std::endl;
@@ -554,27 +593,32 @@ void AliAnalysisTaskEmcal::UserCreateOutputObjects()
 
 Bool_t AliAnalysisTaskEmcal::FillGeneralHistograms()
 {
-  if (fIsPythia || fIsHerwig) {
+  double weight = 1.;
+  if(fIsWeighted) {
+    weight = GetEventWeightFromHeader();
+  }
+  if (fIsPythia || fIsHerwig || fIsHepMC) {
     // Protection: In case the pt-hard bin handling is not initialized we fall back to the
     // global pt-hard bin (usually 0) in order to aviod mismatch between histograms before
     // and after selection
     fHistEventsAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, 1);
     fHistTrialsAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, fNTrials);
+    fHistWeightsAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, weight);
     fHistXsectionAfterSel->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, fXsection);
-    fHistPtHard->Fill(fPtHard);
+    fHistPtHard->Fill(fPtHard, weight);
     if(fPtHardInitialized){
-    	fHistPtHardCorr->Fill(fPtHardBin, fPtHard);
-    	fHistPtHardCorrGlobal->Fill(fPtHardBinGlobal, fPtHard);
-    	fHistPtHardBinCorr->Fill(fPtHardBin, fPtHardBinGlobal);
+    	fHistPtHardCorr->Fill(fPtHardBin, fPtHard, weight);
+    	fHistPtHardCorrGlobal->Fill(fPtHardBinGlobal, fPtHard, weight);
+    	fHistPtHardBinCorr->Fill(fPtHardBin, fPtHardBinGlobal, weight);
     }
   }
 
 
-  fHistZVertex->Fill(fVertex[2]);
+  fHistZVertex->Fill(fVertex[2], weight);
 
   if (fForceBeamType != kpp) {
-    fHistCentrality->Fill(fCent);
-    fHistEventPlane->Fill(fEPV0);
+    fHistCentrality->Fill(fCent, weight);
+    fHistEventPlane->Fill(fEPV0, weight);
   }
 
   std::unique_ptr<TObjArray> triggerClasses(InputEvent()->GetFiredTriggerClasses().Tokenize(" "));
@@ -624,6 +668,24 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
     if(fCountDownscaleCorrectedEvents) PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->SetRun(fRunNumber);
   }
 
+  // Cut on the min. and max. pt-hard:
+  // This is of relevance in particular when combining
+  // min. bias events with pt-hard events by replacing low
+  // pt-hard bins with min. bias events, where in min.
+  // bias events with large pt-hard need to be removed in
+  // order to not double count them when merging with the
+  // pt-hard production in its bias-free region.
+  // This should not be part of the normal event selection
+  // as event counting for the cross section normalization
+  // depends on it.
+  if(fPtHard < fMinPtHard || fPtHard > fMaxPtHard) return;
+
+  // Fill weights before event selection
+  if(fIsPythia || fIsHerwig || fIsHepMC) {
+    auto weight = GetEventWeightFromHeader();
+    fHistWeights->Fill(fPtHardInitialized ? fPtHardBinGlobal : fPtHardBin, weight);
+  }
+
   // Apply fallback for pythia cross section if needed
   if(fIsPythia && fUseXsecFromHeader && fPythiaHeader){
     AliDebugStream(1) << "Fallback to cross section from pythia header required" << std::endl;
@@ -641,7 +703,17 @@ void AliAnalysisTaskEmcal::UserExec(Option_t *option)
     }
     */
     fHistXsection->Fill(fPtHardBinGlobal, fPythiaHeader->GetXsection());
+    fHistTrials->Fill(fPtHardBinGlobal);
+    fHistEvents->Fill(fPtHardBinGlobal);
   }
+
+  if(fIsHepMC && fHepMCHeader) {
+    fHistXsection->Fill(fPtHardBinGlobal, fHepMCHeader->sigma_gen());
+    fHistTrials->Fill(fPtHardBinGlobal, fHepMCHeader->ntrials());
+    fHistEvents->Fill(fPtHardBinGlobal);
+  }
+
+  UserRunBeforeEventSelection();
 
   if (IsEventSelected()) {
     if (fGeneralHistograms) fHistEventCount->Fill("Accepted",1);
@@ -701,12 +773,8 @@ Bool_t AliAnalysisTaskEmcal::AcceptTrack(AliVParticle *track, Int_t c) const
   return cont->AcceptParticle(track, rejectionReason);
 }
 
-Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials, Int_t &pthard)
-{
-  TString file(currFile);
-  fXsec = 0;
-  fTrials = 1;
-
+Int_t AliAnalysisTaskEmcal::ParsePtHardBinFromPath(const char *currentfile) {
+  TString file(currentfile);
   // Determine archive type
   TString archivetype;
   std::unique_ptr<TObjArray> walk(file.Tokenize("/"));
@@ -764,10 +832,10 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
   // Procedure will fail for everything else than the expected path name
   strPthard.Remove(strPthard.Last('/'));
   strPthard.Remove(strPthard.Last('/'));
-  if (strPthard.Contains("AOD")) strPthard.Remove(strPthard.Last('/'));    
+  if (strPthard.Contains("AOD")) strPthard.Remove(strPthard.Last('/'));
   strPthard.Remove(0,strPthard.Last('/')+1);
   if (strPthard.IsDec()) pthard = strPthard.Atoi();
-  else 
+  else
     AliWarningStream() << "Could not extract file number from path " << strPthard << std::endl;
   */
 
@@ -780,6 +848,7 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
   // The procedure is only valid for the current implementations and unable to detect non-pt-hard bins
   // It will also fail in case of arbitrary file names
 
+  Int_t pthard = -1;
   bool binfound = false;
   std::unique_ptr<TObjArray> tokens(strPthard.Tokenize("/"));
   for(auto t : *tokens) {
@@ -807,52 +876,117 @@ Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &f
   } else {
     AliInfoStream() << "Auto-detecting pt-hard bin " << pthard << std::endl;
   }
+  return pthard;
+}
 
-  AliInfoStream() << "File: " << file << std::endl;
 
-  // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
-  std::unique_ptr<TFile> fxsec(TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")));
+Bool_t AliAnalysisTaskEmcal::PythiaInfoFromFile(const char* currFile, Float_t &fXsec, Float_t &fTrials)
+{
+  fXsec = 0;
+  fTrials = 1;
 
-  if (!fxsec) {
-    // next trial fetch the histgram file
-    fxsec = std::unique_ptr<TFile>(TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root")));
-    if (!fxsec){
-      AliErrorStream() << "Failed reading cross section from file " << file << std::endl;
+  if(fReadPyxsecFast) {
+    //
+    // Fast method:
+    // Cross section values are cached in a singleton object: The first call
+    // from any task to UpdateFile will update the cache, all consecutive calls
+    // from any other task with the same file will just use the cached value
+    //
+    AliDebugStream(1) << "Using new method obtaining pythia cross section from file" << std::endl;
+    using PYTHIAFileHander = PWG::EMCAL::AliEmcalPythiaFileHandler;
+    auto pythiahandler = PYTHIAFileHander::Instance();
+    try {
+      auto xsectrials = pythiahandler->GetCrossSectionAndNTrials(currFile);
+      fXsec = xsectrials.fCrossSection;
+      fTrials = xsectrials.fNTrials;
+    } catch(PYTHIAFileHander::FileNotFoundException &e) {
+      AliErrorStream() << e.what() << std::endl;
+    } catch(PYTHIAFileHander::FileContentException &e) {
+      AliErrorStream() << e.what() << std::endl;
+    } catch(PYTHIAFileHander::UninitializedException &e) {
+      AliErrorStream() << e.what() << std::endl;
+    }
+
+    if(!fXsec) {
+      AliErrorStream() << "Cross section value from pythia file 0 - use cross section from header" << std::endl;
       fUseXsecFromHeader = true;
-      return kFALSE; // not a severe condition but inciate that we have no information
+      return kFALSE;
     }
-    else {
-      // find the tlist we want to be independtent of the name so use the Tkey
-      TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0); 
-      if (!key) return kFALSE;
-      TList *list = dynamic_cast<TList*>(key->ReadObj());
-      if (!list) return kFALSE;
-      TProfile *xSecHist = static_cast<TProfile*>(list->FindObject("h1Xsec"));
-      // check for failure
-      if(!xSecHist->GetEntries()) {
-        // No cross seciton information available - fall back to raw
-        AliErrorStream() << "No cross section information available in file " << fxsec->GetName() <<" - fall back to cross section in PYTHIA header" << std::endl;
-        fUseXsecFromHeader = true;
-      } else {
-        // Cross section histogram filled - take it from there
-        fXsec = xSecHist->GetBinContent(1);
-        if(!fXsec) AliErrorStream() << GetName() << ": Cross section 0 for file " << file << std::endl;
-        fUseXsecFromHeader = false;
+    return kTRUE;
+  } else {
+    //
+    // Old (slow) method:
+    // Each task responsible itself for loading the pythia cross section
+    // from file, will lead to multiple file handles.
+    //
+    AliDebugStream(1) << "Using old method obtaining pythia cross section from file" << std::endl;
+    TString file(currFile);
+    // Determine archive type
+    TString archivetype;
+    std::unique_ptr<TObjArray> walk(file.Tokenize("/"));
+    for(auto t : *walk){
+      TString &tok = static_cast<TObjString *>(t)->String();
+      if(tok.Contains(".zip")){
+        archivetype = tok;
+        Int_t pos = archivetype.Index(".zip");
+        archivetype.Replace(pos, archivetype.Length() - pos, "");
       }
-      fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
     }
-  } else { // no tree pyxsec.root
-    TTree *xtree = (TTree*)fxsec->Get("Xsection");
-    if (!xtree) return kFALSE;
-    UInt_t   ntrials  = 0;
-    Double_t  xsection  = 0;
-    xtree->SetBranchAddress("xsection",&xsection);
-    xtree->SetBranchAddress("ntrials",&ntrials);
-    xtree->GetEntry(0);
-    fTrials = ntrials;
-    fXsec = xsection;
+    if(archivetype.Length()){
+      AliDebugStream(1) << "Auto-detected archive type " << archivetype << std::endl;
+      Ssiz_t pos1 = file.Index(archivetype,archivetype.Length(),0,TString::kExact);
+      Ssiz_t pos = file.Index("#",1,pos1,TString::kExact);
+      Ssiz_t pos2 = file.Index(".root",5,TString::kExact);
+      file.Replace(pos+1,pos2-pos1,"");
+    } else {
+      // not an archive take the basename....
+      file.ReplaceAll(gSystem->BaseName(file.Data()),"");
+    }
+    AliDebugStream(1) << "File name: " << file << std::endl;
+
+    // problem that we cannot really test the existance of a file in a archive so we have to live with open error message from root
+    std::unique_ptr<TFile> fxsec(TFile::Open(Form("%s%s",file.Data(),"pyxsec.root")));
+
+    if (!fxsec) {
+      // next trial fetch the histgram file
+      fxsec = std::unique_ptr<TFile>(TFile::Open(Form("%s%s",file.Data(),"pyxsec_hists.root")));
+      if (!fxsec){
+        AliErrorStream() << "Failed reading cross section from file " << file << std::endl;
+        fUseXsecFromHeader = true;
+        return kFALSE; // not a severe condition but inciate that we have no information
+      } else {
+        // find the tlist we want to be independtent of the name so use the Tkey
+        TKey* key = (TKey*)fxsec->GetListOfKeys()->At(0);
+        if (!key) return kFALSE;
+        TList *list = dynamic_cast<TList*>(key->ReadObj());
+        if (!list) return kFALSE;
+        TProfile *xSecHist = static_cast<TProfile*>(list->FindObject("h1Xsec"));
+        // check for failure
+        if(!xSecHist->GetEntries()) {
+          // No cross seciton information available - fall back to raw
+          AliErrorStream() << "No cross section information available in file " << fxsec->GetName() <<" - fall back to cross section in PYTHIA header" << std::endl;
+          fUseXsecFromHeader = true;
+        } else {
+          // Cross section histogram filled - take it from there
+          fXsec = xSecHist->GetBinContent(1);
+          if(!fXsec) AliErrorStream() << GetName() << ": Cross section 0 for file " << file << std::endl;
+          fUseXsecFromHeader = false;
+        }
+        fTrials  = ((TH1F*)list->FindObject("h1Trials"))->GetBinContent(1);
+      }
+    } else { // no tree pyxsec.root
+      TTree *xtree = (TTree*)fxsec->Get("Xsection");
+      if (!xtree) return kFALSE;
+      UInt_t   ntrials  = 0;
+      Double_t  xsection  = 0;
+      xtree->SetBranchAddress("xsection",&xsection);
+      xtree->SetBranchAddress("ntrials",&ntrials);
+      xtree->GetEntry(0);
+      fTrials = ntrials;
+      fXsec = xsection;
+    }
+    return kTRUE;
   }
-  return kTRUE;
 }
 
 Bool_t AliAnalysisTaskEmcal::UserNotify(){
@@ -862,8 +996,10 @@ Bool_t AliAnalysisTaskEmcal::UserNotify(){
 }
 
 Bool_t AliAnalysisTaskEmcal::FileChanged(){
-  if (!fIsPythia || !fGeneralHistograms || !fCreateHisto)
+  if (!(fIsPythia || fIsHepMC) || !fGeneralHistograms || !fCreateHisto)
     return kTRUE;
+
+  // Handling of the pt-hard path common for pythia and HepMC pt-hard productions
 
   // Debugging:
   AliInfoStream() << "FileChanged called for run " << InputEvent()->GetRunNumber() << std::endl;
@@ -873,10 +1009,8 @@ Bool_t AliAnalysisTaskEmcal::FileChanged(){
     AliErrorStream() << GetName() << " - FileChanged: No current tree!" << std::endl;
     return kFALSE;
   }
-
-  Float_t xsection    = 0;
-  Float_t trials      = 0;
-  Int_t   pthardbin   = -1;
+  TChain *chain = dynamic_cast<TChain*>(tree);
+  if (chain) tree = chain->GetTree();
 
   TFile *curfile = tree->GetCurrentFile();
   if (!curfile) {
@@ -884,33 +1018,35 @@ Bool_t AliAnalysisTaskEmcal::FileChanged(){
     return kFALSE;
   }
 
-  TChain *chain = dynamic_cast<TChain*>(tree);
-  if (chain) tree = chain->GetTree();
-
-  Int_t nevents = tree->GetEntriesFast();
-
-  fUseXsecFromHeader = false;
-  PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
   if(fGetPtHardBinFromName) {
     // Use the bin obtained from the path name
-    fPtHardBinGlobal = pthardbin;
+    fPtHardBinGlobal = ParsePtHardBinFromPath(curfile->GetName());
     fPtHardInitialized = kTRUE;
   } else {
     // Put everything in the first bin
     fPtHardBinGlobal = 0;
-    pthardbin = 0;
   }
 
-  if ((pthardbin < 0) || (pthardbin > fNPtHardBins-1)){
-    AliErrorStream() << GetName() << ": Invalid global pt-hard bin " << pthardbin << " detected" << std::endl;
-    pthardbin = 0;
+  if ((fPtHardBinGlobal < 0) || (fPtHardBinGlobal > fNPtHardBins-1)){
+    AliErrorStream() << GetName() << ": Invalid global pt-hard bin " << fPtHardBinGlobal << " detected" << std::endl;
+    fPtHardBinGlobal = 0;
   }
-  fHistTrials->Fill(pthardbin, trials);
+
+  if(!fIsPythia) return kTRUE;
+
+  Float_t xsection    = 0;
+  Float_t trials      = 0;
+  Int_t nevents = tree->GetEntriesFast();
+
+  fUseXsecFromHeader = false;
+  PythiaInfoFromFile(curfile->GetName(), xsection, trials);
+
   if(!fUseXsecFromHeader){
     AliDebugStream(1) << "Using cross section from file pyxsec.root" << std::endl;
-    fHistXsection->Fill(pthardbin, xsection);
+    fHistXsection->Fill(fPtHardBinGlobal, xsection);
+    fHistTrials->Fill(fPtHardBinGlobal, trials);
+    fHistEvents->Fill(fPtHardBinGlobal, nevents);
   }
-  fHistEvents->Fill(pthardbin, nevents);
 
   return kTRUE;
 }
@@ -926,6 +1062,17 @@ void AliAnalysisTaskEmcal::LoadPythiaInfo(AliVEvent *event)
   }
 }
 
+void AliAnalysisTaskEmcal::LoadMCPartonInfo(AliVEvent *event)
+{
+  if (!fNameMCPartonInfo.IsNull() && !fMCPartonInfo) {
+    fMCPartonInfo = dynamic_cast<PWG::EMCAL::AliEmcalMCPartonInfo*>(event->FindListObject(fNameMCPartonInfo));
+    if (!fMCPartonInfo) {
+      AliError(Form("%s: Could not retrieve parton infos! %s!", GetName(), fNameMCPartonInfo.Data()));
+      return;
+    }
+  }
+}
+
 void AliAnalysisTaskEmcal::ExecOnce()
 {
   if (!InputEvent()) {
@@ -934,6 +1081,7 @@ void AliAnalysisTaskEmcal::ExecOnce()
   }
 
   LoadPythiaInfo(InputEvent());
+  LoadMCPartonInfo(InputEvent());
 
   if (fNeedEmcalGeom) {
     fGeom = AliEMCALGeometry::GetInstanceFromRunNumber(InputEvent()->GetRunNumber());
@@ -983,17 +1131,45 @@ void AliAnalysisTaskEmcal::ExecOnce()
   }
 
   if (!fCaloCellsName.IsNull() && !fCaloCells) {
-    fCaloCells =  dynamic_cast<AliVCaloCells*>(InputEvent()->FindListObject(fCaloCellsName));
+    TString objectname = fCaloCellsName;
+    if(fCaloCellsName == "usedefault") {
+      TString datatype;
+      if(fInputHandler->IsA() == AliAODInputHandler::Class()) {
+        objectname = "emcalCells";
+        datatype = "AOD";
+      } else {
+        objectname = "EMCALCells";
+        datatype = "ESD";
+      }
+      AliInfoStream() << GetName() << ": [Cell container] usedefault: Using container " << objectname << " for data type " << datatype << std::endl;
+    } else {
+      AliInfoStream() << GetName() << ": [Cell container] user-defined: Using container " << objectname << std::endl;
+    }
+    fCaloCells =  dynamic_cast<AliVCaloCells*>(InputEvent()->FindListObject(objectname));
     if (!fCaloCells) {
-      AliError(Form("%s: Could not retrieve cells %s!", GetName(), fCaloCellsName.Data())); 
+      AliErrorStream() << GetName() << ": Could not retrieve cells " << objectname << "!" << std::endl;
       return;
     }
   }
 
   if (!fCaloTriggersName.IsNull() && !fCaloTriggers) {
-    fCaloTriggers =  dynamic_cast<AliVCaloTrigger*>(InputEvent()->FindListObject(fCaloTriggersName));
+    TString objectname = fCaloTriggersName;
+    if(fCaloTriggersName == "usedefault") {
+      TString datatype;
+      if(fInputHandler->IsA() == AliAODInputHandler::Class()) {
+        objectname = "emcalTrigger";
+        datatype = "AOD";
+      } else {
+        objectname = "EMCALTrigger";
+        datatype = "ESD";
+      }
+      AliInfoStream() << GetName() << ": [Trigger container] usedefault: Using container " << objectname << " for data type " << datatype << std::endl;
+    } else {
+      AliInfoStream() << GetName() << ": [Trigger container] user-defined: Using container " << objectname << std::endl;
+    }
+    fCaloTriggers =  dynamic_cast<AliVCaloTrigger*>(InputEvent()->FindListObject(objectname));
     if (!fCaloTriggers) {
-      AliError(Form("%s: Could not retrieve calo triggers %s!", GetName(), fCaloTriggersName.Data())); 
+      AliErrorStream() << GetName() <<": Could not retrieve calo triggers " << objectname << "!" << std::endl;
       return;
     }
   }
@@ -1001,7 +1177,7 @@ void AliAnalysisTaskEmcal::ExecOnce()
   if (!fCaloTriggerPatchInfoName.IsNull() && !fTriggerPatchInfo) {
     fTriggerPatchInfo = GetArrayFromEvent(fCaloTriggerPatchInfoName.Data(),"AliEMCALTriggerPatchInfo");
     if (!fTriggerPatchInfo) {
-      AliError(Form("%s: Could not retrieve calo trigger patch info %s!", GetName(), fCaloTriggerPatchInfoName.Data())); 
+      AliError(Form("%s: Could not retrieve calo trigger patch info %s!", GetName(), fCaloTriggerPatchInfoName.Data()));
       return;
     }
 
@@ -1042,7 +1218,7 @@ AliAnalysisTaskEmcal::BeamType AliAnalysisTaskEmcal::GetBeamType() const
     } else {
       return kpp;
     }
-  }  
+  }
 }
 
 ULong_t AliAnalysisTaskEmcal::GetTriggerList()
@@ -1087,7 +1263,7 @@ Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType trigger)
 {
   //
   if(trigger==kND) {
-    AliWarning(Form("%s: Requesting undefined trigger type!", GetName())); 
+    AliWarning(Form("%s: Requesting undefined trigger type!", GetName()));
     return kFALSE;
   }
   //MV: removing this logic which as far as I can see doesn't make any sense
@@ -1098,6 +1274,7 @@ Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType trigger)
 }
 
 Bool_t AliAnalysisTaskEmcal::IsEventSelected(){
+  if(fUseNoEventSelection) return true;
   if(fUseBuiltinEventSelection) return IsEventSelectedInternal();
   if(!IsTriggerSelected()) return false;
   if(!CheckMCOutliers()) return false;
@@ -1239,7 +1416,7 @@ Bool_t AliAnalysisTaskEmcal::IsEventSelectedInternal()
 
   if (!(fEPV0 > fMinEventPlane && fEPV0 <= fMaxEventPlane) &&
       !(fEPV0 + TMath::Pi() > fMinEventPlane && fEPV0 + TMath::Pi() <= fMaxEventPlane) &&
-      !(fEPV0 - TMath::Pi() > fMinEventPlane && fEPV0 - TMath::Pi() <= fMaxEventPlane)) 
+      !(fEPV0 - TMath::Pi() > fMinEventPlane && fEPV0 - TMath::Pi() <= fMaxEventPlane))
   {
     if (fGeneralHistograms) fHistEventRejection->Fill("EvtPlane",1);
     return kFALSE;
@@ -1379,7 +1556,7 @@ TClonesArray *AliAnalysisTaskEmcal::GetArrayFromEvent(const char *name, const ch
   if (!sname.IsNull()) {
     arr = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(sname));
     if (!arr) {
-      AliWarning(Form("%s: Could not retrieve array with name %s!", GetName(), name)); 
+      AliWarning(Form("%s: Could not retrieve array with name %s!", GetName(), name));
       return 0;
     }
   } else {
@@ -1392,7 +1569,7 @@ TClonesArray *AliAnalysisTaskEmcal::GetArrayFromEvent(const char *name, const ch
   TString objname(arr->GetClass()->GetName());
   TClass cls(objname);
   if (!cls.InheritsFrom(clname)) {
-    AliWarning(Form("%s: Objects of type %s in %s are not inherited from %s!", 
+    AliWarning(Form("%s: Objects of type %s in %s are not inherited from %s!",
         GetName(), cls.GetName(), name, clname));
     return 0;
   }
@@ -1465,7 +1642,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       else if (fCent >= 30 && fCent <   50) fCentBin = 2;
       else if (fCent >= 50 && fCent <= 100) fCentBin = 3;
       else {
-        AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
+        AliWarning(Form("%s: Negative centrality: %f. Assuming 99, cent estimator: %s", GetName(), fCent, fCentEst.Data()));
         fCentBin = fNcentBins-1;
       }
     }
@@ -1479,7 +1656,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
         fCentBin = 4;
       }
       else {
-        AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
+        AliWarning(Form("%s: Negative centrality: %f. Assuming 99, cent estimator: %s", GetName(), fCent, fCentEst.Data()));
         fCentBin = fNcentBins-1;
       }
     }
@@ -1521,13 +1698,26 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
     if (MCEvent()) {
       fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(MCEvent()->GenEventHeader());
       if (!fPythiaHeader) {
-        // Check if AOD
+        // Generator header can be part of a cocktail, check cocktail headers
+        // AOD case, cocktail handled via AODMCHeader directly
         AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
 
         if (aodMCH) {
           for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
             fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(aodMCH->GetCocktailHeader(i));
             if (fPythiaHeader) break;
+          }
+        } else {
+          // ESD case, can also be in cocktail header
+          // but must be obtained manually
+          auto cocktailheader = dynamic_cast<AliGenCocktailEventHeader *>(MCEvent()->GenEventHeader());
+          if(cocktailheader) {
+            TIter headeriter(cocktailheader->GetHeaders());
+            TObject *headerobject(nullptr);
+            while((headerobject = headeriter.Next())) {
+              fPythiaHeader = dynamic_cast<AliGenPythiaEventHeader*>(headerobject);
+              if(fPythiaHeader) break;
+            }
           }
         }
       }
@@ -1548,7 +1738,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       fPtHardBin = 0;
     }
 
-    if(fPtHardInitialized){
+    if(fPtHardInitialized && fDoCheckPtHardBin){
       // do check only in case the global pt-hard bin is initialized
       if(fPtHardBin != fPtHardBinGlobal){
         AliErrorStream() << GetName() << ": Mismatch in pt-hard bin determination. Local: " << fPtHardBin << ", Global: " << fPtHardBinGlobal << std::endl;
@@ -1562,9 +1752,10 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   if (fIsHerwig) {
     if (MCEvent()) {
       fHerwigHeader = dynamic_cast<AliGenHerwigEventHeader*>(MCEvent()->GenEventHeader());
-     
+
       if (!fHerwigHeader) {
-        // Check if AOD
+        // Generator header can be part of a cocktail, check cocktail headers
+        // AOD case, cocktail handled via AODMCHeader directly
         AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
 
         if (aodMCH) {
@@ -1572,12 +1763,24 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
             fHerwigHeader = dynamic_cast<AliGenHerwigEventHeader*>(aodMCH->GetCocktailHeader(i));
             if (fHerwigHeader) break;
           }
+        } else {
+          // ESD case, can also be in cocktail header
+          // but must be obtained manually
+          auto cocktailheader = dynamic_cast<AliGenCocktailEventHeader *>(MCEvent()->GenEventHeader());
+          if(cocktailheader) {
+            TIter headeriter(cocktailheader->GetHeaders());
+            TObject *headerobject(nullptr);
+            while((headerobject = headeriter.Next())) {
+              fHerwigHeader = dynamic_cast<AliGenHerwigEventHeader*>(headerobject);
+              if(fHerwigHeader) break;
+            }
+          }
         }
       }
     }
   }
 
-   if (fHerwigHeader) {
+  if (fHerwigHeader) {
     fPtHard = fHerwigHeader->GetPtHard();
 
     if(fPtHardBinning.GetSize()){
@@ -1590,8 +1793,70 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       // No pt-hard binning defined for the dataset - leaving the bin to 0
       fPtHardBin = 0;
     }
+    if(fPtHardInitialized && fDoCheckPtHardBin){
+      // do check only in case the global pt-hard bin is initialized
+      if(fPtHardBin != fPtHardBinGlobal){
+        AliErrorStream() << GetName() << ": Mismatch in pt-hard bin determination. Local: " << fPtHardBin << ", Global: " << fPtHardBinGlobal << std::endl;
+      }
+    }
     fXsection = fHerwigHeader->Weight();
     fNTrials = fHerwigHeader->Trials();
+  }
+
+  if (fIsHepMC) {
+    if (MCEvent()) {
+      fHepMCHeader = dynamic_cast<AliGenHepMCEventHeader*>(MCEvent()->GenEventHeader());
+
+      if (!fHepMCHeader) {
+        // Generator header can be part of a cocktail, check cocktail headers
+        // AOD case, cocktail handled via AODMCHeader directly D
+        AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(InputEvent()->FindListObject(AliAODMCHeader::StdBranchName()));
+
+        if (aodMCH) {
+          for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
+            fHepMCHeader = dynamic_cast<AliGenHepMCEventHeader*>(aodMCH->GetCocktailHeader(i));
+            if (fHepMCHeader) break;
+          }
+        } else {
+          // ESD case, can also be in cocktail header
+          // but must be obtained manually
+          auto cocktailheader = dynamic_cast<AliGenCocktailEventHeader *>(MCEvent()->GenEventHeader());
+          if(cocktailheader) {
+            TIter headeriter(cocktailheader->GetHeaders());
+            TObject *headerobject(nullptr);
+            while((headerobject = headeriter.Next())) {
+              fHepMCHeader = dynamic_cast<AliGenHepMCEventHeader*>(headerobject);
+              if(fHepMCHeader) break;
+            }
+          }
+        }
+      }
+    }
+  }
+
+
+  if (fHepMCHeader) {
+    fPtHard = fHepMCHeader->pthard();
+
+    if(fPtHardBinning.GetSize()){
+      // pt-hard binning defined for the corresponding dataset - automatically determine the bin
+      for (fPtHardBin = 0; fPtHardBin < fNPtHardBins; fPtHardBin++) {
+        if (fPtHard >= fPtHardBinning[fPtHardBin] && fPtHard < fPtHardBinning[fPtHardBin+1])
+          break;
+      }
+    } else {
+      // No pt-hard binning defined for the dataset - leaving the bin to 0
+      fPtHardBin = 0;
+    }
+
+    if(fPtHardInitialized && fDoCheckPtHardBin){
+      // do check only in case the global pt-hard bin is initialized
+      if(fPtHardBin != fPtHardBinGlobal){
+        AliErrorStream() << GetName() << ": Mismatch in pt-hard bin determination. Local: " << fPtHardBin << ", Global: " << fPtHardBinGlobal << std::endl;
+      }
+    }
+    fXsection = fHepMCHeader->sigma_gen();
+    fNTrials = fHepMCHeader->ntrials();
   }
 
 
@@ -1608,6 +1873,8 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
   while ((cont = static_cast<AliParticleContainer*>(nextClusColl()))){
     cont->NextEvent(InputEvent());
   }
+
+  UserRetrieveEventObjects();
 
   return kTRUE;
 }
@@ -1634,7 +1901,7 @@ AliTrackContainer* AliAnalysisTaskEmcal::AddTrackContainer(const char *n)
   return cont;
 }
 
-AliParticleContainer* AliAnalysisTaskEmcal::AddParticleContainer(const char *n) 
+AliParticleContainer* AliAnalysisTaskEmcal::AddParticleContainer(const char *n)
 {
   if (TString(n).IsNull()) return 0;
 
@@ -1645,7 +1912,7 @@ AliParticleContainer* AliAnalysisTaskEmcal::AddParticleContainer(const char *n)
   return cont;
 }
 
-AliClusterContainer* AliAnalysisTaskEmcal::AddClusterContainer(const char *n) 
+AliClusterContainer* AliAnalysisTaskEmcal::AddClusterContainer(const char *n)
 {
   if (TString(n).IsNull()) return 0;
 
@@ -1656,33 +1923,33 @@ AliClusterContainer* AliAnalysisTaskEmcal::AddClusterContainer(const char *n)
   return cont;
 }
 
-AliParticleContainer* AliAnalysisTaskEmcal::GetParticleContainer(Int_t i) const 
+AliParticleContainer* AliAnalysisTaskEmcal::GetParticleContainer(Int_t i) const
 {
   if (i<0 || i>fParticleCollArray.GetEntriesFast()) return 0;
   AliParticleContainer *cont = static_cast<AliParticleContainer*>(fParticleCollArray.At(i));
   return cont;
 }
 
-AliClusterContainer* AliAnalysisTaskEmcal::GetClusterContainer(Int_t i) const 
+AliClusterContainer* AliAnalysisTaskEmcal::GetClusterContainer(Int_t i) const
 {
   if (i<0 || i>fClusterCollArray.GetEntriesFast()) return 0;
   AliClusterContainer *cont = static_cast<AliClusterContainer*>(fClusterCollArray.At(i));
   return cont;
 }
 
-AliParticleContainer* AliAnalysisTaskEmcal::GetParticleContainer(const char *name) const 
+AliParticleContainer* AliAnalysisTaskEmcal::GetParticleContainer(const char *name) const
 {
   AliParticleContainer *cont = static_cast<AliParticleContainer*>(fParticleCollArray.FindObject(name));
   return cont;
 }
 
-AliClusterContainer* AliAnalysisTaskEmcal::GetClusterContainer(const char *name) const 
+AliClusterContainer* AliAnalysisTaskEmcal::GetClusterContainer(const char *name) const
 {
   AliClusterContainer *cont = static_cast<AliClusterContainer*>(fClusterCollArray.FindObject(name));
   return cont;
 }
 
-TClonesArray* AliAnalysisTaskEmcal::GetParticleArray(Int_t i) const 
+TClonesArray* AliAnalysisTaskEmcal::GetParticleArray(Int_t i) const
 {
   AliParticleContainer *cont = GetParticleContainer(i);
   if (!cont) {
@@ -1693,7 +1960,7 @@ TClonesArray* AliAnalysisTaskEmcal::GetParticleArray(Int_t i) const
   return cont->GetArray();
 }
 
-TClonesArray* AliAnalysisTaskEmcal::GetClusterArray(Int_t i) const 
+TClonesArray* AliAnalysisTaskEmcal::GetClusterArray(Int_t i) const
 {
   AliClusterContainer *cont = GetClusterContainer(i);
   if (!cont) {
@@ -1703,7 +1970,7 @@ TClonesArray* AliAnalysisTaskEmcal::GetClusterArray(Int_t i) const
   return cont->GetArray();
 }
 
-AliVParticle* AliAnalysisTaskEmcal::GetAcceptParticleFromArray(Int_t p, Int_t c) const 
+AliVParticle* AliAnalysisTaskEmcal::GetAcceptParticleFromArray(Int_t p, Int_t c) const
 {
 
   AliParticleContainer *cont = GetParticleContainer(c);
@@ -1716,7 +1983,7 @@ AliVParticle* AliAnalysisTaskEmcal::GetAcceptParticleFromArray(Int_t p, Int_t c)
   return vp;
 }
 
-AliVCluster* AliAnalysisTaskEmcal::GetAcceptClusterFromArray(Int_t cl, Int_t c) const 
+AliVCluster* AliAnalysisTaskEmcal::GetAcceptClusterFromArray(Int_t cl, Int_t c) const
 {
   AliClusterContainer *cont = GetClusterContainer(c);
   if (!cont) {
@@ -1728,7 +1995,7 @@ AliVCluster* AliAnalysisTaskEmcal::GetAcceptClusterFromArray(Int_t cl, Int_t c) 
   return vc;
 }
 
-Int_t AliAnalysisTaskEmcal::GetNParticles(Int_t i) const 
+Int_t AliAnalysisTaskEmcal::GetNParticles(Int_t i) const
 {
   AliParticleContainer *cont = GetParticleContainer(i);
   if (!cont) {
@@ -1738,7 +2005,7 @@ Int_t AliAnalysisTaskEmcal::GetNParticles(Int_t i) const
   return cont->GetNEntries();
 }
 
-Int_t AliAnalysisTaskEmcal::GetNClusters(Int_t i) const 
+Int_t AliAnalysisTaskEmcal::GetNClusters(Int_t i) const
 {
   AliClusterContainer *cont = GetClusterContainer(i);
   if (!cont) {
@@ -1772,7 +2039,7 @@ AliEMCALTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(TriggerCateg
             // option not yet implemented in the trigger maker
             if(patch->IsLevel0()) selected = patch;
             break;
-          case kTriggerLevel1Jet: 
+          case kTriggerLevel1Jet:
             if(patch->IsJetHighSimple() || patch->IsJetLowSimple()){
               if(!selected) selected = patch;
               else if(patch->GetADCOfflineAmp() > selected->GetADCOfflineAmp()) selected = patch;
@@ -1812,7 +2079,7 @@ AliEMCALTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(TriggerCateg
         };
       }
     }
-    else if ((trigger == kTriggerRecalcJet &&  patch->IsRecalcJet()) || 
+    else if ((trigger == kTriggerRecalcJet &&  patch->IsRecalcJet()) ||
         (trigger == kTriggerRecalcGamma && patch->IsRecalcGamma())) {  // recalculated patches
       if (doSimpleOffline && patch->IsOfflineSimple()) {
         if(!selected) selected = patch;
@@ -1821,7 +2088,7 @@ AliEMCALTriggerPatchInfo* AliAnalysisTaskEmcal::GetMainTriggerPatch(TriggerCateg
       }
       else if (!doSimpleOffline && !patch->IsOfflineSimple()) {
         if(!selected) selected = patch;
-        else if (patch->GetADCAmp() > selected->GetADCAmp()) 
+        else if (patch->GetADCAmp() > selected->GetADCAmp())
           selected = patch;
       }
     }
@@ -1860,6 +2127,29 @@ Bool_t AliAnalysisTaskEmcal::IsTrackInEmcalAcceptance(AliVParticle* part, Double
   }
 }
 
+void AliAnalysisTaskEmcal::SetMCProductionType(MCProductionType_t prodtype) {
+  if(prodtype == MCProductionType_t::kNoMC) return;
+  switch(prodtype) {
+    case MCProductionType_t::kMCPythiaMB: SetIsPythia(true); break;
+    case MCProductionType_t::kMCPythiaPtHard: SetIsPythia(true); break;
+    case MCProductionType_t::kMCHerwig6: SetIsHerwig(true); break;
+    case MCProductionType_t::kMCHepMCMB: SetIsHepMC(true); break;
+    case MCProductionType_t::kMCHepMCPtHard: SetIsHepMC(true); break;
+    case MCProductionType_t::kMCPythiaWeighted: SetIsPythia(true); SetIsWeighted(true); break;
+    case MCProductionType_t::kNoMC: break;
+  };
+  // In case of min. bias production reduce to 1 pt-hard bin
+  if(prodtype == MCProductionType_t::kMCPythiaMB || prodtype == MCProductionType_t::kMCHepMCMB || prodtype == MCProductionType_t::kMCPythiaWeighted) {
+    SetNumberOfPtHardBins(1);
+    TArrayI mbbinning(2);
+    mbbinning[0] = 0;
+    mbbinning[1] = 10000;
+    SetUserPtHardBinning(mbbinning);
+    SetGetPtHardBinFromPath(false);
+  }
+}
+
+
 void AliAnalysisTaskEmcal::SetRejectionReasonLabels(TAxis* axis)
 {
   axis->SetBinLabel(1,  "NullObject");
@@ -1896,6 +2186,149 @@ void AliAnalysisTaskEmcal::SetRejectionReasonLabels(TAxis* axis)
   axis->SetBinLabel(32, "Bit31");
 }
 
+AliAnalysisTaskEmcal::MCProductionType_t AliAnalysisTaskEmcal::ConfigureMCDataset(const char *dataset) {
+  TString namedataset(dataset);
+  namedataset.ToLower();
+  PtHardBinning_t binningtype = PtHardBinning_t::kBinningUnknown;
+  MCProductionType_t prodtype = MCProductionType_t::kNoMC;
+  std::vector<TString> datasetsPthard20Pythia = {"lhc16c2", "lhc16h3", "lhc16j5", "lhc18b8", "lhc18b9b", "lhc18f5", "lhc18g2", "lhc19a1", "lhc19d3", "lhc19f4", "lhc20g4", "lhc21b8", "lhc23d7a", "lhc23d7b"};
+  std::vector<TString> datasetsPthard20HepMC = {"lhc20j3", "lhc20k1"};
+  std::vector<TString> datasetsPthard13Pythia = {"lhc18i4a", "lhc18i4b2", "lhc19k3a", "lhc19k3b", "lhc19k3c"};
+  std::vector<TString> datasetsPthard10Pythia = {"lhc12a15a", "lhc13b4"};
+  std::vector<TString> datasetsPthard06Pythia = {"lhc17h6e2", "lhc17h6f2"};
+  std::vector<TString> datasetsMBPythia = {
+    "lhc17c3a", "lhc17h8a","lhc18l4a", "lhc18l4b",                                                                                // D-Mesons pp 13 TeV, 2016-18
+    "lhc15h1", "lhc15h2",                                                                                                         // MB pp 8 TeV, 2012
+    "lhc17f6", "lhc17f9", "lhc17d17", "lhc17f5", "lhc17d3", "lhc17e5", "lhc18f1", "lhc18d8", "lhc17d16", "lhc17d18",              // MB pp 13 TeV, 2016
+    "lhc18d3", "lhc17h1", "lhc18c12", "lhc17k4", "lhc17h11", "lhc18c13", "lhc18a8", "lhc17l5", "lhc18a9", "lhc18a1",               // MB pp 13 TeV, 2017
+    "lhc18g4", "lhc18g5", "lhc18g6", "lhc18g2", "lhc18h2", "lhc18h4", "lhc18j1", "lhc18j4", "lhc18k1", "lhc18k2", "lhc18k3",      // MB pp 13 TeV, 2018
+    "lhc18h1"                                                                                                                     // MB pp 13 TeV, 2018, low-B
+
+  };
+  std::vector<std::string> datasetsPythiaWeighted = {
+    "lhc21j5"
+  };
+
+  bool foundDataset = false;
+  for(auto dset : datasetsPthard20Pythia) {
+    if(namedataset.Contains(dset)) {
+      binningtype = PtHardBinning_t::kBinning20;
+      prodtype = MCProductionType_t::kMCPythiaPtHard;
+      foundDataset = true;
+      break;
+    }
+  }
+
+  if(!foundDataset) {
+    for(auto dset : datasetsPthard13Pythia) {
+      if(namedataset.Contains(dset)) {
+        binningtype = PtHardBinning_t::kBinning13;
+        prodtype = MCProductionType_t::kMCPythiaPtHard;
+        foundDataset = true;
+        break;
+      }
+    }
+  }
+
+  if(!foundDataset) {
+    for(auto dset : datasetsPthard10Pythia) {
+      if(namedataset.Contains(dset)) {
+        binningtype = PtHardBinning_t::kBinning10;
+        prodtype = MCProductionType_t::kMCPythiaPtHard;
+        foundDataset = true;
+        break;
+      }
+    }
+  }
+
+  if(!foundDataset) {
+    for(auto dset : datasetsPthard06Pythia) {
+      if(namedataset.Contains(dset)) {
+        binningtype = PtHardBinning_t::kBinning06;
+        prodtype = MCProductionType_t::kMCPythiaPtHard;
+        foundDataset = true;
+        break;
+      }
+    }
+  }
+
+  if(!foundDataset) {
+    for(auto dset : datasetsPthard20HepMC) {
+      if(namedataset.Contains(dset)) {
+        binningtype = PtHardBinning_t::kBinning20;
+        prodtype = MCProductionType_t::kMCHepMCPtHard;
+        foundDataset = true;
+        break;
+      }
+    }
+  }
+
+  if(!foundDataset) {
+    for(auto dset : datasetsMBPythia){
+      if(namedataset.Contains(dset)) {
+        prodtype = MCProductionType_t::kMCPythiaMB;
+        foundDataset = true;
+        break;
+      }
+    }
+  }
+
+  if(!foundDataset) {
+    for(auto dset : datasetsPythiaWeighted){
+      if(namedataset.Contains(dset)) {
+        prodtype = MCProductionType_t::kMCPythiaWeighted;
+        foundDataset = true;
+        break;
+      }
+    }
+  }
+
+  SetMCProductionType(prodtype);
+  if(binningtype != PtHardBinning_t::kBinningUnknown) {
+    SetUsePtHardBinScaling(true);
+    SetUserPtHardBinning(GetPtHardBinningForProd(binningtype));
+  }
+  return prodtype;
+}
+
+TArrayI AliAnalysisTaskEmcal::GetPtHardBinningForProd(PtHardBinning_t binningtype) {
+  TArrayI binning;
+  switch(binningtype) {
+    case PtHardBinning_t::kBinning06: {
+      const Int_t kNBinLimits = 8;
+      binning.Set(kNBinLimits);
+      const Int_t binlimits[] = {0, 5, 11, 21, 36, 57, 84, 1000000};
+      memcpy(binning.GetArray(), binlimits, sizeof(int) * kNBinLimits);
+      break;
+    }
+    case PtHardBinning_t::kBinning10: {
+      const Int_t kNBinLimits = 12;
+      binning.Set(kNBinLimits);
+      const Int_t binlimits[] = {0, 5, 11, 21, 36, 57, 84, 117, 152, 191, 234, 1000000};
+      memcpy(binning.GetArray(), binlimits, sizeof(int) * kNBinLimits);
+      break;
+    }
+    case PtHardBinning_t::kBinning13: {
+      const Int_t kNBinLimits = 15;
+      binning.Set(kNBinLimits);
+      const Int_t binlimits[] = {0, 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 100, 1000000};
+      memcpy(binning.GetArray(), binlimits, sizeof(int) * kNBinLimits);
+      break;
+    }
+    case PtHardBinning_t::kBinning20: {
+      const Int_t kNBinLimits = 22;
+      binning.Set(kNBinLimits);
+      const Int_t binlimits[] = {0, 5, 7, 9, 12, 16, 21, 28, 36, 45, 57, 70, 85, 99, 115, 132, 150, 169, 190, 212, 235, 1000000};
+      memcpy(binning.GetArray(), binlimits, sizeof(int) * kNBinLimits);
+      break;
+    }
+    default:
+      AliErrorGeneralStream("AliAnalysisTaskEmcal::GetPtHardBinningForProd") << "Requested binning type not implemented" << std::endl;
+  };
+
+  return binning;
+}
+
 Double_t AliAnalysisTaskEmcal::GetParallelFraction(AliVParticle* part1, AliVParticle* part2)
 {
   TVector3 vect1(part1->Px(), part1->Py(), part1->Pz());
@@ -1922,8 +2355,8 @@ void AliAnalysisTaskEmcal::GetEtaPhiDiff(const AliVTrack *t, const AliVCluster *
   Double_t vphi = t->GetTrackPhiOnEMCal();
 
   Float_t pos[3] = {0};
-  v->GetPosition(pos);  
-  TVector3 cpos(pos); 
+  v->GetPosition(pos);
+  TVector3 cpos(pos);
   Double_t ceta     = cpos.Eta();
   Double_t cphi     = cpos.Phi();
   etadiff=veta-ceta;
@@ -1987,9 +2420,27 @@ void AliAnalysisTaskEmcal::GeneratePythiaInfoObject(AliMCEvent* mcEvent)
   fPythiaInfo->SetParton7(part7->Pt(), part7->Eta(), part7->Phi(), part7->GetMass());
 
   AliGenPythiaEventHeader *pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(mcEvent->GenEventHeader());
-  if(pythiaGenHeader){ 
-    Float_t ptWeight=pythiaGenHeader->EventWeight(); 
+  if(pythiaGenHeader){
+    Float_t ptWeight=pythiaGenHeader->EventWeight();
     fPythiaInfo->SetPythiaEventWeight(ptWeight);}
+}
+
+double AliAnalysisTaskEmcal::GetEventWeightFromHeader() const {
+  double eventweight = -1.;
+  if(fIsPythia || fIsHepMC) {
+    if(fIsPythia && fPythiaHeader) eventweight = fPythiaHeader->EventWeight();
+    if(fIsHepMC && fHepMCHeader) eventweight = fHepMCHeader->EventWeight();
+  }
+  return eventweight;
+}
+
+double AliAnalysisTaskEmcal::GetCrossSectionFromHeader() const {
+  double crosssection = -1.;
+  if(fIsPythia || fIsHepMC) {
+    if(fIsPythia && fPythiaHeader) crosssection = fPythiaHeader->GetXsection();
+    if(fIsHepMC && fHepMCHeader) crosssection = fHepMCHeader->sigma_gen();
+  }
+  return crosssection;
 }
 
 AliAODInputHandler* AliAnalysisTaskEmcal::AddAODHandler()
@@ -2048,3 +2499,14 @@ AliESDInputHandler* AliAnalysisTaskEmcal::AddESDHandler()
   return esdHandler;
 }
 
+AliMCEventHandler* AliAnalysisTaskEmcal::AddMCEventHandler() {
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) {
+    ::Error("AddESDHandler", "No analysis manager to connect to.");
+    return NULL;
+  }
+
+  AliMCEventHandler *handler = new AliMCEventHandler;
+  mgr->SetMCtruthEventHandler(handler);
+  return handler;
+}

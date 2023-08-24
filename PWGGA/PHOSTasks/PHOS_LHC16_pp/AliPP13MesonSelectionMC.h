@@ -39,11 +39,11 @@ struct ParticleSpectrum
 		fPtPrimaries(),
 		fPtPrimariesStandard()
 	{
-		fPtAllRange = new TH1F(Form("hPt_allrange_%s", n), Form("Generated p_{T} spectrum of %ss in 4 #pi ; p_{T}, GeV/c", n), ptsize, ptbins);
-		fPtRadius   = new TH2F(Form("hPt_%s_radius", n), Form("Generated radius, p_{T} spectrum of all %ss; r, cm; p_{T}, GeV/c", n), 500, 0., 500., 400, 0, 20);
+		fPtAllRange = new TH1F(Form("hPt_allrange_%s", n), Form("Generated p_{T} spectrum of %ss in 4 #pi ; p_{T} (GeV/#it{c})", n), ptsize, ptbins);
+		fPtRadius   = new TH2F(Form("hPt_%s_radius", n), Form("Generated radius, p_{T} spectrum of all %ss; r, cm; p_{T} (GeV/#it{c})", n), 500, 0., 500., 400, 0, 20);
 		fEtaPhi     = new TH2F(Form("hEtaPhi_%s", n), Form("Generated %ss y vs #phi plot; #phi (rad); y", n), 100, 0, TMath::Pi() * 2, 100, -1, 1);
-		fPtLong     = new TH1F(Form("hPtLong_%s", n), Form("Generated p_{T} spectrum of %ss; p_{T}, GeV/c", n), 1000, 0, 100);
-		fPt         = new TH1F(Form("hPt_%s", n), Form("Generated p_{T} spectrum of %ss; p_{T}, GeV/c", n), ptsize, ptbins);
+		fPtLong     = new TH1F(Form("hPtLong_%s", n), Form("Generated p_{T} spectrum of %ss; p_{T} (GeV/#it{c})", n), 1000, 0, 100);
+		fPt         = new TH1F(Form("hPt_%s", n), Form("Generated p_{T} spectrum of %ss; p_{T} (GeV/#it{c})", n), ptsize, ptbins);
 
 		fListOfHistos->Add(fPtAllRange);
 		fListOfHistos->Add(fPtRadius);
@@ -57,10 +57,10 @@ struct ParticleSpectrum
 		for(Int_t i = 0; i < 2; ++i)
 		{
 			const char * s = (i == 0) ? "secondary": "primary";
-			fPtPrimaries[i] = new TH1F(Form("hPt_%s_%s_", n, s), Form("Generated p_{T} spectrum of %s %ss; p_{T}, GeV/c", s, n), ptsize, ptbins);
+			fPtPrimaries[i] = new TH1F(Form("hPt_%s_%s_", n, s), Form("Generated p_{T} spectrum of %s %ss; p_{T} (GeV/#it{c})", s, n), ptsize, ptbins);
 			fListOfHistos->Add(fPtPrimaries[i]);
 
-			fPtPrimariesStandard[i] = new TH1F(Form("hPt_%s_%s_standard", n, s), Form("Generated p_{T} spectrum of %s %ss; p_{T}, GeV/c", s, n), 200, 0, 20);
+			fPtPrimariesStandard[i] = new TH1F(Form("hPt_%s_%s_standard", n, s), Form("Generated p_{T} spectrum of %s %ss; p_{T} (GeV/#it{c})", s, n), 200, 0, 20);
 			fListOfHistos->Add(fPtPrimariesStandard[i]);
 
 		}

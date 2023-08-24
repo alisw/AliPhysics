@@ -44,6 +44,7 @@ public:
   ///
   void CalcRandomPairs(AliDielectron* die);
   void FillHistogramsRandomPairs(AliDielectron* die, AliDielectronPair* part, Bool_t wasRejected);
+  void FillHistogramsRandomRejectedPairs(AliDielectron* die, AliDielectronPair* part, Bool_t wasRejected);
   void FillHistogramsTestpart(AliDielectron* die, TObjArray* arrTracks1, Bool_t* bTracks1, Int_t nNeededTestPart);
   void FillHistogramsDataEle(AliDielectron* die, TObjArray* arrTracks1, Bool_t* bTracks1);
   void FillFinalTrackArrays(AliVEvent * const ev, AliDielectron* die);

@@ -1,7 +1,7 @@
 #ifndef ALIAODCONVERSIONPARTICLE_H
 #define ALIAODCONVERSIONPARTICLE_H
 
-#include "AliKFParticle.h"
+#include "AliGAKFParticle.h"
 #include "TLorentzVector.h"
 
 
@@ -11,7 +11,7 @@ class AliAODConversionParticle : public TLorentzVector {
 
   //Constructors
   AliAODConversionParticle();
-  AliAODConversionParticle(AliKFParticle *kfparticle);
+  AliAODConversionParticle(AliGAKFParticle *kfparticle);
   AliAODConversionParticle(TLorentzVector *vec);
 
   //Copy Constructor

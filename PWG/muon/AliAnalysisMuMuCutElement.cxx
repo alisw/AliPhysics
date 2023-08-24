@@ -15,6 +15,7 @@
  *  \author L. Aphecetche (Subatech)
  */
 
+#include <TObjString.h>
 #include "TMethodCall.h"
 #include "AliLog.h"
 #include "Riostream.h"

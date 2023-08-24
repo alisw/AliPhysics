@@ -28,6 +28,8 @@
 #define ALIANALYSISTASKEMCALSOFTDROPDATA_H
 
 #include <AliAnalysisTaskEmcalJet.h>
+#include "AliAnalysisEmcalTriggerSelectionHelper.h"
+#include "AliAnalysisEmcalSoftdropHelper.h"
 #include <string>
 #include <vector>
 
@@ -38,13 +40,8 @@ namespace PWGJE{
 
 namespace EMCALJetTasks {
 
-class AliAnalysisTaskEmcalSoftDropData : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskEmcalSoftDropData : public AliAnalysisTaskEmcalJet, public AliAnalysisEmcalSoftdropHelperImpl, public AliAnalysisEmcalTriggerSelectionHelperImpl {
 public:
-  enum EBinningMode_t {
-    kSDModeINT7,
-    kSDModeEJ1,
-    kSDModeEJ2,
-  };
   enum EReclusterizer_t {
     kCAAlgo = 0,
     kKTAlgo = 1,
@@ -55,7 +52,8 @@ public:
   AliAnalysisTaskEmcalSoftDropData(EMCAL_STRINGVIEW name);
   virtual ~AliAnalysisTaskEmcalSoftDropData();
 
-  void SetBinningMode(EBinningMode_t binmode) { fBinningMode = binmode; }
+  AliJetContainer *GetDetLevelJetContainer() const { return GetJetContainer("datajets"); }
+
   void SetCustomPtBinning(TBinning *binning) { fPtBinning = binning; }
   void SetBeta(double beta) { fBeta = beta; }
   void SetZcut(double zcut) { fZcut = zcut; }
@@ -64,8 +62,13 @@ public:
   void SetUseNeutralConstituents(bool doUse) { fUseNeutralConstituents = doUse; }
   void SetSelectTrigger(UInt_t triggerbits, const char *triggerstring) { fTriggerBits = triggerbits; fTriggerString = triggerstring; }
   void SetUseDownscaleWeight(Bool_t doUse) { fUseDownscaleWeight = doUse; }
+  void SetDropMass0Jets(bool doDrop) { fDropMass0Jets = doDrop; }
+  void SetMinPtTracksSD(double pt) { fMinPtTracksSD = pt; }
+  void SetMinEClustersSD(double e) { fMinEClustersSD = e; }
 
-  static AliAnalysisTaskEmcalSoftDropData *AddTaskEmcalSoftDropData(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, EMCAL_STRINGVIEW trigger);
+  void ConfigureDetJetSelection(Double_t minJetPt, Double_t maxTrackPt, Double_t maxClusterPt, Double_t minAreaPerc);
+
+  static AliAnalysisTaskEmcalSoftDropData *AddTaskEmcalSoftDropData(Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, AliVCluster::VCluUserDefEnergy_t energydef, EMCAL_STRINGVIEW trigger);
 
 protected:
   virtual void UserCreateOutputObjects();
@@ -74,14 +77,11 @@ protected:
   virtual Bool_t Run();
 
   TBinning *GetDefaultPtBinning() const;
-  TBinning *GetZgBinning() const;
-  TBinning *GetRgBinning(double R) const;
 
   Double_t GetDownscaleWeight() const;
-  std::vector<double> MakeSoftdrop(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const;
+  void FillJetQA(const AliEmcalJet &jet, AliVCluster::VCluUserDefEnergy_t energydef);
 
 private:
-  EBinningMode_t                fBinningMode;               ///< Binning adapted to trigger
   UInt_t                        fTriggerBits;               ///< Trigger selection bits
   std::string                   fTriggerString;             ///< Trigger selection string
   Bool_t                        fUseDownscaleWeight;        ///< Usage of downscale weights
@@ -90,10 +90,14 @@ private:
   EReclusterizer_t              fReclusterizer;             ///< Reclusterizer
   Bool_t                        fUseChargedConstituents;    ///< Use also charged constituents
   Bool_t                        fUseNeutralConstituents;    ///< Use also neutral constituents
-  Double_t                      fJetPtMin;                  ///< Min. jet pt (truncation)
-  Double_t                      fJetPtMax;                  ///< Max. jet pt (truncation)
+  Bool_t                        fDropMass0Jets;             ///< Drop jets with mass 0
+  Double_t                      fMinPtTracksSD;             ///< Min. pt of track constituent for softdrop
+  Double_t                      fMinEClustersSD;            ///< Min. E of EMCAL clusters constituent for softdrop
   THistManager                  *fHistos;                   //!<! Histogram handler
   TBinning                      *fPtBinning;                ///< Detector level pt binning
+
+  AliAnalysisTaskEmcalSoftDropData(const AliAnalysisTaskEmcalSoftDropData &);
+  AliAnalysisTaskEmcalSoftDropData &operator=(const AliAnalysisTaskEmcalSoftDropData &);
 
   ClassDef(AliAnalysisTaskEmcalSoftDropData, 1)
 };

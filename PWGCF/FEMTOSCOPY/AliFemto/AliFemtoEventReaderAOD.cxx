@@ -29,6 +29,7 @@
 
 #include "AliExternalTrackParam.h"
 
+#include <initializer_list>
 #include <algorithm>
 #include <cassert>
 #include <memory>
@@ -121,13 +122,66 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fIsKaonAnalysis(kFALSE),
   fIsProtonAnalysis(kFALSE),
   fIsPionAnalysis(kFALSE),
-  fIsElectronAnalysis(kFALSE)
+  fIsElectronAnalysis(kFALSE),
+  fjets(0), //ML
+  fPtmax(0),  //ML
+  fEventReject(0), // begin dowang
+  fPbPb15Pass2MC(0),
+  fCenCutLowPU(NULL),
+  fCenCutHighPU(NULL),
+  fSPDCutPU(NULL),
+  fV0CutPU(NULL),
+  fMultCutPU(NULL),
+  fCenCutLowPU2018(NULL),
+  fCenCutHighPU2018(NULL),
+  fSPDCutPU2018(NULL),
+  fV0CutPU2018(NULL),
+  fMultCutPU2018(NULL)
+  // end dowang
 {
   // default constructor
   fAllTrue.ResetAllBits(kTRUE);
   fAllFalse.ResetAllBits(kFALSE);
   fCentRange[0] = 0;
   fCentRange[1] = 1000;
+ 
+  // dowang 15o pass2 V0 Calib, follow Dobrin
+  // use TF1 to reject event 
+  // 2022.4.11default is 15o!
+  fSPDCutPU = new TF1("fSPDCutPU", "450. + 3.9*x", 0, 50000); 
+
+ 
+//2015
+  Double_t parV0[8] = {33.4237, 0.953516, 0.0712137, 227.923, 8.9239, -0.00319679, 0.000306314, -7.6627e-07};
+  fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+  fV0CutPU->SetParameters(parV0);
+    
+  Double_t parV0CL0[6] = {0.0193587, 0.975914, 0.675714, 0.0292263, -0.000549509, 5.86421e-06};
+  fCenCutLowPU = new TF1("fCenCutLowPU", "[0]+[1]*x - 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+  fCenCutLowPU->SetParameters(parV0CL0);
+  fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+  fCenCutHighPU->SetParameters(parV0CL0);
+    
+  Double_t parFB32[9] = {-812.822, 6.41796, 5421.83, -0.382601, 0.0299686, -26.6249, 321.388, -0.82615, 0.0167828};
+  fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 6.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
+  fMultCutPU->SetParameters(parFB32);
+    
+// 2018
+fSPDCutPU2018 = new TF1("fSPDCutPU2018", "400. + 4.*x", 0, 10000);
+
+ Double_t parV02018[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
+    fV0CutPU2018  = new TF1("fV0CutPU2018", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+    fV0CutPU2018->SetParameters(parV02018);
+
+  Double_t parV0CL02018[6] = {0.320462, 0.961793, 1.02278, 0.0330054, -0.000719631, 6.90312e-06};
+    fCenCutLowPU2018  = new TF1("fCenCutLowPU2018", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutLowPU2018->SetParameters(parV0CL02018);
+    fCenCutHighPU2018 = new TF1("fCenCutHighPU2018", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutHighPU2018->SetParameters(parV0CL02018);
+
+   Double_t parFB322018[8] = {2093.36, -66.425, 0.728932, -0.0027611, 1.01801e+02, -5.23083e+00, -1.03792e+00, 5.70399e-03};
+    fMultCutPU2018 = new TF1("fMultCutPU2018", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 6.*([4]+[5]*sqrt(x)+[6]*x+[7]*x*x)", 0, 90);
+    fMultCutPU2018->SetParameters(parFB322018);
 }
 
 AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aReader):
@@ -205,8 +259,22 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fIsDeuteronAnalysis(aReader.fIsDeuteronAnalysis),
   fIsTritonAnalysis(aReader.fIsTritonAnalysis),
   fIsHe3Analysis(aReader.fIsHe3Analysis),
-  fIsAlphaAnalysis(aReader.fIsAlphaAnalysis)
-
+  fIsAlphaAnalysis(aReader.fIsAlphaAnalysis),
+  fjets(aReader.fjets), //ML
+  fPtmax(aReader.fPtmax),  //ML
+  fEventReject(aReader.fEventReject), // begin dowang
+  fPbPb15Pass2MC(aReader.fPbPb15Pass2MC),
+  fCenCutLowPU(aReader.fCenCutLowPU),
+  fCenCutHighPU(aReader.fCenCutHighPU),
+  fSPDCutPU(aReader.fSPDCutPU),
+  fV0CutPU(aReader.fV0CutPU),
+  fMultCutPU(aReader.fMultCutPU),
+  fCenCutLowPU2018(aReader.fCenCutLowPU2018),
+  fCenCutHighPU2018(aReader.fCenCutHighPU2018),
+  fSPDCutPU2018(aReader.fSPDCutPU2018),
+  fV0CutPU2018(aReader.fV0CutPU2018),
+  fMultCutPU2018(aReader.fMultCutPU2018)
+    // end dowang
 {
   // copy constructor
   fAllTrue.ResetAllBits(kTRUE);
@@ -310,6 +378,20 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fIsProtonAnalysis = aReader.fIsProtonAnalysis;
   fIsPionAnalysis = aReader.fIsPionAnalysis;
   fIsElectronAnalysis = aReader.fIsElectronAnalysis;
+  fjets = aReader.fjets;  //ML
+  fPtmax = aReader.fPtmax; //ML
+  fEventReject    = aReader.fEventReject; // begin dowang
+  fPbPb15Pass2MC = aReader.fPbPb15Pass2MC;
+  fCenCutLowPU    = aReader.fCenCutLowPU;
+  fCenCutHighPU   = aReader.fCenCutHighPU;
+  fSPDCutPU       = aReader.fSPDCutPU;
+  fV0CutPU        = aReader.fV0CutPU;
+  fMultCutPU      = aReader.fMultCutPU; 
+  fCenCutLowPU2018 = aReader.fCenCutLowPU2018;
+  fCenCutHighPU2018 = aReader.fCenCutHighPU2018;
+  fSPDCutPU2018 = aReader.fSPDCutPU2018;
+  fV0CutPU2018 = aReader.fV0CutPU2018;
+  fMultCutPU2018 = aReader.fMultCutPU2018;// end dowang
 
   return *this;
 }
@@ -351,7 +433,6 @@ AliFemtoEvent *AliFemtoEventReaderAOD::ReturnHbtEvent()
 {
   /// Reads in the next event from the chain and converts it to an AliFemtoEvent
   AliFemtoEvent *hbtEvent = nullptr;
-
   // We have hit the end of our range -> open the next file
   if (fCurEvent == fNumberofEvent) {
     // We haven't loaded anything yet - open
@@ -382,13 +463,11 @@ AliFemtoEvent *AliFemtoEventReaderAOD::ReturnHbtEvent()
 
 AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 {
-
   // A function that reads in the AOD event
   // and transfers the neccessary information into
   // the internal AliFemtoEvent
 
   AliFemtoEvent *tEvent = new AliFemtoEvent();
-
   // setting global event characteristics
   tEvent->SetRunNumber(fEvent->GetRunNumber());
   tEvent->SetMagneticField(fEvent->GetMagneticField() * kilogauss); //to check if here is ok
@@ -444,8 +523,23 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       return nullptr;
     }
   }
-  //**************************************
 
+    // LHC15o pass2 event cut dowang
+    if(fEventReject > 0){
+        if(!Reject15oPass2Event(fEvent,fEventReject)){
+            return nullptr;
+        }
+	if(fCentRange[1]!=1000){
+	AliMultSelection* fMultSel  = (AliMultSelection*)fEvent->FindListObject("MultSelection");
+	float centV0M               = fMultSel->GetMultiplicityPercentile("V0M");
+		if ((centV0M * 10 < fCentRange[0]) || (centV0M * 10 > fCentRange[1])) {
+      			delete tEvent;
+      			return nullptr;
+    		}
+	}		
+    }
+  //**************************************
+  
   // AliAnalysisUtils
   if (fisPileUp || fpA2013) {
     fAnaUtils = new AliAnalysisUtils();
@@ -477,17 +571,17 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
     delete fAnaUtils;
   }
-
+  
   // Primary Vertex position
   const auto *aodvertex = (fUseAliEventCuts)
                         ? static_cast<const AliAODVertex *>(fEventCuts->GetPrimaryVertex())
                         : static_cast<const AliAODVertex *>(fEvent->GetPrimaryVertex());
-
+  
   if (!aodvertex || aodvertex->GetNContributors() < 1) {
     delete tEvent;  // Bad vertex, skip event.
     return nullptr;
   }
-
+  
   aodvertex->GetPosition(fV1);
   AliFmThreeVectorF vertex(fV1[0], fV1[1], fV1[2]);
   tEvent->SetPrimVertPos(vertex);
@@ -506,6 +600,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     tEvent->SetReactionPlaneAngle(event_plane_angle);
   }
 
+
+
   AliCentrality *cent = fEvent->GetCentrality();
 
   if (!fEstEventMult && cent && fUsePreCent) {
@@ -515,7 +611,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       return nullptr;
     }
   }
-
+  
   const Float_t percent = cent->GetCentralityPercentile("V0M");
 
   // Flatten centrality distribution
@@ -539,6 +635,22 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
   // looking for global tracks and saving their numbers to copy from
   // them PID information to TPC-only tracks in the main loop over tracks
+
+//--ML
+   Double_t Ptmax=0; 
+   Double_t Phimax=0; 
+   Double_t Etamax=0;
+   Int_t ParticleNumber = 0;
+   Double_t SumPt = 0;
+   Double_t S00=0;
+   Double_t S11=0;
+   Double_t S10=0;
+   Double_t Lambda1 = 0;
+   Double_t Lambda2 = 0;
+   Double_t St = 0;
+//--
+   
+
   for (int i = 0; i < nofTracks; i++) {
     const auto *aodtrack = static_cast<AliAODTrack *>(fEvent->GetTrack(i));
 
@@ -555,7 +667,71 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       }
       labels[id] = i;
     }
+
+
+//ML--
+ if(fjets>0){
+    Double_t NewPhi = aodtrack->Phi();
+    Double_t NewPt =  aodtrack->Pt();
+    Double_t NewEta = aodtrack->Eta();
+
+    if(NewPt > Ptmax && TMath::Abs(NewEta)<0.8){
+      Ptmax = NewPt;
+      Phimax = NewPhi;
+      Etamax = NewEta;
+    }
+
+if(TMath::Abs(NewEta)<0.8 && NewPt>0.5){
+
+    Double_t Px;
+    Double_t Py;
+
+    Px= NewPt * TMath::Cos(NewPhi);
+    Py= NewPt * TMath::Sin(NewPhi);
+
+    S00 = S00 + Px*Px/(NewPt);  // matrix elements of the transverse shpericity matrix S(i,j)
+    S11 = S11 + Py*Py/(NewPt);  // i,j /in [0,1]
+    S10 = S10 + Px*Py/(NewPt);
+    SumPt = SumPt + NewPt;
+    ParticleNumber++;
+
+  }  
+
+
+  } //fjets
+    
+  } //track loop
+
+
+  //ml -- sphericity selection should be before Delta phi-selection 
+
+if(fjets>0){
+    if(SumPt==0){
+    SumPt=0.000001;
+   }
+
+  S00 = S00/SumPt; // normalize
+  S11 = S11/SumPt;
+  S10 = S10/SumPt;
+
+  Lambda1 = (S00 + S11 + TMath::Sqrt((S00+S11)*(S00+S11)-4.0*(S00*S11-S10*S10)))/2.0;
+  Lambda2 = (S00 + S11 - TMath::Sqrt((S00+S11)*(S00+S11)-4.0*(S00*S11-S10*S10)))/2.0;
+
+     if(Lambda1+Lambda2!=0 && ParticleNumber>2)
+	{
+		St = 2*Lambda2/(Lambda1+Lambda2);
+	}
+
+  if(St<0.00001 || St>0.1){
+      delete tEvent;
+      return nullptr;
   }
+
+ } //fjets
+
+ //--ml
+
+  
 
   int tNormMult = 0;
   Int_t norm_mult = 0;
@@ -573,10 +749,27 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       continue;
     }
 
-    // Check the sanity of the tracks - reject zero momentum tracks
+  // Check the sanity of the tracks - reject zero momentum tracks
     if (aodtrack->P() == 0.0) {
       continue;
     }
+    
+
+//ML -------------- Select same jet    
+   if(fjets>0){
+    Bool_t isSelected;
+    Double_t tPhi = aodtrack->Phi();
+    Double_t tEta = aodtrack->Eta();
+    Double_t dphi= TMath::Abs(Phimax-tPhi);
+    Double_t deta= TMath::Abs(Etamax-tEta);
+    isSelected = (Ptmax>fPtmax && dphi<1.0 && dphi!=0 && deta<1.2);
+    if(!isSelected){
+    continue;
+    }
+      }
+//---fjets
+
+    
 
     // Counting particles to set multiplicity
     if ((fEstEventMult == kGlobalCount)
@@ -584,9 +777,10 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         && (aodtrack->Chi2perNDF() < 4.0)
         && (0.15 <= aodtrack->Pt() && aodtrack->Pt() < 20)
         && (aodtrack->GetTPCNcls() > 70)
-        && (aodtrack->Eta() < 0.8)) {
+        && (TMath::Abs(aodtrack->Eta()) < 0.8)) {
       tNormMult++;
     }
+
 
     norm_mult = tracksPrim;
 
@@ -634,6 +828,9 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       case kReference:
         norm_mult = fAODheader->GetRefMultiplicity();
         break;
+      case kRefComb08:
+        norm_mult = fAODheader->GetRefMultiplicityComb08();
+        break;
       case kTPCOnlyRef:
         norm_mult = fAODheader->GetTPConlyRefMultiplicity();
         break;
@@ -652,6 +849,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     trackCopy->SetMultiplicity(norm_mult);
     trackCopy->SetZvtx(fV1[2]);
 
+
+    ///////////////////////////////////
     // copying PID information from the correspondent track
     //  const AliAODTrack *aodtrackpid = fEvent->GetTrack(labels[-1-fEvent->GetTrack(i)->GetID()]);
 
@@ -679,10 +878,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         continue;
       }
 
-      //loop over the 4 ITS Layrs and check for a hit!
-      for (int i = 0; i < 2; ++i) {
-        //we use layers 0, 1 /OR/ 0, 1, 4, 5
-        // if(i==2 || i==3) i+=2;
+      // loop over 2 ITS layers and check for a hit!
+      for (int i : {0, 1}) {
         if (aodtrackpid->HasPointOnITSLayer(i)) {
           passTrackPileUp = true;
         }
@@ -693,7 +890,14 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       }
     }
 
+
     CopyPIDtoFemtoTrack(aodtrackpid, trackCopy.get());
+	// dowang for Pb-Pb 15 pass2 filter bit7 MC
+	if(fPbPb15Pass2MC){
+		if(fFilterBit == (1 << 7)){
+			CopyPIDtoFemtoTrack(aodtrack,trackCopy.get());		
+		}
+	}
 
     if (mcP) {
       // Fill the hidden information with the simulated data
@@ -838,6 +1042,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
       Bool_t trackAccept = true;
 
+
+
       if (fIsKaonAnalysis == true && TMath::Abs(pdg) != 321) {
         trackAccept = false;
       }
@@ -883,6 +1089,9 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   }
   //cout<<"======================> realnofTracks"<<realnofTracks<<endl;
   tEvent->SetNumberOfTracks(realnofTracks); // Setting number of track which we read in event
+  
+   
+
 
   if (cent) {
     tEvent->SetCentralityV0(cent->GetCentralityPercentile("V0M"));
@@ -944,13 +1153,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
           passNeg = true;
         }
 
-        //loop over the 4 ITS Layrs and check for a hit!
-        for (int i = 0; i < 4; ++i) {
-          //checking layers 0, 1, 4, 5
-          if (i == 2 || i == 3) {
-            i += 2;
-          }
-
+        //loop over the 4 ITS layers and check for a hit!
+        for (int i : {0, 1, 4, 5}) {
           if (daughterTrackPos->HasPointOnITSLayer(i)) {
             passPos = true;
           }
@@ -1085,12 +1289,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
           passBac = true;
         }
 
-        //loop over the 4 ITS Layrs and check for a hit!
-        for (int i = 0; i < 4; ++i) {
-          if (i == 2 || i == 3) {
-            i += 2; //checking layers 0, 1, 4, 5
-          }
-
+        //loop over the 4 ITS layers and check for a hit!
+        for (int i : {0, 1, 4, 5}) {
           if (daughterTrackPos->HasPointOnITSLayer(i)) {
             passPos = true;
           }
@@ -1201,7 +1401,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   return tEvent;
 }
 
-AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrack)
+AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(const AliAODTrack *tAodTrack)
 {
   // Copy the track information from the AOD into the internal AliFemtoTrack
   // If it exists, use the additional information from the PWG2 AOD
@@ -1254,7 +1454,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(AliAODTrack *tAodTrac
   tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
   tFemtoTrack->SetTPCClusterMap(tAodTrack->GetTPCClusterMap());
   tFemtoTrack->SetTPCSharedMap(tAodTrack->GetTPCSharedMap());
-
+  tFemtoTrack->SetTPCNCrossedRows(tAodTrack->GetTPCCrossedRows());
   float globalPositionsAtRadii[9][3];
   float bfield = 5 * fMagFieldSign;
 
@@ -1583,15 +1783,13 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
   //tFemtoV0->SetEtaPos(tAODv0->PseudoRapPos());
   //tFemtoV0->SetEtaNeg(tAODv0->PseudoRapNeg());
 
-  AliAODTrack *trackpos = (AliAODTrack *)tAODv0->GetDaughter(0);
-  AliAODTrack *trackneg = (AliAODTrack *)tAODv0->GetDaughter(1);
+  const AliAODTrack *trackpos = (AliAODTrack *)tAODv0->GetDaughter(0);
+  const AliAODTrack *trackneg = (AliAODTrack *)tAODv0->GetDaughter(1);
 
   // ensure that trackpos and trackneg are pointing to the correct children
   // This confusion seems to arise when fOnFlyStatusV0 = true
   if (trackpos->Charge() < 0 && trackneg->Charge() > 0) {
-    AliAODTrack *tmp = trackpos;
-    trackpos = trackneg;
-    trackneg = tmp;
+    std::swap(trackpos, trackneg);
   }
 
   if (trackpos && trackneg) {
@@ -2112,6 +2310,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, A
     //DCA for TPC only - from PropagateToDCA method
     AliExternalTrackParam aliextparam;
     aliextparam.CopyFromVTrack(tAodTrack);
+    
     if (aliextparam.GetX() > 3.0) {
       DCAXY = -999;
       DCAZ = -999;
@@ -2126,7 +2325,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, A
         DCAZ = DCA[1];
       }
     }
-
+    
     tFemtoTrack->SetImpactD(DCAXY);
     tFemtoTrack->SetImpactZ(DCAZ);
   }
@@ -2158,14 +2357,16 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, A
   {
     tTOF = tAodTrack->GetTOFsignal();
     tAodTrack->GetIntegratedTimes(aodpid);
+    
 
     tTOF -= fAODpidUtil->GetTOFResponse().GetStartTime(tAodTrack->P());
 
     probMis = fAODpidUtil->GetTOFMismatchProbability(tAodTrack);
   }
 
+  // tFemtoTrack->SetTOFsignal(tTOF);
+  tFemtoTrack->SetTOFsignal(tAodTrack->GetTOFsignal());
   tFemtoTrack->SetTofExpectedTimes(tTOF - aodpid[2], tTOF - aodpid[3], tTOF - aodpid[4], tTOF);
-
   //////  TPC ////////////////////////////////////////////
 
   const float nsigmaTPCK = fAODpidUtil->NumberOfSigmasTPC(tAodTrack, AliPID::kKaon);
@@ -2262,7 +2463,11 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, A
   /******************************************/
   //////////////////////////////////////
 }
+void AliFemtoEventReaderAOD::SetPreCentralityCut(double min, double max){
+  fCentRange[0] = min;
+  fCentRange[1] = max;
 
+}
 void AliFemtoEventReaderAOD::SetCentralityPreSelection(double min, double max)
 {
   fCentRange[0] = min;
@@ -2308,7 +2513,7 @@ void AliFemtoEventReaderAOD::SetEPVZERO(Bool_t iepvz)
 }
 
 void AliFemtoEventReaderAOD
-  ::GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrack *track,
+  ::GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTrack *track,
                                              Float_t bfield,
                                              Float_t globalPositionsAtRadii[9][3])
 {
@@ -2693,3 +2898,182 @@ void AliFemtoEventReaderAOD::SetAlphaAnalysis(Bool_t aSetAlphaAna)
 }
 //
 /*************************************************/
+//ML
+void AliFemtoEventReaderAOD::SetCalcJets(Int_t ajets)
+{
+  fjets = ajets;
+}
+void AliFemtoEventReaderAOD::SetPtmaxJets(Double_t aptmax)
+{
+  fPtmax = aptmax;
+}
+void AliFemtoEventReaderAOD::Set15oPass2EventReject(Int_t EventReject)
+{
+  fEventReject = EventReject;   
+}
+void AliFemtoEventReaderAOD::SetPbPb15Pass2MC(Int_t PbPb15Pass2MC){
+  fPbPb15Pass2MC = PbPb15Pass2MC;
+}
+bool AliFemtoEventReaderAOD::Reject15oPass2Event(AliAODEvent *fAOD,Int_t yearLabel)
+{
+	// 2 means 2015 AOD pass2
+	// 3 means 2018 r/q
+	if(yearLabel==2){
+	
+  // 0.0 refenrence 08 pileup
+  if (((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08() < 0) return false;
+  if (fAOD->IsIncompleteDAQ()) return false;
+  // 1.0 trigger
+  // has been done in AliAnalysisTaskFemto.cxx
+
+  // 2.0 vertex
+  // 2.1 data point cut
+  AliAODVertex* fVtx  = fAOD->GetPrimaryVertex();
+  AliAODVertex* vtSPD = fAOD->GetPrimaryVertexSPD();
+  if (!fVtx || fVtx->GetNContributors() < 2 || vtSPD->GetNContributors()<1) return false;
+  
+  // 2.2 Vz, dVz
+  double covTrc[6],covSPD[6];
+  fVtx->GetCovarianceMatrix(covTrc);
+  fAOD->GetPrimaryVertexSPD()->GetCovarianceMatrix(covSPD);
+  double vz       = fVtx->GetZ();
+  double dz       = vz - fAOD->GetPrimaryVertexSPD()->GetZ();
+  double errTot   = TMath::Sqrt(covTrc[5] + covSPD[5]);
+  double errTrc   = TMath::Sqrt(covTrc[5]);
+  double nsigTot  = TMath::Abs(dz)/errTot, nsigTrc = TMath::Abs(dz)/errTrc;
+  if (fabs(dz)>0.2 || nsigTot>10 || nsigTrc>20) return false;
+  
+  // 3.0 centrality
+  AliMultSelection* fMultSel  = (AliMultSelection*)fEvent->FindListObject("MultSelection");
+  float centV0M               = fMultSel->GetMultiplicityPercentile("V0M");
+  float centSPD1              = fMultSel->GetMultiplicityPercentile("CL1");
+  float fCent                 = centV0M;
+  float fCentCut              = 7.5;
+
+  if (fabs(fCent - centSPD1) > fCentCut) return false;
+  if (fCent < 0) return false;
+  
+  // 4.0 pile-up
+  // 4.1 CL0 pile-up
+  float centCL0 = fMultSel->GetMultiplicityPercentile("CL0");
+  if (centCL0 < fCenCutLowPU->Eval(centV0M)) return false;
+  if (centCL0 > fCenCutHighPU->Eval(centV0M)) return false;
+
+  // 4.2 ITS pile-up
+  Int_t nITSClsLy0          = fAOD->GetNumberOfITSClusters(0);
+  Int_t nITSClsLy1          = fAOD->GetNumberOfITSClusters(1);
+  Int_t nITSCls             = nITSClsLy0 + nITSClsLy1;
+  AliAODTracklets* aodTrkl  = (AliAODTracklets*)fAOD->GetTracklets();
+  Int_t nITSTrkls           = aodTrkl->GetNumberOfTracklets();
+  if (Float_t(nITSCls) > fSPDCutPU->Eval(nITSTrkls)) return false;
+
+  // 4.3 V0 pile-up
+  AliAODVZERO* aodV0    = fAOD->GetVZEROData();
+  Float_t multV0a       = aodV0->GetMTotV0A();
+  Float_t multV0c       = aodV0->GetMTotV0C();
+  Float_t multV0Tot     = multV0a + multV0c;
+  UShort_t multV0aOn    = aodV0->GetTriggerChargeA();
+  UShort_t multV0cOn    = aodV0->GetTriggerChargeC();
+  UShort_t multV0On     = multV0aOn + multV0cOn;
+
+  if (multV0On < fV0CutPU->Eval(multV0Tot)) return false;
+
+  // 4.4 Mult(FB32) Vs Cent(V0M)
+  const Int_t nTracks = fAOD->GetNumberOfTracks();
+  Int_t multTrk = 0;
+  for (Int_t it = 0; it < nTracks; it++) {
+      AliAODTrack* aodTrk = (AliAODTrack*)fAOD->GetTrack(it);
+      if (!aodTrk){
+          delete aodTrk;
+          continue;
+      }
+      if (aodTrk->TestFilterBit(32)){
+        //if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2))
+        multTrk++;
+      }
+  }
+  if (Float_t(multTrk) < fMultCutPU->Eval(centV0M)) return false;
+
+  return true;
+}
+	if(yearLabel==3){
+
+  //----------------------------
+  // Vertex
+  //----------------------------
+double fVertex[3] = {0.};
+  AliAODVertex* fVtx = fAOD->GetPrimaryVertex();
+  fVtx -> GetXYZ(fVertex);
+  AliAODVertex* vtSPD = fAOD->GetPrimaryVertexSPD();
+  double vx = fVertex[0];
+  double vy = fVertex[1];
+  double vz = fVertex[2];
+  if (fabs(fVertex[0])<1e-6 || fabs(fVertex[1])<1e-6 || fabs(fVertex[2])<1e-6) return false;
+  double dz = vz - fAOD->GetPrimaryVertexSPD()->GetZ();
+  if (fabs(vz) > 10.) return false;
+  if (!fVtx || fVtx->GetNContributors() < 2 || vtSPD->GetNContributors()<1) return false;
+
+    // 3.0 centrality
+  AliMultSelection* fMultSel  = (AliMultSelection*)fEvent->FindListObject("MultSelection");
+  float centV0M               = fMultSel->GetMultiplicityPercentile("V0M");
+  float centSPD1              = fMultSel->GetMultiplicityPercentile("CL1");
+  float fCent                 = centV0M;
+  float fCentCut              = 7.5;
+
+  if (fabs(fCent - centSPD1) > fCentCut) return false;
+  if (fCent < 0) return false;
+
+
+  centV0M = -999;
+  //Float_t centV0M = -999;
+  Float_t centCL1 = -999;
+  Float_t centCL0 = -999;
+
+
+  centV0M = (Float_t) fCent;
+  centCL1 = fMultSel->GetMultiplicityPercentile("CL1");
+  centCL0 = fMultSel->GetMultiplicityPercentile("CL0");
+
+  Int_t nITSClsLy0 = fAOD->GetNumberOfITSClusters(0);
+  Int_t nITSClsLy1 = fAOD->GetNumberOfITSClusters(1);
+  Int_t nITSCls = nITSClsLy0 + nITSClsLy1;
+
+  AliAODTracklets* aodTrkl = (AliAODTracklets*)fAOD->GetTracklets();
+  Int_t nITSTrkls = aodTrkl->GetNumberOfTracklets();
+
+  const Int_t nTracks = fAOD->GetNumberOfTracks();
+  Int_t multTrk = 0;
+  for (Int_t it = 0; it < nTracks; it++) {
+      AliAODTrack* aodTrk = (AliAODTrack*)fAOD->GetTrack(it);
+      if (!aodTrk) {
+          delete aodTrk;
+          continue;
+      }
+      if (aodTrk->TestFilterBit(32)) {
+        //if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2))
+        multTrk++;
+      }
+  }
+
+  AliAODVZERO* aodV0 = fAOD->GetVZEROData();
+  Float_t  multV0a = aodV0->GetMTotV0A();
+  Float_t  multV0c = aodV0->GetMTotV0C();
+  Float_t  multV0Tot = multV0a + multV0c;
+  UShort_t multV0aOn = aodV0->GetTriggerChargeA();
+  UShort_t multV0cOn = aodV0->GetTriggerChargeC();
+  UShort_t multV0On = multV0aOn + multV0cOn;
+  
+
+  // pile-up cuts
+  if (centCL0 < fCenCutLowPU2018->Eval(centV0M)) return false;
+  if (centCL0 > fCenCutHighPU2018->Eval(centV0M)) return false;
+  if (Float_t(nITSCls) > fSPDCutPU2018->Eval(nITSTrkls)) return false;
+  if (multV0On < fV0CutPU2018->Eval(multV0Tot)) return false;
+  if (Float_t(multTrk) < fMultCutPU2018->Eval(centV0M)) return false;
+  if (((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08() < 0) return false;
+  if (fAOD->IsIncompleteDAQ()) return false;
+
+ return true;
+	}
+
+}

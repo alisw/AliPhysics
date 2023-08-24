@@ -710,6 +710,32 @@ void AliAnalysisTaskMultiparticleCorrelations::SetDiffHarmonics(Int_t order, Int
 
 //=======================================================================================================================
 
+void AliAnalysisTaskMultiparticleCorrelations::Red(const char* text)
+{ 
+ cout<<"\n\033[1;31m"<<text<<"\033[0m\n"<<endl;
+} 
+
+//=======================================================================================
+
+void AliAnalysisTaskMultiparticleCorrelations::Green(const char* text)
+{ 
+ cout<<"\n\033[1;32m"<<text<<"\033[0m\n"<<endl;
+}
+//=======================================================================================
+
+void AliAnalysisTaskMultiparticleCorrelations::Yellow(const char* text)
+{ 
+ cout<<"\n\033[1;33m"<<text<<"\033[0m\n"<<endl;
+} 
+
+//=======================================================================================
+
+void AliAnalysisTaskMultiparticleCorrelations::Blue(const char* text)
+{ 
+ cout<<"\n\033[1;34m"<<text<<"\033[0m\n"<<endl;
+} 
+
+//=======================================================================================
 
 
 

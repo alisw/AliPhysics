@@ -52,7 +52,7 @@ class AliTrackletTreeHandler : public TObject
 
     // Core methods
     TTree* BuildTree(TString name, TString title);
-    void FillTree(int runNumber, unsigned int eventID);
+    void FillTree(int runNumber, int eventID, int eventID_Ext, Long64_t eventID_Long);
 
     // Setters
     void SetTrackletContainer(AliAODTracklets* TrackletContainer) { fTrackletContainer = TrackletContainer; }
@@ -69,7 +69,9 @@ class AliTrackletTreeHandler : public TObject
 
     // Event quantities
     int                          fRunNumber;               //!<! run number
-    unsigned int                 fEventID;                 //!<! event ID (unique identifier when run number is fixed)
+    int                          fEventID;                 //!<! event ID (unique identifier when run number is fixed)
+    int                          fEventIDExt;                 //!<! event ID (unique identifier when run number is fixed)
+    Long64_t                     fEventIDLong;                 //!<! event ID (unique identifier when run number is fixed)
 
   /// \cond CLASSIMP
   ClassDef(AliTrackletTreeHandler,1); ///

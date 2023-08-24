@@ -18,6 +18,7 @@
 /* Class defining containers for the HF b-jets analysis */
 
 //--Root--
+#include <TObjString.h>
 #include <TClonesArray.h>
 
 //--AliRoot--

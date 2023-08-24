@@ -1,5 +1,5 @@
 #include "AliKFConversionMother.h"
-#include "AliKFParticle.h"
+#include "AliGAKFParticle.h"
 #include "TMath.h"
 #include "TVector3.h"
 
@@ -8,7 +8,7 @@ using namespace std;
 ClassImp(AliKFConversionMother)
 
 AliKFConversionMother::AliKFConversionMother() :
-  AliKFParticle(),
+  AliGAKFParticle(),
   fOpeningAngle(-1),
   fAlpha(-1),
   fMCLabel(-1)
@@ -20,7 +20,7 @@ AliKFConversionMother::AliKFConversionMother() :
 }
 
 AliKFConversionMother::AliKFConversionMother(const AliKFConversionPhoton& d1, const AliKFConversionPhoton& d2) :
-  AliKFParticle(d1,d2),
+  AliGAKFParticle(d1,d2),
   fOpeningAngle(-1),
   fAlpha(-1),
   fMCLabel(-1)
@@ -40,7 +40,7 @@ AliKFConversionMother::AliKFConversionMother(const AliKFConversionPhoton& d1, co
 }
 
 AliKFConversionMother::AliKFConversionMother(const AliKFConversionMother & original) :
-  AliKFParticle(original),
+  AliGAKFParticle(original),
   fOpeningAngle(original.fOpeningAngle),
   fAlpha(original.fAlpha),
   fMCLabel(original.fMCLabel)
@@ -72,7 +72,7 @@ return rapidity;
 
 Double_t AliKFConversionMother::Phi() const
 {
-  Double_t phi = AliKFParticle::GetPhi();
+  Double_t phi = AliGAKFParticle::GetPhi();
   if (phi < 0.) phi += 2. * TMath::Pi();
   return phi;
 }

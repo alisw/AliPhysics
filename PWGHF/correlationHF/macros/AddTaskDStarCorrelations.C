@@ -32,7 +32,7 @@ AliAnalysisTaskDStarCorrelations *AddTaskDStarCorrelations(AliAnalysisTaskDStarC
                                                                    
                                Bool_t  UseMCEventType = kFALSE, //***Feature currently disabled***//
 							   TString estimatorFilename = "", Int_t recoEstimator = AliAnalysisTaskDStarCorrelations::kNtrk10,
-							   Double_t refMult=9.26, Bool_t usemultiplicity=kFALSE, Int_t AODprot=1,
+							   Double_t refMult=9.26, Bool_t usemultiplicity=kFALSE, Int_t AODprot=0,
                                                                       
                                                            Bool_t LoadEffFromMaps = kFALSE, // flag to allow laoding the maps not from the cut file but directly from input map files (kTRUE)
                                                            TString effDstarnamec = "DStarEff_From_c_wLimAcc_2d.root", //eff map name from c

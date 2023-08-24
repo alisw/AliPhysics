@@ -217,7 +217,7 @@ class AliAnalysisTaskGammaConvFlow : public AliAnalysisTaskSE {
     
     Bool_t MCElectronElectron( AliAODConversionPhoton *MCPhoton );
     Bool_t MCGammaSignal( AliAODConversionPhoton *MCPhoton );
-    Bool_t MCConversionPhotonCheck( TParticle *MCPhoton );
+    Bool_t MCConversionPhotonCheck( AliVParticle *MCPhoton );
     Int_t GetTemplateID( AliAODConversionPhoton *MCPhoton );
     void GetdPhidRtoCandidate();
     Int_t GetdPhidRtoCandidate( AliAODConversionPhoton* gamma, Int_t PhotonID );

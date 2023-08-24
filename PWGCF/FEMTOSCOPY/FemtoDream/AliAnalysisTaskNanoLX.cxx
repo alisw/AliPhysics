@@ -318,7 +318,7 @@ void AliAnalysisTaskNanoLX::UserExec(Option_t *option) {
           < static_cast<TClonesArray *>(aodEvt->GetV0s())->GetEntriesFast();
       ++iv0) {
     AliAODv0* casc = aodEvt->GetV0(iv0);
-    fv0->Setv0(fInputEvent, casc, fEvent->GetMultiplicity());
+    fv0->Setv0(fInputEvent, casc);
     if (fLambda->isSelected(fv0)) {
       Lambdas.push_back(*fv0);
     }

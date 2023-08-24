@@ -90,7 +90,7 @@ AliEmcalTrackSelection *CreateDefaultTrackCuts(bool isAOD){
   if(isAOD){
     AliEmcalTrackSelectionAOD *aodsel = new AliEmcalTrackSelectionAOD();
     aodsel->AddFilterBit(AliAODTrack::kTrkGlobal);
-    EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts *extraCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts();
+    PWGJE::EMCALJetTasks::AliEMCalTriggerExtraCuts *extraCuts = new PWGJE::EMCALJetTasks::AliEMCalTriggerExtraCuts();
     extraCuts->SetMinTPCCrossedRows(120);
     aodsel->AddTrackCuts(extraCuts);
     trackSelection = aodsel;
@@ -114,7 +114,7 @@ AliEmcalTrackSelection *CreateDefaultTrackCutsChangeCrossRows(bool isAOD, int mi
   if(isAOD){
     AliEmcalTrackSelectionAOD *aodsel = new AliEmcalTrackSelectionAOD();
     aodsel->AddFilterBit(AliAODTrack::kTrkGlobal);
-    EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts *extraCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts();
+    PWGJE::EMCALJetTasks::AliEMCalTriggerExtraCuts *extraCuts = new PWGJE::EMCALJetTasks::AliEMCalTriggerExtraCuts();
     extraCuts->SetMinTPCCrossedRows(minCrossedRows);
     aodsel->AddTrackCuts(extraCuts);
     trackSelection = aodsel;
@@ -138,7 +138,7 @@ AliEmcalTrackSelection *CreateDefaultTrackCutsChangeFiducialAreaCut(bool isAOD )
   if(isAOD){
     AliEmcalTrackSelectionAOD *aodsel = new AliEmcalTrackSelectionAOD();
     aodsel->AddFilterBit(AliAODTrack::kTrkGlobal);
-    EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts *extraCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts();
+    PWGJE::EMCALJetTasks::AliEMCalTriggerExtraCuts *extraCuts = new PWGJE::EMCALJetTasks::AliEMCalTriggerExtraCuts();
     extraCuts->SetMinTPCCrossedRows(120);
     extraCuts->SetMinTPCTrackLengthCut();
     aodsel->AddTrackCuts(extraCuts);
@@ -149,7 +149,7 @@ AliEmcalTrackSelection *CreateDefaultTrackCutsChangeFiducialAreaCut(bool isAOD )
     standardTrackCuts->SetMinNCrossedRowsTPC(120);
     standardTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
     trackSelection = new AliEmcalTrackSelectionESD(standardTrackCuts);
-    EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts *extraCuts = new EMCalTriggerPtAnalysis::AliEMCalTriggerExtraCuts();
+    PWGJE::EMCALJetTasks::AliEMCalTriggerExtraCuts *extraCuts = new PWGJE::EMCALJetTasks::AliEMCalTriggerExtraCuts();
     extraCuts->SetMinTPCTrackLengthCut();
     trackSelection->AddTrackCuts(extraCuts);
   }

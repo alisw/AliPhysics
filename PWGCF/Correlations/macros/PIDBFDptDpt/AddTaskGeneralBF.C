@@ -21,7 +21,7 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
 (
  TString AnalysisDataType       = "RealData", // "RealData"; "MCAOD" for MC AOD truth; "MCAODreco"
  TString System                 = "PbPb",
- int    CentralityGroup         =  21,  // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
+ int    CentralityGroupAndExtra =  21,  // Diff Cent Groups dealing w/ memory limit & weight file 100M Alien limit
  int    singlesOnly             =  1,   // 0: full correlations    1: singles only
  int    useWeights              =  0,   // 0: no                   1: yes
  int    chargeSet               =  1,   // 0: ++    1: +-    2: -+    3: --
@@ -60,6 +60,12 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
 {
   // Set Default Configuration of this analysis
   // ==========================================
+ 
+  // Recover CentralityGroup and extra flags
+  int CentralityGroup = CentralityGroupAndExtra & 0x00FF;
+  bool rejectInjectedSignals = (CentralityGroupAndExtra & 0x0100) != 0;
+  bool performTrackOrdering = (CentralityGroupAndExtra & 0x0200) != 0;
+ 
   int    debugLevel             = 0;
   int    rejectPileup           = 1;
   int    rejectPairConversion   = 1;
@@ -500,7 +506,16 @@ AliAnalysisTaskGeneralBF * AddTaskGeneralBF
     task->SetUse_AliHelperPID(  Use_AliHelperPID  );
     task->SetUse_CircularCutPID_1( Use_CircularCutPID_1 );
     task->SetUse_CircularCutPID_2( Use_CircularCutPID_2 );
-    
+   
+    if (rejectInjectedSignals) {
+      /* HIJING tracks are the only ones kept for the time being */
+      task->SetExcludeInjectedSignals(true);
+      task->SetGenToBeKept("Hijing");
+    }
+    if (performTrackOrdering) {
+      task->SetUseMomentumOrder(true);
+    } 
+   
     // assign initial values to AliHelperPID object
     AliHelperPID* helperpid = new AliHelperPID();
     helperpid -> SetNSigmaCut( nSigmaCut );

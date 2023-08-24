@@ -1,6 +1,6 @@
 /*=================================================================================
  Kunal Garg - last modified 13 May 2018 (kgarg@cern.ch)
-
+ Giuseppe Mandaglio - last modified 16 Jan 2020 (gmandagl@cern.ch) -OOB check
  *** Configuration script for K*+-->K0Short-Pi analysis ***
  =======================================================================================*/
 // A configuration script for RSN package needs to define the followings:
@@ -42,7 +42,8 @@ Bool_t ConfigKStarPlusMinusRun2
  Float_t                 crossedRows,
  Float_t                 rowsbycluster,
  Float_t						 v0rapidity,
- Int_t                   Sys
+ Int_t                   Sys,
+ Bool_t                  OOBCheck
  )
 //kTPCpidphipp2015
 {
@@ -124,7 +125,7 @@ Bool_t ConfigKStarPlusMinusRun2
     cutK0s->SetMaxRapidity(v0rapidity);
     cutK0s->SetpT_Tolerance(tol_switch);
     cutK0s->SetMassTolSigma(tol_sigma);
-
+    cutK0s->SetCheckOOBPileup(OOBCheck);
     if(enableSys)
     {
 
@@ -192,6 +193,8 @@ Bool_t ConfigKStarPlusMinusRun2
     /* cos(theta) J (MC)*/ Int_t ctjmID  = task->CreateValue(AliRsnMiniValue::kCosThetaJackson,kTRUE);
     /* cos(theta) T     */ Int_t cttID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kFALSE);
     /* cos(theta) T (MC)*/ Int_t cttmID  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kTRUE);
+
+    /* pair pt resolution (MC) */   Int_t resPt  = task->CreateValue(AliRsnMiniValue::kPairPtRes, kTRUE);
 
 
     //
@@ -340,6 +343,14 @@ Bool_t ConfigKStarPlusMinusRun2
         outpsf->AddAxis(sdpt,30,0.,3.);
         outpsf->AddAxis(ptID,300,0.,3.);
 
+        AliRsnMiniOutput *outres = task->CreateOutput(Form("KStarPlusMinus_PairPtResol%s", suffix), mode.Data(), "MOTHER");
+        outres->SetDaughter(0, AliRsnDaughter::kKaon0);
+        outres->SetDaughter(1, AliRsnDaughter::kPion);
+        outres->SetMotherPDG(323);
+        outres->SetMotherMass(0.89166);
+        outres->SetPairCuts(PairCutsSame);
+        outres->AddAxis(resPt, 200, -0.1, 0.1);
+        outres->AddAxis(ptID, 300, 0.0, 30.0);
 
     }
 

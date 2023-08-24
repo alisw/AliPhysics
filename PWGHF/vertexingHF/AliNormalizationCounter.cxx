@@ -55,6 +55,7 @@ fMultiplicity(kFALSE),
 fMultiplicityEtaRange(1.0),
 fSpherocity(kFALSE),
 fSpherocitySteps(100.),
+fSpherocityQuant(kFALSE),
 fHistTrackFilterEvMult(0),
 fHistTrackAnaEvMult(0),
 fHistTrackFilterSpdMult(0),
@@ -75,6 +76,7 @@ fMultiplicity(kFALSE),
 fMultiplicityEtaRange(1.0),
 fSpherocity(kFALSE),
 fSpherocitySteps(100.),
+fSpherocityQuant(kFALSE),
 fHistTrackFilterEvMult(0),
 fHistTrackAnaEvMult(0),
 fHistTrackFilterSpdMult(0),
@@ -118,6 +120,7 @@ void AliNormalizationCounter::Init()
   fCounters.AddRubric("Event","triggered/V0AND/PileUp/PbPbC0SMH-B-NOPF-ALLNOTRD/Candles0.3/PrimaryV/countForNorm/noPrimaryV/zvtxGT10/!V0A&Candle03/!V0A&PrimaryV/Candid(Filter)/Candid(Analysis)/NCandid(Filter)/NCandid(Analysis)");
   if(fMultiplicity)  fCounters.AddRubric("Multiplicity", 5000);
   if(fSpherocity)  fCounters.AddRubric("Spherocity", (Int_t)fSpherocitySteps+1);
+  if(fSpherocityQuant) fCounters.AddRubric("SpherocityQuant", 100);
   fCounters.AddRubric("Run", 1000000);
   fCounters.Init();
   fHistTrackFilterEvMult=new TH2F("FiltCandidvsTracksinEv","FiltCandidvsTracksinEv",10000,-0.5,9999.5,200,-0.5,199.5);
@@ -193,7 +196,7 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Boo
   Int_t runNumber = event->GetRunNumber();
  
   // Evaluate the multiplicity
-  if(fMultiplicity && multiplicity==-9999) Multiplicity(event);
+  if(fMultiplicity && multiplicity==-9999) multiplicity = Multiplicity(event);
 
   //Find CINT1B
   AliESDEvent *eventESD = (AliESDEvent*)event;
@@ -486,7 +489,41 @@ Double_t AliNormalizationCounter::GetNEventsForNorm(Int_t minmultiplicity, Int_t
   Double_t noVtxzGT10 = sumPv>0. ? sumnoPV * sumZvtx / sumPv : 0.;
   return sumEvtNorm - noVtxzGT10;
 }
+//___________________________________________________________________________
+Double_t AliNormalizationCounter::GetNEventsForNormSpheroQuant(Int_t minmultiplicity, Int_t maxmultiplicity, Int_t minspheroquant, Int_t maxspheroquant){
 
+  if(!fMultiplicity || !fSpherocityQuant) {
+    AliInfo("You must activate both multiplicity and spherocity quantiles in the counters to use this method!");
+    return 0.;
+  }
+
+  TString listofruns = fCounters.GetKeyWords("Multiplicity");
+  TString listofruns2 = fCounters.GetKeyWords("SpherocityQuant");
+
+  Int_t nmultbins = maxmultiplicity - minmultiplicity;
+  Int_t nstbins = maxspheroquant - minspheroquant;
+  Double_t sumnoPV=0., sumZvtx=0., sumPv=0., sumEvtNorm=0.;
+  for (Int_t ibin=0; ibin<=nmultbins; ibin++) {
+    if(!listofruns.Contains(Form("%d",ibin+minmultiplicity))) continue;
+    for (Int_t ibins=0; ibins<nstbins; ibins++) {
+      if(!listofruns2.Contains(Form("%d",ibins+minspheroquant))){
+        AliError(Form("listofruns does not contain spherocity bin %d",ibins+minspheroquant));
+        continue;
+      }
+      TString suffix;suffix.Form("/Multiplicity:%d/SpherocityQuant:%d",ibin+minmultiplicity,ibins+minspheroquant);
+      TString zvtx;zvtx.Form("zvtxGT10%s",suffix.Data());
+      TString noPV;noPV.Form("noPrimaryV%s",suffix.Data());
+      TString pV;pV.Form("PrimaryV%s",suffix.Data());
+      TString tbc;tbc.Form("countForNorm%s",suffix.Data());
+      sumnoPV += GetSum(noPV.Data());
+      sumZvtx += GetSum(zvtx.Data());
+      sumPv += GetSum(pV.Data());
+      sumEvtNorm += GetSum(tbc.Data());
+    }
+  }
+  Double_t noVtxzGT10 = sumPv>0. ? sumnoPV * sumZvtx / sumPv : 0.;
+  return sumEvtNorm - noVtxzGT10;
+}
 //___________________________________________________________________________
 Double_t AliNormalizationCounter::GetNEventsForNormSpheroOnly(Double_t minspherocity, Double_t maxspherocity){
 
@@ -605,11 +642,16 @@ Int_t AliNormalizationCounter::Multiplicity(AliVEvent* event){
 //___________________________________________________________________________
 void AliNormalizationCounter::FillCounters(TString name, Int_t runNumber, Int_t multiplicity, Double_t spherocity){
 
-
   Int_t sphToInteger=spherocity*fSpherocitySteps;
-  if(fMultiplicity  && !fSpherocity) 
+  if(fMultiplicity  && fSpherocityQuant){
+    sphToInteger = (Int_t)spherocity;
+    if(sphToInteger < 0 | sphToInteger > 100) return;
+    if(sphToInteger == 100) sphToInteger += -1;
+    fCounters.Count(Form("Event:%s/Run:%d/Multiplicity:%d/SpherocityQuant:%d",name.Data(),runNumber,multiplicity,sphToInteger));
+  }
+  else if(fMultiplicity  && !fSpherocity)
     fCounters.Count(Form("Event:%s/Run:%d/Multiplicity:%d",name.Data(),runNumber,multiplicity));
-  else if(fMultiplicity  && fSpherocity) 
+  else if(fMultiplicity  && fSpherocity)
     fCounters.Count(Form("Event:%s/Run:%d/Multiplicity:%d/Spherocity:%d",name.Data(),runNumber,multiplicity,sphToInteger));
   else if(!fMultiplicity  && fSpherocity) 
     fCounters.Count(Form("Event:%s/Run:%d/Spherocity:%d",name.Data(),runNumber,sphToInteger));

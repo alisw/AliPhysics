@@ -357,7 +357,7 @@ AliAnalysisGrid* CreateAlienHandler(const char* uniqueName, const char* gridDir,
   plugin->SetRunMode(gridMode);
 
   // Here you can set the (Ali)PHYSICS version you want to use
-  plugin->SetAliPhysicsVersion("vAN-20170628-1");
+  plugin->SetAliPhysicsVersion("vAN-20200830_ROOT6-1");
 
   plugin->SetGridDataDir(gridDir); // e.g. "/alice/sim/LHC10a6"
   plugin->SetDataPattern(pattern); //dir structure in run directory

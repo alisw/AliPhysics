@@ -11,10 +11,11 @@
 #include "TBits.h"
 #include "TArrayI.h"
 #include "TArrayF.h"
+#include <TObjString.h>
+
 class TList;
 class TTree;
 class TH2D;
-class TObjString;
 
 class AliTOFTriggerEfficiencyTask : public AliAnalysisTaskSE {
  public: 

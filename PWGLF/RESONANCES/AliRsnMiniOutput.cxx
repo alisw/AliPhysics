@@ -53,7 +53,8 @@ AliRsnMiniOutput::AliRsnMiniOutput() :
    fKeepDfromB(kFALSE),
    fKeepDfromBOnly(kFALSE),
    fRejectIfNoQuark(kFALSE),
-   fCheckHistRange(kTRUE)
+   fCheckHistRange(kTRUE),
+   fCheckSameCutID(kFALSE)
 {
 //
 // Constructor
@@ -87,7 +88,8 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, EOutputType type, EComputat
    fKeepDfromB(kFALSE),
    fKeepDfromBOnly(kFALSE),
    fRejectIfNoQuark(kFALSE),
-   fCheckHistRange(kTRUE)
+   fCheckHistRange(kTRUE),
+   fCheckSameCutID(kFALSE)
 {
 //
 // Constructor
@@ -121,7 +123,8 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
    fKeepDfromB(kFALSE),
    fKeepDfromBOnly(kFALSE),
    fRejectIfNoQuark(kFALSE),
-   fCheckHistRange(kTRUE)
+   fCheckHistRange(kTRUE),
+   fCheckSameCutID(kFALSE)
 {
 //
 // Constructor, with a more user friendly implementation, where
@@ -139,7 +142,10 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
 //    -- "ROTATE2" --> rotated background (rotate second track)
 //    -- "TRUE"    --> true pairs (like track pair, but checking that come from same mother)
 //    -- "MOTHER"  --> mother (loop on MC directly for mothers --> denominator of efficiency)
+//    -- "MOTHER_NO_PILEUP"  --> mother (loop on MC directly for mothers --> denominator of efficiency) that does not come from a pileup event
 //    -- "MOTHER_IN_ACC"  --> mother (loop on MC directly for mothers (in a defined acceptance interval)--> needed for efficiency calcutation using  an enriched sample)
+//    -- "SINGLE"  --> simulated single long-lived particle (denominator of efficiency)
+//    -- "SINGLEREC" --> reconstructed single long-lived particle (numerator of efficiency)
 //
 
    TString input;
@@ -171,8 +177,14 @@ AliRsnMiniOutput::AliRsnMiniOutput(const char *name, const char *outType, const 
       fComputation = kTruePair;
    else if (!input.CompareTo("MOTHER"))
       fComputation = kMother;
-    else if (!input.CompareTo("MOTHER_IN_ACC"))
+   else if (!input.CompareTo("MOTHER_NO_PILEUP"))
+      fComputation = kMotherNoPileup;
+   else if (!input.CompareTo("MOTHER_IN_ACC"))
       fComputation = kMotherInAcc;
+   else if (!input.CompareTo("SINGLE"))
+      fComputation = kSingle;
+   else if (!input.CompareTo("SINGLEREC"))
+      fComputation = kSingleRec;
    else
       AliWarning(Form("String '%s' does not define a meaningful computation type", compType));
 
@@ -204,7 +216,8 @@ AliRsnMiniOutput::AliRsnMiniOutput(const AliRsnMiniOutput &copy) :
    fKeepDfromB(kFALSE),
    fKeepDfromBOnly(kFALSE),
    fRejectIfNoQuark(kFALSE),
-   fCheckHistRange(copy.fCheckHistRange)
+   fCheckHistRange(copy.fCheckHistRange),
+   fCheckSameCutID(copy.fCheckSameCutID)
 {
 //
 // Copy constructor
@@ -257,6 +270,7 @@ AliRsnMiniOutput &AliRsnMiniOutput::operator=(const AliRsnMiniOutput &copy)
    fKeepDfromBOnly = copy.fKeepDfromBOnly;
    fRejectIfNoQuark = copy.fRejectIfNoQuark;
    fCheckHistRange = copy.fCheckHistRange;
+   fCheckSameCutID = copy.fCheckSameCutID;
 
    return (*this);
 }
@@ -463,7 +477,7 @@ Bool_t AliRsnMiniOutput::FillMother(const AliRsnMiniPair *pair, AliRsnMiniEvent 
 //
 
    // check computation type
-   if (fComputation != kMother) {
+   if (fComputation != kMother && fComputation != kMotherNoPileup) {
       AliError("This method can be called only for mother-based computations");
       return kFALSE;
    }
@@ -506,6 +520,129 @@ Bool_t AliRsnMiniOutput::FillMotherInAcceptance(const AliRsnMiniPair *pair, AliR
 }
 
 //________________________________________________________________________________________
+Bool_t AliRsnMiniOutput::FillSingle(const AliMCParticle *particle, AliRsnMiniEvent *event, TClonesArray *valueList)
+{
+//
+// Compute values for single MC particles
+//
+
+   // check computation type
+   if (fComputation != kSingle) {
+      AliError("This method can be called only for single-particle computations");
+      return kFALSE;
+   }
+
+   // check computation type
+   if (!particle) {
+      AliError("missing pointer to particle");
+      return kFALSE;
+   }
+
+   TLorentzVector p;
+   p.SetXYZM(particle->Px(), particle->Py(), particle->Pz(), fMotherMass);
+
+   // copy passed particle info
+   AliRsnMiniPair pair;
+   pair.Sum(0) = pair.Sum(1) = pair.P1(1) = p;
+   pair.FillRef(fMotherMass);
+   p.SetXYZM(0, 0, 0, 0);
+   pair.P2(1) = p;
+   fPair = pair;
+
+   // check pair against cuts
+   if (fPairCuts) if (!fPairCuts->IsSelected(&fPair)) return kFALSE;
+
+   // compute & fill
+   ComputeValues(event, valueList);
+   FillHistogram();
+   return kTRUE;
+}
+
+//________________________________________________________________________________________
+Bool_t AliRsnMiniOutput::FillSingle(const AliAODMCParticle *particle, AliRsnMiniEvent *event, TClonesArray *valueList)
+{
+//
+// Compute values for single MC particles
+//
+
+   // check computation type
+   if (fComputation != kSingle) {
+      AliError("This method can be called only for single-particle computations");
+      return kFALSE;
+   }
+
+   // check computation type
+   if (!particle) {
+      AliError("missing pointer to particle");
+      return kFALSE;
+   }
+
+   TLorentzVector p;
+   p.SetXYZM(particle->Px(), particle->Py(), particle->Pz(), fMotherMass);
+
+   // copy passed particle info
+   AliRsnMiniPair pair;
+   pair.Sum(0) = pair.Sum(1) = pair.P1(1) = p;
+   pair.FillRef(fMotherMass);
+   p.SetXYZM(0, 0, 0, 0);
+   pair.P2(1) = p;
+   fPair = pair;
+
+   // check pair against cuts
+   if (fPairCuts) if (!fPairCuts->IsSelected(&fPair)) return kFALSE;
+
+   // compute & fill
+   ComputeValues(event, valueList);
+   FillHistogram();
+   return kTRUE;
+}
+
+//________________________________________________________________________________________
+Bool_t AliRsnMiniOutput::FillSingleRec(AliRsnMiniEvent *event, TClonesArray *valueList)
+{
+//
+// Compute values for single reconstructed MC particles
+//
+
+   // check computation type
+   if (fComputation != kSingleRec) {
+      AliError("This method can be called only for single-particle computations");
+      return kFALSE;
+   }
+
+   AliRsnMiniParticle *p;
+   AliRsnMiniPair pair;
+   TLorentzVector p1[2];
+   TLorentzVector p2;
+   p2.SetXYZM(0,0,0,0);
+
+   Int_t   n1 = event->CountParticles(fSel1, fCharge[0], fCutID[0]);
+
+   // loop over selected particles
+   for (int i1 = 0; i1 < n1; i1++) {
+      p = event->GetParticle(fSel1[i1]);
+      if(p->PDG()!=fMotherPDG) continue;
+      p->Set4Vector(p1[0],fMotherMass,kFALSE);
+      p->Set4Vector(p1[1],fMotherMass,kTRUE );
+
+      for(int i=0; i<2; i++){
+         pair.Sum(i)=pair.Ref(i)=pair.P1(i)=p1[i];
+         pair.P2(i)=p2;
+      }
+      fPair = pair;
+
+      // check pair against cuts
+      if (fPairCuts) if (!fPairCuts->IsSelected(&fPair)) continue;
+
+      // compute & fill
+      ComputeValues(event, valueList);
+      FillHistogram();
+   }
+
+   return kTRUE;
+}
+
+//________________________________________________________________________________________
 Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event2, TClonesArray *valueList, Bool_t refFirst)
 {
 //
@@ -536,6 +673,7 @@ Int_t AliRsnMiniOutput::FillPair(AliRsnMiniEvent *event1, AliRsnMiniEvent *event
    // and if the two events are the same or not (mixing)
    //Bool_t sameCriteria = ((fCharge[0] == fCharge[1]) && (fCutID[0] == fCutID[1]));
    Bool_t sameCriteria = ((fCharge[0] == fCharge[1]) && (fDaughter[0] == fDaughter[1]));
+   if(fCheckSameCutID) sameCriteria = ((fCharge[0] == fCharge[1]) && (fCutID[0] == fCutID[1]));
    Bool_t sameEvent = (event1->ID() == event2->ID());
 
    TString selList1  = "";

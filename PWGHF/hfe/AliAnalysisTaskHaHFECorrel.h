@@ -83,7 +83,7 @@ public:
     void MCTruthCorrelation(TObjArray* MCRedTracks, Bool_t AfterEventCuts, Int_t RecLPLabel, Float_t pVtxZ, Float_t mult, Int_t &LPinAcceptance, Int_t &LP, Double_t EventWeight);
 
     //********************MC
-    void  MCEfficiencyCorrections(const AliVVertex * RecVertex, Double_t EventWeight);
+    void  MCEfficiencyCorrections(const AliVVertex * RecVertex, Double_t mult, Double_t EventWeight);
     Int_t HFEisCharmOrBeauty(Int_t ElectronIndex);
 
     //*********************ANALYSIS Helper
@@ -99,7 +99,7 @@ public:
     Bool_t PhotElecTrackCuts(const AliVVertex *pVtx,AliVTrack *aetrack, Int_t nMother, Int_t listMother[], Double_t EventWeight);
     void   PhotULSLSElectronAcceptance(const AliVVertex *pVtx, Float_t mult,  Int_t nMother, Int_t listMother[], Double_t EventWeight);
     
-    void EvaluateTaggingEfficiency(AliVTrack * track, Int_t LSPartner, Int_t ULSPartner, Bool_t trueULSPartner, Double_t EventWeight, Double_t mult); 
+    void EvaluateTaggingEfficiency(AliVTrack * track, Int_t LSPartner, Int_t ULSPartner, Bool_t trueULSPartner, Double_t EventWeight, Double_t mult, Double_t recEffE); 
     Bool_t CloneAndReduceTrackList(TObjArray* RedTracks, AliVTrack* track, Int_t LSPartner, Int_t ULSPartner, Int_t *LSPartnerID, Int_t *ULSPartnerID, Float_t *LSPartnerWeight, Float_t *ULSPartnerWeight, Bool_t trueULSPartner, Float_t MCPartnerPt, Float_t RecPartnerPt, Bool_t isPhotonic, Bool_t isHadron);
 
     void BinLogX(TAxis *axis);
@@ -115,7 +115,8 @@ public:
     void SetAODanalysis(Bool_t IsAOD) {fIsAOD = IsAOD;};
     void SetTender (Bool_t UseTender) {fUseTender = UseTender;};
     void SetPeriod (Double_t period) {fWhichPeriod = period;};
-
+    void SetEpos (Bool_t UseEpos) {fUseEPOS = UseEpos;};
+    
     void SetOnlyEfficiency() {
       fTRDQA = kFALSE;
       fCorrHadron = kFALSE;
@@ -128,6 +129,7 @@ public:
     void SetEleVarOpt(Int_t VarOption);
     void SetHadVarOpt(Int_t VarOption);
     void SetPhotVarOpt(Int_t PhotVarOpt);
+    void SetVtxVarOpt(Int_t VtxVarOpt) {fVarZVTXCut=VtxVarOpt;};
     
     void SetTRDQA(Bool_t TRDQA) {fTRDQA=TRDQA;};
     void SetPtMinEvent(Double_t PtMin) {fMinPtEvent=PtMin;};
@@ -135,7 +137,7 @@ public:
 
     void SetMinNTr(Double_t MinNTr) {fMinNTr=MinNTr;};
     void SetMaxNTr(Double_t MaxNTr) {fMaxNTr=MaxNTr;};
-
+    void SetUseSPDConfig(Int_t Config) {fUseSPDConfig=Config;};
 
     void SetEtaMax(Double_t EtaMax) {
       fMaxElectronEta = TMath::Abs(EtaMax);
@@ -185,22 +187,23 @@ public:
     };
     void SetUseEventWeights(Bool_t UseEventWeights) {
       fUseEventWeights = UseEventWeights;
-    }
+    };
 
     void SetOpeningAngleCut(Bool_t OpeningAngleCut) {fOpeningAngleCut=OpeningAngleCut;};
     void SetInvmassCut(Double_t InvmassCut) {fInvmassCut=InvmassCut;};
 
-    void SetPi0WeightToData(TH1F &  WPion) {fCorrectPiontoData = WPion; fCorrectPiontoData.SetName("fCorrectPiontoData");}
-    void SetEtaWeightToData(TH1F &  WEta)  {fCorrectEtatoData  = WEta; fCorrectEtatoData.SetName("fCorrectEtatoData");}
-    void SetHadRecEff(TH3F & HadRecEff) {fHadRecEff = HadRecEff; fHadRecEff.SetName("fHadRecEff");}
-    void SetEleRecEff(TH3F & EleRecEff) {fEleRecEff = EleRecEff; fEleRecEff.SetName("fEleRecEff");}
+    void SetPi0WeightToData(TH1F &  WPion) {fCorrectPiontoData = WPion; fCorrectPiontoData.SetName("fCorrectPiontoData");};
+    void SetEtaWeightToData(TH1F &  WEta)  {fCorrectEtatoData  = WEta; fCorrectEtatoData.SetName("fCorrectEtatoData");};
+    void SetBGWeight(TH2F & BGWeight) {fBgWeight = BGWeight; fBgWeight.SetName("fBgWeight");};
+    void SetHadRecEff(TH3F & HadRecEff) {fHadRecEff = HadRecEff; fHadRecEff.SetName("fHadRecEff");};
+    void SetEleRecEff(TH3F & EleRecEff) {fEleRecEff = EleRecEff; fEleRecEff.SetName("fEleRecEff");};
     //  void SetSPDnTrAvg(TProfile & SPDnTrAvg) {fSPDnTrAvg = SPDnTrAvg; fSPDnTrAvg.SetName("fSPDnTrAvg");}
     void SetSPDConfigHist(TH1I & SPDConfigHist) {fSPDConfigHist = SPDConfigHist; fSPDConfigHist.SetName("SPDConfigHist");
       /* for (Int_t i=1; i<300; i++) { */
       /* 	printf("%i, %s, %10.2f, %s, %10.2f", i, fSPDConfigHist.GetXaxis()->GetBinLabel(i), fSPDConfigHist.GetBinContent(i),  SPDConfigHist.GetXaxis()->GetBinLabel(i) ,  SPDConfigHist.GetBinContent(i)); */
       /* } */
 
-    }
+    };
     void SetSPDConfigProfiles(TH3F & SPDConfigProfiles) {fSPDConfigProfiles = SPDConfigProfiles; fSPDConfigProfiles.SetName("fSPDConfigProfiles");}
     void SetNonTagCorr(TH1F & NonTagCorr) {fNonTagCorr = NonTagCorr; fNonTagCorr.SetName("fNonTagCorr");}
     void SetTriggerWeight(TH3F & TriggerWeight){fTriggerWeight = TriggerWeight; fTriggerWeight.SetName("fTriggerWeight");}
@@ -227,15 +230,20 @@ public:
     Double_t              Sphericity(const TObjArray* tracks, Double_t MaxEta, Double_t MinPt);
     Bool_t                Thrust(const TObjArray* tracks, Double_t t[2], Double_t MaxEta, Double_t MinPt);
 
+    Int_t                 CheckParticleOrigin(Int_t Label);
+
     Int_t                 fRunNumber;               //
     Bool_t                fUseTender;               // Use tender
     Int_t                 fWhichPeriod;             // period
+    Bool_t                fUseEPOS;                 //
     Bool_t                fUseKFforPhotonicPartner; //default ist DCA
 
     Float_t               fMaxPtEvent;              //
     Float_t               fMinPtEvent;              //
     Int_t                 fMaxNTr;                  //
     Int_t                 fMinNTr;                  //
+    Int_t                 fUseSPDConfig;            //
+    Int_t                 fVarZVTXCut;              //
 
     
     Double_t              fMaxElectronEta;          //
@@ -246,6 +254,7 @@ public:
     // HFECuts
     Int_t                 fVarEleOpt;               //
     Bool_t                fElectronkAny;            // True: kAny, False: kBoth
+    Bool_t                fElectronkFirst;          // True: kFirst, False: kBoth
     Int_t                 fTPCnCut;                 // TPC number of clusters for tagged electron
     Int_t                 fTPCndEdxCut;             //
     Int_t                 fITSnCut;                 // ITs number of clusters for tagged electrons 
@@ -544,7 +553,19 @@ public:
     THnSparse             *fTagMotherPt;            //!
     TH2F                  *fTagEffInclMult;         //!
     TH2F                  *fTagEffULSMult;          //!
+    TH3F                  *fTagEffInclBGMult;       //!
+    TH3F                  *fTagEffULSBGMult;        //!
     TH2F                  *fTagTruePairsMult;       //!
+    TH2F                  *fTagEffInclMultWoW;         //!
+    TH2F                  *fTagEffULSMultWoW;          //!
+    TH3F                  *fTagEffInclBGMultWoW;       //!
+    TH3F                  *fTagEffULSBGMultWoW;        //!
+    TH2F                  *fTagTruePairsMultWoW;       //!
+    TH2F                  *fTagEffInclMultWoWS;         //!
+    TH2F                  *fTagEffULSMultWoWS;          //!
+    TH3F                  *fTagEffInclBGMultWoWS;       //!
+    TH3F                  *fTagEffULSBGMultWoWS;        //!
+    TH2F                  *fTagTruePairsMultWoWS;       //!
     THnSparse             *fTagEffIncl;             //! 
     THnSparse             *fTagEffLS;               //!
     THnSparse             *fTagEffULS;              //!
@@ -558,7 +579,7 @@ public:
     Double_t              GetPionWeight(Double_t pt);
     TH1F                  fCorrectEtatoData;       
     Double_t              GetEtaWeight(Double_t pt);
-    TH1F                  fBgWeight;       
+    TH2F                  fBgWeight;       
     Double_t              GetBackgroundWeight(Int_t PDGMother, Double_t pt);
    
 
@@ -616,7 +637,9 @@ public:
     THnSparse             *fULSElecHa;              //!
     THnSparse             *fULSElecHaTrue;          //!
     THnSparse             *fSignalElecHa;           //!
+    THnSparse             *fSecondElecHa;           //!
     THnSparse             *fBackgroundElecHa;       //!
+    THnSparse             *fBackgroundElecHaULSLS;  //!
     THnSparse             *fMCElecHaHadron;         //!
     THnSparse             *fElecHaHa;               //!
     THnSparse             *fElecHaLSNoPartner;      //!
@@ -630,52 +653,47 @@ public:
 
     THnSparse             *fMCElecHaTruePartner;    //!
     THnSparse             *fMCElecHaNoPartner;      //!
-    THnSparse             *fMCElecHaRemovedPartner; //!
-    TH2F                  *fMCElecHaTruePartnerTrigger;        //!
-    TH2F                  *fMCElecHaTruePartnerTriggerWW;        //!
-    TH2F                  *fMCElecHaNoPartnerTrigger;          //!
-    TH2F                  *fMCElecHaNoPartnerTriggerWW;          //!
-    TH2F                  *fMCElecHaRemovedPartnerTrigger; //!
+    TH3F                  *fMCElecHaTruePartnerTrigger;        //!
+    TH3F                  *fMCElecHaTruePartnerTriggerWW;        //!
+    TH3F                  *fMCElecHaNoPartnerTrigger;          //!
+    TH3F                  *fMCElecHaNoPartnerTriggerWW;          //!
     THnSparse             *fElecHaMixedEvent;       //!
     THnSparse             *fLSElecHaMixedEvent;     //!
     THnSparse             *fULSElecHaMixedEvent;    //!
+    THnSparse             *fULSNoPartnerElecHaMixedEvent;    //!
     THnSparse             *fTagHaMixedEvent; //!
     THnSparse             *fNonTagHaMixedEvent; //!
 
 
     TH3F                  *fElecLPTrigger;          //!
-    TH2F                  *fElecLPTriggerLS;         //!
-    TH2F                  *fElecLPTriggerULS;        //!
-    TH2F                  *fElecLPTriggerLSNoP;         //!
-    TH2F                  *fElecLPTriggerULSNoP;        //!
-    TH2F                  *fElecLPTriggerULSNoPCorr; //!
+    TH2F                  *fElecLPTriggerULS;       //!
+    TH2F                  *fElecLPTriggerULSNoP;    //!
+    TH2F                  *fElecLPTriggerULSNoPCorr;//!
     TH2F                  *fHadContLPTrigger;       //!
     TH2F                  *fLPElecTrigger;          //!
     TH2F                  *fLPNonElecTrigger;       //!
     TH2F                  *fNonElecLPTrigger;       //!
     THnSparse             *fInclElecLP;             //!
-    THnSparse             *fLSElecLP;               //! 
-    THnSparse             *fULSElecLP;              //! 
+    THnSparse             *fULSElecLP;              //!
+    THnSparse             *fULSElecLPTrue;          //!
+    THnSparse             *fSignalElecLP;           //!
+    THnSparse             *fBackgroundElecLP;       //!
+    THnSparse             *fBackgroundElecLPULSLS;  //! 
     THnSparse             *fMCElecLPHadron;         //! 
     THnSparse             *fElecLPHa;               //!
-    THnSparse             *fElecLPLSNoPartner;      //! 
     THnSparse             *fElecLPULSNoPartner;     //!
-    THnSparse             *fElecLPLSNoPartnerCorrTrue; //!
     THnSparse             *fElecLPULSNoPartnerCorrTrue; //!
-    THnSparse             *fElecLPLSNoPartnerCorr; //!
     THnSparse             *fElecLPULSNoPartnerCorr; //!
-
     THnSparse             *fMCElecLPTruePartner;    //! 
     THnSparse             *fMCElecLPNoPartner;      //! 
-    THnSparse             *fMCElecLPRemovedPartner; //!
     TH2F                  *fMCElecLPTruePartnerTrigger;        //!
+    TH2F                  *fMCElecLPTruePartnerTriggerWW;      //!
     TH2F                  *fMCElecLPNoPartnerTrigger;          //!
-    TH2F                  *fMCElecLPRemovedPartnerTrigger; //!
+    TH2F                  *fMCElecLPNoPartnerTriggerWW;        //!
     THnSparse             *fElecLPMixedEvent;       //!
-    THnSparse             *fLSElecLPMixedEvent;     //!
     THnSparse             *fULSElecLPMixedEvent;    //!
-    THnSparse             *fTagLPMixedEvent; //!
-    THnSparse             *fNonTagLPMixedEvent; //!
+    THnSparse             *fTagLPMixedEvent;        //!
+    THnSparse             *fNonTagLPMixedEvent;     //!
    
     
     TH2F                  *fCheckMCVertex;           //!
@@ -690,7 +708,7 @@ public:
     THnSparse             *fRecHadPtEtaPhiVtxWRecEff; //!
 
     TH2F                  *fCheckMCPtvsRecPtEle;     //!
-    TH1F                  *fRecHFE; //!
+    TH2F                  *fRecElecMultWRecEff; //!
     THnSparse             *fMCElecPtEtaPhiVtx;       //!
     TH2F                  *fRecElecMCSecondaryCont;   //!
     THnSparse             *fRecElecPtEtaPhiVtx;      //!
@@ -698,6 +716,7 @@ public:
     THnSparse             *fRecElecMCPtEtaPhiVtx;    //!
     TH1F                  *fMCElecPDG;               //!
     THnSparse             *fMCElecPtEtaPhiStrictVtx; //!
+    TH2F                  *fMCElecMult;              //!
 
     THnSparse             *fMCPi0Prod;               //!
     THnSparse             *fMCEtaProd;               //!

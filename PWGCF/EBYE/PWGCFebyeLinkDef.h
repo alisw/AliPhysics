@@ -12,13 +12,17 @@
 #pragma link C++ class AliBFBasicParticle+;
 #pragma link C++ class AliAnalysisTaskBF+;
 #pragma link C++ class AliAnalysisTaskBFPsi+;
+#pragma link C++ class AliAnalysisTaskSignedBF+;
+#pragma link C++ class AliAnalysisTaskSignedBFMC+;
 #pragma link C++ class AliAnalysisTaskEventMixingBF+;
 #pragma link C++ class AliAnalysisTaskTriggeredBF+;
 #pragma link C++ class AliAnalysisTaskEfficiencyBF+;
 #pragma link C++ class AliAnalysisTaskEfficiencyBFPsi+;
 #pragma link C++ class AliAnalysisTaskEffContBF+;
 #pragma link C++ class AliAnalysisTaskEffContPIDBF+;
+#pragma link C++ class AliAnalysisTaskRecEff+;
 #pragma link C++ class AliAnalysisTaskToyModel+;
+#pragma link C++ class AliAnalysisTaskLcToD0MC+;
 #pragma link C++ class AliAnalysisTaskAODFilterBitQA+;
 #pragma link C++ class AliAnalysisTaskParticleStudies+;
 #pragma link C++ class AliAnalysisTaskPIDBF+;
@@ -78,11 +82,19 @@
 #pragma link C++ class AliAnalysisTempFluc+;
 
 #pragma link C++ class AliAnalysisFBMultFluct+;
+#pragma link C++ class AliAnalysisTaskLongFluctuations+;
+#pragma link C++ class AliAnalysisTaskLegendreCoef+;
+#pragma link C++ class AliAnalysisTaskLegendreCoef_local+;
+#pragma link C++ class AliAnalysisTaskEtaDist+;
+
+#pragma link C++ class AliAnalysisMultPt+;
+
 
 #pragma link C++ class AliAnalysisTaskNetLambdaIdent+;
 #pragma link C++ class AliLightV0+;
 #pragma link C++ class AliLightGenV0+;
 #pragma link C++ class AliLightV0track+;
+#pragma link C++ class AliLightCascade+;
 
 #pragma link C++ class AliAnalysisTaskEbyeCharge+;
 
@@ -97,6 +109,47 @@
 #pragma link C++ class AliAnalysisTaskEbyeChargeFlucPbPbQA+;
 #pragma link C++ class AliAnalysisTaskEbyeChargeFlucLHC10h+;
 #pragma link C++ class AliEbyEPhiDistNew+;
+
+#pragma link C++ class AliAnalysisTaskStronglyIntensiveCorrTree+;
+#pragma link C++ class AliAnalysisFBCorrelationsWithPID+;
+#pragma link C++ class TrackInfoCorr+;
+
+#pragma link C++ class TrackInfoCorr+;
+#pragma link C++ class AliAnalysisTaskFluctMCTEPOS+;
+
+#pragma link C++ class AliAnalysisTaskParticleYieldRatioCorrelationsEfficiency+;
+#pragma link C++ class AliAnalysisTaskParticleYieldRatioCorrelations+;
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity+;
+#pragma link C++ class AliAnalysisTaskMeanptFluctuationPP+;
+#pragma link C++ class AliAnalysisMeanPtdata+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicityMC+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity2+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicityROOT6+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_trackinfo+;
+#pragma link C++ class AliAnalysisTaskCorrPP+;
+#pragma link C++ class AliAnalysisTaskCorrPbPb+;
+#pragma link C++ class AliAnalysisTaskCorrPbPb_v2+;
+#pragma link C++ class AliAnalysisTaskCorrPbPb_treemerge+;
+#pragma link C++ class AliAnalysisTaskCorrPPHM+;
+#pragma link C++ class AliAnalysisTaskCorrPbPbMC+;
+#pragma link C++ class AliAnalysisTaskCorrPPMC+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicityROOT6_new+;
+
+#pragma link C++ class AliAnalysisTaskDiffPtFluc_PIDhadrons+;
+#pragma link C++ class AliAnalysisTaskDiffPtFStrange+;
+#pragma link C++ class AliAnalysisTaskDiffPtFluc_MCnoESD_detect+;
+#pragma link C++ class AliAnalysisTaskDiffPtFluc_MCnoESD_gen+;
+
+
+#pragma link C++ class AliAnalysisTaskNFactorialMoments+;
+
+#pragma link C++ class AliAnalysisHMMeanPt+;
+#pragma link C++ class AliAnalysisMeanPt+;
+#pragma link C++ class AliAnalysisMCMeanPt+;
 
 
 #endif

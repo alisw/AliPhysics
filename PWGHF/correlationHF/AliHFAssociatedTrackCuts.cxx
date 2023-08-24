@@ -475,6 +475,121 @@ Bool_t AliHFAssociatedTrackCuts::InvMassDstarRejection(AliAODRecoDecayHF2Prong* 
 	
 	return kTRUE;
 }
+
+//________________________________________________________
+Bool_t AliHFAssociatedTrackCuts::InvMassSigmacRejection(AliAODRecoDecayHF3Prong* d, AliAODTrack *redtrack, Int_t hypLc) const {
+	//
+	// Calculates invmass of track+D0 and rejects if compatible with D*
+	// (to remove pions from D*)
+	// 
+	Double_t nsigma = 3.;
+	Double_t mLc1, mLc2;
+        mLc1 = d->InvMassLcpKpi();
+        mLc2 = d->InvMassLcpiKp();	
+	
+	Double_t invmassSigmac1 = 0, invmassSigmac2 = 0; 
+	Double_t e1P = d->EProng(0,2212), e2K = d->EProng(1,321), e3Pi = d->EProng(2,211); //hyp 1 (p,K,pi) - Lc1
+	Double_t e1Pi = d->EProng(0,211), e3P = d->EProng(2,2212); //hyp 2 (pi, K, p) - Lc2
+	Double_t psum2 = (d->Px()+redtrack->Px())*(d->Px()+redtrack->Px())
+	+(d->Py()+redtrack->Py())*(d->Py()+redtrack->Py())
+	+(d->Pz()+redtrack->Pz())*(d->Pz()+redtrack->Pz());
+
+	switch(hypLc) {
+		case 1:
+			invmassSigmac1 = TMath::Sqrt(pow(e1P+e2K+e3Pi+redtrack->E(0.1396),2.)-psum2);
+			if ((TMath::Abs(invmassSigmac1-mLc1)-0.1669) < nsigma*1.5*pow(10.,-3.)) return kFALSE;
+			break;
+		case 2:
+			invmassSigmac2 = TMath::Sqrt(pow(e1Pi+e2K+e3P+redtrack->E(0.1396),2.)-psum2);
+			if ((TMath::Abs(invmassSigmac2-mLc2)-0.1669) < nsigma*1.5*pow(10.,-3.)) return kFALSE;
+			break;
+		case 3:
+			invmassSigmac1 = TMath::Sqrt(pow(e1P+e2K+e3Pi+redtrack->E(0.1396),2.)-psum2);
+			invmassSigmac2 = TMath::Sqrt(pow(e1Pi+e2K+e3P+redtrack->E(0.1396),2.)-psum2);
+			if ((TMath::Abs(invmassSigmac1-mLc1)-0.1669) < nsigma*1.5*pow(10.,-3.)) return kFALSE;
+			if ((TMath::Abs(invmassSigmac2-mLc2)-0.1669) < nsigma*1.5*pow(10.,-3.)) return kFALSE;
+			break;
+	}
+	
+	return kTRUE;
+}
+//________________________________________________________
+Bool_t AliHFAssociatedTrackCuts::InvMassSigmacRejection(AliAODRecoDecayHF3Prong* d, AliReducedParticle *redtrack, Int_t hypLc) const {
+	//
+	// Calculates invmass of track+D0 and rejects if compatible with D*
+	// (to remove pions from D*)
+	// 
+	Double_t nsigma = 3.;
+	Double_t mLc1, mLc2;
+        mLc1 = d->InvMassLcpKpi();
+        mLc2 = d->InvMassLcpiKp();	
+	
+	Double_t invmassSigmac1 = 0, invmassSigmac2 = 0; 
+	Double_t e1P = d->EProng(0,2212), e2K = d->EProng(1,321), e3Pi = d->EProng(2,211); //hyp 1 (p,K,pi) - Lc1
+	Double_t e1Pi = d->EProng(0,211), e3P = d->EProng(2,2212); //hyp 2 (pi, K, p) - Lc2
+	Double_t psum2 = (d->Px()+redtrack->Px())*(d->Px()+redtrack->Px())
+	+(d->Py()+redtrack->Py())*(d->Py()+redtrack->Py())
+	+(d->Pz()+redtrack->Pz())*(d->Pz()+redtrack->Pz());
+
+	switch(hypLc) {
+		case 1:
+			invmassSigmac1 = TMath::Sqrt(pow(e1P+e2K+e3Pi+redtrack->Epion(),2.)-psum2);
+			if ((TMath::Abs(invmassSigmac1-mLc1)-0.1669) < nsigma*1.5*pow(10.,-3.)) return kFALSE;
+			break;
+		case 2:
+			invmassSigmac2 = TMath::Sqrt(pow(e1Pi+e2K+e3P+redtrack->Epion(),2.)-psum2);
+			if ((TMath::Abs(invmassSigmac2-mLc2)-0.1669) < nsigma*1.5*pow(10.,-3.)) return kFALSE;
+			break;
+		case 3:
+			invmassSigmac1 = TMath::Sqrt(pow(e1P+e2K+e3Pi+redtrack->Epion(),2.)-psum2);
+			invmassSigmac2 = TMath::Sqrt(pow(e1Pi+e2K+e3P+redtrack->Epion(),2.)-psum2);
+			if ((TMath::Abs(invmassSigmac1-mLc1)-0.1669) < nsigma*1.5*pow(10.,-3.)) return kFALSE;
+			if ((TMath::Abs(invmassSigmac2-mLc2)-0.1669) < nsigma*1.5*pow(10.,-3.)) return kFALSE;
+			break;
+	}
+	
+	return kTRUE;
+}
+//________________________________________________________
+Bool_t AliHFAssociatedTrackCuts::InvMassSigmacRejection(AliAODRecoCascadeHF* d, AliAODTrack *redtrack, Double_t KFmass) const {
+	//
+	// Calculates invmass of track+Lc(pK0s) and rejects if compatible with D*
+	// (to remove pions from D*)
+	// 
+	Double_t nsigma = 3.;
+	
+	Double_t invmassSigmac1 = 0;    //2212, 310  d->GetBachelor()->
+	Double_t e1P = d->EProng(0,2212), e2K = d->Getv0()->EK0Short(); //hyp 1 (p,K0s) - Lc1
+	//Double_t e1Pi = d->EProng(0,211), e3P = d->EProng(2,2212); //hyp 2 (K0s, p, p) - Lc2
+	Double_t psum2 = (d->Px()+redtrack->Px())*(d->Px()+redtrack->Px())
+	+(d->Py()+redtrack->Py())*(d->Py()+redtrack->Py())
+	+(d->Pz()+redtrack->Pz())*(d->Pz()+redtrack->Pz());
+
+	invmassSigmac1 = TMath::Sqrt(pow(e1P+e2K+redtrack->E(0.1396),2.)-psum2);
+	if ((TMath::Abs(invmassSigmac1-KFmass)-0.1669) < nsigma*1.5*pow(10.,-3.)) return kFALSE;
+	
+	return kTRUE;
+}
+//________________________________________________________
+Bool_t AliHFAssociatedTrackCuts::InvMassSigmacRejection(AliAODRecoCascadeHF* d, AliReducedParticle *redtrack, Double_t KFmass) const {
+	//
+	// Calculates invmass of track+(pK0s) and rejects if compatible with D*
+	// (to remove pions from D*)
+	// 
+	Double_t nsigma = 3.;
+	
+	Double_t invmassSigmac1 = 0;    //2212, 310  d->GetBachelor()->
+	Double_t e1P = d->EProng(0,2212), e2K = d->Getv0()->EK0Short(); //hyp 1 (p,K0s) - Lc1
+	//Double_t e1Pi = d->EProng(0,211), e3P = d->EProng(2,2212); //hyp 2 (K0s, p, p) - Lc2
+	Double_t psum2 = (d->Px()+redtrack->Px())*(d->Px()+redtrack->Px())
+	+(d->Py()+redtrack->Py())*(d->Py()+redtrack->Py())
+	+(d->Pz()+redtrack->Pz())*(d->Pz()+redtrack->Pz());
+
+	invmassSigmac1 = TMath::Sqrt(pow(e1P+e2K+redtrack->Epion(),2.)-psum2);
+	if ((TMath::Abs(invmassSigmac1-KFmass)-0.1669) < nsigma*1.5*pow(10.,-3.)) return kFALSE;
+
+	return kTRUE;
+}
 //________________________________________________________
 void AliHFAssociatedTrackCuts::SetMCEventTypes(Int_t *MCEventTypeArray)
 // set the array of event types you want to process in MonteCarlo (gluon splitting, pair production etc.)

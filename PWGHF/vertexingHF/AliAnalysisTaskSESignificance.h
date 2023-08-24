@@ -45,7 +45,7 @@ class AliAnalysisTaskSESignificance : public AliAnalysisTaskSE
   void SetFillWithPartAntiPartBoth(Int_t value){fPartOrAndAntiPart=value;}
   void SetDsChannel(Int_t chan){fDsChannel=chan;}
   void SetUseSelBit(Bool_t selBit=kTRUE){fUseSelBit=selBit;}
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
 
   //void SetMultiVector(const AliMultiDimVector *MultiDimVec){fMultiDimVec->CopyStructure(MultiDimVec);}
   Float_t GetUpperMassLimit()const {return fUpmasslimit;}

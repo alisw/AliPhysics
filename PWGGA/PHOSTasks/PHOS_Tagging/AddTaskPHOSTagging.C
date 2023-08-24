@@ -29,8 +29,8 @@ AliAnalysisTaskTaggedPhotons* AddTaskPHOSTagging (const char* name = "PHOSTaggin
   task->SetTrigger(ignorePHI7Events) ;
   task->SetCentralityEstimator(centralityEstinator) ; 
   
-  Int_t binLimits[8]={5,10,15,20,30,50,70,100};
-  TArrayI multBins(8,binLimits) ;
+  Int_t binLimits[9]={1,5,10,15,20,30,50,70,100};
+  TArrayI multBins(9,binLimits) ;
   task->SetMultiplicityBins(&multBins) ;
   
   if (TString(options)=="MC"){

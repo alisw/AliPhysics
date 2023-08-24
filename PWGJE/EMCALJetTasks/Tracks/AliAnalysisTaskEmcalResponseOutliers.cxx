@@ -150,7 +150,7 @@ bool AliAnalysisTaskEmcalResponseOutliers::Run(){
 AliAnalysisTaskEmcalResponseOutliers *AliAnalysisTaskEmcalResponseOutliers::AddTaskEmcalResponseOutliers(){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
-    ::Error("EmcalTriggerJets::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
+    ::Error("PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
     return nullptr;
   } 
 
@@ -163,10 +163,10 @@ AliAnalysisTaskEmcalResponseOutliers *AliAnalysisTaskEmcalResponseOutliers::AddT
 
   auto partcont = responsetask->AddMCParticleContainer("mcparticles");
   partcont->SetMinPt(0.);
-  auto clusters = responsetask->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+  auto clusters = responsetask->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
   clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
   clusters->SetClusHadCorrEnergyCut(0.3);
-  auto tracks = responsetask->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+  auto tracks = responsetask->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
   auto contdetjet = responsetask->AddJetContainer(AliJetContainer::kFullJet, AliJetContainer::antikt_algorithm, AliJetContainer::E_scheme, 0.2,
                                                      AliJetContainer::kEMCALfid, tracks, clusters);
   contdetjet->SetName("detjets");

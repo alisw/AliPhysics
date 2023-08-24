@@ -14,7 +14,9 @@
 
 class AliVEvent;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliEMCalTriggerEventData;
 
@@ -45,11 +47,11 @@ protected:
   Bool_t                      fOldPileupSelection;                ///< apply old pileup selection
   Bool_t                      fOldVertexSelection;                ///< apply old vertex selection
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerEventSelection, 1);
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGEREVENTSELECTION_H */

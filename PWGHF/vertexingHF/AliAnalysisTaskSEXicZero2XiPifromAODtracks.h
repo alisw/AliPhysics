@@ -32,21 +32,26 @@
 #include "AliPID.h"
 #include <AliAODRecoCascadeHF.h>
 #include "AliRDHFCutsXicZerotoXiPifromAODtracks.h"
+#include "AliNormalizationCounter.h"
 
 /// \class AliAnalysisTaskSEXicZero2XiPifromAODtracks
 
 class THnSparse;
 class TH1F;
 class TH2F;
+class TH3F;
 class TClonesArray;
 class AliAODPidHF;
 class AliESDtrackCuts;
 class AliESDVertex;
 class AliAODMCParticle;
+class AliNormalizationCounter;
 
 class AliAnalysisTaskSEXicZero2XiPifromAODtracks : public AliAnalysisTaskSE 
 {
  public:
+  enum ECandStatus {kGenLimAcc,kGenAccMother,kGenAccMother08,kGenAcc,kGenAcc08,kReco,kReco08,kRecoCuts,kRecoCuts08,kRecoPID,kRecoPID08};
+  
   AliAnalysisTaskSEXicZero2XiPifromAODtracks();
   AliAnalysisTaskSEXicZero2XiPifromAODtracks(const Char_t* name, AliRDHFCutsXicZerotoXiPifromAODtracks* cuts, Bool_t writeVariableTree=kTRUE, Bool_t anaOmegacZero=kFALSE);
   virtual ~AliAnalysisTaskSEXicZero2XiPifromAODtracks();
@@ -77,7 +82,9 @@ class AliAnalysisTaskSEXicZero2XiPifromAODtracks : public AliAnalysisTaskSE
   AliAODRecoCascadeHF* MakeCascadeHF(AliAODcascade *casc, AliAODTrack *trk, AliAODEvent *aod, AliAODVertex *vert);
   AliAODVertex* ReconstructSecondaryVertex(AliAODcascade *casc, AliAODTrack *trk, AliAODEvent *aod);
 
-
+  void LoopOverGenParticles(TClonesArray *mcArray);
+  Int_t CheckXic2XiPi(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
+ 
  private:
   
   AliAnalysisTaskSEXicZero2XiPifromAODtracks(const AliAnalysisTaskSEXicZero2XiPifromAODtracks &source);
@@ -100,7 +107,6 @@ class AliAnalysisTaskSEXicZero2XiPifromAODtracks : public AliAnalysisTaskSE
   Bool_t fUseMCInfo;          /// Use MC info
   Bool_t fFillSignalOnly;     /// Fill only the signal in MC
   Bool_t fFillBkgOnly;        /// Fill only the bkg in MC
-  Bool_t fAnaOmegacZero;      /// flag to decide analysis OmegacZero
   TList *fOutput;             //!<! User output slot 1 // general histos
   TList *fOutputAll;          //!<! User output slot 3 // Analysis histos
   TList *fListCuts;           //!<! User output slot 2 // Cuts 
@@ -110,6 +116,7 @@ class AliAnalysisTaskSEXicZero2XiPifromAODtracks : public AliAnalysisTaskSE
   AliRDHFCutsXicZerotoXiPifromAODtracks *fAnalCuts;      /// Cuts - sent to output slot 2
   Bool_t fIsEventSelected;           /// flag for event selected
   Bool_t    fWriteVariableTree;       /// flag to decide whether to write the candidate variables on a tree variables
+  Bool_t fAnaOmegacZero;      /// flag to decide analysis OmegacZero
   TTree    *fVariablesTree;           //!<! tree of the candidate variables after track selection on output slot 4
   Bool_t fReconstructPrimVert;            /// Reconstruct primary vertex excluding candidate tracks
   Bool_t fIsMB;            /// Is MB event
@@ -155,10 +162,12 @@ class AliAnalysisTaskSEXicZero2XiPifromAODtracks : public AliAnalysisTaskSE
   TH2F*  fHistoXiMassvsPtRef4;                    //!<! Reference Xi mass spectra 
   TH2F*  fHistoXiMassvsPtRef5;                    //!<! Reference Xi mass spectra 
   TH2F*  fHistoXiMassvsPtRef6;                    //!<! Reference Xi mass spectra 
-  TH1F*  fHistoPiPtRef;                      //!<! Reference pi spectra 
-
+  TH1F*  fHistoPiPtRef;                      //!<! Reference pi spectra
+  AliNormalizationCounter *fCounter;         //!<!Counter for normalization slot 4
+  TH3F*  fHistoMCSpectrumAccXic;    //!<! Spectrum of generated particles
+ 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEXicZero2XiPifromAODtracks,2); /// class for XicZero->Xipi
+  ClassDef(AliAnalysisTaskSEXicZero2XiPifromAODtracks,3); /// class for XicZero->Xipi
   /// \endcond
 };
 #endif

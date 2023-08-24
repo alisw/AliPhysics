@@ -108,18 +108,19 @@ Bool_t DrawTrendingPIDQA(TString mergedTrendFile = "trending.root"){
   delete [] vect;
 
   TDirectoryFile* pidtr=(TDirectoryFile*)fin->Get("PIDinTr");
-  if(pidtr){
+  if(pidtr && pidtr->GetNkeys()>0){
     TCanvas* ctrpid=new TCanvas("ctrpid","PID-in-track",1000,700);
     TCanvas* ctrpidall=new TCanvas("ctrpidall","PID-in-track",1500,700);
     TLegend* leg=new TLegend(0.7,0.35,0.89,0.87);
     leg->SetHeader("PID in tracking");
     ctrpidall->Divide(3,3);
     Int_t cols[9]={kGreen+2,kGray,1,2,4,kMagenta,kOrange+1,kYellow,kCyan};
-    pidtr->ls();
+    Bool_t drawLeg=kFALSE;
     for(Int_t j=0; j<9; j++){
       TString histoname=Form("hSigP_TPC_TrackedAs_%sforMerge",AliPID::ParticleName(j));
       TH2* histo = (TH2*)pidtr->Get(histoname.Data());
       if(histo){
+	drawLeg=kTRUE;
 	TH2* histo2=(TH2*)histo->Clone(Form("%scolor",histoname.Data()));
 	histo2->SetTitle(" ");
 	histo2->SetStats(0);
@@ -136,7 +137,7 @@ Bool_t DrawTrendingPIDQA(TString mergedTrendFile = "trending.root"){
       }
     }
     ctrpid->cd();
-    leg->Draw();
+    if(drawLeg) leg->Draw();
     ctrpidall->SaveAs("TPCdEdx-PIDinTracking-9pads-AllRuns.png");
     ctrpid->SaveAs("TPCdEdx-PIDinTracking-AllRuns.png");
   }

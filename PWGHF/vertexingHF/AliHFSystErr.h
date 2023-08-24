@@ -22,7 +22,7 @@ class AliHFSystErr : public TNamed
 {
  public:
 
-  AliHFSystErr(const Char_t* name="HFSystErr", const Char_t* title="");
+  AliHFSystErr(const Char_t* name="AliHFSystErr", const Char_t* title="");
 
   virtual ~AliHFSystErr();
 
@@ -37,6 +37,8 @@ class AliHFSystErr : public TNamed
   Double_t GetPIDEffErr(Double_t pt) const;
   Double_t GetRawYieldErr(Double_t pt) const;
   Double_t GetTrackingEffErr(Double_t pt) const;
+  Double_t GetDataDrivenFDErr(Double_t pt) const;
+  Double_t GetRawYieldFDCorr(Double_t pt) const;
   Double_t GetTotalSystErr(Double_t pt,Double_t feeddownErr=0) const;
 
   void  ResetRawYieldErr(Double_t pt, Double_t val){
@@ -53,6 +55,11 @@ class AliHFSystErr : public TNamed
   }
   void  ResetTrackEfficErr(Double_t pt, Double_t val){
     fTrackingEff->SetBinContent(fTrackingEff->FindBin(pt),val);
+  }
+  void  ResetDataDrivenFDErr(Double_t pt, Double_t val){
+    if (fDataDrivenFD) {
+      fDataDrivenFD->SetBinContent(fDataDrivenFD->FindBin(pt),val);
+    }
   }
   /// Setting  the run number
   ///  set the two last numbers of the year (is 10 for 2010)
@@ -104,6 +111,11 @@ class AliHFSystErr : public TNamed
   void SetIsMLAnalysis(Bool_t flag){
     fIsMLAnalysis = flag;
     if(flag) AliInfo("Settings for the Lc ML analysis");
+  }
+
+  void SetIsDataDrivenFDAnalysis(Bool_t flag){
+    fIsDataDrivenFDAnalysis = flag;
+    if(flag) AliInfo("Settings for the FD data-driven analyses");
   }
 
   void SetIsPbPb2010EnergyScan(Bool_t flag) {
@@ -262,12 +274,14 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2015pp5TeV();
   void InitD0toKpi2017pp5TeV();
   void InitD0toKpi2017pp5TeV_finebins();
+  void InitDplustoKpipi2017pp5TeVML();
   void InitD0toKpi2017pp5TeVLowPtAn();
   void InitD0toKpi2017pp5TeVLowPtAn_finebins();
   void InitD0toKpi2016pp13TeV();
   void InitD0toKpi20161718pp13TeVmb();
   void InitD0toKpi20161718pp13TeVlm();
   void InitD0toKpi20161718pp13TeVhm();
+  void InitD0toKpi20161718pp13TeVFineBins();
   void InitD0toKpi2011PbPb07half();
   void InitD0toKpi2010PbPb020();
   void InitD0toKpi2010PbPb4080();
@@ -287,6 +301,7 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2017pp5TeV();
   void InitDplustoKpipi2017pp5TeV_finebins();
   void InitDplustoKpipi2016pp13TeV();
+  void InitDplustoKpipi201620172018pp13TeVML();
   void InitDplustoKpipi2011PbPb07half();
   void InitDplustoKpipi2010PbPb020();
   void InitDplustoKpipi2010PbPb4080();
@@ -312,6 +327,7 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2017pp5TeV();
   void InitDstartoD0pi2017pp5TeV_finebins();
   void InitDstartoKpipi2016pp13TeV();
+  void InitDstartoKpipi20161718pp13TeV();
 
   void InitDstoKKpi2010pp();
   void InitDstoKKpi2010ppPass4();
@@ -334,13 +350,20 @@ class AliHFSystErr : public TNamed
   void InitLctopKpi2016pPb();
   void InitLctopKpi2017pp();
   void InitLctopKpi20161718pp13TeV();
+  void InitLctopKpi20161718pp13TeVFineBins();
+  void InitLctopKpi20161718pp13TeVFineBins_woVertexing();
+  void InitLctopKpi2018PbPb010();
+  void InitLctopKpi2018PbPb3050();
 
   void InitLctopK0S2010pp();
   void InitLctopK0S2013pPb();
   void InitLctopK0S2013pPbBDT();
   void InitLctopK0S2016pPb();
   void InitLctopK0S2016pPbBDT();
+  void InitLctopK0S2016pPbBDTLowPtAn();
   void InitLctopK0S2017pp5TeV();
+  void InitLctopK0S2017pp5TeVBDT();
+  void InitLctopK0S20161718pp13TeVBDT();
 
   void InitLctopK0S2018PbPb010BDT();
   void InitLctopK0S2018PbPb3050BDT();
@@ -378,6 +401,24 @@ class AliHFSystErr : public TNamed
   void InitD0toKpi2018PbPb010();
   void InitD0toKpi2018PbPb3050();
   void InitD0toKpi2018PbPb010LowPtAn();
+  void InitD0toKpi2018PbPb3050LowPtAn();
+
+  void InitLctopKpiFromScpp13TeV201620172018(); // Lc(<-Sc)
+  void InitScpp13TeV201620172018(); // Sc
+  void InitLctopK0SFromScpp13TeV201620172018BDT(); // Lc(<-Sc), Lc->pK0S, BDT
+  void InitScpp13TeV201620172018BDT(); // Sc, Lc->pK0S, BDT
+
+  // data-driven non-prompt analyses
+  void InitNonPromptDzerotoKpi2017pp5TeVML();
+  void InitNonPromptDzerotoKpi20161718pp13TeVML();
+  void InitNonPromptDzerotoKpi20161718pp13TeVMLFineBins();
+  void InitNonPromptDzerotoKpi2018PbPb5TeV010ML();
+  void InitNonPromptDzerotoKpi2018PbPb5TeV3050ML();
+  void InitNonPromptDplustoKpipi2017pp5TeVML();
+  void InitNonPromptLctopK0s20161718pp13TeVML();
+  void InitNonPromptLctopKpi20161718pp13TeVML();
+  void InitNonPromptDstoKKpi2017pp5TeVML();
+  void InitNonPromptDstoKKpi2018PbPb5TeV010ML();
 
   TH1F* ReflectHisto(TH1F *hin) const;
 
@@ -389,6 +430,8 @@ class AliHFSystErr : public TNamed
   TH1F *fPIDEff;          /// PID efficiency
   TH1F *fMCPtShape;       /// MC dNdpt
   TH1F *fPartAntipart;    /// particle=antiparticle
+  TH1F *fDataDrivenFD;    /// prompt/FD fraction in case of data-driven analysis
+  TH1F *fRawYieldFDCorr;  /// correlation between raw yield and prompt/FD fraction syst. unc. in case of data-driven analysis
 
   Int_t fRunNumber;        /// Run Number (year)
   Int_t fCollisionType;    /// Collision type: pp=0, PbPb=1
@@ -405,9 +448,10 @@ class AliHFSystErr : public TNamed
   Bool_t fStandardBins;    /// flag for the standard bins in pp@5TeV and pPb@5TeV
   Bool_t fIsRapidityScan;  /// flag for the pPb vs y measurement
   Bool_t fIsMLAnalysis;   /// flag for the Lc ML analysis
+  Bool_t fIsDataDrivenFDAnalysis;   /// flag for the non-prompt data-driven analyses 
 
   /// \cond CLASSIMP
-  ClassDef(AliHFSystErr,12);  /// class for systematic errors of charm hadrons
+  ClassDef(AliHFSystErr,18);  /// class for systematic errors of charm hadrons
   /// \endcond
 };
 

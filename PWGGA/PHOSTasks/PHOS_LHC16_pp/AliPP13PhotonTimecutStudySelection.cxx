@@ -38,10 +38,10 @@ void AliPP13PhotonTimecutStudySelection::InitSelectionHistograms()
 	{
 		const char * s = (i == 0) ? "" : "Mix";
 		AliPP13DetectorHistogram::Mode m = AliPP13DetectorHistogram::kSingleHist;
-		fMassPt[i]             = new AliPP13DetectorHistogram(new TH2F(Form("h%sMassPt", s), "(M,p_{T})_{#gamma#gamma}, N_{cell}>2 ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax), fListOfHistos, m);
-		fMassPtMainMain[i]     = new AliPP13DetectorHistogram(new TH2F(Form("h%sMassPtMainMain", s), "(M,p_{T})_{#gamma#gamma}, main-main ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax), fListOfHistos, m);
-		fMassPtMainPileup[i]   = new AliPP13DetectorHistogram(new TH2F(Form("h%sMassPtMainPileup", s), "(M,p_{T})_{#gamma#gamma}, main-pileup ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax), fListOfHistos, m);
-		fMassPtPileupPileup[i] = new AliPP13DetectorHistogram(new TH2F(Form("h%sMassPtPileupPileup", s), "(M,p_{T})_{#gamma#gamma}, pileup-pileup ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c", nM, mMin, mMax, nPt, ptMin, ptMax), fListOfHistos, m);
+		fMassPt[i]             = new AliPP13DetectorHistogram(new TH2F(Form("h%sMassPt", s), "(M,p_{T})_{#gamma#gamma}, N_{cell}>2 ; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})", nM, mMin, mMax, nPt, ptMin, ptMax), fListOfHistos, m);
+		fMassPtMainMain[i]     = new AliPP13DetectorHistogram(new TH2F(Form("h%sMassPtMainMain", s), "(M,p_{T})_{#gamma#gamma}, main-main ; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})", nM, mMin, mMax, nPt, ptMin, ptMax), fListOfHistos, m);
+		fMassPtMainPileup[i]   = new AliPP13DetectorHistogram(new TH2F(Form("h%sMassPtMainPileup", s), "(M,p_{T})_{#gamma#gamma}, main-pileup ; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})", nM, mMin, mMax, nPt, ptMin, ptMax), fListOfHistos, m);
+		fMassPtPileupPileup[i] = new AliPP13DetectorHistogram(new TH2F(Form("h%sMassPtPileupPileup", s), "(M,p_{T})_{#gamma#gamma}, pileup-pileup ; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})", nM, mMin, mMax, nPt, ptMin, ptMax), fListOfHistos, m);
 	}
 
 

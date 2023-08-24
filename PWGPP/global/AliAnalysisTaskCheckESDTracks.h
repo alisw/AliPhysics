@@ -25,6 +25,7 @@ class AliESDEvent;
 #include "AliESDtrackCuts.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliPID.h"
+#include <THnSparse.h>
 
 class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
 
@@ -40,17 +41,29 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   void SetFillTree(Bool_t fill=kTRUE){
     fFillTree=fill;
   }  
+  void SetFillSparses(Bool_t fill=kTRUE){
+    fFillSparses=fill;
+  }  
   void SetReadMC(Bool_t optMC=kTRUE){
     fReadMC=optMC;
   }
   void SetUseMCtruthForPID(Bool_t opt=kTRUE){
     fUseMCId=opt;
   }
+  void SetUseGenPtInPlots(Bool_t opt=kTRUE){
+    fUseGenPt=opt;
+  }
   void SetUsePhysicsSelection(Bool_t opt=kTRUE){
     fUsePhysSel=opt;
   }
   void SetTriggerMask(Int_t mask){
     fTriggerMask=mask;
+  }
+  void SetCentralityInterval(Double_t minc, Double_t maxc, TString estim="V0M"){
+    fSelectOnCentrality=kTRUE;
+    fMinCentrality=minc;
+    fMaxCentrality=maxc;
+    fCentrEstimator=estim.Data();
   }
   void SetUsePileupCut(Bool_t opt=kTRUE){
     fUsePileupCut=kTRUE;
@@ -74,12 +87,18 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   void SetEtaBinning(Int_t nbins){
     fNEtaBins=nbins;
   }
+  void SetRejectGeneratedEventsWithPileup(Bool_t opt=kTRUE){
+    fRejectGeneratedEventsWithPileup=opt;
+  }
+  void SetRejectParticlesFromOutOfBunchPileup(Bool_t opt=kTRUE){
+    fRejectParticlesFromOutOfBunchPileup=opt;
+  }
 
   AliESDtrackCuts* GetTrackCutObject() const {return fTrCutsTPC;}
 
  private:
 
-  enum EVarsTree {kNumOfIntVar=11, kNumOfFloatVar=34};
+  enum EVarsTree {kNumOfIntVar=14, kNumOfFloatVar=35};
 
   AliAnalysisTaskCheckESDTracks(const AliAnalysisTaskCheckESDTracks &source);
   AliAnalysisTaskCheckESDTracks& operator=(const AliAnalysisTaskCheckESDTracks &source);
@@ -90,6 +109,8 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH1F* fHistNTracks;                //!<!  histo with N of tracks
   TH1F* fHistNTracksBackg;           //!<!  histo with N of background tracks
   TH1F* fHistNTracksEmbed;           //!<!  histo with N of embedded tracks
+  TH1F* fHistNTracksOOBPileup;       //!<!  histo with N of tracks from out of bunch pileup
+  TH2F* fHistNTracksOOBPileupVsNTracks;   //!<!  histo with N of tracks from out of bunch pileup
   TH1F* fHistNV0Daughters;                //!<!  histo with N of V0-tracks
   TH1F* fHistNV0DaughtersBackg;           //!<!  histo with N of background V0-tracks
   TH1F* fHistNV0DaughtersEmbed;           //!<!  histo with N of embedded V0-tracks
@@ -106,13 +127,16 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH2F* fHistNtracksSPDanyVsV0aftEvSel;    //!<!  histo of tracks vs. centr.
 
   TH2F* fHistdEdxVsP[9];              //!<!  histo of dE/dx for hypos (all tracks)
-  TH2F* fHistdEdxVsPTPCsel[9];        //!<!  histo of dE/dx for hypos (TPC cuts)
+  TH2F* fHistdEdxVsPTPCselNoTOFbc[9]; //!<!  histo of dE/dx for hypos (TPC cuts)
+  TH2F* fHistdEdxVsPTPCselTOFbc[9];   //!<!  histo of dE/dx for hypos (TPC cuts)
   TH2F* fHistdEdxVsPTPCselITSref[9];  //!<!  histo of dE/dx for hypos (ITSrefit)
   TH2F* fHistdEdxVsP0[9];              //!<!  histo of dE/dx for hypos (all tracks)
   TH2F* fHistdEdxVsPTPCsel0[9];        //!<!  histo of dE/dx for hypos (TPC cuts)
   TH2F* fHistdEdxVsPTPCselITSref0[9];  //!<!  histo of dE/dx for hypos (ITSrefit)
-  TH2F* fHistCorrelHypo0HypoTPCsel;        //!<!  correl. f PID hypos in tracking steps
-  TH2F* fHistCorrelHypo0HypoTPCselITSref;  //!<!  correl. f PID hypos in tracking steps
+  TH2F* fHistHypoVsPTPCselNoTOFbc;     //!<!  PID hypo in tracking vs p
+  TH2F* fHistHypoVsPTPCselTOFbc;     //!<!  PID hypo in tracking vs p
+  TH2F* fHistCorrelHypo0HypoTPCsel;        //!<!  correl. of PID hypos in tracking steps
+  TH2F* fHistCorrelHypo0HypoTPCselITSref;  //!<!  correl. of PID hypos in tracking steps
 
   TH2F* fHistnSigmaVsPdEdxTPCsel[9];  //!<!  histo of nSigma for particle species
 
@@ -133,6 +157,19 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH3F* fHistEtaPhiPtTPCselITSrefTOFbc;   //!<!  histo of eta,phi,pt (ITSrefit)
   TH3F* fHistEtaPhiPtTPCselSPDanyTOFbc;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
 
+  TH3F* fHistEtaPhiPtTPCselITSrefMCLabelMatch; //!<!  histo of eta,phi,pt (MC labels matching)
+  TH3F* fHistEtaPhiPtTPCselSPDanyMCLabelMatch; //!<!  histo of eta,phi,pt (MC labels matching)
+
+  TH2F* fHistPtTPCInwVsPtTPCsel;              //!<!  histo of pt inw vs. pt refit
+  TH2F* fHistDeltaPtTPCInwVsPtTPCsel;         //!<!  histo of delta pt inw - pt refit
+  TH2F* fHistDeltaPtTPCInwVsPhiTPCselLowPt;   //!<!  histo of delta pt inw - pt refit
+  TH2F* fHistDeltaPtTPCInwVsPhiTPCselMidPt;   //!<!  histo of delta pt inw - pt refit
+  TH2F* fHistDeltaPtTPCInwVsPhiTPCselHighPt;  //!<!  histo of delta pt inw - pt refit
+  TH2F* fHistPtTPCInwVsPtTPCselITSref;        //!<!  histo of pt inw vs. pt refit
+  TH2F* fHistPtTPCInwVsPtTPCselSPDany;        //!<!  histo of pt inw vs. pt refit
+  THnSparseF* fHistPtTPCInwVsPtVsPtTrueTPCsel;       //!<!  histo of pt inw vs. pt refit
+  THnSparseF* fHistPtTPCInwVsPtVsPtTrueTPCselITSref; //!<!  histo of pt inw vs. pt refit
+  
   TH3F* fHistEtaPhiPtInnerTPCsel;         //!<!  histo of eta,phi,pt (TPC cuts)
   TH3F* fHistEtaPhiPtInnerTPCselITSref;   //!<!  histo of eta,phi,pt (ITSrefit)
   TH3F* fHistEtaPhiPtInnerTPCselSPDany;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
@@ -148,10 +185,12 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH2F* fHistNtrackeltsPtTPCselSPDanyTOFbc;   //!<!  histo of eta,phi,pt (ITSrefit+SPDany)
 
   TH3F* fHistTPCchi2PerClusPhiPtTPCsel;        //!<!  histo of chi2 vs. pt and phi;
+  TH3F* fHistTPCchi2PerClusPhiPtTPCselTOFbc;   //!<!  histo of chi2 vs. pt and phi;
   TH3F* fHistTPCchi2PerClusPhiPtTPCselITSref;  //!<!  histo of chi2 vs. pt and phi;
   TH3F* fHistTPCchi2PerClusPhiPtTPCselSPDany;  //!<!  histo of chi2 vs. pt and phi;
 
   TH3F* fHistSig1ptCovMatPhiPtTPCsel;        //!<!  histo of sigma 1/pt vs. pt and phi;
+  TH3F* fHistSig1ptCovMatPhiPtTPCselTOFbc;   //!<!  histo of sigma 1/pt vs. pt and phi;
   TH3F* fHistSig1ptCovMatPhiPtTPCselITSref;  //!<!  histo of sigma 1/pt vs. pt and phi;
   TH3F* fHistSig1ptCovMatPhiPtTPCselSPDany;  //!<!  histo of sigma 1/pt vs. pt and phi;
 
@@ -207,6 +246,7 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   TH3F* fHistImpParXYPtMulTPCselSPDanyPrim;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanySecDec;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanySecMat;   //!<!  histo of impact parameter (pion)
+  THnSparseF* fHistPtDeltaPtTrueImpParXY;       //!<!  histo of pt, pttrue, impact parameter
 
   TH3F* fHistInvMassK0s;
   TH3F* fHistInvMassLambda;
@@ -223,12 +263,17 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
 
 
   AliESDtrackCuts* fTrCutsTPC;        // TPC track cuts
-  AliESDtrackCuts* fTrCutsTPCPrimary; // TPC track cuts for primary tracks
   Int_t   fMinNumOfTPCPIDclu;  // cut on min. of TPC clust for PID
   Bool_t  fUseTOFbcSelection;  // flag use/not use TOF for pileup rejection
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Bool_t  fUsePileupCut;       // flag use/not use phys pileup cut
+  Bool_t  fRejectGeneratedEventsWithPileup;  // reject events with generated pileup
+  Bool_t  fRejectParticlesFromOutOfBunchPileup; // flag to reject tracks from particles generated in out of bunch pileup
   Int_t   fTriggerMask;        // mask used in physics selection
+  Bool_t fSelectOnCentrality;  // flag to activate cut on centrality
+  Double_t fMinCentrality;     // centrality: lower limit
+  Double_t fMaxCentrality;     // centrality: upper limit
+  TString fCentrEstimator;     // centrality: estimator
   Int_t fNEtaBins;             // number of eta intervals in histos
   Int_t fNPhiBins;             // number of phi intervals in histos
   Int_t fNPtBins;              // number of pt intervals in histos
@@ -236,8 +281,10 @@ class AliAnalysisTaskCheckESDTracks : public AliAnalysisTaskSE {
   Double_t fMaxPt;             // maximum pt for histos
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
+  Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
+  Bool_t  fFillSparses;        // flag to control fill of THnSparse
 
-  ClassDef(AliAnalysisTaskCheckESDTracks,17);
+  ClassDef(AliAnalysisTaskCheckESDTracks,32);
 };
 
 

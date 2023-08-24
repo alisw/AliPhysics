@@ -32,6 +32,7 @@
 #include "AliCFVertexingHF.h"
 #include <TH1F.h>
 #include <TProfile.h>
+#include "AliAnalysisFilter.h"
 
 class TH1I;
 class TFile ;
@@ -67,7 +68,8 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
     kSnail = 0,    /// slow configuration, all variables
     kCheetah = 1,   /// fast configuration, only a subset of variables
     kFalcon = 2,   /// super fast configuration, only (pt,y,centrality)
-    kESE = 3   /// configuration with variables for ESE analysis (pt,y,centrality,q2,mult)
+    kESE = 3,   /// configuration with variables for ESE analysis (pt,y,centrality,q2,mult)
+    kRT = 4       /// configuration with variables for RT analysis (pt,y,mult,rt)
   };
 
   enum {
@@ -137,6 +139,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Int_t GetMultiplicityEstimator(){ return fMultiplicityEstimator; }
   void SetIsPPData(Bool_t flag){ fIsPPData = flag; }
   void SetIsPPbData(Bool_t flag){ fIsPPbData = flag; }
+  void SetIsPP13TeVData(Bool_t flag){ fIsPP13TeVData = flag; }
 
   void SetUseNchTrackletsWeight(Bool_t useWeight = kTRUE) { fUseNchWeight=useWeight; fUseTrackletsWeight=useWeight; fUseMultRatioAsWeight=useWeight; }
   Bool_t GetUseNchTrackletsWeight() const {return fUseTrackletsWeight;}
@@ -170,7 +173,10 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
     if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
     fMultEstimatorAvg[1]=new TProfile(*hprof);
   }
-
+  void SetMultiplVsZProfilePP13TeV(TProfile* hprof, Int_t index){
+    if(fMultEstimatorAvg[index]) delete fMultEstimatorAvg[index];
+    fMultEstimatorAvg[index]=new TProfile(*hprof);
+  }
 
   TProfile* GetEstimatorHistogram(const AliVEvent* event);
   void SetReferenceMultiplcity(Double_t rmu){fRefMult=rmu;}
@@ -231,6 +237,7 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   void SetPtWeightsFromFONLL7overLHC10f7aLc();
   void SetPtWeightsFromFONLL8overLHC15l2a2();
   void SetPtWeightsFromFONLL13overLHC17c3a12();
+  void SetPtWeightsFromFONLL13overLHC20f4abc();
 
   void SetPtWeightsFDFromFONLL5anddataoverLHC19c3a();
   void SetPtWeightsFDFromFONLL5anddataoverLHC19c3b();
@@ -245,7 +252,12 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   void SetPtWeightsFromFONLL5overLHC16i6a();
   void SetPtWeightsFromFONLL5andDplusdataoverLHC16i2a();
   void SetPtWeightsFromFONLL5overLHC18a4a2();
-  
+  void SetPtWeightsFromFONLL5anddataoverLHC20g2a();
+  void SetPtWeightsFromFONLL5anddataoverLHC20g2b();
+  void SetPtWeightsFromFONLL5andMCatSHQoverLHC20g2a();
+  void SetPtWeightsFromFONLL5andMCatSHQoverLHC20g2b();
+  void SetPtWeightsLcFromPythiaMode2overLHC20f4abc();
+
   void SetResonantDecay(UInt_t resonantDecay) {fResonantDecay = resonantDecay;}
   UInt_t GetResonantDecay() const {return fResonantDecay;}
 
@@ -277,12 +289,35 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   Float_t GetCutOnMomConservation() const {return fCutOnMomConservation;}
 
   Double_t ComputeTPCq2(AliAODEvent* aod, AliAODMCHeader* mcHeader, Double_t etamin, Double_t etamax, Double_t ptmin, Double_t ptmax) const;
- 
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+
+  Double_t CalculateRTValue(AliAODEvent* esdEvent, AliAODMCHeader* mcHeader, AliCFVertexingHF* cf);
+  ULong64_t  GetEventIdAsLong(AliVHeader* header);
+  TObjArray* FindLeading(TObjArray* array);
+  void QSortTracks(TObjArray& a, Int_t first, Int_t last);
+  TObjArray* SortRegionsRT(const AliVParticle* leading, TObjArray *array);
+  TObjArray* GetMinMaxRegionRT(TList *transv1, TList *transv2);
+
+  Double_t GetMinLeadPtRT() const {return fMinLeadPtRT;}
+  void SetMinLeadPtRT(Double_t opt) {fMinLeadPtRT = opt;}
+
+  void SetAveMultInTransForRT(Double_t opt) {fAveMultInTransForRT=opt;}
+  Double_t GetAveMultInTransForRT() const {return fAveMultInTransForRT;}
+  
+  void SetUseHybridTracks(Bool_t useHybrid) {fUseHybridTracks = useHybrid;} 
+
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
+  void SetRejectOOBPileupEvents() {fRejectOOBPileUpEvents=kTRUE; fKeepOnlyOOBPileupEvents=kFALSE;}
+  void SetKeepOnlyOOBPileupEvents() {fRejectOOBPileUpEvents=kFALSE; fKeepOnlyOOBPileupEvents=kTRUE;}
 
  protected:
   AliCFManager   *fCFManager;   ///  pointer to the CF manager
   TH1I *fHistEventsProcessed;   //!<! simple histo for monitoring the number of events processed
+  TH1F* fNChargedInTrans;       /// Number of charged tracks in the transverse region
+  TH1F* fPTDistributionInTransverse; ///Pt ditribution of charged tracks in transverse region
+  TH1F* fGlobalRT;              /// Global RT distribution
+  TH1F* fStepRecoPIDRT;              ///RT ditribution for events with a D meson at the kRecoPID step
+  TH1F* fHistPtLead;            ///Pt distribution of leading track
+  TList *fOutputRT; //Additional output to check RT
   THnSparse* fCorrelation;      ///  response matrix for unfolding
   TList  *fListProfiles; //list of profile histos for z-vtx correction
   Int_t fCountMC;               ///  MC particle found
@@ -331,22 +366,37 @@ class AliCFTaskVertexingHF: public AliAnalysisTaskSE {
   UInt_t fPDGcode; /// PDG code
 
   Int_t fMultiplicityEstimator; /// Definition of the multiplicity estimator: kNtrk10=0, kNtrk10to16=1, kVZERO=2
-  TProfile* fMultEstimatorAvg[4]; /// TProfile with mult vas. Z per period
+  TProfile* fMultEstimatorAvg[33]; /// TProfile with mult vas. Z per period
   Double_t fRefMult;   /// refrence multiplcity (period b)
   Bool_t fZvtxCorrectedNtrkEstimator; /// flag to use the z-vtx corrected (if not use uncorrected) multiplicity estimator
   Bool_t fIsPPData; /// flag for pp data (not checking centrality)
   Bool_t fIsPPbData; /// flag for pPb data (used for multiplicity corrections)
+  Bool_t fIsPP13TeVData; /// flag for pp 13 TeV data (used for multiplicity corrections)
   Bool_t fUseAdditionalCuts;  /// flag to use additional cuts needed for Lc --> K0S + p, TMVA
   Bool_t fUseCutsForTMVA;     /// flag to use additional cuts needed for Lc --> K0S + p, TMVA
   /// these are the pre-selection cuts for the TMVA
   Bool_t fUseCascadeTaskForLctoV0bachelor;   /// flag to define which task to use for Lc --> K0S+p
   Bool_t fFillMinimumSteps;   /// Skip filling the unneed steps for most of the analyses to save disk space
   Float_t fCutOnMomConservation; /// cut on momentum conservation
+  Double_t fMinLeadPtRT;   /// minimum pT cut for leading particle in RT calculation
+  Double_t fAveMultInTransForRT; ///Average multiplicity in transverse region
+
+  AliAnalysisFilter* fTrackFilterGlobal; //! filter to select global tracks
+  AliAnalysisFilter* fTrackFilterComplementary; //! filter to select complementary tracks
+  Bool_t fUseHybridTracks; /// flag to chose the tracks to use for RT calculation
+  TH1F *fPhiDistributionGlobalTracks; //!<! hist for Phi distribution of selected global tracks
+  TH1F *fPhiDistributionComplementaryTracks; //!<! hist for Phi distribution of selected complementary tracks
+  TH1F *fPhiDistributionHybridTracks; //!<! hist for Phi distribution of selected hybrid tracks
+  TH2F *fPhiEtaDistributionHybridTracks; //!<! hist for PhiEta distribution of selected hybrid tracks
+
+
   Int_t fAODProtection;         /// flag to activate protection against AOD-dAOD mismatch.
                                 /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
+  Bool_t fRejectOOBPileUpEvents; /// flag to enable rejection of events with simulated pileup
+  Bool_t fKeepOnlyOOBPileupEvents; /// flag to keep only events with simulated pileup
 
-  /// \cond CLASSIMP     
-  ClassDef(AliCFTaskVertexingHF,27); /// class for HF corrections as a function of many variables
+  /// \cond CLASSIMP
+  ClassDef(AliCFTaskVertexingHF,34); /// class for HF corrections as a function of many variables
   /// \endcond
 };
 

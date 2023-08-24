@@ -1,4 +1,5 @@
- /*************************************************************************
+
+/*************************************************************************
 * Copyright(c) 1998-2009, ALICE Experiment at CERN, All rights reserved. *
 *                                                                        *
 * Author: The ALICE Off-line Project.                                    *
@@ -107,9 +108,14 @@ AliAnalysisTaskSE(),
   fFB(),
   fRejectCheckGenName(kFALSE),
   fGenToBeKept("Hijing"),
+  fPIDMomCut(0.6),
   fbayesth1(0.75),
   fbayesth2(0.80),
-  fbayesth3(0.9)
+  fbayesth3(0.9),
+  fTPCchi2Cut(-1),
+  fNClustersTPCCut(-1),
+  fMinTPCCrossedRows(-1),
+  fMinTPCRowsOverFindableCls(-1)
 {
   
   
@@ -155,9 +161,16 @@ AliAnalysisTaskPIDPerformCombIDPtDep::AliAnalysisTaskPIDPerformCombIDPtDep(const
   fPriorsUsed(),
   fpartOfInterest(),
   fFB(),
+  fRejectCheckGenName(kFALSE),
+  fGenToBeKept("Hijing"),
+  fPIDMomCut(0.6),
   fbayesth1(0.75),
   fbayesth2(0.80),
-  fbayesth3(0.9)
+  fbayesth3(0.9),
+  fTPCchi2Cut(-1),
+  fNClustersTPCCut(-1),
+  fMinTPCCrossedRows(-1),
+  fMinTPCRowsOverFindableCls(-1)
 {
   
   
@@ -436,11 +449,31 @@ void AliAnalysisTaskPIDPerformCombIDPtDep::UserExec(Option_t *)
     }
     
     if(track->TestFilterBit(fFB)){
-      //Printf("fb test quiiiiii");
+
+      if( fTPCchi2Cut != -1 && track->Chi2perNDF() > fTPCchi2Cut){
+	continue;
+      }
+      if( fNClustersTPCCut != -1 && track->GetTPCNcls() < fNClustersTPCCut){
+	continue;
+      }
       
+      if(fMinTPCCrossedRows != -1){
+	if ((Float_t)track->GetTPCNCrossedRows() < (120 - (5/(Float_t)track->Pt())) ){
+	  continue;
+	}
+      }
+      
+      if (fMinTPCRowsOverFindableCls != -1){
+	Float_t nTPCCrossedRowsOverFindCls = (((Float_t)track->GetTPCNCrossedRows())/((Float_t)track->GetTPCNclsF()));
+	if (nTPCCrossedRowsOverFindCls < fMinTPCRowsOverFindableCls){
+	  continue;
+	}
+      }
+      
+      //Printf("fb test quiiiiii");
+            
       Double_t mom=track->GetTPCmomentum();
       Double_t pt=track->Pt();
-      Double_t momCut=0.6;
       Int_t ibin=GetMomBin(mom);
       Short_t charge = track->Charge();
       Int_t chargeBin; 
@@ -472,7 +505,7 @@ void AliAnalysisTaskPIDPerformCombIDPtDep::UserExec(Option_t *)
       if (!(AODmcTrack->IsPhysicalPrimary())) continue;
 
       Double_t y = AODmcTrack->Y();
-      if (TMath::Abs(y) > 0.9) continue;
+      if (TMath::Abs(y) > 0.5) continue;
       
       //Printf("mother =%d, generatorName=%s", label, generatorName.Data()); 
       
@@ -509,283 +542,292 @@ void AliAnalysisTaskPIDPerformCombIDPtDep::UserExec(Option_t *)
       }
       
       // Printf("pdgIndex=%d", pdgIndex);
+
       
-      //TPC ONLY
       fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC);
       UInt_t detUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPC);
       
+      Double_t nSigmaTPCPions = 0.;
+      Double_t nSigmaTPCKaons = 0.;
+      Double_t nSigmaTPCProtons = 0.;
+      Double_t nSigmaTOFPions = 0.;
+      Double_t nSigmaTOFKaons = 0.;
+      Double_t nSigmaTOFProtons = 0.;
+      Double_t nSigmaTPCTOFPions = 0.;
+      Double_t nSigmaTPCTOFKaons = 0.;
+      Double_t nSigmaTPCTOFProtons = 0.;
       //Printf("detUsed=%d", detUsed);
       
       if (detUsed  == (UInt_t)fPIDCombined->GetDetectorMask() ) {  // TPC is available
 	if (pdgIndex > 4) continue;
-	
+        
 	hTrueInAccTPC[pdgIndex][chargeBin]->Fill(pt);
-	
+        
 	nSigmaProtonsTPCOnly = fPIDResponse->NumberOfSigmasTPC(track,fpartOfInterest);
-	
+	nSigmaTPCPions = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion));
+	nSigmaTPCKaons = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon));
+	nSigmaTPCProtons = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton));
+        
 	if(TMath::Abs(nSigmaProtonsTPCOnly)<2) {
 	  hIdTPConly2s[chargeBin]->Fill(pt);
 	  hEffPlotsTPConly2s[pdgIndex][chargeBin]->Fill(pt);
 	}
-	
+        
 	if (TMath::Abs(nSigmaProtonsTPCOnly) < 3)  {
 	  // Printf("inside 3 sigma");
 	  hIdTPConly3s[chargeBin]->Fill(pt);
 	  hEffPlotsTPConly3s[pdgIndex][chargeBin]->Fill(pt);
 	}
-
-	if (fpartOfInterest == (AliPID::kKaon)) momCut = 0.4;
-	
-	//if(mom < momCut){
-	if(pt < momCut){
+        
+	//if(mom < fPIDMomCut){
+	if(pt < fPIDMomCut){
+	  
 	  hTrueInAccTPCTOF[pdgIndex][chargeBin]->Fill(pt);
-	  
-	  if (TMath::Abs(nSigmaProtonsTPCOnly)<3) {
-	    hIDnSigmaComb1[chargeBin]->Fill(pt);
-	    hEffPlotsnSigmaComb1[pdgIndex][chargeBin]->Fill(pt);
-	    hIDnSigmaComb2[chargeBin]->Fill(pt);
-	    hEffPlotsnSigmaComb2[pdgIndex][chargeBin]->Fill(pt);
-	    hIDnSigmaComb3[chargeBin]->Fill(pt);
-	    hEffPlotsnSigmaComb3[pdgIndex][chargeBin]->Fill(pt);
-	  }
-	  
-	  if (probTPC[fpartOfInterest] > fbayesth1 ){
-	    hIDBayes1[chargeBin]->Fill(pt);
-	    hEffPlotsBayes1[pdgIndex][chargeBin]->Fill(pt);
-	  }
-	  if (probTPC[fpartOfInterest] > fbayesth2 ){
-	    hIDBayes2[chargeBin]->Fill(pt);
-	    hEffPlotsBayes2[pdgIndex][chargeBin]->Fill(pt);
-	  }
-	  if (probTPC[fpartOfInterest] > fbayesth3 ){
-	    hIDBayes3[chargeBin]->Fill(pt);
-	    hEffPlotsBayes3[pdgIndex][chargeBin]->Fill(pt);
-	  }
-	}
-	
-	
-	//Printf("after TPC");
-	
-	//TOF ONLY
-	fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
-	detUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTOF);
-	
-	Double_t priors[5]; 	// check priors used for TOF
-	fPIDCombined->GetPriors(track,priors,fPIDResponse,detUsed);
-	for(Int_t ispec=0;ispec<5;ispec++) fPriorsUsed[ispec]->Fill(TMath::Abs(track->Pt()),priors[ispec]);
-	
-	if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()) {  // TOF is available
-	  if (pdgIndex > 4) continue;
-	  
-	  Int_t detStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,track);
-	  // Printf("CheckPIDStatus(kDetTPC) =%d, CheckPIDStatus(kDetTOF)=%d", fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track),fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) );
-	  
-	  
-	  if(pidObj && pidObj->GetTOFsignal() < 99999){
-	    // track->GetTOFLabel(tofLabel);
-	    //printf("%i compared to (%i,%i,%i) = %i\n",track->GetLabel(),tofLabel[0],tofLabel[1],tofLabel[2],TMath::Abs(track->GetLabel()) == TMath::Abs(tofLabel[0]));
-	  
-	  
-	  //if (track->GetLabel() != tofLabel[0]) continue;
-	  
-	  
-	  // if ((fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track)) !=  (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track))) continue;
-	  
-	  hTrueInAccTOF[pdgIndex][chargeBin]->Fill(pt);
-	  
-	  nSigmaProtonsTOFOnly = fPIDResponse->NumberOfSigmasTOF(track,fpartOfInterest);
-	  if (TMath::Abs(nSigmaProtonsTOFOnly)< 2){
-	    hIdTOFonly2s[chargeBin]->Fill(pt);
-	    hEffPlotsTOFonly2s[pdgIndex][chargeBin]->Fill(pt);
-	  }
-	  if (TMath::Abs(nSigmaProtonsTOFOnly) < 3){
-	    hIdTOFonly3s[chargeBin]->Fill(pt);
-	    hEffPlotsTOFonly3s[pdgIndex][chargeBin]->Fill(pt);
-	  }  
-	}
-	}
-	//Printf("after TOF");
-	
-	
-	fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
-	detUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPCTOF);
-	
-	if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()){
-	  if (pdgIndex > 4) continue;
-	
-	  if ((detUsed >= AliPIDResponse::kDetTOF) && (pidObj && pidObj->GetTOFsignal() < 99999)){
-	    // track->GetTOFLabel(tofLabel);
-	    //if (track->GetLabel() != tofLabel[0]) continue;
-	  
-	  
-	  nSigmaProtonsTPCNsigcomb = fPIDResponse->NumberOfSigmasTPC(track,fpartOfInterest);
-	  nSigmaProtonsTOFNsigcomb = fPIDResponse->NumberOfSigmasTOF(track,fpartOfInterest);
-	  
-	  //if (mom > momCut){
-	  if (pt > momCut){
-	    hTrueInAccTPCTOF[pdgIndex][chargeBin]->Fill(pt);
+                
+	  if (fpartOfInterest == (AliPID::kPion)){
 	    
+	    if (TMath::Abs(nSigmaProtonsTPCOnly)<2 && !(TMath::Abs(nSigmaTPCKaons)<3.) && !(TMath::Abs(nSigmaTPCProtons)<3.)) {
+	      hIDnSigmaComb1[chargeBin]->Fill(pt);
+	      hEffPlotsnSigmaComb1[pdgIndex][chargeBin]->Fill(pt);
+              
+	    }
+            
+	    if (TMath::Abs(nSigmaProtonsTPCOnly)<3 && !(TMath::Abs(nSigmaTPCKaons)<3.) && !(TMath::Abs(nSigmaTPCProtons)<3.)) {
+	      hIDnSigmaComb2[chargeBin]->Fill(pt);
+	      hEffPlotsnSigmaComb2[pdgIndex][chargeBin]->Fill(pt);
+	    }
 	    
-	    if (fpartOfInterest == (AliPID::kPion)){
-	      //first nsigma strategy
-	      
-	      if (TMath::Abs(nSigmaProtonsTOFNsigcomb)<3) {
-		hIDnSigmaComb1[chargeBin]->Fill(pt);
-		hEffPlotsnSigmaComb1[pdgIndex][chargeBin]->Fill(pt);
-	      }
-	      
-	      combSquaredSigma = TMath::Sqrt((nSigmaProtonsTPCNsigcomb*nSigmaProtonsTPCNsigcomb) + (nSigmaProtonsTOFNsigcomb*nSigmaProtonsTOFNsigcomb));
-	      
-	      //if(mom <= 2.5){
-		if(pt <= 2.5){
-		if (TMath::Abs(combSquaredSigma)<3) {
-		hIDnSigmaComb2[chargeBin]->Fill(pt);
-		hEffPlotsnSigmaComb2[pdgIndex][chargeBin]->Fill(pt);
-		hIDnSigmaComb3[chargeBin]->Fill(pt);
-		hEffPlotsnSigmaComb3[pdgIndex][chargeBin]->Fill(pt);
-	      }
-	      }
-	      else {
-	      
-		if (TMath::Abs(combSquaredSigma)<2) {
-		  hIDnSigmaComb2[chargeBin]->Fill(pt);
-		hEffPlotsnSigmaComb2[pdgIndex][chargeBin]->Fill(pt);
-		}
-	      }
-	      
-		//if((mom > 2.5) && (mom < 4)){
-		if((pt > 2.5) && (pt < 4)){
-	      if (TMath::Abs(combSquaredSigma)<1.5) {
-		hIDnSigmaComb3[chargeBin]->Fill(pt);
-		hEffPlotsnSigmaComb3[pdgIndex][chargeBin]->Fill(pt);
-	      }	
+	    if (TMath::Abs(nSigmaProtonsTPCOnly)<2) {
+	      hIDnSigmaComb3[chargeBin]->Fill(pt);
+	      hEffPlotsnSigmaComb3[pdgIndex][chargeBin]->Fill(pt);
 	    }
-		//if(mom>4) {
-	      if(pt>4) {
-	      if (TMath::Abs(combSquaredSigma)<1) {
-		hIDnSigmaComb3[chargeBin]->Fill(pt);
-		hEffPlotsnSigmaComb3[pdgIndex][chargeBin]->Fill(pt);
-	      }
-	    }
-	  } // end of pions      
-	  
+            
+            
+	  }//end of pions
+          
 	  if (fpartOfInterest == (AliPID::kKaon)){
-	    //first nsigma strategy 
 	    
-	    combSquaredSigma = TMath::Sqrt((nSigmaProtonsTPCNsigcomb*nSigmaProtonsTPCNsigcomb) + (nSigmaProtonsTOFNsigcomb*nSigmaProtonsTOFNsigcomb));
-	    
-	    if (TMath::Abs(combSquaredSigma)<2.5) {
+	    if (TMath::Abs(nSigmaProtonsTPCOnly)<2 && !(TMath::Abs(nSigmaTPCPions)<3.) && !(TMath::Abs(nSigmaTPCProtons)<3.)) {
+	      
 	      hIDnSigmaComb1[chargeBin]->Fill(pt);
 	      hEffPlotsnSigmaComb1[pdgIndex][chargeBin]->Fill(pt);
 	    }
-	    
-	    // if (mom<=2){
-	      if (pt<=2){
-	      if (TMath::Abs(combSquaredSigma)<2.5) {
-		hIDnSigmaComb2[chargeBin]->Fill(pt);
-		hEffPlotsnSigmaComb2[pdgIndex][chargeBin]->Fill(pt);
-		hIDnSigmaComb3[chargeBin]->Fill(pt);
-		hEffPlotsnSigmaComb3[pdgIndex][chargeBin]->Fill(pt);
-	      }
+            
+            
+	    if (TMath::Abs(nSigmaProtonsTPCOnly)<3 && !(TMath::Abs(nSigmaTPCPions)<3.) && !(TMath::Abs(nSigmaTPCProtons)<3.)) {
 	      
+	      hIDnSigmaComb2[chargeBin]->Fill(pt);
+	      hEffPlotsnSigmaComb2[pdgIndex][chargeBin]->Fill(pt);
 	    }
-	    else{
-	      //if (mom > 2){
-		if (pt > 2){
-		if (TMath::Abs(combSquaredSigma)<1.5) {
-		  hIDnSigmaComb2[chargeBin]->Fill(pt);
-		  hEffPlotsnSigmaComb2[pdgIndex][chargeBin]->Fill(pt);
-		} 
-	      }
+            
+	    if (TMath::Abs(nSigmaProtonsTPCOnly)<2) {
 	      
-		//if (mom < 3){
-		if (pt < 3){
-		if (TMath::Abs(combSquaredSigma)<1.5) {
-		  hIDnSigmaComb3[chargeBin]->Fill(pt);
-		  hEffPlotsnSigmaComb3[pdgIndex][chargeBin]->Fill(pt);
-		} 
-	      }
-	      else {
-		if (TMath::Abs(combSquaredSigma)<1.) {
-		  hIDnSigmaComb3[chargeBin]->Fill(pt);
-		  hEffPlotsnSigmaComb3[pdgIndex][chargeBin]->Fill(pt);
-		} 
-	      }
-	      
-	    } 
-	  }
-	  
+	      hIDnSigmaComb3[chargeBin]->Fill(pt);
+	      hEffPlotsnSigmaComb3[pdgIndex][chargeBin]->Fill(pt);
+	    }
+            
+	  }//end of kaons
+          
 	  if (fpartOfInterest == (AliPID::kProton)){
-	    //first nsigma strategy 
 	    
-	    combSquaredSigma = TMath::Sqrt((nSigmaProtonsTPCNsigcomb*nSigmaProtonsTPCNsigcomb) + (nSigmaProtonsTOFNsigcomb*nSigmaProtonsTOFNsigcomb));
-	    
-	    // if(mom<=3){
-	      if(pt<=3){
-	      if (TMath::Abs(combSquaredSigma)<3) {
-		hIDnSigmaComb1[chargeBin]->Fill(pt);
-		hEffPlotsnSigmaComb1[pdgIndex][chargeBin]->Fill(pt);
-		hIDnSigmaComb2[chargeBin]->Fill(pt);
-		hEffPlotsnSigmaComb2[pdgIndex][chargeBin]->Fill(pt);
-		hIDnSigmaComb3[chargeBin]->Fill(pt);
-		hEffPlotsnSigmaComb3[pdgIndex][chargeBin]->Fill(pt);
-	      }
+	    if (TMath::Abs(nSigmaProtonsTPCOnly)<2 && !(TMath::Abs(nSigmaTPCPions)<3.) && !(TMath::Abs(nSigmaTPCKaons)<3.)) {
+	      hIDnSigmaComb1[chargeBin]->Fill(pt);
+	      hEffPlotsnSigmaComb1[pdgIndex][chargeBin]->Fill(pt);
 	    }
-	    else{
-	      if (TMath::Abs(combSquaredSigma)<2) {
-		hIDnSigmaComb1[chargeBin]->Fill(pt);
-		hEffPlotsnSigmaComb1[pdgIndex][chargeBin]->Fill(pt);
-	      }
-	    }
-	      //if ((mom>3) && (mom<=5)){
-	      if ((pt>3) && (pt<=5)){
-	      if (TMath::Abs(combSquaredSigma)<2) {
-		hIDnSigmaComb2[chargeBin]->Fill(pt);
-		hEffPlotsnSigmaComb2[pdgIndex][chargeBin]->Fill(pt);
-	      }
-	      if (TMath::Abs(combSquaredSigma)<1.5) {
-		hIDnSigmaComb3[chargeBin]->Fill(pt);
-		hEffPlotsnSigmaComb3[pdgIndex][chargeBin]->Fill(pt);
-	      }
-	    }
-	      //if (mom>5){
-	      if (pt>5){
-	      if (TMath::Abs(combSquaredSigma)<1) {
-		hIDnSigmaComb2[chargeBin]->Fill(pt);
-		hEffPlotsnSigmaComb2[pdgIndex][chargeBin]->Fill(pt);
-		hIDnSigmaComb3[chargeBin]->Fill(pt);
-		hEffPlotsnSigmaComb3[pdgIndex][chargeBin]->Fill(pt);
-	      }
+            
+	    if (TMath::Abs(nSigmaProtonsTPCOnly)<3 && !(TMath::Abs(nSigmaTPCPions)<3.) && !(TMath::Abs(nSigmaTPCKaons)<3.)) {
 	      
+	      hIDnSigmaComb2[chargeBin]->Fill(pt);
+	      hEffPlotsnSigmaComb2[pdgIndex][chargeBin]->Fill(pt);
 	    }
-	    
+            
+	    if (TMath::Abs(nSigmaProtonsTPCOnly)<2) {
+	      
+	      hIDnSigmaComb3[chargeBin]->Fill(pt);
+	      hEffPlotsnSigmaComb3[pdgIndex][chargeBin]->Fill(pt);
+	    }
+            
 	  }//end of protons
 	  
-	  if (probTPCTOF[fpartOfInterest] > fbayesth1 ){
-	    hIDBayes1[chargeBin]->Fill(pt);
-	    hEffPlotsBayes1[pdgIndex][chargeBin]->Fill(pt);
-	  }
-	  if (probTPCTOF[fpartOfInterest] > fbayesth2 ){
-	    hIDBayes2[chargeBin]->Fill(pt);
-	    hEffPlotsBayes2[pdgIndex][chargeBin]->Fill(pt);
-	  }
-	  if (probTPCTOF[fpartOfInterest] > fbayesth3 ){
-	    hIDBayes3[chargeBin]->Fill(pt);
-	    hEffPlotsBayes3[pdgIndex][chargeBin]->Fill(pt);
-	  } 
-	  }
+          
+	}
+        
+        
+	//Printf("after TPC");
+        
+	//TOF ONLY
+	fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF);
+	detUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTOF);
+        
+	Double_t priors[5];     // check priors used for TOF
+	fPIDCombined->GetPriors(track,priors,fPIDResponse,detUsed);
+	for(Int_t ispec=0;ispec<5;ispec++) fPriorsUsed[ispec]->Fill(TMath::Abs(track->Pt()),priors[ispec]);
+        
+	if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()) {  // TOF is available
+	  if (pdgIndex > 4) continue;
+          
+	  Int_t detStatus = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF,track);
+	  // Printf("CheckPIDStatus(kDetTPC) =%d, CheckPIDStatus(kDetTOF)=%d", fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track),fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) );
+          
+          
+	  if(pidObj && pidObj->GetTOFsignal() < 99999){
+	    // track->GetTOFLabel(tofLabel);
+	    //printf("%i compared to (%i,%i,%i) = %i\n",track->GetLabel(),tofLabel[0],tofLabel[1],tofLabel[2],TMath::Abs(track->GetLabel()) == TMath::Abs(tofLabel[0]));
+	    //if (track->GetLabel() != tofLabel[0]) continue;
+	    // if ((fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track)) !=  (fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track))) continue;
+            
+	    hTrueInAccTOF[pdgIndex][chargeBin]->Fill(pt);
+            
+	    nSigmaProtonsTOFOnly = fPIDResponse->NumberOfSigmasTOF(track,fpartOfInterest);
+	    
+	    if (TMath::Abs(nSigmaProtonsTOFOnly)< 2){
+	      hIdTOFonly2s[chargeBin]->Fill(pt);
+	      hEffPlotsTOFonly2s[pdgIndex][chargeBin]->Fill(pt);
+	    }
+	    if (TMath::Abs(nSigmaProtonsTOFOnly) < 3){
+	      hIdTOFonly3s[chargeBin]->Fill(pt);
+	      hEffPlotsTOFonly3s[pdgIndex][chargeBin]->Fill(pt);
+	    }
 	  }
 	}
+	//Printf("after TOF");
+        
+        
+	fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTOF|AliPIDResponse::kDetTPC);
+	detUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, probTPCTOF);
+        
+	if (detUsed == (UInt_t)fPIDCombined->GetDetectorMask()){
+	  if (pdgIndex > 4) continue;
+          
+	  if ((detUsed >= AliPIDResponse::kDetTOF) && (pidObj && pidObj->GetTOFsignal() < 99999)){
+	    // track->GetTOFLabel(tofLabel);
+	    //if (track->GetLabel() != tofLabel[0]) continue;
+            
+            
+	    nSigmaProtonsTPCNsigcomb = fPIDResponse->NumberOfSigmasTPC(track,fpartOfInterest);
+	    nSigmaProtonsTOFNsigcomb = fPIDResponse->NumberOfSigmasTOF(track,fpartOfInterest);
+	    combSquaredSigma = TMath::Sqrt((nSigmaProtonsTPCNsigcomb*nSigmaProtonsTPCNsigcomb) + (nSigmaProtonsTOFNsigcomb*nSigmaProtonsTOFNsigcomb));
+            
+	    nSigmaTOFPions = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
+	    nSigmaTOFKaons = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kKaon);
+	    nSigmaTOFProtons = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
+            
+	    nSigmaTPCTOFPions = TMath::Sqrt(nSigmaTPCPions*nSigmaTPCPions + nSigmaTOFPions*nSigmaTOFPions);
+	    nSigmaTPCTOFKaons = TMath::Sqrt(nSigmaTPCKaons*nSigmaTPCKaons + nSigmaTOFKaons*nSigmaTOFKaons);
+	    nSigmaTPCTOFProtons = TMath::Sqrt(nSigmaTPCProtons*nSigmaTPCProtons + nSigmaTOFProtons*nSigmaTOFProtons);
+            
+	    //if (mom > fPIDMomCut){
+	    if (pt > fPIDMomCut){
+	      
+	      hTrueInAccTPCTOF[pdgIndex][chargeBin]->Fill(pt);
+              
+	      if (fpartOfInterest == (AliPID::kPion)){
+		//first nsigma strategy
+                
+		if (TMath::Abs(combSquaredSigma)<2. && !(TMath::Abs(nSigmaTPCTOFKaons)<3.) && !(TMath::Abs(nSigmaTPCTOFProtons)<3.)) {
+		  
+		  hIDnSigmaComb1[chargeBin]->Fill(pt);
+		  hEffPlotsnSigmaComb1[pdgIndex][chargeBin]->Fill(pt);
+		}
+                
+		if (TMath::Abs(combSquaredSigma)<3. && !(TMath::Abs(nSigmaTPCTOFKaons)<3.) && !(TMath::Abs(nSigmaTPCTOFProtons)<3.)) {
+		  
+		  hIDnSigmaComb2[chargeBin]->Fill(pt);
+		  hEffPlotsnSigmaComb2[pdgIndex][chargeBin]->Fill(pt);
+		}
+                
+		if (TMath::Abs(combSquaredSigma)<2.) {
+		  
+		  hIDnSigmaComb3[chargeBin]->Fill(pt);
+		  hEffPlotsnSigmaComb3[pdgIndex][chargeBin]->Fill(pt);
+		}
+                
+	      }//end of pions
+              
+	      if (fpartOfInterest == (AliPID::kKaon)){
+		//first nsigma strategy
+                
+		if (TMath::Abs(combSquaredSigma)<2. && !(TMath::Abs(nSigmaTPCTOFPions)<3.) && !(TMath::Abs(nSigmaTPCTOFProtons)<3.)) {
+		  
+		  hIDnSigmaComb1[chargeBin]->Fill(pt);
+		  hEffPlotsnSigmaComb1[pdgIndex][chargeBin]->Fill(pt);
+		}
+                
+		if (TMath::Abs(combSquaredSigma)<2.) {
+		  
+		  hIDnSigmaComb3[chargeBin]->Fill(pt);
+		  hEffPlotsnSigmaComb3[pdgIndex][chargeBin]->Fill(pt);
+		}
+                
+		if (pt<=2){
+		  
+		  if (TMath::Abs(combSquaredSigma)<2) {
+		    
+		    hIDnSigmaComb2[chargeBin]->Fill(pt);
+		    hEffPlotsnSigmaComb2[pdgIndex][chargeBin]->Fill(pt);
+                    
+		  }
+                  
+		}
+                
+		else if (pt>2){
+		  
+		  if (TMath::Abs(combSquaredSigma)<1.5) {
+		    
+		    hIDnSigmaComb2[chargeBin]->Fill(pt);
+		    hEffPlotsnSigmaComb2[pdgIndex][chargeBin]->Fill(pt);
+		  }
+		}
+	      }//end of kaons
+              
+	      if (fpartOfInterest == (AliPID::kProton)){
+		//first nsigma strategy
+                
+		if (TMath::Abs(combSquaredSigma)<2. && !(TMath::Abs(nSigmaTPCTOFPions)<3.) && !(TMath::Abs(nSigmaTPCTOFKaons)<3.)) {
+		  hIDnSigmaComb1[chargeBin]->Fill(pt);
+		  hEffPlotsnSigmaComb1[pdgIndex][chargeBin]->Fill(pt);
+		}
+                
+		if (TMath::Abs(combSquaredSigma)<2.) {
+		  hIDnSigmaComb3[chargeBin]->Fill(pt);
+		  hEffPlotsnSigmaComb3[pdgIndex][chargeBin]->Fill(pt);
+		}
+                
+		if (pt<=2){
+		  
+		  if (TMath::Abs(nSigmaProtonsTOFNsigcomb)<3) {
+		    
+		    hIDnSigmaComb2[chargeBin]->Fill(pt);
+		    hEffPlotsnSigmaComb2[pdgIndex][chargeBin]->Fill(pt);
+                    
+		  }
+		}
+                
+		else if (pt>2){
+		  
+		  if (TMath::Abs(combSquaredSigma)<1.5) {
+		    
+		    hIDnSigmaComb2[chargeBin]->Fill(pt);
+		    hEffPlotsnSigmaComb2[pdgIndex][chargeBin]->Fill(pt);
+		  }
+		}
+                
+                
+	      }//end of protons
+              
+	    }
+            
+	  }
+          
+	}
       }
+      
+      
     }
-    
-    
     
   }
   
 }
-
-
 
 //________________________________________________________________________
 void AliAnalysisTaskPIDPerformCombIDPtDep::Terminate(Option_t *) {

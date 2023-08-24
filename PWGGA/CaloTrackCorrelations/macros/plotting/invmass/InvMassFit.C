@@ -2073,7 +2073,7 @@ void PrimarySpectra(Int_t nPt, TArrayD xPtLimits, TArrayD xPt, TArrayD exPt)
 /// \param histoDir   : TDirectoryFile folder name
 /// \param histoList  : TList folder name
 /// \param histoStart : begining of histograms name
-/// \param calorimeter: "EMCAL","DCAL"
+/// \param calorimeter: "EMCAL","DCAL","EMDCAL"
 /// \param particle   : "Pi0","Eta", define fitting and plotting ranges for particle
 /// \param nPairMin   : minimum number of entries un the pi0 or eta peak integral to do the fits and plotting. Careful in MC scaled productions.
 /// \param sumw2      : bool, apply the histograms Sumw2 method to get proper errors when not done before
@@ -2092,12 +2092,12 @@ void PrimarySpectra(Int_t nPt, TArrayD xPtLimits, TArrayD xPt, TArrayD exPt)
 ///
 //-----------------------------------------------------------------------------
 void InvMassFit
-(TString prodname     = "LHC18c3_NystromOn",//"LHC17l3b_fast", 
- TString filename     = "AnalysisResults",
- TString histoDir     = "Pi0IM_GammaTrackCorr_EMCAL", 
- TString histoList    = "default", 
- TString histoStart   = "",
- TString calorimeter  = "EMCAL",
+(TString prodname     = "Data",//"LHC18c3_NystromOn","LHC17l3b_fast",
+ TString filename     = "Run2_MB",
+ TString histoDir     = "",
+ TString histoList    = "CTC_EMCAL_Trig_default_MixOn_EventCuts_RemoveLEDEvents2Strip_FullCalo",
+ TString histoStart   = "AnaPi0",
+ TString calorimeter  = "EMDCAL",
  TString particle     = "Pi0",
  Float_t nPairMin     = 20, 
  Bool_t  sumw2        = kTRUE,
@@ -2319,6 +2319,12 @@ void InvMassFit
       lastMod   = 19;
     }
     
+    if ( kCalorimeter=="EMDCAL" )
+    {
+      firstMod  = 0;
+      lastMod   = 19;
+    }
+
     // Initialize SM grouping histograms
     // 0 : SM 0+4+5+6+8+9
     // 1 : SM 1+2 
@@ -2501,7 +2507,13 @@ void InvMassFit
       firstSector = 6;
       lastSector  = 9;
     }
-    
+
+    if ( kCalorimeter=="EMDCAL" )
+    {
+      firstSector = 0;
+      lastSector  = 9;
+    }
+
     TH2F  * hReSector = 0;
     TH2F  * hMiSector = 0;
     Int_t isector;
@@ -2562,6 +2574,11 @@ void InvMassFit
       firstSide = 10;
       lastSide  = 15;   
     }  
+    if ( kCalorimeter=="EMDCAL" )
+    {
+      firstSide = 0;
+      lastSide  = 15;
+    }
     
     TH2F  * hReSide = 0;
     TH2F  * hMiSide = 0;

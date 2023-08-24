@@ -24,9 +24,9 @@
 #include <AliAnalysisManager.h>
 #include <AliLog.h>
 
-#include "AliJCIaaTask.h"
-#include "../AliJCatalystTask.h"
-#include "../AliJCard.h"
+#include <AliJCIaaTask.h>
+#include <AliJCatalystTask.h>
+#include <AliJCard.h>
 
 //______________________________________________________________________________
 AliJCIaaTask::AliJCIaaTask() :   

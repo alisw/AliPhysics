@@ -217,6 +217,8 @@ void MakeMeanPt() {
     lg[2]->AddEntry(grDeut_pp13[1],"d","P");
   }
   lg[2]->AddEntry(grProt_pp13[1],"p+#bar{p}","P");
+
+  printf("ciao\n");
   
 
   const Int_t Npv=7;

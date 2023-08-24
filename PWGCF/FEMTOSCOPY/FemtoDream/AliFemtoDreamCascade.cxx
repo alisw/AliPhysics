@@ -14,7 +14,7 @@
 
 ClassImp(AliFemtoDreamCascade)
 AliFemtoDreamCascade::AliFemtoDreamCascade()
-    : AliFemtoDreamBasePart(),
+    : AliFemtoDreamBasePart(4),
       fPosDaug(new AliFemtoDreamTrack()),
       fNegDaug(new AliFemtoDreamTrack()),
       fBach(new AliFemtoDreamTrack()),
@@ -63,8 +63,8 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt, AliAODcascade *casc) {
   fIsReset = false;
   fIsSet = true;
   this->SetCharge(casc->ChargeXi());
-  this->SetMomentum(casc->MomXiX(), casc->MomXiY(), casc->MomXiZ());
-  this->SetPt(fP.Pt());
+  this->SetMomentum(0, casc->MomXiX(), casc->MomXiY(), casc->MomXiZ());
+  this->SetPt(GetMomentum().Pt());
   double PrimVtx[3] = { 99., 99., 99 };
   double decayPosXi[3] = { casc->DecayVertexXiX(), casc->DecayVertexXiY(), casc
       ->DecayVertexXiZ() };
@@ -79,8 +79,8 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt, AliAODcascade *casc) {
   fRapXi = casc->RapXi();
   fRapOmega = casc->RapOmega();
   this->SetEta(casc->Eta());
-  this->SetTheta(fP.Theta());
-  this->SetPhi(fP.Phi());
+  this->SetTheta(GetMomentum().Theta());
+  this->SetPhi(GetMomentum().Phi());
   fAlphaXi = casc->AlphaXi();
   fPtArmXi = casc->PtArmXi();
   fDCAXiPrimVtx = casc->DcaXiToPrimVertex(PrimVtx[0], PrimVtx[1], PrimVtx[2]);
@@ -104,9 +104,13 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt, AliAODcascade *casc) {
   fNegDaug->SetTrack(nTrackXi);
   fPosDaug->SetTrack(pTrackXi);
   fBach->SetTrack(bachTrackXi);
-  fNegDaug->SetMomentum(casc->MomNegX(), casc->MomNegY(), casc->MomNegZ());
-  fPosDaug->SetMomentum(casc->MomPosX(), casc->MomPosY(), casc->MomPosZ());
-  fBach->SetMomentum(casc->MomBachX(), casc->MomBachY(), casc->MomBachZ());
+
+  fNegDaug->SetMomentum(0, casc->MomNegX(), casc->MomNegY(), casc->MomNegZ());
+  fPosDaug->SetMomentum(0, casc->MomPosX(), casc->MomPosY(), casc->MomPosZ());
+  fBach->SetMomentum(0, casc->MomBachX(), casc->MomBachY(), casc->MomBachZ());
+  this->SetMomentum(1, casc->MomNegX(), casc->MomNegY(), casc->MomNegZ());
+  this->SetMomentum(2, casc->MomPosX(), casc->MomPosY(), casc->MomPosZ());
+  this->SetMomentum(3, casc->MomBachX(), casc->MomBachY(), casc->MomBachZ());
 
   double posMom[3] = { 0. };
   double negMom[3] = { 0. };
@@ -199,8 +203,8 @@ void AliFemtoDreamCascade::SetCascade(AliVEvent *evt, AliAODcascade *casc) {
   fIsReset = false;
   fIsSet = true;
   this->SetCharge(casc->ChargeXi());
-  this->SetMomentum(casc->MomXiX(), casc->MomXiY(), casc->MomXiZ());
-  this->SetPt(fP.Pt());
+  this->SetMomentum(0, casc->MomXiX(), casc->MomXiY(), casc->MomXiZ());
+  this->SetPt(GetMomentum().Pt());
   double PrimVtx[3] = { 99., 99., 99 };
   double decayPosXi[3] = { casc->DecayVertexXiX(), casc->DecayVertexXiY(), casc
       ->DecayVertexXiZ() };
@@ -215,8 +219,8 @@ void AliFemtoDreamCascade::SetCascade(AliVEvent *evt, AliAODcascade *casc) {
   fRapXi = casc->RapXi();
   fRapOmega = casc->RapOmega();
   this->SetEta(casc->Eta());
-  this->SetTheta(fP.Theta());
-  this->SetPhi(fP.Phi());
+  this->SetTheta(GetMomentum().Theta());
+  this->SetPhi(GetMomentum().Phi());
   fAlphaXi = casc->AlphaXi();
   fPtArmXi = casc->PtArmXi();
   fDCAXiPrimVtx = casc->DcaXiToPrimVertex(PrimVtx[0], PrimVtx[1], PrimVtx[2]);
@@ -237,12 +241,21 @@ void AliFemtoDreamCascade::SetCascade(AliVEvent *evt, AliAODcascade *casc) {
   AliVTrack *pTrackXi = dynamic_cast<AliVTrack*>(casc->GetDaughter(0));
   AliVTrack *bachTrackXi = dynamic_cast<AliVTrack*>(casc->GetDecayVertexXi()
       ->GetDaughter(0));
-  fNegDaug->SetTrack(nTrackXi,evt,0);
-  fPosDaug->SetTrack(pTrackXi,evt,0);
-  fBach->SetTrack(bachTrackXi,evt,0);
-  fNegDaug->SetMomentum(casc->MomNegX(), casc->MomNegY(), casc->MomNegZ());
-  fPosDaug->SetMomentum(casc->MomPosX(), casc->MomPosY(), casc->MomPosZ());
-  fBach->SetMomentum(casc->MomBachX(), casc->MomBachY(), casc->MomBachZ());
+
+  // RE-SET THE TRACKS !!! Somehow, otherwise the MC info is not there. Oton 19/5/2023
+  fNegDaug->SetUseMCInfo(fIsMC);
+  fPosDaug->SetUseMCInfo(fIsMC);
+  fBach->SetUseMCInfo(fIsMC);
+
+  fNegDaug->SetTrack(nTrackXi,evt);
+  fPosDaug->SetTrack(pTrackXi,evt);
+  fBach->SetTrack(bachTrackXi,evt);
+  fNegDaug->SetMomentum(0, casc->MomNegX(), casc->MomNegY(), casc->MomNegZ());
+  fPosDaug->SetMomentum(0, casc->MomPosX(), casc->MomPosY(), casc->MomPosZ());
+  fBach->SetMomentum(0, casc->MomBachX(), casc->MomBachY(), casc->MomBachZ());
+  this->SetMomentum(1, casc->MomNegX(), casc->MomNegY(), casc->MomNegZ());
+  this->SetMomentum(2, casc->MomPosX(), casc->MomPosY(), casc->MomPosZ());
+  this->SetMomentum(3, casc->MomBachX(), casc->MomBachY(), casc->MomBachZ());
 
   double posMom[3] = { 0. };
   double negMom[3] = { 0. };
@@ -339,11 +352,11 @@ void AliFemtoDreamCascade::SetCascade(AliESDEvent *evt, AliMCEvent *mcEvent,
   int idxBachFromCascade = casc->GetBindex();
 
   AliESDtrack *esdCascadePos = evt->GetTrack(idxPosFromV0Dghter);
-  fPosDaug->SetTrack(esdCascadePos, mcEvent, -1, false);
+  fPosDaug->SetTrack(esdCascadePos, mcEvent, false);
   AliESDtrack *esdCascadeNeg = evt->GetTrack(idxNegFromV0Dghter);
-  fNegDaug->SetTrack(esdCascadeNeg, mcEvent, -1, false);
+  fNegDaug->SetTrack(esdCascadeNeg, mcEvent, false);
   AliESDtrack *esdCascadeBach = evt->GetTrack(idxBachFromCascade);
-  fBach->SetTrack(esdCascadeBach, mcEvent, -1, false);
+  fBach->SetTrack(esdCascadeBach, mcEvent, false);
   // Identification of the V0 within the esdCascade (via both daughter track indices)
   AliESDv0 * currentV0 = 0x0;
   int idxV0FromCascade = -1;
@@ -371,18 +384,22 @@ void AliFemtoDreamCascade::SetCascade(AliESDEvent *evt, AliMCEvent *mcEvent,
   //the momenta of the daughters have to be taken at the v0 vertex,
   //the bachelor momenta at the cascade vertex
   currentV0->GetPPxPyPz(posMom[0], posMom[1], posMom[2]);
-  fPosDaug->SetMomentum(posMom[0], posMom[1], posMom[2]);
+  fPosDaug->SetMomentum(0, posMom[0], posMom[1], posMom[2]);
   currentV0->GetNPxPyPz(negMom[0], negMom[1], negMom[2]);
-  fNegDaug->SetMomentum(negMom[0], negMom[1], negMom[2]);
+  fNegDaug->SetMomentum(0, negMom[0], negMom[1], negMom[2]);
   casc->GetBPxPyPz(bachMom[0], bachMom[1], bachMom[2]);
-  fBach->SetMomentum(bachMom[0], bachMom[1], bachMom[2]);
+  fBach->SetMomentum(0, bachMom[0], bachMom[1], bachMom[2]);
+
+  this->SetMomentum(1, negMom[0], negMom[1], negMom[2]);
+  this->SetMomentum(2, posMom[0], posMom[1], posMom[2]);
+  this->SetMomentum(3, bachMom[0], bachMom[1], bachMom[2]);
 
   TVector3 xiMom = fPosDaug->GetMomentum();
   xiMom += fNegDaug->GetMomentum();
   xiMom += fBach->GetMomentum();
 
-  this->SetMomentum(xiMom.X(), xiMom.Y(), xiMom.Z());
-  this->SetPt(fP.Pt());
+  this->SetMomentum(0, xiMom.X(), xiMom.Y(), xiMom.Z());
+  this->SetPt(GetMomentum().Pt());
 
   double PrimVtx[3] = { 99., 99., 99 };
   double decayPosXi[3] = { 0. };
@@ -529,7 +546,10 @@ void AliFemtoDreamCascade::Reset() {
     fv0ToXiPointAngle = 0;
     fv0Length = 0;
     fDCAv0Xi = 0;
-    fP.SetXYZ(0, 0, 0);
+    GetMomentum(0).SetXYZ(0, 0, 0);
+    GetMomentum(1).SetXYZ(0, 0, 0);
+    GetMomentum(2).SetXYZ(0, 0, 0);
+    GetMomentum(3).SetXYZ(0, 0, 0);
     fMCP.SetXYZ(0, 0, 0);
     fPt = 0;
     fMCPt = 0;
@@ -581,6 +601,8 @@ void AliFemtoDreamCascade::SetMCMotherInfo(AliVEvent *evt,
 void AliFemtoDreamCascade::SetMCMotherInfo(TClonesArray *mcarray,
                                            AliAODcascade *casc) {
   if (fBach->IsSet() && fPosDaug->IsSet() && fNegDaug->IsSet()) {
+    //initalize to -1 (since 0 is an actual partice (parton?) in the MC stack). Oton 19/5/2023
+    this->SetMotherID(-1);
     //look if the bachelor is from a weak decay and find the label of the
     //mother
     int labelBachMother = -1;
@@ -662,6 +684,26 @@ void AliFemtoDreamCascade::SetMCMotherInfo(TClonesArray *mcarray,
                     this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
 //                    std::cout << "An Unknown \n";
                   }
+
+
+                  //set mother ID as for v0 (Oton. 19/5/2023) 
+                   int motherID = mcPart->GetMother();
+                   int lastMother = motherID;
+                   AliAODMCParticle *mcMother = nullptr;
+                   while (motherID != -1) {
+                     lastMother = motherID;
+                     mcMother = (AliAODMCParticle *) mcarray->At(motherID);
+                     motherID = mcMother->GetMother();
+                   }
+                   if (lastMother!=-1) {
+                     mcMother = (AliAODMCParticle *) mcarray->At(lastMother);
+                   }
+                   if (mcMother) {
+                     this->SetMotherPDG(mcMother->GetPdgCode());
+                     this->SetMotherID(lastMother);
+                   }
+                 //----
+
                 } else {
                   //combinatorial background
                   this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);

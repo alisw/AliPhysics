@@ -61,6 +61,21 @@ Bool_t AliReducedCompositeCut::IsSelected(TObject* obj, Float_t* values) {
   else return kFALSE;
 }
 
+//____________________________________________________________________________
+Bool_t AliReducedCompositeCut::IsSelected(Float_t* values) {
+  //
+  // apply cuts
+  //
+  for(Int_t iCut=0; iCut<fCuts.GetEntries(); ++iCut) {
+     AliReducedInfoCut* cut = (AliReducedInfoCut*)fCuts.At(iCut);
+
+     if(fOptionUseAND && !cut->IsSelected(values)) return kFALSE;
+     if(!fOptionUseAND && cut->IsSelected(values)) return kTRUE;
+  }
+
+  if(fOptionUseAND) return kTRUE;
+  else return kFALSE;
+}
 
 //____________________________________________________________________________
 Bool_t AliReducedCompositeCut::IsSelected(TObject* obj) {

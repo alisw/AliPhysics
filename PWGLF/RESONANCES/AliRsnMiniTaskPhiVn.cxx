@@ -12,6 +12,7 @@
 
 #include <Riostream.h>
 
+#include <TObjString.h>
 #include <TH1.h>
 #include <TList.h>
 #include <TTree.h>

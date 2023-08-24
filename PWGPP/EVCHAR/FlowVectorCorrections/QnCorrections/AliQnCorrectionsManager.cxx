@@ -31,6 +31,7 @@
 /// \file AliQnCorrectionsManager.cxx
 /// \brief Implementation of the class AliQnCorrectionsManager
 
+#include <TObjString.h>
 #include <TFile.h>
 #include <TList.h>
 #include <TKey.h>

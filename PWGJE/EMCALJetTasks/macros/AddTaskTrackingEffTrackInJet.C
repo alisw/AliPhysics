@@ -10,13 +10,13 @@
 #include "AliParticleContainer.h"
 #endif
 
-EMCalTriggerPtAnalysis::AliAnalysisTaskPtEfficiencyJets *AddTaskTrackingEffTrackInJet(
+PWGJE::EMCALJetTasks::AliAnalysisTaskPtEfficiencyJets *AddTaskTrackingEffTrackInJet(
     const char * mcjetcontainer  = "",
     double jetradius
     )
 {
-  EMCalTriggerPtAnalysis::AliAnalysisTaskPtEfficiencyJets *analysis =
-      new EMCalTriggerPtAnalysis::AliAnalysisTaskPtEfficiencyJets("HighPtTrackingEfficiencyTask");
+  PWGJE::EMCALJetTasks::AliAnalysisTaskPtEfficiencyJets *analysis =
+      new PWGJE::EMCALJetTasks::AliAnalysisTaskPtEfficiencyJets("HighPtTrackingEfficiencyTask");
 
   analysis->SetIsPythia(true);
 

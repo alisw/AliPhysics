@@ -259,16 +259,16 @@ void AliAnalysisTaskOmegaMCStudies::ProcessMCParticles()
 
     
     // fill primary histograms
-    TParticle* particle         = nullptr;
-    particle                    = (TParticle *)fMCEvent->Particle(i);
+    AliVParticle* particle     = nullptr;
+    particle                    = (AliVParticle *)fMCEvent->GetTrack(i);
     if (!particle) continue;
 
-    switch(particle->GetPdgCode()){
+    switch(particle->PdgCode()){
     case kPdgOmega:
       fHistPtYOmega->Fill(particle->Pt(), particle->Y(),fWeight);
       if(IsPiPlusPiMinusPiZeroDecay(particle)){
         fHistPtYOmegaPiPiPi->Fill(particle->Pt(), particle->Y(),fWeight);
-        TParticle* pi0 = (TParticle*) fMCEvent->Particle(ReturnPi0FromOmega(particle));
+        AliVParticle* pi0 = (AliVParticle*) fMCEvent->GetTrack(ReturnPi0FromOmega(particle));
         fHistOmegaPtPi0Pt->Fill(particle->Pt(),pi0->Pt(),fWeight);
       }
       break; 
@@ -279,7 +279,7 @@ void AliAnalysisTaskOmegaMCStudies::ProcessMCParticles()
       fHistPtYEtaPrime->Fill(particle->Pt(), particle->Y(),fWeight);
       if(IsPiPlusPiMinusEtaDecay(particle)){
         fHistPtYEtaPrimeEtaPiPi->Fill(particle->Pt(), particle->Y(),fWeight);
-        TParticle* eta = (TParticle*) fMCEvent->Particle(ReturnEtaFromEtaPrime(particle));
+        AliVParticle* eta = (AliVParticle*) fMCEvent->GetTrack(ReturnEtaFromEtaPrime(particle));
         fHistEtaPrimePtEtaPt->Fill(particle->Pt(),eta->Pt(),fWeight);
       }
       break; 
@@ -291,16 +291,16 @@ void AliAnalysisTaskOmegaMCStudies::ProcessMCParticles()
 
 //________________________________________________________________________
 // check if given particle decays to pi+pi-pi0
-bool AliAnalysisTaskOmegaMCStudies::IsPiPlusPiMinusPiZeroDecay(TParticle* part) const{
+bool AliAnalysisTaskOmegaMCStudies::IsPiPlusPiMinusPiZeroDecay(AliVParticle* part) const{
    // check number of daughters
    Bool_t foundPi0     = kFALSE;
    Bool_t foundPiPlus  = kFALSE;
    Bool_t foundPiMinus = kFALSE;
    
    if(part->GetNDaughters()==3){
-     for(Int_t i = part->GetFirstDaughter(); i <= part->GetLastDaughter();i++){
-         TParticle* daughter = (TParticle*) fMCEvent->Particle(i);
-         switch(daughter->GetPdgCode()){
+     for(Int_t i = part->GetDaughterFirst(); i <= part->GetDaughterLast();i++){
+         AliVParticle* daughter = (AliVParticle*) fMCEvent->GetTrack(i);
+         switch(daughter->PdgCode()){
            case kPdgPi0:     foundPi0      = kTRUE; break;
            case kPdgPiPlus:  foundPiPlus   = kTRUE; break;
            case kPdgPiMinus: foundPiMinus  = kTRUE; break;
@@ -318,16 +318,16 @@ bool AliAnalysisTaskOmegaMCStudies::IsPiPlusPiMinusPiZeroDecay(TParticle* part) 
 
 //________________________________________________________________________
 // check if given particle decays to pi+pi-eta
-bool AliAnalysisTaskOmegaMCStudies::IsPiPlusPiMinusEtaDecay(TParticle* part) const{
+bool AliAnalysisTaskOmegaMCStudies::IsPiPlusPiMinusEtaDecay(AliVParticle* part) const{
    // check number of daughters
    Bool_t foundEta     = kFALSE;
    Bool_t foundPiPlus  = kFALSE;
    Bool_t foundPiMinus = kFALSE;
    
    if(part->GetNDaughters()==3){
-     for(Int_t i = part->GetFirstDaughter(); i <= part->GetLastDaughter();i++){
-         TParticle* daughter = (TParticle*) fMCEvent->Particle(i);
-         switch(daughter->GetPdgCode()){
+     for(Int_t i = part->GetDaughterFirst(); i <= part->GetDaughterLast();i++){
+         AliVParticle* daughter = (AliVParticle*) fMCEvent->GetTrack(i);
+         switch(daughter->PdgCode()){
            case kPdgEta:     foundEta      = kTRUE; break;
            case kPdgPiPlus:  foundPiPlus   = kTRUE; break;
            case kPdgPiMinus: foundPiMinus  = kTRUE; break;
@@ -345,12 +345,12 @@ bool AliAnalysisTaskOmegaMCStudies::IsPiPlusPiMinusEtaDecay(TParticle* part) con
 
 //________________________________________________________________________
 // return stack position pi0 from omega->pi+pi-pi0 decay
-Int_t AliAnalysisTaskOmegaMCStudies::ReturnPi0FromOmega(TParticle* part){
+Int_t AliAnalysisTaskOmegaMCStudies::ReturnPi0FromOmega(AliVParticle* part){
    // check number of daughters
    if(part->GetNDaughters()==3){
-     for(Int_t i = part->GetFirstDaughter(); i <= part->GetLastDaughter();i++){
-       TParticle* daughter = (TParticle*) fMCEvent->Particle(i);
-       if(   (TMath::Abs(daughter->GetPdgCode())== kPdgPi0)){
+     for(Int_t i = part->GetDaughterFirst(); i <= part->GetDaughterLast();i++){
+       AliVParticle* daughter = (AliVParticle*) fMCEvent->GetTrack(i);
+       if(   (TMath::Abs(daughter->PdgCode())== kPdgPi0)){
            return i;
        } 
 
@@ -364,12 +364,12 @@ Int_t AliAnalysisTaskOmegaMCStudies::ReturnPi0FromOmega(TParticle* part){
 
 //________________________________________________________________________
 // return stack position of eta from eta'->pi+pi-eta decay
-Int_t AliAnalysisTaskOmegaMCStudies::ReturnEtaFromEtaPrime(TParticle* part){
+Int_t AliAnalysisTaskOmegaMCStudies::ReturnEtaFromEtaPrime(AliVParticle* part){
    // check number of daughters
    if(part->GetNDaughters()==3){
-     for(Int_t i = part->GetFirstDaughter(); i <= part->GetLastDaughter();i++){
-       TParticle* daughter = (TParticle*) fMCEvent->Particle(i);       
-       if(   (TMath::Abs(daughter->GetPdgCode())== kPdgEta)){
+     for(Int_t i = part->GetDaughterFirst(); i <= part->GetDaughterLast();i++){
+       AliVParticle* daughter = (AliVParticle*) fMCEvent->GetTrack(i);
+       if(   (TMath::Abs(daughter->PdgCode())== kPdgEta)){
            return i;
        } 
 
@@ -381,7 +381,7 @@ Int_t AliAnalysisTaskOmegaMCStudies::ReturnEtaFromEtaPrime(TParticle* part){
 }
 
 //________________________________________________________________________
-bool AliAnalysisTaskOmegaMCStudies::IsInPCMAcceptance(TParticle* part) const {
+bool AliAnalysisTaskOmegaMCStudies::IsInPCMAcceptance(AliVParticle* part) const {
   const Double_t kBoundaryEta = 0.900001;
   if (//part->Pt() > 0.050 
   //&& 
@@ -391,7 +391,7 @@ bool AliAnalysisTaskOmegaMCStudies::IsInPCMAcceptance(TParticle* part) const {
 }
 
 //________________________________________________________________________
-bool AliAnalysisTaskOmegaMCStudies::IsInPHOSAcceptance(TParticle* part) const {
+bool AliAnalysisTaskOmegaMCStudies::IsInPHOSAcceptance(AliVParticle* part) const {
   const Double_t kBoundaryEtaMin = -0.13;
   const Double_t kBoundaryEtaMax = 0.13;
   const Double_t kBoundaryPhiMin = 4.54;
@@ -403,7 +403,7 @@ bool AliAnalysisTaskOmegaMCStudies::IsInPHOSAcceptance(TParticle* part) const {
 }
 
 //________________________________________________________________________
-bool AliAnalysisTaskOmegaMCStudies::IsInEMCalAcceptance(TParticle* part) const {
+bool AliAnalysisTaskOmegaMCStudies::IsInEMCalAcceptance(AliVParticle* part) const {
   const Double_t kBoundaryEtaMin = -0.6687;
   const Double_t kBoundaryEtaMax = 0.66465;
   const Double_t kBoundaryPhiMin = 1.39626;
@@ -415,7 +415,7 @@ bool AliAnalysisTaskOmegaMCStudies::IsInEMCalAcceptance(TParticle* part) const {
 }
 
 //________________________________________________________________________
-bool AliAnalysisTaskOmegaMCStudies::IsInFOCALAcceptance(TParticle* part) const {
+bool AliAnalysisTaskOmegaMCStudies::IsInFOCALAcceptance(AliVParticle* part) const {
   const Double_t kBoundaryEtaMin = 3.2;
   const Double_t kBoundaryEtaMax = 5.3;
   //if (part->Pt() < 0.400) return false;
@@ -424,7 +424,7 @@ bool AliAnalysisTaskOmegaMCStudies::IsInFOCALAcceptance(TParticle* part) const {
 }
 
 //________________________________________________________________________
-bool AliAnalysisTaskOmegaMCStudies::IsInLHCbAcceptance(TParticle* part) const {
+bool AliAnalysisTaskOmegaMCStudies::IsInLHCbAcceptance(AliVParticle* part) const {
   const Double_t kBoundaryEtaMin = 1.9;
   const Double_t kBoundaryEtaMax = 5.1;
   //if (part->Pt() < 0.400) return false;
@@ -433,7 +433,7 @@ bool AliAnalysisTaskOmegaMCStudies::IsInLHCbAcceptance(TParticle* part) const {
 }
 
 //________________________________________________________________________
-bool AliAnalysisTaskOmegaMCStudies::IsInMidAcceptance(TParticle* part) const {
+bool AliAnalysisTaskOmegaMCStudies::IsInMidAcceptance(AliVParticle* part) const {
   const Double_t kBoundaryEtaMin = -1;
   const Double_t kBoundaryEtaMax = 1.;
   //if (part->Pt() < 0.400) return false;

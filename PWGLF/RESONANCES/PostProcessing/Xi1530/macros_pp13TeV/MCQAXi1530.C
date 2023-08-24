@@ -513,13 +513,15 @@ void MCQAXi1530(TString rsnmcfile = "LHC18c6d_vertexer") {
     auto hInvMass_MC = BSTHnSparseHelper::Load("hInvMass", clist_MC);
     auto hInvMass_MC_MB = BSTHnSparseHelper::Load("hInvMass", clist_MC);
 
+    /*
     auto clist_MC_INEL = LoadXi1530ResultList(
         rsnmcfile.Data(), "Xi1530INEL");  // From Resonance Injected MC
     auto hInvMass_MC_INEL = BSTHnSparseHelper::Load("hInvMass", clist_MC);
+    */
 
     // pT binning
     hInvMass_MC_MB.SetBin("Pt", ptbin);
-    hInvMass_MC_INEL.SetBin("Pt", ptbin);
+    //hInvMass_MC_INEL.SetBin("Pt", ptbin);
 
     // Multiplicity percentile binning
     hInvMass_MC.SetBin("Cent", centbin);          // for Trigger Efficiency
@@ -546,8 +548,11 @@ void MCQAXi1530(TString rsnmcfile = "LHC18c6d_vertexer") {
         "fNormalisationHist");  // N of Event through event cuts
     auto hInvMass_MC_General_Trig =
         BSTHnSparseHelper::Load("htriggered_CINT7", clist_MC);
+    
+    /*
     auto hInvMass_MC_General_Trig_INEL =
         BSTHnSparseHelper::Load("htriggered_CINT7", clist_MC_INEL);
+    */
 
     auto htrue_cent =
         hInvMass_MC_General_Trig.GetTH1("true", 1, {1, -1, -1}); // MC True INEL>0

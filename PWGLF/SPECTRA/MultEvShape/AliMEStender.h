@@ -17,7 +17,7 @@
 
 class AliAnalysisFilter;
 class AliPIDCombined;
-//class AliESDevent;
+class AliEventCuts;
 class AliMCEvent;
 class TObjArray;
 class AliMESeventInfo;
@@ -30,16 +30,18 @@ public:
   public:
     friend class AliMEStender;
     enum EMESconfigEventCuts{
-        kNoEC = 0           // no event cuts
-      ,kStandard           // vertex and trigger cuts
+      kNoEC = 0     // no event cuts
+			,k7TeV    // vertex and trigger cuts for 7TeV
+      ,k13TeV       // vertex and trigger cuts for 13TeV
     };
     enum EMESconfigTrackCuts{
-        kNoTC = 0                     // no track cuts
-      ,kStandardITSTPCTrackCuts2010  // 2010 standard cuts
+      kNoTC = 0                      // no track cuts
+			,kStandardITSTPCTrackCuts2010  // 2010 standard cuts
+      ,kStandardITSTPCTrackCuts2011  // 2011 standard cuts
     };
     enum EMESconfigPIDpriors{
-        kNoPP = 0                     // no priors
-      ,kTPC                          // TPC priors
+      kNoPP = 0                    // no priors
+      ,kTPC                        // TPC priors
       ,kIterative                  // iterative priors
     };
 
@@ -60,14 +62,16 @@ public:
     ,kPP          = BIT(19)     // pp/pA data
     ,kPostProcess = BIT(20)     // run pos processing of QA histos
   };
-  enum EMEStenderQA{
-     kConfig = 0
-    ,kEfficiency
-    ,kEvInfo
-    ,kTrkInfo
-    ,kMCevInfo
-    ,kMCtrkInfo
-    ,kNqa
+  enum EMEStenderQA
+  {
+    kConfig = 0,
+    kEfficiency,
+    kEfficiencyMC,
+    kEvInfo,
+    kTrkInfo,
+    kMCevInfo,
+    kMCtrkInfo,
+    kNqa
   };
   AliMEStender();
   AliMEStender(const char *name);
@@ -99,7 +103,9 @@ private:
 
   AliMESconfigTender  fConfig;       // currrent configuration of task
 
-  AliAnalysisFilter  *fTrackFilter;  // working track filter
+  AliEventCuts *fEventFilterMB;      // working event filter
+  AliEventCuts *fEventFilterHM;      // working event filter
+  AliAnalysisFilter *fTrackFilter;   // working track filter
   AliPIDCombined     *fPIDcomb;      // working PID combined service
 
   TObjArray *fTracks;  //!
@@ -109,7 +115,7 @@ private:
 
   AliPPVsMultUtils *fUtils;
 
-  ClassDef(AliMEStender, 5)          // Tender task for the Multi Event Shape
+  ClassDef(AliMEStender, 6)          // Tender task for the Multi Event Shape
 };
 
 #endif

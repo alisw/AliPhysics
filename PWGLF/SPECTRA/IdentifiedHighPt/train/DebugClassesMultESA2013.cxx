@@ -16,6 +16,8 @@ TObject(),
   eta(-999),
   phi(-999),
   dedx(-999),
+  protNSigma(-999),
+  pionNSigma(-999),
   dcaxy(-999),
   dcaz(-999),
   mother(0),
@@ -45,8 +47,9 @@ void DeDxTrack::Copy(TObject& object) const
   track->pttrue     = pttrue;    
   track->eta        = eta;       
   track->phi        = phi;       
-  track->dedx       = dedx;    
-  
+  track->dedx       = dedx;
+  track->protNSigma = protNSigma;
+  track->pionNSigma = pionNSigma;    
   track->dcaxy      = dcaxy;     
   track->dcaz       = dcaz;      
   track->mother     = mother;    
@@ -109,6 +112,7 @@ TObject(),
   dcadaughters(999),
   pdg(0),
   pdgmother(0),
+  oobPileupFlag(-1),
   primary(-1),  
   status(),  
   ptrack(),
@@ -128,7 +132,7 @@ void DeDxV0::Copy(TObject& object) const
 
   v0->p	            = p;		 
   v0->pt	    = pt;		 
-  v0->eta	    = eta;		 
+  v0->eta	    = eta;
   v0->phi	    = phi;		 
   v0->pdca	    = pdca;		 
   v0->ndca	    = ndca;		 
@@ -146,6 +150,7 @@ void DeDxV0::Copy(TObject& object) const
   v0->dcadaughters = dcadaughters;	 
   v0->pdg	    = pdg;		 
   v0->pdgmother	    = pdgmother;
+  v0->oobPileupFlag = oobPileupFlag;
   v0->primary       = primary;  	 
   v0->status  	    = status;  	 
 

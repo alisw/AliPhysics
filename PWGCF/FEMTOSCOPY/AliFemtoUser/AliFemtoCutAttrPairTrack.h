@@ -235,7 +235,7 @@ struct PairCutTrackAttrDetaDphiStar {
   PairCutTrackAttrDetaDphiStar()
    : delta_eta_min(0.0)
    , delta_phistar_min(0.0)
-   , phistar_radius(1.2)
+   , phistar_radius(1.1)
    , fCurrentMagneticField(0.0)
    {
    }
@@ -243,7 +243,7 @@ struct PairCutTrackAttrDetaDphiStar {
   PairCutTrackAttrDetaDphiStar(AliFemtoConfigObject &cut)
    : delta_eta_min(cut.pop_num("delta_eta_min", 0.0))
    , delta_phistar_min(cut.pop_num("delta_phistar_min", 0.0))
-   , phistar_radius(cut.pop_num("phistar_radius", 1.2))
+   , phistar_radius(cut.pop_num("phistar_radius", 1.1))
    , fCurrentMagneticField(0.0)
    {
    }
@@ -254,7 +254,7 @@ struct PairCutTrackAttrDetaDphiStar {
                                 &p2 = track2.P();
 
       const double deta = calc_delta_eta(p1, p2);
-      if (delta_eta_min <= std::fabs(deta)) {
+      if (std::abs(deta) >= delta_eta_min) {
         return true;
       }
 
@@ -263,8 +263,16 @@ struct PairCutTrackAttrDetaDphiStar {
                             p2, track2.Charge(),
                             phistar_radius,
                             fCurrentMagneticField);
+      if (std::abs(dphi) >= delta_phistar_min) {
+        return true;
+      }
 
-      return delta_phistar_min * delta_phistar_min <= deta * deta + dphi * dphi;
+      const double
+        a = deta / delta_eta_min,
+        b = dphi / delta_phistar_min;
+
+      // cut within the ellipse
+      return a*a + b*b >= 1.0;
     }
 
   static double calc_delta_eta(const AliFemtoThreeVector &p1,

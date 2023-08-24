@@ -30,7 +30,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_PbPb(
     Int_t     selectHeavyNeutralMeson     = 0,                        //run eta prime instead of omega
     Int_t     enableQAMesonTask           = 1,                        //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson
     Int_t     enableExtMatchAndQA         = 0,                        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
-    Bool_t    enableTriggerMimicking      = kFALSE,                   // enable trigger mimicking
+    Int_t     enableTriggerMimicking      = 0,                        // enable trigger mimicking
     Bool_t    enableTriggerOverlapRej     = kFALSE,                   // enable trigger overlap rejection
     TString   fileNameInputForWeighting   = "MCSpectraInput.root",    // path to file for weigting input
     Bool_t    doWeighting                 = kFALSE,                   //enable Weighting
@@ -39,11 +39,21 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_PbPb(
     TString   periodNameV0Reader          = "",                       // period Name for V0Reader
     Int_t     runLightOutput              = 0,                        // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
     Int_t     prefilterRunFlag            = 1500,                     // flag to change the prefiltering of ESD tracks. See SetHybridTrackCutsAODFiltering() in AliPrimaryPionCuts
+    Bool_t    enableSortingMCLabels       = kTRUE,                    // enable sorting for MC cluster labels
     TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
-  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
+  AliCutHandlerPCM cuts(13);
+  TString addTaskName                       = "AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_PbPb";
+
+  TString corrTaskSetting             = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "", addTaskName);
+  if(corrTaskSetting.CompareTo(""))
+    cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
+
   //parse additionalTrainConfig flag
+  Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
+  TString unsmearingoutputs = "012"; // 0: No correction, 1: One pi0 mass errer subtracted, 2: pz of pi0 corrected to fix its mass, 3: Lambda(alpha)*DeltaPi0 subtracted, 4: Analytic PCMEMC unsmearing
+
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
   TObjString* rAdditionalTrainConfig;
@@ -57,6 +67,17 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_PbPb(
         tempType.Replace(0,2,"");
         trackMatcherRunningMode = tempType.Atoi();
         cout << Form("INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_PbPb will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
+      }
+      if(tempStr.BeginsWith("UNSMEARING")){
+        TString tempType = tempStr;
+        tempType.Replace(0,9,"");
+        unsmearingoutputs = tempType;
+        cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pPb will output the following minv_pT histograms:" << endl;
+        if(unsmearingoutputs.Contains("4")) cout << "- Analytic PCM unsmearing" << endl;
+        else if(unsmearingoutputs.Contains("0")) cout << "- Uncorrected" << endl;
+        if(unsmearingoutputs.Contains("1")) cout << "- SubNDM" << endl;
+        if(unsmearingoutputs.Contains("2")) cout << "- Fixpz" << endl;
+        if(unsmearingoutputs.Contains("3")) cout << "- SubLambda" << endl;
       }
     }
   }
@@ -111,7 +132,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
         fPionSelector->SetPrimaryPionCuts(fPionCuts);
         fPionCuts->SetFillCutHistograms("",kTRUE);
       }
-    } 
+    }
 
     fPionSelector->Init();
     mgr->AddTask(fPionSelector);
@@ -128,8 +149,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   if(runLightOutput>1) task->SetLightOutput(kTRUE);
   task->SetTolerance(tolerance);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
-
-  AliCutHandlerPCM cuts(13);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
 
 
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -150,25 +170,25 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
    // Test for EMCal (13 TeV) without background calculation
   } else if ( trainConfig == 100) { // with TPC refit + ITS requirement
-    cuts.AddCutHeavyMesonPCMCalo("10130a13","00200009f9730000dge0400000","411798305k0a2220000","32c51070a","0103603700000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCMCalo("11310a13","00200009f9730000dge0400000","411798305k0b2220000","32c51070a","0103603700000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCMCalo("13530a13","00200009f9730000dge0400000","411798305k032220000","32c51070a","0103603700000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCMCalo("15910a13","00200009f9730000dge0400000","411798305k032220000","32c51070a","0103603700000000","0453503000000000"); 
-  
+    cuts.AddCutHeavyMesonPCMCalo("10130a13","00200009f9730000dge0400000","411798305k0a2220000","32c51070a","0103603700000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCMCalo("11310a13","00200009f9730000dge0400000","411798305k0b2220000","32c51070a","0103603700000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCMCalo("13530a13","00200009f9730000dge0400000","411798305k032220000","32c51070a","0103603700000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCMCalo("15910a13","00200009f9730000dge0400000","411798305k032220000","32c51070a","0103603700000000","0453503000000000");
+
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //                                          ETA PRIME MESON
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  
+
   } else if( trainConfig == 200 ) {
     // everything open, min pt charged pi = 100 MeV
-    cuts.AddCutHeavyMesonPCMCalo("10130a13","00200009f9730000dge0400000","411798305k0a2220000","32c510700","0103603l00000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCMCalo("11310a13","00200009f9730000dge0400000","411798305k0b2220000","32c510700","0103603l00000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCMCalo("13530a13","00200009f9730000dge0400000","411798305k032220000","32c510700","0103603l00000000","0453503000000000"); 
-    cuts.AddCutHeavyMesonPCMCalo("15910a13","00200009f9730000dge0400000","411798305k032220000","32c510700","0103603l00000000","0453503000000000"); 
+    cuts.AddCutHeavyMesonPCMCalo("10130a13","00200009f9730000dge0400000","411798305k0a2220000","32c510700","0103603l00000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCMCalo("11310a13","00200009f9730000dge0400000","411798305k0b2220000","32c510700","0103603l00000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCMCalo("13530a13","00200009f9730000dge0400000","411798305k032220000","32c510700","0103603l00000000","0453503000000000");
+    cuts.AddCutHeavyMesonPCMCalo("15910a13","00200009f9730000dge0400000","411798305k032220000","32c510700","0103603l00000000","0453503000000000");
 
-    
+
   } else {
     Error(Form("GammaConvNeutralMeson_MixedMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -214,6 +234,10 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     TString caloCutPos = cuts.GetClusterCut(i);
     caloCutPos.Resize(1);
     TString TrackMatcherName = Form("CaloTrackMatcher_%s_%i",caloCutPos.Data(),trackMatcherRunningMode);
+    if(corrTaskSetting.CompareTo("")){
+      TrackMatcherName = TrackMatcherName+"_"+corrTaskSetting.Data();
+      cout << "Using separate track matcher for correction framework setting: " << TrackMatcherName.Data() << endl;
+    }
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
       AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi(),trackMatcherRunningMode);
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
@@ -223,6 +247,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
     analysisEventCuts[i] = new AliConvEventCuts();
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     analysisEventCuts[i]->SetTriggerOverlapRejecion(enableTriggerOverlapRej);
 
@@ -245,6 +270,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
     analysisClusterCuts[i] = new AliCaloPhotonCuts();
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if(runLightOutput>0) analysisClusterCuts[i]->SetLightOutput(kTRUE);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
@@ -299,17 +325,22 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   task->SetNeutralPionCutList(NeutralPionCutList);
   task->SetMesonCutList(MesonCutList);
   task->SetPionCutList(PionCutList);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
 
   task->SetMoveParticleAccordingToVertex(kTRUE);
   task->SetSelectedHeavyNeutralMeson(selectHeavyNeutralMeson);
 
   task->SetDoMesonQA(enableQAMesonTask );
 
+  task->SetUnsmearedOutputs(unsmearingoutputs);
+
+  task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
+
   //connect containers
   AliAnalysisDataContainer *coutput =
-  mgr->CreateContainer(Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig), TList::Class(),
+  mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig) : Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i_%s.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig, corrTaskSetting.Data()), TList::Class(),
               AliAnalysisManager::kOutputContainer,Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig));
-
+  
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);

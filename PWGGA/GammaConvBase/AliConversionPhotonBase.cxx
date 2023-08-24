@@ -29,7 +29,7 @@ AliConversionPhotonBase::AliConversionPhotonBase() :
   fConversionPoint[2]=-999;
 }
 
-
+//________________________________________________________________________
 AliConversionPhotonBase::AliConversionPhotonBase(const AliConversionPhotonBase & original) :
   fChi2perNDF(original.fChi2perNDF),
   fIMass(original.fIMass),
@@ -54,70 +54,74 @@ AliConversionPhotonBase::AliConversionPhotonBase(const AliConversionPhotonBase &
 
   }
 
+//________________________________________________________________________
 AliConversionPhotonBase::~AliConversionPhotonBase() {
 // empty standard destructor
 
 }
 
-
+//________________________________________________________________________
 AliConversionPhotonBase & AliConversionPhotonBase::operator = (const AliConversionPhotonBase & /*source*/)
 {
   // assignment operator
   return *this;
 }
 
-TParticle *AliConversionPhotonBase::GetMCParticle(AliMCEvent *mcEvent){
+//________________________________________________________________________
+AliVParticle *AliConversionPhotonBase::GetMCParticle(AliMCEvent *mcEvent){
   if(!mcEvent){printf("MCEvent not defined");return 0x0;}
 
   Int_t label=GetMCParticleLabel(mcEvent);
 
   if(label>-1){
-    return mcEvent->Particle(label);
+    return (AliVParticle*) mcEvent->GetTrack(label);
   }
 
   return 0x0;
 }
 
+//________________________________________________________________________
 Bool_t AliConversionPhotonBase::IsTruePhoton(AliMCEvent *mcEvent){
-  TParticle *mcgamma=GetMCParticle(mcEvent);
+  AliVParticle *mcgamma=GetMCParticle(mcEvent);
 
   if(mcgamma){
     // Check if it is a true photon
-    if(mcgamma->GetPdgCode()==22){
+    if(mcgamma->PdgCode()==22){
           return kTRUE;
     }
   }
   return kFALSE;
 }
 
+//________________________________________________________________________
 Int_t AliConversionPhotonBase::GetMCParticleLabel(AliMCEvent *mcEvent){
   if(!mcEvent){printf("MCEvent not defined");return -1;}
 
-  TParticle *fPositiveMCParticle=GetPositiveMCDaughter(mcEvent);
-  TParticle *fNegativeMCParticle=GetNegativeMCDaughter(mcEvent);
+  AliVParticle *fPositiveMCParticle=GetPositiveMCDaughter(mcEvent);
+  AliVParticle *fNegativeMCParticle=GetNegativeMCDaughter(mcEvent);
 
   if(!fPositiveMCParticle||!fNegativeMCParticle){return -1;}
 
-  if(fPositiveMCParticle->GetMother(0)>-1&&(fNegativeMCParticle->GetMother(0) == fPositiveMCParticle->GetMother(0))){
-    return fPositiveMCParticle->GetMother(0);
+  if(fPositiveMCParticle->GetMother()>-1&&(fNegativeMCParticle->GetMother() == fPositiveMCParticle->GetMother())){
+    return fPositiveMCParticle->GetMother();
   }
 
   return -1;
 }
 
-
-TParticle *AliConversionPhotonBase::GetMCDaughter(AliMCEvent *mcEvent,Int_t label){
+//________________________________________________________________________
+AliVParticle *AliConversionPhotonBase::GetMCDaughter(AliMCEvent *mcEvent,Int_t label){
     if(!mcEvent){printf("MCEvent not defined \n");return 0x0;}
     if(label<0||label>1){printf("Requested index out of bounds: %i \n",label);return 0x0;}
 
     if(fMCLabel[label]>-1){
-      TParticle *fMCDaughter=mcEvent->Particle(fMCLabel[label]);
+      AliVParticle *fMCDaughter = (AliVParticle*) mcEvent->GetTrack(fMCLabel[label]);
       return fMCDaughter;
     }
     else return 0x0;
 }
 
-///________________________________________________________________________
+//________________________________________________________________________
 void AliConversionPhotonBase::DeterminePhotonQuality(AliVTrack* negTrack, AliVTrack* posTrack){
   if(!negTrack || !posTrack) {
     fQuality = 0;

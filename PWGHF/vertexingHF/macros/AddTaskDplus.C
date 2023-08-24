@@ -1,17 +1,17 @@
-AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
-				     Float_t minC=0, Float_t maxC=100,
-				     Int_t storeNtuple=0,
-				     Int_t doSparse=0,/*0=cutvar=kFALSE && imppar=kFALSE, 1=cutvar=kTRUE && imppar=kFALSE*/
-				     /*2=cutvar=kFALSE && imppar=kTRUE, 3=cutvar=kTRUE && imppar=kTRUE*/
-				     Bool_t doTrackVarSparse=kFALSE,
-				     Bool_t readMC=kFALSE,
-				     TString finDirname="Loose",
-				     TString filename="",
-				     TString finAnObjname="AnalysisCuts",
-				     Int_t etaRange=0,
-             Bool_t cutsDistr=kFALSE,
-             Int_t trackletsmin=-1,
-             Int_t trackletsmax=-1)
+AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=AliAnalysisTaskSEDplus::kpp,
+                                     Float_t minC=0, Float_t maxC=100,
+                                     Bool_t storeTree=0,
+                                     Int_t doSparse=0,/*0=cutvar=kFALSE && imppar=kFALSE, 1=cutvar=kTRUE && imppar=kFALSE*/
+                                     /*2=cutvar=kFALSE && imppar=kTRUE, 3=cutvar=kTRUE && imppar=kTRUE*/
+                                     Bool_t doTrackVarSparse=kFALSE,
+                                     Bool_t readMC=kFALSE,
+                                     TString finDirname="Loose",
+                                     TString filename="",
+                                     TString finAnObjname="AnalysisCuts",
+                                     Int_t etaRange=0,
+                                     Bool_t cutsDistr=kFALSE,
+                                     Int_t trackletsmin=-1,
+                                     Int_t trackletsmax=-1)
 {
   //
   // Test macro for the AliAnalysisTaskSE for D+ candidates
@@ -55,16 +55,17 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   else analysiscuts = (AliRDHFCutsDplustoKpipi*)filecuts->Get(finAnObjname);
 
 
-  AliAnalysisTaskSEDplus *dplusTask = new AliAnalysisTaskSEDplus("DplusAnalysis",analysiscuts,storeNtuple);
+  AliAnalysisTaskSEDplus *dplusTask = new AliAnalysisTaskSEDplus("DplusAnalysis",analysiscuts,storeTree);
   dplusTask->SetReadMC(readMC);
   dplusTask->SetDoLikeSign(kFALSE);
-  //  dplusTask->SetUseTPCpid(kTRUE);
-  //dplusTask->SetUseTOFpid(kTRUE);
   dplusTask->SetDebugLevel(0);
   dplusTask->SetMassLimits(0.2);
   dplusTask->SetUseBit(kTRUE);
   dplusTask->SetCutsDistr(cutsDistr);
   dplusTask->SetSystem(system);
+  if(system == AliAnalysisTaskSEDplus::kPbPb) {
+      dplusTask->SetKeepOnlyBkgFromHIJING(kTRUE);
+  }
   if(doSparse==0) {
     dplusTask->SetDoCutVarsSparses(kFALSE);
     dplusTask->SetDoImpactParameterHistos(kFALSE);
@@ -84,7 +85,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   else {
     cerr << "The doSparse flag can only be 0,1,2,3!" << endl;
   }
-  
+
   if((doSparse==1 || doSparse==3) && readMC)
     dplusTask->SetDoMCAcceptanceHistos(kTRUE);
   if (doTrackVarSparse)
@@ -100,18 +101,18 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   TString outname = "coutputDplus";
   TString cutsname = "coutputDplusCuts";
   TString normname = "coutputDplusNorm";
-  TString ntuplename = "coutputDplus2";
+  TString treename = "coutputDplus2";
   inname += finDirname.Data();
   outname += finDirname.Data();
   cutsname += finDirname.Data();
   normname += finDirname.Data();
-  ntuplename += finDirname.Data();
+  treename += finDirname.Data();
   TString centr=Form("%.0f%.0f",analysiscuts->GetMinCentrality(),analysiscuts->GetMaxCentrality());
   inname += centr;
   outname += centr;
   cutsname += centr;
   normname += centr;
-  ntuplename += centr;
+  treename += centr;
 
 
   AliAnalysisDataContainer *cinputDplus = mgr->CreateContainer(inname,TChain::Class(),
@@ -129,9 +130,9 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   AliAnalysisDataContainer *coutputDplusNorm = mgr->CreateContainer(normname,AliNormalizationCounter::Class(),
 								AliAnalysisManager::kOutputContainer,
 								outputfile.Data());
-  AliAnalysisDataContainer *coutputDplus2 = 0x0; 
-  if(storeNtuple){
-    coutputDplus2 = mgr->CreateContainer(ntuplename,TNtuple::Class(),
+  AliAnalysisDataContainer *coutputDplus2 = 0x0;
+  if(storeTree){
+    coutputDplus2 = mgr->CreateContainer(treename,TTree::Class(),
 								   AliAnalysisManager::kOutputContainer,
 								   outputfile.Data());
 
@@ -144,7 +145,7 @@ AliAnalysisTaskSEDplus *AddTaskDplus(Int_t system=0/*0=pp,1=PbPb*/,
   mgr->ConnectOutput(dplusTask,2,coutputDplusCuts);
 
   mgr->ConnectOutput(dplusTask,3,coutputDplusNorm);
-  if(storeNtuple){
+  if(storeTree){
     mgr->ConnectOutput(dplusTask,4,coutputDplus2);
   }
 

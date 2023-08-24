@@ -102,6 +102,7 @@ AliAnalysisTaskV0ChCorrelationpp::AliAnalysisTaskV0ChCorrelationpp()
      fTrackPtMin(0),
      fTrackPtMax(0),
      fTrackEta(0),
+     fFilterBit(768),
      fAssocNcls(0),
      //-----------------------------------V0---------------------------------
      fV0MCPtMin(0),
@@ -114,8 +115,8 @@ AliAnalysisTaskV0ChCorrelationpp::AliAnalysisTaskV0ChCorrelationpp()
      fLambdaLifeTimeMax(0),
 
      fV0DaughterPtMinCut(0),
-     fDCANegtoPrimVertexMin(0),
-     fDCAPostoPrimVertexMin(0),
+     fDCANegtoPrimVertex(0),
+     fDCAPostoPrimVertex(0),
      fDCAV0DaughtersMax(0),
      fCosPointingAngleMin(0),
      f2DFiducialMin(0),
@@ -126,6 +127,7 @@ AliAnalysisTaskV0ChCorrelationpp::AliAnalysisTaskV0ChCorrelationpp()
      fK0sMassWindow(0),
      fLambdaMassWindow(0),
      fPtArmV0AlphaV0(0),
+     fk0sCPA(0),
       fLambdaCPA(0),
      fOStatus(1),
      fLambdaCosPointingAngleMin(0),
@@ -229,6 +231,7 @@ AliAnalysisTaskV0ChCorrelationpp::AliAnalysisTaskV0ChCorrelationpp(const char *n
      fTrackPtMin(0),
      fTrackPtMax(0),
      fTrackEta(0),
+     fFilterBit(768),
      fAssocNcls(0),
      //-----------------------------------V0---------------------------------
      fV0MCPtMin(0),
@@ -241,8 +244,8 @@ AliAnalysisTaskV0ChCorrelationpp::AliAnalysisTaskV0ChCorrelationpp(const char *n
      fLambdaLifeTimeMax(0),
      
      fV0DaughterPtMinCut(0),
-     fDCANegtoPrimVertexMin(0),
-     fDCAPostoPrimVertexMin(0),
+     fDCANegtoPrimVertex(0),
+     fDCAPostoPrimVertex(0),
      fDCAV0DaughtersMax(0),
      fCosPointingAngleMin(0),
      f2DFiducialMin(0),
@@ -253,6 +256,7 @@ AliAnalysisTaskV0ChCorrelationpp::AliAnalysisTaskV0ChCorrelationpp(const char *n
      fK0sMassWindow(0),
      fLambdaMassWindow(0),
      fPtArmV0AlphaV0(0),
+     fk0sCPA(0),
       fLambdaCPA(0),
      fOStatus(1),
      fLambdaCosPointingAngleMin(0),
@@ -617,8 +621,8 @@ void AliAnalysisTaskV0ChCorrelationpp::UserCreateOutputObjects()
   // const Double_t* zvtxBins = vertexBins;
 
 
-   const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+   const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
 
@@ -645,8 +649,8 @@ void AliAnalysisTaskV0ChCorrelationpp::UserCreateOutputObjects()
  // const Double_t* zvtxBins = vertexBins;
 
 
-  const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+  const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
 
@@ -666,6 +670,16 @@ tQAEvent->Add(fhEventCentAfterPilp);
 
   TH1F *fhEventAf = new TH1F("fhEventAf", "Event Number; Counts; Number of Events", 1, 0, 1);
   tQAEvent->Add(fhEventAf);
+
+
+
+//---------------------------------------------
+//TH1D *fHistV0Multiplicity = new TH1D ("fHistV0Multiplicity", "V0 event Multiplicity ", 100, 0, 100);
+//	tQAEvent->Add(fHistV0Multiplicity);
+//----------------------------------------------
+    
+
+
 
   fOutput2->Add(tQAEvent);
 }
@@ -688,14 +702,15 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQATrackCandidates()
  //  Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
  //  const Double_t* zvtxBins = vertexBins;
 
-   const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+   const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
 
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 14;
-   const Double_t PtBins[] = {1.,2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0};
+   const Int_t nPtBins = 29;
+   const Double_t PtBins[30] = {1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9, 10}; 
+
 
    //defining bins of Eta distribution
    const Int_t nEtaBins = 16;
@@ -739,6 +754,7 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQATrackCandidates()
    const Double_t spMinTrack[4] = {PtBins[0],  EtaBins[0], centralityBins[0], vertexBins[0]};
    const Double_t spMaxTrack[4] = {PtBins[nPtBins], EtaBins[nEtaBins], centralityBins[nCentralityBins], vertexBins[nZvtxBins]};
    THnSparseF *fHistMassTrack = new THnSparseF("fHistMassTrack","Mass for Track hypothesis", 4, spBinsTrack, spMinTrack, spMaxTrack);
+               fHistMassTrack->GetAxis(0)->Set(nPtBins, PtBins); 
    tQATrack->Add(fHistMassTrack);
    fHistMassTrack->Sumw2(); 
 
@@ -904,24 +920,22 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisK0s()
    Double_t centBins[] = {0., 10., 20., 30., 40., 50., 60., 70., 80.,90.,100.};//90
    const Double_t* centralityBins = centBins;
    
-   // defining bins for Z vertex
- //  const Int_t nZvtxBins  = 8;
- //  Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
- //  const Double_t* zvtxBins = vertexBins;
 
-  const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+  const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
-   
-   // pt bins of trigger particles for the analysis
-   const Int_t nPtBinsV0Xi = 14;
-   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0, 8.0,9.0,10.0,11.0,12.0,13.0,14.0, 15.0}; 
+     const Int_t nPtBinsV0Xi = 3;
+   const Double_t PtBinsV0Xi[4] = {3.0,4.0,8.0,16.0}; 
+  
    
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 7;
-   const Double_t PtBins[8] = {1.0, 2.0, 3.0, 4.0,5.0,6.0,7.0, 8.0}; 
-  
+   const Int_t nPtBins = 6;
+   const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0}; 
+
+
+
+
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
    const Double_t TrigC[4] = {0.5, 1.5, 2.5, 3.5};
@@ -936,6 +950,7 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisK0s()
    const Double_t spMaxK0s[4] = {mMassMax[0], PtBinsV0Xi[nPtBinsV0Xi], 
                                  centralityBins[nCentralityBins], vertexBins[nZvtxBins]};
    THnSparseF *fHistMassK0s = new THnSparseF("fHistMassK0s","Mass for K0s hypothesis", 4, spBinsK0s, spMinK0s, spMaxK0s);
+               fHistMassK0s->GetAxis(1)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
    tQAK0s->Add(fHistMassK0s);
    fHistMassK0s->Sumw2(); 
 
@@ -1013,11 +1028,15 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisK0s()
 if(fAnalysisMC){
  
  THnSparseF *fHistGendPhidEtaSibK0s = new THnSparseF("fHistGendPhidEtaSibK0s","dPhi vs. dEta siblings", 7, corBinsK0s, corMinK0s, corMaxK0s);
+             fHistGendPhidEtaSibK0s->GetAxis(2)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+             fHistGendPhidEtaSibK0s->GetAxis(3)->Set(nPtBins, PtBins); 
    tQAK0s->Add(fHistGendPhidEtaSibK0s);
    fHistGendPhidEtaSibK0s->Sumw2();
 
    
    THnSparseF *fHistGendPhidEtaMixK0s = new THnSparseF("fHistGendPhidEtaMixK0s","dPhi vs. dEta mixed", 7, corBinsMixK0s, corMinMixK0s, corMaxMixK0s);
+               fHistGendPhidEtaMixK0s->GetAxis(2)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+               fHistGendPhidEtaMixK0s->GetAxis(3)->Set(nPtBins, PtBins); 
    tQAK0s->Add(fHistGendPhidEtaMixK0s);
    fHistGendPhidEtaMixK0s->Sumw2(); 
 }
@@ -1026,10 +1045,14 @@ if(fAnalysisMC){
 
 
    THnSparseF *fHistdPhidEtaSibK0s = new THnSparseF("fHistdPhidEtaSibK0s","dPhi vs. dEta siblings", 7, corBinsK0s, corMinK0s, corMaxK0s);
+               fHistdPhidEtaSibK0s->GetAxis(2)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+               fHistdPhidEtaSibK0s->GetAxis(3)->Set(nPtBins, PtBins); 
    tQAK0s->Add(fHistdPhidEtaSibK0s);
    fHistdPhidEtaSibK0s->Sumw2();
 
    THnSparseF *fHistdPhidEtaMixK0s = new THnSparseF("fHistdPhidEtaMixK0s","dPhi vs. dEta mixed", 7, corBinsMixK0s, corMinMixK0s, corMaxMixK0s);
+               fHistdPhidEtaMixK0s->GetAxis(2)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+               fHistdPhidEtaMixK0s->GetAxis(3)->Set(nPtBins, PtBins); 
    tQAK0s->Add(fHistdPhidEtaMixK0s);
    fHistdPhidEtaMixK0s->Sumw2(); 
 
@@ -1046,6 +1069,7 @@ if(fAnalysisMC){
 if(fAnalysisMC){
   
 THnSparseF *fHistGenTrigSibAllK0s = new THnSparseF("fHistGenTrigSibAllK0s","pt trigger K0s including non-correlated",4, trigAllBinsK0s, trigAllMinK0s, trigAllMaxK0s);
+           fHistGenTrigSibAllK0s->GetAxis(0)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
    tQAK0s->Add(fHistGenTrigSibAllK0s);
    fHistGenTrigSibAllK0s->Sumw2();
 }
@@ -1054,8 +1078,33 @@ THnSparseF *fHistGenTrigSibAllK0s = new THnSparseF("fHistGenTrigSibAllK0s","pt t
    THnSparseF *fHistTrigSibAllK0s = new THnSparseF("fHistTrigSibAllK0s",
                                                    "pt trigger K0s including non-correlated",
                                                     4, trigAllBinsK0s, trigAllMinK0s, trigAllMaxK0s);
+             fHistTrigSibAllK0s->GetAxis(0)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
    tQAK0s->Add(fHistTrigSibAllK0s);
    fHistTrigSibAllK0s->Sumw2();
+//--------------------------------
+/*
+
+// defining bins for mass distributions
+  Int_t nBinsK0s = 160;
+ Double_t mMassK0sMin = 0.40;
+   Double_t mMassK0sMax = 0.58;
+
+// pt bins of (K0s) 
+  const Int_t nPtBinsV0Sp = 13;
+  const Double_t PtBinsV0Sp[14] ={ 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6.5, 8, 10, 12, 14}; 
+
+
+ TH2F *fHistK0sMassvsPtCorr = new TH2F("fHistK0sMassvsPtCorr", "K^{0}_{s}  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsK0s, mMassK0sMin ,mMassK0sMax );
+
+   tQAK0s->Add(fHistK0sMassvsPtCorr);
+  fHistK0sMassvsPtCorr->Sumw2();  
+
+ TH2F *fHistK0sMassvsPtNoCorr = new TH2F("fHistK0sMassvsPtNoCorr", "K^{0}_{s}  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsK0s, mMassK0sMin ,mMassK0sMax );
+
+   tQAK0s->Add(fHistK0sMassvsPtNoCorr);
+  fHistK0sMassvsPtNoCorr->Sumw2();        
+      
+*/
 
    fOutput5->Add(tQAK0s);
 }
@@ -1072,24 +1121,24 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisLambda()
    Double_t centBins[] = {0., 10., 20., 30., 40., 50., 60., 70., 80.,90.,100.};
    const Double_t* centralityBins = centBins;
    
-   // defining bins for Z vertex
-  // const Int_t nZvtxBins  = 8;
-  // Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
-  // const Double_t* zvtxBins = vertexBins;
+   
 
-  const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+  const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
    
-  // pt bins of trigger particles for the analysis
-   const Int_t nPtBinsV0Xi = 14;
-   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0, 8.0,9.0,10.0,11.0,12.0,13.0,14.0, 15.0}; 
+  
+   
+  const Int_t nPtBinsV0Xi = 3;
+   const Double_t PtBinsV0Xi[4] = {3.0,4.0,8.0,16.0}; 
+  
    
    // pt bins of associate particles for the analysis
-   const Int_t nPtBins = 7;
-   const Double_t PtBins[8] = {1.0, 2.0, 3.0, 4.0,5.0,6.0,7.0, 8.0}; 
-  
+  const Int_t nPtBins = 6;
+   const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0}; 
+
+
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
    const Double_t TrigC[4] = {0.5, 1.5, 2.5, 3.5};
@@ -1104,6 +1153,7 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisLambda()
    const Double_t spMaxLambda[4] = {mMassMax[1], PtBinsV0Xi[nPtBinsV0Xi],
                                    centralityBins[nCentralityBins], vertexBins[nZvtxBins]};
    THnSparseF *fHistMassLambda = new THnSparseF("fHistMassLambda","Mass for Lambda hypothesis", 4, spBinsLambda, spMinLambda, spMaxLambda);
+               fHistMassLambda->GetAxis(1)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
    tQALambda->Add(fHistMassLambda);
    fHistMassLambda->Sumw2();
 
@@ -1200,10 +1250,14 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisLambda()
 if(fAnalysisMC){
   
 THnSparseF *fHistGendPhidEtaSibLambda = new THnSparseF("fHistGendPhidEtaSibLambda","dPhi vs. dEta mixed", 7, corBinsMixLambda, corMinMixLambda, corMaxMixLambda);
+            fHistGendPhidEtaSibLambda->GetAxis(2)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+            fHistGendPhidEtaSibLambda->GetAxis(3)->Set(nPtBins, PtBins); 
    tQALambda->Add(fHistGendPhidEtaSibLambda);
    fHistGendPhidEtaSibLambda->Sumw2();
 
 THnSparseF *fHistGendPhidEtaMixLambda = new THnSparseF("fHistGendPhidEtaMixLambda","dPhi vs. dEta mixed", 7, corBinsMixLambda, corMinMixLambda, corMaxMixLambda);
+            fHistGendPhidEtaMixLambda->GetAxis(2)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+            fHistGendPhidEtaMixLambda->GetAxis(3)->Set(nPtBins, PtBins); 
    tQALambda->Add(fHistGendPhidEtaMixLambda);
    fHistGendPhidEtaMixLambda->Sumw2();
 
@@ -1211,10 +1265,15 @@ THnSparseF *fHistGendPhidEtaMixLambda = new THnSparseF("fHistGendPhidEtaMixLambd
 //=======================
 
    THnSparseF *fHistdPhidEtaSibLambda = new THnSparseF("fHistdPhidEtaSibLambda","dPhi vs. dEta siblings", 7, corBinsLambda, corMinLambda, corMaxLambda);
+               fHistdPhidEtaSibLambda->GetAxis(2)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+               fHistdPhidEtaSibLambda->GetAxis(3)->Set(nPtBins, PtBins);
+
    tQALambda->Add(fHistdPhidEtaSibLambda);
    fHistdPhidEtaSibLambda->Sumw2();
 
    THnSparseF *fHistdPhidEtaMixLambda = new THnSparseF("fHistdPhidEtaMixLambda","dPhi vs. dEta mixed", 7, corBinsMixLambda, corMinMixLambda, corMaxMixLambda);
+               fHistdPhidEtaMixLambda->GetAxis(2)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+               fHistdPhidEtaMixLambda->GetAxis(3)->Set(nPtBins, PtBins);    
    tQALambda->Add(fHistdPhidEtaMixLambda);
    fHistdPhidEtaMixLambda->Sumw2();
 
@@ -1233,21 +1292,41 @@ THnSparseF *fHistGendPhidEtaMixLambda = new THnSparseF("fHistGendPhidEtaMixLambd
 if(fAnalysisMC){
   
    THnSparseF *fHistGenTrigSibAllLambda = new THnSparseF("fHistGenTrigSibAllLambda","pt trigger Lambda including non-correlated", 4, trigAllBinsLambda, trigAllMinLambda, trigAllMaxLambda);
+              fHistGenTrigSibAllLambda->GetAxis(0)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
    tQALambda->Add(fHistGenTrigSibAllLambda);
    fHistGenTrigSibAllLambda->Sumw2();
 }
 //========================
 
-
-
-
-
-
    THnSparseF *fHistTrigSibAllLambda = new THnSparseF("fHistTrigSibAllLambda",
                                           "pt trigger Lambda including non-correlated",
                                            4, trigAllBinsLambda, trigAllMinLambda, trigAllMaxLambda);
+             fHistTrigSibAllLambda->GetAxis(0)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
    tQALambda->Add(fHistTrigSibAllLambda);
    fHistTrigSibAllLambda->Sumw2();
+
+
+/*
+//-----------------------
+// defining bins for mass distributions
+  Int_t nBinsLam = 160;
+ Double_t mMassLamMin = 1.07;
+   Double_t mMassLamMax = 1.15;
+
+// pt bins of (Lam) 
+  const Int_t nPtBinsV0Sp = 13;
+  const Double_t PtBinsV0Sp[14] ={ 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6.5, 8, 10, 12, 14}; 
+
+ TH2F *fHistLamMassvsPtCorr = new TH2F("fHistLamMassvsPtCorr", "#Lambda  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsLam, mMassLamMin ,mMassLamMax );
+
+   tQALambda->Add(fHistLamMassvsPtCorr);
+  fHistLamMassvsPtCorr->Sumw2();   
+
+ TH2F *fHistLamMassvsPtNoCorr = new TH2F("fHistLamMassvsPtNoCorr", "#Lambda  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsLam, mMassLamMin ,mMassLamMax );
+
+   tQALambda->Add(fHistLamMassvsPtNoCorr);
+  fHistLamMassvsPtNoCorr->Sumw2();       
+*/
 
    fOutput6->Add(tQALambda);
  } 
@@ -1264,24 +1343,23 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisAntiLambda()
    Double_t centBins[] = {0., 10., 20., 30., 40., 50., 60., 70., 80.,90.,100.};
    const Double_t* centralityBins = centBins;
    
-   // defining bins for Z vertex
-  // const Int_t nZvtxBins  = 8;
- //  Double_t vertexBins[] = {-8., -6., -4., -2., 0., 2., 4., 6., 8.};
- //  const Double_t* zvtxBins = vertexBins;
-
-  const Int_t nZvtxBins  = 7;
-   Double_t vertexBins[] = {-7., -5., -3., -1., 1., 3., 5., 7.};
+   
+  const Int_t nZvtxBins  = 10;
+   Double_t vertexBins[] = {-10., -8., -6., -4., -2., 0.,2.,4., 6., 8.,10};
    const Double_t* zvtxBins = vertexBins;
 
    
-   // pt bins of trigger particles for the analysis
-   const Int_t nPtBinsV0Xi = 14;
-   const Double_t PtBinsV0Xi[15] = {1.0,2.0,3.0,4.0,5.0,6.0,7.0, 8.0,9.0,10.0,11.0,12.0,13.0,14.0, 15.0}; 
+   
+  const Int_t nPtBinsV0Xi = 3;
+   const Double_t PtBinsV0Xi[4] = {3.0,4.0,8.0,16.0}; 
+  
    
    // pt bins of associate particles for the analysis
-  const Int_t nPtBins = 7;
-   const Double_t PtBins[8] = {1.0, 2.0, 3.0, 4.0,5.0,6.0,7.0, 8.0}; 
-  
+   const Int_t nPtBins = 6;
+   const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0}; 
+
+
+
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
    const Double_t TrigC[4] = {0.5, 1.5, 2.5, 3.5};
@@ -1296,6 +1374,7 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisAntiLambda()
    const Double_t spMaxAntiLambda[4] = {mMassMax[1], PtBinsV0Xi[nPtBinsV0Xi],  
                                         centralityBins[nCentralityBins], vertexBins[nZvtxBins]};
    THnSparseF *fHistMassAntiLambda = new THnSparseF("fHistMassAntiLambda","Mass for AntiLambda hypothesis", 4, spBinsAntiLambda, spMinAntiLambda, spMaxAntiLambda);
+              fHistMassAntiLambda->GetAxis(1)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
    tQAAntiLambda->Add(fHistMassAntiLambda);
    fHistMassAntiLambda->Sumw2(); 
 
@@ -1389,10 +1468,15 @@ void AliAnalysisTaskV0ChCorrelationpp::AddQAAnalysisAntiLambda()
 //=====================================
 if(fAnalysisMC){
  THnSparseF *fHistGendPhidEtaSibAntiLambda = new THnSparseF("fHistGendPhidEtaSibAntiLambda","dPhi vs. dEta siblings", 7, corBinsAntiLambda, corMinAntiLambda, corMaxAntiLambda);
+   
+               fHistGendPhidEtaSibAntiLambda->GetAxis(2)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+               fHistGendPhidEtaSibAntiLambda->GetAxis(3)->Set(nPtBins, PtBins);
    tQAAntiLambda->Add(fHistGendPhidEtaSibAntiLambda);
    fHistGendPhidEtaSibAntiLambda->Sumw2();
 
-   THnSparseF *fHistGendPhidEtaMixAntiLambda = new THnSparseF("fHistGendPhidEtaMixAntiLambda","dPhi vs. dEta mixed", 7, corBinsMixAntiLambda, corMinMixAntiLambda, corMaxMixAntiLambda);  
+   THnSparseF *fHistGendPhidEtaMixAntiLambda = new THnSparseF("fHistGendPhidEtaMixAntiLambda","dPhi vs. dEta mixed", 7, corBinsMixAntiLambda, corMinMixAntiLambda, corMaxMixAntiLambda); 
+             fHistGendPhidEtaMixAntiLambda->GetAxis(2)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+             fHistGendPhidEtaMixAntiLambda->GetAxis(3)->Set(nPtBins, PtBins); 
    tQAAntiLambda->Add(fHistGendPhidEtaMixAntiLambda);
    fHistGendPhidEtaMixAntiLambda->Sumw2();
 
@@ -1400,10 +1484,14 @@ if(fAnalysisMC){
 //====================================
 
    THnSparseF *fHistdPhidEtaSibAntiLambda = new THnSparseF("fHistdPhidEtaSibAntiLambda","dPhi vs. dEta siblings", 7, corBinsAntiLambda, corMinAntiLambda, corMaxAntiLambda);
+             fHistdPhidEtaSibAntiLambda->GetAxis(2)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+             fHistdPhidEtaSibAntiLambda->GetAxis(3)->Set(nPtBins, PtBins);
    tQAAntiLambda->Add(fHistdPhidEtaSibAntiLambda);
    fHistdPhidEtaSibAntiLambda->Sumw2();
 
-   THnSparseF *fHistdPhidEtaMixAntiLambda = new THnSparseF("fHistdPhidEtaMixAntiLambda","dPhi vs. dEta mixed", 7, corBinsMixAntiLambda, corMinMixAntiLambda, corMaxMixAntiLambda);  
+   THnSparseF *fHistdPhidEtaMixAntiLambda = new THnSparseF("fHistdPhidEtaMixAntiLambda","dPhi vs. dEta mixed", 7, corBinsMixAntiLambda, corMinMixAntiLambda, corMaxMixAntiLambda); 
+              fHistdPhidEtaMixAntiLambda->GetAxis(2)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+             fHistdPhidEtaMixAntiLambda->GetAxis(3)->Set(nPtBins, PtBins); 
    tQAAntiLambda->Add(fHistdPhidEtaMixAntiLambda);
    fHistdPhidEtaMixAntiLambda->Sumw2();
 
@@ -1421,23 +1509,44 @@ if(fAnalysisMC){
 THnSparseF *fHistGenTrigSibAllAntiLambda = new THnSparseF("fHistGenTrigSibAllAntiLambda",
                                               "pt trigger AntiLambda including non-correlated",
                                                4, trigAllBinsAntiLambda, trigAllMinAntiLambda, trigAllMaxAntiLambda);
+           fHistGenTrigSibAllAntiLambda->GetAxis(0)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
    tQAAntiLambda->Add(fHistGenTrigSibAllAntiLambda);
    fHistGenTrigSibAllAntiLambda->Sumw2();
 
 
 }
 //=========================================
-
-
-
-
-
    THnSparseF *fHistTrigSibAllAntiLambda = new THnSparseF("fHistTrigSibAllAntiLambda",
                                               "pt trigger AntiLambda including non-correlated",
                                                4, trigAllBinsAntiLambda, trigAllMinAntiLambda, trigAllMaxAntiLambda);
+              fHistTrigSibAllAntiLambda->GetAxis(0)->Set(nPtBinsV0Xi, PtBinsV0Xi); 
+
    tQAAntiLambda->Add(fHistTrigSibAllAntiLambda);
    fHistTrigSibAllAntiLambda->Sumw2();
 
+
+
+/*
+// defining bins for mass distributions
+  Int_t nBinsLam = 160;
+ Double_t mMassLamMin = 1.07;
+   Double_t mMassLamMax = 1.15;
+
+// pt bins of (ALam) 
+  const Int_t nPtBinsV0Sp = 13;
+  const Double_t PtBinsV0Sp[14] ={ 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6.5, 8, 10, 12, 14}; 
+
+ TH2F *fHistAntiLamMassvsPtCorr = new TH2F("fHistAntiLamMassvsPtCorr", "#bar{#Lambda}  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsLam, mMassLamMin ,mMassLamMax );
+
+   tQAAntiLambda->Add(fHistAntiLamMassvsPtCorr);
+  fHistAntiLamMassvsPtCorr->Sumw2();  
+
+ TH2F *fHistAntiLamMassvsPtNoCorr = new TH2F("fHistAntiLamMassvsPtNoCorr", "#bar{#Lambda}  Mass vs p_{T} ;p_{T} (GeV/c);Inv.Mass (GeV/c^{2})", nPtBinsV0Sp, PtBinsV0Sp, nBinsLam, mMassLamMin ,mMassLamMax );
+
+   tQAAntiLambda->Add(fHistAntiLamMassvsPtNoCorr);
+  fHistAntiLamMassvsPtNoCorr->Sumw2();     
+
+*/
    fOutput7->Add(tQAAntiLambda);
 }
 
@@ -1512,16 +1621,11 @@ const AliAODVertex* primVertexSPD = fAOD->GetPrimaryVertexSPD();
   if ( TMath::Abs(lPVz) >= cutPrimVertex) return ;
   if( TMath::Abs( lPVzSPD-lPVz >0.8)) return ; 
   */
-    Short_t binVertex = Short_t((lPVz+7.)/2);
+    Short_t binVertex = Short_t((lPVz+10.)/2);
 
-    //-----------------------------------Centrality definition------------------------------------
-   /* AliAODHeader *aodHeader = dynamic_cast<AliAODHeader*>(fAOD->GetHeader());
-    if(!aodHeader) AliFatal("Not a standard AOD");
-    if(!aodHeader) return;*/
 
-    //float lCent = fEventCuts->GetCentrality(); // Centrality calculated with the default estimator (V0M for LHC15o) 
-    //if ((lCent < fCentMin)||(lCent > fCentMax)) return;
-  //  float lCent = 0.; // Centrality calculated with the default estimator (V0M for LHC15o) 
+//  Int_t nV0(fAOD->GetNumberOfV0s());                  //  V0 in the event
+// ((TH1D*)((AliDirList*)fOutput2->FindObject("EventInput"))->FindObject("fHistV0Multiplicity"))->Fill(fAOD->GetNumberOfV0s());
 
  //===========  Multiplicity definition===========
 Float_t lPercentile = 300; 
@@ -1867,7 +1971,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
     Int_t nRecTracks = selectedMCTracks->GetEntriesFast();
     for(Int_t i = 0; i < nRecTracks; i++){
       AliAODTrack* tr = (AliAODTrack*)selectedMCTracks->At(i);
-      if ( tr->Pt() < fTrackMCPtMin ) continue;
+      if ( tr->Pt() < fTrackPtMin ) continue;
       if(tr->Charge() == 0.) continue;
       if (!(IsGoodPrimaryTrack(tr))) continue;
       Double_t TrackLabel = tr->GetLabel();
@@ -1901,6 +2005,15 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       if((tr->Pt())>fTrackPtMax) continue;
       if(tr->Charge() == 0.) continue;
       if(!(IsGoodPrimaryTrack(tr))) continue;
+
+
+//Bunch rejection trk by trk
+   if(!(tr->HasPointOnITSLayer(0) || tr->HasPointOnITSLayer(1)  || tr->GetTOFBunchCrossing()==0 )) continue;//////////
+
+
+
+
+
       Double_t tPhi = tr->Phi();
       Double_t tPt = tr->Pt();
       Double_t tEta = tr->Eta();
@@ -2024,7 +2137,19 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
          isNegPionForTPC = kTRUE;
       if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(Ntrack,AliPID::kProton))<fV0PIDSigma)
          isNegProtonForTPC = kTRUE;
- 
+
+
+
+
+// reject bunch-off pile-up
+  if(!fAnalysisMC){      
+ if (!((Ntrack->IsOn(AliAODTrack::kTPCrefit)&& Ntrack->IsOn(AliAODTrack::kITSrefit))||Ntrack->IsOn(AliAODTrack::kTOFout)))continue;
+ if (!((Ptrack->IsOn(AliAODTrack::kTPCrefit)&& Ptrack->IsOn(AliAODTrack::kITSrefit))||Ptrack->IsOn(AliAODTrack::kTOFout))) continue;
+
+     } 
+
+  
+  
       if(isPosPionForTPC && Ptrack->IsOn(AliESDtrack::kTPCin)){
          ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("TPCdEdxOfPion"))->Fill(Ptrack->P()*Ptrack->Charge(),Ptrack->GetTPCsignal());
       }
@@ -2038,12 +2163,13 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
          ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("TPCdEdxOfProton"))->Fill(Ntrack->P()*Ntrack->Charge(),Ntrack->GetTPCsignal());
       }
       //------------------------------------Candidate selection cut-------------------------------------------
-      if(fAnalysisMC){
-        if(lPt < fV0MCPtMin || lPt > fV0PtMax) continue;}
-      else{
-        if(lPt < fV0PtMin || lPt > fV0PtMax) continue;}
+      //if(fAnalysisMC){
+       // if(lPt < fV0PtMin || lPt > fV0PtMax) continue;}
+     // else{
+        if(lPt < fV0PtMin || lPt > fV0PtMax) continue;
+      //}
       if(TMath::Abs(lEta) > fV0Eta) continue;
-      Bool_t ctK=kTRUE;  
+       Bool_t ctK=kTRUE;  
       if(dlK > fK0sLifeTimeMax || dlK <fK0sLifeTimeMin) ctK=kFALSE;
       Bool_t ctL=kTRUE;  
       if(dlL > fLambdaLifeTimeMax || dlL < fLambdaLifeTimeMin) ctL=kFALSE;
@@ -2061,7 +2187,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       ((TH2F*)((AliDirList*)fOutput4->FindObject("V0"))->FindObject("AfAP"))->Fill(lPtArmV0, lAlphaV0);
       
       //--------------------check whether it is K0s/ Lambda/ AntiLambda candidates------------------------------
-      if(ctK && lCPA > 0.98 /*&& lPtArmV0 > TMath::Abs(fPtArmV0AlphaV0 *lAlphaV0)*/ && xyn > 0.06 && xyp > 0.06 && isPosPionForTPC  && isNegPionForTPC)
+      if(ctK && lCPA > fk0sCPA /*&& lPtArmV0 > TMath::Abs(fPtArmV0AlphaV0 *lAlphaV0)*/ && xyn > fDCANegtoPrimVertex && xyp > fDCAPostoPrimVertex && isPosPionForTPC  && isNegPionForTPC)
      if(TMath::Abs(massLambda - fMassMean[1]) >0.005 && TMath::Abs(massAntiLambda - fMassMean[1]) >0.005 ){
         selectedK0s->Add(v0);
         Double_t spK0s[4] = {massK0s, lPt, lPercentile, lPVz};
@@ -2071,6 +2197,12 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
             continue;
           }
           ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistMassK0s"))->Fill(spK0s, 1/weight);
+
+       // ((TH2F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtCorr"))->Fill(lPt,massK0s,1/weight);  
+
+       // ((TH2F*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistK0sMassvsPtNoCorr"))->Fill(lPt,massK0s);  
+	
+
         }
         else{
           ((THnSparseF*)((AliDirList*)fOutput5->FindObject("K0s"))->FindObject("fHistMassK0s"))->Fill(spK0s);
@@ -2086,7 +2218,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       }
     
       // check whether it is Lambda candidates
-      if(ctL && lCPA > fLambdaCPA && xyn > 0.06 && xyp > 0.06 && isPosProtonForTPC && isNegPionForTPC)
+      if(ctL && lCPA > fLambdaCPA && xyn > fDCANegtoPrimVertex && xyp > fDCAPostoPrimVertex && isPosProtonForTPC && isNegPionForTPC)
        if(TMath::Abs(massK0s - fMassMean[0]) >0.01){
         selectedLambda->Add(v0);
         Double_t spLambda[4] = {massLambda, lPt, lPercentile, lPVz};
@@ -2096,6 +2228,10 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
             continue;
           }
           ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistMassLambda"))->Fill(spLambda, 1/weight);
+      
+        // ((TH2F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtCorr"))->Fill(lPt,massLambda,1/weight);  
+        //((TH2F*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistLamMassvsPtNoCorr"))->Fill(lPt,massLambda);  
+
         }
         else{
           ((THnSparseF*)((AliDirList*)fOutput6->FindObject("Lambda"))->FindObject("fHistMassLambda"))->Fill(spLambda);
@@ -2117,7 +2253,7 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
       }
 
     // check whether it is AntiLambda candidates   
-      if(ctL && lCPA > fLambdaCPA && xyn > 0.06 && xyp > 0.06 && isPosPionForTPC && isNegProtonForTPC)
+      if(ctL && lCPA > fLambdaCPA && xyn > fDCANegtoPrimVertex && xyp > fDCAPostoPrimVertex && isPosPionForTPC && isNegProtonForTPC)
        if(TMath::Abs(massK0s - fMassMean[0]) >0.01){
         selectedAntiLambda->Add(v0);
         Double_t spAntiLambda[4] = {massAntiLambda, lPt, lPercentile, lPVz};
@@ -2127,6 +2263,11 @@ for (Int_t j=0; j <MCLambda->GetEntriesFast(); j++){
             continue;
           }
           ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistMassAntiLambda"))->Fill(spAntiLambda, 1/weight);
+
+        //((TH2F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtCorr"))->Fill(lPt, massAntiLambda,1/weight);  
+       // ((TH2F*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistAntiLamMassvsPtNoCorr"))->Fill(lPt,massAntiLambda);  
+	  
+     
         }
         else{
           ((THnSparseF*)((AliDirList*)fOutput7->FindObject("AntiLambda"))->FindObject("fHistMassAntiLambda"))->Fill(spAntiLambda);
@@ -2627,7 +2768,8 @@ Bool_t AliAnalysisTaskV0ChCorrelationpp::IsGoodPrimaryTrack(const AliAODTrack *t
   if (TMath::Abs(t->Eta())>fTrackEta) return kFALSE;
 
   //768-hybrid tracks
-  if (!t->TestFilterBit(768)) return kFALSE; 
+  if (!t->TestFilterBit(fFilterBit)) return kFALSE; 
+  //if (!t->TestFilterBit(1)) return kFALSE; 
   /*
   // Minimum number of clusters
   Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2,1);
@@ -2639,7 +2781,7 @@ Bool_t AliAnalysisTaskV0ChCorrelationpp::IsGoodPrimaryTrack(const AliAODTrack *t
 Bool_t AliAnalysisTaskV0ChCorrelationpp::IsGoodDaughterTrack( const AliAODTrack *t)
 {
   // Pseudorapidity cut   
-  if (TMath::Abs(t->Eta()) > 0.9) return kFALSE;
+  if (TMath::Abs(t->Eta()) > 0.8) return kFALSE;
   
   //pt cut
   //if (t->Pt() < fV0DaughterPtMinCut) return kFALSE;//2017-8-28
@@ -2757,8 +2899,8 @@ Bool_t AliAnalysisTaskV0ChCorrelationpp::IsGoodV0(AliAODv0* aodV0 , Int_t oSta)
   Double_t lPtNeg = TMath::Sqrt(lMomNeg[0]*lMomNeg[0] + lMomNeg[1]*lMomNeg[1]);
 
 
-//Double_t cutMinPtDaughter = 0.160;
-//if (lPtPos<cutMinPtDaughter || lPtNeg<cutMinPtDaughter) return kFALSE;
+Double_t cutMinPtDaughter = 0.160;
+if (lPtPos<cutMinPtDaughter || lPtNeg<cutMinPtDaughter) return kFALSE;
 
 
 

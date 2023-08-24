@@ -28,6 +28,7 @@
 #include "AliAODHeader.h"
 #include "AliAnalysisUtils.h"
 #include "AliEventCuts.h"
+#include "AliMultSelection.h"
 
 class AliFemtoEvent;
 class AliFemtoTrack;
@@ -39,7 +40,7 @@ public:
                   kCentralityZNA = 6, kCentralityCL1 = 7, kCentralityCND = 9,
                   kCentralityV0A = 10, kCentralityV0C = 11, kCentralityZNC = 12,
                   kCentralityCL0 = 13, kCentralityFMD = 14, kCentralityTKL = 15,
-                  kCentralityNPA = 16
+                  kCentralityNPA = 16, kRefComb08 = 17
                  };
   typedef enum EventMult EstEventMult;
 
@@ -73,7 +74,7 @@ public:
   bool GetReadCascade() const {
     return fReadCascade;
   }
-
+  void SetPreCentralityCut(double min, double max); // only set pre centrality cut
   void SetCentralityPreSelection(double min, double max);
   std::pair<double, double> GetCentralityPreSelection() const {
     return std::make_pair(fCentRange[0], fCentRange[1]);
@@ -84,7 +85,7 @@ public:
   void SetAODheader(AliAODHeader *aAODheader);
   void SetMagneticFieldSign(int s);
   void SetEPVZERO(Bool_t);
-  void GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3]);
+  void GetGlobalPositionAtGlobalRadiiThroughTPC(const AliAODTrack *track, Float_t bfield, Float_t globalPositionsAtRadii[9][3]);
 
   void SetUseMultiplicity(EstEventMult aType);
   EstEventMult GetUseMultiplicity() const {
@@ -130,7 +131,20 @@ public:
   void SetUseAliEventCuts(Bool_t useAliEventCuts);
   void SetReadFullMCData(Bool_t should_read=true);
   bool GetReadFullMCData() const;
+  
+  //ml jets--
+  void SetCalcJets(Int_t jets); //0-no, 1-same, 2-diff
+  bool GetCalcJets() const;
+  void SetPtmaxJets(Double_t ptmax);
+  //  void GetPtmaxJets() const {
+  //    return fPtmax;
+  //  } 
 
+    // dowang femto
+    void Set15oPass2EventReject(Int_t EventReject);
+    bool Reject15oPass2Event(AliAODEvent *fAOD,Int_t yearLabel);
+    void SetPbPb15Pass2MC(Int_t PbPb15Pass2MC);
+  //---
   void Set1DCorrectionsPions(TH1D *h1);
   void Set1DCorrectionsKaons(TH1D *h1);
   void Set1DCorrectionsProtons(TH1D *h1);
@@ -176,9 +190,7 @@ public:
 
 protected:
   virtual AliFemtoEvent *CopyAODtoFemtoEvent();
-  virtual AliFemtoTrack *CopyAODtoFemtoTrack(AliAODTrack *tAodTrack
-      //            AliPWG2AODTrack *tPWG2AODTrack
-                                            );
+  virtual AliFemtoTrack *CopyAODtoFemtoTrack(const AliAODTrack *tAodTrack);
   virtual AliFemtoV0 *CopyAODtoFemtoV0(AliAODv0 *tAODv0);
   virtual AliFemtoXi *CopyAODtoFemtoXi(AliAODcascade *tAODxi);
   virtual void CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, AliFemtoTrack *tFemtoTrack);
@@ -208,6 +220,23 @@ protected:
   /// (i.e. tracks with negative labels)
   Bool_t           fReadFullMCData;
 
+//ML -- calculate ptmax,phimax,etamax of event
+  Int_t           fjets; //0-no calc., 1-same, 2-diff
+  Double_t         fPtmax; //max pT in event
+    // dowang femto
+    Int_t fEventReject;
+    Int_t fPbPb15Pass2MC;
+    TF1 *fCenCutLowPU;
+    TF1 *fCenCutHighPU;
+    TF1 *fSPDCutPU;
+    TF1 *fV0CutPU;
+    TF1 *fMultCutPU;
+
+   TF1 *fCenCutLowPU2018;
+    TF1 *fCenCutHighPU2018;
+    TF1 *fSPDCutPU2018;
+    TF1 *fV0CutPU2018;
+    TF1 *fMultCutPU2018;
 private:
 
   AliAODMCParticle *GetParticleWithLabel(TClonesArray *mcP, Int_t aLabel);
@@ -280,7 +309,7 @@ private:
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
-  ClassDef(AliFemtoEventReaderAOD, 13);
+  ClassDef(AliFemtoEventReaderAOD, 36);
   /// \endcond
 #endif
 

@@ -24,6 +24,7 @@ class AliAODTrack;
 class AliESDVertex;
 
 #include "AliESDtrackCuts.h"
+#include <THn.h>
 #include "AliAnalysisTaskSE.h"
 #include "AliPID.h"
 
@@ -40,12 +41,18 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
 
   void SetFillTree(Bool_t fill=kTRUE){
     fFillTree=fill;
-  }  
+  }
+  void SetFillMulDimK0s(Bool_t fill=kTRUE){
+    fFillMulDimK0s=fill;
+  }
   void SetReadMC(Bool_t optMC=kTRUE){
     fReadMC=optMC;
   }
   void SetUseMCtruthForPID(Bool_t opt=kTRUE){
     fUseMCId=opt;
+  }
+  void SetUseGenPtInPlots(Bool_t opt=kTRUE){
+    fUseGenPt=opt;
   }
   void SetUsePhysicsSelection(Bool_t opt=kTRUE){
     fUsePhysSel=opt;
@@ -60,14 +67,43 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
     fCentrEstimator=estim.Data();
   }
   void SetUsePileupCut(Bool_t opt=kTRUE){
-    fUsePileupCut=kTRUE;
+    fUsePileupCut=opt;
+  }
+  void SetUsePbPbOutOfBunchPileupCutITSTPC(Int_t opt) {
+    fUsePbPbOutOfBunchPileupCutsITSTPC=opt;
+  }
+  void SetRejectPbPbEventsWithGeneratedPileup(Bool_t opt=kTRUE){
+    fRejectPbPbEventsWithGeneratedPileup=opt;
+  }
+  void KeepOnlyEventsWithPileup(){
+    fKeepOnlyEventsWithPileup=kTRUE;
   }
   void SetTPCTrackCuts(AliESDtrackCuts* cuts){
     if(fTrCutsTPC) delete fTrCutsTPC;
     fTrCutsTPC=new AliESDtrackCuts(*cuts);
   }
+  void SetRun2Pass2TPCTrackCuts(){
+    fTrCutsTPC->SetMinNCrossedRowsTPC(70);
+    fTrCutsTPC->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    fTrCutsTPC->SetEtaRange(-0.8,0.8);
+    fTrCutsTPC->SetMaxChi2PerClusterTPC(2.5);
+    fTrCutsTPC->SetAcceptKinkDaughters(kFALSE);
+    fTrCutsTPC->SetRequireTPCRefit(kTRUE);
+    fTrCutsTPC->SetDCAToVertex2D(kFALSE);
+    fTrCutsTPC->SetRequireSigmaToVertex(kFALSE);
+    fTrCutsTPC->SetMaxDCAToVertexXY(2.);
+    fTrCutsTPC->SetMaxDCAToVertexZ(3.);
+  }
   void SeMinNumOfTPCPIDclu(Int_t minc){
     fMinNumOfTPCPIDclu=minc;
+  }
+  void SetV0Cuts(Double_t imppardau, Double_t dcadau, Double_t cpa, Double_t minr, Double_t maxr, Double_t maxyV0=999.){
+    fApplyV0Cuts=kTRUE;
+    fV0CutArray[0]=imppardau; fV0CutArray[1]=dcadau; fV0CutArray[2]=cpa;
+    fV0CutArray[3]=minr; fV0CutArray[4]=maxr; fV0CutArray[5]=maxyV0;
+  }
+  void SetV0PbPbLooseCuts(){
+    SetV0Cuts(0.,1.,0.95,0.,100.,0.5);
   }
   void SetPtBinning(Int_t nbins, Double_t minpt, Double_t maxpt){
     fNPtBins=nbins; fMinPt=minpt; fMaxPt=maxpt;
@@ -81,6 +117,9 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   void SetUpperMultiplicity(Double_t maxMult){
     fMaxMult=maxMult;
   }
+  void SetUseTPCCutsForV0dau(Bool_t opt){
+    fUseTPCCutsForV0dau=opt;
+  }
   void SetRequireITSrefitForV0Daughters(Bool_t opt){
     if(opt) fRequireITSforV0dau |= (1<<kBitRequireITSrefit);
     else fRequireITSforV0dau &= ~(1<<kBitRequireITSrefit);
@@ -91,7 +130,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   }
   AliESDtrackCuts* GetTPCTrackCuts(){return fTrCutsTPC;}
 
-  Bool_t ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD, Double_t magField);
+  Bool_t ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD, Double_t magField, Bool_t checkPropagation=kTRUE);
 
 
 
@@ -106,7 +145,8 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   
   TList*  fOutput;                   //!<!  list of output histos
 
-  TH1F* fHistNEvents;                  //!<!  histo with N of events  
+  TH1F* fHistNEvents;                  //!<!  histo with N of events
+  TH2F* fHistGenPilTag;                //!<!  histo of pileup tag in MC
   TH1F* fHistNTracks;                  //!<!  histo with N of tracks
   TH2F* fHistNTracksVsTPCclusters;     //!<! histos of track-cluster correlations
   TH2F* fHistNTracksVsITSclusters;     //!<! histos of track-cluster correlations
@@ -207,12 +247,43 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH3F* fHistImpParXYPtMulTPCselSPDanyPrim;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanySecDec;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanySecMat;   //!<!  histo of impact parameter (pion)
+  
+  TH2F* fHistnSigmadEdxTPCVsP[AliPID::kSPECIESC];              //!<!  histo of nSigma TPC for particle species
+  TH2F* fHistnSigmaTOFVsP[AliPID::kSPECIESC];                  //!<!  histo of nSigma TOF for particle species
+  TH1F* fHistTOFMismProb;                                      //!<!  histo of TOF mismatch probability
+  TH2F* fHistnSigmaPionTOFVsSel;                               //!<!  histo of nSigma TOF for different selections
 
-  TH3F* fHistInvMassK0s;
-  TH3F* fHistInvMassLambda;
-  TH3F* fHistInvMassAntiLambda;
+  TH2F* fHistGenK0s;       //!<! histo of generated y,pt of K0s
+  TH3F* fHistInvMassK0s;   //!<!  histo of inv mass vs. pT vs. radius (K0s)
+  TH3F* fHistInvMassLambda;   //!<!  histo of inv mass vs. pT vs. radius (Lambda)
+  TH3F* fHistInvMassAntiLambda;   //!<!  histo of inv mass vs. pT vs. radius (AntiLambda)
 
+  TH2F* fHistDecayLengthVsPtK0s;        //!<!  histo of decay legnth vs. pT (K0s)
+  TH2F* fHistDecayLengthVsPtLambda;     //!<!  histo of decay legnth vs. pT (Lambda)
+  TH2F* fHistDecayLengthVsPtAntiLambda; //!<!  histo of decay legnth vs. pT (AntiLambda)
+  TH2F* fHistImpParXYVsPtK0s;   //!<!  histo of impact parameter vs. pT (K0s)
+  TH2F* fHistImpParZVsPtK0s;   //!<!  histo of impact parameter vs. pT (K0s)
+  TH2F* fHistImpParXYVsPtLambda;   //!<!  histo of impact parameter vs. pT (Lambda)
+  TH2F* fHistImpParXYVsPtAntiLambda;   //!<!  histo of impact parameter vs. pT (AntiLambda)
+  TH2F* fHistImpParXYVsPtK0sDau;        //!<!  histo of prong imp. param. (K0s)
+  TH2F* fHistImpParXYVsPtLambdaDau;     //!<!  histo of prong imp. param. (Lambda)
+  TH2F* fHistImpParXYVsPtAntiLambdaDau; //!<!  histo of prong imp. param. (AntiLambda)
+  TH1F* fHistV0RadiusBeforeSel;         //!<!  histo of V0 radius (to check cuts)
+  TH1F* fHistV0RadiusAfterSel;          //!<!  histo of V0 radius (to check cuts)
+  TH1F* fHistV0CosPointBeforeSel;       //!<!  histo of V0 cos point angle (to check cuts)
+  TH2F* fHistV0CosPointVsMomBeforeSel;  //!<!  histo of V0 cos point angle (to check cuts)
+  TH1F* fHistV0CosPointAfterSel;        //!<!  histo of V0 cos point angle (to check cuts)
+  TH1F* fHistCrossRowV0DauBeforeSel;    //!<!  histo of cross rows of V0 daughter
+  TH1F* fHistCrossRowV0DauAfterSel;     //!<!  histo of cross rows of V0 daughter
+  TH1F* fHistEtaV0DauBeforeSel;         //!<! control histo of eta of V0 daughter
+  TH1F* fHistEtaV0DauAfterSel;          //!<! control histo of eta of V0 daughter
+  TH1F* fHistImpParV0DauBeforeSel;      //!<! control histo of d0 of V0 daughters
+  TH1F* fHistImpParV0DauAfterSel;       //!<! control histo of d0 of V0 daughters
+  TH1F* fHistDCAV0DauBeforeSel;         //!<! control histo of DCA of V0 daughters
+  TH1F* fHistDCAV0DauAfterSel;          //!<! control histo of DCA of V0 daughters
+  THnF* fHistMuldimK0s;                 //!<! multidim histo for K0s
   Bool_t   fFillTree;          // flag to control fill of tree
+  Bool_t   fFillMulDimK0s;     // flag to control fill of multidim histo
   TTree*   fTrackTree;         //!<! output tree
   Float_t* fTreeVarFloat;      //!<! variables to be written to the tree
   Int_t*   fTreeVarInt;        //!<! variables to be written to the tree
@@ -222,22 +293,29 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Int_t   fMinNumOfTPCPIDclu;  // cut on min. of TPC clust for PID
   Bool_t  fUsePhysSel;         // flag use/not use phys sel
   Bool_t  fUsePileupCut;       // flag use/not use phys pileup cut
+  Int_t   fUsePbPbOutOfBunchPileupCutsITSTPC; /// switch for additional cuts for out-of-bunch pileup based on ITS-TPC correlation (0=no cut, 1=tight cut, 2=intermediate cut, 3=loose cut)
+  Bool_t  fRejectPbPbEventsWithGeneratedPileup;  // flag to rejct MC with pileup
+  Bool_t fKeepOnlyEventsWithPileup; // flag to keep only the events with pileup (for debug only)
   Int_t   fTriggerMask;        // mask used in physics selection
-  Bool_t fSelectOnCentrality;  // flag to activeta cut on centrality
+  Bool_t fSelectOnCentrality;  // flag to activate cut on centrality
   Double_t fMinCentrality;     // centrality: lower limit
   Double_t fMaxCentrality;     // centrality: upper limit
   TString fCentrEstimator;     // centrality: estimator
+  Bool_t fApplyV0Cuts;         // flag to use/not use V0 cuts
+  Double_t fV0CutArray[6];     // Cut values for V0
   Int_t fNEtaBins;             // number of eta intervals in histos
   Int_t fNPhiBins;             // number of phi intervals in histos
   Int_t fNPtBins;              // number of pt intervals in histos
   Double_t fMinPt;             // minimum pt for histos
   Double_t fMaxPt;             // maximum pt for histos
   Double_t fMaxMult;           // upper limit of multiplicity plots
+  Bool_t  fUseTPCCutsForV0dau; // flag use/not-use TPC cuts
   Int_t   fRequireITSforV0dau; // ITSrefit/SPDany requests for V0 daughters
   Bool_t  fReadMC;             // flag read/not-read MC truth info
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
+  Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,18);
+  ClassDef(AliAnalysisTaskCheckAODTracks,32);
 };
 
 

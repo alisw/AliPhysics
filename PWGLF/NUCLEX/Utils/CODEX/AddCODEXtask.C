@@ -13,16 +13,20 @@ AliAnalysisCODEXtask* AddCODEXtask (TString tskname = "AliCODEXfiltering", TStri
     return 0x0;
   }
 
+  //File Name
+  TString fileName = AliAnalysisManager::GetCommonFileName();
+
   tskname.Append(suffix.Data());
-  AliAnalysisCODEXtask* task = new AliAnalysisCODEXtask(tskname.Data());
+  AliAnalysisCODEXtask *task = new AliAnalysisCODEXtask(tskname.Data());
+  mgr -> AddTask(task);
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("AliCODEX%s",suffix.Data()), TTree::Class(),
                                                             AliAnalysisManager::kOutputContainer,
-                                                            "AliCODEX.root");
-  coutput1->SetSpecialOutput();
+                                                            fileName.Data());
+  //coutput1->SetSpecialOutput();
 
   AliAnalysisDataContainer *coutput2 = mgr->CreateContainer(Form("%s_summary", tskname.Data()), TList::Class(),
 							    AliAnalysisManager::kOutputContainer,
-							    "AnalysisResults.root");
+							    fileName.Data());
 
 
   mgr->ConnectInput  (task,  0, mgr->GetCommonInputContainer());

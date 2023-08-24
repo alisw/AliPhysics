@@ -2,7 +2,7 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
                                                      Int_t system=0/*0=pp,1=PbPb*/,
                                                      TString finDirname="HFTreeCreator",
                                                      TString cutsfile="",
-                                                     Int_t AODProtection = 1,
+                                                     Int_t AODProtection = 0,
                                                      Bool_t writeOnlySignalTree=kFALSE,
                                                      Bool_t fillMGgenTrees=kFALSE,
                                                      Int_t fillTreeD0=0,
@@ -14,20 +14,14 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
                                                      Int_t fillTreeBplus=0,
                                                      Int_t fillTreeBs=0,
                                                      Int_t fillTreeLb=0,
-                                                     Int_t pidOptD0=AliHFTreeHandler::kNsigmaPID,
-                                                     Int_t pidOptDs=AliHFTreeHandler::kNsigmaPID,
-                                                     Int_t pidOptDplus=AliHFTreeHandler::kNsigmaPID,
-                                                     Int_t pidOptDstar=AliHFTreeHandler::kNsigmaPID,
-                                                     Int_t pidOptLctopKpi=AliHFTreeHandler::kNsigmaPID,
-                                                     Int_t pidOptLc2V0bachelor=AliHFTreeHandler::kNsigmaPID,
-                                                     Int_t pidOptBplus=AliHFTreeHandler::kNsigmaPID,
-                                                     Int_t pidOptBs=AliHFTreeHandler::kNsigmaPID,
-                                                     Int_t pidOptLb=AliHFTreeHandler::kNsigmaPID,
+                                                     Int_t pidOpt=AliHFTreeHandler::kNsigmaPID,
                                                      Int_t singletrackvarsopt=AliHFTreeHandler::kRedSingleTrackVars,
-                                                     Bool_t fillParticleTree = kFALSE,
+						     Bool_t fillParticleTree = kFALSE,
                                                      Bool_t fillTrackletTree = kFALSE,
                                                      Int_t fillNJetTrees = 0,
-                                                     Bool_t fillJetConstituentTrees = kFALSE)
+                                                     Bool_t fillJetConstituentTrees = kFALSE,
+                                                     Bool_t isITSUpgradeProd = kFALSE,
+						     Bool_t fillInclusiveJetTree = kFALSE)
 {
     //
     //
@@ -129,24 +123,36 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     task->SetFillDstarTree(fillTreeDstar);
     task->SetFillLc2V0bachelorTree(fillTreeLc2V0bachelor);
     task->SetFillLbTree(fillTreeLb);
+    task->SetFillInclusiveJetTree(fillInclusiveJetTree);
     task->SetFillParticleTree(fillParticleTree);
     task->SetFillTrackletTree(fillTrackletTree);
-    task->SetPIDoptD0Tree(pidOptD0);
-    task->SetPIDoptDsTree(pidOptDs);
-    task->SetPIDoptDplusTree(pidOptDplus);
-    task->SetPIDoptLctopKpiTree(pidOptLctopKpi);
-    task->SetPIDoptBplusTree(pidOptBplus);
-    task->SetPIDoptBsTree(pidOptBs);
-    task->SetPIDoptDstarTree(pidOptDstar);
-    task->SetPIDoptLc2V0bachelorTree(pidOptLc2V0bachelor);
-    task->SetPIDoptLbTree(pidOptLb);
+    task->SetPIDoptD0Tree(pidOpt);
+    task->SetPIDoptDsTree(pidOpt);
+    task->SetPIDoptDplusTree(pidOpt);
+    task->SetPIDoptLctopKpiTree(pidOpt);
+    task->SetPIDoptBplusTree(pidOpt);
+    task->SetPIDoptBsTree(pidOpt);
+    task->SetPIDoptDstarTree(pidOpt);
+    task->SetPIDoptLc2V0bachelorTree(pidOpt);
+    task->SetPIDoptLbTree(pidOpt);
     task->SetTreeSingleTrackVarsOpt(singletrackvarsopt);
-    if(fillTreeBs || fillTreeLb){
+    if(fillTreeBs || fillTreeLb || fillTreeBplus || isITSUpgradeProd){
+      task->SetITSUpgradeProduction(kTRUE);
+      task->SetITSUpgradePreSelect(kTRUE);
+      task->SetStoreOnlyHIJINGBackground(kTRUE);
       task->SetGoodTrackFilterBit(4);
       task->SetGoodTrackEtaRange(0.8);
       task->SetGoodTrackMinPt(0.3);
     }
     //task->SetDebugLevel(4);
+
+    if (fillParticleTree)
+      {
+        AliTrackContainer *tracks(nullptr);
+        // task->AddTrackContainer(dataType == kAOD ? "tracks" : "Tracks");
+        tracks = task->AddTrackContainer("tracks");
+        // tracks->SetMinPt(0.15);
+      }
 
     mgr->AddTask(task);
 
@@ -176,6 +182,8 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     TString treeGenDstarname = "coutputTreeGenDstar";
     TString treeGenLc2V0bachelorname = "coutputTreeGenLc2V0bachelor";
     TString treeGenLbname = "coutputTreeGenLb";
+    TString treeInclusiveJetName = "coutputTreeInclusiveJet";
+    TString treeGenInclusiveJetName = "coutputTreeGenInclusiveJet";
     TString treeParticleName = "coutputTreeParticle";
     TString treeTrackletName = "coutputTreeTracklet";
     TString treeGenParticleName = "coutputTreeGenParticle";
@@ -206,6 +214,8 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     treeGenDstarname += finDirname.Data();
     treeGenLc2V0bachelorname += finDirname.Data();
     treeGenLbname += finDirname.Data();
+    treeInclusiveJetName += finDirname.Data();
+    treeGenInclusiveJetName += finDirname.Data();
     treeParticleName += finDirname.Data();
     treeTrackletName += finDirname.Data();
     treeGenParticleName += finDirname.Data();
@@ -215,7 +225,7 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     AliAnalysisDataContainer *cinput = mgr->CreateContainer(inname,TChain::Class(),AliAnalysisManager::kInputContainer);
     TString outputfile = AliAnalysisManager::GetCommonFileName();
     outputfile += ":PWGHF_TreeCreator";
-    if(fillTreeLb || fillTreeBs){
+    if(fillTreeLb || fillTreeBs || fillTreeBplus || isITSUpgradeProd){
       //Needed to run ITS2 production together with ITS2+ITS3 improver
       outputfile += finDirname;
     }
@@ -246,6 +256,8 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     AliAnalysisDataContainer *coutputTreeLb = 0x0;
     AliAnalysisDataContainer *coutputTreeGenLb = 0x0;
     AliAnalysisDataContainer *coutputTreeParticle = 0x0;
+    AliAnalysisDataContainer *coutputTreeInclusiveJet = 0x0;
+    AliAnalysisDataContainer *coutputTreeGenInclusiveJet = 0x0;
     AliAnalysisDataContainer *coutputTreeTracklet = 0x0;
     AliAnalysisDataContainer *coutputTreeGenParticle = 0x0;
     std::vector<AliAnalysisDataContainer*> coutputTreeJet;
@@ -332,6 +344,15 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
       }
     }
   
+    if(fillInclusiveJetTree) {
+      coutputTreeInclusiveJet = mgr->CreateContainer(treeInclusiveJetName,TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+      coutputTreeInclusiveJet->SetSpecialOutput();
+      if(readMC && fillMGgenTrees) {
+        coutputTreeGenInclusiveJet = mgr->CreateContainer(treeGenInclusiveJetName,TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+        coutputTreeGenInclusiveJet->SetSpecialOutput();
+      }
+    }
+
     if(fillParticleTree) {
       coutputTreeParticle = mgr->CreateContainer(treeParticleName,TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
       coutputTreeParticle->SetSpecialOutput();
@@ -340,6 +361,7 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
         coutputTreeGenParticle->SetSpecialOutput();
       }
     }
+    
   
     if(fillTrackletTree) {
       coutputTreeTracklet = mgr->CreateContainer(treeTrackletName,TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
@@ -399,19 +421,24 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
       mgr->ConnectOutput(task,22,coutputTreeLb);
       if(readMC && fillMGgenTrees) mgr->ConnectOutput(task,23,coutputTreeGenLb);
     }
+    if(fillInclusiveJetTree) {
+      mgr->ConnectOutput(task,24,coutputTreeInclusiveJet);
+      if(readMC && fillMGgenTrees) mgr->ConnectOutput(task,25,coutputTreeGenInclusiveJet);
+    }
+    
     if(fillParticleTree) {
-      mgr->ConnectOutput(task,24,coutputTreeParticle);
-      if(readMC && fillMGgenTrees) mgr->ConnectOutput(task,25,coutputTreeGenParticle);
+      mgr->ConnectOutput(task,26,coutputTreeParticle);
+      if(readMC && fillMGgenTrees) mgr->ConnectOutput(task,27,coutputTreeGenParticle);
     }
     if(fillTrackletTree) {
-      mgr->ConnectOutput(task,26,coutputTreeTracklet);
+      mgr->ConnectOutput(task,28,coutputTreeTracklet);
     }
     for (int i=0; i<fillNJetTrees; i++) {
-      mgr->ConnectOutput(task,27+i,coutputTreeJet.at(i));
+      mgr->ConnectOutput(task,29+i,coutputTreeJet.at(i));
     }
     if (fillJetConstituentTrees) {
       for (int i=0; i<fillNJetTrees; i++) {
-        mgr->ConnectOutput(task,27+fillNJetTrees+i,coutputTreeJetConstituent.at(i));
+        mgr->ConnectOutput(task,29+fillNJetTrees+i,coutputTreeJetConstituent.at(i));
       }
     }
 

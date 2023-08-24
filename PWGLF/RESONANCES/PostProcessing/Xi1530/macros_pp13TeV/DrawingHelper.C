@@ -73,7 +73,10 @@ vector<double> GetBinErrorFrations(TH1* hinput) {
 TH1* GetSpectrafromName(TString inputfilename) {
     TFile* inputfile = new TFile(inputfilename.Data());
     auto base = (TH1*)inputfile->Get("hXiSpectrum");
-    return base;
+    gROOT->cd();
+    TH1D* hReturn = (TH1D*)base->Clone();
+    inputfile->Close();
+    return hReturn;
 }
 vector<double> GetdNdetawithError(double multi_start, double multi_end){
     // Return dN/deta with give Multiplicity bin.
@@ -83,44 +86,37 @@ vector<double> GetdNdetawithError(double multi_start, double multi_end){
     vector<double> returnarray;
 
     //--dNdeta histogram
-    // Ref: https://twiki.cern.ch/twiki/bin/viewauth/ALICE/
-    //      ReferenceMult#Multiplicity_dependent_pp_at_AN2
+    // Ref: https://arxiv.org/pdf/1908.01861.pdf
     // LHC16k data.
     // Error was asym error, so choosed bigger error for sym error.
-    
-    vector<double> dNchdeta_multibin = 
-    {0,     1,     5,    10,    15,    20,    30,   40,   50,   70, 100};
-    vector<double> dNchdeta = 
-    {0, 26.02, 20.02, 16.17, 13.77, 12.04, 10.02, 7.95, 6.32, 4.50, 2.55};
-    vector<double> dNchdeta_e = 
-    {0,  0.35,  0.27,  0.22,  0.19,  0.17,  0.14, 0.11, 0.09, 0.07, 0.04};
-    
 
-    // 2nd Reference (LHC15 study)
-    // Ref: https://aliceinfo.cern.ch/Notes/node/510
-    /*
     vector<double> dNchdeta_multibin = 
     {0,     1,     5,    10,    15,    20,    30,   40,   50,   70, 100};
     vector<double> dNchdeta = 
-    {0, 26.18, 20.16, 16.40, 14.00, 12.28, 10.31, 8.24, 6.62, 4.77, 2.76};
+    {0, 26.32, 19.51, 15.45, 13.14, 11.63, 9.50, 7.68, 6.35, 4.36, 2.67};
     vector<double> dNchdeta_e = 
-    {0,  0.55,  0.41,  0.31,  0.29,  0.25,  0.21, 0.17, 0.13, 0.09, 0.05};
-    */
+    {0,  0.40,  0.29,  0.23,  0.20,  0.17,  0.14, 0.11, 0.10, 0.06, 0.04};
+    
 
     // input must be in the multiplicity range
-    if(std::find(dNchdeta_multibin.begin(), dNchdeta_multibin.end(), multi_start) == end(dNchdeta_multibin))
-        return {99,99};
-    if(std::find(dNchdeta_multibin.begin(), dNchdeta_multibin.end(), multi_end) == end(dNchdeta_multibin))
-        return {99,99};
+    if( multi_end > 0.2){
+        if(std::find(dNchdeta_multibin.begin(), dNchdeta_multibin.end(), multi_start) == end(dNchdeta_multibin))
+            return {99,99};
+        if(std::find(dNchdeta_multibin.begin(), dNchdeta_multibin.end(), multi_end) == end(dNchdeta_multibin))
+            return {99,99};
+    }
 
     // special cases
     if((multi_start == 0) && (multi_end == 0.01)){
-        returnarray = {35.37, 0.92};
+        returnarray = {35.92, 0.78};
     }
-    else if((multi_start == 0.01) && (multi_end == 0.1)){
+    else if((multi_start == 0.01) && (multi_end == 0.05)){
+        returnarray = {32.19, 0.56};
+    } else if ((multi_start == 0.05) && (multi_end == 0.1)) {
+        returnarray = {30.13, 0.49};
+    } else if ((multi_start == 0.01) && (multi_end == 0.1)) {
         returnarray = {30.89, 0.57};
-    }
-    else if((multi_start == 0) && (multi_end == 5)){
+    } else if ((multi_start == 0) && (multi_end == 5)) {
         returnarray = {21.20, 0.28};
     }
     else if((multi_start == 0) && (multi_end == 0)){

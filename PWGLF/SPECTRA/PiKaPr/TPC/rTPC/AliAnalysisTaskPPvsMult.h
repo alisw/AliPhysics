@@ -8,6 +8,7 @@
 // ROOT includes
 #include <TList.h>
 #include <TH1.h>
+#include <TH3.h>
 #include <TProfile.h>
 #include <TTreeStream.h>
 #include <TRandom.h>
@@ -44,42 +45,33 @@ public:
 		virtual void   UserExec(Option_t *option);
 
 		Bool_t   GetAnalysisMC() { return fAnalysisMC; }   
-//		Double_t GetVtxCut() { return fVtxCut; }   
 		Double_t GetEtaCut() { return fEtaCut; }     
-		//Double_t GetMinPt() { return fMinPt; }   
-		//Int_t    GetTreeOption() { return fTreeOption; }  
 
-//		virtual void  SetTrigger(UInt_t ktriggerInt) {ftrigBit = ktriggerInt;}
-		virtual void  SetTrackFilterGolden(AliAnalysisFilter* trackF) {fTrackFilterGolden = trackF;}
+////		virtual void  SetTrackFilterGolden(AliAnalysisFilter* trackF) {fTrackFilterGolden = trackF;}
 		virtual void  SetTrackFilterTPC(AliAnalysisFilter* trackF) {fTrackFilterTPC = trackF;}
-		virtual void  SetTrackFilter2015PbPb(AliAnalysisFilter* trackF) {fTrackFilter2015PbPb = trackF;}
-//		virtual void  SetCentralityEstimator(const char * centEst) {fCentEst = centEst;}
+////		virtual void  SetTrackFilter2015PbPb(AliAnalysisFilter* trackF) {fTrackFilter2015PbPb = trackF;}
 		virtual void  SetAnalysisType(const char* analysisType) {fAnalysisType = analysisType;}
 		virtual void  SetAnalysisMC(Bool_t isMC) {fAnalysisMC = isMC;}
 		virtual void  SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
 		virtual void  SetNcl(const Int_t ncl){fNcl = ncl;}
 		virtual void  SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
-//		virtual void  SetPileUpRej(Bool_t isrej) {fPileUpRej = isrej;}   
-		virtual void  SetMinCent(Float_t minvalc) {fMinCent = minvalc;}
-		virtual void  SetMaxCent(Float_t maxvalc) {fMaxCent = maxvalc;}
-//		virtual void  SetStoreMcIn(Bool_t value) {fStoreMcIn = value;}
-		virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) { fAnalysisPbPb = isanaPbPb; }
+                virtual void  SetPeriod(const char* Period) { fPeriod = Period; }
+//		virtual void  SetMinCent(Float_t minvalc) {fMinCent = minvalc;}
+//		virtual void  SetMaxCent(Float_t maxvalc) {fMaxCent = maxvalc;}
+//		virtual void  SetAnalysisPbPb(Bool_t isanaPbPb) { fAnalysisPbPb = isanaPbPb; }
 		virtual void  SetAnalysisTask(Bool_t PostCalib) { fdEdxCalibrated = PostCalib; }
-		virtual void  SetAnalysisPID(Bool_t makePid) { fMakePid = makePid; }
-		virtual void  SetAddLowPt(Bool_t addlowpt) { fLowPt = addlowpt; }
+		virtual void  SetTrackCutsSystVars(const int TrackCutVar) { fTrackCuts = TrackCutVar; }
+/////		virtual void  SetAnalysisPID(Bool_t makePid) { fMakePid = makePid; }
+/////		virtual void  SetAddLowPt(Bool_t addlowpt) { fLowPt = addlowpt; }
 		virtual void  SetPeriod(Int_t isLHC16l) { fLHC16l = isLHC16l; }
 
 	private:
 		virtual Float_t GetVertex(const AliVEvent* event) const;
 		virtual void AnalyzeESD(AliESDEvent* esd); 
-//		virtual void AnalyzeAOD(AliAODEvent* aod); 
 		virtual void ProduceArrayTrksESD(AliESDEvent* event, const Int_t cent);
 		virtual void ProduceArrayV0ESD(AliESDEvent* event, const Int_t cent );
-//		virtual void ProduceArrayTrksAOD(AliAODEvent* event);
-//		virtual void ProduceArrayV0AOD(AliAODEvent* event);
 		Short_t   GetPidCode(Int_t pdgCode) const;
 		void      ProcessMCTruthESD( const Int_t cent );
-//		void      ProcessMCTruthAOD(); 
 
 		Short_t   GetPythiaEventProcessType(Int_t pythiaType);
 		Short_t   GetDPMjetEventProcessType(Int_t dpmJetType);
@@ -88,8 +80,6 @@ public:
 		TParticle* FindPrimaryMother(AliStack* stack, Int_t label);
 		Int_t      FindPrimaryMotherLabel(AliStack* stack, Int_t label);
 
-//		AliAODMCParticle* FindPrimaryMotherAOD(AliAODMCParticle* startParticle);
-
 		TParticle* FindPrimaryMotherV0(AliStack* stack, Int_t label);
 		Int_t      FindPrimaryMotherLabelV0(AliStack* stack, Int_t label, Int_t& nSteps);
 		Bool_t selectVertex2015pp(AliESDEvent* esd, Bool_t checkSPDres, Bool_t requireSPDandTrk, Bool_t checkProximity);
@@ -97,19 +87,11 @@ public:
                 Bool_t IsGoodZvertexPos(AliESDEvent *esd);
 		Bool_t PhiCut(Double_t pt, Double_t phi, Double_t q, Float_t   mag, TF1* phiCutLow, TF1* phiCutHigh);
 		Float_t GetMaxDCApTDep( TF1 *fcut, Double_t pt );
-		Double_t EtaCalibrationNeg(const Int_t centrality, const Double_t Eta);
-		Double_t EtaCalibrationPos(const Int_t centrality, const Double_t Eta);
-		Double_t EtaCalibrationNegEl(const Int_t centrality, const Double_t Eta);
-		Double_t EtaCalibrationPosEl(const Int_t centrality, const Double_t Eta);
-
-
-
-//		AliAODMCParticle* FindPrimaryMotherAODV0(AliAODMCParticle* startParticle, Int_t& nSteps);
-
-
+		Double_t EtaCalibration(const double& Eta);
+		Double_t EtaCalibrationEl(const double& Eta);
+ 		bool TOFPID(AliESDtrack* track);
 
 		static const Double_t fgkClight;   // Speed of light (cm/ps)
-		//  static const Int_t nCent=10;   // Speed of light (cm/ps)
 
 		AliESDEvent* fESD;                  //! ESD object
 		AliAODEvent* fAOD;                  //! AOD object
@@ -118,20 +100,13 @@ public:
 		AliStack*    fMCStack;              //! MC ESD stack
 		TClonesArray* fMCArray;             //! MC array for AOD
 		AliPIDResponse* fPIDResponse;       //! Pointer to PIDResponse
-		AliAnalysisFilter* fTrackFilter2015PbPb;    //  Track Filter, set 2010 with golden cuts
-		AliAnalysisFilter* fTrackFilterGolden;    //  Track Filter, set 2010 with golden cuts
+		AliESDtrackCuts* fTrackFilterGolden;    //  Track Filter, set 2010 with golden cuts
 		AliAnalysisFilter* fTrackFilterTPC; // track filter for TPC only tracks
 		AliAnalysisUtils* utils;
-//		TString       fCentEst;             // V0A , V0M, 
 		TString       fAnalysisType;        //  "ESD" or "AOD"
 		Bool_t        fAnalysisMC;          //  Real(kFALSE) or MC(kTRUE) flag
-		Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
-		//  Boolt_t       fAnalysisTask;
-//		UInt_t        ftrigBit;
+///		Bool_t        fAnalysisPbPb;        //  true you want to analyze PbPb data, false for pp
 		TRandom*      fRandom;              //! random number generator
-//		Bool_t        fPileUpRej;           // kTRUE is pile-up is rejected
-
-
 
 		//
 		// Cuts and options
@@ -141,13 +116,13 @@ public:
 		Int_t        fNcl;                
 		Double_t     fEtaCut;             // Eta cut used to select particles
 		Int_t        cent; //minimum centrality
-		Float_t      fMinCent; //minimum centrality
-		Float_t      fMaxCent; //maximum centrality
+//		Float_t      fMinCent; //minimum centrality
+//		Float_t      fMaxCent; //maximum centrality
                 const Double_t fDeDxMIPMin;
                 const Double_t fDeDxMIPMax;
                 const Double_t fdEdxHigh;
                 const Double_t fdEdxLow;
-//		Bool_t       fStoreMcIn;          // Store MC input tracks
+		TString fPeriod;
 
 		//
 		// Help variables
@@ -166,15 +141,11 @@ public:
 		TList*        fListOfObjects;     //! Output list of objects
 		TH2F*         fEvents;            //! No of accepted events
 		TH1F*         fV0M;            //! No of accepted events
-		//  TH1I*         fVtx;               //! Event vertex info
 		TH1F*         fVtxMC;             //! Event vertex info for ALL MC events
-		//  TH1F*         fVtxBeforeCuts;     //! Vertex z dist before cuts
-		//  TH1F*         fVtxAfterCuts;      //! Vertex z dist after cuts
-		//  TH1F* fn1;
-		//  TH1F* hEvents;
 		Bool_t       fdEdxCalibrated;
-		Bool_t       fMakePid;
-		Bool_t       fLowPt;
+		int fTrackCuts;
+////		Bool_t       fMakePid;
+////		Bool_t       fLowPt;
 		Int_t  fLHC16l;
 		TH1F* fcent;
 		TH1F* fcentAfterPrimaries;
@@ -205,71 +176,65 @@ public:
 		// Histograms for PostCalibration
 
 
-		TH1D *hPtAll[11];
-		TH1D *hPtAllPos[11];
-		TH1D *hPtAllNeg[11];
-		TH1D *hPtPos[11][4];
-		TH1D *hPtNeg[11][4];
+		TH1D *hPt_TPC[11];
+		TH1D *hPtpos_TPC[11];
+		TH1D *hPtneg_TPC[11];
+		TH1D *hPtpos_TPC_Eta[11][4];
+		TH1D *hPtneg_TPC_Eta[11][4];
 		TH2D *hPtVsP[11][4];
 
 		TH2D *hDeDxVsP[11][4];
-
 		TH2D *hnSigmaPiPos[11][4];
 		TH2D *hnSigmaKPos[11][4];
 		TH2D *hnSigmaPPos[11][4];
-
 		TH2D *hnSigmaPiNeg[11][4];
 		TH2D *hnSigmaKNeg[11][4];
 		TH2D *hnSigmaPNeg[11][4];
 
+                TH2D *hBetavsPneg[11][4];
+                TH1D *hPtneg_TOF_Eta[11][4];
+                TH1D *hPneg_TOF_Eta[11][4];
+                TH1D *hPtneg_TOF[11];
+                TH2D *hBetavsPpos[11][4];
+                TH1D *hPtpos_TOF_Eta[11][4];
+                TH1D *hPpos_TOF_Eta[11][4];
+                TH1D *hPtpos_TOF[11];            
+
 		TH2D* histPiV0[11][4];
 		TH1D* histpPiV0[11][4];
-
 		TH2D* histPV0[11][4];
 		TH1D* histpPV0[11][4];
-
 		TH2D* histPiTof[11][4];
 		TH1D* histpPiTof[11][4];
-
 		TH2D* histEV0[11][4];
 
-		TH1D* hMcIn[11][7];
-		TH1D* hMcOut[11][7];
-		TH1D* hMcInNeg[11][7];
-		TH1D* hMcInPos[11][7];
-		TH1D* hMcOutNeg[11][7];
-		TH1D* hMcOutPos[11][7];
+		TH1D* hMcInNeg[3];
+		TH1D* hMcInPos[3];
+		TH1D* hMcOutNeg[3];
+		TH1D* hMcOutPos[3];
+		TH1D* hMcOutNegTOF[3];
+		TH1D* hMcOutPosTOF[3];
 
-		TH2D* hPiondEdx[11];
-                TH2D* hKaondEdx[11];
-                TH2D* hProtondEdx[11];
+		TH3F* hDCApTPrim[2][2];
+		TH3F* hDCApTWDec[2][2];
+		TH3F* hDCApTMate[2][2];
 
+		TH3F* hDCApTPrim_TOF[2][2];
+		TH3F* hDCApTWDec_TOF[2][2];
+		TH3F* hDCApTMate_TOF[2][2];
 
-		TH2D* hDCAxyVsPtPiNeg[11];
-		TH2D* hDCAxyVsPtPiNegC[11];
-		TH2D* hDCAxyVsPtKNeg[11];
-		TH2D* hDCAxyVsPtKNegC[11];
-		TH2D* hDCAxyVsPtPNeg[11];
-		TH2D* hDCAxyVsPtPNegC[11];
-		TH2D* hDCAxyVsPtPiPos[11];
-		TH2D* hDCAxyVsPtPiPosC[11];
-		TH2D* hDCAxyVsPtKPos[11];
-		TH2D* hDCAxyVsPtKPosC[11];
-		TH2D* hDCAxyVsPtPPos[11];
-		TH2D* hDCAxyVsPtPPosC[11];
+		TH3F* hDCAxyVsPtPiNeg_TPC;
+		TH3F* hDCAxyVsPtPNeg_TPC;
+		TH3F* hDCAxyVsPtPiNeg_TOF;
+		TH3F* hDCAxyVsPtPNeg_TOF;
 
-		//    [Cent][Pid][Charge: 0:neutral 1:Neg 2:Pos]
-		TH2D* hDCApTPrim[10][7][3];
-		TH2D* hDCApTWDec[10][7][3];
-		TH2D* hDCApTMate[10][7][3];
+		TH3F* hDCAxyVsPtPiPos_TPC;
+		TH3F* hDCAxyVsPtPPos_TPC;
+		TH3F* hDCAxyVsPtPiPos_TOF;
+		TH3F* hDCAxyVsPtPPos_TOF;
 
-		TH2D* hDCApTPrim2[10][7][3];
-		TH2D* hDCApTWDec2[10][7][3];
-		TH2D* hDCApTMate2[10][7][3];
-
-
+		TF1* fEtaCalibrationPos;
 		TF1* fEtaCalibrationNeg;
-		TF1* fEtaCalibration;
 		TF1* felededxfitPos;
 		TF1* felededxfitNeg;
 		TF1* fcutDCAxy;

@@ -58,6 +58,7 @@ private:
     Float_t fAnchorPoint;       //Raw value below which
     Float_t fAnchorPercentile;  //Percentile of X-section at anchor point
     
-    ClassDef(AliMultEstimator, 1)
+    ClassDef(AliMultEstimator, 2)
+   //2 - addition of auto-vertex-Z corrections
 };
 #endif

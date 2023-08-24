@@ -39,6 +39,7 @@ class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
     
  public:
   enum massD0orD0bar{kmassD0,kmassD0bar}; //for D0_D0bar mass check
+  enum massDstarorDstarbar{kmassDstar, kmassDstarbar}; //for D*_D*bar mass check
 
   enum DecChannel{kDplustoKpipi,kD0toKpi,kDstartoKpipi,kDstoKKpi}; //more particles can be added
   enum EventPlaneMeth{kTPC,kTPCVZERO,kVZERO,kVZEROA,kVZEROC,kPosTPCVZERO,kNegTPCVZERO,kZDC}; //Event plane to be calculated in the task
@@ -59,7 +60,7 @@ class AliAnalysisTaskHFv1 : public AliAnalysisTaskSE
     fSubEvDetA=detsubA; fSubEvDetB=detsubB;
   }
 
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetMassLimits(Float_t range,Int_t pdg);
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);

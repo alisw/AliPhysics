@@ -92,6 +92,9 @@ AliAnalysisTaskSEXicZero2XiPifromAODtracks *AddTaskXicZero2XiPifromAODtracks(TSt
       coutputXic3 = mgr->CreateContainer(Form("OmegacZeroAll%s", outputFileName.Data()),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // general histos
     mgr->ConnectOutput(task,3,coutputXic3);
   }
+
+  AliAnalysisDataContainer *coutputXic4 = mgr->CreateContainer(Form("XicZeroNorm%s",outputFileName.Data()),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data()); // normalization counter
+  mgr->ConnectOutput(task,4,coutputXic4);
   
   return task;
 

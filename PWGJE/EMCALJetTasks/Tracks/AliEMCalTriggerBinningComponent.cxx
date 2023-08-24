@@ -21,12 +21,10 @@
 #include "AliEMCalTriggerBinningComponent.h"
 #include "AliEMCalTriggerBinningFactory.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerBinningComponent)
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningData)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerBinningComponent)
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningData)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningComponent() :
   TObject(),
@@ -131,6 +129,4 @@ AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningData::~AliEMCalTriggerBin
 void AliEMCalTriggerBinningComponent::AliEMCalTriggerBinningData::SetBinning(TBinning *binning){
   if(fBinning) delete fBinning;
   fBinning = binning;
-}
-
 }

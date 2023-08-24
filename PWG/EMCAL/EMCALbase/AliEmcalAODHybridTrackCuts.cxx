@@ -30,9 +30,7 @@
 #include "AliLog.h"
 #include <iostream>
 
-/// \cond CLASSIMP
 ClassImp(PWG::EMCAL::AliEmcalAODHybridTrackCuts)
-/// \endcond
 
 using namespace PWG::EMCAL;
 
@@ -143,7 +141,7 @@ bool TestAliEmcalAODHybridTrackCuts::TestDef2010wRefit() const {
       AliErrorStream() << "Hybrid track information not found for track CAT2" << std::endl;
       nfailure++;          // no hybrid track type found - failure
     } else {
-      if(tracktype->IsHybridTrackConstrained()){
+      if(!tracktype->IsHybridTrackConstrained()){
         AliErrorStream() << "Track not selected as hybrid track CAT2: " << int(tracktype->GetHybridTrackType()) << std::endl;
         nfailure++; // wrong hybrid track type
       }
@@ -216,7 +214,7 @@ bool TestAliEmcalAODHybridTrackCuts::TestDef2010woRefit() const {
       AliErrorStream() << "Hybrid track information not found for track CAT2" << std::endl;
       nfailure++;          // no hybrid track type found - failure
     } else {
-      if(tracktype->IsHybridTrackConstrained()){
+      if(!tracktype->IsHybridTrackConstrained()){
         AliErrorStream() << "Track not selected as hybrid track CAT2: " << int(tracktype->GetHybridTrackType()) << std::endl;
         nfailure++; // wrong hybrid track type
       }
@@ -277,7 +275,7 @@ bool TestAliEmcalAODHybridTrackCuts::TestDef2011() const {
       AliErrorStream() << "Hybrid track information not found for track CAT2" << std::endl;
       nfailure++;
     } else {
-      if(tracktype->IsHybridTrackConstrained()){
+      if(!tracktype->IsHybridTrackConstrained()){
         AliErrorStream() << "Track not selected as hybrid track CAT2: " << int(tracktype->GetHybridTrackType()) << std::endl;
         nfailure++;
       }

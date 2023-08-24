@@ -25,6 +25,7 @@
 #pragma link C++ class AliAnalysisTaskElectronEfficiency+;
 #pragma link C++ class AliAnalysisTaskElectronEfficiencyV2+;
 #pragma link C++ class AliAnalysisTaskEtaReconstruction+;
+#pragma link C++ class AliAnalysisTaskTagAndProbe+;
 #pragma link C++ class AliDielectronVarCuts+;
 #pragma link C++ class AliDielectronV0Cuts+;
 #pragma link C++ class AliDielectronTMVACuts+;
@@ -52,8 +53,12 @@
 #pragma link C++ class AliAnalysisTask_Syst_PtDistributionsMC+;
 #pragma link C++ class AliAnalysisTaskDielectronsPbPb_Data+;
 #pragma link C++ class AliAnalysisTaskDielectronsPbPb_Efficiency+;
+#pragma link C++ class AliAnalysisTaskeeCor+;
+#pragma link C++ class AliAnalysisTaskGammaPythia+;
 #pragma link C++ class AliAnalysisTaskMLTreeMaker+;
+#pragma link C++ class AliAnalysisTaskMLTreeMaker2018+;
 #pragma link C++ class AliAnalysisTaskMLTreeMakerEff+;
+#pragma link C++ class AliAnalysisTaskOmegaDielectron_AccEff+;
 #pragma link C++ class AliAnalysisTaskSimpleTreeMaker+;
 #pragma link C++ class AliAnalysisTask_JPsi_EMCal+;
 #pragma link C++ class AliDielectronReducedTrack+;
@@ -63,15 +68,16 @@
 #pragma link C++ class AliAnalysisTaskTGReducedTree+;
 #pragma link C++ class AliAnalysisTaskReducedTreeDS+;
 #pragma link C++ class AliAnalysisTaskLMeeCocktailMC+;
+#pragma link C++ class AliAnalysisTaskLMeePureMC+;
 #pragma link C++ class AliCocktailSmearing+;
 #pragma link C++ class AliAnalysisTaskCharm+;
 #pragma link C++ class AliAnalysisTaskBeauty+;
 #pragma link C++ class AliAnalysisTaskJpsi+;
 #pragma link C++ class AlimakeJPsiTree+;
-#ifdef HAVE_FASTJET
-// Classes which need direct access only to Fastjet objects (not
-// needed if wrapped into ALICE objects)
-#pragma link C++ class AliAnalysisTaskJpsiJet+;
-#pragma link C++ class AliAnalysisTaskJpsiJetFilter+;
-#endif
+//#ifdef HAVE_FASTJET
+//// Classes which need direct access only to Fastjet objects (not
+//// needed if wrapped into ALICE objects)
+//#pragma link C++ class AliAnalysisTaskJpsiJet+;
+//#pragma link C++ class AliAnalysisTaskJpsiJetFilter+;
+//#endif
 #endif

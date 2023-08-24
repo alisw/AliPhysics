@@ -36,7 +36,7 @@ ClassImp( AliDalitzEventMC )
 
      AliDalitzAODESDMC* AliDalitzEventMC::Particle(Int_t i){
          if (fIsESDMC==kTRUE){
-                AliDalitzAODESDMC* esdparticle= new AliDalitzAODESDMC((TParticle*)fESDEventMC->Particle(i));
+                AliDalitzAODESDMC* esdparticle = new AliDalitzAODESDMC((AliMCParticle*)fESDEventMC->GetTrack(i));
                 return esdparticle;}
                 
         else {
@@ -44,7 +44,7 @@ ClassImp( AliDalitzEventMC )
               TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()));
               
               AliAODMCParticle *aodparticle0 = (AliAODMCParticle*) AODMCTrackArray->At(i);
-              AliDalitzAODESDMC* aodparticle1= new AliDalitzAODESDMC(aodparticle0);
+              AliDalitzAODESDMC* aodparticle1 = new AliDalitzAODESDMC(aodparticle0);
               return aodparticle1;
         }
      }

@@ -29,6 +29,7 @@
 
 /// \class AliAnalysisTaskSELc2pK0sfromAODtracks
 
+class TObjString;
 class THnSparse;
 class TH1F;
 class TH2F;

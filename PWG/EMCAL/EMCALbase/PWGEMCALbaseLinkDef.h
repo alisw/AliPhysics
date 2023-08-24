@@ -48,6 +48,7 @@
 #pragma link C++ class PWG::EMCAL::AliEmcalESDHybridTrackCuts+;
 #pragma link C++ class PWG::EMCAL::AliEmcalESDTrackCutsGenerator+;
 #pragma link C++ class PWG::EMCAL::AliEmcalESDtrackCutsWrapper+;
+#pragma link C++ class PWG::EMCAL::AliEmcalMCPartonInfo+;
 #pragma link C++ class PWG::EMCAL::TestAliEmcalTrackSelResultPtr+;
 #pragma link C++ class PWG::EMCAL::TestAliEmcalAODHybridTrackCuts+;
 #pragma link C++ class PWG::EMCAL::TestAliEmcalTrackSelectionAOD+;

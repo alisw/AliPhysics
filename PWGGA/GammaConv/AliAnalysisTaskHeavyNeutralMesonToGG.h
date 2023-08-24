@@ -17,6 +17,7 @@
 #include "TH3.h"
 #include "TH3F.h"
 #include "THnSparse.h"
+#include "TGenPhaseSpace.h"
 #include <vector>
 #include <map>
 
@@ -123,6 +124,7 @@ public:
 
   // BG HandlerSettings
   void CalculateBackground            ();
+  void CalculateBackgroundSwapp       ();
   void CalculateBackgroundRP          ();
   void RotateParticle                 ( AliAODConversionPhoton *gamma );
   void RotateParticleAccordingToEP    ( AliAODConversionPhoton *gamma,
@@ -318,12 +320,13 @@ protected:
   Bool_t                  fAllowOverlapHeaders;                               // enable overlapping headers for cluster selection
   Bool_t                  fEnableClusterCutsForTrigger;                       // enable CLusterCuts output for trigger only
 
+  TGenPhaseSpace        fGenPhaseSpace;                                       // For generation of decays into two gammas (rotation background)
+
 private:
   AliAnalysisTaskHeavyNeutralMesonToGG(const AliAnalysisTaskHeavyNeutralMesonToGG&); // Prevent copy-construction
   AliAnalysisTaskHeavyNeutralMesonToGG &operator=(const AliAnalysisTaskHeavyNeutralMesonToGG&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskHeavyNeutralMesonToGG, 3);
+  ClassDef(AliAnalysisTaskHeavyNeutralMesonToGG, 4);
 };
 
 #endif // ALIANALYSISTASKHEAVYNEUTRALMESONTOGG_H
-

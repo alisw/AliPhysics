@@ -30,7 +30,7 @@ void AddTask_GammaConvV1_pPb(
     Int_t     enableQAPhotonTask            = 0,        // enable additional QA task
     Bool_t    enableLightOutput             = kFALSE,   // switch to run light output (only essential histograms for afterburner)
     Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
-    Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
+    Int_t     enableTriggerMimicking        = 0,        // enable trigger mimicking
     Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
     TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
     Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
@@ -77,6 +77,9 @@ void AddTask_GammaConvV1_pPb(
   Double_t maxFacPtHard       = 100;
   Bool_t fSingleMaxPtHardSet  = kFALSE;
   Double_t maxFacPtHardSingle = 100;
+  Bool_t fJetFinderUsage      = kFALSE;
+  Bool_t fUsePtHardFromFile      = kFALSE;
+  Bool_t fUseAddOutlierRej      = kFALSE;
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
@@ -95,6 +98,24 @@ void AddTask_GammaConvV1_pPb(
       maxFacPtHardSingle         = strTempSetting.Atof();
       cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
       fSingleMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("USEJETFINDER:")){
+      strTempSetting.Replace(0,13,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fJetFinderUsage        = kTRUE;
+      }
+    } else if(strTempSetting.BeginsWith("PTHFROMFILE:")){
+      strTempSetting.Replace(0,12,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fUsePtHardFromFile        = kTRUE;
+      }
+    } else if(strTempSetting.BeginsWith("ADDOUTLIERREJ:")){
+      strTempSetting.Replace(0,14,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using path based outlier removal" << endl;
+        fUseAddOutlierRej        = kTRUE;
+      }
     } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
       maxFacPtHard               = strTempSetting.Atof();
       cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
@@ -149,7 +170,7 @@ void AddTask_GammaConvV1_pPb(
   // new standard configurations  MB
   if(trainConfig == 1){
     cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0162103500900000"); // new default
-    cuts.AddCutPCM("80010113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCutPCM("80010113", "00200009327000008250400000", "0162103500900000"); // new default, no to close    
   } else if (trainConfig == 2){
     cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0162103500000000"); // new default
     cuts.AddCutPCM("80010113", "00200009327000008250400000", "0162103500000000"); // new default, no to close
@@ -159,22 +180,19 @@ void AddTask_GammaConvV1_pPb(
   } else if (trainConfig == 4){
     cuts.AddCutPCM("80010123", "00200009f9730000dge0400000", "0162103500000000"); // new default
     cuts.AddCutPCM("80010123", "00200009327000008250400000", "0162103500000000"); // new default, no to close
-  } else if (trainConfig == 5){ // past-future protection
-    cuts.AddCutPCM("80010213", "00200009f9730000dge0400000", "0162103500900000"); // new default, +-2.225\mus no other interaction
-    cuts.AddCutPCM("80010213", "00200009327000008250400000", "0162103500900000"); // new default, no to close, +-2.225\mus no other interaction
-    cuts.AddCutPCM("80010513", "00200009f9730000dge0400000", "0162103500900000"); // new default, +-1.075\mus no other interaction
-    cuts.AddCutPCM("80010513", "00200009327000008250400000", "0162103500900000"); // new default, no to close, +-1.075\mus no other interaction
-  } else if (trainConfig == 6){ // past-future protection
-    cuts.AddCutPCM("80010213", "00200009f9730000dge0400000", "0162103500000000"); // new default,  +-2.225\mus no other interaction
-    cuts.AddCutPCM("80010213", "00200009327000008250400000", "0162103500000000"); // new default, no to close, +-2.225\mus no other interaction
-    cuts.AddCutPCM("80010513", "00200009f9730000dge0400000", "0162103500000000"); // new default,  +-1.075\mus no other interaction
-    cuts.AddCutPCM("80010513", "00200009327000008250400000", "0162103500000000"); // new default, no to close,  +-1.075\mus no other interaction
+  } else if (trainConfig == 5){ 
+    cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0162103500000000"); // new default 13TeV
+  } else if (trainConfig == 6){
+    cuts.AddCutPCM("80010123", "0dm00009f9730000dge0404000", "0162103500000000"); // new default 13TeV diff MC treatment
   } else if (trainConfig == 7){
     cuts.AddCutPCM("80010123", "00200009f9730000dge0400000", "0162103500900000"); // new default
     cuts.AddCutPCM("80010123", "00200009327000008250400000", "0162103500900000"); // new default, no to close
   } else if (trainConfig == 8){
     cuts.AddCutPCM("80010123", "00200009f9730000dge0400000", "0162103500000000"); // new default
     cuts.AddCutPCM("80010123", "00200009327000008250400000", "0162103500000000"); // new default, no to close
+  } else if (trainConfig == 9){ //V0 reader studies
+    cuts.AddCutPCM("80010123", "00200009f9730000dge0400000", "0162103500000000"); // on the fly
+    cuts.AddCutPCM("80010123", "10200009f9730000dge0400000", "0162103500000000"); // offline
 
   // default cut all cents without smearing and to close V0
   } else if (trainConfig == 10) {
@@ -248,6 +266,10 @@ void AddTask_GammaConvV1_pPb(
   } else if (trainConfig == 52){
     cuts.AddCutPCM("86010123", "00200009f9730000dge0400000", "0162103500000000"); //new default
     cuts.AddCutPCM("86010123", "00200009327000008250400000", "0162103500000000"); //new default, no to close
+
+
+  } else if (trainConfig == 70){
+    cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0162103500000000"); //new default
 
   //--------------------------------------------------------------------------
   // Systematics variations for standard ana w/o to close V0, wo smearing
@@ -531,6 +553,25 @@ void AddTask_GammaConvV1_pPb(
   } else if (trainConfig == 369) {
     cuts.AddCutPCM("80010213", "00200009f9730000dge0400000", "0152103500000000"); //same as std + maximum past future rejection
     cuts.AddCutPCM("80010513", "00200009f9730000dge0400000", "0152103500000000"); //same as std + medium past future rejection
+  } else if (trainConfig == 370) {
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0152103500000000"); 
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0r52103500000000"); 
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0s52103500000000"); 
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0t52103500000000"); 
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0u52103500000000"); 
+  } else if (trainConfig == 371) {
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0152103500900000"); 
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0r52103500900000"); 
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0s52103500900000"); 
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0t52103500900000"); 
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0u52103500900000"); 
+  } else if (trainConfig == 372) {
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0152103500800000"); 
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0r52103500800000"); 
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0s52103500800000"); 
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0t52103500800000"); 
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0u52103500800000"); 
+
   //--------------------------------------------------------------------------
   // Systematics variations for direct photons pPb 5 TeV Run1 and Run2 - 0-100%
   //--------------------------------------------------------------------------
@@ -1049,6 +1090,42 @@ void AddTask_GammaConvV1_pPb(
 
   } else if (trainConfig == 1120) {
     cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0152103500000000"); // new default (R region rej. + eta<0.8 + DC)
+  } else if (trainConfig == 1121) {
+    cuts.AddCutPCM("80010113", "00m00009f9730000dge0404000", "0152103500000000"); // eta < 0.9
+    cuts.AddCutPCM("80010113", "0d200009f9730000dge0404000", "0152103500000000"); // no R region rejection
+    cuts.AddCutPCM("80010113", "00200009f9730000dge0404000", "0152103500000000"); // old cuts
+  } else if (trainConfig == 1125) { // T0-based cuts
+    cuts.AddCutPCM("80011103", "0dm00009f9730000dge0404000", "0152103500000000"); // new default (R region rej. + eta<0.8 + DC)
+
+
+  } else if (trainConfig == 1126) { // rapidity vars
+    cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0152103500000000"); // new default (R region rej. + eta<0.8 + DC)
+    cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0152403500000000"); // new default (R region rej. + eta<0.8 + DC)
+    cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0152a03500000000"); // new default (R region rej. + eta<0.8 + DC)
+    cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0152b03500000000"); // new default (R region rej. + eta<0.8 + DC)
+    cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0152e03500000000"); // new default (R region rej. + eta<0.8 + DC)
+    cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0152f03500000000"); // new default (R region rej. + eta<0.8 + DC)
+
+  } else if (trainConfig == 1130) {
+    cuts.AddCutPCM("80210103", "0dm00009f9730000dge0404000", "0152103500000000"); // 00-20
+    cuts.AddCutPCM("82410103", "0dm00009f9730000dge0404000", "0152103500000000"); // 20-40
+    cuts.AddCutPCM("84610103", "0dm00009f9730000dge0404000", "0152103500000000"); // 40-60
+  } else if (trainConfig == 1131) {
+    cuts.AddCutPCM("86810103", "0dm00009f9730000dge0404000", "0152103500000000"); // 60-80
+    cuts.AddCutPCM("88010103", "0dm00009f9730000dge0404000", "0152103500000000"); // 80-100
+    cuts.AddCutPCM("89010103", "0dm00009f9730000dge0404000", "0152103500000000"); // 90-100
+
+  // R bin variations only with MBWs
+  } else if (trainConfig == 1140) {
+    cuts.AddCutPCM("80010113", "0d200009f9730000dge0404000", "0152103500000000"); // default eta<0.8 5-180cm
+  } else if (trainConfig == 1141) {
+    cuts.AddCutPCM("80010113", "0dh00009f9730000dge0404000", "0152103500000000"); // default eta<0.8 5-13cm
+    cuts.AddCutPCM("80010113", "0di00009f9730000dge0404000", "0152103500000000"); // default eta<0.8 13-33.5cm
+    cuts.AddCutPCM("80010113", "0dj00009f9730000dge0404000", "0152103500000000"); // default eta<0.8 33.5-55cm
+  } else if (trainConfig == 1142) {
+    cuts.AddCutPCM("80010113", "0dk00009f9730000dge0404000", "0152103500000000"); // default eta<0.8 55-72cm
+    cuts.AddCutPCM("80010113", "0dl00009f9730000dge0404000", "0152103500000000"); // default eta<0.8 72-95cm
+    cuts.AddCutPCM("80010113", "0dg00009f9730000dge0404000", "0152103500000000"); // default eta<0.8 95-180cm
 
   } else if (trainConfig == 1150) {
     cuts.AddCutPCM("80010123", "00200009f9730000dge0400000", "0162103500000000", "4117901050032230000"); // new default for 8TeV+triggers
@@ -1147,9 +1224,6 @@ void AddTask_GammaConvV1_pPb(
     cuts.AddCutPCM("e6810113", "0d200009a27000008250a04120", "0162103500000000"); // 60-80
   } else if (trainConfig == 1527) {
     cuts.AddCutPCM("e8010113", "0d200009a27000008250a04120", "0162103500000000"); // 80-100
-
-
-
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -1261,7 +1335,14 @@ void AddTask_GammaConvV1_pPb(
     if(fMaxPtHardSet)
       analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     if(fSingleMaxPtHardSet)
-      analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);    analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
+      analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
+    if(fJetFinderUsage)
+      analysisEventCuts[i]->SetUseJetFinderForOutliers(kTRUE);
+    if(fUsePtHardFromFile)
+      analysisEventCuts[i]->SetUsePtHardBinFromFile(kTRUE);
+    if(fUseAddOutlierRej)
+      analysisEventCuts[i]->SetUseAdditionalOutlierRejection(kTRUE);
+    analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->SetLightOutput(enableLightOutput);

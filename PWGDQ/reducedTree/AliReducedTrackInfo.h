@@ -62,6 +62,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Int_t   TPCClusterMapBitsFired()         const;
   Bool_t  TPCClusterMapBitFired(Int_t bit) const {return (bit>=0 && bit<8 ? (fTPCClusterMap&(1<<bit)) : kFALSE);};
   Float_t TPCsignal()                      const {return fTPCsignal;}
+  Float_t TPCsignalTunedOnData()           const {return fTPCsignalTunedOnData;}
   UChar_t TPCsignalN()                     const {return fTPCsignalN;}
   Float_t TPCnSig(Int_t specie)            const {return (specie>=0 && specie<=3 ? fTPCnSig[specie] : -999.);}
   Float_t TPCdEdxInfoQmax(Int_t i)         const {return (i>=0 && i<4 ? fTPCdEdxInfoQmax[i] : -999.);}
@@ -91,13 +92,16 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Float_t   TRDGTUsagitta()        const {return fTRDGTUsagitta;}
   UChar_t   TRDGTUPID()            const {return fTRDGTUPID;}
 
+  Float_t   MatchedEMCalClusterEnergy() const {return fMatchedEMCalClusterEnergy;}
   Float_t   EMCALnSigEle()  const {return fEMCALnSigEle;}
   Int_t     CaloClusterId() const {return fCaloClusterId;}
   
-  Float_t TrackParam(Int_t iPar = 0) {return (iPar>=0 && iPar<6 ? fTrackParam[iPar] : 0.0);}
-  Float_t CovMatrix(Int_t iCov = 0) {return (iCov>=0 && iCov<21 ? fCovMatrix[iCov] : 0.0);}
+  Float_t TrackParam(Int_t iPar = 0) const {return (iPar>=0 && iPar<6 ? fTrackParam[iPar] : 0.0);}
+  Float_t CovMatrix(Int_t iCov = 0) const {return (iCov>=0 && iCov<21 ? fCovMatrix[iCov] : 0.0);}
+  void    SetCovMatrix(Int_t iCov, Float_t val) {if(iCov>=0 && iCov<21) fCovMatrix[iCov] = val;}
   
-  Float_t MCmom(Int_t dim);  
+  Float_t MCmom(Int_t dim); 
+  void    SetMCmom(Int_t dim, Float_t val) {if(dim>=0 && dim<3) fMCMom[dim] = val; return;}
   Float_t PtMC() {return (fIsMCTruth ? Pt() : TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]));}
   Float_t PMC()   const {return (fIsMCTruth ? P() : TMath::Sqrt(fMCMom[0]*fMCMom[0]+fMCMom[1]*fMCMom[1]+fMCMom[2]*fMCMom[2]));}
   Float_t PhiMC() const;
@@ -111,8 +115,9 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   Int_t HFProc() const {return fHFProc;}
   Short_t MCGeneratorIndex() {return fMCGeneratorIndex;}
   
+  // setters
+  void SetMatchedEMCalClusterEnergy(Float_t energy) {fMatchedEMCalClusterEnergy=energy;}
 
-     
  protected:
   ULong_t fStatus;              // tracking status
   Float_t fTPCPhi;              // inner param phi
@@ -144,6 +149,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   UChar_t fTPCNclsShared;      // TPC number of shared clusters
   UChar_t fTPCClusterMap;      // TPC cluster distribution map
   Float_t fTPCsignal;          // TPC de/dx
+  Float_t fTPCsignalTunedOnData;// TPC de/dx (tuned on data)
   UChar_t fTPCsignalN;         // TPC no clusters de/dx
   Float_t fTPCnSig[4];         // 0-electron; 1-pion; 2-kaon; 3-proton
   Float_t fTPCdEdxInfoQmax[4]; // dE/dx info using Qmax, 0 - IROC, 1- medium OROC, 2- long OROC, 3- all OROC
@@ -175,6 +181,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
   UChar_t  fTRDGTUPID;          // TRD online track pid
 
   // EMCAL/PHOS
+  Float_t fMatchedEMCalClusterEnergy; // EMCal cluster energy for matched cluster
   Float_t fEMCALnSigEle;        // EMCal n-sigma deviation from expected electron signal
   Int_t   fCaloClusterId;       // ID for the calorimeter cluster (if any)
   
@@ -193,7 +200,7 @@ class AliReducedTrackInfo : public AliReducedBaseTrack {
 
   AliReducedTrackInfo& operator= (const AliReducedTrackInfo &c);
   
-  ClassDef(AliReducedTrackInfo, 10);
+  ClassDef(AliReducedTrackInfo, 11);
 };
 
 //_______________________________________________________________________________

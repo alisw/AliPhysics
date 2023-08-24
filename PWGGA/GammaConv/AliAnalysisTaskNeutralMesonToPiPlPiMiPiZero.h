@@ -102,7 +102,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero: public AliAnalysisTaskSE
     void CalculateBackground();
     void UpdateEventByEventData();
 
-    Bool_t IsPiPlPiMiPiZeroDecay(TParticle *fMCMother) const;
+    Bool_t IsPiPlPiMiPiZeroDecay(AliVParticle *fMCMother) const;
     Bool_t IsEtaPiPlPiMiPiZeroDaughter( Int_t label ) const;
     Bool_t IsOmegaPiPlPiMiPiZeroDaughter( Int_t label ) const;
     Bool_t GammaIsNeutralMesonPiPlPiMiPiZeroDaughter( Int_t label ) const;

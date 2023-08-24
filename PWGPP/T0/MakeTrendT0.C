@@ -1,5 +1,7 @@
 #define NPMTs 24
 
+double GetParameterGaus(TH1F *histo, int whichParameter);
+
 int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://"){
   /*
   gSystem->Load("libANALYSIS");
@@ -29,7 +31,10 @@ int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://"){
   TH1F* fTzeroORC        =(TH1F*) ((TH1F*) fTzeroObject->FindObject("fTzeroORC"))->Clone("D");
 
   TH1F* fSPDVertexZ      =(TH1F*) ((TH1F*) fSPDObject->FindObject("hVertexZ"))->Clone("E");
-  TH1F* f0TVX            =(TH1F*) ((TH1F*) fTzeroObject->FindObject("f0TVX"))->Clone("F");
+  TH1F* f0TVX =0x0;
+  if(fTzeroObject->FindObject("f0TVX")){
+    f0TVX            =(TH1F*) ((TH1F*) fTzeroObject->FindObject("f0TVX"))->Clone("F");
+  }
   if( fTzeroObject->FindObject("fTriggerCounter") )
     fTriggerCounter  =(TH1I*) ((TH1I*) fTzeroObject->FindObject("fTriggerCounter"))->Clone("F");
   TH2F *fTimeVSAmplitude[NPMTs];//counting PMTs from 0
@@ -102,7 +107,7 @@ int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://"){
     tzeroOrC = fTzeroORC->GetMean(); //gaussian mean 
   }
   
-  if((fSPDVertexZ->GetEntries()-fSPDVertexZ->GetBinContent(0)-fSPDVertexZ->GetBinContent(fSPDVertexZ->GetNbinsX()+1))>0)
+  if(f0TVX && (fSPDVertexZ->GetEntries()-fSPDVertexZ->GetBinContent(0)-fSPDVertexZ->GetBinContent(fSPDVertexZ->GetNbinsX()+1))>0)
   efficiency0TVX_SPD = (f0TVX->GetEntries()-f0TVX->GetBinContent(0)-f0TVX->GetBinContent(f0TVX->GetNbinsX()+1)) /
   (fSPDVertexZ->GetEntries()-fSPDVertexZ->GetBinContent(0)-fSPDVertexZ->GetBinContent(fSPDVertexZ->GetNbinsX()+1));
   //efficiency of triggers
@@ -144,7 +149,7 @@ int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://"){
   //--------------- write walues to the output ------------ 
   TTreeSRedirector* pcstream = NULL;
   pcstream = new TTreeSRedirector(outfile,"recreate");
-  if (!pcstream) return;
+  if (!pcstream) return -1;
 
 
   TFile *x =  pcstream->GetFile();
@@ -259,7 +264,7 @@ int MakeTrendT0( char *infile, int run, char* ocdbStorage="raw://"){
  
   delete pcstream; 
 
-  return;
+  return 0;
 
 }
 

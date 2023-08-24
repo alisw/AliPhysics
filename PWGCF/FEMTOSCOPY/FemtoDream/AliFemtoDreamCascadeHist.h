@@ -54,6 +54,16 @@ class AliFemtoDreamCascadeHist {
       fXiPt[iBin]->Fill(pT);
   }
   ;
+  void FillXiEta(int iBin, float Eta) {
+    if (!fMinimalBooking)
+      fXiEta[iBin]->Fill(Eta);
+  }
+  ;
+  void FillXiPhi(int iBin, float phi) {
+    if (!fMinimalBooking)
+      fXiPhi[iBin]->Fill(phi);
+  }
+  ;
   void FillMomRapXi(int iBin, float rap, float pT) {
     if (!fMinimalBooking)
       fP_Y_Xi[iBin]->Fill(rap, pT);
@@ -119,6 +129,16 @@ class AliFemtoDreamCascadeHist {
       fv0Pt[iBin]->Fill(v0pT);
   }
   ;
+  void Fillv0Eta(int iBin, float v0eta) {
+    if (!fMinimalBooking)
+      fv0Eta[iBin]->Fill(v0eta);
+  }
+  ;
+  void Fillv0Phi(int iBin, float v0phi) {
+    if (!fMinimalBooking)
+      fv0Phi[iBin]->Fill(v0phi);
+  }
+  ;
   void FillTransverseRadiusv0(int iBin, float rad) {
     if (!fMinimalBooking)
       fTransRadiusv0[iBin]->Fill(rad);
@@ -170,6 +190,8 @@ class AliFemtoDreamCascadeHist {
   TH1F *fInvMass[2];
   TH1F *fInvMassv0[2];
   TH1F *fXiPt[2];
+  TH1F *fXiEta[2];
+  TH1F *fXiPhi[2];
   TH2F *fP_Y_Xi[2];
   TH2F *fP_Y_Omega[2];
   TH1F *fDCAXi[2];
@@ -183,6 +205,8 @@ class AliFemtoDreamCascadeHist {
   TH1F *fCPAv0[2];
   TH1F *fCPAv0Xi[2];
   TH1F *fv0Pt[2];
+  TH1F *fv0Eta[2];
+  TH1F *fv0Phi[2];
   TH1F *fTransRadiusv0[2];
   TH1F *fMinDistVtxv0[2];
   TH1F *fMinDistVtxv0DaugPos[2];

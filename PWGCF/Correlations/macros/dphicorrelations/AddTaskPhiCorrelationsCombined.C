@@ -30,7 +30,7 @@ AliAnalysisTaskPhiCorrelations *AddTaskPhiCorrelationsCombined(Int_t analysisMod
 
   ana->SetPtMin(0.5);
 
-  ana->SetReduceMemoryFootprint(kTRUE);
+  //ana->SetReduceMemoryFootprint(kTRUE);
   
   ana->SetEventMixing(eventMixing);
   ana->SetUseVtxAxis(zVtxAxis);

@@ -48,6 +48,7 @@
 #include "AliAODMCHeader.h"
 #include "AliPHOSGeometry.h"
 #include "AliOADBContainer.h"
+#include "AliAnalysisUtils.h"
 
 #include "AliAnalysisTaskPWGJEQA.h"
 
@@ -76,7 +77,9 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA() :
   fDoEventQA(kTRUE),
   fGeneratorLevelName(),
   fDetectorLevelName(),
+  fMCGeneratorIndex(-1),
   fRejectOutlierEvents(kFALSE),
+  fRejectMCPileup(kFALSE),
   fIsPtHard(kFALSE),
   fGeneratorLevel(0),
   fDetectorLevel(0),
@@ -123,7 +126,9 @@ AliAnalysisTaskPWGJEQA::AliAnalysisTaskPWGJEQA(const char *name) :
   fDoEventQA(kTRUE),
   fGeneratorLevelName(),
   fDetectorLevelName(),
+  fMCGeneratorIndex(-1),
   fRejectOutlierEvents(kFALSE),
+  fRejectMCPileup(kFALSE),
   fIsPtHard(kFALSE),
   fGeneratorLevel(0),
   fDetectorLevel(0),
@@ -547,7 +552,8 @@ void AliAnalysisTaskPWGJEQA::AllocateEventQAHistograms() {
     hxsection->GetXaxis()->SetBinLabel(1,"<#sigma>");
   }
   
-  fHistEventRejection->GetXaxis()->SetBinLabel(15,"PtHardBinJetOutlier");
+  if(fUseBuiltinEventSelection)
+    fHistEventRejection->GetXaxis()->SetBinLabel(15,"PtHardBinJetOutlier");
 
 }
 
@@ -890,7 +896,7 @@ Bool_t AliAnalysisTaskPWGJEQA::RetrieveEventObjects()
 
           if (jet.Pt() > 4. * fPtHard) {
             //AliInfo(Form("Reject jet event with: pT Hard %2.2f, pycell jet pT %2.2f, rejection factor %1.1f\n", fPtHard, jet.Pt(), 4.));
-            if (fGeneralHistograms) fHistEventRejection->Fill("PtHardBinJetOutlier",1);
+            if (fGeneralHistograms && fHistEventRejection) fHistEventRejection->Fill("PtHardBinJetOutlier",1);
             return kFALSE;
           }
         }
@@ -920,7 +926,6 @@ Bool_t AliAnalysisTaskPWGJEQA::UserNotify()
     
     Float_t xsection    = 0;
     Float_t trials      = 0;
-    Int_t   pthardbin   = 0;
     
     TFile *curfile = tree->GetCurrentFile();
     if (!curfile) {
@@ -931,7 +936,7 @@ Bool_t AliAnalysisTaskPWGJEQA::UserNotify()
     TChain *chain = dynamic_cast<TChain*>(tree);
     if (chain) tree = chain->GetTree();
     
-    PythiaInfoFromFile(curfile->GetName(), xsection, trials, pthardbin);
+    PythiaInfoFromFile(curfile->GetName(), xsection, trials);
     
     fHistManager.FillTH1("hNtrials", "#sum{ntrials}", trials);
     fHistManager.FillTH1("hXsec", "<#sigma>", xsection);
@@ -1001,7 +1006,11 @@ void AliAnalysisTaskPWGJEQA::FillTrackHistograms() {
       if (fGeneratorLevel && label > 0) {
         AliAODMCParticle *part =  fGeneratorLevel->GetAcceptMCParticleWithLabel(label);
         if (part) {
-          if (part->GetGeneratorIndex() == 0) {
+          bool particleIsPileup = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(label,MCEvent());
+          if (particleIsPileup && fRejectMCPileup) {
+            continue;
+          }
+          if (fMCGeneratorIndex == -1 || fMCGeneratorIndex == part->GetGeneratorIndex()) {
             Int_t pdg = TMath::Abs(part->PdgCode());
             // select charged pions, protons, kaons, electrons, muons
             if (pdg == 211 || pdg == 2212 || pdg == 321 || pdg == 11 || pdg == 13) {
@@ -1020,14 +1029,19 @@ void AliAnalysisTaskPWGJEQA::FillTrackHistograms() {
     AliAODMCParticle* part;
     for (auto partIterator : fGeneratorLevel->accepted_momentum() ) {
       part = partIterator.second;
-      
-      Byte_t findable = 0;
-      
-      Int_t pdg = TMath::Abs(part->PdgCode());
-      // select charged pions, protons, kaons, electrons, muons
-      if (pdg == 211 || pdg == 2212 || pdg == 321 || pdg == 11 || pdg == 13) findable = 1;
-      
-      FillGeneratorLevelTHnSparse(fCent, part->Eta(), part->Phi(), part->Pt(), findable);
+
+      int iMCPartLabel = TMath::Abs(part->GetLabel());
+      bool particleIsPileup = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMCPartLabel,MCEvent());
+      if (particleIsPileup && fRejectMCPileup) {
+        continue;
+      }
+      if (fMCGeneratorIndex == -1 || fMCGeneratorIndex == part->GetGeneratorIndex()) {
+        Byte_t findable = 0;
+        Int_t pdg = TMath::Abs(part->PdgCode());
+        // select charged pions, protons, kaons, electrons, muons
+        if (pdg == 211 || pdg == 2212 || pdg == 321 || pdg == 11 || pdg == 13) findable = 1;
+        FillGeneratorLevelTHnSparse(fCent, part->Eta(), part->Phi(), part->Pt(), findable);
+      }
     }
   }
 }

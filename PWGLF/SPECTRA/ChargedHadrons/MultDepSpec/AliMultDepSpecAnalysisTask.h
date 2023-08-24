@@ -1,238 +1,219 @@
-/// \class AliMultDepSpecAnalysisTask
-/// \brief Task to for pT spectra vs. multiplicity analysis
-
-
 #ifndef AliMultDepSpecAnalysisTask_cxx
 #define AliMultDepSpecAnalysisTask_cxx
 
-#define MAX_ALLOWED_MULT_BINS 500
-#define MAX_HISTO_DIM 4
 #define PRECISION 1e-6
-
-
-#include "TList.h"
-#include "THnSparse.h"
-#include "TH1.h"
-#include "TRandom3.h"
-
-#include "AliLog.h"
-#include "AliAnalysisManager.h"
-#include "AliVEventHandler.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliMultSelection.h"
-
-
-#include "AliVEvent.h"
-#include "AliESDEvent.h"
-#include "AliMCEvent.h"
-#include "AliEventCuts.h"
-#include "AliESDZDC.h"
-
-#include "AliVTrack.h"
-#include "AliESDtrack.h"
-#include "AliMCParticle.h"
+#include "AliAnalysisHelpersHist.h"
 #include "AliESDtrackCuts.h"
-#include "AliVHeader.h"
 
+class AliMCSpectraWeights;
+class AliVTrack;
+class AliVParticle;
+class TRandom3;
+class AliEventCuts;
+class AliESDtrack;
 
+class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE
+{
+public:
+  // possible axis dimensions
+  enum Dimension : unsigned int {
+    pt_meas = 0,
+    pt_true,
+    mult_meas,
+    mult_true,
+    LAST,
+  };
 
-#include "AlidNdPtTools.h"
-#include "AliMCSpectraWeights.h"
+  // reference ('generated') event class for the measurement [this is where multiplicity distributions and mult dep pt spectra will be corrected to]
+  enum EventClass : unsigned int {
+    triggered = 0, // mc events that fulfil the (experimental!) trigger condition [varies from dataset to dataset]
+    fiducial,      // mc events that produce at least one charged particle within the fiducial phase space of the measurement [trusting only that trigger eff for these events is modelled properly]
+    inelgt0,       // mc events that produce at least one charged particle in |eta| < 1 [trusting simulation for extrapolation to events with particles produced only in the unmeasured region]
+  };
 
-#include <iostream>
-using std::string;
-using std::vector;
-using std::array;
+  AliMultDepSpecAnalysisTask() : AliAnalysisTaskSE(){};
+  AliMultDepSpecAnalysisTask(const char* name) : AliAnalysisTaskSE(name) { DefineOutput(1, TList::Class()); };
+  ~AliMultDepSpecAnalysisTask()
+  {
+    if (fTrackCuts) delete fTrackCuts;
+  };
+  void UserCreateOutputObjects();
+  void UserExec(Option_t*);
+  void Terminate(Option_t*){};
 
-class AliMultDepSpecAnalysisTask : public AliAnalysisTaskSE {
-  public:
-    AliMultDepSpecAnalysisTask();
-    AliMultDepSpecAnalysisTask(const char *name);
-    virtual ~AliMultDepSpecAnalysisTask();
+  // Setters
+  void SetEventClass(unsigned int eventClass) { fMCEventClass = eventClass; }
+  void SetTriggerMask(unsigned int triggermask) { fTriggerMask = triggermask; }
+  void SetIsNewReco(bool isNewReco = true) { fIsNewReco = isNewReco; }
 
-    static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(TString controlstring, Int_t cutModeLow = 100, Int_t cutModeHigh = 119, Bool_t useDataDrivenCorrections = kFALSE, string pccTrainOutputPath = "",  Int_t pccSysFlag = 0,  Int_t secSysFlag = 0);
-    virtual void   UserCreateOutputObjects();
-    virtual void   UserExec(Option_t* option);
-    virtual void   Terminate(Option_t*);
+  void SetAxis(unsigned int dim, const std::string name, const std::string title, const std::vector<double>& binEdges, int nBins = 0);
 
-    // Setters
-    void SetTriggerMask(UInt_t triggermask)  {fTriggerMask = triggermask;}
-    void SetCutMode(Int_t cutMode){fCutMode = cutMode;}
-    void SetIsMC(Bool_t isMC = kTRUE){fIsMC = isMC;}
-    void SetUseESD(){fIsESD = kTRUE;}
-    void SetUseAOD(){fIsESD = kFALSE;}
-    void SetMCSpectraWeights(AliMCSpectraWeights* mcSpectraWeights){fMCSpectraWeights = mcSpectraWeights;}
-    void SetUseDataDrivenCorrections(Bool_t useDataDrivenCorrections = kTRUE){fMCUseDataDrivenCorrections = useDataDrivenCorrections;}
-    void SetUseZDCCut(Bool_t useZDC){fUseZDCCut = useZDC;}
-    void SetOverridePbPbEventCuts(Bool_t overridePbPbEventCuts){fOverridePbPbEventCuts = overridePbPbEventCuts;}
+  void SetEtaRange(double minEta, double maxEta)
+  {
+    fMinEta = minEta;
+    fMaxEta = maxEta;
+  }
+  void SetPtRange(double minPt, double maxPt)
+  {
+    fMinPt = minPt;
+    fMaxPt = maxPt;
+  }
 
-    void SetSecScalingSysFlag(Int_t sysFlag = 0){fMCSecScalingSysFlag = sysFlag;}
+  // Configure this object for a train run
+  static AliMultDepSpecAnalysisTask* AddTaskMultDepSpec(const std::string& dataSet, TString options,
+                                                        int cutModeLow, int cutModeHigh, bool isMC);
+  void SaveTrainMetadata();
+  bool SetupTask(std::string dataSet, TString options);
+  bool InitTask(bool isMC, bool isAOD, std::string dataSet, TString options, int cutMode = 100);
 
-    // Binning
-    void SetBinsPt(Int_t nBins, Double_t* binEdges){if(fBinsPt) delete fBinsPt; fBinsPt = new TArrayD(nBins+1,binEdges);}
-    void SetBinsEta(Int_t nBins, Double_t* binEdges){if(fBinsEta) delete fBinsEta; fBinsEta = new TArrayD(nBins+1,binEdges);}
-    void SetBinsMult(Int_t nBins, Double_t* binEdges){if(fBinsMult) delete fBinsMult; fBinsMult = new TArrayD(nBins+1,binEdges);}
-    void SetBinsCent(Int_t nBins, Double_t* binEdges){if(fBinsCent) delete fBinsCent; fBinsCent = new TArrayD(nBins+1,binEdges);}
-    void SetBinsZv(Int_t nBins, Double_t* binEdges){if(fBinsZv) delete fBinsZv; fBinsZv = new TArrayD(nBins+1,binEdges);}
-    void SetBinsPtReso(Int_t nBins, Double_t* binEdges){if(fBinsPtReso) delete fBinsPtReso; fBinsPtReso = new TArrayD(nBins+1,binEdges);}
-    void SetBinsMult(vector<Int_t> multSteps, vector<Int_t> multBinWidth);
-    void SetBinsMult(Int_t maxMult);
+protected:
+  void DefineDefaultAxes();
+  void BookHistograms();
+  void FillTrackQA(AliESDtrack* track);
 
-    // Acceptance cuts
-    void SetMinEta(Double_t minEta){fMinEta = minEta;}
-    void SetMaxEta(Double_t maxEta){fMaxEta = maxEta;}
-    void SetMinPt(Double_t minPt){fMinPt = minPt;}
-    void SetMaxPt(Double_t maxPt){fMaxPt = maxPt;}
-    void SetMaxZv(Double_t maxZv)  {fMaxZv = maxZv;}
-    void SetMaxCent(Double_t maxCent)  {fUseCent = kTRUE; fMaxCent = maxCent;}
-    void SetMinCent(Double_t minCent)  {fUseCent = kTRUE; fMinCent = minCent;}
+  bool InitEvent();
+  bool InitTrack(AliVTrack* track);
 
-  private:
+  void LoopMeas(bool count = false);
+  void LoopTrue(bool count = false);
 
-    //
-    TList*              fOutputList;		  //!<! Output list
-    AliEventCuts        fEventCuts;       //!<! Event cuts
-    AliESDtrackCuts*    fESDtrackCuts;    //!<! Track cuts
-    TRandom3*           fRand;            //!<! Random generator
-    AliMCSpectraWeights* fMCSpectraWeights;            //-> MC spectra weights object
+  template <typename T>
+  void BookHistogram(Hist<T>& histContainer, const std::string& histName, const std::vector<unsigned int>& dimensions);
 
-    Int_t               fCutMode;         ///< ID of track cut variation (100=default)
-    Bool_t              fIsESD;			      ///< Flag for ESD usage
-    Bool_t              fIsMC;            ///< Flag for MC usage
-    Bool_t              fUseCent;         ///< Flag for Centrality usage
-    Bool_t              fUseZDCCut;         ///< Flag for zdc cut usage
-    Bool_t              fOverridePbPbEventCuts;         ///< override centrality cut in PbPb
-    Bool_t              fMCUseDataDrivenCorrections; ///< Flag for data driven corrections usage
-    Int_t               fMCSecScalingSysFlag; ///< Flag for secondary scaling systematics 0: nominal, -1,1 variations
-    // Cuts
-    UInt_t                fTriggerMask;   ///< Trigger mask
-    Double_t              fMinEta;        ///< Minimum eta cut
-    Double_t              fMaxEta;        ///< Maximum eta cut
-    Double_t              fMinPt;			    ///< Minimum pT cut
-    Double_t              fMaxPt;			    ///< Maximum pT cut
-    Double_t              fMaxZv;			    ///< Maximum absolute z vertex cut
-    Double_t              fMinCent;       ///< Minimum centrality
-    Double_t              fMaxCent;       ///< Maximum centrality
+  bool InitCentrality();
 
-    // Binning
-    TArrayD*             fBinsEventCuts;       ///< Array of bins for event cuts
-    TArrayD*             fBinsMult;       ///< Array of bins in multiplicity
-    TArrayD*             fBinsCent;       ///< Array of bins in centrality
-    TArrayD*             fBinsPt;			    ///< Array of bins in pt
-    TArrayD*             fBinsEta;		    ///< Array of bins in eta
-    TArrayD*             fBinsZv;			    ///< Array of bins in Zv (Z-position of primary vtx)
-    TArrayD*             fBinsPtReso;     ///< Array of bins for relative pt resoulution
+  template <typename Particle_t>
+  bool InitParticle(int particleID);
+  unsigned long GetSeed();
+  int GetNRepetitons(double scalingFactor);
+  AliMultDepSpecAnalysisTask(const AliMultDepSpecAnalysisTask&);            // not implemented
+  AliMultDepSpecAnalysisTask& operator=(const AliMultDepSpecAnalysisTask&); // not implemented
 
-    // Output Histograms
-    THnSparseF* fHistEventSelection;      //!<! Histogram of event selection
-    THnSparseF* fHistEvents;              //!<! Histogram of measured event distribution
-    THnSparseF* fHistTracks;              //!<! Histogram of measured tracks
-    THnSparseF* fHistRelPtReso;           //!<! Histogram of relatvie pT resolution from covariance matrix
+  std::unique_ptr<TList> fOutputList{};       //!<! output list
+  TList* fQAList{nullptr};                    //!<! QA list
+  std::unique_ptr<AliEventCuts> fEventCuts{}; //!<! event cuts
+  AliESDtrackCuts* fTrackCuts{nullptr};       //-> track cuts
+  std::unique_ptr<TRandom3> fRand{};          //!<! random generator
 
-    THnSparseF* fHistMCEventEfficiency;   //!<! Histogram of selelcted events vs Nch
-    THnSparseF* fHistMCEventEfficiencyScaled; //!<! Histogram of selelcted events vs Nch
+  std::string fTrainMetadata{};       ///<  metadata of the train run used to generate the output
+  std::string fMCSelectedGenerator{}; ///<  selected generator (used in case of MCs with embedded signal to select the MB event)
 
-    THnSparseF* fHistMCRelPtReso;         //!<! Histogram of relative pt resolution from mc
-    THnSparseF* fHistMCMultCorrelMatrix;  //!<! Histogram of multilicity correlation
-    THnSparseF* fHistMCPtCorrelMatrix;    //!<! Histogram of pT correlation
-    THnSparseF* fHistMCEtaCorrelMatrix;   //!<! Histogram of eta correlation
-    THnSparseF* fHistMCPrimTrue;          //!<! Histogram of generated primaries
-    THnSparseF* fHistMCPrimMeas;          //!<! Histogram of measured primaries
-    THnSparseF* fHistMCSecMeas;           //!<! Histogram of measured secondaries
-    THnSparseF* fHistMCEdgeContam;        //!<! Histogram of tracks from particles out of acceptance
-    TH1D* fHistMCDoubleCountig;           //!<! Histogram to track double counting
+  unsigned int fMCEventClass{EventClass::fiducial}; ///< baseline event class that this measurement should be corrected to
+  bool fIsNominalSetting{};                         ///< flag to  propagate if this is the nominal cut setting
+  bool fIsESD{true};                                ///< flag for ESD usage
+  bool fIsMC{};                                     ///< flag for MC usage
+  bool fIsNewReco{};                                ///< flag for new reconstructions (after mid 2020) where tighter chi2 cut has to be used and out-of-bunch pileup is simulated in MCs
+  bool fMCEnableDDC{true};                          ///< flag for data driven corrections usage
+  int fMCDDCMode{0};                                ///< whether to run data-driven corrections in nominal (0) or in systematic mode (-1,1)
+  int fHighPtMode{0};                               ///< extend the binning and pt cuts for a high-pt analysis (mode 0: do not extend beyond 10 GeV/c, mode 1: extend to 50 GeV/c, mode 2: extend to 100 GeV/c)
 
+  // cuts
+  unsigned int fTriggerMask{AliVEvent::kMB | AliVEvent::kINT7}; ///< trigger mask
+  double fMinEta{-0.8};                                         ///< minimum eta cut
+  double fMaxEta{0.8};                                          ///< maximum eta cut
+  double fMinPt{0.15};                                          ///< minimum pT cut
+  double fMaxPt{10.0};                                          ///< maximum pT cut
+  int fMaxMultMeas{100};                                        ///< maximum measured multiplicity
+  int fMaxMultTrue{100};                                        ///< maximum true multiplicity
 
+  std::map<unsigned int, Axis> fAxes{}; //!<! axis definitions used in the histograms
 
-    THnSparseF* fHistMCEventsScaled;  //!<! Histogram
-    THnSparseF* fHistMCTracksScaled;  //!<! Histogram
-    THnSparseF* fHistMCMultCorrelMatrixScaled; //!<! Histogram of scaled multilicity correlation
-    THnSparseF* fHistMCPrimTrueScaled;  //!<! Histogram
-    THnSparseF* fHistMCPrimMeasScaled;  //!<! Histogram
-    THnSparseF* fHistMCSecMeasScaled; //!<! Histogram
-    THnSparseF* fHistMCEdgeContamScaled;  //!<! Histogram
+  Hist<TH1D> fHist_multDist_evt_meas{};   //!<! measured event distribution (contains contamination from events not belonging to specified class or with true vertex position outside fiducial z range)
+  Hist<TH2D> fHist_multPtSpec_trk_meas{}; //!<! measured tracks (contains contamination from secondary particles, particles smeared into acceptance, particles from pileup events and tracks originating from background events as defined above)
 
-    THnSparseF* fHistMCMultMeasScaleEffect;   //!<! Histogram
-    THnSparseF* fHistMCMultTrueScaleEffect;   //!<! Histogram
+  // MC-only histograms
+  Hist<TH2D> fHist_multPtSpec_trk_prim_meas{};    //!<! tracks from measured primaries (no contamination from any of the sources mentioned above)
+  Hist<TH2D> fHist_multPtSpec_trk_sec_meas{};     //!<! tracks from measured secondaries (no contamination from particles smeared into acceptance or background / pileup events)
+  Hist<TH2D> fHist_multPtSpec_trk_meas_evtcont{}; //!<! tracks from events that are measured, but do not belong to the desired class of events or have true vertex position outside fiducial z range
 
-    // event related properties
-    AliVEvent*          fEvent;			      //!<! Event object
-    AliMCEvent*         fMCEvent;         //!<! MC event
-    Double_t            fCent;            //!<! measured V0M centrality
-    Double_t            fMultMeas;        //!<! measured multiplicity
-    Double_t            fMultTrue;        //!<! true multiplicity
-    Double_t            fMultMeasScaled;        //!<! measured multiplicity adjusted to data
-    Double_t            fMultTrueScaled;        //!<! true multiplicity adjusted to data
+  Hist<TH2D> fHist_multPtSpec_prim_meas{};        //!<! measured primary charged particles as function of true properties (no contamination from background events)
+  Hist<TH2D> fHist_multPtSpec_prim_gen{};         //!<! generated primary charged particles as function of true properties (from events within specified class and with proper vertex position)
+  Hist<TH2D> fHist_multPtSpec_prim_gen_evtloss{}; //!<! generated primary charged particles of events that did not pass the event selection as function of multiplicity and pt (subsample of the above)
+  Hist<TH1D> fHist_multDist_evt_gen{};            //!<! generated event distribution  (from events within specified class and with proper vertex position)
+  Hist<THnSparseF> fHist_multCorrel_evt{};        //!<! multilicity correlation of measured events (excluding background events)
+  Hist<THnSparseF> fHist_multCorrel_prim{};       //!<! multiplicity correlation of measured primary charged particles (excluding particles from background or pileup events, secondary particles and particles smeared in from outside acceptance)
+  Hist<TH2D> fHist_ptCorrel_prim{};               //!<! pT correlation of measured primary charged particles  (excluding particles from background or pileup events, secondary particles and particles smeared in from outside acceptance)
 
-    Int_t                           fRunNumber;                 //!<! run n
-    Int_t                           fEventNumberInFile;         //!<! event number in file
-    UInt_t                          fTimeStamp;                 //!<! event time stamp
+  Hist<TH1D> fHist_multDist_evt_gen_trig{};      //!<! generated event distribution (from events within specified class and with proper vertex position) that in addition fulfils the trigger condition [to disentangle trigger eff from reco eff ]
+  Hist<TH2D> fHist_multPtSpec_prim_gen_notrig{}; //!<! generated primary charged particles of events that did not fulfil physics selection and trigger condition as function of multiplicity and pt
 
-    // track related properties
-    Double_t                        fPt;                        //!<! track pT
-    Double_t                        fEta;                       //!<! track Eta
-    Double_t                        fSigmaPt;                  //!<! sigma(pT)/pT
+  Hist<TH2D> fHist_multPtSpec_trk_inter{}; //!<! reference for interim step of unfolding
 
-    Double_t                        fMCPt;                      //!<! mc pt
-    Double_t                        fMCEta;                     //!<! mc eta
-    Int_t                           fMCLabel;                   //!<! mc label
-    Bool_t                          fIsParticleInAcceptance;     //!<! particle in acceptance
-    Bool_t                          fMCIsPhysicalPrimary;       //!<! is physical primary?
-    Bool_t                          fMCIsCharged;               //!<! is charged?
-    Bool_t                          fMCIsChargedPrimary;        //!<! is charged primary?
-    Bool_t                          fMCIsChargedSecondary;        //!<! is charged secondary?
+  // QA histograms
+  Log<TH1I> fHist_trainInfo{};         //!<! train metadata string as bin lable and number of compute jobs as bin content
+  Log<TH1I> fHist_runStatistics{};     //!<! number of measured events per run
+  Hist<TH1D> fHist_eventSelection{};   //!<! logging histogram to for event selection steps
+  Hist<TH1D> fHist_eventSelectionMC{}; //!<! logging histogram to for event selection steps in mc
 
-    Double_t                        fMCParticleWeight;          //!<! scaling factor of particle to match data
-    Double_t                        fMCSecScaleWeight;          //!<! scaling factor of secondary to match data
-    Int_t                           fNRepetitions;               //!<! how often to repeat this particle to match data
-    Bool_t                          fUseRandomSeed;              ///<  use a random seed or a deterministic one (default)
+  Hist<TH1D> fHist_zVtxGen{};  //!<! true z vertex position of all generated events (without z vertex position cut)
+  Hist<TH1D> fHist_zVtxMeas{}; //!<! measured z vertex position of all measured events (without z vertex position cut)
 
-    //UE: enumerator for region kTowards, kAway, kTransverse
-    // external setter to select region
+  Hist<TH2D> fHist_deltaPt{}; //!<! relative track pt resolution (no contamination from particles smeared into acceptance or background events)
+  Hist<TH2D> fHist_sigmaPt{}; //!<! relatvie pT resolution from covariance matrix (from all tracks, including contamination defined above)
 
-    // Tracking functions
-    void InitESDTrackCuts();
-    Bool_t AcceptTrackQuality(AliVTrack* track);
-    Double_t GetCentrality(AliVEvent* event);
+  Hist<TH2D> fHist_dcaXY{}; //!<! dca in xy plane vs pt
+  Hist<TH1D> fHist_dcaZ{};  //!<! dca along the beam line
 
-    // Data driven correction related functions
-    Double_t GetSecScalingFactor(AliMCParticle* particle);
-    Double_t GetParticleWeight(AliMCParticle* particle);
+  Hist<TH1D> fHist_signed1Pt{};                     //!<! signed 1/pt (1/(GeV/c))
+  Hist<TH1D> fHist_eta{};                           //!<! pseudorapidity distribution
+  Hist<TH1D> fHist_phi{};                           //!<! azimuthal angle phi
+  Hist<TH1D> fHist_itsNCls{};                       //!<! found clusters ITS
+  Hist<TH1D> fHist_itsHits{};                       //!<! hitmap ITS
+  Hist<TH1D> fHist_itsChi2NCl{};                    //!<! chi2 per cluster ITS
+  Hist<TH1D> fHist_tpcNClsFindable{};               //!<! findable clusters TPC
+  Hist<TH1D> fHist_tpcNClsFound{};                  //!<! found clusters TPC
+  Hist<TH1D> fHist_tpcCrossedRows{};                //!<! crossed rows in TPC
+  Hist<TH1D> fHist_tpcCrossedRowsOverFindableCls{}; //!<! rows / findable clusters TPC
+  Hist<TH1D> fHist_tpcChi2NCl{};                    //!<! chi2 per cluster TPC
+  Hist<TH1D> fHist_tpcGoldenChi2{};                 //!<! chi2 global vs tpc constrained track
+  Hist<TH1D> fHist_tpcGeomLength{};                 //!<! track length in active volume of the TPC
 
-    Bool_t InitEvent();
-    Bool_t InitTrack(AliVTrack* track);
-    Bool_t InitParticle(AliMCParticle* particle);
+  AliMCSpectraWeights* fMCSpectraWeights{}; //!<! fMCSpectraWeights for data-driven corrections (particle composition and secondary scaling)
 
-    void LoopMeas(Bool_t count = kFALSE);
-    void LoopTrue(Bool_t count = kFALSE);
+  // transient event related properties
+  AliVEvent* fEvent{};    //!<! reconstructed event
+  AliMCEvent* fMCEvent{}; //!<! MC event
+  bool fIsTriggered{};    //!<! if event fired trigger (and passes physics selection)
+  double fVtxZ{};         //!<! position of z vertex
+  double fMCVtxZ{};       //!<! position of MC truth z vertex
+  double fMultMeas{};     //!<! measured central barrel track multiplicity after selections
+  double fMultTrue{};     //!<! true multiplicity within kinematic range of measurement
 
-    void FillEventHistos();
-    void FillMeasTrackHistos();
-    void FillMeasParticleHistos();
-    void FillTrueParticleHistos();
+  bool fIsFirstEventInJob{true}; //!<! flag if the current event is the first one in this computing job
+  int fRunNumber{};              //!<! run number
+  unsigned long fEventNumber{};  //!<! event number
+  unsigned int fTimeStamp{};     //!<! event time stamp
+  float fCent{};                 //!<! event centrality
+  bool fEventPassesPhysSel{};    //!<! event passes physics selection (usually also including pileup rejection)
+  bool fMCIsGoodZPos{};          //!<! is mc event within acceptance (z < 10 cm)?
+  bool fMCIsGoodEventClass{};    //!<! decision if current event is in specified baseline 'generated' event class
+  bool fAcceptEvent{};           //!<! decision if current event is selected
+  bool fMCAcceptEvent{};         //!<! decision if current event is of 'generated' event class and has good vertex position
+  bool fMCIsINELGT0{};           //!<! decision if this event is in INEL>0 event class (at least one charged particle in abs(eta) < 1)
 
-    void FillMeasScaledTrackHistos();
-    void FillTrueScaledParticleHistos();
-    void FillMeasScaledParticleHistos();
+  // transient track related properties
+  double fPt{};      //!<! track pt
+  double fEta{};     //!<! track eta
+  double fPhi{};     //!<! track phi
+  double fSigmaPt{}; //!<! sigma(pt)/pt
 
-    Int_t GetNRepetitons(Double_t scalingFactor);
-    UInt_t GetSeed();
+  double fMCPt{};  //!<! mc pt
+  double fMCEta{}; //!<! mc eta
+  double fMCPhi{}; //!<! mc phi
 
-    // Histogramming functions
-    THnSparseF* CreateHistogram(const string& name, const vector<string>& axes);
-    TH1D* CreateLogHistogram(const string& name);
-    TArrayD* GetBinEdges(const string& axisName);
-    inline void FillHisto(THnSparseF* histo, const array<Double_t, MAX_HISTO_DIM>& values);
-    inline void FillLogHisto(TH1D* logHist, const string& entry);
-    string GetAxisTitle(const string& axisName);
-    void SetFixedBinEdges(Double_t* array, Double_t lowerEdge, Double_t upperEdge, Int_t nBins);
+  int fMCLabel{}; //!<! mc label
 
-    AliMultDepSpecAnalysisTask(const AliMultDepSpecAnalysisTask&); // not implemented
-    AliMultDepSpecAnalysisTask& operator=(const AliMultDepSpecAnalysisTask&); // not implemented
+  bool fMCIsInjectedSignal{};   //!<! is injected signal?
+  bool fMCIsChargedPrimary{};   //!<! is charged primary?
+  bool fMCIsChargedSecondary{}; //!<! is charged secondary?
 
-    /// \cond CLASSIMP
-    ClassDef(AliMultDepSpecAnalysisTask, 1); // example of analysis
-    /// \endcond
+  double fMCParticleWeight{1.}; //!<! scaling factor of particle to match data
+  int fNRepetitions{1};         //!<! how often to repeat this particle to match data
+
+  /// \cond CLASSIMP
+  ClassDef(AliMultDepSpecAnalysisTask, 1);
+  /// \endcond
 };
 
 #endif

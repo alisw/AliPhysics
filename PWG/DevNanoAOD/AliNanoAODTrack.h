@@ -64,7 +64,6 @@ public:
   
   UInt_t GetNanoFlags() const { return fNanoFlags; }
   virtual Short_t  Charge() const { return TESTBIT(fNanoFlags, kNanoCharge) ? 1 : -1; }
-  Bool_t HasTOFPID() { return TESTBIT(fNanoFlags, kNanoHasTOFPID); }
   virtual Bool_t HasPointOnITSLayer(Int_t i) const { return TESTBIT(fNanoFlags, i+kNanoClusterITS0); }
 
   using TObject::ClassName;
@@ -248,6 +247,7 @@ public:
   Double_t  GetTPCmomentum()     const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCmomentum()); }
   Double_t  GetTPCTgl()          const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTPCTgl());      } // FIXME: what is this?
   Double_t  GetTOFsignal()       const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFsignal());   } 
+  Short_t   GetGeneratorIndex()  const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetGeneratorIndex());   } 
   Double_t  GetIntegratedLength() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetintegratedLength()); } 
   void      SetIntegratedLength(Double_t/* l*/) {AliFatal("Not implemented");}
   Double_t  GetTOFsignalTunedOnData() const { return GetVar(AliNanoAODTrackMapping::GetInstance()->GetTOFsignalTuned());}
@@ -363,8 +363,8 @@ public:
 
 
   /// NanoAOD information that cannot be retrieved with the same interface of AliAODtrack
-  bool   IsTRDrefit() { return fNanoFlags & ENanoFlags::kTRDrefit; }
-  bool   HasTOFpid() { return fNanoFlags & ENanoFlags::kNanoHasTOFPID; }
+  bool   IsTRDrefit() { return TESTBIT(fNanoFlags, ENanoFlags::kTRDrefit); }
+  bool   HasTOFpid() { return TESTBIT(fNanoFlags, ENanoFlags::kNanoHasTOFPID); }
 
 private :
 

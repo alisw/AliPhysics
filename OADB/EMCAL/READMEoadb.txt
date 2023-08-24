@@ -93,5 +93,16 @@ In addition, a short history of changes to the files in EOS will be listed here:
 - 20190722: Update of EMCALTimeCalib.root and EMCALTimeL1PhaseCalib.root with updated calibs for LHC17f and new calibs for LHC16f_lowB
 - 20190722: Update of EMCALBadChannels.root with analysis level QA bad channels for LHC17g and LHC18c
 - 20190830: Update of EMCALTemperatureCalibSM.root and EMCALTemperatureCalibParam.root containing new temperature calibration parameters for full Run1 and Run2
-
+- 20191030: Update of EMCALTimeL1PhaseCalib.root with 2016 PAR calibrations
+- 20200316: Re-addition of 2016-2018 PAR calibrations in EMCALTimeL1PhaseCalib.root + missing PAR calib for three runs of LHC18q
+- 20200414: Update of EMCALTimeL1PhaseCalib.root with additional 2016 and 2018 PAR calibrations
+- 20210608: Update of EMCALTimeL1PhaseCalib.root with missing runs from LHC16j, LHC16h and LHC18k
+- 20210615: Update of EMCALTimeL1PhaseCalib.root with PAR for run 256227 in LHC16j
+- 20210813: Fix and update of EMCALTimeCalibMergedBCs.root: It is suspected that since June 4th, multiple periods were missing merged BC low gain timecalib information 
+            for the majority of cells. The following periods were updated: LHC15ij,LHC15n,LHC15o,LHC16fgh,LHC16ijk,LHC16op,LHC16qrst,LHC17g,LHC17h,LHC17ik,LHC17lm,
+            LHC17o,LHC17pq,LHC18b,LHC18c,LHC18def,LHC18ghijklm,LHC18nop,LHC18qr
+            Energy dependent merged BC time calib was added for: LHC16l, LHC17r
+- 20210914: Update of EMCALTimeL1PhaseCalib.root for missing run 282504 in LHC17r
+- 20211015: Update of EMCALTimeL1PhaseCalib.root for missing run 280443, 280445, 280446, 280447 280448 in LHC17o
+- 20220909: Update of EMCALTimeCalib.root and EMCALTimeCalibMergedBCs.root extending run range for LHC17l to include run 276551
 */

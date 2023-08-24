@@ -20,7 +20,9 @@ class AliEMCALGeometry;
 class AliVCluster;
 class AliVTrack;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliEmcalTriggerOfflineSelection;
 
@@ -67,6 +69,8 @@ private:
   ClassDef(AliAnalysisTaskEventSelectionRef, 1);
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALTriggerJets */
+
+} /* namespace PWGJE */
 
 #endif

@@ -38,7 +38,17 @@ UInt_t ConfigureAndGetEventTriggerMaskAndCaloTriggerString
   
   UInt_t mask = AliVEvent::kAny;
   
-  if( trigger.Contains("INT") || trigger.Contains("MB") || trigger.Contains("default") )
+  if( trigger.Contains("MBOrSemiOrCentral") )
+  {
+    mask = (  AliVEvent::kINT7 | AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral );
+    printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set MB | Semi | Central mask %d\n",mask);
+  }
+  else if( trigger.Contains("AllMB_EMDCAL_L1") )
+  {
+    mask = (  AliVEvent::kINT7 | AliVEvent::kMB | AliVEvent::kSemiCentral | AliVEvent::kCentral | AliVEvent::kEMCEGA );
+    printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set MB | Semi | Central | EMCEGA mask %d\n",mask);
+  }
+  else if( trigger.Contains("INT") || trigger.Contains("MB") || trigger.Contains("default") )
   {
     mask = ( AliVEvent::kINT7 | AliVEvent::kMB );
     printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set MB/INT7 mask %d\n",mask);
@@ -55,6 +65,7 @@ UInt_t ConfigureAndGetEventTriggerMaskAndCaloTriggerString
   }
   else if(trigger.Contains("EMDCAL_L0"))
   {
+    triggerString = "MC";
     mask = ( AliVEvent::kEMC7 | AliVEvent::kEMC8 | AliVEvent::kEMC1 );
     printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set L0 EMC/DMC/1/7/8 mask %d\n",mask);
   }
@@ -73,6 +84,7 @@ UInt_t ConfigureAndGetEventTriggerMaskAndCaloTriggerString
   else if(trigger.Contains("EMDCAL_L1"))
   {    
     if(year > 2012) triggerString = "G1";
+    else            triggerString = "EGA";
 
     mask = ( AliVEvent::kEMCEGA );
     printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set L1 EMCEGA mask %d and string %s\n",mask,triggerString.Data());
@@ -80,6 +92,7 @@ UInt_t ConfigureAndGetEventTriggerMaskAndCaloTriggerString
   else if(trigger.Contains("EMCAL_L1"))
   {
     if(year > 2012) triggerString = "EG1";
+    else            triggerString = "EGA";
     // before 2013 only one kind of L1 trigger
     
     mask = ( AliVEvent::kEMCEGA );
@@ -109,11 +122,43 @@ UInt_t ConfigureAndGetEventTriggerMaskAndCaloTriggerString
     mask = ( AliVEvent::kEMCEGA );
     printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set L1 EMCEGA mask %d and string %s\n",mask,triggerString.Data());
   }
-  
+  else if(trigger.Contains("EMDCAL_GA"))
+  {
+    triggerString = "G";
+    mask = ( AliVEvent::kEMCEGA );
+    printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set L1 EMCEGA mask %d and string %s\n",mask,triggerString.Data());
+  }
+  else if(trigger.Contains("EMCAL_GA"))
+  {
+    triggerString = "EG";
+    mask = ( AliVEvent::kEMCEGA );
+    printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set L1 EMCEGA mask %d and string %s\n",mask,triggerString.Data());
+  }
+  else if(trigger.Contains("DCAL_GA"))
+  {
+    triggerString = "DG";
+    mask = ( AliVEvent::kEMCEGA );
+    printf("ConfigureAndGetEventTriggerCaloTrackCorr - Set L1 EMCEGA mask %d and string %s\n",mask,triggerString.Data());
+  }
+
   if ( trigger.Contains("CaloOnly") )
   {
     mask = AliVEvent::kCaloOnly;
-    printf("\t Periods without TPC, change trigger mask %d!!!!\n",mask);
+    printf("\t If periods without TPC, change trigger mask %d!!!!\n",mask);
+
+    if ( year == 2018 )
+    {
+      if ( trigger.Contains("L0") )
+        triggerString = "CDMC7PER";
+
+      if ( trigger.Contains("MB") )
+        triggerString = "CINT7-B-NOPF-CALOPLUS";
+    }
+    else
+    {
+      if ( trigger.Contains("L0") )
+        triggerString = "MC7-B-NOPF-CALOFAST";
+    }
   }
   
   return mask;

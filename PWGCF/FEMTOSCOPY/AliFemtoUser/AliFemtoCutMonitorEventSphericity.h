@@ -52,6 +52,14 @@ private:
   TH1D *fEvSpher;      ///< Sphericity distribution
   TH2D *fEvSpherMult;  ///< Sphericity versus event multiplicity distribution
   TH2D *fMultSumPt;   ///< Event total pT vs. multiplicity
+  TH2D *fEvSpherPtmax;   ///< Event sphericity vs. Ptmax
+
+#ifdef __ROOT__
+  /// \cond CLASSIMP
+  ClassDef(AliFemtoCutMonitorEventSphericity, 7);
+  /// \endcond
+#endif
+
 
 };
 

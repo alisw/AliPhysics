@@ -21,9 +21,11 @@ using namespace utils;
 void Secondaries(bool isTPC = false, bool use_antideuterons = true, bool bRebin = false, bool use_sec_loose = false) {
   /// Taking all the histograms from the MC and data files
   TFile mc_file(kMCfilename.data());
-  TFile mc_file_MB(kMCfilenameMB.data());
+  const char* mc_name_MB = (kUseIntegratedForMB) ? kMCfilename.data() : kMCfilenameMB.data();
+  TFile mc_file_MB(mc_name_MB);
   TFile data_file(kDataFilename.data());
-  TFile data_file_MB(kDataFilenameMB.data());
+  const char* data_name_MB = (kUseIntegratedForMB) ? kDataFilename.data() : kDataFilenameMB.data();
+  TFile data_file_MB(data_name_MB);
   std::string output_string = (isTPC) ? kSecondariesTPCoutput.data() : kSecondariesOutput.data();
   TFile output_file(output_string.data(),"recreate");
 
@@ -42,7 +44,8 @@ void Secondaries(bool isTPC = false, bool use_antideuterons = true, bool bRebin 
           ((bin_center < kPtRangeMatCorrectionTOF[0] || bin_center > kPtRangeMatCorrectionTOF[1]) && !isTPC)) continue;
       int iBin1 = secondaries_gen->GetYaxis()->FindBin(kPtBins[iB-1]+0.005);
       int iBin2 = secondaries_gen->GetYaxis()->FindBin(kPtBins[iB]-0.005);
-      TH1D* sc_tmp = (TH1D*)secondaries_gen->ProjectionZ(Form("sc_tmp_%i",iB),kCentBinsArray[kCentLength-1][0],kCentBinsArray[kCentLength-1][1],iBin1,iBin2);
+      int first_bin = (kUseIntegratedForMB) ? 2 : 1;
+      TH1D* sc_tmp = (TH1D*)secondaries_gen->ProjectionZ(Form("sc_tmp_%i",iB),first_bin,kCentBinsArray[kCentLength-1][1],iBin1,iBin2);
       sc_arr[iB] = (TH1D*)sc_tmp->Rebin(kNDCAbins,Form("sc_%i",iB),kDCAbins);
       sc_arr[iB]->SetTitle(Form("%4.1f < p_{T} #leq %4.1f (GeV/#it{c})",kPtBins[iB-1],kPtBins[iB]));
     }
@@ -61,7 +64,7 @@ void Secondaries(bool isTPC = false, bool use_antideuterons = true, bool bRebin 
     TTList* mcList = (TTList*)mc_file.Get(list_name.data());
     TTList* dtList = (TTList*)data_file.Get(list_name.data());
     string list_name_MB = list_name; 
-    list_name_MB.insert(kFilterListNames.size()-1,"MB");
+    if(!kUseIntegratedForMB) list_name_MB.insert(kFilterListNames.size()-1,"MB");
     TTList* mcListMB = (TTList*)mc_file_MB.Get(list_name_MB.data());
     Requires(mcListMB, Form("MC: %s",list_name_MB.data()));
     TTList* dtListMB = (TTList*)data_file_MB.Get(list_name_MB.data());
@@ -125,6 +128,7 @@ void Secondaries(bool isTPC = false, bool use_antideuterons = true, bool bRebin 
     TDirectory *datadir = base_dir->mkdir("Data");
     TDirectory *primdir = base_dir->mkdir("Primaries");
     TDirectory *secodir = base_dir->mkdir("Secondaries");
+    TDirectory *fitdir = base_dir->mkdir("Fit");
     TDirectory *tffdir = base_dir->mkdir("TFractionFitter");
     TDirectory *resdir = base_dir->mkdir("Results");
     TDirectory *ratio2MBdir = base_dir->mkdir("RatioToMB");
@@ -141,6 +145,7 @@ void Secondaries(bool isTPC = false, bool use_antideuterons = true, bool bRebin 
       datadir->mkdir(Form("%d",iC));
       tffdir->mkdir(Form("%d",iC));
       resdir->mkdir(Form("%d",iC));
+      fitdir->mkdir(Form("%d",iC));
       ratio2MBdir->mkdir(Form("%d",iC));
     }
 
@@ -162,9 +167,9 @@ void Secondaries(bool isTPC = false, bool use_antideuterons = true, bool bRebin 
       TH1D* pr_tmp = nullptr;
       for(int iC=kCentLength; iC--;){
         if(use_antideuterons){
-          pr_tmp = (iC==9) ? (TH1D*) primaries_MB->ProjectionZ(Form("pr_tmp_%i_%i",iC,iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iBin_MB,iBin_MB) : (TH1D*)primaries->ProjectionZ(Form("pr_tmp_%i_%i",iC,iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iBin,iBin);
+          pr_tmp = (iC==9 && !kUseIntegratedForMB) ? (TH1D*) primaries_MB->ProjectionZ(Form("pr_tmp_%i_%i",iC,iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iBin_MB,iBin_MB) : (TH1D*)primaries->ProjectionZ(Form("pr_tmp_%i_%i",iC,iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iBin,iBin);
         } else {
-          pr_tmp = (iC==9) ? (TH1D*)primaries_MB->ProjectionZ(Form("pr_tmp_%i_%i",iC,iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iBin1_prim_MB,iBin2_prim_MB) : (TH1D*)primaries->ProjectionZ(Form("pr_tmp_%i_%i",iC,iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iBin1_prim,iBin2_prim);
+          pr_tmp = (iC==9 && !kUseIntegratedForMB) ? (TH1D*)primaries_MB->ProjectionZ(Form("pr_tmp_%i_%i",iC,iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iBin1_prim_MB,iBin2_prim_MB) : (TH1D*)primaries->ProjectionZ(Form("pr_tmp_%i_%i",iC,iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iBin1_prim,iBin2_prim);
         }
         if(bRebin){
           pr[iC] = (TH1D*)pr_tmp->Rebin(kNDCAbins,Form("pr_%i_%i",iC,iB),kDCAbins);
@@ -177,7 +182,8 @@ void Secondaries(bool isTPC = false, bool use_antideuterons = true, bool bRebin 
       }
       TH1D *sc = nullptr;
       if(!use_sec_loose){
-        TH1D* sc_tmp = (TH1D*)secondaries_MB->ProjectionZ(Form("sc_tmp_%i",iB),kCentBinsArray[kCentLength-1][0],kCentBinsArray[kCentLength-1][1],iBin1_sec_MB,iBin2_sec_MB);
+        int first_bin = (kUseIntegratedForMB) ? 2 : 1;
+        TH1D* sc_tmp = (TH1D*)secondaries_MB->ProjectionZ(Form("sc_tmp_%i",iB),first_bin,kCentBinsArray[kCentLength-1][1],iBin1_sec_MB,iBin2_sec_MB);
         if(bRebin){
           sc = (TH1D*)sc_tmp->Rebin(kNDCAbins,Form("sc_%i",iB),kDCAbins);
         } else {
@@ -191,7 +197,7 @@ void Secondaries(bool isTPC = false, bool use_antideuterons = true, bool bRebin 
       TH1D* dt[kCentLength] = {nullptr};
       TH1D* dt_tmp = nullptr;
       for(int iC=kCentLength; iC--;){
-        dt_tmp = (iC==9)? (TH1D*)data->ProjectionZ(Form("dt_tmp_%i_%i",iC,iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iBin_MB,iBin_MB,"e") : (TH1D*)data->ProjectionZ(Form("dt_tmp_%i_%i",iC,iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iBin,iBin,"e");
+        dt_tmp = (iC==9 && !kUseIntegratedForMB)? (TH1D*)data->ProjectionZ(Form("dt_tmp_%i_%i",iC,iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iBin_MB,iBin_MB,"e") : (TH1D*)data->ProjectionZ(Form("dt_tmp_%i_%i",iC,iB),kCentBinsArray[iC][0],kCentBinsArray[iC][1],iBin,iBin,"e");
         if(bRebin){
           dt[iC] = (TH1D*)dt_tmp->Rebin(kNDCAbins,Form("dt_%i_%i",iC,iB),kDCAbins);
         } else {
@@ -222,7 +228,7 @@ void Secondaries(bool isTPC = false, bool use_antideuterons = true, bool bRebin 
           fitter.GetResult(1, yieldSec, errorSec);
           TH1F* hFit = (TH1F*)fitter.GetPlot();
           Float_t dataIntegral = dt[iC]->Integral();
-          hFit->SetLineColor(kGreen + 1);
+          hFit->SetLineColor(kGreen + 3);
           hFit->SetLineWidth(3);
           hSecondary->Scale(dataIntegral * yieldSec / hSecondary->Integral());
           hPrimary->Scale(dataIntegral * yieldPri / hPrimary->Integral());
@@ -246,12 +252,20 @@ void Secondaries(bool isTPC = false, bool use_antideuterons = true, bool bRebin 
 
           hFit->Scale(1., "width");
           hFit->DrawCopy("hist same");
+          fitdir->cd(Form("%i",iC));
+          hFit->Write(Form("fit_%i_%i",iC,iB));
           hSecondary->SetLineColor(kRed);
           hPrimary->SetLineColor(kBlue);
+          hPrimary->SetLineWidth(2);
+          hSecondary->SetLineWidth(2);
           hSecondary->Scale(1., "width");
           hSecondary->DrawCopy("hist same");
           hPrimary->Scale(1., "width");
           hPrimary->DrawCopy("hist same");
+          fitdir->cd(Form("%d",iC));
+          hPrimary->Write(Form("pr_%i_%i",iC,iB));
+          fitdir->cd(Form("%d",iC));
+          hSecondary->Write(Form("sc_%i_%i",iC,iB));
           tffdir->cd(Form("%d",iC));
           TLegend leg (0.6,0.56,0.89,0.84);
           leg.SetBorderSize(0.);

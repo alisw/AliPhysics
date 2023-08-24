@@ -6,5 +6,10 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
+#pragma link C++ class AliAnalysisTaskQuarkoniumTreeMC+;
 #pragma link C++ class AliAnalysisTaskTree_MCut+;
+#pragma link C++ class AliAnalysisTaskPbPbTree_MCut+;
+#pragma link C++ class AliAnalysisTaskPbPbTree_SingleMuons+;
+#pragma link C++ class AliAnalysisTaskQuarkoniumTreeEmbedding+;
+#pragma link C++ class AliAnalysisTaskPsi2Spolarization+;
 #endif

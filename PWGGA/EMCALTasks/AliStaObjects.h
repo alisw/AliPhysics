@@ -4,6 +4,7 @@
 // $Id$
 
 #include <TLorentzVector.h>
+#include <TString.h>
 
 class AliStaHeader
 {

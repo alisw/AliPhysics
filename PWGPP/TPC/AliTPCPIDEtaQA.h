@@ -60,6 +60,8 @@ class AliTPCPIDEtaQA : public AliTPCPIDBase {
   TH1F* fhPhiPrimeCutEfficiency; //! Effeciency of phiPrime cut as a functio of pT
   
   TObjArray* fOutputContainer; //! output data container
+  
+  void SetUpPhiCutFunctions(); // Set up functions for high and low phi cut
    
   AliTPCPIDEtaQA(const AliTPCPIDEtaQA&); // not implemented
   AliTPCPIDEtaQA& operator=(const AliTPCPIDEtaQA&); // not implemented

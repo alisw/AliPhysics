@@ -13,6 +13,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fCentBinning(false),
       fkTBinning(false),
       fmTBinning(false),
+      fkTandMultBinning(false),
+      fkTandMultPtBinning(false),
+      fkTandMultMCTrueBinning(false),
       fPtQA(false),
       fMassQA(false),
       fMomentumResolution(false),
@@ -40,11 +43,18 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fCorrelationRange(0.),
       fkTCentrality(false),
       fmTdEtadPhi(false),
+      fmTMultBinning(false),
       fEst(AliFemtoDreamEvent::kSPD),
+      fAncestors(false),
+      fpTOnepTTwokStarPlotsmT(false),
+      fpTOnepTTwokStarCut(3.),
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false),
-      fCoutVariables(false) {
+      fRejectMotherDaughter(false),
+      fCoutVariables(false),
+      fSummedPtLimit1(0.0),
+      fSummedPtLimit2(999.0) {
   //should not be used, since we need a name to deal with root objects
 }
 
@@ -55,6 +65,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fCentBinning(config.fCentBinning),
       fkTBinning(config.fkTBinning),
       fmTBinning(config.fmTBinning),
+      fkTandMultBinning(config.fkTandMultBinning),
+      fkTandMultPtBinning(config.fkTandMultPtBinning),
+      fkTandMultMCTrueBinning(config.fkTandMultMCTrueBinning),
       fPtQA(config.fPtQA),
       fMassQA(config.fMassQA),
       fMomentumResolution(config.fMomentumResolution),
@@ -82,11 +95,18 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fCorrelationRange(config.fCorrelationRange),
       fkTCentrality(config.fkTCentrality),
       fmTdEtadPhi(config.fmTdEtadPhi),
+      fmTMultBinning(config.fmTMultBinning),
       fEst(config.fEst),
+      fAncestors(config.fAncestors),
+      fpTOnepTTwokStarPlotsmT(config.fpTOnepTTwokStarPlotsmT),
+      fpTOnepTTwokStarCut(config.fpTOnepTTwokStarCut),
       fDeltaEtaMax(config.fDeltaEtaMax),
       fDeltaPhiMax(config.fDeltaPhiMax),
       fDoDeltaEtaDeltaPhiCut(config.fDoDeltaEtaDeltaPhiCut),
-      fCoutVariables(config.fCoutVariables) {
+      fRejectMotherDaughter(config.fRejectMotherDaughter),
+      fCoutVariables(config.fCoutVariables),
+      fSummedPtLimit1(config.fSummedPtLimit1),
+      fSummedPtLimit2(config.fSummedPtLimit2) {
 }
 
 AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
@@ -97,6 +117,9 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fCentBinning(false),
       fkTBinning(false),
       fmTBinning(false),
+      fkTandMultBinning(false),
+      fkTandMultPtBinning(false),
+      fkTandMultMCTrueBinning(false),
       fPtQA(false),
       fMassQA(false),
       fMomentumResolution(false),
@@ -124,11 +147,18 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fCorrelationRange(0.),
       fkTCentrality(false),
       fmTdEtadPhi(false),
+      fmTMultBinning(false),
       fEst(AliFemtoDreamEvent::kSPD),
+      fAncestors(false),
+      fpTOnepTTwokStarPlotsmT(false),
+      fpTOnepTTwokStarCut(3.),
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false),
-      fCoutVariables(QACouts) {
+      fRejectMotherDaughter(false),
+      fCoutVariables(QACouts),
+      fSummedPtLimit1(0.0),
+      fSummedPtLimit2(999.0) {
 }
 AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     const AliFemtoDreamCollConfig& config) {
@@ -138,6 +168,9 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fCentBinning = config.fCentBinning;
     this->fkTBinning = config.fkTBinning;
     this->fmTBinning = config.fmTBinning;
+    this->fkTandMultBinning = config.fkTandMultBinning;
+    this->fkTandMultPtBinning = config.fkTandMultPtBinning;
+    this->fkTandMultMCTrueBinning = config.fkTandMultMCTrueBinning;
     this->fPtQA = config.fPtQA;
     this->fMassQA = config.fMassQA;
     this->fMomentumResolution = config.fMomentumResolution;
@@ -165,11 +198,18 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fCorrelationRange = config.fCorrelationRange;
     this->fkTCentrality = config.fkTCentrality;
     this->fmTdEtadPhi = config.fmTdEtadPhi;
+    this->fmTMultBinning = config.fmTMultBinning; 
     this->fEst = config.fEst;
+    this->fAncestors = config.fAncestors;
+    this->fpTOnepTTwokStarPlotsmT = config.fpTOnepTTwokStarPlotsmT;
+    this->fpTOnepTTwokStarCut = config.fpTOnepTTwokStarCut;
     this->fDeltaEtaMax = config.fDeltaEtaMax;
     this->fDeltaPhiMax = config.fDeltaPhiMax;
     this->fDoDeltaEtaDeltaPhiCut = config.fDoDeltaEtaDeltaPhiCut;
+    this->fRejectMotherDaughter = config.fRejectMotherDaughter;
     this->fCoutVariables = config.fCoutVariables;
+    this->fSummedPtLimit1 = config.fSummedPtLimit1;
+    this->fSummedPtLimit2 = config.fSummedPtLimit2;
   }
   return *this;
 }
@@ -247,8 +287,8 @@ void AliFemtoDreamCollConfig::SetNBinsHist(std::vector<int> NBins) {
 std::vector<int> AliFemtoDreamCollConfig::GetNBinsHist() {
   if (fCoutVariables) {
     for (auto it : fNBinsHists) {
-    std::cout << "Stored  NBins for your Analysis " << it << std::endl;
-  }
+      std::cout << "Stored  NBins for your Analysis " << it << std::endl;
+    }
   }
   return fNBinsHists;
 }
@@ -259,8 +299,8 @@ void AliFemtoDreamCollConfig::SetMinKRel(std::vector<float> minKRel) {
 std::vector<float> AliFemtoDreamCollConfig::GetMinKRel() {
   if (fCoutVariables) {
     for (auto it : fMinK_rel) {
-    std::cout << "Stored kMin for your Analysis " << it << std::endl;
-  }
+      std::cout << "Stored kMin for your Analysis " << it << std::endl;
+    }
   }
   return fMinK_rel;
 }
@@ -270,8 +310,8 @@ void AliFemtoDreamCollConfig::SetMaxKRel(std::vector<float> maxKRel) {
 std::vector<float> AliFemtoDreamCollConfig::GetMaxKRel() {
   if (fCoutVariables) {
     for (auto it : fMaxK_rel) {
-    std::cout << "Stored kMax for your Analysis " << it << std::endl;
-  }
+      std::cout << "Stored kMax for your Analysis " << it << std::endl;
+    }
   }
   return fMaxK_rel;
 }
@@ -281,21 +321,21 @@ void AliFemtoDreamCollConfig::SetCentBins(std::vector<int> CentBins) {
 std::vector<int> AliFemtoDreamCollConfig::GetCentBins() {
   if (fCoutVariables) {
     for (auto it : fCentBins) {
-    std::cout << "Stored Centrality Ranges for your Analysis " << it << std::endl;
-  }
+      std::cout << "Stored Centrality Ranges for your Analysis " << it
+                << std::endl;
+    }
   }
   return fCentBins;
 }
-void AliFemtoDreamCollConfig::SetmTdEtadPhiBins(std::vector<float> mTBins) {
-  //Set Bins for the deta dphi mT Binning
-  fmTdEtadPhi = true;
+void AliFemtoDreamCollConfig::SetmTBins(std::vector<float> mTBins) {
+  //Set Bins for the deta dphi and multiplicity mT Binning 
   fmTBins = mTBins;
 }
 std::vector<float> AliFemtoDreamCollConfig::GetmTBins() {
   if (fCoutVariables) {
     for (auto it : fmTBins) {
-    std::cout << "Stored mTbins for your Analysis " << it << std::endl;
-  }
+      std::cout << "Stored mTbins for your Analysis " << it << std::endl;
+    }
   }
   return fmTBins;
 }
@@ -381,8 +421,6 @@ void AliFemtoDreamCollConfig::SetClosePairRejection(
 }
 
 std::vector<bool> AliFemtoDreamCollConfig::GetClosePairRej() {
-//  std::vector<bool> Pairs;
-//  float out = 0;
   if ((int) fClosePairRej.size() == 0) {
     AliWarning("=========================================================");
     AliWarning("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -395,10 +433,22 @@ std::vector<bool> AliFemtoDreamCollConfig::GetClosePairRej() {
   } else if ((int) fClosePairRej.size() != this->GetNParticleCombinations()) {
     AliFatal("Not all Pairs have a specified QA Behaviour, terminating \n");
   } else {
+    int counter = 0;
+    std::cout << "=========================================================\n";
     for (auto it : fClosePairRej) {
       std::cout << "Stored CPR for your Analysis "
                 << (it ? "active" : "inactive") << std::endl;
+      if (it) {
+        std::cout
+            << "Using the number of pairs set from SetExtendedQAPairs() \n"
+            << "to determine the number of combinations for this pair: \n"
+            << "Checking " << (unsigned int) fWhichQAPairs.at(counter) / 10
+            << " Tracks against "
+            << (unsigned int) fWhichQAPairs.at(counter) % 10 << std::endl;
+      }
+      counter++;
     }
+    std::cout << "=========================================================\n";
   }
   return fClosePairRej;
 }
@@ -453,4 +503,68 @@ std::vector<bool> AliFemtoDreamCollConfig::GetAllPairRejection() {
   pairs.push_back(true);         // Xi barXi
   pairs.push_back(true);         // barXi barXi
   return pairs;
+}
+
+std::vector<float> AliFemtoDreamCollConfig::GetDefaultZbins() {
+  std::vector<float> defVec;
+  defVec.push_back(-10);
+  defVec.push_back(-8);
+  defVec.push_back(-6);
+  defVec.push_back(-4);
+  defVec.push_back(-2);
+  defVec.push_back(0);
+  defVec.push_back(2);
+  defVec.push_back(4);
+  defVec.push_back(6);
+  defVec.push_back(8);
+  defVec.push_back(10);
+  return defVec;
+}
+std::vector<int> AliFemtoDreamCollConfig::GetHMMultBins() {
+  std::vector<int> defVec;
+  defVec.push_back(0);
+  defVec.push_back(4);
+  defVec.push_back(8);
+  defVec.push_back(12);
+  defVec.push_back(16);
+  defVec.push_back(20);
+  defVec.push_back(24);
+  defVec.push_back(28);
+  defVec.push_back(32);
+  defVec.push_back(36);
+  defVec.push_back(40);
+  defVec.push_back(44);
+  defVec.push_back(48);
+  defVec.push_back(52);
+  defVec.push_back(56);
+  defVec.push_back(60);
+  defVec.push_back(64);
+  defVec.push_back(68);
+  defVec.push_back(72);
+  defVec.push_back(76);
+  defVec.push_back(80);
+  defVec.push_back(84);
+  defVec.push_back(88);
+  defVec.push_back(92);
+  defVec.push_back(96);
+  defVec.push_back(100);
+  return defVec;
+}
+
+std::vector<int> AliFemtoDreamCollConfig::GetMBMultBins() {
+  std::vector<int> defVec;
+  defVec.push_back(0);
+  defVec.push_back(4);
+  defVec.push_back(8);
+  defVec.push_back(12);
+  defVec.push_back(16);
+  defVec.push_back(20);
+  defVec.push_back(24);
+  defVec.push_back(28);
+  defVec.push_back(32);
+  defVec.push_back(36);
+  defVec.push_back(40);
+  defVec.push_back(60);
+  defVec.push_back(80);
+  return defVec;
 }

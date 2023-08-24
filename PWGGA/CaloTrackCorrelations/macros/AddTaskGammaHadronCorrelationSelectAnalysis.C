@@ -49,7 +49,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 /// \param year: The year the data was taken, used to configure some histograms
 /// \param col: A string with the colliding system
 /// \param period: A string with data period 
-/// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit
+/// \param rejectEMCTrig : An int to reject EMCal triggered events with bad trigger: 0 no rejection, 1 old runs L1 bit, 2 newer runs L1 bit, 3 EMCal Trigger Maker
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param gloCutsString : A string with list of global cuts/parameters ("Smearing","SPDPileUp")
 /// \param nonLinOn : A bool to set the use of the non linearity correction
@@ -65,7 +65,6 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 /// \param minCen : An int to select the minimum centrality, -1 means no selection
 /// \param maxCen : An int to select the maximum centrality, -1 means no selection
 /// \param mixOn : A bool to switch the correlation mixing analysis
-/// \param calibrate : Use own calibration tools, do not rely on EMCal correction framewor or clusterizer
 /// \param outputfile : A string to change the name of the histograms output file, default is AnalysisResults.root
 /// \param printSettings : A bool to enable the print of the settings per task
 /// \param debug : An int to define the debug level of all the tasks
@@ -137,7 +136,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskGammaHadronCorrelationSelectAnalysi
   ConfigureCaloTrackCorrAnalysis
   ( anaList, calorimeter, simulation, year, col, analysisString, "", 
    shshMax, isoCone, isoConeMin, isoPtTh, isoMethod, isoContent,
-   leading, tm, mixOn, printSettings, debug);
+   leading, tm, mixOn, printSettings, debug, trigSuffix);
   
   printf("AddTaskGammaHadronCorrelationSelectAnalysis::End configuration\n");
   

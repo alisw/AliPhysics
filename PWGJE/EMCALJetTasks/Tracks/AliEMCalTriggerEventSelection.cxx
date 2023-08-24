@@ -18,20 +18,18 @@
 #include "AliAnalysisUtils.h"
 #include "AliVEvent.h"
 
-/// \cond CLASSIMP
-ClassImp(EMCalTriggerPtAnalysis::AliEMCalTriggerEventSelection)
-/// \endcond
+ClassImp(PWGJE::EMCALJetTasks::AliEMCalTriggerEventSelection)
 
-namespace EMCalTriggerPtAnalysis {
+using namespace PWGJE::EMCALJetTasks;
 
 /**
  * Main Constructor
  */
 AliEMCalTriggerEventSelection::AliEMCalTriggerEventSelection():
   TObject(),
+  fVertexCut(-10., 10.),
   fOldPileupSelection(kFALSE),
-  fOldVertexSelection(kFALSE),
-  fVertexCut(-10., 10.)
+  fOldVertexSelection(kFALSE)
 {
 
 }
@@ -78,5 +76,3 @@ bool AliEMCalTriggerEventSelection::FalseVertexSelectionPA2013(const AliVEvent *
   if (TMath::Abs(zvtx) > 10) return kFALSE;
   return kTRUE;
 }
-
-} /* namespace EMCalTriggerPtAnalysis */

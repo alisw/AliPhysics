@@ -25,11 +25,14 @@ class TArrayS;
 class AliAnalysisUtils;
 class AliAODTrack;
 class AliAODMCParticle;
-class AliMCParticleContainer;
-class AliAnalysisTaskPID;
+class AliMCParticleContainer;;
+class AliFJWrapper;
+
+#include <fastjet/PseudoJet.hh>
 
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliPID.h"
+#include "AliAnalysisTaskMTFPID.h"
   
 class AliAnalysisTaskIDFragmentationFunction : public AliAnalysisTaskEmcalJet {
 public:
@@ -38,16 +41,23 @@ public:
   virtual ~AliAnalysisTaskIDFragmentationFunction();
   
   virtual void   UserCreateOutputObjects();
-  virtual void   Init();
-  virtual void   LocalInit() {Init();}
-
+  virtual void   LocalInit() {Init();};
+  void InitialiseFastSimulationFunctions();
+  
   Bool_t         FillHistograms();
   virtual void   Terminate(Option_t* );
   virtual Bool_t Notify();
+  
+  enum FragmentationFunctionChange { kNoChange = 0, kLowPtEnhancement = 1, kLowPtDepletion = 2};
 
+  // Setters and Getters
   virtual void   SetNonStdFile(char* c){fNonStdFile = c;} 
   
-  virtual void   SetCentralityEstimator(TString c){fCentralityEstimator = c;}
+  const TString  GetCentralityEstimator() const { return TString(fCentEst); }
+  
+  virtual void   SetMinMaxMultiplicity(Int_t min, Int_t max) {fMinMultiplicity = min; fMaxMultiplicity = max;}
+  virtual Int_t  GetMinMultiplicity() { return fMinMultiplicity; }
+  virtual Int_t  GetMaxMultiplicity() { return fMaxMultiplicity; }
   
   virtual void   SetNameTrackContainer(TString c) {fNameTrackContainer = c;}
   virtual TString GetNameTrackContainer() const { return fNameTrackContainer;}
@@ -79,6 +89,37 @@ public:
   virtual Bool_t GetFillDCA() const { return fFillDCA; }
   virtual void SetFillDCA(Bool_t flag) { fFillDCA = flag; }  
   
+  virtual Bool_t GetDoGroomedJets() const { return fDoGroomedJets; }
+  virtual void SetDoGroomedJets(Bool_t flag) { fDoGroomedJets = flag; } 
+  
+  virtual Double_t GetBetaSoftDrop() const { return fBetaSoftDrop; }
+  virtual void SetBetaSoftDrop(Double_t value) { fBetaSoftDrop = value; }
+  
+  virtual Double_t GetZSoftDrop() const { return fZSoftDrop; }
+  virtual void SetZSoftDrop(Double_t value) { fZSoftDrop = value; }  
+  
+  virtual Bool_t GetUseFastSimulations() const { return fUseFastSimulations; }
+  virtual void SetUseFastSimulations(Bool_t value) { fUseFastSimulations = value; } 
+  
+  virtual TF1** GetEfficiencyFunctions() const { return fEffFunctions;};
+  virtual void SetEfficiencyFunctions(TF1** effFunctions) {fEffFunctions = new TF1*[2*AliPID::kSPECIES];for (Int_t i=0;i<2*AliPID::kSPECIES;++i)fEffFunctions[i]=effFunctions[i];};   
+  virtual void ResetEffFunctions() {delete fEffFunctions; fEffFunctions = 0x0;};
+  
+  virtual TString GetFastSimulationParameters() const { return fastSimulationParameters; };
+  virtual void SetFastSimulationParameters(TString value) { fastSimulationParameters = value; };
+  
+  virtual Double_t GetFastSimEffFactor() const { return fFastSimEffFactor; };
+  virtual void SetFastSimEffFactor(Double_t value) { fFastSimEffFactor = value; };
+  
+  virtual Double_t GetFastSimRes() const { return fFastSimRes; };
+  virtual void SetFastSimRes(Double_t value) { fFastSimRes = value; };
+
+  virtual Double_t GetFastSimResFactor() const { return fFastSimResFactor; };
+  virtual void SetFastSimResFactor(Double_t value) { fFastSimResFactor = value; };  
+	
+  virtual FragmentationFunctionChange GetFFChange() const { return fFFChange; }
+  virtual void SetFFChange(FragmentationFunctionChange value) { fFFChange = value; } 
+   
   virtual Bool_t GetUseInclusivePIDtask() const {return fUseInclusivePIDtask; }
   virtual void SetUseInclusivePIDtask(Bool_t flag) {fUseInclusivePIDtask = flag; }
   
@@ -88,46 +129,44 @@ public:
   virtual Bool_t GetUseJetUEPIDtask() const {return fUseJetUEPIDtask; }
   virtual void SetUseJetUEPIDtask(Bool_t flag) {fUseJetUEPIDtask = flag; }
   
-  //Begin of underlying event calculations
+  // Helper functions
+  virtual void FillPIDTasksCutHisto(Double_t value, AliAnalysisTaskMTFPID::CutHistoType histoType);
+  virtual void IncrementPIDTasksEventCounts(Double_t centPercent, AliAnalysisTaskMTFPID::EventCounterType eventCounterType, Bool_t* isPileUpInclusivePIDtask = 0x0, Bool_t* isPileUpJetPIDtask = 0x0, Bool_t* isPileUpJetUEPIDtask = 0x0);
+  
+  // Begin of underlying event calculations
   virtual TList* GetUEJetsWithRandomConeMethod(AliJetContainer* jetContainer, Double_t coneRadius, Double_t maxEtaTrack);
   virtual TList* GetUEJetsWithPerpendicularConeMethod(AliJetContainer* jetContainer);
   virtual AliEmcalJet* GetRandomCone(AliEmcalJet* processedJet, Double_t dEtaConeMax, Double_t dDistance) const;
   virtual AliEmcalJet* GetPerpendicularCone(AliEmcalJet* processedJet, Double_t perpAngle) const;
   virtual TList* GetTracksInCone(const AliEmcalJet* jet, AliParticleContainer* particleContainer = 0x0) const;
   Bool_t IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const;
-  virtual Bool_t IsRCJCOverlap(const AliVParticle* part, Double_t dDistance) const; 
+  virtual Bool_t OverlapsWithAnyRecJet(const AliVParticle* part, Double_t dDistance = -1.0) const; 
   
   //Filling the efficiency containers of the specified task with the generated jet yield
-  virtual void PerformJetMonteCarloAnalysisGeneratedYield(AliEmcalJet* jet, AliVParticle* trackVP, AliAnalysisTaskPID* task, Double_t centPercent, AliJetContainer* mcJetContainer = 0x0);
+  virtual void PerformJetMonteCarloAnalysisGeneratedYield(AliEmcalJet* jet, AliVParticle* trackVP, AliAnalysisTaskMTFPID* task, Double_t centPercent, AliJetContainer* mcJetContainer = 0x0);
   
   //Jet Track Calculations, including filling of the efficiency containers. If no task is specified, the function loops over all Jet tasks in fJetPIDtask, using trackRejectedByTask[] to decide if the track is accepted. If a task is specified, everything is done (without checking further) for the specified task. 
-  virtual void AnalyseJetTrack(AliVTrack* track, AliEmcalJet* jet, AliAnalysisTaskPID* task, const Bool_t* trackRejectedByTask, Double_t centPercent, AliMCParticleContainer* mcParticleContainer = 0x0);
+  virtual void AnalyseJetTrack(AliVTrack* track, AliEmcalJet* jet, AliAnalysisTaskMTFPID* task, const Bool_t* trackRejectedByTask, Double_t centPercent, AliMCParticleContainer* mcParticleContainer = 0x0);
   
   //Fill DCA
   virtual void FillDCA(AliVTrack* track, AliMCParticleContainer* mcParticleContainer); 
   
-  //End of underlying event calculations
-
   static  void   SetProperties(TH1* h,const char* x, const char* y);
   static  void   SetProperties(TH1* h,const char* x, const char* y,const char* z);
   static  void   SetProperties(THnSparse* h,Int_t dim, const char** labels);
   
-  void SetStoreXi(Bool_t storeXi) { fStoreXi = storeXi; }
-  Bool_t GetStoreXi() { return fStoreXi; }
-  
-  const TString  GetCentralityEstimator() const { return fCentralityEstimator; }
   Float_t  GetFFRadius() const { return fFFRadius; }
   Float_t  GetFFMinLTrackPt() const { return fFFMinLTrackPt; }
   Float_t  GetFFMaxTrackPt() const { return fFFMaxTrackPt; }
   Float_t  GetFFMinNTracks() const { return fFFMinnTracks; }
   Float_t  GetMCPtHardCut() const  { return fMCPtHardCut; }
   
-  Double_t GetDistanceJetTrack(const AliEmcalJet* jet, const AliVParticle* track, Bool_t useInternalFlag = kTRUE) const;
+  Double_t GetDistanceJetTrack(const AliEmcalJet* jet, const AliVParticle* track) const;
   
   Double_t GetMCStrangenessFactor(Double_t pt) const;
   Double_t GetMCStrangenessFactorCMS(AliAODMCParticle* daughter, AliMCParticleContainer* mcParticleContainer) const;
   
-  Double_t GetPerpendicularMomentumTrackJet(const AliEmcalJet* jet, const AliVParticle* track, Bool_t useInternalFlag = kTRUE) const;
+  Double_t GetPerpendicularMomentumTrackJet(const AliEmcalJet* jet, const AliVParticle* track) const;
   
   Bool_t IsSecondaryWithStrangeMotherMC(AliAODMCParticle* part, AliMCParticleContainer* mcParticleContainer);
 
@@ -140,12 +179,14 @@ public:
   const TString* GetNamesOfJetUEPIDtasks() const { return fNameJetUEPIDtask; };
   void SetNamesOfJetUEPIDtasks(Int_t numNames, const TString* names, const TString* methods = 0x0);
 	
-	
   Bool_t GetIsPP() const { return fIsPP; };
   void SetIsPP(Bool_t flag) { fIsPP = flag; };
   
   UInt_t GetRCTrials() const { return fRCTrials; }
   void SetRCTrials(UInt_t trials) {fRCTrials = trials; }
+  
+  Bool_t GetUseRealJetArea() const { return fUseRealJetArea; }
+  void SetUseRealJetArea(Bool_t flag) {fUseRealJetArea = flag; }  
 
   const TString* GetUEMethods() const { return fUEMethods; }
   void SetUEMethods(const TString* names);
@@ -155,8 +196,10 @@ public:
   
   void RemoveParticleContainer(const char* n) {fParticleCollArray.Remove(GetParticleContainer(n));}
   void RemoveJetContainer(const char* n) {fJetCollArray.Remove(GetJetContainer(n));}
-
- 
+  
+  void SetUpFastJetWrapperWithOriginalValues(AliFJWrapper* wrapper);
+  void FillEfficiencyContainerFromTrack(AliAODMCParticle* part, AliEmcalJet* jet, Double_t centPercent, AliAnalysisTaskMTFPID::EffSteps step);
+	
  protected:
 
   AliESDEvent* fESD;      //! ESD event
@@ -164,8 +207,9 @@ public:
   AliAODEvent* fAODJets;  //! AOD event with jet branch (case we have AOD both in input and output)
   AliAODExtension  *fAODExtension; //! where we take the jets from can be input or output AOD
   TString       fNonStdFile; // name of delta aod file to catch the extension
- 
-  TString fCentralityEstimator;   // Estimator for the Centrality, V0M is default, set to be V0A for pPb-collisions    
+  
+  Int_t fMinMultiplicity;
+  Int_t fMaxMultiplicity;
   
   TString fNameTrackContainer;
   TString fNameTrackContainerEfficiency;
@@ -188,7 +232,6 @@ public:
   
   // histogram bins  
 
-  Bool_t fStoreXi;          // Store Xi = -ln(z) explicitly
   Bool_t fStudyTransversalJetStructure; // Store observables related to transversal jet structure
   
   // Histograms
@@ -209,7 +252,12 @@ public:
   TH1F*     fh1EvtsPtHardCut;     //! Number events before and after the cut on MC pT hard
 
   TH1F  *fh1nRecJetsCuts;         //! number of jets from reconstructed tracks per event 
+  TH1F  *fh1nRecJetsCutsGroomed; 
+  TH1F  *fh1nRecJetsCuts2; 
+  TH1F  *fh1nRCinUnderground;     //! Scan the underground with random cones
   TH1F  *fh1nGenJets;             //! number of jets from generated tracks per event
+  
+  TH1F  *fh1TotJetEnergy;         //! Total Jet Energy 
   
   TH2F  *fhDCA_XY;                //! DCA XY for all rec. particles
   TH2F  *fhDCA_Z;                 //! DCA Z for all rec. particles
@@ -218,6 +266,9 @@ public:
   TH2F  *fhJetPtRefMultEta8;      //! Jet pT vs. reference multiplicity (|eta|<0.8)
   TH2F  *fhJetPtMultPercent;      //! Jet pT vs. multiplicity percentile (usually V0M)
 
+  TH3F  *fh3trackDensity;
+  TH2F  *fh2TrackDef;     
+  
   TH2F  *fhDCA_XY_prim_MCID[AliPID::kSPECIES];   //! DCA XY for all rec. prim. particles sorted by MC-ID
   TH2F  *fhDCA_Z_prim_MCID[AliPID::kSPECIES];    //! DCA Z for all rec. prim. particles sorted by MC-ID
  
@@ -240,9 +291,9 @@ public:
   TString* fNameJetPIDtask;                 //[fNumJetPIDtasks] Names of the tasks for jet PID spectra
   TString* fNameJetUEPIDtask;               //[fNumJetUEPIDtasks] Names of the tasks for jet UE PID spectra
   
-  AliAnalysisTaskPID** fInclusivePIDtask;   //! Pointer to tasks for inclusive PID spectra
-  AliAnalysisTaskPID** fJetPIDtask;         //! Pointer to tasks for jet PID spectra
-  AliAnalysisTaskPID** fJetUEPIDtask;       //! Pointer to tasks for jet UE PID spectra
+  AliAnalysisTaskMTFPID** fInclusivePIDtask;   //! Pointer to tasks for inclusive PID spectra
+  AliAnalysisTaskMTFPID** fJetPIDtask;         //! Pointer to tasks for jet PID spectra
+  AliAnalysisTaskMTFPID** fJetUEPIDtask;       //! Pointer to tasks for jet UE PID spectra
   
   Bool_t fUseInclusivePIDtask;              // Process inclusive PID spectra?
   Bool_t fUseJetPIDtask;                    // Process jet PID spectra?
@@ -251,16 +302,28 @@ public:
   Bool_t fIsPP;                             // Is pp collision system? -> If yes, centrality will be set to -1
   
   Bool_t fFillDCA;                          //Shall the DCA histograms be filled?
+  Bool_t fDoGroomedJets;                    //! Use groomed jets
+  Double_t fBetaSoftDrop;
+  Double_t fZSoftDrop;
+  
+  Bool_t fUseFastSimulations;
+  TString fastSimulationParameters;          // Parameter string to store FastSimulation parameters
+  TF1** fEffFunctions;                       //! For fast simulations
+  Double_t fFastSimEffFactor;
+  Double_t fFastSimRes;
+  Double_t fFastSimResFactor;
+  FragmentationFunctionChange fFFChange;                           // 0 for none, 1 for lowPt-Enhancement, 2 for lowPt-Depletion
   
   //Underlying event members
   UInt_t fRCTrials;
   TString* fUEMethods;                      //[fNumJetUEPIDtasks] Names for the underlying event methods
+  Bool_t fUseRealJetArea;
   
 private:
   AliAnalysisTaskIDFragmentationFunction(const  AliAnalysisTaskIDFragmentationFunction&);   //Not implemented in AliAnalysisTaskEmcalJet
   AliAnalysisTaskIDFragmentationFunction& operator=(const  AliAnalysisTaskIDFragmentationFunction);   //Not implemented AliAnalysisTaskEmcalJet
   
-  ClassDef(AliAnalysisTaskIDFragmentationFunction, 23);
+  ClassDef(AliAnalysisTaskIDFragmentationFunction, 26);
 };
 
 
@@ -269,7 +332,7 @@ inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfInclusivePIDtasks(
   delete [] fNameInclusivePIDtask;
   fNameInclusivePIDtask = 0x0;
   
-  if (!names || numNames < 0) {
+  if (!names || numNames <= 0) {
     fNumInclusivePIDtasks = 0;
     return;
   }
@@ -291,7 +354,7 @@ inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfJetPIDtasks(Int_t 
   delete [] fNameJetPIDtask;
   fNameJetPIDtask = 0x0;
   
-  if (!names || numNames < 0) {
+  if (!names || numNames <= 0) {
     fNumJetPIDtasks = 0;
     return;
   }
@@ -313,7 +376,7 @@ inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfJetUEPIDtasks(Int_
   delete [] fNameJetUEPIDtask;
   fNameJetUEPIDtask = 0x0;
   
-  if (!names || numNames < 0) {
+  if (!names || numNames <= 0) {
     fNumJetUEPIDtasks = 0;
     return;
   }
@@ -346,7 +409,7 @@ inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfJetUEPIDtasks(Int_
           SetUEMethods(defaultMethods);
           break;
         default:
-          std::cout << "Too many Underlying event PID tasks to specify default methods. Please specify them yourselves for each task by giving TString array as third argument in SetNamesOfJetUEPIDtasks!" << std::endl;
+          AliWarningStream() << "Too many Underlying event PID tasks to specify default methods. Please specify them yourselves for each task by giving TString array as third argument in SetNamesOfJetUEPIDtasks!" << std::endl;
           break;
       }
       delete defaultMethods;
@@ -356,8 +419,9 @@ inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfJetUEPIDtasks(Int_
 }
 
 inline void AliAnalysisTaskIDFragmentationFunction::SetUEMethods(const TString* names) {
-  if (fNumJetUEPIDtasks < 1) {
-    std::cout << "Number of Underlying event PID tasks has to be greater than 0 to set the methods" << std::endl;
+  if (fNumJetUEPIDtasks <= 0) {
+    AliWarningStream() << "At least one UE task required to set UE Methods" << std::endl;
+    
     return;
   }
   delete [] fUEMethods;
@@ -372,5 +436,4 @@ inline void AliAnalysisTaskIDFragmentationFunction::SetUEMethods(const TString* 
     fUEMethods[i] = names[i];
   }
 }
-
 #endif

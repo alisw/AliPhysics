@@ -20,7 +20,7 @@ void AliPP13SpectrumSelectionSimple::InitSelectionHistograms()
 {
 	fMassPt = new TH2F(
 		"hMassPtSM0",
-		"(M,p_{T})_{#gamma#gamma}, ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c",
+		"(M,p_{T})_{#gamma#gamma}, ; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})",
 		fLimits.nM, fLimits.mMin, fLimits.mMax,
 		fLimits.nPt, fLimits.ptMin, fLimits.ptMax
 	);
@@ -29,7 +29,7 @@ void AliPP13SpectrumSelectionSimple::InitSelectionHistograms()
 
 	fMixMassPt = new TH2F(
 		"hMixMassPtSM0",
-		"(M,p_{T})_{#gamma#gamma}, ; M_{#gamma#gamma}, GeV; p_{T}, GeV/c",
+		"(M,p_{T})_{#gamma#gamma}, ; M_{#gamma#gamma} (GeV/#it{c}^{2}); p_{T} (GeV/#it{c})",
 		fLimits.nM, fLimits.mMin, fLimits.mMax,
 		fLimits.nPt, fLimits.ptMin, fLimits.ptMax
 	);

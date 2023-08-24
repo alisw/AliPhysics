@@ -98,6 +98,7 @@ struct AliSoftdropDefinition {
   Double_t fZ;                              ///< Cut on z
   Double_t fBeta;                           ///< Cut on Beta
   fastjet::JetAlgorithm fRecluserAlgo;      ///< Reclusterization algorithm
+  Double_t fR0;                             ///< R0
 };
 
 struct AliJetSubstructureSettings {
@@ -282,6 +283,9 @@ private:
   Bool_t                       fFillSoftDrop;               ///< Fill soft drop parameters
   Bool_t                       fFillNSub;                   ///< Fill N-subjettiness
   Bool_t                       fFillStructGlob;             ///< Fill other substructure variables
+
+  AliAnalysisTaskEmcalJetSubstructureTree(const AliAnalysisTaskEmcalJetSubstructureTree &);
+  AliAnalysisTaskEmcalJetSubstructureTree &operator=(const AliAnalysisTaskEmcalJetSubstructureTree &);
 
 	ClassDef(AliAnalysisTaskEmcalJetSubstructureTree, 1);
 };

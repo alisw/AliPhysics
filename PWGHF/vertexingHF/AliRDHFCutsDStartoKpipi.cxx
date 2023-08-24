@@ -54,6 +54,8 @@ AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const char* name) :
   fMaxPtPid(9999.),
   fTPCflag(999.),
   fCircRadius(0.),
+  fRequireTPCandTOF(kTRUE),
+  fUsePIDSoftPi(kFALSE),
   fUseTPCtrackCutsOnD0Daughters(kTRUE),
   fUseTPCtrackCutsOnSoftPion(kFALSE)
 {
@@ -126,6 +128,8 @@ AliRDHFCutsDStartoKpipi::AliRDHFCutsDStartoKpipi(const AliRDHFCutsDStartoKpipi &
   fMaxPtPid(9999.),
   fTPCflag(999.),
   fCircRadius(0.),
+  fRequireTPCandTOF(kTRUE),
+  fUsePIDSoftPi(kFALSE),
   fUseTPCtrackCutsOnD0Daughters(source.fUseTPCtrackCutsOnD0Daughters),
   fUseTPCtrackCutsOnSoftPion(source.fUseTPCtrackCutsOnSoftPion)
 {
@@ -599,20 +603,37 @@ Int_t AliRDHFCutsDStartoKpipi::IsSelectedPID(Double_t pt, TObjArray aodTracks)
   AliAODTrack *pos = (AliAODTrack*)aodTracks.At(1);
   AliAODTrack *neg = (AliAODTrack*)aodTracks.At(2);
 
-  if (softPion->Charge()>0){
-    if(!SelectPID(pos,2)) return 0;//pion+
-    if(!SelectPID(neg,3)) return 0;//kaon-
-  }else{
-    if(!SelectPID(pos,3)) return 0;//kaon+
-    if(!SelectPID(neg,2)) return 0;//pion-
-  }
+  if(fRequireTPCandTOF){
+    //Default Dstar PID of basically all analysis in Run1+2: TPC and TOF, including cands with no (or only partial) PID info
+    if (softPion->Charge()>0){
+      if(!SelectPID(pos,2)) return 0;//pion+
+      if(!SelectPID(neg,3)) return 0;//kaon-
+    }else{
+      if(!SelectPID(pos,3)) return 0;//kaon+
+      if(!SelectPID(neg,2)) return 0;//pion-
+    }
 
-  if ((fPidHF->GetMatch() == 10 || fPidHF->GetMatch() == 11) && fPidHF->GetITS()) { //ITS n sigma band
-    if (fPidHF->CheckBands(AliPID::kPion, AliPIDResponse::kITS, softPion) == -1) {
-      return 0;
+    if ((fPidHF->GetMatch() == 10 || fPidHF->GetMatch() == 11) && fPidHF->GetITS()) { //ITS n sigma band
+      if (fPidHF->CheckBands(AliPID::kPion, AliPIDResponse::kITS, softPion) == -1) {
+        return 0;
+      }
+    }
+  } else {
+    //New PID option (Dec. 2021), similar as other D mesons: TPC or TOF, including cands with no PID info
+    if (softPion->Charge()>0){
+      if(fPidHF->MakeRawPid(pos,AliPID::kPion) < 0) return 0;
+      if(fPidHF->MakeRawPid(neg,AliPID::kKaon) < 0) return 0;
+    } else {
+      if(fPidHF->MakeRawPid(pos,AliPID::kKaon) < 0) return 0;
+      if(fPidHF->MakeRawPid(neg,AliPID::kPion) < 0) return 0;
+    }
+
+    //Include possibility to require PID on the soft-pion track (candidates w/o PID info are kept)
+    if(fUsePIDSoftPi){
+      if(fPidHF->MakeRawPid(softPion,AliPID::kPion) < 0) return 0;
     }
   }
-
+  
   return 3;
 }
 

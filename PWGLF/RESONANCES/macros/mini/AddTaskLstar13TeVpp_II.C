@@ -24,7 +24,7 @@ enum eventCutSet { kEvtDefault=0,
 		   kNoEvtSel, //=8
 		   kINEL10, //=9
 		   kIGZ10, //=10
-           kIGZ //=11
+		   kIGZ //=11
                  };
 
 enum eventMixConfig { kDisabled = -1,
@@ -46,12 +46,13 @@ AliRsnMiniAnalysisTask * AddTaskLstar13TeVpp_II
  Int_t       customQualityCutsID=1,
  Float_t     nsigmaPr = 2.0,
  Float_t     nsigmaKa=2.,
- Bool_t      enableMonitor=kTRUE,
- Bool_t      IsMcTrueOnly=kFALSE
+ Float_t     nsigmaTOFPr = 2.0,
+ Float_t     nsigmaTOFKa=2.,
+ Bool_t      enableMonitor=kTRUE
  )
 {  
 
-AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPrCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV;
+  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPrCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV;
   AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV;
   
   //-------------------------------------------
@@ -247,8 +248,11 @@ AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPrCandidate = AliRsnCutSetDa
 
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
 
+
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigureLstar13TeVpp_II.C");
-  if (!ConfigureLstar13TeVpp_II(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa,  enableMonitor, isMC&IsMcTrueOnly)) return 0x0;
+  //if (!ConfigureLstar13TeVpp_II(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa,  enableMonitor, isMC&IsMcTrueOnly)) return 0x0;
+  
+  if (!ConfigureLstar13TeVpp_II(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa,nsigmaTOFPr, nsigmaTOFKa,  enableMonitor)) return 0x0;
  
 
   // -- CONTAINERS --------------------------------------------------------------------------------

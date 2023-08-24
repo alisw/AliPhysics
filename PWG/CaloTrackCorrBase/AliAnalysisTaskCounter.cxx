@@ -154,7 +154,7 @@ void AliAnalysisTaskCounter::UserCreateOutputObjects()
   fhEventPlaneAngle->SetXTitle("EP angle (rad)");
   fOutputContainer->Add(fhEventPlaneAngle) ;
   
-  fhNEvents = new TH1I("hNEvents", "Number of analyzed events", 21, 0, 21) ;
+  fhNEvents = new TH1F("hNEvents", "Number of analyzed events", 21, 0, 21) ;
   //fhNEvents->SetXTitle("Selection");
   fhNEvents->SetYTitle("# events");
   fhNEvents->GetXaxis()->SetBinLabel(1 ,"1  = PS");

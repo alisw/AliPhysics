@@ -62,12 +62,20 @@ class AliCalorimeterUtils : public TObject {
   Bool_t        IsClusterSharedByTwoSuperModules(const AliEMCALGeometry * geom,
                                                  AliVCluster* cluster);
   
-  Float_t       GetECross(Int_t absId, AliVCaloCells* cells, Int_t bc);
+  Float_t       GetECross(Int_t absId, AliVCaloCells* cells, Int_t bc, 
+                          Float_t cellMinEn = 0., Bool_t useWeight = kFALSE, Float_t energyClus = 0.);
   
   Bool_t        GetFECCorrelatedCellAbsId(Int_t absId, Int_t absIdCorr[4]) const ;
   
   Bool_t        IsAbsIDsFromTCard(Int_t absId1, Int_t absId2, 
-                                  Int_t & rowDiff, Int_t & colDiff) const ;
+                                  Int_t & rowDiff, Int_t & colDiff) const 
+                { return fEMCALRecoUtils->IsAbsIDsFromTCard(absId1, absId2, rowDiff, colDiff) ; }
+  
+  void          GetEnergyAndNumberOfCellsInTCard(AliVCluster* clus, Int_t absIdMax, AliVCaloCells* cells,
+                                                 Int_t   & nDiff, Int_t   & nSame, 
+                                                 Float_t & eDiff, Float_t & eSame, 
+                                                 Float_t   emin = 0.)
+                  { fEMCALRecoUtils->GetEnergyAndNumberOfCellsInTCard(clus, absIdMax, cells, nDiff, nSame, eDiff, eSame, emin) ; }
   
   Int_t         GetNumberOfLocalMaxima(AliVCluster* cluster, AliVCaloCells* cells)  ;
   
@@ -318,7 +326,7 @@ class AliCalorimeterUtils : public TObject {
   void          SetEMCALRecoUtils(AliEMCALRecoUtils * ru)  { fEMCALRecoUtils = ru          ; }
   AliEMCALRecoUtils* GetEMCALRecoUtils()             const { return fEMCALRecoUtils        ; }
   
-  void          ConfigureEMCALRecoUtils(Bool_t  bMC    = kFALSE, Bool_t  bExotic= kTRUE, Bool_t  bNonLin= kFALSE,  
+  void          ConfigureEMCALRecoUtils(Bool_t  bMC    = kFALSE, Bool_t  bExotic= kTRUE, Int_t  bNonLin= kFALSE,  
                                         Bool_t  bRecalE= kTRUE , Bool_t  bBad   = kTRUE, Bool_t  bRecalT= kTRUE, Int_t   debug  = -1);
   
   Bool_t        IsCorrectionOfClusterEnergyOn()      const { return fCorrectELinearity     ; }

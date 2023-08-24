@@ -102,6 +102,7 @@ class AliAODv0;
 #include "AliESDInputHandler.h"
 #include "AliLog.h"
 #include "AliTrackerBase.h"
+#include "AliV0HypSel.h"
 
 using std::cout;
 using std::endl;
@@ -117,13 +118,20 @@ fkDoExtraEvSels(kTRUE),
 fkForceResetV0s(kFALSE),
 fkForceResetCascades(kFALSE),
 fMinCentrality(0.0),
-fMaxCentrality(301.0),
-fkRevertexAllEvents(kTRUE),
+fMaxCentrality(200.5),
+fkRevertexAllEvents(kFALSE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
 fkPreselectDedx ( kFALSE ),
 fkPreselectDedxLambda ( kTRUE ),
+fdEdxSigmaSelection ( 5.0 ),
 fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
+fkNClustersCut ( kFALSE ),
+fNClustersCutValue ( 50 ),
+fkNCrossedRowsCut ( kTRUE ),
+fNCrossedRowsCutValue ( 60 ),
+fkActiveLengthCut ( kFALSE ),
+fActiveLengthCutValue ( 80 ),
 //________________________________________________
 //Flags for V0 vertexer
 fkRunV0Vertexer (kFALSE),
@@ -153,8 +161,10 @@ fMinPtV0(   -1 ), //pre-selection
 fMaxPtV0( 1000 ),
 fMinPtCascade(   0.3 ),
 fMaxPtCascade( 100.00 ),
+fV0HypSelArray(NULL),
 fMassWindowAroundCascade(0.060),
 fMinXforXYtest( -3.0 ),
+fOnlyCount(kFALSE), 
 //________________________________________________
 //Histos
 fHistEventCounter(0),
@@ -163,7 +173,9 @@ fHistNumberOfCandidates(0), //bookkeep total number of candidates analysed
 fHistV0ToBachelorPropagationStatus(0),
 fHistV0OptimalTrackParamUse(0),
 fHistV0OptimalTrackParamUseBachelor(0),
-fHistV0Statistics(0)
+fHistV0Statistics(0),
+fHistPosTrackCounter(0),
+fHistNegTrackCounter(0)
 //________________________________________________
 {
     SetUseImprovedFinding(); 
@@ -178,13 +190,20 @@ fkDoExtraEvSels(kTRUE),
 fkForceResetV0s(kFALSE),
 fkForceResetCascades(kFALSE),
 fMinCentrality(0.0),
-fMaxCentrality(300.0),
-fkRevertexAllEvents(kTRUE),
+fMaxCentrality(200.5),
+fkRevertexAllEvents(kFALSE),
 //________________________________________________
 //Flags for both V0+cascade vertexer
 fkPreselectDedx ( kFALSE ),
 fkPreselectDedxLambda ( kTRUE ),
+fdEdxSigmaSelection ( 5.0 ), 
 fkExtraCleanup    ( kTRUE ), //extra cleanup: eta, etc
+fkNClustersCut ( kFALSE ),
+fNClustersCutValue ( 50 ),
+fkNCrossedRowsCut ( kTRUE ),
+fNCrossedRowsCutValue ( 60 ),
+fkActiveLengthCut ( kFALSE ),
+fActiveLengthCutValue ( 80 ),
 //________________________________________________
 //Flags for V0 vertexer
 fkRunV0Vertexer (kFALSE),
@@ -214,8 +233,10 @@ fMinPtV0(   -1 ), //pre-selection
 fMaxPtV0( 1000 ),
 fMinPtCascade(   0.3 ), //pre-selection
 fMaxPtCascade( 100.00 ),
+fV0HypSelArray(NULL),
 fMassWindowAroundCascade(0.060),
 fMinXforXYtest( -3.0 ),
+fOnlyCount(kFALSE),
 //________________________________________________
 //Histos
 fHistEventCounter(0),
@@ -224,7 +245,9 @@ fHistNumberOfCandidates(0), //bookkeep total number of candidates analysed
 fHistV0ToBachelorPropagationStatus(0),
 fHistV0OptimalTrackParamUse(0),
 fHistV0OptimalTrackParamUseBachelor(0),
-fHistV0Statistics(0)
+fHistV0Statistics(0),
+fHistPosTrackCounter(0),
+fHistNegTrackCounter(0)
 //________________________________________________
 {
     SetUseImprovedFinding(); 
@@ -353,6 +376,17 @@ void AliAnalysisTaskWeakDecayVertexer::UserCreateOutputObjects()
         fHistV0Statistics->GetXaxis()->SetBinLabel(8, "Within pT range");
         fHistV0Statistics->GetXaxis()->SetBinLabel(9, "Passes all, OTF track used");
         fListHist->Add(fHistV0Statistics);
+    }
+  
+    if(! fHistPosTrackCounter ) {
+        //Histogram Output: Event-by-Event
+        fHistPosTrackCounter = new TH1D( "fHistPosTrackCounter", "",5000,0,5000);
+        fListHist->Add(fHistPosTrackCounter);
+    }
+    if(! fHistNegTrackCounter ) {
+        //Histogram Output: Event-by-Event
+        fHistNegTrackCounter = new TH1D( "fHistNegTrackCounter", "",5000,0,5000);
+        fListHist->Add(fHistNegTrackCounter);
     }
     PostData(1, fListHist    );
 }// end UserCreateOutputObjects
@@ -495,8 +529,8 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
         }
         
         //reset on-the-fly, job is done
-        if(fkUseOptimalTrackParams && !fkUseOptimalTrackParamsBachelor)
-            SelectiveResetV0s(lESDevent, 1);
+        //if(fkUseOptimalTrackParams && !fkUseOptimalTrackParamsBachelor)
+        //    SelectiveResetV0s(lESDevent, 1);
     }
     
     nv0s = lESDevent->GetNumberOfV0s();
@@ -525,8 +559,8 @@ void AliAnalysisTaskWeakDecayVertexer::UserExec(Option_t *)
         }
     }
     //reset on-the-fly, job is done
-    if(fkUseOptimalTrackParamsBachelor)
-        SelectiveResetV0s(lESDevent, 1);
+    //if(fkUseOptimalTrackParamsBachelor)
+    //    SelectiveResetV0s(lESDevent, 1);
     
     ncascades = lESDevent->GetNumberOfCascades();
     fHistNumberOfCandidates->Fill(3.5, ncascades);
@@ -645,6 +679,8 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
     
     if (nentr<2) return 0;
     
+    AliV0HypSel::AccountBField(b);
+    
     TArrayI neg(nentr);
     TArrayI pos(nentr);
     
@@ -661,7 +697,15 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
         //Track pre-selection: clusters
         Float_t lThisTrackLength = -1;
         if (esdTrack->GetInnerParam()) lThisTrackLength = esdTrack->GetLengthInActiveZone(1, 2.0, 220.0, b);
-        if (esdTrack->GetTPCNcls() < 70 && lThisTrackLength<80 &&fkExtraCleanup ) continue;
+        
+        //Cluster-based rejection
+        if ( esdTrack->GetTPCNcls() < fNClustersCutValue && fkNClustersCut ) continue;
+        
+        //Length-based rejection
+        if ( lThisTrackLength < fActiveLengthCutValue && fkActiveLengthCut ) continue;
+        
+        //Crossed-rows-based rejection
+        if ( esdTrack->GetTPCClusterInfo(2,1) < fNCrossedRowsCutValue && fkNCrossedRowsCut ) continue;
         
         Double_t d=esdTrack->GetD(xPrimaryVertex,yPrimaryVertex,b);
         
@@ -670,6 +714,14 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
         if (esdTrack->GetSign() > 0. && TMath::Abs(d)>fV0VertexerSels[2]) pos[npos++]=i;
     }
     
+      int nHypSel = fV0HypSelArray ? fV0HypSelArray->GetEntriesFast() : 0;
+    
+  
+    fHistPosTrackCounter -> Fill(npos);
+    fHistNegTrackCounter -> Fill(nneg);
+  
+    if( fOnlyCount ) return 0 ; 
+  
     for (i=0; i<nneg; i++) {
         Long_t nidx=neg[i];
         AliESDtrack *ntrk=event->GetTrack(nidx);
@@ -801,6 +853,20 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0vertices(AliESDEvent *event) {
             
             fHistV0Statistics->Fill(7.5); //within pT range
             if (lUsedOptimalParams) fHistV0Statistics->Fill(8.5); //good V0, used OTF params
+
+            if (nHypSel) { // do we select particular hypthesis? - i.e. does object exist
+                Bool_t reject = kTRUE;
+                float pt = vertex.Pt();
+                for (int ih=0;ih<nHypSel;ih++) {
+                    const AliV0HypSel* hyp = (const AliV0HypSel*)(*fV0HypSelArray)[ih];
+                    double m = vertex.GetEffMassExplicit(hyp->GetM0(),hyp->GetM1());
+                    if (TMath::Abs(m - hyp->GetMass())<hyp->GetMassMargin(pt)) {
+                        reject = kFALSE;
+                        break;
+                    }
+                }
+                if (reject) continue;
+            }
             
             event->AddV0(&vertex);
             
@@ -833,12 +899,6 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0verticesMC(AliESDEvent *event)
     lMCevent = MCEvent();
     if (!lMCevent) {
         Printf("ERROR: Could not retrieve MC event \n");
-        cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
-        return 0;
-    }
-    lMCstack = lMCevent->Stack();
-    if (!lMCstack) {
-        Printf("ERROR: Could not retrieve MC stack \n");
         cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
         return 0;
     }
@@ -887,13 +947,15 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0verticesMC(AliESDEvent *event)
         //==================================================================================
         //Query MC information to check if this track comes from one of the desired species
         Int_t lLabel = (Int_t) TMath::Abs( esdTrack->GetLabel() );
-        TParticle* lParticle = lMCstack->Particle( lLabel );
-        Int_t lLabelMother = lParticle->GetFirstMother();
+        //TParticle* lParticle = lMCstack->Particle( lLabel );
+        AliMCParticle* lParticle = (AliMCParticle*) lMCevent->GetTrack( lLabel );
+        Int_t lLabelMother = lParticle->GetMother();
         if( lLabelMother < 0 ) continue;
         //Do not select on primaries so that this list can be used for cascades too
         //if( lMCstack->IsPhysicalPrimary(lLabelMother) ) continue;
-        TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
-        Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
+        //TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
+        AliMCParticle* lParticleMother = (AliMCParticle*) lMCevent->GetTrack( lLabelMother );
+        Int_t lParticleMotherPDG = lParticleMother->PdgCode();
         Bool_t lOfDesiredType = kFALSE;
         for(Int_t iType=0; iType<lNV0Types; iType++){
             if( lParticleMotherPDG == lV0Types[iType] ) lOfDesiredType = kTRUE;
@@ -907,7 +969,15 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0verticesMC(AliESDEvent *event)
         //Track pre-selection: clusters
         Float_t lThisTrackLength = -1;
         if (esdTrack->GetInnerParam()) lThisTrackLength = esdTrack->GetLengthInActiveZone(1, 2.0, 220.0, b);
-        if (esdTrack->GetTPCNcls() < 70 && lThisTrackLength<80 &&fkExtraCleanup ) continue;
+                
+        //Cluster-based rejection
+        if ( esdTrack->GetTPCNcls() < fNClustersCutValue && fkNClustersCut ) continue;
+        
+        //Length-based rejection
+        if ( lThisTrackLength < fActiveLengthCutValue && fkActiveLengthCut ) continue;
+        
+        //Crossed-rows-based rejection
+        if ( esdTrack->GetTPCClusterInfo(2,1) < fNCrossedRowsCutValue && fkNCrossedRowsCut ) continue;
         
         Double_t d=esdTrack->GetD(xPrimaryVertex,yPrimaryVertex,b);
         if (TMath::Abs(d)<fV0VertexerSels[2]) continue;
@@ -931,10 +1001,12 @@ Long_t AliAnalysisTaskWeakDecayVertexer::Tracks2V0verticesMC(AliESDEvent *event)
             //Check if same mother
             Int_t lLabelneg = (Int_t) TMath::Abs( ntrk->GetLabel() );
             Int_t lLabelpos = (Int_t) TMath::Abs( ptrk->GetLabel() );
-            TParticle* lParticleneg = lMCstack->Particle( lLabelneg );
-            TParticle* lParticlepos = lMCstack->Particle( lLabelpos );
-            Int_t lLabelMotherneg = lParticleneg->GetFirstMother();
-            Int_t lLabelMotherpos = lParticlepos->GetFirstMother();
+            //TParticle* lParticleneg = lMCstack->Particle( lLabelneg );
+            //TParticle* lParticlepos = lMCstack->Particle( lLabelpos );
+            AliMCParticle* lParticleneg = (AliMCParticle*) lMCevent->GetTrack( lLabelneg );
+            AliMCParticle* lParticlepos = (AliMCParticle*) lMCevent->GetTrack( lLabelpos );
+            Int_t lLabelMotherneg = lParticleneg->GetMother();
+            Int_t lLabelMotherpos = lParticlepos->GetMother();
             if(lLabelMotherneg!=lLabelMotherpos) continue; //discard if combination not good
             //==================================================================================
             
@@ -1172,9 +1244,17 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
         
         if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
         if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
-        if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lSmallestTrackLength<80 ){
-            if(fkExtraCleanup) continue;
-        }
+        
+        //Cluster-based rejection
+        if ( pTrack->GetTPCNcls() < fNClustersCutValue && fkNClustersCut ) continue;
+        if ( nTrack->GetTPCNcls() < fNClustersCutValue && fkNClustersCut ) continue;
+        
+        //Length-based rejection
+        if ( lSmallestTrackLength < fActiveLengthCutValue && fkActiveLengthCut ) continue;
+        
+        //Crossed-rows-based rejection
+        if ( pTrack->GetTPCClusterInfo(2,1) < fNCrossedRowsCutValue && fkNCrossedRowsCut ) continue;
+        if ( nTrack->GetTPCClusterInfo(2,1) < fNCrossedRowsCutValue && fkNCrossedRowsCut ) continue;
         
         //7) Daughter eta
         Double_t lNegEta = nTrack->Eta();
@@ -1186,7 +1266,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
         if(fkPreselectDedxLambda){
             Double_t lNSigPproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton ));
             Double_t lNSigNproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton ));
-            if( lNSigPproton>5.0 && lNSigNproton>5.0 ) continue;
+            if( lNSigPproton>fdEdxSigmaSelection && lNSigNproton>fdEdxSigmaSelection ) continue;
         }
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
@@ -1208,8 +1288,16 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVertices(AliESDEvent *
         //Track pre-selection: Track Quality
         Float_t lThisTrackLength = -1;
         if (esdtr->GetInnerParam()) lThisTrackLength = esdtr->GetLengthInActiveZone(1, 2.0, 220.0, b);
-        if (esdtr->GetTPCNcls() < 70 && lThisTrackLength<80 && fkExtraCleanup ) continue;
+                        
+        //Cluster-based rejection
+        if ( esdtr->GetTPCNcls() < fNClustersCutValue && fkNClustersCut ) continue;
         
+        //Length-based rejection
+        if ( lThisTrackLength < fActiveLengthCutValue && fkActiveLengthCut ) continue;
+        
+        //Crossed-rows-based rejection
+        if ( esdtr->GetTPCClusterInfo(2,1) < fNCrossedRowsCutValue && fkNCrossedRowsCut ) continue;
+                
         if (TMath::Abs(esdtr->GetD(xPrimaryVertex,yPrimaryVertex,b))<fCascadeVertexerSels[3]) continue;
         trk[ntr++]=i;
     }
@@ -1434,12 +1522,6 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesMC(AliESDEvent
         cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
         return 0;
     }
-    lMCstack = lMCevent->Stack();
-    if (!lMCstack) {
-        Printf("ERROR: Could not retrieve MC stack \n");
-        cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
-        return 0;
-    }
     //=================================================
     
     Double_t xPrimaryVertex=vtxT3D->GetX();
@@ -1504,11 +1586,13 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesMC(AliESDEvent
         //==================================================================================
         //Query MC information to check if this track comes from one of the desired species
         Int_t lLabel = (Int_t) TMath::Abs( pTrack->GetLabel() );
-        TParticle* lParticle = lMCstack->Particle( lLabel );
-        Int_t lLabelMother = lParticle->GetFirstMother();
+        //TParticle* lParticle = lMCstack->Particle( lLabel );
+        AliMCParticle* lParticle = (AliMCParticle*) lMCevent->GetTrack( lLabel );
+        Int_t lLabelMother = lParticle->GetMother();
         if( lLabelMother < 0 ) continue;
-        TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
-        Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
+        //TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
+        AliMCParticle* lParticleMother = (AliMCParticle*) lMCevent->GetTrack( lLabelMother );
+        Int_t lParticleMotherPDG = lParticleMother->PdgCode();
         Bool_t lOfDesiredType = kFALSE;
         if( TMath::Abs(lParticleMotherPDG) != 3122  ) continue; //discard K0s (will help a lot)
         //==================================================================================
@@ -1544,9 +1628,17 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesMC(AliESDEvent
         
         if ( lPosTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lPosTrackLength;
         if ( lNegTrackLength  < lSmallestTrackLength ) lSmallestTrackLength = lNegTrackLength;
-        if ( ( ( ( pTrack->GetTPCClusterInfo(2,1) ) < 70 ) || ( ( nTrack->GetTPCClusterInfo(2,1) ) < 70 ) ) && lSmallestTrackLength<80 ){
-            if(fkExtraCleanup) continue;
-        }
+
+        //Cluster-based rejection
+        if ( pTrack->GetTPCNcls() < fNClustersCutValue && fkNClustersCut ) continue;
+        if ( nTrack->GetTPCNcls() < fNClustersCutValue && fkNClustersCut ) continue;
+        
+        //Length-based rejection
+        if ( lSmallestTrackLength < fActiveLengthCutValue && fkActiveLengthCut ) continue;
+        
+        //Crossed-rows-based rejection
+        if ( pTrack->GetTPCClusterInfo(2,1) < fNCrossedRowsCutValue && fkNCrossedRowsCut ) continue;
+        if ( nTrack->GetTPCClusterInfo(2,1) < fNCrossedRowsCutValue && fkNCrossedRowsCut ) continue;
         
         //7) Daughter eta
         Double_t lNegEta = nTrack->Eta();
@@ -1558,7 +1650,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesMC(AliESDEvent
         if(fkPreselectDedxLambda){
             Double_t lNSigPproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton ));
             Double_t lNSigNproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton ));
-            if( lNSigPproton>5.0 && lNSigNproton>5.0 ) continue;
+            if( lNSigPproton>fdEdxSigmaSelection && lNSigNproton>fdEdxSigmaSelection ) continue;
         }
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
@@ -1577,11 +1669,13 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesMC(AliESDEvent
         //==================================================================================
         //Query MC information to check if this track comes from one of the desired species
         Int_t lLabel = (Int_t) TMath::Abs( esdtr->GetLabel() );
-        TParticle* lParticle = lMCstack->Particle( lLabel );
-        Int_t lLabelMother = lParticle->GetFirstMother();
+        //TParticle* lParticle = lMCstack->Particle( lLabel );
+        AliMCParticle* lParticle = (AliMCParticle*) lMCevent->GetTrack( lLabel );
+        Int_t lLabelMother = lParticle->GetMother();
         if( lLabelMother < 0 ) continue;
-        TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
-        Int_t lParticleMotherPDG = lParticleMother->GetPdgCode();
+        //TParticle *lParticleMother = lMCstack->Particle( lLabelMother );
+        AliMCParticle* lParticleMother = (AliMCParticle*) lMCevent->GetTrack( lLabelMother );
+        Int_t lParticleMotherPDG = lParticleMother->PdgCode();
         if( TMath::Abs(lParticleMotherPDG) != 3312 &&
            TMath::Abs(lParticleMotherPDG) != 3334 ) continue; //keep only tracks coming from Xi, Omega
         //==================================================================================
@@ -1592,7 +1686,15 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesMC(AliESDEvent
         //Track pre-selection: Track Quality
         Float_t lThisTrackLength = -1;
         if (esdtr->GetInnerParam()) lThisTrackLength = esdtr->GetLengthInActiveZone(1, 2.0, 220.0, b);
-        if (esdtr->GetTPCNcls() < 70 && lThisTrackLength<80 && fkExtraCleanup ) continue;
+    
+        //Cluster-based rejection
+        if ( esdtr->GetTPCNcls() < fNClustersCutValue && fkNClustersCut ) continue;
+        
+        //Length-based rejection
+        if ( lThisTrackLength < fActiveLengthCutValue && fkActiveLengthCut ) continue;
+        
+        //Crossed-rows-based rejection
+        if ( esdtr->GetTPCClusterInfo(2,1) < fNCrossedRowsCutValue && fkNCrossedRowsCut ) continue;
         
         if (TMath::Abs(esdtr->GetD(xPrimaryVertex,yPrimaryVertex,b))<fCascadeVertexerSels[3]) continue;
         trk[ntr++]=i;
@@ -1903,7 +2005,7 @@ Long_t AliAnalysisTaskWeakDecayVertexer::V0sTracks2CascadeVerticesUncheckedCharg
         if(fkPreselectDedxLambda){
             Double_t lNSigPproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( pTrack, AliPID::kProton ));
             Double_t lNSigNproton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC( nTrack, AliPID::kProton ));
-            if( lNSigPproton>5.0 && lNSigNproton>5.0 ) continue;
+            if( lNSigPproton>fdEdxSigmaSelection && lNSigNproton>fdEdxSigmaSelection ) continue;
         }
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
@@ -2846,11 +2948,103 @@ void AliAnalysisTaskWeakDecayVertexer::SelectiveResetV0s(AliESDEvent *event, Int
     while(iV0 < event->GetNumberOfV0s() ) //extra-crazy test
     {   // This is the begining of the V0 loop
         AliESDv0 *v0 = ((AliESDEvent*)event)->GetV0(iV0);
-        if (!v0) continue;
+        if (!v0) {iV0++ ; continue;}
         if ( v0->GetOnFlyStatus() == lType ){
             event->RemoveV0(iV0);
         } else {
             iV0++;
         }
     }
+}
+
+///________________________________________________________________________
+void AliAnalysisTaskWeakDecayVertexer::SetV0HypSel(TObjArray* selArr)
+{
+    if (!selArr || !selArr->GetEntriesFast()) {
+        AliInfo("No V0 hypothesis selection will be performed");
+        return;
+    }
+    fV0HypSelArray = selArr;
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskWeakDecayVertexer::AddV0HypSel(const AliV0HypSel& sel)
+{
+    if( !fV0HypSelArray )
+        fV0HypSelArray = new TObjArray();
+    //Direct add functionality
+    fV0HypSelArray->AddLast(new AliV0HypSel(sel));
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskWeakDecayVertexer::AddStandardV0HypSel()
+{
+    //Add standard stuff
+    AddV0HypSel( AliV0HypSel("gamma",0.5486e-3, 0.5486e-3, 1.099e-3, 0.001, 20, 0.6, 0.,0.0));
+    AddV0HypSel( AliV0HypSel("K0",139.570e-3, 139.570e-3, 497.7e-3, 0.003,20,0.07, 1.,0.5));
+    AddV0HypSel( AliV0HypSel("Lambda",938.272e-3, 139.570e-3, 1115.683e-3, 0.001, 20, 0.07, 1.,0.5));
+    AddV0HypSel( AliV0HypSel("antiLambda",139.570e-3, 938.272e-3, 1115.683e-3, 0.001, 20, 0.07, 1.,0.5));
+    // He3 with negative mass to signal q=2
+    AddV0HypSel( AliV0HypSel("HyperTriton",-2.8092, 139.570e-3, 2.992, 0.0025, 14, 0.07, 1.,0.5));
+    // He3 with negative mass to signal q=2
+    AddV0HypSel( AliV0HypSel("antiHyperTriton",139.570e-3, -2.8092, 2.992, 0.0025, 14, 0.07, 1.,0.5));
+    
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskWeakDecayVertexer::Print()
+{
+    //Print out settings
+    cout << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+" <<endl;
+    cout << " --- WDV config printout --- "<<endl;
+    cout<<" --> Event level: "<<endl;
+    cout<<" Revertex all events........: "<<fkRevertexAllEvents<<endl;
+    cout<<" Perform extra ev sels......: "<<fkDoExtraEvSels<<endl;
+    cout<<" Minimum centrality,........: "<<fMinCentrality<<endl;
+    cout<<" Maximum centrality,........: "<<fMaxCentrality<<endl;
+    cout<<" --> Track level: "<<endl;
+    cout<<" Preselect dE/dx (cascade)..: "<<fkPreselectDedxLambda<<endl;
+    cout<<" Extra cleanup (|eta|<0.8)..: "<<fkExtraCleanup<<endl;
+    cout<<" Use clusters cut...........: "<<fkNClustersCut<<endl;
+    cout<<" Clusters cut value.........: "<<fNClustersCutValue<<endl;
+    cout<<" Use crossed rows cut.......: "<<fkNCrossedRowsCut<<endl;
+    cout<<" Crossed rows cut value.....: "<<fNCrossedRowsCutValue<<endl;
+    cout<<" Use active length cut......: "<<fkActiveLengthCut<<endl;
+    cout<<" Active length cut value....: "<<fActiveLengthCutValue<<endl;
+    cout<<" --> Flags controlling vertexer behaviour:"<<endl;
+    cout<<" Run V0 finding.............: "<<fkRunV0Vertexer<<endl;
+    cout<<" Force reset V0.............: "<<fkForceResetV0s<<endl;
+    cout<<" Do V0 refit................: "<<fkDoV0Refit<<endl;
+    cout<<" DCA V0 dau fix flag........: "<<fkDoImprovedDCAV0DauPropagation<<endl;
+    cout<<" Run cascade finding........: "<<fkRunCascadeVertexer<<endl;
+    cout<<" Force reset cascades.......: "<<fkForceResetCascades<<endl;
+    cout<<" Circles-far-away opt.......: "<<fkXYCase1<<endl;
+    cout<<" Circles-intersect opt......: "<<fkXYCase2<<endl;
+    cout<<" Run cascade finding........: "<<fkRunCascadeVertexer<<endl;
+    cout<<" Casc.: pure geo opt........: "<<fkDoPureGeometricMinimization<<endl;
+    cout<<" Do cascade refit...........: "<<fkDoCascadeRefit<<endl;
+    cout<<" DCA casc dau pre-opt.......: "<<fkDoXYPlanePreOptCascade<<endl;
+    cout<<" Casc. mass window (GeV/c2).: "<<fMassWindowAroundCascade<<endl;
+    cout<<" Master Niterations value...: "<<fMaxIterationsWhenMinimizing<<endl;
+    cout<<" Skip large DCAXY in opt....: "<<fkSkipLargeXYDCA<<endl;
+    cout<<" MC associated only (MCflag): "<<fkMonteCarlo<<endl;
+    cout<<" --> Experimental flags: "<<endl;
+    cout<<" Run casc. find. with OTFV0.: "<<fkUseOnTheFlyV0Cascading<<endl;
+    cout<<" Combine all chg. in casc...: "<<fkUseUncheckedChargeCascadeVertexer<<endl;
+    cout << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+" <<endl;
+    cout<<" --> Topological variables: "<<endl;
+    cout<<" V0: DCA first to PV...............: "<<fV0VertexerSels[1]<<endl;
+    cout<<" V0: DCA second to PV..............: "<<fV0VertexerSels[2]<<endl;
+    cout<<" V0: DCA V0 daughters..............: "<<fV0VertexerSels[3]<<endl;
+    cout<<" V0: CosPA.........................: "<<fV0VertexerSels[4]<<endl;
+    cout<<" V0: Min 2D Radius.................: "<<fV0VertexerSels[5]<<endl;
+    cout<<" V0: Max 2D Radius.................: "<<fV0VertexerSels[6]<<endl;
+    cout<<" Casc: Min V0 IP...................: "<<fCascadeVertexerSels[1]<<endl;
+    cout<<" Casc: V0 Mass window..............: "<<fCascadeVertexerSels[2]<<endl;
+    cout<<" Casc: DCA bachelor to PV..........: "<<fCascadeVertexerSels[3]<<endl;
+    cout<<" Casc: DCA cascade daughters.......: "<<fCascadeVertexerSels[4]<<endl;
+    cout<<" Casc: Cascade CosPA...............: "<<fCascadeVertexerSels[5]<<endl;
+    cout<<" Casc: Cascade Min 2D Radius.......: "<<fCascadeVertexerSels[6]<<endl;
+    cout<<" Casc: Cascade Max 2D Radius.......: "<<fCascadeVertexerSels[7]<<endl;
+    cout << "+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+" <<endl;
 }

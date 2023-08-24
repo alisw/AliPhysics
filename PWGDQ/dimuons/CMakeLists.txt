@@ -22,14 +22,19 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGDQ/dimuons)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliPhysics_SOURCE_DIR}/OADB
+		    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
-     
   )
 
 # Sources - alphabetical order
 set(SRCS
-
-  AliAnalysisTaskTree_MCut.cxx
+  AliAnalysisTaskQuarkoniumTreeEmbedding.cxx
+  AliAnalysisTaskQuarkoniumTreeMC.cxx
+  AliAnalysisTaskPbPbTree_MCut.cxx
+  AliAnalysisTaskPbPbTree_SingleMuons.cxx
+  AliAnalysisTaskTree_MCut.cxx  
+  Psi2Spolarization/AliAnalysisTaskPsi2Spolarization.cxx
   )
 
 # Headers from sources
@@ -69,7 +74,6 @@ install(TARGETS ${MODULE}
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
 
-install(DIRECTORY
-            macros
-        DESTINATION PWGDQ/dimuons)
-
+install(DIRECTORY macros DESTINATION PWGDQ/dimuons)
+        
+install(DIRECTORY Psi2Spolarization DESTINATION PWGDQ/dimuons)

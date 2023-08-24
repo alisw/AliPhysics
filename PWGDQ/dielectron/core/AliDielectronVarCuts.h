@@ -28,6 +28,7 @@
 #include "AliDielectronVarManager.h"
 
 class THnBase;
+class TF1;
 class AliDielectronVarCuts : public AliAnalysisCuts {
 public:
   // Whether all cut criteria have to be fulfilled of just any
@@ -48,6 +49,7 @@ public:
   void AddBitCut(AliDielectronVarManager::ValueTypes type, UInt_t bit, Bool_t excludeRange=kFALSE);
   void AddCut(AliDielectronVarManager::ValueTypes type, Double_t min, THnBase * const max,  Bool_t excludeRange=kFALSE);
   void AddCut(AliDielectronVarManager::ValueTypes typeA, AliDielectronVarManager::ValueTypes typeB, Double_t min, Double_t max, EVarCutsOperation operation, Bool_t excludeRange=kFALSE);
+  void AddCut(AliDielectronVarManager::ValueTypes typeY, TF1 * const funLow, TF1 * const funUp, AliDielectronVarManager::ValueTypes typeX, Double_t min=0, Double_t max=0, Bool_t excludeRange=kFALSE);
   void InvertCuts();
 
   // setters
@@ -99,12 +101,14 @@ public:
   Bool_t fCutExclude[AliDielectronVarManager::kNMaxValues];         // inverse cut logic?
   Bool_t fBitCut[AliDielectronVarManager::kNMaxValues];             // bit cut
   THnBase  *fUpperCut[AliDielectronVarManager::kNMaxValues];        // use object as upper cut
+  TF1  *fFunUpperCut[AliDielectronVarManager::kNMaxValues];        // use object as upper cut
+  TF1  *fFunLowerCut[AliDielectronVarManager::kNMaxValues];        // use object as lower cut
   EVarCutsOperation fVarOperation[AliDielectronVarManager::kNMaxValues]; // operation between two vars, attention in principle kNMaxValues could be exceeded by the cut logic use with care
 
   AliDielectronVarCuts(const AliDielectronVarCuts &c);
   AliDielectronVarCuts &operator=(const AliDielectronVarCuts &c);
 
-  ClassDef(AliDielectronVarCuts,7)         //Cut class providing cuts to all infomation available for the AliVParticle interface
+  ClassDef(AliDielectronVarCuts,8)         //Cut class providing cuts to all infomation available for the AliVParticle interface
 };
 
 

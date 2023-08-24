@@ -66,6 +66,14 @@ class AliHFInvMassFitter : public TNamed {
     SetInitialGaussianMean(mean); 
     fFixedMean=kTRUE;
   }
+  void SetBoundGaussianMean(Double_t mean, Double_t meanLowerLim, Double_t meanUpperLim){
+    if(!(meanLowerLim < mean && mean < meanUpperLim)) AliFatal("fMass limits are not set correctly\n");
+    SetInitialGaussianMean(mean); 
+    fMassLowerLim = meanLowerLim;
+    fMassUpperLim = meanUpperLim;
+    fBoundMean = kTRUE;
+  }
+
   void SetFixGaussianSigma(Double_t sigma){
     SetInitialGaussianSigma(sigma);
     fFixedSigma=kTRUE;
@@ -110,6 +118,8 @@ class AliHFInvMassFitter : public TNamed {
     fFixSecMass=fixm;  fFixSecWidth=fixw;
   }
   void SetCheckSignalCountsAfterFirstFit(Bool_t opt){fCheckSignalCountsAfterFirstFit=opt;}
+
+  void SetAcceptValidFit(){fAcceptValidFit=kTRUE;}
   
   Double_t GetRawYield()const {return fRawYield;}
   Double_t GetRawYieldError()const {return fRawYieldErr;}
@@ -165,8 +175,14 @@ class AliHFInvMassFitter : public TNamed {
   void DrawHistoMinusFit(TVirtualPad* c,Int_t writeFitInfo=1);
   void Significance(Double_t nOfSigma, Double_t &significance,Double_t &errsignificance) const;
   void Significance(Double_t min, Double_t max, Double_t &significance,Double_t &errsignificance) const;
+  // Function to compute the residuals histo-fit
+  //   option=0 -> use the total fit function (signal+background+reflections)
+  //   option=1 -> use only the background fit function (to isolate signal+reflections)
+  //   option=2 -> use background+reflection fit function (to isolate the signal line shape)
   TH1F* GetResidualsAndPulls(TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0,Double_t minrange=0,Double_t maxrange=-1, Int_t option=0);
+  // Interface method to compute the residuals histo-fit function of the background
   TH1F* GetOverBackgroundResidualsAndPulls(TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0, Double_t minrange=0,Double_t maxrange=-1);
+  // Interface method to compute the residuals histo-(fit function of the background+reflections)
   TH1F* GetOverBackgroundPlusReflResidualsAndPulls(TH1 *hPulls=0x0,TH1 *hResidualTrend=0x0,TH1 *hPullsTrend=0x0, Double_t minrange=0,Double_t maxrange=-1);
   void PrintFunctions();
 
@@ -197,6 +213,9 @@ class AliHFInvMassFitter : public TNamed {
   Int_t     fTypeOfFit4Sgn;        /// signal fit func
   Double_t  fMass;                 /// signal gaussian mean value
   Double_t  fMassErr;              /// unc on signal gaussian mean value
+  Double_t  fMassLowerLim;         /// lower limit of the allowed mass range
+  Double_t  fMassUpperLim;         /// upper limit of the allowed mass range
+  Bool_t    fBoundMean;            /// switch for bound mean of gaussian
   Double_t  fSigmaSgn;             /// signal gaussian sigma
   Double_t  fSigmaSgnErr;          /// unc on signal gaussian sigma
   Double_t  fSigmaSgn2Gaus;        /// signal second gaussian sigma in case of k2Gaus
@@ -240,9 +259,10 @@ class AliHFInvMassFitter : public TNamed {
   Bool_t    fFixSecWidth;          /// flag to fix the width of the 2nd peak
   TF1*      fSecFunc;              /// fit function for second peak
   TF1*      fTotFunc;              /// total fit function
+  Bool_t    fAcceptValidFit;       /// accept a fit when IsValid() gives true, nevertheless the status code
 
   /// \cond CLASSIMP     
-  ClassDef(AliHFInvMassFitter,7); /// class for invariant mass fit
+  ClassDef(AliHFInvMassFitter,9); /// class for invariant mass fit
   /// \endcond
 };
 

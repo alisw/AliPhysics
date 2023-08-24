@@ -13,6 +13,7 @@
 #include "AliMCEvent.h"
 #include "AliStack.h"
 #include "TChain.h"
+#include "AliFemtoDreamBaseDump.h"
 class AliVParticle;
 class AliVTrack;
 
@@ -24,27 +25,36 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
   Float_t GetMass2sq(AliFemtoDreamTrack *track) const;
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
-
   void SetEventCuts(AliFemtoDreamEventCuts *cuts) {
     fEvtCuts = cuts;
   }
   void SetProtonCuts(AliFemtoDreamTrackCuts *cuts) {
     fProtonTrack = cuts;
   }
-
   void SetAntiProtonCuts(AliFemtoDreamTrackCuts *cuts) {
     fAntiProtonTrack = cuts;
   }
   void SetDeuteronCuts(AliFemtoDreamTrackCuts *cuts) {
     fDeuteronTrack = cuts;
   }
-
   void SetAntiDeuteronCuts(AliFemtoDreamTrackCuts *cuts) {
     fAntiDeuteronTrack = cuts;
   }
-
+  void SetDeuteronCutsNoTOF(AliFemtoDreamTrackCuts *cuts) {
+    fDeuteronTrackNoTOF = cuts;
+  }
+  void SetAntiDeuteronCutsNoTOF(AliFemtoDreamTrackCuts *cuts) {
+    fAntiDeuteronTrackNoTOF = cuts;
+  }
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {
     fConfig = config;
+  }
+  void SetUseDumpster(bool use) {
+    fUseDumpster = use;
+  }
+  void SetMCTruth(bool mct) {
+    cout<<"passed argument to MC Truth setter is " << mct<<endl;
+    fIsMCTruth = mct;
   }
 
  private:
@@ -54,33 +64,46 @@ class AliAnalysisTaskNanoPt : public AliAnalysisTaskSE {
     const AliAnalysisTaskNanoPt &task);
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliVTrack *track);
-  bool fIsMC;                                         //
-  AliVEvent *fInputEvent;                            //! current event
-  AliFemtoDreamEvent *fEvent;                        //!
-  AliFemtoDreamEventCuts *fEvtCuts;                  //
-  AliFemtoDreamTrack *fTrack;                        //
-  AliFemtoDreamTrackCuts *fProtonTrack;              //
-  AliFemtoDreamTrackCuts *fAntiProtonTrack;          //
-  AliFemtoDreamTrackCuts *fDeuteronTrack;              //
-  AliFemtoDreamTrackCuts *fAntiDeuteronTrack;          //
- 
-  int fTrackBufferSize; //
-  AliVTrack **fGTI;  //!
-  TList *fEvtList;//!
-  TList *fProtonList;//!
-  TList *fAntiProtonList;//!
-  TList *fDeuteronList;//!
-  TList *fAntiDeuteronList;//!
-
+  int fTrackBufferSize;  //
+  bool fIsMC;   //
+  bool fIsMCTruth; //
+  bool fUseDumpster;  //
+  AliVEvent *fInputEvent; //! current event
+  AliFemtoDreamEvent *fEvent; //!
+  AliFemtoDreamEventCuts *fEvtCuts; //
+  AliFemtoDreamTrack *fTrack; //
+  AliFemtoDreamTrackCuts *fProtonTrack;  //
+  AliFemtoDreamTrackCuts *fAntiProtonTrack; //
+  AliFemtoDreamTrackCuts *fDeuteronTrack; //
+  AliFemtoDreamTrackCuts *fAntiDeuteronTrack; //
+  AliFemtoDreamTrackCuts *fDeuteronTrackNoTOF; //
+  AliFemtoDreamTrackCuts *fAntiDeuteronTrackNoTOF; //
   AliFemtoDreamCollConfig *fConfig; //
-  AliFemtoDreamPairCleaner *fPairCleaner;   //!
-  AliFemtoDreamPartCollection *fPartColl;   //!
-  TList *fResults;//!
-  TList *fResultsQA;//!
-  TH2F  *fProtonRestMass; //!
-  TH2F  *fAntiProtonRestMass; //!
+  AliFemtoDreamPairCleaner *fPairCleaner; //!
+  AliFemtoDreamPartCollection *fPartColl; //!
+  AliFemtoDreamDump *fProtonDeuteronDump; //!
+  AliFemtoDreamDump *fAntiProtonAntiDeuteronDump; //!
+  AliVTrack **fGTI; //!
+  TList *fEvtList; //!
+  TList *fProtonList; //!
+  TList *fProtonMCList; //!
+  TList *fAntiProtonList; //!
+  TList *fAntiProtonMCList; //!
+  TList *fDeuteronList; //!
+  TList *fDeuteronMCList; //!
+  TList *fAntiDeuteronList; //!
+  TList *fAntiDeuteronMCList; //!
+  TList *fDeuteronNoTOFList; //!
+  TList *fDeuteronMCNoTOFList; //!
+  TList *fAntiDeuteronNoTOFList; //!
+  TList *fAntiDeuteronMCNoTOFList; //!
+  TList *fResults; //!
+  TList *fResultsQA; //!
+  TList *fDumpster; //!
   TH2F  *fDeuteronRestMass; //!
   TH2F  *fAntiDeuteronRestMass; //!
-  ClassDef(AliAnalysisTaskNanoPt, 1)
+  TH2F  *fDeuteronRestMassNoTOF; //!
+  TH2F  *fAntiDeuteronRestMassNoTOF; //!
+  ClassDef(AliAnalysisTaskNanoPt, 6)
 };
 #endif

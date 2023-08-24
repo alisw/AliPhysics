@@ -14,7 +14,7 @@ void CalibratePeriodMC( TString lPeriodName         = "",
                         TString dataOADBFile        = "",
                         Int_t defaultRunNumber      = 0,
                         Bool_t enableBufferFiles    = kFALSE,
-                        Bool_t enableSuperCalib     = kFALSE
+                        Bool_t enableSuperCalib     = kTRUE
                       ){
   cout<<"Run!"<<endl;
 
@@ -38,8 +38,8 @@ void CalibratePeriodMC( TString lPeriodName         = "",
 
   //Actual Input files
   lCalib -> SetInputFileData  ( inputFileNameData.Data() ) ;
-  lCalib -> SetInputFileOADB  ( dataOADBFile.Data()) ;
-  lCalib -> SetInputFileMC    ( inputFileNameMC.Data() ) ;
+  lCalib -> SetInputFileOADB  ( dataOADBFile.Data()      ) ;
+  lCalib -> SetInputFileMC    ( inputFileNameMC.Data()   ) ;
 
   // set default runnumber
   lCalib->SetRunToUseAsDefault(defaultRunNumber);

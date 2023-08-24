@@ -124,16 +124,16 @@ void YieldsPlot() {
       for (int iF = 0; iF < kNfitFunctions; ++iF) {
         TH1D* res = (TH1D*)nucleus.Get(Form("%s/%i/result%i",kFitFunctionNames[iF].data(),iC,iC));
         Requires(res, Form("%s/%i/result%i",kFitFunctionNames[iF].data(),iC,iC));
-        if (res->GetBinContent(kFitRes) > 1.e-10) continue;
-        yields.push_back(res->GetBinContent(kYield));
-        meanpts.push_back(res->GetBinContent(kMean));
+        if (res->GetBinContent(yieldmean::kFitRes) > 1.e-10) continue;
+        yields.push_back(res->GetBinContent(yieldmean::kYield));
+        meanpts.push_back(res->GetBinContent(yieldmean::kMean));
         if (iF==0) {
           nucleus_yield[iC] = yields[0];
-          nucleus_yield_stat[iC] = res->GetBinContent(kYieldStat);
-          nucleus_yield_syst[iC] = std::sqrt(Sq(res->GetBinContent(kYieldSysHi)) + Sq(res->GetBinContent(kYieldSysLo)));
+          nucleus_yield_stat[iC] = res->GetBinContent(yieldmean::kYieldStat);
+          nucleus_yield_syst[iC] = std::sqrt(Sq(res->GetBinContent(yieldmean::kYieldSysHi)) + Sq(res->GetBinContent(yieldmean::kYieldSysLo)));
           nucleus_mean_pt[iC] = meanpts[0];
-          nucleus_mean_pt_stat[iC] = res->GetBinContent(kMeanStat);
-          nucleus_mean_pt_syst[iC] = std::sqrt(Sq(res->GetBinContent(kMeanSysHi)) + Sq(res->GetBinContent(kMeanSysLo)));
+          nucleus_mean_pt_stat[iC] = res->GetBinContent(yieldmean::kMeanStat);
+          nucleus_mean_pt_syst[iC] = std::sqrt(Sq(res->GetBinContent(yieldmean::kMeanSysHi)) + Sq(res->GetBinContent(yieldmean::kMeanSysLo)));
           TF1* bw = (TF1*)nucleus.Get(Form("%s/%i/%s%i",kFitFunctionNames[iF].data(),iC,kFitFunctionNames[iF].data(),iC));
           Requires(bw,Form("%s/%i/%s%i",kFitFunctionNames[iF].data(),iC,kFitFunctionNames[iF].data(),iC));
           chi2 = bw->GetChisquare() / bw->GetNDF();

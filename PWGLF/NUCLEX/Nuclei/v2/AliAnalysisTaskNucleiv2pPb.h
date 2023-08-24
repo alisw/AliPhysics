@@ -97,7 +97,15 @@ class AliAnalysisTaskNucleiv2pPb : public AliAnalysisTaskSE {
     TH2F *hQyVzAvsCentrality;
     TH2F *hQxVzCvsCentrality;
     TH2F *hQyVzCvsCentrality;
-     
+
+    // for EP
+    TH2F *hCos2DeltaTPCVzAvsCentrality;
+    TH2F *hCos2DeltaTPCVzCvsCentrality;
+    TH2F *hCos2DeltaVzAVzCvsCentrality;
+    TH2F *hCos2DeltaVzATPCvsCentrality;
+    TH2F *hCos2DeltaVzCTPCvsCentrality;
+    TH2F *hCos2DeltaVzCVzAvsCentrality;
+
     Int_t eventtype;
 
     // TTree
@@ -110,8 +118,8 @@ class AliAnalysisTaskNucleiv2pPb : public AliAnalysisTaskSE {
     Double_t tuqV0A           ;
     Double_t tuqV0C           ;
     Double_t tCharge          ;
-    Double_t tCosdeltaphiV0A  ;
-    Double_t tCosdeltaphiV0C  ;
+    Double_t tdeltaphiV0A     ;
+    Double_t tdeltaphiV0C     ;
     Double_t timpactXY        ;
     Double_t timpactZ         ;
     Double_t tpull            ;

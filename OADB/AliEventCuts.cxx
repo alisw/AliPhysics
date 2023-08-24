@@ -6,6 +6,7 @@ using std::array;
 #include <memory>
 using std::string;
 using std::vector;
+#include <numeric>
 
 #include <TClonesArray.h>
 #include <TH1D.h>
@@ -72,6 +73,8 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fUseVariablesCorrelationCuts{false},
   fUseEstimatorsCorrelationCut{false},
   fUseStrongVarCorrelationCut{false},
+  fUseITSTPCCluCorrelationCut{0},
+  fUseTPCTracklCorrelationCut{false},
   fEstimatorsCorrelationCoef{0.,1.},
   fEstimatorsSigmaPars{10000.,0.,0.,0.},
   fDeltaEstimatorNsigma{1.,1.},
@@ -82,6 +85,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fMultiplicityV0McorrCut{nullptr},
   fFB128vsTrklLinearCut{1.e8,0.},
   fVZEROvsTPCoutPolCut{1.e8,0.,0.,0.,0.},
+  fITSvsTPCcluPolCut{0.,0.,0.},
   fRequireExactTriggerMask{false},
   fTriggerMask{AliVEvent::kAny},
   fTriggerClasses{},
@@ -99,10 +103,12 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
   fOverrideAutoPileUpCuts{false},
   fMultSelectionEvCuts{false},  
   fUseTimeRangeCut{false},
+  fUseEMCALLEDEventsCut{false},
   fSelectInelGt0{false},
   fOverrideInelGt0{false},
   fOverrideCentralityFramework{false},
   fTimeRangeCut{},
+  fEMCALLEDEventsCut{},
   fCutStats{nullptr},
   fCutStatsAfterTrigger{nullptr},
   fCutStatsAfterMultSelection{nullptr},
@@ -127,7 +133,7 @@ AliEventCuts::AliEventCuts(bool saveplots) : TList(),
 AliEventCuts::~AliEventCuts() { 
   delete fMultiplicityV0McorrCut; 
   delete fFB32trackCuts;
-  delete fFB32trackCuts;
+  delete fTPConlyCuts;
 }
 
 bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
@@ -224,6 +230,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   bool usePileUpSPD = (fUseCombinedMVSPDcut && vtx == vtSPD) || fUseSPDpileUpCut;
   AliVMultiplicity* mult = ev->GetMultiplicity();
   const int ntrkl = mult->GetNumberOfTracklets();
+
   if (fUseMultiplicityDependentPileUpCuts) {
     if (ntrkl < 20) fSPDpileupMinContributors = 3;
     else if (ntrkl < 50) fSPDpileupMinContributors = 4;
@@ -234,9 +241,32 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
       (!usePileUpMV || !fUtils.IsPileUpMV(ev)))
     fFlag |= BIT(kPileUp);
 
+
+  // Rejection of TPC pileup
+  int nCluSDDSSD=0;
+  for(Int_t iLay=2; iLay<6; iLay++) nCluSDDSSD+=mult->GetNumberOfITSClusters(iLay);
+  int nCluTPC=0;
+  if (dynamic_cast<AliAODEvent*>(ev)) nCluTPC=dynamic_cast<AliAODEvent*>(ev)->GetNumberOfTPCClusters();
+  else if (dynamic_cast<AliESDEvent*>(ev)) nCluTPC=dynamic_cast<AliESDEvent*>(ev)->GetNumberOfTPCClusters();
+  if(fUseVariablesCorrelationCuts || fTOFvsFB32[0] || fUseStrongVarCorrelationCut ||
+     fUseTPCTracklCorrelationCut) ComputeTrackMultiplicity(ev);
+  const double its_tpcclus_limit = PolN(double(nCluTPC),fITSvsTPCcluPolCut,2);
+  const double vzero_tpcout_limit = PolN(double(fContainer.fMultTrkTPCout),fVZEROvsTPCoutPolCut,4);
+  const double fb128 = fContainer.fMultTrkTPC;
+  if(((fUseITSTPCCluCorrelationCut<=0 || (nCluSDDSSD > its_tpcclus_limit)) && 
+      (!fUseStrongVarCorrelationCut || (fContainer.fMultVZERO > vzero_tpcout_limit)) &&
+      (!fUseTPCTracklCorrelationCut || (fb128 < fFB128vsTrklLinearCut[0] + fFB128vsTrklLinearCut[1] * ntrkl)))
+     || fMC ) fFlag |= BIT(kTPCPileUp);
+
+
   /// Centrality cuts:
   /// * Check for min and max centrality
   /// * Cross check correlation between two centrality estimators
+  if (AliMultSelectionTask::IsINELgtZERO(ev) || !fSelectInelGt0) {
+    fFlag |= BIT(kINELgt0);
+    fCentPercentiles[0] = -0.5;
+    fCentPercentiles[1] = -0.5;
+  }
   if (fCentralityFramework) {
     if (fCentralityFramework == 2) {
       AliCentrality* cent = ev->GetCentrality();
@@ -267,30 +297,21 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
   } else
     fFlag |= BIT(kMultiplicity);
 
-  if (AliMultSelectionTask::IsINELgtZERO(ev) || !fSelectInelGt0) {
-    fFlag |= BIT(kINELgt0);
-  }
-
   /// If the correlation plots are defined, we should fill them
   if (fUseVariablesCorrelationCuts || fTOFvsFB32[0]) {
-    ComputeTrackMultiplicity(ev);
     const double fb32 = fContainer.fMultTrkFB32;
     const double fb32acc = fContainer.fMultTrkFB32Acc;
     const double fb32tof = fContainer.fMultTrkFB32TOF;
-    const double fb128 = fContainer.fMultTrkTPC;
     const double esd = fContainer.fMultESD;
 
     const double mu32tof = PolN(fb32,fTOFvsFB32correlationPars,3);
     const double sigma32tof = PolN(fb32,fTOFvsFB32sigmaPars, 5);
-    const double vzero_tpcout_limit = PolN(double(fContainer.fMultTrkTPCout),fVZEROvsTPCoutPolCut,4);
 
     const bool multV0Mcut = (fMultiplicityV0McorrCut) ? fb32acc > fMultiplicityV0McorrCut->Eval(fCentPercentiles[0]) : true;
 
     if (((fb32tof <= mu32tof + fTOFvsFB32nSigmaCut[0] * sigma32tof && fb32tof >= mu32tof - fTOFvsFB32nSigmaCut[1] * sigma32tof) &&
         (esd < fESDvsTPConlyLinearCut[0] + fESDvsTPConlyLinearCut[1] * fb128) &&
-        multV0Mcut &&
-        (fb128 < fFB128vsTrklLinearCut[0] + fFB128vsTrklLinearCut[1] * ntrkl) &&
-        (!fUseStrongVarCorrelationCut || fContainer.fMultVZERO > vzero_tpcout_limit))
+	 multV0Mcut)
         || fMC || !fUseVariablesCorrelationCuts)
       fFlag |= BIT(kCorrelations);
   } else fFlag |= BIT(kCorrelations);
@@ -305,6 +326,18 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
     fFlag |= BIT(kTimeRangeCut);
   }
 
+  //
+  /// Check if the EMCal event is bad due to LED system flashes
+  //
+  if ( fUseEMCALLEDEventsCut )
+  {
+    if ( !fEMCALLEDEventsCut.IsEMCALLEDEvent(ev,fCurrentRun) ) 
+      fFlag |= BIT(kEMCALEDCut); // accept event
+  }
+  else 
+    fFlag |= BIT(kEMCALEDCut); // accept event
+  //
+  
   /// Ignore SPD/tracks vertex position and reconstruction individual flags
   bool allcuts = CheckNormalisationMask(kPassesAllCuts);
   if (allcuts) {
@@ -359,6 +392,7 @@ bool AliEventCuts::AcceptEvent(AliVEvent *ev) {
 }
 
 void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
+  
   if (!qaList) {
     if (fSavePlots)
       qaList = static_cast<TList*>(this);
@@ -385,6 +419,8 @@ void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
     "INEL > 0",
     "Correlations",
     "TimeRangeCut",
+    "EMCALLEDEventCut",
+    "TPC pile up",
     "All cuts"
   };
 
@@ -412,12 +448,25 @@ void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
   qaList->Add(fNormalisationHist);
 
   string titles[2] = {"before event cuts","after event cuts"};
+
+  int nBins{100};
+  std::array<double, 120> centBins;
+  centBins.fill(0);
+  if (fOverrideAutoTriggerMask && fTriggerMask & AliVEvent::kHighMultV0) {
+    nBins = 119;
+    for (int i = 0; i < 20; ++i)
+      centBins[i+1] = centBins[i] + 0.01;
+    std::iota(centBins.begin() + 20, centBins.end(), 1);
+  } else {
+    std::iota(centBins.begin(), centBins.end(), 0);
+  }
+
   for (int iS = 0; iS < 2; ++iS) {
     fVtz[iS] = new TH1D(Form("Vtz_%s",fkLabels[iS].data()),Form("Vertex z %s; #it{v_{z}} (cm); Events",titles[iS].data()),400,-20.,20.);
     fDeltaTrackSPDvtz[iS] = new TH1D(Form("DeltaVtz_%s",fkLabels[iS].data()),Form("Vertex tracks - Vertex SPD %s; #Delta#it{v_{z}} (cm); Events",titles[iS].data()),400,-2.,2.);
-    fCentrality[iS] = new TH1D(Form("Centrality_%s",fkLabels[iS].data()),Form("Centrality percentile %s; Centrality (%%); Events",titles[iS].data()),100,0.,100.);
-    fEstimCorrelation[iS] = new TH2D(Form("EstimCorrelation_%s",fkLabels[iS].data()),Form("Correlation estimators %s;%s;%s",titles[iS].data(),fCentEstimators[1].data(),fCentEstimators[0].data()),100,0.,100.,100,0.,100.);
-    fMultCentCorrelation[iS] = new TH2D(Form("MultCentCorrelation_%s",fkLabels[iS].data()),Form("Correlation multiplicity-centrality %s;Percentile of %s; Number of tracklets",titles[iS].data(),fCentEstimators[0].data()),100,0.,100.,2000,0.,10000.);
+    fCentrality[iS] = new TH1D(Form("Centrality_%s",fkLabels[iS].data()),Form("Centrality percentile %s; Centrality (%%); Events",titles[iS].data()), nBins, centBins.data());
+    fEstimCorrelation[iS] = new TH2D(Form("EstimCorrelation_%s",fkLabels[iS].data()),Form("Correlation estimators %s;%s;%s",titles[iS].data(),fCentEstimators[1].data(),fCentEstimators[0].data()), nBins, centBins.data(), nBins, centBins.data());
+    fMultCentCorrelation[iS] = new TH2D(Form("MultCentCorrelation_%s",fkLabels[iS].data()),Form("Correlation multiplicity-centrality %s;Percentile of %s; Number of tracklets",titles[iS].data(),fCentEstimators[0].data()), nBins, centBins.data(),2000,0.,10000.);
 
     qaList->Add(fVtz[iS]);
     qaList->Add(fDeltaTrackSPDvtz[iS]);
@@ -439,6 +488,18 @@ void AliEventCuts::AddQAplotsToList(TList *qaList, bool addCorrelationPlots) {
     }
   }
 
+  if ( fUseEMCALLEDEventsCut ) 
+  {
+    fEMCALLEDEventsCut.FillControlHistograms(true) ;
+    fEMCALLEDEventsCut.InitControlHistograms() ;
+    
+    TList * emcHistos = fEMCALLEDEventsCut.GetControlHistograms() ;
+    if ( emcHistos )
+    {
+      for(Int_t iemc = 0; iemc < emcHistos->GetEntries(); iemc++) 
+        qaList->Add(emcHistos->At(iemc)) ;
+    }
+  }
 }
 
 void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
@@ -482,13 +543,13 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
   }
 
   /// Run 2 p-Pb
-  if ((fCurrentRun >= 265309 && fCurrentRun <= 265525) || /// LHC16q: p-Pb 5 TeV
-      (fCurrentRun >= 265594 && fCurrentRun <= 266318) || /// LHC16r: p-Pb 8 TeV
-      (fCurrentRun >= 267163 && fCurrentRun <= 267166)) { /// LHC16t: p-Pb 5 TeV
+  if ((fCurrentRun >= 264896 && fCurrentRun <= 265533) || /// LHC16q: p-Pb 5 TeV
+      (fCurrentRun >= 265534 && fCurrentRun <= 266329) || /// LHC16r: p-Pb 8 TeV
+      (fCurrentRun >= 267139 && fCurrentRun <= 267166)) { /// LHC16t: p-Pb 5 TeV
     SetupRun2pA(0);
     return;
   }
-  if (fCurrentRun >= 266437 && fCurrentRun <= 267110) {   /// LHC16s: Pb-p 5 TeV
+  if (fCurrentRun >= 266330 && fCurrentRun <= 267138) {   /// LHC16s: Pb-p 5 TeV
     SetupRun2pA(1);
     return;
   }
@@ -511,8 +572,9 @@ void AliEventCuts::AutomaticSetup(AliVEvent *ev) {
   }
   
   /// Run 1 pp
-  if ( (fCurrentRun >= 140164 && fCurrentRun <= 146860) ||  // LHC11a 
-       (fCurrentRun >= 121692 && fCurrentRun <= 126437)) {  // LHC10d
+  if ((fCurrentRun >= 140164 && fCurrentRun <= 146860) ||  // pp 2.76 TeV (LHC11a)
+      (fCurrentRun >= 121692 && fCurrentRun <= 126437) ||  // pp 7 TeV (LHC10d)
+      (fCurrentRun >= 172439 && fCurrentRun <= 193766)) {  // pp 8 TeV (LHC12a-i)
     SetupRun1pp();
     return;
   }
@@ -698,9 +760,12 @@ void AliEventCuts::SetupRun2pp() {
     fSelectInelGt0 = fOverrideInelGt0 ? fSelectInelGt0 : true;
   }
 
-  fFB128vsTrklLinearCut[0] = 32.077;
-  fFB128vsTrklLinearCut[1] = 0.932;
-
+  if(fCurrentRun>=244340 && fCurrentRun<= 244628){
+    // out of bunch pileup cut for LHC15n
+    fFB128vsTrklLinearCut[0] = 32.077;
+    fFB128vsTrklLinearCut[1] = 0.932;
+  }
+  
   if (!fOverrideAutoTriggerMask) fTriggerMask = AliVEvent::kINT7;
 
 }
@@ -760,7 +825,13 @@ void AliEventCuts::SetupPbPb2018() {
 
   array<double,5> vzero_tpcout_polcut = {-2000.,2.1,3.5e-5,0.,0.};
   std::copy(vzero_tpcout_polcut.begin(),vzero_tpcout_polcut.end(),fVZEROvsTPCoutPolCut);
-
+  
+  array<double,3> its_tpcclus_polcut = {-3000.,0.0099,9.426e-10};
+  if(fUseITSTPCCluCorrelationCut==2) its_tpcclus_polcut[0]=-8000.;
+  else if(fUseITSTPCCluCorrelationCut==3) its_tpcclus_polcut[0]=-12000.;
+  else if(fUseITSTPCCluCorrelationCut>3) its_tpcclus_polcut[0]=-16000.;
+  std::copy(its_tpcclus_polcut.begin(),its_tpcclus_polcut.end(),fITSvsTPCcluPolCut);
+  
   if (fCentralityFramework != 0) {
     if(!fMultiplicityV0McorrCut) fMultiplicityV0McorrCut = new TF1("fMultiplicityV0McorrCut","[0]+[1]*x+[2]*exp([3]-[4]*x) - 5.*([5]+[6]*exp([7]-[8]*x))",0,100);
     fMultiplicityV0McorrCut->SetParameters(-6.15980e+02, 4.89828e+00, 4.84776e+03, -5.22988e-01, 3.04363e-02, -1.21144e+01, 2.95321e+02, -9.20062e-01, 2.17372e-02);
@@ -769,6 +840,8 @@ void AliEventCuts::SetupPbPb2018() {
   if (!fOverrideAutoTriggerMask) {
     fTriggerMask = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
   }
+
+  fUseTimeRangeCut = true;
 
 }
 
@@ -828,6 +901,20 @@ void AliEventCuts::SetupRun2PbPb() {
   array<double,5> vzero_tpcout_polcut = {-2000.,2.1,3.5e-5,0.,0.};
   std::copy(vzero_tpcout_polcut.begin(),vzero_tpcout_polcut.end(),fVZEROvsTPCoutPolCut);
 
+  array<double,3> its_tpcclus_polcut_hirate = {-3000.,0.0074,1.0e-9};
+  array<double,3> its_tpcclus_polcut_pidfix = {-3000.,0.0076,9.7e-10};
+  array<double,3> its_tpcclus_polcut_lowrat = {0.,0.,0.};
+  if(fCurrentRun>=245145 && fCurrentRun<= 245554){
+    // pidfix reconstruction
+    std::copy(its_tpcclus_polcut_pidfix.begin(),its_tpcclus_polcut_pidfix.end(),fITSvsTPCcluPolCut);
+  }else if(fCurrentRun<=245068 || (fCurrentRun>=246390 && fCurrentRun<=246392)){
+    // lowIR runs, no parameterization available
+    std::copy(its_tpcclus_polcut_lowrat.begin(),its_tpcclus_polcut_lowrat.end(),fITSvsTPCcluPolCut);
+  }else{
+    // high IR runs
+    std::copy(its_tpcclus_polcut_hirate.begin(),its_tpcclus_polcut_hirate.end(),fITSvsTPCcluPolCut);
+  }
+
   if (fCentralityFramework != 0) {
     if(!fMultiplicityV0McorrCut) fMultiplicityV0McorrCut = new TF1("fMultiplicityV0McorrCut","[0]+[1]*x+[2]*exp([3]-[4]*x) - 5.*([5]+[6]*exp([7]-[8]*x))",0,100);
     fMultiplicityV0McorrCut->SetParameters(-6.15980e+02, 4.89828e+00, 4.84776e+03, -5.22988e-01, 3.04363e-02, -1.21144e+01, 2.95321e+02, -9.20062e-01, 2.17372e-02);
@@ -845,11 +932,13 @@ void AliEventCuts::SetupRun1PbPb() {
   fMinVtz = -10.f;
   fMaxVtz = 10.f;
 
-  fCentralityFramework = 2;
-  fCentEstimators[0] = "V0M";
-  fCentEstimators[1] = "CL0";
-  fMinCentrality = 0.f;
-  fMaxCentrality = 90.f;
+  if (!fOverrideCentralityFramework) {
+    fCentralityFramework = 2; // FIXME: for the pass3 (and maybe also previous passes?) we might want to use the AliMultSelection
+    fCentEstimators[0] = "V0M";
+    fCentEstimators[1] = "CL0";
+    fMinCentrality = 0.f;
+    fMaxCentrality = 90.f;
+  }
 
   fUseEstimatorsCorrelationCut = false;
   array<double,5> vzero_tpcout_polcut{-1391.46,1.44779,4.78352e-05,-5.96914e-10,0.0};

@@ -46,6 +46,9 @@ public:
    using   AliRDHFCuts::IsSelectedPID;
    virtual Int_t IsSelectedPID(AliAODRecoDecayHF* obj);
 
+   using   AliRDHFCuts::PreSelect;
+   Bool_t PreSelect(TObject* obj, AliAODv0 *v0, AliVTrack *bachelorTrack);
+
    using   AliRDHFCuts::IsInFiducialAcceptance;
    virtual Bool_t IsInFiducialAcceptance(Double_t pt, Double_t y) const;
 
@@ -65,6 +68,12 @@ public:
                            { return fExcludedCut; }
    void SetExcludedCut(Int_t excludedCut)
                            { fExcludedCut = excludedCut; }
+   Float_t GetV0PtCut(Int_t iPtBin=0) const { return (GetCuts() ? fCutsRD[GetGlobalIndex(8,iPtBin)] : 0.);}
+   Float_t GetMinV0PtCut() const {
+     Float_t minPtCut=99999.;
+     for(Int_t j=0; j<fnPtBins; j++){Float_t c=GetV0PtCut(j); if(c<minPtCut) minPtCut=c;}
+     return minPtCut;
+   }
 
 
 protected:

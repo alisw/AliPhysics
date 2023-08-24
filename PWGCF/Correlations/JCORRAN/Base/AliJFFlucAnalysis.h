@@ -1,15 +1,15 @@
 #ifndef AliJFFlucAnalysis_cxx
 #define AliJFFlucAnalysis_cxx
 
-#include <AliAnalysisTaskSE.h>
-#include "AliJEfficiency.h"
+//#include <AliAnalysisTaskSE.h>
+//#include "AliJEfficiency.h"
 #include "AliJHistManager.h"
 #include <TComplex.h>
+//#include <TF3.h>
 
 class TClonesArray;
-class AliJEfficiency;
 
-class AliJFFlucAnalysis : public AliAnalysisTaskSE {
+class AliJFFlucAnalysis{// : public AliAnalysisTaskSE {
 public:
 	AliJFFlucAnalysis();
 	AliJFFlucAnalysis(const char *name);
@@ -32,7 +32,7 @@ public:
 	//void SetPhiModuleHistos( int cent, int sub, TH1D *hModuledPhi);
 
 	void SetEtaRange( double eta_min, double eta_max){fEta_min = eta_min; fEta_max = eta_max; }
-	void SetEffConfig( int Mode, int FilterBit ){ fEffMode = Mode; fEffFilterBit = FilterBit; cout << "fEffMode set = " << fEffMode << endl;}
+	//void SetEffConfig( int Mode, int FilterBit ){ fEffMode = Mode; fEffFilterBit = FilterBit; cout << "fEffMode set = " << fEffMode << endl;}
 	//void SetIsSCptdep( Bool_t isSCptdep ){ IsSCptdep = isSCptdep; cout << "doing addtional loop to check SC pt dep = "<< IsSCptdep << endl;}
 	//void SetSCwithQC(Bool_t isSCwithQC){ IsSCwithQC = isSCwithQC; cout << "doing additinal loop for SC results with QC method = " << IsSCwithQC << endl;}
 	//void SetEbEWeight(Bool_t isEbEWeighted){ IsEbEWeighted = isEbEWeighted; cout << "use event weight = " << IsEbEWeighted << endl;}
@@ -40,11 +40,14 @@ public:
 		fQC_eta_cut_min = QC_eta_cut_min;
 		fQC_eta_cut_max = QC_eta_cut_max;
 		fQC_eta_gap_half = QC_eta_gap_half;
-		cout<<"setting eta range for QC" << fQC_eta_cut_min << "~" << fQC_eta_cut_max << endl;
+		std::cout<<"setting eta range for QC" << fQC_eta_cut_min << "~" << fQC_eta_cut_max << std::endl;
 	}
-	void SetPhiWeights(TH1 *p){
-		pPhiWeights = p;
-	}
+	//void SetPhiWeights(TH1 *p){
+	//	pPhiWeights = p;
+	//}
+	//void SetPhiWeights(TF3 *p){
+	//	pPhiWeightsAna = p;
+	//}
 
 	void SetEventTracksQA(unsigned int tpc, unsigned int glb){ fTPCtrks = (float)tpc; fGlbtrks = (float)glb;}
 	void SetEventFB32TracksQA(unsigned int fb32, unsigned int fb32tof){ fFB32trks = (float)fb32; fFB32TOFtrks = (float)fb32tof;}
@@ -56,7 +59,7 @@ public:
 	void Fill_QA_plot(double eta1, double eta2 );
 
 	double Get_ScaledMoments( int k, int harmonics);
-	AliJEfficiency* GetAliJEfficiency() const{return fEfficiency;}
+	//AliJEfficiency* GetAliJEfficiency() const{return fEfficiency;}
 
 	// new function for QC method //
 	void CalculateQvectorsQC(double, double);
@@ -71,8 +74,16 @@ public:
 		SUBEVENT_A = 0x1,
 		SUBEVENT_B = 0x2
 	};
-	void SelectSubevents(UInt_t nsubeventMask){
-		subeventMask = nsubeventMask;
+	void SelectSubevents(UInt_t _subeventMask){
+		subeventMask = _subeventMask;
+	}
+	enum BINNING{
+		BINNING_CENT_PbPb,
+		BINNING_MULT_PbPb_1,
+		BINNING_MULT_pPb_1
+	};
+	void SetBinning(BINNING _binning){
+		binning = _binning;
 	}
 	enum{
 		FLUC_PHI_CORRECTION = 0x2,
@@ -83,15 +94,19 @@ public:
 		flags |= nflags;
 	}
 
-#define CENTN_NAT 9
-#define CENTN 7
-	static Double_t CentBin[CENTN_NAT+1]; //8
+	static Double_t CentBin_PbPb_default[][2];
+	static Double_t MultBin_PbPb_1[][2];
+	static Double_t MultBin_pPb_1[][2];
+	static Double_t (*pBin[3])[2];
 	static Double_t pttJacek[74];
-	static UInt_t CentralityTranslationMap[CENTN_NAT];
-	static UInt_t NCentBin;
+	//static UInt_t CentralityTranslationMap[CENTN_NAT];
+	//static UInt_t NCentBin;
+	static UInt_t NBin[3];
 	static UInt_t NpttJacek;
 
-	static int GetCentralityClass(Double_t);
+	//static int GetCentralityClass(Double_t);
+	//static int GetMultiplicityBin(Double_t, BINNING);
+	static int GetBin(Double_t, BINNING);
 
 	enum{kH0, kH1, kH2, kH3, kH4, kH5, kH6, kH7, kH8, kH9, kH10, kH11, kH12, kNH}; //harmonics
 	enum{kK0, kK1, kK2, kK3, kK4, nKL}; // order
@@ -99,19 +114,21 @@ public:
 private:
 
 	TClonesArray *fInputList;
-	AliJEfficiency *fEfficiency;
-	const double *fVertex;//!
-	TH1 *pPhiWeights;//!
+	//AliJEfficiency *fEfficiency;
+	const Double_t *fVertex;//!
+	//TH1 *pPhiWeights;//!
+	//TF3 *pPhiWeightsAna;//!
 	Float_t	fCent;
 	Float_t	fImpactParameter;
 	int fCBin;
-	int fEffMode;
-	int fEffFilterBit;
+	//int fEffMode;
+	//int fEffFilterBit;
 	float fTPCtrks;
 	float fGlbtrks;
 	float fFB32trks;
 	float fFB32TOFtrks;
 	UInt_t subeventMask;
+	BINNING binning;
 	UInt_t flags;
 	Double_t fSingleVn[kNH][3]; // 3 methods
 
@@ -125,8 +142,6 @@ private:
 
 	TComplex QvectorQC[kNH][nKL];
 	TComplex QvectorQCeta10[2][kNH][nKL]; // ksub
-
-	//TH1D *h_phi_module[CENTN][2]; //7 // cent, isub
 
 	AliJHistManager * fHMG;//!
 
@@ -148,6 +163,12 @@ private:
 	AliJTH2D fh_phieta;//!
 	AliJTH3D fh_phietaz;//!
 	//AliJTH1D fh_Qvector;//! // for Q-Vector dist [ic][isub][ih]
+
+	AliJTH1D fh_psi_n;//!
+	AliJTH1D fh_cos_n_phi;//!
+	AliJTH1D fh_sin_n_phi;//!
+	AliJTH1D fh_cos_n_psi_n;//!
+	AliJTH1D fh_sin_n_psi_n;//!
 
 	AliJTH1D fh_ntracks;//! // for number of tracks dist
 	AliJTH1D fh_vn;//!  // single vn^k  array [ih][ik][iCent]
@@ -178,7 +199,7 @@ private:
 	//AliJTH1D fh_QvectorQCphi;//!
 	AliJTH1D fh_evt_SP_QC_ratio_2p;//! // check SP QC evt by evt ratio
 	AliJTH1D fh_evt_SP_QC_ratio_4p;//! // check SP QC evt by evt ratio
-	ClassDef(AliJFFlucAnalysis, 1); // example of analysis
+	//ClassDef(AliJFFlucAnalysis, 1); // example of analysis
 };
 
 #endif

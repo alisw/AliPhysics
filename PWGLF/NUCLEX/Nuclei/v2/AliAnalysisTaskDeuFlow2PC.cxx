@@ -2819,6 +2819,9 @@ void AliAnalysisTaskDeuFlow2PC::DoPairshh (const Float_t lcentrality, int fields
 	DCAxyP2         = (fEvt+eventNumber)->fReconstructedSecond[j].sDCAxy;
 	DCAzP2          = (fEvt+eventNumber)->fReconstructedSecond[j].sDCAz;
 	ptP2            = (fEvt+eventNumber)->fReconstructedSecond[j].sPt;
+
+	if(ptP1 == ptP2)continue;
+
 	if(ptP2< fMinPtForSec)continue;
 	//chargeP2        = (fEvt+eventNumber)->fReconstructedSecond[j].sCharge;
 	isMC2           = (fEvt+eventNumber)->fReconstructedSecond[j].isMCptc;

@@ -66,6 +66,11 @@ class AliRDHFCutsDStartoKpipi : public AliRDHFCuts
   Double_t GetCircRadius() { return fCircRadius; }
   void SetCircRadius(Double_t radius) { fCircRadius = radius; }
 
+  Bool_t GetRequireTPCandTOF() { return fRequireTPCandTOF; }
+  void SetRequireTPCandTOF(Bool_t flag=kTRUE) { fRequireTPCandTOF = flag; }
+  Bool_t GetUsePIDSoftPi() { return fUsePIDSoftPi; }
+  void SetUsePIDSoftPi(Bool_t flag=kTRUE) { fUsePIDSoftPi = flag; }
+
   void SetUseTPCtrackCutsOnD0Daughters(Bool_t flag=kTRUE) { fUseTPCtrackCutsOnD0Daughters = flag; }
   void SetUseTPCtrackCutsOnSoftPion(Bool_t flag=kFALSE) { fUseTPCtrackCutsOnSoftPion = flag; }
   Bool_t GetUseTPCtrackCutsOnD0Daughters() const { return fUseTPCtrackCutsOnD0Daughters; }
@@ -77,11 +82,14 @@ class AliRDHFCutsDStartoKpipi : public AliRDHFCuts
   Float_t fMaxPtPid; /// maximum Dstar Pt for using PID
   Float_t fTPCflag;   ///
   Double_t fCircRadius; /// Radius for circular PID nsigma cut
+  Bool_t fRequireTPCandTOF; /// Flag to switch between TPCandTOF strategy (default Run1-2) and TPCorTOF candidates
+  Bool_t fUsePIDSoftPi; /// Flag to enable PID on the soft-pion candidate (tracks without PID info are kept as well)
+  
   Bool_t fUseTPCtrackCutsOnD0Daughters; ///flag to apply TPC track quality cuts on D0 daughter from Dstar decay (used for different strategies for soft pion and D0daughters from Dstar decay) 
   Bool_t fUseTPCtrackCutsOnSoftPion; ///flag to apply TPC track quality cuts on soft pion from Dstar decay (used for different strategies for soft pion and D0daughters from Dstar decay)
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsDStartoKpipi,8);  /// class for cuts on AOD reconstructed D0->Kpipi
+  ClassDef(AliRDHFCutsDStartoKpipi,9);  /// class for cuts on AOD reconstructed D0->Kpipi
   /// \endcond
 };
 

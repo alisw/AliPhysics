@@ -34,6 +34,7 @@ AliUniFlowCorrTask::AliUniFlowCorrTask() :
   TObject{},
   fbDoRefs{0},
   fbDoPOIs{0},
+  fbUsePowerVector{0},
   fiNumHarm{0},
   fiNumGaps{0},
   fMaxWeightPower{0},
@@ -41,13 +42,15 @@ AliUniFlowCorrTask::AliUniFlowCorrTask() :
   fsName{},
   fsLabel{},
   fiHarm{},
-  fdGaps{}
+  fdGaps{},
+  fiMaxPow{}
 {}
 // ============================================================================
-AliUniFlowCorrTask::AliUniFlowCorrTask(Bool_t doRFPs, Bool_t doPOIs, std::vector<Int_t> harms, std::vector<Double_t> gaps) :
+AliUniFlowCorrTask::AliUniFlowCorrTask(Bool_t doRFPs, Bool_t doPOIs, std::vector<Int_t> harms, std::vector<Double_t> gaps, std::vector<Int_t> maxPowVec) :
   TObject{},
   fbDoRefs{doRFPs},
   fbDoPOIs{doPOIs},
+  fbUsePowerVector{kFALSE},
   fiNumHarm{0},
   fiNumGaps{0},
   fMaxWeightPower{0},
@@ -55,7 +58,8 @@ AliUniFlowCorrTask::AliUniFlowCorrTask(Bool_t doRFPs, Bool_t doPOIs, std::vector
   fsName{},
   fsLabel{},
   fiHarm{harms},
-  fdGaps{gaps}
+  fdGaps{gaps},
+  fiMaxPow{maxPowVec}
 {
   // constructor of CorrTask
 
@@ -76,6 +80,8 @@ AliUniFlowCorrTask::AliUniFlowCorrTask(Bool_t doRFPs, Bool_t doPOIs, std::vector
     if(abs > maxHarm) maxHarm = abs;
   }
   fMaxHarm = maxHarm;
+
+  if(fiMaxPow.size() > 0) fbUsePowerVector = kTRUE;
 
   // generating name
   TString sName = Form("<<%d>>(%d",fiNumHarm,fiHarm[0]);
@@ -110,6 +116,7 @@ void AliUniFlowCorrTask::PrintTask() const
   printf("# fsLabel:\t %s\n", fsLabel.Data());
   printf("# fbDoRefs:\t %d\n", fbDoRefs);
   printf("# fbDoPOIs:\t %d\n", fbDoPOIs);
+  printf("# fbUsePowerVector:\t %d\n", fbUsePowerVector);
   printf("# fiNumHarm:\t %d\n", fiNumHarm);
   printf("# fiHarm:\t { "); for(Int_t i(0); i < fiNumHarm; ++i) { printf("%d ",fiHarm[i]); }  printf("}\n");
   printf("# fiNumGaps:\t %d\n", fiNumGaps);

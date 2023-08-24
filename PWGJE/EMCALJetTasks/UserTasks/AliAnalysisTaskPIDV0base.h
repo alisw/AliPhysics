@@ -107,9 +107,10 @@ class AliAnalysisTaskPIDV0base : public AliAnalysisTaskSE {
   
   static Bool_t TPCnclCut(const AliVTrack* track);
   
- protected:
   void FillV0PIDlist(AliESDEvent* esdEvent = 0x0);
-  void ClearV0PIDlist();
+  void ClearV0PIDlist();  
+  
+ protected:
   
   static Double_t fgCutGeo;   // Cut variable for TPCCutMIGeo concerning geometry
   static Double_t fgCutNcr; // Cut variable for TPCCutMIGeo concerning num crossed rows

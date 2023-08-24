@@ -45,6 +45,7 @@ AliFemtoTrack::AliFemtoTrack():
   fTPCsignal(0.0f),
   fTPCsignalN(0),
   fTPCsignalS(0.0f),
+  fTPCNCrossedRows(0),
   fVTOF(0.0f),
   fTOFsignal(0.0f),
   fNSigmaTPCPi(0.0f),
@@ -144,6 +145,7 @@ AliFemtoTrack::AliFemtoTrack(const AliFemtoTrack& t) :
   fTPCsignal(t.fTPCsignal),
   fTPCsignalN(t.fTPCsignalN),
   fTPCsignalS(t.fTPCsignalS),
+  fTPCNCrossedRows(t.fTPCNCrossedRows),
   fVTOF(t.fVTOF),
   fTOFsignal(t.fTOFsignal),
   fNSigmaTPCPi(t.fNSigmaTPCPi),
@@ -258,6 +260,7 @@ AliFemtoTrack& AliFemtoTrack::operator=(const AliFemtoTrack& aTrack)
   fTPCsignal=aTrack.fTPCsignal;
   fTPCsignalN=aTrack.fTPCsignalN;
   fTPCsignalS=aTrack.fTPCsignalS;
+  fTPCNCrossedRows=aTrack.fTPCNCrossedRows;
   fVTOF=aTrack.fVTOF;
   fTOFsignal=aTrack.fTOFsignal;
   fNSigmaTPCPi=aTrack.fNSigmaTPCPi;

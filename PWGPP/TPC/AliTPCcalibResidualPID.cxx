@@ -21,7 +21,7 @@
 // Yvonne Pachmayer <pachmay@physi.uni-heidelberg.de>
 //
 
-
+#include <TObjString.h>
 #include "AliTPCcalibResidualPID.h"
 #include "TChain.h"
 #include "AliAnalysisManager.h"
@@ -96,6 +96,7 @@ AliTPCcalibResidualPID::AliTPCcalibResidualPID()
     fProduceTPCSignalSparse(0),
     fCorrectdEdxEtaDependence(0),
     fCorrectdEdxMultiplicityDependence(0),
+    fCorrectdEdxPileupDependence(kTRUE),
     fThnspTpc(0),
     fWriteAdditionalOutput(kFALSE),
     fQAList(0x0),
@@ -171,6 +172,7 @@ AliTPCcalibResidualPID::AliTPCcalibResidualPID(const char *name)
     fProduceTPCSignalSparse(0),
     fCorrectdEdxEtaDependence(0),
     fCorrectdEdxMultiplicityDependence(0),
+    fCorrectdEdxPileupDependence(kTRUE),
     fThnspTpc(0),
     fWriteAdditionalOutput(kFALSE),
     fQAList(0x0),
@@ -545,8 +547,9 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
 
   const Double_t magField = esdEvent->GetMagneticField();
 
-  Bool_t etaCorrAvail = fPIDResponse->UseTPCEtaCorrection();
-  Bool_t multCorrAvail = fPIDResponse->UseTPCMultiplicityCorrection();
+  const Bool_t etaCorrAvail    = fPIDResponse->UseTPCEtaCorrection();
+  const Bool_t multCorrAvail   = fPIDResponse->UseTPCMultiplicityCorrection();
+  const Bool_t pileupCorrAvail = fPIDResponse->UseTPCPileupCorrection();
 
   for (Int_t iTracks = 0; iTracks < nTotTracks; iTracks++){//begin track loop 
     AliESDtrack *trackESD = esdEvent->GetTrack(iTracks);
@@ -797,44 +800,24 @@ void AliTPCcalibResidualPID::Process(AliESDEvent *const esdEvent, AliMCEvent *co
         AliError("Ignoring this error from now on!");
     }
     
-    if (fCorrectdEdxEtaDependence && etaCorrAvail && fCorrectdEdxMultiplicityDependence && multCorrAvail) {
-      processedTPCsignal[0] = fPIDResponse->GetTPCResponse().GetEtaAndMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kElectron,
-                                                                                                     AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[1] = fPIDResponse->GetTPCResponse().GetEtaAndMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kPion,
-                                                                                                     AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[2] = fPIDResponse->GetTPCResponse().GetEtaAndMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kKaon,
-                                                                                                     AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[3] = fPIDResponse->GetTPCResponse().GetEtaAndMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kProton,
-                                                                                                     AliTPCPIDResponse::kdEdxDefault);
-    }
-    else if (fCorrectdEdxEtaDependence && etaCorrAvail) {
-      processedTPCsignal[0] = fPIDResponse->GetTPCResponse().GetEtaCorrectedTrackdEdx(trackESD, AliPID::kElectron,
-                                                                                      AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[1] = fPIDResponse->GetTPCResponse().GetEtaCorrectedTrackdEdx(trackESD, AliPID::kPion,
-                                                                                      AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[2] = fPIDResponse->GetTPCResponse().GetEtaCorrectedTrackdEdx(trackESD, AliPID::kKaon,
-                                                                                      AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[3] = fPIDResponse->GetTPCResponse().GetEtaCorrectedTrackdEdx(trackESD, AliPID::kProton,
-                                                                                      AliTPCPIDResponse::kdEdxDefault);
-    }
-    else if (fCorrectdEdxMultiplicityDependence && multCorrAvail) {
-      processedTPCsignal[0] = fPIDResponse->GetTPCResponse().GetMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kElectron,
-                                                                                               AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[1] = fPIDResponse->GetTPCResponse().GetMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kPion,
-                                                                                               AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[2] = fPIDResponse->GetTPCResponse().GetMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kKaon,
-                                                                                               AliTPCPIDResponse::kdEdxDefault);
-      processedTPCsignal[3] = fPIDResponse->GetTPCResponse().GetMultiplicityCorrectedTrackdEdx(trackESD, AliPID::kProton,
-                                                                                               AliTPCPIDResponse::kdEdxDefault);
-    }
-    
+    AliTPCPIDResponse& tpcResponse = fPIDResponse->GetTPCResponse();
+    const Bool_t etaCorrected = fCorrectdEdxEtaDependence && etaCorrAvail;
+    const Bool_t multCorrected = fCorrectdEdxMultiplicityDependence && multCorrAvail;
+    const Bool_t pileupCorrected = fCorrectdEdxPileupDependence && pileupCorrAvail;
+
+    processedTPCsignal[0] = tpcResponse.GetCorrectedTrackdEdx(trackESD, AliPID::kElectron, etaCorrected, multCorrected, pileupCorrected);
+    processedTPCsignal[1] = tpcResponse.GetCorrectedTrackdEdx(trackESD, AliPID::kPion,     etaCorrected, multCorrected, pileupCorrected);
+    processedTPCsignal[2] = tpcResponse.GetCorrectedTrackdEdx(trackESD, AliPID::kKaon,     etaCorrected, multCorrected, pileupCorrected);
+    processedTPCsignal[3] = tpcResponse.GetCorrectedTrackdEdx(trackESD, AliPID::kProton,   etaCorrected, multCorrected, pileupCorrected);
+
     // id 5 is just again Kaons in restricted eta range
     processedTPCsignal[4] = processedTPCsignal[2];
     
     for(Int_t iPart = 0; iPart < 5; iPart++) {
       // Only accept "Kaons" within |eta| < 0.2 for index 4 in case of data (no contamination in case of MC, so this index is not used)
-      if (iPart == 4 && ((mcEvent && fUseMCinfo) || abs(trackESD->Eta()) > 0.2))
+      if (iPart == 4 && ((mcEvent && fUseMCinfo) || abs(trackESD->Eta()) > 0.2)) {
         continue;
+      }
       
       Double_t vecHistQA[7] = {precin, processedTPCsignal[iPart], (Double_t)particleID, (Double_t)iPart, tpcQA[iPart], tofQA[iPart],
                                (Double_t)nTotESDTracks};
@@ -3258,16 +3241,28 @@ TObjArray * AliTPCcalibResidualPID::GetResponseFunctions(TF1* parametrisation, T
       // In case of data there are sometimes problems to fit the shape with one function (could describe the overall deviation,
       // but will not cover all the details).
       // Nevertheless, this shape (including most of the "details") can be fitted with the following approach with two functions
-      TF1 * funcCorrKaon1 = new TF1("funcCorrKaon1", fitFuncString.Data(),
-                                    TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.981); 
-      graphKaonTPC->Fit(funcCorrKaon1, "QREX0M", "same", TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.0);
+      //Simple functions
+//          Double_t minValue = TMath::Max(graphKaonTPC->GetX()[0], 0.25);
+//          Double_t maxValue = 1.0; //1.981
+//         funcCorrKaon = new TF1("funcCorrKaon", fitFuncString2.Data(), 0.22,  1.981);
+//         funcCorrKaon = new TF1("funcCorrKaon", "[0] + [1] / x + [2] / (x**2) + [3] / (x**3) + [4] / (x**4) + [5] / (x**5) + [6] * x + [7] / (x**6)", 0.22,  1.981);
+//          funcCorrKaon = new TF1("funcCorrKaon", fitFuncString.Data(), minValue,  maxValue);
+         
+//          graphKaonTPC->Fit(funcCorrKaon, "QREX0M", "same", minValue, maxValue);
+      
+        // Complex fit, using two functions
+        TF1 * funcCorrKaon1 = new TF1("funcCorrKaon1", fitFuncString.Data(),
+                                        TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.0); 
+        graphKaonTPC->Fit(funcCorrKaon1, "QREX0M", "same", TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.0);
+        
+        TString funcCorrKaonString = TString(TString::Format("(%f + %f / x + %f / (x**2) + %f / (x**3) + %f / (x**4) + %f / (x**5) + %f * x)", funcCorrKaon1->GetParameter(0), funcCorrKaon1->GetParameter(1), funcCorrKaon1->GetParameter(2), funcCorrKaon1->GetParameter(3), funcCorrKaon1->GetParameter(4), funcCorrKaon1->GetParameter(5), funcCorrKaon1->GetParameter(6)));
 
-      TF1 * funcCorrKaon2 = new TF1("funcCorrKaon2", fitFuncString2.Data(), TMath::Max(graphKaonTPC->GetX()[0], 0.25),  1.981);
-      graphKaonTPC->Fit(funcCorrKaon2, "QREX0M", "same", (isMC ? 1.981 : 1.0), 1.981);
+        TF1 * funcCorrKaon2 = new TF1("funcCorrKaon2", fitFuncString2.Data(), 1.0,  1.981);
+        graphKaonTPC->Fit(funcCorrKaon2, "QREX0M", "same", 1.0, 1.981);
 
-      funcCorrKaon = new TF1("funcCorrKaon",
-                             "funcCorrKaon1 * 0.5*(1.+TMath::Erf((1 - x) / 0.1)) + ([0]+[1]*x+[2]*x*x+[3]*x*x*x+[4]*x*x*x*x+[5]*x*x*x*x*x+[6]*x*x*x*x*x*x) * 0.5*(1.+TMath::Erf((x - 1) / 0.1))",
-                             TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.981);
+        funcCorrKaon = new TF1("funcCorrKaon",
+                                (funcCorrKaonString + TString(" * 0.5*(1.+TMath::Erf((1 - x) / 0.1)) + ([0]+[1]*x+[2]*x**2+[3]*x**3+[4]*x**4+[5]*x**5+[6]*x**6) * 0.5*(1.+TMath::Erf((x - 1) / 0.1))")).Data(),
+                                TMath::Max(graphKaonTPC->GetX()[0], 0.25), 1.981);
 
       for (Int_t i = funcCorrKaon1->GetNpar(), j = 0; i < funcCorrKaon1->GetNpar() + funcCorrKaon2->GetNpar(); i++, j++) {
         funcCorrKaon->SetParameter(j, funcCorrKaon2->GetParameter(j));
@@ -4386,6 +4381,7 @@ void AliTPCcalibResidualPID::SetAxisNamesFromTitle(const THnSparseF *h)
   }
 }
 
+//________________________________________________________________________
 TString AliTPCcalibResidualPID::GetStringFitType(Int_t fitType) {   
   if (fitType == AliTPCcalibResidualPID::kLund)
     return "Lund";

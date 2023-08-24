@@ -15,30 +15,29 @@
 //
 class AliPP13NonlinearityScanSelection : public AliPP13SpectrumSelectionMC
 {
-	enum ScanSize {kNbinsA = 9, kNbinsSigma = 9};
+	enum ScanSize {kNbinsA = 9, kNbinsB = 9};
 public:
 	AliPP13NonlinearityScanSelection(): AliPP13SpectrumSelectionMC() {}
 	AliPP13NonlinearityScanSelection(const char * name, const char * title, AliPP13ClusterCuts cuts, 
-			AliPP13SelectionWeightsMC * sw, Float_t precA = 0.01, Float_t precSigma = 0.1):
+			AliPP13SelectionWeightsScan * sw, Float_t precA = 0.01, Float_t precB = 0.1):
 		AliPP13SpectrumSelectionMC(name, title, cuts, sw),
 		fInvariantMass(),
 		fMixInvariantMass(),
 		fPtPrimaryPi0(),
 		fPrecisionA(precA),
-		fPrecisionSigma(precSigma)
+		fPrecisionB(precB)
 	{
 
-		Float_t nona = sw->fNonA;
-		Float_t nonSigma = sw->fNonSigma;
+		Float_t nonA = sw->fE;
+		Float_t nonB = sw->fD;
 
 		for(Int_t ia = 0; ia < kNbinsA; ++ia)
 		{
-			for(Int_t ib = 0; ib < kNbinsSigma; ++ib)
+			for(Int_t ib = 0; ib < kNbinsB; ++ib)
 			{
-				AliPP13SelectionWeightsMC & swi = fWeightsScan[ia][ib];
-				swi.fNonGlobal = sw->fNonGlobal;
-				swi.fNonA = nona - fPrecisionA * kNbinsA / 2 + ia * fPrecisionA;
-				swi.fNonSigma = nonSigma - fPrecisionSigma * kNbinsSigma / 2 + ib * fPrecisionSigma;
+				AliPP13SelectionWeightsScan & swi = fWeightsScan[ia][ib];
+				swi.fE = nonA + fPrecisionA * (kNbinsA / 2 - ia) / (kNbinsA / 2);
+				swi.fD = nonB + fPrecisionB * (kNbinsB / 2 - ib) / (kNbinsB / 2);
 			}
 		}
 	}
@@ -55,15 +54,15 @@ protected:
 private:
 
 	// Set of weights that are need for NonlinearityScan
-	AliPP13SelectionWeightsMC fWeightsScan[kNbinsA][kNbinsSigma];
+	AliPP13SelectionWeightsScan fWeightsScan[kNbinsA][kNbinsB];
 
 	// Parameters of nonlinearity parametrization
-	TH1 * fInvariantMass[kNbinsA][kNbinsSigma];    //!
-	TH1 * fMixInvariantMass[kNbinsA][kNbinsSigma]; //!
+	TH1 * fInvariantMass[kNbinsA][kNbinsB];    //!
+	TH1 * fMixInvariantMass[kNbinsA][kNbinsB]; //!
 	TH1 * fPtPrimaryPi0; //!
 
 	Float_t fPrecisionA;
-	Float_t fPrecisionSigma;
+	Float_t fPrecisionB;
 
 	ClassDef(AliPP13NonlinearityScanSelection, 2)
 };

@@ -24,6 +24,7 @@
 #include "AliAnalysisManager.h"
 #include "AliMultSelection.h"
 #include "AliAODVertex.h"
+#include "AliDataFile.h"
 
 ClassImp(AliAnalysisTaskSEHFTenderQnVectors)
 
@@ -338,14 +339,19 @@ TList* AliAnalysisTaskSEHFTenderQnVectors::GetSplineForqnPercentileList(int det)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEHFTenderQnVectors::LoadSplinesForqnPercentile(TString splinesfilepath)
+void AliAnalysisTaskSEHFTenderQnVectors::LoadSplinesForqnPercentile(TString splinesFilePath)
 {
     // load splines for qn percentiles
 
     TString listnameTPC[3] = {"SplineListq2TPC", "SplineListq2TPCPosEta", "SplineListq2TPCNegEta"};
     TString listnameV0[3] = {"SplineListq2V0", "SplineListq2V0A", "SplineListq2V0C"};
 
-    TFile* splinesfile = TFile::Open(splinesfilepath.Data());
+    TString pathToFileCMVFNS = AliDataFile::GetFileName(splinesFilePath.Data());
+    // Check access to CVMFS (will only be displayed locally)
+    if (pathToFileCMVFNS.IsNull())
+        AliFatal("Cannot access data files from CVMFS: please export ALICE_DATA=root://eospublic.cern.ch//eos/experiment/alice/analysis-data and run again");
+
+    TFile* splinesfile = TFile::Open(pathToFileCMVFNS.Data());
     if(!splinesfile)
         AliFatal("File with splines for qn percentiles not found!");
 

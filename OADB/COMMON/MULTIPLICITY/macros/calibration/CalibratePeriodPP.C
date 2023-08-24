@@ -1,3 +1,4 @@
+#ifdef __CLING__
 #include "AliMultEstimator.h"
 #include "AliMultSelectionCuts.h"
 #include "AliMultSelection.h"
@@ -6,6 +7,7 @@
 #include <TSystem.h>
 #include <TF1.h>
 #include <TFile.h>
+#endif
 
 ////////////////////////////////////////////////////////////
 //
@@ -35,8 +37,8 @@ void CalibratePeriodPP(const Char_t* inputDir, TString lPeriodName = "LHC16k",
     AliMultSelectionCalibrator *lCalib = new AliMultSelectionCalibrator("lCalib");
 
     lCalib->SetRunToUseAsDefault( lRunToUseAsDefault );
-    lCalib->SetSelectedTriggerClass(AliVEvent::kINT7);
-
+    lCalib->SetSelectedTriggerClass(AliVEvent::kINT7 | AliVEvent::kINT7inMUON);
+    
     //============================================================
     // --- Definition of Boundaries ---
     //============================================================

@@ -12,16 +12,20 @@
 #include "AliESDtrack.h"
 #include "AliESDVertex.h"
 #include <AliAODMCParticle.h>
+#include <AliAODMCHeader.h>
 #include "AliAnalysisUtils.h"
+#include "AliEventCuts.h"
 #include <TSystem.h>
 #include <TTree.h>
 #include <TTree.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TH3F.h>
+#include <THn.h>
 #include <TChain.h>
 #include "AliPIDResponse.h"
 #include "AliAnalysisTaskCheckAODTracks.h"
+#include "AliNeutralTrackParam.h"
 
 
 /**************************************************************************
@@ -55,6 +59,7 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   AliAnalysisTaskSE("QAofAODtracks"), 
   fOutput{nullptr},
   fHistNEvents{nullptr},
+  fHistGenPilTag{nullptr},
   fHistNTracks{nullptr},
   fHistNTracksVsTPCclusters{nullptr},
   fHistNTracksVsITSclusters{nullptr},
@@ -130,10 +135,38 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistImpParXYPtMulTPCselSPDanyPrim{nullptr},
   fHistImpParXYPtMulTPCselSPDanySecDec{nullptr},
   fHistImpParXYPtMulTPCselSPDanySecMat{nullptr},
+  fHistTOFMismProb{nullptr},
+  fHistnSigmaPionTOFVsSel{nullptr},
+  fHistGenK0s{nullptr},
   fHistInvMassK0s{nullptr},
   fHistInvMassLambda{nullptr},
   fHistInvMassAntiLambda{nullptr},
+  fHistDecayLengthVsPtK0s{nullptr},
+  fHistDecayLengthVsPtLambda{nullptr},
+  fHistDecayLengthVsPtAntiLambda{nullptr},
+  fHistImpParXYVsPtK0s{nullptr},
+  fHistImpParZVsPtK0s{nullptr},
+  fHistImpParXYVsPtLambda{nullptr},
+  fHistImpParXYVsPtAntiLambda{nullptr},
+  fHistImpParXYVsPtK0sDau{nullptr},
+  fHistImpParXYVsPtLambdaDau{nullptr},
+  fHistImpParXYVsPtAntiLambdaDau{nullptr},
+  fHistV0RadiusBeforeSel{nullptr},
+  fHistV0RadiusAfterSel{nullptr},
+  fHistV0CosPointBeforeSel{nullptr},
+  fHistV0CosPointVsMomBeforeSel{nullptr},
+  fHistV0CosPointAfterSel{nullptr},
+  fHistCrossRowV0DauBeforeSel{nullptr},
+  fHistCrossRowV0DauAfterSel{nullptr},
+  fHistEtaV0DauBeforeSel{nullptr},
+  fHistEtaV0DauAfterSel{nullptr},
+  fHistImpParV0DauBeforeSel{nullptr},
+  fHistImpParV0DauAfterSel{nullptr},
+  fHistDCAV0DauBeforeSel{nullptr},
+  fHistDCAV0DauAfterSel{nullptr},
+  fHistMuldimK0s{nullptr},
   fFillTree(kFALSE),
+  fFillMulDimK0s(kFALSE),
   fTrackTree{nullptr},
   fTreeVarFloat{nullptr},
   fTreeVarInt{nullptr},
@@ -141,20 +174,26 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fMinNumOfTPCPIDclu(0),
   fUsePhysSel(kTRUE),
   fUsePileupCut(kTRUE),
+  fUsePbPbOutOfBunchPileupCutsITSTPC(0),
+  fRejectPbPbEventsWithGeneratedPileup(kFALSE),
+  fKeepOnlyEventsWithPileup(kFALSE),
   fTriggerMask(AliVEvent::kAnyINT),
   fSelectOnCentrality(kFALSE),
   fMinCentrality(-1.),
   fMaxCentrality(110.),
   fCentrEstimator("V0M"),
+  fApplyV0Cuts(kFALSE),
   fNEtaBins(10),
   fNPhiBins(144),
   fNPtBins(100),
   fMinPt(0.),
   fMaxPt(25.),
   fMaxMult(500.),
+  fUseTPCCutsForV0dau(kTRUE),
   fRequireITSforV0dau(0),
   fReadMC{kFALSE},
-  fUseMCId{kFALSE}
+  fUseMCId{kFALSE},
+  fUseGenPt{kFALSE}
 {
   //
 
@@ -185,6 +224,20 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
     fHistChi2TPCConstrVsGlobPtFiltBit[jb]=0x0;
     fHistSig1ptCovMatPtFiltBit[jb]=0x0;
   }
+  for (int iS = 0; iS < AliPID::kSPECIESC;++iS) {
+    fHistPtResidVsPtTPCsel[iS]=0x0;
+    fHistPtResidVsPtTPCselITSref[iS]=0x0;
+    fHistOneOverPtResidVsPtTPCsel[iS]=0x0;
+    fHistOneOverPtResidVsPtTPCselITSref[iS]=0x0;
+    fHistnSigmadEdxTPCVsP[iS]=0x0;
+    fHistnSigmaTOFVsP[iS]=0x0;
+  }
+  fV0CutArray[0]=0.;
+  fV0CutArray[1]=99999.;
+  fV0CutArray[2]=-1.;
+  fV0CutArray[3]=0.;
+  fV0CutArray[4]=99999.;
+  fV0CutArray[5]=99999.;
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
@@ -197,6 +250,7 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
   if (AliAnalysisManager::GetAnalysisManager()->IsProofMode()) return;
   if(fOutput && !fOutput->IsOwner()){
     delete fHistNEvents;
+    delete fHistGenPilTag;
     delete fHistNTracks;
     delete fHistNTracksVsTPCclusters;
     delete fHistNTracksVsITSclusters;
@@ -260,6 +314,8 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
       delete fHistPtResidVsPtTPCselITSref[iS];
       delete fHistOneOverPtResidVsPtTPCsel[iS];
       delete fHistOneOverPtResidVsPtTPCselITSref[iS];
+      delete fHistnSigmadEdxTPCVsP[iS];
+      delete fHistnSigmaTOFVsP[iS];
     }
     delete fHistPzResidVsPtTPCselAll;
     delete fHistPzResidVsPtTPCselITSrefAll;
@@ -272,10 +328,36 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
     delete fHistImpParXYPtMulTPCselSPDanyPrim;
     delete fHistImpParXYPtMulTPCselSPDanySecDec;
     delete fHistImpParXYPtMulTPCselSPDanySecMat;
+    delete fHistTOFMismProb;
+    delete fHistnSigmaPionTOFVsSel;
+    delete fHistGenK0s;
     delete fHistInvMassK0s;
     delete fHistInvMassLambda;
     delete fHistInvMassAntiLambda;
-
+    delete fHistDecayLengthVsPtK0s;
+    delete fHistDecayLengthVsPtLambda;
+    delete fHistDecayLengthVsPtAntiLambda;
+    delete fHistImpParXYVsPtK0s;
+    delete fHistImpParZVsPtK0s;
+    delete fHistImpParXYVsPtLambda;
+    delete fHistImpParXYVsPtAntiLambda;
+    delete fHistImpParXYVsPtK0sDau;
+    delete fHistImpParXYVsPtLambdaDau;
+    delete fHistImpParXYVsPtAntiLambdaDau;
+    delete fHistV0RadiusBeforeSel;
+    delete fHistV0RadiusAfterSel;
+    delete fHistV0CosPointBeforeSel;
+    delete fHistV0CosPointVsMomBeforeSel;
+    delete fHistV0CosPointAfterSel;
+    delete fHistCrossRowV0DauBeforeSel;
+    delete fHistCrossRowV0DauAfterSel;
+    delete fHistEtaV0DauBeforeSel;
+    delete fHistEtaV0DauAfterSel;
+    delete fHistImpParV0DauBeforeSel;
+    delete fHistImpParV0DauAfterSel;
+    delete fHistDCAV0DauBeforeSel;
+    delete fHistDCAV0DauAfterSel;
+    delete fHistMuldimK0s;
     for(Int_t jb=0; jb<kNumOfFilterBits; jb++){
       delete fHistImpParXYPtMulFiltBit[jb];
       delete fHistEtaPhiPtFiltBit[jb];
@@ -371,13 +453,18 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fHistNEvents->GetXaxis()->SetBinLabel(5,"Pass zSPD-zTrk vert sel");
   fHistNEvents->GetXaxis()->SetBinLabel(6,"|zvert|<10");
   fHistNEvents->GetXaxis()->SetBinLabel(7,"Pileup cut");
+  fHistNEvents->GetXaxis()->SetBinLabel(8,"Reject generated pileup");
   fOutput->Add(fHistNEvents);
 
+  fHistGenPilTag = new TH2F("hGenPilTag"," ; from fMCEvent ; from AliAODMCHeader",2,-0.5,1.5,2,-0.5,1.5);
+  fOutput->Add(fHistGenPilTag);
+
+  
   fHistNTracks = new TH1F("hNTracks", "Number of tracks in AOD events ; N_{tracks}",(Int_t)(fMaxMult+1.00001),-0.5,fMaxMult+0.5);
   fOutput->Add(fHistNTracks);
   fHistNTracksVsTPCclusters = new TH2F("hNTracksVsTPCclusters"," ; N_{TPCclusters} ; N_{tracks}",100,0.,300.*fMaxMult,100,0.,fMaxMult);
   fHistNTracksVsITSclusters = new TH2F("hNTracksVsITSclusters"," ; N_{ITSclusters} ; N_{tracks}",100,0.,10*fMaxMult,100,0.,fMaxMult);
-  fHistITSclustersVsTPCclusters = new TH2F("hITSclustersVsTPCclusters"," ;  N_{ITSclusters} ; N_{TPCclusters}",100,0.,300.*fMaxMult,100,0.,10*fMaxMult);
+  fHistITSclustersVsTPCclusters = new TH2F("hITSclustersVsTPCclusters"," ;  N_{TPCclusters} ; N_{ITSclusters}",100,0.,300.*fMaxMult,100,0.,10*fMaxMult);
   fHistNTracksFB4VsTPCclusters = new TH2F("hNTracksFB4VsTPCclusters"," ; N_{TPCclusters} ; N_{tracks,FB4}",100,0.,300.*fMaxMult,100,0.,fMaxMult);
   fHistNTracksFB4VsITSclusters = new TH2F("hNTracksFB4VsITSclusters"," ; N_{ITSclusters} ; N_{tracks,FB4}",100,0.,10*fMaxMult,100,0.,fMaxMult);
   fOutput->Add(fHistNTracksVsTPCclusters);
@@ -483,7 +570,7 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   for(Int_t jjj=85; jjj<=90; jjj++) ptBins4ip[jjj]=ptBins4ip[84]+1.*(jjj-84);
   const Int_t nMultBins4ip=12;
   Double_t multBins4ip[nMultBins4ip+1]={0.,20.,50.,100.,500.,1000.,
-					1500.,2000.,3000.,4000.,5000.,7500.,10000.};
+                                        1500.,2000.,3000.,4000.,5000.,7500.,10000.};
   const Int_t nIPBins4ip=400;
   Double_t ipBins4ip[nIPBins4ip+1];
   for(Int_t jjj=0; jjj<=nIPBins4ip; jjj++) ipBins4ip[jjj]=-1500.+(3000./(Double_t)nIPBins4ip)*(Double_t)jjj;
@@ -521,22 +608,24 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
     fOutput->Add(fHistSig1ptCovMatPtFiltBit[jb]);
   }
 
-  fHistPtResidVsPtTPCselAll = new TH2F("hPtResidVsPtTPCselAll","All particles ; p_{T,rec} (GeV/c) ; p_{T,rec}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
-  fHistPtResidVsPtTPCselITSrefAll = new TH2F("hPtResidVsPtTPCselITSrefAll","All particles ; p_{T,rec} (GeV/c) ; p_{T,rec}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
-  fHistOneOverPtResidVsPtTPCselAll = new TH2F("hOneOverPtResidVsPtTPCselAll","All particles ; p_{T,rec} (GeV/c) ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
-  fHistOneOverPtResidVsPtTPCselITSrefAll = new TH2F("hOneOverPtResidVsPtTPCselITSrefAll","All particles ; p_{T,rec} (GeV/c) ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
-  fHistPtResidVsPtTPCselPrim = new TH2F("hPtResidVsPtTPCselPrim","Primaries ; p_{T,rec} (GeV/c) ; p_{T,rec}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
-  fHistPtResidVsPtTPCselITSrefPrim = new TH2F("hPtResidVsPtTPCselITSrefPrim","Primaries ; p_{T,rec} (GeV/c) ; p_{T,rec}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
-  fHistOneOverPtResidVsPtTPCselPrim = new TH2F("hOneOverPtResidVsPtTPCselPrim","Primaries ; p_{T,rec} (GeV/c) ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
-  fHistOneOverPtResidVsPtTPCselITSrefPrim = new TH2F("hOneOverPtResidVsPtTPCselITSrefPrim","Primaries ; p_{T,rec} (GeV/c) ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
-  fHistPtResidVsPtTPCselSecDec = new TH2F("hPtResidVsPtTPCselSecDec","Secondaries from decays ; p_{T,rec} (GeV/c) ; p_{T,rec}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
-  fHistPtResidVsPtTPCselITSrefSecDec = new TH2F("hPtResidVsPtTPCselITSrefSecDec","Secondaries from decays ; p_{T,rec} (GeV/c) ; p_{T,rec}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
-  fHistOneOverPtResidVsPtTPCselSecDec = new TH2F("hOneOverPtResidVsPtTPCselSecDec","Secondaries from decays ; p_{T,rec} (GeV/c) ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
-  fHistOneOverPtResidVsPtTPCselITSrefSecDec = new TH2F("hOneOverPtResidVsPtTPCselITSrefSecDec","Secondaries from decays ; p_{T,rec} (GeV/c) ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
-  fHistPtResidVsPtTPCselSecMat = new TH2F("hPtResidVsPtTPCselSecMat","Secondaries from material ; p_{T,rec} (GeV/c) ; p_{T,rec}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
-  fHistPtResidVsPtTPCselITSrefSecMat = new TH2F("hPtResidVsPtTPCselITSrefSecMat","Secondaries from material ; p_{T,rec} (GeV/c) ; p_{T,rec}-p_{T,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
-  fHistOneOverPtResidVsPtTPCselSecMat = new TH2F("hOneOverPtResidVsPtTPCselSecMat","Secondaries from material ; p_{T,rec} (GeV/c) ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
-  fHistOneOverPtResidVsPtTPCselITSrefSecMat = new TH2F("hOneOverPtResidVsPtTPCselITSrefSecMat","Secondaries from material ; p_{T,rec} (GeV/c) ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
+  TString xTit="p_{T,rec} (GeV/c)";
+  if(fUseGenPt) xTit="p_{T,gen} (GeV/c)";
+  fHistPtResidVsPtTPCselAll = new TH2F("hPtResidVsPtTPCselAll",Form("All particles ; %s ; p_{T,rec}-p_{T,gen} (GeV/c)",xTit.Data()),fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
+  fHistPtResidVsPtTPCselITSrefAll = new TH2F("hPtResidVsPtTPCselITSrefAll",Form("All particles ; %s ; p_{T,rec}-p_{T,gen} (GeV/c)",xTit.Data()),fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
+  fHistOneOverPtResidVsPtTPCselAll = new TH2F("hOneOverPtResidVsPtTPCselAll",Form("All particles ; %s ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",xTit.Data()),fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
+  fHistOneOverPtResidVsPtTPCselITSrefAll = new TH2F("hOneOverPtResidVsPtTPCselITSrefAll",Form("All particles ; %s ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",xTit.Data()),fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
+  fHistPtResidVsPtTPCselPrim = new TH2F("hPtResidVsPtTPCselPrim",Form("Primaries ; %s ; p_{T,rec}-p_{T,gen} (GeV/c)",xTit.Data()),fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
+  fHistPtResidVsPtTPCselITSrefPrim = new TH2F("hPtResidVsPtTPCselITSrefPrim",Form("Primaries ; %s ; p_{T,rec}-p_{T,gen} (GeV/c)",xTit.Data()),fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
+  fHistOneOverPtResidVsPtTPCselPrim = new TH2F("hOneOverPtResidVsPtTPCselPrim",Form("Primaries ; %s ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",xTit.Data()),fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
+  fHistOneOverPtResidVsPtTPCselITSrefPrim = new TH2F("hOneOverPtResidVsPtTPCselITSrefPrim",Form("Primaries ; %s ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",xTit.Data()),fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
+  fHistPtResidVsPtTPCselSecDec = new TH2F("hPtResidVsPtTPCselSecDec",Form("Secondaries from decays ; %s ; p_{T,rec}-p_{T,gen} (GeV/c)",xTit.Data()),fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
+  fHistPtResidVsPtTPCselITSrefSecDec = new TH2F("hPtResidVsPtTPCselITSrefSecDec",Form("Secondaries from decays ; %s ; p_{T,rec}-p_{T,gen} (GeV/c)",xTit.Data()),fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
+  fHistOneOverPtResidVsPtTPCselSecDec = new TH2F("hOneOverPtResidVsPtTPCselSecDec",Form("Secondaries from decays ; %s ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",xTit.Data()),fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
+  fHistOneOverPtResidVsPtTPCselITSrefSecDec = new TH2F("hOneOverPtResidVsPtTPCselITSrefSecDec",Form("Secondaries from decays ; %s ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",xTit.Data()),fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
+  fHistPtResidVsPtTPCselSecMat = new TH2F("hPtResidVsPtTPCselSecMat",Form("Secondaries from material ; %s ; p_{T,rec}-p_{T,gen} (GeV/c)",xTit.Data()),fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
+  fHistPtResidVsPtTPCselITSrefSecMat = new TH2F("hPtResidVsPtTPCselITSrefSecMat",Form("Secondaries from material ; %s ; p_{T,rec}-p_{T,gen} (GeV/c)",xTit.Data()),fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
+  fHistOneOverPtResidVsPtTPCselSecMat = new TH2F("hOneOverPtResidVsPtTPCselSecMat",Form("Secondaries from material ; %s ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",xTit.Data()),fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
+  fHistOneOverPtResidVsPtTPCselITSrefSecMat = new TH2F("hOneOverPtResidVsPtTPCselITSrefSecMat",Form("Secondaries from material ; %s ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",xTit.Data()),fNPtBins,fMinPt,fMaxPt,200,-0.5,0.5);
   fOutput->Add(fHistPtResidVsPtTPCselAll);
   fOutput->Add(fHistPtResidVsPtTPCselITSrefAll);
   fOutput->Add(fHistOneOverPtResidVsPtTPCselAll);
@@ -555,17 +644,17 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistOneOverPtResidVsPtTPCselITSrefSecMat);
 
   for (int iS = 0; iS < AliPID::kSPECIESC; ++iS) {
-    fHistPtResidVsPtTPCsel[iS] = new TH2F(Form("hPtResidVsPtTPCsel%s",AliPID::ParticleShortName(iS)), Form("%s ; p_{T,rec} (GeV/c) ; p_{T,rec}-p_{T,gen} (GeV/c)",AliPID::ParticleLatexName(iS)),fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
-    fHistPtResidVsPtTPCselITSref[iS] = new TH2F(Form("hPtResidVsPtTPCselITSref%s",AliPID::ParticleShortName(iS)),Form("%s ; p_{T,rec} (GeV/c) ; p_{T,rec}-p_{T,gen} (GeV/c)",AliPID::ParticleLatexName(iS)),fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
-    fHistOneOverPtResidVsPtTPCsel[iS] = new TH2F(Form("hOneOverPtResidVsPtTPCsel%s",AliPID::ParticleShortName(iS)), Form("%s ; p_{T,rec} (GeV/c) ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",AliPID::ParticleLatexName(iS)),fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
-    fHistOneOverPtResidVsPtTPCselITSref[iS] = new TH2F(Form("hOneOverPtResidVsPtTPCselITSref%s",AliPID::ParticleShortName(iS)),Form("%s ; p_{T,rec} (GeV/c) ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",AliPID::ParticleLatexName(iS)),fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
+    fHistPtResidVsPtTPCsel[iS] = new TH2F(Form("hPtResidVsPtTPCsel%s",AliPID::ParticleShortName(iS)), Form("%s ; %s ; p_{T,rec}-p_{T,gen} (GeV/c)",AliPID::ParticleLatexName(iS),xTit.Data()),fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
+    fHistPtResidVsPtTPCselITSref[iS] = new TH2F(Form("hPtResidVsPtTPCselITSref%s",AliPID::ParticleShortName(iS)),Form("%s ; %s ; p_{T,rec}-p_{T,gen} (GeV/c)",AliPID::ParticleLatexName(iS),xTit.Data()),fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
+    fHistOneOverPtResidVsPtTPCsel[iS] = new TH2F(Form("hOneOverPtResidVsPtTPCsel%s",AliPID::ParticleShortName(iS)), Form("%s ; %s ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",AliPID::ParticleLatexName(iS),xTit.Data()),fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
+    fHistOneOverPtResidVsPtTPCselITSref[iS] = new TH2F(Form("hOneOverPtResidVsPtTPCselITSref%s",AliPID::ParticleShortName(iS)),Form("%s ; %s ; p_{T,rec}*(1/p_{T,rec}-1/p_{T,gen})",AliPID::ParticleLatexName(iS),xTit.Data()),fNPtBins,fMinPt,fMaxPt,100,-0.5,0.5);
     fOutput->Add(fHistPtResidVsPtTPCsel[iS]);
     fOutput->Add(fHistPtResidVsPtTPCselITSref[iS]);
     fOutput->Add(fHistOneOverPtResidVsPtTPCsel[iS]);
     fOutput->Add(fHistOneOverPtResidVsPtTPCselITSref[iS]);
   }
-  fHistPzResidVsPtTPCselAll = new TH2F("hPzResidVsPtTPCselAll","; p_{T,rec} (GeV/c) ; p_{z,rec}-p_{z,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,150,-0.3,0.3);
-  fHistPzResidVsPtTPCselITSrefAll = new TH2F("hPzResidVsPtTPCselITSrefAll","; p_{T,rec} (GeV/c) ; p_{z,rec}-p_{z,gen} (GeV/c)",fNPtBins,fMinPt,fMaxPt,150,-0.3,0.3);
+  fHistPzResidVsPtTPCselAll = new TH2F("hPzResidVsPtTPCselAll",Form("; %s ; p_{z,rec}-p_{z,gen} (GeV/c)",xTit.Data()),fNPtBins,fMinPt,fMaxPt,150,-0.3,0.3);
+  fHistPzResidVsPtTPCselITSrefAll = new TH2F("hPzResidVsPtTPCselITSrefAll",Form("; %s ; p_{z,rec}-p_{z,gen} (GeV/c)",xTit.Data()),fNPtBins,fMinPt,fMaxPt,150,-0.3,0.3);
   fHistPzResidVsEtaTPCselAll = new TH2F("hPzResidVsEtaTPCselAll","; #eta ; p_{z,rec}-p_{z,gen} (GeV/c)",fNEtaBins,-1.,1.,150,-0.3,0.3);
   fHistPzResidVsEtaTPCselITSrefAll = new TH2F("hPzResidVsEtaTPCselITSrefAll","; #eta ; p_{z,rec}-p_{z,gen} (GeV/c)",fNEtaBins,-1.,1.,150,-0.3,0.3);
   fOutput->Add(fHistPzResidVsPtTPCselAll);
@@ -577,26 +666,102 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistEtaPhiPtTPCselITSrefGood);
   fOutput->Add(fHistEtaPhiPtTPCselITSrefFake);
 
-  fHistImpParXYPtMulTPCselSPDanyGood = new TH3F("hImpParXYPtMulTPCselSPDanyGood"," ; p_{T} (GeV/c) ; d_{0}^{xy} (#mum) ; N_{CL1}",nPtBins4ip,ptBins4ip,nIPBins4ip,ipBins4ip,nMultBins4ip,multBins4ip);
-  fHistImpParXYPtMulTPCselSPDanyFake = new TH3F("hImpParXYPtMulTPCselSPDanyFake"," ; p_{T} (GeV/c) ; d_{0}^{xy} (#mum) ; N_{CL1}",nPtBins4ip,ptBins4ip,nIPBins4ip,ipBins4ip,nMultBins4ip,multBins4ip);
+  fHistImpParXYPtMulTPCselSPDanyGood = new TH3F("hImpParXYPtMulTPCselSPDanyGood",Form(" ; %s ; d_{0}^{xy} (#mum) ; N_{CL1}",xTit.Data()),nPtBins4ip,ptBins4ip,nIPBins4ip,ipBins4ip,nMultBins4ip,multBins4ip);
+  fHistImpParXYPtMulTPCselSPDanyFake = new TH3F("hImpParXYPtMulTPCselSPDanyFake",Form(" ; %s ; d_{0}^{xy} (#mum) ; N_{CL1}",xTit.Data()),nPtBins4ip,ptBins4ip,nIPBins4ip,ipBins4ip,nMultBins4ip,multBins4ip);
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanyGood);
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanyFake);
 
-  fHistImpParXYPtMulTPCselSPDanyPrim = new TH3F("hImpParXYPtMulTPCselSPDanyPrim"," ; p_{T} (GeV/c) ; d_{0}^{xy} (#mum) ; N_{CL1}",nPtBins4ip,ptBins4ip,nIPBins4ip,ipBins4ip,nMultBins4ip,multBins4ip);
-  fHistImpParXYPtMulTPCselSPDanySecDec = new TH3F("hImpParXYPtMulTPCselSPDanySecDec"," ; p_{T} (GeV/c) ; d_{0}^{xy} (#mum) ; N_{CL1}",nPtBins4ip,ptBins4ip,nIPBins4ip,ipBins4ip,nMultBins4ip,multBins4ip);
-  fHistImpParXYPtMulTPCselSPDanySecMat = new TH3F("hImpParXYPtMulTPCselSPDanySecMat"," ; p_{T} (GeV/c) ; d_{0}^{xy} (#mum) ; N_{CL1}",nPtBins4ip,ptBins4ip,nIPBins4ip,ipBins4ip,nMultBins4ip,multBins4ip);
+  fHistImpParXYPtMulTPCselSPDanyPrim = new TH3F("hImpParXYPtMulTPCselSPDanyPrim",Form(" ; %s ; d_{0}^{xy} (#mum) ; N_{CL1}",xTit.Data()),nPtBins4ip,ptBins4ip,nIPBins4ip,ipBins4ip,nMultBins4ip,multBins4ip);
+  fHistImpParXYPtMulTPCselSPDanySecDec = new TH3F("hImpParXYPtMulTPCselSPDanySecDec",Form(" ; %s ; d_{0}^{xy} (#mum) ; N_{CL1}",xTit.Data()),nPtBins4ip,ptBins4ip,nIPBins4ip,ipBins4ip,nMultBins4ip,multBins4ip);
+  fHistImpParXYPtMulTPCselSPDanySecMat = new TH3F("hImpParXYPtMulTPCselSPDanySecMat",Form(" ; %s ; d_{0}^{xy} (#mum) ; N_{CL1}",xTit.Data()),nPtBins4ip,ptBins4ip,nIPBins4ip,ipBins4ip,nMultBins4ip,multBins4ip);
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanyPrim);
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanySecDec);
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanySecMat);
-
-
+  for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++){
+    fHistnSigmadEdxTPCVsP[jsp] = new TH2F(Form("hnSigmadEdxTPCVsP%s",AliPID::ParticleShortName(jsp)),Form("  ; p_{TPC} (GeV/c) ; n#sigma_{TPC}(%s)",AliPID::ParticleShortName(jsp)),100,0.,5.,200,-10.,10.);
+    fHistnSigmaTOFVsP[jsp] = new TH2F(Form("hnSigmaTOFVsP%s",AliPID::ParticleShortName(jsp)),Form("  ; p (GeV/c) ; n#sigma_{TOF}(%s)",AliPID::ParticleLatexName(jsp)),100,0.,5.,200,-10.,10.);
+    fOutput->Add(fHistnSigmadEdxTPCVsP[jsp]);
+    fOutput->Add(fHistnSigmaTOFVsP[jsp]);
+  }
+  fHistTOFMismProb = new TH1F("hTOFMismProb"," ; TOF mismatch prob",100,0.,1.01);
+  fHistnSigmaPionTOFVsSel= new TH2F("hnSigmaPionTOFVsSel"," ; ; n#sigma_{TOF}(#pi)",4,-0.5,3.5,2000,-1000.,1000.);
+  fHistnSigmaPionTOFVsSel->GetXaxis()->SetBinLabel(1,"!kDetPidOk");
+  fHistnSigmaPionTOFVsSel->GetXaxis()->SetBinLabel(2,"kDetPidOk");
+  fHistnSigmaPionTOFVsSel->GetXaxis()->SetBinLabel(3,"p(mism)>0.01");
+  fHistnSigmaPionTOFVsSel->GetXaxis()->SetBinLabel(4,"p(mism)<0.01");
+  fOutput->Add(fHistTOFMismProb);
+  fOutput->Add(fHistnSigmaPionTOFVsSel);
+  
+  fHistGenK0s = new TH2F("hGenK0s"," ; p_{T} ; y",200,0.,10.,20,-1.,1.);
   fHistInvMassK0s = new TH3F("hInvMassK0s"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(K0s) ; R (cm)",200,0.4,0.6,50,0.,10.,50,0.,50.);
   fHistInvMassLambda = new TH3F("hInvMassLambda"," ;Inv.Mass (GeV/c^{2}) ; p_{T}(#Lambda) ; R (cm)",200,1.0,1.2,50,0.,10.,50,0.,50.);
   fHistInvMassAntiLambda = new TH3F("hInvMassAntiLambda"," ;Inv.Mass (GeV/c^{2}) ; p_{T}(#bar{#Lambda}) ; R (cm)",200,1.0,1.2,50,0.,10.,50,0.,50.);
+  fOutput->Add(fHistGenK0s);
   fOutput->Add(fHistInvMassK0s);
   fOutput->Add(fHistInvMassLambda);
   fOutput->Add(fHistInvMassAntiLambda);
 
+  fHistDecayLengthVsPtK0s = new TH2F("hDecayLengthVsPtK0s"," ;K0s Decay Length (cm)",80,0.,80.,50,0.,10.);
+  fHistDecayLengthVsPtLambda = new TH2F("hDecayLengthVsPtLambda"," ;Lambda Decay Length (cm)",80,0.,80.,50,0.,10.);
+  fHistDecayLengthVsPtAntiLambda = new TH2F("hDecayLengthVsPtAntiLambda"," ;AntiLambda Decay Length (cm)",80,0.,80.,50,0.,10.);
+  fHistImpParXYVsPtK0s = new TH2F("hImpParXYVsPtK0s"," ;d_{0}^{xy} (cm) ; p_{T}(K0s)",200,-1.,1.,50,0.,10.);
+  fHistImpParZVsPtK0s = new TH2F("hImpParZVsPtK0s"," ;d_{0}^{z} (cm) ; p_{T}(K0s)",200,-1.,1.,50,0.,10.);
+  fHistImpParXYVsPtLambda = new TH2F("hImpParXYVsPtLambda"," ;d_{0}^{xy} (cm) ; p_{T}(#Lambda)",200,-1.,1.,50,0.,10.);
+  fHistImpParXYVsPtAntiLambda = new TH2F("hImpParXYVsPtAntiLambda"," ;d_{0}^{xy} (cm) ; p_{T}(#bar{#Lambda})",200,-1.,1.,50,0.,10.);
+  fHistImpParXYVsPtK0sDau = new TH2F("hImpParXYVsPtK0sDau"," ;d_{0}^{xy} (cm) ; p_{T}(K0s daughter)",200,-10.,10.,50,0.,10.);
+  fHistImpParXYVsPtLambdaDau = new TH2F("hImpParXYVsPtLambdaDau"," ;d_{0}^{xy} (cm) ; p_{T}(K0s daughter)",200,-10.,10.,50,0.,10.);
+  fHistImpParXYVsPtAntiLambdaDau = new TH2F("hImpParXYVsPtAntiLambdaDau"," ;d_{0}^{xy} (cm) ; p_{T}(K0s daughter)",200,-10.,10.,50,0.,10.);
+  fOutput->Add(fHistDecayLengthVsPtK0s);
+  fOutput->Add(fHistDecayLengthVsPtLambda);
+  fOutput->Add(fHistDecayLengthVsPtAntiLambda);
+  fOutput->Add(fHistImpParXYVsPtK0s);
+  fOutput->Add(fHistImpParZVsPtK0s);
+  fOutput->Add(fHistImpParXYVsPtLambda);
+  fOutput->Add(fHistImpParXYVsPtAntiLambda);
+  fOutput->Add(fHistImpParXYVsPtK0sDau);
+  fOutput->Add(fHistImpParXYVsPtLambdaDau);
+  fOutput->Add(fHistImpParXYVsPtAntiLambdaDau);
+  
+  fHistV0RadiusBeforeSel = new TH1F("hV0RadiusBeforeSel", " ; R (cm)",250,0.,50);
+  fHistV0RadiusAfterSel = new TH1F("hV0RadiusAfterSel", " ; R (cm)",250,0.,50);
+  fHistV0CosPointBeforeSel = new TH1F("hV0CosPointBeforeSel", " ; cos(#vartheta_{p})",200,-1.,1.);
+  fHistV0CosPointVsMomBeforeSel = new TH2F("hV0CosPointVsMomBeforeSel", " ; p (GeV/c) ; cos(#vartheta_{p})",100,0.,10.,200,-1.,1.);
+  fHistV0CosPointAfterSel = new TH1F("hV0CosPointAfterSel", " ; cos(#vartheta_{p})",200,-1.,1.);
+  fHistCrossRowV0DauBeforeSel = new TH1F("hCrossRowV0DauBeforeSel", " ; N. Crossed Rows",161,-0.5,160.5);
+  fHistCrossRowV0DauAfterSel = new TH1F("hCrossRowV0DauAfterSel", " ; N. Crossed Rows",161,-0.5,160.5);
+  fHistEtaV0DauBeforeSel = new TH1F("hEtaV0DauBeforeSel", " ; #eta",100,-2,2);
+  fHistEtaV0DauAfterSel = new TH1F("hEtaV0DauAfterSel", " ; #eta",100,-2,2);
+  fHistImpParV0DauBeforeSel = new TH1F("hImpParV0DauBeforeSel"," ;d_{0}^{xy} (cm)",200,-1,1);
+  fHistImpParV0DauAfterSel = new TH1F("hImpParV0DauAfterSel"," ;d_{0}^{xy} (cm)",200,-1,1);
+  fHistDCAV0DauBeforeSel = new TH1F("hDCAV0DauBeforeSel"," ; V0 daughter DCA (cm)",100,0,5);
+  fHistDCAV0DauAfterSel = new TH1F("hDCAV0DauAfterSel"," ; V0 daughter DCA (cm)",100,0,5);
+  fOutput->Add(fHistV0RadiusBeforeSel);
+  fOutput->Add(fHistV0RadiusAfterSel);
+  fOutput->Add(fHistV0CosPointBeforeSel);
+  fOutput->Add(fHistV0CosPointVsMomBeforeSel);
+  fOutput->Add(fHistV0CosPointAfterSel);
+  fOutput->Add(fHistCrossRowV0DauBeforeSel);
+  fOutput->Add(fHistCrossRowV0DauAfterSel);
+  fOutput->Add(fHistEtaV0DauBeforeSel);
+  fOutput->Add(fHistEtaV0DauAfterSel);
+  fOutput->Add(fHistImpParV0DauBeforeSel);
+  fOutput->Add(fHistImpParV0DauAfterSel);
+  fOutput->Add(fHistDCAV0DauBeforeSel);
+  fOutput->Add(fHistDCAV0DauAfterSel);
+  // K0s THnF: mass, pt, R, status track+, status track-
+  if(fFillMulDimK0s){
+    int nbinsMuldimK0s[5]={200,200,100,3,3};
+    double xminMuldimK0s[5]={0.4,0., 0.,-0.5,-0.5};
+    double xmaxMuldimK0s[5]={0.6,10.,10.,2.5,2.5};
+    fHistMuldimK0s = new THnF("hMultiDimK0s","",5,nbinsMuldimK0s,xminMuldimK0s,xmaxMuldimK0s);
+    fHistMuldimK0s->GetAxis(0)->SetTitle("Inv.Mass (GeV/c^{2})");
+    fHistMuldimK0s->GetAxis(1)->SetTitle("p_{T}(K0s)");
+    fHistMuldimK0s->GetAxis(2)->SetTitle("R (cm)");
+    fHistMuldimK0s->GetAxis(3)->SetTitle("Status dau+");
+    fHistMuldimK0s->GetAxis(4)->SetTitle("Status dau-");
+    fOutput->Add(fHistMuldimK0s);
+  }
+  
   PostData(1,fOutput);
   PostData(2,fTrackTree);
 
@@ -618,11 +783,17 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
   AliPIDResponse *pidResp=inputHandler->GetPIDResponse();
   
   TClonesArray *arrayMC=0;
-
+  AliAODMCHeader *aodMcHeader = 0x0;
+  
   if(fReadMC){
     arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
     if(!arrayMC) {
       Printf("ERROR: MC particles branch not found!\n");
+      return;
+    }
+    aodMcHeader = dynamic_cast<AliAODMCHeader*>(fInputEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
+    if(!aodMcHeader) {
+      Printf("ERROR: MC header branch not found!\n");
       return;
     }
   }
@@ -706,9 +877,30 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     utils.SetCheckPlpFromDifferentBCMV(kTRUE);
     Bool_t isPUMV = utils.IsPileUpMV(aod);
     if(isPUMV) return;
-    fHistNEvents->Fill(6);
   }
+  Int_t runNumb=aod->GetRunNumber();
+  if(fUsePbPbOutOfBunchPileupCutsITSTPC){
+    AliEventCuts evc;
+    evc.SetManualMode();
+    if(runNumb >= 244917 && runNumb <= 246994) evc.SetupRun2PbPb();
+    else if(runNumb >= 295369 && runNumb <= 297624) evc.SetupPbPb2018();
+    evc.SetRejectTPCPileupWithITSTPCnCluCorr(true, fUsePbPbOutOfBunchPileupCutsITSTPC);
+    evc.AcceptEvent(aod);
+    if(fKeepOnlyEventsWithPileup && evc.PassedCut(AliEventCuts::kTPCPileUp)) return;
+    if(!fKeepOnlyEventsWithPileup && !evc.PassedCut(AliEventCuts::kTPCPileUp)) return;
+  }
+  fHistNEvents->Fill(6);
 
+  // in PbPb reject events with generated pileup
+  if(fMCEvent && aodMcHeader && ((runNumb >= 244917 && runNumb <= 246994) || (runNumb >= 295369 && runNumb <= 297624))){
+    Bool_t isPileupMCEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(fMCEvent,"ijing");
+    Bool_t isPileupAODheader = AliAnalysisUtils::IsPileupInGeneratedEvent(aodMcHeader,"ijing");
+    fHistGenPilTag->Fill(isPileupMCEvent,isPileupAODheader);
+    if(fRejectPbPbEventsWithGeneratedPileup && isPileupAODheader) return;
+    if(fKeepOnlyEventsWithPileup && !isPileupAODheader) return;
+  }
+  fHistNEvents->Fill(7);
+  
   fHistNtracksFb4VsV0aftEvSel->Fill(vZEROampl,ntracksFB4);
   fHistNtracksFb5VsV0aftEvSel->Fill(vZEROampl,ntracksFB5);
 
@@ -723,10 +915,10 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     fHistNtracksFb8->Fill(ntracksFB8);
   }
   
-  Double_t pos[3],cov[6];
-  vtTrc->GetXYZ(pos);
-  vtTrc->GetCovarianceMatrix(cov);
-  const AliESDVertex vESD(pos,cov,100.,100);
+  Double_t posPrimVtx[3],covPrimVtx[6];
+  vtTrc->GetXYZ(posPrimVtx);
+  vtTrc->GetCovarianceMatrix(covPrimVtx);
+  const AliESDVertex vESD(posPrimVtx,covPrimVtx,100.,100);
 
   fHistNTracks->Fill(ntracks);
   fHistNTracksVsTPCclusters->Fill(totTPCclusters,ntracks);
@@ -756,6 +948,8 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 
     Int_t chtrack=track->Charge();
     Double_t pttrack=track->Pt();
+    Double_t momtrack=track->P();
+    Double_t momtrackTPC=track->GetTPCmomentum();
     Double_t etatrack=track->Eta();
     Double_t phitrack=track->Phi();
     fTreeVarFloat[3]=track->Px();
@@ -780,15 +974,15 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     UChar_t clumap=track->GetITSClusterMap();
     if(itsRefit && !(statusTrack&AliESDtrack::kTPCin)){
       if(statusTrack&AliESDtrack::kITSpureSA){
-	fHistITSnClusITSPureSA->Fill(nITSclus);
-	for(Int_t layer=0; layer<6; layer++) {
-	  if(TESTBIT(clumap,layer)) fHistITSCluInLayITSPureSA->Fill(layer);
-	}
+        fHistITSnClusITSPureSA->Fill(nITSclus);
+        for(Int_t layer=0; layer<6; layer++) {
+          if(TESTBIT(clumap,layer)) fHistITSCluInLayITSPureSA->Fill(layer);
+        }
       }else{
-	fHistITSnClusITSsa->Fill(nITSclus);
-	for(Int_t layer=0; layer<6; layer++) {
-	  if(TESTBIT(clumap,layer)) fHistITSCluInLayITSsa->Fill(layer);
-	}
+        fHistITSnClusITSsa->Fill(nITSclus);
+        for(Int_t layer=0; layer<6; layer++) {
+          if(TESTBIT(clumap,layer)) fHistITSCluInLayITSsa->Fill(layer);
+        }
       }
     }
     Int_t nSPDclus=0;
@@ -836,11 +1030,12 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     if(pidResp){
       AliPIDResponse::EDetPidStatus status = pidResp->CheckPIDStatus(AliPIDResponse::kTPC,track);
       if (status == AliPIDResponse::kDetPidOk){
-	for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++){
-	  nSigmaTPC[jsp]=pidResp->NumberOfSigmasTPC(track,(AliPID::EParticleType)jsp);
-	}
+        for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++){
+          nSigmaTPC[jsp]=pidResp->NumberOfSigmasTPC(track,(AliPID::EParticleType)jsp);
+        }
       }
     }
+
     fTreeVarFloat[15]=dedx;
     fTreeVarFloat[16]=nSigmaTPC[0];
     fTreeVarFloat[17]=nSigmaTPC[2];
@@ -894,16 +1089,16 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 
     for(Int_t jb=0; jb<kNumOfFilterBits; jb++){
       if(track->TestFilterBit(1<<jb)){
-	fHistImpParXYPtMulFiltBit[jb]->Fill(pttrack,impactXY*10000.,ncl1);
-	fHistEtaPhiPtFiltBit[jb]->Fill(etatrack,phitrack,pttrack);
-	fHistITScluPtFiltBit[jb]->Fill(pttrack,nITSclus);
- 	fHistSPDcluPtFiltBit[jb]->Fill(pttrack,nSPDclus);
- 	fHistTPCcluPtFiltBit[jb]->Fill(pttrack,nTPCclus);
-	fHistTPCcrrowsPtFiltBit[jb]->Fill(pttrack,nCrossedRowsTPC);
-	fHistTPCCrowOverFindPtFiltBit[jb]->Fill(pttrack,ratioCrossedRowsOverFindableClustersTPC);
-	fHistTPCChi2clusPtFiltBit[jb]->Fill(pttrack,chi2clus);
-	fHistChi2TPCConstrVsGlobPtFiltBit[jb]->Fill(pttrack,goldenChi2);
-	fHistSig1ptCovMatPtFiltBit[jb]->Fill(pttrack,curvrelerr);
+        fHistImpParXYPtMulFiltBit[jb]->Fill(pttrack,impactXY*10000.,ncl1);
+        fHistEtaPhiPtFiltBit[jb]->Fill(etatrack,phitrack,pttrack);
+        fHistITScluPtFiltBit[jb]->Fill(pttrack,nITSclus);
+        fHistSPDcluPtFiltBit[jb]->Fill(pttrack,nSPDclus);
+        fHistTPCcluPtFiltBit[jb]->Fill(pttrack,nTPCclus);
+        fHistTPCcrrowsPtFiltBit[jb]->Fill(pttrack,nCrossedRowsTPC);
+        fHistTPCCrowOverFindPtFiltBit[jb]->Fill(pttrack,ratioCrossedRowsOverFindableClustersTPC);
+        fHistTPCChi2clusPtFiltBit[jb]->Fill(pttrack,chi2clus);
+        fHistChi2TPCConstrVsGlobPtFiltBit[jb]->Fill(pttrack,goldenChi2);
+        fHistSig1ptCovMatPtFiltBit[jb]->Fill(pttrack,curvrelerr);
       }
     }
 
@@ -944,9 +1139,28 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       fHistTPCchi2PerClusPhiPtTPCselITSref->Fill(chi2clus,pttrack,phitrack);
       fHistSig1ptCovMatPhiPtTPCselITSref->Fill(curvrelerr,pttrack,phitrack);
       if(spdAny){
-	fHistTPCchi2PerClusPhiPtTPCselSPDany->Fill(chi2clus,pttrack,phitrack);
-	fHistSig1ptCovMatPhiPtTPCselSPDany->Fill(curvrelerr,pttrack,phitrack);
+        fHistTPCchi2PerClusPhiPtTPCselSPDany->Fill(chi2clus,pttrack,phitrack);
+        fHistSig1ptCovMatPhiPtTPCselSPDany->Fill(curvrelerr,pttrack,phitrack);
       }
+    }
+
+    Double_t nSigmaTOF[AliPID::kSPECIESC];
+    for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++) nSigmaTOF[jsp]=-999.;
+    if(pidResp){
+      for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++) nSigmaTOF[jsp]=pidResp->NumberOfSigmasTOF(track,(AliPID::EParticleType)jsp);
+      AliPIDResponse::EDetPidStatus status = pidResp->CheckPIDStatus(AliPIDResponse::kTOF,track);
+      if (status != AliPIDResponse::kDetPidOk) fHistnSigmaPionTOFVsSel->Fill(0.,nSigmaTOF[AliPID::kPion]);
+      else{
+	fHistnSigmaPionTOFVsSel->Fill(1.,nSigmaTOF[AliPID::kPion]);
+	Float_t probMis = pidResp->GetTOFMismatchProbability(track);
+	fHistTOFMismProb->Fill(probMis);
+	if(probMis > 0.01) fHistnSigmaPionTOFVsSel->Fill(2.,nSigmaTOF[AliPID::kPion]);
+	else{
+	  fHistnSigmaPionTOFVsSel->Fill(3.,nSigmaTOF[AliPID::kPion]);
+	  for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++) fHistnSigmaTOFVsP[jsp]->Fill(momtrack,nSigmaTOF[jsp]);
+	}
+      }
+      for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++) fHistnSigmadEdxTPCVsP[jsp]->Fill(momtrackTPC,nSigmaTPC[jsp]);
     }
 
     bool pid[AliPID::kSPECIESC] = {false};
@@ -967,70 +1181,83 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
     }
 
     if(fReadMC && pttrack>0.){
-      fHistPtResidVsPtTPCselAll->Fill(pttrack,(pttrack-ptgen));
-      fHistOneOverPtResidVsPtTPCselAll->Fill(pttrack,pttrack*(1./pttrack-invptgen));
-      fHistPzResidVsPtTPCselAll->Fill(pttrack,(track->Pz()-pzgen));
+      Double_t ptOnX=pttrack;
+      if(fUseGenPt) ptOnX=ptgen;
+      fHistPtResidVsPtTPCselAll->Fill(ptOnX,(pttrack-ptgen));
+      fHistOneOverPtResidVsPtTPCselAll->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
+      fHistPzResidVsPtTPCselAll->Fill(ptOnX,(track->Pz()-pzgen));
       fHistPzResidVsEtaTPCselAll->Fill(etatrack,(track->Pz()-pzgen));
       if (itsRefit){
-	fHistPtResidVsPtTPCselITSrefAll->Fill(pttrack,(pttrack-ptgen));
-	fHistOneOverPtResidVsPtTPCselITSrefAll->Fill(pttrack,pttrack*(1./pttrack-invptgen));
-	fHistPzResidVsPtTPCselITSrefAll->Fill(pttrack,(track->Pz()-pzgen));
-	fHistPzResidVsEtaTPCselITSrefAll->Fill(etatrack,(track->Pz()-pzgen));
+        fHistPtResidVsPtTPCselITSrefAll->Fill(ptOnX,(pttrack-ptgen));
+        fHistOneOverPtResidVsPtTPCselITSrefAll->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
+        fHistPzResidVsPtTPCselITSrefAll->Fill(ptOnX,(track->Pz()-pzgen));
+        fHistPzResidVsEtaTPCselITSrefAll->Fill(etatrack,(track->Pz()-pzgen));
       }
       if(isPhysPrim==1){
-	fHistPtResidVsPtTPCselPrim->Fill(pttrack,(pttrack-ptgen));
-	fHistOneOverPtResidVsPtTPCselPrim->Fill(pttrack,pttrack*(1./pttrack-invptgen));
-	if (itsRefit){
-	  fHistPtResidVsPtTPCselITSrefPrim->Fill(pttrack,(pttrack-ptgen));
-	  fHistOneOverPtResidVsPtTPCselITSrefPrim->Fill(pttrack,pttrack*(1./pttrack-invptgen));
-	}
+        fHistPtResidVsPtTPCselPrim->Fill(ptOnX,(pttrack-ptgen));
+        fHistOneOverPtResidVsPtTPCselPrim->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
+        if (itsRefit){
+          fHistPtResidVsPtTPCselITSrefPrim->Fill(ptOnX,(pttrack-ptgen));
+          fHistOneOverPtResidVsPtTPCselITSrefPrim->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
+        }
       }else if(isPhysPrim==0){
-	fHistPtResidVsPtTPCselSecDec->Fill(pttrack,(pttrack-ptgen));
-	fHistOneOverPtResidVsPtTPCselSecDec->Fill(pttrack,pttrack*(1./pttrack-invptgen));
-	if (itsRefit){
-	  fHistPtResidVsPtTPCselITSrefSecDec->Fill(pttrack,(pttrack-ptgen));
-	  fHistOneOverPtResidVsPtTPCselITSrefSecDec->Fill(pttrack,pttrack*(1./pttrack-invptgen));
-	}
+        fHistPtResidVsPtTPCselSecDec->Fill(ptOnX,(pttrack-ptgen));
+        fHistOneOverPtResidVsPtTPCselSecDec->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
+        if (itsRefit){
+          fHistPtResidVsPtTPCselITSrefSecDec->Fill(ptOnX,(pttrack-ptgen));
+          fHistOneOverPtResidVsPtTPCselITSrefSecDec->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
+        }
       }else if(isPhysPrim==-1){
-	fHistPtResidVsPtTPCselSecMat->Fill(pttrack,(pttrack-ptgen));
-	fHistOneOverPtResidVsPtTPCselSecMat->Fill(pttrack,pttrack*(1./pttrack-invptgen));
-	if (itsRefit){
-	  fHistPtResidVsPtTPCselITSrefSecMat->Fill(pttrack,(pttrack-ptgen));
-	  fHistOneOverPtResidVsPtTPCselITSrefSecMat->Fill(pttrack,pttrack*(1./pttrack-invptgen));
-	}
+        fHistPtResidVsPtTPCselSecMat->Fill(ptOnX,(pttrack-ptgen));
+        fHistOneOverPtResidVsPtTPCselSecMat->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
+        if (itsRefit){
+          fHistPtResidVsPtTPCselITSrefSecMat->Fill(ptOnX,(pttrack-ptgen));
+          fHistOneOverPtResidVsPtTPCselITSrefSecMat->Fill(ptOnX,pttrack*(1./pttrack-invptgen));
+        }
       }
       if(isPhysPrim==1){
-	for (int iS = 0; iS < AliPID::kSPECIESC; ++iS) {
-	  if (pid[iS]) {
-	    Double_t ptDiff=pttrack*AliPID::ParticleCharge(iS)-ptgen;
-	    Double_t oneOverPtDiff=0;
-	    if(AliPID::ParticleCharge(iS)>0) oneOverPtDiff=pttrack*AliPID::ParticleCharge(iS)*(1./(pttrack*AliPID::ParticleCharge(iS))-invptgen);
-	    fHistPtResidVsPtTPCsel[iS]->Fill(pttrack*AliPID::ParticleCharge(iS),ptDiff);
-	    fHistOneOverPtResidVsPtTPCsel[iS]->Fill(pttrack*AliPID::ParticleCharge(iS),oneOverPtDiff);
-	    if (itsRefit){ 
-	      fHistPtResidVsPtTPCselITSref[iS]->Fill(pttrack*AliPID::ParticleCharge(iS),ptDiff);
-	      fHistOneOverPtResidVsPtTPCselITSref[iS]->Fill(pttrack*AliPID::ParticleCharge(iS),oneOverPtDiff);
-	    }
-	  }
-	}
+        for (int iS = 0; iS < AliPID::kSPECIESC; ++iS) {
+          if (pid[iS]) {
+            Double_t ptDiff=pttrack*AliPID::ParticleCharge(iS)-ptgen;
+            Double_t oneOverPtDiff=0;
+            if(AliPID::ParticleCharge(iS)>0) oneOverPtDiff=pttrack*AliPID::ParticleCharge(iS)*(1./(pttrack*AliPID::ParticleCharge(iS))-invptgen);
+            fHistPtResidVsPtTPCsel[iS]->Fill(ptOnX*AliPID::ParticleCharge(iS),ptDiff);
+            fHistOneOverPtResidVsPtTPCsel[iS]->Fill(ptOnX*AliPID::ParticleCharge(iS),oneOverPtDiff);
+            if (itsRefit){ 
+              fHistPtResidVsPtTPCselITSref[iS]->Fill(ptOnX*AliPID::ParticleCharge(iS),ptDiff);
+              fHistOneOverPtResidVsPtTPCselITSref[iS]->Fill(ptOnX*AliPID::ParticleCharge(iS),oneOverPtDiff);
+            }
+          }
+        }
       }
     
       if(trlabel>=0){
-	fHistEtaPhiPtTPCselITSrefGood->Fill(etatrack,phitrack,pttrack);
-	if(itsRefit && spdAny) fHistImpParXYPtMulTPCselSPDanyGood->Fill(pttrack,impactXY*10000.,ncl1);
+        fHistEtaPhiPtTPCselITSrefGood->Fill(etatrack,phitrack,pttrack);
+        if(itsRefit && spdAny) fHistImpParXYPtMulTPCselSPDanyGood->Fill(ptOnX,impactXY*10000.,ncl1);
       }else{
-	fHistEtaPhiPtTPCselITSrefFake->Fill(etatrack,phitrack,pttrack);
-	if(itsRefit && spdAny) fHistImpParXYPtMulTPCselSPDanyFake->Fill(pttrack,impactXY*10000.,ncl1);
+        fHistEtaPhiPtTPCselITSrefFake->Fill(etatrack,phitrack,pttrack);
+        if(itsRefit && spdAny) fHistImpParXYPtMulTPCselSPDanyFake->Fill(ptOnX,impactXY*10000.,ncl1);
       }
       
       if(itsRefit && spdAny){
-	if(isPhysPrim==1) fHistImpParXYPtMulTPCselSPDanyPrim->Fill(pttrack,impactXY*10000.,ncl1);
-	else if(isPhysPrim==0) fHistImpParXYPtMulTPCselSPDanySecDec->Fill(pttrack,impactXY*10000.,ncl1);
-	else if(isPhysPrim==-1) fHistImpParXYPtMulTPCselSPDanySecMat->Fill(pttrack,impactXY*10000.,ncl1);
+        if(isPhysPrim==1) fHistImpParXYPtMulTPCselSPDanyPrim->Fill(ptOnX,impactXY*10000.,ncl1);
+        else if(isPhysPrim==0) fHistImpParXYPtMulTPCselSPDanySecDec->Fill(ptOnX,impactXY*10000.,ncl1);
+        else if(isPhysPrim==-1) fHistImpParXYPtMulTPCselSPDanySecMat->Fill(ptOnX,impactXY*10000.,ncl1);
       }
     }
   }
-
+  // build generated spectrum of K0s in case of MC
+  if(fMCEvent){
+    for (int iMC = 0; iMC < fMCEvent->GetNumberOfTracks(); ++iMC) {
+      AliVParticle *part = (AliVParticle*)fMCEvent->GetTrack(iMC);
+      if(part){
+	if(!part->IsPhysicalPrimary()) continue;
+	const int pdg = std::abs(part->PdgCode());
+	if(pdg==310) fHistGenK0s->Fill(part->Pt(),part->Y());
+      }
+    }
+  }
+  
   Int_t nv0s = aod->GetNumberOfV0s();
   for (Int_t iV0 = 0; iV0 < nv0s; iV0++){
     AliAODv0 *v0 = aod->GetV0(iV0);
@@ -1045,18 +1272,55 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       continue;
     }
     if(pTrack->GetID()<0 || nTrack->GetID()<0) continue;
-    if (pTrack->Charge() == nTrack->Charge()) continue;
+    if(pTrack->Charge() == nTrack->Charge()) continue;
+
+    fHistEtaV0DauBeforeSel->Fill(pTrack->Eta());
+    fHistEtaV0DauBeforeSel->Fill(nTrack->Eta());
+    fHistCrossRowV0DauBeforeSel->Fill(pTrack->GetTPCCrossedRows());
+    fHistCrossRowV0DauBeforeSel->Fill(nTrack->GetTPCCrossedRows());
 
     Double_t invMassK0s = v0->MassK0Short();
     Double_t invMassLambda = v0->MassLambda();
     Double_t invMassAntiLambda = v0->MassAntiLambda();
     Double_t ptv0=v0->Pt();
+    Double_t pv0=v0->P();
     Double_t xv0=v0->Xv();
     Double_t yv0=v0->Yv();
     Double_t rv0=TMath::Sqrt(xv0*xv0+yv0*yv0);
-
-    if(ConvertAndSelectAODTrack(pTrack,vESD,magField)==kFALSE) continue;
-    if(ConvertAndSelectAODTrack(nTrack,vESD,magField)==kFALSE) continue;
+    Double_t d0v0[2], covd0v0[3];
+    const AliVTrack *trackVV0 = dynamic_cast<const AliVTrack*>(v0);
+    if(trackVV0){
+      AliNeutralTrackParam* trackV0 = new AliNeutralTrackParam(trackVV0);
+      trackV0->PropagateToDCA(vtTrc,magField,99999.,d0v0,covd0v0);
+    }
+    // Daughter tracks impact parameter
+    // Not taken via v0->DcaPosToPrimVertex() and v0->DcaNegToPrimVertex()
+    // because prong DCA in AliAODv0 is stored with absolute value
+    Float_t d0p[2],d0n[2];
+    Float_t covd0p[3],covd0n[3];
+    pTrack->GetImpactParameters(d0p,covd0p);
+    nTrack->GetImpactParameters(d0n,covd0n);
+    Double_t dlen=v0->DecayLengthV0(posPrimVtx);
+    Double_t cpa=v0->CosPointingAngle(posPrimVtx);
+    Double_t dca=v0->DcaV0Daughters();
+    fHistV0RadiusBeforeSel->Fill(rv0);
+    fHistV0CosPointBeforeSel->Fill(cpa);
+    fHistV0CosPointVsMomBeforeSel->Fill(pv0,cpa);
+    fHistImpParV0DauBeforeSel->Fill(d0p[0]);
+    fHistImpParV0DauBeforeSel->Fill(d0n[0]);
+    fHistDCAV0DauBeforeSel->Fill(dca);
+    Bool_t okV0DauTr=kTRUE;
+    if(fUseTPCCutsForV0dau){
+      Double_t oldXY=fTrCutsTPC->GetMaxDCAToVertexXY();
+      Double_t oldZ=fTrCutsTPC->GetMaxDCAToVertexZ();
+      fTrCutsTPC->SetMaxDCAToVertexXY(999.);
+      fTrCutsTPC->SetMaxDCAToVertexZ(999.);
+      if(!ConvertAndSelectAODTrack(pTrack,vESD,magField,kFALSE)) okV0DauTr=kFALSE;
+      if(!ConvertAndSelectAODTrack(nTrack,vESD,magField,kFALSE)) okV0DauTr=kFALSE;
+      fTrCutsTPC->SetMaxDCAToVertexXY(oldXY);
+      fTrCutsTPC->SetMaxDCAToVertexZ(oldZ);
+    }
+    if(!okV0DauTr) continue;
     if(fRequireITSforV0dau & (1<<kBitRequireITSrefit)){
       if(!(pTrack->GetStatus() & AliESDtrack::kITSrefit)) continue;
       if(!(nTrack->GetStatus() & AliESDtrack::kITSrefit)) continue;
@@ -1065,22 +1329,37 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       if(!pTrack->HasPointOnITSLayer(0) && !pTrack->HasPointOnITSLayer(1)) continue;
       if(!nTrack->HasPointOnITSLayer(0) && !nTrack->HasPointOnITSLayer(1)) continue;
     }
-
+    if(fApplyV0Cuts){
+      if(TMath::Abs(d0p[0])<fV0CutArray[0] || TMath::Abs(d0n[0])<fV0CutArray[0]) continue;
+      if(dca>fV0CutArray[1]) continue;
+      if(cpa<fV0CutArray[2]) continue;
+      if(rv0<fV0CutArray[3] || rv0>fV0CutArray[4]) continue;
+    }
+    fHistEtaV0DauAfterSel->Fill(pTrack->Eta());
+    fHistEtaV0DauAfterSel->Fill(nTrack->Eta());
+    fHistCrossRowV0DauAfterSel->Fill(pTrack->GetTPCCrossedRows());
+    fHistCrossRowV0DauAfterSel->Fill(nTrack->GetTPCCrossedRows());
+    fHistV0RadiusAfterSel->Fill(rv0);
+    fHistV0CosPointAfterSel->Fill(cpa);
+    fHistImpParV0DauAfterSel->Fill(d0p[0]);
+    fHistImpParV0DauAfterSel->Fill(d0n[0]);
+    fHistDCAV0DauAfterSel->Fill(dca);
+ 
     Bool_t keepK0s=kTRUE;
     Bool_t keepLambda=kTRUE;
     Bool_t keepAntiLambda=kTRUE;
     if(!fReadMC){
       if(pidResp){
-	Double_t nsigmap=-999.;
-	if (pidResp->CheckPIDStatus(AliPIDResponse::kTPC,pTrack) == AliPIDResponse::kDetPidOk){
-	  nsigmap=pidResp->NumberOfSigmasTPC(pTrack,AliPID::kProton);
-	}
-	Double_t nsigman=-999.;
-	if (pidResp->CheckPIDStatus(AliPIDResponse::kTPC,nTrack) == AliPIDResponse::kDetPidOk){
-	  nsigman=pidResp->NumberOfSigmasTPC(nTrack,AliPID::kProton);
-	}
-	if(TMath::Abs(nsigmap)>3) keepLambda=kFALSE;
-	if(TMath::Abs(nsigman)>3) keepAntiLambda=kFALSE;
+        Double_t nsigmap=-999.;
+        if (pidResp->CheckPIDStatus(AliPIDResponse::kTPC,pTrack) == AliPIDResponse::kDetPidOk){
+          nsigmap=pidResp->NumberOfSigmasTPC(pTrack,AliPID::kProton);
+        }
+        Double_t nsigman=-999.;
+        if (pidResp->CheckPIDStatus(AliPIDResponse::kTPC,nTrack) == AliPIDResponse::kDetPidOk){
+          nsigman=pidResp->NumberOfSigmasTPC(nTrack,AliPID::kProton);
+        }
+        if(TMath::Abs(nsigmap)>3) keepLambda=kFALSE;
+        if(TMath::Abs(nsigman)>3) keepAntiLambda=kFALSE;
       }
     }else{
       keepK0s=kFALSE;
@@ -1091,28 +1370,71 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
       AliAODMCParticle* partPos = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(labelPos)));
       AliAODMCParticle* partNeg = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(labelNeg)));
       if(partPos && partNeg){
-        Int_t labelMotherPos=partPos->GetMother() ;
+        Int_t labelMotherPos=partPos->GetMother();
         Int_t labelMotherNeg=partNeg->GetMother();
-	if(labelMotherPos==labelMotherNeg && labelMotherPos>-1){
-	  AliAODMCParticle* partV0 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(labelMotherPos)));
- 	  Int_t pdgV0=partV0->GetPdgCode();
-	  if(TMath::Abs(pdgV0)==310) keepK0s=kTRUE;
-	  if(pdgV0==3122) keepLambda=kTRUE;
-	  if(pdgV0==-3122) keepAntiLambda=kTRUE;
-	}
+        if(labelMotherPos==labelMotherNeg && labelMotherPos>-1){
+          AliAODMCParticle* partV0 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(TMath::Abs(labelMotherPos)));
+          Int_t pdgV0=partV0->GetPdgCode();
+          if(TMath::Abs(pdgV0)==310) keepK0s=kTRUE;
+          if(pdgV0==3122) keepLambda=kTRUE;
+          if(pdgV0==-3122) keepAntiLambda=kTRUE;
+        }
       }
     }
     if(TMath::Abs(invMassK0s-0.4976)<0.03){
       keepLambda=kFALSE;
       keepAntiLambda=kFALSE;
     }
+    Bool_t inPeakK0s=keepK0s;
+    Bool_t inPeakLambda=keepLambda;
+    Bool_t inPeakAntiLambda=keepAntiLambda;
+    if(!fReadMC){
+      if(TMath::Abs(invMassK0s-0.497614)>0.016) inPeakK0s=kFALSE;  // 16 MeV window ~ 4 sigmas
+      if(TMath::Abs(invMassLambda-1.11568)>0.006) inPeakLambda=kFALSE;  // 6 MeV window ~ 4 sigmas
+      if(TMath::Abs(invMassAntiLambda-1.11568)>0.006) inPeakAntiLambda=kFALSE; // 6 MeV window ~ 4 sigmas
+    }
 
-    if(keepK0s) fHistInvMassK0s->Fill(invMassK0s,ptv0,rv0);
+    if(keepK0s) {
+      if(!fApplyV0Cuts || TMath::Abs(v0->RapK0Short())<fV0CutArray[5]){
+        fHistInvMassK0s->Fill(invMassK0s,ptv0,rv0);
+        int statusp=0;
+        if(pTrack->GetStatus() & AliESDtrack::kITSrefit){
+          statusp=1;
+          if(pTrack->HasPointOnITSLayer(0) || pTrack->HasPointOnITSLayer(1)) statusp=2;
+        }
+        int statusn=0;
+        if(nTrack->GetStatus() & AliESDtrack::kITSrefit){
+          statusn=1;
+          if(nTrack->HasPointOnITSLayer(0) || nTrack->HasPointOnITSLayer(1)) statusn=2;
+        }
+        double arrK0s[5]={invMassK0s,ptv0,rv0,(double)statusp,(double)statusn};
+        if(fFillMulDimK0s && fHistMuldimK0s) fHistMuldimK0s->Fill(arrK0s);
+        if(inPeakK0s){
+          fHistDecayLengthVsPtK0s->Fill(dlen,ptv0);
+          fHistImpParXYVsPtK0s->Fill(d0v0[0],ptv0);
+          fHistImpParZVsPtK0s->Fill(d0v0[1],ptv0);
+          fHistImpParXYVsPtK0sDau->Fill(d0p[0],ptv0);
+          fHistImpParXYVsPtK0sDau->Fill(d0n[0],ptv0);
+        }
+      }
+    }
     if(keepLambda){
       fHistInvMassLambda->Fill(invMassLambda,ptv0,rv0);
+      if(inPeakLambda){
+        fHistDecayLengthVsPtLambda->Fill(dlen,ptv0);
+        fHistImpParXYVsPtLambda->Fill(d0v0[0],ptv0);
+        fHistImpParXYVsPtLambdaDau->Fill(d0p[0],ptv0);
+        fHistImpParXYVsPtLambdaDau->Fill(d0n[0],ptv0);
+      }
     }
     if(keepAntiLambda){
       fHistInvMassAntiLambda->Fill(invMassAntiLambda,ptv0,rv0);
+      if(inPeakAntiLambda){
+        fHistDecayLengthVsPtAntiLambda->Fill(dlen,ptv0);
+        fHistImpParXYVsPtAntiLambda->Fill(d0v0[0],ptv0);
+        fHistImpParXYVsPtAntiLambdaDau->Fill(d0p[0],ptv0);
+        fHistImpParXYVsPtAntiLambdaDau->Fill(d0n[0],ptv0);
+      }
     }
   }
   PostData(1,fOutput);
@@ -1121,28 +1443,15 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 }
 
 //______________________________________________________________________________
-Bool_t AliAnalysisTaskCheckAODTracks::ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD, Double_t magField)
+Bool_t AliAnalysisTaskCheckAODTracks::ConvertAndSelectAODTrack(AliAODTrack* aTrack, const AliESDVertex vESD, Double_t magField, Bool_t checkPropagation)
 {
-  AliESDtrack esdTrack(aTrack);
-  esdTrack.SetTPCClusterMap(aTrack->GetTPCClusterMap());
-  esdTrack.SetTPCSharedMap(aTrack->GetTPCSharedMap());
-  esdTrack.SetTPCPointsF(aTrack->GetTPCNclsF());
-  esdTrack.SetTPCNcls(aTrack->GetTPCNcls());
-  esdTrack.SetITSchi2(aTrack->GetITSchi2());
-  Int_t nTPCclus=aTrack->GetNcls(1);
-  Double_t chi2ndf=aTrack->Chi2perNDF();
-  Double_t chi2tpc=999.;
-  if(chi2ndf>0. && nTPCclus > 5){
-    chi2tpc=Float_t(nTPCclus-5)*chi2ndf;
+  if(checkPropagation){
+    AliESDtrack esdTrack(aTrack);
+    Bool_t okDCA=esdTrack.RelateToVertex(&vESD,magField,99999.);
+    if(!okDCA) return kFALSE;
   }
-  esdTrack.SetTPCchi2(chi2tpc);
-  // needed to calculate the impact parameters
-  Bool_t okDCA=esdTrack.RelateToVertex(&vESD,magField,99999.);
-  if(!okDCA) return kFALSE;
-  AliAODVertex* av=aTrack->GetProdVertex();
-  if(av->GetType()==AliAODVertex::kKink) return kFALSE;
   if(aTrack->GetTPCsignalN()<fMinNumOfTPCPIDclu) return kFALSE;
-  return fTrCutsTPC->AcceptTrack(&esdTrack);
+  return fTrCutsTPC->IsSelected(aTrack);
 }
 //______________________________________________________________________________
 void AliAnalysisTaskCheckAODTracks::Terminate(Option_t */*option*/)

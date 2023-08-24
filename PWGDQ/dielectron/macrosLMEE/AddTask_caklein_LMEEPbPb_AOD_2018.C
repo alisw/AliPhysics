@@ -21,9 +21,6 @@ AliAnalysisTask *AddTask_caklein_LMEEPbPb_AOD_2018(Char_t* outputFileName = "LME
   TString trainRoot = gSystem->Getenv("TRAIN_ROOT");
   if (trainRoot.IsNull()) configBasePath= "$ALICE_PHYSICS/PWGDQ/dielectron/macrosLMEE/";
 
-  // TString configFile("Config_caklein_LMEEPbPb_AOD.C");
-  TString configFilePath(configBasePath+configFile.Data());
-  TString configLMEECutLibPath(configBasePath+configLMEECutLib);
 
   //Load updated macros from private ALIEN path
   if (getFromAlien //&&
@@ -33,6 +30,10 @@ AliAnalysisTask *AddTask_caklein_LMEEPbPb_AOD_2018(Char_t* outputFileName = "LME
     cout << "Copy config from Alien" << std::endl;
     configBasePath=Form("%s/",gSystem->pwd());
   }
+  
+  // TString configFile("Config_caklein_LMEEPbPb_AOD.C");
+  TString configFilePath      (configBasePath+configFile);
+  TString configLMEECutLibPath(configBasePath+configLMEECutLib);
 
   // Load cut library when running several trains at once. Library has to be only loaded once otherwise the trains fail miserably
   Bool_t err=kFALSE;
@@ -99,10 +100,7 @@ AliAnalysisTask *AddTask_caklein_LMEEPbPb_AOD_2018(Char_t* outputFileName = "LME
                        outputFileName);
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(task, 0, coutput1 );
   mgr->ConnectOutput(task, 1, cOutputHist1);
-  mgr->ConnectOutput(task, 2, cOutputHist2);
-  mgr->ConnectOutput(task, 3, cOutputHist3);
 
   return task;
 }

@@ -156,8 +156,8 @@ void AliAnalysisTaskTritonVsMultiplicity_PbPb::UserCreateOutputObjects()
     histoNsigmaTOFtriton_vs_p         = new TH2F ("histoNsigmaTOFtriton_vs_p","",500,0,5,1000,-20,20);
     histoNsigmaTOFantitriton_vs_p     = new TH2F ("histoNsigmaTOFantitriton_vs_p","",500,0,5,1000,-20,20);
     
-    histoNsigmaTPCtriton_vs_pt_notof     = new TH2F ("histoNsigmaTPCtriton_vs_pt_notof","",500,0,5,1000,-20,20);
-    histoNsigmaTPCantitriton_vs_pt_notof = new TH2F ("histoNsigmaTPCantitriton_vs_pt_notof","",500,0,5,1000,-20,20);
+    histoNsigmaTPCtriton_vs_p_notof     = new TH2F ("histoNsigmaTPCtriton_vs_p_notof","",500,0,5,1000,-20,20);
+    histoNsigmaTPCantitriton_vs_p_notof = new TH2F ("histoNsigmaTPCantitriton_vs_p_notof","",500,0,5,1000,-20,20);
 
     histoNsigmaTPCtriton_vs_pt     -> Sumw2();
     histoNsigmaTOFtriton_vs_pt     -> Sumw2();
@@ -167,19 +167,19 @@ void AliAnalysisTaskTritonVsMultiplicity_PbPb::UserCreateOutputObjects()
     histoNsigmaTPCtriton_vs_pt_centered           -> Sumw2();
     histoNsigmaTPCantitriton_vs_pt_centered       -> Sumw2();
     
-	  histoNsigmaTOFtriton_vs_pt_centered           -> Sumw2();
+    histoNsigmaTOFtriton_vs_pt_centered           -> Sumw2();
     histoNsigmaTOFantitriton_vs_pt_centered       -> Sumw2();
     
     histoNsigmaTOFtriton_vs_pt_trd                -> Sumw2();
     histoNsigmaTOFantitriton_vs_pt_trd            -> Sumw2();
     
     histoNsigmaTPCtriton_vs_p                     -> Sumw2();
-	  histoNsigmaTPCantitriton_vs_p                 -> Sumw2();
-	  histoNsigmaTOFtriton_vs_p                     -> Sumw2();
-	  histoNsigmaTOFantitriton_vs_p                 -> Sumw2();
-	  
-    histoNsigmaTPCtriton_vs_pt_notof              -> Sumw2();
-	  histoNsigmaTPCantitriton_vs_pt_notof          -> Sumw2();
+    histoNsigmaTPCantitriton_vs_p                 -> Sumw2();
+    histoNsigmaTOFtriton_vs_p                     -> Sumw2();
+    histoNsigmaTOFantitriton_vs_p                 -> Sumw2();
+    
+    histoNsigmaTPCtriton_vs_p_notof              -> Sumw2();
+	histoNsigmaTPCantitriton_vs_p_notof          -> Sumw2();
     
     fOutputList -> Add(histoNsigmaTPCtriton_vs_pt);
     fOutputList -> Add(histoNsigmaTOFtriton_vs_pt);
@@ -194,14 +194,14 @@ void AliAnalysisTaskTritonVsMultiplicity_PbPb::UserCreateOutputObjects()
     fOutputList -> Add(histoNsigmaTOFtriton_vs_pt_trd);
     fOutputList -> Add(histoNsigmaTOFantitriton_vs_pt_trd);
         
-	  fOutputList -> Add(histoNsigmaTPCtriton_vs_p);
-	  fOutputList -> Add(histoNsigmaTPCantitriton_vs_p);
-	  fOutputList -> Add(histoNsigmaTOFtriton_vs_p);
-	  fOutputList -> Add(histoNsigmaTOFantitriton_vs_p);
-	  
-    fOutputList -> Add(histoNsigmaTPCtriton_vs_pt_notof);
-	  fOutputList -> Add(histoNsigmaTPCantitriton_vs_pt_notof);
+    fOutputList -> Add(histoNsigmaTPCtriton_vs_p);
+    fOutputList -> Add(histoNsigmaTPCantitriton_vs_p);
+    fOutputList -> Add(histoNsigmaTOFtriton_vs_p);
+    fOutputList -> Add(histoNsigmaTOFantitriton_vs_p);
     
+    fOutputList -> Add(histoNsigmaTPCtriton_vs_p_notof);
+    fOutputList -> Add(histoNsigmaTPCantitriton_vs_p_notof);
+
     
     
     
@@ -240,13 +240,15 @@ void AliAnalysisTaskTritonVsMultiplicity_PbPb::UserExec(Option_t *)
         //Track Selection
         AliAODTrack *track = (AliAODTrack*) fAODevent -> GetTrack(i);
         if ( !track ) continue;
-        if ( !PassedTrackQualityCutsNoDCA (track)) continue;
+        if ( PassedTrackQualityCutsNoDCA (track)) {
 
         if (IsCleanTritonCandidate(track))  {
             if (track->Charge()>0) histoDCAxyTriton_vs_pt     -> Fill (track->Pt(),GetDCAxy(track));
             if (track->Charge()<0) histoDCAxyAntiTriton_vs_pt -> Fill (track->Pt(),GetDCAxy(track));
         }
         
+        }
+
         if ( !PassedTrackQualityCuts (track)) continue;
 
         
@@ -258,15 +260,15 @@ void AliAnalysisTaskTritonVsMultiplicity_PbPb::UserExec(Option_t *)
         //TPC Signal vs. pT
         
         
-      	if (track->Charge()>0) histoNsigmaTPCtriton_vs_pt_notof	    -> Fill (track->Pt(),nsigmaTPC);
-        if (track->Charge()<0) histoNsigmaTPCantitriton_vs_pt_notof -> Fill (track->Pt(),nsigmaTPC);
+      	if (track->Charge()>0) histoNsigmaTPCtriton_vs_p_notof	    -> Fill (track->P(),nsigmaTPC);
+        if (track->Charge()<0) histoNsigmaTPCantitriton_vs_p_notof -> Fill (track->P(),nsigmaTPC);
         
         
         if (PassedTOFSelection(track))  {
             
             if (track->Charge()>0) histoNsigmaTPCtriton_vs_pt     -> Fill (track->Pt(),nsigmaTPC);
             if (track->Charge()<0) histoNsigmaTPCantitriton_vs_pt -> Fill (track->Pt(),nsigmaTPC);
-	          if (track->Charge()>0) histoNsigmaTPCtriton_vs_p      -> Fill (track->P(),nsigmaTPC);
+	        if (track->Charge()>0) histoNsigmaTPCtriton_vs_p      -> Fill (track->P(),nsigmaTPC);
             if (track->Charge()<0) histoNsigmaTPCantitriton_vs_p  -> Fill (track->P(),nsigmaTPC);
         
             if (track->Charge()>0) histoNsigmaTPCtriton_vs_pt_centered     -> Fill (track->Pt(),Centered_nsigmaTPC(track));
@@ -482,7 +484,11 @@ Bool_t AliAnalysisTaskTritonVsMultiplicity_PbPb::PassedTOFSelection (AliAODTrack
 Bool_t AliAnalysisTaskTritonVsMultiplicity_PbPb::PassedTPCSelection (AliAODTrack *track)  {
     
     Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kTriton);
-    if (TMath::Abs(nsigmaTPC) > fnSigmaTPCmax) return false;
+    if (TMath::Abs(nsigmaTPC) > fnSigmaTPCmax || (track->GetStatus()&AliAODTrack::kTOFout)!=0) return false;
+
+    //TPC-TOF Matching
+//   if ((track->GetStatus()&AliAODTrack::kTOFout)==0) hasTOFhit=0;//Track with no TOF hit
+//   if ((track->GetStatus()&AliAODTrack::kTOFout)!=0) hasTOFhit=1;//Track with TOF hit
     
     return true;
 }

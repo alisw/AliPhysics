@@ -1,4 +1,6 @@
-#if ! defined (__CINT__) || defined (__MAKECINT__)
+// #if ! defined (__CINT__) || defined (__MAKECINT__)
+// #if ! defined (__CLING__) || defined (__MAKECINT__)
+#ifdef __CLING__
 #include <TTree.h>
 #include <TError.h>
 #include <AliLog.h>
@@ -8,13 +10,14 @@
 #include <AliMESppColTask.h>
 #endif
 
-AliMESppColTask *AddMESppColTask(Bool_t mc)
+AliMESppColTask *AddMESppColTask(Bool_t mc, Bool_t hm = kFALSE)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliMESppColTask *ppCol = new AliMESppColTask("MESppCol");
   mgr->AddTask(ppCol);
   ppCol->SetPostProcess(kFALSE);
   ppCol->SetMCdata(mc);
+  ppCol->SetTriggerHM(hm);
   ppCol->SetDebugLevel(1);
 
   mgr->ConnectInput(ppCol, 0, mgr->GetCommonInputContainer()); // connect main (ESD) container

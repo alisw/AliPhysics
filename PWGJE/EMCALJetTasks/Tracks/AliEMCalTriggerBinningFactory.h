@@ -6,7 +6,9 @@
 #include <TLinearBinning.h>
 #include <TCustomBinning.h>
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 /**
  * @class AliEMCalTriggerBinningFactory
@@ -99,6 +101,8 @@ public:
   void Create(AliEMCalTriggerBinningComponent * const data);
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGERBINNINGFACTORY_H */

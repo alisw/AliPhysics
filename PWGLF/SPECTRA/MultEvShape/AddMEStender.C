@@ -1,4 +1,6 @@
-#if ! defined (__CINT__) || defined (__MAKECINT__)
+// #if ! defined (__CINT__) || defined (__MAKECINT__)
+// #if ! defined (__CLING__) || defined (__MAKECINT__)
+#ifdef __CLING__
 #include <TTree.h>
 #include <TError.h>
 #include <AliLog.h>
@@ -6,9 +8,10 @@
 #include <AliAnalysisDataContainer.h>
 #include <AliMESbaseTask.h>
 #include <AliMEStender.h>
+#include <AliMESeventInfo.h>
 #endif
 
-AliMEStender *AddMEStender(Bool_t mc)
+AliMEStender *AddMEStender(Bool_t mc, Int_t configuration = 0)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -18,10 +21,21 @@ AliMEStender *AddMEStender(Bool_t mc)
   // task set-up
   tender->SetMCdata(mc);
   tender->SetDebugLevel(0);
-  tender->ConfigTask( AliMEStender::AliMESconfigTender::kStandard,                    // event cuts
+	switch (configuration) {
+		case 0:
+	 		tender->ConfigTask( AliMEStender::AliMESconfigTender::k7TeV,      // event cuts
 					  AliMEStender::AliMESconfigTender::kStandardITSTPCTrackCuts2010, // track cuts
 					  AliMEStender::AliMESconfigTender::kIterative);                  // PID priors
-  tender->SetPriors();  // always call this after ConfigTask !!
+  		break;
+		case 1:
+			tender->ConfigTask( AliMEStender::AliMESconfigTender::k13TeV,       // event cuts
+					AliMEStender::AliMESconfigTender::kStandardITSTPCTrackCuts2011, // track cuts
+					AliMEStender::AliMESconfigTender::kIterative);                  // PID priors
+			break;
+		default: printf("Configuration not defined\n");
+			break;
+	}
+	tender->SetPriors();  // always call this after ConfigTask !!
 
   // connect input
   mgr->ConnectInput (tender, 0, mgr->GetCommonInputContainer());

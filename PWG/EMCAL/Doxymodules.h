@@ -65,6 +65,12 @@
  */
  
  /**
+  * \defgroup EMCALTESTS Unit tests for classes in the EMCAL framework
+  * \ingroup EMCALFW
+  * \brief Unit tests for classes in the EMCAL framework
+  */
+ 
+ /**
  * \defgroup EMCALJETFW Jet finding framework
  * \ingroup EMCALFW
  * \brief Framework for jet finding and analysis of jet-related observables

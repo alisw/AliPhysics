@@ -165,8 +165,8 @@ private:
     TH2F *histoNsigmaTOFtriton_vs_p;//!
     TH2F *histoNsigmaTOFantitriton_vs_p;//!
     
-    TH2F *histoNsigmaTPCtriton_vs_pt_notof;//!
-    TH2F *histoNsigmaTPCantitriton_vs_pt_notof;//!
+    TH2F *histoNsigmaTPCtriton_vs_p_notof;//!
+    TH2F *histoNsigmaTPCantitriton_vs_p_notof;//!
     
     
     

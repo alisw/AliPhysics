@@ -219,7 +219,7 @@ AliAnalysisTaskSEImproveITSCVMFS::AliAnalysisTaskSEImproveITSCVMFS()
    fUpdateSecVertCovMat(kTRUE),
    fUpdateSTCovMatrix(kTRUE),
    fUpdatePulls(kTRUE),
-   fMimicData(kFALSE),
+   fMimicData(kTRUE),
    fIsAOD        (kTRUE),
    fSmearOnlySignal(kFALSE),
    fMCs         (0),
@@ -229,7 +229,11 @@ AliAnalysisTaskSEImproveITSCVMFS::AliAnalysisTaskSEImproveITSCVMFS()
    fNDebug      (0),
    fImproverSuffix(0),
    fOverridePeriodName(0),
-   fFilesOpen(kFALSE)
+   fUseSeparateOverrideDataMC(false),
+   fOverridePeriodNameData(""),
+   fOverridePeriodNameMC(""),
+   fFilesOpen(kFALSE),
+   fRescaledd0rphi(1.)
 {
   //
   // Default constructor.
@@ -441,7 +445,7 @@ AliAnalysisTaskSEImproveITSCVMFS::AliAnalysisTaskSEImproveITSCVMFS(const char *n
    fUpdateSecVertCovMat(kTRUE),
    fUpdateSTCovMatrix(kTRUE),
    fUpdatePulls(kTRUE),
-   fMimicData(kFALSE),
+   fMimicData(kTRUE),
    fIsAOD        (kTRUE),
    fSmearOnlySignal(kFALSE),
    fMCs         (0),
@@ -451,7 +455,11 @@ AliAnalysisTaskSEImproveITSCVMFS::AliAnalysisTaskSEImproveITSCVMFS(const char *n
    fNDebug      (ndebug),
    fImproverSuffix(0),
    fOverridePeriodName(0),
-   fFilesOpen(kFALSE)
+   fUseSeparateOverrideDataMC(false),
+   fOverridePeriodNameData(""),
+   fOverridePeriodNameMC(""),
+   fFilesOpen(kFALSE),
+   fRescaledd0rphi(1.)
 {
   //
   // Constructor to be used to create the task.
@@ -1264,7 +1272,7 @@ void AliAnalysisTaskSEImproveITSCVMFS::SmearTrack(AliVTrack *track,Double_t bz) 
   Double_t dd0zn =dd0zo *(sd0zo >0. ? (sd0zn /sd0zo ) : 1.);
   Double_t d0zn  =d0zmc+dd0zn;
   Double_t dd0rpo=d0rpo-d0rpmc;
-  Double_t dd0rpn=dd0rpo*(sd0rpo>0. ? (sd0rpn/sd0rpo) : 1.);
+  Double_t dd0rpn=dd0rpo*fRescaledd0rphi*(sd0rpo>0. ? (sd0rpn/sd0rpo) : 1.);
   Double_t dd0mrpn=TMath::Abs(sd0mrpn)-TMath::Abs(sd0mrpo);
   Double_t d0rpn =d0rpmc+dd0rpn-dd0mrpn;
   Double_t d0zoinsigma = 0.;
@@ -1286,14 +1294,14 @@ void AliAnalysisTaskSEImproveITSCVMFS::SmearTrack(AliVTrack *track,Double_t bz) 
 
    //cov matrix update
    if(fUpdateSTCovMatrix){
-    if(sd0rpo>0.)            covar[0]*=(sd0rpn/sd0rpo)*(sd0rpn/sd0rpo);//yy
-    if(sd0zo>0. && sd0rpo>0.)covar[1]*=(sd0rpn/sd0rpo)*(sd0zn/sd0zo);//yz
+    if(sd0rpo>0.)            covar[0]*=(sd0rpn/sd0rpo)*(sd0rpn/sd0rpo)*fRescaledd0rphi*fRescaledd0rphi;//yy
+    if(sd0zo>0. && sd0rpo>0.)covar[1]*=(sd0rpn/sd0rpo)*(sd0zn/sd0zo)*fRescaledd0rphi;//yz
     if(sd0zo>0.)             covar[2]*=(sd0zn/sd0zo)*(sd0zn/sd0zo);//zz
-    if(sd0rpo>0.)            covar[3]*=(sd0rpn/sd0rpo);//yl
+    if(sd0rpo>0.)            covar[3]*=(sd0rpn/sd0rpo)*fRescaledd0rphi;//yl
     if(sd0zo>0.)             covar[4]*=(sd0zn/sd0zo);//zl
-    if(sd0rpo>0.)            covar[6]*=(sd0rpn/sd0rpo);//ysenT
+    if(sd0rpo>0.)            covar[6]*=(sd0rpn/sd0rpo)*fRescaledd0rphi;//ysenT
     if(sd0zo>0.)             covar[7]*=(sd0zn/sd0zo);//zsenT
-    if(sd0rpo>0. && spt1o>0.)covar[10]*=(sd0rpn/sd0rpo)*(spt1n/spt1o);//ypt
+    if(sd0rpo>0. && spt1o>0.)covar[10]*=(sd0rpn/sd0rpo)*(spt1n/spt1o)*fRescaledd0rphi;//ypt
     if(sd0zo>0. && spt1o>0.) covar[11]*=(sd0zn/sd0zo)*(spt1n/spt1o);//zpt
     if(spt1o>0.)             covar[12]*=(spt1n/spt1o);//sinPhipt
     if(spt1o>0.)             covar[13]*=(spt1n/spt1o);//tanTpt
@@ -1507,6 +1515,14 @@ void AliAnalysisTaskSEImproveITSCVMFS::OpenImproverHistos(AliVEvent* event) {
     if ( run >= 296690 && run <= 300000 ) { lProductionName = "LHC18r"; fIsPbPb2018 = kTRUE; }
 }
 
+  /// case for forced paths set with SetUseSeparateOverrideDataMC function
+  TString lProductionNameOriginal = lProductionName;
+  if(fUseSeparateOverrideDataMC){
+    /// override only if the string is not empty, otherwise keep the authomatic one
+    if(!fOverridePeriodNameMC.EqualTo(""))  lProductionName = fOverridePeriodNameMC;
+    else lProductionName = lProductionNameOriginal; /// not necessary
+  }
+
   if (lProductionName.EqualTo("")) {
    AliError("This run number has no corresponding improver file!");
    return;
@@ -1515,6 +1531,8 @@ void AliAnalysisTaskSEImproveITSCVMFS::OpenImproverHistos(AliVEvent* event) {
 
 
   TString pathToFileCurrent = AliDataFile::GetFileName(Form("PWGHF/common/Improver/%s/%s/ITSgraphs_Current.root",lProductionName.Data(),fImproverSuffix.Data()));  // find URI for improver file from CVMFS
+
+  Printf(">>> Taking parametrization files for MC from %s",pathToFileCurrent.Data());
   
   // Check access to CVMFS (will only be displayed locally)
   if (pathToFileCurrent.IsNull()) {
@@ -1770,8 +1788,20 @@ void AliAnalysisTaskSEImproveITSCVMFS::OpenImproverHistos(AliVEvent* event) {
     
   //TString resfileUpgURI = Form("alien:///alice/cern.ch/user/p/pwg_hf/common/Improver/%s/%s/ITSgraphs_NewAll-X0.3-Res4um.root",period,systematic);
 
+  if(fUseSeparateOverrideDataMC){
+    /// override only if the string is not empty, otherwise keep the authomatic one
+    if(!fOverridePeriodNameData.EqualTo(""))  lProductionName = fOverridePeriodNameData;
+    else lProductionName = lProductionNameOriginal;
+  }
 
   TString pathToFileUpgrade = AliDataFile::GetFileName(Form("PWGHF/common/Improver/%s/%s/ITSgraphs_NewAll-X0.3-Res4um.root",lProductionName.Data(),fImproverSuffix.Data()));  // find URI for improver file from CVMFS
+
+  Printf(">>> Taking parametrization files for Data from %s",pathToFileUpgrade.Data());
+  
+  // Check access to CVMFS (will only be displayed locally)
+  if (pathToFileUpgrade.IsNull()) {
+	AliFatal("Cannot access data files from CVMFS: please export ALICE_DATA=root://eospublic.cern.ch//eos/experiment/alice/analysis-data and run again");
+}
 
   TFile *resfileUpg=TFile::Open(pathToFileUpgrade.Data());
   printf("\n### reading file %s ...\n",pathToFileUpgrade.Data());

@@ -122,6 +122,7 @@ class AliAODv0;
 #include "AliV0Result.h"
 #include "AliCascadeResult.h"
 #include "AliAnalysisTaskStrangenessVsMultiplicityAODRun2.h"
+#include "AliNanoAODHeader.h"
 
 using std::cout;
 using std::endl;
@@ -1474,21 +1475,25 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
     
     Float_t lPercentile = 500;
     Int_t lEvSelCode = 100;
+    fMVPileupFlag = kFALSE;
     AliMultSelection *MultSelection = (AliMultSelection*) lAODevent -> FindListObject("MultSelection");
     if( !MultSelection) {
         //If you get this warning (and lPercentiles 300) please check that the AliMultSelectionTask actually ran (before your task)
         AliWarning("AliMultSelection object not found!");
+        AliNanoAODHeader* nanoHeader = dynamic_cast<AliNanoAODHeader*>(fInputEvent->GetHeader());
+        lPercentile = nanoHeader->GetCentralityV0M();
+        lEvSelCode = 999;
+        fMVPileupFlag = kFALSE;
     } else {
         //V0M Multiplicity Percentile
         lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
         //Event Selection Code
         lEvSelCode = MultSelection->GetEvSelCode();
+        fMVPileupFlag = MultSelection->GetThisEventIsNotPileupMV();
     }
     
     //just ask AliMultSelection. It will know.
-    fMVPileupFlag = kFALSE;
-    fMVPileupFlag = MultSelection->GetThisEventIsNotPileupMV();
-    
+
     fCentrality = lPercentile;
     
     //===================================================================
@@ -2143,7 +2148,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
     
     Long_t ncascades = 0;
     ncascades = lAODevent->GetNumberOfCascades();
-    
+    AliWarning(Form("Number of cascades received: %i", ncascades));
     Bool_t lValidXiMinus, lValidXiPlus, lValidOmegaMinus, lValidOmegaPlus;
     
     for (Int_t iXi = 0; iXi < ncascades; iXi++) {
@@ -2232,9 +2237,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         // II.ESD - Calculation Part dedicated to Xi vertices (ESD)
         
         const AliAODcascade *xi = lAODevent->GetCascade(iXi);
-        if (!xi) continue;
+        if (!xi){
+            AliWarning("ERROR: Problem retrieving cascade...");
+            continue;
+        }
         
         lEffMassXi  			= xi->MassXi();
+        lChargeXi = xi->ChargeXi();
         
         //ChiSquare implementation
         fTreeCascVarChiSquareV0      = xi->Chi2V0();
@@ -2602,19 +2611,19 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         // - II.Step 4 : around effective masses (ESD)
         // ~ change mass hypotheses to cover all the possibilities :  Xi-/+, Omega -/+
         
-        if ( lChargeXi < 0 )        lInvMassXiMinus     = xi->MassXi();
-        if ( lChargeXi > 0 )        lInvMassXiPlus         = xi->MassXi();
-        if ( lChargeXi < 0 )        lInvMassOmegaMinus     = xi->MassOmega();
-        if ( lChargeXi > 0 )        lInvMassOmegaPlus     = xi->MassOmega();
+        if ( bachTrackXi->Charge() < 0 )        lInvMassXiMinus     = xi->MassXi();
+        if ( bachTrackXi->Charge() > 0 )        lInvMassXiPlus         = xi->MassXi();
+        if ( bachTrackXi->Charge() < 0 )        lInvMassOmegaMinus     = xi->MassOmega();
+        if ( bachTrackXi->Charge() > 0 )        lInvMassOmegaPlus     = xi->MassOmega();
         
         // - II.Step 6 : extra info for QA (ESD)
         // miscellaneous pieces of info that may help regarding data quality assessment.
         //-------------
         Double_t lXiMomVec[3];
-        xi->GetPxPyPz( lXiMomVec );
-        lXiMomX = lXiMomVec[0];
-        lXiMomY = lXiMomVec[1];
-        lXiMomZ = lXiMomVec[2];
+        //xi->GetPxPyPz( lXiMomVec ); WHY ARE GETTERS NOT THE SAME IN AODS? ARGH
+        lXiMomX = xi->MomXiX();
+        lXiMomY = xi->MomXiY();
+        lXiMomZ = xi->MomXiZ();
         lXiTransvMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY );
         lXiTotMom  	= TMath::Sqrt( lXiMomX*lXiMomX   + lXiMomY*lXiMomY   + lXiMomZ*lXiMomZ );
         
@@ -2624,7 +2633,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         //lBachTransvMom  = TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY );
         //lBachTotMom  	= TMath::Sqrt( lBachMomX*lBachMomX   + lBachMomY*lBachMomY  +  lBachMomZ*lBachMomZ  );
         
-        lChargeXi = xi->Charge();
+        lChargeXi = bachTrackXi->Charge();
         
         //lV0toXiCosineOfPointingAngle = xi->GetV0CosineOfPointingAngle( lPosXi[0], lPosXi[1], lPosXi[2] );
         
@@ -2757,8 +2766,14 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
             lValidOmegaMinus = kFALSE;
             lValidOmegaPlus = kFALSE;
             //Meant to provide extra level of cleanup
-            if( TMath::Abs(fTreeCascVarPosEta)>0.8 || TMath::Abs(fTreeCascVarNegEta)>0.8 || TMath::Abs(fTreeCascVarBachEta)>0.8 ) continue;
-            if( TMath::Abs(fTreeCascVarRapXi)>0.5 && TMath::Abs(fTreeCascVarRapOmega)>0.5 ) continue;
+            if( TMath::Abs(fTreeCascVarPosEta)>0.8 || TMath::Abs(fTreeCascVarNegEta)>0.8 || TMath::Abs(fTreeCascVarBachEta)>0.8 ){
+                AliDebug(1,"Outside eta range / cleanup!");
+                continue;
+            }
+            if( TMath::Abs(fTreeCascVarRapXi)>0.5 && TMath::Abs(fTreeCascVarRapOmega)>0.5 ){
+                AliDebug(1,"Outside rapidity range / cleanup!");
+                continue;
+            }
             if ( fkPreselectDedx ){
                 Bool_t lPassesPreFilterdEdx = kFALSE;
                 Double_t lWindow = 0.11;
@@ -2799,7 +2814,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
                     lPassesPreFilterdEdx = kTRUE;
                     lValidOmegaPlus = kTRUE;
                 }
-                if( !lPassesPreFilterdEdx ) continue;
+                if( !lPassesPreFilterdEdx ){
+                    AliDebug(1,"Doesn't pass dE/dx / cleanup");
+                    continue;
+                }
             }
         }
         
@@ -2812,6 +2830,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         // The conditional is meant to decrease excessive
         // memory usage! Be careful when loosening the
         // cut!
+        
+        //WARNING: remove this line later / debug only
+        //AliWarning(Form("This is a cascade candidate with Xi Mass %.4f or Omega Mass %.4f and pT = %.3f", fTreeCascVarMassAsXi, fTreeCascVarMassAsOmega, fTreeCascVarPt));
         
         //Xi    Mass window: 150MeV wide
         //Omega mass window: 150MeV wide
@@ -3230,7 +3251,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityAODRun2::UserExec(Option_t *)
         //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
         
     }// end of the Cascade loop (ESD or AOD)
-    
+    AliWarning(Form("Number of cascades saved: %i", fTreeCascade->GetEntries()));
     
     // Post output data.
     //Regular Output: Slots 1-8

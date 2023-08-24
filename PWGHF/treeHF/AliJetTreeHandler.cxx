@@ -178,11 +178,13 @@ TTree* AliJetTreeHandler::BuildJetConstituentTree(TString name, TString title)
  * Set tree variables and fill them
  */
 //________________________________________________________________
-void AliJetTreeHandler::FillTree(int runNumber, unsigned int eventID)
+void AliJetTreeHandler::FillTree(int runNumber, int eventID, int eventID_Ext, Long64_t eventID_Long)
 {
   
   fRunNumber = runNumber;
   fEventID = eventID;
+  fEventIDExt = eventID_Ext;
+  fEventIDLong = eventID_Long;
   
   for (const auto jet : fJetContainer->accepted()) {
     

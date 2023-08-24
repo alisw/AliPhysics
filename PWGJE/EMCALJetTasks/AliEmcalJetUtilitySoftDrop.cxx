@@ -188,7 +188,7 @@ void AliEmcalJetUtilitySoftDrop::ProcessJet(AliEmcalJet* jet, Int_t ij, AliFJWra
     jet->GetShapeProperties()->SetSoftDropdR(jets_groomed[ij].structure_of<fastjet::contrib::SoftDrop>().delta_R());
 
     //getting ungroomed pt
-    unsigned k = jets_groomed[ij].user_index();
+    int k = jets_groomed[ij].user_index();
     if ( (k>0) && (k<ninc) ) jet->GetShapeProperties()->SetSoftDropPtfrac( jets_groomed[ij].perp() / jets_inclusive[k].perp() );
 
     jet->GetShapeProperties()->SetSoftDropDropCount(jets_groomed[ij].structure_of<fastjet::contrib::SoftDrop>().dropped_count());

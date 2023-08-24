@@ -238,7 +238,7 @@ Bool_t AliReducedHighPtEventCreator::Run() {
     );
     // Assing MC particles
     if(MCEvent()){
-      for(Int_t ilab = 0; ilab < incluster->GetNLabels(); ilab++){
+      for(UInt_t ilab = 0; ilab < incluster->GetNLabels(); ilab++){
         AliVParticle *assigned = MCEvent()->GetTrack(TMath::Abs(incluster->GetLabels()[ilab]));
         if(!assigned) continue;
         redcluster->AddTrueContributor(assigned->PdgCode(), assigned->Px(), assigned->Py(), assigned->Pz(), assigned->E());

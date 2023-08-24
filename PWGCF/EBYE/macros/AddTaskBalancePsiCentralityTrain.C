@@ -320,8 +320,8 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
     // set extra DCA cuts (-1 no extra cut)
     taskBF->SetExtraDCACutsAOD(DCAxy,DCAz);
 
-    // set extra TPC chi2 / nr of clusters cut
-    taskBF->SetExtraTPCCutsAOD(maxTPCchi2, minNClustersTPC);
+    // set extra TPC chi2 / nr of clusters cut --> this option needs to be set as external param. 
+    // taskBF->SetExtraTPCCutsAOD(maxTPCchi2, minNClustersTPC);
 
     // electron rejection (so far only for AOD), <0 --> no rejection
     if(sigmaElectronRejection > 0){
@@ -358,7 +358,7 @@ AliAnalysisTaskBFPsi *AddTaskBalancePsiCentralityTrain(Double_t centrMin=0.,
     taskBF->SetExtraDCACutsAOD(DCAxy,DCAz);
 
     // set extra TPC chi2 / nr of clusters cut
-    taskBF->SetExtraTPCCutsAOD(maxTPCchi2, minNClustersTPC);
+    //  taskBF->SetExtraTPCCutsAOD(maxTPCchi2, minNClustersTPC);
 
     // electron rejection (so far only for AOD), <0 --> no rejection
     if(sigmaElectronRejection > 0){

@@ -33,6 +33,7 @@
 
 class AliEMCALGeometry;
 class AliOADBContainer;
+class AliEMCALRecoUtils;
 class THistManager;
 
 /**
@@ -101,6 +102,16 @@ public:
   void SetRequestTrigger(ULong_t triggerbits, TString triggerstring = "") {
     fRequestTrigger = triggerbits;
     fTriggerPattern = triggerstring;
+  }
+  
+  /**
+   * @brief Set accepted cell time range (in ns) for FEE energies
+   * @param mintime Min. cell time (in ns)
+   * @param maxtime Max. cell time (in ns)
+   */
+  void SetCellTimeRangeNS(double mintimens, double maxtimens) {
+    fMinCellTimeNS = mintimens;
+    fMaxCellTimeNS = maxtimens;
   }
 
   /**
@@ -193,6 +204,18 @@ protected:
    */
   void LoadEventCellData();
 
+  /**
+   * @brief Check whether a cell with abs. ID is masked
+   * 
+   * Function requires that the Reco utils are initialized and the bad
+   * channel map is loaded.
+   * 
+   * @param absCellID Abs. ID of the cell
+   * @return true if the cell is masked (hot,dead,warm)
+   * @return false if the cell is good
+   */
+  bool IsCellMasked(int absCellID) const;
+
   THistManager                            *fHistosQA;           //!<! Histogram handler
   Bool_t                                  fLocalInitialized;  ///< Switch whether task is initialized (for ExecOnce)
   Int_t                                   fOldRun;            ///< Old Run (for RunChanged())
@@ -200,18 +223,21 @@ protected:
   ULong_t                                 fRequestTrigger;    ///< Trigger selection bits
   TString                                 fTriggerPattern;    ///< Trigger string pattern used in addition to the trigger selection bits
 
-  AliEMCALTriggerDataGrid<double>         fCellData;          ///< Grid with summed cell data
+  AliEMCALTriggerDataGrid<double>         fCellData;          //!<! Grid with summed cell data
   std::vector<int>                        fMaskedFastors;     ///< List of masked fastors
-  std::vector<int>                        fMaskedCells;       ///< List of masked cells
+  Double_t                                fMinCellTimeNS;     ///< Min. cell time for time cut (in ns)
+  Double_t                                fMaxCellTimeNS;     ///< Max. cell time for time cut (in ns)
 
   TString                                 fNameMaskedFastorOADB; ///< Name of the OADB container with masked fastors
   TString                                 fNameMaskedCellOADB;   ///< Name of the OADB container with masked cells
   AliOADBContainer                        *fMaskedFastorOADB; //!<! OADB container with masked fastors
   AliOADBContainer                        *fMaskedCellOADB;   //!<! OADB container with masked cells
+  AliEMCALRecoUtils                       *fRecoUtils;        //!<! EMCAL reco utils (for bad channel handling)
 
-  /// \cond CLASSIMP
+  AliEmcalFastOrMonitorTask(const AliEmcalFastOrMonitorTask &);
+  AliEmcalFastOrMonitorTask &operator=(const AliEmcalFastOrMonitorTask &);
+
   ClassDef(AliEmcalFastOrMonitorTask, 1);
-  /// \endcond
 };
 
 } /* namespace EMCAL */

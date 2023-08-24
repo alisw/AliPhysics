@@ -14,6 +14,8 @@
 // This includes a TList of AliLRCBase objects that are processing LRC analysis
 // for a given Eta and Phi windows
 
+// Used for paper JHEP 05 (2015) 097
+
 // Email: Igor.Altsybeev@cern.ch
 
 #include <AliAnalysisManager.h>

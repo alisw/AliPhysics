@@ -38,7 +38,7 @@ AliReducedBaseEvent::AliReducedBaseEvent() :
   // Constructor
   //
   for(Int_t i=0; i<3; ++i) {fVtx[i]=-999.;}
-  for(Int_t i=0; i<7; ++i) fCentrality[i]=-1.;
+  for(Int_t i=0; i<16; ++i) fCentrality[i]=-1.;
   fNtracks[0]=0; fNtracks[1]=0;
   fNV0candidates[0]=0; fNV0candidates[1]=0;
 }
@@ -63,7 +63,7 @@ AliReducedBaseEvent::AliReducedBaseEvent(const Char_t* /*name*/, Int_t trackOpti
   // Constructor
   //
   for(Int_t i=0; i<3; ++i) {fVtx[i]=-999.;}
-  for(Int_t i=0; i<4; ++i) fCentrality[i]=-1.;
+  for(Int_t i=0; i<16; ++i) fCentrality[i]=-1.;
   fNtracks[0]=0; fNtracks[1]=0;
   fNV0candidates[0]=0; fNV0candidates[1]=0;
   
@@ -109,7 +109,7 @@ void AliReducedBaseEvent::CopyEventHeader(const AliReducedBaseEvent* other) {
    fRunNo = other->fRunNo;
    for(Int_t i=0; i<3; ++i) fVtx[i] = other->fVtx[i];
    fNVtxContributors = other->fNVtxContributors;
-   for(Int_t i=0; i<7; ++i) fCentrality[i] = other->fCentrality[i];
+   for(Int_t i=0; i<16; ++i) fCentrality[i] = other->fCentrality[i];
    fCentQuality = other->fCentQuality;
    fNtracks[0] = other->fNtracks[0]; 
    fNV0candidates[0] = other->fNV0candidates[0];
@@ -126,7 +126,7 @@ void AliReducedBaseEvent::ClearEvent() {
   fEventTag = 0;
   fRunNo = 0;
   fCentQuality = 0;
-  for(Int_t i=0;i<7;++i) fCentrality[i] = -9999.0;
+  for(Int_t i=0;i<16;++i) fCentrality[i] = -9999.0;
   fNtracks[0] = 0; fNtracks[1] = 0;
   fNV0candidates[0] = 0; fNV0candidates[1] = 0;
   for(Int_t i=0; i<3; ++i) {fVtx[i]=-9999.;}

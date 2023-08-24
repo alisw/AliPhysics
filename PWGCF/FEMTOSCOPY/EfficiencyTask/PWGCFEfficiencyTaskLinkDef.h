@@ -3,3 +3,4 @@
 #pragma link off all functions;
 
 #pragma link C++ class AliAnalysisTaskParticleEff+;
+#pragma link C++ class AliAnalysisTaskParticleEffpbpb5020+;

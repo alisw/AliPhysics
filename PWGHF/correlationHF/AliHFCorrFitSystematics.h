@@ -32,8 +32,9 @@ public:
     
     //enum
   enum SystematicModes{kFree=0, kLowestPoint = 1, k2PointsAtPiHalf = 2, k4PointsAtPiHalf=4, kTransverse = 5, kNLowest=6, k2GausNS=7, kBinCount = -1, kTransverseUppStatUnc = 10, kTransverseLowStatUnc = 20,  kMinVar=100, kMaxVar=200, kv2Mod = 300};
-  enum SystCombination{kSumQuadr = 1, kMax = 2, kRMS =3, kEnvelope_RMS_BaselStat=4};
-    
+  enum SystCombination{kSumQuadr = 1, kMax = 2, kRMS =3, kEnvelope_RMS_BaselStat=4, kForpp13TeV_vsCent=5};
+  //Fabio: case kForpp13TeV_vsCent is the same as 4, but Min/Max pts shift variations are excluded from the RMS, treated asymmetrically, and added in quadrature at the end to the uncertainty (takes into account large asymm FD variations as in 0-0.1%)
+
     AliHFCorrFitSystematics();
     virtual ~AliHFCorrFitSystematics();
     Bool_t AddHistoToFit(TString path);
@@ -73,11 +74,12 @@ public:
     void CheckBaselineRanges();
     void SetUseCorrelatedSystematics(Bool_t k) {fUseCorrelatedSystematics = k;}
     void SetIspPb(Bool_t k){fIspPb = k;}
+    void SetHasV2(Bool_t v2){fHasV2 = v2;}    
     void SetIsv2DvsPt(Bool_t k){fV2DvsPt = k;}
     void SetUseCorrelatedSystematicsForWidths(Bool_t k){fUseCorrelatedSystematicsForWidths = k;}
     
     void SetPlotV2SystSeparately(Bool_t k){
-        if(!fIspPb){std::cout << "Warning:: Not p-Pb " << std::endl;}
+        if(!fHasV2){std::cout << "Warning:: Has no v2! " << std::endl;}
         
         fPlotV2SystSeparately = k;}  
     
@@ -112,6 +114,8 @@ public:
     void DrawTotalSystematicsOnCanvas(TString variable, TLegend * legend);
     void DrawBaselineSystematicsOnCanvas(TH1D * histo, Int_t iSystMode, Double_t * array, TLegend * legend);
     void DrawRMSBaselineSystematicOnCanvas(TH1D * histoinput, Double_t * arraymin, Double_t * arraymax , TLegend * legend, Bool_t isSystBaseline);
+    void DrawkMinBaselineSystematicOnCanvas(TH1D * histoinput, Double_t * arraymin, Double_t * arraymax , TLegend * legend, Bool_t isSystBaseline);
+    void DrawkMaxBaselineSystematicOnCanvas(TH1D * histoinput, Double_t * arraymin, Double_t * arraymax , TLegend * legend, Bool_t isSystBaseline);
     void DrawTotalBaselineSystematicOnCanvas(TH1D * histoinput, Double_t * arraymin, Double_t * arraymax , TLegend * legend, Bool_t isSystBaseline);
     void PrintAllSystematicsOnShell();
     Bool_t DrawFinalPlots(){return DrawFinalPlots(kTRUE,kTRUE,kFALSE,kFALSE,kTRUE,kFALSE);}
@@ -175,6 +179,7 @@ private:
     Bool_t fUseCorrelatedSystematics;
     Bool_t fUseMaximumVariation; // uses the maximum variation of the systematics on the baseline and the min and max variation, otherwise sums them in quadrature
     Bool_t fIspPb;
+    Bool_t fHasV2;    
     Bool_t fUseCorrelatedSystematicsForWidths;
     Bool_t fPlotV2SystSeparately;
     TString fBetaDir;
@@ -248,6 +253,34 @@ private:
     Double_t *fValueSystematicBaseline_FromBaselStatLo_ASSigma;
     Double_t *fValueSystematicBaseline_FromBaselStatLo_Pedestal;
     Double_t *fValueSystematicBaseline_FromBaselStatLo_Beta;
+
+    Double_t *fValueSystematicBaseline_FromMinVar_HIG_NSYield;
+    Double_t *fValueSystematicBaseline_FromMinVar_HIG_NSSigma;
+    Double_t *fValueSystematicBaseline_FromMinVar_HIG_ASYield;
+    Double_t *fValueSystematicBaseline_FromMinVar_HIG_ASSigma;
+    Double_t *fValueSystematicBaseline_FromMinVar_HIG_Pedestal;
+    Double_t *fValueSystematicBaseline_FromMinVar_HIG_Beta;
+
+    Double_t *fValueSystematicBaseline_FromMinVar_LOW_NSYield;
+    Double_t *fValueSystematicBaseline_FromMinVar_LOW_NSSigma;
+    Double_t *fValueSystematicBaseline_FromMinVar_LOW_ASYield;
+    Double_t *fValueSystematicBaseline_FromMinVar_LOW_ASSigma;
+    Double_t *fValueSystematicBaseline_FromMinVar_LOW_Pedestal;
+    Double_t *fValueSystematicBaseline_FromMinVar_LOW_Beta;
+
+    Double_t *fValueSystematicBaseline_FromMaxVar_HIG_NSYield;
+    Double_t *fValueSystematicBaseline_FromMaxVar_HIG_NSSigma;
+    Double_t *fValueSystematicBaseline_FromMaxVar_HIG_ASYield;
+    Double_t *fValueSystematicBaseline_FromMaxVar_HIG_ASSigma;
+    Double_t *fValueSystematicBaseline_FromMaxVar_HIG_Pedestal;
+    Double_t *fValueSystematicBaseline_FromMaxVar_HIG_Beta;
+
+    Double_t *fValueSystematicBaseline_FromMaxVar_LOW_NSYield;
+    Double_t *fValueSystematicBaseline_FromMaxVar_LOW_NSSigma;
+    Double_t *fValueSystematicBaseline_FromMaxVar_LOW_ASYield;
+    Double_t *fValueSystematicBaseline_FromMaxVar_LOW_ASSigma;
+    Double_t *fValueSystematicBaseline_FromMaxVar_LOW_Pedestal;
+    Double_t *fValueSystematicBaseline_FromMaxVar_LOW_Beta;
     
     Double_t *fRMSRelative_NSYield;
     Double_t *fRMSRelative_NSSigma;

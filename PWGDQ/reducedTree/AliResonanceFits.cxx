@@ -92,7 +92,8 @@ AliResonanceFits::AliResonanceFits() :
   fFitValues(),
   fMatchingIsDone(kFALSE),
   fMinuitFitter(0x0),
-  fResidualFitFunc(0x0)
+  fResidualFitFunc(0x0),
+  fBkgFitOption("MEI0")
 {
   //
   // Default constructor
@@ -1057,8 +1058,8 @@ void AliResonanceFits::FitInvMass() {
          }
       }
       //fBkgFitFunction->SetParameters(1.6, -0.8);
-      fSplusBblind->Fit(fBkgFitFunction, "MEI0", "Q", fgMassFitRange[0], fgMassFitRange[1]);
-      fSplusBblind->Fit(fBkgFitFunction, "MEI0", "Q", fgMassFitRange[0], fgMassFitRange[1]);
+      fSplusBblind->Fit(fBkgFitFunction, fBkgFitOption.Data(), "Q", fgMassFitRange[0], fgMassFitRange[1]);
+      fSplusBblind->Fit(fBkgFitFunction, fBkgFitOption.Data(), "Q", fgMassFitRange[0], fgMassFitRange[1]);
       for(Int_t i=0;i<fBkgFitFunction->GetNpar();++i) {
          fGlobalFitFunction->SetParameter(i+1, fBkgFitFunction->GetParameter(i));
       }
@@ -1069,8 +1070,8 @@ void AliResonanceFits::FitInvMass() {
       //fGlobalFitFunction->SetParameter(1, 1.6);
       //fGlobalFitFunction->SetParameter(2, -0.8);
       //fGlobalFitFunction->SetParameter(0, 0.0005);
-      fSplusResidualBkg->Fit(fGlobalFitFunction, "MEI0", "Q", fgMassFitRange[0], fgMassFitRange[1]);
-      fFitResult = fSplusResidualBkg->Fit(fGlobalFitFunction, "SMEI0", "Q", fgMassFitRange[0], fgMassFitRange[1]);
+      fSplusResidualBkg->Fit(fGlobalFitFunction, fBkgFitOption.Data(), "Q", fgMassFitRange[0], fgMassFitRange[1]);
+      fFitResult = fSplusResidualBkg->Fit(fGlobalFitFunction, Form("S%s",fBkgFitOption.Data()), "Q", fgMassFitRange[0], fgMassFitRange[1]);
       for(Int_t i=0;i<fBkgFitFunction->GetNpar();++i)
          fBkgFitFunction->SetParameter(i, fGlobalFitFunction->GetParameter(i+1));
       //fBkg->Scale(fGlobalFitFunction->GetParameter(1));

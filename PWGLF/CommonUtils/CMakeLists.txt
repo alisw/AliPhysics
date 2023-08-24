@@ -35,7 +35,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
 
 # Sources - alphabetical order
 set(SRCS
-  MConthefly/AliAnalysisTaskSimSpectraLF.cxx  
+  MConthefly/AliAnalysisTaskSimSpectraLF.cxx
+  MConthefly/AliAnalysisTaskSimSpectraLFpPb.cxx  
   )
 
 # Headers from sources

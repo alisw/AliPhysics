@@ -1,0 +1,10 @@
+application hadron
+set laproj 54 set maproj 129 set latarg 54 set matarg 129 set ecms 5440
+set istmax 10 set ninicon 1 set iranphi 0 ftime on
+nodecays 110 20 2130 -2130 2230 -2230 1130 -1130 1330 -1330 2330 -2330 3331 -3331 end
+
+core full hydro x3ff   hacas full set nfull 2 set nfreeze 2  set modsho 100 set centrality 0  set ijetfluid 1
+
+fillTree(C1)
+
+echo off

@@ -17,7 +17,9 @@ class AliOADBContainer;
 
 namespace PWG { namespace EMCAL { class AliEmcalTriggerDecisionContainer; } }
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+
+namespace EMCALJetTasks {
 
 /**
  * @class AliAnalysisTaskEmcalTriggerBase
@@ -92,6 +94,12 @@ public:
   void EnableDCALTriggers(Bool_t doEnable) { fEnableDCALTriggers = doEnable; }
 
   /**
+   * @brief Enable EMCAL/DCAL combined triggers (OR of EMCAL and DCAL triggers at same threshold)
+   * @param doEnable If true EMCAL and DCAL combined triggers are enabled
+   */
+  void EnableEDCombinedTriggers(Bool_t doEnable) { fEnableEDCombinedTriggers = doEnable; }
+
+  /**
    * @brief Enable T0-based (INT8, EMC8, DMC8) trigger suite (Default: Off)
    * @param doEnable If true T0-based triggers are enabled
    */
@@ -140,7 +148,7 @@ public:
    *
    * @param[in] oadbname Name of the OADB container with the trigger downscale factors
    */
-  void SetDownscaleOADB(TString oadbname) { fNameDownscaleOADB = oadbname; }
+  void SetDownscaleOADB(EMCAL_STRINGVIEW oadbname) { fNameDownscaleOADB = oadbname.data(); }
 
   /**
    * @brief Load the downscale factors run-by-run from the OCDB
@@ -239,7 +247,7 @@ public:
    * 
    * @param[in] nameCont Name of the trigger decision container 
    */
-  void SetNameTriggerSelectionContainer(TString &nameCont) { fNameTriggerSelectionContainer = nameCont;}
+  void SetNameTriggerSelectionContainer(EMCAL_STRINGVIEW nameCont) { fNameTriggerSelectionContainer = nameCont.data();}
 
 protected:
 
@@ -330,7 +338,7 @@ protected:
    * @param[in] triggerclass Class for which to obtain the trigger.
    * @return Downscale facror for the trigger class (1 if trigger is not downscaled or no OADB container is available)
    */
-  Double_t GetTriggerWeight(const TString &triggerclass) const;
+  Double_t GetTriggerWeight(EMCAL_STRINGVIEW triggerclass) const;
 
   /**
    * Steering of the trigger selection:
@@ -353,7 +361,7 @@ protected:
    * @return true Pattern found
    * @return false Pattern not found
    */
-  bool MatchTriggerFromPattern(const std::string &pattern, const std::string &triggerclass) const;
+  bool MatchTriggerFromPattern(EMCAL_STRINGVIEW pattern, EMCAL_STRINGVIEW triggerclass) const;
 
   /**
    * @brief Matching triggers in pattern with entry in trigger decision container
@@ -365,14 +373,14 @@ protected:
    * @return true Pattern found in the trigger decision container 
    * @return false Pattern not found in the trigger decision container
    */
-  bool MatchTriggerFromContainer(const std::string &pattern, const PWG::EMCAL::AliEmcalTriggerDecisionContainer *trgcont) const;
+  bool MatchTriggerFromContainer(EMCAL_STRINGVIEW pattern, const PWG::EMCAL::AliEmcalTriggerDecisionContainer *trgcont) const;
 
   /**
    * Define name of the cluster container used to read EMCAL cluster information
    * from
    * @param[in] clustercontname Name of the cluster container
    */
-  void SetClusterContainer(TString clustercontname) { fNameClusterContainer = clustercontname; }
+  void SetClusterContainer(EMCAL_STRINGVIEW clustercontname) { fNameClusterContainer = clustercontname.data(); }
 
   /**
    * @brief Read the downscale factors from the OCDB
@@ -400,6 +408,7 @@ protected:
   TString                         fNameTriggerSelectionContainer; ///< Name of the trigger selection container
 
   Bool_t                          fEnableDCALTriggers;        ///< Enable / Disable event selection for DCAL trigger classes
+  Bool_t                          fEnableEDCombinedTriggers;  ///< Enable OR combination of EMCAL and DCAL combined triggers
   Bool_t                          fEnableV0Triggers;          ///< Enable VZERO-based triggers (default)
   Bool_t                          fEnableT0Triggers;          ///< Enable triggers depending on T0 (INT8, EMC8, EMC8EGA, EMC8EJE) - default off
   Bool_t                          fEnableNoINTTriggers;       ///< Process EMCAL triggers without coincidence with INT triggers - exotic case - default off
@@ -413,6 +422,8 @@ private:
   AliAnalysisTaskEmcalTriggerBase &operator=(const AliAnalysisTaskEmcalTriggerBase &);
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIANALYSISTASKEMCALTRIGGERBASE_H */

@@ -1,3 +1,9 @@
+/*
+Author: Vytautas Vislavicius
+Contains the non-uniform acceptance correction.
+Primarily used with <AliGFW> framework.
+If used, modified, or distributed, please aknowledge the original author of this code.
+*/
 #include "AliGFWWeights.h"
 #include "TMath.h"
 AliGFWWeights::AliGFWWeights():
@@ -7,10 +13,20 @@ AliGFWWeights::AliGFWWeights():
   fW_mcrec(0),
   fW_mcgen(0),
   fEffInt(0),
+  fIntEff(0),
   fAccInt(0),
   fNbinsPt(0),
   fbinsPt(0)
 {
+};
+AliGFWWeights::AliGFWWeights(const AliGFWWeights& target):
+  TNamed(target)
+{
+  fDataFilled = target.fDataFilled;
+  fMCFilled = target.fMCFilled;
+  if(target.fW_data) fW_data = (TObjArray*)target.fW_data->Clone(target.fW_data->GetName());
+  if(target.fW_mcrec) fW_mcrec = (TObjArray*)target.fW_mcrec->Clone(target.fW_mcrec->GetName());
+  if(target.fW_mcgen) fW_mcgen = (TObjArray*)target.fW_mcgen->Clone(target.fW_mcgen->GetName());
 };
 AliGFWWeights::~AliGFWWeights()
 {
@@ -18,6 +34,7 @@ AliGFWWeights::~AliGFWWeights()
   delete fW_mcrec;
   delete fW_mcgen;
   delete fEffInt;
+  delete fIntEff;
   delete fAccInt;
   if(fbinsPt) delete [] fbinsPt;
 };
@@ -29,17 +46,8 @@ void AliGFWWeights::SetPtBins(Int_t Nbins, Double_t *bins) {
 };
 void AliGFWWeights::Init(Bool_t AddData, Bool_t AddMC)
 {
-  fW_data = new TObjArray();
-  fW_data->SetName("AliGFWWeights_Data");
-  fW_mcrec = new TObjArray();
-  fW_mcrec->SetName("AliGFWWeights_MCRec");
-  fW_mcgen = new TObjArray();
-  fW_mcgen->SetName("AliGFWWeights_MCGen");
-  fW_data->SetOwner(kTRUE);
-  fW_mcrec->SetOwner(kTRUE);
-  fW_mcgen->SetOwner(kTRUE);
-  fDataFilled = kFALSE;
-  fMCFilled = kFALSE;
+  // fDataFilled = kFALSE;
+  // fMCFilled = kFALSE;
   if(!fbinsPt) { //If pT bins not initialized, set to default (-1 to 1e6) to accept everything
     fNbinsPt=1;
     fbinsPt = new Double_t[2];
@@ -47,20 +55,31 @@ void AliGFWWeights::Init(Bool_t AddData, Bool_t AddMC)
     fbinsPt[1] = 1e6;
   };
   if(AddData) {
+    fW_data = new TObjArray();
+    fW_data->SetName("AliGFWWeights_Data");
+    fW_data->SetOwner(kTRUE);
     const char *tnd = GetBinName(0,0,Form("data_%s",this->GetName()));
     fW_data->Add(new TH3D(tnd,";#varphi;#eta;v_{z}",60,0,TMath::TwoPi(),64,-1.6,1.6,40,-10,10));
+    fDataFilled = kTRUE;
   };
   if(AddMC) {
+    fW_mcrec = new TObjArray();
+    fW_mcrec->SetName("AliGFWWeights_MCRec");
+    fW_mcgen = new TObjArray();
+    fW_mcgen->SetName("AliGFWWeights_MCGen");
+    fW_mcrec->SetOwner(kTRUE);
+    fW_mcgen->SetOwner(kTRUE);
     const char *tnr = GetBinName(0,0,"mcrec"); //all integrated over cent. anyway
     const char *tng = GetBinName(0,0,"mcgen"); //all integrated over cent. anyway
     fW_mcrec->Add(new TH3D(tnr,";#it{p}_{T};#eta;v_{z}",fNbinsPt,0,20,64,-1.6,1.6,40,-10,10));
     fW_mcgen->Add(new TH3D(tng,";#it{p}_{T};#eta;v_{z}",fNbinsPt,0,20,64,-1.6,1.6,40,-10,10));
     ((TH3D*)fW_mcrec->At(fW_mcrec->GetEntries()-1))->GetXaxis()->Set(fNbinsPt,fbinsPt);
     ((TH3D*)fW_mcgen->At(fW_mcgen->GetEntries()-1))->GetXaxis()->Set(fNbinsPt,fbinsPt);
+    fMCFilled = kTRUE;
   };
 };
 
-void AliGFWWeights::Fill(Double_t phi, Double_t eta, Double_t vz, Double_t pt, Double_t cent, Int_t htype) {
+void AliGFWWeights::Fill(Double_t phi, Double_t eta, Double_t vz, Double_t pt, Double_t cent, Int_t htype, Double_t weight) {
   TObjArray *tar=0;
   const char *pf="";
   if(htype==0) { tar = fW_data; pf = Form("data_%s",this->GetName()); };
@@ -72,7 +91,7 @@ void AliGFWWeights::Fill(Double_t phi, Double_t eta, Double_t vz, Double_t pt, D
     if(!htype) tar->Add(new TH3D(GetBinName(0,0,pf),";#varphi;#eta;v_{z}",60,0,TMath::TwoPi(),64,-1.6,1.6,40,-10,10)); //0,0 since all integrated
     th3 = (TH3D*)tar->At(tar->GetEntries()-1);
   };
-  th3->Fill(htype?pt:phi,eta,vz);
+  th3->Fill(htype?pt:phi,eta,vz, weight);
 };
 Double_t AliGFWWeights::GetWeight(Double_t phi, Double_t eta, Double_t vz, Double_t pt, Double_t cent, Int_t htype) {
   TObjArray *tar=0;
@@ -96,6 +115,15 @@ Double_t AliGFWWeights::GetNUA(Double_t phi, Double_t eta, Double_t vz) {
   Int_t etaind = fAccInt->GetYaxis()->FindBin(eta);
   Int_t vzind = fAccInt->GetZaxis()->FindBin(vz);
   Double_t weight = fAccInt->GetBinContent(xind, etaind, vzind);
+  if(weight!=0) return 1./weight;
+  return 1;
+}
+Double_t AliGFWWeights::GetNUE(Double_t pt, Double_t eta, Double_t vz) {
+  if(!fEffInt) CreateNUE();
+  Int_t xind = fEffInt->GetXaxis()->FindBin(pt);
+  Int_t etaind = fEffInt->GetYaxis()->FindBin(eta);
+  Int_t vzind = fEffInt->GetZaxis()->FindBin(vz);
+  Double_t weight = fEffInt->GetBinContent(xind, etaind, vzind);
   if(weight!=0) return 1./weight;
   return 1;
 }
@@ -156,8 +184,10 @@ void AliGFWWeights::CreateNUA(Bool_t IntegrateOverCentAndPt) {
     	if(fAccInt->Integral()<1) continue;
     	h1 = (TH1D*)fAccInt->Project3D("x");
     	Double_t maxv = h1->GetMaximum();
-    	for(Int_t phii=1;phii<=h1->GetNbinsX();phii++)
-    	  fAccInt->SetBinContent(phii,etai,vzi,fAccInt->GetBinContent(phii,etai,vzi)/maxv);
+    	for(Int_t phii=1;phii<=h1->GetNbinsX();phii++) {
+        fAccInt->SetBinContent(phii,etai,vzi,fAccInt->GetBinContent(phii,etai,vzi)/maxv);
+        fAccInt->SetBinError(phii,etai,vzi,fAccInt->GetBinError(phii,etai,vzi)/maxv);
+      };
     	delete h1;
       };
       fAccInt->GetZaxis()->SetRange(1,fAccInt->GetNbinsZ());
@@ -166,6 +196,20 @@ void AliGFWWeights::CreateNUA(Bool_t IntegrateOverCentAndPt) {
     return;
   };
 };
+TH1D *AliGFWWeights::GetdNdPhi() {
+  TH3D *temph = (TH3D*)fW_data->At(0)->Clone("tempH3");
+  TH1D *reth = (TH1D*)temph->Project3D("x");
+  reth->SetName("RetHist");
+  delete temph;
+  Double_t max = reth->GetMaximum();
+  if(max==0) return 0;
+  for(Int_t phi=1; phi<=reth->GetNbinsX(); phi++) {
+    if(reth->GetBinContent(phi)==0) continue;
+    reth->SetBinContent(phi,reth->GetBinContent(phi)/max);
+    reth->SetBinError(phi,reth->GetBinError(phi)/max);
+  }
+  return reth;
+}
 void AliGFWWeights::CreateNUE(Bool_t IntegrateOverCentrality) {
   if(!IntegrateOverCentrality) {
     printf("Method is outdated! NUE is integrated over centrality. Quit now, or the behaviour will be bad\n");
@@ -188,8 +232,8 @@ void AliGFWWeights::CreateNUE(Bool_t IntegrateOverCentrality) {
     return;
   };
 };
-void AliGFWWeights::ReadAndMerge(const char *filelinks) {
-  FILE *flist = fopen(filelinks,"r");
+void AliGFWWeights::ReadAndMerge(TString filelinks, TString listName, Bool_t addData, Bool_t addRec, Bool_t addGen) {
+  FILE *flist = fopen(filelinks.Data(),"r");
   char str[150];
   Int_t nFiles=0;
   while(fscanf(flist,"%s\n",str)==1) nFiles++;
@@ -198,23 +242,23 @@ void AliGFWWeights::ReadAndMerge(const char *filelinks) {
     printf("No files to read!\n");
     return;
   };
-  if(!fW_data) {
+  if(!fW_data && addData) {
     fW_data = new TObjArray();
     fW_data->SetName("Weights_Data");
     fW_data->SetOwner(kTRUE);
   };
-  if(!fW_mcrec) {
+  if(!fW_mcrec && addRec) {
     fW_mcrec = new TObjArray();
     fW_mcrec->SetName("Weights_MCRec");
     fW_mcrec->SetOwner(kTRUE);
   };
-  if(!fW_mcgen) {
+  if(!fW_mcgen && addGen) {
     fW_mcgen = new TObjArray();
     fW_mcgen->SetName("Weights_MCGen");
     fW_mcgen->SetOwner(kTRUE);
   };
-  fDataFilled = kFALSE;
-  fMCFilled = kFALSE;
+  // fDataFilled = kFALSE;
+  // fMCFilled = kFALSE;
   TFile *tf=0;
   for(Int_t i=0;i<nFiles;i++) {
     Int_t trash = fscanf(flist,"%s\n",str);
@@ -224,23 +268,23 @@ void AliGFWWeights::ReadAndMerge(const char *filelinks) {
       tf->Close();
       continue;
     };
-    TList *tl = (TList*)tf->Get("OutputList");
+    TList *tl = (TList*)tf->Get(listName.Data());
     AliGFWWeights *tw = (AliGFWWeights*)tl->FindObject(this->GetName());
     if(!tw) {
       printf("Could not fetch weights object from %s\n",str);
       tf->Close();
       continue;
     };
-    AddArray(fW_data,tw->GetDataArray());
-    AddArray(fW_mcrec,tw->GetRecArray());
-    AddArray(fW_mcgen,tw->GetGenArray());
+    if(addData) AddArray(fW_data,tw->GetDataArray());
+    if(addRec) AddArray(fW_mcrec,tw->GetRecArray());
+    if(addGen) AddArray(fW_mcgen,tw->GetGenArray());
     tf->Close();
     delete tw;
   };
 };
 void AliGFWWeights::AddArray(TObjArray *targ, TObjArray *sour) {
   if(!sour) {
-    printf("Source array does not exist!\n");
+    // printf("Source array does not exist!\n");
     return;
   };
   for(Int_t i=0;i<sour->GetEntries();i++) {
@@ -289,3 +333,57 @@ Long64_t AliGFWWeights::Merge(TCollection *collist) {
   };
   return nmerged;
 };
+TH1D *AliGFWWeights::GetIntegratedEfficiencyHist() {
+  if(!fW_mcgen) { printf("MCGen array does not exist!\n"); return 0; };
+  if(!fW_mcrec) { printf("MCRec array does not exist!\n"); return 0; };
+  if(!fW_mcgen->GetEntries()) { printf("MCGen array is empty!\n"); return 0; };
+  if(!fW_mcrec->GetEntries()) { printf("MCRec array is empty!\n"); return 0; };
+  TH3D *num = (TH3D*)fW_mcrec->At(0)->Clone("Numerator");
+  for(Int_t i=1;i<fW_mcrec->GetEntries();i++) num->Add((TH3D*)fW_mcrec->At(i));
+  TH3D *den = (TH3D*)fW_mcgen->At(0)->Clone("Denominator");
+  for(Int_t i=1;i<fW_mcgen->GetEntries();i++) den->Add((TH3D*)fW_mcgen->At(i));
+  TH1D *num1d = (TH1D*)num->Project3D("x");
+  num1d->SetName("retHist");
+  num1d->Sumw2();
+  TH1D *den1d = (TH1D*)den->Project3D("x");
+  den1d->Sumw2();
+  num1d->Divide(den1d);
+  delete num;
+  delete den;
+  delete den1d;
+  return num1d;
+}
+Bool_t AliGFWWeights::CalculateIntegratedEff() {
+  if(fIntEff) delete fIntEff;
+  fIntEff = GetIntegratedEfficiencyHist();
+  if(!fIntEff) { return kFALSE; };
+  fIntEff->SetName("IntegratedEfficiency");
+  return kTRUE;
+}
+Double_t AliGFWWeights::GetIntegratedEfficiency(Double_t pt) {
+  if(!fIntEff) if(!CalculateIntegratedEff()) return 0;
+  return fIntEff->GetBinContent(fIntEff->FindBin(pt));
+}
+TH1D *AliGFWWeights::GetEfficiency(Double_t etamin, Double_t etamax, Double_t vzmin, Double_t vzmax) {
+  TH3D *num = (TH3D*)fW_mcrec->At(0)->Clone("Numerator");
+  for(Int_t i=1;i<fW_mcrec->GetEntries();i++) num->Add((TH3D*)fW_mcrec->At(i));
+  TH3D *den = (TH3D*)fW_mcgen->At(0)->Clone("Denominator");
+  for(Int_t i=1;i<fW_mcgen->GetEntries();i++) den->Add((TH3D*)fW_mcgen->At(i));
+  Int_t eb1 = num->GetYaxis()->FindBin(etamin+1e-6);
+  Int_t eb2 = num->GetYaxis()->FindBin(etamax-1e-6);
+  Int_t vz1 = num->GetZaxis()->FindBin(vzmin+1e-6);
+  Int_t vz2 = num->GetZaxis()->FindBin(vzmax-1e-6);
+  num->GetYaxis()->SetRange(eb1,eb2);
+  num->GetZaxis()->SetRange(vz1,vz2);
+  den->GetYaxis()->SetRange(eb1,eb2);
+  den->GetZaxis()->SetRange(vz1,vz2);
+  TH1D *num1d = (TH1D*)num->Project3D("x");
+  TH1D *den1d = (TH1D*)den->Project3D("x");
+  delete num;
+  delete den;
+  num1d->Sumw2();
+  den1d->Sumw2();
+  num1d->Divide(den1d);
+  delete den1d;
+  return num1d;
+}

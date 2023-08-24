@@ -180,9 +180,12 @@ void AddTask_GammaConvFlow_PbPb2(
   } else if (trainConfig == 19) {
     cuts.AddCut("50200013", "00200009297002008250400000");
   } else if (trainConfig == 20) {
-    cuts.AddCut("51200013", "00200009297002008250400000");
-  } else if (trainConfig == 21) {
-    cuts.AddCut("52400013", "00200009297002008250400000");
+    cuts.AddCut("53500013", "00200009297002008250400000");
+    cuts.AddCut("53585013", "00200009297002008250400000");
+    cuts.AddCut("53583013", "00200009297002008250400000");
+  } else if (trainConfig == 21) { //15o
+    cuts.AddCut("13510a13", "00200009297002008250400000");
+    cuts.AddCut("1358da13", "00200009297002008250400000");
   } else if (trainConfig == 22) {
     cuts.AddCut("54600013", "00200009297002008250400000");
   } else if (trainConfig == 23) {

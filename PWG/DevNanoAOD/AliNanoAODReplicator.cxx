@@ -107,6 +107,8 @@ AliAODBranchReplicator(),
   fSaveV0s(0),
   fSaveCascades(kFALSE),
   fSaveConversionPhotons(kFALSE),
+  fPhotonFromDeltas(kFALSE),
+  fDeltaAODBranchName(""),
   fInputArrayName(""),
   fOutputArrayName("tracks"),
   fKeepDaughters(),
@@ -145,6 +147,8 @@ AliNanoAODReplicator::AliNanoAODReplicator(const char* name, const char* title) 
   fSaveV0s(0),
   fSaveCascades(kFALSE),
   fSaveConversionPhotons(kFALSE),
+  fPhotonFromDeltas(kFALSE),
+  fDeltaAODBranchName(""),
   fInputArrayName(""),
   fOutputArrayName("tracks"),
   fKeepDaughters(),
@@ -795,13 +799,18 @@ void AliNanoAODReplicator::ReplicateAndFilter(const AliAODEvent& source)
   // Photons
   std::list<Int_t> trackIDs; // tracks which should be kept as they are referred to
   if (fSaveConversionPhotons) {
+    TClonesArray* gammaArray = nullptr;
     Int_t nConvPhotons = 0;
     static AliV0ReaderV1* photonReader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask("ConvGammaAODProduction");
-    if (!photonReader)
-      AliFatal("No V0 reader but photon conversion requested");
-    if (photonReader->AreAODsRelabeled() != kFALSE)
-      AliFatal("This requires not relabled tracks");
-    TClonesArray* gammaArray = photonReader->GetReconstructedGammas();
+    if (photonReader) {
+      if (photonReader->AreAODsRelabeled() != kFALSE)
+        AliFatal("This requires not relabled tracks");
+      gammaArray = photonReader->GetReconstructedGammas();
+    } else if (fPhotonFromDeltas) {
+      gammaArray = dynamic_cast<TClonesArray*>(source.FindListObject(fDeltaAODBranchName.Data()));
+    } else {
+      AliFatal("No Photon reader and no branch name specified");
+    }
     for (int iGamma = 0; iGamma < gammaArray->GetEntriesFast(); ++iGamma) {
       auto *photonCandidate = dynamic_cast<AliAODConversionPhoton *>(gammaArray->At(iGamma));
       if (fConversionPhotonCuts && !fConversionPhotonCuts->IsSelected(photonCandidate))

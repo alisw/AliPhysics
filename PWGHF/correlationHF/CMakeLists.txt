@@ -22,13 +22,28 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/correlationHF)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    ${AliPhysics_SOURCE_DIR}/ML
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools/yaml-cpp/include
                     ${AliPhysics_SOURCE_DIR}/PWGHF/hfe
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
+                    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFML
   )
+if(KFParticle_FOUND)
+  get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
+  include_directories(${KFPARTICLE_INCLUDE_DIR})
+  add_definitions("-DWITH_KFPARTICLE")
+endif(KFParticle_FOUND)
+
+# pulled in for HF vertexing
+if(FASTJET_FOUND)
+    include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+    link_directories(${FASTJET_LIBS_DIR})
+    add_definitions(${FASTJET_DEFINITIONS})
+    list(APPEND HDRS FJ_includes.h)
+endif(FASTJET_FOUND)
 
 # Sources - alphabetical order
 set(SRCS
@@ -63,13 +78,18 @@ set(SRCS
     AliHFCorrFitter.cxx
     AliHFCorrFitSystematics.cxx
     AliDhCorrelationExtraction.cxx
+    AliAnalysisHFEHCorrOnFlySim.cxx
   )
 
 # Tasks that should only be compiled in ROOT 6
 if(ROOT_VERSION_MAJOR EQUAL 6)
     set(SRCS ${SRCS}
 	AliAnalysisTaskDHFeCorr.cxx
-	)						
+        AliHFMLResponseLambdactopKpi.cxx
+        AliAnalysisTaskSELambdacCorrelations.cxx
+        AliHFMLResponseLambdactopK0s.cxx
+        AliAnalysisTaskSELcTopK0sCorrelations.cxx
+	)
 endif(ROOT_VERSION_MAJOR EQUAL 6)
 
 # Headers from sources
@@ -86,6 +106,13 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 # Generate the ROOT map
 # Dependecies
 set(LIBDEPS ANALYSISalice PWGHFhfe PWGHFvertexingHF)
+if(KFParticle_FOUND)
+  get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
+  set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
+endif(KFParticle_FOUND)
+if(ROOT_VERSION_MAJOR EQUAL 6)
+  set(LIBDEPS ${LIBDEPS} ML PWGHFvertexingHFML)
+endif(ROOT_VERSION_MAJOR EQUAL 6)
 
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 

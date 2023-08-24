@@ -160,9 +160,11 @@ class AliAnalysisTaskForMCpPb : public AliAnalysisTaskSE
 
                                 /**
                                  * As far as I understand, it should be the
-                                 * pseudorapidity distribution of the many muons.
+                                 * Pseudorapidity distribution of the single muons.
+                                 * Followed by the same for the dimuons.
                                  */
         TH1F*                   fEtaMuonH;          //!
+        TH1F*                   fEtaDimuonH;        //!
 
                                 /**
                                  *
@@ -353,7 +355,17 @@ class AliAnalysisTaskForMCpPb : public AliAnalysisTaskSE
                                  * fMCEfficiencyPerRunH to extract the
                                  * efficiency on a run-by-run basis.
                                  */
-        TH1F*                   fEfficiencyPerRunH;  //!
+        TH1F*                   fEfficiencyPerRunH;                                       //!
+        TH1F*                   fEfficiencyPerRunRestrictedRapidityH;                     //!
+        TH1F*                   fEfficiencyPerRunRestrictedRapidity36to31H;               //!
+        TH1F*                   fEfficiencyPerRunRestrictedRapidity31to26H;               //!
+
+        TH1F*                   fEfficiencyPerRunWithRunTwoSettings;                      //!
+        TH1F*                   fEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[2];   //!
+        TH1F*                   fEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[3]; //!
+        TH1F*                   fEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[4];  //!
+        TH1F*                   fEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[5];  //!
+
 
                                 /**
                                  * This histogram shows the entries distribution
@@ -365,7 +377,17 @@ class AliAnalysisTaskForMCpPb : public AliAnalysisTaskSE
                                  * and I forgot to eliminate  the comment
                                  * from here....
                                  */
-        TH1F*                   fMCEfficiencyPerRunH;  //!
+        TH1F*                   fMCEfficiencyPerRunH;                          //!
+        TH1F*                   fMCEfficiencyPerRunRestrictedRapidityH;        //!
+        TH1F*                   fMCEfficiencyPerRunRestrictedRapidity36to31H;  //!
+        TH1F*                   fMCEfficiencyPerRunRestrictedRapidity31to26H;  //!
+
+        TH1F*                   fMCEfficiencyPerRunWithRunTwoSettings;                      //!
+        TH1F*                   fMCEfficiencyPerRunWithRunTwoSettingsTwoBinsRapidityH[2];   //!
+        TH1F*                   fMCEfficiencyPerRunWithRunTwoSettingsThreeBinsRapidityH[3]; //!
+        TH1F*                   fMCEfficiencyPerRunWithRunTwoSettingsFourBinsRapidityH[4];  //!
+        TH1F*                   fMCEfficiencyPerRunWithRunTwoSettingsFiveBinsRapidityH[5];  //!
+
 
                                 /**
                                  * This array of histograms shows the
@@ -469,7 +491,7 @@ class AliAnalysisTaskForMCpPb : public AliAnalysisTaskSE
          * If I happen to encounter it again in the future, I will make sure to
          * record it!
          */
-        ClassDef(AliAnalysisTaskForMCpPb, 1);
+        ClassDef(AliAnalysisTaskForMCpPb, 7);
 };
 
 #endif

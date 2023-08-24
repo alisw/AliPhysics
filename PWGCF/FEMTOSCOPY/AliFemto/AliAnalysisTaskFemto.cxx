@@ -635,6 +635,7 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
       printf("*** Connect to AliEn ***\n");
       TGrid::Connect("alien://");
       TFile *fileConfig = TFile::Open(fConfigMacro.Data());
+      if(fConfigTMacro) delete fConfigTMacro;
       fConfigTMacro = dynamic_cast<TMacro*>(fileConfig->Get(fconfigFunName.Data())->Clone());
       LoadMacro(fConfigTMacro);
       fileConfig->Close();
@@ -687,7 +688,6 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
       return;
     }
   }
-
   if (fAnalysisType == 1) {
     if (!fESD) {
       if (fVerbose) {
@@ -819,7 +819,7 @@ void AliAnalysisTaskFemto::Exec(Option_t *)
           fManager->ProcessEvent();
         }
 
-        else if (auto *faodkine = dynamic_cast<AliFemtoEventReaderAODKinematicsChain *>(fReader)) {
+        else if (auto *faodkine = dynamic_cast<AliFemtoEventReaderAODKinematicsChain *>(fReader)) { 
           // Process the event
           faodkine->SetAODSource(fAOD);
           fManager->ProcessEvent();

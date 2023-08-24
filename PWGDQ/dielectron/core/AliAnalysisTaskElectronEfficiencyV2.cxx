@@ -29,7 +29,13 @@
 #include "AliESDEvent.h"
 #include "AliMCEvent.h"
 #include "AliAnalysisFilter.h"
+#include "AliAnalysisUtils.h"
 
+#include "AliGenEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliGenDPMjetEventHeader.h"
+#include "AliGenPythiaEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 
 #include "AliDielectronMC.h"
 #include "AliDielectronVarManager.h"
@@ -40,6 +46,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "TAxis.h"
 #include "TTree.h"
 #include "THnSparse.h"
 #include "TLorentzVector.h"
@@ -105,13 +112,21 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
   fResolutionEtaBins(),
   fResolutionPhiBins(),
   fResolutionThetaBins(),
+  fNGenpt(1000),
+  fGenptMin(0.),
+  fGenptMax(20.),
   fMassBins(),
   fPairPtBins(),
+  fPhiVBins(),
   fDoGenSmearing(false),
+  fDoRecSmearing(false),
   fPtMin(0.),
   fPtMax(0.),
   fEtaMin(-99.),
   fEtaMax(99.),
+  fOpeningAngleAccCut(kFALSE),							       	    
+  fOpMin(0.),
+  fOpMax(999.),
   fPtMinGen(0.),
   fPtMaxGen(0.),
   fEtaMinGen(-99.),
@@ -125,6 +140,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
   fGeneratorHashs(),
   fGeneratorMCSignalHashs(),
   fGeneratorULSSignalHashs(),
+  fRejectParticleFromOOB(false),
   fPIDResponse(0x0),
   fEvent(0x0),
   fMC(0x0),
@@ -138,6 +154,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
   fSupportCutsetting(0),
   fHistEvents(0x0),
   fHistEventStat(0x0),
+  fHistCentralityRaw(0x0),
   fHistCentrality(0x0),
   fHistVertex(0x0),
   fHistVertexContibutors(0x0),
@@ -147,7 +164,10 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
   fCentralityEst("V0M"),
   fCentralityFile(0x0),
   fCentralityFilename(""),
+  fCentralityFilenameFromAlien(""),
   fHistCentralityCorrection(0x0),
+  fNBinsCentralityCorr(0.),
+  fEntriesCentralityCorr(0.),
   fOutputListSupportHistos(0x0),
   fHistGenPosPart(),
   fHistGenNegPart(),
@@ -176,6 +196,10 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
   fOpAngleNBinsLegsFromPair(-99),
   fTHnSparseGenSmearedLegsFromPair(),
   fTHnSparseRecLegsFromPair(),
+  fDoFillPhiV(false),
+  fApplyPhivCut(false),
+  fMaxMee(-1),
+  fMinPhiV(3.2),
   fDoPairing(false),
   fDoULSandLS(false),
   fDeactivateLS(false),
@@ -246,13 +270,21 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fResolutionEtaBins(),
   fResolutionPhiBins(),
   fResolutionThetaBins(),
+  fNGenpt(1000),
+  fGenptMin(0.),
+  fGenptMax(20.),
   fMassBins(),
   fPairPtBins(),
+  fPhiVBins(),
   fDoGenSmearing(false),
+  fDoRecSmearing(false),
   fPtMin(0.),
   fPtMax(0.),
   fEtaMin(-99.),
   fEtaMax(99.),
+  fOpeningAngleAccCut(kFALSE),							       	    
+  fOpMin(0.),
+  fOpMax(999.),
   fPtMinGen(0.),
   fPtMaxGen(0.),
   fEtaMinGen(-99.),
@@ -266,6 +298,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fGeneratorHashs(),
   fGeneratorMCSignalHashs(),
   fGeneratorULSSignalHashs(),
+  fRejectParticleFromOOB(false),
   fPIDResponse(0x0),
   fEvent(0x0),
   fMC(0x0),
@@ -279,6 +312,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fSupportCutsetting(0),
   fHistEvents(0x0),
   fHistEventStat(0x0),
+  fHistCentralityRaw(0x0),
   fHistCentrality(0x0),
   fHistVertex(0x0),
   fHistVertexContibutors(0x0),
@@ -288,7 +322,10 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fCentralityEst("V0M"),
   fCentralityFile(0x0),
   fCentralityFilename(""),
+  fCentralityFilenameFromAlien(""),
   fHistCentralityCorrection(0x0),
+  fNBinsCentralityCorr(0.),
+  fEntriesCentralityCorr(0.),
   fOutputListSupportHistos(0x0),
   fHistGenPosPart(),
   fHistGenNegPart(),
@@ -317,6 +354,10 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fOpAngleNBinsLegsFromPair(-99),
   fTHnSparseGenSmearedLegsFromPair(),
   fTHnSparseRecLegsFromPair(),
+  fDoFillPhiV(false),
+  fApplyPhivCut(false),
+  fMaxMee(-1),
+  fMinPhiV(3.2),
   fDoPairing(false),
   fDoULSandLS(false),
   fDeactivateLS(false),
@@ -410,70 +451,7 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
     fGeneratorULSSignalHashs.push_back(temp.Hash());
   }
 
-  if (fResoFilename != ""){
-    fResoFile = TFile::Open(fResoFilename.c_str());
-    if (fResoFile == 0x0){
-      std::cout << "Location in AliEN: " << fResoFilenameFromAlien << std::endl;
-      gSystem->Exec(Form("alien_cp alien://%s .", fResoFilenameFromAlien.c_str()));
-      std::cout << "Copy resolution from Alien" << std::endl;
-      fResoFile = TFile::Open(fResoFilename.c_str());
-    }
-
-    if (!fResoFile->IsOpen()) {
-      AliError(Form("Could not open file %s", fResoFilename.c_str()));
-    }
-    fArrResoPt = (TObjArray *)fResoFile->Get("RelPtResArrCocktail");
-    fArrResoEta = (TObjArray *)fResoFile->Get("EtaResArrVsPt");
-    fArrResoPhi_Pos = (TObjArray *)fResoFile->Get("PhiPosResArrVsPt");
-    fArrResoPhi_Neg = (TObjArray *)fResoFile->Get("PhiEleResArrVsPt");
-    std::cout << fArrResoPt << " " << fArrResoEta << " " << fArrResoPhi_Pos << " " << fArrResoPhi_Neg << std::endl;
-    if (fArrResoPt == 0x0 ||  fArrResoEta == 0x0 || fArrResoPhi_Pos == 0x0 || fArrResoPhi_Neg == 0x0){
-      AliError(Form("Could not extract resolution histograms from file %s", fResoFilename.c_str()));
-    }
-  }
-
-  if (fDoCocktailWeighting && fCocktailFilename != ""){
-    std::cout << "Do Cocktail weighting" << std::endl;
-    fCocktailFile = TFile::Open(fCocktailFilename.c_str());
-    if (fCocktailFile == 0x0){
-      std::cout << "Location in AliEN: " << fCocktailFilenameFromAlien << std::endl;
-      gSystem->Exec(Form("alien_cp alien://%s .", fCocktailFilenameFromAlien.c_str()));
-      std::cout << "Copy cocktail weighting from Alien" << std::endl;
-      fCocktailFile = TFile::Open(fCocktailFilename.c_str());
-    }
-
-    if (fCocktailFile){
-      fPtPion     = dynamic_cast<TH1F*>(fCocktailFile->Get("Pion"));
-      fPtEta      = dynamic_cast<TH1F*>(fCocktailFile->Get("Eta"));
-      fPtEtaPrime = dynamic_cast<TH1F*>(fCocktailFile->Get("EtaPrime"));
-      fPtRho      = dynamic_cast<TH1F*>(fCocktailFile->Get("Rho"));
-      fPtOmega    = dynamic_cast<TH1F*>(fCocktailFile->Get("Omega"));
-      fPtPhi      = dynamic_cast<TH1F*>(fCocktailFile->Get("Phi"));
-      fPtJPsi     = dynamic_cast<TH1F*>(fCocktailFile->Get("JPsi"));
-
-      if (!fPtPion)     { std::cout << "Pion reweighting not loaded"     << std::endl; }
-      if (!fPtEta)      { std::cout << "Eta reweighting not loaded"      << std::endl; }
-      if (!fPtEtaPrime) { std::cout << "EtaPrime reweighting not loaded" << std::endl; }
-      if (!fPtRho)      { std::cout << "Rho reweighting not loaded"      << std::endl; }
-      if (!fPtOmega)    { std::cout << "Omega reweighting not loaded"    << std::endl; }
-      if (!fPtPhi)      { std::cout << "Phi reweighting not loaded"      << std::endl; }
-      if (!fPtJPsi)     { std::cout << "JPsi reweighting not loaded"     << std::endl; }
-    }
-    else std::cout << "No cocktail weighting file found" << std::endl;
-  }
-
-  if (fCentralityFilename != ""){
-    fCentralityFile = TFile::Open(fCentralityFilename.c_str());
-    if (!fCentralityFile->IsOpen()) {
-      AliError(Form("Could not open file %s", fCentralityFilename.c_str()));
-    }
-    TList* list_temp = (TList*)fCentralityFile->Get("efficiency");
-    fHistCentralityCorrection = (TH1F*) list_temp->FindObject("centrality");
-    if (fHistCentralityCorrection == 0x0){
-      AliError(Form("Could not extract centrality histogram from file %s", fCentralityFilename.c_str()));
-    }
-  }
-
+ 
   // Check binning for single electron histograms. All 3 dimension must have >= 1 bin
   const int fNptBins = fPtBins.size()-1;
   const int fNetaBins = fEtaBins.size()-1;
@@ -486,6 +464,7 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
   const int fNResolutionthetaBins = fResolutionThetaBins.size()-1;
   const int fNmassBins = fMassBins.size()-1;
   const int fNpairptBins = fPairPtBins.size()-1;
+  const int fNphivBins = fPhiVBins.size()-1;
 
   const int nDim = 7;
   Int_t nBins[nDim] = {fPtNBinsLegsFromPair, fEtaNBinsLegsFromPair, fPhiNBinsLegsFromPair, fPtNBinsLegsFromPair, fEtaNBinsLegsFromPair, fPhiNBinsLegsFromPair, fOpAngleNBinsLegsFromPair};
@@ -503,12 +482,14 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
   // Initialize all histograms
     fHistEvents             = new TH1F("events", "events", 1, 0., 1.);
     fHistEventStat          = new TH1F("eventStats", "eventStats", kLastBin, -0.5, kLastBin-0.5);
+    fHistCentralityRaw      = new TH1F("centralityRaw", "centralityRaw", 100, 0., 100.);
     fHistCentrality         = new TH1F("centrality", "centrality", 100, 0., 100.);
     fHistVertex             = new TH1F("zVertex", "zVertex", 300, -15.0, 15.0);
     fHistVertexContibutors  = new TH1F("vtxContributor", "vtxContributor",5000,-0.5,4999.5);
     fHistNTracks            = new TH1F("nTracks", "nTracks", 4000, 0., 40000.);
     fOutputList->Add(fHistEvents);
     fOutputList->Add(fHistEventStat);
+    fOutputList->Add(fHistCentralityRaw);
     fOutputList->Add(fHistCentrality);
     fOutputList->Add(fHistVertex);
     // fOutputList->Add(fHistVertexContibutors);
@@ -691,10 +672,19 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
           list->SetOwner();
 
           for (unsigned int i = 0; i < fPairMCSignal.size(); ++i){
-            TH2D* th2_tmp = new TH2D(Form("Nrec_%s", fPairMCSignal.at(i).GetName()),";m_{ee};p_{T,ee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
-            th2_tmp->Sumw2();
-            fHistRecPair.push_back(th2_tmp);
-            list->Add(th2_tmp);
+
+            if(fDoFillPhiV){
+              TH3D* th3_tmp_PhiV = new TH3D(Form("Nrec_%s_MPtPhiV", fPairMCSignal.at(i).GetName()),";m_{ee};p_{T,ee};#varphi_{V}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data(),fNphivBins,fPhiVBins.data());
+              th3_tmp_PhiV->Sumw2();
+              fHistRecPair.push_back(th3_tmp_PhiV);
+              list->Add(th3_tmp_PhiV);
+            }
+            else{
+              TH2D* th2_tmp = new TH2D(Form("Nrec_%s", fPairMCSignal.at(i).GetName()),";m_{ee};p_{T,ee}",fNmassBins,fMassBins.data(),fNpairptBins,fPairPtBins.data());
+              th2_tmp->Sumw2();
+              fHistRecPair.push_back(th2_tmp);
+              list->Add(th2_tmp);
+            }
 
             if (fWriteLegsFromPair){
               THnSparseF* fTHnSparseRecLegsFromPair_tmp= new THnSparseF(Form("fTHnSparseRecLegsFromPair_%s", fPairMCSignal.at(i).GetName()),Form("fTHnSparseRecLegsFromPair_%s;p_{t,Pos};#eta_{Pos};#phi_{Pos};p_{t,Neg};#eta_{Neg};#phi_{Neg};opAngle", fPairMCSignal.at(i).GetName()), nDim, nBins, min, max);
@@ -740,21 +730,21 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
     fResolutionList->SetName("Resolution");
     fResolutionList->SetOwner();
 
-      fPGen_DeltaP                         = new TH2D("PGen_DeltaP",                        "", 1000, 0., 20., fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
-      fPGen_PrecOverPGen                   = new TH2D("PGen_PrecOverPGen",                  "", 1000, 0., 20., fNResolutionRelptBins, fResolutionRelPtBins.data());
-      fPtGen_DeltaPt                       = new TH2D("PtGen_DeltaPt",                      "", 1000, 0., 20., fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
-      fPtGen_DeltaPtOverPtGen              = new TH2D("PtGen_DeltaPtOverPtGen",             "", 1000, 0., 20., fNResolutionDeltaptBins, -1., +1.);
-      fPtGen_PtRecOverPtGen                = new TH2D("PtGen_PtRecOverPtGen",               "", 1000, 0., 20., fNResolutionRelptBins, fResolutionRelPtBins.data());
-      fPtGen_DeltaPt_wGenSmeared           = new TH2D("PtGen_DeltaPt_wGenSmeared",          "", 1000, 0., 20., fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
-      fPtGen_DeltaPtOverPtGen_wGenSmeared  = new TH2D("PtGen_DeltaPtOverPtGen_wGenSmeared", "", 1000, 0., 20., fNResolutionDeltaptBins, -1., +1.);
-      fPtGen_PtRecOverPtGen_wGenSmeared    = new TH2D("PtGen_PtRecOverPtGen_wGenSmeared",   "", 1000, 0., 20., fNResolutionRelptBins, fResolutionRelPtBins.data());
-      fPGen_DeltaEta                       = new TH2D("PGen_DeltaEta",                      "", 1000, 0., 20., fNResolutionetaBins, fResolutionEtaBins.data());
-      fPtGen_DeltaEta                      = new TH2D("PtGen_DeltaEta",                     "", 1000, 0., 20., fNResolutionetaBins, fResolutionEtaBins.data());
-      fPGen_DeltaTheta                     = new TH2D("PGen_DeltaTheta",                    "", 1000, 0., 20., fNResolutionthetaBins, fResolutionThetaBins.data());
-      fPGen_DeltaPhi_Ele                   = new TH2D("PGen_DeltaPhi_Ele",                  "", 1000, 0., 20., fNResolutionphiBins, fResolutionPhiBins.data());
-      fPGen_DeltaPhi_Pos                   = new TH2D("PGen_DeltaPhi_Pos",                  "", 1000, 0., 20., fNResolutionphiBins, fResolutionPhiBins.data());
-      fPtGen_DeltaPhi_Ele                  = new TH2D("PtGen_DeltaPhi_Ele",                 "", 1000, 0., 20., fNResolutionphiBins, fResolutionPhiBins.data());
-      fPtGen_DeltaPhi_Pos                  = new TH2D("PtGen_DeltaPhi_Pos",                 "", 1000, 0., 20., fNResolutionphiBins, fResolutionPhiBins.data());
+      fPGen_DeltaP                         = new TH2D("PGen_DeltaP",                        "", fNGenpt, fGenptMin, fGenptMax, fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
+      fPGen_PrecOverPGen                   = new TH2D("PGen_PrecOverPGen",                  "", fNGenpt, fGenptMin, fGenptMax, fNResolutionRelptBins, fResolutionRelPtBins.data());
+      fPtGen_DeltaPt                       = new TH2D("PtGen_DeltaPt",                      "", fNGenpt, fGenptMin, fGenptMax, fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
+      fPtGen_DeltaPtOverPtGen              = new TH2D("PtGen_DeltaPtOverPtGen",             "", fNGenpt, fGenptMin, fGenptMax, fNResolutionDeltaptBins, -1., +1.);
+      fPtGen_PtRecOverPtGen                = new TH2D("PtGen_PtRecOverPtGen",               "", fNGenpt, fGenptMin, fGenptMax, fNResolutionRelptBins, fResolutionRelPtBins.data());
+      fPtGen_DeltaPt_wGenSmeared           = new TH2D("PtGen_DeltaPt_wGenSmeared",          "", fNGenpt, fGenptMin, fGenptMax, fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
+      fPtGen_DeltaPtOverPtGen_wGenSmeared  = new TH2D("PtGen_DeltaPtOverPtGen_wGenSmeared", "", fNGenpt, fGenptMin, fGenptMax, fNResolutionDeltaptBins, -1., +1.);
+      fPtGen_PtRecOverPtGen_wGenSmeared    = new TH2D("PtGen_PtRecOverPtGen_wGenSmeared",   "", fNGenpt, fGenptMin, fGenptMax, fNResolutionRelptBins, fResolutionRelPtBins.data());
+      fPGen_DeltaEta                       = new TH2D("PGen_DeltaEta",                      "", fNGenpt, fGenptMin, fGenptMax, fNResolutionetaBins, fResolutionEtaBins.data());
+      fPtGen_DeltaEta                      = new TH2D("PtGen_DeltaEta",                     "", fNGenpt, fGenptMin, fGenptMax, fNResolutionetaBins, fResolutionEtaBins.data());
+      fPGen_DeltaTheta                     = new TH2D("PGen_DeltaTheta",                    "", fNGenpt, fGenptMin, fGenptMax, fNResolutionthetaBins, fResolutionThetaBins.data());
+      fPGen_DeltaPhi_Ele                   = new TH2D("PGen_DeltaPhi_Ele",                  "", fNGenpt, fGenptMin, fGenptMax, fNResolutionphiBins, fResolutionPhiBins.data());
+      fPGen_DeltaPhi_Pos                   = new TH2D("PGen_DeltaPhi_Pos",                  "", fNGenpt, fGenptMin, fGenptMax, fNResolutionphiBins, fResolutionPhiBins.data());
+      fPtGen_DeltaPhi_Ele                  = new TH2D("PtGen_DeltaPhi_Ele",                 "", fNGenpt, fGenptMin, fGenptMax, fNResolutionphiBins, fResolutionPhiBins.data());
+      fPtGen_DeltaPhi_Pos                  = new TH2D("PtGen_DeltaPhi_Pos",                 "", fNGenpt, fGenptMin, fGenptMax, fNResolutionphiBins, fResolutionPhiBins.data());
       fThetaGen_DeltaTheta                 = new TH2D("ThetaGen_DeltaTheta",                "", 220, -0.1*TMath::Pi(), 1.1*TMath::Pi(), fNResolutionthetaBins, fResolutionThetaBins.data());
       fPhiGen_DeltaPhi                     = new TH2D("PhiGen_DeltaPhi",                    "", 320, -0.1*TMath::Pi(), 2.1*TMath::Pi(), fNResolutionphiBins, fResolutionPhiBins.data());
 
@@ -915,11 +905,45 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
     AliDielectronPID::SetWidthCorrFunctionTOF(fPostPIDWdthCorrTOF);
   }
 
-
   if (isAOD) fEvent = static_cast<AliAODEvent*>(eventHandler->GetEvent());
   else       fEvent = static_cast<AliESDEvent*>(eventHandler->GetEvent());
 
   AliDielectronVarManager::SetEvent(fEvent);
+
+
+  // ##########################################################
+  // print generator header
+  if(isAOD){//for AOD
+    AliAODMCHeader* mcHeader = (AliAODMCHeader*)fEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    TList *chl = (TList*)mcHeader->GetCocktailHeaders();//cocktail hearder list
+    const Int_t Ngen = chl->GetEntries();
+    AliInfo(Form("N generators = %d",Ngen));
+    for(Int_t igen=0;igen<Ngen;igen++){
+      AliGenEventHeader *gh = (AliGenEventHeader*)chl->At(igen);
+      AliInfo(Form("Generator name = %s , NProduced = %d.",gh->GetName(),gh->NProduced()));
+    }//end of generator loop
+  }
+  else{//for ESD
+    AliGenEventHeader* genHeader = fMC->GenEventHeader();
+    AliGenHijingEventHeader* hijingGenHeader = dynamic_cast<AliGenHijingEventHeader*>(genHeader);
+    AliGenPythiaEventHeader* pythiaGenHeader = dynamic_cast<AliGenPythiaEventHeader*>(genHeader);
+    AliGenDPMjetEventHeader* dpmjetGenHeader = dynamic_cast<AliGenDPMjetEventHeader*>(genHeader);
+
+    if(hijingGenHeader == NULL && pythiaGenHeader == NULL && dpmjetGenHeader == NULL){
+      AliGenCocktailEventHeader* genCocktailHeader = dynamic_cast<AliGenCocktailEventHeader*>(genHeader);
+      TList *chl = (TList*)genCocktailHeader->GetHeaders();//cocktail header list
+      const Int_t Ngen = chl->GetEntries();
+      AliInfo(Form("N generators = %d",Ngen));
+      for (Int_t igen=0; igen<Ngen; igen++) {
+        AliGenEventHeader *gh = (AliGenEventHeader*)chl->At(igen);
+        AliInfo(Form("Cocktail header is found : Generator name = %s , NProduced = %d.",gh->GetName(),gh->NProduced()));
+      }
+    }
+    else if(hijingGenHeader) AliInfo(Form("Hijing header is found : Generator name = %s , NProduced = %d.",hijingGenHeader->GetName(),hijingGenHeader->NProduced()));
+    else if(pythiaGenHeader) AliInfo(Form("Pythia header is found : Generator name = %s , NProduced = %d.",pythiaGenHeader->GetName(),pythiaGenHeader->NProduced()));
+    else if(dpmjetGenHeader) AliInfo(Form("DPMjet header is found : Generator name = %s , NProduced = %d.",dpmjetGenHeader->GetName(),dpmjetGenHeader->NProduced()));
+  }
+
 
   // ##########################################################
   // All events before all cuts
@@ -976,19 +1000,33 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
 
   fHistEventStat->Fill(kCentralityEvents);
   fHistEvents->Fill(0.5);
-  fHistCentrality->Fill(centralityF);
+  fHistCentralityRaw->Fill(centralityF);
+
 
   // Calculating the weight when centrality correction is applied
   double centralityWeight = 1.;
   if (fHistCentralityCorrection != 0x0){
-    centralityWeight = (fHistCentralityCorrection->GetEntries() / fHistCentralityCorrection->GetNbinsX()) / fHistCentralityCorrection->FindBin(centralityF) ;
-    std::cout << "cent: " << centralityF << "  " << "weight: " << centralityWeight << std::endl;
+
+    // find bin
+    TAxis *xaxis = fHistCentralityCorrection->GetXaxis();
+    Int_t bin_cent = xaxis->FindBin(centralityF);
+    Double_t lowedge_cent = xaxis->GetBinLowEdge(bin_cent);
+    Double_t upedge_cent = xaxis->GetBinUpEdge(bin_cent);
+    if(lowedge_cent > (centralityF+0.0000000001)) bin_cent--;
+    if(upedge_cent < (centralityF-0.0000000001)) bin_cent++;
+
+    
+    if((fNBinsCentralityCorr>0.) && (fHistCentralityCorrection->GetBinContent(bin_cent)>0.)) centralityWeight = fEntriesCentralityCorr/(fNBinsCentralityCorr*fHistCentralityCorrection->GetBinContent(bin_cent));
+    
+    //centralityWeight = (fHistCentralityCorrection->GetEntries() / fHistCentralityCorrection->GetNbinsX()) / fHistCentralityCorrection->FindBin(centralityF) ;
+    //std::cout << "cent: " << centralityF << "  " << "weight: " << centralityWeight << std::endl;
   }
+  fHistCentrality->Fill(centralityF,centralityWeight);
 
   // ##########################################################
   // Fill Multiplicity histogram
   int nTracks = fEvent->GetNumberOfTracks();
-  fHistNTracks->Fill(nTracks);
+  fHistNTracks->Fill(nTracks,centralityWeight);
 
 
   // ######################################################
@@ -1015,8 +1053,9 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
 
     // ##########################################################
     // check if correct generator used
-    bool generatorForMCSignal  = CheckGenerator(iPart, fGeneratorMCSignalHashs);
-    bool generatorForULSSignal = CheckGenerator(iPart, fGeneratorULSSignalHashs);
+    bool generatorForMCSignal  = CheckGenerator(iPart, fGeneratorMCSignalHashs, kTRUE);
+    bool generatorForULSSignal = CheckGenerator(iPart, fGeneratorULSSignalHashs, kTRUE);
+
     if (!generatorForMCSignal && !generatorForULSSignal) continue;
     // if (!CheckGenerator(iPart, fGeneratorHashs)) continue;
 
@@ -1103,8 +1142,9 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
 
     // ##########################################################
     // check if correct generator used
-    bool generatorForMCSignal  = CheckGenerator(label, fGeneratorMCSignalHashs);
-    bool generatorForULSSignal = CheckGenerator(label, fGeneratorULSSignalHashs);
+    bool generatorForMCSignal  = CheckGenerator(label, fGeneratorMCSignalHashs, kFALSE);
+    bool generatorForULSSignal = CheckGenerator(label, fGeneratorULSSignalHashs, kFALSE);
+
     // std::cout << "generatorForMCSignal = " << generatorForMCSignal << std::endl;
     // std::cout << "generatorForULSSignal = " << generatorForULSSignal << std::endl;
     if (!generatorForMCSignal && !generatorForULSSignal) continue;
@@ -1138,6 +1178,20 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
     // ##########################################################
     // check if electron comes from a mother with ele+pos as daughters
     CheckIfFromMotherWithDielectronAsDaughter(part);
+
+    // Test:Smear reconstructed particles to fill list for cutsetting
+    if (fDoRecSmearing == true && fArrResoPt){
+      AliMCParticle *mc_part = (AliMCParticle*)fMC->GetTrack(TMath::Abs(label));
+      Double_t mcPt     = mc_part->Pt();
+      Double_t mcEta    = mc_part->Eta();
+      Double_t mcPhi    = mc_part->Phi();
+      Short_t  mcCharge = mc_part->Charge();
+      TLorentzVector smearedVec = ApplyResolution(mcPt, mcEta, mcPhi, mcCharge);
+      part.fPt_smeared  = smearedVec.Pt();
+      part.fEta_smeared = smearedVec.Eta();
+      if (smearedVec.Phi() < 0) part.fPhi_smeared = smearedVec.Phi()+ 2 * pi;
+      else part.fPhi_smeared = smearedVec.Phi();
+    }
 
     // ##########################################################
     if      (fDoPairing == true && part.fCharge < 0) fRecNegPart.push_back(part);
@@ -1286,20 +1340,23 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
             double mass = LvecM.M();
             double pairpt = LvecM.Pt();
             double weight = 1;
-            for (unsigned int iMCSignal = 0; iMCSignal < fGenNegPart[neg_i].isMCSignal.size(); ++iMCSignal){
-              // if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true){
-              if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true &&
-                  fGenNegPart[neg_i].DielectronPairFromSameMother[iMCSignal] == false && fGenPosPart[pos_i].DielectronPairFromSameMother[iMCSignal] == false){
-                if (!fDeactivateLS) {
-//                  std::cout << "Deactivate" << std::endl;
-                 fHistGenPair_ULSandLS.at(3*iMCSignal)->Fill(mass, pairpt, weight);
-                }
-                else {
-                  fHistGenPair_ULSandLS.at(1*iMCSignal)->Fill(mass, pairpt, weight);
-                }
-              }
-            }
-          }
+	    double opangle = Lvec1.Angle(Lvec2.Vect());
+	    if((!fOpeningAngleAccCut) || (fOpeningAngleAccCut && (opangle >= fOpMin) && (opangle < fOpMax))) {
+	      for (unsigned int iMCSignal = 0; iMCSignal < fGenNegPart[neg_i].isMCSignal.size(); ++iMCSignal){
+		// if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true){
+		if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true &&
+		    fGenNegPart[neg_i].DielectronPairFromSameMother[iMCSignal] == false && fGenPosPart[pos_i].DielectronPairFromSameMother[iMCSignal] == false){
+		  if (!fDeactivateLS) {
+		    //                  std::cout << "Deactivate" << std::endl;
+		    fHistGenPair_ULSandLS.at(3*iMCSignal)->Fill(mass, pairpt, weight);
+		  }
+		  else {
+		    fHistGenPair_ULSandLS.at(1*iMCSignal)->Fill(mass, pairpt, weight);
+		  }
+		}
+	      }
+	    }
+	  }
           if (selectedByKinematicCuts_smeared){
             TLorentzVector Lvec1;
             TLorentzVector Lvec2;
@@ -1309,20 +1366,23 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
             double mass = LvecM.M();
             double pairpt = LvecM.Pt();
             double weight = 1;
+	    double opangle = Lvec1.Angle(Lvec2.Vect());
+	    if((!fOpeningAngleAccCut) || (fOpeningAngleAccCut && (opangle >= fOpMin) && (opangle < fOpMax))) {
 
-            for (unsigned int iMCSignal = 0; iMCSignal < fGenNegPart[neg_i].isMCSignal.size(); ++iMCSignal){
-              // if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true)
-              if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true &&
-                  fGenNegPart[neg_i].DielectronPairFromSameMother[iMCSignal] == false && fGenPosPart[pos_i].DielectronPairFromSameMother[iMCSignal] == false){
-                if (!fDeactivateLS) {
-                 fHistGenSmearedPair_ULSandLS.at(3*iMCSignal)->Fill(mass, pairpt, weight);
-                }
-                else {
-                  fHistGenSmearedPair_ULSandLS.at(1*iMCSignal)->Fill(mass, pairpt, weight);
-                }
-              }
-            }
-          }
+	      for (unsigned int iMCSignal = 0; iMCSignal < fGenNegPart[neg_i].isMCSignal.size(); ++iMCSignal){
+		// if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true)
+		if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_i].isMCSignal[iMCSignal] == true &&
+		    fGenNegPart[neg_i].DielectronPairFromSameMother[iMCSignal] == false && fGenPosPart[pos_i].DielectronPairFromSameMother[iMCSignal] == false){
+		  if (!fDeactivateLS) {
+		    fHistGenSmearedPair_ULSandLS.at(3*iMCSignal)->Fill(mass, pairpt, weight);
+		  }
+		  else {
+		    fHistGenSmearedPair_ULSandLS.at(1*iMCSignal)->Fill(mass, pairpt, weight);
+		  }
+		}
+	      }
+	    }
+	  }
         } // End of ULS
 
         // Check if electrons are from MCSignal Generator
@@ -1355,23 +1415,26 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
           TLorentzVector LvecM = Lvec1 + Lvec2;
           double mass = LvecM.M();
           double pairpt = LvecM.Pt();
-          double weight = 1.;
-          if (fCocktailFile) {
-            if (fGenNegPart[neg_i].GetMotherID() == fGenPosPart[pos_i].GetMotherID()){
-              double motherpt = fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->Pt();
-              weight *= GetWeight(fGenNegPart[neg_i], fGenPosPart[pos_i], motherpt);
-            }
-            else{
-              weight = 0; // if should not fail by definition. but does in 13 / 10000000 cases
-            }
-          }
-
+	  double opangle = Lvec1.Angle(Lvec2.Vect());
+	  if((!fOpeningAngleAccCut) || (fOpeningAngleAccCut && (opangle >= fOpMin) && (opangle < fOpMax))) {
+	    double weight = 1.;
+	    if (fCocktailFile) {
+	      if (fGenNegPart[neg_i].GetMotherID() == fGenPosPart[pos_i].GetMotherID()){
+		double motherpt = fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->Pt();
+		weight *= GetWeight(fGenNegPart[neg_i], fGenPosPart[pos_i], motherpt);
+	      }
+	      else{
+		weight = 0; // if should not fail by definition. but does in 13 / 10000000 cases
+	      }
+	    }
+	    
           for (unsigned int i = 0; i < mcSignal_acc.size(); ++i){
             if (mcSignal_acc[i] == kTRUE){
               fHistGenPair.at(i)->Fill(mass, pairpt, weight * centralityWeight);
             }
           } // end of loop over all MCsignals
-        }
+	  } // opening angle cut if any
+	} // kinematic cuts
         if (fArrResoPt){ // Smear particles to fill "GeneratedSmeared"
 
           if (fGenNegPart[neg_i].fPt_smeared < fPtMin || fGenNegPart[neg_i].fPt_smeared > fPtMax || fGenNegPart[neg_i].fEta_smeared < fEtaMin || fGenNegPart[neg_i].fEta_smeared > fEtaMax) continue;
@@ -1386,33 +1449,36 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
           double massSmeared = LvecM_smeared.M();
           double pairptSmeared = LvecM_smeared.Pt();
           double weight = 1.;
-          if (fCocktailFile) {
-            if (fGenNegPart[neg_i].GetMotherID() == fGenPosPart[pos_i].GetMotherID()){
-              double motherpt = fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->Pt();
-              weight *= GetWeight(fGenNegPart[neg_i], fGenPosPart[pos_i], motherpt);
-            }
-            else{
-              weight = 0; // if should not fail by definition. but does in 13 / 10000000 cases
-            }
-          }
-
-          for (unsigned int i = 0; i <  mcSignal_acc.size(); ++i){
-            if (mcSignal_acc[i] == kTRUE){
-              fHistGenSmearedPair.at(i)->Fill(massSmeared, pairptSmeared, weight * centralityWeight);
-              if (fWriteLegsFromPair){
-                ptNeg  = fGenNegPart[neg_i].fPt_smeared;
-                etaNeg = fGenNegPart[neg_i].fEta_smeared;
-                phiNeg = fGenNegPart[neg_i].fPhi_smeared;
-                ptPos  = fGenPosPart[pos_i].fPt_smeared;
-                etaPos = fGenPosPart[pos_i].fEta_smeared;
-                phiPos = fGenPosPart[pos_i].fPhi_smeared;
-                op_angle = Lvec2_smeared.Angle(Lvec1_smeared.Vect());
-
-                double tuple[7] = {ptPos,etaPos,phiPos,ptNeg,etaNeg,phiNeg,op_angle};
-                fTHnSparseGenSmearedLegsFromPair[i]->Fill(tuple);
-              }
-            }
-          } // end of loop over all MCsignals
+	  double opangleSmeared = Lvec1_smeared.Angle(Lvec2_smeared.Vect());
+	  if((!fOpeningAngleAccCut) || (fOpeningAngleAccCut && (opangleSmeared >= fOpMin) && (opangleSmeared < fOpMax))) {
+	    if (fCocktailFile) {
+	      if (fGenNegPart[neg_i].GetMotherID() == fGenPosPart[pos_i].GetMotherID()){
+		double motherpt = fMC->GetTrack(fGenNegPart[neg_i].GetMotherID())->Pt();
+		weight *= GetWeight(fGenNegPart[neg_i], fGenPosPart[pos_i], motherpt);
+	      }
+	      else{
+		weight = 0; // if should not fail by definition. but does in 13 / 10000000 cases
+	      }
+	    }
+	    
+	    for (unsigned int i = 0; i <  mcSignal_acc.size(); ++i){
+	      if (mcSignal_acc[i] == kTRUE){
+		fHistGenSmearedPair.at(i)->Fill(massSmeared, pairptSmeared, weight * centralityWeight);
+		if (fWriteLegsFromPair){
+		  ptNeg  = fGenNegPart[neg_i].fPt_smeared;
+		  etaNeg = fGenNegPart[neg_i].fEta_smeared;
+		  phiNeg = fGenNegPart[neg_i].fPhi_smeared;
+		  ptPos  = fGenPosPart[pos_i].fPt_smeared;
+		  etaPos = fGenPosPart[pos_i].fEta_smeared;
+		  phiPos = fGenPosPart[pos_i].fPhi_smeared;
+		  op_angle = Lvec2_smeared.Angle(Lvec1_smeared.Vect());
+		  
+		  double tuple[7] = {ptPos,etaPos,phiPos,ptNeg,etaNeg,phiNeg,op_angle};
+		  fTHnSparseGenSmearedLegsFromPair[i]->Fill(tuple);
+		}
+	      }
+	    } // end of loop over all MCsignals
+	  } // opening angle cut if any
         } // end of smearing
       } // end of loop over all positive particles
     } // end of loop over all negative particles
@@ -1438,12 +1504,15 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
             double mass = LvecM.M();
             double pairpt = LvecM.Pt();
             double weight = 1;
-            for (unsigned int iMCSignal = 0; iMCSignal < fGenNegPart[neg_i].isMCSignal.size(); ++iMCSignal){
-              // if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenNegPart[neg_j].isMCSignal[iMCSignal] == true)
-              if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenNegPart[neg_j].isMCSignal[iMCSignal] == true &&
-                  fGenNegPart[neg_i].DielectronPairFromSameMother[iMCSignal] == false && fGenNegPart[neg_j].DielectronPairFromSameMother[iMCSignal] == false)
-               fHistGenPair_ULSandLS.at(3*iMCSignal+2)->Fill(mass, pairpt, weight * centralityWeight);
-            }
+	    double opangle = Lvec1.Angle(Lvec2.Vect());
+	    if((!fOpeningAngleAccCut) || (fOpeningAngleAccCut && (opangle >= fOpMin) && (opangle < fOpMax))) {
+	      for (unsigned int iMCSignal = 0; iMCSignal < fGenNegPart[neg_i].isMCSignal.size(); ++iMCSignal){
+		// if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenNegPart[neg_j].isMCSignal[iMCSignal] == true)
+		if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenNegPart[neg_j].isMCSignal[iMCSignal] == true &&
+		    fGenNegPart[neg_i].DielectronPairFromSameMother[iMCSignal] == false && fGenNegPart[neg_j].DielectronPairFromSameMother[iMCSignal] == false)
+		  fHistGenPair_ULSandLS.at(3*iMCSignal+2)->Fill(mass, pairpt, weight * centralityWeight);
+	      }
+	    }// opening angle cut if any
           }
           if (selectedByKinematicCuts_smeared){
             TLorentzVector Lvec1;
@@ -1454,16 +1523,19 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
             double mass = LvecM.M();
             double pairpt = LvecM.Pt();
             double weight = 1;
-            for (unsigned int iMCSignal = 0; iMCSignal < fGenNegPart[neg_i].isMCSignal.size(); ++iMCSignal){
-              // if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenNegPart[neg_j].isMCSignal[iMCSignal] == true)
-              if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenNegPart[neg_j].isMCSignal[iMCSignal] == true &&
-                  fGenNegPart[neg_i].DielectronPairFromSameMother[iMCSignal] == false && fGenNegPart[neg_j].DielectronPairFromSameMother[iMCSignal] == false)
-               fHistGenSmearedPair_ULSandLS.at(3*iMCSignal+2)->Fill(mass, pairpt, weight * centralityWeight);
-
-            }
-          }
-        }
-      }
+	    double opangle = Lvec1.Angle(Lvec2.Vect());
+	    if((!fOpeningAngleAccCut) || (fOpeningAngleAccCut && (opangle >= fOpMin) && (opangle < fOpMax))) {
+	      for (unsigned int iMCSignal = 0; iMCSignal < fGenNegPart[neg_i].isMCSignal.size(); ++iMCSignal){
+		// if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenNegPart[neg_j].isMCSignal[iMCSignal] == true)
+		if (fGenNegPart[neg_i].isMCSignal[iMCSignal] == true && fGenNegPart[neg_j].isMCSignal[iMCSignal] == true &&
+		    fGenNegPart[neg_i].DielectronPairFromSameMother[iMCSignal] == false && fGenNegPart[neg_j].DielectronPairFromSameMother[iMCSignal] == false)
+		  fHistGenSmearedPair_ULSandLS.at(3*iMCSignal+2)->Fill(mass, pairpt, weight * centralityWeight);
+		
+	      }
+	    } // opening angle cut if any
+	  } // kinematic cuts
+	} // neg
+      } // neg
 
       // Calculated for single leg signals LS++ pairs
       for (unsigned int pos_i = 0; pos_i < fGenPosPart.size(); ++pos_i){
@@ -1485,12 +1557,15 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
             double mass = LvecM.M();
             double pairpt = LvecM.Pt();
             double weight = 1;
-            for (unsigned int iMCSignal = 0; iMCSignal < fGenPosPart[pos_i].isMCSignal.size(); ++iMCSignal){
-              // if (fGenPosPart[pos_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_j].isMCSignal[iMCSignal] == true)
-              if (fGenPosPart[pos_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_j].isMCSignal[iMCSignal] == true &&
-                  fGenPosPart[pos_i].DielectronPairFromSameMother[iMCSignal] == false && fGenPosPart[pos_j].DielectronPairFromSameMother[iMCSignal] == false)
-               fHistGenPair_ULSandLS.at(3*iMCSignal+1)->Fill(mass, pairpt, weight * centralityWeight);
-            }
+	    double opangle = Lvec1.Angle(Lvec2.Vect());
+	    if((!fOpeningAngleAccCut) || (fOpeningAngleAccCut && (opangle >= fOpMin) && (opangle < fOpMax))) {
+	      for (unsigned int iMCSignal = 0; iMCSignal < fGenPosPart[pos_i].isMCSignal.size(); ++iMCSignal){
+		// if (fGenPosPart[pos_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_j].isMCSignal[iMCSignal] == true)
+		if (fGenPosPart[pos_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_j].isMCSignal[iMCSignal] == true &&
+		    fGenPosPart[pos_i].DielectronPairFromSameMother[iMCSignal] == false && fGenPosPart[pos_j].DielectronPairFromSameMother[iMCSignal] == false)
+		  fHistGenPair_ULSandLS.at(3*iMCSignal+1)->Fill(mass, pairpt, weight * centralityWeight);
+	      }
+	    }// opening angle cut if any
           }
           if (selectedByKinematicCuts_smeared){
             TLorentzVector Lvec1;
@@ -1501,17 +1576,20 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
             double mass = LvecM.M();
             double pairpt = LvecM.Pt();
             double weight = 1;
-            for (unsigned int iMCSignal = 0; iMCSignal < fGenPosPart[pos_i].isMCSignal.size(); ++iMCSignal){
-              // if (fGenPosPart[pos_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_j].isMCSignal[iMCSignal] == true)
-              if (fGenPosPart[pos_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_j].isMCSignal[iMCSignal] == true &&
-                  fGenPosPart[pos_i].DielectronPairFromSameMother[iMCSignal] == false && fGenPosPart[pos_j].DielectronPairFromSameMother[iMCSignal] == false)
-               fHistGenSmearedPair_ULSandLS.at(3*iMCSignal+1)->Fill(mass, pairpt, weight * centralityWeight);
-
-            }
-          }
-        }
-      }
-    }
+	    double opangle = Lvec1.Angle(Lvec2.Vect());
+	    if((!fOpeningAngleAccCut) || (fOpeningAngleAccCut && (opangle >= fOpMin) && (opangle < fOpMax))) {
+	      for (unsigned int iMCSignal = 0; iMCSignal < fGenPosPart[pos_i].isMCSignal.size(); ++iMCSignal){
+		// if (fGenPosPart[pos_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_j].isMCSignal[iMCSignal] == true)
+		if (fGenPosPart[pos_i].isMCSignal[iMCSignal] == true && fGenPosPart[pos_j].isMCSignal[iMCSignal] == true &&
+		    fGenPosPart[pos_i].DielectronPairFromSameMother[iMCSignal] == false && fGenPosPart[pos_j].DielectronPairFromSameMother[iMCSignal] == false)
+		  fHistGenSmearedPair_ULSandLS.at(3*iMCSignal+1)->Fill(mass, pairpt, weight * centralityWeight);
+		
+	      }
+	    } // opening angle cut if any
+          } // kinematic cut
+        } // pos
+      } // pos
+    } // Do ULSand LS and not desactivate LS
 
     // ##########################################################
     // ##########################################################
@@ -1528,27 +1606,34 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
           TLorentzVector Lvec2;
           Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt, fRecNegPart[neg_i].fEta, fRecNegPart[neg_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
           Lvec2.SetPtEtaPhiM(fRecPosPart[pos_i].fPt, fRecPosPart[pos_i].fEta, fRecPosPart[pos_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
-          TLorentzVector LvecM = Lvec1 + Lvec2;
+	  if (fDoRecSmearing == true && fArrResoPt){
+	    Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt_smeared, fRecNegPart[neg_i].fEta_smeared, fRecNegPart[neg_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	    Lvec2.SetPtEtaPhiM(fRecPosPart[pos_i].fPt_smeared, fRecPosPart[pos_i].fEta_smeared, fRecPosPart[pos_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	  }
+	  TLorentzVector LvecM = Lvec1 + Lvec2;
           double mass = LvecM.M();
           double pairpt = LvecM.Pt();
-
-          for (unsigned int i = 0; i < fRecNegPart[neg_i].isMCSignal.size(); ++i){
-            // if (fRecNegPart[neg_i].isMCSignal[i] == kTRUE && fRecPosPart[pos_i].isMCSignal[i] == kTRUE){
-            if (fRecNegPart[neg_i].isMCSignal[i] == true && fRecPosPart[pos_i].isMCSignal[i] == true &&
-                fRecNegPart[neg_i].DielectronPairFromSameMother[i] == false && fRecPosPart[pos_i].DielectronPairFromSameMother[i] == false){
-              for (unsigned int j = 0; j < fRecNegPart[neg_i].isReconstructed.size(); ++j){
-                if (fRecNegPart[neg_i].isReconstructed[j] == kTRUE && fRecPosPart[pos_i].isReconstructed[j] == kTRUE){
-                  if (!fDeactivateLS) {
-                    fHistRecPair_ULSandLS[j * 3 * fSingleLegMCSignal.size() + 3 * i]->Fill(mass, pairpt, centralityWeight);
-                  }
-                  else {
-                    fHistRecPair_ULSandLS[j * 1 * fSingleLegMCSignal.size() + 1 * i]->Fill(mass, pairpt, centralityWeight);
-                  }
-                }// is selected by cutsetting
-              } // end of loop over all cutsettings
-            } // is selected by MC Signal
-          } // end of loop over all MCsignals
-        } // end of ULS loops
+	  double opangle = Lvec1.Angle(Lvec2.Vect());
+	  if((!fOpeningAngleAccCut) || (fOpeningAngleAccCut && (opangle >= fOpMin) && (opangle < fOpMax))) {
+	    
+	    for (unsigned int i = 0; i < fRecNegPart[neg_i].isMCSignal.size(); ++i){
+	      // if (fRecNegPart[neg_i].isMCSignal[i] == kTRUE && fRecPosPart[pos_i].isMCSignal[i] == kTRUE){
+	      if (fRecNegPart[neg_i].isMCSignal[i] == true && fRecPosPart[pos_i].isMCSignal[i] == true &&
+		  fRecNegPart[neg_i].DielectronPairFromSameMother[i] == false && fRecPosPart[pos_i].DielectronPairFromSameMother[i] == false){
+		for (unsigned int j = 0; j < fRecNegPart[neg_i].isReconstructed.size(); ++j){
+		  if (fRecNegPart[neg_i].isReconstructed[j] == kTRUE && fRecPosPart[pos_i].isReconstructed[j] == kTRUE){
+		    if (!fDeactivateLS) {
+		      fHistRecPair_ULSandLS[j * 3 * fSingleLegMCSignal.size() + 3 * i]->Fill(mass, pairpt, centralityWeight);
+		    }
+		    else {
+		      fHistRecPair_ULSandLS[j * 1 * fSingleLegMCSignal.size() + 1 * i]->Fill(mass, pairpt, centralityWeight);
+		    }
+		  }// is selected by cutsetting
+		} // end of loop over all cutsettings
+	      } // is selected by MC Signal
+	    } // end of loop over all MCsignals
+	  } // opening angle cut
+	} // end of ULS loops
 
         // Check if electrons are from MCSignal Generator
         if (!fRecPosPart[pos_i].GetMCSignalPair() || !fRecNegPart[neg_i].GetMCSignalPair()) continue;
@@ -1571,9 +1656,17 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
         TLorentzVector Lvec2;
         Lvec1.SetPtEtaPhiM(track1->Pt(), track1->Eta(), track1->Phi(), AliPID::ParticleMass(AliPID::kElectron));
         Lvec2.SetPtEtaPhiM(track2->Pt(), track2->Eta(), track2->Phi(), AliPID::ParticleMass(AliPID::kElectron));
+	if (fDoRecSmearing == true && fArrResoPt){
+	  Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt_smeared, fRecNegPart[neg_i].fEta_smeared, fRecNegPart[neg_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	  Lvec2.SetPtEtaPhiM(fRecPosPart[pos_i].fPt_smeared, fRecPosPart[pos_i].fEta_smeared, fRecPosPart[pos_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	}
         TLorentzVector LvecM = Lvec1 + Lvec2;
         double mass = LvecM.M();
         double pairpt = LvecM.Pt();
+        double phiv = PhivPair(fEvent->GetMagneticField(),track1->Charge(),track2->Charge(),Lvec1.Vect(),Lvec2.Vect());
+	double opangle = Lvec1.Angle(Lvec2.Vect());
+
+
         double weight = 1.;
         if (fCocktailFile) {
           if (fRecNegPart[neg_i].GetMotherID() == fRecPosPart[pos_i].GetMotherID()){
@@ -1591,20 +1684,29 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
           if (mcSignal_acc[i] == kTRUE){
             for (unsigned int j = 0; j < fRecNegPart[neg_i].isReconstructed.size(); ++j){
               if (fRecNegPart[neg_i].isReconstructed[j] == kTRUE && fRecPosPart[pos_i].isReconstructed[j] == kTRUE){
-                fHistRecPair.at(j * mcSignal_acc.size() + i)->Fill(mass, pairpt, weight * centralityWeight);
 
-                if (fWriteLegsFromPair){
-                  ptNeg  = fRecNegPart[neg_i].fPt;
-                  etaNeg = fRecNegPart[neg_i].fEta;
-                  phiNeg = fRecNegPart[neg_i].fPhi;
-                  ptPos  = fRecPosPart[pos_i].fPt;
-                  etaPos = fRecPosPart[pos_i].fEta;
-                  phiPos = fRecPosPart[pos_i].fPhi;
-                  op_angle = Lvec2.Angle(Lvec1.Vect());
-
-                  const double tuple[7] = {ptPos,etaPos,phiPos,ptNeg,etaNeg,phiNeg,op_angle};
-                  fTHnSparseRecLegsFromPair.at(j * mcSignal_acc.size() + i)->Fill(tuple);
-                }
+		if((!fOpeningAngleAccCut) || (fOpeningAngleAccCut && (opangle >= fOpMin) && (opangle < fOpMax))) {
+		  
+		  if(fDoFillPhiV) dynamic_cast<TH3D*>(fHistRecPair.at(j * mcSignal_acc.size() + i))->Fill(mass, pairpt, phiv ,weight * centralityWeight);//3D
+		  else{
+		    if(fApplyPhivCut){
+		      if(!(mass < fMaxMee && phiv > fMinPhiV)) dynamic_cast<TH2D*>(fHistRecPair.at(j * mcSignal_acc.size() + i))->Fill(mass, pairpt, weight * centralityWeight);//2D
+		    }
+		    else dynamic_cast<TH2D*>(fHistRecPair.at(j * mcSignal_acc.size() + i))->Fill(mass, pairpt, weight * centralityWeight);//2D
+		  }
+		  if (fWriteLegsFromPair){
+		    ptNeg  = fRecNegPart[neg_i].fPt;
+		    etaNeg = fRecNegPart[neg_i].fEta;
+		    phiNeg = fRecNegPart[neg_i].fPhi;
+		    ptPos  = fRecPosPart[pos_i].fPt;
+		    etaPos = fRecPosPart[pos_i].fEta;
+		    phiPos = fRecPosPart[pos_i].fPhi;
+		    op_angle = Lvec2.Angle(Lvec1.Vect());
+		    
+		    const double tuple[7] = {ptPos,etaPos,phiPos,ptNeg,etaNeg,phiNeg,op_angle};
+		    fTHnSparseRecLegsFromPair.at(j * mcSignal_acc.size() + i)->Fill(tuple);
+		  }
+		} // opening angle cut if any
               }// is selected by cutsetting
             } // end of loop over all cutsettings
           } // is selected by MCSignal
@@ -1624,19 +1726,27 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
         TLorentzVector Lvec2;
         Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt, fRecNegPart[neg_i].fEta, fRecNegPart[neg_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
         Lvec2.SetPtEtaPhiM(fRecNegPart[neg_j].fPt, fRecNegPart[neg_j].fEta, fRecNegPart[neg_j].fPhi, AliPID::ParticleMass(AliPID::kElectron));
+	if (fDoRecSmearing == true && fArrResoPt){
+	  Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt_smeared, fRecNegPart[neg_i].fEta_smeared, fRecNegPart[neg_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	  Lvec2.SetPtEtaPhiM(fRecNegPart[neg_j].fPt_smeared, fRecNegPart[neg_j].fEta_smeared, fRecNegPart[neg_j].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	}
         TLorentzVector LvecM = Lvec1 + Lvec2;
         double mass = LvecM.M();
         double pairpt = LvecM.Pt();
+	double opangle = Lvec1.Angle(Lvec2.Vect());
 
         for (unsigned int i = 0; i < fRecNegPart[neg_i].isMCSignal.size(); ++i){
           // if (fRecNegPart[neg_i].isMCSignal[i] == kTRUE && fRecNegPart[neg_j].isMCSignal[i] == kTRUE){
           if (fRecNegPart[neg_i].isMCSignal[i] == true && fRecNegPart[neg_j].isMCSignal[i] == true &&
               fRecNegPart[neg_i].DielectronPairFromSameMother[i] == false && fRecNegPart[neg_j].DielectronPairFromSameMother[i] == false){
-            for (unsigned int j = 0; j < fRecNegPart[neg_i].isReconstructed.size(); ++j){
-              if (fRecNegPart[neg_i].isReconstructed[j] == kTRUE && fRecNegPart[neg_j].isReconstructed[j] == kTRUE){
-                fHistRecPair_ULSandLS[j * 3 * fSingleLegMCSignal.size() + 3 * i + 2]->Fill(mass, pairpt, centralityWeight);
-              }// is selected by cutsetting
-            } // end of loop over all cutsettings
+	    if((!fOpeningAngleAccCut) || (fOpeningAngleAccCut && (opangle >= fOpMin) && (opangle < fOpMax))) {
+       	
+	      for (unsigned int j = 0; j < fRecNegPart[neg_i].isReconstructed.size(); ++j){
+		if (fRecNegPart[neg_i].isReconstructed[j] == kTRUE && fRecNegPart[neg_j].isReconstructed[j] == kTRUE){
+		  fHistRecPair_ULSandLS[j * 3 * fSingleLegMCSignal.size() + 3 * i + 2]->Fill(mass, pairpt, centralityWeight);
+		}// is selected by cutsetting
+	      } // end of loop over all cutsettings
+	    } // opening angle cut if any
           } // is selected by MC Signal
         } // end of loop over all MCsignals
       }
@@ -1650,19 +1760,28 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
         TLorentzVector Lvec2;
         Lvec1.SetPtEtaPhiM(fRecPosPart[pos_i].fPt, fRecPosPart[pos_i].fEta, fRecPosPart[pos_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
         Lvec2.SetPtEtaPhiM(fRecPosPart[pos_j].fPt, fRecPosPart[pos_j].fEta, fRecPosPart[pos_j].fPhi, AliPID::ParticleMass(AliPID::kElectron));
+	if (fDoRecSmearing == true && fArrResoPt){
+	  Lvec1.SetPtEtaPhiM(fRecPosPart[pos_i].fPt_smeared, fRecPosPart[pos_i].fEta_smeared, fRecPosPart[pos_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	  Lvec2.SetPtEtaPhiM(fRecPosPart[pos_j].fPt_smeared, fRecPosPart[pos_j].fEta_smeared, fRecPosPart[pos_j].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	}
         TLorentzVector LvecM = Lvec1 + Lvec2;
         double mass = LvecM.M();
         double pairpt = LvecM.Pt();
+	double opangle = Lvec1.Angle(Lvec2.Vect());
 
         for (unsigned int i = 0; i < fRecPosPart[pos_i].isMCSignal.size(); ++i){
           // if (fRecPosPart[pos_i].isMCSignal[i] == kTRUE && fRecPosPart[pos_j].isMCSignal[i] == kTRUE){
           if (fRecPosPart[pos_i].isMCSignal[i] == true && fRecPosPart[pos_j].isMCSignal[i] == true &&
               fRecPosPart[pos_i].DielectronPairFromSameMother[i] == false && fRecPosPart[pos_j].DielectronPairFromSameMother[i] == false){
-            for (unsigned int j = 0; j < fRecPosPart[pos_i].isReconstructed.size(); ++j){
-              if (fRecPosPart[pos_i].isReconstructed[j] == kTRUE && fRecPosPart[pos_j].isReconstructed[j] == kTRUE){
-                fHistRecPair_ULSandLS[j * 3 * fSingleLegMCSignal.size() + 3 * i + 1]->Fill(mass, pairpt, centralityWeight);
-              }// is selected by cutsetting
-            } // end of loop over all cutsettings
+
+	    if((!fOpeningAngleAccCut) || (fOpeningAngleAccCut && (opangle >= fOpMin) && (opangle < fOpMax))) {
+       	
+	      for (unsigned int j = 0; j < fRecPosPart[pos_i].isReconstructed.size(); ++j){
+		if (fRecPosPart[pos_i].isReconstructed[j] == kTRUE && fRecPosPart[pos_j].isReconstructed[j] == kTRUE){
+		  fHistRecPair_ULSandLS[j * 3 * fSingleLegMCSignal.size() + 3 * i + 1]->Fill(mass, pairpt, centralityWeight);
+		}// is selected by cutsetting
+	      } // end of loop over all cutsettings
+	    } // opening angle cut if any
           } // is selected by MC Signal
         } // end of loop over all MCsignals
       }
@@ -1798,6 +1917,7 @@ void AliAnalysisTaskElectronEfficiencyV2::SetBinsLinear(const std::string var, c
   else if (var == "theta_reso")  fResolutionThetaBins.clear();
   else if (var == "mass")   fMassBins.clear();
   else if (var == "pairpt") fPairPtBins.clear();
+  else if (var == "phiv") fPhiVBins.clear();
 
   const double stepSize = (max - min) / steps;
   for (unsigned int i = 0; i < steps+1; ++i){
@@ -1812,6 +1932,7 @@ void AliAnalysisTaskElectronEfficiencyV2::SetBinsLinear(const std::string var, c
     else if (var == "theta_reso")  fResolutionThetaBins.push_back(i * stepSize + min);
     else if (var == "mass")   fMassBins.push_back(i * stepSize + min);
     else if (var == "pairpt") fPairPtBins.push_back(i * stepSize + min);
+    else if (var == "phiv") fPhiVBins.push_back(i * stepSize + min);
   }
 }
 
@@ -1836,15 +1957,15 @@ void AliAnalysisTaskElectronEfficiencyV2::CreateSupportHistos()
 
 
   // Track variables
-  TH1D* hPt      = new TH1D("Pt","Pt;Pt [GeV];#tracks",160,0.,8.);//,AliDielectronVarManager::kPt);
+  TH1D* hPt      = new TH1D("Pt","Pt;Pt [GeV];#tracks",200,0.,10.);//,AliDielectronVarManager::kPt);
   fOutputListSupportHistos->AddAt(hPt,     0);
 
   // PID
-  TH2D* hITSnSigmaEle_P = new TH2D("ITSnSigmaEle_P","ITS number of sigmas Electrons;P [GeV/c];ITS number of sigmas Electrons", 160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEle,makeLogx);
+  TH2D* hITSnSigmaEle_P = new TH2D("ITSnSigmaEle_P","ITS number of sigmas Electrons;P [GeV/c];ITS number of sigmas Electrons", 200,0.,10.,100,-5.,5.);//.,AliDielectronVarManager::kP,AliDielectronVarManager::kITSnSigmaEle,makeLogx);
   fOutputListSupportHistos->AddAt(hITSnSigmaEle_P, 1);
-  TH2D* hTPCnSigmaEle_P = new TH2D("TPCnSigmaEle_P","TPC number of sigmas Electrons;PIn (pTPC) [GeV/c];TPC number of sigmas Electrons", 160,0.,8.,100,-5.,5.);//.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,makeLogx);
+  TH2D* hTPCnSigmaEle_P = new TH2D("TPCnSigmaEle_P","TPC number of sigmas Electrons;PIn (pTPC) [GeV/c];TPC number of sigmas Electrons", 200,0.,10.,100,-5.,5.);//.,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTPCnSigmaEle,makeLogx);
   fOutputListSupportHistos->AddAt(hTPCnSigmaEle_P, 2);
-  TH2D* hTOFnSigmaEle_P = new TH2D("TOFnSigmaEle_P","TOF number of sigmas Electrons;PIn (pTPC) [GeV/c];TOF number of sigmas Electrons", 160,0.,8.,100,-5.,5.);//,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle,makeLogx);
+  TH2D* hTOFnSigmaEle_P = new TH2D("TOFnSigmaEle_P","TOF number of sigmas Electrons;PIn (pTPC) [GeV/c];TOF number of sigmas Electrons", 200,0.,10.,100,-5.,5.);//,AliDielectronVarManager::kPIn,AliDielectronVarManager::kTOFnSigmaEle,makeLogx);
   fOutputListSupportHistos->AddAt(hTOFnSigmaEle_P, 3);
 
   // Track kinematic
@@ -1883,7 +2004,7 @@ void AliAnalysisTaskElectronEfficiencyV2::CreateSupportHistos()
   TH2D* hTPCcrossedRows_TPCnCls = new TH2D("TPCcrossedRows_TPCnCls","TPC crossed rows vs TPC number clusters;TPC number clusters;TPC crossed rows",
                                            160,-0.5,159.5,160,-0.5,159.5);//,AliDielectronVarManager::kNclsTPC,AliDielectronVarManager::kNFclsTPCr);
   TH2D* hTPCcrossedRows_Pt = new TH2D("TPCcrossedRows_Pt","TPC crossed rows vs Pt;Pt [GeV];TPC crossed rows",
-                                      160,0.,8.,160,-0.5,159.5);//,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
+                                      200,0.,10.,160,-0.5,159.5);//,AliDielectronVarManager::kPt,AliDielectronVarManager::kNFclsTPCr);
   fOutputListSupportHistos->AddAt(hTPCcrossedRows_TPCnCls, 19);
   fOutputListSupportHistos->AddAt(hTPCcrossedRows_Pt, 20);
 
@@ -1967,24 +2088,47 @@ Double_t AliAnalysisTaskElectronEfficiencyV2::GetSmearing(TObjArray *arr, Double
   return smearing;
 }
 
-bool AliAnalysisTaskElectronEfficiencyV2::CheckGenerator(int trackID, std::vector<unsigned int> vecHashes){
+bool AliAnalysisTaskElectronEfficiencyV2::CheckGenerator(int trackID, std::vector<unsigned int> vecHashes, Bool_t isGen){
+  if(fRejectParticleFromOOB){
+    if(isAOD){//for AOD
+      AliAODMCHeader* mcHeader = (AliAODMCHeader*)fEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+      if (!mcHeader) {
+          AliError("Could not find MC headr in AOD");
+          return false;
+      }
+      TClonesArray* mcArray = dynamic_cast<TClonesArray*>(fEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      if (!mcArray) {
+          AliError("Could not find MC array in AOD");
+          return false;
+      }
+      if(isGen && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), mcHeader, mcArray)) return false;//particles from pileup collision should NOT be used.
+    }
+    else{//for ESD
+        if(isGen && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(TMath::Abs(trackID), fMC)) return false;//particles from pileup collision should NOT be used.
+    }
+  }
+
   if (vecHashes.size() == 0) return true;
 
-  TString genname;
+  TString genname="";
   Bool_t hasGenerator = fMC->GetCocktailGenerator(TMath::Abs(trackID), genname);
-  // std::cout << genname << std::endl;
+  //AliMCParticle* p = (AliMCParticle*)fMC->GetTrack(TMath::Abs(trackID));
+  //Int_t genID = p->GetGeneratorIndex();
+  //AliInfo(Form("genID = %d , generator name = %s",genID,genname.Data()));
+
+  //std::cout << genname << std::endl;
   if(!hasGenerator) {
     Printf("no cocktail header list was found for this track");
     return false;
   }
   else{
     for (unsigned int i = 0; i < vecHashes.size(); ++i){
-      // std::cout << genname.Hash() << " " << vecHashes[i] << std::endl;
+      //std::cout << genname.Hash() << " " << vecHashes[i] << std::endl;
       if (genname.Hash() == vecHashes[i]) return true;
-
-    }
+    }//end of vecHashes loop
     return false;
   }
+
   return false; // should not happen
 }
 
@@ -2160,4 +2304,315 @@ void AliAnalysisTaskElectronEfficiencyV2::SetWidthCorrFunction(Detector det, TOb
     // fUsedVars->SetBitNumber(vary, kTRUE);
     // fUsedVars->SetBitNumber(varz, kTRUE);
   }
+}
+//______________________________________________
+Double_t AliAnalysisTaskElectronEfficiencyV2::PhivPair(Double_t MagField, Int_t charge1, Int_t charge2, TVector3 dau1, TVector3 dau2) //const
+{
+  /// Following the idea to use opening of collinear pairs in magnetic field from e.g. PHENIX
+  /// to identify conversions. Angle between ee plane and magnetic field is calculated (0 to pi).
+  /// Due to tracking to the primary vertex, conversions with no intrinsic opening angle
+  /// always end up as pair in "cowboy" configuration. The function as defined here then
+  /// returns values close to pi.
+  /// Correlated Like Sign pairs (from double conversion / dalitz + conversion) may show up
+  /// at pi or at 0 depending on which leg has the higher momentum. (not checked yet)
+  /// This expected ambiguity is not seen due to sorting of track arrays in this framework.
+  /// To reach the same result as for ULS (~pi), the legs are flipped for LS.
+  /// from PWGDQ/dielectron/AliDielectronPair.cxx
+
+  //Define local buffer variables for leg properties
+  Double_t px1=-9999.,py1=-9999.,pz1=-9999.;
+  Double_t px2=-9999.,py2=-9999.,pz2=-9999.;
+
+  TVector3 fD1=dau1;
+  TVector3 fD2=dau2;
+  Int_t    d1Q=charge1;
+  //Int_t    d2Q=charge2;
+
+  if (charge1*charge2 > 0.) { // Like Sign
+    if(MagField<0){ // inverted behaviour
+      if(d1Q>0){
+        px1 = fD1.Px();   py1 = fD1.Py();   pz1 = fD1.Pz();
+        px2 = fD2.Px();   py2 = fD2.Py();   pz2 = fD2.Pz();
+      }else{
+        px1 = fD2.Px();   py1 = fD2.Py();   pz1 = fD2.Pz();
+        px2 = fD1.Px();   py2 = fD1.Py();   pz2 = fD1.Pz();
+      }
+    }else{
+      if(d1Q>0){
+        px1 = fD2.Px();   py1 = fD2.Py();   pz1 = fD2.Pz();
+        px2 = fD1.Px();   py2 = fD1.Py();   pz2 = fD1.Pz();
+      }else{
+        px1 = fD1.Px();   py1 = fD1.Py();   pz1 = fD1.Pz();
+        px2 = fD2.Px();   py2 = fD2.Py();   pz2 = fD2.Pz();
+      }
+    }
+  }
+  else { // Unlike Sign
+    if(MagField>0){ // regular behaviour
+      if(d1Q>0){
+        px1 = fD1.Px();
+        py1 = fD1.Py();
+        pz1 = fD1.Pz();
+
+        px2 = fD2.Px();
+        py2 = fD2.Py();
+        pz2 = fD2.Pz();
+      }else{
+        px1 = fD2.Px();
+        py1 = fD2.Py();
+        pz1 = fD2.Pz();
+
+        px2 = fD1.Px();
+        py2 = fD1.Py();
+        pz2 = fD1.Pz();
+      }
+    }else{
+      if(d1Q>0){
+        px1 = fD2.Px();
+        py1 = fD2.Py();
+        pz1 = fD2.Pz();
+
+        px2 = fD1.Px();
+        py2 = fD1.Py();
+        pz2 = fD1.Pz();
+      }else{
+        px1 = fD1.Px();
+        py1 = fD1.Py();
+        pz1 = fD1.Pz();
+
+        px2 = fD2.Px();
+        py2 = fD2.Py();
+        pz2 = fD2.Pz();
+      }
+    }
+  }
+
+  Double_t px = px1+px2;
+  Double_t py = py1+py2;
+  Double_t pz = pz1+pz2;
+  Double_t dppair = TMath::Sqrt(px*px+py*py+pz*pz);
+
+  //unit vector of (pep+pem)
+  Double_t pl = dppair;
+  Double_t ux = px/pl;
+  Double_t uy = py/pl;
+  Double_t uz = pz/pl;
+  Double_t ax = uy/TMath::Sqrt(ux*ux+uy*uy);
+  Double_t ay = -ux/TMath::Sqrt(ux*ux+uy*uy);
+
+  //momentum of e+ and e- in (ax,ay,az) axis. Note that az=0 by definition.
+  //Double_t ptep = iep->Px()*ax + iep->Py()*ay;
+  //Double_t ptem = iem->Px()*ax + iem->Py()*ay;
+
+  Double_t pxep = px1;
+  Double_t pyep = py1;
+  Double_t pzep = pz1;
+  Double_t pxem = px2;
+  Double_t pyem = py2;
+  Double_t pzem = pz2;
+
+  //vector product of pep X pem
+  Double_t vpx = pyep*pzem - pzep*pyem;
+  Double_t vpy = pzep*pxem - pxep*pzem;
+  Double_t vpz = pxep*pyem - pyep*pxem;
+  Double_t vp = sqrt(vpx*vpx+vpy*vpy+vpz*vpz);
+  //Double_t thev = acos(vpz/vp);
+
+  //unit vector of pep X pem
+  Double_t vx = vpx/vp;
+  Double_t vy = vpy/vp;
+  Double_t vz = vpz/vp;
+
+  //The third axis defined by vector product (ux,uy,uz)X(vx,vy,vz)
+  Double_t wx = uy*vz - uz*vy;
+  Double_t wy = uz*vx - ux*vz;
+  //Double_t wz = ux*vy - uy*vx;
+  //Double_t wl = sqrt(wx*wx+wy*wy+wz*wz);
+  // by construction, (wx,wy,wz) must be a unit vector.
+  // measure angle between (wx,wy,wz) and (ax,ay,0). The angle between them
+  // should be small if the pair is conversion.
+  // this function then returns values close to pi!
+  Double_t cosPhiV = wx*ax + wy*ay;
+  Double_t phiv = TMath::ACos(cosPhiV);
+
+  return phiv;
+}
+//____________________________
+Double_t AliAnalysisTaskElectronEfficiencyV2::CalculateNbins() {
+
+  //
+  // Calculate the number of bins not emptied in the correction centrality histo in the centrality range we are interested in
+  //
+
+  Double_t nbins=0.;
+
+  if(!fHistCentralityCorrection) return nbins;
+
+  
+  for(Int_t k=0; k < fHistCentralityCorrection->GetNbinsX(); k++) {
+     
+    TAxis *xaxis = fHistCentralityCorrection->GetXaxis();
+    Double_t cent = xaxis->GetBinCenter(k+1);
+
+    if((fMinCentrality < 0.) || (fMaxCentrality < 0.)) {
+      if( fHistCentralityCorrection->GetBinContent(k+1)>0.) nbins = nbins + 1.;
+    }
+    else {
+      if((cent>=fMinCentrality) && (cent<=fMaxCentrality)) {
+	if( fHistCentralityCorrection->GetBinContent(k+1)>0.) nbins = nbins + 1.;
+      }
+    }
+    
+  }
+    
+   
+  return nbins;
+  
+}
+//________________________________________________________________________
+void AliAnalysisTaskElectronEfficiencyV2::SetCentralityFile(std::string filenamelocal,std::string filenamealien) {
+
+  fCentralityFilename = filenamelocal;
+  fCentralityFilenameFromAlien = filenamealien;
+
+  if (fCentralityFilename != ""){
+    fCentralityFile = TFile::Open(fCentralityFilename.c_str());
+    if (fCentralityFile == 0x0){
+      std::cout << "Location in AliEN: " <<  fCentralityFilenameFromAlien << std::endl;
+      gSystem->Exec(Form("alien_cp alien://%s file:./", fCentralityFilenameFromAlien.c_str()));
+      std::cout << "Copy centrality weighting from Alien" << std::endl;
+      fCentralityFile = TFile::Open(fCentralityFilename.c_str());
+    }
+    if (!fCentralityFile) {
+      AliFatal(Form("Could not open file %s", fCentralityFilename.c_str()));
+    }
+    TList* list_temp = (TList*)fCentralityFile->Get("efficiency");
+    fHistCentralityCorrection = (TH1F*) list_temp->FindObject("centrality");
+    if (fHistCentralityCorrection == 0x0){
+      AliError(Form("Could not extract centrality histogram from file %s", fCentralityFilename.c_str()));
+    }
+    else {
+
+      if((fMinCentrality<0.)||(fMaxCentrality<0.)) {
+	fEntriesCentralityCorr =  fHistCentralityCorrection->Integral();
+      }
+      else {
+	TAxis *xaxis = fHistCentralityCorrection->GetXaxis();
+	Int_t bina_mix = xaxis->FindBin(fMinCentrality);
+	Int_t binb_mix = xaxis->FindBin(fMaxCentrality);
+	Double_t lowedge_mix = xaxis->GetBinLowEdge(bina_mix);
+	Double_t upedge_mix = xaxis->GetBinUpEdge(binb_mix);
+	if(lowedge_mix > (fMinCentrality+0.0000000001)) bina_mix--;
+	if(lowedge_mix < (fMinCentrality-0.0000000001)) bina_mix++;
+	if(upedge_mix < (fMaxCentrality-0.0000000001)) binb_mix++;
+	if(upedge_mix > (fMaxCentrality+0.0000000001)) binb_mix--;
+	fEntriesCentralityCorr =  fHistCentralityCorrection->Integral(bina_mix,binb_mix);
+      }
+      fNBinsCentralityCorr = CalculateNbins();
+      
+      std::cout << "Centrality correction On in the range " << fMinCentrality << " " << fMaxCentrality << std::endl;
+      std::cout << "nbins: " << fNBinsCentralityCorr << std::endl;
+      std::cout << "entries: " << fEntriesCentralityCorr << std::endl;
+    }
+  }
+  
+
+}
+//________________________________________________________________________
+void AliAnalysisTaskElectronEfficiencyV2::SetCocktailWeighting(std::string CocktailFilenamelocal,std::string CocktailFilenamealien)  {
+
+  fCocktailFilename = CocktailFilenamelocal;
+  fCocktailFilenameFromAlien = CocktailFilenamealien;
+  
+
+  if (fDoCocktailWeighting && fCocktailFilename != ""){
+    std::cout << "Do Cocktail weighting" << std::endl;
+    fCocktailFile = TFile::Open(fCocktailFilename.c_str());
+    if (fCocktailFile == 0x0){
+      std::cout << "Location in AliEN: " << fCocktailFilenameFromAlien << std::endl;
+      gSystem->Exec(Form("alien_cp alien://%s file:./", fCocktailFilenameFromAlien.c_str()));
+      std::cout << "Copy cocktail weighting from Alien" << std::endl;
+      fCocktailFile = TFile::Open(fCocktailFilename.c_str());
+    }
+    if (!fCocktailFile) {
+      AliFatal(Form("Could not open file %s", fCocktailFilename.c_str()));
+    }
+    
+    if (fCocktailFile){
+      fPtPion     = dynamic_cast<TH1F*>(fCocktailFile->Get("Pion"));
+      fPtEta      = dynamic_cast<TH1F*>(fCocktailFile->Get("Eta"));
+      fPtEtaPrime = dynamic_cast<TH1F*>(fCocktailFile->Get("EtaPrime"));
+      fPtRho      = dynamic_cast<TH1F*>(fCocktailFile->Get("Rho"));
+      fPtOmega    = dynamic_cast<TH1F*>(fCocktailFile->Get("Omega"));
+      fPtPhi      = dynamic_cast<TH1F*>(fCocktailFile->Get("Phi"));
+      fPtJPsi     = dynamic_cast<TH1F*>(fCocktailFile->Get("JPsi"));
+      
+      if (!fPtPion)     { std::cout << "Pion reweighting not loaded"     << std::endl; }
+      if (!fPtEta)      { std::cout << "Eta reweighting not loaded"      << std::endl; }
+      if (!fPtEtaPrime) { std::cout << "EtaPrime reweighting not loaded" << std::endl; }
+      if (!fPtRho)      { std::cout << "Rho reweighting not loaded"      << std::endl; }
+      if (!fPtOmega)    { std::cout << "Omega reweighting not loaded"    << std::endl; }
+      if (!fPtPhi)      { std::cout << "Phi reweighting not loaded"      << std::endl; }
+      if (!fPtJPsi)     { std::cout << "JPsi reweighting not loaded"     << std::endl; }
+    }
+    else std::cout << "No cocktail weighting file found" << std::endl;
+  }
+  
+}
+//________________________________________________________________________
+void AliAnalysisTaskElectronEfficiencyV2::SetResolutionFile(std::string filenamelocal,std::string filenamealien)  {
+
+  //
+  // Set the histograms for the resolution
+  //
+  
+  fResoFilename = filenamelocal;
+  fResoFilenameFromAlien = filenamealien;
+
+ if (fResoFilename != ""){
+    fResoFile = TFile::Open(fResoFilename.c_str());
+    if (fResoFile == 0x0){
+      std::cout << "Location in AliEN: " << fResoFilenameFromAlien << std::endl;
+      gSystem->Exec(Form("alien_cp alien://%s file:./", fResoFilenameFromAlien.c_str()));
+      std::cout << "Copy resolution from Alien" << std::endl;
+      fResoFile = TFile::Open(fResoFilename.c_str());
+    }
+
+    if (!fResoFile) {
+      AliFatal(Form("Could not open file %s", fResoFilename.c_str()));
+    }
+    fArrResoPt = (TObjArray *)fResoFile->Get("RelPtResArrCocktail");
+    fArrResoEta = (TObjArray *)fResoFile->Get("EtaResArrVsPt");
+    fArrResoPhi_Pos = (TObjArray *)fResoFile->Get("PhiPosResArrVsPt");
+    fArrResoPhi_Neg = (TObjArray *)fResoFile->Get("PhiEleResArrVsPt");
+    std::cout << fArrResoPt << " " << fArrResoEta << " " << fArrResoPhi_Pos << " " << fArrResoPhi_Neg << std::endl;
+    if (fArrResoPt == 0x0 ||  fArrResoEta == 0x0 || fArrResoPhi_Pos == 0x0 || fArrResoPhi_Neg == 0x0){
+      AliError(Form("Could not extract resolution histograms from file %s", fResoFilename.c_str()));
+    }
+  }
+
+}
+//_____________________________________________________________________
+void AliAnalysisTaskElectronEfficiencyV2::PrintSummary()  {
+
+  printf("Resolution maps:\n");
+  std::cout << fArrResoPt << " " << fArrResoEta << " " << fArrResoPhi_Pos << " " << fArrResoPhi_Neg << std::endl;
+
+  printf("Weighting from cocktail for LF:\n");
+  if (!fPtPion)     { std::cout << "Pion reweighting not loaded"     << std::endl; }
+  if (!fPtEta)      { std::cout << "Eta reweighting not loaded"      << std::endl; }
+  if (!fPtEtaPrime) { std::cout << "EtaPrime reweighting not loaded" << std::endl; }
+  if (!fPtRho)      { std::cout << "Rho reweighting not loaded"      << std::endl; }
+  if (!fPtOmega)    { std::cout << "Omega reweighting not loaded"    << std::endl; }
+  if (!fPtPhi)      { std::cout << "Phi reweighting not loaded"      << std::endl; }
+  if (!fPtJPsi)     { std::cout << "JPsi reweighting not loaded"     << std::endl; }
+
+  printf("Centrality correction:\n");
+  if (!fHistCentralityCorrection) printf("No centrality correction\n");
+  else printf("Number of bins for centrality %d\n",fHistCentralityCorrection->GetNbinsX());
+  
+
+
+
+  
 }

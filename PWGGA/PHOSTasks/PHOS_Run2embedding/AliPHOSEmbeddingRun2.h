@@ -4,103 +4,119 @@
 // Class to perform embedding on the AOD level
 // Author: D.Peressounko
 
-class TChain ;
-class TClonesArray ;
-class TH2F ;
+#include "AliAnalysisTaskSE.h"
+class TChain;
+class TClonesArray;
+class TH2F;
 
-class AliPHOSClusterizerv1 ;
-class AliPHOSReconstructor ;
-class AliAODEvent ;
-class AliESDEvent ;
-class AliESDtrack ;
-class AliESDCaloCells ;
+class AliPHOSClusterizerv1;
+class AliPHOSReconstructor;
+class AliAODEvent;
+class AliAODtrack;
+class AliAODCaloCells;
+class AliPHOSGeometry;
+class AliPHOSCalibData;
 
-#include "AliAnalysisTaskESDfilter.h"
-
-class AliPHOSEmbeddingRun2 : public AliAnalysisTaskESDfilter {
-public:
-  AliPHOSEmbeddingRun2(const char *name = "AliPHOSEmbeddingRun2");
+class AliPHOSEmbeddingRun2 : public AliAnalysisTaskSE
+{
+ public:
+  AliPHOSEmbeddingRun2(const char* name = "AliPHOSEmbeddingRun2");
   virtual ~AliPHOSEmbeddingRun2() {}
-  
-  //Standard methods
-  virtual void   UserCreateOutputObjects();
-  virtual void   UserExec(Option_t *option);
-  virtual void   Terminate(Option_t *){}
-  
-  //Chain with signal AOD for embedding
-  void SetSignalChains(TChain * signal1,TChain * signal2,TChain * signal3) {fAODChain1 =signal1; fAODChain2 =signal2; fAODChain3 =signal3;}
-  void SetEmbeddedFlag(Bool_t embpi0, Bool_t embeta,Bool_t embgamma) {fIsPi0Embedded = embpi0; fIsEtaEmbedded =embeta; fIsGammaEmbedded =embgamma;}
-  void SetPrivateOADBPath(TString path) {fPathPrivateOADB=path;}//simply copy from AliPhysics which you want to use for analysis is enough.
-  void SetSignalCalibration(Double_t corr) {fSignalECorrection=corr;}
 
-private:
-  AliPHOSEmbeddingRun2(const AliPHOSEmbeddingRun2&); // not implemented
+  // Standard methods
+  virtual void UserCreateOutputObjects();
+  virtual void UserExec(Option_t* option);
+  virtual void Terminate(Option_t*) {}
+
+  // Chain with signal AOD for embedding
+  void SetSignalChain(TChain* signal) { fAODChain = signal; }
+  void SetPrivateOADBPath(TString path = "$ALICE_PHYSICS/OADB/PHOS/PHOSMCCalibrations.root")
+  {
+    fPathPrivateOADBMC = path;
+  } // simply copy from AliPhysics which you want to use for analysis is enough.
+  void SetSignalCalibration(double corr) { fSignalECorrection = corr; }
+  void SetSelectedEvProp(float p = 0.2) { fSelEventsPart = p; } // proportion of events which will pass Ev.Selection
+
+ private:
+  AliPHOSEmbeddingRun2(const AliPHOSEmbeddingRun2&);            // not implemented
   AliPHOSEmbeddingRun2& operator=(const AliPHOSEmbeddingRun2&); // not implemented
 
-  void Init() ;
-  void InitMF() ; //Mag.Field initialization for track matching
-  void InitGeometry() ;
-  
-  void GetNextSignalEvent(void) ;
-  void GetNextSignalEventPi0(void) ;
-  void GetNextSignalEventEta(void) ;
-  void GetNextSignalEventGamma(void) ;
+  void RunSignalSimulation(int nevents);
+  void Init();
+  void InitMF(); // Mag.Field initialization for track matching
 
-  void CopyRecalibrateDigits(void) ;
-  void MakeEmbedding(AliESDEvent * event, AliAODEvent * signal) ;
-  void MakeDigits(AliAODEvent* signal) ;  
-  
-  Double_t DecalibrateSignal(Double_t cellAmplitude,Int_t cellNumber) ;
- 
-  //Add new branch
-  void ConvertEmbeddedClusters(const AliESDEvent *esd,Int_t what) ;
-  void ConvertEmbeddedCells(const AliESDEvent *esd,Int_t what) ;
-  void ConvertMCParticles(const AliAODEvent *aod,Int_t what) ;
+  bool GetNextSignalEvent(void); // returns true is successfully read
 
-  Float_t TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge) ;
-  Float_t TestCPVRun2(Double_t dx, Double_t dz, Double_t pt, Int_t charge) ;
-  
+  void CopyRecalibrateSignal();
+  void CopyRecalibrateBackground();
+  void MakeEmbedding();
 
-  TChain * fAODChain1 ; //Signal1 (pi0)
-  TChain * fAODChain2 ; //Signal (eta)
-  TChain * fAODChain3 ; //Signal (gamma)
-  
-  AliAODEvent * fSignal1 ; //! pi0 signal event  
-  AliAODEvent * fSignal2 ; //! eta signal event  
-  AliAODEvent * fSignal3 ; //! gamma signal event  
+  // void CopyRecalibrateDigits() ;
+  void MakeDigits(const AliAODEvent* bgevent, const AliAODEvent* signal);
 
-  TTree * fDigitsTree ;  //! Digits
-  TTree * fClustersTree; //! Clusters
-  TTree * fTreeOut;      //Output AOD
-  TClonesArray * fDigitsArr ; //!
+  // Add new branches
+  void ConvertEmbeddedClusters();
+  void ConvertEmbeddedCells();
+  void ConvertMCParticles();
 
-  TClonesArray * fEmbeddedClusters1 ; //!
-  TClonesArray * fEmbeddedClusters2 ; //!
-  TClonesArray * fEmbeddedClusters3 ; //!
-  AliAODCaloCells * fEmbeddedCells1 ; //!
-  AliAODCaloCells * fEmbeddedCells2 ; //!
-  AliAODCaloCells * fEmbeddedCells3 ; //!
-  AliESDCaloCells * fCellsPHOS ; //! Old PHOS cells
+  double CorrectNonlinearity(double en);
+  double CorrectNonlinearityMC(double en);
+  bool IsGoodChannel(int mod, int ix, int iz);
+  double CoreEnergy(AliVCluster* clu);
+  void EvalLambdas(AliVCluster* clu, double& m02, double& m20);
+  double TestCoreLambda(double pt, double l1, double l2);
+  double TestFullLambda(double pt, double l1, double l2);
+  // void DistanceToBadChannel(int mod, TVector3 * locPos, double &minDist) ;
+  double EvalTOF(AliVCluster* clu, AliVCaloCells* cells);
 
-  AliPHOSClusterizerv1 * fClusterizer ; //!
-  AliPHOSReconstructor * fPHOSReconstructor ; //!
-  
-  TH2F * fOldPHOSCalibration[5] ; //! Calibration coeff. used in ESD production
-  AliPHOSCalibData * fSignalCalibData ; //! Decalibration of signal, inverse to OADB. //new memeber variable for an additional calibration.
-  TString fPathPrivateOADB; //path to private OADB.
-  Double_t           fSignalECorrection;  //! Correction for the Signal clibration
-  Int_t fNSignal ; // Number of signal evetns processed  
-  Int_t fNSignalPi0 ; // Number of signal evetns processed  
-  Int_t fNSignalEta ; // Number of signal evetns processed  
-  Int_t fNSignalGamma ; // Number of signal evetns processed  
-  Int_t fNCaloClustersOld ; //Number of CaloClusters already in ESD
-  Bool_t fInitialized ; //!
+  int FindTrackMatching(int mod, TVector3* locpos, double& dx, double& dz, double& pttrack, int& charge);
+  float TestCPV(double dx, double dz, double pt, int charge);
+  float TestCPVRun2(double dx, double dz, double pt, int charge);
 
-	Bool_t fIsPi0Embedded;
-	Bool_t fIsEtaEmbedded;
-	Bool_t fIsGammaEmbedded;
+ private:
+  bool fAddNoiseMC = false;
+  float fNoiseMC = 0.001;
+  float fZScut = 0.;
+  float fSelEventsPart = 0.2; // only fSelEventsPart will pass selection, simulate smaller number of events
 
-  ClassDef(AliPHOSEmbeddingRun2, 4); // PHOS analysis task
+  TChain* fAODChain;    //! Signal
+  AliAODEvent* fSignal; //!
+
+  TTree* fDigitsTree;       //! Digits
+  TTree* fClustersTree;     //! Clusters
+  TTree* fTreeOut;          //! Output AOD
+  TClonesArray* fDigitsArr; //!
+
+  TClonesArray* fmcparticles;      //!
+  TClonesArray* fSignalClusters;   //!
+  TClonesArray* fEmbeddedClusters; //!
+  AliAODCaloCells* fEmbeddedCells; //!
+  AliAODCaloCells* fCellsPHOS;     //! Old PHOS cells
+  TObjArray* fEmcRecPoints;        //!
+  TObjArray* fCpvRecPoints;        //!
+
+  AliPHOSGeometry* fPHOSGeo;                //!
+  AliPHOSClusterizerv1* fClusterizer;       //!
+  AliPHOSReconstructor* fPHOSReconstructor; //!
+
+  TH2I* fPHOSBadMap[6];   //! Bad channels map
+  float fRunByRunCorr[5]; // Per module run-by-run correction
+  int fL1phase[15];       // L1phases for PHOS DDLs (run2 only)
+
+  TH2F* fOldPHOSCalibration[5];            //! Calibration coeff. used in Bg production
+  AliPHOSCalibData* fCalibMC = nullptr;    //! Calibration of signal
+  AliPHOSCalibData* fCalibData = nullptr;  //! Calibration of Data
+  AliPHOSCalibData* fgCalibData = nullptr; //!
+  TString fPathPrivateOADBMC;              // path to private OADB.
+  double fSignalECorrection;               // Correction for the Signal clibration
+  int fNSignal;                            //! Number of signal evetns processed
+  int fNCaloClustersOld;                   //! Number of CaloClusters already in Bg
+  int fRunNumber;                          //! Current run
+  int fMF;                                 //! Magnetic field
+  bool fInitialized;                       //!
+  TVector3 fVtx;                           //! vertex in current event
+
+  ClassDef(AliPHOSEmbeddingRun2, 7); // PHOS analysis task
 };
 
 #endif

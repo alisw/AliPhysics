@@ -13,10 +13,12 @@
 #include "AliConversionPhotonCuts.h"
 #include "AliConversionMesonCuts.h"
 #include "AliAnalysisManager.h"
+#include "AliDalitzElectronSelector.h"
 #include "TProfile2D.h"
 #include "TH3.h"
 #include "TH3F.h"
 #include "THnSparse.h"
+#include "TGenPhaseSpace.h"
 #include <vector>
 #include <map>
 
@@ -46,6 +48,7 @@ public:
   void ProcessPhotonCandidates();
   void CalculateMesonCandidates();
   void SetPhotonVeto();
+  void GetV0Electrons();
 
   // MC functions
   void SetIsMC                        ( Int_t isMC)                                       { fIsMC = isMC                              ;}
@@ -66,6 +69,7 @@ public:
   void SetDoTreeConvGammaShowerShape  ( Bool_t flag )                                     { fDoConvGammaShowerShapeTree = flag          ;}
   void SetDoTreeInvMassShowerShape    ( Bool_t flag )                                     { fDoInvMassShowerShapeTree = flag            ;}
   void SetAllowOverlapHeaders         ( Bool_t allowOverlapHeader )                       { fAllowOverlapHeaders = allowOverlapHeader   ;}
+  void SetElectronMatchingCalibration ( Int_t flag )                                      { fUseEletronMatchingCalibration = flag       ;}
 
   // Setting the cut lists for the conversion photons
   void SetEventCutList                ( Int_t nCuts,
@@ -104,6 +108,7 @@ void SetNumOfCaloModules              ( Int_t nModules)                         
 
   // BG HandlerSettings
   void CalculateBackground            ();
+  void CalculateBackgroundSwapp       ();
   void CalculateBackgroundRP          ();
   void RotateParticle                 ( AliAODConversionPhoton *gamma );
   void RotateParticleAccordingToEP    ( AliAODConversionPhoton *gamma,
@@ -132,7 +137,6 @@ void SetNumOfCaloModules              ( Int_t nModules)                         
 
   void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
-
 protected:
   TRandom3                            fRandom;                                // random number
   AliV0ReaderV1*                      fV0Reader;                              // basic photon Selection Task
@@ -147,6 +151,7 @@ protected:
   AliCaloPhotonCuts*                  fCaloPhotonCuts;                        // CaloPhotonCutObject
   AliConversionMesonCuts*             fMesonCuts;                             // MesonCutObject
   AliEMCALGeometry*                   fGeomEMCAL;                             // pointer to EMCAL geometry
+  AliDalitzElectronSelector*          fElecSelector;					      // basic electron Selection
 
   TList**                             fCutFolder;                             // Array of lists for containers belonging to cut
   TList**                             fESDList;                               // Array of lists with histograms with reconstructed properties
@@ -160,6 +165,9 @@ protected:
   TList*                              fClusterCutArray;                       // List with Cluster Cuts
   TList*                              fMesonCutArray;                         // List with Meson Cuts
   TClonesArray*                       fReaderGammas;                          // Array with conversion photons selected by V0Reader Cut
+  std::vector<Int_t>                  fSelectorElectronIndex;                 // Vector with electrons selected with std. cut
+  std::vector<Int_t>                  fSelectorPositronIndex;                 // Vector with positrons selected with std. cut
+  std::vector<Int_t>                  fV0Electrons;                           // Vector with electrons from V0s
 
   TString                             fV0ReaderName;                          // V0Reader name to be found in input
   TString                             fCorrTaskSetting;                       // Correction Task Special Name
@@ -186,6 +194,8 @@ protected:
   TH2F**                  fHistoMotherInvMassECalib;                          //! array of histos with signal + background with alpha < 0.1 for NonLin
   TH2F**                  fHistoMotherBackInvMassECalib;                      //! array of histos with mixed event background with alpha < 0.1 for NonLin
 
+  TH2F**                  fHistoEVsNCellsInPiMass;                            //! array of histos with cluster energy vs. cluster NCells for pi0 tagged photon clusters
+
   TProfile**              fProfileEtaShift;                                   //! array of profiles with eta shift
   TProfile**              fProfileJetJetXSection;                             //! array of profiles with xsection for jetjet
 
@@ -196,9 +206,16 @@ protected:
   TH1F**                  fHistoClusGammaE;                                   //! array of histos with cluster, E
   TH1F***                 fHistoClusGammaPtSM;                                //! array of histos with cluster, pt
   TH1F***                 fHistoClusGammaESM;                                 //! array of histos with cluster, E
-  TH1F**                  fHistoClusOverlapHeadersGammaPt;                    //! array of histos with cluster, pt overlapping with other headers
-  TH1F**                  fHistoClusAllHeadersGammaPt;                        //! array of histos with cluster, pt all headers
-  TH1F**                  fHistoClusRejectedHeadersGammaPt;                   //! array of histos with cluster, pt rejected headers
+  TH1F**                  fHistoClusGammaERx;                                 //!array of histos with cluster E in 0.1 < M02 < 0.3
+  TH1F***                 fHistoClusGammaERxSM;                               //!array of histos with cluster E in 0.1 < M02 < 0.3 for each SM
+  TH1F**                  fHistoClusGammaERxNCellCrit;                        //!array of histos with cluster E in 0.1 < M02 < 0.3 and NCell > 4
+  TH1F***                 fHistoClusGammaERxNCellCritSM;                      //!array of histos with cluster E in 0.1 < M02 < 0.3 and NCell > 4 for each SM
+  TH1F***                 fHistoClusTrackdEtaSM;                              //!array of histos with dEta between track and cluster
+  TH1F***                 fHistoClusTrackdPhiSM;                              //!array of histos with dPhi between track and cluster
+  TH1F***                 fHistoClusHighPtTrackdEtaSM;                        //!array of histos with dEta between track (above 5GeV) and cluster
+  TH1F***                 fHistoClusHighPtTrackdPhiSM;                        //!array of histos with dPhi between track (above 5GeV) and cluster
+  TH2F**                  fHistoEVsM02;                                       //!array of histos with cluster E vs M02
+  TH2F**                  fHistoEVsM02NCell4;                                 //!array of histos with cluster E vs M02 for NCell > 4
   TH1F**                  fHistoMotherInvMassRejected;                        //! array of histos with invariant mass pairs which were rejected
   TH1F**                  fHistoNEvents;                                      //! array of histos with event information
   TH1F**                  fHistoNEventsWOWeight;                              //! array of histos with event information without event weights
@@ -255,12 +272,14 @@ protected:
   Bool_t                  fAllowOverlapHeaders;                               // enable overlapping headers for cluster selection
   Bool_t                  fEnableClusterCutsForTrigger;                       // enable CLusterCuts output for trigger only
   Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
+  Int_t                   fUseEletronMatchingCalibration;                     // switch for calibration using electron tracks (1) or electrons from V0s (2) to cluster matching
 
+  TGenPhaseSpace          fGenPhaseSpace;                                     // TGenPhaseSpace needed for some cases of rotation method
 private:
   AliAnalysisTaskConvCaloCalibration(const AliAnalysisTaskConvCaloCalibration&); // Prevent copy-construction
   AliAnalysisTaskConvCaloCalibration &operator=(const AliAnalysisTaskConvCaloCalibration&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskConvCaloCalibration, 4);
+  ClassDef(AliAnalysisTaskConvCaloCalibration, 8);
 };
 
 #endif // AliAnalysisTaskConvCaloCalibration_H

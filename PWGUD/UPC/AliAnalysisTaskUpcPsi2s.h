@@ -5,6 +5,7 @@
 #ifndef ALIANALYSISTASKUPCPSI2S_H
 #define ALIANALYSISTASKUPCPSI2S_H
 
+class TObjString;
 class TClonesArray;
 class TTree;
 class TH1;

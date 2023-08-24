@@ -44,7 +44,7 @@ RooPlot* FitModule::FitData(TH1* dat,TString name, TString title, TString range,
   if(isColored){
     mTemplate->plotOn(plot,Name("bkg"),Components(*mBackground),LineStyle(kDashed),LineColor(kRed),Range(range),NormRange(range), DrawOption("F"), FillColor(kRed), FillStyle(3344), VLines());
   }
-  mTemplate->paramOn(plot,Label(Form("#chi^{2}/NDF = %2.4f",mChi2)),Layout(0.64,0.92,0.86));
+  mTemplate->paramOn(plot,Label(Form("#chi^{2}/NDF = %2.4f",mChi2)),Layout(0.64,0.92,0.86), Format("NEU", AutoPrecision(1)));
   plot->getAttLine()->SetLineWidth(0);
   data.removeSelfFromDir();
   return plot;

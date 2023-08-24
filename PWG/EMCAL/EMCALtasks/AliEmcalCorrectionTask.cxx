@@ -54,7 +54,7 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask() :
   fMaxCent(-999),
   fNcentBins(4),
   fCentEst("V0M"),
-  fUseNewCentralityEstimation(kFALSE),
+  fUseNewCentralityEstimation(kTRUE),
   fVertex{0},
   fNVertCont(0),
   fBeamType(kNA),
@@ -99,7 +99,7 @@ AliEmcalCorrectionTask::AliEmcalCorrectionTask(const char * name) :
   fMaxCent(-999),
   fNcentBins(4),
   fCentEst("V0M"),
-  fUseNewCentralityEstimation(kFALSE),
+  fUseNewCentralityEstimation(kTRUE),
   fVertex{0},
   fNVertCont(0),
   fBeamType(kNA),
@@ -489,7 +489,7 @@ void AliEmcalCorrectionTask::CheckForUnmatchedUserSettings()
   std::string tempComponentName = "";
 
   // Loop over all components
-  for (const auto componentName : fOrderedComponentsToExecute)
+  for (const auto & componentName : fOrderedComponentsToExecute)
   {
     // Reset for each loop
     userPropertyNames.clear();
@@ -898,6 +898,15 @@ void AliEmcalCorrectionTask::SetupContainer(const AliEmcalContainerUtils::InputO
       clusterContainer->SetClusNonLinCorrEnergyCut(tempDouble);
     }
 
+    // Exotics cut
+    result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "exoticsCut", tempBool, false);
+    if (result) {
+      AliDebugStream(2) << clusterContainer->GetName() << ": Setting exotics cut to " << (tempBool ? "enabled" : "disabled") << std::endl;
+      clusterContainer->SetExoticCut(tempBool);
+    }
+    
+    
+    
     // HadCorrEnergyCut
     result = fYAMLConfig.GetProperty(inputObjectPropertiesPath, "clusHadCorrEnergyCut", tempDouble, false);
     if (result) {
@@ -1242,7 +1251,7 @@ Bool_t AliEmcalCorrectionTask::RetrieveEventObjects()
       else if (fCent >= 30 && fCent <   50) fCentBin = 2;
       else if (fCent >= 50 && fCent <= 100) fCentBin = 3;
       else {
-        AliWarning(Form("Negative centrality: %f. Assuming 99", fCent));
+        AliWarning(Form("%s: Negative centrality: %f. Assuming 99, cent estimator: %s", GetName(), fCent, fCentEst.Data()));
         fCentBin = fNcentBins-1;
       }
     }
@@ -1256,7 +1265,7 @@ Bool_t AliEmcalCorrectionTask::RetrieveEventObjects()
         fCentBin = 4;
       }
       else {
-        AliWarning(Form("Negative centrality: %f. Assuming 99", fCent));
+        AliWarning(Form("%s: Negative centrality: %f. Assuming 99, cent estimator: %s", GetName(), fCent, fCentEst.Data()));
         fCentBin = fNcentBins-1;
       }
     }

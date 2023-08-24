@@ -5,7 +5,7 @@
 
 class TH1F;
 class TH2F;
-class TH2D;
+class TH2F;
 class TH3F;
 class AliAODEvent;
 class TList;
@@ -24,7 +24,7 @@ class TClonesArray;
 class AliAODMCParticle;
 class TClonesArray;
 class AliAODParticle;
-class AliVertexingHFUtils;
+//class AliVertexingHFUtils;
 
 #include <TProfile.h>
 #include "AliAnalysisTaskSE.h"
@@ -69,30 +69,24 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
 	Int_t GetElecSourceType(AliAODMCParticle *, TClonesArray *,Double_t &ptm);
 	Int_t GetPi0EtaType(AliAODMCParticle *, TClonesArray *);
 
-	void SelectPhotonicElectronR(Int_t itrack, AliAODTrack *track, Int_t motherindex, Int_t pdg,Int_t source,Double_t V0Mmult1 , Double_t SPDntr1);
+	void SelectPhotonicElectronR(Int_t itrack, AliAODTrack *track, Int_t motherindex, Int_t pdg,Int_t source,Double_t V0Mmult1 , Double_t SPDntr1,Double_t ptmotherwg,const AliVVertex* pVtx);
+	Double_t WeightMCncCorr(Int_t multSPDtr);
 	Double_t Beta(AliAODTrack *track);
+	Double_t GetCorrectedNtracklets(TProfile* estimatorAvg, Double_t uncorrectedNacc, Double_t vtxZ, Double_t refMult);
 	AliHFEpid *GetPID() const { return fPID; }
 	  
 	//Setters
 	void SetMCAnalysis(Bool_t isMC){fIsMC=isMC;}
 	void SetReferenceMultiplicity(Double_t multi){fRefMult=multi;}
+	void SetEstimatorHistogram(Int_t period){fPeriod=period;}
 		
-	void SetMultiplVsZProfile_16l(TProfile* hprof){
-		if(fMultEstimatorAvg[0]) delete fMultEstimatorAvg[0];
-		fMultEstimatorAvg[0]=new TProfile(*hprof);
+	void SetMultiplVsZProfile(TProfile* hprof){
+		if(fMultEstimatorAvg) delete fMultEstimatorAvg;
+		fMultEstimatorAvg=new TProfile(*hprof);
   	}
-	void SetMultiplVsZProfile_17d20a2_extra(TProfile* hprof){
-		if(fMultEstimatorAvg[1]) delete fMultEstimatorAvg[1];
-		fMultEstimatorAvg[1]=new TProfile(*hprof);
-	}
-	void SetMultiplVsZProfile_16k(TProfile* hprof){
-		if(fMultEstimatorAvg[2]) delete fMultEstimatorAvg[2];
-		fMultEstimatorAvg[2]=new TProfile(*hprof);
-  	}
-	void SetMultiplVsZProfile_17d20a1_extra(TProfile* hprof){
-		if(fMultEstimatorAvg[3]) delete fMultEstimatorAvg[3];
-		fMultEstimatorAvg[3]=new TProfile(*hprof);
-	}
+	
+  	
+	
 	//----------Setter for Track and PID cuts
 	void SetTrigger(AliVEvent::EOfflineTriggerTypes trigger){ftrigger =trigger;}
 	//void SetTrigger(Int_t trigger){ftrigger =trigger;}
@@ -122,7 +116,9 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
 	void SetAssopTMin(Double_t AssopTMin){fAssopTMin = AssopTMin;}
 	void SetAssoEtarange(Double_t AssoEtarange){fAssoEtarange=AssoEtarange;}
 	void SetAssoTPCnsig(Double_t AssoTPCnsig){fAssoTPCnsig=AssoTPCnsig;}
-	
+	void SetAssoTPCNclsForPID(Int_t AssoTPCNclsForPID){fAssoTPCNclsForPID=AssoTPCNclsForPID;}
+	void SetAssoITSNclus(Int_t AssoITSNclus){fAssoITSNclus=AssoITSNclus;}
+	void SeAssoDCA(Double_t AssoDCAxy,Double_t AssoDCAz){fAssoDCAxy=AssoDCAxy;fAssoDCAz=AssoDCAz;}
 	
 	private:
 	
@@ -147,12 +143,16 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
 	Bool_t fAssoITSRefit;  
 	Double_t fAssopTMin;  
 	Double_t fAssoEtarange;  
-	Double_t fAssoTPCnsig;  
+	Double_t fAssoTPCnsig;
+	Int_t fAssoTPCNclsForPID;
+	Int_t fAssoITSNclus;
+	Double_t fAssoDCAxy;
+	Double_t fAssoDCAz;  
 	
-	
+//---------------------------------------------------------------	
 	Double_t fDCAxy;  
 	Double_t fDCAz;  
-	Double_t 		fRefMult;
+	Double_t fRefMult;
   //---------------------------------------------------------------
 	AliAODEvent *fAOD;    //! AOD object
 	AliHFEpid   *fPID;                  //!PID
@@ -164,7 +164,7 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
 	Bool_t fIsMC;
 	TList       *fOutputList; //! Output list
 
-	TH1D        *fcount;//!
+	TH1F        *fcount;//!
 	TH1F        *fHistPt; //! Pt spectrum
 	TH1F        *fHistMult; //! Multiplicity Distribution
 	TH1F        *fTPCSignal; //! TPCSignal vs entries
@@ -180,6 +180,7 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
 	TH2F	      *fdEdxVsP_TPC_cut ;//!
 	TH2F	      *fnSigmaVsP_TPC;//!
 	TH2F	      *fnSigmaVsP_TPC_cut;//!
+	TH2F	      *fnSigmaVsPt_TPC_cut;//!
 	TH2F	      *fnSigmaVsP_TOF;//!
 	TH2F	      *fnBetaVsP_TOF;//!
 	
@@ -195,11 +196,12 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
 	TH1F        *fNentries2;         	//!histogram with number of events on output slot 3 
 	TF1	   *fLandau;//!
 	TF1	   *fErr;//!
+	TF1	   *func_MCnchCorr;//!
 	  
-	TH1D *fHadCot_Landau;//!
-	TH1D *fHadCot_Err;	//!
-	TH1D *fPt_incl_e_Landau;//!
-	TH1D *fPt_incl_e_Err;	//!	
+	TH1F *fHadCot_Landau;//!
+	TH1F *fHadCot_Err;	//!
+	TH1F *fPt_incl_e_Landau;//!
+	TH1F *fPt_incl_e_Err;	//!	
 
   	Double_t fMultiPercentile;
   	Double_t fMultiPercentileSPD;
@@ -290,6 +292,7 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
 	TH1F        *fPt_elec_gamma_MB_LS;//!
    
    THnSparseF  *fInvMULSnSp;//!
+   THnSparseF  *fInvMULSnSpwg;//!
    THnSparseF  *fPi0EtaSpectra;//!
 	THnSparseF  *fPi0EtaSpectraSp;//!
 	TH2F        *fInvMULSpi0;//!
@@ -307,8 +310,29 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
     TH1F        *pi0MC_1;//!
 	TH1F        *etaMC_1;//!
 	TH1F        *gammaMC_1;//!
+	
+	//++++++++++Weights++++++++++++++++++++
+	TH1F *fPt_elec_phot2;//!
+	TH1F *fPtElec_ULS_MC2;//!
+	TH1F *fPtElec_LS_MC2;//!
+	TH2F *fPt_elec_phot2_multSPD;//!
+	TH2F *fPtElec_ULS_MC2_multSPD;//!
+	TH2F *fPtElec_LS_MC2_multSPD;//!
+	TH1F *fPt_elec_from_pi02;//!
+	TH1F *fPtElec_ULS_MC_from_pi02;//!
+	TH1F *fPtElec_LS_MC_from_pi02;//!
+	TH1F *fPt_elec_from_eta2;//!
+	TH1F *fPtElec_ULS_MC_from_eta2;//!
+	TH1F *fPtElec_LS_MC_from_eta2;//!
+	TH1F *fPt_elec_from_gamma2;//!
+	TH1F *fPtElec_ULS_MC_from_gamma2;//!
+	TH1F *fPtElec_LS_MC_from_gamma2;//!
 
-   
+       TF1 *fPi0a;//!
+	TF1 *fPi0b;//!
+	TF1 *fEtaa;//!
+	TF1 *fEtab;//!
+	TF1 *fEtac;//!
    //-------------------------SPD V0M Multiplicity -------------------------------
    
 		
@@ -325,13 +349,15 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
   	
   	TH1F *fSPDCorrMultDist_min;//!
   	TH1F *fSPDCorrMultDist_max;//!
+  	TH1F *fSPDWeightedCorrMultDist_max;//!
   
    TProfile* GetEstimatorHistogram(const AliAODEvent* fAOD);
   
   	TH2F *fHistNtrVsZvtx;//!
   	TH2F *fHistNtrCorrVsZvtx_min;//!
   	TH2F *fHistNtrCorrVsZvtx_max;//!
-  	TProfile *fMultEstimatorAvg[4]; /// TProfile with mult vs. Z per period
+  	 Int_t fPeriod;
+  	TProfile *fMultEstimatorAvg; /// TProfile with mult vs. Z per period
   	TH2F *fSPDCorrMultDist_min_vs_AliSPDMult;//!
   	
 
@@ -341,10 +367,23 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
   	TH2F *fMultV0M_vs_alimult;//!
   	TH2F *fNchVsZvtx;//!
   	TH2F *SPDNtrCorrVsNch;//!
+  	TH2F *SPDNtrCorrVsNchweights;//!
 	TH2F *V0MCorrVsNch;//!
 	THnSparseF  *fSPDNtrCorrVsV0MCorrVsNch;//!
   
-  	
+  	 TProfile*               Profile_Mean; //!
+  	 TProfile*               Profile_MeanCorr;//!
+
+    
+    TH1F *fPtHFEMC_aftertrackcut;//!
+    TH1F *fPtHFEMC_aftertofcut;//!
+    TH1F *fPtHFEMC_aftertpcnsigcut;//!
+    TH1F *fPtHFEMC_aftertoftpcnsigcut;//!
+    TH2F *fPtHFEMC_aftertrackcut_SPD;//!
+    TH2F *fPtHFEMC_aftertofcut_SPD;//!
+    TH2F *fPtHFEMC_aftertpcnsigcut_SPD;//!
+    TH2F *fPtHFEMC_aftertoftpcnsigcut_SPD;//!
+  
 	//-------------------------------------------------------------------------------------
 	  
 	AliAnalysisTaskHFEmultTPCTOF(const AliAnalysisTaskHFEmultTPCTOF&); // not implemented
@@ -354,3 +393,4 @@ class AliAnalysisTaskHFEmultTPCTOF : public AliAnalysisTaskSE {
 };
 	
 #endif	
+

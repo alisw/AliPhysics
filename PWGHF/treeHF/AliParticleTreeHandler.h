@@ -39,6 +39,7 @@
 #include "TTree.h"
 
 #include "AliParticleContainer.h"
+#include "AliAODMCHeader.h"
 
 //________________________________________________________________
 //****************************************************************
@@ -51,10 +52,11 @@ class AliParticleTreeHandler : public TObject
 
     // Core methods
     TTree* BuildTree(TString name, TString title);
-    void FillTree(int runNumber, unsigned int eventID);
+    void FillTree(int runNumber, int eventID, int eventID_Ext, Long64_t eventID_Long);
   
     // Setters
     void SetParticleContainer(AliParticleContainer* partCont) { fParticleContainer = partCont; }
+    void SetMCHeader(AliAODMCHeader* MCHeader) { fMCHeader = MCHeader; }
 
   protected:
   
@@ -66,20 +68,24 @@ class AliParticleTreeHandler : public TObject
     // Each tree structure is completely flat -- the branches are all primitive types.
   
     TTree*                       fTreeParticle;            ///< Tree with particle variables
-  
+    bool                         fIsMCGen;                 //!<! Flag for whether tree is for MC gen particles
+    AliAODMCHeader*              fMCHeader;                //!<! MC header (only used in case is_mc_gen=true)
     AliParticleContainer*        fParticleContainer;       //!<! Particle container for this tree
   
     // Track quantities.
     float                        fParticlePt;              //!<! Pt of particle
     float                        fParticleEta;             //!<! Eta of particle
     float                        fParticlePhi;             //!<! Phi of particle (0 < phi < 2pi)
+    float                        fParticleCharge;          //!<! Charge of particle
   
     // Event quantities
     int                          fRunNumber;               //!<! run number
-    unsigned int                 fEventID;                 //!<! event ID (unique identifier when run number is fixed)
+    int                          fEventID;                 //!<! event ID (unique identifier when run number is fixed), first 32 bits of fEventIDLong
+    int                          fEventIDExt;                 //!<! event ID (unique identifier when run number is fixed), second 32 bits of fEventIDLong
+    Long64_t                     fEventIDLong;                 //!<! event ID (unique identifier when run number is fixed), full 64 bits of fEventIDLong
 
   /// \cond CLASSIMP
-  ClassDef(AliParticleTreeHandler,1); ///
+  ClassDef(AliParticleTreeHandler,2); ///
   /// \endcond
 };
 

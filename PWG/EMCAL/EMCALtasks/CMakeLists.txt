@@ -46,6 +46,7 @@ set(SRCS
   AliEmcalDebugTask.cxx
   AliEmcalEsdTrackFilterTask.cxx
   AliEmcalMCTrackSelector.cxx
+  AliEmcalMCPartonInfoCreator.cxx
   AliEmcalParticleMaker.cxx
   AliEmcalPatchFromCellMaker.cxx
   AliEmcalPhysicsSelectionTask.cxx
@@ -71,18 +72,26 @@ set(SRCS
   AliEmcalCorrectionComponent.cxx
   AliEmcalCorrectionCellBadChannel.cxx
   AliEmcalCorrectionCellEnergy.cxx
+  AliEmcalCorrectionCellEnergyCompression.cxx
+  AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction.cxx
+  AliEmcalCorrectionCellSingleChannelCalibration.cxx
   AliEmcalCorrectionCellTimeCalib.cxx
   AliEmcalCorrectionCellEmulateCrosstalk.cxx
   AliEmcalCorrectionCellCombineCollections.cxx
+  AliEmcalCorrectionCellCloneContainer.cxx
   AliEmcalCorrectionClusterizer.cxx
   AliEmcalCorrectionClusterNonLinearity.cxx
   AliEmcalCorrectionClusterNonLinearityMCAfterburner.cxx
+  AliEmcalCorrectionClusterLowEnergyEfficiency.cxx
+  AliEmcalCorrectionClusterPositionCorrection.cxx
   AliEmcalCorrectionClusterExotics.cxx
   AliEmcalCorrectionClusterTrackMatcher.cxx
   AliEmcalCorrectionClusterHadronicCorrection.cxx
   AliEmcalCorrectionCellEnergyVariation.cxx
   AliEmcalCorrectionClusterEnergyVariation.cxx
   AliEmcalCorrectionPHOSCorrections.cxx
+  AliEmcalFilterAODMCHeaders.cxx
+  AliEmcalRejectMCBackground.cxx
   AliAnalysisTaskEmcalOccupancy.cxx
   TestAliEmcalAODFilterBitCuts.cxx
   TestAliEmcalTrackSelection.cxx
@@ -122,7 +131,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)

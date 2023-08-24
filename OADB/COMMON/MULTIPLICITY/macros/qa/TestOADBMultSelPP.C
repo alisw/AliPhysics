@@ -152,7 +152,7 @@ void TestOADBMultSelPP(const Char_t* inputDir, TString lPeriodName = "LHC18f", I
         if ( !fEvSel_INELgtZERO ) continue ;
         if ( !fEvSel_HasNoInconsistentVertices ) continue ; 
         if ( TMath::Abs(fEvSel_VtxZ) > 10. ) continue; 
-        if ( !(fEvSel_TriggerMask & AliVEvent::kINT7) ) continue;
+        if ( !(fEvSel_TriggerMask & (AliVEvent::kINT7 | AliVEvent::kINT7inMUON)) ) continue;
 
 
         lSelected ++;

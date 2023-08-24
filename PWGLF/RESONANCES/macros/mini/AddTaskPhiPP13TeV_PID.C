@@ -69,11 +69,12 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   //-------------------------------------------
   // event cuts
   //-------------------------------------------
+  bool isAOD=(evtCutSetID>=1000);
   UInt_t      triggerMask=AliVEvent::kINT7;
-  if(evtCutSetID>=100){
+  if(evtCutSetID%1000>=100){
     triggerMask=AliVEvent::kHighMultV0;
-    evtCutSetID=evtCutSetID%100;
   }
+  evtCutSetID=evtCutSetID%100;
 
   Bool_t      rejectPileUp=kTRUE;
   Double_t    vtxZcut=10.0;//cm, default cut on vtx z
@@ -125,8 +126,8 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   TString taskName=Form("phi%s%s_%i",(isPP? "pp" : "PbPb"),(isMC ? "MC" : "Data"),(Int_t)cutKaCandidate);
   AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
   if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kINEL10 && evtCutSetID!=eventCutSet::kIGZ10 && evtCutSetID!=eventCutSet::kIGZ){
-    task->UseESDTriggerMask(triggerMask); //ESD
-    //task->SelectCollisionCandidates(triggerMask); //AOD
+    if(!isAOD) task->UseESDTriggerMask(triggerMask); //ESD
+    else task->SelectCollisionCandidates(triggerMask); //AOD
   }
 
   if(isPP){
@@ -229,7 +230,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPP13TeV_PID
   for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
   nmult--;
   TH1F* hEventsVsMulti=new TH1F("hAEventsVsMulti","",nmult,multbins);
-  task->SetEventQAHist("EventsVsMulti",hEventsVsMulti);//custom binning for fHAEventsVsMulti
+  task->SetEventQAHist("eventsvsmulti",hEventsVsMulti);//custom binning for fHAEventsVsMulti
 
   TH2F* hvz=new TH2F("hVzVsCent","",110,0.,110., 240,-12.0,12.0);
   task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member

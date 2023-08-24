@@ -52,6 +52,7 @@ public:
   enum EMESmultId{
      kGlob08=0    // Global multiplicity for eta in (-0.8,0.8)
     ,kComb        // Combined multiplicity
+    ,kSPDtrk
     ,kNoClSPD     // SPD number of clusters
     ,kV0M           // V0M percentile
     ,kComb0408  // Combined multiplicity for eta (-0.8,-0.4) & (0.4, 0.8)

@@ -133,6 +133,22 @@ Int_t AliRsnMiniResonanceFinder::RunResonanceFinder(AliRsnMiniEvent* event)
    // loop variables
    Int_t i1, i2, start, nadded = 0;
    AliRsnMiniParticle *r, *p1, *p2;
+   
+   //Set charge for resonance
+   Char_t RsnCharge;
+   if(fCharge[0] == '+'){
+     if(fCharge[1] == '-') RsnCharge = '0';
+     else if(fCharge[1] == '+') RsnCharge = '0';
+     else if(fCharge[1] == '0') RsnCharge = '+';
+   }else if(fCharge[0] == '-'){
+     if(fCharge[1] == '-') RsnCharge = '0';
+     else if(fCharge[1] == '+') RsnCharge = '0';
+     else if(fCharge[1] == '0') RsnCharge = '-';
+   }else if(fCharge[0] == '0'){
+     if(fCharge[1] == '-') RsnCharge = '-';
+     else if(fCharge[1] == '+') RsnCharge = '+';
+     else if(fCharge[1] == '0') RsnCharge = '0';
+   }
 
    // it is necessary to know if criteria for the two daughters are the same
    Bool_t sameCriteria = ((fCharge[0] == fCharge[1]) && (fDaughter[0] == fDaughter[1]));
@@ -239,7 +255,7 @@ Int_t AliRsnMiniResonanceFinder::RunResonanceFinder(AliRsnMiniEvent* event)
       } // end internal loop
    } // end external loop
 
-   event->CountParticles(fSelRes, '0', fCutIDrsn);
+   event->CountParticles(fSelRes, RsnCharge, fCutIDrsn);
 
    AliDebugClass(1, Form("Pairs added in total = %4d", nadded));
    return nadded;

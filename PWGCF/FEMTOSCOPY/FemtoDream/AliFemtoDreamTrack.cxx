@@ -13,14 +13,13 @@
 #include "AliESDVertex.h"
 #include "AliInputEventHandler.h"
 #include "AliFemtoDreamTrack.h"
-#include "AliNanoAODTrack.h"
 #include "AliLog.h"
 #include "TClonesArray.h"
 #include "TMath.h"
 #include <iostream>
 ClassImp(AliFemtoDreamTrack)
 AliFemtoDreamTrack::AliFemtoDreamTrack()
-    : AliFemtoDreamBasePart(),
+    : AliFemtoDreamBasePart(1),
       fPIDResponse(0),
       fstatusITS(AliPIDResponse::kDetNoParams),
       fstatusTPC(AliPIDResponse::kDetNoParams),
@@ -42,6 +41,7 @@ AliFemtoDreamTrack::AliFemtoDreamTrack()
       fChi2ITS(0),
       fSharedClsITSLayer(0),
       fHasSharedClsITSLayer(false),
+      fdEdxITS(0),
       fdEdxTPC(0),
       fbetaTOF(0),
       fHasITSHit(false),
@@ -74,9 +74,8 @@ AliFemtoDreamTrack::~AliFemtoDreamTrack() {
   }
 }
 
-void AliFemtoDreamTrack::SetTrack(AliAODTrack *track, const int multiplicity) {
+void AliFemtoDreamTrack::SetTrack(AliAODTrack *track) {
   this->Reset();
-  SetEventMultiplicity(multiplicity);
   fAODTrack = track;
   int trackID = fAODTrack->GetID();
   if (trackID < 0) {
@@ -110,11 +109,17 @@ void AliFemtoDreamTrack::SetTrack(AliAODTrack *track, const int multiplicity) {
   }
 }
 
-void AliFemtoDreamTrack::SetTrack(AliVTrack *track, AliVEvent *event,
-                                  const int multiplicity) {
+void AliFemtoDreamTrack::SetTrack(AliVTrack *track, AliVEvent *event) {
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  if (man) {
+    AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man
+        ->GetInputEventHandler());
+    if (inputHandler) {
+      fPIDResponse = inputHandler->GetPIDResponse();
+    }
+  }
   AliNanoAODTrack* nanoTrack = dynamic_cast<AliNanoAODTrack*>(track);
   this->Reset();
-  SetEventMultiplicity(multiplicity);
   fVTrack = track;
   int trackID = nanoTrack->GetID();
   if (trackID < 0) {
@@ -148,11 +153,9 @@ void AliFemtoDreamTrack::SetTrack(AliVTrack *track, AliVEvent *event,
 }
 
 void AliFemtoDreamTrack::SetTrack(AliESDtrack *track, AliMCEvent *mcEvent,
-                                  const int multiplicity,
                                   const bool TPCOnlyTrack,
                                   const bool IsOmegaTrack) {
   this->Reset();
-  SetEventMultiplicity(multiplicity);
   fESDTrack = track;
   if (fESDTrack) {
     this->fIsReset = false;
@@ -243,7 +246,7 @@ void AliFemtoDreamTrack::SetESDTrackingInformation(const bool TPCOnlyTrack) {
   this->SetTheta(fESDTPCOnlyTrack->Theta());
   this->SetCharge(fESDTPCOnlyTrack->Charge());
   this->SetMomTPC(fESDTrack->GetTPCmomentum());
-  this->SetMomentum(p[0], p[1], p[2]);
+  this->SetMomentum(0, p[0], p[1], p[2]);
   this->SetPt(fESDTPCOnlyTrack->Pt());
 
   this->fdcaXY = dDCA[0];
@@ -308,10 +311,8 @@ void AliFemtoDreamTrack::SetESDTrackingInformationOmega() {
     //Get primary vertex
     Double_t PrimVtx[3];
     fESDTrack->GetESDEvent()->GetPrimaryVertex()->GetXYZ(PrimVtx);
-
     //get tpc mom
     this->SetMomTPC(fESDTrack->GetTPCmomentum());
-
     //REQUIRE EVERYTHING TO HAVE TPCMOM > 50MeV
     if(fESDTrack->GetTPCmomentum()<.050){
       this->fIsSet = false;
@@ -328,7 +329,7 @@ void AliFemtoDreamTrack::SetESDTrackingInformationOmega() {
     //fill momentum. This will be overwritten later in the cascade setting.
     double p[3] = { 0. };
     fESDTrack->GetPxPyPz(p);
-    this->SetMomentum(p[0], p[1], p[2]);
+    this->SetMomentum(0, p[0], p[1], p[2]);
     this->SetPt(fESDTrack->Pt());
 
     //fill Eta etc:
@@ -433,6 +434,7 @@ void AliFemtoDreamTrack::SetESDPIDInformation() {
   this->fstatusITS = statusITS;
   this->fstatusTPC = statusTPC;
   this->fstatusTOF = statusTOF;
+  this->fdEdxITS = fESDTrack->GetITSsignal();
   this->fdEdxTPC = fESDTrack->GetTPCsignal();
   this->fbetaTOF = GetBeta(fESDTrack);
   for (int i = 0; i < 6; ++i) {
@@ -469,7 +471,7 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
   this->SetPhi(fVTrack->Phi());
   this->SetTheta(fVTrack->Theta());
   this->SetCharge(fVTrack->Charge());
-  this->SetMomentum(fVTrack->Px(), fVTrack->Py(), fVTrack->Pz());
+  this->SetMomentum(0, fVTrack->Px(), fVTrack->Py(), fVTrack->Pz());
   this->SetPt(fVTrack->Pt());
 
   // loop over the 6 ITS Layrs and check for a hit!
@@ -542,8 +544,11 @@ void AliFemtoDreamTrack::SetVInformation(AliVEvent *event) {
     this->fnoSharedClst = true;
   }
 
+  if (fPIDResponse) {
+    this->fbetaTOF = GetBeta(globalNanoTrack);
+  }
+
   // TODO
-  //  this->fbetaTOF = GetBeta(fVTrack);
   //   For the moment we don't need ITS PID
   //  this->fstatusITS = statusITS;
   //          this->fnSigmaITS)[i] =
@@ -565,7 +570,7 @@ void AliFemtoDreamTrack::SetAODTrackingInformation() {
   this->SetPhi(fAODTrack->Phi());
   this->SetTheta(fAODTrack->Theta());
   this->SetCharge(fAODTrack->Charge());
-  this->SetMomentum(fAODTrack->Px(), fAODTrack->Py(), fAODTrack->Pz());
+  this->SetMomentum(0, fAODTrack->Px(), fAODTrack->Py(), fAODTrack->Pz());
   this->SetMomTPC(fAODGlobalTrack->GetTPCmomentum());
   this->SetPt(fAODTrack->Pt());
   this->fdcaXY = fAODTrack->DCA();
@@ -653,11 +658,15 @@ void AliFemtoDreamTrack::SetPhiAtRadii(const float bfield) {
   float chg = GetCharge().at(0);
   std::vector<float> phiatRadius;
   for (int radius = 0; radius < 9; radius++) {
+   //20-Feb-2022
+   //Avoid NAN in asin for low momentum particle (particularly for pions)
+   if(TMath::Abs(0.1*chg*bfield*0.3*TPCradii[radius]*0.01/(2.*pt))< 1.){
     phiatRadius.push_back(
         phi0
             - TMath::ASin(
                 0.1 * chg * bfield * 0.3 * TPCradii[radius] * 0.01
                     / (2. * pt)));
+   }//safety check for asin
   }
   fPhiAtRadius.push_back(phiatRadius);
   return;
@@ -706,6 +715,7 @@ void AliFemtoDreamTrack::SetAODPIDInformation() {
   this->fstatusITS = statusITS;
   this->fstatusTPC = statusTPC;
   this->fstatusTOF = statusTOF;
+  this->fdEdxITS= fAODGlobalTrack->GetITSsignal();
   this->fdEdxTPC = fAODGlobalTrack->GetTPCsignal();
   this->fbetaTOF = GetBeta(fAODGlobalTrack);
   for (int i = 0; i < 6; ++i) {
@@ -835,44 +845,43 @@ void AliFemtoDreamTrack::SetMCInformation(AliMCEvent *mcEvent) {
   }
 }
 
-float AliFemtoDreamTrack::GetBeta(AliAODTrack *track) {
-  float beta = -999;
-  double integratedTimes[9] = { -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
-      -1.0 };
-
-  track->GetIntegratedTimes(integratedTimes);
-
-  const float c = 2.99792457999999984e-02;
-  float p = track->P();
-  float l = integratedTimes[0] * c;
-
-  float trackT0 = fPIDResponse->GetTOFResponse().GetStartTime(p);
-
-  float timeTOF = track->GetTOFsignal() - trackT0;
-  if (timeTOF > 0) {
-    beta = l / timeTOF / c;
+float AliFemtoDreamTrack::GetBeta(AliNanoAODTrack *track) const {
+  static float c = 2.99792457999999984e-02;
+  if (!fPIDResponse) {
+    return -0.075f;
   }
-  return beta;
+
+  const float len = track->GetIntegratedLength();
+  if (!(track->HasTOFpid() && (len > 350.))) {
+    return -0.05f;
+  }
+  const float tim = track->GetTOFsignal()
+      - fPIDResponse->GetTOFResponse().GetStartTime(track->GetTPCmomentum());
+  return len / (tim * c);
 }
 
-float AliFemtoDreamTrack::GetBeta(AliESDtrack *track) {
-  float beta = -999;
-  double integratedTimes[9] = { -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0,
-      -1.0 };
-
-  track->GetIntegratedTimes(integratedTimes);
-
-  const float c = 2.99792457999999984e-02;
-  float p = track->P();
-  float l = integratedTimes[0] * c;
-
-  float trackT0 = fPIDResponse->GetTOFResponse().GetStartTime(p);
-
-  float timeTOF = track->GetTOFsignal() - trackT0;
-  if (timeTOF > 0) {
-    beta = l / timeTOF / c;
+float AliFemtoDreamTrack::GetBeta(AliAODTrack *track) const {
+  static float c = 2.99792457999999984e-02;
+  const float len = track->GetIntegratedLength();
+  if (!(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track)
+      && (len > 350.))) {
+    return -0.05f;
   }
-  return beta;
+  const float tim = track->GetTOFsignal()
+      - fPIDResponse->GetTOFResponse().GetStartTime(track->GetTPCmomentum());
+  return len / (tim * c);
+}
+
+float AliFemtoDreamTrack::GetBeta(AliESDtrack *track) const {
+  static float c = 2.99792457999999984e-02;
+  const float len = track->GetIntegratedLength();
+  if (!(fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track)
+      && (len > 350.))) {
+    return -0.05f;
+  }
+  const float tim = track->GetTOFsignal()
+      - fPIDResponse->GetTOFResponse().GetStartTime(track->GetTPCmomentum());
+  return len / (tim * c);
 }
 
 bool AliFemtoDreamTrack::CheckGlobalTrack(const Int_t TrackID) {
@@ -917,6 +926,7 @@ void AliFemtoDreamTrack::Reset() {
     fChi2ITS = 0;
     fSharedClsITSLayer.clear();
     fHasSharedClsITSLayer = false;
+    fdEdxITS = -999;
     fdEdxTPC = -999;
     fbetaTOF = 1.1;
     fHasITSHit = false;
@@ -931,7 +941,7 @@ void AliFemtoDreamTrack::Reset() {
     fESDStatus = 0;
     fESDnClusterITS = 0;
     fESDnClusterTPC = 0;
-    fP.SetXYZ(0, 0, 0);
+    GetMomentum(0).SetXYZ(0, 0, 0);
     fMCP.SetXYZ(0, 0, 0);
     fPt = 0;
     fMCPt = 0;

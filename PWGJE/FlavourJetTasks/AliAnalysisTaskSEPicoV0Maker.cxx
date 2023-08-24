@@ -25,7 +25,6 @@
 #include <TMath.h>
 #include <THnSparse.h>
 #include <TClonesArray.h>
-#include <TParticle.h>
 
 #include "AliStack.h"
 #include "AliESDEvent.h"
@@ -1535,7 +1534,7 @@ void AliAnalysisTaskSEPicoV0Maker::FillHistogramsMC()
 //=============================================================================
 
   for (auto i=0; i<MCEvent()->GetNumberOfTracks(); ++i) {
-    TParticle *pESD(nullptr);
+    AliMCParticle    *pESD(nullptr);
     AliAODMCParticle *pAOD(nullptr);
 
     if (fEventAOD) {
@@ -1544,8 +1543,8 @@ void AliAnalysisTaskSEPicoV0Maker::FillHistogramsMC()
     }
 
     if (fEventESD) {
-      const auto pMC(static_cast<AliMCParticle*>(MCEvent()->GetTrack(i))); if (!pMC) continue;
-      pESD = pMC->Particle(); if (!pESD) continue;
+      pESD = static_cast<AliMCParticle*>(MCEvent()->GetTrack(i));
+      if (!pESD) continue;
     }
 //=============================================================================
 
@@ -1554,7 +1553,7 @@ void AliAnalysisTaskSEPicoV0Maker::FillHistogramsMC()
     if (!(bPri || bPhy)) continue;
 //=============================================================================
 
-    const auto id(pAOD ? pAOD->GetPdgCode() : pESD->GetPdgCode());
+    const auto id(pAOD ? pAOD->GetPdgCode() : pESD->PdgCode());
 
     const auto bXi(bPri && ((id==3312) || (id==-3312)));
     const auto bV0(bPhy && ((id==3122) || (id==-3122) || (id==310)));

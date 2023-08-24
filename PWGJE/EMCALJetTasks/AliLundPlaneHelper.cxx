@@ -53,7 +53,6 @@ AliLundPlaneData AliLundPlaneHelper::Evaluate(const AliEmcalJet &jet, const AliP
   fInputVectors.clear();
   fastjet::PseudoJet  PseudoTracks;
   Int_t nall=0;
-  Double_t z = 0;
 
   if (tracks){
     for (Int_t i=0; i < jet.GetNumberOfTracks(); i++) {
@@ -94,7 +93,7 @@ AliLundPlaneData AliLundPlaneHelper::Evaluate(const AliEmcalJet &jet, const AliP
     while(jj.has_parents(j1,j2)){
       nall++;
       if(j1.perp() < j2.perp()) std::swap(j1,j2);
-      z=j2.perp()/(j1.perp()+j2.perp());
+      // double z=j2.perp()/(j1.perp()+j2.perp());
       double delta_R=j1.delta_R(j2);
       double lndeltaR =log(1.0/delta_R);
       double lnpt_rel=log(j2.perp()*delta_R);

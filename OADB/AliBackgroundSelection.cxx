@@ -19,7 +19,7 @@
 // Author: Michele Floris, CERN
 // ----------------------------------------------------------------
 
-
+#include <TObjString.h>
 #include "AliBackgroundSelection.h"
 #include "TH2F.h"
 #include "TList.h"

@@ -20,10 +20,12 @@ class AliFlowEventSimpleMaker;
 class AliFlowEvent;
 class TList;
 class TF1;
+class TH3;
 class TRandom3;
 class AliAnalysisTaskSE;
 class TString;
 class AliESDpid;
+class AliAODEvent;
 
 class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
  public:
@@ -111,6 +113,25 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
                {fV1=v1;fV2=v2;fV3=v3;fV4=v4;fV5=v5;}
   // end setters afterburner
 
+  //=================ZDC info===============//
+  //ZDC filler
+  void FillZDCInfo(AliAODEvent* myAOD);
+  
+  //Calibration
+  void SetZNChannelGainEqualizationMap(TH3F *gHist) {
+    kUseGainEqualizationMap = kTRUE;
+    fHistZNChannelGainEqualizationMap = gHist;}
+  Double_t GetZNChannelEqualizationFactor(Int_t run,
+                                          Int_t channel,
+                                          Double_t gCentrality);
+  
+  void SetZPChannelGainEqualizationMap(TH3F *gHist) {
+    kUseGainEqualizationMap = kTRUE;
+    fHistZPChannelGainEqualizationMap = gHist;}
+  Double_t GetZPChannelEqualizationFactor(Int_t run,
+                                          Int_t channel,
+                                          Double_t gCentrality);
+
  private:
 
   AliAnalysisTaskFlowEvent(const AliAnalysisTaskFlowEvent& aAnalysisTask);
@@ -181,6 +202,11 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   Double_t  fV4;        // Add Flow. Must be in range [0,0.5].
   Double_t  fV5;        // Add Flow. Must be in range [0,0.5].
   TF1 *fDifferentialV2; // pt-differential v2
+
+  //ZDC
+  Bool_t kUseGainEqualizationMap; //use equalisation map
+  TH3F *fHistZNChannelGainEqualizationMap; //ZN calibration map                                      
+  TH3F *fHistZPChannelGainEqualizationMap; //ZN calibration map    
 
   AliFlowEvent* fFlowEvent; //flowevent
   Bool_t fShuffleTracks;    //serve the tracks shuffled

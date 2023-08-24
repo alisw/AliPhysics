@@ -18,31 +18,31 @@
 // This class is to support AOD and ESD MonteCarlo data
 #include "AliVTrack.h"
 #include "AliDalitzAODESDMC.h"
-#include "TParticle.h"
+#include "AliMCParticle.h"
 #include "AliAODMCParticle.h"
 #include "AliMCEvent.h"
 
 class AliMCEvent;
-class TParticle;
+class AliMCParticle;
 class AliAODMCParticle;
 
 
 class AliDalitzAODESDMC: public TObject{
 public:
     
-    AliDalitzAODESDMC(TParticle* ltparticle):
+    AliDalitzAODESDMC(AliMCParticle* lalimcparticle):
 	TObject(),
 	fIsESDMC(kTRUE),
-	tparticle(ltparticle),
+    alimcparticle(lalimcparticle),
 	aliaodmcparticle(NULL)
     {
 //        fIsESDMC=kTRUE;
-  //      tparticle=ltparticle;
+  //      alimcparticle=lalimcparticle;
     };
     AliDalitzAODESDMC(AliAODMCParticle* laliaodmcparticle):
 	TObject(),
         fIsESDMC(kFALSE),
-        tparticle(NULL),
+        alimcparticle(NULL),
         aliaodmcparticle(laliaodmcparticle)
     {
     //    fIsESDMC=kFALSE;
@@ -69,8 +69,8 @@ public:
      Bool_t   GetIsESDMC(){
          return fIsESDMC;
      }
-        TParticle* GetDalitzESDparticle(){
-        return tparticle;
+        AliMCParticle* GetDalitzESDparticle(){
+        return alimcparticle;
      };
         AliAODMCParticle* GetDalitzAODparticle(){
         return aliaodmcparticle;
@@ -79,9 +79,9 @@ public:
 private:
     
     Bool_t fIsESDMC;
-    TParticle* tparticle;
+    AliMCParticle* alimcparticle;
     AliAODMCParticle* aliaodmcparticle;
-    ClassDef( AliDalitzAODESDMC, 1 );
+    ClassDef( AliDalitzAODESDMC, 2 )
     };
 
 

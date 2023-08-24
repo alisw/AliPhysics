@@ -11,6 +11,9 @@
 #include "AliConvEventCuts.h"
 #include "AliConversionPhotonCuts.h"
 #include "AliConversionMesonCuts.h"
+#include "AliAnalysisTaskConvJet.h"
+#include "AliAnalysisTaskJetOutlierRemoval.h"
+#include "AliDalitzElectronSelector.h"
 #include "AliAnalysisManager.h"
 #include "TProfile2D.h"
 #include "TH3.h"
@@ -35,7 +38,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
                                                             return                                                                                        ;
                                                           }
     void SetIsHeavyIon(Int_t flag)                        { fIsHeavyIon                 = flag                                                            ; }
-    
+
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting)        { fCorrTaskSetting = setting                                                                    ; }
     // base functions for selecting photon and meson candidates in reconstructed data
@@ -45,8 +48,15 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     void SetIsMC(Int_t isMC)                              { fIsMC                       = isMC                                                            ; }
     void SetSelectedMesonID(Int_t anaMeson)               { fSelectedMesonID            = anaMeson                                                        ; }
 
-    void ProcessMCParticles();
-    void ProcessAODMCParticles();
+    void ProcessMCParticles(Int_t isCurrentEventSelected);
+    void ProcessAODMCParticles(Int_t isCurrentEventSelected);
+
+    // Jet functions
+    void ProcessJets();
+
+    // for electron contamination
+    void ProcessElectronCont();
+
     // determine source according to pdg code of mother
     Int_t GetSourceClassification(Int_t daughter, Int_t pdgCode);
 
@@ -62,6 +72,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     void SetDoClusterQA(Int_t flag)                       { fDoClusterQA                = flag                                                            ; }
     void SetPlotHistsExtQA(Bool_t flag)                   { fSetPlotHistsExtQA          = flag                                                            ; }
 
+    // switch for overlap criterium
+    void SetOverlapFromCluster(Bool_t flag)               { fMesonOLFromCluster = flag                                                                    ; }
       // Setting the cut lists for the conversion photons
     void SetEventCutList(Int_t nCuts, TList *CutArray)    {
                                                             fnCuts                      = nCuts                                                           ;
@@ -108,11 +120,16 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 
     void SetTrackMatcherRunningMode(Int_t mode){fTrackMatcherRunningMode = mode;}
 
+    void SetMinNeutralPionOverlapsMC(Int_t nOverlaps){fMinAllowedPi0OverlapsMC = nOverlaps;}
     void SetMaxNeutralPionOverlapsMC(Int_t nOverlaps){fMaxAllowedPi0OverlapsMC = nOverlaps;}
 
     Bool_t NumberOfMCEventNeutralPionOverlapInEMCal(AliMCEvent *mcEvent);
     void ProcessNeutralOverlapsMC(AliMCEvent *mcEvent);
     void PrintCaloMCLabelsAndInfoAOD(AliVEvent* event, AliAODConversionPhoton *TrueClusterCandidate, AliVCluster* cluster);
+
+    void SetCalcElectronContribution(Bool_t tmp)  {fUsePrimElectronMatching = tmp;};
+
+    void SetJetContainerAddName(TString name) { fAddNameConvJet = name; }
 
   protected:
     AliV0ReaderV1*          fV0Reader;                                          // basic photon Selection Task
@@ -135,6 +152,17 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TList*                  fClusterMergedCutArray;                             // List with Cluster Cuts for merged clusters
     TList*                  fMesonCutArray;                                     // List with Meson Cuts
     AliConversionMesonCuts* fMesonCuts;                                         // MesonCutObject
+    AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
+    AliAnalysisTaskConvJet* fConvJetReader;                                     // JetReader
+    TString                 fAddNameConvJet;                                    // Additional Name of jet container
+    Bool_t                  fDoJetAnalysis;                                     // Switch for Jet Analysis
+    Bool_t                  fDoJetQA;                                           // Switch for Jet QA
+    Int_t                   fDoOutOfJet;                                        // Switch for Jet Analysis out of jet (see AliConversionMesonCuts for detailed description)
+    TList**                 fJetHistograms;                                     // List for Jet histograms
+    TClonesArray*           fAODMCTrackArray;                                   // MC track array
+    TClonesArray*           farrClustersProcess;                                // Cluster array
+    std::map<Int_t, Int_t>* fMapNeutralPionOverlap;                             // map with number of neutral pion overlaps for current pion
+    Bool_t                  fMesonOLFromCluster;                                // flag to switch between event and cluster classification of overlaps
 
     //histograms for mesons reconstructed quantities
     TH2F**                  fHistoMotherInvMassPt;                              //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -147,8 +175,10 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH1F**                  fHistoClusOverlapHeadersGammaPt;                    //! array of histos with cluster, pt overlapping with other headers
     TH2F**                  fHistoClusNLMPt;                                    //! array of histos with cluster NLM vs Pt
     TH2F**                  fHistoClusMergedPtvsM02;                            //! array of histos with cluster merged, pt vs M02
+    TH2F**                  fHistoClusMergedEvsM02;                             //! array of histos with cluster merged, E vs M02
     TH2F**                  fHistoClusMergedPtvsM02Accepted;                    //! array of histos with cluster merged accepted mesons, pt vs M02
     TH2F**                  fHistoClusMergedEvsM02Accepted;                     //! array of histos with cluster merged accepted mesons, E vs M02
+    TH2F**                  fHistoClusMergedEvsM20;                             //! array of histos with cluster merged, E vs M20
     TH2F**                  fHistoClusNCellsPt;                                 //! array of histos with cluster NCells vs Pt
     TH2F**                  fHistoClusMergedNCellsPt;                           //! array of histos with merged cluster NCells vs Pt
     TH2F**                  fHistoClusMergedNParticlePt;                        //! array of histos with merged cluster N MC paricles in cluster vs Pt
@@ -156,28 +186,63 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoClusMergedNCellsAroundAndInPt;                //! array of histos with number of cells surrounding merged cluster + Ncells in clus vs merged cluster Pt
     TH2F**                  fHistoClusMergedEAroundE;                           //! array of histos with E surrounding merged cluster vs merged cluster E
 
+    // Jet ESD histograms
+    TH1F**                  fHistoPtJet;                                        //! array of histos with Jet pT
+    TH1F**                  fHistoJetEta;                                       //! array of histos with Jet eta
+    TH1F**                  fHistoJetPhi;                                       //! array of histos with Jet phi
+    TH1F**                  fHistoJetArea;                                      //! array of histos with Jet area
+    TH2F**                  fClusterEtaPhiJets;                                 //! array of histos with hitmap of clusters in Jet
+    TH1F**                  fHistoNJets;                                        //! array of histos with events with Jets
+    TH1F**                  fHistoEventwJets;                                   //! array of histos with events with Jets > 0
+    TH2F**                  fHistoTruevsRecJetPt;                               //! array of histos Jet rec. vs true pT
+    TH2F**                  fHistoClusMergedPtvsRJetAccepted;                   //! array of histos with clusters in Jets vs distance between cluster and Jet axis
+    TH2F**                  fHistoJetFragmFunc;                                 //! array of histos with clusters in Jets vs z (z = pJet*pPi0 / |pJet|)
+    TH2F**                  fHistoClusMergedPtvsM02FakeJet;                     //! array of histos with clusters which are in a reconstructed Jet but not in true Jet
+    TH2F**                  fHistoClusMergedPtvsM02MissedJet;                   //! array of histos with clusters which are in a true Jet but not in rec. Jet
+
+    TH2F**                  fHistoPrimIdentified;                               //! pT of all matched clusters for prim electron candidates
+    TH2F**                  fHistoPrimIdentifiedEoverP;                         //! E/p vs Pt for all matched clusters for prim electron candidates
+    TH2F**                  fHistoPrimIdentifiedMC;                             //! pT of all matched clusters for prim electron candidates disentangled for different particle species
+    TH2F**                  fHistoTrueElectronsEoverP;                          //! True primary electron E/p
+    TH2F**                  fHistoTrueDalitzElectronsEoverP;                    //! True dalitz electron E/p
+    TH2F**                  fHistoTrueConvElectronsEoverP;                      //! True conv. electron E/p
+    TH2F**                  fHistoTruePionsEoverP;                              //! True pion E/p
+    TH2F**                  fHistoElectronsRecVsTrueP;                          //! Rec. vs true P of electron track candidates
+
     //histograms for pure MC quantities
     TH1I**                  fHistoMCHeaders;                                    //! array of histos for header names
     TH1F**                  fHistoMCPi0Pt;                                      //! array of histos with weighted pi0, pT
+    TH1F**                  fHistoMCPi0PtNotTriggered;                          //! array of histos with weighted pi0 from events wihch didnt fire the trigger, pT
+    TH1F**                  fHistoMCPi0PtNoVertex;                              //! array of histos with weighted pi0 from events with no Vertex, pT
     TH1F**                  fHistoMCPi0ReducedPt;                               //! array of histos with weighted pi0, pT
     TH1F**                  fHistoMCPi0WOWeightPt;                              //! array of histos with unweighted pi0, pT
     TH1F**                  fHistoMCPi0WOEvtWeightPt;                           //! array of histos without event weights pi0, pT
     TH1F**                  fHistoMCEtaPt;                                      //! array of histos with weighted eta, pT
+    TH1F**                  fHistoMCEtaPtNotTriggered;                          //! array of histos with weighted eta from events wihch didnt fire the trigger, pT
+    TH1F**                  fHistoMCEtaPtNoVertex;                              //! array of histos with weighted eta from events with no Vertex, pT
     TH1F**                  fHistoMCEtaWOWeightPt;                              //! array of histos with unweighted eta, pT
     TH1F**                  fHistoMCEtaWOEvtWeightPt;                           //! array of histos without event weights eta, pT
     TH1F**                  fHistoMCPi0DalitzPt;                                //! array of histos with weighted pi0 Dalitz, pT
+    TH1F**                  fHistoMCPi0DalitzPtNotTriggered;                    //! array of histos with weighted pi0 Dalitz from events wihch didnt fire the trigger, pT
+    TH1F**                  fHistoMCPi0DalitzPtNoVertex;                        //! array of histos with weighted pi0 Dalitz from events with no Vertex, pT
     TH1F**                  fHistoMCPi0DalitzWOWeightPt;                        //! array of histos with unweighted pi0 Dalitz, pT
     TH1F**                  fHistoMCPi0DalitzWOEvtWeightPt;                     //! array of histos without event weights pi0 Dalitz, pT
     TH1F**                  fHistoMCEtaDalitzPt;                                //! array of histos with weighted eta Dalitz, pT
+    TH1F**                  fHistoMCEtaDalitzPtNotTriggered;                    //! array of histos with weighted eta Dalitz from events wihch didnt fire the trigger, pT
+    TH1F**                  fHistoMCEtaDalitzPtNoVertex;                        //! array of histos with weighted eta Dalitz from events with no Vertex, pT
     TH1F**                  fHistoMCEtaDalitzWOWeightPt;                        //! array of histos with unweighted eta Dalitz, pT
     TH1F**                  fHistoMCEtaDalitzWOEvtWeightPt;                     //! array of histos without event weights eta Dalitz, pT
     TH1F**                  fHistoMCPi0InAccPt;                                 //! array of histos with weighted pi0 in acceptance, pT
+    TH1F**                  fHistoMCPi0InAccPtNotTriggerd;                      //! array of histos with weighted pi0 in acceptance, pT for not triggered events
     TH1F**                  fHistoMCPi0ReducedInAccPt;                          //! array of histos with weighted pi0 in acceptance, pT
     TH1F**                  fHistoMCEtaInAccPt;                                 //! array of histos with weighted eta in acceptance, pT
+    TH1F**                  fHistoMCEtaInAccPtNotTriggered;                     //! array of histos with weighted eta in acceptance, pT  for not triggered events
     TH1F**                  fHistoMCPi0WOEvtWeightInAccPt;                      //! array of histos without evt weight pi0 in acceptance, pT
     TH1F**                  fHistoMCEtaWOEvtWeightInAccPt;                      //! array of histos without evt weight eta in acceptance, pT
     TH1F**                  fHistoMCPi0DalitzInAccPt;                           //! array of histos with weighted pi0 dalitz in acceptance, pT
+    TH1F**                  fHistoMCPi0DalitzInAccPtNotTriggered;               //! array of histos with weighted pi0 dalitz in acceptance, pT  for not triggered events
     TH1F**                  fHistoMCEtaDalitzInAccPt;                           //! array of histos with weighted eta dalitz in acceptance, pT
+    TH1F**                  fHistoMCEtaDalitzInAccPNotTriggered;                //! array of histos with weighted eta dalitz in acceptance, pT  for not triggered events
     TH1F**                  fHistoMCPi0DalitzWOEvtWeightInAccPt;                //! array of histos without evt weight pi0 in acceptance, pT
     TH1F**                  fHistoMCEtaDalitzWOEvtWeightInAccPt;                //! array of histos without evt weight eta in acceptance, pT
 
@@ -189,6 +254,9 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoMCPrimaryYvsSource;                           //! array of histos with weighted primary particles, Y vs source
     TH1F**                  fHistoMCDecayGammaPt;                               //! array of histos with weighted decay gamma
     TH1F**                  fHistoMCAllGammaPt;                                 //! array of histos with weighted all gamma
+    TH1F**                  fHistoMCAllGammaPtNotTriggered;                     //! array of histos with weighted all gamma from events which didnt fire the trigger
+    TH1F**                  fHistoMCAllGammaPtNoVertex;                         //! array of histos with weighted all gamma from events with no rec. vertex
+    TH2F**                  fHistoMCElectronsPt;                                //! array of histos with weighted electrons from different sources
 
     // MC validated cluster histos
     TH2F**                  fHistoTrueClusEFracFirstLabel;                      //!
@@ -205,6 +273,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusPrimPi0PtMCPt;                        //!
     TH2F**                  fHistoTruePureMergedClusPrimPi0PtvsM02;             //!
     TH2F**                  fHistoTruePartConvClusPrimPi0PtvsM02;               //!
+    TH2F**                  fHistoTrueClusMergedPartConvPi0EVsM20;              //!
     TH2F**                  fHistoTrueClusPrimPi0PureMergedPtMCPt;              //!
     TH2F**                  fHistoTrueClusPrimPi0PartConvMergedPtMCPt;          //!
     TH2F**                  fHistoTrueClusPrimPi01GammaMergedPtMCPt;            //!
@@ -247,6 +316,13 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 //    TH2F**                  fHistoTrueClusElectronPtvsConvPhotonTopMotherID;    //!
     TH1F**                  fHistoTrueMergedMissedPDG;                          //!
 
+    TH2F**                  fHistoTrueClusMergedPtvsRJet;                       //! array of histos with clusters from vs distance to Jet axis
+    TH2F**                  fHistoTrueClusPi0PtvsRJet;                          //! array of histos with clusters from true pi0s vs distance to Jet axis
+    TH2F**                  fHistoTrueClusEtaPtvsRJet;                          //! array of histos with clusters from true etas vs distance to Jet axis
+    TH2F**                  fHistoTrueClusGammaPtvsRJet;                        //! array of histos with clusters from true gammas vs distance to Jet axis
+    TH2F**                  fHistoTrueClusElectronPtvsRJet;                     //! array of histos with clusters from true electrons vs distance to Jet axis
+    TH2F**                  fHistoTrueClusHadronPtvsRJet;                       //! array of histos with clusters from true hadrons vs distance to Jet axis
+
     // MC validated reconstructed quantities mesons
     TH2F**                  fHistoTruePi0PtY;                                   //! array of histos with validated pi0, pt, Y
     TH2F**                  fHistoTrueEtaPtY;                                   //! array of histos with validated eta, pt, Y
@@ -256,6 +332,15 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusElectronEM02;                         //! array of histos with validated electrons, E, m02
     TH2F**                  fHistoTrueClusPi0EM02;                              //! array of histos with validated pi0, E, m02
     TH2F**                  fHistoTrueClusEtaEM02;                              //! array of histos with validated eta, E, m02
+    TH2F**                  fHistoTrueClusBGEvsM02;                             //! array of histos with validated hadrons(BG), E, m02
+
+    TH2F**                  fHistoTrueClusGammaEvsM20;                          //! array of histos with validated gamma, E, m02
+    TH2F**                  fHistoTrueClusElectronEM20;                         //! array of histos with validated e+-, E, m02
+    TH2F**                  fHistoTrueClusMergedPi0EVsM20;                      //! array of histos with validated merged pi0, E, m20
+    TH2F**                  fHistoTrueClusMergedPi0EVsM02;                      //! array of histos with validated merged pi0, E, m02
+    TH2F**                  fHistoTrueClusMergedEtaEVsM20;                      //! array of histos with validated merged eta, E, m20
+    TH2F**                  fHistoTrueClusMergedEtaEVsM02;                      //! array of histos with validated merged eta, E, m02
+    TH2F**                  fHistoTrueClusBGEvsM20;                             //! array of histos with validated hadrons(BG), E, m20
 
     TH2F**                  fHistoTruePrimaryPi0MCPtResolPt;          //! array of histos with validated weighted primary pi0, MCpt, resol pt
     TH2F**                  fHistoTruePrimaryPi0PureMergedMCPtResolPt;          //! array of histos with validated weighted primary pi0, MCpt, resol pt
@@ -283,6 +368,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TH1F**                  fHistoNEventsWOWeight;                              //! array of histos with event information without event weights
     TH1F**                  fHistoNGoodESDTracks;                               //! array of histos with number of good tracks (2010 Standard track cuts)
     TH1F**                  fHistoVertexZ;                                      //! array of histos with vertex z distribution for selected events
+    TH2F**                  fHistoOverlapsPi0All;                               //! array of histos with number of overlapping particles with generated pi0 within R<0.05
+    TH2F**                  fHistoOverlapsPi0Accepted;                          //! array of histos with number of overlapping particles with generated pi0 within R<0.05
     TH1F**                  fHistoNClusterCandidates;                           //! array of histos with number of cluster candidates per event
     TH1F**                  fHistoNClusterMergedCandidates;                     //! array of histos with number of merged cluster candidates per event
     TH2F**                  fHistoNGoodESDTracksVsNClusterCandidates;           //! array of histos with number of good tracks vs gamma candidates
@@ -291,6 +378,21 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TProfile**              fProfileEtaShift;                                   //! array of profiles with eta shift
     TProfile**              fProfileJetJetXSection;                             //! array of profiles with xsection for jetjet
     TH1F**                  fHistoJetJetNTrials;                                //! array of histos with ntrials for jetjet
+
+    // Jet
+    vector<Double_t>      fVectorJetPt;                                         // Vector of JetPt
+    vector<Double_t>      fVectorJetPx;                                         // Vector of JetPx
+    vector<Double_t>      fVectorJetPy;                                         // Vector of JetPy
+    vector<Double_t>      fVectorJetPz;                                         // Vector of JetPz
+    vector<Double_t>      fVectorJetEta;                                        // Vector of JetEta
+    vector<Double_t>      fVectorJetPhi;                                        // Vector of JetPhi
+    vector<Double_t>      fVectorJetArea;                                       // Vector of JetArea
+    vector<Double_t>      fTrueVectorJetPt;                                     // Vector of True JetPt
+    vector<Double_t>      fTrueVectorJetPx;                                     // Vector of True JetPx
+    vector<Double_t>      fTrueVectorJetPy;                                     // Vector of True JetPy
+    vector<Double_t>      fTrueVectorJetPz;                                     // Vector of True JetPz
+    vector<Double_t>      fTrueVectorJetEta;                                    // Vector of True JetEta
+    vector<Double_t>      fTrueVectorJetPhi;                                    // Vector of True JetPhi
 
     // additional variables
     TRandom3                fRandom;                                            // random
@@ -311,14 +413,22 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     TObjString*             fFileNameBroken;                                    // string object for broken file name
     Bool_t                  fDoDetailedM02;                                     // detailed M02 distribution
     Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
+    Int_t                   fMinAllowedPi0OverlapsMC;                           // Event rejection based on pi0 overlaps in MC
     Int_t                   fMaxAllowedPi0OverlapsMC;                           // Event rejection based on pi0 overlaps in MC
     TH2F**                  fHistoPi0EvsGammaOverlapE;                          //! array of histos with SPD tracklets vs SPD clusters for background rejection
+
+    // electron contamination estimation
+    Bool_t                      fUsePrimElectronMatching;                       // switch for electron contamination estimation
+    AliDalitzElectronSelector*  fElecSelector;                                  // pointer to dalitz eletron selection task
+    std::vector<Int_t>          fSelectorElectronIndex;                         //! vector containing the track ids of the identified primary electron tracks
+    std::vector<Int_t>          fSelectorPositronIndex;                         //! vector containing the track ids of the identified primary positron tracks
+
 
   private:
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 35);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 50);
 };
 
 #endif

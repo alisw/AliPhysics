@@ -70,6 +70,10 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
   ,fIsMC(kFALSE)
   ,fMCProduction("")
   ,fDRN(-1)
+  ,fEmulateCrossTalk(false)
+  ,fTCardCorrMinAmp(0.1)
+  ,fTCardCorrInduceEnerFracMin(0.)
+  ,fTCardCorrInduceEnerFracMax(100.)
 {
 	//
 	// default ctor
@@ -77,7 +81,19 @@ AliPHOSTenderSupply::AliPHOSTenderSupply() :
    for(Int_t i=0;i<10;i++)fNonlinearityParams[i]=0. ;
    for(Int_t mod=0;mod<6;mod++)fPHOSBadMap[mod]=0x0 ;
    for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=0;
-
+   
+   fTCardCorrInduceEnerFrac[0] = 1.15e-02; 
+   fTCardCorrInduceEnerFrac[1] = 1.15e-02;
+   fTCardCorrInduceEnerFrac[2] = 1.15e-02;
+   fTCardCorrInduceEnerFracP1[0] = -1.1e-03;
+   fTCardCorrInduceEnerFracP1[1] = -1.1e-03;
+   fTCardCorrInduceEnerFracP1[2] = -1.1e-03;
+   fTCardCorrInduceEner[0] = 0.02;
+   fTCardCorrInduceEner[1] = 0.02;
+   fTCardCorrInduceEner[2] = 0.02;
+   fTCardCorrInduceEnerFracWidth[0] = 5.0e-03;
+   fTCardCorrInduceEnerFracWidth[1] = 5.0e-03;
+   fTCardCorrInduceEnerFracWidth[2] = 5.0e-03;
 }
 
 //_____________________________________________________
@@ -102,6 +118,10 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
   ,fIsMC(kFALSE)
   ,fMCProduction("")
   ,fDRN(-1)
+  ,fEmulateCrossTalk(false)
+  ,fTCardCorrMinAmp(0.1)
+  ,fTCardCorrInduceEnerFracMin(0.)
+  ,fTCardCorrInduceEnerFracMax(100.)
 {
 	//
 	// named ctor
@@ -110,6 +130,19 @@ AliPHOSTenderSupply::AliPHOSTenderSupply(const char *name, const AliTender *tend
    for(Int_t mod=0;mod<6;mod++)fPHOSBadMap[mod]=0x0 ;
    for(Int_t ii=0; ii<15; ii++)fL1phase[ii]=0;
    for(Int_t mod=0; mod<5; mod++)fRunByRunCorr[mod]=0.136 ; //Correction contains measured pi0 mass
+
+   fTCardCorrInduceEnerFrac[0] = 1.15e-02; 
+   fTCardCorrInduceEnerFrac[1] = 1.15e-02;
+   fTCardCorrInduceEnerFrac[2] = 1.15e-02;
+   fTCardCorrInduceEnerFracP1[0] = -1.1e-03;
+   fTCardCorrInduceEnerFracP1[1] = -1.1e-03;
+   fTCardCorrInduceEnerFracP1[2] = -1.1e-03;
+   fTCardCorrInduceEner[0] = 0.02;
+   fTCardCorrInduceEner[1] = 0.02;
+   fTCardCorrInduceEner[2] = 0.02;
+   fTCardCorrInduceEnerFracWidth[0] = 5.0e-03;
+   fTCardCorrInduceEnerFracWidth[1] = 5.0e-03;
+   fTCardCorrInduceEnerFracWidth[2] = 5.0e-03;
 }
 
 //_____________________________________________________
@@ -505,11 +538,10 @@ void AliPHOSTenderSupply::ProcessEvent()
             clu->AddTracksMatched(arrayTrackMatched);
 	}
       }  
-      
-      Double_t tof=EvalTOF(&cluPHOS,cells); 
-//      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
-//	tof=clu->GetTOF() ;
-      clu->SetTOF(tof);       
+      if(!fIsMC){ //Slewing correction only for real data      
+        Double_t tof=EvalTOF(&cluPHOS,cells); 
+        clu->SetTOF(tof);       
+      }
       Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;
@@ -572,6 +604,10 @@ void AliPHOSTenderSupply::ProcessAODEvent(TClonesArray * clusters, AliAODCaloCel
 	 Bool_t isHG=cells->GetHighGain(pos) ;
          cells->SetCell(pos, cellNumber, amplitude, time,  mclabel,  efrac, isHG);
       }      
+    }
+  
+    if(fEmulateCrossTalk){
+       TCardEmulation(cells); 
     }
   
     for (Int_t i=0; i<multClust; i++) {
@@ -648,11 +684,10 @@ void AliPHOSTenderSupply::ProcessAODEvent(TClonesArray * clusters, AliAODCaloCel
         }
       }  
 
-
-      Double_t tof=EvalTOF(&cluPHOS,cells); 
-//      if(TMath::Abs(tof-clu->GetTOF())>100.e-9) //something wrong in cell TOF!
-//	tof=clu->GetTOF() ;
-      clu->SetTOF(tof);       
+      if(!fIsMC){ //Slewing correction only for real data
+        Double_t tof=EvalTOF(&cluPHOS,cells); 
+        clu->SetTOF(tof);       
+      }
       Double_t minDist=clu->GetDistanceToBadChannel() ;//Already calculated
       DistanceToBadChannel(mod,&locPos,minDist);
       clu->SetDistanceToBadChannel(minDist) ;
@@ -863,10 +898,10 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
   if(fNonlinearityVersion=="Run2TuneMC"){ //Improved Run2 tune for MC
     if(en<=0.) return 0.;
 
-    const Double_t p0 = 1.04397;
-    const Double_t p1 = 0.512307;
-    const Double_t p2 = 0.133812;
-    const Double_t p3 = -0.150093;
+    const Double_t p0 = 1.031;
+    const Double_t p1 = 0.51786058;
+    const Double_t p2 = 0.13504396;
+    const Double_t p3 = -0.14737537;
     const Double_t p4 = -0.455062;
 
     const Double_t Nonlin = p0+p1/en+p2/en/en+p3/TMath::Sqrt(en)+p4/en/TMath::Sqrt(en);
@@ -910,6 +945,48 @@ Double_t AliPHOSTenderSupply::CorrectNonlinearity(Double_t en){
 
     return ecorr ;    
   }
+  if(fNonlinearityVersion=="Run2TuneMCNoNcellHighPtFix"){ 
+    //Run2 tune for MC in the case of loose cluster cuts (no Ncell>2 cut)
+    //improved agreement at hight pT>6-10 GeV/c using pPb8 TeV sample (LHC16rs)
+    // modification of parameters xMax and beta wrt. Run2TuneMCNoNcell parameterization
+    if(en<=0.) return 0.;
+    
+    const Double_t xMin=0.850;  //low part of the param (optimized from pi0 peak)
+    const Double_t xMax=4.17;   //Upper part of the param (optimized from pi0 peak)
+        
+    //middle part param    
+    const Double_t a= 1.02165   ; 
+    const Double_t b=-2.548e-01 ; 
+    const Double_t c= 0.6483 ;
+    const Double_t d=-0.4980 ;
+    const Double_t e= 0.1245 ;  
+    
+    Double_t ecorr=0.;
+    if(en<xMin){
+       const Double_t gamma = 0.150 ;
+       const Double_t beta = 0.5*(0.5*b*sqrt(xMin)+c+1.5*d/sqrt(xMin)+2.*e/xMin)*TMath::Power((xMin*xMin+gamma*gamma),2)/
+       (xMin*xMin*xMin);
+       const Double_t alpha = (a*xMin+b*sqrt(xMin)+c+d/sqrt(xMin)+e/xMin-beta*xMin/(xMin*xMin+gamma*gamma))/xMin ;
+       ecorr= 1.0328783*(alpha*en+beta*en/(en*en+gamma*gamma)) ;  
+    }
+    else{
+      if(en<xMax){
+         ecorr= 1.0328783*(a*en+b*sqrt(en)+c+d/sqrt(en)+e/en) ;
+      }
+      else{
+        const Double_t beta= 1.4*(b+2.*c/sqrt(xMax)+3.*d/xMax+4.*e/xMax/sqrt(xMax)) ;
+        const Double_t alpha = a+b/sqrt(xMax)+c/xMax+d/xMax/sqrt(xMax)+e/(xMax*xMax)-beta/sqrt(xMax) ;
+        ecorr= 1.0328783*(alpha*en+beta*sqrt(en)) ;  
+      }
+    }
+    if(ecorr<0){
+      return 0.;
+    }
+
+    return ecorr ;    
+  }
+  
+  
 
   return en ;
 }
@@ -1433,5 +1510,113 @@ void AliPHOSTenderSupply::DistanceToBadChannel(Int_t mod, TVector3 * locPos, Dou
   }
   
 }
+//________________________________________________________________________
+void AliPHOSTenderSupply::TCardEmulation(AliAODCaloCells * cells){
+  //Perform T-Card cross-talk emulation   
+    
+  // Loop on all cells with signal
+  Int_t nCells = cells->GetNumberOfCells();
+  for (Short_t icell = 0; icell < nCells; icell++)
+  {
+    float amp = cells->GetAmplitude (icell); 
+    if ( amp <= fTCardCorrMinAmp ){
+      continue ;
+    }
+    int id  = cells->GetCellNumber(icell);
+    int relid[4] ;
+    fPHOSGeo->AbsToRelNumbering(id, relid) ; 
+    if(relid[1]!=0){ //not PHOS
+      continue ;  
+    }
+    //Look for cells in in the same T-Card
+    //find smallest and largest cell in the list
+    Short_t lowest=icell, test = lowest-1;
+    int relidTest[4] ;
+    while(test>0){
+      int idTest  = cells->GetCellNumber(test);
+      fPHOSGeo->AbsToRelNumbering(idTest, relidTest) ; 
+      if((relidTest[0]==relid[0]) && (relidTest[1]==0) && 
+         (((relidTest[2]-1)/8)==((relid[2]-1)/8))){ //same TCard
+        lowest= test;
+        test--;
+      }
+      else{
+        break ;
+      }
+    }
+    Short_t highest=icell;
+    test = highest+1;
+    while(test<nCells){
+      int testId  = cells->GetCellNumber(test);
+      if((relidTest[0]==relid[0]) && (relidTest[1]==0) && 
+         (((relidTest[2]-1)/8)==((relid[2]-1)/8))){ //same TCard
+        highest= test;
+        test++;
+      }
+      else{
+        break ;
+      }
+    }
+    Short_t cellNumber;
+    Double_t  amplitude, dE=0., time, efrac ;
+    Int_t  mclabel = -1;
+    Bool_t isHG=kFALSE;
+    //Add energy to cells
+    for(test=lowest; test<=highest; test++){
+      if(test==icell){ //same cell
+        continue ;
+      }
+      int idTest  = cells->GetCellNumber(test);
+      fPHOSGeo->AbsToRelNumbering(idTest, relidTest) ; 
+      if((relidTest[0]!=relid[0]) || 
+         (((relidTest[2]-1)/8)!=((relid[2]-1)/8)) || 
+         (((relidTest[3]-1)/2)!=(relid[3]-1)/2)) { //not same TCard
+        continue ;   
+      }    
+      int dphi=TMath::Abs(relidTest[2]-relid[2]) ;
+      float dAmp = InducedAmpTCard(amp,dphi) ;
+      cells->GetCell(test, cellNumber, amplitude, time, mclabel, efrac);
+      if(dAmp<-amplitude){
+        dAmp=-amplitude+0.0001;   
+      }
+      amplitude+=dAmp ;
+      isHG = cells->GetHighGain(test);
+      dE+=dAmp ;
+      if(dE>amplitude){
+        dE-=dAmp;
+      }
+      else{       
+        cells->SetCell(test, cellNumber, amplitude, time, mclabel, efrac, isHG);
+      }
+    }
+    cells->GetCell(icell, cellNumber, amplitude, time, mclabel, efrac);
+    amplitude-=dE ;
+    isHG = cells->GetHighGain(icell);
+    cells->SetCell(icell, cellNumber, amplitude, time, mclabel, efrac, isHG);
+  }
+}
+//________________________________________________________________________
+Float_t AliPHOSTenderSupply::InducedAmpTCard(float amp, int dphi){
+    
+  if(dphi>2){
+    return 0;
+  }    
 
+  // Get the fraction
+  Float_t frac = fTCardCorrInduceEnerFrac[dphi] + amp * fTCardCorrInduceEnerFracP1[dphi];
+  
+  // Use an absolute minimum and maximum fraction if calculated one is out of range
+  if ( frac < fTCardCorrInduceEnerFracMin ) frac = fTCardCorrInduceEnerFracMin;  //[4.5e-3]
+  if ( frac > fTCardCorrInduceEnerFracMax ) frac = fTCardCorrInduceEnerFracMax;   //[0.018]
+    
+  // Randomize the induced fraction, if requested
+  frac = gRandom->Gaus(frac, fTCardCorrInduceEnerFracWidth[dphi]); //[5.0e-03,5.0e-03,5.0e-03, 0]
+  
+  // If too small or negative, do nothing else
+  if ( frac < 0.0001 ) return 0;
 
+  // Calculate induced energy
+  return fTCardCorrInduceEner[dphi] + amp * frac;
+  
+}
+  

@@ -7,7 +7,7 @@ const AliDielectronEventCuts *GetEventCuts();
 Bool_t isRandomRejTask=kFALSE;//needed for InitHistograms() //dont change!!!
 Bool_t kRot = kFALSE;
 Bool_t kMix = kFALSE;
-Bool_t kNoPairing   = kTRUE;
+Bool_t kNoPairing   = kFALSE;
 Bool_t randomizeDau = kTRUE;
      
 TString names("V0_noPID;V0_TPC;V0_TPC_TOF;V0_TPC_TOFpid;V0_TPC_ITS;V0_TPC_ITSpid;V0_ITSpid_TPCpid_TOF;V0_ITS_TPCpid_TOFpid;V0_ITSpid_TPCpid_TOFpid");
@@ -350,32 +350,16 @@ void InitHistograms(AliDielectron *die, Int_t cutDefinition)
   //add histograms to pair classes
   histos->UserHistogram("Pair",
                         "InvMass_pPt","Inv.Mass:PairPt;Inv. Mass (GeV/c^{2});Pair Pt (GeV/c)",
-                        500,0.,5.,250,0.,5.,
+                        500,0.,0.05,250,0.,5.,
                         AliDielectronVarManager::kM, AliDielectronVarManager::kPt);
 
-  histos->UserHistogram("Pair","InvMass_PairPt_PhivPair","InvMass:PairPt:PhivPair;Inv. Mass [GeV];Pair Pt [GeV];PhiV",
-                        600,0.,6., 600,0.,6., 20,0.,TMath::Pi(),
-                        AliDielectronVarManager::kM, AliDielectronVarManager::kPt, AliDielectronVarManager::kPhivPair);  
+  histos->UserHistogram("Pair","InvMass_R","Inv.Mass:R;Inv. Mass (GeV/c^{2});R",
+                        500,0.,0.05,500,0.,50.,
+                        AliDielectronVarManager::kM, AliDielectronVarManager::kR);  
   						
-  histos->UserHistogram("Pair",
-                        "Eta_phi_pair","Eta vs Phi (pair);Eta;Phi",
-                        50,-1.,1.,80,0.,6.4,
-                        AliDielectronVarManager::kEta,AliDielectronVarManager::kPhi);
-			
-  histos->UserHistogram("Pair",
-                        "InvMass_PhivPair","InvMass_PhivPair;InvMass;PhivPair",
-                         50, 0. , 0.5, 160 , 0., 3.2,
-                         AliDielectronVarManager::kM , AliDielectronVarManager::kPhivPair );
-
-  histos->UserHistogram("Pair",
-		            	"InvMass_OpAngle","InvMass_OpAngle;Invariant Mass;Opening angle",
-		            	100, 0., 0.5 ,160, 0., 3.2,
-		            	AliDielectronVarManager::kM,AliDielectronVarManager::kOpeningAngle);
-
-  histos->UserHistogram("Pair",
-                        "Y","Y;counts;Y",
-                        60, -1.2 , 1.2, 
-                        AliDielectronVarManager::kY);
+   histos->UserHistogram("Pair","ArmAlpha_ArmPt","ArmAlpha:ArmPt;#alpha;Armenteros Pt (GeV/c)",
+                        500,-1.,1.,500,0.,0.5,
+                        AliDielectronVarManager::kArmAlpha, AliDielectronVarManager::kArmPt); 
 
   die->SetHistogramManager(histos);
 

@@ -23,7 +23,6 @@
 #include "TChain.h"
 #include "TRandom.h"
 #include "AliAnalysisManager.h"
-#include "TParticle.h"
 #include "TVectorF.h"
 #include "AliPIDResponse.h"
 #include "TFile.h"
@@ -374,8 +373,8 @@ void AliAnalysisTaskConversionTree::ProcessQATree(AliAODConversionPhoton *gamma)
 UInt_t AliAnalysisTaskConversionTree::IsTruePhotonESD(AliAODConversionPhoton *TruePhotonCandidate)
 {
   UInt_t kind = 9;
-  TParticle *posDaughter = TruePhotonCandidate->GetPositiveMCDaughter(fMCEvent);
-  TParticle *negDaughter = TruePhotonCandidate->GetNegativeMCDaughter(fMCEvent);
+  AliMCParticle *posDaughter = (AliMCParticle*) TruePhotonCandidate->GetPositiveMCDaughter(fMCEvent);
+  AliMCParticle *negDaughter = (AliMCParticle*) TruePhotonCandidate->GetNegativeMCDaughter(fMCEvent);
   Int_t pdgCodePos = 0; 
   Int_t pdgCodeNeg = 0; 
   Int_t pdgCode = 0; 
@@ -390,14 +389,14 @@ UInt_t AliAnalysisTaskConversionTree::IsTruePhotonESD(AliAODConversionPhoton *Tr
     kind = 9;
     //		return kFALSE; // One particle does not exist
   
-  } else if( posDaughter->GetMother(0) != negDaughter->GetMother(0)  || (posDaughter->GetMother(0) == negDaughter->GetMother(0) && posDaughter->GetMother(0) ==-1)) {
+  } else if( posDaughter->GetMother() != negDaughter->GetMother()  || (posDaughter->GetMother() == negDaughter->GetMother() && posDaughter->GetMother() ==-1)) {
     kind = 1;
     // 	  	return 1;
-    pdgCodePos=TMath::Abs(posDaughter->GetPdgCode());
-    pdgCodeNeg=TMath::Abs(negDaughter->GetPdgCode());
+    pdgCodePos=TMath::Abs(posDaughter->PdgCode());
+    pdgCodeNeg=TMath::Abs(negDaughter->PdgCode());
     if(pdgCodePos==11 && pdgCodeNeg==11) return 10; //Electron Combinatorial
     if(pdgCodePos==11 && pdgCodeNeg==11 && 
-      (posDaughter->GetMother(0) == negDaughter->GetMother(0) && posDaughter->GetMother(0) ==-1)) return 15; //direct Electron Combinatorial
+      (posDaughter->GetMother() == negDaughter->GetMother() && posDaughter->GetMother() ==-1)) return 15; //direct Electron Combinatorial
         
     if(pdgCodePos==211 && pdgCodeNeg==211) kind = 11; //Pion Combinatorial
     if((pdgCodePos==211 && pdgCodeNeg==2212) ||(pdgCodePos==2212 && pdgCodeNeg==211))	kind = 12; //Pion, Proton Combinatorics
@@ -407,10 +406,10 @@ UInt_t AliAnalysisTaskConversionTree::IsTruePhotonESD(AliAODConversionPhoton *Tr
     if((pdgCodePos==211 && pdgCodeNeg==11) ||(pdgCodePos==11 && pdgCodeNeg==211)) kind = 13; //Pion, Electron Combinatorics
     if(pdgCodePos==321 && pdgCodeNeg==321) kind = 14; //Kaon,Kaon combinatorics
   }else{		
-    pdgCodePos=posDaughter->GetPdgCode();
-    pdgCodeNeg=negDaughter->GetPdgCode();
-    Bool_t gammaIsPrimary = fEventCuts->IsConversionPrimaryESD( fMCEvent, posDaughter->GetMother(0), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
-    if ( TruePhotonCandidate->GetMCParticle(fMCEvent)->GetPdgCode()) pdgCode = TruePhotonCandidate->GetMCParticle(fMCEvent)->GetPdgCode();
+    pdgCodePos=posDaughter->PdgCode();
+    pdgCodeNeg=negDaughter->PdgCode();
+    Bool_t gammaIsPrimary = fEventCuts->IsConversionPrimaryESD( fMCEvent, posDaughter->GetMother(), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
+    if ( TruePhotonCandidate->GetMCParticle(fMCEvent)->PdgCode()) pdgCode = TruePhotonCandidate->GetMCParticle(fMCEvent)->PdgCode();
 
     if(TMath::Abs(pdgCodePos)!=11 || TMath::Abs(pdgCodeNeg)!=11) return 2; // true from hadronic decays
     else if ( !(pdgCodeNeg==pdgCodePos)){
@@ -494,43 +493,43 @@ UInt_t AliAnalysisTaskConversionTree::GetTrueMotherInfoESD(AliAODConversionPhoto
 {
   UInt_t kind = 9;
   if (TruePhotonCandidate!=NULL){
-    TParticle * negativeMC = (TParticle*)TruePhotonCandidate->GetNegativeMCDaughter(fMCEvent);
-    TParticle * positiveMC = (TParticle*)TruePhotonCandidate->GetPositiveMCDaughter(fMCEvent);
+    AliMCParticle * negativeMC = (AliMCParticle*) TruePhotonCandidate->GetNegativeMCDaughter(fMCEvent);
+    AliMCParticle * positiveMC = (AliMCParticle*) TruePhotonCandidate->GetPositiveMCDaughter(fMCEvent);
 
 
     Int_t gammaMCLabel = -1;
     if(!positiveMC||!negativeMC)
       return kind;
 
-    if(positiveMC->GetFirstMother()>-1&&(negativeMC->GetFirstMother() == positiveMC->GetFirstMother())){
-      gammaMCLabel = positiveMC->GetFirstMother();
+    if(positiveMC->GetMother()>-1&&(negativeMC->GetMother() == positiveMC->GetMother())){
+      gammaMCLabel = positiveMC->GetMother();
     }
 
-    TParticle *photonCandMCParticle = fMCEvent->Particle(gammaMCLabel);
+    AliMCParticle *photonCandMCParticle = (AliMCParticle*) fMCEvent->GetTrack(gammaMCLabel);
     Int_t pdgCodeMother = 0;
 
     if(photonCandMCParticle == NULL) {
       // particle does not exist
       kind = 9;
-    } else if( photonCandMCParticle->GetFirstMother() ==-1) {
+    } else if( photonCandMCParticle->GetMother() ==-1) {
       // particle mother is no particle
       kind = 9;
     }else{
       // get mother and save ID of mother
-      TParticle *photonMotherParticle = fMCEvent->Particle(photonCandMCParticle->GetFirstMother());
-      fBuffer_ConversionCandidate_MC_Mother_ID[fBuffer_NConversionCandidates] = photonCandMCParticle->GetFirstMother();
+      AliMCParticle *photonMotherParticle = (AliMCParticle*) fMCEvent->GetTrack(photonCandMCParticle->GetMother());
+      fBuffer_ConversionCandidate_MC_Mother_ID[fBuffer_NConversionCandidates] = photonCandMCParticle->GetMother();
 
       // get true Pt of mother particle
       fBuffer_ConversionCandidate_MC_Mother_TruePt[fBuffer_NConversionCandidates] = photonMotherParticle->Pt();
 
       // get PDG code of mother and save it
-      pdgCodeMother = photonMotherParticle->GetPdgCode();
+      pdgCodeMother = photonMotherParticle->PdgCode();
       fBuffer_ConversionCandidate_MC_Mother_PDG[fBuffer_NConversionCandidates] = pdgCodeMother;
 
       if(TMath::Abs(pdgCodeMother)==111){
-        if(photonMotherParticle->GetFirstMother() != -1){
-          TParticle *photonGrandMotherParticle = fMCEvent->Particle(photonMotherParticle->GetFirstMother());
-          fBuffer_ConversionCandidate_MC_GrandMother_PDG[fBuffer_NConversionCandidates] = photonGrandMotherParticle->GetPdgCode();
+        if(photonMotherParticle->GetMother() != -1){
+          AliMCParticle *photonGrandMotherParticle = (AliMCParticle*) fMCEvent->GetTrack(photonMotherParticle->GetMother());
+          fBuffer_ConversionCandidate_MC_GrandMother_PDG[fBuffer_NConversionCandidates] = photonGrandMotherParticle->PdgCode();
           return 5;
         } else {
           return 0;

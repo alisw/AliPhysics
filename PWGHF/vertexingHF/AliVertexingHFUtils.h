@@ -1,7 +1,6 @@
 #ifndef ALIVERTEXINGHFUTILS_H
 #define ALIVERTEXINGHFUTILS_H
 
-
 /* $Id$ */
 
 ////////////////////////////////////////////////////////////////////
@@ -10,13 +9,16 @@
 /// \brief Class with functions useful for different D2H analyses //
 /// - event plane resolution                                      //
 /// - <pt> calculation with side band subtraction                 //
-/// - tracklet multiplicity calculation                            //
-/// \author Origin: F.Prino, Torino, prino@to.infn.it              //
+/// - tracklet multiplicity calculation                           //
+/// \author Origin: F.Prino, Torino, prino@to.infn.it             //
+/// - KF particle                                                 //
+/// \author Origin: Jianhui Zhu, <zjh@mail.ccnu.edu.cn>           //
 ///                                                               //
 ////////////////////////////////////////////////////////////////////
 
 #include "TObject.h"
 #include "AliAODTrack.h"
+#include "AliAODVertex.h"
 #include "AliAODRecoDecay.h"
 #include "AliAODRecoDecayHF.h"
 #include "AliAODRecoCascadeHF.h"
@@ -24,12 +26,23 @@
 #include "AliHFInvMassFitter.h"
 
 #include <vector>
+#include <TDatabasePDG.h>
 
 #include "Fit/Fitter.h"
 #include "Fit/Chi2FCN.h"
 #include "Math/WrappedMultiTF1.h"
 #include "Fit/BinData.h"
 #include "HFitInterface.h"
+
+// For KF Particle
+#ifndef HomogeneousField
+#define HomogeneousField
+#endif
+#include "KFParticleBase.h"
+#include "KFParticle.h"
+#include "KFPTrack.h"
+#include "KFPVertex.h"
+#include "KFVertex.h"
 
 class AliMCEvent;
 class AliMCParticle;
@@ -41,6 +54,8 @@ class TProfile;
 class TClonesArray;
 class TH1F;
 class TH2F;
+class TH1D;
+class TH2D;
 class TF1;
 
 using std::vector;
@@ -92,6 +107,8 @@ class AliVertexingHFUtils : public TObject{
   static Bool_t IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC);
   static Bool_t IsCandidateInjected(AliAODRecoDecayHF *cand, AliAODEvent* aod, AliAODMCHeader *header,TClonesArray *arrayMC);
   static Bool_t HasCascadeCandidateAnyDaughInjected(AliAODRecoCascadeHF *cand, AliAODMCHeader *header,TClonesArray *arrayMC);
+  static Int_t PreSelectITSUpgrade(TClonesArray* arrayMC, AliAODMCHeader *header, TObjArray aodTracks, Int_t nDaug, Int_t pdgabs, const Int_t *pdgDg);
+
   /// Functions for tracklet multiplcity calculation
   void SetEtaRangeForTracklets(Double_t mineta, Double_t maxeta){
     fMinEtaForTracklets=mineta;
@@ -112,13 +129,15 @@ class AliVertexingHFUtils : public TObject{
                             Double_t ptMin=0.15, Double_t ptMax=10.,
                             Int_t filtbit1=256, Int_t filtbit2=512,
                             Int_t minMult=3, Double_t phiStepSizeDeg=0.1,
-                            Int_t nTrksToSkip=0, Int_t* idToSkip=0x0);
+                            Int_t nTrksToSkip=0, Int_t* idToSkip=0x0, 
+                            Bool_t unweight=kFALSE);
 
   static void GetGeneratedSpherocity(TClonesArray *arrayMC,
                                      Double_t &spherocity, Double_t &phiRef,
                                      Double_t etaMin=-0.8, Double_t etaMax=0.8,
                                      Double_t ptMin=0.15, Double_t ptMax=10.,
-                                     Int_t minMult=3, Double_t phiStepSizeDeg=0.1);
+                                     Int_t minMult=3, Double_t phiStepSizeDeg=0.1, 
+                                     Bool_t unweight=kFALSE);
 
   static Double_t GetSphericity(AliAODEvent* aod,
                                 Double_t etaMin=-0.8, Double_t etaMax=0.8,
@@ -131,7 +150,8 @@ class AliVertexingHFUtils : public TObject{
   static Double_t GetVZEROCEqualizedMultiplicity(AliAODEvent* ev);
 
   /// Functions for computing average pt
-  static void AveragePt(Float_t& averagePt, Float_t& errorPt, Float_t ptmin, Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, TF1* funcB2, Float_t sigmaRangeForSig=2.5, Float_t sigmaRangeForBkg=4.5, Float_t minMass=0., Float_t maxMass=3., Int_t rebin=1);
+  static void AveragePt(Float_t& averagePt, Float_t& errorPt, Float_t ptmin, Float_t ptmax, TH2F* hMassD, Float_t massFromFit, Float_t sigmaFromFit, 
+                        TF1* funcB2, Float_t sigmaRangeForSig=2.5, Float_t sigmaRangeForBkg=4.5, Float_t minMass=0., Float_t maxMass=3., Int_t rebin=1);
 
   /// Functions for processing trigger information
   static Bool_t CheckT0TriggerFired(AliAODEvent* aodEv);
@@ -152,6 +172,7 @@ class AliVertexingHFUtils : public TObject{
   static Bool_t IsTrackFromCharm(AliAODTrack* tr, TClonesArray* arrayMC);
   static Bool_t IsTrackFromBeauty(AliAODTrack* tr, TClonesArray* arrayMC);
   static Bool_t IsTrackFromHadronDecay(Int_t pdgMoth, AliAODTrack* tr, TClonesArray* arrayMC);
+  static Double_t GetBeautyMotherPt(AliMCEvent* mcEvent, AliMCParticle *mcPart);
   static Double_t GetBeautyMotherPt(TClonesArray* arrayMC, AliAODMCParticle *mcPart);
   static Double_t GetBeautyMotherPtAndPDG(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t &pdgGranma);
   static Int_t CheckD0Decay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
@@ -173,10 +194,14 @@ class AliVertexingHFUtils : public TObject{
   static Int_t CheckXicXipipiDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckBplusDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckBplusDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
-  static Int_t CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
-  static Int_t CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
+  static Int_t CheckB0toDminuspiDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
+  static Int_t CheckB0toDminuspiDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
+  static Int_t CheckBsDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab, Bool_t ITS2UpgradeProd=kFALSE);
+  static Int_t CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab, Bool_t ITS2UpgradeProd=kFALSE);
   static Int_t CheckLbDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckLbDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
+  static Int_t CheckResoToDplusK0SDecay(TClonesArray *arrayMC, AliAODMCParticle *mcPart, Int_t *arrayDauLab);
+  static Int_t CheckResoToDstarK0SDecay(TClonesArray *arrayMC, AliAODMCParticle *mcPart, Int_t *arrayDauLab);
 
 
   /// Simultaneus fit
@@ -221,7 +246,34 @@ class AliVertexingHFUtils : public TObject{
     vector<UInt_t> fCommonPars;
   };
 
-  static ROOT::Fit::FitResult DoInPlaneOutOfPlaneSimultaneusFit(AliHFInvMassFitter *&massfitterInPlane, AliHFInvMassFitter *&massfitterOutOfPlane, TH1F* hMassInPlane, TH1F* hMassOutOfPlane, Double_t MinMass, Double_t MaxMass, Double_t massD, vector<UInt_t> commonpars);
+  static ROOT::Fit::FitResult DoInPlaneOutOfPlaneSimultaneusFit(AliHFInvMassFitter *&massfitterInPlane, AliHFInvMassFitter *&massfitterOutOfPlane, 
+                                                                TH1F* hMassInPlane, TH1F* hMassOutOfPlane, Double_t MinMass, Double_t MaxMass, 
+                                                                Double_t massD, vector<UInt_t> commonpars);
+  
+  /// Helper functions for D-meson analyses
+  static Double_t ComputeMaxd0MeasMinusExp(AliAODRecoDecayHF *cand, Double_t bfield);
+  static Double_t CombineNsigmaTPCTOF(Double_t nsigmaTPC, Double_t nsigmaTOF);
+
+  // KF Particle functions
+  static Double_t CosPointingAngleFromKF(KFParticle kfp, KFParticle kfpmother);
+  static Double_t CosPointingAngleXYFromKF(KFParticle kfp, KFParticle kfpmother);
+  static Double_t CosThetaStarFromKF(Int_t ip, UInt_t pdgvtx, UInt_t pdgprong0, UInt_t pdgprong1, KFParticle kfpvtx, KFParticle kfpprong0, KFParticle kfpprong1);
+  static Bool_t CheckAODvertexCov(AliAODVertex *vtx);
+  static Bool_t CheckAODtrackCov(AliAODTrack *track);
+  static Bool_t CheckKFParticleCov(KFParticle kfp);
+  static KFVertex CreateKFVertex(Double_t *param, Double_t *cov);
+  static KFVertex CreateKFVertexFromAODvertex(AliAODVertex *vtx);
+  static KFParticle CreateKFParticle(Double_t *param, Double_t *cov, Float_t Chi2perNDF, Int_t charge, Int_t pdg);
+  static KFParticle CreateKFParticleFromAODtrack(AliAODTrack *track, Int_t pdg);
+  static KFParticle CreateKFParticleV0(AliAODTrack *track1, AliAODTrack *track2, Int_t pdg1, Int_t pdg2);
+  static KFParticle CreateKFParticleCasc(KFParticle kfpV0, AliAODTrack *btrack, Int_t pdg_V0, Int_t pdg_btrack);
+  static Double_t DecayLengthFromKF(KFParticle kfpParticle, KFParticle PV);
+  static Double_t DecayLengthXYFromKF(KFParticle kfpParticle, KFParticle PV);
+  static Double_t ldlFromKF(KFParticle kfpParticle, KFParticle PV); /// l/dl
+  static Double_t ldlXYFromKF(KFParticle kfpParticle, KFParticle PV); /// l/dl
+  static TH1D* ComputeGenAccOverGenLimAcc(TFile* fileToyMCoutput, Int_t nPtBins=0, Double_t* binLims=0x0,Bool_t useSimpleFormula=kFALSE);
+  static TH1D* ComputeGenAccOverGenLimAcc(TH2D* hPtVsYGenAccToy, TH2D* hPtVsYGenLimAccToy, Int_t nPtBins=0, Double_t* binLims=0x0,Bool_t useSimpleFormula=kFALSE);
+
 
  private:
 
@@ -231,7 +283,7 @@ class AliVertexingHFUtils : public TObject{
   Double_t fMaxEtaForTracklets; /// min eta for counting tracklets
 
   /// \cond CLASSIMP
-  ClassDef(AliVertexingHFUtils,0);
+  ClassDef(AliVertexingHFUtils, 1);
   /// \endcond
 };
 #endif

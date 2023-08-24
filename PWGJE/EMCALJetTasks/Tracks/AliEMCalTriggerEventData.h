@@ -17,7 +17,9 @@ class AliJetContainer;
 class AliMCEvent;
 class AliVEvent;
 
-namespace EMCalTriggerPtAnalysis {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 /**
  * \class AliEMCalTriggerEventData
@@ -139,11 +141,11 @@ protected:
   AliJetContainer       *fJetContainerMC;               ///< Container with reconstructed jets
   AliJetContainer       *fJetContainerData;             ///< Container with reconstructed jets
 
-  /// \cond CLASSIMP
   ClassDef(AliEMCalTriggerEventData, 1);
-  /// \endcond
 };
 
-} /* namespace EMCalTriggerPtAnalysis */
+} /* namespace EMCALJetTasks */
+
+} /* namespace PWGJE */
 
 #endif /* ALIEMCALTRIGGEREVENTDATA_H */

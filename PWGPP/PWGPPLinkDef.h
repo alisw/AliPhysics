@@ -149,6 +149,7 @@
 #pragma link C++ class  AliTPCPIDEtaTree+;
 #pragma link C++ class  AliTPCPIDEtaQA+;
 #pragma link C++ class  AliTPCcalibResidualPID+;
+#pragma link C++ class  AliTPCcalibResidualPID_Modified+;
 // TOF QA
 #pragma link C++ class  AliAnalysisTaskTOFqa+;
 #pragma link C++ class  AliAnalysisTaskTOFqaID+;
@@ -171,6 +172,9 @@
 #pragma link C++ class  AliAnalysisTaskZDCPbPb+;
 // T0
 #pragma link C++ class  AliT0AnalysisTaskQA+;
+#pragma link C++ class  AliAnalysisTaskSpectrumT0::SetEventID_t+;
+#pragma link C++ class  AliAnalysisTaskSpectrumT0::SetRunNums_t+;
+#pragma link C++ class  AliAnalysisTaskSpectrumT0+;
 // AD
 #pragma link C++ class  AliAnalysisTaskADQA+;
 #pragma link C++ class  AliAnalysisTaskADVVQA+;

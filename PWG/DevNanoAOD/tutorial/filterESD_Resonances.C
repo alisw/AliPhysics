@@ -53,19 +53,19 @@ void filterESD_Resonances()
   //V0-Related topological selections
   v0Finder->SetV0VertexerDCAFirstToPV(0.05);
   v0Finder->SetV0VertexerDCASecondtoPV(0.05);
-  v0Finder->SetV0VertexerDCAV0Daughters(1.5);
-  v0Finder->SetV0VertexerCosinePA(0.9);
+  v0Finder->SetV0VertexerDCAV0Daughters(2.0);
+  v0Finder->SetV0VertexerCosinePA(0.95);
   v0Finder->SetV0VertexerMinRadius(0.2);
-  v0Finder->SetV0VertexerMaxRadius(200);
+  v0Finder->SetV0VertexerMaxRadius(500);
 
   // Cascade-Related topological selections
   v0Finder->SetCascVertexerMinV0ImpactParameter(0.01);
-  v0Finder->SetCascVertexerV0MassWindow(0.008);
+  v0Finder->SetCascVertexerV0MassWindow(0.01);
   v0Finder->SetCascVertexerDCABachToPV(0.01);
   v0Finder->SetCascVertexerDCACascadeDaughters(2.0);
   v0Finder->SetCascVertexerCascadeMinRadius(0.2);
-  v0Finder->SetCascVertexerCascadeMaxRadius(200);
-  v0Finder->SetCascVertexerCascadeCosinePA(0.98);
+  v0Finder->SetCascVertexerCascadeMaxRadius(500);
+  v0Finder->SetCascVertexerCascadeCosinePA(0.96);
 
   // Test1 track selection
   v0Finder->SetExtraCleanup(kFALSE);
@@ -79,12 +79,11 @@ void filterESD_Resonances()
   
   AliAnalysisTaskNanoAODFilter* task = (AliAnalysisTaskNanoAODFilter*) gInterpreter->ExecuteMacro("$ALICE_PHYSICS/PWG/DevNanoAOD/macros/AddTaskNanoAODFilter.C(0, kFALSE)");
   task->AddSetter(new AliNanoAODSimpleSetter);
+  task->fUseAliEventCuts = true;
+  task->fEventCuts.fCentralityFramework = 1;
+  task->fEventCuts.SelectOnlyInelGt0(false);
   task->SelectCollisionCandidates(AliVEvent::kINT7);
   
-  // Event selection
-  AliAnalysisNanoAODEventCuts* evtCuts = new AliAnalysisNanoAODEventCuts;
-  evtCuts->GetAliEventCuts().fCentralityFramework = 1;
-
   // NOTE filter bit set in AliEventCuts automatically
 
   // Track selection
@@ -96,7 +95,9 @@ void filterESD_Resonances()
   // Fields to store
   // event level
   // Note: vertices are kept by default
-  task->SetVarListHeader("OfflineTrigger,MagField,CentrV0M,RunNumber,T0Spread,NumberOfESDTracks,MultSelection.V0M.Value,MultSelection.SPDTracklets.Value");
+  task->SetVarListHeader("OfflineTrigger,MagField,CentrV0M,CentrTRK,RunNumber,T0Spread,NumberOfESDTracks,MultSelection.V0M.Value,MultSelection.SPDTracklets.Value,cstINELgt0");
+  task->AddSetter(new AliNanoAODSimpleSetter);
+  task->AddSetter(new AliNanoAODINELgt0setter);
   // track level
   task->SetVarListTrack("pt,theta,phi,TPCmomentum,TOFsignal,TPCsignal,integratedLength,DCA,posDCAz,ID,FilterMap,covmat,posx,posy,posz");
   task->AddPIDField(AliNanoAODTrack::kSigmaTPC, AliPID::kPion);
@@ -106,10 +107,18 @@ void filterESD_Resonances()
   task->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kKaon);
   task->AddPIDField(AliNanoAODTrack::kSigmaTOF, AliPID::kProton);
   task->SetTrkCuts(trkCuts);
-  task->AddEvtCuts(evtCuts);
+
+  // V0s Cuts
+  AliAnalysisNanoAODV0Cuts* v0cut = new AliAnalysisNanoAODV0Cuts;
+  v0cut->SetTransverseRadius(0.2,500); // 500 is large limit
+  v0cut->Setv0EtaMax(1.0);
+  v0cut->SetCPAMin(0.95);
+  v0cut->SetMaxDCADaughtersToV0Vtx(2.0);
+  v0cut->SetMinDCADaughtersToPrimVtx(0.05);
+  //v0cut->SetLambdaDaugnSigTPCMax(5); // Disable for the non-PID study
 
   // V0s
-  task->SaveV0s(kTRUE, new AliAnalysisNanoAODV0Cuts);
+  task->SaveV0s(kTRUE, v0cut);
   task->SaveCascades(kTRUE);
 
   mgr->SetDebugLevel(1); // enable debug printouts

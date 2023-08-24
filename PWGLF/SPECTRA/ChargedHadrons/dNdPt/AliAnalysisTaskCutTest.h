@@ -5,7 +5,7 @@ class THnSparse;
 class AliESDEvent;
 class AliESDtrackCuts;
 class AlidNdPtAcceptanceCuts;
-class AlidNdPtEventCuts;
+class AliEventCuts;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -18,8 +18,8 @@ class AliAnalysisTaskCutTest : public AliAnalysisTaskSE {
   AliESDtrackCuts* GetTrackCuts() const                         { return fEsdTrackCuts; }
   void SetAcceptanceCuts(AlidNdPtAcceptanceCuts* const cuts)    { fAccCuts = cuts; }
   AlidNdPtAcceptanceCuts* GetAcceptanceCuts() const             { return fAccCuts; }  
-  void SetEventCuts(AlidNdPtEventCuts* const cuts)              { fEventCuts = cuts; }
-  AlidNdPtEventCuts* GetEventCuts() const                       { return fEventCuts; }  
+  void SetEventCuts(AliEventCuts* const cuts)              { fEventCuts = cuts; }
+  AliEventCuts* GetEventCuts() const                       { return fEventCuts; }
   void SetUseMCInfo(Bool_t useMC = kTRUE)                       { fUseMCInfo = useMC; }
   Bool_t IsUseMCInfo() const                                    { return fUseMCInfo; }
   void SetCentralityInterval(Double_t cmin, Double_t cmax)      { fCentralityMin = cmin; fCentralityMax = cmax; fUseCentrality = kTRUE; }
@@ -36,7 +36,7 @@ class AliAnalysisTaskCutTest : public AliAnalysisTaskSE {
  private:
   AliESDtrackCuts *fEsdTrackCuts;               // esd track cuts 
   AlidNdPtAcceptanceCuts* fAccCuts;             // acceptance cuts for multiplicity
-  AlidNdPtEventCuts *fEventCuts;                // event cuts
+  AliEventCuts *fEventCuts;                // event cuts
   AliESDEvent *fESD;    //! ESD event
   AliMCEvent  *fMC;      //! MC event
   Bool_t      fUseCentrality;

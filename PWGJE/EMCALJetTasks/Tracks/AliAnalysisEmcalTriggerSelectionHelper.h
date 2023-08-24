@@ -50,6 +50,12 @@ public:
     kTrgClusterCALOBOTH,
     kTrgClusterOnlyCALO,
     kTrgClusterOnlyCALOFAST,
+    kTrgClusterCENTNOPMD,
+    kTrgClusterALL,
+    kTrgClusterALLNOTRD,
+    kTrgClusterALLBOTH,
+    kTrgClusterOnlyALL,
+    kTrgClusterOnlyALLNOTRD,
     kTrgClusterN
   };
 

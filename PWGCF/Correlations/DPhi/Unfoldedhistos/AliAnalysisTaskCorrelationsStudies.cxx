@@ -24,7 +24,7 @@
  * Edited by Arvinder Palaha
  */
 #include "AliAnalysisTaskCorrelationsStudies.h"
-
+#include <TObjString.h>
 #include <TBits.h>
 #include "Riostream.h"
 #include "TGrid.h"
@@ -48,6 +48,7 @@
 #include "AliCSTrackMaps.h"
 #include "AliCSEventCuts.h"
 #include "AliCSPIDCuts.h"
+#include "Ali2PCorrelations.h"
 #include "AliDptDptCorrelations.h"
 #include "AliCSPairAnalysis.h"
 #include "AliVEvent.h"
@@ -63,15 +64,18 @@
 
 ClassImp(AliAnalysisTaskCorrelationsStudies)
 
-const Int_t AliAnalysisTaskCorrelationsStudies::kgTHnDimension = 4;
+  const Int_t AliAnalysisTaskCorrelationsStudies::kgTHnDimension = 4;
+/* the track names for pT averages, weights  and effciency/purity corrections */
+std::vector<std::string> AliAnalysisTaskCorrelationsStudies::tracknames = {"HaP", "HaM", "PiP", "PiM", "KaP", "KaM", "PrP", "PrM"};
 
 AliCSTrackMaps aodTrackMaps("AODtrackMaps", "The AOD tracks id maps"); ///< the id track maps for AOD tracks
 
 /// Default constructor
 AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All data members should be initialised here
-   :AliAnalysisTaskSE(),
+  : AliAnalysisTaskSE(),
     fOutput(NULL),
     fTaskConfigurationString(""),
+    fOnTheFlyProduction(""),
     fTaskActivitiesString(""),
     fEventCutsString(""),
     fEfficiencyProfileToEnforce(""),
@@ -87,17 +91,20 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All 
     fDoProcessCorrelations(kFALSE),
     fDoProcessPairAnalysis(kFALSE),
     fMCRecOption(kNone),
-    fProcessCorrelations(),
-    fProcessMCRecCorrelationsWithOptions(),
-    fProcessTrueCorrelations(),
+    fProcessCorrelations(nullptr),
+    fProcessMCRecCorrelationsWithOptions(nullptr),
+    fProcessTrueCorrelations(nullptr),
     fProcessPairAnalysis(),
     fProcessTruePairAnalysis(),
     ffEfficiencyProfile(NULL),
     fRandomGenerator(NULL),
-    fhWeightsTrack_1(NULL),
-    fhWeightsTrack_2(NULL),
-    fhEffCorrTrack_1(NULL),
-    fhEffCorrTrack_2(NULL),
+    fhV0MCentMult(nullptr),
+    fhCL1MCentMult(nullptr),
+    fhCL1EtaGapMCentMult(nullptr),
+    fhWeightsTrack{tracknames.size(), nullptr},
+    fhPtAverageTrack{tracknames.size(), nullptr},
+    fhTruePtAverageTrack{tracknames.size(), nullptr},
+    fhEffCorrTrack{tracknames.size(), nullptr},
     fhPairEfficiency_PP(NULL),
     fhPairEfficiency_PM(NULL),
     fhPairEfficiency_MM(NULL),
@@ -108,7 +115,9 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All 
     fTrueToRecWrong(NULL),
     fMCRecFlags(NULL),
     fMCTruePrimaryFlags(NULL),
-    fMCFlagsStorageSize(30*1024),
+    fMCFlagsStorageSize(30 * 1024),
+    fRecoTrackPairFlags(nullptr),
+    fRecoTrackPairFlagsSize(30 * 1024),
     fhOnTrueEfficiencyProfile_1(NULL),
     fhOnTrueEfficiencyProfile_2(NULL),
     fhPt(NULL),
@@ -129,6 +138,12 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All 
     fhPureP(NULL),
     fhPurePPos(NULL),
     fhPurePNeg(NULL),
+    fhSecPurePt(NULL),
+    fhSecPurePtPos(NULL),
+    fhSecPurePtNeg(NULL),
+    fhSecPureP(NULL),
+    fhSecPurePPos(NULL),
+    fhSecPurePNeg(NULL),
     fhUnConstrainedPt(NULL),
     fhPtDifference(NULL),
     fhEtaB(NULL),
@@ -162,10 +177,11 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All 
 
 /// Analysis task constructor
 /// \param name the name to assign to the task
-AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const char *name) // All data members should be initialized here
-   :AliAnalysisTaskSE(name),
+AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const char* name) // All data members should be initialized here
+  : AliAnalysisTaskSE(name),
     fOutput(NULL),
     fTaskConfigurationString(""),
+    fOnTheFlyProduction(""),
     fTaskActivitiesString(""),
     fEventCutsString(""),
     fEfficiencyProfileToEnforce(""),
@@ -181,17 +197,20 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const cha
     fDoProcessCorrelations(kFALSE),
     fDoProcessPairAnalysis(kFALSE),
     fMCRecOption(kNone),
-    fProcessCorrelations("DptDptCorrelations"),
-    fProcessMCRecCorrelationsWithOptions("DptDptCorrelationsMCRecOptions"),
-    fProcessTrueCorrelations("DptDptTrueCorrelations"),
+    fProcessCorrelations(nullptr),
+    fProcessMCRecCorrelationsWithOptions(nullptr),
+    fProcessTrueCorrelations(nullptr),
     fProcessPairAnalysis("PairAnalysis"),
     fProcessTruePairAnalysis("TruePairAnalysis"),
     ffEfficiencyProfile(NULL),
     fRandomGenerator(NULL),
-    fhWeightsTrack_1(NULL),
-    fhWeightsTrack_2(NULL),
-    fhEffCorrTrack_1(NULL),
-    fhEffCorrTrack_2(NULL),
+    fhV0MCentMult(nullptr),
+    fhCL1MCentMult(nullptr),
+    fhCL1EtaGapMCentMult(nullptr),
+    fhWeightsTrack{tracknames.size(), nullptr},
+    fhPtAverageTrack{tracknames.size(), nullptr},
+    fhTruePtAverageTrack{tracknames.size(), nullptr},
+    fhEffCorrTrack{tracknames.size(), nullptr},
     fhPairEfficiency_PP(NULL),
     fhPairEfficiency_PM(NULL),
     fhPairEfficiency_MM(NULL),
@@ -202,7 +221,9 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const cha
     fTrueToRecWrong(NULL),
     fMCRecFlags(NULL),
     fMCTruePrimaryFlags(NULL),
-    fMCFlagsStorageSize(30*1024),
+    fMCFlagsStorageSize(30 * 1024),
+    fRecoTrackPairFlags(nullptr),
+    fRecoTrackPairFlagsSize(30 * 1024),
     fhOnTrueEfficiencyProfile_1(NULL),
     fhOnTrueEfficiencyProfile_2(NULL),
     fhPt(NULL),
@@ -223,6 +244,12 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const cha
     fhPureP(NULL),
     fhPurePPos(NULL),
     fhPurePNeg(NULL),
+    fhSecPurePt(NULL),
+    fhSecPurePtPos(NULL),
+    fhSecPurePtNeg(NULL),
+    fhSecPureP(NULL),
+    fhSecPurePPos(NULL),
+    fhSecPurePNeg(NULL),
     fhUnConstrainedPt(NULL),
     fhPtDifference(NULL),
     fhEtaB(NULL),
@@ -268,20 +295,31 @@ AliAnalysisTaskCorrelationsStudies::~AliAnalysisTaskCorrelationsStudies()
     if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
         delete fOutput;
     }
-    if (fhWeightsTrack_1 != NULL) delete fhWeightsTrack_1;
-    if (fhWeightsTrack_2 != NULL) delete fhWeightsTrack_2;
-    if (fhEffCorrTrack_1 != NULL) delete fhEffCorrTrack_1;
-    if (fhEffCorrTrack_2 != NULL) delete fhEffCorrTrack_2;
+    for (auto h : fhWeightsTrack) {
+        if (h != nullptr) {
+          delete h;
+        }
+    }
+    for (auto h : fhEffCorrTrack) {
+        if (h != nullptr) {
+          delete h;
+        }
+    }
     if (fPositiveTrackPdf != NULL) delete fPositiveTrackPdf;
     if (fNegativeTrackPdf != NULL) delete fNegativeTrackPdf;
     if (fTrueToRec != NULL) delete fTrueToRec;
     if (fTrueToRecWrong != NULL) delete fTrueToRecWrong;
     if (fMCRecFlags != NULL) delete [] fMCRecFlags;
     if (fMCTruePrimaryFlags != NULL) delete [] fMCTruePrimaryFlags;
+    if (fRecoTrackPairFlags != nullptr)
+        delete[] fRecoTrackPairFlags;
     if (ffEfficiencyProfile != NULL) delete ffEfficiencyProfile;
     if (fhOnTrueEfficiencyProfile_1 != NULL) delete fhOnTrueEfficiencyProfile_1;
     if (fhOnTrueEfficiencyProfile_2 != NULL) delete fhOnTrueEfficiencyProfile_2;
     if (fRandomGenerator != NULL) delete fRandomGenerator;
+    delete fProcessCorrelations;
+    delete fProcessMCRecCorrelationsWithOptions;
+    delete fProcessTrueCorrelations;
     delete fEventCuts;
     delete fTrackSelectionCuts;
 }
@@ -296,7 +334,8 @@ AliAnalysisTaskCorrelationsStudies::~AliAnalysisTaskCorrelationsStudies()
 /// the expression  will not depend on the pT value of the concrete bin being
 /// handled. If pT value were needed use the corresponding factor within the
 /// expression.
-Bool_t AliAnalysisTaskCorrelationsStudies::BuildEfficiencyProfiles() {
+Bool_t AliAnalysisTaskCorrelationsStudies::BuildEfficiencyProfiles() 
+{
 
   Bool_t done = kTRUE;
 
@@ -307,20 +346,30 @@ Bool_t AliAnalysisTaskCorrelationsStudies::BuildEfficiencyProfiles() {
   /* let's build the efficiency profile formula if required */
   if (fEfficiencyProfileToEnforce.Length() != 0) {
     fEnforceEfficiencyProfile = kTRUE;
-    if (ffEfficiencyProfile != NULL) delete ffEfficiencyProfile;
-    if (fRandomGenerator != NULL) delete fRandomGenerator;
+    if (ffEfficiencyProfile != NULL) {
+      delete ffEfficiencyProfile;
+    }
+    if (fRandomGenerator != NULL) {
+      delete fRandomGenerator;
+    }
 
     ffEfficiencyProfile = new TF1("EfficiencyProfile",fEfficiencyProfileToEnforce.Data(),ptlow,ptup);
     fRandomGenerator = new TRandom3();
-    AliInfo(Form("Configured efficiency profile enforcement with formula: %s", ffEfficiencyProfile->GetExpFormula().ReplaceAll("x","pT").Data()));
+    AliInfo(TString::Format("Configured efficiency profile enforcement with formula: %s", ffEfficiencyProfile->GetExpFormula().ReplaceAll("x", "pT").Data()));
   }
 
   /* let's build the efficiency profile for true data if required */
   if (fEfficiencyProfileOnTrue.Length() != 0) {
     fOnTrueEfficiencyProfile = kEfficiencyProfile;
-    if (fhOnTrueEfficiencyProfile_1 != NULL) delete fhOnTrueEfficiencyProfile_1;
-    if (fhOnTrueEfficiencyProfile_2 != NULL) delete fhOnTrueEfficiencyProfile_2;
-    if (fRandomGenerator != NULL) delete fRandomGenerator;
+    if (fhOnTrueEfficiencyProfile_1 != NULL) {
+      delete fhOnTrueEfficiencyProfile_1;
+    }
+    if (fhOnTrueEfficiencyProfile_2 != NULL) {
+      delete fhOnTrueEfficiencyProfile_2;
+    }
+    if (fRandomGenerator != NULL) {
+      delete fRandomGenerator;
+    }
 
     /* let's check for a single expression for the whole pT range */
     TObjArray *intervals = fEfficiencyProfileOnTrue.Tokenize(TString("|"));
@@ -402,23 +451,31 @@ Bool_t AliAnalysisTaskCorrelationsStudies::BuildEfficiencyProfiles() {
     AliInfo("Configured two-dimensional efficiency profile on true data for track one");
     for (Int_t ptbin = 0; ptbin < fhOnTrueEfficiencyProfile_1->GetNbinsY(); ptbin++) {
       printf("%f, ", fhOnTrueEfficiencyProfile_1->GetBinContent(4,ptbin+1));
-      if ((ptbin+1)%8 == 0) printf("\n");
+      if ((ptbin+1)%8 == 0) {
+        printf("\n");
+      }
     }
     printf("\n");
     for (Int_t ptbin = 0; ptbin < fhOnTrueEfficiencyProfile_1->GetNbinsY(); ptbin++) {
       printf("%f, ", fhOnTrueEfficiencyProfile_1->GetBinContent(12,ptbin+1));
-      if ((ptbin+1)%8 == 0) printf("\n");
+      if ((ptbin+1)%8 == 0) {
+        printf("\n");
+      }
     }
     printf("\n");
     AliInfo("Configured two-dimensional efficiency profile on true data for track two");
     for (Int_t ptbin = 0; ptbin < fhOnTrueEfficiencyProfile_2->GetNbinsY(); ptbin++) {
       printf("%f, ", fhOnTrueEfficiencyProfile_2->GetBinContent(4,ptbin+1));
-      if ((ptbin+1)%8 == 0) printf("\n");
+      if ((ptbin+1)%8 == 0) {
+        printf("\n");
+      }
     }
     printf("\n");
     for (Int_t ptbin = 0; ptbin < fhOnTrueEfficiencyProfile_2->GetNbinsY(); ptbin++) {
       printf("%f, ", fhOnTrueEfficiencyProfile_2->GetBinContent(12,ptbin+1));
-      if ((ptbin+1)%8 == 0) printf("\n");
+      if ((ptbin+1)%8 == 0) {
+        printf("\n");
+      }
     }
     printf("\n");
     fRandomGenerator = new TRandom3();
@@ -433,20 +490,20 @@ Bool_t AliAnalysisTaskCorrelationsStudies::BuildEfficiencyProfiles() {
       }
       else {
         /* true will not apply any efficiency correction */
-        fProcessTrueCorrelations.SetEfficiencyCorrection(NULL,NULL);
+        fProcessTrueCorrelations->SetEfficiencyCorrection(std::vector<const TH1*>{tracknames.size(), nullptr});
       }
     }
   }
   else {
     if (fDoProcessCorrelations) {
       /* true will not apply any efficiency correction */
-      fProcessTrueCorrelations.SetEfficiencyCorrection(NULL,NULL);
+      fProcessTrueCorrelations->SetEfficiencyCorrection(std::vector<const TH1*>{tracknames.size(), nullptr});
     }
   }
 
   if (fDoProcessCorrelations) {
     /* for the time being, rec with true will never apply efficiency correction */
-    fProcessMCRecCorrelationsWithOptions.SetEfficiencyCorrection(NULL,NULL);
+    fProcessMCRecCorrelationsWithOptions->SetEfficiencyCorrection(std::vector<const TH1*>{tracknames.size(), nullptr});
   }
 
   return done;
@@ -506,6 +563,47 @@ Int_t AliAnalysisTaskCorrelationsStudies::GetNoOfTruePrimaries() {
   }
 }
 
+/// \brief Mark diverse pair rejection conditions for the reco particles
+/// For every reconstructed particle several pair combinations are flagged
+/// The first one will be the electron from pair conversions rejection
+/// We loop over particles twice building the invariant mass of the pair
+/// and check for different rejection conditions.
+void AliAnalysisTaskCorrelationsStudies::FlagPreRejectionConditions()
+{
+  AliInfo("");
+  AliVEvent* event = InputEvent();
+  int ntracks = event->GetNumberOfTracks();
+
+  /* allocate the structure if it is not there */
+  if (fRecoTrackPairFlags == nullptr) {
+    if (ntracks < fRecoTrackPairFlagsSize) {
+      fRecoTrackPairFlags = new unsigned int[fRecoTrackPairFlagsSize];
+    } else {
+      fRecoTrackPairFlagsSize = (Int_t(ntracks / 1024) + 5) * 1024;
+      delete[] fRecoTrackPairFlags;
+      fRecoTrackPairFlags = new unsigned int[fRecoTrackPairFlagsSize];
+    }
+  }
+  /* start with everything clean */
+  std::fill_n(fRecoTrackPairFlags, fRecoTrackPairFlagsSize, 0);
+  for (int i = 0; i < ntracks; ++i) {
+    AliVTrack* vtrack1 = dynamic_cast<AliVTrack*>(event->GetTrack(i));
+    if (vtrack1 == nullptr)
+      continue;
+    for (int j = i + 1; j < ntracks; ++j) {
+      AliVTrack* vtrack2 = dynamic_cast<AliVTrack*>(event->GetTrack(j));
+      if (vtrack2 == nullptr)
+        continue;
+      if (vtrack1->Charge() * vtrack2->Charge() > 0)
+        continue;
+      if (0 < fProcessCorrelations->checkIfResonance(fProcessCorrelations->getPhotonConversionIndex(), true, vtrack1->Pt(), vtrack1->Eta(), vtrack1->Phi(), vtrack2->Pt(), vtrack2->Eta(), vtrack2->Phi())) {
+        fRecoTrackPairFlags[i] = 1;
+        fRecoTrackPairFlags[j] = 1;
+      }
+    }
+  }
+}
+
 /// \brief Builds the true to reconstructed relation to allow quick access
 /// to both data sets
 /// The relation is materialized as an array addressed by true label
@@ -541,10 +639,12 @@ void AliAnalysisTaskCorrelationsStudies::BuildTrueRecRelation() {
   Int_t nNoOfTruePrimaries = GetNoOfTruePrimaries();
   Int_t nNoOfMCRecTracks = GetNoOfMCRecTracks();
 
-  if (fTrueToRec->GetSize() < nNoOfTrueTracks)
+  if (fTrueToRec->GetSize() < nNoOfTrueTracks) {
     fTrueToRec->Expand((Int_t(nNoOfTrueTracks/1024)+5)*1024);
-  if (fTrueToRecWrong->GetSize() < nNoOfTrueTracks)
+  }
+  if (fTrueToRecWrong->GetSize() < nNoOfTrueTracks) {
     fTrueToRecWrong->Expand((Int_t(nNoOfTrueTracks/1024)+5)*1024);
+  }
   if (fMCFlagsStorageSize < TMath::Max(nNoOfTruePrimaries,nNoOfMCRecTracks)) {
     fMCFlagsStorageSize = (Int_t(TMath::Max(nNoOfTruePrimaries,nNoOfMCRecTracks)/1024)+5)*1024;
     delete [] fMCRecFlags;
@@ -566,7 +666,9 @@ void AliAnalysisTaskCorrelationsStudies::BuildTrueRecRelation() {
 
   for (Int_t iaod = 0; iaod < nNoOfMCRecTracks; iaod++) {
     /* just to be sure we do not surpass the limits */
-    if (!(iaod < event->GetNumberOfTracks())) break;
+    if (!(iaod < event->GetNumberOfTracks())) {
+      break;
+    }
 
     AliVTrack* vtrack = dynamic_cast<AliVTrack*>(event->GetTrack(iaod)); // pointer to reconstructed track
     if(!vtrack) {
@@ -574,7 +676,9 @@ void AliAnalysisTaskCorrelationsStudies::BuildTrueRecRelation() {
       continue; /* error is reported in normal rec track processing */
     }
     /* so far let's handle the not constrained tracks */
-    if (vtrack->GetID() < 0) continue;
+    if (vtrack->GetID() < 0) {
+      continue;
+    }
 
     Int_t iesd = vtrack->GetID();
 
@@ -621,8 +725,9 @@ void AliAnalysisTaskCorrelationsStudies::BuildTrueRecAccRelation() {
   AliVEvent *event = InputEvent();
   for (Int_t iaod = 0; iaod < GetNoOfMCRecTracks(); iaod++) {
     /* just to be sure we do not surpass the limits */
-    if (!(iaod < event->GetNumberOfTracks())) break;
-
+    if (!(iaod < event->GetNumberOfTracks())) {
+      break;
+    }
     AliVTrack* vtrack = dynamic_cast<AliVTrack*>(event->GetTrack(iaod)); // pointer to reconstructed track
     if(!vtrack) {
       continue; /* error is reported in normal rec track processing */
@@ -630,7 +735,9 @@ void AliAnalysisTaskCorrelationsStudies::BuildTrueRecAccRelation() {
 
     if (vtrack->GetLabel() < 0) {
       Int_t iesd = vtrack->GetID();
-      if (iesd < 0) iesd = -1 - iesd;
+      if (iesd < 0) {
+        iesd = -1 - iesd;
+      }
 
       /* track should not have been accepted */
       if ((fMCRecFlags[iesd] & kAccepted) == kAccepted) {
@@ -639,8 +746,9 @@ void AliAnalysisTaskCorrelationsStudies::BuildTrueRecAccRelation() {
     }
     else {
       Int_t iesd = vtrack->GetID();
-      if (iesd < 0) iesd = -1 - iesd;
-
+      if (iesd < 0) {
+        iesd = -1 - iesd;
+      }
       if (fTrueToRec->At(vtrack->GetLabel()) != NULL) {
         AliVTrack *prevvtrack = (AliVTrack *) fTrueToRec->At(vtrack->GetLabel());
         if ((fMCRecFlags[iesd] & kAccepted) == kAccepted) {
@@ -706,6 +814,7 @@ void AliAnalysisTaskCorrelationsStudies::BuildTrueRecAccRelation() {
 /// The option string could be one of the following
 /// - trueval   the reconstructed results will use reconstructed tracks but with true data
 /// - primaries   the reconstructed results will use true primary reconstructed tracks
+/// - pritrueval   the reconstructed results will use true primary reconstructed tracks but with true data
 /// It should only be used at initial task configuration
 Bool_t AliAnalysisTaskCorrelationsStudies::Configure(const char *confstring)
 {
@@ -719,9 +828,21 @@ Bool_t AliAnalysisTaskCorrelationsStudies::Configure(const char *confstring)
     fTaskActivitiesString = sztmp(0,sztmp.Index(";"));
     sztmp.Remove(0,sztmp.Index(";")+1);
 
-    TObjArray *tokens = fTaskActivitiesString.Tokenize("+");
+    TString woOnTheFly  = fTaskActivitiesString;
+    if (woOnTheFly.Contains("OnTheFly")) {
+      if (woOnTheFly.Contains("+")) {
+        fOnTheFlyProduction = woOnTheFly(0,woOnTheFly.Index("+"));
+        woOnTheFly.Remove(0,woOnTheFly.Index("+")+1);
+      }
+      else {
+        fOnTheFlyProduction = woOnTheFly;
+        woOnTheFly = "";
+      }
+    }
+
+    TObjArray *tokens = woOnTheFly.Tokenize("+");
     if (tokens->GetEntries() == 2) {
-      if (((TObjString*)tokens->At(0))->String().EqualTo("corr")) {
+      if (((TObjString*)tokens->At(0))->String().Contains("corr")) {
         if (((TObjString*)tokens->At(1))->String().EqualTo("pairs")) {
           fDoProcessCorrelations = kTRUE;
           fDoProcessPairAnalysis = kTRUE;
@@ -731,7 +852,7 @@ Bool_t AliAnalysisTaskCorrelationsStudies::Configure(const char *confstring)
           return kFALSE;
         }
       }
-      else if (((TObjString*)tokens->At(1))->String().EqualTo("corr")) {
+      else if (((TObjString*)tokens->At(1))->String().Contains("corr")) {
         if (((TObjString*)tokens->At(0))->String().EqualTo("pairs")) {
           fDoProcessCorrelations = kTRUE;
           fDoProcessPairAnalysis = kTRUE;
@@ -748,7 +869,7 @@ Bool_t AliAnalysisTaskCorrelationsStudies::Configure(const char *confstring)
       delete tokens;
     }
     else if (tokens->GetEntries() == 1) {
-      if (((TObjString*)tokens->At(0))->String().EqualTo("corr")) {
+      if (((TObjString*)tokens->At(0))->String().Contains("corr")) {
         fDoProcessCorrelations = kTRUE;
       }
       else if (((TObjString*)tokens->At(0))->String().EqualTo("pairs")) {
@@ -763,6 +884,19 @@ Bool_t AliAnalysisTaskCorrelationsStudies::Configure(const char *confstring)
       AliFatal("Wrong task activities. ABORTING!!!");
       return kFALSE;
     }
+  }
+
+  /* lets's initialize the kind of correlations */
+  if (fTaskActivitiesString.Contains("diffcorr") || !fDoProcessCorrelations) {
+    /* the differential two-particle data collection */
+    fProcessCorrelations = new Ali2PCorrelations("DiffTwoParticleCorrelations");
+    fProcessMCRecCorrelationsWithOptions = new Ali2PCorrelations("DiffTwoParticleCorrelationsMCRecOptions");
+    fProcessTrueCorrelations = new Ali2PCorrelations("DiffTwoParticleTrueCorrelations");
+  }
+  else {
+    fProcessCorrelations = new AliDptDptCorrelations("DptDptCorrelations");
+    fProcessMCRecCorrelationsWithOptions = new AliDptDptCorrelations("DptDptCorrelationsMCRecOptions");
+    fProcessTrueCorrelations = new AliDptDptCorrelations("DptDptTrueCorrelations");
   }
 
   /* the event cuts */
@@ -808,6 +942,9 @@ Bool_t AliAnalysisTaskCorrelationsStudies::Configure(const char *confstring)
     }
     else if(fAdditionalMCRecOption.EqualTo("notacc")) {
       fMCRecOption = kRecWithNotAccepted;
+    }
+    else if (fAdditionalMCRecOption.EqualTo("pritrueval")) {
+      fMCRecOption = kRecTruePrimariesWithTrue;
     }
     else {
       AliFatal("Unknown option for additional MC rec results. ABORTING!!!");
@@ -855,7 +992,8 @@ Bool_t AliAnalysisTaskCorrelationsStudies::Configure(const char *confstring)
 
 /// \brief Builds a configuration string out of the task variables
 /// \return the built configuration string
-const char *AliAnalysisTaskCorrelationsStudies::ProduceConfigurationString() {
+const char *AliAnalysisTaskCorrelationsStudies::ProduceConfigurationString() 
+{
   static char buffer[2048];
 
   sprintf(buffer, "Task:%s;Events:%s;%s%s%s%s",
@@ -875,7 +1013,7 @@ const char *AliAnalysisTaskCorrelationsStudies::ProduceConfigurationString() {
 /// \param pattern string pattern for the weigths or particle density files
 /// \param szContainerPrefix for placing the prefix of the particle and action combination
 /// \return kTRUE if everything went OK kFALSE otherwise
-Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *confstring, const char *pattern, TString &szContainerPrefix)
+Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char* confstring, const char* pattern, TString& szContainerPrefix)
 {
   TString sztmp = confstring;
   TString szTrack1;
@@ -892,96 +1030,79 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
 
   TObjArray *tokens = sztmp.Tokenize(",");
   if ((tokens->GetEntries() == 4) || (tokens->GetEntries() == 5)) {
+    auto configureProcesses = [&](int ch_1, int ch_2, bool all) {
+        auto configureProcess = [](auto process, int ch_1, int ch_2, bool all) {
+            bool same = ch_1 == ch_2;
+            process->SetSameSign(same);
+            process->SetAllCombinations(all);
+            process->SetRequestedCharge_1(ch_1);
+            process->SetRequestedCharge_2(ch_2);
+        };
+        auto configureTracks = [&](int ch_1, int ch_2, bool all) {
+            bool same = ch_1 == ch_2;
+            if (same) {
+                if (ch_1 > 0) {
+                    /* both track positives */
+                    szTrack1 = "p1";
+                    szTrack2 = "p2";
+                    szContainerPrefix = "PP";
+                } else {
+                    /* both track negatives */
+                    szTrack1 = "m1";
+                    szTrack2 = "m2";
+                    szContainerPrefix = "MM";
+                }
+            } else {
+                if (ch_1 > 0) {
+                    /* track 1 positive track 2 negative and, perhaps, all tracks */
+                    szTrack1 = "p1";
+                    szTrack2 = "m2";
+                    if (all) {
+                        szContainerPrefix = "AA";
+                    } else {
+                        szContainerPrefix = "PM";
+                    }
+                } else {
+                    szTrack1 = "m1";
+                    szTrack2 = "p2";
+                    szContainerPrefix = "MP";
+                }
+            }
+        };
+        configureProcess(fProcessCorrelations, ch_1, ch_2, all);
+        configureProcess(fProcessMCRecCorrelationsWithOptions, ch_1, ch_2, all);
+        configureProcess(fProcessTrueCorrelations, ch_1, ch_2, all);
+        configureTracks(ch_1, ch_2, all);
+    };
     /* track polarities */
     if (((TObjString*) tokens->At(0))->String().EqualTo("--")) {
-      fProcessCorrelations.SetSameSign(kTRUE);
-      fProcessCorrelations.SetRequestedCharge_1(-1);
-      fProcessCorrelations.SetRequestedCharge_2(-1);
-      fProcessMCRecCorrelationsWithOptions.SetSameSign(kTRUE);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_1(-1);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_2(-1);
-      fProcessTrueCorrelations.SetSameSign(kTRUE);
-      fProcessTrueCorrelations.SetRequestedCharge_1(-1);
-      fProcessTrueCorrelations.SetRequestedCharge_2(-1);
-      szTrack1 = "m1";
-      szTrack2 = "m2";
-      szContainerPrefix = "MM";
-    }
-    else if (((TObjString*) tokens->At(0))->String().EqualTo("++")) {
-      fProcessCorrelations.SetSameSign(kTRUE);
-      fProcessCorrelations.SetRequestedCharge_1(1);
-      fProcessCorrelations.SetRequestedCharge_2(1);
-      fProcessMCRecCorrelationsWithOptions.SetSameSign(kTRUE);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_1(1);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_2(1);
-      fProcessTrueCorrelations.SetSameSign(kTRUE);
-      fProcessTrueCorrelations.SetRequestedCharge_1(1);
-      fProcessTrueCorrelations.SetRequestedCharge_2(1);
-      szTrack1 = "p1";
-      szTrack2 = "p2";
-      szContainerPrefix = "PP";
-    }
-    else if (((TObjString*) tokens->At(0))->String().EqualTo("+-")) {
-      fProcessCorrelations.SetSameSign(kFALSE);
-      fProcessCorrelations.SetRequestedCharge_1(1);
-      fProcessCorrelations.SetRequestedCharge_2(-1);
-      fProcessMCRecCorrelationsWithOptions.SetSameSign(kFALSE);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_1(1);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_2(-1);
-      fProcessTrueCorrelations.SetSameSign(kFALSE);
-      fProcessTrueCorrelations.SetRequestedCharge_1(1);
-      fProcessTrueCorrelations.SetRequestedCharge_2(-1);
-      szTrack1 = "p1";
-      szTrack2 = "m2";
-      szContainerPrefix = "PM";
-    }
-    else if (((TObjString*) tokens->At(0))->String().EqualTo("-+")) {
-      fProcessCorrelations.SetSameSign(kFALSE);
-      fProcessCorrelations.SetRequestedCharge_1(-1);
-      fProcessCorrelations.SetRequestedCharge_2(1);
-      fProcessMCRecCorrelationsWithOptions.SetSameSign(kFALSE);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_1(-1);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_2(1);
-      fProcessTrueCorrelations.SetSameSign(kFALSE);
-      fProcessTrueCorrelations.SetRequestedCharge_1(-1);
-      fProcessTrueCorrelations.SetRequestedCharge_2(1);
-      szTrack1 = "m1";
-      szTrack2 = "p2";
-      szContainerPrefix = "MP";
-    }
-    else if (((TObjString*) tokens->At(0))->String().EqualTo("**")) {
-      fProcessCorrelations.SetSameSign(kFALSE);
-      fProcessCorrelations.SetAllCombinations(kTRUE);
-      fProcessCorrelations.SetRequestedCharge_1(1);
-      fProcessCorrelations.SetRequestedCharge_2(-1);
-      fProcessMCRecCorrelationsWithOptions.SetSameSign(kFALSE);
-      fProcessMCRecCorrelationsWithOptions.SetAllCombinations(kTRUE);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_1(1);
-      fProcessMCRecCorrelationsWithOptions.SetRequestedCharge_2(-1);
-      fProcessTrueCorrelations.SetSameSign(kFALSE);
-      fProcessTrueCorrelations.SetAllCombinations(kTRUE);
-      fProcessTrueCorrelations.SetRequestedCharge_1(1);
-      fProcessTrueCorrelations.SetRequestedCharge_2(-1);
-      szTrack1 = "p1";
-      szTrack2 = "m2";
-      szContainerPrefix = "AA";
-    }
-    else {
+      configureProcesses(-1, -1, false);
+    } else if (((TObjString*)tokens->At(0))->String().EqualTo("++")) {
+      configureProcesses(1, 1, false);
+    } else if (((TObjString*)tokens->At(0))->String().EqualTo("+-")) {
+      configureProcesses(1, -1, false);
+    } else if (((TObjString*)tokens->At(0))->String().EqualTo("-+")) {
+      configureProcesses(-1, 1, false);
+    } else if (((TObjString*)tokens->At(0))->String().EqualTo("**") || ((TObjString*)tokens->At(0))->String().EqualTo("ch")) {
+      configureProcesses(1, -1, true);
+    } else if (((TObjString*)tokens->At(0))->String().EqualTo("idch")) {
+      configureProcesses(1, -1, true);
+    } else {
       AliFatal("Requested track polarities string not properly configured.ABORTING!!!");
       return kFALSE;
     }
 
     /* singles or pairs */
     if (((TObjString*) tokens->At(1))->String().EqualTo("singles")) {
-      fProcessCorrelations.SetSinglesOnly(kTRUE);
-      fProcessMCRecCorrelationsWithOptions.SetSinglesOnly(kTRUE);
-      fProcessTrueCorrelations.SetSinglesOnly(kTRUE);
+      fProcessCorrelations->SetSinglesOnly(kTRUE);
+      fProcessMCRecCorrelationsWithOptions->SetSinglesOnly(kTRUE);
+      fProcessTrueCorrelations->SetSinglesOnly(kTRUE);
       szContainerPrefix += "_S";
     }
     else if (((TObjString*) tokens->At(1))->String().EqualTo("pairs")) {
-      fProcessCorrelations.SetSinglesOnly(kFALSE);
-      fProcessMCRecCorrelationsWithOptions.SetSinglesOnly(kFALSE);
-      fProcessTrueCorrelations.SetSinglesOnly(kFALSE);
+      fProcessCorrelations->SetSinglesOnly(kFALSE);
+      fProcessMCRecCorrelationsWithOptions->SetSinglesOnly(kFALSE);
+      fProcessTrueCorrelations->SetSinglesOnly(kFALSE);
       szContainerPrefix += "_P";
     }
     else {
@@ -991,78 +1112,118 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
 
     /* resonace rejection configuration */
     if (((TObjString*) tokens->At(2))->String().Contains("resonances:")) {
-      fProcessCorrelations.ConfigureResonances(((TObjString*) tokens->At(2))->String().Data());
+      fProcessCorrelations->ConfigureResonances(((TObjString*) tokens->At(2))->String().Data());
     }
     else {
       AliFatal("Resonance string not properly configured.ABORTING!!!");
       return kFALSE;
     }
 
-    /* use weights or efficiency corrections or both */
+    /* use weights or efficiency corrections or both                */
+    /* or the input file for diff correlations                      */
+    /* or the input file for centrality / multiplicity estimation   */
     if (((TObjString*) tokens->At(3))->String().EqualTo("weights") ||
         ((TObjString*) tokens->At(3))->String().EqualTo("effcorr") ||
         ((TObjString*) tokens->At(3))->String().EqualTo("weightseffcorr") ||
-        ((TObjString*) tokens->At(3))->String().EqualTo("weightspairseff") ) {
-      /* we will use weights or efficiency corrections so the weights filename has to be there */
+        ((TObjString*) tokens->At(3))->String().EqualTo("weightspairseff") ||
+        fOnTheFlyProduction.Length() != 0 ||
+        fTaskActivitiesString.Contains("diffcorr")) {
+      /* we will use weights or efficiency corrections  so the weights filename has to be there */
       if (tokens->GetEntries() == 5) {
         /* get the weights histos */
-        TFile *weights;
+        TFile *inputandweights;
         Char_t localbuffer[2048];
 
-        TGrid::Connect("alien:");
-        weights = TFile::Open(((TObjString*) tokens->At(4))->String(),"OLD");
-        if (weights != NULL && weights->IsOpen()) {
-          /* the weights correction */
+        /* only connect to alien if required */
+        if (((TObjString*) tokens->At(4))->String().BeginsWith("alien:")) {
+          TGrid::Connect("alien:");
+        }
+        inputandweights = TFile::Open(((TObjString*) tokens->At(4))->String(),"OLD");
+        if (inputandweights != NULL && inputandweights->IsOpen()) {
+          /* the pT average histograms  */
+          if (fTaskActivitiesString.Contains("diffcorr")) {
+            for (unsigned int isp = 0; isp < tracknames.size(); ++isp) {
+              sprintf(localbuffer, "%s%s", TString(pattern).ReplaceAll("correction", "ptavgetaphi").Data(), tracknames[isp].c_str());
+              fhPtAverageTrack[isp] = (TH2*)inputandweights->Get(localbuffer);
+              sprintf(localbuffer, "%s%s", TString(pattern).ReplaceAll("correction", "trueptavgetaphi").Data(), tracknames[isp].c_str());
+              fhTruePtAverageTrack[isp] = (TH2*)inputandweights->Get(localbuffer);
+
+              if (fhPtAverageTrack[isp] == nullptr) {
+                AliError(TString::Format("Differential correlations ordered but average pT histograms for reconstructed %s tracks not present", tracknames[isp].c_str()));
+              }
+              if (fhTruePtAverageTrack[isp] == nullptr) {
+                AliError(TString::Format("Differential correlations ordered but average pT histograms for %s generated tracks not present", tracknames[isp].c_str()));
+              }
+            }
+          }
+          /* the centrality / multiplicity estimation histograms */
+          if (fOnTheFlyProduction.Length() != 0) {
+            fhV0MCentMult = (TH1*) inputandweights->Get("V0MCentMult");
+            fhCL1MCentMult = (TH1*) inputandweights->Get("CL1MCentMult");
+            fhCL1EtaGapMCentMult = (TH1*) inputandweights->Get("CL1EtaGapMCentMult");
+
+            if ((fhV0MCentMult == nullptr) and (fhCL1MCentMult == nullptr) and (fhCL1EtaGapMCentMult == nullptr)) {
+              AliError("On the fly MC production but centraliy / multiplicity estimation histograms not present");
+            }
+          }
+          /* the weights correction histograms */
           if (((TObjString*) tokens->At(3))->String().EqualTo("weights") ||
               ((TObjString*) tokens->At(3))->String().EqualTo("weightseffcorr") ||
               ((TObjString*) tokens->At(3))->String().EqualTo("weightspairseff")) {
-            sprintf(localbuffer,"%s%s", pattern,szTrack1.Data());
-            fhWeightsTrack_1 = (TH3F*) weights->Get(localbuffer);
-            sprintf(localbuffer,"%s%s", pattern,szTrack2.Data());
-            fhWeightsTrack_2 = (TH3F*) weights->Get(localbuffer);
-            if ((fhWeightsTrack_1 != NULL) && (fhWeightsTrack_2 != NULL)) {
-              fProcessCorrelations.SetUseWeights(kTRUE);
-              AliInfo("===========STORED CORRECTION WEIGHTS====================");
-              AliInfo(Form("Track 1: %c charge, weights histogram: %s", ((TObjString*) tokens->At(0))->String()[0],fhWeightsTrack_1->GetName()));
-              AliInfo(Form("Track 2: %c charge, weights histogram: %s", ((TObjString*) tokens->At(0))->String()[1],fhWeightsTrack_2->GetName()));
-              AliInfo("===========END STORED CORRECTION WEIGHTS================");
-              szContainerPrefix += "W";
+            /* for the time being we use a single weights collection for all particle independently of their identity */
+            AliInfo("===========STORED CORRECTION WEIGHTS====================");
+            bool storedweights = false;
+            for (unsigned int isp = 0; isp < tracknames.size(); ++isp) {
+              sprintf(localbuffer, "%s%s", pattern, tracknames[isp].c_str());
+              fhWeightsTrack[isp] = (TH3F*)inputandweights->Get(localbuffer);
+              if ((fhWeightsTrack[isp] != nullptr)) {
+                fProcessCorrelations->SetUseWeights(kTRUE);
+                AliInfo(Form("Track %s weights histogram: %s", tracknames[isp].c_str(), fhWeightsTrack[isp]->GetName()));
+                storedweights = true;
+              }
             }
-            else {
-              AliFatal(Form("Not able to find weights histograms %s in file %s. ABORTING!!!",localbuffer, ((TObjString*) tokens->At(3))->String().Data()));
-              return kFALSE;
+            AliInfo("===========END STORED CORRECTION WEIGHTS================");
+            if (storedweights) {
+              szContainerPrefix += "W";
+            } else {
+              AliFatal(Form("Not able to find weights histograms %s in file %s. ABORTING!!!", localbuffer, ((TObjString*)tokens->At(3))->String().Data()));
+              return false;
             }
           }
+          /* the singles efficiency correction histograms */
           if (((TObjString*) tokens->At(3))->String().EqualTo("effcorr") ||
               ((TObjString*) tokens->At(3))->String().EqualTo("weightseffcorr") ) {
-            /* the efficiency correction */
-            sprintf(localbuffer,"%seff_%s", pattern,szTrack1.Data());
-            fhEffCorrTrack_1 = (TH1F*) weights->Get(localbuffer);
-            sprintf(localbuffer,"%seff_%s", pattern,szTrack2.Data());
-            fhEffCorrTrack_2 = (TH1F*) weights->Get(localbuffer);
-            if ((fhEffCorrTrack_1 != NULL) && (fhEffCorrTrack_2 != NULL)) {
-              AliInfo("===========STORED EFFICIENCY CORRECTION====================");
-              AliInfo(Form("Track 1: %c charge, efficiency correction histogram: %s", ((TObjString*) tokens->At(0))->String()[0],fhEffCorrTrack_1->GetName()));
-              AliInfo(Form("Track 2: %c charge, efficiency correction histogram: %s", ((TObjString*) tokens->At(0))->String()[1],fhEffCorrTrack_2->GetName()));
-              AliInfo("===========END STORED EFFICIENCY CORRECTION================");
-              szContainerPrefix += "E";
+            /* the efficiency correction for each species supported*/
+            bool storedefficiencies = false;
+            AliInfo("===========STORED EFFICIENCY CORRECTION====================");
+            for (unsigned int isp = 0; isp < tracknames.size(); ++isp) {
+              sprintf(localbuffer, "%seff_%s", pattern, tracknames[isp].c_str());
+              fhEffCorrTrack[isp] = (TH1F*)inputandweights->Get(localbuffer);
+              if (fhEffCorrTrack[isp] != nullptr) {
+                AliInfo(Form("Track %s, efficiency correction histogram: %s", tracknames[isp].c_str(), fhEffCorrTrack[isp]->GetName()));
+                storedefficiencies = true;
+              }
             }
-            else {
-              AliFatal(Form("Not able to find efficiency correction histograms %s in file %s. ABORTING!!!", localbuffer, ((TObjString*) tokens->At(3))->String().Data()));
+            AliInfo("===========END STORED EFFICIENCY CORRECTION================");
+            if (storedefficiencies) {
+              szContainerPrefix += "E";
+            } else {
+              AliFatal(Form("Not able to find efficiency correction histograms %s in file %s. ABORTING!!!", localbuffer, ((TObjString*)tokens->At(3))->String().Data()));
               return kFALSE;
             }
           }
+          /* the pairs efficiency histograms */
           if (((TObjString*) tokens->At(3))->String().EqualTo("pairseff") ||
               ((TObjString*) tokens->At(3))->String().EqualTo("weightspairseff") ) {
             /* the pairs efficiencies */
             sprintf(localbuffer,"%spairseff_PP", pattern);
-            fhPairEfficiency_PP = (THn*) weights->Get(localbuffer);
+            fhPairEfficiency_PP = (THn*) inputandweights->Get(localbuffer);
             sprintf(localbuffer,"%spairseff_PM", pattern);
-            fhPairEfficiency_PM = (THn*) weights->Get(localbuffer);
+            fhPairEfficiency_PM = (THn*) inputandweights->Get(localbuffer);
             sprintf(localbuffer,"%spairseff_MM", pattern);
-            fhPairEfficiency_MM = (THn*) weights->Get(localbuffer);
+            fhPairEfficiency_MM = (THn*) inputandweights->Get(localbuffer);
             sprintf(localbuffer,"%spairseff_MP", pattern);
-            fhPairEfficiency_MP = (THn*) weights->Get(localbuffer);
+            fhPairEfficiency_MP = (THn*) inputandweights->Get(localbuffer);
             if ((fhPairEfficiency_PP != NULL) && (fhPairEfficiency_PM != NULL) && (fhPairEfficiency_MM != NULL) && (fhPairEfficiency_MP != NULL)) {
               AliInfo("===========STORED PAIRS EFFICIENCY=========================");
               AliInfo(Form("Pair PP: pairs efficiency histogram: %s", fhPairEfficiency_PP->GetName()));
@@ -1079,25 +1240,28 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
           }
         }
         else {
-          AliFatal(Form("Weights file %s not available.ABORTING!!!",((TObjString*) tokens->At(3))->String().Data()));
+          AliFatal(Form("Weights/input file %s not available.ABORTING!!!",((TObjString*) tokens->At(3))->String().Data()));
           return kFALSE;
         }
-      }
-      else {
-        AliFatal("Use weights required but the weights filename is not present.ABORTING!!!");
+      } else if (tokens->GetEntries() == 4 && fTaskActivitiesString.Contains("diffcorr") && ((TObjString*)tokens->At(3))->String().EqualTo("noweights")) {
+        fProcessCorrelations->SetUseWeights(kFALSE);
+        szContainerPrefix += "NW";
+      } else {
+        AliFatal("Use weights/input histograms required but the weights filename is not present.ABORTING!!!");
         return kFALSE;
       }
     }
     else if (((TObjString*) tokens->At(3))->String().BeginsWith("simulate")) {
       /* get the number of events to generate per real event */
       Int_t nSimEventsPerEvent;
-      if (((TObjString*) tokens->At(3))->String().EqualTo("simulate"))
+      if (((TObjString*) tokens->At(3))->String().EqualTo("simulate")) {
         nSimEventsPerEvent = 1;
-      else
+      }
+      else {
         sscanf(((TObjString*) tokens->At(3))->String().Data(), "simulate-%d", &nSimEventsPerEvent);
-
-      fProcessCorrelations.SetUseSimulation(kTRUE);
-      fProcessCorrelations.SetSimEventsPerEvent(nSimEventsPerEvent);
+      }
+      fProcessCorrelations->SetUseSimulation(kTRUE);
+      fProcessCorrelations->SetSimEventsPerEvent(nSimEventsPerEvent);
       /* we will use particle profiles so the particle profiles filename has to be there */
       if (tokens->GetEntries() == 5) {
         /* get the weights histos */
@@ -1123,10 +1287,11 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
           for (Int_t ix = 0; ;ix++) {
             sprintf(localbuffer, "%sm_yield_%d", pattern, ix);
             TH3F *hslot = (TH3F*) trkprofiles->Get(localbuffer);
-            if (hslot != NULL)
+            if (hslot != NULL) {
               fNegativeTrackPdf->Add(hslot);
-            else
+            } else {
               break;
+            }
           }
           printf("Took %d negative tracks slots with %s pattern\n", fNegativeTrackPdf->GetEntriesFast(), Form("%sm_yield", pattern));
           if ((fPositiveTrackPdf->GetEntriesFast() != 0) &&
@@ -1155,11 +1320,11 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
     }
     else if (((TObjString*) tokens->At(3))->String().EqualTo("effcorrtrue")) {
       fCorrectOnTrueEfficiency = kTRUE;
-      fProcessCorrelations.SetUseWeights(kFALSE);
+      fProcessCorrelations->SetUseWeights(kFALSE);
       szContainerPrefix += "NW";
     }
     else if (((TObjString*) tokens->At(3))->String().EqualTo("noweights")) {
-      fProcessCorrelations.SetUseWeights(kFALSE);
+      fProcessCorrelations->SetUseWeights(kFALSE);
       szContainerPrefix += "NW";
     }
     else {
@@ -1175,10 +1340,10 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
   delete tokens;
 
   /* true will never use weights nor simulation */
-  fProcessMCRecCorrelationsWithOptions.SetUseWeights(kFALSE);
-  fProcessMCRecCorrelationsWithOptions.SetUseSimulation(kFALSE);
-  fProcessTrueCorrelations.SetUseWeights(kFALSE);
-  fProcessTrueCorrelations.SetUseSimulation(kFALSE);
+  fProcessMCRecCorrelationsWithOptions->SetUseWeights(kFALSE);
+  fProcessMCRecCorrelationsWithOptions->SetUseSimulation(kFALSE);
+  fProcessTrueCorrelations->SetUseWeights(kFALSE);
+  fProcessTrueCorrelations->SetUseSimulation(kFALSE);
 
 
   return kTRUE;
@@ -1187,11 +1352,10 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
 /// \brief Establishes the bining for the correlation object instance
 /// \param confstring the string containing the bins configuration
 /// \return kTRUE if everything went OK kFALSE otherwise
-Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelationsBinning(const char *confstring) {
+Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelationsBinning(const char *confstring) 
+{
 
   TString sztmp = confstring;
-  TString szTrack1;
-  TString szTrack2;
 
   /* the correlation configuration */
   if (sztmp.BeginsWith("Binning:")) {
@@ -1202,19 +1366,18 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelationsBinning(const ch
     return kFALSE;
   }
 
-  fProcessCorrelations.ConfigureBinning(sztmp.Data());
-  fProcessMCRecCorrelationsWithOptions.ConfigureBinning(sztmp.Data());
-  fProcessTrueCorrelations.ConfigureBinning(sztmp.Data());
-  fProcessPairAnalysis.ConfigureBinning(sztmp.Data());
-  fProcessTruePairAnalysis.ConfigureBinning(sztmp.Data());
-
-  return kTRUE;
+  return (fProcessCorrelations->ConfigureBinning(sztmp.Data()) &&
+          fProcessMCRecCorrelationsWithOptions->ConfigureBinning(sztmp.Data()) &&
+          fProcessTrueCorrelations->ConfigureBinning(sztmp.Data()) &&
+          fProcessPairAnalysis.ConfigureBinning(sztmp.Data()) &&
+          fProcessTruePairAnalysis.ConfigureBinning(sztmp.Data()));
 }
 
 
 /// Creates the object to be preserved on the results files
 void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
 {
+  AliInfo("UserCreateOutputObjects()");
   Bool_t oldstatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
@@ -1223,6 +1386,11 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
   fOutput = new TList();
   fOutput->SetOwner();  // IMPORTANT!
 
+  /* let's prepare in case of on the fly MC productions */
+  if (fOnTheFlyProduction.Length() != 0) {
+    AliCSAnalysisCutsBase::SetOnTheFlyMCProduction(fOnTheFlyProduction);
+  }
+
   fEventCuts = new AliCSEventCuts("CS_Event_Cuts", "CS Event Cuts");
   if (!fEventCuts->InitializeCutsFromCutString(fEventCutsString)) {
     AliFatal("Not able to initialize event cuts. ABORTING!!!");
@@ -1230,6 +1398,7 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
 
   fEventCuts->SetQALevelOutput(AliCSAnalysisCutsBase::kQALevelHeavy);
   fEventCuts->InitCuts();
+  fEventCuts->StoreCentMultEstimationHistos(fhV0MCentMult,fhCL1MCentMult,fhCL1EtaGapMCentMult);
   fOutput->Add(fEventCuts->GetHistogramsList());
 
   fTrackSelectionCuts = new AliCSTrackSelection("CS_Track_Selection", "CS Track Selection");
@@ -1237,16 +1406,34 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
   fTrackSelectionCuts->SetQALevelOutput(AliCSAnalysisCutsBase::kQALevelHeavy);
   fTrackSelectionCuts->InitCuts();
   fOutput->Add(fTrackSelectionCuts->GetHistogramsList());
+  /* get the particles of interest out of the track selection */
+  AliInfo("Preparing the analysis for the particles of interest");
+  std::vector<std::string> pois{};
+  for (auto s : fTrackSelectionCuts->getPoiNames()) {
+    AliInfo(TString::Format("=====: %s", s.c_str()));
+    pois.push_back(s + "P");
+    pois.push_back(s + "M");
+  }
 
   /* now initialize the processing correlations instance */
   if (fDoProcessCorrelations) {
-    fProcessCorrelations.Initialize();
-    fProcessMCRecCorrelationsWithOptions.Initialize();
-    fProcessTrueCorrelations.Initialize();
-    fProcessCorrelations.SetWeigths(fhWeightsTrack_1, fhWeightsTrack_2);
-    fProcessCorrelations.SetEfficiencyCorrection(fhEffCorrTrack_1, fhEffCorrTrack_2);
-    fProcessCorrelations.SetPairEfficiencyCorrection(fhPairEfficiency_PP, fhPairEfficiency_PM, fhPairEfficiency_MM, fhPairEfficiency_MP);
-    fProcessCorrelations.SetSimultationPdfs(fPositiveTrackPdf, fNegativeTrackPdf);
+    fProcessCorrelations->SetSpeciesNames(pois);
+    fProcessMCRecCorrelationsWithOptions->SetSpeciesNames(pois);
+    fProcessTrueCorrelations->SetSpeciesNames(pois);
+    fProcessCorrelations->Initialize();
+    fProcessMCRecCorrelationsWithOptions->Initialize();
+    fProcessTrueCorrelations->Initialize();
+    fProcessCorrelations->SetWeigths(fhWeightsTrack);
+    fProcessCorrelations->SetPtAvg(fhPtAverageTrack);
+    fProcessCorrelations->SetEfficiencyCorrection(fhEffCorrTrack);
+    fProcessCorrelations->SetPairEfficiencyCorrection(std::vector<std::vector<const THn*>>{pois.size(), {pois.size(), nullptr}});
+    fProcessCorrelations->SetSimultationPdfs(std::vector<const TObjArray*>{pois.size(), nullptr});
+    /* not clear how we will do it with MC rec with options */
+    fProcessTrueCorrelations->SetWeigths(std::vector<const TH3*>{pois.size(), nullptr});
+    fProcessTrueCorrelations->SetPtAvg(fhTruePtAverageTrack);
+    fProcessTrueCorrelations->SetEfficiencyCorrection(std::vector<const TH1*>{pois.size(), nullptr});
+    fProcessTrueCorrelations->SetPairEfficiencyCorrection(std::vector<std::vector<const THn*>>{pois.size(), {pois.size(), nullptr}});
+    fProcessTrueCorrelations->SetSimultationPdfs(std::vector<const TObjArray*>{pois.size(), nullptr});
   }
 
   /* now initialize the pair analysis instance */
@@ -1254,7 +1441,7 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
     fProcessPairAnalysis.Initialize();
     fProcessTruePairAnalysis.Initialize();
     /* we use the weights, they should contain NUA x NUE in four dimensions vtxz, eta, phi and pT */
-    fProcessPairAnalysis.SetSinglesEfficiency(fhWeightsTrack_1, fhWeightsTrack_2);
+    fProcessPairAnalysis.SetSinglesEfficiency(nullptr, nullptr);
     fProcessPairAnalysis.SetPairEfficiency(fhPairEfficiency_PP, fhPairEfficiency_PM, fhPairEfficiency_MM, fhPairEfficiency_MP);
     /* and incorporate its histograms to the output list */
     /* now initialize the pair analysis instance */
@@ -1335,16 +1522,16 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
 
   /* incorporate configuration parameters if needed */
   if (fDoProcessCorrelations) {
-    fProcessMCRecCorrelationsWithOptions.GetHistogramsList()->AddFirst(new TParameter<Int_t>("AdditionalMCRecOption",fMCRecOption,'f'));
+    fProcessMCRecCorrelationsWithOptions->GetHistogramsList()->AddFirst(new TParameter<Int_t>("AdditionalMCRecOption",fMCRecOption,'f'));
   }
 
   TH1::AddDirectory(oldstatus);
 
   PostData(1, fOutput); // Post data for ALL output slots >0 here, to get at least an empty histogram
   if (fDoProcessCorrelations) {
-    PostData(2, fProcessCorrelations.GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
-    PostData(3, fProcessMCRecCorrelationsWithOptions.GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
-    PostData(4, fProcessTrueCorrelations.GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
+    PostData(2, fProcessCorrelations->GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
+    PostData(3, fProcessMCRecCorrelationsWithOptions->GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
+    PostData(4, fProcessTrueCorrelations->GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
   }
   else {
     /* we post dummy list for avoiding fatal error */
@@ -1360,15 +1547,18 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
 /// A new run analysis is starting
 /// Check for a potential change in the period (will always happen for the first
 /// run in the analysis) and produce all the output depending on the concrete analysis
-void AliAnalysisTaskCorrelationsStudies::NotifyRun() {
-  AliInfo("");
+void AliAnalysisTaskCorrelationsStudies::NotifyRun() 
+{
+  AliInfo("NotifyRun()");
 
   AliCSAnalysisCutsBase::NotifyRunGlobal();
   fEventCuts->NotifyRun();
   fTrackSelectionCuts->NotifyRun();
 
   /* checks the change in the analysis period */
-  if (AliCSAnalysisCutsBase::GetGlobalPeriod() == fDataPeriod) return;
+  if (AliCSAnalysisCutsBase::GetGlobalPeriod() == fDataPeriod) {
+    return;
+  }
   fDataPeriod = AliCSAnalysisCutsBase::GetGlobalPeriod();
 
   /* now we create additional MC histograms if applicable */
@@ -1385,12 +1575,18 @@ void AliAnalysisTaskCorrelationsStudies::NotifyRun() {
     fhTrueP = new TH1F("fHistTrueP", "P distribution (truth);P (GeV/c);dN/dP_{T} (c/GeV)", ptbins, ptlow, ptup);
     fhTruePPos = new TH1F("fHistTruePPos", "P distribution (+) (truth);P (GeV/c);dN/dP (c/GeV)", ptbins, ptlow, ptup);
     fhTruePNeg = new TH1F("fHistTruePNeg", "P distribution (-) (truth);P (GeV/c);dN/dP (c/GeV)", ptbins, ptlow, ptup);
-    fhPurePt = new TH1F("fHistPurePt", "P_{T} distribution for reconstructed (pure);P_{T} (GeV/c);dN/dP_{T} (c/GeV)", ptbins, ptlow, ptup);
-    fhPurePtPos = new TH1F("fHistPurePtPos", "P_{T} distribution for reconstructed (+) (pure);P_{T} (GeV/c);dN/dP_{T} (c/GeV)", ptbins, ptlow, ptup);
-    fhPurePtNeg = new TH1F("fHistPurePtNeg", "P_{T} distribution for reconstructed (-) (pure);P_{T} (GeV/c);dN/dP_{T} (c/GeV)", ptbins, ptlow, ptup);
-    fhPureP = new TH1F("fHistPureP", "P distribution for reconstructed (pure);P (GeV/c);dN/dP_{T} (c/GeV)", ptbins, ptlow, ptup);
-    fhPurePPos = new TH1F("fHistPurePPos", "P distribution for reconstructed (+) (pure);P (GeV/c);dN/dP (c/GeV)", ptbins, ptlow, ptup);
-    fhPurePNeg = new TH1F("fHistPurePNeg", "P distribution for reconstructed (-) (pure);P (GeV/c);dN/dP (c/GeV)", ptbins, ptlow, ptup);
+    fhPurePt = new TH3F("fHistPurePt", "P_{T} distribution for reconstructed primaries;P_{T} (GeV/c);dN/dP_{T} (c/GeV)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
+    fhPurePtPos = new TH3F("fHistPurePtPos", "P_{T} distribution for reconstructed (+) primaries;P_{T} (GeV/c);dN/dP_{T} (c/GeV)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
+    fhPurePtNeg = new TH3F("fHistPurePtNeg", "P_{T} distribution for reconstructed (-) primaries;P_{T} (GeV/c);dN/dP_{T} (c/GeV)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
+    fhPureP = new TH3F("fHistPureP", "P distribution for reconstructed primaries;P (GeV/c);dN/dP_{T} (c/GeV)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
+    fhPurePPos = new TH3F("fHistPurePPos", "P distribution for reconstructed (+) primaries;P (GeV/c);dN/dP (c/GeV)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
+    fhPurePNeg = new TH3F("fHistPurePNeg", "P distribution for reconstructed (-) primaries;P (GeV/c);dN/dP (c/GeV)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
+    fhSecPurePt = new TH3F("fHistSecPurePt", "P_{T} distribution for reconstructed secondaries;Reco ID;Gen ID;P_{T} (GeV/c)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
+    fhSecPurePtPos = new TH3F("fHistSecPurePtPos", "P_{T} distribution for reconstructed (+) secondaries;Reco ID;Gen ID;P_{T} (GeV/c)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
+    fhSecPurePtNeg = new TH3F("fHistSecPurePtNeg", "P_{T} distribution for reconstructed (-) secondaries;Reco ID;Gen ID;P_{T} (GeV/c)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
+    fhSecPureP = new TH3F("fHistSecPureP", "P distribution for reconstructed secondaries;Reco ID;Gen ID;P (GeV/c)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
+    fhSecPurePPos = new TH3F("fHistSecPurePPos", "P distribution for reconstructed (+) secondaries;Reco ID;Gen ID;P (GeV/c)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
+    fhSecPurePNeg = new TH3F("fHistSecPurePNeg", "P distribution for reconstructed (-) secondaries;Reco ID;Gen ID;P (GeV/c)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
 
     Int_t etabins = fhEtaB->GetNbinsX();
     Double_t etalow = fhEtaB->GetXaxis()->GetBinLowEdge(1), etaup = fhEtaB->GetXaxis()->GetBinUpEdge(etabins);
@@ -1430,6 +1626,12 @@ void AliAnalysisTaskCorrelationsStudies::NotifyRun() {
     fOutput->Add(fhPureP);
     fOutput->Add(fhPurePPos);
     fOutput->Add(fhPurePNeg);
+    fOutput->Add(fhSecPurePt);
+    fOutput->Add(fhSecPurePtPos);
+    fOutput->Add(fhSecPurePtNeg);
+    fOutput->Add(fhSecPureP);
+    fOutput->Add(fhSecPurePPos);
+    fOutput->Add(fhSecPurePNeg);
     fOutput->Add(fhTrueEta);
     fOutput->Add(fhTruePhi);
     fOutput->Add(fhTrueEtaVsPhi);
@@ -1470,10 +1672,10 @@ void AliAnalysisTaskCorrelationsStudies::NotifyRun() {
     /* if only truth analysis remove the content for the reconstructed output lists */
     if (AliCSAnalysisCutsBase::IsMConlyTruth()) {
       if (fDoProcessCorrelations) {
-        fProcessCorrelations.GetHistogramsList()->Clear();
+        fProcessCorrelations->GetHistogramsList()->Clear();
         /* if not additional MC rec results we remove the content from the output list */
         if (fMCRecOption == kNone) {
-          fProcessMCRecCorrelationsWithOptions.GetHistogramsList()->Clear();
+          fProcessMCRecCorrelationsWithOptions->GetHistogramsList()->Clear();
         }
       }
       if (fDoProcessPairAnalysis) {
@@ -1484,7 +1686,7 @@ void AliAnalysisTaskCorrelationsStudies::NotifyRun() {
       /* if not additional MC rec results we remove the content from the output list */
       if (fDoProcessCorrelations) {
         if (fMCRecOption == kNone) {
-          fProcessMCRecCorrelationsWithOptions.GetHistogramsList()->Clear();
+          fProcessMCRecCorrelationsWithOptions->GetHistogramsList()->Clear();
         }
       }
     }
@@ -1497,8 +1699,8 @@ void AliAnalysisTaskCorrelationsStudies::NotifyRun() {
       fProcessTruePairAnalysis.GetHistogramsList()->Clear();
     }
     if (fDoProcessCorrelations) {
-      fProcessMCRecCorrelationsWithOptions.GetHistogramsList()->Clear();
-      fProcessTrueCorrelations.GetHistogramsList()->Clear();
+      fProcessMCRecCorrelationsWithOptions->GetHistogramsList()->Clear();
+      fProcessTrueCorrelations->GetHistogramsList()->Clear();
     }
   }
 }
@@ -1508,70 +1710,84 @@ void AliAnalysisTaskCorrelationsStudies::UserExec(Option_t *)
 {
     // Main loop
     // Called for each event
-    AliInfo("Got a new event!");
+  AliInfo("Got a new event!");
 
+  // Create pointer to event to handle
+  AliVEvent* event = nullptr;
+  if (!fEventCuts->IsOnTheFlyMC()) {
     // Create pointer to reconstructed event
-    AliVEvent *event = InputEvent();
-    if (!event) { AliError("ERROR: Could not retrieve event"); return; }
+    event = InputEvent();
+  } else {
+    /* on the fly production */
+    /* create pointer to the new events */
+    event = fMCEvent;
+  }
+  if (event == nullptr) {
+    AliError("ERROR: Could not retrieve event");
+    return;
+  }
 
-    /* notify the new coming event to our cuts */
-    fEventCuts->NotifyEvent();
+  /* notify the new coming event to our cuts */
+  fEventCuts->NotifyEvent();
 
-    /* check if the event is accepted */
-    if (!fEventCuts->IsEventAccepted(fInputEvent)) return;
+  /* check if the event is accepted */
+  if (!fEventCuts->IsEventAccepted(event)) {
+    return;
+  }
 
-    /* notify the new coming event to our track mapping function */
+  /* notify the new coming event to our track mapping function if not fast MC */
+  if (!fEventCuts->IsMConlyTruth()) {
     aodTrackMaps.NotifyEvent();
+  }
 
-    /* notify the new coming event to our cuts */
-    fTrackSelectionCuts->NotifyEvent();
+  /* notify the new coming event to our cuts */
+  fTrackSelectionCuts->NotifyEvent();
 
-    /* build true to rec tracks relation if MC event */
-    if (fEventCuts->IsMC()) {
-      /* provide some feedback about MC */
-      AliInfo(Form("========= MC event is %s", ((fMCEvent != NULL) ? "NOT null" : "NULL")));
-      if (fMCEvent != NULL) {
-        AliInfo(Form("========= event is 0x%lX while MC event is 0x%lX", (unsigned long) fInputEvent, (unsigned long) fMCEvent));
-      }
-      if (!fEventCuts->IsMConlyTruth()) {
-        /* only if not fast MC */
-        BuildTrueRecRelation();
-      }
+  /* build true to rec tracks relation if MC event */
+  if (fEventCuts->IsMC()) {
+    /* provide some feedback about MC */
+    AliInfo(Form("========= MC event is %s", ((fMCEvent != NULL) ? "NOT null" : "NULL")));
+    if (fMCEvent != NULL) {
+      AliInfo(Form("========= event is 0x%lX while MC event is 0x%lX", (unsigned long)fInputEvent, (unsigned long)fMCEvent));
     }
-
-    /* process reconstructed tracks if not a fast MC analysis */
     if (!fEventCuts->IsMConlyTruth()) {
-      if (fDoProcessCorrelations && fProcessCorrelations.GetUseSimulation()) {
-        /* process rec tracks with potential simulation */
-        for (Int_t nsim = 0; nsim < fProcessCorrelations.GetSimEventsPerEvent(); nsim++) {
-          /* skip sensible process if additional simulation event is ongoing */
-          ProcessTracks(nsim != 0);
-        }
+      /* only if not fast MC */
+      BuildTrueRecRelation();
+    }
+  }
+
+  /* process reconstructed tracks if not a fast MC analysis */
+  if (!fEventCuts->IsMConlyTruth()) {
+    if (fDoProcessCorrelations && fProcessCorrelations->GetUseSimulation()) {
+      /* process rec tracks with potential simulation */
+      for (Int_t nsim = 0; nsim < fProcessCorrelations->GetSimEventsPerEvent(); nsim++) {
+        /* skip sensible process if additional simulation event is ongoing */
+        ProcessTracks(nsim != 0);
       }
-      else {
-        ProcessTracks(kFALSE);
-      }
+    } else {
+      ProcessTracks(kFALSE);
     }
+  }
 
-    /* complete true to rec tracks relation if MC event and not fast MC */
-    if (fEventCuts->IsMC() && !fEventCuts->IsMConlyTruth()) {
-      BuildTrueRecAccRelation();
-    }
+  /* complete true to rec tracks relation if MC event and not fast MC */
+  if (fEventCuts->IsMC() && !fEventCuts->IsMConlyTruth()) {
+    BuildTrueRecAccRelation();
+  }
 
-    /* process true tracks if MC event */
-    if (fEventCuts->IsMC()) {
-      ProcessTrueTracks();
-    }
+  /* process true tracks if MC event */
+  if (fEventCuts->IsMC()) {
+    ProcessTrueTracks();
+  }
 
-    // NEW HISTO should be filled before this point, as PostData puts the
-    // information for this iteration of the UserExec in the container
-    AliInfo("Processed event!");
-    PostData(1, fOutput);
-    if (fDoProcessCorrelations) {
-      PostData(2, fProcessCorrelations.GetHistogramsList());
-      PostData(3, fProcessMCRecCorrelationsWithOptions.GetHistogramsList());
-      PostData(4, fProcessTrueCorrelations.GetHistogramsList());
-    }
+  // NEW HISTO should be filled before this point, as PostData puts the
+  // information for this iteration of the UserExec in the container
+  AliInfo("Processed event!");
+  PostData(1, fOutput);
+  if (fDoProcessCorrelations) {
+    PostData(2, fProcessCorrelations->GetHistogramsList());
+    PostData(3, fProcessMCRecCorrelationsWithOptions->GetHistogramsList());
+    PostData(4, fProcessTrueCorrelations->GetHistogramsList());
+  }
 }
 
 /// \brief Processes the tracks for the current event
@@ -1580,7 +1796,8 @@ void AliAnalysisTaskCorrelationsStudies::UserExec(Option_t *)
 /// In that case only the first call should be invoked with kFALSE to fill
 /// histograms only once with track real values.
 /// \param simulated if kTRUE not fill histograms, tracks will be simulated
-void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
+void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated)
+{
   AliInfo("Start processing event tracks");
 
   AliVEvent *event = InputEvent();
@@ -1591,41 +1808,64 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
   /* only process pair analysis if this is not an additional simulated event */
   if (fDoProcessPairAnalysis && !simulated) {
     /* initialize pair analysis function activities */
-    if (!fProcessPairAnalysis.StartEvent(vertexz)) return;
+    if (!fProcessPairAnalysis.StartEvent(vertexz)) {
+      return;
+    }
   }
 
   /* initialize correlation function activities */
   /* reject event if not correctly initialized */
   if (fDoProcessCorrelations) {
-    if (!fProcessCorrelations.StartEvent(centrality,vertexz)) return;
+    if (!fProcessCorrelations->StartEvent(centrality, vertexz)) {
+      return;
+    }
     if (fEventCuts->IsMC()) {
       if (fMCRecOption != kNone) {
-        if (!fProcessMCRecCorrelationsWithOptions.StartEvent(centrality,vertexz)) return;
+        if (!fProcessMCRecCorrelationsWithOptions->StartEvent(centrality, vertexz)) {
+          return;
+        }
       }
     }
   }
 
   /* prepare for a potential AOD MC data format */
   TClonesArray *arrayMC = NULL;
-  if (fEventCuts->IsMC() && AliCSAnalysisCutsBase::GetMCEventHandler() == NULL) arrayMC = AliCSAnalysisCutsBase::GetMCTrueArray();
+  if (fEventCuts->IsMC() && AliCSAnalysisCutsBase::GetMCEventHandler() == NULL) {
+    arrayMC = AliCSAnalysisCutsBase::GetMCTrueArray();
+  }
 
   // Track loop for reconstructed event
   Int_t ntracks = event->GetNumberOfTracks();
   Int_t nNoOfAccepted = 0;
-  for(Int_t i = 0; i < ntracks; i++) {
+  // Prepare for a pre-rejection of electron conversions
+  if (fDoProcessCorrelations && fProcessCorrelations->preRejectResonances()) {
+    FlagPreRejectionConditions();
+  }
+
+  for (Int_t i = 0; i < ntracks; i++) {
     AliVTrack* vtrack = dynamic_cast<AliVTrack*>(event->GetTrack(i)); // pointer to reconstructed to track
-    if(!vtrack) {
-        AliError(Form("ERROR: Could not retrieve vtrack %d",i));
-        continue;
+    if (!vtrack) {
+      AliError(Form("ERROR: Could not retrieve vtrack %d", i));
+      continue;
     }
 
     /* enforce the efficiency profile if required */
     if (fEnforceEfficiencyProfile) {
-      if (fRandomGenerator->Uniform(1.0) > ffEfficiencyProfile->Eval(vtrack->Pt()))
+      if (fRandomGenerator->Uniform(1.0) > ffEfficiencyProfile->Eval(vtrack->Pt())) {
         continue;
+      }
     }
 
     Bool_t bTrackAccepted = fTrackSelectionCuts->IsTrackAccepted(vtrack);
+    AliCSTrackSelection::poiIds pid = fTrackSelectionCuts->GetAcceptedTrackPOIId();
+    /* pre-check the particle acceptance */
+    if (fDoProcessCorrelations) {
+      bTrackAccepted = bTrackAccepted && fProcessCorrelations->IsTrackAccepted(vtrack);
+    }
+    /* test for a potential pre-reject of decays products */
+    if (fDoProcessCorrelations && fProcessCorrelations->preRejectResonances()) {
+      bTrackAccepted = bTrackAccepted && (fRecoTrackPairFlags[i] != 1);
+    }
 
     /* only fill histograms if this is not an additional simulated event */
     if (!simulated) {
@@ -1641,7 +1881,9 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
       /* get the original track in case of constrained track */
       Int_t esdid = vtrack->GetID();
       AliVTrack *origtrack = vtrack;
-      if (esdid < 0) origtrack = aodTrackMaps.GetOriginalTrack((AliAODTrack*) vtrack);
+      if (esdid < 0) {
+        origtrack = aodTrackMaps.GetOriginalTrack((AliAODTrack*)vtrack);
+      }
 
       /* additional tracks quality tests for MC reconstructed */
       if (fEventCuts->IsMC()) {
@@ -1687,28 +1929,40 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
 
       /* track accepted, process correlation function activities */
       if (fDoProcessCorrelations) {
-        fProcessCorrelations.ProcessTrack(i, vtrack);
+        fProcessCorrelations->ProcessTrack(pid, vtrack);
         /* only process rec with true values if MC and this is not an additional simulated event */
         if (fEventCuts->IsMC() && !simulated) {
           switch (fMCRecOption) {
           case kRecWithTrue:
             /* additional results with reconstructed with true values */
             if (AliCSAnalysisCutsBase::GetMCEventHandler() != NULL) {
-              fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, fMCEvent->GetTrack(vtrack->GetLabel()));
+              fProcessMCRecCorrelationsWithOptions->ProcessTrack(pid, fMCEvent->GetTrack(vtrack->GetLabel()));
             }
             else {
-              fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, (AliVParticle *) arrayMC->At(vtrack->GetLabel()));
+              fProcessMCRecCorrelationsWithOptions->ProcessTrack(pid, (AliVParticle *) arrayMC->At(vtrack->GetLabel()));
             }
             break;
           case kRecTruePrimaries:
             /* additional results with true primary reconstructed tracks */
             if (fTrackSelectionCuts->IsTruePrimary(vtrack)) {
-              fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, vtrack);
+              fProcessMCRecCorrelationsWithOptions->ProcessTrack(pid, vtrack);
+            }
+            break;
+          case kRecTruePrimariesWithTrue:
+            /* additional results with true primary reconstructed tracks */
+            if (fTrackSelectionCuts->IsTruePrimary(vtrack)) {
+              /* but using the true values */
+              if (AliCSAnalysisCutsBase::GetMCEventHandler() != NULL) {
+                fProcessMCRecCorrelationsWithOptions->ProcessTrack(pid, fMCEvent->GetTrack(vtrack->GetLabel()));
+              }
+              else {
+                fProcessMCRecCorrelationsWithOptions->ProcessTrack(pid, (AliVParticle *) arrayMC->At(vtrack->GetLabel()));
+              }
             }
             break;
           case kRecWithNotAccepted:
             /* additional results with accepted and not accepted reconstructed tracks */
-            fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, vtrack);
+            fProcessMCRecCorrelationsWithOptions->ProcessTrack(pid, vtrack);
             break;
           default:
             break;
@@ -1720,22 +1974,35 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
       if (!simulated) {
         /* store purity information if applicable */
         if (fEventCuts->IsMC()) {
-          if (fTrackSelectionCuts->IsTrueTrackAccepted(vtrack)) {
-            fhPurePt->Fill(vtrack->Pt());
-            fhPureP->Fill(vtrack->P());
-            if (vtrack->Charge() > 0) {
-              fhPurePtPos->Fill(vtrack->Pt());
-              fhPurePPos->Fill(vtrack->P());
-            }
-            else {
-              fhPurePtNeg->Fill(vtrack->Pt());
-              fhPurePNeg->Fill(vtrack->P());
-            }
+          AliPID::EParticleType trueid = AliCSPIDCuts::GetTrueSpecies(vtrack);
+          if (!(trueid < AliPID::EParticleType(AliPID::kSPECIES))) {
+          trueid = AliPID::EParticleType(AliPID::kSPECIES);
+          }
+          if (fTrackSelectionCuts->IsTruePrimary(vtrack)) {
+          fhPurePt->Fill(pid, trueid, vtrack->Pt());
+          fhPureP->Fill(pid, trueid, vtrack->P());
+          if (vtrack->Charge() > 0) {
+            fhPurePtPos->Fill(pid, trueid, vtrack->Pt());
+            fhPurePPos->Fill(pid, trueid, vtrack->P());
+          } else {
+            fhPurePtNeg->Fill(pid, trueid, vtrack->Pt());
+            fhPurePNeg->Fill(pid, trueid, vtrack->P());
+          }
+
+          } else {
+          fhSecPurePt->Fill(pid, trueid, vtrack->Pt());
+          fhSecPureP->Fill(pid, trueid, vtrack->P());
+          if (vtrack->Charge() > 0) {
+            fhSecPurePtPos->Fill(pid, trueid, vtrack->Pt());
+            fhSecPurePPos->Fill(pid, trueid, vtrack->P());
+          } else {
+            fhSecPurePtNeg->Fill(pid, trueid, vtrack->Pt());
+            fhSecPurePNeg->Fill(pid, trueid, vtrack->P());
+          }
           }
         }
       }
-    }
-    else {
+    } else {
       /* track not accepted, process required correlation function activities */
       if (fEventCuts->IsMC() && !simulated) {
         if (fDoProcessCorrelations) {
@@ -1744,7 +2011,7 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
             /* additional results with accepted and not accepted reconstructed tracks */
             /* but only with its corresponding true accepted, for the time being */
             if (fTrackSelectionCuts->IsTrueTrackAccepted(vtrack)) {
-              fProcessMCRecCorrelationsWithOptions.ProcessTrack(i, vtrack);
+              fProcessMCRecCorrelationsWithOptions->ProcessTrack(i, vtrack);
             }
             break;
           default:
@@ -1762,11 +2029,11 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
 
   /* and finalize correlation function activities */
   if (fDoProcessCorrelations) {
-    fProcessCorrelations.ProcessEventData();
+    fProcessCorrelations->ProcessEventData();
     /* only process rec with true if MC and this is not an additional simulated event */
     if (fEventCuts->IsMC() && !simulated) {
       if (fMCRecOption != kNone) {
-        fProcessMCRecCorrelationsWithOptions.ProcessEventData();
+        fProcessMCRecCorrelationsWithOptions->ProcessEventData();
       }
     }
   }
@@ -1778,8 +2045,8 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated) {
 }
 
 /// \brief Processes the true tracks for the current event
-void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks() {
-
+void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks() 
+{
   AliInfo("");
 
   Double_t vertexz = 0.0;
@@ -1802,7 +2069,9 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks() {
  /* initialize correlation function activities */
   /* reject event if not correctly initialized */
   if (fDoProcessCorrelations) {
-    if (!fProcessTrueCorrelations.StartEvent(centrality,vertexz)) return;
+    if (!fProcessTrueCorrelations->StartEvent(centrality,vertexz)) {
+      return;
+    }
   }
 
   Int_t nNoOfTrueReconstructedAndAccepted = 0;
@@ -1815,7 +2084,9 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks() {
 
   Int_t ntracks = GetNoOfTrueParticles();
   TClonesArray *arrayMC = NULL;
-  if (AliCSAnalysisCutsBase::GetMCEventHandler() == NULL) arrayMC = AliCSAnalysisCutsBase::GetMCTrueArray();
+  if (AliCSAnalysisCutsBase::GetMCEventHandler() == NULL) {
+    arrayMC = AliCSAnalysisCutsBase::GetMCTrueArray();
+  }
   for(Int_t iTrack = 0; iTrack < ntracks; iTrack++ ){
 
     if (fTrackSelectionCuts->IsTrueTrackAccepted(iTrack)) {
@@ -1836,6 +2107,14 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks() {
         part = (AliAODMCParticle *) arrayMC->At(iTrack);
       }
 
+      /* pre-check the particle acceptance */
+      if (fDoProcessCorrelations) {
+        if (!fProcessTrueCorrelations->IsTrackAccepted(part)) {
+          /* particle not accepted by the correlations cuts */
+          continue;
+        }
+      }
+
       p = part->P();
       pt = part->Pt();
       pz = part->Pz();
@@ -1843,6 +2122,7 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks() {
       phi = part->Phi();
       charge = part->Charge();
       species = AliCSPIDCuts::GetTrueSpecies(part);
+      AliCSTrackSelection::poiIds pid = fTrackSelectionCuts->GetAcceptedParticlePOIId();
 
       Double_t filldata[kgTHnDimension] = {pt,eta,phi*180.0/TMath::Pi(),
           (AliPID::kProton < species) ?  AliPID::kSPECIES + 0.5 : species + 0.5};
@@ -1854,14 +2134,12 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks() {
         case kEfficiencyProfile:
           /* use the stored efficiency profile */
           if (charge > 0) {
-            if (fRandomGenerator->Uniform(1.0) > fhOnTrueEfficiencyProfile_1->GetBinContent(
-                fhOnTrueEfficiencyProfile_1->FindBin(eta,pt))) {
+            if (fRandomGenerator->Uniform(1.0) > fhOnTrueEfficiencyProfile_1->GetBinContent(fhOnTrueEfficiencyProfile_1->FindBin(eta,pt))) {
               continue;
             }
           }
           else {
-            if (fRandomGenerator->Uniform(1.0) > fhOnTrueEfficiencyProfile_2->GetBinContent(
-                fhOnTrueEfficiencyProfile_2->FindBin(eta,pt))) {
+            if (fRandomGenerator->Uniform(1.0) > fhOnTrueEfficiencyProfile_2->GetBinContent(fhOnTrueEfficiencyProfile_2->FindBin(eta,pt))) {
               continue;
             }
           }
@@ -1926,7 +2204,7 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks() {
         }
         /* track accepted, process correlation function activities */
         if (fDoProcessCorrelations) {
-           fProcessTrueCorrelations.ProcessTrack(iTrack, part);
+           fProcessTrueCorrelations->ProcessTrack(pid, part);
         }
       }
     }
@@ -1937,13 +2215,14 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks() {
   }
   /* and finalize correlation function activities */
   if (fDoProcessCorrelations) {
-    fProcessTrueCorrelations.ProcessEventData();
+    fProcessTrueCorrelations->ProcessEventData();
   }
 
   if (!fEventCuts->IsMConlyTruth()) {
     /* only if not fast MC */
-    if (nNoOfTrueMultiReconstructedAndAccepted != 0)
+    if (nNoOfTrueMultiReconstructedAndAccepted != 0) {
       fhTrueMultiRec->Fill(nNoOfTrueMultiReconstructedAndAccepted+0.5);
+    }
   }
 
   /* track the event multiplicity */
@@ -1972,25 +2251,25 @@ void AliAnalysisTaskCorrelationsStudies::FinishTaskOutput() {
 
   if (fDoProcessCorrelations) {
     if (!fEventCuts->IsMConlyTruth()) {
-      fProcessCorrelations.FinalizeProcess();
+      fProcessCorrelations->FinalizeProcess();
     }
     if (fEventCuts->IsMC()) {
       if (fMCRecOption != kNone) {
-        fProcessMCRecCorrelationsWithOptions.FinalizeProcess();
+        fProcessMCRecCorrelationsWithOptions->FinalizeProcess();
       }
-      fProcessTrueCorrelations.FinalizeProcess();
+      fProcessTrueCorrelations->FinalizeProcess();
     }
   }
 
   if (fDoProcessCorrelations) {
     if (!fEventCuts->IsMConlyTruth()) {
-      PostData(2, fProcessCorrelations.GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
+      PostData(2, fProcessCorrelations->GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
     }
     if (fEventCuts->IsMC()) {
       if (fMCRecOption != kNone) {
-        PostData(3, fProcessMCRecCorrelationsWithOptions.GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
+        PostData(3, fProcessMCRecCorrelationsWithOptions->GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
       }
-      PostData(4, fProcessTrueCorrelations.GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
+      PostData(4, fProcessTrueCorrelations->GetHistogramsList()); // Post data for ALL output slots >0 here, to get at least an empty histogram
     }
   }
 
@@ -2008,9 +2287,13 @@ void AliAnalysisTaskCorrelationsStudies::Terminate(Option_t *)
     if(!fOutput) { AliError("ERROR: could not retrieve TList fOutput"); return; }
 
     fhPt = dynamic_cast<TH1F*> (fOutput->FindObject("fHistPt"));
-    if (!fhPt) { AliError("ERROR: could not retrieve fHistPt"); return;}
+    if (!fhPt) { 
+      AliError("ERROR: could not retrieve fHistPt"); return;
+    }
     fhEtaA = dynamic_cast<TH1F*> (fOutput->FindObject("fHistEtaA"));
-    if (!fhEtaA) { AliError("ERROR: could not retrieve fHistEtaA"); return;}
+    if (!fhEtaA) { 
+      AliError("ERROR: could not retrieve fHistEtaA"); return;
+    }
 
     // Get the physics selection histograms with the selection statistics
     //AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();

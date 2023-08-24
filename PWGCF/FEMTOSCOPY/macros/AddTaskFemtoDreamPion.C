@@ -1,7 +1,9 @@
 AliAnalysisTaskSE* AddTaskFemtoDreamPion(
-    bool isMC=false, float fSpherDown=0.7, float fdPhidEta=0.04,
-    TString CentEst="kInt7")
-{
+    bool isMC=false, bool MCtemplatefit=false, bool doSharedCut=false, float fSpherDown=0.7, float fdPhidEta=0.01,
+    TString CentEst="kInt7", bool isRun1=false, bool oldreject=false, const char *cutVar = "0") {
+
+  TString suffix = TString::Format("%s", cutVar);
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr)
@@ -14,17 +16,29 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
     return nullptr;
   }
 
-  AliFemtoDreamEventCuts *evtCuts=
+  AliFemtoDreamEventCuts *evtCuts = new AliFemtoDreamEventCuts;
+  if(isRun1) {
+      AliFemtoDreamEventCuts::StandardCutsRun1();
+    printf("This task uses StandardCutsRun1!\n");
+  } else {
       AliFemtoDreamEventCuts::StandardCutsRun2();
+    printf("This task uses StandardCutsRun2!\n");
+  }
   //This sets the method we want to use to clean up events with negative or too
   //low multiplicity. Usually you use the matching multiplicity estiamtor in your
   //event collection
   // Not mention in AN oder Indico
   evtCuts->CleanUpMult(false,false,false,true);
-  evtCuts->SetZVtxPosition(-10., 10.);
+  if(isRun1 && oldreject) {
+ 	evtCuts->SetCutMinContrib(3);
+  	evtCuts->SetZVtxPosition(-8., 8.);
+  } else {
+  	evtCuts->SetCutMinContrib(2);
+  	evtCuts->SetZVtxPosition(-10., 10.);
+  }
   // Only use those events where more than two primary tracks with |eta|<0.8 and pT>0.5 GeV/c see AN
-  evtCuts->SetSphericityCuts(fSpherDown, 1.0);
-
+  evtCuts->SetSphericityCuts(fSpherDown, 1.0, 0.5);
+  
   //Track Cuts are defined here
   //positive pions
   //Track Cuts tuned according to:
@@ -34,42 +48,70 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   AliFemtoDreamTrackCuts *fTrackCutsPosPion=new AliFemtoDreamTrackCuts();
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
   fTrackCutsPosPion->SetCutCharge(1);
-  fTrackCutsPosPion->SetFilterBit(128); // Indico Filterbit 7
   fTrackCutsPosPion->SetPtRange(0.14, 4.0);
   fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
   fTrackCutsPosPion->SetNClsTPC(80);
   // Not mention in AN oder Indico
   fTrackCutsPosPion->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
-  fTrackCutsPosPion->SetDCAVtxZ(0.3);
-  fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  if ( !MCtemplatefit ) {
+    fTrackCutsPosPion->SetFilterBit(96); // Filterbit 5+6
+    fTrackCutsPosPion->SetDCAVtxZ(0.3);
+    fTrackCutsPosPion->SetDCAVtxXY(0.3);
+  } else {
+    fTrackCutsPosPion->SetFilterBit(128); // Filterbit 7
+  }
   // Cut on avrg. separation in TPC: <Dr> < 12 cm (10 cm, 3 cm); Share quality < 1.0; share fraction < 0.05
-  fTrackCutsPosPion->SetCutSharedCls(true);
+  if ( doSharedCut ) { fTrackCutsPosPion->SetCutSharedCls(true);}
   fTrackCutsPosPion->SetNClsTPC(80); // In Indico + additional Chi²/NDF <4
-  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.);
+  fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
-  fTrackCutsPosPion->SetChi2Cut(0., 4.0);
+  fTrackCutsPosPion->SetMinimalBooking(false);
   //this checks if the sigma of the wanted hypothesis is the smallest, and if
   //another particle has a smaller sigma, the track is rejected.
   // Not mention in AN oder Indico
   //fTrackCutsPosPion->SetCutSmallestSig(true);
+  fTrackCutsPosPion->SetPlotDCADist(true);
+
+  //MC Template treatment
+  if ( isMC && MCtemplatefit ) {
+    //fTrackCutsPosPion->SetPlotContrib(true);
+    fTrackCutsPosPion->CheckParticleMothers(true);
+    fTrackCutsPosPion->SetPlotDCADist(true);
+    //fTrackCutsPosPion->SetOriginMultiplicityHists(true);
+    fTrackCutsPosPion->SetFillQALater(false); //Be careful about this flag! When the MinimalBooking is set
+  }
 
   //The same things for negative pions
   AliFemtoDreamTrackCuts *fTrackCutsNegPion=new AliFemtoDreamTrackCuts();
   fTrackCutsNegPion->SetIsMonteCarlo(isMC);
   fTrackCutsNegPion->SetCutCharge(-1);
-  fTrackCutsNegPion->SetFilterBit(128);
   fTrackCutsNegPion->SetPtRange(0.14, 4.0);
   fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
   fTrackCutsNegPion->SetNClsTPC(80);
   fTrackCutsNegPion->SetDCAReCalculation(true);
-  fTrackCutsNegPion->SetDCAVtxZ(0.3);
-  fTrackCutsNegPion->SetDCAVtxXY(0.3);
-  fTrackCutsNegPion->SetCutSharedCls(true);
+  if ( !MCtemplatefit ) {
+    fTrackCutsNegPion->SetFilterBit(96);
+    fTrackCutsNegPion->SetDCAVtxZ(0.3);
+    fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  } else {
+    fTrackCutsNegPion->SetFilterBit(128);
+  }
+  if ( doSharedCut ) { fTrackCutsNegPion->SetCutSharedCls(true);}
   fTrackCutsNegPion->SetNClsTPC(80);
-  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.);
+  fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
-  fTrackCutsNegPion->SetChi2Cut(0., 4.0);
+  fTrackCutsNegPion->SetMinimalBooking(false);
   //fTrackCutsNegPion->SetCutSmallestSig(true);
+  fTrackCutsNegPion->SetPlotDCADist(true);
+
+  //MC Template treatment
+  if ( isMC && MCtemplatefit ) {
+    //fTrackCutsNegPion->SetPlotContrib(true);
+    fTrackCutsNegPion->CheckParticleMothers(true);
+    fTrackCutsNegPion->SetPlotDCADist(true);
+    //fTrackCutsNegPion->SetOriginMultiplicityHists(true);
+    fTrackCutsNegPion->SetFillQALater(false); //Be careful about this flag! When the MinimalBooking is set
+  }
 
   //Now we define stuff we want for our Particle collection
   //Thanks, CINT - will not compile due to an illegal constructor
@@ -83,7 +125,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
 
   //We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
-  ZVtxBins.push_back(-10);
+  if(isRun1) ZVtxBins.push_back(-10);
   ZVtxBins.push_back(-8);
   ZVtxBins.push_back(-6);
   ZVtxBins.push_back(-4);
@@ -93,14 +135,12 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   ZVtxBins.push_back(4);
   ZVtxBins.push_back(6);
   ZVtxBins.push_back(8);
-  ZVtxBins.push_back(10);
+  if(isRun1) ZVtxBins.push_back(10);
   //The Multiplicity bins are set here
   std::vector<int> MultBins;
   MultBins.push_back(0);
-  MultBins.push_back(14);
-  MultBins.push_back(22);
-  MultBins.push_back(31);
-  MultBins.push_back(55);
+  MultBins.push_back(18);
+  MultBins.push_back(30);
 
   //The next part is for the result histograms. The order of hist. is the following:
   //                Particle1     Particle2
@@ -128,6 +168,16 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   closeRejection.push_back(true); // pi+ pi+
   closeRejection.push_back(false); // pi+ pi- 
   closeRejection.push_back(true); // pi- pi-
+
+  if (suffix == "5") {
+    //Deactivate the ClosePairRejection
+    fdPhidEta=0.;
+    closeRejection.clear();
+    closeRejection.push_back(false); // pi+ pi+
+    closeRejection.push_back(false); // pi+ pi-
+    closeRejection.push_back(false); // pi- pi-
+  }
+
   //QA plots for tracks
   std::vector<int> pairQA;
   pairQA.push_back(11); // pi+ pi+
@@ -155,6 +205,12 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   config->SetkTBinning(true);
   config->SetmTBinning(true);
   config->SetMinimalBookingME(false);
+  config->SetdPhidEtaPlots(true);
+  config->SetkTandMultBinning(true);
+  config->SetkTandMultPtBinning(true);
+  if(isMC) config->SetkTandMultMCTrueBinning(true);
+  config->SetdPhidEtaPlotsSmallK(true);
+  config->SetPhiEtaBinnign(true);
   
   if (isMC) {
       config->SetMomentumResolution(true);
@@ -174,9 +230,15 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   //kINT7 == Minimum bias
   //kHighMultV0 high multiplicity triggered by the V0 detector
   if(CentEst == "kInt7"){
-	task->SetTrigger(AliVEvent::kINT7);
-    task->SelectCollisionCandidates(AliVEvent::kINT7);
-    std::cout << "Added kINT7 Trigger \n";
+    if(isRun1) {
+    	task->SetTrigger(AliVEvent::kMB);
+    	task->SelectCollisionCandidates(AliVEvent::kMB);
+    	std::cout << "Added kMB Trigger \n";
+    } else {
+    	task->SetTrigger(AliVEvent::kINT7);
+    	task->SelectCollisionCandidates(AliVEvent::kINT7);
+    	std::cout << "Added kINT7 Trigger \n";
+    }
   } else if (CentEst == "kHM") {
     task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
     std::cout << "Added kHighMultV0 Trigger \n";
@@ -193,6 +255,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   task->SetTrackCutsPosPion(fTrackCutsPosPion);
   task->SetTrackCutsNegPion(fTrackCutsNegPion);
   task->SetCollectionConfig(config);
+  task->SetIsMC(isMC);
 
   mgr->AddTask(task);
 
@@ -203,13 +266,19 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   mgr->ConnectInput(task, 0, cinput);
 
   AliAnalysisDataContainer *coutputQA;
-  TString QAName = Form("MyTask");
+  TString addon = "";
+  if (CentEst == "kInt7") {
+  addon += "MB";
+  } else if (CentEst == "kHM") {
+  addon += "HM";
+  }
+  TString QAName = Form("%sResults%s", addon.Data(), suffix.Data());
   coutputQA = mgr->CreateContainer(
-      QAName.Data(), TList::Class(),
-      AliAnalysisManager::kOutputContainer,
-      Form("%s:%s", file.Data(), QAName.Data()));
+    QAName.Data(),
+    TList::Class(),
+    AliAnalysisManager::kOutputContainer,
+    Form("%s:%s", file.Data(), QAName.Data()));
   mgr->ConnectOutput(task, 1, coutputQA);
 
   return task;
 }
-

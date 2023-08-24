@@ -3,7 +3,7 @@ AliAnalysisTaskSED0MassTMVA *AddTaskD0MassTMVA(Int_t flag=0/*0 = D0,1 = LS*/,Boo
                                            Int_t system=0/*0=pp,1=PbPb*/,Int_t flagD0D0bar=0,
                                            Float_t minC=0, Float_t maxC=0,
                                            TString finDirname="Loose", TString finname="",TString finObjname="D0toKpiCuts",
-                                           Bool_t flagAOD049=kFALSE, Bool_t DrawDetSignal=false, Bool_t FillMCAcc=true,Int_t AODProtection = 1)
+                                           Bool_t flagAOD049=kFALSE, Bool_t DrawDetSignal=false, Bool_t FillMCAcc=true,Int_t AODProtection = 0,Bool_t multiana = false,Double_t refMult=9.26,Bool_t subtractDau=kFALSE,Int_t recoEstimator = AliAnalysisTaskSED0MassTMVA::kNtrk10,Int_t year = 16,Int_t MCEstimator = AliAnalysisTaskSED0MassTMVA::kEta10,TString estimatorFilename="")
 {
   //
   // AddTask for the AliAnalysisTaskSE for D0 candidates
@@ -21,7 +21,7 @@ AliAnalysisTaskSED0MassTMVA *AddTaskD0MassTMVA(Int_t flag=0/*0 = D0,1 = LS*/,Boo
     return NULL;
   }   
 
-  TString filename="",out1name="",out2name="",out3name="",out4name="",out5name="",out6name="",out7name="",out8name="",out9name="", inname="";
+  TString filename="",out1name="",out2name="",out3name="",out4name="",out5name="",out6name="",out7name="",out8name="",out9name="",out10name="", inname="";
   filename = AliAnalysisManager::GetCommonFileName();
   filename += ":PWG3_D2H_";
   if(flag==0){
@@ -75,6 +75,8 @@ AliAnalysisTaskSED0MassTMVA *AddTaskD0MassTMVA(Int_t flag=0/*0 = D0,1 = LS*/,Boo
     if(cutOnDistr) out9name+="C"; 
     if(flagD0D0bar==1)out9name+="D0";
     if(flagD0D0bar==2)out9name+="D0bar";
+      
+      out10name="coutputProf";
 
 
     inname="cinputmassD0_0";
@@ -150,6 +152,7 @@ AliAnalysisTaskSED0MassTMVA *AddTaskD0MassTMVA(Int_t flag=0/*0 = D0,1 = LS*/,Boo
   out7name += finDirname.Data();
   out8name += finDirname.Data();
   out9name += finDirname.Data();
+    out10name += finDirname.Data();
   inname += finDirname.Data();
 
    //setting my cut values
@@ -232,6 +235,11 @@ AliAnalysisTaskSED0MassTMVA *AddTaskD0MassTMVA(Int_t flag=0/*0 = D0,1 = LS*/,Boo
   massD0Task->SetFillVarHists(filldistr); // default is FALSE if System=PbPb
 
   massD0Task->SetAODMismatchProtection(AODProtection);
+    massD0Task->SetSubtractTrackletsFromDaughters(subtractDau);
+    massD0Task->SetMCPrimariesEstimator(MCEstimator);
+    massD0Task->SetMultiplicityEstimator(recoEstimator);
+    massD0Task->SetAODMismatchProtection(AODProtection);
+      massD0Task->SetMultiana(multiana);
 
  // massD0Task->SetFillPtHistos(FillMassPt);
  // massD0Task->SetFillImpactParameterHistos(FillImpPar);
@@ -244,8 +252,105 @@ AliAnalysisTaskSED0MassTMVA *AddTaskD0MassTMVA(Int_t flag=0/*0 = D0,1 = LS*/,Boo
   //  else massD0Task->SetD0PtCut(0.4,9999999999);
   //   massD0Task->SetWriteVariableTree(kTRUE);
 
-  mgr->AddTask(massD0Task);
-  
+    if(estimatorFilename.EqualTo("") ) {
+      printf("Estimator file not provided, multiplcity corrected histograms will not be filled\n");
+    } else{
+          
+      TFile* fileEstimator=TFile::Open(estimatorFilename.Data());
+      if(!fileEstimator)  {
+        Printf("FATAL: File with multiplicity estimator not found\n");
+        return NULL;
+      }
+        
+        massD0Task->SetReferenceMultiplcity(refMult);
+        const Char_t* profilebasename="SPDmult10";
+        if(recoEstimator==AliAnalysisTaskSED0MassTMVA::kVZEROA || recoEstimator==AliAnalysisTaskSED0MassTMVA::kVZEROAEq) profilebasename="VZEROAmult";
+        else if(recoEstimator==AliAnalysisTaskSED0MassTMVA::kVZERO || recoEstimator==AliAnalysisTaskSED0MassTMVA::kVZEROEq) profilebasename="VZEROMmult";
+        cout<<endl<<endl<<" profilebasename="<<profilebasename<<endl<<endl;
+        if(year == 10){
+        const Char_t* periodNames[4] = {"LHC10b", "LHC10c", "LHC10d", "LHC10e"};
+        TProfile* multEstimatorAvg[4];
+        for(Int_t ip=0; ip<4; ip++) {
+      multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+      if (!multEstimatorAvg[ip]) {
+        Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+        return NULL;
+      }
+        }
+            massD0Task->SetMultiplVsZProfileLHC10b(multEstimatorAvg[0]);
+            massD0Task->SetMultiplVsZProfileLHC10c(multEstimatorAvg[1]);
+            massD0Task->SetMultiplVsZProfileLHC10d(multEstimatorAvg[2]);
+            massD0Task->SetMultiplVsZProfileLHC10e(multEstimatorAvg[3]);
+      }else if(year ==16){
+        const Char_t* periodNames[10]={"LHC16d","LHC16e","LHC16g","LHC16h_1", "LHC16h_2","LHC16j","LHC16k","LHC16l","LHC16o","LHC16p"};
+        TProfile *multEstimatorAvg[10];
+        for(Int_t ip=0;ip<10; ip++){
+          multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+    if (!multEstimatorAvg[ip]) {
+      Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+      return NULL;
+    }
+        }
+          massD0Task->SetMultiplVsZProfileLHC16d(multEstimatorAvg[0]);
+          massD0Task->SetMultiplVsZProfileLHC16e(multEstimatorAvg[1]);
+          massD0Task->SetMultiplVsZProfileLHC16g(multEstimatorAvg[2]);
+          massD0Task->SetMultiplVsZProfileLHC16h1(multEstimatorAvg[3]);
+          massD0Task->SetMultiplVsZProfileLHC16h2(multEstimatorAvg[4]);
+          massD0Task->SetMultiplVsZProfileLHC16j(multEstimatorAvg[5]);
+          massD0Task->SetMultiplVsZProfileLHC16k(multEstimatorAvg[6]);
+          massD0Task->SetMultiplVsZProfileLHC16l(multEstimatorAvg[7]);
+          massD0Task->SetMultiplVsZProfileLHC16o(multEstimatorAvg[8]);
+          massD0Task->SetMultiplVsZProfileLHC16p(multEstimatorAvg[9]);
+
+      }else if(year == 17){
+       const Char_t* periodNames[10]={"LHC17e","LHC17f","LHC17h","LHC17i", "LHC17j","LHC17k","LHC17l","LHC17m","LHC17o","LHC17r"};
+        TProfile *multEstimatorAvg[10];
+        for(Int_t ip=0;ip<10; ip++){
+          multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+          if (!multEstimatorAvg[ip]) {
+          Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+          return NULL;
+          }
+        }
+          massD0Task->SetMultiplVsZProfileLHC17e(multEstimatorAvg[0]);
+          massD0Task->SetMultiplVsZProfileLHC17f(multEstimatorAvg[1]);
+          massD0Task->SetMultiplVsZProfileLHC17h(multEstimatorAvg[2]);
+          massD0Task->SetMultiplVsZProfileLHC17i(multEstimatorAvg[3]);
+          massD0Task->SetMultiplVsZProfileLHC17j(multEstimatorAvg[4]);
+          massD0Task->SetMultiplVsZProfileLHC17k(multEstimatorAvg[5]);
+          massD0Task->SetMultiplVsZProfileLHC17l(multEstimatorAvg[6]);
+          massD0Task->SetMultiplVsZProfileLHC17m(multEstimatorAvg[7]);
+          massD0Task->SetMultiplVsZProfileLHC17o(multEstimatorAvg[8]);
+          massD0Task->SetMultiplVsZProfileLHC17r(multEstimatorAvg[9]);
+      }else if(year == 18){
+  const Char_t* periodNames[14]={"LHC18b","LHC18d","LHC18e","LHC18f", "LHC18g","LHC18h","LHC18i","LHC18j","LHC18k","LHC18l","LHC18m","LHC18n","LHC18o","LHC18p"};
+        TProfile *multEstimatorAvg[14];
+        for(Int_t ip=0;ip<14; ip++){
+          multEstimatorAvg[ip] = (TProfile*)(fileEstimator->Get(Form("%s_%s",profilebasename,periodNames[ip]))->Clone(Form("%s_%s_clone",profilebasename,periodNames[ip])));
+          if (!multEstimatorAvg[ip]) {
+          Printf("Multiplicity estimator for %s not found! Please check your estimator file",periodNames[ip]);
+          return NULL;
+          }
+        }
+          massD0Task->SetMultiplVsZProfileLHC18b(multEstimatorAvg[0]);
+          massD0Task->SetMultiplVsZProfileLHC18d(multEstimatorAvg[1]);
+          massD0Task->SetMultiplVsZProfileLHC18e(multEstimatorAvg[2]);
+          massD0Task->SetMultiplVsZProfileLHC18f(multEstimatorAvg[3]);
+          massD0Task->SetMultiplVsZProfileLHC18g(multEstimatorAvg[4]);
+          massD0Task->SetMultiplVsZProfileLHC18h(multEstimatorAvg[5]);
+          massD0Task->SetMultiplVsZProfileLHC18i(multEstimatorAvg[6]);
+          massD0Task->SetMultiplVsZProfileLHC18j(multEstimatorAvg[7]);
+          massD0Task->SetMultiplVsZProfileLHC18k(multEstimatorAvg[8]);
+          massD0Task->SetMultiplVsZProfileLHC18l(multEstimatorAvg[9]);
+          massD0Task->SetMultiplVsZProfileLHC18m(multEstimatorAvg[10]);
+          massD0Task->SetMultiplVsZProfileLHC18n(multEstimatorAvg[11]);
+          massD0Task->SetMultiplVsZProfileLHC18o(multEstimatorAvg[12]);
+          massD0Task->SetMultiplVsZProfileLHC18p(multEstimatorAvg[13]);
+      }//18
+    
+       
+    }
+    mgr->AddTask(massD0Task);
   //
   // Create containers for input/output
   AliAnalysisDataContainer *cinputmassD0 = mgr->CreateContainer(inname,TChain::Class(), 
@@ -260,6 +365,7 @@ AliAnalysisTaskSED0MassTMVA *AddTaskD0MassTMVA(Int_t flag=0/*0 = D0,1 = LS*/,Boo
   AliAnalysisDataContainer *coutputmassD07 = mgr->CreateContainer(out7name,TTree::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //mass vs pt vs impt par
   AliAnalysisDataContainer *coutputmassD08 = mgr->CreateContainer(out8name,TTree::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //dedx
   AliAnalysisDataContainer *coutputmassD09 = mgr->CreateContainer(out9name,TTree::Class(),AliAnalysisManager::kOutputContainer, filename.Data()); //mass vs y
+    AliAnalysisDataContainer *coutputmassD010 = mgr->CreateContainer(out10name,TList::Class(),AliAnalysisManager::kOutputContainer, filename.Data());
     
   
 
@@ -275,7 +381,7 @@ AliAnalysisTaskSED0MassTMVA *AddTaskD0MassTMVA(Int_t flag=0/*0 = D0,1 = LS*/,Boo
   mgr->ConnectOutput(massD0Task,7,coutputmassD07);
   mgr->ConnectOutput(massD0Task,8,coutputmassD08);
   mgr->ConnectOutput(massD0Task,9,coutputmassD09);
-
+    mgr->ConnectOutput(massD0Task,10,coutputmassD010);
 
   return massD0Task;
 }

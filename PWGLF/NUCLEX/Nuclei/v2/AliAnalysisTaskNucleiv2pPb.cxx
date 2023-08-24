@@ -103,6 +103,12 @@ AliAnalysisTaskNucleiv2pPb::AliAnalysisTaskNucleiv2pPb():
   hQyVzAvsCentrality(0),
   hQxVzCvsCentrality(0),
   hQyVzCvsCentrality(0),
+  hCos2DeltaTPCVzAvsCentrality(0),
+  hCos2DeltaTPCVzCvsCentrality(0),
+  hCos2DeltaVzAVzCvsCentrality(0),
+  hCos2DeltaVzATPCvsCentrality(0),
+  hCos2DeltaVzCTPCvsCentrality(0),
+  hCos2DeltaVzCVzAvsCentrality(0),
   eventtype(-999),
   ftree(0),           
   tCentrality(0),     
@@ -113,8 +119,8 @@ AliAnalysisTaskNucleiv2pPb::AliAnalysisTaskNucleiv2pPb():
   tuqV0A(0),
   tuqV0C(0),
   tCharge(0),
-  tCosdeltaphiV0A(0),
-  tCosdeltaphiV0C(0),
+  tdeltaphiV0A(0),
+  tdeltaphiV0C(0),
   timpactXY(0),
   timpactZ(0),
   tpull(0),
@@ -161,6 +167,12 @@ AliAnalysisTaskNucleiv2pPb::AliAnalysisTaskNucleiv2pPb(const char *name):
     hQyVzAvsCentrality(0),
     hQxVzCvsCentrality(0),
     hQyVzCvsCentrality(0),
+    hCos2DeltaTPCVzAvsCentrality(0),
+    hCos2DeltaTPCVzCvsCentrality(0),
+    hCos2DeltaVzAVzCvsCentrality(0),
+    hCos2DeltaVzATPCvsCentrality(0),
+    hCos2DeltaVzCTPCvsCentrality(0),
+    hCos2DeltaVzCVzAvsCentrality(0),
     eventtype(-999),
     ftree(0),           
     tCentrality(0),     
@@ -171,8 +183,8 @@ AliAnalysisTaskNucleiv2pPb::AliAnalysisTaskNucleiv2pPb(const char *name):
     tuqV0A(0),
     tuqV0C(0),
     tCharge(0),
-    tCosdeltaphiV0A(0),
-    tCosdeltaphiV0C(0),
+    tdeltaphiV0A(0),
+    tdeltaphiV0C(0),
     timpactXY(0),
     timpactZ(0),
     tpull(0),
@@ -299,6 +311,20 @@ void AliAnalysisTaskNucleiv2pPb::UserCreateOutputObjects()
   fListHist->Add(hQxVzCvsCentrality);
   fListHist->Add(hQyVzCvsCentrality);
  
+  hCos2DeltaTPCVzAvsCentrality   = new TH2F("hCos2DeltaTPCVzAvsCentrality"  ,"hCos2DeltaTPCVzAvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaTPCVzCvsCentrality   = new TH2F("hCos2DeltaTPCVzCvsCentrality"  ,"hCos2DeltaTPCVzCvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzAVzCvsCentrality   = new TH2F("hCos2DeltaVzAVzCvsCentrality"  ,"hCos2DeltaVzAVzCvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzATPCvsCentrality   = new TH2F("hCos2DeltaVzATPCvsCentrality"  ,"hCos2DeltaVzATPCvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzCTPCvsCentrality   = new TH2F("hCos2DeltaVzCTPCvsCentrality"  ,"hCos2DeltaVzCTPCvsCentrality"  ,100,-1.1,1.1,105,0,105);
+  hCos2DeltaVzCVzAvsCentrality   = new TH2F("hCos2DeltaVzCVzAvsCentrality"  ,"hCos2DeltaVzCVzAvsCentrality"  ,100,-1.1,1.1,105,0,105);
+
+  fListHist->Add(hCos2DeltaTPCVzAvsCentrality);
+  fListHist->Add(hCos2DeltaTPCVzCvsCentrality);
+  fListHist->Add(hCos2DeltaVzAVzCvsCentrality);
+  fListHist->Add(hCos2DeltaVzATPCvsCentrality);
+  fListHist->Add(hCos2DeltaVzCTPCvsCentrality);
+  fListHist->Add(hCos2DeltaVzCVzAvsCentrality);
+
   if(!ftree){
    
     ftree = new TTree("ftree","ftree");
@@ -311,8 +337,8 @@ void AliAnalysisTaskNucleiv2pPb::UserCreateOutputObjects()
     ftree->Branch("tuqV0A"           ,&tuqV0A           ,"tuqV0A/D"         );
     ftree->Branch("tuqV0C"           ,&tuqV0C           ,"tuqV0C/D"         );
     ftree->Branch("tCharge"          ,&tCharge          ,"tCharge/D"        );
-    ftree->Branch("tCosdeltaphiV0A"  ,&tCosdeltaphiV0A  ,"tCosdeltaphiV0A/D");
-    ftree->Branch("tCosdeltaphiV0C"  ,&tCosdeltaphiV0C  ,"tCosdeltaphiV0C/D");
+    ftree->Branch("tdeltaphiV0A"     ,&tdeltaphiV0A     ,"tdeltaphiV0A/D");
+    ftree->Branch("tdeltaphiV0C"     ,&tdeltaphiV0C     ,"tdeltaphiV0C/D");
     ftree->Branch("timpactXY"        ,&timpactXY        ,"timpactXY/D"      );
     ftree->Branch("timpactZ"         ,&timpactZ         ,"timpactZ/D"       );
     ftree->Branch("tpull"            ,&tpull            ,"tpull/D"          );
@@ -579,7 +605,17 @@ void AliAnalysisTaskNucleiv2pPb::Analyze(AliVEvent* aod)
 	
       }
     }
+
+    // TBC
+    Double_t evPlAngTPC = TMath::ATan2(Qytn, Qxtn)/fNHarm;
     
+    hCos2DeltaTPCVzAvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngTPC - evPlAngV0A)) , iCen);
+    hCos2DeltaTPCVzCvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngTPC - evPlAngV0C)) , iCen);
+    hCos2DeltaVzAVzCvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngV0A - evPlAngV0C)) , iCen);
+    hCos2DeltaVzATPCvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngV0A - evPlAngTPC)) , iCen);
+    hCos2DeltaVzCTPCvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngV0C - evPlAngTPC)) , iCen);
+    hCos2DeltaVzCVzAvsCentrality  ->Fill(TMath::Cos(fNHarm*(evPlAngV0C - evPlAngV0A)) , iCen);
+
     //Scalar Product
   
     Double_t  QV0AQV0C = QxanCor *  QxcnCor+ QyanCor*QycnCor;
@@ -599,7 +635,7 @@ void AliAnalysisTaskNucleiv2pPb::Analyze(AliVEvent* aod)
     hQyVzCvsCentrality->Fill(QycnCor,iCen);
 
     //----------------------------------------------------
-    // from here my analysis starts
+    // from here my analysis start
     
     Float_t  impactXY=-999., impactZ=-999.;
     Double_t TPCSignal=0.;
@@ -707,8 +743,8 @@ void AliAnalysisTaskNucleiv2pPb::Analyze(AliVEvent* aod)
 
 	fhBBDeu->Fill(ptot*atrack->Charge(),TPCSignal);
       	    
-	deltaphiV0A=TMath::Cos(fNHarm*GetPhi0Pi(tPhi-evPlAngV0A));
-	deltaphiV0C=TMath::Cos(fNHarm*GetPhi0Pi(tPhi-evPlAngV0C));
+	deltaphiV0A=GetPhi0Pi(tPhi-evPlAngV0A);
+	deltaphiV0C=GetPhi0Pi(tPhi-evPlAngV0C);
       
 	// Scalar Product
       
@@ -723,8 +759,8 @@ void AliAnalysisTaskNucleiv2pPb::Analyze(AliVEvent* aod)
 	tuqV0A           = uqV0A;
 	tuqV0C           = uqV0C;
 	tCharge          = atrack->Charge();
-	tCosdeltaphiV0A  = deltaphiV0A;
-	tCosdeltaphiV0C  = deltaphiV0C;
+	tdeltaphiV0A     = deltaphiV0A;
+	tdeltaphiV0C     = deltaphiV0C;
 	timpactXY        = impactXY;
 	timpactZ         = impactZ;
 	tpull            = pullTPC;

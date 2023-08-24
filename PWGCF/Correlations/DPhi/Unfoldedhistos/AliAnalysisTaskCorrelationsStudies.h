@@ -28,7 +28,7 @@ class TRandom3;
 #include "AliCSEventCuts.h"
 #include "AliCSTrackSelection.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliDptDptCorrelations.h"
+#include "AliTwoParticleCorrelationsBase.h"
 #include "AliCSPairAnalysis.h"
 
 /// class AliAnalysisTaskCorrelationsStudies
@@ -46,6 +46,7 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     virtual                    ~AliAnalysisTaskCorrelationsStudies();
 
     virtual void                UserCreateOutputObjects();
+    virtual bool                UserNotify() { NotifyRun(); return true; }
     virtual void                NotifyRun();
     virtual void                UserExec(Option_t *option);
     virtual void                FinishTaskOutput();
@@ -63,6 +64,7 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     Bool_t                      BuildEfficiencyProfiles();
     void                        BuildTrueRecRelation();
     void                        BuildTrueRecAccRelation();
+    void FlagPreRejectionConditions();
     Int_t                       GetNoOfTruePrimaries();
     Int_t                       GetNoOfTrueParticles();
     Int_t                       GetNoOfMCRecTracks();
@@ -77,7 +79,8 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
       kNone = 0,                                              ///< no additional analysis with reconstructed tracks
       kRecWithTrue,                                           ///< additional analysis with rec tracks using true values
       kRecTruePrimaries,                                      ///< additional analysis with rec tracks but using only the ones corresponding to true primaries
-      kRecWithNotAccepted                                     ///< additional analysis with rec tracks incorporating the reconstructed which were not accepted
+      kRecWithNotAccepted,                                    ///< additional analysis with rec tracks incorporating the reconstructed which were not accepted
+      kRecTruePrimariesWithTrue                               ///< additional analysis with rec tracks using only the ones corresponding to true primaries and with their true values
     };
 
     /// \enum trackQualityFlags
@@ -99,8 +102,12 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
       kOnlyReconstructed  = 2                                 ///< only consider true tracks which have been reconstructed
     };
 
+    /* the track names for pT averages and effciency/purity corrections */
+    static std::vector<std::string> tracknames;
+
     TList                      *fOutput;                      ///< Output histograms list
     TString                     fTaskConfigurationString;     ///< the task configuration string
+    TString                     fOnTheFlyProduction;          ///< the on the fly MC production
     TString                     fTaskActivitiesString;        ///< the activities to perform by the task
     TString                     fEventCutsString;             ///< the event cuts string of characters
     TString                     fEfficiencyProfileToEnforce;  ///< the efficiency profile to enforce
@@ -118,18 +125,21 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     Bool_t                      fDoProcessCorrelations;       ///< perform the correlation analysis data collection
     Bool_t                      fDoProcessPairAnalysis;       ///< perform the pairs analysis data collection
     mcRecOptions                fMCRecOption;                 ///< options for the additional MC rec results
-    AliDptDptCorrelations       fProcessCorrelations;         ///< the processing correlations instance
-    AliDptDptCorrelations       fProcessMCRecCorrelationsWithOptions; ///< the processing correlations instance for MC rec with additional options
-    AliDptDptCorrelations       fProcessTrueCorrelations;     ///< the processing correlations instance for MC truth
+    AliTwoParticleCorrelationsBase       *fProcessCorrelations;                   ///< the processing correlations instance
+    AliTwoParticleCorrelationsBase       *fProcessMCRecCorrelationsWithOptions;   ///< the processing correlations instance for MC rec with additional options
+    AliTwoParticleCorrelationsBase       *fProcessTrueCorrelations;               ///< the processing correlations instance for MC truth
     AliCSPairAnalysis           fProcessPairAnalysis;         ///< the processing pairs analysis instance
     AliCSPairAnalysis           fProcessTruePairAnalysis;     ///< the processing pairs analysis instance for MC truth
     TF1                        *ffEfficiencyProfile;          ///< the formula for the efficiency profile to enforce
     TRandom3                   *fRandomGenerator;             ///< the random generator object instance for enforcing the efficiency profile
-    TH3F                       *fhWeightsTrack_1;             ///< the weights histogram for track one
-    TH3F                       *fhWeightsTrack_2;             ///< the weights histogram for track two
-    TH1F                       *fhEffCorrTrack_1;             ///< the efficiency correction for track one
-    TH1F                       *fhEffCorrTrack_2;             ///< the efficiency correction for track two
-    THn                        *fhPairEfficiency_PP;          ///< the plus plus pair efficiency
+    const TH1                  *fhV0MCentMult;                ///< the V0M centrality / multiplicity estimation histogram
+    const TH1                  *fhCL1MCentMult;               ///< the CL1M centrality / multiplicity estimation histogram
+    const TH1                  *fhCL1EtaGapMCentMult;         ///< the CL1M with an eta gap centrality / multiplicity estimation histogram
+    std::vector<const TH3*> fhWeightsTrack;                   ///< the species weights histogram
+    std::vector<const TH2*> fhPtAverageTrack;                 ///< the track species \f$ \langle p_{T>} \rangle \f$
+    std::vector<const TH2*> fhTruePtAverageTrack;             ///< the true track species \f$ \langle p_{T>} \rangle \f$
+    std::vector<const TH1*> fhEffCorrTrack;                   ///< the track species efficiency/purity correction
+    THn* fhPairEfficiency_PP;                                 ///< the plus plus pair efficiency
     THn                        *fhPairEfficiency_PM;          ///< the plus minus pair efficiency
     THn                        *fhPairEfficiency_MM;          ///< the minus minus pair efficiency
     THn                        *fhPairEfficiency_MP;          ///< the minus plus pair efficiency
@@ -140,6 +150,8 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     UInt_t                     *fMCRecFlags;                  //!<! the flags which qualify MC reconstructed tracks
     UInt_t                     *fMCTruePrimaryFlags;          //!<! the flags which qualify MC primary true tracks
     Int_t                       fMCFlagsStorageSize;          ///< the size of the MC flags storage
+    unsigned int *fRecoTrackPairFlags; ///< the pair track flags storage, decay involvement for instance
+    int fRecoTrackPairFlagsSize;                              ///< the size of the pair track flags, decay involvement for instance
 
     TH2F                       *fhOnTrueEfficiencyProfile_1;  ///< the histogram for the efficiency profile on true data for track one
     TH2F                       *fhOnTrueEfficiencyProfile_2;  ///< the histogram for the efficiency profile on true data for track two
@@ -155,13 +167,19 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     TH1F                       *fhTrueP;                      ///< True \f$ p \f$ spectrum
     TH1F                       *fhTruePPos;                   ///< True \f$ p \f$ spectrum for positive tracks
     TH1F                       *fhTruePNeg;                   ///< True \f$ p \f$ spectrum for negative tracks
-    TH1F                       *fhPurePt;                     ///< \f$ p_{T} \f$ spectrum with good PID
-    TH1F                       *fhPurePtPos;                  ///< \f$ p_{T} \f$ spectrum for positive tracks with good PID
-    TH1F                       *fhPurePtNeg;                  ///< \f$ p_{T} \f$ spectrum for negative tracks with good PID
-    TH1F                       *fhPureP;                      ///< \f$ p \f$ spectrum with good PID
-    TH1F                       *fhPurePPos;                   ///< \f$ p \f$ spectrum for positive tracks with good PID
-    TH1F                       *fhPurePNeg;                   ///< \f$ p \f$ spectrum for negative tracks with good PID
-    TH1F                       *fhUnConstrainedPt;            ///< not constrained \f$ p_{T} \f$ spectrum
+    TH3F* fhPurePt;                                           ///< \f$ p_{T} \f$ spectrum according to reco and primary truth species
+    TH3F* fhPurePtPos;                                        ///< \f$ p_{T} \f$ spectrum for positive tracks according to reco and primary truth species
+    TH3F* fhPurePtNeg;                                        ///< \f$ p_{T} \f$ spectrum for negative tracks according to reco and primary truth species
+    TH3F* fhPureP;                                            ///< \f$ p \f$ spectrum according to reco and primary truth species
+    TH3F* fhPurePPos;                                         ///< \f$ p \f$ spectrum for positive tracks according to reco and primary truth species
+    TH3F* fhPurePNeg;                                         ///< \f$ p \f$ spectrum for negative tracks according to reco and primary truth species
+    TH3F* fhSecPurePt;                                        ///< \f$ p_{T} \f$ spectrum according to reco and secondary truth species
+    TH3F* fhSecPurePtPos;                                     ///< \f$ p_{T} \f$ spectrum for positive tracks according to reco and secondary truth species
+    TH3F* fhSecPurePtNeg;                                     ///< \f$ p_{T} \f$ spectrum for negative tracks according to reco and secondary truth species
+    TH3F* fhSecPureP;                                         ///< \f$ p \f$ spectrum according to reco and secondary truth species
+    TH3F* fhSecPurePPos;                                      ///< \f$ p \f$ spectrum for positive tracks according to reco and secondary truth species
+    TH3F* fhSecPurePNeg;                                      ///< \f$ p \f$ spectrum for negative tracks according to reco and secondary truth species
+    TH1F* fhUnConstrainedPt;                                  ///< not constrained \f$ p_{T} \f$ spectrum
     TH1F                       *fhPtDifference;               ///< Constrained - unconstrained \f$ p_{T} \f$ spectrum
     TH1F                       *fhEtaB;                       ///< pseudorapidity spectrum before any cut
     TH1F                       *fhEtaA;                       ///< pseudorapidity spectrum after cuts
@@ -201,7 +219,7 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     AliAnalysisTaskCorrelationsStudies& operator=(const AliAnalysisTaskCorrelationsStudies&); // not implemented
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskCorrelationsStudies, 4);
+    ClassDef(AliAnalysisTaskCorrelationsStudies, 8);
     /// \endcond
 };
 

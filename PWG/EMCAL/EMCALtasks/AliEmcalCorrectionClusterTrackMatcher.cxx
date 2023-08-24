@@ -82,7 +82,15 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
   GetProperty("maxDist", fMaxDistance);
   GetProperty("updateClusters", fUpdateClusters);
   GetProperty("updateTracks", fUpdateTracks);
-  fDoPropagation = fEsdMode;
+  
+  // Track extrapolation to EMCal surface
+  //
+  // Calculate extrapolation for all tracks on ESDs
+  fDoPropagation = fEsdMode; 
+  // Attempt extrapolation of non extrapolated AOD tracks
+  GetProperty("extrapolateNotMatchedAOD", fAttemptProp);
+  // Attempt extrapolation of non extrapolated AOD tracks in EMCal acceptance
+  GetProperty("extrapolateNotMatchedAODInEMCal", fAttemptPropMatch); 
   
   Bool_t enableFracEMCRecalc = kFALSE;
   GetProperty("enableFracEMCRecalc", enableFracEMCRecalc);
@@ -105,7 +113,7 @@ Bool_t AliEmcalCorrectionClusterTrackMatcher::Initialize()
       SetNameOfMCGeneratorsToAccept(1,removeMCGen2);
     }
   }
-
+  
   return kTRUE;
 }
 

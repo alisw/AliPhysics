@@ -32,7 +32,9 @@
 
 class TH2;
 
-namespace EmcalTriggerJets {
+namespace PWGJE {
+  
+namespace EMCALJetTasks {
 
 class AliAnalysisTaskEmcalTriggerCorrelationMC : public AliAnalysisTaskEmcal {
 public:
@@ -59,6 +61,8 @@ private:
 
   ClassDef(AliAnalysisTaskEmcalTriggerCorrelationMC, 1);
 };
+
+}
 
 }
 

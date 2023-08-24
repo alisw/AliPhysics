@@ -1,4 +1,4 @@
-configurationName: "EMCal MC Correction Cluster V1 Run1 with cross talk emulation, 100 MeV induced cut"
+configurationName: "EMCal MC Correction Cluster V1 Run1 with cross talk emulation"
 pass: "pass1"
 CellEnergy:
     enabled: false

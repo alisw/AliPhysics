@@ -43,6 +43,7 @@
 #include "AliNanoAODTrackMapping.h"
 #include "AliNanoAODTrack.h"
 #include "AliNanoFilterNormalisation.h"
+#include "AliMultSelectionTask.h"
 
 ClassImp(AliAnalysisTaskNanoAODFilter)
 
@@ -50,6 +51,8 @@ ClassImp(AliAnalysisTaskNanoAODFilter)
 //________________________________________________________________________
 AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members should be initialised here
 :AliAnalysisTaskSE(),
+  fUseAliEventCuts(false),
+  fEventCuts(),
   fMCMode(0),
   fReplicator(0),
   fEvtCuts(),
@@ -57,6 +60,9 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members
   fSaveCutsFlag(kFALSE),
   fInputArrayName(""),
   fOutputArrayName(""),
+  fNmultBins(100),
+  fMinMult(0),
+  fMaxMult(100),
   fNormalisation(0x0)
 
 {
@@ -66,6 +72,8 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter() // All data members
 //________________________________________________________________________
 AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter(const char *name, Bool_t saveCutsFlag) // All data members should be initialised here
   :AliAnalysisTaskSE(name),
+   fUseAliEventCuts(false),
+   fEventCuts(),
    fMCMode(0),
    fReplicator(0),
    fEvtCuts(0),
@@ -73,6 +81,9 @@ AliAnalysisTaskNanoAODFilter::AliAnalysisTaskNanoAODFilter(const char *name, Boo
    fSaveCutsFlag(saveCutsFlag),
    fInputArrayName(""),
    fOutputArrayName(""),
+   fNmultBins(100),
+   fMinMult(0),
+   fMaxMult(100),
    fNormalisation(0x0)
 
 {
@@ -111,7 +122,7 @@ void AliAnalysisTaskNanoAODFilter::UserCreateOutputObjects()
   }
   
   std::string normName = std::string(fName) + "_scaler";
-  fNormalisation = new AliNanoFilterNormalisation(normName.data(), normName.data());
+  fNormalisation = new AliNanoFilterNormalisation(normName.data(), normName.data(),fNmultBins,fMinMult,fMaxMult);
   PostData(1, fNormalisation);
 }
 
@@ -174,7 +185,18 @@ void AliAnalysisTaskNanoAODFilter::UserExec(Option_t *)
     if (!((*it)->IsSelected(lAODevent))) 
       return;
 
-  fNormalisation->FillSelected(kTRUE, kTRUE, kTRUE, kTRUE, 0);
+  if (fUseAliEventCuts) {
+    auto isEventSelected_EventCuts = fEventCuts.AcceptEvent(lAODevent);
+    double mult = AliMultSelectionTask::IsINELgtZERO(lAODevent) ? fEventCuts.GetCentrality() : -0.5;
+    fNormalisation->FillSelected(fEventCuts.CheckNormalisationMask(AliEventCuts::kTriggeredEvent),
+                                 fEventCuts.CheckNormalisationMask(AliEventCuts::kPassesNonVertexRelatedSelections),
+                                 fEventCuts.CheckNormalisationMask(AliEventCuts::kHasReconstructedVertex),
+                                 fEventCuts.CheckNormalisationMask(AliEventCuts::kPassesAllCuts),
+                                 mult);
+    if(!isEventSelected_EventCuts)
+      return;
+  } else
+    fNormalisation->FillSelected(kTRUE, kTRUE, kTRUE, kTRUE, 0);
 
   AliAODHandler* handler = dynamic_cast<AliAODHandler*>(AliAnalysisManager::GetAnalysisManager()->GetOutputEventHandler());
   if ( handler ){

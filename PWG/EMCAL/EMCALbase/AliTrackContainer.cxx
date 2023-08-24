@@ -43,9 +43,7 @@
 #include "AliEmcalTrackSelResultHybrid.h"
 #include "AliTrackContainer.h"
 
-/// \cond CLASSIMP
 ClassImp(AliTrackContainer);
-/// \endcond
 
 TString AliTrackContainer::fgDefTrackCutsPeriod = "";
 
@@ -62,9 +60,6 @@ const std::map <std::string, AliEmcalTrackSelection::ETrackFilterType_t> AliTrac
   {"kHybridTracks2011woNoRefit", AliEmcalTrackSelection::kHybridTracks2011woNoRefit }
 };
 
-/**
- * Default constructor.
- */
 AliTrackContainer::AliTrackContainer():
   AliParticleContainer(),
   fTrackFilterType(AliEmcalTrackSelection::kHybridTracks),
@@ -82,11 +77,6 @@ AliTrackContainer::AliTrackContainer():
   fMassHypothesis = 0.139;
 }
 
-/**
- * Standard constructor.
- * @param[in] name Name of the container (= name of the array operated on)
- * @param[in] period Name of the period, needed for track cut selection
- */
 AliTrackContainer::AliTrackContainer(const char *name, const char *period):
   AliParticleContainer(name),
   fTrackFilterType(AliEmcalTrackSelection::kHybridTracks),
@@ -109,12 +99,6 @@ AliTrackContainer::AliTrackContainer(const char *name, const char *period):
   fMassHypothesis = 0.139;
 }
 
-/**
- * Get array from event. Also
- * creating the virtual track selection
- * for the period provided in the constructor.
- * @param[in] event Event from which the data is read
- */
 void AliTrackContainer::SetArray(const AliVEvent *event)
 {
   AliParticleContainer::SetArray(event);
@@ -176,11 +160,6 @@ void AliTrackContainer::SetArray(const AliVEvent *event)
   }
 }
 
-/**
- * Preparation for the next event: Run the track
- * selection of all bit and store the pointers to
- * selected tracks in a separate array.
- */
 void AliTrackContainer::NextEvent(const AliVEvent * event)
 {
   AliParticleContainer::NextEvent(event);
@@ -247,11 +226,6 @@ void AliTrackContainer::NextEvent(const AliVEvent * event)
   }
 }
 
-/**
- * Get track at index in the container
- * @param[in] i Index of the particle in the container
- * @return pointer to particle if particle is accepted, NULL otherwise
- */
 AliVTrack* AliTrackContainer::GetTrack(Int_t i) const
 {
   //Get i^th jet in array
@@ -261,11 +235,6 @@ AliVTrack* AliTrackContainer::GetTrack(Int_t i) const
   return vp;
 }
 
-/**
- * Get track at index in the container if accepted by the track selection provided
- * @param[in] i Index of the particle in the container
- * @return pointer to particle if particle is accepted, NULL otherwise
- */
 AliVTrack* AliTrackContainer::GetAcceptTrack(Int_t i) const
 {
   UInt_t rejectionReason;
@@ -279,11 +248,6 @@ AliVTrack* AliTrackContainer::GetAcceptTrack(Int_t i) const
   }
 }
 
-/**
- * Get next accepted particle in the container selected using the track cuts provided.
- * @deprecated Old style iterator - for compatibility reasons, use AliParticleContainer::accept_iterator instead
- * @return Next accepted particle (NULL if the end of the array is reached)
- */
 AliVTrack* AliTrackContainer::GetNextAcceptTrack()
 {
   const Int_t n = GetNEntries();
@@ -297,11 +261,6 @@ AliVTrack* AliTrackContainer::GetNextAcceptTrack()
   return p;
 }
 
-/**
- * Get next particle in the container
- * @deprecated Old style iterator - for compatibility reasons, use AliParticleContainer::all_iterator instead
- * @return Next track in the container (NULL if end of the container is reached)
- */
 AliVTrack* AliTrackContainer::GetNextTrack()
 {
   const Int_t n = GetNEntries();
@@ -315,12 +274,6 @@ AliVTrack* AliTrackContainer::GetNextTrack()
   return p;
 }
 
-/**
- * Retrieve the track type using the IndexOf method of the TClonesArray
- * to retrieve the index of the provided track.
- * @param track Track for which the type is requested.
- * @return The track type from fTrackTypes
- */
 Char_t AliTrackContainer::GetTrackType(const AliVTrack* track) const
 {
   Int_t id = fFilteredTracks.GetData()->IndexOf(track);
@@ -332,15 +285,6 @@ Char_t AliTrackContainer::GetTrackType(const AliVTrack* track) const
   }
 }
 
-/**
- * Retrieve momentum information of a track and fill a TLorentzVector
- * with it. In case the optional parameter mass is provided, it is used as mass
- * hypothesis, otherwise the mass hypothesis from the particle itself is used.
- * @param[out] mom Momentum vector to be filled
- * @param[in] track Track from which the momentum information is obtained.
- * @param[in] mass (Optional) Mass hypothesis
- * @return
- */
 Bool_t AliTrackContainer::GetMomentumFromTrack(TLorentzVector &mom, const AliVTrack* track, Double_t mass) const
 {
   if (track) {
@@ -370,27 +314,11 @@ Bool_t AliTrackContainer::GetMomentumFromTrack(TLorentzVector &mom, const AliVTr
   }
 }
 
-/**
- * Fills a TLorentzVector with the momentum information of the track provided
- * under a global mass hypothesis.
- * @param[out] mom Momentum vector of the particle provided
- * @param[in] track Track from which to obtain the momentum information
- * @return Always true
- */
 Bool_t AliTrackContainer::GetMomentumFromTrack(TLorentzVector &mom, const AliVTrack* part) const
 {
   return GetMomentumFromTrack(mom,part,fMassHypothesis);
 }
 
-/**
- * Fills a TLorentzVector with the momentum information of the
- * \f$ i^{th} \f$ particle in the container, using a global
- * mass hypothesis. In case the provided index is out of
- * range, false is returned as return value.
- * @param[out] mom Momentum vector of the \f$ i^{th} \f$ particle in the array
- * @param[in] i Index of the particle to check
- * @return True if the request was successful, false otherwise
- */
 Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
 {
   Double_t mass = fMassHypothesis;
@@ -417,15 +345,6 @@ Bool_t AliTrackContainer::GetMomentum(TLorentzVector &mom, Int_t i) const
   }
 }
 
-/**
- * Fills a TLorentzVector with the momentum information of the
- * next particle in the container, using a global mass hypothesis.
- * In case the iterator reached the end of the array, false
- * is returned as return value.
- * @deprecated Old style iterator - use all_iterator instead
- * @param[out] mom Momentum vector of the next particle
- * @return True if the request was successful, false otherwise
- */
 Bool_t AliTrackContainer::GetNextMomentum(TLorentzVector &mom)
 {
   Double_t mass = fMassHypothesis;
@@ -451,16 +370,6 @@ Bool_t AliTrackContainer::GetNextMomentum(TLorentzVector &mom)
   }
 }
 
-/**
- * Fills a TLorentzVector with the monentum infomation of the
- * \f$ i^{th} \f$ accepted particle in the container, using a
- * global mass hypothesis. In case the provided index is out of
- * range, or the particle under the index is not accepted, false
- * is returned as return value.
- * @param[out] mom Momentum vector of the accepted particle
- * @param[in] i Index to check
- * @return True if the request was successfull, false otherwise
- */
 Bool_t AliTrackContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i) const
 {
 
@@ -489,15 +398,6 @@ Bool_t AliTrackContainer::GetAcceptMomentum(TLorentzVector &mom, Int_t i) const
   }
 }
 
-/**
- * Fills a TLorentzVector with the monentum infomation of the
- * next accepted particle in the container, using a global
- * mass hypothesis. In case the iteration reached the end of
- * the array, false is returned as return value.
- * @deprecated Old style iterator - use accept_iterator instead
- * @param[out] mom Momentum vector of the next particle in the array
- * @return True if the request was successfull, false (no more entries) otherwise
- */
 Bool_t AliTrackContainer::GetNextAcceptMomentum(TLorentzVector &mom)
 {
   Double_t mass = fMassHypothesis;
@@ -524,16 +424,6 @@ Bool_t AliTrackContainer::GetNextAcceptMomentum(TLorentzVector &mom)
   }
 }
 
-/**
- * Perform full track selection for the particle vp, consisting
- * of kinematical track selection and track quality
- * cut provided by the cuts assigned to this container
- * @param[in] vp Track to be checked
- * @param[in] rejectionReason Bitmap encoding the reason why the
- * track was rejected. Note: The variable is not set to NULL
- * inside this function before changing its value.
- * @return True if the track is accepted, false otherwise
- */
 Bool_t AliTrackContainer::AcceptTrack(const AliVTrack *vp, UInt_t &rejectionReason) const
 {
   Bool_t r = ApplyTrackCuts(vp, rejectionReason);
@@ -545,17 +435,6 @@ Bool_t AliTrackContainer::AcceptTrack(const AliVTrack *vp, UInt_t &rejectionReas
   return ApplyKinematicCuts(mom, rejectionReason);
 }
 
-/**
- * Perform full track selection for the particle in
- * the container stored at position i, consisting
- * of kinematical track selection and track quality
- * cut provided by the cuts assigned to this container
- * @param[in] i Index of the track to check
- * @param[in] rejectionReason Bitmap encoding the reason why the
- * track was rejected. Note: The variable is not set to NULL
- * inside this function before changing its value.
- * @return True if the track is accepted, false otherwise
- */
 Bool_t AliTrackContainer::AcceptTrack(Int_t i, UInt_t &rejectionReason) const
 {
   if(fTrackTypes[i] == kRejected) return false; // track was rejected by the track selection
@@ -568,24 +447,11 @@ Bool_t AliTrackContainer::AcceptTrack(Int_t i, UInt_t &rejectionReason) const
   return ApplyKinematicCuts(mom, rejectionReason);
 }
 
-/**
- * Perform track quality selection of the track vp using
- * the track cuts assigned to this container.
- * @param[in] vp Track to be checked
- * @param[out] rejectionReason Bitmap encoding the reason why the
- * track was rejected. Note: The variable is not set to NULL
- * inside this function before changing its value.
- * @return True if the particle was accepted, false otherwise
- */
 Bool_t AliTrackContainer::ApplyTrackCuts(const AliVTrack* vp, UInt_t &rejectionReason) const
 {
   return ApplyParticleCuts(vp, rejectionReason);
 }
 
-/**
- * Add new track cuts to the container.
- * @param[in] cuts Cuts to be  added
- */
 void AliTrackContainer::AddTrackCuts(AliVCuts *cuts)
 {
   if (!fListOfCuts) {
@@ -595,21 +461,12 @@ void AliTrackContainer::AddTrackCuts(AliVCuts *cuts)
   fListOfCuts->Add(cuts);
 }
 
-/**
- * Get number of track cut objects assigned to this container.
- * @return Number of track cut objects
- */
 Int_t AliTrackContainer::GetNumberOfCutObjects() const
 {
   if (!fListOfCuts) return 0;
   return fListOfCuts->GetEntries();
 }
 
-/**
- * Get the cut object at index (icut) assigned to this container.
- * @param[in] icut Index of the cut in the container
- * @return Cut object at the index if existing, NULL otherwise
- */
 AliVCuts* AliTrackContainer::GetTrackCuts(Int_t icut)
 {
   if (!fListOfCuts) return NULL;
@@ -678,48 +535,22 @@ Bool_t AliTrackContainer::CheckArrayConsistency() const {
   return teststatus;
 }
 
-/**
- * Create an iterable container interface over all objects in the
- * EMCAL container.
- * @return iterable container over all objects in the EMCAL container
- */
 const AliTrackIterableContainer AliTrackContainer::all() const {
   return AliTrackIterableContainer(this, false);
 }
 
-/**
- * Create an iterable container interface over accepted objects in the
- * EMCAL container.
- * @return iterable container over accepted objects in the EMCAL container
- */
 const AliTrackIterableContainer AliTrackContainer::accepted() const {
   return AliTrackIterableContainer(this, true);
 }
 
-/**
- * Create an iterable container interface over all objects in the
- * EMCAL container.
- * @return iterable container over all objects in the EMCAL container
- */
 const AliTrackIterableMomentumContainer AliTrackContainer::all_momentum() const {
   return AliTrackIterableMomentumContainer(this, false);
 }
 
-/**
- * Create an iterable container interface over accepted objects in the
- * EMCAL container.
- * @return iterable container over accepted objects in the EMCAL container
- */
 const AliTrackIterableMomentumContainer AliTrackContainer::accepted_momentum() const {
   return AliTrackIterableMomentumContainer(this, true);
 }
 
-/**
- * Build title of the container consisting of the container name
- * and a string encoding the minimum \f$ p_{t} \f$ cut applied
- * in the kinematic track selection.
- * @return Title of the container
- */
 const char* AliTrackContainer::GetTitle() const
 {
   static TString trackString;

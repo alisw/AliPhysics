@@ -25,7 +25,6 @@
 #include <TMath.h>
 #include <TString.h>
 #include <TClonesArray.h>
-#include <TParticle.h>
 
 #include "AliStack.h"
 #include "AliESDEvent.h"
@@ -380,21 +379,33 @@ AliPicoV0MC *AliAnalysisTaskSEPicoV0MakerMC::SelectV0Candidate(AliAODv0 const *p
   Double_t dNegEta = v3Neg.Eta(); if ((dNegEta<fCutMinDauEta) || (dNegEta>fCutMaxDauEta)) return nullptr;
 //=============================================================================
 
-  const auto inp(TMath::Abs(pDauPosRD->GetLabel())); if (inp<0) return nullptr;
-  auto pDauPosMC(static_cast<AliAODMCParticle*>(MCEvent()->GetTrack(inp))); if (!pDauPosMC) return nullptr;
-  const auto imp(pDauPosMC->GetMother()); if (imp<0) return nullptr;
+  const auto inp(TMath::Abs(pDauPosRD->GetLabel()));
+  if (inp<0) return nullptr;
 
-  const auto inn(TMath::Abs(pDauNegRD->GetLabel())); if (inn<0) return nullptr;
-  auto pDauNegMC(static_cast<AliAODMCParticle*>(MCEvent()->GetTrack(inn))); if (!pDauNegMC) return nullptr;
-  const auto imn(pDauNegMC->GetMother()); if (imn<0) return nullptr;
+  auto pDauPosMC(static_cast<AliAODMCParticle*>(MCEvent()->GetTrack(inp)));
+  if (!pDauPosMC) return nullptr;
+
+  const auto imp(pDauPosMC->GetMother());
+  if (imp<0) return nullptr;
+
+  const auto inn(TMath::Abs(pDauNegRD->GetLabel()));
+  if (inn<0) return nullptr;
+
+  auto pDauNegMC(static_cast<AliAODMCParticle*>(MCEvent()->GetTrack(inn)));
+  if (!pDauNegMC) return nullptr;
+
+  const auto imn(pDauNegMC->GetMother());
+  if (imn<0) return nullptr;
 
   if (imp != imn) return nullptr;
-  const auto pV0MC(static_cast<AliAODMCParticle*>(MCEvent()->GetTrack(imp))); if (!pV0MC) return nullptr;
+  const auto pV0MC(static_cast<AliAODMCParticle*>(MCEvent()->GetTrack(imp)));
+
+  if (!pV0MC) return nullptr;
   if (((pV0MC->Y())<fCutMinV0Rap) || ((pV0MC->Y())>fCutMaxV0Rap)) return nullptr;
 
-  const auto idvMC(pV0MC->GetPdgCode());
-  const auto idp(pDauPosMC->GetPdgCode());
-  const auto idn(pDauNegMC->GetPdgCode());
+  const auto idvMC(pV0MC->PdgCode());
+  const auto idp(pDauPosMC->PdgCode());
+  const auto idn(pDauNegMC->PdgCode());
   auto bIsKshort((idp==211)  && (idn==-211)  && (idvMC== 310));
   auto bIsLambda((idp==2212) && (idn==-211)  && (idvMC== 3122));
   auto bIsAntiLa((idp==211)  && (idn==-2212) && (idvMC==-3122));
@@ -419,7 +430,7 @@ AliPicoV0MC *AliAnalysisTaskSEPicoV0MakerMC::SelectV0Candidate(AliAODv0 const *p
       const auto pMother(static_cast<AliAODMCParticle*>(MCEvent()->GetTrack(imv)));
 
       if (pMother) {
-        idmMC = pMother->GetPdgCode();
+        idmMC = pMother->PdgCode();
         if ((bIsLambda && ((idmMC== 3312) || (idmMC== 3322))) ||
             (bIsAntiLa && ((idmMC==-3312) || (idmMC==-3322)))) {
           dMotherPt  = pMother->Pt();
@@ -631,25 +642,34 @@ AliPicoV0MC *AliAnalysisTaskSEPicoV0MakerMC::SelectV0Candidate(AliESDv0 const *p
   const auto dNegEta(v3Neg.Eta()); if ((dNegEta<fCutMinDauEta) || (dNegEta>fCutMaxDauEta)) return nullptr;
 //=============================================================================
 
-  AliMCParticle *pDauTmpMC(nullptr);
-  const auto inp(TMath::Abs(pDauPosRD->GetLabel())); if (inp<0) return nullptr;
-  pDauTmpMC = static_cast<AliMCParticle*>(MCEvent()->GetTrack(inp)); if (!pDauTmpMC) return nullptr;
-  const auto pDauPosMC(pDauTmpMC->Particle()); if (!pDauPosMC) return nullptr;
-  const auto imp(pDauPosMC->GetFirstMother()); if (imp<0) return nullptr;
+//AliMCParticle *pDauTmpMC(nullptr);
+  const auto inp(TMath::Abs(pDauPosRD->GetLabel()));
+  if (inp<0) return nullptr;
 
-  const auto inn(TMath::Abs(pDauNegRD->GetLabel())); if (inn<0) return nullptr;
-  pDauTmpMC = static_cast<AliMCParticle*>(MCEvent()->GetTrack(inn)); if (!pDauTmpMC) return nullptr;
-  const auto pDauNegMC(pDauTmpMC->Particle()); if (!pDauNegMC) return nullptr;
-  const auto imn(pDauNegMC->GetFirstMother()); if (imn<0) return nullptr;
+  const auto pDauPosMC(static_cast<AliMCParticle*>(MCEvent()->GetTrack(inp)));
+  if (!pDauPosMC) return nullptr;
+
+  const auto imp(pDauPosMC->GetMother());
+  if (imp<0) return nullptr;
+
+  const auto inn(TMath::Abs(pDauNegRD->GetLabel()));
+  if (inn<0) return nullptr;
+
+  const auto pDauNegMC(static_cast<AliMCParticle*>(MCEvent()->GetTrack(inn)));
+  if (!pDauNegMC) return nullptr;
+
+  const auto imn(pDauNegMC->GetMother());
+  if (imn<0) return nullptr;
 
   if (imp != imn) return nullptr;
-  pDauTmpMC = static_cast<AliMCParticle*>(MCEvent()->GetTrack(imp)); if (!pDauTmpMC) return nullptr;
-  const auto pV0MC(pDauTmpMC->Particle()); if (!pV0MC) return nullptr;
+  const auto pV0MC(static_cast<AliMCParticle*>(MCEvent()->GetTrack(imp)));
+
+  if (!pV0MC) return nullptr;
   if (((pV0MC->Y())<fCutMinV0Rap) || ((pV0MC->Y())>fCutMaxV0Rap)) return nullptr;
 
-  const auto idvMC(pV0MC->GetPdgCode());
-  const auto idp(pDauPosMC->GetPdgCode());
-  const auto idn(pDauNegMC->GetPdgCode());
+  const auto idvMC(pV0MC->PdgCode());
+  const auto idp(pDauPosMC->PdgCode());
+  const auto idn(pDauNegMC->PdgCode());
   auto bIsKshort((idp==211)  && (idn==-211)  && (idvMC== 310));
   auto bIsLambda((idp==2212) && (idn==-211)  && (idvMC== 3122));
   auto bIsAntiLa((idp==211)  && (idn==-2212) && (idvMC==-3122));
@@ -668,27 +688,23 @@ AliPicoV0MC *AliAnalysisTaskSEPicoV0MakerMC::SelectV0Candidate(AliESDv0 const *p
   auto dMotherEta(0.);
   auto dMotherRap(0.);
   if (bIsLambda || bIsAntiLa) {
-    const auto imv(pV0MC->GetFirstMother());
+    const auto imv(pV0MC->GetMother());
 
     if (imv>=0) {
-      pDauTmpMC = static_cast<AliMCParticle*>(MCEvent()->GetTrack(imv));
+      auto pMother(static_cast<AliMCParticle*>(MCEvent()->GetTrack(imv)));
 
-      if (pDauTmpMC) {
-        auto pMother(pDauTmpMC->Particle());
+      if (pMother) {
+        idmMC = pMother->PdgCode();
+        if ((bIsLambda && ((idmMC== 3312) || (idmMC== 3322))) ||
+            (bIsAntiLa && ((idmMC==-3312) || (idmMC==-3322)))) {
+          dMotherPt  = pMother->Pt();
+          dMotherEta = pMother->Eta();
+          dMotherRap = pMother->Y();
 
-        if (pMother) {
-          idmMC = pMother->GetPdgCode();
-          if ((bIsLambda && ((idmMC== 3312) || (idmMC== 3322))) ||
-              (bIsAntiLa && ((idmMC==-3312) || (idmMC==-3322)))) {
-            dMotherPt  = pMother->Pt();
-            dMotherEta = pMother->Eta();
-            dMotherRap = pMother->Y();
-
-            if (imp<pStack->GetNprimary())             wsmMC |= AliPicoBase::kPrimary;
-            if (pStack->IsPhysicalPrimary(imv))        wsmMC |= AliPicoBase::kPhysicalPrimary;
-            if (pStack->IsSecondaryFromWeakDecay(imv)) wsmMC |= AliPicoBase::kSecondaryFromWeakDecay;
-            if (pStack->IsSecondaryFromMaterial(imv))  wsmMC |= AliPicoBase::kSecondaryFromMaterial;
-          }
+          if (imp<pStack->GetNprimary())             wsmMC |= AliPicoBase::kPrimary;
+          if (pStack->IsPhysicalPrimary(imv))        wsmMC |= AliPicoBase::kPhysicalPrimary;
+          if (pStack->IsSecondaryFromWeakDecay(imv)) wsmMC |= AliPicoBase::kSecondaryFromWeakDecay;
+          if (pStack->IsSecondaryFromMaterial(imv))  wsmMC |= AliPicoBase::kSecondaryFromMaterial;
         }
       }
     }
@@ -805,7 +821,7 @@ AliPicoV0MC *AliAnalysisTaskSEPicoV0MakerMC::SelectV0Candidate(AliESDv0 const *p
                           v3Pos.Px(), v3Pos.Py(), v3Pos.Pz(),
                           v3Neg.Px(), v3Neg.Py(), v3Neg.Pz(),
                           bPosInJC, bNegInJC,
-                          idvMC, wsvMC, pV0MC->Px(), pV0MC->Py(), pV0MC->Pz(), pV0MC->Energy(),
+                          idvMC, wsvMC, pV0MC->Px(), pV0MC->Py(), pV0MC->Pz(), pV0MC->E(),
                           idmMC, wsmMC, dMotherPt, dMotherEta, dMotherRap));
 }
 

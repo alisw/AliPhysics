@@ -21,6 +21,7 @@ AliAnalysisTaskNanoAODFemtoDreamPion::AliAnalysisTaskNanoAODFemtoDreamPion()
 ,fEventCuts()
 ,fTrackCutsPosPion()
 ,fTrackCutsNegPion()
+//,fTrackCutsProton()
 ,fConfig()
 ,fPairCleaner()
 ,fPartColl()
@@ -40,6 +41,7 @@ AliAnalysisTaskNanoAODFemtoDreamPion::AliAnalysisTaskNanoAODFemtoDreamPion(const
 ,fEventCuts()
 ,fTrackCutsPosPion()
 ,fTrackCutsNegPion()
+//,fTrackCutsProton()
 ,fConfig()
 ,fPairCleaner()
 ,fPartColl()
@@ -91,6 +93,17 @@ void AliAnalysisTaskNanoAODFemtoDreamPion::UserCreateOutputObjects() {
     fTrackCutsNegPion->SetMCName("MCPion-");
     fOutput->Add(fTrackCutsNegPion->GetMCQAHists());
   }
+
+  /*if (!fTrackCutsProton) {
+    AliFatal("Track Cuts for Proton+ not set!");
+  }
+  fTrackCutsProton->Init();
+  fTrackCutsProton->SetName("Proton+");
+  fOutput->Add(fTrackCutsProton->GetQAHists());
+  if (fTrackCutsProton->GetIsMonteCarlo()) {
+    fTrackCutsProton->SetMCName("MCProton+");
+    fOutput->Add(fTrackCutsProton->GetMCQAHists());
+  }*/
   //Arguments for the pair cleaner as follows:
   //1. How many pairs of Tracks + Decays do you want to clean?
   //(for the purpose of this tutorial, we are going to treat the
@@ -133,6 +146,8 @@ void AliAnalysisTaskNanoAODFemtoDreamPion::UserExec(Option_t *) {
       PosPions.clear();
       static std::vector<AliFemtoDreamBasePart> NegPions;
       NegPions.clear();
+      //static std::vector<AliFemtoDreamBasePart> Protons;
+      //Protons.clear();
 
       for (int iTrack = 0;iTrack<Event->GetNumberOfTracks();++iTrack) {
         AliVTrack *track=static_cast<AliVTrack*>(Event->GetTrack(iTrack));
@@ -148,6 +163,9 @@ void AliAnalysisTaskNanoAODFemtoDreamPion::UserExec(Option_t *) {
         if (fTrackCutsNegPion->isSelected(fTrack)) {
           NegPions.push_back(*fTrack);
         }
+       //if (fTrackCutsProton->isSelected(fTrack)) {
+       //   Protons.push_back(*fTrack);
+       // }
       }
 
       //This is where the magic of selecting particles ends, and we can turn our attention to
@@ -158,6 +176,7 @@ void AliAnalysisTaskNanoAODFemtoDreamPion::UserExec(Option_t *) {
       //fPairCleaner->CleanTrackAndDecay(&PosPions,&PosPions,0); // pi+ pi+
       //fPairCleaner->CleanTrackAndDecay(&PosPions,&NegPions,1); // pi+ pi-
       //fPairCleaner->CleanTrackAndDecay(&NegPions,&NegPions,2); // pi- pi-
+      //fPairCleaner->CleanTrackAndDecay(&PosPions, &Protons, 0);
 
       //The cleaner tags particles as 'bad' for use, these we don't want to give to our particle
       //pairer, that's why we call store particles, which only takes the particles marked 'good' from
@@ -166,6 +185,7 @@ void AliAnalysisTaskNanoAODFemtoDreamPion::UserExec(Option_t *) {
       fPairCleaner->ResetArray();
       fPairCleaner->StoreParticle(PosPions);
       fPairCleaner->StoreParticle(NegPions);
+      //fPairCleaner->StoreParticle(Protons);
       //Now we can give our particlers to the particle collection where the magic happens.
       //The arguments one by one:
       //1. A vector of a vector of cleaned particles fresh from the laundromat.

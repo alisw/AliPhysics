@@ -1,4 +1,4 @@
-#include "THnSparseDefinitions.h"
+#include "./PID.C"
 
 void runPIDiterative(TString fileName, Double_t deta, Double_t pLow, Double_t pHigh, Bool_t isMCdataSet, Int_t fitMethod, Int_t 
                      muonFractionHandlingParameter, Bool_t useIdentifiedGeneratedSpectra, Bool_t plotIdentifiedSpectra, Int_t mode,
@@ -9,10 +9,6 @@ void runPIDiterative(TString fileName, Double_t deta, Double_t pLow, Double_t pH
                      Bool_t useWeightsForLogLikelihood, Int_t regularisation, Double_t regularisationFactor,
                      Bool_t applyTOFpatching, Int_t binTypePt = kPtBinTypeJets, Double_t yieldThresholdForFitting = 100)
 {
-  // Load class for fit
-  gROOT->LoadMacro("histFitting/AliTPCPIDmathFit.cxx+g");
-  gROOT->LoadMacro("PID.C+");
-  
   TString filePathNameResultsWithoutReg = "";
   
   // First estimate w/o regularisation

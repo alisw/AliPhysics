@@ -39,12 +39,14 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
 
+  Float_t GetCosPA(AliESDtrack *lPosTrack, AliESDtrack *lNegTrack, Float_t lB, Double_t *lVtx);
   void Tracks2V0vertices(TClonesArray* fv0s, TObjArray* ev1, TObjArray* ev2, Bool_t mixing, AliVVertex *vtxT3D, Double_t b);
   Bool_t TrackCutsForTreeAOD(AliAODTrack* trk);
   Bool_t TrackCutsForTreeESD(AliESDtrack* trk);
   Bool_t V0CutsForTreeAOD(AliAODv0* v0, Double_t* vt);
   Bool_t V0CutsForTreeESD(AliESDv0* v0, Double_t* vt, AliExternalTrackParam* ptrk, AliExternalTrackParam* ntrk, Double_t b);
   Int_t IsGenLambda(Int_t poslabel, Int_t neglabel, Float_t pt, Float_t &mpt, Float_t &meta, Float_t &cascpt, Float_t &casceta);
+  Int_t IsGenCascade(Int_t Poslabel, Int_t Neglabel, Int_t Bachlabel);
   Double_t GetDCAV0Dau( AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b, Double_t lNegMassForTracking, Double_t lPosMassForTracking);
   void GetHelixCenter(const AliExternalTrackParam *track,Double_t center[2], Double_t b);
   void Evaluate(const Double_t *h, Double_t t, Double_t r[3], Double_t g[3], Double_t gg[3]);
@@ -71,6 +73,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   void SetEventSelection(UInt_t val) {fEvSel = val;}
   void MakeLambdaTree(Bool_t val){fLambdaTree = val;};
   void MakeEventMixingTree(Bool_t val){fEventMixingTree = val;};
+  void MakeCascadeTree(Bool_t val){fCascadeTree = val;};
   void DoRevertexing(Bool_t val){fRevertex = val;};
   void SetMaxMixTracks(Int_t val){nmaxmixtracks = val;};
   void SetMaxMixEvents(Int_t val){nmaxmixevents = val;};
@@ -152,6 +155,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   Int_t fRunNumber;
   TClonesArray *fAcceptV0; //!
   //TClonesArray *fAcceptV0test; //!
+  TClonesArray *fAcceptCascade; //!
   TClonesArray *fGenLambda; //!
   TClonesArray *fGenCascade; //!
   TClonesArray *fMixV0; //!
@@ -161,6 +165,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   UInt_t fEvSel;
   Bool_t fLambdaTree;
   Bool_t fEventMixingTree;
+  Bool_t fCascadeTree;
   Bool_t fRevertex;
   Int_t nmaxmixtracks;
   Int_t nmaxmixevents;
@@ -178,11 +183,12 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   const Float_t massPi = 0.139570;
   const Float_t massP = 0.938272;
   const Float_t massLambda = 1.115683;
+  const Float_t massXi = 1.32171;
 
   //AliMCEvent*              fMcEvent;    //! MC event
   //AliInputEventHandler*    fMcHandler;  //! MCEventHandler 
  
-  ClassDef(AliAnalysisTaskNetLambdaIdent,12);
+  ClassDef(AliAnalysisTaskNetLambdaIdent,17);
 };
 
 //_____________________________________________________________________________
@@ -190,14 +196,14 @@ class AliLightV0 : public TObject, public TArrayF
 {
  public:
  AliLightV0() : TObject(), TArrayF(), pt(-999), eta(-999), invmass(-999), invmassK0S(-999), invmassGamma(-999),
-    cospt(-999), decayr(-999), proplife(-999), dcadaughters(-999), mcstatus(0),
+    cospt(-999), decayr(-999), proplife(-999), dcav0pv(-999), dcadaughters(-999), mcstatus(0),
     ppt(-999), peta(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nnsigmapr(-999), ndca(-999) {};//genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
  AliLightV0(Float_t ptin, Float_t etain, UInt_t ndim = 0) : TObject(), TArrayF(ndim), pt(ptin), eta(etain), invmass(-999), invmassK0S(-999), invmassGamma(-999),
-    cospt(-999), decayr(-999), proplife(-999), dcadaughters(-999), mcstatus(0), 
+    cospt(-999), decayr(-999), proplife(-999), dcav0pv(-999), dcadaughters(-999), mcstatus(0), 
     ppt(-999), peta(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nnsigmapr(-999), ndca(-999) {};//genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
  AliLightV0(Float_t ptin, Float_t etain, Float_t invmassin, Float_t invmassK0Sin, Float_t invmassGammain,  
-	       Float_t cosptin, Float_t decayrin, Float_t proplifein, UInt_t ndim = 0) : TObject(), TArrayF(ndim), pt(ptin), eta(etain), invmass(invmassin), invmassK0S(invmassK0Sin), invmassGamma(invmassGammain),
-    cospt(cosptin), decayr(decayrin), proplife(proplifein), dcadaughters(-999), mcstatus(0),
+	    Float_t cosptin, Float_t decayrin, Float_t proplifein, UInt_t ndim = 0) : TObject(), TArrayF(ndim), pt(ptin), eta(etain), invmass(invmassin), invmassK0S(invmassK0Sin), invmassGamma(invmassGammain),
+    cospt(cosptin), decayr(decayrin), proplife(proplifein), dcav0pv(-999), dcadaughters(-999), mcstatus(0),
     ppt(-999), peta(-999), pnsigmapr(-999), pdca(-999), npt(-999), neta(-999), nnsigmapr(-999), ndca(-999) {};//genpt(-999), geneta(-999), cascpt(-999), casceta(-999) {};
   virtual ~AliLightV0(){};
   void SetPt(Float_t val){pt = val;};
@@ -208,6 +214,7 @@ class AliLightV0 : public TObject, public TArrayF
   void SetCosPointingAngle(Float_t val){cospt = val;};
   void SetDecayR(Float_t val){decayr = val;};
   void SetProperLifetime(Float_t val){proplife = val;};
+  void SetDCAV0(Float_t val){dcav0pv = val;};
   void SetDCADaughters(Float_t val){dcadaughters = val;};
   void SetMcStatus(Int_t val){mcstatus = val;};
   void SetPosDaughter(Float_t ptin, Float_t etain, Float_t nsigma, Float_t dca){ppt = ptin; peta = etain; pnsigmapr = nsigma; pdca = dca;};
@@ -223,6 +230,7 @@ class AliLightV0 : public TObject, public TArrayF
   Float_t GetCosPointingAngle(){return cospt;};
   Float_t GetDecayR(){return decayr;};
   Float_t GetProperLifetime(){return proplife;};
+  Float_t GetDCAV0(){return dcav0pv;};
   Float_t GetDCADaughters(){return dcadaughters;};
   Int_t   GetMcStatus(){return mcstatus;};
   void    GetPosDaughter(Float_t& ptout, Float_t& etaout, Float_t& nsigma, Float_t& dca){ptout = ppt; etaout = peta; nsigma = pnsigmapr; dca = pdca;};
@@ -241,6 +249,7 @@ class AliLightV0 : public TObject, public TArrayF
   Float_t   cospt;
   Float_t   decayr;
   Float_t   proplife;
+  Float_t   dcav0pv;
   Float_t   dcadaughters;
   Int_t    mcstatus;
   Float_t   ppt; // positive daughter properties
@@ -256,7 +265,7 @@ class AliLightV0 : public TObject, public TArrayF
   //Float_t   cascpt;
   //Float_t   casceta;
   
-  ClassDef(AliLightV0, 8);
+  ClassDef(AliLightV0, 9);
 };
 
 //_____________________________________________________________________________
@@ -319,4 +328,60 @@ class AliLightV0track : public TObject
   
   ClassDef(AliLightV0track, 4);
 };
+
+//_____________________________________________________________________________
+class AliLightCascade : public TObject, public TArrayF {
+ public:
+ AliLightCascade() : TObject(), TArrayF(), PtXi(-999), PtBach(-999), EtaXi(-999), EtaBach(-999), InvMassXi(-999), CosPAXi(-999), CosPABachBar(-999), DecayRXi(-999), PLTXi(-999), DCAXiPV(-999), DCABachPV(-999), DCAXiDaughters(-999), MCStatus(0), CascadeV0(0x0) {};
+
+  virtual ~AliLightCascade(){};
+  void SetPtXi(Float_t value) { PtXi = value; }
+  void SetPtBach(Float_t value) { PtBach = value; }
+  void SetEtaXi(Float_t value) { EtaXi = value; }
+  void SetEtaBach(Float_t value) { EtaBach = value; }
+  void SetInvMassXi(Float_t value) { InvMassXi = value; }
+  void SetCosPAXi(Float_t value) { CosPAXi = value; }
+  void SetCosPABachBar(Float_t value) { CosPABachBar = value; }
+  void SetDecayRXi(Float_t value) { DecayRXi = value; }
+  void SetPLTXi(Float_t value) { PLTXi = value; }
+  void SetDCAXiPV(Float_t value) { DCAXiPV = value; }
+  void SetDCABachPV(Float_t value) { DCABachPV = value; }
+  void SetDCAXiDaughters(Float_t value) { DCAXiDaughters = value; } 
+  void SetMCStatus(Int_t value) { MCStatus = value; }
+  void SetCascadeV0(AliLightV0 *tempCascadeV0) { CascadeV0 = tempCascadeV0; }
+
+  Float_t GetPtXi() { return PtXi; }
+  Float_t GetPtBach() { return PtBach; }
+  Float_t GetEtaXi() { return EtaXi; }
+  Float_t GetEtaBach() { return EtaBach; } 
+  Float_t GetInvMassXi() { return InvMassXi; }
+  Float_t GetCosPAXi() { return CosPAXi; }
+  Float_t GetCosPABachBar() { return CosPABachBar; }
+  Float_t GetDecayRXi() { return DecayRXi; }
+  Float_t GetPLTXi() { return PLTXi; } 
+  Float_t GetDCAXiPV() { return DCAXiPV; }
+  Float_t GetDCABachPV() { return DCABachPV; }
+  Float_t GetDCAXiDaughters() { return DCAXiDaughters; }
+  Int_t GetMCStatus() { return MCStatus; }
+  AliLightV0* GetCascadeV0() { return CascadeV0; }
+
+ private:
+  Float_t PtXi;
+  Float_t PtBach;
+  Float_t EtaXi;
+  Float_t EtaBach;
+  Float_t InvMassXi;
+  Float_t CosPAXi;
+  Float_t CosPABachBar;
+  Float_t DecayRXi;
+  Float_t PLTXi;
+  Float_t DCAXiPV;
+  Float_t DCABachPV;
+  Float_t DCAXiDaughters;
+  Int_t MCStatus;
+  AliLightV0 *CascadeV0;
+
+  ClassDef(AliLightCascade, 2);
+};
+  
 #endif

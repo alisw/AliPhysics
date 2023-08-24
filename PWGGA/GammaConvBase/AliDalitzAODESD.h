@@ -77,8 +77,8 @@ public:
      Double_t GetConstrainedParamPhiG();
      Int_t GetLabelG();
      Bool_t GetConstrainedPxPyPzG(Double_t* p) const;
-     void GetParamG(const AliVVertex* vx,Double_t bmag, Double_t* vector);
-//    const AliExternalTrackParam* GetParamG(const AliVVertex* vx,Double_t bmag);
+     void GetParamG(const AliVVertex* vx,Double_t bmag, Double_t vector[4]) const;
+     const AliExternalTrackParam* GetParamG(const AliVVertex* vx,Double_t bmag);
      void GetImpactParametersG(Float_t* p,Float_t* cov) const;
      Double_t GetSignG();
      Double_t GetEtaG();
@@ -90,6 +90,7 @@ public:
      Double_t GetDCAxy();
      Double_t GetDCAz();
      Bool_t TestFilterBitG(UInt_t bit) const;
+     Bool_t HasSharedPointOnITSLayerG(Int_t i);
      Bool_t   GetIsESD(){
          return fIsESD;
      }
@@ -111,7 +112,7 @@ private:
     AliAODTrack* fAODtrack;
     Double_t b[2];
     Double_t bCov[3];
-    ClassDef( AliDalitzAODESD, 1 );
+    ClassDef( AliDalitzAODESD, 2 );
     };
 
 

@@ -35,7 +35,7 @@ void AddTask_GammaHeavyMeson_MixedMode_pp(
   Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
   Int_t     enableLightOutput             = 0,        // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
-  Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
+  Int_t     enableTriggerMimicking        = 0,        // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
   TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
@@ -415,7 +415,13 @@ void AddTask_GammaHeavyMeson_MixedMode_pp(
   } else if (trainConfig == 904){ // for eta prime
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","2446600043013300000","01631030000000d0"); // INT7
     cuts.AddCutPCMCalo("00062113","00200009327000008250400000","2446600043013300000","01631030000000d0"); // PHI7
-  
+  } else if (trainConfig == 905){ // new for eta prime
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","24466190sa01cc00000","0r63103000000000"); // INT7
+    cuts.AddCutPCMCalo("00062113","00200009f9730000dge0400000","24466190sa01cc00000","0r63103000000000"); // PHI7
+  } else if (trainConfig == 906){ // new for eta prime (data)
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","24466190sa01cc00000","0r63103b00000000"); // INT7
+    cuts.AddCutPCMCalo("00062113","00200009f9730000dge0400000","24466190sa01cc00000","0r63103b00000000"); // PHI7
+
 
   // *********************************************************************************************************
   // 13 TeV  pp Run2 - EDC configurations
@@ -424,7 +430,14 @@ void AddTask_GammaHeavyMeson_MixedMode_pp(
     cuts.AddCutPCMCalo("00010113","00200009327000008250400000","4117911067032230000","01631030000000d0"); //INT7
     cuts.AddCutPCMCalo("0008e113","00200009327000008250400000","4117911067032230000","01631030000000d0"); //EG2
     cuts.AddCutPCMCalo("0008d113","00200009327000008250400000","4117911067032230000","01631030000000d0"); //EG1
-
+  } else if (trainConfig == 1001){ // EMCAL + DCal clusters for eta prime
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411793206f032230000","0r63103000000010"); //INT7
+    cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411793206f032230000","0r63103000000010"); //EG2
+    cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411793206f032230000","0r63103000000010"); //EG1
+  } else if (trainConfig == 1002){ // EMCAL + DCal clusters for eta prime (data)
+    cuts.AddCutPCMCalo("00010113","00200009f9730000dge0400000","411793206f032230000","0r63103b00000010"); //INT7
+    cuts.AddCutPCMCalo("0008e113","00200009f9730000dge0400000","411793206f032230000","0r63103b00000010"); //EG2
+    cuts.AddCutPCMCalo("0008d113","00200009f9730000dge0400000","411793206f032230000","0r63103b00000010"); //EG1
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

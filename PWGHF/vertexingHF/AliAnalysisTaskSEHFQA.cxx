@@ -63,13 +63,10 @@
 #include "AliVertexingHFUtils.h"
 #include "AliInputEventHandler.h"
 #include "AliMultSelection.h"
+#include "AliGenCocktailEventHeader.h"
+#include "AliLog.h"
 
-#include "AliFlowEvent.h"
-#include "AliFlowTrackCuts.h"
-#include "AliFlowTrackSimple.h"
-#include "AliFlowVector.h"
-
-#include "AliTRDTriggerAnalysis.h"
+//#include "AliTRDTriggerAnalysis.h"
 
 #include "AliAnalysisTaskSEHFQA.h"
 
@@ -90,18 +87,15 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE()
   , fOutputCounters(0x0)
   , fOutputCheckCentrality(0x0)
   , fOutputEvSelection(0x0)
-  , fOutputFlowObs(0x0)
   , fDecayChannel(AliAnalysisTaskSEHFQA::kD0toKpi)
   , fCuts(0x0)
-  , fFlowEvent(0x0)
-  , fRFPcuts(0x0)
   , fEstimator(AliRDHFCuts::kCentTRK)
   , fReadMC(kFALSE)
   , fSimpleMode(kFALSE)
   , fUseSelectionBit(kTRUE)
   , fOnOff()
   , fFillDistrTrackEffChecks(kFALSE)
-  , fAODProtection(1)
+  , fAODProtection(0)
   , fHisNentries(0)
   , fHisNentriesSelBit(0)
   , fHisTOFflags(0)
@@ -248,22 +242,16 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA():AliAnalysisTaskSE()
   , fHiszvtxvsSPDzvtx(0)
   , fHiszvtxvsSPDzvtxSel(0)
   , fHiszvtxvsSPDzvtxSelWithD(0)
-  , fHisFEvents(0)
-  , fHisTPCVZE_AngleQ(0)
-  , fHisCentVsMultRPS(0)
+  , fRejectMCPileupEvents(kFALSE)
+  , fKeepOnlyCharmEvents(kFALSE)
+  , fKeepOnlyBeautyEvents(kFALSE)
 {
   /// default constructor
   fOnOff[0]=kTRUE;
   fOnOff[1]=kTRUE;
   fOnOff[2]=kTRUE;
   fOnOff[3]=kTRUE;
-  fOnOff[4]=kTRUE;
 
-  for (Int_t iii=0; iii<3; iii++) {
-    fHisQ[iii]=0;
-    fHisAngleQ[iii]=0;
-    fHisPhiEta[iii]=0;
-  }
 }
 
 //____________________________________________________________________________
@@ -275,18 +263,15 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   , fOutputCounters(0x0)
   , fOutputCheckCentrality(0x0)
   , fOutputEvSelection(0x0)
-  , fOutputFlowObs(0x0)
   , fDecayChannel(ch)
   , fCuts(0x0)
-  , fFlowEvent(0x0)
-  , fRFPcuts(0x0)
   , fEstimator(AliRDHFCuts::kCentTRK)
   , fReadMC(kFALSE)
   , fSimpleMode(kFALSE)
   , fUseSelectionBit(kTRUE)
   , fOnOff()
   , fFillDistrTrackEffChecks(kFALSE)
-  , fAODProtection(1)
+  , fAODProtection(0)
   , fHisNentries(0)
   , fHisNentriesSelBit(0)
   , fHisTOFflags(0)
@@ -433,9 +418,9 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   , fHiszvtxvsSPDzvtx(0)
   , fHiszvtxvsSPDzvtxSel(0)
   , fHiszvtxvsSPDzvtxSelWithD(0)
-  , fHisFEvents(0)
-  , fHisTPCVZE_AngleQ(0)
-  , fHisCentVsMultRPS(0)
+  , fRejectMCPileupEvents(kFALSE)
+  , fKeepOnlyCharmEvents(kFALSE)
+  , fKeepOnlyBeautyEvents(kFALSE)
 {
   /// constructor
 
@@ -446,13 +431,7 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   fOnOff[1]=kTRUE;
   fOnOff[2]=kTRUE;
   fOnOff[3]=kTRUE;
-  fOnOff[4]=kTRUE;
 
-  for (Int_t iii=0; iii<3; iii++) {
-    fHisQ[iii]=0;
-    fHisAngleQ[iii]=0;
-    fHisPhiEta[iii]=0;
-  }
 
   // Output slot #1 writes into a TList container (number of events)
   DefineOutput(1,TList::Class());
@@ -492,7 +471,6 @@ AliAnalysisTaskSEHFQA::AliAnalysisTaskSEHFQA(const char *name, AliAnalysisTaskSE
   }
 
   if(fOnOff[3]) DefineOutput(7,TList::Class());  //My private output
-  if(fOnOff[4]) DefineOutput(8,TList::Class());  //My private output
 
 }
 
@@ -512,11 +490,6 @@ AliAnalysisTaskSEHFQA::~AliAnalysisTaskSEHFQA()
   delete fOutputCheckCentrality;
 
   delete fOutputEvSelection;
-
-  if(fOnOff[4]) {
-    delete fOutputFlowObs;
-    delete fFlowEvent;
-  }
 
 }
 
@@ -594,9 +567,12 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
   fOutputEntries->SetOwner();
   fOutputEntries->SetName(GetOutputSlot(1)->GetContainer()->GetName());
 
+  Int_t nBinsEvHisto = 15;
+  if(fReadMC && fRejectMCPileupEvents)
+    nBinsEvHisto++;
 
   TString hnameEntries="hNentries";
-  fHisNentries=new TH1F(hnameEntries.Data(), "Counts the number of events", 15,-0.5,14.5);
+  fHisNentries=new TH1F(hnameEntries.Data(), "Counts the number of events", nBinsEvHisto,-0.5,nBinsEvHisto-0.5);
   fHisNentries->GetXaxis()->SetBinLabel(1,"nEventsRead");
   fHisNentries->GetXaxis()->SetBinLabel(2,"nEvents Matched dAOD");
   fHisNentries->GetXaxis()->SetBinLabel(3,"Mismatched dAOD (Event numbers)");
@@ -613,17 +589,20 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fHisNentries->GetXaxis()->SetBinLabel(13,"MC Cand from b");
     fHisNentries->GetXaxis()->SetBinLabel(14,"N fake Trks");
     fHisNentries->GetXaxis()->SetBinLabel(15,"N true Trks");
+    if(fRejectMCPileupEvents)
+      fHisNentries->GetXaxis()->SetBinLabel(16,"nEvents rej w/ pileup");
   }
 
   fHisNentries->GetXaxis()->SetNdivisions(1,kFALSE);
 
   hnameEntries="HasSelBit";
-  fHisNentriesSelBit=new TH2F(hnameEntries.Data(), "Counts the number of events with SelectionBit", 5,0.,5.,100,0.,30.);
+  fHisNentriesSelBit=new TH2F(hnameEntries.Data(), "Counts the number of events with SelectionBit", 6,0.,6.,100,0.,30.);
   fHisNentriesSelBit->GetXaxis()->SetBinLabel(1,"Dplus");
   fHisNentriesSelBit->GetXaxis()->SetBinLabel(2,"Ds");
   fHisNentriesSelBit->GetXaxis()->SetBinLabel(3,"LcKpi");
   fHisNentriesSelBit->GetXaxis()->SetBinLabel(4,"D0toKpi");
   fHisNentriesSelBit->GetXaxis()->SetBinLabel(5,"Dstar");
+  fHisNentriesSelBit->GetXaxis()->SetBinLabel(6,"LctoV0");
 
   fOutputEntries->Add(fHisNentries);
   fOutputEntries->Add(fHisNentriesSelBit);
@@ -1439,65 +1418,6 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
     fOutputEvSelection->Add(fHiszvtxvsSPDzvtxSelWithD);
 
   }
-  if(fOnOff[4]){ // FLOW OBSERVABLES
-    fOutputFlowObs=new TList();
-    fOutputFlowObs->SetOwner();
-    fOutputFlowObs->SetName(GetOutputSlot(8)->GetContainer()->GetName());
-
-    fFlowEvent = new AliFlowEvent(3000);
-    fRFPcuts = new AliFlowTrackCuts("rfpCuts");
-
-    fHisFEvents = new TH2F("hFlowEvents","FlowEvent Selection",7,0,7,7,-10,60);
-    fHisFEvents->GetXaxis()->SetBinLabel(1,"REACHED");
-    fHisFEvents->GetXaxis()->SetBinLabel(2,"TRIGGERED");
-    fHisFEvents->GetXaxis()->SetBinLabel(3,"kMB");
-    fHisFEvents->GetXaxis()->SetBinLabel(4,"kCent");
-    fHisFEvents->GetXaxis()->SetBinLabel(5,"kSemiC");
-    fHisFEvents->GetXaxis()->SetBinLabel(6,"Triggered + vtx cut");
-    fHisFEvents->GetXaxis()->SetBinLabel(7,"UnexpectedBehaviour");
-    fOutputFlowObs->Add(fHisFEvents);
-
-    TString ref[3] = {"FB1","FB128","VZE"};
-    Int_t etabin[3] = {40,40,20};
-    Int_t etamax[3] = { 1, 1, 5};
-    for(Int_t i=0; i<3; ++i) {
-      fHisQ[i]= new TProfile2D( Form("h%s_Q",ref[i].Data()),
-			     Form("Q_{2} components for %s",ref[i].Data()),
-			     4,0,4,12,0,60,"s");
-      fHisQ[i]->GetXaxis()->SetBinLabel(1,"Qx^{-}");
-      fHisQ[i]->GetXaxis()->SetBinLabel(2,"Qy^{-}");
-      fHisQ[i]->GetXaxis()->SetBinLabel(3,"Qx^{+}");
-      fHisQ[i]->GetXaxis()->SetBinLabel(4,"Qy^{+}");
-      fHisQ[i]->GetYaxis()->SetTitle("Centrality");
-      fOutputFlowObs->Add(fHisQ[i]);
-
-      fHisAngleQ[i] = new TH2F( Form("h%s_AngleQ",ref[i].Data()),
-			     Form("#Psi_{2} for %s",ref[i].Data()),
-			     72,0,TMath::Pi(),12,0,60);
-      fHisAngleQ[i]->GetXaxis()->SetTitle( Form("#Psi_{2}^{%s}",ref[i].Data()) );
-      fHisAngleQ[i]->GetYaxis()->SetTitle("Centrality");
-      fOutputFlowObs->Add(fHisAngleQ[i]);
-
-      fHisPhiEta[i] = new TH3F( Form("h%s_PhiEta",ref[i].Data()),
-			     Form("Eta vs Phi for %s",ref[i].Data()),
-			     144,0,TMath::TwoPi(),etabin[i],-1.0*etamax[i],+1.0*etamax[i],12,0,60);
-      fHisPhiEta[i]->GetXaxis()->SetTitle("Phi");
-      fHisPhiEta[i]->GetYaxis()->SetTitle("Eta");
-      fHisPhiEta[i]->GetZaxis()->SetTitle("Centrality");
-      fOutputFlowObs->Add(fHisPhiEta[i]);
-
-    }
-    fHisTPCVZE_AngleQ = new TH3F("hTPCVZE_AngleQ","#Psi_{2}^{VZERO} vs #Psi_{2}^{TPC}",   72,0,TMath::Pi(),72,0,TMath::Pi(),12,0,60);
-    fHisTPCVZE_AngleQ->GetXaxis()->SetTitle("#Psi_{2}^{TPC}");
-    fHisTPCVZE_AngleQ->GetYaxis()->SetTitle("#Psi_{2}^{VZE}");
-    fHisTPCVZE_AngleQ->GetZaxis()->SetTitle("Centrality");
-    fOutputFlowObs->Add(fHisTPCVZE_AngleQ);
-
-    fHisCentVsMultRPS = new TH2F("hCentVsMultRPS", " Centrality Vs. Multiplicity RPs",5000, 0, 5000.,12,0,60 );
-    fHisCentVsMultRPS->GetXaxis()->SetTitle("Multiplicity RPs");
-    fHisCentVsMultRPS->GetYaxis()->SetTitle("Centrality");
-    fOutputFlowObs->Add(fHisCentVsMultRPS);
-  }
 
   // Post the data
   PostData(1,fOutputEntries);
@@ -1507,7 +1427,6 @@ void AliAnalysisTaskSEHFQA::UserCreateOutputObjects()
   PostData(4,fCuts);
   if(fOnOff[2]) PostData(5,fOutputCounters);
   if(fOnOff[3]) PostData(7,fOutputEvSelection);
-  if(fOnOff[4]) PostData(8,fOutputFlowObs);
 
   if(!fOnOff[0] && !fOnOff[1] && !fOnOff[2]) AliError("Nothing will be filled!");
 }
@@ -1767,8 +1686,35 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       delete [] pdgdaughters;
       return;
     }
-  }
 
+    // if MC pileup event and enabled flag, reject immediately
+    if(fRejectMCPileupEvents)
+    {
+      if(IsMCPileupEvent(mcHeader)) {
+        fHisNentries->Fill(15);
+        return;
+      }
+    }
+
+    // check if charm or beauty event and reject it if only one of the two is enabled
+    if(fKeepOnlyCharmEvents || fKeepOnlyBeautyEvents)
+    {
+      Int_t nCharm = 0, nBeauty = 0;
+      for (Int_t iPart = 0; iPart < mcArray->GetEntries(); iPart++)
+      {
+        AliAODMCParticle *part = (AliAODMCParticle *)mcArray->At(iPart);
+        Int_t pdgCode = TMath::Abs(part->GetPdgCode());
+        if (pdgCode == 4)
+          nCharm++;
+        else if (pdgCode == 5)
+          nBeauty++;
+      }
+      if(fKeepOnlyCharmEvents && nBeauty > nCharm)
+        return;
+      if(fKeepOnlyBeautyEvents && nCharm > nBeauty)
+        return;
+    }
+  }
 
   UInt_t evSelMask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Double_t centrality=fCuts->GetCentrality(aod);
@@ -1784,8 +1730,8 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   Int_t nSelTracksTPCITS1SPD=0;
   Int_t ntracksFBit4=0;
 
-  AliTRDTriggerAnalysis trdSelection;
-  trdSelection.CalcTriggers(aod);
+  // AliTRDTriggerAnalysis trdSelection;
+  // trdSelection.CalcTriggers(aod);
 
   if(fReadMC) {
     if(aod->GetTriggerMask()==0 &&
@@ -1819,10 +1765,6 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
     }
   }
 
-  if(fOnOff[4]) {
-    FillFlowObs(aod);
-    PostData(8,fOutputFlowObs);
-  }
   if(fOnOff[3]){
     AliCounterCollection* trigCount=(AliCounterCollection*)fOutputEvSelection->FindObject("trigCounter");
     AliCounterCollection* trigCount2=(AliCounterCollection*)fOutputEvSelection->FindObject("trigCounter2");
@@ -1945,12 +1887,12 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       fHisTrigMul->Fill(16.,multiplicity);
       trigCount2->Count(Form("triggerType:TRD/Run:%d",runNumber));
     }
-    if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
+    if((evSelMask & AliVEvent::kTRD) && trigClass.Contains("HJT")){ // trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
       fHisTrigCent->Fill(17.,centrality);
       fHisTrigMul->Fill(17.,multiplicity);
       trigCount2->Count(Form("triggerType:TRDHJT/Run:%d",runNumber));
     }
-    if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
+    if((evSelMask & AliVEvent::kTRD) && trigClass.Contains("HSE")){ //trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
       fHisTrigCent->Fill(18.,centrality);
       fHisTrigMul->Fill(18.,multiplicity);
       trigCount2->Count(Form("triggerType:TRDHSE/Run:%d",runNumber));
@@ -2106,11 +2048,11 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
       fHisTrigCentSel->Fill(16.,centrality);
       fHisTrigMulSel->Fill(16.,multiplicity);
     }
-    if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
+    if((evSelMask & AliVEvent::kTRD) && trigClass.Contains("HJT")){ //trdSelection.IsFired(AliTRDTriggerAnalysis::kHJT)){
       fHisTrigCentSel->Fill(17.,centrality);
       fHisTrigMulSel->Fill(17.,multiplicity);
     }
-    if((evSelMask & AliVEvent::kTRD) && trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
+    if((evSelMask & AliVEvent::kTRD) && trigClass.Contains("HSE")){ // trdSelection.IsFired(AliTRDTriggerAnalysis::kHSE)){
       fHisTrigCentSel->Fill(18.,centrality);
       fHisTrigMulSel->Fill(18.,multiplicity);
     }
@@ -2304,43 +2246,68 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
   AliAODRecoDecayHF *d;
   for (Int_t iCand = 0; iCand < nCand3Prong; iCand++) {
     d = (AliAODRecoDecayHF*)arrayProng3Prong->UncheckedAt(iCand);
-    if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d))continue;
-
+    Int_t fill3prong = -1;
     if(fUseSelectionBit){
-      Double_t ptCand_selBit = d->Pt();
+      Double_t ptCand_selBit;
+      if(d->GetIsFilled()<1) ptCand_selBit = GetPtForUnfilledCand(vHF, aod, d, 3);
+      else                   ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
-        if(d->HasSelectionBit(AliRDHFCuts::kDplusCuts)) fHisNentriesSelBit->Fill(0.0,ptCand_selBit);
-        if(d->HasSelectionBit(AliRDHFCuts::kDsCuts)) fHisNentriesSelBit->Fill(1.0,ptCand_selBit);
-        if(d->HasSelectionBit(AliRDHFCuts::kLcCuts)) fHisNentriesSelBit->Fill(2.0,ptCand_selBit);
+        if(d->HasSelectionBit(AliRDHFCuts::kDplusCuts)){ fill3prong = 0; fHisNentriesSelBit->Fill(0.0,ptCand_selBit); }
+        if(d->HasSelectionBit(AliRDHFCuts::kDsCuts)){ fill3prong = 1; fHisNentriesSelBit->Fill(1.0,ptCand_selBit); }
+        if(d->HasSelectionBit(AliRDHFCuts::kLcCuts)){ fill3prong = 2; fHisNentriesSelBit->Fill(2.0,ptCand_selBit); }
       }
     }
+
+    if(fill3prong == 0 && fDecayChannel!=AliAnalysisTaskSEHFQA::kDplustoKpipi) continue;
+    if(fill3prong == 1 && fDecayChannel!=AliAnalysisTaskSEHFQA::kDstoKKpi) continue;
+    if(fill3prong == 2 && fDecayChannel!=AliAnalysisTaskSEHFQA::kLambdactopKpi) continue;
+    if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF3Prong*)d))continue;
   }
   // D0kpi
   for (Int_t iCand = 0; iCand < nCandD0toKpi; iCand++) {
     d = (AliAODRecoDecayHF*)arrayProngD0toKpi->UncheckedAt(iCand);
-    if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d))continue;
+
     if(fUseSelectionBit){
-      Double_t ptCand_selBit = d->Pt();
+      Double_t ptCand_selBit;
+      if(d->GetIsFilled()<1) ptCand_selBit = GetPtForUnfilledCand(vHF, aod, d, 2);
+      else                   ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
         if(d->HasSelectionBit(AliRDHFCuts::kD0toKpiCuts)) fHisNentriesSelBit->Fill(3.0,ptCand_selBit);
       }
     }
+
+    if(fDecayChannel != AliAnalysisTaskSEHFQA::kD0toKpi) continue;
+    if(!vHF->FillRecoCand(aod,(AliAODRecoDecayHF2Prong*)d))continue;
   }
   // Dstar
   for (Int_t iCand = 0; iCand < nCandDstar; iCand++) {
     d = (AliAODRecoDecayHF*)arrayProngDstar->UncheckedAt(iCand);
-    if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)d),kTRUE))continue;
     if(fUseSelectionBit){
-      Double_t ptCand_selBit = d->Pt();
+      Double_t ptCand_selBit;
+      if(d->GetIsFilled()<1) ptCand_selBit = GetPtForUnfilledCand(vHF, aod, d, -1); //-1 = Dstar option
+      else                   ptCand_selBit = d->Pt();
       if(fUseSelectionBit && d->GetSelectionMap()) {
         if(d->HasSelectionBit(AliRDHFCuts::kDstarCuts)) fHisNentriesSelBit->Fill(4.0,ptCand_selBit);
       }
     }
+
+    if(fDecayChannel != AliAnalysisTaskSEHFQA::kDstartoKpipi) continue;
+    if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)d),kTRUE))continue;
   }
-//   //Cascade
+  // Cascade
   if(arrayProngCascades){
     for (Int_t iCand = 0; iCand < nCandCasc; iCand++) {
       d=(AliAODRecoDecayHF*)arrayProngCascades->UncheckedAt(iCand);
+      if(fUseSelectionBit){
+        Double_t ptCand_selBit;
+        if(d->GetIsFilled()<1) ptCand_selBit = GetPtForUnfilledCand(vHF, aod, d, -2); //-2 = LctoV0 option
+        else                   ptCand_selBit = d->Pt();
+        if(fUseSelectionBit && d->GetSelectionMap()) {
+          if(d->HasSelectionBit(AliRDHFCuts::kLctoV0Cuts)) fHisNentriesSelBit->Fill(5.0,ptCand_selBit);
+        }
+      }
+
+      if(fDecayChannel != AliAnalysisTaskSEHFQA::kLambdactoV0) continue;
       if(!vHF->FillRecoCasc(aod,((AliAODRecoCascadeHF*)d),kFALSE))continue;
     }
   }
@@ -2918,93 +2885,6 @@ void AliAnalysisTaskSEHFQA::UserExec(Option_t */*option*/)
 }
 
 //____________________________________________________________________________
-void AliAnalysisTaskSEHFQA::FillFlowObs(AliAODEvent *aod){
-  /// fills the flow observables
-  Double_t cc;
-  cc = fCuts->GetCentrality(aod);
-  fHisFEvents->Fill(0., cc);
-
-  UInt_t mask=((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  UInt_t trigger=AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral;
-  if(mask & trigger) {
-    fHisFEvents->Fill(1.,cc); // fired
-    if (mask & AliVEvent::kMB) fHisFEvents->Fill(2.,cc);
-    if (mask & AliVEvent::kCentral) fHisFEvents->Fill(3.,cc);
-    if (mask & AliVEvent::kSemiCentral) fHisFEvents->Fill(4.,cc);
-    Bool_t rejected=false;
-    if(cc<0 || cc>60) rejected=true;
-    const AliVVertex *vertex = aod->GetPrimaryVertex();
-    Double_t zvtx=vertex->GetZ();
-    if(TMath::Abs(zvtx)>fCuts->GetMaxVtxZ()) rejected=true;
-    if(rejected) return; //not interesting for flow QA
-  } else {
-    return;
-  }
-
-  // event accepted
-  fHisFEvents->Fill(5.,cc);
-  fRFPcuts->SetParamType(AliFlowTrackCuts::kGlobal);
-  fRFPcuts->SetPtRange(0.2,5.);
-  fRFPcuts->SetEtaRange(-0.8,0.8);
-  fRFPcuts->SetMinNClustersTPC(70);
-  fRFPcuts->SetMinChi2PerClusterTPC(0.2);
-  fRFPcuts->SetMaxChi2PerClusterTPC(4.0);
-  fRFPcuts->SetAcceptKinkDaughters(kFALSE);
-  fRFPcuts->SetEvent(aod);
-
-  // "FB1" (i=0), "FB128" (i=1), "VZE" (i=2)
-  Double_t psi[3];
-  for(Int_t i=0; i!=3; ++i) {
-    if(i==0) { // switching to bit 1
-      fRFPcuts->SetMinimalTPCdedx(10.);
-      fRFPcuts->SetAODfilterBit(1);
-    } else { // switching to bit 128
-      fRFPcuts->SetMinimalTPCdedx(-1);
-      fRFPcuts->SetAODfilterBit(128);
-    }
-    if(i>1) {
-      fRFPcuts->SetParamType(AliFlowTrackCuts::kVZERO);
-      fRFPcuts->SetEtaRange(-5,+5);
-      fRFPcuts->SetPhiMin(0);
-      fRFPcuts->SetPhiMax(TMath::TwoPi());
-    }
-    fFlowEvent->Fill(fRFPcuts,fRFPcuts);
-    fFlowEvent->TagSubeventsInEta(-5,0,0,+5);
-    // getting informationt
-    AliFlowVector vQ, vQaQb[2];
-    fFlowEvent->Get2Qsub(vQaQb,2);
-    vQ = vQaQb[0]+vQaQb[1];
-    Double_t dMa=vQaQb[0].GetMult();
-    Double_t dMb=vQaQb[1].GetMult();
-    if( dMa<2 || dMb<2 ) {
-      fHisFEvents->Fill(6.,cc); //???
-      continue;
-    }
-    psi[i] = vQ.Phi()/2;
-    // publishing
-    fHisQ[i]->Fill(0,cc,vQaQb[0].X()/dMa,dMa); // Qx-
-    fHisQ[i]->Fill(1,cc,vQaQb[0].Y()/dMa,dMa); // Qy-
-    fHisQ[i]->Fill(2,cc,vQaQb[1].X()/dMb,dMb); // Qx+
-    fHisQ[i]->Fill(3,cc,vQaQb[1].Y()/dMb,dMb); // Qy+
-    fHisAngleQ[i]->Fill(psi[i],cc); // Psi
-    AliFlowTrackSimple *track;
-    for(Int_t t=0; t!=fFlowEvent->NumberOfTracks(); ++t) {
-      track = (AliFlowTrackSimple*) fFlowEvent->GetTrack(t);
-      if(!track) continue;
-      if(!track->InRPSelection()) continue;
-      fHisPhiEta[i]->Fill(track->Phi(),track->Eta(),cc,track->Weight()); //PhiEta
-    }
-
-  //histo filled only for TPCFB1
-  if (i==0) {
-    fHisCentVsMultRPS->Fill(fFlowEvent->GetNumberOfRPs(),cc);
-  }
-  }
-  // TPC vs VZERO
-  fHisTPCVZE_AngleQ->Fill(psi[0],psi[2],cc);
-}
-
-//____________________________________________________________________________
 void AliAnalysisTaskSEHFQA::Terminate(Option_t */*option*/){
   /// terminate analysis
 
@@ -3028,5 +2908,82 @@ void AliAnalysisTaskSEHFQA::Terminate(Option_t */*option*/){
 
 }
 
+Double_t AliAnalysisTaskSEHFQA::GetPtForUnfilledCand(AliAnalysisVertexingHF *vHF, AliAODEvent *aod, AliAODRecoDecayHF *d, Int_t nprongs){
+  /// Get pT of HF candidate before refilling, so not all HF candidates have to be refilled (which adds up to a lot of CPU time for PbPb)
+  /// Different procedure for cascades (Dstar (=-1) and LctoV0 (=-2)) to get all prongs
 
+  Double_t px = 0;
+  Double_t py = 0;
+  if(nprongs == -2){
+    for(Int_t ipr=0;ipr<2;ipr++){
+      AliAODTrack *tr;
+      if(ipr==0) tr = vHF->GetProng(aod,d,ipr);
+      else       tr = (AliAODTrack*)(aod->GetV0(d->GetProngID(1)));
 
+      if(!tr) return -1;
+      px += tr->Px();
+      py += tr->Py();
+    }
+  } else if(nprongs == -1){
+    TClonesArray* inputArrayD0 = (TClonesArray*)aod->GetList()->FindObject("D0toKpi");
+    if(!inputArrayD0) return -1;
+    AliAODRecoDecayHF2Prong* trackD0 = (AliAODRecoDecayHF2Prong*)inputArrayD0->At(d->GetProngID(1));
+    for(Int_t ipr=0;ipr<3;ipr++){
+      AliAODTrack *tr;
+      if(ipr==0) tr=vHF->GetProng(aod,d,ipr);
+      else       tr=vHF->GetProng(aod,trackD0,ipr-1);
+
+      if(!tr) return -1;
+      px += tr->Px();
+      py += tr->Py();
+    }
+  } else {
+    for(Int_t pr = 0; pr < nprongs; pr++){
+      AliAODTrack *tr=vHF->GetProng(aod,d,pr);
+
+      if(!tr) return -1;
+      px += tr->Px();
+      py += tr->Py();
+    }
+  }
+
+  Double_t ptD=TMath::Sqrt(px*px+py*py);
+
+  return ptD;
+}
+
+Bool_t AliAnalysisTaskSEHFQA::IsMCPileupEvent(AliAODMCHeader *mcHeader){
+  // Method for tagging pileup events in the MC. To be replaced with AliAnalysisUtils method when available
+  TList *lh=mcHeader->GetCocktailHeaders();
+  Int_t nCollis=0;
+  if (lh) {
+    Int_t nh=lh->GetEntries();
+    for (Int_t i=0;i<nh;i++) {
+      AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+      if (gh->InheritsFrom(AliGenCocktailEventHeader::Class())) {
+        AliGenCocktailEventHeader* gc=dynamic_cast<AliGenCocktailEventHeader*>(gh);
+        TList* lh2=gc->GetHeaders();
+        if (lh2) {
+          Int_t nh2=lh2->GetEntries();
+          for (Int_t i2=0;i2<nh2;i2++) {
+            AliGenEventHeader* gh2=(AliGenEventHeader*)lh2->At(i2);
+            TString genclass2=gh2->ClassName();
+            if (genclass2.Contains("Hijing")) nCollis++;
+          }
+        }
+      }
+      else {
+        TString genclass=gh->ClassName();
+        if (genclass.Contains("Hijing")) nCollis++;
+      }
+    }
+  }
+  if (nCollis==1) 
+    return kFALSE;
+  else if (nCollis>1)
+    return kTRUE;
+  else {
+    AliWarning(Form("Event with %d collisions, something went wrong!", nCollis));
+    return kFALSE;
+  }
+}

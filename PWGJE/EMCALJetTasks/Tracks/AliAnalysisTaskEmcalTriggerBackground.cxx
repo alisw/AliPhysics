@@ -10,9 +10,9 @@
 #include "AliAnalysisTaskEmcalTriggerBackground.h"
 #include "AliVCaloTrigger.h"
 
-ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalTriggerBackground)
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerBackground)
 
-using namespace EmcalTriggerJets;
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalTriggerBackground::AliAnalysisTaskEmcalTriggerBackground():
     AliAnalysisTaskEmcal(),

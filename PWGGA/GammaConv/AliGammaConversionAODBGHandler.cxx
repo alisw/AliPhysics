@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////
 
 #include "AliGammaConversionAODBGHandler.h"
-#include "AliKFParticle.h"
+#include "AliGAKFParticle.h"
 #include "AliAODConversionPhoton.h"
 #include "AliAODConversionMother.h"
 
@@ -251,6 +251,11 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(Int_t collisionSy
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb2040[i];
                   }
+              } else if(centMin == 30 && centMax == 50){	// 30-50%
+                  Double_t fBinLimitsArrayMultiplicityPbPb2040[5] =   {1., 5., 11., 17., 200.};
+                  for (Int_t i = 0; i < fNBinsMultiplicity; i++){
+                      fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb2040[i];
+                  }
               } else if(centMin == 40 && centMax == 60){  // 40-60%
                   Double_t fBinLimitsArrayMultiplicityPbPb4060[5] =   {1., 4., 7., 13., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
@@ -325,6 +330,11 @@ AliGammaConversionAODBGHandler::AliGammaConversionAODBGHandler(Int_t collisionSy
                   }
               } else if(centMin == 20 && centMax == 40){	// 20-40%
                   Double_t fBinLimitsArrayMultiplicityPbPb2040[5] = 	{2., 6., 11., 18., 200.};
+                  for (Int_t i = 0; i < fNBinsMultiplicity; i++){
+                      fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb2040[i];
+                  }
+              } else if(centMin == 30 && centMax == 50){	// 30-50%
+                  Double_t fBinLimitsArrayMultiplicityPbPb2040[5] = 	{2., 6., 11., 20., 200.};
                   for (Int_t i = 0; i < fNBinsMultiplicity; i++){
                       fBinLimitsArrayMultiplicity[i] =  fBinLimitsArrayMultiplicityPbPb2040[i];
                   }
@@ -652,7 +662,7 @@ void AliGammaConversionAODBGHandler::AddEvent(TList* const eventGammas,Double_t 
 	
 	// add the gammas to the vector
 	for(Int_t i=0; i< eventGammas->GetEntries();i++){
-		//    AliKFParticle *t = new AliKFParticle(*(AliKFParticle*)(eventGammas->At(i)));
+		//    AliGAKFParticle *t = new AliGAKFParticle(*(AliGAKFParticle*)(eventGammas->At(i)));
 		fBGEvents[z][m][eventCounter].push_back(new AliAODConversionPhoton(*(AliAODConversionPhoton*)(eventGammas->At(i))));
 	}
 	fBGEventCounter[z][m]++;
@@ -741,7 +751,7 @@ void AliGammaConversionAODBGHandler::AddElectronEvent(TClonesArray* const eventE
 
 	// add the electron to the vector
 	for(Int_t i=0; i< eventENeg->GetEntriesFast();i++){
-		//    AliKFParticle *t = new AliKFParticle(*(AliKFParticle*)(eventGammas->At(i)));
+		//    AliGAKFParticle *t = new AliGAKFParticle(*(AliGAKFParticle*)(eventGammas->At(i)));
 		fBGEventsENeg[z][m][eventENegCounter].push_back(new AliAODConversionPhoton(*(AliAODConversionPhoton*)(eventENeg->At(i))));
 	}
 	fBGEventENegCounter[z][m]++;
@@ -774,7 +784,7 @@ void AliGammaConversionAODBGHandler::AddMCParticleEvent(TList* const eventGammas
 
 	// add the gammas to the vector
 	for(Int_t i=0; i< eventGammas->GetEntries();i++){
-		//    AliKFParticle *t = new AliKFParticle(*(AliKFParticle*)(eventGammas->At(i)));
+		//    AliGAKFParticle *t = new AliGAKFParticle(*(AliGAKFParticle*)(eventGammas->At(i)));
 		fBGEventsMCParticle[z][m][eventCounter].push_back(new AliAODMCParticle(*(AliAODMCParticle*)(eventGammas->At(i))));
 	}
 	fBGMCParticleEventCounter[z][m]++;

@@ -26,7 +26,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/RUN3
 include_directories(${ROOT_INCLUDE_DIRS})
 
 # Sources in alphabetical order
-set(SRCS AliAnalysisTaskAO2Dconverter.cxx)
+set(SRCS AliAnalysisTaskAO2Dconverter.cxx benchmark/AliAnalysisTaskHistogram.cxx)
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
@@ -37,7 +37,7 @@ get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
 
 set(ROOT_DEPENDENCIES Core EG Gpad Hist MathCore Physics RIO Spectrum)
-set(ALIROOT_DEPENDENCIES ANALYSIS ESD OADB STEERBase ANALYSISalice STEER)
+set(ALIROOT_DEPENDENCIES ANALYSIS ESD OADB STEERBase ANALYSISalice STEER EMCALUtils)
 
 # Generate the ROOT map
 # Dependecies
@@ -92,3 +92,4 @@ install(FILES ${HDRS} DESTINATION include)
 
 # Install the macros
 install(DIRECTORY . DESTINATION RUN3 FILES_MATCHING PATTERN "*.C")
+install(DIRECTORY . DESTINATION RUN3 FILES_MATCHING PATTERN "benchmark/*.C")

@@ -253,8 +253,8 @@ void AliAnalysisTaskEmcalJetSubstructureTree::RunChanged(Int_t newrun) {
 }
 
 bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
-  AliClusterContainer *clusters = GetClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
-  AliTrackContainer *tracks = GetTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
+  AliClusterContainer *clusters = GetClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
+  AliTrackContainer *tracks = GetTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
   AliParticleContainer *particles = GetParticleContainer("mcparticles");
 
   AliJetContainer *mcjets = GetJetContainer("mcjets");
@@ -336,6 +336,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   AliSoftdropDefinition softdropSettings;
   softdropSettings.fBeta = fSDBetaCut;
   softdropSettings.fZ = fSDZCut;
+  softdropSettings.fR0 = datajets->GetJetRadius();
   switch(fReclusterizer) {
   case kCAAlgo: softdropSettings.fRecluserAlgo = fastjet::cambridge_aachen_algorithm; break;
   case kKTAlgo: softdropSettings.fRecluserAlgo = fastjet::kt_algorithm; break;
@@ -615,7 +616,7 @@ AliJetSubstructureData AliAnalysisTaskEmcalJetSubstructureTree::MakeJetSubstruct
 }
 
 AliSoftDropParameters AliAnalysisTaskEmcalJetSubstructureTree::MakeSoftDropParameters(const fastjet::PseudoJet &jet, const AliSoftdropDefinition &cutparameters) const {
-  fastjet::contrib::SoftDrop softdropAlgorithm(cutparameters.fBeta, cutparameters.fZ);
+  fastjet::contrib::SoftDrop softdropAlgorithm(cutparameters.fBeta, cutparameters.fZ, cutparameters.fR0);
   softdropAlgorithm.set_verbose_structure(kTRUE);
 #if FASTJET_VERSION_NUMBER >= 30302
   fastjet::Recluster reclusterizer(cutparameters.fRecluserAlgo, 1, fastjet::Recluster::keep_only_hardest);
@@ -845,14 +846,14 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
   if(isData) {
     AliTrackContainer *tracks(nullptr);
     if((jettype == AliJetContainer::kChargedJet) || (jettype == AliJetContainer::kFullJet)){
-      tracks = treemaker->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+      tracks = treemaker->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
       std::cout << "Track container name: " << tracks->GetName() << std::endl;
       tracks->SetMinPt(0.15);
     }
     AliClusterContainer *clusters(nullptr);
     if((jettype == AliJetContainer::kFullJet) || (jettype == AliJetContainer::kNeutralJet)){
       std::cout << "Using full or neutral jets ..." << std::endl;
-      clusters = treemaker->AddClusterContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+      clusters = treemaker->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
       std::cout << "Cluster container name: " << clusters->GetName() << std::endl;
       clusters->SetClusHadCorrEnergyCut(0.3); // 300 MeV E-cut
       clusters->SetDefaultClusterEnergy(AliVCluster::kHadCorr);

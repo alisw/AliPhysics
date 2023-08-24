@@ -72,7 +72,7 @@ using namespace std;
 
 const Char_t * estimators[3]={"Mid05","Mid08","V0M"};
 const Int_t NchPercBin=7;
-const Int_t NchBin08=78;// multiplicity |eta|<0.8
+const Int_t NchBin08=122;// multiplicity |eta|<0.8
 const Int_t nTSBins=100;
 Double_t nchBin_gen0[NchPercBin+1]={0x0};
 Double_t nchBin_gen1[NchPercBin+1]={0x0};
@@ -853,6 +853,11 @@ void AliAnalysisTaskGenUeSpherocity::UserExec(Option_t *){
 	Bool_t fIsInel0_rec = kFALSE;
 	if(mult_estimators_rec[3]>0)
 		fIsInel0_rec = kTRUE;// is INEL>0
+	//////////////////////////////////////////////////////////////////////
+	///////    Temporal solutution, Ntrk>10, pT>0.15 (to match the data analysis)
+	if(fNso_gen<10)
+		return;
+	///////////////////////////////////////////////////////////////////////
 
 	if(fIsInel0_gen)
 		MakeAnaGen(fNso_gen, mult_estimators_gen, pt_so_gen, eta_so_gen, phi_so_gen);
@@ -869,14 +874,16 @@ void AliAnalysisTaskGenUeSpherocity::UserExec(Option_t *){
 	fbinPerc1_rec=GetMultBin(kTRUE,mult_estimators_rec[1],1);
 	fbinPerc2_rec=GetMultBin(kTRUE,mult_estimators_rec[2],2);
 
+
+	// Only for Sphero (pT=1) Analysis
 	if(fIsInel0_gen&&fIsInel0_rec){
 		ParticleSel( kTRUE, mult_estimators_rec );
 		ParticleSel( kFALSE, mult_estimators_gen );
 	}
 
-
+	// To check charged particle spherocity analysis
 	if(fIndexLeadingGen>=0){
-		if(mcPartLeadingGen->Pt()>=fMinPtLeading){
+		if(mcPartLeadingGen->Pt()>=0.15){
 			MakeUeSoNch08Analysis(mult_estimators_gen);
 		}
 	}
@@ -946,6 +953,9 @@ Int_t AliAnalysisTaskGenUeSpherocity::GetIndexLeading(Bool_t fIsPseudoRec){
 
 		pPDG = TMath::Abs(mcPart->GetPdgCode());
 		pidCodeMC = GetPidCode(pPDG);
+
+		if(TMath::Abs(pidCodeMC)==5)
+			continue;
 
 		etaPart = mcPart -> Eta();
 		if(fIsPseudoRec)
@@ -1217,7 +1227,7 @@ void AliAnalysisTaskGenUeSpherocity::MakeUeSoNch08Analysis(vector<Int_t> &mult){
 
 	fSoWeighedVsNchPtL->Fill(1.0*BinNchForSpherocity,fspherocity_gen_ptWeighted);
 
-	if(BinNchForSpherocity<3||BinNchForSpherocity>80)
+	if(BinNchForSpherocity<3||BinNchForSpherocity>122)
 		return;
 
 	TParticle* mcPartTmp         = 0x0;

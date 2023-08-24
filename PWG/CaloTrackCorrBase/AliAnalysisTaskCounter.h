@@ -108,7 +108,7 @@ class AliAnalysisTaskCounter : public AliAnalysisTaskSE {
   //
   // Histograms
   //
-  TH1I *  fhNEvents;         //!<! Events that delivers the analysis frame after different assumptions.  
+  TH1F *  fhNEvents;         //!<! Events that delivers the analysis frame after different assumptions.
   TH1F *  fhXVertex;         //!<! X Vertex distribution.
   TH1F *  fhYVertex;         //!<! Y Vertex distribution.
   TH1F *  fhZVertex;         //!<! Z Vertex distribution.

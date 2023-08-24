@@ -68,6 +68,7 @@ public:
    void SetTrackPtMin(Double_t value){fTrackPtMin = value;} 
    void SetTrackPtMax(Double_t value){fTrackPtMax = value;}
    void SetTrackEta(Double_t value){fTrackEta = value;}
+   void SetFilterBit(Double_t value){fFilterBit = value;}
    void SetAssocNcls(Double_t value){fAssocNcls = value;}
    //---------------------V0---------------------------------
    void SetV0MCPtMin(Double_t value){fV0MCPtMin = value;}
@@ -79,8 +80,13 @@ public:
    void SetLambdaLifeTimeMin(Double_t value){fLambdaLifeTimeMin = value;}
    void SetLambdaLifeTimeMax(Double_t value){fLambdaLifeTimeMax = value;}
    void SetV0DaughterPtMinCut(Double_t value){fV0DaughterPtMinCut = value;}
-   void SetDCANegtoPrimVertexMin(Double_t value){fDCANegtoPrimVertexMin = value;}
-   void SetDCAPostoPrimVertexMin(Double_t value){fDCAPostoPrimVertexMin = value;}
+   void SetDCANegtoPrimVertexMink0s(Double_t value){fDCANegtoPrimVertexMink0s = value;}
+   void SetDCAPostoPrimVertexMink0s(Double_t value){fDCAPostoPrimVertexMink0s = value;}
+   void SetDCANegtoPrimVertexMinLamb(Double_t value){fDCANegtoPrimVertexMinLamb = value;}
+   void SetDCAPostoPrimVertexMinLamb(Double_t value){fDCAPostoPrimVertexMinLamb = value;}
+   void SetDCANegtoPrimVertexMinALamb(Double_t value){fDCANegtoPrimVertexMinALamb = value;}
+   void SetDCAPostoPrimVertexMinALamb(Double_t value){fDCAPostoPrimVertexMinALamb = value;}
+
    void SetDCAV0DaughtersMax(Double_t value){fDCAV0DaughtersMax = value;}
    void SetCosPointingAngleMin(Double_t value){fCosPointingAngleMin = value;}
    void Set2DFiducialMin(Double_t value){f2DFiducialMin = value;}
@@ -92,6 +98,7 @@ public:
    void SetLambdaMassWindow(Double_t value){fLambdaMassWindow = value;}
    void SetPtArmV0AlphaV0(Double_t value){fPtArmV0AlphaV0 = value;}
    void SetLambdaCPA(Double_t value){fLambdaCPA = value;}//
+   void Setk0sCPA(Double_t value){fk0sCPA = value;}
    void SetLambdaCosPointingAngleMin(Double_t value){fLambdaCosPointingAngleMin = value;}
    void SetAntiLambdaCosPointingAngleMin(Double_t value){fAntiLambdaCosPointingAngleMin = value;}
    void SetLambdaAlphaV0Min(Double_t value){fLambdaAlphaV0Min = value;}
@@ -159,6 +166,7 @@ private:
    Double_t        fTrackPtMin;
    Double_t        fTrackPtMax;
    Double_t        fTrackEta;
+   Int_t          fFilterBit;
    Double_t        fAssocNcls;
    //---------------------------------V0----------------------------------------
    Double_t        fV0MCPtMin;
@@ -173,10 +181,16 @@ private:
    Double_t       fMaxCtau;
    
    Double_t        fV0DaughterPtMinCut;
-   Double_t        fDCANegtoPrimVertexMin;
-   Double_t        fDCAPostoPrimVertexMin;
+   Double_t        fDCANegtoPrimVertexMink0s;
+   Double_t        fDCAPostoPrimVertexMink0s;
+   Double_t        fDCANegtoPrimVertexMinLamb;
+   Double_t        fDCAPostoPrimVertexMinLamb;
+   Double_t        fDCANegtoPrimVertexMinALamb;
+   Double_t        fDCAPostoPrimVertexMinALamb;
+
    Double_t        fDCAV0DaughtersMax;
    Double_t        fLambdaCPA;
+   Double_t        fk0sCPA;                
    Double_t        fCosPointingAngleMin;
    Double_t        f2DFiducialMin;
    Double_t        fV0DaughterTrackTPCCluster;

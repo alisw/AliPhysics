@@ -17,7 +17,7 @@
 
 ClassImp(AliAnalysisMuMuSpectraProcessor)
 
-
+#include <TObjString.h>
 #include "AliLog.h"
 #include "TObject.h"
 #include <TString.h>

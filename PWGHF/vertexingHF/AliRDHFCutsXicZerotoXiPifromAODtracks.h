@@ -88,6 +88,8 @@ class AliRDHFCutsXicZerotoXiPifromAODtracks : public AliRDHFCuts
   void SetProdRoughPtMin(Double_t a){fProdRoughPtMin=a;}
   void SetProdLikeSignDcaMax(Double_t a){fProdLikeSignDcaMax=a;}
   void SetProdCascNTPCClustersMin(Double_t a){fProdCascNTPCClustersMin=a;}
+  void SetProdCascNTPCCrossedRowsMin(Double_t a){fProdCascNTPCCrossedRowsMin=a;}
+  void SetProdCascNTPCCrossedOverFindalbleRatioMin(Double_t a){fProdCascNTPCCrossedOverFindableRatioMin=a;}
 
   Double_t GetProdTrackPtMin(){return fProdTrackPtMin;}
   Double_t GetProdTrackEtaRange(){return fProdTrackEtaRange;}
@@ -113,7 +115,9 @@ class AliRDHFCutsXicZerotoXiPifromAODtracks : public AliRDHFCuts
   Double_t GetProdRoughPtMin(){return fProdRoughPtMin;}
   Double_t GetProdLikeSignDcaMax(){return fProdLikeSignDcaMax;}
   Double_t GetProdCascNTPCClustersMin(){return fProdCascNTPCClustersMin;}
-
+  Double_t GetProdCascNTPCCrossedRowsMin(){return fProdCascNTPCCrossedRowsMin;}
+  Double_t GetProdCascNTPCCrossedOverFindalbleRatioMin(){return fProdCascNTPCCrossedOverFindableRatioMin;}
+  
   void useSetNPtBins(Int_t nptBins){SetNPtBins(nptBins);}
  protected:
 	
@@ -147,12 +151,14 @@ class AliRDHFCutsXicZerotoXiPifromAODtracks : public AliRDHFCuts
   Double_t fProdXiCosineOfPoiningAngleMin;  /// Min Xi cos pointing angle  to PV
   Double_t fProdV0CosineOfPoiningAngleXiMin;  // /Min V0 cos pointing angle  to Xi vertex
   Double_t fProdCascNTPCClustersMin;         /// Minimum number of TPC clusters
+  Double_t fProdCascNTPCCrossedRowsMin;   
+  Double_t fProdCascNTPCCrossedOverFindableRatioMin;
   Double_t fProdLikeSignDcaMax;     /// Maximum DCA of pions
   Double_t fProdRoughMassTol;       /// Tolerance of Xic mass from PDG value
   Double_t fProdRoughPtMin;         /// Minimum pT of Xic
 
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsXicZerotoXiPifromAODtracks, 2); 
+  ClassDef(AliRDHFCutsXicZerotoXiPifromAODtracks, 3); 
   /// \endcond
 };
 

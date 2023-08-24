@@ -27,6 +27,7 @@
 #pragma link C++ class AliTimeRangeMask<ULong64_t, UShort_t>+;
 #pragma link C++ class AliTimeRangeMasking<ULong64_t, UShort_t>+;
 #pragma link C++ class AliTimeRangeCut;
+#pragma link C++ class AliEMCALLEDEventsCut;
 
 #pragma link C++ class AliMultVariable+;
 #pragma link C++ class AliMultInput+;

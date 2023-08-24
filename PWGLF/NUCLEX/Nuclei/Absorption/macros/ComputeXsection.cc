@@ -3,6 +3,7 @@
 #include "TFile.h"
 #include "TF1.h"
 #include "TLegend.h"
+#include "TGraph.h"
 #include "TList.h"
 #include "TStyle.h"
 
@@ -40,29 +41,30 @@ void ComputeXsection(std::string fileName = "AnalysisResults.root")
   }
 
   TFile inputFile(fileName.data());
-  TList *inputList = (TList *)inputFile.Get("DeuteronAbsorption/standard");
+  TList *inputList = (TList *)inputFile.Get("DeuteronAbsorption/100");
 
   constexpr double massInterval = 0.2; /// 20% around the expected mass
 
-  TH2F *fHist2Matching[4][2][2];
-  TH1D *fHist1MomSpectrum[4][2][2];
-  TH1D *fHist1MomSpectrumTPC[4][2][2];
-  TH1D *fHist1RatioTRDnoTRD[4][2];
-  TH1D *fHist1DoubleRatio[4];
-  TH1D *fHist1CrossSection[4];
+  TH2F *fHist2Matching[kNabsSpecies][2][2];
+  TH1D *fHist1MomSpectrum[kNabsSpecies][2][2];
+  TH1D *fHist1MomSpectrumTPC[kNabsSpecies][2][2];
+  TH1D *fHist1RatioTRDnoTRD[kNabsSpecies][2];
+  TH1D *fHist1DoubleRatio[kNabsSpecies];
+  TH1D *fHist1CrossSection[kNabsSpecies];
   TH1F *fHist1AcceptanceAll[2][2][2];
   TH1F *fHist1AcceptanceTRDnoTRD[2][2];
 
   std::string wTRD[2] = {"woTRD", "wTRD"};
   std::string wTOF[2] = {"woTOF", "wTOF"};
   std::string pos_neg[2] = {"neg", "pos"};
-  std::string labels[4][2] = {
+  std::string labels[kNabsSpecies][2] = {
       {"K^{-}", "K^{+}"},
       {"#bar{p}", "p"},
       {"^{2}#bar{H}", "^{2}H"},
       {"^{3}#bar{H}", "^{3}H"},
+      {"^{3}#bar{He}", "^{3}He"}
   };
-  double maxp[4]{1.,1.,2.,2.5};
+  double maxp[kNabsSpecies]{1.,1.,2.,2.5,7.0};
 
   TFile outputFile(Form("xsection_%s", fileName.data()), "recreate");
   TDirectory *spectraDir = outputFile.mkdir("Spectra");
@@ -99,15 +101,15 @@ void ComputeXsection(std::string fileName = "AnalysisResults.root")
     }
   }
 
-  for (int iSpecies = 0; iSpecies < 4; ++iSpecies)
+  for (int iSpecies = 0; iSpecies < kNabsSpecies; ++iSpecies)
   {
     for (int iCharge = 0; iCharge < 2; ++iCharge)
     {
       for (int iTRD = 0; iTRD < 2; ++iTRD)
         fHist2Matching[iSpecies][iCharge][iTRD] = static_cast<TH2F *>(inputList->FindObject(Form("fHist2Matching%s_%s_%s", AliAnalysisTaskDeuteronAbsorption::fgkParticleNames[iSpecies].data(), pos_neg[iCharge].data(), wTRD[iTRD].data())));
-      const double minMass = Sq(AliPID::ParticleMass(AliAnalysisTaskDeuteronAbsorption::fgkSpecies[iSpecies])) * (1. - massInterval);
+      const double minMass = Sq(AliPID::ParticleMassZ(AliAnalysisTaskDeuteronAbsorption::fgkSpecies[iSpecies])) * (1. - massInterval);
       const int minBin = fHist2Matching[iSpecies][iCharge][0]->GetYaxis()->FindBin(minMass);
-      const double maxMass = Sq(AliPID::ParticleMass(AliAnalysisTaskDeuteronAbsorption::fgkSpecies[iSpecies])) * (1. + massInterval);
+      const double maxMass = Sq(AliPID::ParticleMassZ(AliAnalysisTaskDeuteronAbsorption::fgkSpecies[iSpecies])) * (1. + massInterval);
       const int maxBin = fHist2Matching[iSpecies][iCharge][0]->GetYaxis()->FindBin(maxMass);
       std::cout << "Mass^2 limits used for " << AliAnalysisTaskDeuteronAbsorption::fgkParticleNames[iSpecies].data() << ": " << minMass << ", " << maxMass << std::endl;
       for (int iTRD = 0; iTRD < 2; ++iTRD)
@@ -156,7 +158,7 @@ void ComputeXsection(std::string fileName = "AnalysisResults.root")
     fHist1CrossSection[iSpecies]->SetTitle(Form("; #it{p} (GeV/#it{c}); #sigma_{%s} - #sigma_{%s} (mb)", labels[iSpecies][0].data(), labels[iSpecies][1].data()));
     fHist1CrossSection[iSpecies]->Write();
   }
-  for (int iPad = 0; iPad < 4; ++iPad) {
+  for (int iPad = 0; iPad < kNabsSpecies; ++iPad) {
     cvMatching.cd(iPad + 1)->BuildLegend(0.15,0.65,0.38,0.88);
     cvDoubleRatio.cd(iPad + 1)->BuildLegend(0.15,0.65,0.38,0.88);
   }

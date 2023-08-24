@@ -1,6 +1,6 @@
 #ifndef ALICONVERSIONPHOTONCUTS_H
 #define ALICONVERSIONPHOTONCUTS_H
-
+#include <TObjString.h>
 #include "AliAODpidUtil.h"
 #include "AliConversionPhotonBase.h"
 #include "AliAODConversionMother.h"
@@ -13,6 +13,7 @@
 #include "TH1F.h"
 #include "TF1.h"
 #include "TProfile.h"
+#include "TProfile2D.h"
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisManager.h"
 #include "AliDalitzAODESDMC.h"
@@ -23,11 +24,12 @@ class AliESDEvent;
 class AliAODEvent;
 class AliConversionPhotonBase;
 class AliPIDResponse;
-class AliKFVertex;
+class AliGAKFVertex;
 class TH1F;
 class TH2F;
 class TF1;
 class TProfile;
+class TProfile2D;
 class AliAnalysisCuts;
 class iostream;
 class TList;
@@ -121,6 +123,8 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
         kPhotonOut
     };
 
+    // todo: use unordered_map when found out how to make it work with ROOT5
+    typedef std::map<AliAODConversionPhoton*, Bool_t> TMapPhotonBool;
 
     Bool_t SetCutIds(TString cutString);
     Int_t fCuts[kNCuts];
@@ -159,18 +163,19 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     // Cut Selection
     Bool_t TrackIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
     Bool_t PhotonIsSelected(AliConversionPhotonBase * photon, AliVEvent  * event);
-    Bool_t PhotonIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma=kTRUE);
+    Bool_t PhotonIsSelectedMC(AliMCParticle *particle,AliMCEvent *mcEvent,Bool_t checkForConvertedGamma=kTRUE);
     Bool_t PhotonIsSelectedAODMC(AliAODMCParticle *particle,TClonesArray *aodmcArray,Bool_t checkForConvertedGamma=kTRUE);
     Bool_t PhotonIsSelectedMCAODESD(AliDalitzAODESDMC *particle,AliDalitzEventMC *mcEvent,Bool_t checkForConvertedGamma) const;
-    //Bool_t ElectronIsSelectedMC(TParticle *particle,AliMCEvent *mcEvent);
+    //Bool_t ElectronIsSelectedMC(AliMCParticle *particle,AliMCEvent *mcEvent);
     Bool_t TracksAreSelected(AliVTrack * negTrack, AliVTrack * posTrack);
     //Bool_t MesonIsSelected(AliAODConversionMother *pi0,Bool_t IsSignal=kTRUE);
-    //Bool_t MesonIsSelectedMC(TParticle *fMCMother,AliMCEvent *mcEvent, Bool_t bMCDaughtersInAcceptance=kFALSE);
+    //Bool_t MesonIsSelectedMC(AliMCParticle *fMCMother,AliMCEvent *mcEvent, Bool_t bMCDaughtersInAcceptance=kFALSE);
 
     void PrintCuts();
     void PrintCutsWithValues();
 
-    void SetLightOutput( Bool_t flag ){fDoLightOutput = flag; return;}
+    void SetLightOutput( Int_t flag ){fDoLightOutput = flag; return;}
+    void SetPlotTrackPID( Bool_t flag ){fDoPlotTrackPID = flag; return;}
     void InitCutHistograms(TString name="",Bool_t preCut = kTRUE);
     void SetFillCutHistograms(TString name="",Bool_t preCut = kTRUE){if(!fHistograms){InitCutHistograms(name,preCut);};}
     TList *GetCutHistograms(){return fHistograms;}
@@ -188,7 +193,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t SpecificTrackCuts(AliAODTrack * negTrack, AliAODTrack * posTrack,Int_t &cutIndex);
     Bool_t SpecificTrackCuts(AliESDtrack * negTrack, AliESDtrack * posTrack,Int_t &cutIndex);
     Bool_t AcceptanceCuts(AliConversionPhotonBase *photon);
-    Bool_t AcceptanceCut(TParticle *particle, TParticle * ePos,TParticle* eNeg);
+    Bool_t AcceptanceCut(AliMCParticle *particle, AliMCParticle * ePos,AliMCParticle* eNeg);
     Bool_t PhiSectorCut(AliConversionPhotonBase * photon);
     //   Bool_t dEdxCuts(AliVTrack * track);
     Bool_t dEdxCuts(AliVTrack * track, AliConversionPhotonBase * photon);
@@ -207,7 +212,12 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t RejectSharedElectronV0s(AliAODConversionPhoton* photon, Int_t nV0, Int_t nV0s);
     Bool_t RejectToCloseV0s(AliAODConversionPhoton* photon, TList *photons, Int_t nV0);
 
+    void RemovePhotonsWithSharedTracks(TMapPhotonBool &thePhotons) const;
+    void RemoveTooClosePhotons(TMapPhotonBool &thePhotons) const;
+
     UChar_t DeterminePhotonQualityAOD(AliAODConversionPhoton*, AliVEvent*);
+    UChar_t DeterminePhotonQualityTRD(AliAODConversionPhoton*, AliVEvent*);
+    UChar_t DeterminePhotonQualityTOF(AliAODConversionPhoton*, AliVEvent*);
     Bool_t InPlaneOutOfPlaneCut(Double_t photonPhi, Double_t eventPlaneAngle = -100, Bool_t fill = kTRUE);
     Int_t GetInPlaneOutOfPlaneCut(){return fInPlaneOutOfPlane;}
 
@@ -230,6 +240,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t SetTOFElectronPIDCut(Int_t TOFelectronPID);
     Bool_t SetTRDElectronCut(Int_t TRDElectronCut);
     Bool_t SetPhotonAsymmetryCut(Int_t doPhotonAsymmetryCut);
+    Bool_t SetPhotonRDepPtCut(Int_t doPhotonRDepPtCut);
     Bool_t SetCosPAngleCut(Int_t cosCut);
     Bool_t SetPsiPairCut(Int_t psiCut);
     Bool_t SetSharedElectronCut(Int_t sharedElec);
@@ -255,7 +266,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void SetDoElecDeDxPostCalibration(Bool_t k=kTRUE)  {fDoElecDeDxPostCalibration=k;}
     Bool_t GetMaterialBudgetWeightsInitialized() {return fMaterialBudgetWeightsInitialized;}
     Bool_t InitializeMaterialBudgetWeights(Int_t flag, TString filename);
-    Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma);
+    Float_t GetMaterialBudgetCorrectingWeightForTrueGamma(AliAODConversionPhoton* gamma, Double_t magField);
 
     Int_t GetV0FinderSameSign(){return fUseOnFlyV0FinderSameSign;}
     Bool_t GetUseBDTPhotonCuts(){return fUseBDTPhotonCuts;}
@@ -265,12 +276,15 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Bool_t LoadElecDeDxPostCalibration(Int_t runNumber);
     Double_t GetCorrectedElectronTPCResponse(Short_t charge,Double_t nsig,Double_t P,Double_t Eta,Double_t TPCCl, Double_t R);
     void ForceTPCRecalibrationAsFunctionOfConvR(){fIsRecalibDepTPCCl = kFALSE;}
+    void SetPtCutArraySize(Int_t ptCutArraySize){fPtCutArraySize = ptCutArraySize;return;};
+    void SetRArraySize(Int_t rArraySize){fRArraySize = rArraySize;return;};
 
   protected:
     TList*            fHistograms;                          ///< List of QA histograms
     AliPIDResponse*   fPIDResponse;                         ///< PID response
 
-    Bool_t            fDoLightOutput;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Int_t             fDoLightOutput;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
+    Bool_t            fDoPlotTrackPID;                       ///< switch for running light output, kFALSE -> normal mode, kTRUE -> light mode
     TString           fV0ReaderName;                        ///< Name of the V0 reader
 
     //cuts
@@ -284,6 +298,11 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Float_t           fMaxPhiCut;                           ///< phi sector cut
     Int_t             fDoShrinkTPCAcceptance;               ///< Flag for shrinking the TPC acceptance due to different reasons
     Double_t          fPtCut;                               ///< pt cut
+    Int_t             fPtCutArraySize;                      ///< Array size for the R Dep pT cut
+    Double_t*         fRDepPtCutArray;                      //[fPtCutArraySize]
+    Int_t             fRArraySize;                          ///< Array size for the array bins of the r-dep pt cut
+    Double_t*         fRArray;                              //[fRArraySize]
+    Bool_t            fDoRDepPtCut;                         ///< Flag for setting a R_dependent pT cut
     Double_t          fSinglePtCut;                         ///< pt cut for electron/positron
     Double_t          fSinglePtCut2;                        ///< second pt cut for electron/positron if asymmetric cut is chosen
     Bool_t            fDoAsymPtCut;                         ///< Flag for setting asymmetric pT cut on electron/positron
@@ -337,17 +356,26 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fMaxPhotonAsymmetry;                  ///< Asymmetry Cut
     Bool_t            fUseCorrectedTPCClsInfo;              ///< flag to use corrected tpc cl info
     Bool_t            fUseTOFpid;                           ///< flag to use tof pid
+    Bool_t            fUseTOFtiming;                        ///< flag to use tof timing information
+    Double_t          fTOFtimeMin;                          ///< minimum TOF time cut on conversion leg
+    Double_t          fTOFtimeMax;                          ///< maximum TOF time cut on conversion leg
+    Bool_t            fTOFtimingBothLegs;                   ///< flag to use tof timing on both or either one photon leg
+    Bool_t            fUseTOFpidMomRange;                   ///< flag to use TOF nSigma cut only above a certain track momentum
+    Double_t          fTofPIDMinMom;                        ///< track momentum threshold for TOF nSigma cut
+    Double_t          fTofPIDMaxMom;                        ///< track momentum threshold for TOF nSigma cut
     Float_t           fOpeningAngle;                        ///< min opening angle for meson
     Float_t           fPsiPairCut;                          ///<
     Int_t             fDo2DPsiPairChi2;                     ///<
     Bool_t            fIncludeRejectedPsiPair;              ///<
     Float_t           fCosPAngleCut;                        ///<
     Bool_t            fDoToCloseV0sCut;                     ///<
-    Double_t          fminV0Dist;                           ///<
+    Double_t          fMinV0DistSquared;                    ///<
     Bool_t            fDoSharedElecCut;                     ///<
     Bool_t            fDoPhotonQualitySelectionCut;         ///<
     Bool_t            fDoPhotonQualityRejectionCut;         ///<
     Int_t             fPhotonQualityCut;                    ///<
+    Int_t             fPhotonQualityCutTRD;                 ///<
+    Int_t             fPhotonQualityCutTOF;                 ///<
     TRandom3          fRandom;                              ///<
     Int_t             fElectronArraySize;                   ///< Size of electron array
     Int_t*            fElectronLabelArray;                  //[fElectronArraySize]
@@ -367,7 +395,6 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fTRDPIDAboveCut;                      ///< TRD cut range
     Double_t          fTRDPIDBelowCut;                      ///< TRD cut range
     Bool_t            fDoDoubleCountingCut;                 ///< Flag to reject double counting
-    Double_t          fMinRDC;                              ///< Min R for Double Counting Cut
     Double_t          fDeltaR;                              ///< Delta R for Double Counting Cut
     Double_t          fOpenAngle;                           ///< Opening Angle for Double Counting Cut
     Bool_t            fSwitchToKappa;                       ///< switches from standard dEdx nSigma TPC cuts to Kappa TPC
@@ -394,6 +421,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH2F*             fHistoITSSigafter;                    ///< ITS Sigma after cuts
     TH2F*             fHistoPsiPairDeltaPhiafter;           ///< TOF Sigma after cuts
     TH1F*             fHistoTrackCuts;                      ///< bookkeeping for track cuts
+    TH2F*             fHistoTrackPID;                      ///< bookkeeping for track pid
     TH2F*             fHistoPhotonCuts;                     ///< bookkeeping for photon specific cuts
     TH1F*             fHistoInvMassbefore;                  ///< e+e- inv mass distribution before cuts
     TH2F*             fHistoArmenterosbefore;               ///< armenteros podolanski plot before cuts
@@ -403,11 +431,12 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH2F*             fHistoAsymmetryafter;                 ///< asymmetry plot after cuts
     TH2F*             fHistoAcceptanceCuts;                 ///< bookkeeping for acceptance cuts
     TH1F*             fHistoCutIndex;                       ///< bookkeeping for cuts
+    TH2F*             fHistoTOFtimeVSMomentum;              ///< TOF timing (ns) versus e+- momentum
     TH1F*             fHistoEventPlanePhi;                  ///< EventPlaneAngle Minus Photon Angle
     Bool_t            fPreSelCut;                           ///< Flag for preselection cut used in V0Reader
     Bool_t            fProcessAODCheck;                     ///< Flag for processing check for AOD to be contained in AliAODs.root and AliAODGammaConversion.root
     Bool_t            fMaterialBudgetWeightsInitialized;    ///< weights for conversions photons due due deviating material budget in MC compared to data
-    TProfile*         fProfileContainingMaterialBudgetWeights;
+    TProfile2D*       fProfileContainingMaterialBudgetWeights;
     TString           fFileNameElecDeDxPostCalibration;     ///< name of recalibration file (if no special non-OADB is required)
     Bool_t            fElecDeDxPostCalibrationInitialized;  ///< flag to check that initialization worked
     Int_t             fRecalibCurrentRun;                   ///< runnumber for correct loading of recalib from OADB
@@ -426,8 +455,21 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     Double_t          fExcludeMaxR;                         ///< r cut exclude region
 
   private:
+    /*helper class for on-the-fly removal of elements from a std::map like container while iterating over it */
+    struct TItRemove {
+        TItRemove(TMapPhotonBool &theMap, TMapPhotonBool::iterator theIt);
+        void Remove();
+        void IncIfNotRemoved();
+
+        TMapPhotonBool           &fMap;
+        TMapPhotonBool::iterator  fIt;
+        Bool_t                    fRemoved;
+    };
+
+    void RemovePhotonWithHigherChi2(TItRemove &theI1, TItRemove &theI2) const;
+
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,30)
+    ClassDef(AliConversionPhotonCuts,40)
     /// \endcond
 };
 

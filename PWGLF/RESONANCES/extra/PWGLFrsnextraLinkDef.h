@@ -21,4 +21,16 @@
 #pragma link C++ class AliAnalysisTaskLambdaStar+;
 #pragma link C++ class AliAnalysisTaskSEF01710fromAODtracks+;
 #pragma link C++ class AliRsnf0f2Task+;
+#pragma link C++ class AliAnalysisTaskPPVsMultMCRSN+;
+#pragma link C++ class AliAnalysisTaskEffMatrix+;
+#pragma link C++ class AliAnalysisTaskPhiSA+;
+#pragma link C++ class AliAnalysisTaskPhiSAR+;
+#pragma link C++ class AliAnalysisTaskPhiCount+;
+#pragma link C++ class AliAnalysisTask_Phi_MC+;
+#pragma link C++ class AliAnalysisTaskAODTrackPairUtils+;
+#pragma link C++ class AliAnalysisTaskAODTrackPair+;
+#pragma link C++ class AliAnalysisTaskAODTrackPairMC+;
+#pragma link C++ class AliAnalysisTaskResonanceDP+;
+
+
 #endif

@@ -42,7 +42,7 @@
 #include "AliVParticle.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-#include "AliKFVertex.h"
+#include "AliGAKFVertex.h"
 #include "AliV0ReaderV1.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliConversionAODBGHandlerRP.h"
@@ -601,7 +601,7 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
     hNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
-    hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
+    hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL/TPC problem");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
     hNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
     fESDList[iCut]->Add(hNEvents[iCut]);
@@ -852,6 +852,7 @@ void AliAnalysisTaskGammaConvFlow::UserExec(Option_t *)
   // Called for each event
   //
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
+  if(fV0Reader->GetErrorAODRelabeling()) eventQuality = 2;
   if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
     for(Int_t iCut = 0; iCut<fnCuts; iCut++){
       hNEvents[iCut]->Fill(eventQuality);
@@ -958,7 +959,7 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidates()
                 PhotonTemplateID != 3 && PhotonTemplateID != 4 && PhotonTemplateID != 5 &&
                 PhotonTemplateID != 6 && PhotonTemplateID != 7 && PhotonTemplateID != 8) hKappaTPC_Temp10[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
 
-              TParticle *TRUEPhoton = PhotonCandidate->GetMCParticle(fMCEvent);
+              AliVParticle *TRUEPhoton = PhotonCandidate->GetMCParticle(fMCEvent);
               if(TRUEPhoton) hPt_TruePt[fiCut]->Fill(PhotonCandidate->Pt(),TRUEPhoton->Pt());
             }
             
@@ -1196,7 +1197,7 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforLTM()
   if(fIsMC){
     // Loop over Photon Candidates allocated by MCstack
     for(Int_t i = 0; i < fMCEvent->GetNumberOfPrimaries(); i++){
-      TParticle* gammaForLTM = (TParticle *)fMCEvent->Particle(i);
+      AliVParticle* gammaForLTM = fMCEvent->GetTrack(i);
       if(!gammaForLTM) return;
       if(!MCConversionPhotonCheck(gammaForLTM)) continue;
       gamma_Eta = gammaForLTM->Eta(); gamma_Phi = gammaForLTM->Phi(); gamma_Pt = gammaForLTM->Pt();
@@ -1263,16 +1264,16 @@ void AliAnalysisTaskGammaConvFlow::PrepareFlowEvent(Int_t iMulti, AliFlowEvent *
 Bool_t AliAnalysisTaskGammaConvFlow::MCGammaSignal( AliAODConversionPhoton *MCPhoton ){
   
   
-  TParticle *posDaughter = MCPhoton->GetPositiveMCDaughter(fMCEvent);
-  TParticle *negDaughter = MCPhoton->GetNegativeMCDaughter(fMCEvent);
+  AliVParticle *posDaughter = MCPhoton->GetPositiveMCDaughter(fMCEvent);
+  AliVParticle *negDaughter = MCPhoton->GetNegativeMCDaughter(fMCEvent);
   if(posDaughter==NULL || negDaughter==NULL) return kFALSE;
   Int_t pdgCodePos = 0; 
   Int_t pdgCodeNeg = 0;
   Bool_t IsItGammaSignal = kFALSE;
   
-  if( (posDaughter->GetMother(0) == negDaughter->GetMother(0)) ) {
-    pdgCodePos=TMath::Abs(posDaughter->GetPdgCode());
-    pdgCodeNeg=TMath::Abs(negDaughter->GetPdgCode());
+  if( (posDaughter->GetMother() == negDaughter->GetMother()) ) {
+    pdgCodePos=TMath::Abs(posDaughter->PdgCode());
+    pdgCodeNeg=TMath::Abs(negDaughter->PdgCode());
     if(pdgCodePos==11 && pdgCodeNeg==11) IsItGammaSignal = kTRUE;
   }else{
     IsItGammaSignal = kFALSE;
@@ -1285,16 +1286,16 @@ Bool_t AliAnalysisTaskGammaConvFlow::MCGammaSignal( AliAODConversionPhoton *MCPh
 Bool_t AliAnalysisTaskGammaConvFlow::MCElectronElectron( AliAODConversionPhoton *MCPhoton ){
   
   
-  TParticle *posDaughter = MCPhoton->GetPositiveMCDaughter(fMCEvent);
-  TParticle *negDaughter = MCPhoton->GetNegativeMCDaughter(fMCEvent);
+  AliVParticle *posDaughter = MCPhoton->GetPositiveMCDaughter(fMCEvent);
+  AliVParticle *negDaughter = MCPhoton->GetNegativeMCDaughter(fMCEvent);
   if(posDaughter==NULL || negDaughter==NULL) return kFALSE;
   Int_t pdgCodePos = 0; 
   Int_t pdgCodeNeg = 0;
   Bool_t IsItElectronElectron = kFALSE;
   
-  if( (posDaughter->GetMother(0) != negDaughter->GetMother(0))  || (posDaughter->GetMother(0) == negDaughter->GetMother(0) && posDaughter->GetMother(0) ==-1) ) {
-    pdgCodePos=TMath::Abs(posDaughter->GetPdgCode());
-    pdgCodeNeg=TMath::Abs(negDaughter->GetPdgCode());
+  if( (posDaughter->GetMother() != negDaughter->GetMother())  || (posDaughter->GetMother() == negDaughter->GetMother() && posDaughter->GetMother() ==-1) ) {
+    pdgCodePos=TMath::Abs(posDaughter->PdgCode());
+    pdgCodeNeg=TMath::Abs(negDaughter->PdgCode());
     if(pdgCodePos==11 && pdgCodeNeg==11) IsItElectronElectron = kTRUE;
   }else{
     IsItElectronElectron = kFALSE;
@@ -1304,21 +1305,21 @@ Bool_t AliAnalysisTaskGammaConvFlow::MCElectronElectron( AliAODConversionPhoton 
     
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskGammaConvFlow::MCConversionPhotonCheck( TParticle *MCPhoton ){
+Bool_t AliAnalysisTaskGammaConvFlow::MCConversionPhotonCheck( AliVParticle *MCPhoton ){
   
-  if(MCPhoton->GetPdgCode()!=22) return kFALSE;
+  if(MCPhoton->PdgCode()!=22) return kFALSE;
   if(MCPhoton->GetNDaughters() != 2) return kFALSE;
-  TParticle *posDaughter = (TParticle*)fMCEvent->Particle(MCPhoton->GetFirstDaughter());
-  TParticle *negDaughter = (TParticle*)fMCEvent->Particle(MCPhoton->GetLastDaughter());
+  AliVParticle *posDaughter = fMCEvent->GetTrack(MCPhoton->GetDaughterFirst());
+  AliVParticle *negDaughter = fMCEvent->GetTrack(MCPhoton->GetDaughterLast());
   if(posDaughter==NULL || negDaughter==NULL) return kFALSE;
   if(posDaughter->GetUniqueID() != 5 || negDaughter->GetUniqueID() != 5) return kFALSE;
   Int_t pdgCodePos = 0; 
   Int_t pdgCodeNeg = 0;
   Bool_t IsItPhoton = kFALSE;
   
-  if(posDaughter->GetMother(0) == negDaughter->GetMother(0)) {
-    pdgCodePos=TMath::Abs(posDaughter->GetPdgCode());
-    pdgCodeNeg=TMath::Abs(negDaughter->GetPdgCode());
+  if(posDaughter->GetMother() == negDaughter->GetMother()) {
+    pdgCodePos=TMath::Abs(posDaughter->PdgCode());
+    pdgCodeNeg=TMath::Abs(negDaughter->PdgCode());
     if(pdgCodePos==11 && pdgCodeNeg==11) IsItPhoton = kTRUE;
   }else{
     IsItPhoton = kFALSE;
@@ -1331,16 +1332,16 @@ Bool_t AliAnalysisTaskGammaConvFlow::MCConversionPhotonCheck( TParticle *MCPhoto
 Int_t AliAnalysisTaskGammaConvFlow::GetTemplateID( AliAODConversionPhoton *MCPhoton ){
   
   
-  TParticle *posDaughter = MCPhoton->GetPositiveMCDaughter(fMCEvent);
-  TParticle *negDaughter = MCPhoton->GetNegativeMCDaughter(fMCEvent);
+  AliVParticle *posDaughter = MCPhoton->GetPositiveMCDaughter(fMCEvent);
+  AliVParticle *negDaughter = MCPhoton->GetNegativeMCDaughter(fMCEvent);
   if(posDaughter==NULL || negDaughter==NULL) return kFALSE;
   
   Int_t pdgCodePos = 0; 
   Int_t pdgCodeNeg = 0;
   Int_t TemplateID = -1;
   
-  pdgCodePos=TMath::Abs(posDaughter->GetPdgCode());
-  pdgCodeNeg=TMath::Abs(negDaughter->GetPdgCode());
+  pdgCodePos=TMath::Abs(posDaughter->PdgCode());
+  pdgCodeNeg=TMath::Abs(negDaughter->PdgCode());
   
   if(pdgCodePos==11 && pdgCodeNeg==11)                                              TemplateID = 0; //signal -> e+ e-
   if(pdgCodePos==211 && pdgCodeNeg==211)                                            TemplateID = 1; //pi pi 211 211

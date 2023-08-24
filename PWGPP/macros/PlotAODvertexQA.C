@@ -39,11 +39,13 @@ void PlotAODvertexQA(TString filename="QAresults_AOD.root", TString suffix="QA",
   TDirectoryFile* df=(TDirectoryFile*)f->Get("CheckVertexAOD");
   if(!df){
     printf("Directory CheckVertexAOD not found in file %s\n",filename.Data());
+    f->ls();
     return;
   }
   TList* l=(TList*)df->Get(Form("clistCheckVertexAOD%s",suffix.Data()));
   if(!l){
     printf("TList clistCheckVertexAOD%s not found in file %s\n",suffix.Data(),filename.Data());
+    df->ls();
     return;    
   }
 

@@ -1,0 +1,87 @@
+#!/bin/bash
+
+alien_expand() {
+    f=$(echo "$1/" | sed "s|//|/|g")
+    f_old=""
+    while [[ "$f" != "$f_old" ]]; do
+	echo "$f" 1>&2
+	f_old="$f"
+	f=$(while read f; do [[ "${f: -1}" == "/" ]] && \
+	    alien_ls -F "$f" | /bin/sed "s|^|$f|" || \
+	    echo "$f"; done < <(echo "$f"))
+	if echo "$f" | /bin/grep -q \
+	    "${tx_dir}/[0-9]\\{3\\}/[0-9]\\{3\\}/"; then
+	    echo "$f"
+	    break
+	elif echo "$f" | /bin/grep -qF ".root"; then
+	    echo "$f"
+	    break
+	fi
+    done
+}
+
+count_process() {
+    nproc="$(jobs | grep "Running.*alien_cp" | wc -l)"
+    # echo "count_process: nproc=$nproc" 1>&2
+}
+
+wait_process() {
+    while [[ "$nproc" -ge "${1:-1}" ]]; do
+	sleep 2
+	count_process
+	# echo "wait_process: nproc=$nproc limit=${1:-1}" 1>&2
+    done
+}
+
+copy() {
+    nproc=0
+    for f in $(alien_expand "$1"); do
+	echo "$f" 1>&2
+	case "$f" in
+	    *analysis.jdl)
+		;;
+	    *.root|*/[0-9]*[0-9].[0-9]*/*)
+		o=$(echo "$f" | /bin/sed "s|.*$(echo "${1}" | \
+sed "s|/\\+\$||")/\\+|$(echo "${2}" | sed "s|/\\+\$||")/|")
+		if [[ -f "$o" ]]; then
+		    echo "info: skipped \
+\"alien://${f}\" because output file \"$o\" already exists" 1>&2
+		    continue
+		fi
+		o=$(dirname "${o}")
+		wait_process "$3"
+		echo "+ alien_cp \
+\"alien://${f}\" \"$o\" (nproc = $nproc)" 1>&2
+		[[ -d "$o" ]] || /bin/mkdir -p "$o"
+		alien_cp "alien://${f}" "$o" &
+		count_process
+		;;
+	    $1*/)
+		o=$(echo "$f" | /bin/sed "s|.*$1/\\([0-9]*\\)|$2/\\1|")
+		if [[ -f "$o/AnalysisResults.root" ]]; then
+		    echo "info: skipped \
+\"alien://${f}AnalysisResults.root\" because output file \
+\"$o/AnalysisResults.root\" already exists" 1>&2
+		    continue
+		fi
+		wait_process "$3"
+		echo "+ alien_cp \
+\"alien://${f}AnalysisResults.root\" \"$o\" (nproc = $nproc)" 1>&2
+		[[ -d "$o" ]] || /bin/mkdir -p "$o"
+		alien_cp "alien://${f}AnalysisResults.root" "$o" &
+		count_process
+		;;
+	esac
+    done
+    wait
+}
+
+case "$#" in
+    2|3)
+	copy "$@"
+	;;
+    *)
+	echo "Usage: $0 <source> <destination> [<nprocess>]" 1>&2
+	exit 1
+	;;
+esac

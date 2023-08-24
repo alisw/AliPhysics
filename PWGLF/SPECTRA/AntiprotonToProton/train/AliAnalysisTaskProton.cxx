@@ -72,13 +72,13 @@ using namespace std;
 ClassImp(AliAnalysisTaskProton)
 
 AliAnalysisTaskProton::AliAnalysisTaskProton()
-  : AliAnalysisTaskSE(), fPIDMode(kSigma), EventNo(0) ,fProtonContainer(0),fAntiProtonContainer(0),fListAnalysis(0),gHistProtonsDCAxyEtaPt(0),gHistAntiProtonsDCAxyEtaPt(0),fMaxDCAXYFlag(kFALSE), fPtDependentDcaXYFlag(kFALSE), fMaxDCAZFlag(kFALSE),fDebugMode(kFALSE),nbinsPt(6),fLowPt(0.45),fHighPt(1.05), fOADBPath(0), fPIDResponse(0), fRun(0), fOldRun(0), fRecoPass(0), fAnalysisType(0), fCollidingSystems(0), fUsePhysicsSelection(0), fMaxPrimaryVtxPosZ(0), fHistEventStats(0), fGlobalQAList(0), fListQA(0), fQA2DList(0), fHistMultiplicity(0), gHistdEdxP(0), gHistProtonsdEdxP(0), gHistProtonsDCAzEtaPt(0), gHistAntiProtonsDCAzEtaPt(0),gHistProtonsDCAzCentPt (0), gHistAntiProtonsDCAzCentPt(0), gHistFieldProtonsEtaPt(0), gHistFieldAntiProtonsEtaPt(0), gHistFieldProtonsCentPt(0), gHistFieldAntiProtonsCentPt(0), gHistFieldProtonsLengthPt(0), gHistFieldAntiProtonsLengthPt(0), gHistProtonsLengthCentPt(0), gHistAntiProtonsLengthCentPt(0), fPhysicsSelection(0), fMultiplicityMode(0), nbinsY(100), fLowY(0), fHighY(100), fMinTPCClusters(80), fMinITSClusters(2), fMaxChi2PerTPCCluster(3.5), fMaxChi2PerITSCluster(36.), fMaxDCAXY(0.2), fMaxDCAZ(1.), fMaxDCAXYTPCFlag(0), fMaxDCAXYTPC(0),fPtDependentDcaXY(NULL), fNSigmaDCAXY(7), fNBoundP(0.7), fNSigma1(3), fNSigma2(3), fNRatio1(0), fNRatio2(0), fIsMC(kFALSE), fUserDataRecoPass(0), MAXCent(100), MINCent(0) {
+  : AliAnalysisTaskSE(), fPIDMode(kSigma), EventNo(0) ,fProtonContainer(0),fAntiProtonContainer(0),fListAnalysis(0),gHistProtonsDCAxyEtaPt(0),gHistAntiProtonsDCAxyEtaPt(0),fMaxDCAXYFlag(kFALSE), fPtDependentDcaXYFlag(kFALSE), fMaxDCAZFlag(kFALSE),fDebugMode(kFALSE),nbinsPt(6),fLowPt(0.45),fHighPt(1.05), fOADBPath(0), fPIDResponse(0), fRun(0), fOldRun(0), fRecoPass(0), fAnalysisType(0), fCollidingSystems(0), fUsePhysicsSelection(0), fMaxPrimaryVtxPosZ(0), fHistEventStats(0), fGlobalQAList(0), fListQA(0), fQA2DList(0), fHistMultiplicity(0), gHistdEdxP(0), gHistProtonsdEdxP(0), gHistProtonsDCAzEtaPt(0), gHistAntiProtonsDCAzEtaPt(0),gHistProtonsDCAzCentPt (0), gHistAntiProtonsDCAzCentPt(0), gHistFieldProtonsEtaPt(0), gHistFieldAntiProtonsEtaPt(0), gHistFieldProtonsCentPt(0), gHistFieldAntiProtonsCentPt(0), fPhysicsSelection(0), fMultiplicityMode(0), nbinsY(100), fLowY(0), fHighY(100), fMinTPCClusters(80), fMinITSClusters(2), fMaxChi2PerTPCCluster(3.5), fMaxChi2PerITSCluster(36.), fMaxDCAXY(0.2), fMaxDCAZ(1.), fMaxDCAXYTPCFlag(0), fMaxDCAXYTPC(0),fPtDependentDcaXY(NULL), fNSigmaDCAXY(7), fNBoundP(0.7), fNSigma1(3), fNSigma2(3), fNRatio1(0), fNRatio2(0), fIsMC(kFALSE), fUserDataRecoPass(0), MAXCent(100), MINCent(0) {
 
 }
 
 //________________________________________________________________________
 AliAnalysisTaskProton::AliAnalysisTaskProton(const char *name) 
-  : AliAnalysisTaskSE(name), fPIDMode(kSigma), EventNo(0) ,fProtonContainer(0),fAntiProtonContainer(0),fListAnalysis(0),gHistProtonsDCAxyEtaPt(0),gHistAntiProtonsDCAxyEtaPt(0),fMaxDCAXYFlag(kFALSE), fPtDependentDcaXYFlag(kFALSE), fMaxDCAZFlag(kFALSE),fDebugMode(kFALSE),nbinsPt(6),fLowPt(0.45),fHighPt(1.05), fOADBPath(0), fPIDResponse(0), fRun(0), fOldRun(0), fRecoPass(0), fAnalysisType(0), fCollidingSystems(0), fUsePhysicsSelection(0), fMaxPrimaryVtxPosZ(0), fHistEventStats(0), fGlobalQAList(0), fListQA(0), fQA2DList(0), fHistMultiplicity(0), gHistdEdxP(0), gHistProtonsdEdxP(0), gHistProtonsDCAzEtaPt(0), gHistAntiProtonsDCAzEtaPt(0),gHistProtonsDCAzCentPt (0), gHistAntiProtonsDCAzCentPt(0), gHistFieldProtonsEtaPt(0), gHistFieldAntiProtonsEtaPt(0), gHistFieldProtonsCentPt(0), gHistFieldAntiProtonsCentPt(0), gHistFieldProtonsLengthPt(0), gHistFieldAntiProtonsLengthPt(0), gHistProtonsLengthCentPt(0), gHistAntiProtonsLengthCentPt(0), fPhysicsSelection(0), fMultiplicityMode(0), nbinsY(100), fLowY(0), fHighY(100), fMinTPCClusters(80), fMinITSClusters(2), fMaxChi2PerTPCCluster(3.5), fMaxChi2PerITSCluster(36.), fMaxDCAXY(0.2), fMaxDCAZ(1.), fMaxDCAXYTPCFlag(0), fMaxDCAXYTPC(0),fPtDependentDcaXY(NULL), fNSigmaDCAXY(7), fNBoundP(0.7), fNSigma1(3), fNSigma2(3), fNRatio1(0), fNRatio2(0), fIsMC(kFALSE), fUserDataRecoPass(0), MAXCent(100), MINCent(0) {
+  : AliAnalysisTaskSE(name), fPIDMode(kSigma), EventNo(0) ,fProtonContainer(0),fAntiProtonContainer(0),fListAnalysis(0),gHistProtonsDCAxyEtaPt(0),gHistAntiProtonsDCAxyEtaPt(0),fMaxDCAXYFlag(kFALSE), fPtDependentDcaXYFlag(kFALSE), fMaxDCAZFlag(kFALSE),fDebugMode(kFALSE),nbinsPt(6),fLowPt(0.45),fHighPt(1.05), fOADBPath(0), fPIDResponse(0), fRun(0), fOldRun(0), fRecoPass(0), fAnalysisType(0), fCollidingSystems(0), fUsePhysicsSelection(0), fMaxPrimaryVtxPosZ(0), fHistEventStats(0), fGlobalQAList(0), fListQA(0), fQA2DList(0), fHistMultiplicity(0), gHistdEdxP(0), gHistProtonsdEdxP(0), gHistProtonsDCAzEtaPt(0), gHistAntiProtonsDCAzEtaPt(0),gHistProtonsDCAzCentPt (0), gHistAntiProtonsDCAzCentPt(0), gHistFieldProtonsEtaPt(0), gHistFieldAntiProtonsEtaPt(0), gHistFieldProtonsCentPt(0), gHistFieldAntiProtonsCentPt(0), fPhysicsSelection(0), fMultiplicityMode(0), nbinsY(100), fLowY(0), fHighY(100), fMinTPCClusters(80), fMinITSClusters(2), fMaxChi2PerTPCCluster(3.5), fMaxChi2PerITSCluster(36.), fMaxDCAXY(0.2), fMaxDCAZ(1.), fMaxDCAXYTPCFlag(0), fMaxDCAXYTPC(0),fPtDependentDcaXY(NULL), fNSigmaDCAXY(7), fNBoundP(0.7), fNSigma1(3), fNSigma2(3), fNRatio1(0), fNRatio2(0), fIsMC(kFALSE), fUserDataRecoPass(0), MAXCent(100), MINCent(0) {
  // Constructor
 //fPtDependentDcaXY=NULL;
 
@@ -415,44 +415,6 @@ fListAnalysis->Add(fHistMultiplicity);
   gHistFieldAntiProtonsCentPt->SetStats(kTRUE);
   fQA2DList->Add(gHistFieldAntiProtonsCentPt);
 
-//========================Magnetic field Length Pt================================//
-
-  gHistFieldProtonsLengthPt = new TH3F("gHistFieldProtonsLengthPt",
-					  ";P_{T} [GeV/c];Mag. field",
-					  640,0,260,
-					  nbinsPt,fLowPt,fHighPt,
-					  2,-10, 10);
-  gHistFieldProtonsLengthPt->GetXaxis()->SetTitle("track length in TPC (cm)");
-  gHistFieldProtonsLengthPt->SetStats(kTRUE);
-  fQA2DList->Add(gHistFieldProtonsLengthPt);
-
-  gHistFieldAntiProtonsLengthPt = new TH3F("gHistFieldAntiProtonsLengthPt",
-					  ";P_{T} [GeV/c];Mag. field",
-					  640,0,260,
-					  nbinsPt,fLowPt,fHighPt,
-					  2,-10, 10);
-  gHistFieldAntiProtonsLengthPt->GetXaxis()->SetTitle("track length in TPC (cm)");
-  gHistFieldAntiProtonsLengthPt->SetStats(kTRUE);
-  fQA2DList->Add(gHistFieldAntiProtonsLengthPt);
-
-//========================Length Cent Pt================================//
-gHistProtonsLengthCentPt = new TH3F("gHistProtonsLengthCentPt",
-					  ";P_{T} [GeV/c];Length [cm]",
-					  100,0,100,
-					  nbinsPt,fLowPt,fHighPt,
-					  640,0,260);
-gHistProtonsLengthCentPt->GetXaxis()->SetTitle("Centrality");
-gHistProtonsLengthCentPt->SetStats(kTRUE);
-fQA2DList->Add(gHistProtonsLengthCentPt);
-
-gHistAntiProtonsLengthCentPt = new TH3F("gHistAntiProtonsLengthCentPt",
-					  ";P_{T} [GeV/c];Length [cm]",
-					  100,0,100,
-					  nbinsPt,fLowPt,fHighPt,
-					  640,0,260);
-gHistAntiProtonsLengthCentPt->GetXaxis()->SetTitle("Centrality");
-gHistAntiProtonsLengthCentPt->SetStats(kTRUE);
-fQA2DList->Add(gHistAntiProtonsLengthCentPt);
 
 /*
   //==========================Systematics==============================//
@@ -548,7 +510,7 @@ AliCentrality *esdCentrality = lESDEvent->GetCentrality();
 Float_t nTracklets = esdCentrality->GetCentralityPercentile("V0M");
   
 
-  Bool_t isSelected = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected() & AliVEvent::kMB);
+  Bool_t isSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   if ((fUsePhysicsSelection)&&(!isSelected)) return;
   fHistEventStats->Fill(2); //number of analyzed events
 fHistMultiplicity->Fill(nTracklets);
@@ -597,7 +559,6 @@ const AliESDVertex* spdVtx = lESDEvent->GetPrimaryVertexSPD();
 if (TMath::Abs(zvtx)<fMaxPrimaryVtxPosZ){// event selections
     gPt = tpcTrack->Pt();
     gP = track->GetInnerParam()->P();
-    Double_t Length = track->GetLengthInActiveZone(0,3,236,B,0,0);
 
     AliExternalTrackParam cParam;
     track->RelateToVertex(spdVtx,
@@ -663,16 +624,12 @@ gHistProtonsDCAxyEtaPt->Fill(nTracklets,tpcTrack->Pt(),dca[0]);
 		if(tpcTrack->Charge() > 0) {
 		gHistFieldProtonsEtaPt->Fill(Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz(),3),tpcTrack->Pt(),B);
 		gHistFieldProtonsCentPt->Fill(nTracklets,tpcTrack->Pt(),B);
-		gHistFieldProtonsLengthPt->Fill(Length,tpcTrack->Pt(),B);
-		gHistProtonsLengthCentPt->Fill(nTracklets,tpcTrack->Pt(),Length);
 
 		fProtonContainer->Fill(containerInput,3);   
 	      }//protons
 	      else if(tpcTrack->Charge() < 0) {
 		gHistFieldAntiProtonsEtaPt->Fill(Rapidity(tpcTrack->Px(),tpcTrack->Py(),tpcTrack->Pz(),3),tpcTrack->Pt(),B);
 		gHistFieldAntiProtonsCentPt->Fill(nTracklets,tpcTrack->Pt(),B);
-		gHistFieldAntiProtonsLengthPt->Fill(Length,tpcTrack->Pt(),B);
-		gHistAntiProtonsLengthCentPt->Fill(nTracklets,tpcTrack->Pt(),Length);
 		
 		fAntiProtonContainer->Fill(containerInput,3);
 	      }//antiprotons

@@ -1,15 +1,23 @@
 #include "AliVEvent.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
+#include "AliMCEvent.h"
+#include "AliAODMCHeader.h"
+#include "AliAODMCParticle.h"
+#include "AliGenEventHeader.h"
+#include "AliGenCocktailEventHeader.h"
 #include "AliVVertex.h"
+#include "AliMCVertex.h"
 #include "AliLog.h"
 #include "AliAODVertex.h"
 #include "AliVTrack.h"
 #include "AliVEvent.h"
+#include "AliAODTrack.h"
 #include <TMatrixDSym.h>
 #include <TMath.h>
 #include "AliVMultiplicity.h"
 #include "AliPPVsMultUtils.h"
+#include "AliESDtrackCuts.h"
 
 #include "AliAnalysisUtils.h"
 
@@ -280,4 +288,259 @@ Float_t AliAnalysisUtils::GetMultiplicityPercentile(AliVEvent *event, TString lM
     AliFatal("Event is neither of AOD nor ESD type"); 
     return -999.;
   }
+}
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(Int_t index, AliMCEvent* mcEv){
+  // interface method for analyses on ESDs
+  // returns kTRUE if a particle is produced in a pileup event in case of MC with pileup
+
+  // check if the event header is that of a cocktail (AliGenPileup creates a cocktail):
+  
+  Int_t totPrimaries=mcEv->GetNumberOfPrimaries();
+  if(index>=totPrimaries){
+    // particles from the transport, get mother
+    while(index>=totPrimaries) index=mcEv->GetLabelOfParticleMother(index);
+  }
+  TList *lgen = mcEv->GetCocktailList();
+  if(!lgen) return kFALSE;
+  return IsParticleFromOutOfBunchPileupCollision(index,lgen);
+}
+
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(Int_t index, AliAODMCHeader* aodMCHeader, TClonesArray *arrayMC){
+  // interface method for analyses on AODs
+  // returns kTRUE if a particle is produced in a pileup event in case of MC with pileup
+
+  TList *lgen = aodMCHeader->GetCocktailHeaders();
+  if(!lgen) return kFALSE;
+
+  if(index<0 || index>=arrayMC->GetEntriesFast()){
+    printf("AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision: particle index %d outside valid range. Entries in AOD MC array = %d\n",index,arrayMC->GetEntriesFast());
+    return kFALSE;
+  }
+  
+  AliAODMCParticle* mcPart=(AliAODMCParticle*)arrayMC->At(index);
+  if(mcPart && !mcPart->IsPrimary()){
+    // particle from the transport, get mother
+    index=mcPart->GetMother();
+    while(index>=0 && index<arrayMC->GetEntriesFast()){
+      mcPart =(AliAODMCParticle*)arrayMC->At(index);
+      if(!mcPart) return kFALSE;
+      if(mcPart->IsPrimary()) break;
+      index=mcPart->GetMother();
+    }
+  }
+  return IsParticleFromOutOfBunchPileupCollision(index,lgen);
+}
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(Int_t index, TList *lgen){
+  
+  // returns kTRUE if a particle is produced in a pileup event in case of MC with pileup
+
+  // retrieve the header of the generator that produced the considered particle
+  Int_t nh=lgen->GetEntries();
+  AliGenEventHeader* theGener=0x0;
+  Int_t nsumpart=0;
+  for(Int_t i=0;i<nh;i++){
+    AliGenEventHeader* gh=(AliGenEventHeader*)lgen->At(i);
+    if(gh->InheritsFrom(AliGenCocktailEventHeader::Class())){
+      AliGenCocktailEventHeader* gc=dynamic_cast<AliGenCocktailEventHeader*>(gh);
+      TList* lh2=gc->GetHeaders();
+      if(lh2){
+	Int_t nh2=lh2->GetEntries();
+	for(Int_t i2=0;i2<nh2;i2++){
+	  AliGenEventHeader* gh2=(AliGenEventHeader*)lh2->At(i2);
+	  Int_t npart=gh2->NProduced();
+	  if(index>=nsumpart && index<(nsumpart+npart)){
+	    theGener=gh2;
+	    break;
+	  }
+	  nsumpart+=npart;
+	}
+      }
+    }else{
+      Int_t npart=gh->NProduced();
+      if(index>=nsumpart && index<(nsumpart+npart)){
+	theGener=gh;
+	break;
+      }
+      nsumpart+=npart;
+    }
+    if(theGener) break;
+  }
+  if(!theGener) return kFALSE;
+  
+  Double_t timeNs = theGener->InteractionTime() * 1e9;
+  if (TMath::Abs(timeNs) > 3.0){
+    // Out of bunch pileup according to collision time
+    // use 3 ns window around the trigger time
+    return kTRUE;
+  }
+  return kFALSE;
+}
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(AliMCEvent* mcEv, TString genname){
+  // Interface method for ESDs
+  // returns kTRUE if there is >1 collision in the bunch crossing of the trigger
+  // use 3 ns window around the trigger time
+
+  AliGenCocktailEventHeader *cocktailHeader = dynamic_cast<AliGenCocktailEventHeader *>(mcEv->GenEventHeader());
+  if (cocktailHeader == nullptr) return kFALSE;
+  TList *lgen = cocktailHeader->GetHeaders();
+  return IsPileupInGeneratedEvent(lgen,genname,kTRUE);
+}
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(AliAODMCHeader* aodMCHeader, TString genname){
+  // Interface method for AODs
+  // returns kTRUE if there is >1 collision in the bunch crossing of the trigger
+  // use 3 ns window around the trigger time
+  
+  TList *lgen = aodMCHeader->GetCocktailHeaders();
+  return IsPileupInGeneratedEvent(lgen,genname,kTRUE);
+}
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(TList *lgen, TString genname){
+  // Interface method -> call IsPileupInGeneratedEvent requiring the check of same bunch pileup
+  return IsPileupInGeneratedEvent(lgen,genname,kTRUE);
+}
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsPileupInGeneratedEvent(AliMCEvent* mcEv, TString genname){
+  // Interface method for ESDs
+  // returns kTRUE if there is >1 collision with the generator specified in genname
+  AliGenCocktailEventHeader *cocktailHeader = dynamic_cast<AliGenCocktailEventHeader *>(mcEv->GenEventHeader());
+  if (cocktailHeader == nullptr) return kFALSE;
+  TList *lgen = cocktailHeader->GetHeaders();
+  return IsPileupInGeneratedEvent(lgen,genname,kFALSE);
+}
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsPileupInGeneratedEvent(AliAODMCHeader* aodMCHeader, TString genname){
+  // Interface method for AODs
+  // returns kTRUE if there is >1 collision with the generator specified in genname
+  TList *lgen = aodMCHeader->GetCocktailHeaders();
+  return IsPileupInGeneratedEvent(lgen,genname,kFALSE);
+}
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsPileupInGeneratedEvent(TList *lgen, TString genname, Bool_t requireSameBunch){
+  // returns kTRUE if there is >1 collision with the generator specified in genname
+  // if requireSameBunch is true: same bunch pileup is tagged using a 3 ns window around the trigger time
+
+  if(!lgen) return kFALSE;
+  Int_t nh=lgen->GetEntries();
+  Int_t nCollis=0;
+  for(Int_t i=0;i<nh;i++){
+    AliGenEventHeader* gh=(AliGenEventHeader*)lgen->At(i);
+    if(gh->InheritsFrom(AliGenCocktailEventHeader::Class())){
+      AliGenCocktailEventHeader* gc=dynamic_cast<AliGenCocktailEventHeader*>(gh);
+      TList* lh2=gc->GetHeaders();
+      if(lh2){
+	Int_t nh2=lh2->GetEntries();
+	for(Int_t i2=0;i2<nh2;i2++){
+	  AliGenEventHeader* gh2=(AliGenEventHeader*)lh2->At(i2);
+	  TString genclass=gh2->ClassName();
+	  Double_t timeNs = gh2->InteractionTime() * 1e9;
+	  if( genclass.Contains(genname.Data()) && (!requireSameBunch || (TMath::Abs(timeNs) < 3.0)) ) nCollis++;
+	}
+      }
+    }else{
+      TString genclass=gh->ClassName();
+      Double_t timeNs = gh->InteractionTime() * 1e9;
+      if( genclass.Contains(genname.Data()) && (!requireSameBunch || (TMath::Abs(timeNs) < 3.0)) ) nCollis++;
+    }
+  }
+  if(nCollis<1){
+    printf("AliAnalysisUtils::IsPileupInGeneratedEvent: ERROR: No collisions with %s generator found!\n",genname.Data());
+    return kFALSE;
+  }
+  if(nCollis>1) return kTRUE;
+  return kFALSE;
+}
+//______________________________________________________________________
+AliVVertex*  AliAnalysisUtils::GetGeneratedPrimaryVertexOfTriggerEvent(AliMCEvent* mcEv){
+  // Interface method for ESDs
+  AliGenCocktailEventHeader *cocktailHeader = dynamic_cast<AliGenCocktailEventHeader *>(mcEv->GenEventHeader());
+  if (cocktailHeader == nullptr) return 0x0;
+  TList *lgen = cocktailHeader->GetHeaders();
+  return GetGeneratedPrimaryVertexOfTriggerEvent(lgen);
+}
+//______________________________________________________________________
+AliVVertex*  AliAnalysisUtils::GetGeneratedPrimaryVertexOfTriggerEvent(AliAODMCHeader* aodMCHeader){
+  // Interface method for AODs
+  TList *lgen = aodMCHeader->GetCocktailHeaders();
+  return GetGeneratedPrimaryVertexOfTriggerEvent(lgen);
+}
+//______________________________________________________________________
+AliVVertex*  AliAnalysisUtils::GetGeneratedPrimaryVertexOfTriggerEvent(TList *lgen){
+  // returns the position of the generated primary vertex of the trigger event
+  // in case of productions with generated pileup
+
+  if(!lgen) return 0x0;
+  TArrayF v;
+  Int_t nh=lgen->GetEntries();
+  for(Int_t i=0; i<nh; i++){
+    AliGenEventHeader* gh=(AliGenEventHeader*)lgen->At(i);
+    if(gh->InheritsFrom(AliGenCocktailEventHeader::Class())){
+      AliGenCocktailEventHeader* gch=dynamic_cast<AliGenCocktailEventHeader*>(gh);
+      TList* lh2=gch->GetHeaders();
+      if(lh2){
+	Int_t nh2=lh2->GetEntries();
+	for(Int_t i2=0; i2<nh2; i2++){
+	  AliGenEventHeader* gh2=(AliGenEventHeader*)lh2->At(i2);
+	  Double_t timeNs = gh2->InteractionTime() * 1e9;
+	  if(TMath::Abs(timeNs) < 3.0) gh2->PrimaryVertex(v);
+	}
+      }
+    }else{
+      Double_t timeNs = gh->InteractionTime() * 1e9;
+      if(TMath::Abs(timeNs) < 3.0) gh->PrimaryVertex(v);
+    }
+  }
+  AliMCVertex* primv=new AliMCVertex(v[0] ,v[1], v[2]);
+  return ((AliVVertex*)primv);
+}
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsKinkMother(AliAODTrack* track, AliAODEvent* aod){
+  // returns kTRUE if a track enters in a kink (kink mother)
+  for(Int_t jv=0; jv<aod->GetNumberOfVertices(); jv++){
+    AliAODVertex *v=(AliAODVertex*)aod->GetVertex(jv);
+    Int_t vtyp=v->GetType();
+    if(vtyp==AliAODVertex::kKink){
+      AliAODTrack* mothKink=dynamic_cast<AliAODTrack*>(v->GetParent());
+      if(!mothKink) continue;
+      if(mothKink->GetID()==track->GetID()) return kTRUE;
+    }
+  }
+  return kFALSE;
+}
+//______________________________________________________________________
+Bool_t AliAnalysisUtils::IsKinkDaughter(AliAODTrack* track){
+  // returns kTRUE if a track is produced in a kink (kink daughter)
+  AliAODVertex* av=track->GetProdVertex();
+  if(av && av->GetType()==AliAODVertex::kKink) return kTRUE;
+  return kFALSE;
+}
+//______________________________________________________________________
+AliESDtrackCuts* AliAnalysisUtils::GetStandardITSTPCTrackCuts2011TighterChi2(Bool_t selPrimaries, Int_t clusterCut)
+{
+  // In 2020 the error parametrisation in the TPC was improved resulting in a narrower chi2/cls distribution.
+  // Therefore all newer reconstructions require a tighter cut on this variable to remove outlier tracks.
+  // In particular this change affects the fowllowing periods (and corresponding MCs):
+  // LHC18qr_pass3, LHC15o_pass2, LHC16rsqt_pass2 (and all newer reconstructions).
+  
+  AliESDtrackCuts* esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(selPrimaries, clusterCut);
+  esdTrackCuts->SetMaxChi2PerClusterTPC(2.5);
+  AliInfoClass("Applying tighter chi2/ncl cut for reconstruction with improved error parametrisation.");
+  return esdTrackCuts;
+}
+//______________________________________________________________________
+AliESDtrackCuts* AliAnalysisUtils::GetStandardITSTPCTrackCuts2015PbPbTighterChi2(Bool_t selPrimaries/*=kTRUE*/, Int_t clusterCut/*=1*/, Bool_t cutAcceptanceEdges/*=kTRUE*/, Bool_t removeDistortedRegions/*=kFALSE*/)
+{
+  // In 2020 the error parametrisation in the TPC was improved resulting in a narrower chi2/cls distribution.
+  // Therefore all newer reconstructions require a tighter cut on this variable to remove outlier tracks.
+  // In particular this change affects the fowllowing periods (and corresponding MCs):
+  // LHC18qr_pass3, LHC15o_pass2, LHC16rsqt_pass2 (and all newer reconstructions).
+  
+  AliESDtrackCuts* esdTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2015PbPb(selPrimaries, clusterCut, cutAcceptanceEdges, removeDistortedRegions);
+  esdTrackCuts->SetMaxChi2PerClusterTPC(2.5);
+  AliInfoClass("Applying tighter chi2/ncl cut for reconstruction with improved error parametrisation.");
+  return esdTrackCuts;
 }

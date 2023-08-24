@@ -38,7 +38,20 @@ private:
 
   TH2D *fPtKstar2part;   // pt vs k* 
   TH2D *fPtKstarDen2part;   // pt vs k* mixed pairs 
+  
+  TH2D *fPairPtKstar2part;   // pair pt vs k* 
+  TH2D *fPairPtKstarDen2part;   // pair pt vs k* mixed pairs 
 
+  TH2D *fPtKstar_kT[10];   // pt vs k* for kT 
+  TH2D *fPtKstarDen_kT[10];   // pt vs k* mixed pairs for kT
+  TH2D *fPtKstar2part_kT[10];   // pt vs k* for kT
+  TH2D *fPtKstarDen2part_kT[10];   // pt vs k* mixed pairs for kT
+  TH2D *fPairPtKstar2part_kT[10];   // pair pt vs k* for kT
+  TH2D *fPairPtKstarDen2part_kT[10];   // pair pt vs k* mixed pairs for kT 
+
+  
+  TH2D *fKstarBetaT;  //k* vs BetaT
+  
 #ifdef __ROOT__
   ClassDef(AliFemtoCorrFctnPtKstar, 1)
 #endif

@@ -52,6 +52,7 @@
 #include "AliEmcalParticleJetConstituent.h"
 
 #include "AliEmcalJetTask.h"
+#include "AliProdInfo.h"
 
 using std::cout;
 using std::endl;
@@ -86,7 +87,10 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fTrackEfficiencyFunction(nullptr),
+  fTrackEfficiencyHistogram(nullptr),
   fApplyArtificialTrackingEfficiency(kFALSE),
+  fApplyPtDependentTrackingEfficiency(kFALSE),
+  fApplyQoverPtShift(kFALSE),
   fRandom(0),
   fLocked(0),
   fFillConstituents(kTRUE),
@@ -99,6 +103,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fFillGhost(kFALSE),
   fJets(0),
   fFastJetWrapper("AliEmcalJetTask","AliEmcalJetTask"),
+  fYAMLConfig(),
   fClusterContainerIndexMap(),
   fParticleContainerIndexMap()
 {
@@ -127,7 +132,10 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fTrackEfficiencyFunction(nullptr),
+  fTrackEfficiencyHistogram(nullptr),
   fApplyArtificialTrackingEfficiency(kFALSE),
+  fApplyPtDependentTrackingEfficiency(kFALSE),
+  fApplyQoverPtShift(kFALSE),
   fRandom(0),
   fLocked(0),
   fFillConstituents(kTRUE),
@@ -140,6 +148,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fFillGhost(kFALSE),
   fJets(0),
   fFastJetWrapper(name,name),
+  fYAMLConfig(),
   fClusterContainerIndexMap(),
   fParticleContainerIndexMap()
 {
@@ -230,6 +239,7 @@ void AliEmcalJetTask::TerminateUtilities()
  */
 Bool_t AliEmcalJetTask::Run()
 {
+
   InitEvent();
   // clear the jet array (normally a null operation)
   fJets->Delete();
@@ -271,7 +281,25 @@ Int_t AliEmcalJetTask::FindJets()
       // Apply artificial track inefficiency, if supplied (either constant or pT-dependent)
       if (fApplyArtificialTrackingEfficiency) {
         if (fTrackEfficiencyOnlyForEmbedding == kFALSE || (fTrackEfficiencyOnlyForEmbedding == kTRUE && tracks->GetIsEmbedding())) {
-          Double_t trackEfficiency = fTrackEfficiencyFunction->Eval(it->first.Pt());
+          Double_t trackEfficiency = 1.;
+          if(fTrackEfficiencyFunction!=nullptr) {
+            trackEfficiency = fTrackEfficiencyFunction->Eval(it->first.Pt());
+          }
+          if(fApplyPtDependentTrackingEfficiency) {
+            // if it exists, centrality-integrated tracking efficiency taken from index 0 
+            if(fTrackEfficiencyHistogramVector.at(0) ) {
+              trackEfficiency -= (1. - fTrackEfficiencyHistogramVector.at(0)->GetBinContent(fTrackEfficiencyHistogramVector.at(0)->FindBin(it->first.Pt())));
+            }
+            // otherwise, tracking efficiency taken from corresponding centrality bin stored in index 1-4
+            else {
+              if(fTrackEfficiencyHistogramVector.at(fCentBin+1)) {
+                trackEfficiency -= (1. - fTrackEfficiencyHistogramVector.at(fCentBin+1)->GetBinContent(fTrackEfficiencyHistogramVector.at(fCentBin+1)->FindBin(it->first.Pt())));
+              }
+              else {
+                AliFatal(TString::Format("You're running over centrality (%.0f) for which the pt-dependent tracking uncertainty has not been defined",fCent).Data());
+              }
+            }
+          }
           Double_t rnd = fRandom.Rndm();
           if (trackEfficiency < rnd) {
             AliDebug(2,Form("Track %d rejected due to artificial tracking inefficiency", it.current_index()));
@@ -414,11 +442,17 @@ Bool_t AliEmcalJetTask::GetSortedArray(Int_t indexes[], std::vector<fastjet::Pse
  */
 void AliEmcalJetTask::ExecOnce()
 {
+
+  fYAMLConfig.Reinitialize();
+
+  if(fApplyPtDependentTrackingEfficiency) {
+    SetArtificialTrackingEfficiencyFromYAML();
+  }
   
   // If a constant artificial track efficiency is supplied, create a TF1 that is constant in pT
   if (fTrackEfficiency < 1.) {
     // If a TF1 was already loaded, throw an error
-    if (fApplyArtificialTrackingEfficiency) {
+    if (fApplyArtificialTrackingEfficiency && fTrackEfficiencyHistogram==nullptr) {
       AliError(Form("%s: fTrackEfficiencyFunction was already loaded! Do not apply multiple artificial track efficiencies.", GetName()));
     }
     
@@ -564,9 +598,6 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
         AliError(Form("Could not find track %d",tid));
         continue;
       }
-      if(fFillConstituents){
-        jet->AddParticleConstituent(t, partCont->GetIsEmbedding(), fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, tid));
-      }
 
       Double_t cEta = t->Eta();
       Double_t cPhi = t->Phi();
@@ -599,6 +630,9 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
 
       if (flag == 0 || particlesSubName == "") {
         jet->AddTrackAt(fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, tid), nt);
+        if(fFillConstituents){
+          jet->AddParticleConstituent(t, partCont->GetIsEmbedding(), fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, tid));
+        }
       }
       else {
         // Get the particle container and array corresponding to the subtracted particles
@@ -609,6 +643,9 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
         AliEmcalParticle* part_sub = new ((*particles_sub)[part_sub_id]) AliEmcalParticle(dynamic_cast<AliVTrack*>(t));   // SA: probably need to be fixed!!
         part_sub->SetPtEtaPhiM(constituents[ic].perp(),constituents[ic].eta(),constituents[ic].phi(),constituents[ic].m());
         jet->AddTrackAt(fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, part_sub_id), nt);
+        if(fFillConstituents){
+          jet->AddParticleConstituent(part_sub, partCont->GetIsEmbedding(), fParticleContainerIndexMap.GlobalIndexFromLocalIndex(partCont, part_sub_id));
+        }
       }
 
       ++nt;
@@ -630,8 +667,6 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       Double_t cPhi = nP.Phi_0_2pi();
       Double_t cPt  = nP.Pt();
       Double_t cP   = nP.P();
-      Double_t pvec[3] = {nP.Px(), nP.Py(), nP.Pz()};
-      if(fFillConstituents) jet->AddClusterConstituent(c, (AliVCluster::VCluUserDefEnergy_t)clusCont->GetDefaultClusterEnergy(), pvec, clusCont->GetIsEmbedding(), fClusterContainerIndexMap.GlobalIndexFromLocalIndex(clusCont, cid));
 
       neutralE += cP;
       if (cPt > maxNe) maxNe = cPt;
@@ -651,6 +686,11 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
 
       if (flag == 0 || particlesSubName == "") {
         jet->AddClusterAt(fClusterContainerIndexMap.GlobalIndexFromLocalIndex(clusCont, cid), nc);
+
+        if(fFillConstituents) {
+          Double_t pvec[3] = {nP.Px(), nP.Py(), nP.Pz()};
+          jet->AddClusterConstituent(c, (AliVCluster::VCluUserDefEnergy_t)clusCont->GetDefaultClusterEnergy(), pvec, clusCont->GetIsEmbedding(), fClusterContainerIndexMap.GlobalIndexFromLocalIndex(clusCont, cid));
+        }
       }
       else {
         // Get the cluster container and array corresponding to the subtracted particles
@@ -661,6 +701,16 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
         AliEmcalParticle* part_sub = new ((*particles_sub)[part_sub_id]) AliEmcalParticle(c);
         part_sub->SetPtEtaPhiM(constituents[ic].perp(),constituents[ic].eta(),constituents[ic].phi(),constituents[ic].m());
         jet->AddClusterAt(fClusterContainerIndexMap.GlobalIndexFromLocalIndex(clusCont, part_sub_id), nc);
+
+        if(fFillConstituents) {
+          // NOTE: The ClusterConstituent constructor won't work here because we're not passing an AliVCluster.
+          //       We don't have an subtracted object. However, we don't want a user to miss this issue, so we raise an exception.
+          // - RE 2020-05-13
+          //clusCont->GetMomentum(nP, part_sub_id);
+          //Double_t pvec[3] = {nP.Px(), nP.Py(), nP.Pz()};
+          //jet->AddClusterConstituent(part_sub, (AliVCluster::VCluUserDefEnergy_t)clusCont->GetDefaultClusterEnergy(), pvec, clusCont->GetIsEmbedding(), fClusterContainerIndexMap.GlobalIndexFromLocalIndex(clusCont, part_sub_id));
+          throw std::runtime_error("Subtracted clusters constituents are not implemented.");
+        }
       }
 
       ++nc;
@@ -1040,6 +1090,86 @@ void AliEmcalJetTask::LoadTrackEfficiencyFunction(const std::string & path, cons
 }
 
 /**
+ * Set the pt-dependent tracking efficiency from the loaded YAML file
+ */
+
+void AliEmcalJetTask::SetArtificialTrackingEfficiencyFromYAML() {
+
+  
+  std::vector <Double_t> ptBinning;
+  std::vector <Double_t> trackingUncertainty;
+  bool res = fYAMLConfig.GetProperty("ptBinning", ptBinning, false);
+  Int_t nPtBins = ptBinning.size()-1;
+  double* aptBinning = ptBinning.data();
+
+  auto userInfo = fInputHandler->GetUserInfo();
+  AliProdInfo prodInfo(userInfo);
+  std::string period = prodInfo.GetAnchorProduction().Data();
+  if(period.size() == 0) {
+    // MC where anchor production is not saved - get the name of the MC production instead
+    period = prodInfo.GetTag(AliProdInfo::kProdTag).Data();
+    if(period.size() == 0) {
+      AliFatal("No information relating to anchored datset or MC tag in this MC production - can't get pT-dependent tracking efficiencies");
+    }
+    AliInfoStream() << "Get MC set tracking efficiency for " << period << "\n";
+  }
+  else {
+    AliInfoStream() << "Get anchor production set tracking efficiency for " << period << "\n";
+  }
+
+  // index 0 always corresponds to centrality-integrated tracking efficiencies
+  // index 1-4 corresponds to the centrality bins defined below
+  // the vector entry is set to nullptr if the centralities don't exist in the yaml file
+  Double_t centMin[5] = {0,0,10,30,50};
+  Double_t centMax[5] = {100,10,30,50,90};
+  Int_t count = 0;
+  for (Int_t icent = 0; icent <= fNcentBins; icent++) {
+    std::string cent = TString::Format("%.0f_%.0f",centMin[icent],centMax[icent]).Data();
+
+    res = fYAMLConfig.GetProperty({period,cent},trackingUncertainty, false);
+    if(res) {
+      fTrackEfficiencyHistogram = new TH1D("fTrackEfficiencyHistogram","h",nPtBins,aptBinning);
+      for(Int_t i = 0; i < nPtBins; i++) {
+        fTrackEfficiencyHistogram->SetBinContent(i+1, trackingUncertainty.at(i));
+        AliDebug(2,TString::Format("pT %f - %f \t track uncertainty: %f", ptBinning.at(i), ptBinning.at(i+1), trackingUncertainty.at(i)).Data());
+      }
+      fTrackEfficiencyHistogramVector.push_back(fTrackEfficiencyHistogram);
+      count++;
+    }
+    else {
+      fTrackEfficiencyHistogramVector.push_back(nullptr);
+    }
+  }
+  if(count == 0) {
+    AliFatal(TString::Format("not able to find any pt-dependent uncertainties for the anchored period %s of the MC that you are running over",period.c_str()));
+  }
+  if(fNcentBins != 4 && fNcentBins != 5 && !fTrackEfficiencyHistogramVector.at(0) ) {
+    AliFatal("fNcentBins should be set to either 4 or 5 in order to correctly load the pt-dependent tracking efficiency histograms when running on Pb-Pb events");
+  }
+
+  fApplyArtificialTrackingEfficiency = kTRUE;
+
+}
+
+/**
+ * Stream and initialise tracking efficiency yaml file
+ */
+
+void AliEmcalJetTask::AddArtificialTrackingEfficiencyConfig() {
+
+
+  std::string path = "$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/TrackEfficiencyConfiguration.yaml";
+  Printf("Get pT-dependent Tracking efficiency from %s", path.c_str());
+  int addedConfig = fYAMLConfig.AddConfiguration(path, "yamlConfig");
+  if (addedConfig < 0) {
+    AliFatal(TString::Format("YAML Configuration in set path %s not found!",path.c_str()).Data());
+  }
+  fYAMLConfig.Initialize();
+
+
+}
+
+/**
  * Add an instance of this class to the analysis manager
  * @param nTracks name of the track collection
  * @param nClusters name of the calorimeter cluster collection
@@ -1190,6 +1320,8 @@ AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
 
   if (bFillGhosts) jetTask->SetFillGhost();
   if (lockTask) jetTask->SetLocked();
+
+  jetTask->AddArtificialTrackingEfficiencyConfig();
 
   //-------------------------------------------------------
   // Final settings, pass to manager and set the containers

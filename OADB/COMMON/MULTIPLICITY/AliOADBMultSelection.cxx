@@ -1,5 +1,6 @@
 #include "AliOADBMultSelection.h"
 #include "TH1F.h"
+#include "TProfile.h"
 #include "TList.h"
 #include "AliMultEstimator.h"
 #include "AliMultVariable.h"
@@ -17,7 +18,7 @@ ClassImp(AliOADBMultSelection);
 //________________________________________________________________
 //Constructors/Destructor
 AliOADBMultSelection::AliOADBMultSelection() :
-TNamed("multSel",""), fCalibList(0), fEventCuts(0), fSelection(0), fMap(0)
+TNamed("multSel",""), fCalibList(0), fCalibListVtxZ(0), fEventCuts(0), fSelection(0), fMap(0), fMapVtxZ(0)
 {
     // constructor
     // fCalibList = new TList();
@@ -27,25 +28,35 @@ TNamed("multSel",""), fCalibList(0), fEventCuts(0), fSelection(0), fMap(0)
 AliOADBMultSelection::AliOADBMultSelection(const AliOADBMultSelection& o)
 : TNamed(o),
 fCalibList(0),
+fCalibListVtxZ(0),
 fEventCuts(0),
 fSelection(0),
-fMap(0)
+fMap(0),
+fMapVtxZ(0)
 {
     fCalibList = new TList();
     fCalibList->SetOwner (kTRUE);
-    TIter next(o.fCalibList);
+    fCalibListVtxZ = new TList();
+    fCalibListVtxZ->SetOwner (kTRUE);
     TObject* obj = 0;
+    
+    TIter next(o.fCalibList);
     while ((obj = next())) fCalibList->Add(obj->Clone());
+    TIter nextvtxZ(o.fCalibListVtxZ);
+    while ((obj = nextvtxZ())) fCalibListVtxZ->Add(obj->Clone());
+  
     fSelection = new AliMultSelection(*o.fSelection);
     fEventCuts = new AliMultSelectionCuts(*o.fEventCuts);
 }
 //________________________________________________________________
 AliOADBMultSelection::AliOADBMultSelection(const char * name, const char * title) :
-TNamed(name, title), fCalibList(0), fEventCuts(0), fSelection(0), fMap(0)
+TNamed(name, title), fCalibList(0), fCalibListVtxZ(0), fEventCuts(0), fSelection(0), fMap(0), fMapVtxZ(0)
 {
     // constructor
     fCalibList = new TList();
     fCalibList -> SetOwner (kTRUE) ;
+    fCalibListVtxZ = new TList();
+    fCalibListVtxZ -> SetOwner (kTRUE) ;
 }
 //________________________________________________________________
 AliOADBMultSelection& AliOADBMultSelection::operator=(const AliOADBMultSelection& o)
@@ -57,15 +68,30 @@ AliOADBMultSelection& AliOADBMultSelection::operator=(const AliOADBMultSelection
         fCalibList->Delete();
         fCalibList = 0;
     }
+    if (fCalibListVtxZ) {
+        fCalibListVtxZ->Delete();
+        fCalibListVtxZ = 0;
+    }
     if (fMap) {
         delete fMap;
         fMap = 0;
     }
+    if (fMapVtxZ) {
+        delete fMapVtxZ;
+        fMapVtxZ = 0;
+    }
+    TObject* obj = 0;
+  
     fCalibList = new TList();
     fCalibList->SetOwner (kTRUE);
     TIter next(o.fCalibList);
-    TObject* obj = 0;
     while ((obj = next())) fCalibList->Add(obj->Clone());
+  
+    fCalibListVtxZ = new TList();
+    fCalibListVtxZ->SetOwner (kTRUE);
+    TIter nextvtxZ(o.fCalibListVtxZ);
+    while ((obj = nextvtxZ())) fCalibListVtxZ->Add(obj->Clone());
+  
     SetMultSelection(new AliMultSelection(*o.fSelection));
     SetEventCuts(new AliMultSelectionCuts(*o.fEventCuts));
     return *this;
@@ -84,9 +110,11 @@ AliOADBMultSelection::~AliOADBMultSelection(){
 //________________________________________________________________
 void AliOADBMultSelection::Dissociate()
 {
-    TIter next(fCalibList);
     TH1*  hist = 0;
+    TIter next(fCalibList);
     while ((hist = static_cast<TH1*>(next()))) hist->SetDirectory(0);
+    TIter nextvtxZ(fCalibListVtxZ);
+    while ((hist = static_cast<TH1*>(nextvtxZ()))) hist->SetDirectory(0);
 }
 //________________________________________________________________
 void AliOADBMultSelection::AddCalibHisto (TH1F * var) {
@@ -97,6 +125,17 @@ void AliOADBMultSelection::AddCalibHisto (TH1F * var) {
         fCalibList->SetOwner();
     }
     fCalibList->Add(var);
+}
+
+//________________________________________________________________
+void AliOADBMultSelection::AddCalibHistoVtx (TProfile * varVtx) {
+    if (!varVtx) return;
+    if (!fCalibListVtxZ) {
+        //create if needed...
+      fCalibListVtxZ = new TList;
+      fCalibListVtxZ->SetOwner();
+    }
+  fCalibListVtxZ->Add(varVtx);
 }
 //________________________________________________________________
 void AliOADBMultSelection::SetEventCuts(AliMultSelectionCuts* c)
@@ -122,6 +161,19 @@ TH1F* AliOADBMultSelection::GetCalibHisto(const TString& lCalibHistoName) const
 {
     if (!fCalibList) return 0;
     return ((TH1F*)fCalibList->FindObject(lCalibHistoName));
+}
+//________________________________________________________________
+TProfile* AliOADBMultSelection::GetCalibHistoVtx(Long_t iVar) const
+{
+    if (!fCalibListVtxZ) return 0;
+    if (iVar < 0 || iVar >= fCalibListVtxZ->GetEntries()) return 0;
+    return (TProfile*) fCalibListVtxZ->At(iVar);
+}
+//________________________________________________________________
+TProfile* AliOADBMultSelection::GetCalibHistoVtx(const TString& lCalibHistoName) const
+{
+    if (!fCalibListVtxZ) return 0;
+    return ((TProfile*)fCalibListVtxZ->FindObject(lCalibHistoName));
 }
 //________________________________________________________________
 void AliOADBMultSelection::Print(Option_t* option) const
@@ -174,14 +226,34 @@ void AliOADBMultSelection::Browse(TBrowser *b)
     // FIXME: this should be implemented for all histograms
     // FIXME: who deletes the folders? Make sure there are no memory leaks here!
     if (b) {
-        TFolder  * histoFolder = new TFolder ("histograms", "Calibration Histograms");
+      TFolder  * histoFolder = new TFolder ("histograms", "Calibration Histograms");
+      TFolder  * vertexFolder = new TFolder ("vertexZprofiles", "Vertex-Z profiles");
         TFolder  * cutsFolder  = new TFolder ("cuts"      , "Event Selection Cuts");
         TFolder  * estFolder   = new TFolder ("estimators", "Estimators");
         histoFolder->SetOwner();
+      vertexFolder->SetOwner();
         cutsFolder->SetOwner();
         estFolder->SetOwner();
-        for(Int_t iEst=0; iEst<fCalibList->GetEntries(); iEst++) histoFolder->Add(GetCalibHisto(iEst));
-        
+      Printf(Form("Browsing operation started on %i objects",fCalibList->GetEntries()));
+      for(Int_t iEst=0; iEst<fCalibList->GetEntries(); iEst++){
+        if(GetCalibHisto(iEst)){
+          Printf(Form("Adding histo number %i",iEst));
+          histoFolder->Add(GetCalibHisto(iEst));
+        }else{
+          Printf(Form("Histogram numbered %i not found for estimators, skipping",iEst));
+        }
+      }
+      if(fCalibListVtxZ){
+        Printf(Form("Browsing operation started on %i objects",fCalibListVtxZ->GetEntries()));
+        for(Int_t iEst=0; iEst<fCalibListVtxZ->GetEntries(); iEst++){
+          if(GetCalibHistoVtx(iEst)){
+            vertexFolder->Add(GetCalibHistoVtx(iEst));
+          }else{
+            Printf(Form("Profile numbered %i not found, skipping",iEst));
+          }
+        }
+      }
+      Printf("Created histogram folder");
         //Info for Event Selection: Printouts 
         cutsFolder->Add(new TObjString(Form("Vertex Z cut: %f", GetEventCuts()->GetVzCut())));
         cutsFolder->Add(new TObjString(Form("Physics Selection: %i", GetEventCuts()->GetTriggerCut())));
@@ -208,7 +280,9 @@ void AliOADBMultSelection::Browse(TBrowser *b)
             lEst[iEst]->Add(new TObjString(Form("Anchor Percentile: %f", fSelection->GetEstimator(iEst)->GetAnchorPercentile() ) ) );
             estFolder->Add(lEst[iEst]);
         }
+      Printf("Created estimator folder");
         b->Add(histoFolder);
+      b->Add(vertexFolder);
         b->Add(cutsFolder);
         b->Add(estFolder);
         
@@ -241,7 +315,7 @@ void AliOADBMultSelection::Setup()
         AliMultEstimator* e = sel->GetEstimator(iEst);
         if (!e) continue;
         
-        TString name(Form("hCalib_%s", e->GetName()));
+      TString name(Form("hCalib_%s", e->GetName()));
         TH1F*   h = GetCalibHisto(name);
         if (!h) continue;
         

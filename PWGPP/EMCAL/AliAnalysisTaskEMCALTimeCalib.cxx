@@ -14,6 +14,7 @@
  **************************************************************************/
 
 #include <vector>
+#include <memory>
 #include <TChain.h>
 #include <TTree.h>
 #include <TFile.h>
@@ -28,6 +29,7 @@
 #include <TGeoManager.h>
 #include <TRefArray.h>
 #include <TKey.h>
+#include <TSpline.h>
 
 #include "AliLog.h"
 #include "AliAnalysisTask.h"
@@ -109,6 +111,9 @@ AliAnalysisTaskEMCALTimeCalib::AliAnalysisTaskEMCALTimeCalib(const char *name)
   fBadReco(kFALSE),
   fFillHeavyHisto(kFALSE),
   fOneHistAllBCs(kFALSE),
+  fTimeECorrection(kFALSE),
+  fEMCALTimeEShiftCorrection(0),
+  fEMCALRecalibrationFactors(NULL),
   fBadChannelMapArray(0),
   fBadChannelMapSet(kFALSE),
   fSetBadChannelMapSource(0),
@@ -404,6 +409,7 @@ void AliAnalysisTaskEMCALTimeCalib::NotifyRun()
   // set bad channel map
   if(!fBadChannelMapSet && fSetBadChannelMapSource>0) LoadBadChannelMap();
 
+  if(fTimeECorrection) InitRecalib();
   return;
 }
 
@@ -467,6 +473,9 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
 {
   AliDebug(1,"AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()");
 
+  // Initialize E dependent time offset
+  if(fTimeECorrection) InitEDepTimeCalibration();
+
   const Int_t nChannels = 17664;
   //book histograms
   if(fFillHeavyHisto){
@@ -516,9 +525,9 @@ void AliAnalysisTaskEMCALTimeCalib::UserCreateOutputObjects()
   if(runNum == 0){
     runNum = TString(gSystem->Getenv("RUNNO")).Atoi();
     AliInfo(Form("Run number from RUNNO variable %d",runNum));
-    if(runNum < 200000){
+    /*if(runNum < 200000){
         AliFatal("Run Number not correctly set in UserCreateOutputObjects()!");
-    }
+    }*/
   }
   GetPARInfoForRunNumber(runNum);
 
@@ -1091,6 +1100,19 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 	if(GetEMCALChannelStatus(absId)) continue;//printf("bad\n");
       }
 
+	if (fTimeECorrection) {
+
+    // take out non lin from shaper for low gain cells
+    // if(fUseShaperNonlin && !isHighGain){
+    //   amp = CorrectShaperNonLin(amp,1.);
+    // }
+
+    // correct cell energy based on pi0 calibration
+    amp *= GetEMCALChannelRecalibrationFactor(nSupMod,ieta,iphi);
+
+    CorrectCellTimeVsE(amp, hkdtime, isHighGain);
+  }
+
       //main histograms with raw time information 
       if(amp>fMinCellEnergy){
           
@@ -1250,7 +1272,7 @@ void AliAnalysisTaskEMCALTimeCalib::UserExec(Option_t *)
 //	fhTimeSumSq[nBC]->SetBinContent(absId,sumTimeSq);
 //	fhTimeSum[nBC]->SetBinContent(absId,sumTime);
 
-        //correction in 2015 for wrong L1 phase and L1 shift
+  //correction in 2015 for wrong L1 phase and L1 shift
 	hkdtime = hkdtime - offsetPerSM - L1shiftOffset;
 
  	if(!fOneHistAllBCs){
@@ -1469,7 +1491,7 @@ void AliAnalysisTaskEMCALTimeCalib::SetDefaultCuts()
 /// input - root file with histograms 
 /// output - root file with constants in historams
 /// isFinal - flag: kFALSE-first iteration, kTRUE-final iteration
-void AliAnalysisTaskEMCALTimeCalib::ProduceCalibConsts(TString inputFile,TString outputFile,Bool_t isFinal, Bool_t oneHistoAllBCs, Bool_t isPAR)
+void AliAnalysisTaskEMCALTimeCalib::ProduceCalibConsts(TString inputFile,TString outputFile,Bool_t isFinal, Bool_t oneHistoAllBCs, Bool_t isPAR, Bool_t doFit)
 {
   TFile *file =new TFile(inputFile.Data());
   if(file==0x0) {
@@ -1503,250 +1525,321 @@ void AliAnalysisTaskEMCALTimeCalib::ProduceCalibConsts(TString inputFile,TString
 
   if(numPARs == -1) isPAR = kFALSE;
 
-  if(!oneHistoAllBCs){
-    //high gain
-    TH1F *h1[4];
-    TH1F *h2[4];
-    TH1F *h3[4];
-    TH1F *hAllTimeAvBC[4];
-    TH1F *hAllTimeRMSBC[4];
-    
-    //low gain
-    TH1F *h4[4];
-    TH1F *h5[4];
-    TH1F *h6[4];
-    TH1F *hAllTimeAvLGBC[4];
-    TH1F *hAllTimeRMSLGBC[4];
-    
-    //PAR histos
-    TH1F *h1PAR[numPARs+1][4];
-    TH1F *h2PAR[numPARs+1][4];
-    //TH1F *h3PAR[numPARs+1][4];
-    TH1F *hAllTimeAvBCPAR[numPARs+1][4];
-    //TH1F *hAllTimeRMSBCPAR[numPARs+1][4];
-    
-    TH1F *h4PAR[numPARs+1][4];
-    TH1F *h5PAR[numPARs+1][4];
-    //TH1F *h6PAR[numPARs+1][4];
-    TH1F *hAllTimeAvLGBCPAR[numPARs+1][4];
-    //TH1F *hAllTimeRMSLGBCPAR[numPARs+1][4];
-    
-    TH2D* raw2D[4];
-    TH2D* rawLG2D[4];
-    
-    if(isFinal==kFALSE){//first itereation
-      for(Int_t i=0;i<4;i++){
-	h1[i]=(TH1F *)list->FindObject(Form("RawTimeSumBC%d",i));
-	h2[i]=(TH1F *)list->FindObject(Form("RawTimeEntriesBC%d",i));
-	h3[i]=(TH1F *)list->FindObject(Form("RawTimeSumSqBC%d",i));
-	
-	h4[i]=(TH1F *)list->FindObject(Form("RawTimeSumLGBC%d",i));
-	h5[i]=(TH1F *)list->FindObject(Form("RawTimeEntriesLGBC%d",i));
-	h6[i]=(TH1F *)list->FindObject(Form("RawTimeSumSqLGBC%d",i));
-	
-	if(isPAR){ //set-up histograms for different PAR time regions
-	  for(Int_t iPAR = 0; iPAR <= numPARs; iPAR++){
-	    raw2D[i] = (TH2D*)list->FindObject(Form("RawTimeBeforePAR%dBC%d", iPAR+1, i));
-	    rawLG2D[i] = (TH2D*)list->FindObject(Form("RawTimeLGBeforePAR%dBC%d", iPAR+1, i));
-	    h1PAR[iPAR][i] = new TH1F(Form("hAllTimeSumPAR%dBC%d",iPAR, i), Form("hAlltimeSumPAR%dBC%d",iPAR, i), raw2D[i]->GetXaxis()->GetNbins(), raw2D[i]->GetXaxis()->GetXmin(), raw2D[i]->GetXaxis()->GetXmax());
-	    hAllTimeAvBCPAR[iPAR][i] = new TH1F(Form("hAllTimeAvPAR%dBC%d",iPAR, i), Form("hAlltimeAvPAR%dBC%d",iPAR, i), raw2D[i]->GetXaxis()->GetNbins(), raw2D[i]->GetXaxis()->GetXmin(), raw2D[i]->GetXaxis()->GetXmax());
-	    h2PAR[iPAR][i] = (TH1F*)raw2D[i]->ProjectionX(Form("hAllTimeEntriesPAR%dBC%d",iPAR, i), 0, raw2D[i]->GetYaxis()->GetNbins());
-	    
-	    h4PAR[iPAR][i] = new TH1F(Form("hAllTimeSumLGPAR%dBC%d",iPAR, i), Form("hAllTimeSumLGPAR%dBC%d",iPAR, i), raw2D[i]->GetXaxis()->GetNbins(), raw2D[i]->GetXaxis()->GetXmin(), raw2D[i]->GetXaxis()->GetXmax());
-	    hAllTimeAvLGBCPAR[iPAR][i] = new TH1F(Form("hAllTimeAvLGPAR%dBC%d",iPAR, i), Form("hAlltimeAvLGPAR%dBC%d",iPAR, i), raw2D[i]->GetXaxis()->GetNbins(), raw2D[i]->GetXaxis()->GetXmin(), raw2D[i]->GetXaxis()->GetXmax());
-	    h5PAR[iPAR][i] = (TH1F*)raw2D[i]->ProjectionX(Form("hAllTimeEntriesPAR%dLGBC%d",iPAR, i), 0, raw2D[i]->GetYaxis()->GetNbins());
-	    for(int ixbin = 0; ixbin < raw2D[i]->GetXaxis()->GetNbins(); ixbin++){
-	      float sumtime = 0.0;
-	      float sumLGtime = 0.0;
-	      for(int iybin = 0; iybin < raw2D[i]->GetYaxis()->GetNbins(); iybin++){
-		sumtime += raw2D[i]->GetBinContent(ixbin, iybin)*raw2D[i]->GetYaxis()->GetBinCenter(iybin);
-		sumLGtime += rawLG2D[i]->GetBinContent(ixbin, iybin)*rawLG2D[i]->GetYaxis()->GetBinCenter(iybin);
-	      }//end of loop over y-bins
-	      h1PAR[iPAR][i]->SetBinContent(ixbin, sumtime);
-	      h4PAR[iPAR][i]->SetBinContent(ixbin, sumLGtime);
-	      if(h2PAR[iPAR][i]->GetBinContent(ixbin) ==0){
-		hAllTimeAvBCPAR[iPAR][i]->SetBinContent(ixbin, 0);
-	      }else{
-		hAllTimeAvBCPAR[iPAR][i]->SetBinContent(ixbin, h1PAR[iPAR][i]->GetBinContent(ixbin)/h2PAR[iPAR][i]->GetBinContent(ixbin));
-	      }
-	      
-	      if(h5PAR[iPAR][i]->GetBinContent(ixbin) ==0){
-		hAllTimeAvLGBCPAR[iPAR][i]->SetBinContent(ixbin, 0);
-	      }else{
-		hAllTimeAvLGBCPAR[iPAR][i]->SetBinContent(ixbin, h4PAR[iPAR][i]->GetBinContent(ixbin)/h5PAR[iPAR][i]->GetBinContent(ixbin));
-	      }
-	    }//end of loop over x-bins
+  if(!doFit){
 
-	  }//end of loop over PARs
-	}//end of if(isPAR)
-      }//end of loop over BC 
-    } else {//final iteration
-      for(Int_t i=0;i<4;i++){
-	h1[i]=(TH1F *)list->FindObject(Form("hTimeSum%d",i));
-	h2[i]=(TH1F *)list->FindObject(Form("hTimeEnt%d",i));
-	h3[i]=(TH1F *)list->FindObject(Form("hTimeSumSq%d",i));
-	
-	h4[i]=(TH1F *)list->FindObject(Form("hTimeLGSum%d",i));
-	h5[i]=(TH1F *)list->FindObject(Form("hTimeLGEnt%d",i));
-	h6[i]=(TH1F *)list->FindObject(Form("hTimeLGSumSq%d",i));
-      }
-    }
-    //AliWarning("Input histograms read.");
-
-    for(Int_t i=0;i<4;i++){
-      hAllTimeAvBC[i]=new TH1F(Form("hAllTimeAvBC%d",i),Form("hAllTimeAvBC%d",i),h1[i]->GetNbinsX(),h1[i]->GetXaxis()->GetXmin(),h1[i]->GetXaxis()->GetXmax());
-      hAllTimeRMSBC[i]=new TH1F(Form("hAllTimeRMSBC%d",i),Form("hAllTimeRMSBC%d",i),h3[i]->GetNbinsX(),h3[i]->GetXaxis()->GetXmin(),h3[i]->GetXaxis()->GetXmax());
-      
-      hAllTimeAvLGBC[i]=new TH1F(Form("hAllTimeAvLGBC%d",i),Form("hAllTimeAvLGBC%d",i),h4[i]->GetNbinsX(),h4[i]->GetXaxis()->GetXmin(),h4[i]->GetXaxis()->GetXmax());
-      hAllTimeRMSLGBC[i]=new TH1F(Form("hAllTimeRMSLGBC%d",i),Form("hAllTimeRMSLGBC%d",i),h6[i]->GetNbinsX(),h6[i]->GetXaxis()->GetXmin(),h6[i]->GetXaxis()->GetXmax());
-    }
-	  
-    //AliWarning("New histograms booked.");
-
-    //important remark: we use 'underflow bin' for absid=0 in OADB  . That's why there is j-1 below.
-    for(Int_t i=0;i<4;i++){
-      for(Int_t j=1;j<=h1[i]->GetNbinsX();j++){
-	//high gain
-	if(h2[i]->GetBinContent(j)!=0){
-	  hAllTimeAvBC[i]->SetBinContent(j-1,h1[i]->GetBinContent(j)/h2[i]->GetBinContent(j));
-	  hAllTimeRMSBC[i]->SetBinContent(j-1,TMath::Sqrt(h3[i]->GetBinContent(j)/h2[i]->GetBinContent(j)) );
-	} else {
-	  hAllTimeAvBC[i]->SetBinContent(j-1,0.);
-	  hAllTimeRMSBC[i]->SetBinContent(j-1,0.);
-	}
-	//low gain
-	if(h5[i]->GetBinContent(j)!=0){
-	  hAllTimeAvLGBC[i]->SetBinContent(j-1,h4[i]->GetBinContent(j)/h5[i]->GetBinContent(j));
-	  hAllTimeRMSLGBC[i]->SetBinContent(j-1,TMath::Sqrt(h6[i]->GetBinContent(j)/h5[i]->GetBinContent(j)) );
-	} else {
-	  hAllTimeAvLGBC[i]->SetBinContent(j-1,0.);
-	  hAllTimeRMSLGBC[i]->SetBinContent(j-1,0.);
-	}
-	
-      }
-    }
-    
-    //AliWarning("Average and rms calculated.");
-    TFile *fileNew=new TFile(outputFile.Data(),"recreate");
-    for(Int_t i=0;i<4;i++){
-      if(isPAR){
-	for(Int_t iPAR = 0; iPAR <= numPARs; iPAR++){
-	  hAllTimeAvBCPAR[iPAR][i]->Write();
-	  //hAllTimeRMSBCPAR[iPAR][i]->Write();
-	  hAllTimeAvLGBCPAR[iPAR][i]->Write();
-	  //hAllTimeRMSLGBCPAR[iPAR][i]->Write();
-	}
-      }else{
-	hAllTimeAvBC[i]->Write();
-	hAllTimeRMSBC[i]->Write();
-	hAllTimeAvLGBC[i]->Write();
-	hAllTimeRMSLGBC[i]->Write();
-      }
-    }
-    
-    //AliWarning(Form("Histograms saved in %s file.",outputFile.Data()));
-
-    fileNew->Close();
-    delete fileNew;
-    
-    for(Int_t i=0;i<4;i++){
-      delete hAllTimeAvBC[i];
-      delete hAllTimeRMSBC[i];
-      delete hAllTimeAvLGBC[i];
-      delete hAllTimeRMSLGBC[i];
-      
-      if(isPAR){ //set-up histograms for different PAR time regions
-	for(Int_t iPAR = 0; iPAR <= numPARs; iPAR++){
-	  delete h1PAR[iPAR][i];
-	  delete hAllTimeAvBCPAR[iPAR][i];
-	  delete h2PAR[iPAR][i];
-	  delete h4PAR[iPAR][i];
-	  delete hAllTimeAvLGBCPAR[iPAR][i];
-	  delete h5PAR[iPAR][i];
-	}
-      }
-    }
-    list->SetOwner(1);
-    delete list;
-    file->Close();
-    delete file;
-  }else{
-
-    //high gain
-    TH1F *h1;
-    TH1F *h2;
-    TH1F *h3;
-    TH1S *hAllTimeAvBC;
-    TH1S *hAllTimeRMSBC;
-    
-    //low gain
-    TH1F *h4;
-    TH1F *h5;
-    TH1F *h6;
-    TH1S *hAllTimeAvLGBC;
-    TH1S *hAllTimeRMSLGBC;
-    
-    h1=(TH1F *)list->FindObject("hTimeSumAllBCs");
-    h2=(TH1F *)list->FindObject("hTimeEntAllBCs");
-    h3=(TH1F *)list->FindObject("hTimeSumSqAllBCs");
-    
-    h4=(TH1F *)list->FindObject("hTimeLGSumAllBCs");
-    h5=(TH1F *)list->FindObject("hTimeLGEntAllBCs");
-    h6=(TH1F *)list->FindObject("hTimeLGSumSqAllBCs");
-    //AliWarning("Input histograms read.");
-    
-    hAllTimeAvBC=new TH1S("hAllTimeAv","hAllTimeAv",h1->GetNbinsX(),h1->GetXaxis()->GetXmin(),h1->GetXaxis()->GetXmax());
-    hAllTimeRMSBC=new TH1S("hAllTimeRMS","hAllTimeRMS",h3->GetNbinsX(),h3->GetXaxis()->GetXmin(),h3->GetXaxis()->GetXmax());
-    
-    hAllTimeAvLGBC=new TH1S("hAllTimeAvLG","hAllTimeAvLG",h4->GetNbinsX(),h4->GetXaxis()->GetXmin(),h4->GetXaxis()->GetXmax());
-    hAllTimeRMSLGBC=new TH1S("hAllTimeRMSLG","hAllTimeRMSLG",h6->GetNbinsX(),h6->GetXaxis()->GetXmin(),h6->GetXaxis()->GetXmax());
-    
-    //AliWarning("New histograms booked.");
-    
-    //important remark: we use 'underflow bin' for absid=0 in OADB  . That's why there is j-1 below.
-    for(Int_t j=1;j<=h1->GetNbinsX();j++){
+    if(!oneHistoAllBCs){
       //high gain
-      if(h2->GetBinContent(j)!=0){
-	hAllTimeAvBC->SetBinContent(j-1,h1->GetBinContent(j)/h2->GetBinContent(j));
-	hAllTimeRMSBC->SetBinContent(j-1,TMath::Sqrt(h3->GetBinContent(j)/h2->GetBinContent(j)) );
-      } else {
-	hAllTimeAvBC->SetBinContent(j-1,0.);
-	hAllTimeRMSBC->SetBinContent(j-1,0.);
-      }
+      TH1F *h1[4];
+      TH1F *h2[4];
+      TH1F *h3[4];
+      TH1F *hAllTimeAvBC[4];
+      TH1F *hAllTimeRMSBC[4];
+      
       //low gain
-      if(h5->GetBinContent(j)!=0){
-	hAllTimeAvLGBC->SetBinContent(j-1,h4->GetBinContent(j)/h5->GetBinContent(j));
-	hAllTimeRMSLGBC->SetBinContent(j-1,TMath::Sqrt(h6->GetBinContent(j)/h5->GetBinContent(j)) );
-      } else {
-	hAllTimeAvLGBC->SetBinContent(j-1,0.);
-	hAllTimeRMSLGBC->SetBinContent(j-1,0.);
+      TH1F *h4[4];
+      TH1F *h5[4];
+      TH1F *h6[4];
+      TH1F *hAllTimeAvLGBC[4];
+      TH1F *hAllTimeRMSLGBC[4];
+      
+      //PAR histos
+      TH1F *h1PAR[numPARs+1][4];
+      TH1F *h2PAR[numPARs+1][4];
+      //TH1F *h3PAR[numPARs+1][4];
+      TH1F *hAllTimeAvBCPAR[numPARs+1][4];
+      //TH1F *hAllTimeRMSBCPAR[numPARs+1][4];
+      
+      TH1F *h4PAR[numPARs+1][4];
+      TH1F *h5PAR[numPARs+1][4];
+      //TH1F *h6PAR[numPARs+1][4];
+      TH1F *hAllTimeAvLGBCPAR[numPARs+1][4];
+      //TH1F *hAllTimeRMSLGBCPAR[numPARs+1][4];
+      
+      TH2D* raw2D[4];
+      TH2D* rawLG2D[4];
+      
+      if(isFinal==kFALSE){//first itereation
+        for(Int_t i=0;i<4;i++){
+    h1[i]=(TH1F *)list->FindObject(Form("RawTimeSumBC%d",i));
+    h2[i]=(TH1F *)list->FindObject(Form("RawTimeEntriesBC%d",i));
+    h3[i]=(TH1F *)list->FindObject(Form("RawTimeSumSqBC%d",i));
+    
+    h4[i]=(TH1F *)list->FindObject(Form("RawTimeSumLGBC%d",i));
+    h5[i]=(TH1F *)list->FindObject(Form("RawTimeEntriesLGBC%d",i));
+    h6[i]=(TH1F *)list->FindObject(Form("RawTimeSumSqLGBC%d",i));
+    
+    if(isPAR){ //set-up histograms for different PAR time regions
+      for(Int_t iPAR = 0; iPAR <= numPARs; iPAR++){
+        raw2D[i] = (TH2D*)list->FindObject(Form("RawTimeBeforePAR%dBC%d", iPAR+1, i));
+        rawLG2D[i] = (TH2D*)list->FindObject(Form("RawTimeLGBeforePAR%dBC%d", iPAR+1, i));
+        h1PAR[iPAR][i] = new TH1F(Form("hAllTimeSumPAR%dBC%d",iPAR, i), Form("hAlltimeSumPAR%dBC%d",iPAR, i), raw2D[i]->GetXaxis()->GetNbins(), raw2D[i]->GetXaxis()->GetXmin(), raw2D[i]->GetXaxis()->GetXmax());
+        hAllTimeAvBCPAR[iPAR][i] = new TH1F(Form("hAllTimeAvPAR%dBC%d",iPAR, i), Form("hAlltimeAvPAR%dBC%d",iPAR, i), raw2D[i]->GetXaxis()->GetNbins(), raw2D[i]->GetXaxis()->GetXmin(), raw2D[i]->GetXaxis()->GetXmax());
+        h2PAR[iPAR][i] = (TH1F*)raw2D[i]->ProjectionX(Form("hAllTimeEntriesPAR%dBC%d",iPAR, i), 0, raw2D[i]->GetYaxis()->GetNbins());
+        
+        h4PAR[iPAR][i] = new TH1F(Form("hAllTimeSumLGPAR%dBC%d",iPAR, i), Form("hAllTimeSumLGPAR%dBC%d",iPAR, i), raw2D[i]->GetXaxis()->GetNbins(), raw2D[i]->GetXaxis()->GetXmin(), raw2D[i]->GetXaxis()->GetXmax());
+        hAllTimeAvLGBCPAR[iPAR][i] = new TH1F(Form("hAllTimeAvLGPAR%dBC%d",iPAR, i), Form("hAlltimeAvLGPAR%dBC%d",iPAR, i), raw2D[i]->GetXaxis()->GetNbins(), raw2D[i]->GetXaxis()->GetXmin(), raw2D[i]->GetXaxis()->GetXmax());
+        h5PAR[iPAR][i] = (TH1F*)raw2D[i]->ProjectionX(Form("hAllTimeEntriesPAR%dLGBC%d",iPAR, i), 0, raw2D[i]->GetYaxis()->GetNbins());
+        for(int ixbin = 0; ixbin < raw2D[i]->GetXaxis()->GetNbins(); ixbin++){
+          float sumtime = 0.0;
+          float sumLGtime = 0.0;
+          for(int iybin = 0; iybin < raw2D[i]->GetYaxis()->GetNbins(); iybin++){
+      sumtime += raw2D[i]->GetBinContent(ixbin, iybin)*raw2D[i]->GetYaxis()->GetBinCenter(iybin);
+      sumLGtime += rawLG2D[i]->GetBinContent(ixbin, iybin)*rawLG2D[i]->GetYaxis()->GetBinCenter(iybin);
+          }//end of loop over y-bins
+          h1PAR[iPAR][i]->SetBinContent(ixbin, sumtime);
+          h4PAR[iPAR][i]->SetBinContent(ixbin, sumLGtime);
+          if(h2PAR[iPAR][i]->GetBinContent(ixbin) ==0){
+      hAllTimeAvBCPAR[iPAR][i]->SetBinContent(ixbin, 0);
+          }else{
+      hAllTimeAvBCPAR[iPAR][i]->SetBinContent(ixbin, h1PAR[iPAR][i]->GetBinContent(ixbin)/h2PAR[iPAR][i]->GetBinContent(ixbin));
+          }
+          
+          if(h5PAR[iPAR][i]->GetBinContent(ixbin) ==0){
+      hAllTimeAvLGBCPAR[iPAR][i]->SetBinContent(ixbin, 0);
+          }else{
+      hAllTimeAvLGBCPAR[iPAR][i]->SetBinContent(ixbin, h4PAR[iPAR][i]->GetBinContent(ixbin)/h5PAR[iPAR][i]->GetBinContent(ixbin));
+          }
+        }//end of loop over x-bins
+
+      }//end of loop over PARs
+    }//end of if(isPAR)
+        }//end of loop over BC 
+      } else {//final iteration
+        for(Int_t i=0;i<4;i++){
+    h1[i]=(TH1F *)list->FindObject(Form("hTimeSum%d",i));
+    h2[i]=(TH1F *)list->FindObject(Form("hTimeEnt%d",i));
+    h3[i]=(TH1F *)list->FindObject(Form("hTimeSumSq%d",i));
+    
+    h4[i]=(TH1F *)list->FindObject(Form("hTimeLGSum%d",i));
+    h5[i]=(TH1F *)list->FindObject(Form("hTimeLGEnt%d",i));
+    h6[i]=(TH1F *)list->FindObject(Form("hTimeLGSumSq%d",i));
+        }
+      }
+      //AliWarning("Input histograms read.");
+
+      for(Int_t i=0;i<4;i++){
+        hAllTimeAvBC[i]=new TH1F(Form("hAllTimeAvBC%d",i),Form("hAllTimeAvBC%d",i),h1[i]->GetNbinsX(),h1[i]->GetXaxis()->GetXmin(),h1[i]->GetXaxis()->GetXmax());
+        hAllTimeRMSBC[i]=new TH1F(Form("hAllTimeRMSBC%d",i),Form("hAllTimeRMSBC%d",i),h3[i]->GetNbinsX(),h3[i]->GetXaxis()->GetXmin(),h3[i]->GetXaxis()->GetXmax());
+        
+        hAllTimeAvLGBC[i]=new TH1F(Form("hAllTimeAvLGBC%d",i),Form("hAllTimeAvLGBC%d",i),h4[i]->GetNbinsX(),h4[i]->GetXaxis()->GetXmin(),h4[i]->GetXaxis()->GetXmax());
+        hAllTimeRMSLGBC[i]=new TH1F(Form("hAllTimeRMSLGBC%d",i),Form("hAllTimeRMSLGBC%d",i),h6[i]->GetNbinsX(),h6[i]->GetXaxis()->GetXmin(),h6[i]->GetXaxis()->GetXmax());
       }
       
+      //AliWarning("New histograms booked.");
+
+      //important remark: we use 'underflow bin' for absid=0 in OADB  . That's why there is j-1 below.
+      for(Int_t i=0;i<4;i++){
+        for(Int_t j=1;j<=h1[i]->GetNbinsX();j++){
+    //high gain
+    if(h2[i]->GetBinContent(j)!=0){
+      hAllTimeAvBC[i]->SetBinContent(j-1,h1[i]->GetBinContent(j)/h2[i]->GetBinContent(j));
+      hAllTimeRMSBC[i]->SetBinContent(j-1,TMath::Sqrt(h3[i]->GetBinContent(j)/h2[i]->GetBinContent(j)) );
+    } else {
+      hAllTimeAvBC[i]->SetBinContent(j-1,0.);
+      hAllTimeRMSBC[i]->SetBinContent(j-1,0.);
+    }
+    //low gain
+    if(h5[i]->GetBinContent(j)!=0){
+      hAllTimeAvLGBC[i]->SetBinContent(j-1,h4[i]->GetBinContent(j)/h5[i]->GetBinContent(j));
+      hAllTimeRMSLGBC[i]->SetBinContent(j-1,TMath::Sqrt(h6[i]->GetBinContent(j)/h5[i]->GetBinContent(j)) );
+    } else {
+      hAllTimeAvLGBC[i]->SetBinContent(j-1,0.);
+      hAllTimeRMSLGBC[i]->SetBinContent(j-1,0.);
     }
     
-    //AliWarning("Average and rms calculated.");
-    TFile *fileNew=new TFile(outputFile.Data(),"recreate");
+        }
+      }
+      
+      //AliWarning("Average and rms calculated.");
+      TFile *fileNew=new TFile(outputFile.Data(),"recreate");
+      for(Int_t i=0;i<4;i++){
+        if(isPAR){
+    for(Int_t iPAR = 0; iPAR <= numPARs; iPAR++){
+      hAllTimeAvBCPAR[iPAR][i]->Write();
+      //hAllTimeRMSBCPAR[iPAR][i]->Write();
+      hAllTimeAvLGBCPAR[iPAR][i]->Write();
+      //hAllTimeRMSLGBCPAR[iPAR][i]->Write();
+    }
+        }else{
+    hAllTimeAvBC[i]->Write();
+    hAllTimeRMSBC[i]->Write();
+    hAllTimeAvLGBC[i]->Write();
+    hAllTimeRMSLGBC[i]->Write();
+        }
+      }
+      
+      //AliWarning(Form("Histograms saved in %s file.",outputFile.Data()));
 
-    hAllTimeAvBC->Write();
-    hAllTimeRMSBC->Write();
-    hAllTimeAvLGBC->Write();
-    hAllTimeRMSLGBC->Write();
-    
-    //AliWarning(Form("Histograms saved in %s file.",outputFile.Data()));
-    
-    fileNew->Close();
-    delete fileNew;
-    
-    delete hAllTimeAvBC;
-    delete hAllTimeRMSBC;
-    delete hAllTimeAvLGBC;
-    delete hAllTimeRMSLGBC;
-    
-    list->SetOwner(1);
-    delete list;
-    file->Close();
-    delete file;
-    
+      fileNew->Close();
+      delete fileNew;
+      
+      for(Int_t i=0;i<4;i++){
+        delete hAllTimeAvBC[i];
+        delete hAllTimeRMSBC[i];
+        delete hAllTimeAvLGBC[i];
+        delete hAllTimeRMSLGBC[i];
+        
+        if(isPAR){ //set-up histograms for different PAR time regions
+    for(Int_t iPAR = 0; iPAR <= numPARs; iPAR++){
+      delete h1PAR[iPAR][i];
+      delete hAllTimeAvBCPAR[iPAR][i];
+      delete h2PAR[iPAR][i];
+      delete h4PAR[iPAR][i];
+      delete hAllTimeAvLGBCPAR[iPAR][i];
+      delete h5PAR[iPAR][i];
+    }
+        }
+      }
+      list->SetOwner(1);
+      delete list;
+      file->Close();
+      delete file;
+    }else{
+
+      //high gain
+      TH1F *h1;
+      TH1F *h2;
+      TH1F *h3;
+      TH1S *hAllTimeAvBC;
+      TH1S *hAllTimeRMSBC;
+      
+      //low gain
+      TH1F *h4;
+      TH1F *h5;
+      TH1F *h6;
+      TH1S *hAllTimeAvLGBC;
+      TH1S *hAllTimeRMSLGBC;
+      
+      h1=(TH1F *)list->FindObject("hTimeSumAllBCs");
+      h2=(TH1F *)list->FindObject("hTimeEntAllBCs");
+      h3=(TH1F *)list->FindObject("hTimeSumSqAllBCs");
+      
+      h4=(TH1F *)list->FindObject("hTimeLGSumAllBCs");
+      h5=(TH1F *)list->FindObject("hTimeLGEntAllBCs");
+      h6=(TH1F *)list->FindObject("hTimeLGSumSqAllBCs");
+      //AliWarning("Input histograms read.");
+      
+      hAllTimeAvBC=new TH1S("hAllTimeAv","hAllTimeAv",h1->GetNbinsX(),h1->GetXaxis()->GetXmin(),h1->GetXaxis()->GetXmax());
+      hAllTimeRMSBC=new TH1S("hAllTimeRMS","hAllTimeRMS",h3->GetNbinsX(),h3->GetXaxis()->GetXmin(),h3->GetXaxis()->GetXmax());
+      
+      hAllTimeAvLGBC=new TH1S("hAllTimeAvLG","hAllTimeAvLG",h4->GetNbinsX(),h4->GetXaxis()->GetXmin(),h4->GetXaxis()->GetXmax());
+      hAllTimeRMSLGBC=new TH1S("hAllTimeRMSLG","hAllTimeRMSLG",h6->GetNbinsX(),h6->GetXaxis()->GetXmin(),h6->GetXaxis()->GetXmax());
+      
+      //AliWarning("New histograms booked.");
+      
+      //important remark: we use 'underflow bin' for absid=0 in OADB  . That's why there is j-1 below.
+      for(Int_t j=1;j<=h1->GetNbinsX();j++){
+        //high gain
+        if(h2->GetBinContent(j)!=0){
+    hAllTimeAvBC->SetBinContent(j-1,h1->GetBinContent(j)/h2->GetBinContent(j));
+    hAllTimeRMSBC->SetBinContent(j-1,TMath::Sqrt(h3->GetBinContent(j)/h2->GetBinContent(j)) );
+        } else {
+    hAllTimeAvBC->SetBinContent(j-1,0.);
+    hAllTimeRMSBC->SetBinContent(j-1,0.);
+        }
+        //low gain
+        if(h5->GetBinContent(j)!=0){
+    hAllTimeAvLGBC->SetBinContent(j-1,h4->GetBinContent(j)/h5->GetBinContent(j));
+    hAllTimeRMSLGBC->SetBinContent(j-1,TMath::Sqrt(h6->GetBinContent(j)/h5->GetBinContent(j)) );
+        } else {
+    hAllTimeAvLGBC->SetBinContent(j-1,0.);
+    hAllTimeRMSLGBC->SetBinContent(j-1,0.);
+        }
+        
+      }
+      
+      //AliWarning("Average and rms calculated.");
+      TFile *fileNew=new TFile(outputFile.Data(),"recreate");
+
+      hAllTimeAvBC->Write();
+      hAllTimeRMSBC->Write();
+      hAllTimeAvLGBC->Write();
+      hAllTimeRMSLGBC->Write();
+      
+      //AliWarning(Form("Histograms saved in %s file.",outputFile.Data()));
+      
+      fileNew->Close();
+      delete fileNew;
+      
+      delete hAllTimeAvBC;
+      delete hAllTimeRMSBC;
+      delete hAllTimeAvLGBC;
+      delete hAllTimeRMSLGBC;
+      
+      list->SetOwner(1);
+      delete list;
+      file->Close();
+      delete file;
+      
+    }
+  }
+  else{
+
+      //high gain
+      TH2F *h1;
+      TH1S *hAllTimeAvBC;
+      
+      //low gain
+      TH2F *h2;
+      TH1S *hAllTimeAvLGBC;
+      
+      h1=(TH2F *)list->FindObject("TimeVsIdAllBCs");
+      
+      h2=(TH2F *)list->FindObject("TimeVsIdLGAllBCs");
+      
+      hAllTimeAvBC=new TH1S("hAllTimeAv","hAllTimeAv",h1->GetNbinsX(),h1->GetXaxis()->GetXmin(),h1->GetXaxis()->GetXmax());
+      
+      hAllTimeAvLGBC=new TH1S("hAllTimeAvLG","hAllTimeAvLG",h2->GetNbinsX(),h2->GetXaxis()->GetXmin(),h2->GetXaxis()->GetXmax());
+
+      for(Int_t j=1;j<=h1->GetNbinsX();j++){
+        //high gain
+        TH1D* HGcells = (TH1D*)h1->ProjectionY("HGcells",j,j);
+        Double_t PeakHG = HGcells->GetXaxis()->GetBinCenter(HGcells->GetMaximumBin());
+        auto resHG = HGcells->Fit("gaus","","", PeakHG - 25, PeakHG + 25);
+        
+        if(resHG==0 && HGcells->GetFunction("gaus")->GetParameter(1) < PeakHG + 25 && HGcells->GetFunction("gaus")->GetParameter(1) > PeakHG - 25){
+          hAllTimeAvBC->SetBinContent(j-1,HGcells->GetFunction("gaus")->GetParameter(1));
+        } else if(HGcells->GetEntries()>0){
+          std::cout<<"HG: Fit failed, taking the peak."<<std::endl;
+          hAllTimeAvBC->SetBinContent(j-1,PeakHG);
+        }else{
+          std::cout<<"HG cell has no entries."<<std::endl;
+          hAllTimeAvBC->SetBinContent(j-1,0.);
+        }
+
+        //low gain
+        TH1D* LGcells = (TH1D*)h2->ProjectionY("LGcells",j,j);
+        Double_t PeakLG = LGcells->GetXaxis()->GetBinCenter(LGcells->GetMaximumBin());
+        auto resLG = LGcells->Fit("gaus","","", PeakLG - 25, PeakLG + 25);
+        
+        if(resLG==0 && LGcells->GetFunction("gaus")->GetParameter(1) < PeakLG + 25 && LGcells->GetFunction("gaus")->GetParameter(1) > PeakLG - 25){
+          hAllTimeAvLGBC->SetBinContent(j-1,LGcells->GetFunction("gaus")->GetParameter(1));
+        } else if(LGcells->GetEntries()>0){
+          std::cout<<"LG: Fit failed, taking the peak."<<std::endl;
+          hAllTimeAvLGBC->SetBinContent(j-1,PeakLG);
+        } else {
+          std::cout<<"LG cell has no entries."<<std::endl;
+          hAllTimeAvLGBC->SetBinContent(j-1,0.);
+        }
+        
+      }
+      
+      //AliWarning("Average and rms calculated.");
+      TFile *fileNew=new TFile(outputFile.Data(),"recreate");
+
+      hAllTimeAvBC->Write();
+      hAllTimeAvLGBC->Write();
+            
+      fileNew->Close();
+      delete fileNew;
+      
+      delete hAllTimeAvBC;
+      delete hAllTimeAvLGBC;
+      
+      list->SetOwner(1);
+      delete list;
+      file->Close();
+      delete file;
   }
   
   //AliWarning("Pointers deleted. Memory cleaned.");
@@ -2106,6 +2199,201 @@ void AliAnalysisTaskEMCALTimeCalib::LoadBadChannelMap(){
   else if(fSetBadChannelMapSource==2) LoadBadChannelMapFile();
 }
 
+
+//_____________________________________________________________________
+/// Initialize the energy dependent time calibration.
+Int_t AliAnalysisTaskEMCALTimeCalib::InitEDepTimeCalibration()
+{
+  
+  AliInfo("Initialising energy dependent time calibration map");
+  
+  std::unique_ptr<TFile> timeCalibFileVsE;
+  // set spline for time dependent time calibration if option is enabled
+  AliInfo("Loading E dep time calibration OADB from $ALICE_PHYSICS/OADB/EMCAL");
+
+  timeCalibFileVsE = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALTimeTiltCorrection.root").data(),"read"));
+  if (!timeCalibFileVsE || timeCalibFileVsE->IsZombie()){
+    AliFatal("OADB/EMCAL/EMCALTimeTiltCorrection.root was not found");
+    return 0;
+  }
+  fEMCALTimeEShiftCorrection = (TSpline3*)timeCalibFileVsE->Get("highGainCellTimeCorr");
+
+  return 1;
+}
+
+///
+/// Correct Slewing for each channel
+/// 
+/// \param energy: cell energy
+/// \param celltime: cell time to be returned calibrated
+/// \param isLowGain: low gain cell 
+void AliAnalysisTaskEMCALTimeCalib::CorrectCellTimeVsE(Float_t energy, Float_t & celltime, Bool_t isHighGain) const
+{
+  Double_t offset = 0;        // in ns
+  if (isHighGain){
+    offset = fEMCALTimeEShiftCorrection->Eval(energy);
+  } else {
+    offset = GetLowGainSlewing(energy);
+  }
+  //std::cout<<"The offset is: "<<offset<<" And the time is: "<<celltime<<" Energy: "<<energy<<std::endl;
+  celltime -= offset;
+
+}
+
+///
+/// energy dependent time offset for low gain 
+/// returns slewing for low gain at certain cell energy
+/// \param energy: cell energy
+///
+Double_t AliAnalysisTaskEMCALTimeCalib::GetLowGainSlewing(Double_t energy) const
+{
+  Double_t offset = 0;
+  
+  if (energy > 14 && energy <= 80){
+    offset = 2.2048848 - 0.19256571*energy + 0.0034679678*TMath::Power(energy,2) - 1.9102064e-05*TMath::Power(energy,2);
+  } else if (energy <= 14) {
+    offset = 2.2048848 - 0.19256571*14 + 0.0034679678*TMath::Power(14,2) - 1.9102064e-05*TMath::Power(14,2);
+  } else {
+    offset = 2.2048848 - 0.19256571*80 + 0.0034679678*TMath::Power(80,2) - 1.9102064e-05*TMath::Power(80,2);
+  }
+
+  return offset;
+}
+
+Int_t AliAnalysisTaskEMCALTimeCalib::InitRecalib()
+{
+  
+  AliInfo("Initialising recalibration factors");
+    
+  std::unique_ptr<AliOADBContainer> contRF;
+  std::unique_ptr<TFile> recalibFile;
+
+  AliInfo("Loading Recalib OADB from OADB/EMCAL");
+    
+  recalibFile = std::unique_ptr<TFile>(TFile::Open(AliDataFile::GetFileNameOADB("EMCAL/EMCALRecalib.root").data(),"read"));
+  if (!recalibFile || recalibFile->IsZombie())
+  {
+    AliFatal("OADB/EMCAL/EMCALRecalib.root was not found");
+    return 0;
+  }
+    
+  contRF = std::unique_ptr<AliOADBContainer>(static_cast<AliOADBContainer *>(recalibFile->Get("AliEMCALRecalib")));
+
+  if(!contRF) {
+    AliError("No OADB container found");
+    return 0;
+  }
+  contRF->SetOwner(true);
+  
+  TObjArray *recal=(TObjArray*)contRF->GetObject(fRunNumber);
+  if (!recal)
+  {
+    AliError(Form("No Objects for run: %d",fRunNumber));
+    return 2;
+  }
+
+  TString filePass = GetPass();
+  
+  TObjArray *recalpass=(TObjArray*)recal->FindObject(filePass);
+  if (!recalpass)
+  {
+    AliError(Form("No Objects for run: %d - %s",fRunNumber,filePass.Data()));
+    return 2;
+  }
+  
+  TObjArray *recalib=(TObjArray*)recalpass->FindObject("Recalib");
+  if (!recalib)
+  {
+    AliError(Form("No Recalib histos found for  %d - %s",fRunNumber,filePass.Data()));
+    return 2;
+  } 
+
+  Int_t sms = fgeom->GetEMCGeometry()->GetNumberOfSuperModules();
+  for (Int_t i=0; i<sms; ++i)
+  {
+    TH2F *h = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
+    if (!h)
+    {
+      AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
+      continue;
+    }
+    h->SetDirectory(0);
+    SetEMCALChannelRecalibrationFactors(i,h);
+  }
+  
+  return 1;
+}
+
+/**
+ * Get pass from filename. Sets pass in filePass.
+ */
+TString AliAnalysisTaskEMCALTimeCalib::GetPass()
+{
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  TTree *inputTree = mgr->GetTree();
+  
+  if (!inputTree)
+  {
+    AliError("Pointer to tree = 0, returning");
+    return "";
+  }
+  
+  TFile *inputFile = inputTree->GetCurrentFile();
+  if (!inputFile) {
+    AliError("Null pointer input file, returning");
+    return "";
+  }
+  
+  TString filePass;
+
+  TString fname(inputFile->GetName());
+  if      (fname.Contains("pass1_pidfix"))                filePass = TString("pass1_pidfix");
+  else if (fname.Contains("pass3_lowIR_pidfix"))          filePass = TString("pass3_lowIR_pidfix");
+  else if (fname.Contains("pass4_lowIR_pidfix_cookdedx")) filePass = TString("pass4_lowIR_pidfix_cookdedx");
+  else if (fname.Contains("pass1")) filePass = TString("pass1");
+  else if (fname.Contains("pass2")) filePass = TString("pass2");
+  else if (fname.Contains("pass3")) filePass = TString("pass3");
+  else if (fname.Contains("pass4")) filePass = TString("pass4");
+  else if (fname.Contains("pass5")) filePass = TString("pass5");
+  else if (fname.Contains("LHC11c") && fname.Contains("spc_calo")) filePass = TString("spc_calo");
+  else if (fname.Contains("calo") || fname.Contains("high_lumi"))
+  {
+    Printf("%s: Path contains <calo> or <high-lumi>, set as <pass1>", GetName());
+    filePass = TString("pass1");
+  }
+  else if (fname.Contains("LHC14a1a"))
+  {
+    AliInfo("Energy calibration activated for this MC production!");
+    filePass = TString("LHC14a1a");
+  }
+  else
+  {
+    AliFatal(Form("Pass number string not found: %s. Please set the pass number in the configuration!", fname.Data()));
+    return "";
+  }
+
+  return filePass;
+}
+
+void AliAnalysisTaskEMCALTimeCalib::SetEMCALChannelRecalibrationFactors(Int_t iSM , const TH2F* h) {
+  if(!fEMCALRecalibrationFactors){
+    fEMCALRecalibrationFactors = new TObjArray(iSM);
+    fEMCALRecalibrationFactors->SetOwner(true);
+  }
+  if(fEMCALRecalibrationFactors->GetEntries() <= iSM) fEMCALRecalibrationFactors->Expand(iSM+1);
+  if(fEMCALRecalibrationFactors->At(iSM)) fEMCALRecalibrationFactors->RemoveAt(iSM);
+  TH2F *clone = new TH2F(*h);
+  clone->SetDirectory(NULL);
+  fEMCALRecalibrationFactors->AddAt(clone,iSM);
+}
+
+Float_t AliAnalysisTaskEMCALTimeCalib::GetEMCALChannelRecalibrationFactor(Int_t iSM , Int_t iCol, Int_t iRow) const 
+{
+  if(fEMCALRecalibrationFactors) 
+    return (Float_t) ((TH2F*)fEMCALRecalibrationFactors->At(iSM))->GetBinContent(iCol,iRow); 
+  else return 1; 
+}
+
 //_____________________________________________________________________
 // Load PAR info from text file
 void AliAnalysisTaskEMCALTimeCalib::SetPARInfo(TString PARFileName){
@@ -2147,7 +2435,7 @@ void AliAnalysisTaskEMCALTimeCalib::SetPARInfo(TString PARFileName){
 //_______________________________________________________________________
 // Get Par info for the current run number, set-up PAR info variables
 void AliAnalysisTaskEMCALTimeCalib::GetPARInfoForRunNumber(Int_t runnum){
-  if(runnum < 200000) AliFatal(Form("Bad Run Number %d passed to GetPARInfo!", runnum));
+  //if(runnum < 200000) AliFatal(Form("Bad Run Number %d passed to GetPARInfo!", runnum));
   if(fRunNumber!=runnum) fRunNumber = runnum;
   fIsPARRun = kFALSE;
   fCurrentPARs.PARGlobalBCs.erase(fCurrentPARs.PARGlobalBCs.begin(), fCurrentPARs.PARGlobalBCs.end());

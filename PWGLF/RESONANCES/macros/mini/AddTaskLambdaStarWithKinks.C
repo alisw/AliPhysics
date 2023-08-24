@@ -11,14 +11,16 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarWithKinks
  TString     outNameSuffix = "LambdaStarKink",                         //suffix for output container
  Bool_t      isMC          = kFALSE,                            //MC flag
  AliPIDResponse::EBeamType collSys = AliPIDResponse::kPBPB, //=0, kPPB=1, kPBPB=2 outNameSuffix
- UInt_t      triggerMask   = AliVEvent::kCentral,             //trigger selection
+ Int_t      triggerMask    = 0,             //trigger selection
  Bool_t      enaMultSel    = kTRUE,                        //enable multiplicity axis
  Float_t     nsigma        = 3.0,   //PID cut
  Float_t     masslow       = 1.4,   //inv mass range lower boundary
  Float_t     massup        = 2.2,   //inv mass range upper boundary
  Int_t       nbins         = 2000,  //inv mass: N bins
  Bool_t      enableMonitor = kTRUE, //enable single track QA
- Float_t     kaonPIDCut=4.)        //nsigma kaon daughters 
+ Float_t     kaonPIDCut=4.,        //nsigma kaon daughters 
+ Double_t    minAsym = 0.0,           //pair lower abs(asym)
+ Double_t    maxAsym=0.7)            //pair maximum abs(asym)
 
 {  
 
@@ -42,7 +44,7 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarWithKinks
   //-------------------------------------------
   Double_t minYlab = -0.5;
   Double_t maxYlab =  0.5;
-      
+
   // if (pairCutSetID==pairYCutSet::kCentralTight) { //|y_cm|<0.3
   //   minYlab = -0.3;    maxYlab = 0.3;
   // }
@@ -77,7 +79,15 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarWithKinks
   AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
 
   //trigger 
-  if (!isMC) task->UseESDTriggerMask(triggerMask); //ESD
+  if (!isMC) {
+  
+        if (triggerMask==0) task->UseESDTriggerMask(AliVEvent::kCentral); //ESD
+        if (triggerMask==1) task->UseESDTriggerMask(AliVEvent::kSemiCentral);
+        if (triggerMask==3) task->UseESDTriggerMask(AliVEvent::kINT7);
+        if (triggerMask==4) task->UseESDTriggerMask(AliVEvent::kSemiCentral|AliVEvent::kCentral|AliVEvent::kINT7);
+  
+  }   
+
   if(isMC) task->UseESDTriggerMask(AliVEvent::kAnyINT);
 //  task->SelectCollisionCandidates(triggerMask); //AOD
   
@@ -104,7 +114,7 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarWithKinks
 
   AliRsnEventCuts * rsnEventCuts = new AliRsnEventCuts("rsnEventCuts");
   rsnEventCuts->ForceSetupPbPb2018();
-  rsnEventCuts->SetUseMultSelectionEvtSel();
+//  rsnEventCuts->SetUseMultSelectionEvtSel();
   eventCuts->AddCut(rsnEventCuts);
   eventCuts->SetCutScheme(Form("%s", rsnEventCuts->GetName()));
 
@@ -166,13 +176,22 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarWithKinks
   AliRsnCutMiniPair *cutY = new AliRsnCutMiniPair("cutRapidity", AliRsnCutMiniPair::kRapidityRange);
   cutY->SetRangeD(minYlab, maxYlab);
 
+  AliRsnCutMiniPair *cutAsym = new AliRsnCutMiniPair("cutAsymmetry", AliRsnCutMiniPair::kAsymRange);
+  cutAsym->SetRangeD(minAsym, maxAsym);
+
   //AliRsnCutMiniPair* cutV0=new AliRsnCutMiniPair("cutV0", AliRsnCutMiniPair::kContainsV0Daughter);
 
   AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
   cutsPair->AddCut(cutY);
+  cutsPair->AddCut(cutAsym);
   //cutsPair->AddCut(cutV0);
   //cutsPair->SetCutScheme(TString::Format("%s&(!%s)",cutY->GetName(),cutV0->GetName()).Data());
-  cutsPair->SetCutScheme(cutY->GetName());
+  cutsPair->SetCutScheme(Form("%s & %s ",cutY->GetName(), cutAsym->GetName()));
+//   cutsPair->SetCutScheme(cutY->GetName());
+
+  AliRsnCutSet *cutsPairY = new AliRsnCutSet("pairCutsY", AliRsnTarget::kMother);
+  cutsPairY->AddCut(cutY);
+  cutsPairY->SetCutScheme(cutY->GetName());
 
   // AliRsnCutSet* PairCutsMix=new AliRsnCutSet("PairCutsMix",AliRsnTarget::kMother);
   // PairCutsMix->AddCut(cutY);
@@ -181,9 +200,8 @@ AliRsnMiniAnalysisTask * AddTaskLambdaStarWithKinks
   //-----------------------------------------------------------------------------------------------
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
   //-----------------------------------------------------------------------------------------------
- gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigLambdaStarWithKinks.C");
-//  gROOT->LoadMacro("ConfigLambdaStarWithKinks.C");
-  if (!ConfigLambdaStarWithKinks(task, isMC, collSys, cutsPair, enaMultSel, masslow, massup, nbins, nsigma, 
+  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigLambdaStarWithKinks.C");
+  if (!ConfigLambdaStarWithKinks(task, isMC, collSys, cutsPair, cutsPairY, enaMultSel, masslow, massup, nbins, nsigma, 
 enableMonitor, kaonPIDCut)) 
 return 0x0;
   

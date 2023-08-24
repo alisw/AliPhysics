@@ -91,9 +91,11 @@ public:
   void Set1DCorrectionsPions(TH1D *h1);
   void Set1DCorrectionsKaons(TH1D *h1);
   void Set1DCorrectionsProtons(TH1D *h1);
+  void Set1DCorrectionsDeuterons(TH1D *h1);
   void Set1DCorrectionsPionsMinus(TH1D *h1);
   void Set1DCorrectionsKaonsMinus(TH1D *h1);
   void Set1DCorrectionsProtonsMinus(TH1D *h1);
+  void Set1DCorrectionsDeuteronsMinus(TH1D *h1);
   void Set1DCorrectionsAll(TH1D *h1);
   void Set1DCorrectionsLambdas(TH1D *h1);
   void Set1DCorrectionsLambdasMinus(TH1D *h1);
@@ -103,9 +105,11 @@ public:
   void Set4DCorrectionsPions(THnSparse *h1);
   void Set4DCorrectionsKaons(THnSparse *h1);
   void Set4DCorrectionsProtons(THnSparse *h1);
+  void Set4DCorrectionsDeuterons(THnSparse *h1);
   void Set4DCorrectionsPionsMinus(THnSparse *h1);
   void Set4DCorrectionsKaonsMinus(THnSparse *h1);
   void Set4DCorrectionsProtonsMinus(THnSparse *h1);
+  void Set4DCorrectionsDeuteronsMinus(THnSparse *h1);
   void Set4DCorrectionsAll(THnSparse *h1);
   void Set4DCorrectionsLambdas(THnSparse *h1);
   void Set4DCorrectionsLambdasMinus(THnSparse *h1);
@@ -172,9 +176,11 @@ private:
   TH1D *f1DcorrectionsPions;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsKaons;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsProtons;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsDeuterons;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsPionsMinus;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsKaonsMinus;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsProtonsMinus;    ///<file with corrections, pT dependant
+  TH1D *f1DcorrectionsDeuteronsMinus;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsAll;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsLambdas;    ///<file with corrections, pT dependant
   TH1D *f1DcorrectionsLambdasMinus;    ///<file with corrections, pT dependant
@@ -183,9 +189,11 @@ private:
   THnSparse *f4DcorrectionsPions;    ///<file with corrections, pT dependant
   THnSparse *f4DcorrectionsKaons;    ///<file with corrections, pT dependant
   THnSparse *f4DcorrectionsProtons;    ///<file with corrections, pT dependant
+  THnSparse *f4DcorrectionsDeuterons;    ///<file with corrections, pT dependant
   THnSparse *f4DcorrectionsPionsMinus;    ///<file with corrections, pT dependant
   THnSparse *f4DcorrectionsKaonsMinus;    ///<file with corrections, pT dependant
   THnSparse *f4DcorrectionsProtonsMinus;    ///<file with corrections, pT dependant
+  THnSparse *f4DcorrectionsDeuteronsMinus;    ///<file with corrections, pT dependant
   THnSparse *f4DcorrectionsAll;    ///<file with corrections, pT dependant
   THnSparse *f4DcorrectionsLambdas;    ///<file with corrections, pT dependant
   THnSparse *f4DcorrectionsLambdasMinus;    ///<file with corrections, pT dependant

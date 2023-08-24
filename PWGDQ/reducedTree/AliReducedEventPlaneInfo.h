@@ -29,6 +29,8 @@ class AliReducedEventPlaneInfo : public TObject {
     kTPCptWeights,           // All TPC tracks, using pt weights  
     kTPCpos,                 // Positive TPC tracks 
     kTPCneg,                 // Negative TPC tracks 
+    kTPCsideA,               // TPC tracks from A-side 
+    kTPCsideC,               // TPC tracks from C-side
     kVZEROA,                 // VZERO A-side channels
     kVZEROC,                 // VZERO C-side channels
     kFMD,                    // FMD 

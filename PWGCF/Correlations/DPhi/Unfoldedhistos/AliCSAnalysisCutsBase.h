@@ -24,6 +24,7 @@
 class TClonesArray;
 class AliInputEventHandler;
 class AliMCEventHandler;
+class AliVVertex;
 
 class AliCSAnalysisCutsBase : public TNamed {
 public:
@@ -39,179 +40,192 @@ public:
   /// \enum ProdPeriods
   /// \brief The supported LHC production periods
   enum ProdPeriods {
-    kNoPeriod=0,      ///< no period
-    /// \name 2010
-    /// \brief 2010 periods
-    ///@{
-    kLHC10bg,         ///< pp 7 TeV (LHC10c incl 900 GeV)
-    kLHC10h,          ///< PbPb 2.76TeV
-    ///@}
-    /// \name 2010MC
-    /// \brief MC's corresponding to 2010 data
-    ///@{
-    kLHC10d1,         ///< anchored LHC10b pass 2
-    kLHC10d2,         ///< anchored LHC10b pass 2
-    kLHC10d4a,        ///< anchored LHC10c pass 2
-    kLHC10d4,         ///< anchored LHC10c pass 2
-    kLHC10e12,        ///< anchored LHC10c pass 2
-    kLHC10e13,        ///< anchored LHC10c pass 2
-    kLHC10f6a,        ///< anchored LHC10d pass 2
-    kLHC10f6,         ///< anchored LHC10d pass 2
-    kLHC10e20,        ///< anchored LHC10e pass 2
-    kLHC10e21,        ///< anchored LHC10e pass 2
-    kLHC14j4,         ///< anchored LHC10[b-g] pass 4
-    kLHC11a10a,       ///< anchored LHC10h pass 2
-    kLHC11a10b,       ///< anchored LHC10h pass 2
-    kLHC13d2,         ///< anchored LHC10h pass 2
-    kLHC13d2b,        ///< anchored LHC10h pass 2
-    kLHC12a11a,       ///< anchored LHC10h pass 2
-    kLHC12a11b,       ///< anchored LHC10h pass 2
-    kLHC12a11c,       ///< anchored LHC10h pass 2
-    kLHC12a11d,       ///< anchored LHC10h pass 2
-    kLHC12a11e,       ///< anchored LHC10h pass 2
-    kLHC12a11f,       ///< anchored LHC10h pass 2
-    kLHC13d19,        ///< anchored LHC10h pass 2, upgrade 5.5TeV PbPb
-    ///@}
-    /// \name 2011
-    /// \brief 2011 periods
-    ///@{
-    kLHC11a,          ///< pp 2.76TeV (part 7TeV)
-    kLHC11b,          ///< pp 7TeV
-    kLHC11cg,         ///< pp 7TeV
-    kLHC11h,          ///< PbPb 2.76TeV
-    ///@}
-    /// \name 2011MC
-    /// \brief MC's corresponding to 2011 data
-    ///@{
-    kLHC12a15c,       ///< anchored LHC11a pass 2 - JJ
-    kLHC12f1a,        ///< anchored LHC11a pass 4
-    kLHC12f1b,        ///< anchored LHC11a pass 4
-    kLHC12i3,         ///< anchored LHC11a pass 4
-    kLHC15g1a,        ///< anchored LHC11a pass 4 - JJ
-    kLHC15g1b,        ///< anchored LHC11a pass 4 - JJ
-    kLHC13e4,         ///< anchored LHC11c pass 1 - GJ
-    kLHC13e5,         ///< anchored LHC11c pass 1 - JJ
-    kLHC14k1a,        ///< anchored LHC11[c-d] pass 1 - JJ
-    kLHC14k1b,        ///< anchored LHC11[c-d] pass 1 - JJ
-    kLHC12a15f,       ///< anchored LHC11d pass 1 - JJ
-    kLHC12a15g,       ///< anchored LHC11d pass 1 - GJ
-    kLHC12f2a,        ///< anchored LHC11d pass 1 - JJ
-    kLHC14a1a,        ///< anchored LHC11h pass 2
-    kLHC14a1b,        ///< anchored LHC11h pass 2
-    kLHC14a1c,        ///< anchored LHC11h pass 2
-    ///@}
-    /// \name 2012
-    /// \brief 2012 periods
-    ///@{
-    kLHC12,           ///< pp 8TeV
-    ///@}
-    /// \name 2012MC
-    /// \brief MC's corresponding to 2012 data
-    ///@{
-    kLHC14e2a,        ///< anchored LHC12[a-h] pass 1
-    kLHC14e2b,        ///< anchored LHC12[a-h] pass 1
-    kLHC14e2c,        ///< anchored LHC12[a-h] pass 1
-    kLHC15h1,         ///< anchored LHC12[a-h] pass 2
-    kLHC15h2,         ///< anchored LHC12[a-h] pass 2
-    kLHC16c2,         ///< anchored LHC12[a-h] pass 2 - JJ
-    ///@}
-    /// \name 2013
-    /// \brief 2013 periods
-    ///@{
-    kLHC13bc,         ///< pPb 5.023TeV
-    kLHC13de,         ///< pPb 5.023TeV
-    kLHC13f,          ///< Pbp 5.023TeV
-    kLHC13g,          ///< pp 2.76TeV
-    ///@}
-    /// \name 2013MC
-    /// \brief MC's corresponding to 2013 data
-    ///@{
-    kLHC13b2,         ///< anchored LHC13[b-c] pass 2
-    kLHC13b2_efix,    ///< anchored LHC13[b-c] pass 2
-    kLHC13e7,         ///< anchored LHC13[b-c] pass 2
-    kLHC14b2,         ///< anchored LHC13[b-c] pass 2
-    kLHC13b4_fix,     ///< anchored LHC13[b-c] pass 2 - JJ
-    kLHC13b4_plus,    ///< anchored LHC13[b-c] pass 2 - JJ
-    kLHC16c3a,        ///< anchored LHC13[d-e] pass 2 - JJ
-    kLHC16c3b,        ///< anchored LHC13[d-e] pass 2 - JJ
-    kLHC16c3c,        ///< anchored LHC13[d-e] pass 2 - GJ
-    kLHC15g2,         ///< anchored LHC13g pass 1
-    kLHC15a3a,        ///< anchored LHC13g pass 1 - JJ
-    kLHC15a3a_plus,   ///< anchored LHC13g pass 1 - JJ
-    kLHC15a3b,        ///< anchored LHC13g pass 1 - JJ
-    kLHC15d3a,        ///< anchored LHC13g pass 1
-    kLHC15d3b,        ///< anchored LHC13g pass 1
-    ///@}
-    /// \name 2015
-    /// \brief 2015 periods
-    ///@{
-    kLHC15fm,         ///< pp 13 TeV
-    kLHC15n,          ///< pp 5 TeV
-    kLHC15oLIR,       ///< PbPb 5 TeV low interaction rate
-    kLHC15oHIR,       ///< PbPb 5 TeV high interaction rate
-    ///@}
-    /// \name 2015MC
-    /// \brief MC's corresponding to 2015 data
-    ///@{
-    kLHC15g3a3,       ///< anchored LHC15f pass 1
-    kLHC15g3a,        ///< anchored LHC15f pass 1
-    kLHC15g3c2,       ///< anchored LHC15f pass 1
-    kLHC15g3c3,       ///< anchored LHC15f pass 1
-    kLHC15g3,         ///< anchored LHC15f pass 1
-    kLHC16a2a,        ///< anchored LHC15h pass 1
-    kLHC16a2b,        ///< anchored LHC15h pass 1
-    kLHC16a2c,        ///< anchored LHC15h pass 1
-    kLHC15l1a2,       ///< anchored LHC15n pass 1
-    kLHC15l1b2,       ///< anchored LHC15n pass 1
-    kLHC15k1a1,       ///< LHC15o low IR
-    kLHC15k1a2,       ///< LHC15o low IR
-    kLHC15k1a3,       ///< LHC15o low IR
-    kLHC16g1,         ///< anchored LHC15o pass1 - general purpose
-    kLHC16g1a,        ///< anchored LHC15o pass1 - general purpose 0-10%
-    kLHC16g1b,        ///< anchored LHC15o pass1 - general purpose 10-50%
-    kLHC16g1c,        ///< anchored LHC15o pass1 - general purpose 50-90%
-    kLHC16h4a,        ///< anchored LHC15o pass1 - injected signals 0-10%
-    kLHC16h4b,        ///< anchored LHC15o pass1 - injected signals 10-50%
-    kLHC16h4b2,       ///< anchored LHC15o pass1 - injected signals 10-50% with TPC gas corrections
-    kLHC16h4c,        ///< anchored LHC15o pass1 - injected signals 50-90%
-    kLHC16h2a,        ///< anchored LHC15o pass1 - jet-jet 0-10%
-    kLHC16h2b,        ///< anchored LHC15o pass1 - jet-jet 10-50%
-    kLHC16h2c,        ///< anchored LHC15o pass1 - jet-jet 50-90%
-    kLHC16i3,         ///< anchored LHC15o HIJING + HF injected with electron decays
-    kLHC17i2,         ///< anchored LHC15o AMPT via AliGenerators
-    ///@}
-    /// \name 2016
-    /// \brief 2016 periods
-    ///@{
-    kLHC16k,          ///< pp 13 TeV
-    kLHC16l,          ///< pp 13 TeV
-    ///@}
-    /// \name 2017
-    /// \brief 2017 periods
-    ///@{
-    kLHC17n,          ///< XeXe 5.44 TeV
-    ///@}
-    /// \name 2017MC
-    /// \brief MC's corresponding to 2017 data
-    ///@{
-    kLHC17j6,          ///< anchored LHC17n XeXe 5.44 TeV with ITS reco points
-    kLHC17j7,          ///< anchored LHC17n XeXe 5.44 TeV general purpose
-    ///@}
-    /// \name 2018
-    /// \brief 2018 periods
-    ///@{
-    kLHC18q,          ///< PbPb 5 TeV
-    kLHC18r,          ///< PbPb 5 TeV
-    ///@}
-    /// \name 2018MC
-    /// \brief MC's corresponding to 2018 data
-    ///@{
-    kLHC18l8,          ///< anchored to LHC18q/r Pb-Pb 5.02 TeV general purpose
-    ///@}
-    /// \name fast MC productions
-    ///@{
-    kLHC13f3,         ///<  PbPb, AMPT, fast generation, 2.76TeV (min. bias)
-    ///@}
+      kNoPeriod = 0, ///< no period
+      /// \name 2010
+      /// \brief 2010 periods
+      ///@{
+      kLHC10bg, ///< pp 7 TeV (LHC10c incl 900 GeV)
+      kLHC10h,  ///< PbPb 2.76TeV
+      ///@}
+      /// \name 2010MC
+      /// \brief MC's corresponding to 2010 data
+      ///@{
+      kLHC10d1,   ///< anchored LHC10b pass 2
+      kLHC10d2,   ///< anchored LHC10b pass 2
+      kLHC10d4a,  ///< anchored LHC10c pass 2
+      kLHC10d4,   ///< anchored LHC10c pass 2
+      kLHC10e12,  ///< anchored LHC10c pass 2
+      kLHC10e13,  ///< anchored LHC10c pass 2
+      kLHC13d4,   //! anchored LHC10c pass 2
+      kLHC10f6a,  ///< anchored LHC10d pass 2
+      kLHC10f6,   ///< anchored LHC10d pass 2
+      kLHC10e20,  ///< anchored LHC10e pass 2
+      kLHC10e21,  ///< anchored LHC10e pass 2
+      kLHC14j4,   ///< anchored LHC10[b-g] pass 4
+      kLHC11a10a, ///< anchored LHC10h pass 2
+      kLHC11a10b, ///< anchored LHC10h pass 2
+      kLHC13d2,   ///< anchored LHC10h pass 2
+      kLHC13d2b,  ///< anchored LHC10h pass 2
+      kLHC12a11a, ///< anchored LHC10h pass 2
+      kLHC12a11b, ///< anchored LHC10h pass 2
+      kLHC12a11c, ///< anchored LHC10h pass 2
+      kLHC12a11d, ///< anchored LHC10h pass 2
+      kLHC12a11e, ///< anchored LHC10h pass 2
+      kLHC12a11f, ///< anchored LHC10h pass 2
+      kLHC13d19,  ///< anchored LHC10h pass 2, upgrade 5.5TeV PbPb
+      ///@}
+      /// \name 2011
+      /// \brief 2011 periods
+      ///@{
+      kLHC11a,  ///< pp 2.76TeV (part 7TeV)
+      kLHC11b,  ///< pp 7TeV
+      kLHC11cg, ///< pp 7TeV
+      kLHC11h,  ///< PbPb 2.76TeV
+      ///@}
+      /// \name 2011MC
+      /// \brief MC's corresponding to 2011 data
+      ///@{
+      kLHC12a15c, ///< anchored LHC11a pass 2 - JJ
+      kLHC12f1a,  ///< anchored LHC11a pass 4
+      kLHC12f1b,  ///< anchored LHC11a pass 4
+      kLHC12i3,   ///< anchored LHC11a pass 4
+      kLHC15g1a,  ///< anchored LHC11a pass 4 - JJ
+      kLHC15g1b,  ///< anchored LHC11a pass 4 - JJ
+      kLHC13e4,   ///< anchored LHC11c pass 1 - GJ
+      kLHC13e5,   ///< anchored LHC11c pass 1 - JJ
+      kLHC14k1a,  ///< anchored LHC11[c-d] pass 1 - JJ
+      kLHC14k1b,  ///< anchored LHC11[c-d] pass 1 - JJ
+      kLHC12a15f, ///< anchored LHC11d pass 1 - JJ
+      kLHC12a15g, ///< anchored LHC11d pass 1 - GJ
+      kLHC12f2a,  ///< anchored LHC11d pass 1 - JJ
+      kLHC14a1a,  ///< anchored LHC11h pass 2
+      kLHC14a1b,  ///< anchored LHC11h pass 2
+      kLHC14a1c,  ///< anchored LHC11h pass 2
+      ///@}
+      /// \name 2012
+      /// \brief 2012 periods
+      ///@{
+      kLHC12, ///< pp 8TeV
+      ///@}
+      /// \name 2012MC
+      /// \brief MC's corresponding to 2012 data
+      ///@{
+      kLHC14e2a, ///< anchored LHC12[a-h] pass 1
+      kLHC14e2b, ///< anchored LHC12[a-h] pass 1
+      kLHC14e2c, ///< anchored LHC12[a-h] pass 1
+      kLHC15h1,  ///< anchored LHC12[a-h] pass 2
+      kLHC15h2,  ///< anchored LHC12[a-h] pass 2
+      kLHC16c2,  ///< anchored LHC12[a-h] pass 2 - JJ
+      ///@}
+      /// \name 2013
+      /// \brief 2013 periods
+      ///@{
+      kLHC13bc, ///< pPb 5.023TeV
+      kLHC13de, ///< pPb 5.023TeV
+      kLHC13f,  ///< Pbp 5.023TeV
+      kLHC13g,  ///< pp 2.76TeV
+      ///@}
+      /// \name 2013MC
+      /// \brief MC's corresponding to 2013 data
+      ///@{
+      kLHC13b2,       ///< anchored LHC13[b-c] pass 2
+      kLHC13b2_efix,  ///< anchored LHC13[b-c] pass 2
+      kLHC13e7,       ///< anchored LHC13[b-c] pass 2
+      kLHC14b2,       ///< anchored LHC13[b-c] pass 2
+      kLHC13b4_fix,   ///< anchored LHC13[b-c] pass 2 - JJ
+      kLHC13b4_plus,  ///< anchored LHC13[b-c] pass 2 - JJ
+      kLHC15g4a,      ///< p-Pb, 5.023 TeV, STARLIGHT, rho(1720)->4pi, LHC13b anchors
+      kLHC15g5b,      ///< p-A, 5.023 TeV, HIJING anchored to LHC13b with shadowing
+      kLHC16c3a,      ///< anchored LHC13[d-e] pass 2 - JJ
+      kLHC16c3b,      ///< anchored LHC13[d-e] pass 2 - JJ
+      kLHC16c3c,      ///< anchored LHC13[d-e] pass 2 - GJ
+      kLHC15g2,       ///< anchored LHC13g pass 1
+      kLHC15a3a,      ///< anchored LHC13g pass 1 - JJ
+      kLHC15a3a_plus, ///< anchored LHC13g pass 1 - JJ
+      kLHC15a3b,      ///< anchored LHC13g pass 1 - JJ
+      kLHC15d3a,      ///< anchored LHC13g pass 1
+      kLHC15d3b,      ///< anchored LHC13g pass 1
+      ///@}
+      /// \name 2015
+      /// \brief 2015 periods
+      ///@{
+      kLHC15fm,   ///< pp 13 TeV
+      kLHC15n,    ///< pp 5 TeV
+      kLHC15oLIR, ///< PbPb 5 TeV low interaction rate
+      kLHC15oHIR, ///< PbPb 5 TeV high interaction rate
+      ///@}
+      /// \name 2015MC
+      /// \brief MC's corresponding to 2015 data
+      ///@{
+      kLHC15g3a3, ///< anchored LHC15f pass 1
+      kLHC15g3a,  ///< anchored LHC15f pass 1
+      kLHC15g3c2, ///< anchored LHC15f pass 1
+      kLHC15g3c3, ///< anchored LHC15f pass 1
+      kLHC15g3,   ///< anchored LHC15f pass 1
+      kLHC16a2a,  ///< anchored LHC15h pass 1
+      kLHC16a2b,  ///< anchored LHC15h pass 1
+      kLHC16a2c,  ///< anchored LHC15h pass 1
+      kLHC15l1a2, ///< anchored LHC15n pass 1
+      kLHC15l1b2, ///< anchored LHC15n pass 1
+      kLHC15k1a1, ///< LHC15o low IR
+      kLHC15k1a2, ///< LHC15o low IR
+      kLHC15k1a3, ///< LHC15o low IR
+      kLHC16g1,   ///< anchored LHC15o pass1 - general purpose
+      kLHC16g1a,  ///< anchored LHC15o pass1 - general purpose 0-10%
+      kLHC16g1b,  ///< anchored LHC15o pass1 - general purpose 10-50%
+      kLHC16g1c,  ///< anchored LHC15o pass1 - general purpose 50-90%
+      kLHC16h4a,  ///< anchored LHC15o pass1 - injected signals 0-10%
+      kLHC16h4b,  ///< anchored LHC15o pass1 - injected signals 10-50%
+      kLHC16h4b2, ///< anchored LHC15o pass1 - injected signals 10-50% with TPC gas corrections
+      kLHC16h4c,  ///< anchored LHC15o pass1 - injected signals 50-90%
+      kLHC16h2a,  ///< anchored LHC15o pass1 - jet-jet 0-10%
+      kLHC16h2b,  ///< anchored LHC15o pass1 - jet-jet 10-50%
+      kLHC16h2c,  ///< anchored LHC15o pass1 - jet-jet 50-90%
+      kLHC16i3,   ///< anchored LHC15o HIJING + HF injected with electron decays
+      kLHC17i2,   ///< anchored LHC15o AMPT via AliGenerators
+      ///@}
+      /// \name 2016
+      /// \brief 2016 periods
+      ///@{
+      kLHC16k,  ///< pp 13 TeV
+      kLHC16l,  ///< pp 13 TeV
+      kLHC16qt, ///< pPb 5.02 TeV
+      ///@}
+      /// \name 2017
+      /// \brief 2017 periods
+      ///@{
+      kLHC17n,  ///< XeXe 5.44 TeV
+      kLHC17pq, ///< pp 5.02 TeV
+      ///@}
+      /// \name 2017MC
+      /// \brief MC's corresponding to 2017 data
+      ///@{
+      kLHC17j6, ///< anchored LHC17n XeXe 5.44 TeV with ITS reco points
+      kLHC17j7, ///< anchored LHC17n XeXe 5.44 TeV general purpose
+      ///@}
+      /// \name 2018
+      /// \brief 2018 periods
+      ///@{
+      kLHC18bp, ///< pp 13 TeV
+      kLHC18q,  ///< PbPb 5 TeV
+      kLHC18r,  ///< PbPb 5 TeV
+      ///@}
+      /// \name 2018MC
+      /// \brief MC's corresponding to 2018 data
+      ///@{
+      kLHC18l8, ///< anchored to LHC18q/r Pb-Pb 5.02 TeV general purpose
+      kLHC20e3, ///< anchored to LHC18q/r pass3 Pb-Pb 5.02 general purpose
+      ///@}
+      /// \name fast MC productions
+      ///@{
+      kLHC13f3, ///<  PbPb, AMPT, fast generation, 2.76TeV (min. bias)
+      ///@}
+      /// \name on the fly MC productions
+      ///@{
+      kOTFpp,   ///<  pp, on the fly MC production
+      kOTFpPb,  ///<  p-Pb, on the fly MC production
+      kOTFPbPb, ///<  Pb-Pb, on the fly MC production
+                ///@}
   };
 
   /// \enum EnergyValue
@@ -255,12 +269,19 @@ public:
                                 /// A new event is coming
                                 /// Pure virtual function
   virtual void                  NotifyEvent() = 0;
-  static void                   NotifyRunGlobal();
-                                /// Prints the activated cuts mask
-                                /// \param opt the print options
+  static void NotifyRunGlobal();
+  /// Get the vertex object
+  /// \return the event vertex object for the whole cuts complex
+  static const AliVVertex* GetVertex() { return fVertex; }
+  /// Get the magnetic field
+  /// \return the event magnetic field for the whole cuts complex
+  static Double_t GetMagField() { return fMagField; }
+  /// Prints the activated cuts mask
+  /// \param opt the print options
   virtual void                  Print(Option_t *opt = "") const { fCutsActivatedMask.Print(opt); }
 
   Bool_t                        InitializeCutsFromCutString(const TString cutSelectionString);
+  static void                   SetOnTheFlyMCProduction(TString &ofp);
                                 /// Get the event cuts associated string
                                 /// \return the event cuts associated string
   const char                   *GetCutsString() const { return fCutsString; }
@@ -279,9 +300,12 @@ public:
                                 /// Is a fast Monte Carlo data set (only MC truth)
                                 /// \return kTRUE if it is a fast Monte Carlo data set, kFALSE otherwise
   static Bool_t                 IsMConlyTruth() { return fgIsMConlyTruth; }
+                                /// Is an on the fly MC production (nothing stored)
+                                /// \return true if the current production is an on the fly production
+  static bool                   IsOnTheFlyMC() { return fgIsOnTheFlyMC; } 
                                 /// Get the Monte Carlo event handler
                                 /// \return the Monte Carlo event handler
-  static AliMCEventHandler     *GetMCEventHandler() { return fgMCHandler; }
+  static AliMCEventHandler     *GetMCEventHandler() { return (AliMCEventHandler*) fgMCHandler; }
                                 /// Get the Input event handler
                                 /// \return the Input event handler
   static AliInputEventHandler  *GetInputEventHandler() { return fgInputHandler; }
@@ -309,23 +333,29 @@ private:
 
 private:
   static TString                fgPeriodName;           ///< the period name of the ongoing analysis
+  static TString                fgOnTheFlyProduction;   ///< the on the fly MC production name
   static ProdPeriods            fgDataPeriod;           ///< the global period of ongoing analysis
   static ProdPeriods            fgAnchorPeriod;         ///< the anchor period, different from #fgDataPeriod in case of MC data
-  Int_t                         fNParams;               ///< the number of cuts parameters
-  char                         *fCutsString;            ///< the cuts parameters associated string
+  Int_t fNParams;                                       ///< the number of cuts parameters
+  char* fCutsString;                                    ///< the cuts parameters associated string
+ protected:
+  static const AliVVertex* fVertex;            ///< the vertex \f$z\f$ coordinate, unique for the whole cuts complex
+  static Double_t fMagField;                   ///< the magnetic field intensity, unique for the whole cuts complex
+  Int_t fNCuts;                                ///< the number of cuts
+  QALevel fQALevel;                            ///< the level of the QA histograms output
+                                               /// the external values for each of the cuts parameters
+  Int_t* fParameters;                          //[fNParams]
+  TBits fCutsEnabledMask;                      ///< the mask of enabled cuts
+  TBits fCutsActivatedMask;                    ///< the mask of cut activated for the ongoing event
+  ProdPeriods fDataPeriod;                     ///< the current period under analysis. Occasionally could be different from the global period
+  static EnergyValue fgEnergy;                 ///< the collision energy for the analysis period
+  static Bool_t fgIsMC;                        ///< MC flag from production information
+  static Bool_t fgIsOnTheFlyMC;                ///< on the fly MC flag from configuration
+  static Bool_t fgIsMConlyTruth;               ///< fast MC flag (only kinematics) from production information
+  static AliInputEventHandler* fgInputHandler; ///< the input handler for the current ongoing analysis
+ private:
+  static AliInputEventHandler  *fgMCHandler;            ///< MC handler for the current ongoing analysis
 protected:
-  Int_t                         fNCuts;                 ///< the number of cuts
-  QALevel                       fQALevel;               ///< the level of the QA histograms output
-                                /// the external values for each of the cuts parameters
-  Int_t                        *fParameters;            //[fNParams]
-  TBits                         fCutsEnabledMask;       ///< the mask of enabled cuts
-  TBits                         fCutsActivatedMask;     ///< the mask of cut activated for the ongoing event
-  ProdPeriods                   fDataPeriod;            ///< the current period under analysis. Occasionally could be different from the global period
-  static EnergyValue            fgEnergy;               ///< the collision energy for the analysis period
-  static Bool_t                 fgIsMC;                 ///< MC flag from production information
-  static Bool_t                 fgIsMConlyTruth;        ///< fast MC flag (only kinematics) from production information
-  static AliInputEventHandler  *fgInputHandler;         ///< the input handler for the current ongoing analysis
-  static AliMCEventHandler     *fgMCHandler;            ///< MC handler for the current ongoing analysis
   static Bool_t                 fgIsESD;                ///< kTRUE if data format is ESD, kFALSE if AOD
   static TClonesArray          *fgMCArray;              ///< the array containing true particles when MC AOD analysis
 
@@ -340,7 +370,7 @@ protected:
   AliCSAnalysisCutsBase& operator=(const AliCSAnalysisCutsBase&);
 
   /// \cond CLASSIMP
-  ClassDef(AliCSAnalysisCutsBase,2);
+  ClassDef(AliCSAnalysisCutsBase,3);
   /// \endcond
 };
 

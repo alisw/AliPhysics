@@ -54,7 +54,7 @@ class AliAnalysisTaskSEHFvn : public AliAnalysisTaskSE
     fSubEvDetA=detsubA; fSubEvDetB=detsubB;
   }
 
-  void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+  void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
   void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
   void SetMassLimits(Float_t range,Int_t pdg);
   void SetMassLimits(Float_t lowlimit, Float_t uplimit);

@@ -1,7 +1,8 @@
 
+
 // For: Net Lambda fluctuation analysis via traditional method
 // By: Ejiro Umaka Apr 2018
-//Update Oct 2019
+//Update Mar 2019
 
 #ifndef AliAnalysisTaskNetLambdaMCTrad_h
 #define AliAnalysisTaskNetLambdaMCTrad_h
@@ -24,7 +25,7 @@ class TH3F;
 class AliAnalysisTaskNetLambdaMCTrad : public AliAnalysisTaskSE {
 public:
     AliAnalysisTaskNetLambdaMCTrad(const char* name="AliAnalysisTaskNetLambdaMCTrad");
-    virtual ~AliAnalysisTaskNetLambdaMCTrad(){};
+    virtual ~AliAnalysisTaskNetLambdaMCTrad ();
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
     
@@ -43,30 +44,44 @@ protected:
     
     TH1D*  fHistEventCounter;
     TH1D*  fHistCentrality;
-    TH1D*  hPt;
-
     
     TH2F*  f2fHistGenCentVsPtLambda;
     TH2F*  f2fHistGenCentVsPtAntiLambda;
     TH2F*  f2fHistXiPlus;
     TH2F*  f2fHistXiMinus;
+
     
     TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthree;
     TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthree;
-    
-    TH2F*  f2fHistRecSecCentVsPtLambdaFourSigthree;
-    TH2F*  f2fHistRecSecCentVsPtAntiLambdaFourSigthree;
-    
-    TH2F*  f2fHistRecMatCentVsPtLambdaFourSigthree;
-    TH2F*  f2fHistRecMatCentVsPtAntiLambdaFourSigthree;
-    
     TH3F*  f3fHistLambdafromXiFourSigthree;
     TH3F*  f3fHistAntiLambdafromXiFourSigthree;
-  
     
-    TH3F*  f3fHistCentInvMassVsPtLambdaRecFourSigthreeUntag;
-    TH3F*  f3fHistCentInvMassVsPtAntiLambdaRecFourSigthreeUntag;
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthreensigtight;
+    TH3F*  f3fHistLambdafromXiFourSigthreensigtight;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthreensigtight;
+    TH3F*  f3fHistAntiLambdafromXiFourSigthreensigtight;
+    
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthreenegloose;
+    TH3F*  f3fHistLambdafromXiFourSigthreenegloose;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthreenegloose;
+    TH3F*  f3fHistAntiLambdafromXiFourSigthreenegloose;
 
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthreenegtight;
+    TH3F*  f3fHistLambdafromXiFourSigthreenegtight;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthreenegtight;
+    TH3F*  f3fHistAntiLambdafromXiFourSigthreenegtight;
+    
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthreeposloose;
+    TH3F*  f3fHistLambdafromXiFourSigthreeposloose;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthreeposloose;
+    TH3F*  f3fHistAntiLambdafromXiFourSigthreeposloose;
+
+    TH2F*  f2fHistRecPrimariesCentVsPtLambdaFourSigthreepostight;
+    TH3F*  f3fHistLambdafromXiFourSigthreepostight;
+    TH2F*  f2fHistRecPrimariesCentVsPtAntiLambdaFourSigthreepostight;
+    TH3F*  f3fHistAntiLambdafromXiFourSigthreepostight;
+    
+    
     Float_t fCentrality;
     Int_t fTreeVariablePID;
     Int_t fTreeVariablePIDParent;
@@ -82,8 +97,14 @@ protected:
     Int_t  fNptBins;
     
     THnSparse *fPtBinNplusNminusChTruth;
-    
-    THnSparse *fPtBinNplusNminusChRec;
+    THnSparse *fPtBinNplusNminusChnsigtight;
+    THnSparse *fPtBinNplusNminusChnegloose;
+    THnSparse *fPtBinNplusNminusChnegtight;
+    THnSparse *fPtBinNplusNminusChposloose;
+    THnSparse *fPtBinNplusNminusChpostight;
+    THnSparse *fPtBinNplusNminusCh;
+
+
     
     Int_t    GetPtBin(Double_t pt);
     Double_t MyRapidity(Double_t rE, Double_t rPz) const;
@@ -94,6 +115,8 @@ protected:
 
 
 #endif
+
+
 
 
 

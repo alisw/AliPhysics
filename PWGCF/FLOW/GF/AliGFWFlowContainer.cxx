@@ -1,3 +1,10 @@
+/*
+Author: Vytautas Vislavicius
+Contains the calculated n-particle correlations, both pT-integrated and differential.
+An extra layer to calculate multiparticle cummulants and flow coefficients.
+Primarily used with <AliGFW> framework.
+If used, modified, or distributed, please aknowledge the original author of this code.
+*/
 #include "AliGFWFlowContainer.h"
 
 AliGFWFlowContainer::AliGFWFlowContainer():
@@ -8,6 +15,8 @@ AliGFWFlowContainer::AliGFWFlowContainer():
   fIDName("MidV"),
   fPtRebin(1),
   fPtRebinEdges(0),
+  fMultiRebin(0),
+  fMultiRebinEdges(0),
   fXAxis(0),
   fNbinsPt(0),
   fbinsPt(0),
@@ -22,6 +31,8 @@ AliGFWFlowContainer::AliGFWFlowContainer(const char *name):
   fIDName("MidV"),
   fPtRebin(1),
   fPtRebinEdges(0),
+  fMultiRebin(0),
+  fMultiRebinEdges(0),
   fXAxis(0),
   fNbinsPt(0),
   fbinsPt(0),
@@ -245,6 +256,16 @@ void AliGFWFlowContainer::PickAndMerge(TFile *tfi) {
   };
   //printf("After merge: %i in target, %i in source\n",fProfRand->GetEntries(),tarr->GetEntries());
 };
+Bool_t AliGFWFlowContainer::OverrideBinsWithZero(Int_t xb1, Int_t yb1, Int_t xb2, Int_t yb2) {
+  AliProfileSubset *t_apf = new AliProfileSubset(*fProf);
+  if(!t_apf->OverrideBinsWithZero(xb1,yb1,xb2,yb2)) {
+    delete t_apf;
+    return kFALSE;
+  };
+  delete fProf;
+  fProf = (TProfile2D*)t_apf;
+  return kTRUE;
+}
 Bool_t AliGFWFlowContainer::OverrideMainWithSub(Int_t ind, Bool_t ExcludeChosen) {
   if(!fProfRand) {
     printf("Cannot override main profile with a randomized one. Random profile array does not exist.\n");
@@ -332,6 +353,13 @@ TProfile *AliGFWFlowContainer::GetCorrXXVsMulti(const char *order, Int_t l_pti) 
     } else { retSubset->Add(rethist);};
     delete rethist;
   };
+  if(fMultiRebin>0) { //If needed, rebin multiplicity
+    TString temp_name(retSubset->GetName());
+    TProfile *tempprof = (TProfile*)retSubset->Clone("tempProfile");
+    delete retSubset;
+    retSubset = (TProfile*)tempprof->Rebin(fMultiRebin,temp_name.Data(),fMultiRebinEdges);
+    delete tempprof;
+  }
   return retSubset;
 };
 TProfile *AliGFWFlowContainer::GetCorrXXVsPt(const char *order, Double_t lminmulti, Double_t lmaxmulti) {
@@ -935,6 +963,7 @@ Double_t AliGFWFlowContainer::VDN6Value(Double_t d6, Double_t c6) {
 Double_t AliGFWFlowContainer::VDN6Error(Double_t d6, Double_t d6e, Double_t c6, Double_t c6e) {
   if(!fPropagateErrors) return 0;
   if(c6<0) return 0;
+  if(d6==0) return 0;
   Double_t vdn6 = VDN6Value(d6, c6);
   Double_t dp = d6e/d6;
   Double_t cp = 5*c6e/6;
@@ -1001,3 +1030,44 @@ Double_t AliGFWFlowContainer::VDN8Error(Double_t d8, Double_t d8e, Double_t c8, 
   Double_t dc = -7*c8e/(8*c8);
   return vdn8v * TMath::Sqrt(dd*dd+dc*dc);
 };
+void AliGFWFlowContainer::SetPtRebin(Int_t nbins, Double_t *binedges) {
+  fPtRebin = nbins;
+  fPtRebinEdges = binedges;
+  return;
+   Int_t fPtRebin=0;
+   //Double_t *lPtRebinEdges=binedges;
+   if(!fbinsPt) SetXAxis();
+   for(Int_t i=0; i<nbins; i++) if(binedges[i] < fbinsPt[0] || binedges[i] > fbinsPt[fNbinsPt-1]) continue; else fPtRebin++;
+   if(fPtRebinEdges) delete [] fPtRebinEdges;
+   fPtRebinEdges = new Double_t[fPtRebin];
+   fPtRebin=0;
+   for(Int_t i=0; i<nbins; i++) if(binedges[i] < fbinsPt[0] || binedges[i] > fbinsPt[fNbinsPt]) continue;
+    else fPtRebinEdges[fPtRebin++] = binedges[i];
+  //fPtRebin--;
+}
+void AliGFWFlowContainer::SetMultiRebin(Int_t nbins, Double_t *binedges) {
+  if(fMultiRebinEdges) {delete [] fMultiRebinEdges; fMultiRebinEdges=0;};
+  if(nbins<=0) { fMultiRebin=0; return; };
+  fMultiRebin = nbins;
+  fMultiRebinEdges = new Double_t[nbins+1];
+  for(Int_t i=0;i<=fMultiRebin;i++) fMultiRebinEdges[i] = binedges[i];
+}
+Double_t *AliGFWFlowContainer::GetMultiRebin(Int_t &nbins) {
+  if(fMultiRebin<=0) {nbins=0; return 0; };
+  nbins = fMultiRebin;
+  Double_t *retBins = new Double_t[fMultiRebin+1];
+  for(Int_t i=0;i<=nbins;i++) retBins[i] = fMultiRebinEdges[i];
+  return fMultiRebinEdges;
+}
+Bool_t AliGFWFlowContainer::RebinYBlind(Int_t nbins) {
+  Int_t nTotBins = fProf->GetNbinsY();
+  if(nTotBins%nbins) {printf("Cannot rebin Y axis properly, number of bins (%i) is not a multiple of group size (%i)\n",nTotBins,nbins); return 0; };
+  Int_t reducedSize = TMath::Nint(nTotBins/nbins);
+  TString *StrAr = new TString[reducedSize];
+  for(Int_t i=0;i<reducedSize;i++)
+    StrAr[i] = fProf->GetYaxis()->GetBinLabel(i*nbins);
+  fProf->RebinY(nbins);
+  for(Int_t i=1;i<=fProf->GetNbinsY();i++) fProf->GetYaxis()->SetBinLabel(i,StrAr[i-1].Data());
+  delete [] StrAr;
+  return 1;
+}

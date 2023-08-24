@@ -82,10 +82,11 @@ class AliAnaWeights : public TObject {
 
   void             SetPythiaEventHeader(AliGenPythiaEventHeader* py) { fPyEventHeader = py    ; }
   
-  void             SwitchOnMCCrossSectionCalculation()     { fCheckMCCrossSection = kTRUE  ; }
-  void             SwitchOffMCCrossSectionCalculation()    { fCheckMCCrossSection = kFALSE ; }
+  void             SwitchOnMCCrossSectionCalculation()     { fCheckMCCrossSection    = kTRUE  ; }
+  void             SwitchOffMCCrossSectionCalculation()    { fCheckMCCrossSection    = kFALSE ; }
 
-  void             SwitchOnMCCrossSectionHistoFill()       { fCheckMCCrossSection = kTRUE  ;  fJustFillCrossSecHist = kTRUE ; }
+  void             SwitchOnMCCrossSectionHistoFill()       { fCheckMCCrossSection    = kTRUE  ;  fJustFillCrossSecHist = kTRUE ; }
+  void             SwitchOffMCCrossSectionHistoFill()      { fJustFillCrossSecHist   = kFALSE ; }
 
   void             SwitchOnMCCrossSectionFromEventHeader() { fCheckPythiaEventHeader = kTRUE  ; }
   void             SwitchOffMCCrossSectionFromEventHeader(){ fCheckPythiaEventHeader = kFALSE ; }
@@ -93,7 +94,7 @@ class AliAnaWeights : public TObject {
   //
   // Pt weights
   //
-  Double_t         GetParticlePtWeight ( Float_t pt, Int_t pdg, TString genName, Int_t igen ) const ;
+  Double_t         GetParticlePtWeight ( Float_t pt, Int_t pdg, TString genName, Int_t igen, Float_t centrality ) const ;
   
   void             SetEtaFunction(TF1* fun)                { if ( fEtaFunction ) delete fEtaFunction ; fEtaFunction = fun ; }
   void             SetPi0Function(TF1* fun)                { if ( fPi0Function ) delete fPi0Function ; fPi0Function = fun ; }
@@ -101,7 +102,11 @@ class AliAnaWeights : public TObject {
   void             SwitchOnMCParticlePtWeights ()          { fDoMCParticlePtWeights = kTRUE  ; }
   void             SwitchOffMCParticlePtWeights()          { fDoMCParticlePtWeights = kFALSE ; }
   void             CheckGeneratorName( Bool_t ch )         { fCheckGeneratorName    = ch     ; }
+  void             SwitchOnChargedParticleRaaWeight()      { fApplyRaaWeight        = true   ; }
+  void             SwitchOffChargedParticleRaaWeight()     { fApplyRaaWeight        = false  ; }
 
+  void             PrintParameters();
+  
  private:
     
   Int_t            fDebug ;               ///< Debug level.
@@ -128,6 +133,8 @@ class AliAnaWeights : public TObject {
   
   Bool_t           fCheckGeneratorName;   ///< apply weight only for pi0/eta particle from a particular generator.
   
+  Bool_t           fApplyRaaWeight;       ///< apply weight depending on charged particle Raa
+
   //
   // MC weights, pT hard pythia
   //
@@ -155,7 +162,7 @@ class AliAnaWeights : public TObject {
   AliAnaWeights& operator=(const AliAnaWeights&); 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaWeights, 4) ;
+  ClassDef(AliAnaWeights, 5) ;
   /// \endcond
   
 } ;

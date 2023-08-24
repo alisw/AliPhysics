@@ -1105,8 +1105,13 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
   if(fCollidingSystem == "PbPb"){
     isSelectedCentral     = (mask & AliVEvent::kCentral);
     isSelectedSemiCentral = (mask & AliVEvent::kSemiCentral);
-    isSelectedMB          = (mask & AliVEvent::kMB);
+    isSelectedMB          = (mask & AliVEvent::kINT7);
     isSelectedAny         = (mask & AliVEvent::kAny);
+    
+    if(fYear == 2015 && isSelectedMB)
+      isSelected = kTRUE;
+    else if(fYear == 2018 && (isSelectedMB ||isSelectedCentral|| isSelectedSemiCentral))
+      isSelected = kTRUE;
   }
   
   else if(fCollidingSystem == "pp"){
@@ -1170,7 +1175,8 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 
   
   if(fCollidingSystem == "PbPb"){
-    if(!isSelectedCentral && !isSelectedSemiCentral && !isSelectedMB)  {
+    //    if(!isSelectedCentral && !isSelectedSemiCentral && !isSelectedMB)  {
+    if(!isSelected){   
       PostData(1, fOutputContainer);
       PostData(2, fHistSparseSignal );
       PostData(3, fHistSparseBkg );
@@ -1659,16 +1665,22 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	 
 	  Int_t mcMotherLabel = tparticle->GetMother();
 	  Int_t mcMotherPdg = 0;
-	  AliAODMCParticle *mcMother = (AliAODMCParticle*)arrayMC->At(mcMotherLabel);
 	  
-	  Int_t mcGrandMotherLabel = mcMother->GetMother();
+	  Int_t mcGrandMotherLabel = 0;
 	  Int_t mcGrandMotherPdg = 0; 
-	  AliAODMCParticle *mcGrandMother = (AliAODMCParticle*)arrayMC->At(mcGrandMotherLabel);
-	  
-	  //	  if (mcMotherLabel < -1) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} //RAMONA : era questo 02/03/16
-	  if(mcMotherLabel < 0) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} 
-	  if(mcGrandMotherLabel < 0){mcGrandMotherPdg=0;}else{mcGrandMotherPdg = mcGrandMother->GetPdgCode();}
 
+	  AliAODMCParticle *mcMother = (AliAODMCParticle*)arrayMC->At(mcMotherLabel);
+	
+	  if(mcMother){
+	    mcMotherLabel = mcMother->GetMother();
+	    mcMotherPdg = 0; 
+	
+	    AliAODMCParticle *mcGrandMother = (AliAODMCParticle*)arrayMC->At(mcGrandMotherLabel);
+	    
+	    //	  if (mcMotherLabel < -1) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} //RAMONA : era questo 02/03/16
+	    if(mcMotherLabel < 0) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} 
+	    if(mcGrandMotherLabel < 0){mcGrandMotherPdg=0;}else{mcGrandMotherPdg = mcGrandMother->GetPdgCode();}
+	  }
 	  // if(mcMotherLabel < -1) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} //to run on phojet
 	  // if(mcGrandMotherLabel < -1){mcGrandMotherPdg=0;}else{mcGrandMotherPdg = mcGrandMother->GetPdgCode();}
 
@@ -2015,15 +2027,20 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	  
 	  Int_t mcMotherLabel = tparticle->GetMother();
 	  Int_t mcMotherPdg = 0;
-	  AliAODMCParticle *mcMother = (AliAODMCParticle*)arrayMC->At(mcMotherLabel);
-	  
-	  Int_t mcGrandMotherLabel = mcMother->GetMother();
+	  Int_t mcGrandMotherLabel = 0;
 	  Int_t mcGrandMotherPdg = 0; 
-	  AliAODMCParticle *mcGrandMother = (AliAODMCParticle*)arrayMC->At(mcGrandMotherLabel);
-	  
-	  //	  if (mcMotherLabel < -1) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} //RAMONA : era questo 02/03/16
-	  if(mcMotherLabel < 0) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} 
-	  if(mcGrandMotherLabel < 0){mcGrandMotherPdg=0;}else{mcGrandMotherPdg = mcGrandMother->GetPdgCode();}
+	
+
+	  AliAODMCParticle *mcMother = (AliAODMCParticle*)arrayMC->At(mcMotherLabel);
+	  if(mcMother){
+	    AliAODMCParticle *mcGrandMother = (AliAODMCParticle*)arrayMC->At(mcGrandMotherLabel);
+	    mcGrandMotherLabel = mcMother->GetMother();
+	    mcGrandMotherPdg = 0; 
+	    
+	    //	  if (mcMotherLabel < -1) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} //RAMONA : era questo 02/03/16
+	    if(mcMotherLabel < 0) {mcMotherPdg = 0;} else {mcMotherPdg = mcMother->GetPdgCode();} 
+	    if(mcGrandMotherLabel < 0){mcGrandMotherPdg=0;}else{mcGrandMotherPdg = mcGrandMother->GetPdgCode();}
+	  }
 	  // cout<<"mcMotherlabel: "<<mcMotherLabel<<endl;
 
 	  //Mum id
@@ -2058,8 +2075,12 @@ void AliAnalysisTaskKPFemto::UserExec(Option_t *) {
 	if (TMath::Abs(dz[0])>fIPCutxySec ) continue;  // 2.4 proton 1. pion 
 	if (TMath::Abs(dz[1])>fIPCutzSec ) continue;  // 3.2  proton 1. pion
       } else {
-	if (TMath::Abs(dzg[0])>fIPCutxySec ) continue;  // 0.1 proton/pion
-	if (TMath::Abs(dzg[1])>fIPCutzSec ) continue; // 0.15 proton/pion
+	dz[0] = dzg[0];
+	dz[1] = dzg[1];
+	if (TMath::Abs(dz[0])>fIPCutxySec ) continue;  // 0.1 proton/pion
+	if (TMath::Abs(dz[1])>fIPCutzSec ) continue;   // 0.15 proton/pion
+	// if (TMath::Abs(dzg[0])>fIPCutxySec ) continue;  // 0.1 proton/pion
+	// if (TMath::Abs(dzg[1])>fIPCutzSec ) continue; // 0.15 proton/pion
       }
       
       if (track->Pt()>=fMinPtForSec && track->Pt()< fMomemtumLimitForTOFPIDsecond){	

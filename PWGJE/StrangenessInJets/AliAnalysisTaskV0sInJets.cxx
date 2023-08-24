@@ -52,7 +52,7 @@ ClassImp(AliAnalysisTaskV0sInJets)
 const Int_t AliAnalysisTaskV0sInJets::fgkiCentBinRanges[AliAnalysisTaskV0sInJets::fgkiNBinsCent] = {10}; // only central
 
 // axis: pT of V0
-const Double_t AliAnalysisTaskV0sInJets::fgkdBinsPtV0[2] = {0, 12};
+const Double_t AliAnalysisTaskV0sInJets::fgkdBinsPtV0[2] = {0, 15};
 const Int_t AliAnalysisTaskV0sInJets::fgkiNBinsPtV0 = sizeof(AliAnalysisTaskV0sInJets::fgkdBinsPtV0) / sizeof((AliAnalysisTaskV0sInJets::fgkdBinsPtV0)[0]) - 1;
 const Int_t AliAnalysisTaskV0sInJets::fgkiNBinsPtV0Init = int(((AliAnalysisTaskV0sInJets::fgkdBinsPtV0)[AliAnalysisTaskV0sInJets::fgkiNBinsPtV0] - (AliAnalysisTaskV0sInJets::fgkdBinsPtV0)[0]) / 0.1); // bin width 0.1 GeV/c
 // axis: pT of jets

@@ -46,6 +46,8 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   virtual Int_t IsSelected(TObject* obj, Int_t selectionLevel){ return IsSelected(obj,selectionLevel,0); }
   virtual Int_t IsSelected(TObject* obj, Int_t selectionLevel, AliAODEvent* aod, Bool_t* bCutArray);
 
+  Bool_t IsThisDaughterSelected(AliAODTrack *track, AliAODVertex *primary, const AliAODEvent* aod);
+
   //Last three for MVA, first two for standard analysis (TBD: Merge them?)
   Int_t IsD0FromBPlusSelected(Double_t ptBPlus, TObject* obj,Int_t selectionLevel, AliAODEvent* aod, Bool_t bCutArray[75]);
   Int_t IsD0forD0ptbinSelected(TObject* obj,Int_t selectionLevel, AliAODEvent* aod, Bool_t* bCutArray);
@@ -213,6 +215,9 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   void SetSigmaForCutOptimization(Double_t value, Int_t iPtBin){fSigmaForCutOptimization[iPtBin] = value; return;}
   Double_t GetSigmaForCutOptimization(Int_t iPtBin) const {return fSigmaForCutOptimization[iPtBin];}
 
+  void SetNumberOfSigmaBinsForCutOptimization(Int_t nSigma){fNumberOfSigmaBinsForCutOptimization = nSigma; return;}
+  Int_t GetNumberOfSigmaBinsForCutOptimization() const {return fNumberOfSigmaBinsForCutOptimization;}
+
  protected:
 
   //Pion from Bplus not really soft, but re-using code from Dstar
@@ -282,9 +287,10 @@ class AliRDHFCutsBPlustoD0Pi : public AliRDHFCuts
   Bool_t * fIsUpperCutForCutOptimization;             //[fnVariablesForCutOptimization]
   Int_t * fCutIndexForCutOptimization;                //[fnVariablesForCutOptimization]
   Float_t * fSigmaForCutOptimization;                 //[fnPtBins]
+  Int_t fNumberOfSigmaBinsForCutOptimization;         ///
 
   /// \cond CLASSIMP    
-  ClassDef(AliRDHFCutsBPlustoD0Pi,4) ///
+  ClassDef(AliRDHFCutsBPlustoD0Pi,5) ///
   /// \endcond
 };
 

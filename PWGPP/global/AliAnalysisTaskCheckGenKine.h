@@ -87,6 +87,7 @@ class AliAnalysisTaskCheckGenKine : public AliAnalysisTaskSE {
   TH3F*  fPrimSec[kMaxNumOfSpeciesToCheck];      //!<! histo with prim/sec, prod radius, pt
   TH2F*  fNumOfDau[kMaxNumOfSpeciesToCheck];     //!<! histo with n daughters per species
   TH2F*  fDecLen[kMaxNumOfSpeciesToCheck];       //!<! histo with decay length per species
+  TH2F*  fCt[kMaxNumOfSpeciesToCheck];           //!<! histo with ct per species
   TH2F*  fMassDiff[kMaxNumOfSpeciesToCheck];     //!<! histo of mass mother - inv mass daughters
   TH2F*  fMomDiff[kMaxNumOfSpeciesToCheck];      //!<! histo of mass mother - inv mass daughters
   TH3F*  fPrimSecb[kMaxNumOfSpeciesToCheck];     //!<! histo with prim/sec, prod radius, impact parameter (A-A)
@@ -95,7 +96,7 @@ class AliAnalysisTaskCheckGenKine : public AliAnalysisTaskSE {
   Int_t  fNumOfSpeciesToCheck;                   // actual number of species to be checked
     
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskCheckGenKine,3);
+  ClassDef(AliAnalysisTaskCheckGenKine,4);
   /// \endcond
 };
 

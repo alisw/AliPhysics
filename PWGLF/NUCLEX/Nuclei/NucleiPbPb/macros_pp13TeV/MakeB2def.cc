@@ -155,12 +155,12 @@ void MakeB2def(){
 	//
   legPrel->AddEntry(pp13TeVSyst,"#bar{d}, pp, #sqrt{#it{s}} = 13 TeV","pf");
   //legPrel->AddEntry(pp13TeVSystMB,"#bar{d} (INEL), pp, #sqrt{#it{s}} = 13 TeV","pf");
-  legPrel->AddEntry(pp7TeVSyst,"d+#bar{d}, pp, #sqrt{#it{s}} = 7 TeV (PLB 794 (2019) 50-63)","pf");
+  legPrel->AddEntry(pp7TeVSyst,"d+#bar{d}, pp, #sqrt{#it{s}} = 7 TeV", "pf");// (PLB 794 (2019) 50-63)","pf");
   //legPrel->AddEntry((TObject*)nullptr,"V0M Multiplicity Classes","");
-  legPrel->AddEntry(pPb5TeVSyst,"d+#bar{d}, p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV (arXiv:1906.03136)","pf");
+  legPrel->AddEntry(pPb5TeVSyst,"d+#bar{d}, p-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV", "pf");// (arXiv:1906.03136)","pf");
   //legPrel->AddEntry((TObject*)nullptr,"V0A Multiplicity Classes (Pb-side)","");
   //legPrel->AddEntry(PbPb5TeVSyst,"d, Pb-Pb, #sqrt{#it{s}_{NN}} = 5.02 TeV","pf");
-  legPrel->AddEntry(PbPb2d7TeVSyst,"d, Pb-Pb, #sqrt{#it{s}_{NN}} = 2.76 TeV (PRC 93 (2015) 024917)","pf");
+  legPrel->AddEntry(PbPb2d7TeVSyst,"d, Pb-Pb, #sqrt{#it{s}_{NN}} = 2.76 TeV", "pf");// (PRC 93 (2015) 024917)","pf");
 	TLegendEntry *header = (TLegendEntry*)legPrel->GetListOfPrimitives()->First();
 	header->SetTextSize(0.04);
   legPrel->Draw();

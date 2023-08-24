@@ -48,9 +48,9 @@
 #include "AliTrackContainer.h"
 #include "AliVEvent.h"
 
-ClassImp(EmcalTriggerJets::AliAnalysisTaskEmcalClustersInJets)
+ClassImp(PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalClustersInJets)
 
-using namespace EmcalTriggerJets;
+using namespace PWGJE::EMCALJetTasks;
 
 AliAnalysisTaskEmcalClustersInJets::AliAnalysisTaskEmcalClustersInJets():
   AliAnalysisTaskEmcalJet(),
@@ -150,6 +150,8 @@ AliAnalysisTaskEmcalClustersInJets *AliAnalysisTaskEmcalClustersInJets::AddTaskE
   switch(jettype){
     case AliJetContainer::kFullJet: jetname = "fulljets"; break;
     case AliJetContainer::kNeutralJet: jetname = "neutraljets"; break;
+    case AliJetContainer::kChargedJet:
+    case AliJetContainer::kUndefinedJetType: break;
   };
 
   if(!jetname.length()){
@@ -165,7 +167,7 @@ AliAnalysisTaskEmcalClustersInJets *AliAnalysisTaskEmcalClustersInJets::AddTaskE
 
 
   // adding cluster container
-  auto nameclusters = EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD);
+  auto nameclusters = AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD);
   auto clusters = task->AddClusterContainer(nameclusters);
   task->SetNameClusterContainer(nameclusters);
   clusters->SetClusTimeCut(-20e-9, 15e-9);
@@ -179,7 +181,7 @@ AliAnalysisTaskEmcalClustersInJets *AliAnalysisTaskEmcalClustersInJets::AddTaskE
 
   AliTrackContainer *tracks = nullptr;
   if(jettype == AliJetContainer::kFullJet){
-    tracks = task->AddTrackContainer(EMCalTriggerPtAnalysis::AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    tracks = task->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
     tracks->SetMinPt(0.15);
   }
 

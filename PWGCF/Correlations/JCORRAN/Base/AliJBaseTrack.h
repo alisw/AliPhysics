@@ -53,12 +53,13 @@ class AliJBaseTrack : public TLorentzVector {
 
         Int_t         GetTriggBin()     const { return fTriggID; }
         Int_t         GetAssocBin()     const { return fAssocID; }
-        Double32_t    GetTrackEff()     const { 
-            if(fTracEff==-1) {  cout<<"AliJBaseTrack: Uninitilized track eff " <<endl;  exit(-1);
-            } else return fTracEff;  }
+        Double_t      GetTrackEff()     const { 
+            /*if(fTracEff==-1) {  cout<<"AliJBaseTrack: Uninitilized track eff " <<endl;  exit(-1);
+            } else return fTracEff;*/ return fTracEff; }
         Bool_t        IsInTriggerBin()  const { return fTriggID>=0; }
         Bool_t        IsInAssocBin()    const { return fAssocID>=0; }
-        Double_t      GetWeight()       const { return fWeight;}             
+        Double_t      GetWeight()       const { return fWeight;}
+        Float_t       GetCentWeight()   const { return fCentWeight; }
         Int_t         GetMCIndex()      const { return fMCIndex;}
 
         void SetID      (const int id){fID=id;}
@@ -71,9 +72,10 @@ class AliJBaseTrack : public TLorentzVector {
 
         void SetTriggBin(const int id){fTriggID = id;}
         void SetAssocBin(const int id){fAssocID = id;}
-        void SetTrackEff(const Double32_t inEff){fTracEff = inEff;}
+        void SetTrackEff(const Double_t inEff){fTracEff = inEff;}
 
         void SetWeight(Double_t weight) { fWeight = weight;}
+        void SetCentWeight(Float_t centWeight) { fCentWeight = centWeight;}
         void SetMCIndex(Int_t idx) {      fMCIndex = idx;}
 
         void SetPrimary(Bool_t b=kTRUE){ SetFlag(kPrimary,b);}
@@ -97,11 +99,12 @@ class AliJBaseTrack : public TLorentzVector {
         UInt_t        fFlags;         // store series of any boolen value.
 
         Int_t         fTriggID, fAssocID; //!   //id of trigger and assoc particle 
-        Double32_t    fTracEff;           //!   //track efficiency
+        Double_t      fTracEff;           //!   //track efficiency
         Int_t         fMCIndex;           //!   //index of corresp. MC track
         Double_t      fWeight;            //!   //particle weight
+        Float_t       fCentWeight;        //!   //centrality weight for LHC15o.
 
-        ClassDef(AliJBaseTrack,2)
+        ClassDef(AliJBaseTrack,3)
 };
 
 #endif

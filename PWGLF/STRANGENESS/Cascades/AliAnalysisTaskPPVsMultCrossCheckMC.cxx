@@ -114,7 +114,7 @@ fHistTracklets0815True_DataSelection(0), fHistTracklets0815True_MCSelection(0),
 fHistTracklets0815CentVsMidRapidityTrue_DataSelection(0), fHistTracklets0815VsMidRapidityTrue_DataSelection(0), fHistTracklets0815TrueVsMidRapidityTrue_DataSelection(0),
 fHistTracklets0815CentVsMidRapidityTrue_MCSelection(0), fHistTracklets0815VsMidRapidityTrue_MCSelection(0), fHistTracklets0815TrueVsMidRapidityTrue_MCSelection(0),
 ////
-fkMultSelection ( kFALSE ), fTrigType(AliVEvent::kMB), fTrigName(""), fkSelectTriggerByName ( kFALSE ), fkInel10MCSelection ( kFALSE )
+fkMultSelection ( kFALSE ), fTrigType(AliVEvent::kMB), fTrigName(""), fkSelectTriggerByName ( kFALSE ), fkInel10MCSelection ( kFALSE ), fMultPercentileBinning(0)
 {
     //Empty constructor (not to be used, always pass name...)
     for(Int_t ih=0; ih<9; ih++){
@@ -171,7 +171,7 @@ fHistTracklets0815True_DataSelection(0), fHistTracklets0815True_MCSelection(0),
 fHistTracklets0815CentVsMidRapidityTrue_DataSelection(0), fHistTracklets0815VsMidRapidityTrue_DataSelection(0), fHistTracklets0815TrueVsMidRapidityTrue_DataSelection(0),
 fHistTracklets0815CentVsMidRapidityTrue_MCSelection(0), fHistTracklets0815VsMidRapidityTrue_MCSelection(0), fHistTracklets0815TrueVsMidRapidityTrue_MCSelection(0),
 ////
-fkMultSelection ( kFALSE ), fTrigType(AliVEvent::kMB), fTrigName(""), fkSelectTriggerByName ( kFALSE ), fkInel10MCSelection ( kFALSE )
+fkMultSelection ( kFALSE ), fTrigType(AliVEvent::kMB), fTrigName(""), fkSelectTriggerByName ( kFALSE ), fkInel10MCSelection ( kFALSE ), fMultPercentileBinning(0)
 {
     for(Int_t ih=0; ih<9; ih++){
         fHistPt_Generated[ih] = 0x0;
@@ -287,11 +287,34 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     //Settings for transverse momentum
     Int_t lNPtBins = 300; //50MeV/c precision
     Double_t lMaxPt = 15.0;
+    Float_t lPtBins[1000];
+    for (int i = 0; i <= lNPtBins; i++) lPtBins[i] = 0.05*i;
     
     //Settings for charged particle counters (integers!)
     Int_t lNNchBins = 400;
     Double_t lLowNchBound  = -0.5;
     Double_t lHighNchBound = -0.5 + ((double)(lNNchBins));
+    Float_t lNchBins[1000];
+    for (int i = 0; i <= lNNchBins; i++) lNchBins[i] = -0.5 + i;
+    
+    //Settings for multiplicity percentiles
+    Int_t lNMultPercentileBins = 100;
+    Float_t lMultPercentileBins[200];
+    if (fMultPercentileBinning == 1){
+        // subdivide 0-1% bin for high-multiplicity analyses
+        lNMultPercentileBins = 107;
+        lMultPercentileBins[0] = 0;
+        lMultPercentileBins[1] = 0.001;
+        lMultPercentileBins[2] = 0.005;
+        lMultPercentileBins[3] = 0.01;
+        lMultPercentileBins[4] = 0.05;
+        lMultPercentileBins[5] = 0.1;
+        lMultPercentileBins[6] = 0.2;
+        lMultPercentileBins[7] = 0.5;
+        for (int i = 1; i <= 100; i++) lMultPercentileBins[7+i] = i;
+    } else {
+        for (int i = 0; i <= 100; i++) lMultPercentileBins[i] = i;
+    }
     
     //Settings for V0M amplitudes (floating points)
     Int_t lNAmplitudeBins = 2000;
@@ -304,11 +327,11 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     //Main Output: Histograms
     // V0M
     if(! fHistV0M_DataSelection ) {
-        fHistV0M_DataSelection = new TH1F("fHistV0M_DataSelection","",100,0,100);
+        fHistV0M_DataSelection = new TH1F("fHistV0M_DataSelection","",lNMultPercentileBins,lMultPercentileBins);
         fListHist->Add(fHistV0M_DataSelection);
     }
     if(! fHistV0M_MCSelection ) {
-        fHistV0M_MCSelection = new TH1F("fHistV0M_MCSelection","",100,0,100);
+        fHistV0M_MCSelection = new TH1F("fHistV0M_MCSelection","",lNMultPercentileBins,lMultPercentileBins);
         fListHist->Add(fHistV0M_MCSelection);
     }
     if(! fHistV0MAmplitude_DataSelection ) {
@@ -329,11 +352,11 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     }
     // |Ntrckl| < 0.8
     if(! fHistTracklets08Cent_DataSelection ) {
-        fHistTracklets08Cent_DataSelection = new TH1F("fHistTracklets08Cent_DataSelection","",100,0,100);
+        fHistTracklets08Cent_DataSelection = new TH1F("fHistTracklets08Cent_DataSelection","",lNMultPercentileBins,lMultPercentileBins);
         fListHist->Add(fHistTracklets08Cent_DataSelection);
     }
     if(! fHistTracklets08Cent_MCSelection ) {
-        fHistTracklets08Cent_MCSelection = new TH1F("fHistTracklets08Cent_MCSelection","",100,0,100);
+        fHistTracklets08Cent_MCSelection = new TH1F("fHistTracklets08Cent_MCSelection","",lNMultPercentileBins,lMultPercentileBins);
         fListHist->Add(fHistTracklets08Cent_MCSelection);
     }
     if(! fHistTracklets08_DataSelection ) {
@@ -354,11 +377,11 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     }
     // 0.8 < |Ntrckl| < 1.5
     if(! fHistTracklets0815Cent_DataSelection ) {
-        fHistTracklets0815Cent_DataSelection = new TH1F("fHistTracklets0815Cent_DataSelection","",100,0,100);
+        fHistTracklets0815Cent_DataSelection = new TH1F("fHistTracklets0815Cent_DataSelection","",lNMultPercentileBins,lMultPercentileBins);
         fListHist->Add(fHistTracklets0815Cent_DataSelection);
     }
     if(! fHistTracklets0815Cent_MCSelection ) {
-        fHistTracklets0815Cent_MCSelection = new TH1F("fHistTracklets0815Cent_MCSelection","",100,0,100);
+        fHistTracklets0815Cent_MCSelection = new TH1F("fHistTracklets0815Cent_MCSelection","",lNMultPercentileBins,lMultPercentileBins);
         fListHist->Add(fHistTracklets0815Cent_MCSelection);
     }
     if(! fHistTracklets0815_DataSelection ) {
@@ -381,7 +404,7 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     // Correlations V0M
     //Correlation between mid-rapidity and forward V0M percentile
     if(! fHistV0MVsMidRapidityTrue_DataSelection ) {
-        fHistV0MVsMidRapidityTrue_DataSelection = new TH2F("fHistV0MVsMidRapidityTrue_DataSelection","",100,0,100,lNNchBins,lLowNchBound,lHighNchBound);
+        fHistV0MVsMidRapidityTrue_DataSelection = new TH2F("fHistV0MVsMidRapidityTrue_DataSelection","",lNMultPercentileBins,lMultPercentileBins,lNNchBins,lNchBins);
         fListHist->Add(fHistV0MVsMidRapidityTrue_DataSelection);
     }
     //Correlation between mid-rapidity and forward V0M percentile
@@ -397,7 +420,7 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     
     //Correlation between mid-rapidity and forward V0M percentile
     if(! fHistV0MVsMidRapidityTrue_MCSelection ) {
-        fHistV0MVsMidRapidityTrue_MCSelection = new TH2F("fHistV0MVsMidRapidityTrue_MCSelection","",100,0,100,lNNchBins,lLowNchBound,lHighNchBound);
+        fHistV0MVsMidRapidityTrue_MCSelection = new TH2F("fHistV0MVsMidRapidityTrue_MCSelection","",lNMultPercentileBins,lMultPercentileBins,lNNchBins,lNchBins);
         fListHist->Add(fHistV0MVsMidRapidityTrue_MCSelection);
     }
     //Correlation between mid-rapidity and forward V0M percentile
@@ -414,7 +437,7 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     // Correlations |Ntrackl| < 0.8
     //Correlation between mid-rapidity and central Ntrkl08 percentile
     if(! fHistTracklets08CentVsMidRapidityTrue_DataSelection ) {
-        fHistTracklets08CentVsMidRapidityTrue_DataSelection = new TH2F("fHistTracklets08CentVsMidRapidityTrue_DataSelection","",100,0,100,lNNchBins,lLowNchBound,lHighNchBound);
+        fHistTracklets08CentVsMidRapidityTrue_DataSelection = new TH2F("fHistTracklets08CentVsMidRapidityTrue_DataSelection","",lNMultPercentileBins,lMultPercentileBins,lNNchBins,lNchBins);
         fListHist->Add(fHistTracklets08CentVsMidRapidityTrue_DataSelection);
     }
     //Correlation between mid-rapidity and central Ntrkl08 percentile
@@ -430,7 +453,7 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
 
     //Correlation between mid-rapidity and central Ntrkl08 percentile
     if(! fHistTracklets08CentVsMidRapidityTrue_MCSelection ) {
-        fHistTracklets08CentVsMidRapidityTrue_MCSelection = new TH2F("fHistTracklets08CentVsMidRapidityTrue_MCSelection","",100,0,100,lNNchBins,lLowNchBound,lHighNchBound);
+        fHistTracklets08CentVsMidRapidityTrue_MCSelection = new TH2F("fHistTracklets08CentVsMidRapidityTrue_MCSelection","",lNMultPercentileBins,lMultPercentileBins,lNNchBins,lNchBins);
         fListHist->Add(fHistTracklets08CentVsMidRapidityTrue_MCSelection);
     }
     //Correlation between mid-rapidity and central Ntrkl08 percentile
@@ -447,7 +470,7 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     // Correlations 0.8 < |Ntrackl| < 1.5
     //Correlation between mid-rapidity and central Ntrkl0815 percentile
     if(! fHistTracklets0815CentVsMidRapidityTrue_DataSelection ) {
-        fHistTracklets0815CentVsMidRapidityTrue_DataSelection = new TH2F("fHistTracklets0815CentVsMidRapidityTrue_DataSelection","",100,0,100,lNNchBins,lLowNchBound,lHighNchBound);
+        fHistTracklets0815CentVsMidRapidityTrue_DataSelection = new TH2F("fHistTracklets0815CentVsMidRapidityTrue_DataSelection","",lNMultPercentileBins,lMultPercentileBins,lNNchBins,lNchBins);
         fListHist->Add(fHistTracklets0815CentVsMidRapidityTrue_DataSelection);
     }
     //Correlation between mid-rapidity and central Ntrkl0815 percentile
@@ -463,7 +486,7 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
 
     //Correlation between mid-rapidity and central Ntrkl0815 percentile
     if(! fHistTracklets0815CentVsMidRapidityTrue_MCSelection ) {
-        fHistTracklets0815CentVsMidRapidityTrue_MCSelection = new TH2F("fHistTracklets0815CentVsMidRapidityTrue_MCSelection","",100,0,100,lNNchBins,lLowNchBound,lHighNchBound);
+        fHistTracklets0815CentVsMidRapidityTrue_MCSelection = new TH2F("fHistTracklets0815CentVsMidRapidityTrue_MCSelection","",lNMultPercentileBins,lMultPercentileBins,lNNchBins,lNchBins);
         fListHist->Add(fHistTracklets0815CentVsMidRapidityTrue_MCSelection);
     }
     //Correlation between mid-rapidity and central Ntrkl0815 percentile
@@ -500,19 +523,19 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     //2-Dimensional Histograms
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsV0M_Generated[ih] ) {
-            fHistPtVsV0M_Generated[ih] = new TH2F(Form("fHistPtVsV0M_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            fHistPtVsV0M_Generated[ih] = new TH2F(Form("fHistPtVsV0M_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,lPtBins,lNMultPercentileBins,lMultPercentileBins);
             fListHist->Add(fHistPtVsV0M_Generated[ih]);
         }
     }
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsV0M_DataSelection[ih] ) {
-            fHistPtVsV0M_DataSelection[ih] = new TH2F(Form("fHistPtVsV0M_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            fHistPtVsV0M_DataSelection[ih] = new TH2F(Form("fHistPtVsV0M_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,lPtBins,lNMultPercentileBins,lMultPercentileBins);
             fListHist->Add(fHistPtVsV0M_DataSelection[ih]);
         }
     }
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsV0M_MCSelection[ih] ) {
-            fHistPtVsV0M_MCSelection[ih] = new TH2F(Form("fHistPtVsV0M_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            fHistPtVsV0M_MCSelection[ih] = new TH2F(Form("fHistPtVsV0M_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,lPtBins,lNMultPercentileBins,lMultPercentileBins);
             fListHist->Add(fHistPtVsV0M_MCSelection[ih]);
         }
     }
@@ -562,15 +585,15 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     //2-Dimensional Histograms
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsTracklets08Cent_Generated[ih] ) {
-            fHistPtVsTracklets08Cent_Generated[ih] = new TH2F(Form("fHistPtVsTracklets08Cent_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            fHistPtVsTracklets08Cent_Generated[ih] = new TH2F(Form("fHistPtVsTracklets08Cent_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,lPtBins,lNMultPercentileBins,lMultPercentileBins);
             fListHist->Add(fHistPtVsTracklets08Cent_Generated[ih]);
         }
         if(! fHistPtVsTracklets08Cent_DataSelection[ih] ) {
-            fHistPtVsTracklets08Cent_DataSelection[ih] = new TH2F(Form("fHistPtVsTracklets08Cent_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            fHistPtVsTracklets08Cent_DataSelection[ih] = new TH2F(Form("fHistPtVsTracklets08Cent_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,lPtBins,lNMultPercentileBins,lMultPercentileBins);
             fListHist->Add(fHistPtVsTracklets08Cent_DataSelection[ih]);
         }
         if(! fHistPtVsTracklets08Cent_MCSelection[ih] ) {
-            fHistPtVsTracklets08Cent_MCSelection[ih] = new TH2F(Form("fHistPtVsTracklets08Cent_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            fHistPtVsTracklets08Cent_MCSelection[ih] = new TH2F(Form("fHistPtVsTracklets08Cent_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,lPtBins,lNMultPercentileBins,lMultPercentileBins);
             fListHist->Add(fHistPtVsTracklets08Cent_MCSelection[ih]);
         }
        if(! fHistPtVsTracklets08_Generated[ih] ) {
@@ -602,15 +625,15 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserCreateOutputObjects()
     //2-Dimensional Histograms
     for(Int_t ih=0; ih<9; ih++){
         if(! fHistPtVsTracklets0815Cent_Generated[ih] ) {
-            fHistPtVsTracklets0815Cent_Generated[ih] = new TH2F(Form("fHistPtVsTracklets0815Cent_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            fHistPtVsTracklets0815Cent_Generated[ih] = new TH2F(Form("fHistPtVsTracklets0815Cent_Generated_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,lPtBins,lNMultPercentileBins,lMultPercentileBins);
             fListHist->Add(fHistPtVsTracklets0815Cent_Generated[ih]);
         }
         if(! fHistPtVsTracklets0815Cent_DataSelection[ih] ) {
-            fHistPtVsTracklets0815Cent_DataSelection[ih] = new TH2F(Form("fHistPtVsTracklets0815Cent_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            fHistPtVsTracklets0815Cent_DataSelection[ih] = new TH2F(Form("fHistPtVsTracklets0815Cent_DataSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,lPtBins,lNMultPercentileBins,lMultPercentileBins);
             fListHist->Add(fHistPtVsTracklets0815Cent_DataSelection[ih]);
         }
         if(! fHistPtVsTracklets0815Cent_MCSelection[ih] ) {
-            fHistPtVsTracklets0815Cent_MCSelection[ih] = new TH2F(Form("fHistPtVsTracklets0815Cent_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,0,lMaxPt,100,0,100);
+            fHistPtVsTracklets0815Cent_MCSelection[ih] = new TH2F(Form("fHistPtVsTracklets0815Cent_MCSelection_%s",lPartNames[ih].Data()),    "Generated;p_{T} (GeV/c)",lNPtBins,lPtBins,lNMultPercentileBins,lMultPercentileBins);
             fListHist->Add(fHistPtVsTracklets0815Cent_MCSelection[ih]);
         }
        if(! fHistPtVsTracklets0815_Generated[ih] ) {
@@ -816,13 +839,18 @@ void AliAnalysisTaskPPVsMultCrossCheckMC::UserExec(Option_t *)
     Int_t nSPDtrackl0815 = -1;
     if ( !lPureMonteCarlo )
     {
-     fV0MAmplitude = GetV0MAmplitude( lESDevent );
-     if(fkMultSelection){
-       AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
-       nSPDtrackl08 = MultSelection->GetEstimator("SPDTracklets08")->GetValue(); // raw value not corrected for z-vtx
-       nSPDtrackl0815 = MultSelection->GetEstimator("SPDTracklets08to15")->GetValue(); // raw value not corrected for z-vtx
-     }
-     
+      fV0MAmplitude = GetV0MAmplitude( lESDevent );
+      if(fkMultSelection){
+        AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
+        if( MultSelection ){
+          AliMultEstimator* est08 = MultSelection->GetEstimator("SPDTracklets08");
+          if(est08) nSPDtrackl08 = est08->GetValue(); // raw value not corrected for z-vtx
+          AliMultEstimator* est0815 = MultSelection->GetEstimator("SPDTracklets08to15");
+          if(est0815) nSPDtrackl0815 = est0815->GetValue(); // raw value not corrected for z-vtx
+        } else {
+          AliError("Missing AliMultSelection object");
+        }
+      }
     }
     //------------------------------------------------
     // Get All Conditionals

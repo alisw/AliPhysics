@@ -6,7 +6,10 @@
 
 // ClusterSelection
 #pragma link C++ class AliPHOSTriggerUtils+;
+#pragma link C++ class AliCaloTriggerMimicHelper+;
 
+// CorrectionFW
+#pragma link C++ class AliPHOSCorrectionFW+;
 
 // PHOS_Run2
 #pragma link C++ class AliAnalysisTaskPHOSObjectCreator+;
@@ -49,6 +52,9 @@
 //PHOS_EpRatio
 #pragma link C++ class AliAnalysisTaskEpRatio+;
 
+//PHOS_Fluctuations
+#pragma link C++ class AliAnalysisPHOSFluctuations+;
+
 //PHOS_PbPb_MC
 #pragma link C++ class AliPHOSHijingEfficiency+;
 
@@ -60,6 +66,7 @@
 // PHOS_Run2embedding
 #pragma link C++ class AliPHOSEmbeddingRun2+;
 #pragma link C++ class AliPHOSEventCounter+;
+#pragma link C++ class AliPHOSEmbedggHBT+;
 
 //PHOS_GAFlow
 #pragma link C++ class AliAnalysisTaskThermalGAFlow+;
@@ -73,6 +80,7 @@
 
 // PHOS_Tagging
 #pragma link C++ class AliAnalysisTaskTaggedPhotons+;
+#pragma link C++ class AliAnalysisPhotonDDA+;
 
 // PHOS_TriggerQA
 #pragma link C++ class AliAnalysisTaskPHOSTriggerQA+;
@@ -113,6 +121,7 @@
 #pragma link C++ class AliPP13SelectionWeightsMC+;
 #pragma link C++ class AliPP13SelectionWeightsFeeddown+;
 #pragma link C++ class AliPP13SelectionWeightsSPMC+;
+#pragma link C++ class AliPP13SelectionWeightsScan+;
 #pragma link C++ class AliPP13DetectorHistogram+;
 #pragma link C++ class SelectionLimits+;
 #pragma link C++ class AliPP13PhysicsSelection+;
@@ -140,4 +149,12 @@
 
 //Resonances
 #pragma link C++ class AliAnalysisPHOSResonances+ ;
+
+//Nbar
+#pragma link C++ class AliAnalysisSigmaBarCharged+ ;
+
+//Gamma
+#pragma link C++ class AliAnalysisTaskGammaPHOSPP+ ;
+#pragma link C++ class AliAnalysisTaskPHOSPbPbQARun2+;
+
 #endif

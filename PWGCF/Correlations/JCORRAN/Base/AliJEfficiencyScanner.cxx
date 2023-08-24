@@ -207,7 +207,7 @@ AliJEfficiencyScanner::~AliJEfficiencyScanner()
 void AliJEfficiencyScanner::UserCreateOutputObjects()
 {  
     //=== create the jcorran outputs objects
-    cout<<"DEBUG Start AliJEfficiencyScanner::UserCreateOutputObjects() "<<"\t"<<gDirectory<<endl;
+  cout<<"DEBUG Start AliJEfficiencyScanner::UserCreateOutputObjects() "<<"\t"<<gDirectory->GetName()<<endl;
 
     double ptbin[300] = {0};
     double pt = 0;

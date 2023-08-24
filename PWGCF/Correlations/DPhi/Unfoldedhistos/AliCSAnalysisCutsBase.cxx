@@ -17,23 +17,29 @@
 #include "AliAnalysisManager.h"
 #include "AliVEvent.h"
 #include "AliCSAnalysisCutsBase.h"
+#include "AliDummyHandler.h"
 #include "AliMCEventHandler.h"
 #include "AliInputEventHandler.h"
 #include "AliMultiInputEventHandler.h"
+#include "AliMCGenHandler.h"
 
 /// \file AliCSAnalysisCutsBase.cxx
 /// \brief Implementation of base analysis cuts class within the correlation studies analysis
 
 TString                             AliCSAnalysisCutsBase::fgPeriodName = "";
+TString                             AliCSAnalysisCutsBase::fgOnTheFlyProduction = "";
 AliCSAnalysisCutsBase::ProdPeriods  AliCSAnalysisCutsBase::fgDataPeriod = AliCSAnalysisCutsBase::kNoPeriod;
 AliCSAnalysisCutsBase::ProdPeriods  AliCSAnalysisCutsBase::fgAnchorPeriod = AliCSAnalysisCutsBase::kNoPeriod;
 AliCSAnalysisCutsBase::EnergyValue  AliCSAnalysisCutsBase::fgEnergy = AliCSAnalysisCutsBase::kUnset;
 Bool_t                              AliCSAnalysisCutsBase::fgIsMC = kFALSE;
 Bool_t                              AliCSAnalysisCutsBase::fgIsMConlyTruth = kFALSE;
+bool                                AliCSAnalysisCutsBase::fgIsOnTheFlyMC = false;
 AliInputEventHandler               *AliCSAnalysisCutsBase::fgInputHandler = NULL;
-AliMCEventHandler                  *AliCSAnalysisCutsBase::fgMCHandler = NULL;
+AliInputEventHandler               *AliCSAnalysisCutsBase::fgMCHandler = NULL;
 Bool_t                              AliCSAnalysisCutsBase::fgIsESD = kTRUE;
 TClonesArray                       *AliCSAnalysisCutsBase::fgMCArray = NULL;
+const AliVVertex* AliCSAnalysisCutsBase::fVertex = nullptr;
+double AliCSAnalysisCutsBase::fMagField = 0.0;
 
 /// Default constructor for serialization
 AliCSAnalysisCutsBase::AliCSAnalysisCutsBase() :
@@ -79,6 +85,21 @@ AliCSAnalysisCutsBase::~AliCSAnalysisCutsBase()
 {
   if (fParameters != NULL) delete [] fParameters;
   if (fCutsString != NULL) delete [] fCutsString;
+}
+
+/// (Un)Set the name of the MC on the fly production
+/// \param ofp the name of the MC on the fly production
+/// If lengt of the ofp is zero the on the fly flag is unset
+void AliCSAnalysisCutsBase::SetOnTheFlyMCProduction(TString &ofp) {
+  AliInfoClass(TString::Format("Setting it to %s", ofp.Data()));
+  if (ofp.Length() != 0) {
+    fgIsOnTheFlyMC = true;
+    fgOnTheFlyProduction = ofp;
+  }
+  else {
+    fgIsOnTheFlyMC = false;
+    fgOnTheFlyProduction = "";
+  }
 }
 
 /// The run to analyze has potentially changed
@@ -214,382 +235,410 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
     fgAnchorPeriod = kLHC16l;
     fgEnergy = k13TeV;
 
-  // LHC17 XeXe periods
+    // LHC16 pPb periods
+  } else if (szLHCPeriod.CompareTo("LHC16q") == 0 || szLHCPeriod.CompareTo("LHC16t") == 0) {
+    fgDataPeriod = kLHC16qt;
+    fgAnchorPeriod = kLHC16qt;
+    fgEnergy = k5TeV;
+
+    // LHC17 XeXe periods
   } else if (szLHCPeriod.CompareTo("LHC17n") == 0) {
     fgDataPeriod = kLHC17n;
     fgAnchorPeriod = kLHC17n;
     fgEnergy = kXeXe5440GeV;
 
-  // LHC10x anchored MCs
-  } else if (szLHCPeriod.CompareTo("LHC10d1") == 0){
+    // LHC17 pp periods
+  } else if (szLHCPeriod.CompareTo("LHC17p") == 0 || szLHCPeriod.CompareTo("LHC17q") == 0) {
+    fgDataPeriod = kLHC17pq;
+    fgAnchorPeriod = kLHC17pq;
+    fgEnergy = k5TeV;
+
+    // LHC10x anchored MCs
+  } else if (szLHCPeriod.CompareTo("LHC10d1") == 0) {
     fgDataPeriod = kLHC10d1;
     fgAnchorPeriod = kLHC10bg;
     fgIsMC = kTRUE;
     fgEnergy = k7TeV;
-  } else if (szLHCPeriod.CompareTo("LHC10d2") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC10d2") == 0) {
     fgDataPeriod = kLHC10d2;
     fgAnchorPeriod = kLHC10bg;
     fgIsMC = kTRUE;
     fgEnergy = k7TeV;
-  } else if (szLHCPeriod.CompareTo("LHC10d4a") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC10d4a") == 0) {
     fgDataPeriod = kLHC10d4a;
     fgIsMC = kTRUE;
     fgAnchorPeriod = kLHC10bg;
     fgEnergy = k7TeV;
-  } else if (szLHCPeriod.CompareTo("LHC10d4") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC10d4") == 0) {
     fgDataPeriod = kLHC10d4;
     fgAnchorPeriod = kLHC10bg;
     fgIsMC = kTRUE;
     fgEnergy = k7TeV;
-  } else if (szLHCPeriod.CompareTo("LHC10e12") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC10e12") == 0) {
     fgDataPeriod = kLHC10e12;
     fgAnchorPeriod = kLHC10bg;
     fgIsMC = kTRUE;
     fgEnergy = k900GeV;
-  } else if (szLHCPeriod.CompareTo("LHC10e13") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC10e13") == 0) {
     fgDataPeriod = kLHC10e13;
     fgAnchorPeriod = kLHC10bg;
     fgIsMC = kTRUE;
     fgEnergy = k900GeV;
-  } else if (szLHCPeriod.CompareTo("LHC10e20") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC13d4") == 0) {
+    fgDataPeriod = kLHC13d4;
+    fgAnchorPeriod = kLHC10bg;
+    fgIsMC = kTRUE;
+    fgEnergy = k900GeV;
+  } else if (szLHCPeriod.CompareTo("LHC10e20") == 0) {
     fgDataPeriod = kLHC10e20;
     fgAnchorPeriod = kLHC10bg;
     fgIsMC = kTRUE;
     fgEnergy = k7TeV;
-  } else if (szLHCPeriod.CompareTo("LHC10e21") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC10e21") == 0) {
     fgDataPeriod = kLHC10e21;
     fgAnchorPeriod = kLHC10bg;
     fgIsMC = kTRUE;
     fgEnergy = k7TeV;
-  } else if (szLHCPeriod.CompareTo("LHC10f6a") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC10f6a") == 0) {
     fgDataPeriod = kLHC10f6a;
     fgAnchorPeriod = kLHC10bg;
     fgIsMC = kTRUE;
     fgEnergy = k7TeV;
-  } else if (szLHCPeriod.CompareTo("LHC10f6") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC10f6") == 0) {
     fgDataPeriod = kLHC10f6;
     fgAnchorPeriod = kLHC10bg;
     fgIsMC = kTRUE;
     fgEnergy = k7TeV;
-  } else if (szLHCPeriod.Contains("LHC14j4")){
+  } else if (szLHCPeriod.Contains("LHC14j4")) {
     fgDataPeriod = kLHC14j4;
     fgAnchorPeriod = kLHC10bg;
     fgIsMC = kTRUE;
     fgEnergy = k7TeV;
-  } else if (szLHCPeriod.CompareTo("LHC11a10a") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC11a10a") == 0) {
     fgDataPeriod = kLHC11a10a;
     fgAnchorPeriod = kLHC10h;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC11a10b") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC11a10b") == 0) {
     fgDataPeriod = kLHC11a10b;
     fgAnchorPeriod = kLHC10h;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC13d2") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC13d2") == 0) {
     fgDataPeriod = kLHC13d2;
     fgAnchorPeriod = kLHC10h;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC13d2b") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC13d2b") == 0) {
     fgDataPeriod = kLHC13d2b;
     fgAnchorPeriod = kLHC10h;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC12a11a") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC12a11a") == 0) {
     fgDataPeriod = kLHC12a11a;
     fgAnchorPeriod = kLHC10h;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC12a11b") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC12a11b") == 0) {
     fgDataPeriod = kLHC12a11b;
     fgAnchorPeriod = kLHC10h;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC12a11c") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC12a11c") == 0) {
     fgDataPeriod = kLHC12a11c;
     fgAnchorPeriod = kLHC10h;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC12a11d") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC12a11d") == 0) {
     fgDataPeriod = kLHC12a11d;
     fgAnchorPeriod = kLHC10h;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC12a11e") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC12a11e") == 0) {
     fgDataPeriod = kLHC12a11e;
     fgAnchorPeriod = kLHC10h;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC12a11f") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC12a11f") == 0) {
     fgDataPeriod = kLHC12a11f;
     fgAnchorPeriod = kLHC10h;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb2760GeV;
-  // LHC11x anchored MCs
-  } else if (szLHCPeriod.CompareTo("LHC12a15c") == 0){
+    // LHC11x anchored MCs
+  } else if (szLHCPeriod.CompareTo("LHC12a15c") == 0) {
     fgDataPeriod = kLHC12a15c;
     fgIsMC = kTRUE;
     fgEnergy = k2760GeV;
-  } else if (szLHCPeriod.Contains("LHC12f1a") ){
+  } else if (szLHCPeriod.Contains("LHC12f1a")) {
     fgDataPeriod = kLHC12f1a;
     fgIsMC = kTRUE;
     fgEnergy = k2760GeV;
-  } else if (szLHCPeriod.Contains("LHC12f1b") ){
+  } else if (szLHCPeriod.Contains("LHC12f1b")) {
     fgDataPeriod = kLHC12f1b;
     fgIsMC = kTRUE;
     fgEnergy = k2760GeV;
-  } else if (szLHCPeriod.Contains("LHC12i3") ){
+  } else if (szLHCPeriod.Contains("LHC12i3")) {
     fgDataPeriod = kLHC12i3;
     fgIsMC = kTRUE;
     fgEnergy = k2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC15g1a") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC15g1a") == 0) {
     fgDataPeriod = kLHC15g1a;
     fgIsMC = kTRUE;
     fgEnergy = k2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC15g1b") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC15g1b") == 0) {
     fgDataPeriod = kLHC15g1b;
     fgIsMC = kTRUE;
     fgEnergy = k2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC13e4") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC13e4") == 0) {
     fgDataPeriod = kLHC13e4;
     fgIsMC = kTRUE;
     fgEnergy = k7TeV;
-  } else if (szLHCPeriod.CompareTo("LHC13e5") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC13e5") == 0) {
     fgDataPeriod = kLHC13e5;
     fgIsMC = kTRUE;
     fgEnergy = k7TeV;
-  } else if (szLHCPeriod.CompareTo("LHC14k1a") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC14k1a") == 0) {
     fgDataPeriod = kLHC14k1a;
     fgIsMC = kTRUE;
     fgEnergy = k7TeV;
-  } else if (szLHCPeriod.CompareTo("LHC14k1b") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC14k1b") == 0) {
     fgDataPeriod = kLHC14k1b;
     fgIsMC = kTRUE;
     fgEnergy = k7TeV;
-  } else if (szLHCPeriod.CompareTo("LHC12a15f") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC12a15f") == 0) {
     fgDataPeriod = kLHC12a15f;
     fgIsMC = kTRUE;
     fgEnergy = k7TeV;
-  } else if (szLHCPeriod.CompareTo("LHC12a15g") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC12a15g") == 0) {
     fgDataPeriod = kLHC12a15g;
     fgIsMC = kTRUE;
     fgEnergy = k7TeV;
-  } else if (szLHCPeriod.CompareTo("LHC12f2a") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC12f2a") == 0) {
     fgDataPeriod = kLHC12f2a;
     fgIsMC = kTRUE;
     fgEnergy = k7TeV;
-  } else if (szLHCPeriod.CompareTo("LHC14a1a") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC14a1a") == 0) {
     fgDataPeriod = kLHC14a1a;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC14a1b") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC14a1b") == 0) {
     fgDataPeriod = kLHC14a1b;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC14a1c") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC14a1c") == 0) {
     fgDataPeriod = kLHC14a1c;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb2760GeV;
-  // LHC12x anchored MCs
-  } else if (szLHCPeriod.CompareTo("LHC14e2a") == 0){
+    // LHC12x anchored MCs
+  } else if (szLHCPeriod.CompareTo("LHC14e2a") == 0) {
     fgDataPeriod = kLHC14e2a;
     fgIsMC = kTRUE;
     fgEnergy = k8TeV;
-  } else if (szLHCPeriod.CompareTo("LHC14e2b") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC14e2b") == 0) {
     fgDataPeriod = kLHC14e2b;
     fgIsMC = kTRUE;
     fgEnergy = k8TeV;
-  } else if (szLHCPeriod.CompareTo("LHC14e2c") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC14e2c") == 0) {
     fgDataPeriod = kLHC14e2c;
     fgIsMC = kTRUE;
     fgEnergy = k8TeV;
-  } else if (szLHCPeriod.Contains("LHC15h1")){
+  } else if (szLHCPeriod.Contains("LHC15h1")) {
     fgDataPeriod = kLHC15h1;
     fgIsMC = kTRUE;
     fgEnergy = k8TeV;
-  } else if (szLHCPeriod.Contains("LHC15h2")){
+  } else if (szLHCPeriod.Contains("LHC15h2")) {
     fgDataPeriod = kLHC15h2;
     fgIsMC = kTRUE;
     fgEnergy = k8TeV;
-  } else if (szLHCPeriod.CompareTo("LHC16c2") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC16c2") == 0) {
     fgDataPeriod = kLHC16c2;
     fgIsMC = kTRUE;
     fgEnergy = k8TeV;
-  // LHC13x anchored MCs
-  } else if (szLHCPeriod.Contains("LHC13b2_efix")){
+    // LHC13x anchored MCs
+  } else if (szLHCPeriod.Contains("LHC13b2_efix")) {
     fgDataPeriod = kLHC13b2_efix;
     fgIsMC = kTRUE;
     fgAnchorPeriod = kLHC13bc;
     fgEnergy = kpPb5TeV;
-  } else if (szLHCPeriod.Contains("LHC13b2")){
+  } else if (szLHCPeriod.Contains("LHC13b2")) {
     fgDataPeriod = kLHC13b2;
     fgIsMC = kTRUE;
     fgAnchorPeriod = kLHC13bc;
     fgEnergy = kpPb5TeV;
-  } else if (szLHCPeriod.CompareTo("LHC13e7") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC13e7") == 0) {
     fgDataPeriod = kLHC13e7;
     fgIsMC = kTRUE;
+    fgAnchorPeriod = kLHC13bc;
     fgEnergy = kpPb5TeV;
-  } else if (szLHCPeriod.CompareTo("LHC14b2") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC14b2") == 0) {
     fgDataPeriod = kLHC14b2;
     fgIsMC = kTRUE;
     fgEnergy = kpPb5TeV;
-  } else if (szLHCPeriod.CompareTo("LHC13b4_fix") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC13b4_fix") == 0) {
     fgDataPeriod = kLHC13b4_fix;
     fgIsMC = kTRUE;
     fgEnergy = kpPb5TeV;
-  } else if (szLHCPeriod.CompareTo("LHC13b4_plus") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC13b4_plus") == 0) {
     fgDataPeriod = kLHC13b4_plus;
     fgIsMC = kTRUE;
     fgEnergy = kpPb5TeV;
-  } else if (szLHCPeriod.CompareTo("LHC16c3a") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC15g4a") == 0) {
+    fgDataPeriod = kLHC15g4a;
+    fgIsMC = kTRUE;
+    fgAnchorPeriod = kLHC13bc;
+    fgEnergy = kpPb5TeV;
+  } else if (szLHCPeriod.CompareTo("LHC15g5b") == 0) {
+    fgDataPeriod = kLHC15g5b;
+    fgIsMC = kTRUE;
+    fgAnchorPeriod = kLHC13bc;
+    fgEnergy = kpPb5TeV;
+  } else if (szLHCPeriod.CompareTo("LHC16c3a") == 0) {
     fgDataPeriod = kLHC16c3a;
     fgIsMC = kTRUE;
     fgEnergy = kpPb5TeV;
-  } else if (szLHCPeriod.CompareTo("LHC16c3b") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC16c3b") == 0) {
     fgDataPeriod = kLHC16c3b;
     fgIsMC = kTRUE;
     fgEnergy = kpPb5TeV;
-  } else if (szLHCPeriod.CompareTo("LHC16c3c") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC16c3c") == 0) {
     fgDataPeriod = kLHC16c3c;
     fgIsMC = kTRUE;
     fgEnergy = kpPb5TeV;
-  } else if (szLHCPeriod.CompareTo("LHC15g2") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC15g2") == 0) {
     fgDataPeriod = kLHC15g2;
     fgIsMC = kTRUE;
     fgEnergy = k2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC15a3a") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC15a3a") == 0) {
     fgDataPeriod = kLHC15a3a;
     fgIsMC = kTRUE;
     fgEnergy = k2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC15a3a_plus") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC15a3a_plus") == 0) {
     fgDataPeriod = kLHC15a3a_plus;
     fgIsMC = kTRUE;
     fgEnergy = k2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC15a3b") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC15a3b") == 0) {
     fgDataPeriod = kLHC15a3b;
     fgIsMC = kTRUE;
     fgEnergy = k2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC15d3a") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC15d3a") == 0) {
     fgDataPeriod = kLHC15d3a;
     fgIsMC = kTRUE;
     fgEnergy = k2760GeV;
-  } else if (szLHCPeriod.CompareTo("LHC15d3b") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC15d3b") == 0) {
     fgDataPeriod = kLHC15d3b;
     fgIsMC = kTRUE;
     fgEnergy = k2760GeV;
-  // LHC15x anchored MCs
-  } else if (szLHCPeriod.CompareTo("LHC15g3a3") == 0){
+    // LHC15x anchored MCs
+  } else if (szLHCPeriod.CompareTo("LHC15g3a3") == 0) {
     fgDataPeriod = kLHC15g3a3;
     fgIsMC = kTRUE;
     fgEnergy = k13TeV;
-  } else if (szLHCPeriod.CompareTo("LHC15g3a") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC15g3a") == 0) {
     fgDataPeriod = kLHC15g3a;
     fgIsMC = kTRUE;
     fgEnergy = k13TeV;
-  } else if (szLHCPeriod.CompareTo("LHC15g3c2") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC15g3c2") == 0) {
     fgDataPeriod = kLHC15g3c2;
     fgIsMC = kTRUE;
     fgEnergy = k13TeV;
-  } else if (szLHCPeriod.CompareTo("LHC15g3c3") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC15g3c3") == 0) {
     fgDataPeriod = kLHC15g3c3;
     fgIsMC = kTRUE;
     fgEnergy = k13TeV;
-  } else if (szLHCPeriod.CompareTo("LHC15g3") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC15g3") == 0) {
     fgDataPeriod = kLHC15g3;
     fgIsMC = kTRUE;
     fgEnergy = k13TeV;
-  } else if (szLHCPeriod.CompareTo("LHC16a2a") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC16a2a") == 0) {
     fgDataPeriod = kLHC16a2a;
     fgIsMC = kTRUE;
     fgEnergy = k13TeV;
-  } else if (szLHCPeriod.CompareTo("LHC16a2b") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC16a2b") == 0) {
     fgDataPeriod = kLHC16a2b;
     fgIsMC = kTRUE;
     fgEnergy = k13TeV;
-  } else if (szLHCPeriod.CompareTo("LHC16a2c") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC16a2c") == 0) {
     fgDataPeriod = kLHC16a2c;
     fgIsMC = kTRUE;
     fgEnergy = k13TeV;
-  } else if (szLHCPeriod.CompareTo("LHC15l1a2") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC15l1a2") == 0) {
     fgDataPeriod = kLHC15l1a2;
     fgIsMC = kTRUE;
     fgEnergy = k5TeV;
-  } else if (szLHCPeriod.CompareTo("LHC15l1b2") == 0){
+  } else if (szLHCPeriod.CompareTo("LHC15l1b2") == 0) {
     fgDataPeriod = kLHC15l1b2;
     fgIsMC = kTRUE;
     fgEnergy = k5TeV;
-  } else if (szLHCPeriod.Contains("LHC15k1a1")){
+  } else if (szLHCPeriod.Contains("LHC15k1a1")) {
     fgDataPeriod = kLHC15k1a1;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
-  } else if (szLHCPeriod.Contains("LHC15k1a2")){
+  } else if (szLHCPeriod.Contains("LHC15k1a2")) {
     fgDataPeriod = kLHC15k1a2;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
-  } else if (szLHCPeriod.Contains("LHC15k1a3")){
+  } else if (szLHCPeriod.Contains("LHC15k1a3")) {
     fgDataPeriod = kLHC15k1a3;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
-  } else if (szLHCPeriod.Contains("LHC16h4a")){
+  } else if (szLHCPeriod.Contains("LHC16h4a")) {
     fgDataPeriod = kLHC16h4a;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
-  } else if (szLHCPeriod.Contains("LHC16h4b")){
+  } else if (szLHCPeriod.Contains("LHC16h4b")) {
     fgDataPeriod = kLHC16h4b;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
-  } else if (szLHCPeriod.Contains("LHC16h4b2")){
+  } else if (szLHCPeriod.Contains("LHC16h4b2")) {
     fgDataPeriod = kLHC16h4b2;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
-  } else if (szLHCPeriod.Contains("LHC16h4c")){
+  } else if (szLHCPeriod.Contains("LHC16h4c")) {
     fgDataPeriod = kLHC16h4c;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
-  // LHC15x anchored MCs
-  } else if (szLHCPeriod.Contains("LHC16g1")){
+    // LHC15x anchored MCs
+  } else if (szLHCPeriod.Contains("LHC16g1")) {
     fgDataPeriod = kLHC16g1;
     fgAnchorPeriod = kLHC15oHIR;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
-  } else if (szLHCPeriod.Contains("LHC16g1a")){
+  } else if (szLHCPeriod.Contains("LHC16g1a")) {
     fgDataPeriod = kLHC16g1a;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
-  } else if (szLHCPeriod.Contains("LHC16g1b")){
+  } else if (szLHCPeriod.Contains("LHC16g1b")) {
     fgDataPeriod = kLHC16g1b;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
-  } else if (szLHCPeriod.Contains("LHC16g1c")){
+  } else if (szLHCPeriod.Contains("LHC16g1c")) {
     fgDataPeriod = kLHC16g1c;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
-  } else if (szLHCPeriod.Contains("LHC16h2a")){
+  } else if (szLHCPeriod.Contains("LHC16h2a")) {
     fgDataPeriod = kLHC16h2a;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
-  } else if (szLHCPeriod.Contains("LHC16h2b")){
+  } else if (szLHCPeriod.Contains("LHC16h2b")) {
     fgDataPeriod = kLHC16h2b;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
-  } else if (szLHCPeriod.Contains("LHC16h2c")){
+  } else if (szLHCPeriod.Contains("LHC16h2c")) {
     fgDataPeriod = kLHC16h2c;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
-  } else if (szLHCPeriod.Contains("kLHC16i3")){
+  } else if (szLHCPeriod.Contains("kLHC16i3")) {
     fgDataPeriod = kLHC16i3;
     fgAnchorPeriod = kLHC15oHIR;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
-  } else if (szLHCPeriod.Contains("kLHC17i2")){
+  } else if (szLHCPeriod.Contains("kLHC17i2")) {
     fgDataPeriod = kLHC17i2;
     fgAnchorPeriod = kLHC15oHIR;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
 
-  // LHC17x anchored MCs
+    // LHC17x anchored MCs
   } else if (szLHCPeriod.Contains("LHC17j6")) {
     fgDataPeriod = kLHC17j6;
     fgAnchorPeriod = kLHC17n;
@@ -601,56 +650,85 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
     fgIsMC = kTRUE;
     fgEnergy = kXeXe5440GeV;
 
-  // MC upgrade
-  } else if (szLHCPeriod.Contains("LHC13d19")){
+    // MC upgrade
+  } else if (szLHCPeriod.Contains("LHC13d19")) {
     fgDataPeriod = kLHC13d19;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
 
-  // LHC18x PbPb productions
-  } else if (szLHCPeriod.Contains("LHC18q")){
+    // LHC18x pp productions
+  } else if (szLHCPeriod.EqualTo("LHC18b") or szLHCPeriod.EqualTo("LHC18d")
+             or szLHCPeriod.EqualTo("LHC18e") or szLHCPeriod.EqualTo("LHC18f")
+             or szLHCPeriod.EqualTo("LHC18g") or szLHCPeriod.EqualTo("LHC18h")
+             or szLHCPeriod.EqualTo("LHC18i") or szLHCPeriod.EqualTo("LHC18k")
+             or szLHCPeriod.EqualTo("LHC18l") or szLHCPeriod.EqualTo("LHC18m")
+             or szLHCPeriod.EqualTo("LHC18n") or szLHCPeriod.EqualTo("LHC18o")
+             or szLHCPeriod.EqualTo("LHC18p")) {
+    fgDataPeriod = kLHC18bp;
+    fgAnchorPeriod = kLHC18bp;
+    fgIsMC = kFALSE;
+    fgEnergy = k13TeV;
+
+    // LHC18x PbPb productions
+  } else if (szLHCPeriod.Contains("LHC18q")) {
     fgDataPeriod = kLHC18q;
     fgAnchorPeriod = kLHC18q;
     fgIsMC = kFALSE;
     fgEnergy = kPbPb5TeV;
 
-  } else if (szLHCPeriod.Contains("LHC18r")){
+  } else if (szLHCPeriod.Contains("LHC18r")) {
     fgDataPeriod = kLHC18r;
     fgAnchorPeriod = kLHC18r;
     fgIsMC = kFALSE;
     fgEnergy = kPbPb5TeV;
 
-  // LHC18x anchored MCs
+    // LHC18x anchored MCs
   } else if (szLHCPeriod.Contains("LHC18l8")) {
     fgDataPeriod = kLHC18l8;
     fgAnchorPeriod = kLHC18r;
     fgIsMC = kTRUE;
     fgEnergy = kPbPb5TeV;
+  } else if (szLHCPeriod.Contains("LHC20e3")) {
+    fgDataPeriod = kLHC20e3;
+    fgAnchorPeriod = kLHC18r;
+    fgIsMC = kTRUE;
+    fgEnergy = kPbPb5TeV;
 
-  // fast MC productions
+    // fast MC productions
   } else if (szLHCPeriod.Contains("LHC13f3")) {
     fgDataPeriod = kLHC13f3;
     fgAnchorPeriod = kLHC10h;
     fgIsMC = kTRUE;
     fgIsMConlyTruth = kTRUE;
     fgEnergy = kPbPb2760GeV;
-
+    // On the fly MC productions
+  } else if (szLHCPeriod.EqualTo("OnTheFlyPP")) {
+    fgDataPeriod = kOTFpp;
+    fgAnchorPeriod = kLHC10bg;
+    fgIsMC = kTRUE;
+    fgIsMConlyTruth = kTRUE;
+    fgEnergy = k7TeV;
   } else {
-    AliFatalClass(Form("Analysis period %s not supported. Please update the class!!!", szLHCPeriod.Data()));
+    AliFatalClass(
+        Form("Analysis period %s not supported. Please update the class!!!", szLHCPeriod.Data()));
     fgDataPeriod = kNoPeriod;
     fgEnergy = kUnset;
   }
 
   /* let's check the consistency of the MC flag and store the input and the MC handlers */
   fgInputHandler = (AliInputEventHandler *)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
-  if (fgInputHandler != NULL && fgInputHandler->InheritsFrom("AliESDInputHandler")) {
+  if (fgInputHandler != NULL && (fgInputHandler->InheritsFrom("AliESDInputHandler") || TString(fgInputHandler->ClassName()).EqualTo("AliDummyHandler"))) {
     fgIsESD = kTRUE;
     AliMultiInputEventHandler *multiInputHandler = dynamic_cast<AliMultiInputEventHandler *>(fgInputHandler);
     if (multiInputHandler) {
+      printf("is multi input handler");
       fgInputHandler = dynamic_cast<AliInputEventHandler *>(multiInputHandler->GetFirstInputEventHandler());
-      fgMCHandler = dynamic_cast<AliMCEventHandler *>(multiInputHandler->GetFirstMCEventHandler());
+      fgMCHandler = dynamic_cast<AliInputEventHandler *>(multiInputHandler->GetFirstMCEventHandler());
     } else {
-      fgMCHandler = dynamic_cast<AliMCEventHandler *>((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+      /* events already generated? */
+      fgMCHandler = dynamic_cast<AliInputEventHandler *>((AliAnalysisManager::GetAnalysisManager())->GetMCtruthEventHandler());
+      if (fgMCHandler != nullptr)
+        AliInfoClass(TString::Format("Class of the mc truth event handler %s",fgMCHandler->ClassName()));
     }
 
     if (fgIsMC && !(fgMCHandler != NULL))
@@ -667,35 +745,41 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
 TString AliCSAnalysisCutsBase::GetPeriodNameFromDataFilePath()
 {
   TString szPeriodName = "";
-  AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
 
-  if(man) {
-    AliVEventHandler* inputHandler = (AliVEventHandler*) (man->GetInputEventHandler());
+  if (fgIsOnTheFlyMC) {
+    szPeriodName = fgOnTheFlyProduction;
+  }
+  else {
+    AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
 
-    if (inputHandler){
-      TString szFullFileName = inputHandler->GetTree()->GetCurrentFile()->GetName();
+    if(man) {
+      AliVEventHandler* inputHandler = (AliVEventHandler*) (man->GetInputEventHandler());
 
-      AliInfoClass(Form("Detecting period name from filename: %s", szFullFileName.Data()));
+      if (inputHandler){
+        TString szFullFileName = inputHandler->GetTree()->GetCurrentFile()->GetName();
 
-      TObjArray *tokens = szFullFileName.Tokenize("/._");
-      for (Int_t i = 0; i < tokens->GetEntriesFast();i++ ){
-        TObjString* testObjString = (TObjString*)tokens->At(i);
-        if (testObjString->GetString().BeginsWith("LHC")){
-          szPeriodName = testObjString->GetString();
-          break;
-        }
-      }
-      delete tokens;
-      if (szPeriodName.Length() == 0){
-        tokens = szFullFileName.Tokenize("__");
+        AliInfoClass(Form("Detecting period name from filename: %s", szFullFileName.Data()));
+
+        TObjArray *tokens = szFullFileName.Tokenize("/._");
         for (Int_t i = 0; i < tokens->GetEntriesFast();i++ ){
-          TObjString* testObjString = (TObjString*) tokens->At(i);
+          TObjString* testObjString = (TObjString*)tokens->At(i);
           if (testObjString->GetString().BeginsWith("LHC")){
             szPeriodName = testObjString->GetString();
             break;
           }
         }
         delete tokens;
+        if (szPeriodName.Length() == 0){
+          tokens = szFullFileName.Tokenize("__");
+          for (Int_t i = 0; i < tokens->GetEntriesFast();i++ ){
+            TObjString* testObjString = (TObjString*) tokens->At(i);
+            if (testObjString->GetString().BeginsWith("LHC")){
+              szPeriodName = testObjString->GetString();
+              break;
+            }
+          }
+          delete tokens;
+        }
       }
     }
   }

@@ -1,3 +1,3 @@
-EmcalTriggerJets::AliAnalysisTaskEmcalTriggerJetsIDcorr *AddTaskEmcalTriggerJetsIDcorr(const char *name){
-  return EmcalTriggerJets::AliAnalysisTaskEmcalTriggerJetsIDcorr::AddTaskEmcalTriggerJetsIDcorr(name);
+PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerJetsIDcorr *AddTaskEmcalTriggerJetsIDcorr(const char *name){
+  return PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerJetsIDcorr::AddTaskEmcalTriggerJetsIDcorr(name);
 }

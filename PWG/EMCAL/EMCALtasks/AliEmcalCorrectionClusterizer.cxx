@@ -76,6 +76,8 @@ AliEmcalCorrectionClusterizer::AliEmcalCorrectionClusterizer() :
   fJustUnfold(kFALSE),
   fUnfoldCellMinE(0),
   fUnfoldCellMinEFrac(0),
+  fNxMRowDiff(1),
+  fNxMColDiff(1),
   fGeomName(),
   fGeomMatrixSet(kFALSE),
   fLoadGeomMatrices(kFALSE),
@@ -179,7 +181,11 @@ Bool_t AliEmcalCorrectionClusterizer::Initialize()
   fRecParam->SetLocMaxCut(diffEAggregation);      // Set minimum energy difference to start new cluster
   
   if (clusterizerType == AliEMCALRecParam::kClusterizerNxN)
-    fRecParam->SetNxM(1,1); // -> (1,1) means 3x3!
+  {
+    GetProperty("nxmRowDiff", fNxMRowDiff);
+    GetProperty("nxmColDiff", fNxMColDiff);
+    fRecParam->SetNxM(fNxMRowDiff,fNxMColDiff); // -> (1,1) means 3x3!
+  }
   
   // init reco utils
   if (!fRecoUtils)
@@ -593,7 +599,11 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
     Float_t *parentListDE = recpoint->GetParentsDE();  // deposited energy
     
     c->SetLabel(parentList, parentMult);
-    c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+    if(parentListDE[0]) {
+      c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
+    } else {
+      if (mcEnergy > 0.) AliWarning("Could not get deposited energy of parents. Particle might not have parents?");
+    }
     
     //
     // Set the cell energy deposition fraction map:
@@ -608,6 +618,8 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
       for(Int_t icell = 0; icell < ncellsTrue ; icell++)
       {
         Int_t   idigit  = fCellLabels[absIds[icell]];
+        
+        if ( idigit < 0 ) continue;
         
         const AliEMCALDigit * dig = (const AliEMCALDigit*)fDigitsArr->At(idigit);
         

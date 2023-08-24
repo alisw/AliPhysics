@@ -91,7 +91,7 @@ TTree* AliHFTreeHandlerLc2V0bachelor::BuildTree(TString name, TString title)
   fTreeVar = new TTree(name.Data(), title.Data());
 
   //set common variables
-  AddCommonDmesonVarBranches();
+  AddCommonDmesonVarBranches(fCalcSecoVtx);
 
   //set Lc variables
   fTreeVar->Branch("cos_t_star", &fCosThetaStar);
@@ -121,14 +121,16 @@ TTree* AliHFTreeHandlerLc2V0bachelor::BuildTree(TString name, TString title)
 }
 
 //________________________________________________________________
-bool AliHFTreeHandlerLc2V0bachelor::SetVariables(int runnumber, unsigned int eventID, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo) 
+bool AliHFTreeHandlerLc2V0bachelor::SetVariables(int runnumber, int eventID, int eventID_Ext, Long64_t eventID_Long, float ptgen, AliAODRecoDecayHF* cand, float bfield, int masshypo, AliPIDResponse* pidrespo, AliAODPidHF* pidhf)
 {
+  fRunNumber=runnumber;
+  fEvID=eventID;
+  fEvIDExt=eventID_Ext;
+  fEvIDLong=eventID_Long;
   if(!cand) return false;
   if(fFillOnlySignal) { //if fill only signal and not signal candidate, do not store
     if(!(fCandType&kSignal)) return true;
   }
-  fRunNumber=runnumber;
-  fEvID=eventID;
   fPtGen=ptgen;
   
   //topological variables
@@ -211,7 +213,7 @@ bool AliHFTreeHandlerLc2V0bachelor::SetVariables(int runnumber, unsigned int eve
   //pid variables
   if(fPidOpt == kNoPID) return true;
 
-  bool setpid = SetPidVars(prongtracks, pidrespo, true, true, true, true, true);
+  bool setpid = SetPidVars(prongtracks, pidrespo, true, true, true, true, true, pidhf);
   if(!setpid) return false;
 
   return true;

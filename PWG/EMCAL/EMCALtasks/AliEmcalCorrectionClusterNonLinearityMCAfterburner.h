@@ -11,7 +11,7 @@
  * Non-linearity correction to the MC cluster energy is necessary because the current non linearity is done for
  * 50MeV cell threshold and all analyses use a 100MeV cell threshold for the clusterization.
  * Thus, the MC need to be corrected in a second step
- 
+
  The energy of the cluster **after** the MC non-linearity correction can be retrieved using the method `cluster->GetNonLinCorrEnergy()`.
  *
  * Based on code in AliCaloPhotonCuts.cxx.
@@ -56,7 +56,7 @@ protected:
   TH2F                  *fEnergyTimeHistBefore;      		//!<!energy/time distribution before
   TH1F                  *fEnergyDistAfter;          	 		//!<!energy distribution after
   TH2F                  *fEnergyTimeHistAfter;      			//!<!energy/time distribution after
-  Float_t                fNLAfterburnerPara[9];     			///< Parameters for the non linearity function
+  Float_t                fNLAfterburnerPara[11];     			///< Parameters for the non linearity function
   Int_t                  fNonLinearityAfterburnerFunction; ///< Type of function used for the non linearity afterburner correction
 
   EMCAfterburnerMethod_t fAfterburnerMethod;        			 ///< The version of the non-linearity afterburner correction (0-3, see enum NonlinearityMCAfterburnerMethod), 4=no correction
@@ -71,7 +71,7 @@ protected:
   static RegisterCorrectionComponent<AliEmcalCorrectionClusterNonLinearityMCAfterburner> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionClusterNonLinearityMCAfterburner, 1); // EMCal cluster non-linearity MC correction afterburner component
+  ClassDef(AliEmcalCorrectionClusterNonLinearityMCAfterburner, 2); // EMCal cluster non-linearity MC correction afterburner component
   /// \endcond
 };
 

@@ -28,6 +28,7 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 #include "AliPID.h"
+#include "AliPIDResponse.h"
 #include "AliVertexerTracks.h"
 
 #include <TMath.h>
@@ -50,15 +51,17 @@ public:
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *);
 
+  static  bool  HasTOF(AliESDtrack *t);
+
   AliEventCuts fEventCuts; /// event cuts class
 
 private:
   AliAnalysisTaskFindableHypertriton3(const AliAnalysisTaskFindableHypertriton3 &);            // not implemented
   AliAnalysisTaskFindableHypertriton3 &operator=(const AliAnalysisTaskFindableHypertriton3 &); // not implemented
 
-  AliPIDResponse *fPIDResponse;   // PID response object
-  AliESDtrackCuts *fESDtrackCuts; // ESD track cuts
-  AliESDVertex *fPrimaryVertex;   // Primary vertex of the current event
+  AliPIDResponse *fPIDResponse;   //! PID response object
+  AliESDtrackCuts *fESDtrackCuts; //! ESD track cuts
+  AliESDVertex *fPrimaryVertex;   //! Primary vertex of the current event
 
   // Settings
   float fCosPoiningAngleLimit;
@@ -68,8 +71,10 @@ private:
   TTree *fFindableTree; //!
 
   // Findable Tree
-  AliESDtrack *fTreeHyp3BodyVarTracks[3];
+  AliESDtrack *fTreeHyp3BodyVarTracks[3]; //!
   Int_t fTreeHyp3BodyVarPDGcodes[3];
+  Float_t fTreeHyp3BodyVarNsigmaTPC[3];
+  Float_t fTreeHyp3BodyVarNsigmaTOF[3];
 
   ULong64_t fTreeHyp3BodyVarEventId;
   Int_t fTreeHyp3BodyVarMotherId;
@@ -90,12 +95,13 @@ private:
   Float_t fTreeHyp3BodyVarPVt;
 
   Float_t fTreeHyp3BodyVarMagneticField;
+  Float_t fTreeHyp3BodyVarCentrality;
 
   TH1D *fHistEventCounter; //!
   TH1D *fHistCentrality;   //!
 
-  TH3D *fHistGeneratedPtVsYVsCentralityHypTrit;     //!
-  TH3D *fHistGeneratedPtVsYVsCentralityAntiHypTrit; //!
+  TH3D *fHistGeneratedPtVsCtVsCentralityHypTrit3;     //!
+  TH3D *fHistGeneratedPtVsCtVsCentralityAntiHypTrit3; //!
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskFindableHypertriton3, 1); // analysisclass

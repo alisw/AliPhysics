@@ -14,6 +14,7 @@
 #include "AliAnalysisUtils.h"
 #include "AliTimeRangeMasking.h"
 #include "AliTimeRangeCut.h"
+#include "AliEMCALLEDEventsCut.h"
 
 class AliESDtrackCuts;
 class TList;
@@ -67,6 +68,8 @@ class AliEventCuts : public TList {
       kINELgt0,
       kCorrelations,
       kTimeRangeCut,
+      kEMCALEDCut,
+      kTPCPileUp,
       kAllCuts
     };
 
@@ -108,6 +111,12 @@ class AliEventCuts : public TList {
     ///
     const AliTimeRangeCut& GetTimeRangeCut() const { return fTimeRangeCut; }
 
+    /// set up the usage of the time range cut
+    void UseEMCALLEDEventsCut() { fUseEMCALLEDEventsCut = true;}
+
+    ///
+    AliEMCALLEDEventsCut& GetEMCALLEDEventsCut() { return fEMCALLEDEventsCut; }
+  
     /// While the general philosophy here is to avoid setters and getters
     /// for some variables (like the max z vertex position) standard the cuts usually follow some patterns
     /// (e.g. the max vertex z position is always symmetric wrt the nominal beam collision point) thus
@@ -120,7 +129,9 @@ class AliEventCuts : public TList {
     void          SetCentralityRange (float min, float max) { fMinCentrality = min; fMaxCentrality = max; }
     void          SetMaxVertexZposition (float max) { fMinVtz = -fabs(max); fMaxVtz = fabs(max); }
     void          SelectOnlyInelGt0(bool toogle) { fOverrideInelGt0 = true; fSelectInelGt0 = toogle; }
-
+    void          SetRejectTPCPileupWithITSTPCnCluCorr(bool opt, int cutlevel=1) { if(opt==kTRUE) fUseITSTPCCluCorrelationCut = cutlevel; }
+    void          SetRejectTPCPileupWithV0CentTPCnTracksCorr(bool opt) { fUseStrongVarCorrelationCut = opt; }
+    
     AliAnalysisUtils fUtils;                      ///< Analysis utils for the pileup rejection
 
     bool          fGreenLight;                    ///< If true it will bypass all the selections.
@@ -159,7 +170,9 @@ class AliEventCuts : public TList {
 
     bool          fUseVariablesCorrelationCuts;   ///< Switch on/off the cuts on the correlation between event variables
     bool          fUseEstimatorsCorrelationCut;   ///< Switch on/off the cut on the correlation between centrality estimators
-    bool          fUseStrongVarCorrelationCut;    ///< Switch on/off the strong cuts on the correlation between event variables
+    bool          fUseStrongVarCorrelationCut;    ///< Switch on/off the strong OOB pileup cut (for Pb-Pb) based on TPC tracks vs V0 mult
+    int  fUseITSTPCCluCorrelationCut;             ///< OOB pileup cut (for Pb-Pb) based on ITS and TPC clusters: 0-> no cut; 1-> default cut (remove all OOB pileup); 2-> looser cut; 3-> even more looser cut; 4-> very loose cut 
+    bool          fUseTPCTracklCorrelationCut;    ///< Switch on/off OOB pileup cut (for pp, LHC15n) based on tracklets and TPC only tracks
     double        fEstimatorsCorrelationCoef[2];  ///< fCentEstimators[0] = [0] + [1] * fCentEstimators[1]
     double        fEstimatorsSigmaPars[4];        ///< Sigma parametrisation fCentEstimators[1] vs fCentEstimators[0]
     double        fDeltaEstimatorNsigma[2];       ///< Number of sigma to cut on fCentEstimators[1] vs fCentEstimators[0]
@@ -170,7 +183,8 @@ class AliEventCuts : public TList {
     TF1          *fMultiplicityV0McorrCut;        //!<! Cut on the FB128 vs V0M plane
     double        fFB128vsTrklLinearCut[2];       ///< Cut on the FB128 vs Tracklet plane
     double        fVZEROvsTPCoutPolCut[5];        ///< Cut on VZERO multipliciy vs the number of tracks with kTPCout on
-
+    double        fITSvsTPCcluPolCut[3];          ///< Cut on SDD+SSD clusters vs TPC clusters
+    
     bool          fRequireExactTriggerMask;       ///< If true the event selection mask is required to be equal to fTriggerMask
     unsigned long fTriggerMask;                   ///< Trigger mask
     std::vector<std::string> fTriggerClasses;     ///< Trigger classes
@@ -201,12 +215,15 @@ class AliEventCuts : public TList {
     bool          fOverrideAutoPileUpCuts;        ///<  If true the pile-up cuts are defined by the user.
     bool          fMultSelectionEvCuts;           ///< Enable/Disable the event selection applied in the AliMultSelection framework
     bool          fUseTimeRangeCut;               ///< If to use the time range cut
+    bool          fUseEMCALLEDEventsCut;          ///< If EMCal LED events are to be removed
 
     bool          fSelectInelGt0;                 ///< Select only INEL > 0 events
     bool          fOverrideInelGt0;               ///< If the user ask for a configuration, let's not touch it
     bool          fOverrideCentralityFramework;   ///< If the user ask (not) to run a centrality framework this should be onored by AliEventCuts 
 
     AliTimeRangeCut fTimeRangeCut;       ///< Time Range cut
+  
+    AliEMCALLEDEventsCut fEMCALLEDEventsCut;      ///< EMCAL LED events cut
 
     /// The following pointers are used to avoid the intense usage of FindObject. The objects pointed are owned by (TList*)this.
     TH1D* fCutStats;               //!<! Cuts statistics: every column keeps track of how many times a cut is passed independently from the other cuts.
@@ -228,7 +245,7 @@ class AliEventCuts : public TList {
     AliESDtrackCuts* fFB32trackCuts; //!<! Cuts corresponding to FB32 in the ESD (used only for correlations cuts in ESDs)
     AliESDtrackCuts* fTPConlyCuts;   //!<! Cuts corresponding to the standalone TPC cuts in the ESDs (used only for correlations cuts in ESDs)
 
-    ClassDef(AliEventCuts, 12)
+    ClassDef(AliEventCuts, 16)
 };
 
 template<typename F> F AliEventCuts::PolN(F x,F* coef, int n) {

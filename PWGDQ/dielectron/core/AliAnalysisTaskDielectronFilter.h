@@ -67,7 +67,7 @@ public:
   void SetStoreEventplanes(Bool_t storeEventplanes) {fStoreEventplanes = storeEventplanes;}
 
   void SetEventFilter(AliAnalysisCuts * const filter) {fEventFilter=filter;}
-
+  void SetStoreCaloClusters(Bool_t storeCalo) { fStoreCaloClusters = storeCalo;}
 
 private:
   enum {kAllEvents=0, kSelectedEvents, kV0andEvents, kFilteredEvents, kPileupEvents, kNbinsEvent};
@@ -97,6 +97,7 @@ private:
   Bool_t fStoreEventplanes;     // flag to store eventplane information in a seperated tree
   Bool_t AddMetadataToUserInfo(); // Function to add ProdInfo to Nano AOD Tree
   Bool_t Notify();				// Function to add ProdInfo to Nano AOD Tree
+  Bool_t fStoreCaloClusters;     // flag to store calo cluster information
 
   AliAnalysisCuts *fEventFilter;     // event filter
   TList *fQnList; //! List for the storage of the output of the QnFramework needed for event-plane analysis since 2016

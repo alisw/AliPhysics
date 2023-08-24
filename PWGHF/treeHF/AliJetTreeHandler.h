@@ -52,7 +52,7 @@ class AliJetTreeHandler : public TObject
     // Core methods
     TTree* BuildJetTree(TString name, TString title);
     TTree* BuildJetConstituentTree(TString name, TString title);
-    void FillTree(int runNumber, unsigned int eventID);
+    void FillTree(int runNumber, int eventID, int eventID_Ext, Long64_t eventID_Long);
     void SetJetVariables(const AliEmcalJet* jet);
     void SetJetConstituentVariables(const AliVParticle* track);
     void SetJetLabels();
@@ -115,7 +115,9 @@ class AliJetTreeHandler : public TObject
   
     // Jet quantities
     int                          fRunNumber;               //!<! run number
-    unsigned int                 fEventID;                 //!<! event ID (unique identifier when run number is fixed)
+    int                          fEventID;                 //!<! event ID (unique identifier when run number is fixed), first 32 bits of fEventIDLong
+    int                          fEventIDExt;              //!<! event ID (unique identifier when run number is fixed), second 32 bits of fEventIDLong
+    Long64_t                     fEventIDLong;             //!<! event ID (unique identifier when run number is fixed), full 4 bits of fEventIDLong
     unsigned short int           fJetID;                   //!<! jet ID (i^th jet in each event)
 
     float                        fPtCorr;                  //!<! Pt of the jet after subtracting average background

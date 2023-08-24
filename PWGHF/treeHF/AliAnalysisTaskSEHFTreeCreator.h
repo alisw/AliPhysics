@@ -51,6 +51,7 @@
 #include "AliHFTreeHandlerDstartoKpipi.h"
 #include "AliHFTreeHandlerLc2V0bachelor.h"
 #include "AliHFTreeHandlerLbtoLcpi.h"
+#include "AliHFTreeHandlerInclusiveJet.h"
 #include "AliJetTreeHandler.h"
 #include "AliParticleTreeHandler.h"
 #include "AliTrackletTreeHandler.h"
@@ -112,7 +113,7 @@ public:
     
     void SetReadMC(Bool_t opt=kFALSE){fReadMC=opt;}
     void SetSystem(Int_t opt){fSys=opt;}
-    void SetAODMismatchProtection(Int_t opt=1) {fAODProtection=opt;}
+    void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
     void SetWriteOnlySignalTree(Bool_t opt){fWriteOnlySignal=opt;}
     void SetFillD0Tree(Int_t opt){fWriteVariableTreeD0=opt;}
     void SetFillDsTree(Int_t opt){fWriteVariableTreeDs=opt;}
@@ -123,6 +124,7 @@ public:
     void SetFillDstarTree(Int_t opt){fWriteVariableTreeDstar=opt;}
     void SetFillLc2V0bachelorTree(Int_t opt){fWriteVariableTreeLc2V0bachelor=opt;}
     void SetFillLbTree(Int_t opt){fWriteVariableTreeLb=opt;}
+    void SetFillInclusiveJetTree(Int_t opt){fWriteVariableTreeInclusiveJet=opt;}
     void SetPIDoptD0Tree(Int_t opt){fPIDoptD0=opt;}
     void SetPIDoptDsTree(Int_t opt){fPIDoptDs=opt;}
     void SetPIDoptDplusTree(Int_t opt){fPIDoptDplus=opt;}
@@ -153,28 +155,46 @@ public:
     void SetJetAlgorithm(Int_t i) {fJetAlgorithm = i; }
     void SetSubJetAlgorithm(Int_t i) {fSubJetAlgorithm = i; }
     void SetMinJetPt(Double_t d) {fMinJetPt = d; }
+    void SetSoftDropZCut(Double_t d) {fSoftDropZCut = d; }
+    void SetSoftDropBeta(Double_t d) {fSoftDropBeta = d; }
     void SetTrackingEfficiency(Double_t d) {fTrackingEfficiency = d;}
+    void SetDoPtHard(bool b) {fDoPtHard = b;}
   
     void SetGoodTrackFilterBit(Int_t i) { fGoodTrackFilterBit = i; }
     void SetGoodTrackEtaRange(Double_t d) { fGoodTrackEtaRange = d; }
     void SetGoodTrackMinPt(Double_t d) { fGoodTrackMinPt = d; }
-  
+    void SetITSUpgradeProduction(Bool_t b) { fITSUpgradeProduction = b; }
+    void SetITSUpgradePreSelect(Bool_t b) { fITSUpgradePreSelect = b; }
+    void SetStoreOnlyHIJINGBackground(Bool_t b) {fStoreOnlyHIJINGBackground = b; }
+    void SetLctopKpiPreselection(Bool_t d){ fPreSelectLctopKpi = d; }
+    void SetFillInjCandHijingTrackCombi(Bool_t b){ fFillInjCandHijingTrackCombi = b; }
+    
     void SetDsMassKKOption(AliHFTreeHandlerDstoKKpi::massKKopt opt) {fDsMassKKOpt=opt;}
     void SetLc2V0bachelorCalcSecoVtx(Int_t opt=1) {fLc2V0bachelorCalcSecoVtx=opt;}
-  
+    void SetLc2V0type(Int_t opt=1) {fV0typeForLc2V0bachelor=opt;}
+    void SetOnFlySelectionValues(float invmass, float pt, float impparprod, float cosp, float cospxy){
+      fInvMassOnFlyCut = invmass;
+      fPtOnFlyCut = pt;
+      fImpParProdOnFlyCut = impparprod;
+      fCosPOnFlyCut = cosp;
+      fCosPXYOnFlyCut = cospxy;
+    }
+
     void SetTreeSingleTrackVarsOpt(Int_t opt) {fTreeSingleTrackVarsOpt=opt;}
   
     Int_t  GetSystem() const {return fSys;}
     Bool_t GetWriteOnlySignalTree() const {return fWriteOnlySignal;}
     
-    void Process2Prong(TClonesArray *array2prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
-    void Process3Prong(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
-    void ProcessDstar(TClonesArray *arrayDstar, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
-    void ProcessCasc(TClonesArray *arrayCasc, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield);
+    void Process2Prong(TClonesArray *array2prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
+    void Process3Prong(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
+    void ProcessDstar(TClonesArray *arrayDstar, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
+    void ProcessCasc(TClonesArray *arrayCasc, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessBplus(TClonesArray *array2prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessBs(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
     void ProcessLb(TClonesArray *array3Prong, AliAODEvent *aod, TClonesArray *arrMC, Float_t bfield, AliAODMCHeader *mcHeader);
-    void ProcessMCGen(TClonesArray *mcarray);
+    void ProcessInclusiveJet(AliAODEvent *aod, TClonesArray *arrMC);
+    void ProcessMCGen(TClonesArray *mcarray, AliAODMCHeader *mcHeader);
+    void ProcessMCGenInclusiveJet(TClonesArray *mcarray);
   
     Bool_t CheckDaugAcc(TClonesArray* arrayMC,Int_t nProng, Int_t *labDau, Bool_t ITSUpgradeStudy);
     Bool_t IsCandidateFromHijing(AliAODRecoDecayHF *cand, AliAODMCHeader *mcHeader, TClonesArray* arrMC, AliAODTrack *tr = 0x0);
@@ -212,7 +232,7 @@ public:
     AliJetContainer* AddJetContainer(AliJetContainer::EJetType_t jetType, AliJetContainer::EJetAlgo_t jetAlgo, AliJetContainer::ERecoScheme_t recoScheme, Double_t radius, UInt_t accType, AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag = "Jet");
     AliJetContainer* AddJetContainer(const char *n, UInt_t accType, Float_t jetRadius);
     AliJetContainer* GetJetContainer(Int_t i=0) const;
-    void FillJetTree();
+    void FillJetTree(AliAODMCHeader* mcHeader);
   
     
     unsigned int GetEvID();
@@ -280,6 +300,10 @@ private:
                                                                    // 0 don't fill
                                                                    // 1 fill standard tree
 
+    Int_t                   fWriteVariableTreeInclusiveJet;        // flag to decide whether to write the candidate variables on a tree variables
+                                                                   // 0 don't fill
+                                                                   // 1 fill standard tree
+
 
     TTree                   *fVariablesTreeD0;                     //!<! tree of the candidate variables
     TTree                   *fVariablesTreeDs;                     //!<! tree of the candidate variables
@@ -290,6 +314,7 @@ private:
     TTree                   *fVariablesTreeDstar;                  //!<! tree of the candidate variables
     TTree                   *fVariablesTreeLc2V0bachelor;          //!<! tree of the candidate variables
     TTree                   *fVariablesTreeLb;                     //!<! tree of the candidate variables
+    TTree                   *fVariablesTreeInclusiveJet;           //!<! tree of the candidate variables
     TTree                   *fGenTreeD0;                           //!<! tree of the gen D0 variables
     TTree                   *fGenTreeDs;                           //!<! tree of the gen Ds variables
     TTree                   *fGenTreeDplus;                        //!<! tree of the gen D+ variables
@@ -299,6 +324,7 @@ private:
     TTree                   *fGenTreeDstar;                        //!<! tree of the gen Dstar variables
     TTree                   *fGenTreeLc2V0bachelor;                //!<! tree of the gen Lc2V0bachelor variables
     TTree                   *fGenTreeLb;                           //!<! tree of the gen Lb variables
+    TTree                   *fGenTreeInclusiveJet;                 //!<! tree of the gen Inclusive variables
     TTree                   *fTreeEvChar;                          //!<! tree of event variables
     bool                    fWriteOnlySignal;
     AliHFTreeHandlerD0toKpi        *fTreeHandlerD0;                //!<! handler object for the tree with topological variables
@@ -310,6 +336,7 @@ private:
     AliHFTreeHandlerDstartoKpipi   *fTreeHandlerDstar;             //!<! handler object for the tree with topological variables
     AliHFTreeHandlerLc2V0bachelor  *fTreeHandlerLc2V0bachelor;     //!<! handler object for the tree with topological variables
     AliHFTreeHandlerLbtoLcpi       *fTreeHandlerLb;                //!<! handler object for the tree with topological variables
+    AliHFTreeHandlerInclusiveJet   *fTreeHandlerInclusiveJet;      //!<! handler object for the tree 
     AliHFTreeHandlerD0toKpi        *fTreeHandlerGenD0;             //!<! handler object for the tree with topological variables
     AliHFTreeHandlerDstoKKpi       *fTreeHandlerGenDs;             //!<! handler object for the tree with topological variables
     AliHFTreeHandlerDplustoKpipi   *fTreeHandlerGenDplus;          //!<! handler object for the tree with topological variables
@@ -319,6 +346,7 @@ private:
     AliHFTreeHandlerDstartoKpipi   *fTreeHandlerGenDstar;          //!<! handler object for the tree with topological variables
     AliHFTreeHandlerLc2V0bachelor  *fTreeHandlerGenLc2V0bachelor;  //!<! handler object for the tree with topological variables
     AliHFTreeHandlerLbtoLcpi       *fTreeHandlerGenLb;             //!<! handler object for the tree with topological variables
+    AliHFTreeHandlerInclusiveJet   *fTreeHandlerGenInclusiveJet;   //!<! handler object for the tree 
     AliPIDResponse          *fPIDresp;                             /// PID response
     int                     fPIDoptD0;                             /// PID option for D0 tree
     int                     fPIDoptDs;                             /// PID option for Ds tree
@@ -338,9 +366,22 @@ private:
     Int_t                   fIsEvRej_INT7;                         /// flag with information about rejection of the event
     Int_t                   fIsEvRej_HighMultSPD;                  /// flag with information about rejection of the event
     Int_t                   fIsEvRej_HighMultV0;                   /// flag with information about rejection of the event
+    Int_t                   fIsEvRej_EMCEJE;                       /// flag with information about rejection of the event
+    Bool_t                  fIsEvSel_INT7;                         /// boolean whether event accept for INT7
+    Bool_t                  fIsEvSel_HighMultSPD;                  /// boolean whether event accept for SHM
+    Bool_t                  fIsEvSel_HighMultV0;                   /// boolean whether event accept for VHM
+    Bool_t                  fIsEvSel_EMCEJE;                       /// boolean whether event accept for EMCEJE
+    Double_t                fCross_Section;                        /// cross section of pt hard bin event
+    Int_t                   fTrials;                               /// Trials of pt hard bin event
+    Double_t                fpthard;                               /// Pt hard bin of event
     Int_t                   fRunNumber;                            /// run number
     Int_t                   fRunNumberCDB;                         /// run number (for OCDB)
-    UInt_t                  fEventID;                              /// event ID (unique when combined with run number)
+    UShort_t                fBC;                                   /// bunch crossing number
+    Int_t                   fOrbit;                                /// orbit
+    Int_t                   fPeriod;                               /// period
+    Int_t                   fEventID;                              /// event ID (for guaranteed uniqueness combine with ext ID)
+    Int_t                   fEventIDExt;                           /// upper 32-bit of event ID
+    Long64_t                fEventIDLong;                          /// single unique event id (long64)
     TString                 fFileName;
     unsigned int            fDirNumber;
     Int_t                   fnTracklets;                           /// number of tracklets
@@ -353,40 +394,65 @@ private:
     Int_t                   fMultGenV0A;                           /// generated multiplicity in V0A range
     Int_t                   fMultGenV0C;                           /// generated multiplicity in V0C range
     ULong64_t               fTriggerMask;                          /// Trigger mask bitmap
-    Bool_t                  fTriggerOnlineINT7;                       /// Flag explicitly whether bitmap contains INT7
-    Bool_t                  fTriggerOnlineHighMultSPD;                /// Flag explicitly whether bitmap contains HighMultSPD
-    Bool_t                  fTriggerOnlineHighMultV0;                 /// Flag explicitly whether bitmap kHighMultV0
+    Bool_t                  fTriggerOnlineINT7;                    /// Flag explicitly whether bitmap contains INT7
+    Bool_t                  fTriggerOnlineHighMultSPD;             /// Flag explicitly whether bitmap contains HighMultSPD
+    Bool_t                  fTriggerOnlineHighMultV0;              /// Flag explicitly whether bitmap kHighMultV0
+    Bool_t                  fTriggerOnlineEMCALEJ1;                /// Flag explicitly whether bitmap kEMCEJ1
+    Bool_t                  fTriggerOnlineEMCALEJ2;                /// Flag explicitly whether bitmap kEMCEJ2
+    Bool_t                  fTriggerOnlineDCALDJ1;                 /// Flag explicitly whether bitmap DCALDJ1
+    Bool_t                  fTriggerOnlineDCALDJ2;                 /// Flag explicitly whether bitmap DCALDJ2
     Bool_t                  fTriggerBitINT7;                       /// Flag explicitly whether bitmap contains INT7
     Bool_t                  fTriggerBitHighMultSPD;                /// Flag explicitly whether bitmap contains HighMultSPD
     Bool_t                  fTriggerBitHighMultV0;                 /// Flag explicitly whether bitmap kHighMultV0
+    Bool_t                  fTriggerBitCentral;                    /// Flag explicitly whether bitmap contains kCentral
+    Bool_t                  fTriggerBitSemiCentral;                /// Flag explicitly whether bitmap contains kSemiCentral
+    Bool_t                  fTriggerBitEMCEJE;                     /// Flag explicitly whether bitmap contains kEMCEJE
     TString                 fTriggerClasses;                       /// Collect all trigger classes
     Bool_t                  fTriggerClassINT7;                     /// Flag explicitly whether classes contain INT7
     Bool_t                  fTriggerClassHighMultSPD;              /// Flag explicitly whether classes contain HighMultSPD
     Bool_t                  fTriggerClassHighMultV0m;              /// Flag explicitly whether classes contain HighMultV0
+    Bool_t                  fTriggerClassEMCALEJ1;                 /// Flag explicitly whether classes contain EMCALEJ1 (contained in AliVEvent::kEMCEJE)
+    Bool_t                  fTriggerClassEMCALEJ2;                 /// Flag explicitly whether classes contain EMCALEJ2 (conatined in AliVEvent::kEMCEJE)
+    Bool_t                  fTriggerClassDCALDJ1;                  /// Flag explicitly whether classes contain DCALDJ1 (contained in AliVEvent::kEMCEJE)
+    Bool_t                  fTriggerClassDCALDJ2;                  /// Flag explicitly whether classes contain DCALDJ2 (conatined in AliVEvent::kEMCEJE)
     Int_t                   fnV0M;                                 /// V0M multiplicity
     Int_t                   fnV0MEq;                               /// V0M multiplicity (equalized)
     Int_t                   fnV0MCorr;                             /// V0M multiplicity (corrected)
     Int_t                   fnV0MEqCorr;                           /// V0M multiplicity (equalized + corrected)
     Float_t                 fPercV0M;                              /// V0M multiplicity percentile
     Float_t                 fMultV0M;                              /// V0M multiplicity from mult selection task
+    Int_t                   fMultEvSelCode;                        /// Mult. event selection code, 0 if ok
 
     Bool_t                  fFillMCGenTrees;                       /// flag to enable fill of the generated trees
   
     Int_t                   fDsMassKKOpt;                          /// option for Ds massKK (mass or delta mass)
     Int_t                   fLc2V0bachelorCalcSecoVtx;             /// option to calculate the secondary vertex for Lc2V0bachelor. False by default, has to be added to AddTask in case we want to start using it.
+    Int_t                   fV0typeForLc2V0bachelor;               /// option to select Offline+OnTheFly (0), only Offline (1=default), only OnTheFly (2) V0's for the Lc->V0bachelor decay
+    Float_t                 fInvMassOnFlyCut;                      ///Cut on invariant mass for on fly hadron selection
+    Float_t                 fPtOnFlyCut;                           ///Cut on pT for on fly hadron  selection
+    Float_t                 fImpParProdOnFlyCut;                   ///Cut on d0xd0 for on fly hadron  selection
+    Float_t                 fCosPOnFlyCut;                         ///Cut on cos pointing angle for on fly hadron  selection
+    Float_t                 fCosPXYOnFlyCut;                       ///Cut on cos pointing angle xy for on fly hadron selection
   
     Int_t                   fTreeSingleTrackVarsOpt;               /// option for single-track variables to be filled in the trees
 
-    Double_t                fJetRadius;                            //Setting the radius for jet finding
-    Double_t                fSubJetRadius;                         //Setting the radius for subjet finding
-    Int_t                   fJetAlgorithm;                         //Setting the jet finding algorithm
-    Int_t                   fSubJetAlgorithm;                      //Setting the jet finding algorithm
-    Double_t                fMinJetPt;                             //Setting the jet finding min pT
-    Double_t                fTrackingEfficiency;                   //Setting the jet finding tracking efficiency
+    Double_t                fJetRadius;                            /// Setting the radius for jet finding
+    Double_t                fSubJetRadius;                         /// Setting the radius for subjet finding
+    Int_t                   fJetAlgorithm;                         /// Setting the jet finding algorithm
+    Int_t                   fSubJetAlgorithm;                      /// Setting the jet finding algorithm
+    Double_t                fMinJetPt;                             /// Setting the jet finding min pT
+    Double_t                fSoftDropZCut;                         /// setting the soft drop z parameter
+    Double_t                fSoftDropBeta;                         /// setting the soft drop beta parameter
+    Double_t                fTrackingEfficiency;                   /// Setting the jet finding tracking efficiency
   
     Int_t                   fGoodTrackFilterBit;                   /// Setting filter bit for bachelor on-the-fly reconstruction candidate
     Double_t                fGoodTrackEtaRange;                    /// Setting eta-range for bachelor on-the-fly reconstruction candidate
     Double_t                fGoodTrackMinPt;                       /// Setting min pT for bachelor on-the-fly reconstruction candidate
+    Bool_t                  fITSUpgradeProduction;                 /// Setting for analysing an ITS Upgrade production
+    Bool_t                  fITSUpgradePreSelect;                  /// Setting to enable ITSUpgrade Preselect function
+    Bool_t                  fStoreOnlyHIJINGBackground;            /// Setting to store only HIJING background candidates
+    Bool_t                  fPreSelectLctopKpi;                    /// Setting for reduce the filling of reconstucted candidates  in an ITS Upgrade production
+    Bool_t                  fFillInjCandHijingTrackCombi;          /// Setting to store injected candidate + HIJING track for background shape studies
 
     // Particles (tracks / MC particles)
     // Add a single AliTrackContainer and/or AliMCParticleContainer to select particles
@@ -442,8 +508,9 @@ private:
 
 
     
-    bool                    fFillJets;                             //FillJetInfo
-    bool                    fDoJetSubstructure;                    //FillJetSubstructure
+    bool                    fFillJets;                             /// FillJetInfo
+    bool                    fDoJetSubstructure;                    /// FillJetSubstructure
+    bool                    fDoPtHard;                             /// Get infor for Pt Hard Bins
     
   
     bool fEnableNsigmaTPCDataCorr; /// flag to enable data-driven NsigmaTPC correction
@@ -462,7 +529,7 @@ private:
     AliCDBEntry *fCdbEntry;
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFTreeCreator,22);
+    ClassDef(AliAnalysisTaskSEHFTreeCreator,30);
     /// \endcond
 };
 

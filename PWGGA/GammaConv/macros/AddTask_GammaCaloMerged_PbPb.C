@@ -33,7 +33,7 @@ void AddTask_GammaCaloMerged_PbPb(
   Int_t     enableQAClusterTask           = 0,        // enable additional QA task
   Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
   Int_t     enableLightOutput             = 0,        // switch to run light output (only essential histograms for afterburner)
-  Bool_t    enableTriggerMimicking        = kFALSE,   // enable trigger mimicking
+  Int_t     enableTriggerMimicking        = 0,   // enable trigger mimicking
   Bool_t    enableTriggerOverlapRej       = kFALSE,   // enable trigger overlap rejection
   TString   settingMaxFacPtHard           = "3.",       // maximum factor between hardest jet and ptHard generated
   // settings for weights
@@ -51,7 +51,9 @@ void AddTask_GammaCaloMerged_PbPb(
   Bool_t    enableExoticsQA               = kFALSE,   // switch to run QA for exotic clusters
   Bool_t    runDetailedM02                = kFALSE,   // switch on very detailed M02 distribution
   // subwagon config
+  Int_t     minAllowedPi0Overlaps         = -1,   // set maximum number of Pi0 overlaps in MC
   Int_t     maxAllowedPi0Overlaps         = -1,   // set maximum number of Pi0 overlaps in MC
+  Bool_t    doOverlapsFromCluster         = kFALSE, // overlaps as event criteria (false) or from single clusters (true)
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
 ) {
 
@@ -99,6 +101,9 @@ void AddTask_GammaCaloMerged_PbPb(
   Double_t maxFacPtHard       = 100;
   Bool_t fSingleMaxPtHardSet  = kFALSE;
   Double_t maxFacPtHardSingle = 100;
+  Bool_t fJetFinderUsage      = kFALSE;
+  Bool_t fUsePtHardFromFile      = kFALSE;
+  Bool_t fUseAddOutlierRej      = kFALSE;
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
@@ -117,6 +122,24 @@ void AddTask_GammaCaloMerged_PbPb(
       maxFacPtHardSingle         = strTempSetting.Atof();
       cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
       fSingleMaxPtHardSet        = kTRUE;
+    } else if(strTempSetting.BeginsWith("USEJETFINDER:")){
+      strTempSetting.Replace(0,13,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fJetFinderUsage        = kTRUE;
+      }
+    } else if(strTempSetting.BeginsWith("PTHFROMFILE:")){
+      strTempSetting.Replace(0,12,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using MC jet finder for outlier removal" << endl;
+        fUsePtHardFromFile        = kTRUE;
+      }
+    } else if(strTempSetting.BeginsWith("ADDOUTLIERREJ:")){
+      strTempSetting.Replace(0,14,"");
+      if(strTempSetting.Atoi()==1){
+        cout << "using path based outlier removal" << endl;
+        fUseAddOutlierRej        = kTRUE;
+      }
     } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
       maxFacPtHard               = strTempSetting.Atof();
       cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
@@ -162,6 +185,7 @@ void AddTask_GammaCaloMerged_PbPb(
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetLightOutput(enableLightOutput);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
 
@@ -224,16 +248,43 @@ void AddTask_GammaCaloMerged_PbPb(
     cuts.AddCutMergedCalo("50010113","1111100050032200000","1111100050022000001","0163300000000000"); //
 
   } else if (trainConfig == 300){ // mEDC configs 0-90%
-    cuts.AddCutMergedCalo("10910123","4117901050032200000","4117901050022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("10910a13","4117931050032200000","4117931050022700001","0163300000000000"); // INT7
   } else if (trainConfig == 301){
-    cuts.AddCutMergedCalo("1098e123","4117901050032200000","4117901050022700001","0163300000000000"); // EG2+DG2
-    cuts.AddCutMergedCalo("1098d123","4117901050032200000","4117901050022700001","0163300000000000"); // EG1+DG1
+    cuts.AddCutMergedCalo("1098ea13","4117931050032200000","4117931050022700001","0163300000000000"); // EG2+DG2
+    cuts.AddCutMergedCalo("1098da13","4117931050032200000","4117931050022700001","0163300000000000"); // EG1+DG1
 
   } else if (trainConfig == 320){ // mEDC configs 0-10%
-    cuts.AddCutMergedCalo("10110123","4117901050032200000","4117901050022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("10110a13","4117931050032200000","4117931050022700001","0163300000000000"); // INT7
   } else if (trainConfig == 321){
-    cuts.AddCutMergedCalo("1018e123","4117901050032200000","4117901050022700001","0163300000000000"); // EG2+DG2
-    cuts.AddCutMergedCalo("1018d123","4117901050032200000","4117901050022700001","0163300000000000"); // EG1+DG1
+    cuts.AddCutMergedCalo("1018ea13","4117931050032200000","4117931050022700001","0163300000000000"); // EG2+DG2
+    cuts.AddCutMergedCalo("1018da13","4117931050032200000","4117931050022700001","0163300000000000"); // EG1+DG1
+
+  // NLM = 1
+  } else if (trainConfig == 400){ // mEDC configs V0 cents
+    cuts.AddCutMergedCalo("10110a13","411793105f032200000","411793105f022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("13510a13","411793105f032200000","411793105f022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("15910a13","411793105f032200000","411793105f022700001","0163300000000000"); // INT7
+  } else if (trainConfig == 401){ // mEDC configs V0 cents
+    cuts.AddCutMergedCalo("1018ea13","411793105f032200000","411793105f022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("1358ea13","411793105f032200000","411793105f022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("1598ea13","411793105f032200000","411793105f022700001","0163300000000000"); // INT7
+  } else if (trainConfig == 402){ // mEDC configs V0 cents
+    cuts.AddCutMergedCalo("1018da13","411793105f032200000","411793105f022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("1358da13","411793105f032200000","411793105f022700001","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("1598da13","411793105f032200000","411793105f022700001","0163300000000000"); // INT7
+    // NLM = 2
+  } else if (trainConfig == 410){ // mEDC configs V0 cents
+    cuts.AddCutMergedCalo("10110a13","411793105f032200000","411793105f022700002","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("13510a13","411793105f032200000","411793105f022700002","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("15910a13","411793105f032200000","411793105f022700002","0163300000000000"); // INT7
+  } else if (trainConfig == 411){ // mEDC configs V0 cents
+    cuts.AddCutMergedCalo("1018ea13","411793105f032200000","411793105f022700002","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("1358ea13","411793105f032200000","411793105f022700002","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("1598ea13","411793105f032200000","411793105f022700002","0163300000000000"); // INT7
+  } else if (trainConfig == 412){ // mEDC configs V0 cents
+    cuts.AddCutMergedCalo("1018da13","411793105f032200000","411793105f022700002","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("1358da13","411793105f032200000","411793105f022700002","0163300000000000"); // INT7
+    cuts.AddCutMergedCalo("1598da13","411793105f032200000","411793105f022700002","0163300000000000"); // INT7
 
   } else {
     Error(Form("GammaCaloMerged_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -302,6 +353,7 @@ void AddTask_GammaCaloMerged_PbPb(
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
       AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi(),trackMatcherRunningMode);
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
+      fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
       mgr->AddTask(fTrackMatcher);
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
@@ -330,7 +382,14 @@ void AddTask_GammaCaloMerged_PbPb(
       analysisEventCuts[i]->SetMaxFacPtHard(maxFacPtHard);
     if(fSingleMaxPtHardSet)
       analysisEventCuts[i]->SetMaxFacPtHardSingleParticle(maxFacPtHardSingle);
+    if(fJetFinderUsage)
+      analysisEventCuts[i]->SetUseJetFinderForOutliers(kTRUE);
+    if(fUsePtHardFromFile)
+      analysisEventCuts[i]->SetUsePtHardBinFromFile(kTRUE);
+    if(fUseAddOutlierRej)
+      analysisEventCuts[i]->SetUseAdditionalOutlierRejection(kTRUE);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if(periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->SetLightOutput(enableLightOutput);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
@@ -341,6 +400,7 @@ void AddTask_GammaCaloMerged_PbPb(
     analysisClusterCuts[i]->SetIsPureCaloCut(2);
     analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterCuts[i]->SetLightOutput(enableLightOutput);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
@@ -352,6 +412,7 @@ void AddTask_GammaCaloMerged_PbPb(
     analysisClusterMergedCuts[i]->SetIsPureCaloCut(1);
     analysisClusterMergedCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterMergedCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterMergedCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterMergedCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     analysisClusterMergedCuts[i]->SetLightOutput(enableLightOutput);
     analysisClusterMergedCuts[i]->InitializeCutsFromCutString((cuts.GetClusterMergedCut(i)).Data());
@@ -368,23 +429,26 @@ void AddTask_GammaCaloMerged_PbPb(
     analysisMesonCuts[i]->SetFillCutHistograms("");
     analysisEventCuts[i]->SetAcceptedHeader(HeaderList);
   }
+  if(minAllowedPi0Overlaps>-1){ task->SetMinNeutralPionOverlapsMC(minAllowedPi0Overlaps);}
   if(maxAllowedPi0Overlaps>-1){ task->SetMaxNeutralPionOverlapsMC(maxAllowedPi0Overlaps);}
   task->SetEnableDetailedM02Distribtuon(runDetailedM02);
   task->SetSelectedMesonID(selectedMeson);
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetCaloMergedCutList(numberOfCuts,ClusterMergedCutList);
   task->SetMesonCutList(numberOfCuts,MesonCutList);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
+  task->SetOverlapFromCluster(doOverlapsFromCluster);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if (enableDetailedPrintout) task->SetEnableDetailedPrintout(enableDetailedPrintout);//Attention new switch small for Cluster QA
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer(Form("GammaCaloMerged_%i",trainConfig), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("GammaCaloMerged_%i.root",trainConfig));
+    mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaCaloMerged_%i",trainConfig) : Form("GammaCaloMerged_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
+              AliAnalysisManager::kOutputContainer,Form("GammaCaloMerged_%i.root",trainConfig) );
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
