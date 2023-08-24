@@ -215,8 +215,7 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_detect::UserExec(Option_t *)
   Float_t fNwNwColl=0.0;
   Float_t fNpart=0.0;
 
-  int fMCchoice=2;
-    
+     
   //For EPOS
     
   if(fMCchoice==1)
@@ -332,11 +331,17 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_detect::UserExec(Option_t *)
       if(TMath::Abs(trkEta)>0.8)continue;
       if(TMath::Abs(trkCharge)!=1)continue;
 
+      //filling pt at generated level
+      hist2D_pt_gen_centrality->Fill(trkPt,fCentImpBin);
+
       x=ran.Uniform(0,1);
       eff=fEff->Eval(trkPt);
       //cout<<x<<"\t"<<eff<<endl;
       if(x<(eff))
 	{
+	  //filling pt after losing particle imposing eff loss
+	  hist2D_pt_rec_centrality->Fill(trkPt,fCentImpBin);
+      
 	  if(TMath::Abs(trkCharge) > 0)
 	    {
 	      if(trkEta < 0.0)
