@@ -71,6 +71,7 @@ fOutputList(0),
 fPIDResponse(0),
 fPidpTDependentMethod(kTRUE),
 fRejectEventPileUp(kTRUE),
+skipmom(kTRUE),
 fRemoveResonance(kFALSE),
 fRemoveResonancek0s(kFALSE),
 fRemoveAnyResonance(kTRUE),
@@ -226,6 +227,9 @@ fMCK0(0),
 fMCKpos(0),
 fMCKneg(0),
 fMCKch(0),
+fMCK0Cut(0),
+fMCKposCut(0),
+fMCKnegCut(0),
 fHistk0kch(0),
 fHistkpkn(0),
 fHistk0kp(0),
@@ -260,6 +264,7 @@ fmcEvent(0),
 fOutputList(0), 
 fPIDResponse(0),
 fPidpTDependentMethod(kTRUE),
+skipmom(kTRUE),
 fRejectEventPileUp(kTRUE),
 fRemoveResonance(kFALSE),
 fRemoveResonancek0s(kFALSE),
@@ -416,6 +421,9 @@ fMCK0(0),
 fMCKpos(0),
 fMCKneg(0),
 fMCKch(0),
+fMCK0Cut(0),
+fMCKposCut(0),
+fMCKnegCut(0),
 fHistk0kch(0),
 fHistkpkn(0),
 fHistk0kp(0),
@@ -731,9 +739,9 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
 
     //+++++++++++++++++++++ MC ++++++++++++++++++++++++++
 
-    Int_t bins[4] = {100,100,100,100};
-    Double_t min[4] = {fLpTCut,0,-1.0,0.4};
-    Double_t max[4] = {fUpTCut,2*Pi,1.0,0.6};
+    Int_t bins[3] = {100,100,100};
+    Double_t min[3] = {fLpTCut,0,-1.0};
+    Double_t max[3] = {fUpTCut,2*Pi,1.0};
 
     fMCK0Pt = new TH1F("fMCK0Pt", "", 100, fLpTv0Cut, fUpTv0Cut);
     fMCK0Pt->SetOption("HIST E p");
@@ -750,34 +758,41 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fMCKMinusPtfullRange = new TH1F("fMCKMinusPtfullRange", "", 100, 0, 2);
     fMCKMinusPtfullRange->SetOption("HIST E p");
     
-    fMCK0 = new THnSparseF("fMCK0","fMCK0",4,bins,min,max);
+    fMCK0 = new THnSparseF("fMCK0","fMCK0",3,bins,min,max);
     fMCK0->GetAxis(0)->SetTitle("p_{T} of K^{0}_{S}");
     fMCK0->GetAxis(1)->SetTitle("#phi");
     fMCK0->GetAxis(2)->SetTitle("#eta");
-    fMCK0->GetAxis(3)->SetTitle("mass");
 
-    fMCKpos = new THnSparseF("fMCKpos","fMCKpos",4,bins,min,max);
+    fMCKpos = new THnSparseF("fMCKpos","fMCKpos",3,bins,min,max);
     fMCKpos->GetAxis(0)->SetTitle("p_{T} of K^{+}");
     fMCKpos->GetAxis(1)->SetTitle("#phi of K^{+}");
     fMCKpos->GetAxis(2)->SetTitle("#eta of K^{+}");
-    fMCKpos->GetAxis(3)->SetTitle("mass of K^{+}");
 
-    fMCKneg = new THnSparseF("fMCKneg","fMCKneg",4,bins,min,max);
+    fMCKneg = new THnSparseF("fMCKneg","fMCKneg",3,bins,min,max);
     fMCKneg->GetAxis(0)->SetTitle("p_{T} of K^{-}");
     fMCKneg->GetAxis(1)->SetTitle("#phi of K^{-}");
     fMCKneg->GetAxis(2)->SetTitle("#eta of K^{-}");
-    fMCKneg->GetAxis(3)->SetTitle("mass of K^{-}");
 
-    fMCKch = new THnSparseF("fMCKch","fMCKch",4,bins,min,max);
+    fMCKch = new THnSparseF("fMCKch","fMCKch",3,bins,min,max);
     fMCKch->GetAxis(0)->SetTitle("p_{T} of K^{ch}");
     fMCKch->GetAxis(1)->SetTitle("#phi of K^{ch}");
     fMCKch->GetAxis(2)->SetTitle("#eta of K^{ch}");
-    fMCKch->GetAxis(3)->SetTitle("mass of K^{ch}");
+
+    // QA plots after resonance cut
+
+    fMCK0Cut = new THnSparseF("fMCK0Cut","fMCK0Cut",3,bins,min,max);
+
+    fMCKposCut = new THnSparseF("fMCKposCut","fMCKposCut",3,bins,min,max);
+
+    fMCKnegCut = new THnSparseF("fMCKnegCut","fMCKnegCut",3,bins,min,max);
+    
 
     fHistk0kch = new TH2F("fHistk0kch","",32,MinFi,MaxFi,32,-1.6, 1.6);
     fHistk0kch->GetXaxis()->SetTitle("#Delta#varphi ");
     fHistk0kch->GetYaxis()->SetTitle("#Delta#eta");
     fHistk0kch->SetOption("SURF1");
+
+    //MC truth correlations
 
     fHistK0KchMC = new TH2F("fHistK0KchMC","K^{0}-K^{ch} Correlation for MC Truth",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
     fHistK0KchMC->GetXaxis()->SetTitle("#Delta#varphi ");
@@ -938,6 +953,9 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fOutputList->Add(fMCKpos);
     fOutputList->Add(fMCKneg);
     fOutputList->Add(fMCKch);
+    fOutputList->Add(fMCK0Cut);
+    fOutputList->Add(fMCKposCut);
+    fOutputList->Add(fMCKnegCut);
     fOutputList->Add(fMCK0Pt);
     fOutputList->Add(fMCK0PtfullRange);
     fOutputList->Add(fMCKPlusPt);
@@ -1999,47 +2017,11 @@ for (Int_t i = 0; i < nMCTracks; i++){
 
     nAcceptedParticles += 1;
 
-    Int_t labMom = mcTrack->GetMother();
-    fGetMom->Fill(labMom);
-    //cout << "mother is" << labMom << endl;
-
-    //if (labMom==-1) continue;
-
-
-    if (labMom >= 0) {
-    MotherTrack = (AliMCParticle *)fmcEvent->GetTrack(labMom);
-    pdgMother = MotherTrack->PdgCode();
-    fpdgCode->Fill(pdgMother);
-    //cout << "pdgcode is" << pdgMother << endl; 
-
-    if (fRemoveKchResonance) {
-        if (SelectKch){
-        if (pdgMother != 0) continue;    // remove every kaon track from resonances
-        //cout << " pdg mother of tracks remained" << pdgMother << endl;
-        }
-    }
-
-    if (fRemoveAnyResonance) {
-        if (SelectKch){ if (pdgMother != 0) continue; }
-        if (SelectK0) { if (!(pdgMother == 311 || pdgMother == -311)) continue; }
-        //if (SelectK0) cout << " pdg mother of tracks remained" << pdgMother << endl;  
-    
-    }
-
-    }
-
-    nTracksResonancecut += 1;
-    //cout << "nTracksResonancecut is" << nTracksResonancecut << endl;
-
-    if (labMom > 0) nTrackswithMother += 1;
-    if (labMom < 0) nTrackswithoutMother += 1;
-    
-    Double_t KaonVariables[4]= {TrackPt, TrackPhi, TrackEta, TrackMass};
+    Double_t KaonVariables[3]= {TrackPt, TrackPhi, TrackEta};
     if(SelectK0) {
         fMCK0->Fill(KaonVariables);
         fMCK0Pt->Fill(TrackPt);
     }
-    if(SelectK0) fMCSelectedK0s->Add(mcTrack);
     
     if(SelectKpos) {
         fMCKpos->Fill(KaonVariables);
@@ -2051,9 +2033,45 @@ for (Int_t i = 0; i < nMCTracks; i++){
         fMCKMinusPt->Fill(TrackPt);
     }
     if(SelectKch) fMCKch->Fill(KaonVariables);
+
+
+    Int_t labMom = mcTrack->GetMother();
+    fGetMom->Fill(labMom);
+
+    if (skipmom) if (labMom < 0) continue;
+    MotherTrack = (AliMCParticle *)fmcEvent->GetTrack(labMom);
+    pdgMother = MotherTrack->PdgCode();
+    fpdgCode->Fill(pdgMother);
+    //cout << "pdgcode is" << pdgMother << endl; 
+
+    if (fRemoveKchResonance) {
+        if (SelectKch){ if (pdgMother != 0) continue; 
+        //cout << " pdg mother of tracks" << pdgMother << endl;
+        
+        }
+    }
+
+    if (fRemoveAnyResonance) {
+
+        if (SelectK0) { if (!(pdgMother == 311 || pdgMother == -311)) continue; }
+ 
+    }
+
+    if (SelectKpos) { fMCKposCut->Fill(KaonVariables); }
+    if (SelectKneg) { fMCKnegCut->Fill(KaonVariables); }
+    if (SelectK0) { fMCK0Cut->Fill(KaonVariables); }
+
+    nTracksResonancecut += 1;
+    //cout << "nTracksResonancecut is" << nTracksResonancecut << endl;
+
+    //if (labMom > 0) nTrackswithMother += 1;
+    //if (labMom < 0) nTrackswithoutMother += 1;
+    
+    
     if(SelectKch) fMCSelectedKCh->Add(mcTrack);
     if(SelectKpos) fMCSelectedKpos->Add(mcTrack);
     if(SelectKneg) fMCSelectedKneg->Add(mcTrack);
+    if(SelectK0) fMCSelectedK0s->Add(mcTrack);
 
 }
 //cout << "ntracks with mother is" << nTrackswithMother << endl;
