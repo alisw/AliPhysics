@@ -71,6 +71,7 @@ AliAnalysisTaskSED0MassTMVA::AliAnalysisTaskSED0MassTMVA():
   AliAnalysisTaskSE(),
   fNtupleD0C(0),
   fNtupleD0B(0),
+  fNtuplebkg(0),
   fNtupleD0Data(0),
   fNtupleRefl(0),
   fOutputMass(0),
@@ -104,7 +105,7 @@ AliAnalysisTaskSED0MassTMVA::AliAnalysisTaskSED0MassTMVA():
   fEventCounter(0),
   fUseSelectionBit(kTRUE),
   fAODProtection(0),
-  fWriteVariableTree(kFALSE),
+  fWriteVariableTree(kTRUE),
   fVariablesTree(0),
   fCandidateVariables(),
   fWriteProtosgnVar(kFALSE),
@@ -148,6 +149,7 @@ AliAnalysisTaskSED0MassTMVA::AliAnalysisTaskSED0MassTMVA(const char *name,AliRDH
   AliAnalysisTaskSE(name),
   fNtupleD0C(0),
   fNtupleD0B(0),
+  fNtuplebkg(0),
   fNtupleD0Data(0),
   fNtupleRefl(0),
   fOutputMass(0),
@@ -181,7 +183,7 @@ AliAnalysisTaskSED0MassTMVA::AliAnalysisTaskSED0MassTMVA(const char *name,AliRDH
   fEventCounter(0),
   fUseSelectionBit(kTRUE),
   fAODProtection(0),
-  fWriteVariableTree(kFALSE),
+  fWriteVariableTree(kTRUE),
   fVariablesTree(0),
   fCandidateVariables(),
   fWriteProtosgnVar(kFALSE),
@@ -994,6 +996,7 @@ void AliAnalysisTaskSED0MassTMVA::UserCreateOutputObjects()
       const char* varstring = "ptD:topo1:topo2:lxy:nlxy:iscut:ispid:type:mass:d0d0:cosp:dca:ptk:ptpi:cospxy:d0k:d0pi:cosstar:ptB:pdgcode:YD0:phi:multiplicity";
       fNtupleD0C = new TNtuple("fNtupleD0C", "Prompt D0 in MC", varstring);
       fNtupleD0B = new TNtuple("fNtupleD0B", "Non-prompt D0 in MC",    varstring);
+      fNtuplebkg = new TNtuple("fNtuplebkg", "bkg in MC", varstring);
       fNtupleD0Data = new TNtuple("fNtupleD0Data", "D0 in Data", varstring);
       fNtupleRefl = new TNtuple("fNtupleRefl","Reflection in MC", varstring);
   }
@@ -1248,8 +1251,10 @@ void AliAnalysisTaskSED0MassTMVA::UserCreateOutputObjects()
   PostData(5,fCounter);
   PostData(6,fNtupleD0C);
   PostData(7,fNtupleD0B);
-  PostData(8, fNtupleD0Data);
-  PostData(9,fNtupleRefl);
+  PostData(8,fNtuplebkg);
+  PostData(9, fNtupleD0Data);
+  PostData(10,fNtupleRefl);
+
   return;
 }
 
@@ -1643,8 +1648,10 @@ void AliAnalysisTaskSED0MassTMVA::UserExec(Option_t */*option*/)
   PostData(5,fCounter);
   PostData(6,fNtupleD0C);
   PostData(7,fNtupleD0B);
-  PostData(8, fNtupleD0Data);
-  PostData(9,fNtupleRefl);
+  PostData(8,fNtuplebkg);
+  PostData(9,fNtupleD0Data);
+  PostData(10,fNtupleRefl);
+
 
   return;
 }
@@ -2958,7 +2965,7 @@ void AliAnalysisTaskSED0MassTMVA::Terminate(Option_t */*option*/)
   }
   fOutputMassPt = dynamic_cast<TList*> (GetOutputData(6));
   if ((fFillPtHist || fFillImpParHist) && !fOutputMassPt) {
-    printf("ERROR: fOutputMass not available\n");
+    printf("ERROR: fOutputMassPt not available\n");
     return;
   }
 
@@ -3415,8 +3422,10 @@ void AliAnalysisTaskSED0MassTMVA::NormIPvar(AliAODEvent *aod, AliAODRecoDecayHF2
             ptB=AliVertexingHFUtils::GetBeautyMotherPt(arrMC,partD0);
             tmp[18] = ptB;
             
-            if(tmp[7]==4)         fNtupleD0C->Fill(tmp);
-            else if(tmp[7]==5)     fNtupleD0B->Fill(tmp);
+            if(tmp[7]==4)        fNtupleD0C->Fill(tmp);
+            else if (tmp[7]==5)     fNtupleD0B->Fill(tmp);
+            else if (tmp[7]==0)     fNtuplebkg->Fill(tmp);
+
             
             // Check reflection
             if((fIsSelectedCandidate==1 || fIsSelectedCandidate==3) && fFillOnlyD0D0bar<2){

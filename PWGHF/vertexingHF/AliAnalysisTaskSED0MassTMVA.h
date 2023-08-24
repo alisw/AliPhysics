@@ -421,6 +421,7 @@ class AliAnalysisTaskSED0MassTMVA : public AliAnalysisTaskSE
   Bool_t    fRejectOutOfBunchPileUp;
   TNtuple *fNtupleD0C;//!<!
   TNtuple *fNtupleD0B;//!<!
+  TNtuple *fNtuplebkg;//!<!
   TNtuple *fNtupleD0Data;//!<!
   TNtuple *fNtupleRefl;//!<!
 
