@@ -214,6 +214,10 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
 
   // follow the convention of AliFemtoDreamBaseParticle 
   int GetBuddyOrigin(AliAODMCParticle *mcPart) {
+    if (!mcPart || !fIsMC) {
+      return AliFemtoDreamBasePart::PartOrigin::kUnknown;
+    }
+
     bool isPhysPrim = mcPart->IsPhysicalPrimary();
     bool isSec = mcPart->IsSecondaryFromWeakDecay();
     bool isMat = mcPart->IsSecondaryFromMaterial();
@@ -232,6 +236,10 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   }
 
   bool SelectBuddyOrigin(AliAODMCParticle *mcPart) {
+    if (!mcPart || !fIsMC) {
+      return true;
+    }
+
     if(fBuddyOrigin==0) {
       return true;
     }
@@ -266,6 +274,10 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
     fDmesonOrigin = origin;
   }
   bool SelectDmesonOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPart) {
+    if (!mcPart || !fIsMC) {
+      return true;
+    }
+
     if(fDmesonOrigin==0) {
       fDoDorigPlots=true;
       return true;
