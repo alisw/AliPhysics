@@ -1,19 +1,17 @@
 AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
-	TString	taskName = "beauty",
-	bool	isMC = false,
-
-    //TString estimatorFileName = "fileEstimatorAvg.root",
-    //double  multRef = 11.7,
-
-	int		minTPCnCrossedRow = 70,
-	int		minTPCnClsPID = 80,
-	double	maxTPCchi2 = 4,
-	double	minTPCclsRatio = 0.8,
-	int		minITSnCls = 3,
-	int		itsLayer = 2,
-	double	tpcPIDlow = -1,
-	double	tpcPIDhigh = 3,
-	double	tofPID = 3)
+  TString	taskName = "beauty",
+  bool		isMC = false,
+  bool		isPP = true,
+  double	multRef = 11.7,
+  int		minTPCnCrossedRow = 70,
+  int		minTPCnClsPID = 80,
+  double	maxTPCchi2 = 4,
+  double	minTPCclsRatio = 0.8,
+  int		minITSnCls = 3,
+  int		itsLayer = 2,
+  double	tpcPIDlow = -1,
+  double	tpcPIDhigh = 3,
+  double	tofPID = 3)
 {
   //TString taskName = "beauty";
   //TString itsLayer = citsLayer;
@@ -54,32 +52,45 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
   task->SetITSlayer(itsLayer);
   task->SetPIDCuts(tpcPIDlow, tpcPIDhigh, tofPID);
 
+  //gSystem->Load("libRAliEn");
+  TGrid::Connect("alien://");
+
   // Multiplicity
-  double multRef = 11.7;
-  TString estimatorFileName = "fileEstimatorAvg.root";
-  if(estimatorFileName.EqualTo("")){
-    printf("Estimator file not provided, multiplcity corrected histograms will not be filled\n");
-  }else{
-    TString alienpath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/";
-    TString path_file = alienpath + estimatorFileName;
-    //TFile* fileEstimator = TFile::Open(estimatorFileName.Data());
-    TFile* fileEstimator = TFile::Open(path_file.Data());
-    if(!fileEstimator){
-      printf("File with multiplicity estimator not found\n");
-      return 0x0;
-    }
-    task->SetMultReference(multRef);
-
-    TProfile *multEstimatorAvg = (TProfile*)fileEstimator->Get("fNtrAvg_pp_pass1_all");
-    if(!multEstimatorAvg) {
-      printf("Multiplicity estimator not found! Please check your estimator file\n");
-      return 0x0;
-    }
-
-    task->SetEstimatorAvg(multEstimatorAvg);
-    //task->SetEstimatorHistogram(period);
-  }
+  TString profile;
+  if(isMC) profile = "GPMC";
+  else profile = "Data";
+  TString filepath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/fileEstimatorAvg.root";
+  printf("Multiplicity estimator from %s \n", filepath.Data());
   
+  TFile* fileEstimator = TFile::Open(filepath.Data());
+  if(!fileEstimator){
+    printf("File with multiplicity estimator not found\n");
+    return 0x0;
+  }
+  task->SetMultReference(multRef);
+
+  TProfile *multEstimatorAvg = (TProfile*)fileEstimator->Get(Form("fNtrkletAvg_%s", profile.Data()))->Clone(Form("fNtrkletAvg_%s", profile.Data()));
+  if(!multEstimatorAvg) {
+    printf("Multiplicity estimator not found! Please check your estimator file\n");
+    return 0x0;
+  }
+  printf("fNtrkletAvg_%s will be used in the multiplcity correction!!!", profile.Data());
+  task->SetEstimatorAvg(multEstimatorAvg);
+
+  if(isMC){
+    TString pathNchCorr = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/NchCorr.root";
+    printf("Correction for Ntrklet to Nch conversion from %s \n", pathNchCorr.Data());
+    TFile *fileNchCorr = TFile::Open(pathNchCorr.Data());
+    if(!fileNchCorr){
+      printf("File %s is not found!", pathNchCorr.Data());
+      return 0x0;
+    }
+    TH1F *histNchCorr = (TH1F*)fileNchCorr->Get("histNchCorr")->Clone("histNchCorr");
+    TF1 *funcNchCorr = (TF1*)fileNchCorr->Get("funcNchCorr")->Clone("funcNchCorr");
+    task->SetNchCorrHist(histNchCorr);
+    task->SetNchCorrFunc(funcNchCorr);
+  }
+
   
   if(isMC){
 	task->SetMCanalysis();
@@ -137,6 +148,7 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
 
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("ccontainer0_%s",taskName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("ccontainer0_%s","trackQA"), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   
 	return task;
 }
