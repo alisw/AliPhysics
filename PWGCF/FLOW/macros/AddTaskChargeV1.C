@@ -50,8 +50,8 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
   if (doNUE)
   {
 
-    // fNUEFile = TFile::Open("alien:///alice/cern.ch/user/j/jwan/CalibFile/18q/efficiencyBothpol18qnew.root", "READ");
-    fNUEFile = TFile::Open("./efficiencyBothpol18qnew.root", "READ");
+     fNUEFile = TFile::Open("alien:///alice/cern.ch/user/j/jwan/CalibFile/18q/efficiencyBothpol18qnew.root", "READ");
+    //fNUEFile = TFile::Open("./efficiencyBothpol18qnew.root", "READ");
     fListNUE = dynamic_cast<TList *>(fNUEFile->Get("fMcEffiHij"));
 
     if (fListNUE)
@@ -65,8 +65,8 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
   if (doNUA)
   {
 
-    // fNUAFile = TFile::Open("alien:///alice/cern.ch/user/j/jwan/CalibFile/18q/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
-    fNUAFile = TFile::Open("./WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
+     fNUAFile = TFile::Open("alien:///alice/cern.ch/user/j/jwan/CalibFile/18q/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
+   // fNUAFile = TFile::Open("./WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
     fListNUA = dynamic_cast<TList *>(fNUAFile->Get("fNUA_ChPosChNeg"));
 
     if (fListNUA)
@@ -80,8 +80,8 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
 
   if (ZDCcali)
   {
-    // fZDCCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/RecenteringResultFinal_2018q.root", "READ");
-    fZDCCalibFile = TFile::Open("./RecenteringResultFinal_2018q.root");
+     fZDCCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/RecenteringResultFinal_2018q.root", "READ");
+    //fZDCCalibFile = TFile::Open("./RecenteringResultFinal_2018q.root");
     fZDCCalibList = dynamic_cast<TList *>(fZDCCalibFile->Get("fOutputRecenter"));
     task->SetListForZDCCalib(fZDCCalibList);
     std::cout << "================  ZDC List Set =================" << std::endl;
