@@ -71,11 +71,11 @@ fOutputList(0),
 fPIDResponse(0),
 fPidpTDependentMethod(kTRUE),
 fRejectEventPileUp(kTRUE),
-skipmom(kTRUE),
+skipmom(kFALSE),
 fRemoveResonance(kFALSE),
 fRemoveResonancek0s(kFALSE),
-fRemoveAnyResonance(kTRUE),
-fRemoveKchResonance(kFALSE),
+fRemoveK0Resonance(kTRUE),
+fRemoveKchResonance(kTRUE),
 fRemovePhiResonance(kFALSE),
 fMinBias(kTRUE),
 fCentral(kFALSE),
@@ -250,6 +250,7 @@ fHistGenMultiplicity(0),
 fGetMom(0),
 fpdgCode(0),
 fpdgCodeaftercut(0),
+fpdgkch(0),
 //eventcuts
 fEventCuts(0)
 
@@ -264,12 +265,12 @@ fmcEvent(0),
 fOutputList(0), 
 fPIDResponse(0),
 fPidpTDependentMethod(kTRUE),
-skipmom(kTRUE),
+skipmom(kFALSE),
 fRejectEventPileUp(kTRUE),
 fRemoveResonance(kFALSE),
 fRemoveResonancek0s(kFALSE),
-fRemoveAnyResonance(kTRUE),
-fRemoveKchResonance(kFALSE),
+fRemoveK0Resonance(kTRUE),
+fRemoveKchResonance(kTRUE),
 fRemovePhiResonance(kFALSE),
 fMinBias(kTRUE),
 fCentral(kFALSE),
@@ -445,6 +446,7 @@ fHistGenMultiplicity(0),
 fGetMom(0),
 fpdgCode(0),
 fpdgCodeaftercut(0),
+fpdgkch(0),
 fEventCuts(0)
 
 
@@ -500,8 +502,9 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fPoolMgr->SetTargetValues(fPoolMinNTracks, 0.1, 5);
 
     fGetMom = new TH1F("GetMother Index", "GetMother Index", 700, -200000, 200000);
-    fpdgCode = new TH1F("PDG of Mother Tracks", "PDG of Mother Tracks", 1000, -2500, 2500);
-    fpdgCodeaftercut = new TH1F("PDG of Mother Tracks after cut", "PDG of Mother Tracks after cut", 1000, -4000, 4000);
+    fpdgCode = new TH1F("PDG of Mother Tracks", "PDG of Mother Tracks", 600, -600, 600);
+    fpdgCodeaftercut = new TH1F("PDG of Mother Tracks after cut", "PDG of Mother Tracks after cut", 600, -600, 600);
+    fpdgkch = new TH1F("PDG of kch mother Tracks", "PDG of kch mother tracks", 1000, -6000, 6000);
 
     //PID histograms
     fEnergy = new TH1F("fEnergy", "particle yield vs energy loss",800,0,200);
@@ -863,6 +866,7 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fOutputList->Add(fGetMom);
     fOutputList->Add(fpdgCode);
     fOutputList->Add(fpdgCodeaftercut);
+    fOutputList->Add(fpdgkch);
     fOutputList->Add(fEnergy);
     fOutputList->Add(fEnergyCuts);
     fOutputList->Add(fPID);
@@ -2034,27 +2038,33 @@ for (Int_t i = 0; i < nMCTracks; i++){
     }
     if(SelectKch) fMCKch->Fill(KaonVariables);
 
-
     Int_t labMom = mcTrack->GetMother();
+    MotherTrack = (AliMCParticle *)fmcEvent->GetTrack(labMom);
     fGetMom->Fill(labMom);
 
-    if (skipmom) if (labMom < 0) continue;
-    MotherTrack = (AliMCParticle *)fmcEvent->GetTrack(labMom);
-    pdgMother = MotherTrack->PdgCode();
-    fpdgCode->Fill(pdgMother);
-    //cout << "pdgcode is" << pdgMother << endl; 
+    if (skipmom) if (labMom < 0) continue; // not implemented
 
-    if (fRemoveKchResonance) {
-        if (SelectKch){ if (pdgMother != 0) continue; 
-        //cout << " pdg mother of tracks" << pdgMother << endl;
-        
+    if (SelectKch) {
+        if (labMom >0) {
+            Int_t pdgMomKch = MotherTrack->PdgCode();
+            fpdgkch->Fill(pdgMomKch);
         }
     }
 
-    if (fRemoveAnyResonance) {
+    if (fRemoveKchResonance) {  
+        if (SelectKch){  
+            if (labMom!= -1) continue;
+        }
+    }
+    
 
-        if (SelectK0) { if (!(pdgMother == 311 || pdgMother == -311)) continue; }
- 
+    if (fRemoveK0Resonance) {
+        if (SelectK0){
+            pdgMother = MotherTrack->PdgCode();
+            fpdgCode->Fill(pdgMother);   // pdg code of mother tracks of neutral kaons
+            if (!(pdgMother == 311 || pdgMother == -311)) continue;
+            fpdgCodeaftercut->Fill(pdgMother);
+        }
     }
 
     if (SelectKpos) { fMCKposCut->Fill(KaonVariables); }
@@ -2150,7 +2160,6 @@ for (Int_t i = 0; i < fMCSelectedKpos->GetEntries(); i++){
                 //cout << "pdgcode is" << pdgMom << endl;
 
                 if (pdgMom == 333) {
-                    fpdgCodeaftercut->Fill(pdgMom);
                     // Ignore pairs with particle ID 333 == Phi Meson
                     continue;
                 }
