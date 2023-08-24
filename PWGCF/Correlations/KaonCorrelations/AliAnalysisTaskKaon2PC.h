@@ -84,7 +84,8 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         void                    SetRemoveResonancek0s(Bool_t resonanceflag) {fRemoveResonancek0s = resonanceflag; }
         void                    SetRemoveAnyResonance(Bool_t anyresonanceflag) {fRemoveAnyResonance = anyresonanceflag; }
         void                    SetRemoveKchResonance(Bool_t kchresonanceflag) {fRemoveKchResonance = kchresonanceflag; }  
-        void                    SetRemovePhiResonance(Bool_t phiresonanceflag) {fRemovePhiResonance = phiresonanceflag; }                     
+        void                    SetRemovePhiResonance(Bool_t phiresonanceflag) {fRemovePhiResonance = phiresonanceflag; }
+        void                    SetSkipMom(Bool_t skipmomflag) {skipmom = skipmomflag; }                   
 
         //mixing
         //void                    SetNofSamples(Int_t n) { fNOfSamples = n; } //sampling setter
@@ -193,6 +194,9 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        THnSparse*              fMCKpos;
        THnSparse*              fMCKneg;
        THnSparse*              fMCKch;
+       THnSparse*              fMCK0Cut;
+       THnSparse*              fMCKposCut;
+       THnSparse*              fMCKnegCut;
        TH1F*                   fMCK0Pt;
        TH1F*                   fMCK0PtfullRange;
        TH1F*                   fMCKPlusPt;
@@ -230,6 +234,7 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        Bool_t                  fRemoveAnyResonance;
        Bool_t                  fRemoveKchResonance;
        Bool_t                  fRemovePhiResonance;
+       Bool_t                  skipmom;
        Bool_t                  fMinBias;
        Bool_t                  fCentral;
        Bool_t                  fSemiCentral;
