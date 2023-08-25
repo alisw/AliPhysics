@@ -206,7 +206,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   */
   bool IsPrimaryCustom(TClonesArray* arrayMC, AliAODMCParticle *mcPart) {
     if (!mcPart || !fIsMC) {
-      return false;
+      return true;
     }
     if (int motherIdx = mcPart->GetMother(); motherIdx >= 0) {
       AliAODMCParticle *mcMother = (AliAODMCParticle *)arrayMC->At(motherIdx);
