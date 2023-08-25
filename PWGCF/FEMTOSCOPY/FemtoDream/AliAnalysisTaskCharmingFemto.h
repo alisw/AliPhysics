@@ -205,6 +205,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
     (lightest hadron). Returns true otherwise.
   */
   bool IsPrimaryCustom(TClonesArray* arrayMC, AliAODMCParticle *mcPart) {
+    if (!mcPart || !fIsMC) {
+      return false;
+    }
     if (int motherIdx = mcPart->GetMother(); motherIdx >= 0) {
       AliAODMCParticle *mcMother = (AliAODMCParticle *)arrayMC->At(motherIdx);
       return std::abs(mcMother->GetPdgCode()) < 111;
