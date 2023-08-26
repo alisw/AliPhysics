@@ -99,7 +99,9 @@ AliAnalysisTaskEmbeddingJetWithEP::AliAnalysisTaskEmbeddingJetWithEP() :
     fDetJetMinMatchingPt(0.15),
     fPlotJetMatchCandThresh(1.),
     fExLJetFromFit(kTRUE),
+    fExSubLJetFromFit(kTRUE),
     fLeadingJet(0),
+    fSubLeadingJet(0),
     fLeadingJetAfterSub(0),
     fFitModulation(0),
     fPileupCut(kFALSE),
@@ -291,7 +293,9 @@ AliAnalysisTaskEmbeddingJetWithEP::AliAnalysisTaskEmbeddingJetWithEP(const char 
     fDetJetMinMatchingPt(0.15),
     fPlotJetMatchCandThresh(1.),
     fExLJetFromFit(kTRUE),
+    fExSubLJetFromFit(kTRUE),
     fLeadingJet(0),
+    fSubLeadingJet(0),
     fLeadingJetAfterSub(0),
     fFitModulation(0),
     fPileupCut(kFALSE),
@@ -483,6 +487,9 @@ AliAnalysisTaskEmbeddingJetWithEP::~AliAnalysisTaskEmbeddingJetWithEP()
 
     if(fCalibRefObjList) {delete fCalibRefObjList; fCalibRefObjList = 0x0;}
     if(fFitModulation) {delete fFitModulation; fFitModulation = 0x0;}
+    if(fLeadingJet)    {delete fLeadingJet; fLeadingJet = 0x0;}
+    if(fSubLeadingJet) {delete fSubLeadingJet; fSubLeadingJet = 0x0;}
+    
 }
 
 
@@ -1252,17 +1259,30 @@ Bool_t AliAnalysisTaskEmbeddingJetWithEP::MeasureBkg(Double_t baseJetRho){
     TString groupName;
     TString histName;
 
+    Double_t tempJetR = 0.;
+    tempJetR = GetJetContainer()->GetJetRadius();
+
     // AliAnalysisTaskJetV2 ==================================================================
     // Int_t iTracks(fTracks->GetEntriesFast()); //????
     Double_t excludeInEta = -999;
     Double_t excludeInPhi = -999;
     Double_t excludeInPt  = -999;
+    Double_t excludeSubInEta = -999;
+    Double_t excludeSubInPhi = -999;
+    Double_t excludeSubInPt  = -999;
     if(fLocalRho->GetVal() <= 0 ) return kFALSE;   // no use fitting an empty event ...
     if(fExLJetFromFit) {
         if(fLeadingJet) {
             excludeInEta = fLeadingJet->Eta();
             excludeInPhi = fLeadingJet->Phi();
             excludeInPt = fLeadingJet->Pt();
+        }
+    }
+    if(fExSubLJetFromFit) {
+        if(fSubLeadingJet) {
+            excludeSubInEta = fSubLeadingJet->Eta();
+            excludeSubInPhi = fSubLeadingJet->Phi();
+            excludeSubInPt = fSubLeadingJet->Pt();
         }
     }
     
@@ -1301,6 +1321,8 @@ Bool_t AliAnalysisTaskEmbeddingJetWithEP::MeasureBkg(Double_t baseJetRho){
             track = trackIterator.second;
             TClonesArray* fTracksContArray = partContForBKG->GetArray();
             trackID = fTracksContArray->IndexOf(track);
+            if( fExLJetFromFit && (TMath::Abs(trackEta - excludeInEta) < tempJetR) ) continue;
+            if( fExSubLJetFromFit && (TMath::Abs(trackEta - excludeSubInEta) < tempJetR) ) continue;
             if (TMath::Abs(trackEta) < etaTPC) fNAcceptedTracks++;
         }
         
@@ -1316,8 +1338,6 @@ Bool_t AliAnalysisTaskEmbeddingJetWithEP::MeasureBkg(Double_t baseJetRho){
 
     // non poissonian error when using pt weights
     Double_t sumPt(0.), sumPt2(0.), trackN(0.);
-    Double_t tempJetR = 0.;
-    tempJetR = GetJetContainer()->GetJetRadius();
 
     AliParticleContainer* partCont = 0;
     TIter next(&fParticleCollArray);
@@ -1327,9 +1347,10 @@ Bool_t AliAnalysisTaskEmbeddingJetWithEP::MeasureBkg(Double_t baseJetRho){
             if (partCont->GetLoadedClass()->InheritsFrom("AliVTrack")) {
             const AliVTrack* track = static_cast<const AliVTrack*>(part);
             
-            if(( (TMath::Abs(track->Eta() - excludeInEta) < tempJetR) \
-            || (TMath::Abs(track->Eta()) - tempJetR - GetJetContainer()->GetJetEtaMax() ) > 0 )) continue;
-            
+            if((TMath::Abs(track->Eta()) - tempJetR - GetJetContainer()->GetJetEtaMax() ) > 0 ) continue;
+            if( fExLJetFromFit && (TMath::Abs(track->Eta() - excludeInEta) < tempJetR) ) continue;
+            if( fExSubLJetFromFit && (TMath::Abs(track->Eta() - excludeSubInEta) < tempJetR) ) continue;
+
             _tempSwap.Fill(track->Phi(), track->Pt());
             
             sumPt += track->Pt();
@@ -1530,6 +1551,10 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetLoop()
             if (jet->Phi() - psi2V0[0] < 0.0) deltaPhiJetEP += TMath::TwoPi();
 
             if (jetKindCount==0) {
+                fLeadingJet = 0x0;
+                fSubLeadingJet = 0x0;
+                GetLeadingAndSubJet();
+
                 // for only hybrid jet
                 rhoVal = jetCont->GetRhoVal();
                 MeasureBkg(rhoVal);
@@ -2753,6 +2778,32 @@ AliEmcalJet* AliAnalysisTaskEmbeddingJetWithEP::GetLeadingJet(AliLocalRhoParamet
     }
     return 0x0;
 }
+
+void AliAnalysisTaskEmbeddingJetWithEP::GetLeadingAndSubJet() {
+    // return pointer to the highest pt jet (before background subtraction) within acceptance
+    // only rudimentary cuts are applied on this level, hence the implementation outside of
+    // the framework
+    Int_t iJets(fJets->GetEntriesFast());
+    Double_t leadJetPt(0.);
+    Double_t subleadJetPt(0.);
+    for(Int_t i(0); i < iJets; i++) {
+        AliEmcalJet* jet = static_cast<AliEmcalJet*>(fJets->At(i));
+        // if(!PassesSimpleCuts(jet)) continue;
+        if(jet->Pt() > subleadJetPt) {
+            if(jet->Pt() > leadJetPt) {
+                fLeadingJet = jet;
+                leadJetPt = fLeadingJet->Pt();
+            }
+            if((iJets>=2)&&(jet != fLeadingJet)){
+                fSubLeadingJet = jet;
+                subleadJetPt = fSubLeadingJet->Pt();
+            }
+        }
+    }
+    
+}
+
+
 
 Bool_t AliAnalysisTaskEmbeddingJetWithEP::CheckEventIsPileUp2018(){
     /// Todo Rihan: I can check for PileUp and get TPC event Plane in Same Function
