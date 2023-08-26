@@ -1125,8 +1125,16 @@ bool AliAnalysisTaskNFactorialMoments::GetParticleID(AliAODTrack* trk,
       fHistQAPID[3]->Fill(trk->Pt(), combSquare);
       fHistQAPID[4]->Fill(trk->Pt(), beta);
       fHistQAPID[5]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
-
-      if (combSquare < nSigmaPrCut) {
+      if ((trk->Pt() < 2.0) && (nsigmaTPC[4] < nSigmaPrCut)){
+        fHistQAPID[6]->Fill(trk->P() * trk->Charge(), dEdx);
+        fHistQAPID[7]->Fill(trk->Pt(), nsigmaTPC[4]);
+        fHistQAPID[8]->Fill(trk->Pt(), nsigmaTOF[4]);
+        fHistQAPID[9]->Fill(trk->Pt(), combSquare);
+        fHistQAPID[10]->Fill(trk->Pt(), beta);
+        fHistQAPID[11]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
+        return kFALSE;
+      }
+      else if ((trk->Pt() > 2.0)  && (combSquare < nSigmaPrCut)) {
         fHistQAPID[6]->Fill(trk->P() * trk->Charge(), dEdx);
         fHistQAPID[7]->Fill(trk->Pt(), nsigmaTPC[4]);
         fHistQAPID[8]->Fill(trk->Pt(), nsigmaTOF[4]);
