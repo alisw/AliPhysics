@@ -1100,6 +1100,25 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("17810013","0dm00009f9730000dge0404000","411790105fe30220000","0r63103100000010"); // 70-80%
     cuts.AddCutPCMCalo("18910013","0dm00009f9730000dge0404000","411790105fe30220000","0r63103100000010"); // 80-90%
     cuts.AddCutPCMCalo("16810013","0dm00009f9730000dge0404000","411790105fe30220000","0r63103100000010"); // 60-80%
+  // Same as above but with neutral energy overlap correction for EMCal!
+  } else if (trainConfig == 775){ // EMCAL+DCal clusters - cent
+    cuts.AddCutPCMCalo("10110013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 00-10%
+    cuts.AddCutPCMCalo("30110013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 00-05%
+    cuts.AddCutPCMCalo("31210013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 05-10%
+  } else if (trainConfig == 776){ // EMCAL+DCal clusters - semi-central
+    cuts.AddCutPCMCalo("11210013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 10-20%
+    cuts.AddCutPCMCalo("12310013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 20-30%
+    cuts.AddCutPCMCalo("13410013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 30-40%
+    cuts.AddCutPCMCalo("12410013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 20-40%
+  } else if (trainConfig == 777){ // EMCAL+DCal clusters - semi peripheral
+    cuts.AddCutPCMCalo("14510013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 40-50%
+    cuts.AddCutPCMCalo("14610013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 40-60%
+    cuts.AddCutPCMCalo("15610013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 50-60%
+  } else if (trainConfig == 778){ // EMCAL+DCal clusters - peripheral
+    cuts.AddCutPCMCalo("16710013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 60-70%
+    cuts.AddCutPCMCalo("17810013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 70-80%
+    cuts.AddCutPCMCalo("18910013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 80-90%
+    cuts.AddCutPCMCalo("16810013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 60-80%
 
   // **********************************************************************************************************
   // ***************************** PCM-PHOS       QA configurations PbPb run 2 2018 ***************************

@@ -205,6 +205,10 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fIsPureCalo(0),
   fNactiveEmcalCells(0),
   fDoSecondaryTrackMatching(kFALSE),
+  fDoEnergyCorrectionForOverlap(0),
+  fFuncPoissonParamCent(0),
+  fFuncNMatchedTracks(0),
+  fOverlapEnergy(0),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
   fCutStringRead(""),
@@ -450,6 +454,10 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fIsPureCalo(ref.fIsPureCalo),
   fNactiveEmcalCells(ref.fNactiveEmcalCells),
   fDoSecondaryTrackMatching(ref.fDoSecondaryTrackMatching),
+  fDoEnergyCorrectionForOverlap(ref.fDoEnergyCorrectionForOverlap),
+  fFuncPoissonParamCent(ref.fFuncPoissonParamCent),
+  fFuncNMatchedTracks(ref.fFuncNMatchedTracks),
+  fOverlapEnergy(ref.fOverlapEnergy),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
   fCutStringRead(""),
@@ -601,6 +609,8 @@ AliCaloPhotonCuts::~AliCaloPhotonCuts() {
   if(fFuncTimingEfficiencyMCSimCluster) delete fFuncTimingEfficiencyMCSimCluster;
   if(fFuncTimingEfficiencyMCSimClusterHighPt) delete fFuncTimingEfficiencyMCSimClusterHighPt;
   if(fFuncNCellCutEfficiencyEMCal) delete fFuncNCellCutEfficiencyEMCal;
+  if(fFuncPoissonParamCent) delete fFuncPoissonParamCent;
+  if(fFuncNMatchedTracks) delete fFuncNMatchedTracks;
 }
 
 //________________________________________________________________________
@@ -2822,11 +2832,13 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     leadMCLabel         = ((AliAODCaloCluster*)cluster)->GetLabel();
 
   Int_t nlabelsMatchedTracks      = 0;
-  if (fUsePtDepTrackToCluster == 0)
+  if (fUsePtDepTrackToCluster == 0 && fUseDistTrackToCluster){
     nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta,
                                                                                       fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
-  else if (fUsePtDepTrackToCluster == 1)
+  }
+  else if (fUsePtDepTrackToCluster == 1 && fUseDistTrackToCluster){
     nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
+  }
 
   if(fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5) {
     fHistClusterNMatched->Fill(nlabelsMatchedTracks);
@@ -2961,10 +2973,10 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
           fHistClusterTMEffiInput->Fill(cluster->E(), 23., weight); // El cl match
 
         vector<Int_t> labelsMatchedTracks;
-        if (fUsePtDepTrackToCluster == 0)
+        if (fUsePtDepTrackToCluster == 0 && fUseDistTrackToCluster)
           labelsMatchedTracks           = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta,
                                                                                           fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
-        else if  (fUsePtDepTrackToCluster == 1)
+        else if  (fUsePtDepTrackToCluster == 1 && fUseDistTrackToCluster)
           labelsMatchedTracks           = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
 
         //Int_t idHighestPt = -1;
@@ -5758,6 +5770,7 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
 //___________________________________________________________________
 Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
 {
+  std::cout << "fClusterType = " << fClusterType << "\t trackMatching = " << trackMatching << std::endl;
   // matching parameters for EMCal clusters
   if(fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
     switch(trackMatching){
@@ -6015,6 +6028,34 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fMaxDistTrackToClusterEta = 0.1;
       fMinDistTrackToClusterPhi = -0.1;
       fMaxDistTrackToClusterPhi = 0.1;
+      break;
+    case 29: // cut char 't' (like f so standard TM but with mean energy correction for overlap)
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
+      fUsePtDepTrackToCluster = 1;
+      fFuncPtDepEta = new TF1("funcEta29", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
+      fFuncPtDepPhi = new TF1("funcPhi29", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
+      fFuncPoissonParamCent = new TF1("fFuncPoissonParamCent29", "[0] * TMath::Exp( (x + [1] ) / [2] )", 0., 90.);
+      fFuncNMatchedTracks = new TF1("fFuncNMatchedTracks29", "TMath::Poisson(x,[0])", 0., 10.);
+      fDoEnergyCorrectionForOverlap = 1;
+      fEOverPMax = 1.75;
+      fOverlapEnergy = 0.3;
+      break;
+    case 30: // cut char 'u' (like f so standard TM but with random energy correction for overlap)
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
+      fUsePtDepTrackToCluster = 1;
+      fFuncPtDepEta = new TF1("funcEta30", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
+      fFuncPtDepPhi = new TF1("funcPhi30", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
+      fFuncPoissonParamCent = new TF1("fFuncPoissonParamCent30", "[0] * TMath::Exp( (x + [1] ) / [2] )", 0., 90.);
+      fFuncNMatchedTracks = new TF1("fFuncNMatchedTracks30", "TMath::Poisson(x,[0])", 0., 10.);
+      fDoEnergyCorrectionForOverlap = 2;
+      fEOverPMax = 1.75;
+      fOverlapEnergy = 0.3;
       break;
 
     default:
@@ -10529,6 +10570,66 @@ void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,AliMCEvent *mcEvent
      // Set new Efrac
      clus->SetClusterMCEdepFractionFromEdepArray(newEFrac);
 }
+
+// Function to set the parameters of fFuncPoissonParamCent which describes the
+// centrality dependens of the parameter of a poisson function to describe the
+// number of primary matched tracks per cluster in PbPb 5 TeV
+Bool_t AliCaloPhotonCuts::SetPoissonParamCentFunction(int isMC){
+
+  switch (isMC){
+    if(!fFuncPoissonParamCent){
+      AliFatal("fFuncPoissonParamCent is still NULL!");
+      return false;
+    }
+    case 0: //data
+      // TODO: Needs to be checked!
+      fFuncPoissonParamCent->SetParameters(5.53930e3, 3.27510e2, -3.81302e1);
+      break;
+    case 1: // MC
+      fFuncPoissonParamCent->SetParameters(4.61262e2, 2.39373e2, -3.79710e1);
+      break;
+    case 2: //JJMC
+      // TODO: Needs to be checked!
+      fFuncPoissonParamCent->SetParameters(4.61262e2, 2.39373e2, -3.79710e1);
+      break;
+    default:
+      fFuncPoissonParamCent->SetParameters(0, 0, 0);
+      AliFatal("isMC value not recognized!");
+      return false;
+  }
+  return true;
+}
+
+// Function to set the parameter of fFuncNMatchedTracks which describes the
+// centrality dependens of the number of primary matched tracks per cluster
+// in PbPb 5 TeV. Needs the mean centrality to get the parameter from
+// fFuncPoissonParamCent
+Bool_t AliCaloPhotonCuts::SetNMatchedTracksFunc(float meanCent){
+
+  if(!fFuncPoissonParamCent || !fFuncNMatchedTracks){
+    AliFatal("fFuncPoissonParamCent or fFuncNMatchedTracks is still NULL!");
+    return false;
+  }
+
+  fFuncNMatchedTracks->SetParameter(0, fFuncPoissonParamCent->Eval(meanCent));
+  return true;
+}
+
+// Function to get the energy value to subtract from a cluster to account for
+// neutral overlap in PbPb 5 TeV
+Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(){
+  switch (fDoEnergyCorrectionForOverlap){
+    case 0:
+      return 0.;
+    case 1:
+      return 0.5 * fFuncNMatchedTracks->Mean(0.0, 4.0) * fOverlapEnergy;
+    case 2:
+      return 0.5 * fFuncNMatchedTracks->GetRandom(0.0, 4.0) * fOverlapEnergy;
+    default:
+      return 0;
+  }
+}
+
 //________________________________________________________________________
 // Function to clean MC labels of given cluster from labels containing garbage
 // from productions INSIDE the calorimeter (e.g. shower particles)
