@@ -13,8 +13,8 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
-// Analysis task for antineutron measurement in PHOS and mesurment of charged Sigma bar
-// Authors: Pavel Gordeev, Dmitri Blau, Dmitri Peresunko
+// Analysis task for antineutron measurement in PHOS and mesurment of charged
+// Sigma bar Authors: Pavel Gordeev, Dmitri Blau, Dmitri Peresunko
 #include "AliAnalysisSigmaBarCharged.h"
 
 #include <cstdio>
@@ -24,17 +24,22 @@
 #include "AliAODCaloCluster.h"
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
+#include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 #include "AliAODVertex.h"
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSE.h"
+#include "AliAnalysisUtils.h"
 #include "AliCaloPhoton.h"
 #include "AliCascadeVertexer.h"
 #include "AliESDVertex.h"
 #include "AliESDtrack.h"
 #include "AliESDv0.h"
+#include "AliEventplane.h"
 #include "AliExternalTrackParam.h"
+#include "AliGenEventHeader.h"
 #include "AliLog.h"
+#include "AliMultSelection.h"
 #include "AliPHOSGeometry.h"
 #include "AliPID.h"
 #include "AliPIDResponse.h"
@@ -58,440 +63,742 @@
 
 ClassImp(AliAnalysisSigmaBarCharged);
 
-AliAnalysisSigmaBarCharged::AliAnalysisSigmaBarCharged(const char* name)
-  : AliAnalysisTaskSE(name),
-    fOutputContainer(nullptr),
-    fPIDResponse(nullptr),
-    fGamma(nullptr),
-    fPi(nullptr),
-    fCentBin(0),
-    fNCenBin(5),
-    fCurrentMixedList(nullptr),
-    fCluMinECut(0.3),
-    fCluTimeCut(25.e-9),
-    fCluNbarMinE(1.),
-    fOptDepth(10.),
-    fCPACut(0.9),
-    fCPVCut(4.),
-    fDispCut(2.),
-    fDispA(-1),
-    fDispB(3.5),
-    fTracksBits(21),
-    fIsMC(false),
-    fPHOSClusterTOFOption(0),
-    fPHOSClusterEnergyOption(0),
-    fStack(nullptr),
-    fEvent(nullptr)
-{
-  for (Int_t i = 0; i < 1; i++)
-    for (Int_t j = 0; j < 5; j++)
+AliAnalysisSigmaBarCharged::AliAnalysisSigmaBarCharged(const char *name)
+    : AliAnalysisTaskSE(name), fOutputContainer(nullptr), fPIDResponse(nullptr),
+      fUtils(nullptr), fGamma(nullptr), fCurrentMixedList(nullptr),
+      fCluTimeCut(150.e-9), fCluNbarMinE(0.6), fCPAplusCut(0.),
+      fCPAminusCut(0.), fDCAdaugplusCut(0.06), fDCAdaugminusCut(0.06),
+      fRADplusCut(0.25), fRADminusCut(0.15), fCPVCut(10.), fDispCut(4.),
+      fNcellCut(7), fTracksBits(4), fTrackEta(0.8), fNTPCclusters(60),
+      fTPCsigmas(3), fIsMC(false), fAdditionHist(false), fInvMassHist(false),
+      fPHOSClusterTOFOption(0), fCentrality(0), fCentBin(0), fStack(nullptr),
+      fEvent(nullptr) {
+  for (Int_t i = 0; i < 10; i++) {
+    for (Int_t j = 0; j < 10; j++) {
       fPHOSEvents[i][j] = 0x0; // Container for PHOS photons
-  fCenBinEdges.Set(fNCenBin);
-  for (int cen = 1; cen <= fNCenBin; cen++)
-    fCenBinEdges.AddAt(int(100. * cen / fNCenBin), cen - 1);
+    }
+  }
+
+  // Output slots #0 write into a TH1 container
   DefineOutput(1, THashList::Class());
 }
 
-AliAnalysisSigmaBarCharged::AliAnalysisSigmaBarCharged(const AliAnalysisSigmaBarCharged& rh)
-  : AliAnalysisTaskSE(rh.GetName()),
-    fOutputContainer(nullptr),
-    fPIDResponse(nullptr),
-    fGamma(nullptr),
-    fPi(nullptr),
-    fCentBin(0),
-    fNCenBin(5),
-    fCurrentMixedList(nullptr),
-    fCluMinECut(0.3),
-    fCluTimeCut(25.e-9),
-    fCluNbarMinE(1.),
-    fOptDepth(10.),
-    fCPACut(0.9),
-    fCPVCut(4.),
-    fDispCut(2.),
-    fDispA(-1),
-    fDispB(3.5),
-    fTracksBits(21),
-    fIsMC(false),
-    fPHOSClusterTOFOption(0),
-    fPHOSClusterEnergyOption(0),
-    fStack(nullptr),
-    fEvent(nullptr)
-{
-  for (Int_t i = 0; i < 1; i++)
-    for (Int_t j = 0; j < 5; j++)
+AliAnalysisSigmaBarCharged::AliAnalysisSigmaBarCharged(
+    const AliAnalysisSigmaBarCharged &rh)
+    : AliAnalysisTaskSE(rh.GetName()), fOutputContainer(nullptr),
+      fPIDResponse(nullptr), fUtils(nullptr), fGamma(nullptr),
+      fCurrentMixedList(nullptr), fCluTimeCut(150.e-9), fCluNbarMinE(0.6),
+      fCPAplusCut(0.), fCPAminusCut(0.), fDCAdaugplusCut(0.06),
+      fDCAdaugminusCut(0.06), fRADplusCut(0.25), fRADminusCut(0.15),
+      fCPVCut(10.), fDispCut(4.), fNcellCut(7), fTracksBits(4), fTrackEta(0.8),
+      fNTPCclusters(60), fTPCsigmas(3), fIsMC(false), fAdditionHist(false),
+      fInvMassHist(false), fPHOSClusterTOFOption(0), fCentrality(0),
+      fCentBin(0), fStack(nullptr), fEvent(nullptr) {
+  for (Int_t i = 0; i < 10; i++) {
+    for (Int_t j = 0; j < 10; j++) {
       fPHOSEvents[i][j] = 0x0; // Container for PHOS photons
-  fCenBinEdges.Set(rh.fCenBinEdges.GetSize(), rh.fCenBinEdges.GetArray());
+    }
+  }
+
   if (fOutputContainer)
     delete fOutputContainer;
   fOutputContainer = new THashList();
 }
 
-AliAnalysisSigmaBarCharged& AliAnalysisSigmaBarCharged::operator=(const AliAnalysisSigmaBarCharged& rh)
-{
+AliAnalysisSigmaBarCharged &
+AliAnalysisSigmaBarCharged::operator=(const AliAnalysisSigmaBarCharged &rh) {
   this->~AliAnalysisSigmaBarCharged();
   new (this) AliAnalysisSigmaBarCharged(rh);
   return *this;
 }
 
-AliAnalysisSigmaBarCharged::~AliAnalysisSigmaBarCharged()
-{
+AliAnalysisSigmaBarCharged::~AliAnalysisSigmaBarCharged() {
   if (fOutputContainer) {
     delete fOutputContainer;
     fOutputContainer = 0x0;
   }
-  for (Int_t i = 0; i < 10; i++)
-    for (Int_t j = 0; j < 2; j++)
+  for (Int_t i = 0; i < 10; i++) {
+    for (Int_t j = 0; j < 10; j++) {
       if (fPHOSEvents[i][j]) {
         delete fPHOSEvents[i][j];
         fPHOSEvents[i][j] = 0x0;
       }
+    }
+  }
 }
 
-void AliAnalysisSigmaBarCharged::UserCreateOutputObjects()
-{
+void AliAnalysisSigmaBarCharged::UserCreateOutputObjects() {
   if (fOutputContainer != nullptr) {
     delete fOutputContainer;
   }
   fOutputContainer = new THashList();
   fOutputContainer->SetOwner(kTRUE);
-  // General QC
 
   // Criteria
-  char cPID[4][15];
-  snprintf(cPID[0], 15, "%s", ""); // to avoid gcc warnings
-  snprintf(cPID[1], 15, "CPV2_");
-  snprintf(cPID[2], 15, "Disp2_");
-  snprintf(cPID[3], 15, "CPV2_Disp2_");
-
-  char cIM[5][15];
-  snprintf(cIM[0], 15, "%s", "");
-  snprintf(cIM[1], 15, "CPV2_");
-  snprintf(cIM[2], 15, "Disp2_");
-  snprintf(cIM[3], 15, "All3_");
-  snprintf(cIM[4], 15, "All4_");
-
-  char cMC[2][15];
-  snprintf(cMC[0], 15, "%s", "");
-  snprintf(cMC[1], 15, "MC_");
-
-  char cCH[6][30];
-  snprintf(cCH[0], 30, "_Charge1");
-  snprintf(cCH[1], 30, "_Charge-1");
-  snprintf(cCH[2], 30, "_AntiSigmaPlus");
-  snprintf(cCH[3], 30, "_AntiSigmaMinus");
-  snprintf(cCH[4], 30, "_AntiSigmaPlus_ParentCheck");
-  snprintf(cCH[5], 30, "_AntiSigmaMinus_ParentCheck");
+  char cPT[13][12];
+  snprintf(cPT[0], 12, "Photon");
+  snprintf(cPT[1], 12, "Electron");
+  snprintf(cPT[2], 12, "Positron");
+  snprintf(cPT[3], 12, "Proton");
+  snprintf(cPT[4], 12, "AntiProton");
+  snprintf(cPT[5], 12, "PiPlus");
+  snprintf(cPT[6], 12, "PiMinus");
+  snprintf(cPT[7], 12, "Neutron");
+  snprintf(cPT[8], 12, "AntiNeutron");
+  snprintf(cPT[9], 12, "KPlus");
+  snprintf(cPT[10], 12, "KMinus");
+  snprintf(cPT[11], 12, "KLong");
+  snprintf(cPT[12], 12, "Other");
 
   // Binning
-  int dispmin = 0, dispmax = 15, dispbins = 200; // dispersion: m02 and m20
+  int dispmin = 0, dispmax = 15, dispbins = 600; // dispersion: m02 and m20
   double tofmin = -250.e-9, tofmax = 250.e-9;
-  int tofbins = 500; // Time Of Flight
+  int tofbins = 2000; // Time Of Flight
   double dcaxymin = -2.4, dcaxymax = 2.4, dcazmin = -3.2, dcazmax = 3.2;
   int dcabins = 800; // DCA XY and DCA Z
-  double invmin = 1.0, invmax = 1.5;
-  int invbins = 1000;                           // invariant mass
-  int recmin = -20, recmax = 20, recbins = 400; // reconstructed momentum
-  int dcamin = 0, dcamax = 15;                  // dca between daughters
-  int cpamin = -1, cpamax = 1, cpabins = 400;   // cosine of pointing angle
-  int radmin = 0, radmax = 15, radbins = 800;   // distance between primary and secondary vertex
-  int ebins = 400;
-  float emin = 0, emax = 20.;
+  double invmin = 1.0, invmax = 3.0;
+  int invbins = 2000;                            // invariant mass
+  int recmin = -20, recmax = 20, recbins = 1000; // reconstructed momentum
+  int dcamin = 0, dcamax = 15;                   // dca between daughters
+  int cpamin = -1, cpamax = 1, cpabins = 400;    // cosine of pointing angle
+  int radmin = 0, radmax = 15,
+      radbins = 800; // distance between primary and secondary vertex
+  int ebins = 800;
+  double emin = 0., emax = 20.;
 
-  // Dispersion and check of dispersion cuts
-  fOutputContainer->Add(new TH3F("All_Disp_MinCut", "Dispersion of all particles min cut", dispbins, dispmin, dispmax,
-                                 dispbins, dispmin, dispmax, ebins, emin, emax));
-  fOutputContainer->Add(new TH3F("AntiNeutron_Disp_MinCut", "Dispersion of antineutron min cut", dispbins, dispmin,
-                                 dispmax, dispbins, dispmin, dispmax, ebins, emin, emax));
-  fOutputContainer->Add(new TH3F("All_Disp", "Dispersion of all particles", dispbins, dispmin, dispmax, dispbins,
-                                 dispmin, dispmax, ebins, emin, emax));
-  fOutputContainer->Add(new TH3F("AntiNeutron_Disp", "Dispersion of antineutron", dispbins, dispmin, dispmax, dispbins,
-                                 dispmin, dispmax, ebins, emin, emax));
-  fOutputContainer->Add(new TH3F("Disp2_Cut", "Dispersion of all after cut", dispbins, dispmin, dispmax, dispbins,
-                                 dispmin, dispmax, ebins, emin, emax));
-  fOutputContainer->Add(new TH3F("AntiNeutron_Disp2_Cut", "Dispersion of all after cut", dispbins, dispmin, dispmax,
-                                 dispbins, dispmin, dispmax, ebins, emin, emax));
-
-  // Relation between cluster and MC energy
-  fOutputContainer->Add(new TH2F("EnergyclustervsMC", "Cluster vs MC energy", ebins, emin, emax, ebins, emin, emax));
-  fOutputContainer->Add(new TH2F("AntiNeutron_EnergyclustervsMC", "Antineutron cluster vs MC energy", ebins, emin, emax,
-                                 ebins, emin, emax));
-
-  // Spectra of identified clusters with CPV и Disp cuts; antineutron spectra
-  fOutputContainer->Add(new TH1F("Spectrum_Cluster_TOF", "Spectrum of clusters", ebins, emin, emax));
-
-  for (int iter = 0; iter < 8; iter++) {
-    fOutputContainer->Add(new TH1F(Form("MC_A_%d", iter), "MC spectrum of antineutron", ebins, emin, emax));
-    if (iter > 0) {
-      fOutputContainer->Add(new TH1F(Form("Spectrum_Cluster_%d", iter), "Spectrum of clusters", ebins, emin, emax));
+  if (fIsMC) {
+    fOutputContainer->Add(
+        new TH1F("MC_AntiSigmaPlus_1",
+                 "Spectrum of AntiSigmaPlus;#it{p}_{T} (GeV/#it{c});Counts",
+                 ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("MC_AntiSigmaMinus_1",
+                 "Spectrum of AntiSigmaMinus;#it{p}_{T} (GeV/#it{c});Counts",
+                 ebins, emin, emax));
+    if (fAdditionHist) {
+      fOutputContainer->Add(new TH1F(
+          "MC_Nbar_1", "Spectrum of nbar;#it{p}_{T} (GeV/#it{c});Counts", ebins,
+          emin, emax));
+      fOutputContainer->Add(new TH1F(
+          "MC_Pbar_1", "Spectrum of pbar;#it{p}_{T} (GeV/#it{c});Counts", ebins,
+          emin, emax));
+      fOutputContainer->Add(new TH1F(
+          "MC_Nbar_prim_1", "Spectrum of nbar;#it{p}_{T} (GeV/#it{c});Counts",
+          ebins, emin, emax));
+      fOutputContainer->Add(
+          new TH1F("MC_Nbar_nonprim_1",
+                   "Spectrum of nbar;#it{p}_{T} (GeV/#it{c});Counts", ebins,
+                   emin, emax));
     }
-    if (iter > 2) {
-      fOutputContainer->Add(
-        new TH1F(Form("MC_APlus_%d", iter + 1), "MC spectrum of antineutron from AntiSigmaPlus", ebins, emin, emax));
-      fOutputContainer->Add(new TH1F(Form("Rec_APlus_%d", iter + 1),
-                                     "Reconstructed spectrum of antineutron from AntiSigmaPlus", ebins, emin, emax));
-      fOutputContainer->Add(
-        new TH1F(Form("MC_AMinus_%d", iter + 1), "MC spectrum of antineutron from AntiSigmaMinus", ebins, emin, emax));
-      fOutputContainer->Add(new TH1F(Form("Rec_AMinus_%d", iter + 1),
-                                     "Reconstructed spectrum of antineutron from AntiSigmaMinus", ebins, emin, emax));
-    }
-    if (iter > 3) {
-      fOutputContainer->Add(
-        new TH1F(Form("Rec_A_%d", iter), "Reconstructed spectrum of antineutron", ebins, emin, emax));
-      fOutputContainer->Add(
-        new TH1F(Form("Rec_Spectrum_Cluster_%d", iter), "Reconstructed spectrum of clusters", ebins, emin, emax));
-    }
-  }
-
-  // Track spectra; pion spectra
-  fOutputContainer->Add(new TH1F("MC_PionPlus_0", "MC spectrum of pions with pos charge", ebins, emin, emax));
-  fOutputContainer->Add(new TH1F("MC_PionMinus_0", "MC spectrum of pions with neg charge", ebins, emin, emax));
-
-  for (int iter = 1; iter < 6; iter++) {
-    if (iter < 3) {
-      fOutputContainer->Add(
-        new TH1F(Form("TrackPlus_%d", iter), "Spectrum of tracks with pos charge", ebins, emin, emax));
-      fOutputContainer->Add(
-        new TH1F(Form("TrackMinus_%d", iter), "Spectrum of tracks with neg charge", ebins, emin, emax));
-    }
-    fOutputContainer->Add(new TH1F(Form("PionPlus_%d", iter), "Spectrum of pions with pos charge", ebins, emin, emax));
-    fOutputContainer->Add(new TH1F(Form("PionMinus_%d", iter), "Spectrum of pions with neg charge", ebins, emin, emax));
-  }
-
-  // AntiSigma spectra
-  for (int iter = 0; iter < 8; iter++) {
-    fOutputContainer->Add(new TH1F(Form("MC_AntiSigmaPlus_%d", iter), "Spectrum of AntiSigmaPlus", ebins, emin, emax));
-    fOutputContainer->Add(new TH1F(Form("MC_AntiSigmaMinus_%d", iter), "Spectrum of AntiSigmaPlus", ebins, emin, emax));
-  }
-
-  fOutputContainer->Add(new TH1F("MC_AntiSigmaPlus_5_CPV2", "Spectrum of AntiSigmaPlus", ebins, emin, emax));
-  fOutputContainer->Add(new TH1F("MC_AntiSigmaPlus_5_Disp2", "Spectrum of AntiSigmaPlus", ebins, emin, emax));
-  fOutputContainer->Add(new TH1F("MC_AntiSigmaPlus_5_CPV2_Disp2", "Spectrum of AntiSigmaPlus", ebins, emin, emax));
-  fOutputContainer->Add(new TH1F("MC_AntiSigmaMinus_5_CPV2", "Spectrum of AntiSigmaMinus", ebins, emin, emax));
-  fOutputContainer->Add(new TH1F("MC_AntiSigmaMinus_5_Disp2", "Spectrum of AntiSigmaMinus", ebins, emin, emax));
-  fOutputContainer->Add(new TH1F("MC_AntiSigmaMinus_5_CPV2_Disp2", "Spectrum of AntiSigmaMinus", ebins, emin, emax));
-
-  // Spectra of identified clusters with CPV и Disp cuts
-  for (int iPID = 0; iPID < 4; iPID++) {
-    fOutputContainer->Add(
-      new TH1F(Form("%sSpectrum_Photon", cPID[iPID]), "Spectrum of clusters from photon", ebins, emin, emax));
-    fOutputContainer->Add(
-      new TH1F(Form("%sSpectrum_Electron", cPID[iPID]), "Spectrum of clusters from electron", ebins, emin, emax));
-    fOutputContainer->Add(
-      new TH1F(Form("%sSpectrum_Positron", cPID[iPID]), "Spectrum of clusters from positron", ebins, emin, emax));
-    fOutputContainer->Add(
-      new TH1F(Form("%sSpectrum_Proton", cPID[iPID]), "Spectrum of clusters from proton", ebins, emin, emax));
-    fOutputContainer->Add(
-      new TH1F(Form("%sSpectrum_AntiProton", cPID[iPID]), "Spectrum of clusters from antiproton", ebins, emin, emax));
-    fOutputContainer->Add(
-      new TH1F(Form("%sSpectrum_PiPlus", cPID[iPID]), "Spectrum of clusters from pi plus", ebins, emin, emax));
-    fOutputContainer->Add(
-      new TH1F(Form("%sSpectrum_PiMinus", cPID[iPID]), "Spectrum of clusters from pi minus", ebins, emin, emax));
-    fOutputContainer->Add(
-      new TH1F(Form("%sSpectrum_Neutron", cPID[iPID]), "Spectrum of clusters from neutron", ebins, emin, emax));
-    fOutputContainer->Add(
-      new TH1F(Form("%sSpectrum_AntiNeutron", cPID[iPID]), "Spectrum of clusters from antineutron", ebins, emin, emax));
-    fOutputContainer->Add(
-      new TH1F(Form("%sSpectrum_KPlus", cPID[iPID]), "Spectrum of clusters from K plus", ebins, emin, emax));
-    fOutputContainer->Add(
-      new TH1F(Form("%sSpectrum_KMinus", cPID[iPID]), "Spectrum of clusters from K minus", ebins, emin, emax));
-    fOutputContainer->Add(
-      new TH1F(Form("%sSpectrum_KLong", cPID[iPID]), "Spectrum of clusters from K long", ebins, emin, emax));
-    fOutputContainer->Add(
-      new TH1F(Form("%sSpectrum_Other", cPID[iPID]), "Spectrum of clusters from other", ebins, emin, emax));
-    fOutputContainer->Add(new TH1F(Form("%sSpectrum_Sum", cPID[iPID]), "Spectrum of clusters sum", ebins, emin, emax));
   }
 
   // Time of flight vs energy
+  fOutputContainer->Add(new TH2F(
+      "hClusterTOFvsE", "Cluster time vs energy;TOF (s);#it{E}_{clu} (GeV)",
+      tofbins, tofmin, tofmax, ebins, emin, emax));
+  fOutputContainer->Add(new TH2F(
+      "hClusterTOFvsE_1", "Cluster time vs energy;TOF (s);#it{E}_{clu} (GeV)",
+      tofbins, tofmin, tofmax, ebins, emin, emax));
   fOutputContainer->Add(
-    new TH2F("hClusterTOFvsE", "Cluster time vs energy", tofbins, tofmin, tofmax, ebins, emin, emax));
-  fOutputContainer->Add(new TH2F("AntiNeutronClusterTOFvsE", "Antineutron cluster time vs energy", tofbins, tofmin,
-                                 tofmax, ebins, emin, emax));
-  fOutputContainer->Add(new TH2F("AntiNeutronClusterTOFvsMCE", "Antineutron cluster time vs MC energy", tofbins, tofmin,
-                                 tofmax, ebins, emin, emax));
+      new TH2F("hClusterpTvsE_1",
+               "Reconstructed #it{p}_{T} vs energy;#it{p}_{T, rec} "
+               "(GeV/#it{c});#it{E}_{clu} (GeV)",
+               ebins, emin, emax, ebins, emin, emax));
+  if (fAdditionHist) {
+    fOutputContainer->Add(
+        new TH2F("hClusterTOFvsE_cut1",
+                 "Cluster time vs energy;TOF (s);#it{E}_{clu} (GeV)", tofbins,
+                 tofmin, tofmax, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("hClusterTOFvsE_cut2",
+                 "Cluster time vs energy;TOF (s);#it{E}_{clu} (GeV)", tofbins,
+                 tofmin, tofmax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F(
+        "hClusterTOFvsE_2", "Cluster time vs energy;TOF (s);#it{E}_{clu} (GeV)",
+        tofbins, tofmin, tofmax, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("hClusterpTvsE_2",
+                 "Reconstructed #it{p}_{T} vs energy;#it{p}_{T, rec} "
+                 "(GeV/#it{c});#it{E}_{clu} (GeV)",
+                 ebins, emin, emax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("All_Disp",
+                                   "Dispersion of all particles;M20 "
+                                   "(cm^{2});M02 (cm^{2});#it{E}_{clu} (GeV)",
+                                   300, 0, 12, 300, 0, 12));
+    // fOutputContainer->Add(new TH2F("All_M02", "Dispersion of all
+    // particles;M02 (cm^{2});#it{E}_{clu} (GeV)", 300, 0, 12, ebins, emin,
+    // emax)); fOutputContainer->Add(new TH2F("All_M20", "Dispersion of all
+    // particles;M20 (cm^{2});#it{E}_{clu} (GeV)", 300, 0, 12, ebins, emin,
+    // emax));
+    fOutputContainer->Add(new TH2F(
+        "All_Sum",
+        "Dispersion of all particles;M02 + M20 (cm^{2});#it{E}_{clu} (GeV)",
+        600, 0, 24, ebins, emin, emax));
+    // fOutputContainer->Add(new TH2F("Nbar_all_M02_1", "Dispersion of all
+    // particles;M02 (cm^{2});#it{E}_{clu} (GeV)", 300, 0, 12, ebins, emin,
+    // emax)); fOutputContainer->Add(new TH2F("Nbar_all_M20_1", "Dispersion of
+    // all particles;M20 (cm^{2});#it{E}_{clu} (GeV)", 300, 0, 12, ebins, emin,
+    // emax));
+    fOutputContainer->Add(new TH2F(
+        "Nbar_all_Sum_1",
+        "Dispersion of all particles;M02 + M20 (cm^{2});#it{E}_{clu} (GeV)",
+        600, 0, 24, ebins, emin, emax));
+    // fOutputContainer->Add(new TH2F("Nbar_all_M02_2", "Dispersion of all
+    // particles;M02 (cm^{2});#it{E}_{clu} (GeV)", 300, 0, 12, ebins, emin,
+    // emax)); fOutputContainer->Add(new TH2F("Nbar_all_M20_2", "Dispersion of
+    // all particles;M20 (cm^{2});#it{E}_{clu} (GeV)", 300, 0, 12, ebins, emin,
+    // emax));
+    fOutputContainer->Add(new TH2F(
+        "Nbar_all_Sum_2",
+        "Dispersion of all particles;M02 + M20 (cm^{2});#it{E}_{clu} (GeV)",
+        600, 0, 24, ebins, emin, emax));
+    // fOutputContainer->Add(new TH2F("Pbar_all_M02_1", "Dispersion of all
+    // particles;M02 (cm^{2});#it{E}_{clu} (GeV)", 300, 0, 12, ebins, emin,
+    // emax)); fOutputContainer->Add(new TH2F("Pbar_all_M20_1", "Dispersion of
+    // all particles;M20 (cm^{2});#it{E}_{clu} (GeV)", 300, 0, 12, ebins, emin,
+    // emax)); fOutputContainer->Add(new TH2F("Pbar_all_Sum_1", "Dispersion of
+    // all particles;M02 + M20 (cm^{2});#it{E}_{clu} (GeV)", 600, 0, 24, ebins,
+    // emin, emax)); fOutputContainer->Add(new TH2F("Pbar_all_M02_2",
+    // "Dispersion of all particles;M02 (cm^{2});#it{E}_{clu} (GeV)", 300, 0,
+    // 12, ebins, emin, emax)); fOutputContainer->Add(new TH2F("Pbar_all_M20_2",
+    // "Dispersion of all particles;M20 (cm^{2});#it{E}_{clu} (GeV)", 300, 0,
+    // 12, ebins, emin, emax)); fOutputContainer->Add(new TH2F("Pbar_all_Sum_2",
+    // "Dispersion of all particles;M02 + M20 (cm^{2});#it{E}_{clu} (GeV)", 600,
+    // 0, 24, ebins, emin, emax));
 
-  // Reconstruction of momentum; dependences
-  fOutputContainer->Add(new TH2F("AntiNeutronPolar_clustervsMC", "Cluster vs MC polar angle", 100, 1, 2., 400, 0, 4));
-  fOutputContainer->Add(
-    new TH2F("AntiNeutronPolar_clustervscluster-MC", "Cluster vs Cluster-MC polar angle", 100, 1, 2., 400, -2, 2.));
-  fOutputContainer->Add(
-    new TH2F("AntiNeutronAzimuth_clustervsMC", "Cluster vs MC azimuth angle", 100, -2.5, -0.5, 200, -3, 1.));
-  fOutputContainer->Add(new TH2F("AntiNeutronAzimuth_clustervscluster-MC", "Cluster vs Cluster-MC azimuth angle", 100,
-                                 -2.5, -0.5, 300, -3, 3.));
-  fOutputContainer->Add(
-    new TH2F("AntiNeutronMomentum_reconvsMC", "Reconstructed vs MC momentum", ebins, emin, emax, ebins, emin, emax));
-  fOutputContainer->Add(new TH2F("AntiNeutronMomentum_MCvsMC-recon_Plus",
-                                 "Reconstructed vs Reconstructed momentum - MC", ebins, emin, emax, recbins, recmin,
-                                 recmax));
-  fOutputContainer->Add(new TH2F("AntiNeutronMomentum_MCvsMC-recon_Minus",
-                                 "Reconstructed vs Reconstructed momentum - MC", ebins, emin, emax, recbins, recmin,
-                                 recmax));
+    // Spec of clu and nbar,pbar candidates
+    fOutputContainer->Add(
+        new TH1F("Spectrum_pt_allnbar_1", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_eclu_allnbar_1", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_pt_allnbar_2", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_eclu_allnbar_2", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_pt_allpbar_1", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_eclu_allpbar_1", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_pt_allpbar_2", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_eclu_allpbar_2", "Spec", ebins, emin, emax));
 
-  for (int istep = 0; istep < 7; istep++) {
-    fOutputContainer->Add(new TH2F(Form("AntiNeutronMomentum_MCvsRecon%d-MC_Im", 5 * istep),
-                                   "Reconstructed vs Reconstructed momentum - MC imaginary", ebins, emin, emax, recbins,
-                                   recmin, recmax));
-    fOutputContainer->Add(new TH2F(Form("AntiNeutronMomentum_MCvsRecon%d-MC", 5 * istep),
-                                   "Reconstructed vs Reconstructed momentum - MC", ebins, emin, emax, recbins, recmin,
-                                   recmax));
+    // TPC PID
+    fOutputContainer->Add(new TH2F(
+        "TPC_clusters_track", "TPC clusters;Clusters;#it{p}_{T} (GeV/#it{c})",
+        160, 0, 160, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("TPC_pid_track",
+                                   "TPC n#sigma;n#sigma;#it{p} (GeV/#it{c})",
+                                   80, -10, 10, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("TPC_pid_proton",
+                                   "TPC n#sigma;n#sigma;#it{p} (GeV/#it{c})",
+                                   80, -10, 10, ebins, emin, emax));
   }
 
-  fOutputContainer->Add(
-    new TH2F("AntiNeutronMomentum_clustervsMC", "Cluster vs MC momentum", ebins, emin, emax, ebins, emin, emax));
-  fOutputContainer->Add(new TH2F("AntiNeutronMomentum_MCvscluster-MC", "MC vs Cluster-MC momentum", ebins, emin, emax,
-                                 recbins, recmin, recmax));
+  if (fIsMC && fAdditionHist) {
+    fOutputContainer->Add(
+        new TH2F("hClusterTOFvsE_nbar",
+                 "Cluster time vs energy;TOF (s);#it{E}_{clu} (GeV)", tofbins,
+                 tofmin, tofmax, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("hClusterTOFvsE_nbar_1",
+                 "Cluster time vs energy;TOF (s);#it{E}_{clu} (GeV)", tofbins,
+                 tofmin, tofmax, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("hClusterpTvsE_nbar_1",
+                 "Reconstructed #it{p}_{T} vs energy;#it{p}_{T, rec} "
+                 "(GeV/#it{c});#it{E}_{clu} (GeV)",
+                 ebins, emin, emax, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("hClusterpTmcvsE_nbar_1",
+                 "Reconstructed #it{p}_{T} vs energy;#it{p}_{T, rec} "
+                 "(GeV/#it{c});#it{E}_{clu} (GeV)",
+                 ebins, emin, emax, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("hClusterTOFvsE_nbar_2",
+                 "Cluster time vs energy;TOF (s);#it{E}_{clu} (GeV)", tofbins,
+                 tofmin, tofmax, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("hClusterpTvsE_nbar_2",
+                 "Reconstructed #it{p}_{T} vs energy;#it{p}_{T, rec} "
+                 "(GeV/#it{c});#it{E}_{clu} (GeV)",
+                 ebins, emin, emax, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("hClusterpTmcvsE_nbar_2",
+                 "Reconstructed #it{p}_{T} vs energy;#it{p}_{T, rec} "
+                 "(GeV/#it{c});#it{E}_{clu} (GeV)",
+                 ebins, emin, emax, ebins, emin, emax));
 
-  // Reconstructed and unrec. momentum, TOF dependences
-  fOutputContainer->Add(
-    new TH2F("NegativeTime+", "TOF vs Energy of cluster if real", tofbins, tofmin, tofmax, ebins, emin, emax));
-  fOutputContainer->Add(
-    new TH2F("NegativeTime-", "TOF vs Energy of cluster if complex", tofbins, tofmin, tofmax, ebins, emin, emax));
-  fOutputContainer->Add(new TH2F("AntineutronNegativeTime+", "TOF vs Energy of antineutron cluster if real", tofbins,
-                                 tofmin, tofmax, ebins, emin, emax));
-  fOutputContainer->Add(new TH2F("AntineutronNegativeTime-", "TOF vs Energy of antineutron cluster if complex", tofbins,
-                                 tofmin, tofmax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F(
+        "AntiProton_Disp", "Dispersion of pbar;M20 (cm^{2});M02 (cm^{2})", 300,
+        0, 12, 300, 0, 12));
+    fOutputContainer->Add(new TH2F(
+        "Photon_Disp", "Dispersion of photon;M20 (cm^{2});M02 (cm^{2})", 300, 0,
+        12, 300, 0, 12));
+    fOutputContainer->Add(new TH2F(
+        "AntiNeutron_Disp",
+        "Dispersion of nbar;M20 (cm^{2});M02 (cm^{2});#it{E}_{clu} (GeV)", 300,
+        0, 12, 300, 0, 12));
 
-  // Topological dependences
-  fOutputContainer->Add(
-    new TH2F("DCA_Daughters_Plus", "DCA between daughters", dcabins, dcamin, dcamax, ebins, emin, emax));
-  fOutputContainer->Add(
-    new TH2F("DCA_Daughters_Minus", "DCA between daughters", dcabins, dcamin, dcamax, ebins, emin, emax));
-  fOutputContainer->Add(
-    new TH2F("DCA_Daughters_AntiSigmaPlus", "DCA between daughters", dcabins, dcamin, dcamax, ebins, emin, emax));
-  fOutputContainer->Add(
-    new TH2F("DCA_Daughters_AntiSigmaMinus", "DCA between daughters", dcabins, dcamin, dcamax, ebins, emin, emax));
-  fOutputContainer->Add(
-    new TH2F("CPA_Daughters_Plus", "DCA between daughters", cpabins, cpamin, cpamax, ebins, emin, emax));
-  fOutputContainer->Add(
-    new TH2F("CPA_Daughters_Minus", "DCA between daughters", cpabins, cpamin, cpamax, ebins, emin, emax));
-  fOutputContainer->Add(
-    new TH2F("CPA_Daughters_AntiSigmaPlus", "DCA between daughters", cpabins, cpamin, cpamax, ebins, emin, emax));
-  fOutputContainer->Add(
-    new TH2F("CPA_Daughters_AntiSigmaMinus", "DCA between daughters", cpabins, cpamin, cpamax, ebins, emin, emax));
-  fOutputContainer->Add(
-    new TH2F("RAD_Daughters_Plus", "RAD between daughters", radbins, radmin, radmax, ebins, emin, emax));
-  fOutputContainer->Add(
-    new TH2F("RAD_Daughters_Minus", "RAD between daughters", radbins, radmin, radmax, ebins, emin, emax));
-  fOutputContainer->Add(
-    new TH2F("RAD_Daughters_AntiSigmaPlus", "RAD between daughters", radbins, radmin, radmax, ebins, emin, emax));
-  fOutputContainer->Add(
-    new TH2F("RAD_Daughters_AntiSigmaMinus", "RAD between daughters", radbins, radmin, radmax, ebins, emin, emax));
-  fOutputContainer->Add(
-    new TH2F("DCA_XY_Plus", "DCA XY vs pT of track", dcabins, dcaxymin, dcaxymax, ebins, emin, emax));
-  fOutputContainer->Add(
-    new TH2F("DCA_XY_Minus", "DCA XY vs pT of track", dcabins, dcaxymin, dcaxymax, ebins, emin, emax));
-  fOutputContainer->Add(new TH2F("DCA_XY_AntiSigmaPlus", "DCA XY vs pT of pion from AntiSigma", dcabins, dcaxymin,
-                                 dcaxymax, ebins, emin, emax));
-  fOutputContainer->Add(new TH2F("DCA_XY_AntiSigmaMinus", "DCA XY vs pT of pion from AntiSigma", dcabins, dcaxymin,
-                                 dcaxymax, ebins, emin, emax));
-  fOutputContainer->Add(new TH2F("DCA_Z_Plus", "DCA Z vs pT of track", dcabins, dcazmin, dcazmax, ebins, emin, emax));
-  fOutputContainer->Add(new TH2F("DCA_Z_Minus", "DCA Z vs pT of track", dcabins, dcazmin, dcazmax, ebins, emin, emax));
-  fOutputContainer->Add(new TH2F("DCA_Z_AntiSigmaPlus", "DCA Z vs pT of pion from AntiSigma", dcabins, dcazmin, dcazmax,
-                                 ebins, emin, emax));
-  fOutputContainer->Add(new TH2F("DCA_Z_AntiSigmaMinus", "DCA Z vs pT of pion from AntiSigma", dcabins, dcazmin,
-                                 dcazmax, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("EcluvsP_nbar",
+                 "Response matrix;#it{E}_{clu} (GeV);#it{p}_{MC} (GeV/#it{c})",
+                 ebins, emin, emax, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("EcluvsP_pbar",
+                 "Response matrix;#it{E}_{clu} (GeV);#it{p}_{MC} (GeV/#it{c})",
+                 ebins, emin, emax, ebins, emin, emax));
 
-  // Invariant mass
-  for (int iIM = 0; iIM < 5; iIM++) {
-    for (int iMC = 0; iMC < 2; iMC++) {
-      for (int iCH = 0; iCH < 6; iCH++) {
-        fOutputContainer->Add(new TH2F(Form("%s%sInvMass%s", cIM[iIM], cMC[iMC], cCH[iCH]), "Invariant mass", invbins,
-                                       invmin, invmax, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("Nbar_pmcvsprec-pmc_prim",
+                 "nbar_pmcvsprec-pmc;#it{p}_{MC} (GeV/#it{c});#it{p}_{rec} "
+                 "#minus #it{p}_{MC} (GeV/#it{c})",
+                 ebins, emin, emax, recbins, recmin, recmax));
+    fOutputContainer->Add(
+        new TH2F("Nbar_prec-pmcvseclu_prim",
+                 "nbar_pmcvsprec-pmc;#it{E}_{clu} (GeV);#it{p}_{rec} #minus "
+                 "#it{p}_{MC} (GeV/#it{c})",
+                 ebins, emin, emax, recbins, recmin, recmax));
+    fOutputContainer->Add(new TH2F(
+        "Nbar_pmcvsprec_prim",
+        "nbar_pmcvsprec-pmc;#it{p}_{MC} (GeV/#it{c});#it{p}_{rec} (GeV/#it{c})",
+        ebins, emin, emax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F(
+        "Nbar_emcvserec_prim",
+        "nbar_emcvserec-emc;#it{E}_{MC} (GeV/#it{c});#it{E}_{rec} (GeV/#it{c})",
+        ebins, emin, emax, ebins, emin, emax));
+
+    fOutputContainer->Add(
+        new TH2F("Nbar_pmcvsprec-pmc",
+                 "nbar_pmcvsprec-pmc;#it{p}_{MC} (GeV/#it{c});#it{p}_{rec} "
+                 "#minus #it{p}_{MC} (GeV/#it{c})",
+                 ebins, emin, emax, recbins, recmin, recmax));
+    fOutputContainer->Add(
+        new TH2F("Nbar_prec-pmcvseclu",
+                 "nbar_pmcvsprec-pmc;#it{E}_{clu} (GeV);#it{p}_{rec} #minus "
+                 "#it{p}_{MC} (GeV/#it{c})",
+                 ebins, emin, emax, recbins, recmin, recmax));
+    fOutputContainer->Add(new TH2F(
+        "Nbar_pmcvsprec",
+        "nbar_pmcvsprec-pmc;#it{p}_{MC} (GeV/#it{c});#it{p}_{rec} (GeV/#it{c})",
+        ebins, emin, emax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F(
+        "Nbar_emcvserec",
+        "nbar_emcvserec-emc;#it{E}_{MC} (GeV/#it{c});#it{E}_{rec} (GeV/#it{c})",
+        ebins, emin, emax, ebins, emin, emax));
+
+    fOutputContainer->Add(new TH1F(
+        "Spectrum_Sum", "Spectrum of clusters;#it{E}_{clu} (GeV);Counts", ebins,
+        emin, emax));
+    fOutputContainer->Add(new TH1F(
+        "Ncells_Sum", "Ncells of clusters;#it{N}_{cells};Counts", 50, 0, 50));
+    fOutputContainer->Add(new TH1F(
+        "Spectrum_Sum_1", "Spectrum of clusters;#it{E}_{clu} (GeV);Counts",
+        ebins, emin, emax));
+    fOutputContainer->Add(new TH1F(
+        "Ncells_Sum_1", "Ncells of clusters;#it{N}_{cells};Counts", 50, 0, 50));
+    for (int iPID = 0; iPID < 13; iPID++) {
+      fOutputContainer->Add(new TH1F(
+          Form("Spectrum_%s", cPT[iPID]),
+          "Spectrum of clusters;#it{E}_{clu} (GeV);Counts", ebins, emin, emax));
+      fOutputContainer->Add(
+          new TH1F(Form("Ncells_%s", cPT[iPID]),
+                   "Spectrum of clusters;#it{N}_{cells};Counts", 50, 0, 50));
+      fOutputContainer->Add(new TH1F(
+          Form("Spectrum_%s_1", cPT[iPID]),
+          "Spectrum of clusters;#it{E}_{clu} (GeV);Counts", ebins, emin, emax));
+      fOutputContainer->Add(
+          new TH1F(Form("Ncells_%s_1", cPT[iPID]),
+                   "Spectrum of clusters;#it{N}_{cells};Counts", 50, 0, 50));
+    }
+    // fOutputContainer->Add(new TH1F("PDG_Other", "pdg", 8000, -4000, 4000));
+
+    // Spectre for ROC
+    // fOutputContainer->Add(new TH1F("Spectrum_Nbar", "Spec", ebins, emin,
+    // emax)); Clusters default cuts and variations
+    fOutputContainer->Add(
+        new TH1F("Spectrum_d_0_0_0", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_0_d_0_0", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_0_0_d_0", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_0_0_0_d", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_Nbar_d_0_0_0", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_Nbar_0_d_0_0", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_Nbar_0_0_d_0", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_Nbar_0_0_0_d", "Spec", ebins, emin, emax));
+    for (Int_t i = 1; i < 14; i++) {
+      fOutputContainer->Add(
+          new TH1F(Form("Spectrum_%d_0_0_0", i), "Spec", ebins, emin, emax));
+      fOutputContainer->Add(
+          new TH1F(Form("Spectrum_0_%d_0_0", i), "Spec", ebins, emin, emax));
+      fOutputContainer->Add(
+          new TH1F(Form("Spectrum_0_0_%d_0", i), "Spec", ebins, emin, emax));
+      fOutputContainer->Add(
+          new TH1F(Form("Spectrum_0_0_0_%d", i), "Spec", ebins, emin, emax));
+      fOutputContainer->Add(new TH1F(Form("Spectrum_Nbar_%d_0_0_0", i), "Spec",
+                                     ebins, emin, emax));
+      fOutputContainer->Add(new TH1F(Form("Spectrum_Nbar_0_%d_0_0", i), "Spec",
+                                     ebins, emin, emax));
+      fOutputContainer->Add(new TH1F(Form("Spectrum_Nbar_0_0_%d_0", i), "Spec",
+                                     ebins, emin, emax));
+      fOutputContainer->Add(new TH1F(Form("Spectrum_Nbar_0_0_0_%d", i), "Spec",
+                                     ebins, emin, emax));
+    }
+
+    fOutputContainer->Add(
+        new TH2F("Nbar_pmcvsprec-pmc_plus",
+                 "nbar_pmcvsprec-pmc;#it{p}_{MC} (GeV/#it{c});#it{p}_{rec} "
+                 "#minus #it{p}_{MC} (GeV/#it{c})",
+                 ebins, emin, emax, recbins, recmin, recmax));
+    fOutputContainer->Add(
+        new TH2F("Nbar_prec-pmcvseclu_plus",
+                 "nbar_pmcvsprec-pmc;#it{E}_{clu} (GeV);#it{p}_{rec} #minus "
+                 "#it{p}_{MC} (GeV/#it{c})",
+                 ebins, emin, emax, recbins, recmin, recmax));
+    fOutputContainer->Add(new TH2F(
+        "Nbar_pmcvsprec_plus",
+        "nbar_pmcvsprec-pmc;#it{p}_{MC} (GeV/#it{c});#it{p}_{rec} (GeV/#it{c})",
+        ebins, emin, emax, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("Nbar_pmcvsprec-pmc_minus",
+                 "nbar_pmcvsprec-pmc;#it{p}_{MC} (GeV/#it{c});#it{p}_{rec} "
+                 "#minus #it{p}_{MC} (GeV/#it{c})",
+                 ebins, emin, emax, recbins, recmin, recmax));
+    fOutputContainer->Add(
+        new TH2F("Nbar_prec-pmcvseclu_minus",
+                 "nbar_pmcvsprec-pmc;#it{E}_{clu} (GeV);#it{p}_{rec} #minus "
+                 "#it{p}_{MC} (GeV/#it{c})",
+                 ebins, emin, emax, recbins, recmin, recmax));
+    fOutputContainer->Add(new TH2F(
+        "Nbar_pmcvsprec_minus",
+        "nbar_pmcvsprec-pmc;#it{p}_{MC} (GeV/#it{c});#it{p}_{rec} (GeV/#it{c})",
+        ebins, emin, emax, ebins, emin, emax));
+
+    fOutputContainer->Add(
+        new TH2F("SV_plus", "SV", 1000, 0., 0.1, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("SV_minus", "SV", 1000, 0., 0.1, ebins, emin, emax));
+
+    fOutputContainer->Add(
+        new TH2F("t_compare_plus", "compare t", 500, -1, 1, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("t_compare_plus_1", "compare t", 1000, -0.05,
+                                   0.05, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("t_compare_plus_2", "compare t", 1000, 0.,
+                                   0.25, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("t_compare_plus_3", "compare t", 1000, -0.1,
+                                   0.1, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("t_compare_minus", "compare t", 500, -1, 1,
+                                   ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("t_compare_minus_1", "compare t", 1000,
+                                   -0.05, 0.05, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("t_compare_minus_2", "compare t", 1000, 0.,
+                                   0.25, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("t_compare_minus_3", "compare t", 1000, -0.1,
+                                   0.1, ebins, emin, emax));
+
+    fOutputContainer->Add(
+        new TH2F("TPC_clusters_pionsigma",
+                 "TPC clusters;Clusters;#it{p}_{T} (GeV/#it{c})", 160, 0, 160,
+                 ebins, emin, emax));
+
+    // Sigma cut varitions and default
+    fOutputContainer->Add(
+        new TH1F("Sigma_Plus_DCAdaug", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Sigma_Plus_RAD", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Sigma_Plus_CPA", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Track_Plus_DCAdaug", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Track_Plus_RAD", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Track_Plus_CPA", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Sigma_Minus_DCAdaug", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Sigma_Minus_RAD", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Sigma_Minus_CPA", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Track_Minus_DCAdaug", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Track_Minus_RAD", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Track_Minus_CPA", "Spec", ebins, emin, emax));
+    for (Int_t i = 1; i < 11; i++) {
+      fOutputContainer->Add(new TH1F(Form("Sigma_Plus_DCAdaug_%d", i), "Spec",
+                                     ebins, emin, emax));
+      fOutputContainer->Add(
+          new TH1F(Form("Sigma_Plus_RAD_%d", i), "Spec", ebins, emin, emax));
+      fOutputContainer->Add(
+          new TH1F(Form("Sigma_Plus_CPA_%d", i), "Spec", ebins, emin, emax));
+      fOutputContainer->Add(new TH1F(Form("Track_Plus_DCAdaug_%d", i), "Spec",
+                                     ebins, emin, emax));
+      fOutputContainer->Add(
+          new TH1F(Form("Track_Plus_RAD_%d", i), "Spec", ebins, emin, emax));
+      fOutputContainer->Add(
+          new TH1F(Form("Track_Plus_CPA_%d", i), "Spec", ebins, emin, emax));
+      fOutputContainer->Add(new TH1F(Form("Sigma_Minus_DCAdaug_%d", i), "Spec",
+                                     ebins, emin, emax));
+      fOutputContainer->Add(
+          new TH1F(Form("Sigma_Minus_RAD_%d", i), "Spec", ebins, emin, emax));
+      fOutputContainer->Add(
+          new TH1F(Form("Sigma_Minus_CPA_%d", i), "Spec", ebins, emin, emax));
+      fOutputContainer->Add(new TH1F(Form("Track_Minus_DCAdaug_%d", i), "Spec",
+                                     ebins, emin, emax));
+      fOutputContainer->Add(
+          new TH1F(Form("Track_Minus_RAD_%d", i), "Spec", ebins, emin, emax));
+      fOutputContainer->Add(
+          new TH1F(Form("Track_Minus_CPA_%d", i), "Spec", ebins, emin, emax));
+    }
+
+    fOutputContainer->Add(new TH2F("DCA_Daughters_AntiSigmaPlus",
+                                   "DCA between daughters", dcabins, dcamin,
+                                   dcamax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("DCA_Daughters_AntiSigmaMinus",
+                                   "DCA between daughters", dcabins, dcamin,
+                                   dcamax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("CPA_Daughters_AntiSigmaPlus",
+                                   "DCA between daughters", cpabins, cpamin,
+                                   cpamax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("CPA_Daughters_AntiSigmaMinus",
+                                   "DCA between daughters", cpabins, cpamin,
+                                   cpamax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("RAD_Daughters_AntiSigmaPlus",
+                                   "RAD between daughters", radbins, radmin,
+                                   radmax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("RAD_Daughters_AntiSigmaMinus",
+                                   "RAD between daughters", radbins, radmin,
+                                   radmax, ebins, emin, emax));
+
+    fOutputContainer->Add(new TH2F("DCA_XY_pionsigma", "DCA XY", 480, -2.4, 2.4,
+                                   ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("DCA_Z_pionsigma", "DCA Z", 640, -3.2, 3.2,
+                                   ebins, emin, emax));
+
+    fOutputContainer->Add(
+        new TH2F("SV_x_plus", "SV_x", 800, -20, 20, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("SV_y_plus", "SV_y", 800, -20, 20, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("SV_z_plus", "SV_z", 800, -20, 20, ebins, emin, emax));
+
+    fOutputContainer->Add(
+        new TH2F("SV_x_minus", "SV_x", 800, -20, 20, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("SV_y_minus", "SV_y", 800, -20, 20, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("SV_z_minus", "SV_z", 800, -20, 20, ebins, emin, emax));
+
+    // Proton spec from clu and nbar;
+    // Spec of clu and nbar,pbar candidates
+    fOutputContainer->Add(
+        new TH1F("Spectrum_pt_nbar_1", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_ptmc_nbar_1", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Response_nbar_1", "Spec", ebins, emin, emax,
+                                   ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_eclu_nbar_1", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_pt_nbar_2", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_ptmc_nbar_2", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Response_nbar_2", "Spec", ebins, emin, emax,
+                                   ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_eclu_nbar_2", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_pt_pbar_1", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_ptmc_pbar_1", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Response_pbar_1", "Spec", ebins, emin, emax,
+                                   ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_eclu_pbar_1", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_pt_pbar_2", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_ptmc_pbar_2", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Response_pbar_2", "Spec", ebins, emin, emax,
+                                   ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spectrum_eclu_pbar_2", "Spec", ebins, emin, emax));
+    // fOutputContainer->Add(new TH2F("Nbar_M02_1", "Dispersion of all
+    // particles;M02 (cm^{2});#it{E}_{clu} (GeV)", 300, 0, 12, ebins, emin,
+    // emax)); fOutputContainer->Add(new TH2F("Nbar_M20_1", "Dispersion of all
+    // particles;M20 (cm^{2});#it{E}_{clu} (GeV)", 300, 0, 12, ebins, emin,
+    // emax));
+    fOutputContainer->Add(new TH2F(
+        "Nbar_Sum_1",
+        "Dispersion of all particles;M02 + M20 (cm^{2});#it{E}_{clu} (GeV)",
+        600, 0, 24, ebins, emin, emax));
+    // fOutputContainer->Add(new TH2F("Nbar_M02_2", "Dispersion of all
+    // particles;M02 (cm^{2});#it{E}_{clu} (GeV)", 300, 0, 12, ebins, emin,
+    // emax)); fOutputContainer->Add(new TH2F("Nbar_M20_2", "Dispersion of all
+    // particles;M20 (cm^{2});#it{E}_{clu} (GeV)", 300, 0, 12, ebins, emin,
+    // emax));
+    fOutputContainer->Add(new TH2F(
+        "Nbar_Sum_2",
+        "Dispersion of all particles;M02 + M20 (cm^{2});#it{E}_{clu} (GeV)",
+        600, 0, 24, ebins, emin, emax));
+    // fOutputContainer->Add(new TH2F("Pbar_M02_1", "Dispersion of all
+    // particles;M02 (cm^{2});#it{E}_{clu} (GeV)", 300, 0, 12, ebins, emin,
+    // emax)); fOutputContainer->Add(new TH2F("Pbar_M20_1", "Dispersion of all
+    // particles;M20 (cm^{2});#it{E}_{clu} (GeV)", 300, 0, 12, ebins, emin,
+    // emax)); fOutputContainer->Add(new TH2F("Pbar_Sum_1", "Dispersion of all
+    // particles;M02 + M20 (cm^{2});#it{E}_{clu} (GeV)", 600, 0, 24, ebins,
+    // emin, emax)); fOutputContainer->Add(new TH2F("Pbar_M02_2", "Dispersion of
+    // all particles;M02 (cm^{2});#it{E}_{clu} (GeV)", 300, 0, 12, ebins, emin,
+    // emax)); fOutputContainer->Add(new TH2F("Pbar_M20_2", "Dispersion of all
+    // particles;M20 (cm^{2});#it{E}_{clu} (GeV)", 300, 0, 12, ebins, emin,
+    // emax)); fOutputContainer->Add(new TH2F("Pbar_Sum_2", "Dispersion of all
+    // particles;M02 + M20 (cm^{2});#it{E}_{clu} (GeV)", 600, 0, 24, ebins,
+    // emin, emax));
+  }
+
+  // Invmas for MC truth AntiSigma with selections
+  if (fIsMC) {
+    fOutputContainer->Add(new TH2F("Cuts1_InvMass_AntiSigmaPlus_ParentCheck",
+                                   "Invariant mass", invbins, invmin, invmax,
+                                   ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Cuts1_InvMass_AntiSigmaMinus_ParentCheck",
+                                   "Invariant mass", invbins, invmin, invmax,
+                                   ebins, emin, emax));
+    if (fInvMassHist) {
+      for (Int_t i = 1; i < 34; i++) {
+        fOutputContainer->Add(new TH2F(
+            Form("Cuts%d_InvMass_AntiSigmaPlus_ParentCheck", i + 1),
+            "Invariant mass", invbins, invmin, invmax, ebins, emin, emax));
+        fOutputContainer->Add(new TH2F(
+            Form("Cuts%d_InvMass_AntiSigmaMinus_ParentCheck", i + 1),
+            "Invariant mass", invbins, invmin, invmax, ebins, emin, emax));
       }
     }
+    // fOutputContainer->Add(new TH2F("Cuts1_InvMass_AntiSigmaPlus_Parent",
+    // "Invariant mass", invbins, invmin, invmax, ebins, emin, emax));
+    // fOutputContainer->Add(new TH2F("Cuts1_InvMass_AntiSigmaMinus_Parent",
+    // "Invariant mass", invbins, invmin, invmax, ebins, emin, emax));
+    // fOutputContainer->Add(new TH1F("Plus_Parent_PDG", "pdg", 8000, -4000,
+    // 4000)); fOutputContainer->Add(new TH1F("Minus_Parent_PDG", "pdg", 8000,
+    // -4000, 4000)); fOutputContainer->Add(new TH1F("Plus_Cluster_PDG", "pdg",
+    // 8000, -4000, 4000)); fOutputContainer->Add(new TH1F("Minus_Cluster_PDG",
+    // "pdg", 8000, -4000, 4000));
   }
 
-  // Mixed invariant mass
-  for (int iIM = 0; iIM < 5; iIM++) {
-    for (int iCH = 0; iCH < 2; iCH++) {
-      fOutputContainer->Add(new TH2F(Form("%sMixed_InvMass%s", cIM[iIM], cCH[iCH]), "Invariant mass", invbins, invmin,
-                                     invmax, ebins, emin, emax));
+  if (fAdditionHist) {
+    fOutputContainer->Add(new TH2F("DCA_Daughters_Plus",
+                                   "DCA between daughters", dcabins, dcamin,
+                                   dcamax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("DCA_Daughters_Test",
+                                   "DCA between daughters", dcabins, dcamin,
+                                   dcamax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("DCA_Daughters_Minus",
+                                   "DCA between daughters", dcabins, dcamin,
+                                   dcamax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("CPA_Daughters_Plus",
+                                   "DCA between daughters", cpabins, cpamin,
+                                   cpamax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("CPA_Daughters_Test",
+                                   "DCA between daughters", cpabins, cpamin,
+                                   cpamax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("CPA_Daughters_Minus",
+                                   "DCA between daughters", cpabins, cpamin,
+                                   cpamax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("RAD_Daughters_Plus",
+                                   "RAD between daughters", radbins, radmin,
+                                   radmax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("RAD_Daughters_Test",
+                                   "RAD between daughters", radbins, radmin,
+                                   radmax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("RAD_Daughters_Minus",
+                                   "RAD between daughters", radbins, radmin,
+                                   radmax, ebins, emin, emax));
+
+    fOutputContainer->Add(
+        new TH2F("DCA_XY_pion", "DCA XY", 480, -2.4, 2.4, ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH2F("DCA_Z_pion", "DCA XY", 640, -3.2, 3.2, ebins, emin, emax));
+  }
+
+  // Inv mass
+  fOutputContainer->Add(new TH2F("Cuts1_Mixed_InvMass_Charge1",
+                                 "Invariant mass", invbins, invmin, invmax,
+                                 ebins, emin, emax));
+  fOutputContainer->Add(new TH2F("Cuts1_Mixed_InvMass_Charge-1",
+                                 "Invariant mass", invbins, invmin, invmax,
+                                 ebins, emin, emax));
+  fOutputContainer->Add(new TH2F("Cuts1_InvMass_Charge1", "Invariant mass",
+                                 invbins, invmin, invmax, ebins, emin, emax));
+  fOutputContainer->Add(new TH2F("Cuts1_InvMass_Charge-1", "Invariant mass",
+                                 invbins, invmin, invmax, ebins, emin, emax));
+
+  if (fInvMassHist && !fIsMC) {
+    for (Int_t i = 1; i < 34; i++) {
+      fOutputContainer->Add(new TH2F(
+          Form("Cuts%d_Mixed_InvMass_Charge1", i + 1), "Invariant mass",
+          invbins, invmin, invmax, ebins, emin, emax));
+      fOutputContainer->Add(new TH2F(
+          Form("Cuts%d_Mixed_InvMass_Charge-1", i + 1), "Invariant mass",
+          invbins, invmin, invmax, ebins, emin, emax));
+
+      fOutputContainer->Add(new TH2F(Form("Cuts%d_InvMass_Charge1", i + 1),
+                                     "Invariant mass", invbins, invmin, invmax,
+                                     ebins, emin, emax));
+      fOutputContainer->Add(new TH2F(Form("Cuts%d_InvMass_Charge-1", i + 1),
+                                     "Invariant mass", invbins, invmin, invmax,
+                                     ebins, emin, emax));
     }
   }
 
-  // Invariant mass
-  fOutputContainer->Add(
-    new TH2F("InvMass_AntiNeutron_Charge1", "Invariant mass", invbins, invmin, invmax, ebins, emin, emax));
-  fOutputContainer->Add(
-    new TH2F("InvMass_AntiNeutron_Charge-1", "Invariant mass", invbins, invmin, invmax, ebins, emin, emax));
-  fOutputContainer->Add(new TH2F("InvMass_PiMinus", "Invariant mass", invbins, invmin, invmax, ebins, emin, emax));
-  fOutputContainer->Add(new TH2F("InvMass_PiPlus", "Invariant mass", invbins, invmin, invmax, ebins, emin, emax));
-  //МС invariant mass
-  fOutputContainer->Add(
-    new TH2F("MC_InvMass_AntiNeutron_Charge1", "Invariant mass", invbins, invmin, invmax, ebins, emin, emax));
-  fOutputContainer->Add(
-    new TH2F("MC_InvMass_AntiNeutron_Charge-1", "Invariant mass", invbins, invmin, invmax, ebins, emin, emax));
-  fOutputContainer->Add(new TH2F("MC_InvMass_PiMinus", "Invariant mass", invbins, invmin, invmax, ebins, emin, emax));
-  fOutputContainer->Add(new TH2F("MC_InvMass_PiPlus", "Invariant mass", invbins, invmin, invmax, ebins, emin, emax));
-
   //========================================//
-  fOutputContainer->Add(new TH1F("hSelEvents", "Events selected", 10, 0., 10.));
-  fOutputContainer->Add(new TH1F("hCellMultEvent", "PHOS cell multiplicity per event", 2000, 0, 2000));
-  fOutputContainer->Add(new TH1F("hClusterMult", "CaloCluster multiplicity", 100, 0, 100));
-  fOutputContainer->Add(new TH1F("hPHOSClusterMult", "PHOS cluster multiplicity", 100, 0, 100));
-  fOutputContainer->Add(new TH1F("hCellEnergy", "Cell energy", 5000, 0., 50.));
-  fOutputContainer->Add(new TH1F("hClusterEnergy", "Cluster energy", 5000, 0., 50.));
-  fOutputContainer->Add(new TH2F("hClusterEvsN", "Cluster energy vs digit multiplicity", 5000, 0., 50., 40, 0., 40.));
-  fOutputContainer->Add(new TH1F("hCellMultClu", "Cell multiplicity per cluster", 200, 0, 200));
-  fOutputContainer->Add(new TH1F("hModule", "Module events", 5, 0., 5.));
-  for (Int_t module = 1; module < 5; module++) {
-    fOutputContainer->Add(
-      new TH2F(Form("hModule%d", module), Form("Cluster occupancy in module %d", module), 64, 0., 64, 56, 0., 56.));
-  }
+  fOutputContainer->Add(new TH1F("hSelEvents", "Events selected", 14, 0., 14));
+  fOutputContainer->Add(new TH1F("hCentralityV0M", "V0M", 105, 0, 105));
   fOutputContainer->Add(new TH1F("hZvertex", "Z vertex", 200, -50., +50.));
-  fOutputContainer->Add(new TH1F("hNvertexTracks", "N of primary tracks from the primary vertex", 150, 0., 150.));
-  fOutputContainer->Add(new TH1F("hT0TOF", "T0 time (s)", 2000, -2.0e-9, 2.0e-9));
-  fOutputContainer->Add(new TH1F("hTrackMult", "Charged track multiplicity", 150, 0., 150.));
+  fOutputContainer->Add(new TH1F("hNvertexTracks",
+                                 "N of primary tracks from the primary vertex",
+                                 150, 0., 150.));
 
-  for (Int_t i = 0; i < 10; i++)
-    for (Int_t j = 0; j < fNCenBin; j++)
+  for (Int_t i = 0; i < 10; i++) {
+    for (Int_t j = 0; j < 10; j++) {
       fPHOSEvents[i][j] = 0x0; // Container for PHOS photons
+    }
+  }
 
   PostData(1, fOutputContainer);
 }
 
-void AliAnalysisSigmaBarCharged::UserExec(Option_t*)
-{
+void AliAnalysisSigmaBarCharged::UserExec(Option_t *) {
   // analyze one event
   FillHistogram("hSelEvents", 1);
-  fEvent = dynamic_cast<AliAODEvent*>(InputEvent());
+  fEvent = dynamic_cast<AliAODEvent *>(InputEvent());
   if (!fEvent) {
     Printf("ERROR: Could not retrieve event");
-    PostData(1, fOutputContainer);
+    // PostData(1, fOutputContainer);
     return;
   }
   FillHistogram("hSelEvents", 2);
 
-  // Test vertex
-  const AliAODVertex* esdVertex5 = fEvent->GetPrimaryVertex();
-  fvtx5[0] = esdVertex5->GetX();
-  fvtx5[1] = esdVertex5->GetY();
-  fvtx5[2] = esdVertex5->GetZ();
-
-  FillHistogram("hNvertexTracks", esdVertex5->GetNContributors());
-  FillHistogram("hZvertex", fvtx5[2]);
-  if (TMath::Abs(fvtx5[2]) > 10.) {
-    PostData(1, fOutputContainer);
+  fUtils = new AliAnalysisUtils();
+  if (!fUtils) {
+    Printf("ERROR: Could not retrieve an. utils");
+    // PostData(1, fOutputContainer);
     return;
   }
-  FillHistogram("hSelEvents", 4);
-  Int_t zvtx = (Int_t)((fvtx5[2] + 10.) / 2.);
-  if (zvtx < 0)
-    zvtx = 0;
-  if (zvtx > 9)
-    zvtx = 9;
+  FillHistogram("hSelEvents", 3);
 
-  // Pileup selection
-
-  FillHistogram("hSelEvents", 5);
-
-  if (!fPHOSEvents[zvtx][fCentBin])
-    fPHOSEvents[zvtx][fCentBin] = new TList();
-  fCurrentMixedList = fPHOSEvents[zvtx][fCentBin];
-
+  AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(
+      AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   // particle identification
   if (!fPIDResponse) {
-    AliAODInputHandler* aodH =
-      dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     if (aodH) {
       fPIDResponse = aodH->GetPIDResponse();
     } else {
@@ -499,23 +806,120 @@ void AliAnalysisSigmaBarCharged::UserExec(Option_t*)
       return;
     }
   }
+  FillHistogram("hSelEvents", 4);
+
+  // Minimum Bias events
+  if (aodH && !fIsMC) {
+    if (!(aodH->IsEventSelected() & AliVEvent::kINT7)) {
+      return;
+    }
+  }
+  FillHistogram("hSelEvents", 5);
+
+  // Test vertex
+  const AliAODVertex *esdVertex5 = fEvent->GetPrimaryVertex();
+  if (!esdVertex5) {
+    Printf("ERROR: No primary vertex in AOD!");
+    return;
+  }
+  fvtx5[0] = esdVertex5->GetX();
+  fvtx5[1] = esdVertex5->GetY();
+  fvtx5[2] = esdVertex5->GetZ();
+
+  FillHistogram("hNvertexTracks", esdVertex5->GetNContributors());
+  if (esdVertex5->GetNContributors() <= 0) {
+    // PostData(1, fOutputContainer);
+    return;
+  }
+  FillHistogram("hSelEvents", 6);
+
+  FillHistogram("hZvertex", fvtx5[2]);
+  if (TMath::Abs(fvtx5[2]) > 10.) {
+    // PostData(1, fOutputContainer);
+    return;
+  }
+  FillHistogram("hSelEvents", 7);
+
+  // Pileup selection
+  if (fUtils->IsPileUpEvent(fEvent))
+    return;
+  FillHistogram("hSelEvents", 8);
+
+  // Pileup in Monte-Carlo
+  if (fIsMC) {
+    AliAODMCHeader *aodMCHeader = (AliAODMCHeader *)fEvent->FindListObject(
+        AliAODMCHeader::StdBranchName());
+    if (aodMCHeader) {
+      // find cocktail header
+      Int_t nGenerators = aodMCHeader->GetNCocktailHeaders();
+      if (nGenerators > 0) {
+        for (Int_t igen = 0; igen < nGenerators; igen++) {
+          AliGenEventHeader *eventHeaderGen =
+              aodMCHeader->GetCocktailHeader(igen);
+          TString genname = eventHeaderGen->ClassName();
+          bool isPileUp =
+              AliAnalysisUtils::IsPileupInGeneratedEvent(aodMCHeader, genname);
+          if (isPileUp)
+            return;
+        }
+      }
+    }
+  }
+  FillHistogram("hSelEvents", 9);
+
+  // Centrality
+  AliMultSelection *multSelection =
+      (AliMultSelection *)fEvent->FindListObject("MultSelection");
+  if (!multSelection) {
+    Printf("ERROR: No Cent. inf.!");
+    return;
+  }
+  FillHistogram("hSelEvents", 10);
+
+  fCentrality = multSelection->GetMultiplicityPercentile("V0M");
+  // Centrality class bin
+  fCentBin = int(fCentrality / 10.);
+  if (fCentBin >= 10)
+    fCentBin = 9;
+  FillHistogram("hCentralityV0M", fCentrality);
+
+  // Vtx class z-bin
+  Int_t zvtx = (Int_t)((fvtx5[2] + 10.) / 2.);
+  if (zvtx < 0)
+    zvtx = 0;
+  if (zvtx > 9)
+    zvtx = 9;
+
+  if (!fPHOSEvents[zvtx][fCentBin]) {
+    fPHOSEvents[zvtx][fCentBin] = new TList();
+  }
+  fCurrentMixedList = fPHOSEvents[zvtx][fCentBin];
 
   SelectSigma();
 
   // Remove old events
-  fCurrentMixedList->AddFirst(fGamma);
-  fGamma = 0x0;
-  if (fCurrentMixedList->GetSize() > 100) {
-    TClonesArray* tmp = static_cast<TClonesArray*>(fCurrentMixedList->Last());
-    fCurrentMixedList->Remove(tmp);
-    delete tmp;
+  if (fGamma->GetEntriesFast() > 0) {
+    fCurrentMixedList->AddFirst(fGamma);
+    fGamma = 0x0;
+    if (fCurrentMixedList->GetSize() > 100) {
+      TClonesArray *tmp =
+          static_cast<TClonesArray *>(fCurrentMixedList->Last());
+      fCurrentMixedList->Remove(tmp);
+      delete tmp;
+    }
   }
 
   PostData(1, fOutputContainer);
 }
 
-void AliAnalysisSigmaBarCharged::SelectSigma()
-{
+void AliAnalysisSigmaBarCharged::SelectSigma() {
+  const Double_t c = 29979245800.;    // speed of light in cm/sec
+  const Double_t mbar = 0.939485;     // neutron mass
+  const Double_t mpi = 0.13957039;    // pion mass
+  const Double_t msigmap = 1.197449;  //
+  const Double_t msigmam = 1.18937;   //
+  const Double_t ltantip = 1.479e-10; // lifetime of Sigma-plus-bar
+  const Double_t ltantim = 8.018e-11; // lifetime of Sigma-minus-bar
   Int_t inPHOS = 0;
   // List of antineutron clusters
   if (fGamma)
@@ -529,826 +933,2864 @@ void AliAnalysisSigmaBarCharged::SelectSigma()
 
   if (fIsMC) {
     // MC stack
-    fStack = (TClonesArray*)fEvent->FindListObject(AliAODMCParticle::StdBranchName());
+    fStack = (TClonesArray *)fEvent->FindListObject(
+        AliAODMCParticle::StdBranchName());
 
     // Generated particles
     Int_t multMC = fStack->GetEntriesFast();
     for (Int_t i = 0; i < multMC; i++) {
-      AliAODMCParticle* prim = (AliAODMCParticle*)fStack->At(i);
-      if (prim->GetPdgCode() == -3222 && TMath::Abs(prim->Y()) < 1) {
-        FillHistogram("MC_AntiSigmaMinus_0", prim->Pt());
-      }
-      if (prim->GetPdgCode() == -3112 && TMath::Abs(prim->Y()) < 1) {
-        FillHistogram("MC_AntiSigmaPlus_0", prim->Pt());
-      }
-      if (prim->GetPdgCode() == -2112) {
-        FillHistogram("MC_A_0", prim->Pt());
-        Int_t iparent = prim->GetMother();
-        if (iparent > -1) {
-          AliAODMCParticle* parent = (AliAODMCParticle*)fStack->At(iparent);
-          if (parent->GetPdgCode() == -3222 && TMath::Abs(prim->Y()) < 1) {
-            FillHistogram("MC_AntiSigmaMinus_1", parent->Pt());
-            // cout << "an- label: " << prim->GetLabel() << "parent label: " << parent->GetLabel() << endl;
-          }
-          if (parent->GetPdgCode() == -3112 && TMath::Abs(prim->Y()) < 1) {
-            FillHistogram("MC_AntiSigmaPlus_1", parent->Pt());
-          }
+      AliAODMCParticle *prim = (AliAODMCParticle *)fStack->At(i);
+      if (prim->GetPdgCode() == -3222 && TMath::Abs(prim->Y()) < 0.5) {
+        if (prim->GetDaughterFirst() == -1 || prim->GetDaughterLast() == -1)
+          continue;
+        AliAODMCParticle *daug1 =
+            (AliAODMCParticle *)fStack->At(prim->GetDaughterFirst());
+        AliAODMCParticle *daug2 =
+            (AliAODMCParticle *)fStack->At(prim->GetDaughterLast());
+        if ((daug1->GetPdgCode() == -2112 && daug2->GetPdgCode() == -211) ||
+            (daug2->GetPdgCode() == -2112 && daug1->GetPdgCode() == -211)) {
+          FillHistogram("MC_AntiSigmaMinus_1", prim->Pt());
         }
       }
-      if (prim->GetPdgCode() == 211 && TMath::Abs(prim->Eta()) < 0.8) {
-        FillHistogram("MC_PionPlus_0", prim->Pt());
+      if (prim->GetPdgCode() == -3112 && TMath::Abs(prim->Y()) < 0.5) {
+        if (prim->GetDaughterFirst() == -1 || prim->GetDaughterLast() == -1)
+          continue;
+        AliAODMCParticle *daug1 =
+            (AliAODMCParticle *)fStack->At(prim->GetDaughterFirst());
+        AliAODMCParticle *daug2 =
+            (AliAODMCParticle *)fStack->At(prim->GetDaughterLast());
+        if ((daug1->GetPdgCode() == -2112 && daug2->GetPdgCode() == 211) ||
+            (daug2->GetPdgCode() == -2112 && daug1->GetPdgCode() == 211)) {
+          FillHistogram("MC_AntiSigmaPlus_1", prim->Pt());
+        }
       }
-      if (prim->GetPdgCode() == -211 && TMath::Abs(prim->Eta()) < 0.8) {
-        FillHistogram("MC_PionMinus_0", prim->Pt());
+      if (fAdditionHist) {
+        if (prim->GetPdgCode() == -2112 && TMath::Abs(prim->Y()) < 0.5) {
+          FillHistogram("MC_Nbar_1", prim->Pt());
+          if (prim->IsPhysicalPrimary() || prim->IsPrimary()) {
+            FillHistogram("MC_Nbar_prim_1", prim->Pt());
+          } else {
+            FillHistogram("MC_Nbar_nonprim_1", prim->Pt());
+          }
+        }
+        if (prim->GetPdgCode() == -2212 && TMath::Abs(prim->Y()) < 0.5) {
+          FillHistogram("MC_Pbar_1", prim->Pt());
+        }
       }
     }
   } // End of MC particles loop
 
   // Scan clusters
   for (Int_t i = 0; i < multClust; i++) {
-    AliAODCaloCluster* clu = fEvent->GetCaloCluster(i);
+    AliAODCaloCluster *clu = fEvent->GetCaloCluster(i);
+    // Select cluster type
     if (clu->GetType() != AliVCluster::kPHOSNeutral)
       continue;
+    // Min energy cut
     Double_t cluE = clu->E();
-    if (cluE < fCluMinECut)
-      continue;
-    FillHistogram("All_Disp_MinCut", clu->GetM20(), clu->GetM02(), cluE);
-    FillHistogram("Spectrum_Cluster_1", cluE);
-    // Dispersion and spectrum of antineutron clusters
-    if (fIsMC) {
-      Int_t primLabel0 = clu->GetLabelAt(0);
-      if (primLabel0 > -1) {
-        AliAODMCParticle* prim0 = (AliAODMCParticle*)fStack->At(primLabel0);
-        FillHistogram("EnergyclustervsMC", cluE, prim0->E());
-        Int_t iparent = prim0->GetMother();
-        if (prim0->GetPdgCode() == -2112) {
-          FillHistogram("AntiNeutron_Disp_MinCut", clu->GetM20(), clu->GetM02(), cluE);
-          FillHistogram("AntiNeutron_EnergyclustervsMC", cluE, prim0->E());
-          FillHistogram("MC_A_1", prim0->Pt());
-          if (iparent > -1) {
-            AliAODMCParticle* parent = (AliAODMCParticle*)fStack->At(iparent);
-            if (parent->GetPdgCode() == -3222) {
-              FillHistogram("MC_AntiSigmaMinus_2", parent->Pt());
-            }
-            if (parent->GetPdgCode() == -3112) {
-              FillHistogram("MC_AntiSigmaPlus_2", parent->Pt());
-            }
-          }
-        }
-      }
-    }
     // Exotic or single cell cluster
-    if (clu->GetM02() < 0.2)
+    if (clu->GetM02() <= 0.2)
       continue;
-    FillHistogram("Spectrum_Cluster_2", cluE);
-    if (fIsMC) {
-      Int_t primLabel0 = clu->GetLabelAt(0);
-      if (primLabel0 > -1) {
-        AliAODMCParticle* prim0 = (AliAODMCParticle*)fStack->At(primLabel0);
-        Int_t iparent = prim0->GetMother();
-        if (prim0->GetPdgCode() == -2112) {
-          FillHistogram("MC_A_2", prim0->Pt());
-          if (iparent > -1) {
-            AliAODMCParticle* parent = (AliAODMCParticle*)fStack->At(iparent);
-            if (parent->GetPdgCode() == -3222) {
-              FillHistogram("MC_AntiSigmaMinus_3", parent->Pt());
-            }
-            if (parent->GetPdgCode() == -3112) {
-              FillHistogram("MC_AntiSigmaPlus_3", parent->Pt());
-            }
-          }
-        }
-      }
-    }
-    // Time cut in data
-    if (!fIsMC) {
-      if (TMath::Abs(clu->GetTOF()) > fCluTimeCut) {
-        continue;
-      }
-      FillHistogram("Spectrum_Cluster_TOF", cluE);
-    }
-    // Energy cut for antineutrons
-    if (cluE < fCluNbarMinE) { // append realistic resolution
+    if (clu->GetNCells() < 3)
+      continue;
+    if (cluE < 0.3) { // Min energy
       continue;
     }
 
-    FillHistogram("All_Disp", clu->GetM20(), clu->GetM02(), cluE);
-    FillHistogram("Spectrum_Cluster_3", cluE);
-    if (fIsMC) {
-      Int_t primLabel0 = clu->GetLabelAt(0);
-      if (primLabel0 > -1) {
-        AliAODMCParticle* prim0 = (AliAODMCParticle*)fStack->At(primLabel0);
-        Int_t iparent = prim0->GetMother();
-        if (prim0->GetPdgCode() == -2112) {
-          FillHistogram("AntiNeutron_Disp", clu->GetM20(), clu->GetM02(), cluE);
-          FillHistogram("MC_A_3", prim0->Pt());
-          if (iparent > -1) {
-            AliAODMCParticle* parent = (AliAODMCParticle*)fStack->At(iparent);
-            if (parent->GetPdgCode() == -3222) {
-              FillHistogram("MC_AntiSigmaMinus_4", parent->Pt());
-            }
-            if (parent->GetPdgCode() == -3112) {
-              FillHistogram("MC_AntiSigmaPlus_4", parent->Pt());
-            }
-          }
-        }
-      }
-    }
     // Reconstructed (photon) momentum
     TLorentzVector lvclu;
     clu->GetMomentum(lvclu, fvtx5);
     // Position in PHOS surface
     Float_t pos[3];
     clu->GetPosition(pos);
-    const Double_t c = 29979245800.; // speed of light in cm/sec
-    const Double_t mbar = 0.939485;  // neutron mass
     Double_t t = clu->GetTOF();
-    Double_t r = TMath::Sqrt((fvtx5[0] - pos[0]) * (fvtx5[0] - pos[0]) + (fvtx5[1] - pos[1]) * (fvtx5[1] - pos[1]) +
+    Double_t r = TMath::Sqrt((fvtx5[0] - pos[0]) * (fvtx5[0] - pos[0]) +
+                             (fvtx5[1] - pos[1]) * (fvtx5[1] - pos[1]) +
                              (fvtx5[2] - pos[2]) * (fvtx5[2] - pos[2]));
     Double_t tgamma = r / c;
-    if (!fIsMC) { // Real data calibrated wrt photon arrival
+    // Real data calibrated wrt photon arrival
+    if (!fIsMC) {
       t = t + tgamma;
     }
-    // Time resolution
+    // Time resolution (realistic)
     Double_t sigt = 0.;
-    if (fIsMC && fPHOSClusterTOFOption == 1) { // append realistic resolution
+    if (fIsMC && fPHOSClusterTOFOption == 1) {
       sigt = RealRes(cluE);
       t = gRandom->Gaus(t, sigt);
+    } // append realistic resolution
+
+    // Time resolution (realistic)
+    if (fIsMC && fPHOSClusterTOFOption == 2) {
+      t = t + RealResv2(cluE);
+    } // append realistic resolution
+
+    // TOF versus E_clu distribution
+    FillHistogram("hClusterTOFvsE", t - tgamma, cluE);
+
+    if (fAdditionHist) {
+      if ((clu->GetM02() >= -1 * clu->GetM20() + fDispCut)) {
+        FillHistogram("hClusterTOFvsE_cut1", t - tgamma, cluE);
+      }
+      if ((clu->GetM02() >= -1 * clu->GetM20() + fDispCut) &&
+          clu->GetNCells() >= fNcellCut) {
+        FillHistogram("hClusterTOFvsE_cut2", t - tgamma, cluE);
+      }
     }
 
-    FillHistogram("hClusterTOFvsE", t, cluE);
-
-    // Reconstruct nbar momentum
+    Int_t primLabel0;
     if (fIsMC) {
-      Int_t primLabel = clu->GetLabelAt(0);
-      if (primLabel > -1) {
-        AliAODMCParticle* prim = (AliAODMCParticle*)fStack->At(primLabel);
-        if (prim->GetPdgCode() == -2112) {
-          Double_t px = prim->Px();
-          Double_t py = prim->Py();
-          Double_t pz = prim->Pz();
-          TVector3 vecmc(px, py, pz);
+      primLabel0 = clu->GetLabelAt(0);
+      if (primLabel0 > -1 && fAdditionHist) {
+        AliAODMCParticle *prim0 = (AliAODMCParticle *)fStack->At(primLabel0);
+        if (prim0->GetPdgCode() == -2112) {
+          FillHistogram("hClusterTOFvsE_nbar", t - tgamma, cluE);
+        }
+      }
+    }
 
-          // Vary depth of shower maximum: without shift
-          for (int istep = 0; istep < 7; istep++) {
-            Double_t precs = mbar * mbar / (pow(t * c / (r + 5. * istep), 2) - 1);
-            FillHistogram(Form("AntiNeutronMomentum_MCvsRecon%d-MC_Im", 5 * istep), vecmc.Mag(),
-                          -vecmc.Mag() * vecmc.Mag() + precs);
-            if (pow(t * c / (r + 5. * istep), 2) - 1 > 0) {
-              Double_t prec = mbar / sqrt(pow(t * c / (r + 5. * istep), 2) - 1);
-              FillHistogram(Form("AntiNeutronMomentum_MCvsRecon%d-MC", 5 * istep), vecmc.Mag(), -vecmc.Mag() + prec);
-            }
+    // Time cut; exclude negative times
+    if ((t - tgamma <= 0) || (t - tgamma >= fCluTimeCut)) {
+      continue;
+    }
+
+    // Reconstructed momentum
+    Double_t prec = mbar / sqrt(pow(t * c / r, 2) - 1);
+
+    TVector3 recon;
+    recon.SetMagThetaPhi(prec, lvclu.Theta(), lvclu.Phi());
+    Double_t reconE = sqrt(mbar * mbar + prec * prec);
+    TLorentzVector nbar(recon.Px(), recon.Py(), recon.Pz(), reconE);
+
+    // Arrays for clu cut variations
+    Double_t Eclucut[13] = {0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
+                            1.,  1.1, 1.2, 1.3, 1.4, 1.5};
+    Double_t Ncellcut[13] = {3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15};
+    Double_t Dispcut[13] = {1.,  1.5, 2.,  2.5, 3.,  3.5, 4.,
+                            4.5, 5.,  5.5, 6.,  6.5, 7.0};
+    Double_t CPVcut[13] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
+
+    FillHistogram("hClusterTOFvsE_1", t - tgamma, cluE);
+    FillHistogram("hClusterpTvsE_1", nbar.Pt(), cluE);
+    if (fAdditionHist) {
+      // FillHistogram("Spectrum", cluE);
+      FillHistogram("All_Disp", clu->GetM20(), clu->GetM02());
+      // FillHistogram("All_M02", clu->GetM02(),cluE);
+      // FillHistogram("All_M20", clu->GetM20(),cluE);
+      FillHistogram("All_Sum", clu->GetM02() + clu->GetM20(), cluE);
+    }
+
+    if (fAdditionHist) {
+      // Eclu variation
+      if (fIsMC && (clu->GetNCells() >= fNcellCut) &&
+          (clu->GetM02() >= -1 * clu->GetM20() + fDispCut) &&
+          (clu->GetEmcCpvDistance() > fCPVCut)) {
+        FillHistogram("Spectrum_d_0_0_0", cluE);
+        for (Int_t i1 = 1; i1 < 14; i1++) {
+          if (cluE >= Eclucut[i1 - 1]) {
+            FillHistogram(Form("Spectrum_%d_0_0_0", i1), cluE);
+          }
+        }
+      }
+      // Ncells variation
+      if (fIsMC && (cluE >= fCluNbarMinE) &&
+          (clu->GetM02() >= -1 * clu->GetM20() + fDispCut) &&
+          (clu->GetEmcCpvDistance() > fCPVCut)) {
+        FillHistogram("Spectrum_0_d_0_0", cluE);
+        for (Int_t i1 = 1; i1 < 14; i1++) {
+          if (clu->GetNCells() >= Ncellcut[i1 - 1]) {
+            FillHistogram(Form("Spectrum_0_%d_0_0", i1), cluE);
+          }
+        }
+      }
+      // Disp variation
+      if (fIsMC && (cluE >= fCluNbarMinE) && (clu->GetNCells() >= fNcellCut) &&
+          (clu->GetEmcCpvDistance() > fCPVCut)) {
+        FillHistogram("Spectrum_0_0_d_0", cluE);
+        for (Int_t i1 = 1; i1 < 14; i1++) {
+          if (clu->GetM02() >= -1 * clu->GetM20() + Dispcut[i1 - 1]) {
+            FillHistogram(Form("Spectrum_0_0_%d_0", i1), cluE);
+          }
+        }
+      }
+      // CPV variation
+      if (fIsMC && (cluE >= fCluNbarMinE) && (clu->GetNCells() >= fNcellCut) &&
+          (clu->GetM02() >= -1 * clu->GetM20() + fDispCut)) {
+        FillHistogram("Spectrum_0_0_0_d", cluE);
+        for (Int_t i1 = 1; i1 < 14; i1++) {
+          if (clu->GetEmcCpvDistance() > CPVcut[i1 - 1]) {
+            FillHistogram(Form("Spectrum_0_0_0_%d", i1), cluE);
           }
         }
       }
     }
-    // If momentum can be reconstructed at optimal depth
-    if (pow(t * c / (r + fOptDepth), 2) - 1 > 0) {
-      FillHistogram("NegativeTime+", t, cluE);
-      FillHistogram("Spectrum_Cluster_4", cluE);
-      Double_t prec = mbar / sqrt(pow(t * c / (r + fOptDepth), 2) - 1);
-      // 4-momentum of nbar
-      TVector3 recon;
-      recon.SetMagThetaPhi(prec, lvclu.Theta(), lvclu.Phi());
-      Double_t reconE = sqrt(mbar * mbar + recon.Mag() * recon.Mag());
 
-      if (inPHOS >= fGamma->GetSize()) {
-        fGamma->Expand(inPHOS + 50);
-      }
-      AliCaloPhoton* ph = new ((*fGamma)[inPHOS++]) AliCaloPhoton(recon.X(), recon.Y(), recon.Z(), reconE);
-      // ph->SetTOFBit((clu->GetTOF()>-50.e-9) && (clu->GetTOF() <50.e-9) );
-
-      // CPV cut
-      ph->SetCPV2Bit(clu->GetEmcCpvDistance() > fCPVCut);
-
-      // Anti-photon dispersion cut
-      ph->SetDisp2Bit((clu->Chi2() > fDispCut * fDispCut) && (clu->GetM20() >= fDispA * clu->GetM02() + fDispB));
-
-      Int_t primLabel = clu->GetLabelAt(0);
-      ph->SetPrimaryAtVertex(primLabel);
-
-      Float_t pt = ph->Pt();
-      FillHistogram("Rec_Spectrum_Cluster_4", pt);
-
-      // CPV2 cut
-      if (ph->IsCPV2OK()) {
-        FillHistogram("Spectrum_Cluster_5", cluE);
-        FillHistogram("Rec_Spectrum_Cluster_5", pt);
-      }
-      // Disp2 cut
-      if (ph->IsDisp2OK()) {
-        FillHistogram("Spectrum_Cluster_6", cluE);
-        FillHistogram("Rec_Spectrum_Cluster_6", pt);
-        FillHistogram("Disp2_Cut", clu->GetM20(), clu->GetM02(), cluE);
-        if (fIsMC) {
-          if (primLabel > -1) {
-            AliAODMCParticle* prim0 = (AliAODMCParticle*)fStack->At(primLabel);
-            if (prim0->GetPdgCode() == -2112) {
-              FillHistogram("AntiNeutron_Disp2_Cut", clu->GetM20(), clu->GetM02(), cluE);
-            }
-          }
-        }
-        // CPV2 and Disp2 cut
-        if (ph->IsCPV2OK()) {
-          FillHistogram("Spectrum_Cluster_7", cluE);
-          FillHistogram("Rec_Spectrum_Cluster_7", pt);
-        }
-      }
-
-      if (fIsMC) {
-        if (primLabel > -1) {
-          AliAODMCParticle* prim = (AliAODMCParticle*)fStack->At(primLabel);
-          Int_t iparent = prim->GetMother();
-          TVector3 vecmc(prim->Px(), prim->Py(), prim->Pz());
-          Double_t primE = prim->E();
-          Double_t primPt = prim->Pt();
-          Double_t primP = vecmc.Mag();
-
-          // Classify particle
-          TString partName;
-          switch (prim->GetPdgCode()) {
-            case 22:
-              partName = "Photon";
-              break;
-            case 11:
-              partName = "Electron";
-              break;
-            case -11:
-              partName = "Positron";
-              break;
-            case 2212:
-              partName = "Proton";
-              break;
-            case -2212:
-              partName = "AntiProton";
-              break;
-            case 211:
-              partName = "PiPlus";
-              break;
-            case -211:
-              partName = "PiMinus";
-              break;
-            case 112:
-              partName = "Neutron";
-              break;
-            case -2112:
-              partName = "AntiNeutron";
-              break;
-            case 321:
-              partName = "KPlus";
-              break;
-            case -321:
-              partName = "KMinus";
-              break;
-            case 130:
-              partName = "KLong";
-              break;
-            default:
-              partName = "Other";
-              FillHistogram("PDG_Other", prim->GetPdgCode());
-          }
-
-          // Spectrum of particles in PHOS
-          FillHistogram("Spectrum_Sum", primE);
-          FillHistogram(Form("Spectrum_%s", partName.Data()), primE);
-          // CPV2 cut
-          if (ph->IsCPV2OK()) {
-            FillHistogram("CPV2_Spectrum_Sum", primE);
-            FillHistogram(Form("CPV2_Spectrum_%s", partName.Data()), primE);
-          }
-          // Disp2 cut
-          if (ph->IsDisp2OK()) {
-            FillHistogram("Disp2_Spectrum_Sum", primE);
-            FillHistogram(Form("Disp2_Spectrum_%s", partName.Data()), primE);
-            if (ph->IsCPV2OK()) {
-              FillHistogram("CPV2_Disp2_Spectrum_Sum", primE);
-              FillHistogram(Form("CPV2_Disp2_Spectrum_%s", partName.Data()), primE);
-            }
-          }
-          // For antineutrons
-          if (prim->GetPdgCode() == -2112) {
-            // Difference rec and true momenta
-            // FillHistogram("AntiNeutronMomentum_MCvsRecon10-MC", primP, prec - primP);
-            // spectra
-            FillHistogram("MC_A_4", primPt);
-            FillHistogram("Rec_A_4", pt);
-            // Angles rec vs true
-            FillHistogram("AntiNeutronPolar_clustervsMC", lvclu.Theta(), vecmc.Theta());
-            FillHistogram("AntiNeutronPolar_clustervscluster-MC", lvclu.Theta(), lvclu.Theta() - vecmc.Theta());
-            FillHistogram("AntiNeutronAzimuth_clustervsMC", lvclu.Phi(), vecmc.Phi());
-            FillHistogram("AntiNeutronAzimuth_clustervscluster-MC", lvclu.Phi(), lvclu.Phi() - vecmc.Phi());
-            // Momemta rec vs true
-            FillHistogram("AntiNeutronMomentum_reconvsMC", recon.Mag(), primP);
-            FillHistogram("AntiNeutronMomentum_clustervsMC", lvclu.Mag(), primP);
-            FillHistogram("AntiNeutronMomentum_MCvscluster-MC", primP, lvclu.Mag() - primP);
-            // Time dependences
-            FillHistogram("AntiNeutronClusterTOFvsE", t, cluE);
-            FillHistogram("AntiNeutronClusterTOFvsMCE", t, primE);
-            //  Antineutrons
-            FillHistogram("AntineutronNegativeTime+", t, cluE);
-            if (ph->IsCPV2OK()) {
-              FillHistogram("MC_A_5", primPt);
-              FillHistogram("Rec_A_5", pt);
-            }
-            if (ph->IsDisp2OK()) {
-              FillHistogram("MC_A_6", primPt);
-              FillHistogram("Rec_A_6", pt);
-              if (ph->IsCPV2OK()) {
-                FillHistogram("MC_A_7", primPt);
-                FillHistogram("Rec_A_7", pt);
+    if (fIsMC && fAdditionHist) {
+      if (primLabel0 > -1) {
+        AliAODMCParticle *prim0 = (AliAODMCParticle *)fStack->At(primLabel0);
+        if (prim0->GetPdgCode() == -2112) {
+          Double_t pmc = prim0->P();
+          FillHistogram("hClusterTOFvsE_nbar_1", t - tgamma, cluE);
+          FillHistogram("hClusterpTvsE_nbar_1", nbar.Pt(), cluE);
+          FillHistogram("hClusterpTmcvsE_nbar_1", prim0->Pt(), cluE);
+          // FillHistogram("Spectrum_Nbar", cluE);
+          FillHistogram("AntiNeutron_Disp", clu->GetM20(), clu->GetM02());
+          FillHistogram("EcluvsP_nbar", cluE, pmc);
+          // Eclu variation
+          if ((clu->GetNCells() >= fNcellCut) &&
+              (clu->GetM02() >= -1 * clu->GetM20() + fDispCut) &&
+              (clu->GetEmcCpvDistance() > fCPVCut)) {
+            FillHistogram("Spectrum_Nbar_d_0_0_0", cluE);
+            for (Int_t i1 = 1; i1 < 14; i1++) {
+              if (cluE >= Eclucut[i1 - 1]) {
+                FillHistogram(Form("Spectrum_Nbar_%d_0_0_0", i1), cluE);
               }
             }
-            if (iparent > -1) {
-              AliAODMCParticle* parent = (AliAODMCParticle*)fStack->At(iparent);
-              Double_t parentPt = parent->Pt();
-              TVector3 vecpar(parent->Px(), parent->Py(), parent->Pz());
-
-              if (parent->GetPdgCode() == -3222) {
-                FillHistogram("AntiNeutronMomentum_MCvsMC-recon_Minus", primP, -primP + recon.Mag());
-                FillHistogram("MC_AntiSigmaMinus_5", parentPt);
-                // CPV2 cut
-                if (ph->IsCPV2OK()) {
-                  FillHistogram("MC_AntiSigmaMinus_5_CPV2", parentPt);
-                }
-                // Disp2 cut
-                if (ph->IsDisp2OK()) {
-                  FillHistogram("MC_AntiSigmaMinus_5_Disp2", parentPt);
-                  // CPV2 and Disp2 cut
-                  if (ph->IsCPV2OK()) {
-                    FillHistogram("MC_AntiSigmaMinus_5_CPV2_Disp2", parentPt);
-                  }
-                }
+          }
+          // Ncells variation
+          if ((cluE >= fCluNbarMinE) &&
+              (clu->GetM02() >= -1 * clu->GetM20() + fDispCut) &&
+              (clu->GetEmcCpvDistance() > fCPVCut)) {
+            FillHistogram("Spectrum_Nbar_0_d_0_0", cluE);
+            for (Int_t i1 = 1; i1 < 14; i1++) {
+              if (clu->GetNCells() >= Ncellcut[i1 - 1]) {
+                FillHistogram(Form("Spectrum_Nbar_0_%d_0_0", i1), cluE);
               }
-              if (parent->GetPdgCode() == -3112) {
-                FillHistogram("AntiNeutronMomentum_MCvsMC-recon_Plus", primP, -primP + recon.Mag());
-                FillHistogram("MC_AntiSigmaPlus_5", parentPt);
-                // CPV2 cut
-                if (ph->IsCPV2OK()) {
-                  FillHistogram("MC_AntiSigmaPlus_5_CPV2", parentPt);
-                }
-                // Disp2 cut
-                if (ph->IsDisp2OK()) {
-                  FillHistogram("MC_AntiSigmaPlus_5_Disp2", parentPt);
-                  // CPV2 and Disp2 cut
-                  if (ph->IsCPV2OK()) {
-                    FillHistogram("MC_AntiSigmaPlus_5_CPV2_Disp2", parentPt);
-                  }
-                }
+            }
+          }
+          // Disp variation
+          if ((cluE >= fCluNbarMinE) && (clu->GetNCells() >= fNcellCut) &&
+              (clu->GetEmcCpvDistance() > fCPVCut)) {
+            FillHistogram("Spectrum_Nbar_0_0_d_0", cluE);
+            for (Int_t i1 = 1; i1 < 14; i1++) {
+              if (clu->GetM02() >= -1 * clu->GetM20() + Dispcut[i1 - 1]) {
+                FillHistogram(Form("Spectrum_Nbar_0_0_%d_0", i1), cluE);
+              }
+            }
+          }
+          // CPV variation
+          if ((cluE >= fCluNbarMinE) && (clu->GetNCells() >= fNcellCut) &&
+              (clu->GetM02() >= -1 * clu->GetM20() + fDispCut)) {
+            FillHistogram("Spectrum_Nbar_0_0_0_d", cluE);
+            for (Int_t i1 = 1; i1 < 14; i1++) {
+              if (clu->GetEmcCpvDistance() > CPVcut[i1 - 1]) {
+                FillHistogram(Form("Spectrum_Nbar_0_0_0_%d", i1), cluE);
               }
             }
           }
         }
+        if (prim0->GetPdgCode() == -2212) {
+          FillHistogram("EcluvsP_pbar", cluE, prim0->P());
+          FillHistogram("AntiProton_Disp", clu->GetM20(), clu->GetM02());
+        }
+        if (prim0->GetPdgCode() == 22) {
+          FillHistogram("Photon_Disp", clu->GetM20(), clu->GetM02());
+        }
+        // Classify particle
+        TString partName;
+        switch (prim0->GetPdgCode()) {
+        case 22:
+          partName = "Photon";
+          break;
+        case 11:
+          partName = "Electron";
+          break;
+        case -11:
+          partName = "Positron";
+          break;
+        case 2212:
+          partName = "Proton";
+          break;
+        case -2212:
+          partName = "AntiProton";
+          break;
+        case 211:
+          partName = "PiPlus";
+          break;
+        case -211:
+          partName = "PiMinus";
+          break;
+        case 2112:
+          partName = "Neutron";
+          break;
+        case -2112:
+          partName = "AntiNeutron";
+          break;
+        case 321:
+          partName = "KPlus";
+          break;
+        case -321:
+          partName = "KMinus";
+          break;
+        case 130:
+          partName = "KLong";
+          break;
+        default:
+          partName = "Other";
+        }
+
+        // Spectrum of particles in PHOS
+        FillHistogram("Spectrum_Sum", cluE);
+        FillHistogram("Ncells_Sum", clu->GetNCells());
+        FillHistogram(Form("Spectrum_%s", partName.Data()), cluE);
+        FillHistogram(Form("Ncells_%s", partName.Data()), clu->GetNCells());
       }
-    } else {
-      // Clusters with imaginary reconstructed momentum
-      FillHistogram("NegativeTime-", t, cluE);
+    }
+
+    // Set bits; After nbar cuts
+
+    // Fill the Nbar array
+    if (inPHOS >= fGamma->GetSize()) {
+      fGamma->Expand(inPHOS + 50);
+    }
+
+    // Create AliCaloPhoton
+    AliCaloPhoton *ph = new ((*fGamma)[inPHOS++])
+        AliCaloPhoton(nbar.Px(), nbar.Py(), nbar.Pz(), nbar.E());
+
+    // Default Cuts
+    // Energy cut for antineutrons
+    ph->SetCPVBit(cluE >= fCluNbarMinE);
+    // Ncells cut
+    ph->SetCPV2Bit(clu->GetNCells() >= fNcellCut);
+    // CPV cut
+    ph->SetDispBit(clu->GetEmcCpvDistance() > fCPVCut);
+    // Disp cut
+    ph->SetDisp2Bit(clu->GetM02() >= -1 * clu->GetM20() + fDispCut);
+
+    // Record first label of the cluster
+    ph->SetPrimaryAtVertex(primLabel0);
+
+    // Set variables for momentum reconstruction
+    ph->SetEMCx(pos[0]);
+    ph->SetEMCy(pos[1]);
+    ph->SetEMCz(pos[2]);
+    ph->SetTime(t);
+    ph->SetWeight(t - tgamma);
+
+    if (fAdditionHist) {
+      // Compare spec. in MC and data
+      FillHistogram("Spectrum_pt_allnbar_1", ph->Pt());
+      FillHistogram("Spectrum_eclu_allnbar_1", cluE);
+      // FillHistogram("Nbar_all_M02_1", clu->GetM02(),cluE);
+      // FillHistogram("Nbar_all_M20_1", clu->GetM20(),cluE);
+      FillHistogram("Nbar_all_Sum_1", clu->GetM02() + clu->GetM20(), cluE);
+
+      // All cut
+      if (ph->IsCPVOK() && ph->IsCPV2OK() && ph->IsDispOK() &&
+          ph->IsDisp2OK()) {
+        FillHistogram("hClusterTOFvsE_2", t - tgamma, cluE);
+        FillHistogram("hClusterpTvsE_2", nbar.Pt(), cluE);
+        FillHistogram("Spectrum_pt_allnbar_2", ph->Pt());
+        FillHistogram("Spectrum_eclu_allnbar_2", cluE);
+        // FillHistogram("Nbar_all_M02_2", clu->GetM02(),cluE);
+        // FillHistogram("Nbar_all_M20_2", clu->GetM20(),cluE);
+        FillHistogram("Nbar_all_Sum_2", clu->GetM02() + clu->GetM20(), cluE);
+      }
+
       if (fIsMC) {
         Int_t primLabel = clu->GetLabelAt(0);
         if (primLabel > -1) {
-          AliAODMCParticle* prim0 = (AliAODMCParticle*)fStack->At(primLabel);
-          if (prim0->GetPdgCode() == -2112) {
-            FillHistogram("AntineutronNegativeTime-", t, cluE);
+          AliAODMCParticle *prim = (AliAODMCParticle *)fStack->At(primLabel);
+          if (prim->GetPdgCode() == -2112) {
+            // Compare spec. in MC and data
+            FillHistogram("Spectrum_pt_nbar_1", ph->Pt());
+            FillHistogram("Spectrum_ptmc_nbar_1", prim->Pt());
+            FillHistogram("Response_nbar_1", ph->Pt(), prim->Pt());
+            FillHistogram("Spectrum_eclu_nbar_1", cluE);
+            // FillHistogram("Nbar_M02_1", clu->GetM02(),cluE);
+            // FillHistogram("Nbar_M20_1", clu->GetM20(),cluE);
+            FillHistogram("Nbar_Sum_1", clu->GetM02() + clu->GetM20(), cluE);
+            // All cut
+            if (ph->IsCPVOK() && ph->IsCPV2OK() && ph->IsDispOK() &&
+                ph->IsDisp2OK()) {
+              FillHistogram("Spectrum_pt_nbar_2", ph->Pt());
+              FillHistogram("Spectrum_ptmc_nbar_2", prim->Pt());
+              FillHistogram("Response_nbar_2", ph->Pt(), prim->Pt());
+              FillHistogram("Spectrum_eclu_nbar_2", cluE);
+              // FillHistogram("Nbar_M02_2", clu->GetM02(),cluE);
+              // FillHistogram("Nbar_M20_2", clu->GetM20(),cluE);
+              FillHistogram("Nbar_Sum_2", clu->GetM02() + clu->GetM20(), cluE);
+            }
+          }
+        }
+      }
+
+      if (fPIDResponse && clu->GetNTracksMatched() > 0) {
+        AliAODTrack *trackclu =
+            dynamic_cast<AliAODTrack *>(clu->GetTrackMatched(0));
+        Double_t nsigmaProtonTPC =
+            fPIDResponse->NumberOfSigmasTPC(trackclu, AliPID::kProton);
+        FillHistogram("TPC_pid_proton", nsigmaProtonTPC, trackclu->P());
+        if (TMath::Abs(nsigmaProtonTPC) < 3. && trackclu->Charge() == -1) {
+          // Compare spec. in MC and data
+          FillHistogram("Spectrum_pt_allpbar_1", ph->Pt());
+          FillHistogram("Spectrum_eclu_allpbar_1", cluE);
+          // FillHistogram("Pbar_all_M02_1", clu->GetM02(),cluE);
+          // FillHistogram("Pbar_all_M20_1", clu->GetM20(),cluE);
+          // FillHistogram("Pbar_all_Sum_1", clu->GetM02()+clu->GetM20(),cluE);
+
+          // All cut
+          if (ph->IsCPVOK() && ph->IsCPV2OK() && ph->IsDisp2OK() &&
+              clu->GetEmcCpvDistance() < 2.) {
+            FillHistogram("Spectrum_pt_allpbar_2", ph->Pt());
+            FillHistogram("Spectrum_eclu_allpbar_2", cluE);
+            // FillHistogram("Pbar_all_M02_2", clu->GetM02(),cluE);
+            // FillHistogram("Pbar_all_M20_2", clu->GetM20(),cluE);
+            // FillHistogram("Pbar_all_Sum_2",
+            // clu->GetM02()+clu->GetM20(),cluE);
+          }
+          if (fIsMC) {
+            Int_t primLabel = clu->GetLabelAt(0);
+            if (primLabel > -1) {
+              AliAODMCParticle *prim =
+                  (AliAODMCParticle *)fStack->At(primLabel);
+              if (prim->GetPdgCode() == -2212) {
+                // Compare spec. in MC and data
+                FillHistogram("Spectrum_pt_pbar_1", ph->Pt());
+                FillHistogram("Spectrum_ptmc_pbar_1", prim->Pt());
+                FillHistogram("Response_pbar_1", ph->Pt(), prim->Pt());
+                FillHistogram("Spectrum_eclu_pbar_1", cluE);
+                // FillHistogram("Pbar_M02_1", clu->GetM02(),cluE);
+                // FillHistogram("Pbar_M20_1", clu->GetM20(),cluE);
+                // FillHistogram("Pbar_Sum_1",
+                // clu->GetM02()+clu->GetM20(),cluE); All cut
+                if (ph->IsCPVOK() && ph->IsCPV2OK() && ph->IsDisp2OK() &&
+                    clu->GetEmcCpvDistance() < 2.) {
+                  FillHistogram("Spectrum_pt_pbar_2", ph->Pt());
+                  FillHistogram("Spectrum_ptmc_pbar_2", prim->Pt());
+                  FillHistogram("Response_pbar_2", ph->Pt(), prim->Pt());
+                  FillHistogram("Spectrum_eclu_pbar_2", cluE);
+                  // FillHistogram("Pbar_M02_2", clu->GetM02(),cluE);
+                  // FillHistogram("Pbar_M20_2", clu->GetM20(),cluE);
+                  // FillHistogram("Pbar_Sum_2",
+                  // clu->GetM02()+clu->GetM20(),cluE);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    if (fIsMC && ph->IsCPVOK() && ph->IsCPV2OK() && ph->IsDispOK() &&
+        ph->IsDisp2OK() && fAdditionHist) {
+      Int_t primLabel = clu->GetLabelAt(0);
+      if (primLabel > -1) {
+        AliAODMCParticle *prim = (AliAODMCParticle *)fStack->At(primLabel);
+        // Classify particle
+        TString partName;
+        switch (prim->GetPdgCode()) {
+        case 22:
+          partName = "Photon";
+          break;
+        case 11:
+          partName = "Electron";
+          break;
+        case -11:
+          partName = "Positron";
+          break;
+        case 2212:
+          partName = "Proton";
+          break;
+        case -2212:
+          partName = "AntiProton";
+          break;
+        case 211:
+          partName = "PiPlus";
+          break;
+        case -211:
+          partName = "PiMinus";
+          break;
+        case 2112:
+          partName = "Neutron";
+          break;
+        case -2112:
+          partName = "AntiNeutron";
+          break;
+        case 321:
+          partName = "KPlus";
+          break;
+        case -321:
+          partName = "KMinus";
+          break;
+        case 130:
+          partName = "KLong";
+          break;
+        default:
+          partName = "Other";
+          // FillHistogram("PDG_Other", prim->GetPdgCode());
+        }
+
+        // Spectrum of particles in PHOS
+        FillHistogram("Spectrum_Sum_1", cluE);
+        FillHistogram("Ncells_Sum_1", clu->GetNCells());
+        FillHistogram(Form("Spectrum_%s_1", partName.Data()), cluE);
+        FillHistogram(Form("Ncells_%s_1", partName.Data()), clu->GetNCells());
+
+        if (prim->GetPdgCode() == -2112) {
+          FillHistogram("hClusterTOFvsE_nbar_2", t - tgamma, cluE);
+          FillHistogram("hClusterpTvsE_nbar_2", nbar.Pt(), cluE);
+          FillHistogram("hClusterpTmcvsE_nbar_2", prim->Pt(), cluE);
+
+          Double_t vtxmc[3];
+          prim->XvYvZv(vtxmc);
+          Double_t pmc = prim->P();
+          Double_t Emc = prim->E();
+
+          if (prim->IsPhysicalPrimary() || prim->IsPrimary()) {
+            FillHistogram("Nbar_pmcvsprec-pmc_prim", pmc, -pmc + prec);
+            FillHistogram("Nbar_prec-pmcvseclu_prim", cluE, -pmc + prec);
+            FillHistogram("Nbar_pmcvsprec_prim", pmc, prec);
+            FillHistogram("Nbar_emcvserec_prim", Emc, reconE);
+          } else {
+            FillHistogram("Nbar_pmcvsprec-pmc", pmc, -pmc + prec);
+            FillHistogram("Nbar_prec-pmcvseclu", cluE, -pmc + prec);
+            FillHistogram("Nbar_pmcvsprec", pmc, prec);
+            FillHistogram("Nbar_emcvserec", Emc, reconE);
+          }
+
+          Int_t primparentLabel = prim->GetMother();
+          if (primparentLabel > -1) {
+            AliAODMCParticle *primparent =
+                (AliAODMCParticle *)fStack->At(primparentLabel);
+            if (primparent->GetPdgCode() == -3222) {
+              AliAODMCParticle *pion;
+              if (primparent->GetDaughterLast() == primLabel) {
+                pion = (AliAODMCParticle *)fStack->At(
+                    primparent->GetDaughterFirst());
+              } else if (primparent->GetDaughterFirst() == primLabel) {
+                pion = (AliAODMCParticle *)fStack->At(
+                    primparent->GetDaughterLast());
+              }
+              if (pion->GetPdgCode() == -211) {
+                FillHistogram("Nbar_pmcvsprec-pmc_minus", pmc, -pmc + prec);
+                FillHistogram("Nbar_prec-pmcvseclu_minus", cluE, -pmc + prec);
+                FillHistogram("Nbar_pmcvsprec_minus", pmc, prec);
+
+                Double_t vtxpion[3]; // Vertex of Sigma bar decay
+                pion->XvYvZv(vtxpion);
+                Double_t rtosecondary = TMath::Sqrt(
+                    (vtxpion[0] - fvtx5[0]) * (vtxpion[0] - fvtx5[0]) +
+                    (vtxpion[1] - fvtx5[1]) * (vtxpion[1] - fvtx5[1]) +
+                    (vtxpion[2] - fvtx5[2]) *
+                        (vtxpion[2] - fvtx5[2])); // PV to decay vertex
+                Double_t rsectophs = TMath::Sqrt(
+                    (vtxpion[0] - pos[0]) * (vtxpion[0] - pos[0]) +
+                    (vtxpion[1] - pos[1]) * (vtxpion[1] - pos[1]) +
+                    (vtxpion[2] - pos[2]) *
+                        (vtxpion[2] - pos[2])); // Decay vertex to PHOS
+
+                // AntiSigma tof compare
+                Int_t parentSigmalabel = primparent->GetMother();
+                Double_t tofparent = primparent->T();
+                while (parentSigmalabel > -1) {
+                  AliAODMCParticle *Sigmamother =
+                      (AliAODMCParticle *)fStack->At(parentSigmalabel);
+                  tofparent = Sigmamother->T();
+                  parentSigmalabel = Sigmamother->GetMother();
+                }
+
+                Double_t tofsigma = prim->T() - tofparent;
+                Double_t tofnbar = rtosecondary / (pmc * c / Emc);
+                Double_t prec_corr =
+                    mbar / sqrt(pow((t - tofsigma) * c / rsectophs, 2) - 1);
+
+                FillHistogram("t_compare_minus",
+                              (tofsigma - tofnbar) / tofsigma,
+                              primparent->Pt());
+                FillHistogram("t_compare_minus_1", (tofsigma - tofnbar) / t,
+                              primparent->Pt());
+                FillHistogram("t_compare_minus_2", tofsigma / t,
+                              primparent->Pt());
+                FillHistogram("SV_minus", (rtosecondary + rsectophs - r) / r,
+                              primparent->Pt());
+
+                FillHistogram("t_compare_minus_3", (-prec_corr + prec) / prec,
+                              primparent->Pt());
+              }
+            }
+            if (primparent->GetPdgCode() == -3112) {
+              AliAODMCParticle *pion;
+              if (primparent->GetDaughterLast() == primLabel) {
+                pion = (AliAODMCParticle *)fStack->At(
+                    primparent->GetDaughterFirst());
+              } else if (primparent->GetDaughterFirst() == primLabel) {
+                pion = (AliAODMCParticle *)fStack->At(
+                    primparent->GetDaughterLast());
+              }
+              if (pion->GetPdgCode() == 211) {
+                FillHistogram("Nbar_pmcvsprec-pmc_plus", pmc, -pmc + prec);
+                FillHistogram("Nbar_prec-pmcvseclu_plus", cluE, -pmc + prec);
+                FillHistogram("Nbar_pmcvsprec_plus", pmc, prec);
+
+                Double_t vtxpion[3]; // Vertex of Sigma bar decay
+                pion->XvYvZv(vtxpion);
+                Double_t rtosecondary = TMath::Sqrt(
+                    (vtxpion[0] - fvtx5[0]) * (vtxpion[0] - fvtx5[0]) +
+                    (vtxpion[1] - fvtx5[1]) * (vtxpion[1] - fvtx5[1]) +
+                    (vtxpion[2] - fvtx5[2]) *
+                        (vtxpion[2] - fvtx5[2])); // PV to decay vertex
+                Double_t rsectophs = TMath::Sqrt(
+                    (vtxpion[0] - pos[0]) * (vtxpion[0] - pos[0]) +
+                    (vtxpion[1] - pos[1]) * (vtxpion[1] - pos[1]) +
+                    (vtxpion[2] - pos[2]) *
+                        (vtxpion[2] - pos[2])); // Decay vertex to PHOS
+
+                // AntiSigma tof compare
+                Int_t parentSigmalabel = primparent->GetMother();
+                Double_t tofparent = primparent->T();
+                while (parentSigmalabel > -1) {
+                  AliAODMCParticle *Sigmamother =
+                      (AliAODMCParticle *)fStack->At(parentSigmalabel);
+                  tofparent = Sigmamother->T();
+                  parentSigmalabel = Sigmamother->GetMother();
+                }
+
+                Double_t tofsigma = prim->T() - tofparent;
+                Double_t tofnbar = rtosecondary / (pmc * c / Emc);
+                Double_t prec_corr =
+                    mbar / sqrt(pow((t - tofsigma) * c / rsectophs, 2) - 1);
+
+                FillHistogram("t_compare_plus", (tofsigma - tofnbar) / tofsigma,
+                              primparent->Pt());
+                FillHistogram("t_compare_plus_1", (tofsigma - tofnbar) / t,
+                              primparent->Pt());
+                FillHistogram("t_compare_plus_2", tofsigma / t,
+                              primparent->Pt());
+                FillHistogram("SV_plus", (rtosecondary + rsectophs - r) / r,
+                              primparent->Pt());
+
+                FillHistogram("t_compare_plus_3", (-prec_corr + prec) / prec,
+                              primparent->Pt());
+              }
+            }
           }
         }
       }
     }
   }
 
-  // Tracks
   TIter nextEv(fCurrentMixedList);
+
   for (Int_t i = 0; i < multTracks; i++) {
-    AliAODTrack* track = (AliAODTrack*)fEvent->GetTrack(i);
-    if (track->GetFilterMap() != fTracksBits)
+    AliAODTrack *track = (AliAODTrack *)fEvent->GetTrack(i);
+    Int_t primLabelTrack = track->GetLabel();
+    Bool_t isMCpion = kFALSE;
+    Bool_t isMCpionsigma = kFALSE;
+
+    if (fIsMC) {
+      if (primLabelTrack > -1) {
+        AliAODMCParticle *primpion =
+            (AliAODMCParticle *)fStack->At(primLabelTrack);
+        if (primpion->GetPdgCode() == -211 || primpion->GetPdgCode() == 211) {
+          isMCpion = kTRUE;
+          if (primpion->GetMother() > -1) {
+            AliAODMCParticle *primpionmother =
+                (AliAODMCParticle *)fStack->At(primpion->GetMother());
+            if (primpionmother->GetPdgCode() == -3112 ||
+                primpionmother->GetPdgCode() == -3222) {
+              isMCpionsigma = kTRUE;
+            }
+          }
+        }
+      }
+    }
+
+    // Select FilterBit
+    if (!track->TestFilterMask(BIT(fTracksBits))) {
       continue;
-    if (TMath::Abs(track->Eta()) > 0.8)
-      continue;
+    }
+
+    Int_t TPCClust = track->GetTPCNcls();
+    if (TMath::Abs(track->Eta()) <= fTrackEta && fAdditionHist) {
+      FillHistogram("TPC_clusters_track", TPCClust, track->Pt());
+      if (isMCpionsigma) {
+        FillHistogram("TPC_clusters_pionsigma", TPCClust, track->Pt());
+      }
+    }
+
     Double_t pxtr = track->Px();
     Double_t pytr = track->Py();
     Double_t pztr = track->Pz();
-    const Double_t mpi = 0.13957039;
     Double_t etr = sqrt(mpi * mpi + (pxtr * pxtr + pytr * pytr + pztr * pztr));
-    TLorentzVector lvtr(pxtr, pytr, pztr, etr);
     Double_t trackPt = track->Pt();
-    Int_t primLabelTrack = track->GetLabel();
     // DCA
     Float_t b[2];
-    track->GetImpactParameters(b[0], b[1]); // xy:-5.43674e-02+3.14319e-02/x z:-3.65702e-02e-02+5.38728e-02/x pt<0.5
-    if (b[0] == -999 || b[1] == -999)
-      continue;
+    track->GetImpactParameters(b[0], b[1]);
+    // if (b[0] == -999 || b[1] == -999)
+    //   continue;
+
     // Track PID in TPC sigmas
-    AliVParticle* inEvHMain = dynamic_cast<AliVParticle*>(track);
-    Bool_t pidPion = kFALSE, pidKaon = kFALSE, pidProton = kFALSE;
-    Double_t nsigmaProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(inEvHMain, AliPID::kProton));
-    Double_t nsigmaKaon = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(inEvHMain, AliPID::kKaon));
-    Double_t nsigmaPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(inEvHMain, AliPID::kPion));
-    // guess the particle based on the smaller nsigma
-    if ((nsigmaKaon < nsigmaPion) && (nsigmaKaon < nsigmaProton) && (nsigmaKaon < 3))
-      pidKaon = kTRUE;
-    if ((nsigmaPion < nsigmaKaon) && (nsigmaPion < nsigmaProton) && (nsigmaPion < 3))
-      pidPion = kTRUE;
-    if ((nsigmaProton < nsigmaKaon) && (nsigmaProton < nsigmaPion) && (nsigmaProton < 3))
-      pidProton = kTRUE;
-//     if (!pidPion && !pidKaon && !pidProton)
-//       pidUndef = kTRUE;
-    // kink daughters
+    Double_t nsigmaPionTPC =
+        TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion));
+    Double_t nsigmaPionTPC_noabs =
+        fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+
+    // TPC dE/dx PID efficiency and purity check; TPCClusters
+    if (fAdditionHist && TMath::Abs(track->Eta()) <= fTrackEta &&
+        TPCClust >= fNTPCclusters) {
+      FillHistogram("TPC_pid_track", nsigmaPionTPC_noabs, track->P());
+    }
+
+    // kink daughters check
     if (track->GetKinkIndex(0) != 0) {
       std::cout << "label: " << primLabelTrack << std::endl;
       if (primLabelTrack > -1) {
-        AliAODMCParticle* primpion = (AliAODMCParticle*)fStack->At(primLabelTrack);
+        AliAODMCParticle *primpion =
+            (AliAODMCParticle *)fStack->At(primLabelTrack);
         std::cout << "pdg: " << primpion->GetPdgCode() << std::endl;
       }
       continue; // TODO?????
     }
-    if (track->Charge() == 1) {
-      FillHistogram("TrackPlus_1", trackPt);
-      FillHistogram("DCA_XY_Plus", b[0], trackPt);
-      FillHistogram("DCA_Z_Plus", b[1], trackPt);
-    }
-    if (track->Charge() == -1) {
-      FillHistogram("TrackMinus_1", trackPt);
-      FillHistogram("DCA_XY_Minus", b[0], trackPt);
-      FillHistogram("DCA_Z_Minus", b[1], trackPt);
-    }
-    // Pions
-    if (fIsMC) {
-      if (primLabelTrack > -1) {
-        AliAODMCParticle* primpion = (AliAODMCParticle*)fStack->At(primLabelTrack);
-        if (primpion->GetPdgCode() == 211) {
-          FillHistogram("PionPlus_1", trackPt);
-        }
-        if (primpion->GetPdgCode() == -211) {
-          FillHistogram("PionMinus_1", trackPt);
-        }
-        if (primpion->GetMother() > -1) {
-          AliAODMCParticle* pionparent = (AliAODMCParticle*)fStack->At(primpion->GetMother());
-          if (pionparent->GetPdgCode() == -3112 && primpion->GetPdgCode() == 211) {
-            FillHistogram("MC_AntiSigmaPlus_6", pionparent->Pt());
-            FillHistogram("DCA_XY_AntiSigmaPlus", b[0], trackPt);
-            FillHistogram("DCA_Z_AntiSigmaPlus", b[1], trackPt);
-          }
-          if (pionparent->GetPdgCode() == -3222 && primpion->GetPdgCode() == -211) {
-            FillHistogram("MC_AntiSigmaMinus_6", pionparent->Pt());
-            FillHistogram("DCA_XY_AntiSigmaMinus", b[0], trackPt);
-            FillHistogram("DCA_Z_AntiSigmaMinus", b[1], trackPt);
-          }
+
+    if (fAdditionHist) {
+      // DCA pion to PV
+      if (TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= fNTPCclusters &&
+          nsigmaPionTPC < fTPCsigmas) {
+        FillHistogram("DCA_XY_pion", b[0], trackPt);
+        FillHistogram("DCA_Z_pion", b[1], trackPt);
+        if (isMCpionsigma) {
+          FillHistogram("DCA_XY_pionsigma", b[0], trackPt);
+          FillHistogram("DCA_Z_pionsigma", b[1], trackPt);
         }
       }
     }
 
-    if (pidPion) {
-      if (track->Charge() == 1) {
-        FillHistogram("TrackPlus_2", trackPt);
-      }
-      if (track->Charge() == -1) {
-        FillHistogram("TrackMinus_2", trackPt);
-      }
-      if (fIsMC) {
-        if (primLabelTrack > -1) {
-          AliAODMCParticle* primpion = (AliAODMCParticle*)fStack->At(primLabelTrack);
-          if (primpion->GetPdgCode() == 211) {
-            FillHistogram("PionPlus_2", trackPt);
-          }
-          if (primpion->GetPdgCode() == -211) {
-            FillHistogram("PionMinus_2", trackPt);
-          }
-          if (primpion->GetMother() > -1) {
-            AliAODMCParticle* pionparent = (AliAODMCParticle*)fStack->At(primpion->GetMother());
-            if (pionparent->GetPdgCode() == -3112 && primpion->GetPdgCode() == 211) {
-              // FillHistogram("DCA_XYvsPionPt_Parent_AntiSigmaPlus", b[0], trackPt);
-              // FillHistogram("DCA_ZvsPionPt_Parent_AntiSigmaPlus", b[1], trackPt);
-              FillHistogram("MC_AntiSigmaPlus_7", pionparent->Pt());
-            }
-            if (pionparent->GetPdgCode() == -3222 && primpion->GetPdgCode() == -211) {
-              // FillHistogram("DCA_XYvsPionPt_Parent_AntiSigmaMinus", b[0], trackPt);
-              // FillHistogram("DCA_ZvsPionPt_Parent_AntiSigmaMinus", b[1], trackPt);
-              FillHistogram("MC_AntiSigmaMinus_7", pionparent->Pt());
-            }
-          }
-        }
-      }
-
-      //=================Event mixing==============
-      while (TClonesArray* event2 = static_cast<TClonesArray*>(nextEv())) {
-        Int_t nPhotons2 = event2->GetEntriesFast();
-        for (Int_t j = 0; j < nPhotons2; j++) {
-          AliCaloPhoton* ph2 = static_cast<AliCaloPhoton*>(event2->At(j));
-          //             Int_t primLabel2 = ph2->GetPrimaryAtVertex();
-          Double_t m = (lvtr + *ph2).M();
-          Double_t pt = (lvtr + *ph2).Pt();
-
-          // Try to construct particle out of track and nbar
-          Double_t bm = fEvent->GetMagneticField();
-
-          AliESDtrack btrk((AliVTrack*)track);
-          AliExternalTrackParam bt(btrk);
-
-          Double_t cv[21];
-          for (Int_t ii = 0; ii < 21; ii++)
-            cv[ii] = 0.0;
-          Double_t p[3] = { ph2->Px(), ph2->Py(), ph2->Pz() };
-          AliExternalTrackParam lV0TrajObject(fvtx5, p, cv, +1), *nt = &lV0TrajObject;
-          nt->ResetCovariance(1); // won't use
-
-          Double_t xn, xp, dca;
-          dca = nt->GetDCA(&bt, bm, xn, xp); //+: pt<0.25 dca>0.2, -:pt<0.25, dca>0.1
-          nt->PropagateTo(xn, bm);
-          bt.PropagateTo(xp, bm);
-          AliESDv0 v0(*nt, nPhotons2, bt, multTracks);
-          Float_t cpa = v0.GetV0CosineOfPointingAngle(fvtx5[0], fvtx5[1], fvtx5[2]); //>0.9 по модулю
-          Double_t rad =
-            sqrt((fvtx5[0] - v0.Xv()) * (fvtx5[0] - v0.Xv()) + (fvtx5[1] - v0.Yv()) * (fvtx5[1] - v0.Yv()) +
-                 (fvtx5[2] - v0.Zv()) * (fvtx5[2] - v0.Zv())); //>0.2для +, 0.1
-
-          FillHistogram(Form("Mixed_InvMass_Charge%d", track->Charge()), m, pt);
-          if (ph2->IsCPV2OK()) {
-            FillHistogram(Form("CPV2_Mixed_InvMass_Charge%d", track->Charge()), m, pt);
-          }
-          if (ph2->IsDisp2OK()) {
-            FillHistogram(Form("Disp2_Mixed_InvMass_Charge%d", track->Charge()), m, pt);
-            if (ph2->IsCPV2OK()) {
-              FillHistogram(Form("All3_Mixed_InvMass_Charge%d", track->Charge()), m, pt);
-
-              if ((TestDCAZ(trackPt, b[1])) && (TestDCAXY(trackPt, b[0])) && abs(cpa) > 0.9) {
-                if (track->Charge() == 1 && rad > 0.2 && DCADaugPlus(trackPt, dca)) {
-                  FillHistogram("All4_Mixed_InvMass_Charge1", m, pt);
-                }
-                if (track->Charge() == -1 && rad > 0.1 && DCADaugMinus(trackPt, dca)) {
-                  FillHistogram("All4_Mixed_InvMass_Charge-1", m, pt);
-                }
-              }
-            }
-          }
-        }
-      }
-
-      //======================Fill Real==========================
-      for (Int_t j = 0; j < inPHOS; j++) {
-        AliCaloPhoton* ph2 = static_cast<AliCaloPhoton*>(fGamma->At(j));
+    //=================Event mixing==============
+    while (TClonesArray *event2 = static_cast<TClonesArray *>(nextEv())) {
+      Int_t nPhotons2 = event2->GetEntriesFast();
+      for (Int_t j = 0; j < nPhotons2; j++) {
+        AliCaloPhoton *ph2 = static_cast<AliCaloPhoton *>(event2->At(j));
         Int_t primLabel2 = ph2->GetPrimaryAtVertex();
-        Double_t m = (lvtr + *ph2).M();
-        Double_t pt = (lvtr + *ph2).Pt();
+
+        Double_t t = ph2->GetTime();
+        Double_t phoscoord[3] = {ph2->EMCx(), ph2->EMCy(), ph2->EMCz()};
 
         // Try to construct particle out of track and nbar
         Double_t bm = fEvent->GetMagneticField();
 
-        AliESDtrack btrk((AliVTrack*)track);
+        AliESDtrack btrk((AliVTrack *)track);
         AliExternalTrackParam bt(btrk);
 
-        Double_t cv[21];
-        for (Int_t ii = 0; ii < 21; ii++)
-          cv[ii] = 0.0;
-        Double_t p[3] = { ph2->Px(), ph2->Py(), ph2->Pz() };
-        AliExternalTrackParam lV0TrajObject(fvtx5, p, cv, +1), *nt = &lV0TrajObject;
-        nt->ResetCovariance(1); // won't use
+        Double_t decayparams[4];
+        PropagateToDCACurvedBachelor(decayparams, ph2, fvtx5, &bt, bm);
 
-        Double_t xn, xp, dca;
-        dca = nt->GetDCA(&bt, bm, xn, xp); //+: pt<0.25 dca>0.2, -:pt<0.25, dca>0.1
-        nt->PropagateTo(xn, bm);
-        bt.PropagateTo(xp, bm);
-        AliESDv0 v0(*nt, inPHOS, bt, multTracks);
-        Float_t cpa = v0.GetV0CosineOfPointingAngle(fvtx5[0], fvtx5[1], fvtx5[2]); //>0.9
-        Double_t rad = sqrt((fvtx5[0] - v0.Xv()) * (fvtx5[0] - v0.Xv()) + (fvtx5[1] - v0.Yv()) * (fvtx5[1] - v0.Yv()) +
-                            (fvtx5[2] - v0.Zv()) * (fvtx5[2] - v0.Zv())); //>0.2 for positive +, 0.1 for negative
+        Double_t dca = decayparams[3];
 
-        if (fIsMC) {
-          if (primLabelTrack > -1) {
-            AliAODMCParticle* primpion = (AliAODMCParticle*)fStack->At(primLabelTrack);
-            if (primpion->GetMother() > -1) {
-              AliAODMCParticle* pionparent = (AliAODMCParticle*)fStack->At(primpion->GetMother());
-              if (pionparent->GetPdgCode() == -3112 && primpion->GetPdgCode() == 211) {
-                FillHistogram("DCA_Daughters_AntiSigmaPlus", dca, trackPt);
-                FillHistogram("CPA_Daughters_AntiSigmaPlus", cpa, trackPt);
-                FillHistogram("RAD_Daughters_AntiSigmaPlus", rad, trackPt);
-              }
-              if (pionparent->GetPdgCode() == -3222 && primpion->GetPdgCode() == -211) {
-                FillHistogram("DCA_Daughters_AntiSigmaMinus", dca, trackPt);
-                FillHistogram("CPA_Daughters_AntiSigmaMinus", cpa, trackPt);
-                FillHistogram("RAD_Daughters_AntiSigmaMinus", rad, trackPt);
-              }
+        Double_t decayposition[3] = {decayparams[0], decayparams[1],
+                                     decayparams[2]};
+
+        pxtr = bt.Px();
+        pytr = bt.Py();
+        pztr = bt.Pz();
+        etr = sqrt(mpi * mpi + (pxtr * pxtr + pytr * pytr + pztr * pztr));
+        TLorentzVector lvtr(pxtr, pytr, pztr, etr);
+        trackPt = bt.Pt();
+
+        Double_t rad =
+            sqrt((fvtx5[0] - decayparams[0]) * (fvtx5[0] - decayparams[0]) +
+                 (fvtx5[1] - decayparams[1]) * (fvtx5[1] - decayparams[1]) +
+                 (fvtx5[2] - decayparams[2]) *
+                     (fvtx5[2] - decayparams[2])); // dist betw prim and v0
+
+        Double_t sectophos =
+            sqrt((phoscoord[0] - fvtx5[0]) * (phoscoord[0] - fvtx5[0]) +
+                 (phoscoord[1] - fvtx5[1]) * (phoscoord[1] - fvtx5[1]) +
+                 (phoscoord[2] - fvtx5[2]) *
+                     (phoscoord[2] - fvtx5[2])); // dist betw prim and phos
+
+        TLorentzVector nbar(ph2->Px(), ph2->Py(), ph2->Pz(), ph2->E());
+
+        Double_t p[3]; // momentum of Sigmabar
+        p[0] = nbar.Px() + pxtr;
+        p[1] = nbar.Py() + pytr;
+        p[2] = nbar.Pz() + pztr;
+
+        Double_t cpa =
+            GetCosineOfPointingAngle(p, decayposition, fvtx5[0], fvtx5[1],
+                                     fvtx5[2]); // Cosine of Pointing Angle
+
+        Double_t m = (lvtr + nbar).M();
+        Double_t pt = (lvtr + nbar).Pt();
+
+        // default
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+            TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+            ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+            track->Charge() == 1) {
+          FillHistogram("Cuts1_Mixed_InvMass_Charge1", m, pt);
+        }
+        if (fInvMassHist && !fIsMC) {
+          if (TMath::Abs(track->Eta()) <= 0.7 && TPCClust >= fNTPCclusters &&
+              nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+              TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+              ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+              track->Charge() == 1) {
+            FillHistogram("Cuts2_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= 0.9 && TPCClust >= fNTPCclusters &&
+              nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+              TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+              ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+              track->Charge() == 1) {
+            FillHistogram("Cuts3_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= 50 &&
+              nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+              TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+              ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+              track->Charge() == 1) {
+            FillHistogram("Cuts4_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= 70 &&
+              nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+              TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+              ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+              track->Charge() == 1) {
+            FillHistogram("Cuts5_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < 2.5 &&
+              TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+              TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+              ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+              track->Charge() == 1) {
+            FillHistogram("Cuts6_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < 3.5 &&
+              TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+              TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+              ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+              track->Charge() == 1) {
+            FillHistogram("Cuts7_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts8_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts9_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts10_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts11_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 &&
+              TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts12_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 &&
+              TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts13_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts14_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts15_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts16_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.06) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts17_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.06) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts18_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.06) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts19_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.06) && cpa >= 0.3 &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts20_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.06) && cpa >= 0.3 &&
+              TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts21_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts22_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts23_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts24_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts25_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts26_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts27_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts28_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 &&
+              TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts29_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 &&
+              TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts30_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts31_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts32_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Cuts33_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (ph2->GetWeight() < 100.e-09) {
+            if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+                TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+                ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                track->Charge() == 1) {
+              FillHistogram("Cuts34_Mixed_InvMass_Charge1", m, pt);
             }
           }
         }
-
-        if (track->Charge() == 1) {
-          FillHistogram("DCA_Daughters_Plus", dca, trackPt);
-          FillHistogram("CPA_Daughters_Plus", cpa, trackPt);
-          FillHistogram("RAD_Daughters_Plus", rad, trackPt);
+        // default
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+            TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+            ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+            track->Charge() == -1) {
+          FillHistogram("Cuts1_Mixed_InvMass_Charge-1", m, pt);
         }
-        if (track->Charge() == -1) {
-          FillHistogram("DCA_Daughters_Minus", dca, trackPt);
-          FillHistogram("CPA_Daughters_Minus", cpa, trackPt);
-          FillHistogram("RAD_Daughters_Minus", rad, trackPt);
-        }
-
-        FillHistogram(Form("InvMass_Charge%d", track->Charge()), m, pt);
-        if (ph2->IsCPV2OK() == kTRUE) {
-          FillHistogram(Form("CPV2_InvMass_Charge%d", track->Charge()), m, pt);
-        }
-        if (ph2->IsDisp2OK()) {
-          FillHistogram(Form("Disp2_InvMass_Charge%d", track->Charge()), m, pt);
-          if (ph2->IsCPV2OK()) {
-            FillHistogram(Form("All3_InvMass_Charge%d", track->Charge()), m, pt);
-
-            if ((TestDCAZ(trackPt, b[1])) && (TestDCAXY(trackPt, b[0])) && abs(cpa) > 0.9) {
-              if (track->Charge() == 1 && rad > 0.2 && DCADaugPlus(trackPt, dca)) {
-                FillHistogram("All4_InvMass_Charge1", m, pt);
-              }
-              if (track->Charge() == -1 && rad > 0.1 && DCADaugMinus(trackPt, dca)) {
-                FillHistogram("All4_InvMass_Charge-1", m, pt);
-              }
+        if (fInvMassHist && !fIsMC) {
+          if (TMath::Abs(track->Eta()) <= 0.7 && TPCClust >= fNTPCclusters &&
+              nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+              TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+              ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+              track->Charge() == -1) {
+            FillHistogram("Cuts2_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= 0.9 && TPCClust >= fNTPCclusters &&
+              nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+              TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+              ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+              track->Charge() == -1) {
+            FillHistogram("Cuts3_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= 50 &&
+              nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+              TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+              ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+              track->Charge() == -1) {
+            FillHistogram("Cuts4_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= 70 &&
+              nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+              TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+              ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+              track->Charge() == -1) {
+            FillHistogram("Cuts5_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < 2.5 &&
+              TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+              TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+              ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+              track->Charge() == -1) {
+            FillHistogram("Cuts6_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < 3.5 &&
+              TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+              TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+              ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+              track->Charge() == -1) {
+            FillHistogram("Cuts7_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts8_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts9_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts10_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 &&
+              TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts11_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 &&
+              TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts12_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts13_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts14_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts15_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts16_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.06) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts17_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.06) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts18_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.06) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts19_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.06) && cpa >= 0.3 &&
+              TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts20_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.06) && cpa >= 0.3 &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts21_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts22_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts23_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts24_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts25_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts26_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0. &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts27_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 &&
+              TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts28_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 &&
+              TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts29_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts30_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts31_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts32_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 &&
+              TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Cuts33_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (ph2->GetWeight() < 100.e-09) {
+            if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+                TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+                ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                track->Charge() == -1) {
+              FillHistogram("Cuts34_Mixed_InvMass_Charge-1", m, pt);
             }
           }
         }
+      }
+    }
 
-        if (fIsMC) {
-          if (primLabelTrack > -1 && primLabel2 > -1) {
-            // Track
-            AliAODMCParticle* prim2 = (AliAODMCParticle*)fStack->At(primLabelTrack);
-            Int_t primTrackPdg = prim2->GetPdgCode();
-            TLorentzVector lv1;
-            prim2->Momentum(lv1);
-            //                 Double_t e1 = prim2->E();
+    //======================Fill Real==========================
+    for (Int_t j = 0; j < inPHOS; j++) {
+      AliCaloPhoton *ph2 = static_cast<AliCaloPhoton *>(fGamma->At(j));
+      Int_t primLabel2 = ph2->GetPrimaryAtVertex();
 
-            // Cluster
-            AliAODMCParticle* prim3 = (AliAODMCParticle*)fStack->At(primLabel2);
-            TLorentzVector lv2;
-            prim3->Momentum(lv2);
-            //                 Double_t e2 = prim2->E();
+      // Double_t cluE = ph2->E();
+      Double_t t = ph2->GetTime();
+      Double_t phoscoord[3] = {ph2->EMCx(), ph2->EMCy(), ph2->EMCz()};
 
-            Double_t mPrim = (lv1 + lv2).M();
-            Double_t ptPrim = (lv1 + lv2).Pt();
+      // Try to construct particle out of track and nbar
+      Double_t bm = fEvent->GetMagneticField();
 
-            Int_t primLabelCluster1 = prim3->GetPdgCode();
-            FillHistogram(Form("MC_InvMass_Charge%d", track->Charge()), mPrim, ptPrim);
-            // CPV2 cut
-            if (ph2->IsCPV2OK()) {
-              FillHistogram(Form("CPV2_MC_InvMass_Charge%d", track->Charge()), mPrim, ptPrim);
+      AliESDtrack btrk((AliVTrack *)track);
+      AliExternalTrackParam bt(btrk);
+
+      Double_t decayparams[4];
+      PropagateToDCACurvedBachelor(decayparams, ph2, fvtx5, &bt, bm);
+
+      Double_t dca = decayparams[3];
+
+      Double_t decayposition[3] = {decayparams[0], decayparams[1],
+                                   decayparams[2]};
+
+      pxtr = bt.Px();
+      pytr = bt.Py();
+      pztr = bt.Pz();
+      etr = sqrt(mpi * mpi + (pxtr * pxtr + pytr * pytr + pztr * pztr));
+      TLorentzVector lvtr(pxtr, pytr, pztr, etr);
+      trackPt = bt.Pt();
+
+      Double_t rad =
+          sqrt((fvtx5[0] - decayparams[0]) * (fvtx5[0] - decayparams[0]) +
+               (fvtx5[1] - decayparams[1]) * (fvtx5[1] - decayparams[1]) +
+               (fvtx5[2] - decayparams[2]) *
+                   (fvtx5[2] - decayparams[2])); // dist betw prim and v0
+
+      Double_t sectophos =
+          sqrt((phoscoord[0] - fvtx5[0]) * (phoscoord[0] - fvtx5[0]) +
+               (phoscoord[1] - fvtx5[1]) * (phoscoord[1] - fvtx5[1]) +
+               (phoscoord[2] - fvtx5[2]) *
+                   (phoscoord[2] - fvtx5[2])); // dist betw prim and phos
+
+      TLorentzVector nbar(ph2->Px(), ph2->Py(), ph2->Pz(), ph2->E());
+
+      Double_t p[3]; // momentum of Sigmabar
+      p[0] = nbar.Px() + pxtr;
+      p[1] = nbar.Py() + pytr;
+      p[2] = nbar.Pz() + pztr;
+
+      Double_t cpa =
+          GetCosineOfPointingAngle(p, decayposition, fvtx5[0], fvtx5[1],
+                                   fvtx5[2]); // Cosine of Pointing Angle
+
+      Double_t m = (lvtr + nbar).M();
+      Double_t pt = (lvtr + nbar).Pt();
+
+      Bool_t IsSigmaPlusv1 = kFALSE;
+      Bool_t IsSigmaPlusv2 = kFALSE;
+      Bool_t IsSigmaMinusv1 = kFALSE;
+      Bool_t IsSigmaMinusv2 = kFALSE;
+      Bool_t IsPairPlus = kFALSE;
+      Bool_t IsPairMinus = kFALSE;
+      Int_t PdgPairPlus = -1;
+      Int_t PdgPairMinus = -1;
+
+      Double_t DCAcut[10] = {0.01, 0.02, 0.03, 0.04, 0.05,
+                             0.06, 0.07, 0.08, 0.09, 0.1};
+      Double_t CPAcut[10] = {-0.9, -0.7, -0.5, -0.3, 0.,
+                             0.3,  0.5,  0.7,  0.9,  0.95};
+      Double_t RADcut[10] = {0.05, 0.1,  0.15, 0.2,  0.25,
+                             0.3,  0.35, 0.4,  0.45, 0.5};
+
+      if (fIsMC) {
+        if (primLabelTrack > -1 && primLabel2 > -1) {
+          AliAODMCParticle *primpion =
+              (AliAODMCParticle *)fStack->At(primLabelTrack);
+          AliAODMCParticle *primanti =
+              (AliAODMCParticle *)fStack->At(primLabel2);
+          if (primpion->GetMother() > -1 && primanti->GetMother() > -1) {
+            AliAODMCParticle *pionparent =
+                (AliAODMCParticle *)fStack->At(primpion->GetMother());
+            AliAODMCParticle *antiparent =
+                (AliAODMCParticle *)fStack->At(primanti->GetMother());
+            // IsSigmaPlusv1 - first parent
+            // if (pionparent->GetPdgCode() == -3112 && primpion->GetPdgCode()
+            // == 211 && track->Charge()==1) {
+            //   if (antiparent->GetPdgCode() == -3112 && pionparent ==
+            //   antiparent) {
+            //     IsSigmaPlusv1 = kTRUE;
+            //   } else {
+            //     Int_t dummy = antiparent->GetMother();
+            //     while (dummy > -1) {
+            //       AliAODMCParticle* antigrandparent =
+            //       (AliAODMCParticle*)fStack->At(dummy); if
+            //       (antigrandparent->GetPdgCode() == -3112 && pionparent ==
+            //       antigrandparent) {
+            //         IsSigmaPlusv1 = kTRUE;
+            //         break;
+            //       }
+            //       dummy = antigrandparent->GetMother();
+            //     }
+            //   }
+            // }
+            // IsSigmaPlusv2 - check all parent
+            if (track->Charge() == 1) {
+              Int_t dummypion = primpion->GetMother();
+              AliAODMCParticle *piongrandparent;
+              while (dummypion > -1) {
+                piongrandparent = (AliAODMCParticle *)fStack->At(dummypion);
+                if (piongrandparent->GetPdgCode() == -3112) {
+                  break;
+                }
+                dummypion = piongrandparent->GetMother();
+              }
+              if (piongrandparent) {
+                Int_t dummyanti = primanti->GetMother();
+                while (dummyanti > -1) {
+                  AliAODMCParticle *antigrandparent =
+                      (AliAODMCParticle *)fStack->At(dummyanti);
+                  if (antigrandparent->GetPdgCode() == -3112 &&
+                      piongrandparent == antigrandparent) {
+                    IsSigmaPlusv2 = kTRUE;
+                    break;
+                  }
+                  dummyanti = antigrandparent->GetMother();
+                }
+              }
+              // Topological selections
+              if (fAdditionHist && IsSigmaPlusv2 &&
+                  TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+                  ph2->IsDisp2OK()) {
+                FillHistogram("DCA_Daughters_AntiSigmaPlus", dca, pt);
+                FillHistogram("CPA_Daughters_AntiSigmaPlus", cpa, pt);
+                FillHistogram("RAD_Daughters_AntiSigmaPlus", rad, pt);
+
+                // DCAdaug variation
+                if (cpa >= fCPAplusCut && TestRAD(pt, rad, fRADplusCut) &&
+                    (m >= msigmap - 0.02 && m <= msigmap + 0.02)) {
+                  FillHistogram("Sigma_Plus_DCAdaug", pt);
+                  for (Int_t i1 = 1; i1 < 11; i1++) {
+                    if (TestDCADaug(pt, dca, DCAcut[i1 - 1])) {
+                      FillHistogram(Form("Sigma_Plus_DCAdaug_%d", i1), pt);
+                    }
+                  }
+                }
+                // RAD variation
+                if (cpa >= fCPAplusCut &&
+                    TestDCADaug(pt, dca, fDCAdaugplusCut) &&
+                    (m >= msigmap - 0.02 && m <= msigmap + 0.02)) {
+                  FillHistogram("Sigma_Plus_RAD", pt);
+                  for (Int_t i1 = 1; i1 < 11; i1++) {
+                    if (TestRAD(pt, rad, RADcut[i1 - 1])) {
+                      FillHistogram(Form("Sigma_Plus_RAD_%d", i1), pt);
+                    }
+                  }
+                }
+                // CPA variation
+                if (TestDCADaug(pt, dca, fDCAdaugplusCut) &&
+                    TestRAD(pt, rad, fRADplusCut) &&
+                    (m >= msigmap - 0.02 && m <= msigmap + 0.02)) {
+                  FillHistogram("Sigma_Plus_CPA", pt);
+                  for (Int_t i1 = 1; i1 < 11; i1++) {
+                    if (cpa >= CPAcut[i1 - 1]) {
+                      FillHistogram(Form("Sigma_Plus_CPA_%d", i1), pt);
+                    }
+                  }
+                }
+
+                Double_t vtxpion[3];
+                primpion->XvYvZv(vtxpion);
+                // Double_t rsectophs = sqrt((phoscoord[0] - decayparams[0]) *
+                // (phoscoord[0] - decayparams[0]) + (phoscoord[1] -
+                // decayparams[1]) * (phoscoord[1] - decayparams[1]) +
+                //                      (phoscoord[2] - decayparams[2]) *
+                //                      (phoscoord[2] - decayparams[2])); //dist
+                //                      betw v0 and phos
+
+                FillHistogram("SV_x_plus", vtxpion[0] - decayparams[0],
+                              pionparent->Pt());
+                FillHistogram("SV_y_plus", vtxpion[1] - decayparams[1],
+                              pionparent->Pt());
+                FillHistogram("SV_z_plus", vtxpion[2] - decayparams[2],
+                              pionparent->Pt());
+              }
             }
-            if (ph2->IsDisp2OK()) {
-              FillHistogram(Form("Disp2_MC_InvMass_Charge%d", track->Charge()), mPrim, ptPrim);
-              if (ph2->IsCPV2OK()) {
-                FillHistogram(Form("All3_MC_InvMass_Charge%d", track->Charge()), mPrim, ptPrim);
-                if (TestDCAZ(trackPt, b[1]) && TestDCAXY(trackPt, b[0]) && abs(cpa) > 0.9) {
-                  if (track->Charge() > 0 && rad > 0.2 && DCADaugPlus(trackPt, dca)) {
-                    FillHistogram("All4_MC_InvMass_Charge1", mPrim, ptPrim);
+            // IsSigmaMinusv1 - first parent
+            // if (pionparent->GetPdgCode() == -3222 && primpion->GetPdgCode()
+            // == -211 && track->Charge()==-1) {
+            //   if (antiparent->GetPdgCode() == -3222 && pionparent ==
+            //   antiparent) {
+            //     IsSigmaMinusv1 = kTRUE;
+            //   } else {
+            //     Int_t dummy = antiparent->GetMother();
+            //     while (dummy > -1) {
+            //       AliAODMCParticle* antigrandparent =
+            //       (AliAODMCParticle*)fStack->At(dummy); if
+            //       (antigrandparent->GetPdgCode() == -3222 && pionparent ==
+            //       antigrandparent) {
+            //         IsSigmaMinusv1 = kTRUE;
+            //         break;
+            //       }
+            //       dummy = antigrandparent->GetMother();
+            //     }
+            //   }
+            // }
+            // IsSigmaMinusv2 - all parent check
+            if (track->Charge() == -1) {
+              Int_t dummypion = primpion->GetMother();
+              AliAODMCParticle *piongrandparent;
+              while (dummypion > -1) {
+                piongrandparent = (AliAODMCParticle *)fStack->At(dummypion);
+                if (piongrandparent->GetPdgCode() == -3222) {
+                  break;
+                }
+                dummypion = piongrandparent->GetMother();
+              }
+              if (piongrandparent) {
+                Int_t dummyanti = primanti->GetMother();
+                while (dummyanti > -1) {
+                  AliAODMCParticle *antigrandparent =
+                      (AliAODMCParticle *)fStack->At(dummyanti);
+                  if (antigrandparent->GetPdgCode() == -3222 &&
+                      piongrandparent == antigrandparent) {
+                    IsSigmaMinusv2 = kTRUE;
+                    break;
                   }
-                  if (track->Charge() < 0 && rad > 0.1 && DCADaugMinus(trackPt, dca)) {
-                    FillHistogram("All4_MC_InvMass_Charge-1", mPrim, ptPrim);
+                  dummyanti = antigrandparent->GetMother();
+                }
+              }
+              // topological selections
+              if (fAdditionHist && IsSigmaMinusv2 &&
+                  TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+                  ph2->IsDisp2OK()) {
+                FillHistogram("DCA_Daughters_AntiSigmaMinus", dca, pt);
+                FillHistogram("CPA_Daughters_AntiSigmaMinus", cpa, pt);
+                FillHistogram("RAD_Daughters_AntiSigmaMinus", rad, pt);
+
+                // DCAdaug variation
+                if (cpa >= fCPAminusCut && TestRAD(pt, rad, fRADminusCut) &&
+                    (m >= msigmam - 0.02 && m <= msigmam + 0.02)) {
+                  FillHistogram("Sigma_Minus_DCAdaug", pt);
+                  for (Int_t i1 = 1; i1 < 11; i1++) {
+                    if (TestDCADaug(pt, dca, DCAcut[i1 - 1])) {
+                      FillHistogram(Form("Sigma_Minus_DCAdaug_%d", i1), pt);
+                    }
                   }
+                }
+                // RAD variation
+                if (cpa >= fCPAminusCut &&
+                    TestDCADaug(pt, dca, fDCAdaugminusCut) &&
+                    (m >= msigmam - 0.02 && m <= msigmam + 0.02)) {
+                  FillHistogram("Sigma_Minus_RAD", pt);
+                  for (Int_t i1 = 1; i1 < 11; i1++) {
+                    if (TestRAD(pt, rad, RADcut[i1 - 1])) {
+                      FillHistogram(Form("Sigma_Minus_RAD_%d", i1), pt);
+                    }
+                  }
+                }
+                // CPA variation
+                if (TestDCADaug(pt, dca, fDCAdaugminusCut) &&
+                    TestRAD(pt, rad, fRADminusCut) &&
+                    (m >= msigmam - 0.02 && m <= msigmam + 0.02)) {
+                  FillHistogram("Sigma_Minus_CPA", pt);
+                  for (Int_t i1 = 1; i1 < 11; i1++) {
+                    if (cpa >= CPAcut[i1 - 1]) {
+                      FillHistogram(Form("Sigma_Minus_CPA_%d", i1), pt);
+                    }
+                  }
+                }
+
+                Double_t vtxpion[3];
+                primpion->XvYvZv(vtxpion);
+                // Double_t rsectophs = sqrt((phoscoord[0] - decayparams[0]) *
+                // (phoscoord[0] - decayparams[0]) + (phoscoord[1] -
+                // decayparams[1]) * (phoscoord[1] - decayparams[1]) +
+                //                      (phoscoord[2] - decayparams[2]) *
+                //                      (phoscoord[2] - decayparams[2])); //dist
+                //                      betw v0 and phos
+
+                FillHistogram("SV_x_minus", vtxpion[0] - decayparams[0],
+                              pionparent->Pt());
+                FillHistogram("SV_y_minus", vtxpion[1] - decayparams[1],
+                              pionparent->Pt());
+                FillHistogram("SV_z_minus", vtxpion[2] - decayparams[2],
+                              pionparent->Pt());
+              }
+            }
+            // track and cluster parent, not AntiSigma
+            // if (IsSigmaPlusv2 == kFALSE && track->Charge() == 1) {
+            //   AliAODMCParticle* piongrandparent;
+            //
+            //   Int_t dummypion = primpion->GetMother();
+            //   while (dummypion > -1) {
+            //     piongrandparent = (AliAODMCParticle*)fStack->At(dummypion);
+            //     if (piongrandparent->GetPdgCode() != -3112) {
+            //       Int_t dummyanti = primanti->GetMother();
+            //       while (dummyanti > -1) {
+            //         AliAODMCParticle* antigrandparent =
+            //         (AliAODMCParticle*)fStack->At(dummyanti); if
+            //         (antigrandparent->GetPdgCode() != -3112 &&
+            //         piongrandparent == antigrandparent) {
+            //           IsPairPlus = kTRUE;
+            //           break;
+            //         }
+            //         dummyanti = antigrandparent->GetMother();
+            //       }
+            //       if (IsPairPlus) {
+            //         break;
+            //       }
+            //     }
+            //     dummypion = piongrandparent->GetMother();
+            //   }
+            //
+            //   if (IsPairPlus) {
+            //     PdgPairPlus = piongrandparent->GetPdgCode();
+            //   }
+            // }
+            // track and cluster parent, not AntiSigma
+            // if (IsSigmaMinusv2 == kFALSE && track->Charge() == -1) {
+            //   AliAODMCParticle* piongrandparent;
+            //
+            //   Int_t dummypion = primpion->GetMother();
+            //   while (dummypion > -1) {
+            //     piongrandparent = (AliAODMCParticle*)fStack->At(dummypion);
+            //     if (piongrandparent->GetPdgCode() != -3222) {
+            //       Int_t dummyanti = primanti->GetMother();
+            //       while (dummyanti > -1) {
+            //         AliAODMCParticle* antigrandparent =
+            //         (AliAODMCParticle*)fStack->At(dummyanti); if
+            //         (antigrandparent->GetPdgCode() != -3222 &&
+            //         piongrandparent == antigrandparent) {
+            //           IsPairMinus = kTRUE;
+            //           break;
+            //         }
+            //         dummyanti = antigrandparent->GetMother();
+            //       }
+            //       if (IsPairMinus) {
+            //         break;
+            //       }
+            //     }
+            //     dummypion = piongrandparent->GetMother();
+            //   }
+            //
+            //   if (IsPairMinus) {
+            //     PdgPairMinus = pionparent->GetPdgCode();
+            //   }
+            // }
+          }
+        }
+      }
+
+      // Top selections
+      if (fAdditionHist && track->Charge() == 1 &&
+          TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= fNTPCclusters &&
+          nsigmaPionTPC < fTPCsigmas && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+          ph2->IsDispOK() && ph2->IsDisp2OK()) {
+        FillHistogram("DCA_Daughters_Plus", dca, pt);
+        FillHistogram("CPA_Daughters_Plus", cpa, pt);
+        FillHistogram("RAD_Daughters_Plus", rad, pt);
+
+        // DCAdaug variation
+        if (cpa >= fCPAplusCut && TestRAD(pt, rad, fRADplusCut) &&
+            (m >= msigmap - 0.02 && m <= msigmap + 0.02) && fIsMC) {
+          FillHistogram("Track_Plus_DCAdaug", pt);
+          for (Int_t i1 = 1; i1 < 11; i1++) {
+            if (TestDCADaug(pt, dca, DCAcut[i1 - 1])) {
+              FillHistogram(Form("Track_Plus_DCAdaug_%d", i1), pt);
+            }
+          }
+        }
+        // RAD variation
+        if (cpa >= fCPAplusCut && TestDCADaug(pt, dca, fDCAdaugplusCut) &&
+            (m >= msigmap - 0.02 && m <= msigmap + 0.02) && fIsMC) {
+          FillHistogram("Track_Plus_RAD", pt);
+          for (Int_t i1 = 1; i1 < 11; i1++) {
+            if (TestRAD(pt, rad, RADcut[i1 - 1])) {
+              FillHistogram(Form("Track_Plus_RAD_%d", i1), pt);
+            }
+          }
+        }
+        // CPA variation
+        if (TestDCADaug(pt, dca, fDCAdaugplusCut) &&
+            TestRAD(pt, rad, fRADplusCut) &&
+            (m >= msigmap - 0.02 && m <= msigmap + 0.02) && fIsMC) {
+          FillHistogram("Track_Plus_CPA", pt);
+          for (Int_t i1 = 1; i1 < 11; i1++) {
+            if (cpa >= CPAcut[i1 - 1]) {
+              FillHistogram(Form("Track_Plus_CPA_%d", i1), pt);
+            }
+          }
+        }
+        // Test of cuts
+        if (TestDCADaug(pt, dca, fDCAdaugplusCut)) {
+          FillHistogram("DCA_Daughters_Test", dca, pt);
+        }
+        if (cpa >= fCPAplusCut) {
+          FillHistogram("CPA_Daughters_Test", cpa, pt);
+        }
+        if (TestRAD(pt, rad, fRADplusCut)) {
+          FillHistogram("RAD_Daughters_Test", rad, pt);
+        }
+      }
+      if (fAdditionHist && track->Charge() == -1 &&
+          TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= fNTPCclusters &&
+          nsigmaPionTPC < fTPCsigmas && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+          ph2->IsDispOK() && ph2->IsDisp2OK()) {
+        FillHistogram("DCA_Daughters_Minus", dca, pt);
+        FillHistogram("CPA_Daughters_Minus", cpa, pt);
+        FillHistogram("RAD_Daughters_Minus", rad, pt);
+
+        // DCAdaug variation
+        if (cpa >= fCPAminusCut && TestRAD(pt, rad, fRADminusCut) &&
+            (m >= msigmam - 0.02 && m <= msigmam + 0.02) && fIsMC) {
+          FillHistogram("Track_Minus_DCAdaug", pt);
+          for (Int_t i1 = 1; i1 < 11; i1++) {
+            if (TestDCADaug(pt, dca, DCAcut[i1 - 1])) {
+              FillHistogram(Form("Track_Minus_DCAdaug_%d", i1), pt);
+            }
+          }
+        }
+        // RAD variation
+        if (cpa >= fCPAminusCut && TestDCADaug(pt, dca, fDCAdaugminusCut) &&
+            (m >= msigmam - 0.02 && m <= msigmam + 0.02) && fIsMC) {
+          FillHistogram("Track_Minus_RAD", pt);
+          for (Int_t i1 = 1; i1 < 11; i1++) {
+            if (TestRAD(pt, rad, RADcut[i1 - 1])) {
+              FillHistogram(Form("Track_Minus_RAD_%d", i1), pt);
+            }
+          }
+        }
+        // CPA variation
+        if (TestDCADaug(pt, dca, fDCAdaugminusCut) &&
+            TestRAD(pt, rad, fRADminusCut) &&
+            (m >= msigmam - 0.02 && m <= msigmam + 0.02) && fIsMC) {
+          FillHistogram("Track_Minus_CPA", pt);
+          for (Int_t i1 = 1; i1 < 11; i1++) {
+            if (cpa >= CPAcut[i1 - 1]) {
+              FillHistogram(Form("Track_Minus_CPA_%d", i1), pt);
+            }
+          }
+        }
+      }
+
+      // default
+      if (TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= fNTPCclusters &&
+          nsigmaPionTPC < fTPCsigmas && TestDCADaug(pt, dca, fDCAdaugplusCut) &&
+          cpa >= fCPAplusCut && TestRAD(pt, rad, fRADplusCut) &&
+          ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+          ph2->IsDisp2OK() && track->Charge() == 1) {
+        FillHistogram("Cuts1_InvMass_Charge1", m, pt);
+      }
+      if (fInvMassHist && !fIsMC) {
+        if (TMath::Abs(track->Eta()) <= 0.7 && TPCClust >= fNTPCclusters &&
+            nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+            TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+            ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+            track->Charge() == 1) {
+          FillHistogram("Cuts2_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= 0.9 && TPCClust >= fNTPCclusters &&
+            nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+            TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+            ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+            track->Charge() == 1) {
+          FillHistogram("Cuts3_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= 50 &&
+            nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+            TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+            ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+            track->Charge() == 1) {
+          FillHistogram("Cuts4_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= 70 &&
+            nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+            TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+            ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+            track->Charge() == 1) {
+          FillHistogram("Cuts5_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < 2.5 &&
+            TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+            TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+            ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+            track->Charge() == 1) {
+          FillHistogram("Cuts6_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < 3.5 &&
+            TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+            TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+            ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+            track->Charge() == 1) {
+          FillHistogram("Cuts7_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0. && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts8_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0. && TestRAD(pt, rad, 0.25) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts9_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0. && TestRAD(pt, rad, 0.3) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts10_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts11_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 &&
+            TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+            ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts12_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 && TestRAD(pt, rad, 0.3) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts13_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts14_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 &&
+            TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+            ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts15_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 && TestRAD(pt, rad, 0.3) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts16_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.06) && cpa >= 0. && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts17_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.06) && cpa >= 0. && TestRAD(pt, rad, 0.25) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts18_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.06) && cpa >= 0. && TestRAD(pt, rad, 0.3) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts19_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.06) && cpa >= 0.3 && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts20_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.06) && cpa >= 0.3 && TestRAD(pt, rad, 0.3) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts21_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts22_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 &&
+            TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+            ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts23_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 && TestRAD(pt, rad, 0.3) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts24_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0. && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts25_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0. && TestRAD(pt, rad, 0.25) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts26_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0. && TestRAD(pt, rad, 0.3) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts27_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts28_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 &&
+            TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+            ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts29_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 && TestRAD(pt, rad, 0.3) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts30_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts31_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 &&
+            TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+            ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts32_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 && TestRAD(pt, rad, 0.3) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Cuts33_InvMass_Charge1", m, pt);
+        }
+        if (ph2->GetWeight() < 100.e-09) {
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+              TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+              ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+              track->Charge() == 1) {
+            FillHistogram("Cuts34_InvMass_Charge1", m, pt);
+          }
+        }
+      }
+      // default
+      if (TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= fNTPCclusters &&
+          nsigmaPionTPC < fTPCsigmas &&
+          TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+          TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+          ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+        FillHistogram("Cuts1_InvMass_Charge-1", m, pt);
+      }
+      if (fInvMassHist && !fIsMC) {
+        if (TMath::Abs(track->Eta()) <= 0.7 && TPCClust >= fNTPCclusters &&
+            nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+            TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+            ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+            track->Charge() == -1) {
+          FillHistogram("Cuts2_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= 0.9 && TPCClust >= fNTPCclusters &&
+            nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+            TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+            ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+            track->Charge() == -1) {
+          FillHistogram("Cuts3_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= 50 &&
+            nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+            TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+            ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+            track->Charge() == -1) {
+          FillHistogram("Cuts4_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= 70 &&
+            nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+            TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+            ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+            track->Charge() == -1) {
+          FillHistogram("Cuts5_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < 2.5 &&
+            TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+            TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+            ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+            track->Charge() == -1) {
+          FillHistogram("Cuts6_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < 3.5 &&
+            TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+            TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+            ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+            track->Charge() == -1) {
+          FillHistogram("Cuts7_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0. && TestRAD(pt, rad, 0.1) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts8_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0. && TestRAD(pt, rad, 0.15) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts9_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0. && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts10_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 && TestRAD(pt, rad, 0.1) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts11_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 &&
+            TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+            ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts12_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts13_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 && TestRAD(pt, rad, 0.1) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts14_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 &&
+            TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+            ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts15_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts16_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.06) && cpa >= 0. && TestRAD(pt, rad, 0.1) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts17_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.06) && cpa >= 0. && TestRAD(pt, rad, 0.15) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts18_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.06) && cpa >= 0. && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts19_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.06) && cpa >= 0.3 && TestRAD(pt, rad, 0.1) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts20_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.06) && cpa >= 0.3 && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts21_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 && TestRAD(pt, rad, 0.1) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts22_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 &&
+            TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+            ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts23_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts24_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0. && TestRAD(pt, rad, 0.1) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts25_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0. && TestRAD(pt, rad, 0.15) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts26_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0. && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts27_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 && TestRAD(pt, rad, 0.1) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts28_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 &&
+            TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+            ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts29_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts30_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 && TestRAD(pt, rad, 0.1) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts31_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 &&
+            TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+            ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts32_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 && TestRAD(pt, rad, 0.2) &&
+            ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+            ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Cuts33_InvMass_Charge-1", m, pt);
+        }
+        if (ph2->GetWeight() < 100.e-09) {
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+              TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+              ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+              track->Charge() == -1) {
+            FillHistogram("Cuts34_InvMass_Charge-1", m, pt);
+          }
+        }
+      }
+
+      if (fIsMC) {
+        if (primLabelTrack > -1 && primLabel2 > -1) {
+          // Track
+          AliAODMCParticle *prim2 =
+              (AliAODMCParticle *)fStack->At(primLabelTrack);
+          // Int_t primTrackPdg = prim2->GetPdgCode();
+          // TLorentzVector lv1;
+          // prim2->Momentum(lv1);
+
+          // Cluster
+          AliAODMCParticle *prim3 = (AliAODMCParticle *)fStack->At(primLabel2);
+          // TLorentzVector lv2;
+          // prim3->Momentum(lv2);
+
+          // Double_t mPrim = (lv1 + lv2).M();
+          // Double_t ptPrim = (lv1 + lv2).Pt();
+
+          // Int_t primLabelCluster1 = prim3->GetPdgCode();
+
+          // if (IsPairPlus) {
+          //   if (TestDCADaug(pt,dca,fDCAdaugplusCut) && cpa>=fCPAplusCut &&
+          //   TestRAD(pt,rad,fRADplusCut) && ph2->IsCPVOK() && ph2->IsCPV2OK()
+          //   && ph2->IsDispOK() && ph2->IsDisp2OK() && pidPion &&
+          //   track->Charge()==1) {
+          //     FillHistogram("Cuts1_InvMass_AntiSigmaPlus_Parent", m, pt);
+          //     FillHistogram("Plus_Parent_PDG", PdgPairPlus);
+          //   }
+          // }
+          // if (IsPairMinus) {
+          //   if (TestDCADaug(pt,dca,fDCAdaugminusCut) && cpa>=fCPAminusCut &&
+          //   TestRAD(pt,rad,fRADminusCut) && ph2->IsCPVOK() && ph2->IsCPV2OK()
+          //   && ph2->IsDispOK() && ph2->IsDisp2OK() && pidPion &&
+          //   track->Charge()==-1) {
+          //     FillHistogram("Cuts1_InvMass_AntiSigmaMinus_Parent", m, pt);
+          //     FillHistogram("Minus_Parent_PDG", PdgPairMinus);
+          //   }
+          // }
+
+          if (IsSigmaPlusv2) {
+            if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+                TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+                ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                track->Charge() == 1) {
+              FillHistogram("Cuts1_InvMass_AntiSigmaPlus_ParentCheck", m, pt);
+            }
+            if (fInvMassHist) {
+              if (TMath::Abs(track->Eta()) <= 0.7 &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+                  TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+                  ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == 1) {
+                FillHistogram("Cuts2_InvMass_AntiSigmaPlus_ParentCheck", m, pt);
+              }
+              if (TMath::Abs(track->Eta()) <= 0.9 &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+                  TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+                  ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == 1) {
+                FillHistogram("Cuts3_InvMass_AntiSigmaPlus_ParentCheck", m, pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= 50 &&
+                  nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+                  TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+                  ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == 1) {
+                FillHistogram("Cuts4_InvMass_AntiSigmaPlus_ParentCheck", m, pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= 70 &&
+                  nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+                  TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+                  ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == 1) {
+                FillHistogram("Cuts5_InvMass_AntiSigmaPlus_ParentCheck", m, pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < 2.5 &&
+                  TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+                  TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+                  ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == 1) {
+                FillHistogram("Cuts6_InvMass_AntiSigmaPlus_ParentCheck", m, pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < 3.5 &&
+                  TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+                  TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+                  ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == 1) {
+                FillHistogram("Cuts7_InvMass_AntiSigmaPlus_ParentCheck", m, pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts8_InvMass_AntiSigmaPlus_ParentCheck", m, pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts9_InvMass_AntiSigmaPlus_ParentCheck", m, pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts10_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts11_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 &&
+                  TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts12_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 &&
+                  TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts13_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts14_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts15_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts16_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.06) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts17_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.06) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts18_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.06) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts19_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.06) && cpa >= 0.3 &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts20_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.06) && cpa >= 0.3 &&
+                  TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts21_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts22_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts23_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts24_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts25_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts26_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts27_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts28_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 &&
+                  TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts29_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 &&
+                  TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts30_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts31_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.25) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts32_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.3) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Cuts33_InvMass_AntiSigmaPlus_ParentCheck", m,
+                              pt);
+              }
+              if (ph2->GetWeight() < 100.e-09) {
+                if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                    TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                    TestDCADaug(pt, dca, fDCAdaugplusCut) &&
+                    cpa >= fCPAplusCut && TestRAD(pt, rad, fRADplusCut) &&
+                    ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+                    ph2->IsDisp2OK() && track->Charge() == 1) {
+                  FillHistogram("Cuts34_InvMass_AntiSigmaPlus_ParentCheck", m,
+                                pt);
                 }
               }
             }
-            // PDG pion and nbar
-            if (primTrackPdg == 211 && primLabelCluster1 == -2112) {
-              FillHistogram("MC_InvMass_AntiSigmaPlus", mPrim, ptPrim);
-              FillHistogram("InvMass_AntiSigmaPlus", m, pt);
-              // CPV2 cut
-              if (ph2->IsCPV2OK()) {
-                FillHistogram("CPV2_MC_InvMass_AntiSigmaPlus", mPrim, ptPrim);
-                FillHistogram("CPV2_InvMass_AntiSigmaPlus", m, pt);
-              }
-              // Disp2 cut
-              if (ph2->IsDisp2OK()) {
-                FillHistogram("Disp2_MC_InvMass_AntiSigmaPlus", mPrim, ptPrim);
-                FillHistogram("Disp2_InvMass_AntiSigmaPlus", m, pt);
+          }
 
-                if (ph2->IsCPV2OK()) {
-                  FillHistogram("All3_MC_InvMass_AntiSigmaPlus", mPrim, ptPrim);
-                  FillHistogram("All3_InvMass_AntiSigmaPlus", m, pt);
-
-                  if (TestDCAZ(trackPt, b[1]) && TestDCAXY(trackPt, b[0]) && abs(cpa) > 0.9 && rad > 0.2 &&
-                      DCADaugPlus(trackPt, dca)) {
-                    FillHistogram("All4_MC_InvMass_AntiSigmaPlus", mPrim, ptPrim);
-                    FillHistogram("All4_InvMass_AntiSigmaPlus", m, pt);
-                  }
+          if (IsSigmaMinusv2) {
+            if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+                TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+                ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                track->Charge() == -1) {
+              FillHistogram("Cuts1_InvMass_AntiSigmaMinus_ParentCheck", m, pt);
+            }
+            if (fInvMassHist) {
+              if (TMath::Abs(track->Eta()) <= 0.7 &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, fDCAdaugminusCut) &&
+                  cpa >= fCPAminusCut && TestRAD(pt, rad, fRADminusCut) &&
+                  ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+                  ph2->IsDisp2OK() && track->Charge() == -1) {
+                FillHistogram("Cuts2_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= 0.9 &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, fDCAdaugminusCut) &&
+                  cpa >= fCPAminusCut && TestRAD(pt, rad, fRADminusCut) &&
+                  ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+                  ph2->IsDisp2OK() && track->Charge() == -1) {
+                FillHistogram("Cuts3_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= 50 &&
+                  nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, fDCAdaugminusCut) &&
+                  cpa >= fCPAminusCut && TestRAD(pt, rad, fRADminusCut) &&
+                  ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+                  ph2->IsDisp2OK() && track->Charge() == -1) {
+                FillHistogram("Cuts4_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= 70 &&
+                  nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, fDCAdaugminusCut) &&
+                  cpa >= fCPAminusCut && TestRAD(pt, rad, fRADminusCut) &&
+                  ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+                  ph2->IsDisp2OK() && track->Charge() == -1) {
+                FillHistogram("Cuts5_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < 2.5 &&
+                  TestDCADaug(pt, dca, fDCAdaugminusCut) &&
+                  cpa >= fCPAminusCut && TestRAD(pt, rad, fRADminusCut) &&
+                  ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+                  ph2->IsDisp2OK() && track->Charge() == -1) {
+                FillHistogram("Cuts6_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < 3.5 &&
+                  TestDCADaug(pt, dca, fDCAdaugminusCut) &&
+                  cpa >= fCPAminusCut && TestRAD(pt, rad, fRADminusCut) &&
+                  ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+                  ph2->IsDisp2OK() && track->Charge() == -1) {
+                FillHistogram("Cuts7_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts8_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts9_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts10_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 &&
+                  TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts11_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 &&
+                  TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts12_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0.3 &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts13_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts14_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts15_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.05) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts16_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.06) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts17_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.06) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts18_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.06) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts19_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.06) && cpa >= 0.3 &&
+                  TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts20_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.06) && cpa >= 0.3 &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts21_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts22_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts23_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.06) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts24_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts25_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts26_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0. &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts27_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 &&
+                  TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts28_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 &&
+                  TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts29_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0.3 &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts30_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.1) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts31_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.15) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts32_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, 0.07) && cpa >= 0.5 &&
+                  TestRAD(pt, rad, 0.2) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Cuts33_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (ph2->GetWeight() < 100.e-09) {
+                if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                    TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                    TestDCADaug(pt, dca, fDCAdaugminusCut) &&
+                    cpa >= fCPAminusCut && TestRAD(pt, rad, fRADminusCut) &&
+                    ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+                    ph2->IsDisp2OK() && track->Charge() == -1) {
+                  FillHistogram("Cuts34_InvMass_AntiSigmaMinus_ParentCheck", m,
+                                pt);
                 }
               }
-              if (prim2->GetMother() > -1 && prim3->GetMother() > -1) {
-                AliAODMCParticle* prim2parent = (AliAODMCParticle*)fStack->At(prim2->GetMother());
-                AliAODMCParticle* prim3parent = (AliAODMCParticle*)fStack->At(prim3->GetMother());
-                if (prim2parent->GetPdgCode() == -3112 && prim3parent->GetPdgCode() == -3112 &&
-                    prim2parent == prim3parent) {
-                  FillHistogram("MC_InvMass_AntiSigmaPlus_ParentCheck", mPrim, ptPrim);
-                  FillHistogram("InvMass_AntiSigmaPlus_ParentCheck", m, pt);
-                  FillHistogram("MC_APlus_4", lv2.Pt());
-                  FillHistogram("Rec_APlus_4", ph2->Pt());
-                  FillHistogram("PionPlus_3", trackPt);
-                  // CPV2 cut
-                  if (ph2->IsCPV2OK() == kTRUE) {
-                    FillHistogram("CPV2_MC_InvMass_AntiSigmaPlus_ParentCheck", mPrim, ptPrim);
-                    FillHistogram("CPV2_InvMass_AntiSigmaPlus_ParentCheck", m, pt);
-                    FillHistogram("MC_APlus_5", lv2.Pt());
-                    FillHistogram("Rec_APlus_5", ph2->Pt());
-                  }
-                  // Disp2 cut
-                  if (ph2->IsDisp2OK() == kTRUE) {
-                    FillHistogram("Disp2_MC_InvMass_AntiSigmaPlus_ParentCheck", mPrim, ptPrim);
-                    FillHistogram("Disp2_InvMass_AntiSigmaPlus_ParentCheck", m, pt);
-                    FillHistogram("MC_APlus_6", lv2.Pt());
-                    FillHistogram("Rec_APlus_6", ph2->Pt());
-                  }
-                  // All3 cuts
-                  if (ph2->IsCPV2OK() == kTRUE && ph2->IsDisp2OK() == kTRUE) {
-                    FillHistogram("All3_MC_InvMass_AntiSigmaPlus_ParentCheck", mPrim, ptPrim);
-                    FillHistogram("All3_InvMass_AntiSigmaPlus_ParentCheck", m, pt);
-                    FillHistogram("MC_APlus_7", lv2.Pt());
-                    FillHistogram("Rec_APlus_7", ph2->Pt());
-                    FillHistogram("PionPlus_4", trackPt);
-                  }
-                  // All4 cuts
-                  if (ph2->IsCPV2OK() == kTRUE && (TestDCAZ(trackPt, b[1])) && (TestDCAXY(trackPt, b[0])) &&
-                      ph2->IsDisp2OK() == kTRUE && abs(cpa) > 0.9 && rad > 0.2 && DCADaugPlus(trackPt, dca)) {
-                    FillHistogram("All4_MC_InvMass_AntiSigmaPlus_ParentCheck", mPrim, ptPrim);
-                    FillHistogram("All4_InvMass_AntiSigmaPlus_ParentCheck", m, pt);
-                    FillHistogram("MC_APlus_8", lv2.Pt());
-                    FillHistogram("Rec_APlus_8", ph2->Pt());
-                    FillHistogram("PionPlus_5", trackPt);
-                  }
-                }
-              }
-            }
-            // PDG pion and nbar
-            if (primTrackPdg == -211 && primLabelCluster1 == -2112) {
-              FillHistogram("MC_InvMass_AntiSigmaMinus", mPrim, ptPrim);
-              FillHistogram("InvMass_AntiSigmaMinus", m, pt);
-              // CPV2 cut
-              if (ph2->IsCPV2OK() == kTRUE) {
-                FillHistogram("CPV2_MC_InvMass_AntiSigmaMinus", mPrim, ptPrim);
-                FillHistogram("CPV2_InvMass_AntiSigmaMinus", m, pt);
-              }
-              // Disp2 cut
-              if (ph2->IsDisp2OK() == kTRUE) {
-                FillHistogram("Disp2_MC_InvMass_AntiSigmaMinus", mPrim, ptPrim);
-                FillHistogram("Disp2_InvMass_AntiSigmaMinus", m, pt);
-              }
-              // All3 cuts
-              if (ph2->IsCPV2OK() == kTRUE && ph2->IsDisp2OK() == kTRUE) {
-                FillHistogram("All3_MC_InvMass_AntiSigmaMinus", mPrim, ptPrim);
-                FillHistogram("All3_InvMass_AntiSigmaMinus", m, pt);
-              }
-              // All4 cuts
-              if (ph2->IsCPV2OK() == kTRUE && (TestDCAZ(trackPt, b[1])) && (TestDCAXY(trackPt, b[0])) &&
-                  ph2->IsDisp2OK() == kTRUE && abs(cpa) > 0.9 && rad > 0.1 && DCADaugMinus(trackPt, dca)) {
-                FillHistogram("All4_MC_InvMass_AntiSigmaMinus", mPrim, ptPrim);
-                FillHistogram("All4_InvMass_AntiSigmaMinus", m, pt);
-              }
-              // PDG Codes, pion and nbar
-              if (prim2->GetMother() > -1 && prim3->GetMother() > -1) {
-                AliAODMCParticle* prim2parent = (AliAODMCParticle*)fStack->At(prim2->GetMother());
-                AliAODMCParticle* prim3parent = (AliAODMCParticle*)fStack->At(prim3->GetMother());
-                if (prim2parent->GetPdgCode() == -3222 && prim3parent->GetPdgCode() == -3222 &&
-                    prim2parent == prim3parent) {
-                  FillHistogram("MC_InvMass_AntiSigmaMinus_ParentCheck", mPrim, ptPrim);
-                  FillHistogram("InvMass_AntiSigmaMinus_ParentCheck", m, pt);
-                  FillHistogram("MC_AMinus_4", lv2.Pt());
-                  FillHistogram("Rec_AMinus_4", ph2->Pt());
-                  FillHistogram("PionMinus_3", trackPt);
-                  // CPV2 cut
-                  if (ph2->IsCPV2OK()) {
-                    FillHistogram("CPV2_MC_InvMass_AntiSigmaMinus_ParentCheck", mPrim, ptPrim);
-                    FillHistogram("CPV2_InvMass_AntiSigmaMinus_ParentCheck", m, pt);
-                    FillHistogram("MC_AMinus_5", lv2.Pt());
-                    FillHistogram("Rec_AMinus_5", ph2->Pt());
-                  }
-                  // Disp2 cut
-                  if (ph2->IsDisp2OK()) {
-                    FillHistogram("Disp2_MC_InvMass_AntiSigmaMinus_ParentCheck", mPrim, ptPrim);
-                    FillHistogram("Disp2_InvMass_AntiSigmaMinus_ParentCheck", m, pt);
-                    FillHistogram("MC_AMinus_6", lv2.Pt());
-                    FillHistogram("Rec_AMinus_6", ph2->Pt());
-                  }
-                  // All3 cuts
-                  if (ph2->IsCPV2OK() && ph2->IsDisp2OK()) {
-                    FillHistogram("All3_MC_InvMass_AntiSigmaMinus_ParentCheck", mPrim, ptPrim);
-                    FillHistogram("All3_InvMass_AntiSigmaMinus_ParentCheck", m, pt);
-                    FillHistogram("MC_AMinus_7", lv2.Pt());
-                    FillHistogram("Rec_AMinus_7", ph2->Pt());
-                    FillHistogram("PionMinus_4", trackPt);
-                  }
-                  // All4 cuts
-                  if (ph2->IsCPV2OK() == kTRUE && (TestDCAZ(trackPt, b[1])) && (TestDCAXY(trackPt, b[0])) &&
-                      ph2->IsDisp2OK() == kTRUE && abs(cpa) > 0.9 && rad > 0.1 && DCADaugMinus(trackPt, dca)) {
-                    FillHistogram("All4_MC_InvMass_AntiSigmaMinus_ParentCheck", mPrim, ptPrim);
-                    FillHistogram("All4_InvMass_AntiSigmaMinus_ParentCheck", m, pt);
-                    FillHistogram("MC_AMinus_8", lv2.Pt());
-                    FillHistogram("Rec_AMinus_8", ph2->Pt());
-                    FillHistogram("PionMinus_5", trackPt);
-                  }
-                }
-              }
-            }
-            if (primLabelCluster1 == -2112) {
-              FillHistogram(Form("MC_InvMass_AntiNeutron_Charge%d", track->Charge()), mPrim, ptPrim);
-              FillHistogram(Form("InvMass_AntiNeutron_Charge%d", track->Charge()), m, pt);
-            }
-            // Track- pion
-            if (primTrackPdg == -211) {
-              FillHistogram("MC_InvMass_PiMinus", mPrim, ptPrim);
-              FillHistogram("InvMass_PiMinus", m, pt);
-            }
-            if (primTrackPdg == 211) {
-              FillHistogram("MC_InvMass_PiPlus", mPrim, ptPrim);
-              FillHistogram("InvMass_PiPlus", m, pt);
             }
           }
         }
@@ -1357,9 +3799,9 @@ void AliAnalysisSigmaBarCharged::SelectSigma()
   }
 }
 
-void AliAnalysisSigmaBarCharged::FillHistogram(const char* key, Double_t x) const
-{
-  TH1* hist = dynamic_cast<TH1*>(fOutputContainer->FindObject(key));
+void AliAnalysisSigmaBarCharged::FillHistogram(const char *key,
+                                               Double_t x) const {
+  TH1 *hist = dynamic_cast<TH1 *>(fOutputContainer->FindObject(key));
   if (hist) {
     hist->Fill(x);
   } else {
@@ -1367,14 +3809,14 @@ void AliAnalysisSigmaBarCharged::FillHistogram(const char* key, Double_t x) cons
   }
 }
 
-void AliAnalysisSigmaBarCharged::FillHistogram(const char* key, Double_t x, Double_t y) const
-{
-  TObject* obj = fOutputContainer->FindObject(key);
-  TH1* th1 = dynamic_cast<TH1*>(obj);
+void AliAnalysisSigmaBarCharged::FillHistogram(const char *key, Double_t x,
+                                               Double_t y) const {
+  TObject *obj = fOutputContainer->FindObject(key);
+  TH1 *th1 = dynamic_cast<TH1 *>(obj);
   if (th1) {
     th1->Fill(x, y);
   } else {
-    TH2* th2 = dynamic_cast<TH2*>(obj);
+    TH2 *th2 = dynamic_cast<TH2 *>(obj);
     if (th2) {
       th2->Fill(x, y);
     } else {
@@ -1383,17 +3825,17 @@ void AliAnalysisSigmaBarCharged::FillHistogram(const char* key, Double_t x, Doub
   }
 }
 
-void AliAnalysisSigmaBarCharged::FillHistogram(const char* key, Double_t x, Double_t y, Double_t z) const
-{
-  TObject* obj = fOutputContainer->FindObject(key);
+void AliAnalysisSigmaBarCharged::FillHistogram(const char *key, Double_t x,
+                                               Double_t y, Double_t z) const {
+  TObject *obj = fOutputContainer->FindObject(key);
 
-  TH2* th2 = dynamic_cast<TH2*>(obj);
+  TH2 *th2 = dynamic_cast<TH2 *>(obj);
   if (th2) {
     th2->Fill(x, y, z);
     return;
   }
 
-  TH3* th3 = dynamic_cast<TH3*>(obj);
+  TH3 *th3 = dynamic_cast<TH3 *>(obj);
   if (th3) {
     th3->Fill(x, y, z);
     return;
@@ -1401,10 +3843,35 @@ void AliAnalysisSigmaBarCharged::FillHistogram(const char* key, Double_t x, Doub
 
   AliError(Form("can not findi histogram (of instance TH2) <%s> ", key));
 }
-void AliAnalysisSigmaBarCharged::Terminate(Option_t*) {}
+void AliAnalysisSigmaBarCharged::Terminate(Option_t *) {}
 
-Double_t AliAnalysisSigmaBarCharged::RealRes(Double_t x)
-{
+Double_t CBfunction(Double_t *x, Double_t *par) {
+  // Parameterizatin of signal
+  Double_t m = par[1];
+  Double_t s = par[2];
+  Double_t dx = (x[0] - m) / s;
+  Double_t alpha = par[3];
+  Double_t n = par[4];
+
+  Double_t result;
+  Double_t fact1TLessMinosAlphaL = alpha / n;
+  Double_t fact2TLessMinosAlphaL = (n / alpha) - alpha - dx;
+  Double_t fact1THihgerAlphaH = alpha / n;
+  Double_t fact2THigherAlphaH = (n / alpha) - alpha + dx;
+
+  if (-alpha <= dx && alpha >= dx) {
+    result = exp(-0.5 * dx * dx);
+  } else if (dx < -alpha) {
+    result = exp(-0.5 * alpha * alpha) *
+             pow(fact1TLessMinosAlphaL * fact2TLessMinosAlphaL, -n);
+  } else if (dx > alpha) {
+    result = exp(-0.5 * alpha * alpha) *
+             pow(fact1THihgerAlphaH * fact2THigherAlphaH, -n);
+  }
+  return par[0] * result;
+}
+
+Double_t AliAnalysisSigmaBarCharged::RealRes(Double_t x) {
   // Simulates time resolution
   if (x <= 0.2) {
     x = 0.2;
@@ -1412,50 +3879,359 @@ Double_t AliAnalysisSigmaBarCharged::RealRes(Double_t x)
   if (x >= 10) {
     x = 10;
   }
-  return sqrt(pow(9.217682 * TMath::Exp(-x / 3.575588e+11) / x - 0.02196338 * x + 0.02202962 * x * x, 2) -
+  return sqrt(pow(9.217682 * TMath::Exp(-x / 3.575588e+11) / x -
+                      0.02196338 * x + 0.02202962 * x * x,
+                  2) -
               pow(0.5, 2)) *
          1e-9;
 }
 
-Bool_t AliAnalysisSigmaBarCharged::TestDCAXY(Double_t pt, Double_t dca)
-{
-  // Checks if track DCA far enough from primary vertex due to large Sigma lifetime
-  if (pt > 0.5)
-    return true;
-  if (TMath::Abs(dca) >= -5.43674e-02 + 3.14319e-02 / pt) { // dca>=f(pt)
-    return true;
+Double_t AliAnalysisSigmaBarCharged::RealResv2(Double_t x) {
+  Double_t sigma, alpha, n;
+  // Sigma
+  if (x <= 0.4) {
+    sigma = 9.27927e-09 * exp(0.4 * 1.24013e-01) / 0.4 - 1.36967e-09;
+  } else if (x >= 8.) {
+    sigma = 9.27927e-09 * exp(8. * 1.24013e-01) / 8. - 1.36967e-09;
   } else {
-    return false;
+    sigma = 9.27927e-09 * exp(x * 1.24013e-01) / x - 1.36967e-09;
   }
+
+  sigma = sqrt(sigma * sigma - 0.5 * 0.5 * 1e-9 * 1e-9);
+
+  // Alpha
+  if (x <= 0.4) {
+    alpha = exp(-1.20237e+00 * 0.4 + 6.78364e-01) - 1.34970e-02 +
+            5.21402e-01 * 0.4 + 1.01185e-01 * 0.4 * 0.4 -
+            2.90393e-02 * 0.4 * 0.4 * 0.4 + 1.48951e-03 * 0.4 * 0.4 * 0.4 * 0.4;
+  } else if (x >= 10.) {
+    alpha = exp(-1.20237e+00 * 10. + 6.78364e-01) - 1.34970e-02 +
+            5.21402e-01 * 10. + 1.01185e-01 * 10. * 10. -
+            2.90393e-02 * 10. * 10. * 10. + 1.48951e-03 * 10. * 10. * 10. * 10.;
+  } else {
+    alpha = exp(-1.20237e+00 * x + 6.78364e-01) - 1.34970e-02 +
+            5.21402e-01 * x + 1.01185e-01 * x * x - 2.90393e-02 * x * x * x +
+            1.48951e-03 * x * x * x * x;
+  }
+
+  // N
+  if (x <= 0.5) {
+    n = exp(2.51256e+00 - 7.40150e-01 * 0.5) + 2.19880e-01;
+  } else {
+    n = exp(2.51256e+00 - 7.40150e-01 * x) + 2.19880e-01;
+  }
+
+  Int_t bin, binx, ibin, loop;
+  Double_t r1, xres;
+
+  TF1 *f1 = new TF1("CB", CBfunction, -250e-9, 250e-9, 5);
+  f1->SetParameters(1, 0, sigma, alpha, n);
+
+  TAxis *xAxis = new TAxis(2000, -250e-9, 250e-9);
+
+  Int_t first = xAxis->GetFirst();
+  Int_t last = xAxis->GetLast();
+  Int_t nbinsx = last - first + 1;
+
+  Double_t *integral = new Double_t[nbinsx + 1];
+  integral[0] = 0;
+  for (binx = 1; binx <= nbinsx; binx++) {
+    Double_t fint = f1->Integral(xAxis->GetBinLowEdge(binx + first - 1),
+                                 xAxis->GetBinUpEdge(binx + first - 1), 0.);
+    integral[binx] = integral[binx - 1] + fint;
+  }
+
+  //   - Normalize integral to 1
+  for (bin = 1; bin <= nbinsx; bin++)
+    integral[bin] /= integral[nbinsx];
+
+  r1 = gRandom->Rndm();
+  ibin = TMath::BinarySearch(nbinsx, &integral[0], r1);
+  xres = xAxis->GetBinLowEdge(ibin + first) +
+         xAxis->GetBinWidth(ibin + first) * (r1 - integral[ibin]) /
+             (integral[ibin + 1] - integral[ibin]);
+
+  delete[] integral;
+  delete xAxis;
+  delete f1;
+
+  return xres;
 }
 
-Bool_t AliAnalysisSigmaBarCharged::TestDCAZ(Double_t pt, Double_t dca)
-{
-  // Checks if track DCA in z direction far enough from primary vertex due to large Sigma lifetime
-  if (pt > 0.5)
-    return true;
-  if (TMath::Abs(dca) >= -3.65702e-02 + 5.38728e-02 / pt) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-Bool_t AliAnalysisSigmaBarCharged::DCADaugPlus(Double_t pt, Double_t dca)
-{
+Bool_t AliAnalysisSigmaBarCharged::TestDCADaug(Double_t pt, Double_t dca,
+                                               Double_t dcashift) {
   // Daughter DCA cut
-  if (pt < 0.25 && dca < 0.2) {
-    return false;
-  } else {
+  if (dca < dcashift + exp(-1.381 * pt - 2.232)) {
     return true;
+  } else {
+    return false;
   }
 }
 
-Bool_t AliAnalysisSigmaBarCharged::DCADaugMinus(Double_t pt, Double_t dca)
-{
-  if (pt < 0.25 && dca < 0.1) {
-    return false;
-  } else {
+Bool_t AliAnalysisSigmaBarCharged::TestRAD(Double_t pt, Double_t rad,
+                                           Double_t radshift) {
+  // RAD Plus cut
+  if (rad > 0.193 * pt + radshift) {
     return true;
+  } else {
+    return false;
   }
+}
+
+void AliAnalysisSigmaBarCharged::PropagateToDCACurvedBachelor(
+    Double_t *decayparams, AliCaloPhoton *v, Double_t v0vtx[3],
+    AliExternalTrackParam *t, Double_t b) {
+  //--------------------------------------------------------------------
+  // This function returns the DCA between the V0 and the track
+  // assumes that bachelor track is not straight
+  // algorithm based on AliExternalTrackParam::GetDCA with zero curvature track
+  //--------------------------------------------------------------------
+
+  // Double_t decayparams[4]; //decayparams[0]-decayparams[2] -- cascade vertex
+  // (secondary vtx); decayparams[3] -- dca daughters
+
+  // Double_t alpha=t->GetAlpha(), cs1=TMath::Cos(alpha), sn1=TMath::Sin(alpha);
+  Double_t r[3];
+  t->GetXYZ(r);
+  // Double_t x1=r[0], y1=r[1], z1=r[2];
+  Double_t p[3];
+  t->GetPxPyPz(p);
+  // Double_t px1=p[0], py1=p[1], pz1=p[2];
+
+  Double_t x2 = v0vtx[0], y2 = v0vtx[1],
+           z2 = v0vtx[2]; // position and momentum of V0
+  Double_t px2 = v->Px(), py2 = v->Py(), pz2 = v->Pz();
+
+  // v->GetXYZ(x2,y2,z2);
+  // v->GetPxPyPz(px2,py2,pz2);
+
+  decayparams[3] = 1e+33; // initial dca
+  Double_t dy2 = 1e-10;
+  Double_t dz2 = 1e-10;
+  Double_t dx2 = 1e-10;
+
+  // Create dummy V0 track
+  // V0 properties to get started
+  Double_t xyz[3] = {v0vtx[0], v0vtx[1], v0vtx[2]},
+           pxpypz[3] = {v->Px(), v->Py(), v->Pz()}, cv[21];
+  for (Int_t ii = 0; ii < 21; ii++)
+    cv[ii] = 0.0; // something small
+
+  // Mockup track for V0 trajectory (no covariance)
+  // AliExternalTrackParam *hV0Traj = new
+  // AliExternalTrackParam(xyz,pxpypz,cv,+1);
+  AliExternalTrackParam lV0TrajObject(xyz, pxpypz, cv, +1),
+      *hV0Traj = &lV0TrajObject;
+  hV0Traj->ResetCovariance(1); // won't use
+
+  // Re-acquire helix parameters for bachelor (necessary!)
+  Double_t p1[8];
+  t->GetHelixParameters(p1, b);
+  p1[6] = TMath::Sin(p1[2]);
+  p1[7] = TMath::Cos(p1[2]);
+
+  Double_t p2[8];
+  hV0Traj->GetHelixParameters(
+      p2, 0.0); // p2[4]=0 -> no curvature (fine, predicted in Evaluate)
+  p2[6] = TMath::Sin(p2[2]);
+  p2[7] = TMath::Cos(p2[2]);
+
+  Double_t r1[3], g1[3], gg1[3];
+  Double_t t1 = 0.;
+  Evaluate(p1, t1, r1, g1, gg1);
+  Double_t r2[3], g2[3], gg2[3];
+  Double_t t2 = 0.;
+  Evaluate(p2, t2, r2, g2, gg2);
+
+  Double_t dx = r2[0] - r1[0], dy = r2[1] - r1[1], dz = r2[2] - r1[2];
+  Double_t dm = dx * dx / dx2 + dy * dy / dy2 + dz * dz / dz2;
+
+  Int_t max = 27; // standard in AliExternalTrackParam::GetDCA, good performance
+  while (max--) {
+    Double_t gt1 = -(dx * g1[0] / dx2 + dy * g1[1] / dy2 + dz * g1[2] / dz2);
+    Double_t gt2 = +(dx * g2[0] / dx2 + dy * g2[1] / dy2 + dz * g2[2] / dz2);
+    Double_t h11 = (g1[0] * g1[0] - dx * gg1[0]) / dx2 +
+                   (g1[1] * g1[1] - dy * gg1[1]) / dy2 +
+                   (g1[2] * g1[2] - dz * gg1[2]) / dz2;
+    Double_t h22 = (g2[0] * g2[0] + dx * gg2[0]) / dx2 +
+                   (g2[1] * g2[1] + dy * gg2[1]) / dy2 +
+                   (g2[2] * g2[2] + dz * gg2[2]) / dz2;
+    Double_t h12 =
+        -(g1[0] * g2[0] / dx2 + g1[1] * g2[1] / dy2 + g1[2] * g2[2] / dz2);
+
+    Double_t det = h11 * h22 - h12 * h12;
+
+    Double_t dt1, dt2;
+    if (TMath::Abs(det) < 1.e-33) {
+      //(quasi)singular Hessian
+      dt1 = -gt1;
+      dt2 = -gt2;
+    } else {
+      dt1 = -(gt1 * h22 - gt2 * h12) / det;
+      dt2 = -(h11 * gt2 - h12 * gt1) / det;
+    }
+
+    if ((dt1 * gt1 + dt2 * gt2) > 0) {
+      dt1 = -dt1;
+      dt2 = -dt2;
+    }
+
+    // check delta(phase1) ?
+    // check delta(phase2) ?
+
+    if (TMath::Abs(dt1) / (TMath::Abs(t1) + 1.e-3) < 1.e-4)
+      if (TMath::Abs(dt2) / (TMath::Abs(t2) + 1.e-3) < 1.e-4) {
+        if ((gt1 * gt1 + gt2 * gt2) > 1.e-4 / dy2 / dy2) {
+          AliDebug(1, " stopped at not a stationary point !");
+        }
+        Double_t lmb = h11 + h22;
+        lmb = lmb - TMath::Sqrt(lmb * lmb - 4 * det);
+        if (lmb < 0.) {
+          AliDebug(1, " stopped at not a minimum !");
+        }
+        break;
+      }
+
+    Double_t dd = dm;
+    for (Int_t div = 1;; div *= 2) {
+      Evaluate(p1, t1 + dt1, r1, g1, gg1);
+      Evaluate(p2, t2 + dt2, r2, g2, gg2);
+      dx = r2[0] - r1[0];
+      dy = r2[1] - r1[1];
+      dz = r2[2] - r1[2];
+      dd = dx * dx / dx2 + dy * dy / dy2 + dz * dz / dz2;
+      if (dd < dm)
+        break;
+      dt1 *= 0.5;
+      dt2 *= 0.5;
+      if (div > 512) {
+        AliDebug(1, " overshoot !");
+        break;
+      }
+    }
+    dm = dd;
+    t1 += dt1;
+    t2 += dt2;
+  }
+  if (max <= 0) {
+    AliDebug(1, " too many iterations !");
+  }
+  Double_t cs = TMath::Cos(t->GetAlpha());
+  Double_t sn = TMath::Sin(t->GetAlpha());
+  Double_t xthis = r1[0] * cs + r1[1] * sn;
+
+  // Propagate bachelor to the point of DCA
+  if (!t->PropagateTo(xthis, b)) {
+    AliDebug(1, " propagation failed !");
+    decayparams[3] = 1e+33;
+  }
+
+  // V0 distance to bachelor: the desired distance
+  Double_t rBachDCAPt[3];
+  t->GetXYZ(rBachDCAPt);
+
+  // dca between daughters
+  decayparams[3] = GetDCASigmabar(xyz, pxpypz, rBachDCAPt); // dca is ok
+
+  // reconstruction of secondary vertex
+  // Double_t r[3]; t.GetXYZ(r);
+  Double_t x1 = rBachDCAPt[0], y1 = rBachDCAPt[1],
+           z1 = rBachDCAPt[2]; // position of the bachelor
+  t->GetPxPyPz(p);
+  Double_t px1 = p[0], py1 = p[1], pz1 = p[2]; // momentum of the bachelor track
+
+  // Double_t x2,y2,z2;          // position of the V0
+  // v.GetXYZ(x2,y2,z2);
+  // Double_t px2,py2,pz2;       // momentum of V0
+  // v.GetPxPyPz(px2,py2,pz2);
+
+  Double_t a2 = ((x1 - x2) * px2 + (y1 - y2) * py2 + (z1 - z2) * pz2) /
+                (px2 * px2 + py2 * py2 + pz2 * pz2);
+
+  Double_t xm = x2 + a2 * px2;
+  Double_t ym = y2 + a2 * py2;
+  Double_t zm = z2 + a2 * pz2;
+
+  // position of the cascade decay
+  decayparams[0] = 0.5 * (x1 + xm);
+  decayparams[1] = 0.5 * (y1 + ym);
+  decayparams[2] = 0.5 * (z1 + zm);
+}
+
+Float_t AliAnalysisSigmaBarCharged::GetDCASigmabar(Double_t xyz[3],
+                                                   Double_t pxpypz[3],
+                                                   Double_t bachelor[3]) const {
+  //--------------------------------------------------------------------
+  // This function returns V0's impact parameter calculated in 3D
+  //--------------------------------------------------------------------
+  Double_t x = xyz[0], y = xyz[1], z = xyz[2];
+  Double_t px = pxpypz[0];
+  Double_t py = pxpypz[1];
+  Double_t pz = pxpypz[2];
+
+  Double_t dx = (bachelor[1] - y) * pz - (bachelor[2] - z) * py;
+  Double_t dy = (bachelor[0] - x) * pz - (bachelor[2] - z) * px;
+  Double_t dz = (bachelor[0] - x) * py - (bachelor[1] - y) * px;
+  Double_t d = TMath::Sqrt((dx * dx + dy * dy + dz * dz) /
+                           (px * px + py * py + pz * pz));
+  return d;
+}
+
+void AliAnalysisSigmaBarCharged::Evaluate(const Double_t *h, Double_t t,
+                                          Double_t r[3],  // radius vector
+                                          Double_t g[3],  // first defivatives
+                                          Double_t gg[3]) // second derivatives
+{
+  //--------------------------------------------------------------------
+  // Calculate position of a point on a track and some derivatives
+  //--------------------------------------------------------------------
+  Double_t phase = h[4] * t + h[2];
+  Double_t sn = TMath::Sin(phase), cs = TMath::Cos(phase);
+
+  r[0] = h[5];
+  r[1] = h[0];
+  if (TMath::Abs(h[4]) > kAlmost0) {
+    r[0] += (sn - h[6]) / h[4];
+    r[1] -= (cs - h[7]) / h[4];
+  } else {
+    r[0] += t * cs;
+    r[1] -= -t * sn;
+  }
+  r[2] = h[1] + h[3] * t;
+
+  g[0] = cs;
+  g[1] = sn;
+  g[2] = h[3];
+
+  gg[0] = -h[4] * sn;
+  gg[1] = h[4] * cs;
+  gg[2] = 0.;
+}
+
+Double_t AliAnalysisSigmaBarCharged::GetCosineOfPointingAngle(
+    Double_t mom[3], Double_t pos[3], Double_t refPointX, Double_t refPointY,
+    Double_t refPointZ) const {
+  // calculates the pointing angle of the cascade wrt a reference point
+
+  Double_t momCas[3] = {mom[0], mom[1], mom[2]}; // momentum of the cascade
+
+  Double_t fPosXi[3] = {pos[0], pos[1], pos[2]}; // pos of cascade
+
+  Double_t
+      deltaPos[3]; // vector between the reference point and the cascade vertex
+  deltaPos[0] = fPosXi[0] - refPointX;
+  deltaPos[1] = fPosXi[1] - refPointY;
+  deltaPos[2] = fPosXi[2] - refPointZ;
+
+  Double_t momCas2 =
+      momCas[0] * momCas[0] + momCas[1] * momCas[1] + momCas[2] * momCas[2];
+  Double_t deltaPos2 = deltaPos[0] * deltaPos[0] + deltaPos[1] * deltaPos[1] +
+                       deltaPos[2] * deltaPos[2];
+
+  Double_t cosinePointingAngle =
+      (deltaPos[0] * momCas[0] + deltaPos[1] * momCas[1] +
+       deltaPos[2] * momCas[2]) /
+      TMath::Sqrt(momCas2 * deltaPos2);
+
+  return cosinePointingAngle;
 }
