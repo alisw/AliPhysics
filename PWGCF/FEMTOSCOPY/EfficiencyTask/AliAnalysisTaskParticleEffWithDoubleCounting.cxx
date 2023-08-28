@@ -136,37 +136,37 @@ void AliAnalysisTaskParticleEffWithDoubleCounting::UserCreateOutputObjects()
 
     for(Int_t i = 0; i < MULTBINS; i++)  {
       hname1  = "hGeneratedMCPrimariesEffM"; hname1+=i; hname1+=parttypename;
-      htitle1 = "Kinematic level Y_pT (prim only) M"; htitle1+=i; htitle1+=parttypename;
+      htitle1 = "Kinematic level eta_pT (prim only) M"; htitle1+=i; htitle1+=parttypename;
       fGeneratedMCPrimaries[i*PARTTYPES+j][0] = new TH2F(hname1.Data(),htitle1.Data(),72, -1.8, 1.8,1000,0.,10.0);
       hname1+="Minus";htitle1+="Minus";
       fGeneratedMCPrimaries[i*PARTTYPES+j][1] = new TH2F(hname1.Data(),htitle1.Data(),72, -1.8, 1.8,1000,0.,10.0);
 
       hname3  = "hMCPrimariesThatAreReconstructedM"; hname3+=i; hname3+=parttypename;
-      htitle3 = "Reconstructed level Y_pT (prim only) M"; htitle3+=i; htitle3+=parttypename;
+      htitle3 = "Reconstructed level eta_pT (prim only) M"; htitle3+=i; htitle3+=parttypename;
       fMCPrimariesThatAreReconstructed[i*PARTTYPES+j][0] = new TH2F(hname3.Data(),htitle3.Data(),72, -1.8, 1.8,1000,0.,10.0);
       hname3+="Minus";htitle3+="Minus";
       fMCPrimariesThatAreReconstructed[i*PARTTYPES+j][1] = new TH2F(hname3.Data(),htitle3.Data(),72, -1.8, 1.8,1000,0.,10.0);
 
       hname3  = "hMCPrimariesThatAreReconstructedNoNsigmaM"; hname3+=i; hname3+=parttypename;
-      htitle3 = "Reconstructed level Y_pT (prim only) no Nsigma cut only PDG M"; htitle3+=i; htitle3+=parttypename;
+      htitle3 = "Reconstructed level eta_pT (prim only) no Nsigma cut only PDG M"; htitle3+=i; htitle3+=parttypename;
       fMCPrimariesThatAreReconstructedNoNsigma[i*PARTTYPES+j][0] = new TH2F(hname3.Data(),htitle3.Data(),72, -1.8, 1.8,1000,0.,10.0);
       hname3+="Minus";htitle3+="Minus";
       fMCPrimariesThatAreReconstructedNoNsigma[i*PARTTYPES+j][1] = new TH2F(hname3.Data(),htitle3.Data(),72, -1.8, 1.8,1000,0.,10.0);
 
       hname2  = "hHistoReconstructedAfterCutsM"; hname2+=i; hname2+=parttypename;
-      htitle2 = "Total Reconstructed tracks M "; htitle2+=i; htitle2+=parttypename;
+      htitle2 = "Total Reconstructed tracks M"; htitle2+=i; htitle2+=parttypename;
       fReconstructedAfterCuts[i*PARTTYPES+j][0] = new TH2F(hname2.Data(),htitle2.Data(),72, -1.8, 1.8,1000,0.,10.0);
       hname2+="Minus";htitle2+="Minus";
       fReconstructedAfterCuts[i*PARTTYPES+j][1] = new TH2F(hname2.Data(),htitle2.Data(),72, -1.8, 1.8,1000,0.,10.0);
 
       hname4  = "hHistoReconstructedNotPrimariesM"; hname4+=i; hname4+=parttypename;
-      htitle4 = "Reconstructed level Y_pT (not primaries) M"; htitle4+=i; htitle4+=parttypename;
+      htitle4 = "Reconstructed level eta_pT (not primaries) M"; htitle4+=i; htitle4+=parttypename;
       fReconstructedNotPrimaries[i*PARTTYPES+j][0] = new TH2F(hname4.Data(),htitle4.Data(),72, -1.8, 1.8,1000,0.,10.0);
       hname4+="Minus";htitle4+="Minus";
       fReconstructedNotPrimaries[i*PARTTYPES+j][1] = new TH2F(hname4.Data(),htitle4.Data(),72, -1.8, 1.8,1000,0.,10.0);
 
       hname4  = "hHistoReconstructedPrimariesM"; hname4+=i; hname4+=parttypename;
-      htitle4 = "Reconstructed level Y_pT (primaries) M"; htitle4+=i; htitle4+=parttypename;
+      htitle4 = "Reconstructed level eta_pT (primaries) M"; htitle4+=i; htitle4+=parttypename;
       fReconstructedPrimaries[i*PARTTYPES+j][0] = new TH2F(hname4.Data(),htitle4.Data(),72, -1.8, 1.8,1000,0.,10.0);
       hname4+="Minus";htitle4+="Minus";
       fReconstructedPrimaries[i*PARTTYPES+j][1] = new TH2F(hname4.Data(),htitle4.Data(),72, -1.8, 1.8,1000,0.,10.0);
