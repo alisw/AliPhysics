@@ -1245,49 +1245,12 @@ void AliAnalysisTaskParticleEffWithDoubleCounting::UserExec(Option_t *)
     bool isKaonNsigma = false;
     bool isProtonNsigma  = false;
 
-    if(fPidMethod==kNSigma){
+    
     //******** With double counting *******************
       isPionNsigma = (IsPionNSigma3(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
       isKaonNsigma = (IsKaonNSigma3(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
       isProtonNsigma = (IsProtonNSigma3(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-    }
-    else if(fPidMethod==kNSigmaNoDoubleCounting){
-      //******** Without double counting *******************
-      double nSigmaPIDPi = 0, nSigmaPIDK = 0, nSigmaPIDP = 0;
-
-      if(track->Pt()<0.5){
-	nSigmaPIDPi = abs(nSigmaTPCPi);
-	nSigmaPIDK  = abs(nSigmaTPCK);
-	nSigmaPIDP  = abs(nSigmaTPCP);
-      }
-      else{
-	nSigmaPIDPi = TMath::Hypot(nSigmaTPCPi,nSigmaTOFPi);
-	nSigmaPIDK= TMath::Hypot(nSigmaTPCK,nSigmaTOFK);
-	nSigmaPIDP= TMath::Hypot(nSigmaTPCP,nSigmaTOFP);
-      }
-
-      if(nSigmaPIDPi<nSigmaPIDK && nSigmaPIDPi<nSigmaPIDP){
-	isPionNsigma = (IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
-      }
-      else if(nSigmaPIDK<nSigmaPIDPi && nSigmaPIDK<nSigmaPIDP){
-	isKaonNsigma = (IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
-      }
-      else if(nSigmaPIDP<nSigmaPIDPi && nSigmaPIDP<nSigmaPIDK){
-	isProtonNsigma = (IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      }
-    }
-    else if(fPidMethod==kExclusivePID){
-      //******** Exclusive PID ********************
-      isPionNsigma = (IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isKaonNsigma = (!IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isProtonNsigma = (!IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-    }
-    else if(fPidMethod==kExclusivePIDDiffRejection){
-      //******** Exclusive PID, different rejection  ********************
-      isPionNsigma = (IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma3(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isKaonNsigma = (!IsPionNSigma3(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isProtonNsigma = (!IsPionNSigma3(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-    }
+        
 
     if (isPionNsigma){
       fHistQAPID[0][1][charge]->Fill(tPt,tdEdx);
