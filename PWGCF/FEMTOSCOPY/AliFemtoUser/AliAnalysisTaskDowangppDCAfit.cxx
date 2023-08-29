@@ -165,6 +165,7 @@ if(ic!=0) continue;
             kStarVsmT2DinMixPID[ichg][ic] = nullptr;
             kStarVsmT2DinMixTrue[ichg][ic] = nullptr;
 
+            kStarVsmT2DinSamePID[ichg][ic] = nullptr;
         }
     }
 
@@ -288,6 +289,8 @@ fListOfObjects(0)
             kStarVskT2DinMixTrue[ichg][ic] = nullptr;
             kStarVsmT2DinMixPID[ichg][ic] = nullptr;
             kStarVsmT2DinMixTrue[ichg][ic] = nullptr;
+
+            kStarVsmT2DinSamePID[ichg][ic] = nullptr;
         }
     }
 
@@ -529,6 +532,11 @@ void AliAnalysisTaskDowangppDCAfit::UserCreateOutputObjects()
             fListOfObjects->Add(kStarVsmT2DinMixPID[ichg][ic]);
             fListOfObjects->Add(kStarVsmT2DinMixTrue[ichg][ic]);
 
+
+            filename.Form("kStarVsmT2DinSamePID%d%d",ichg,ic);
+            kStarVsmT2DinSamePID[ichg][ic] = new TH2F(filename," ",1000, 0.0, 1.0,25,1,3.5);
+            fListOfObjects->Add(kStarVsmT2DinSamePID[ichg][ic]);
+    
 
         }
     }
@@ -938,7 +946,12 @@ void AliAnalysisTaskDowangppDCAfit::Analyze(AliAODEvent* aod,Float_t v0Centr,flo
                     //cout<<"ddd "<<kStar_Reco<<" "<<kStar_True<<endl;
                     MomSmearing[ichg][iCent]->Fill(kStar_True,kStar_Reco);
                     fNumDPhiDEtaAvgQA_afterPairCut[ichg][iCent]->Fill(deta,AvgDPhi);
-                 
+                    
+                    TLorentzVector tmp_pair = Particle1_Reco + Particle2_Reco;
+
+                    float mT_tmp = 0.5 * tmp_pair.Mt();
+
+                    kStarVsmT2DinSamePID[ichg][iCent]->Fill(kStar_Reco,mT_tmp);
                 }
             }
         }
@@ -1980,6 +1993,7 @@ float AliAnalysisTaskDowangppDCAfit::ReAvgDphi(p_info &first_p_info, p_info &sec
     dphiAvg = dphiAvg/9.;
     return dphiAvg; 
 }
+
 
 
 
