@@ -257,7 +257,7 @@ class AliAnalysisTaskDowangppDCAfit : public AliAnalysisTaskSE {
     TH2F * kStarVsmT2DinMixPID[2][5]; 
     TH2F * kStarVsmT2DinMixTrue[2][5]; 
 
-
+    TH2F * kStarVsmT2DinSamePID[2][5]; 
     
     vector<pool_bin> All_Event_pool;
 
