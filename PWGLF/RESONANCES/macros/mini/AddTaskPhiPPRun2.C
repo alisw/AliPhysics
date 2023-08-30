@@ -14,14 +14,21 @@ dmallick@cern.ch - last modified on 21/11/2020
 //
 ****************************************************************************/
 
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGLF/RESONANCES/macros/mini/ConfigPhiPPRun2.C>
+//#include "ConfigPhiPPRun2.C"
+#endif
+
 AliRsnMiniAnalysisTask * AddTaskPhiPPRun2(
-					    Bool_t      isMC                = kFALSE,
+					    Int_t       isAOD = 1,
+                                            Bool_t      isMC                = kFALSE,
 					    Bool_t      isPP                = kTRUE,
 					    Int_t       isMult                 = 1,
 					    Int_t       Strcut              = 2011,
 					    Int_t       customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom,
 					    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,
-					    Float_t     ThetaStar=AliRsnMiniValue::kCosThetaHeAbs,
+					    Int_t       polaxis=0,
 					    Float_t     nsigmaPi            = 2.0,
 					    Float_t     nsigmaK             = 2.0,
 					    Bool_t      enableMonitor       = kTRUE,
@@ -58,7 +65,12 @@ AliRsnMiniAnalysisTask * AddTaskPhiPPRun2(
  // create the task and configure 
    TString taskName = Form("KStar%s%s", (isPP? "pp" : "PbPb"), (isMC ? "MC" : "Data"));
    AliRsnMiniAnalysisTask *task = new AliRsnMiniAnalysisTask(taskName.Data(), isMC);
-   task->UseESDTriggerMask(trigger);
+
+    //trigger 
+  if (!isAOD) task->UseESDTriggerMask(trigger); //ESD
+  else task->SelectCollisionCandidates(trigger); //AOD
+  //  task->UseESDTriggerMask(trigger);
+
    if(isMult==0) task->UseMultiplicity("QUALITY");
    else if(isMult==1) task->UseMultiplicity("AliMultSelection_V0M");
    else if(isMult==2) task->UseMultiplicity("AliMultSelection_RefMult08");
@@ -76,7 +88,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPPRun2(
      
      mgr->AddTask(task);
    
-     AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
+     AliRsnCutEventUtils *cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
      //AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,kFALSE);
      cutEventUtils->SetCheckAcceptedMultSelection();
      AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
@@ -84,16 +96,7 @@ AliRsnMiniAnalysisTask * AddTaskPhiPPRun2(
      eventCuts->SetCutScheme(Form("%s",cutEventUtils->GetName()));
      task->SetEventCuts(eventCuts);
    
-   /*
-   AliRsnCutPrimaryVertex *cutVertex = new AliRsnCutPrimaryVertex("cutVertex", 10.0, 0, kFALSE);
-   //   cutVertex->SetCheckPileUp(kTRUE);   // set the check for pileup   
-   // define and fill cut set for event cut
-   AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
-   eventCuts->AddCut(cutVertex);
-   eventCuts->SetCutScheme(cutVertex->GetName());
-   task->SetEventCuts(eventCuts);
-   */
-
+  
    // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------
    //   
    //vertex
@@ -117,14 +120,11 @@ AliRsnMiniAnalysisTask * AddTaskPhiPPRun2(
    AliRsnCutSet *cutsPair = new AliRsnCutSet("pairCuts", AliRsnTarget::kMother);
    cutsPair->AddCut(cutY);
    cutsPair->SetCutScheme(cutY->GetName());
-     // -- CONFIG ANALYSIS --------------------------------------------------------------------------
-   // gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPbPb2018.C");
 
-   //   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPbPb2018.C");
-   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPPRun2.C");
-
-   //    gROOT->LoadMacro("ConfigPhiPPRun2.C");
-   if (!ConfigPhiPPRun2(task,isMC, isPP, cutsPair,Strcut, customQualityCutsID,cutKaCandidate,ThetaStar,nsigmaPi,nsigmaK, enableMonitor,Multbin,lMultbin,hMultbin,Ptbin,lPtbin,hPtbin,InvMbin,lInvMbin,hInvMbin)) return 0x0;
+   //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigPhiPPRun2.C");
+   //gROOT->LoadMacro("ConfigPhiPPRun2.C");
+   
+   if (!ConfigPhiPPRun2(task,isAOD,isMC, isPP, cutsPair,Strcut, customQualityCutsID,cutKaCandidate,polaxis,nsigmaPi,nsigmaK, enableMonitor,Multbin,lMultbin,hMultbin,Ptbin,lPtbin,hPtbin,InvMbin,lInvMbin,hInvMbin)) return 0x0;
    // -- CONTAINERS --------------------------------------------------------------------------------/
    TString outputFileName = AliAnalysisManager::GetCommonFileName();
    //outputFileName += ":Rsn";
