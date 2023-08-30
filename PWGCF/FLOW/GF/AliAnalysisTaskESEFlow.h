@@ -12,6 +12,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "AliMCEvent.h"
+#include "AliGFWCuts.h"
 
 #include "AliUniFlowCorrTask.h"
 
@@ -88,13 +89,12 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetQARejFiller( Bool_t actQA ) { fFillQARej = actQA; }
 
         void                    SetNUEWeights( Bool_t actNUE, Int_t NUEType) {fUseNUEWeights = actNUE; fNUE = NUEType; }
-        void                    SetEfficiencyWeights ( Bool_t actEff, Int_t EffType) { fUseEfficiency = actEff; fEfficiency = EffType; }
 
         void                    SetBayesUnfolding( Bool_t actBayes) { fBayesUnfolding = actBayes; }
 
         void                    Activateq2ESEProjections(Bool_t actProj) { fActq2Projections = actProj; }
 
-
+        void                    SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
 
 
     private:
@@ -104,6 +104,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Double_t                dEtaGap;
         Bool_t                  bHasGap;
         Bool_t                  fSampling;      //Bootstrapping sampling
+
+        Int_t                   fSystFlag;
 
         static const Int_t      fNumHarms = 13; // maximum harmonics length of flow vector array
         static const Int_t      fNumPowers = 9; // maximum weight power length of flow vector array
@@ -135,6 +137,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TList*                  fFlowWeightsList; //!
         AliGFWWeights*          fWeights;           //!
         TList*                  fV0CalibList;   //!
+        TList*                  fEffList;       //!
         TList*                  fqSelList;   //!
         //output histograms
         TH3F*                   fHistPhiEtaVz;    //!
@@ -173,10 +176,10 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH1F*                   fHistPDG; //!
 
         TFile*                  fFileTrackEff; //! NUE
-        TFile*                  ptEfficiency; //! efficiency
         TH3F*                   fhTrackNUE; //!
         TDirectory*             fDir_efficiencies; //!
-        TH2D*                   fhEfficiency2D; //!
+        TH1D*                   fhEfficiency1D; //!
+
 
 
         /////////////////////////// CALIBRATION QA HISTOGRAMS ////////////////////////////////////
@@ -275,7 +278,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Bool_t LoadV0Calibration();
         Double_t GetFlowWeight(const AliAODTrack* track, const float dVz) const;
         Double_t GetNUEPtWeight(Double_t pt, Double_t eta, const float dVz) const;
-        Double_t GetEfficiency(Double_t pt, const Float_t centrality);
+        Double_t GetEfficiency(Double_t pt);
         //############ GENERIC FRAMEWORK ############# MODIFIED WITH ESE //
 
         double GetWeight(double phi, double eta, double vz,  double runNumber);
@@ -467,6 +470,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Bool_t                  fIs2018Data;
         Bool_t                  fBayesUnfolding;
         Bool_t                  fActq2Projections;
+
+        AliGFWCuts*             fGFWSelection;
 
 
 
