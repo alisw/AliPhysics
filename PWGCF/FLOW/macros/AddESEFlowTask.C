@@ -105,6 +105,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     task->Set2018(kFALSE);
     task->SetBayesUnfolding(kFALSE);
     task->Activateq2ESEProjections(kFALSE);
+    task->SetUseEfficiency(kTRUE);
     
 
     const Int_t nEsePercentiles = 10;

@@ -435,6 +435,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     DefineInput(1, TList::Class());
     DefineInput(2, TList::Class());
     DefineInput(3, TList::Class());
+    DefineInput(4, TList::Class());
 
     DefineOutput(1, TList::Class());
     DefineOutput(2, TList::Class());

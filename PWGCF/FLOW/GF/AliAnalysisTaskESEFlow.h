@@ -95,7 +95,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    Activateq2ESEProjections(Bool_t actProj) { fActq2Projections = actProj; }
 
         void                    SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
-
+        void                    SetUseEfficiency( Bool_t actEff) { fUseEfficiency = actEff;}
 
     private:
         Bool_t                  fFlowRunByRunWeights;
