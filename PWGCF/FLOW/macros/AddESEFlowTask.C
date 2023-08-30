@@ -1,7 +1,7 @@
 class AliAnalysisDataContainer;
 class AliAnalysisTaskESEFlow;
 
-AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys, TString sWeightsFile = "", TString sVWeights = "",TString V0Calib = "", TString qSplines="", const char* suffix = "")
+AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys, TString sWeightsFile = "", TString sVWeights = "",TString V0Calib = "", TString qSplines="", TString EfficiencyFile="", const char* suffix = "")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -28,6 +28,9 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
 
     Bool_t bUseRBRWeights = kFALSE;
     if(!sVWeights.IsNull() || !sWeightsFile.IsNull()) { bUseRBRWeights = kTRUE; }
+
+    Bool_t bUseEfficiency = kFALSE;
+    if(!EfficiencyFile.IsNull()) { bUseEfficiency = kTRUE; }
 
 
 
@@ -81,7 +84,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     const Int_t nCentBins = 10;
     Double_t CentEdges[nCentBins+1] = {0, 5., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
     task->SetCentBin(nCentBins,CentEdges);
-    task->SetReadMC(kFALSE); //activate monte carlo analysis
+    task->SetReadMC(kFALSE); //activate MC analysis
     task->SetAbsEta(0.8);
     task->SetRejectAddPileUp(kTRUE);
     task->SetFlowRFPsPt(0.2,5.0);
@@ -99,10 +102,10 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     task->SetChi2ITSFl(kFALSE, 36.0); // change to kTRUE for systematic, default in track cut is 36.0, so change to i.e. 35
     task->SetQARejFiller(kFALSE);
     task->SetNUEWeights(kFALSE, 1);
-    task->SetEfficiencyWeights(kFALSE,1);
     task->Set2018(kFALSE);
     task->SetBayesUnfolding(kFALSE);
     task->Activateq2ESEProjections(kFALSE);
+    
 
     const Int_t nEsePercentiles = 10;
     Double_t EseEdges[nEsePercentiles+1] = {0, 10., 20., 30., 40., 50., 60., 70., 80., 90.,100.};
@@ -239,6 +242,34 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     }
     else{
       task->SetMakeqSelectionRun(kTRUE);
+    }
+    if(bUseEfficiency)
+    {
+      TObjArray* taskContainersEff = mgr->GetContainers();
+      if(!taskContainersEff) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
+
+      // check if the input weights are already loaded (e.g. in different subwagon)
+      AliAnalysisDataContainer* effi = (AliAnalysisDataContainer*) taskContainersEff->FindObject("inputEffi");
+      if(!effi) {
+        // if it does not exists create it
+        // in case of non-local run, establish connection to ALiEn for loading the weights
+        if(EfficiencyFile.Contains("alien://")) { gGrid->Connect("alien://"); }
+
+        TFile* effi_file = TFile::Open(EfficiencyFile.Data(),"READ");
+        if(!effi_file) { printf("E-AddTaskESEFlow: Input file with efficiency not found!\n"); return NULL; }
+
+        TList* effi_list = static_cast<TList*>(effi_file->Get("EffAndFD"));
+        if(!effi_list) { printf("E-AddTaskESEFlow: Input list with efficiency not found!\n"); effi_file->ls(); return NULL; }
+
+        AliAnalysisDataContainer* cInputEfficiency = mgr->CreateContainer("inputEffi",TList::Class(), AliAnalysisManager::kInputContainer);
+        cInputEfficiency->SetData(effi_list);
+        mgr->ConnectInput(task,4,cInputEfficiency);
+      }
+      else
+      {
+        // connect existing container
+        mgr->ConnectInput(task,4,effi);
+      }
     }
 
 

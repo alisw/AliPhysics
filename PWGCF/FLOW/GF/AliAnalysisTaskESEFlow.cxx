@@ -42,7 +42,13 @@
 #include "AliAODEvent.h"
 #include "AliMultSelection.h"
 #include "AliAODInputHandler.h"
+
 #include "AliGFWWeights.h"
+#include "AliGFWFlowContainer.h"
+#include "AliGFW.h"
+#include "TClonesArray.h"
+#include "AliGFWCuts.h"
+
 #include "AliAODMCParticle.h"
 #include "AliMCEvent.h"
 #include "AliAODVZERO.h"
@@ -52,7 +58,6 @@
 #include "AliGenEventHeader.h"
 #include "AliCollisionGeometry.h"
 #include "AliGenHijingEventHeader.h"
-
 
 #include "AliUniFlowCorrTask.h"
 
@@ -70,6 +75,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     dEtaGap(1),
     bHasGap(kTRUE),
     fSampling(kFALSE),
+    fSystFlag(0),
     fInit(kFALSE),
     fMakeqSelectionRun(kFALSE),
     fMakeRBRweightsRun(kFALSE),
@@ -93,6 +99,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fFlowWeightsList{nullptr},
     fWeights(0),
     fV0CalibList(0),
+    fEffList(0),
     fqSelList(0),
 
     fHistPhiEtaVz(0),
@@ -128,10 +135,9 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fHistPDG{0},
 
     fFileTrackEff(0),
-    ptEfficiency(0),
     fhTrackNUE(0),
     fDir_efficiencies(0),
-    fhEfficiency2D(0),
+    fhEfficiency1D(0),
 
     fq2TPC(0),
     fq3TPC(0),
@@ -238,6 +244,8 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fBayesUnfolding(kFALSE),
     fActq2Projections(kFALSE),
 
+    fGFWSelection(0),
+
 
     fVecCorrTask()
 {}
@@ -250,6 +258,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     dEtaGap(1),
     bHasGap(kTRUE),
     fSampling(kFALSE),
+    fSystFlag(0),
     fInit(kFALSE),
     fMakeqSelectionRun(kFALSE),
     fMakeRBRweightsRun(kFALSE),
@@ -273,6 +282,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fFlowWeightsList{nullptr},
     fWeights(0),
     fV0CalibList(0),
+    fEffList(0),
     fqSelList(0),
 
     fHistPhiEtaVz(0),
@@ -308,10 +318,9 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fHistPDG{0},
 
     fFileTrackEff(0),
-    ptEfficiency(0),
     fhTrackNUE(0),
     fDir_efficiencies(0),
-    fhEfficiency2D(0),
+    fhEfficiency1D(0),
 
     fq2TPC(0),
     fq3TPC(0),
@@ -418,6 +427,8 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fBayesUnfolding(kFALSE),
     fActq2Projections(kFALSE),
 
+    fGFWSelection(0),
+
     fVecCorrTask()
 {
     DefineInput(0, TChain::Class());
@@ -488,6 +499,11 @@ Bool_t AliAnalysisTaskESEFlow::InitializeTask()
         if(!LoadqSelection()) { AliFatal("\n \n \n \n \n \n \n \n \n \n q-Splines not loaded! Terminating! \n \n \n \n \n \n \n \n \n \n "); return kFALSE; }
     }
 
+    if(fUseEfficiency){
+        fEffList = static_cast<TList*>(GetInputData(4));
+        if (!fEffList) { AliFatal("\n \n \n \n \n \n \n \n \n \n \n \n Efficiency list not found! Terminating! \n \n \n \n \n \n \n \n \n \n \n \n "); return kFALSE; }
+    }
+
     if(fSampling && fNumSamples < 2){
         AliFatal("Sampling used, but number of samples < 2! Terminating!");
         return kFALSE;
@@ -499,6 +515,12 @@ Bool_t AliAnalysisTaskESEFlow::InitializeTask()
 //_____________________________________________________________________________
 void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
 {
+    
+    if(!fGFWSelection) SetSystFlag(0);
+    fGFWSelection->PrintSetup();
+    fSystFlag = fGFWSelection->GetSystFlagIndex();
+
+
     fOutputList = new TList();
     fObservables = new TList();
     fCorrDist = new TList();
@@ -1052,20 +1074,20 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
         }
 
     }
-    if(fUseEfficiency){
-      if(!gGrid) { TGrid::Connect("alien://"); }
-      if(!fIs2018Data){
-        if(fEfficiency==1){
-          ptEfficiency = TFile::Open("alien:///alice/cern.ch/user/j/joachiha/efficiency/2015/Efficiency_LHC20j6a_AOD243_default.root");
-        }
-      }
-      else{
-        if(fEfficiency==1){
-          ptEfficiency = TFile::Open("alien:///alice/cern.ch/user/j/joachiha/efficiency/2018/Efficiency_LHC20e3a_AOD243_default.root");
-        }
-      }
-      if(!ptEfficiency) { printf("Problem with efficiency file!!! \n"); }
-    }
+    // if(fUseEfficiency){
+    //   if(!gGrid) { TGrid::Connect("alien://"); }
+    //   if(!fIs2018Data){
+    //     if(fEfficiency==1){
+    //       ptEfficiency = TFile::Open("alien:///alice/cern.ch/user/j/joachiha/efficiency/2015/Efficiency_LHC20j6a_AOD243_default.root");
+    //     }
+    //   }
+    //   else{
+    //     if(fEfficiency==1){
+    //       ptEfficiency = TFile::Open("alien:///alice/cern.ch/user/j/joachiha/efficiency/2018/Efficiency_LHC20e3a_AOD243_default.root");
+    //     }
+    //   }
+    //   if(!ptEfficiency) { printf("Problem with efficiency file!!! \n"); }
+    // }
 
 
     if(fFillQARej){
@@ -1704,7 +1726,12 @@ void AliAnalysisTaskESEFlow::FillObsDistributions(const Float_t centrality)
         fHistPt->Fill(dPt);
         Double_t dEffWeight = 1.0;
         if (fUseEfficiency){
-          dEffWeight = GetEfficiency(dPt,centrality);
+            if(dPt < 3.0){
+                dEffWeight = GetEfficiency(dPt);
+            }
+            if(dPt > 3.0){
+                dEffWeight = GetEfficiency(2.5);
+            }
           fHistPtCorr->Fill(dPt,dEffWeight); // plus some weight
         }
 
@@ -1743,7 +1770,12 @@ void AliAnalysisTaskESEFlow::FillObsDistributions(const Float_t centrality)
         fHistPhiCor3D->Fill(dPhi, dEta, dVz, dWeight);
 
         if (fUseEfficiency){
-          dEffWeight = GetEfficiency(dPt,centrality);
+            if(dPt < 3.0){
+                dEffWeight = GetEfficiency(dPt);
+            }
+            if(dPt > 3.0){
+                dEffWeight = GetEfficiency(2.5);
+            }
           fHistPhiCorrPt->Fill(dPhi,dWeight*dEffWeight);
         }
 
@@ -1827,7 +1859,12 @@ void AliAnalysisTaskESEFlow::RFPVectors(const Float_t centrality)
             }
         }
         if (fUseEfficiency){
-          dPtWeight = GetEfficiency(dPt,centrality);
+            if(dPt < 3.0){
+                dPtWeight = GetEfficiency(dPt);
+            }
+            if(dPt > 3.0){
+                dPtWeight = GetEfficiency(2.5);
+            }
         }
 
         // no eta gap
@@ -2605,7 +2642,8 @@ Bool_t AliAnalysisTaskESEFlow::LoadWeights()
     else
     {
         Int_t runno = fAOD->GetRunNumber();
-        fWeights = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",runno));
+        // fWeights = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",runno));
+        fWeights = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i%s",runno,fGFWSelection->GetSystPF()));
         if(!fWeights)
         {
             printf("Weights could not be found in list!\n");
@@ -2614,6 +2652,14 @@ Bool_t AliAnalysisTaskESEFlow::LoadWeights()
         fWeights->CreateNUA();
     }
 
+    return kTRUE;
+}
+Bool_t AliAnalysisTaskESEFlow::LoadEfficiency()
+{
+    // printf("EffRescaled_Cent%i%s\n",i,fGFWSelection->GetSystPF());
+    // fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
+    fhEfficiency1D = (TH1D*)fEffList->FindObject(Form("EffRescaled_Cent%i%s",0,fGFWSelection->GetSystPF()));
+    if (!fhEfficiency1D) { printf("Problems with retrieving efficiency histogram in LoadEfficiency() !! \n"); return kFALSE;}
     return kTRUE;
 }
 Bool_t AliAnalysisTaskESEFlow::LoadNUE()
@@ -2640,15 +2686,6 @@ Bool_t AliAnalysisTaskESEFlow::LoadNUE()
     if(!fhTrackNUE) { printf("Problems loading NUE in LoadNUE()! \n"); return kFALSE; }
 
     return kTRUE;
-}
-Bool_t AliAnalysisTaskESEFlow::LoadEfficiency()
-{
-  if (!ptEfficiency) { return kFALSE; }
-  fDir_efficiencies = (TDirectory*)ptEfficiency->Get("efficiency");
-  if (!fDir_efficiencies) { printf("Porblems loading TDirectory with efficiency in LoadEfficiency() !! \n"); return kFALSE;}
-  fhEfficiency2D = (TH2D*)fDir_efficiencies->Get("efficiency2d");
-  if (!fhEfficiency2D) { printf("Problems with retrieving efficiency histogram in LoadEfficiency() !! \n"); return kFALSE;}
-  return kTRUE;
 }
 Bool_t AliAnalysisTaskESEFlow::LoadV0Calibration()
 {
@@ -2744,16 +2781,17 @@ Double_t AliAnalysisTaskESEFlow::GetNUEPtWeight(Double_t pt, Double_t eta, const
 
     return dPtWeight;
 }
-Double_t AliAnalysisTaskESEFlow::GetEfficiency(Double_t pt, const Float_t centrality)
+Double_t AliAnalysisTaskESEFlow::GetEfficiency(Double_t pt)
 {
   // Int_t CentralityCode = GetCentralityCode(centrality);
   // TH1* pthist = (TH1*)fDir_efficiencies->Get(Form("efficiency_%i",CentralityCode));
-  Double_t binCent = fhEfficiency2D->GetYaxis()->FindBin(centrality);
-  Double_t binPt = fhEfficiency2D->GetXaxis()->FindBin(pt);
-  Double_t eff = fhEfficiency2D->GetBinContent(binPt,centrality);
-  if (eff<=0) { eff = 1; }
+//   Double_t binCent = fhEfficiency1D->GetYaxis()->FindBin(centrality);
+    Double_t binPt = fhEfficiency1D->GetXaxis()->FindBin(pt);
+//   Double_t eff = fhEfficiency1D->GetBinContent(binPt,centrality);
+    Double_t eff = fhEfficiency1D->GetBinContent(binPt);
+    if (eff<=0) { eff = 1; }
 
-  return eff;
+    return 1./eff;
 }
 Int_t AliAnalysisTaskESEFlow::GetSamplingIndex() const
 {
