@@ -205,20 +205,20 @@ void AliAnalysisTaskSA::UserCreateOutputObjects()
   fHisteventmult            = new TH1F("fHisteventmult", "Event multiplicity", 10,0.0,10.0);       
   fHistVz            = new TH1F("fHistZVertex", "Z vertex distribution", 100,-10,10);       
   fHistCentrality = new TH1F("fHistCentrality", "Centrality distribution", 100,0,100);
-
   /*
-  Int_t bins[4]={90, 18, 200, 20};
-  Double_t xmin[4]={0.6, 0.0, 0.0, -1.0};
-  Double_t xmax[4]={1.5, 90.0, 20.0, 1.0};
-  */
   Int_t bins[4]={90, 10, 200, 5};
   Double_t xmin[4]={0.6, 0.0, 0.0, 0.0};
   Double_t xmax[4]={1.5, 100.0, 20.0, 1.0};
-  kstarUnlike = new THnSparseD("kstarUnlike", "Unlike histogram", 4, bins, xmin, xmax);
-  kstarLike = new THnSparseD("kstarLike", "Like histogram", 4, bins, xmin, xmax);
+  */
+  Int_t bins[3]={90, 100, 200};
+  Double_t xmin[3]={0.6, 0.0, 0.0};
+  Double_t xmax[3]={1.5, 100.0, 20.0};
+  
+  kstarUnlike = new THnSparseD("kstarUnlike", "Unlike histogram", 3, bins, xmin, xmax);
+  kstarLike = new THnSparseD("kstarLike", "Like histogram", 3, bins, xmin, xmax);
   //kstarposLike = new THnSparseD("kstarposLike", "Pos Like histogram", 3, bins, xmin, xmax);
   //kstarnegLike = new THnSparseD("kstarnegLike", "Neg Like histogram", 3, bins, xmin, xmax);
-  kstarMix = new THnSparseD("kstarMix", "Mix histogram", 4, bins, xmin, xmax);
+  kstarMix = new THnSparseD("kstarMix", "Mix histogram", 3, bins, xmin, xmax);
 
   //fHistpionpt = new TH1D("pionpt", "pionpt", 200, 0.0, 20.0);
   //fHistkaonpt = new TH1D("kaonpt", "kaonpt", 200, 0.0, 20.0);
@@ -490,16 +490,16 @@ void AliAnalysisTaskSA::UserExec(Option_t *)
 	    {
 	      fHisteventmult->Fill(6.5);	  
 	      // Fill unlike histo
-	      kstarUnlike->Fill(motherkstar.M(), lV0M, motherkstar.Pt(), Costhetastar);
-	      //kstarUnlike->Fill(motherkstar.M(), lV0M, motherkstar.Pt());
+	      //kstarUnlike->Fill(motherkstar.M(), lV0M, motherkstar.Pt(), Costhetastar);
+	      kstarUnlike->Fill(motherkstar.M(), lV0M, motherkstar.Pt());
 	      
 	    }
 	  else if (pion.charge * kaon.charge > 0)
 	    {
 	      fHisteventmult->Fill(7.5);	  
 	      // Fill like histo
-	      kstarLike->Fill(motherkstar.M(), lV0M, motherkstar.Pt(), Costhetastar);
-	      //kstarLike->Fill(motherkstar.M(), lV0M, motherkstar.Pt());
+	      //kstarLike->Fill(motherkstar.M(), lV0M, motherkstar.Pt(), Costhetastar);
+	      kstarLike->Fill(motherkstar.M(), lV0M, motherkstar.Pt());
 	    }
 	  /*
 	   if ((pion.charge > 0) && (kaon.charge > 0))
@@ -567,8 +567,8 @@ void AliAnalysisTaskSA::UserExec(Option_t *)
 		 else if (frame==1)
 		   Costhetastarmix = CosThetaStarHel(motherkstarmix, pionmixVector, kaon.particle);
 		 // Fill mix histo
-		 kstarMix->Fill(motherkstarmix.M(), lV0M, motherkstarmix.Pt(), Costhetastarmix);
-		 //kstarMix->Fill(motherkstarmix.M(), lV0M, motherkstarmix.Pt());
+		 //kstarMix->Fill(motherkstarmix.M(), lV0M, motherkstarmix.Pt(), Costhetastarmix);
+		 kstarMix->Fill(motherkstarmix.M(), lV0M, motherkstarmix.Pt());
 	       }
 	   }
        }
