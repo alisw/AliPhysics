@@ -3379,6 +3379,13 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
     nclus = arrClustersProcess->GetEntries();
   }
 
+  // energy correction for neutral overlap!
+  float cent = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetCentrality(fInputEvent);
+  if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() > 0){
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SetPoissonParamCentFunction(fIsMC);
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SetNMatchedTracksFunc(cent);
+  }
+
 //   cout << nclus << endl;
   vector<AliAODConversionPhoton*>         vectorCurrentClusters;
   vector<Int_t>                           vectorRejectCluster;
@@ -3413,6 +3420,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
     }
 
     if (!clus) continue;
+    // energy correction for neutral overlap!
+    if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() > 0){
+      clus->SetE(clus->E() - ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap());
+    }
     if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,fWeightJetJetMC,i)){
       if(fDoInvMassShowerShapeTree && ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedBeforeTrackMatch() ) tESDmapIsClusterAcceptedWithoutTrackMatch[i] = 1;
       delete clus;
