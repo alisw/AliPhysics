@@ -54,6 +54,7 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    void SetEtaCut(Double_t etacut)        {fEtaCut = etacut;}
    void SetPtLeadMin(Double_t pt)         {fLeadMin = pt;}
    void SetAveMultiInTrans(Double_t mult) {fAveMultiInTrans = mult;}
+   void SetPIDsyst(Bool_t option=kFALSE)  {fPIDsyst = option;}
 
    void SetUseHybridTracks(Bool_t useHybrid) {fUseHybridTracks = useHybrid;}
 
@@ -134,13 +135,14 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    AliAnalysisFilter* fTrackFilter[18]; //! track filter
    AliAnalysisFilter* fTrackFilterGlobal; //! filter to select global tracks
    AliAnalysisFilter* fTrackFilterComplementary; //! filter to select complementary tracks
+   Bool_t fPIDsyst; ///flag to turn on noPID analysis
    Bool_t fUseHybridTracks; /// flag to chose the tracks to use for RT calculation
 
    Bool_t fUseNsparse;        /// switch to give nsparse in output
    THnSparse *fOutNsparse;    //!<! output THnSparse for RT analysis
 
    /// \cond CLASSIMP
-   ClassDef(AliAnalysisTaskSEDvsRT,7); /// charmed hadrons vs. RT task
+   ClassDef(AliAnalysisTaskSEDvsRT,8); /// charmed hadrons vs. RT task
    /// \endcond
 };
 

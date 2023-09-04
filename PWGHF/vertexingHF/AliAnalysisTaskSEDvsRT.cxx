@@ -106,6 +106,7 @@ AliAnalysisTaskSEDvsRT::AliAnalysisTaskSEDvsRT():
    fTrackFilterGlobal(0),
    fTrackFilterComplementary(0),
    fUseHybridTracks(kTRUE),
+   fPIDsyst(kFALSE),
    fUseNsparse(kFALSE),
    fOutNsparse(0)
 
@@ -161,6 +162,7 @@ AliAnalysisTaskSEDvsRT::AliAnalysisTaskSEDvsRT(const char *name, Int_t pdgSpecie
    fTrackFilterGlobal(0),
    fTrackFilterComplementary(0),
    fUseHybridTracks(kTRUE),
+   fPIDsyst(kFALSE),
    fUseNsparse(kFALSE),
    fOutNsparse(0)
    {
@@ -782,7 +784,7 @@ return;
            if (iHyp == 1 && !(passTopolCuts&2)) continue; // candidate not passing as Lc->piKp
         }
 
-      if (passAllCuts) {
+      if ((!fPIDsyst && passAllCuts) || (fPIDsyst && passTopolCuts!=0)) {
          // if using nsparse, fill it
 
          //select phi region and fill appropriate histo
