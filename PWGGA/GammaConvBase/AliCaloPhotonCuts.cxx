@@ -5770,7 +5770,6 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
 //___________________________________________________________________
 Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
 {
-  std::cout << "fClusterType = " << fClusterType << "\t trackMatching = " << trackMatching << std::endl;
   // matching parameters for EMCal clusters
   if(fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
     switch(trackMatching){
