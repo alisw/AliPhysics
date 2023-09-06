@@ -47,15 +47,23 @@ ClassImp(AliAnalysisTaskWHMult) // classimp: necessary for root
 
 AliAnalysisTaskWHMult::AliAnalysisTaskWHMult() : AliAnalysisTaskSE(), 
   fAOD(0),
+  fTracks_tender(0),
+  fCaloClusters_tender(0),
   fVevent(0),
   fPIDResponse(0),
   fMCTrackpart(0),
   fMCarray(0),
+  fMCpart(0),
   fMCparticle(0),
   fOutputList(0),
   tree(0),
   fNevents(0),
   fHistPt(0),
+  fPt_MCgenWe(0),
+  fPt_TrackingMCWe(0),
+  fPt_TrackMatchingMCWe(0),
+  fPt_TPCPIDMCWe(0),
+  fPt_EMCalPIDMCWe(0),
   pVertex_all(0),
   pVertex(0),
   EtavsPhi(0),
@@ -84,25 +92,17 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult() : AliAnalysisTaskSE(),
   fREiso_MCHF(0),
   fREiso_MCWhpt(0),
   fREiso_MCHFhpt(0),
-  fREiso_MCWvhpt(0),
-  fREiso_MCHFvhpt(0),
   fdPhi_trkW_Pt(),
   fdPhi_trkHF_Pt(),
-  fdPhi_trkW_Pt_hpt(),
-  fdPhi_trkHF_Pt_hpt(),
   fdPhi_trkW_ePt(),
   fdPhi_trkHF_ePt(),
   fHistPt_We(),
   fHistPt_HFe(),
   fPt_maxtrack_W(),
-  fPt_maxtrack_W_hpt(),
   fNtrkl_PtOfMaxTrk_W(),
-  fNtrkl_PtOfMaxTrk_W_hpt(),
   fHistPt_We_Ntrkl(),
   fdPhi_trkW_full(),
   fdPhi_trkHF_full(),
-  fdPhi_trkW_full_hpt(),
-  fdPhi_trkHF_full_hpt(),
   fNtrkl_ClustE(0),
   fEMCEG1(kFALSE)
 {
@@ -112,15 +112,23 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult() : AliAnalysisTaskSE(),
 //_____________________________________________________________________________
 AliAnalysisTaskWHMult::AliAnalysisTaskWHMult(const char* name) : AliAnalysisTaskSE(name),
   fAOD(0),
+  fTracks_tender(0),
+  fCaloClusters_tender(0),
   fVevent(0),
   fPIDResponse(0),
   fMCTrackpart(0),
   fMCarray(0),
+  fMCpart(0),
   fMCparticle(0),
   fOutputList(0),
   tree(0),
   fNevents(0),
   fHistPt(0),
+  fPt_MCgenWe(0),
+  fPt_TrackingMCWe(0),
+  fPt_TrackMatchingMCWe(0),
+  fPt_TPCPIDMCWe(0),
+  fPt_EMCalPIDMCWe(0),
   pVertex_all(0),
   pVertex(0),
   EtavsPhi(0),
@@ -149,25 +157,17 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult(const char* name) : AliAnalysisTask
   fREiso_MCHF(0),
   fREiso_MCWhpt(0),
   fREiso_MCHFhpt(0),
-  fREiso_MCWvhpt(0),
-  fREiso_MCHFvhpt(0),
   fdPhi_trkW_Pt(),
   fdPhi_trkHF_Pt(),
-  fdPhi_trkW_Pt_hpt(),
-  fdPhi_trkHF_Pt_hpt(),
   fdPhi_trkW_ePt(),
   fdPhi_trkHF_ePt(),
   fHistPt_We(),
   fHistPt_HFe(),
   fPt_maxtrack_W(),
-  fPt_maxtrack_W_hpt(),
   fNtrkl_PtOfMaxTrk_W(),
-  fNtrkl_PtOfMaxTrk_W_hpt(),
   fHistPt_We_Ntrkl(),
   fdPhi_trkW_full(),
   fdPhi_trkHF_full(),
-  fdPhi_trkW_full_hpt(),
-  fdPhi_trkHF_full_hpt(),
   fNtrkl_ClustE(0),
   fEMCEG1(kFALSE)
 {
@@ -192,7 +192,13 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
 
   fNevents = new TH1F("fNevents","Number of events",8,-0.5,7.5);
 
-  fHistPt = new TH1F("fHistPt", "fHistPt", 200, 0, 200);
+  fHistPt = new TH1F("fHistPt","dummy p_{T}", 200, 0, 200);
+
+  fPt_MCgenWe = new TH1F("fPt_MCgenWe","MC generated W p_{T}; p_{T} (GeV/c); counts",200,0,200);
+  fPt_TrackingMCWe = new TH1F("fPt_TrackingMCWe","reconstructed W p_{T}; p_{T} (GeV/c); counts",200,0,200);
+  fPt_TrackMatchingMCWe = new TH1F("fPt_TrackMatchingMCWe","matched track W p_{T}; p_{T} (GeV/c); counts",200,0,200);
+  fPt_TPCPIDMCWe = new TH1F("fPt_TPCPIDMCWe","dE/dx cut W p_{T}; p_{T} (GeV/c); counts",200,0,200);
+  fPt_EMCalPIDMCWe = new TH1F("fPt_EMCalPIDMCWe","M02,E/P,Eiso cut W p_{T}; p_{T} (GeV/c); counts",200,0,200);
 
   pVertex_all = new TH1F("pVertex_all", "pVertex_all", 100, -20, 20);
   pVertex_all->GetXaxis()->SetTitle("Z vertex (collision point on z-axis)");
@@ -251,18 +257,12 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
   fREiso_MCHF = new TH1F("fREiso_MCHF","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (e #leftarrow b,c) (p_{T} > 10GeV)",100,0,1);
   fREiso_MCHF->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
   fREiso_MCHF->GetYaxis()->SetTitle("Entries");
-  fREiso_MCWhpt = new TH1F("fREiso_MCWhpt","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (e #leftarrow W) (p_{T} > 20GeV)",100,0,1);
+  fREiso_MCWhpt = new TH1F("fREiso_MCWhpt","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (e #leftarrow W) (p_{T} > 30GeV)",100,0,1);
   fREiso_MCWhpt->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
   fREiso_MCWhpt->GetYaxis()->SetTitle("Entries");
-  fREiso_MCHFhpt = new TH1F("fREiso_MCHFhpt","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (e #leftarrow b,c) (p_{T} > 20GeV)",100,0,1);
+  fREiso_MCHFhpt = new TH1F("fREiso_MCHFhpt","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (e #leftarrow b,c) (p_{T} > 30GeV)",100,0,1);
   fREiso_MCHFhpt->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
   fREiso_MCHFhpt->GetYaxis()->SetTitle("Entries");
-  fREiso_MCWvhpt = new TH1F("fREiso_MCWvhpt","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (e #leftarrow W) (p_{T} > 30GeV)",100,0,1);
-  fREiso_MCWvhpt->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
-  fREiso_MCWvhpt->GetYaxis()->SetTitle("Entries");
-  fREiso_MCHFvhpt = new TH1F("fREiso_MCHFvhpt","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (e #leftarrow b,c) (p_{T} > 30GeV)",100,0,1);
-  fREiso_MCHFvhpt->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
-  fREiso_MCHFvhpt->GetYaxis()->SetTitle("Entries");
 
   for (Int_t isoR=0;isoR<3;isoR++) {
     fdPhi_trkW_Pt[isoR] = new TH2F(Form("fdPhi_trkW_Pt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
@@ -273,20 +273,12 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
     fdPhi_trkHF_Pt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{HFcan} (Eiso_{R<0.%d})",3+isoR));
     fdPhi_trkHF_Pt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
     fdPhi_trkHF_Pt[isoR]->GetYaxis()->SetTitle("p_{T,trk}(GeV/c)");
-    fdPhi_trkW_Pt_hpt[isoR] = new TH2F(Form("fdPhi_trkW_Pt_hpt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
-    fdPhi_trkW_Pt_hpt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{can} (Eiso_{R<0.%d}) (p_{T,can}>30GeV/c)",3+isoR));
-    fdPhi_trkW_Pt_hpt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
-    fdPhi_trkW_Pt_hpt[isoR]->GetYaxis()->SetTitle("p_{T,trk}(GeV/c)");
-    fdPhi_trkHF_Pt_hpt[isoR] = new TH2F(Form("fdPhi_trkHF_Pt_hpt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
-    fdPhi_trkHF_Pt_hpt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{HFcan} (Eiso_{R<0.%d}) (p_{T,HFcan}>30GeV/c)",3+isoR));
-    fdPhi_trkHF_Pt_hpt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
-    fdPhi_trkHF_Pt_hpt[isoR]->GetYaxis()->SetTitle("p_{T,trk}(GeV/c)");
 
-    fdPhi_trkW_ePt[isoR] = new TH2F(Form("fdPhi_trkW_ePt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
+    fdPhi_trkW_ePt[isoR] = new TH2F(Form("fdPhi_trkW_ePt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,200,0,200);
     fdPhi_trkW_ePt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{can} (Eiso_{R<0.%d})",3+isoR));
     fdPhi_trkW_ePt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
     fdPhi_trkW_ePt[isoR]->GetYaxis()->SetTitle("p_{T,can}(GeV/c)");
-    fdPhi_trkHF_ePt[isoR] = new TH2F(Form("fdPhi_trkHF_ePt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
+    fdPhi_trkHF_ePt[isoR] = new TH2F(Form("fdPhi_trkHF_ePt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,200,0,200);
     fdPhi_trkHF_ePt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{HFcan} (Eiso_{R<0.%d})",3+isoR));
     fdPhi_trkHF_ePt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
     fdPhi_trkHF_ePt[isoR]->GetYaxis()->SetTitle("p_{T,HFcan}(GeV/c)");
@@ -301,18 +293,11 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
     fPt_maxtrack_W[isoR] = new TH1F(Form("fPt_maxtrack_W_%d",isoR),Form("p_{T,trk}/p_{T,can} (Eiso_{R<0.%d})",3+isoR),200,0,2);
     fPt_maxtrack_W[isoR]->GetXaxis()->SetTitle("p_{T,trk}/p_{T,can}");
     fPt_maxtrack_W[isoR]->GetYaxis()->SetTitle("Counts");
-    fPt_maxtrack_W_hpt[isoR] = new TH1F(Form("fPt_maxtrack_W_hpt_%d",isoR),Form("p_{T,trk}/p_{T,can} (Eiso_{R<0.%d}) (p_{T,can}>30GeV/c)",3+isoR),200,0,2);
-    fPt_maxtrack_W_hpt[isoR]->GetXaxis()->SetTitle("p_{T,trk}/p_{T,can}");
-    fPt_maxtrack_W_hpt[isoR]->GetYaxis()->SetTitle("Counts");
 
     fNtrkl_PtOfMaxTrk_W[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W_%d",isoR),"",200,0,200,200,0,2);
     fNtrkl_PtOfMaxTrk_W[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} (Eiso_{R<0.%d})",3+isoR));
     fNtrkl_PtOfMaxTrk_W[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
     fNtrkl_PtOfMaxTrk_W[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
-    fNtrkl_PtOfMaxTrk_W_hpt[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W_hpt_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfMaxTrk_W_hpt[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} (Eiso_{R<0.%d}) (p_{T,can}>30GeV/c)",3+isoR));
-    fNtrkl_PtOfMaxTrk_W_hpt[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfMaxTrk_W_hpt[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
 
     fHistPt_We_Ntrkl[isoR] = new TH2F(Form("fHistPt_We_Ntrkl_%d",isoR),Form("p_{T,can} vs N_{tracklets} (Eiso_{R<0.%d})",3+isoR),200,0,200,200,0,200);
     fHistPt_We_Ntrkl[isoR]->GetXaxis()->SetTitle("p_{T,can} (GeV/c)");
@@ -324,14 +309,6 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
     fdPhi_trkHF_full[isoR] = new TH2F(Form("fdPhi_trkHF_Pt_full_%d",isoR),Form("raw #Delta #phi (Eiso_{R<0.%d})",3+isoR),200,-7,7,200,0,200);
     fdPhi_trkHF_full[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
     fdPhi_trkHF_full[isoR]->GetYaxis()->SetTitle("p_{T,trk} (GeV/c)");
-    fdPhi_trkW_full_hpt[isoR] = new TH2F(Form("fdPhi_trkW_Pt_full_hpt_%d",isoR),"",200,-7,7,200,0,200);
-    fdPhi_trkW_full_hpt[isoR]->SetTitle(Form("raw #Delta #phi (Eiso_{R<0.%d}) (p_{T,can}>30GeV/c)",3+isoR));
-    fdPhi_trkW_full_hpt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
-    fdPhi_trkW_full_hpt[isoR]->GetYaxis()->SetTitle("p_{T,trk} (GeV/c)");
-    fdPhi_trkHF_full_hpt[isoR] = new TH2F(Form("fdPhi_trkHF_Pt_full_hpt_%d",isoR),"",200,-7,7,200,0,200);
-    fdPhi_trkHF_full_hpt[isoR]->SetTitle(Form("raw #Delta #phi (Eiso_{R<0.%d}) (p_{T,HFcan}>30GeV/c)",3+isoR));
-    fdPhi_trkHF_full_hpt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
-    fdPhi_trkHF_full_hpt[isoR]->GetYaxis()->SetTitle("p_{T,trk} (GeV/c)");
   }
 
   fNtrkl_ClustE = new TH2F("fNtrkl_ClustE","N_{tracklets} vs cluster energy; N_{tracklets}; E (GeV)",200,0,200,100,0,50);
@@ -339,6 +316,11 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
 
   fOutputList->Add(fNevents);
   fOutputList->Add(fHistPt);
+  fOutputList->Add(fPt_MCgenWe);
+  fOutputList->Add(fPt_TrackingMCWe);
+  fOutputList->Add(fPt_TrackMatchingMCWe);
+  fOutputList->Add(fPt_TPCPIDMCWe);
+  fOutputList->Add(fPt_EMCalPIDMCWe);
   fOutputList->Add(pVertex_all);
   fOutputList->Add(pVertex);
   fOutputList->Add(EtavsPhi);
@@ -369,20 +351,12 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
   fOutputList->Add(fREiso_MCHF);
   fOutputList->Add(fREiso_MCWhpt);
   fOutputList->Add(fREiso_MCHFhpt);
-  fOutputList->Add(fREiso_MCWvhpt);
-  fOutputList->Add(fREiso_MCHFvhpt);
   fOutputList->Add(fdPhi_trkW_Pt[0]);
   fOutputList->Add(fdPhi_trkW_Pt[1]);
   fOutputList->Add(fdPhi_trkW_Pt[2]);
   fOutputList->Add(fdPhi_trkHF_Pt[0]);
   fOutputList->Add(fdPhi_trkHF_Pt[1]);
   fOutputList->Add(fdPhi_trkHF_Pt[2]);
-  fOutputList->Add(fdPhi_trkW_Pt_hpt[0]);
-  fOutputList->Add(fdPhi_trkW_Pt_hpt[1]);
-  fOutputList->Add(fdPhi_trkW_Pt_hpt[2]);
-  fOutputList->Add(fdPhi_trkHF_Pt_hpt[0]);
-  fOutputList->Add(fdPhi_trkHF_Pt_hpt[1]);
-  fOutputList->Add(fdPhi_trkHF_Pt_hpt[2]);
   fOutputList->Add(fdPhi_trkW_ePt[0]);
   fOutputList->Add(fdPhi_trkW_ePt[1]);
   fOutputList->Add(fdPhi_trkW_ePt[2]);
@@ -398,15 +372,9 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
   fOutputList->Add(fPt_maxtrack_W[0]);
   fOutputList->Add(fPt_maxtrack_W[1]);
   fOutputList->Add(fPt_maxtrack_W[2]);
-  fOutputList->Add(fPt_maxtrack_W_hpt[0]);
-  fOutputList->Add(fPt_maxtrack_W_hpt[1]);
-  fOutputList->Add(fPt_maxtrack_W_hpt[2]);
   fOutputList->Add(fNtrkl_PtOfMaxTrk_W[0]);
   fOutputList->Add(fNtrkl_PtOfMaxTrk_W[1]);
   fOutputList->Add(fNtrkl_PtOfMaxTrk_W[2]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_W_hpt[0]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_W_hpt[1]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_W_hpt[2]);
   fOutputList->Add(fHistPt_We_Ntrkl[0]);
   fOutputList->Add(fHistPt_We_Ntrkl[1]);
   fOutputList->Add(fHistPt_We_Ntrkl[2]);
@@ -416,12 +384,6 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
   fOutputList->Add(fdPhi_trkHF_full[0]);
   fOutputList->Add(fdPhi_trkHF_full[1]);
   fOutputList->Add(fdPhi_trkHF_full[2]);
-  fOutputList->Add(fdPhi_trkW_full_hpt[0]);
-  fOutputList->Add(fdPhi_trkW_full_hpt[1]);
-  fOutputList->Add(fdPhi_trkW_full_hpt[2]);
-  fOutputList->Add(fdPhi_trkHF_full_hpt[0]);
-  fOutputList->Add(fdPhi_trkHF_full_hpt[1]);
-  fOutputList->Add(fdPhi_trkHF_full_hpt[2]);
   fOutputList->Add(fNtrkl_ClustE);
 
   PostData(1, fOutputList);
@@ -434,10 +396,12 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
   //!!!!!!!!!!!//
 
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-
   if(!fAOD) return;
 
   if(fAOD)fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+
+  fTracks_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("tracks"));			//get updated tracks
+  fCaloClusters_tender = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject("caloClusters"));	//get updated clusters
 
   fVevent = dynamic_cast<AliVEvent*>(InputEvent());
   if (!fVevent) {
@@ -466,17 +430,18 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
 
   //=====reference objects file=====
   if(!tree)
-    {
-     cout << "no tree for correcting mult" << endl; 
-     cout << "get from Grid" << endl; 
-     TFile* RefData=TFile::Open("alien:///alice/cern.ch/user/t/takawagu/Data.root");
-     tree=(TTree*)RefData->Get("tree");
-     //TTree* treee=(TTree*)RefData->Get("treee");
-    }
+  {
+   cout << "no tree for correcting mult" << endl; 
+   cout << "get from Grid" << endl; 
+   TFile* RefData=TFile::Open("alien:///alice/cern.ch/user/t/takawagu/Data.root");
+   tree=(TTree*)RefData->Get("tree");
+   //TTree* treee=(TTree*)RefData->Get("treee");
+  }
  
-  Int_t iTracks(fAOD->GetNumberOfTracks());
+  //Int_t iTracks(fAOD->GetNumberOfTracks());		//original
+  Int_t iTracks(fTracks_tender->GetEntries());		//updated
 
-  Int_t Nclust = fAOD->GetNumberOfCaloClusters();
+  Int_t Nclust = fVevent->GetNumberOfCaloClusters();
 
   //===== Global Vtx =====
   const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
@@ -495,9 +460,9 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
   if(multSelection) centrality = multSelection->GetMultiplicityPercentile("V0M");	//get centrality
   Cent->Fill(centrality);
 
-    ////////////////////////
-    //  Event Selection   //
-    ////////////////////////
+  ////////////////////////
+  //  Event Selection   //
+  ////////////////////////
   fNevents->Fill(0);
   // ===== 1. remove pile up events =====
   if (fVevent->IsPileupFromSPDInMultBins()) return;
@@ -545,9 +510,40 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
     fNtrklNch->Fill(corr_nAcc,Nch);
   }
 
+//---------------MC particle loop---------------
+  if(fMCarray){
+    for (int iMCgen = 0;iMCgen < fMCarray->GetEntriesFast();iMCgen++) {
+      fMCpart = (AliAODMCParticle*)fMCarray->At(iMCgen);			//call all generated particles in fMCarray of each event
+
+      ////////////////////////
+      // Get MC information //
+      ////////////////////////
+      Int_t pdg = -999;					// initialize pdg code
+      Double_t pid_ele = 0.0;				// initialize electron PID
+      Double_t pTmom = -1.0;				// initialize Mother's pT
+      Int_t pidM = -1;					// initialize Mother's PDG
+      Int_t ilabelM = -1;				// initialize Mother's label(charge)
+      Double_t pTdad = -1.0;				// initialize Father's pT
+      Int_t pidF = -1;					// initialize Father's PDG
+      Int_t ilabelF = -1;				// initialize Father's label(charge)
+      Bool_t pidW = 0;					// initialize W boson PID
+
+      pdg = fMCpart->GetPdgCode();			// get pdg code
+      if (TMath::Abs(pdg) == 11) pid_ele = 1.0;		// find electron: pid_ele = 1.0
+      if (pid_ele == 1.0) {
+        FindMother(fMCpart, ilabelM, pidM, pTmom);
+        FindFather(fMCpart, ilabelF, pidF, pTdad);
+        if (TMath::Abs(pidF) == 24) pidW = 1;
+      }
+      if (pidW == 1) fPt_MCgenWe->Fill(fMCpart->Pt());
+    }
+  }
+
 //---------------track loop---------------
   for(Int_t i(0); i < iTracks; i++) {
-    AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
+    //AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));	//original
+    AliAODTrack* track = dynamic_cast<AliAODTrack*>(fTracks_tender->At(i));	//updated
+    if (!track) continue;
 
     ////////////////////////
     // Get MC information //
@@ -591,6 +587,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
 //---------------FilterBit 1---------------
     if(!track || !track->TestFilterBit(1)) continue;
     fHistPt->Fill(track->Pt());
+    if (pidW == 1) fPt_TrackingMCWe->Fill(track->Pt());
 
   // Comparison with TPC analysis
     Double_t DCA[2] = {-999.,-999.}, covar[3];
@@ -638,7 +635,8 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
     AliVCluster*clustMatch = 0x0;
     if (EMCalIndex >= 0)
     {
-      clustMatch = (AliVCluster*)fAOD->GetCaloCluster(EMCalIndex);
+      //clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex);			//original
+      clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));	//updated
       Double_t clustEmatch = clustMatch->E();
       fHistClustEMatch->Fill(clustEmatch);
       fNtrkl_ClustE->Fill(corr_nAcc,clustEmatch);
@@ -648,11 +646,15 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
 
       Double_t EoverP = clustEmatch/track->P();
 
+      if (pidW == 1) fPt_TrackMatchingMCWe->Fill(track->Pt());
+
 //---------------nsigma cut (electron)---------------
       if (fTPCnSigma > -1. && fTPCnSigma < 3.)
       {
         fPtEoverPE->Fill(track->Pt(),EoverP);
         if (TMath::Abs(pdg) == 11) fPtEoverPMCE->Fill(track->Pt(),EoverP);
+
+        if (pidW == 1) fPt_TPCPIDMCWe->Fill(track->Pt());
 
         //to compare all tracks and electron M02
         if (EoverP > 0.7 && EoverP < 1.5)
@@ -682,7 +684,8 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
 //---------------EMCal Cluster loop for Isolation cut start---------------
             for(Int_t icl=0;icl<Nclust;icl++){
               AliVCluster*clust = 0x0;
-              clust = (AliVCluster*)fAOD->GetCaloCluster(icl);
+              //clust = (AliVCluster*)fVevent->GetCaloCluster(icl);			//original
+              clust = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(icl));	//updated
               if(clust && clust->IsEMCAL()){
                 Double_t clustE = clust->E();
                 fHistClustE->Fill(clustE);
@@ -707,21 +710,22 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
               if (pidW == 1) fREiso_MCW->Fill(Eiso[0]);
               if (pidHF == 1) fREiso_MCHF->Fill(Eiso[0]);
             }
-            if (track->Pt() > 20.) {
+            if (track->Pt() > 30.) {
               if (pidW == 1) fREiso_MCWhpt->Fill(Eiso[0]);
               if (pidHF == 1) fREiso_MCHFhpt->Fill(Eiso[0]);
-            }
-            if (track->Pt() > 30.) {
-              if (pidW == 1) fREiso_MCWvhpt->Fill(Eiso[0]);
-              if (pidHF == 1) fREiso_MCHFvhpt->Fill(Eiso[0]);
             }
             //=================
             for (Int_t isoR=0;isoR<3;isoR++) {
               if (Eiso[isoR] >= 0.1) fHistPt_HFe[isoR]->Fill(track->Pt());
-              if (Eiso[isoR] <= 0.05) fHistPt_We[isoR]->Fill(track->Pt());
+              if (Eiso[isoR] <= 0.05) {
+                fHistPt_We[isoR]->Fill(track->Pt());
+                if (isoR == 0) {
+                  if (pidW == 1) fPt_EMCalPIDMCWe->Fill(track->Pt());
+                }
+              }
 
-//---------------1st Pt cut---------------
-              if (track->Pt() > 10.)
+//---------------Pt cut---------------
+              if (track->Pt() > 30.)
               {
 //---------------another track loop start---------------
                 Int_t MaxPtTrackNum = 0;
@@ -764,10 +768,6 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
 
                   if (Eiso[isoR] >= 0.05) fdPhi_trkW_full[isoR]->Fill(dPhi,anotrack->Pt());
                   if (Eiso[isoR] <= 0.1) fdPhi_trkHF_full[isoR]->Fill(dPhi,anotrack->Pt());
-                  if (track->Pt() > 30.) {
-                    if (Eiso[isoR] >= 0.05) fdPhi_trkW_full_hpt[isoR]->Fill(dPhi,anotrack->Pt());
-                    if (Eiso[isoR] <= 0.1) fdPhi_trkHF_full_hpt[isoR]->Fill(dPhi,anotrack->Pt());
-                  }
                   //=== change dPhi range ===
                   if (dPhi < -1.*TMath::Pi()/3.) dPhi = dPhi + 2.*TMath::Pi();
                   if (dPhi > 5.*TMath::Pi()/3.) dPhi = dPhi - 2.*TMath::Pi();
@@ -775,12 +775,10 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                   if (Eiso[isoR] <= 0.05) {
                     fdPhi_trkW_Pt[isoR]->Fill(dPhi,anotrack->Pt());
                     fdPhi_trkW_ePt[isoR]->Fill(dPhi,track->Pt());
-                    if (track->Pt() > 30.) fdPhi_trkW_Pt_hpt[isoR]->Fill(dPhi,anotrack->Pt());
                   }
                   if (Eiso[isoR] >= 0.1) {
                     fdPhi_trkHF_Pt[isoR]->Fill(dPhi,anotrack->Pt());
                     fdPhi_trkHF_ePt[isoR]->Fill(dPhi,track->Pt());
-                    if (track->Pt() > 30.) fdPhi_trkHF_Pt_hpt[isoR]->Fill(dPhi,anotrack->Pt());
                   }
 
                   //===== Highest Pt track selection =====
@@ -808,11 +806,6 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                   fPt_maxtrack_W[isoR]->Fill(MaxPtTrk->Pt()/track->Pt());
                   fNtrkl_PtOfMaxTrk_W[isoR]->Fill(corr_nAcc,MaxPtTrk->Pt()/track->Pt());
                   fHistPt_We_Ntrkl[isoR]->Fill(track->Pt(),corr_nAcc);
-//---------------2nd Pt cut----------
-                  if (track->Pt() > 30.) {
-                    fPt_maxtrack_W_hpt[isoR]->Fill(MaxPtTrk->Pt()/track->Pt());
-                    fNtrkl_PtOfMaxTrk_W_hpt[isoR]->Fill(corr_nAcc,MaxPtTrk->Pt()/track->Pt());
-                  }
                 }       //isolation cut end
               }         //standard Pt cut end
             }           //varied R of Eiso loop end
