@@ -769,8 +769,8 @@ return;
 
         if (fReadMC) {//TODO: add MC selections (l.1238-1279 in mult task)
         }
-
-        if (fPdgSpecies ==421) {
+	
+        if (fPdgSpecies ==421 && !fPIDsyst) {
            if (iHyp == 0 && !(passAllCuts&1)) continue; // candidate not passing as D0
            if (iHyp == 1 && !(passAllCuts&2)) continue; // candidate not passing as D0bar
         }
