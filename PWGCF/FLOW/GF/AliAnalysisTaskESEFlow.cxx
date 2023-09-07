@@ -238,6 +238,8 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
 
     fUseNUEWeights(kFALSE),
     fUseEfficiency(kFALSE),
+    fMagFieldSys(kFALSE),
+    fMagField(0),
     fNUE(1),
     fEfficiency(1),
     fIs2018Data(kFALSE),
@@ -421,6 +423,8 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
 
     fUseNUEWeights(kFALSE),
     fUseEfficiency(kFALSE),
+    fMagFieldSys(kFALSE),
+    fMagField(0),
     fNUE(1),
     fEfficiency(1),
     fIs2018Data(kFALSE),
@@ -1398,7 +1402,11 @@ void AliAnalysisTaskESEFlow::UserExec(Option_t *)
     if(!IsEventSelected()) { return; }
 
     fhEventCounter->Fill("Event OK",1);
-
+    
+    Int_t bfield = (InputEvent()->GetMagneticField() > 0) ? 1 : -1;
+    if (fMagFieldSys && bfield!=fMagField) return;
+    
+    
     //centrality
     Float_t centrality(0);
     AliMultSelection *multSelection =static_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
