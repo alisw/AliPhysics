@@ -19,6 +19,7 @@
 #include "TString.h"
 #include "TTree.h"
 #include "AliEventCuts.h"
+#include "AliMCEventHandler.h"
 
 class TList;
 class TTree;
@@ -50,13 +51,14 @@ class AliAnalysisTaskDeutFlucpp : public AliAnalysisTaskSE {
   Double_t      GetTOFBeta(AliVTrack *esdtrack);
   Bool_t        MatchTOF(AliVTrack *vtrack);
   void setTriggerType(UInt_t type) {fTriggerMask=type;}
+  void SetUseMC(Bool_t mc=kFALSE) {fUseMC=mc;} // use to analyse MC data
   
  private:
   enum
   {
     kMaxTrack=500
   };
-  
+  Bool_t IsMCEventSelected(TObject* obj);
   TTree  *fTreeEvent;//!
   AliPIDResponse   *fPIDResponse;//!
   AliESDtrackCuts  *fESDtrackCuts;//!
@@ -65,6 +67,10 @@ class AliAnalysisTaskDeutFlucpp : public AliAnalysisTaskSE {
   Float_t fTreeTrackVariableCentrality;
   Float_t fTreeTrackVariableVtxz;
   Int_t fTreeTrackVariableNTrack;//!
+  AliStack *fMCstack; //! MC stack
+  AliMCEvent *fMCevent;    //! MC Event
+  AliMCEventHandler *fMCHandler;
+  Bool_t fUseMC;      // analyze MC events
   Float_t fTreeTrackVariabledeuteronnsigmaTPC[kMaxTrack];//!
   Float_t fTreeTrackVariableprotonnsigmaTPC[kMaxTrack];//!
   Float_t fTreeTrackVariablemasssquare[kMaxTrack];//!
