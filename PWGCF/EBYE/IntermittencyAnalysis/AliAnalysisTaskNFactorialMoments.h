@@ -7,6 +7,7 @@
 #include "AliEventCuts.h"
 #include "AliPID.h"
 #include "AliPIDResponse.h"
+#include "AliPIDCombined.h"
 
 const int M = 40, Q = 6, fPt = 4, D = 2;
 
@@ -21,6 +22,7 @@ class TList;
 class AliAODEvent;
 class AliMCEvent;
 class AliPIDResponse;
+class AliPIDCombined;
 
 class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
 {
@@ -66,7 +68,7 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
     this->maxEta = f_maxEta;
   }
   void Setfbit(int fb) { this->filterBit = fb; }
-  void SetYear(TString year) { this->fYear = year; }  
+  void SetYear(TString year) { this->fYear = year; }
   void SetPSbinning(TArrayI MB, TArrayI NB, int Mm)
   {
     this->Mbins = MB;
@@ -86,6 +88,11 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   void SetTPCClusterCut(double tpccut) { this->fTPCCls = tpccut; }
   void SetnTPCrossedrows(double tpcrowcut) { this->fTPCRows = tpcrowcut; }
   void SetSelfAffine(bool selfaffine) { this->fSelfAffine = selfaffine; }
+  void SetPIDAnalysis(bool prAnalysis, double nSigCut)
+  {
+    this->fProtonAnalysis = prAnalysis;
+    this->nSigmaPrCut = nSigCut;
+  }
   void SetSharedCls(double fSharedCls, double fSharedrows, double fFindable, bool fSharedMean)
   {
     this->fSharedClsMax = fSharedCls;
@@ -177,13 +184,17 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
 
   Double_t mfield;
   Double_t nsigmaTPC[5];
+  Double_t nsigmaTOF[5];
+  Bool_t fProtonAnalysis;
+  Double_t nSigmaPrCut;
+  AliPIDCombined* fPIDCombined;
 
   // Histograms
   TH2D* fHistbeforeHBT[4];
   TH2D* fHistafterHBT[4];
   TH1D* fHistdEta;
   TH1D* fHistdPhi;
-  TH2D* fHistQAPID[2];
+  TH2D* fHistQAPID[13];
   TH1D* fHistPDG[2];
   TH1F* fHistnTPCcls;
   TH1F* fHistnTPCcrossedrows;

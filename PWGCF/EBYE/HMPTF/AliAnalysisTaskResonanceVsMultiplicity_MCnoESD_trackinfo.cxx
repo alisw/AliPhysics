@@ -64,6 +64,8 @@ AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_trackinfo::AliAnalysisTaskResonan
   for(int str=0; str<kMaxTrack; str++)
     {
       fTreeTrackVariablePt[str]=-999;
+      fTreeTrackVariableEta[str]=-999;
+      fTreeTrackVariablePdgCode[str]=-999;
     }
 }
 
@@ -85,6 +87,8 @@ AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_trackinfo::AliAnalysisTaskResonan
   for(int str=0; str<kMaxTrack; str++)
     {
       fTreeTrackVariablePt[str]=-999;
+      fTreeTrackVariableEta[str]=-999;
+      fTreeTrackVariablePdgCode[str]=-999;
     }
 
   DefineOutput(1, TTree::Class());
@@ -133,6 +137,8 @@ void AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_trackinfo::UserCreateOutputO
   fTreeEvent->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
   fTreeEvent->Branch("fTreeEventNTrack",&fTreeEventNTrack,"fTreeEventNTrack/I");
   fTreeEvent->Branch("fTreeTrackVariablePt",&fTreeTrackVariablePt,"fTreeTrackVariablePt[fTreeEventNTrack]/F");
+  fTreeEvent->Branch("fTreeTrackVariableEta",&fTreeTrackVariableEta,"fTreeTrackVariableEta[fTreeEventNTrack]/F");
+  fTreeEvent->Branch("fTreeTrackVariablePdgCode",&fTreeTrackVariablePdgCode,"fTreeTrackVariablePdgCode[fTreeEventNTrack]/I");
   /*
   fTreeEvent->Branch("fvertex",&fvertex,"fvertex/F");
   fTreeEvent->Branch("fNch_eta0pt5",&fNch_eta0pt5,"fNch_eta0pt5/F");
@@ -291,7 +297,8 @@ void AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_trackinfo::UserExec(Option_t
 
       Int_t trackcharge=0;
       float Track_pt=0.0;
-      float_t Track_eta=0.0;
+      float Track_eta=0.0;
+      Int_t Track_pdgcode=0;
       float Q1[2]={0.0,0.0};
       float Q2[2]={0.0,0.0};
       float Q3[2]={0.0,0.0};
@@ -319,6 +326,7 @@ void AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_trackinfo::UserExec(Option_t
 	  trackcharge=1.0/3.0*trackMCgen->Charge();
 	  Track_pt=trackMCgen->Pt();
 	  Track_eta=trackMCgen->Eta();
+	  Track_pdgcode=trackMCgen->PdgCode();
 
 	  if(TMath::Abs(Track_eta)>0.8)continue;
 	  if(TMath::Abs(trackcharge)!=1)continue;
@@ -348,6 +356,8 @@ void AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_trackinfo::UserExec(Option_t
 	  if(Track_pt>0.2 && Track_pt<=3.0)
 	    {
 	      fTreeTrackVariablePt[str1]=Track_pt;
+	      fTreeTrackVariableEta[str1]=Track_eta;
+	      fTreeTrackVariablePdgCode[str1]=Track_pdgcode;
 	      str1++;
 	    }
       

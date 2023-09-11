@@ -92,6 +92,8 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
       if(fMultEstimatorAvg) delete fMultEstimatorAvg;
       fMultEstimatorAvg = new TProfile(*profile);
     }
+    void SetNchCorrHist(TH1F *hist) { histNchCorr = hist; }
+    void SetNchCorrFunc(TF1 *func) { funcNchCorr = func; }
 
 	// Setter for B corr
 	void SetBcorrCentLow(TF1* BcorrFcentL) { fBmesonCorrCentLow = BcorrFcentL; }
@@ -121,7 +123,7 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	int GetElecSource(const AliAODMCParticle * const mcpart, double &mpt, int &mpdg);
 	int GetElecSource(const AliAODMCParticle * const mcpart, bool isElec, double &mpt, int &mpdg) const;
 	int GetHeavyFlavours(const AliAODMCParticle * const mcpart, double &hfpt, double &hfeta);
-
+    int GetNcharged();
 
 	bool		fIsMC;
 	int			fMinTPCnCrossedRow;
@@ -137,6 +139,7 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 
     AliAODEvent				*fAOD;           //! input event
     TList					*fOutputList;    //! output list
+	TList					*fTrackQA;
     AliPIDResponse			*fPIDResponse;
 	AliHFEextraCuts			*fExtraCuts;
 	TClonesArray			*fAODArrayMCInfo;
@@ -146,16 +149,23 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	
 	TH1F		*hVtxZbeforCut;
 	TH1F		*hVtxZafterCut;
+	TH2F		*hVtxZ;
 	TH1F		*hNrEvents;
 
     // multiplicity
     TH1F		*hSPDtracklet;
-    TH2F		*hNtr_vtxZ;
+    TH2F		*hNtrklet_vtxZ;
     TProfile	*hMultEstimatorAvg;
     TH1F		*hSPDtracklet_Corr;
-    TH2F		*hNtr_vtxZ_Corr;
+    TH2F		*hNtrklet_vtxZ_Corr;
     TProfile	*hMultEstimatorAvg_Corr;
     TProfile	*fMultEstimatorAvg;
+    TH1F		*histNchCorr;
+    TF1			*funcNchCorr;
+    TH1F		*hNtrkletCorr;
+    TH2F		*hSPDtrklet_Nch;
+    TH2F		*hSPDtrklet_Nch_Corr;
+    TH2F		*hNch_vtxZ;
 	
 	// track cut QA
 	TH1F		*hFilterMask;
@@ -174,21 +184,13 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	// generated level
 	TH1F		*hBhadronPt;
 	TH1F		*hBhadronPtCorr;
+	TH2F		*hTrklet_BhadronPt;
+	TH2F		*hTrklet_BhadronPtCorr;
 	TH1F		*hD0Pt;
 	TH1F		*hD0PtCorr;
+	TH2F		*hTrklet_D0Pt;
+	TH2F		*hTrklet_D0PtCorr;
 	TH1F		*hLcPt;
-	TH1F		*hPtB;
-	TH1F		*hPtD;
-	TH1F		*hPtB2M;
-	TH1F		*hPtD2M;
-	TH1F		*hPtGammaB2M;
-	TH1F		*hPtGammaD2M;
-	TH1F		*hPtBe;
-	TH1F		*hPtDe;
-	TH1F		*hPtB2Me;
-	TH1F		*hPtD2Me;
-	TH1F		*hPtGammaB2Me;
-	TH1F		*hPtGammaD2Me;
 
 	TH1F		*hGenBePt;
 	TH1F		*hRecBePt_track;

@@ -386,7 +386,7 @@ void AliAnalysisTaskfnAOD::UserExec(Option_t *)
       aodtrack->GetImpactParameters(dca[0], dca[1]);
       chi2perclsITS= aodtrack->GetITSchi2()/aodtrack->GetITSNcls();
 
-      if (nCrossedRowsTPC > nCRcut  && ratiocrfindcls > ratiocrfccut && chi2constglobal > chi2globalcut && chi2perclsITS > chi2cut)
+      if (nCrossedRowsTPC > nCRcut  && ratiocrfindcls > ratiocrfccut && chi2constglobal < chi2globalcut && chi2perclsITS < chi2cut)
 	{
 	
       hist1->Fill(nCrossedRowsTPC);
@@ -579,7 +579,7 @@ Bool_t AliAnalysisTaskfnAOD::GoodEvent(const AliVVertex *vertex) //all cuts take
     }
 
   
-  
+  /*
   AliPPVsMultUtils *multUtils = new AliPPVsMultUtils();
   Bool_t spdpileup=multUtils->IsNotPileupSPDInMultBins(fVevent);
   Bool_t inel0=multUtils->IsINELgtZERO(fVevent);
@@ -590,16 +590,19 @@ Bool_t AliAnalysisTaskfnAOD::GoodEvent(const AliVVertex *vertex) //all cuts take
       PostData(1, fOutput);
       return kFALSE;
     }
+  
   if(!inel0)
     {
       PostData(1, fOutput);
       return kFALSE;
     }
+  
   if(!inconstspdvertex) 
     {
       PostData(1, fOutput);
       return kFALSE;
     }
+  */
   if( lAODevent->IsIncompleteDAQ() ) 
     {
       PostData(1, fOutput);

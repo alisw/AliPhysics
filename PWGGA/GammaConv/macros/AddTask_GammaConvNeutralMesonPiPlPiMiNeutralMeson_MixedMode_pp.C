@@ -67,6 +67,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
   if(additionalTrainConfig.Contains("MaterialBudgetWeights"))
     fileNameMatBudWeights         = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "MaterialBudgetWeights",fileNameMatBudWeights, addTaskName);
 
+  TString corrTaskSetting             = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "", addTaskName);
+  if(corrTaskSetting.CompareTo(""))
+    cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
+
+
   //parse additionalTrainConfig flag
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   TString unsmearingoutputs = "0123"; // 0: No correction, 1: One pi0 mass errer subtracted, 2: pz of pi0 corrected to fix its mass, 3: Lambda(alpha)*DeltaPi0 subtracted, 4: Analytic PCMEMC unsmearing
@@ -174,7 +179,8 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
     //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-  TString V0ReaderName        = Form("V0ReaderV1_%s",photonCutNumberV0Reader.Data());
+  TString cutnumberEvent = "00000003";
+  TString V0ReaderName        = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),photonCutNumberV0Reader.Data());
   AliV0ReaderV1 *fV0ReaderV1  =  NULL;
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
     cout << "V0Reader: " << V0ReaderName.Data() << " not found!!"<< endl;
@@ -222,6 +228,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   }
   task->SetTolerance(tolerance);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
 
   if(enableMLBckRedStudy && !isMC){
     cout << "Error: Trees for ML studies implemented only for MC. Returning..." << endl;
@@ -2399,15 +2406,21 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     TString caloCutPos = cuts.GetClusterCut(i);
     caloCutPos.Resize(1);
     TString TrackMatcherName = Form("CaloTrackMatcher_%s_%i",caloCutPos.Data(),trackMatcherRunningMode);
+    if(corrTaskSetting.CompareTo("")){
+      TrackMatcherName = TrackMatcherName+"_"+corrTaskSetting.Data();
+      cout << "Using separate track matcher for correction framework setting: " << TrackMatcherName.Data() << endl;
+    }
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
       AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi(),trackMatcherRunningMode);
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
+      fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
       mgr->AddTask(fTrackMatcher);
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
 
     analysisEventCuts[i] = new AliConvEventCuts();
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisEventCuts[i]->SetTriggerMimicking(enableTriggerMimicking);
     if(fileNameCustomTriggerMimicOADB.CompareTo("") != 0)
       analysisEventCuts[i]->SetCustomTriggerMimicOADBFile(fileNameCustomTriggerMimicOADB);
@@ -2470,7 +2483,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     }
     if( ! analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data()) ) {
       cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
-      return 0;
+      return ;
     } else {
       ConvCutList->Add(analysisCuts[i]);
       analysisCuts[i]->SetFillCutHistograms("",kFALSE);
@@ -2478,6 +2491,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
     analysisClusterCuts[i] = new AliCaloPhotonCuts();
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
+    analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     if(runLightOutput>=4) {
         analysisClusterCuts[i]->SetLightOutput(2);
     } else if(runLightOutput>=1) {
@@ -2487,7 +2501,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     if( ! analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data()) ) {
       cout<<"ERROR: analysisClusterCuts [" <<i<<"]"<<endl;
-      return 0;
+      return ;
     } else {
       ClusterCutList->Add(analysisClusterCuts[i]);
       analysisClusterCuts[i]->SetFillCutHistograms("");
@@ -2502,7 +2516,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     }
     if( ! analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNDMCut(i)).Data()) ) {
       cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
-      return 0;
+      return ;
     } else {
       NeutralPionCutList->Add(analysisNeutralPionCuts[i]);
       analysisNeutralPionCuts[i]->SetFillCutHistograms("");
@@ -2516,7 +2530,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     }
     if( ! analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data()) ) {
       cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
-      return 0;
+      return ;
     } else {
       MesonCutList->Add(analysisMesonCuts[i]);
       analysisMesonCuts[i]->SetFillCutHistograms("");
@@ -2531,7 +2545,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
     if( !analysisPionCuts[i]->InitializeCutsFromCutString((cuts.GetPionCut(i)).Data())) {
       cout<< "ERROR:  analysisPionCuts [ " <<i<<" ] "<<endl;
-      return 0;
+      return ;
     } else {
       PionCutList->Add(analysisPionCuts[i]);
       analysisPionCuts[i]->SetFillCutHistograms("",kFALSE,cutName);
@@ -2545,6 +2559,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   task->SetNeutralPionCutList(NeutralPionCutList);
   task->SetMesonCutList(MesonCutList);
   task->SetPionCutList(PionCutList);
+  task->SetCorrectionTaskSetting(corrTaskSetting);
 
   task->SetMoveParticleAccordingToVertex(kTRUE);
   task->SetSelectedHeavyNeutralMeson(selectHeavyNeutralMeson);
@@ -2565,7 +2580,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   //connect containers
   AliAnalysisDataContainer *couttree  = 0;
   AliAnalysisDataContainer *coutput =
-  mgr->CreateContainer(Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig), TList::Class(),
+  mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig) : Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i_%s.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig, corrTaskSetting.Data()), TList::Class(),
               AliAnalysisManager::kOutputContainer,Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig));
   if(enableMLBckRedStudy){
     couttree = mgr->CreateContainer( Form("GammaConvNeutralMesonPiPlPiMiNeutralMesonTree_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig),

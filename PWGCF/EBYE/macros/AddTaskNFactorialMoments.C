@@ -1,25 +1,13 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskNFactorialMoments.h"
 
-AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
-  TString year = "2015", bool fSelfAffAnalysis = kFALSE, double pt1 = 0.4,
-  double pt2 = 0.6, double pt3 = 0.4, double pt4 = 1.0, double pt5 = 0.6,
-  double pt6 = 0.8, double pt7 = 0.6, double pt8 = 2.0, bool fPileup = kFALSE,
-  double fEtaMin = -0.8, double fEtaMax = 0.8, int fCentMin = 0,
-  int fCentMax = 5, int fBit = 768, double fDeta = 0.02, double fDphi = 0.02,
-  bool fTwoTrack = kFALSE, double fSharedFraction = 0.05,
-  bool fSharity = kFALSE, double fVxMax = 0.3, double fVyMax = 0.4,
-  double fVzMax = 10.0, bool fRejectElectrons = kFALSE,
-  double fDCAXYRangeMax = 0.0, double fDCAZRangeMax = 0.0,
-  double fITSClusterCut = 0.0, double fTPCClusterCut = 0.0,
-  double fnTPCrossedrows = 0.0, double fSharedCls = 0.0, double fSharedRows = 0.0, double fFindableCls = 0.0, bool defSharedFrac = kTRUE, int bField = 0, int Mmax = 123, bool fIsMC = kFALSE, const char* suffix = "")
+AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(TString year = "2015", bool fSelfAffAnalysis = kFALSE, double pt1 = 0.4, double pt2 = 0.6, double pt3 = 0.4, double pt4 = 1.0, double pt5 = 0.6, double pt6 = 0.8, double pt7 = 0.6, double pt8 = 2.0, int Mmax = 123, bool fIsMC = kFALSE, const char* suffix = "")
 {
 
   // year = "2010" or "2015"
   // fSelfAffAnalysis for self-affine analysis
   // cuts on detas and dphis work only if fTwoTrack = kTRUE
   // cuts on DCA, ITS/TPC clusters, ncrssed rows work only if they have non-zero
-  // values Particle Indentification uses only TPC for now TODO: add TOF
 
   double ptarr[8] = { pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8 };
   TArrayD ptarrD(8, ptarr);
@@ -43,6 +31,35 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
   TArrayI Mbins(40, Mbinsarr);
   TArrayI Nbins(40, Nbinsarr);
 
+  // Initialize variables
+  bool fPileup = kFALSE;
+  double fEtaMin = -0.8;
+  double fEtaMax = 0.8;
+  int fCentMin = 0;
+  int fCentMax = 5;
+  int fBit = 768;
+  double fDeta = 0.02;
+  double fDphi = 0.02;
+  bool fTwoTrack = kFALSE;
+  double fSharedFraction = 0.05;
+  bool fSharity = kFALSE;
+  double fVxMax = 0.3;
+  double fVyMax = 0.4;
+  double fVzMax = 10.0;
+  bool fRejectElectrons = kFALSE;
+  double fDCAXYRangeMax = 0.0;
+  double fDCAZRangeMax = 0.0;
+  double fITSClusterCut = 0.0;
+  double fTPCClusterCut = 0.0;
+  double fnTPCrossedrows = 0.0;
+  double fSharedCls = 0.0;
+  double fSharedRows = 0.0;
+  double fFindableCls = 0.0;
+  bool defSharedFrac = kTRUE;
+  int bField = 0;
+  bool fPrAnalysis = kFALSE;
+  double nSigmaCutPr = 3.0;
+
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     return 0x0;
@@ -57,7 +74,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
   tasknfms->SetIsMC(fIsMC, "Hijing");
   tasknfms->SetYear(year);
   tasknfms->SetPSbinning(Mbins, Nbins, Mmax);
-  tasknfms->SetRejectPileup(kTRUE);
+  tasknfms->SetRejectPileup(fPileup);
   tasknfms->SetEta(fEtaMin, fEtaMax);
   tasknfms->SetCentLim(fCentMin, fCentMax);
   tasknfms->SetPtArray(ptarrD);
@@ -74,6 +91,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
   tasknfms->SetnTPCrossedrows(fnTPCrossedrows); // 70
   tasknfms->SetSelfAffine(fSelfAffAnalysis);
   tasknfms->SetSharedCls(fSharedCls, fSharedRows, fFindableCls, defSharedFrac);
+  tasknfms->SetPIDAnalysis(fPrAnalysis, nSigmaCutPr);
 
   // add your tasknfms to the manager
   mgr->AddTask(tasknfms);
