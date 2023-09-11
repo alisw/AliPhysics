@@ -3,7 +3,7 @@ class AliAnalysisDataContainer;
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #endif
 #include "AliAnalysisTaskDeutFlucpp.h"
-AliAnalysisTaskDeutFlucpp* AddMyTaskDeutFlucpp(const char* taskname="DeutFlucpp",int triggerClass = 0)
+AliAnalysisTaskDeutFlucpp* AddMyTaskDeutFlucpp(Bool_t UseMC,const char* taskname="DeutFlucpp", int triggerClass = 0)
 {
     // get the manager via the static access member. since it's static, you don't need                                                                                                   
     // an instance of the class to call the function                                                                                                                                     
@@ -18,12 +18,12 @@ AliAnalysisTaskDeutFlucpp* AddMyTaskDeutFlucpp(const char* taskname="DeutFlucpp"
     if (!mgr->GetInputEventHandler()) {
         return 0x0;
     }
-
     // by default, a file is open for writing. here, we get the filename     
     const char* ananame  ="DeutFlucpp";                                                                                                                                                                                                                                                    
     AliAnalysisTaskDeutFlucpp* task = new AliAnalysisTaskDeutFlucpp(taskname);
     if (triggerClass ==0 ) task->setTriggerType(AliVEvent::kINT7);
     if (triggerClass ==1 ) task->setTriggerType(AliVEvent::kHighMultV0);
+    task->SetUseMC(UseMC);
 
     if(!task) return 0x0;
     // add your task to the manager                                                                                                                                                      
