@@ -96,6 +96,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         void                    SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
         void                    SetUseEfficiency( Bool_t actEff) { fUseEfficiency = actEff;}
+        void                    SetMagneticField(Bool_t actField, Int_t magField){ fMagFieldSys = actField; fMagField = magField; }
 
     private:
         Bool_t                  fFlowRunByRunWeights;
@@ -465,6 +466,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Bool_t                  fFillQARej;
         Bool_t                  fUseNUEWeights;
         Bool_t                  fUseEfficiency;
+        Bool_t                  fMagFieldSys;
+        Int_t                   fMagField;
         Int_t                   fNUE;
         Int_t                   fEfficiency;
         Bool_t                  fIs2018Data;
