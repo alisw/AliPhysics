@@ -99,7 +99,9 @@ public:
   void SetCascadePileUpRemoval(Bool_t cascadePileUpRemoval);
   void SetV0PileUpRemoval(Bool_t v0PileUpRemoval);
   void SetTrackPileUpRemoval(Bool_t trackPileUpRemoval);
-
+  void SetRejectTPCPileupWithITSTPCnCluCorr(Bool_t RejectTPCPileupWithITSTPCnCluCorr);
+  
+  
   void SetMinVtxContr(Int_t contr = 1) {
     fMinVtxContr = contr;
   }
@@ -251,6 +253,7 @@ private:
   Bool_t fCascadePileUpRemoval;//pile-up removal for cascades (its+tof hits for pos, neg and bac tracks)
   Bool_t fV0PileUpRemoval;//pile-up removal for V0s
   Bool_t fTrackPileUpRemoval;//pile-up removal for tracks (its+tof hits of tracks)
+  Bool_t fRejectTPCPileupWithITSTPCnCluCorr;
   Bool_t fMVPlp;           ///< multi-vertex pileup rejection?
   Bool_t fOutOfBunchPlp;   ///out-of-bunch pileup rejection
   Int_t fMinVtxContr;      ///< no of contributors for pA 2013 data
