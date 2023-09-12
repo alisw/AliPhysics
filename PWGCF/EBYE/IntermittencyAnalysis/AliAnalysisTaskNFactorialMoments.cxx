@@ -1120,8 +1120,8 @@ bool AliAnalysisTaskNFactorialMoments::GetParticleID(AliAODTrack* trk,
     if (fProtonAnalysis) {
       fHistQAPID[1]->Fill(trk->Pt(), nsigmaTPC[4]);
       fHistQAPID[2]->Fill(trk->Pt(), nsigmaTOF[4]);
-      double combSquare = nsigmaTPC[4] * nsigmaTPC[4] +
-                          nsigmaTOF[4] * nsigmaTOF[4];
+      double combSquare = TMath::Sqrt(nsigmaTPC[4] * nsigmaTPC[4] +
+                          nsigmaTOF[4] * nsigmaTOF[4]);
       fHistQAPID[3]->Fill(trk->Pt(), combSquare);
       fHistQAPID[4]->Fill(trk->Pt(), beta);
       fHistQAPID[5]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
