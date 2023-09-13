@@ -278,7 +278,7 @@ Bool_t AliAnalysisTaskForwardJets::CheckMCOutliers(){
   return true;
 }
 
-AliAnalysisTaskForwardJets *AliAnalysisTaskForwardJets::AddTaskForwardJets(const char *suffix){
+AliAnalysisTaskForwardJets *AliAnalysisTaskForwardJets::AddTaskForwardJets(const char *partcontname, const char *suffix){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr){
     ::Error("PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetEnergyScale::AddTaskJetEnergyScale", "No analysis manager available");
@@ -301,7 +301,7 @@ AliAnalysisTaskForwardJets *AliAnalysisTaskForwardJets::AddTaskForwardJets(const
   auto task = new AliAnalysisTaskForwardJets(tasknamebuilder.str().data());
   mgr->AddTask(task);
 
-  auto partcont = task->AddMCParticleContainer("mcparticles");
+  auto partcont = task->AddMCParticleContainer(partcontname);
   partcont->SetMinPt(0.);
   const std::string kNameMCParticles = "MCParticles";
   partcont->SetName(kNameMCParticles.data());

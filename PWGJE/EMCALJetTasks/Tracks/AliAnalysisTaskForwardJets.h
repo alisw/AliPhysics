@@ -52,7 +52,7 @@ class AliAnalysisTaskForwardJets : public AliAnalysisTaskEmcalJet {
     void setRequireFOCALJet(bool doRequire) { fRequireFOCALJet = doRequire; }
     void setDebugMCOutliers(bool doDebug) { fDebugMaxJetOutliers = doDebug; }
 
-    static AliAnalysisTaskForwardJets *AddTaskForwardJets(const char *suffix);
+    static AliAnalysisTaskForwardJets *AddTaskForwardJets(const char* partcontname = "mcparticles", const char *suffix = "");
 
   protected:
     virtual void UserCreateOutputObjects();
