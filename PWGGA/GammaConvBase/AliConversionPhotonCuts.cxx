@@ -799,7 +799,8 @@ Bool_t AliConversionPhotonCuts::InitPIDResponse(){
 }
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::InitializeElecDeDxPostCalibration(TString filename) {
-  AliInfo("Entering loading of correction map for post calibration");
+  AliInfo(Form("Entering loading of correction map for post calibration as function of %s", 
+               fIsRecalibDepTPCCl ? "TPC clusters" : "ConvR"));
 
   TFile *file = TFile::Open(filename.Data());
   if(!file){
