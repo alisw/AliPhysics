@@ -549,15 +549,12 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
        if(fRejectTPCPileupWithITSTPCnCluCorr) {
          fEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(fRejectTPCPileupWithITSTPCnCluCorr);
        }
-       
-       if (!fEventCuts->AcceptEvent(fEvent) == kFALSE){
+       if (!fEventCuts->AcceptEvent(fEvent)){
          delete fEventCuts;
          return nullptr;
        }
     }
-       
-    
-    
+
   // AliAnalysisUtils
   if (fisPileUp || fpA2013) {
     fAnaUtils = new AliAnalysisUtils();
