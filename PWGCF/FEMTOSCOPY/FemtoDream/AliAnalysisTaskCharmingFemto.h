@@ -466,6 +466,8 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TH1F *fHistPercentileV0MEventsWithD;     //! histogram with V0M percentile for events with D candidates
   TH1F *fHistNtrackletsAllEvents;          //! histogram with Ntracklets for each event
   TH1F *fHistNtrackletsEventsWithD;        //! histogram with Ntracklets for events with D candidates
+  TH1F *fHistRef08AllEvents;               //! histogram with Ref08 mult estimator for each event
+  TH1F *fHistRef08EventsWithD;             //! histogram with Ref08 mult estimator for events with D candidates
 
   // HF data members
   int fDecChannel;                                         // HF decay channel
