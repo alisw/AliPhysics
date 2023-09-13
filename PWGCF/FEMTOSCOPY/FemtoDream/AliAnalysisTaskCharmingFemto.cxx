@@ -487,6 +487,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   int tracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(fInputEvent, -1., 1.);
   fHistPercentileV0MAllEvents->Fill(centrality);
   fHistNtrackletsAllEvents->Fill(tracklets);
+  fHistRef08AllEvents->Fill(fEvent->GetMultiplicity());
 
   if(fCheckProtonSPDHit) { // force usage of global tracks since TPC only tracks have no ITS hits
     fTrackCutsPartProton->SetFilterBit(96);
@@ -1248,6 +1249,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   if ((dplus.size() > 0 || dminus.size() > 0) && (protons.size() > 0 || antiprotons.size() > 0)) {
     fHistPercentileV0MEventsWithD->Fill(centrality);
     fHistNtrackletsEventsWithD->Fill(tracklets);
+    fHistRef08EventsWithD->Fill(fEvent->GetMultiplicity());
   }
 
   // flush the data
@@ -1438,6 +1440,8 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   fHistPercentileV0MEventsWithD = new TH1F("fHistPercentileV0MEventsWithD", "events with D-LF pair; V0M percentile; counts", 10000, 0., 100.);
   fHistNtrackletsAllEvents = new TH1F("fHistNtrackletsAllEvents", "all events; #it{N}_{tracklets}; counts", 300, -0.5, 299.5);
   fHistNtrackletsEventsWithD = new TH1F("fHistNtrackletsEventsWithD", "events with D-LF pair; #it{N}_{tracklets}; counts",  300, -0.5, 299.5);
+  fHistRef08AllEvents = new TH1F("fHistRef08AllEvents", "all events; Ref08 Mult; counts", 300, -0.5, 299.5);
+  fHistRef08EventsWithD = new TH1F("fHistRef08EventsWithD", "events with D-LF pair; Ref08 Mult; counts",  300, -0.5, 299.5);
 
   if (fEvtCuts) {
     fEvtCuts->InitQA();
@@ -1462,6 +1466,8 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   fEvtHistList->Add(fHistPercentileV0MEventsWithD);
   fEvtHistList->Add(fHistNtrackletsAllEvents);
   fEvtHistList->Add(fHistNtrackletsEventsWithD);
+  fEvtHistList->Add(fHistRef08AllEvents);
+  fEvtHistList->Add(fHistRef08EventsWithD);
 
   if (!fConfig->GetMinimalBookingME() && fPairCleaner
       && fPairCleaner->GetHistList()) {
