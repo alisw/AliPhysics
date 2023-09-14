@@ -37,7 +37,9 @@
 #pragma link C++ class AliAnalysisTaskElectronStudies+;
 
 // MC and cocktail tasks
+#ifdef HAVE_FASTJET
 #pragma link C++ class AliAnalysisTaskGammaPureMC+;
+#endif
 #pragma link C++ class AliAnalysisTaskGammaCocktailMC+;
 #pragma link C++ class AliAnalysisTaskHadronicCocktailMC+;
 #pragma link C++ class AliAnalysisTaskOmegaMCStudies+;

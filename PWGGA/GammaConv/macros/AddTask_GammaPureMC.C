@@ -1,4 +1,4 @@
-void AddTask_GammaPureMC(Int_t isK0 = 0 , Double_t maxpT = 100 , Int_t doMultStudies = 0) {
+void AddTask_GammaPureMC(Int_t isK0 = 0 , Double_t maxpT = 100 , Int_t doMultStudies = 0, int doJetStudies = 0) {
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -21,10 +21,18 @@ void AddTask_GammaPureMC(Int_t isK0 = 0 , Double_t maxpT = 100 , Int_t doMultStu
   task->SetIsK0(isK0);
   task->SetMaxPt(maxpT);
   task->SetDoMultStudies(doMultStudies);
+  task->SetDoJetStudies(doJetStudies);
 
+  TString AddString = "";
+  if(doMultStudies){
+    AddString+=Form("_Mult%i", doMultStudies);
+  }
+  if(doJetStudies){
+    AddString+=Form("_Jet%i", doJetStudies);
+  }
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer("GammaPureMC", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaPureMC",AliAnalysisManager::GetCommonFileName()));
+    mgr->CreateContainer(Form("GammaPureMC%s", AddString.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaPureMC%s",AliAnalysisManager::GetCommonFileName(), AddString.Data()));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
