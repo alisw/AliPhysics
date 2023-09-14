@@ -40,7 +40,7 @@
 #include "AliMCEventHandler.h"
 #include "AliStack.h"
 
-#include "AliAnalysisTaskfnAODPbPb.h"
+#include "AliAnalysisTaskfnAODsp.h"
 #include "AliPIDResponse.h"
 #include "AliPhysicsSelection.h"
 #include "AliMultSelection.h"
@@ -56,10 +56,10 @@
 using std::cout;
 using std::endl;
 
-ClassImp(AliAnalysisTaskfnAODPbPb)
-ClassImp(AliReducedPbPbTrack)
+ClassImp(AliAnalysisTaskfnAODsp)
+ClassImp(AliReducedspTrack)
 
-AliAnalysisTaskfnAODPbPb::AliAnalysisTaskfnAODPbPb(): 
+AliAnalysisTaskfnAODsp::AliAnalysisTaskfnAODsp(): 
 AliAnalysisTaskSE(), 
 fOutput(0), 
 fPoolMgr(0X0), 
@@ -69,12 +69,18 @@ lESDevent(0),
 lAODevent(0), 
 fEventCuts(0), 
 fESDtrackCuts(0), 
-//fHistVz(0),
+fHistVz(0),
 fHistCentrality(0), 
 fHisteventsummary(0),
-f1Unlike(0),
-f1Like(0),
-f1Mix(0),
+f1Unlike0(0),
+f1Unlike1(0),
+f1Unlike2(0),
+f1Like0(0),
+f1Like1(0),
+f1Like2(0),
+f1Mix0(0),
+f1Mix1(0),
+f1Mix2(0),
 /*hist1(0),
 hist2(0),
 hist3(0),
@@ -104,7 +110,7 @@ chi2cut(36.0)
 
 }
 
-AliAnalysisTaskfnAODPbPb::AliAnalysisTaskfnAODPbPb(const char *name): 
+AliAnalysisTaskfnAODsp::AliAnalysisTaskfnAODsp(const char *name): 
 AliAnalysisTaskSE(name), 
 fOutput(0), 
 fPoolMgr(0X0), 
@@ -114,12 +120,18 @@ lESDevent(0),
 lAODevent(0), 
 fEventCuts(0), 
 fESDtrackCuts(0), 
-//fHistVz(0),
+fHistVz(0),
 fHistCentrality(0), 
 fHisteventsummary(0),
-f1Unlike(0),
-f1Like(0),
-f1Mix(0),
+f1Unlike0(0),
+f1Unlike1(0),
+f1Unlike2(0),
+f1Like0(0),
+f1Like1(0),
+f1Like2(0),
+f1Mix0(0),
+f1Mix1(0),
+f1Mix2(0),
 /*hist1(0),
 hist2(0),
 hist3(0),
@@ -151,7 +163,7 @@ chi2cut(36.0)
 }
 
 
-AliAnalysisTaskfnAODPbPb::~AliAnalysisTaskfnAODPbPb()
+AliAnalysisTaskfnAODsp::~AliAnalysisTaskfnAODsp()
 {
   //------------------------------------------------
   // DESTRUCTOR
@@ -188,7 +200,7 @@ AliAnalysisTaskfnAODPbPb::~AliAnalysisTaskfnAODPbPb()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskfnAODPbPb::UserCreateOutputObjects()
+void AliAnalysisTaskfnAODsp::UserCreateOutputObjects()
 {
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
@@ -208,15 +220,21 @@ void AliAnalysisTaskfnAODPbPb::UserCreateOutputObjects()
   fOutput->SetOwner(); 
   OpenFile(1);
   fHisteventsummary            = new TH1F("fHisteventsummary", "Event cut summary", 5,0.0,5.0);       
-  //fHistVz            = new TH1F("fHistZVertex", "Z vertex distribution", 100,-10,10);       
+  fHistVz            = new TH1F("fHistZVertex", "Z vertex distribution", 100,-10,10);       
   fHistCentrality = new TH1F("fHistCentrality", "Centrality distribution", 100,0,100);
 
-  Int_t bins[4]={250, 200, 10, 100};
-  Double_t xmin[4]={1.0, 0.0, 0, 0.9};
-  Double_t xmax[4]={2.0, 20.0, 100, 1.9};
-  f1Unlike = new THnSparseD("f1Unlike", "Unlike histogram", 4, bins, xmin, xmax);
-  f1Like = new THnSparseD("f1Like", "Like histogram", 4, bins, xmin, xmax);
-  f1Mix = new THnSparseD("f1Mix", "Mix histogram", 4, bins, xmin, xmax);
+  Int_t bins[3]={250, 200, 10};
+  Double_t xmin[3]={1.0, 0.0, 0};
+  Double_t xmax[3]={2.0, 20.0, 1};
+  f1Unlike0 = new THnSparseD("f1Unlike0", "Unlike histogram0", 3, bins, xmin, xmax);
+  f1Unlike1 = new THnSparseD("f1Unlike1", "Unlike histogram1", 3, bins, xmin, xmax);
+  f1Unlike2 = new THnSparseD("f1Unlike2", "Unlike histogram2", 3, bins, xmin, xmax);
+  f1Like0 = new THnSparseD("f1Like0", "Like histogram0", 3, bins, xmin, xmax);
+  f1Like1 = new THnSparseD("f1Like1", "Like histogram1", 3, bins, xmin, xmax);
+  f1Like2 = new THnSparseD("f1Like2", "Like histogram2", 3, bins, xmin, xmax);
+  f1Mix0 = new THnSparseD("f1Mix0", "Mix histogram0", 3, bins, xmin, xmax);
+  f1Mix1 = new THnSparseD("f1Mix1", "Mix histogram1", 3, bins, xmin, xmax);
+  f1Mix2 = new THnSparseD("f1Mix2", "Mix histogram2", 3, bins, xmin, xmax);
   /*hist1=new TH1D("hist1", "hist1", 85, 0, 170);
   hist2=new TH1D("hist2", "hist2", 20, 0, 2);
   hist3=new TH1D("hist3", "hist3", 10, 0, 10);
@@ -225,17 +243,29 @@ void AliAnalysisTaskfnAODPbPb::UserCreateOutputObjects()
   hist6=new TH1D("hist6", "hist6", 50, -5, 5);
   hist7=new TH1D("hist7", "hist7", 25, 0, 50);*/
 
-  f1Unlike->Sumw2();
-  f1Like->Sumw2();
-  f1Mix->Sumw2();
 
+  f1Unlike0->Sumw2();
+  f1Like0->Sumw2();
+  f1Mix0->Sumw2();
+  f1Unlike1->Sumw2();
+  f1Like1->Sumw2();
+  f1Mix1->Sumw2();
+  f1Unlike2->Sumw2();
+  f1Like2->Sumw2();
+  f1Mix2->Sumw2();
 
   fOutput->Add(fHisteventsummary);
-  //fOutput->Add(fHistVz);
+  fOutput->Add(fHistVz);
   fOutput->Add(fHistCentrality);
-  fOutput->Add(f1Unlike);
-  fOutput->Add(f1Like);
-  fOutput->Add(f1Mix);
+  fOutput->Add(f1Unlike0);
+  fOutput->Add(f1Like0);
+  fOutput->Add(f1Mix0);
+  fOutput->Add(f1Unlike1);
+  fOutput->Add(f1Like1);
+  fOutput->Add(f1Mix1);
+  fOutput->Add(f1Unlike2);
+  fOutput->Add(f1Like2);
+  fOutput->Add(f1Mix2);
   /*fOutput->Add(hist1);
   fOutput->Add(hist2);
   fOutput->Add(hist3);
@@ -249,7 +279,7 @@ void AliAnalysisTaskfnAODPbPb::UserCreateOutputObjects()
 
 
 //________________________________________________________________________
-void AliAnalysisTaskfnAODPbPb::UserExec(Option_t *)
+void AliAnalysisTaskfnAODsp::UserExec(Option_t *)
 {
      
   // Main loop
@@ -314,7 +344,7 @@ void AliAnalysisTaskfnAODPbPb::UserExec(Option_t *)
     
   
 
-  //fHistVz->Fill(zv);
+  fHistVz->Fill(zv);
   fHistCentrality->Fill(lV0M);
   fHisteventsummary->Fill(1.5);
   
@@ -324,6 +354,13 @@ void AliAnalysisTaskfnAODPbPb::UserExec(Option_t *)
   std::vector<Alipi> pionCandidates;
   AlikkshPair kks0;
   Alipi pion;
+
+  //for spin
+  std::vector<Alikaonsp> kaonspCandidates;
+  std::vector<Alikshortsp> kshortspCandidates;
+  Alikaonsp kaonsp;
+  Alikshortsp kshortsp;
+
     
   TLorentzVector kaon(0.0,0.0,0.0,0.0);
   TLorentzVector kshort(0.0,0.0,0.0,0.0);
@@ -353,12 +390,10 @@ void AliAnalysisTaskfnAODPbPb::UserExec(Option_t *)
   Float_t dca[2]{0., 0.};
 
 
-
   for(Int_t itr = 0; itr < ntracks; itr++)
     {
       AliVTrack   *track = (AliVTrack*)lAODevent->GetTrack(itr);
       if(!track)      continue;
-      //AliAODTrack* aodtrack = dynamic_cast <AliAODTrack*> (fVevent->GetTrack(itr));
       AliAODTrack *aodtrack  = dynamic_cast<AliAODTrack*>(track);
       if(!aodtrack)      continue;
       if(!aodtrack->TestFilterBit(fFilterBit))  continue;
@@ -385,7 +420,7 @@ void AliAnalysisTaskfnAODPbPb::UserExec(Option_t *)
       aodtrack->GetImpactParameters(dca[0], dca[1]);
       chi2perclsITS= aodtrack->GetITSchi2()/aodtrack->GetITSNcls();
 
-      /*if (nCrossedRowsTPC > nCRcut  && ratiocrfindcls > ratiocrfccut && chi2constglobal < chi2globalcut && chi2perclsITS < chi2cut)
+      /*     if (nCrossedRowsTPC > nCRcut  && ratiocrfindcls > ratiocrfccut && chi2constglobal < chi2globalcut && chi2perclsITS < chi2cut)
 	{
 	
       hist1->Fill(nCrossedRowsTPC);
@@ -396,9 +431,7 @@ void AliAnalysisTaskfnAODPbPb::UserExec(Option_t *)
       hist6->Fill(dca[1]);
       hist7->Fill(chi2perclsITS);
       /////////////////////////
-
       */
-
       if(IsKaon(track)){
 	kaon.SetXYZM(track->Px(), track->Py(), track->Pz(), kaonmass);
 
@@ -412,10 +445,25 @@ void AliAnalysisTaskfnAODPbPb::UserExec(Option_t *)
 	    kaonkshort=kaon+kshort;
 	    kks0.charge=aodtrack->Charge();
 	    kks0.trkid=itr;
+	    kks0.trkidv0=itrv0;
 	    kks0.particle.SetXYZM(kaonkshort.Px(),kaonkshort.Py(),kaonkshort.Pz(),kaonkshort.M());
 	    kks0Candidates.push_back(kks0);
 	    nkks0pair=nkks0pair+1;
 	    
+	    //for spin
+	    kaonsp.charge=aodtrack->Charge();
+	    kaonsp.trkid=itr;
+	    kaonsp.trkidv0=itrv0;
+	    kaonsp.particle.SetXYZM(kaon.Px(),kaon.Py(),kaon.Pz(),kaonmass);
+	    kaonspCandidates.push_back(kaonsp);
+
+	    kshortsp.charge=0;
+	    kshortsp.trkid=itr;
+	    kshortsp.trkidv0=itrv0;
+	    kshortsp.particle.SetXYZM(kshort.Px(),kshort.Py(),kshort.Pz(),0.4976);
+	    kshortspCandidates.push_back(kshortsp);
+
+	    //cout<<"filling values are:"<<itr<<" "<<itrv0<<" "<<kaon.Pt()<<" "<<kks0.particle.Pt()<<" "<<kaonsp.particle.Pt()<<" "<<(kaonsp.particle+kshortsp.particle).Pt()<<endl;
 
 	  }
       }
@@ -423,7 +471,7 @@ void AliAnalysisTaskfnAODPbPb::UserExec(Option_t *)
 
       if(IsPion(track))
 	{
-	  selectedpiontracks->Add(new AliReducedPbPbTrack(track->Px(),track->Py(),track->Pz(),aodtrack->Charge()));
+	  selectedpiontracks->Add(new AliReducedspTrack(track->Px(),track->Py(),track->Pz(),aodtrack->Charge()));
 	  pion.charge=aodtrack->Charge();
 	  pion.trkid=itr;
 	  pion.particle.SetXYZM(track->Px(), track->Py(), track->Pz(), pionmass);
@@ -437,6 +485,8 @@ void AliAnalysisTaskfnAODPbPb::UserExec(Option_t *)
   
   Int_t piontracksize = pionCandidates.size();
   Int_t kkshorttracksize = kks0Candidates.size();
+  Int_t kaontracksize = kaonspCandidates.size();
+  Int_t kshorttracksize = kshortspCandidates.size();
 
 
   if(piontracksize<1 || kkshorttracksize<1) 
@@ -448,32 +498,78 @@ void AliAnalysisTaskfnAODPbPb::UserExec(Option_t *)
   fHisteventsummary->Fill(2.5);
 
 
+  TLorentzVector kaonspLV(0.0,0.0,0.0,0.0);
+  TLorentzVector kshortspLV(0.0,0.0,0.0,0.0);
+  TLorentzVector kaonkshortspLV(0.0,0.0,0.0,0.0);
+  Double_t Costhetastar0=0.0;
+  Double_t Costhetastar1=0.0;
+  Double_t Costhetastar2=0.0;
+
+
   for (const auto& kks0 : kks0Candidates)
     {
-      //if (kks0.particle.M() > kkshmasscut)
-      //continue;
+
+	  ////////for accessing individual kaon and pion lorentzvectors
+	  for (const auto& kaonsp : kaonspCandidates)
+	    {
+	  if ((kaonsp.trkid == kks0.trkid))
+	    {
+	      kaonspLV=kaonsp.particle;
+	      break;
+	    }
+	}
+	  for (const auto& kshortsp : kshortspCandidates)
+	{
+	  if ((kshortsp.trkidv0 == kks0.trkidv0))
+	    {
+	    kshortspLV=kshortsp.particle;
+	    break;
+	    }
+	}
+
+	  ////////////////////////////////////////////////    
+
+      if (kks0.particle.M() > kkshmasscut)
+	continue;
+      kaonkshortspLV=kaonspLV + kshortspLV;
+      if (kaonkshortspLV.M() > kkshmasscut)
+	continue;
+      
       // Creating same event pair
       for (const auto& pion : pionCandidates)
 	{
 	  if (pion.trkid == kks0.trkid)
-            continue;
-
+            continue; 
+	 
+	 
 	  motherf1 = pion.particle + kks0.particle;
 	  if (motherf1.M() > 2.0)
             continue;
 	  if (TMath::Abs(motherf1.Rapidity())>=0.5)                                                                                         
 	    continue;       
 
+	  //cout<<"values are:"<<kks0.trkid<<" "<<kaonsp.trkid<<" "<<kshortsp.trkid<<" "<<pion.trkid<<" "<<kaonkshortspLV.Pt()<<" "<<kks0.particle.Pt()<<endl;
+
+
+	  Costhetastar0 = CosThetaStarHel0(motherf1, pion.particle);
+	  Costhetastar1 = CosThetaStarHel1(motherf1, kaonspLV);
+	  Costhetastar2 = CosThetaStarHel2(motherf1, kshortspLV);
+
+
 	  if (pion.charge * kks0.charge < 0)
 	    {
 	      // Fill unlike histo
-	      f1Unlike->Fill(motherf1.M(), motherf1.Pt(), lV0M, kks0.particle.M());
+	      f1Unlike0->Fill(motherf1.M(), motherf1.Pt(), Costhetastar0);
+	      f1Unlike1->Fill(motherf1.M(), motherf1.Pt(), Costhetastar1);
+	      f1Unlike2->Fill(motherf1.M(), motherf1.Pt(), Costhetastar2);
 	      
 	    }
 	  else if (pion.charge * kks0.charge > 0)
 	    {
 	      // Fill like histo
-	      f1Like->Fill(motherf1.M(), motherf1.Pt(), lV0M, kks0.particle.M());
+	      f1Like0->Fill(motherf1.M(), motherf1.Pt(), Costhetastar0);
+	      f1Like1->Fill(motherf1.M(), motherf1.Pt(), Costhetastar1);
+	      f1Like2->Fill(motherf1.M(), motherf1.Pt(), Costhetastar2);
 	      
 	    }
 	}
@@ -485,6 +581,15 @@ void AliAnalysisTaskfnAODPbPb::UserExec(Option_t *)
 
   ///////////////////////////////////////////////////////////////////
       
+
+ Double_t Costhetastarmix0=0.0;
+ Double_t Costhetastarmix1=0.0;
+ Double_t Costhetastarmix2=0.0;
+ TLorentzVector kaonspLVmix(0.0,0.0,0.0,0.0);
+ TLorentzVector kshortspLVmix(0.0,0.0,0.0,0.0);
+ TLorentzVector kaonkshortspLVmix(0.0,0.0,0.0,0.0);
+ TLorentzVector pionmixVector(0.0,0.0,0.0,0.0);
+
  // Mixed event
  double pionmixenergy = 0.0;
  AliEventPool* pool = fPoolMgr->GetEventPool(lV0M, zv);
@@ -499,7 +604,7 @@ void AliAnalysisTaskfnAODPbPb::UserExec(Option_t *)
 
 	 for (const auto& bgTrack : *bgTracks)
 	   {
-	     AliReducedPbPbTrack* piontrackmix = dynamic_cast<AliReducedPbPbTrack*>(bgTrack);
+	     AliReducedspTrack* piontrackmix = dynamic_cast<AliReducedspTrack*>(bgTrack);
 	     if (!piontrackmix)
 	       {
 		 AliFatal(Form("ERROR: Could not receive mix pool track %d\n", bgTrack->GetUniqueID()));
@@ -510,20 +615,50 @@ void AliAnalysisTaskfnAODPbPb::UserExec(Option_t *)
 
 	     for (const auto& kks0 : kks0Candidates)
 	       {
-		 //if (kks0.particle.M() > kkshmasscut)
-		 //continue;
+	
+		 //////////for individual LVs/////////
+		 for (const auto& kaonsp : kaonspCandidates)
+		   {
+		     if ((kaonsp.trkid == kks0.trkid))
+		       {
+			 kaonspLVmix=kaonsp.particle;
+			 break;
+		       }
+		   }
+		 for (const auto& kshortsp : kshortspCandidates)
+		   {
+		     if ((kshortsp.trkidv0 == kks0.trkidv0))
+		       {
+			 kshortspLVmix=kshortsp.particle;
+			 break;
+		       }
+		   }
+		 
+		 //////////////////////
+		 if (kks0.particle.M() > kkshmasscut)
+		   continue;
+		 kaonkshortspLVmix=kaonspLVmix + kshortspLVmix;
+		 if (kaonkshortspLVmix.M() > kkshmasscut)
+		   continue;
 
 		 if (piontrackmix->Charge() * kks0.charge > 0)
 		   continue;
 
 		 pionmixenergy = TMath::Sqrt(pionmass * pionmass + piontrackmix->Px() * piontrackmix->Px() + piontrackmix->Py() * piontrackmix->Py() + piontrackmix->Pz() * piontrackmix->Pz());
+		 pionmixVector.SetPxPyPzE(piontrackmix->Px(), piontrackmix->Py(), piontrackmix->Pz(), pionmixenergy);
 		 motherf1mix.SetPxPyPzE(piontrackmix->Px()+kks0.particle.Px(), piontrackmix->Py()+kks0.particle.Py(), piontrackmix->Pz()+kks0.particle.Pz(), pionmixenergy+kks0.particle.E());
 		 if (motherf1mix.M() > 2.0)
 		   continue;
-		 if (TMath::Abs(motherf1mix.Rapidity())>=0.5)                                         
+		 if (TMath::Abs(motherf1mix.Rapidity())>=0.5)                   
 		   continue;
+		 
+		 Costhetastarmix0 = CosThetaStarHel0(motherf1mix, pionmixVector);
+		 Costhetastarmix1 = CosThetaStarHel1(motherf1mix, kaonspLVmix);
+		 Costhetastarmix2 = CosThetaStarHel2(motherf1mix, kshortspLVmix);
 		 // Fill mix histo
-		 f1Mix->Fill(motherf1mix.M(), motherf1mix.Pt(), lV0M, kks0.particle.M());
+		 f1Mix0->Fill(motherf1mix.M(), motherf1mix.Pt(), Costhetastarmix0);
+		 f1Mix1->Fill(motherf1mix.M(), motherf1mix.Pt(), Costhetastarmix1);
+		 f1Mix2->Fill(motherf1mix.M(), motherf1mix.Pt(), Costhetastarmix2);
 		 
 	       }
 	   }
@@ -542,14 +677,14 @@ void AliAnalysisTaskfnAODPbPb::UserExec(Option_t *)
   PostData(1, fOutput);
 }
 //________________________________________________________________________
-void AliAnalysisTaskfnAODPbPb::Terminate(Option_t *)
+void AliAnalysisTaskfnAODsp::Terminate(Option_t *)
 {
   
 }
 
 //________________________________________________________________________
 
-Bool_t AliAnalysisTaskfnAODPbPb::GoodEvent(const AliVVertex *vertex) //all cuts taken from alice code github pp analysis from strangeness and correlation analysis
+Bool_t AliAnalysisTaskfnAODsp::GoodEvent(const AliVVertex *vertex) //all cuts taken from alice code github pp analysis from strangeness and correlation analysis
 {
 
   Bool_t EventAccepted;
@@ -610,7 +745,7 @@ Bool_t AliAnalysisTaskfnAODPbPb::GoodEvent(const AliVVertex *vertex) //all cuts 
       return kFALSE;
     }
 
-  /*    AliAnalysisUtils *fUtils = new AliAnalysisUtils();
+    AliAnalysisUtils *fUtils = new AliAnalysisUtils();
     if(fUtils->IsSPDClusterVsTrackletBG(fVevent))
     {
       PostData(1, fOutput);
@@ -618,13 +753,13 @@ Bool_t AliAnalysisTaskfnAODPbPb::GoodEvent(const AliVVertex *vertex) //all cuts 
     }
 
     fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
-  */
+
 
     return kTRUE;
 
 }
 //-----------------------------------------------
-Bool_t AliAnalysisTaskfnAODPbPb::IsPion(AliVTrack *vtrack)
+Bool_t AliAnalysisTaskfnAODsp::IsPion(AliVTrack *vtrack)
 {
 
   
@@ -649,7 +784,7 @@ Bool_t AliAnalysisTaskfnAODPbPb::IsPion(AliVTrack *vtrack)
   return kTRUE;
 }
 
-Bool_t AliAnalysisTaskfnAODPbPb::IsKaon(AliVTrack *vtrack)
+Bool_t AliAnalysisTaskfnAODsp::IsKaon(AliVTrack *vtrack)
 {
 
   AliAODTrack *aodtrack  = dynamic_cast<AliAODTrack*>(vtrack);
@@ -676,20 +811,20 @@ Bool_t AliAnalysisTaskfnAODPbPb::IsKaon(AliVTrack *vtrack)
 //--------------------------------------------
 
 
-Bool_t AliAnalysisTaskfnAODPbPb::HasTOF(AliAODTrack *track)
+Bool_t AliAnalysisTaskfnAODsp::HasTOF(AliAODTrack *track)
 {
   bool hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
   bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
-  const float len = track->GetIntegratedLength();
-  bool hasTOF = hasTOFout && hasTOFtime && (len > 350.);
-  //bool hasTOF = hasTOFout && hasTOFtime;
+  //const float len = track->GetIntegratedLength();
+  //bool hasTOF = hasTOFout && hasTOFtime && (len > 350.);
+  bool hasTOF = hasTOFout && hasTOFtime;
   return hasTOF;
 }
 
 
 
 //_________________________________________________________________________________________________
-Bool_t AliAnalysisTaskfnAODPbPb::IsV0(AliAODv0 *v0, AliAODEvent *lAODEvent)
+Bool_t AliAnalysisTaskfnAODsp::IsV0(AliAODv0 *v0, AliAODEvent *lAODEvent)
 {
 
   
@@ -775,7 +910,7 @@ Bool_t AliAnalysisTaskfnAODPbPb::IsV0(AliAODv0 *v0, AliAODEvent *lAODEvent)
 
   Double_t altmass=0.0;
   Double_t fMass = 0.497614;
-  Double_t fTolerance = 0.015;
+  Double_t fTolerance = 0.03;
   altmass = v0->MassK0Short();
 
 
@@ -786,7 +921,6 @@ Bool_t AliAnalysisTaskfnAODPbPb::IsV0(AliAODv0 *v0, AliAODEvent *lAODEvent)
 
 
   // Competing v0rejection for K0s vs Lambda
-  /*
   Double_t fToleranceVeto=0.004;
   
   altmass = v0->MassLambda();
@@ -797,11 +931,6 @@ Bool_t AliAnalysisTaskfnAODPbPb::IsV0(AliAODv0 *v0, AliAODEvent *lAODEvent)
   altmass = v0->MassAntiLambda();
   if ((TMath::Abs(altmass - 1.115683)) < fToleranceVeto) {
     AliDebugClass(2, "Failed competing anti-V0 rejection check");
-    return kFALSE;
-  }
-  */
-
-  if ((v0->PtArmV0()/TMath::Abs(v0->AlphaV0())) < 0.2) {
     return kFALSE;
   }
 
@@ -823,7 +952,7 @@ Bool_t AliAnalysisTaskfnAODPbPb::IsV0(AliAODv0 *v0, AliAODEvent *lAODEvent)
 }
 
 //_________________________________________________________________________________________________
-void AliAnalysisTaskfnAODPbPb::EventMixing()
+void AliAnalysisTaskfnAODsp::EventMixing()
 {
 
   ////////////////////////////
@@ -842,7 +971,7 @@ void AliAnalysisTaskfnAODPbPb::EventMixing()
 //___________________________________________________________
 
 
-Bool_t AliAnalysisTaskfnAODPbPb::TrackPassesOOBPileupCut(AliAODTrack* t, Double_t b){
+Bool_t AliAnalysisTaskfnAODsp::TrackPassesOOBPileupCut(AliAODTrack* t, Double_t b){
   if (!t) return true;
   if ((t->GetStatus() & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) return true;
   if (t->GetTOFExpTDiff(b, true) + 2500 > 1e-6) return true;
@@ -852,7 +981,7 @@ Bool_t AliAnalysisTaskfnAODPbPb::TrackPassesOOBPileupCut(AliAODTrack* t, Double_
 
 //___________________________________________________________________
 
-Bool_t AliAnalysisTaskfnAODPbPb::AcceptAODtracks(AliAODTrack *pTrack, AliAODTrack *nTrack)
+Bool_t AliAnalysisTaskfnAODsp::AcceptAODtracks(AliAODTrack *pTrack, AliAODTrack *nTrack)
 {
 
   Double_t peta = pTrack->Eta();
@@ -895,3 +1024,68 @@ Bool_t AliAnalysisTaskfnAODPbPb::AcceptAODtracks(AliAODTrack *pTrack, AliAODTrac
 }
 
 
+
+
+
+
+
+/////for spin///////////////////
+
+Double_t AliAnalysisTaskfnAODsp::CosThetaStarHel0(TLorentzVector mother, TLorentzVector daughter0)
+
+{
+
+  // Computes components of beta
+  Double_t betaX = -mother.X() / mother.E();
+  Double_t betaY = -mother.Y() / mother.E();
+  Double_t betaZ = -mother.Z() / mother.E();
+
+  daughter0.Boost(betaX, betaY, betaZ);
+
+  TVector3 zAxisHE = (mother.Vect()).Unit();
+  Double_t thetaHE= zAxisHE.Dot((daughter0.Vect()).Unit());
+
+  //return thetaHE;
+  return TMath::Abs(thetaHE);
+
+}
+
+
+Double_t AliAnalysisTaskfnAODsp::CosThetaStarHel1(TLorentzVector mother, TLorentzVector daughter1)
+
+{
+
+  // Computes components of beta
+  Double_t betaX = -mother.X() / mother.E();
+  Double_t betaY = -mother.Y() / mother.E();
+  Double_t betaZ = -mother.Z() / mother.E();
+
+  daughter1.Boost(betaX, betaY, betaZ);
+
+  TVector3 zAxisHE = (mother.Vect()).Unit();
+  Double_t thetaHE= zAxisHE.Dot((daughter1.Vect()).Unit());
+
+  //return thetaHE;
+  return TMath::Abs(thetaHE);
+
+}
+
+
+Double_t AliAnalysisTaskfnAODsp::CosThetaStarHel2(TLorentzVector mother, TLorentzVector daughter2)
+
+{
+
+  // Computes components of beta
+  Double_t betaX = -mother.X() / mother.E();
+  Double_t betaY = -mother.Y() / mother.E();
+  Double_t betaZ = -mother.Z() / mother.E();
+
+  daughter2.Boost(betaX, betaY, betaZ);
+
+  TVector3 zAxisHE = (mother.Vect()).Unit();
+  Double_t thetaHE= zAxisHE.Dot((daughter2.Vect()).Unit());
+
+  //return thetaHE;
+  return TMath::Abs(thetaHE);
+
+}
