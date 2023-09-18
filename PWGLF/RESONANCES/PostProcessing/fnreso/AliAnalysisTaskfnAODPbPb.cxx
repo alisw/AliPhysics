@@ -211,7 +211,7 @@ void AliAnalysisTaskfnAODPbPb::UserCreateOutputObjects()
   //fHistVz            = new TH1F("fHistZVertex", "Z vertex distribution", 100,-10,10);       
   fHistCentrality = new TH1F("fHistCentrality", "Centrality distribution", 100,0,100);
 
-  Int_t bins[4]={250, 200, 10, 100};
+  Int_t bins[4]={250, 40, 10, 100};
   Double_t xmin[4]={1.0, 0.0, 0, 0.9};
   Double_t xmax[4]={2.0, 20.0, 100, 1.9};
   f1Unlike = new THnSparseD("f1Unlike", "Unlike histogram", 4, bins, xmin, xmax);
