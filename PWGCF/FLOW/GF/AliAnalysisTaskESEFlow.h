@@ -111,7 +111,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         static const Int_t      fNumHarms = 13; // maximum harmonics length of flow vector array
         static const Int_t      fNumPowers = 9; // maximum weight power length of flow vector array
 
-        static const Int_t      nCentBinMax = 11;           // maximum number of centrality bins
+        static const Int_t      nCentBinMax = 91;           // maximum number of centrality bins
         static const Int_t      nPtBinMax = 70;             // maximum number of pt bins
         static const Int_t      nESEMaxPercs = 15;             //
 
