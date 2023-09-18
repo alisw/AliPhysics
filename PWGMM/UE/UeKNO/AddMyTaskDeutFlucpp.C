@@ -3,7 +3,7 @@ class AliAnalysisDataContainer;
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #endif
 #include "AliAnalysisTaskDeutFlucpp.h"
-AliAnalysisTaskDeutFlucpp* AddMyTaskDeutFlucpp(Bool_t UseMC,const char* taskname="DeutFlucpp", int triggerClass = 0)
+AliAnalysisTaskDeutFlucpp* AddMyTaskDeutFlucpp(const char* taskname="DeutFlucpp",Bool_t UseMC = kFALSE, int triggerClass = 0)
 {
     // get the manager via the static access member. since it's static, you don't need                                                                                                   
     // an instance of the class to call the function                                                                                                                                     
