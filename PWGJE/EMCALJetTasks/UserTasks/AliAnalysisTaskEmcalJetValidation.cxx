@@ -299,7 +299,7 @@ void AliAnalysisTaskEmcalJetValidation::UserCreateOutputObjects()
    fOutputList->SetName("OutputHistos");
 
    fHistNEvents = new TH1F("hNEvents", "Number of processed events", 1, 0, 1);
-   fHistNEventVtx =  new TH1F("Events Vertex Distribution", "", 200, -15, 15);
+   fHistNEventVtx =  new TH1F("Events Vertex Distribution", "", 200, -20, 20);
 
    //JET QA
    fHistJetPt = new TH1F("jetPt", "inclusive jetPt ; p_{T} (GeV/#it{c})", 200, 0, 100);
@@ -384,6 +384,7 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
     //EVENTS WHICH PASSED
     fHistNEvents->Fill(1);
     fHistNEventVtx->Fill((vertex->GetZ()));
+    std::cout << "vertex positions for selected events" << vertex->GetZ() << '\n';
 
 
   fFastJetWrapper->Clear();
