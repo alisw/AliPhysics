@@ -4424,7 +4424,6 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
         if (gamma1MotherLabel == -221) isTrueEtaDalitz = kTRUE;
       }
     }
-    cout << gamma0MotherLabel <<" "<< gamma1MotherLabel<< " " << gamma1MCLabel<< " "<< gamma1MCLabel<<endl;
     if(isTruePi0 || isTrueEta){// True Pion or Eta
 
       Float_t weightMatBudget = 1.;
