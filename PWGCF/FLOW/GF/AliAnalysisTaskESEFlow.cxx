@@ -1497,7 +1497,7 @@ void AliAnalysisTaskESEFlow::CorrelationTask(const Float_t centrality, Int_t fSp
       }
     }
 
-    if( (CentrCode < 0) || (CentrCode > 8)) { return; }
+    // if( (centrality < 0) || (centrality > 90)) { return; }
 
     fIndexSampling = GetSamplingIndex();
 
@@ -2858,9 +2858,17 @@ Int_t AliAnalysisTaskESEFlow::GetCentralityCode(const Float_t centrality)
     }*/
 
     for (Int_t centr(0); centr<fCentAxis->GetNbins(); ++centr){
-        if ((centrality > CentEdges[centr]) && (centrality < CentEdges[centr+1])){
-            centrcode = centr;
-            return centrcode;
+        if (centr==0){
+            if ((centrality >= CentEdges[centr]) && (centrality <= CentEdges[centr+1])){
+                centrcode = centr;
+                return centrcode;
+            }
+        }
+        else{
+            if ((centrality > CentEdges[centr]) && (centrality <= CentEdges[centr+1])){
+                centrcode = centr;
+                return centrcode;
+            }
         }
     }
 
@@ -2902,9 +2910,17 @@ Int_t AliAnalysisTaskESEFlow::GetEsePercentileCode(Double_t qPerc) const
     }*/
 
     for (Int_t code(0); code<ESEPercAxis->GetNbins(); ++code){
-        if ((qPerc > EventShapeEdges[code]) && (qPerc < EventShapeEdges[code+1])){
-            qPerccode = code;
-            return qPerccode;
+        if (code==0){
+            if ((qPerc >= EventShapeEdges[code]) && (qPerc <= EventShapeEdges[code+1])){
+                qPerccode = code;
+                return qPerccode;
+            }
+        }
+        else{
+            if ((qPerc > EventShapeEdges[code]) && (qPerc <= EventShapeEdges[code+1])){
+                qPerccode = code;
+                return qPerccode;
+            }
         }
     }
 
@@ -3023,10 +3039,10 @@ Bool_t AliAnalysisTaskESEFlow::IsEventSelected()
   if(!multSelection) { AliError("AliMultSelection object not found! Returning -1"); return -1; }
   Float_t dPercentile = multSelection->GetMultiplicityPercentile(fCentEstimator);
 
+  
 
   if(fIs2018Data){
     fEventCuts.SetupPbPb2018();
-    fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE); //
     fhEventCounter->Fill("2018 OK",1);
   }
 
@@ -3052,8 +3068,10 @@ Bool_t AliAnalysisTaskESEFlow::IsEventSelected()
   if(dPercentile > 100 || dPercentile < 0) { AliWarning("Centrality percentile estimated not within 0-100 range. Returning -1"); return -1; }
   fhEventCounter->Fill("Centrality Cut OK",1);
 
+  if (fColSystem == kPbPb) {fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE); } //} 
   if( (fColSystem == kPbPb || fColSystem == kXeXe) && fEventRejectAddPileUp && dPercentile > 0 && dPercentile < 10 && IsEventRejectedAddPileUp()) { return kFALSE; }
   fhEventCounter->Fill("Pileup Cut OK",1);
+  
 
   if(TMath::Abs(fAOD->GetPrimaryVertex()->GetZ()) > fVtxZCuts) { return kFALSE; }
   fhEventCounter->Fill("VtxZ Cut OK",1);
