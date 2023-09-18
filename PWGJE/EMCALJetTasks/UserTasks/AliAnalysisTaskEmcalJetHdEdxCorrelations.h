@@ -20,6 +20,7 @@
 #include <vector>
 
 #include <TRandom3.h>
+#include <TGrid.h>
 class TH1;
 class TH2;
 class TH3;
@@ -69,10 +70,7 @@ namespace PWGJE
       AliAnalysisTaskEmcalJetHdEdxCorrelations(const char *name);
       virtual ~AliAnalysisTaskEmcalJetHdEdxCorrelations() {
         //Make sure we close epCorrectionsFile if it is open
-        if (fEPcorrectionFile) {
-          fEPcorrectionFile->Close();
-          delete fEPcorrectionFile;
-        }
+
       }
 
       Double_t GetTrackBias() const { return fTrackBias; }
@@ -83,6 +81,23 @@ namespace PWGJE
       virtual void SetTrackBias(Double_t b) { fTrackBias = b; }
       /// Require a cluster with pt > b in jet
       virtual void SetClusterBias(Double_t b) { fClusterBias = b; }
+
+      // EPCorrectionsFileSetter
+      void SetEPcorrectionsTree(TString* filename) {
+        //Check if filename contains alien:// and connect to TGrid if it does
+        if (filename->Contains("alien://")) {
+          TGrid::Connect("alien://");
+        }
+        TFile *fEPcorrectionFile = TFile::Open(filename->Data());
+        if (!fEPcorrectionFile) {
+          AliError(Form("Could not open file %s", filename->Data()));
+        }
+        fEPCorrectionTree = (TTree *)(fEPcorrectionFile->Get("V0C"));
+        if (!fEPCorrectionTree)
+        {
+          AliError(Form("Could not open tree %s", "V0C"));
+        }
+      }
 
       // Event trigger/mixed selection - setters
       /// Set the trigger event trigger selection
@@ -251,7 +266,7 @@ namespace PWGJE
       Double_t fMinSharedMomentumFraction;    ///< Minimum shared momentum with matched jet
       bool fRequireMatchedPartLevelJet;       ///< True if matched jets are required to be matched to a particle level jet
       Double_t fMaxMatchedJetDistance;        ///< Maximum distance between two matched jets
-      TFile *fEPcorrectionFile;               ///< File containing the EP corrections
+      TTree* fEPCorrectionTree;               ///< Tree containing the EP corrections
 
       // Histograms
       THistManager fHistManager; ///<  Histogram manager
@@ -271,7 +286,7 @@ namespace PWGJE
       AliAnalysisTaskEmcalJetHdEdxCorrelations(const AliAnalysisTaskEmcalJetHdEdxCorrelations &);            // not implemented
       AliAnalysisTaskEmcalJetHdEdxCorrelations &operator=(const AliAnalysisTaskEmcalJetHdEdxCorrelations &); // not implemented
 
-      ClassDef(AliAnalysisTaskEmcalJetHdEdxCorrelations, 21);
+      ClassDef(AliAnalysisTaskEmcalJetHdEdxCorrelations, 23);
     };
 
   } /* namespace EMCALJetTasks */

@@ -66,7 +66,7 @@ namespace PWGJE
                                                                                            fMinSharedMomentumFraction(0.),
                                                                                            fRequireMatchedPartLevelJet(false),
                                                                                            fMaxMatchedJetDistance(-1),
-                                                                                           fEPcorrectionFile(nullptr),
+                                                                                           fEPCorrectionTree(nullptr),
                                                                                            fHistManager(),
                                                                                            fHistJetHTrackPt(nullptr),
                                                                                            fHistEPAngle(nullptr),
@@ -104,7 +104,7 @@ namespace PWGJE
                                                                                                            fMinSharedMomentumFraction(0.),
                                                                                                            fRequireMatchedPartLevelJet(false),
                                                                                                            fMaxMatchedJetDistance(-1),
-                                                                                                           fEPcorrectionFile(nullptr),
+                                                                                                           fEPCorrectionTree(nullptr),
                                                                                                            fHistManager(name),
                                                                                                            fHistJetHTrackPt(nullptr),
                                                                                                            fHistEPAngle(nullptr),
@@ -649,7 +649,7 @@ namespace PWGJE
 
               pionTPCnSigma = pidResponse->NumberOfSigmasTPC(vTrack, (AliPID::EParticleType)2);
 
-              EDetPidStatus status = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, vTrack);
+              AliPIDResponse::EDetPidStatus status = pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, vTrack);
               hasTOFhit = (status == AliPIDResponse::kDetPidOk);
             
               pionTOFnSigma = pidResponse->NumberOfSigmasTOF(vTrack, (AliPID::EParticleType)2);
@@ -806,7 +806,7 @@ namespace PWGJE
 
                   for (Int_t ibg = 0; ibg < bgTracks->GetEntries(); ibg++)
                   {
-                    AliVParticle *bgTrack = static_cast<AliVParticle *>(bgTracks->At(ibg));
+                    AliVTrack *bgTrack = static_cast<AliVTrack *>(bgTracks->At(ibg));
                     if (!bgTrack)
                     {
                       AliError(Form("%s:Failed to retrieve tracks from mixed events", GetName()));
@@ -816,7 +816,7 @@ namespace PWGJE
                     //       it when will filling into the event pool (in CloneAndReduceTrackList()).
                     Bool_t hasTOFhit;
 
-                    EDetPidStatus status = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, bgTrack);
+                    AliPIDResponse::EDetPidStatus status = pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, bgTrack);
                     hasTOFhit = (status == AliPIDResponse::kDetPidOk);
 
                     // Fill into TLorentzVector for use with functions below
@@ -1521,7 +1521,7 @@ namespace PWGJE
 
   Double_t AliAnalysisTaskEmcalJetHdEdxCorrelations::GetFlattenedEPAngle(Double_t uncorrectedAngle){
       // Read the TTree from the ROOT file
-      TTree *tree = dynamic_cast<TTree *>(fEPcorrectionFile->Get("V0C"));
+      
       TString centrality_string=TString("");
       if(fCent<10)
       {
@@ -1565,7 +1565,7 @@ namespace PWGJE
       }
       
 
-      if (tree)
+      if (fEPCorrectionTree)
       {
         // Declare variables to hold the data
         Double_t cos_ave_i1_v0c = 0;
@@ -1574,19 +1574,20 @@ namespace PWGJE
         Double_t sin_ave_i2_v0c = 0;
 
         // Set branch addresses to access the data
-        tree->SetBranchAddress(Form("cos_ave_i1_V0C_%s", centrality_string.Data()), &cos_ave_i1_v0c);
-        tree->SetBranchAddress(Form("cos_ave_i2_V0C_%s", centrality_string.Data()), &cos_ave_i2_v0c);
-        tree->SetBranchAddress(Form("sin_ave_i1_V0C_%s", centrality_string.Data()), &sin_ave_i1_v0c);
-        tree->SetBranchAddress(Form("sin_ave_i2_V0C_%s", centrality_string.Data()), &sin_ave_i2_v0c);
+        fEPCorrectionTree->SetBranchAddress(Form("cos_ave_i1_V0C_%s", centrality_string.Data()), &cos_ave_i1_v0c);
+        fEPCorrectionTree->SetBranchAddress(Form("cos_ave_i2_V0C_%s", centrality_string.Data()), &cos_ave_i2_v0c);
+        fEPCorrectionTree->SetBranchAddress(Form("sin_ave_i1_V0C_%s", centrality_string.Data()), &sin_ave_i1_v0c);
+        fEPCorrectionTree->SetBranchAddress(Form("sin_ave_i2_V0C_%s", centrality_string.Data()), &sin_ave_i2_v0c);
 
         // Loop over the entries and retrieve the values
-        tree->GetEntry(0);
+        fEPCorrectionTree->GetEntry(0);
         Double_t flatEPangle = uncorrectedAngle +1/2*(2*(-sin_ave_i1_v0c*TMath::Cos(2*uncorrectedAngle) + cos_ave_i1_v0c*TMath::Sin(2*uncorrectedAngle)) + (-sin_ave_i2_v0c*TMath::Cos(4*uncorrectedAngle) + cos_ave_i2_v0c*TMath::Sin(4*uncorrectedAngle)));
         return flatEPangle;
         }
         else
         {
           std::cerr << "Failed to read TTree from the ROOT file." << std::endl;
+          return uncorrectedAngle;
         }
   }
 
@@ -1688,14 +1689,7 @@ namespace PWGJE
 
       TString *epCorrectionsFilenameTstr = new TString(epCorrectionsFilename);
 
-      if (epCorrectionsFilenameTstr->Contains("alien://") && !gGrid)
-      {
-        TGrid::Connect("alien://");
-      }
-        // Open the ROOT file in read mode
-      TFile *file = new TFile(epCorrectionsFilenameTstr->Data(), "READ");
-
-      correlationTask->fEPcorrectionFile = file;
+      correlationTask->SetEPcorrectionsTree(epCorrectionsFilenameTstr);
 
       //-------------------------------------------------------
       // Final settings, pass to manager and set the containers
