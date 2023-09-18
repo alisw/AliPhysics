@@ -681,7 +681,10 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
   } else {
     //..standard event plots (cent. percentiles, mult-vs-percentile)
     const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
-    const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
+    double dCentrality = 0;
+    if (pms) {
+      dCentrality = pms->GetMultiplicityPercentile("V0M");
+    }
     float centrV0 = dCentrality;
     float cent = dCentrality;
     float centSPD = 0;
@@ -690,9 +693,13 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
     fV0CentralityDis->Fill(centrV0);
     fV0CentralityDisNarrow->Fill(centrV0);
 
-    const auto v0Est = pms->GetEstimator("V0M");
-    fV0MMultiplicity->Fill(v0Est->GetValue());
-    fV0MRatio->Fill(v0Est->GetValue()/v0Est->GetMean());
+    // Initialize the estimator
+    AliMultEstimator *v0Est = 0;
+    if (pms) {
+      v0Est = pms->GetEstimator("V0M");
+      fV0MMultiplicity->Fill(v0Est->GetValue());
+      fV0MRatio->Fill(v0Est->GetValue()/v0Est->GetMean());
+    }
 
     // Check if it passed the standard AOD selection
     if (!AcceptAOD(fAOD) ) {
