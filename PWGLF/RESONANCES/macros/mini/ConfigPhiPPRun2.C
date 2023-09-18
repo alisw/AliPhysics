@@ -10,16 +10,24 @@
 // (2) cuts at all levels: single daughters, tracks, events
 // (3) output objects: histograms or trees
 ****************************************************************************/
+Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQualityCutsID = 0, Int_t customFilterBit = 0);
 
-Bool_t ConfigPhiPPRun2(AliRsnMiniAnalysisTask *task, 
-			    Bool_t                 isMC, 
-			    Bool_t                 isPP,
-			    AliRsnCutSet           *cutsPair,
+#ifdef __CLING__
+R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
+#include <PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C>
+#endif
+
+
+Bool_t ConfigPhiPPRun2(AliRsnMiniAnalysisTask *task,
+		       Bool_t isAOD = kTRUE,       
+		       Bool_t                 isMC=kFALSE, 
+		       Bool_t                 isPP=kTRUE,
+			    AliRsnCutSet           *cutsPair =0,
 			    Int_t                  Strcut = 2011,
 			    Int_t                  customQualityCutsID = AliRsnCutSetDaughterParticle::kDisableCustom,
 			    AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate=AliRsnCutSetDaughterParticle::kTPCpidTOFveto3s,
-			    Float_t                ThetaStar =AliRsnMiniValue::kCosThetaStarAbs,
-			    Float_t                nsigmaPi = 3.0,
+		             Int_t                    polaxis=0,
+                             Float_t                nsigmaPi = 3.0,
 			    Float_t                nsigmaK  = 3.0,
 			    Bool_t                 enableMonitor = kTRUE,
 			   Int_t                   Multbin=100,
@@ -59,7 +67,7 @@ Bool_t ConfigPhiPPRun2(AliRsnMiniAnalysisTask *task,
   Int_t iCutK  = task->AddTrackCuts(cutSetK);
   if(enableMonitor){
     Printf("======== Monitoring cut AliRsnCutSetDaughterParticle enabled");
-    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
+    // gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
     //AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput());
     AddMonitorOutput(isMC, cutSetK->GetMonitorOutput());
   }  
@@ -72,29 +80,69 @@ Bool_t ConfigPhiPPRun2(AliRsnMiniAnalysisTask *task,
   /* rapidity         */ Int_t yID    = task->CreateValue(AliRsnMiniValue::kY,          kFALSE);
   /* CosThetaStar     */ //Int_t cosThStarID = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs, kTRUE);
 
-  if(isMC==1)
+  Int_t costheta;   
+  if(isMC)
     {
-      /* CosThetaStar     */ Int_t cosThStarID = task->CreateValue(ThetaStar, kTRUE);
+   
+      if(polaxis==0) {
+	costheta  = task->CreateValue(AliRsnMiniValue::kCosThetaHeAbs,kTRUE); } 
+
+      if(polaxis==1) {
+	costheta  = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs,kTRUE); } 
+      //if(polaxis==2) {
+      //costheta  = task->CreateValue(AliRsnMiniValue::kCosThetaCsAbs,kTRUE); } 
+
+      if(polaxis==2) {
+	costheta  = task->CreateValue(AliRsnMiniValue::kCosThetaJackson,kTRUE); }
+
+      if(polaxis==3){
+	costheta  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kTRUE); }
+
     }
-  
-  else
+
+  if(!isMC)
     {
-	 /* CosThetaStar  */ Int_t cosThStarID = task->CreateValue(ThetaStar, kFALSE);
-    }
   
+      if(polaxis==0) {
+	costheta  = task->CreateValue(AliRsnMiniValue::kCosThetaHeAbs,kFALSE); } 
+
+      if(polaxis==1) {
+	costheta  = task->CreateValue(AliRsnMiniValue::kCosThetaStarAbs,kFALSE); } 
+      //if(polaxis==2) {
+      // costheta  = task->CreateValue(AliRsnMiniValue::kCosThetaCsAbs,kFALSE); } 
+
+      if(polaxis==2) {
+	costheta  = task->CreateValue(AliRsnMiniValue::kCosThetaJackson,kFALSE); }
+
+      if(polaxis==3){
+	costheta  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kFALSE); }
+          
+    }
+  /*  
   if (isMC)
-    Bool_t isDATA=kFALSE;
+ 
   else
     Bool_t isDATA=kTRUE;
-  
+  */  
   // -- Create all needed outputs -----------------------------------------------------------------
   // use an array for more compact writing, which are different on mixing and charges
   // // [0] = unlike
   // [1] = mixing
   // [2] = like ++
   // [3] = like --
+
+  Bool_t isDATA;
+
+  if(isMC)
+    {
+      isDATA = kFALSE;
+    }
+  else 
+    {
+      isDATA=kTRUE;
+     }
   
-  Bool_t  use     [10] = {isDATA         ,isDATA         ,isDATA       ,isDATA       ,isMC     ,isMC     ,isMC     ,isMC   ,  isMC    ,isMC    };
+  Bool_t  use     [10] = {isDATA        ,isDATA         ,isDATA       ,isDATA       ,isMC     ,isMC     ,isMC     ,isMC   ,  isMC    ,isMC    };
   Bool_t  useIM   [10] = {1         ,1         ,1       ,1       ,1        ,1        ,1        ,1          ,0       ,0       };
   TString name    [10] = {"UnlikePM","MixingPM","LikePP","LikeMM","MCGenPM","MCGenMP","TruesPM","TruesMP","ResPM" ,"ResMP" };
   TString comp    [10] = {"PAIR"    ,"MIX"     ,"PAIR"  ,"PAIR"  ,"MOTHER" ,"MOTHER" ,"TRUE"   ,"TRUE"  ,"TRUE"  ,"TRUE"  };
@@ -125,7 +173,7 @@ Bool_t ConfigPhiPPRun2(AliRsnMiniAnalysisTask *task,
       out->AddAxis(resID, 200, -0.02, 0.02);
 
     // axis Y: transverse momentum
-    //    out->AddAxis(ptID, 120, 0.0, 10.0);
+    //    out->AddAxxis(ptID, 120, 0.0, 10.0);
     out->AddAxis(ptID, Ptbin,lPtbin,hPtbin);
     // axis Z: centrality-multiplicity
     if (isPP)
@@ -134,9 +182,9 @@ Bool_t ConfigPhiPPRun2(AliRsnMiniAnalysisTask *task,
       out->AddAxis(centID, 100, 0.0, 100.0);
     // axis W: CosThetaStar
     if (isPP)
-      out->AddAxis(cosThStarID, 10, 0.0, 1.0);
+      out->AddAxis(costheta, 10, 0.0, 1.0);
     else 
-      out->AddAxis(cosThStarID, 10, 0.0, 1.0);
+      out->AddAxis(costheta, 10, 0.0, 1.0);
    }
 
   return kTRUE;

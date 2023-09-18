@@ -185,13 +185,16 @@ set(SRCS
   AliFemtoPairCutRadialDistanceDR.cxx
   AliFemtoCorrFctnDYDPhiSimpleWithCorrections.cxx
   AliFemtoCorrFctnDYDPhiSimple.cxx
-  AliAnalysisEfficiencyPbPbExclusivePID.cxx
-  AliAnalysisEfficiencyPbPbNodoublecount.cxx
   AliAnalysisTaskParticleEffDYM3.cxx
   AliAnalysisTaskParticleEffDYM1.cxx
- AliAnalysisTaskParticleEffDYM2.cxx
- AliAnalysisTaskParticleEffDYM0.cxx
+  AliAnalysisTaskParticleEffDYM2.cxx
+  AliAnalysisTaskParticleEffDYM0.cxx
+  AliAnalysisTaskEfficiencyPbPb_DR.cxx
 
+
+
+  AliAnalysisEfficiencyPbPbExclusivePID.cxx
+  AliAnalysisEfficiencyPbPbNodoublecount.cxx
     )
 
 

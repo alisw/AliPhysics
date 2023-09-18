@@ -149,6 +149,10 @@ set(SRCS
   HMPTF/AliAnalysisTaskCorrPbPbMC.cxx
   HMPTF/AliAnalysisTaskCorrPPMC.cxx
   HMPTF/AliAnalysisTaskResonanceVsMultiplicityROOT6_new.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFStrange.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_detect.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_gen.cxx
   IntermittencyAnalysis/AliAnalysisTaskNFactorialMoments.cxx
   )
 
@@ -203,3 +207,4 @@ install(DIRECTORY FBCorrelationsWithPID/macros DESTINATION PWGCF/EBYE/FBCorrelat
 install(DIRECTORY KaonIsospinFluctuations/macros DESTINATION PWGCF/EBYE/KaonIsospinFluctuations)
 install(DIRECTORY ParticleYieldRatioCorrelations/macros DESTINATION PWGCF/EBYE/ParticleYieldRatioCorrelations)
 install(DIRECTORY HMPTF/macros DESTINATION PWGCF/EBYE/HMPTF)
+install(DIRECTORY DiffPTF/macros DESTINATION PWGCF/EBYE/DiffPTF)

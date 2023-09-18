@@ -255,6 +255,7 @@ class AliVertexingHFUtils : public TObject{
   static Double_t CombineNsigmaTPCTOF(Double_t nsigmaTPC, Double_t nsigmaTOF);
 
   // KF Particle functions
+  static Double_t CosOpeningAngleFromKF(KFParticle kfp_0, KFParticle kfp_1);
   static Double_t CosPointingAngleFromKF(KFParticle kfp, KFParticle kfpmother);
   static Double_t CosPointingAngleXYFromKF(KFParticle kfp, KFParticle kfpmother);
   static Double_t CosThetaStarFromKF(Int_t ip, UInt_t pdgvtx, UInt_t pdgprong0, UInt_t pdgprong1, KFParticle kfpvtx, KFParticle kfpprong0, KFParticle kfpprong1);

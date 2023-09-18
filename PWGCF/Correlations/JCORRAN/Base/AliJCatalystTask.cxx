@@ -1255,7 +1255,7 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
    if (bSaveHMOhist) {fControlHistogramsList[icent]->Add(fHMOsHistogram[icent][1]);}
 
    // q) Book histogram to hold 2D eta-phi spectra
-   f2DEtaPhiHistogram[icent][0] = new TH2F("f2DEtaPhiHist_BeforeCorrection","eta-phi; #phi (rad); #eta",50,0.,TMath::TwoPi(),16,-0.8,0.8); 
+   f2DEtaPhiHistogram[icent][0] = new TH2F("f2DEtaPhiHist_BeforeCorrection","eta-phi; #phi (rad); #eta",50,-TMath::Pi(),TMath::Pi(),16,-0.8,0.8); 
    f2DEtaPhiHistogram[icent][0]->GetXaxis()->SetTitle("#phi");
    f2DEtaPhiHistogram[icent][0]->GetYaxis()->SetTitle("#eta");
    if (bSaveQCNUA) {fControl2DNUAList[icent]->Add(f2DEtaPhiHistogram[icent][0]);}

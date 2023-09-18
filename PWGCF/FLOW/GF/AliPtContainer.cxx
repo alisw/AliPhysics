@@ -551,6 +551,11 @@ TH1* AliPtContainer::getRecursiveHist(int ind, int m, unsigned int l_obs, bool s
   }
   return 0;
 }
+TH1* AliPtContainer::getCentralMomentHist(int ind, int m){
+    if(!fCMList) CalculateCentralMoment();
+    if(!fCMList) return 0;
+    if(ind+1<fCMList->GetEntries()) return (TH1*)fCMList->At((ind+1)*mpar+m-1);
+}
 TH1* AliPtContainer::getSubeventCumulantHist(int ind, int m) {
     TH1* reth;
     if(m==2) {
@@ -609,6 +614,22 @@ void AliPtContainer::CalculateRecursive(bool normalized) {
     ((AliProfileBS*)fCorrList->At(0))->PresetWeights(0);
     return;
 }
+void AliPtContainer::CalculateCentralMoment() { 
+    if(fCMList) delete fCMList;
+    fCMList = new TList();
+    fCMList->SetOwner();
+    ((AliProfileBS*)fCorrList->At(0))->PresetWeights((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar%s",mpar,(mpar>4)?"":Form("_%ipc",mpar))));
+    for(int i=-1;i<((AliProfileBS*)fCorrList->At(0))->getNSubs();++i) {
+        vector<TH1*> hTs;
+        for(int j=1;j<=mpar;++j) {
+            ((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar%s",j,(j>4)?"":Form("_%ipc",j))))->SetErrorOption("g");
+            hTs.push_back(((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar%s",j,(j>4)?"":Form("_%ipc",j))))->getHist(i));
+        }
+        CalculateCentralMomentHists(hTs,i);
+    }
+    ((AliProfileBS*)fCorrList->At(0))->PresetWeights(0);
+    return;
+}
 void AliPtContainer::CalculateCumulantHists(vector<TH1*> inh, int ind, bool normalized) {
     auto binomial = [&](const int n, const int m) { return factorial(n)/(factorial(m)*factorial(n-m)); };
     int lMax = (((AliProfileBS*)fCorrList->At(0))->getNSubs()+1)*mpar;
@@ -640,6 +661,29 @@ void AliPtContainer::CalculateCumulantHists(vector<TH1*> inh, int ind, bool norm
             normh->Divide(getPowerHist(sigmah,0.5*(m)));
             fNormList->Add(normh);
         }
+    }
+
+    return;
+}
+void AliPtContainer::CalculateCentralMomentHists(vector<TH1*> inh, int ind) {
+    auto binomial = [&](const int n, const int m) { return factorial(n)/(factorial(m)*factorial(n-m)); };  
+    TH1* mpt = (TH1*)fCorrList->FindObject("corr_1par_1pc");
+    for(int m=1;m<=mpar;++m)
+    {
+        TH1* reth = (TH1*)inh[m-1]->Clone(Form("h%i%i",m,ind));
+        TH1* hWeights = (TH1*)inh[m-1]->Clone(Form("hWeights%i%i",m,ind));
+        for(int k=1;k<m;++k)
+        {
+            TH1* corrh = (TH1*)inh[m-k-1]->Clone(Form("corr%i%i",m,k,ind));
+            TH1* mpt_power = getPowerHist(mpt,k);
+            corrh->Multiply(mpt_power);
+            corrh->Scale(binomial(m,k));
+            reth->Add(corrh,fFactorial[k]);
+            delete corrh;
+        }
+        for(int i=1;i<=hWeights->GetNbinsX();++i) reth->SetBinError(i,hWeights->GetBinError(i));
+        delete hWeights;
+        fCMList->Add(reth->Clone(Form("reth%i%i",m,ind)));
     }
 
     return;

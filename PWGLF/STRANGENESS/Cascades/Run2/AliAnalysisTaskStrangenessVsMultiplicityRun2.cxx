@@ -1884,6 +1884,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
   }
   
   AliVEvent *ev = InputEvent();
+  // Override automatic trigger selection from fEventCuts to get all the kHighMultV0 triggered events
+  if(AliMultSelectionTask::IsSelectedTrigger( ev, AliVEvent::kHighMultV0 )) {fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0);}
+
   if( fkDoExtraEvSels ) {
     if ( fkPileupRejectionMode == 0) {
       if( !fEventCuts.AcceptEvent(ev) ) {

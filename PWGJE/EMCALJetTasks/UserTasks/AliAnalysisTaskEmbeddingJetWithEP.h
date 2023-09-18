@@ -103,6 +103,10 @@ public:
   void Set2DRMwithEP2(Bool_t b2DRMwithEP2){f2DRMwithEP2 = b2DRMwithEP2;}
   void Set2DRMwithEP3(Bool_t b2DRMwithEP3){f2DRMwithEP3 = b2DRMwithEP3;}
   
+
+  void SetExLJetFromFit(Bool_t bExLJetFromFit){fExLJetFromFit = bExLJetFromFit;}
+  void SetExSubLJetFromFit(Bool_t bExSubLJetFromFit){fExSubLJetFromFit = bExSubLJetFromFit;}
+
   void SetJetHistWEP(Bool_t bSepEP){fSepEP = bSepEP;}
   void SetModulationFitType(fitModulationType type) {fFitModulationType = type; }
   void SetRhoLocalSubType(Bool_t bRhoLocalSubType){fRhoLocalSubType = bRhoLocalSubType;}
@@ -240,7 +244,9 @@ private:
     // == e ==  Embedding Parameters  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Bool_t        fExLJetFromFit = kTRUE;   ///< exclude tracks from bkg fit.
+    Bool_t        fExSubLJetFromFit = kTRUE;   ///< exclude tracks from bkg fit.
     AliEmcalJet*  fLeadingJet;              //! leading jet
+    AliEmcalJet*  fSubLeadingJet;           //! subleading jet
     AliEmcalJet*  fLeadingJetAfterSub;      //! leading jet after background subtraction
     TF1*          fFitModulation;           //-> modulation fit for rho
 
@@ -309,7 +315,7 @@ private:
     }
 
     AliEmcalJet* GetLeadingJet(AliLocalRhoParameter* localRho = 0x0);
-
+    void GetLeadingAndSubJet();
 
     // static Double_t CalcEPChi(Double_t res)
     // {
@@ -485,10 +491,11 @@ private:
   /// ========================================================================================
 
     // not implemented
+    
     AliAnalysisTaskEmbeddingJetWithEP(const AliAnalysisTaskEmbeddingJetWithEP&); // not implemented
     AliAnalysisTaskEmbeddingJetWithEP &operator=(const AliAnalysisTaskEmbeddingJetWithEP&);
 
-    ClassDef(AliAnalysisTaskEmbeddingJetWithEP, 133);
+    ClassDef(AliAnalysisTaskEmbeddingJetWithEP, 135);
 };
 
 #endif

@@ -4105,8 +4105,8 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidates(AliAODConversionPhot
   }
 
   Int_t pdgCodeParticle = Photon->PdgCode();
-  int NMatchedPrimTracks = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetVectorMatchedTracksToCluster(fInputEvent, fInputEvent->GetCaloCluster(TruePhotonCandidate->GetCaloClusterRef())).size();
-  int NMatchedTracks = NMatchedPrimTracks + ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetVectorMatchedSecTracksToCluster(fInputEvent, fInputEvent->GetCaloCluster(TruePhotonCandidate->GetCaloClusterRef())).size();
+  int NMatchedTracks = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetVectorMatchedTracksToCluster(fInputEvent, fInputEvent->GetCaloCluster(TruePhotonCandidate->GetCaloClusterRef())).size();
+  int NMatchedPrimTracks = NMatchedTracks - ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetVectorMatchedSecTracksToCluster(fInputEvent, fInputEvent->GetCaloCluster(TruePhotonCandidate->GetCaloClusterRef())).size();
   TruePhotonCandidate->SetCaloPhotonMCFlags(fMCEvent, fEnableSortForClusMC);
 
   // True Photon
@@ -4281,8 +4281,8 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidatesAOD(AliAODConversionP
     return;
   }
   Int_t pdgCodeParticle = Photon->GetPdgCode();
-  int NMatchedPrimTracks = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetVectorMatchedTracksToCluster(fInputEvent, fInputEvent->GetCaloCluster(TruePhotonCandidate->GetCaloClusterRef())).size();
-  int NMatchedTracks = NMatchedPrimTracks + ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetVectorMatchedSecTracksToCluster(fInputEvent, fInputEvent->GetCaloCluster(TruePhotonCandidate->GetCaloClusterRef())).size();
+  int NMatchedTracks = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetVectorMatchedTracksToCluster(fInputEvent, fInputEvent->GetCaloCluster(TruePhotonCandidate->GetCaloClusterRef())).size();
+  int NMatchedPrimTracks = NMatchedTracks - ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetVectorMatchedSecTracksToCluster(fInputEvent, fInputEvent->GetCaloCluster(TruePhotonCandidate->GetCaloClusterRef())).size();
   TruePhotonCandidate->SetCaloPhotonMCFlagsAOD(fAODMCTrackArray, fEnableSortForClusMC);
 
   // Set the jetjet weight to 1 in case the cluster orignated from the minimum bias header

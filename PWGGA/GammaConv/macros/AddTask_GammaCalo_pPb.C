@@ -1266,8 +1266,11 @@ void AddTask_GammaCalo_pPb(
   } else if (trainConfig == 577){ // 
     cuts.AddCutCalo("80010113","24466640ua09dc00000","0163103100000010"); // INT7
 
-     } else if (trainConfig == 578) { 
+  } else if (trainConfig == 578) { 
     cuts.AddCutCalo("80010113","24466530ua01cc00000","0163g03100000010"); // rapidity changed
+
+  } else if (trainConfig == 579) { 
+    cuts.AddCutCalo("80010113","24466530ua010000000","0163103100000010"); // no M02 cut and NCellCut
 
     
     

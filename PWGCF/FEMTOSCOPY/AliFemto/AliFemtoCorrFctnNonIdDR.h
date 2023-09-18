@@ -7,6 +7,7 @@
 #define ALIFEMTOCORRFCTNNONIDDR_H
 
 class TH1D;
+class TH2D;
 class TNtuple;
 
 #include "AliFemtoCorrFctn.h"
@@ -57,6 +58,7 @@ protected:
   TH1D *fDenLongN;    ///< Denominator for pair with negative k*long
 
   TH1D* fkTMonitor;   ///< Monitor the kT of pairs in the function
+  TH2D* fkTvsksMonitor;   ///< Monitor of the kT of pairs in the function of k*
   TNtuple *mNtuple;       //momentum and energy of particles
 
   bool fParticleP;    //kTRUE to fill nTuple which contain px,py,pz and E of particles

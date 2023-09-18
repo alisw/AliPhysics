@@ -1,5 +1,5 @@
 
-void AddTaskSA(const char *suffix = "CMWchrg", TString sMCfilePath = "a.root",TString sNUAFilePath = "b.root", TString sEVNTWGTFilePath = "c.root")
+void AddTaskSA(const char *suffix = "CMWchrg", Int_t frame =1, TString sMCfilePath = "a.root",TString sNUAFilePath = "b.root", TString sEVNTWGTFilePath = "c.root")
 
 {
   // standard with task
@@ -24,6 +24,7 @@ void AddTaskSA(const char *suffix = "CMWchrg", TString sMCfilePath = "a.root",TS
   TaskCMWPID.Form("gTaskCMWCent%d_%d_%s", gCentMin, gCentMax, suffix);
 
   AliAnalysisTaskSA *task_CMW = new AliAnalysisTaskSA(TaskCMWPID);
+  task_CMW->Setframe(frame);
 
 
 

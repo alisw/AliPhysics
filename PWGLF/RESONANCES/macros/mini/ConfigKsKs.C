@@ -566,8 +566,8 @@ Bool_t ConfigKsKs
     /* 2nd daughter p   */ Int_t sdp    = task->CreateValue(AliRsnMiniValue::kSecondDaughterP,kFALSE);
     Int_t costheta;   
  
-   if(isMC)
-      {
+      if(isMC)
+       {
 	if(polaxis==0) {
 	  costheta  = task->CreateValue(AliRsnMiniValue::kCosThetaHeAbs,kTRUE); } 
 
@@ -582,8 +582,8 @@ Bool_t ConfigKsKs
 	if(polaxis==3){
 	  costheta  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kTRUE); }
 
-      }
-	
+        }
+   	
     if(!isMC)
       {
 	if(polaxis==0) {
@@ -599,8 +599,10 @@ Bool_t ConfigKsKs
 
 	if(polaxis==3){
 	  costheta  = task->CreateValue(AliRsnMiniValue::kCosThetaTransversity,kFALSE); }
-          }
- 
+          
+      }
+
+    if (!isMC) {
    
     Bool_t  use     [4] = {1   ,1    ,1     ,1  };
     Bool_t  useIM   [4] = {1   ,1    ,1    ,1   };
@@ -614,8 +616,8 @@ Bool_t ConfigKsKs
     Int_t   ipdg    [4] = {10331            ,10331            ,10331             , 10331            };
     Double_t mass   [4] = { 1.710           ,1.710            ,1.710             , 1.710            };
     AliRsnCutSet* paircuts[4] = {PairCutsSame,  PairCutsMix,    PairCutsSame,   PairCutsSame        };
-
     
+        
     for (Int_t i = 0; i < 4; i++) {
       if (!use[i]) continue;
       //if (collSyst) output[i] = "SPARSE";
@@ -641,14 +643,14 @@ Bool_t ConfigKsKs
 	if(isPP && !enaMultSel) out->AddAxis(centID, 400, 0.5, 400.5);
 	if(!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
 	out->AddAxis(costheta, nbinscos, coslow, cosup);
-     }
-    Bool_t isRotate =1;
+    
 
-    if (!isMC)
-      {    
-	if(isRotate){
-	 for (Int_t i = 0; i < 2; i++)
-	   {if (!use[i]) continue;
+    Bool_t isRotate =1;
+    if(isRotate){
+      for (Int_t i = 0; i < 2; i++)
+	   {
+
+	     if (!use[i]) continue;
 	   //if (collSyst) output[i] = "SPARSE";
 
 	AliRsnMiniOutput *out = task->CreateOutput(Form("ChargeKstar_Rotated_%s%s", name[i].Data(), suffix), output[i].Data(), "ROTATE2");
@@ -670,47 +672,53 @@ Bool_t ConfigKsKs
 	if(isPP && !enaMultSel) out->AddAxis(centID, 400, 0.5, 400.5);
 	if(!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
        	out->AddAxis(costheta, nbinscos, coslow, cosup);
-	    }
-        }
-      }
+	 
+	   }
+            } // rotate lopp 
+            } // loop 
 
-    /*
-    // AddMonitorOutput_K0sP(cutSetK0s->GetMonitorOutput());
-    AddMonitorOutput_K0sPt(cutSetK0s->GetMonitorOutput());
-    AddMonitorOutput_K0sNegDaughPt(cutSetK0s->GetMonitorOutput());
-    AddMonitorOutput_K0sPosDaughPt(cutSetK0s->GetMonitorOutput());
-    AddMonitorOutput_K0sMass(cutSetK0s->GetMonitorOutput());
-    // AddMonitorOutput_K0sDCA(cutSetK0s->GetMonitorOutput());
-    AddMonitorOutput_K0sRadius(cutSetK0s->GetMonitorOutput());
-    AddMonitorOutput_K0sDaughterDCA(cutSetK0s->GetMonitorOutput());
-    AddMonitorOutput_K0sCosPointAngle(cutSetK0s->GetMonitorOutput());
-    // AddMonitorOutput_K0sProtonPID(cutSetK0s->GetMonitorOutput());
-    AddMonitorOutput_K0sPionPID(cutSetK0s->GetMonitorOutput());
-    AddMonitorOutput_K0sfpLife(cutSetK0s->GetMonitorOutput());
-    AddMonitorOutput_K0sMass_Pt(cutSetK0s->GetMonitorOutput());
-    
-    //Monitor Output for Tracks
-    AddMonitorOutput_MinDCAToVertexXYPtDep(cutSetK0s->GetMonitorOutput());
-    //AddMonitorOutput_MinDCAToVertexXY(cutSetK0s->GetMonitorOutput());     //Uncomment if fixed value Cut used
-    */
- 
-    if (isMC) {
- 
+          } // is not mc loop end 
 
-      /*     Bool_t  MCuseIM   [4] = {1   ,1    ,1    ,1   };
-      TString mode = "SPARSE";
+         
+      if (isMC) {
+
+	Bool_t  MCuse     [9] = {1 ,1 ,1, 1, 1, 1,1,1,1};
+	Bool_t  MCuseIM   [9] = {1   ,1    ,1    ,1 ,1  ,1 ,1,1,1};
+	TString MCname    [9] = {"f01710_REC", "f01710_GEN", "f01710_MIX", "f1500_REC","f1500_GEN", "f01500_MIX", "f1525_REC","f1525_GEN","f1525_MIX"};
+	TString MCcomp    [9] = {"TRUE"          ,"MOTHER_NO_PILEUP","PAIR"           ,"TRUE" ,    "MOTHER_NO_PILEUP", "PAIR", "TRUE",     "MOTHER_NO_PILEUP","PAIR"};
+	TString MCoutput  [9] = {"SPARSE"        ,"SPARSE"       ,"SPARSE"      ,"SPARSE"  ,"SPARSE"  ,"SPARSE","SPARSE","SPARSE","SPARSE"};
+	Char_t  MCcharge1 [9] = {'0'              ,'0'               ,'0'              ,'0' ,'0','0','0','0','0'};
+	Char_t  MCcharge2 [9] = {'0'              ,'0'               ,'0'              ,'0','0','0','0','0','0'};
+	Int_t   MCcutID1  [9] = { iCutK0s         ,iCutK0s         ,iCutK0s            ,iCutK0s, iCutK0s, iCutK0s,iCutK0s, iCutK0s, iCutK0s};
+	Int_t   MCcutID2  [9] = { iCutK0s         , iCutK0s        , iCutK0s           , iCutK0s,iCutK0s, iCutK0s,iCutK0s, iCutK0s, iCutK0s};
+	Int_t   MCipdg    [9] = {10331            ,10331  ,10331            ,9030221    , 9030221, 9030221, 335, 335, 335 };
+	Double_t MCmass   [9] = { 1.710           ,1.710, 1.710            ,1.505             , 1.505 , 1.505, 1.525, 1.525,1.525};
+	AliRsnCutSet* MCpaircuts[9] = {PairCutsSame, PairCutsSame,PairCutsMix,  PairCutsSame,PairCutsSame,PairCutsMix,PairCutsSame,PairCutsSame,PairCutsMix};
+ 
+      for (Int_t i = 0; i < 9; i++) {
+	
+     //Bool_t  MCuseIM [4] = {1   ,1    ,1    ,1   };
+          
+     //	TString mode = "SPARSE";
         //TString mode = "HIST";
         //if (collSyst) mode = "SPARSE";
 
 	// create output
-        AliRsnMiniOutput *out = task->CreateOutput(Form("KStarPlusMinus_MotherMC%s", suffix), mode.Data(), "MOTHER");
+	
+	//      AliRsnMiniOutput *out = task->CreateOutput(Form("f0_MotherMC%s", suffix), MCoutput[i].Data(), "MOTHER");
+
+	AliRsnMiniOutput *out = task->CreateOutput(Form("f0_MotherMC%s%s", MCname[i].Data(), suffix), MCoutput[i].Data(), MCcomp[i].Data());                  
+
+	//	AliRsnMiniOutput *out = task->CreateOutput(Form("ChargeKstar_%s%s", name[i].Data(), suffix), output[i].Data());                            
+      
+
         // selection settings
         out->SetDaughter(0, AliRsnDaughter::kKaon0);
         out->SetDaughter(1, AliRsnDaughter::kKaon0);
-        out->SetMotherPDG(10331);
-        out->SetMotherMass(1.710);
+        out->SetMotherPDG(MCipdg[i]);
+        out->SetMotherMass(MCmass[i]);
         // pair cuts
-        out->SetPairCuts(PairCutsSame);
+        out->SetPairCuts(MCpaircuts[i]);
 
 	if (MCuseIM[i])
 	out->AddAxis(imID, nbins, masslow, massup);
@@ -720,6 +728,7 @@ Bool_t ConfigKsKs
 	if(!isPP) out->AddAxis(centID, 100, 0.0, 100.0);
 	out->AddAxis(costheta, nbinscos, coslow, cosup);
 	
+	/*
         // create output
         AliRsnMiniOutput *out = task->CreateOutput(Form("AKStarPlusMinus_MotherMC%s", suffix), mode.Data(), "MOTHER");
         // selection settings
@@ -739,7 +748,10 @@ Bool_t ConfigKsKs
 	out->AddAxis(costheta, nbinscos, coslow, cosup);
 	//	if(isGT)  out->AddAxis(sdpt,100,0.,10.);
 	*/
-        AliRsnMiniOutput* outps=task->CreateOutput(Form("K*_phaseSpace%s", suffix),"HIST","TRUE");
+
+	/*
+
+        AliRsnMiniOutput* outps=task->CreateOutput(Form("phasespace_phaseSpace%s", suffix),"HIST","TRUE");
         outps->SetDaughter(0,AliRsnDaughter::kKaon0);
         outps->SetDaughter(1,AliRsnDaughter::kKaon0);
         outps->SetCutID(0,iCutK0s);
@@ -751,7 +763,7 @@ Bool_t ConfigKsKs
         outps->AddAxis(sdpt,100,0.,10.);
         outps->AddAxis(ptID,200,0.,20.);
 
-        AliRsnMiniOutput* outpsf=task->CreateOutput(Form("K*_phaseSpaceFine%s", suffix),"HIST","TRUE");
+              AliRsnMiniOutput* outpsf=task->CreateOutput(Form("K*_phaseSpaceFine%s", suffix),"HIST","TRUE");
         outpsf->SetDaughter(0,AliRsnDaughter::kKaon0);
         outpsf->SetDaughter(1,AliRsnDaughter::kKaon0);
         outpsf->SetCutID(0,iCutK0s);
@@ -761,14 +773,14 @@ Bool_t ConfigKsKs
         outpsf->SetPairCuts(PairCutsSame);
         outpsf->AddAxis(fdpt,30,0.,3.);
         outpsf->AddAxis(sdpt,30,0.,3.);
-        outpsf->AddAxis(ptID,300,0.,3.);
-
-
-    }
-
+        outpsf->AddAxis(ptID,300,0.,3.);*/
+       
+      }
+      }
+ 
     return kTRUE;
-}
 
+ }
 Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQualityCutsID = 0, Int_t customFilterBit = 0)
 {
     //Sets configuration for track quality object different from std quality cuts.

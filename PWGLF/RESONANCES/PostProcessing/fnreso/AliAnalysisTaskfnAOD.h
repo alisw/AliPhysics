@@ -83,7 +83,7 @@ class AliAnalysisTaskfnAOD : public AliAnalysisTaskSE {
   void SetLowradius(Double_t lr)              {this->lowrad = lr;}
   void SetLT(Double_t lt)              {this->lifetime = lt;}
   void SetPIDpion(Double_t pidpi)              {this->pidpion = pidpi;}
-
+  void SetPTC(Float_t cr, Float_t crfc, Double_t chi2global, Double_t chi2ITS)     {this->nCRcut=cr; this->ratiocrfccut=crfc; this->chi2globalcut=chi2global; this->chi2cut=chi2ITS;}
 
 
 
@@ -144,7 +144,12 @@ class AliAnalysisTaskfnAOD : public AliAnalysisTaskSE {
   Double_t lowrad;
   Double_t lifetime;
   Double_t pidpion;
+  Float_t nCRcut;
+  Float_t ratiocrfccut;
+  Double_t chi2globalcut;
+  Double_t chi2cut;
 
+  
   AliAnalysisTaskfnAOD(const AliAnalysisTaskfnAOD&);
   AliAnalysisTaskfnAOD& operator=(const AliAnalysisTaskfnAOD&);  
   ClassDef(AliAnalysisTaskfnAOD, 1);

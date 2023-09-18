@@ -110,8 +110,8 @@ private:
   TH1D *pos1Plane;
   TH1D *neg1Plane;
   TProfile *Res1Square;
-  TProfile2D *TPCcos_t;
-  TProfile2D *TPCcos_p;
+  TProfile2D **TPCcos_t;
+  TProfile2D **TPCcos_p;
 
   // qc
   int nCentrality;
@@ -141,10 +141,10 @@ private:
 
   // v1tp
   TProfile *ptEta;
-  TProfile2D *px_P;
-  TProfile2D *px_T;
-  TProfile2D *v1_t;
-  TProfile2D *v1_p;
+  TProfile2D **px_P;
+  TProfile2D **px_T;
+  TProfile2D **v1_t;
+  TProfile2D **v1_p;
   TProfile *ResQ;
   TH1D *Psi_P;
   TH1D *Psi_T;
@@ -159,8 +159,8 @@ private:
   TH1D *fHZDCAparameters;
   TProfile *fProfileZDCPsi1Correlation; // ZNC-ZNA 1st
   TProfile *fProfileZDCPsi2Correlation; // ZNC-ZNA 2nd
-  TH1D *fHist2Psi1ZNCCent;
-  TH1D *fHist2Psi1ZNACent;
+  TH1D **fHist2Psi1ZNCCent;
+  TH1D **fHist2Psi1ZNACent;
 
   //  QA
   //  ZDC
@@ -180,35 +180,33 @@ private:
   TProfile *fProfileZDCQxAQyCCent[2];
   TProfile *fProfileZDCQyAQxCCent[2];
   TProfile *fProfileZDCQyAQyCCent[2];
-  TH1D *fPsi1ZDC_PT;
 
   double fPsi1ZNC;
   double fPsi1ZNA;
 
-  //PID QA
-  TH2D* fHistPIDPt;
-  TH2D* fHistPIDEta;
-  TH2D* fHistPIDPhi;
-  TH2D* fHist2ProtonSigTPC;
-  TH2D* fHist2ProtonSigTOF;
-  TH2D* fHist2PionSigTPC;
-  TH2D* fHist2PionSigTOF;
-  TH2D* fHist2KionSigTPC;
-  TH2D* fHist2KionSigTOF;
-
+  // PID QA
+  TH2D *fHistPIDPt;
+  TH2D *fHistPIDEta;
+  TH2D *fHistPIDPhi;
+  TH2D *fHist2ProtonSigTPC;
+  TH2D *fHist2ProtonSigTOF;
+  TH2D *fHist2PionSigTPC;
+  TH2D *fHist2PionSigTOF;
+  TH2D *fHist2KionSigTPC;
+  TH2D *fHist2KionSigTOF;
 
   // ZDC v1
   double Qtx;
   double Qty;
   double Qpx;
   double Qpy;
-  TProfile2D *ZDCpx_P;
-  TProfile2D *ZDCpx_T;
-  TProfile2D *ZDCv1_t;
-  TProfile2D *ZDCv1_p;
+  TProfile2D **ZDCpx_P;
+  TProfile2D **ZDCpx_T;
+  TProfile2D **ZDCv1_t;
+  TProfile2D **ZDCv1_p;
   TProfile *ZDCResQ;
-  TProfile2D *ZDCcos_t;
-  TProfile2D *ZDCcos_p;
+  TProfile2D **ZDCcos_t;
+  TProfile2D **ZDCcos_p;
 
   AliAnalysisTaskChargeV1(const AliAnalysisTaskChargeV1 &);            // not implemented
   AliAnalysisTaskChargeV1 &operator=(const AliAnalysisTaskChargeV1 &); // not implemented

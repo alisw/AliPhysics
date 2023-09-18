@@ -407,6 +407,11 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      GetDoFlatEnergySubtraction()                    {return fDoFlatEnergySubtraction;}
     Bool_t      GetDoSecondaryTrackMatching()                   {return fDoSecondaryTrackMatching;}
 
+    Bool_t      SetPoissonParamCentFunction(int isMC);
+    Bool_t      SetNMatchedTracksFunc(float meanCent);
+    Double_t    CorrectEnergyForOverlap();
+    Int_t       GetDoEnergyCorrectionForOverlap()               {return fDoEnergyCorrectionForOverlap;}
+
     // modify acceptance via histogram with cellID
     void        SetHistoToModifyAcceptance(TH1S* histAcc)       {fHistoModifyAcc  = histAcc; return;}
 
@@ -595,6 +600,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t     fIsPureCalo;                              // flag for MergedCluster analysis
     Int_t     fNactiveEmcalCells;                       // total number of active emcal cells
     Bool_t    fDoSecondaryTrackMatching;                // flag to switch on secondary trackmatching
+    Int_t     fDoEnergyCorrectionForOverlap;            // mask to switch on a special for PbPb developed cluster energy correction, 0 = off, 1 = on with mean, 2 = on with random values
+    TF1*      fFuncPoissonParamCent;                    // TF1 to describe the poisson parameter that you get from fitting a poisson dsitribution to the number of matched tracks per cluster as function of centrality
+    TF1*      fFuncNMatchedTracks;                      // TF1 poisson distribution to describe the number of matched tracks per cluster for a specific centrality
+    Double_t  fOverlapEnergy;                           // track matching cut value for the energy correction for neutral overlap. Current only standard value is 300 MeV based on the charged particle paper (CERN-EP-2022-266)
 
     //vector
     std::vector<Int_t> fVectorMatchedClusterIDs;        // vector with cluster IDs that have been matched to tracks in merged cluster analysis
@@ -714,6 +723,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterENMatchesCharged;             //
     TH2F*     fHistClusterEvsTrackEPrimaryButNoElec;    //
     TH2F*     fHistClusterEvsTrackSumEPrimaryButNoElec; //
+    TH1F*     fHistClusterNMatched;                     // Number of matched tracks per cluster
 
     TH1F*     fHistClusETruePi0_BeforeTM;               // for checking the false positives: how much true pi0s are matched away?
     TH1F*     fHistClusETruePi0_Matched;                //
@@ -744,7 +754,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,128)
+    ClassDef(AliCaloPhotonCuts,129)
 };
 
 #endif
