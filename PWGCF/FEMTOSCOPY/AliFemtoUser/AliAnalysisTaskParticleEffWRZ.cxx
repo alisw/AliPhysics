@@ -27,7 +27,6 @@
 #include "AliAODHeader.h"
 #include "AliFemtoEventReaderAODMultSelection.h"
 #include "AliMultSelection.h"
-#include "AliAnalysisUtils.h"
 #include "AliAnalysisTaskParticleEffWRZ.h"
 
 
@@ -575,7 +574,6 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
   Double_t  centper = alicent->GetCentralityPercentile("V0M");
   if(mult_selection->GetMultiplicityPercentile("V0M") < 0.0000001 || mult_selection->GetMultiplicityPercentile("V0M") >  10.0) 
      return; 
-
 
   fHistEv->Fill(centper);
 
