@@ -44,6 +44,7 @@ private:
    bool IsDeuteronTPCdEdx(float mom, float dEdx, float maxmom);
    bool IsDeuteronNSigma(float mom, float massTOFPDG,float sigmaMass, float nsigmaTPCD, float nsigmaTOFD);
    bool IsDeuteronNSigma16(float mom, float nsigmaTPCD, float nsigmaTOFD);
+   bool IsDeuteronNSigma17(float mom, float nsigmaTPCD, float nsigmaTOFD);   
 };
 
 inline void AliFemtoWRzTrackCut::SetdEdxcut(bool coumet) { fdEdxcut = coumet; }
