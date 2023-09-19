@@ -97,6 +97,7 @@
 #pragma link C++ class AliAnalysisTaskfnAODsp+;
 #pragma link C++ class AliAnalysisTaskfnAODPbPb+;
 #pragma link C++ class AliAnalysisTaskSA+;
+#pragma link C++ class AliAnalysisTaskEP+;
 #pragma link C++ class AliAnalysisTaskSAphi+;
 #pragma link C++ class AliCompactTrack+;
 #pragma link C++ class AliReducedTrack+;
