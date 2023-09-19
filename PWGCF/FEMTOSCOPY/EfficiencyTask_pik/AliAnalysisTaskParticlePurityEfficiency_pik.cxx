@@ -584,6 +584,7 @@ if(!MultSelection) {
     
   Bool_t fpA2013 = kFALSE;
   Bool_t fMVPlp = kFALSE;
+  Bool_t fUseOutOfBunchPileUp = kTRUE;
   Bool_t fisPileUp = kTRUE;                                                                                                                   
   Int_t fMinPlpContribMV = 0;                                                                                                                 
   Int_t fMinPlpContribSPD = 5;                                                                                                                
@@ -601,6 +602,7 @@ if(!MultSelection) {
  
   if(fMinPlpContribMV) anaUtil->SetMinPlpContribMV(fMinPlpContribMV);
   if(fMinPlpContribSPD) anaUtil->SetMinPlpContribSPD(fMinPlpContribSPD);
+  if(fUseOutOfBunchPileUp) anaUtil->SetUseOutOfBunchPileUp(fUseOutOfBunchPileUp);
 
   if(fisPileUp)
     if(anaUtil->IsPileUpEvent(aodEvent)) return;
