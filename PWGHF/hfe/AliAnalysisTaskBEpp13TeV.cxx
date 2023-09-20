@@ -750,7 +750,7 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
   if(fIsMC){
     double nchCorr = 1.;
     if(Corrected_Ntr>50 && Corrected_Ntr<=100) nchCorr = funcNchCorr->Eval(Corrected_Ntr);
-    else if(Corrected_Ntr<=40) nchCorr = histNchCorr->GetBinContent(histNchCorr->GetBin(Corrected_Ntr));
+    else if(Corrected_Ntr<=50) nchCorr = histNchCorr->GetBinContent(histNchCorr->GetBin(Corrected_Ntr));
 
     hNtrkletCorr->Fill(Corrected_Ntr, nchCorr);
     int nch = GetNcharged();
@@ -991,10 +991,8 @@ double AliAnalysisTaskBEpp13TeV::GetCorrectedNtracklets(TProfile *estimatorAvg, 
   if(TMath::Abs(vtxz) > 10) return rawNtr;
   if (!estimatorAvg) return rawNtr;
   double Ntr_mean = estimatorAvg->GetBinContent(estimatorAvg->FindBin(vtxz));
-  double deltaN = rawNtr * (refmult / Ntr_mean - 1);
+  double deltaN = rawNtr * ((refmult/Ntr_mean) - 1);
   double correctedNtr = rawNtr + (deltaN > 0 ? 1 : -1) * gRandom->Poisson(TMath::Abs(deltaN));
-  double diff = refmult - Ntr_mean;
-  double poisson = gRandom->Poisson(TMath::Abs(deltaN));
   return correctedNtr;
 }
 //_________________________________________________________________
