@@ -38,7 +38,9 @@ void AddTask_GammaConvV1_PbPb(
   TString   settingMaxFacPtHard           = "3.",     // maximum factor between hardest jet and ptHard generated
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
   // settings for weights
-  // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, FMAW:fileNameMatBudWeights, FEPC:fileNamedEdxPostCalib, FCEF:fileNameCentFlattening, separate with ; NB on FEPC: can be one filename for all cut configs OR one filename per cut config separated by '+'. If no filename at all is given and enableElecDeDxPostCalibration>0 the maps are taken from the OADB 
+
+  // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, FMAW:fileNameMatBudWeights, FEPC:fileNamedEdxPostCalib, FCEF:fileNameCentFlattening, separate with ; NB on FEPC: can be one filename for all cut configs OR one filename per cut config separated by '+'. If no filename at all is given and enableElecDeDxPostCalibration>0 the maps are taken from the OADB. Also ['FMLR:enable' -> Machine learning Trees] 
+ 
   TString   fileNameExternalInputs        = "",
   Int_t     doWeightingPart               = 0,        // enable Weighting
   Bool_t    enablePtWeighting             = kFALSE,   // enable Weighting
@@ -52,10 +54,10 @@ void AddTask_GammaConvV1_PbPb(
   Bool_t    enableChargedPrimary          = kFALSE,
   Bool_t    enablePlotVsCentrality        = kFALSE,
   Bool_t    processAODcheckForV0s         = kFALSE,   // flag for AOD check if V0s contained in AliAODs.root and AliAODGammaConversion.root
+  
   // subwagon config
-  TString   additionalTrainConfig         = "0"       // additional counter for trainconfig + special settings
-)  {
-
+  TString   additionalTrainConfig         = "0")       // additional counter for trainconfig + special settings
+  {
 
   AliCutHandlerPCM cuts;
 
@@ -66,11 +68,26 @@ void AddTask_GammaConvV1_PbPb(
   TString fileNamedEdxPostCalib       = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FEPC:");
   TString fileNameCentFlattening      = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FCEF:");
   TString fileNameBDT                 = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FBDT:");
+  TString fileNameMLR                 = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMLR:");
+
   Bool_t enableBDT = kFALSE;
   if(fileNameBDT.CompareTo("")!= 0){
     enableBDT = kTRUE;
     cout << "enabling BDT !!!! " << fileNameBDT.Data() << endl;
   }
+
+  
+  Bool_t    enablePhotonTree      =  kFALSE;
+  Bool_t    enableMesonTree       =  kFALSE;
+  Float_t   meson_m1_range_left = 0.1; 
+  Float_t   meson_m1_range_right = 0.2; 
+  Float_t   meson_m2_range_left = 0.4; 
+  Float_t   meson_m2_range_right = 0.7;  
+
+  if (fileNameMLR.CompareTo("enable") == 0){
+    enablePhotonTree      =  kTRUE;
+    enableMesonTree       =  kTRUE;
+}
 
   TString addTaskName                 = "AddTask_GammaConvV1_PbPb";
   TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
@@ -4634,6 +4651,8 @@ void AddTask_GammaConvV1_PbPb(
   task->SetDoPlotVsCentrality(kTRUE);
   task->SetDoTHnSparse(enableTHnSparse);
   task->SetDoCentFlattening(enableFlattening);
+  if (enablePhotonTree) task->SetDoTreeForPhotonML(kTRUE);
+  if (enableMesonTree) task->SetDoTreeForMesonML(kTRUE,meson_m1_range_left,meson_m1_range_right,meson_m2_range_left,meson_m2_range_right);
   if (initializedMatBudWeigths_existing) {
       task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);
   }
@@ -4662,6 +4681,14 @@ void AddTask_GammaConvV1_PbPb(
       }else{
 	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
       }
+      nContainer++;
+    }
+    if(enablePhotonTree){
+	    mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("TreeForPhotonMLData_%s_%s_%s",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+      nContainer++;
+    }
+    if(enableMesonTree){
+	    mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("TreeForMesonMLData_%s_%s_%s",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
       nContainer++;
     }
   }
