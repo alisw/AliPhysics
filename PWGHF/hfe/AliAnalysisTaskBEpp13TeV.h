@@ -259,9 +259,9 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 
     TRandom3    *fRnd;
 		
-		static const int fgkMaxIter = 100;
-		static const int fNparents = 7;
-		int fParentSelect[2][7];
+	static const int fgkMaxIter = 100;
+	static const int fNparents = 7;
+	int fParentSelect[2][7];
 	
     AliAnalysisTaskBEpp13TeV(const AliAnalysisTaskBEpp13TeV&); // not implemented
     AliAnalysisTaskBEpp13TeV& operator=(const AliAnalysisTaskBEpp13TeV&); // not implemented
