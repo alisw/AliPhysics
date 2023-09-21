@@ -6082,6 +6082,7 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
       fVars_MLmap["chi2topo_Xic0ToPV"] = fVar_Xic0[40]; // chi2_topo of Xic0 to PV
       fVars_MLmap["ldl_Xic0"]          = fVar_Xic0[42]; // l/dl of Xic0
       fVars_MLmap["ct_Xic0"]           = fVar_Xic0[43]; // lifetime of Xic0
+      fVars_MLmap["OA_XiToPi"]         = fVar_Xic0[48]; // Opening angle of Xi and pion
       // pion (from Xic0)
       fVars_MLmap["chi2prim_PiFromXic0"] = fVar_Xic0[26]; // chi2_topo of pion to PV
       fVars_MLmap["DCAxy_PiFromXic0_KF"] = fVar_Xic0[27]; // DCA of pion coming from Xic0 in x-y plane
@@ -6131,6 +6132,7 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
       fVars_MLmap["chi2topo_Omegac0ToPV"] = fVar_Xic0[40]; // chi2_topo of Omegac0 to PV
       fVars_MLmap["ldl_Omegac0"]          = fVar_Xic0[42]; // l/dl of Omegac0
       fVars_MLmap["ct_Omegac0"]           = fVar_Xic0[43]; // lifetime of Omegac0
+      fVars_MLmap["OA_OmegaToPi"]         = fVar_Xic0[48]; // Opening angle of Omega and pion
       // pion (from Omegac0)
       fVars_MLmap["chi2prim_PiFromOmegac0"] = fVar_Xic0[26]; // chi2_topo of pion to PV
       fVars_MLmap["DCAxy_PiFromOmegac0_KF"] = fVar_Xic0[27]; // DCA of pion coming from Omegac0 in x-y plane
@@ -6160,7 +6162,8 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
     
     Bool_t isSelectedML = kFALSE;
     Float_t modelPred = -1.;
-    // === Pre-selections ===
+    /*
+    // === Pre-selections (old and p_T independent) ===
     if (
         // Xic0 cuts
         fabs(fVar_Xic0[23])<0.8 && // rapidity of Xic0 or Omegac0
@@ -6208,6 +6211,283 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
         fVar_MLoutput[3] = modelPred; // ML output score
         fTree_MLoutput->Fill();
       }
+    }
+    */
+    // === Pre-selections (new and p_T dependent, tune based on 30-50% data and MC, 6% for 2-4 GeV/c and 3% for 4-12 GeV/c) ===
+    const Float_t mass_Lam_PDG = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+    const Float_t mass_Xi_PDG  = TDatabasePDG::Instance()->GetParticle(3312)->Mass();
+    if ( fabs(fVar_Xic0[23])<0.8 && fVar_Xic0[44]==1. && fVar_Xic0[21]>fAnaCuts->GetPtMinPiFromXic0ForML() && fVar_Xic0[25]>-1. && fVar_Xic0[25]<1. ) { // rapidity of Xic0 or Omegac0; unlike-sign selection; pt_PiFromXic0; CosThetaStar_PiFromXic0
+      if ( fVar_Xic0[22]>=2. && fVar_Xic0[22]<3. && // 2<=p_T<3
+        // Xic0 cuts
+        fabs(fVar_Xic0[33])<0.39 && // DecayLxy_Xic0
+        fVar_Xic0[34]<11. && fVar_Xic0[34]>0. && // chi2geo_Xic0
+        fVar_Xic0[37]<0.44 && fVar_Xic0[37]>0. && // DCA_Xic0Dau_KF
+        fVar_Xic0[40]<9. && fVar_Xic0[40]>0. && // chi2topo_Xic0ToPV
+        fVar_Xic0[42]<3.5 && fVar_Xic0[42]>0. && // ldl_Xic0
+        fabs(fVar_Xic0[43])<0.37 && // ct_Xic0
+        
+        // pion (from Xic0) cuts
+        fVar_Xic0[26]<2.2 && fVar_Xic0[26]>0. && // chi2prim_PiFromXic0
+        fabs(fVar_Xic0[27])<0.0114 && // DCAxy_PiFromXic0_KF
+
+        // Xi cuts
+        fVar_Xic0[6]<0.90 && fVar_Xic0[6]>0. && // DCA_XiDau
+        fVar_Xic0[10]<8. && fVar_Xic0[10]>0. && // chi2geo_Xi
+        fVar_Xic0[11]>2.2 && // ldl_Xi
+        fVar_Xic0[12]<11. && fVar_Xic0[12]>0. && // chi2topo_XiToPV
+        fVar_Xic0[14]>1.0 && fVar_Xic0[14]<30.6 && // DecayLxy_Xi
+        fVar_Xic0[17]<0.1 && fVar_Xic0[17]>0. && // PA_XiToXic0
+        fVar_Xic0[18]<0.12 && fVar_Xic0[18]>0. && // PA_XiToPV
+        fVar_Xic0[32]<4.2 && fVar_Xic0[32]>0. && // chi2topo_XiToXic0
+        fabs(fVar_Xic0[38])<0.44 && // DCAxy_XiToPV_KF
+        fabs(fVar_Xic0[20]-mass_Xi_PDG)<0.0046 && // mass_Xi
+
+        // Xi daughter cuts
+        fVar_Xic0[7]<4. && fVar_Xic0[7]>0. && // chi2geo_Lam
+        fVar_Xic0[8]>4. && // ldl_Lam
+        fVar_Xic0[9]>0.54 && // chi2topo_LamToPV
+        fVar_Xic0[13]>0.5 && fVar_Xic0[13]<40 && // DecayLxy_Lam
+        fVar_Xic0[15]<0.06 && fVar_Xic0[15]>0. && // PA_LamToXi
+        fVar_Xic0[16]>0.006 && fVar_Xic0[16]<0.13 && // PA_LamToPV
+        fVar_Xic0[31]<2.2 && fVar_Xic0[31]>0. && // chi2topo_LamToXi
+        fVar_Xic0[35]<1.05 && fVar_Xic0[35]>0. && // DCA_LamDau
+        fVar_Xic0[47]<0.165 && // Armenteros-Podolanski plot (qT/|alpha|)
+        fabs(fVar_Xic0[19]-mass_Lam_PDG)<0.0038 // mass_Lam
+          ) {
+        if (fMLResponse) isSelectedML = fMLResponse->IsSelected(fVar_Xic0[22], fVars_MLmap, modelPred);
+        if (isSelectedML) { // ML score selection
+          fVar_MLoutput[0] = fVar_Xic0[22]; // pt of Xic0 or Omegac0
+          fVar_MLoutput[1] = fVar_Xic0[21]; // pt of pion from Xic0 or Omegac0 decay
+          fVar_MLoutput[2] = fVar_Xic0[24]; // mass of Xic0 or Omegac0
+          fVar_MLoutput[3] = modelPred; // ML output score
+          fTree_MLoutput->Fill();
+        }
+      } // 2<=p_T<3
+      if ( fVar_Xic0[22]>=3. && fVar_Xic0[22]<4. && // 3<=p_T<4
+        // Xic0 cuts
+        fabs(fVar_Xic0[33])<0.42 && // DecayLxy_Xic0
+        fVar_Xic0[34]<7. && fVar_Xic0[34]>0. && // chi2geo_Xic0
+        fVar_Xic0[37]<0.34 && fVar_Xic0[37]>0. && // DCA_Xic0Dau_KF
+        fVar_Xic0[40]<6. && fVar_Xic0[40]>0. && // chi2topo_Xic0ToPV
+        fVar_Xic0[42]<2.9 && fVar_Xic0[42]>0. && // ldl_Xic0
+        fabs(fVar_Xic0[43])<0.3 && // ct_Xic0
+        
+        // pion (from Xic0) cuts
+        fVar_Xic0[26]<2.5 && fVar_Xic0[26]>0. && // chi2prim_PiFromXic0
+        fabs(fVar_Xic0[27])<0.011 && // DCAxy_PiFromXic0_KF
+
+        // Xi cuts
+        fVar_Xic0[6]<0.81 && fVar_Xic0[6]>0. && // DCA_XiDau
+        fVar_Xic0[10]<5. && fVar_Xic0[10]>0. && // chi2geo_Xi
+        fVar_Xic0[11]>2.3 && // ldl_Xi
+        fVar_Xic0[12]<6. && fVar_Xic0[12]>0. && // chi2topo_XiToPV
+        fVar_Xic0[14]>1.2 && fVar_Xic0[14]<42.5 && // DecayLxy_Xi
+        fVar_Xic0[17]<0.07 && fVar_Xic0[17]>0. && // PA_XiToXic0
+        fVar_Xic0[18]<0.09 && fVar_Xic0[18]>0. && // PA_XiToPV
+        fVar_Xic0[32]<2.7 && fVar_Xic0[32]>0. && // chi2topo_XiToXic0
+        fabs(fVar_Xic0[38])<0.36 && // DCAxy_XiToPV_KF
+        fabs(fVar_Xic0[20]-mass_Xi_PDG)<0.0046 && // mass_Xi
+
+        // Xi daughter cuts
+        fVar_Xic0[7]<4. && fVar_Xic0[7]>0. && // chi2geo_Lam
+        fVar_Xic0[8]>5. && // ldl_Lam
+        fVar_Xic0[9]>0.47 && // chi2topo_LamToPV
+        fVar_Xic0[13]>0.6 && fVar_Xic0[13]<50 && // DecayLxy_Lam
+        fVar_Xic0[15]<0.04 && fVar_Xic0[15]>0. && // PA_LamToXi
+        fVar_Xic0[16]>0.003 && fVar_Xic0[16]<0.09 && // PA_LamToPV
+        fVar_Xic0[31]<1.7 && fVar_Xic0[31]>0. && // chi2topo_LamToXi
+        fVar_Xic0[35]<0.95 && fVar_Xic0[35]>0. && // DCA_LamDau
+        fabs(fVar_Xic0[19]-mass_Lam_PDG)<0.0039 // mass_Lam
+          ) {
+        if (fMLResponse) isSelectedML = fMLResponse->IsSelected(fVar_Xic0[22], fVars_MLmap, modelPred);
+        if (isSelectedML) { // ML score selection
+          fVar_MLoutput[0] = fVar_Xic0[22]; // pt of Xic0 or Omegac0
+          fVar_MLoutput[1] = fVar_Xic0[21]; // pt of pion from Xic0 or Omegac0 decay
+          fVar_MLoutput[2] = fVar_Xic0[24]; // mass of Xic0 or Omegac0
+          fVar_MLoutput[3] = modelPred; // ML output score
+          fTree_MLoutput->Fill();
+        }
+      } // 3<=p_T<4
+      if ( fVar_Xic0[22]>=4. && fVar_Xic0[22]<5. && // 4<=p_T<5
+        // Xic0 cuts
+        fabs(fVar_Xic0[33])<0.63 && // DecayLxy_Xic0
+        fVar_Xic0[34]<11. && fVar_Xic0[34]>0. && // chi2geo_Xic0
+        fVar_Xic0[37]<0.39 && fVar_Xic0[37]>0. && // DCA_Xic0Dau_KF
+        fVar_Xic0[40]<10. && fVar_Xic0[40]>0. && // chi2topo_Xic0ToPV
+        fVar_Xic0[42]<3.7 && fVar_Xic0[42]>0. && // ldl_Xic0
+        fabs(fVar_Xic0[43])<0.35 && // ct_Xic0
+        
+        // pion (from Xic0) cuts
+        fVar_Xic0[26]<3.6 && fVar_Xic0[26]>0. && // chi2prim_PiFromXic0
+        fabs(fVar_Xic0[27])<0.0143 && // DCAxy_PiFromXic0_KF
+
+        // Xi cuts
+        fVar_Xic0[6]<0.90 && fVar_Xic0[6]>0. && // DCA_XiDau
+        fVar_Xic0[10]<8. && fVar_Xic0[10]>0. && // chi2geo_Xi
+        fVar_Xic0[11]>1.5 && // ldl_Xi
+        fVar_Xic0[12]<9. && fVar_Xic0[12]>0. && // chi2topo_XiToPV
+        fVar_Xic0[14]>1.0 && // DecayLxy_Xi
+        fVar_Xic0[17]<0.09 && fVar_Xic0[17]>0. && // PA_XiToXic0
+        fVar_Xic0[18]<0.12 && fVar_Xic0[18]>0. && // PA_XiToPV
+        fVar_Xic0[32]<4.0 && fVar_Xic0[32]>0. && // chi2topo_XiToXic0
+        fabs(fVar_Xic0[38])<0.42 && // DCAxy_XiToPV_KF
+        fabs(fVar_Xic0[20]-mass_Xi_PDG)<0.0059 && // mass_Xi
+
+        // Xi daughter cuts
+        fVar_Xic0[7]<5. && fVar_Xic0[7]>0. && // chi2geo_Lam
+        fVar_Xic0[8]>4.3 && // ldl_Lam
+        fVar_Xic0[9]>0.22 && // chi2topo_LamToPV
+        fVar_Xic0[13]>0.5 && fVar_Xic0[13]<80 && // DecayLxy_Lam
+        fVar_Xic0[15]<0.05 && fVar_Xic0[15]>0. && // PA_LamToXi
+        fVar_Xic0[16]>0.001 && fVar_Xic0[16]<0.08 && // PA_LamToPV
+        fVar_Xic0[31]<2.2 && fVar_Xic0[31]>0. && // chi2topo_LamToXi
+        fVar_Xic0[35]<1.03 && fVar_Xic0[35]>0. && // DCA_LamDau
+        fabs(fVar_Xic0[19]-mass_Lam_PDG)<0.0047 // mass_Lam
+          ) {
+        if (fMLResponse) isSelectedML = fMLResponse->IsSelected(fVar_Xic0[22], fVars_MLmap, modelPred);
+        if (isSelectedML) { // ML score selection
+          fVar_MLoutput[0] = fVar_Xic0[22]; // pt of Xic0 or Omegac0
+          fVar_MLoutput[1] = fVar_Xic0[21]; // pt of pion from Xic0 or Omegac0 decay
+          fVar_MLoutput[2] = fVar_Xic0[24]; // mass of Xic0 or Omegac0
+          fVar_MLoutput[3] = modelPred; // ML output score
+          fTree_MLoutput->Fill();
+        }
+      } // 4<=p_T<5
+      if ( fVar_Xic0[22]>=5. && fVar_Xic0[22]<6. && // 5<=p_T<6
+        // Xic0 cuts
+        fabs(fVar_Xic0[33])<0.68 && // DecayLxy_Xic0
+        fVar_Xic0[34]<9. && fVar_Xic0[34]>0. && // chi2geo_Xic0
+        fVar_Xic0[37]<0.35 && fVar_Xic0[37]>0. && // DCA_Xic0Dau_KF
+        fVar_Xic0[40]<8. && fVar_Xic0[40]>0. && // chi2topo_Xic0ToPV
+        fVar_Xic0[42]<3.3 && fVar_Xic0[42]>0. && // ldl_Xic0
+        fabs(fVar_Xic0[43])<0.31 && // ct_Xic0
+        
+        // pion (from Xic0) cuts
+        fVar_Xic0[26]<4.1 && fVar_Xic0[26]>0. && // chi2prim_PiFromXic0
+        fabs(fVar_Xic0[27])<0.0138 && // DCAxy_PiFromXic0_KF
+
+        // Xi cuts
+        fVar_Xic0[6]<0.84 && fVar_Xic0[6]>0. && // DCA_XiDau
+        fVar_Xic0[10]<6. && fVar_Xic0[10]>0. && // chi2geo_Xi
+        fVar_Xic0[11]>1.6 && // ldl_Xi
+        fVar_Xic0[12]<7. && fVar_Xic0[12]>0. && // chi2topo_XiToPV
+        fVar_Xic0[14]>1.2 && // DecayLxy_Xi
+        fVar_Xic0[17]<0.08 && fVar_Xic0[17]>0. && // PA_XiToXic0
+        fVar_Xic0[18]<0.1 && fVar_Xic0[18]>0. && // PA_XiToPV
+        fVar_Xic0[32]<3.6 && fVar_Xic0[32]>0. && // chi2topo_XiToXic0
+        fabs(fVar_Xic0[38])<0.38 && // DCAxy_XiToPV_KF
+        fabs(fVar_Xic0[20]-mass_Xi_PDG)<0.006 && // mass_Xi
+
+        // Xi daughter cuts
+        fVar_Xic0[7]<4. && fVar_Xic0[7]>0. && // chi2geo_Lam
+        fVar_Xic0[8]>4.5 && // ldl_Lam
+        fVar_Xic0[9]>0.19 && // chi2topo_LamToPV
+        fVar_Xic0[13]>0.5 && fVar_Xic0[13]<80 && // DecayLxy_Lam
+        fVar_Xic0[15]<0.04 && fVar_Xic0[15]>0. && // PA_LamToXi
+        fVar_Xic0[16]>0.001 && fVar_Xic0[16]<0.06 && // PA_LamToPV
+        fVar_Xic0[31]<1.9 && fVar_Xic0[31]>0. && // chi2topo_LamToXi
+        fVar_Xic0[35]<0.92 && fVar_Xic0[35]>0. && // DCA_LamDau
+        fabs(fVar_Xic0[19]-mass_Lam_PDG)<0.0047 // mass_Lam
+          ) {
+        if (fMLResponse) isSelectedML = fMLResponse->IsSelected(fVar_Xic0[22], fVars_MLmap, modelPred);
+        if (isSelectedML) { // ML score selection
+          fVar_MLoutput[0] = fVar_Xic0[22]; // pt of Xic0 or Omegac0
+          fVar_MLoutput[1] = fVar_Xic0[21]; // pt of pion from Xic0 or Omegac0 decay
+          fVar_MLoutput[2] = fVar_Xic0[24]; // mass of Xic0 or Omegac0
+          fVar_MLoutput[3] = modelPred; // ML output score
+          fTree_MLoutput->Fill();
+        }
+      } // 5<p_T<6
+      if ( fVar_Xic0[22]>=6. && fVar_Xic0[22]<8. && // 6<=p_T<8
+        // Xic0 cuts
+        fabs(fVar_Xic0[33])<0.78 && // DecayLxy_Xic0
+        fVar_Xic0[34]<8. && fVar_Xic0[34]>0. && // chi2geo_Xic0
+        fVar_Xic0[37]<0.32 && fVar_Xic0[37]>0. && // DCA_Xic0Dau_KF
+        fVar_Xic0[40]<7. && fVar_Xic0[40]>0. && // chi2topo_Xic0ToPV
+        fVar_Xic0[42]<3.1 && fVar_Xic0[42]>0. && // ldl_Xic0
+        fabs(fVar_Xic0[43])<0.29 && // ct_Xic0
+        
+        // pion (from Xic0) cuts
+        fVar_Xic0[26]<4.5 && fVar_Xic0[26]>0. && // chi2prim_PiFromXic0
+        fabs(fVar_Xic0[27])<0.0131 && // DCAxy_PiFromXic0_KF
+
+        // Xi cuts
+        fVar_Xic0[6]<0.76 && fVar_Xic0[6]>0. && // DCA_XiDau
+        fVar_Xic0[10]<6. && fVar_Xic0[10]>0. && // chi2geo_Xi
+        fVar_Xic0[11]>1.6 && // ldl_Xi
+        fVar_Xic0[12]<7. && fVar_Xic0[12]>0. && // chi2topo_XiToPV
+        fVar_Xic0[14]>1.4 && // DecayLxy_Xi
+        fVar_Xic0[17]<0.07 && fVar_Xic0[17]>0. && // PA_XiToXic0
+        fVar_Xic0[18]<0.08 && fVar_Xic0[18]>0. && // PA_XiToPV
+        fVar_Xic0[32]<3.3 && fVar_Xic0[32]>0. && // chi2topo_XiToXic0
+        fabs(fVar_Xic0[38])<0.35 && // DCAxy_XiToPV_KF
+        fabs(fVar_Xic0[20]-mass_Xi_PDG)<0.0062 && // mass_Xi
+
+        // Xi daughter cuts
+        fVar_Xic0[7]<3. && fVar_Xic0[7]>0. && // chi2geo_Lam
+        fVar_Xic0[8]>4.6 && // ldl_Lam
+        fVar_Xic0[9]>0.16 && // chi2topo_LamToPV
+        fVar_Xic0[13]>0.5 && fVar_Xic0[13]<80 && // DecayLxy_Lam
+        fVar_Xic0[15]<0.03 && fVar_Xic0[15]>0. && // PA_LamToXi
+        fVar_Xic0[16]>0.001 && fVar_Xic0[16]<0.05 && // PA_LamToPV
+        fVar_Xic0[31]<1.7 && fVar_Xic0[31]>0. && // chi2topo_LamToXi
+        fVar_Xic0[35]<0.8 && fVar_Xic0[35]>0. && // DCA_LamDau
+        fabs(fVar_Xic0[19]-mass_Lam_PDG)<0.0048 // mass_Lam
+          ) {
+        if (fMLResponse) isSelectedML = fMLResponse->IsSelected(fVar_Xic0[22], fVars_MLmap, modelPred);
+        if (isSelectedML) { // ML score selection
+          fVar_MLoutput[0] = fVar_Xic0[22]; // pt of Xic0 or Omegac0
+          fVar_MLoutput[1] = fVar_Xic0[21]; // pt of pion from Xic0 or Omegac0 decay
+          fVar_MLoutput[2] = fVar_Xic0[24]; // mass of Xic0 or Omegac0
+          fVar_MLoutput[3] = modelPred; // ML output score
+          fTree_MLoutput->Fill();
+        }
+      } // 6<=p_T<8
+      if ( fVar_Xic0[22]>=8. && fVar_Xic0[22]<12. && // 8<=p_T<12
+        // Xic0 cuts
+        fabs(fVar_Xic0[33])<0.93 && // DecayLxy_Xic0
+        fVar_Xic0[34]<7. && fVar_Xic0[34]>0. && // chi2geo_Xic0
+        fVar_Xic0[37]<0.27 && fVar_Xic0[37]>0. && // DCA_Xic0Dau_KF
+        fVar_Xic0[40]<6. && fVar_Xic0[40]>0. && // chi2topo_Xic0ToPV
+        fVar_Xic0[42]<2.8 && fVar_Xic0[42]>0. && // ldl_Xic0
+        fabs(fVar_Xic0[43])<0.26 && // ct_Xic0
+        
+        // pion (from Xic0) cuts
+        fVar_Xic0[26]<5.2 && fVar_Xic0[26]>0. && // chi2prim_PiFromXic0
+        fabs(fVar_Xic0[27])<0.012 && // DCAxy_PiFromXic0_KF
+
+        // Xi cuts
+        fVar_Xic0[6]<0.62 && fVar_Xic0[6]>0. && // DCA_XiDau
+        fVar_Xic0[10]<5. && fVar_Xic0[10]>0. && // chi2geo_Xi
+        fVar_Xic0[11]>1.5 && // ldl_Xi
+        fVar_Xic0[12]<5. && fVar_Xic0[12]>0. && // chi2topo_XiToPV
+        fVar_Xic0[14]>1.6 && // DecayLxy_Xi
+        fVar_Xic0[17]<0.05 && fVar_Xic0[17]>0. && // PA_XiToXic0
+        fVar_Xic0[18]<0.06 && fVar_Xic0[18]>0. && // PA_XiToPV
+        fVar_Xic0[32]<2.8 && fVar_Xic0[32]>0. && // chi2topo_XiToXic0
+        fabs(fVar_Xic0[38])<0.3 && // DCAxy_XiToPV_KF
+        fabs(fVar_Xic0[20]-mass_Xi_PDG)<0.0064 && // mass_Xi
+
+        // Xi daughter cuts
+        fVar_Xic0[7]<3. && fVar_Xic0[7]>0. && // chi2geo_Lam
+        fVar_Xic0[8]>4.7 && // ldl_Lam
+        fVar_Xic0[9]>0.13 && // chi2topo_LamToPV
+        fVar_Xic0[13]>0.6 && fVar_Xic0[13]<80 && // DecayLxy_Lam
+        fVar_Xic0[15]<0.03 && fVar_Xic0[15]>0. && // PA_LamToXi
+        fVar_Xic0[16]>0.001 && fVar_Xic0[16]<0.04 && // PA_LamToPV
+        fVar_Xic0[31]<1.5 && fVar_Xic0[31]>0. && // chi2topo_LamToXi
+        fVar_Xic0[35]<0.63 && fVar_Xic0[35]>0. && // DCA_LamDau
+        fabs(fVar_Xic0[19]-mass_Lam_PDG)<0.0049 // mass_Lam
+          ) {
+        if (fMLResponse) isSelectedML = fMLResponse->IsSelected(fVar_Xic0[22], fVars_MLmap, modelPred);
+        if (isSelectedML) { // ML score selection
+          fVar_MLoutput[0] = fVar_Xic0[22]; // pt of Xic0 or Omegac0
+          fVar_MLoutput[1] = fVar_Xic0[21]; // pt of pion from Xic0 or Omegac0 decay
+          fVar_MLoutput[2] = fVar_Xic0[24]; // mass of Xic0 or Omegac0
+          fVar_MLoutput[3] = modelPred; // ML output score
+          fTree_MLoutput->Fill();
+        }
+      } // 8<=p_T<12
     }
   }
 
