@@ -37,8 +37,8 @@ double fVer1[3];
 
 //_______________________________________________________
 
-AliAnalysisTaskParticleEffWRZ::AliAnalysisTaskParticleEffWRZ(const Char_t *partName) :
-  AliAnalysisTaskSE(partName), centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0), fAODpidUtil(0)
+AliAnalysisTaskParticleEffWRZ::AliAnalysisTaskParticleEffWRZ(const Char_t *partName, double micen, double macen) :
+  AliAnalysisTaskSE(partName), centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0), fAODpidUtil(0), fmincen(micen), fmaxcen(macen)
 {
   for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
     for(Int_t chg=0;chg<2;chg++){
@@ -73,6 +73,7 @@ AliAnalysisTaskParticleEffWRZ::AliAnalysisTaskParticleEffWRZ(const Char_t *partN
   }
 
   DefineOutput(1, TList::Class());
+
 }
 
 //_______________________________________________________
@@ -572,7 +573,7 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
   AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
   AliMultSelection *mult_selection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
   Double_t  centper = alicent->GetCentralityPercentile("V0M");
-  if(mult_selection->GetMultiplicityPercentile("V0M") < 0.0000001 || mult_selection->GetMultiplicityPercentile("V0M") >  10.0) 
+  if(mult_selection->GetMultiplicityPercentile("V0M") < fmincen || mult_selection->GetMultiplicityPercentile("V0M") >  fmaxcen) 
      return; 
 
   fHistEv->Fill(centper);
