@@ -49,14 +49,14 @@ class AliESDtrackCuts;
 #include "AliESDVZERO.h"
 #include "AliESDtrack.h"
 #include "AliESDtrackCuts.h"
-#include "AliEventCuts.h"
+// #include "AliEventCuts.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenEventHeader.h"
 #include "AliInputEventHandler.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
-#include "AliMCParticle.h"
+// #include "AliMCParticle.h"
 #include "AliMultEstimator.h"
 #include "AliMultInput.h"
 #include "AliMultSelection.h"
@@ -86,7 +86,7 @@ using std::endl;
 static constexpr int uc_v0m_Nbins_fd{7};
 static constexpr double uc_v0m_bins_high[uc_v0m_Nbins_fd] = {
     1.0, 2.0, 3.0, 4.0, 5.0, 10.0, 80.0};
-static constexpr double uc_v0m_bins_low[uc_v0m_Nbins_fd] = {0.1, 1.0, 2.0, 3.0,
+static constexpr double uc_v0m_bins_low[uc_v0m_Nbins_fd] = {0.0, 1.0, 2.0, 3.0,
                                                             4.0, 5.0, 10.0};
 
 #include "AliAnalysisTaskDataSpeedOfSound.h"
@@ -276,18 +276,18 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
       0.9, 1.0, 1.25, 1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5,  5.0, 6.0, 7.0,
       8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 30.0, 40.0, 50.0};
 
-  constexpr int uc_v0m_Nbins{8};
-  constexpr double uc_v0m_bins[uc_v0m_Nbins + 1] = {0.0, 0.001, 0.01, 0.1, 1.0,
-                                                    2.0, 3.0,   4.0,  5.0};
+  constexpr int uc_v0m_Nbins{5};
+  constexpr double uc_v0m_bins[uc_v0m_Nbins + 1] = {0.0, 1.0, 2.0,
+                                                    3.0, 4.0, 5.0};
 
   constexpr int v0m_Nbins{8};
   constexpr double v0m_bins[v0m_Nbins + 1] = {0.0,  5.0,  10.0, 20.0, 30.0,
                                               40.0, 50.0, 60.0, 80.0};
 
-  constexpr int nch_Nbins{8000};
+  constexpr int nch_Nbins{920};
   double nch_bins[nch_Nbins + 1] = {0};
   for (int i = 0; i <= nch_Nbins; ++i) {
-    nch_bins[i] = -0.5 + i;
+    nch_bins[i] = 5.0 * i;
   }
 
   constexpr int dcaxy_Nbins{300};
@@ -317,12 +317,11 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
 
   // hV0Mmultbefvtx = new TH1F("hV0Mmultbefvtx", ";V0M (%) bef. Vtx
   // cut;Entries",
-  //                           v0m_Nbins, v0m_bins);
   // fOutputList->Add(hV0Mmultbefvtx);
 
   hTrackletvsV0M =
       new TH2F("hTrackletvsV0M", ";#it{N}_{ch}^{tracklet} (|#eta|<0.8);V0M (%)",
-               nch_Nbins, nch_bins, v0m_Nbins, v0m_bins);
+               8001, -0.5, 8000.5, uc_v0m_Nbins, uc_v0m_bins);
   fOutputList->Add(hTrackletvsV0M);
 
   hTrueVtxZ =
@@ -358,16 +357,6 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   hPtTruePrivsV0M =
       new TH2F("hPtTruePrivsV0M", ";#it{p}_{T} GeV/#it{c}; V0M (%)", pt_Nbins,
                pt_bins, v0m_Nbins, v0m_bins);
-
-  // hPtTrueSecvsV0M =
-  //     new TH2F("hPtTrueSecvsV0M", ";#it{p}_{T} GeV/#it{c}; V0M (%)",
-  //     pt_Nbins,
-  //              pt_bins, v0m_Nbins, v0m_bins);
-
-  // hPtTrueAllvsV0M =
-  //     new TH2F("hPtTrueAllvsV0M", ";#it{p}_{T} GeV/#it{c}; V0M (%)",
-  //     pt_Nbins,
-  //              pt_bins, v0m_Nbins, v0m_bins);
 
   hPtRecPrivsV0M = new TH2F("hPtRecPrivsV0M", ";#it{p}_{T} GeV/#it{c}; V0M (%)",
                             pt_Nbins, pt_bins, v0m_Nbins, v0m_bins);
