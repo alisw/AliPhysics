@@ -50,6 +50,11 @@
 #include <vector>
 #include <map>
 
+#include <fastjet/PseudoJet.hh>
+#include <fastjet/JetDefinition.hh>
+#include <fastjet/AreaDefinition.hh>
+#include <fastjet/ClusterSequenceArea.hh>
+
 ClassImp(AliAnalysisTaskGammaPureMC)
 
 //________________________________________________________________________
@@ -136,12 +141,34 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fHistPtV0MultPi0GG(nullptr),
   fHistPtV0MultEtaGG(nullptr),
   fHistPtV0MultEtaPrimeGG(nullptr),
+  fHistPi0PtJetPt(nullptr),
+  fHistEtaPtJetPt(nullptr),
+  fHistPi0ZJetPt(nullptr),
+  fHistEtaZJetPt(nullptr),
+  fHistJetPtY(nullptr),
+  fHistJetEta(nullptr),
+  fHistJetPhi(nullptr),
   fIsK0(1),
   fIsMC(1),
   fMaxpT(100),
   fDoMultStudies(0),
   fNTracksInV0Acc(0),
-  fIsEvtINELgtZERO(0)
+  fIsEvtINELgtZERO(0),
+  fDoJetStudies(false),
+  fJetRadius(0.4),
+  fJetMinE(1.),
+  fJetAccEta(0.8),
+  fJetParticleAcc(0.4),
+  fJetParticleAccFF(1.2),
+  fJetAlgorithm(fastjet::antikt_algorithm),
+  fJetStrategy(fastjet::Best),
+  fJetAreaType(fastjet::active_area),
+  fJetRecombScheme(fastjet::BIpt_scheme),
+  fJetGhostArea(0.01),
+  fGhostEtaMax(1.5),
+  fActiveAreaRepeats(1),
+  fAreaType(fastjet::active_area),
+  fVecJets({})
 {
 
 }
@@ -231,12 +258,34 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   fHistPtV0MultPi0GG(nullptr),
   fHistPtV0MultEtaGG(nullptr),
   fHistPtV0MultEtaPrimeGG(nullptr),
+  fHistPi0PtJetPt(nullptr),
+  fHistEtaPtJetPt(nullptr),
+  fHistPi0ZJetPt(nullptr),
+  fHistEtaZJetPt(nullptr),
+  fHistJetPtY(nullptr),
+  fHistJetEta(nullptr),
+  fHistJetPhi(nullptr),
   fIsK0(1),
   fIsMC(1),
   fMaxpT(100),
   fDoMultStudies(0),
   fNTracksInV0Acc(0),
-  fIsEvtINELgtZERO(0)
+  fIsEvtINELgtZERO(0),
+  fDoJetStudies(false),
+  fJetRadius(0.4),
+  fJetMinE(1.),
+  fJetAccEta(0.8),
+  fJetParticleAcc(0.4),
+  fJetParticleAccFF(1.2),
+  fJetAlgorithm(fastjet::antikt_algorithm),
+  fJetStrategy(fastjet::Best),
+  fJetAreaType(fastjet::active_area),
+  fJetRecombScheme(fastjet::BIpt_scheme),
+  fJetGhostArea(0.01),
+  fGhostEtaMax(1.5),
+  fActiveAreaRepeats(1),
+  fAreaType(fastjet::active_area),
+  fVecJets({})
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -573,6 +622,47 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
     fOutputContainer->Add(fHistPtV0MultEtaPrimeGG);
   }
 
+  if(fDoJetStudies){
+    std::vector<double> vecJetPt;
+    double jetPt = 0.;
+    double maxJetPt = 500.;
+    double epsilon = 1e-20;
+    while(jetPt < maxJetPt){
+      vecJetPt.push_back(jetPt);
+      if(jetPt < 5. - epsilon) jetPt +=1.;
+      else if(jetPt < 50. - epsilon) jetPt +=5.;
+      else if(jetPt < 100. - epsilon) jetPt +=10.;
+      else if(jetPt < 200. - epsilon) jetPt +=50.;
+      else if(jetPt < 500. - epsilon) jetPt +=100.;
+      else vecJetPt.push_back(maxJetPt);
+    }
+    
+    fHistJetPtY = new TH2F("JetPtY", "JetPtY", vecJetPt.size()-1, vecJetPt.data(), 100, -2, 2);
+    fHistJetPtY->Sumw2();
+    fOutputContainer->Add(fHistJetPtY);
+    fHistJetEta = new TH1D("JetEta", "JetEta", 100, -1., 1.);
+    fHistJetEta->Sumw2();
+    fOutputContainer->Add(fHistJetEta);
+    fHistJetPhi = new TH1D("JetPhi", "JetPhi", 100, 0., 6.5);
+    fHistJetPhi->Sumw2();
+    fOutputContainer->Add(fHistJetPhi);
+
+    fHistPi0PtJetPt = new TH2F("Pi0PtVsJetPt_Eta08", "Pi0PtVsJetPt_Eta08", fMaxpT*10, 0., fMaxpT, vecJetPt.size()-1, vecJetPt.data());
+    fHistPi0PtJetPt->Sumw2();
+    fOutputContainer->Add(fHistPi0PtJetPt);
+
+    fHistEtaPtJetPt = new TH2F("EtaPtVsJetPt_Eta08", "EtaPtVsJetPt_Eta08", fMaxpT*10, 0., fMaxpT, vecJetPt.size()-1, vecJetPt.data());
+    fHistEtaPtJetPt->Sumw2();
+    fOutputContainer->Add(fHistEtaPtJetPt);
+
+    fHistPi0ZJetPt = new TH2F("Pi0ZVsJetPt_Eta08", "Pi0ZVsJetPt_Eta08", 100 ,0, 1, vecJetPt.size()-1, vecJetPt.data());
+    fHistPi0ZJetPt->Sumw2();
+    fOutputContainer->Add(fHistPi0ZJetPt);
+
+    fHistEtaZJetPt = new TH2F("EtaZVsJetPt_Eta08", "EtaZVsJetPt_Eta08", 100 ,0, 1, vecJetPt.size()-1, vecJetPt.data());
+    fHistEtaZJetPt->Sumw2();
+    fOutputContainer->Add(fHistEtaZJetPt);
+  }
 
   PostData(1, fOutputContainer);
 }
@@ -645,6 +735,10 @@ void AliAnalysisTaskGammaPureMC::UserExec(Option_t *)
   if(fDoMultStudies)
   {
     ProcessMultiplicity();
+  }
+
+  if(fDoJetStudies){
+    ProcessJets();
   }
 
   ProcessMCParticles();
@@ -749,6 +843,20 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
           }
         }
       }
+      if(fDoJetStudies){
+        if(!IsSecondary(motherParticle)){
+          int index = -1;
+          double R = 0;
+          if(IsParticleInJet(fVecJets, particle->Eta(), particle->Phi(), index, R)){
+            if(std::abs(particle->Y()) <= fJetParticleAcc){
+              fHistPi0PtJetPt->Fill(particle->Pt(), fVecJets[index].pt());
+            }
+            if(std::abs(particle->Y()) <= fJetParticleAccFF){
+              fHistPi0ZJetPt->Fill(GetFrag(fVecJets[index], particle), fVecJets[index].pt());
+            }
+          }
+        }
+      }
       break;
     case kPdgEta:
       fHistPtYEta->Fill(particle->Pt(), particle->Y());
@@ -762,6 +870,20 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
               }
             } else {
               fHistPtV0MultEtaGG->Fill(particle->Pt(), fNTracksInV0Acc);
+            }
+          }
+        }
+      }
+      if(fDoJetStudies){
+        if(!IsSecondary(motherParticle)){
+          int index = -1;
+          double R = 0;
+          if(IsParticleInJet(fVecJets, particle->Eta(), particle->Phi(), index, R)){
+            if(std::abs(particle->Y()) <= fJetParticleAcc){
+              fHistEtaPtJetPt->Fill(particle->Pt(), fVecJets[index].pt());
+            }
+            if(std::abs(particle->Y()) <= fJetParticleAccFF){
+              fHistEtaZJetPt->Fill(GetFrag(fVecJets[index], particle), fVecJets[index].pt());
             }
           }
         }
@@ -1184,4 +1306,74 @@ void AliAnalysisTaskGammaPureMC::SetLogBinningXTH2(TH2* histoRebin){
   for(Int_t i=1; i<=bins; ++i) newbins[i] = factor * newbins[i-1];
   axisafter->Set(bins, newbins);
   delete [] newbins;
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskGammaPureMC::ProcessJets(){
+  fVecJets.clear();
+
+  std::vector<fastjet::PseudoJet> vecParticles;
+  for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
+    // fill primary histograms
+    AliVParticle* particle     = nullptr;
+    particle                    = (AliVParticle *)fMCEvent->GetTrack(i);
+    if (!particle) continue;
+
+    // only select stable particles for jet finder
+    if(fDoJetStudies == 1){ // reject all unstable particles
+      if(particle->GetDaughterFirst() > 0){
+        continue;
+      }
+    } else if(fDoJetStudies == 2){ // set pi0 and eta to stable and reject photons from those decays
+      if(particle->GetDaughterFirst() > 0 && (particle->PdgCode() != 111 && particle->PdgCode() != 221)){
+        continue;
+      } else if(particle->GetMother() > 0){
+        if(static_cast<AliVParticle*>(fMCEvent->GetTrack(particle->GetMother()))->PdgCode() == 111 || static_cast<AliVParticle*>(fMCEvent->GetTrack(particle->GetMother()))->PdgCode() == 221){
+          continue;
+        }
+      }
+    }
+  
+    fastjet::PseudoJet jetPart(particle->Px(), particle->Py(), particle->Pz(), particle->P());
+    jetPart.set_user_index(i);
+    vecParticles.push_back(jetPart);
+  }
+
+  fastjet::Selector sel_jets = fastjet::SelectorEMin(fJetMinE) * fastjet::SelectorEtaRange(-fJetAccEta, fJetAccEta);
+  fastjet::JetDefinition jet_def(fJetAlgorithm, fJetRadius, fJetRecombScheme, fJetStrategy);
+  fastjet::GhostedAreaSpec ghostSpec(fGhostEtaMax, fActiveAreaRepeats, fJetGhostArea, 0.1, 1e-100);
+  fastjet::AreaDefinition area_def = fastjet::AreaDefinition(fAreaType,ghostSpec);
+  fastjet::ClusterSequenceArea clust_seq_full(vecParticles, jet_def, area_def);
+  fVecJets = sel_jets(clust_seq_full.inclusive_jets());
+
+  for(const auto & jet : fVecJets){
+    fHistJetPtY->Fill(jet.pt(), jet.eta());
+    fHistJetEta->Fill(jet.eta());
+    fHistJetPhi->Fill(jet.phi());
+  }
+
+}
+
+//_________________________________________________________________________________
+bool AliAnalysisTaskGammaPureMC::IsParticleInJet(const std::vector<fastjet::PseudoJet>& vecJet, double eta, double phi, int& index, double& R){
+  R = 100; // some high value that will get replaced
+  for(unsigned int i = 0; i < vecJet.size(); ++i){
+    double dEta = std::abs(vecJet[i].eta() - eta);
+    double dPhi = std::abs(vecJet[i].phi() - phi);
+    double Rtmp = sqrt(dEta*dEta + dPhi * dPhi);
+    if(Rtmp < fJetRadius && Rtmp < R){
+      R = Rtmp;
+      index = i;
+    }
+  }
+  if(R >= 100) return false;
+  return true;
+}
+
+//_________________________________________________________________________________
+double AliAnalysisTaskGammaPureMC::GetFrag(const fastjet::PseudoJet& jet, const AliVParticle* part){
+  double ScalarProd = jet.px()*part->Px() + jet.py()*part->Py() + jet.pz()*part->Pz();
+  double jetP2 = jet.px()*jet.px() + jet.py()*jet.py() + jet.pz()*jet.pz();
+  double z = ScalarProd/jetP2;
+  return z;
 }
