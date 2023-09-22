@@ -346,7 +346,7 @@ namespace PWGJE
       Int_t nEventActivityBins = 8;
       Double_t *eventActivityBins = 0;
       // +1 to accomodate the fact that we define bins rather than array entries.
-      Double_t multiplicityBins[kMixedEventMultiplicityBins + 1] = {0., 4., 9., 15., 25., 35., 55., 100., 500.};
+      Double_t multiplicityBins[kMixedEventMultiplicityBins + 1] = {0., 4., 9., 15., 25., 35., 55., 100., 700.};
 
       // Cannot use GetBeamType() since it is not available until UserExec()
       if (fForceBeamType != AliAnalysisTaskEmcal::kpp)
@@ -645,12 +645,16 @@ namespace PWGJE
               Double_t protonTOFnSigma;
               Double_t kaonTOFnSigma;
 
-              Bool_t hasTOFhit;
+              Double_t hasTOFhit;
 
               pionTPCnSigma = pidResponse->NumberOfSigmasTPC(vTrack, (AliPID::EParticleType)2);
 
               AliPIDResponse::EDetPidStatus status = pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, vTrack);
-              hasTOFhit = (status == AliPIDResponse::kDetPidOk);
+              if (status == AliPIDResponse::kDetPidOk){
+                hasTOFhit = 1;
+              } else {
+                hasTOFhit = 0;
+              }
             
               pionTOFnSigma = pidResponse->NumberOfSigmasTOF(vTrack, (AliPID::EParticleType)2);
               protonTOFnSigma = pidResponse->NumberOfSigmasTOF(vTrack, (AliPID::EParticleType)4);
@@ -814,10 +818,14 @@ namespace PWGJE
 
                     // NOTE: We don't need to apply the artificial track inefficiency here because we already applied
                     //       it when will filling into the event pool (in CloneAndReduceTrackList()).
-                    Bool_t hasTOFhit;
+                    Double_t hasTOFhit;
 
                     AliPIDResponse::EDetPidStatus status = pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, bgTrack);
-                    hasTOFhit = (status == AliPIDResponse::kDetPidOk);
+                    if(status == AliPIDResponse::kDetPidOk){
+                      hasTOFhit = 1;
+                    } else {
+                      hasTOFhit = 0;
+                    }
 
                     // Fill into TLorentzVector for use with functions below
                     track.Clear();
