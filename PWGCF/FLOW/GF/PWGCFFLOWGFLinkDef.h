@@ -54,6 +54,7 @@
 #pragma link C++ class AliAnalysisTaskMeanPtV2Corr+;
 #pragma link C++ class AliAnalysisTaskXDeptFlow+;
 #pragma link C++ class AliAnalysisTaskNonlinearFlow+;
+#pragma link C++ class AliAnalysisTaskVnPtCorr+;
 #pragma link C++ class AliAnalysisTaskCorrForNonlinearFlow+;
 #pragma link C++ class AliAnalysisTaskAcceptanceCorr+;
 #pragma link C++ class AliEffFDContainer+;
@@ -63,6 +64,7 @@
 #pragma link C++ class AliGFWXXCuts+;
 #pragma link C++ class AliGFWPbpass23Cuts+;
 #pragma link C++ class PhysicsProfile+;
+#pragma link C++ class PhysicsProfileVnPt+;
 #pragma link C++ class PhysicsProfilePPTask+;
 #pragma link C++ class AliLWTPCTrack+;
 #pragma link C++ class AliLWFMDTrack+;
