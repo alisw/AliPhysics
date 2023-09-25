@@ -40,7 +40,6 @@ using std::cout;
 using std::endl;
 
 ClassImp(AliAnalysisTaskDeutFlucpp)
-
     AliAnalysisTaskDeutFlucpp::AliAnalysisTaskDeutFlucpp() : AliAnalysisTaskSE(), fTreeEvent(NULL), fPIDResponse(NULL), fESDtrackCuts(NULL), fEventCuts(0), fTriggerMask(0), fTreeTrackVariableCentrality(0), fTreeTrackVariableVtxz(0), fTreeTrackVariableNTrack(0), fMCstack(0), fMCevent(0),
       fUseMC(0)
 {
@@ -101,6 +100,9 @@ void AliAnalysisTaskDeutFlucpp::UserCreateOutputObjects()
   AliInputEventHandler *inputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
 
+  AliMCEventHandler* mcHandler = new AliMCEventHandler();
+	man->SetMCtruthEventHandler(mcHandler);
+
   //------------------------------------------------
   // track cut
   //------------------------------------------------
@@ -142,17 +144,17 @@ void AliAnalysisTaskDeutFlucpp::UserCreateOutputObjects()
   PostData(1, fTreeEvent);
 }
 
-Bool_t AliAnalysisTaskDeutFlucpp::IsMCEventSelected(TObject* obj){
+// Bool_t AliAnalysisTaskDeutFlucpp::IsMCEventSelected(TObject* obj){
 
-	Bool_t isSelected = kTRUE;
+// 	Bool_t isSelected = kTRUE;
 
-	AliMCEvent *event = 0x0;
-	event = dynamic_cast<AliMCEvent*>(obj);
-	if( !event ) 
-		isSelected = kFALSE;
+// 	AliMCEvent *event = 0x0;
+// 	event = dynamic_cast<AliMCEvent*>(obj);
+// 	if( !event ) 
+// 		isSelected = kFALSE;
 
-	return isSelected;
-}
+// 	return isSelected;
+// }
 
 //________________________________________________________________________
 void AliAnalysisTaskDeutFlucpp::UserExec(Option_t *)
@@ -172,20 +174,22 @@ void AliAnalysisTaskDeutFlucpp::UserExec(Option_t *)
     // PostData(1,fTreeEvent);
     return;
   }
-  
+  if(fUseMC)
+  {
   fMCevent = MCEvent();
     if (!fMCevent) {
       Printf("ERROR: Could not retrieve MC event \n");
-      cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+      //cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
       return;
     }
 
     fMCstack = fMCevent->Stack();
     if (!fMCstack) {
       Printf("ERROR: Could not retrieve MC stack \n");
-      cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+      //cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
       return;
     }
+  }
   //IsMCEventSelected = 1;
   
   ////tigger/////////////
@@ -194,7 +198,7 @@ void AliAnalysisTaskDeutFlucpp::UserExec(Option_t *)
 
   isSelected = (maskIsSelected & fTriggerMask); // AliVEvent::kINT7)
 
-  IsMCEventSelected(fMCevent);
+  //IsMCEventSelected(fMCevent);
 
   if (!isSelected)
   {

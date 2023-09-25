@@ -26,7 +26,7 @@ class TTree;
 
 class AliESDEvent;
 class AliESDtrackCuts;
-class AliMCEvent;
+//class AliMCEvent;
 
 class TH1F;
 class TH2F;
@@ -58,7 +58,7 @@ class AliAnalysisTaskDeutFlucpp : public AliAnalysisTaskSE {
   {
     kMaxTrack=500
   };
-  Bool_t IsMCEventSelected(TObject* obj);
+  //Bool_t IsMCEventSelected(TObject* obj);
   TTree  *fTreeEvent;//!
   AliPIDResponse   *fPIDResponse;//!
   AliESDtrackCuts  *fESDtrackCuts;//!
@@ -69,7 +69,7 @@ class AliAnalysisTaskDeutFlucpp : public AliAnalysisTaskSE {
   Int_t fTreeTrackVariableNTrack;//!
   AliStack *fMCstack; //! MC stack
   AliMCEvent *fMCevent;    //! MC Event
-  AliMCEventHandler *fMCHandler;
+  //AliMCEventHandler *fMCHandler;
   Bool_t fUseMC;      // analyze MC events
   Float_t fTreeTrackVariabledeuteronnsigmaTPC[kMaxTrack];//!
   Float_t fTreeTrackVariableprotonnsigmaTPC[kMaxTrack];//!
