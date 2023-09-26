@@ -594,7 +594,7 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     fHistTPCchi2 = new TH1F("fHistChi2TPC","fHistChi2TPC",10,0,10);
     fHistITSchi2 = new TH1F("fHistChi2ITS","fHistChi2ITS",40,0,40);
 
-    fHistDCAxy = new TH1F("fHistDCAxy","fHistDCAxy",100,0,15);
+    fHistDCAxy = new TH2F("fHistDCAxyvspt","fHistDCAxyvspt",100,0,1,50,0,10);
     fHistDCAz = new TH1F("fHistDCAz","fHistDCAz",100,-5,5);
 
     fHistMCPtEtaVz = new TH3F("fMCHistPtEtaVz","fMCHistPtEtaVz; pT; #eta; Vz", 50, fFlowRFPsPtMin, fFlowRFPsPtMax, fNEtaBins, -1.0, 1.0, fVtxZCuts*2,-fVtxZCuts,fVtxZCuts);
@@ -1769,7 +1769,7 @@ void AliAnalysisTaskESEFlow::FillObsDistributions(const Float_t centrality)
             vtx->GetXYZ(dVtxXYZ);
             for(Int_t i(0); i < 3; ++i) { dDCAXYZ[i] = dTrackXYZ[i]-dVtxXYZ[i]; }
             Double_t dDCAxy = TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0]+dDCAXYZ[1]*dDCAXYZ[1]);
-            fHistDCAxy->Fill(dDCAxy);
+            fHistDCAxy->Fill(dDCAxy,dPt);
             fHistDCAz->Fill(dDCAXYZ[2]);
         }
         // stop dca
@@ -3217,8 +3217,9 @@ void AliAnalysisTaskESEFlow::QAMultFiller(Float_t v0Centr)
 
   for(Int_t it(0); it < nTracks; it++)
   {
-    AliAODTrack* track = (AliAODTrack*) fAOD->GetTrack(it);
+    AliAODTrack *track = static_cast<AliAODTrack *>(fAOD->GetTrack(it));
     if(!track) { continue; }
+
 
     if(track->TestFilterBit(32))
     {
@@ -3232,14 +3233,11 @@ void AliAnalysisTaskESEFlow::QAMultFiller(Float_t v0Centr)
     if(track->TestFilterBit(96)) { multTPC96++; }
   }
 
-
   fhQAEventsfMult32vsCentr->Fill(v0Centr, multTrk);
   fhQAEventsfMult128vsCentr->Fill(v0Centr, multTPC128);
   fhQAEventsfMult96vsCentr->Fill(v0Centr, multTPC96);
   fhQAEventsfMultTPCvsTOF->Fill(multTPC32, multTOF);
   fhQAEventsfMultTPCvsESD->Fill(multTPC128, multESD);
-
-
 
 
   return;

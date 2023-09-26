@@ -153,7 +153,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH1F*                   fHistTPCchi2;   //!
         TH1F*                   fHistITSchi2;   //!
 
-        TH1F*                   fHistDCAxy;      //!
+        TH2F*                   fHistDCAxy;      //!
         TH1F*                   fHistDCAz;      //!
         TH3F*                   fHistMCPtEtaVz; //!
         TH1F*                   fHistPhiCorrPt; //!
