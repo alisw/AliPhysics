@@ -337,6 +337,7 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
   if(fIsMC||fIsMCtruth) fTree->Branch("XiMotherPDG",&fTXiMotherPDG,"fTXiMotherPDG[fTnXi]/I");
   if(fIsMC||fIsMCtruth) fTree->Branch("XiMotherWeak",&fTXiMotherWeak,"fTXiMotherWeak[fTnXi]/I");
   if(fIsMC||fIsMCtruth) fTree->Branch("XiOrigin",&fTXiOrigin,"fTXiOrigin[fTnXi]/I");
+  if(fOnlyXi) fTree->Branch("XiBachelorBaryonPA",&fTXiBachelorBaryonPA,"fTXiBachelorBaryonPA[fTnXi]/F");
 
   PostData(1, fEvtList);
   PostData(2, fKaonList);
@@ -505,7 +506,6 @@ void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
    fTXiDCA[ii] =  -10000.;
    fTXiDaughtersDCA[ii] =  -10000.;
    fTXiMass[ii] =  -10000.;
-   fTXiXiMass[ii] =  -10000.;
    fTXiOmegaMass[ii] =  -10000.;
    fTXiVr[ii] =  -10000.;
    fTXiPA[ii] =  -10000.;
@@ -537,6 +537,7 @@ void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
    fTXiMotherPDG[ii]=-1;
    fTXiMotherWeak[ii]=-1;
    fTXiOrigin[ii]=-1;
+   fTXiBachelorBaryonPA[ii]=-99.;
   }
   fTnXi=0;
  
@@ -764,10 +765,8 @@ Bool_t AliAnalysisTaskOtonXx::FillXi(AliFemtoDreamCascade *TheCasc, bool isomega
  fTXiDaughtersDCA[fTnXi] = TheCasc->GetXiDCADaug();
 
  fTXiMass[fTnXi] = TheCasc->GetXiMass();
- if(isomega)  fTXiMass[fTnXi] = TheCasc->GetOmegaMass();
-
- fTXiXiMass[fTnXi] = TheCasc->GetXiMass();
  fTXiOmegaMass[fTnXi] = TheCasc->GetOmegaMass();
+
  fTXiVr[fTnXi] = TheCasc->GetXiTransverseRadius();
  fTXiPA[fTnXi] = TheCasc->GetCPA();
  fTXiLambdaDCA[fTnXi] = TheCasc->Getv0DCAPrimVtx();
@@ -809,8 +808,13 @@ Bool_t AliAnalysisTaskOtonXx::FillXi(AliFemtoDreamCascade *TheCasc, bool isomega
   }else if(jj==2) {
    TheTrack = TheCasc->GetBach();
    fTXiTrackDCA[fTnXi][jj]= TheCasc->BachDCAPrimVtx();
-   fTXiTrackTPCsigma[fTnXi][jj]=(TheTrack->GetnSigmaTPC((int) (AliPID::kKaon)));
-   fTXiTrackTOFsigma[fTnXi][jj]=(TheTrack->GetnSigmaTOF((int) (AliPID::kKaon)));
+   if(isomega){
+    fTXiTrackTPCsigma[fTnXi][jj]=(TheTrack->GetnSigmaTPC((int) (AliPID::kKaon)));
+    fTXiTrackTOFsigma[fTnXi][jj]=(TheTrack->GetnSigmaTOF((int) (AliPID::kKaon)));
+   }else{
+    fTXiTrackTPCsigma[fTnXi][jj]=(TheTrack->GetnSigmaTPC((int) (AliPID::kPion)));
+    fTXiTrackTOFsigma[fTnXi][jj]=(TheTrack->GetnSigmaTOF((int) (AliPID::kPion)));
+   }
   }
 
   TVector3 mom;
@@ -835,6 +839,8 @@ Bool_t AliAnalysisTaskOtonXx::FillXi(AliFemtoDreamCascade *TheCasc, bool isomega
   fTXiMotherPDG[fTnXi] = TheCasc->GetMotherPDG();
   fTXiMotherWeak[fTnXi] = TheCasc->GetMotherWeak();
   fTXiOrigin[fTnXi] =  TheCasc->GetParticleOrigin();
+
+ fTXiBachelorBaryonPA[fTnXi] = TheCasc->GetBachelorBaryonCosPA();
 
  fTnXi++;
  Filled = kTRUE;
