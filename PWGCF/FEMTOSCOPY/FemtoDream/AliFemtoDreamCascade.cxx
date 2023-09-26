@@ -32,6 +32,7 @@ AliFemtoDreamCascade::AliFemtoDreamCascade()
       fMassv0(0),
       fv0DCADaug(0),
       fv0DCAPrimVtx(0),
+      fBachelorBaryonCosPA(0),
       fv0Momentum(),
       fv0Pt(0),
       fDCABachPrimVtx(0),
@@ -168,6 +169,7 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt, AliAODcascade *casc) {
   fv0Pt = casc->MomV0X() * casc->MomV0X() + casc->MomV0Y() * casc->MomV0Y();
   fv0DCADaug = casc->DcaV0Daughters();
   fv0DCAPrimVtx = casc->DcaV0ToPrimVertex();
+  fBachelorBaryonCosPA = casc->BachBaryonCosPA();
   double decayPosV0[3] = { casc->DecayVertexV0X(), casc->DecayVertexV0Y(), casc
       ->DecayVertexV0Z() };
   fv0TransRadius = TMath::Sqrt(
@@ -313,6 +315,7 @@ void AliFemtoDreamCascade::SetCascade(AliVEvent *evt, AliAODcascade *casc) {
   fv0Pt = casc->MomV0X() * casc->MomV0X() + casc->MomV0Y() * casc->MomV0Y();
   fv0DCADaug = casc->DcaV0Daughters();
   fv0DCAPrimVtx = casc->DcaV0ToPrimVertex();
+  fBachelorBaryonCosPA = casc->BachBaryonCosPA();
   double decayPosV0[3] = { casc->DecayVertexV0X(), casc->DecayVertexV0Y(), casc
       ->DecayVertexV0Z() };
   fv0TransRadius = TMath::Sqrt(
@@ -480,6 +483,7 @@ void AliFemtoDreamCascade::SetCascade(AliESDEvent *evt, AliMCEvent *mcEvent,
   fv0DCAPrimVtx = currentV0->GetD(evt->GetPrimaryVertex()->GetX(),
                                   evt->GetPrimaryVertex()->GetY(),
                                   evt->GetPrimaryVertex()->GetZ());
+  fBachelorBaryonCosPA = -99.; // not existing (?) for ESD analysis
   double decayPosV0[3] = { 0. };
   currentV0->GetXYZ(decayPosV0[0], decayPosV0[1], decayPosV0[2]);
   fv0TransRadius = TMath::Sqrt(
@@ -536,6 +540,7 @@ void AliFemtoDreamCascade::Reset() {
     fMassv0 = 0;
     fv0DCADaug = 0;
     fv0DCAPrimVtx = 0;
+    fBachelorBaryonCosPA = -99.;
     fv0Momentum.SetXYZ(0, 0, 0);
     fv0Pt = 0;
     fDCABachPrimVtx = 0;
