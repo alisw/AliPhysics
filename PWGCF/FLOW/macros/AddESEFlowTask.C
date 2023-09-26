@@ -86,7 +86,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     task->SetCentBin(nCentBins,CentEdges);
     task->SetReadMC(kFALSE); //activate MC analysis
     task->SetAbsEta(0.8);
-    task->SetRejectAddPileUp(kTRUE);
+    task->SetRejectAddPileUp(kFALSE); //for the old pile-up, can be activated as a systematic check
     task->SetFlowRFPsPt(0.2,5.0);
     task->SetFlowPOIsPt(0.0,10.0);
     task->SetRedFlowPt(0.2,20.0);
