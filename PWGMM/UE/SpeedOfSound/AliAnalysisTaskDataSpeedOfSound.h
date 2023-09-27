@@ -74,24 +74,32 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH1F* hRefMult;
   TH2F* hNchUCvsV0M;
   TH1F* hV0Mmult;
-  // TH1F* hV0Mmultbefvtx;
   TH2F* hTrackletvsV0M;
-  TH3F* hPtvsNch;
+  TH2F* hPtvsNch[5];
   TH1F* hTrueVtxZ;
-  TH3F* hRecNchvsRecPt;
   TH2F* hTrueNchvsV0M_UC;
   TH2F* hRecNchvsV0M_UC;
-  TH3F* hTrueNchvsTruePt;
+  // TH3F* hTrueNchvsTruePt;
   TH2F* hFullNchResponse;
   TH2F* hNchResponse;
   TH2F* hPtTruePrivsV0M;
   // TH2F* hPtTrueSecvsV0M;
   // TH2F* hPtTrueAllvsV0M;
   TH2F* hPtRecPrivsV0M;
-  TH2F* hDCAxyPri[7];
-  TH2F* hDCAxyWeDe[7];
-  TH2F* hDCAxyMaIn[7];
-  TH2F* hDCAxyData[7];
+  TH2F* hRecNchvsRecPt[5];
+  TH2F* hTrueNchvsTruePt[5];
+  TH2F* hDCAxyPri[6];
+  TH2F* hDCAxyWeDe[6];
+  TH2F* hDCAxyMaIn[6];
+  TH2F* hDCAxyData[6];
+  TH1F* hTrueNch;
+  TH2F* hTrueNchHM;
+  TH1F* hTrueNchWithTrigger;
+  TH2F* hTrueNchHMWithTrigger;
+  TH1F* hTrueNchWithEventCuts;
+  TH2F* hTrueNchHMWithEventCuts;
+  TH1F* hTrueNchWithVtxSel;
+  TH2F* hTrueNchHMWithVtxSel;
 
   AliAnalysisTaskDataSpeedOfSound(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented
