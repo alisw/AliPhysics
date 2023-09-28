@@ -1033,10 +1033,8 @@ public:
   TString          fPeriodLetter;                       ///<  Run name based on the Run number
   Bool_t           fApplyArtificialTrackEffCut;    ///<  Activate Artificial Tracking efficiency cut
   Float_t          fPtBinXTrackEffCut[17];         ///<  PtBinning for selecting the efficiency cut
-  Float_t          fTrackEfficiencyCentr[16];
-  Float_t          fTrackEfficiencyPeriph[16];
-  Int_t            nPtBinXTrackEff;  
-
+  Float_t          fTrackEfficiencyCentr[16];      ///<  Parameters for tracking efficiency, central events
+  Float_t          fTrackEfficiencyPeriph[16];     ///<  Parameters for tracking efficiency, peripheral events
 
   /// List with AOD branches created and needed in analysis.
   TList          * fAODBranchList ;                //-> 

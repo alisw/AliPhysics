@@ -752,7 +752,11 @@ void AliAnalysisTaskVnPtCorr::UserExec(Option_t *)
     if (!fIsMC) {
       AnalyzeAOD(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
     } else {
-      AnalyzeMCTruth(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
+      if (fIsMC == 1) {
+        AnalyzeMCTruth(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
+      } else {
+        AnalyzeMCReco(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
+      }
     }
   }
 
@@ -828,8 +832,6 @@ void AliAnalysisTaskVnPtCorr::NTracksCalculation(AliVEvent* aod) {
   } else {
     NtrksCounter = NTracksCorrected;
   }
-  hTracksCorrection2d->Fill(NTracksUncorrected, NTracksCorrected);
-  hnCorrectedTracks->Fill(NtrksCounter, NTracksCorrected);
 }
 
 //________________________________________________________________________
@@ -1015,6 +1017,8 @@ void AliAnalysisTaskVnPtCorr::AnalyzeAOD(AliVEvent* aod, float centrV0, float ce
   correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight);
   correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle);
 
+  hTracksCorrection2d->Fill(NTracksUncorrected, NTracksCorrected);
+  hnCorrectedTracks->Fill(NtrksCounter, NTracksCorrected);
   if (fNtrksName == "Mult") {
     CalculateProfile(multProfile, NtrksCounter, NTracksUncorrected);
     CalculateProfile(multProfile_bin[bootstrap_value], NtrksCounter, NTracksUncorrected);
@@ -1169,13 +1173,234 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCTruth(AliVEvent* aod, float centrV0, floa
   correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight);
   correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle);
 
+  hTracksCorrection2d->Fill(NtrksCounter, NtrksAfter);
+  hnCorrectedTracks->Fill(NtrksCounter, NTracksCorrected);
   if (fNtrksName == "Mult") {
-    CalculateProfile(multProfile, NtrksCounter, NTracksUncorrected);
-    CalculateProfile(multProfile_bin[bootstrap_value], NtrksCounter, NTracksUncorrected);
+    CalculateProfile(multProfile, NtrksCounter, NtrksAfter);
+    CalculateProfile(multProfile_bin[bootstrap_value], NtrksCounter, NtrksAfter);
   } else {
   }
 
 }
+
+//________________________________________________________________________
+void AliAnalysisTaskVnPtCorr::AnalyzeMCReco(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus)
+{
+  const int nAODTracks = aod->GetNumberOfTracks();
+
+  // Init the number of tracks
+  NtrksAfter = 0;
+  NtrksAfterGap0M = 0;
+  NtrksAfterGap0P = 0;
+  NtrksAfterGap2M = 0;
+  NtrksAfterGap2P = 0;
+  NtrksAfterGap4M = 0;
+  NtrksAfterGap4P = 0;
+  NtrksAfterGap6M = 0;
+  NtrksAfterGap6P = 0;
+  NtrksAfterGap8M = 0;
+  NtrksAfterGap8P = 0;
+  NtrksAfterGap10M = 0;
+  NtrksAfterGap10P = 0;
+  NtrksAfterGap14M = 0;
+  NtrksAfterGap14P = 0;
+  NtrksAfter3subL = 0;
+  NtrksAfter3subM = 0;
+  NtrksAfter3subR = 0;
+
+  sumPtw = 0;
+  sumPtw2 = 0;
+  sumPt2w2 = 0;
+  sumWeight = 0;
+  sumWeight2 = 0;
+  eventWeight  = 0;
+  eventWeight2 = 0;
+
+  //..for DCA
+  double pos[3], vz, vx, vy;
+  vz = aod->GetPrimaryVertex()->GetZ();
+  vx = aod->GetPrimaryVertex()->GetX();
+  vy = aod->GetPrimaryVertex()->GetY();
+  double vtxp[3] = {vx, vy, vz};
+
+  double QcosGap8M[20][20] = {0};
+  double QsinGap8M[20][20] = {0};
+  double QcosGap8P[20][20] = {0};
+  double QsinGap8P[20][20] = {0};
+  double QcosSubLeft[20][20] = {0};
+  double QsinSubLeft[20][20] = {0};
+  double QcosSubMiddle[20][20] = {0};
+  double QsinSubMiddle[20][20] = {0};
+  double QcosSubRight[20][20] = {0};
+  double QsinSubRight[20][20] = {0};
+
+
+  double runNumber = fInputEvent->GetRunNumber();
+
+  //..LOOP OVER TRACKS........
+  //........................................
+  for(Int_t nt = 0; nt < nAODTracks; nt++) {
+
+    AliAODTrack *aodTrk = (AliAODTrack*) fInputEvent->GetTrack(nt);
+
+    if (!aodTrk) {
+      continue;
+    }
+
+    aodTrk->GetXYZ(pos);
+    double dcaX = pos[0] - vtxp[0];
+    double dcaY = pos[1] - vtxp[1];
+    double dcaZ = abs(pos[2] - vtxp[2]);
+    double dcaXY = TMath::Sqrt(dcaX*dcaX+dcaY*dcaY);
+
+    double fb = (fCurrSystFlag == 1) ? 768 : 96;
+    if (aodTrk->TestFilterBit(fb)) {
+      hDCAxyBefore->Fill(dcaXY, aodTrk->Pt());
+      hDCAzBefore->Fill(dcaZ);
+      hChi2Before->Fill(aodTrk->GetTPCchi2perCluster());
+    }
+
+    if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
+    if (fUseAdditionalDCACut) {
+      if (dcaXY > 1) continue;
+      if (dcaZ > 1) continue;
+    }
+    if(bUseLikeSign)
+    {
+      if(!(aodTrk->Charge() == iSign)) continue;
+    }
+
+    hDCAxy->Fill(dcaXY, aodTrk->Pt());
+    hDCAz->Fill(dcaZ);
+    hChi2->Fill(aodTrk->GetTPCchi2perCluster());
+    hnTPCClu->Fill(aodTrk->GetTPCNclsF());
+    NtrksAfter += 1;
+
+    //..get phi-weight for NUA correction
+    double weight = 1;
+    if (fPeriod.EqualTo("LHC15oKatarina") ) {
+      if(fNUA == 1) weight = GetWeightKatarina(aodTrk->Phi(), aodTrk->Eta(), fVtxZ);
+    } else {
+      if(fNUA == 1) weight = GetFlowWeightSystematics(aodTrk, fVtxZ, kRefs);
+    }
+    double weightPt = 1;
+    if (fPeriod.EqualTo("LHC15oKatarina") ) {
+      if(fNUE == 1) weightPt = GetPtWeightKatarina(aodTrk->Pt(), aodTrk->Eta(), fVtxZ);
+    } else {
+      if(fNUE == 1) weightPt = GetPtWeight(aodTrk->Pt(), aodTrk->Eta(), fVtxZ, runNumber);
+    }
+
+    fPhiDis1DBefore->Fill(aodTrk->Phi());
+    fPtDis->Fill(aodTrk->Pt());
+    fEtaDis->Fill(aodTrk->Eta());
+    fPhiDis1D->Fill(aodTrk->Phi(), weight*weightPt);
+
+
+
+    //..Gap > 0.8
+    if(aodTrk->Eta() < -0.4) {
+      NtrksAfterGap8M++;
+      for(int iharm=0; iharm<8; iharm++) {
+        for(int ipow=0; ipow<6; ipow++) {
+          QcosGap8M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinGap8M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+    if(aodTrk->Eta() > 0.4) {
+      NtrksAfterGap8P++;
+      for(int iharm=0; iharm<8; iharm++) {
+        for(int ipow=0; ipow<6; ipow++) {
+          QcosGap8P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinGap8P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+
+    //..3-subevent method
+    if(aodTrk->Eta() < -fEtaGap3Sub1) {//..left part
+      NtrksAfter3subL += 1;
+      for(int iharm=0; iharm<8; iharm++) {
+        for(int ipow=0; ipow<6; ipow++) {
+          QcosSubLeft[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinSubLeft[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+    if(aodTrk->Eta() >= -fEtaGap3Sub2 && aodTrk->Eta() <= fEtaGap3Sub2) {//..middle part
+                                                                         // eventWeight += weightPt;
+      sumPtw+=weightPt*aodTrk->Pt();
+      sumPtw2+=weightPt*weightPt*aodTrk->Pt();
+      sumPt2w2 += weightPt*weightPt*aodTrk->Pt()*aodTrk->Pt();
+      sumWeight += weightPt;
+      sumWeight2 += weightPt*weightPt;
+
+      NtrksAfter3subM += 1;
+      for(int iharm=0; iharm<8; iharm++) {
+        for(int ipow=0; ipow<6; ipow++) {
+          QcosSubMiddle[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinSubMiddle[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+    if(aodTrk->Eta() > fEtaGap3Sub1) {//..right part
+      NtrksAfter3subR += 1;
+      for(int iharm=0; iharm<8; iharm++) {
+        for(int ipow=0; ipow<6; ipow++) {
+          QcosSubRight[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinSubRight[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+  } // end loop of all track
+
+  //............................
+  //..GENERIC FRAMEWORK RP
+  //............................
+
+  //..calculate Q-vector for each harmonics n and power p
+  correlator.FillQVector(correlator.Qvector8M, QcosGap8M, QsinGap8M);
+  correlator.FillQVector(correlator.Qvector8P, QcosGap8P, QsinGap8P);
+  correlator.FillQVector(correlator.QvectorSubLeft, QcosSubLeft, QsinSubLeft);
+  correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight);
+  correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle);
+
+  // Calculate the Ntrk Gen
+  TClonesArray* farray = (TClonesArray*)aod->FindListObject("mcparticles");
+  const int nAODTracksTruth = farray->GetEntries();
+  // Init the number of tracks
+  double NtrksGen = 0;
+    for(Int_t nt = 0; nt < nAODTracksTruth; nt++) {
+
+    AliAODMCParticle *track = (AliAODMCParticle*) farray->At(TMath::Abs(nt));
+    if (!track) {
+      continue;
+    }
+    if (fUseOutOfBunchPileupCut && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(nt, fMCEvent)) continue;
+    // track->GetXYZ(pos);
+    if (!AcceptMCTruthTrack(track)) continue;
+    NtrksGen += 1;
+  } // end loop of all truth tracks
+
+  //............................
+  //..GENERIC FRAMEWORK RP
+  //............................
+  correlator.FillQVector(correlator.Qvector8M, QcosGap8M, QsinGap8M);
+  correlator.FillQVector(correlator.Qvector8P, QcosGap8P, QsinGap8P);
+  correlator.FillQVector(correlator.QvectorSubLeft, QcosSubLeft, QsinSubLeft);
+  correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight);
+  correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle);
+
+  hTracksCorrection2d->Fill(NtrksCounter, NtrksGen);
+  hnCorrectedTracks->Fill(NtrksCounter, NTracksCorrected);
+  if (fNtrksName == "Mult") {
+    CalculateProfile(multProfile, NtrksCounter, NtrksGen);
+    CalculateProfile(multProfile_bin[bootstrap_value], NtrksCounter, NtrksGen);
+  } else {
+  }
+}
+
+
 
 
 //________________________________________________________________________
@@ -1324,8 +1549,8 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCOnTheFly(AliMCEvent* aod) {
   correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle);
 
   if (fNtrksName == "Mult") {
-    CalculateProfile(multProfile, NtrksCounter, NTracksUncorrected);
-    CalculateProfile(multProfile_bin[bootstrap_value], NtrksCounter, NTracksUncorrected);
+    CalculateProfile(multProfile, NtrksCounter, NtrksAfter);
+    CalculateProfile(multProfile_bin[bootstrap_value], NtrksCounter, NtrksAfter);
   } else {
   }
 }

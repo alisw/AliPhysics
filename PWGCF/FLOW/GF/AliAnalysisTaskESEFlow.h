@@ -97,6 +97,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
         void                    SetUseEfficiency( Bool_t actEff) { fUseEfficiency = actEff;}
         void                    SetMagneticField(Bool_t actField, Int_t magField){ fMagFieldSys = actField; fMagField = magField; }
+        void                    SetPTAnalysis(Bool_t activatePT){ fActivatePT = activatePT; }
 
     private:
         Bool_t                  fFlowRunByRunWeights;
@@ -153,16 +154,16 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH1F*                   fHistTPCchi2;   //!
         TH1F*                   fHistITSchi2;   //!
 
-        TH1F*                   fHistDCAxy;      //!
+        TH2F*                   fHistDCAxy;      //!
         TH1F*                   fHistDCAz;      //!
         TH3F*                   fHistMCPtEtaVz; //!
         TH1F*                   fHistPhiCorrPt; //!
 
-        TH2D*                   fhQAEventsfMult32vsCentr;   //!
-        TH2D*                   fhQAEventsfMult128vsCentr;   //!
-        TH2D*                   fhQAEventsfMult96vsCentr;   //!
-        TH2D*                   fhQAEventsfMultTPCvsTOF;    //!
-        TH2D*                   fhQAEventsfMultTPCvsESD;    //!
+        TH2D*                   fhQAEventsfMult32vsCentr[2];   //!
+        TH2D*                   fhQAEventsfMult128vsCentr[2];   //!
+        TH2D*                   fhQAEventsfMult96vsCentr[2];   //!
+        TH2D*                   fhQAEventsfMultTPCvsTOF[2];    //!
+        TH2D*                   fhQAEventsfMultTPCvsESD[2];    //!
 
 
         TSpline3*               fSplq2TPC[90];  // q2 TPC splines
@@ -260,7 +261,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void FillqnRedV0(const Float_t centrality, TString V0type);
         void FillPOI(const Double_t dPtLow, const Double_t dPtHigh);
 
-        void QAMultFiller(Float_t v0Centr);
+        void QAMultFiller(Float_t v0Centr, Int_t fCutStage);
 
         Int_t GetSamplingIndex() const;
 
@@ -445,6 +446,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         Int_t                   fIndexSampling;
         Int_t                   fNumSamples;
+        Bool_t                  fActivatePT;
 
         Bool_t                  fSPAnalysis;
 

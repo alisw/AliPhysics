@@ -133,7 +133,7 @@ class AliAnalysisTaskVnPtCorr : public AliAnalysisTaskSE {
 		virtual void   SetTrigger(Int_t trig){fTrigger = trig;}
 		virtual void   SetNUEFlag(Bool_t NUE){fNUE = NUE;}
 		virtual void   SetNUA(Bool_t NUA){fNUA = NUA;}
-		virtual void   SetIsMC(Bool_t isMC){fIsMC = isMC;}
+		virtual void   SetIsMC(Int_t isMC){fIsMC = isMC;}
 		virtual void   SetNtrksName(TString ntrksname){fNtrksName = ntrksname;}
 		virtual void   SetPeriod(TString period) { fPeriod = period; }
 		virtual void   SetSystFlag(int flag) { fCurrSystFlag = flag; }
@@ -176,6 +176,7 @@ class AliAnalysisTaskVnPtCorr : public AliAnalysisTaskSE {
     AliMCEvent*     getMCEvent();
 		virtual void		AnalyzeAOD(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus);
 		virtual void		AnalyzeMCTruth(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus);
+		virtual void		AnalyzeMCReco(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus);
     virtual void		AnalyzeMCOnTheFly(AliMCEvent* event);
 		virtual void            NTracksCalculation(AliVEvent* aod);
 		Bool_t                  AcceptAOD(AliAODEvent *inEv);
@@ -210,7 +211,7 @@ class AliAnalysisTaskVnPtCorr : public AliAnalysisTaskSE {
 		Int_t			  fAliTrigger;		// name for trigger
 		Bool_t			fNUE;					  // flag for NUE correction
 		Bool_t			fNUA;					  // 0: no NUA correction, 1: NUA correction
-		bool        fIsMC;          // The observable for MonteCarlo truth
+		Int_t       fIsMC;          // The observable for MonteCarlo truth
 		TString     fNtrksName;     // Cent or Mult
 		TString			fPeriod;				// period
 		Int_t                   fCurrSystFlag;                          // Systematics flag
