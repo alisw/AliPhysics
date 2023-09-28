@@ -500,9 +500,10 @@ namespace PWGJE
       AliEmcalJet *leadingJet = jets->GetLeadingJet();
       // For getting the proper properties of tracks
       AliTLorentzVector track;
+      AliPIDResponse::EDetPidStatus TOFPIDstatus;
 
-      // Get PID Response
-      AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
+          // Get PID Response
+          AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
       if (!pidResponse)
       {
         AliErrorStream() << "PID Response not available\n";
@@ -649,8 +650,8 @@ namespace PWGJE
 
               pionTPCnSigma = pidResponse->NumberOfSigmasTPC(vTrack, (AliPID::EParticleType)2);
 
-              AliPIDResponse::EDetPidStatus status = pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, vTrack);
-              if (status == AliPIDResponse::kDetPidOk){
+              TOFPIDstatus = pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, vTrack);
+              if (TOFPIDstatus == AliPIDResponse::kDetPidOk){
                 hasTOFhit = 1;
               } else {
                 hasTOFhit = 0;
