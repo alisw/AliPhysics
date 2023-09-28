@@ -67,7 +67,6 @@ public:
           fS0SplList[a] = S0SplList[a];
           fsplMult[a] = splMult[a];
           fS0SplList[a]->Print();
-          AliInfo(Form("A is %d", a));
         }
     }
     void SetMCOption(Int_t option=0){ fMCOption = option; }

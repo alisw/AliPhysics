@@ -132,7 +132,7 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
         TH1F *hMeasNchPrimaries = NULL;
         if(NchWeight==1){
             if(isPPbData) {
-                hNchPrimaries = (TH1F*)filecuts->Get("hNtfS0SplrUnCorrEvWithDWeight"); // MC distribution
+                hNchPrimaries = (TH1F*)filecuts->Get("hNtrUnCorrEvWithDWeight"); // MC distribution
             }
             else hNchPrimaries = (TH1F*)filecuts->Get("hGenPrimaryParticlesInelGt0");
             if(hNchPrimaries) {
