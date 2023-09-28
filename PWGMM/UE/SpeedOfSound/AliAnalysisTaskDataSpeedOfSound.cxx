@@ -304,10 +304,10 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   constexpr double v0m_bins[v0m_Nbins + 1] = {0.0,  5.0,  10.0, 20.0, 30.0,
                                               40.0, 50.0, 60.0, 80.0};
 
-  constexpr int nch_Nbins{920};
+  constexpr int nch_Nbins{200};
   double nch_bins[nch_Nbins + 1] = {0};
   for (int i = 0; i <= nch_Nbins; ++i) {
-    nch_bins[i] = 5.0 * i;
+    nch_bins[i] = 25.0 * i;
   }
 
   constexpr int dcaxy_Nbins{300};
