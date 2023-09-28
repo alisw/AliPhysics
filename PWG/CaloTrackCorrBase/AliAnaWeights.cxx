@@ -45,6 +45,9 @@ AliAnaWeights::AliAnaWeights()
   fEtaFunction(0), fPi0Function(0), 
   fCheckGeneratorName(0),
   fApplyRaaWeight(0),
+  fApplyNeutralMesonWeight(0),
+  fApplyFunctionWeight(0),
+  fFunctionWeight(0),
   fMCWeight(1.),
   fCurrFileName(0),
   fCheckMCCrossSection(kFALSE),
@@ -66,6 +69,9 @@ AliAnaWeights::~AliAnaWeights()
   if ( fEtaFunction ) delete fEtaFunction ;
  
   if ( fPi0Function ) delete fPi0Function ;
+
+  if ( fFunctionWeight ) delete fFunctionWeight ;
+
 }
 
 //____________________________________________________
@@ -184,7 +190,16 @@ Double_t AliAnaWeights::GetParticlePtWeight(Float_t pt, Int_t pdg, TString genNa
     } // centrality loop
     
   }
-  else
+
+  if ( fApplyFunctionWeight )
+  {
+    if ( !fFunctionWeight ) AliFatal("Weights function not found!");
+    if ( fFunctionWeight->GetMaximumX() < pt && fFunctionWeight->GetMinimumX() >= pt )
+      weight = fFunctionWeight->Eval(pt);
+    //printf("GetParticlePtWeights:: w %2.3f, pt %2.3f\n",weight,pt);
+  }
+
+  if ( fApplyNeutralMesonWeight )
   {
     if ( !fCheckGeneratorName )
     {
@@ -206,8 +221,10 @@ Double_t AliAnaWeights::GetParticlePtWeight(Float_t pt, Int_t pdg, TString genNa
         weight = fEtaFunction->Eval(pt);
     }
   }
+
   AliDebug(1,Form("MC particle pdg %d, pt %2.2f, generator %s with index %d: weight %f",pdg,pt,genName.Data(),igen, weight));
-  
+  //if ( weight != 1 )
+  //  printf("MC particle pdg %d, pt %2.2f, generator %s with index %d: weight %f\n",pdg,pt,genName.Data(),igen, weight);
   return weight ;
 }
 
@@ -433,6 +450,8 @@ void AliAnaWeights::PrintParameters()
   printf("Do MC particle weight           = %d\n",fDoMCParticlePtWeights);
   printf("Check generator                 = %d\n",fCheckGeneratorName);
   printf("Use charged particle Raa        = %d\n",fApplyRaaWeight);
+  printf("Use neutral meson               = %d\n",fApplyNeutralMesonWeight);
+  printf("Use function <%s>? = %d\n",(fFunctionWeight->GetExpFormula()).Data(), fApplyFunctionWeight);
   printf("Check cross section             = %d\n",fCheckMCCrossSection);
   printf("Only fill cross sec. histo.     = %d\n",fJustFillCrossSecHist);
   printf("Get cross sec. pythia Evt Head. = %d\n",fCheckPythiaEventHeader);  

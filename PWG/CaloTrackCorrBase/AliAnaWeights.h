@@ -104,6 +104,13 @@ class AliAnaWeights : public TObject {
   void             CheckGeneratorName( Bool_t ch )         { fCheckGeneratorName    = ch     ; }
   void             SwitchOnChargedParticleRaaWeight()      { fApplyRaaWeight        = true   ; }
   void             SwitchOffChargedParticleRaaWeight()     { fApplyRaaWeight        = false  ; }
+  void             SwitchOnNeutralMesonWeight()            { fApplyNeutralMesonWeight = true   ; }
+  void             SwitchOffNeutralMesonWeight()           { fApplyNeutralMesonWeight = false  ; }
+  void             SwitchOffFunctionWeight()               { fApplyFunctionWeight   = false  ; }
+  void             SwitchOnFunctionWeight(TString formula, Float_t ptmin, Float_t ptmax) {
+    fApplyFunctionWeight   = true   ; if ( fFunctionWeight ) delete fFunctionWeight;
+    fFunctionWeight = new TF1("FunctionWeightCTC", formula, ptmin, ptmax);
+ }
 
   void             PrintParameters();
   
@@ -135,6 +142,11 @@ class AliAnaWeights : public TObject {
   
   Bool_t           fApplyRaaWeight;       ///< apply weight depending on charged particle Raa
 
+  Bool_t           fApplyNeutralMesonWeight; ///< apply weight depending on charged particle Raa
+
+  Bool_t           fApplyFunctionWeight;  ///< apply weight depending on function
+  TF1 *            fFunctionWeight;       //!<!  function
+
   //
   // MC weights, pT hard pythia
   //
@@ -162,7 +174,7 @@ class AliAnaWeights : public TObject {
   AliAnaWeights& operator=(const AliAnaWeights&); 
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaWeights, 5) ;
+  ClassDef(AliAnaWeights, 6) ;
   /// \endcond
   
 } ;
