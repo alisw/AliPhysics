@@ -217,6 +217,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fV0AEse(kFALSE),
     fIndexSampling{0},
     fNumSamples{1},
+    fActivatePT{kTRUE},
     fSPAnalysis(kFALSE),
 
     TPCqnBins(100),
@@ -402,6 +403,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fV0AEse(kFALSE),
     fIndexSampling{0},
     fNumSamples{1},
+    fActivatePT{kTRUE},
     fSPAnalysis(kFALSE),
 
     TPCqnBins(100),
@@ -820,75 +822,77 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
             }
 
 
-            //pt differentials
-            if (CorrOrder < 6) {
-                for(Int_t fCentNum(0) ; fCentNum<nCentBin; ++fCentNum){
+              //pt differentials
+            if (fActivatePT){
+              if (CorrOrder < 6) {
+                  for(Int_t fCentNum(0) ; fCentNum<nCentBin; ++fCentNum){
 
 
-                    dn = new TProfile(Form("%s_diff_%.0f_%.0f_sample%d",CorrName,CentEdges[fCentNum],CentEdges[fCentNum+1],iSample),Form("%s_diff_%.0f_%.0f",CorrLabel,CentEdges[fCentNum],CentEdges[fCentNum+1]),nPtBin,PtEdges);
+                      dn = new TProfile(Form("%s_diff_%.0f_%.0f_sample%d",CorrName,CentEdges[fCentNum],CentEdges[fCentNum+1],iSample),Form("%s_diff_%.0f_%.0f",CorrLabel,CentEdges[fCentNum],CentEdges[fCentNum+1]),nPtBin,PtEdges);
 
-                    if(!dn) { AliError("pt differential profile not created"); task->PrintTask(); return; }
-                    if(fpTDiff->FindObject(dn->GetName())) {
-                        AliError(Form("Task %d: Profile '%s' already exists",iTask,dn->GetName()));
-                        task->PrintTask();
-                        delete dn;
-                        return;
-                    }
+                      if(!dn) { AliError("pt differential profile not created"); task->PrintTask(); return; }
+                      if(fpTDiff->FindObject(dn->GetName())) {
+                          AliError(Form("Task %d: Profile '%s' already exists",iTask,dn->GetName()));
+                          task->PrintTask();
+                          delete dn;
+                          return;
+                      }
 
-                    dn->Sumw2();
-                    fpTDiff->Add(dn);
+                      dn->Sumw2();
+                      fpTDiff->Add(dn);
 
 
-                    for (Int_t qi(0);qi<2;++qi){
-                        for (Int_t iEse(0);iEse<ESEPercAxis->GetNbins();++iEse){
+                      for (Int_t qi(0);qi<2;++qi){
+                          for (Int_t iEse(0);iEse<ESEPercAxis->GetNbins();++iEse){
 
-                            if(fTPCEse){
-                                dnESETPC = new TProfile(Form("%s_diff_q%iTPC_PerCode%i_%.0f_%.0f_sample%d",CorrName,qi+2,iEse+1,CentEdges[fCentNum],CentEdges[fCentNum+1],iSample),Form("%s_q%iTPCPerCode%i_%.0f_%.0f",CorrLabel,qi+2,iEse+1,CentEdges[fCentNum],CentEdges[fCentNum+1]),nPtBin,PtEdges);
+                              if(fTPCEse){
+                                  dnESETPC = new TProfile(Form("%s_diff_q%iTPC_PerCode%i_%.0f_%.0f_sample%d",CorrName,qi+2,iEse+1,CentEdges[fCentNum],CentEdges[fCentNum+1],iSample),Form("%s_q%iTPCPerCode%i_%.0f_%.0f",CorrLabel,qi+2,iEse+1,CentEdges[fCentNum],CentEdges[fCentNum+1]),nPtBin,PtEdges);
 
-                                if(!dnESETPC) { AliError("ESETPC pt diff profile not created"); task->PrintTask(); return; }
-                                if(fpTDiffESETPC->FindObject(dnESETPC->GetName())) {
-                                    AliError(Form("Task %d: Profile '%s' already exists",iTask,dnESETPC->GetName()));
-                                    task->PrintTask();
-                                    delete dnESETPC;
-                                    return;
-                                }
+                                  if(!dnESETPC) { AliError("ESETPC pt diff profile not created"); task->PrintTask(); return; }
+                                  if(fpTDiffESETPC->FindObject(dnESETPC->GetName())) {
+                                      AliError(Form("Task %d: Profile '%s' already exists",iTask,dnESETPC->GetName()));
+                                      task->PrintTask();
+                                      delete dnESETPC;
+                                      return;
+                                  }
 
-                                dnESETPC->Sumw2();
-                                fpTDiffESETPC->Add(dnESETPC);
-                            }
+                                  dnESETPC->Sumw2();
+                                  fpTDiffESETPC->Add(dnESETPC);
+                              }
 
-                            if(fV0CEse){
-                                dnESEV0C = new TProfile(Form("%s_diff_q%iV0C_PerCode%i_%.0f_%.0f_sample%d",CorrName,qi+2,iEse+1,CentEdges[fCentNum],CentEdges[fCentNum+1],iSample),Form("%s_q%iV0CPerCode%i_%.0f_%.0f",CorrLabel,qi+2,iEse+1,CentEdges[fCentNum],CentEdges[fCentNum+1]),nPtBin,PtEdges);
+                              if(fV0CEse){
+                                  dnESEV0C = new TProfile(Form("%s_diff_q%iV0C_PerCode%i_%.0f_%.0f_sample%d",CorrName,qi+2,iEse+1,CentEdges[fCentNum],CentEdges[fCentNum+1],iSample),Form("%s_q%iV0CPerCode%i_%.0f_%.0f",CorrLabel,qi+2,iEse+1,CentEdges[fCentNum],CentEdges[fCentNum+1]),nPtBin,PtEdges);
 
-                                if(!dnESEV0C) { AliError("ESEV0C pt diff profile not created"); task->PrintTask(); return; }
-                                if(fpTDiffESEV0C->FindObject(dnESEV0C->GetName())) {
-                                    AliError(Form("Task %d: Profile '%s' already exists",iTask,dnESEV0C->GetName()));
-                                    task->PrintTask();
-                                    delete dnESEV0C;
-                                    return;
-                                }
+                                  if(!dnESEV0C) { AliError("ESEV0C pt diff profile not created"); task->PrintTask(); return; }
+                                  if(fpTDiffESEV0C->FindObject(dnESEV0C->GetName())) {
+                                      AliError(Form("Task %d: Profile '%s' already exists",iTask,dnESEV0C->GetName()));
+                                      task->PrintTask();
+                                      delete dnESEV0C;
+                                      return;
+                                  }
 
-                                dnESEV0C->Sumw2();
-                                fpTDiffESEV0C->Add(dnESEV0C);
-                            }
+                                  dnESEV0C->Sumw2();
+                                  fpTDiffESEV0C->Add(dnESEV0C);
+                              }
 
-                            if(fV0AEse){
-                                dnESEV0A = new TProfile(Form("%s_diff_q%iV0A_PerCode%i_%.0f_%.0f_sample%d",CorrName,qi+2,iEse+1,CentEdges[fCentNum],CentEdges[fCentNum+1],iSample),Form("%s_q%iV0APerCode%i_%.0f_%.0f",CorrLabel,qi+2,iEse+1,CentEdges[fCentNum],CentEdges[fCentNum+1]),nPtBin,PtEdges);
+                              if(fV0AEse){
+                                  dnESEV0A = new TProfile(Form("%s_diff_q%iV0A_PerCode%i_%.0f_%.0f_sample%d",CorrName,qi+2,iEse+1,CentEdges[fCentNum],CentEdges[fCentNum+1],iSample),Form("%s_q%iV0APerCode%i_%.0f_%.0f",CorrLabel,qi+2,iEse+1,CentEdges[fCentNum],CentEdges[fCentNum+1]),nPtBin,PtEdges);
 
-                                if(!dnESEV0A) { AliError("ESEV0A pt diff profile not created"); task->PrintTask(); return; }
-                                if(fpTDiffESEV0A->FindObject(dnESEV0A->GetName())) {
-                                    AliError(Form("Task %d: Profile '%s' already exists",iTask,dnESEV0A->GetName()));
-                                    task->PrintTask();
-                                    delete dnESEV0A;
-                                    return;
-                                }
+                                  if(!dnESEV0A) { AliError("ESEV0A pt diff profile not created"); task->PrintTask(); return; }
+                                  if(fpTDiffESEV0A->FindObject(dnESEV0A->GetName())) {
+                                      AliError(Form("Task %d: Profile '%s' already exists",iTask,dnESEV0A->GetName()));
+                                      task->PrintTask();
+                                      delete dnESEV0A;
+                                      return;
+                                  }
 
-                                dnESEV0A->Sumw2();
-                                fpTDiffESEV0A->Add(dnESEV0A);
-                            }
-                        }
-                    }
-                }
+                                  dnESEV0A->Sumw2();
+                                  fpTDiffESEV0A->Add(dnESEV0A);
+                              }
+                          }
+                      }
+                  }
+              }
             }
         }
     }
@@ -1539,7 +1543,9 @@ void AliAnalysisTaskESEFlow::CorrelationTask(const Float_t centrality, Int_t fSp
 
         FillCorrelation(centrality, -1, q2ESECodeTPC, q3ESECodeTPC, q2ESECodeV0C, q3ESECodeV0C, q2ESECodeV0A, q3ESECodeV0A, 1, 0);
 
-        POIVectors(centrality, q2ESECodeTPC, q3ESECodeTPC, q2ESECodeV0C, q3ESECodeV0C, q2ESECodeV0A, q3ESECodeV0A);
+        if (fActivatePT){
+          POIVectors(centrality, q2ESECodeTPC, q3ESECodeTPC, q2ESECodeV0C, q3ESECodeV0C, q2ESECodeV0A, q3ESECodeV0A);
+        }
 
         // SCALAR PROD ANALYZER
         if(fSPAnalysis){
