@@ -195,7 +195,7 @@ Double_t AliAnaWeights::GetParticlePtWeight(Float_t pt, Int_t pdg, TString genNa
   {
     if ( !fFunctionWeight ) AliFatal("Weights function not found!");
     if ( fFunctionWeight->GetMaximumX() < pt && fFunctionWeight->GetMinimumX() >= pt )
-      weight = fFunctionWeight->Eval(pt);
+      weight *= fFunctionWeight->Eval(pt);
     //printf("GetParticlePtWeights:: w %2.3f, pt %2.3f\n",weight,pt);
   }
 
@@ -205,20 +205,20 @@ Double_t AliAnaWeights::GetParticlePtWeight(Float_t pt, Int_t pdg, TString genNa
     {
       if      (pdg == 111 && fPi0Function)
       {
-        weight = fPi0Function->Eval(pt);
+        weight *= fPi0Function->Eval(pt);
         //printf("GetParticlePtWeights:: Pi0 w %2.3f, pt %2.3f\n",weight,pt);
       }
       else if (pdg == 221 && fEtaFunction)
-        weight = fEtaFunction->Eval(pt);
+        weight *= fEtaFunction->Eval(pt);
     }
     else // Check particular generator names, to be better done
     {
       if      (pdg == 111 && fPi0Function &&
                ( genName.Contains("Pi0") || genName.Contains("pi0") || genName.Contains("PARAM") || genName.Contains("BOX")))
-        weight = fPi0Function->Eval(pt);
+        weight *= fPi0Function->Eval(pt);
       else if (pdg == 221 && fEtaFunction &&
                ( genName.Contains("Eta") || genName.Contains("eta") || genName.Contains("PARAM") || genName.Contains("BOX")))
-        weight = fEtaFunction->Eval(pt);
+        weight *= fEtaFunction->Eval(pt);
     }
   }
 
