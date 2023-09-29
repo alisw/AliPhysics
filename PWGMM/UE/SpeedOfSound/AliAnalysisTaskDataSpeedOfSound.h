@@ -22,6 +22,7 @@ class TProfile;
 #include "AliMCParticle.h"
 #include "AliMultSelection.h"
 #include "AliStack.h"
+#include "AliVEvent.h"
 #include "TParticle.h"
 
 class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
@@ -47,6 +48,9 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetUseMC(bool mc = false) { fUseMC = mc; }      // use to analyse MC data
   void SetTrackCuts(bool TPConly = true) { fIsTPConly = TPConly; }
+  void SetTrigger(UInt_t offlineTriggerMask = AliVEvent::kINT7) {
+    fTrigger = offlineTriggerMask;
+  }
   bool HasRecVertex();
 
  protected:
@@ -57,6 +61,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   AliMCEvent* fMC;
   bool fUseMC;
   bool fIsTPConly;
+  UInt_t fTrigger;
   AliAnalysisFilter* fTrackFilter;
   AliAnalysisFilter* fTrackFilterwoDCA;
   TList* fOutputList;
@@ -76,6 +81,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH1F* hV0Mmult;
   TH2F* hTrackletvsV0M;
   TH2F* hPtvsNch[5];
+  TH2F* hPtvsNch05;
   TH1F* hTrueVtxZ;
   TH2F* hTrueNchvsV0M_UC;
   TH2F* hRecNchvsV0M_UC;
@@ -86,6 +92,8 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   // TH2F* hPtTrueSecvsV0M;
   // TH2F* hPtTrueAllvsV0M;
   TH2F* hPtRecPrivsV0M;
+  TH2F* hRecNchvsRecPt05;
+  TH2F* hTrueNchvsTruePt05;
   TH2F* hRecNchvsRecPt[5];
   TH2F* hTrueNchvsTruePt[5];
   TH2F* hDCAxyPri[6];
