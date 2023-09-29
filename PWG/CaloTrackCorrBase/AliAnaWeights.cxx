@@ -48,6 +48,9 @@ AliAnaWeights::AliAnaWeights()
   fApplyNeutralMesonWeight(0),
   fApplyFunctionWeight(0),
   fFunctionWeight(0),
+  fFormulaString(""),
+  fFunctionPtMin(0),
+  fFunctionPtMax(0),
   fMCWeight(1.),
   fCurrFileName(0),
   fCheckMCCrossSection(kFALSE),
@@ -145,7 +148,7 @@ Double_t AliAnaWeights::GetWeight()
 /// ex param: TF1* PowerEta0 = new TF1("PowerEta0","[0]*pow([1]/(([1]*exp(-[3]*x)+x)),[2])",4,25);
 /// Only active when SwitchOnMCParticlePtWeights() 
 //_____________________________________________
-Double_t AliAnaWeights::GetParticlePtWeight(Float_t pt, Int_t pdg, TString genName, Int_t igen, Float_t cen) const
+Double_t AliAnaWeights::GetParticlePtWeight(Float_t pt, Int_t pdg, TString genName, Int_t igen, Float_t cen)
 {
   Double_t weight = 1.;
 
@@ -193,10 +196,18 @@ Double_t AliAnaWeights::GetParticlePtWeight(Float_t pt, Int_t pdg, TString genNa
 
   if ( fApplyFunctionWeight )
   {
-    if ( !fFunctionWeight ) AliFatal("Weights function not found!");
-    if ( fFunctionWeight->GetMaximumX() < pt && fFunctionWeight->GetMinimumX() >= pt )
+    if ( !fFunctionWeight )
+    {
+      fFunctionWeight = new TF1("FunctionWeightCTC", fFormulaString, fFunctionPtMin, fFunctionPtMax);
+      AliInfo(Form("Init weight function <%s> %2.2f < pT < %2.2f GeV/c",
+             fFormulaString.Data(),fFunctionPtMin,fFunctionPtMax));
+    }
+
+    if ( fFunctionPtMin <= pt && fFunctionPtMax > pt)
+    {
       weight *= fFunctionWeight->Eval(pt);
-    //printf("GetParticlePtWeights:: w %2.3f, pt %2.3f\n",weight,pt);
+      //printf("GetParticlePtWeights:: w %2.3f, pt %2.3f\n", weight,pt);//(fFunctionWeight->GetExpFormula()).Data());
+    }
   }
 
   if ( fApplyNeutralMesonWeight )
