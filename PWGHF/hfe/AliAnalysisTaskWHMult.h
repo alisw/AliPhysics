@@ -46,55 +46,57 @@ class AliAnalysisTaskWHMult : public AliAnalysisTaskSE
         TTree*			tree;				//! ref. for mult correction
 	TH1F*			fNevents;			//! hist of event cut performance						//0
         TH1F*                   fHistPt;        		//! dummy histogram								//1
-	TH1F*			fPt_MCgenWe;			//! MC generated e<-W Pt
-	TH1F*			fPt_TrackingMCWe;		//! reconstructed track Pt (MC e<-W)
-	TH1F*			fPt_TrackMatchingMCWe;		//! matched track Pt (MC e<-W)
-	TH1F*			fPt_TPCPIDMCWe;			//! dE/dx cut track Pt (MC e<-W)
-	TH1F*			fPt_EMCalPIDMCWe;		//! M02,E/P,Eiso cut track Pt (MC e<-W)
-	TH1F*                   pVertex_all;    	    	//! additional histgram in Step3						//2
-	TH1F*                   pVertex;        	 	//! after event selection							//3
-	TH2F*			EtavsPhi;			//! hist of pseudorapidity and azimuthal distribution with cutVer		//4
-	TH2F*			TPCSig;				//! hist of TPC signal (dE/dx) and p/z						//5
-	TH1F*			Cent;				//! hist of the centrality							//6
-	TH2F*			fzvtx_Ntrkl;			//! hist of vertexZ vs tracklets(corresponding to multiplicity)			//7
-	TH2F*			fzvtx_Ntrkl_cal;		//! hist of vertexZ vs tracklets after calibration				//8
-	TH2F*			fNtrklNch;			//! hist of vertexZ calibrated tracklets vs primary charged particles		//9
-	TH1F*			fPDG;				//! histogram of pdg code							//10
-	TH1F*			fMPDG;				//! histogram of mother's pdg code						//11
-	TH1F*			fFPDG;				//! histogram of father's pdg code						//12
+	TH1F*			fPt_MCgenWe;			//! MC generated e<-W Pt							//2
+	TH1F*			fPt_TrackingMCWe;		//! reconstructed track Pt (MC e<-W)						//3
+	TH1F*			fPt_TPCPIDMCWe;			//! dE/dx cut track Pt (MC e<-W)						//4
+	TH1F*			fPt_TrackMatchingMCWe;		//! matched track Pt (MC e<-W)							//5
+	TH1F*			fPt_EMCalPIDMCWe;		//! M02,E/P,Eiso cut track Pt (MC e<-W)						//6
+	TH1F*                   pVertex_all;			//! additional histgram in Step3						//7
+	TH1F*                   pVertex;			//! after event selection							//8
+	TH2F*			EtavsPhi;			//! hist of pseudorapidity and azimuthal distribution with cutVer		//9
+	TH2F*			TPCSig;				//! hist of TPC signal (dE/dx) and p/z						//10
+	TH1F*			Cent;				//! hist of the centrality							//11
+	TH2F*			fzvtx_Ntrkl;			//! hist of vertexZ vs tracklets(corresponding to multiplicity)			//12
+	TH2F*			fzvtx_Ntrkl_cal;		//! hist of vertexZ vs tracklets after calibration				//13
+	TH2F*			fNtrklNch;			//! hist of vertexZ calibrated tracklets vs primary charged particles		//14
+	TH1F*			fPDG;				//! histogram of pdg code							//15
+	TH1F*			fMPDG;				//! histogram of mother's pdg code						//16
+	TH1F*			fFPDG;				//! histogram of father's pdg code						//17
 
-	TH1F*			fHistClustE;			//! histogram of Energy in EMCal Cluster					//13
-	TH1F*			fHistClustEMatch;		//! histogram of Energy in EMCal Cluster					//14
-	TH1F*			fHistClustLongAxis;		//! histogram of events on M02							//15
-	TH1F*			fHistClustLongAxisE;		//! histogram of events on M02 about Electron					//16
+	TH1F*			fHistClustE;			//! histogram of Energy in EMCal Cluster					//18
+	TH1F*			fHistClustEMatch;		//! histogram of Energy in EMCal Cluster					//19
+	TH1F*			fHistClustLongAxis;		//! histogram of events on M02							//20
+	TH1F*			fHistClustLongAxisE;		//! histogram of events on M02 about Electron					//21
 
-	TH2F*			fHistNsigmaP;			//! histogram of nsigma vs P							//17
-	TH2F*			fHistMCNsigmaP;			//! histogram of nsigma vs P of MC events					//18
-	TH2F*			fPtEoverPE;			//! histogram of Pt vs E/P of electron						//19
-	TH2F*			fPtEoverPMCE;			//! histogram of Pt vs E/P of MC electron					//20
-	TH2F*			fPtEoverPEGeo;			//! histogram of Pt vs E/P of electron in M02					//21
-	TH1F*			fHistMCClsLAE;			//! histogram of MC events on M02						//22
-        TH2F*			fPtEoverPH;			//! histogram of Pt vs E/P of hadron						//23
-        TH2F*                   fPtEoverPHGeo;         	 	//! histogram of Pt vs E/P of hadron in M02					//24
-	TH1F*			fREisolation[3];		//! histogram of Eiso in R<0.3,0.4,0.5						//25,26,27
-        TH1F*                   fREiso_MCW;			//! histogram of Eiso in R<0.3 of W more 10GeV					//28
-        TH1F*                   fREiso_MCHF;			//! histogram of Eiso in R<0.3 of HF more 10GeV					//29
-	TH1F*			fREiso_MCWhpt;			//! histogram of Eiso in R<0.3 of W more 30GeV					//32
-	TH1F*			fREiso_MCHFhpt;			//! histogram of Eiso in R<0.3 of HF more 30GeV					//33
-	TH2F*			fdPhi_trkW_Pt[3];		//! histogram of DeltaPhi w/ e<-W cut vs Pt R<0.3,0.4,0.5			//34,35,36
-	TH2F*			fdPhi_trkHF_Pt[3];		//! histogram of DeltaPhi w/ e<-HF cut vs Pt R<0.3,0.4,0.5			//37,38,39
-	TH2F*			fdPhi_trkW_ePt[3];		//! histogram of DeltaPhi (trk-W) vs Pt of e<-W R<0.3,0.4,0.5			//46,47,48
-	TH2F*			fdPhi_trkHF_ePt[3];		//! histogram of DeltaPhi (trk-HF) vs Pt of e<-HF R<0.3,0.4,0.5			//49,50,51
-	TH1F*			fHistPt_We[3];			//! histogram of Pt (W candidate) R<0.3,0.4,0.5					//52,53,54
-	TH1F*			fHistPt_HFe[3];			//! histogram of Pt (HF candidate) R<0.3,0.4,0.5				//55,56,57
-	TH1F*			fPt_maxtrack_W[3];		//! histogram of max pT track/e<-W R<0.3,0.4,0.5				//58,59,60
-	TH2F*			fNtrkl_PtOfMaxTrk_W[3];		//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5			//64,65,66
-	TH2F*			fHistPt_We_Ntrkl[3];		//! histogram of Pt of e<-W vs tracklets R<0.3,0.4,0.5				//70,71,72
+	TH2F*			fHistNsigmaP;			//! histogram of nsigma vs P							//22
+	TH2F*			fHistMCNsigmaP;			//! histogram of nsigma vs P of MC events					//23
+	TH2F*			fPtEoverPE;			//! histogram of Pt vs E/P of electron						//24
+	TH2F*			fPtEoverPMCE;			//! histogram of Pt vs E/P of MC electron					//25
+	TH2F*			fPtEoverPEGeo;			//! histogram of Pt vs E/P of electron in M02					//26
+	TH1F*			fHistMCClsLAE;			//! histogram of MC events on M02						//27
+        TH2F*			fPtEoverPH;			//! histogram of Pt vs E/P of hadron						//28
+	TH1F*			fREisolation[3];		//! histogram of Eiso in R<0.3,0.4,0.5						//29,30,31
+        TH1F*                   fREiso_MCW;			//! histogram of Eiso in R<0.3 of W more 10GeV					//32
+        TH1F*                   fREiso_MCHF;			//! histogram of Eiso in R<0.3 of HF more 10GeV					//33
+	TH1F*			fREiso_MCWhpt;			//! histogram of Eiso in R<0.3 of W more 30GeV					//34
+	TH1F*			fREiso_MCHFhpt;			//! histogram of Eiso in R<0.3 of HF more 30GeV					//35
+	TH2F*			fdPhi_trkW_Pt[3];		//! histogram of DeltaPhi w/ e<-W cut vs Pt R<0.3,0.4,0.5			//36,37,38
+	TH2F*			fdPhi_trkHF_Pt[3];		//! histogram of DeltaPhi w/ e<-HF cut vs Pt R<0.3,0.4,0.5			//39,40,41
+	TH2F*			fdPhi_trkW_ePt[3];		//! histogram of DeltaPhi (trk-W) vs Pt of e<-W R<0.3,0.4,0.5			//42,43,44
+	TH2F*			fdPhi_trkHF_ePt[3];		//! histogram of DeltaPhi (trk-HF) vs Pt of e<-HF R<0.3,0.4,0.5			//45,46,47
+	TH1F*			fHistPt_We[3];			//! histogram of Pt (W candidate) R<0.3,0.4,0.5					//48,49,50
+	TH1F*			fHistPt_HFe[3];			//! histogram of Pt (HF candidate) R<0.3,0.4,0.5				//51,52,53
+	TH1F*			fPt_maxtrack_W[3];		//! histogram of max pT track/e<-W R<0.3,0.4,0.5				//54,55,56
+	TH2F*			fNtrkl_PtOfMaxTrk_W[3];		//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5			//57,58,59
+	TH2F*			fNtrkl_PtOfTrks_W[3];		//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5			//60,61,62
+	TH2F*			fHistPt_We_Ntrkl[3];		//! histogram of Pt of e<-W vs tracklets R<0.3,0.4,0.5				//63,64,65
 
-	TH2F*			fdPhi_trkW_full[3];		//! tryal hist R<0.3,0.4,0.5							//73,74,75
-	TH2F*			fdPhi_trkHF_full[3];		//! Eiso>0.1 tryal hist R<0.3,0.4,0.5						//76,77,78
+	TH2F*			fdPhi_trkW_full[3];		//! tryal hist R<0.3,0.4,0.5							//66,67,68
+	TH2F*			fdPhi_trkHF_full[3];		//! Eiso>0.1 tryal hist R<0.3,0.4,0.5						//69,70,71
 
-	TH2F*			fNtrkl_ClustE;			//! histogram for rejection factor						//85
+	TH2F*			fNtrkl_ClustE;			//! histogram for rejection factor						//72
+	TH2F*			TPCSigForE;			//! hist of TPC signal (dE/dx) and p						//73
+	TH2F*			fNsigmaPtForE;			//! histogram of nsigma vs Pt with e EMCal cut					//74
 
 	Bool_t                  fEMCEG1;//EMcal Threshold EG1
 
