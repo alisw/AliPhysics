@@ -98,6 +98,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetUseEfficiency( Bool_t actEff) { fUseEfficiency = actEff;}
         void                    SetMagneticField(Bool_t actField, Int_t magField){ fMagFieldSys = actField; fMagField = magField; }
         void                    SetPTAnalysis(Bool_t activatePT){ fActivatePT = activatePT; }
+        void                    SetTPCPileupWithITSTPCnCluCorrCutLevel(Int_t cutlevel) { TPCPileupWithITSTPCnCluCorrCutLevel = cutlevel; }
 
     private:
         Bool_t                  fFlowRunByRunWeights;
@@ -459,6 +460,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Double_t                V0qnBinMax;
 
         Int_t                   fPileupCut;
+        Int_t                   TPCPileupWithITSTPCnCluCorrCutLevel;
         Bool_t                  fCheckChi2TPC;
         Bool_t                  fCheckChi2ITS;
         Float_t                 vTPCChi2Bound;

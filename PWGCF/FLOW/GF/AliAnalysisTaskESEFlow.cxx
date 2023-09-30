@@ -229,6 +229,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     V0qnBinMax(15.0),
 
     fPileupCut(500),
+    TPCPileupWithITSTPCnCluCorrCutLevel{1},
     fCheckChi2TPC(kFALSE),
     fCheckChi2ITS(kFALSE),
     vTPCChi2Bound(4.0),
@@ -415,6 +416,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     V0qnBinMax(15.0),
 
     fPileupCut(500),
+    TPCPileupWithITSTPCnCluCorrCutLevel{1},
     fCheckChi2TPC(kFALSE),
     fCheckChi2ITS(kFALSE),
     vTPCChi2Bound(4.0),
@@ -3077,7 +3079,7 @@ Bool_t AliAnalysisTaskESEFlow::IsEventSelected()
   if(dPercentile > 100 || dPercentile < 0) { AliWarning("Centrality percentile estimated not within 0-100 range. Returning -1"); return -1; }
   fhEventCounter->Fill("Centrality Cut OK",1);
 
-  if (fColSystem == kPbPb) {fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE); } //} 
+  if (fColSystem == kPbPb) {fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,TPCPileupWithITSTPCnCluCorrCutLevel); } //} 
   if( (fColSystem == kPbPb || fColSystem == kXeXe) && fEventRejectAddPileUp && dPercentile > 0 && dPercentile < 10 && IsEventRejectedAddPileUp()) { return kFALSE; }
   fhEventCounter->Fill("Pileup Cut OK",1);
   
