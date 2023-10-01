@@ -236,7 +236,6 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     vITSChi2Bound(36.0),
     fCutDCAzMax(0.0),
     fCutDCAxyMax(0.0),
-    fFillQARej(kFALSE),
 
     fUseNUEWeights(kFALSE),
     fUseEfficiency(kFALSE),
@@ -423,7 +422,6 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     vITSChi2Bound(36.0),
     fCutDCAzMax(0.0),
     fCutDCAxyMax(0.0),
-    fFillQARej(kFALSE),
 
     fUseNUEWeights(kFALSE),
     fUseEfficiency(kFALSE),
@@ -1101,8 +1099,8 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     // }
 
 
-    if(fFillQARej){
-      for (Int_t i{0}; i<2; i++){
+    
+    for (Int_t i{0}; i<2; i++){
       fhQAEventsfMult32vsCentr[i] = new TH2D(Form("fhQAEventsfMult32vsCentr_%i",i), "; centr: V0M; TPC Mult (FB32)", 100, 0, 100, 100, 0, 3000);
       fObservables->Add(fhQAEventsfMult32vsCentr[i]);
       fhQAEventsfMult96vsCentr[i] = new TH2D(Form("fhQAEventsfMult96vsCentr_%i",i), "; centr: V0M; TPC Mult (FB96)", 100,0,100,100,0,4000);
@@ -1113,8 +1111,9 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
       fObservables->Add(fhQAEventsfMultTPCvsTOF[i]);
       fhQAEventsfMultTPCvsESD[i] = new TH2D(Form("fhQAEventsfMultTPCvsESD_%i",i), "; TPC FB128 Mult; ESD Mult)", 200, 0, 7000, 300, -1000, 35000);
       fObservables->Add(fhQAEventsfMultTPCvsESD[i]);
-      }
     }
+    
+    
 
     TString sEventCounterLabel[] = {"Input"};
     const Int_t iEventCounterBins = sizeof(sEventCounterLabel)/sizeof(sEventCounterLabel[0]);
@@ -1839,10 +1838,6 @@ void AliAnalysisTaskESEFlow::FillObsDistributions(const Float_t centrality)
 
     } // ending V0 calibration loop
 
-    if(fFillQARej){
-        QAMultFiller(centrality, 0);
-        QAMultFiller(centrality, 1);
-    }
 
     return;
 }
@@ -3079,7 +3074,8 @@ Bool_t AliAnalysisTaskESEFlow::IsEventSelected()
   if(dPercentile > 100 || dPercentile < 0) { AliWarning("Centrality percentile estimated not within 0-100 range. Returning -1"); return -1; }
   fhEventCounter->Fill("Centrality Cut OK",1);
 
-  if (fColSystem == kPbPb) {fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,TPCPileupWithITSTPCnCluCorrCutLevel); } //} 
+  if (fColSystem == kPbPb) {
+    fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,TPCPileupWithITSTPCnCluCorrCutLevel); } //} 
   if( (fColSystem == kPbPb || fColSystem == kXeXe) && fEventRejectAddPileUp && dPercentile > 0 && dPercentile < 10 && IsEventRejectedAddPileUp()) { return kFALSE; }
   fhEventCounter->Fill("Pileup Cut OK",1);
   
@@ -3177,6 +3173,12 @@ Bool_t AliAnalysisTaskESEFlow::IsEventRejectedAddPileUp() const
     if(track->TestFilterBit(96)) { multTPC96++; }
   }
 
+  fhQAEventsfMult32vsCentr[0]->Fill(v0Centr, multTrk);
+  fhQAEventsfMult128vsCentr[0]->Fill(v0Centr, multTPC128);
+  fhQAEventsfMult96vsCentr[0]->Fill(v0Centr, multTPC96);
+  fhQAEventsfMultTPCvsTOF[0]->Fill(multTPC32, multTOF);
+  fhQAEventsfMultTPCvsESD[0]->Fill(multTPC128, multESD);
+
   if(bIs17n)
   {
     multESDTPCdif = multESD - (6.6164 + 3.64583*multTPC128 + 0.000126397*multTPC128*multTPC128);
@@ -3206,59 +3208,13 @@ Bool_t AliAnalysisTaskESEFlow::IsEventRejectedAddPileUp() const
     if(Double_t(multTrk) < fMultCentLowCut.Eval(v0Centr)) { return kTRUE; }
   }
 
-
-
-
+  fhQAEventsfMult32vsCentr[1]->Fill(v0Centr, multTrk);
+  fhQAEventsfMult128vsCentr[1]->Fill(v0Centr, multTPC128);
+  fhQAEventsfMult96vsCentr[1]->Fill(v0Centr, multTPC96);
+  fhQAEventsfMultTPCvsTOF[1]->Fill(multTPC32, multTOF);
+  fhQAEventsfMultTPCvsESD[1]->Fill(multTPC128, multESD);
 
   return kFALSE;
-}
-void AliAnalysisTaskESEFlow::QAMultFiller(Float_t v0Centr, Int_t fCutStage)
-{
-    // recounting multiplcities
-  const Int_t multESD = ((AliAODHeader*) fAOD->GetHeader())->GetNumberOfESDTracks();
-  const Int_t nTracks = fAOD->GetNumberOfTracks();
-  Int_t multTPC32 = 0;
-  Int_t multTPC128 = 0;
-  Int_t multTPC96 = 0;
-  Int_t multTOF = 0;
-  Int_t multTrk = 0;
-  //Double_t multESDTPCdif = 0.0;
-  //Double_t v0Centr = 0.0;
-
-
-  for(Int_t it(0); it < nTracks; it++)
-  {
-    AliAODTrack *track = static_cast<AliAODTrack *>(fAOD->GetTrack(it));
-    if(!track) { continue; }
-
-    if (fCutStage==1){
-      if (!track || !IsTrackSelected(track))
-      {
-      continue;
-      }
-    }
-
-
-    if(track->TestFilterBit(32))
-    {
-      multTPC32++;
-      if(TMath::Abs(track->GetTOFsignalDz()) <= 10.0 && track->GetTOFsignal() >= 12000.0 && track->GetTOFsignal() <= 25000.0) { multTOF++; }
-      if((TMath::Abs(track->Eta())) < fAbsEtaMax && (track->GetTPCNcls() >= fCutChargedNumTPCclsMin) && (track->Pt() >= fFlowRFPsPtMin) && (track->Pt() < fFlowRFPsPtMax)) { multTrk++; }
-    }
-
-    if(track->TestFilterBit(128)) { multTPC128++; }
-
-    if(track->TestFilterBit(96)) { multTPC96++; }
-  }
-
-  fhQAEventsfMult32vsCentr[fCutStage]->Fill(v0Centr, multTrk);
-  fhQAEventsfMult128vsCentr[fCutStage]->Fill(v0Centr, multTPC128);
-  fhQAEventsfMult96vsCentr[fCutStage]->Fill(v0Centr, multTPC96);
-  fhQAEventsfMultTPCvsTOF[fCutStage]->Fill(multTPC32, multTOF);
-  fhQAEventsfMultTPCvsESD[fCutStage]->Fill(multTPC128, multESD);
-
-
-  return;
 }
 //_____________________________________________________________________
 TComplex AliAnalysisTaskESEFlow::Q(int n, int p)

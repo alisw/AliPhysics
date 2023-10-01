@@ -100,7 +100,6 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     task->SetV0EseqnBins(100,0.0,15.0);
     task->SetChi2TPCFl(kTRUE, 2.5); // 
     task->SetChi2ITSFl(kFALSE, 36.0); //
-    task->SetQARejFiller(kFALSE);
     task->SetNUEWeights(kFALSE, 1);
     task->Set2018(kFALSE);
     task->SetBayesUnfolding(kFALSE);

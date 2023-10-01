@@ -86,7 +86,6 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetChi2TPCFl( Bool_t actChi2TPC, Float_t actValue) { fCheckChi2TPC = actChi2TPC; vTPCChi2Bound = actValue; }
         void                    SetChi2ITSFl( Bool_t actChi2ITS, Float_t actValue) { fCheckChi2ITS = actChi2ITS; vITSChi2Bound = actValue; }
 
-        void                    SetQARejFiller( Bool_t actQA ) { fFillQARej = actQA; }
 
         void                    SetNUEWeights( Bool_t actNUE, Int_t NUEType) {fUseNUEWeights = actNUE; fNUE = NUEType; }
 
@@ -467,7 +466,6 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Float_t                 vITSChi2Bound;
         Double_t                fCutDCAzMax;
         Double_t                fCutDCAxyMax;
-        Bool_t                  fFillQARej;
         Bool_t                  fUseNUEWeights;
         Bool_t                  fUseEfficiency;
         Bool_t                  fMagFieldSys;
