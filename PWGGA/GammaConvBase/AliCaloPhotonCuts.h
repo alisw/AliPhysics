@@ -409,7 +409,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Bool_t      SetPoissonParamCentFunction(int isMC);
     Bool_t      SetNMatchedTracksFunc(float meanCent);
-    Double_t    CorrectEnergyForOverlap();
+    Double_t    CorrectEnergyForOverlap(float meanCent);
     Int_t       GetDoEnergyCorrectionForOverlap()               {return fDoEnergyCorrectionForOverlap;}
 
     // modify acceptance via histogram with cellID
@@ -603,7 +603,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t     fDoEnergyCorrectionForOverlap;            // mask to switch on a special for PbPb developed cluster energy correction, 0 = off, 1 = on with mean, 2 = on with random values
     TF1*      fFuncPoissonParamCent;                    // TF1 to describe the poisson parameter that you get from fitting a poisson dsitribution to the number of matched tracks per cluster as function of centrality
     TF1*      fFuncNMatchedTracks;                      // TF1 poisson distribution to describe the number of matched tracks per cluster for a specific centrality
-    Double_t  fOverlapEnergy;                           // track matching cut value for the energy correction for neutral overlap. Current only standard value is 300 MeV based on the charged particle paper (CERN-EP-2022-266)
+    TF1*      fFuncMeanTrackPt;                         // TF1 distribution to describe the mean pT of tracks as function of centrality. Half of this value is used as neutral energy overlap correction.
 
     //vector
     std::vector<Int_t> fVectorMatchedClusterIDs;        // vector with cluster IDs that have been matched to tracks in merged cluster analysis
@@ -754,7 +754,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,129)
+    ClassDef(AliCaloPhotonCuts,130)
 };
 
 #endif

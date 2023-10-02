@@ -3422,7 +3422,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
     if (!clus) continue;
     // energy correction for neutral overlap!
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() > 0){
-      clus->SetE(clus->E() - ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap());
+      clus->SetE(clus->E() - ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent));
     }
     if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,fWeightJetJetMC,i)){
       if(fDoInvMassShowerShapeTree && ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedBeforeTrackMatch() ) tESDmapIsClusterAcceptedWithoutTrackMatch[i] = 1;
