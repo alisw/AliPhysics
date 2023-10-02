@@ -38,9 +38,9 @@
 
 
 ClassImp(AliAnalysisTaskParticleEfficiencyMezonPhiDR)
-//ClassImp(AliAnalysisTaskParticleEfficiencyMezonPhiDR)
 
-double fV1[3];
+
+double fV2[3];
 
 //_______________________________________________________
 
@@ -675,7 +675,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserCreateOutputObjects()
 
 //_____________________________________________________________________
 
-bool IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
+bool IsPionNSigmaN(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
 {
 
     if (mom > 0.5) {
@@ -690,7 +690,7 @@ bool IsPionNSigma(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime
   return false;
 }
 
-bool IsPionNSigmaV0(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
+bool IsPionNSigmaNV0(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 {
 
   if (TMath::Abs(nsigmaTPCPi) < 3.0) return true;
@@ -698,7 +698,7 @@ bool IsPionNSigmaV0(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
   return false;
 }
 
-bool IsPionNSigmaV0TPC5(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
+bool IsPionNSigmaNV0TPC5(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 {
 
   if (TMath::Abs(nsigmaTPCPi) < 5.0) return true;
@@ -707,7 +707,7 @@ bool IsPionNSigmaV0TPC5(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 }
 
 
-bool IsProtonNSigmaV0TPC5(float mom, float nsigmaTPCP, float nsigmaTOFP)
+bool IsProtonNSigmaNV0TPC5(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
 
   if (TMath::Abs(nsigmaTPCP) < 5.0) return true;
@@ -715,7 +715,7 @@ bool IsProtonNSigmaV0TPC5(float mom, float nsigmaTPCP, float nsigmaTOFP)
   return false;
 }
 
-bool IsPionNSigma3(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
+bool IsPionNSigmaN3(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
 {
 
     if (mom > 0.5) {
@@ -730,7 +730,7 @@ bool IsPionNSigma3(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtim
   return false;
 }
 
-bool IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
+bool IsKaonNSigmaN(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
 {
     if (mom > 0.2) {
       //rejection of unwanted contamination
@@ -750,7 +750,7 @@ bool IsKaonNSigma(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
 }
 
 
-bool IsKaonNSigmaCustom(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
+bool IsKaonNSigmaNCustom(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
 { 
 
 	//NsigmaTPCle250(2.0);
@@ -872,7 +872,7 @@ bool IsKaonNSigmaCustom(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOF
   return false;
 }
 
-bool IsKaonNSigma3(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
+bool IsKaonNSigmaN3(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
 {
   if (mom > 0.5) {
     //rejection of unwanted contamination
@@ -891,7 +891,7 @@ bool IsKaonNSigma3(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
   return false;
 }
 
-bool IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
+bool IsProtonNSigmaN(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
 {
 
     if (mom > 0.5) {
@@ -913,7 +913,7 @@ bool IsProtonNSigma(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime
   return false;
 }
 
-bool IsProtonNSigmaV0(float mom, float nsigmaTPCP, float nsigmaTOFP)
+bool IsProtonNSigmaNV0(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
 
   if (mom < 0.8) {
@@ -929,7 +929,7 @@ bool IsProtonNSigmaV0(float mom, float nsigmaTPCP, float nsigmaTOFP)
   return false;
 }
 
-bool IsProtonNSigma3(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
+bool IsProtonNSigmaN3(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
 {
   if (mom > 0.5) {
     // if(mom>1.8 && TOFtime<-300)
@@ -949,7 +949,7 @@ bool IsProtonNSigma3(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtim
 }
 
 
-bool IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
+bool IsElectronN(float nsigmaTPCE, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
 {
   if(TMath::Abs(nsigmaTPCE)<3 && TMath::Abs(nsigmaTPCPi)>3 && TMath::Abs(nsigmaTPCK)>3 && TMath::Abs(nsigmaTPCP)>3)
       return true;
@@ -1057,7 +1057,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
 	*/
   //"ESDs/pass2/AOD049/*AliAOD.root");
   const AliAODVertex* vertex =(AliAODVertex*) aodEvent->GetPrimaryVertex();
-  vertex->GetPosition(fV1);
+  vertex->GetPosition(fV2);
   if (!vertex || vertex->GetNContributors()<=0) return;
 	/*
   fHistQA[9]->Fill(2);
@@ -1260,10 +1260,10 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
       Double_t pos[3];
       track->GetXYZ(pos);
 
-      //Double_t DCAX = pos[0] - vertexX;
-      //Double_t DCAY = pos[1] - vertexY;
-      //DCAZ = pos[2] - vertexZ;
-      //DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
+      Double_t DCAX = pos[0] - vertexX;
+      Double_t DCAY = pos[1] - vertexY;
+      DCAZ = pos[2] - vertexZ;
+      DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
 
       //if(TMath::Abs(DCAXY) > 0.0182 + 0.035*TMath::Power(track->Pt(), -1.01)) continue; //XY, Pt dep
       //if(TMath::Abs(impactD) > 0.44 + 0.07*TMath::Power(tPt, -1.94)) continue; //XY, Pt dep
@@ -1287,7 +1287,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
     double nSigmaTPCK = fAODpidUtil->NumberOfSigmasTPC(aodtrackpid,AliPID::kKaon);
     double nSigmaTPCP = fAODpidUtil->NumberOfSigmasTPC(aodtrackpid,AliPID::kProton);
     double nSigmaTPCe = fAODpidUtil->NumberOfSigmasTPC(aodtrackpid,AliPID::kElectron);
-    if(IsElectron(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
+    if(IsElectronN(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
       continue;
       
      
@@ -1335,7 +1335,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
     float tdEdx = aodtrackpid->GetTPCsignal();
     float tTofSig = aodtrackpid->GetTOFsignal();
     double pidTime[5]; aodtrackpid->GetIntegratedTimes(pidTime);
-	/*
+	
 
     fHistQAPID[0][0][charge]->Fill(tPt,tdEdx);
     fHistQAPID[1][0][charge]->Fill(tPt,tTofSig-pidTime[2]);//pion
@@ -1349,22 +1349,24 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
     fHistQAPIDFail[3][0][charge]->Fill(tPt,nSigmaTPCPi);
     fHistQAPIDFail[4][0][charge]->Fill(nSigmaTPCPi,nSigmaTOFPi);
 
-	*/
-    bool isPionNsigma = false;
-    bool isKaonNsigma = false;
-    bool isProtonNsigma  = false;
-	/*
+	
+    bool IsPionNSigma = false;
+    bool IsKaonNSigma = false;
+    bool IsProtonNSigma  = false;
+	
     if(fPidMethod==kNSigma){
     //******** With double counting *******************
-      isPionNsigma = (IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
-      isKaonNsigma = (IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
-      isProtonNsigma = (IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      IsPionNSigma = (IsPionNSigmaN(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
+      IsKaonNSigma = (IsKaonNSigmaN(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
+      IsProtonNSigma = (IsProtonNSigmaN(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
     }
-    */
+    
     if(fPidMethod==kNSigmaCustom){
-		isKaonNsigma = (IsKaonNSigmaCustom(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
+		IsKaonNSigma = (IsKaonNSigmaNCustom(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
+		IsPionNSigma = (IsPionNSigmaN(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
+		IsProtonNSigma = (IsProtonNSigmaN(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
 	}
-	/*
+	
     else if(fPidMethod==kNSigmaNoDoubleCounting){
       //******** Without double counting *******************
       double nSigmaPIDPi = 0, nSigmaPIDK = 0, nSigmaPIDP = 0;
@@ -1381,29 +1383,28 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
       }
       
       if(nSigmaPIDPi<nSigmaPIDK && nSigmaPIDPi<nSigmaPIDP){
-	isPionNsigma = (IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
+	IsPionNSigma = (IsPionNSigmaN(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
       }
       else if(nSigmaPIDK<nSigmaPIDPi && nSigmaPIDK<nSigmaPIDP){
-	isKaonNsigma = (IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
+	IsKaonNSigma = (IsKaonNSigmaN(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
       }
       else if(nSigmaPIDP<nSigmaPIDPi && nSigmaPIDP<nSigmaPIDK){
-	isProtonNsigma = (IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+	IsProtonNSigma = (IsProtonNSigmaN(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
       }
     }
     else if(fPidMethod==kExclusivePID){
       //******** Exclusive PID ********************
-      isPionNsigma = (IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isKaonNsigma = (!IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isProtonNsigma = (!IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      IsPionNSigma = (IsPionNSigmaN(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigmaN(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaN(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      IsKaonNSigma = (!IsPionNSigmaN(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaN(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaN(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      IsProtonNSigma = (!IsPionNSigmaN(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigmaN(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaN(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
     }
     else if(fPidMethod==kExclusivePIDDiffRejection){
       //******** Exclusive PID, different rejection  ********************
-      isPionNsigma = (IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma3(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isKaonNsigma = (!IsPionNSigma3(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isProtonNsigma = (!IsPionNSigma3(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      IsPionNSigma = (IsPionNSigmaN(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigmaN3(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaN3(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      IsKaonNSigma = (!IsPionNSigmaN3(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaN(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaN3(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      IsProtonNSigma = (!IsPionNSigmaN3(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigmaN3(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaN(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
     }
-    */
-    if (isPionNsigma){
+    if (IsPionNSigma){
       fHistQAPID[0][1][charge]->Fill(tPt,tdEdx);
       fHistQAPID[1][1][charge]->Fill(tPt,tTofSig-pidTime[2]);//pion
       fHistQAPID[2][1][charge]->Fill(tPt,nSigmaTOFPi);
@@ -1418,7 +1419,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
       fHistQAPIDFail[3][1][charge]->Fill(tPt,nSigmaTPCPi);
       fHistQAPIDFail[4][1][charge]->Fill(nSigmaTPCPi,nSigmaTOFPi);
     }
-    if (isKaonNsigma){
+    if (IsKaonNSigma){
       fHistQAPID[0][2][charge]->Fill(tPt,tdEdx);
       fHistQAPID[1][2][charge]->Fill(tPt,tTofSig-pidTime[3]);//kaon
       fHistQAPID[2][2][charge]->Fill(tPt,nSigmaTOFK);
@@ -1434,7 +1435,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
       fHistQAPIDFail[4][2][charge]->Fill(nSigmaTPCK,nSigmaTOFK);
     }
   
-    if (isProtonNsigma){
+    if (IsProtonNSigma){
       fHistQAPID[0][3][charge]->Fill(tPt,tdEdx);
       fHistQAPID[1][3][charge]->Fill(tPt,tTofSig-pidTime[4]);//proton
       fHistQAPID[2][3][charge]->Fill(tPt,nSigmaTOFP);
@@ -1449,23 +1450,23 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
       fHistQAPIDFail[3][3][charge]->Fill(tPt,nSigmaTPCP);
       fHistQAPIDFail[4][3][charge]->Fill(nSigmaTPCP,nSigmaTOFP);
     }
-    //fReconstructedAfterCuts[PARTTYPES*fcent][charge]->Fill(track->Eta(), track->Pt());//Fills hist. for all reconstructed particles after cuts
+    fReconstructedAfterCuts[PARTTYPES*fcent][charge]->Fill(track->Eta(), track->Pt());//Fills hist. for all reconstructed particles after cuts
     //getting no. of tracks for each particle species after all the cuts:
 
     //********* PID - pions ********
-    if (isPionNsigma){
+    if (IsPionNSigma){
       fReconstructedAfterCuts[PARTTYPES*fcent+1][charge]->Fill(track->Eta(), track->Pt());
      }
     //Fills for all identified pions found after cuts (reconstructed) - numerator for Efficiency
 
     //********* PID - kaons ********
-    if (isKaonNsigma){
+    if (IsKaonNSigma){
       fReconstructedAfterCuts[PARTTYPES*fcent+2][charge]->Fill(track->Eta(), track->Pt());
       
       for(Int_t jTracks = 0; jTracks < aodEvent->GetNumberOfTracks(); jTracks++){
 		if(iTracks != jTracks){
 			AliAODTrack *track2 = (AliAODTrack*)aodEvent->GetTrack(jTracks);
-			if(IsKaonNSigmaCustom(track2->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3])){
+			if(IsKaonNSigmaNCustom(track2->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3])){
 				if(track->Charge() > 0){
 					if(track2->Charge() < 0){
 								double px1 = track->Px();
@@ -1508,7 +1509,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
     //Fills for all identified kaons found after cuts (reconstructed) - numerator for Efficiency
 
     //********* PID - protons ********
-    if (isProtonNsigma){
+    if (IsProtonNSigma){
       fReconstructedAfterCuts[PARTTYPES*fcent+3][charge]->Fill(track->Eta(), track->Pt());
      }
 
@@ -1525,17 +1526,17 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
     
    //creating set of MC tracks that correspond to the reconstructed tracks
     //********* PID - pions ********
-    if (isPionNsigma){
+    if (IsPionNSigma){
       recoParticleArray[1].Add(MCtrk);
     }
   
     //********* PID - kaons ********
-    if (isKaonNsigma){
+    if (IsKaonNSigma){
       recoParticleArray[2].Add(MCtrk);
      }
   
     //********* PID - protons ********
-    if (isProtonNsigma){
+    if (IsProtonNSigma){
       recoParticleArray[3].Add(MCtrk);
      }
 
@@ -1563,22 +1564,22 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
 
     int PDGcode = MCtrk->GetPdgCode();
    //And secondaries for different particle species:
-    if (!MCtrk->IsPhysicalPrimary() && (isPionNsigma && abs(PDGcode)==211)) { //secondaries in pions
+    if (!MCtrk->IsPhysicalPrimary() && (IsPionNSigmaN && abs(PDGcode)==211)) { //secondaries in pions
       fReconstructedNotPrimaries[PARTTYPES*fcent+1][charge]->Fill(track->Eta(), track->Pt());
     }
-    else if(MCtrk->IsPhysicalPrimary() && (isPionNsigma && abs(PDGcode)==211)) {
+    else if(MCtrk->IsPhysicalPrimary() && (IsPionNSigmaN && abs(PDGcode)==211)) {
       fReconstructedPrimaries[PARTTYPES*fcent+1][charge]->Fill(track->Eta(), track->Pt());
     }
-    if (!MCtrk->IsPhysicalPrimary() && (isKaonNsigma && abs(PDGcode)==321)) { //secondaries in kaons
+    if (!MCtrk->IsPhysicalPrimary() && (IsKaonNSigmaN && abs(PDGcode)==321)) { //secondaries in kaons
       fReconstructedNotPrimaries[PARTTYPES*fcent+2][charge]->Fill(track->Eta(), track->Pt());
     }
-    else if(MCtrk->IsPhysicalPrimary() && (isKaonNsigma && abs(PDGcode)==321)) {
+    else if(MCtrk->IsPhysicalPrimary() && (IsKaonNSigmaN && abs(PDGcode)==321)) {
       fReconstructedPrimaries[PARTTYPES*fcent+2][charge]->Fill(track->Eta(), track->Pt());
     }
-    if (!MCtrk->IsPhysicalPrimary() && (isProtonNsigma && abs(PDGcode)==2212)) { //secondaries in protons
+    if (!MCtrk->IsPhysicalPrimary() && (IsProtonNSigmaN && abs(PDGcode)==2212)) { //secondaries in protons
       fReconstructedNotPrimaries[PARTTYPES*fcent+3][charge]->Fill(track->Eta(), track->Pt());
     }
-    else if(MCtrk->IsPhysicalPrimary() && (isProtonNsigma && abs(PDGcode)==2212)) {
+    else if(MCtrk->IsPhysicalPrimary() && (IsProtonNSigmaN && abs(PDGcode)==2212)) {
       fReconstructedPrimaries[PARTTYPES*fcent+3][charge]->Fill(track->Eta(), track->Pt());
     }
 
@@ -1593,13 +1594,13 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
     //Misidentification fraction
     if(abs(PDGcode)==211)
     {
-    	if(isPionNsigma)
+    	if(IsPionNSigma)
     	  fMisidentification[fcent][charge]-> Fill(1,0.5);
-    	if(isKaonNsigma)
+    	if(IsKaonNSigma)
     	  fMisidentification[fcent][charge]-> Fill(1,1.5);
-    	if(isProtonNsigma)
+    	if(IsProtonNSigma)
     	  fMisidentification[fcent][charge]-> Fill(1,2.5);
-    	if(!isPionNsigma && !isKaonNsigma && !isProtonNsigma)
+    	if(!IsPionNSigma && !IsKaonNSigma && !IsProtonNSigma)
     	  if(statusTOF)
     	    fMisidentification[fcent][charge]-> Fill(1,3.5);
 
@@ -1607,13 +1608,13 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
     }
     else if(abs(PDGcode)==321)
     {
-    	if(isPionNsigma)
+    	if(IsPionNSigma)
     	  fMisidentification[fcent][charge]-> Fill(2,0.5);
-    	if(isKaonNsigma)
+    	if(IsKaonNSigma)
     	  fMisidentification[fcent][charge]-> Fill(2,1.5);
-    	if(isProtonNsigma)
+    	if(IsProtonNSigma)
     	  fMisidentification[fcent][charge]-> Fill(2,2.5);
-    	if(!isPionNsigma && !isKaonNsigma && !isProtonNsigma)
+    	if(!IsPionNSigma && !IsKaonNSigma && !IsProtonNSigma)
     	  if(statusTOF)
     	    fMisidentification[fcent][charge]-> Fill(2,3.5);
 
@@ -1621,15 +1622,15 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
     }
     else if(abs(PDGcode) == 2212)
     {
-    	if(isPionNsigma)
+    	if(IsPionNSigma)
     	  fMisidentification[fcent][charge]-> Fill(3,0.5);
-    	if(isKaonNsigma)
+    	if(IsKaonNSigma)
     	  fMisidentification[fcent][charge]-> Fill(3,1.5);
-    	if(isProtonNsigma)
+    	if(IsProtonNSigma)
     	  {
     	  fMisidentification[fcent][charge]-> Fill(3,2.5);
     	  }
-    	if(!isPionNsigma && !isKaonNsigma && !isProtonNsigma)
+    	if(!IsPionNSigma && !IsKaonNSigma && !IsProtonNSigma)
     	  if(statusTOF)
     	    fMisidentification[fcent][charge]-> Fill(3,3.5);
     }
@@ -1638,24 +1639,24 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
     //Contaminations: "how many pions are in the kaons sample"? etc.
     //Do not use for corrections: using those values will be dependant on i.e. Pi/K ratio in MC
     //Use misidentification fraction instead
-    if(isPionNsigma)
+    if(IsPionNSigma)
     {
       fContamination[PARTTYPES*fcent+1][charge]-> Fill(PDGcode,track->Pt()); // filling contamination histogram for pions
     }
-  if(isKaonNsigma)
+  if(IsKaonNSigma)
     {
       fContamination[PARTTYPES*fcent+2][charge]-> Fill(PDGcode,track->Pt()); // filling contamination histogram for kaons
     }
-  if(isProtonNsigma)
+  if(IsProtonNSigma)
     {
       fContamination[PARTTYPES*fcent+3][charge]-> Fill(PDGcode,track->Pt()); // filling contamination histogram for protons
     }
 
   }
   
-  //fHistEv[1]->Fill(multFB16);
-  //fHistEv[2]->Fill(multFB96);
-  //fHistEv[3]->Fill(multFB128);
+  fHistEv[1]->Fill(multFB16);
+  fHistEv[2]->Fill(multFB96);
+  fHistEv[3]->Fill(multFB128);
 
   //loop over V0s
   for (Int_t i = 0; i < aodEvent->GetNumberOfV0s(); i++)
@@ -1676,8 +1677,8 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
     fCutsLambda->Fill(cutLam++);
     fCutsAntiLambda->Fill(cutALam++);
 
-    if (aodv0->CosPointingAngle(fV1) < 0.99) continue;
-    //if (aodv0->CosPointingAngle(fV1) < 0.95) continue;
+    if (aodv0->CosPointingAngle(fV2) < 0.99) continue;
+    //if (aodv0->CosPointingAngle(fV2) < 0.95) continue;
     fCutsLambda->Fill(cutLam++);
     fCutsAntiLambda->Fill(cutALam++);
 
@@ -1718,7 +1719,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
     //fCutsLambda->Fill(cutLam++);
     //fCutsAntiLambda->Fill(cutALam++);
 
-    if(aodv0->DecayLength(fV1) > 60) continue;
+    if(aodv0->DecayLength(fV2) > 60) continue;
     fCutsLambda->Fill(cutLam++);
     fCutsAntiLambda->Fill(cutALam++);
 
@@ -1839,21 +1840,21 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
 	    }
 	  }
 
-    bool isPionNsigmaPos = 0;
-    bool isProtonNsigmaPos  = 0;
-    bool isPionNsigmaNeg = 0;
-    bool isProtonNsigmaNeg  = 0;
+    bool IsPionNSigmaNPos = 0;
+    bool IsProtonNSigmaNPos  = 0;
+    bool IsPionNSigmaNNeg = 0;
+    bool IsProtonNSigmaNNeg  = 0;
 
-    isPionNsigmaPos = IsPionNSigmaV0TPC5(trackpos->Pt(),nSigmaTPCPiPos,nSigmaTOFPiPos);
-    isProtonNsigmaPos = IsProtonNSigmaV0TPC5(trackpos->Pt(),nSigmaTPCPPos,nSigmaTOFPPos);
-    isPionNsigmaNeg = IsPionNSigmaV0TPC5(trackneg->Pt(),nSigmaTPCPiNeg,nSigmaTOFPiNeg);
-    isProtonNsigmaNeg = IsProtonNSigmaV0TPC5(trackneg->Pt(),nSigmaTPCPNeg,nSigmaTOFPNeg);
+    IsPionNSigmaNPos = IsPionNSigmaNV0TPC5(trackpos->Pt(),nSigmaTPCPiPos,nSigmaTOFPiPos);
+    IsProtonNSigmaNPos = IsProtonNSigmaNV0TPC5(trackpos->Pt(),nSigmaTPCPPos,nSigmaTOFPPos);
+    IsPionNSigmaNNeg = IsPionNSigmaNV0TPC5(trackneg->Pt(),nSigmaTPCPiNeg,nSigmaTOFPiNeg);
+    IsProtonNSigmaNNeg = IsProtonNSigmaNV0TPC5(trackneg->Pt(),nSigmaTPCPNeg,nSigmaTOFPNeg);
 
     bool Lambda = false;
     bool AntiLambda = false;
 
     //antilambda
-    if(isProtonNsigmaNeg && isPionNsigmaPos)
+    if(IsProtonNSigmaNNeg && IsPionNSigmaNPos)
   	{
   	  fCutsAntiLambda->Fill(cutALam++);
   	  if(trackpos->Pt() < 0.16 || trackpos->Pt() > 4.0) continue; //pions plus
@@ -1873,14 +1874,14 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
 	  fPtAntiLambda->Fill(aodv0->Pt());
 	  fEtaAntiLambda->Fill(TMath::Abs(aodv0->Eta()));
 	  fHistQALambdas[1]->Fill(1,aodv0->Pt());
-	  fAllVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt());
+	  fAllVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV2),aodv0->Pt());
 	  fAllVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt());
   	  
   	  AntiLambda = true;
   	}
 
       //lambda
-    if(isProtonNsigmaPos && isPionNsigmaNeg)
+    if(IsProtonNSigmaNPos && IsPionNSigmaNNeg)
       {
 	fCutsLambda->Fill(cutLam++);
 	if(trackpos->Pt() < 0.3 || trackpos->Pt() > 4.0) continue; //proton
@@ -1901,7 +1902,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
 	fPtLambda->Fill(aodv0->Pt());
 	fEtaLambda->Fill(TMath::Abs(aodv0->Eta()));
 	fHistQALambdas[0]->Fill(1,aodv0->Pt());
-	fAllVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt());
+	fAllVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV2),aodv0->Pt());
 	fAllVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  
 	Lambda = true;
@@ -1988,7 +1989,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
   	  fPrimVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
   	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx)
       {
-  	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt());
+  	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV2),aodv0->Pt());
   	    fPrimVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
   	  }
   	}
@@ -1997,7 +1998,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
   	  fPrimVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
   	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx)
       {
-  	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt());
+  	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV2),aodv0->Pt());
   	    fPrimVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt());
   	  }
   	}
@@ -2006,7 +2007,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
   	  fSecWeakVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
   	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx)
       {
-  	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt());
+  	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV2),aodv0->Pt());
   	    fSecWeakVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
   	  }
   	}
@@ -2015,7 +2016,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
   	  fSecWeakVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
   	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx)
       {
-  	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt());
+  	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV2),aodv0->Pt());
   	    fSecWeakVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt());
   	  }
   	}
@@ -2024,7 +2025,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
   	fSecMatVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
   	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx)
       {
-  	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt());
+  	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV2),aodv0->Pt());
   	    fSecMatVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
   	  }
   	}
@@ -2032,7 +2033,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
   	{
   	fSecMatVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
   	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-  	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt());
+  	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV2),aodv0->Pt());
   	    fSecMatVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt());
   	  }
   	}
@@ -2041,7 +2042,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
   	  fFakeVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
 
   	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-  	    fFakeVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt());
+  	    fFakeVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV2),aodv0->Pt());
   	    fFakeVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
   	  }
     }
@@ -2050,7 +2051,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
 
   	  fFakeVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
   	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-  	    fFakeVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1),aodv0->Pt());
+  	    fFakeVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV2),aodv0->Pt());
   	    fFakeVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt());
   	  }
   	}
@@ -2414,9 +2415,9 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
       if(!aodCascade) continue; fCutsXim->Fill(cutXim++);
       if(TMath::Sqrt(aodCascade->Pt2Xi()) < 0.5) continue; fCutsXim->Fill(cutXim++);
       if(TMath::Abs(etaXi) > 0.8) continue; fCutsXim->Fill(cutXim++);
-      if(aodCascade->DecayLengthXi(fV1[0],fV1[1],fV1[2]) > 100) continue; fCutsXim->Fill(cutXim++);
+      if(aodCascade->DecayLengthXi(fV2[0],fV2[1],fV2[2]) > 100) continue; fCutsXim->Fill(cutXim++);
       if(aodCascade->DcaXiDaughters() > 1.6) continue; fCutsXim->Fill(cutXim++);
-      if(aodCascade->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]) < 0.97) continue; fCutsXim->Fill(cutXim++);
+      if(aodCascade->CosPointingAngleXi(fV2[0],fV2[1],fV2[2]) < 0.97) continue; fCutsXim->Fill(cutXim++);
       if(radiusXi<0.8 || radiusXi>200) continue; fCutsXim->Fill(cutXim++);
         
       //*****Bachelor*********************
@@ -2427,12 +2428,12 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
       if(!(BachelorTrack->GetStatus() & (AliESDtrack::kTPCrefit))) continue; fCutsXim->Fill(cutXim++);
 
       //*****Lambda***********************
-      if(aodCascade->CosPointingAngle(fV1) < 0.97) continue; fCutsXim->Fill(cutXim++);
+      if(aodCascade->CosPointingAngle(fV2) < 0.97) continue; fCutsXim->Fill(cutXim++);
       if(aodCascade->DcaV0ToPrimVertex() < 0.07) continue; fCutsXim->Fill(cutXim++);
       if(aodCascade->DcaV0Daughters() > 1.6) continue; fCutsXim->Fill(cutXim++);
       if(aodCascade->MassLambda() < (LambdaMass-0.005) || aodCascade->MassLambda() > (LambdaMass+0.005)) continue; fCutsXim->Fill(cutXim++);
       if(TMath::Abs(aodCascade->Eta()) > 0.8) continue; fCutsXim->Fill(cutXim++);
-      if(aodCascade->DecayLength(fV1) > 100) continue;  fCutsXim->Fill(cutXim++);
+      if(aodCascade->DecayLength(fV2) > 100) continue;  fCutsXim->Fill(cutXim++);
       if(aodCascade->RadiusV0()<1.4 || aodCascade->RadiusV0()>200) continue; fCutsXim->Fill(cutXim++);
 
       //*****Lambda Daughters*************
@@ -2455,9 +2456,9 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
       if(!aodCascade) continue; fCutsXip->Fill(cutXip++);
       if(TMath::Sqrt(aodCascade->Pt2Xi()) < 0.5) continue; fCutsXip->Fill(cutXip++);
       if(TMath::Abs(etaXi) > 0.8) continue; fCutsXip->Fill(cutXip++);
-      if(aodCascade->DecayLengthXi(fV1[0],fV1[1],fV1[2]) > 100) continue; fCutsXip->Fill(cutXip++);
+      if(aodCascade->DecayLengthXi(fV2[0],fV2[1],fV2[2]) > 100) continue; fCutsXip->Fill(cutXip++);
       if(aodCascade->DcaXiDaughters() > 1.6) continue; fCutsXip->Fill(cutXip++);
-      if(aodCascade->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]) < 0.97) continue; fCutsXip->Fill(cutXip++);
+      if(aodCascade->CosPointingAngleXi(fV2[0],fV2[1],fV2[2]) < 0.97) continue; fCutsXip->Fill(cutXip++);
       if(radiusXi<0.8 || radiusXi>200) continue; fCutsXip->Fill(cutXip++);
 
       //*****Bachelor*********************
@@ -2468,12 +2469,12 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
       if(!(BachelorTrack->GetStatus() & (AliESDtrack::kTPCrefit))) continue; fCutsXip->Fill(cutXip++);
 
       //*****Lambda***********************
-      if(aodCascade->CosPointingAngle(fV1) < 0.97) continue; fCutsXip->Fill(cutXip++);
+      if(aodCascade->CosPointingAngle(fV2) < 0.97) continue; fCutsXip->Fill(cutXip++);
       if(aodCascade->DcaV0ToPrimVertex() < 0.07) continue; fCutsXip->Fill(cutXip++);
       if(aodCascade->DcaV0Daughters() > 1.6) continue; fCutsXip->Fill(cutXip++);
       if(aodCascade->MassAntiLambda() < (LambdaMass-0.005) || aodCascade->MassAntiLambda() > (LambdaMass+0.005)) continue; fCutsXip->Fill(cutXip++);
       if(TMath::Abs(aodCascade->Eta()) > 0.8) continue; fCutsXip->Fill(cutXip++);
-      if(aodCascade->DecayLength(fV1) > 100) continue;  fCutsXip->Fill(cutXip++);
+      if(aodCascade->DecayLength(fV2) > 100) continue;  fCutsXip->Fill(cutXip++);
       if(aodCascade->RadiusV0()<1.4 || aodCascade->RadiusV0()>200) continue; fCutsXip->Fill(cutXip++);
 
       //*****Lambda Daughters*************
@@ -2586,19 +2587,19 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
 
 
 
-    bool isPionNsigmaPos = 0;
-    bool isProtonNsigmaPos  = 0;
-    bool isPionNsigmaNeg = 0;
-    bool isProtonNsigmaNeg  = 0;
+    bool IsPionNSigmaNPos = 0;
+    bool IsProtonNSigmaNPos  = 0;
+    bool IsPionNSigmaNNeg = 0;
+    bool IsProtonNSigmaNNeg  = 0;
 
-    bool isPionNsigmaBach = 0;
+    bool IsPionNSigmaNBach = 0;
     
-    isPionNsigmaPos = IsPionNSigmaV0TPC5(daughterTrackPos->Pt(),nSigmaTPCPiPos,nSigmaTOFPiPos);
-    isProtonNsigmaPos = IsProtonNSigmaV0TPC5(daughterTrackPos->Pt(),nSigmaTPCPPos,nSigmaTOFPPos);
-    isPionNsigmaNeg = IsPionNSigmaV0TPC5(daughterTrackNeg->Pt(),nSigmaTPCPiNeg,nSigmaTOFPiNeg);
-    isProtonNsigmaNeg = IsProtonNSigmaV0TPC5(daughterTrackNeg->Pt(),nSigmaTPCPNeg,nSigmaTOFPNeg);
+    IsPionNSigmaNPos = IsPionNSigmaNV0TPC5(daughterTrackPos->Pt(),nSigmaTPCPiPos,nSigmaTOFPiPos);
+    IsProtonNSigmaNPos = IsProtonNSigmaNV0TPC5(daughterTrackPos->Pt(),nSigmaTPCPPos,nSigmaTOFPPos);
+    IsPionNSigmaNNeg = IsPionNSigmaNV0TPC5(daughterTrackNeg->Pt(),nSigmaTPCPiNeg,nSigmaTOFPiNeg);
+    IsProtonNSigmaNNeg = IsProtonNSigmaNV0TPC5(daughterTrackNeg->Pt(),nSigmaTPCPNeg,nSigmaTOFPNeg);
     
-    isPionNsigmaBach = IsPionNSigmaV0TPC5(BachelorTrack->Pt(),nSigmaTPCBach,nSigmaTOFBach);
+    IsPionNSigmaNBach = IsPionNSigmaNV0TPC5(BachelorTrack->Pt(),nSigmaTPCBach,nSigmaTOFBach);
     
     bool Xiplus = false;
     bool Ximinus = false;
@@ -2606,7 +2607,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
     //Xiplus   
                
 
-    if(isProtonNsigmaNeg && isPionNsigmaPos && isPionNsigmaBach)
+    if(IsProtonNSigmaNNeg && IsPionNSigmaNPos && IsPionNSigmaNBach)
       {
 	fCutsXip->Fill(cutXip++);
 	if(aodCascade->MassXi() < (XiMass-0.005) || aodCascade->MassXi() > (XiMass+0.005)){fMassInvXipFail->Fill(aodCascade->MassXi()); continue;}
@@ -2616,7 +2617,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
 	  fPtXip->Fill(aodCascade->Pt2Xi());
 	  fEtaXip->Fill(etaXi);
 	  fHistQAXi[1]->Fill(1,TMath::Sqrt(aodCascade->Pt2Xi()));
-	  fAllVsCosPointingAngle[PARTTYPES*fcent+5][1]->Fill(aodCascade->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
+	  fAllVsCosPointingAngle[PARTTYPES*fcent+5][1]->Fill(aodCascade->CosPointingAngleXi(fV2[0],fV2[1],fV2[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
 	  fAllVsDecayRadius[PARTTYPES*fcent+5][1]->Fill(radiusXi,TMath::Sqrt(aodCascade->Pt2Xi()));
 	}
 	fAllVsDCA[PARTTYPES*fcent+5][1]->Fill(aodCascade->DcaXiToPrimVertex(),TMath::Sqrt(aodCascade->Pt2Xi()));
@@ -2626,7 +2627,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
 
 
     //    Ximinus
-    if(isProtonNsigmaPos && isPionNsigmaNeg && isPionNsigmaBach)
+    if(IsProtonNSigmaNPos && IsPionNSigmaNNeg && IsPionNSigmaNBach)
       {
 
 	fCutsXim->Fill(cutXim++);
@@ -2637,7 +2638,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
 	  fPtXim->Fill(TMath::Sqrt(aodCascade->Pt2Xi()));
 	  fEtaXim->Fill(etaXi);
 	  fHistQAXi[0]->Fill(1,TMath::Sqrt(aodCascade->Pt2Xi()));
-	  fAllVsCosPointingAngle[PARTTYPES*fcent+5][0]->Fill(aodCascade->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
+	  fAllVsCosPointingAngle[PARTTYPES*fcent+5][0]->Fill(aodCascade->CosPointingAngleXi(fV2[0],fV2[1],fV2[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
 	  fAllVsDecayRadius[PARTTYPES*fcent+5][0]->Fill(radiusXi,TMath::Sqrt(aodCascade->Pt2Xi()));
 
 	}
@@ -2648,7 +2649,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
     if(!arrayMC) continue;
     //Xiplus 
 
-    if(isProtonNsigmaNeg && isPionNsigmaPos && isPionNsigmaBach)
+    if(IsProtonNSigmaNNeg && IsPionNSigmaNPos && IsPionNSigmaNBach)
       {
 	fCutsXip->Fill(cutXip++);
 	if(aodCascade->MassXi() < (XiMass-0.005) || aodCascade->MassXi() > (XiMass+0.005)){fMassInvXipFail->Fill(aodCascade->MassXi()); continue;}
@@ -2658,7 +2659,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
 	  fPtXip->Fill(aodCascade->Pt2Xi());
 	  fEtaXip->Fill(etaXi);
 	  fHistQAXi[1]->Fill(1,TMath::Sqrt(aodCascade->Pt2Xi()));
-	  fAllVsCosPointingAngle[PARTTYPES*fcent+5][1]->Fill(aodCascade->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
+	  fAllVsCosPointingAngle[PARTTYPES*fcent+5][1]->Fill(aodCascade->CosPointingAngleXi(fV2[0],fV2[1],fV2[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
 	  fAllVsDecayRadius[PARTTYPES*fcent+5][1]->Fill(radiusXi,TMath::Sqrt(aodCascade->Pt2Xi()));
 	}
 	fAllVsDCA[PARTTYPES*fcent+5][1]->Fill(aodCascade->DcaXiToPrimVertex(),TMath::Sqrt(aodCascade->Pt2Xi()));
@@ -2668,7 +2669,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
 
     //    Ximinus
 
-    if(isProtonNsigmaPos && isPionNsigmaNeg && isPionNsigmaBach)
+    if(IsProtonNSigmaNPos && IsPionNSigmaNNeg && IsPionNSigmaNBach)
       {          
 
 	fCutsXim->Fill(cutXim++);
@@ -2679,7 +2680,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
 	  fPtXim->Fill(TMath::Sqrt(aodCascade->Pt2Xi()));
 	  fEtaXim->Fill(etaXi);
 	  fHistQAXi[0]->Fill(1,TMath::Sqrt(aodCascade->Pt2Xi()));
-	  fAllVsCosPointingAngle[PARTTYPES*fcent+5][0]->Fill(aodCascade->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
+	  fAllVsCosPointingAngle[PARTTYPES*fcent+5][0]->Fill(aodCascade->CosPointingAngleXi(fV2[0],fV2[1],fV2[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
 	  fAllVsDecayRadius[PARTTYPES*fcent+5][0]->Fill(radiusXi,TMath::Sqrt(aodCascade->Pt2Xi()));
 
 	}
@@ -2774,7 +2775,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
 
 	fPrimVsDCA[PARTTYPES*fcent+5][0]->Fill(aodCascade->DcaXiToPrimVertex(),TMath::Sqrt(aodCascade->Pt2Xi()));
 	if( aodCascade->DcaXiToPrimVertex() < 100){
-	  fPrimVsCosPointingAngle[PARTTYPES*fcent+5][0]->Fill(aodCascade->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
+	  fPrimVsCosPointingAngle[PARTTYPES*fcent+5][0]->Fill(aodCascade->CosPointingAngleXi(fV2[0],fV2[1],fV2[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
 	  fPrimVsDecayRadius[PARTTYPES*fcent+5][0]->Fill(radiusXi,TMath::Sqrt(aodCascade->Pt2Xi()));
 	}
       }
@@ -2782,7 +2783,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
       {
 	fPrimVsDCA[PARTTYPES*fcent+5][1]->Fill(aodCascade->DcaXiToPrimVertex(),TMath::Sqrt(aodCascade->Pt2Xi()));
 	if( aodCascade->DcaXiToPrimVertex() < 100){
-	  fPrimVsCosPointingAngle[PARTTYPES*fcent+5][1]->Fill(aodCascade->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
+	  fPrimVsCosPointingAngle[PARTTYPES*fcent+5][1]->Fill(aodCascade->CosPointingAngleXi(fV2[0],fV2[1],fV2[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
 	  fPrimVsDecayRadius[PARTTYPES*fcent+5][1]->Fill(radiusXi,TMath::Sqrt(aodCascade->Pt2Xi()));
 	}
       }
@@ -2790,7 +2791,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
       {
 	fSecWeakVsDCA[PARTTYPES*fcent+5][0]->Fill(aodCascade->DcaXiToPrimVertex(),TMath::Sqrt(aodCascade->Pt2Xi()));
 	if( aodCascade->DcaXiToPrimVertex() < 100){
-	  fSecWeakVsCosPointingAngle[PARTTYPES*fcent+5][0]->Fill(aodCascade->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
+	  fSecWeakVsCosPointingAngle[PARTTYPES*fcent+5][0]->Fill(aodCascade->CosPointingAngleXi(fV2[0],fV2[1],fV2[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
 	  fSecWeakVsDecayRadius[PARTTYPES*fcent+5][0]->Fill(radiusXi,TMath::Sqrt(aodCascade->Pt2Xi()));
 	}
       }
@@ -2798,7 +2799,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
       {
 	fSecWeakVsDCA[PARTTYPES*fcent+5][1]->Fill(aodCascade->DcaXiToPrimVertex(),TMath::Sqrt(aodCascade->Pt2Xi()));
 	if( aodCascade->DcaXiToPrimVertex() < 100){
-	  fSecWeakVsCosPointingAngle[PARTTYPES*fcent+5][1]->Fill(aodCascade->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
+	  fSecWeakVsCosPointingAngle[PARTTYPES*fcent+5][1]->Fill(aodCascade->CosPointingAngleXi(fV2[0],fV2[1],fV2[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
 	  fSecWeakVsDecayRadius[PARTTYPES*fcent+5][1]->Fill(radiusXi, TMath::Sqrt(aodCascade->Pt2Xi()));
 	}
       }
@@ -2807,7 +2808,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
       {
 	fSecMatVsDCA[PARTTYPES*fcent+5][1]->Fill(aodCascade->DcaXiToPrimVertex(),TMath::Sqrt(aodCascade->Pt2Xi()));
 	if( aodCascade->DcaXiToPrimVertex() < 100){
-	  fSecMatVsCosPointingAngle[PARTTYPES*fcent+5][1]->Fill(aodCascade->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
+	  fSecMatVsCosPointingAngle[PARTTYPES*fcent+5][1]->Fill(aodCascade->CosPointingAngleXi(fV2[0],fV2[1],fV2[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
 	  fSecMatVsDecayRadius[PARTTYPES*fcent+5][1]->Fill(radiusXi, TMath::Sqrt(aodCascade->Pt2Xi()));
 	}
       }
@@ -2817,7 +2818,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
 	fFakeVsDCA[PARTTYPES*fcent+5][0]->Fill(aodCascade->DcaXiToPrimVertex(),TMath::Sqrt(aodCascade->Pt2Xi()));
 
 	if( aodCascade->DcaXiToPrimVertex() < 100){
-	  fFakeVsCosPointingAngle[PARTTYPES*fcent+5][0]->Fill(aodCascade->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
+	  fFakeVsCosPointingAngle[PARTTYPES*fcent+5][0]->Fill(aodCascade->CosPointingAngleXi(fV2[0],fV2[1],fV2[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
 	  fFakeVsDecayRadius[PARTTYPES*fcent+5][0]->Fill(radiusXi,TMath::Sqrt(aodCascade->Pt2Xi()));
 	}
 
@@ -2827,7 +2828,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::AnalyseCascades(int fcent, Ali
 
 	fFakeVsDCA[PARTTYPES*fcent+5][1]->Fill(aodCascade->DcaXiToPrimVertex(),TMath::Sqrt(aodCascade->Pt2Xi()));
 	if( aodCascade->DcaXiToPrimVertex() < 100){
-	  fFakeVsCosPointingAngle[PARTTYPES*fcent+5][1]->Fill(aodCascade->CosPointingAngleXi(fV1[0],fV1[1],fV1[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
+	  fFakeVsCosPointingAngle[PARTTYPES*fcent+5][1]->Fill(aodCascade->CosPointingAngleXi(fV2[0],fV2[1],fV2[2]),TMath::Sqrt(aodCascade->Pt2Xi()));
 	  fFakeVsDecayRadius[PARTTYPES*fcent+5][1]->Fill(radiusXi,TMath::Sqrt(aodCascade->Pt2Xi()));
 	}
       }
