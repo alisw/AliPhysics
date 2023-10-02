@@ -6,9 +6,8 @@
 //
 //=============================================================================
 
-#include "AliAnalysisTaskParticleEfficiencyMezonPhiDR.h"
 
-AliAnalysisTaskParticleEfficiencyMezonPhiDR *AddTaskEfficiency(TString containerName="femtolist",int method=4, int filterbit=96)
+AliAnalysisTaskParticleEfficiencyMezonPhiDR *AddTaskEfficiencyMezonPhiDR(TString containerName="femtolist",int method=4, int filterbit=96)
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
