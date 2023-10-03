@@ -1838,6 +1838,7 @@ void AliAnalysisTaskESEFlow::FillObsDistributions(const Float_t centrality)
 
     } // ending V0 calibration loop
 
+    QAMultFiller(centrality);
 
     return;
 }
@@ -3173,11 +3174,6 @@ Bool_t AliAnalysisTaskESEFlow::IsEventRejectedAddPileUp() const
     if(track->TestFilterBit(96)) { multTPC96++; }
   }
 
-  fhQAEventsfMult32vsCentr[0]->Fill(v0Centr, multTrk);
-  fhQAEventsfMult128vsCentr[0]->Fill(v0Centr, multTPC128);
-  fhQAEventsfMult96vsCentr[0]->Fill(v0Centr, multTPC96);
-  fhQAEventsfMultTPCvsTOF[0]->Fill(multTPC32, multTOF);
-  fhQAEventsfMultTPCvsESD[0]->Fill(multTPC128, multESD);
 
   if(bIs17n)
   {
@@ -3215,6 +3211,60 @@ Bool_t AliAnalysisTaskESEFlow::IsEventRejectedAddPileUp() const
   fhQAEventsfMultTPCvsESD[1]->Fill(multTPC128, multESD);
 
   return kFALSE;
+}
+void AliAnalysisTaskESEFlow::QAMultFiller(const Float_t v0Centr)
+{
+  // recounting multiplcities
+  const Int_t multESD = ((AliAODHeader *)fAOD->GetHeader())->GetNumberOfESDTracks();
+  const Int_t nTracks = fAOD->GetNumberOfTracks();
+  Int_t multTPC32 = 0;
+  Int_t multTPC128 = 0;
+  Int_t multTPC96 = 0;
+  Int_t multTOF = 0;
+  Int_t multTrk = 0;
+  // Double_t multESDTPCdif = 0.0;
+  // Double_t v0Centr = 0.0;
+
+  for (Int_t it(0); it < nTracks; it++)
+  {
+    AliAODTrack *track = static_cast<AliAODTrack *>(fAOD->GetTrack(it));
+    if (!track)
+    {
+      continue;
+    }
+
+
+    if (track->TestFilterBit(32))
+    {
+      multTPC32++;
+      if (TMath::Abs(track->GetTOFsignalDz()) <= 10.0 && track->GetTOFsignal() >= 12000.0 && track->GetTOFsignal() <= 25000.0)
+      {
+      multTOF++;
+      }
+      if ((TMath::Abs(track->Eta())) < fAbsEtaMax && (track->GetTPCNcls() >= fCutChargedNumTPCclsMin) && (track->Pt() >= fFlowRFPsPtMin) && (track->Pt() < fFlowRFPsPtMax))
+      {
+      multTrk++;
+      }
+    }
+
+    if (track->TestFilterBit(128))
+    {
+      multTPC128++;
+    }
+
+    if (track->TestFilterBit(96))
+    {
+      multTPC96++;
+    }
+  }
+
+  fhQAEventsfMult32vsCentr[0]->Fill(v0Centr, multTrk);
+  fhQAEventsfMult128vsCentr[0]->Fill(v0Centr, multTPC128);
+  fhQAEventsfMult96vsCentr[0]->Fill(v0Centr, multTPC96);
+  fhQAEventsfMultTPCvsTOF[0]->Fill(multTPC32, multTOF);
+  fhQAEventsfMultTPCvsESD[0]->Fill(multTPC128, multESD);
+
+  return;
 }
 //_____________________________________________________________________
 TComplex AliAnalysisTaskESEFlow::Q(int n, int p)

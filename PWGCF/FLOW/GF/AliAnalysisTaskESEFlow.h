@@ -281,6 +281,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Double_t GetFlowWeight(const AliAODTrack* track, const float dVz) const;
         Double_t GetNUEPtWeight(Double_t pt, Double_t eta, const float dVz) const;
         Double_t GetEfficiency(Double_t pt);
+
+        void QAMultFiller(const Float_t v0Centr);
         //############ GENERIC FRAMEWORK ############# MODIFIED WITH ESE //
 
         double GetWeight(double phi, double eta, double vz,  double runNumber);
