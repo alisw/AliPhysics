@@ -12,7 +12,6 @@ class TH1F;
 class TH2F;
 class TH3F;
 class TProfile;
-// class THnSparse;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
@@ -71,41 +70,33 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   double fV0Mmax;
   double ftrackmult08;
   double fv0mpercentile;
-  // double fv0mpercentilebefvtx;
   float fdcaxy;
   float fdcaz;
   AliMultSelection* fMultSelection;
-  // AliMultSelection* fMultSelectionbefvtx;
-  // TH1F* hRefMult;
   TH2D* hNchUCvsV0M;
   TH1F* hV0Mmult;
   TH2F* hTrackletvsV0M;
-  TProfile* pPtvsNch[5];
-  TH2D* hPtvsNch[5];
+  TProfile* pPtvsNch[3];
+  TH2D* hPtvsNch[3];
   TProfile* pPtvsNch05;
   TH2D* hPtvsNch05;
   TH1F* hTrueVtxZ;
   TH2F* hTrueNchvsV0M_UC;
   TH2F* hRecNchvsV0M_UC;
-  TH2D* hFullNchResponse;
   TH2D* hNchResponse;
   TH2D* hPtTruePrivsV0M;
   TH2D* hPtRecPrivsV0M;
   TH2D* hRecNchvsRecPt05;
   TH2D* hTrueNchvsTruePt05;
-  TH2D* hRecNchvsRecPt[5];
-  TH2D* hTrueNchvsTruePt[5];
-  TH2F* hDCAxyPri[6];
-  TH2F* hDCAxyWeDe[6];
-  TH2F* hDCAxyMaIn[6];
-  TH2F* hDCAxyData[6];
-  TH1F* hTrueNch;
+  TH2D* hRecNchvsRecPt[3];
+  TH2D* hTrueNchvsTruePt[3];
+  TH2F* hDCAxyPri[3];
+  TH2F* hDCAxyWeDe[3];
+  TH2F* hDCAxyMaIn[3];
+  TH2F* hDCAxyData[3];
   TH2F* hTrueNchHM;
-  TH1F* hTrueNchWithTrigger;
   TH2F* hTrueNchHMWithTrigger;
-  TH1F* hTrueNchWithEventCuts;
   TH2F* hTrueNchHMWithEventCuts;
-  TH1F* hTrueNchWithVtxSel;
   TH2F* hTrueNchHMWithVtxSel;
 
   AliAnalysisTaskDataSpeedOfSound(
