@@ -493,7 +493,8 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair){
  double tKStar = fabs(fPair->KStar());
  if (fPairCut && !fPairCut->Pass(fPair)) {
        // failed pair QA
-        if(fUseDPhiDEtaQA>1 && tKStar<0.2){
+        /*
+	if(fUseDPhiDEtaQA>1 && tKStar<0.2){
 
           double eta1 = fPair->Track1()->FourMomentum().PseudoRapidity();
           double eta2 = fPair->Track2()->FourMomentum().PseudoRapidity();
@@ -503,7 +504,7 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair){
           fDumDPhiDEtaAvgQA->Fill(deta,AvgDPhi);
 
         }
-
+	*/
  
         return;
     }
@@ -679,6 +680,19 @@ if(fUseGobalVelGate){
     if(fSideBand){
 	FillSideBandDum(fPair);
 	}
+
+
+   if(fUseDPhiDEtaQA>0 && tKStar<0.2){
+	  double eta1 = fPair->Track1()->FourMomentum().PseudoRapidity();
+    	  double eta2 = fPair->Track2()->FourMomentum().PseudoRapidity();
+    	  float AvgDPhi = ReAvgDphi(fPair);
+	  double deta = eta1 - eta2;
+
+ 	  //fNumDPhiDEtaQA->Fill(deta,AvgDPhi);
+	fDumDPhiDEtaAvgQA->Fill(deta,AvgDPhi);
+ 	  //	  	
+ 	 }
+
 	if(fUseVelGate){
 	    int VelLabel = ReVelocityGate(fPair);
 	    if(VelLabel == 1){
