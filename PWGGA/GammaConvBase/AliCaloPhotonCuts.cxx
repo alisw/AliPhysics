@@ -208,7 +208,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fDoEnergyCorrectionForOverlap(0),
   fFuncPoissonParamCent(0),
   fFuncNMatchedTracks(0),
-  fOverlapEnergy(0),
+  fFuncMeanTrackPt(0),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
   fCutStringRead(""),
@@ -457,7 +457,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fDoEnergyCorrectionForOverlap(ref.fDoEnergyCorrectionForOverlap),
   fFuncPoissonParamCent(ref.fFuncPoissonParamCent),
   fFuncNMatchedTracks(ref.fFuncNMatchedTracks),
-  fOverlapEnergy(ref.fOverlapEnergy),
+  fFuncMeanTrackPt(ref.fFuncMeanTrackPt),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
   fCutStringRead(""),
@@ -611,6 +611,7 @@ AliCaloPhotonCuts::~AliCaloPhotonCuts() {
   if(fFuncNCellCutEfficiencyEMCal) delete fFuncNCellCutEfficiencyEMCal;
   if(fFuncPoissonParamCent) delete fFuncPoissonParamCent;
   if(fFuncNMatchedTracks) delete fFuncNMatchedTracks;
+  if(fFuncMeanTrackPt) delete fFuncMeanTrackPt;
 }
 
 //________________________________________________________________________
@@ -6040,7 +6041,14 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fFuncNMatchedTracks = new TF1("fFuncNMatchedTracks29", "TMath::Poisson(x,[0])", 0., 10.);
       fDoEnergyCorrectionForOverlap = 1;
       fEOverPMax = 1.75;
-      fOverlapEnergy = 0.3;
+      fFuncMeanTrackPt = new TF1("fFuncMeanTrackPt29", "pol2");
+      if(fIsMC > 1){
+        // values for HIJING 5.02 TeV Pb--Pb simulations
+        fFuncMeanTrackPt->SetParameters(+6.20104e-01, -2.62817e-04, -2.13551e-06);
+      } else{
+        // values for data 5.02 TeV Pb--Pb
+        fFuncMeanTrackPt->SetParameters(+6.82971e-01, +2.33711e-04, -1.93788e-05);
+      }
       break;
     case 30: // cut char 'u' (like f so standard TM but with random energy correction for overlap)
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
@@ -6054,7 +6062,14 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fFuncNMatchedTracks = new TF1("fFuncNMatchedTracks30", "TMath::Poisson(x,[0])", 0., 10.);
       fDoEnergyCorrectionForOverlap = 2;
       fEOverPMax = 1.75;
-      fOverlapEnergy = 0.3;
+      fFuncMeanTrackPt = new TF1("fFuncMeanTrackPt30", "pol2");
+      if(fIsMC > 1){
+        // values for HIJING 5.02 TeV Pb--Pb simulations
+        fFuncMeanTrackPt->SetParameters(+6.20104e-01, -2.62817e-04, -2.13551e-06);
+      } else{
+        // values for data 5.02 TeV Pb--Pb
+        fFuncMeanTrackPt->SetParameters(+6.82971e-01, +2.33711e-04, -1.93788e-05);
+      }
       break;
 
     default:
@@ -10616,14 +10631,14 @@ Bool_t AliCaloPhotonCuts::SetNMatchedTracksFunc(float meanCent){
 
 // Function to get the energy value to subtract from a cluster to account for
 // neutral overlap in PbPb 5 TeV
-Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(){
+Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent){
   switch (fDoEnergyCorrectionForOverlap){
     case 0:
       return 0.;
     case 1:
-      return 0.5 * fFuncNMatchedTracks->Mean(0.0, 4.0) * fOverlapEnergy;
+      return 0.25 * fFuncNMatchedTracks->Mean(0.0, 8.0) * fFuncMeanTrackPt->Eval(meanCent);
     case 2:
-      return 0.5 * fFuncNMatchedTracks->GetRandom(0.0, 4.0) * fOverlapEnergy;
+      return 0.25 * fFuncNMatchedTracks->GetRandom(0.0, 8.0) * fFuncMeanTrackPt->Eval(meanCent);
     default:
       return 0;
   }

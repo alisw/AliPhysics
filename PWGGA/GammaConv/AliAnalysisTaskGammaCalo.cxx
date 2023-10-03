@@ -3460,6 +3460,13 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
     nclus = arrClustersProcess->GetEntries();
   }
 
+  // energy correction for neutral overlap!
+  float cent = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetCentrality(fInputEvent);
+  if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() > 0){
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SetPoissonParamCentFunction(fIsMC);
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SetNMatchedTracksFunc(cent);
+  }
+
   vector<AliAODConversionPhoton*>         vectorCurrentClusters;
   vector<Int_t>                           vectorRejectCluster;
   vector<Double_t>                        vectorPhotonWeight;
@@ -3501,6 +3508,10 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
           clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
       }
       if(!clus) continue;
+      // energy correction for neutral overlap!
+      if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() > 0){
+        clus->SetE(clus->E() - ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent));
+      }
       totalClusterEnergy += clus->E();
       totalCellsinClusters += clus->GetNCells();
       delete clus;
