@@ -630,7 +630,7 @@ namespace PWGJE
             // Get proper track properties
             track.Clear();
             track = trackIter->first;
-            AliVTrack *vTrack = dynamic_cast<AliVTrack *>(trackIter->second);
+            const AliVTrack *vTrack = dynamic_cast<AliVTrack *>(trackIter->second);
 
             // Artificial inefficiency
             // Note that we already randomly rejected tracks so that the same tracks will be rejected for the mixed events
