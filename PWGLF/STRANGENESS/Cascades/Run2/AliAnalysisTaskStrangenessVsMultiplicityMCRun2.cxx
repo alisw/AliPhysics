@@ -99,6 +99,7 @@ class AliAODv0;
 #include "AliMultVariable.h"
 #include "AliMultInput.h"
 #include "AliMultSelection.h"
+#include "AliMultSelectionTask.h"
 
 #include "AliCFContainer.h"
 #include "AliMultiplicity.h"
