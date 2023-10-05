@@ -244,6 +244,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         //
         TH1D*                   fhEventCounter; //!
+        TH2D*                   fhTPCMultiplicity; //!
 
         void CorrelationTask(const Float_t centrality, Int_t fSpCent);
         void SPVienna(const Float_t centrality, Int_t q2ESECodeV0C);
@@ -261,7 +262,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void FillqnRedV0(const Float_t centrality, TString V0type);
         void FillPOI(const Double_t dPtLow, const Double_t dPtHigh);
 
-        void QAMultFiller(Float_t v0Centr, Int_t fCutStage);
+        void QAMultFiller(const Float_t &v0Centr);
 
         Int_t GetSamplingIndex() const;
 
@@ -282,7 +283,6 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Double_t GetNUEPtWeight(Double_t pt, Double_t eta, const float dVz) const;
         Double_t GetEfficiency(Double_t pt);
 
-        void QAMultFiller(const Float_t v0Centr);
         //############ GENERIC FRAMEWORK ############# MODIFIED WITH ESE //
 
         double GetWeight(double phi, double eta, double vz,  double runNumber);
