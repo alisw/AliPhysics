@@ -135,6 +135,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fCenCutLowPU(0),
   fCenCutHighPU(0),
   fMultCutPU(0),
+  fCentralPU(1500),
   fPhiEtaVz(0),
   fPt(0),
   fDCAxy(0),
@@ -253,6 +254,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fCenCutLowPU(0),
   fCenCutHighPU(0),
   fMultCutPU(0),
+  fCentralPU(1500),
   fPhiEtaVz(0),
   fPt(0),
   fDCAxy(0),
@@ -678,6 +680,8 @@ void AliAnalysisTaskDeform::UserExec(Option_t*) {
   if(!fGFWSelection->AcceptVertex(fAOD)) return;
   fEventCount->Fill("Vertex",1);
   if(fUseOldPileup && IsPileupEvent(fAOD,l_Cent)) return;
+  if(l_Cent < 10) fEventCuts.fESDvsTPConlyLinearCut[0] = fCentralPU;
+  else fEventCuts.fESDvsTPConlyLinearCut[0] = 15000.;
   fEventCount->Fill("Pileup",1);
   if(fStageSwitch==1)
     fIsMC?FillWeightsMC(fAOD, vz,l_Cent,vtxXYZ):FillWeights(fAOD, vz,l_Cent,vtxXYZ);
@@ -783,7 +787,7 @@ Bool_t AliAnalysisTaskDeform::IsPileupEvent(AliAODEvent* ev, double centrality){
     if(track->TestFilterBit(128)) { multTPC128++; }
   }
   int fPileupCut = 15000;
-  if(centrality < 10) fPileupCut = 1500;
+  if(centrality < 10) fPileupCut = fCentralPU;
   if(bIs17n)
   {
     multESDTPCdif = multESD - (6.6164 + 3.64583*multTPC128 + 0.000126397*multTPC128*multTPC128);
@@ -1514,7 +1518,6 @@ void AliAnalysisTaskDeform::LoadCorrectionsFromLists(){
   fEfficiencyList = (TList*)GetInputData(2); //Efficiencies start from input slot 2
   fEfficiencies = new TH1D*[fNV0MBinsDefault];
   for(Int_t i=0;i<fNV0MBinsDefault;i++) {
-      printf("EffRescaled_Cent%i%s\n",i,fGFWSelection->GetSystPF());
       fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
       if(fEfficiencies[i] && fPseudoEfficiency<1) fEfficiencies[i]->Scale(fPseudoEfficiency);
       if(!fEfficiencies[i]) {

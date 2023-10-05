@@ -50,7 +50,6 @@ class AliPtContainer: public TNamed {
         void RebinMulti(Int_t nbins);
         void RebinMulti(Int_t nbins, Double_t *binedges);
         TH1* getRecursiveHist(Int_t ind, Int_t m, unsigned int l_obs, Bool_t sub = false);
-        TH1* getCentralMomentHist(int ind, int m);
         TH1* getSubeventCumulantHist(int ind, int m);
         vector<Double_t> getSubeventCorrelation(Int_t mOrder);
         Int_t getMpar() { return mpar;}
@@ -65,7 +64,6 @@ class AliPtContainer: public TNamed {
         TList* fSubList;
         TList* fCumulantList;
         TList* fNormList;
-        TList* fCMList;
         const int mpar;
         unsigned int fEventWeight;
         Bool_t fSubevent;
@@ -80,10 +78,8 @@ class AliPtContainer: public TNamed {
         TH1* RecalculateCkHists(vector<TH1*> inh);
         TH1* RecalculateSkewHists(vector<TH1*> inh);
         TH1* RecalculateKurtosisHists(vector<TH1*> inh);
-        void CalculateCumulantHists(vector<TH1*> inh, Int_t ind, Bool_t normalized);
-        void CalculateCentralMomentHists(vector<TH1*> inh, int ind);
+        void CalculateCumulantHists(vector<TH1*> inh, Int_t ind, Bool_t normalized); 
         void CalculateRecursive(Bool_t normalized);
-        void CalculateCentralMoment();
         Int_t getSubIndex(TString sub);
         Int_t factorial(const Int_t n) { return (n<2)?1:factorial(n - 1)*n; }
 

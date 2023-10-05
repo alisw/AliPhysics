@@ -132,6 +132,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetUseExoticPtCorr(bool newval) { fUseExoticPtCorr = newval; }
   void SetEnableFB768DCAxy(bool newval) { fEnableFB768dcaxy = newval;}
   void SetUseOldPileup(bool newval) { fUseOldPileup = newval; }
+  void SetCentralPileup(double newval) {fCentralPU = newval;}
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -235,6 +236,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TF1 *fCenCutLowPU; //Store these
   TF1 *fCenCutHighPU; //Store these
   TF1 *fMultCutPU; //Store these
+  Double_t fCentralPU;
   TH3D** fPhiEtaVz; //!
   TH2D** fPt; //!
   TH2D** fDCAxy; //!
