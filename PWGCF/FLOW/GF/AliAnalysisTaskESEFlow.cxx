@@ -186,6 +186,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fhqnV0CvqnV0A{0},
     fhqnTPCvqnV0A{0},
     fhEventCounter{0},
+    fhTPCMultiplicity{0},
 
     fColSystem{kPbPb},
     fTrigger(AliVEvent::kINT7),
@@ -372,6 +373,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fhqnV0CvqnV0A{0},
     fhqnTPCvqnV0A{0},
     fhEventCounter{0},
+    fhTPCMultiplicity{0},
 
     fColSystem{colSys},
     fTrigger(AliVEvent::kINT7),
@@ -1121,6 +1123,10 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     for(Int_t i(0); i < iEventCounterBins; ++i) { fhEventCounter->GetXaxis()->SetBinLabel(i+1,sEventCounterLabel[i].Data() ); }
     fObservables->Add(fhEventCounter);
 
+    // fhTPCMultiplicity = new TH2D("fhTPCMult","fhtpcMultsel",100,0,100,500,0,5000);
+    // fObservables->Add(fhTPCMultiplicity);
+
+
     if(fBayesUnfolding){
       TH2* v2Raw = nullptr;
 
@@ -1726,7 +1732,7 @@ void AliAnalysisTaskESEFlow::FillObsDistributions(const Float_t centrality)
     if(iTracks < 1 ) { return; }
     fHistZVertex->Fill(dVz);
     fProfNPar->Fill(centrality,iTracks);
-
+    // fhTPCMultiplicity->Fill(centrality,iTracks);
 
     for(Int_t i(0); i < iTracks; ++i)
     {
@@ -3212,7 +3218,7 @@ Bool_t AliAnalysisTaskESEFlow::IsEventRejectedAddPileUp() const
 
   return kFALSE;
 }
-void AliAnalysisTaskESEFlow::QAMultFiller(const Float_t v0Centr)
+void AliAnalysisTaskESEFlow::QAMultFiller(const Float_t &v0Centr)
 {
   // recounting multiplcities
   const Int_t multESD = ((AliAODHeader *)fAOD->GetHeader())->GetNumberOfESDTracks();
