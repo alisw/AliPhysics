@@ -1,158 +1,205 @@
-AliAnalysisTaskSE* AddTaskFemtoDreamRho(bool isMC = false,
+AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
                                         TString CentEst = "kHM",
                                         float fdPhidEta = 0.01,
                                         bool MCtemplatefit = false,
                                         float fSpherDown = 0.7,
                                         bool doCleaning = false,
                                         bool rejectKaon = false,
-                                        const char* cutVariation = "0") {
-          
+                                        const char *cutVariation = "0")
+{
+
   TString suffix = TString::Format("%s", cutVariation);
-                                        
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-  if (!mgr) {
+  if (!mgr)
+  {
     printf("No analysis manager to connect to!\n");
     return nullptr;
   }
-  if (!mgr->GetInputEventHandler()) {
+  if (!mgr->GetInputEventHandler())
+  {
     printf("This task requires an input event handler!\n");
     return nullptr;
   }
-  
+
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
+  evtCuts->SetCutMinContrib(2);
+  evtCuts->SetZVtxPosition(-10., 10.);
+
+  printf("This task uses StandardCutsRun2!\n");
+
   evtCuts->SetSphericityCuts(0.0, 1);
 
-  if (suffix == "1") {
+  if (suffix == "1")
+  {
     evtCuts->SetSphericityCuts(fSpherDown, 1.0, 0.5);
   }
-                                        
+
   AliFemtoDreamTrackCuts *TrackPosProtonCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, true, true);
   TrackPosProtonCuts->SetCutCharge(1);
-  //MC Template treatment
-  if ( !MCtemplatefit ) {
+  // MC Template treatment
+  if (!MCtemplatefit)
+  {
     TrackPosProtonCuts->SetFilterBit(128); // Filterbit 5+6
     TrackPosProtonCuts->SetDCAVtxZ(0.2);
     TrackPosProtonCuts->SetDCAVtxXY(0.1);
-  } else {
+  }
+  else
+  {
     TrackPosProtonCuts->SetFilterBit(128); // Filterbit 7 //Else the DCA is to tight
     TrackPosProtonCuts->SetDCAVtxZ(3.0);
     TrackPosProtonCuts->SetDCAVtxXY(3.0);
   }
-  if ( isMC && MCtemplatefit ) {
-    //TrackPosProtonCuts->SetPlotContrib(true);
+  if (isMC && MCtemplatefit)
+  {
+    // TrackPosProtonCuts->SetPlotContrib(true);
     TrackPosProtonCuts->CheckParticleMothers(true);
     TrackPosProtonCuts->SetPlotDCADist(true);
-    //TrackPosProtonCuts->SetOriginMultiplicityHists(true);
-    TrackPosProtonCuts->SetFillQALater(false); //Be careful about this flag! When the MinimalBooking is set
+    // TrackPosProtonCuts->SetOriginMultiplicityHists(true);
+    TrackPosProtonCuts->SetFillQALater(false); // Be careful about this flag! When the MinimalBooking is set
   }
-                                        
+
   AliFemtoDreamTrackCuts *TrackNegProtonCuts =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, true, true);
   TrackNegProtonCuts->SetCutCharge(-1);
-  //MC Template treatment
-  if ( !MCtemplatefit ) {
+  // MC Template treatment
+  if (!MCtemplatefit)
+  {
     TrackNegProtonCuts->SetFilterBit(128); // Filterbit 5+6
     TrackNegProtonCuts->SetDCAVtxZ(0.2);
     TrackNegProtonCuts->SetDCAVtxXY(0.1);
-  } else {
+  }
+  else
+  {
     TrackNegProtonCuts->SetFilterBit(128); // Filterbit 7 //Else the DCA is to tight
     TrackNegProtonCuts->SetDCAVtxZ(3.0);
     TrackNegProtonCuts->SetDCAVtxXY(3.0);
   }
-  if ( isMC && MCtemplatefit ) {
-    //TrackNegProtonCuts->SetPlotContrib(true);
+  if (isMC && MCtemplatefit)
+  {
+    // TrackNegProtonCuts->SetPlotContrib(true);
     TrackNegProtonCuts->CheckParticleMothers(true);
     TrackNegProtonCuts->SetPlotDCADist(true);
-    //TrackNegProtonCuts->SetOriginMultiplicityHists(true);
-    TrackNegProtonCuts->SetFillQALater(false); //Be careful about this flag! When the MinimalBooking is set
+    // TrackNegProtonCuts->SetOriginMultiplicityHists(true);
+    TrackNegProtonCuts->SetFillQALater(false); // Be careful about this flag! When the MinimalBooking is set
   }
 
-  if (suffix != "0") {
-      TrackPosProtonCuts->SetMinimalBooking(false);
-      TrackNegProtonCuts->SetMinimalBooking(false);
+  if (suffix != "0")
+  {
+    TrackPosProtonCuts->SetMinimalBooking(false);
+    TrackNegProtonCuts->SetMinimalBooking(false);
   }
 
   AliFemtoDreamTrackCuts *TrackPosPionCuts =
       AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, true, true);
   TrackPosPionCuts->SetCutCharge(1);
-  //MC Template treatment
-  if ( !MCtemplatefit ) {
+  // MC Template treatment
+  if (!MCtemplatefit)
+  {
     TrackPosPionCuts->SetFilterBit(96); // Filterbit 5+6
     TrackPosPionCuts->SetDCAVtxZ(0.3);
     TrackPosPionCuts->SetDCAVtxXY(0.3);
-  } else {
+  }
+  else
+  {
     TrackPosPionCuts->SetFilterBit(128); // Filterbit 7 //Else the DCA is to tight
     TrackPosPionCuts->SetDCAVtxZ(3.0);
     TrackPosPionCuts->SetDCAVtxXY(3.0);
   }
-  if ( isMC && MCtemplatefit ) {
-    //TrackPosPionCuts->SetPlotContrib(true);
+  if (isMC && MCtemplatefit)
+  {
+    // TrackPosPionCuts->SetPlotContrib(true);
     TrackPosPionCuts->CheckParticleMothers(true);
     TrackPosPionCuts->SetPlotDCADist(true);
-    //TrackPosPionCuts->SetOriginMultiplicityHists(true);
-    TrackPosPionCuts->SetFillQALater(false); //Be careful about this flag! When the MinimalBooking is set
+    // TrackPosPionCuts->SetOriginMultiplicityHists(true);
+    TrackPosPionCuts->SetFillQALater(false); // Be careful about this flag! When the MinimalBooking is set
   }
-                                        
+
   AliFemtoDreamTrackCuts *TrackNegPionCuts =
       AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, true, true);
   TrackNegPionCuts->SetCutCharge(-1);
-  //MC Template treatment
-  if ( !MCtemplatefit ) {
+  // MC Template treatment
+  if (!MCtemplatefit)
+  {
     TrackNegPionCuts->SetFilterBit(96); // Filterbit 5+6
     TrackNegPionCuts->SetDCAVtxZ(0.3);
     TrackNegPionCuts->SetDCAVtxXY(0.3);
-  } else {
+  }
+  else
+  {
     TrackNegPionCuts->SetFilterBit(128); // Filterbit 7 //Else the DCA is to tight
     TrackNegPionCuts->SetDCAVtxZ(3.0);
     TrackNegPionCuts->SetDCAVtxXY(3.0);
   }
-  //MC Template treatment
-  if ( isMC && MCtemplatefit ) {
-    //TrackNegPionCuts->SetPlotContrib(true);
+  // MC Template treatment
+  if (isMC && MCtemplatefit)
+  {
+    // TrackNegPionCuts->SetPlotContrib(true);
     TrackNegPionCuts->CheckParticleMothers(true);
     TrackNegPionCuts->SetPlotDCADist(true);
-    //TrackNegPionCuts->SetOriginMultiplicityHists(true);
-    TrackNegPionCuts->SetFillQALater(false); //Be careful about this flag! When the MinimalBooking is set
+    // TrackNegPionCuts->SetOriginMultiplicityHists(true);
+    TrackNegPionCuts->SetFillQALater(false); // Be careful about this flag! When the MinimalBooking is set
   }
 
-  if (suffix != "0") {
+  if (suffix != "0")
+  {
     TrackPosPionCuts->SetMinimalBooking(false);
     TrackNegPionCuts->SetMinimalBooking(false);
   }
-                                        
+
   AliFemtoDreamv0Cuts *TrackCutsRho = new AliFemtoDreamv0Cuts();
   TrackCutsRho->SetIsMonteCarlo(isMC);
   TrackCutsRho->SetAxisInvMassPlots(5000, 0, 5);
-  TrackCutsRho->SetCutInvMass(0.150); //Should be determined from fit to the rho peak
+  TrackCutsRho->SetCutInvMass(0.150); // Should be determined from fit to the rho peak
   AliFemtoDreamTrackCuts *dummyCutsPos = new AliFemtoDreamTrackCuts();
   dummyCutsPos->SetIsMonteCarlo(isMC);
   AliFemtoDreamTrackCuts *dummyCutsNeg = new AliFemtoDreamTrackCuts();
   dummyCutsNeg->SetIsMonteCarlo(isMC);
-  TrackCutsRho->SetPosDaugterTrackCuts(dummyCutsPos); //These are needed but will not be used
+  TrackCutsRho->SetPosDaugterTrackCuts(dummyCutsPos); // These are needed but will not be used
   TrackCutsRho->SetNegDaugterTrackCuts(dummyCutsNeg);
   TrackCutsRho->SetPDGCodePosDaug(211);
   TrackCutsRho->SetPDGCodeNegDaug(211);
   TrackCutsRho->SetPDGCodev0(113);
-  //Reject Kaons present in the sample:
-  if (rejectKaon)TrackCutsRho->SetKaonRejection(0.4,0.6); //inv mass down and up
+  TrackCutsRho->SetEtaRange(-0.8, 0.8); //For now we also cut on the reconstructed rho, as to not be "too" forward (these are anyway probably not usable for femto due to the large Deta with the protons)
+  // Reject Kaons present in the sample:
+  if (rejectKaon)
+  {
+    TrackCutsRho->SetKaonRejection(0.4, 0.6); // inv mass down and up
+  }
+  AliFemtoDreamTrackCuts *TrackCutsRhoMCTrue = new AliFemtoDreamTrackCuts();
+
+  // if (isMC) // run only if MC is on synchornise with the QA for the pairs etc
+  //{
+  //  AliFemtoDreamTrackCuts *TrackCutsRhoMCTrue = new AliFemtoDreamTrackCuts();
+  //  TrackCutsRhoMCTrue->SetIsMonteCarlo(false); // here we need to set false as in the task we want to treat these are real particles
+  // TrackCutsRhoMCTrue->SetPtRange(0.14, 5.);
+  // TrackCutsRhoMCTrue->SetEtaRange(-0.8, 0.8);
+  // TrackCutsRhoMCTrue->SetFillQALater(true);
+  //}
+
   // now we create the task
   AliAnalysisTaskFemtoDreamRho *task =
       new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doCleaning);
   // THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
   // kINT7 == Minimum bias
   // kHighMultV0 high multiplicity triggered by the V0 detector
-  if (CentEst == "kInt7") {
+  if (CentEst == "kInt7")
+  {
     task->SetTrigger(AliVEvent::kINT7);
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     std::cout << "Added kINT7 Trigger \n";
-  } else if (CentEst == "kHM") {
+  }
+  else if (CentEst == "kHM")
+  {
     task->SetTrigger(AliVEvent::kHighMultV0);
     task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
     std::cout << "Added kHighMultV0 Trigger \n";
-  } else {
+  }
+  else
+  {
     std::cout << "============================================================="
                  "========"
               << std::endl;
@@ -169,7 +216,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamRho(bool isMC = false,
                  "========"
               << std::endl;
   }
-  
+
   // Now we define stuff we want for our Particle collection
   // Thanks, CINT - will not compile due to an illegal constructor
   // std::vector<int> PDGParticles ={2212,2212,3122,3122,3312,3312};
@@ -181,7 +228,8 @@ AliAnalysisTaskSE* AddTaskFemtoDreamRho(bool isMC = false,
   PDGParticles.push_back(113);  // 2 //rho
   PDGParticles.push_back(2212); // 3 //proton+
   PDGParticles.push_back(2212); // 4 //proton-
-                                        
+  // PDGParticles.push_back(113);  // 5 //rhoMCTrue
+
   // We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
@@ -224,13 +272,13 @@ AliAnalysisTaskSE* AddTaskFemtoDreamRho(bool isMC = false,
   MultBins.push_back(96);
   MultBins.push_back(100);
 
-  //The next part is for the result histograms. The order of hist. is the following:
-  //                Particle1     Particle2
-  //Particle 1       Hist 1         Hist2
+  // The next part is for the result histograms. The order of hist. is the following:
+  //                 Particle1     Particle2
+  // Particle 1       Hist 1         Hist2
   //
-  //Particle 2                      Hist3
-  //The same way the values for binning, minimum and maximum k* range have to be set!
-  // Number of bins
+  // Particle 2                      Hist3
+  // The same way the values for binning, minimum and maximum k* range have to be set!
+  //  Number of bins
   std::vector<int> NBins;
   //  NBins.push_back(750);
 
@@ -245,86 +293,101 @@ AliAnalysisTaskSE* AddTaskFemtoDreamRho(bool isMC = false,
   std::vector<int> pairQA;
   //  pairQA.push_back(11);
 
-  for (int i = 0; i < ( 5*(5+1)/2 ); i++) {
+  for (int i = 0; i < (5 * (5 + 1) / 2); i++) // change from 5 to 6 is fIsMCTrue is set
+  {
     NBins.push_back(750);
     kMin.push_back(0.);
     kMax.push_back(3.);
     pairQA.push_back(0);
   }
-  
-  pairQA[0] = 11;   // pp
-  pairQA[1] = 11;   // pap
-  pairQA[2] = 11;   // prho
-  pairQA[3] = 11;   // apap
-  pairQA[4] = 11;   // apphi
-  pairQA[5] = 11;   // phiphi
-  pairQA[6] = 11;   // pp
-  pairQA[7] = 11;   // pap
-  pairQA[8] = 11;   // prho
-  pairQA[9] = 11;   // apap
-  pairQA[10] = 11;  // apphi
-  pairQA[11] = 11;  // phiphi
-  pairQA[12] = 11;  // pp
-  pairQA[13] = 11;  // pap
-  pairQA[14] = 11;  // prho
 
-  if (isMC) {
-    pairQA[0] = 0;  // pp
-    pairQA[1] = 0;  // pap
-    pairQA[2] = 0;  // prho
-    pairQA[3] = 0;  // apap
-    pairQA[4] = 0;  // apphi
-    pairQA[5] = 0;  // phiphi
-    pairQA[6] = 0;  // pp
-    pairQA[7] = 0;  // pap
-    pairQA[8] = 0;  // prho
-    pairQA[9] = 0;  // apap
-    pairQA[10] = 0; // apphi
-    pairQA[11] = 0; // phiphi
-    pairQA[12] = 0; // pp
-    pairQA[13] = 0; // pap
-    pairQA[14] = 0; // prho
+  pairQA[0] = 11;  // pp
+  pairQA[1] = 11;  // pap
+  pairQA[2] = 11;  // prho
+  pairQA[3] = 11;  // apap
+  pairQA[4] = 11;  // apphi
+  pairQA[5] = 11;  // phiphi
+  pairQA[6] = 11;  // pp
+  pairQA[7] = 11;  // pap
+  pairQA[8] = 11;  // prho
+  pairQA[9] = 11;  // apap
+  pairQA[10] = 11; // apphi
+  pairQA[11] = 11; // phiphi
+  pairQA[12] = 11; // pp
+  pairQA[13] = 11; // pap
+  pairQA[14] = 11; // prho
+
+  for (int i = 0; i < (5 * (5 + 1) / 2); i++) // change from 5 to 6 is fIsMCTrue is set
+  {
+    pairQA[i] = 11; // phiphi
   }
 
-  //pair rejection
+  if (isMC)
+  {
+    pairQA[0] = 11;  // pp
+    pairQA[1] = 11;  // pap
+    pairQA[2] = 11;  // prho
+    pairQA[3] = 11;  // apap
+    pairQA[4] = 11;  // apphi
+    pairQA[5] = 11;  // phiphi
+    pairQA[6] = 11;  // pp
+    pairQA[7] = 11;  // pap
+    pairQA[8] = 11;  // prho
+    pairQA[9] = 11;  // apap
+    pairQA[10] = 11; // apphi
+    pairQA[11] = 11; // phiphi
+    pairQA[12] = 11; // pp
+    pairQA[13] = 11; // pap
+    pairQA[14] = 11; // prho
+  }
+
+  // pair rejection
   std::vector<bool> closeRejection;
-  closeRejection.push_back(true);   // pi+ pi+
-  closeRejection.push_back(false);  // pi+ pi- 
-  closeRejection.push_back(true);   // pi- pi-
-  closeRejection.push_back(false);  // rho pi+
-  closeRejection.push_back(false);  // rho pi-
-  closeRejection.push_back(false);  // rho rho
-  closeRejection.push_back(true);   // p   pi+
-  closeRejection.push_back(false);  // p   pi-
-  closeRejection.push_back(false);  // p   rho
-  closeRejection.push_back(true);   // p   p
-  closeRejection.push_back(false);  // p-  pi+
-  closeRejection.push_back(true);   // p-  pi-
-  closeRejection.push_back(false);  // p-  rho
-  closeRejection.push_back(false);  // p-  p
-  closeRejection.push_back(true);   // p-  p-
-  
-  if (suffix == "99") {
-    //Deactivate the ClosePairRejection
-    fdPhidEta=0.;
-    closeRejection.clear();
-    closeRejection.push_back(false);  // pi+ pi+
-    closeRejection.push_back(false);  // pi+ pi- 
-    closeRejection.push_back(false);  // pi- pi-
-    closeRejection.push_back(false);  // rho pi+
-    closeRejection.push_back(false);  // rho pi-
-    closeRejection.push_back(false);  // rho rho
-    closeRejection.push_back(false);  // p   pi+
-    closeRejection.push_back(false);  // p   pi-
-    closeRejection.push_back(false);  // p   rho
-    closeRejection.push_back(false);  // p   p
-    closeRejection.push_back(false);  // p-  pi+
-    closeRejection.push_back(false);  // p-  pi-
-    closeRejection.push_back(false);  // p-  rho
-    closeRejection.push_back(false);  // p-  p
-    closeRejection.push_back(false);  // p-  p-
+  closeRejection.push_back(true);  // pi+ pi+
+  closeRejection.push_back(false); // pi+ pi-
+  closeRejection.push_back(true);  // pi- pi-
+  closeRejection.push_back(false); // rho pi+
+  closeRejection.push_back(false); // rho pi-
+  closeRejection.push_back(false); // rho rho
+  closeRejection.push_back(true);  // p   pi+
+  closeRejection.push_back(false); // p   pi-
+  closeRejection.push_back(false); // p   rho
+  closeRejection.push_back(true);  // p   p
+  closeRejection.push_back(false); // p-  pi+
+  closeRejection.push_back(true);  // p-  pi-
+  closeRejection.push_back(false); // p-  rho
+  closeRejection.push_back(false); // p-  p
+  closeRejection.push_back(true);  // p-  p-
+
+  for (int i = 0; i < (5 * (5 + 1) / 2); i++) // change from 5 to 6 is fIsMCTrue is set
+  {
+    if (i > 14)
+    {
+      closeRejection.push_back(true);
+    }
   }
 
+  if (suffix == "99")
+  {
+    // Deactivate the ClosePairRejection
+    fdPhidEta = 0.;
+    closeRejection.clear();
+    closeRejection.push_back(false); // pi+ pi+
+    closeRejection.push_back(false); // pi+ pi-
+    closeRejection.push_back(false); // pi- pi-
+    closeRejection.push_back(false); // rho pi+
+    closeRejection.push_back(false); // rho pi-
+    closeRejection.push_back(false); // rho rho
+    closeRejection.push_back(false); // p   pi+
+    closeRejection.push_back(false); // p   pi-
+    closeRejection.push_back(false); // p   rho
+    closeRejection.push_back(false); // p   p
+    closeRejection.push_back(false); // p-  pi+
+    closeRejection.push_back(false); // p-  pi-
+    closeRejection.push_back(false); // p-  rho
+    closeRejection.push_back(false); // p-  p
+    closeRejection.push_back(false); // p-  p-
+  }
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto");
   config->SetPtQA(true);
@@ -347,11 +410,14 @@ AliAnalysisTaskSE* AddTaskFemtoDreamRho(bool isMC = false,
   config->SetMinimalBookingME(false);
   config->SetdPhidEtaPlots(true);
   config->SetdPhidEtaPlotsSmallK(true);
-                                        
-  if (isMC) {
+
+  if (isMC)
+  {
     config->SetMomentumResolution(true);
     config->SetPhiEtaBinnign(true);
-  } else {
+  }
+  else
+  {
     std::cout << "You are trying to request the Momentum Resolution without MC "
                  "Info; fix it wont work! \n";
   }
@@ -361,12 +427,16 @@ AliAnalysisTaskSE* AddTaskFemtoDreamRho(bool isMC = false,
   task->SetProtonCuts(TrackPosProtonCuts);
   task->SetAntiProtonCuts(TrackNegProtonCuts);
   task->SetRhoCuts(TrackCutsRho);
+  // if (TrackCutsRhoMCTrue)
+  //{
+  //   task->SetRhoMCTrueCuts(TrackCutsRhoMCTrue);
+  //  }
   task->SetPosPionCuts(TrackPosPionCuts);
   task->SetNegPionCuts(TrackNegPionCuts);
   task->SetCollectionConfig(config);
   task->SetDoCleaning(doCleaning);
   task->SetIsMC(isMC);
-  
+
   mgr->AddTask(task);
 
   TString file = AliAnalysisManager::GetCommonFileName();
@@ -377,9 +447,12 @@ AliAnalysisTaskSE* AddTaskFemtoDreamRho(bool isMC = false,
 
   AliAnalysisDataContainer *coutputQA;
   TString addon = "";
-  if (CentEst == "kInt7") {
+  if (CentEst == "kInt7")
+  {
     addon += "MB";
-  } else if (CentEst == "kHM") {
+  }
+  else if (CentEst == "kHM")
+  {
     addon += "HM";
   }
   TString QAName = Form("%sResults%s", addon.Data(), suffix.Data());

@@ -20,8 +20,9 @@
 #include "AliFemtoDreamv0.h"
 #include "AliFemtoDreamv0Cuts.h"
 
-class AliAnalysisTaskFemtoDreamRho : public AliAnalysisTaskSE {
- public:
+class AliAnalysisTaskFemtoDreamRho : public AliAnalysisTaskSE
+{
+public:
   AliAnalysisTaskFemtoDreamRho();
   AliAnalysisTaskFemtoDreamRho(const char *name, bool isMC, bool doCleaning);
   virtual ~AliAnalysisTaskFemtoDreamRho();
@@ -29,51 +30,75 @@ class AliAnalysisTaskFemtoDreamRho : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *){};
   void SetEventCuts(AliFemtoDreamEventCuts *evtCuts) { fEventCuts = evtCuts; };
-  void SetPosPionCuts(AliFemtoDreamTrackCuts *trkCuts) {
+  void SetPosPionCuts(AliFemtoDreamTrackCuts *trkCuts)
+  {
     fPosPionCuts = trkCuts;
   }
-  void SetNegPionCuts(AliFemtoDreamTrackCuts *trkCuts) {
+  void SetNegPionCuts(AliFemtoDreamTrackCuts *trkCuts)
+  {
     fNegPionCuts = trkCuts;
   }
-  void SetProtonCuts(AliFemtoDreamTrackCuts *trkCuts) {
+  void SetProtonCuts(AliFemtoDreamTrackCuts *trkCuts)
+  {
     fPosProtonCuts = trkCuts;
   }
-  void SetAntiProtonCuts(AliFemtoDreamTrackCuts *trkCuts) {
+  void SetAntiProtonCuts(AliFemtoDreamTrackCuts *trkCuts)
+  {
     fNegProtonCuts = trkCuts;
   }
-  void SetRhoCuts(AliFemtoDreamv0Cuts *rhoCuts) { 
-    fRhoCuts = rhoCuts; 
+  void SetRhoCuts(AliFemtoDreamv0Cuts *rhoCuts)
+  {
+    fRhoCuts = rhoCuts;
   }
-  void SetCollectionConfig(AliFemtoDreamCollConfig *config) {
+  // void SetRhoMCTrueCuts(AliFemtoDreamTrackCuts *trkCuts)
+  // {
+  //  fRhoParticleMCTrueCuts = trkCuts;
+  // }
+  void SetCollectionConfig(AliFemtoDreamCollConfig *config)
+  {
     fConfig = config;
   }
-  void SetTrigger(UInt_t trigger) { fTrigger = trigger;};
-  void SetIsMC(bool isMC) { fIsMC = isMC;};
-  void SetDoCleaning(bool doCleaning) { fDoCleaning = doCleaning;};
- private:
+  void SetTrigger(UInt_t trigger) { fTrigger = trigger; };
+  void SetIsMC(bool isMC) { fIsMC = isMC; };
+  void SetDoCleaning(bool doCleaning) { fDoCleaning = doCleaning; };
+  std::map<TString, std::pair<TH1F *, TH2F *>> CreateResonanceHistograms(const std::vector<TString> &resonanceList);
+
+private:
   AliAnalysisTaskFemtoDreamRho(const AliAnalysisTaskFemtoDreamRho &);
   AliAnalysisTaskFemtoDreamRho &operator=(const AliAnalysisTaskFemtoDreamRho &);
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
-  bool fIsMC;                               //
-  TList *fOutput;                           //!
-  UInt_t fTrigger;                          //
-  bool fDoCleaning;                         //
-  AliFemtoDreamEvent *fEvent;               //!
-  AliFemtoDreamTrack *fTrack;               //!
-  AliFemtoDreamv0 *fRhoParticle;            //!
-  AliFemtoDreamEventCuts *fEventCuts;       //
-  AliFemtoDreamTrackCuts *fPosPionCuts;     //
-  AliFemtoDreamTrackCuts *fNegPionCuts;     //
-  AliFemtoDreamTrackCuts *fPosProtonCuts;   //
-  AliFemtoDreamTrackCuts *fNegProtonCuts;   //
-  AliFemtoDreamv0Cuts *fRhoCuts;            //
+  bool fIsMC;                             //
+  TList *fOutput;                         //!
+  UInt_t fTrigger;                        //
+  bool fDoCleaning;                       //
+  AliFemtoDreamEvent *fEvent;             //!
+  AliFemtoDreamTrack *fTrack;             //!
+  AliFemtoDreamv0 *fRhoParticle;          //!
+  AliFemtoDreamEventCuts *fEventCuts;     //
+  AliFemtoDreamTrackCuts *fPosPionCuts;   //
+  AliFemtoDreamTrackCuts *fNegPionCuts;   //
+  AliFemtoDreamTrackCuts *fPosProtonCuts; //
+  AliFemtoDreamTrackCuts *fNegProtonCuts; //
+  // AliFemtoDreamTrackCuts *fRhoParticleMCTrueCuts; //
 
-  AliFemtoDreamCollConfig *fConfig;         //
-  AliFemtoDreamPairCleaner *fPairCleaner;   //!
-  AliFemtoDreamPartCollection *fPartColl;   //!
-  AliAODTrack **fGTI;                       //!
-  int fTrackBufferSize;                     //
+  AliFemtoDreamv0Cuts *fRhoCuts; //
+
+  AliFemtoDreamCollConfig *fConfig;       //
+  AliFemtoDreamPairCleaner *fPairCleaner; //!
+  AliFemtoDreamPartCollection *fPartColl; //!
+  AliAODTrack **fGTI;                     //!
+  int fTrackBufferSize;                   //
+
+  TH1F *fFlagHistogram;        //! The histogram to track the flags
+  TH1F *ptHist_RhoMCTrue;      //!
+  TH1F *fpTerrorHistogram;     //!
+  TH2F *fpTCorrerrorHistogram; //!
+
+  TH1F *fHistogramPDG; //!
+
+  std::map<TString, std::pair<TH1F *, TH2F *>> fResonanceHistograms; //! Map to hold histograms for each resonance
+
   ClassDef(AliAnalysisTaskFemtoDreamRho, 1)
 };
 
