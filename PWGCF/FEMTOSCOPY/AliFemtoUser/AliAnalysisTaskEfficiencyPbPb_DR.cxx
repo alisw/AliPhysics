@@ -1355,7 +1355,7 @@ void AliAnalysisTaskEfficiencyPbPb_DR::UserExec(Option_t *)
   }
 
   
-      for (Int_t ipart = 0; ipart < arrayMC->GetEntries(); ipart++) {
+      for (Int_t ipart = 0; ipart < arrayMC->GetEntriesFast(); ipart++) {
     AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(ipart);
 
     if (!MCtrk) continue;
