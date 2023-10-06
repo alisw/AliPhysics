@@ -78,6 +78,7 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         void                    SetPtLimits(Double_t ptmin, Double_t ptmax) { fLpTCut = ptmin; fUpTCut=ptmax; }
         void                    SetV0PtLimits(Double_t v0ptmin, Double_t v0ptmax) { fLpTv0Cut = v0ptmin; fUpTv0Cut=v0ptmax; }
         void                    SetEtaLimit(Double_t etalimit) { fEtaCut = etalimit; }
+        void                    Setv0EtaLimit(Double_t v0etalimit) { fEtav0Cut = v0etalimit; }
         void                    SetPIDCombined(Bool_t pidflag) {fPidpTDependentMethod = pidflag; }
         void                    SetPileUp(Bool_t pileupflag) {fRejectEventPileUp = pileupflag; }
         void                    SetRemoveResonance(Bool_t removePhiflag) {fRemoveResonance = removePhiflag; }
