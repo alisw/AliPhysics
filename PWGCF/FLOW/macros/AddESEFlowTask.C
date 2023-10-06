@@ -84,6 +84,9 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     const Int_t nCentBins = 10;
     Double_t CentEdges[nCentBins+1] = {0, 5., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
     task->SetCentBin(nCentBins,CentEdges);
+    const Int_t nCentPtBins = 10;
+    Double_t CentPtEdges[nCentPtBins+1] = {0, 5., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
+    task->SetCentBinForPt(nCentPtBins,CentPtEdges);
     task->SetReadMC(kFALSE); //activate MC analysis
     task->SetAbsEta(0.8);
     task->SetRejectAddPileUp(kFALSE); //for the old pile-up, can be activated as a systematic check

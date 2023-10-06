@@ -76,6 +76,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetSampling(Bool_t sample, Int_t iNum) { fSampling = sample; fNumSamples = iNum; }
 
         void                    SetCentBin(Int_t nbins, Double_t *bins) { fCentAxis->Set(nbins,bins); }
+        void                    SetCentBinForPt(Int_t nbins, Double_t *bins) { fCentPtAxis->Set(nbins,bins); }
         void                    SetPtBins(Int_t nbins, Double_t *bins) { fPtAxis->Set(nbins, bins); }
 
         void                    SetEventShapeBins(Int_t nbins, Double_t *bins) { ESEPercAxis->Set(nbins, bins); }
@@ -97,7 +98,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetUseEfficiency( Bool_t actEff) { fUseEfficiency = actEff;}
         void                    SetMagneticField(Bool_t actField, Int_t magField){ fMagFieldSys = actField; fMagField = magField; }
         void                    SetPTAnalysis(Bool_t activatePT){ fActivatePT = activatePT; }
-        void                    SetTPCPileupWithITSTPCnCluCorrCutLevel(Int_t cutlevel) { TPCPileupWithITSTPCnCluCorrCutLevel = cutlevel; }
+        void                    SetTPCPileupWithITSTPCnCluCorrCutLevel(Bool_t fActivate, Int_t cutlevel) { fActivateTPCPileupWithITSTPCnCluCorr = fActivate; TPCPileupWithITSTPCnCluCorrCutLevel = cutlevel; }
+        void                    SetMaxPtCorrelation(Int_t MaxCorrOrder) { MaxPtCorrelation = MaxCorrOrder; }
 
     private:
         Bool_t                  fFlowRunByRunWeights;
@@ -238,36 +240,40 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TProfile*               fProfNPar; //!
         TH2F*                   fhV0Multiplicity;    //!
         TH2F*                   fhV0CorrMult;       //!
+        TH2F*                   fhV0CorrCent;       //!
         TH2F*                   fhqnTPCvqnV0C[2];  //!
         TH2F*                   fhqnV0CvqnV0A[2];  //!
         TH2F*                   fhqnTPCvqnV0A[2];  //!
 
         //
         TH1D*                   fhEventCounter; //!
-        TH2D*                   fhTPCMultiplicity; //!
+        TH2F*                   fhTPCMultiplicity; //!
+        TH2F*                   fhV0AMult;     //!
+        TH2F*                   fhV0CMult;     //!
 
-        void CorrelationTask(const Float_t centrality, Int_t fSpCent);
-        void SPVienna(const Float_t centrality, Int_t q2ESECodeV0C);
-        void BayesianUnfolding(Float_t centrality, Int_t q2ESECodeV0C);
+        void CorrelationTask(const Float_t &centrality,const Int_t &fSpCent);
+        void SPVienna(const Float_t &centrality, Int_t q2ESECodeV0C);
+        void BayesianUnfolding(const Float_t &centrality, Int_t q2ESECodeV0C);
 
-        void FillCorrelation(Float_t centrality, Double_t dPt, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C, Int_t q2ESECodeV0A, Int_t q3ESECodeV0A, Bool_t doRef, Bool_t doDiff);
-        void FillObsDistributions(const Float_t centrality);
+        void FillCorrelation(const Float_t &centrality, Double_t dPt, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C, Int_t q2ESECodeV0A, Int_t q3ESECodeV0A, Bool_t doRef, Bool_t doDiff);
+        void FillObsDistributions(const Float_t &centrality);
         // Calculate flow vectors for reference and POIs
-        void RFPVectors(const Float_t centrality);
-        void POIVectors(const Float_t centrality, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C,Int_t q2ESECodeV0A, Int_t q3ESECodeV0A);
-        void ReducedqVectorsTPC(const Float_t centrality, const Int_t SPCode);
-        void ReducedqVectorsV0(const Float_t centrality, const Int_t SPCode);
+        void RFPVectors(const Float_t &centrality);
+        void POIVectors(const Float_t &centrality, Int_t q2ESECodeTPC, Int_t q3ESECodeTPC, Int_t q2ESECodeV0C, Int_t q3ESECodeV0C,Int_t q2ESECodeV0A, Int_t q3ESECodeV0A);
+        void ReducedqVectorsTPC(const Float_t &centrality, const Int_t &SPCode);
+        void ReducedqVectorsV0(const Float_t &centrality, const Int_t &SPCode);
 
-        void FillqnRedTPC(const Float_t centrality);
-        void FillqnRedV0(const Float_t centrality, TString V0type);
+        void FillqnRedTPC(const Float_t &centrality);
+        void FillqnRedV0(const Float_t &centrality, const TString &V0type);
         void FillPOI(const Double_t dPtLow, const Double_t dPtHigh);
 
         void QAMultFiller(const Float_t &v0Centr);
 
         Int_t GetSamplingIndex() const;
 
-        Int_t GetCentralityCode(const Float_t centrality);
-        Int_t GetEsePercentileCode(Double_t qPerc) const;
+        Int_t GetCentralityCode(const Float_t &centrality) const;
+        Int_t GetPtCentralityCode(const Float_t &centrality) const;
+        Int_t GetEsePercentileCode(const Double_t &qPerc) const;
         Bool_t WithinRFP(const AliVParticle* track) const;
         Bool_t WithinPOI(const AliVParticle* track) const;
         Bool_t WithinRedRP(const AliVParticle* track) const;
@@ -434,10 +440,13 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         TAxis*                  fPtAxis;
         TAxis*                  fCentAxis;
+        TAxis*                  fCentPtAxis;
         TAxis*                  ESEPercAxis;
         Int_t                   nCentBin;
+        Int_t                   nCentPtBin;
         Int_t                   nPtBin;
         Double_t                CentEdges[nCentBinMax+1];
+        Double_t                CentPtEdges[nCentBinMax+1];
         Double_t                PtEdges[nPtBinMax+1];
         Double_t                EventShapeEdges[nESEMaxPercs+1];
 
@@ -462,6 +471,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
 
         Int_t                   fPileupCut;
         Int_t                   TPCPileupWithITSTPCnCluCorrCutLevel;
+        Bool_t                  fActivateTPCPileupWithITSTPCnCluCorr;
         Bool_t                  fCheckChi2TPC;
         Bool_t                  fCheckChi2ITS;
         Float_t                 vTPCChi2Bound;
@@ -477,6 +487,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Bool_t                  fIs2018Data;
         Bool_t                  fBayesUnfolding;
         Bool_t                  fActq2Projections;
+        Int_t                   MaxPtCorrelation;
 
         AliGFWCuts*             fGFWSelection;
 
