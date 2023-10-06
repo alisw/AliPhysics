@@ -32,7 +32,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(TString year = "2015"
   TArrayI Nbins(40, Nbinsarr);
 
   // Initialize variables
-  bool fPileup = kFALSE;
+  Bool_t fPileup = kFALSE;
   double fEtaMin = -0.8;
   double fEtaMax = 0.8;
   int fCentMin = 0;
@@ -40,13 +40,13 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(TString year = "2015"
   int fBit = 768;
   double fDeta = 0.02;
   double fDphi = 0.02;
-  bool fTwoTrack = kFALSE;
+  Bool_t fTwoTrack = kFALSE;
   double fSharedFraction = 0.05;
-  bool fSharity = kFALSE;
+  Bool_t fSharity = kFALSE;
   double fVxMax = 0.3;
   double fVyMax = 0.4;
   double fVzMax = 10.0;
-  bool fRejectElectrons = kFALSE;
+  Bool_t fRejectElectrons = kFALSE;
   double fDCAXYRangeMax = 0.0;
   double fDCAZRangeMax = 0.0;
   double fITSClusterCut = 0.0;
@@ -55,10 +55,11 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(TString year = "2015"
   double fSharedCls = 0.0;
   double fSharedRows = 0.0;
   double fFindableCls = 0.0;
-  bool defSharedFrac = kTRUE;
+  Bool_t defSharedFrac = kTRUE;
   int bField = 0;
-  bool fPrAnalysis = kFALSE;
+  Bool_t fPrAnalysis = kFALSE;
   double nSigmaCutPr = 3.0;
+  Bool_t fEff = kTRUE;
 
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -92,6 +93,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(TString year = "2015"
   tasknfms->SetSelfAffine(fSelfAffAnalysis);
   tasknfms->SetSharedCls(fSharedCls, fSharedRows, fFindableCls, defSharedFrac);
   tasknfms->SetPIDAnalysis(fPrAnalysis, nSigmaCutPr);
+  tasknfms->SetEfficiency(fEff);
 
   // add your tasknfms to the manager
   mgr->AddTask(tasknfms);

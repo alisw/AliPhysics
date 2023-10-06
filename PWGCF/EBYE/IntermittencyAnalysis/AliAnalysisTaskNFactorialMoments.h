@@ -15,6 +15,7 @@ class TH1F;
 class TH1D;
 class TH2D;
 class TH2F;
+class TH3F;
 class TList;
 class TNtuple;
 class TString;
@@ -100,6 +101,7 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
     this->fFindableClsMin = fFindable;
     this->fSharedFrMean = fSharedMean;
   }
+  void SetEfficiency(bool eff) { this->useEff = eff; }
 
  protected:
   AliEventCuts fEventCuts;
@@ -118,6 +120,7 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   bool ConfigureTrack();
   void DataPosting();
   void ResetHistograms();
+  void ReadEfficiency(TFile* fEfficiency);
 
  private:
   // Event related (Data and MC)
@@ -133,6 +136,7 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   bool fsharity;
   bool fRejectEls;
   bool fSelfAffine;
+  bool useEff;
   double fITSCls, fTPCCls, fTPCRows;
   bool fSharedFrMean;
   int fBfield;
@@ -166,6 +170,10 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   TNtuple* fntpMBin2Gen[M];  //!
   TNtuple* fntpMBin3Gen[M];  //!
   TNtuple* fntpMBin4Gen[M];  //!
+  TNtuple* fntpMBin1Corr[M];
+  TNtuple* fntpMBin2Corr[M];
+  TNtuple* fntpMBin3Corr[M];
+  TNtuple* fntpMBin4Corr[M];
 
   // Filter Bit
   int filterBit;
@@ -228,6 +236,8 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   TH2D* fHEtaPhiBin2Gen[M]; //! Eta-Phi for 10 different bins  distribution
   TH2D* fHEtaPhiBin3Gen[M]; //! Eta-Phi for 10 different bins  distribution
   TH2D* fHEtaPhiBin4Gen[M]; //! Eta-Phi for 10 different bins  distribution
+  // Histogram for efficiency
+  TH3F* fMapEff[fPt][M];
 
   // QA hists
   TH1F* fHistQAVx;      //!
