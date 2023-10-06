@@ -5,6 +5,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
                                         float fSpherDown = 0.7,
                                         bool doCleaning = false,
                                         bool rejectKaon = false,
+                                        bool doNoSpherSelect = false,
                                         const char *cutVariation = "0")
 {
 
@@ -32,7 +33,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
 
   evtCuts->SetSphericityCuts(0.0, 1);
 
-  if (suffix == "1")
+  if (doNoSpherSelect)
   {
     evtCuts->SetSphericityCuts(fSpherDown, 1.0, 0.5);
   }
@@ -153,7 +154,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   AliFemtoDreamv0Cuts *TrackCutsRho = new AliFemtoDreamv0Cuts();
   TrackCutsRho->SetIsMonteCarlo(isMC);
   TrackCutsRho->SetAxisInvMassPlots(5000, 0, 5);
-  TrackCutsRho->SetCutInvMass(0.150); // Should be determined from fit to the rho peak
+  TrackCutsRho->SetCutInvMass(0.150 / 2); // Should be determined from fit to the rho peak
   AliFemtoDreamTrackCuts *dummyCutsPos = new AliFemtoDreamTrackCuts();
   dummyCutsPos->SetIsMonteCarlo(isMC);
   AliFemtoDreamTrackCuts *dummyCutsNeg = new AliFemtoDreamTrackCuts();
@@ -163,8 +164,27 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   TrackCutsRho->SetPDGCodePosDaug(211);
   TrackCutsRho->SetPDGCodeNegDaug(211);
   TrackCutsRho->SetPDGCodev0(113);
-  TrackCutsRho->SetEtaRange(-0.8, 0.8); //For now we also cut on the reconstructed rho, as to not be "too" forward (these are anyway probably not usable for femto due to the large Deta with the protons)
-  // Reject Kaons present in the sample:
+
+  if (suffix == "1")
+  {
+    TrackCutsRho->SetCutWindow(0.850, 0.900);
+  }
+  if (suffix == "2")
+  {
+    TrackCutsRho->SetCutWindow(0.820, 0.900);
+  }
+  if (suffix == "3")
+  {
+    TrackCutsRho->SetCutWindow(0.650, 0.730);
+  }
+  if (suffix == "4")
+  {
+    TrackCutsRho->SetCutWindow(0.650, 0.700);
+  }
+
+  // This needs further implementation
+  // TrackCutsRho->SetEtaRange(-0.8, 0.8); //For now we also cut on the reconstructed rho, as to not be "too" forward (these are anyway probably not usable for femto due to the large Deta with the protons)
+  //  Reject Kaons present in the sample:
   if (rejectKaon)
   {
     TrackCutsRho->SetKaonRejection(0.4, 0.6); // inv mass down and up
