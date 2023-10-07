@@ -240,7 +240,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	   //dtc1etaphitpc[aniter]->SetPIDMethod(AliFemtoESDTrackCut::kContour);
 //------------------- November 2013 -----------------------------------< 
 	  // new cuts to remove electron (do not take into analysis if 400<p<500) 
-	   dtc1etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
+	   /*dtc1etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
 	   dtc1etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
 	   dtc1etaphitpc[aniter]->SetNsigmaTPC400_450(2.0);
 	   dtc1etaphitpc[aniter]->SetNsigmaTPC450_500(2.0);
@@ -249,7 +249,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	   // when momentum is greater then 800 MeV/c
 	   dtc1etaphitpc[aniter]->SetNsigmaTOF500_800(2.0);
 	   dtc1etaphitpc[aniter]->SetNsigmaTOF800_1000(1.5);
-	   dtc1etaphitpc[aniter]->SetNsigmaTOFge1000(1.0);
+	   dtc1etaphitpc[aniter]->SetNsigmaTOFge1000(1.0);*/
 	  //------------------- November 2013 ----------------------------------->
 	  //Track quality cuts
 	 //dtc1etaphitpc[aniter]->SetStatus(AliESDtrack::kTPCrefit|AliESDtrack::kITSrefit);
@@ -266,8 +266,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  //				 AliESDtrackCuts::kAny);
 	  //dtc1etaphitpc[aniter]->SetMaxImpactZ(3.0);
 	  //dtc1etaphitpc[aniter]->SetMaxImpactXY(2.4);
-	  dtc1etaphitpc[aniter]->SetMaxImpactZ(0.13);//main
-	  dtc1etaphitpc[aniter]->SetMaxImpactXY(0.135);//main
+	  dtc1etaphitpc[aniter]->SetMaxImpactZ(0.3);//0.13 - kaons
+	  dtc1etaphitpc[aniter]->SetMaxImpactXY(0.3);//0.135 - kaons
 	  //dtc1etaphitpc[aniter]->SetMaxImpactZ(0.14);
 	  //dtc1etaphitpc[aniter]->SetMaxImpactXY(0.145);
 	  //dtc1etaphitpc[aniter]->SetMaxImpactXYPtDep(0.0105, 0.0350, -1.1);
