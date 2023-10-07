@@ -1530,13 +1530,13 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[M], TH2D* h2[M],
           Reading Efficiency from the Efficiency File
 ________________________________________________________________________*/
 
-void ReadEfficiency(TFile* file)
+void AliAnalysisTaskNFactorialMoments::ReadEfficiency(TFile* file)
 {
   for (int iPt = 0; iPt < 4; iPt++) {
     for (int i = 0; i < M; i++) {
-      fMapEff[iPt][i] = (TH3D*)file->Get(Form("f2DimRecBin%iM%i_proj_1_2_0", iPt + 1, i + 1));
+      fMapEff[iPt][i] = (TH3F*)file->Get(Form("f2DimRecBin%iM%i_proj_1_2_0", iPt + 1, i + 1));
       if (!fMapEff[iPt][i])
-        ::Error(Form("Could not read efficiency for bin %i", i));
+        ::Error("AliAnalysisTaskNFactorialMoments", Form("Could not read efficiency for bin %i", i));
     }
   }
 }

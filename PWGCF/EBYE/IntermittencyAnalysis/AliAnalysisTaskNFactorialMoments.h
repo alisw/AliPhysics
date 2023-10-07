@@ -8,6 +8,7 @@
 #include "AliPID.h"
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
+#include "TH3F.h"
 
 const int M = 40, Q = 6, fPt = 4, D = 2;
 
