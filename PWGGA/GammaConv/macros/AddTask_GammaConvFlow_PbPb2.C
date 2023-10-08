@@ -37,6 +37,8 @@ class CutHandlerConvFlow{
     TString* photonCutArray;
 };
 
+void AddSPmethod(const char *name, const char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, bool debug, TString uniqueID,  AliFlowTrackSimpleCuts* POIfilter,Int_t trainConfig, bool BasicHistoSP = kTRUE, TString CutNumberString = "");
+
 void AddTask_GammaConvFlow_PbPb2(
                                   TString uniqueID              = "",
                                   Int_t harmonic                = 2,
@@ -58,8 +60,8 @@ void AddTask_GammaConvFlow_PbPb2(
                                   const Int_t NFilterBins       = 1,
                                   Double_t MinFilter            = 0.0,
                                   Double_t MaxFilter            = 0.2,
-                                  Bool_t isMC                   = kFALSE,
-                                  Int_t ApplydPhidRCut         = 0,
+                                  Int_t isMC                    = 0,
+                                  Int_t ApplydPhidRCut          = 0,
                                   Bool_t PerformExtraStudies    = kFALSE,                         // with kTRUE it performs the LTM study and dRdPhi study
                                   TString additionalTrainConfig = "0"                             // additional counter for trainconfig, always has to be last parameter
                                ) {
@@ -392,8 +394,24 @@ void AddTask_GammaConvFlow_PbPb2(
     cuts.AddCut("52400013", "00200009467000008250400000"); // TPCpi 2, 0,5, TPCe -6,7
     cuts.AddCut("50200013", "00200009487000008250400000"); // TPCpi 2,1, TPCe -6,7
     cuts.AddCut("52400013", "00200009487000008250400000"); // TPCpi 2,1, TPCe -6,7
+  // PbPb 2018 @ 5.02 TeV
+  } else if (trainConfig == 100) {
+    cuts.AddCut("10130e03", "0dm00009f9730000dge0404000"); // 0-10%
+    cuts.AddCut("11310e03", "0dm00009f9730000dge0404000"); // 10-30%
+    cuts.AddCut("13530e03", "0dm00009f9730000dge0404000"); // 30-50%
+    cuts.AddCut("15910e03", "0dm00009f9730000dge0404000"); // 50-90%
+ } else if (trainConfig == 101){ // copy of PCM train config 992
+    cuts.AddCut("10130e03", "0d200009ab770c00amd0400000"); // 0-10%
+    cuts.AddCut("11310e03", "0d200009ab770c00amd0400000"); // 10-30%
+    cuts.AddCut("13530e03", "0d200009ab770c00amd0400000"); // 30-50%
+    cuts.AddCut("15910e03", "0d200009ab770c00amd0400000"); // 50-90%
+  } else if (trainConfig == 102){ // copy of PCM train config 993
+    cuts.AddCut("10130e03", "0d200009ab770c00amd0404000"); // 0-10%
+    cuts.AddCut("11310e03", "0d200009ab770c00amd0404000"); // 10-30%
+    cuts.AddCut("13530e03", "0d200009ab770c00amd0404000"); // 30-50%
+    cuts.AddCut("15910e03", "0d200009ab770c00amd0404000"); // 50-90%
   } else {
-      Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
+      Error(Form("GammaConvFlow_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
   }
 
@@ -410,15 +428,15 @@ void AddTask_GammaConvFlow_PbPb2(
   //========= Add task to the ANALYSIS manager =====
   //================================================
   AliAnalysisTaskGammaConvFlow *task=NULL;
-  task= new AliAnalysisTaskGammaConvFlow(Form("GammaConvV1_%i_v%d",trainConfig,harmonic),numberOfCuts);
+  task= new AliAnalysisTaskGammaConvFlow(Form("GammaConvFlow_%i_v%d",trainConfig,harmonic),numberOfCuts);
   task->SetIsHeavyIon(isHeavyIon);
   task->AliAnalysisTaskGammaConvFlow::SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
 
-  cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID));
+  AliFlowTrackCuts *cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID.Data()));
   if(!cutsRP) {
       if(debug) cout << " Fatal error: no RP cuts found, could be a library problem! " << endl;
-      return 0x0;
+      return;
   }
   cutsRP = cutsRP->GetStandardVZEROOnlyTrackCuts(); // select vzero tracks
   cutsRP->SetVZEROgainEqualizationPerRing(kFALSE);
@@ -530,7 +548,7 @@ void AddTask_GammaConvFlow_PbPb2(
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-  mgr->CreateContainer(Form("GammaConvV1_%i_v%d",trainConfig,harmonic), TList::Class(),
+  mgr->CreateContainer(Form("GammaConvFlow_%i_v%d",trainConfig,harmonic), TList::Class(),
                       AliAnalysisManager::kOutputContainer,Form("GammaConvFlow_%i.root",trainConfig));
 
   mgr->AddTask(task);
@@ -542,7 +560,7 @@ void AddTask_GammaConvFlow_PbPb2(
 }
 
 //_____________________________________________________________________________
-void AddSPmethod(char *name, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, bool debug, TString uniqueID,  AliFlowTrackSimpleCuts* POIfilter,Int_t trainConfig, bool BasicHistoSP = kTRUE, TString CutNumberString)
+void AddSPmethod(const char *name, const char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, bool debug, TString uniqueID,  AliFlowTrackSimpleCuts* POIfilter,Int_t trainConfig, bool BasicHistoSP = kTRUE, TString CutNumberString = "")
 {
   // add sp task and invm filter tasks
   if(debug)  cout << " ******* Switching to SP task ******* " << endl;
