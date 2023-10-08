@@ -66,7 +66,10 @@ class AliAnalysisTaskDeutFlucpp : public AliAnalysisTaskSE {
   UInt_t fTriggerMask;
   Float_t fTreeTrackVariableCentrality;
   Float_t fTreeTrackVariableVtxz;
+  Float_t fTreeTrackVariableVtxz_Gen;
   Int_t fTreeTrackVariableNTrack;//!
+  Int_t fTreeTrackVariableNTrack_d_Gen;//!
+  Int_t fTreeTrackVariableNTrack_p_Gen;//!
   AliStack *fMCstack; //! MC stack
   AliMCEvent *fMCevent;    //! MC Event
   //AliMCEventHandler *fMCHandler;
@@ -83,6 +86,12 @@ class AliAnalysisTaskDeutFlucpp : public AliAnalysisTaskSE {
   Float_t fTreeTrackVariableMomentumPx[kMaxTrack];//!
   Float_t fTreeTrackVariableMomentumPy[kMaxTrack];//!
   Float_t fTreeTrackVariableMomentumPz[kMaxTrack];//!
+  Float_t fTreeTrackVariableMomentumPx_p_Gen[kMaxTrack];//!
+  Float_t fTreeTrackVariableMomentumPy_p_Gen[kMaxTrack];//!
+  Float_t fTreeTrackVariableMomentumPz_p_Gen[kMaxTrack];//!
+  Float_t fTreeTrackVariableMomentumPx_d_Gen[kMaxTrack];//!
+  Float_t fTreeTrackVariableMomentumPy_d_Gen[kMaxTrack];//!
+  Float_t fTreeTrackVariableMomentumPz_d_Gen[kMaxTrack];//!
   AliAnalysisTaskDeutFlucpp(const AliAnalysisTaskDeutFlucpp&);
   AliAnalysisTaskDeutFlucpp& operator=(const AliAnalysisTaskDeutFlucpp&);  
   ClassDef(AliAnalysisTaskDeutFlucpp, 1);
