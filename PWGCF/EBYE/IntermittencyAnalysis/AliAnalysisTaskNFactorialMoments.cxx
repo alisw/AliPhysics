@@ -137,6 +137,14 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
     fEventCuts.AddQAplotsToList(fQAList, kTRUE);
   }
 
+  if (useEff) {
+    TFile* f = new TFile("alien:///alice/cern.ch/user/f/fhaider/efficiency.root", "READ");
+    if (!f)
+      ::Fatal("AliAnalysisTaskNFactorialMoments::UserExec",
+              "No Efficiency file found!");
+    ReadEfficiency(f);
+  }
+
   // QA Histograms for deta-dphi and PID
   fHistdEta = new TH1D("deta", "deta", 400, -0.2, 0.2);
   fQAList2->Add(fHistdEta);
@@ -583,14 +591,6 @@ void AliAnalysisTaskNFactorialMoments::UserExec(Option_t*)
     if (!fPIDResponse)
       ::Fatal("AliAnalysisTaskNFactorialMoments::UserExec",
               "No PIDResponse found!");
-  }
-
-  if (useEff) {
-    TFile* f = new TFile("alien:///alice/cern.ch/user/f/fhaider/efficiency.root", "READ");
-    if (!f)
-      ::Fatal("AliAnalysisTaskNFactorialMoments::UserExec",
-              "No Efficiency file found!");
-    ReadEfficiency(f);
   }
 
   // fEventCuts.SetupLHC15o();
@@ -1535,8 +1535,6 @@ void AliAnalysisTaskNFactorialMoments::ReadEfficiency(TFile* file)
   for (int iPt = 0; iPt < 4; iPt++) {
     for (int i = 0; i < M; i++) {
       fMapEff[iPt][i] = (TH3F*)file->Get(Form("f2DimRecBin%iM%i_proj_1_2_0", iPt + 1, i + 1));
-      if (!fMapEff[iPt][i])
-        ::Error("AliAnalysisTaskNFactorialMoments", Form("Could not read efficiency for bin %i", i));
     }
   }
 }
