@@ -299,6 +299,9 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
     fHistFMDeta = new TH2D("fHistFMDeta", "FMD eta vs. PVz; eta; PVz [cm]", 90, -4, 5, 20, -10, 10);
     fOutputListCharged->Add(fHistFMDeta);
 
+    fHistFMDeta_phi = new TH2D("fHistFMDeta_phi", "FMD eta vs. phi; eta; phi", 90, -4, 5, 60, 0, 2*TMath::Pi());
+    fOutputListCharged->Add(fHistFMDeta_phi);
+
     TString fmdv0corrNames[4] = {"A_Before","C_Before", "A_After", "C_After"};
     for(Int_t i(0); i < 4; i++){
       fh2FMDvsV0[i] = new TH2D(Form("fh2FMDvsV0%s",fmdv0corrNames[i].Data()), "FMD vs. V0; FMD; V0", 250, 0, 1000, 250, 0, 1000);
@@ -1816,11 +1819,13 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
              if(fAnalType == eTPCFMDA) {
                fTracksAss->Add(new AliPartSimpleForCorr(eta,phi,mostProbableN));
                fHistFMDeta->Fill(eta,fPVz,mostProbableN);
+	       fHistFMDeta_phi->Fill(eta,phi,mostProbableN);
              }
              if(fAnalType == eFMDAFMDC) {
                fTracksTrig[0]->Add(new AliPartSimpleForCorr(eta,phi,mostProbableN));
                fhTrigTracks[0]->Fill(binscontFMD,0,mostProbableN);
                fHistFMDeta->Fill(eta,fPVz,mostProbableN);
+               fHistFMDeta_phi->Fill(eta,phi,mostProbableN);
              }
            }
     	   } // eta positive
@@ -1832,6 +1837,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
              if(fAnalType == eTPCFMDC || fAnalType == eFMDAFMDC) {
                fTracksAss->Add(new AliPartSimpleForCorr(eta,phi,mostProbableN));
                fHistFMDeta->Fill(eta,fPVz,mostProbableN);
+	       fHistFMDeta_phi->Fill(eta,phi,mostProbableN);
              }
            }
     	   } // eta negative
@@ -1939,11 +1945,13 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
       if(fAnalType == eTPCFMDA) {
         fTracksAss->Add(new AliPartSimpleForCorr(partEta,partPhi,1.));
         fHistFMDeta->Fill(partEta,fPVz,1.);
+	fHistFMDeta_phi->Fill(partEta,partPhi,1.);		
       }
       if(fAnalType == eFMDAFMDC) {
         fTracksTrig[0]->Add(new AliPartSimpleForCorr(partEta,partPhi,1.));
         fhTrigTracks[0]->Fill(binscontFMD,0,1.);
         fHistFMDeta->Fill(partEta,fPVz,1.);
+        fHistFMDeta_phi->Fill(partEta,partPhi,1.);		
       }
     } // end eta within FMDA range
     else if(partEta < -fFMDCacceptanceCutLower && partEta > -fFMDCacceptanceCutUpper){
@@ -1951,6 +1959,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
       if(fAnalType == eTPCFMDC || fAnalType == eFMDAFMDC) {
         fTracksAss->Add(new AliPartSimpleForCorr(partEta,partPhi,1.));
         fHistFMDeta->Fill(partEta,fPVz,1.);
+	fHistFMDeta_phi->Fill(partEta,partPhi,1.);		
       }
     } // end eta within FMDC range
 
