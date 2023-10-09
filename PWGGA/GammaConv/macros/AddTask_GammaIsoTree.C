@@ -77,7 +77,7 @@ void AddTask_GammaIsoTree(
   Double_t                    fChi2PerClsTPC = 5;   
   Int_t                       fMinClsITS = 0;  
   Double_t                    fEtaCut = 0.9;  
-  Double_t                    fPtCut= 0.1;  
+  Double_t                    fPtCut= 0.15;  
   Double_t                    fYMCCut = 9999;  
 
   Double_t                    fAntiIsolation[2] = {5.,10};
