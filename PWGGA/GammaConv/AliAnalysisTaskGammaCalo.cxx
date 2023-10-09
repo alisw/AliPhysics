@@ -5003,28 +5003,35 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
                 }
               }
               fHistoGoodMesonClusters[fiCut]->Fill(2); //"Triggered Meson Candidates"
-              Int_t ClusterIDIsInBadDDL;
-              Bool_t FlagMaybeBadDDLs=((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetReduceTriggeredPhiDueBadDDLs();
-              Int_t DDLIsBadIndex;
-              if (FlagMaybeBadDDLs==kFALSE){ //only flag bad DDLs -> ClusterIDIsInBadDDL>=2
-                DDLIsBadIndex=2;
-              } else { //also flag maybe bad DDLs  -> ClusterIDIsInBadDDL>=1
-                DDLIsBadIndex=1;
-              }
-              if (fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma0->GetCaloClusterRef())){ //gamma 0 is triggered
-                ClusterIDIsInBadDDL=fCaloTriggerMimicHelper[fiCut]->IsTriggeredClusterIDInBadDDL(gamma0->GetCaloClusterRef());
-                if (ClusterIDIsInBadDDL>=DDLIsBadIndex){ //DDL is bad
-                    fHistoGoodMesonClusters[fiCut]->Fill(7); //"DDL not passed"
-                    continue;
-                }
-              }
-              if (fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef())) { //gamma 1 is triggered
-                ClusterIDIsInBadDDL=fCaloTriggerMimicHelper[fiCut]->IsTriggeredClusterIDInBadDDL(gamma1->GetCaloClusterRef());
-                if (ClusterIDIsInBadDDL>=DDLIsBadIndex){ //DDL is bad
-                    fHistoGoodMesonClusters[fiCut]->Fill(7); //"DDL not passed"
-                    continue;
-                }
-              }
+
+              // Following code is commented out (from 09.10.2023 onwards)
+              // Suspected to cause issues as we count the clusters but then throw away the pi0 candidates. This leads to a different rejection factor for Pi0s and clusters as well as a different rec. efficiency
+              // If it is found that commenting this fixes the issue, this will be deleted permanently
+
+              //************************************************************************************
+              // Int_t ClusterIDIsInBadDDL;
+              // Bool_t FlagMaybeBadDDLs=((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetReduceTriggeredPhiDueBadDDLs();
+              // Int_t DDLIsBadIndex;
+              // if (FlagMaybeBadDDLs==kFALSE){ //only flag bad DDLs -> ClusterIDIsInBadDDL>=2
+              //   DDLIsBadIndex=2;
+              // } else { //also flag maybe bad DDLs  -> ClusterIDIsInBadDDL>=1
+              //   DDLIsBadIndex=1;
+              // }
+              // if (fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma0->GetCaloClusterRef())){ //gamma 0 is triggered
+              //   ClusterIDIsInBadDDL=fCaloTriggerMimicHelper[fiCut]->IsTriggeredClusterIDInBadDDL(gamma0->GetCaloClusterRef());
+              //   if (ClusterIDIsInBadDDL>=DDLIsBadIndex){ //DDL is bad
+              //       fHistoGoodMesonClusters[fiCut]->Fill(7); //"DDL not passed"
+              //       continue;
+              //   }
+              // }
+              // if (fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef())) { //gamma 1 is triggered
+              //   ClusterIDIsInBadDDL=fCaloTriggerMimicHelper[fiCut]->IsTriggeredClusterIDInBadDDL(gamma1->GetCaloClusterRef());
+              //   if (ClusterIDIsInBadDDL>=DDLIsBadIndex){ //DDL is bad
+              //       fHistoGoodMesonClusters[fiCut]->Fill(7); //"DDL not passed"
+              //       continue;
+              //   }
+              // }
+              //************************************************************************************
               fHistoGoodMesonClusters[fiCut]->Fill(6); //"DDL passed"
             }
           }
