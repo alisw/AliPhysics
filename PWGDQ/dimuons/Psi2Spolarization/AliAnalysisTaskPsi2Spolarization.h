@@ -8,7 +8,7 @@
 
 
 
-class AliAnalysisTaskPsi2Spolarization : public AliAnalysisTaskSE  
+class AliAnalysisTaskPsi2Spolarization : public AliAnalysisTaskSE
 {
  public:
   // two class constructors
@@ -34,16 +34,11 @@ class AliAnalysisTaskPsi2Spolarization : public AliAnalysisTaskSE
   Double_t fBeamEnergy;   // Energy of the beam (required for the CS angle)
   AliAODEvent*            fAOD;           //!<! input event
   TList*                  fOutputList;    //!<! output list
-  TH1F*                   fHistPtDimu;        //!<! dummy histogram
-  TH1F*                   fHistRap;        //!<! dummy histogram
-  TH1F*                   fHistInvMass;
-  TH1F*                   fVertexZ;
-  TH1F*                   fHistCosThetaCSDimu;
-  TH1F*                   fHistCosThetaHEDimu;
-  TH1F*                   fHistPhiCSDimu;
-  TH1F*                   fHistPhiHEDimu;
+
   TTree*                  tree;
   TTree*                  tree1;
+  TTree*                  tree2;
+  TTree*                  tree3;  
   //AliAnalysisTaskPsi2Spolarization(const AliAnalysisTaskPsi2Spolarization&); // not implemented
   Float_t     Rap(Float_t e, Float_t pz) const;
   //AliAnalysisTaskPsi2Spolarization& operator=(const AliAnalysisTaskPsi2Spolarization&); // not implemented
