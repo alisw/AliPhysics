@@ -631,6 +631,11 @@ namespace PWGJE
             track.Clear();
             track = trackIter->first;
             const AliVTrack *vTrack = dynamic_cast<AliVTrack *>(trackIter->second);
+            if (!vTrack)
+            {
+              AliErrorStream() << "Could not retrieve associated track from trackIter, skipping track.\n";
+              continue;
+            }
 
             // Artificial inefficiency
             // Note that we already randomly rejected tracks so that the same tracks will be rejected for the mixed events
