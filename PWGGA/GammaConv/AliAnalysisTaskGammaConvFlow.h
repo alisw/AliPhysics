@@ -45,7 +45,7 @@ class AliAnalysisTaskGammaConvFlow : public AliAnalysisTaskSE {
     void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
     void SetDoPhotonQA(Int_t flag){fDoPhotonQA = flag;}
     void ProcessPhotonCandidates();
-    void SetIsMC(Bool_t isMC){ fIsMC = isMC;}
+    void SetIsMC(Int_t isMC){ fIsMC = isMC;}
     //void CalculatePi0Candidates();
     //void CalculateBackground();
     //void CalculateBackgroundRP();
@@ -156,7 +156,8 @@ class AliAnalysisTaskGammaConvFlow : public AliAnalysisTaskSE {
     TH2F                                **hESDMotherEtaPtAlpha;               //
     TH2F                                **hESDMotherPi0PtOpenAngle;           //
     TH2F                                **hESDMotherEtaPtOpenAngle;           //
-    TH1I                                **hNEvents;                           //
+    TH1F                                **fHistoNEvents;                      //
+    TH1F                                **fHistoNEventsWOWeight;              //! array of histos with event information without event weights
     TH1I                                **hNGoodESDTracks;                    //
     TH1I                                **hNGammaCandidates;                  //
     TH2F                                **hNGoodESDTracksVsNGammaCanditates;  //
@@ -204,7 +205,9 @@ class AliAnalysisTaskGammaConvFlow : public AliAnalysisTaskSE {
     Int_t                               fFilterVariable;                      //
     Double_t                            fMinFilter;                           //
     Double_t                            fMaxFilter;                           //
-    Bool_t                              fIsMC;                                //
+    Int_t                               fIsMC;                                //
+    TTree*                              tBrokenFiles;                         // tree for keeping track of broken files
+    TObjString*                         fFileNameBroken;                      // string object for broken file name
     Int_t                               fApplydPhidRCut;                      //
     Bool_t                              fPerformExtraStudies;                 //
     AliMCEvent*                         fMCEvent;                             //
@@ -225,7 +228,7 @@ class AliAnalysisTaskGammaConvFlow : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvFlow(const AliAnalysisTaskGammaConvFlow&); // Prevent copy-construction
     AliAnalysisTaskGammaConvFlow &operator=(const AliAnalysisTaskGammaConvFlow&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskGammaConvFlow, 13);
+  ClassDef(AliAnalysisTaskGammaConvFlow, 14);
 };
 
 #endif
