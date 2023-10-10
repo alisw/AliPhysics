@@ -83,7 +83,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fCascadePileUpRemoval(kFALSE),
   fV0PileUpRemoval(kFALSE),
   fTrackPileUpRemoval(kFALSE),
-  fRejectTPCPileupWithITSTPCnCluCorr(kTRUE),
+  fRejectTPCPileupWithITSTPCnCluCorr(kFALSE),
   fMVPlp(kFALSE),
   fOutOfBunchPlp(kFALSE),
   fMinVtxContr(0),
