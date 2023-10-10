@@ -32,10 +32,10 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskNFactorialMoments)
   AliAnalysisTaskNFactorialMoments::AliAnalysisTaskNFactorialMoments()
-  : AliAnalysisTaskSE(), fAOD(0), fMCEvent(0), fOutHList(0), fQAList(0), fQAList2(0), fEventCuts(0), fPIDResponse(0), fPIDCombined(0), mcHeader{ nullptr }, fNtupleListBin1(0), fNtupleListBin2(0), fNtupleListBin3(0), fNtupleListBin4(0), fNtupleListBin{ nullptr }, fNtupleListBin1Gen(0), fNtupleListBin2Gen(0), fNtupleListBin3Gen(0), fNtupleListBin4Gen(0), fHistQAEta{ nullptr }, fHistQAPhi{ nullptr }, fHistQAVx(0), fHistdEta{ nullptr }, fHistdPhi{ nullptr }, fHistQAVy(0), counter(0), fHistQAVz(0), fHistPtBin{ nullptr }, fEtaBin{ nullptr }, fPhiBin{ nullptr }, fHistMulBin{ nullptr }, fHistPtBinGen{ nullptr }, fEtaBinGen{ nullptr }, fPhiBinGen{ nullptr }, fHistMulBinGen{ nullptr }, fHistbeforeHBT{ nullptr }, fHistafterHBT{ nullptr }, fHistQAPID{ nullptr }, fHistPDG{ nullptr }, fHistDCAxy{ nullptr }, fHistDCAz{ nullptr }, fHistnITScls{ nullptr }, fHistnTPCcls{ nullptr }, fHistnTPCcrossedrows{ nullptr }, fHistnchi2ITScls{ nullptr }, fHistnchi2TPCcls{ nullptr }, fHistDCAxypT{ nullptr }, fHistDCAzpT{ nullptr }, fHistnsharedcls{ nullptr }, fHistnshclsfra{ nullptr }, fHistnshclsfravspt{ nullptr }, fHistnfoundcls{ nullptr }, fHistnfcls{ nullptr }, fEventCounter(0), fTrackCounter(0), fHistQACent(0), fMapEff{ nullptr }, ptbin1(0), ptbin2(0), ptbin3(0), ptbin4(0), mfield(0) {}
+  : AliAnalysisTaskSE(), fAOD(0), fMCEvent(0), fOutHList(0), fQAList(0), fQAList2(0), fEventCuts(0), fPIDResponse(0), fPIDCombined(0), mcHeader{ nullptr }, fNtupleListBin1(0), fNtupleListBin2(0), fNtupleListBin3(0), fNtupleListBin4(0), fNtupleListBin{ nullptr }, fNtupleListBin1Gen(0), fNtupleListBin2Gen(0), fNtupleListBin3Gen(0), fNtupleListBin4Gen(0), fHistQAEta{ nullptr }, fHistQAPhi{ nullptr }, fHistQAVx(0), fHistdEta{ nullptr }, fHistdPhi{ nullptr }, fHistQAVy(0), counter(0), fHistQAVz(0), fHistPtBin{ nullptr }, fEtaBin{ nullptr }, fPhiBin{ nullptr }, fHistMulBin{ nullptr }, fHistPtBinGen{ nullptr }, fEtaBinGen{ nullptr }, fPhiBinGen{ nullptr }, fHistMulBinGen{ nullptr }, fHistbeforeHBT{ nullptr }, fHistafterHBT{ nullptr }, fHistQAPID{ nullptr }, fHistPDG{ nullptr }, fHistDCAxy{ nullptr }, fHistDCAz{ nullptr }, fHistnITScls{ nullptr }, fHistnTPCcls{ nullptr }, fHistnTPCcrossedrows{ nullptr }, fHistnchi2ITScls{ nullptr }, fHistnchi2TPCcls{ nullptr }, fHistDCAxypT{ nullptr }, fHistDCAzpT{ nullptr }, fHistnsharedcls{ nullptr }, fHistnshclsfra{ nullptr }, fHistnshclsfravspt{ nullptr }, fHistnfoundcls{ nullptr }, fHistnfcls{ nullptr }, fEventCounter(0), fTrackCounter(0), fHistQACent(0), fntpMCorr{ nullptr }, fefficiencyMap{ nullptr }, ptbin1(0), ptbin2(0), ptbin3(0), ptbin4(0), mfield(0) {}
 AliAnalysisTaskNFactorialMoments::AliAnalysisTaskNFactorialMoments(
   const char* name)
-  : AliAnalysisTaskSE(name), fAOD(0), fMCEvent(0), fOutHList(0), fQAList(0), fQAList2(0), fEventCuts(0), fPIDResponse(0), fPIDCombined(0), mcHeader{ nullptr }, fNtupleListBin1(0), fNtupleListBin2(0), fNtupleListBin3(0), fNtupleListBin4(0), fNtupleListBin{ nullptr }, fNtupleListBin1Gen(0), fNtupleListBin2Gen(0), fNtupleListBin3Gen(0), fNtupleListBin4Gen(0), fHistQAEta{ nullptr }, fHistQAPhi{ nullptr }, fHistQAVx(0), fHistdEta{ nullptr }, fHistdPhi{ nullptr }, fHistQAVy(0), counter(0), fHistQAVz(0), fHistPtBin{ nullptr }, fEtaBin{ nullptr }, fPhiBin{ nullptr }, fHistMulBin{ nullptr }, fHistPtBinGen{ nullptr }, fEtaBinGen{ nullptr }, fPhiBinGen{ nullptr }, fHistMulBinGen{ nullptr }, fHistbeforeHBT{ nullptr }, fHistafterHBT{ nullptr }, fHistQAPID{ nullptr }, fHistPDG{ nullptr }, fHistDCAxy{ nullptr }, fHistDCAz{ nullptr }, fHistnITScls{ nullptr }, fHistnTPCcls{ nullptr }, fHistnTPCcrossedrows{ nullptr }, fHistnchi2ITScls{ nullptr }, fHistnchi2TPCcls{ nullptr }, fHistDCAxypT{ nullptr }, fHistDCAzpT{ nullptr }, fHistnsharedcls{ nullptr }, fHistnshclsfra{ nullptr }, fHistnshclsfravspt{ nullptr }, fHistnfoundcls{ nullptr }, fHistnfcls{ nullptr }, fEventCounter(0), fTrackCounter(0), fHistQACent(0), fMapEff{ nullptr }, ptbin1(0), ptbin2(0), ptbin3(0), ptbin4(0), mfield(0)
+  : AliAnalysisTaskSE(name), fAOD(0), fMCEvent(0), fOutHList(0), fQAList(0), fQAList2(0), fEventCuts(0), fPIDResponse(0), fPIDCombined(0), mcHeader{ nullptr }, fNtupleListBin1(0), fNtupleListBin2(0), fNtupleListBin3(0), fNtupleListBin4(0), fNtupleListBin{ nullptr }, fNtupleListBin1Gen(0), fNtupleListBin2Gen(0), fNtupleListBin3Gen(0), fNtupleListBin4Gen(0), fHistQAEta{ nullptr }, fHistQAPhi{ nullptr }, fHistQAVx(0), fHistdEta{ nullptr }, fHistdPhi{ nullptr }, fHistQAVy(0), counter(0), fHistQAVz(0), fHistPtBin{ nullptr }, fEtaBin{ nullptr }, fPhiBin{ nullptr }, fHistMulBin{ nullptr }, fHistPtBinGen{ nullptr }, fEtaBinGen{ nullptr }, fPhiBinGen{ nullptr }, fHistMulBinGen{ nullptr }, fHistbeforeHBT{ nullptr }, fHistafterHBT{ nullptr }, fHistQAPID{ nullptr }, fHistPDG{ nullptr }, fHistDCAxy{ nullptr }, fHistDCAz{ nullptr }, fHistnITScls{ nullptr }, fHistnTPCcls{ nullptr }, fHistnTPCcrossedrows{ nullptr }, fHistnchi2ITScls{ nullptr }, fHistnchi2TPCcls{ nullptr }, fHistDCAxypT{ nullptr }, fHistDCAzpT{ nullptr }, fHistnsharedcls{ nullptr }, fHistnshclsfra{ nullptr }, fHistnshclsfravspt{ nullptr }, fHistnfoundcls{ nullptr }, fHistnfcls{ nullptr }, fEventCounter(0), fTrackCounter(0), fHistQACent(0), fntpMCorr{ nullptr }, fefficiencyMap{ nullptr }, ptbin1(0), ptbin2(0), ptbin3(0), ptbin4(0), mfield(0)
 {
   // Constructor
   Info("AliAnalysisTaskNFactorialMoments", "Specific Constructor");
@@ -48,10 +48,6 @@ AliAnalysisTaskNFactorialMoments::AliAnalysisTaskNFactorialMoments(
     fntpMBin2[j] = nullptr;
     fntpMBin3[j] = nullptr;
     fntpMBin4[j] = nullptr;
-    fntpMBin1Corr[j] = nullptr;
-    fntpMBin2Corr[j] = nullptr;
-    fntpMBin3Corr[j] = nullptr;
-    fntpMBin4Corr[j] = nullptr;
 
     if (fismc) {
       fHEtaPhiBin1Gen[j] = nullptr;
@@ -122,6 +118,10 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
   fNtupleListBin3->SetOwner(kTRUE);
   fNtupleListBin4->SetOwner(kTRUE);
 
+  if (useEff) {
+    ReadEfficiency();
+  }
+
   if (fismc) {
     fNtupleListBin1Gen = new TList();
     fNtupleListBin2Gen = new TList();
@@ -135,14 +135,6 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
     fQAList = new TList();
     fQAList->SetOwner(kTRUE);
     fEventCuts.AddQAplotsToList(fQAList, kTRUE);
-  }
-
-  if (useEff) {
-    TFile* f = new TFile("alien:///alice/cern.ch/user/f/fhaider/efficiency.root", "READ");
-    if (!f)
-      ::Fatal("AliAnalysisTaskNFactorialMoments::UserExec",
-              "No Efficiency file found!");
-    ReadEfficiency(f);
   }
 
   // QA Histograms for deta-dphi and PID
@@ -534,27 +526,23 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
       name = Form("fntpMBin4%d", (nOfTuple));
     fntpMBin4[nOfTuple - 1] = new TNtuple(
       name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
-    name = Form("fntpMBin1Corr%d", (nOfTuple));
-    name_ = Form("FmsforetaphicutCorr_%d", (nOfTuple));
-    fntpMBin1Corr[nOfTuple - 1] = new TNtuple(
-      name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
-    name = Form("fntpMBin2Corr%d", (nOfTuple));
-    fntpMBin2Corr[nOfTuple - 1] = new TNtuple(
-      name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
-    name = Form("fntpMBin3Corr%d", (nOfTuple));
-    fntpMBin3Corr[nOfTuple - 1] = new TNtuple(
-      name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
-    name = Form("fntpMBin4Corr%d", (nOfTuple));
-    fntpMBin4Corr[nOfTuple - 1] = new TNtuple(
-      name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
     fNtupleListBin1->Add(fntpMBin1[nOfTuple - 1]);
     fNtupleListBin2->Add(fntpMBin2[nOfTuple - 1]);
     fNtupleListBin3->Add(fntpMBin3[nOfTuple - 1]);
     fNtupleListBin4->Add(fntpMBin4[nOfTuple - 1]);
-    fNtupleListBin1->Add(fntpMBin1Corr[nOfTuple - 1]);
-    fNtupleListBin2->Add(fntpMBin2Corr[nOfTuple - 1]);
-    fNtupleListBin3->Add(fntpMBin3Corr[nOfTuple - 1]);
-    fNtupleListBin4->Add(fntpMBin4Corr[nOfTuple - 1]);
+
+    for (int pt = 0; pt < 4; ++pt) {
+      name = Form("fntpMBin%dCorr%d", pt + 1, nOfTuple);
+      name_ = Form("FmsforetaphicutCorrBin%d_%d", pt + 1, nOfTuple);
+
+      fntpMCorr[pt][nOfTuple - 1] = new TNtuple(
+        name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
+
+      fNtupleListBin1->Add(fntpMCorr[0][nOfTuple - 1]);
+      fNtupleListBin2->Add(fntpMCorr[1][nOfTuple - 1]);
+      fNtupleListBin3->Add(fntpMCorr[2][nOfTuple - 1]);
+      fNtupleListBin4->Add(fntpMCorr[3][nOfTuple - 1]);
+    }
   }
 
   DataPosting();
@@ -1383,9 +1371,7 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[M], TH2D* h2[M],
 
       for (int index = 0; index < Q; index++) {
         FqEvent[index] = 0.0;
-        corrFqEvent[index] = 0.0;
         sumoff[index] = 0.0;
-        corrsumoff[index] = 0.0;
       }
 
       if (fptbins == 0) {
@@ -1416,20 +1402,21 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[M], TH2D* h2[M],
             bincontent = h3[binset]->GetBinContent(etabin, phibin);
           if (fptbins == 3)
             bincontent = h4[binset]->GetBinContent(etabin, phibin);
-
-          float corrFac = 0.0;
-          if (!mcGen) {
-            if (fptbins == 0)
-              corrFac = fMapEff[0][binset]->GetBinContent(etabin, phibin, 1);
-            if (fptbins == 1)
-              corrFac = fMapEff[1][binset]->GetBinContent(etabin, phibin, 1);
-            if (fptbins == 2)
-              corrFac = fMapEff[2][binset]->GetBinContent(etabin, phibin, 1);
-            if (fptbins == 3)
-              corrFac = fMapEff[3][binset]->GetBinContent(etabin, phibin, 1);
-            corrSumofBC += bincontent / corrFac;
-          }
           SumOfbincontent += bincontent;
+
+          float corrFactor = 0.0;
+
+          if (useEff && !mcGen) {
+            if (fptbins == 0)
+              corrFactor = fefficiencyMap[0][binset]->GetBinContent(etabin, phibin, 1);
+            if (fptbins == 1)
+              corrFactor = fefficiencyMap[1][binset]->GetBinContent(etabin, phibin, 1);
+            if (fptbins == 2)
+              corrFactor = fefficiencyMap[2][binset]->GetBinContent(etabin, phibin, 1);
+            if (fptbins == 3)
+              corrFactor = fefficiencyMap[3][binset]->GetBinContent(etabin, phibin, 1);
+            corrSumofBC += bincontent / corrFactor;
+          }
 
           for (int q = 0; q < Q; q++) {
             if (bincontent >= (q + 2)) {
@@ -1437,14 +1424,20 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[M], TH2D* h2[M],
               double corrFqeofbin = 0.0;
               Fqeofbin = TMath::Factorial(bincontent) /
                          TMath::Factorial(bincontent - (q + 2));
+              if (useEff && !mcGen) {
+                corrFqeofbin = Fqeofbin / (TMath::Power(corrFactor, q + 2));
+                corrsumoff[q] += Fqeofbin / (TMath::Power(corrFactor, q + 2));
+                corrsumoff[q] += corrFqeofbin;
+              }
               if (fismc) {
                 if (TMath::IsNaN(Fqeofbin)) {
                   break;
                 }
-              }
-              if (!mcGen) {
-                corrFqeofbin = Fqeofbin / (TMath::Power(corrFac, q + 2));
-                corrsumoff[q] += corrFqeofbin;
+                if (useEff) {
+                  if (TMath::IsNaN(corrFqeofbin)) {
+                    break;
+                  }
+                }
               }
               sumoff[q] += Fqeofbin;
             }
@@ -1454,18 +1447,16 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[M], TH2D* h2[M],
 
       double Av_bincontent = SumOfbincontent / MSquare;
       double corrAv_bincontent = 0.0;
-      if (!mcGen) {
-        corrAv_bincontent = corrSumofBC / MSquare;
-      }
-      if (!mcGen)
-        for (int q = 0; q < Q; q++) {
-          if (sumoff[q] > 0.0)
-            FqEvent[q] = sumoff[q] / (MSquare);
-          if (!mcGen) {
-            if (corrsumoff[q] > 0.0)
-              corrFqEvent[q] = corrsumoff[q] / (MSquare);
+      for (int q = 0; q < Q; q++) {
+        if (sumoff[q] > 0.0) {
+          FqEvent[q] = sumoff[q] / (MSquare);
+        }
+        if (useEff && !mcGen) {
+          if (corrsumoff[q] > 0.0) {
+            corrFqEvent[q] = corrsumoff[q] / (MSquare);
           }
         }
+      }
 
       float Fq2e = FqEvent[0];
       float Fq3e = FqEvent[1];
@@ -1478,10 +1469,12 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[M], TH2D* h2[M],
         if (!mcGen) {
           fntpMBin1[binset]->Fill(Mbin, Av_bincontent, Fq2e, Fq3e, Fq4e, Fq5e,
                                   Fq6e, Fq7e);
-          fntpMBin1Corr[binset]->Fill(Mbin, corrAv_bincontent, corrFqEvent[0],
-                                      corrFqEvent[1], corrFqEvent[2],
-                                      corrFqEvent[3], corrFqEvent[4],
-                                      corrFqEvent[5]);
+          if (useEff) {
+            fntpMCorr[0][binset]->Fill(Mbin, corrAv_bincontent, corrFqEvent[0],
+                                       corrFqEvent[1], corrFqEvent[2],
+                                       corrFqEvent[3], corrFqEvent[4],
+                                       corrFqEvent[5]);
+          }
         } else
           fntpMBin1Gen[binset]->Fill(Mbin, Av_bincontent, Fq2e, Fq3e, Fq4e,
                                      Fq5e, Fq6e, Fq7e);
@@ -1490,10 +1483,12 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[M], TH2D* h2[M],
         if (!mcGen) {
           fntpMBin2[binset]->Fill(Mbin, Av_bincontent, Fq2e, Fq3e, Fq4e, Fq5e,
                                   Fq6e, Fq7e);
-          fntpMBin2Corr[binset]->Fill(Mbin, corrAv_bincontent, corrFqEvent[0],
-                                      corrFqEvent[1], corrFqEvent[2],
-                                      corrFqEvent[3], corrFqEvent[4],
-                                      corrFqEvent[5]);
+          if (useEff) {
+            fntpMCorr[1][binset]->Fill(Mbin, corrAv_bincontent, corrFqEvent[0],
+                                       corrFqEvent[1], corrFqEvent[2],
+                                       corrFqEvent[3], corrFqEvent[4],
+                                       corrFqEvent[5]);
+          }
         } else
           fntpMBin2Gen[binset]->Fill(Mbin, Av_bincontent, Fq2e, Fq3e, Fq4e,
                                      Fq5e, Fq6e, Fq7e);
@@ -1502,10 +1497,12 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[M], TH2D* h2[M],
         if (!mcGen) {
           fntpMBin3[binset]->Fill(Mbin, Av_bincontent, Fq2e, Fq3e, Fq4e, Fq5e,
                                   Fq6e, Fq7e);
-          fntpMBin3Corr[binset]->Fill(Mbin, corrAv_bincontent, corrFqEvent[0],
-                                      corrFqEvent[1], corrFqEvent[2],
-                                      corrFqEvent[3], corrFqEvent[4],
-                                      corrFqEvent[5]);
+          if (useEff) {
+            fntpMCorr[2][binset]->Fill(Mbin, corrAv_bincontent, corrFqEvent[0],
+                                       corrFqEvent[1], corrFqEvent[2],
+                                       corrFqEvent[3], corrFqEvent[4],
+                                       corrFqEvent[5]);
+          }
         } else
           fntpMBin3Gen[binset]->Fill(Mbin, Av_bincontent, Fq2e, Fq3e, Fq4e,
                                      Fq5e, Fq6e, Fq7e);
@@ -1514,10 +1511,12 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[M], TH2D* h2[M],
         if (!mcGen) {
           fntpMBin4[binset]->Fill(Mbin, Av_bincontent, Fq2e, Fq3e, Fq4e, Fq5e,
                                   Fq6e, Fq7e);
-          fntpMBin4Corr[binset]->Fill(Mbin, corrAv_bincontent, corrFqEvent[0],
-                                      corrFqEvent[1], corrFqEvent[2],
-                                      corrFqEvent[3], corrFqEvent[4],
-                                      corrFqEvent[5]);
+          if (useEff) {
+            fntpMCorr[3][binset]->Fill(Mbin, corrAv_bincontent, corrFqEvent[0],
+                                       corrFqEvent[1], corrFqEvent[2],
+                                       corrFqEvent[3], corrFqEvent[4],
+                                       corrFqEvent[5]);
+          }
         } else
           fntpMBin4Gen[binset]->Fill(Mbin, Av_bincontent, Fq2e, Fq3e, Fq4e,
                                      Fq5e, Fq6e, Fq7e);
@@ -1530,11 +1529,16 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[M], TH2D* h2[M],
           Reading Efficiency from the Efficiency File
 ________________________________________________________________________*/
 
-void AliAnalysisTaskNFactorialMoments::ReadEfficiency(TFile* file)
+void AliAnalysisTaskNFactorialMoments::ReadEfficiency()
 {
+  TFile* f = TFile::Open("alien:///alice/cern.ch/user/f/fhaider/efficiency.root");
+  if (!f->IsOpen()) {
+    ::Fatal("AliAnalysisTaskNFactorialMoments::UserExec",
+            "No Efficiency file found!");
+  }
   for (int iPt = 0; iPt < 4; iPt++) {
     for (int i = 0; i < M; i++) {
-      fMapEff[iPt][i] = (TH3F*)file->Get(Form("f2DimRecBin%iM%i_proj_1_2_0", iPt + 1, i + 1));
+      fefficiencyMap[iPt][i] = (TH3F*)f->Get(Form("f2DimRecBin%iM%i_proj_1_2_0", iPt + 1, i + 1));
     }
   }
 }

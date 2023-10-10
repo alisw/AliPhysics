@@ -8,6 +8,7 @@
 #include "AliPID.h"
 #include "AliPIDResponse.h"
 #include "AliPIDCombined.h"
+#include "TNtuple.h"
 #include "TH3F.h"
 
 const int M = 40, Q = 6, fPt = 4, D = 2;
@@ -16,7 +17,6 @@ class TH1F;
 class TH1D;
 class TH2D;
 class TH2F;
-class TH3F;
 class TList;
 class TNtuple;
 class TString;
@@ -121,7 +121,7 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   bool ConfigureTrack();
   void DataPosting();
   void ResetHistograms();
-  void ReadEfficiency(TFile* fEfficiency);
+  void ReadEfficiency();
 
  private:
   // Event related (Data and MC)
@@ -137,10 +137,10 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   bool fsharity;
   bool fRejectEls;
   bool fSelfAffine;
-  bool useEff;
   double fITSCls, fTPCCls, fTPCRows;
   bool fSharedFrMean;
   int fBfield;
+  bool useEff;
   // int fPt;              // Number of pt bins
 
   // Output lists
@@ -171,10 +171,7 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   TNtuple* fntpMBin2Gen[M];  //!
   TNtuple* fntpMBin3Gen[M];  //!
   TNtuple* fntpMBin4Gen[M];  //!
-  TNtuple* fntpMBin1Corr[M];
-  TNtuple* fntpMBin2Corr[M];
-  TNtuple* fntpMBin3Corr[M];
-  TNtuple* fntpMBin4Corr[M];
+  TNtuple* fntpMCorr[4][M];  //!
 
   // Filter Bit
   int filterBit;
@@ -237,8 +234,6 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   TH2D* fHEtaPhiBin2Gen[M]; //! Eta-Phi for 10 different bins  distribution
   TH2D* fHEtaPhiBin3Gen[M]; //! Eta-Phi for 10 different bins  distribution
   TH2D* fHEtaPhiBin4Gen[M]; //! Eta-Phi for 10 different bins  distribution
-  // Histogram for efficiency
-  TH3F* fMapEff[fPt][M];
 
   // QA hists
   TH1F* fHistQAVx;      //!
@@ -251,6 +246,8 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   TH1F* fHistQAPhi[2];  //!
   TH1F* fHistQAMult;    //!
   TH1F* fHistQAMultwpc; //!
+
+  TH3F* fefficiencyMap[4][M]; //!
 
   AliAnalysisTaskNFactorialMoments(
     const AliAnalysisTaskNFactorialMoments&); // not implemented
