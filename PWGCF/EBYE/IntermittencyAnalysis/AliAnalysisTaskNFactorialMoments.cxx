@@ -1426,7 +1426,6 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[M], TH2D* h2[M],
                          TMath::Factorial(bincontent - (q + 2));
               if (useEff && !mcGen) {
                 corrFqeofbin = Fqeofbin / (TMath::Power(corrFactor, q + 2));
-                corrsumoff[q] += Fqeofbin / (TMath::Power(corrFactor, q + 2));
                 corrsumoff[q] += corrFqeofbin;
               }
               if (fismc) {
@@ -1446,7 +1445,7 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[M], TH2D* h2[M],
       }
 
       double Av_bincontent = SumOfbincontent / MSquare;
-      double corrAv_bincontent = 0.0;
+      double corrAv_bincontent = corrSumofBC / MSquare;
       for (int q = 0; q < Q; q++) {
         if (sumoff[q] > 0.0) {
           FqEvent[q] = sumoff[q] / (MSquare);
