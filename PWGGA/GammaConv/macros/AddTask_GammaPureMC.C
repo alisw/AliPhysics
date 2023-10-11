@@ -1,4 +1,4 @@
-void AddTask_GammaPureMC(Int_t isK0 = 0 , Double_t maxpT = 100 , Int_t doMultStudies = 0, int doJetStudies = 0) {
+void AddTask_GammaPureMC(Int_t isK0 = 0 , Double_t maxpT = 100 , Int_t doMultStudies = 0, int doJetStudies = 0, int doFeedDownStudies = 0) {
 
   // ================== GetAnalysisManager ===============================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -22,6 +22,7 @@ void AddTask_GammaPureMC(Int_t isK0 = 0 , Double_t maxpT = 100 , Int_t doMultStu
   task->SetMaxPt(maxpT);
   task->SetDoMultStudies(doMultStudies);
   task->SetDoJetStudies(doJetStudies);
+  task->SetDoFeedDownStudies(doFeedDownStudies);
 
   TString AddString = "";
   if(doMultStudies){

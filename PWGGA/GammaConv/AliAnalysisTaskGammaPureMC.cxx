@@ -154,6 +154,13 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fDoMultStudies(0),
   fNTracksInV0Acc(0),
   fIsEvtINELgtZERO(0),
+  fDoFeedDownStudies(false),
+  fHistPtPi0FromDecay(nullptr),
+  fHistPtEtaFromDecay(nullptr),
+  fHistPtOmegaFromDecay(nullptr),
+  fHistPtYPi0Primordial(nullptr),
+  fHistPtYEtaPrimordial(nullptr),
+  fHistPtYOmegaPrimordial(nullptr),
   fDoJetStudies(false),
   fJetRadius(0.4),
   fJetMinE(1.),
@@ -271,6 +278,13 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   fDoMultStudies(0),
   fNTracksInV0Acc(0),
   fIsEvtINELgtZERO(0),
+  fDoFeedDownStudies(false),
+  fHistPtPi0FromDecay(nullptr),
+  fHistPtEtaFromDecay(nullptr),
+  fHistPtOmegaFromDecay(nullptr),
+  fHistPtYPi0Primordial(nullptr),
+  fHistPtYEtaPrimordial(nullptr),
+  fHistPtYOmegaPrimordial(nullptr),
   fDoJetStudies(false),
   fJetRadius(0.4),
   fJetMinE(1.),
@@ -411,7 +425,7 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
   fHistPtYKMi->Sumw2();
   fOutputContainer->Add(fHistPtYKMi);
 
-  fHistPtYPi0FromEta          		= new TH2F("Pt_Y_Pi0FromEta","Pt_Y_Pi0FromEta", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+  fHistPtYPi0FromEta       		    = new TH2F("Pt_Y_Pi0FromEta","Pt_Y_Pi0FromEta", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPi0FromEta->Sumw2();
   fOutputContainer->Add(fHistPtYPi0FromEta);
 
@@ -622,6 +636,39 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
     fOutputContainer->Add(fHistPtV0MultEtaPrimeGG);
   }
 
+  if(fDoFeedDownStudies){
+    fHistPtYPi0Primordial = new TH2F("Pt_Y_Pi0Primordial","Pt_Y_Pi0Primordial", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+    fHistPtYPi0Primordial->Sumw2();
+    fOutputContainer->Add(fHistPtYPi0Primordial);
+    fHistPtYEtaPrimordial = new TH2F("Pt_Y_EtaPrimordial","Pt_Y_EtaPrimordial", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+    fHistPtYEtaPrimordial->Sumw2();
+    fOutputContainer->Add(fHistPtYEtaPrimordial);
+    fHistPtYOmegaPrimordial = new TH2F("Pt_Y_OmegaPrimordial","Pt_Y_OmegaPrimordial", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+    fHistPtYOmegaPrimordial->Sumw2();
+    fOutputContainer->Add(fHistPtYOmegaPrimordial);
+
+    const Int_t NFeedDownMothers = 20;
+    TString FeedDownMotherNames[NFeedDownMothers] = {"u","d","s","c","b","t","qq","g","#rho","#omega","#eta","#eta'","K^{*}","#Delta","#Lambda","#Sigma","#phi","D","#Xi^{0}","Other"};
+
+    fHistPtPi0FromDecay = new TH2F("Pt_Pi0FromDecay","Pt_Pi0FromDecay",20, 0.5, 20.5, fMaxpT*10, 0, fMaxpT);
+    for (Int_t iMother = 0; iMother < NFeedDownMothers; iMother++)
+      fHistPtPi0FromDecay->GetXaxis()->SetBinLabel(iMother+1,FeedDownMotherNames[iMother]);
+    fHistPtPi0FromDecay->Sumw2();
+    fOutputContainer->Add(fHistPtPi0FromDecay);
+
+    fHistPtEtaFromDecay = new TH2F("Pt_EtaFromDecay","Pt_EtaFromDecay",20, 0.5, 20.5, fMaxpT*10, 0, fMaxpT);
+    for (Int_t iMother = 0; iMother < NFeedDownMothers; iMother++)
+      fHistPtEtaFromDecay->GetXaxis()->SetBinLabel(iMother+1,FeedDownMotherNames[iMother]);
+    fHistPtEtaFromDecay->Sumw2();
+    fOutputContainer->Add(fHistPtEtaFromDecay);
+
+    fHistPtOmegaFromDecay = new TH2F("Pt_OmegaFromDecay","Pt_OmegaFromDecay",20, 0.5, 20.5, fMaxpT*10, 0, fMaxpT);
+    for (Int_t iMother = 0; iMother < NFeedDownMothers; iMother++)
+      fHistPtOmegaFromDecay->GetXaxis()->SetBinLabel(iMother+1,FeedDownMotherNames[iMother]);
+    fHistPtOmegaFromDecay->Sumw2();
+    fOutputContainer->Add(fHistPtOmegaFromDecay);
+  }
+
   if(fDoJetStudies){
     std::vector<double> vecJetPt;
     double jetPt = 0.;
@@ -672,7 +719,7 @@ void AliAnalysisTaskGammaPureMC::UserExec(Option_t *)
 {
 
   fInputEvent = InputEvent();
-  //   cout << "I found an Event" << endl;
+    // std::cout << "I found an Event" << std::endl;
 
   fMCEvent = MCEvent();
   if(fMCEvent == nullptr) fIsMC = 0;
@@ -782,6 +829,82 @@ void AliAnalysisTaskGammaPureMC::ProcessMultiplicity()
   }
 }
 
+
+int AliAnalysisTaskGammaPureMC::ReturnFeedDownBinFromPDG(int pdgcode) {
+  switch (TMath::Abs(pdgcode))
+  {
+  case 2:
+    return 1; // u
+  case 1:
+    return 2; // d
+  case 3:
+    return 3; // s
+  case 4:
+    return 4; // c
+  case 5:
+    return 5; // b
+  case 6:
+    return 6; // t
+  case 1103:
+  case 2101:
+  case 2103:
+  case 2203:
+  case 3101:
+  case 3103:
+  case 3201:
+  case 3203:
+  case 3303:
+    return 7; // diquark
+  case 21:
+  case 9:
+    return 8; // g
+  case 113:
+  case 213:
+    return 9; // charged rho
+  case 223:
+    return 10; // omega
+  case 221:
+    return 11; // eta
+  case 331:
+    return 12; // eta'
+  case 313:
+  case 323:
+  case 10311:
+    return 13; // K* 0 and +
+  case 2224:
+  case 2214:
+  case 2114:
+  case 1114:
+    return 14; // Delta
+  case 3122:
+  case 4122: // Lambda+C
+    return 15; // Lambda
+  case 3222:
+  case 3212:
+  case 3112:
+  case 3214:
+  case 3114:
+  case 3224:
+    return 16; // Sigma
+  case 333:
+    return 17; // phi
+  case 421:
+  case 411:
+  case 413:
+  case 423:
+  case 431:
+    return 18; // D
+  case 3322:
+  case 3312:
+  case 3324:
+  case 3314:
+    return 19; // Xi
+  default:
+    // std::cout << "Unknown PDG code of mother: " << pdgcode << std::endl;
+    return 20; // Other
+  }
+}
+
 //________________________________________________________________________
 void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 {
@@ -802,6 +925,10 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
       hasMother                 = kTRUE;
     else
       hasMother                 = kFALSE;
+
+    int absmotherpdg = 0;
+    if (hasMother)
+      absmotherpdg = TMath::Abs(motherParticle->PdgCode());
 
     const std::array<int, 19> kAcceptPdgCodes = {kPdgPi0, kPdgEta, kPdgEtaPrime, kPdgOmega, kPdgPiPlus, kPdgRho0, kPdgPhi, kPdgJPsi, kPdgSigma0, kPdgK0Short, kPdgDeltaPlus, kPdgDeltaPlusPlus, kPdgDeltaMinus, kPdgDelta0, kPdgRhoPlus, kPdgKStar, kPdgK0Long, kPdgLambda, kPdgKPlus};
     if(std::find(kAcceptPdgCodes.begin(), kAcceptPdgCodes.end(), TMath::Abs(particle->PdgCode())) ==  kAcceptPdgCodes.end()) continue;  // species not supported
@@ -828,7 +955,13 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
           fHistPtYPi0FromLambda->Fill(particle->Pt(), particle->Y());
         if (motherParticle->PdgCode() == kPdgEta)
           fHistPtYPi0FromEta->Fill(particle->Pt(), particle->Y());
+        if(fDoFeedDownStudies){
+          fHistPtPi0FromDecay->Fill(ReturnFeedDownBinFromPDG(absmotherpdg),particle->Pt());
+          if(ReturnFeedDownBinFromPDG(absmotherpdg) < 9)
+            fHistPtYPi0Primordial->Fill(particle->Pt(), particle->Y());
+        }
       }
+
       // fill primary pi0s in eta > 0.8
       if(fDoMultStudies){
         if(std::abs(particle->Y()) <= 0.8){
@@ -860,6 +993,12 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
       break;
     case kPdgEta:
       fHistPtYEta->Fill(particle->Pt(), particle->Y());
+      if(fDoFeedDownStudies){
+        if (hasMother)
+          fHistPtEtaFromDecay->Fill(ReturnFeedDownBinFromPDG(absmotherpdg),particle->Pt());
+        if(ReturnFeedDownBinFromPDG(absmotherpdg) < 9)
+          fHistPtYEtaPrimordial->Fill(particle->Pt(), particle->Y());
+      }
       // fill primary etas in eta > 0.8
       if(fDoMultStudies){
         if(std::abs(particle->Y()) <= 0.8){
@@ -907,6 +1046,12 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
       break;
     case kPdgOmega:
       fHistPtYOmega->Fill(particle->Pt(), particle->Y());
+      if(fDoFeedDownStudies){
+        if (hasMother)
+          fHistPtOmegaFromDecay->Fill(ReturnFeedDownBinFromPDG(absmotherpdg),particle->Pt());
+        if(ReturnFeedDownBinFromPDG(absmotherpdg) < 9)
+          fHistPtYOmegaPrimordial->Fill(particle->Pt(), particle->Y());
+      }
       break;
     case kPdgPiPlus:
       fHistPtYPiPl->Fill(particle->Pt(), particle->Y());
