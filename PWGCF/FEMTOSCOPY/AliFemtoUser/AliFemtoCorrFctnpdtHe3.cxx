@@ -84,7 +84,9 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     f2DkSVspT(nullptr),
     f2DkSVsMass(nullptr),
     fUsemTCheck(0),
-    f3DmTDepkSVspT(nullptr)
+    f3DmTDepkSVspT(nullptr),
+    EscapePairCut(0),
+    WhichCutIndEtadPhi(1)
 {
     
     fNumerator      = new TH1D(TString::Format("Num%s", fTitle.Data()), "fNumerator", nbins, KStarLo, KStarHi);
@@ -156,7 +158,10 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCo
     f2DkSVspT(aCorrFctn.f2DkSVspT),
     f2DkSVsMass(aCorrFctn.f2DkSVsMass),
     fUsemTCheck(aCorrFctn.fUsemTCheck),
-    f3DmTDepkSVspT(aCorrFctn.f3DmTDepkSVspT)
+    f3DmTDepkSVspT(aCorrFctn.f3DmTDepkSVspT),
+    EscapePairCut(aCorrFctn.EscapePairCut),
+    WhichCutIndEtadPhi(aCorrFctn.WhichCutIndEtadPhi)
+
 {
     
 
@@ -491,24 +496,14 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair){
     
     // add true pair
  double tKStar = fabs(fPair->KStar());
- if (fPairCut && !fPairCut->Pass(fPair)) {
-       // failed pair QA
-        /*
-	if(fUseDPhiDEtaQA>1 && tKStar<0.2){
-
-          double eta1 = fPair->Track1()->FourMomentum().PseudoRapidity();
-          double eta2 = fPair->Track2()->FourMomentum().PseudoRapidity();
-          float AvgDPhi = ReAvgDphi(fPair);
-          double deta = eta1 - eta2;
-
-          fDumDPhiDEtaAvgQA->Fill(deta,AvgDPhi);
-
-        }
-	*/
+if(EscapePairCut==0){ 
+if (fPairCut && !fPairCut->Pass(fPair)) {
  
         return;
     }
-   if(fUsePairCutEtaPhi){
+}   
+
+if(fUsePairCutEtaPhi){
 		    if(!PairEtaPhiSelect(fPair)) return;
 	}
 /*
@@ -644,10 +639,12 @@ void AliFemtoCorrFctnpdtHe3::AddMixedPair(AliFemtoPair* aPair)
     // add true pair
 double tKStar = fabs(fPair->KStar());
 
-   if (fPairCut && !fPairCut->Pass(fPair)) {
+if(EscapePairCut==0){
+   if (fPairCut && !fPairCut->Pass(fPair) ) {
 
         return;
     }
+}
     if(fUsePairCutEtaPhi){
 		    if(!PairEtaPhiSelect(fPair)) return;
 	}
@@ -1132,6 +1129,7 @@ bool AliFemtoCorrFctnpdtHe3::PairEtaPhiSelect(AliFemtoPair* aPair){
   double eta1 = aPair->Track1()->Track()->P().PseudoRapidity();
   double eta2 = aPair->Track2()->Track()->P().PseudoRapidity();
   float deta2 = TMath::Power(eta1-eta2,2);
+  float absdeta = abs(eta1-eta2);
   float tmpCut = TMath::Power(fPairCut_eta,2) + TMath::Power(fPairCut_phi,2);
 
   for(int i=0;i<9;i++){
@@ -1143,9 +1141,14 @@ bool AliFemtoCorrFctnpdtHe3::PairEtaPhiSelect(AliFemtoPair* aPair){
     double afsi1b = -0.15*magval*chg2*fMagSign*rad/pt2;
     Double_t dphistar =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
     dphistar = TVector2::Phi_mpi_pi(dphistar); // returns phi angle in the interval [-PI,PI)
-   
-    float tmp = deta2 + TMath::Power(dphistar,2);
-    if(tmp > tmpCut) return false;
+    Double_t absdphi = abs(dphistar);
+	if(WhichCutIndEtadPhi==0){   
+    		float tmp = deta2 + TMath::Power(dphistar,2);
+    		if(tmp < tmpCut) return false;
+	}
+	if(WhichCutIndEtadPhi==1){
+		if(absdeta < fPairCut_eta && absdphi < fPairCut_phi) return false;
+	}
    }
    return true;
   
@@ -1226,5 +1229,11 @@ int nbinsmT,float lowmT,float upmT
 //fUsemTCheck = 2 : kT vs pT 
 f3DmTDepkSVspT = new TH3F(TString::Format("f3DmTDepkSVspT%s", fTitle.Data())," ",nbinsks,lowks,upks,nbinspT,lowpT,uppT,nbinsmT,lowmT,upmT);
 
+}
+void AliFemtoCorrFctnpdtHe3::SetEscapePairCut(int aUse){
+EscapePairCut = aUse;
+}
+void AliFemtoCorrFctnpdtHe3::SetWhichCutIndEtadPhi(int aUse){
+WhichCutIndEtadPhi = aUse;
 }
 
