@@ -303,13 +303,13 @@ void AliAnalysisTaskEmcalJetValidation::UserCreateOutputObjects()
 
    //JET QA
    fHistJetPt = new TH1F("jetPt", "inclusive jetPt ; p_{T} (GeV/#it{c})", 200, 0, 100);
-   fHistJetPhi = new TH1F("jetPhi", "inclusive jetPhi; #phi ", 200, -3.2, 6.4);
+   fHistJetPhi = new TH1F("jetPhi", "inclusive jetPhi; #phi ", 180, 0, 6.4);// we have 18 sectors to be covered 
    fHistJetEta = new TH1F("jetEta", "inclusive jetEta; #eta ", 200, -0.9, 0.9);
 
    //TRACK QA
    fHistNTracksAll = new TH1F("NTracksAll", "NTracksAll; N of ESD tracks", 1, -0.5, 0.5);
    fHistTrackPt = new TH1F("jetTrackPt","track Pt;p_{T} (GeV/#it{c})", 200, 0, 100);
-   fHistTrackPhi = new TH1F("jetTrackPhi", "track #phi; #phi",200, 0, 6.4);
+   fHistTrackPhi = new TH1F("jetTrackPhi", "track #phi; #phi",180, 0, 6.4);
    fHistTrackEta = new TH1F("jetTrackEta", "track #eta; #eta",200, -0.9, 0.9);
 
    //Some more Track QA histos to test the implemented track cuts
