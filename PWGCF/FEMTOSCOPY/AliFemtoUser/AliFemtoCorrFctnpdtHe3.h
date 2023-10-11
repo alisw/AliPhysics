@@ -110,6 +110,10 @@ void SetmTCheckInit(bool aInit,
 int nbinspT,float lowpT,float uppT,
 int nbinsmT,float lowmT,float upmT);
 
+
+void SetEscapePairCut(int aUse);
+void  SetWhichCutIndEtadPhi(int aUse);
+
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
         int isHe3Pair;
@@ -202,6 +206,10 @@ int nbinsmT,float lowmT,float upmT);
 	
 	int fUsemTCheck;
 	TH3F *f3DmTDepkSVspT;
+
+	int EscapePairCut;
+	int WhichCutIndEtadPhi;
+	
 };
 
 #endif
