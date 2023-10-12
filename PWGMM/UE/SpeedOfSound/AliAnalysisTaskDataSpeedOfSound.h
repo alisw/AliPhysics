@@ -46,6 +46,8 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetUseMC(bool mc = false) { fUseMC = mc; }      // use to analyse MC data
+  void SetEtaCut(const double& etacut) { fEtaCut = etacut; }
+  void SetPtMin(const double& ptmin) { fPtMin = ptmin; }
   void SetTrackCuts(bool TPConly = true) { fIsTPConly = TPConly; }
   void SetTrigger(UInt_t offlineTriggerMask = AliVEvent::kINT7) {
     fTrigger = offlineTriggerMask;
@@ -94,6 +96,10 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2F* hDCAxyWeDe[3];
   TH2F* hDCAxyMaIn[3];
   TH2F* hDCAxyData[3];
+  TH2F* hAllpTRec;
+  TH2F* hAllpTTrue;
+  TH2F* hPripTRec;
+  TH2F* hPripTTrue;
   TH2F* hTrueNchHM;
   TH2F* hTrueNchHMWithTrigger;
   TH2F* hTrueNchHMWithEventCuts;

@@ -28,6 +28,8 @@ AliAnalysisTaskDataSpeedOfSound* AddTaskDataSpeedOfSound(
   taskKno->SetUseMC(use_mc);
   taskKno->SetV0Mmin(v0m_min);
   taskKno->SetV0Mmax(v0m_max);
+  taskKno->SetEtaCut(0.8);
+  taskKno->SetPtMin(0.15);
   taskKno->SetTrackCuts(tpc_trkcuts);
   taskKno->SetTrigger(AliVEvent::kINT7);
   mgr->AddTask(taskKno);
