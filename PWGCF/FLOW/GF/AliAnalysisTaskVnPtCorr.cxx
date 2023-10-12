@@ -950,7 +950,7 @@ void AliAnalysisTaskVnPtCorr::AnalyzeAOD(AliVEvent* aod, float centrV0, float ce
 
 
     //..Gap > 0.8
-    if(aodTrk->Eta() < -0.4) {
+    if(aodTrk->Eta() < -fEtaGap3Sub1) {
       NtrksAfterGap8M++;
       for(int iharm=0; iharm<8; iharm++) {
         for(int ipow=0; ipow<6; ipow++) {
@@ -959,7 +959,7 @@ void AliAnalysisTaskVnPtCorr::AnalyzeAOD(AliVEvent* aod, float centrV0, float ce
         }
       }
     }
-    if(aodTrk->Eta() > 0.4) {
+    if(aodTrk->Eta() > fEtaGap3Sub1) {
       NtrksAfterGap8P++;
       for(int iharm=0; iharm<8; iharm++) {
         for(int ipow=0; ipow<6; ipow++) {
@@ -1109,7 +1109,7 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCTruth(AliVEvent* aod, float centrV0, floa
 
     //..calculate Q-vectors
     //..Gap > 0.8
-    if(track->Eta() < -0.4) {
+    if(track->Eta() < -fEtaGap3Sub1) {
       NtrksAfterGap8M++;
       for(int iharm=0; iharm<8; iharm++) {
         for(int ipow=0; ipow<6; ipow++) {
@@ -1118,7 +1118,7 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCTruth(AliVEvent* aod, float centrV0, floa
         }
       }
     }
-    if(track->Eta() > 0.4) {
+    if(track->Eta() > fEtaGap3Sub1) {
       NtrksAfterGap8P++;
       for(int iharm=0; iharm<8; iharm++) {
         for(int ipow=0; ipow<6; ipow++) {
@@ -1298,7 +1298,7 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCReco(AliVEvent* aod, float centrV0, float
 
 
     //..Gap > 0.8
-    if(aodTrk->Eta() < -0.4) {
+    if(aodTrk->Eta() < -fEtaGap3Sub1) {
       NtrksAfterGap8M++;
       for(int iharm=0; iharm<8; iharm++) {
         for(int ipow=0; ipow<6; ipow++) {
@@ -1307,7 +1307,7 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCReco(AliVEvent* aod, float centrV0, float
         }
       }
     }
-    if(aodTrk->Eta() > 0.4) {
+    if(aodTrk->Eta() > fEtaGap3Sub1) {
       NtrksAfterGap8P++;
       for(int iharm=0; iharm<8; iharm++) {
         for(int ipow=0; ipow<6; ipow++) {
@@ -1481,7 +1481,7 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCOnTheFly(AliMCEvent* aod) {
     double weightPt = 1;
 
     //..Gap > 0.8
-    if(track->Eta() < -0.4) {
+    if(track->Eta() < -fEtaGap3Sub1) {
       NtrksAfterGap8M++;
       for(int iharm=0; iharm<8; iharm++) {
         for(int ipow=0; ipow<6; ipow++) {
@@ -1490,7 +1490,7 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCOnTheFly(AliMCEvent* aod) {
         }
       }
     }
-    if(track->Eta() > 0.4) {
+    if(track->Eta() > fEtaGap3Sub1) {
       NtrksAfterGap8P++;
       for(int iharm=0; iharm<8; iharm++) {
         for(int ipow=0; ipow<6; ipow++) {
