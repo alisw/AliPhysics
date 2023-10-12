@@ -130,6 +130,10 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       hPtRecPrivsV0M(0),
       hRecNchvsRecPt05(0),
       hTrueNchvsTruePt05(0),
+      hAllpTRec(0),
+      hAllpTTrue(0),
+      hPripTRec(0),
+      hPripTTrue(0),
       hTrueNchHM(0),
       hTrueNchHMWithTrigger(0),
       hTrueNchHMWithEventCuts(0),
@@ -181,6 +185,10 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       hPtRecPrivsV0M(0),
       hRecNchvsRecPt05(0),
       hTrueNchvsTruePt05(0),
+      hAllpTRec(0),
+      hAllpTTrue(0),
+      hPripTRec(0),
+      hPripTTrue(0),
       hTrueNchHM(0),
       hTrueNchHMWithTrigger(0),
       hTrueNchHMWithEventCuts(0),
@@ -303,113 +311,118 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   fOutputList->Add(hV0Mmult);
 
   //! This is used in data
-  hNchUCvsV0M = new TH2D("hNchvsV0M_UC", ";#it{N}_{ch} (|#eta|<0.8); V0M (%)",
-                         nch_Nbins, nch_bins, v0m_Nbins, v0m_bins);
+  hNchUCvsV0M = new TH2D("hNchvsV0M_UC", ";#it{N}_{ch}; V0M (%)", nch_Nbins,
+                         nch_bins, v0m_Nbins, v0m_bins);
   fOutputList->Add(hNchUCvsV0M);
 
-  pPtvsNch05 = new TProfile(
-      "pPtvsNch_0_5",
-      "; #it{N}_{ch}^{rec} (|#eta|<0.8); #LT#it{p}_{T}#GT GeV/#it{c}",
-      nch_Nbins, nch_bins);
+  pPtvsNch05 = new TProfile("pPtvsNch_0_5",
+                            "; #it{N}_{ch}^{rec}; #LT#it{p}_{T}#GT GeV/#it{c}",
+                            nch_Nbins, nch_bins);
 
-  hPtvsNch05 = new TH2D(
-      "hPtvsNch_0_5", "; #it{N}_{ch}^{rec} (|#eta|<0.8); #it{p}_{T} GeV/#it{c}",
-      nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+  hPtvsNch05 =
+      new TH2D("hPtvsNch_0_5", "; #it{N}_{ch}^{rec}; #it{p}_{T} GeV/#it{c}",
+               nch_Nbins, nch_bins, pt_Nbins, pt_bins);
 
   for (int i = 0; i < v0m_Nbins; ++i) {
-    pPtvsNch[i] = new TProfile(
-        Form("pPtvsNch_%s", uc_v0m_bins_name[i]),
-        "; #it{N}_{ch}^{rec} (|#eta|<0.8); #LT#it{p}_{T}#GT GeV/#it{c}",
-        nch_Nbins, nch_bins);
+    pPtvsNch[i] =
+        new TProfile(Form("pPtvsNch_%s", uc_v0m_bins_name[i]),
+                     "; #it{N}_{ch}^{rec}; #LT#it{p}_{T}#GT GeV/#it{c}",
+                     nch_Nbins, nch_bins);
     fOutputList->Add(pPtvsNch[i]);
-    hPtvsNch[i] =
-        new TH2D(Form("hPtvsNch_%s", uc_v0m_bins_name[i]),
-                 "; #it{N}_{ch}^{rec} (|#eta|<0.8); #it{p}_{T} GeV/#it{c}",
-                 nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+    hPtvsNch[i] = new TH2D(Form("hPtvsNch_%s", uc_v0m_bins_name[i]),
+                           "; #it{N}_{ch}^{rec}; #it{p}_{T} GeV/#it{c}",
+                           nch_Nbins, nch_bins, pt_Nbins, pt_bins);
     fOutputList->Add(hPtvsNch[i]);
   }
   fOutputList->Add(pPtvsNch05);
   fOutputList->Add(hPtvsNch05);
 
-  hTrackletvsV0M =
-      new TH2F("hTrackletvsV0M", ";#it{N}_{ch}^{tracklet} (|#eta|<0.8);V0M (%)",
-               8001, -0.5, 8000.5, v0m_Nbins, v0m_bins);
+  hTrackletvsV0M = new TH2F("hTrackletvsV0M", ";#it{N}_{ch}^{tracklet};V0M (%)",
+                            8001, -0.5, 8000.5, v0m_Nbins, v0m_bins);
   fOutputList->Add(hTrackletvsV0M);
 
   hTrueVtxZ =
       new TH1F("hTrueVtxZ", ";z-vertex position;Entries", 200, -10.0, 10.0);
 
-  hNchResponse = new TH2D(
-      "hNchResponse", ";#it{N}_{ch}^{rec} (|#eta|<0.8); #it{N}_{ch}^{true};",
-      nch_Nbins, nch_bins, nch_Nbins, nch_bins);
+  hNchResponse =
+      new TH2D("hNchResponse", ";#it{N}_{ch}^{rec}; #it{N}_{ch}^{true};",
+               nch_Nbins, nch_bins, nch_Nbins, nch_bins);
 
   hTrueNchvsV0M_UC =
-      new TH2F("hTrueNchvsV0M_UC", "; #it{N}_{ch}^{rec} (|#eta|<0.8); V0M (%)",
+      new TH2F("hTrueNchvsV0M_UC", "; #it{N}_{ch}^{true}; V0M (%)", nch_Nbins,
+               nch_bins, v0m_Nbins, v0m_bins);
+
+  hRecNchvsV0M_UC = new TH2F("hRecNchvsV0M_UC", "; #it{N}_{ch}^{rec}; V0M (%)",
+                             nch_Nbins, nch_bins, v0m_Nbins, v0m_bins);
+
+  hAllpTRec = new TH2F("hAllpTRec", ";V0M (%);#it{p}_{T}^{rec} GeV/#it{c}",
+                       v0m_Nbins, v0m_bins, pt_Nbins, pt_bins);
+
+  hAllpTTrue = new TH2F("hAllpTTrue", ";V0M (%);#it{p}_{T}^{true} GeV/#it{c}",
+                        v0m_Nbins, v0m_bins, pt_Nbins, pt_bins);
+
+  hPripTRec = new TH2F("hPripTRec", ";V0M (%);#it{p}_{T}^{rec} GeV/#it{c}",
+                       v0m_Nbins, v0m_bins, pt_Nbins, pt_bins);
+
+  hPripTTrue = new TH2F("hPripTTrue", ";V0M (%);#it{p}_{T}^{rec} GeV/#it{c}",
+                        v0m_Nbins, v0m_bins, pt_Nbins, pt_bins);
+
+  hTrueNchHM = new TH2F("hTrueNchvsV0M", ";#it{N}_{ch}^{true}; V0M (%)",
+                        nch_Nbins, nch_bins, v0m_Nbins, v0m_bins);
+
+  hTrueNchHMWithTrigger =
+      new TH2F("hTrueNchHMWithTrigger", ";#it{N}_{ch}^{true}; V0M (%)",
                nch_Nbins, nch_bins, v0m_Nbins, v0m_bins);
 
-  hRecNchvsV0M_UC =
-      new TH2F("hRecNchvsV0M_UC", "; #it{N}_{ch}^{rec} (|#eta|<0.8); V0M (%)",
+  hTrueNchHMWithEventCuts =
+      new TH2F("hTrueNchHMWithEventCuts", ";#it{N}_{ch}^{true}; V0M (%)",
                nch_Nbins, nch_bins, v0m_Nbins, v0m_bins);
 
-  hTrueNchHM =
-      new TH2F("hTrueNchvsV0M", ";#it{N}_{ch}^{true} (|#eta|<0.8); V0M (%)",
+  hTrueNchHMWithVtxSel =
+      new TH2F("hTrueNchHMWithVtxSel", ";#it{N}_{ch}^{true}; V0M (%)",
                nch_Nbins, nch_bins, v0m_Nbins, v0m_bins);
 
-  hTrueNchHMWithTrigger = new TH2F("hTrueNchHMWithTrigger",
-                                   ";#it{N}_{ch}^{true} (|#eta|<0.8); V0M (%)",
-                                   nch_Nbins, nch_bins, v0m_Nbins, v0m_bins);
+  hRecNchvsRecPt05 = new TH2D("hRecPtvsRecNch_UC_0_5",
+                              "; #it{N}_{ch}^{rec}; #it{p}_{T} GeV/#it{c}",
+                              nch_Nbins, nch_bins, pt_Nbins, pt_bins);
 
-  hTrueNchHMWithEventCuts = new TH2F(
-      "hTrueNchHMWithEventCuts", ";#it{N}_{ch}^{true} (|#eta|<0.8); V0M (%)",
-      nch_Nbins, nch_bins, v0m_Nbins, v0m_bins);
-
-  hTrueNchHMWithVtxSel = new TH2F("hTrueNchHMWithVtxSel",
-                                  ";#it{N}_{ch}^{true} (|#eta|<0.8); V0M (%)",
-                                  nch_Nbins, nch_bins, v0m_Nbins, v0m_bins);
-
-  hRecNchvsRecPt05 =
-      new TH2D("hRecPtvsRecNch_UC_0_5",
-               "; #it{N}_{ch}^{rec} (|#eta|<0.8); #it{p}_{T} GeV/#it{c}",
-               nch_Nbins, nch_bins, pt_Nbins, pt_bins);
-
-  hTrueNchvsTruePt05 =
-      new TH2D("hTruePtvsTrueNch_UC_0_5",
-               "; #it{N}_{ch}^{rec} (|#eta|<0.8); #it{p}_{T} GeV/#it{c}",
-               nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+  hTrueNchvsTruePt05 = new TH2D("hTruePtvsTrueNch_UC_0_5",
+                                "; #it{N}_{ch}^{rec}; #it{p}_{T} GeV/#it{c}",
+                                nch_Nbins, nch_bins, pt_Nbins, pt_bins);
 
   for (int i = 0; i < v0m_Nbins; ++i) {
     hRecNchvsRecPt[i] =
         new TH2D(Form("hRecPtvsRecNch_UC_%s", uc_v0m_bins_name[i]),
-                 "; #it{N}_{ch}^{rec} (|#eta|<0.8); #it{p}_{T} GeV/#it{c}",
-                 nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+                 "; #it{N}_{ch}^{rec}; #it{p}_{T} GeV/#it{c}", nch_Nbins,
+                 nch_bins, pt_Nbins, pt_bins);
 
     hTrueNchvsTruePt[i] =
         new TH2D(Form("hTruePtvsTrueNch_UC_%s", uc_v0m_bins_name[i]),
-                 "; #it{N}_{ch}^{rec} (|#eta|<0.8); #it{p}_{T} GeV/#it{c}",
-                 nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+                 "; #it{N}_{ch}^{rec}; #it{p}_{T} GeV/#it{c}", nch_Nbins,
+                 nch_bins, pt_Nbins, pt_bins);
   }
 
   hPtTruePrivsV0M =
-      new TH2D("hPtTruePrivsV0M", "; V0M (%); #it{p}_{T} GeV/#it{c}", v0m_Nbins,
-               v0m_bins, pt_Nbins, pt_bins);
+      new TH2D("hPtTruePrivsV0M", "; V0M (%); #it{p}_{T}^{true} GeV/#it{c}",
+               v0m_Nbins, v0m_bins, pt_Nbins, pt_bins);
 
   hPtRecPrivsV0M =
-      new TH2D("hPtRecPrivsV0M", "; V0M (%); #it{p}_{T} GeV/#it{c}", v0m_Nbins,
-               v0m_bins, pt_Nbins, pt_bins);
+      new TH2D("hPtRecPrivsV0M", "; V0M (%); #it{p}_{T}^{rec} GeV/#it{c}",
+               v0m_Nbins, v0m_bins, pt_Nbins, pt_bins);
 
   for (int i = 0; i < v0m_Nbins; ++i) {
     hDCAxyPri[i] = new TH2F(Form("hDCAxyPri_%s", uc_v0m_bins_name[i]),
-                            "; #it{p}_{T} GeV/#it{c}; DCA_{xy} (cm)", pt_Nbins,
-                            pt_bins, dcaxy_Nbins, dcaxy_bins);
+                            ";DCA_{xy} (cm);#it{p}_{T} GeV/#it{c}", dcaxy_Nbins,
+                            dcaxy_bins, pt_Nbins, pt_bins);
     hDCAxyWeDe[i] = new TH2F(Form("hDCAxyWeDe_%s", uc_v0m_bins_name[i]),
-                             "; #it{p}_{T} GeV/#it{c}; DCA_{xy} (cm)", pt_Nbins,
-                             pt_bins, dcaxy_Nbins, dcaxy_bins);
+                             ";DCA_{xy} (cm);#it{p}_{T} GeV/#it{c}",
+                             dcaxy_Nbins, dcaxy_bins, pt_Nbins, pt_bins);
     hDCAxyMaIn[i] = new TH2F(Form("hDCAxyMaIn_%s", uc_v0m_bins_name[i]),
-                             "; #it{p}_{T} GeV/#it{c}; DCA_{xy} (cm)", pt_Nbins,
-                             pt_bins, dcaxy_Nbins, dcaxy_bins);
+                             ";DCA_{xy} (cm);#it{p}_{T} GeV/#it{c}",
+                             dcaxy_Nbins, dcaxy_bins, pt_Nbins, pt_bins);
     hDCAxyData[i] = new TH2F(Form("hDCAxyData_%s", uc_v0m_bins_name[i]),
-                             "; #it{p}_{T} GeV/#it{c}; DCA_{xy} (cm)", pt_Nbins,
-                             pt_bins, dcaxy_Nbins, dcaxy_bins);
+                             ";DCA_{xy} (cm);#it{p}_{T} GeV/#it{c}",
+                             dcaxy_Nbins, dcaxy_bins, pt_Nbins, pt_bins);
   }
 
   if (fUseMC) {
@@ -419,6 +432,10 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
     fOutputList->Add(hPtRecPrivsV0M);
     fOutputList->Add(hTrueNchvsV0M_UC);
     fOutputList->Add(hRecNchvsV0M_UC);
+    fOutputList->Add(hAllpTRec);
+    fOutputList->Add(hAllpTTrue);
+    fOutputList->Add(hPripTRec);
+    fOutputList->Add(hPripTTrue);
     fOutputList->Add(hTrueNchHM);
     fOutputList->Add(hTrueNchHMWithTrigger);
     fOutputList->Add(hTrueNchHMWithEventCuts);
@@ -651,6 +668,9 @@ void AliAnalysisTaskDataSpeedOfSound::AnalyzeRecEvent(
     if (track->Pt() < fPtMin) {
       continue;
     }
+    if (track->Charge() == 0) {
+      continue;
+    }
     if (TMath::Abs(track->Eta()) > fEtaCut) {
       continue;
     }
@@ -689,6 +709,9 @@ void AliAnalysisTaskDataSpeedOfSound::DCAxyDistributions() const {
       if (TMath::Abs(track->Eta()) > fEtaCut) {
         continue;
       }
+      if (track->Charge() == 0) {
+        continue;
+      }
 
       float dcaxy = -999;
       float dcaz = -999;
@@ -701,95 +724,100 @@ void AliAnalysisTaskDataSpeedOfSound::DCAxyDistributions() const {
       //   continue;
       // }
       if (fMC->IsPhysicalPrimary(label)) {
-        hDCAxyPri[index]->Fill(track->Pt(), dcaxy);
+        hDCAxyPri[index]->Fill(dcaxy, track->Pt());
       } else if (fMC->IsSecondaryFromWeakDecay(label)) {
-        hDCAxyWeDe[index]->Fill(track->Pt(), dcaxy);
+        hDCAxyWeDe[index]->Fill(dcaxy, track->Pt());
       } else if (fMC->IsSecondaryFromMaterial(label)) {
-        hDCAxyMaIn[index]->Fill(track->Pt(), dcaxy);
+        hDCAxyMaIn[index]->Fill(dcaxy, track->Pt());
       } else {
         continue;
       }
     }
   }
-  if (!fUseMC) {
-    for (int i = 0; i < n_tracks; ++i) {
-      AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
-      if (!track) {
-        continue;
-      }
-      if (!fTrackFilterwoDCA->IsSelected(track)) {
-        continue;
-      }
-      if (track->Pt() < fPtMin) {
-        continue;
-      }
-      if (TMath::Abs(track->Eta()) > fEtaCut) {
-        continue;
-      }
-
-      float dcaxy = -999;
-      float dcaz = -999;
-      track->GetImpactParameters(dcaxy, dcaz);
-
-      hDCAxyData[index]->Fill(track->Pt(), dcaxy);
+  for (int i = 0; i < n_tracks; ++i) {
+    AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
+    if (!track) {
+      continue;
     }
+    if (!fTrackFilterwoDCA->IsSelected(track)) {
+      continue;
+    }
+    if (track->Pt() < fPtMin) {
+      continue;
+    }
+    if (TMath::Abs(track->Eta()) > fEtaCut) {
+      continue;
+    }
+    if (track->Charge() == 0) {
+      continue;
+    }
+
+    float dcaxy = -999;
+    float dcaz = -999;
+    track->GetImpactParameters(dcaxy, dcaz);
+    hDCAxyData[index]->Fill(dcaxy, track->Pt());
   }
 }
 //____________________________________________________________
 void AliAnalysisTaskDataSpeedOfSound::TrackingEfficiency() const {
   const int n_tracks{fESD->GetNumberOfTracks()};
-  if (fUseMC) {
-    for (int i = 0; i < n_tracks; ++i) {
-      AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
-      if (!track) {
-        continue;
-      }
-      if (!fTrackFilter->IsSelected(track)) {
-        continue;
-      }
-      if (track->Pt() < fPtMin) {
-        continue;
-      }
-      if (TMath::Abs(track->Eta()) > fEtaCut) {
-        continue;
-      }
-
-      int label = -1;
-      label = TMath::Abs(track->GetLabel());
-      // TParticle* particle = fMC->GetTrack(label)->Particle();
-      // if (!particle) {
-      //   continue;
-      // }
-      if (fMC->IsPhysicalPrimary(label)) {
-        hPtRecPrivsV0M->Fill(fv0mpercentile, track->Pt());
-      } else {
-        continue;
-      }
+  for (int i = 0; i < n_tracks; ++i) {
+    AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
+    if (!track) {
+      continue;
+    }
+    if (!fTrackFilter->IsSelected(track)) {
+      continue;
+    }
+    if (track->Pt() < fPtMin) {
+      continue;
+    }
+    if (TMath::Abs(track->Eta()) > fEtaCut) {
+      continue;
+    }
+    if (track->Charge() == 0) {
+      continue;
     }
 
-    const int n_particles{fMC->GetNumberOfTracks()};
-    for (int i = 0; i < n_particles; ++i) {
-      AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
-      if (!particle) {
-        continue;
-      }
-      if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fMC)) {
-        continue;
-      }
-      if (TMath::Abs(particle->Eta()) > fEtaCut) {
-        continue;
-      }
-      if (particle->Pt() < fPtMin) {
-        continue;
-      }
-      if (particle->Charge() == 0.0) {
-        continue;
-      }
-      if (fMC->IsPhysicalPrimary(i)) {
-        hPtTruePrivsV0M->Fill(fv0mpercentile, particle->Pt());
-      } else {
-        continue;
-      }
+    int label = -1;
+    label = TMath::Abs(track->GetLabel());
+    TParticle* particle = fMC->GetTrack(label)->Particle();
+    if (!particle) {
+      continue;
+    }
+    hAllpTRec->Fill(fv0mpercentile, track->Pt());
+    hAllpTTrue->Fill(fv0mpercentile, particle->Pt());
+    if (fMC->IsPhysicalPrimary(label)) {
+      hPtRecPrivsV0M->Fill(fv0mpercentile, track->Pt());
+      hPripTRec->Fill(fv0mpercentile, track->Pt());
+      hPripTTrue->Fill(fv0mpercentile, particle->Pt());
+    } else {
+      continue;
+    }
+  }
+
+  const int n_particles{fMC->GetNumberOfTracks()};
+  for (int i = 0; i < n_particles; ++i) {
+    AliMCParticle* particle = (AliMCParticle*)fMC->GetTrack(i);
+    if (!particle) {
+      continue;
+    }
+    if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fMC)) {
+      continue;
+    }
+    if (TMath::Abs(particle->Eta()) > fEtaCut) {
+      continue;
+    }
+    if (particle->Pt() < fPtMin) {
+      continue;
+    }
+    if (particle->Charge() == 0) {
+      continue;
+    }
+    if (fMC->IsPhysicalPrimary(i)) {
+      hPtTruePrivsV0M->Fill(fv0mpercentile, particle->Pt());
+    } else {
+      continue;
     }
   }
 }
