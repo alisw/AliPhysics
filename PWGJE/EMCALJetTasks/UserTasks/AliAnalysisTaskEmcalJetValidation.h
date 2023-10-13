@@ -12,6 +12,7 @@
 #include "AliVEvent.h"
 #include "AliFiducialCut.h"
 #include "AliEMCALRecoUtils.h"
+#include "AliFJWrapper.h"
 #include <map>
 #include <string>
 #include <vector>
@@ -70,7 +71,7 @@ private:
     AliESDEvent*            fESD;           //! input event
     TList*                  fOutputList;    //! output list
     TH1F*                   fHistJetPt;     //! jet Pt
-    TH1F*	                  fHistNEvents;   //! histogram for total number of events
+    TH1F*                   fHistNEvents;   //! histogram for total number of events
     TH1F*                   fHistNEventVtx; //! event vertex distribution
     TH1F*                   fHistJetPhi;    //! jet Phi
     TH1F*                   fHistJetEta;    //! jet Eta
@@ -88,6 +89,7 @@ private:
     AliESDtrackCuts*        fTrackCuts;  //! track cuts
 
     Bool_t fInitializedLocal;       //! flag which marks the first access to  ExecOnceLocal()
+    Bool_t fUseAliEventCuts;	   //! flag for AliEvent cuts
     Double_t fMinPt;                //  minimum track/jet pt
     Double_t fJetEtaRange;          //  fiducial cut on jets
     Double_t fJetR;                 //  fiducial cut on jets
