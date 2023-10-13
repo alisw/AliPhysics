@@ -102,7 +102,8 @@ AliAnalysisTaskEmcalJetValidation::AliAnalysisTaskEmcalJetValidation() :
    fJetR(0.4),
    fJetAlgo(AliJetContainer::antikt_algorithm),
    fGhostArea(0.005),
-   fRecoScheme(AliJetContainer::E_scheme)
+   fRecoScheme(AliJetContainer::E_scheme),
+   fUseAliEventCuts(kFALSE)
 
    {
 
@@ -135,7 +136,8 @@ AliAnalysisTaskEmcalJetValidation::AliAnalysisTaskEmcalJetValidation(const char*
    fJetR(0.4),
    fJetAlgo(AliJetContainer::antikt_algorithm),
    fGhostArea(0.005),
-   fRecoScheme(AliJetContainer::E_scheme)
+   fRecoScheme(AliJetContainer::E_scheme),
+   fUseAliEventCuts(kFALSE)
 
 {
     // constructor
@@ -367,6 +369,12 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
      return;
    }
 
+   if (fUseAliEventCuts) {
+     Bool_t alieventcut = fEventCuts.AcceptEvent(vevt);
+     if (!alieventcut)
+      return;
+   }
+   fHistNEvents->Fill(2);
   //DO SOME EVENT SELECTION HERE
   const AliESDVertex* vertex = (AliESDVertex*)fESD->GetPrimaryVertex();
   if(TMath::Abs(vertex->GetZ()) > 10.) return;      // vertex selection
@@ -375,9 +383,15 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
   Bool_t passedTrigger = kFALSE;
   UInt_t triggerMask = fInputHandler->IsEventSelected();
   {
-  if(triggerMask & AliVEvent::kINT7){
+  if(triggerMask & AliVEvent::kINT7){      // for sel7 in Run3
          passedTrigger = kTRUE;
   }
+  // if(triggerMask & AliVEvent::kAny){     // for noSel in Run3
+  //        passedTrigger = kTRUE;
+  // }
+  // if(triggerMask & AliVEvent::kINT8){       // for sel8 in Run3
+  //        passedTrigger = kTRUE;
+  // }
   }
   if(passedTrigger == kTRUE){
 

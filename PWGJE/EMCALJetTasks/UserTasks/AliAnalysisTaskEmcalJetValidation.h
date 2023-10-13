@@ -84,7 +84,7 @@ private:
     TH1F*                   fHistMaxChi2PerClusterITS; //! for MaxChi2PerClusterITS(36.0) track cut
 
     AliFJWrapper*           fFastJetWrapper;  //! utility
-
+    AliEventCuts            fEventCuts; //! alievent cuts
     AliESDtrackCuts*        fTrackCuts;  //! track cuts
 
     Bool_t fInitializedLocal;       //! flag which marks the first access to  ExecOnceLocal()
@@ -102,7 +102,7 @@ private:
     AliAnalysisTaskEmcalJetValidation(const AliAnalysisTaskEmcalJetValidation&); // not implemented
     AliAnalysisTaskEmcalJetValidation& operator=(const AliAnalysisTaskEmcalJetValidation&); // not implemented
 
-    ClassDef(AliAnalysisTaskEmcalJetValidation, 23);
+    ClassDef(AliAnalysisTaskEmcalJetValidation, 24);
 };
 
 #endif
