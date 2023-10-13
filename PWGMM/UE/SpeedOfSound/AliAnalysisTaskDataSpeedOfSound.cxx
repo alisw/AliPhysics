@@ -84,11 +84,11 @@ class AliESDtrackCuts;
 using std::cout;
 using std::endl;
 
-static constexpr int v0m_Nbins{3};
-static constexpr double v0m_bins[v0m_Nbins + 1] = {0.0, 1.0, 5.0, 80.0};
-static constexpr double uc_v0m_bins_high[v0m_Nbins] = {1.0, 5.0, 80.0};
-static constexpr double uc_v0m_bins_low[v0m_Nbins] = {0.0, 1.0, 5.0};
-static const char* uc_v0m_bins_name[v0m_Nbins] = {"0_1", "1_5", "5_80"};
+static constexpr int v0m_Nbins{2};
+static constexpr double v0m_bins[v0m_Nbins + 1] = {0.0, 1.0, 5.0};
+static constexpr double uc_v0m_bins_high[v0m_Nbins] = {1.0, 5.0};
+static constexpr double uc_v0m_bins_low[v0m_Nbins] = {0.0, 1.0};
+static const char* uc_v0m_bins_name[v0m_Nbins] = {"0_1", "1_5"};
 
 #include "AliAnalysisTaskDataSpeedOfSound.h"
 
@@ -114,14 +114,18 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       fV0Mmax(100.0),
       ftrackmult08(0),
       fv0mpercentile(0),
+      fv0mamplitude(0),
       fdcaxy(-999),
       fdcaz(-999),
       fMultSelection(0x0),
-      hNchUCvsV0M(0),
+      hNchvsV0M(0),
+      hNchvsV0MAmp(0),
+      hV0MvsV0MAmp(0),
+      // hNchUCvsV0MvsV0MAmp(0),
       hV0Mmult(0),
-      hTrackletvsV0M(0),
       pPtvsNch05(0),
       hPtvsNch05(0),
+      hPtvsNchvsV0MAmp_0_5(0),
       hTrueVtxZ(0),
       hTrueNchvsV0M_UC(0),
       hRecNchvsV0M_UC(0),
@@ -169,14 +173,18 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       fV0Mmax(100.0),
       ftrackmult08(0),
       fv0mpercentile(0),
+      fv0mamplitude(0),
       fdcaxy(-999),
       fdcaz(-999),
       fMultSelection(0x0),
-      hNchUCvsV0M(0),
+      hNchvsV0M(0),
+      hNchvsV0MAmp(0),
+      hV0MvsV0MAmp(0),
+      // hNchUCvsV0MvsV0MAmp(0),
       hV0Mmult(0),
-      hTrackletvsV0M(0),
       pPtvsNch05(0),
       hPtvsNch05(0),
+      hPtvsNchvsV0MAmp_0_5(0),
       hTrueVtxZ(0),
       hTrueNchvsV0M_UC(0),
       hRecNchvsV0M_UC(0),
@@ -301,19 +309,43 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
     nch_bins[i] = 30.0 * i;
   }
 
+  constexpr int v0mAmp_Nbins{1000};
+  double v0mAmp_bins[v0mAmp_Nbins + 1] = {0};
+  for (int i = 0; i <= v0mAmp_Nbins; ++i) {
+    v0mAmp_bins[i] = 28000.0 + (22.0 * i);
+  }
+
   constexpr int dcaxy_Nbins{100};
   double dcaxy_bins[dcaxy_Nbins + 1] = {0};
   for (int i = 0; i <= dcaxy_Nbins; ++i) {
     dcaxy_bins[i] = -3.0 + (0.06 * i);
   }
 
-  hV0Mmult = new TH1F("hV0Mmult", ";V0M (%);Entries", v0m_Nbins, v0m_bins);
+  constexpr int v0m_Nbins080{6};
+  constexpr double v0m_bins080[v0m_Nbins080 + 1] = {0.0,  1.0,  5.0, 10.0,
+                                                    20.0, 50.0, 80.0};
+
+  hV0Mmult =
+      new TH1F("hV0Mmult", ";V0M (%);Entries", v0m_Nbins080, v0m_bins080);
   fOutputList->Add(hV0Mmult);
 
   //! This is used in data
-  hNchUCvsV0M = new TH2D("hNchvsV0M_UC", ";#it{N}_{ch}; V0M (%)", nch_Nbins,
-                         nch_bins, v0m_Nbins, v0m_bins);
-  fOutputList->Add(hNchUCvsV0M);
+  hNchvsV0M = new TH2D("hNchvsV0M", ";#it{N}_{ch}; V0M (%)", nch_Nbins,
+                       nch_bins, v0m_Nbins080, v0m_bins080);
+  fOutputList->Add(hNchvsV0M);
+
+  hNchvsV0MAmp = new TH2D("hNchvsV0MAmp", ";#it{N}_{ch}; V0M Amp", nch_Nbins,
+                          nch_bins, v0mAmp_Nbins, v0mAmp_bins);
+  fOutputList->Add(hNchvsV0MAmp);
+
+  hV0MvsV0MAmp = new TH2D("hV0MvsV0MAmp", ";V0M Ampl; V0M (%)", v0mAmp_Nbins,
+                          v0mAmp_bins, v0m_Nbins080, v0m_bins080);
+  fOutputList->Add(hV0MvsV0MAmp);
+
+  // hNchUCvsV0MvsV0MAmp = new TH3D(
+  //     "hNchUCvsV0MvsV0MAmp", ";#it{N}_{ch}; V0M (%); V0M Amp", nch_Nbins,
+  //     nch_bins, v0m_Nbins, v0m_bins, v0mAmp_Nbins, v0mAmp_bins);
+  // fOutputList->Add(hNchUCvsV0MvsV0MAmp);
 
   pPtvsNch05 = new TProfile("pPtvsNch_0_5",
                             "; #it{N}_{ch}^{rec}; #LT#it{p}_{T}#GT GeV/#it{c}",
@@ -322,6 +354,11 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   hPtvsNch05 =
       new TH2D("hPtvsNch_0_5", "; #it{N}_{ch}^{rec}; #it{p}_{T} GeV/#it{c}",
                nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+
+  hPtvsNchvsV0MAmp_0_5 = new TH3D(
+      "hPtvsNchvsV0MAmp_0_5",
+      ";V0M Amp; #it{N}_{ch}^{rec}; #it{p}_{T} GeV/#it{c}", v0mAmp_Nbins,
+      v0mAmp_bins, nch_Nbins, nch_bins, pt_Nbins, pt_bins);
 
   for (int i = 0; i < v0m_Nbins; ++i) {
     pPtvsNch[i] =
@@ -336,10 +373,7 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   }
   fOutputList->Add(pPtvsNch05);
   fOutputList->Add(hPtvsNch05);
-
-  hTrackletvsV0M = new TH2F("hTrackletvsV0M", ";#it{N}_{ch}^{tracklet};V0M (%)",
-                            8001, -0.5, 8000.5, v0m_Nbins, v0m_bins);
-  fOutputList->Add(hTrackletvsV0M);
+  fOutputList->Add(hPtvsNchvsV0MAmp_0_5);
 
   hTrueVtxZ =
       new TH1F("hTrueVtxZ", ";z-vertex position;Entries", 200, -10.0, 10.0);
@@ -503,9 +537,11 @@ void AliAnalysisTaskDataSpeedOfSound::UserExec(Option_t*) {
 
   ftrackmult08 = -999.0;
   fv0mpercentile = -999.0;
+  fv0mamplitude = -999.0;
 
   fMultSelection = (AliMultSelection*)fESD->FindListObject("MultSelection");
   fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
+  fv0mamplitude = fMultSelection->GetEstimator("V0M")->GetValue();
   ftrackmult08 = AliESDtrackCuts::GetReferenceMultiplicity(
       fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
 
@@ -595,7 +631,7 @@ void AliAnalysisTaskDataSpeedOfSound::UserExec(Option_t*) {
   }
 
   AnalyzeRecEvent(rec_nch, vec_rec_pt);
-  hTrackletvsV0M->Fill(ftrackmult08, fv0mpercentile);
+  // hTrackletvsV0M->Fill(ftrackmult08, fv0mpercentile);
 
   //! DCAxy templates MC and Data
   DCAxyDistributions();
@@ -626,6 +662,11 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions(
          << '\n';
   }
 
+  hNchvsV0M->Fill(rec_nch, fv0mpercentile);
+  hNchvsV0MAmp->Fill(rec_nch, fv0mamplitude);
+  hV0MvsV0MAmp->Fill(fv0mamplitude, fv0mpercentile);
+  // hNchUCvsV0MvsV0MAmp->Fill(rec_nch, fv0mpercentile, fv0mamplitude);
+
   int index{-1};
   for (int i = 0; i < v0m_Nbins; ++i) {
     if (fv0mpercentile >= uc_v0m_bins_low[i] &&
@@ -645,11 +686,9 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions(
     if (fv0mpercentile >= 0.0 && fv0mpercentile < 5.0) {
       pPtvsNch05->Fill(rec_nch, pt);
       hPtvsNch05->Fill(rec_nch, pt);
+      hPtvsNchvsV0MAmp_0_5->Fill(fv0mamplitude, rec_nch, pt);
     }
   }
-
-  hNchUCvsV0M->Fill(rec_nch, fv0mpercentile);
-  // hITSclustersvsNch->Fill(track->GetITSNcls(), multrec);
 }
 //____________________________________________________________
 void AliAnalysisTaskDataSpeedOfSound::AnalyzeRecEvent(
@@ -865,6 +904,8 @@ void AliAnalysisTaskDataSpeedOfSound::RecMultiplicityDistributions(
          << '\n';
   }
 
+  hRecNchvsV0M_UC->Fill(rec_nch, fv0mpercentile);
+
   int index{-1};
   for (int i = 0; i < v0m_Nbins; ++i) {
     if (fv0mpercentile >= uc_v0m_bins_low[i] &&
@@ -884,8 +925,6 @@ void AliAnalysisTaskDataSpeedOfSound::RecMultiplicityDistributions(
       hRecNchvsRecPt05->Fill(rec_nch, pt);
     }
   }
-
-  hRecNchvsV0M_UC->Fill(rec_nch, fv0mpercentile);
 }
 //____________________________________________________________
 void AliAnalysisTaskDataSpeedOfSound::TrueMultiplicityDistributions(
@@ -896,6 +935,8 @@ void AliAnalysisTaskDataSpeedOfSound::TrueMultiplicityDistributions(
          << "nch= " << true_nch << "nch from vector= " << vec_true_pt.size()
          << '\n';
   }
+
+  hTrueNchvsV0M_UC->Fill(true_nch, fv0mpercentile);
 
   int index{-1};
   for (int i = 0; i < v0m_Nbins; ++i) {
@@ -916,8 +957,6 @@ void AliAnalysisTaskDataSpeedOfSound::TrueMultiplicityDistributions(
       hTrueNchvsTruePt05->Fill(true_nch, pt);
     }
   }
-
-  hTrueNchvsV0M_UC->Fill(true_nch, fv0mpercentile);
 }
 //____________________________________________________________
 Bool_t AliAnalysisTaskDataSpeedOfSound::HasRecVertex() {
