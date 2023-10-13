@@ -36,14 +36,17 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void AnalyzeRecEvent(int& rec_nch, std::vector<float>& vec_rec_pt) const;
   void DCAxyDistributions() const;
   void TrackingEfficiency() const;
-  void AnalyzeMCevent(int& true_nch, std::vector<float>& vec_true_pt) const;
+  void AnalyzeMCevent(int& true_nch, int& true_nch_v0,
+                      std::vector<float>& vec_true_pt) const;
   void DetectorResponse(const int& true_nch, const int& rec_nch) const;
   void RecMultiplicityDistributions(const int& rec_nch,
                                     const std::vector<float>& vec_rec_pt) const;
   void TrueMultiplicityDistributions(
-      const int& true_nch, const std::vector<float>& vec_true_pt) const;
+      const int& true_nch, const int& true_nch_v0,
+      const std::vector<float>& vec_true_pt) const;
   void MultiplicityDistributions(const int& rec_nch,
                                  const std::vector<float>& vec_rec_pt) const;
+  void GetCalibratedV0Amplitude();
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetUseMC(bool mc = false) { fUseMC = mc; }      // use to analyse MC data
@@ -80,27 +83,28 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2D* hNchvsV0M;
   TH2D* hNchvsV0MAmp;
   TH2D* hV0MvsV0MAmp;
-  // TH3D* hNchUCvsV0MvsV0MAmp;
+  TProfile* pV0MAmpChannel;
+  TH1D* hV0MAmplitude;
   TH1F* hV0Mmult;
-  TProfile* pPtvsNch[2];
-  TH2D* hPtvsNch[2];
-  TProfile* pPtvsNch05;
-  TH2D* hPtvsNch05;
-  TH3D* hPtvsNchvsV0MAmp_0_5;
+  TProfile* pPtvsNch[1];
+  TH2D* hPtvsNch[1];
+  TH3D* hPtvsNchvsV0MAmp[1];
   TH1F* hTrueVtxZ;
-  TH2F* hTrueNchvsV0M_UC;
-  TH2F* hRecNchvsV0M_UC;
+  TH2F* hTrueNchvsV0M;
+  TH2F* hTrueNchvsTrueV0MAmp;
+  TH2F* hRecNchvsV0M;
+  TH2F* hRecNchvsRecV0MAmp;
   TH2D* hNchResponse;
   TH2D* hPtTruePrivsV0M;
   TH2D* hPtRecPrivsV0M;
-  TH2D* hRecNchvsRecPt05;
-  TH2D* hTrueNchvsTruePt05;
-  TH2D* hRecNchvsRecPt[2];
-  TH2D* hTrueNchvsTruePt[2];
-  TH2F* hDCAxyPri[2];
-  TH2F* hDCAxyWeDe[2];
-  TH2F* hDCAxyMaIn[2];
-  TH2F* hDCAxyData[2];
+  TH2D* hRecNchvsRecPt[1];
+  TH3D* hRecPtvsRecNchvsRecV0MAmp[1];
+  TH2D* hTrueNchvsTruePt[1];
+  TH3D* hTruePtvsTrueNchvsTrueV0MAmp[1];
+  TH2F* hDCAxyPri[1];
+  TH2F* hDCAxyWeDe[1];
+  TH2F* hDCAxyMaIn[1];
+  TH2F* hDCAxyData[1];
   TH2F* hAllpTRec;
   TH2F* hAllpTTrue;
   TH2F* hPripTRec;
