@@ -258,7 +258,8 @@ class AliAnalysisTaskDowangppDCAfit : public AliAnalysisTaskSE {
     TH2F * kStarVsmT2DinMixTrue[2][5]; 
 
     TH2F * kStarVsmT2DinSamePID[2][5]; 
-    
+   
+    TH1F *kStarDis[2][5][2]; 
     vector<pool_bin> All_Event_pool;
 
     ClassDef(AliAnalysisTaskDowangppDCAfit, 1);    //Analysis task for high pt analysis
