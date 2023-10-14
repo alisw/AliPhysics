@@ -86,6 +86,7 @@
 #pragma link C++ class AliAnalysisTaskNanoXiPi+;
 #pragma link C++ class AliAnalysisTaskNanoFemtoProtonKaonPlus+;
 #pragma link C++ class AliAnalysisTaskFemtoProtonKaonPlus+;
+#pragma link C++ class AliAnalysisTaskAODThreeBodyProtonPrimary+;
 
 #pragma link C++ class AliAnalysisTaskOtonXx+;
 

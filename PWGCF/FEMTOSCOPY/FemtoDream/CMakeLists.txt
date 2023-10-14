@@ -131,6 +131,7 @@ set(SRCS
   AliAnalysisTaskOtonXx.cxx
   AliAnalysisTaskNanoFemtoProtonKaonPlus.cxx
   AliAnalysisTaskFemtoProtonKaonPlus.cxx
+  AliAnalysisTaskAODThreeBodyProtonPrimary.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
