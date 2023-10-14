@@ -40,6 +40,7 @@
 #include "AliGenEventHeader.h"
 #include "AliLog.h"
 #include "AliMultSelection.h"
+#include "AliOADBContainer.h"
 #include "AliPHOSGeometry.h"
 #include "AliPID.h"
 #include "AliPIDResponse.h"
@@ -65,19 +66,21 @@ ClassImp(AliAnalysisSigmaBarCharged);
 
 AliAnalysisSigmaBarCharged::AliAnalysisSigmaBarCharged(const char *name)
     : AliAnalysisTaskSE(name), fOutputContainer(nullptr), fPIDResponse(nullptr),
-      fUtils(nullptr), fGamma(nullptr), fCurrentMixedList(nullptr),
-      fCluTimeCut(150.e-9), fCluNbarMinE(0.6), fCPAplusCut(0.),
-      fCPAminusCut(0.), fDCAdaugplusCut(0.06), fDCAdaugminusCut(0.06),
-      fRADplusCut(0.25), fRADminusCut(0.15), fCPVCut(10.), fDispCut(4.),
-      fNcellCut(7), fTracksBits(4), fTrackEta(0.8), fNTPCclusters(60),
-      fTPCsigmas(3), fIsMC(false), fAdditionHist(false), fInvMassHist(false),
-      fPHOSClusterTOFOption(0), fCentrality(0), fCentBin(0), fStack(nullptr),
-      fEvent(nullptr) {
+      fUtils(nullptr), fPHOSgeom(nullptr), fRunNumber(0), fGamma(nullptr),
+      fCurrentMixedList(nullptr), fCluTimeCut(150.e-9), fCluNbarMinE(0.6),
+      fCPAplusCut(0.), fCPAminusCut(0.), fDCAdaugplusCut(0.06),
+      fDCAdaugminusCut(0.06), fRADplusCut(0.25), fRADminusCut(0.15),
+      fCPVCut(10.), fDispCut(4.), fNcellCut(7), fTracksBits(4), fTrackEta(0.8),
+      fNTPCclusters(60), fTPCsigmas(3), fIsMC(false), fAdditionHist(false),
+      fInvMassHist(false), fQAhist(false), fPHOSClusterTOFOption(0),
+      fCentrality(0), fCentBin(0), fStack(nullptr), fEvent(nullptr) {
   for (Int_t i = 0; i < 10; i++) {
     for (Int_t j = 0; j < 10; j++) {
       fPHOSEvents[i][j] = 0x0; // Container for PHOS photons
     }
   }
+  for (Int_t mod = 0; mod < 6; mod++)
+    fPHOSBadMap[mod] = 0x0;
 
   // Output slots #0 write into a TH1 container
   DefineOutput(1, THashList::Class());
@@ -86,19 +89,22 @@ AliAnalysisSigmaBarCharged::AliAnalysisSigmaBarCharged(const char *name)
 AliAnalysisSigmaBarCharged::AliAnalysisSigmaBarCharged(
     const AliAnalysisSigmaBarCharged &rh)
     : AliAnalysisTaskSE(rh.GetName()), fOutputContainer(nullptr),
-      fPIDResponse(nullptr), fUtils(nullptr), fGamma(nullptr),
-      fCurrentMixedList(nullptr), fCluTimeCut(150.e-9), fCluNbarMinE(0.6),
-      fCPAplusCut(0.), fCPAminusCut(0.), fDCAdaugplusCut(0.06),
-      fDCAdaugminusCut(0.06), fRADplusCut(0.25), fRADminusCut(0.15),
-      fCPVCut(10.), fDispCut(4.), fNcellCut(7), fTracksBits(4), fTrackEta(0.8),
-      fNTPCclusters(60), fTPCsigmas(3), fIsMC(false), fAdditionHist(false),
-      fInvMassHist(false), fPHOSClusterTOFOption(0), fCentrality(0),
-      fCentBin(0), fStack(nullptr), fEvent(nullptr) {
+      fPIDResponse(nullptr), fUtils(nullptr), fPHOSgeom(nullptr), fRunNumber(0),
+      fGamma(nullptr), fCurrentMixedList(nullptr), fCluTimeCut(150.e-9),
+      fCluNbarMinE(0.6), fCPAplusCut(0.), fCPAminusCut(0.),
+      fDCAdaugplusCut(0.06), fDCAdaugminusCut(0.06), fRADplusCut(0.25),
+      fRADminusCut(0.15), fCPVCut(10.), fDispCut(4.), fNcellCut(7),
+      fTracksBits(4), fTrackEta(0.8), fNTPCclusters(60), fTPCsigmas(3),
+      fIsMC(false), fAdditionHist(false), fInvMassHist(false), fQAhist(false),
+      fPHOSClusterTOFOption(0), fCentrality(0), fCentBin(0), fStack(nullptr),
+      fEvent(nullptr) {
   for (Int_t i = 0; i < 10; i++) {
     for (Int_t j = 0; j < 10; j++) {
       fPHOSEvents[i][j] = 0x0; // Container for PHOS photons
     }
   }
+  for (Int_t mod = 0; mod < 6; mod++)
+    fPHOSBadMap[mod] = 0x0;
 
   if (fOutputContainer)
     delete fOutputContainer;
@@ -123,6 +129,12 @@ AliAnalysisSigmaBarCharged::~AliAnalysisSigmaBarCharged() {
         delete fPHOSEvents[i][j];
         fPHOSEvents[i][j] = 0x0;
       }
+    }
+  }
+  for (Int_t mod = 0; mod < 6; mod++) {
+    if (fPHOSBadMap[mod]) {
+      delete fPHOSBadMap[mod];
+      fPHOSBadMap[mod] = 0x0;
     }
   }
 }
@@ -190,6 +202,47 @@ void AliAnalysisSigmaBarCharged::UserCreateOutputObjects() {
                    "Spectrum of nbar;#it{p}_{T} (GeV/#it{c});Counts", ebins,
                    emin, emax));
     }
+    if (fQAhist) {
+      fOutputContainer->Add(new TH1F(
+          "MC_Pion_1", "Spectrum of pion;#it{p}_{T} (GeV/#it{c});Counts", ebins,
+          emin, emax));
+    }
+  }
+
+  if (fQAhist) {
+    for (Int_t iModule = 1; iModule <= 4; iModule++) {
+      fOutputContainer->Add(new TH2F(Form("OccupancyPlot_%dM", iModule),
+                                     ";x, cells; z, cells", 64, 0, 64, 56, 0,
+                                     56));
+      fOutputContainer->Add(
+          new TH2F(Form("ClusterTOFvsE_%dM", iModule),
+                   "Cluster time vs energy;TOF (s);#it{E}_{clu} (GeV)", tofbins,
+                   tofmin, tofmax, ebins, emin, emax));
+    }
+    fOutputContainer->Add(
+        new TH2F("Acceptance_track", "Spec", 400, -10, 10, 800, -1, 7));
+    fOutputContainer->Add(
+        new TH2F("PhivsPt_track_1", "Spec", ebins, emin, emax, 800, -1, 7));
+    fOutputContainer->Add(
+        new TH2F("PhivsPt_track_2", "Spec", ebins, emin, emax, 800, -1, 7));
+    fOutputContainer->Add(
+        new TH1F("Spec_track_FB5_0", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spec_track_FB5_1", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spec_track_FB5_2", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spec_track_FB5_3", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spec_track_FB5_4", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spec_track_FB4_1", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spec_track_FB4_2", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spec_track_FB4_3", "Spec", ebins, emin, emax));
+    fOutputContainer->Add(
+        new TH1F("Spec_track_FB4_4", "Spec", ebins, emin, emax));
   }
 
   // Time of flight vs energy
@@ -673,6 +726,26 @@ void AliAnalysisSigmaBarCharged::UserCreateOutputObjects() {
     fOutputContainer->Add(new TH2F("Cuts1_InvMass_AntiSigmaMinus_ParentCheck",
                                    "Invariant mass", invbins, invmin, invmax,
                                    ebins, emin, emax));
+    if (fQAhist) {
+      fOutputContainer->Add(new TH2F("Ncell_InvMass_AntiSigmaPlus_ParentCheck",
+                                     "Invariant mass", invbins, invmin, invmax,
+                                     ebins, emin, emax));
+      fOutputContainer->Add(new TH2F("Ncell_InvMass_AntiSigmaMinus_ParentCheck",
+                                     "Invariant mass", invbins, invmin, invmax,
+                                     ebins, emin, emax));
+      fOutputContainer->Add(new TH2F("Disp_InvMass_AntiSigmaPlus_ParentCheck",
+                                     "Invariant mass", invbins, invmin, invmax,
+                                     ebins, emin, emax));
+      fOutputContainer->Add(new TH2F("Disp_InvMass_AntiSigmaMinus_ParentCheck",
+                                     "Invariant mass", invbins, invmin, invmax,
+                                     ebins, emin, emax));
+      fOutputContainer->Add(new TH2F("Wo_InvMass_AntiSigmaPlus_ParentCheck",
+                                     "Invariant mass", invbins, invmin, invmax,
+                                     ebins, emin, emax));
+      fOutputContainer->Add(new TH2F("Wo_InvMass_AntiSigmaMinus_ParentCheck",
+                                     "Invariant mass", invbins, invmin, invmax,
+                                     ebins, emin, emax));
+    }
     if (fInvMassHist) {
       for (Int_t i = 1; i < 34; i++) {
         fOutputContainer->Add(new TH2F(
@@ -740,6 +813,41 @@ void AliAnalysisSigmaBarCharged::UserCreateOutputObjects() {
                                  invbins, invmin, invmax, ebins, emin, emax));
   fOutputContainer->Add(new TH2F("Cuts1_InvMass_Charge-1", "Invariant mass",
                                  invbins, invmin, invmax, ebins, emin, emax));
+  if (fQAhist) {
+    fOutputContainer->Add(new TH2F("Ncell_Mixed_InvMass_Charge1",
+                                   "Invariant mass", invbins, invmin, invmax,
+                                   ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Ncell_Mixed_InvMass_Charge-1",
+                                   "Invariant mass", invbins, invmin, invmax,
+                                   ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Disp_Mixed_InvMass_Charge1",
+                                   "Invariant mass", invbins, invmin, invmax,
+                                   ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Disp_Mixed_InvMass_Charge-1",
+                                   "Invariant mass", invbins, invmin, invmax,
+                                   ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Wo_Mixed_InvMass_Charge1", "Invariant mass",
+                                   invbins, invmin, invmax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Wo_Mixed_InvMass_Charge-1",
+                                   "Invariant mass", invbins, invmin, invmax,
+                                   ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Cuts1_Mixed_Pi0", "Invariant mass", invbins,
+                                   0., 0.5, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Ncell_InvMass_Charge1", "Invariant mass",
+                                   invbins, invmin, invmax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Ncell_InvMass_Charge-1", "Invariant mass",
+                                   invbins, invmin, invmax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Disp_InvMass_Charge1", "Invariant mass",
+                                   invbins, invmin, invmax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Disp_InvMass_Charge-1", "Invariant mass",
+                                   invbins, invmin, invmax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Wo_InvMass_Charge1", "Invariant mass",
+                                   invbins, invmin, invmax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Wo_InvMass_Charge-1", "Invariant mass",
+                                   invbins, invmin, invmax, ebins, emin, emax));
+    fOutputContainer->Add(new TH2F("Cuts1_Pi0", "Invariant mass", invbins, 0.,
+                                   0.5, ebins, emin, emax));
+  }
 
   if (fInvMassHist && !fIsMC) {
     for (Int_t i = 1; i < 34; i++) {
@@ -772,6 +880,8 @@ void AliAnalysisSigmaBarCharged::UserCreateOutputObjects() {
       fPHOSEvents[i][j] = 0x0; // Container for PHOS photons
     }
   }
+  for (Int_t mod = 0; mod < 6; mod++)
+    fPHOSBadMap[mod] = 0x0;
 
   PostData(1, fOutputContainer);
 }
@@ -786,6 +896,16 @@ void AliAnalysisSigmaBarCharged::UserExec(Option_t *) {
     return;
   }
   FillHistogram("hSelEvents", 2);
+
+  fRunNumber = fEvent->GetRunNumber();
+
+  // read geometry if not read yet
+  if (fPHOSgeom == 0) {
+    InitGeometry();
+  }
+  if (!fPHOSgeom) {
+    Printf("ERROR: PHOS geometry hasn't been connected!");
+  }
 
   fUtils = new AliAnalysisUtils();
   if (!fUtils) {
@@ -879,8 +999,9 @@ void AliAnalysisSigmaBarCharged::UserExec(Option_t *) {
   fCentrality = multSelection->GetMultiplicityPercentile("V0M");
   // Centrality class bin
   fCentBin = int(fCentrality / 10.);
-  if (fCentBin >= 10)
+  if (fCentBin >= 10) {
     fCentBin = 9;
+  }
   FillHistogram("hCentralityV0M", fCentrality);
 
   // Vtx class z-bin
@@ -977,6 +1098,12 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
           FillHistogram("MC_Pbar_1", prim->Pt());
         }
       }
+      if (fQAhist) {
+        if ((prim->GetPdgCode() == 211 || prim->GetPdgCode() == -211) &&
+            TMath::Abs(prim->Y()) < 0.5) {
+          FillHistogram("MC_Pion_1", prim->Pt());
+        }
+      }
     }
   } // End of MC particles loop
 
@@ -986,8 +1113,12 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
     // Select cluster type
     if (clu->GetType() != AliVCluster::kPHOSNeutral)
       continue;
-    // Min energy cut
     Double_t cluE = clu->E();
+    // Energy shift, see pi0 measurement in pPb@8TeV by D.Peresunko, additional
+    // energy non-linearity in MC
+    if (fIsMC) {
+      cluE = 1.0245 * cluE * (1. - 0.013 * exp(-0.5 * cluE));
+    }
     // Exotic or single cell cluster
     if (clu->GetM02() <= 0.2)
       continue;
@@ -1003,6 +1134,14 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
     // Position in PHOS surface
     Float_t pos[3];
     clu->GetPosition(pos);
+
+    TVector3 global1(pos);
+    Int_t relId[4];
+    fPHOSgeom->GlobalPos2RelId(global1, relId);
+    Int_t mod = relId[0];
+    Int_t cellX = relId[2];
+    Int_t cellZ = relId[3];
+
     Double_t t = clu->GetTOF();
     Double_t r = TMath::Sqrt((fvtx5[0] - pos[0]) * (fvtx5[0] - pos[0]) +
                              (fvtx5[1] - pos[1]) * (fvtx5[1] - pos[1]) +
@@ -1026,6 +1165,10 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
 
     // TOF versus E_clu distribution
     FillHistogram("hClusterTOFvsE", t - tgamma, cluE);
+    if (fQAhist) {
+      FillHistogram(Form("OccupancyPlot_%dM", mod), cellX, cellZ);
+      FillHistogram(Form("ClusterTOFvsE_%dM", mod), t - tgamma, cluE);
+    }
 
     if (fAdditionHist) {
       if ((clu->GetM02() >= -1 * clu->GetM20() + fDispCut)) {
@@ -1264,8 +1407,8 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
     ph->SetEMCx(pos[0]);
     ph->SetEMCy(pos[1]);
     ph->SetEMCz(pos[2]);
-    ph->SetTime(t);
-    ph->SetWeight(t - tgamma);
+    ph->SetTime(t - tgamma);
+    ph->SetWeight(cluE);
 
     if (fAdditionHist) {
       // Compare spec. in MC and data
@@ -1572,6 +1715,57 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
 
   TIter nextEv(fCurrentMixedList);
 
+  if (fQAhist) {
+    for (Int_t i = 0; i < inPHOS; i++) {
+      AliCaloPhoton *ph1 = static_cast<AliCaloPhoton *>(fGamma->At(i));
+      Int_t primLabel1 = ph1->GetPrimaryAtVertex();
+
+      Double_t cluE1 = ph1->GetWeight();
+
+      TVector3 nbar1mom;
+      nbar1mom.SetMagThetaPhi(cluE1, ph1->Theta(), ph1->Phi());
+      TLorentzVector nbar1(nbar1mom.Px(), nbar1mom.Py(), nbar1mom.Pz(), cluE1);
+      //=================Event mixing==============
+      while (TClonesArray *event2 = static_cast<TClonesArray *>(nextEv())) {
+        Int_t nPhotons2 = event2->GetEntriesFast();
+        for (Int_t j = 0; j < nPhotons2; j++) {
+          AliCaloPhoton *ph2 = static_cast<AliCaloPhoton *>(event2->At(j));
+          Int_t primLabel2 = ph2->GetPrimaryAtVertex();
+
+          Double_t cluE2 = ph2->GetWeight();
+
+          TVector3 nbar2mom;
+          nbar2mom.SetMagThetaPhi(cluE2, ph2->Theta(), ph2->Phi());
+          TLorentzVector nbar2(nbar2mom.Px(), nbar2mom.Py(), nbar2mom.Pz(),
+                               cluE2);
+
+          Double_t m = (nbar1 + nbar2).M();
+          Double_t pt = (nbar1 + nbar2).Pt();
+
+          FillHistogram("Cuts1_Mixed_Pi0", m, pt);
+        }
+      }
+
+      //======================Fill Real==========================
+      for (Int_t j = i + 1; j < inPHOS; j++) {
+        AliCaloPhoton *ph2 = static_cast<AliCaloPhoton *>(fGamma->At(j));
+        Int_t primLabel2 = ph2->GetPrimaryAtVertex();
+
+        Double_t cluE2 = ph2->GetWeight();
+
+        TVector3 nbar2mom;
+        nbar2mom.SetMagThetaPhi(cluE2, ph2->Theta(), ph2->Phi());
+        TLorentzVector nbar2(nbar2mom.Px(), nbar2mom.Py(), nbar2mom.Pz(),
+                             cluE2);
+
+        Double_t m = (nbar1 + nbar2).M();
+        Double_t pt = (nbar1 + nbar2).Pt();
+
+        FillHistogram("Cuts1_Pi0", m, pt);
+      }
+    }
+  }
+
   for (Int_t i = 0; i < multTracks; i++) {
     AliAODTrack *track = (AliAODTrack *)fEvent->GetTrack(i);
     Int_t primLabelTrack = track->GetLabel();
@@ -1596,9 +1790,33 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
       }
     }
 
+    // Check of entries of FB5 before and after FB4 selection
+    if (track->TestFilterMask(BIT(5)) && fQAhist) {
+      FillHistogram("Spec_track_FB5_0", track->Pt());
+    }
+
     // Select FilterBit
     if (!track->TestFilterMask(BIT(fTracksBits))) {
       continue;
+    }
+
+    // kink daughters check
+    if (track->GetKinkIndex(0) != 0) {
+      std::cout << "label: " << primLabelTrack << std::endl;
+      if (primLabelTrack > -1) {
+        AliAODMCParticle *primpion =
+            (AliAODMCParticle *)fStack->At(primLabelTrack);
+        std::cout << "pdg: " << primpion->GetPdgCode() << std::endl;
+      }
+      continue; // TODO?????
+    }
+
+    // Spec of tracks with selected FB
+    if (fQAhist) {
+      FillHistogram("Spec_track_FB4_1", track->Pt());
+      if (track->TestFilterMask(BIT(5))) {
+        FillHistogram("Spec_track_FB5_1", track->Pt());
+      }
     }
 
     Int_t TPCClust = track->GetTPCNcls();
@@ -1631,18 +1849,18 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
         TPCClust >= fNTPCclusters) {
       FillHistogram("TPC_pid_track", nsigmaPionTPC_noabs, track->P());
     }
-
-    // kink daughters check
-    if (track->GetKinkIndex(0) != 0) {
-      std::cout << "label: " << primLabelTrack << std::endl;
-      if (primLabelTrack > -1) {
-        AliAODMCParticle *primpion =
-            (AliAODMCParticle *)fStack->At(primLabelTrack);
-        std::cout << "pdg: " << primpion->GetPdgCode() << std::endl;
+    if (fQAhist && TMath::Abs(track->Eta()) <= fTrackEta &&
+        TPCClust >= fNTPCclusters) {
+      FillHistogram("Spec_track_FB4_2", trackPt);
+      FillHistogram("Acceptance_track", 1 / trackPt * track->Charge(),
+                    track->Phi());
+      FillHistogram("PhivsPt_track_1", trackPt, track->Phi());
+      if (track->TestFilterMask(BIT(5))) {
+        FillHistogram("Spec_track_FB5_2", trackPt);
       }
-      continue; // TODO?????
     }
 
+    // DCA distributions
     if (fAdditionHist) {
       // DCA pion to PV
       if (TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= fNTPCclusters &&
@@ -1656,6 +1874,24 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
       }
     }
 
+    // QA for tracks; with cuts
+    if (fQAhist) {
+      if (TMath::Abs(track->Eta()) <= fTrackEta && TPCClust >= fNTPCclusters &&
+          nsigmaPionTPC < fTPCsigmas) {
+        FillHistogram("PhivsPt_track_2", trackPt, track->Phi());
+        FillHistogram("Spec_track_FB4_3", trackPt);
+        if (isMCpion) {
+          FillHistogram("Spec_track_FB4_4", trackPt);
+        }
+        if (track->TestFilterMask(BIT(5))) {
+          FillHistogram("Spec_track_FB5_3", trackPt);
+          if (isMCpion) {
+            FillHistogram("Spec_track_FB5_4", trackPt);
+          }
+        }
+      }
+    }
+
     //=================Event mixing==============
     while (TClonesArray *event2 = static_cast<TClonesArray *>(nextEv())) {
       Int_t nPhotons2 = event2->GetEntriesFast();
@@ -1663,7 +1899,7 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
         AliCaloPhoton *ph2 = static_cast<AliCaloPhoton *>(event2->At(j));
         Int_t primLabel2 = ph2->GetPrimaryAtVertex();
 
-        Double_t t = ph2->GetTime();
+        // Double_t t = ph2->GetTime();
         Double_t phoscoord[3] = {ph2->EMCx(), ph2->EMCy(), ph2->EMCz()};
 
         // Try to construct particle out of track and nbar
@@ -1721,6 +1957,29 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
             ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
             track->Charge() == 1) {
           FillHistogram("Cuts1_Mixed_InvMass_Charge1", m, pt);
+        }
+        if (fQAhist) {
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+              TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+              ph2->IsDispOK() && track->Charge() == 1) {
+            FillHistogram("Wo_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+              TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+              ph2->IsCPV2OK() && ph2->IsDispOK() && track->Charge() == 1) {
+            FillHistogram("Ncell_Mixed_InvMass_Charge1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+              TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+            FillHistogram("Disp_Mixed_InvMass_Charge1", m, pt);
+          }
         }
         if (fInvMassHist && !fIsMC) {
           if (TMath::Abs(track->Eta()) <= 0.7 && TPCClust >= fNTPCclusters &&
@@ -1953,7 +2212,7 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
               ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
             FillHistogram("Cuts33_Mixed_InvMass_Charge1", m, pt);
           }
-          if (ph2->GetWeight() < 100.e-09) {
+          if (ph2->GetTime() < 100.e-09) {
             if (TMath::Abs(track->Eta()) <= fTrackEta &&
                 TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
                 TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
@@ -1972,6 +2231,29 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
             ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
             track->Charge() == -1) {
           FillHistogram("Cuts1_Mixed_InvMass_Charge-1", m, pt);
+        }
+        if (fQAhist) {
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+              TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+              ph2->IsDispOK() && track->Charge() == -1) {
+            FillHistogram("Wo_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+              TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+              ph2->IsCPV2OK() && ph2->IsDispOK() && track->Charge() == -1) {
+            FillHistogram("Ncell_Mixed_InvMass_Charge-1", m, pt);
+          }
+          if (TMath::Abs(track->Eta()) <= fTrackEta &&
+              TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+              TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+              TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+              ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+            FillHistogram("Disp_Mixed_InvMass_Charge-1", m, pt);
+          }
         }
         if (fInvMassHist && !fIsMC) {
           if (TMath::Abs(track->Eta()) <= 0.7 && TPCClust >= fNTPCclusters &&
@@ -2204,7 +2486,7 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
               ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
             FillHistogram("Cuts33_Mixed_InvMass_Charge-1", m, pt);
           }
-          if (ph2->GetWeight() < 100.e-09) {
+          if (ph2->GetTime() < 100.e-09) {
             if (TMath::Abs(track->Eta()) <= fTrackEta &&
                 TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
                 TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
@@ -2223,8 +2505,7 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
       AliCaloPhoton *ph2 = static_cast<AliCaloPhoton *>(fGamma->At(j));
       Int_t primLabel2 = ph2->GetPrimaryAtVertex();
 
-      // Double_t cluE = ph2->E();
-      Double_t t = ph2->GetTime();
+      // Double_t t = ph2->GetTime();
       Double_t phoscoord[3] = {ph2->EMCx(), ph2->EMCy(), ph2->EMCz()};
 
       // Try to construct particle out of track and nbar
@@ -2673,6 +2954,29 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
           ph2->IsDisp2OK() && track->Charge() == 1) {
         FillHistogram("Cuts1_InvMass_Charge1", m, pt);
       }
+      if (fQAhist) {
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+            TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+            ph2->IsDispOK() && track->Charge() == 1) {
+          FillHistogram("Wo_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+            TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+            ph2->IsCPV2OK() && ph2->IsDispOK() && track->Charge() == 1) {
+          FillHistogram("Ncell_InvMass_Charge1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+            TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+            ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+          FillHistogram("Disp_InvMass_Charge1", m, pt);
+        }
+      }
       if (fInvMassHist && !fIsMC) {
         if (TMath::Abs(track->Eta()) <= 0.7 && TPCClust >= fNTPCclusters &&
             nsigmaPionTPC < fTPCsigmas &&
@@ -2904,7 +3208,7 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
             ph2->IsDisp2OK() && track->Charge() == 1) {
           FillHistogram("Cuts33_InvMass_Charge1", m, pt);
         }
-        if (ph2->GetWeight() < 100.e-09) {
+        if (ph2->GetTime() < 100.e-09) {
           if (TMath::Abs(track->Eta()) <= fTrackEta &&
               TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
               TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
@@ -2922,6 +3226,29 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
           TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() && ph2->IsCPV2OK() &&
           ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
         FillHistogram("Cuts1_InvMass_Charge-1", m, pt);
+      }
+      if (fQAhist) {
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+            TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+            ph2->IsDispOK() && track->Charge() == -1) {
+          FillHistogram("Wo_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+            TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+            ph2->IsCPV2OK() && ph2->IsDispOK() && track->Charge() == -1) {
+          FillHistogram("Ncell_InvMass_Charge-1", m, pt);
+        }
+        if (TMath::Abs(track->Eta()) <= fTrackEta &&
+            TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+            TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
+            TestRAD(pt, rad, fRADminusCut) && ph2->IsCPVOK() &&
+            ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == -1) {
+          FillHistogram("Disp_InvMass_Charge-1", m, pt);
+        }
       }
       if (fInvMassHist && !fIsMC) {
         if (TMath::Abs(track->Eta()) <= 0.7 && TPCClust >= fNTPCclusters &&
@@ -3154,7 +3481,7 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
             ph2->IsDisp2OK() && track->Charge() == -1) {
           FillHistogram("Cuts33_InvMass_Charge-1", m, pt);
         }
-        if (ph2->GetWeight() < 100.e-09) {
+        if (ph2->GetTime() < 100.e-09) {
           if (TMath::Abs(track->Eta()) <= fTrackEta &&
               TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
               TestDCADaug(pt, dca, fDCAdaugminusCut) && cpa >= fCPAminusCut &&
@@ -3212,6 +3539,29 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
                 ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
                 track->Charge() == 1) {
               FillHistogram("Cuts1_InvMass_AntiSigmaPlus_ParentCheck", m, pt);
+            }
+            if (fQAhist) {
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+                  TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+                  ph2->IsDispOK() && track->Charge() == 1) {
+                FillHistogram("Wo_InvMass_AntiSigmaPlus_ParentCheck", m, pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+                  TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+                  ph2->IsCPV2OK() && ph2->IsDispOK() && track->Charge() == 1) {
+                FillHistogram("Ncell_InvMass_AntiSigmaPlus_ParentCheck", m, pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, fDCAdaugplusCut) && cpa >= fCPAplusCut &&
+                  TestRAD(pt, rad, fRADplusCut) && ph2->IsCPVOK() &&
+                  ph2->IsDispOK() && ph2->IsDisp2OK() && track->Charge() == 1) {
+                FillHistogram("Disp_InvMass_AntiSigmaPlus_ParentCheck", m, pt);
+              }
             }
             if (fInvMassHist) {
               if (TMath::Abs(track->Eta()) <= 0.7 &&
@@ -3468,7 +3818,7 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
                 FillHistogram("Cuts33_InvMass_AntiSigmaPlus_ParentCheck", m,
                               pt);
               }
-              if (ph2->GetWeight() < 100.e-09) {
+              if (ph2->GetTime() < 100.e-09) {
                 if (TMath::Abs(track->Eta()) <= fTrackEta &&
                     TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
                     TestDCADaug(pt, dca, fDCAdaugplusCut) &&
@@ -3490,6 +3840,32 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
                 ph2->IsCPV2OK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
                 track->Charge() == -1) {
               FillHistogram("Cuts1_InvMass_AntiSigmaMinus_ParentCheck", m, pt);
+            }
+            if (fQAhist) {
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, fDCAdaugminusCut) &&
+                  cpa >= fCPAminusCut && TestRAD(pt, rad, fRADminusCut) &&
+                  ph2->IsCPVOK() && ph2->IsDispOK() && track->Charge() == -1) {
+                FillHistogram("Wo_InvMass_AntiSigmaMinus_ParentCheck", m, pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, fDCAdaugminusCut) &&
+                  cpa >= fCPAminusCut && TestRAD(pt, rad, fRADminusCut) &&
+                  ph2->IsCPVOK() && ph2->IsCPV2OK() && ph2->IsDispOK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Ncell_InvMass_AntiSigmaMinus_ParentCheck", m,
+                              pt);
+              }
+              if (TMath::Abs(track->Eta()) <= fTrackEta &&
+                  TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
+                  TestDCADaug(pt, dca, fDCAdaugminusCut) &&
+                  cpa >= fCPAminusCut && TestRAD(pt, rad, fRADminusCut) &&
+                  ph2->IsCPVOK() && ph2->IsDispOK() && ph2->IsDisp2OK() &&
+                  track->Charge() == -1) {
+                FillHistogram("Disp_InvMass_AntiSigmaMinus_ParentCheck", m, pt);
+              }
             }
             if (fInvMassHist) {
               if (TMath::Abs(track->Eta()) <= 0.7 &&
@@ -3780,7 +4156,7 @@ void AliAnalysisSigmaBarCharged::SelectSigma() {
                 FillHistogram("Cuts33_InvMass_AntiSigmaMinus_ParentCheck", m,
                               pt);
               }
-              if (ph2->GetWeight() < 100.e-09) {
+              if (ph2->GetTime() < 100.e-09) {
                 if (TMath::Abs(track->Eta()) <= fTrackEta &&
                     TPCClust >= fNTPCclusters && nsigmaPionTPC < fTPCsigmas &&
                     TestDCADaug(pt, dca, fDCAdaugminusCut) &&
@@ -4234,4 +4610,54 @@ Double_t AliAnalysisSigmaBarCharged::GetCosineOfPointingAngle(
       TMath::Sqrt(momCas2 * deltaPos2);
 
   return cosinePointingAngle;
+}
+void AliAnalysisSigmaBarCharged::InitGeometry() {
+  // Rotation matrixes are set with Tender
+
+  if (fPHOSgeom)
+    return;
+
+  fPHOSgeom = AliPHOSGeometry::GetInstance();
+
+  if (!fPHOSgeom) {            // Geometry not yet constructed with Tender
+    if (fRunNumber < 209122) { // Run1
+      AliError("TaggedPhotons: Can not get geometry from TENDER, creating PHOS "
+               "geometry for Run1\n");
+      fPHOSgeom = AliPHOSGeometry::GetInstance("IHEP", "");
+    } else {
+      AliError("TaggedPhotons: Can not get geometry from TENDER, creating PHOS "
+               "geometry for Run2\n");
+      fPHOSgeom = AliPHOSGeometry::GetInstance("Run2", "");
+    }
+    AliOADBContainer geomContainer("phosGeo");
+    geomContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSGeometry.root",
+                               "PHOSRotationMatrixes");
+    TObjArray *matrixes = (TObjArray *)geomContainer.GetObject(
+        fRunNumber, "PHOSRotationMatrixes");
+    for (Int_t mod = 0; mod < 5; mod++) {
+      if (!matrixes->At(mod))
+        continue;
+      fPHOSgeom->SetMisalMatrix(((TGeoHMatrix *)matrixes->At(mod)), mod);
+    }
+  }
+
+  // Read BadMap for MC simulations
+  AliOADBContainer badmapContainer(Form("phosBadMap"));
+  badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root",
+                               "phosBadMap");
+  TObjArray *maps =
+      (TObjArray *)badmapContainer.GetObject(fRunNumber, "phosBadMap");
+  if (!maps) {
+    AliError("TaggedPhotons: Can not read Bad map\n");
+  } else {
+    AliInfo(Form("TaggedPhotons: Setting PHOS bad map with name %s \n",
+                 maps->GetName()));
+    for (Int_t mod = 0; mod < 5; mod++) {
+      if (fPHOSBadMap[mod])
+        delete fPHOSBadMap[mod];
+      TH2I *h = (TH2I *)maps->At(mod);
+      if (h)
+        fPHOSBadMap[mod] = new TH2I(*h);
+    }
+  }
 }
