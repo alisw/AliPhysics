@@ -300,7 +300,10 @@ void AliAnalysisTaskEmcalJetValidation::UserCreateOutputObjects()
    fOutputList->SetOwner(kTRUE);
    fOutputList->SetName("OutputHistos");
 
-   fHistNEvents = new TH1F("hNEvents", "Number of processed events", 1, 0, 1);
+   fHistNEvents = new TH1F("hNEvents", "Number of processed events", 15, -0.5, 14.5);
+   fHistNEvents->SetMinimum(0);
+   fHistNEvents->GetXaxis()->SetBinLabel(1, "All selected events after trigger selection");
+   fHistNEvents->GetXaxis()->SetBinLabel(2, "events after AliEventCuts are applied");
    fHistNEventVtx =  new TH1F("Events Vertex Distribution", "", 200, -20, 20);
 
    //JET QA
@@ -374,9 +377,7 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
      if (!alieventcut)
       return;
    }
-   if (useO2Vertexer) {
-    taskJet->SetUseO2Vertexer();
-  }
+
    fHistNEvents->Fill(2);
   //DO SOME EVENT SELECTION HERE
   const AliESDVertex* vertex = (AliESDVertex*)fESD->GetPrimaryVertex();
