@@ -134,6 +134,9 @@ namespace PWGJE
       void SetNoMixedEventJESCorrection(Bool_t b) { fNoMixedEventJESCorrection = b; }
       Bool_t RetrieveAndInitializeJESCorrectionHist(TString filename, TString histName, Double_t trackBias = AliAnalysisTaskEmcalJetHdEdxCorrelations::kDisableBias, Double_t clusterBias = AliAnalysisTaskEmcalJetHdEdxCorrelations::kDisableBias);
 
+      void CreateHistograms();
+      void CreateSparses();
+      void CreateEventPool();
       virtual void UserCreateOutputObjects();
       Double_t GetFlattenedEPAngle(Double_t uncorrectedAngle);
 

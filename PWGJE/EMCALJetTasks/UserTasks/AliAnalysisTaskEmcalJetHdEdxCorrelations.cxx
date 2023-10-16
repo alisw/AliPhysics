@@ -6,6 +6,7 @@
 #include "AliAnalysisTaskEmcalJetHdEdxCorrelations.h"
 
 #include <bitset>
+#include <vector>
 
 #include <TH1F.h>
 #include <TH2F.h>
@@ -210,23 +211,7 @@ namespace PWGJE
       }
     }
 
-    /**
-     * Perform run independent initializations, such as histograms and the event pool.
-     */
-    void AliAnalysisTaskEmcalJetHdEdxCorrelations::UserCreateOutputObjects()
-    {
-      // Called once
-      AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
-
-      // Check that the task was initialized
-      if (!fConfigurationInitialized)
-      {
-        AliFatal("Task was not initialized. Please ensure that Initialize() was called!");
-      }
-      // Reinitialize the YAML configuration
-      fYAMLConfig.Reinitialize();
-
-      // Create histograms
+    void AliAnalysisTaskEmcalJetHdEdxCorrelations::CreateHistograms(){
       fHistJetHTrackPt = new TH1F("fHistJetHTrackPt", "P_{T} distribution", 1000, 0.0, 100.0);
       fHistEPAngle = new TH1F("fHistEPAngle", "#Psi_{2} distribution for 2018 calib", 100, -TMath::Pi(), 3. * TMath::Pi());
       fHistJetEtaPhi = new TH2F("fHistJetEtaPhi", "Jet eta-phi", 900, -1.8, 1.8, 720, -3.2, 3.2);
@@ -275,23 +260,85 @@ namespace PWGJE
         }
       }
 
+      // Store hist manager output in the output list
+      TIter next(fHistManager.GetListOfHistograms());
+      TObject *obj = 0;
+      while ((obj = next()))
+      {
+        fOutput->Add(obj);
+      }
+    }
+
+    enum SparseAxes{
+      centrality = 0,
+      trigger_pT = 1,
+      associated_pT = 2,
+      delta_eta = 3,
+      delta_phi = 4,
+      is_leading_jet = 5,
+      is_trigger_track = 6, // I have never used this, nor do I understand it. It is not used in the analysis.
+      event_plane_angle = 7,
+      z_vertex = 8,
+      delta_R = 9,
+      is_leading_track = 10,
+      track_eta = 11,
+      pion_TPC_nSigma = 12,
+      pion_TOF_nSigma = 13,
+      proton_TOF_nSigma = 14,
+      kaon_TOF_nSigma = 15,
+      electron_TOF_nSigma = 16,
+      has_TOF_hit = 17,
+    };
+
+    void AliAnalysisTaskEmcalJetHdEdxCorrelations::CreateSparses(){
+
       // NOTE: The bit encoding doesn't preserve the order defined here. It's
       //       just using the bit values.
-      UInt_t cifras = 0; // bit coded, see GetDimParams() below
-      if (fDoLessSparseAxes)
+      UInt_t jetHadronAxesBitCode = 0; // bit coded, see GetDimParams() below
+      if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1<<8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15 | 1<<17;
+        vector<SparseAxes> jetHadronAxes = {
+            centrality,
+            trigger_pT,
+            associated_pT,
+            delta_eta,
+            delta_phi,
+            z_vertex,
+            track_eta,
+            pion_TPC_nSigma,
+            pion_TOF_nSigma,
+            proton_TOF_nSigma,
+            kaon_TOF_nSigma,
+            has_TOF_hit
+            };
+        for (auto axis : jetHadronAxes)
+        {
+          jetHadronAxesBitCode |= 1 << axis;
+        }
       }
       else
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15 | 1 << 17;
-        ;
+        vector<SparseAxes> jetHadronAxes = {
+            centrality,
+            trigger_pT,
+            associated_pT,
+            delta_eta,
+            delta_phi,
+            event_plane_angle,
+            z_vertex,
+            track_eta,
+            pion_TPC_nSigma,
+            pion_TOF_nSigma,
+            proton_TOF_nSigma,
+            kaon_TOF_nSigma,
+            has_TOF_hit
+            };
+        for (auto axis : jetHadronAxes)
+        {
+          jetHadronAxesBitCode |= 1 << axis;
+        }
       }
-      if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
-      {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15 | 1 << 17;
-      }
-      fhnJH = NewTHnSparseF("fhnJH", cifras);
+      fhnJH = NewTHnSparseF("fhnJH", jetHadronAxesBitCode);
       fhnJH->Sumw2();
       fOutput->Add(fhnJH);
 
@@ -300,44 +347,75 @@ namespace PWGJE
         // The event plane angle does not need to be included because the semi-central determined that the EP angle didn't change
         // significantly for any of the EP orientations. However, it will be included so this can be demonstrated for the central
         // analysis if so desired.
-        if (fDoLessSparseAxes)
+        UInt_t mixedEventAxesBitCode = 0;
+        if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
         {
-          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 8 | 1 << 17;
+          vector<SparseAxes> mixedEventAxes = {
+              centrality,
+              trigger_pT,
+              associated_pT,
+              delta_eta,
+              delta_phi,
+              z_vertex,
+              has_TOF_hit
+              };
+          for (auto axis : mixedEventAxes)
+          {
+            mixedEventAxesBitCode |= 1 << axis;
+          }
         }
         else
         {
-          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 8 | 1 << 9 | 1 << 17;
+          vector<SparseAxes> mixedEventAxes = {
+              centrality,
+              trigger_pT,
+              delta_eta,
+              delta_phi,
+              event_plane_angle,
+              z_vertex,
+              has_TOF_hit
+              };
+          for (auto axis : mixedEventAxes)
+          {
+            mixedEventAxesBitCode |= 1 << axis;
+          }
         }
-        if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
-        {
-          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 8 | 1 << 17;
-        }
-        fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);
+        fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", mixedEventAxesBitCode);
         fhnMixedEvents->Sumw2();
         fOutput->Add(fhnMixedEvents);
       }
 
       // Trigger THnSparse
-      cifras = 1 << 0 | 1 << 1 | 1 << 7 | 1<< 8;
+      UInt_t triggerAxesBitCode = 0;
       if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 8;
+        vector<SparseAxes> triggerAxes = {
+            centrality,
+            trigger_pT,
+            z_vertex,
+            };
+        for(auto axis : triggerAxes){
+          triggerAxesBitCode |= 1 << axis;
+        }
       }
-      fhnTrigger = NewTHnSparseF("fhnTrigger", cifras);
+      else{
+        vector<SparseAxes> triggerAxes = {
+            centrality,
+            trigger_pT,
+            event_plane_angle,
+            z_vertex,
+            };
+        for (auto axis : triggerAxes)
+        {
+          triggerAxesBitCode |= 1 << axis;
+        }
+      }
+      fhnTrigger = NewTHnSparseF("fhnTrigger", triggerAxesBitCode);
       fhnTrigger->Sumw2();
       fOutput->Add(fhnTrigger);
+    }
 
-      // Store hist manager output in the output list
-      TIter next(fHistManager.GetListOfHistograms());
-      TObject *obj = 0;
-      while ((obj = next()))
-      {
-        fOutput->Add(obj);
-      }
-
-      PostData(1, fOutput);
-
-      // Event Mixing
+    void AliAnalysisTaskEmcalJetHdEdxCorrelations::CreateEventPool(){
       Int_t poolSize = -1; // Maximum number of events. Set to -1 to avoid limits on number of events
       // ZVertex
       Int_t nZVertexBins = 10;
@@ -365,6 +443,32 @@ namespace PWGJE
 
       // Print pool properties
       fPoolMgr->Validate();
+    }
+
+    /**
+     * Perform run independent initializations, such as histograms and the event pool.
+     */
+    void AliAnalysisTaskEmcalJetHdEdxCorrelations::UserCreateOutputObjects()
+    {
+      // Call the base class implementation to get the base output.
+      AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+
+      // Check that the task was initialized
+      if (!fConfigurationInitialized)
+      {
+        AliFatal("Task was not initialized. Please ensure that Initialize() was called!");
+      }
+      // Reinitialize the YAML configuration
+      fYAMLConfig.Reinitialize();
+
+      CreateHistograms();
+
+      CreateSparses();
+
+      PostData(1, fOutput);
+
+      // Event Mixing
+      CreateEventPool();
     }
 
     /**
@@ -630,7 +734,7 @@ namespace PWGJE
             // Get proper track properties
             track.Clear();
             track = trackIter->first;
-            const AliVTrack *vTrack = dynamic_cast<AliVTrack *>(trackIter->second);
+            const AliVTrack *vTrack = dynamic_cast<const AliVTrack *>(trackIter->second);
             if (!vTrack)
             {
               AliErrorStream() << "Could not retrieve associated track from trackIter, skipping track.\n";
