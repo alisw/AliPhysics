@@ -122,7 +122,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
               inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/SimpleWeight_16qt.root");
             }
             // pp Periods
-            else if (fPeriod.EqualTo("LHC15i")) { 
+            else if (fPeriod.EqualTo("LHC15i")) {
               if (trigger == 0) {
                 inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC15/weights_LHC15i_MB.root");
               } else {
@@ -170,6 +170,8 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
               } else {
                 inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/PeriodNUA_META_LHC18_pass1_AOD264.root");
               }
+            } else if (fPeriod.EqualTo("LHC161718_Closure")) {
+              inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/PeriodNUA_META_LHC161718.root");
             } else if (fPeriod.EqualTo("LHC16ZM")) {
               if (trigger == 0) {
                 inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC16/weights_LHC16_MB_periods.root");
@@ -200,10 +202,10 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
             TList* weight_list = NULL;
             if (fPeriod.EqualTo("LHC15oKatarina")) {
               weight_list = dynamic_cast<TList*>(inNUA->Get("weightList"));
-              cin_NUA->SetData(weight_list); 
+              cin_NUA->SetData(weight_list);
             } else if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") ||
-                       fPeriod.EqualTo("LHC16_Closure") || fPeriod.EqualTo("LHC17_Closure") || fPeriod.EqualTo("LHC18_Closure")
-                       ) {
+                       fPeriod.EqualTo("LHC16_Closure") || fPeriod.EqualTo("LHC17_Closure") || fPeriod.EqualTo("LHC18_Closure") ||
+                       fPeriod.EqualTo("LHC161718_Closure")) {
               weight_list = dynamic_cast<TList*>(inNUA->Get("WeightList_Default"));
               cin_NUA->SetData(weight_list);
             } else {
@@ -258,12 +260,14 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
             }
             // pp Periods
             else { // pp, with preview or updated
-              if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") || 
+              if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") ||
                   fPeriod.EqualTo("LHC16Preview") || fPeriod.EqualTo("LHC17Preview") || fPeriod.EqualTo("LHC18Preview")
                   ) {
                 inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/pp_HM.root");
               } else if (fPeriod.EqualTo("LHC16_simp") || fPeriod.EqualTo("LHC17_simp") || fPeriod.EqualTo("LHC18_simp") ||
-                         fPeriod.EqualTo("LHC16_Closure") || fPeriod.EqualTo("LHC17_Closure") || fPeriod.EqualTo("LHC18_Closure")) {
+                         fPeriod.EqualTo("LHC16_Closure") || fPeriod.EqualTo("LHC17_Closure") || fPeriod.EqualTo("LHC18_Closure") ||
+                         fPeriod.EqualTo("LHC161718_Closure")
+                         ) {
                 inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/simpleEff_pp.root");
               } else { // pp, using Zuzana's previous weight
                 inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC17d20a1_WithModEff_Syst.root");
@@ -293,7 +297,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
               TList* feeddown_list = dynamic_cast<TList*>(inNUE->Get("FeeddownMB"));
               cin_NUE_feeddown->SetData(feeddown_list);
             } else {
-              if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") || 
+              if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") ||
                   fPeriod.EqualTo("LHC16Preview") || fPeriod.EqualTo("LHC17Preview") || fPeriod.EqualTo("LHC18Preview")
                   ) {
                 weight_list = dynamic_cast<TList*>(inNUE->Get("EfficiencyMB"));
@@ -311,7 +315,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
               mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUE_feeddown);
               inSlotCounter++;
             }
-            if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") || 
+            if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") ||
                 fPeriod.EqualTo("LHC16Preview") || fPeriod.EqualTo("LHC17Preview") || fPeriod.EqualTo("LHC18Preview")) {
               mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUE_feeddown);
               inSlotCounter++;
@@ -323,7 +327,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
               mgr->ConnectInput(taskFlowEp,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUE_feeddown"));
               inSlotCounter++;
             }
-            if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") || 
+            if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") ||
                 fPeriod.EqualTo("LHC16Preview") || fPeriod.EqualTo("LHC17Preview") || fPeriod.EqualTo("LHC18Preview")) {
               mgr->ConnectInput(taskFlowEp,inSlotCounter,(AliAnalysisDataContainer*)AllContainers->FindObject("NUE_feeddown"));
               inSlotCounter++;
@@ -331,7 +335,7 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
             printf("NUE already loaded\n");
           }
 
-        } 
+        }
 
 	// Return task pointer at the end
 	return taskFlowEp;
