@@ -57,6 +57,8 @@ public:
     void                    SetGhostArea(Double_t ga){ fGhostArea = ga; }                        // sets ghost area
     void                    SetRecoScheme(AliJetContainer::ERecoScheme_t rs){ fRecoScheme =rs;}  // recombination scheme
     void                    InitFromJson(TString filename);                                      //initialization from json file
+    void		   SetUseO2Vertexer() { fSecVertexerAlgo = 0;}			       
+    void		   SetUseAliEventCuts(Bool_t opt) {fUseAliEventCuts = opt; }
 
 
 

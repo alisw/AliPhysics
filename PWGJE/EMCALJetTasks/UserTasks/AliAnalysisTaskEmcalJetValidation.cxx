@@ -374,6 +374,9 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
      if (!alieventcut)
       return;
    }
+   if (useO2Vertexer) {
+    taskJet->SetUseO2Vertexer();
+  }
    fHistNEvents->Fill(2);
   //DO SOME EVENT SELECTION HERE
   const AliESDVertex* vertex = (AliESDVertex*)fESD->GetPrimaryVertex();
@@ -386,6 +389,7 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
   if(triggerMask & AliVEvent::kINT7){      // for sel7 in Run3
          passedTrigger = kTRUE;
   }
+
   // if(triggerMask & AliVEvent::kAny){     // for noSel in Run3
   //        passedTrigger = kTRUE;
   // }
