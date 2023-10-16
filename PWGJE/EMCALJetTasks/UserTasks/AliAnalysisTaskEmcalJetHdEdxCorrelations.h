@@ -137,7 +137,8 @@ namespace PWGJE
       void CreateHistograms();
       void CreateSparses();
       void CreateEventPool();
-      virtual void UserCreateOutputObjects();
+      void MixEvents(AliJetContainer *jets, Int_t current_event_multiplicity, Double_t zVertex, UInt_t eventTrigger, Double_t flattened_EP_angle);
+       virtual void UserCreateOutputObjects();
       Double_t GetFlattenedEPAngle(Double_t uncorrectedAngle);
 
       // AddTask
