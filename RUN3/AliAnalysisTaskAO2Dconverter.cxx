@@ -228,7 +228,7 @@ namespace
 AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
   : AliAnalysisTaskSE(name),
     fTrackFilter(Form("AO2Dconverter%s", name), Form("fTrackFilter%s", name)),
-    fEventCuts{},
+    fEventCuts(),
     fTriggerAnalysis(),
     collision(),
     eventextra(),
