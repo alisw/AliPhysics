@@ -633,8 +633,7 @@ void AliAnalysisTaskEfficiencyPbPb_DR::UserCreateOutputObjects()
   fHistoList->Add(fRecPtLambdaMC);
   fHistoList->Add(fRecPtAntiLambdaMC);
 
-  
-  
+
 //********** PID ****************
 
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
@@ -963,13 +962,121 @@ void AliAnalysisTaskEfficiencyPbPb_DR::UserExec(Option_t *)
 
 
   fHistQA[10]->Fill(1,aodEvent->GetNumberOfTracks());
- 
+  //loop over AOD tracks 
+  for (Int_t iTracks = 0; iTracks < aodEvent->GetNumberOfTracks(); iTracks++) {
+  	AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iTracks); 
+	if (!track)continue;
+	if(track->Y() < -0.5 || track->Y() > 0.5)
+      		continue; 
+      	
+	
+	UInt_t filterBit = fFB;
+	if(!track->TestFilterBit(filterBit))continue;		
+        
+	bool isPionNsigma = 0;
+	bool isKaonNsigma = 0;
+	bool isProtonNsigma  = 0;
+
+    	if (isPionNsigma){
+		if (track->Pt() > 0.2 || track->Pt() < 2.5){
+		continue;
+		}
+	}
+	if (isKaonNsigma){
+     		if (track->Pt() > 0.5 || track->Pt() < 2.5){
+     		continue;
+     		}
+        }
+     	if (isProtonNsigma){
+     		if (track->Pt() > 0.5 || track->Pt() < 2.5){
+     		continue;
+     		}
+        }
+        
+	AliAODTrack* aodtrackpid;
+		
+	if(filterBit==(1 << (7)))
+	aodtrackpid =(AliAODTrack*)aodEvent->GetTrack(labels[-1-aodEvent->GetTrack(iTracks)->GetID()]);
+	else
+	aodtrackpid = track;
+
+	float nSigmaTPCPi = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kPion);
+	float nSigmaTPCK = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kKaon);
+	float nSigmaTPCP = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kProton);
+    
+	double nSigmaTOFPi = fpidResponse->NumberOfSigmasTOF(aodtrackpid,AliPID::kPion);
+	double nSigmaTOFK = fpidResponse->NumberOfSigmasTOF(aodtrackpid,AliPID::kKaon);
+	double nSigmaTOFP = fpidResponse->NumberOfSigmasTOF(aodtrackpid,AliPID::kProton);
+
+
+	float tTofSig = aodtrackpid->GetTOFsignal();
+	double pidTime[5]; aodtrackpid->GetIntegratedTimes(pidTime);
+
+	isPionNsigma = (IsPionNSigmaPbPb_DR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma3PbPb_DR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3PbPb_DR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+	isKaonNsigma = (!IsPionNSigma3PbPb_DR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigma3PbPb_DR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3PbPb_DR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+	isProtonNsigma = (!IsPionNSigma3PbPb_DR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3PbPb_DR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaPbPb_DR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+   
+   
+   
+   	if (isPionNsigma){
+	collect[0]=true; 
+	if(fcent2==10)fHistP[0]->Fill(1);
+	else if(fcent2==1)fHistP[1]->Fill(1);
+	else if(fcent2==2)fHistP[2]->Fill(1);
+	else if(fcent2==3)fHistP[3]->Fill(1);
+	}
+  	if (isKaonNsigma){
+	collect[1]=true; 
+	if(fcent2==10)fHistP[0]->Fill(2);
+	else if(fcent2==1)fHistP[1]->Fill(2);
+	else if(fcent2==2)fHistP[2]->Fill(2);
+	else if(fcent2==3)fHistP[3]->Fill(2);
+	}
+	if (isProtonNsigma){
+	collect[2]=true;
+	if(fcent2==10)fHistP[0]->Fill(3);
+	else if(fcent2==1)fHistP[1]->Fill(3);
+	else if(fcent2==2)fHistP[2]->Fill(3);
+	else if(fcent2==3)fHistP[3]->Fill(3);
+	}	
+  	}
+
+
+
+if(collect[0]==true){
+	fHistQA[9]->Fill(5);
+	if(fcent2==10)fHistEvCuts[0]->Fill(5);
+	else if(fcent2==1)fHistEvCuts[1]->Fill(5);
+	else if(fcent2==2)fHistEvCuts[2]->Fill(5);
+	else if(fcent2==3)fHistEvCuts[3]->Fill(5);
+}
+
+if(collect[1]==true){
+	fHistQA[9]->Fill(6);
+	if(fcent2==10)fHistEvCuts[0]->Fill(6);
+	else if(fcent2==1)fHistEvCuts[1]->Fill(6);
+	else if(fcent2==2)fHistEvCuts[2]->Fill(6);
+	else if(fcent2==3)fHistEvCuts[3]->Fill(6);
+}
+
+
+if(collect[2]==true){
+	fHistQA[9]->Fill(7);
+	if(fcent2==10)fHistEvCuts[0]->Fill(7);
+	else if(fcent2==1)fHistEvCuts[1]->Fill(7);
+	else if(fcent2==2)fHistEvCuts[2]->Fill(7);
+	else if(fcent2==3)fHistEvCuts[3]->Fill(7);
+}
+
+
+
 
 	//if(!evpass) return;
 	
   for (Int_t iTracks = 0; iTracks < aodEvent->GetNumberOfTracks(); iTracks++) {
     //get track 
     
+
     AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iTracks); 
     if (!track)continue;
     fHistQA[10]->Fill(2);
@@ -1354,6 +1461,95 @@ void AliAnalysisTaskEfficiencyPbPb_DR::UserExec(Option_t *)
     return;
   }
 
+  bool evpassT=true;  	
+  bool collectT[3] = {false,false,false};  	
+  	
+  // loop over MC stack 
+  int hmPionsT=0, hmKaonsT=0, hmProtonsT=0;
+  for (Int_t ipart = 0; ipart < arrayMC->GetEntriesFast(); ipart++) {
+    AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(ipart);
+
+    if (!MCtrk) continue;
+    
+	if(MCtrk->Y() < -0.5 || MCtrk->Y() > 0.5){
+	continue; }
+	
+      if(MCtrk->GetPdgCode() == 211){
+      	if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 2.5){
+	continue;
+	}
+      }
+      if(MCtrk->GetPdgCode() == 321){
+      	if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5){
+	continue;
+	}
+       }
+       if(MCtrk->GetPdgCode() == 3122){
+      	if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5){
+	continue;
+	}
+       }
+      
+      // check physical primary 
+
+      if(MCtrk->IsPhysicalPrimary()) // Not from weak decay!
+	{
+    
+    Int_t PDGcode = TMath::Abs(MCtrk->GetPdgCode()); 
+
+   	if (PDGcode==211){
+	collectT[0]=true; 
+	if(fcent2==10)fHistP[0]->Fill(4);
+	else if(fcent2==1)fHistP[1]->Fill(4);
+	else if(fcent2==2)fHistP[2]->Fill(4);
+	else if(fcent2==3)fHistP[3]->Fill(4);
+	}
+  	if (PDGcode==321){
+	collectT[1]=true; 
+	if(fcent2==10)fHistP[0]->Fill(5);
+	else if(fcent2==1)fHistP[1]->Fill(5);
+	else if(fcent2==2)fHistP[2]->Fill(5);
+	else if(fcent2==3)fHistP[3]->Fill(5);
+	}
+	if (PDGcode==2212){
+	collectT[2]=true;
+	if(fcent2==10)fHistP[0]->Fill(6);
+	else if(fcent2==1)fHistP[1]->Fill(6);
+	else if(fcent2==2)fHistP[2]->Fill(6);
+	else if(fcent2==3)fHistP[3]->Fill(6);
+	}
+	}
+   }
+  	
+
+        if(collectT[0]==true){
+        	fHistQA[9]->Fill(8);
+		if(fcent2==10)fHistEvCuts[0]->Fill(8);
+		else if(fcent2==1)fHistEvCuts[1]->Fill(8);
+		else if(fcent2==2)fHistEvCuts[2]->Fill(8);
+		else if(fcent2==3)fHistEvCuts[3]->Fill(8);
+        }
+
+	if(collectT[1]==true){
+		fHistQA[9]->Fill(9);
+		if(fcent2==10)fHistEvCuts[0]->Fill(9);
+		else if(fcent2==1)fHistEvCuts[1]->Fill(9);
+		else if(fcent2==2)fHistEvCuts[2]->Fill(9);
+		else if(fcent2==3)fHistEvCuts[3]->Fill(9);
+	}
+
+
+	if(collectT[2]==true){
+		fHistQA[9]->Fill(10);
+		if(fcent2==10)fHistEvCuts[0]->Fill(10);
+		else if(fcent2==1)fHistEvCuts[1]->Fill(10);
+		else if(fcent2==2)fHistEvCuts[2]->Fill(10);
+		else if(fcent2==3)fHistEvCuts[3]->Fill(10);
+
+	}
+  
+  
+  
   
       for (Int_t ipart = 0; ipart < arrayMC->GetEntriesFast(); ipart++) {
     AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(ipart);
