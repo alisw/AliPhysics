@@ -352,8 +352,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
     taskAOD->SetDeltaEtaMaxPP(0.017);
     taskAOD->SetDeltaPhiMaxPPrim(0.04);
     taskAOD->SetDeltaEtaMaxPPrim(0.017);
-    taskAOD->SetDeltaPhiMaxPAPrim(0.); //for proton anti-pion we don't need delta eta delta phi
-    taskAOD->SetDeltaEtaMaxPAPrim(0.); //for proton anti-pion we don't need delta eta delta phi
+    taskAOD->SetDeltaPhiMaxPAPrim(0.04); 
+    taskAOD->SetDeltaEtaMaxPAPrim(0.017); 
 
     taskAOD->SetQ3LimitForDeltaPhiDeltaEta(Q3LimitForDeltaPhiDeltaEta);
     taskAOD->SetQ3cutValue(Q3cutValue); 
