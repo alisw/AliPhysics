@@ -35,7 +35,6 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     bool CheckLambdaCuts(AliAODv0 &v0,double PrimaryVertexPos[3], AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber);
     bool CheckDeuteronCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber);
     double CalculateSigmadEdxITS(AliAODTrack &Track, int ParticleSpecies, int RunNumber);
-    bool RejectInjectedMonteCarloHyperNuclei(int PDG);
 
 
   private:
