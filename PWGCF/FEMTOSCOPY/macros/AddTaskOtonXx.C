@@ -657,6 +657,25 @@ bool PionCheckPileUp = false; //std
     Form("%s:%s", file.Data(), TreeName.Data()));
   mgr->ConnectOutput(task, 8, coutputTree);
 
+
+
+
+  if (isMC) {
+   TString TrackCutsKaonNameMC = Form("%sKaonMC%s", addon.Data(), suffix.Data());
+   AliAnalysisDataContainer *coutputTrkCutsKaonMC = mgr->CreateContainer(
+        TrackCutsKaonNameMC.Data(), TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), TrackCutsKaonNameMC.Data()));
+   mgr->ConnectOutput(task, 9, coutputTrkCutsKaonMC);
+
+   TString AntiTrackCutsKaonNameMC = Form("%sAntiKaonMC%s", addon.Data(), suffix.Data());
+   AliAnalysisDataContainer *coutputAntiTrkCutsKaonMC = mgr->CreateContainer(
+        AntiTrackCutsKaonNameMC.Data(), TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), AntiTrackCutsKaonNameMC.Data()));
+   mgr->ConnectOutput(task, 10, coutputAntiTrkCutsKaonMC);
+  }
+
   return task;
 }
 

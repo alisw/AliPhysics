@@ -37,6 +37,8 @@ AliAnalysisTaskOtonXx::AliAnalysisTaskOtonXx()
     fKaonList(nullptr),
     fTrackCutsAntiKaon(nullptr),
     fAntiKaonList(nullptr),
+    fKaonListMC(nullptr),
+    fAntiKaonListMC(nullptr),
     fCascade(nullptr),
     fCutsXi(nullptr),
     fXiList(nullptr),
@@ -69,6 +71,8 @@ AliAnalysisTaskOtonXx::AliAnalysisTaskOtonXx(const char *name, bool doFDpairing,
     fKaonList(nullptr),
     fTrackCutsAntiKaon(nullptr),
     fAntiKaonList(nullptr),
+    fKaonListMC(nullptr),
+    fAntiKaonListMC(nullptr),
     fCascade(nullptr),
     fCutsXi(nullptr),
     fXiList(nullptr),
@@ -89,7 +93,10 @@ AliAnalysisTaskOtonXx::AliAnalysisTaskOtonXx(const char *name, bool doFDpairing,
   DefineOutput(6, TList::Class());  //Output for the Results
   DefineOutput(7, TList::Class());  //Output for the Results QA
   DefineOutput(8, TTree::Class());  // XiTree (former OmegaTree)
-
+  if (fIsMC) {
+   DefineOutput(9, TList::Class());  //Output for the Kaon Cuts MC
+   DefineOutput(10, TList::Class());  //Output for the AntiKaon Cuts MC
+  }
 }
 
 AliAnalysisTaskOtonXx::~AliAnalysisTaskOtonXx() {
@@ -224,6 +231,30 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
     fAntiKaonList->SetOwner();
   }
 
+  //MC
+  if (fIsMC) {
+   if (!fTrackCutsKaon->GetMinimalBooking()) {
+    if (fTrackCutsKaon->GetIsMonteCarlo()) {
+     fKaonListMC = fTrackCutsKaon->GetMCQAHists(); 
+    }
+   }else{
+     fKaonListMC = new TList();
+     fKaonListMC->SetName("TrackCutsKaonMC");
+     fKaonListMC->SetOwner();
+   }
+   if (!fTrackCutsAntiKaon->GetMinimalBooking()) {
+    if (fTrackCutsAntiKaon->GetIsMonteCarlo()) {
+     fAntiKaonListMC = fTrackCutsAntiKaon->GetMCQAHists();
+    }
+   }else{
+     fAntiKaonListMC = new TList();
+     fAntiKaonListMC->SetName("TrackCutsAntiKaonMC");
+     fAntiKaonListMC->SetOwner();
+   }
+  }
+  //  
+
+
   if (!fCutsXi->GetMinimalBooking()) {
     fXiList = fCutsXi->GetQAHists();
   } else {
@@ -347,7 +378,12 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
   PostData(6, fResults);
   PostData(7, fResultsQA);
   PostData(8, fTree);
+  if (fIsMC) {
+   PostData(9, fKaonListMC);
+   PostData(10, fAntiKaonListMC);
+  }
 }
+
 
 void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
 //AOD
@@ -616,6 +652,10 @@ void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
   PostData(6, fResults);
   PostData(7, fResultsQA);
   PostData(8, fTree);
+  if (fIsMC) {
+   PostData(9, fKaonListMC);
+   PostData(10, fAntiKaonListMC);
+  }
 }
 
 //________________________________________________________________________________________________
