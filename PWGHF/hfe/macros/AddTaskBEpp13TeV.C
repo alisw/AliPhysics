@@ -57,9 +57,9 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
 
   // Multiplicity
   TString profile;
-  if(isMC) profile = "GPMC";
-  else profile = "Data";
-  TString filepath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/fileEstimatorAvg.root";
+  if(isMC) profile = "LHC18d8";
+  else profile = "LHC16l";
+  TString filepath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/fileEstimatorAvg_LHC16l.root";
   printf("Multiplicity estimator from %s \n", filepath.Data());
   
   TFile* fileEstimator = TFile::Open(filepath.Data());
@@ -78,17 +78,17 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
   task->SetEstimatorAvg(multEstimatorAvg);
 
   if(isMC){
-    TString pathNchCorr = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/NchCorr.root";
+    TString pathNchCorr = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/weightNtrkCorr.root";
     printf("Correction for Ntrklet to Nch conversion from %s \n", pathNchCorr.Data());
     TFile *fileNchCorr = TFile::Open(pathNchCorr.Data());
     if(!fileNchCorr){
       printf("File %s is not found!", pathNchCorr.Data());
       return 0x0;
     }
-    TH1F *histNchCorr = (TH1F*)fileNchCorr->Get("histNchCorr")->Clone("histNchCorr");
-    TF1 *funcNchCorr = (TF1*)fileNchCorr->Get("funcNchCorr")->Clone("funcNchCorr");
-    task->SetNchCorrHist(histNchCorr);
-    task->SetNchCorrFunc(funcNchCorr);
+    TH1F *histWeight = (TH1F*)fileNchCorr->Get("histWeight")->Clone("histWeight");
+    TF1 *funcWeight = (TF1*)fileNchCorr->Get("funcWeight")->Clone("funcWeight");
+    task->SetNchCorrHist(histWeight);
+    task->SetNchCorrFunc(funcWeight);
   }
 
   

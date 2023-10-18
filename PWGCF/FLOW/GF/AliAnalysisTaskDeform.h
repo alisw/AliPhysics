@@ -66,6 +66,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *);
   Bool_t CheckTrigger(Double_t);
   Bool_t AcceptAOD(AliAODEvent*, Double_t lvtxXYZ[3]);
+  Bool_t IsPileupEvent(AliAODEvent* ev, double centrality);
   void SetTriggerType(UInt_t newval) {fTriggerType = newval; };
   void SetEventCutFlag(Int_t newval) { fEventCutFlag = newval; };
   void FillWeights(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
@@ -130,6 +131,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetPtMPar(int newval) { fPtMpar = newval; }
   void SetUseExoticPtCorr(bool newval) { fUseExoticPtCorr = newval; }
   void SetEnableFB768DCAxy(bool newval) { fEnableFB768dcaxy = newval;}
+  void SetUseOldPileup(bool newval) { fUseOldPileup = newval; }
+  void SetCentralPileup(double newval) {fCentralPU = newval;}
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -145,6 +148,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fIsMC;
   Bool_t fBypassTriggerAndEventCuts;
   Bool_t fDisablePileup;
+  Bool_t fUseOldPileup;
   TString fDCAxyFunctionalForm;
   Bool_t fOnTheFly;
   AliMCEvent *fMCEvent; //! MC event
@@ -232,13 +236,20 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TF1 *fCenCutLowPU; //Store these
   TF1 *fCenCutHighPU; //Store these
   TF1 *fMultCutPU; //Store these
+  Double_t fCentralPU;
   TH3D** fPhiEtaVz; //!
   TH2D** fPt; //!
   TH2D** fDCAxy; //!
   TH2D** fDCAz; //!
   TH1D** fChi2TPCcls; //!
+  TH1D** fTPCcls; //!
   TH1D* fEtaMptAcceptance; //!
   TH1D* fPtMptAcceptance; //!
+  TH1D* fAcceptedNch; //! 
+  TH2D* fhQAEventsfMult32vsCentr; //!
+  TH2D* fhQAEventsMult128vsCentr; //!
+  TH2D* fhQAEventsfMultTPCvsTOF; //!
+  TH2D* fhQAEventsfMultTPCvsESD; //!
   Double_t fImpactParameterMC;
   int EventNo;
   unsigned int fEventWeight; 

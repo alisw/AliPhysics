@@ -164,10 +164,10 @@ void AliAnalysisSPCRun2::UserExec(Option_t *option)
 
     // Fill the track QA if needed.
     if (bSaveAllQA) {
-      fPhiHistogram[centralityBin][0].Fill(iPhi, (1./phi_module_corr)); 
+      fPhiHistogram[centralityBin]->Fill(iPhi, (1./phi_module_corr)); 
       fPhiWeightProfile[centralityBin]->Fill(iPhi,(1./phi_module_corr));
-      fEtaHistogram[centralityBin][0].Fill(iEta);
-      fPTHistogram[centralityBin][0].Fill(iPt, (1./iEffCorr));
+      fEtaHistogram[centralityBin]->Fill(iEta);
+      fPTHistogram[centralityBin]->Fill(iPt, (1./iEffCorr));
       fChargeHistogram[centralityBin]->Fill(iCharge); 
     }
 

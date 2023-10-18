@@ -1300,7 +1300,18 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11310e03","411790105fe30220000","01631031000000d0"); // 10-30%
     cuts.AddCutCalo("13530e03","411790105fe30220000","01631031000000d0"); // 30-50%
     cuts.AddCutCalo("15910e03","411790105fe30220000","01631031000000d0"); // 50-90%
-
+  // Mean neutral energy overlap correction!
+  } else if (trainConfig == 789){ // EMCAL+DCal clusters - 13 TeV emcal cuts with TM
+    cuts.AddCutCalo("10130e03","411790105te30220000","0s631031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310e03","411790105te30220000","0s631031000000d0"); // 10-30%
+    cuts.AddCutCalo("13530e03","411790105te30220000","0s631031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910e03","411790105te30220000","0s631031000000d0"); // 50-90%
+  // Random neutral energy overlap correction!
+  } else if (trainConfig == 790){ // EMCAL+DCal clusters - 13 TeV emcal cuts with TM
+    cuts.AddCutCalo("10130e03","411790105ue30220000","0s631031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310e03","411790105ue30220000","0s631031000000d0"); // 10-30%
+    cuts.AddCutCalo("13530e03","411790105ue30220000","0s631031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910e03","411790105ue30220000","0s631031000000d0"); // 50-90%
   // **********************************************************************************************************
   // ***************************** PHOS       QA configurations PbPb run 2 2018 *******************************
   // **********************************************************************************************************

@@ -2637,7 +2637,7 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 		TrackPhi        = track->Phi();
 
 		//if(ptWasso <1.0) continue;
-		if(ptWasso <3.0) continue;
+		//if(ptWasso <3.0) continue;  <--- removed after vAN09222023
 
 		/////////////////////////
 		// track cut

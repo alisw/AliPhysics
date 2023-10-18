@@ -66,7 +66,7 @@ namespace PWGJE
                                                                                            fMinSharedMomentumFraction(0.),
                                                                                            fRequireMatchedPartLevelJet(false),
                                                                                            fMaxMatchedJetDistance(-1),
-                                                                                           fEPcorrectionFile(nullptr),
+                                                                                           fEPCorrectionTree(nullptr),
                                                                                            fHistManager(),
                                                                                            fHistJetHTrackPt(nullptr),
                                                                                            fHistEPAngle(nullptr),
@@ -104,7 +104,7 @@ namespace PWGJE
                                                                                                            fMinSharedMomentumFraction(0.),
                                                                                                            fRequireMatchedPartLevelJet(false),
                                                                                                            fMaxMatchedJetDistance(-1),
-                                                                                                           fEPcorrectionFile(nullptr),
+                                                                                                           fEPCorrectionTree(nullptr),
                                                                                                            fHistManager(name),
                                                                                                            fHistJetHTrackPt(nullptr),
                                                                                                            fHistEPAngle(nullptr),
@@ -280,16 +280,16 @@ namespace PWGJE
       UInt_t cifras = 0; // bit coded, see GetDimParams() below
       if (fDoLessSparseAxes)
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1<<8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
+        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1<<8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15 | 1<<17;
       }
       else
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
+        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15 | 1 << 17;
         ;
       }
       if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
+        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15 | 1 << 17;
       }
       fhnJH = NewTHnSparseF("fhnJH", cifras);
       fhnJH->Sumw2();
@@ -302,15 +302,15 @@ namespace PWGJE
         // analysis if so desired.
         if (fDoLessSparseAxes)
         {
-          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 <<8 ;
+          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 8 | 1 << 17;
         }
         else
         {
-          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 8 | 1 << 9;
+          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 8 | 1 << 9 | 1 << 17;
         }
         if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
         {
-          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 8;
+          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 8 | 1 << 17;
         }
         fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);
         fhnMixedEvents->Sumw2();
@@ -346,7 +346,7 @@ namespace PWGJE
       Int_t nEventActivityBins = 8;
       Double_t *eventActivityBins = 0;
       // +1 to accomodate the fact that we define bins rather than array entries.
-      Double_t multiplicityBins[kMixedEventMultiplicityBins + 1] = {0., 4., 9., 15., 25., 35., 55., 100., 500.};
+      Double_t multiplicityBins[kMixedEventMultiplicityBins + 1] = {0., 4., 9., 15., 25., 35., 55., 100., 700.};
 
       // Cannot use GetBeamType() since it is not available until UserExec()
       if (fForceBeamType != AliAnalysisTaskEmcal::kpp)
@@ -500,9 +500,10 @@ namespace PWGJE
       AliEmcalJet *leadingJet = jets->GetLeadingJet();
       // For getting the proper properties of tracks
       AliTLorentzVector track;
+      AliPIDResponse::EDetPidStatus TOFPIDstatus;
 
-      // Get PID Response
-      AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
+          // Get PID Response
+          AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
       if (!pidResponse)
       {
         AliErrorStream() << "PID Response not available\n";
@@ -629,7 +630,12 @@ namespace PWGJE
             // Get proper track properties
             track.Clear();
             track = trackIter->first;
-            AliVTrack *vTrack = dynamic_cast<AliVTrack *>(trackIter->second);
+            const AliVTrack *vTrack = dynamic_cast<AliVTrack *>(trackIter->second);
+            if (!vTrack)
+            {
+              AliErrorStream() << "Could not retrieve associated track from trackIter, skipping track.\n";
+              continue;
+            }
 
             // Artificial inefficiency
             // Note that we already randomly rejected tracks so that the same tracks will be rejected for the mixed events
@@ -645,8 +651,17 @@ namespace PWGJE
               Double_t protonTOFnSigma;
               Double_t kaonTOFnSigma;
 
+              Double_t hasTOFhit;
 
               pionTPCnSigma = pidResponse->NumberOfSigmasTPC(vTrack, (AliPID::EParticleType)2);
+
+              TOFPIDstatus = pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, vTrack);
+              if (TOFPIDstatus == AliPIDResponse::kDetPidOk){
+                hasTOFhit = 1;
+              } else {
+                hasTOFhit = 0;
+              }
+            
               pionTOFnSigma = pidResponse->NumberOfSigmasTOF(vTrack, (AliPID::EParticleType)2);
               protonTOFnSigma = pidResponse->NumberOfSigmasTOF(vTrack, (AliPID::EParticleType)4);
               kaonTOFnSigma = pidResponse->NumberOfSigmasTOF(vTrack, (AliPID::EParticleType)3);
@@ -672,12 +687,12 @@ namespace PWGJE
                 {
                   if (fDoLessSparseAxes)
                   { // check if we want all dimensions
-                    double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, zVertex, trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma};
+                    double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, zVertex, trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma, hasTOFhit};
                     FillHist(fhnJH, triggerEntries, 1.0 / efficiency);
                   }
                   else
                   {
-                    double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, zVertex, deltaR, trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma};
+                    double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, zVertex, deltaR, trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma, hasTOFhit};
                     FillHist(fhnJH, triggerEntries, 1.0 / efficiency);
                   }
                 }
@@ -801,7 +816,7 @@ namespace PWGJE
 
                   for (Int_t ibg = 0; ibg < bgTracks->GetEntries(); ibg++)
                   {
-                    AliBasicParticle *bgTrack = static_cast<AliBasicParticle *>(bgTracks->At(ibg));
+                    AliVTrack *bgTrack = static_cast<AliVTrack *>(bgTracks->At(ibg));
                     if (!bgTrack)
                     {
                       AliError(Form("%s:Failed to retrieve tracks from mixed events", GetName()));
@@ -809,6 +824,14 @@ namespace PWGJE
 
                     // NOTE: We don't need to apply the artificial track inefficiency here because we already applied
                     //       it when will filling into the event pool (in CloneAndReduceTrackList()).
+                    Double_t hasTOFhit;
+
+                    AliPIDResponse::EDetPidStatus status = pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, bgTrack);
+                    if(status == AliPIDResponse::kDetPidOk){
+                      hasTOFhit = 1;
+                    } else {
+                      hasTOFhit = 0;
+                    }
 
                     // Fill into TLorentzVector for use with functions below
                     track.Clear();
@@ -823,18 +846,18 @@ namespace PWGJE
                     {
                       if (fDoLessSparseAxes)
                       { // check if we want all the axis filled
-                        double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, epAngle, zVertex};
+                        double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, epAngle, zVertex, hasTOFhit};
                         FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
                       }
                       else
                       {
-                        double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, epAngle, zVertex, deltaR};
+                        double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, epAngle, zVertex, deltaR, hasTOFhit};
                         FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
                       }
                     }
                     else
                     {
-                      double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, zVertex};
+                      double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, zVertex, hasTOFhit};
                       FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
                     }
                   }
@@ -1213,6 +1236,13 @@ namespace PWGJE
         xmin = -5;
         xmax = 5;
         break;
+
+      case 17:
+        label = "Has TOF hit";
+        nbins = 2;
+        xmin = 0;
+        xmax = 2;
+        break;
       }
     }
 
@@ -1505,7 +1535,7 @@ namespace PWGJE
 
   Double_t AliAnalysisTaskEmcalJetHdEdxCorrelations::GetFlattenedEPAngle(Double_t uncorrectedAngle){
       // Read the TTree from the ROOT file
-      TTree *tree = dynamic_cast<TTree *>(fEPcorrectionFile->Get("V0C"));
+      
       TString centrality_string=TString("");
       if(fCent<10)
       {
@@ -1549,7 +1579,7 @@ namespace PWGJE
       }
       
 
-      if (tree)
+      if (fEPCorrectionTree)
       {
         // Declare variables to hold the data
         Double_t cos_ave_i1_v0c = 0;
@@ -1558,19 +1588,20 @@ namespace PWGJE
         Double_t sin_ave_i2_v0c = 0;
 
         // Set branch addresses to access the data
-        tree->SetBranchAddress(Form("cos_ave_i1_V0C_%s", centrality_string.Data()), &cos_ave_i1_v0c);
-        tree->SetBranchAddress(Form("cos_ave_i2_V0C_%s", centrality_string.Data()), &cos_ave_i2_v0c);
-        tree->SetBranchAddress(Form("sin_ave_i1_V0C_%s", centrality_string.Data()), &sin_ave_i1_v0c);
-        tree->SetBranchAddress(Form("sin_ave_i2_V0C_%s", centrality_string.Data()), &sin_ave_i2_v0c);
+        fEPCorrectionTree->SetBranchAddress(Form("cos_ave_i1_V0C_%s", centrality_string.Data()), &cos_ave_i1_v0c);
+        fEPCorrectionTree->SetBranchAddress(Form("cos_ave_i2_V0C_%s", centrality_string.Data()), &cos_ave_i2_v0c);
+        fEPCorrectionTree->SetBranchAddress(Form("sin_ave_i1_V0C_%s", centrality_string.Data()), &sin_ave_i1_v0c);
+        fEPCorrectionTree->SetBranchAddress(Form("sin_ave_i2_V0C_%s", centrality_string.Data()), &sin_ave_i2_v0c);
 
         // Loop over the entries and retrieve the values
-        tree->GetEntry(0);
+        fEPCorrectionTree->GetEntry(0);
         Double_t flatEPangle = uncorrectedAngle +1/2*(2*(-sin_ave_i1_v0c*TMath::Cos(2*uncorrectedAngle) + cos_ave_i1_v0c*TMath::Sin(2*uncorrectedAngle)) + (-sin_ave_i2_v0c*TMath::Cos(4*uncorrectedAngle) + cos_ave_i2_v0c*TMath::Sin(4*uncorrectedAngle)));
         return flatEPangle;
         }
         else
         {
           std::cerr << "Failed to read TTree from the ROOT file." << std::endl;
+          return uncorrectedAngle;
         }
   }
 
@@ -1672,14 +1703,7 @@ namespace PWGJE
 
       TString *epCorrectionsFilenameTstr = new TString(epCorrectionsFilename);
 
-      if (epCorrectionsFilenameTstr->Contains("alien://") && !gGrid)
-      {
-        TGrid::Connect("alien://");
-      }
-        // Open the ROOT file in read mode
-      TFile *file = new TFile(epCorrectionsFilenameTstr->Data(), "READ");
-
-      correlationTask->fEPcorrectionFile = file;
+      correlationTask->SetEPcorrectionsTree(epCorrectionsFilenameTstr);
 
       //-------------------------------------------------------
       // Final settings, pass to manager and set the containers

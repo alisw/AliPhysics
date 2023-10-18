@@ -3921,6 +3921,20 @@ Double_t AliVertexingHFUtils::CombineNsigmaTPCTOF(Double_t nsigmaTPC, Double_t n
 }
 
 //______________________________________________________________________
+Double_t AliVertexingHFUtils::CosOpeningAngleFromKF(KFParticle kfp_0, KFParticle kfp_1)
+{
+  Double_t p_0[3], p_1[3];
+  p_0[0] = kfp_0.GetPx();
+  p_0[1] = kfp_0.GetPy();
+  p_0[2] = kfp_0.GetPz();
+  p_1[0] = kfp_1.GetPx();
+  p_1[1] = kfp_1.GetPy();
+  p_1[2] = kfp_1.GetPz();
+  Double_t cosOA = (p_0[0]*p_1[0]+p_0[1]*p_1[1]+p_0[2]*p_1[2])/sqrt(p_0[0]*p_0[0]+p_0[1]*p_0[1]+p_0[2]*p_0[2])/sqrt(p_1[0]*p_1[0]+p_1[1]*p_1[1]+p_1[2]*p_1[2]);
+  return cosOA;
+}
+
+//______________________________________________________________________
 Double_t AliVertexingHFUtils::CosPointingAngleFromKF(KFParticle kfp, KFParticle kfpmother)
 {
   Double_t v[3];

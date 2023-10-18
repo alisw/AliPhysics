@@ -47,7 +47,7 @@ void AddTask_GammaConvCalo_pp(
   TString   generatorName                 = "DPMJET", // generator Name
   Bool_t    enableMultiplicityWeighting   = kFALSE,   //
   Int_t     enableMatBudWeightsPi0        = 0,        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
-  Bool_t    enableElecDeDxPostCalibration = kFALSE,
+  Int_t     enableElecDeDxPostCalibration = 0,        // 0 = off, 1 = as function of TPC clusters, 2 = as function of convR. Option 2 is available only if FEPC is given.
   TString   periodNameAnchor              = "",       //
   // special settings
   Bool_t    enableSortingMCLabels         = kTRUE,    // enable sorting for MC cluster labels
@@ -4048,6 +4048,13 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n230000","0r63103100000010"); // NCell >= 2, M02 < 0.5
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","4117901095e3n230000","0r63103100000010"); // NCell >= 2, M02 < 0.5, TM 5
 
+  // special setting with very low cluster energies
+  } else if ( trainConfig == 3547){// without smearing, different cuts
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe00230000","0r63103100000010"); // no cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fei0230000","0r63103100000010"); // 0.2 GeV
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109feg0230000","0r63103100000010"); // 0.3 GeV
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109feh0230000","0r63103100000010"); // 0.4 GeV
+
   //////////////////////    Mult slices  pp 13 TeV   //////////////////////////////////
 // INT7 trigger	V0M high mult	EG2	EG1	SPD high mult PHI7
 // bit: 10	bit: 76	bit 8e	bit: 8d	bit: 75 bit: 62
@@ -4780,19 +4787,53 @@ void AddTask_GammaConvCalo_pp(
     }
 
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
-    if (enableElecDeDxPostCalibration){
+    // extract single filenames from fileNamedEdxPostCalib
+    TObjArray *lArrFnamesdEdxPostCalib = nullptr;
+    if (enableElecDeDxPostCalibration == 2){
+      if (isMC){
+        cout << "ERROR enableElecDeDxPostCalibration set to 2 even if MC file. Automatically reset to 0"<< endl;
+        enableElecDeDxPostCalibration = 0;
+      } else {
+        lArrFnamesdEdxPostCalib = fileNamedEdxPostCalib.Tokenize("+");
+        if (!lArrFnamesdEdxPostCalib){
+          cout << "ERROR fileNamedEdxPostCalib.Tokenize() returned nullptr\n";
+          return;
+        }
+        int lNFnames = lArrFnamesdEdxPostCalib->GetEntriesFast();
+        if (lNFnames && lNFnames != numberOfCuts){
+          cout << "ERROR: FEPC either has to be one filename or several separated by a '+' where the number of filenames has to match the number of cuts in the trainconfig.\nOr no filename at all if the file from the OADB is to be taken\n";
+          return;
+        }
+      }
+    }
+    if (enableElecDeDxPostCalibration == 1){
       if (isMC == 0){
         if(fileNamedEdxPostCalib.CompareTo("") != 0){
           analysisCuts[i]->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
           cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
         }
-        analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(kTRUE);
         cout << "Enabled TPC dEdx recalibration." << endl;
       } else{
         cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
         enableElecDeDxPostCalibration=kFALSE;
         analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
       }
+    } else if(enableElecDeDxPostCalibration == 2){
+      int lNFnames = lArrFnamesdEdxPostCalib->GetEntriesFast();
+      if (lNFnames){
+        if (enableElecDeDxPostCalibration==2){
+          analysisCuts[i]->ForceTPCRecalibrationAsFunctionOfConvR();
+        }
+        const TString &lFname = (static_cast<TObjString*>(lArrFnamesdEdxPostCalib->At(lNFnames > 1 ? i : 0)))->GetString();
+        printf("Cut config %s_%s_%s:\nSetting custom dEdx recalibration file: %s\n", cuts.GetEventCut(i).Data(), cuts.GetPhotonCut(i).Data(), cuts.GetMesonCut(i).Data(), lFname.Data());
+        Bool_t lSuccess = analysisCuts[i]->InitializeElecDeDxPostCalibration(lFname);
+        if (!lSuccess) {
+          return;
+        }
+      }
+      analysisCuts[i]->SetDoElecDeDxPostCalibration(kTRUE);
+      cout << "Enabled TPC dEdx recalibration." << endl;
     }
     if (enableLightOutput == 1 || enableLightOutput == 2 || enableLightOutput ==5 ) analysisCuts[i]->SetLightOutput(1);
     if (enableLightOutput == 4) analysisCuts[i]->SetLightOutput(2);

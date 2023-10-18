@@ -673,7 +673,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 
         if (bSaveAllQA){
           fProfileWeights[GetCentralityBin(fcent)]->Fill(itrack->Phi(), phi_module_corr);
-          fPhiHistogram[GetCentralityBin(fcent)][2]->Fill(track->Phi(), 1./phi_module_corr);
+          fPhiHistogram[GetCentralityBin(fcent)][2]->Fill(itrack->Phi(), 1./phi_module_corr);
           fPTHistogram[GetCentralityBin(fcent)][2]->Fill(itrack->Pt(), 1./effCorr);
         }
 
@@ -1137,7 +1137,8 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
    fPhiHistogram[icent][1]->SetLineColor(4);
    fControlHistogramsList[icent]->Add(fPhiHistogram[icent][1]);
 
-   fPhiHistogram[icent][2] = new TH1F("fPhiHist_AfterTrackSelection_Weighted","Phi Distribution",1000,0.,TMath::TwoPi()); 
+   fPhiHistogram[icent][2] = new TH1F("fPhiHist_AfterTrackSelection_Weighted","Phi Distribution",1000,-TMath::Pi(),TMath::Pi()); 
+   // fPhiHistogram[icent][2] = new TH1F("fPhiHist_AfterTrackSelection_Weighted","Phi Distribution",1000,0,TMath::TwoPi()); 
    fPhiHistogram[icent][2]->GetXaxis()->SetTitle("Phi");
    fPhiHistogram[icent][2]->SetLineColor(4);
    fControlHistogramsList[icent]->Add(fPhiHistogram[icent][2]);

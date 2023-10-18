@@ -111,7 +111,11 @@ set(SRCS
   PostProcessing/f0980/AliAnalysisTaskInclusivef0f2.cxx
   PostProcessing/fnreso/AliAnalysisTaskfn.cxx
   PostProcessing/fnreso/AliAnalysisTaskfnAOD.cxx
-  PostProcessing/fnreso/AliAnalysisTaskSA.cxx			
+  PostProcessing/fnreso/AliAnalysisTaskfnAODsp.cxx
+  PostProcessing/fnreso/AliAnalysisTaskfnAODPbPb.cxx	
+  PostProcessing/fnreso/AliAnalysisTaskSA.cxx
+  PostProcessing/fnreso/AliAnalysisTaskSAphi.cxx
+  PostProcessing/fnreso/AliAnalysisTaskEP.cxx
   )
 
 # Headers from sources

@@ -35,17 +35,20 @@
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
 #include "AliEventCuts.h"
+#include "AliHeader.h"
+#include "AliGenEventHeader.h"
 
 using std::cout;
 using std::endl;
 
 ClassImp(AliAnalysisTaskDeutFlucpp)
-
-    AliAnalysisTaskDeutFlucpp::AliAnalysisTaskDeutFlucpp() : AliAnalysisTaskSE(), fTreeEvent(NULL), fPIDResponse(NULL), fESDtrackCuts(NULL), fEventCuts(0), fTriggerMask(0), fTreeTrackVariableCentrality(0), fTreeTrackVariableVtxz(0), fTreeTrackVariableNTrack(0)
+    AliAnalysisTaskDeutFlucpp::AliAnalysisTaskDeutFlucpp() : AliAnalysisTaskSE(), fTreeEvent(NULL), fPIDResponse(NULL), fESDtrackCuts(NULL), fEventCuts(0), fTriggerMask(0), fTreeTrackVariableCentrality(0), fTreeTrackVariableVtxz(0), fTreeTrackVariableVtxz_Gen(0), fTreeTrackVariableNTrack(0), fTreeTrackVariableNTrack_d_Gen(0), fTreeTrackVariableNTrack_p_Gen(0), fMCstack(0), fMCevent(0),
+      fUseMC(kTRUE)
 {
 }
 
-AliAnalysisTaskDeutFlucpp::AliAnalysisTaskDeutFlucpp(const char *name) : AliAnalysisTaskSE(name), fTreeEvent(NULL), fPIDResponse(NULL), fESDtrackCuts(NULL), fEventCuts(0), fTriggerMask(0), fTreeTrackVariableCentrality(0), fTreeTrackVariableVtxz(0), fTreeTrackVariableNTrack(0)
+AliAnalysisTaskDeutFlucpp::AliAnalysisTaskDeutFlucpp(const char *name) : AliAnalysisTaskSE(name), fTreeEvent(NULL), fPIDResponse(NULL), fESDtrackCuts(NULL), fEventCuts(0), fTriggerMask(0), fTreeTrackVariableCentrality(0), fTreeTrackVariableVtxz(0), fTreeTrackVariableVtxz_Gen(0), fTreeTrackVariableNTrack(0), fTreeTrackVariableNTrack_d_Gen(0), fTreeTrackVariableNTrack_p_Gen(0), fMCstack(0), fMCevent(0),
+      fUseMC(kTRUE)
 {
 
   std::cout << " i am in constrctor " << std::endl;
@@ -67,6 +70,20 @@ AliAnalysisTaskDeutFlucpp::AliAnalysisTaskDeutFlucpp(const char *name) : AliAnal
     fTreeTrackVariableMomentumPy[str] = -999;
     fTreeTrackVariableMomentumPz[str] = -999;
   }
+
+  for (int str_d_Gen = 0; str_d_Gen < kMaxTrack; str_d_Gen++)
+  {
+    fTreeTrackVariableMomentumPx_d_Gen[str_d_Gen] = -999;
+    fTreeTrackVariableMomentumPy_d_Gen[str_d_Gen] = -999;
+    fTreeTrackVariableMomentumPz_d_Gen[str_d_Gen] = -999;
+  }
+for (int str_p_Gen = 0; str_p_Gen < kMaxTrack; str_p_Gen++)
+  {
+    fTreeTrackVariableMomentumPx_d_Gen[str_p_Gen] = -999;
+    fTreeTrackVariableMomentumPy_d_Gen[str_p_Gen] = -999;
+    fTreeTrackVariableMomentumPz_d_Gen[str_p_Gen] = -999;
+  }
+  
 }
 
 AliAnalysisTaskDeutFlucpp::~AliAnalysisTaskDeutFlucpp()
@@ -98,6 +115,9 @@ void AliAnalysisTaskDeutFlucpp::UserCreateOutputObjects()
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
   fPIDResponse = inputHandler->GetPIDResponse();
+
+  AliMCEventHandler* mcHandler = new AliMCEventHandler();
+	man->SetMCtruthEventHandler(mcHandler);
 
   //------------------------------------------------
   // track cut
@@ -137,8 +157,34 @@ void AliAnalysisTaskDeutFlucpp::UserCreateOutputObjects()
   fTreeEvent->Branch("fTreeTrackVariableMomentumPx", &fTreeTrackVariableMomentumPx, "fTreeTrackVariableMomentumPx[fTreeTrackVariableNTrack]/F");
   fTreeEvent->Branch("fTreeTrackVariableMomentumPy", &fTreeTrackVariableMomentumPy, "fTreeTrackVariableMomentumPy[fTreeTrackVariableNTrack]/F");
   fTreeEvent->Branch("fTreeTrackVariableMomentumPz", &fTreeTrackVariableMomentumPz, "fTreeTrackVariableMomentumPz[fTreeTrackVariableNTrack]/F");
+  
+  fTreeEvent->Branch("fTreeTrackVariableNTrack_d_Gen", &fTreeTrackVariableNTrack_d_Gen, "fTreeTrackVariableNTrack_d_Gen/I");
+  fTreeEvent->Branch("fTreeTrackVariableNTrack_p_Gen", &fTreeTrackVariableNTrack_p_Gen, "fTreeTrackVariableNTrack_p_Gen/I");
+
+  fTreeEvent->Branch("fTreeTrackVariableVtxz_Gen", &fTreeTrackVariableVtxz_Gen, "fTreeTrackVariableVtxz_Gen/F");
+  fTreeEvent->Branch("fTreeTrackVariableMomentumPx_d_Gen", &fTreeTrackVariableMomentumPx_d_Gen, "fTreeTrackVariableMomentumPx_d_Gen[fTreeTrackVariableNTrack_d_Gen]/F");
+  fTreeEvent->Branch("fTreeTrackVariableMomentumPy_d_Gen", &fTreeTrackVariableMomentumPy_d_Gen, "fTreeTrackVariableMomentumPy_d_Gen[fTreeTrackVariableNTrack_d_Gen]/F");
+  fTreeEvent->Branch("fTreeTrackVariableMomentumPz_d_Gen", &fTreeTrackVariableMomentumPz_d_Gen, "fTreeTrackVariableMomentumPz_d_Gen[fTreeTrackVariableNTrack_d_Gen]/F");
+
+  fTreeEvent->Branch("fTreeTrackVariableMomentumPx_p_Gen", &fTreeTrackVariableMomentumPx_p_Gen, "fTreeTrackVariableMomentumPx_p_Gen[fTreeTrackVariableNTrack_p_Gen]/F");
+  fTreeEvent->Branch("fTreeTrackVariableMomentumPy_p_Gen", &fTreeTrackVariableMomentumPy_p_Gen, "fTreeTrackVariableMomentumPy_p_Gen[fTreeTrackVariableNTrack_p_Gen]/F");
+  fTreeEvent->Branch("fTreeTrackVariableMomentumPz_p_Gen", &fTreeTrackVariableMomentumPz_p_Gen, "fTreeTrackVariableMomentumPz_p_Gen[fTreeTrackVariableNTrack_p_Gen]/F");
+   
+
   PostData(1, fTreeEvent);
 }
+
+// Bool_t AliAnalysisTaskDeutFlucpp::IsMCEventSelected(TObject* obj){
+
+// 	Bool_t isSelected = kTRUE;
+
+// 	AliMCEvent *event = 0x0;
+// 	event = dynamic_cast<AliMCEvent*>(obj);
+// 	if( !event ) 
+// 		isSelected = kFALSE;
+
+// 	return isSelected;
+// }
 
 //________________________________________________________________________
 void AliAnalysisTaskDeutFlucpp::UserExec(Option_t *)
@@ -146,7 +192,10 @@ void AliAnalysisTaskDeutFlucpp::UserExec(Option_t *)
 
   // Main loop
   // Called for each event
-  AliESDEvent *lESDevent = 0x0;
+
+  AliESDEvent *lESDevent = 0x0; 
+  fMCevent = 0x0;
+  fMCstack = 0x0;
 
   lESDevent = dynamic_cast<AliESDEvent *>(InputEvent());
   if (!lESDevent)
@@ -155,12 +204,114 @@ void AliAnalysisTaskDeutFlucpp::UserExec(Option_t *)
     // PostData(1,fTreeEvent);
     return;
   }
+  if(fUseMC)
+  {
+  fMCevent = MCEvent();
+    if (!fMCevent) {
+      Printf("ERROR: Could not retrieve MC event \n");
+      //cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+      return;
+    }
 
+    fMCstack = fMCevent->Stack();
+    if (!fMCstack) {
+      Printf("ERROR: Could not retrieve MC stack \n");
+      //cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+      return;
+    }
+  }
+
+  AliHeader *headerMC;
+	Bool_t isGoodVtxPosMC = kFALSE;
+  
+ if(fUseMC)
+    {
+    //Int_t ntracks_Gen = fMCstack->GetNtrack();
+    Int_t str_d_Gen = 0;
+    Int_t str_p_Gen = 0;
+    Bool_t isdeuteron_Gen;
+    Bool_t isproton_Gen;
+    //const Int_t label = TMath::Abs(esdt->GetLabel());
+    //--------generated-------------
+
+		headerMC = fMCevent->Header();
+		AliGenEventHeader *genHeader = headerMC->GenEventHeader();
+		TArrayF vtxMC(3); // primary vertex  MC
+		vtxMC[0] = 9999;
+		vtxMC[1] = 9999;
+		vtxMC[2] = 9999; // initialize with dummy
+		if (genHeader)
+			genHeader->PrimaryVertex(vtxMC);
+    //cout<<"vtx ====" << vtxMC[2]<<endl;
+
+    fTreeTrackVariableVtxz_Gen = vtxMC[2];
+
+		if (TMath::Abs(vtxMC[2]) <= 10)
+			isGoodVtxPosMC = kTRUE;
+
+    if (isGoodVtxPosMC)
+    {
+    Int_t noGenMCtracks = fMCevent->GetNumberOfTracks();
+    for (Int_t i = 0; i < noGenMCtracks; i++) {
+        
+      AliMCParticle* particle = (AliMCParticle*)fMCevent->GetTrack(i);
+      if (!particle)
+	    {
+	    cout<<"Could not find track in MC generated loop !!!"<<endl;
+	    continue;
+	    }
+		  if (!particle->IsPhysicalPrimary()) continue;
+		  if (TMath::Abs(particle->Eta()) > 0.8) continue;
+		  if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i,fMCevent)) continue;
+
+        Int_t trk_PID_gen = particle->PdgCode();
+        Float_t trk_eta_gen = particle->Eta();
+        Float_t trk_pt_gen = particle->Pt();
+        Float_t trk_px_gen = particle->Px();
+        Float_t trk_py_gen = particle->Py();
+        Float_t trk_pz_gen = particle->Pz();
+        isdeuteron_Gen = kFALSE;
+        isproton_Gen = kFALSE;
+
+
+      if (trk_pt_gen > 0.8 && trk_pt_gen <= 2.0 && trk_PID_gen == -1000010020)
+        isdeuteron_Gen = kTRUE;
+
+      if (trk_pt_gen > 0.4 && trk_pt_gen <= 1.0 && trk_PID_gen == -2212)
+        isproton_Gen = kTRUE;
+
+      if (isdeuteron_Gen)
+       {
+      //   fTreeTrackVariableCharge_d_Gen[str_d_Gen] = trk_charge_gen;
+         fTreeTrackVariableMomentumPx_d_Gen[str_d_Gen] = trk_px_gen;
+         fTreeTrackVariableMomentumPy_d_Gen[str_d_Gen] = trk_py_gen;
+         fTreeTrackVariableMomentumPz_d_Gen[str_d_Gen] = trk_pz_gen;
+         str_d_Gen = str_d_Gen+1;
+       }
+
+       if (isproton_Gen)
+       {
+      //   fTreeTrackVariableCharge_p_Gen[str_p_Gen] = trk_charge_gen;
+         fTreeTrackVariableMomentumPx_p_Gen[str_p_Gen] = trk_px_gen;
+         fTreeTrackVariableMomentumPy_p_Gen[str_p_Gen] = trk_py_gen;
+         fTreeTrackVariableMomentumPz_p_Gen[str_p_Gen] = trk_pz_gen;
+         str_p_Gen = str_p_Gen+1;
+       }
+        
+      }
+      fTreeTrackVariableNTrack_p_Gen = str_p_Gen;
+      fTreeTrackVariableNTrack_d_Gen = str_d_Gen; 
+     }
+    }
+  //IsMCEventSelected = 1;
+  
   ////tigger/////////////
   UInt_t maskIsSelected = ((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Bool_t isSelected = 0;
 
   isSelected = (maskIsSelected & fTriggerMask); // AliVEvent::kINT7)
+
+  //IsMCEventSelected(fMCevent);
 
   if (!isSelected)
   {
@@ -242,6 +393,7 @@ void AliAnalysisTaskDeutFlucpp::UserExec(Option_t *)
     if (!track)
       continue;
     AliESDtrack *esdt = dynamic_cast<AliESDtrack *>(track);
+
     if (!esdt)
       continue;
     if (!fESDtrackCuts->AcceptTrack(esdt))
@@ -301,8 +453,10 @@ void AliAnalysisTaskDeutFlucpp::UserExec(Option_t *)
       fTreeTrackVariableMomentumPz[str] = p[2];
       str = str + 1;
     }
+
   }
   fTreeTrackVariableNTrack = str;
+
   fTreeEvent->Fill();
   PostData(1, fTreeEvent);
 }

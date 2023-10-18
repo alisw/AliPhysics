@@ -2396,6 +2396,11 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411790109fe3v2v0000","0s631031000000d0"); // INT7 PCM-EDC pi0 tagging for gamma clus, Gaussian Fit
   } else if (trainConfig == 1924){  // pp 13 TeV variations: cell track matching
     cuts.AddCutCalo("00010113","4117901090e302v0000","0s631031000000d0"); // INT7 no TM
+  } else if (trainConfig == 1925){  // pp 13 TeV variations: min energy special var
+    cuts.AddCutCalo("00010113","411790109fe002v0000","0s631031000000d0"); // INT7 no min energy
+    cuts.AddCutCalo("00010113","411790109fei02v0000","0s631031000000d0"); // INT7 energy 0.2 GeV
+    cuts.AddCutCalo("00010113","411790109feg02v0000","0s631031000000d0"); // INT7 energy 0.3 GeV
+    cuts.AddCutCalo("00010113","411790109feh02v0000","0s631031000000d0"); // INT7 energy 0.4 GeV
 
 
   //-----------  EG2 std cut

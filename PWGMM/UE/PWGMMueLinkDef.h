@@ -36,4 +36,5 @@
 #pragma link C++ class AliAnalysisTaskFlatenicityMCclosure+;
 // study on fluctuations
 #pragma link C++ class AliAnalysisTaskDeutFlucpp+;
+#pragma link C++ class AliAnalysisTaskDataSpeedOfSound+;
 #endif

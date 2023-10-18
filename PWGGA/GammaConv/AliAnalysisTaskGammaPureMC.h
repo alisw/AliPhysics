@@ -4,6 +4,10 @@
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 
+#include <fastjet/PseudoJet.hh>
+#include <fastjet/ClusterSequenceArea.hh>
+
+
 class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
   public:
     /**
@@ -46,7 +50,14 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
       kPdgLambda = 3122,       //!< kPdgLambda
       kPdgSigmaPlus = 3222,    //!< kPdgSigmaPlus
       kPdgXiMinus = 3312,      //!< kPdgXiMinus
-      kPdgXi0 = 3322           //!< kPdgXi0
+      kPdgXi0 = 3322,          //!< kPdgXi0
+      kPdgd = 1,               //!< kPdgd
+      kPdgu = 2,               //!< kPdgu
+      kPdgs = 3,               //!< kPdgs
+      kPdgc = 4,               //!< kPdgc
+      kPdgb = 5,               //!< kPdgb
+      kPdgt = 6,               //!< kPdgt
+      kPdgg = 21               //!< kPdgg
     };
 
     AliAnalysisTaskGammaPureMC();
@@ -66,6 +77,9 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     bool IsInEMCalAcceptance(AliVParticle* part) const;
     bool IsInV0Acceptance(AliVParticle* part) const;
     bool IsSecondary(AliVParticle* motherParticle) const;
+    void ProcessJets();
+    bool IsParticleInJet(const std::vector<fastjet::PseudoJet>& vecJet, double eta, double phi, int& index, double& R);
+    double GetFrag(const fastjet::PseudoJet& jet, const AliVParticle* part);
 
     // additional functions
     void SetLogBinningXTH1(TH1* histoRebin);
@@ -73,6 +87,10 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     void SetIsK0(Int_t isK0){fIsK0 = isK0;}
     void SetMaxPt(Double_t pTmax){fMaxpT = pTmax;}
     void SetDoMultStudies(Int_t tmp){fDoMultStudies = tmp;}
+    void SetDoJetStudies(int tmp) {fDoJetStudies = tmp;}
+    void SetDoFeedDownStudies(int tmp) {fDoFeedDownStudies = tmp;}
+    int ReturnFeedDownBinFromPDG(int pdgcode);
+    
 
   protected:
     TList*                fOutputContainer;           //! Output container
@@ -166,6 +184,17 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     TH2F*                 fHistPtV0MultEtaGG;                 //! histo for Eta pt vs V0 multiplicity
     TH2F*                 fHistPtV0MultEtaPrimeGG;            //! histo for EtaPrime pt vs V0 multiplicity
 
+    // jet studies
+    TH2F*                 fHistPi0PtJetPt;        //! histo for Pi0 pt vs jet Pt
+    TH2F*                 fHistEtaPtJetPt;        //! histo for Pi0 pt vs jet Pt
+
+    TH2F*                 fHistPi0ZJetPt;        //! histo for Pi0 pt vs jet Pt
+    TH2F*                 fHistEtaZJetPt;        //! histo for Pi0 pt vs jet Pt
+
+    TH2F*                 fHistJetPtY;  //! histo for jet pt
+    TH1D*                 fHistJetEta;  //! histo for jet eta
+    TH1D*                 fHistJetPhi;  //! histo for jet phi
+
 	  Int_t				          fIsK0;					  // k0 flag
     Int_t                 fIsMC;            // MC flag
     Double_t              fMaxpT;           // Max pT flag
@@ -173,11 +202,37 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     Int_t                 fNTracksInV0Acc;  // number of tracks in V0A+C acceptance for multiplicity studies
     Bool_t                fIsEvtINELgtZERO; // flag if event is INEL>0
 
+    int fDoFeedDownStudies;                 // 0 = off, 1 = on
+    TH2F* fHistPtPi0FromDecay;              //! histo listing which mesons decayed into pi0
+    TH2F* fHistPtEtaFromDecay;              //! histo listing which mesons decayed into eta
+    TH2F* fHistPtOmegaFromDecay;            //! histo listing which mesons decayed into omega
+    TH2F* fHistPtYPi0Primordial;            //! histo for Pi0s that did not decay from one of the listed mesons
+    TH2F* fHistPtYEtaPrimordial;            //! histo for Etas that did not decay from one of the listed mesons
+    TH2F* fHistPtYOmegaPrimordial;          //! histo for Omegas that did not decay from one of the listed mesons
+
+    // jet finding
+    int fDoJetStudies;                                      // 0 = off, 1 = standard, 2 = stable pi0 and eta for jet finder
+    double fJetRadius;                                      // jet radius parameter
+    double fJetMinE;                                        // minimum jet energy
+    double fJetAccEta;                                      // eta acceptance of jet
+    double fJetParticleAcc;                                 // acceptance of particles that contribute to jet for pt spectra
+    double fJetParticleAccFF;                               // acceptance of particles that contribute to jet for FF
+    fastjet::JetAlgorithm   	    fJetAlgorithm;            // jet algorithm
+    fastjet::Strategy 		        fJetStrategy;             // jet strategy parameter
+    fastjet::AreaType 		        fJetAreaType;             // jet rea type parameter
+    fastjet::RecombinationScheme  fJetRecombScheme;         // jet recomb. scheme parameter
+    double fJetGhostArea;                                   // jet ghost area
+    double fGhostEtaMax;                                    // maximum eta of ghost particles
+    int fActiveAreaRepeats;                                 // jet active area
+    fastjet::AreaType 		  fAreaType;                      // jet area type
+    std::vector<fastjet::PseudoJet> fVecJets;               //! vector containing all reconstructed jets
+     
+
   private:
     AliAnalysisTaskGammaPureMC(const AliAnalysisTaskGammaPureMC&); // Prevent copy-construction
     AliAnalysisTaskGammaPureMC &operator=(const AliAnalysisTaskGammaPureMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaPureMC, 7);
+    ClassDef(AliAnalysisTaskGammaPureMC, 9);
 };
 
 #endif

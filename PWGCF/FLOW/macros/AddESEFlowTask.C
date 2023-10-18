@@ -66,8 +66,8 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
 
 
     task->SetFilterBit(96);
-    task->SetDCAzMax(2.5); // check default cuts!!
-    task->SetDCAxyMax(7);
+    task->SetDCAzMax(2.0); 
+    task->SetDCAxyMax(1.0);
     task->SetVtxZCut(10.0);
     task->SetPhiBins(60);
     task->SetEtaBins(32);
@@ -84,9 +84,12 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     const Int_t nCentBins = 10;
     Double_t CentEdges[nCentBins+1] = {0, 5., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
     task->SetCentBin(nCentBins,CentEdges);
+    const Int_t nCentPtBins = 10;
+    Double_t CentPtEdges[nCentPtBins+1] = {0, 5., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
+    task->SetCentBinForPt(nCentPtBins,CentPtEdges);
     task->SetReadMC(kFALSE); //activate MC analysis
     task->SetAbsEta(0.8);
-    task->SetRejectAddPileUp(kTRUE);
+    task->SetRejectAddPileUp(kFALSE); //for the old pile-up, can be activated as a systematic check
     task->SetFlowRFPsPt(0.2,5.0);
     task->SetFlowPOIsPt(0.0,10.0);
     task->SetRedFlowPt(0.2,20.0);
@@ -98,9 +101,8 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     task->SetEtaGap(1.0);
     task->SetTPCEseqnBins(100,0.0,8.0);
     task->SetV0EseqnBins(100,0.0,15.0);
-    task->SetChi2TPCFl(kTRUE, 2.5); // change to kTRUE for systematic, default in track cut is 4.0, so change to i.e. 3
-    task->SetChi2ITSFl(kFALSE, 36.0); // change to kTRUE for systematic, default in track cut is 36.0, so change to i.e. 35
-    task->SetQARejFiller(kFALSE);
+    task->SetChi2TPCFl(kTRUE, 2.5); // 
+    task->SetChi2ITSFl(kFALSE, 36.0); //
     task->SetNUEWeights(kFALSE, 1);
     task->Set2018(kFALSE);
     task->SetBayesUnfolding(kFALSE);
@@ -109,7 +111,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     
 
     const Int_t nEsePercentiles = 10;
-    Double_t EseEdges[nEsePercentiles+1] = {0, 10., 20., 30., 40., 50., 60., 70., 80., 90.,100.};
+    Double_t EseEdges[nEsePercentiles+1] = {0., 10., 20., 30., 40., 50., 60., 70., 80., 90.,100.};
     task->SetEventShapeBins(nEsePercentiles,EseEdges);
 
     if( colSys == AliAnalysisTaskESEFlow::ColSystem::kPbPb){

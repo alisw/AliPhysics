@@ -27,7 +27,6 @@
 #include "AliAODHeader.h"
 #include "AliFemtoEventReaderAODMultSelection.h"
 #include "AliMultSelection.h"
-
 #include "AliAnalysisTaskParticleEffWRZ.h"
 
 
@@ -38,8 +37,8 @@ double fVer1[3];
 
 //_______________________________________________________
 
-AliAnalysisTaskParticleEffWRZ::AliAnalysisTaskParticleEffWRZ(const Char_t *partName) :
-  AliAnalysisTaskSE(partName), centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0), fAODpidUtil(0)
+AliAnalysisTaskParticleEffWRZ::AliAnalysisTaskParticleEffWRZ(const Char_t *partName, double micen, double macen) :
+  AliAnalysisTaskSE(partName), centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0), fAODpidUtil(0), fmincen(micen), fmaxcen(macen)
 {
   for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
     for(Int_t chg=0;chg<2;chg++){
@@ -74,6 +73,7 @@ AliAnalysisTaskParticleEffWRZ::AliAnalysisTaskParticleEffWRZ(const Char_t *partN
   }
 
   DefineOutput(1, TList::Class());
+
 }
 
 //_______________________________________________________
@@ -438,7 +438,7 @@ bool IsPionNSigmaWRZ(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFt
 {
 
     if (mom > 0.5 && mom<1.5) {
-        if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < 3*1.41)
+        if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < 3)
             return true;
 	}
     else  {
@@ -566,7 +566,6 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
   AliAODEvent *fAOD = aodH->GetEvent();
   fAODpidUtil = aodH->GetAODpidUtil();
   
-
   /***Get Event****/
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!aodEvent) return;
@@ -574,21 +573,19 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
   AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
   AliMultSelection *mult_selection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
   Double_t  centper = alicent->GetCentralityPercentile("V0M");
-  if(mult_selection->GetMultiplicityPercentile("V0M") < 0.0000001 || mult_selection->GetMultiplicityPercentile("V0M") >  10.0) return;
+  if(mult_selection->GetMultiplicityPercentile("V0M") < fmincen || mult_selection->GetMultiplicityPercentile("V0M") >  fmaxcen) 
+     return; 
+
   fHistEv->Fill(centper);
 
   // EVENT SELECTION ********************
   fHistQA[9]->Fill(1);
-
   fHistEvCuts[0]->Fill(1);
-
   const AliAODVertex* vertex =(AliAODVertex*) aodEvent->GetPrimaryVertex();
   vertex->GetPosition(fVer1);
   if (!vertex || vertex->GetNContributors()<=0) return;
-
   fHistQA[9]->Fill(2);
   fHistEvCuts[0]->Fill(2);
- 
   AliAnalysisUtils *anaUtil=new AliAnalysisUtils();
     
   Bool_t fpA2013 = kFALSE;
@@ -607,9 +604,9 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
   if(fMinPlpContribSPD) anaUtil->SetMinPlpContribSPD(fMinPlpContribSPD);
 
   if(fisPileUp)
-    if(anaUtil->IsPileUpEvent(aodEvent)) return;
+   if(anaUtil->IsPileUpEvent(aodEvent)) return;
+      delete anaUtil;   
 
-  delete anaUtil;   
 
   fHistQA[9]->Fill(3);
   fHistEvCuts[0]->Fill(3);
@@ -640,8 +637,7 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 
   TObjArray recoParticleArray[PARTTYPES];
   fHistQA[10]->Fill(1,aodEvent->GetNumberOfTracks());
-  
-      cout<<"  "<<endl<<endl;
+ 
   //loop over AOD tracks
   for (Int_t iTracks = 0; iTracks < aodEvent->GetNumberOfTracks(); iTracks++) {
     //get track 
@@ -650,6 +646,19 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
     int PDGcode;
     //AliESDtrack* track = AliESDtrackCuts::GetTPCOnlyTrack(const_cast<AliESDEvent*>(esdEvent),iTracks);
     AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iTracks); 
+    
+  //from Mesut about pileup 
+  //Int_t labb = TMath::Abs(track->GetLabel());           // avoid from negatif labels, they include some garbage
+  //AliMCParticle *trackMCgen = (AliMCParticle *)aodEvent->GetTrack(labb);
+  // if (!fMCStack->IsPhysicalPrimary(lab)) continue;
+  //
+  // Select real trigger event and reject other pile up vertices
+ //  Bool_t isTPCPileup = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(labb,aodEvent);
+//   Bool_t isITSPileup = AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(aodEvent, "Hijing");
+  // if (isTPCPileup || isITSPileup) continue;
+   
+
+    
     if (!track)continue;
     fHistQA[10]->Fill(2);
 
@@ -782,10 +791,14 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
     bool isProtonNsigma  = 0;
     bool isDeuteronNsigma  = 0;
 
-    isPionNsigma = (IsPionNSigmaWRZ(track->P(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigmaRealWRZ(track->P(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaWRZ(track->P(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]) && !IsDeuteronNSigmaWRZ(track->P(), nSigmaTPCD,nSigmaTOFD));
-    isKaonNsigma = (!IsPionNSigmaWRZ(track->P(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaRealWRZ(track->P(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaWRZ(track->P(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4])  && !IsDeuteronNSigmaWRZ(track->P(), nSigmaTPCD,nSigmaTOFD));
-    isProtonNsigma = (!IsPionNSigmaWRZ(track->P(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigmaRealWRZ(track->P(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaWRZ(track->P(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4])  && !IsDeuteronNSigmaWRZ(track->P(), nSigmaTPCD,nSigmaTOFD));
+ //   isPionNsigma = (IsPionNSigmaWRZ(track->P(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigmaRealWRZ(track->P(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaWRZ(track->P(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]) && !IsDeuteronNSigmaWRZ(track->P(), nSigmaTPCD,nSigmaTOFD));
+ //   isKaonNsigma = (!IsPionNSigmaWRZ(track->P(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaRealWRZ(track->P(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaWRZ(track->P(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4])  && !IsDeuteronNSigmaWRZ(track->P(), nSigmaTPCD,nSigmaTOFD));
+//    isProtonNsigma = (!IsPionNSigmaWRZ(track->P(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigmaRealWRZ(track->P(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaWRZ(track->P(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4])  && !IsDeuteronNSigmaWRZ(track->P(), nSigmaTPCD,nSigmaTOFD));
    // isDeuteronNsigma = (track->Pt() < 2.2 && !IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigmaReal(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4])  && IsDeuteronNSigma(track->Pt(),track->P(),nSigmaTPCD,nSigmaTOFD,1.5));
+
+    isPionNsigma = IsPionNSigmaWRZ(track->P(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]);
+    isKaonNsigma = IsKaonNSigmaRealWRZ(track->P(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]);
+    isProtonNsigma = IsProtonNSigmaWRZ(track->P(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]);  
     isDeuteronNsigma = (track->Pt() < 2.0 && IsDeuteronNSigmaWRZ(track->P(), nSigmaTPCD, nSigmaTOFD));
      if(isDeuteronNsigma)
       if(track->P() < 2.2)

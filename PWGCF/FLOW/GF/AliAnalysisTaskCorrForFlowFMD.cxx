@@ -66,6 +66,8 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fbSign(0),
     fRunNumber(-1),
     fNofTracks(0),
+    fNFMD_fwd_hits(0),
+    fNFMD_bwd_hits(0),
     fNofMinHighPtTracksForRejection(0),
     fNchMin(0),
     fNchMax(100000),
@@ -184,6 +186,8 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fbSign(0),
     fRunNumber(-1),
     fNofTracks(0),
+    fNFMD_fwd_hits(0),
+    fNFMD_bwd_hits(0),	
     fNofMinHighPtTracksForRejection(0),
     fNchMin(0),
     fNchMax(100000),
@@ -298,6 +302,18 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
 
     fHistFMDeta = new TH2D("fHistFMDeta", "FMD eta vs. PVz; eta; PVz [cm]", 90, -4, 5, 20, -10, 10);
     fOutputListCharged->Add(fHistFMDeta);
+
+    fHistFMDeta_phi = new TH2D("fHistFMDeta_phi", "FMD eta vs. phi; eta; phi", 90, -4, 5, 60, 0, 2*TMath::Pi());
+    fOutputListCharged->Add(fHistFMDeta_phi);
+
+      fh2D_TPCvsFMDA = new TH2D("fh2D_TPCvsFMDA", "TPC vs. FMDA; TPC; FMDA", 250,0,250, 250, 0, 1000);
+      fOutputListCharged->Add(fh2D_TPCvsFMDA);
+
+      fh2D_TPCvsFMDC = new TH2D("fh2D_TPCvsFMDC", "TPC vs. FMDC; TPC; FMDC", 250,0,250, 250, 0, 1000);
+      fOutputListCharged->Add(fh2D_TPCvsFMDC);
+
+      fh2D_TPCvsFMD_AC = new TH2D("fh2D_TPCvsFMD_AC", "TPC vs. FMD_AC; TPC; FMD_AC", 250,0,250, 500, 0, 2000);
+      fOutputListCharged->Add(fh2D_TPCvsFMD_AC);
 
     TString fmdv0corrNames[4] = {"A_Before","C_Before", "A_After", "C_After"};
     for(Int_t i(0); i < 4; i++){
@@ -573,6 +589,11 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
         delete fTracksTrig[i];
       }
     }
+
+    fh2D_TPCvsFMDA->Fill(fNofTracks , fNFMD_fwd_hits);
+    fh2D_TPCvsFMDC->Fill(fNofTracks , fNFMD_bwd_hits);
+    fh2D_TPCvsFMD_AC->Fill(fNofTracks ,(fNFMD_fwd_hits+fNFMD_bwd_hits));
+
 
     if(fUseEfficiency) fRunNumber = fAOD->GetRunNumber();
 
@@ -1816,11 +1837,13 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
              if(fAnalType == eTPCFMDA) {
                fTracksAss->Add(new AliPartSimpleForCorr(eta,phi,mostProbableN));
                fHistFMDeta->Fill(eta,fPVz,mostProbableN);
+	       fHistFMDeta_phi->Fill(eta,phi,mostProbableN);
              }
              if(fAnalType == eFMDAFMDC) {
                fTracksTrig[0]->Add(new AliPartSimpleForCorr(eta,phi,mostProbableN));
                fhTrigTracks[0]->Fill(binscontFMD,0,mostProbableN);
                fHistFMDeta->Fill(eta,fPVz,mostProbableN);
+               fHistFMDeta_phi->Fill(eta,phi,mostProbableN);
              }
            }
     	   } // eta positive
@@ -1832,6 +1855,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
              if(fAnalType == eTPCFMDC || fAnalType == eFMDAFMDC) {
                fTracksAss->Add(new AliPartSimpleForCorr(eta,phi,mostProbableN));
                fHistFMDeta->Fill(eta,fPVz,mostProbableN);
+	       fHistFMDeta_phi->Fill(eta,phi,mostProbableN);
              }
            }
     	   } // eta negative
@@ -1861,6 +1885,9 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
     fhEventCounter->Fill("FMD cuts OK",1);
     fh2FMDvsV0[2]->Fill(nFMD_fwd_hits,nV0A_hits);
     fh2FMDvsV0[3]->Fill(nFMD_bwd_hits,nV0C_hits);
+
+    fNFMD_fwd_hits = nFMD_fwd_hits;
+    fNFMD_bwd_hits = nFMD_bwd_hits;
   }
 
   return kTRUE;
@@ -1939,11 +1966,13 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
       if(fAnalType == eTPCFMDA) {
         fTracksAss->Add(new AliPartSimpleForCorr(partEta,partPhi,1.));
         fHistFMDeta->Fill(partEta,fPVz,1.);
+	fHistFMDeta_phi->Fill(partEta,partPhi,1.);		
       }
       if(fAnalType == eFMDAFMDC) {
         fTracksTrig[0]->Add(new AliPartSimpleForCorr(partEta,partPhi,1.));
         fhTrigTracks[0]->Fill(binscontFMD,0,1.);
         fHistFMDeta->Fill(partEta,fPVz,1.);
+        fHistFMDeta_phi->Fill(partEta,partPhi,1.);		
       }
     } // end eta within FMDA range
     else if(partEta < -fFMDCacceptanceCutLower && partEta > -fFMDCacceptanceCutUpper){
@@ -1951,6 +1980,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
       if(fAnalType == eTPCFMDC || fAnalType == eFMDAFMDC) {
         fTracksAss->Add(new AliPartSimpleForCorr(partEta,partPhi,1.));
         fHistFMDeta->Fill(partEta,fPVz,1.);
+	fHistFMDeta_phi->Fill(partEta,partPhi,1.);		
       }
     } // end eta within FMDC range
 

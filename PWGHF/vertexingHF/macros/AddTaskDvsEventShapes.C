@@ -29,7 +29,9 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
                                                        Bool_t unweightS0=kFALSE,
                                                        Bool_t S0spline=kFALSE,
                                                        TString filSpline="",
-                                                       TString splname=""
+                                                       TString splname="",
+                                                       Int_t nmultspline=0,
+                                                       std::vector<Float_t> multspl={0.}
                                                        )
 {
     //
@@ -101,14 +103,21 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
     dEvtShapeTask->SetMultiplicityEstimator(recoEstimator);
     dEvtShapeTask->SetMCPrimariesEstimator(MCEstimator);
     dEvtShapeTask->SetMCOption(MCOption); 
-    TList* contspli;
+    TList* contspli[20];
     if(S0spline==kTRUE){
         TFile * spline = TFile::Open(filSpline.Data(), "READ");
         if(spline){
-            contspli = (TList*)spline->Get(Form("%s",splname.Data()));   
-            Printf("Printing content of List from Splines file\n");    
-            contspli->Print();     
-            dEvtShapeTask->SetIsS0Spline(S0spline, contspli, splname.Data());
+            for(int mult = 0; mult<=nmultspline+1; mult++){
+                if(mult==nmultspline+1)
+                    contspli[mult] = (TList*)spline->Get(Form("%s",splname.Data()));
+                else if(mult==nmultspline)
+                    contspli[mult] = (TList*)spline->Get(Form("%s%0.f-%0.f",splname.Data(),multspl[0],multspl[mult]-1));
+                else
+                    contspli[mult] = (TList*)spline->Get(Form("%s%0.f-%0.f",splname.Data(),multspl[mult],multspl[mult+1]-1));   
+                Printf("Printing content of List from Splines file\n");    
+                contspli[mult]->Print();     
+            }
+            dEvtShapeTask->SetIsS0Spline(S0spline, contspli, splname.Data(), nmultspline, multspl);
             spline->Close();
         }
         else{

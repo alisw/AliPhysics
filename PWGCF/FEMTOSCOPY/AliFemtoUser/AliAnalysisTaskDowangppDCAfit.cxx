@@ -169,8 +169,13 @@ if(ic!=0) continue;
         }
     }
 
-
-
+	for(int ic=0;ic<5;ic++){
+        	for(int ichg=0;ichg<2;ichg++){
+			for(int im=0;im<2;im++){
+				kStarDis[ichg][ic][im] = nullptr;
+			}
+		}
+	}
     // mix pool
     pool_bin empty_pool;
 
@@ -293,6 +298,15 @@ fListOfObjects(0)
             kStarVsmT2DinSamePID[ichg][ic] = nullptr;
         }
     }
+
+	  for(int ic=0;ic<5;ic++){
+                for(int ichg=0;ichg<2;ichg++){
+                        for(int im=0;im<2;im++){
+                                kStarDis[ichg][ic][im] = nullptr;
+                        }
+                }
+        }
+
 
     // 默认每个事件都至少有2个p,2anti-p
     pool_bin empty_pool;
@@ -541,6 +555,15 @@ void AliAnalysisTaskDowangppDCAfit::UserCreateOutputObjects()
         }
     }
 
+  for(int ic=0;ic<5;ic++){
+                for(int ichg=0;ichg<2;ichg++){
+                        for(int im=0;im<2;im++){
+				filename.Form("kStarDis%d%d%d",ichg,ic,im);
+                                kStarDis[ichg][ic][im] = new TH1F(filename," ",600,0.,3.0);
+				fListOfObjects->Add(kStarDis[ichg][ic][im]);
+                        }
+                }
+        }
 
     
     aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -927,6 +950,7 @@ void AliAnalysisTaskDowangppDCAfit::Analyze(AliAODEvent* aod,Float_t v0Centr,flo
 
 
     for(int ichg=0;ichg<2;ichg++){
+
         int HowmanyTrack = track_info[ichg].size();
 
         for(int ip1=0;ip1<HowmanyTrack;ip1++){
@@ -939,9 +963,12 @@ void AliAnalysisTaskDowangppDCAfit::Analyze(AliAODEvent* aod,Float_t v0Centr,flo
                 float AvgDPhi = ReAvgDphi(track_info[ichg][ip1],track_info[ichg][ip2]);
 	            double deta = Particle1_Reco.Eta() - Particle2_Reco.Eta();
                 fNumDPhiDEtaAvgQA[ichg][iCent]->Fill(deta,AvgDPhi);
-
+		float kStar_Reco = re_kstar(Particle1_Reco,Particle2_Reco);
+		if(ichg==0) kStarDis[0][iCent][0]->Fill(kStar_Reco);
+		
                 if(Pass(track_info[ichg][ip1],track_info[ichg][ip2],aodH)){
-                    float kStar_Reco = re_kstar(Particle1_Reco,Particle2_Reco);
+		if(ichg==0) kStarDis[1][iCent][0]->Fill(kStar_Reco);
+                    //float kStar_Reco = re_kstar(Particle1_Reco,Particle2_Reco);
                     float kStar_True = re_kstar(Particle1_True,Particle2_True);
                     //cout<<"ddd "<<kStar_Reco<<" "<<kStar_True<<endl;
                     MomSmearing[ichg][iCent]->Fill(kStar_True,kStar_Reco);
@@ -1001,7 +1028,10 @@ void AliAnalysisTaskDowangppDCAfit::Analyze(AliAODEvent* aod,Float_t v0Centr,flo
                             float AvgDPhi = ReAvgDphi(mix_p1,track_info[ichg][ip2]);
                             double deta = Particle1_Reco.Eta() - Particle2_Reco.Eta();
                             fDumDPhiDEtaAvgQA[ichg][iCent]->Fill(deta,AvgDPhi);
+
+			 if(ichg==0) kStarDis[0][iCent][1]->Fill(kStar_Reco);
                             if(Pass(mix_p1,track_info[ichg][ip2],aodH)){
+			 if(ichg==0) kStarDis[1][iCent][1]->Fill(kStar_Reco);
                                 //cout<<"ddd "<<kStar_Reco<<" "<<kStar_True<<endl;
                                 MomSmearing_mix[ichg][iCent]->Fill(kStar_True,kStar_Reco);
                                 fDumDPhiDEtaAvgQA_afterPairCut[ichg][iCent]->Fill(deta,AvgDPhi);

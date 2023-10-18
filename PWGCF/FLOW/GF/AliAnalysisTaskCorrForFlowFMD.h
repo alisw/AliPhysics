@@ -198,6 +198,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         TH2D*                   fhEfficiency[6]; //! not eta dependent
         TH2D*                   fhEfficiencyEta[6][8]; //! eta dependent (8 sectors)
         TH2D*                   fHistFMDeta; //! vs PVz
+	TH2D*                   fHistFMDeta_phi; //! vs phi
         TH1D*                   fhV0Counter[3]; //!
         TH1D*                   fhK0sphi; //!
 	TH1D*                   fhLambdaphi; //!
@@ -208,6 +209,9 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         TH2D*                   fhPTvsMinv[3]; //!
 	TH2D*                   fhPTvsMinv_Phi_LS; //!
         TH2D*                   fh2FMDvsV0[4]; //!
+	TH2D*                   fh2D_TPCvsFMDA; //!
+	TH2D*                   fh2D_TPCvsFMDC; //!
+	TH2D*                   fh2D_TPCvsFMD_AC; //!
 
         //event and track selection
         AnaType                 fAnalType;
@@ -239,6 +243,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Int_t                   fbSign;
         Int_t                   fRunNumber; // previous run
         Double_t                fNofTracks;
+	Double_t                fNFMD_fwd_hits;
+	Double_t                fNFMD_bwd_hits;	
         Int_t                   fNofMinHighPtTracksForRejection;
         Int_t                   fNchMin;
         Int_t                   fNchMax;

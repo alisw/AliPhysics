@@ -25,6 +25,7 @@ class AliVertexerTracks;
 class AliCascadeVertexer;
 class AliCaloPhoton;
 class AliAnalysisUtils;
+class AliPHOSGeometry;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -42,6 +43,7 @@ public:
   void SetMC(Bool_t isMC) { fIsMC = isMC; }
   void SetAdditionHist(Bool_t AdditionHist) { fAdditionHist = AdditionHist; }
   void SetInvMassHist(Bool_t InvMassHist) { fInvMassHist = InvMassHist; }
+  void SetQAhist(Bool_t QAhist) { fQAhist = QAhist; }
 
   void SetClusterTOF(Int_t option) { fPHOSClusterTOFOption = option; }
   void SetMinNbarEnergy(Float_t e) { fCluNbarMinE = e; }
@@ -70,6 +72,8 @@ protected:
   void SelectSigma();
   Double_t RealRes(Double_t x);
   Double_t RealResv2(Double_t x);
+  void InitGeometry(); // read geometry from TENDER, if not, get rotation
+                       // matrixes from AODB
   Bool_t TestDCADaug(Double_t x, Double_t y, Double_t z);
   Bool_t TestRAD(Double_t x, Double_t y, Double_t z);
   void PropagateToDCACurvedBachelor(Double_t *decayparams, AliCaloPhoton *v,
@@ -93,6 +97,8 @@ protected:
 private:
   THashList *fOutputContainer;  //! List of output histograms
   AliPIDResponse *fPIDResponse; //! PID response
+  AliPHOSGeometry *fPHOSgeom;   //! PHOS geometry
+  TH2I *fPHOSBadMap[6];         // Bad maps
   AliAnalysisUtils *fUtils;
   TClonesArray *fGamma;       //! List of selected photons
   TList *fPHOSEvents[10][10]; //! Previous events for mixing
@@ -100,6 +106,7 @@ private:
   Double_t fvtx5[3];
   Double_t fCentrality;          // Centrality
   Int_t fCentBin;                // Centrality
+  Int_t fRunNumber;              // Run number
   Float_t fCluTimeCut = 150.e-9; // Time cut
   Float_t fCluNbarMinE = 0.6; // Minimal energy for antineutron selection in GeV
   Float_t fCPAplusCut = 0.;   // Cut on cos of pointing angle AntiSigmaPlus
@@ -120,6 +127,7 @@ private:
   Bool_t fIsMC;
   Bool_t fAdditionHist;
   Bool_t fInvMassHist;
+  Bool_t fQAhist;
   Int_t fPHOSClusterTOFOption;
 
   TClonesArray *fStack;

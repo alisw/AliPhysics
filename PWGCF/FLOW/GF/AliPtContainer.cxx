@@ -534,7 +534,14 @@ TH1 *AliPtContainer::RecalculateKurtosisHists(vector<TH1*> inh) {
 }
 TH1* AliPtContainer::getRecursiveHist(int ind, int m, unsigned int l_obs, bool sub) {
   if(l_obs==kObs::kCorr) {
-      if(!sub) return (m<5)?((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar_%ipc",m,m)))->getHist(ind):((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar",m)))->getHist(ind);
+      if(!sub) {
+        if((AliProfileBS*)fCorrList->FindObject("corr_1par_1pc")){
+          return (m<5)?((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar_%ipc",m,m)))->getHist(ind):((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar",m)))->getHist(ind);
+        }
+        else {
+          return ((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar",m)))->getHist(ind);
+        }
+      }
       else return getSubeventCumulantHist(ind, m);
   }
   if(l_obs==kObs::kCum) 
@@ -597,12 +604,18 @@ void AliPtContainer::CalculateRecursive(bool normalized) {
         fCumulantList = new TList();
         fCumulantList->SetOwner();
     }
-    ((AliProfileBS*)fCorrList->At(0))->PresetWeights((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar%s",mpar,(mpar>4)?"":Form("_%ipc",mpar))));
+    ((AliProfileBS*)fCorrList->At(0))->PresetWeights((AliProfileBS*)fCorrList->At(mpar-1));
     for(int i=-1;i<((AliProfileBS*)fCorrList->At(0))->getNSubs();++i) {
         vector<TH1*> hTs;
-        for(int j=1;j<=mpar;++j) {
-            ((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar%s",j,(j>4)?"":Form("_%ipc",j))))->SetErrorOption("g");
-            hTs.push_back(((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar%s",j,(j>4)?"":Form("_%ipc",j))))->getHist(i));
+        for(int j=0;j<mpar;++j) {
+            if((AliProfileBS*)fCorrList->FindObject("corr_1par_1pc")){
+              (j<4)?((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar_%ipc",j+1,j+1)))->SetErrorOption("g"):((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar",j+1)))->SetErrorOption("g");
+              (j<4)?hTs.push_back(((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar_%ipc",j+1,j+1)))->getHist(i)):hTs.push_back(((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar",j+1)))->getHist(i));
+            }
+            else {
+              ((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar",j+1)))->SetErrorOption("g");
+              hTs.push_back(((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar",j+1)))->getHist(i));
+            }
         }
         CalculateCumulantHists(hTs,i,normalized);
     }

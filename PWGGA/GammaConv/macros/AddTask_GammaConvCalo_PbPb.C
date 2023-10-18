@@ -39,7 +39,7 @@ void AddTask_GammaConvCalo_PbPb(
   TString   settingMaxFacPtHard           = "3.",     // maximum factor between hardest jet and ptHard generated
   Int_t     debugLevel                    = 0,        // introducing debug levels for grid running
   // settings for weights
-  // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, FCEF:fileNameCentFlattening,   FMAW:fileNameMatBudWeights, separate with ;
+  // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, FCEF:fileNameCentFlattening,   FMAW:fileNameMatBudWeights, FEPC:fileNamedEdxPostCalib, separate with ;
   // Material Budget Weights file for Run 2
   // FMAW:alien:///alice/cern.ch/user/a/amarin//MBW/MCInputFileMaterialBudgetWeightsLHC16_Pythia_00010103_0d000009266300008850404000_date181214.root
   TString   fileNameExternalInputs        = "",
@@ -47,7 +47,7 @@ void AddTask_GammaConvCalo_PbPb(
   TString   generatorName                 = "DPMJET", // generator Name
   Bool_t    enableMultiplicityWeighting   = kFALSE,   //
   Int_t     enableMatBudWeightsPi0        = 0,        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
-  Bool_t    enableElecDeDxPostCalibration = kFALSE,
+  Int_t     enableElecDeDxPostCalibration = 0,        // 0 = off, 1 = as function of TPC clusters, 2 = as function of convR. Option 2 is available only if FEPC is given.
   TString   periodNameAnchor              = "",       //
   Bool_t    enableFlattening              = kFALSE,   // switch on centrality flattening for LHC11h
   // special settings
@@ -1100,6 +1100,25 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("17810013","0dm00009f9730000dge0404000","411790105fe30220000","0r63103100000010"); // 70-80%
     cuts.AddCutPCMCalo("18910013","0dm00009f9730000dge0404000","411790105fe30220000","0r63103100000010"); // 80-90%
     cuts.AddCutPCMCalo("16810013","0dm00009f9730000dge0404000","411790105fe30220000","0r63103100000010"); // 60-80%
+  // Same as above but with neutral energy overlap correction for EMCal!
+  } else if (trainConfig == 775){ // EMCAL+DCal clusters - cent
+    cuts.AddCutPCMCalo("10110013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 00-10%
+    cuts.AddCutPCMCalo("30110013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 00-05%
+    cuts.AddCutPCMCalo("31210013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 05-10%
+  } else if (trainConfig == 776){ // EMCAL+DCal clusters - semi-central
+    cuts.AddCutPCMCalo("11210013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 10-20%
+    cuts.AddCutPCMCalo("12310013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 20-30%
+    cuts.AddCutPCMCalo("13410013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 30-40%
+    cuts.AddCutPCMCalo("12410013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 20-40%
+  } else if (trainConfig == 777){ // EMCAL+DCal clusters - semi peripheral
+    cuts.AddCutPCMCalo("14510013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 40-50%
+    cuts.AddCutPCMCalo("14610013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 40-60%
+    cuts.AddCutPCMCalo("15610013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 50-60%
+  } else if (trainConfig == 778){ // EMCAL+DCal clusters - peripheral
+    cuts.AddCutPCMCalo("16710013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 60-70%
+    cuts.AddCutPCMCalo("17810013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 70-80%
+    cuts.AddCutPCMCalo("18910013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 80-90%
+    cuts.AddCutPCMCalo("16810013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 60-80%
 
   // **********************************************************************************************************
   // ***************************** PCM-PHOS       QA configurations PbPb run 2 2018 ***************************
@@ -1502,27 +1521,65 @@ void AddTask_GammaConvCalo_PbPb(
 
     if (enableMatBudWeightsPi0 > 0){
       if (isMC > 0){
-	if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
-	  initializedMatBudWeigths_existing = kTRUE;}
-	else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
-      }
-      else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
+	      if (analysisCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
+	        initializedMatBudWeigths_existing = kTRUE;
+          } else {
+            cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;
+          }
+      } else {
+        cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;
+        }
     }
 
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
-    if (enableElecDeDxPostCalibration){
+
+    // extract single filenames from fileNamedEdxPostCalib
+    TObjArray *lArrFnamesdEdxPostCalib = nullptr;
+    if (enableElecDeDxPostCalibration == 2){
+      if (isMC){
+        cout << "ERROR enableElecDeDxPostCalibration set to 2 even if MC file. Automatically reset to 0"<< endl;
+        enableElecDeDxPostCalibration = 0;
+      } else {
+        lArrFnamesdEdxPostCalib = fileNamedEdxPostCalib.Tokenize("+");
+        if (!lArrFnamesdEdxPostCalib){
+          cout << "ERROR fileNamedEdxPostCalib.Tokenize() returned nullptr\n";
+          return;
+        }
+        int lNFnames = lArrFnamesdEdxPostCalib->GetEntriesFast();
+        if (lNFnames && lNFnames != numberOfCuts){
+          cout << "ERROR: FEPC either has to be one filename or several separated by a '+' where the number of filenames has to match the number of cuts in the trainconfig.\nOr no filename at all if the file from the OADB is to be taken\n";
+          return;
+        }
+      }
+    }
+    if (enableElecDeDxPostCalibration == 1){
       if (isMC == 0){
         if(fileNamedEdxPostCalib.CompareTo("") != 0){
           analysisCuts[i]->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
           cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
         }
-        analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(kTRUE);
         cout << "Enabled TPC dEdx recalibration." << endl;
       } else{
         cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
         enableElecDeDxPostCalibration=kFALSE;
         analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
       }
+    } else if(enableElecDeDxPostCalibration == 2){
+      int lNFnames = lArrFnamesdEdxPostCalib->GetEntriesFast();
+      if (lNFnames){
+        if (enableElecDeDxPostCalibration==2){
+          analysisCuts[i]->ForceTPCRecalibrationAsFunctionOfConvR();
+        }
+        const TString &lFname = (static_cast<TObjString*>(lArrFnamesdEdxPostCalib->At(lNFnames > 1 ? i : 0)))->GetString();
+        printf("Cut config %s_%s_%s:\nSetting custom dEdx recalibration file: %s\n", cuts.GetEventCut(i).Data(), cuts.GetPhotonCut(i).Data(), cuts.GetMesonCut(i).Data(), lFname.Data());
+        Bool_t lSuccess = analysisCuts[i]->InitializeElecDeDxPostCalibration(lFname);
+        if (!lSuccess) {
+          return;
+        }
+      }
+      analysisCuts[i]->SetDoElecDeDxPostCalibration(kTRUE);
+      cout << "Enabled TPC dEdx recalibration." << endl;
     }
     if (enableLightOutput > 0) analysisCuts[i]->SetLightOutput(kTRUE);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());

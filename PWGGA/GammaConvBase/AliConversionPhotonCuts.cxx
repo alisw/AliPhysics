@@ -799,7 +799,8 @@ Bool_t AliConversionPhotonCuts::InitPIDResponse(){
 }
 ///________________________________________________________________________
 Bool_t AliConversionPhotonCuts::InitializeElecDeDxPostCalibration(TString filename) {
-  AliInfo("Entering loading of correction map for post calibration");
+  AliInfo(Form("Entering loading of correction map for post calibration as function of %s", 
+               fIsRecalibDepTPCCl ? "TPC clusters" : "ConvR"));
 
   TFile *file = TFile::Open(filename.Data());
   if(!file){
@@ -3028,6 +3029,12 @@ Bool_t AliConversionPhotonCuts::SetRCut(Int_t RCut){
   case 29: //t
     fMaxR = 95.;
     fMinR = 20.;
+    fExcludeMinR = 180.;
+    fExcludeMaxR = 250.;
+    break;
+  case 30: //u
+    fMaxR = 180.;
+    fMinR = 145.;
     fExcludeMinR = 180.;
     fExcludeMaxR = 250.;
     break;
