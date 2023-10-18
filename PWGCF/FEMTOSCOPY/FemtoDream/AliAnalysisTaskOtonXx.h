@@ -79,9 +79,9 @@ class AliAnalysisTaskOtonXx : public AliAnalysisTaskSE {
 
   TList *fEvtList;//!
   TList *fKaonList;//!
-  TList* fKaonMCList;//!
+  TList* fKaonListMC;//!
   TList *fAntiKaonList;//!
-  TList* fAntiKaonMCList;//!
+  TList* fAntiKaonListMC;//!
   TList *fXiList;//!
   TList *fAntiXiList;//!
   TList *fResults;                          //!
