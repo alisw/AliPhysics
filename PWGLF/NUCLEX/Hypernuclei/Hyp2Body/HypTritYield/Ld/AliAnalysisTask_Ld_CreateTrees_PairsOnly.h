@@ -103,7 +103,6 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fLambda_Daughter_Proton_DCAxy;
     float fLambda_Daughter_Proton_DCAz;
     
-    short fLambda_Daughter_Proton_Charge;
     unsigned short fLambda_Daughter_Proton_TPC_nCrossedRows;
     unsigned short fLambda_Daughter_Proton_TPC_nSharedCluster;
     unsigned short fLambda_Daughter_Proton_TPC_nFindableCluster;
@@ -133,7 +132,6 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fLambda_Daughter_AntiPion_DCAxy;
     float fLambda_Daughter_AntiPion_DCAz;
 
-    short fLambda_Daughter_AntiPion_Charge;
     unsigned short fLambda_Daughter_AntiPion_TPC_nCrossedRows;
     unsigned short fLambda_Daughter_AntiPion_TPC_nSharedCluster;
     unsigned short fLambda_Daughter_AntiPion_TPC_nFindableCluster;
@@ -230,7 +228,6 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fAntiLambda_Daughter_AntiProton_DCAxy;
     float fAntiLambda_Daughter_AntiProton_DCAz;
 
-    short fAntiLambda_Daughter_AntiProton_Charge;
     unsigned short fAntiLambda_Daughter_AntiProton_TPC_nCrossedRows;
     unsigned short fAntiLambda_Daughter_AntiProton_TPC_nSharedCluster;
     unsigned short fAntiLambda_Daughter_AntiProton_TPC_nFindableCluster;
@@ -260,7 +257,6 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fAntiLambda_Daughter_Pion_DCAxy;
     float fAntiLambda_Daughter_Pion_DCAz;
 
-    short fAntiLambda_Daughter_Pion_Charge;
     unsigned short fAntiLambda_Daughter_Pion_TPC_nCrossedRows;
     unsigned short fAntiLambda_Daughter_Pion_TPC_nSharedCluster;
     unsigned short fAntiLambda_Daughter_Pion_TPC_nFindableCluster;
