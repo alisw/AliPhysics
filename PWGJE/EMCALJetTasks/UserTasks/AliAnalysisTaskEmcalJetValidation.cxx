@@ -308,7 +308,7 @@ void AliAnalysisTaskEmcalJetValidation::UserCreateOutputObjects()
 
    //JET QA
    fHistJetPt = new TH1F("jetPt", "inclusive jetPt ; p_{T} (GeV/#it{c})", 200, 0, 100);
-   fHistJetPhi = new TH1F("jetPhi", "inclusive jetPhi; #phi ", 180, 0, 6.4);// we have 18 sectors to be covered 
+   fHistJetPhi = new TH1F("jetPhi", "inclusive jetPhi; #phi ", 180, 0, 6.4);// we have 18 sectors to be covered
    fHistJetEta = new TH1F("jetEta", "inclusive jetEta; #eta ", 200, -0.9, 0.9);
 
    //TRACK QA
@@ -403,7 +403,7 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
     //EVENTS WHICH PASSED
     fHistNEvents->Fill(1);
     fHistNEventVtx->Fill((vertex->GetZ()));
-    std::cout << "vertex positions for selected events" << vertex->GetZ() << '\n';
+  //  std::cout << "vertex positions for selected events" << vertex->GetZ() << '\n';
 
 
   fFastJetWrapper->Clear();
