@@ -1499,7 +1499,7 @@ int AliAnalysisTaskSEHFResonanceBuilder::MatchResoToMC(AliAODMCParticle *partD, 
     }
 
     int motherD = partD->GetMother();
-    while(motherD >= 0) {
+    while(motherD >= 0 && motherD < arrayMC->GetEntriesFast()) {
         AliAODMCParticle *partMother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(motherD));
         if (!partMother) {
             motherD = -1;
@@ -1511,7 +1511,7 @@ int AliAnalysisTaskSEHFResonanceBuilder::MatchResoToMC(AliAODMCParticle *partD, 
         motherD = partMother->GetMother();
     }
     int motherLight = partLight->GetMother();
-    while(motherLight >= 0) {
+    while(motherLight >= 0 && motherLight < arrayMC->GetEntriesFast()) {
         AliAODMCParticle *partMother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(motherLight));
         if (!partMother) {
             motherLight = -1;
@@ -1531,7 +1531,7 @@ int AliAnalysisTaskSEHFResonanceBuilder::MatchResoToMC(AliAODMCParticle *partD, 
         return 0;
 
     double momSumDaughters[3] = {partD->Px()+partLight->Px(), partD->Py()+partLight->Py(), partD->Pz()+partLight->Pz()};
-    for (auto iMother{commonMothers.size()-1}; iMother>=0; ++iMother) {
+    for (int iMother{commonMothers.size()-1}; iMother>=0; iMother--) {
         AliAODMCParticle *partMother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(commonMothers[iMother]));
         if(!partMother) {
             continue;
