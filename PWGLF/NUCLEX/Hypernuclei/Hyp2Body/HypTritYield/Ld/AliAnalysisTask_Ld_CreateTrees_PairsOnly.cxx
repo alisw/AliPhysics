@@ -109,7 +109,6 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly::AliAnalysisTask_Ld_CreateTrees_PairsOn
   fLambda_Daughter_Proton_ITS_dEdx_nSigma(0),
   fLambda_Daughter_Proton_DCAxy(0),
   fLambda_Daughter_Proton_DCAz(0),
-  fLambda_Daughter_Proton_Charge(0),
   fLambda_Daughter_Proton_TPC_nCrossedRows(0),
   fLambda_Daughter_Proton_TPC_nSharedCluster(0),
   fLambda_Daughter_Proton_TPC_nFindableCluster(0),
@@ -137,7 +136,6 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly::AliAnalysisTask_Ld_CreateTrees_PairsOn
   fLambda_Daughter_AntiPion_ITS_dEdx_nSigma(0),
   fLambda_Daughter_AntiPion_DCAxy(0),
   fLambda_Daughter_AntiPion_DCAz(0),
-  fLambda_Daughter_AntiPion_Charge(0),
   fLambda_Daughter_AntiPion_TPC_nCrossedRows(0),
   fLambda_Daughter_AntiPion_TPC_nSharedCluster(0),
   fLambda_Daughter_AntiPion_TPC_nFindableCluster(0),
@@ -225,7 +223,6 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly::AliAnalysisTask_Ld_CreateTrees_PairsOn
   fAntiLambda_Daughter_AntiProton_ITS_dEdx_nSigma(0),
   fAntiLambda_Daughter_AntiProton_DCAxy(0),
   fAntiLambda_Daughter_AntiProton_DCAz(0),
-  fAntiLambda_Daughter_AntiProton_Charge(0),
   fAntiLambda_Daughter_AntiProton_TPC_nCrossedRows(0),
   fAntiLambda_Daughter_AntiProton_TPC_nSharedCluster(0),
   fAntiLambda_Daughter_AntiProton_TPC_nFindableCluster(0),
@@ -250,7 +247,6 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly::AliAnalysisTask_Ld_CreateTrees_PairsOn
   fAntiLambda_Daughter_Pion_ITS_dEdx_nSigma(0),
   fAntiLambda_Daughter_Pion_DCAxy(0),
   fAntiLambda_Daughter_Pion_DCAz(0),
-  fAntiLambda_Daughter_Pion_Charge(0),
   fAntiLambda_Daughter_Pion_TPC_nCrossedRows(0),
   fAntiLambda_Daughter_Pion_TPC_nSharedCluster(0),
   fAntiLambda_Daughter_Pion_TPC_nFindableCluster(0),
@@ -370,7 +366,6 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly::AliAnalysisTask_Ld_CreateTrees_PairsOn
   fLambda_Daughter_Proton_ITS_dEdx_nSigma(0),
   fLambda_Daughter_Proton_DCAxy(0),
   fLambda_Daughter_Proton_DCAz(0),
-  fLambda_Daughter_Proton_Charge(0),
   fLambda_Daughter_Proton_TPC_nCrossedRows(0),
   fLambda_Daughter_Proton_TPC_nSharedCluster(0),
   fLambda_Daughter_Proton_TPC_nFindableCluster(0),
@@ -398,7 +393,6 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly::AliAnalysisTask_Ld_CreateTrees_PairsOn
   fLambda_Daughter_AntiPion_ITS_dEdx_nSigma(0),
   fLambda_Daughter_AntiPion_DCAxy(0),
   fLambda_Daughter_AntiPion_DCAz(0),
-  fLambda_Daughter_AntiPion_Charge(0),
   fLambda_Daughter_AntiPion_TPC_nCrossedRows(0),
   fLambda_Daughter_AntiPion_TPC_nSharedCluster(0),
   fLambda_Daughter_AntiPion_TPC_nFindableCluster(0),
@@ -489,7 +483,6 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly::AliAnalysisTask_Ld_CreateTrees_PairsOn
   fAntiLambda_Daughter_AntiProton_ITS_dEdx_nSigma(0),
   fAntiLambda_Daughter_AntiProton_DCAxy(0),
   fAntiLambda_Daughter_AntiProton_DCAz(0),
-  fAntiLambda_Daughter_AntiProton_Charge(0),
   fAntiLambda_Daughter_AntiProton_TPC_nCrossedRows(0),
   fAntiLambda_Daughter_AntiProton_TPC_nSharedCluster(0),
   fAntiLambda_Daughter_AntiProton_TPC_nFindableCluster(0),
@@ -517,7 +510,6 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly::AliAnalysisTask_Ld_CreateTrees_PairsOn
   fAntiLambda_Daughter_Pion_ITS_dEdx_nSigma(0),
   fAntiLambda_Daughter_Pion_DCAxy(0),
   fAntiLambda_Daughter_Pion_DCAz(0),
-  fAntiLambda_Daughter_Pion_Charge(0),
   fAntiLambda_Daughter_Pion_TPC_nCrossedRows(0),
   fAntiLambda_Daughter_Pion_TPC_nSharedCluster(0),
   fAntiLambda_Daughter_Pion_TPC_nFindableCluster(0),
@@ -738,7 +730,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_Lambda->Branch("Lambda_Daughter_Proton_ITS_dEdx_nSigma",&fLambda_Daughter_Proton_ITS_dEdx_nSigma,"Lambda_Daughter_Proton_ITS_dEdx_nSigma/F");
   fSaveTree_Lambda->Branch("Lambda_Daughter_Proton_DCAxy",&fLambda_Daughter_Proton_DCAxy,"Lambda_Daughter_Proton_DCAxy/F");
   fSaveTree_Lambda->Branch("Lambda_Daughter_Proton_DCAz",&fLambda_Daughter_Proton_DCAz,"Lambda_Daughter_Proton_DCAz/F");
-  fSaveTree_Lambda->Branch("Lambda_Daughter_Proton_Charge",&fLambda_Daughter_Proton_Charge,"Lambda_Daughter_Proton_Charge/S");
   fSaveTree_Lambda->Branch("Lambda_Daughter_Proton_TPC_nCrossedRows",&fLambda_Daughter_Proton_TPC_nCrossedRows,"Lambda_Daughter_Proton_TPC_nCrossedRows/s");
   fSaveTree_Lambda->Branch("Lambda_Daughter_Proton_TPC_nSharedCluster",&fLambda_Daughter_Proton_TPC_nSharedCluster,"Lambda_Daughter_Proton_TPC_nSharedCluster/s");
   fSaveTree_Lambda->Branch("Lambda_Daughter_Proton_TPC_nFindableCluster",&fLambda_Daughter_Proton_TPC_nFindableCluster,"Lambda_Daughter_Proton_TPC_nFindableCluster/s");
@@ -767,7 +758,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_Lambda->Branch("Lambda_Daughter_AntiPion_ITS_dEdx_nSigma",&fLambda_Daughter_AntiPion_ITS_dEdx_nSigma,"Lambda_Daughter_AntiPion_ITS_dEdx_nSigma/F");
   fSaveTree_Lambda->Branch("Lambda_Daughter_AntiPion_DCAxy",&fLambda_Daughter_AntiPion_DCAxy,"Lambda_Daughter_AntiPion_DCAxy/F");
   fSaveTree_Lambda->Branch("Lambda_Daughter_AntiPion_DCAz",&fLambda_Daughter_AntiPion_DCAz,"Lambda_Daughter_AntiPion_DCAz/F");
-  fSaveTree_Lambda->Branch("Lambda_Daughter_AntiPion_Charge",&fLambda_Daughter_AntiPion_Charge,"Lambda_Daughter_AntiPion_Charge/S");
   fSaveTree_Lambda->Branch("Lambda_Daughter_AntiPion_TPC_nCrossedRows",&fLambda_Daughter_AntiPion_TPC_nCrossedRows,"Lambda_Daughter_AntiPion_TPC_nCrossedRows/s");
   fSaveTree_Lambda->Branch("Lambda_Daughter_AntiPion_TPC_nSharedCluster",&fLambda_Daughter_AntiPion_TPC_nSharedCluster,"Lambda_Daughter_AntiPion_TPC_nSharedCluster/s");
   fSaveTree_Lambda->Branch("Lambda_Daughter_AntiPion_TPC_nFindableCluster",&fLambda_Daughter_AntiPion_TPC_nFindableCluster,"Lambda_Daughter_AntiPion_TPC_nFindableCluster/s");
@@ -870,7 +860,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_AntiLambda->Branch("AntiLambda_Daughter_AntiProton_ITS_dEdx_nSigma",&fAntiLambda_Daughter_AntiProton_ITS_dEdx_nSigma,"AntiLambda_Daughter_AntiProton_ITS_dEdx_nSigma/F");
   fSaveTree_AntiLambda->Branch("AntiLambda_Daughter_AntiProton_DCAxy",&fAntiLambda_Daughter_AntiProton_DCAxy,"AntiLambda_Daughter_AntiProton_DCAxy/F");
   fSaveTree_AntiLambda->Branch("AntiLambda_Daughter_AntiProton_DCAz",&fAntiLambda_Daughter_AntiProton_DCAz,"AntiLambda_Daughter_AntiProton_DCAz/F");
-  fSaveTree_AntiLambda->Branch("AntiLambda_Daughter_AntiProton_Charge",&fAntiLambda_Daughter_AntiProton_Charge,"AntiLambda_Daughter_AntiProton_Charge/S");
   fSaveTree_AntiLambda->Branch("AntiLambda_Daughter_AntiProton_TPC_nCrossedRows",&fAntiLambda_Daughter_AntiProton_TPC_nCrossedRows,"AntiLambda_Daughter_AntiProton_TPC_nCrossedRows/s");
   fSaveTree_AntiLambda->Branch("AntiLambda_Daughter_AntiProton_TPC_nSharedCluster",&fAntiLambda_Daughter_AntiProton_TPC_nSharedCluster,"AntiLambda_Daughter_AntiProton_TPC_nSharedCluster/s");
   fSaveTree_AntiLambda->Branch("AntiLambda_Daughter_AntiProton_TPC_nFindableCluster",&fAntiLambda_Daughter_AntiProton_TPC_nFindableCluster,"AntiLambda_Daughter_AntiProton_TPC_nFindableCluster/s");
@@ -899,7 +888,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_AntiLambda->Branch("AntiLambda_Daughter_Pion_ITS_dEdx_nSigma",&fAntiLambda_Daughter_Pion_ITS_dEdx_nSigma,"AntiLambda_Daughter_Pion_ITS_dEdx_nSigma/F");
   fSaveTree_AntiLambda->Branch("AntiLambda_Daughter_Pion_DCAxy",&fAntiLambda_Daughter_Pion_DCAxy,"AntiLambda_Daughter_Pion_DCAxy/F");
   fSaveTree_AntiLambda->Branch("AntiLambda_Daughter_Pion_DCAz",&fAntiLambda_Daughter_Pion_DCAz,"AntiLambda_Daughter_Pion_DCAz/F");
-  fSaveTree_AntiLambda->Branch("AntiLambda_Daughter_Pion_Charge",&fAntiLambda_Daughter_Pion_Charge,"AntiLambda_Daughter_Pion_Charge/S");
   fSaveTree_AntiLambda->Branch("AntiLambda_Daughter_Pion_TPC_nCrossedRows",&fAntiLambda_Daughter_Pion_TPC_nCrossedRows,"AntiLambda_Daughter_Pion_TPC_nCrossedRows/s");
   fSaveTree_AntiLambda->Branch("AntiLambda_Daughter_Pion_TPC_nSharedCluster",&fAntiLambda_Daughter_Pion_TPC_nSharedCluster,"AntiLambda_Daughter_Pion_TPC_nSharedCluster/s");
   fSaveTree_AntiLambda->Branch("AntiLambda_Daughter_Pion_TPC_nFindableCluster",&fAntiLambda_Daughter_Pion_TPC_nFindableCluster,"AntiLambda_Daughter_Pion_TPC_nFindableCluster/s");
@@ -1150,7 +1138,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
   float     Lambda_Daughter_Proton_ITS_dEdx_nSigma;
   float     Lambda_Daughter_Proton_DCAxy;
   float     Lambda_Daughter_Proton_DCAz;
-  short	    Lambda_Daughter_Proton_Charge;
   unsigned short    Lambda_Daughter_Proton_TPC_nCrossedRows;
   unsigned short    Lambda_Daughter_Proton_TPC_nSharedCluster;
   unsigned short    Lambda_Daughter_Proton_TPC_nFindableCluster;
@@ -1179,7 +1166,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
   float     Lambda_Daughter_AntiPion_ITS_dEdx_nSigma;
   float     Lambda_Daughter_AntiPion_DCAxy;
   float     Lambda_Daughter_AntiPion_DCAz;
-  short	    Lambda_Daughter_AntiPion_Charge;
   unsigned short    Lambda_Daughter_AntiPion_TPC_nCrossedRows;
   unsigned short    Lambda_Daughter_AntiPion_TPC_nSharedCluster;
   unsigned short    Lambda_Daughter_AntiPion_TPC_nFindableCluster;
@@ -1234,7 +1220,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
   fTempTree_Lambda->Branch("Lambda_Daughter_Proton_ITS_dEdx_nSigma",&Lambda_Daughter_Proton_ITS_dEdx_nSigma,"Lambda_Daughter_Proton_ITS_dEdx_nSigma/F");
   fTempTree_Lambda->Branch("Lambda_Daughter_Proton_DCAxy",&Lambda_Daughter_Proton_DCAxy,"Lambda_Daughter_Proton_DCAxy/F");
   fTempTree_Lambda->Branch("Lambda_Daughter_Proton_DCAz",&Lambda_Daughter_Proton_DCAz,"Lambda_Daughter_Proton_DCAz/F");
-  fTempTree_Lambda->Branch("Lambda_Daughter_Proton_Charge",&Lambda_Daughter_Proton_Charge,"Lambda_Daughter_Proton_Charge/S");
   fTempTree_Lambda->Branch("Lambda_Daughter_Proton_TPC_nCrossedRows",&Lambda_Daughter_Proton_TPC_nCrossedRows,"Lambda_Daughter_Proton_TPC_nCrossedRows/s");
   fTempTree_Lambda->Branch("Lambda_Daughter_Proton_TPC_nSharedCluster",&Lambda_Daughter_Proton_TPC_nSharedCluster,"Lambda_Daughter_Proton_TPC_nSharedCluster/s");
   fTempTree_Lambda->Branch("Lambda_Daughter_Proton_TPC_nFindableCluster",&Lambda_Daughter_Proton_TPC_nFindableCluster,"Lambda_Daughter_Proton_TPC_nFindableCluster/s");
@@ -1263,7 +1248,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
   fTempTree_Lambda->Branch("Lambda_Daughter_AntiPion_ITS_dEdx_nSigma",&Lambda_Daughter_AntiPion_ITS_dEdx_nSigma,"Lambda_Daughter_AntiPion_ITS_dEdx_nSigma/F");
   fTempTree_Lambda->Branch("Lambda_Daughter_AntiPion_DCAxy",&Lambda_Daughter_AntiPion_DCAxy,"Lambda_Daughter_AntiPion_DCAxy/F");
   fTempTree_Lambda->Branch("Lambda_Daughter_AntiPion_DCAz",&Lambda_Daughter_AntiPion_DCAz,"Lambda_Daughter_AntiPion_DCAz/F");
-  fTempTree_Lambda->Branch("Lambda_Daughter_AntiPion_Charge",&Lambda_Daughter_AntiPion_Charge,"Lambda_Daughter_AntiPion_Charge/S");
   fTempTree_Lambda->Branch("Lambda_Daughter_AntiPion_TPC_nCrossedRows",&Lambda_Daughter_AntiPion_TPC_nCrossedRows,"Lambda_Daughter_AntiPion_TPC_nCrossedRows/s");
   fTempTree_Lambda->Branch("Lambda_Daughter_AntiPion_TPC_nSharedCluster",&Lambda_Daughter_AntiPion_TPC_nSharedCluster,"Lambda_Daughter_AntiPion_TPC_nSharedCluster/s");
   fTempTree_Lambda->Branch("Lambda_Daughter_AntiPion_TPC_nFindableCluster",&Lambda_Daughter_AntiPion_TPC_nFindableCluster,"Lambda_Daughter_AntiPion_TPC_nFindableCluster/s");
@@ -1581,7 +1565,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     Lambda_Daughter_Proton_ITS_dEdx_nSigma	    = (float)Proton_ITS_dEdx_nSigma;
     Lambda_Daughter_Proton_DCAxy		    = Proton_DCAxy;
     Lambda_Daughter_Proton_DCAz			    = Proton_DCAz;
-    Lambda_Daughter_Proton_Charge		    = ProtonTrack->Charge();
     Lambda_Daughter_Proton_TPC_nCrossedRows	    = ProtonTrack->GetTPCCrossedRows();
     Lambda_Daughter_Proton_TPC_nSharedCluster	    = ProtonTrack->GetTPCnclsS();
     Lambda_Daughter_Proton_TPC_nFindableCluster	    = ProtonTrack->GetTPCNclsF();
@@ -1609,7 +1592,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     Lambda_Daughter_AntiPion_ITS_dEdx_nSigma	    = (float)AntiPion_ITS_dEdx_nSigma;
     Lambda_Daughter_AntiPion_DCAxy		    = AntiPion_DCAxy;
     Lambda_Daughter_AntiPion_DCAz		    = AntiPion_DCAz;
-    Lambda_Daughter_AntiPion_Charge		    = AntiPionTrack->Charge();
     Lambda_Daughter_AntiPion_TPC_nCrossedRows	    = AntiPionTrack->GetTPCCrossedRows();
     Lambda_Daughter_AntiPion_TPC_nSharedCluster	    = AntiPionTrack->GetTPCnclsS();
     Lambda_Daughter_AntiPion_TPC_nFindableCluster   = AntiPionTrack->GetTPCNclsF();
@@ -1860,7 +1842,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       TBranch *Branch_Lambda_Daughter_Proton_ITS_dEdx_nSigma	  = fTempTree_Lambda->GetBranch("Lambda_Daughter_Proton_ITS_dEdx_nSigma");
       TBranch *Branch_Lambda_Daughter_Proton_DCAxy		  = fTempTree_Lambda->GetBranch("Lambda_Daughter_Proton_DCAxy");
       TBranch *Branch_Lambda_Daughter_Proton_DCAz		  = fTempTree_Lambda->GetBranch("Lambda_Daughter_Proton_DCAz");
-      TBranch *Branch_Lambda_Daughter_Proton_Charge		  = fTempTree_Lambda->GetBranch("Lambda_Daughter_Proton_Charge");
       TBranch *Branch_Lambda_Daughter_Proton_TPC_nCrossedRows	  = fTempTree_Lambda->GetBranch("Lambda_Daughter_Proton_TPC_nCrossedRows");
       TBranch *Branch_Lambda_Daughter_Proton_TPC_nSharedCluster	  = fTempTree_Lambda->GetBranch("Lambda_Daughter_Proton_TPC_nSharedCluster");
       TBranch *Branch_Lambda_Daughter_Proton_TPC_nFindableCluster = fTempTree_Lambda->GetBranch("Lambda_Daughter_Proton_TPC_nFindableCluster");
@@ -1889,7 +1870,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       TBranch *Branch_Lambda_Daughter_AntiPion_ITS_dEdx_nSigma	  = fTempTree_Lambda->GetBranch("Lambda_Daughter_AntiPion_ITS_dEdx_nSigma");
       TBranch *Branch_Lambda_Daughter_AntiPion_DCAxy		  = fTempTree_Lambda->GetBranch("Lambda_Daughter_AntiPion_DCAxy");
       TBranch *Branch_Lambda_Daughter_AntiPion_DCAz		  = fTempTree_Lambda->GetBranch("Lambda_Daughter_AntiPion_DCAz");
-      TBranch *Branch_Lambda_Daughter_AntiPion_Charge		  = fTempTree_Lambda->GetBranch("Lambda_Daughter_AntiPion_Charge");
       TBranch *Branch_Lambda_Daughter_AntiPion_TPC_nCrossedRows	  = fTempTree_Lambda->GetBranch("Lambda_Daughter_AntiPion_TPC_nCrossedRows");
       TBranch *Branch_Lambda_Daughter_AntiPion_TPC_nSharedCluster = fTempTree_Lambda->GetBranch("Lambda_Daughter_AntiPion_TPC_nSharedCluster");
       TBranch *Branch_Lambda_Daughter_AntiPion_TPC_nFindableCluster = fTempTree_Lambda->GetBranch("Lambda_Daughter_AntiPion_TPC_nFindableCluster");
@@ -1943,7 +1923,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       Branch_Lambda_Daughter_Proton_ITS_dEdx_nSigma->SetAddress(&fLambda_Daughter_Proton_ITS_dEdx_nSigma);
       Branch_Lambda_Daughter_Proton_DCAxy->SetAddress(&fLambda_Daughter_Proton_DCAxy);
       Branch_Lambda_Daughter_Proton_DCAz->SetAddress(&fLambda_Daughter_Proton_DCAz);
-      Branch_Lambda_Daughter_Proton_Charge->SetAddress(&fLambda_Daughter_Proton_Charge);
       Branch_Lambda_Daughter_Proton_TPC_nCrossedRows->SetAddress(&fLambda_Daughter_Proton_TPC_nCrossedRows);
       Branch_Lambda_Daughter_Proton_TPC_nSharedCluster->SetAddress(&fLambda_Daughter_Proton_TPC_nSharedCluster);
       Branch_Lambda_Daughter_Proton_TPC_nFindableCluster->SetAddress(&fLambda_Daughter_Proton_TPC_nFindableCluster);
@@ -1972,7 +1951,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       Branch_Lambda_Daughter_AntiPion_ITS_dEdx_nSigma->SetAddress(&fLambda_Daughter_AntiPion_ITS_dEdx_nSigma);
       Branch_Lambda_Daughter_AntiPion_DCAxy->SetAddress(&fLambda_Daughter_AntiPion_DCAxy);
       Branch_Lambda_Daughter_AntiPion_DCAz->SetAddress(&fLambda_Daughter_AntiPion_DCAz);
-      Branch_Lambda_Daughter_AntiPion_Charge->SetAddress(&fLambda_Daughter_AntiPion_Charge);
       Branch_Lambda_Daughter_AntiPion_TPC_nCrossedRows->SetAddress(&fLambda_Daughter_AntiPion_TPC_nCrossedRows);
       Branch_Lambda_Daughter_AntiPion_TPC_nSharedCluster->SetAddress(&fLambda_Daughter_AntiPion_TPC_nSharedCluster);
       Branch_Lambda_Daughter_AntiPion_TPC_nFindableCluster->SetAddress(&fLambda_Daughter_AntiPion_TPC_nFindableCluster);
@@ -2027,7 +2005,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       Branch_Lambda_Daughter_Proton_ITS_dEdx_nSigma->SetAutoDelete(true);
       Branch_Lambda_Daughter_Proton_DCAxy->SetAutoDelete(true);
       Branch_Lambda_Daughter_Proton_DCAz->SetAutoDelete(true);
-      Branch_Lambda_Daughter_Proton_Charge->SetAutoDelete(true);
       Branch_Lambda_Daughter_Proton_TPC_nCrossedRows->SetAutoDelete(true);
       Branch_Lambda_Daughter_Proton_TPC_nSharedCluster->SetAutoDelete(true);
       Branch_Lambda_Daughter_Proton_TPC_nFindableCluster->SetAutoDelete(true);
@@ -2056,7 +2033,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       Branch_Lambda_Daughter_AntiPion_ITS_dEdx_nSigma->SetAutoDelete(true);
       Branch_Lambda_Daughter_AntiPion_DCAxy->SetAutoDelete(true);
       Branch_Lambda_Daughter_AntiPion_DCAz->SetAutoDelete(true);
-      Branch_Lambda_Daughter_AntiPion_Charge->SetAutoDelete(true);
       Branch_Lambda_Daughter_AntiPion_TPC_nCrossedRows->SetAutoDelete(true);
       Branch_Lambda_Daughter_AntiPion_TPC_nSharedCluster->SetAutoDelete(true);
       Branch_Lambda_Daughter_AntiPion_TPC_nFindableCluster->SetAutoDelete(true);
@@ -2244,7 +2220,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
   float     AntiLambda_Daughter_AntiProton_ITS_dEdx_nSigma;
   float     AntiLambda_Daughter_AntiProton_DCAxy;
   float     AntiLambda_Daughter_AntiProton_DCAz;
-  short	    AntiLambda_Daughter_AntiProton_Charge;
   unsigned short    AntiLambda_Daughter_AntiProton_TPC_nCrossedRows;
   unsigned short    AntiLambda_Daughter_AntiProton_TPC_nSharedCluster;
   unsigned short    AntiLambda_Daughter_AntiProton_TPC_nFindableCluster;
@@ -2273,7 +2248,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
   float     AntiLambda_Daughter_Pion_ITS_dEdx_nSigma;
   float     AntiLambda_Daughter_Pion_DCAxy;
   float     AntiLambda_Daughter_Pion_DCAz;
-  short	    AntiLambda_Daughter_Pion_Charge;
   unsigned short    AntiLambda_Daughter_Pion_TPC_nCrossedRows;
   unsigned short    AntiLambda_Daughter_Pion_TPC_nSharedCluster;
   unsigned short    AntiLambda_Daughter_Pion_TPC_nFindableCluster;
@@ -2328,7 +2302,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
   fTempTree_AntiLambda->Branch("AntiLambda_Daughter_AntiProton_ITS_dEdx_nSigma",&AntiLambda_Daughter_AntiProton_ITS_dEdx_nSigma,"AntiLambda_Daughter_AntiProton_ITS_dEdx_nSigma/F");
   fTempTree_AntiLambda->Branch("AntiLambda_Daughter_AntiProton_DCAxy",&AntiLambda_Daughter_AntiProton_DCAxy,"AntiLambda_Daughter_AntiProton_DCAxy/F");
   fTempTree_AntiLambda->Branch("AntiLambda_Daughter_AntiProton_DCAz",&AntiLambda_Daughter_AntiProton_DCAz,"AntiLambda_Daughter_AntiProton_DCAz/F");
-  fTempTree_AntiLambda->Branch("AntiLambda_Daughter_AntiProton_Charge",&AntiLambda_Daughter_AntiProton_Charge,"AntiLambda_Daughter_AntiProton_Charge/S");
   fTempTree_AntiLambda->Branch("AntiLambda_Daughter_AntiProton_TPC_nCrossedRows",&AntiLambda_Daughter_AntiProton_TPC_nCrossedRows,"AntiLambda_Daughter_AntiProton_TPC_nCrossedRows/s");
   fTempTree_AntiLambda->Branch("AntiLambda_Daughter_AntiProton_TPC_nSharedCluster",&AntiLambda_Daughter_AntiProton_TPC_nSharedCluster,"AntiLambda_Daughter_AntiProton_TPC_nSharedCluster/s");
   fTempTree_AntiLambda->Branch("AntiLambda_Daughter_AntiProton_TPC_nFindableCluster",&AntiLambda_Daughter_AntiProton_TPC_nFindableCluster,"AntiLambda_Daughter_AntiProton_TPC_nFindableCluster/s");
@@ -2357,7 +2330,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
   fTempTree_AntiLambda->Branch("AntiLambda_Daughter_Pion_ITS_dEdx_nSigma",&AntiLambda_Daughter_Pion_ITS_dEdx_nSigma,"AntiLambda_Daughter_Pion_ITS_dEdx_nSigma/F");
   fTempTree_AntiLambda->Branch("AntiLambda_Daughter_Pion_DCAxy",&AntiLambda_Daughter_Pion_DCAxy,"AntiLambda_Daughter_Pion_DCAxy/F");
   fTempTree_AntiLambda->Branch("AntiLambda_Daughter_Pion_DCAz",&AntiLambda_Daughter_Pion_DCAz,"AntiLambda_Daughter_Pion_DCAz/F");
-  fTempTree_AntiLambda->Branch("AntiLambda_Daughter_Pion_Charge",&AntiLambda_Daughter_Pion_Charge,"AntiLambda_Daughter_Pion_Charge/S");
   fTempTree_AntiLambda->Branch("AntiLambda_Daughter_Pion_TPC_nCrossedRows",&AntiLambda_Daughter_Pion_TPC_nCrossedRows,"AntiLambda_Daughter_Pion_TPC_nCrossedRows/s");
   fTempTree_AntiLambda->Branch("AntiLambda_Daughter_Pion_TPC_nSharedCluster",&AntiLambda_Daughter_Pion_TPC_nSharedCluster,"AntiLambda_Daughter_Pion_TPC_nSharedCluster/s");
   fTempTree_AntiLambda->Branch("AntiLambda_Daughter_Pion_TPC_nFindableCluster",&AntiLambda_Daughter_Pion_TPC_nFindableCluster,"AntiLambda_Daughter_Pion_TPC_nFindableCluster/s");
@@ -2659,7 +2631,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     AntiLambda_Daughter_AntiProton_ITS_dEdx_nSigma	    = (float)AntiProton_ITS_dEdx_nSigma;
     AntiLambda_Daughter_AntiProton_DCAxy		    = AntiProton_DCAxy;
     AntiLambda_Daughter_AntiProton_DCAz			    = AntiProton_DCAz;
-    AntiLambda_Daughter_AntiProton_Charge		    = AntiProtonTrack->Charge();
     AntiLambda_Daughter_AntiProton_TPC_nCrossedRows	    = AntiProtonTrack->GetTPCCrossedRows();
     AntiLambda_Daughter_AntiProton_TPC_nSharedCluster	    = AntiProtonTrack->GetTPCnclsS();
     AntiLambda_Daughter_AntiProton_TPC_nFindableCluster	    = AntiProtonTrack->GetTPCNclsF();
@@ -2687,7 +2658,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     AntiLambda_Daughter_Pion_ITS_dEdx_nSigma	    = (float)Pion_ITS_dEdx_nSigma;
     AntiLambda_Daughter_Pion_DCAxy		    = Pion_DCAxy;
     AntiLambda_Daughter_Pion_DCAz		    = Pion_DCAz;
-    AntiLambda_Daughter_Pion_Charge		    = PionTrack->Charge();
     AntiLambda_Daughter_Pion_TPC_nCrossedRows	    = PionTrack->GetTPCCrossedRows();
     AntiLambda_Daughter_Pion_TPC_nSharedCluster	    = PionTrack->GetTPCnclsS();
     AntiLambda_Daughter_Pion_TPC_nFindableCluster   = PionTrack->GetTPCNclsF();
@@ -2952,7 +2922,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       TBranch *Branch_AntiLambda_Daughter_AntiProton_ITS_dEdx_nSigma	  = fTempTree_AntiLambda->GetBranch("AntiLambda_Daughter_AntiProton_ITS_dEdx_nSigma");
       TBranch *Branch_AntiLambda_Daughter_AntiProton_DCAxy		  = fTempTree_AntiLambda->GetBranch("AntiLambda_Daughter_AntiProton_DCAxy");
       TBranch *Branch_AntiLambda_Daughter_AntiProton_DCAz		  = fTempTree_AntiLambda->GetBranch("AntiLambda_Daughter_AntiProton_DCAz");
-      TBranch *Branch_AntiLambda_Daughter_AntiProton_Charge		  = fTempTree_AntiLambda->GetBranch("AntiLambda_Daughter_AntiProton_Charge");
       TBranch *Branch_AntiLambda_Daughter_AntiProton_TPC_nCrossedRows	  = fTempTree_AntiLambda->GetBranch("AntiLambda_Daughter_AntiProton_TPC_nCrossedRows");
       TBranch *Branch_AntiLambda_Daughter_AntiProton_TPC_nSharedCluster	  = fTempTree_AntiLambda->GetBranch("AntiLambda_Daughter_AntiProton_TPC_nSharedCluster");
       TBranch *Branch_AntiLambda_Daughter_AntiProton_TPC_nFindableCluster = fTempTree_AntiLambda->GetBranch("AntiLambda_Daughter_AntiProton_TPC_nFindableCluster");
@@ -2981,7 +2950,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       TBranch *Branch_AntiLambda_Daughter_Pion_ITS_dEdx_nSigma	  = fTempTree_AntiLambda->GetBranch("AntiLambda_Daughter_Pion_ITS_dEdx_nSigma");
       TBranch *Branch_AntiLambda_Daughter_Pion_DCAxy		  = fTempTree_AntiLambda->GetBranch("AntiLambda_Daughter_Pion_DCAxy");
       TBranch *Branch_AntiLambda_Daughter_Pion_DCAz		  = fTempTree_AntiLambda->GetBranch("AntiLambda_Daughter_Pion_DCAz");
-      TBranch *Branch_AntiLambda_Daughter_Pion_Charge		  = fTempTree_AntiLambda->GetBranch("AntiLambda_Daughter_Pion_Charge");
       TBranch *Branch_AntiLambda_Daughter_Pion_TPC_nCrossedRows	  = fTempTree_AntiLambda->GetBranch("AntiLambda_Daughter_Pion_TPC_nCrossedRows");
       TBranch *Branch_AntiLambda_Daughter_Pion_TPC_nSharedCluster	  = fTempTree_AntiLambda->GetBranch("AntiLambda_Daughter_Pion_TPC_nSharedCluster");
       TBranch *Branch_AntiLambda_Daughter_Pion_TPC_nFindableCluster = fTempTree_AntiLambda->GetBranch("AntiLambda_Daughter_Pion_TPC_nFindableCluster");
@@ -3035,7 +3003,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       Branch_AntiLambda_Daughter_AntiProton_ITS_dEdx_nSigma->SetAddress(&fAntiLambda_Daughter_AntiProton_ITS_dEdx_nSigma);
       Branch_AntiLambda_Daughter_AntiProton_DCAxy->SetAddress(&fAntiLambda_Daughter_AntiProton_DCAxy);
       Branch_AntiLambda_Daughter_AntiProton_DCAz->SetAddress(&fAntiLambda_Daughter_AntiProton_DCAz);
-      Branch_AntiLambda_Daughter_AntiProton_Charge->SetAddress(&fAntiLambda_Daughter_AntiProton_Charge);
       Branch_AntiLambda_Daughter_AntiProton_TPC_nCrossedRows->SetAddress(&fAntiLambda_Daughter_AntiProton_TPC_nCrossedRows);
       Branch_AntiLambda_Daughter_AntiProton_TPC_nSharedCluster->SetAddress(&fAntiLambda_Daughter_AntiProton_TPC_nSharedCluster);
       Branch_AntiLambda_Daughter_AntiProton_TPC_nFindableCluster->SetAddress(&fAntiLambda_Daughter_AntiProton_TPC_nFindableCluster);
@@ -3064,7 +3031,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       Branch_AntiLambda_Daughter_Pion_ITS_dEdx_nSigma->SetAddress(&fAntiLambda_Daughter_Pion_ITS_dEdx_nSigma);
       Branch_AntiLambda_Daughter_Pion_DCAxy->SetAddress(&fAntiLambda_Daughter_Pion_DCAxy);
       Branch_AntiLambda_Daughter_Pion_DCAz->SetAddress(&fAntiLambda_Daughter_Pion_DCAz);
-      Branch_AntiLambda_Daughter_Pion_Charge->SetAddress(&fAntiLambda_Daughter_Pion_Charge);
       Branch_AntiLambda_Daughter_Pion_TPC_nCrossedRows->SetAddress(&fAntiLambda_Daughter_Pion_TPC_nCrossedRows);
       Branch_AntiLambda_Daughter_Pion_TPC_nSharedCluster->SetAddress(&fAntiLambda_Daughter_Pion_TPC_nSharedCluster);
       Branch_AntiLambda_Daughter_Pion_TPC_nFindableCluster->SetAddress(&fAntiLambda_Daughter_Pion_TPC_nFindableCluster);
@@ -3119,7 +3085,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       Branch_AntiLambda_Daughter_AntiProton_ITS_dEdx_nSigma->SetAutoDelete(true);
       Branch_AntiLambda_Daughter_AntiProton_DCAxy->SetAutoDelete(true);
       Branch_AntiLambda_Daughter_AntiProton_DCAz->SetAutoDelete(true);
-      Branch_AntiLambda_Daughter_AntiProton_Charge->SetAutoDelete(true);
       Branch_AntiLambda_Daughter_AntiProton_TPC_nCrossedRows->SetAutoDelete(true);
       Branch_AntiLambda_Daughter_AntiProton_TPC_nSharedCluster->SetAutoDelete(true);
       Branch_AntiLambda_Daughter_AntiProton_TPC_nFindableCluster->SetAutoDelete(true);
@@ -3148,7 +3113,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       Branch_AntiLambda_Daughter_Pion_ITS_dEdx_nSigma->SetAutoDelete(true);
       Branch_AntiLambda_Daughter_Pion_DCAxy->SetAutoDelete(true);
       Branch_AntiLambda_Daughter_Pion_DCAz->SetAutoDelete(true);
-      Branch_AntiLambda_Daughter_Pion_Charge->SetAutoDelete(true);
       Branch_AntiLambda_Daughter_Pion_TPC_nCrossedRows->SetAutoDelete(true);
       Branch_AntiLambda_Daughter_Pion_TPC_nSharedCluster->SetAutoDelete(true);
       Branch_AntiLambda_Daughter_Pion_TPC_nFindableCluster->SetAutoDelete(true);
