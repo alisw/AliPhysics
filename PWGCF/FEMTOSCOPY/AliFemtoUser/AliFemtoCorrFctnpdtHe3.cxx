@@ -86,7 +86,10 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     fUsemTCheck(0),
     f3DmTDepkSVspT(nullptr),
     EscapePairCut(0),
-    WhichCutIndEtadPhi(1)
+    WhichCutIndEtadPhi(1),
+    fUse3DmTvsPIDvspT(0),
+    fNum3DmTvsPIDvspT(nullptr),
+    fDum3DmTvsPIDvspT(nullptr) 
 {
     
     fNumerator      = new TH1D(TString::Format("Num%s", fTitle.Data()), "fNumerator", nbins, KStarLo, KStarHi);
@@ -160,7 +163,11 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCo
     fUsemTCheck(aCorrFctn.fUsemTCheck),
     f3DmTDepkSVspT(aCorrFctn.f3DmTDepkSVspT),
     EscapePairCut(aCorrFctn.EscapePairCut),
-    WhichCutIndEtadPhi(aCorrFctn.WhichCutIndEtadPhi)
+    WhichCutIndEtadPhi(aCorrFctn.WhichCutIndEtadPhi),
+    fUse3DmTvsPIDvspT(aCorrFctn.fUse3DmTvsPIDvspT),
+    fNum3DmTvsPIDvspT(aCorrFctn.fNum3DmTvsPIDvspT),
+    fDum3DmTvsPIDvspT(aCorrFctn.fDum3DmTvsPIDvspT)
+
 
 {
     
@@ -219,6 +226,8 @@ AliFemtoCorrFctnpdtHe3::~AliFemtoCorrFctnpdtHe3()
 
 
     delete f3DmTDepkSVspT;
+    delete fNum3DmTvsPIDvspT;
+    delete fDum3DmTvsPIDvspT;
 }
 AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctnpdtHe3& aCorrFctn)
 {
@@ -336,6 +345,15 @@ if(fUsemTCheck){
 	delete f3DmTDepkSVspT;
 	f3DmTDepkSVspT = new TH3F(*aCorrFctn.f3DmTDepkSVspT);
 }
+
+if(fUse3DmTvsPIDvspT){
+
+delete fNum3DmTvsPIDvspT;
+fNum3DmTvsPIDvspT = new TH3F(*aCorrFctn.fNum3DmTvsPIDvspT);
+delete fDum3DmTvsPIDvspT;
+fDum3DmTvsPIDvspT = new TH3F(*aCorrFctn.fDum3DmTvsPIDvspT);
+
+}
     return *this;
 
 }
@@ -412,6 +430,12 @@ tOutputList->Add(f2DkSVsMass);
 if(fUsemTCheck){
 tOutputList->Add(f3DmTDepkSVspT);
 }
+
+if(fUse3DmTvsPIDvspT){
+tOutputList->Add(fNum3DmTvsPIDvspT);
+tOutputList->Add(fDum3DmTvsPIDvspT);
+}
+
     return tOutputList;
 }
 void AliFemtoCorrFctnpdtHe3::Finish()
@@ -479,6 +503,12 @@ if(fUsemTCheck){
 
 f3DmTDepkSVspT->Write();
 }
+
+if(fUse3DmTvsPIDvspT){
+fNum3DmTvsPIDvspT->Write();
+fDum3DmTvsPIDvspT->Write();
+}
+
 }
 void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair){
 
@@ -619,6 +649,11 @@ if(fUse2DkStarVsmT){
 	}
  }
 
+if(fUse3DmTvsPIDvspT && tKStar<0.1){
+//cout<<" "<<fPair->Track2()->Track()->NSigmaTPCP()<<endl;     
+   fNum3DmTvsPIDvspT->Fill(fPair->Track1()->Track()->NSigmaTPCP(),fPair->Track1()->Track()->Pt(),CalcMt(fPair));
+}
+
 	return;
     
  
@@ -724,6 +759,13 @@ fDum2DkStarVsmT->Fill(tKStar,CalcMt(fPair));
 			f3DmTDepkSVspT->Fill(tKStar,fPair->Track1()->Track()->Pt(),fPair->KT());
 		}
 	}
+
+
+if(fUse3DmTvsPIDvspT && tKStar<0.1){
+   fDum3DmTvsPIDvspT->Fill(fPair->Track1()->Track()->NSigmaTPCP(),fPair->Track1()->Track()->Pt(),CalcMt(fPair));
+}
+
+
 	return;
     
 
@@ -1236,4 +1278,17 @@ EscapePairCut = aUse;
 void AliFemtoCorrFctnpdtHe3::SetWhichCutIndEtadPhi(int aUse){
 WhichCutIndEtadPhi = aUse;
 }
+void AliFemtoCorrFctnpdtHe3::Set3DmTvsPIDvspT(int aUse){
+fUse3DmTvsPIDvspT = aUse;
+}
+void AliFemtoCorrFctnpdtHe3::Set3DmTvsPIDvspTInit(
+int nbinsNs,float lowNs,float upNs,
+int nbinspT,float lowpT,float uppT,
+int nbinsmT,float lowmT,float upmT
+){
+fNum3DmTvsPIDvspT = new TH3F(TString::Format("fNum3DmTvsPIDvspT%s", fTitle.Data())," ",nbinsNs,lowNs,upNs,nbinspT,lowpT,uppT,nbinsmT,lowmT,upmT);
 
+fDum3DmTvsPIDvspT = new TH3F(TString::Format("fDum3DmTvsPIDvspT%s", fTitle.Data())," ",nbinsNs,lowNs,upNs,nbinspT,lowpT,uppT,nbinsmT,lowmT,upmT);
+
+
+}
