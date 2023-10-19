@@ -1285,6 +1285,9 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
 
 
 
+
+
+
     float Generated_px = -999.0;
     float Generated_py = -999.0;
     float Generated_pz = -999.0;
@@ -1391,33 +1394,49 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
 
 
 
-    double MomentumDaughterPosX = v0->MomPosX();
-    double MomentumDaughterPosY = v0->MomPosY();
-    double MomentumDaughterPosZ = v0->MomPosZ();
-    double MomentumDaughterNegX = v0->MomNegX();
-    double MomentumDaughterNegY = v0->MomNegY();
-    double MomentumDaughterNegZ = v0->MomNegZ();
+    AliAODVertex *DecayVertex = v0->GetSecondaryVtx();
+
+    AliExternalTrackParam *ProtonTrackParam = new AliExternalTrackParam();
+    ProtonTrackParam->CopyFromVTrack(ProtonTrack);
+    double Proton_DCA_new[2];
+    double Proton_CovarianceMatrix_new[3];
+    ProtonTrackParam->PropagateToDCA(DecayVertex,BField,10.0,Proton_DCA_new,Proton_CovarianceMatrix_new);
+    double ProtonMomentumPropagated[3];
+    ProtonTrackParam->GetPxPyPz(ProtonMomentumPropagated);
+
+    AliExternalTrackParam *AntiPionTrackParam = new AliExternalTrackParam();
+    AntiPionTrackParam->CopyFromVTrack(AntiPionTrack);
+    double AntiPion_DCA_new[2];
+    double AntiPion_CovarianceMatrix_new[3];
+    AntiPionTrackParam->PropagateToDCA(DecayVertex,BField,10.0,AntiPion_DCA_new,AntiPion_CovarianceMatrix_new);
+    double AntiPionMomentumPropagated[3];
+    AntiPionTrackParam->GetPxPyPz(AntiPionMomentumPropagated);
+
+
+    bool PrintDecayMomentaOnScreen = false;
+    if(PrintDecayMomentaOnScreen == true){
+
+      std::cout << "\nProtonTrack->Px() = " << ProtonTrack->Px() << "\t ProtonTrack->Py() = " << ProtonTrack->Py() << "\t ProtonTrack->Pz() = " << ProtonTrack->Pz() << std::endl;
+      std::cout << "v0->MomPosX() = " << v0->MomPosX() << "\t v0->MomPosY() = " << v0->MomPosY() << "\tv0->MomPosZ() = " << v0->MomPosZ() << std::endl;
+      std::cout << "px_prop = " << ProtonMomentumPropagated[0] << "\t\t py_prop = " << ProtonMomentumPropagated[1] << "\t\t pz_prop = " << ProtonMomentumPropagated[2] << std::endl;
+    std::cout << "AntiPionTrack->Px() = " << AntiPionTrack->Px() << "\t AntiPionTrack->Py() = " << AntiPionTrack->Py() << "\tAntiPionTrack->Pz() = " << AntiPionTrack->Pz() << std::endl;
+    std::cout << "v0->MomNegX() = " << v0->MomNegX() << "\t v0->MomNegY() = " << v0->MomNegY() << "\tv0->MomNegZ() = " << v0->MomNegZ() << std::endl;
+    std::cout << "px_prop = " << AntiPionMomentumPropagated[0] << "\t py_prop = " << AntiPionMomentumPropagated[1] << "\t pz_prop = " << AntiPionMomentumPropagated[2] << std::endl;
+
+    } // end of PrintDecayMomentaOnScreen
+
+
+    double MomentumDaughterPosX = ProtonMomentumPropagated[0];
+    double MomentumDaughterPosY = ProtonMomentumPropagated[1];
+    double MomentumDaughterPosZ = ProtonMomentumPropagated[2];
+    double MomentumDaughterNegX = AntiPionMomentumPropagated[0];
+    double MomentumDaughterNegY = AntiPionMomentumPropagated[1];
+    double MomentumDaughterNegZ = AntiPionMomentumPropagated[2];
     double MomentumV0X = v0->MomV0X();
     double MomentumV0Y = v0->MomV0Y();
     double MomentumV0Z = v0->MomV0Z();
-/*
-    std::cout << "\nProtonTrack->Px() = " << ProtonTrack->Px() << "\t ProtonTrack->Py() = " << ProtonTrack->Py() << "\tProtonTrack->Pz() = " << ProtonTrack->Pz() << std::endl;
-    std::cout << "v0->MomPosX() = " << v0->MomPosX() << "\t v0->MomPosY() = " << v0->MomPosY() << "\tv0->MomPosZ() = " << v0->MomPosZ() << std::endl;
-    std::cout << "AntiPionTrack->Px() = " << AntiPionTrack->Px() << "\t AntiPionTrack->Py() = " << AntiPionTrack->Py() << "\tAntiPionTrack->Pz() = " << AntiPionTrack->Pz() << std::endl;
-    std::cout << "v0->MomNegX() = " << v0->MomNegX() << "\t v0->MomNegY() = " << v0->MomNegY() << "\tv0->MomNegZ() = " << v0->MomNegZ() << std::endl;
-    std::cout << "Propagate to vertex..." << std::endl;
 
-    AliAODVertex *v0Vertex = v0->GetSecondaryVtx();
-    double DCA[2];
-    double CovarianceMatrix[3];
-    bool PropagatedToVertex = ProtonTrack->PropagateToDCA(v0Vertex,BField,9999.0,DCA,CovarianceMatrix);
-    if(PropagatedToVertex == false) continue;
 
-    std::cout << "ProtonTrack->Px() = " << ProtonTrack->Px() << "\t ProtonTrack->Py() = " << ProtonTrack->Py() << "\t ProtonTrack->Pz() = " << ProtonTrack->Pz() << std::endl;
-    std::cout << "v0->MomPosX() = " << v0->MomPosX() << "\t v0->MomPosY() = " << v0->MomPosY() << "\t v0->MomPosZ() = " << v0->MomPosZ() << std::endl;
-    std::cout << "AntiPionTrack->Px() = " << AntiPionTrack->Px() << "\t AntiPionTrack->Py() = " << AntiPionTrack->Py() << "\tAntiPionTrack->Pz() = " << AntiPionTrack->Pz() << std::endl;
-    std::cout << "v0->MomNegX() = " << v0->MomNegX() << "\t v0->MomNegY() = " << v0->MomNegY() << "\tv0->MomNegZ() = " << v0->MomNegZ() << "\n" << std::endl;
-*/
 
   
     TVector3 *MomentumDaughterPositive = new TVector3();
@@ -1510,6 +1529,8 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     }
 
 
+
+
     Lambda_px			  = (float)v0->MomV0X();
     Lambda_py			  = (float)v0->MomV0Y();
     Lambda_pz			  = (float)v0->MomV0Z();
@@ -1540,9 +1561,9 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     Lambda_Daughter_Proton_px_Generated		    = Generated_px_Daughter1;
     Lambda_Daughter_Proton_py_Generated		    = Generated_py_Daughter1;
     Lambda_Daughter_Proton_pz_Generated		    = Generated_pz_Daughter1;
-    Lambda_Daughter_Proton_px_DecayVertex	    = v0->MomPosX();
-    Lambda_Daughter_Proton_py_DecayVertex	    = v0->MomPosY();
-    Lambda_Daughter_Proton_pz_DecayVertex	    = v0->MomPosZ();
+    Lambda_Daughter_Proton_px_DecayVertex	    = MomentumDaughterPosX;
+    Lambda_Daughter_Proton_py_DecayVertex	    = MomentumDaughterPosY;
+    Lambda_Daughter_Proton_pz_DecayVertex	    = MomentumDaughterPosZ;
     Lambda_Daughter_Proton_pTPC			    = ProtonTrack->GetTPCmomentum();
     Lambda_Daughter_Proton_Eta			    = ProtonTrack->Eta();
     Lambda_Daughter_Proton_Phi			    = ProtonTrack->Phi();
@@ -1568,9 +1589,9 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     Lambda_Daughter_AntiPion_px_Generated	    = Generated_px_Daughter2;
     Lambda_Daughter_AntiPion_py_Generated	    = Generated_py_Daughter2;
     Lambda_Daughter_AntiPion_pz_Generated	    = Generated_pz_Daughter2;
-    Lambda_Daughter_AntiPion_px_DecayVertex	    = v0->MomNegX();
-    Lambda_Daughter_AntiPion_py_DecayVertex	    = v0->MomNegY();
-    Lambda_Daughter_AntiPion_pz_DecayVertex	    = v0->MomNegZ();
+    Lambda_Daughter_AntiPion_px_DecayVertex	    = MomentumDaughterNegX;
+    Lambda_Daughter_AntiPion_py_DecayVertex	    = MomentumDaughterNegY;
+    Lambda_Daughter_AntiPion_pz_DecayVertex	    = MomentumDaughterNegZ;
     Lambda_Daughter_AntiPion_pTPC		    = AntiPionTrack->GetTPCmomentum();
     Lambda_Daughter_AntiPion_Eta		    = AntiPionTrack->Eta();
     Lambda_Daughter_AntiPion_Phi		    = AntiPionTrack->Phi();
@@ -2460,19 +2481,55 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
 
 
 
+    AliAODVertex *DecayVertex = v0->GetSecondaryVtx();
+
+    AliExternalTrackParam *AntiProtonTrackParam = new AliExternalTrackParam();
+    AntiProtonTrackParam->CopyFromVTrack(AntiProtonTrack);
+    double AntiProton_DCA_new[2];
+    double AntiProton_CovarianceMatrix_new[3];
+    AntiProtonTrackParam->PropagateToDCA(DecayVertex,BField,10.0,AntiProton_DCA_new,AntiProton_CovarianceMatrix_new);
+    double AntiProtonMomentumPropagated[3];
+    AntiProtonTrackParam->GetPxPyPz(AntiProtonMomentumPropagated);
+
+    AliExternalTrackParam *PionTrackParam = new AliExternalTrackParam();
+    PionTrackParam->CopyFromVTrack(PionTrack);
+    double Pion_DCA_new[2];
+    double Pion_CovarianceMatrix_new[3];
+    PionTrackParam->PropagateToDCA(DecayVertex,BField,10.0,Pion_DCA_new,Pion_CovarianceMatrix_new);
+    double PionMomentumPropagated[3];
+    PionTrackParam->GetPxPyPz(PionMomentumPropagated);
 
 
+    bool PrintDecayMomentaOnScreen = false;
+    if(PrintDecayMomentaOnScreen == true){
+
+      std::cout << "\nAntiProtonTrack->Px() = " << AntiProtonTrack->Px() << "\t AntiProtonTrack->Py() = " << AntiProtonTrack->Py() << "\t AntiProtonTrack->Pz() = " << AntiProtonTrack->Pz() << std::endl;
+      std::cout << "v0->MomNegX() = " << v0->MomNegX() << "\t v0->MomNegY() = " << v0->MomNegY() << "\tv0->MomNegZ() = " << v0->MomNegZ() << std::endl;
+      std::cout << "px_prop = " << AntiProtonMomentumPropagated[0] << "\t\t py_prop = " << AntiProtonMomentumPropagated[1] << "\t\t pz_prop = " << AntiProtonMomentumPropagated[2] << std::endl;
+    std::cout << "PionTrack->Px() = " << PionTrack->Px() << "\t PionTrack->Py() = " << PionTrack->Py() << "\tPionTrack->Pz() = " << PionTrack->Pz() << std::endl;
+    std::cout << "v0->MomPosX() = " << v0->MomPosX() << "\t v0->MomPosY() = " << v0->MomPosY() << "\tv0->MomPosZ() = " << v0->MomPosZ() << std::endl;
+    std::cout << "px_prop = " << PionMomentumPropagated[0] << "\t py_prop = " << PionMomentumPropagated[1] << "\t pz_prop = " << PionMomentumPropagated[2] << std::endl;
+
+    } // end of PrintDecayMomentaOnScreen
 
 
-    double MomentumDaughterPosX = v0->MomPosX();
-    double MomentumDaughterPosY = v0->MomPosY();
-    double MomentumDaughterPosZ = v0->MomPosZ();
-    double MomentumDaughterNegX = v0->MomNegX();
-    double MomentumDaughterNegY = v0->MomNegY();
-    double MomentumDaughterNegZ = v0->MomNegZ();
+    double MomentumDaughterNegX = AntiProtonMomentumPropagated[0];
+    double MomentumDaughterNegY = AntiProtonMomentumPropagated[1];
+    double MomentumDaughterNegZ = AntiProtonMomentumPropagated[2];
+    double MomentumDaughterPosX = PionMomentumPropagated[0];
+    double MomentumDaughterPosY = PionMomentumPropagated[1];
+    double MomentumDaughterPosZ = PionMomentumPropagated[2];
     double MomentumV0X = v0->MomV0X();
     double MomentumV0Y = v0->MomV0Y();
     double MomentumV0Z = v0->MomV0Z();
+
+
+
+
+
+
+
+
   
     TVector3 *MomentumDaughterPositive = new TVector3();
     TVector3 *MomentumDaughterNegative = new TVector3();
@@ -2597,9 +2654,9 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     AntiLambda_Daughter_AntiProton_px_Generated		    = Generated_px_Daughter1;
     AntiLambda_Daughter_AntiProton_py_Generated		    = Generated_py_Daughter1;
     AntiLambda_Daughter_AntiProton_pz_Generated		    = Generated_pz_Daughter1;
-    AntiLambda_Daughter_AntiProton_px_DecayVertex	    = v0->MomNegX();
-    AntiLambda_Daughter_AntiProton_py_DecayVertex	    = v0->MomNegY();
-    AntiLambda_Daughter_AntiProton_pz_DecayVertex	    = v0->MomNegZ();
+    AntiLambda_Daughter_AntiProton_px_DecayVertex	    = MomentumDaughterNegX;
+    AntiLambda_Daughter_AntiProton_py_DecayVertex	    = MomentumDaughterNegY;
+    AntiLambda_Daughter_AntiProton_pz_DecayVertex	    = MomentumDaughterNegZ;
     AntiLambda_Daughter_AntiProton_pTPC			    = AntiProtonTrack->GetTPCmomentum();
     AntiLambda_Daughter_AntiProton_Eta			    = AntiProtonTrack->Eta();
     AntiLambda_Daughter_AntiProton_Phi			    = AntiProtonTrack->Phi();
@@ -2625,9 +2682,9 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     AntiLambda_Daughter_Pion_px_Generated	    = Generated_px_Daughter2;
     AntiLambda_Daughter_Pion_py_Generated	    = Generated_py_Daughter2;
     AntiLambda_Daughter_Pion_pz_Generated	    = Generated_pz_Daughter2;
-    AntiLambda_Daughter_Pion_px_DecayVertex	    = v0->MomPosX();
-    AntiLambda_Daughter_Pion_py_DecayVertex	    = v0->MomPosY();
-    AntiLambda_Daughter_Pion_pz_DecayVertex	    = v0->MomPosZ();
+    AntiLambda_Daughter_Pion_px_DecayVertex	    = MomentumDaughterPosX;
+    AntiLambda_Daughter_Pion_py_DecayVertex	    = MomentumDaughterPosY;
+    AntiLambda_Daughter_Pion_pz_DecayVertex	    = MomentumDaughterPosZ;
     AntiLambda_Daughter_Pion_pTPC		    = PionTrack->GetTPCmomentum();
     AntiLambda_Daughter_Pion_Eta		    = PionTrack->Eta();
     AntiLambda_Daughter_Pion_Phi		    = PionTrack->Phi();
@@ -4906,6 +4963,28 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
 
   }
 
+  if(LHC20g7a == true && isPion == true){
+
+    Mean->FixParameter(0,1.8487e-09);
+    Mean->FixParameter(1,-163771);
+    Mean->FixParameter(2,-238672);
+    Mean->FixParameter(3,899.867);
+    Mean->FixParameter(4,15658.8);
+
+  }
+
+  if(LHC20g7a == true && isAntiPion == true){
+
+    Mean->FixParameter(0,3.14614e-10);
+    Mean->FixParameter(1,-157437);
+    Mean->FixParameter(2,-238672);
+    Mean->FixParameter(3,899.867);
+    Mean->FixParameter(4,14760.3);
+
+  }
+
+
+
 
 
   // LHC20g7b
@@ -4955,7 +5034,7 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
 
 
   // copied from data
-  if((LHC22f3 == true) && (isProton == true) || (isAntiProton == true)){
+  if((LHC22f3 == true) && ((isProton == true) || (isAntiProton == true))){
 
     Mean->FixParameter(0,2.36861e-07);
     Mean->FixParameter(1,-55831.1);
@@ -5047,6 +5126,7 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
 
   if(((isProton == true) || (isAntiProton == true))	&& (LHC20g7a == true)) Resolution = 1.31668e-01;
   if(((isDeuteron == true) || (isAntiDeuteron == true))	&& (LHC20g7a == true)) Resolution = 9.46937e-02;
+  if(((isPion == true) || (isAntiPion == true))	&& (LHC20g7a == true))	       Resolution = 1.73629e-01;
 
   if(((isProton == true) || (isAntiProton == true))	&& (LHC20g7b == true)) Resolution = 1.30878e-01;
   if(((isDeuteron == true) || (isAntiDeuteron == true))	&& (LHC20g7b == true)) Resolution = 9.46815e-02;
