@@ -588,6 +588,7 @@ Bool_t AliAnalysisTaskFlowPPTask::CheckTrigger(){
 		if(fPeriod.EqualTo("LHC18qr_pass3")){
 			if((fSelectMask&AliVEvent::kCentral) && cent>10){return kFALSE;}
 			if((fSelectMask&AliVEvent::kSemiCentral) && (cent<30 || cent>50)){return kFALSE;}
+			if((!fUsekCentralTrigger)&&(!fUsekSemiCentralTrigger)){return kFALSE;}
 		}
 		else{
 			//for LHC15o pass2,only pass by kint7
