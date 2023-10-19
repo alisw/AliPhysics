@@ -53,7 +53,7 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
   v0Cuts->SetPDGCodePosDaug(2212); // Proton
-  v0Cuts->SetPDGCodeNegDaug(211);  // Positive pion
+  v0Cuts->SetPDGCodeNegDaug(211);  // Pion
   v0Cuts->SetPDGCodev0(3122);      // Lambda
 
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
@@ -64,7 +64,7 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
 
   Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
   Antiv0Cuts->SetNegDaugterTrackCuts(NegAntiv0Daug);
-  Antiv0Cuts->SetPDGCodePosDaug(-211); // Negative Pion
+  Antiv0Cuts->SetPDGCodePosDaug(211);  // Pion
   Antiv0Cuts->SetPDGCodeNegDaug(2212); // Proton
   Antiv0Cuts->SetPDGCodev0(-3122);     // Lambda
 
@@ -124,7 +124,7 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
   // PDG code the mass is obtained.
   std::vector<int> PDGParticles;
   PDGParticles.push_back(211);  // 0 Pion Plus
-  PDGParticles.push_back(-211); // 1 Pion Minus
+  PDGParticles.push_back(211);  // 1 Pion Minus
   PDGParticles.push_back(3122); // 2 Lambda
   PDGParticles.push_back(3122); // 3 antiLambda
 
