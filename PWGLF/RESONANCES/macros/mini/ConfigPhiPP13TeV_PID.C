@@ -293,7 +293,7 @@ Bool_t ConfigPhiPP13TeV_PID(
 
     if (isMC) {
         // get mothers for phi PDG = 333
-        out = task->CreateOutput(Form("phi_Mother%s", suffix), "HIST", "MOTHER");
+        out = task->CreateOutput(Form("phi_Mother%s", suffix), "HIST", "MOTHER_NO_PILEUP");
         out->SetDaughter(0, AliRsnDaughter::kKaon);
         out->SetDaughter(1, AliRsnDaughter::kKaon);
         out->SetMotherPDG(333);
