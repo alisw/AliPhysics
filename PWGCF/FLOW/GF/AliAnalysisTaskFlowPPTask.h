@@ -224,6 +224,8 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		virtual void   SetIsSample(Int_t IsSample){fSample = IsSample;}
 		virtual void   SetCentFlag(Short_t nCent){fCentFlag = nCent;}
 		virtual void   SetTrigger(Int_t trig){fTrigger = trig;}
+		virtual void   SetUsekCentralTrigger(Bool_t trig){fUsekCentralTrigger = trig;}
+		virtual void   SetUsekSemiCentralTrigger(Bool_t trig){fUsekSemiCentralTrigger = trig;}
 		virtual void   SetLSFlag(Bool_t LS){fLS = LS;}
 		virtual void   SetNUEFlag(Bool_t NUE){fNUE = NUE;}
 		virtual void   SetNUA(Bool_t NUA){fNUA = NUA;}
@@ -286,6 +288,8 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		Short_t			fCentFlag;				// centrality flag
 		Int_t			fTrigger;				// flag for trigger
 		Int_t			fAliTrigger;				// name for trigger
+		Bool_t			fUsekCentralTrigger;		// use kCentral trigger
+		Bool_t			fUsekSemiCentralTrigger;		// use kSemiCentral trigger
 		Bool_t			fLS;					// charge, 1:all, 2:pp,  3: mm
 		Bool_t			fNUE;					// flag for NUE correction
 		Bool_t			fNUA;					// 0: no NUA correction, 1: NUA correction
