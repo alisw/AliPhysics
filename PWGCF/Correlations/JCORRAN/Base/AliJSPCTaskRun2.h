@@ -108,8 +108,9 @@ class AliJSPCTaskRun2 : public AliAnalysisTaskSE {
 
   Bool_t bAliSPCRun2ComputeEtaGap;    // Do eta gap computation if kTRUE. Default kFALSE
   Float_t fAliSPCRun2EtaGap;          // Value of eta gap
+  Int_t fDebug;
 
-  ClassDef(AliJSPCTaskRun2, 1); 
+  ClassDef(AliJSPCTaskRun2, 1);
 };
 
 #endif  // ALIJSPCTASKRUN2_H
