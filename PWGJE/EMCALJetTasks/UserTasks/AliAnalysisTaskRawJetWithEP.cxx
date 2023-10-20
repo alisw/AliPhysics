@@ -1048,25 +1048,25 @@ void AliAnalysisTaskRawJetWithEP::AllocateJetHistograms()
 
         histName = TString::Format("%s/hJetPtVsEP2AngleVsCent", InclusiveGroupName.Data());
         histtitle = TString::Format("%s;#it{p}_{T,jet}^{raw} [GeV/#it{c}]; #phi^{jet}-#Psi_{EP, 2} [rad];Centrality ", histName.Data());
-        fHistManager.CreateTH3(histName, histtitle, 60, -50, 250, 100, 0., TMath::TwoPi(), 20, 0., 100.);
+        fHistManager.CreateTH3(histName, histtitle, 60, -50, 250, 96, 0., TMath::TwoPi(), 20, 0., 100.);
         histName = TString::Format("%s/hJetCorrPtVsEP2AngleVsCent", InclusiveGroupName.Data());
         histtitle = TString::Format("%s;#it{p}_{T,jet}^{corr} [GeV/#it{c}];#phi^{jet}-#Psi_{EP, 2} [rad];Centrality ", histName.Data());
-        fHistManager.CreateTH3(histName, histtitle, 60, -50, 250, 100, 0., TMath::TwoPi(), 20, 0., 100.);
+        fHistManager.CreateTH3(histName, histtitle, 60, -50, 250, 96, 0., TMath::TwoPi(), 20, 0., 100.);
         // fHistManager.CreateTH3(histName, histtitle, 60, -50, 250, 100, 0., TMath::Pi(), 20, 0., 100.);
         histName = TString::Format("%s/hLocalRhoAVsEP2AngleVsCent", InclusiveGroupName.Data());
         histtitle = TString::Format("%s;#it{#rho}_{ch} (#it{#phi}) [GeV/#it{c}/ (m^{2})];#phi^{jet}-#Psi_{EP, 2} [rad];Centrality ", histName.Data());
-        fHistManager.CreateTH3(histName, histtitle, 125, -20, 230, 100, 0., TMath::TwoPi(), 20, 0., 100.);
+        fHistManager.CreateTH3(histName, histtitle, 125, -20, 230, 96, 0., TMath::TwoPi(), 20, 0., 100.);
 
         histName = TString::Format("%s/hJetPtVsEP3AngleVsCent", InclusiveGroupName.Data());
         histtitle = TString::Format("%s;#it{p}_{T,jet}^{raw} [GeV/#it{c}];#phi^{jet}-#Psi_{EP, 3} [rad];Centrality ", histName.Data());
-        fHistManager.CreateTH3(histName, histtitle, 60, -50, 250, 100, 0., TMath::TwoPi(), 20, 0., 100.);
+        fHistManager.CreateTH3(histName, histtitle, 60, -50, 250, 144, 0., TMath::TwoPi(), 20, 0., 100.);
         histName = TString::Format("%s/hJetCorrPtVsEP3AngleVsCent", InclusiveGroupName.Data());
         histtitle = TString::Format("%s;#it{p}_{T,jet}^{corr} [GeV/#it{c}];#phi^{jet}-#Psi_{EP, 3} [rad];Centrality ", histName.Data());
-        fHistManager.CreateTH3(histName, histtitle, 60, -50, 250, 100, 0., TMath::TwoPi(), 20, 0., 100.);
+        fHistManager.CreateTH3(histName, histtitle, 60, -50, 250, 144, 0., TMath::TwoPi(), 20, 0., 100.);
         // fHistManager.CreateTH3(histName, histtitle, 60, -50, 250, 100, 0., TMath::TwoPi()*2/3, 20, 0., 100.);
         histName = TString::Format("%s/hLocalRhoAVsEP3AngleVsCent", InclusiveGroupName.Data());
         histtitle = TString::Format("%s;#it{#rho}_{ch} (#it{#phi}) [GeV/#it{c}/ (m^{2})];#phi^{jet}-#Psi_{EP, 3} [rad];Centrality ", histName.Data());
-        fHistManager.CreateTH3(histName, histtitle, 125, -20, 230, 100, 0., TMath::TwoPi(), 20, 0., 100.);
+        fHistManager.CreateTH3(histName, histtitle, 125, -20, 230, 144, 0., TMath::TwoPi(), 20, 0., 100.);
     }
 }
 
