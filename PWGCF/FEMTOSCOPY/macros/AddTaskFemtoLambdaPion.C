@@ -36,13 +36,13 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
   }
 
   //========= Init subtasks and start analysis ============================
-  // Event Cuts
+  // Event Cuts 
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
 
   if (sTsuffix == "1")
   {
-    evtCuts->SetSphericityCuts(0.7, 1);
+    evtCuts->SetSphericityCuts(0.7,1);
   }
 
   // Lambda Cuts
