@@ -131,8 +131,8 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
        configNames[i].Data());
       break;
     case 7:
-      // MAPfileNames[i] = "/home/maxim/Documents/Work/SPC/MAP_comparison/PhiWeights_LHC18q_Rebin3_default.root";
-      MAPfileNames[i] = "/home/maxim/Documents/Work/SPC/3Dhisto/PhiWeights_18q.root";
+      // Used for local corrections
+      MAPfileNames[i] = "/home/maxim/Documents/Work/SPC/3Dhisto/PhiWeights_local.root";
       break;
     default:
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
