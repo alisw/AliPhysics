@@ -1335,11 +1335,10 @@ void AliAnalysisTaskEffK0s::UserExec(Option_t *)
     fCutsK0s->Fill(cutK0s++);
 
 
-    fDCAtoPrimVtx = 0.4;
+   /* fDCAtoPrimVtx = 0.4;
     if(aodv0->DcaV0ToPrimVertex() > fDCAtoPrimVtx) continue;
     fCutsK0s->Fill(cutK0s++);
-
-
+   */
     if(aodv0->DecayLength(fV1K0s) > 20) continue;
     fCutsK0s->Fill(cutK0s++);
 
@@ -1381,7 +1380,7 @@ void AliAnalysisTaskEffK0s::UserExec(Option_t *)
 
     // fMassInvK0sPass->Fill(aodv0->MassK0Short());
     // fPtK0s->Fill(aodv0->Pt());
-	  // fEtaK0s->Fill(TMath::Abs(aodv0->Eta())); 
+    // fEtaK0s->Fill(TMath::Abs(aodv0->Eta())); 
     
     double nSigmaTPCPiPos = fAODpidUtil->NumberOfSigmasTPC(trackpos,AliPID::kPion);
     double nSigmaTPCPiNeg = fAODpidUtil->NumberOfSigmasTPC(trackneg,AliPID::kPion);
@@ -1400,7 +1399,7 @@ void AliAnalysisTaskEffK0s::UserExec(Option_t *)
 
     double nSigmaTOFPiPos = 0;
     double nSigmaTOFPiNeg = 0;
-
+/*
     if(((trackpos->GetStatus() & AliVTrack::kTOFout) == AliVTrack::kTOFout) && ((trackpos->GetStatus() & AliVTrack::kTIME) == AliVTrack::kTIME))
   	{
   	  probMisPos = fAODpidUtil->GetTOFMismatchProbability(trackpos);
@@ -1438,13 +1437,13 @@ void AliAnalysisTaskEffK0s::UserExec(Option_t *)
 	      nSigmaTOFPiNeg = fAODpidUtil->NumberOfSigmasTOF(trackneg, AliPID::kPion);
 
 	    }
-	  }
+	  }*/
 
     bool isPionNsigmaPos = 0;
     bool isPionNsigmaNeg = 0;
 
-    isPionNsigmaPos = IsPionNSigmaV0TPC5AM(trackpos->Pt(),nSigmaTPCPiPos,nSigmaTOFPiPos);
-    isPionNsigmaNeg = IsPionNSigmaV0TPC5AM(trackneg->Pt(),nSigmaTPCPiNeg,nSigmaTOFPiNeg);
+    isPionNsigmaPos = IsPionNSigmaV0TPC5AM(trackpos->Pt(),nSigmaTPCPiPos,0);
+    isPionNsigmaNeg = IsPionNSigmaV0TPC5AM(trackneg->Pt(),nSigmaTPCPiNeg,0);
 
     bool K0s = false;
 
@@ -1456,9 +1455,10 @@ void AliAnalysisTaskEffK0s::UserExec(Option_t *)
 	// fCutsK0s->Fill(cutK0s++);
       //if(trackneg->Pt() < 0.15 || trackneg->Pt() > 10) continue; //pion minus
       //fCutsK0s->Fill(cutK0s++);
+    //  if(aodv0->MassK0Short() < 0.48 || aodv0->MassK0Short() > 0.515) continue;
       fMassInvK0s->Fill(aodv0->MassK0Short());
-      if(aodv0->MassK0Short() < 0.48 || aodv0->MassK0Short() > 0.515) continue;
-      if(aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
+
+     // if(aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
         fCutsK0s->Fill(cutK0s++);
         fMassInvK0sPass->Fill(aodv0->MassK0Short());
         fPtK0s->Fill(aodv0->Pt());
@@ -1467,7 +1467,7 @@ void AliAnalysisTaskEffK0s::UserExec(Option_t *)
         fAllVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1K0s),aodv0->Pt());
         fAllVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	K0s = true;
-      }
+     // }
 
     //********* PID - K0s ********
    
@@ -1487,71 +1487,65 @@ void AliAnalysisTaskEffK0s::UserExec(Option_t *)
     Int_t motherPos = MCtrkPos->GetMother();
     Int_t motherNeg = MCtrkNeg->GetMother();
 
-    if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
+   // if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
       //********* PID - K0ss, ********
       if(K0s){
         int charge = 0;
         fOriginK0ss[0][0]->Fill(MCtrkPos->GetPdgCode(), aodv0->Pt());
         fOriginK0ss[1][0]->Fill(MCtrkNeg->GetPdgCode(), aodv0->Pt());
       }
-    }
+    //}
 
     if(MCtrkPos->IsPhysicalPrimary() || MCtrkNeg->IsPhysicalPrimary())
      continue;
 
-    if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
+    //if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
       if(K0s){
       fHistQAK0ss[0]->Fill(2,aodv0->Pt());
       fOriginK0ss[2][0]->Fill(((AliAODMCParticle*)arrayMC->At(motherPos))->GetPdgCode(), aodv0->Pt());
       fOriginK0ss[3][0]->Fill(((AliAODMCParticle*)arrayMC->At(motherNeg))->GetPdgCode(), aodv0->Pt());
     }
-   }
+  // }
      
     if(motherPos != motherNeg) continue;
- 
-    if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-      if(K0s)
-	    fHistQAK0ss[0]->Fill(3,aodv0->Pt());
-    }
-
+    fHistQAK0ss[0]->Fill(3,aodv0->Pt());
+    
     AliAODMCParticle *MCtrkMother = (AliAODMCParticle*)arrayMC->At(motherPos);
     if(!MCtrkMother) continue;
-
-    if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	if(K0s) fHistQAK0ss[0]->Fill(4,aodv0->Pt());
-    }
+    fHistQAK0ss[0]->Fill(4,aodv0->Pt());
+    
 
     int pdgMother = MCtrkMother->GetPdgCode();
     if (MCtrkMother->IsPhysicalPrimary() && K0s && pdgMother==310){
 	    fPrimVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
-	    if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
+	    //if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
 	      fPrimVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1K0s),aodv0->Pt()); 
 	      fPrimVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	    }
-	  }
+	 // }
       
     else if(MCtrkMother->IsSecondaryFromWeakDecay() && K0s && pdgMother==310){
 	    fSecWeakVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
-	    if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
+	 //   if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
 	      fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1K0s),aodv0->Pt()); 
 	      fSecWeakVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	    }
-	  }
+	 // }
      
     else if(MCtrkMother->IsSecondaryFromMaterial() && K0s && pdgMother==310){
 	    fSecMatVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
-	    if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
+	  //  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
 	      fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1K0s),aodv0->Pt()); 
 	      fSecMatVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	    }
-	  }
+	//  }
      
     else if(K0s){
 	    fFakeVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
-      if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
+      //if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
 	      fFakeVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1K0s),aodv0->Pt()); 
 	      fFakeVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
-	    }
+	 //   }
   	}
      
     //if( aodv0->DcaV0ToPrimVertex() > fDCAtoPrimVtx) continue; // we do not longer need full DCA V0 to prim vertex sample
