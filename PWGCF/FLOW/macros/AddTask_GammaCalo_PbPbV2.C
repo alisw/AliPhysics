@@ -236,8 +236,8 @@ void AddTask_GammaCalo_PbPbV2(
     TGrid::Connect("alien://");
   if (v0calibOn)
   {
-    //   fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC15o/VZEROCalibFile15o.root", "READ");
-    fVZEROCalibFile = TFile::Open("./VZEROCalibFile15o.root", "READ");
+    fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC15o/VZEROCalibFile15o.root", "READ");
+    // fVZEROCalibFile = TFile::Open("./VZEROCalibFile15o.root", "READ");
     fVZEROCalibList = dynamic_cast<TList *>(fVZEROCalibFile->Get("VZEROCalibList"));
     if (fVZEROCalibList)
     {
