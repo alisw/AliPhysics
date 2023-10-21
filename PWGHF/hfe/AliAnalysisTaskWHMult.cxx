@@ -39,11 +39,11 @@
 #include "TRandom.h"
 #include "TGrid.h"
 
-class AliAnalysisTaskWHMult;    // your analysis class
+class AliAnalysisTaskWHMult;	// your analysis class
 
-using namespace std;            // std namespace: so you can do things like 'cout'
+using namespace std;		// std namespace: so you can do things like 'cout'
 
-ClassImp(AliAnalysisTaskWHMult) // classimp: necessary for root
+ClassImp(AliAnalysisTaskWHMult)	// classimp: necessary for root
 
 AliAnalysisTaskWHMult::AliAnalysisTaskWHMult() : AliAnalysisTaskSE(), 
   fAOD(0),
@@ -568,7 +568,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
     Double_t clustLongE = -1;				//M02
     Double_t EoverP = -1;				//E/p
     Double_t fTPCnSigma = 1000;				//nsigma
-    Double_t Eiso[3] = {-1,-1,-1};			//isolation energy
+    Double_t Eiso[3] = {0,0,0};				//isolation energy
 
     ////////////////////////
     // Get MC information //
