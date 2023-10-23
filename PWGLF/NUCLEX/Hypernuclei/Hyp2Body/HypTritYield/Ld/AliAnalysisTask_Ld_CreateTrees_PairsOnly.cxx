@@ -1338,7 +1338,8 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
 
     // apply Lambda cuts
     double MassInvariant = CalculateInvariantMassLambda(ProtonMomentumPropagated,AntiPionMomentumPropagated,true);
-    bool PassedLambdaCuts = CheckLambdaCuts(*v0,PrimaryVertexPos,*fPIDResponse,true,RunNumber,MassInvariant);
+    double WrongMassInvariant = CalculateInvariantMassLambda(AntiPionMomentumPropagated,ProtonMomentumPropagated,true);
+    bool PassedLambdaCuts = CheckLambdaCuts(*v0,PrimaryVertexPos,*fPIDResponse,true,RunNumber,MassInvariant,WrongMassInvariant);
     if(!PassedLambdaCuts) continue;
 
 
@@ -2434,7 +2435,8 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
 
     // apply AntiLambda cuts
     double MassInvariant = CalculateInvariantMassLambda(PionMomentumPropagated,AntiProtonMomentumPropagated,false);
-    bool PassedLambdaCuts = CheckLambdaCuts(*v0,PrimaryVertexPos,*fPIDResponse,false,RunNumber,MassInvariant);
+    double WrongMassInvariant = CalculateInvariantMassLambda(AntiProtonMomentumPropagated,PionMomentumPropagated,false);
+    bool PassedLambdaCuts = CheckLambdaCuts(*v0,PrimaryVertexPos,*fPIDResponse,false,RunNumber,MassInvariant,WrongMassInvariant);
     if(!PassedLambdaCuts) continue;
 
 
@@ -4487,7 +4489,7 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
 
 
 
-bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckLambdaCuts(AliAODv0 &v0, double PrimaryVertexPos[3], AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, double MassInvariant)
+bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckLambdaCuts(AliAODv0 &v0, double PrimaryVertexPos[3], AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, double MassInvariant, double WrongMassInvariant)
 {
 
   bool PassedParticleCuts = false;
@@ -4500,7 +4502,7 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckLambdaCuts(AliAODv0 &v0, dou
   double DecayRadius_max = 100.0; // cm
   double LambdaMassVariation_max = 0.01; // GeV/c²
   double DCAv0ToPrimaryVertex_max = 1.5; // cm
-  double CosinePointingAngle_min = 0.994;
+  double CosinePointingAngle_min = 0.997;
 
   bool UseReconstructionOnTheFly = true;
 
@@ -4557,6 +4559,7 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckLambdaCuts(AliAODv0 &v0, dou
   if(fUseOpenCuts == true){
 
     if(MassInvariant < 1.07 || MassInvariant > 1.17) return PassedParticleCuts;
+    if(WrongMassInvariant < 1.4) return PassedParticleCuts;
 
   }
 
@@ -4564,6 +4567,7 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckLambdaCuts(AliAODv0 &v0, dou
 
     const double LambdaMassPDG = 1.115683; // GeV/c²
     if(MassInvariant < (LambdaMassPDG-LambdaMassVariation_max) || MassInvariant > (LambdaMassPDG+LambdaMassVariation_max)) return PassedParticleCuts;
+    if(WrongMassInvariant < 1.4) return PassedParticleCuts;
 
   }
  
