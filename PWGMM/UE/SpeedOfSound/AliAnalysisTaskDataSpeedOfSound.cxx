@@ -102,6 +102,7 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       fEventCuts(0x0),
       fMCStack(0),
       fMC(0),
+      fUseZDC(false),
       fUseMC(kFALSE),
       fIsTPConly(kTRUE),
       fTrigger(AliVEvent::kCentral),
@@ -142,7 +143,16 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       hTrueNchHM(0),
       hTrueNchHMWithTrigger(0),
       hTrueNchHMWithEventCuts(0),
-      hTrueNchHMWithVtxSel(0) {
+      hTrueNchHMWithVtxSel(0),
+      fZDCN(0),
+      fZDCP(0),
+      fZDCEM(0),
+      fZDCNvsNch(0),
+      fZDCPvsNch(0),
+      hPtvsNchvsZDCN(0),
+      hPtvsNchvsZDCP(0),
+      hZDCNvsPart(0),
+      hZDCPvsPart(0) {
   for (int i = 0; i < v0m_Nbins; ++i) {
     hDCAxyPri[i] = 0;
     hDCAxyWeDe[i] = 0;
@@ -158,6 +168,7 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       fEventCuts(0x0),
       fMCStack(0),
       fMC(0),
+      fUseZDC(false),
       fUseMC(kFALSE),
       fIsTPConly(kTRUE),
       fTrigger(AliVEvent::kCentral),
@@ -198,7 +209,16 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       hTrueNchHM(0),
       hTrueNchHMWithTrigger(0),
       hTrueNchHMWithEventCuts(0),
-      hTrueNchHMWithVtxSel(0) {
+      hTrueNchHMWithVtxSel(0),
+      fZDCN(0),
+      fZDCP(0),
+      fZDCEM(0),
+      fZDCNvsNch(0),
+      fZDCPvsNch(0),
+      hPtvsNchvsZDCN(0),
+      hPtvsNchvsZDCP(0),
+      hZDCNvsPart(0),
+      hZDCPvsPart(0) {
   for (int i = 0; i < v0m_Nbins; ++i) {
     // pPtvsNch[i] = 0;
     // pPtvsV0MAmp[i] = 0;
@@ -359,9 +379,71 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
                              v0mAmp_Nbins, v0mAmp_bins);
 
   hPtvsNchvsV0MAmp = new TH3D(
-      "hPtvsNchvsV0MAmp_%s",
-      ";V0M Amp; #it{N}_{ch}^{rec}; #it{p}_{T} GeV/#it{c}", v0mAmp_Nbins,
-      v0mAmp_bins, nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+      "hPtvsNchvsV0MAmp", ";V0M Amp; #it{N}_{ch}^{rec}; #it{p}_{T} GeV/#it{c}",
+      v0mAmp_Nbins, v0mAmp_bins, nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+
+  const int zdcN_Nbins{500};
+  double zdcN_bins[zdcN_Nbins + 1] = {0.0};
+  for (int i = 0; i <= zdcN_Nbins; ++i) {
+    zdcN_bins[i] = 0.4 * i;
+  }
+
+  const int zdcN_sumNbins{1000};
+  double zdcN_sumbins[zdcN_sumNbins + 1] = {0.0};
+  for (int i = 0; i <= zdcN_sumNbins; ++i) {
+    zdcN_sumbins[i] = 0.4 * i;
+  }
+
+  const int zdcP_Nbins{250};
+  double zdcP_bins[zdcP_Nbins + 1] = {0.0};
+  for (int i = 0; i <= zdcP_Nbins; ++i) {
+    zdcP_bins[i] = 0.4 * i;
+  }
+
+  const int zdcP_sumNbins{500};
+  double zdcP_sumbins[zdcP_sumNbins + 1] = {0.0};
+  for (int i = 0; i <= zdcP_sumNbins; ++i) {
+    zdcP_sumbins[i] = 0.4 * i;
+  }
+
+  const int part_Nbins{420};
+  double part_bins[part_Nbins + 1] = {0.0};
+  for (int i = 0; i <= part_Nbins; ++i) {
+    part_bins[i] = -0.5 + i;
+  }
+
+  fZDCN = new TH2D("fZDCN", ";ZNC signal; ZNA Signal", zdcN_Nbins, zdcN_bins,
+                   zdcN_Nbins, zdcN_bins);
+  fZDCP = new TH2D("fZDCP", ";ZPC signal; ZPA Signal", zdcP_Nbins, zdcP_bins,
+                   zdcP_Nbins, zdcP_bins);
+  fZDCEM = new TH2D("fZDCEM", ";ZEM1 signal; ZEM2 signal", 200, 0, 1400, 200, 0,
+                    1400);
+  fZDCNvsNch = new TH2D("fZDCNvsNch", ";ZN signal; #it{N}_{ch}(|#eta|<0.8)",
+                        zdcN_sumNbins, zdcN_sumbins, nch_Nbins, nch_bins);
+  fZDCPvsNch = new TH2D("fZDCPvsNch", ";ZP signal; #it{N}_{ch}(|#eta|<0.8)",
+                        zdcP_sumNbins, zdcP_sumbins, nch_Nbins, nch_bins);
+  hPtvsNchvsZDCN = new TH3D(
+      "hPtvsNchvsZDCN", ";ZN signal; #it{N}_{ch}^{rec}; #it{p}_{T} GeV/#it{c}",
+      zdcN_sumNbins, zdcN_sumbins, nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+  hPtvsNchvsZDCP = new TH3D(
+      "hPtvsNchvsZDCP", ";ZP signal; #it{N}_{ch}^{rec}; #it{p}_{T} GeV/#it{c}",
+      zdcN_sumNbins, zdcN_sumbins, nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+  hZDCNvsPart = new TH2D("hZDCNvsPart", ";ZN signal; #it{N}_{part}",
+                         zdcN_sumNbins, zdcN_sumbins, part_Nbins, part_bins);
+  hZDCPvsPart = new TH2D("hZDCPvsPart", ";ZN signal; #it{N}_{part}",
+                         zdcP_sumNbins, zdcP_sumbins, part_Nbins, part_bins);
+
+  if (fUseZDC) {
+    fOutputList->Add(fZDCN);
+    fOutputList->Add(fZDCP);
+    fOutputList->Add(fZDCEM);
+    fOutputList->Add(fZDCNvsNch);
+    fOutputList->Add(fZDCPvsNch);
+    fOutputList->Add(hPtvsNchvsZDCN);
+    fOutputList->Add(hPtvsNchvsZDCP);
+    fOutputList->Add(hZDCNvsPart);
+    fOutputList->Add(hZDCPvsPart);
+  }
 
   if (!fUseMC) {
     fOutputList->Add(hNchvsV0M);
@@ -632,6 +714,9 @@ void AliAnalysisTaskDataSpeedOfSound::UserExec(Option_t*) {
 
   //! Data Multiplicity distributions
   MultiplicityDistributions(rec_nch, vec_rec_pt);
+  if (fUseZDC) {
+    ZDC(rec_nch, vec_rec_pt);
+  }
   if (fUseMC && isGoodVtxPosMC) {
     if (!fill_corrections) {
       RecMultiplicityDistributions(rec_nch, vec_rec_pt);
@@ -643,8 +728,41 @@ void AliAnalysisTaskDataSpeedOfSound::UserExec(Option_t*) {
 
   PostData(1, fOutputList);
 }
+
 //______________________________________________________________________________
+
 void AliAnalysisTaskDataSpeedOfSound::Terminate(Option_t*) {}
+
+//______________________________________________________________________________
+void AliAnalysisTaskDataSpeedOfSound::ZDC(
+    const int& rec_nch, const std::vector<float>& vec_rec_pt) const {
+  AliESDZDC* esdZDC = fESD->GetESDZDC();
+  if (!esdZDC) {
+    return;
+  }
+
+  double zdcn{0.0};
+  double zdcp{0.0};
+  int part{0};
+  zdcn = esdZDC->GetZDCN1Energy() + esdZDC->GetZDCN2Energy();
+  zdcp = esdZDC->GetZDCP1Energy() + esdZDC->GetZDCP2Energy();
+  part = esdZDC->GetZDCParticipants();
+
+  fZDCN->Fill(esdZDC->GetZDCN1Energy(), esdZDC->GetZDCN2Energy());
+  fZDCP->Fill(esdZDC->GetZDCP1Energy(), esdZDC->GetZDCP2Energy());
+  fZDCEM->Fill(esdZDC->GetZDCEMEnergy(0), esdZDC->GetZDCEMEnergy(1));
+  hZDCNvsPart->Fill(zdcn, part);
+  hZDCPvsPart->Fill(zdcp, part);
+  fZDCNvsNch->Fill(zdcn, rec_nch);
+  fZDCPvsNch->Fill(zdcp, rec_nch);
+
+  for (auto pt : vec_rec_pt) {
+    hPtvsNchvsZDCN->Fill(zdcn, rec_nch, pt);
+    hPtvsNchvsZDCP->Fill(zdcp, rec_nch, pt);
+  }
+}
+
+//______________________________________________________________________________
 
 void AliAnalysisTaskDataSpeedOfSound::GetCalibratedV0Amplitude() {
   float mV0M{0.0};
