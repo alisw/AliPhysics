@@ -20,8 +20,9 @@ class AliAODTrack;
 class AliAnalysisTaskLambdaPion : public AliAnalysisTaskSE
 {
 public:
+  enum PCSettings {NoPC, OldPC, NewPC};
   AliAnalysisTaskLambdaPion();
-  AliAnalysisTaskLambdaPion(const char *name, bool isMC, bool isNewPC);
+  AliAnalysisTaskLambdaPion(const char *name, bool isMC, PCSettings pcsettings);
   virtual ~AliAnalysisTaskLambdaPion();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
@@ -57,7 +58,7 @@ private:
   void StoreGlobalTrackReference(AliAODTrack *track);
   bool fIsMC;                             //
   bool fUseOMixing;                       //
-  bool fIsNewPC;                          //
+  PCSettings fPCSettings;                 //
   UInt_t fTrigger;                        //
   TList *fResults;                        //!
   TList *fResultsQA;                      //!
@@ -92,4 +93,4 @@ private:
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKLAMBDAPION_H_ */
 
 
-// CHANGING NAME KAON -> PION DONE
+// CHANGING KAON -> PION DONE
