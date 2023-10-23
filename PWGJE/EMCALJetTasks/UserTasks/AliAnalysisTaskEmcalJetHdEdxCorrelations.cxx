@@ -212,6 +212,7 @@ namespace PWGJE
     }
 
     void AliAnalysisTaskEmcalJetHdEdxCorrelations::CreateHistograms(){
+
       fHistJetHTrackPt = new TH1F("fHistJetHTrackPt", "P_{T} distribution", 1000, 0.0, 100.0);
       fHistEPAngle = new TH1F("fHistEPAngle", "#Psi_{2} distribution for 2018 calib", 100, -TMath::Pi(), 3. * TMath::Pi());
       fHistJetEtaPhi = new TH2F("fHistJetEtaPhi", "Jet eta-phi", 900, -1.8, 1.8, 720, -3.2, 3.2);
@@ -291,7 +292,6 @@ namespace PWGJE
     };
 
     void AliAnalysisTaskEmcalJetHdEdxCorrelations::CreateSparses(){
-
       // NOTE: The bit encoding doesn't preserve the order defined here. It's
       //       just using the bit values.
       UInt_t jetHadronAxesBitCode = 0; // bit coded, see GetDimParams() below
@@ -549,9 +549,9 @@ namespace PWGJE
       return eventTrigger;
     }
 
-    void AliAnalysisTaskEmcalJetHdEdxCorrelation::MixEvents(AliJetContainer* jets, Int_t current_event_multiplicity, Double_t zVertex, UInt_t eventTrigger, Double_t flattened_EP_angle)
+    Bool_t AliAnalysisTaskEmcalJetHdEdxCorrelations::MixEvents(AliJetContainer *jets, std::vector<unsigned int> rejectedTrackIndices, Int_t current_event_multiplicity, Double_t zVertex, UInt_t eventTrigger, Double_t flattened_EP_angle)
     {
-
+        
       // event mixing
 
       // 1. First get an event pool corresponding in mult (cent) and
@@ -574,7 +574,17 @@ namespace PWGJE
       Double_t deltaEta = 0;
       Double_t deltaR = 0;
       Double_t epAngle = 0;
-      AliTLorentzVector track = AliTLorentzVector(0, 0, 0, 0);
+      Double_t eventActivity = 0;
+      Double_t jetPt = 0;
+      Double_t efficiency = -999;
+      Bool_t leadJet = kFALSE;
+      Bool_t isBiasedJet = kFALSE;
+      AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
+      AliPIDResponse::EDetPidStatus TOFPIDstatus;
+      const AliAODTrack *bgTrack = new AliAODTrack();
+
+          bool useListOfRejectedIndices = false;
+      AliTLorentzVector bgTrackVec;
 
       AliEventPool *pool = 0;
       if (fBeamType == kAA || fBeamType == kpA)
@@ -655,18 +665,20 @@ namespace PWGJE
 
               for (Int_t ibg = 0; ibg < bgTracks->GetEntries(); ibg++)
               {
-                AliVTrack *bgTrack = static_cast<AliVTrack *>(bgTracks->At(ibg));
+                
+                bgTrack = dynamic_cast<const AliAODTrack *>(bgTracks->At(ibg));
                 if (!bgTrack)
                 {
-                  AliError(Form("%s:Failed to retrieve tracks from mixed events", GetName()));
+                  AliError(Form("%s:Failed to retrieve track from mixed events", GetName()));
+                  continue;
                 }
 
                 // NOTE: We don't need to apply the artificial track inefficiency here because we already applied
                 //       it when will filling into the event pool (in CloneAndReduceTrackList()).
                 Double_t hasTOFhit;
 
-                AliPIDResponse::EDetPidStatus status = pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, bgTrack);
-                if (status == AliPIDResponse::kDetPidOk)
+                TOFPIDstatus = pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, bgTrack);
+                if (TOFPIDstatus == AliPIDResponse::kDetPidOk)
                 {
                   hasTOFhit = 1;
                 }
@@ -676,22 +688,22 @@ namespace PWGJE
                 }
 
                 // Fill into TLorentzVector for use with functions below
-                track.Clear();
-                track.SetPtEtaPhiE(bgTrack->Pt(), bgTrack->Eta(), bgTrack->Phi(), 0);
+                bgTrackVec.Clear();
+                bgTrackVec.SetPtEtaPhiE(bgTrack->Pt(), bgTrack->Eta(), bgTrack->Phi(), 0);
 
                 // Calculate single particle tracking efficiency of mixed events for correlations
-                efficiency = EffCorrection(track.Eta(), track.Pt());
+                efficiency = EffCorrection(bgTrackVec.Eta(), bgTrackVec.Pt());
 
                 // Phi is [-0.5*TMath::Pi(), 3*TMath::Pi()/2.]
-                GetDeltaEtaDeltaPhiDeltaR(track, jet, deltaEta, deltaPhi, deltaR);
+                GetDeltaEtaDeltaPhiDeltaR(bgTrackVec, jet, deltaEta, deltaPhi, deltaR);
                 if (fBeamType != AliAnalysisTaskEmcal::kpp)
                 {
-                    double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, epAngle, zVertex, hasTOFhit};
+                    double triggerEntries[] = {eventActivity, jetPt, bgTrackVec.Pt(), deltaEta, deltaPhi, epAngle, zVertex, hasTOFhit};
                     FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
                 }
                 else
                 {
-                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, zVertex, hasTOFhit};
+                  double triggerEntries[] = {eventActivity, jetPt, bgTrackVec.Pt(), deltaEta, deltaPhi, zVertex, hasTOFhit};
                   FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
                 }
               }
@@ -699,7 +711,8 @@ namespace PWGJE
           }
         }
       }
-
+      TObjArray *tracksClone = 0;
+      
       // The two bitwise and to zero yet are still equal when both are 0, so we allow for that possibility
       if ((eventTrigger & fMixingEventType) || eventTrigger == fMixingEventType)
       {
@@ -708,6 +721,7 @@ namespace PWGJE
         // update pool if jet in event or not
         pool->UpdatePool(tracksClone);
       }
+      return kTRUE;
     }
 
     /**
@@ -759,8 +773,9 @@ namespace PWGJE
       Double_t epAngle = 0;
       // Event plane angle from V0C
       Double_t EP_angle_from_calib = 0;
-      // Event activity (centrality or multipilicity)
-      Double_t eventActivity = 0;
+      Double_t flattenedEPangle = 0;
+          // Event activity (centrality or multipilicity)
+          Double_t eventActivity = 0;
       // Efficiency correction
       Double_t efficiency = -999;
       // For comparison to the current jet
@@ -797,7 +812,7 @@ namespace PWGJE
         // and applying them to the EP angle
         // The formula for the correction to the n=2 event plane is:
         // EP_angle_corrected = EP_angle + 1/2*(2*(-sin_average)*cos(2*EP_angle) + 2*(cos_average)*sin(2*EP_angle)+(-sin_average)*cos(4*EP_angle)+(-cos_average)*sin(4*EP_angle))
-        Double_t flattenedEPangle = GetFlattenedEPAngle(EP_angle_from_calib);
+        flattenedEPangle = GetFlattenedEPAngle(EP_angle_from_calib);
         fHistEPAngle->Fill(flattenedEPangle);
       }
 
@@ -984,12 +999,10 @@ namespace PWGJE
       }
         // Prepare to do event mixing
 
-        // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
-        TObjArray *tracksClone = 0;
 
         if (fDoEventMixing == kTRUE)
         {
-          MixEvents(jets, tracks->GetNTracks(), zVertex, eventTrigger, flattenedEPangle);
+          MixEvents(jets, rejectedTrackIndices, tracks->GetNTracks(), zVertex, eventTrigger, flattenedEPangle);
         } // end of event mixing
 
         return kTRUE;
@@ -1375,7 +1388,7 @@ namespace PWGJE
       tracksClone->SetOwner(kTRUE);
 
       // Loop over all tracks
-      AliVParticle *particle = 0;
+      AliVTrack *particle;
       // AliBasicParticle *clone = 0;
       AliTrackContainer *tracks = GetTrackContainer("tracksForCorrelations");
 
@@ -1383,7 +1396,11 @@ namespace PWGJE
       for (auto particleIter = particlesIter.begin(); particleIter != particlesIter.end(); particleIter++)
       {
         // Retrieve the particle
-        particle = particleIter->second;
+        particle = dynamic_cast<AliVTrack *>(particleIter->second);
+        if(!particle){
+          AliDebugStream(4) << "Could not retrieve associated track from particleIter, skipping track.\n";
+          continue;
+        }
 
         // Artificial inefficiency
         bool rejectParticle = CheckArtificialTrackEfficiency(particleIter.current_index(), rejectedTrackIndices, useRejectedList);
