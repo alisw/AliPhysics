@@ -427,7 +427,7 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
       zdcN_sumNbins, zdcN_sumbins, nch_Nbins, nch_bins, pt_Nbins, pt_bins);
   hPtvsNchvsZDCP = new TH3D(
       "hPtvsNchvsZDCP", ";ZP signal; #it{N}_{ch}^{rec}; #it{p}_{T} GeV/#it{c}",
-      zdcN_sumNbins, zdcN_sumbins, nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+      zdcP_sumNbins, zdcP_sumbins, nch_Nbins, nch_bins, pt_Nbins, pt_bins);
   hZDCNvsPart = new TH2D("hZDCNvsPart", ";ZN signal; #it{N}_{part}",
                          zdcN_sumNbins, zdcN_sumbins, part_Nbins, part_bins);
   hZDCPvsPart = new TH2D("hZDCPvsPart", ";ZN signal; #it{N}_{part}",
