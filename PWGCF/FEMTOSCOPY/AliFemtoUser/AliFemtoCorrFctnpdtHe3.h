@@ -197,7 +197,10 @@ int nbinsmT,float lowmT,float upmT
 	int IsSameParticlePair;
 	TH2F *KStarVspT_P1Hist;
 	TH2F *KStarVspT_P2Hist;
+	TH2F *KStarVspT_P1Hist_Dum;
+	TH2F *KStarVspT_P2Hist_Dum;
 
+	
 	int fUse3DkTvsKStarvsmT;
 	TH3F *fNum3DkTvsKStarvsmT;
 	TH3F *fDum3DkTvsKStarvsmT;
