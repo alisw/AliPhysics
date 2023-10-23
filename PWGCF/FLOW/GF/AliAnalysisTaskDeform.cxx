@@ -57,6 +57,8 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fUseOldPileup(kFALSE),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
+  fGenerator(GENERATOR::kAMPT),
+  generatorMap{{GENERATOR::kAMPT,"AMPT"},{GENERATOR::kHIJING,"HIJING"}},
   fMCEvent(0),
   fUseRecoNchForMC(kFALSE),
   fRndm(0),
@@ -176,6 +178,8 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fUseOldPileup(kFALSE),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
+  fGenerator(GENERATOR::kAMPT),
+  generatorMap{{GENERATOR::kAMPT,"AMPT"},{GENERATOR::kHIJING,"HIJING"}},
   fMCEvent(0),
   fUseRecoNchForMC(kFALSE),
   fRndm(0),
@@ -416,11 +420,18 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
     if(fOnTheFly)
     {
       printf("Creating OTF objects\n");
-      if(centralitymap.empty()) {
+      printf("Generator is %s\n",generatorMap.find(fGenerator)->second);
+      if(centralitymap.empty() && fGenerator == GENERATOR::kAMPT) {
         vector<double> b = {0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,13.50,14.51,100.0};
         vector<double> cent = {0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,100.0};
         for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i];
       }
+      if(centralitymapHJ.empty() && fGenerator == GENERATOR::kHIJING) {
+        vector<double> b = {0.0,1.60,2.27,2.79,3.22,3.60,5.09,7.20,8.83,10.20,11.40,12.49,13.49,14.44,15.46,100.0};
+        vector<double> cent = {0.0,1.0,2.0,3.0,4.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0};
+        for(size_t i(0); i<b.size(); ++i) centralitymapHJ[b[i]]=cent[i];
+      }
+
       fIP = new TH1D("fIP","Impact parameter",1000,0.0,30.0);
       printf("OTF objects created\n");
     }
@@ -747,6 +758,26 @@ double AliAnalysisTaskDeform::getAMPTCentrality()
   double l_cent = (fImpactParameterMC<0)?-1.0:(centralitymap[b[it-b.begin()]]+centralitymap[b[it-b.begin()-1]])/2.0;
   return l_cent;
 }
+double AliAnalysisTaskDeform::getHIJINGCentrality()
+{
+  vector<double> b;
+  if(centralitymapHJ.empty()) AliFatal("Centralitymap is empty!");
+  for (auto const& element : centralitymapHJ) b.push_back(element.first);
+  vector<double>::iterator it = upper_bound(b.begin(),b.end(),fImpactParameterMC);
+  double l_cent = (fImpactParameterMC<0)?-1.0:(centralitymapHJ[b[it-b.begin()]]+centralitymapHJ[b[it-b.begin()-1]])/2.0;
+  return l_cent;
+}
+double AliAnalysisTaskDeform::getGeneratorCentrality(){
+  switch(fGenerator) {
+    case GENERATOR::kAMPT:
+      return getAMPTCentrality();
+    case GENERATOR::kHIJING:
+      return getHIJINGCentrality();
+    default:
+      return getAMPTCentrality();
+  }
+}
+
 Bool_t AliAnalysisTaskDeform::IsPileupEvent(AliAODEvent* ev, double centrality){
   // Check for additional pile-up rejection in Run 2 Pb-Pb collisions (15o, 17n)
   // based on multiplicity correlations
