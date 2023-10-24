@@ -134,6 +134,10 @@ namespace PWGJE
       void SetNoMixedEventJESCorrection(Bool_t b) { fNoMixedEventJESCorrection = b; }
       Bool_t RetrieveAndInitializeJESCorrectionHist(TString filename, TString histName, Double_t trackBias = AliAnalysisTaskEmcalJetHdEdxCorrelations::kDisableBias, Double_t clusterBias = AliAnalysisTaskEmcalJetHdEdxCorrelations::kDisableBias);
 
+      void CreateHistograms();
+      void CreateSparses();
+      void CreateEventPool();
+      Bool_t MixEvents(AliJetContainer *jets, std::vector<unsigned int> rejectedTrackIndices, Int_t current_event_multiplicity, Double_t zVertex, UInt_t eventTrigger, Double_t flattened_EP_angle);
       virtual void UserCreateOutputObjects();
       Double_t GetFlattenedEPAngle(Double_t uncorrectedAngle);
 
