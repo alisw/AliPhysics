@@ -16,7 +16,7 @@ AliFemtoESDTrackCut()
     fNsigmaRejection = 3.;
     
     SwitchMom_p = 0.5;
-    SwitchMom_d = 0.8;
+    SwitchMom_d = 1.3;
     SwitchMom_t = 999;
     SwitchMom_He3 = 999;
     SwitchMom_Pi = 0.5;
@@ -57,6 +57,8 @@ AliFemtoESDTrackCut()
     MaxPtotal = 100.;
     pionrejectcut = 2.;
 
+    d_TPCCut = 2.;
+    d_TOFCut = 2.;
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -108,9 +110,12 @@ AliFemtoESDTrackCut(aCut)
     wiolaCrossCheck = aCut.wiolaCrossCheck;
     
     fUsePtotalCut = aCut.fUsePtotalCut;
-       MinPtotal = aCut.MinPtotal;
+    MinPtotal = aCut.MinPtotal;
     MaxPtotal = aCut.MaxPtotal;
-  pionrejectcut = aCut.pionrejectcut; 
+    pionrejectcut = aCut.pionrejectcut; 
+    d_TPCCut = aCut.d_TPCCut;
+    d_TOFCut = aCut.d_TOFCut;
+
 }
 
 AliFemtoTrackCutPdtHe3::~AliFemtoTrackCutPdtHe3()
@@ -169,9 +174,12 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
 
     wiolaCrossCheck = aCut.wiolaCrossCheck;
     fUsePtotalCut = aCut.fUsePtotalCut;
-MinPtotal = MinPtotal;
-MaxPtotal = MaxPtotal;
-pionrejectcut = aCut.pionrejectcut;
+    MinPtotal = MinPtotal;
+    MaxPtotal = MaxPtotal;
+    pionrejectcut = aCut.pionrejectcut;
+    d_TPCCut = aCut.d_TPCCut;
+    d_TOFCut = aCut.d_TOFCut;
+
     return *this;
 }
 
@@ -1012,11 +1020,11 @@ void AliFemtoTrackCutPdtHe3::SetwiolaCrossCheck(int aUse){
 }
 bool AliFemtoTrackCutPdtHe3::WiolaDCut(float mom, float nsigmaTPCD, float nsigmaTOFD){
 
-	if(mom < 1.3){
-		if(abs(nsigmaTPCD) < 2)	return true;
+	if(mom < SwitchMom_d){
+		if(abs(nsigmaTPCD) < d_TPCCut)	return true;
 	}
 	else{
-		if((abs(nsigmaTPCD) < 2) && (abs(nsigmaTOFD) < 2)) return true;
+		if((abs(nsigmaTPCD) < d_TPCCut) && (abs(nsigmaTOFD) < d_TOFCut)) return true;
 	}
 	return false;
 }
@@ -1039,4 +1047,9 @@ void AliFemtoTrackCutPdtHe3::SetPtotalRange(float aMin,float aMax){
 }
 void AliFemtoTrackCutPdtHe3::Setpionrejectcut(float aRejectCut){
 pionrejectcut = aRejectCut;
+}
+void AliFemtoTrackCutPdtHe3::SetPIDdNSigmaTPCAndTOF(float aTPC,float aTOF){
+	d_TPCCut = aTPC;
+	d_TOFCut = aTOF;
+
 }
