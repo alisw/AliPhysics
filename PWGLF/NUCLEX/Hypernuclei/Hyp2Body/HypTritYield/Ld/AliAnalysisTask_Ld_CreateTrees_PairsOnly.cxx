@@ -1062,6 +1062,17 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
 
   } // end of fIsMC == true
 
+                                                                                                                                               
+  TF1 *FitPionDCAxy_min = new TF1("FitPionDCAxy_min","pol2",0.0,6.0);
+  FitPionDCAxy_min->FixParameter(0,0.0635603);
+  FitPionDCAxy_min->FixParameter(1,-0.0593139);
+  FitPionDCAxy_min->FixParameter(2,0.0171978);
+  
+  TF1 *FitPionDCAz_min = new TF1("FitPionDCAz_min","pol2",0.0,6.0);
+  FitPionDCAz_min->FixParameter(0,0.071036);
+  FitPionDCAz_min->FixParameter(1,-0.0441316);
+  FitPionDCAz_min->FixParameter(2,0.00701049);
+
 
 
 
@@ -1273,15 +1284,64 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     AliAODTrack *AntiPionTrack = dynamic_cast<AliAODTrack*>(v0->GetDaughter(1));
     if(!AntiPionTrack) continue;
 
-    // apply Lambda cuts
-    bool PassedLambdaCuts = CheckLambdaCuts(*v0,PrimaryVertexPos,*fPIDResponse,true,RunNumber);
-    if(!PassedLambdaCuts) continue;
-
     bool PassedProtonCuts = CheckProtonCuts(*ProtonTrack,*fPIDResponse,true,RunNumber);
     if(!PassedProtonCuts) continue;
 
-    bool PassedPionCuts = CheckPionCuts(*AntiPionTrack,*fPIDResponse,false,RunNumber);
+    double PionDCAxy_min = FitPionDCAxy_min->Eval(AntiPionTrack->Pt());
+    double PionDCAz_min = FitPionDCAz_min->Eval(AntiPionTrack->Pt());
+    bool PassedPionCuts = CheckPionCuts(*AntiPionTrack,*fPIDResponse,false,RunNumber,PionDCAxy_min,PionDCAz_min);
     if(!PassedPionCuts) continue;
+
+
+    AliAODVertex *DecayVertex = v0->GetSecondaryVtx();
+
+    AliExternalTrackParam *ProtonTrackParam = new AliExternalTrackParam();
+    ProtonTrackParam->CopyFromVTrack(ProtonTrack);
+    double Proton_DCA_new[2];
+    double Proton_CovarianceMatrix_new[3];
+    ProtonTrackParam->PropagateToDCA(DecayVertex,BField,10.0,Proton_DCA_new,Proton_CovarianceMatrix_new);
+    double ProtonMomentumPropagated[3];
+    ProtonTrackParam->GetPxPyPz(ProtonMomentumPropagated);
+
+    AliExternalTrackParam *AntiPionTrackParam = new AliExternalTrackParam();
+    AntiPionTrackParam->CopyFromVTrack(AntiPionTrack);
+    double AntiPion_DCA_new[2];
+    double AntiPion_CovarianceMatrix_new[3];
+    AntiPionTrackParam->PropagateToDCA(DecayVertex,BField,10.0,AntiPion_DCA_new,AntiPion_CovarianceMatrix_new);
+    double AntiPionMomentumPropagated[3];
+    AntiPionTrackParam->GetPxPyPz(AntiPionMomentumPropagated);
+
+
+    bool PrintDecayMomentaOnScreen = false;
+    if(PrintDecayMomentaOnScreen == true){
+
+      std::cout << "\nProtonTrack->Px() = " << ProtonTrack->Px() << "\t ProtonTrack->Py() = " << ProtonTrack->Py() << "\t ProtonTrack->Pz() = " << ProtonTrack->Pz() << std::endl;
+      std::cout << "v0->MomPosX() = " << v0->MomPosX() << "\t v0->MomPosY() = " << v0->MomPosY() << "\tv0->MomPosZ() = " << v0->MomPosZ() << std::endl;
+      std::cout << "px_prop = " << ProtonMomentumPropagated[0] << "\t\t py_prop = " << ProtonMomentumPropagated[1] << "\t\t pz_prop = " << ProtonMomentumPropagated[2] << std::endl;
+    std::cout << "AntiPionTrack->Px() = " << AntiPionTrack->Px() << "\t AntiPionTrack->Py() = " << AntiPionTrack->Py() << "\tAntiPionTrack->Pz() = " << AntiPionTrack->Pz() << std::endl;
+    std::cout << "v0->MomNegX() = " << v0->MomNegX() << "\t v0->MomNegY() = " << v0->MomNegY() << "\tv0->MomNegZ() = " << v0->MomNegZ() << std::endl;
+    std::cout << "px_prop = " << AntiPionMomentumPropagated[0] << "\t py_prop = " << AntiPionMomentumPropagated[1] << "\t pz_prop = " << AntiPionMomentumPropagated[2] << std::endl;
+
+    } // end of PrintDecayMomentaOnScreen
+
+
+    double MomentumDaughterPosX = ProtonMomentumPropagated[0];
+    double MomentumDaughterPosY = ProtonMomentumPropagated[1];
+    double MomentumDaughterPosZ = ProtonMomentumPropagated[2];
+    double MomentumDaughterNegX = AntiPionMomentumPropagated[0];
+    double MomentumDaughterNegY = AntiPionMomentumPropagated[1];
+    double MomentumDaughterNegZ = AntiPionMomentumPropagated[2];
+    double MomentumV0X = v0->MomV0X();
+    double MomentumV0Y = v0->MomV0Y();
+    double MomentumV0Z = v0->MomV0Z();
+
+
+    // apply Lambda cuts
+    double MassInvariant = CalculateInvariantMassLambda(ProtonMomentumPropagated,AntiPionMomentumPropagated,true);
+    double WrongMassInvariant = CalculateInvariantMassLambda(AntiPionMomentumPropagated,ProtonMomentumPropagated,true);
+    bool PassedLambdaCuts = CheckLambdaCuts(*v0,PrimaryVertexPos,*fPIDResponse,true,RunNumber,MassInvariant,WrongMassInvariant);
+    if(!PassedLambdaCuts) continue;
+
 
 
 
@@ -1391,33 +1451,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
 
 
 
-    double MomentumDaughterPosX = v0->MomPosX();
-    double MomentumDaughterPosY = v0->MomPosY();
-    double MomentumDaughterPosZ = v0->MomPosZ();
-    double MomentumDaughterNegX = v0->MomNegX();
-    double MomentumDaughterNegY = v0->MomNegY();
-    double MomentumDaughterNegZ = v0->MomNegZ();
-    double MomentumV0X = v0->MomV0X();
-    double MomentumV0Y = v0->MomV0Y();
-    double MomentumV0Z = v0->MomV0Z();
-/*
-    std::cout << "\nProtonTrack->Px() = " << ProtonTrack->Px() << "\t ProtonTrack->Py() = " << ProtonTrack->Py() << "\tProtonTrack->Pz() = " << ProtonTrack->Pz() << std::endl;
-    std::cout << "v0->MomPosX() = " << v0->MomPosX() << "\t v0->MomPosY() = " << v0->MomPosY() << "\tv0->MomPosZ() = " << v0->MomPosZ() << std::endl;
-    std::cout << "AntiPionTrack->Px() = " << AntiPionTrack->Px() << "\t AntiPionTrack->Py() = " << AntiPionTrack->Py() << "\tAntiPionTrack->Pz() = " << AntiPionTrack->Pz() << std::endl;
-    std::cout << "v0->MomNegX() = " << v0->MomNegX() << "\t v0->MomNegY() = " << v0->MomNegY() << "\tv0->MomNegZ() = " << v0->MomNegZ() << std::endl;
-    std::cout << "Propagate to vertex..." << std::endl;
-
-    AliAODVertex *v0Vertex = v0->GetSecondaryVtx();
-    double DCA[2];
-    double CovarianceMatrix[3];
-    bool PropagatedToVertex = ProtonTrack->PropagateToDCA(v0Vertex,BField,9999.0,DCA,CovarianceMatrix);
-    if(PropagatedToVertex == false) continue;
-
-    std::cout << "ProtonTrack->Px() = " << ProtonTrack->Px() << "\t ProtonTrack->Py() = " << ProtonTrack->Py() << "\t ProtonTrack->Pz() = " << ProtonTrack->Pz() << std::endl;
-    std::cout << "v0->MomPosX() = " << v0->MomPosX() << "\t v0->MomPosY() = " << v0->MomPosY() << "\t v0->MomPosZ() = " << v0->MomPosZ() << std::endl;
-    std::cout << "AntiPionTrack->Px() = " << AntiPionTrack->Px() << "\t AntiPionTrack->Py() = " << AntiPionTrack->Py() << "\tAntiPionTrack->Pz() = " << AntiPionTrack->Pz() << std::endl;
-    std::cout << "v0->MomNegX() = " << v0->MomNegX() << "\t v0->MomNegY() = " << v0->MomNegY() << "\tv0->MomNegZ() = " << v0->MomNegZ() << "\n" << std::endl;
-*/
 
   
     TVector3 *MomentumDaughterPositive = new TVector3();
@@ -1510,6 +1543,8 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     }
 
 
+
+
     Lambda_px			  = (float)v0->MomV0X();
     Lambda_py			  = (float)v0->MomV0Y();
     Lambda_pz			  = (float)v0->MomV0Z();
@@ -1540,9 +1575,9 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     Lambda_Daughter_Proton_px_Generated		    = Generated_px_Daughter1;
     Lambda_Daughter_Proton_py_Generated		    = Generated_py_Daughter1;
     Lambda_Daughter_Proton_pz_Generated		    = Generated_pz_Daughter1;
-    Lambda_Daughter_Proton_px_DecayVertex	    = v0->MomPosX();
-    Lambda_Daughter_Proton_py_DecayVertex	    = v0->MomPosY();
-    Lambda_Daughter_Proton_pz_DecayVertex	    = v0->MomPosZ();
+    Lambda_Daughter_Proton_px_DecayVertex	    = MomentumDaughterPosX;
+    Lambda_Daughter_Proton_py_DecayVertex	    = MomentumDaughterPosY;
+    Lambda_Daughter_Proton_pz_DecayVertex	    = MomentumDaughterPosZ;
     Lambda_Daughter_Proton_pTPC			    = ProtonTrack->GetTPCmomentum();
     Lambda_Daughter_Proton_Eta			    = ProtonTrack->Eta();
     Lambda_Daughter_Proton_Phi			    = ProtonTrack->Phi();
@@ -1568,9 +1603,9 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     Lambda_Daughter_AntiPion_px_Generated	    = Generated_px_Daughter2;
     Lambda_Daughter_AntiPion_py_Generated	    = Generated_py_Daughter2;
     Lambda_Daughter_AntiPion_pz_Generated	    = Generated_pz_Daughter2;
-    Lambda_Daughter_AntiPion_px_DecayVertex	    = v0->MomNegX();
-    Lambda_Daughter_AntiPion_py_DecayVertex	    = v0->MomNegY();
-    Lambda_Daughter_AntiPion_pz_DecayVertex	    = v0->MomNegZ();
+    Lambda_Daughter_AntiPion_px_DecayVertex	    = MomentumDaughterNegX;
+    Lambda_Daughter_AntiPion_py_DecayVertex	    = MomentumDaughterNegY;
+    Lambda_Daughter_AntiPion_pz_DecayVertex	    = MomentumDaughterNegZ;
     Lambda_Daughter_AntiPion_pTPC		    = AntiPionTrack->GetTPCmomentum();
     Lambda_Daughter_AntiPion_Eta		    = AntiPionTrack->Eta();
     Lambda_Daughter_AntiPion_Phi		    = AntiPionTrack->Phi();
@@ -2346,15 +2381,65 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     AliAODTrack *PionTrack = dynamic_cast<AliAODTrack*>(v0->GetDaughter(0));
     if(!PionTrack) continue;
  
-    // apply AntiLambda cuts
-    bool PassedLambdaCuts = CheckLambdaCuts(*v0,PrimaryVertexPos,*fPIDResponse,false,RunNumber);
-    if(!PassedLambdaCuts) continue;
 
     bool PassedAntiProtonCuts = CheckProtonCuts(*AntiProtonTrack,*fPIDResponse,false,RunNumber);
     if(!PassedAntiProtonCuts) continue;
 
-    bool PassedPionCuts = CheckPionCuts(*PionTrack,*fPIDResponse,true,RunNumber);
+    double PionDCAxy_min = FitPionDCAxy_min->Eval(PionTrack->Pt());
+    double PionDCAz_min = FitPionDCAz_min->Eval(PionTrack->Pt());
+    bool PassedPionCuts = CheckPionCuts(*PionTrack,*fPIDResponse,true,RunNumber,PionDCAxy_min,PionDCAz_min);
     if(!PassedPionCuts) continue;
+
+
+    AliAODVertex *DecayVertex = v0->GetSecondaryVtx();
+
+    AliExternalTrackParam *AntiProtonTrackParam = new AliExternalTrackParam();
+    AntiProtonTrackParam->CopyFromVTrack(AntiProtonTrack);
+    double AntiProton_DCA_new[2];
+    double AntiProton_CovarianceMatrix_new[3];
+    AntiProtonTrackParam->PropagateToDCA(DecayVertex,BField,10.0,AntiProton_DCA_new,AntiProton_CovarianceMatrix_new);
+    double AntiProtonMomentumPropagated[3];
+    AntiProtonTrackParam->GetPxPyPz(AntiProtonMomentumPropagated);
+
+    AliExternalTrackParam *PionTrackParam = new AliExternalTrackParam();
+    PionTrackParam->CopyFromVTrack(PionTrack);
+    double Pion_DCA_new[2];
+    double Pion_CovarianceMatrix_new[3];
+    PionTrackParam->PropagateToDCA(DecayVertex,BField,10.0,Pion_DCA_new,Pion_CovarianceMatrix_new);
+    double PionMomentumPropagated[3];
+    PionTrackParam->GetPxPyPz(PionMomentumPropagated);
+
+
+    bool PrintDecayMomentaOnScreen = false;
+    if(PrintDecayMomentaOnScreen == true){
+
+      std::cout << "\nAntiProtonTrack->Px() = " << AntiProtonTrack->Px() << "\t AntiProtonTrack->Py() = " << AntiProtonTrack->Py() << "\t AntiProtonTrack->Pz() = " << AntiProtonTrack->Pz() << std::endl;
+      std::cout << "v0->MomNegX() = " << v0->MomNegX() << "\t v0->MomNegY() = " << v0->MomNegY() << "\tv0->MomNegZ() = " << v0->MomNegZ() << std::endl;
+      std::cout << "px_prop = " << AntiProtonMomentumPropagated[0] << "\t\t py_prop = " << AntiProtonMomentumPropagated[1] << "\t\t pz_prop = " << AntiProtonMomentumPropagated[2] << std::endl;
+    std::cout << "PionTrack->Px() = " << PionTrack->Px() << "\t PionTrack->Py() = " << PionTrack->Py() << "\tPionTrack->Pz() = " << PionTrack->Pz() << std::endl;
+    std::cout << "v0->MomPosX() = " << v0->MomPosX() << "\t v0->MomPosY() = " << v0->MomPosY() << "\tv0->MomPosZ() = " << v0->MomPosZ() << std::endl;
+    std::cout << "px_prop = " << PionMomentumPropagated[0] << "\t py_prop = " << PionMomentumPropagated[1] << "\t pz_prop = " << PionMomentumPropagated[2] << std::endl;
+
+    } // end of PrintDecayMomentaOnScreen
+
+
+    double MomentumDaughterNegX = AntiProtonMomentumPropagated[0];
+    double MomentumDaughterNegY = AntiProtonMomentumPropagated[1];
+    double MomentumDaughterNegZ = AntiProtonMomentumPropagated[2];
+    double MomentumDaughterPosX = PionMomentumPropagated[0];
+    double MomentumDaughterPosY = PionMomentumPropagated[1];
+    double MomentumDaughterPosZ = PionMomentumPropagated[2];
+    double MomentumV0X = v0->MomV0X();
+    double MomentumV0Y = v0->MomV0Y();
+    double MomentumV0Z = v0->MomV0Z();
+
+    // apply AntiLambda cuts
+    double MassInvariant = CalculateInvariantMassLambda(PionMomentumPropagated,AntiProtonMomentumPropagated,false);
+    double WrongMassInvariant = CalculateInvariantMassLambda(AntiProtonMomentumPropagated,PionMomentumPropagated,false);
+    bool PassedLambdaCuts = CheckLambdaCuts(*v0,PrimaryVertexPos,*fPIDResponse,false,RunNumber,MassInvariant,WrongMassInvariant);
+    if(!PassedLambdaCuts) continue;
+
+
 
 
     float Generated_px = -999.0;
@@ -2464,15 +2549,6 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
 
 
 
-    double MomentumDaughterPosX = v0->MomPosX();
-    double MomentumDaughterPosY = v0->MomPosY();
-    double MomentumDaughterPosZ = v0->MomPosZ();
-    double MomentumDaughterNegX = v0->MomNegX();
-    double MomentumDaughterNegY = v0->MomNegY();
-    double MomentumDaughterNegZ = v0->MomNegZ();
-    double MomentumV0X = v0->MomV0X();
-    double MomentumV0Y = v0->MomV0Y();
-    double MomentumV0Z = v0->MomV0Z();
   
     TVector3 *MomentumDaughterPositive = new TVector3();
     TVector3 *MomentumDaughterNegative = new TVector3();
@@ -2597,9 +2673,9 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     AntiLambda_Daughter_AntiProton_px_Generated		    = Generated_px_Daughter1;
     AntiLambda_Daughter_AntiProton_py_Generated		    = Generated_py_Daughter1;
     AntiLambda_Daughter_AntiProton_pz_Generated		    = Generated_pz_Daughter1;
-    AntiLambda_Daughter_AntiProton_px_DecayVertex	    = v0->MomNegX();
-    AntiLambda_Daughter_AntiProton_py_DecayVertex	    = v0->MomNegY();
-    AntiLambda_Daughter_AntiProton_pz_DecayVertex	    = v0->MomNegZ();
+    AntiLambda_Daughter_AntiProton_px_DecayVertex	    = MomentumDaughterNegX;
+    AntiLambda_Daughter_AntiProton_py_DecayVertex	    = MomentumDaughterNegY;
+    AntiLambda_Daughter_AntiProton_pz_DecayVertex	    = MomentumDaughterNegZ;
     AntiLambda_Daughter_AntiProton_pTPC			    = AntiProtonTrack->GetTPCmomentum();
     AntiLambda_Daughter_AntiProton_Eta			    = AntiProtonTrack->Eta();
     AntiLambda_Daughter_AntiProton_Phi			    = AntiProtonTrack->Phi();
@@ -2625,9 +2701,9 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     AntiLambda_Daughter_Pion_px_Generated	    = Generated_px_Daughter2;
     AntiLambda_Daughter_Pion_py_Generated	    = Generated_py_Daughter2;
     AntiLambda_Daughter_Pion_pz_Generated	    = Generated_pz_Daughter2;
-    AntiLambda_Daughter_Pion_px_DecayVertex	    = v0->MomPosX();
-    AntiLambda_Daughter_Pion_py_DecayVertex	    = v0->MomPosY();
-    AntiLambda_Daughter_Pion_pz_DecayVertex	    = v0->MomPosZ();
+    AntiLambda_Daughter_Pion_px_DecayVertex	    = MomentumDaughterPosX;
+    AntiLambda_Daughter_Pion_py_DecayVertex	    = MomentumDaughterPosY;
+    AntiLambda_Daughter_Pion_pz_DecayVertex	    = MomentumDaughterPosZ;
     AntiLambda_Daughter_Pion_pTPC		    = PionTrack->GetTPCmomentum();
     AntiLambda_Daughter_Pion_Eta		    = PionTrack->Eta();
     AntiLambda_Daughter_Pion_Phi		    = PionTrack->Phi();
@@ -3910,26 +3986,26 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
     // define open proton and antiproton track cuts
     Proton_pT_min = 0.0;
     Proton_pT_max = 4.0;
-    Proton_eta_min = -0.9;
-    Proton_eta_max = +0.9;
-    Proton_DCAxy_min = 0.01; // cm
+    Proton_eta_min = -0.8;
+    Proton_eta_max = +0.8;
+    Proton_DCAxy_min = 0.02; // cm
     Proton_DCAxy_max = 999.0; // cm
-    Proton_DCAz_min = 0.01; // cm
+    Proton_DCAz_min = 0.02; // cm
     Proton_DCAz_max = 999.0; // cm
 
     Proton_TPC_RatioRowsFindableCluster_min = 0.73;
-    Proton_TPC_dEdx_nSigma_max = 4.0;
+    Proton_TPC_dEdx_nSigma_max = 5.0;
     Proton_TPC_Chi2perCluster_max = 5.0;
     Proton_TPC_Chi2perNDF_max = 5.0;
     Proton_TPC_nCluster_min = 70;
     Proton_TPC_nCrossedRows_min = 60;
     Proton_TPC_nSharedCluster_max = 2;
-    Proton_TPC_Threshold = 0.8;
+    Proton_TPC_Threshold = 0.7;
 
-    Proton_TOF_m2_nSigma_max = 4.0;
-    Proton_TOF_m2_nSigma_max_low_pTPC = 4.0;
+    Proton_TOF_m2_nSigma_max = 5.0;
+    Proton_TOF_m2_nSigma_max_low_pTPC = 5.0;
 
-    Proton_ITS_dEdx_nSigma_max = 4.0;
+    Proton_ITS_dEdx_nSigma_max = 5.0;
     Proton_ITS_nCluster_min = 0;
 
     UseTOF = true;
@@ -4139,13 +4215,13 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
 
 
 // apply track cuts for Pions and antiPions
-bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track, AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber)
+bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track, AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, double Pion_DCAxy_min, double Pion_DCAz_min)
 {
 
   bool PassedParticleCuts = false;
 
   double Pion_pT_min, Pion_pT_max, Pion_eta_min, Pion_eta_max;
-  double Pion_DCAxy_min, Pion_DCAz_min, Pion_DCAxy_max, Pion_DCAz_max;
+  double Pion_DCAxy_max, Pion_DCAz_max;
   double Pion_TPC_RatioRowsFindableCluster_min;
   double Pion_TPC_dEdx_nSigma_max, Pion_TPC_Chi2perCluster_max, Pion_TPC_Chi2perNDF_max;
   int Pion_TPC_nCluster_min, Pion_TPC_nCrossedRows_min, Pion_TPC_nSharedCluster_max;
@@ -4161,15 +4237,13 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
     // define open Pion and antiPion track cuts
     Pion_pT_min = 0.0;
     Pion_pT_max = 4.0;
-    Pion_eta_min = -0.9;
-    Pion_eta_max = +0.9;
-    Pion_DCAxy_min = 0.01; // cm
+    Pion_eta_min = -0.8;
+    Pion_eta_max = +0.8;
     Pion_DCAxy_max = 999.0; // cm
-    Pion_DCAz_min = 0.01; // cm
     Pion_DCAz_max = 999.0; // cm
 
     Pion_TPC_RatioRowsFindableCluster_min = 0.73;
-    Pion_TPC_dEdx_nSigma_max = 4.0;
+    Pion_TPC_dEdx_nSigma_max = 5.0;
     Pion_TPC_Chi2perCluster_max = 5.0;
     Pion_TPC_Chi2perNDF_max = 5.0;
     Pion_TPC_nCluster_min = 60;
@@ -4177,10 +4251,10 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
     Pion_TPC_nSharedCluster_max = 2;
     Pion_TPC_Threshold = 4.0;
 
-    Pion_TOF_m2_nSigma_max = 4.0;
-    Pion_TOF_m2_nSigma_max_low_pTPC = 4.0;
+    Pion_TOF_m2_nSigma_max = 5.0;
+    Pion_TOF_m2_nSigma_max_low_pTPC = 5.0;
 
-    Pion_ITS_dEdx_nSigma_max = 4.0;
+    Pion_ITS_dEdx_nSigma_max = 5.0;
     Pion_ITS_nCluster_min = 0;
 
     UseTOF = true;
@@ -4197,9 +4271,7 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
     Pion_pT_max = 4.0;
     Pion_eta_min = -0.8;
     Pion_eta_max = +0.8;
-    Pion_DCAxy_min = 0.02; // cm
     Pion_DCAxy_max = 999.0; // cm
-    Pion_DCAxy_min = 0.02; // cm
     Pion_DCAz_max = 999.0; // cm
 
     Pion_TPC_RatioRowsFindableCluster_min = 0.83;
@@ -4417,25 +4489,25 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
 
 
 
-bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckLambdaCuts(AliAODv0 &v0, double PrimaryVertexPos[3], AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber)
+bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckLambdaCuts(AliAODv0 &v0, double PrimaryVertexPos[3], AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, double MassInvariant, double WrongMassInvariant)
 {
 
   bool PassedParticleCuts = false;
 
 
-  double eta_max = 0.9;
+  double eta_max = 0.8;
   double pT_min = 0.0; // GeV/c
   double pT_max = 999.0; // GeV/c
-  double DecayRadius_min = 0.0; // cm
+  double DecayRadius_min = 0.1; // cm
   double DecayRadius_max = 100.0; // cm
-  //double LambdaMassVariation_max = 0.005; // GeV/c²
+  double LambdaMassVariation_max = 0.01; // GeV/c²
   double DCAv0ToPrimaryVertex_max = 1.5; // cm
-  double CosinePointingAngle_min = 0.9;
+  double CosinePointingAngle_min = 0.997;
 
   bool UseReconstructionOnTheFly = true;
 
   double DCAv0Daughters_min = 0.0;
-  double DCAv0Daughters_max = 4.0;
+  double DCAv0Daughters_max = 2.0;
  
  
   bool IsReconstructedOnTheFly = v0.GetOnFlyStatus();
@@ -4462,15 +4534,6 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckLambdaCuts(AliAODv0 &v0, dou
   if(TMath::IsNaN(DCAv0ToPrimaryVertex)) return PassedParticleCuts;
   if(TMath::Abs(DCAv0ToPrimaryVertex) > DCAv0ToPrimaryVertex_max) return PassedParticleCuts;
 
-/*
-  const double LambdaMassPDG = 1.115683; // GeV/c²
-  double mass = 0.0;
-  if(isMatter == true) mass = v0.MassLambda();
-  if(isMatter == false) mass = v0.MassAntiLambda();
-  if(TMath::IsNaN(mass)) return PassedParticleCuts;
-  if(TMath::Abs(mass-LambdaMassPDG) > LambdaMassVariation_max) return PassedParticleCuts;
-*/
-
   double DecayRadius = v0.RadiusV0();
   if(TMath::IsNaN(DecayRadius)) return PassedParticleCuts;
   if((TMath::Abs(DecayRadius) < DecayRadius_min) || (TMath::Abs(DecayRadius) > DecayRadius_max)) return PassedParticleCuts;
@@ -4491,6 +4554,22 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckLambdaCuts(AliAODv0 &v0, dou
   if((TMath::Abs(DCAv0Daughters) < DCAv0Daughters_min) || (TMath::Abs(DCAv0Daughters) > DCAv0Daughters_max)) return PassedParticleCuts;
 
 
+
+
+  if(fUseOpenCuts == true){
+
+    if(MassInvariant < 1.07 || MassInvariant > 1.17) return PassedParticleCuts;
+    if(WrongMassInvariant < 1.4) return PassedParticleCuts;
+
+  }
+
+  if(fUseOpenCuts == false){
+
+    const double LambdaMassPDG = 1.115683; // GeV/c²
+    if(MassInvariant < (LambdaMassPDG-LambdaMassVariation_max) || MassInvariant > (LambdaMassPDG+LambdaMassVariation_max)) return PassedParticleCuts;
+    if(WrongMassInvariant < 1.4) return PassedParticleCuts;
+
+  }
  
 
   PassedParticleCuts = true;
@@ -4510,94 +4589,40 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
   bool PassedParticleCuts = false;
 
-  double Deuteron_pT_min, Deuteron_pT_max, Deuteron_eta_min, Deuteron_eta_max;
-  double Deuteron_DCAxy_max, Deuteron_DCAz_max;
-  double Deuteron_TPC_RatioRowsFindableCluster_min;
-  double Deuteron_TPC_dEdx_nSigma_max, Deuteron_TPC_Chi2perCluster_max, Deuteron_TPC_Chi2perNDF_max;
-  int Deuteron_TPC_nCluster_min, Deuteron_TPC_nCrossedRows_min, Deuteron_TPC_nSharedCluster_max;
-  double Deuteron_TPC_Threshold;
-  double Deuteron_TOF_m2_nSigma_max, Deuteron_TOF_m2_nSigma_max_low_pTPC;
-  double Deuteron_ITS_dEdx_nSigma_max;
-  int Deuteron_ITS_nCluster_min;
-  bool UseTOF = false;
-  bool UseITS = false;
-  bool Extend_pT_range = false;
-  double Pion_TPC_dEdx_nSigma_max, Kaon_TPC_dEdx_nSigma_max, Proton_TPC_dEdx_nSigma_max, Electron_TPC_dEdx_nSigma_max, Muon_TPC_dEdx_nSigma_max;
 
-  if(fUseOpenCuts == true){
+  // define open deuteron and antideuteron track cuts
+  double Deuteron_pT_min = 0.0;
+  double Deuteron_pT_max = 3.0;
+  double Deuteron_eta_min = -0.8;
+  double Deuteron_eta_max = +0.8;
+  double Deuteron_DCAxy_max = 0.3; // cm
+  double Deuteron_DCAz_max = 0.2; // cm
 
-    // define open deuteron and antideuteron track cuts
-    Deuteron_pT_min = 0.0;
-    Deuteron_pT_max = 3.0;
-    Deuteron_eta_min = -0.9;
-    Deuteron_eta_max = +0.9;
-    Deuteron_DCAxy_max = 0.3; // cm
-    Deuteron_DCAz_max = 0.2; // cm
+  double Deuteron_TPC_RatioRowsFindableCluster_min = 0.73;
+  double Deuteron_TPC_dEdx_nSigma_max = 4.0;
+  double Deuteron_TPC_Chi2perCluster_max = 5.0;
+  double Deuteron_TPC_Chi2perNDF_max = 5.0;
+  int Deuteron_TPC_nCluster_min = 70;
+  int Deuteron_TPC_nCrossedRows_min = 60;
+  int Deuteron_TPC_nSharedCluster_max = 2;
+  double Deuteron_TPC_Threshold = 1.5;
 
-    Deuteron_TPC_RatioRowsFindableCluster_min = 0.73;
-    Deuteron_TPC_dEdx_nSigma_max = 4.0;
-    Deuteron_TPC_Chi2perCluster_max = 5.0;
-    Deuteron_TPC_Chi2perNDF_max = 5.0;
-    Deuteron_TPC_nCluster_min = 70;
-    Deuteron_TPC_nCrossedRows_min = 60;
-    Deuteron_TPC_nSharedCluster_max = 2;
-    Deuteron_TPC_Threshold = 1.5;
+  double Deuteron_TOF_m2_nSigma_max = 4.0;
 
-    Deuteron_TOF_m2_nSigma_max = 4.0;
-    Deuteron_TOF_m2_nSigma_max_low_pTPC = 4.0;
+  double Deuteron_ITS_dEdx_nSigma_max = 4.0;
+  int Deuteron_ITS_nCluster_min = 1;
 
-    Deuteron_ITS_dEdx_nSigma_max = 4.0;
-    Deuteron_ITS_nCluster_min = 1;
+  bool UseTOF = true;
+  bool UseITS = true;
+  bool Extend_pT_range = true;
 
-    UseTOF = true;
-    UseITS = true;
-    Extend_pT_range = true;
-
-    Pion_TPC_dEdx_nSigma_max     = 3.0;
-    Kaon_TPC_dEdx_nSigma_max     = 3.0;
-    Proton_TPC_dEdx_nSigma_max   = 3.0;
-    Electron_TPC_dEdx_nSigma_max = 3.0;
-    Muon_TPC_dEdx_nSigma_max     = 3.0;
-
-  } // end of UseOpenCuts == true
+  double Pion_TPC_dEdx_nSigma_max     = 3.0;
+  double Kaon_TPC_dEdx_nSigma_max     = 3.0;
+  double Proton_TPC_dEdx_nSigma_max   = 3.0;
+  double Electron_TPC_dEdx_nSigma_max = 3.0;
+  double Muon_TPC_dEdx_nSigma_max     = 3.0;
 
 
-  if(fUseOpenCuts == false){
-
-    // define closed deuteron and antideuteron track cuts
-    Deuteron_pT_min = 0.0;
-    Deuteron_pT_max = 2.0;
-    Deuteron_eta_min = -0.8;
-    Deuteron_eta_max = +0.8;
-    Deuteron_DCAxy_max = 0.2; // cm
-    Deuteron_DCAz_max = 0.1; // cm
-
-    Deuteron_TPC_RatioRowsFindableCluster_min = 0.83;
-    Deuteron_TPC_dEdx_nSigma_max = 3.0;
-    Deuteron_TPC_Chi2perCluster_max = 4.0;
-    Deuteron_TPC_Chi2perNDF_max = 4.0;
-    Deuteron_TPC_nCluster_min = 80;
-    Deuteron_TPC_nCrossedRows_min = 70;
-    Deuteron_TPC_nSharedCluster_max = 0;
-    Deuteron_TPC_Threshold = 1.4;
-
-    Deuteron_TOF_m2_nSigma_max = 3.0;
-    Deuteron_TOF_m2_nSigma_max_low_pTPC = 3.0;
-
-    Deuteron_ITS_dEdx_nSigma_max = 3.0;
-    Deuteron_ITS_nCluster_min = 2;
-
-    UseTOF = true;
-    UseITS = true;
-    Extend_pT_range = false;  
-
-    Pion_TPC_dEdx_nSigma_max     = 3.0;
-    Kaon_TPC_dEdx_nSigma_max     = 3.0;
-    Proton_TPC_dEdx_nSigma_max   = 3.0;
-    Electron_TPC_dEdx_nSigma_max = 3.0;
-    Muon_TPC_dEdx_nSigma_max     = 3.0;
-
-  } // end of UseOpenCuts == false
 
 
 
@@ -4760,21 +4785,18 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
     double TOF_m2	  = CalculateMassSquareTOF(Track);
     double TOF_m2_nSigma  = CalculateSigmaMassSquareTOF(pT,TOF_m2,ParticleSpecies,RunNumber);
 
+    if(fUseOpenCuts == true){
 
-    // apply tight TOF m2 cut above pTPC threshold   
-    if(pTPC >= Deuteron_TPC_Threshold){
+      if(TOF_m2 < 2.0 || TOF_m2 > 6.0) return PassedParticleCuts;
+
+    }
+
+    if(fUseOpenCuts == false){
 
       if(TMath::Abs(TOF_m2_nSigma) > Deuteron_TOF_m2_nSigma_max) return PassedParticleCuts;
-
-    }
-
-    // apply loose TOF m2 cut below pTPC threshold
-    if(pTPC < Deuteron_TPC_Threshold){
-
-      if(TMath::Abs(TOF_m2_nSigma) > Deuteron_TOF_m2_nSigma_max_low_pTPC) return PassedParticleCuts;
-
-    }
  
+    }
+
   } // end of TOFisOK
 
 
@@ -4906,6 +4928,28 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
 
   }
 
+  if(LHC20g7a == true && isPion == true){
+
+    Mean->FixParameter(0,1.8487e-09);
+    Mean->FixParameter(1,-163771);
+    Mean->FixParameter(2,-238672);
+    Mean->FixParameter(3,899.867);
+    Mean->FixParameter(4,15658.8);
+
+  }
+
+  if(LHC20g7a == true && isAntiPion == true){
+
+    Mean->FixParameter(0,3.14614e-10);
+    Mean->FixParameter(1,-157437);
+    Mean->FixParameter(2,-238672);
+    Mean->FixParameter(3,899.867);
+    Mean->FixParameter(4,14760.3);
+
+  }
+
+
+
 
 
   // LHC20g7b
@@ -4955,7 +4999,7 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
 
 
   // copied from data
-  if((LHC22f3 == true) && (isProton == true) || (isAntiProton == true)){
+  if((LHC22f3 == true) && ((isProton == true) || (isAntiProton == true))){
 
     Mean->FixParameter(0,2.36861e-07);
     Mean->FixParameter(1,-55831.1);
@@ -5047,6 +5091,7 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
 
   if(((isProton == true) || (isAntiProton == true))	&& (LHC20g7a == true)) Resolution = 1.31668e-01;
   if(((isDeuteron == true) || (isAntiDeuteron == true))	&& (LHC20g7a == true)) Resolution = 9.46937e-02;
+  if(((isPion == true) || (isAntiPion == true))	&& (LHC20g7a == true))	       Resolution = 1.73629e-01;
 
   if(((isProton == true) || (isAntiProton == true))	&& (LHC20g7b == true)) Resolution = 1.30878e-01;
   if(((isDeuteron == true) || (isAntiDeuteron == true))	&& (LHC20g7b == true)) Resolution = 9.46815e-02;
@@ -5065,6 +5110,62 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
 } // end of CalculateSigmadEdxITS
 
 
+
+
+
+
+double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateInvariantMassLambda(double Momentum1[3], double Momentum2[3], bool isMatter){
+
+
+  const double MassProton   = 0.938272088;    // GeV/c²
+  const double MassPion     = 0.13957039;     // GeV/c²
+
+  double m1, m2;
+  double p1x, p1y, p1z;
+  double p2x, p2y, p2z;
+
+  bool CalculateLambda = false;
+  bool CalculateAntiLambda = false;
+
+  if(isMatter == true)	CalculateLambda = true;
+  if(isMatter == false)	CalculateAntiLambda = true;
+
+  if(CalculateLambda == true){
+
+    m1 = MassProton;
+    p1x = Momentum1[0];
+    p1y = Momentum1[1];
+    p1z = Momentum1[2];
+
+    m2 = MassPion;
+    p2x = Momentum2[0];
+    p2y = Momentum2[1];
+    p2z = Momentum2[2];
+
+  }
+
+  if(CalculateAntiLambda == true){
+
+    m1 = MassPion;
+    p1x = Momentum1[0];
+    p1y = Momentum1[1];
+    p1z = Momentum1[2];
+
+    m2 = MassProton;
+    p2x = Momentum2[0];
+    p2y = Momentum2[1];
+    p2z = Momentum2[2];
+
+  }
+
+  double E1 = TMath::Sqrt((m1*m1) + (p1x*p1x) + (p1y*p1y) + (p1z*p1z));
+  double E2 = TMath::Sqrt((m2*m2) + (p2x*p2x) + (p2y*p2y) + (p2z*p2z)); 
+
+  double MassInvariant = TMath::Sqrt(((E1+E2)*(E1+E2)) - ((p1x+p2x)*(p1x+p2x)) - ((p1y+p2y)*(p1y+p2y)) - ((p1z+p2z)*(p1z+p2z)));
+
+  return MassInvariant;
+
+} // end of CalculateInvariantMassLambda
 
 
 

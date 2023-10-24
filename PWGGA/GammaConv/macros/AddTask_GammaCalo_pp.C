@@ -3540,6 +3540,12 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("n2415113","411790109fe30220000","0s631031000000d0"); // INEL>0 20-40%
     cuts.AddCutCalo("n4715113","411790109fe30220000","0s631031000000d0"); // INEL>0 40-70%
     cuts.AddCutCalo("n7a15113","411790109fe30220000","0s631031000000d0"); // INEL>0 70-100%
+  } else if (trainConfig == 2373){  // EMCal+DCAL clusters standard cuts, Sphericity
+    cuts.AddCutCalo("00010113","411790109fe32220000","0s631031000000d0"); // std with NCell>=2
+    cuts.AddCutCalo("00015113","411790109fe32220000","0s631031000000d0"); // std with NCell>=2, INEL>0 
+    cuts.AddCutCalo("00010113","411790109fe32220000","01631031000000d0"); // std with NCell>=2, no Rotation
+    cuts.AddCutCalo("00015113","411790109fe32220000","01631031000000d0"); // std with NCell>=2, no Rotation, INEL>0 
+    // cuts.AddCutCalo("00015113","411790109fe302v0000","01631031000000d0"); // std with NCell>=2, no Rotation, INEL>0 
 
 
   // PHOS configs for pp 5 TeV based on pp 13 TeV

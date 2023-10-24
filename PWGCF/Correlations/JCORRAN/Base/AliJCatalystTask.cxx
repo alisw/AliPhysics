@@ -425,11 +425,8 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
         AliJFFlucAnalysis::GetBin(fcent,AliJFFlucAnalysis::BINNING_CENT_PbPb);
       pPhiWeights = fJCorMapTask->GetCorrectionMap(phiMapIndex,fRunNum,fcBin);
     }
-
     ReadAODTracks( paodEvent, fInputList, fcent ) ; // read tracklist
   } // AOD
-  fZvert = fvertex[2];
-
 }
 
 //______________________________________________________________________________
@@ -541,9 +538,11 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
         if (bSaveAllQA) {fMultHistogram[GetCentralityBin(fcent)][0]->Fill(nt);}
     }
 
-    Int_t ntrack =0;
+    Int_t ntrack = 0;
     Double_t PV[3] = {0.};
-    ReadVertexInfo(aod, PV);
+    ReadVertexInfo(aod, PV); // Vertex info is read for the second time, first info stored in fvertex
+
+    fZvert = PV[2]; // z_vtx set before corrections
 
     for( int it=0; it<nt ; it++){
       AliAODTrack *track;
@@ -657,7 +656,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
         itrack->SetWeight(phi_module_corr);
 
         // Uncommentable for local test
-        // if(phi_module_corr<0.5){printf("Track info: %.4f \t %.4f \t %.4f \t %.4f \t %d \n", itrack->Phi(), itrack->Eta(), fZvert, phi_module_corr, fRunNum);}
+        // if(fEvtNum<5){printf("Track info: %.4f \t %.4f \t %.4f \t %.4f \t %.4f \t %d \n", itrack->Phi(), itrack->Eta(), fZvert, PV[2], phi_module_corr, fEvtNum);}
 
         // Adding centrality weight for a LHC15o track, and given centrality.
         float cent_weight = 1.0;
@@ -1266,7 +1265,6 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
    f2DEtaPhiHistogram[icent][1]->GetYaxis()->SetTitle("#eta");
    if (bSaveQCNUA) {fControl2DNUAList[icent]->Add(f2DEtaPhiHistogram[icent][0]);}
 
-
    // TProfile for the weights to apply.
    fProfileWeights[icent] = new TProfile("fProfileWeights","Phi Weights",1000,-TMath::Pi(),TMath::Pi()); //centrality dependent output
    fProfileWeights[icent]->GetXaxis()->SetTitle("#varphi");
@@ -1290,9 +1288,16 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
    fProfileSinVSCent[5] = new TProfile("fProfileSinVSCent_n7","<sin(7phi)> vs Cent",12,0,60); 
    fProfileSinVSCent[6] = new TProfile("fProfileSinVSCent_n8","<sin(8phi)> vs Cent",12,0,60);
    
-   
+    // (NEW) Control histograms for the DCAxy vs pT to check applications of the cuts.
+    fPtDCAxyHisto[icent][0] = new TH2F("fPtDCAxyHisto_Before", "DCAxy vs pT before track cuts", 500, 0., 5., 1000, -1., 1.);
+    fPtDCAxyHisto[icent][0]->GetXaxis()->SetTitle("p_{T}");
+    fPtDCAxyHisto[icent][0]->GetYaxis()->SetTitle("DCA_{xy}");
+    fControlHistogramsList[icent]->Add(fPtDCAxyHisto[icent][0]);
 
-
+    fPtDCAxyHisto[icent][1] = new TH2F("fPtDCAxyHisto_After", "DCAxy vs pT after track cuts", 500, 0., 5., 1000, -1., 1.);
+    fPtDCAxyHisto[icent][1]->GetXaxis()->SetTitle("p_{T}");
+    fPtDCAxyHisto[icent][1]->GetYaxis()->SetTitle("DCA_{xy}");
+    fControlHistogramsList[icent]->Add(fPtDCAxyHisto[icent][1]);
 
    // Save the TH2D for the ESD-TPC pileup cut in Run2.
     fESDpileupHistogram[icent][0] = new TH2D("fESDpileupHistogram_Before","Correlations before ESD-TPC cut", 1200, 0., 6000., 7000, 0., 35000.);
@@ -1320,7 +1325,7 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 }
 
 //______________________________________________________________________________
-void AliJCatalystTask::FillControlHistograms(AliAODTrack *thisTrack, Int_t whichHisto, Float_t cent, Double_t *v) {
+void AliJCatalystTask::FillControlHistograms(AliAODTrack *thisTrack, Int_t whichHisto, Float_t cent, Double_t *v) { // Vertex info (*v) not used, might be needed later.
 
 // Get the corresponding centrality bin.
   Int_t CentralityBin = GetCentralityBin(cent);
@@ -1343,6 +1348,8 @@ void AliJCatalystTask::FillControlHistograms(AliAODTrack *thisTrack, Int_t which
   fDCAzHistogram[CentralityBin][whichHisto]->Fill(ValueDCAz);
   fDCAxyHistogram[CentralityBin][whichHisto]->Fill(ValueDCAxy);
   fChargeHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Charge());
+
+  fPtDCAxyHisto[CentralityBin][whichHisto]->Fill(thisTrack->Pt(), ValueDCAxy);
 }
 
 //______________________________________________________________________________

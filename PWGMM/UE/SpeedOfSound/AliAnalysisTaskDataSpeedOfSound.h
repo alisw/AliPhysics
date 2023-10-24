@@ -50,6 +50,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetUseMC(bool mc = false) { fUseMC = mc; }      // use to analyse MC data
+  void SetUseZDC(bool zdc = false) { fUseZDC = zdc; }  // use ZDC selection
   void SetEtaCut(const double& etacut) { fEtaCut = etacut; }
   void SetPtMin(const double& ptmin) { fPtMin = ptmin; }
   void SetTrackCuts(bool TPConly = true) { fIsTPConly = TPConly; }
@@ -57,6 +58,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
     fTrigger = offlineTriggerMask;
   }
   bool HasRecVertex();
+  void ZDC(const int& rec_nch, const std::vector<float>& vec_rec_pt) const;
 
  protected:
  private:
@@ -64,6 +66,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   AliEventCuts fEventCuts;
   AliStack* fMCStack;
   AliMCEvent* fMC;
+  bool fUseZDC;
   bool fUseMC;
   bool fIsTPConly;
   UInt_t fTrigger;
@@ -86,17 +89,17 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TProfile* pV0MAmpChannel;
   TH1D* hV0MAmplitude;
   TH1F* hV0Mmult;
-  TProfile* pPtvsNch[1];
-  TProfile* pPtvsV0MAmp[1];
-  TH3D* hPtvsNchvsV0MAmp[1];
+  TProfile* pPtvsNch;
+  TProfile* pPtvsV0MAmp;
+  TH3D* hPtvsNchvsV0MAmp;
   TH1F* hTrueVtxZ;
   TH3F* hTrueNchvsTrueV0MAmp;
   TH3F* hRecNchvsRecV0MAmp;
   TH2D* hNchResponse;
   TH2D* hPtTruePrivsV0M;
   TH2D* hPtRecPrivsV0M;
-  TH3D* hRecPtvsRecNchvsRecV0MAmp[1];
-  TH3D* hTruePtvsTrueNchvsTrueV0MAmp[1];
+  TH3D* hRecPtvsRecNchvsRecV0MAmp;
+  TH3D* hTruePtvsTrueNchvsTrueV0MAmp;
   TH2F* hDCAxyPri[1];
   TH2F* hDCAxyWeDe[1];
   TH2F* hDCAxyMaIn[1];
@@ -109,6 +112,15 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2F* hTrueNchHMWithTrigger;
   TH2F* hTrueNchHMWithEventCuts;
   TH2F* hTrueNchHMWithVtxSel;
+  TH2D* fZDCN;
+  TH2D* fZDCP;
+  TH2D* fZDCEM;
+  TH2D* fZDCNvsNch;
+  TH2D* fZDCPvsNch;
+  TH3D* hPtvsNchvsZDCN;
+  TH3D* hPtvsNchvsZDCP;
+  TH2D* hZDCNvsPart;
+  TH2D* hZDCPvsPart;
 
   AliAnalysisTaskDataSpeedOfSound(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented

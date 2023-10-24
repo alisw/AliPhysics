@@ -114,6 +114,12 @@ int nbinsmT,float lowmT,float upmT);
 void SetEscapePairCut(int aUse);
 void  SetWhichCutIndEtadPhi(int aUse);
 
+void Set3DmTvsPIDvspT(int aUse);
+void Set3DmTvsPIDvspTInit(
+int nbinsNs,float lowNs,float upNs,
+int nbinspT,float lowpT,float uppT,
+int nbinsmT,float lowmT,float upmT
+); 
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
         int isHe3Pair;
@@ -191,7 +197,10 @@ void  SetWhichCutIndEtadPhi(int aUse);
 	int IsSameParticlePair;
 	TH2F *KStarVspT_P1Hist;
 	TH2F *KStarVspT_P2Hist;
+	TH2F *KStarVspT_P1Hist_Dum;
+	TH2F *KStarVspT_P2Hist_Dum;
 
+	
 	int fUse3DkTvsKStarvsmT;
 	TH3F *fNum3DkTvsKStarvsmT;
 	TH3F *fDum3DkTvsKStarvsmT;
@@ -209,7 +218,10 @@ void  SetWhichCutIndEtadPhi(int aUse);
 
 	int EscapePairCut;
 	int WhichCutIndEtadPhi;
-	
+
+	int fUse3DmTvsPIDvspT;
+	TH3F *fNum3DmTvsPIDvspT;
+	TH3F *fDum3DmTvsPIDvspT;
 };
 
 #endif

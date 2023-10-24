@@ -867,7 +867,7 @@ void AliAnalysisTaskEmbeddingJetWithEP::AllocateMatchedJetHistograms()
     //setup the THnSparse
     Int_t nCentBins=20;
     TString titleThFiveForV2[5]= {"#it{p}_{T}^{truth} (GeV/#it{c})", "#it{p}_{T,corr}^{det} (GeV/#it{c})", "#phi^{truth jet}-#Psi_{EP, 2}", "#phi^{det jet}-#Psi_{EP, 2}" , "Centrality (%)"};
-    Int_t nbinsThFiveForV2[5]  = {(Int_t)fMaxPt, (Int_t)fMaxPt, 50, 50, nCentBins};
+    Int_t nbinsThFiveForV2[5]  = {(Int_t)fMaxPt, (Int_t)fMaxPt, 48, 48, nCentBins};
     Double_t minThFiveForV2[5] = {0., 0., 0., 0.,0.};
     Double_t maxThFiveForV2[5] = {fMaxPt, fMaxPt, TMath::TwoPi(), TMath::TwoPi(), 100};
     histname = "hRMWithEP2Angle";
@@ -879,7 +879,7 @@ void AliAnalysisTaskEmbeddingJetWithEP::AllocateMatchedJetHistograms()
     }
 
     TString titleThFiveForV3[5]= {"#it{p}_{T}^{truth} (GeV/#it{c})", "#it{p}_{T,corr}^{det} (GeV/#it{c})", "#phi^{truth jet}-#Psi_{EP, 3}", "#phi^{det jet}-#Psi_{EP, 3}" , "Centrality (%)"};
-    Int_t nbinsThFiveForV3[5]  = {(Int_t)fMaxPt, (Int_t)fMaxPt, 50, 50, nCentBins};
+    Int_t nbinsThFiveForV3[5]  = {(Int_t)fMaxPt, (Int_t)fMaxPt, 72, 72, nCentBins};
     Double_t minThFiveForV3[5] = {0., 0., 0., 0.,0.};
     Double_t maxThFiveForV3[5] = {fMaxPt, fMaxPt, TMath::TwoPi(), TMath::TwoPi(), 100};
     histname = "hRMWithEP3Angle";

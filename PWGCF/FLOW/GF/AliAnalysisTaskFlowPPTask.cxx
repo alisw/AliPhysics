@@ -54,6 +54,8 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
     fSample(1),
     fCentFlag(0),
     fTrigger(0),
+	fUsekCentralTrigger(true),
+	fUsekSemiCentralTrigger(true),
     fLS(false),
     fNUE(0),
     fNUA(0),
@@ -125,6 +127,8 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
 	fCentFlag(0),
 	fTrigger(0),
 	fAliTrigger(0),
+	fUsekCentralTrigger(true),
+	fUsekSemiCentralTrigger(true),
 	fLS(false),
 	fNUE(0),
 	fNUA(0),
@@ -414,7 +418,10 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 			// pass3 use kInt7 || kCentral || kSemiCentral
 			// but in this function you should pass them all
 			// and only check trigger in CheckTrigger()
-			fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7+AliVEvent::kCentral+AliVEvent::kSemiCentral, true);
+			unsigned long usedTrigger = AliVEvent::kINT7;
+			if(fUsekCentralTrigger)usedTrigger = usedTrigger + AliVEvent::kCentral;
+			if(fUsekSemiCentralTrigger)usedTrigger = usedTrigger + AliVEvent::kSemiCentral;
+			fEventCuts.OverrideAutomaticTriggerSelection(usedTrigger, true);
 		}
 		else{
 			fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7, true);
@@ -581,6 +588,7 @@ Bool_t AliAnalysisTaskFlowPPTask::CheckTrigger(){
 		if(fPeriod.EqualTo("LHC18qr_pass3")){
 			if((fSelectMask&AliVEvent::kCentral) && cent>10){return kFALSE;}
 			if((fSelectMask&AliVEvent::kSemiCentral) && (cent<30 || cent>50)){return kFALSE;}
+			if((!fUsekCentralTrigger)&&(!fUsekSemiCentralTrigger)){return kFALSE;}
 		}
 		else{
 			//for LHC15o pass2,only pass by kint7

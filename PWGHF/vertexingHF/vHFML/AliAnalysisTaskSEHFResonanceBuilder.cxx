@@ -1531,7 +1531,8 @@ int AliAnalysisTaskSEHFResonanceBuilder::MatchResoToMC(AliAODMCParticle *partD, 
         return 0;
 
     double momSumDaughters[3] = {partD->Px()+partLight->Px(), partD->Py()+partLight->Py(), partD->Pz()+partLight->Pz()};
-    for (int iMother{commonMothers.size()-1}; iMother>=0; iMother--) {
+    int maxMotherIdx = static_cast<int>(commonMothers.size()-1);
+    for (int iMother{maxMotherIdx}; iMother>=0; iMother--) {
         AliAODMCParticle *partMother = dynamic_cast<AliAODMCParticle *>(arrayMC->At(commonMothers[iMother]));
         if(!partMother) {
             continue;

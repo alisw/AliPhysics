@@ -271,6 +271,8 @@ private:
   TProfile *fProfileCosVSCent[7];		//! 0: n=2, 1: n=3, 2: n=4, 3:n=5, 4:n=6, 5:n=7, 6:n=8
   TProfile *fProfileSinVSCent[7];		//! 0: n=2, 1: n=3, 2: n=4, 3:n=5, 4:n=6, 5:n=7, 6:n=8
 
-  ClassDef(AliJCatalystTask, 9);
+  TH2F *fPtDCAxyHisto[16][2];		//! pT-DCAxy distribution before (0) and after (1) track cut.
+
+  ClassDef(AliJCatalystTask, 10);
 };
 #endif // AliJCatalystTask_H

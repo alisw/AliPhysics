@@ -78,19 +78,19 @@ class AliAnalysisTaskInclusivef0f2 : public AliAnalysisTaskSE{
 	AliEventCuts fEventCuts;  // Event cuts
 
  private:
-        typedef std::vector<AliVTrack*> tracklist;
-        typedef std::deque<tracklist> eventpool;
-        typedef std::vector<std::vector<eventpool> > mixingpool;
+    typedef std::vector<AliVTrack*> tracklist;
+    typedef std::deque<tracklist> eventpool;
+    typedef std::vector<std::vector<eventpool> > mixingpool;
 	typedef std::vector<mixingpool> mixingpooltrkcut;
 	
-        mixingpool                      fEMpool; //!
+    mixingpool                      fEMpool; //!
 	mixingpooltrkcut		fEMpooltrk;
 
 	AliAnalysisTaskInclusivef0f2RunTable*   fRunTable=nullptr; //!
-        AliAODEvent*            	fAOD;           //! input event
+    AliAODEvent*            	fAOD;           //! input event
 	TString                         fOption;
-        TList*                  	fOutput=nullptr;    //! output list
-        TH1F*                   	fHistPt;        //! dummy histogram
+    TList*                  	fOutput=nullptr;    //! output list
+    TH1F*                   	fHistPt;        //! dummy histogram
 	AliTriggerAnalysis*             fTrigger=nullptr; //!
 	AliESDtrackCuts*                fTrackCuts=nullptr; //!
 	THistManager*                   fHistos=nullptr; //!
@@ -101,44 +101,43 @@ class AliAnalysisTaskInclusivef0f2 : public AliAnalysisTaskSE{
 	std::vector<UInt_t>             goodtrackindices; //!
 	UInt_t                          fFilterBit;
 	Int_t                           fParticleType;
-        AliMultSelection               *sel=nullptr;//! 
-        Int_t                           bookingsize = 20;
-        AliVMultiplicity*               fMultiplicity=nullptr;//!
+    AliMultSelection               *sel=nullptr;//! 
+    Int_t                           bookingsize = 20;
+    AliVMultiplicity*               fMultiplicity=nullptr;//!
 	TClonesArray*                   fMCArray=nullptr;
 	bool				IsMC=kFALSE;
 	AliStack*			fmcstack=nullptr;
-        TAxis                           binCent; //! 
+    TAxis               binCent; //! 
 	TAxis				binCentForMC;
-        TAxis                           binZ; //!
-        TAxis                           binPt; //!
-
-        TAxis                           binMtPion; //!
-        TAxis                           binMtKaon; //!
-        TAxis                           binMtRho; //!
-        TAxis                           binMtPhi; //!
-
-        TAxis                           binPtGen; //!
-	TAxis                           binType; //!
-        TAxis                           binMass; //!
+    TAxis               binZ; //!
+    TAxis               binPt; //!
+    TAxis               binMtPion; //!
+    TAxis               binMtKaon; //!
+    TAxis               binMtRho; //!
+    TAxis               binMtPhi; //!
+    TAxis               binPtGen; //!
+	TAxis               binType; //!
+    TAxis               binMass; //!
 	TAxis				binEP; //!
-	TAxis				binPtTrack;
-	TAxis				binPhiTrack;
-	TAxis				binEtaTrack;
-	TAxis				binCharge;
-	TAxis				binTrackCutBit;
-	TAxis				binPID;
-	TAxis				binExKaonNum;
-	TAxis				binTrackPt;
-	TAxis				binSigma;
-	TAxis				binEta;
-	TAxis				binSwitch;
+	TAxis				binPtTrack; //!
+	TAxis				binPhiTrack; //!
+	TAxis				binEtaTrack; //!
+	TAxis				binCharge; //!
+	TAxis				binTrackCutBit; //!
+	TAxis				binPID; //!
+	TAxis				binExKaonNum; //!
+	TAxis				binTrackPt; //!
+	TAxis				binSigma; //!
+	TAxis				binEta; //!
+	TAxis				binSwitch; //!
+	TAxis				binqaMR; //!
 
-        Double_t                        fCent=-1;
-        Double_t                        fZ=-30;
-        Double_t                        fptcut = 0.15;
-        Double_t                        fetacut = 0.8;
-        Int_t                           centbin = -1 ;
-        Int_t                           zbin = -1 ;
+    Double_t            fCent=-1;
+    Double_t            fZ=-30;
+    Double_t            fptcut = 0.15;
+    Double_t            fetacut = 0.8;
+    Int_t               centbin = -1 ;
+    Int_t               zbin = -1 ;
 	Int_t				trkbin = -1;
 	Int_t				pidbin = -1;
 	Double_t			fEP_v0 = -999.;
