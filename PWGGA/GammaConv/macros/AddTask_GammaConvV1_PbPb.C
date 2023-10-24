@@ -4109,7 +4109,7 @@ void AddTask_GammaConvV1_PbPb(
         return;
       }
       int lNFnames = lArrFnamesdEdxPostCalib->GetEntriesFast();
-      if (lNFnames && lNFnames != numberOfCuts){
+      if (!(lNFnames == 1) && !(lNFnames == numberOfCuts)){
         cout << "ERROR: FEPC either has to be one filename or several separated by a '+' where the number of filenames has to match the number of cuts in the trainconfig.\nOr no filename at all if the file from the OADB is to be taken\n";
         return;
       }
