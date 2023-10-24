@@ -29,6 +29,10 @@ public:
   virtual void Terminate(Option_t *){};
   void SetEventCuts(AliFemtoDreamEventCuts *evtCuts) { fEventCuts = evtCuts; };
 
+  void SetPairCleaner(AliAnalysisTaskLambdaPion::PCSettings pairCleaner)
+  {
+    fPCSettings = pairCleaner;
+  }
   void SetLambdaCuts(AliFemtoDreamv0Cuts *cuts)
   {
     fLambdaCuts = cuts;

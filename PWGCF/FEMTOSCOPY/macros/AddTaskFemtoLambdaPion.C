@@ -16,7 +16,7 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
                                               const char *sTcut = "0",
                                               bool DoAncestors = false,
                                               bool IsSystematics = false,
-                                              PCSettings pcsettings = NoPC,
+                                              AliAnalysisTaskLambdaPion::PCSettings pcsettings = AliAnalysisTaskLambdaPion::PCSettings::NoPC,
                                               const char *cutVariation = "0")
 {
   TString suffix = TString::Format("%s", cutVariation);
