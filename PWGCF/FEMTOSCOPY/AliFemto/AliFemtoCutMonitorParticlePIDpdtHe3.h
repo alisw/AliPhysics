@@ -45,16 +45,21 @@ class AliFemtoCutMonitorParticlePIDpdtHe3 : public AliFemtoCutMonitor{
 
         void Write();
         void SetUsePt(Bool_t usept){fIfUsePt=usept;}
+	void SetSaveDCA(int aUse){fSaveDCA = aUse;}
+	void SetDCAInit(TString aName,int nbinsDCA,float lowDCA,float upDCA,
+int nbinspT,float lowpT,float uppT);
         virtual TList *GetOutputList();
 
     protected:
         Int_t fTOFParticle; ///< Select TOF time hypothesis, 0-pion, 1-kaon, 2-proton
         Bool_t fIfUsePt;    ///< Plot pT instead of p in all momentum histograms
-
+	int fSaveDCA;
         TH2D *fTPCdEdx;        ///< TPC dEdx information
         TH2D *fTOFNSigma;      ///< TOF NSigma values vs mom
         TH2D *fTPCNSigma;      ///< TPC NSigma values vs mom
         TH2D *fMass;
+  	TH2D *fDCARPt;
+	TH2D *fDCAZPt;	
 
 };
 

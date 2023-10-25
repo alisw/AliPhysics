@@ -15,6 +15,7 @@ AliFemtoCutMonitorParticlePIDpdtHe3::AliFemtoCutMonitorParticlePIDpdtHe3():
   AliFemtoCutMonitor()
   , fTOFParticle(0)
   , fIfUsePt(false)
+  , fSaveDCA(0)
   , fTPCdEdx(nullptr)
   , fTOFNSigma(nullptr)
   , fTPCNSigma(nullptr)
@@ -25,16 +26,24 @@ AliFemtoCutMonitorParticlePIDpdtHe3::AliFemtoCutMonitorParticlePIDpdtHe3():
   fTOFNSigma      = new TH2D("TOFNSigma","TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
   fTPCNSigma      = new TH2D("TPCNSigma","TPC NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
   fMass           = new TH2D("Mass", "m vs. p", 100, 0.0, 5.0, 250, -1.0, 10.0);
+   
+      fDCARPt     = new TH2D("DCARPt", "DCA in XY vs. Pt", 400, -3.0, 3.0, 100,0.0,5.0);
+      fDCAZPt     = new TH2D("DCAZPt", "DCA in Z vs. Pt", 400, -3.0, 3.0, 100,0.0,5.0);
+  
+
 }
 
 AliFemtoCutMonitorParticlePIDpdtHe3::AliFemtoCutMonitorParticlePIDpdtHe3(const char *aName, Int_t aTOFParticle, int MassBin, float LowMass, float UpMass):
   AliFemtoCutMonitor()
   , fTOFParticle(aTOFParticle)
   , fIfUsePt(false)
+  , fSaveDCA(0)
   , fTPCdEdx(nullptr)
   , fTOFNSigma(nullptr)
   , fTPCNSigma(nullptr)
   , fMass(nullptr)
+  , fDCARPt(nullptr)
+  , fDCAZPt(nullptr) 
 {
   // Normal constructor
   fTPCdEdx        = new TH2D(TString::Format("TPCdEdx%s", aName), "TPC dEdx vs. momentum", 200, 0.0, 4.0, 250, 0.0, 500.0);
@@ -47,23 +56,27 @@ AliFemtoCutMonitorParticlePIDpdtHe3::AliFemtoCutMonitorParticlePIDpdtHe3(const A
   AliFemtoCutMonitor(aCut)
   , fTOFParticle(aCut.fTOFParticle)
   , fIfUsePt(aCut.fIfUsePt)
+  , fSaveDCA(aCut.fSaveDCA)
   , fTPCdEdx(new TH2D(*aCut.fTPCdEdx))
   , fTOFNSigma(new TH2D(*aCut.fTOFNSigma))
   , fTPCNSigma(new TH2D(*aCut.fTPCNSigma))
   , fMass(new TH2D(*aCut.fMass))
+  , fDCARPt(new TH2D(*aCut.fDCARPt))
+  , fDCAZPt(new TH2D(*aCut.fDCAZPt))
 
 {
   // copy constructor
 }
 
 AliFemtoCutMonitorParticlePIDpdtHe3::~AliFemtoCutMonitorParticlePIDpdtHe3()
-{
+{ 
   // Destructor
   delete fTPCdEdx;
   delete fTOFNSigma;
   delete fTPCNSigma;
   delete fMass;
-
+  delete fDCARPt;
+  delete fDCAZPt;
 }
 
 AliFemtoCutMonitorParticlePIDpdtHe3& AliFemtoCutMonitorParticlePIDpdtHe3::operator=(const AliFemtoCutMonitorParticlePIDpdtHe3& aCut)
@@ -76,12 +89,16 @@ AliFemtoCutMonitorParticlePIDpdtHe3& AliFemtoCutMonitorParticlePIDpdtHe3::operat
 
   fTOFParticle  = aCut.fTOFParticle;
   fIfUsePt      = aCut.fIfUsePt;
-
+  fSaveDCA 	= aCut.fSaveDCA;
   *fTPCdEdx     = *aCut.fTPCdEdx;
   *fTOFNSigma   = *aCut.fTOFNSigma;
   *fTPCNSigma   = *aCut.fTPCNSigma;
   *fMass        = *aCut.fMass;
 
+    if(fSaveDCA){
+      *fDCARPt = *aCut.fDCARPt;
+      *fDCAZPt = *aCut.fDCAZPt; 
+  } 
   return *this;
 }
 
@@ -132,7 +149,13 @@ void AliFemtoCutMonitorParticlePIDpdtHe3::Fill(const AliFemtoTrack* aTrack)
         fMass->Fill(tMom,massTOF);
     }
     
-    
+    if(fSaveDCA){
+      float tPt = aTrack->Pt();
+      float dcar = aTrack->ImpactD();
+      float dcaz = aTrack->ImpactZ();
+      fDCARPt->Fill(dcar, tPt);
+      fDCAZPt->Fill(dcaz, tPt);
+    }    
 
 }
 
@@ -143,7 +166,10 @@ void AliFemtoCutMonitorParticlePIDpdtHe3::Write()
     fTOFNSigma->Write();
     fTPCNSigma->Write();
     fMass->Write();
-
+    if(fSaveDCA){
+        fDCARPt->Write();
+        fDCAZPt->Write();
+    }
 }
 
 TList *AliFemtoCutMonitorParticlePIDpdtHe3::GetOutputList()
@@ -153,8 +179,18 @@ TList *AliFemtoCutMonitorParticlePIDpdtHe3::GetOutputList()
     tOutputList->Add(fTOFNSigma);
     tOutputList->Add(fTPCNSigma);
     tOutputList->Add(fMass);
-
-
+   
+    if(fSaveDCA){
+        tOutputList->Add(fDCARPt);
+        tOutputList->Add(fDCAZPt);
+    }
+       
         
     return tOutputList;
+}
+void AliFemtoCutMonitorParticlePIDpdtHe3::SetDCAInit(TString aName,int nbinsDCA,float lowDCA,float upDCA,
+int nbinspT,float lowpT,float uppT){
+
+	fDCARPt = new TH2D(aName+"DCAR","",nbinsDCA,lowDCA,upDCA,nbinspT,lowpT,uppT);
+	fDCAZPt = new TH2D(aName+"DCAZ","",nbinsDCA,lowDCA,upDCA,nbinspT,lowpT,uppT);
 }
