@@ -117,10 +117,12 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2D* fZDCEM;
   TH2D* fZDCNvsNch;
   TH2D* fZDCPvsNch;
-  TH3D* hPtvsNchvsZDCN;
-  TH3D* hPtvsNchvsZDCP;
   TH2D* fZDCNvsV0MAmp;
   TH2D* fZDCPvsV0MAmp;
+  TH3D* hPtvsNchvsZDCN;
+  TH3D* hPtvsNchvsZDCP;
+  TProfile* pPtvsZDCN;
+  TProfile* pPtvsZDCP;
 
   AliAnalysisTaskDataSpeedOfSound(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented
