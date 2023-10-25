@@ -46,7 +46,7 @@ class AliPIDCombined;
 
 class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
  public:
-  enum class GENERATOR {kAMPT,kHIJING};
+  enum GENERATOR {kAMPT,kHIJING};
   AliAnalysisTaskDeform();
   AliAnalysisTaskDeform(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="", TString ContainerSubfix="");
   virtual ~AliAnalysisTaskDeform();
@@ -142,7 +142,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fUseOldPileup;
   TString fDCAxyFunctionalForm;
   Bool_t fOnTheFly;
-  AliAnalysisTaskDeform::GENERATOR fGenerator;
+  GENERATOR fGenerator;
   std::map<GENERATOR, const char*> generatorMap;
   AliMCEvent *fMCEvent; //! MC event
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
