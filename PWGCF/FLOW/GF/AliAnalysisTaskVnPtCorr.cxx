@@ -842,31 +842,53 @@ void AliAnalysisTaskVnPtCorr::AnalyzeAOD(AliVEvent* aod, float centrV0, float ce
 
   // Init the number of tracks
   NtrksAfter = 0;
-  NtrksAfterGap0M = 0;
-  NtrksAfterGap0P = 0;
-  NtrksAfterGap2M = 0;
-  NtrksAfterGap2P = 0;
-  NtrksAfterGap4M = 0;
-  NtrksAfterGap4P = 0;
-  NtrksAfterGap6M = 0;
-  NtrksAfterGap6P = 0;
-  NtrksAfterGap8M = 0;
-  NtrksAfterGap8P = 0;
-  NtrksAfterGap10M = 0;
-  NtrksAfterGap10P = 0;
-  NtrksAfterGap14M = 0;
-  NtrksAfterGap14P = 0;
+  NtrksAfterGap0M = 0; NtrksAfterGap0P = 0;
+  NtrksAfterGap2M = 0; NtrksAfterGap2P = 0;
+  NtrksAfterGap4M = 0; NtrksAfterGap4P = 0;
+  NtrksAfterGap6M = 0; NtrksAfterGap6P = 0;
+  NtrksAfterGap8M = 0; NtrksAfterGap8P = 0;
+  NtrksAfterGap10M = 0; NtrksAfterGap10P = 0;
+  NtrksAfterGap12M = 0; NtrksAfterGap12P = 0;
+  NtrksAfterGap14M = 0; NtrksAfterGap14P = 0;
+
+  NtrksAfterEta4 = 0;
+  NtrksAfterEta3 = 0;
+  NtrksAfterEta2 = 0;
+  NtrksAfterEta1 = 0;
+
   NtrksAfter3subL = 0;
   NtrksAfter3subM = 0;
   NtrksAfter3subR = 0;
+
+  NtrksAfter3subMGap0M = 0; NtrksAfter3subMGap0P = 0;
+  NtrksAfter3subMGap2M = 0; NtrksAfter3subMGap2P = 0;
+  NtrksAfter3subMGap4M = 0; NtrksAfter3subMGap4P = 0;
+  NtrksAfter3subMGap6M = 0; NtrksAfter3subMGap6P = 0;
+  NtrksAfter3subMGap8M = 0; NtrksAfter3subMGap8P = 0;
+  NtrksAfter3subMGap10M = 0; NtrksAfter3subMGap10P = 0;
+  NtrksAfter3subMGap12M = 0; NtrksAfter3subMGap12P = 0;
+  NtrksAfter3subMGap14M = 0; NtrksAfter3subMGap14P = 0;
 
   sumPtw = 0;
   sumPtw2 = 0;
   sumPt2w2 = 0;
   sumWeight = 0;
   sumWeight2 = 0;
-  eventWeight  = 0;
-  eventWeight2 = 0;
+
+  sumPtwEta1 = 0; sumWeightEta1 = 0;
+  sumPtwEta2 = 0; sumWeightEta2 = 0;
+  sumPtwEta3 = 0; sumWeightEta3 = 0;
+  sumPtwEta4 = 0; sumWeightEta4 = 0;
+  sumPtwEta8 = 0; sumWeightEta8 = 0;
+
+  sumPtwGap0M = 0; sumWeightGap0M = 0; sumPtwGap0P = 0; sumWeightGap0P = 0;
+  sumPtwGap2M = 0; sumWeightGap2M = 0; sumPtwGap2P = 0; sumWeightGap2P = 0;
+  sumPtwGap4M = 0; sumWeightGap4M = 0; sumPtwGap4P = 0; sumWeightGap4P = 0;
+  sumPtwGap6M = 0; sumWeightGap6M = 0; sumPtwGap6P = 0; sumWeightGap6P = 0;
+  sumPtwGap8M = 0; sumWeightGap8M = 0; sumPtwGap8P = 0; sumWeightGap8P = 0;
+  sumPtwGap10M = 0; sumWeightGap10M = 0; sumPtwGap10P = 0; sumWeightGap10P = 0;
+  sumPtwGap12M = 0; sumWeightGap12M = 0; sumPtwGap12P = 0; sumWeightGap12P = 0;
+  sumPtwGap14M = 0; sumWeightGap14M = 0; sumPtwGap14P = 0; sumWeightGap14P = 0;
 
   //..for DCA
   double pos[3], vz, vx, vy;
@@ -875,16 +897,17 @@ void AliAnalysisTaskVnPtCorr::AnalyzeAOD(AliVEvent* aod, float centrV0, float ce
   vy = aod->GetPrimaryVertex()->GetY();
   double vtxp[3] = {vx, vy, vz};
 
-  double QcosGap8M[20][20] = {0};
-  double QsinGap8M[20][20] = {0};
-  double QcosGap8P[20][20] = {0};
-  double QsinGap8P[20][20] = {0};
-  double QcosSubLeft[20][20] = {0};
-  double QsinSubLeft[20][20] = {0};
-  double QcosSubMiddle[20][20] = {0};
-  double QsinSubMiddle[20][20] = {0};
-  double QcosSubRight[20][20] = {0};
-  double QsinSubRight[20][20] = {0};
+  double QcosGap0M[20][20] = {}; double QsinGap0M[20][20] = {}; double QcosGap0P[20][20] = {}; double QsinGap0P[20][20] = {};
+  double QcosGap2M[20][20] = {}; double QsinGap2M[20][20] = {}; double QcosGap2P[20][20] = {}; double QsinGap2P[20][20] = {};
+  double QcosGap4M[20][20] = {}; double QsinGap4M[20][20] = {}; double QcosGap4P[20][20] = {}; double QsinGap4P[20][20] = {};
+  double QcosGap6M[20][20] = {}; double QsinGap6M[20][20] = {}; double QcosGap6P[20][20] = {}; double QsinGap6P[20][20] = {};
+  double QcosGap8M[20][20] = {}; double QsinGap8M[20][20] = {}; double QcosGap8P[20][20] = {}; double QsinGap8P[20][20] = {};
+  double QcosGap10M[20][20] = {}; double QsinGap10M[20][20] = {}; double QcosGap10P[20][20] = {}; double QsinGap10P[20][20] = {};
+  double QcosGap12M[20][20] = {}; double QsinGap12M[20][20] = {}; double QcosGap12P[20][20] = {}; double QsinGap12P[20][20] = {};
+  double QcosGap14M[20][20] = {}; double QsinGap14M[20][20] = {}; double QcosGap14P[20][20] = {}; double QsinGap14P[20][20] = {};
+  double QcosSubLeft[20][20] = {}; double QsinSubLeft[20][20] = {};
+  double QcosSubMiddle[20][20] = {}; double QsinSubMiddle[20][20] = {};
+  double QcosSubRight[20][20] = {}; double QsinSubRight[20][20] = {};
 
 
   double runNumber = fInputEvent->GetRunNumber();
@@ -926,7 +949,6 @@ void AliAnalysisTaskVnPtCorr::AnalyzeAOD(AliVEvent* aod, float centrV0, float ce
     hDCAz->Fill(dcaZ);
     hChi2->Fill(aodTrk->GetTPCchi2perCluster());
     hnTPCClu->Fill(aodTrk->GetTPCNclsF());
-    NtrksAfter += 1;
 
     //..get phi-weight for NUA correction
     double weight = 1;
@@ -947,10 +969,198 @@ void AliAnalysisTaskVnPtCorr::AnalyzeAOD(AliVEvent* aod, float centrV0, float ce
     fEtaDis->Fill(aodTrk->Eta());
     fPhiDis1D->Fill(aodTrk->Phi(), weight*weightPt);
 
+    NtrksAfter += 1;
+    NtrksAfterEta8 += 1;
+    sumPtwEta8 += weightPt*aodTrk->Pt();
+    sumWeightEta8 += weightPt;
+    // Deal with the middle part
+    if (aodTrk->Eta() >= -0.1 && aodTrk->Eta() <= 0.1) {
+      NtrksAfterEta1 += 1;
+      sumPtwEta1 += weightPt*aodTrk->Pt();
+      sumWeightEta1 += weightPt;
+    }
+    if (aodTrk->Eta() >= -0.2 && aodTrk->Eta() <= 0.2) {
+      NtrksAfterEta2 += 1;
+      sumPtwEta2 += weightPt*aodTrk->Pt();
+      sumWeightEta2 += weightPt;
+    }
+    if (aodTrk->Eta() >= -0.3 && aodTrk->Eta() <= 0.3) {
+      NtrksAfterEta3 += 1;
+      sumPtwEta3 += weightPt*aodTrk->Pt();
+      sumWeightEta3 += weightPt;
+    }
+    if (aodTrk->Eta() >= -0.4 && aodTrk->Eta() <= 0.4) {
+      NtrksAfterEta4 += 1;
+      sumPtwEta4 += weightPt*aodTrk->Pt();
+      sumWeightEta4 += weightPt;
+    }
+    if (aodTrk->Eta() >= -fEtaGap3Sub2 && aodTrk->Eta() <= fEtaGap3Sub2) {
+      NtrksAfter3subM += 1;
+      sumPtw+=weightPt*aodTrk->Pt();
+      sumPtw2+=weightPt*weightPt*aodTrk->Pt();
+      sumPt2w2 += weightPt*weightPt*aodTrk->Pt()*aodTrk->Pt();
+      sumWeight += weightPt;
+      sumWeight2 += weightPt*weightPt;
+    }
 
+    if (aodTrk->Eta() >= -fEtaGap3Sub2 && aodTrk->Eta() <= fEtaGap3Sub2) { // If in the middle region
+      if (aodTrk->Eta() < 0) {
+        NtrksAfter3subMGap0M += 1;
+        sumPtwGap0M += weightPt*aodTrk->Pt();
+        sumWeightGap0M += weightPt;
+      }
+      if (aodTrk->Eta() > 0) {
+        NtrksAfter3subMGap0P += 1;
+        sumPtwGap0P += weightPt*aodTrk->Pt();
+        sumWeightGap0P += weightPt;
+      }
+      if (aodTrk->Eta() < -0.1) {
+        NtrksAfter3subMGap2M += 1;
+        sumPtwGap2M += weightPt*aodTrk->Pt();
+        sumWeightGap2M += weightPt;
+      }
+      if (aodTrk->Eta() > 0.1) {
+        NtrksAfter3subMGap2P += 1;
+        sumPtwGap2P += weightPt*aodTrk->Pt();
+        sumWeightGap2P += weightPt;
+      }
+      if (aodTrk->Eta() < -0.2) {
+        NtrksAfter3subMGap4M += 1;
+        sumPtwGap4M += weightPt*aodTrk->Pt();
+        sumWeightGap4M += weightPt;
+      }
+      if (aodTrk->Eta() > 0.2) {
+        NtrksAfter3subMGap4P += 1;
+        sumPtwGap4P += weightPt*aodTrk->Pt();
+        sumWeightGap4P += weightPt;
+      }
+      if (aodTrk->Eta() < -0.3) {
+        NtrksAfter3subMGap6M += 1;
+        sumPtwGap6M += weightPt*aodTrk->Pt();
+        sumWeightGap6M += weightPt;
+      }
+      if (aodTrk->Eta() > 0.3) {
+        NtrksAfter3subMGap6P += 1;
+        sumPtwGap6P += weightPt*aodTrk->Pt();
+        sumWeightGap6P += weightPt;
+      }
+      if (aodTrk->Eta() < -0.4) {
+        NtrksAfter3subMGap8M += 1;
+        sumPtwGap8M += weightPt*aodTrk->Pt();
+        sumWeightGap8M += weightPt;
+      }
+      if (aodTrk->Eta() > 0.4) {
+        NtrksAfter3subMGap8P += 1;
+        sumPtwGap8P += weightPt*aodTrk->Pt();
+        sumWeightGap8P += weightPt;
+      }
+      if (aodTrk->Eta() < -0.5) {
+        NtrksAfter3subMGap10M += 1;
+        sumPtwGap10M += weightPt*aodTrk->Pt();
+        sumWeightGap10M += weightPt;
+      }
+      if (aodTrk->Eta() > 0.5) {
+        NtrksAfter3subMGap10P += 1;
+        sumPtwGap10P += weightPt*aodTrk->Pt();
+        sumWeightGap10P += weightPt;
+      }
+      if (aodTrk->Eta() < -0.6) {
+        NtrksAfter3subMGap12M += 1;
+        sumPtwGap12M += weightPt*aodTrk->Pt();
+        sumWeightGap12M += weightPt;
+      }
+      if (aodTrk->Eta() > 0.6) {
+        NtrksAfter3subMGap12P += 1;
+        sumPtwGap12P += weightPt*aodTrk->Pt();
+        sumWeightGap12P += weightPt;
+      }
+      if (aodTrk->Eta() < -0.7) {
+        NtrksAfter3subMGap14M += 1;
+        sumPtwGap14M += weightPt*aodTrk->Pt();
+        sumWeightGap14M += weightPt;
+      }
+      if (aodTrk->Eta() > 0.7) {
+        NtrksAfter3subMGap14P += 1;
+        sumPtwGap14P += weightPt*aodTrk->Pt();
+        sumWeightGap14P += weightPt;
+      }
+    }
 
-    //..Gap > 0.8
-    if(aodTrk->Eta() < -fEtaGap3Sub1) {
+    if (aodTrk->Eta() < 0) {
+      NtrksAfterGap0M += 1;
+      for(int iharm=0; iharm<8; iharm++) {
+        for(int ipow=0; ipow<6; ipow++) {
+          QcosGap0M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinGap0M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+    if (aodTrk->Eta() > 0) {
+      NtrksAfterGap0P += 1;
+      for(int iharm=0; iharm<8; iharm++) {
+        for(int ipow=0; ipow<6; ipow++) {
+          QcosGap0P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinGap0P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+    // Gap > 0.2
+    if (aodTrk->Eta() < -0.1) {
+      NtrksAfterGap2M++;
+      for(int iharm=0; iharm<8; iharm++) {
+        for(int ipow=0; ipow<6; ipow++) {
+          QcosGap2M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinGap2M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+    if (aodTrk->Eta() > 0.1) {
+      NtrksAfterGap2P++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap2P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinGap2P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+    if (aodTrk->Eta() < -0.2) {
+      NtrksAfterGap4M++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap4M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinGap4M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+    if (aodTrk->Eta() > 0.2) {
+      NtrksAfterGap4P++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap4P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinGap4P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+    if (aodTrk->Eta() < -0.3) {
+      NtrksAfterGap6M++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap6M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinGap6M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+    if (aodTrk->Eta() > 0.3) {
+      NtrksAfterGap6P++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap6P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinGap6P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+    // Gap > 0.8
+    if(aodTrk->Eta() < -0.4) {
       NtrksAfterGap8M++;
       for(int iharm=0; iharm<8; iharm++) {
         for(int ipow=0; ipow<6; ipow++) {
@@ -959,7 +1169,7 @@ void AliAnalysisTaskVnPtCorr::AnalyzeAOD(AliVEvent* aod, float centrV0, float ce
         }
       }
     }
-    if(aodTrk->Eta() > fEtaGap3Sub1) {
+    if(aodTrk->Eta() > 0.4) {
       NtrksAfterGap8P++;
       for(int iharm=0; iharm<8; iharm++) {
         for(int ipow=0; ipow<6; ipow++) {
@@ -968,9 +1178,63 @@ void AliAnalysisTaskVnPtCorr::AnalyzeAOD(AliVEvent* aod, float centrV0, float ce
         }
       }
     }
+    if (aodTrk->Eta() < -0.5) {
+      NtrksAfterGap10M++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap10M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinGap10M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+    if (aodTrk->Eta() > 0.5) {
+      NtrksAfterGap10P++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap10P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinGap10P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+    if (aodTrk->Eta() < -0.6) {
+      NtrksAfterGap12M++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap12M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinGap12M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+    if (aodTrk->Eta() > 0.6) {
+      NtrksAfterGap12P++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap12P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinGap12P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+    if (aodTrk->Eta() < -0.7) {
+      NtrksAfterGap14M++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap14M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinGap14M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
+    if (aodTrk->Eta() > 0.7) {
+      NtrksAfterGap14P++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap14P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
+          QsinGap14P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
+        }
+      }
+    }
 
     //..3-subevent method
-    if(aodTrk->Eta() < -fEtaGap3Sub1) {//..left part
+    if (aodTrk->Eta() < -fEtaGap3Sub1) {//..left part
       NtrksAfter3subL += 1;
       for(int iharm=0; iharm<8; iharm++) {
         for(int ipow=0; ipow<6; ipow++) {
@@ -979,15 +1243,9 @@ void AliAnalysisTaskVnPtCorr::AnalyzeAOD(AliVEvent* aod, float centrV0, float ce
         }
       }
     }
-    if(aodTrk->Eta() >= -fEtaGap3Sub2 && aodTrk->Eta() <= fEtaGap3Sub2) {//..middle part
-                                                                         // eventWeight += weightPt;
-      sumPtw+=weightPt*aodTrk->Pt();
-      sumPtw2+=weightPt*weightPt*aodTrk->Pt();
-      sumPt2w2 += weightPt*weightPt*aodTrk->Pt()*aodTrk->Pt();
-      sumWeight += weightPt;
-      sumWeight2 += weightPt*weightPt;
 
-      NtrksAfter3subM += 1;
+    if(aodTrk->Eta() >= -fEtaGap3Sub2 && aodTrk->Eta() <= fEtaGap3Sub2) {//..middle part
+      // NtrksAfter3subM += 1; should not have counting here because it is already counted above
       for(int iharm=0; iharm<8; iharm++) {
         for(int ipow=0; ipow<6; ipow++) {
           QcosSubMiddle[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
@@ -995,6 +1253,7 @@ void AliAnalysisTaskVnPtCorr::AnalyzeAOD(AliVEvent* aod, float centrV0, float ce
         }
       }
     }
+
     if(aodTrk->Eta() > fEtaGap3Sub1) {//..right part
       NtrksAfter3subR += 1;
       for(int iharm=0; iharm<8; iharm++) {
@@ -1011,8 +1270,22 @@ void AliAnalysisTaskVnPtCorr::AnalyzeAOD(AliVEvent* aod, float centrV0, float ce
   //............................
 
   //..calculate Q-vector for each harmonics n and power p
+  correlator.FillQVector(correlator.Qvector0M, QcosGap0M, QsinGap0M);
+  correlator.FillQVector(correlator.Qvector0P, QcosGap0P, QsinGap0P);
+  correlator.FillQVector(correlator.Qvector2M, QcosGap2M, QsinGap2M);
+  correlator.FillQVector(correlator.Qvector2P, QcosGap2P, QsinGap2P);
+  correlator.FillQVector(correlator.Qvector4M, QcosGap4M, QsinGap4M);
+  correlator.FillQVector(correlator.Qvector4P, QcosGap4P, QsinGap4P);
+  correlator.FillQVector(correlator.Qvector6M, QcosGap6M, QsinGap6M);
+  correlator.FillQVector(correlator.Qvector6P, QcosGap6P, QsinGap6P);
   correlator.FillQVector(correlator.Qvector8M, QcosGap8M, QsinGap8M);
   correlator.FillQVector(correlator.Qvector8P, QcosGap8P, QsinGap8P);
+  correlator.FillQVector(correlator.Qvector10M, QcosGap10M, QsinGap10M);
+  correlator.FillQVector(correlator.Qvector10P, QcosGap10P, QsinGap10P);
+  correlator.FillQVector(correlator.Qvector12M, QcosGap12M, QsinGap12M);
+  correlator.FillQVector(correlator.Qvector12P, QcosGap12P, QsinGap12P);
+  correlator.FillQVector(correlator.Qvector14M, QcosGap14M, QsinGap14M);
+  correlator.FillQVector(correlator.Qvector14P, QcosGap14P, QsinGap14P);
   correlator.FillQVector(correlator.QvectorSubLeft, QcosSubLeft, QsinSubLeft);
   correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight);
   correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle);
@@ -1035,32 +1308,53 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCTruth(AliVEvent* aod, float centrV0, floa
 
   // Init the number of tracks
   NtrksAfter = 0;
-  NtrksAfterGap0M = 0;
-  NtrksAfterGap0P = 0;
-  NtrksAfterGap2M = 0;
-  NtrksAfterGap2P = 0;
-  NtrksAfterGap4M = 0;
-  NtrksAfterGap4P = 0;
-  NtrksAfterGap6M = 0;
-  NtrksAfterGap6P = 0;
-  NtrksAfterGap8M = 0;
-  NtrksAfterGap8P = 0;
-  NtrksAfterGap10M = 0;
-  NtrksAfterGap10P = 0;
-  NtrksAfterGap14M = 0;
-  NtrksAfterGap14P = 0;
+  NtrksAfterGap0M = 0; NtrksAfterGap0P = 0;
+  NtrksAfterGap2M = 0; NtrksAfterGap2P = 0;
+  NtrksAfterGap4M = 0; NtrksAfterGap4P = 0;
+  NtrksAfterGap6M = 0; NtrksAfterGap6P = 0;
+  NtrksAfterGap8M = 0; NtrksAfterGap8P = 0;
+  NtrksAfterGap10M = 0; NtrksAfterGap10P = 0;
+  NtrksAfterGap12M = 0; NtrksAfterGap12P = 0;
+  NtrksAfterGap14M = 0; NtrksAfterGap14P = 0;
+
+  NtrksAfterEta4 = 0;
+  NtrksAfterEta3 = 0;
+  NtrksAfterEta2 = 0;
+  NtrksAfterEta1 = 0;
+
   NtrksAfter3subL = 0;
   NtrksAfter3subM = 0;
   NtrksAfter3subR = 0;
+
+  NtrksAfter3subMGap0M = 0; NtrksAfter3subMGap0P = 0;
+  NtrksAfter3subMGap2M = 0; NtrksAfter3subMGap2P = 0;
+  NtrksAfter3subMGap4M = 0; NtrksAfter3subMGap4P = 0;
+  NtrksAfter3subMGap6M = 0; NtrksAfter3subMGap6P = 0;
+  NtrksAfter3subMGap8M = 0; NtrksAfter3subMGap8P = 0;
+  NtrksAfter3subMGap10M = 0; NtrksAfter3subMGap10P = 0;
+  NtrksAfter3subMGap12M = 0; NtrksAfter3subMGap12P = 0;
+  NtrksAfter3subMGap14M = 0; NtrksAfter3subMGap14P = 0;
 
   sumPtw = 0;
   sumPtw2 = 0;
   sumPt2w2 = 0;
   sumWeight = 0;
   sumWeight2 = 0;
-  eventWeight  = 0;
-  eventWeight2 = 0;
 
+  sumPtwEta1 = 0; sumWeightEta1 = 0;
+  sumPtwEta2 = 0; sumWeightEta2 = 0;
+  sumPtwEta3 = 0; sumWeightEta3 = 0;
+  sumPtwEta4 = 0; sumWeightEta4 = 0;
+  sumPtwEta8 = 0; sumWeightEta8 = 0;
+
+  sumPtwGap0M = 0; sumWeightGap0M = 0; sumPtwGap0P = 0; sumWeightGap0P = 0;
+  sumPtwGap2M = 0; sumWeightGap2M = 0; sumPtwGap2P = 0; sumWeightGap2P = 0;
+  sumPtwGap4M = 0; sumWeightGap4M = 0; sumPtwGap4P = 0; sumWeightGap4P = 0;
+  sumPtwGap6M = 0; sumWeightGap6M = 0; sumPtwGap6P = 0; sumWeightGap6P = 0;
+  sumPtwGap8M = 0; sumWeightGap8M = 0; sumPtwGap8P = 0; sumWeightGap8P = 0;
+  sumPtwGap10M = 0; sumWeightGap10M = 0; sumPtwGap10P = 0; sumWeightGap10P = 0;
+  sumPtwGap12M = 0; sumWeightGap12M = 0; sumPtwGap12P = 0; sumWeightGap12P = 0;
+  sumPtwGap14M = 0; sumWeightGap14M = 0; sumPtwGap14P = 0; sumWeightGap14P = 0;
 
   //..for DCA
   // double pos[3], vz, vx, vy;
@@ -1070,17 +1364,17 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCTruth(AliVEvent* aod, float centrV0, floa
   // double vtxp[3] = {vx, vy, vz};
   // Assume that DCA cuts not needed here
 
-  double QcosGap8M[20][20] = {0};
-  double QsinGap8M[20][20] = {0};
-  double QcosGap8P[20][20] = {0};
-  double QsinGap8P[20][20] = {0};
-  double QcosSubLeft[20][20] = {0};
-  double QsinSubLeft[20][20] = {0};
-  double QcosSubMiddle[20][20] = {0};
-  double QsinSubMiddle[20][20] = {0};
-  double QcosSubRight[20][20] = {0};
-  double QsinSubRight[20][20] = {0};
-
+  double QcosGap0M[20][20] = {}; double QsinGap0M[20][20] = {}; double QcosGap0P[20][20] = {}; double QsinGap0P[20][20] = {};
+  double QcosGap2M[20][20] = {}; double QsinGap2M[20][20] = {}; double QcosGap2P[20][20] = {}; double QsinGap2P[20][20] = {};
+  double QcosGap4M[20][20] = {}; double QsinGap4M[20][20] = {}; double QcosGap4P[20][20] = {}; double QsinGap4P[20][20] = {};
+  double QcosGap6M[20][20] = {}; double QsinGap6M[20][20] = {}; double QcosGap6P[20][20] = {}; double QsinGap6P[20][20] = {};
+  double QcosGap8M[20][20] = {}; double QsinGap8M[20][20] = {}; double QcosGap8P[20][20] = {}; double QsinGap8P[20][20] = {};
+  double QcosGap10M[20][20] = {}; double QsinGap10M[20][20] = {}; double QcosGap10P[20][20] = {}; double QsinGap10P[20][20] = {};
+  double QcosGap12M[20][20] = {}; double QsinGap12M[20][20] = {}; double QcosGap12P[20][20] = {}; double QsinGap12P[20][20] = {};
+  double QcosGap14M[20][20] = {}; double QsinGap14M[20][20] = {}; double QcosGap14P[20][20] = {}; double QsinGap14P[20][20] = {};
+  double QcosSubLeft[20][20] = {}; double QsinSubLeft[20][20] = {};
+  double QcosSubMiddle[20][20] = {}; double QsinSubMiddle[20][20] = {};
+  double QcosSubRight[20][20] = {}; double QsinSubRight[20][20] = {};
 
 
   // double runNumber = fInputEvent->GetRunNumber();
@@ -1100,16 +1394,200 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCTruth(AliVEvent* aod, float centrV0, floa
     // track->GetXYZ(pos);
     if (!AcceptMCTruthTrack(track)) continue;
 
-
-    NtrksAfter += 1;
-
-    //..get phi-weight for NUA correction
-    double weight = 1;
     double weightPt = 1;
+    double weight = 1;
+    NtrksAfter += 1;
+    NtrksAfterEta8 += 1;
+    sumPtwEta8 += weightPt*track->Pt();
+    sumWeightEta8 += weightPt;
+    // Deal with the middle part
+    if (track->Eta() >= -0.1 && track->Eta() <= 0.1) {
+      NtrksAfterEta1 += 1;
+      sumPtwEta1 += weightPt*track->Pt();
+      sumWeightEta1 += weightPt;
+    }
+    if (track->Eta() >= -0.2 && track->Eta() <= 0.2) {
+      NtrksAfterEta2 += 1;
+      sumPtwEta2 += weightPt*track->Pt();
+      sumWeightEta2 += weightPt;
+    }
+    if (track->Eta() >= -0.3 && track->Eta() <= 0.3) {
+      NtrksAfterEta3 += 1;
+      sumPtwEta3 += weightPt*track->Pt();
+      sumWeightEta3 += weightPt;
+    }
+    if (track->Eta() >= -0.4 && track->Eta() <= 0.4) {
+      NtrksAfterEta4 += 1;
+      sumPtwEta4 += weightPt*track->Pt();
+      sumWeightEta4 += weightPt;
+    }
+    if (track->Eta() >= -fEtaGap3Sub2 && track->Eta() <= fEtaGap3Sub2) {
+      NtrksAfter3subM += 1;
+      sumPtw+=weightPt*track->Pt();
+      sumPtw2+=weightPt*weightPt*track->Pt();
+      sumPt2w2 += weightPt*weightPt*track->Pt()*track->Pt();
+      sumWeight += weightPt;
+      sumWeight2 += weightPt*weightPt;
+    }
 
-    //..calculate Q-vectors
-    //..Gap > 0.8
-    if(track->Eta() < -fEtaGap3Sub1) {
+    if (track->Eta() >= -fEtaGap3Sub2 && track->Eta() <= fEtaGap3Sub2) { // If in the middle region
+      if (track->Eta() < 0) {
+        NtrksAfter3subMGap0M += 1;
+        sumPtwGap0M += weightPt*track->Pt();
+        sumWeightGap0M += weightPt;
+      }
+      if (track->Eta() > 0) {
+        NtrksAfter3subMGap0P += 1;
+        sumPtwGap0P += weightPt*track->Pt();
+        sumWeightGap0P += weightPt;
+      }
+      if (track->Eta() < -0.1) {
+        NtrksAfter3subMGap2M += 1;
+        sumPtwGap2M += weightPt*track->Pt();
+        sumWeightGap2M += weightPt;
+      }
+      if (track->Eta() > 0.1) {
+        NtrksAfter3subMGap2P += 1;
+        sumPtwGap2P += weightPt*track->Pt();
+        sumWeightGap2P += weightPt;
+      }
+      if (track->Eta() < -0.2) {
+        NtrksAfter3subMGap4M += 1;
+        sumPtwGap4M += weightPt*track->Pt();
+        sumWeightGap4M += weightPt;
+      }
+      if (track->Eta() > 0.2) {
+        NtrksAfter3subMGap4P += 1;
+        sumPtwGap4P += weightPt*track->Pt();
+        sumWeightGap4P += weightPt;
+      }
+      if (track->Eta() < -0.3) {
+        NtrksAfter3subMGap6M += 1;
+        sumPtwGap6M += weightPt*track->Pt();
+        sumWeightGap6M += weightPt;
+      }
+      if (track->Eta() > 0.3) {
+        NtrksAfter3subMGap6P += 1;
+        sumPtwGap6P += weightPt*track->Pt();
+        sumWeightGap6P += weightPt;
+      }
+      if (track->Eta() < -0.4) {
+        NtrksAfter3subMGap8M += 1;
+        sumPtwGap8M += weightPt*track->Pt();
+        sumWeightGap8M += weightPt;
+      }
+      if (track->Eta() > 0.4) {
+        NtrksAfter3subMGap8P += 1;
+        sumPtwGap8P += weightPt*track->Pt();
+        sumWeightGap8P += weightPt;
+      }
+      if (track->Eta() < -0.5) {
+        NtrksAfter3subMGap10M += 1;
+        sumPtwGap10M += weightPt*track->Pt();
+        sumWeightGap10M += weightPt;
+      }
+      if (track->Eta() > 0.5) {
+        NtrksAfter3subMGap10P += 1;
+        sumPtwGap10P += weightPt*track->Pt();
+        sumWeightGap10P += weightPt;
+      }
+      if (track->Eta() < -0.6) {
+        NtrksAfter3subMGap12M += 1;
+        sumPtwGap12M += weightPt*track->Pt();
+        sumWeightGap12M += weightPt;
+      }
+      if (track->Eta() > 0.6) {
+        NtrksAfter3subMGap12P += 1;
+        sumPtwGap12P += weightPt*track->Pt();
+        sumWeightGap12P += weightPt;
+      }
+      if (track->Eta() < -0.7) {
+        NtrksAfter3subMGap14M += 1;
+        sumPtwGap14M += weightPt*track->Pt();
+        sumWeightGap14M += weightPt;
+      }
+      if (track->Eta() > 0.7) {
+        NtrksAfter3subMGap14P += 1;
+        sumPtwGap14P += weightPt*track->Pt();
+        sumWeightGap14P += weightPt;
+      }
+    }
+
+    if (track->Eta() < 0) {
+      NtrksAfterGap0M += 1;
+      for(int iharm=0; iharm<8; iharm++) {
+        for(int ipow=0; ipow<6; ipow++) {
+          QcosGap0M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+          QsinGap0M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+        }
+      }
+    }
+    if (track->Eta() > 0) {
+      NtrksAfterGap0P += 1;
+      for(int iharm=0; iharm<8; iharm++) {
+        for(int ipow=0; ipow<6; ipow++) {
+          QcosGap0P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+          QsinGap0P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+        }
+      }
+    }
+    // Gap > 0.2
+    if (track->Eta() < -0.1) {
+      NtrksAfterGap2M++;
+      for(int iharm=0; iharm<8; iharm++) {
+        for(int ipow=0; ipow<6; ipow++) {
+          QcosGap2M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+          QsinGap2M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+        }
+      }
+    }
+    if (track->Eta() > 0.1) {
+      NtrksAfterGap2P++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap2P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+          QsinGap2P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+        }
+      }
+    }
+    if (track->Eta() < -0.2) {
+      NtrksAfterGap4M++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap4M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+          QsinGap4M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+        }
+      }
+    }
+    if (track->Eta() > 0.2) {
+      NtrksAfterGap4P++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap4P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+          QsinGap4P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+        }
+      }
+    }
+    if (track->Eta() < -0.3) {
+      NtrksAfterGap6M++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap6M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+          QsinGap6M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+        }
+      }
+    }
+    if (track->Eta() > 0.3) {
+      NtrksAfterGap6P++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap6P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+          QsinGap6P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+        }
+      }
+    }
+    // Gap > 0.8
+    if(track->Eta() < -0.4) {
       NtrksAfterGap8M++;
       for(int iharm=0; iharm<8; iharm++) {
         for(int ipow=0; ipow<6; ipow++) {
@@ -1118,7 +1596,7 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCTruth(AliVEvent* aod, float centrV0, floa
         }
       }
     }
-    if(track->Eta() > fEtaGap3Sub1) {
+    if(track->Eta() > 0.4) {
       NtrksAfterGap8P++;
       for(int iharm=0; iharm<8; iharm++) {
         for(int ipow=0; ipow<6; ipow++) {
@@ -1127,9 +1605,63 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCTruth(AliVEvent* aod, float centrV0, floa
         }
       }
     }
+    if (track->Eta() < -0.5) {
+      NtrksAfterGap10M++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap10M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+          QsinGap10M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+        }
+      }
+    }
+    if (track->Eta() > 0.5) {
+      NtrksAfterGap10P++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap10P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+          QsinGap10P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+        }
+      }
+    }
+    if (track->Eta() < -0.6) {
+      NtrksAfterGap12M++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap12M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+          QsinGap12M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+        }
+      }
+    }
+    if (track->Eta() > 0.6) {
+      NtrksAfterGap12P++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap12P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+          QsinGap12P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+        }
+      }
+    }
+    if (track->Eta() < -0.7) {
+      NtrksAfterGap14M++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap14M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+          QsinGap14M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+        }
+      }
+    }
+    if (track->Eta() > 0.7) {
+      NtrksAfterGap14P++;
+      for (int iharm = 0; iharm < 8; iharm++) {
+        for (int ipow = 0; ipow < 6; ipow++) {
+          QcosGap14P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+          QsinGap14P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+        }
+      }
+    }
 
     //..3-subevent method
-    if(track->Eta() < -fEtaGap3Sub1) {//..left part
+    if (track->Eta() < -fEtaGap3Sub1) {//..left part
       NtrksAfter3subL += 1;
       for(int iharm=0; iharm<8; iharm++) {
         for(int ipow=0; ipow<6; ipow++) {
@@ -1138,14 +1670,9 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCTruth(AliVEvent* aod, float centrV0, floa
         }
       }
     }
-    if(track->Eta() >= -fEtaGap3Sub2 && track->Eta() <= fEtaGap3Sub2) {//..middle part
-      sumPtw+=weightPt*track->Pt();
-      sumPtw2+=weightPt*weightPt*track->Pt();
-      sumPt2w2 += weightPt*weightPt*track->Pt()*track->Pt();
-      sumWeight += weightPt;
-      sumWeight2 += weightPt*weightPt;
 
-      NtrksAfter3subM += 1;
+    if(track->Eta() >= -fEtaGap3Sub2 && track->Eta() <= fEtaGap3Sub2) {//..middle part
+      // NtrksAfter3subM += 1; should not have counting here because it is already counted above
       for(int iharm=0; iharm<8; iharm++) {
         for(int ipow=0; ipow<6; ipow++) {
           QcosSubMiddle[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
@@ -1153,6 +1680,7 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCTruth(AliVEvent* aod, float centrV0, floa
         }
       }
     }
+
     if(track->Eta() > fEtaGap3Sub1) {//..right part
       NtrksAfter3subR += 1;
       for(int iharm=0; iharm<8; iharm++) {
@@ -1167,8 +1695,23 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCTruth(AliVEvent* aod, float centrV0, floa
   //............................
   //..GENERIC FRAMEWORK RP
   //............................
+  //..calculate Q-vector for each harmonics n and power p
+  correlator.FillQVector(correlator.Qvector0M, QcosGap0M, QsinGap0M);
+  correlator.FillQVector(correlator.Qvector0P, QcosGap0P, QsinGap0P);
+  correlator.FillQVector(correlator.Qvector2M, QcosGap2M, QsinGap2M);
+  correlator.FillQVector(correlator.Qvector2P, QcosGap2P, QsinGap2P);
+  correlator.FillQVector(correlator.Qvector4M, QcosGap4M, QsinGap4M);
+  correlator.FillQVector(correlator.Qvector4P, QcosGap4P, QsinGap4P);
+  correlator.FillQVector(correlator.Qvector6M, QcosGap6M, QsinGap6M);
+  correlator.FillQVector(correlator.Qvector6P, QcosGap6P, QsinGap6P);
   correlator.FillQVector(correlator.Qvector8M, QcosGap8M, QsinGap8M);
   correlator.FillQVector(correlator.Qvector8P, QcosGap8P, QsinGap8P);
+  correlator.FillQVector(correlator.Qvector10M, QcosGap10M, QsinGap10M);
+  correlator.FillQVector(correlator.Qvector10P, QcosGap10P, QsinGap10P);
+  correlator.FillQVector(correlator.Qvector12M, QcosGap12M, QsinGap12M);
+  correlator.FillQVector(correlator.Qvector12P, QcosGap12P, QsinGap12P);
+  correlator.FillQVector(correlator.Qvector14M, QcosGap14M, QsinGap14M);
+  correlator.FillQVector(correlator.Qvector14P, QcosGap14P, QsinGap14P);
   correlator.FillQVector(correlator.QvectorSubLeft, QcosSubLeft, QsinSubLeft);
   correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight);
   correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle);
@@ -1180,7 +1723,6 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCTruth(AliVEvent* aod, float centrV0, floa
     CalculateProfile(multProfile_bin[bootstrap_value], NtrksCounter, NtrksAfter);
   } else {
   }
-
 }
 
 //________________________________________________________________________
@@ -1213,8 +1755,6 @@ void AliAnalysisTaskVnPtCorr::AnalyzeMCReco(AliVEvent* aod, float centrV0, float
   sumPt2w2 = 0;
   sumWeight = 0;
   sumWeight2 = 0;
-  eventWeight  = 0;
-  eventWeight2 = 0;
 
   //..for DCA
   double pos[3], vz, vx, vy;
@@ -1834,10 +2374,22 @@ Double_t AliAnalysisTaskVnPtCorr::GetFlowWeightSystematics(const AliVParticle* t
 
 void AliAnalysisTaskVnPtCorr::InitProfile(PhysicsProfileVnPt& multProfile, TString label, TList* listOfProfile) {
 
+  // Mean Pt
   multProfile.fMeanPt = new TProfile(Form("fPt%s", label.Data()), "Mean Pt", nn, xbins);
   multProfile.fMeanPt->Sumw2();
   listOfProfile->Add(multProfile.fMeanPt);
 
+  for (int i = 0; i < 4; i++) {
+    multProfile.fMeanPtEta[i] = new TProfile(Form("fPtEta%d%s", i+1, label.Data()), "Mean Pt", nn, xbins);
+    multProfile.fMeanPtEta[i]->Sumw2();
+    listOfProfile->Add(multProfile.fMeanPtEta[i]);
+  }
+
+  multProfile.fMeanPtEta8 = new TProfile(Form("fPtEta8%s", label.Data()), "Mean Pt", nn, xbins);
+  multProfile.fMeanPtEta8->Sumw2();
+  listOfProfile->Add(multProfile.fMeanPtEta8);
+
+  // PCC
   multProfile.fc22w = new TProfile(Form("fChc22w%s", label.Data()), "v2^2 with event weight", nn, xbins);
   multProfile.fc22w->Sumw2();
   listOfProfile->Add(multProfile.fc22w);
@@ -1846,13 +2398,35 @@ void AliAnalysisTaskVnPtCorr::InitProfile(PhysicsProfileVnPt& multProfile, TStri
   multProfile.fPcc->Sumw2();
   listOfProfile->Add(multProfile.fPcc);
 
-  multProfile.fc22nw = new TProfile(Form("fChc22nw%s", label.Data()), "v2^2 without event weight", nn, xbins);
-  multProfile.fc22nw->Sumw2();
-  listOfProfile->Add(multProfile.fc22nw);
+  for (int i = 0; i < 4; i++) {
+    multProfile.fPccGap[i] = new TProfile(Form("fV2PtGap%d%s", i*2+8, label.Data()), "v2-Pt correlation", nn, xbins);
+    multProfile.fPccGap[i]->Sumw2();
+    listOfProfile->Add(multProfile.fPccGap[i]);
 
-  multProfile.fc24nw = new TProfile(Form("fChc24nw%s", label.Data()), "v2^4 with event weight", nn, xbins);
-  multProfile.fc24nw->Sumw2();
-  listOfProfile->Add(multProfile.fc24nw);
+    multProfile.fc22wGap[i] = new TProfile(Form("fChc22wGap%d%s", i*2+8, label.Data()), "v2^2 with event weight", nn, xbins);
+    multProfile.fc22wGap[i]->Sumw2();
+    listOfProfile->Add(multProfile.fc22wGap[i]);
+  }
+
+  for (int i = 0; i < 4; i++) {
+    multProfile.fPccEta[i] = new TProfile(Form("fV2PtEta%d%s", i+1, label.Data()), "v2-Pt correlation", nn, xbins);
+    multProfile.fPccEta[i]->Sumw2();
+    listOfProfile->Add(multProfile.fPccEta[i]);
+
+    multProfile.fc22wEta[i] = new TProfile(Form("fChc22wEta%d%s", i+1, label.Data()), "v2^2 with event weight", nn, xbins);
+    multProfile.fc22wEta[i]->Sumw2();
+    listOfProfile->Add(multProfile.fc22wEta[i]);
+  }
+
+  for (int i = 0; i < 8; i++) {
+    multProfile.fc22nwGap[i] = new TProfile(Form("fChc22nwGap%d%s", i*2, label.Data()), "v2^2 without event weight", nn, xbins);
+    multProfile.fc22nwGap[i]->Sumw2();
+    listOfProfile->Add(multProfile.fc22nwGap[i]);
+
+    multProfile.fc24nwGap[i] = new TProfile(Form("fChc24nwGap%d%s", i*2, label.Data()), "v2^4 without event weight", nn, xbins);
+    multProfile.fc24nwGap[i]->Sumw2();
+    listOfProfile->Add(multProfile.fc24nwGap[i]);
+  }
 
   multProfile.fPtVariancea = new TProfile(Form("fdPt2a%s", label.Data()), "Pt variance", nn, xbins);
   multProfile.fPtVariancea->Sumw2();
@@ -1862,42 +2436,19 @@ void AliAnalysisTaskVnPtCorr::InitProfile(PhysicsProfileVnPt& multProfile, TStri
   multProfile.fPtVarianceb->Sumw2();
   listOfProfile->Add(multProfile.fPtVarianceb);
 
-  multProfile.fPtVariancec = new TProfile(Form("fdPt2c%s", label.Data()), "Pt variance", nn, xbins);
-  multProfile.fPtVariancec->Sumw2();
-  listOfProfile->Add(multProfile.fPtVariancec);
+  for (int i = 0; i < 8; i++) {
+    multProfile.fPtVarGap[i] = new TProfile(Form("fdPt2Gap%d%s", i*2, label.Data()), "Pt variance", nn, xbins);
+    multProfile.fPtVarGap[i]->Sumw2();
+    listOfProfile->Add(multProfile.fPtVarGap[i]);
 
-  multProfile.fMeanPt2D = new TProfile2D(Form("fPt2D%s", label.Data()), "Mean Pt", nn, xbins, nn, xbins_uncorr);
-  multProfile.fMeanPt2D->Sumw2();
-  listOfProfile->Add(multProfile.fMeanPt2D);
+    multProfile.fMeanPtGapM[i] = new TProfile(Form("fPtGap%dM%s", i*2, label.Data()), "Mean Pt", nn, xbins);
+    multProfile.fMeanPtGapM[i]->Sumw2();
+    listOfProfile->Add(multProfile.fMeanPtGapM[i]);
 
-  multProfile.fc22w2D = new TProfile2D(Form("fChc22w2D%s", label.Data()), "v2^2 with event weight", nn, xbins, nn, xbins_uncorr);
-  multProfile.fc22w2D->Sumw2();
-  listOfProfile->Add(multProfile.fc22w2D);
-
-  multProfile.fPcc2D = new TProfile2D(Form("fV2Pt2D%s", label.Data()), "v2-Pt correlation", nn, xbins, nn, xbins_uncorr);
-  multProfile.fPcc2D->Sumw2();
-  listOfProfile->Add(multProfile.fPcc2D);
-
-  multProfile.fc22nw2D = new TProfile2D(Form("fChc22nw2D%s", label.Data()), "v2^2 without event weight", nn, xbins, nn, xbins_uncorr);
-  multProfile.fc22nw2D->Sumw2();
-  listOfProfile->Add(multProfile.fc22nw2D);
-
-  multProfile.fc24nw2D = new TProfile2D(Form("fChc24nw2D%s", label.Data()), "v2^4 with event weight", nn, xbins, nn, xbins_uncorr);
-  multProfile.fc24nw2D->Sumw2();
-  listOfProfile->Add(multProfile.fc24nw2D);
-
-  multProfile.fPtVariancea2D = new TProfile2D(Form("fdPt2a2D%s", label.Data()), "Pt variance", nn, xbins, nn, xbins_uncorr);
-  multProfile.fPtVariancea2D->Sumw2();
-  listOfProfile->Add(multProfile.fPtVariancea2D);
-
-  multProfile.fPtVarianceb2D = new TProfile2D(Form("fdPt2b2D%s", label.Data()), "Pt variance", nn, xbins, nn, xbins_uncorr);
-  multProfile.fPtVarianceb2D->Sumw2();
-  listOfProfile->Add(multProfile.fPtVarianceb2D);
-
-  multProfile.fPtVariancec2D = new TProfile2D(Form("fdPt2c2D%s", label.Data()), "Pt variance", nn, xbins, nn, xbins_uncorr);
-  multProfile.fPtVariancec2D->Sumw2();
-  listOfProfile->Add(multProfile.fPtVariancec2D);
-
+    multProfile.fMeanPtGapP[i] = new TProfile(Form("fPtGap%dP%s", i*2, label.Data()), "Mean Pt", nn, xbins);
+    multProfile.fMeanPtGapP[i]->Sumw2();
+    listOfProfile->Add(multProfile.fMeanPtGapP[i]);
+  }
 }
 
 Bool_t AliAnalysisTaskVnPtCorr::AcceptAOD(AliAODEvent *inEv) {
@@ -2028,43 +2579,316 @@ Bool_t AliAnalysisTaskVnPtCorr::AcceptMCTruthTrack(AliAODMCParticle *mtrk) {
 
 
 void AliAnalysisTaskVnPtCorr::CalculateProfile(PhysicsProfileVnPt& profile, double Ntrks, double Ntrks_uncorr) {
-  //..calculate the PCC
-  double Dn2GapLR = correlator.TwoGap8(0, 0).Re();
-  double Dn4GapLR = correlator.FourGap8(0, 0, 0, 0).Re();
-  if(NtrksAfter3subL > 1 && NtrksAfter3subM > 1 && NtrksAfter3subR > 1
-      && Dn2GapLR != 0 && Dn4GapLR != 0)
-  {
-    eventWeight = sumWeight;
-    eventWeight2 = sumWeight*sumWeight - sumWeight2;
-    TComplex v22_3subLR = correlator.TwoGap8(2, -2);
-    double v22Re_3subLR = v22_3subLR.Re()/Dn2GapLR;
+  // Calculate the Covariance
+  double Dn2Gap0  = correlator.TwoGap0(0, 0).Re();
+  double Dn2Gap2  = correlator.TwoGap2(0, 0).Re();
+  double Dn2Gap4  = correlator.TwoGap4(0, 0).Re();
+  double Dn2Gap6  = correlator.TwoGap6(0, 0).Re();
+  double Dn2Gap8  = correlator.TwoGap8(0, 0).Re();
+  double Dn2Gap10 = correlator.TwoGap10(0, 0).Re();
+  double Dn2Gap12 = correlator.TwoGap12(0, 0).Re();
+  double Dn2Gap14 = correlator.TwoGap14(0, 0).Re();
+  double Dn2_3sub_LR = correlator.Two_3SubLR(0, 0).Re();
+
+  double Dn4Gap0  = correlator.FourGap0(0, 0, 0, 0).Re();
+  double Dn4Gap2  = correlator.FourGap2(0, 0, 0, 0).Re();
+  double Dn4Gap4  = correlator.FourGap4(0, 0, 0, 0).Re();
+  double Dn4Gap6  = correlator.FourGap6(0, 0, 0, 0).Re();
+  double Dn4Gap8  = correlator.FourGap8(0, 0, 0, 0).Re();
+  double Dn4Gap10 = correlator.FourGap10(0, 0, 0, 0).Re();
+  double Dn4Gap12 = correlator.FourGap12(0, 0, 0, 0).Re();
+  // double Dn4Gap14 = correlator.FourGap14(0, 0, 0, 0).Re();
+
+
+  // Calculate the mean pt
+  if (NtrksAfterEta4 >= 1) {
+    double mPtWeight = sumWeightEta4;
+    double meanPt = sumPtwEta4/sumWeightEta4;
+    profile.fMeanPtEta[3]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfterEta3 >= 1) {
+    double mPtWeight = sumWeightEta3;
+    double meanPt = sumPtwEta3/sumWeightEta3;
+    profile.fMeanPtEta[2]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfterEta2 >= 1) {
+    double mPtWeight = sumWeightEta2;
+    double meanPt = sumPtwEta2/sumWeightEta2;
+    profile.fMeanPtEta[1]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfterEta1 >= 1) {
+    double mPtWeight = sumWeightEta1;
+    double meanPt = sumPtwEta1/sumWeightEta1;
+    profile.fMeanPtEta[0]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfterEta8 >= 1) {
+    double mPtWeight = sumWeightEta8;
+    double meanPt = sumPtwEta8/sumWeightEta8;
+    profile.fMeanPtEta8->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfter3subM >= 1) {
+    double mPtWeight = sumWeight;
+    double meanPt = sumPtw/sumWeight;
+    profile.fMeanPt->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfter3subMGap0M >= 1) {
+    double mPtWeight = sumWeightGap0M;
+    double meanPt = sumPtwGap0M/sumWeightGap0M;
+    profile.fMeanPtGapM[0]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfter3subMGap0P >= 1) {
+    double mPtWeight = sumWeightGap0P;
+    double meanPt = sumPtwGap0P/sumWeightGap0P;
+    profile.fMeanPtGapP[0]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfter3subMGap2M >= 1) {
+    double mPtWeight = sumWeightGap2M;
+    double meanPt = sumPtwGap2M/sumWeightGap2M;
+    profile.fMeanPtGapM[1]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfter3subMGap2P >= 1) {
+    double mPtWeight = sumWeightGap2P;
+    double meanPt = sumPtwGap2P/sumWeightGap2P;
+    profile.fMeanPtGapP[1]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfter3subMGap4M >= 1) {
+    double mPtWeight = sumWeightGap4M;
+    double meanPt = sumPtwGap4M/sumWeightGap4M;
+    profile.fMeanPtGapM[2]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfter3subMGap4P >= 1) {
+    double mPtWeight = sumWeightGap4P;
+    double meanPt = sumPtwGap4P/sumWeightGap4P;
+    profile.fMeanPtGapP[2]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfter3subMGap6M >= 1) {
+    double mPtWeight = sumWeightGap6M;
+    double meanPt = sumPtwGap6M/sumWeightGap6M;
+    profile.fMeanPtGapM[3]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfter3subMGap6P >= 1) {
+    double mPtWeight = sumWeightGap6P;
+    double meanPt = sumPtwGap6P/sumWeightGap6P;
+    profile.fMeanPtGapP[3]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfter3subMGap8M >= 1) {
+    double mPtWeight = sumWeightGap8M;
+    double meanPt = sumPtwGap8M/sumWeightGap8M;
+    profile.fMeanPtGapM[4]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfter3subMGap8P >= 1) {
+    double mPtWeight = sumWeightGap8P;
+    double meanPt = sumPtwGap8P/sumWeightGap8P;
+    profile.fMeanPtGapP[4]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfter3subMGap10M >= 1) {
+    double mPtWeight = sumWeightGap10M;
+    double meanPt = sumPtwGap10M/sumWeightGap10M;
+    profile.fMeanPtGapM[5]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfter3subMGap10P >= 1) {
+    double mPtWeight = sumWeightGap10P;
+    double meanPt = sumPtwGap10P/sumWeightGap10P;
+    profile.fMeanPtGapP[5]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfter3subMGap12M >= 1) {
+    double mPtWeight = sumWeightGap12M;
+    double meanPt = sumPtwGap12M/sumWeightGap12M;
+    profile.fMeanPtGapM[6]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfter3subMGap12P >= 1) {
+    double mPtWeight = sumWeightGap12P;
+    double meanPt = sumPtwGap12P/sumWeightGap12P;
+    profile.fMeanPtGapP[6]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfter3subMGap14M >= 1) {
+    double mPtWeight = sumWeightGap14M;
+    double meanPt = sumPtwGap14M/sumWeightGap14M;
+    profile.fMeanPtGapM[7]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+  if (NtrksAfter3subMGap14P >= 1) {
+    double mPtWeight = sumWeightGap14P;
+    double meanPt = sumPtwGap14P/sumWeightGap14P;
+    profile.fMeanPtGapP[7]->Fill(Ntrks, meanPt, mPtWeight);
+  }
+
+  // Calculate the v2^2 and sigma(v2^2)
+  if (NtrksAfterGap0M >= 2 && NtrksAfterGap0P >= 2 && Dn2Gap0 != 0 && Dn4Gap0 != 0) {
+    TComplex v22 = correlator.TwoGap0(2, -2);
+    double v22Re = v22.Re()/Dn2Gap0;
+    profile.fc22nwGap[0]->Fill(Ntrks, v22Re, Dn2Gap0);
+    TComplex v24 = correlator.FourGap0(2, 2, -2, -2);
+    double v24Re = v24.Re()/Dn4Gap0;
+    profile.fc24nwGap[0]->Fill(Ntrks, v24Re, Dn4Gap0);
+  }
+  if (NtrksAfterGap2M >= 2 && NtrksAfterGap2P >= 2 && Dn2Gap2 != 0 && Dn4Gap2 != 0) {
+    TComplex v22 = correlator.TwoGap2(2, -2);
+    double v22Re = v22.Re()/Dn2Gap2;
+    profile.fc22nwGap[1]->Fill(Ntrks, v22Re, Dn2Gap2);
+    TComplex v24 = correlator.FourGap2(2, 2, -2, -2);
+    double v24Re = v24.Re()/Dn4Gap2;
+    profile.fc24nwGap[1]->Fill(Ntrks, v24Re, Dn4Gap2);
+  }
+  if (NtrksAfterGap4M >= 2 && NtrksAfterGap4P >= 2 && Dn2Gap4 != 0 && Dn4Gap4 != 0) {
+    TComplex v22 = correlator.TwoGap4(2, -2);
+    double v22Re = v22.Re()/Dn2Gap4;
+    profile.fc22nwGap[2]->Fill(Ntrks, v22Re, Dn2Gap4);
+    TComplex v24 = correlator.FourGap4(2, 2, -2, -2);
+    double v24Re = v24.Re()/Dn4Gap4;
+    profile.fc24nwGap[2]->Fill(Ntrks, v24Re, Dn4Gap4);
+  }
+  if (NtrksAfterGap6M >= 2 && NtrksAfterGap6P >= 2 && Dn2Gap6 != 0 && Dn4Gap6 != 0) {
+    TComplex v22 = correlator.TwoGap6(2, -2);
+    double v22Re = v22.Re()/Dn2Gap6;
+    profile.fc22nwGap[3]->Fill(Ntrks, v22Re, Dn2Gap6);
+    TComplex v24 = correlator.FourGap6(2, 2, -2, -2);
+    double v24Re = v24.Re()/Dn4Gap6;
+    profile.fc24nwGap[3]->Fill(Ntrks, v24Re, Dn4Gap6);
+  }
+  if (NtrksAfterGap8M >= 2 && NtrksAfterGap8P >= 2 && Dn2Gap8 != 0 && Dn4Gap8 != 0) {
+    TComplex v22 = correlator.TwoGap8(2, -2);
+    double v22Re = v22.Re()/Dn2Gap8;
+    profile.fc22nwGap[4]->Fill(Ntrks, v22Re, Dn2Gap8);
+    TComplex v24 = correlator.FourGap8(2, 2, -2, -2);
+    double v24Re = v24.Re()/Dn4Gap8;
+    profile.fc24nwGap[4]->Fill(Ntrks, v24Re, Dn4Gap8);
+  }
+  if (NtrksAfterGap10M >= 2 && NtrksAfterGap10P >= 2 && Dn2Gap10 != 0 && Dn4Gap10 != 0) {
+    TComplex v22 = correlator.TwoGap10(2, -2);
+    double v22Re = v22.Re()/Dn2Gap10;
+    profile.fc22nwGap[5]->Fill(Ntrks, v22Re, Dn2Gap10);
+    TComplex v24 = correlator.FourGap10(2, 2, -2, -2);
+    double v24Re = v24.Re()/Dn4Gap10;
+    profile.fc24nwGap[5]->Fill(Ntrks, v24Re, Dn4Gap10);
+  }
+  if (NtrksAfterGap12M >= 2 && NtrksAfterGap12P >= 2 && Dn2Gap12 != 0 && Dn4Gap12 != 0) {
+    TComplex v22 = correlator.TwoGap12(2, -2);
+    double v22Re = v22.Re()/Dn2Gap12;
+    profile.fc22nwGap[6]->Fill(Ntrks, v22Re, Dn2Gap12);
+    TComplex v24 = correlator.FourGap12(2, 2, -2, -2);
+    double v24Re = v24.Re()/Dn4Gap12;
+    profile.fc24nwGap[6]->Fill(Ntrks, v24Re, Dn4Gap12);
+  }
+  if (NtrksAfterGap14M >= 2 && NtrksAfterGap14P >= 2 && Dn2Gap14 != 0) {
+    TComplex v22 = correlator.TwoGap14(2, -2);
+    double v22Re = v22.Re()/Dn2Gap14;
+    profile.fc22nwGap[7]->Fill(Ntrks, v22Re, Dn2Gap14);
+    // TComplex v24 = correlator.FourGap14(2, 2, -2, -2);
+    // double v24Re = v24.Re()/Dn4Gap14;
+    // profile.fc24nwGap[7]->Fill(Ntrks, v24Re, Dn4Gap14);
+  }
+
+  // Calculate the VnPt
+  if (NtrksAfter3subL >= 1 && NtrksAfter3subM >= 1 && NtrksAfter3subR >= 1 && Dn2_3sub_LR != 0) {
+    double eventWeight = sumWeight;
+    TComplex v22_3subLR = correlator.Two_3SubLR(2, -2);
+    double v22Re_3subLR = v22_3subLR.Re()/Dn2_3sub_LR;
 
     double meanPt = sumPtw/sumWeight;
-    profile.fc22w->Fill(Ntrks, v22Re_3subLR, Dn2GapLR*eventWeight);
-    profile.fPcc->Fill(Ntrks,  v22Re_3subLR*meanPt, Dn2GapLR*eventWeight);
-    profile.fMeanPt->Fill(Ntrks, meanPt, eventWeight);
+    profile.fc22w->Fill(Ntrks, v22Re_3subLR, Dn2_3sub_LR*eventWeight);
+    profile.fPcc->Fill(Ntrks,  v22Re_3subLR*meanPt, Dn2_3sub_LR*eventWeight);
+  }
+  // Calculate the VnPt with eta gap
+  if (NtrksAfter3subM >= 1) {
+    double mPtWeight = sumWeight;
+    double meanPt = sumPtw/sumWeight;
+    if (NtrksAfterGap8M >= 1 && NtrksAfterGap8P >= 1 && Dn2Gap8 != 0) {
+      TComplex v22_Gap8 = correlator.TwoGap8(2, -2);
+      double v22Re_Gap8 = v22_Gap8.Re()/Dn2Gap8;
 
-    profile.fc22w2D->Fill(Ntrks, Ntrks_uncorr, v22Re_3subLR, Dn2GapLR*eventWeight);
-    profile.fPcc2D->Fill(Ntrks, Ntrks_uncorr, v22Re_3subLR*meanPt, Dn2GapLR*eventWeight);
-    profile.fMeanPt2D->Fill(Ntrks, Ntrks_uncorr, meanPt, eventWeight);
+      profile.fc22wGap[0]->Fill(Ntrks, v22Re_Gap8, Dn2Gap8*mPtWeight);
+      profile.fPccGap[0]->Fill(Ntrks, v22Re_Gap8*meanPt, Dn2Gap8*mPtWeight);
+    }
+    if (NtrksAfterGap10M >= 1 && NtrksAfterGap10P >= 1 && Dn2Gap10 != 0) {
+      TComplex v22_Gap10 = correlator.TwoGap10(2, -2);
+      double v22Re_Gap10 = v22_Gap10.Re()/Dn2Gap10;
 
+      profile.fc22wGap[1]->Fill(Ntrks, v22Re_Gap10, Dn2Gap10*mPtWeight);
+      profile.fPccGap[1]->Fill(Ntrks, v22Re_Gap10*meanPt, Dn2Gap10*mPtWeight);
+    }
+    if (NtrksAfterGap12M >= 1 && NtrksAfterGap12P >= 1 && Dn2Gap12 != 0) {
+      TComplex v22_Gap12 = correlator.TwoGap12(2, -2);
+      double v22Re_Gap12 = v22_Gap12.Re()/Dn2Gap12;
+
+      profile.fc22wGap[2]->Fill(Ntrks, v22Re_Gap12, Dn2Gap12*mPtWeight);
+      profile.fPccGap[2]->Fill(Ntrks, v22Re_Gap12*meanPt, Dn2Gap12*mPtWeight);
+    }
+    if (NtrksAfterGap14M >= 1 && NtrksAfterGap14P >= 1 && Dn2Gap14 != 0) {
+      TComplex v22_Gap14 = correlator.TwoGap14(2, -2);
+      double v22Re_Gap14 = v22_Gap14.Re()/Dn2Gap14;
+
+      profile.fc22wGap[3]->Fill(Ntrks, v22Re_Gap14, Dn2Gap14*mPtWeight);
+      profile.fPccGap[3]->Fill(Ntrks, v22Re_Gap14*meanPt, Dn2Gap14*mPtWeight);
+    }
+  }
+  if (NtrksAfter3subL >= 1 && NtrksAfter3subR >= 1 && Dn2_3sub_LR != 0) {
+    TComplex v22_3subLR = correlator.Two_3SubLR(2, -2);
+    double v22Re_3subLR = v22_3subLR.Re()/Dn2_3sub_LR;
+    if (NtrksAfterEta4 >= 1) {
+      double mPtWeight = sumWeightEta4;
+      double meanPt = sumPtwEta4/sumWeightEta4;
+      profile.fc22wEta[3]->Fill(Ntrks, v22Re_3subLR, Dn2_3sub_LR*mPtWeight);
+      profile.fPccEta[3]->Fill(Ntrks, v22Re_3subLR*meanPt, Dn2_3sub_LR*mPtWeight);
+    }
+    if (NtrksAfterEta3 >= 1) {
+      double mPtWeight = sumWeightEta3;
+      double meanPt = sumPtwEta3/sumWeightEta3;
+      profile.fc22wEta[2]->Fill(Ntrks, v22Re_3subLR, Dn2_3sub_LR*mPtWeight);
+      profile.fPccEta[2]->Fill(Ntrks, v22Re_3subLR*meanPt, Dn2_3sub_LR*mPtWeight);
+    }
+    if (NtrksAfterEta2 >= 1) {
+      double mPtWeight = sumWeightEta2;
+      double meanPt = sumPtwEta2/sumWeightEta2;
+      profile.fc22wEta[1]->Fill(Ntrks, v22Re_3subLR, Dn2_3sub_LR*mPtWeight);
+      profile.fPccEta[1]->Fill(Ntrks, v22Re_3subLR*meanPt, Dn2_3sub_LR*mPtWeight);
+    }
+    if (NtrksAfterEta1 >= 1) {
+      double mPtWeight = sumWeightEta1;
+      double meanPt = sumPtwEta1/sumWeightEta1;
+      profile.fc22wEta[0]->Fill(Ntrks, v22Re_3subLR, Dn2_3sub_LR*mPtWeight);
+      profile.fPccEta[0]->Fill(Ntrks, v22Re_3subLR*meanPt, Dn2_3sub_LR*mPtWeight);
+    }
+  }
+
+  // Calculate the ck
+  if (NtrksAfter3subM >= 2) {
+    double eventWeight = sumWeight;
+    double eventWeight2 = sumWeight*sumWeight - sumWeight2;
     // Variance of Pt
     profile.fPtVariancea->Fill(Ntrks, (sumPtw*sumPtw-sumPt2w2)   / eventWeight2, eventWeight2);
     profile.fPtVarianceb->Fill(Ntrks, (sumWeight*sumPtw-sumPtw2) / eventWeight2, eventWeight2);
-    profile.fPtVariancec->Fill(Ntrks, 1, eventWeight2);
-
-    profile.fPtVariancea2D->Fill(Ntrks, Ntrks_uncorr, (sumPtw*sumPtw-sumPt2w2)   / eventWeight2, eventWeight2);
-    profile.fPtVarianceb2D->Fill(Ntrks, Ntrks_uncorr, (sumWeight*sumPtw-sumPtw2) / eventWeight2, eventWeight2);
-    profile.fPtVariancec2D->Fill(Ntrks, Ntrks_uncorr, 1, eventWeight2);
-
-    // Variance of vn^2
-    profile.fc22nw->Fill(Ntrks, v22Re_3subLR, Dn2GapLR);
-    profile.fc22nw2D->Fill(Ntrks, Ntrks_uncorr, v22Re_3subLR, Dn2GapLR);
-
-    TComplex v24_3subLR = correlator.FourGap8(2, 2, -2, -2);
-    double v24Re_3subLR = v24_3subLR.Re()/Dn4GapLR;
-    profile.fc24nw->Fill(Ntrks, v24Re_3subLR, Dn4GapLR);
-    profile.fc24nw2D->Fill(Ntrks, Ntrks_uncorr, v24Re_3subLR, Dn4GapLR);
+  }
+  if (NtrksAfter3subMGap0M >= 1 && NtrksAfter3subMGap0P >= 1) {
+    eventWeight2 = sumWeightGap0M * sumWeightGap0P;
+    profile.fPtVarGap[0]->Fill(Ntrks, (sumPtwGap0M*sumPtwGap0P) / eventWeight2, eventWeight2);
+  }
+  if (NtrksAfter3subMGap2M >= 1 && NtrksAfter3subMGap2P >= 1) {
+    eventWeight2 = sumWeightGap2M * sumWeightGap2P;
+    profile.fPtVarGap[1]->Fill(Ntrks, (sumPtwGap2M*sumPtwGap2P) / eventWeight2, eventWeight2);
+  }
+  if (NtrksAfter3subMGap4M >= 1 && NtrksAfter3subMGap4P >= 1) {
+    eventWeight2 = sumWeightGap4M * sumWeightGap4P;
+    profile.fPtVarGap[2]->Fill(Ntrks, (sumPtwGap4M*sumPtwGap4P) / eventWeight2, eventWeight2);
+  }
+  if (NtrksAfter3subMGap6M >= 1 && NtrksAfter3subMGap6P >= 1) {
+    eventWeight2 = sumWeightGap6M * sumWeightGap6P;
+    profile.fPtVarGap[3]->Fill(Ntrks, (sumPtwGap6M*sumPtwGap6P) / eventWeight2, eventWeight2);
+  }
+  if (NtrksAfter3subMGap8M >= 1 && NtrksAfter3subMGap8P >= 1) {
+    eventWeight2 = sumWeightGap8M * sumWeightGap8P;
+    profile.fPtVarGap[4]->Fill(Ntrks, (sumPtwGap8M*sumPtwGap8P) / eventWeight2, eventWeight2);
+  }
+  if (NtrksAfter3subMGap10M >= 1 && NtrksAfter3subMGap10P >= 1) {
+    eventWeight2 = sumWeightGap10M * sumWeightGap10P;
+    profile.fPtVarGap[5]->Fill(Ntrks, (sumPtwGap10M*sumPtwGap10P) / eventWeight2, eventWeight2);
+  }
+  if (NtrksAfter3subMGap12M >= 1 && NtrksAfter3subMGap12P >= 1) {
+    eventWeight2 = sumWeightGap12M * sumWeightGap12P;
+    profile.fPtVarGap[6]->Fill(Ntrks, (sumPtwGap12M*sumPtwGap12P) / eventWeight2, eventWeight2);
+  }
+  if (NtrksAfter3subMGap14M >= 1 && NtrksAfter3subMGap14P >= 1) {
+    eventWeight2 = sumWeightGap14M * sumWeightGap14P;
+    profile.fPtVarGap[7]->Fill(Ntrks, (sumPtwGap14M*sumPtwGap14P) / eventWeight2, eventWeight2);
   }
 }
 
@@ -2201,40 +3025,42 @@ void AliAnalysisTaskVnPtCorr::Terminate(Option_t *)
 
 ClassImp(PhysicsProfileVnPt);
 PhysicsProfileVnPt::PhysicsProfileVnPt() :
+  fMeanPtEta8(nullptr),
   fMeanPt(nullptr),
-  fc22w(nullptr),
   fPcc(nullptr),
-  fc22nw(nullptr),
-  fc24nw(nullptr),
+  fc22w(nullptr),
   fPtVariancea(nullptr),
-  fPtVarianceb(nullptr),
-  fPtVariancec(nullptr),
-  fMeanPt2D(nullptr),
-  fc22w2D(nullptr),
-  fPcc2D(nullptr),
-  fc22nw2D(nullptr),
-  fc24nw2D(nullptr),
-  fPtVariancea2D(nullptr),
-  fPtVarianceb2D(nullptr),
-  fPtVariancec2D(nullptr) {}
+  fPtVarianceb(nullptr) {
+    memset(fMeanPtEta, 0, sizeof(fMeanPtEta));
+    memset(fPccGap, 0, sizeof(fPccGap));
+    memset(fc22wGap, 0, sizeof(fc22wGap));
+    memset(fPccEta, 0, sizeof(fPccEta));
+    memset(fc22wEta, 0, sizeof(fc22wEta));
+    memset(fc22nwGap, 0, sizeof(fc22nwGap));
+    memset(fc24nwGap, 0, sizeof(fc24nwGap));
+    memset(fPtVarGap, 0, sizeof(fPtVarGap));
+    memset(fMeanPtGapM, 0, sizeof(fMeanPtGapM));
+    memset(fMeanPtGapP, 0, sizeof(fMeanPtGapP));
+  }
 
   PhysicsProfileVnPt::PhysicsProfileVnPt(const PhysicsProfileVnPt& profile) :
-    fMeanPt(nullptr),
-    fc22w(nullptr),
-    fPcc(nullptr),
-    fc22nw(nullptr),
-    fc24nw(nullptr),
-    fPtVariancea(nullptr),
-    fPtVarianceb(nullptr),
-    fPtVariancec(nullptr),
-    fMeanPt2D(nullptr),
-    fc22w2D(nullptr),
-    fPcc2D(nullptr),
-    fc22nw2D(nullptr),
-    fc24nw2D(nullptr),
-    fPtVariancea2D(nullptr),
-    fPtVarianceb2D(nullptr),
-    fPtVariancec2D(nullptr) {}
+  fMeanPtEta8(nullptr),
+  fMeanPt(nullptr),
+  fPcc(nullptr),
+  fc22w(nullptr),
+  fPtVariancea(nullptr),
+  fPtVarianceb(nullptr) {
+    memset(fMeanPtEta, 0, sizeof(fMeanPtEta));
+    memset(fPccGap, 0, sizeof(fPccGap));
+    memset(fc22wGap, 0, sizeof(fc22wGap));
+    memset(fPccEta, 0, sizeof(fPccEta));
+    memset(fc22wEta, 0, sizeof(fc22wEta));
+    memset(fc22nwGap, 0, sizeof(fc22nwGap));
+    memset(fc24nwGap, 0, sizeof(fc24nwGap));
+    memset(fPtVarGap, 0, sizeof(fPtVarGap));
+    memset(fMeanPtGapM, 0, sizeof(fMeanPtGapM));
+    memset(fMeanPtGapP, 0, sizeof(fMeanPtGapP));
+  }
 
     int AliAnalysisTaskVnPtCorr::GetEtaPtFlag(double dEta) {
       if(dEta > 0.0){
