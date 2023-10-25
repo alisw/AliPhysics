@@ -1965,7 +1965,7 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
       double arrMinvBin[nBinsMinv + 1];
       for (Int_t i = 0; i < nBinsMinv + 1; i++)
       {
-        arrMinvBin[i] = (maxMinv / nPhiBins) * i;
+        arrMinvBin[i] = (maxMinv / nBinsMinv) * i;
       }
       fHistoMotherInvMassPtPhi[iCut] = new TH3F("ESD_Mother_InvMass_Pt_Phi", "ESD_Mother_InvMass_Pt_Phi", nBinsMinv, arrMinvBin, nBinsPt, arrPtBinning, nPhiBins, arrPhiBin);
       fHistoMotherInvMassPtPhi[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
