@@ -207,9 +207,17 @@ void AliAnalysisTaskEtaPhigg::UserCreateOutputObjects() {
   fOutputContainer->Add(
       new TH2F("hDispCTSSp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
   fOutputContainer->Add(
+      new TH2F("hCTS2Sp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
+  fOutputContainer->Add(
+      new TH2F("hDispCTS2Sp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
+  fOutputContainer->Add(
       new TH2F("hCPVSp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
   fOutputContainer->Add(
       new TH2F("hDispCPVSp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
+  fOutputContainer->Add(
+      new TH2F("hCPV2Sp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
+  fOutputContainer->Add(
+      new TH2F("hDispCPV2Sp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
   fOutputContainer->Add(
       new TH2F("hBothVetoSp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
   fOutputContainer->Add(new TH2F("hDispBothVetoSp", "Spectrum in PHOS", 100, 0.,
@@ -530,10 +538,20 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *) {
       if (disp)
         FillHistogram("hDispCTSSp", clu->E(), fCentrality);
     }
-    if (trackCPV && mod == 3) {
+    if (trackCPV2) {
+      FillHistogram("hCTS2Sp", clu->E(), fCentrality);
+      if (disp)
+        FillHistogram("hDispCTS2Sp", clu->E(), fCentrality);
+    }
+    if (cpvCPV && mod == 3) {
       FillHistogram("hCPVSp", clu->E(), fCentrality);
       if (disp)
         FillHistogram("hDispCPVSp", clu->E(), fCentrality);
+    }
+    if (cpvCPV2 && mod == 3) {
+      FillHistogram("hCPV2Sp", clu->E(), fCentrality);
+      if (disp)
+        FillHistogram("hDispCPV2Sp", clu->E(), fCentrality);
     }
     if (cpvAndTrack && mod == 3) {
       FillHistogram("hBothVetoSp", clu->E(), fCentrality);
@@ -846,7 +864,7 @@ bool AliAnalysisTaskEtaPhigg::PairCut(const AliCaloPhoton *ph1,
     if (iPID == 2)
       return ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV &&
              ph1->IsDispOK() && cpv2CPV && ph2->IsDispOK(); // Disp & CTS
-    if (iPID == 2)
+    if (iPID == 3)
       return ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 &&
              ph1->IsDispOK() && cpv2CPV2 && ph2->IsDispOK(); // Disp & CTS
   }
