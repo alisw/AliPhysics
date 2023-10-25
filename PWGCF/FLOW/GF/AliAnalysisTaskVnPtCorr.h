@@ -79,28 +79,33 @@ class PhysicsProfileVnPt : public TObject {
 	public:
 		PhysicsProfileVnPt();
 		PhysicsProfileVnPt(const PhysicsProfileVnPt&);
+
 		// Physics profiles
+    TProfile*  fMeanPtEta8;         //! Average of Pt -0.8 to 0.8
+    TProfile*  fMeanPtEta[4];       //! Average of Pt -0.4 to 0.4
+    TProfile*  fMeanPt;             //! Average of Pt in mid-rapidity
+    // Pcc
+    TProfile*  fPcc;                //! v2^2-pt
+    TProfile*  fc22w;               //! vn^2 with event weight
+    TProfile*  fPccGap[4];            //! v2^2-pt default no gap
+    TProfile*  fc22wGap[4];           //! vn^2 with event weight |\Delta\eta| > 0.8
+    TProfile*  fPccEta[4];            //! v2^2-pt
+    TProfile*  fc22wEta[4];           //! vn^2 with event weight |\eta| < 0.3
 
-    TProfile*  fMeanPt;         //! Average of Pt
-    TProfile*  fc22w;           //! vn^2 with event weight
-    TProfile*  fPcc;            //! v2^2-pt
-    TProfile*  fc22nw;           //! vn^2 without event weight
-    TProfile*  fc24nw;           //! vn^4 without event weight
-    TProfile*  fPtVariancea;                  //! for variance of pt
-    TProfile*  fPtVarianceb;                  //! for variance of pt
-    TProfile*  fPtVariancec;                  //! for variance of pt
+    // sigma(vn^2)
+    TProfile*  fc22nwGap[8];          //! vn^2 without event weight
+    TProfile*  fc24nwGap[8];          //! vn^4 without event weight
 
-    TProfile2D*  fMeanPt2D;         //! Average of Pt
-    TProfile2D*  fc22w2D;           //! vn^2 with event weight
-    TProfile2D*  fPcc2D;            //! v2^2-pt
-    TProfile2D*  fc22nw2D;           //! vn^2 without event weight
-    TProfile2D*  fc24nw2D;           //! vn^4 without event weight
-    TProfile2D*  fPtVariancea2D;                  //! for variance of pt
-    TProfile2D*  fPtVarianceb2D;                  //! for variance of pt
-    TProfile2D*  fPtVariancec2D;                  //! for variance of pt
+    // ck
+    TProfile*  fPtVariancea;        //! for variance of pt
+    TProfile*  fPtVarianceb;        //! for variance of pt
+    // ck with gap
+    TProfile*  fPtVarGap[8];             //! for variance of pt
+    TProfile*  fMeanPtGapM[8];         //! Average of Pt
+    TProfile*  fMeanPtGapP[8];         //! Average of Pt
 
 	private:
-		ClassDef(PhysicsProfileVnPt, 1);    //Analysis task
+		ClassDef(PhysicsProfileVnPt, 2);    //Analysis task
 };
 
 class AliAnalysisTaskVnPtCorr : public AliAnalysisTaskSE {
@@ -323,11 +328,34 @@ class AliAnalysisTaskVnPtCorr : public AliAnalysisTaskSE {
 		int NtrksAfterGap8P = 0;       //!
 		int NtrksAfterGap10M = 0;      //!
 		int NtrksAfterGap10P = 0;      //!
+		int NtrksAfterGap12M = 0;      //!
+		int NtrksAfterGap12P = 0;      //!
 		int NtrksAfterGap14M = 0;      //!
 		int NtrksAfterGap14P = 0;      //!
+    int NtrksAfterEta8 = 0;        //!
+    int NtrksAfterEta4 = 0;        //!
+    int NtrksAfterEta3 = 0;        //!
+    int NtrksAfterEta2 = 0;        //!
+    int NtrksAfterEta1 = 0;        //!
 		int NtrksAfter3subL = 0;       //!
 		int NtrksAfter3subM = 0;       //!
 		int NtrksAfter3subR = 0;       //!
+    int NtrksAfter3subMGap0M = 0;  //!
+    int NtrksAfter3subMGap0P = 0;  //!
+    int NtrksAfter3subMGap2M = 0;  //!
+    int NtrksAfter3subMGap2P = 0;  //!
+    int NtrksAfter3subMGap4M = 0;  //!
+    int NtrksAfter3subMGap4P = 0;  //!
+    int NtrksAfter3subMGap6M = 0;  //!
+    int NtrksAfter3subMGap6P = 0;  //!
+    int NtrksAfter3subMGap8M = 0;  //!
+    int NtrksAfter3subMGap8P = 0;  //!
+    int NtrksAfter3subMGap10M = 0; //!
+    int NtrksAfter3subMGap10P = 0; //!
+    int NtrksAfter3subMGap12M = 0; //!
+    int NtrksAfter3subMGap12P = 0; //!
+    int NtrksAfter3subMGap14M = 0; //!
+    int NtrksAfter3subMGap14P = 0; //!
 
 		int lastRunNumber = 0;         //!
 
@@ -335,13 +363,57 @@ class AliAnalysisTaskVnPtCorr : public AliAnalysisTaskSE {
 		PhysicsProfileVnPt multProfile_bin[30]; //!
 
     CorrelationCalculator correlator; //!
-    Double_t sumPtw; //!
-    Double_t sumPtw2; //!
-    Double_t sumPt2w2; //!
-    Double_t sumWeight; //!
-    Double_t sumWeight2; //!
-    Double_t eventWeight; //!
-    Double_t eventWeight2; //!
+    Double_t sumPtw = 0; //! sum of pt * weights [-M, M]
+    Double_t sumPtw2 = 0; //! sum of pt * weights^2 [-M, M]
+    Double_t sumPt2w2 = 0; //! sum of pt^2 * weights^2 [-M, M]
+    Double_t sumWeight = 0; //! sum of weights [-M, M]
+    Double_t sumWeight2 = 0; //! sum of weights^2 [-M, M]
+    Double_t eventWeight = 0; //!
+    Double_t eventWeight2 = 0; //!
+
+    Double_t sumPtwEta1 = 0;      //! sum of pt * weights [-0.1, 0.1]
+    Double_t sumWeightEta1 = 0;   //! sum of weights [-0.1, 0.1]
+    Double_t sumPtwEta2 = 0;      //! sum of pt * weights [-0.2, 0.2]
+    Double_t sumWeightEta2 = 0;   //! sum of weights [-0.2, 0.2]
+    Double_t sumPtwEta3 = 0;      //! sum of pt * weights [-0.3, 0.3]
+    Double_t sumWeightEta3 = 0;   //! sum of weights [-0.3, 0.3]
+    Double_t sumPtwEta4 = 0;      //! sum of pt * weights [-0.4, 0.4]
+    Double_t sumWeightEta4 = 0;   //! sum of weights [-0.4, 0.4]
+    Double_t sumPtwEta8 = 0;      //! sum of pt * weights [-0.8, 0.8]
+    Double_t sumWeightEta8 = 0;   //! sum of weights [-0.8, 0.8]
+    Double_t sumPtwGap0M = 0;     //! sum of pt * weights [-M, 0]
+    Double_t sumPtwGap0P = 0;     //! sum of pt * weights [0,  M]
+    Double_t sumWeightGap0M = 0;  //! sum of weights [-M, 0]
+    Double_t sumWeightGap0P = 0;  //! sum of weights [0,  M]
+    Double_t sumPtwGap2M = 0;     //! sum of pt * weights [-M, -0.1]
+    Double_t sumPtwGap2P = 0;     //! sum of pt * weights [0.1,   M]
+    Double_t sumWeightGap2M = 0;  //! sum of weights [-M, -0.1]
+    Double_t sumWeightGap2P = 0;  //! sum of weights [0.1,   M]
+    Double_t sumPtwGap4M = 0;     //! sum of pt * weights [-M, -0.2]
+    Double_t sumPtwGap4P = 0;     //! sum of pt * weights [0.2,   M]
+    Double_t sumWeightGap4M = 0;  //! sum of weights [-M, -0.2]
+    Double_t sumWeightGap4P = 0;  //! sum of weights [0.2,   M]
+    Double_t sumPtwGap6M = 0;     //! sum of pt * weights [-M, -0.3]
+    Double_t sumPtwGap6P = 0;     //! sum of pt * weights [0.3,   M]
+    Double_t sumWeightGap6M = 0;  //! sum of weights [-M, -0.3]
+    Double_t sumWeightGap6P = 0;  //! sum of weights [0.3,   M]
+    Double_t sumPtwGap8M = 0;     //! sum of pt * weights [-M, -0.4]
+    Double_t sumPtwGap8P = 0;     //! sum of pt * weights [0.4,   M]
+    Double_t sumWeightGap8M = 0;  //! sum of weights [-M, -0.4]
+    Double_t sumWeightGap8P = 0;  //! sum of weights [0.4,   M]
+    Double_t sumPtwGap10M = 0;    //! sum of pt * weights [-M, -0.5]
+    Double_t sumPtwGap10P = 0;    //! sum of pt * weights [0.5,   M]
+    Double_t sumWeightGap10M = 0; //! sum of weights [-M, -0.5]
+    Double_t sumWeightGap10P = 0; //! sum of weights [0.5,   M]
+    Double_t sumPtwGap12M = 0;    //! sum of pt * weights [-M, -0.6]
+    Double_t sumPtwGap12P = 0;    //! sum of pt * weights [0.6,   M]
+    Double_t sumWeightGap12M = 0; //! sum of weights [-M, -0.6]
+    Double_t sumWeightGap12P = 0; //! sum of weights [0.6,   M]
+    Double_t sumPtwGap14M = 0;    //! sum of pt * weights [-M, -0.7]
+    Double_t sumPtwGap14P = 0;    //! sum of pt * weights [0.7,   M]
+    Double_t sumWeightGap14M = 0; //! sum of weights [-M, -0.7]
+    Double_t sumWeightGap14P = 0; //! sum of weights [0.7,   M]
+
     TRandom3 rand;         //!
     Int_t bootstrap_value = -1; //!
 
@@ -399,7 +471,7 @@ class AliAnalysisTaskVnPtCorr : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfileVnPt& profile, double Ntrks, double Ntrks_uncorr);
 		void InitProfile(PhysicsProfileVnPt& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskVnPtCorr, 1);    //Analysis task
+		ClassDef(AliAnalysisTaskVnPtCorr, 2);    //Analysis task
 };
 
 #endif
