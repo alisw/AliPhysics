@@ -165,9 +165,9 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
 
   closeRejection[0] = true;  // pp
   closeRejection[2] = true;  // ppi+
-  closeRejection[3] = true;  // ppi-
+  closeRejection[3] = false;  // ppi-
   closeRejection[4] = true;  // barp barp
-  closeRejection[5] = true;  // barp pi+
+  closeRejection[5] = false;  // barp pi+
   closeRejection[6] = true;  // barp pi-
   closeRejection[7] = true;  // pi+pi+
   closeRejection[9] = true;  // pi-pi-

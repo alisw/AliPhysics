@@ -21,12 +21,13 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
   double Q3LimitForDeltaPhiDeltaEta = 0.4, //9
   bool StandardMixing = true, //10
   int MixingDepth = 10, //11
-  const char *cutVariation = "0", //12
-  bool RunPlotMult = true, //13
-  bool RunPlotInvMass = false, //14
-  double Q3MinValue = 0., //15
-  double Q3cutValue = 1.0,//16
-  bool RunmTPlots = false //17
+  bool RunPlotMult = true, //12
+  bool RunPlotInvMass = false, //13
+  double Q3MinValue = 0., //14
+  double Q3cutValue = 1.0,//15
+  bool RunmTPlots = false, //16,
+  bool RunPairMultThreeBody = false, //17
+  const char *cutVariation = "0" //18
   ){
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -352,8 +353,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
     taskAOD->SetDeltaEtaMaxPP(0.017);
     taskAOD->SetDeltaPhiMaxPPrim(0.04);
     taskAOD->SetDeltaEtaMaxPPrim(0.017);
-    taskAOD->SetDeltaPhiMaxPAPrim(0.04); 
-    taskAOD->SetDeltaEtaMaxPAPrim(0.017); 
+    taskAOD->SetDeltaPhiMaxPAPrim(0.0); 
+    taskAOD->SetDeltaEtaMaxPAPrim(0.0); 
 
     taskAOD->SetQ3LimitForDeltaPhiDeltaEta(Q3LimitForDeltaPhiDeltaEta);
     taskAOD->SetQ3cutValue(Q3cutValue); 
@@ -363,7 +364,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
     taskAOD->SetRunPlotInvMass(RunPlotInvMass);
     taskAOD->SetRunPlotPhiTheta(RunPlotPhiTheta);
     taskAOD->SetRunPlotMult(RunPlotMult);
-    taskAOD->SetRunPairMultThreeBody(false);
+    taskAOD->SetRunPairMultThreeBody(RunPairMultThreeBody);
     taskAOD->SetRunmTPlots(RunmTPlots);
     
     mgr->AddTask(taskAOD);
