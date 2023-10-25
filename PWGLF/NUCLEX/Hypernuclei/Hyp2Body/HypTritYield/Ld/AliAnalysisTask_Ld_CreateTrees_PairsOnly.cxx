@@ -4953,7 +4953,7 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
 
 
   // LHC20g7b
-  if(LHC20g7b == true && isProton == true){
+  if((LHC20g7b == true) && (isProton == true)){
     
     Mean->FixParameter(0,1.29354e-13);
     Mean->FixParameter(1,-55831.1);
@@ -4973,7 +4973,7 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
 
   }
 
-  if(LHC20g7b == true && isAntiProton == true){
+  if((LHC20g7b == true) && (isAntiProton == true)){
     
     Mean->FixParameter(0,4.10675e-08);
     Mean->FixParameter(1,-55831.1);
@@ -4983,7 +4983,7 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
 
   }
 
-  if(LHC20g7b == true && isAntiDeuteron == true){
+  if((LHC20g7b == true) && (isAntiDeuteron == true)){
 
     Mean->FixParameter(0,3.34314e-18);
     Mean->FixParameter(1,-55831.1);
@@ -4993,7 +4993,25 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
 
   }
  
+  if((LHC20g7b == true) && (isPion == true)){
 
+    Mean->FixParameter(0,1.16208e-06);
+    Mean->FixParameter(1,-121114);
+    Mean->FixParameter(2,-238672);
+    Mean->FixParameter(3,899.867);
+    Mean->FixParameter(4,19595);
+
+  }
+
+  if((LHC20g7b == true) && (isAntiPion == true)){
+
+    Mean->FixParameter(0,2.0497);
+    Mean->FixParameter(1,-123189);
+    Mean->FixParameter(2,-238672);
+    Mean->FixParameter(3,899.867);
+    Mean->FixParameter(4,47257.2);
+
+  }
 
 
 
@@ -5030,9 +5048,25 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
 
   }
 
+  if((LHC22f3 == true) && (isPion == true)){
 
+    Mean->FixParameter(0,1.08232e-08);
+    Mean->FixParameter(1,-84115.4);
+    Mean->FixParameter(2,-238672);
+    Mean->FixParameter(3,899.867);
+    Mean->FixParameter(4,17225.4);
 
+  }
 
+  if((LHC22f3 == true) && (isAntiPion == true)){
+
+    Mean->FixParameter(0,1.20941e-08);
+    Mean->FixParameter(1,-84115.4);
+    Mean->FixParameter(2,-238672);
+    Mean->FixParameter(3,899.867);
+    Mean->FixParameter(4,16967.4);
+
+  }
 
 
 
@@ -5095,9 +5129,11 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
 
   if(((isProton == true) || (isAntiProton == true))	&& (LHC20g7b == true)) Resolution = 1.30878e-01;
   if(((isDeuteron == true) || (isAntiDeuteron == true))	&& (LHC20g7b == true)) Resolution = 9.46815e-02;
+  if(((isPion == true) || (isAntiPion == true))	&& (LHC20g7b == true)) Resolution = 1.06914e-01;
 
   if(((isProton == true) || (isAntiProton == true))	&& (LHC22f3 == true)) Resolution = 1.10359e-01;
   if(((isDeuteron == true) || (isAntiDeuteron == true))	&& (LHC22f3 == true)) Resolution = 9.35349e-02;
+  if(((isPion == true) || (isAntiPion == true))	&& (LHC22f3 == true)) Resolution = 8.22958e-02;
 
   double ScaleFactor = 1.0-(Resolution);
   double sigma = (mean*ScaleFactor) - mean;
