@@ -12,6 +12,7 @@
 #include "AliVEvent.h"
 #include "AliFiducialCut.h"
 #include "AliEMCALRecoUtils.h"
+#include "AliFJWrapper.h"
 #include <map>
 #include <string>
 #include <vector>
@@ -56,6 +57,8 @@ public:
     void                    SetGhostArea(Double_t ga){ fGhostArea = ga; }                        // sets ghost area
     void                    SetRecoScheme(AliJetContainer::ERecoScheme_t rs){ fRecoScheme =rs;}  // recombination scheme
     void                    InitFromJson(TString filename);                                      //initialization from json file
+    //void		   SetUseO2Vertexer() { fSecVertexerAlgo = 0;}			       
+    void		   SetUseAliEventCuts(Bool_t opt) {fUseAliEventCuts = opt; }
 
 
 
@@ -70,7 +73,7 @@ private:
     AliESDEvent*            fESD;           //! input event
     TList*                  fOutputList;    //! output list
     TH1F*                   fHistJetPt;     //! jet Pt
-    TH1F*	                  fHistNEvents;   //! histogram for total number of events
+    TH1F*                   fHistNEvents;   //! histogram for total number of events
     TH1F*                   fHistNEventVtx; //! event vertex distribution
     TH1F*                   fHistJetPhi;    //! jet Phi
     TH1F*                   fHistJetEta;    //! jet Eta
@@ -84,10 +87,11 @@ private:
     TH1F*                   fHistMaxChi2PerClusterITS; //! for MaxChi2PerClusterITS(36.0) track cut
 
     AliFJWrapper*           fFastJetWrapper;  //! utility
-
+    AliEventCuts            fEventCuts; //! alievent cuts
     AliESDtrackCuts*        fTrackCuts;  //! track cuts
 
     Bool_t fInitializedLocal;       //! flag which marks the first access to  ExecOnceLocal()
+    Bool_t fUseAliEventCuts;	   //! flag for AliEvent cuts
     Double_t fMinPt;                //  minimum track/jet pt
     Double_t fJetEtaRange;          //  fiducial cut on jets
     Double_t fJetR;                 //  fiducial cut on jets
@@ -102,7 +106,7 @@ private:
     AliAnalysisTaskEmcalJetValidation(const AliAnalysisTaskEmcalJetValidation&); // not implemented
     AliAnalysisTaskEmcalJetValidation& operator=(const AliAnalysisTaskEmcalJetValidation&); // not implemented
 
-    ClassDef(AliAnalysisTaskEmcalJetValidation, 23);
+    ClassDef(AliAnalysisTaskEmcalJetValidation, 25);
 };
 
 #endif
