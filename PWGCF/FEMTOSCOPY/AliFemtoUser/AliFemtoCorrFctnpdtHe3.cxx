@@ -86,7 +86,11 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     f2DkSVspT(nullptr),
     f2DkSVsMass(nullptr),
     fUsemTCheck(0),
-    f3DmTDepkSVspT(nullptr),
+    f3DmTDepkSVspT1_num(nullptr),
+    f3DmTDepkSVspT1_dum(nullptr),
+    f3DmTDepkSVspT2_num(nullptr),
+    f3DmTDepkSVspT2_dum(nullptr),
+
     EscapePairCut(0),
     WhichCutIndEtadPhi(1),
     fUse3DmTvsPIDvspT(0),
@@ -165,7 +169,11 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCo
     f2DkSVspT(aCorrFctn.f2DkSVspT),
     f2DkSVsMass(aCorrFctn.f2DkSVsMass),
     fUsemTCheck(aCorrFctn.fUsemTCheck),
-    f3DmTDepkSVspT(aCorrFctn.f3DmTDepkSVspT),
+    f3DmTDepkSVspT1_num(aCorrFctn.f3DmTDepkSVspT1_num),
+    f3DmTDepkSVspT1_dum(aCorrFctn.f3DmTDepkSVspT1_dum),
+    f3DmTDepkSVspT2_num(aCorrFctn.f3DmTDepkSVspT2_num),
+    f3DmTDepkSVspT2_dum(aCorrFctn.f3DmTDepkSVspT2_dum),
+
     EscapePairCut(aCorrFctn.EscapePairCut),
     WhichCutIndEtadPhi(aCorrFctn.WhichCutIndEtadPhi),
     fUse3DmTvsPIDvspT(aCorrFctn.fUse3DmTvsPIDvspT),
@@ -231,7 +239,12 @@ AliFemtoCorrFctnpdtHe3::~AliFemtoCorrFctnpdtHe3()
     delete f2DkSVsMass;
 
 
-    delete f3DmTDepkSVspT;
+    delete f3DmTDepkSVspT1_num;
+    delete f3DmTDepkSVspT1_dum;
+    
+    delete f3DmTDepkSVspT2_num;
+    delete f3DmTDepkSVspT2_dum;
+
     delete fNum3DmTvsPIDvspT;
     delete fDum3DmTvsPIDvspT;
 }
@@ -354,8 +367,17 @@ if(fUseBumpC){
 
 if(fUsemTCheck){
 
-	delete f3DmTDepkSVspT;
-	f3DmTDepkSVspT = new TH3F(*aCorrFctn.f3DmTDepkSVspT);
+	delete f3DmTDepkSVspT1_num;
+	f3DmTDepkSVspT1_num = new TH3F(*aCorrFctn.f3DmTDepkSVspT1_num);
+	
+	delete f3DmTDepkSVspT1_dum;
+        f3DmTDepkSVspT1_dum = new TH3F(*aCorrFctn.f3DmTDepkSVspT1_dum);
+
+ 	delete f3DmTDepkSVspT2_num;
+        f3DmTDepkSVspT2_num = new TH3F(*aCorrFctn.f3DmTDepkSVspT2_num);
+
+        delete f3DmTDepkSVspT2_dum;
+        f3DmTDepkSVspT2_dum = new TH3F(*aCorrFctn.f3DmTDepkSVspT2_dum);
 }
 
 if(fUse3DmTvsPIDvspT){
@@ -444,7 +466,11 @@ tOutputList->Add(f2DkSVsMass);
 
 
 if(fUsemTCheck){
-tOutputList->Add(f3DmTDepkSVspT);
+tOutputList->Add(f3DmTDepkSVspT1_num);
+tOutputList->Add(f3DmTDepkSVspT1_dum);
+tOutputList->Add(f3DmTDepkSVspT2_num);
+tOutputList->Add(f3DmTDepkSVspT2_dum);
+
 }
 
 if(fUse3DmTvsPIDvspT){
@@ -518,7 +544,11 @@ if(fUseBumpC){
 
 if(fUsemTCheck){
 
-f3DmTDepkSVspT->Write();
+f3DmTDepkSVspT1_num->Write();
+f3DmTDepkSVspT1_dum->Write();
+f3DmTDepkSVspT2_num->Write();
+f3DmTDepkSVspT2_dum->Write();
+
 }
 
 if(fUse3DmTvsPIDvspT){
@@ -654,6 +684,18 @@ if(fUse2DkStarVsmT){
         fNum2DkStarVsmT->Fill(tKStar,CalcMt(fPair));
 }
 
+ if(fUsemTCheck){
+                if(fUsemTCheck==1){
+                         f3DmTDepkSVspT1_num->Fill(tKStar,fPair->Track1()->Track()->Pt(),CalcMt(fPair));
+                        f3DmTDepkSVspT2_num->Fill(tKStar,fPair->Track2()->Track()->Pt(),CalcMt(fPair));
+                }
+                if(fUsemTCheck==2){
+                        f3DmTDepkSVspT1_num->Fill(tKStar,fPair->Track1()->Track()->Pt(),fPair->KT());
+                        f3DmTDepkSVspT2_num->Fill(tKStar,fPair->Track2()->Track()->Pt(),fPair->KT());
+                }
+        }
+
+
 
 	if(fUseBumpC && 
 	tKStar>0.18 && tKStar<0.25 &&
@@ -772,12 +814,12 @@ fDum2DkStarVsmT->Fill(tKStar,CalcMt(fPair));
 
 	if(fUsemTCheck){
 		if(fUsemTCheck==1){
-			 f3DmTDepkSVspT->Fill(tKStar,fPair->Track2()->Track()->Pt(),CalcMt(fPair));
-			f3DmTDepkSVspT->Fill(tKStar,fPair->Track1()->Track()->Pt(),CalcMt(fPair));
+			 f3DmTDepkSVspT1_dum->Fill(tKStar,fPair->Track1()->Track()->Pt(),CalcMt(fPair));
+			f3DmTDepkSVspT2_dum->Fill(tKStar,fPair->Track2()->Track()->Pt(),CalcMt(fPair));
 		}
 		if(fUsemTCheck==2){
-			f3DmTDepkSVspT->Fill(tKStar,fPair->Track2()->Track()->Pt(),fPair->KT());
-			f3DmTDepkSVspT->Fill(tKStar,fPair->Track1()->Track()->Pt(),fPair->KT());
+			f3DmTDepkSVspT1_dum->Fill(tKStar,fPair->Track1()->Track()->Pt(),fPair->KT());
+			f3DmTDepkSVspT2_dum->Fill(tKStar,fPair->Track2()->Track()->Pt(),fPair->KT());
 		}
 	}
 
@@ -1294,7 +1336,10 @@ int nbinsmT,float lowmT,float upmT
 
 //fUsemTCheck = 1: mT vs pT
 //fUsemTCheck = 2 : kT vs pT 
-f3DmTDepkSVspT = new TH3F(TString::Format("f3DmTDepkSVspT%s", fTitle.Data())," ",nbinsks,lowks,upks,nbinspT,lowpT,uppT,nbinsmT,lowmT,upmT);
+f3DmTDepkSVspT1_num = new TH3F(TString::Format("f3DmTDepkSVspT1%s_num", fTitle.Data())," ",nbinsks,lowks,upks,nbinspT,lowpT,uppT,nbinsmT,lowmT,upmT);
+f3DmTDepkSVspT1_dum = new TH3F(TString::Format("f3DmTDepkSVspT1%s_dum", fTitle.Data())," ",nbinsks,lowks,upks,nbinspT,lowpT,uppT,nbinsmT,lowmT,upmT);
+f3DmTDepkSVspT2_num = new TH3F(TString::Format("f3DmTDepkSVspT2%s_num", fTitle.Data())," ",nbinsks,lowks,upks,nbinspT,lowpT,uppT,nbinsmT,lowmT,upmT);
+f3DmTDepkSVspT2_dum = new TH3F(TString::Format("f3DmTDepkSVspT2%s_dum", fTitle.Data())," ",nbinsks,lowks,upks,nbinspT,lowpT,uppT,nbinsmT,lowmT,upmT);
 
 }
 void AliFemtoCorrFctnpdtHe3::SetEscapePairCut(int aUse){

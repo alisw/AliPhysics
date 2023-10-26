@@ -214,7 +214,11 @@ int nbinsmT,float lowmT,float upmT
 	TH2F *f2DkSVsMass;
 	
 	int fUsemTCheck;
-	TH3F *f3DmTDepkSVspT;
+	TH3F *f3DmTDepkSVspT1_num;
+	TH3F *f3DmTDepkSVspT1_dum;
+	TH3F *f3DmTDepkSVspT2_num;
+        TH3F *f3DmTDepkSVspT2_dum;
+
 
 	int EscapePairCut;
 	int WhichCutIndEtadPhi;
