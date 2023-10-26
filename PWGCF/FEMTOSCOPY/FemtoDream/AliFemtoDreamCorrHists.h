@@ -82,6 +82,9 @@ class AliFemtoDreamCorrHists {
   bool GetDoAncestorsPlots() {
     return fAncestors;
   }
+  bool GetDoRemoveAncestorsResonances() {
+    return fRemoveAncestorsResonances;
+  }
   bool GetDopTOnepTTwokStarPlotsmT() {
     return fpTOnepTTwokStarPlotsmT;
   }
@@ -512,6 +515,7 @@ class AliFemtoDreamCorrHists {
   bool fPhiEtaPlotsSmallK;
   bool fmTDetaDPhi;
   bool fAncestors;
+  bool fRemoveAncestorsResonances;
   bool fpTOnepTTwokStarPlotsmT;
   double fpTOnepTTwokStarCutOff;
   std::vector<int> fPDGCode;

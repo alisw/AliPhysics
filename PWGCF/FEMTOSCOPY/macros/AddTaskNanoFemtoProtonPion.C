@@ -18,8 +18,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     int PionFilterbit = 96, //7
     bool DoPairCleaning = false, //8
     bool DoAncestors = false, //9
-    bool RemoveMCResonances = true, //10
-    bool RemoveMCResonanceDaughters = true, //11
+    bool RemoveMCResonances = false, //10
+    bool RemoveMCResonanceDaughters = false, //11
     bool DoInvMass = false, //12
     bool DoResonanceLorentzFactor = false, //13
     bool DoFinemTBinning = false, //14
@@ -255,6 +255,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     if(DoAncestors){
       config->SetAncestors(true);
       config->GetDoAncestorsPlots();
+      config->SetRemoveAncestorsResonances(RemoveMCResonances);
     }
   }
   if (fullBlastQA) {
