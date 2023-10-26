@@ -705,7 +705,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
       //DOUBT: isEventSelected before or after LoopOverGenParticles?
       
       LoopOverGenParticles(mcArray);
-	  FillGenParticleTree();
+	  //FillGenParticleTree();
 
       fCEvents->Fill(17); // in case of MC events
     }
@@ -2396,6 +2396,20 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	Float_t ptpart=mcpart->Pt();
 	Float_t ypart=mcpart->Y();
 
+	if(checkXic2XiPiPi==1){	//Direct
+		foriginFlag=checkOrigin;
+		fLevFlag=ypart;
+		fGenpT=ptpart;
+		fGenNtracklet=fntracklet; 
+
+	}	
+	else if(checkXic2XiPiPi==2){	//Resonant
+		foriginFlag=checkOrigin+2;
+		fLevFlag=ypart;
+		fGenpT=ptpart;
+		fGenNtracklet=fntracklet; 
+	}
+
 	if(TMath::Abs(ypart)<0.5){ // ypart < 0.5
 	  if (checkXic2XiPiPi==1) { 
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenLimAcc,checkOrigin);
@@ -2416,17 +2430,10 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	if (TMath::Abs(ypart)<0.8) {
 	  if (checkXic2XiPiPi==1) { 
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother08,checkOrigin);
-			foriginFlag=checkOrigin;
-			fLevFlag=kGenAccMother08; //kGenAccMother08
-			fGenpT=ptpart;
-			fdummy->Fill(fGenpT);
+			//fdummy->Fill(fGenpT);
 	  } // checkXic 1
 	  else if (checkXic2XiPiPi==2) { 
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother08,checkOrigin+2);
-			foriginFlag=checkOrigin+2;
-			fLevFlag=kGenAccMother08; //kGenAccMother08
-			fGenpT=ptpart;
-			fGenNtracklet=fntracklet;
 	  } // checkXic 2
 	  Bool_t istrackIn08=kTRUE;
 	  for(Int_t k=0;k<5;k++){
@@ -2446,15 +2453,9 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	if(isInAcc){
 	  if (checkXic2XiPiPi==1) { 
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother,checkOrigin);
-			foriginFlag=checkOrigin;
-			fLevFlag=kGenAccMother; //kGenAccMother
-			fGenpT=ptpart;
 	  } // checkXic 1
 	  else if (checkXic2XiPiPi==2) {
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother,checkOrigin+2);
-			foriginFlag=checkOrigin+2;
-			fLevFlag=kGenAccMother; //kGenAccMother
-			fGenpT=ptpart;
 	  } // checkXic 2
 	  for(Int_t k=0;k<5;k++){
 	    AliAODMCParticle *mcpartdau=(AliAODMCParticle*)mcArray->At(arrayDauLab[k]);
@@ -2475,11 +2476,11 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 
 	FillGenParticleTree();
 
-	foriginFlag=-999;
-	fLevFlag=-999;
-	fGenpT=-999;
-	fGenNtracklet=-999;
-	fNSPDTracklets=-999;
+	foriginFlag=-99;
+	fLevFlag=-99;
+	fGenpT=-99;
+	fGenNtracklet=-99;
+	fNSPDTracklets=-99;
 
 }
 
@@ -2679,8 +2680,8 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGenParticleTree()
 	TString * fVarGenTreeName = new TString[varNum];
 
 	fVarGenTreeName[0] = "Ntracklet";
-	fVarGenTreeName[1] = "OriginFlag";
-	fVarGenTreeName[2] = "LevelFlag";
+	fVarGenTreeName[1] = "OriginFlag"; // From charm or from beauty
+	fVarGenTreeName[2] = "LevelAndOriginFlag"; //  Flag for origin and acceptance condition of Xic+
 	fVarGenTreeName[3] = "GenpT";
 	fVarGenTreeName[4] = "NspdTracklet";
 
