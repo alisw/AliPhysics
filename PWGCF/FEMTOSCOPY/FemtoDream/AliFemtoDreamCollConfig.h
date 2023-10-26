@@ -96,6 +96,9 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetAncestors(bool doIt) {
     fAncestors = doIt;
   }
+  void SetRemoveAncestorsResonances(bool doIt) {
+    fRemoveAncestorsResonances = doIt;
+  }
   void SetpTOnepTTwokStarPlotsmT(bool doIt, float kStarCutOff) {
     fpTOnepTTwokStarPlotsmT = doIt;
     fpTOnepTTwokStarCut = kStarCutOff; 
@@ -198,6 +201,9 @@ class AliFemtoDreamCollConfig : public TNamed {
   ;
   bool GetDoAncestorsPlots() {
     return fAncestors;
+  }
+  bool GetRemoveAncestorResonances() {
+    return fRemoveAncestorsResonances;
   }
   bool GetDopTOnepTTwokStarPlotsmT() {
     return fpTOnepTTwokStarPlotsmT;
@@ -364,6 +370,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fmTMultBinning; //
   AliFemtoDreamEvent::MultEstimator fEst;  //
   bool fAncestors;              //
+  bool fRemoveAncestorsResonances; //
   bool fpTOnepTTwokStarPlotsmT; //
   float fpTOnepTTwokStarCut; //
   float fDeltaEtaMax;           //

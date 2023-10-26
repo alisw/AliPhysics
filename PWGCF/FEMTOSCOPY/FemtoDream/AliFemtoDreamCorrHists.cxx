@@ -106,6 +106,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fPhiEtaPlotsSmallK(false),
       fmTDetaDPhi(false),
       fAncestors(false),
+      fRemoveAncestorsResonances(false),
       fpTOnepTTwokStarPlotsmT(false),
       fpTOnepTTwokStarCutOff(3.),
       fPDGCode(),
@@ -209,6 +210,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fPhiEtaPlotsSmallK(hists.fPhiEtaPlotsSmallK),
       fmTDetaDPhi(hists.fmTDetaDPhi),
       fAncestors(hists.fAncestors),
+      fRemoveAncestorsResonances(hists.fRemoveAncestorsResonances),
       fpTOnepTTwokStarPlotsmT(hists.fpTOnepTTwokStarPlotsmT),
       fpTOnepTTwokStarCutOff(hists.fpTOnepTTwokStarCutOff),
       fPDGCode(hists.fPDGCode),
@@ -312,6 +314,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fPhiEtaPlotsSmallK(false),
       fmTDetaDPhi(false),
       fAncestors(false),
+      fRemoveAncestorsResonances(false),
       fpTOnepTTwokStarPlotsmT(false),
       fpTOnepTTwokStarCutOff(3.),
       fPDGCode(),
@@ -337,6 +340,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   fPhiEtaPlotsSmallK = conf->GetdPhidEtaPlotsSmallK();
   fmTDetaDPhi = conf->GetdPhidEtamTPlots();
   fAncestors = conf-> GetDoAncestorsPlots();
+  fRemoveAncestorsResonances = conf->GetRemoveAncestorResonances();
   fpTOnepTTwokStarPlotsmT = conf->GetDopTOnepTTwokStarPlotsmT(); 
   fpTOnepTTwokStarCutOff = conf->GetDopTOnepTTwokStarCutOff();
 
@@ -1576,6 +1580,7 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fdPhidEtaPlots = hists.fdPhidEtaPlots;
     this->fCentBins = hists.fCentBins;
     this->fAncestors = hists.fAncestors;
+    this->fRemoveAncestorsResonances = hists.fRemoveAncestorsResonances;
     this->fpTOnepTTwokStarPlotsmT = hists.fpTOnepTTwokStarPlotsmT;
     this->fpTOnepTTwokStarCutOff = hists.fpTOnepTTwokStarCutOff;
   }

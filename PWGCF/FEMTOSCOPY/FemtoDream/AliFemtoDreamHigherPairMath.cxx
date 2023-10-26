@@ -117,6 +117,36 @@ bool AliFemtoDreamHigherPairMath::CommonAncestors(AliFemtoDreamBasePart& part1, 
     return IsCommon;
   }
 
+  bool AliFemtoDreamHigherPairMath::CommonMotherResonance(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2) {
+
+  if(part1.GetMotherID() != part2.GetMotherID()) {
+    return false; //MotherID is different -> no common resonance
+  }
+
+  if(part1.GetMotherPDG() != part2.GetMotherPDG()) { //the ID is the same, but the PDG different -> Two tracks from same hard scattering but different resonances.
+    return false; 
+  }
+
+  bool HasCommonMotherResonance = true;
+  HasCommonMotherResonance = IsResonance(part1.GetMotherPDG()); //the resonance is of the type that should be removed 
+  return HasCommonMotherResonance; 
+}
+
+bool AliFemtoDreamHigherPairMath::IsResonance(int PDG) {
+
+  int ProtonAntiPion[33] = {2114, 12112, 1214, 22112, 32114, 1212, 32112, 2116, 12116, 12114, 42112, 21214, 31214, 11212, 9902114, 1216, 9902112, 9912112, 21212, 22114, 9912114, 2118, 11216, 9902116, 9922112, 9922114, 1218, 9901218, 99021110, 99121110, 99012112, 99021112, 3122};
+  int ProtonPion[12] = {2224, 32224, 2222, 12224, 12222, 2226, 22222, 22224, 2228, 12226, 9902228, 99022212};
+
+  // When the element is not found, std::find returns the end of the range
+  if ( std::find(std::begin(ProtonAntiPion), std::end(ProtonAntiPion), abs(PDG)) != std::end(ProtonAntiPion) ) {
+    return true;
+  } else if ( std::find(std::begin(ProtonPion), std::end(ProtonPion), abs(PDG)) != std::end(ProtonPion) ) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
     AliFemtoDreamBasePart &part) {
   static float TPCradii[9] = { 85., 105., 125., 145., 165., 185., 205., 225.,
@@ -231,17 +261,24 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
   }
   if (fillHists && fHists->GetDoAncestorsPlots()) {
     bool isAlabama = CommonAncestors(part1,part2);
+
     if (isAlabama) {
-      fHists->FillSameEventDistCommon(iHC, RelativeK);
-      if (fHists->GetDoMultBinning()) {
-	fHists->FillSameEventMultDistCommon(iHC, Mult + 1, RelativeK);
+
+      if(fHists->GetDoRemoveAncestorsResonances() && CommonMotherResonance(part1,part2)){
+        //do nothing
+      } else{
+        fHists->FillSameEventDistCommon(iHC, RelativeK);
+        if (fHists->GetDoMultBinning()) {
+	        fHists->FillSameEventMultDistCommon(iHC, Mult + 1, RelativeK);
+        }
+        if (fHists->GetDomTBinning()) {
+	      fHists->FillSameEventmTDistCommon(iHC, RelativePairmT(PartOne, PartTwo), RelativeK);
+        }
+        if (fHists->GetDomTMultPlots()) {
+	      fHists->FillSameEventmTMultDistCommon(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, RelativeK);
+        }
       }
-      if (fHists->GetDomTBinning()) {
-	fHists->FillSameEventmTDistCommon(iHC, RelativePairmT(PartOne, PartTwo), RelativeK);
-      }
-      if (fHists->GetDomTMultPlots()) {
-	fHists->FillSameEventmTMultDistCommon(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, RelativeK);
-      }
+
     } else {
       fHists->FillSameEventDistNonCommon(iHC, RelativeK);
       if (fHists->GetDoMultBinning()) {

@@ -46,6 +46,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fmTMultBinning(false),
       fEst(AliFemtoDreamEvent::kSPD),
       fAncestors(false),
+      fRemoveAncestorsResonances(false),
       fpTOnepTTwokStarPlotsmT(false),
       fpTOnepTTwokStarCut(3.),
       fDeltaEtaMax(0.f),
@@ -98,6 +99,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fmTMultBinning(config.fmTMultBinning),
       fEst(config.fEst),
       fAncestors(config.fAncestors),
+      fRemoveAncestorsResonances(config.fRemoveAncestorsResonances),
       fpTOnepTTwokStarPlotsmT(config.fpTOnepTTwokStarPlotsmT),
       fpTOnepTTwokStarCut(config.fpTOnepTTwokStarCut),
       fDeltaEtaMax(config.fDeltaEtaMax),
@@ -150,6 +152,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fmTMultBinning(false),
       fEst(AliFemtoDreamEvent::kSPD),
       fAncestors(false),
+      fRemoveAncestorsResonances(false),
       fpTOnepTTwokStarPlotsmT(false),
       fpTOnepTTwokStarCut(3.),
       fDeltaEtaMax(0.f),
@@ -201,6 +204,7 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fmTMultBinning = config.fmTMultBinning; 
     this->fEst = config.fEst;
     this->fAncestors = config.fAncestors;
+    this->fRemoveAncestorsResonances = config.fRemoveAncestorsResonances;
     this->fpTOnepTTwokStarPlotsmT = config.fpTOnepTTwokStarPlotsmT;
     this->fpTOnepTTwokStarCut = config.fpTOnepTTwokStarCut;
     this->fDeltaEtaMax = config.fDeltaEtaMax;
