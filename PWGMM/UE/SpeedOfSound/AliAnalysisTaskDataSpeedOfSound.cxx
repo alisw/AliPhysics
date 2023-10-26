@@ -148,10 +148,13 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       fZDCP(0),
       fZDCEM(0),
       fZDCNvsNch(0),
+      fZDCNvsNchHM(0),
       fZDCPvsNch(0),
       fZDCNvsV0MAmp(0),
+      fZDCNvsV0MAmpHM(0),
       fZDCPvsV0MAmp(0),
       hPtvsNchvsZDCN(0),
+      hPtvsNchvsZDCNHM(0),
       hPtvsNchvsZDCP(0),
       pPtvsZDCN(0),
       pPtvsZDCP(0) {
@@ -216,10 +219,13 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       fZDCP(0),
       fZDCEM(0),
       fZDCNvsNch(0),
+      fZDCNvsNchHM(0),
       fZDCPvsNch(0),
       fZDCNvsV0MAmp(0),
+      fZDCNvsV0MAmpHM(0),
       fZDCPvsV0MAmp(0),
       hPtvsNchvsZDCN(0),
+      hPtvsNchvsZDCNHM(0),
       hPtvsNchvsZDCP(0),
       pPtvsZDCN(0),
       pPtvsZDCP(0) {
@@ -314,7 +320,7 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
 
   fOutputList->SetOwner(kTRUE);
 
-  constexpr int pt_Nbins{250};
+  constexpr int pt_Nbins{190};
   double pt_bins[pt_Nbins + 1] = {0};
   for (int i = 0; i <= pt_Nbins; ++i) {
     pt_bins[i] = 0.1 + (i * 0.08);
@@ -326,7 +332,7 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   //     5.5,  6.0,  6.5,  7.0,  7.5,  8.0,  8.5,  9.0,  9.5, 10.0, 11.0,
   //     12.0, 13.0, 14.0, 15.0, 16.0, 17.0, 18.0, 19.0, 20.0};
 
-  constexpr int nch_Nbins{168};
+  constexpr int nch_Nbins{84};
   double nch_bins[nch_Nbins + 1] = {0};
   for (int i = 0; i <= nch_Nbins; ++i) {
     nch_bins[i] = 30.0 * i;
@@ -434,6 +440,12 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   pPtvsZDCP =
       new TProfile("pPtvsZDCP", ";ZP signal (TeV); #LT#it{p}_{T}#GT GeV/#it{c}",
                    zdcP_sumNbins, zdcP_sumbins);
+  fZDCNvsNchHM =
+      new TH2D("fZDCNvsNchHM", ";ZN signal (TeV); #it{N}_{ch}(|#eta|<0.8)",
+               zdcN_sumNbins, zdcN_sumbins, nch_Nbins, nch_bins);
+  fZDCNvsV0MAmpHM =
+      new TH2D("fZDCNvsV0MAmpHM", ";ZN signal (TeV); V0M Amplitude",
+               zdcN_sumNbins, zdcN_sumbins, v0mAmp_Nbins, v0mAmp_bins);
   hPtvsNchvsZDCN = new TH3D(
       "hPtvsNchvsZDCN",
       ";ZN signal (TeV); #it{N}_{ch}^{rec}; #it{p}_{T} GeV/#it{c}",
@@ -442,18 +454,25 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
       "hPtvsNchvsZDCP",
       ";ZP signal (TeV); #it{N}_{ch}^{rec}; #it{p}_{T} GeV/#it{c}",
       zdcP_sumNbins, zdcP_sumbins, nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+  hPtvsNchvsZDCNHM = new TH3D(
+      "hPtvsNchvsZDCNHM",
+      ";ZN signal (TeV); #it{N}_{ch}^{rec}; #it{p}_{T} GeV/#it{c}",
+      zdcN_sumNbins, zdcN_sumbins, nch_Nbins, nch_bins, pt_Nbins, pt_bins);
 
   if (fUseZDC) {
     fOutputList->Add(fZDCN);
     fOutputList->Add(fZDCP);
     fOutputList->Add(fZDCEM);
     fOutputList->Add(fZDCNvsNch);
+    fOutputList->Add(fZDCNvsNchHM);
     fOutputList->Add(fZDCPvsNch);
     fOutputList->Add(fZDCNvsV0MAmp);
     fOutputList->Add(fZDCPvsV0MAmp);
+    fOutputList->Add(fZDCNvsV0MAmpHM);
     fOutputList->Add(pPtvsZDCN);
     fOutputList->Add(pPtvsZDCP);
     fOutputList->Add(hPtvsNchvsZDCN);
+    fOutputList->Add(hPtvsNchvsZDCNHM);
     fOutputList->Add(hPtvsNchvsZDCP);
   }
 
@@ -784,6 +803,11 @@ void AliAnalysisTaskDataSpeedOfSound::ZDC(
     hPtvsNchvsZDCP->Fill(zdcp, rec_nch, pt);
     pPtvsZDCN->Fill(zdcn, pt);
     pPtvsZDCP->Fill(zdcp, pt);
+    if (fv0mpercentile <= 20.0) {
+      fZDCNvsNchHM->Fill(zdcn, rec_nch);
+      fZDCNvsV0MAmpHM->Fill(zdcn, fv0mamplitude);
+      hPtvsNchvsZDCNHM->Fill(zdcn, rec_nch, pt);
+    }
   }
 }
 
