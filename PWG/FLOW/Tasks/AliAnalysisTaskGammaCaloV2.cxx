@@ -103,6 +103,7 @@ ClassImp(AliAnalysisTaskGammaCaloV2)
                                                                fHistoMotherInvMassPt(NULL),
                                                                fSparseMotherInvMassPtZM(NULL),
                                                                fHistoMotherBackInvMassPt(NULL),
+                                                               fHistoMotherBackInvMassPtdPhi(NULL),
                                                                fSparseMotherBackInvMassPtZM(NULL),
                                                                fHistoMotherPi0PtY(NULL),
                                                                fHistoMotherEtaPtY(NULL),
@@ -471,6 +472,7 @@ AliAnalysisTaskGammaCaloV2::AliAnalysisTaskGammaCaloV2(const char *name) : AliAn
                                                                            fHistoMotherInvMassPt(NULL),
                                                                            fSparseMotherInvMassPtZM(NULL),
                                                                            fHistoMotherBackInvMassPt(NULL),
+                                                                           fHistoMotherBackInvMassPtdPhi(NULL),
                                                                            fSparseMotherBackInvMassPtZM(NULL),
                                                                            fHistoMotherPi0PtY(NULL),
                                                                            fHistoMotherEtaPtY(NULL),
@@ -1376,6 +1378,7 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
     fHistoMotherInvMassPtPhi = new TH3F *[fnCuts];
     fHistoMotherInvMassPt = new TH2F *[fnCuts];
     fHistoMotherBackInvMassPt = new TH2F *[fnCuts];
+    fHistoMotherBackInvMassPtdPhi = new TH3F *[fnCuts];
     if (!fDoLightOutput || fDoPi0Only || fDoECalibOutput)
     {
       fHistoMotherInvMassECalib = new TH2F *[fnCuts];
@@ -1980,6 +1983,11 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
       fHistoMotherBackInvMassPt[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
       fHistoMotherBackInvMassPt[iCut]->SetYTitle("p_{T} (GeV/c)");
       fESDList[iCut]->Add(fHistoMotherBackInvMassPt[iCut]);
+      fHistoMotherBackInvMassPtdPhi[iCut] = new TH3F("ESD_Background_InvMass_Pt_Phi", "ESD_Background_InvMass_Pt_Phi", nBinsMinv, arrMinvBin, nBinsPt, arrPtBinning, nPhiBins, arrPhiBin);
+      fHistoMotherBackInvMassPtdPhi[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
+      fHistoMotherBackInvMassPtdPhi[iCut]->SetYTitle("p_{T} (GeV/c)");
+      fHistoMotherBackInvMassPtdPhi[iCut]->SetZTitle("phi");
+      fESDList[iCut]->Add(fHistoMotherBackInvMassPtdPhi[iCut]);
       if (!fDoLightOutput || fDoPi0Only || fDoECalibOutput)
       {
         fHistoMotherInvMassECalib[iCut] = new TH2F("ESD_Mother_InvMass_E_Calib", "ESD_Mother_InvMass_E_Calib", 300, 0, 0.3, nBinsPt, arrPtBinning);
@@ -1997,6 +2005,7 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
         fHistoMotherInvMassPt[iCut]->Sumw2();
         fHistoMotherInvMassPtPhi[iCut]->Sumw2();
         fHistoMotherBackInvMassPt[iCut]->Sumw2();
+        fHistoMotherBackInvMassPtdPhi[iCut]->Sumw2();
         if (!fDoLightOutput || fDoPi0Only || fDoECalibOutput)
         {
           fHistoMotherInvMassECalib[iCut]->Sumw2();
@@ -7571,7 +7580,7 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackground()
         for (UInt_t iPrevious = 0; iPrevious < previousEventV0s->size(); iPrevious++)
         {
           AliAODConversionPhoton previousGoodV0 = (AliAODConversionPhoton)(*(previousEventV0s->at(iPrevious)));
-          AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0, &previousGoodV0);
+          AliAODConversionMother *backgroundCandidate = new AliAODConversionMother(&currentEventGoodV0, &previousGoodV0); // TODO background
           backgroundCandidate->CalculateDistanceOfClossetApproachToPrimVtx(fInputEvent->GetPrimaryVertex());
 
           // Set the BG candidate jetjet weight to 1 in case both photons orignated from the minimum bias header
@@ -7588,6 +7597,14 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackground()
               ((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonLeadTrackSelection(fInputEvent, backgroundCandidate))
           {
             fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), tempBGCandidateWeight);
+            if (backgroundCandidate->Eta() > 0)
+            {
+              fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), backgroundCandidate->Phi() - fPsi2V0C, tempBGCandidateWeight);
+            }
+            else
+            {
+              fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), backgroundCandidate->Phi() - fPsi2V0A, tempBGCandidateWeight);
+            }
             if (fDoTHnSparse)
             {
               Double_t sparesFill[4] = {backgroundCandidate->M(), backgroundCandidate->Pt(), (Double_t)zbin, (Double_t)mbin};
@@ -7702,6 +7719,14 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackground()
                   ((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonLeadTrackSelection(fInputEvent, backgroundCandidate))
               {
                 fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), tempBGCandidateWeight);
+                if (backgroundCandidate->Eta() > 0)
+                {
+                  fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), backgroundCandidate->Phi() - fPsi2V0C, tempBGCandidateWeight);
+                }
+                else
+                {
+                  fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), backgroundCandidate->Phi() - fPsi2V0A, tempBGCandidateWeight);
+                }
               }
               delete backgroundCandidate;
               backgroundCandidate = 0x0;
@@ -7740,6 +7765,14 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackground()
                     tempBGCandidateWeight = 1;
                 }
                 fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), tempBGCandidateWeight);
+                if (backgroundCandidate->Eta() > 0)
+                {
+                  fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), backgroundCandidate->Phi() - fPsi2V0C, tempBGCandidateWeight);
+                }
+                else
+                {
+                  fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), backgroundCandidate->Phi() - fPsi2V0A, tempBGCandidateWeight);
+                }
                 if (fDoTHnSparse)
                 {
                   Double_t sparesFill[4] = {backgroundCandidate->M(), backgroundCandidate->Pt(), (Double_t)zbin, (Double_t)mbin};
@@ -7801,6 +7834,14 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackground()
                   tempBGCandidateWeight = 1;
               }
               fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), tempBGCandidateWeight);
+              if (backgroundCandidate->Eta() > 0)
+              {
+                fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), backgroundCandidate->Phi() - fPsi2V0C, tempBGCandidateWeight);
+              }
+              else
+              {
+                fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), backgroundCandidate->Phi() - fPsi2V0A, tempBGCandidateWeight);
+              }
               if (fDoTHnSparse)
               {
                 Double_t sparesFill[4] = {backgroundCandidate->M(), backgroundCandidate->Pt(), (Double_t)zbin, (Double_t)mbin};
@@ -7855,7 +7896,7 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackgroundSwapp()
     Int_t cellIDRotatedPhoton1 = -1; // cell ID of the cluster after rotation
     Int_t cellIDRotatedPhoton2 = -1; // cell ID of the cluster after rotation
 
-    std::vector<std::array<Double_t, 2>> vSwappingInvMassPT;
+    std::vector<std::array<Double_t, 4>> vSwappingInvMassPT;
     std::vector<std::array<Double_t, 2>> vSwappingInvMassPTAlphaCut;
     vSwappingInvMassPT.clear();
     vSwappingInvMassPTAlphaCut.clear();
@@ -7963,7 +8004,7 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackgroundSwapp()
               {
                 if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate1.get(), kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPhoton1, ((AliAODConversionPhoton *)kCurrentClusterCandidates)->GetLeadingCellID()) && ((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonLeadTrackSelection(fInputEvent, backgroundCandidate1.get()))
                 {
-                  vSwappingInvMassPT.push_back({backgroundCandidate1->M(), backgroundCandidate1->Pt()});
+                  vSwappingInvMassPT.push_back({backgroundCandidate1->M(), backgroundCandidate1->Pt(), backgroundCandidate1->Phi(), backgroundCandidate1->Eta()});
                   if ((!fDoLightOutput || fDoPi0Only) && TMath::Abs(backgroundCandidate1->GetAlpha()) < 0.1)
                   {
                     vSwappingInvMassPTAlphaCut.push_back({backgroundCandidate1->M(), backgroundCandidate1->Pt()});
@@ -7974,7 +8015,7 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackgroundSwapp()
               {
                 if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate2.get(), kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPhoton2, ((AliAODConversionPhoton *)kCurrentClusterCandidates)->GetLeadingCellID()) && ((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonLeadTrackSelection(fInputEvent, backgroundCandidate2.get()))
                 {
-                  vSwappingInvMassPT.push_back({backgroundCandidate2->M(), backgroundCandidate2->Pt()});
+                  vSwappingInvMassPT.push_back({backgroundCandidate2->M(), backgroundCandidate2->Pt(), backgroundCandidate1->Phi(), backgroundCandidate1->Eta()});
                   if ((!fDoLightOutput || fDoPi0Only) && TMath::Abs(backgroundCandidate2->GetAlpha()) < 0.1)
                   {
                     vSwappingInvMassPTAlphaCut.push_back({backgroundCandidate2->M(), backgroundCandidate2->Pt()});
@@ -7993,6 +8034,14 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackgroundSwapp()
       for (Int_t i = 0; i < (Int_t)vSwappingInvMassPT.size(); i++)
       {
         fHistoMotherBackInvMassPt[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], tempMultWeightSwapping * fWeightJetJetMC);
+        if (vSwappingInvMassPT.at(i)[3] > 0)
+        {
+          fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], vSwappingInvMassPT.at(i)[2] - fPsi2V0C, tempMultWeightSwapping * fWeightJetJetMC);
+        }
+        else
+        {
+          fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], vSwappingInvMassPT.at(i)[2] - fPsi2V0A, tempMultWeightSwapping * fWeightJetJetMC);
+        }
       }
       if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->DoWeightingInSwappBg() && vSwappingInvMassPTAlphaCut.size() > 0)
       {
