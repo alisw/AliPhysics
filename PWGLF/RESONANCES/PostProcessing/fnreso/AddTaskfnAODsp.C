@@ -1,5 +1,5 @@
 
-void AddTaskfnAODsp(const char *suffix = "CMWchrg", Double_t fFilterBit = 32, Double_t kkshmasscut = 1.04, Double_t nsigtpcpion=2.0, Double_t nsigtofpion=3.0, Double_t nsigtpckaon=2.0, Double_t nsigtofkaon=3.0, Double_t dcaxypos=0.06, Double_t dcaxyneg=0.06, Double_t dcav0daugh=1.0, Double_t dcav0pv=0.3, Double_t cospa=0.97, Double_t lowrad=0.5, Double_t lifetime=15, Double_t pidpion=4, Float_t nCRcut=70.0, Float_t ratiocrfccut=0.8, Double_t chi2globalcut=36.0, Double_t chi2cut=36.0)
+void AddTaskfnAODsp(const char *suffix = "CMWchrg", Double_t fFilterBit = 32, Double_t kkshmasscut = 1.04, Double_t nsigtpcpion=2.0, Double_t nsigtofpion=3.0, Double_t nsigtpckaon=2.0, Double_t nsigtofkaon=3.0, Double_t dcaxypos=0.06, Double_t dcaxyneg=0.06, Double_t dcav0daugh=1.0, Double_t dcav0pv=0.3, Double_t cospa=0.97, Double_t lowrad=0.5, Double_t lifetime=15, Double_t pidpion=4, Float_t nCRcut=70.0, Float_t ratiocrfccut=0.8, Double_t chi2globalcut=36.0, Double_t chi2cut=36.0, Int_t frame=1)
 
 {
   // standard with task
@@ -40,6 +40,7 @@ void AddTaskfnAODsp(const char *suffix = "CMWchrg", Double_t fFilterBit = 32, Do
   task_CMW->SetLT(lifetime);
   task_CMW->SetPIDpion(pidpion);
   task_CMW->SetPTC(nCRcut, ratiocrfccut, chi2globalcut, chi2cut);
+  task_CMW->Setframe(frame);
 
 
 

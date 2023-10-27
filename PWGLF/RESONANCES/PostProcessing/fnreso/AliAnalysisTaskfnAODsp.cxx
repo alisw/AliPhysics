@@ -105,7 +105,9 @@ pidpion(4),
 nCRcut(70.),
 ratiocrfccut(0.8),
 chi2globalcut(36.0),
-chi2cut(36.0)  
+chi2cut(36.0),
+frame(0)
+  
 {
 
 }
@@ -156,7 +158,9 @@ pidpion(4),
 nCRcut(70.),
 ratiocrfccut(0.8),
 chi2globalcut(36.0),
-chi2cut(36.0)  
+chi2cut(36.0),
+frame(0)
+
 {
   DefineInput(0, TChain::Class()); 
   DefineOutput(1, TList::Class()); 
@@ -551,9 +555,18 @@ void AliAnalysisTaskfnAODsp::UserExec(Option_t *)
 	  //cout<<"values are:"<<kks0.trkid<<" "<<kaonsp.trkid<<" "<<kshortsp.trkid<<" "<<pion.trkid<<" "<<kaonkshortspLV.Pt()<<" "<<kks0.particle.Pt()<<endl;
 
 
-	  Costhetastar0 = CosThetaStarHel0(motherf1, pion.particle);
-	  Costhetastar1 = CosThetaStarHel1(motherf1, kaonspLV);
-	  Costhetastar2 = CosThetaStarHel2(motherf1, kshortspLV);
+	  if (frame==0)
+            {
+	      Costhetastar0 = CosThetaStarHel0(motherf1, pion.particle);
+	      Costhetastar1 = CosThetaStarHel1(motherf1, kaonspLV);
+	      Costhetastar2 = CosThetaStarHel2(motherf1, kshortspLV);
+            }
+          else if (frame==1)
+            {
+              Costhetastar0 = CosThetaStarJack0(motherf1, pion.particle);
+              Costhetastar1 = CosThetaStarJack1(motherf1, kaonspLV);
+              Costhetastar2 = CosThetaStarJack2(motherf1, kshortspLV);
+            }
 
 
 	  if (pion.charge * kks0.charge < 0)
@@ -652,9 +665,22 @@ void AliAnalysisTaskfnAODsp::UserExec(Option_t *)
 		 if (TMath::Abs(motherf1mix.Rapidity())>=0.5)                   
 		   continue;
 		 
-		 Costhetastarmix0 = CosThetaStarHel0(motherf1mix, pionmixVector);
-		 Costhetastarmix1 = CosThetaStarHel1(motherf1mix, kaonspLVmix);
-		 Costhetastarmix2 = CosThetaStarHel2(motherf1mix, kshortspLVmix);
+		 if (frame==0)
+                   {
+		     Costhetastarmix0 = CosThetaStarHel0(motherf1mix, pionmixVector);
+		     Costhetastarmix1 = CosThetaStarHel1(motherf1mix, kaonspLVmix);
+		     Costhetastarmix2 = CosThetaStarHel2(motherf1mix, kshortspLVmix);
+                   }
+
+                 else if (frame==1)
+                   {
+		     Costhetastarmix0 = CosThetaStarJack0(motherf1mix, pionmixVector);
+		     Costhetastarmix1 = CosThetaStarJack1(motherf1mix, kaonspLVmix);
+		     Costhetastarmix2 = CosThetaStarJack2(motherf1mix, kshortspLVmix);
+                   }
+
+
+
 		 // Fill mix histo
 		 f1Mix0->Fill(motherf1mix.M(), motherf1mix.Pt(), Costhetastarmix0);
 		 f1Mix1->Fill(motherf1mix.M(), motherf1mix.Pt(), Costhetastarmix1);
@@ -1087,5 +1113,34 @@ Double_t AliAnalysisTaskfnAODsp::CosThetaStarHel2(TLorentzVector mother, TLorent
 
   //return thetaHE;
   return TMath::Abs(thetaHE);
+
+}
+
+
+Double_t AliAnalysisTaskfnAODsp::CosThetaStarJack0(TLorentzVector mother, TLorentzVector daughter0)
+
+{
+
+  daughter0.Boost(-mother.BoostVector());
+  return TMath::Abs(daughter0.CosTheta());
+
+}
+
+
+Double_t AliAnalysisTaskfnAODsp::CosThetaStarJack1(TLorentzVector mother, TLorentzVector daughter1)
+
+{
+
+  daughter1.Boost(-mother.BoostVector());
+  return TMath::Abs(daughter1.CosTheta());
+
+}
+
+Double_t AliAnalysisTaskfnAODsp::CosThetaStarJack2(TLorentzVector mother, TLorentzVector daughter2)
+
+{
+
+  daughter2.Boost(-mother.BoostVector());
+  return TMath::Abs(daughter2.CosTheta());
 
 }
