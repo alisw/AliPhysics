@@ -1,6 +1,8 @@
 AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
   TString	taskName = "beauty",
-  bool		isMC = false,
+  TString	fDataType = "data",
+  TString	fPeriod = "period16",
+  TString	fPass = "pass1",
   bool		isPP = true,
   double	multRef = 11.7,
   int		minTPCnCrossedRow = 70,
@@ -13,12 +15,19 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
   double	tpcPIDhigh = 3,
   double	tofPID = 3)
 {
+  bool isMC = false;
+  TString flagMC(dtype);
+  if(!flagMC.EqualTo("data")) isMC = true;
+  
   //TString taskName = "beauty";
   //TString itsLayer = citsLayer;
   printf("=======================================\n");
   printf("==========ADD TASK PARAMETERS==========\n");
   printf("=======================================\n");
   printf("Task name: %s \n", taskName.Data());
+  printf("Data type: %s \n", fDataType.Data());
+  printf("Period info: %s \n", fPeriod.Data());
+  printf("Reconstruction info: %s \n", fPass.Data());
   printf("MC Flag: %d \n",isMC);
   printf("Min. TPC crossed raw: %d \n", minTPCnCrossedRow);
   printf("Min. TPC clusters for PID: %d \n", minTPCnClsPID);
@@ -55,13 +64,33 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
   //gSystem->Load("libRAliEn");
   TGrid::Connect("alien://");
 
+  //===================================================================================================================
   // Multiplicity
-  TString profile;
-  if(isMC) profile = "LHC18d8";
-  else profile = "LHC16l";
-  TString filepath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/fileEstimatorAvg_LHC16l.root";
-  printf("Multiplicity estimator from %s \n", filepath.Data());
+  TString filepath;
+  if(fDataType.EqualTo("data")){
+	if(fPass.EqualTo("pass1")){
+	  filepath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/fileEstimatorAvg_Data_pass1.root";
+	}else if(fPass.EqualTo("pass2")){
+	  filepath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/fileEstimatorAvg_Data_pass2.root";
+	}else return 0x0;
+  }else if(fDataType.EqualTo("gpmc")){
+	if(fPass.EqualTo("pass1")){
+	  filepath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/fileEstimatorAvg_GPMC_pass1.root";
+	}else if(fPass.EqualTo("pass2")){
+	  filepath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/fileEstimatorAvg_GPMC_pass2.root";
+	}else return 0x0;
+  }else if(fDataType.EqualTo("hfe")){
+	if(fPass.EqualTo("pass1")){
+	  filepath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/fileEstimatorAvg_HFe_pass1.root";
+	}else if(fPass.EqualTo("pass2")){
+	  filepath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/fileEstimatorAvg_HFe_pass2.root";
+	}else return 0x0;
+  }
+  printf("=========================================\n");
+  printf("\n\nMultiplicity estimator from %s \n\n", filepath.Data());
+  printf("=========================================\n");
   
+
   TFile* fileEstimator = TFile::Open(filepath.Data());
   if(!fileEstimator){
     printf("File with multiplicity estimator not found\n");
@@ -69,13 +98,25 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
   }
   task->SetMultReference(multRef);
 
-  TProfile *multEstimatorAvg = (TProfile*)fileEstimator->Get(Form("fNtrkletAvg_%s", profile.Data()))->Clone(Form("fNtrkletAvg_%s", profile.Data()));
+  TProfile *multEstimatorAvg;
+  if(fPeriod.EqualTo("16period"))
+	multEstimatorAvg = (TProfile*)fileEstimator->Get("fNtrkletAvg_16period")->Clone("fNtrkletAvg_16period");
+  else if(fPeriod.EqualTo("17period"))
+	multEstimatorAvg = (TProfile*)fileEstimator->Get("fNtrkletAvg_17period")->Clone("fNtrkletAvg_17period");
+  else if(fPeriod.EqualTo("18period"))
+	multEstimatorAvg = (TProfile*)fileEstimator->Get("fNtrkletAvg_18period")->Clone("fNtrkletAvg_18period");
+  else return 0x0;
+
   if(!multEstimatorAvg) {
     printf("Multiplicity estimator not found! Please check your estimator file\n");
     return 0x0;
   }
-  printf("fNtrkletAvg_%s will be used in the multiplcity correction!!!", profile.Data());
+  printf("===============================================================\n");
+  printf("\n\nnfNtrkletAvg_%s will be used in the multiplcity correction!!!\n\n", period.Data());
+  printf("===============================================================\n");
   task->SetEstimatorAvg(multEstimatorAvg);
+  //===================================================================================================================
+
 
   if(isMC){
     TString pathNchCorr = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/weightNtrkCorr.root";
