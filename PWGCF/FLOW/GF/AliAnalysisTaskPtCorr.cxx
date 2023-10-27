@@ -352,6 +352,7 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
       Double_t trackXYZ[] = {0.,0.,0.};
       //Counting FB128 for QA:
       if(lTrack->TestFilterBit(128)) nTotTracksFB128++;
+      if(TMath::Abs(leta) > fEtaAcceptance) continue;
       if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxXYZ)) continue;
       nTotNoTracks++;
       Double_t lpt = lTrack->Pt();
