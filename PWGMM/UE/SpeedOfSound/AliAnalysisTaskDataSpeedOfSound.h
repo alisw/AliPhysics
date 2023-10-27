@@ -49,6 +49,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void GetCalibratedV0Amplitude();
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
+  void SetHMCut(double HMcut) { fHMCut = HMcut; }      // Set V0M max value
   void SetUseMC(bool mc = false) { fUseMC = mc; }      // use to analyse MC data
   void SetUseZDC(bool zdc = false) { fUseZDC = zdc; }  // use ZDC selection
   void SetEtaCut(const double& etacut) { fEtaCut = etacut; }
@@ -77,6 +78,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   double fPtMin;
   double fV0Mmin;
   double fV0Mmax;
+  double fHMCut;
   double ftrackmult08;
   double fv0mpercentile;
   float fv0mamplitude;
@@ -112,20 +114,21 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2F* hTrueNchHMWithTrigger;
   TH2F* hTrueNchHMWithEventCuts;
   TH2F* hTrueNchHMWithVtxSel;
-  TH2D* fZDCN;
-  TH2D* fZDCP;
-  TH2D* fZDCEM;
-  TH2D* fZDCNvsNch;
-  TH2D* fZDCNvsNchHM;
-  TH2D* fZDCPvsNch;
-  TH2D* fZDCNvsV0MAmp;
-  TH2D* fZDCNvsV0MAmpHM;
-  TH2D* fZDCPvsV0MAmp;
-  TH3D* hPtvsNchvsZDCN;
-  TH3D* hPtvsNchvsZDCNHM;
-  TH3D* hPtvsNchvsZDCP;
-  TProfile* pPtvsZDCN;
-  TProfile* pPtvsZDCP;
+  TH2D* hZNCvsZNA;
+  TH2D* hZPCvsZPA;
+  TH2D* hZEM;
+  TH2D* hZNvsNch;
+  TH2D* hZAvsNchHM;
+  TH2D* hZCvsNchHM;
+  TH2D* hZNvsNchHM;
+  TH2D* hZNvsV0MAmp;
+  TH2D* hZNvsV0MAmpHM;
+  TH3D* hPtvsNchvsZAHM;
+  TH3D* hPtvsNchvsZCHM;
+  TH3D* hPtvsNchvsZNHM;
+  TProfile* pPtvsZA;
+  TProfile* pPtvsZC;
+  TProfile* pPtvsZN;
 
   AliAnalysisTaskDataSpeedOfSound(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented
