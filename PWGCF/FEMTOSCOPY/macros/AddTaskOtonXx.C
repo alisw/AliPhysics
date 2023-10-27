@@ -21,9 +21,11 @@ AliAnalysisTaskSE* AddTaskOtonXx(int isMCint = 0,
 
 //do pions:
   // KaonCut = 0 // Kaons
-  // KaonCut = 1 // pions
+  // KaonCut = 1,2 // pions 96,128
   bool isPi = false;
-  if(KaonCut==1) isPi = true;
+  bool isPi128 = false;
+  if(KaonCut>0) isPi = true;
+  if(KaonCut>1) isPi128 = true;
 
 //do omegas
   // XiCut = 0 // Xi
@@ -73,7 +75,7 @@ if(FillOnlyXi>2) forML = true; // in this case we will have massopen and XiOpen 
 
   //kaons:
   AliFemtoDreamTrackCuts *TrackCutsKaon;
-  if(KaonCut!=1){ // std, use kaons
+  if(KaonCut<1){ // std, use kaons
    TrackCutsKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
    TrackCutsKaon->SetPIDkd();
    TrackCutsKaon->SetCutCharge(1);
@@ -101,6 +103,7 @@ if(FillOnlyXi>2) forML = true; // in this case we will have massopen and XiOpen 
    */
    //Marcel's pions:
    int PionFilterbit = 96;
+   if(isPi128) PionFilterbit = 128;
    TrackCutsKaon = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
    TrackCutsKaon->SetFilterBit(PionFilterbit);
    TrackCutsKaon->SetCutCharge(1);
@@ -108,7 +111,7 @@ if(FillOnlyXi>2) forML = true; // in this case we will have massopen and XiOpen 
 
   //antikaons
   AliFemtoDreamTrackCuts *TrackCutsAntiKaon;
-  if(KaonCut!=1){ // std, use kaons
+  if(KaonCut<1){ // std, use kaons
    TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
    TrackCutsAntiKaon->SetPIDkd();
    TrackCutsAntiKaon->SetCutCharge(-1);
@@ -136,6 +139,7 @@ if(FillOnlyXi>2) forML = true; // in this case we will have massopen and XiOpen 
    */
    //Marcel's pions:
    int PionFilterbit = 96;
+   if(isPi128) PionFilterbit = 128;
    TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
    TrackCutsAntiKaon->SetFilterBit(PionFilterbit);
    TrackCutsAntiKaon->SetCutCharge(-1);
@@ -418,7 +422,7 @@ bool PionCheckPileUp = false; //std
   // Femto Collection
 //TO WHICH ORDER CORRESPONDS THIS???????????
   std::vector<int> PDGParticles;
-  if(KaonCut!=1){ //use Kaons
+  if(KaonCut<1){ //use Kaons
    PDGParticles.push_back(321);
    PDGParticles.push_back(321);
   }else { // use pions
