@@ -314,7 +314,6 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
   iCent--;
-  Int_t lPosCount=0, lNegCount=0, lMidCount=0;
   Double_t ptMin = fPtBins[0];
   Double_t ptMax = fPtBins[fNPtBins];
   Int_t nTotNoTracks=0;
