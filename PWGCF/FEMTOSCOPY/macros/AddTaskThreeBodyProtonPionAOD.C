@@ -27,7 +27,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
   double Q3cutValue = 1.0,//15
   bool RunmTPlots = false, //16,
   bool RunPairMultThreeBody = false, //17
-  const char *cutVariation = "0" //18
+  float PionMaxPt = 4.0, //18
+  const char *cutVariation = "0" //19
   ){
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -69,9 +70,11 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
   AliFemtoDreamTrackCuts *TrackCutsAntiPion = NULL;
 
   TrackCutsPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+  TrackCutsPion->SetPtRange(0.14, PionMaxPt);
   TrackCutsPion->SetFilterBit(96);
   TrackCutsPion->SetCutCharge(1);
   TrackCutsAntiPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+  TrackCutsAntiPion->SetPtRange(0.14, PionMaxPt);
   TrackCutsAntiPion->SetFilterBit(96);
   TrackCutsAntiPion->SetCutCharge(-1);
 

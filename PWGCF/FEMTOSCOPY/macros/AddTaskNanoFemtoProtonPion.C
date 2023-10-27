@@ -28,7 +28,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     float pTOnepTTwokStarCutOff = 3., //17
     bool DoKine = false, //18
     bool DoReco = false, //19
-    const char *cutVariation = "0" //20
+    bool SwitchOffCPR = false, //20
+    const char *cutVariation = "0" //21
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -171,6 +172,17 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   closeRejection[6] = true;  // barp pi-
   closeRejection[7] = true;  // pi+pi+
   closeRejection[9] = true;  // pi-pi-
+
+  if(SwitchOffCPR){
+    closeRejection[0] = false;  // pp
+    closeRejection[2] = false;  // ppi+
+    closeRejection[3] = false;  // ppi-
+    closeRejection[4] = false;  // barp barp
+    closeRejection[5] = false;  // barp pi+
+    closeRejection[6] = false;  // barp pi-
+    closeRejection[7] = false;  // pi+pi+
+    closeRejection[9] = false;  // pi-pi- 
+  }
 
   /*if(DoKine){
     closeRejection[0] = false;  // pp
