@@ -71,7 +71,7 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	void SetUsePtotal(int aUse);
 	void SetPtotalRange(float aMin,float aMax);
 	void Setpionrejectcut(float aRejectCut);
-	void SetPIDdNSigmaTPCAndTOF(float aTPC,float aTOF);	
+	void SetPIDdNSigmaTPCAndTOF(float aTPC1,float aTPC2,float aTOF);	
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -156,7 +156,8 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	float MaxPtotal;
 	float pionrejectcut;
 
-	float d_TPCCut;
+	float d_TPCCut_Stage1;
+	float d_TPCCut_Stage2;
 	float d_TOFCut;
 };
 
