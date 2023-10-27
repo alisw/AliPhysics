@@ -1359,6 +1359,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11310e03","24466810ha082200000","0133103100000010"); // 10-30%
     cuts.AddCutCalo("13530e03","24466810ha082200000","0133103100000010"); // 30-50%
     cuts.AddCutCalo("15910e03","24466810ha082200000","0133103100000010"); // 50-90%
+  } else if (trainConfig == 881){ // PHOS clusters - similar to EMCal 780 only 0-10 trigger
+    cuts.AddCutCalo("10130e03","24466810ha082200000","0133103100000010"); // 00-10%
+  } else if (trainConfig == 882){ // PHOS clusters - similar to EMCal 780 only 30-50 trigger
+    cuts.AddCutCalo("13530e03","24466810ha082200000","0133103100000010"); // 30-50%
 
   // **********************************************************************************************************
   // ****************************** EMCal+DCal configurations PbPb run 2 2018 *********************************
