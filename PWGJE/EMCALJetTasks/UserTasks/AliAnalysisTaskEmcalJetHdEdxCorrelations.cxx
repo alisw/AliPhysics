@@ -549,7 +549,7 @@ namespace PWGJE
       return eventTrigger;
     }
 
-    Bool_t AliAnalysisTaskEmcalJetHdEdxCorrelations::MixEvents(AliJetContainer *jets, std::vector<unsigned int> rejectedTrackIndices, Int_t current_event_multiplicity, Double_t zVertex, UInt_t eventTrigger, Double_t flattened_EP_angle)
+    void AliAnalysisTaskEmcalJetHdEdxCorrelations::MixEvents(AliJetContainer *jets, AliPIDResponse *pidResponse, TObjArray *tracksClone, std::vector<unsigned int> rejectedTrackIndices, bool useListOfRejectedIndices, Int_t current_event_multiplicity, Double_t zVertex, UInt_t eventTrigger, Double_t flattened_EP_angle)
     {
         
       // event mixing
@@ -579,11 +579,9 @@ namespace PWGJE
       Double_t efficiency = -999;
       Bool_t leadJet = kFALSE;
       Bool_t isBiasedJet = kFALSE;
-      AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
       AliPIDResponse::EDetPidStatus TOFPIDstatus;
-      const AliAODTrack *bgTrack = new AliAODTrack();
+      AliVTrack *bgTrack;
 
-          bool useListOfRejectedIndices = false;
       AliTLorentzVector bgTrackVec;
 
       AliEventPool *pool = 0;
@@ -602,7 +600,7 @@ namespace PWGJE
           AliFatal(Form("No pool found for centrality = %f, zVertex = %f", fCent, zVertex));
         else if (fBeamType == kpp)
           AliFatal(Form("No pool found for ntracks_pp = %d, zVertex = %f", current_event_multiplicity, zVertex));
-        return kTRUE;
+          return;
       }
 
       // The number of events in the pool
@@ -666,7 +664,7 @@ namespace PWGJE
               for (Int_t ibg = 0; ibg < bgTracks->GetEntries(); ibg++)
               {
                 
-                bgTrack = dynamic_cast<const AliAODTrack *>(bgTracks->At(ibg));
+                bgTrack = dynamic_cast<AliVTrack *>(bgTracks->At(ibg));
                 if (!bgTrack)
                 {
                   AliError(Form("%s:Failed to retrieve track from mixed events", GetName()));
@@ -711,7 +709,7 @@ namespace PWGJE
           }
         }
       }
-      TObjArray *tracksClone = 0;
+      
       
       // The two bitwise and to zero yet are still equal when both are 0, so we allow for that possibility
       if ((eventTrigger & fMixingEventType) || eventTrigger == fMixingEventType)
@@ -721,7 +719,7 @@ namespace PWGJE
         // update pool if jet in event or not
         pool->UpdatePool(tracksClone);
       }
-      return kTRUE;
+      return;
     }
 
     /**
@@ -783,9 +781,10 @@ namespace PWGJE
       // For getting the proper properties of tracks
       AliTLorentzVector track;
       AliPIDResponse::EDetPidStatus TOFPIDstatus;
+      TObjArray *tracksClone = 0;
 
-          // Get PID Response
-          AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
+      // Get PID Response
+      AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
       if (!pidResponse)
       {
         AliErrorStream() << "PID Response not available\n";
@@ -1002,7 +1001,7 @@ namespace PWGJE
 
         if (fDoEventMixing == kTRUE)
         {
-          MixEvents(jets, rejectedTrackIndices, tracks->GetNTracks(), zVertex, eventTrigger, flattenedEPangle);
+          MixEvents(jets, pidResponse, tracksClone, rejectedTrackIndices, useListOfRejectedIndices, tracks->GetNTracks(), zVertex, eventTrigger, flattenedEPangle);
         } // end of event mixing
 
         return kTRUE;
@@ -1385,7 +1384,7 @@ namespace PWGJE
     {
       // clones a track list by using AliBasicTrack which uses much less memory (used for event mixing)
       TObjArray *tracksClone = new TObjArray;
-      tracksClone->SetOwner(kTRUE);
+      // tracksClone->SetOwner(kTRUE);
 
       // Loop over all tracks
       AliVTrack *particle;

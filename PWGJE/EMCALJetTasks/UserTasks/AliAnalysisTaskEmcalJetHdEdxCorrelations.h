@@ -137,7 +137,7 @@ namespace PWGJE
       void CreateHistograms();
       void CreateSparses();
       void CreateEventPool();
-      Bool_t MixEvents(AliJetContainer *jets, std::vector<unsigned int> rejectedTrackIndices, Int_t current_event_multiplicity, Double_t zVertex, UInt_t eventTrigger, Double_t flattened_EP_angle);
+      void MixEvents(AliJetContainer *jets, AliPIDResponse *pidResponse, TObjArray *tracksClone, std::vector<unsigned int> rejectedTrackIndices, bool useListOfRejectedIndices, Int_t current_event_multiplicity, Double_t zVertex, UInt_t eventTrigger, Double_t flattened_EP_angle);
       virtual void UserCreateOutputObjects();
       Double_t GetFlattenedEPAngle(Double_t uncorrectedAngle);
 
@@ -290,7 +290,7 @@ namespace PWGJE
       AliAnalysisTaskEmcalJetHdEdxCorrelations(const AliAnalysisTaskEmcalJetHdEdxCorrelations &);            // not implemented
       AliAnalysisTaskEmcalJetHdEdxCorrelations &operator=(const AliAnalysisTaskEmcalJetHdEdxCorrelations &); // not implemented
 
-      ClassDef(AliAnalysisTaskEmcalJetHdEdxCorrelations, 23);
+      ClassDef(AliAnalysisTaskEmcalJetHdEdxCorrelations, 25);
     };
 
   } /* namespace EMCALJetTasks */
