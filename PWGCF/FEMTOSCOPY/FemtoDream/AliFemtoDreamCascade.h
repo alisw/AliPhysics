@@ -90,6 +90,10 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
     return fv0DCAPrimVtx;
   }
   ;
+  float GetBachelorBaryonCosPA() {
+    return fBachelorBaryonCosPA;
+  }
+  ;
   float Getv0TransverseRadius() {
     return fv0TransRadius;
   }
@@ -187,6 +191,7 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   float fMassv0;
   float fv0DCADaug;
   float fv0DCAPrimVtx;
+  float fBachelorBaryonCosPA;
   TVector3 fv0Momentum;
   float fv0Pt;
   float fDCABachPrimVtx;

@@ -41,6 +41,7 @@
 /// Default constructor for serialization
 AliCSTrackSelection::AliCSTrackSelection()
   : TNamed(),
+    fPoiNames{},
     fTrackId(kWrongPOIid),
     fParticleId(kWrongPOIid),
     fQALevel(AliCSAnalysisCutsBase::kQALevelNone),
@@ -718,6 +719,7 @@ Bool_t AliCSTrackSelection::IsTrueTrackAccepted(Int_t itrk) {
         }
       }
     }
+    inclusivepid = inclusivepid && (fParticleId != kWrongPOIid);
   } else {
     /* if the track is accepted then by default is a hadron */
     fParticleId = kPOIh;
@@ -810,6 +812,8 @@ void AliCSTrackSelection::InitCuts(const char *name){
   TH1::AddDirectory(kFALSE);
 
   TList* tmplist = new TList();
+  fPoiNames.clear();
+  fPoiNames.push_back("Ha");
 
   auto addcut = [&](auto& lst, auto& cut, auto cfstr, std::string kind) {
     cut->InitializeCutsFromCutString(cfstr);
@@ -827,7 +831,7 @@ void AliCSTrackSelection::InitCuts(const char *name){
     }
   };
 
-  auto populatepids = [&](auto& lst, std::string cutrole, auto& cutscf) {
+  auto populatepids = [&](auto& lst, std::string cutrole, auto& cutscf, bool updatepoilst = false) {
     int ncuts[AliPID::kSPECIESC] = {0};
     for (int icut = 0; icut < cutscf.GetEntries(); ++icut) {
       TString szcut = ((TObjString*)cutscf.At(icut))->String().Data();
@@ -856,11 +860,19 @@ void AliCSTrackSelection::InitCuts(const char *name){
       AliCSPIDCuts* cut = new AliCSPIDCuts(Form("CS_%sPidCut%d", cutrole.c_str(), icut), Form("CS %s PID Cut %d", cutrole.c_str(), icut), target, ncuts[target]);
       addcut(lst, cut, szcut.Data(), Form("%s PID", cutrole.c_str()));
     }
+    static std::vector<std::string> speciesNames{"El", "Mu", "Pi", "Ka", "Pr"};
+    if (updatepoilst) {
+      for (uint isp = 0; isp < AliPID::kSPECIES; ++isp) {
+        if (ncuts[isp] > 0) {
+          fPoiNames.push_back(speciesNames[isp]);
+        }
+      }
+    }
   };
 
   populatetrks(fInclusiveTrackCuts, "Inclusive", fInclusiveCutsStrings);
   populatetrks(fExclusiveCuts, "Exclusive", fExclusiveCutsStrings);
-  populatepids(fInclusivePIDCuts, "Inclusive", fInclusivePidCutsStrings);
+  populatepids(fInclusivePIDCuts, "Inclusive", fInclusivePidCutsStrings, true);
   populatepids(fExclusiveCuts, "Exclusive", fExclusivePidCutsStrings);
 
   if (name == NULL) name = GetName();

@@ -8,7 +8,7 @@
 #include "TFile.h"
 #endif
 
-AliAnalysisTaskSESemileptonicOmegac0KFP *AddTaskOmegac2eleOmegafromKFP(TString finname="", Bool_t theMCon=kFALSE, Bool_t writeQATree=kFALSE, Bool_t writeElectronTree = kFALSE, Bool_t domixing = kFALSE,  Bool_t writeTrackRotation = kFALSE, TString cuttype="")
+AliAnalysisTaskSESemileptonicOmegac0KFP *AddTaskOmegac2eleOmegafromKFP(TString finname="", Bool_t theMCon=kFALSE, Bool_t writeQATree=kFALSE, Bool_t writeElectronTree = kFALSE, Bool_t domixing = kFALSE,  Bool_t writeTrackRotation = kFALSE, Bool_t theMCClosureTest = kFALSE, TString cuttype="")
 
 {
     
@@ -56,6 +56,7 @@ AliAnalysisTaskSESemileptonicOmegac0KFP *AddTaskOmegac2eleOmegafromKFP(TString f
    if(!task) return NULL;
     
    task->SetMC(theMCon);
+   task->SetMCClosureTest(theMCClosureTest);
    task->SetDebugLevel(1);
    task->SetWriteOmegac0MCGenTree(writeOmegac0MCGenTree);
    task->SetWriteOmegac0Tree(writeOmegac0RecTree);

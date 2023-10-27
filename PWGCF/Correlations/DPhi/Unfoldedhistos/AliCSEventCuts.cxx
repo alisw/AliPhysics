@@ -15,6 +15,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TMath.h>
+#include "AliAODMCHeader.h"
 #include "AliVEvent.h"
 #include "AliVTrack.h"
 #include "AliCSEventCuts.h"
@@ -38,20 +39,20 @@
 /// \file AliCSEventCuts.cxx
 /// \brief Implementation of event cuts class within the correlation studies analysis
 
-const char *AliCSEventCuts::fgkCutsNames[AliCSEventCuts::kNCuts] = {
-    "MC without proper MC data",
-    "DAQ incomplete",
-    "No tracks",
-    "Offline trigger",
-    "Vertex contributors",
-    "Vertex quality",
-    "SPD and tracks vertex distance",
-    "z_{vtx}",
-    "Pile up",
-    "2015 Pile up",
-    "SPD clusters vs tracklets",
-    "Centrality"
-};
+const char* AliCSEventCuts::fgkCutsNames[AliCSEventCuts::kNCuts] = {
+  "MC without proper MC data",
+  "MC generated pile up",
+  "DAQ incomplete",
+  "No tracks",
+  "Offline trigger",
+  "Vertex contributors",
+  "Vertex quality",
+  "SPD and tracks vertex distance",
+  "z_{vtx}",
+  "Pile up",
+  "2015 Pile up",
+  "SPD clusters vs tracklets",
+  "Centrality"};
 
 Float_t AliCSEventCuts::fgkVertexResolutionThreshold = 0.25;
 Float_t AliCSEventCuts::fgkVertexResolutionThreshold_pPb = 0.25;
@@ -325,6 +326,31 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
       if (arrayMC == NULL) {
         fCutsActivatedMask.SetBitNumber(kMCdataQuality);
         accepted = kFALSE;
+      }
+      /* check if pile-up generated event for AOD format*/
+      AliAODMCHeader* header = (AliAODMCHeader*)((AliAODEvent*)AliCSAnalysisCutsBase::GetInputEventHandler()->GetEvent())->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+      if (header != nullptr) {
+        for (auto h : *header->GetCocktailHeaders()) {
+          auto genname = [](auto header) {
+            TString str = header->GetName();
+            str.ToLower();
+            if (str.Contains("hijing")) {
+              return "Hijing";
+            } else if (str.Contains("pythia")) {
+              return "Phytia";
+            } else if (str.Contains("phojet")) {
+              return "Phojet";
+            } else {
+              return "";
+            }
+          };
+          TString gname = genname(h);
+          if (gname.Length() > 0 && (AliAnalysisUtils::IsPileupInGeneratedEvent(header, gname) || AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(header, gname))) {
+            AliInfo("Event rejected. Pile up generated event");
+            fCutsActivatedMask.SetBitNumber(kMCGeneratedPileUp);
+            accepted = false;
+          }
+        }
       }
     }
   }
@@ -832,15 +858,17 @@ void AliCSEventCuts::SetActualSystemType() {
   case kLHC15n:
   case kLHC16k:
   case kLHC16l:
+  case kLHC17pq:
   case kLHC18bp:
       system = kpp;
       AliInfo("SYSTEM: p-p");
       break;
   case kLHC13bc:
   case kLHC13de:
-    system = kpPb;
-    AliInfo("SYSTEM: p-Pb");
-    break;
+  case kLHC16qt:
+      system = kpPb;
+      AliInfo("SYSTEM: p-Pb");
+      break;
   case kLHC13f:
     system = kPbp;
     AliInfo("SYSTEM: Pb-p");
@@ -1043,7 +1071,9 @@ Bool_t AliCSEventCuts::UseNewMultiplicityFramework() const{
   case kLHC10bg:
   case kLHC15oLIR:
   case kLHC15oHIR:
+  case kLHC16qt:
   case kLHC17n:
+  case kLHC17pq:
   case kLHC18bp:
   case kLHC18q:
   case kLHC18r:
@@ -1505,7 +1535,9 @@ void AliCSEventCuts::SetActualActiveTrigger()
     case kLHC15oHIR:
     case kLHC16k:
     case kLHC16l:
+    case kLHC16qt:
     case kLHC17n:
+    case kLHC17pq:
       fOfflineTriggerMask = AliVEvent::kINT7;
       AliInfo("Using AliVEvent::kINT7 as MB trigger");
       break;
@@ -2314,18 +2346,30 @@ void AliCSEventCuts::SetActualFilterTracksCuts() {
     system = "Pb-Pb";
     period = "2015o";
     break;
+  case kLHC16qt:
+    baseSystem = k2011based;
+    basename = "2011";
+    system = "p-Pb";
+    period = "2016qt";
+    break;
   case kLHC17n:
     baseSystem = k2011based;
     basename = "2011";
     system = "Xe-Xe";
     period = "2017n";
     break;
+  case kLHC17pq:
+    baseSystem = k2011based;
+    basename = "2011";
+    system = "p-p";
+    period = "LHC17pq";
+    break;
   case kLHC18bp:
-      baseSystem = k2011based;
-      basename = "2011";
-      system = "p-p";
-      period = "2018bp";
-      break;
+    baseSystem = k2011based;
+    basename = "2011";
+    system = "p-p";
+    period = "2018bp";
+    break;
   case kLHC18q:
       baseSystem = k2011based;
       basename = "2011";

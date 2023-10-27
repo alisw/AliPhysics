@@ -172,6 +172,7 @@ set(SRCS
   AliFemtoWRzTrackCut.cxx
   AliFemtoTrackCutPdtHe3.cxx	# p-d/t/He3 track cut
   AliFemtoCorrFctnpdtHe3.cxx
+  AliAnalysisTaskDowangppDCAfit.cxx # for MC 
   #Daniela
   AliAnalysisTaskParticleEffDY04.cxx
   AliAnalysisTaskParticleEffDY06.cxx
@@ -184,13 +185,17 @@ set(SRCS
   AliFemtoPairCutRadialDistanceDR.cxx
   AliFemtoCorrFctnDYDPhiSimpleWithCorrections.cxx
   AliFemtoCorrFctnDYDPhiSimple.cxx
-  AliAnalysisEfficiencyPbPbExclusivePID.cxx
-  AliAnalysisEfficiencyPbPbNodoublecount.cxx
   AliAnalysisTaskParticleEffDYM3.cxx
   AliAnalysisTaskParticleEffDYM1.cxx
- AliAnalysisTaskParticleEffDYM2.cxx
- AliAnalysisTaskParticleEffDYM0.cxx
+  AliAnalysisTaskParticleEffDYM2.cxx
+  AliAnalysisTaskParticleEffDYM0.cxx
+  AliAnalysisTaskEfficiencyPbPb_DR.cxx
+  AliAnalysisTaskEffK0s.cxx
 
+
+
+  AliAnalysisEfficiencyPbPbExclusivePID.cxx
+  AliAnalysisEfficiencyPbPbNodoublecount.cxx
     )
 
 

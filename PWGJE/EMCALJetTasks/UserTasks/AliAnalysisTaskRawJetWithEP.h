@@ -98,9 +98,6 @@ public:
   void Terminate(Option_t *option);
 
   static AliAnalysisTaskRawJetWithEP* AddTaskRawJetWithEP(
-      TString EPCailbType = "JeHand",
-      TString EPCalibJEHandRefFileName = "alien:///alice/cern.ch/user/t/tkumaoka/calibV0TPCRun2Vtx10P118qPass3.root",
-      TString EPCalibOrigRefFileName = "alien:///alice/cern.ch/user/t/tkumaoka/CalibV0GainCorrectionLHC18q_Oct2021.root",
       const char *ntracks            = "usedefault",
       const char *nclusters          = "usedefault",
       const char* ncells             = "usedefault",
@@ -145,6 +142,8 @@ public:
 
   void SetJetHistWEP(Bool_t bSepEP){fSepEP = bSepEP;}
 
+  void SetExLJetFromFit(Bool_t bExLJetFromFit){fExLJetFromFit = bExLJetFromFit;}
+  void SetExSubLJetFromFit(Bool_t bExSubLJetFromFit){fExSubLJetFromFit = bExSubLJetFromFit;}
 
   void SetCalibOrigRefObjList(TList *hWgtsV0ZDC){this->fCalibRefObjList = (TList *) hWgtsV0ZDC->Clone();}
 
@@ -257,8 +256,10 @@ private:
     std::string   fRunListFileName;         ///< Run list file Name
     TString       fCalibRefFileName;        ///< Calibration input file name
 
-    Bool_t        fExLJetFromFit = kTRUE;   ///< exclude tracks from bkg fit.
+    Bool_t        fExLJetFromFit = kTRUE;   ///< exclude tracks from bkg fit in leading jet region.
+    Bool_t        fExSubLJetFromFit = kTRUE;   ///< exclude tracks from bkg fit in subleading jet region.
     AliEmcalJet*  fLeadingJet;              //! leading jet
+    AliEmcalJet*  fSubLeadingJet;           //! subleading jet
     AliEmcalJet*  fLeadingJetAfterSub;      //! leading jet after background subtraction
     TF1*          fFitModulation;           //-> modulation fit for rho
 
@@ -290,9 +291,9 @@ private:
     Double_t CalcEPAngle(double Qx,double Qy) const {return (TMath::Pi()+TMath::ATan2(-Qy,-Qx))/2;}
     Double_t CalcEPReso(Int_t n, Double_t &psiA, Double_t &psiB, Double_t &psiC);
 
-    void  CalcRandomCone(Double_t &pt, Double_t &eta, Double_t &phi, \
-        Double_t &leadingJetEta, Double_t &leadingJetPhi, Double_t &jetR
-    ) const;
+    void  EstimateDeltaPt(TString GenGroupName, Double_t jetR);
+    void  CalcRandomCone(Double_t &pt, Double_t &eta, Double_t &phi, Double_t &jetR,\
+      Double_t& lJetAreaTrackPt, Double_t& subLJetAreaTrackPt) const;
 
     // TH1F*   GetResoFromOutputFile(detectorType det, Int_t h, TArrayD* cen);
     Double_t CalculateEventPlaneChi(Double_t res);
@@ -319,7 +320,7 @@ private:
     }
 
     AliEmcalJet* GetLeadingJet(AliLocalRhoParameter* localRho = 0x0);
-
+    void GetLeadingAndSubJet();
 
     // static Double_t CalcEPChi(Double_t res)
     // {
@@ -499,7 +500,7 @@ private:
     AliAnalysisTaskRawJetWithEP(const AliAnalysisTaskRawJetWithEP&); // not implemented
     AliAnalysisTaskRawJetWithEP &operator=(const AliAnalysisTaskRawJetWithEP&);
 
-    ClassDef(AliAnalysisTaskRawJetWithEP, 140);
+    ClassDef(AliAnalysisTaskRawJetWithEP, 142);
 };
 
 #endif

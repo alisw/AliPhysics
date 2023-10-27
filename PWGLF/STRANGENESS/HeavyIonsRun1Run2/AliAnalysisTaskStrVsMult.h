@@ -50,6 +50,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     //MC-related setters and getters
     void SetIsMC(bool IsMC){fisMC = IsMC;};
     void SetIsMCassoc(bool IsMCassoc){fisMCassoc = IsMCassoc;};
+    void SetIsMaterialAnalysis(bool IsMaterialAnalysis){fisMaterialAnalysis = IsMaterialAnalysis;};
 
     //pile-up rejection setter
     void SetRejectPileUpEvts(bool RejectPileupEvts, int PileupCut=1){if(RejectPileupEvts==kTRUE) fPileupCut = PileupCut;};
@@ -83,6 +84,7 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     //MC-realted variables
     bool fisMC;                                               //
     bool fisMCassoc;                                          //
+    bool fisMaterialAnalysis;                                 //
 
     //Default cut configuration
     bool fDefOnly;                                            //
@@ -206,8 +208,8 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliAnalysisTaskStrVsMult(const AliAnalysisTaskStrVsMult&);            // not implemented
     AliAnalysisTaskStrVsMult& operator=(const AliAnalysisTaskStrVsMult&); // not implemented
 
-    ClassDef(AliAnalysisTaskStrVsMult, 20); 
-    //version 20: add Armenteros-Podolanski cut for K0s
+    ClassDef(AliAnalysisTaskStrVsMult, 21); 
+    //version 21: add histogram for secondaries from material
 };
 
 #endif

@@ -75,18 +75,24 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         Int_t                   MatchToXicZeroMC(TClonesArray *mcArray, Int_t PDGXicZero, const Int_t nDaughters, const Int_t *daughterIndex, const Int_t *daughterPDG);
 
         /// set MC usage
+        void SetWriteCascMCGenTree(Bool_t a) {fWriteCascMCGenTree = a;}
+        Bool_t GetWriteCascMCGenTree() const {return fWriteCascMCGenTree;}
         void SetWriteXic0MCGenTree(Bool_t a) {fWriteXic0MCGenTree = a;}
         Bool_t GetWriteXic0MCGenTree() const {return fWriteXic0MCGenTree;}
 
         void SetWriteXic0Tree(Bool_t a) {fWriteXic0Tree = a;}
         Bool_t GetWriteXic0Tree() const {return fWriteXic0Tree;}
 
-        void FillTreeGenXic0(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLoverP);
+        void FillTreeGenCasc(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLoverP, TClonesArray *mcArray, AliAODMCParticle *mc_bachelorfromCasc, AliAODMCParticle *mc_pifromLam, AliAODMCParticle *mc_prfromLam, AliAODMCParticle *mc_Lam);
+        void FillTreeRecCascFromCasc(AliAODcascade *casc, KFParticle kfpCasc, AliAODTrack *trackPiFromXiOrKaonFromOmega, KFParticle kfpPionOrKaon, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Casc);
+        void FillTreeGenXic0(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLoverP, TClonesArray *mcArray, AliAODMCParticle *mc_pifromXic0, AliAODMCParticle *mc_pifromXi, AliAODMCParticle *mc_pifromLam, AliAODMCParticle *mc_prfromLam, AliAODMCParticle *mc_Xi, AliAODMCParticle *mc_Lam);
         void FillTreeRecXic0FromV0(KFParticle kfpXicZero, AliAODTrack *trackPi, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, AliAODTrack *trackPiFromXi, AliAODv0 *v0, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkP, AliAODTrack *trkN, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
         void FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
 
     private:
         void                    DefineEvent();
+        void                    DefineTreeRecCasc();
+        void                    DefineTreeGenCasc();
         void                    DefineTreeRecXic0();
         void                    DefineTreeGenXic0();
         void                    DefineAnaHist();
@@ -101,16 +107,20 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
 //        Int_t                   fRunNumber;            ///< Run Number
 //        Int_t                   fEvNumberCounter;      ///< EvNumber counter
 //        TObjArray               fMapParticle;         ///< Map of particles in the supporting TClonesArray
-        vector<Int_t>           fAodTrackInd;         ///< Translation table: aodTrackInd(mcTrackIndex) = aodTrackIndex
-        TList*                  fOutputList;          //!<! Output list
-        Float_t*                fVar_Event;           //!<! variables of event to be written to the tree
-        TTree*                  fTree_Xic0;             //!<! tree of the candidate variables
-        Float_t*                fVar_Xic0;         //!<! variables of Xic0 to be written to the tree
-        TTree*                  fTree_Xic0MCGen; //!<! tree of the candidate variables after track selection on output slot
-        Float_t*                fVar_Xic0MCGen;   //!<! variables to be written to the tree
+        vector<Int_t>           fAodTrackInd;    ///< Translation table: aodTrackInd(mcTrackIndex) = aodTrackIndex
+        TList*                  fOutputList;     //!<! Output list
+        Float_t*                fVar_Event;      //!<! variables of event to be written to the tree
+        TTree*                  fTree_Xic0;      //!<! tree of the Xic0 candidate variables
+        Float_t*                fVar_Xic0;       //!<! variables of Xic0 to be written to the tree
+        TTree*                  fTree_Casc;      //!<! tree of the Cascade candidate variables
+        Float_t*                fVar_Casc;       //!<! variables of Cascade to be written to the tree
+        TTree*                  fTree_CascMCGen; //!<! MC gen. tree of Cascade
+        Float_t*                fVar_CascMCGen;  //!<! variables to be written to MC gen. tree of Cascade
+        TTree*                  fTree_Xic0MCGen; //!<! MC gen. tree of Xic0
+        Float_t*                fVar_Xic0MCGen;  //!<! variables to be written to MC gen. tree of Xic0
 //        TTree*                  fVarTree_AntiXicZero;             //!<! tree of the candidate variables
 //        Float_t*                fVar_AntiXicZero;         //!<! variables of Anti-Xic0 to be written to the tree
-        TList*                  fListCuts;           //!<! User output slot 3 // Cuts 
+        TList*                  fListCuts;       //!<! User output slot 3 // Cuts 
 
         Bool_t                  fIsMC; ///< Flag of MC analysis
         Bool_t                  fIsAnaOmegac0; ///< Flag of Omegac0 analysis
@@ -201,6 +211,12 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         TH2F*                   f2DHistXiMinusXY_PV; //!<! 2D Histogram of y vs. x of Xi- at production vertex
         TH2F*                   f2DHistXiPlusXY_DV; //!<! 2D Histogram of y vs. x of Xi+ at decay vertex
         TH2F*                   f2DHistXiPlusXY_PV; //!<! 2D Histogram of y vs. x of Xi+ at production vertex
+        TH2F*                   f2DHistNsigmaTPCTOF_PiFromXic0; //!<! 2D Histogram of Nsigma TPC and Nsigma TOF of pion from Xic0
+        TH2F*                   f2DHistNsigmaTPCTOF_PiFromOmegac0; //!<! 2D Histogram of Nsigma TPC and Nsigma TOF of pion from Omegac0
+        TH2F*                   f2DHistNsigmaTPCTOF_PiFromXi; //!<! 2D Histogram of Nsigma TPC and Nsigma TOF of pion from Xi
+        TH2F*                   f2DHistNsigmaTPCTOF_KaFromOmega; //!<! 2D Histogram of Nsigma TPC and Nsigma TOF of kaon from Omega
+        TH2F*                   f2DHistNsigmaTPCTOF_PiFromLam; //!<! 2D Histogram of Nsigma TPC and Nsigma TOF of pion from Lambda
+        TH2F*                   f2DHistNsigmaTPCTOF_PrFromLam; //!<! 2D Histogram of Nsigma TPC and Nsigma TOF of proton from Lambda
 
         TH1F*                   fHistEvents;          //!<! Histogram of selected events
         TH1F*                   fHTrigger;            //!<! Histogram of trigger
@@ -387,7 +403,6 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         TH1F*                   fHistPVy;              //!<! Histogram of primary vertex in y
         TH1F*                   fHistPVz;              //!<! Histogram of primary vertex in z
         TH1F*                   fHCentrality;          //!<! Histogram of centrality
-        TH1F*                   fHistMCXiDecayType; //!<! MC event type of Xi
         TH1F*                   fHistMCpdg_All;     //!<! PDG of all particle
         TH1F*                   fHistMCpdg_Dau_XicZero;     //!<! PDG of all particle from Xic0 decay
         TH1F*                   fHistMCpdg_Dau_XicPM;     //!<! PDG of all particle from Xic+- decay
@@ -410,7 +425,8 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         THnSparseF*             fHistMCGen_PiXiMassvsPiPt; //!<! mcArray
         THnSparseF*             fHistMCGen_PiXiMassvsPiPt_PionPlus; //!<! mcArray
         THnSparseF*             fHistMCGen_PiXiMassvsPiPt_PionMinus; //!<! mcArray
-        Bool_t                  fWriteXic0MCGenTree; ///< flag to decide whether to write the MC candidate variables on a tree variables
+        Bool_t                  fWriteCascMCGenTree; ///< flag to decide whether to write the Cascade MC candidate variables on a tree variables
+        Bool_t                  fWriteXic0MCGenTree; ///< flag to decide whether to write the Xic0 MC candidate variables on a tree variables
         Bool_t                  fWriteXic0Tree; ///< flag to decide whether to write XicZero tree
         std::map<std::string, double> fVars_MLmap; ///< map of variables (features) that can be used for the ML model application
         TTree*                  fTree_MLoutput; //!<! tree of the ML output
@@ -419,7 +435,7 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         AliHFMLXicZeroToXiPifromKFP(const AliHFMLXicZeroToXiPifromKFP &source); // not implemented
         AliHFMLXicZeroToXiPifromKFP& operator=(const AliHFMLXicZeroToXiPifromKFP& source); // not implemented
 
-        ClassDef(AliHFMLXicZeroToXiPifromKFP, 3);
+        ClassDef(AliHFMLXicZeroToXiPifromKFP, 5);
 };
 
 #endif

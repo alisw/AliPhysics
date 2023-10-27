@@ -67,7 +67,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         virtual void            Terminate(Option_t* option);
 
         enum                    AnaType { eTPCFMDA = 0, eTPCFMDC, eFMDAFMDC, eTPCTPC };
-        enum                    PartSpecies { eCharged = 0, ePion, eKaon, eProton, eK0s, eLambda };
+        enum                    PartSpecies { eCharged = 0, ePion, eKaon, eProton, eK0s, eLambda, ePhi };
         enum                    ColSystem { sPP = 0, sPPb, sPbPb};
 
         // global flags
@@ -85,13 +85,15 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetSkipCorrelations(Bool_t flag = kTRUE) { fSkipCorr = flag; }
         void                    SetIsAniparticleCheck(Bool_t flag = kTRUE, Bool_t antip = kTRUE) { fIsAntiparticleCheck = flag; fDoAntiparticleOnly = antip; }
         void                    SetRejectSecondariesFromMC(Bool_t flag = kTRUE) { fRejectSecondariesFromMC = flag; }
-        void                    SetVetoJetEvents(Bool_t flag = kTRUE) { fVetoJetEvents = flag; }
-        void                    SetJetEventsLowPtCut(Double_t cut) { fJetParticleLowPt = cut; }
+        void                    SetVetoJetEvents(Bool_t flag, Double_t cut, Double_t selectionval, Bool_t selectjetsinTPC) { fVetoJetEvents = flag; fJetParticleLowPt = cut; fJetvetoselectionval = selectionval; fselectjetsinTPC = selectjetsinTPC; }
+	void                    SetParticlemassbias(Bool_t massbias = kFALSE, Bool_t massbias_Proton=kFALSE, Bool_t massbias_Lambda=kFALSE, Bool_t massbias_Phi=kFALSE) { fParticlemass_bias_corr = massbias; fcheckmassbias_Proton = massbias_Proton; fcheckmassbias_Lambda = massbias_Lambda; fcheckmassbias_Phi = massbias_Phi; }
+
 
         // event selection
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
         void                    SetPVZcut(Double_t cut) { fPVzCut = cut; }
         void                    SetUseNchRange(Bool_t range, Int_t min, Int_t max) { fUseNch = range; fNchMin = min; fNchMax = max; }
+	void                    SetUseNchfor_eventmixing(Bool_t range) { fUseNchfor_eventmixing = range; }
         void                    SetCentrality(TString cent, Double_t min = 0.0, Double_t max = 20.0) { fCentEstimator = cent; fCentMin = min; fCentMax = max; }
 
         //track selection (charged + PID + som global )
@@ -113,6 +115,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetV0sCPAs(Double_t k0s, Double_t lambda) { fCutCPAK0s = k0s; fCutCPALambda = lambda; }
         void                    SetV0sTaus(Double_t k0s, Double_t lambda) { fCutTauK0s = k0s; fCutTauLambda = lambda; }
         void                    SetNSigmaTPC(Double_t cut) { fSigmaTPC = cut; }
+	void                    SetNSigmaTPCTOF(Double_t cut) { fNSigmaTPCTOF = cut; }
+
         void                    SetnTPCcrossedRows(Int_t cut) { fnTPCcrossedRows = cut; }
         void                    SetMassRejWindowK0(Double_t cut) { fMassRejWindowK0 = cut; }
         void                    SetMassRejWindowLambda(Double_t cut) { fMassRejWindowLambda = cut; }
@@ -129,6 +133,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetCentBinsForMixing(Int_t nofBins, std::vector<Double_t> bins) { fNCentBins = nofBins; fCentBins = bins; }
         void                    SetNofSamples(Int_t n) { fNOfSamples = n; }
         void                    SetNofMbins(Int_t n) { fNbinsMinv = n; }
+	void                    SetPvzBins(Int_t nofBins, std::vector<Double_t> bins)  {fNzVtxBins = nofBins; fzVtxBins = bins;}
+
 
         // FMD related
         void                    SetUseFMDcut(Bool_t cut = kTRUE) { fUseFMDcut = cut; }
@@ -154,12 +160,12 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  PrepareFMDTracks();
         Bool_t                  PrepareMCTracks();
 
-        Int_t                   IdentifyTrack(const AliAODTrack* track) const; // PID
+        Int_t                   IdentifyTrack(const AliAODTrack* track); // PID
         void                    PrepareV0(); // V0
 	void                    PreparePhi(); // Phi
         Bool_t                  IsV0(const AliAODv0* v0) const; // V0s selection
         Bool_t                  IsK0s(const AliAODv0* v0) const;
-        Bool_t                  IsLambda(const AliAODv0* v0) const;
+        Bool_t                  IsLambda(const AliAODv0* v0);
         Double_t                ProperLifetime(const AliAODv0* v0, const Double_t massPDG) const;
         Bool_t                  HasTrackPIDTPC(const AliAODTrack* track) const; // is TPC PID OK for this track ?
         Bool_t                  HasTrackPIDTOF(const AliAODTrack* track) const; // is TOF PID OK for this track ?
@@ -184,21 +190,28 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         //output histograms
         TH1D*                   fhEventCounter; //!
         TH1D*                   fhEventMultiplicity; //!
+	TH1D*                   fhEventMultiplicity_jetveto; //!
+	TH1D*                   fhEventMultiplicity_massbias; //!
         AliTHn*                 fhTrigTracks[7]; //!
         AliTHn*                 fhSE[7]; //!
         AliTHn*                 fhME[7]; //!
         TH2D*                   fhEfficiency[6]; //! not eta dependent
         TH2D*                   fhEfficiencyEta[6][8]; //! eta dependent (8 sectors)
         TH2D*                   fHistFMDeta; //! vs PVz
+	TH2D*                   fHistFMDeta_phi; //! vs phi
         TH1D*                   fhV0Counter[3]; //!
         TH1D*                   fhK0sphi; //!
 	TH1D*                   fhLambdaphi; //!
 	TH1D*                   fhPhiphi; //!	   		
         TH1D*                   fhCentCalib; //!
         TH1D*                   fhPT[7]; //!
+	TH1D*                   fhPT_trig[7]; //!
         TH2D*                   fhPTvsMinv[3]; //!
 	TH2D*                   fhPTvsMinv_Phi_LS; //!
         TH2D*                   fh2FMDvsV0[4]; //!
+	TH2D*                   fh2D_TPCvsFMDA; //!
+	TH2D*                   fh2D_TPCvsFMDC; //!
+	TH2D*                   fh2D_TPCvsFMD_AC; //!
 
         //event and track selection
         AnaType                 fAnalType;
@@ -214,6 +227,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 	Bool_t                  fshiftphi_PHI; // [kFALSE]
         Bool_t                  fshiftrap_PHI; // [kFALSE]
         Bool_t                  fUseNch; // [kFALSE]
+	Bool_t                  fUseNchfor_eventmixing; // [kFALSE]
         Bool_t                  fUseEfficiency; // [kFALSE]
         Bool_t                  fUseFMDcut; // [kTRUE]
         Bool_t                  fUseOppositeSidesOnly; // [kFALSE]
@@ -222,12 +236,15 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  fIsAntiparticleCheck; // [kFALSE]
         Bool_t                  fDoAntiparticleOnly; // [kFALSE] == positive particles only and lambdas
         Bool_t                  fVetoJetEvents; // [kFALSE]
+	Bool_t                  fselectjetsinTPC; // [kFALSE]
         Bool_t                  fRejectSecondariesFromMC; // [kFALSE]
         Bool_t                  fBoostAMPT; // [kFALSE] = boost to CMS in pPb collisions for the gen level of AMPT
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fRunNumber; // previous run
-        Int_t                   fNofTracks;
+        Double_t                fNofTracks;
+	Double_t                fNFMD_fwd_hits;
+	Double_t                fNFMD_bwd_hits;	
         Int_t                   fNofMinHighPtTracksForRejection;
         Int_t                   fNchMin;
         Int_t                   fNchMax;
@@ -276,8 +293,11 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                fCutTauK0s; // [0.]
         Double_t                fCutTauLambda; // [0.]
         Double_t                fSigmaTPC; // [3.0]
+	Double_t                fNSigmaTPCTOF; // [0.0]
+	
         Double_t                fMassRejWindowK0; // [0.005]
         Double_t                fMassRejWindowLambda; // [0.01]
+	Double_t                fJetvetoselectionval; //[0.5]
 	
 	Double_t                fMinK0Mass; // [0.44]
         Double_t                fMaxK0Mass; // [0.56]
@@ -285,6 +305,13 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                fMaxLambdaMass; // [1.15]
 	Double_t                fMinPhiMass; // [0.99]
         Double_t                fMaxPhiMass; // [1.07]
+	Bool_t                  fParticlemass_bias_corr;
+	Bool_t                  fcheckmassbias_Proton;//(kFALSE),
+        Bool_t                  fcheckmassbias_Lambda;//(kFALSE),
+        Bool_t                  fcheckmassbias_Phi;//(kFALSE),
+        Int_t                   fProtonSigcount;
+        Int_t                   fLambdaSigcount;
+        Int_t                   fPhiSigcount;
 
 
         Double_t                fJetParticleLowPt; // [5.]

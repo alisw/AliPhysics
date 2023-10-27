@@ -19,7 +19,11 @@ AliHFMLXicZeroToXiPifromKFP* AddTaskXicZeroToXiPiFromKFParticleForPbPb (TString 
 
     Bool_t writeXic0RecTree = kTRUE;
     Bool_t writeXic0MCGenTree = kFALSE;
-    if (IsMC) writeXic0MCGenTree = kTRUE;
+    Bool_t writeCascMCGenTree = kFALSE;
+    if (IsMC) {
+      writeXic0MCGenTree = kTRUE;
+      writeCascMCGenTree = kTRUE;
+    }
 
     TString particle = "Xic0";
     if (IsAnaOmegac0) particle = "Omegac0";
@@ -82,6 +86,7 @@ AliHFMLXicZeroToXiPifromKFP* AddTaskXicZeroToXiPiFromKFParticleForPbPb (TString 
     task->SetDebugLevel(1);
     task->SetWriteXic0MCGenTree(writeXic0MCGenTree);
     task->SetWriteXic0Tree(writeXic0RecTree);
+    task->SetWriteCascMCGenTree(writeCascMCGenTree);
 
     task->SetAnaPbPb(IsPbPb);
     task->SetMLConfigFile(confFileML);
@@ -132,6 +137,16 @@ AliHFMLXicZeroToXiPifromKFP* AddTaskXicZeroToXiPiFromKFParticleForPbPb (TString 
     mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("tree_%s_MCGen_cent_%d_%d_pT_%d_%d_%s", particle.Data(), centmin, centmax, pTmin, pTmax, cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("hist_%s_cent_%d_%d_pT_%d_%d_%s", particle.Data(), centmin, centmax, pTmin, pTmax, cuttype.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     if (IsPbPb) mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("tree_ML_%s_cent_%d_%d_pT_%d_%d_%s", particle.Data(), centmin, centmax, pTmin, pTmax, cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    if (IsMC) {
+      if (!IsAnaOmegac0) {
+        mgr->ConnectOutput(task,7,mgr->CreateContainer(Form("tree_Xi_MCGen_cent_%d_%d_pT_%d_%d_%s", centmin, centmax, pTmin, pTmax, cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+        mgr->ConnectOutput(task,8,mgr->CreateContainer(Form("tree_Xi_cent_%d_%d_pT_%d_%d_%s", centmin, centmax, pTmin, pTmax, cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+      }
+      if (IsAnaOmegac0) {
+        mgr->ConnectOutput(task,7,mgr->CreateContainer(Form("tree_Omega_MCGen_cent_%d_%d_pT_%d_%d_%s", centmin, centmax, pTmin, pTmax, cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+        mgr->ConnectOutput(task,8,mgr->CreateContainer(Form("tree_Omega_cent_%d_%d_pT_%d_%d_%s", centmin, centmax, pTmin, pTmax, cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+      }
+    }
 
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid

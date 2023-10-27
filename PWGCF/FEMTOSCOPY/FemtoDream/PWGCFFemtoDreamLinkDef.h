@@ -41,6 +41,7 @@
 #pragma link C++ class AliAnalysisTaskDeuteronProtonEfficiency+;
 #pragma link C++ class AliAnalysisTaskNanoAODFemtoDreamPhi+;
 #pragma link C++ class AliAnalysisTaskNanoAODFemtoDreamLambdaPhi + ;
+#pragma link C++ class AliAnalysisTaskFemtoDreamRho+;
 #pragma link C++ class AliAnalysisTaskFemtoDreamSigPi+;
 #pragma link C++ class AliAnalysisTaskNanoAODFemtoDreamSigPi+;
 #pragma link C++ class AliAnalysisTaskFemtoDreamPion+;
@@ -74,6 +75,7 @@
 #pragma link C++ class AliAnalysisTaskThreeBodyProtonPrimary+;
 #pragma link C++ class AliAnalysisTaskNanoTreeLPhi + ;
 #pragma link C++ class AliAnalysisTaskNanoLambdaKaon + ;
+#pragma link C++ class AliAnalysisTaskLambdaPion + ;
 #pragma link C++ class AliAnalysisTaskNanoLKr + ;
 #pragma link C++ class AliAnalysisTaskThreeBodyFemtoMixedCharge+;
 #pragma link C++ class AliAnalysisTaskNanoBenchmark + ;
@@ -83,6 +85,9 @@
 #pragma link C++ class AliSigma0AODPhotonMotherCuts+;
 #pragma link C++ class AliSigma0PhotonCuts+;
 #pragma link C++ class AliAnalysisTaskNanoXiPi+;
+#pragma link C++ class AliAnalysisTaskNanoFemtoProtonKaonPlus+;
+#pragma link C++ class AliAnalysisTaskFemtoProtonKaonPlus+;
+#pragma link C++ class AliAnalysisTaskAODThreeBodyProtonPrimary+;
 
 #pragma link C++ class AliAnalysisTaskOtonXx+;
 

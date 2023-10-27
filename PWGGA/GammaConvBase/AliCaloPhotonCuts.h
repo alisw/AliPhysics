@@ -25,7 +25,6 @@
 #include "AliPhotonIsolation.h"
 #include <vector>
 
-
 class AliESDEvent;
 class AliAODEvent;
 class AliConversionPhotonBase;
@@ -219,6 +218,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       kPP13T17P1JJ,
       kPP13T17P1JJTrigger,
       kLHC21j8a,
+      kPP13T17HERJJ,
       // pp 13 TeV 2018
       kPP13T18P1JJ,
       kPP13T18P1JJTrigger,
@@ -405,6 +405,12 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Bool_t      GetDoFlatEnergySubtraction()                    {return fDoFlatEnergySubtraction;}
     Bool_t      GetDoSecondaryTrackMatching()                   {return fDoSecondaryTrackMatching;}
+
+    Bool_t      SetPoissonParamCentFunction(int isMC);
+    Bool_t      SetNMatchedTracksFunc(float meanCent);
+    Double_t    CorrectEnergyForOverlap(float meanCent);
+    Int_t       GetDoEnergyCorrectionForOverlap()               {return fDoEnergyCorrectionForOverlap;}
+    Double_t    GetMeanEForOverlap(Double_t cent, Double_t* par);
 
     // modify acceptance via histogram with cellID
     void        SetHistoToModifyAcceptance(TH1S* histAcc)       {fHistoModifyAcc  = histAcc; return;}
@@ -594,6 +600,11 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t     fIsPureCalo;                              // flag for MergedCluster analysis
     Int_t     fNactiveEmcalCells;                       // total number of active emcal cells
     Bool_t    fDoSecondaryTrackMatching;                // flag to switch on secondary trackmatching
+    Int_t     fDoEnergyCorrectionForOverlap;            // mask to switch on a special for PbPb developed cluster energy correction, 0 = off, 1 = on with mean, 2 = on with random values
+    TF1*      fFuncPoissonParamCent;                    // TF1 to describe the poisson parameter that you get from fitting a poisson dsitribution to the number of matched tracks per cluster as function of centrality
+    TF1*      fFuncNMatchedTracks;                      // TF1 poisson distribution to describe the number of matched tracks per cluster for a specific centrality
+    Double_t  fParamMeanTrackPt[3];                     // TF1 distribution to describe the mean pT of tracks as function of centrality. Half of this value is used as neutral energy overlap correction.
+    Float_t   fMeanNMatchedTracks;                      // Mean number of matched primary tracks, stored to reduce CPU time for neutral overlap correction
 
     //vector
     std::vector<Int_t> fVectorMatchedClusterIDs;        // vector with cluster IDs that have been matched to tracks in merged cluster analysis
@@ -612,6 +623,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterEtavsPhiAfterQA;              // eta-phi-distribution of all after cluster quality cuts
     TH2F*     fHistClusterEtavsPhiAfterQA_onlyTriggered;// eta-phi-distribution of all after cluster quality cuts
     TH2F*     fHistClusterEtavsPhiBackground;           // eta-phi-distribution of all clusters in background calculation
+    TH2F*     fHistClusterEtavsPhiMatchedClusters;      // eta-phi-distribution of all track-matched clusters
     TH2F*     fHistClusterTimevsEBeforeQA;              // Cluster time vs E before cluster quality cuts
     TH2F*     fHistClusterTimevsEAfterQA;               // Cluster time vs E after cluster quality cuts
     TH2F*     fHistClusterTimevsELowGain;               // Cluster time vs E for low gain cluster
@@ -642,6 +654,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterEnergyvsNCellsBeforeQA;       // Cluster Energy vs NCells before QA
     TH2F*     fHistClusterEnergyvsNCellsAfterQA;        // Cluster Energy vs NCells after QA
     TH2F*     fHistCellEnergyvsCellID;                  // Cell Energy vs CellID
+    TH2F*     fHistClusterEnergyvsCellID;               // Cluster Energy vs CellID
     TH1F*     fHistCellEnergyLG;                        // Cell Energy of low gain cells
     TH1F*     fHistCellEnergyHG;                        // Cell Energy of high gain cells
     TH2F*     fHistCellTimevsCellID;                    // Cell Time vs CellID
@@ -707,9 +720,11 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterEvsTrackEGammaSubCharged;     //
     TH2F*     fHistClusterEvsTrackEConv;                //
     TH2F*     fHistClusterENMatchesNeutral;             //
+    TH2F*     fHistClusterENMatchesConv;                //
     TH2F*     fHistClusterENMatchesCharged;             //
     TH2F*     fHistClusterEvsTrackEPrimaryButNoElec;    //
     TH2F*     fHistClusterEvsTrackSumEPrimaryButNoElec; //
+    TH1F*     fHistClusterNMatched;                     // Number of matched tracks per cluster
 
     TH1F*     fHistClusETruePi0_BeforeTM;               // for checking the false positives: how much true pi0s are matched away?
     TH1F*     fHistClusETruePi0_Matched;                //
@@ -740,7 +755,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,126)
+    ClassDef(AliCaloPhotonCuts,131)
 };
 
 #endif

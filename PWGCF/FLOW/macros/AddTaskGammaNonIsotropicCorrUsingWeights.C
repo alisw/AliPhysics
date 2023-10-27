@@ -38,10 +38,15 @@ void AddTaskGammaNonIsotropicCorrUsingWeights(Int_t whichData = 2018,TString per
   else if(sTrigger=="kAny" || sTrigger=="kAll"){
     taskGammaPID->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kSemiCentral | AliVEvent::kCentral);
   }
+  else if(sTrigger=="kINT7andSemiCentral"){
+    taskGammaPID->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kSemiCentral); 
+    printf("\n =========> AddTaskCMW::Info() Trigger = kINT7+kSemiCentral \n");
+  }
   else{//if trigger==kINT7 or no trigger provided:
     taskGammaPID->SelectCollisionCandidates(AliVEvent::kINT7);      // default is kINT7
     printf("\n =========> AddTaskCMW::Info() Trigger = kINT7 \n");
   }
+  
   
 
   ///Set Event cuts:

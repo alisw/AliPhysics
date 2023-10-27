@@ -6,6 +6,7 @@ void AddTask_PhotonQA(
   Int_t     IsHeavyIon                    = 0,
   Bool_t    kHistograms                   = kTRUE,
   Double_t  kTree                         = 1.0,  // 0. / 0 / kFALSE for no, 1. / 1 / kTRUE for yes,  x > 1.0 will use only 1/x of the event statistics for the tree
+  Double_t  kTreeHighPt                   = 100., // effective only for kTree >1. up to this pt write a fraction 1/kTree to the tree, above write all photons to the tree
   TString   V0ReaderCutNumberAODBranch    = "0000000060084001001500000",
   Bool_t    runBasicQAWithStandardOutput  = kTRUE,
   Bool_t    doEtaShiftV0Reader            = kFALSE,
@@ -71,7 +72,7 @@ void AddTask_PhotonQA(
   AliAnalysisTaskConversionQA *fQA = new AliAnalysisTaskConversionQA(Form("%s_%s_QA",TaskEventCutnumber.Data(),TaskPhotonCutnumber.Data()));
   fQA->SetEventCuts(analysisEventCuts,IsHeavyIon);
   fQA->SetConversionCuts(analysisCuts,IsHeavyIon);
-  fQA->FillType(kTree,kHistograms);
+  fQA->FillType(kTree,kTreeHighPt,kHistograms);
   fQA->SetIsMC(isMC);
   fQA->SetV0ReaderName(V0ReaderName);
   mgr->AddTask(fQA);

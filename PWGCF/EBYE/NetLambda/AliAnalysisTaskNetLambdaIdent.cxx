@@ -1054,6 +1054,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 
   // Create the cascade and track objects for AOD and ESD
   AliAODcascade *aodcasc = 0x0;
+  AliAODTrack *aodcascbachtrack = 0x0;
   AliAODTrack *aodcascv0postrack = 0x0;
   AliAODTrack *aodcascv0negtrack = 0x0;
   AliESDcascade *esdcasc = 0x0;
@@ -1066,6 +1067,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 
     // Reset the objects for every event
     aodcasc = 0x0;
+    aodcascbachtrack = 0x0;
     aodcascv0postrack = 0x0;
     aodcascv0negtrack = 0x0;
     esdcasc = 0x0;
@@ -1074,7 +1076,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
     esdcascv0negtrack = 0x0;
 
     // Define all cascade property parameters
-    Int_t Charge = -999, MCStatus = 0;
+    Int_t Charge = -999, MCStatusCasc = 0, MCStatusV0 = 0;
     Double_t AODXiVertexXYZ[3], ESDBachMom[3];
     Float_t PtXi = -999, PtBach = -999, EtaXi = -999, EtaBach = -999, InvMassXi = -999;
     Float_t CosPAXi = -999, CosPABachBar = -999, DecayRXi = -999, DecayLengthXi = -999, PLTXi = -999;  
@@ -1086,19 +1088,26 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
     Float_t PPt = -999, NPt = -999, PEta = -999, NEta = -999;
     Float_t PNsigmaPr = -999, NNsigmaPr = -999, PDCAPV = -999, NDCAPV = -999;
 
-    if(fIsAOD) {
+    if(fIsAOD) { // AOD
       aodcasc = fAOD->GetCascade(iCasc);
       InvMassXi = aodcasc->MassXi();
       if(TMath::Abs(InvMassXi) < massXi - 5*0.007 || TMath::Abs(InvMassXi) > massXi + 5*0.007) { continue; } // Xi invariant mass cut - Joey Staa    
-      if(aodcasc->GetOnFlyStatus() == kTRUE) { continue; }
+      if(aodcasc->GetOnFlyStatus() == kTRUE) { continue; }      
+      AliAODVertex* xivtx = (AliAODVertex*)aodcasc->GetDecayVertexXi();   
       AliAODVertex* cascv0vtx = (AliAODVertex*)aodcasc->GetSecondaryVtx();
+      aodcascbachtrack = (AliAODTrack*)xivtx->GetDaughter(0);
       aodcascv0postrack = (AliAODTrack*)cascv0vtx->GetDaughter(0);
       aodcascv0negtrack = (AliAODTrack*)cascv0vtx->GetDaughter(1);
+      if(fIsMC) {
+	MCStatusCasc = IsGenCascade(TMath::Abs(aodcascv0postrack->GetLabel()), TMath::Abs(aodcascv0negtrack->GetLabel()), TMath::Abs(aodcascbachtrack->GetLabel()));
+	if(MCStatusCasc > 0) { MCStatusV0 = 3125; }
+	else if(MCStatusCasc < 0) { MCStatusV0 = -3125; }
+      }
       
       // Xi- and bachelor properties
       aodcasc->GetDecayVertexXi()->GetXYZ(AODXiVertexXYZ);
       Charge = aodcasc->ChargeXi();
-      if(Charge > 0) { InvMassXi = -1*(aodcasc->MassXi()); } // Incorporate the charge in the particle mass
+      if(Charge > 0) { InvMassXi = -1*(InvMassXi); } // Incorporate the charge in the particle mass
       PtXi = TMath::Sqrt(aodcasc->Pt2Xi());
       PtBach = TMath::Sqrt(TMath::Power(aodcasc->MomBachX(), 2) + TMath::Power(aodcasc->MomBachY(), 2));
       EtaXi = TMath::ATanH((aodcasc->MomXiZ())/(TMath::Sqrt(aodcasc->Ptot2Xi())));
@@ -1115,7 +1124,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       // Secondary V0 properties
       PtV0 = TMath::Sqrt(aodcasc->Pt2V0());
       EtaV0 = aodcasc->PseudoRapV0();
-      if(Charge < 0) { InvMassV0 = aodcasc->MassLambda(); }
+      if(Charge <= 0) { InvMassV0 = aodcasc->MassLambda(); }
       else if(Charge > 0) { InvMassV0 = -1*(aodcasc->MassAntiLambda()); } // Incorporate the charge in the particle mass
       InvMassK0S = aodcasc->MassK0Short();
       InvMassGamma = aodcasc->InvMass2Prongs(0,1,11,11);
@@ -1135,7 +1144,8 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       PDCAPV = aodcasc->DcaPosToPrimVertex();
       NDCAPV = aodcasc->DcaNegToPrimVertex();
     }
-    else {
+    
+    else { // ESD
       esdcasc = fESD->GetCascade(iCasc);
       InvMassXi = esdcasc->M();
       if(TMath::Abs(InvMassXi) < massXi - 5*0.007 || TMath::Abs(InvMassXi) > massXi + 5*0.007) { continue; } // Xi invariant mass cut - Joey Staa
@@ -1143,6 +1153,11 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       esdcascbachtrack = fESD->GetTrack(TMath::Abs(esdcasc->GetBindex()));
       esdcascv0postrack = (AliESDtrack*)fESD->GetTrack(TMath::Abs(esdcasc->GetPindex()));
       esdcascv0negtrack = (AliESDtrack*)fESD->GetTrack(TMath::Abs(esdcasc->GetNindex()));
+      if(fIsMC) {
+	MCStatusCasc = IsGenCascade(TMath::Abs(esdcascv0postrack->GetLabel()), TMath::Abs(esdcascv0negtrack->GetLabel()), TMath::Abs(esdcascbachtrack->GetLabel()));
+	if(MCStatusCasc > 0) { MCStatusV0 = 3125; }
+	else if(MCStatusCasc < 0) { MCStatusV0 = -3125; }
+      }
 
       // Xi- and bachelor properties
       Charge = esdcasc->Charge();    
@@ -1157,7 +1172,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	CosPABachBar = GetCosPA(esdcascv0postrack, esdcascbachtrack, b, fVtx);
       }
       else if(Charge > 0) {
-	InvMassXi = -1*(esdcasc->M()); // Incorporate the charge in the particle mass
+	InvMassXi = -1*(InvMassXi); // Incorporate the charge in the particle mass
 	CosPABachBar = GetCosPA(esdcascbachtrack, esdcascv0negtrack, b, fVtx);
       } 
       CosPAXi = esdcasc->GetCascadeCosineOfPointingAngle(fVtx[0], fVtx[1], fVtx[2]);    
@@ -1173,10 +1188,10 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       // Secondary V0 properties
       PtV0 = esdcasc->AliESDv0::Pt();
       EtaV0 = esdcasc->AliESDv0::Eta();
-      if(Charge < 0) { InvMassV0 = esdcasc->GetEffMass(4, 2); }
-      else if(Charge > 0) { InvMassV0 = -1*(esdcasc->GetEffMass(2, 4)); } // Incorporate the charge in the particle mass
-      InvMassK0S = esdcasc->GetEffMass(2, 2);
-      InvMassGamma = esdcasc->GetEffMass(0, 0);
+      if(Charge <= 0) { InvMassV0 = esdcasc->AliESDv0::M(); }
+      else if(Charge > 0) { InvMassV0 = -1*(esdcasc->AliESDv0::M()); } // Incorporate the charge in the particle mass
+      //InvMassK0S = esdcasc->GetEffMass(2, 2);
+      //InvMassGamma = esdcasc->GetEffMass(0, 0);     
       CosPAV0 = esdcasc->GetV0CosineOfPointingAngle(esdcasc->Xv(), esdcasc->Yv(), esdcasc->Zv());
       DecayRV0 = TMath::Sqrt(TMath::Power(esdcasc->AliESDv0::Xv(), 2) +
 			     TMath::Power(esdcasc->AliESDv0::Yv(), 2));
@@ -1204,6 +1219,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
     AliLightV0 *tempLightCascadeV0 = new AliLightV0(PtV0, EtaV0, InvMassV0, InvMassK0S, InvMassGamma, CosPAV0, DecayRV0, PLTV0);
     tempLightCascadeV0->SetDCAV0(DCAV0PV);
     tempLightCascadeV0->SetDCADaughters(DCAV0Daughters);
+    tempLightCascadeV0->SetMcStatus(MCStatusV0);
     tempLightCascadeV0->SetPosDaughter(PPt, PEta, PNsigmaPr, PDCAPV);
     tempLightCascadeV0->SetNegDaughter(NPt, NEta, NNsigmaPr, NDCAPV);
     if(fCascadeTree) {
@@ -1220,7 +1236,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       tempLightCascade->SetDCAXiPV(DCAXiPV);
       tempLightCascade->SetDCABachPV(DCABachPV);
       tempLightCascade->SetDCAXiDaughters(DCAXiDaughters);
-      tempLightCascade->SetMCStatus(MCStatus);
+      tempLightCascade->SetMCStatus(MCStatusCasc);
       tempLightCascade->SetCascadeV0(tempLightCascadeV0);
     }
   }
@@ -1802,6 +1818,67 @@ Int_t AliAnalysisTaskNetLambdaIdent::IsGenLambda(Int_t poslabel, Int_t neglabel,
   return 0;
 }
 
+Int_t AliAnalysisTaskNetLambdaIdent::IsGenCascade(Int_t Poslabel, Int_t Neglabel, Int_t Bachlabel) {
+   
+  Int_t mPos, mNeg, mBach;
+  Int_t gmPID;
+  Int_t gmLambda = 0;
+  Int_t nGen = fMCEvent->GetNumberOfTracks();
+
+  if(fIsAOD) {
+    if(Poslabel >= nGen || Neglabel >= nGen || Bachlabel >= nGen) { return 0; } 
+    AliAODMCParticle *aodGenTrackPos = (AliAODMCParticle*)fMCEvent->GetTrack(Poslabel);
+    AliAODMCParticle *aodGenTrackNeg = (AliAODMCParticle*)fMCEvent->GetTrack(Neglabel);
+    AliAODMCParticle *aodGenTrackBach = (AliAODMCParticle*)fMCEvent->GetTrack(Bachlabel);
+    if(!aodGenTrackPos || !aodGenTrackNeg || !aodGenTrackBach) { return 0; }
+
+    mPos = aodGenTrackPos->GetMother();
+    mNeg = aodGenTrackNeg->GetMother();
+    mBach = aodGenTrackBach->GetMother();
+    if(mPos < 0 || mNeg < 0 || mBach < 0) { return 0; }
+    AliVParticle *aodTestMotherPos = fMCEvent->GetTrack(mPos);
+    AliVParticle *aodTestMotherNeg = fMCEvent->GetTrack(mNeg);
+    AliVParticle *aodTestMotherBach = fMCEvent->GetTrack(mBach);
+    if(!aodTestMotherPos || !aodTestMotherNeg || !aodTestMotherBach) { return 0; }
+    gmLambda = aodTestMotherPos->GetMother();     
+    
+    if(mPos == mNeg && gmLambda >= 0 && gmLambda == mBach) {	
+      AliVParticle *aodGrandMother = fMCEvent->GetTrack(gmLambda);
+      if(aodGrandMother && aodGrandMother->IsPhysicalPrimary()) {	
+	gmPID = aodGrandMother->PdgCode();
+	return gmPID; // |3322| = Xi0, |3312| = Xi-+, |3334| = Omega-+
+      }
+    }
+  }
+
+  else {
+    if(Poslabel >= nGen || Neglabel >= nGen || Bachlabel >= nGen) { return 0; } 
+    AliMCParticle *esdGenTrackPos = (AliMCParticle*)fMCEvent->GetTrack(Poslabel);
+    AliMCParticle *esdGenTrackNeg = (AliMCParticle*)fMCEvent->GetTrack(Neglabel);
+    AliMCParticle *esdGenTrackBach = (AliMCParticle*)fMCEvent->GetTrack(Bachlabel);
+    if(!esdGenTrackPos || !esdGenTrackNeg || !esdGenTrackBach) { return 0; }
+
+    mPos = esdGenTrackPos->GetMother();
+    mNeg = esdGenTrackNeg->GetMother();
+    mBach = esdGenTrackBach->GetMother();
+    if(mPos < 0 || mNeg < 0 || mBach < 0) { return 0; }
+    AliMCParticle *esdTestMotherPos = (AliMCParticle*)fMCEvent->GetTrack(mPos);
+    AliMCParticle *esdTestMotherNeg = (AliMCParticle*)fMCEvent->GetTrack(mNeg);
+    AliMCParticle *esdTestMotherBach = (AliMCParticle*)fMCEvent->GetTrack(mBach);
+    if(!esdTestMotherPos || !esdTestMotherNeg || !esdTestMotherBach) { return 0; }
+    gmLambda = esdTestMotherPos->GetMother();
+
+    if(mPos == mNeg && gmLambda >= 0 && gmLambda == mBach) {
+      AliMCParticle *esdGrandMother = (AliMCParticle*)fMCEvent->GetTrack(gmLambda);
+      if(esdGrandMother && fMCEvent->IsPhysicalPrimary(gmLambda)) {	
+	gmPID = esdGrandMother->PdgCode();
+	return gmPID; // |3322| = Xi0, |3312| = Xi-+, |3334| = Omega-+
+      }
+    }
+  }
+
+  return 0;
+}
 
 Double_t AliAnalysisTaskNetLambdaIdent::GetDCAV0Dau( AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b, Double_t lNegMassForTracking, Double_t lPosMassForTracking) {
     //--------------------------------------------------------------

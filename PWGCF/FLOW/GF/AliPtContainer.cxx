@@ -6,9 +6,13 @@ If used, modified, or distributed, please aknowledge the original author of this
 */
 #include "AliPtContainer.h"
 
-double AliPtContainer::fFactorial[9] = {1.,1.,2.,6.,24.,120.,720.,5040.,40320.};
-int AliPtContainer::fSign[9] = {1,-1,1,-1,1,-1,1,-1,1};
-
+Double_t AliPtContainer::fFactorial[9] = {1.,1.,2.,6.,24.,120.,720.,5040.,40320.};
+Int_t AliPtContainer::fSign[9] = {1,-1,1,-1,1,-1,1,-1,1};
+Double_t AliPtContainer::fCoeff[5][5][5][5] = {{{{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}},{{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}},{{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}},{{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}},{{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}}},
+                                          {{{0,0,0,0,0},{1,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}},{{0,0,0,0,0},{1,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}},{{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}},{{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}},{{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}}},
+                                          {{{0,0,0,0,0},{0,1,0,0,0},{1,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}},{{0,0,0,0,0},{1,0,0,0,0},{1,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}},{{0,0,0,0,0},{1,0,0,0,0},{1,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}},{{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}},{{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}}},
+                                          {{{0,0,0,0,0},{0,0,1,0,0},{0,1,0,0,0},{1,0,0,0,0},{0,0,0,0,0}},{{0,0,0,0,0},{0,2,-1,0,0},{1,0,0,0,0},{1,0,0,0,0},{0,0,0,0,0}},{{0,0,0,0,0},{1,0,0,0,0},{1,0,0,0,0},{1,0,0,0,0},{0,0,0,0,0}},{{0,0,0,0,0},{1,0,0,0,0},{1,0,0,0,0},{1,0,0,0,0},{0,0,0,0,0}},{{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0},{0,0,0,0,0}}},
+                                          {{{0,0,0,0,0},{0,0,0,1,0},{0,0,1,0,0},{0,1,0,0,0},{1,0,0,0,0}},{{0,0,0,0,0},{0,0,3,-2,0},{0,2,-1,0,0},{1,0,0,0,0},{1,0,0,0,0}},{{0,0,0,0,0},{0,2,-1,0,0},{2./3,2./3,-1./3,0,0},{1,0,0,0,0},{1,0,0,0,0}},{{0,0,0,0,0},{1,0,0,0,0},{1,0,0,0,0},{1,0,0,0,0},{1,0,0,0,0}},{{0,0,0,0,0},{1,0,0,0,0},{1,0,0,0,0},{1,0,0,0,0},{1,0,0,0,0}}}};
 using namespace PtSpace;
 AliPtContainer::AliPtContainer():
     fCkTermList(0),
@@ -25,7 +29,8 @@ AliPtContainer::AliPtContainer():
     fEventWeight(kWeight::kOne),
     fSubevent(false),
     fCorr(),
-    fSumw()
+    fSumw(),
+    fExoticCorr()
 {};
 AliPtContainer::~AliPtContainer()
 {
@@ -50,7 +55,8 @@ AliPtContainer::AliPtContainer(const char* name, const char* title, int nbinsx, 
     fEventWeight(kWeight::kWperms),
     fSubevent(sub),
     fCorr(),
-    fSumw()
+    fSumw(),
+    fExoticCorr()
 {
     Initialize(nbinsx,xbins);
 };
@@ -68,7 +74,10 @@ AliPtContainer::AliPtContainer(const char* name, const char* title, int nbinsx, 
     fNormList(0),
     mpar(m),
     fEventWeight(kWeight::kWperms),
-    fSubevent(sub)
+    fSubevent(sub),
+    fCorr(),
+    fSumw(),
+    fExoticCorr()
 {
     Initialize(nbinsx,xlow,xhigh);
 };
@@ -180,6 +189,36 @@ vector<double> AliPtContainer::getEventCorrelation(int mOrder, Int_t subIndex) {
   vector<double> outvec = {fCorr[subIndex][mOrder],fSumw[subIndex][mOrder]};
   return outvec;
 }
+double AliPtContainer::getExoticEventCorrelation(int w, int p) {
+  if(w>4) { printf("Exotic corr only supported up to m = 4\n"); return 0; }
+  if(p>w) { printf("weight order must be >= pt order\n"); return 0; }
+  return fExoticCorr[w][p];
+}
+void AliPtContainer::FillExotic(int mMax, const vector<vector<double>> &inarr) {
+  vector<double> outer_terms;
+  vector<double> inner_terms;
+  fExoticCorr.resize(mMax+1,vector<double>(mMax+1,0.0)); fExoticCorr[0][0] = 1.0;
+  double inner_sum;
+  double outer_sum;
+  for(int m(1);m<=mMax;++m){
+    for(int n(0);n<=m;++n){
+      for(int k(1);k<=m;++k){
+        inner_terms.clear();
+        for(int l(0);l<=m-k;++l){
+          if(l>m-n) continue;
+          if(m-k-l>n || m-k-l<0) continue;
+          inner_terms.push_back(fCoeff[m][n][k][l]*fExoticCorr[m-k][m-k-l]*inarr[k][n-m+k+l]);
+        }
+        inner_sum = OrderedAddition(inner_terms);
+        outer_terms.push_back(fSign[k-1]*(fFactorial[m-1]/fFactorial[m-k])*inner_sum);
+      }
+      outer_sum = OrderedAddition(outer_terms);
+      outer_terms.clear();
+      fExoticCorr[m][n] = outer_sum;
+    }
+  }
+  return;
+}
 void AliPtContainer::FillRecursive(const vector<vector<double>> &inarr, Int_t subIndex) {
   if(subIndex<0||subIndex>2) return;
   fCorr[subIndex].clear(); fCorr[subIndex].resize(mpar+1,0); fCorr[subIndex][0] = 1.0;
@@ -195,8 +234,8 @@ void AliPtContainer::FillRecursive(const vector<vector<double>> &inarr, Int_t su
       valNum.push_back(fSign[k-1]*fCorr[subIndex][m-k]*(fFactorial[m-1]/fFactorial[m-k])*inarr[k][k]);
       valDenum.push_back(fSign[k-1]*fSumw[subIndex][m-k]*(fFactorial[m-1]/fFactorial[m-k])*inarr[k][0]);
     }
-    sumNum = OrderedAddition(valNum, m);
-    sumDenum = OrderedAddition(valDenum, m);
+    sumNum = OrderedAddition(valNum);
+    sumDenum = OrderedAddition(valDenum);
     valNum.clear();
     valDenum.clear();
   
@@ -205,13 +244,13 @@ void AliPtContainer::FillRecursive(const vector<vector<double>> &inarr, Int_t su
   }
   return;
 }
-void AliPtContainer::FillRecursiveProfiles(const double &lMult, const double &rn) {
+void AliPtContainer::FillRecursiveProfiles(const double &lMult, const double &rn, bool exotic) {
     int k = 0;
     for(int m=1;m<=mpar;++m)
     {
       if(m<5){
         for(int i(m);i<=4;++i){
-          if(fSumw[0][m]!=0 && fSumw[0][i]!=0) ((AliProfileBS*)fCorrList->At(k))->FillProfile(lMult,fCorr[0][m]/fSumw[0][m],(fEventWeight==PtSpace::kOne)?1.0:fSumw[0][i],rn);
+          if(fSumw[0][m]!=0 && fSumw[0][i]!=0) ((AliProfileBS*)fCorrList->At(k))->FillProfile(lMult,(exotic)?fExoticCorr[i][m]/fSumw[0][i]:fCorr[0][m]/fSumw[0][m],(fEventWeight==PtSpace::kOne)?1.0:fSumw[0][i],rn);
           ++k;
         }
       }
@@ -277,11 +316,11 @@ vector<Double_t> AliPtContainer::getSubeventCorrelation(Int_t mOrder){
   outvec = {0,0};
   return outvec;
 }
-double AliPtContainer::OrderedAddition(vector<double> vec, int size) {
+double AliPtContainer::OrderedAddition(vector<double> vec) {
   double sum = 0;
   std::sort(vec.begin(), vec.end());
 
-  for(int i = 0; i < size; i++)
+  for(int i = 0; i < vec.size(); i++)
   {
     sum += vec[i];
   }
@@ -495,7 +534,14 @@ TH1 *AliPtContainer::RecalculateKurtosisHists(vector<TH1*> inh) {
 }
 TH1* AliPtContainer::getRecursiveHist(int ind, int m, unsigned int l_obs, bool sub) {
   if(l_obs==kObs::kCorr) {
-      if(!sub) return ((AliProfileBS*)fCorrList->At(m-1))->getHist(ind);
+      if(!sub) {
+        if((AliProfileBS*)fCorrList->FindObject("corr_1par_1pc")){
+          return (m<5)?((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar_%ipc",m,m)))->getHist(ind):((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar",m)))->getHist(ind);
+        }
+        else {
+          return ((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar",m)))->getHist(ind);
+        }
+      }
       else return getSubeventCumulantHist(ind, m);
   }
   if(l_obs==kObs::kCum) 
@@ -562,8 +608,14 @@ void AliPtContainer::CalculateRecursive(bool normalized) {
     for(int i=-1;i<((AliProfileBS*)fCorrList->At(0))->getNSubs();++i) {
         vector<TH1*> hTs;
         for(int j=0;j<mpar;++j) {
-            ((AliProfileBS*)fCorrList->At(j))->SetErrorOption("g");
-            hTs.push_back(((AliProfileBS*)fCorrList->At(j))->getHist(i));
+            if((AliProfileBS*)fCorrList->FindObject("corr_1par_1pc")){
+              (j<4)?((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar_%ipc",j+1,j+1)))->SetErrorOption("g"):((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar",j+1)))->SetErrorOption("g");
+              (j<4)?hTs.push_back(((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar_%ipc",j+1,j+1)))->getHist(i)):hTs.push_back(((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar",j+1)))->getHist(i));
+            }
+            else {
+              ((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar",j+1)))->SetErrorOption("g");
+              hTs.push_back(((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar",j+1)))->getHist(i));
+            }
         }
         CalculateCumulantHists(hTs,i,normalized);
     }

@@ -45,6 +45,7 @@
 
 #include "AliMultSelection.h"
 #include "AliAODMCParticle.h"
+#include "AliPPVsMultUtils.h"
 
 // includes added to play with KFParticle
 #ifndef HomogeneousField
@@ -107,16 +108,12 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP() :
   fCounter(0),
   fCentrality(0),
   fNtracklets(0),
+  fCounter_INEL(0),
   fHistMCGen_Lambda_Pt(0),
   fHistMCGen_AntiLambda_Pt(0),
   fHistMCGen_Lambda_Pt_wYcut(0),
   fHistMCGen_AntiLambda_Pt_wYcut(0),
   fCounterGen_Cuts_Lambda(0),
-  fCounterGen_Cuts_AntiLambda(0),
-  fCounterRecMC_Cuts_Lambda(0),
-  fCounterRecMC_Cuts_AntiLambda(0),
-  fCounterRec_Cuts_Lambda(0),
-  fCounterRec_Cuts_AntiLambda(0),
   fHistMCGen_XiMinus_Pt(0),
   fHistMCGen_XiPlus_Pt(0),
   fHistMCGen_XiMinus_Pt_wYcut(0),
@@ -428,6 +425,7 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
   fCounter(0),
   fCentrality(0),
   fNtracklets(0),
+  fCounter_INEL(0),
   fHistMCGen_Lambda_Pt(0),
   fHistMCGen_AntiLambda_Pt(0),
   fHistMCGen_Lambda_Pt_wYcut(0),
@@ -734,6 +732,7 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
   DefineOutput(4, TTree::Class()); // Xic0
   DefineOutput(5, TTree::Class()); // Xic0 MCGen
   DefineOutput(6, TList::Class()); // Omega hist
+  DefineOutput(7,AliNormalizationCounter::Class()); fCounter_INEL = 0; //For INEl>0
 
 }
 //_____________________________________________________________________________
@@ -1580,6 +1579,13 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserCreateOutputObjects()
   fCounter = new AliNormalizationCounter(normName.Data());
   fCounter->SetStudyMultiplicity(kTRUE,1.);
   fCounter->Init();
+
+  TString normName1="NormalizationCounter_INEL";
+  AliAnalysisDataContainer *cont1 = GetOutputSlot(7)->GetContainer();
+  if(cont1) normName1 = (TString)cont1->GetName();
+  fCounter_INEL = new AliNormalizationCounter(normName1.Data());
+  fCounter_INEL->Init();
+
   PostData(2, fCounter);
 
   DefineEvent();
@@ -1591,6 +1597,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserCreateOutputObjects()
   DefineTreeGenXic0();
   PostData(5, fTree_Xic0MCGen);
   PostData(6, fOutputList);
+
+  PostData(7, fCounter_INEL);
 
   return;
                                         // fOutputList object. the manager will in the end take care of writing your output to file
@@ -1635,6 +1643,12 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
     vzeroMult  = vzeroMultA + vzeroMultC;
   }
   fCounter->StoreEvent(AODEvent,fAnaCuts,fIsMC,vzeroMult); // Fill "AliNormalizationCounter" with V0A+V0C multiplicity
+	
+  fIsINEL = false;
+	if (fIsMC==false && AliPPVsMultUtils::IsINELgtZERO(AODEvent)==true) fIsINEL = true;
+  if (fIsINEL) {
+    fCounter_INEL->StoreEvent(AODEvent,fAnaCuts,fIsMC,vzeroMult);
+  }
 
   //------------------------------------------------
   // MC analysis setting                                                                    
@@ -1642,6 +1656,10 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
 
   TClonesArray *mcArray = 0;
   AliAODMCHeader *mcHeader = 0;
+
+  fNtracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AODEvent, -1., 1.);
+  AliMultSelection *MultSelection = dynamic_cast<AliMultSelection*>(AODEvent->FindListObject("MultSelection"));
+  if (MultSelection) fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
 
   if (fIsMC) {
     fMCEvent = MCEvent(); // get the corresponding MC event fMCEvent
@@ -1714,10 +1732,6 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
   if(IsINT7&&IsEMC7) fHTrigger->Fill(12);
   if(fIsHMV0) fHTrigger->Fill(13);
   if(fIsHMSPD) fHTrigger->Fill(14); 
-
-  fNtracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AODEvent, -1., 1.);
-  AliMultSelection *MultSelection = dynamic_cast<AliMultSelection*>(AODEvent->FindListObject("MultSelection"));
-  if (MultSelection) fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
 
   //------------------------------------------------
   // Check if the event has v0 candidate
@@ -1818,6 +1832,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
   PostData(4, fTree_Xic0);
   PostData(5, fTree_Xic0MCGen);
   PostData(6, fOutputList);
+
+  PostData(7, fCounter_INEL);
 
   return;
 }
@@ -5181,17 +5197,15 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromV0(KFParticle kfpX
     fVar_Xic0[i] = -9999.;
   }
 
-//  Float_t nSigmaTOF_PiFromXic0 = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackPiFromXic0,AliPID::kPion);
-//  Float_t nSigmaTOF_PiFromXi   = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackPiFromXi,AliPID::kPion);
+  Double_t nSigmaTOF_PiFromXic0 = -999., nSigmaTOF_PiFromXi = -999.;
+  AliAODPidHF *Pid_HF = fAnaCuts->GetPidHF();
+  if (Pid_HF) {
+    Pid_HF->GetnSigmaTOF(trackPiFromXic0, AliPID::kPion, nSigmaTOF_PiFromXic0);
+    Pid_HF->GetnSigmaTOF(trackPiFromXi, AliPID::kPion, nSigmaTOF_PiFromXi);
+  }
 
-//  Float_t nSigmaTPC_PiFromXic0 = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackPiFromXic0,AliPID::kPion);
-//  Float_t nSigmaTPC_PiFromXi   = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackPiFromXi,AliPID::kPion);
-//  Float_t nSigmaTPC_PrFromLam  = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkProton,AliPID::kProton);
-//  Float_t nSigmaTPC_PiFromLam  = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkPion,AliPID::kPion);
-
-
-  Float_t nSigmaTOF_PiFromXic0 = fPID->NumberOfSigmasTOF(trackPiFromXic0,AliPID::kPion);
-  Float_t nSigmaTOF_PiFromXi   = fPID->NumberOfSigmasTOF(trackPiFromXi,AliPID::kPion);
+//  Float_t nSigmaTOF_PiFromXic0 = fPID->NumberOfSigmasTOF(trackPiFromXic0,AliPID::kPion);
+//  Float_t nSigmaTOF_PiFromXi   = fPID->NumberOfSigmasTOF(trackPiFromXi,AliPID::kPion);
   Float_t nSigmaTPC_PiFromXic0 = fPID->NumberOfSigmasTPC(trackPiFromXic0,AliPID::kPion);
   Float_t nSigmaTPC_PiFromXi   = fPID->NumberOfSigmasTPC(trackPiFromXi,AliPID::kPion);
   Float_t nSigmaTPC_PrFromLam  = fPID->NumberOfSigmasTPC(trkProton,AliPID::kProton);
@@ -5412,27 +5426,25 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSo
     fVar_Xic0[i] = -9999.;
   }
 
-//  Float_t nSigmaTOF_PiFromXic0 = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackPiFromXic0,AliPID::kPion);
-//  Float_t nSigmaTOF_PiFromXi   = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackPiFromXi,AliPID::kPion);
+  Double_t nSigmaTOF_PiFromXic0 = -999., nSigmaTOF_PiFromXi = -999.;
+  AliAODPidHF *Pid_HF = fAnaCuts->GetPidHF();
+  if (Pid_HF) {Pid_HF->GetnSigmaTOF(trackPiFromXic0, AliPID::kPion, nSigmaTOF_PiFromXic0);}
 
-//  Float_t nSigmaTPC_PiFromXic0 = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackPiFromXic0,AliPID::kPion);
-//  Float_t nSigmaTPC_PiFromXi   = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackPiFromXi,AliPID::kPion);
-//  Float_t nSigmaTPC_PrFromLam  = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkProton,AliPID::kProton);
-//  Float_t nSigmaTPC_PiFromLam  = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkPion,AliPID::kPion);
-
-  Float_t nSigmaTOF_PiFromXic0 = fPID->NumberOfSigmasTOF(trackPiFromXic0,AliPID::kPion);
+//  Float_t nSigmaTOF_PiFromXic0 = fPID->NumberOfSigmasTOF(trackPiFromXic0,AliPID::kPion);
   Float_t nSigmaTPC_PiFromXic0 = fPID->NumberOfSigmasTPC(trackPiFromXic0,AliPID::kPion);
   Float_t nSigmaTPC_PrFromLam  = fPID->NumberOfSigmasTPC(trkProton,AliPID::kProton);
   Float_t nSigmaTPC_PiFromLam  = fPID->NumberOfSigmasTPC(trkPion,AliPID::kPion);
 
-  Float_t nSigmaTPC_PiFromXi = -9999., nSigmaTOF_PiFromXi = -9999.;
+  Float_t nSigmaTPC_PiFromXi = -9999.;
   if (!fIsAnaOmegac0) {
     nSigmaTPC_PiFromXi = fPID->NumberOfSigmasTPC(trackPiFromXiOrKaonFromOmega,AliPID::kPion);
-    nSigmaTOF_PiFromXi = fPID->NumberOfSigmasTOF(trackPiFromXiOrKaonFromOmega,AliPID::kPion);
+    if (Pid_HF) {Pid_HF->GetnSigmaTOF(trackPiFromXiOrKaonFromOmega, AliPID::kPion, nSigmaTOF_PiFromXi);}
+//    nSigmaTOF_PiFromXi = fPID->NumberOfSigmasTOF(trackPiFromXiOrKaonFromOmega,AliPID::kPion);
   }
   if (fIsAnaOmegac0) {
     nSigmaTPC_PiFromXi = fPID->NumberOfSigmasTPC(trackPiFromXiOrKaonFromOmega,AliPID::kKaon);
-    nSigmaTOF_PiFromXi = fPID->NumberOfSigmasTOF(trackPiFromXiOrKaonFromOmega,AliPID::kKaon);
+    if (Pid_HF) {Pid_HF->GetnSigmaTOF(trackPiFromXiOrKaonFromOmega, AliPID::kKaon, nSigmaTOF_PiFromXi);}
+//    nSigmaTOF_PiFromXi = fPID->NumberOfSigmasTOF(trackPiFromXiOrKaonFromOmega,AliPID::kKaon);
   }
 
   if ( fabs(nSigmaTPC_PiFromXic0)>=4. || fabs(nSigmaTPC_PiFromXi)>=4. || fabs(nSigmaTPC_PrFromLam)>=4. || fabs(nSigmaTPC_PiFromLam)>=4. ) return;

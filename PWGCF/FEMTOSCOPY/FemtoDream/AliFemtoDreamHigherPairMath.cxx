@@ -17,6 +17,7 @@ AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath(
       fBField(-99.),
       fRejPairs(conf->GetClosePairRej()),
       fDoDeltaEtaDeltaPhiCut(conf->GetDoDeltaEtaDeltaPhiCut()),
+      fRejectMotherDaughter(conf->GetRejectMotherDaughter()),
       fDeltaPhiSqMax(conf->GetDeltaPhiMax() * conf->GetDeltaPhiMax()),
       fDeltaEtaSqMax(conf->GetDeltaEtaMax() * conf->GetDeltaEtaMax()),
       fDeltaPhiEtaMax(conf->GetSqDeltaPhiEtaMax()),
@@ -38,6 +39,7 @@ AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath(
       fBField(-99.),
       fRejPairs(samp.fRejPairs),
       fDoDeltaEtaDeltaPhiCut(samp.fDoDeltaEtaDeltaPhiCut),
+      fRejectMotherDaughter(samp.fRejectMotherDaughter),
       fDeltaPhiSqMax(samp.fDeltaPhiSqMax),
       fDeltaEtaSqMax(samp.fDeltaEtaSqMax),
       fDeltaPhiEtaMax(samp.fDeltaPhiEtaMax),
@@ -55,6 +57,7 @@ AliFemtoDreamHigherPairMath& AliFemtoDreamHigherPairMath::operator=(
   fBField = math.fBField;
   fRejPairs = math.fRejPairs;
   fDoDeltaEtaDeltaPhiCut = math.fDoDeltaEtaDeltaPhiCut;
+  fRejectMotherDaughter = math.fRejectMotherDaughter;
   fDeltaPhiSqMax = math.fDeltaPhiSqMax;
   fDeltaEtaSqMax = math.fDeltaEtaSqMax; 
   fDeltaPhiEtaMax = math.fDeltaPhiEtaMax;
@@ -83,6 +86,27 @@ bool AliFemtoDreamHigherPairMath::PassesPairSelection(
   return pass;
 }
 
+bool AliFemtoDreamHigherPairMath::PassesMDPairSelection(
+    AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2) {
+
+  bool pass = true;
+
+  if(fRejectMotherDaughter){
+    std::vector<int> IDTrack = part1.GetIDTracks();
+    std::vector<int> IDDaug = part2.GetIDTracks();
+    for (const auto &idt : IDTrack) {
+      for (const auto &idd : IDDaug) {
+        if (idt == idd){
+          std::cout<<"LALALAL"<<std::endl;
+          pass=false;
+        } 
+      }
+    }
+  }
+  return pass;
+}
+
+
 bool AliFemtoDreamHigherPairMath::CommonAncestors(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2) {
     bool IsCommon = false;
     if(part1.GetMotherID() == part2.GetMotherID()){
@@ -92,6 +116,36 @@ bool AliFemtoDreamHigherPairMath::CommonAncestors(AliFemtoDreamBasePart& part1, 
     }
     return IsCommon;
   }
+
+  bool AliFemtoDreamHigherPairMath::CommonMotherResonance(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2) {
+
+  if(part1.GetMotherID() != part2.GetMotherID()) {
+    return false; //MotherID is different -> no common resonance
+  }
+
+  if(part1.GetMotherPDG() != part2.GetMotherPDG()) { //the ID is the same, but the PDG different -> Two tracks from same hard scattering but different resonances.
+    return false; 
+  }
+
+  bool HasCommonMotherResonance = true;
+  HasCommonMotherResonance = IsResonance(part1.GetMotherPDG()); //the resonance is of the type that should be removed 
+  return HasCommonMotherResonance; 
+}
+
+bool AliFemtoDreamHigherPairMath::IsResonance(int PDG) {
+
+  int ProtonAntiPion[33] = {2114, 12112, 1214, 22112, 32114, 1212, 32112, 2116, 12116, 12114, 42112, 21214, 31214, 11212, 9902114, 1216, 9902112, 9912112, 21212, 22114, 9912114, 2118, 11216, 9902116, 9922112, 9922114, 1218, 9901218, 99021110, 99121110, 99012112, 99021112, 3122};
+  int ProtonPion[12] = {2224, 32224, 2222, 12224, 12222, 2226, 22222, 22224, 2228, 12226, 9902228, 99022212};
+
+  // When the element is not found, std::find returns the end of the range
+  if ( std::find(std::begin(ProtonAntiPion), std::end(ProtonAntiPion), abs(PDG)) != std::end(ProtonAntiPion) ) {
+    return true;
+  } else if ( std::find(std::begin(ProtonPion), std::end(ProtonPion), abs(PDG)) != std::end(ProtonPion) ) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 void AliFemtoDreamHigherPairMath::RecalculatePhiStar(
     AliFemtoDreamBasePart &part) {
@@ -192,6 +246,10 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
     fHists->FillSameEventmTMultDist(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, 
 				   RelativeK); 
   }   
+  if (fillHists && fHists->GetDopTOnepTTwokStarPlotsmT()) {
+    fHists->FillSameEventpTOnepTTwokStar(iHC, RelativePairmT(PartOne, PartTwo), Part1Momentum.Pt(), Part2Momentum.Pt(),
+				   RelativeK); 
+  }
   if (fillHists && fHists->GetDoPtQA()) {
     fHists->FillPtQADist(iHC, RelativeK, Part1Momentum.Pt(),
                          Part2Momentum.Pt());
@@ -203,14 +261,24 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
   }
   if (fillHists && fHists->GetDoAncestorsPlots()) {
     bool isAlabama = CommonAncestors(part1,part2);
+
     if (isAlabama) {
-      fHists->FillSameEventDistCommon(iHC, RelativeK);
-      if (fHists->GetDoMultBinning()) {
-	fHists->FillSameEventMultDistCommon(iHC, Mult + 1, RelativeK);
+
+      if(fHists->GetDoRemoveAncestorsResonances() && CommonMotherResonance(part1,part2)){
+        //do nothing
+      } else{
+        fHists->FillSameEventDistCommon(iHC, RelativeK);
+        if (fHists->GetDoMultBinning()) {
+	        fHists->FillSameEventMultDistCommon(iHC, Mult + 1, RelativeK);
+        }
+        if (fHists->GetDomTBinning()) {
+	      fHists->FillSameEventmTDistCommon(iHC, RelativePairmT(PartOne, PartTwo), RelativeK);
+        }
+        if (fHists->GetDomTMultPlots()) {
+	      fHists->FillSameEventmTMultDistCommon(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, RelativeK);
+        }
       }
-      if (fHists->GetDomTBinning()) {
-	fHists->FillSameEventmTDistCommon(iHC, RelativePairmT(PartOne, PartTwo), RelativeK);
-      }
+
     } else {
       fHists->FillSameEventDistNonCommon(iHC, RelativeK);
       if (fHists->GetDoMultBinning()) {
@@ -218,6 +286,9 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
       }
       if (fHists->GetDomTBinning()) {
 	fHists->FillSameEventmTDistNonCommon(iHC, RelativePairmT(PartOne, PartTwo), RelativeK);
+      }
+      if (fHists->GetDomTMultPlots()) {
+	fHists->FillSameEventmTMultDistNonCommon(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, RelativeK);
       }
     }
   }
@@ -313,6 +384,10 @@ float AliFemtoDreamHigherPairMath::FillMixedEvent(
     fHists->FillMixedEventmTMultDist(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, 
 				   RelativeK); 
   }   
+  if (fillHists && fHists->GetDopTOnepTTwokStarPlotsmT()) {
+    fHists->FillMixedEventpTOnepTTwokStar(iHC, RelativePairmT(PartOne, PartTwo), Part1Momentum.Pt(), Part2Momentum.Pt(),
+				   RelativeK); 
+  }
   if (fillHists && fHists->GetDoPtQA()) {
     fHists->FillPtMEOneQADist(iHC, Part1Momentum.Pt(), Mult + 1);
     fHists->FillPtMETwoQADist(iHC, Part2Momentum.Pt(), Mult + 1);

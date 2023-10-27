@@ -104,6 +104,10 @@ public:
 	static UInt_t NBin[3];
 	static UInt_t NpttJacek;
 
+	static Double_t altPhiBins[101];
+	static Double_t altEtaBins[41];
+	static Double_t altZBins[21];
+
 	//static int GetCentralityClass(Double_t);
 	//static int GetMultiplicityBin(Double_t, BINNING);
 	static int GetBin(Double_t, BINNING);
@@ -162,6 +166,7 @@ private:
 	AliJTH1D fh_phi;//! // for phi dist [ic][isub]
 	AliJTH2D fh_phieta;//!
 	AliJTH3D fh_phietaz;//!
+	AliJTH3D fh_phietaz_altbin;//!
 	//AliJTH1D fh_Qvector;//! // for Q-Vector dist [ic][isub][ih]
 
 	AliJTH1D fh_psi_n;//!

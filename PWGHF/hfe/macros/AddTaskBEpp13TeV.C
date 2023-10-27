@@ -1,22 +1,33 @@
 AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
-	TString	taskName = "beauty",
-	bool	isMC = false,
-	int		minTPCnCrossedRow = 100,
-	int		minTPCnClsPID = 80,
-	double	maxTPCchi2 = 4,
-	double	minTPCclsRatio = 0.6,
-	int		minITSnCls = 3,
-	int		itsLayer = 2,
-	double	tpcPIDlow = -1,
-	double	tpcPIDhigh = 3,
-	double	tofPID = 3)
+  TString	taskName = "beauty",
+  TString	fDataType = "data",
+  TString	fPeriod = "period16",
+  TString	fPass = "pass1",
+  bool		isPP = true,
+  double	multRef = 11.7,
+  int		minTPCnCrossedRow = 70,
+  int		minTPCnClsPID = 80,
+  double	maxTPCchi2 = 4,
+  double	minTPCclsRatio = 0.8,
+  int		minITSnCls = 3,
+  int		itsLayer = 2,
+  double	tpcPIDlow = -1,
+  double	tpcPIDhigh = 3,
+  double	tofPID = 3)
 {
+  bool isMC = false;
+  TString flagMC(dtype);
+  if(!flagMC.EqualTo("data")) isMC = true;
+  
   //TString taskName = "beauty";
   //TString itsLayer = citsLayer;
   printf("=======================================\n");
   printf("==========ADD TASK PARAMETERS==========\n");
   printf("=======================================\n");
   printf("Task name: %s \n", taskName.Data());
+  printf("Data type: %s \n", fDataType.Data());
+  printf("Period info: %s \n", fPeriod.Data());
+  printf("Reconstruction info: %s \n", fPass.Data());
   printf("MC Flag: %d \n",isMC);
   printf("Min. TPC crossed raw: %d \n", minTPCnCrossedRow);
   printf("Min. TPC clusters for PID: %d \n", minTPCnClsPID);
@@ -41,7 +52,7 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
   // now we create an instance of your task
   AliAnalysisTaskBEpp13TeV* task = new AliAnalysisTaskBEpp13TeV(taskName.Data());   
   if(!task) return 0x0;
-  task->SelectCollisionCandidates(AliVEvent::kINT7);
+  if(!isMC) task->SelectCollisionCandidates(AliVEvent::kINT7);
   task->SetMinTPCnCrossedRow(minTPCnCrossedRow);
   task->SetMinTPCNclsPID(minTPCnClsPID);
   task->SetMaxTPCchi2(maxTPCchi2);
@@ -49,6 +60,78 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
   task->SetMinITSNcls(minITSnCls);
   task->SetITSlayer(itsLayer);
   task->SetPIDCuts(tpcPIDlow, tpcPIDhigh, tofPID);
+
+  //gSystem->Load("libRAliEn");
+  TGrid::Connect("alien://");
+
+  //===================================================================================================================
+  // Multiplicity
+  TString filepath;
+  if(fDataType.EqualTo("data")){
+	if(fPass.EqualTo("pass1")){
+	  filepath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/fileEstimatorAvg_Data_pass1.root";
+	}else if(fPass.EqualTo("pass2")){
+	  filepath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/fileEstimatorAvg_Data_pass2.root";
+	}else return 0x0;
+  }else if(fDataType.EqualTo("gpmc")){
+	if(fPass.EqualTo("pass1")){
+	  filepath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/fileEstimatorAvg_GPMC_pass1.root";
+	}else if(fPass.EqualTo("pass2")){
+	  filepath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/fileEstimatorAvg_GPMC_pass2.root";
+	}else return 0x0;
+  }else if(fDataType.EqualTo("hfe")){
+	if(fPass.EqualTo("pass1")){
+	  filepath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/fileEstimatorAvg_HFe_pass1.root";
+	}else if(fPass.EqualTo("pass2")){
+	  filepath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/fileEstimatorAvg_HFe_pass2.root";
+	}else return 0x0;
+  }
+  printf("=========================================\n");
+  printf("\n\nMultiplicity estimator from %s \n\n", filepath.Data());
+  printf("=========================================\n");
+  
+
+  TFile* fileEstimator = TFile::Open(filepath.Data());
+  if(!fileEstimator){
+    printf("File with multiplicity estimator not found\n");
+    return 0x0;
+  }
+  task->SetMultReference(multRef);
+
+  TProfile *multEstimatorAvg;
+  if(fPeriod.EqualTo("16period"))
+	multEstimatorAvg = (TProfile*)fileEstimator->Get("fNtrkletAvg_16period")->Clone("fNtrkletAvg_16period");
+  else if(fPeriod.EqualTo("17period"))
+	multEstimatorAvg = (TProfile*)fileEstimator->Get("fNtrkletAvg_17period")->Clone("fNtrkletAvg_17period");
+  else if(fPeriod.EqualTo("18period"))
+	multEstimatorAvg = (TProfile*)fileEstimator->Get("fNtrkletAvg_18period")->Clone("fNtrkletAvg_18period");
+  else return 0x0;
+
+  if(!multEstimatorAvg) {
+    printf("Multiplicity estimator not found! Please check your estimator file\n");
+    return 0x0;
+  }
+  printf("===============================================================\n");
+  printf("\n\nnfNtrkletAvg_%s will be used in the multiplcity correction!!!\n\n", period.Data());
+  printf("===============================================================\n");
+  task->SetEstimatorAvg(multEstimatorAvg);
+  //===================================================================================================================
+
+
+  if(isMC){
+    TString pathNchCorr = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/weightNtrkCorr.root";
+    printf("Correction for Ntrklet to Nch conversion from %s \n", pathNchCorr.Data());
+    TFile *fileNchCorr = TFile::Open(pathNchCorr.Data());
+    if(!fileNchCorr){
+      printf("File %s is not found!", pathNchCorr.Data());
+      return 0x0;
+    }
+    TH1F *histWeight = (TH1F*)fileNchCorr->Get("histWeight")->Clone("histWeight");
+    TF1 *funcWeight = (TF1*)fileNchCorr->Get("funcWeight")->Clone("funcWeight");
+    task->SetNchCorrHist(histWeight);
+    task->SetNchCorrFunc(funcWeight);
+  }
+
   
   if(isMC){
 	task->SetMCanalysis();
@@ -71,9 +154,14 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
     std::cout<<"---------------------------------------------------------------------------------------"<<std::endl<<std::endl;
 
     // D meson pt correction
-    TF1 *DmesonCorr = new TF1("DmesonCorr","(1/1.73303)*(0.552699*TMath::Power(1+(1.18107-1)*x/1.4446,1.18107/(1-1.18107))+0.158337*TMath::Exp(1.8436-x/1.28754)) / ((3.33487*((3.54275-1.)*(3.54275-2.))/(3.54275*0.501107*(3.54275*0.501107+9.24732*(3.54275-2.)))*pow(1.+(sqrt(9.24732*9.24732 + x*x)-9.24732)/(3.54275*0.501107),-3.54275)))",0.1,100);
-    TF1 *DmesonCorrVar1 = new TF1("DmesonCorrVar1","(1/1.27055)*(0.552699*TMath::Power(1+(1.18107-1)*x/1.5446,1.18107/(1-1.18107))+0.088337*TMath::Exp(1.8436-x/1.28754)) / ((3.33487*((3.54275-1.)*(3.54275-2.))/(3.54275*0.501107*(3.54275*0.501107+9.24732*(3.54275-2.)))*pow(1.+(sqrt(9.24732*9.24732 + x*x)-9.24732)/(3.54275*0.501107),-3.54275)))",0.1,100);
-    TF1 *DmesonCorrVar2 = new TF1("DmesonCorrVar2","(1/2.193)*(0.552699*TMath::Power(1+(1.18107-1)*x/1.3446,1.18107/(1-1.18107))+0.228337*TMath::Exp(1.8436-x/1.28754)) / ((3.33487*((3.54275-1.)*(3.54275-2.))/(3.54275*0.501107*(3.54275*0.501107+9.24732*(3.54275-2.)))*pow(1.+(sqrt(9.24732*9.24732 + x*x)-9.24732)/(3.54275*0.501107),-3.54275)))",0.1,100);
+    // from old D0 spectrum (measured)
+		//TF1 *DmesonCorr = new TF1("DmesonCorr","(1/1.73303)*(0.552699*TMath::Power(1+(1.18107-1)*x/1.4446,1.18107/(1-1.18107))+0.158337*TMath::Exp(1.8436-x/1.28754)) / ((3.33487*((3.54275-1.)*(3.54275-2.))/(3.54275*0.501107*(3.54275*0.501107+9.24732*(3.54275-2.)))*pow(1.+(sqrt(9.24732*9.24732 + x*x)-9.24732)/(3.54275*0.501107),-3.54275)))",0.1,100);
+    //TF1 *DmesonCorrVar1 = new TF1("DmesonCorrVar1","(1/1.27055)*(0.552699*TMath::Power(1+(1.18107-1)*x/1.5446,1.18107/(1-1.18107))+0.088337*TMath::Exp(1.8436-x/1.28754)) / ((3.33487*((3.54275-1.)*(3.54275-2.))/(3.54275*0.501107*(3.54275*0.501107+9.24732*(3.54275-2.)))*pow(1.+(sqrt(9.24732*9.24732 + x*x)-9.24732)/(3.54275*0.501107),-3.54275)))",0.1,100);
+    //TF1 *DmesonCorrVar2 = new TF1("DmesonCorrVar2","(1/2.193)*(0.552699*TMath::Power(1+(1.18107-1)*x/1.3446,1.18107/(1-1.18107))+0.228337*TMath::Exp(1.8436-x/1.28754)) / ((3.33487*((3.54275-1.)*(3.54275-2.))/(3.54275*0.501107*(3.54275*0.501107+9.24732*(3.54275-2.)))*pow(1.+(sqrt(9.24732*9.24732 + x*x)-9.24732)/(3.54275*0.501107),-3.54275)))",0.1,100);
+    // from newest D0 spectrum 
+		TF1 *DmesonCorr = new TF1("DmesonCorr","(1/1.85581)*(0.0218308*TMath::Power(1+(0.974074-1)*x/4.33734,0.974074/(1-0.974074))+0.395143*TMath::Exp(1.35595-x/1.39509)) / (3.33623*((3.57495-1.)*(3.57495-2.))/(3.57495*0.508028*(3.57495*0.508028+9.15572*(3.57495-2.)))*pow(1.+(sqrt(9.15572*9.15572 + x*x)-9.15572)/(3.57495*0.508028),-3.57495))",0.1,100);
+    TF1 *DmesonCorrVar1 = new TF1("DmesonCorrVar1","(1/1.41037)*(0.0288308*TMath::Power(1+(0.974074-1)*x/4.33734,0.974074/(1-0.974074))+0.295143*TMath::Exp(1.35595-x/1.39509)) / (3.33623*((3.57495-1.)*(3.57495-2.))/(3.57495*0.508028*(3.57495*0.508028+9.15572*(3.57495-2.)))*pow(1.+(sqrt(9.15572*9.15572 + x*x)-9.15572)/(3.57495*0.508028),-3.57495))",0.1,100);
+    TF1 *DmesonCorrVar2 = new TF1("DmesonCorrVar2","(1/2.53073)*(0.0148308*TMath::Power(1+(0.974074-1)*x/4.33734,0.974074/(1-0.974074))+0.545143*TMath::Exp(1.35595-x/1.39509)) / (3.33623*((3.57495-1.)*(3.57495-2.))/(3.57495*0.508028*(3.57495*0.508028+9.15572*(3.57495-2.)))*pow(1.+(sqrt(9.15572*9.15572 + x*x)-9.15572)/(3.57495*0.508028),-3.57495))",0.1,100);
     task->SetDcorrFtn(DmesonCorr);
     task->SetDcorrFtnVar1(DmesonCorrVar1);
     task->SetDcorrFtnVar2(DmesonCorrVar2);
@@ -101,6 +189,7 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
 
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("ccontainer0_%s",taskName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("ccontainer0_%s","trackQA"), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
   
-  return task;
+	return task;
 }

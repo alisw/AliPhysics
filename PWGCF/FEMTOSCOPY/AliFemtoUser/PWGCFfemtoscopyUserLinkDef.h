@@ -217,6 +217,9 @@
 #pragma link C++ class AliAnalysisTaskParticleEffDYM2+;
 #pragma link C++ class AliAnalysisTaskParticleEffDYM0+;
 #pragma link C++ class AliAnalysisTaskParticleEffDYM1+;
+#pragma link C++ class AliAnalysisTaskEfficiencyPbPb_DR+;
+#pragma link C++ class AliAnalysisTaskEffK0s+;
+
 
 
 
@@ -225,4 +228,6 @@
 // p-d/t/He3 track cut
 #pragma link C++ class AliFemtoTrackCutPdtHe3;
 #pragma link C++ class AliFemtoCorrFctnpdtHe3;
+#pragma link C++ class AliAnalysisTaskDowangppDCAfit+;
+
 

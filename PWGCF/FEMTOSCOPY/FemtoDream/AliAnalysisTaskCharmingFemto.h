@@ -197,7 +197,52 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
     //0:no selection, 1:Physical Primary, 2:Secondary From Weak Decay, 3:Secondary From Material, 4: Primary part
     fBuddyOrigin = origin;
   }
+
+  /*
+    Returns true if the particle is primary according to MC truth. Namely,
+    it returns false if the particle has mother with positive index
+    and the unsigned PDG code of the mother is smaller than the one of the pion
+    (lightest hadron). Returns true otherwise.
+  */
+  bool IsPrimaryCustom(TClonesArray* arrayMC, AliAODMCParticle *mcPart) {
+    if (!mcPart || !fIsMC) {
+      return true;
+    }
+    if (int motherIdx = mcPart->GetMother(); motherIdx >= 0) {
+      AliAODMCParticle *mcMother = (AliAODMCParticle *)arrayMC->At(motherIdx);
+      return std::abs(mcMother->GetPdgCode()) < 111;
+    }
+    return true;
+  }
+
+  // follow the convention of AliFemtoDreamBaseParticle 
+  int GetBuddyOrigin(AliAODMCParticle *mcPart) {
+    if (!mcPart || !fIsMC) {
+      return AliFemtoDreamBasePart::PartOrigin::kUnknown;
+    }
+
+    bool isPhysPrim = mcPart->IsPhysicalPrimary();
+    bool isSec = mcPart->IsSecondaryFromWeakDecay();
+    bool isMat = mcPart->IsSecondaryFromMaterial();
+
+    if(isPhysPrim + isSec + isMat > 1) {
+      AliWarning(Form("Particle has multiple origins! phys. prim: %d, weak: %d, mat. %d\n", isPhysPrim , isSec, isMat));
+      return AliFemtoDreamBasePart::PartOrigin::kUnknown;
+    }
+
+    if(isPhysPrim) return AliFemtoDreamBasePart::PartOrigin::kPhysPrimary;
+    if(isSec) return  AliFemtoDreamBasePart::PartOrigin::kWeak;
+    if(isMat) return  AliFemtoDreamBasePart::PartOrigin::kMaterial;
+
+    AliWarning("Particle has no origin!\n");
+    return AliFemtoDreamBasePart::PartOrigin::kUnknown;
+  }
+
   bool SelectBuddyOrigin(AliAODMCParticle *mcPart) {
+    if (!mcPart || !fIsMC) {
+      return true;
+    }
+
     if(fBuddyOrigin==0) {
       return true;
     }
@@ -232,6 +277,10 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
     fDmesonOrigin = origin;
   }
   bool SelectDmesonOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPart) {
+    if (!mcPart || !fIsMC) {
+      return true;
+    }
+
     if(fDmesonOrigin==0) {
       fDoDorigPlots=true;
       return true;
@@ -413,6 +462,13 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   TH2F *fHistDminusMCtruthmotherPDG;  //!
   TH2F *fHistDminusMCtruthQuarkOrigin;     //!
 
+  TH1F *fHistPercentileV0MAllEvents;       //! histogram with V0M percentile for each event
+  TH1F *fHistPercentileV0MEventsWithD;     //! histogram with V0M percentile for events with D candidates
+  TH1F *fHistNtrackletsAllEvents;          //! histogram with Ntracklets for each event
+  TH1F *fHistNtrackletsEventsWithD;        //! histogram with Ntracklets for events with D candidates
+  TH1F *fHistRef08AllEvents;               //! histogram with Ref08 mult estimator for each event
+  TH1F *fHistRef08EventsWithD;             //! histogram with Ref08 mult estimator for events with D candidates
+
   // HF data members
   int fDecChannel;                                         // HF decay channel
   AliRDHFCuts* fRDHFCuts;                                  // HF cut object
@@ -450,7 +506,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto, 20)
+ClassDef(AliAnalysisTaskCharmingFemto, 21)
 };
 
 #endif

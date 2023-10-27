@@ -49,8 +49,8 @@ private:
   Bool_t                 fDisableTempCalib;          ///< Off by default, disables temp calibration totally
   Bool_t                 fUseShaperCorrection;       ///< Off by default the correction for the shaper nonlinearity
   Bool_t                 fUseDetermineLowGain;       ///< Instead of using cell info, determine if cell is LG or HG from ADC values
-  Bool_t                 fUseAdditionalScale;        ///< Eenables an energy scale shift on cell level
-  Bool_t                 fUseAdditionalScaleEtaDep;  ///< Off by default, enables an energy scale shift on cell level for cells behing TRD suport. Highly experimental!
+  Bool_t                 fUseAdditionalScale;        ///< Enables an energy scale shift on cell level. 
+  Int_t                  fAdditionalScaleMode;       ///< Mode for the additional scale: 1 = default (Scales for Full, 2/3 and 1/3 SM), 2 = diff. scales for regions behind TRD support, 3 = Run1 scales behind SM with TRD in front and without, 4 = Same as 3 but additionally values for with and without TRD support structures
   std::vector<Float_t>   fAdditionalScaleSM;         ///< values for additionalScale shift for 3 different types of SM: Full, 2/3 and 1/3
   TString                fCustomRecalibFilePath;     ///< Empty string by default the path to the OADB file of the custom energy recalibration
   Bool_t                 fLoad1DRecalibFactors;      ///< Flag to load 1D energy recalibration factors
@@ -62,7 +62,7 @@ private:
   static RegisterCorrectionComponent<AliEmcalCorrectionCellEnergy> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionCellEnergy, 11); // EMCal cell energy correction component
+  ClassDef(AliEmcalCorrectionCellEnergy, 12); // EMCal cell energy correction component
   /// \endcond
 };
 

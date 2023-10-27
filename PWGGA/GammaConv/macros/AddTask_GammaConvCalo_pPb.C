@@ -47,7 +47,7 @@ void AddTask_GammaConvCalo_pPb(
   TString   generatorName                 = "DPMJET", // generator Name
   Bool_t    enableMultiplicityWeighting   = kFALSE,   //
   Int_t     enableMatBudWeightsPi0        = 0,        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
-  Bool_t    enableElecDeDxPostCalibration = kFALSE,
+  Int_t     enableElecDeDxPostCalibration = 0,        // // 0 = off, 1 = as function of TPC clusters, 2 = as function of convR. Option 2 is available only if FEPC is given.
   TString   periodNameAnchor              = "",       //
   // special settings
   Bool_t    enableSortingMCLabels         = kTRUE,    // enable sorting for MC cluster labels
@@ -122,17 +122,17 @@ void AddTask_GammaConvCalo_pPb(
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
-    if(strTempSetting.BeginsWith("MINPTHFAC:")){
+    if(strTempSetting.BeginsWith("MINPTHFAC:") && isMC == 2){
       strTempSetting.Replace(0,10,"");
       minFacPtHard               = strTempSetting.Atof();
       cout << "running with min pT hard jet fraction of: " << minFacPtHard << endl;
       fMinPtHardSet        = kTRUE;
-    } else if(strTempSetting.BeginsWith("MAXPTHFAC:")){
+    } else if(strTempSetting.BeginsWith("MAXPTHFAC:")&& isMC == 2){
       strTempSetting.Replace(0,10,"");
       maxFacPtHard               = strTempSetting.Atof();
       cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
       fMaxPtHardSet        = kTRUE;
-    } else if(strTempSetting.BeginsWith("MAXPTHFACSINGLE:")){
+    } else if(strTempSetting.BeginsWith("MAXPTHFACSINGLE:")&& isMC == 2){
       strTempSetting.Replace(0,16,"");
       maxFacPtHardSingle         = strTempSetting.Atof();
       cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
@@ -143,19 +143,19 @@ void AddTask_GammaConvCalo_pPb(
         cout << "using MC jet finder for outlier removal" << endl;
         fJetFinderUsage        = kTRUE;
       }
-    } else if(strTempSetting.BeginsWith("PTHFROMFILE:")){
+    } else if(strTempSetting.BeginsWith("PTHFROMFILE:")&& isMC == 2){
       strTempSetting.Replace(0,12,"");
       if(strTempSetting.Atoi()==1){
         cout << "using MC jet finder for outlier removal" << endl;
         fUsePtHardFromFile        = kTRUE;
       }
-    } else if(strTempSetting.BeginsWith("ADDOUTLIERREJ:")){
+    } else if(strTempSetting.BeginsWith("ADDOUTLIERREJ:")&& isMC == 2){
       strTempSetting.Replace(0,14,"");
       if(strTempSetting.Atoi()==1){
         cout << "using path based outlier removal" << endl;
         fUseAddOutlierRej        = kTRUE;
       }
-    } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
+    } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0 && isMC == 2){
       maxFacPtHard               = strTempSetting.Atof();
       cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
       fMaxPtHardSet        = kTRUE;
@@ -178,8 +178,7 @@ void AddTask_GammaConvCalo_pPb(
   TString cutnumberPhoton = photonCutNumberV0Reader.Data();
   TString cutnumberEvent = "80000003";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-
-    //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
+  //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
   TString V0ReaderName        = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
   AliV0ReaderV1 *fV0ReaderV1  =  NULL;
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
@@ -188,7 +187,6 @@ void AddTask_GammaConvCalo_pPb(
   } else {
     cout << "V0Reader: " << V0ReaderName.Data() << " found!!"<< endl;
   }
-
   //================================================
   //========= Add task to the ANALYSIS manager =====
   //================================================
@@ -203,35 +201,30 @@ void AddTask_GammaConvCalo_pPb(
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
   if(trainConfig >= 1520 && trainConfig < 1530) task->SetDoHBTHistoOutput(kTRUE);
 
-  // cluster cuts
+    // cluster cuts
   // 0 "ClusterType",  1 "EtaMin", 2 "EtaMax", 3 "PhiMin", 4 "PhiMax", 5 "DistanceToBadChannel", 6 "Timing", 7 "TrackMatching", 8 "ExoticCell",
   // 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinMaxM20", 14 "RecConv", 15 "MaximumDispersion", 16 "NLM"
 
   //************************************************ PCM- EDC analysis 5 TeV pPb *********************************************
-  if (trainConfig == 1){ // EMC  INT7 run1 & run2
-    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","411790105f032230000","0h63103100000010"); // 0-100% without NL
-    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC
-  } else if (trainConfig == 2){ // EMC  INT7 run1 & run2
-    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); // 0-100% PCM NL
-    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC
-  } else if (trainConfig == 3){ // EMC EMC triggers
-    cuts.AddCutPCMCalo("80052113","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC, EMC7
-    cuts.AddCutPCMCalo("80052113","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC, EMC7
-  } else if (trainConfig == 4){ // EMC EMC triggers
-    cuts.AddCutPCMCalo("80083113","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC, EG1
-    cuts.AddCutPCMCalo("80083113","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC, EG1
-  } else if (trainConfig == 5){ // EMC EMC triggers
-    cuts.AddCutPCMCalo("80085113","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC, EG2
-    cuts.AddCutPCMCalo("80085113","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC, EG2
-  } else if (trainConfig == 6){ // EMC EMC triggers
-    cuts.AddCutPCMCalo("80083123","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC, EG1
-    cuts.AddCutPCMCalo("80083123","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC, EG1
-  } else if (trainConfig == 7){ // EMC EMC triggers
-    cuts.AddCutPCMCalo("80085123","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC, EG2
-    cuts.AddCutPCMCalo("80085123","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC, EG2
-  } else if (trainConfig == 8){ // EMC  INT7 run1 & run2
-    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); // 0-100% PCM NL
-    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC
+  if (trainConfig == 1){ // EMC  INT7 run1 & run2 external NL
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","411790009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","111110009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut    
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","411790009fe30220000","0h63103100000010"); // 0-100% latest 13TeV cut mixing
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","111110009fe30220000","0h63103100000010"); // 0-100% latest 13TeV cut mixing
+  } else if (trainConfig == 2){ // EMC  INT7 run1 & run2 external NL
+    cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","411790009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut
+    cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","111110009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut    
+    cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","411790009fe30220000","0h63103100000010"); // 0-100% latest 13TeV cut mixing
+    cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","111110009fe30220000","0h63103100000010"); // 0-100% latest 13TeV cut mixing
+  } else if (trainConfig == 3){ // EMC EMC triggers external NL
+    cuts.AddCutPCMCalo("80052113","0dm00009f9730000dge0404000","111110009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut EMC7
+    cuts.AddCutPCMCalo("80052123","0dm00009f9730000dge0404000","111110009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut EMC7
+  } else if (trainConfig == 4){ // EMC EMC triggers MC rejected external NL
+    cuts.AddCutPCMCalo("80085113","0dm00009f9730000dge0404000","111110009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut EG2
+    cuts.AddCutPCMCalo("80085123","0dm00009f9730000dge0404000","111110009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut EG2
+  } else if (trainConfig == 5){ // EMC EMC triggers MC rejected external NL
+    cuts.AddCutPCMCalo("80083113","0dm00009f9730000dge0404000","111110009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut EG1
+    cuts.AddCutPCMCalo("80083123","0dm00009f9730000dge0404000","111110009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut EG1
 
   //************************************************ PCM- EDC analysis 5 TeV pPb INT7 sys *********************************
   } else if (trainConfig == 10) { // PCM variations
@@ -1043,6 +1036,10 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466530ha01cc00000","0h63103100000010"); // 0-100% with NL 1
   } else if (trainConfig == 1008) { // timing cut effi u, new default
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 0-100% with NL 1
+
+  } else if (trainConfig == 1009) { // timing cut effi u, new default, new eta-phi
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","2444c530ua01cc00000","0h63103100000010"); // 0-100% with NL 1
+  
   
   ///PCM-Variation
   } else if (trainConfig == 1010) {
@@ -1224,6 +1221,21 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466530ua01cc70000","0h63103100000010"); //cc7:   maxM02 == 1.3
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466530ua01cc80000","0h63103100000010"); //cc8:   maxM02 == 2.5
 
+  } else if (trainConfig == 1040) { // centralities changed
+    cuts.AddCutPCMCalo("80110113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 0-10%
+    cuts.AddCutPCMCalo("81210113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 10-20%
+    cuts.AddCutPCMCalo("82310113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 20-30%
+    cuts.AddCutPCMCalo("83410113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 30-40%
+    cuts.AddCutPCMCalo("84510113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 40-50%
+
+  } else if (trainConfig == 1041) { // centralities changed
+    cuts.AddCutPCMCalo("85610113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 50-60% with NL 1
+    cuts.AddCutPCMCalo("86710113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 60-70% with NL 1
+    cuts.AddCutPCMCalo("87810113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 70-80% with NL 1
+    cuts.AddCutPCMCalo("889110113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 80-90% with NL 1
+    cuts.AddCutPCMCalo("89a110113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 90-100% with NL 1
+
+
 
 
 
@@ -1372,6 +1384,12 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","411793105f030230000","0h63103100b00010");
     cuts.AddCutPCMCalo("8008e103","0dm00009f9730000dge0404000","411793105f030230000","0h63103100b00010");
     cuts.AddCutPCMCalo("8008d103","0dm00009f9730000dge0404000","411793105f030230000","0h63103100b00010");
+
+  } else if (trainConfig == 2061) { // no NCell cut, no NL correction
+    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","411790005f030230000","0h63103100b00010"); // INT7
+  } else if (trainConfig == 2062) { // no NCell cut, no NL correction
+    cuts.AddCutPCMCalo("8008e103","0dm00009f9730000dge0404000","411790005f030230000","0h63103100b00010"); // EG2
+    cuts.AddCutPCMCalo("8008d103","0dm00009f9730000dge0404000","411790005f030230000","0h63103100b00010"); // EG1
 
   } else if (trainConfig == 2061) { // no NL, NCell Effi MC
     cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","411790005f03h230000","0h63103100b00010");
@@ -1980,19 +1998,51 @@ void AddTask_GammaConvCalo_pPb(
     }
 
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
-    if (enableElecDeDxPostCalibration){
+    if (enableElecDeDxPostCalibration == 2){
+      if (isMC){
+        cout << "ERROR enableElecDeDxPostCalibration set to 2 even if MC file. Automatically reset to 0"<< endl;
+        enableElecDeDxPostCalibration = 0;
+      } else {
+        lArrFnamesdEdxPostCalib = fileNamedEdxPostCalib.Tokenize("+");
+        if (!lArrFnamesdEdxPostCalib){
+          cout << "ERROR fileNamedEdxPostCalib.Tokenize() returned nullptr\n";
+          return;
+        }
+        int lNFnames = lArrFnamesdEdxPostCalib->GetEntriesFast();
+        if (!(lNFnames == 1) && !(lNFnames == numberOfCuts)){
+          cout << "ERROR: FEPC either has to be one filename or several separated by a '+' where the number of filenames has to match the number of cuts in the trainconfig.\nOr no filename at all if the file from the OADB is to be taken\n";
+          return;
+        }
+      }
+    }
+    if (enableElecDeDxPostCalibration == 1){
       if (isMC == 0){
         if(fileNamedEdxPostCalib.CompareTo("") != 0){
           analysisCuts[i]->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
           cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
         }
-        analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(kTRUE);
         cout << "Enabled TPC dEdx recalibration." << endl;
       } else{
         cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
         enableElecDeDxPostCalibration=kFALSE;
         analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
       }
+    } else if(enableElecDeDxPostCalibration == 2){
+      int lNFnames = lArrFnamesdEdxPostCalib->GetEntriesFast();
+      if (lNFnames){
+        if (enableElecDeDxPostCalibration==2){
+          analysisCuts[i]->ForceTPCRecalibrationAsFunctionOfConvR();
+        }
+        const TString &lFname = (static_cast<TObjString*>(lArrFnamesdEdxPostCalib->At(lNFnames > 1 ? i : 0)))->GetString();
+        printf("Cut config %s_%s_%s:\nSetting custom dEdx recalibration file: %s\n", cuts.GetEventCut(i).Data(), cuts.GetPhotonCut(i).Data(), cuts.GetMesonCut(i).Data(), lFname.Data());
+        Bool_t lSuccess = analysisCuts[i]->InitializeElecDeDxPostCalibration(lFname);
+        if (!lSuccess) {
+          return;
+        }
+      }
+      analysisCuts[i]->SetDoElecDeDxPostCalibration(kTRUE);
+      cout << "Enabled TPC dEdx recalibration." << endl;
     }
     if (enableLightOutput > 0) analysisCuts[i]->SetLightOutput(kTRUE);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
@@ -2021,7 +2071,7 @@ void AddTask_GammaConvCalo_pPb(
     if(analysisMesonCuts[i]->DoGammaSwappForBg()) analysisClusterCuts[i]->SetUseEtaPhiMapForBackCand(kTRUE);
     analysisClusterCuts[i]->SetFillCutHistograms("");
   }
-
+  
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetConversionCutList(numberOfCuts,ConvCutList);
   task->SetCaloCutList(numberOfCuts,ClusterCutList);

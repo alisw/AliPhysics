@@ -174,7 +174,7 @@ void AliAnalysisTaskPsi2Spolarization::UserExec(Option_t *)
   UInt_t fSelectMask= fInputHandler->IsEventSelected();
   Bool_t isINT7selected = fSelectMask& AliVEvent::kINT7;
 
-    if (isINT7selected) return;
+    if (!isINT7selected) return;
     
   AliVVertex* vertex = NULL;
   AliAODVertex* vertexSPD = NULL;

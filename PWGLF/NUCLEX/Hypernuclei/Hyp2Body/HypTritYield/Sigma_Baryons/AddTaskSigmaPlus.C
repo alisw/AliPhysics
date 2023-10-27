@@ -44,7 +44,8 @@ AliAnalysisTaskSigmaPlus* AddTaskSigmaPlus(TString name = "SigmaPlus")
     mgr->ConnectOutput(task,7 ,mgr->CreateContainer("Sigma_Pair_Tree_PHOS_SE", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,8 ,mgr->CreateContainer("Sigma_Pair_Tree_PHOS_ME", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,9 ,mgr->CreateContainer("Sigma_PHOS_ME_Bkg_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,10,mgr->CreateContainer("Proton_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,10,mgr->CreateContainer("Sigma_Calc_Cand_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,11,mgr->CreateContainer("Proton_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     // Finally, a pointer to the created task is returned
     return task;
 }

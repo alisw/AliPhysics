@@ -96,6 +96,13 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetAncestors(bool doIt) {
     fAncestors = doIt;
   }
+  void SetRemoveAncestorsResonances(bool doIt) {
+    fRemoveAncestorsResonances = doIt;
+  }
+  void SetpTOnepTTwokStarPlotsmT(bool doIt, float kStarCutOff) {
+    fpTOnepTTwokStarPlotsmT = doIt;
+    fpTOnepTTwokStarCut = kStarCutOff; 
+  }
   void SetDomTMultBinning(bool doIt) {
     fmTMultBinning = doIt; 
   };
@@ -194,6 +201,16 @@ class AliFemtoDreamCollConfig : public TNamed {
   ;
   bool GetDoAncestorsPlots() {
     return fAncestors;
+  }
+  bool GetRemoveAncestorResonances() {
+    return fRemoveAncestorsResonances;
+  }
+  bool GetDopTOnepTTwokStarPlotsmT() {
+    return fpTOnepTTwokStarPlotsmT;
+  }
+  ;
+  float GetDopTOnepTTwokStarCutOff() {
+    return fpTOnepTTwokStarCut;
   }
   ;
   AliFemtoDreamCollConfig::UncorrelatedMode GetControlMode() {
@@ -294,6 +311,12 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool GetDoDeltaEtaDeltaPhiCut() const {
     return fDoDeltaEtaDeltaPhiCut;
   }
+  void RejectMotherDaughter(bool doIt){
+    fRejectMotherDaughter = doIt;
+  }
+  bool GetRejectMotherDaughter() const {
+    return fRejectMotherDaughter;
+  }
   void SetSummedPtCut(float limit1, float limit2){
     fSummedPtLimit1 = limit1;
     fSummedPtLimit2 = limit2;
@@ -347,13 +370,17 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fmTMultBinning; //
   AliFemtoDreamEvent::MultEstimator fEst;  //
   bool fAncestors;              //
+  bool fRemoveAncestorsResonances; //
+  bool fpTOnepTTwokStarPlotsmT; //
+  float fpTOnepTTwokStarCut; //
   float fDeltaEtaMax;           //
   float fDeltaPhiMax;           //
   bool fDoDeltaEtaDeltaPhiCut;  //
+  bool fRejectMotherDaughter;   //
   bool fCoutVariables;
   float fSummedPtLimit1;
   float fSummedPtLimit2;
-  ClassDef(AliFemtoDreamCollConfig,18);
+  ClassDef(AliFemtoDreamCollConfig,21);
 };
 
 #endif /* ALIFEMTODREAMCOLLCONFIG_H_ */

@@ -44,21 +44,11 @@ class AliGFWFlowContainer;
 class AliPIDResponse;
 class AliPIDCombined;
 
-namespace EFF_FLAG {
-    enum {
-      noeff = 1,
-      consteff = 2,
-      gausseff = 4,
-      flateff = 8,
-      powereff = 16,
-      inputeff = 32
-    };
-}
-enum {kCh = 0, kPi = 1, kKa = 2, kPr = 4};
 class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
  public:
+  enum GENERATOR {kAMPT,kHIJING};
   AliAnalysisTaskDeform();
-  AliAnalysisTaskDeform(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="", TString ContainerSubfix="", Int_t Nkeys = 1);
+  AliAnalysisTaskDeform(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="", TString ContainerSubfix="");
   virtual ~AliAnalysisTaskDeform();
   virtual void UserCreateOutputObjects();
   virtual void NotifyRun();
@@ -66,6 +56,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   virtual void Terminate(Option_t *);
   Bool_t CheckTrigger(Double_t);
   Bool_t AcceptAOD(AliAODEvent*, Double_t lvtxXYZ[3]);
+  Bool_t IsPileupEvent(AliAODEvent* ev, double centrality);
   void SetTriggerType(UInt_t newval) {fTriggerType = newval; };
   void SetEventCutFlag(Int_t newval) { fEventCutFlag = newval; };
   void FillWeights(AliAODEvent*, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
@@ -120,9 +111,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetEventWeight(unsigned int weight) { fEventWeight = weight; };
   void SetDisablePileup(bool disable) { fDisablePileup = disable; };
   void SetRequirePositiveCharge(bool newval) {fRequirePositive = newval;};
-  void SetUse2DEfficiencies(bool newval) {fUse2DEff = newval;};
-  void SetEfficiencyIndex(UInt_t newval) {fEfficiencyIndex = newval;}
   void SetOnTheFly(bool newval) {fOnTheFly = newval;}
+  void SetOTFGenerator(TString gen) { fGenerator = gen; }
   void SetFillMptPowers(bool newval) { fFillMptPowers = newval; }
   void SetIPBins(Int_t nBins, Double_t *multibins);
   void SetUsePIDNUA(bool newval) { fUsePIDNUA = newval; }
@@ -130,6 +120,10 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetUseMcParticleForEfficiency(bool newval) { fUseMcParticleForEfficiency = newval; }
   void SetFillAdditionalTrackQAPlots(Bool_t newval) { fFillAdditionalQA = newval; }
   void SetPtMPar(int newval) { fPtMpar = newval; }
+  void SetUseExoticPtCorr(bool newval) { fUseExoticPtCorr = newval; }
+  void SetEnableFB768DCAxy(bool newval) { fEnableFB768dcaxy = newval;}
+  void SetUseOldPileup(bool newval) { fUseOldPileup = newval; }
+  void SetCentralPileup(double newval) {fCentralPU = newval;}
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -145,8 +139,10 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fIsMC;
   Bool_t fBypassTriggerAndEventCuts;
   Bool_t fDisablePileup;
+  Bool_t fUseOldPileup;
   TString fDCAxyFunctionalForm;
   Bool_t fOnTheFly;
+  TString fGenerator;
   AliMCEvent *fMCEvent; //! MC event
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
   TRandom *fRndm; 
@@ -190,12 +186,11 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH2D *fESDvsFB128;
   TList *fptVarList;
   TList* fMptList;
-  AliCkContainer **fCkCont;
-  AliPtContainer  **fPtCont;
+  AliCkContainer *fCkCont;
+  AliPtContainer  *fPtCont;
   TList *fCovList;
   TList *fV2dPtList;
   AliProfileBS **fCovariance; //!
-  AliProfileBS **fCovariancePID; //!
   AliProfileBS **fCovariancePowerMpt; //!
   AliProfileBS **fMpt; //!
   UInt_t fTriggerType;
@@ -233,20 +228,26 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TF1 *fCenCutLowPU; //Store these
   TF1 *fCenCutHighPU; //Store these
   TF1 *fMultCutPU; //Store these
-  TH1D** fPhi; //!
-  TH1D** fPt; //!
-  TH1D** fEta; //!
+  Double_t fCentralPU;
+  TH3D** fPhiEtaVz; //!
+  TH2D** fPt; //!
   TH2D** fDCAxy; //!
   TH2D** fDCAz; //!
   TH1D** fChi2TPCcls; //!
+  TH1D** fTPCcls; //!
   TH1D* fEtaMptAcceptance; //!
   TH1D* fPtMptAcceptance; //!
+  TH1D* fAcceptedNch; //! 
+  TH2D* fhQAEventsfMult32vsCentr; //!
+  TH2D* fhQAEventsMult128vsCentr; //!
+  TH2D* fhQAEventsfMultTPCvsTOF; //!
+  TH2D* fhQAEventsfMultTPCvsESD; //!
   Double_t fImpactParameterMC;
   int EventNo;
   unsigned int fEventWeight; 
-  vector<vector<vector<double>>>  wpPt;
-  vector<vector<vector<double>>>  wpPtSubP;
-  vector<vector<vector<double>>>  wpPtSubN;
+  vector<vector<double>>  wpPt;
+  vector<vector<double>>  wpPtSubP;
+  vector<vector<double>>  wpPtSubN;
   std::map<double,double> centralitymap;  
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
@@ -256,7 +257,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
   Bool_t AcceptESDTrack(AliESDtrack *lTr, UInt_t&, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
   Bool_t AcceptESDTrack(AliESDtrack *lTr, UInt_t&, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
-  void FillAdditionalTrackQAPlots(AliAODTrack &track, Double_t weff, Double_t wacc, Double_t* vtxp, Bool_t beforeCuts);
+  void FillAdditionalTrackQAPlots(AliAODTrack &track, const Double_t &cent, Double_t weff, Double_t wacc, const Double_t &vz, Double_t* vtxp, Bool_t beforeCuts);
   void SetupAxes();
   void CreateWeightOutputObjects();
   void CreateEfficiencyOutputObjects();
@@ -264,20 +265,21 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void CreateMptOutputObjects();
   Bool_t AcceptCustomEvent(AliAODEvent*);
   Bool_t AcceptCustomEvent(AliESDEvent*);
+  Bool_t LoadWeights(const Int_t &runno);
   AliMCEvent *getMCEvent();
-  double getAMPTCentrality();
+  double getGeneratorCentrality();
   void ProcessOnTheFly();
   Double_t getEfficiency(double &lpt, int iCent);
   vector<Double_t> getPowerEfficiency(double &lpt, int iCent);
   Bool_t fDisablePID;
   UInt_t fConsistencyFlag;
-  UInt_t fEfficiencyIndex;
   Bool_t fRequireReloadOnRunChange;
   Bool_t fRequirePositive;
-  Bool_t fUse2DEff;
   Bool_t fUsePIDNUA;
   Bool_t fFillMptPowers;
   Bool_t fUseMcParticleForEfficiency;
+  Bool_t fUseExoticPtCorr;
+  Bool_t fEnableFB768dcaxy;
   Double_t *GetBinsFromAxis(TAxis *inax);
 
   ClassDef(AliAnalysisTaskDeform,1);

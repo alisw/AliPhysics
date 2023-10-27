@@ -4,12 +4,20 @@
 AliAnalysisTaskSE* AddTaskOtonXx(int isMCint = 0,
     int KaonCut = 0,
     int XiCut = 0,
-    int ProtonCut = 0,
-    int DoFDpairing = 0
+    int OpenMass = 0,
+    int DoFDpairing = 0,
+    int FillOnlyXi = 0
     ) {
 
 
-bool isMC = false;
+//MC and ancestors
+    // 0 data
+    // 1 MC
+    // 2 MC and do Ancestors
+    bool isMC = false;
+    if(isMCint>0)isMC=true;
+    bool DoAncestors = false;        // for common or uncommon ancestors
+    if(isMCint>1) DoAncestors=true;
 
 //do pions:
   // KaonCut = 0 // Kaons
@@ -22,6 +30,25 @@ bool isMC = false;
   // XiCut = 1 // Omega
   bool isOmega = false;
   if(XiCut==1) isOmega = true;
+
+//Mass Cascade Open:
+bool massopen = false;
+if(OpenMass>0) massopen=true;
+
+//FDpairing
+bool doFD = false;
+if(DoFDpairing>0)doFD=true;
+
+//fill only Xi's (but require Xi-pi event) for optimization
+bool OnlyXi = false;
+if(FillOnlyXi>0) OnlyXi = true;
+//open xi also?:
+bool XiOpen = false;
+if(FillOnlyXi>1) XiOpen = true;
+if(XiOpen) massopen = true; // XiOpen implies massopen !!!
+//open xi for ML? (no Minv cut! and cosPA open as well):
+bool forML = false;
+if(FillOnlyXi>2) forML = true; // in this case we will have massopen and XiOpen too 
 
 
   const char fullBlastQA = true; //moved from arguments
@@ -49,10 +76,12 @@ bool isMC = false;
   if(KaonCut!=1){ // std, use kaons
    TrackCutsKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
    TrackCutsKaon->SetPIDkd();
+   TrackCutsKaon->SetCutCharge(1);
+   TrackCutsKaon->SetFilterBit(128);
   }else{ //use pions
-/*
-   TrackCutsKaon = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
-*/
+   /*
+   //my pions
+   ////TrackCutsKaon = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
    TrackCutsKaon = new AliFemtoDreamTrackCuts();
    TrackCutsKaon->SetIsMonteCarlo(isMC);
    TrackCutsKaon->SetPtRange(0.14, 4.0);
@@ -67,19 +96,27 @@ bool isMC = false;
    TrackCutsKaon->SetMinimalBooking(false);
    TrackCutsKaon->SetPlotDCADist(true);
    TrackCutsKaon->SetCheckPileUpSPDTOF(true);
+   TrackCutsKaon->SetCutCharge(1);
+   TrackCutsKaon->SetFilterBit(128);
+   */
+   //Marcel's pions:
+   int PionFilterbit = 96;
+   TrackCutsKaon = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+   TrackCutsKaon->SetFilterBit(PionFilterbit);
+   TrackCutsKaon->SetCutCharge(1);
   }
-  TrackCutsKaon->SetCutCharge(1);
-  TrackCutsKaon->SetFilterBit(128);
 
   //antikaons
   AliFemtoDreamTrackCuts *TrackCutsAntiKaon;
   if(KaonCut!=1){ // std, use kaons
    TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
    TrackCutsAntiKaon->SetPIDkd();
+   TrackCutsAntiKaon->SetCutCharge(-1);
+   TrackCutsAntiKaon->SetFilterBit(128);
   }else{ //use pions
-/*
-   TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false); 
-*/
+   /*
+   //my pions
+   ////TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false); 
    TrackCutsAntiKaon = new AliFemtoDreamTrackCuts();
    TrackCutsAntiKaon->SetIsMonteCarlo(isMC);
    TrackCutsAntiKaon->SetPtRange(0.14, 4.0);
@@ -94,9 +131,15 @@ bool isMC = false;
    TrackCutsAntiKaon->SetMinimalBooking(false);
    TrackCutsAntiKaon->SetPlotDCADist(true);
    TrackCutsAntiKaon->SetCheckPileUpSPDTOF(true);
+   TrackCutsAntiKaon->SetCutCharge(-1);
+   TrackCutsAntiKaon->SetFilterBit(128);
+   */
+   //Marcel's pions:
+   int PionFilterbit = 96;
+   TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+   TrackCutsAntiKaon->SetFilterBit(PionFilterbit);
+   TrackCutsAntiKaon->SetCutCharge(-1);
   }
-  TrackCutsAntiKaon->SetCutCharge(-1);
-  TrackCutsAntiKaon->SetFilterBit(128);
 
 
   //Cascade Cuts 
@@ -184,25 +227,122 @@ bool isMC = false;
   }
 
 
+
+//////////////////////////////////////////////////////
+//  ---------------   XI CUTS  -------------------- //
+//////////////////////////////////////////////////////
+
   if(!isOmega){
-   //Set the Xi cuts: // THIS ARE SUPPOSED TO BE GEORGIOS L-Xi CUTS
-   CascadeXiCuts->SetCutXiDaughterDCA(1.5);
-   AntiCascadeXiCuts->SetCutXiDaughterDCA(1.5);
-   CascadeXiCuts->SetCutXiMinDistBachToPrimVtx(0.05);
-   AntiCascadeXiCuts->SetCutXiMinDistBachToPrimVtx(0.05);
-   CascadeXiCuts->SetCutv0MinDistToPrimVtx(0.07);
-   AntiCascadeXiCuts->SetCutv0MinDistToPrimVtx(0.07);
-   CascadeXiCuts->SetCutv0MinDaugDistToPrimVtx(0.05);
-   AntiCascadeXiCuts->SetCutv0MinDaugDistToPrimVtx(0.05);
-   CascadeXiCuts->SetCutXiCPA(0.97);
-   AntiCascadeXiCuts->SetCutXiCPA(0.97);
-   CascadeXiCuts->SetCutXiTransverseRadius(0.8, 200);
-   AntiCascadeXiCuts->SetCutXiTransverseRadius(0.8, 200);
-   CascadeXiCuts->SetCutv0TransverseRadius(1.4, 200);
-   AntiCascadeXiCuts->SetCutv0TransverseRadius(1.4, 200);
-   CascadeXiCuts->SetXiMassRange(1.322, 0.015);      // mass is open!!!
-   AntiCascadeXiCuts->SetXiMassRange(1.322, 0.015);  // mass is open!!!
+   //Set the Xi cuts: // THESE ARE SUPPOSED TO BE GEORGIOS L-Xi CUTS
+//in ttree: XiDaughtersDCA
+Float_t XiDaughterDCA = 1.5; //std Georgios
+   CascadeXiCuts->SetCutXiDaughterDCA(XiDaughterDCA);
+   AntiCascadeXiCuts->SetCutXiDaughterDCA(XiDaughterDCA);
+//in ttree: XiTrackDCA[][2]
+//Float_t XiMinDistBachToPrimVtx = 0.05; //std Georgios
+Float_t XiMinDistBachToPrimVtx = 0.03; //risky, but move it to the min
+if(XiOpen) XiMinDistBachToPrimVtx = 0.03;
+   CascadeXiCuts->SetCutXiMinDistBachToPrimVtx(XiMinDistBachToPrimVtx);
+   AntiCascadeXiCuts->SetCutXiMinDistBachToPrimVtx(XiMinDistBachToPrimVtx);
+//in ttree: XiTrackDCA[][0,1]
+//Float_t v0MinDaugDistToPrimVtx = 0.05; //std Georgios
+Float_t v0MinDaugDistToPrimVtx = 0.03;//risky, but move it to the min(CAN WE OPEN IT EVEN MORE???
+if(XiOpen) v0MinDaugDistToPrimVtx = 0.03; //
+   CascadeXiCuts->SetCutv0MinDaugDistToPrimVtx(v0MinDaugDistToPrimVtx);
+   AntiCascadeXiCuts->SetCutv0MinDaugDistToPrimVtx(v0MinDaugDistToPrimVtx);
+//in ttree: XiLambdaDCA
+//Float_t v0MinDistToPrimVtx = 0.07; //std Georgios
+Float_t v0MinDistToPrimVtx = 0.06; //risky, but move it to the min(CAN WE OPEN IT EVEN MORE???
+if(XiOpen) v0MinDistToPrimVtx = 0.05; //(cut in Vertexer 0.06?)
+   CascadeXiCuts->SetCutv0MinDistToPrimVtx(v0MinDistToPrimVtx);
+   AntiCascadeXiCuts->SetCutv0MinDistToPrimVtx(v0MinDistToPrimVtx);
+//in ttree: XiPA
+//Float_t XiCPA = 0.98; //std Georgios
+//Float_t XiCPA = 0.995; // NEW STD
+Float_t XiCPA = 0.98; //
+   if(forML) XiCPA = 0.95; //(cut in vertexer 0.98????)
+   CascadeXiCuts->SetCutXiCPA(XiCPA);
+   AntiCascadeXiCuts->SetCutXiCPA(XiCPA);
+//in ttree: XiVr
+//Float_t XiTransverseRadius = 0.8; //std Georgios
+Float_t XiTransverseRadius = 0.000001; // (cut in Vertexer 0.4?)
+if(XiOpen) XiTransverseRadius = 0.000001; //no cut (cut in Vertexer 0.4?)
+   CascadeXiCuts->SetCutXiTransverseRadius(XiTransverseRadius, 200);
+   AntiCascadeXiCuts->SetCutXiTransverseRadius(XiTransverseRadius, 200);
+//in ttree: XiLambdaVr
+//Float_t v0TransverseRadius = 1.4; //std Georgios
+Float_t v0TransverseRadius = 0.00001; //no cut (cut in Vertexer 0.4?)
+if(XiOpen) v0TransverseRadius = 0.000001; //no cut (cut in Vertexer 0.4?)
+   CascadeXiCuts->SetCutv0TransverseRadius(v0TransverseRadius, 200);
+   AntiCascadeXiCuts->SetCutv0TransverseRadius(v0TransverseRadius, 200);
+//in ttree: XiMass
+   CascadeXiCuts->SetXiMassRange(1.322, 0.005);  
+   AntiCascadeXiCuts->SetXiMassRange(1.322, 0.005); 
+   if(massopen){
+    CascadeXiCuts->SetXiMassRange(1.322, 0.025);  
+    AntiCascadeXiCuts->SetXiMassRange(1.322, 0.025); 
+   }
+   if(forML){
+    CascadeXiCuts->SetXiMassRange(1.322, 0.060);  
+    AntiCascadeXiCuts->SetXiMassRange(1.322, 0.060); 
+   }
+//in ttree XiLambdaDaughtersDCA
+Float_t v0MaxDaughterDCA = 1.5; //std FD
+  CascadeXiCuts->SetCutv0MaxDaughterDCA(v0MaxDaughterDCA);
+  AntiCascadeXiCuts->SetCutv0MaxDaughterDCA(v0MaxDaughterDCA);
+//in ttree XiLambdaPA
+Float_t v0CPA = 0.97; //std FD (and vertexer)
+  if(forML) v0CPA = 0.95;
+  CascadeXiCuts->SetCutv0CPA(v0CPA);
+  AntiCascadeXiCuts->SetCutv0CPA(v0CPA);
+//in ttree:
+Float_t v0MassRange = 0.006; //std FD
+  CascadeXiCuts->Setv0MassRange(1.116, v0MassRange);
+  AntiCascadeXiCuts->Setv0MassRange(1.116, v0MassRange);
+//in ttree:
+Float_t RejectOmegas = 0.005; //std FD
+  CascadeXiCuts->SetRejectOmegas(1.672, RejectOmegas);
+  AntiCascadeXiCuts->SetRejectOmegas(1.672, RejectOmegas);
+//in ttree:
+//Float_t PtRangeXi = 0.3; // std FD
+Float_t PtRangeXi = 0.5; // from BDT files, there is no signal at all below 0.5
+if(XiOpen) PtRangeXi = 0.000001; //no cut (cut in Vertexer 0.3?)
+  CascadeXiCuts->SetPtRangeXi(PtRangeXi, 999.9);
+  AntiCascadeXiCuts->SetPtRangeXi(PtRangeXi, 999.9);
+//in ttree:
+//std seems to see, for proton TIME is req, for pion(from lambda) it is not, and for bachelor it is:
+//bool BachCheckPileUp = true; //std 
+bool BachCheckPileUp = false; //  NOW TIME REQ IN TREEREADER!
+if(XiOpen) BachCheckPileUp = false;
+  XiBachCuts->SetCheckPileUp(BachCheckPileUp);
+  AntiXiBachCuts->SetCheckPileUp(BachCheckPileUp);
+  if(forML) XiPosCuts->SetCheckPileUp(false);//for ML release ALL pileup cuts! cut in tree!
+  if(forML) AntiXiNegCuts->SetCheckPileUp(false);//for ML release ALL pileup cuts! cut in tree!
+
+  //  NOW TIME REQ IN TREEREADER!
+  XiPosCuts->SetCheckPileUp(false);//for ML release ALL pileup cuts! cut in tree!
+  AntiXiNegCuts->SetCheckPileUp(false);//for ML release ALL pileup cuts! cut in tree!
+
+//in ttree:
+//Float_t nSigma = 4.; //std 
+Float_t nSigma = 5.; // BDT is gonna find the good ones! ;)
+if(XiOpen) nSigma = 5.; 
+  XiPosCuts->SetPID(AliPID::kProton, 999., nSigma);
+  XiNegCuts->SetPID(AliPID::kPion, 999., nSigma);
+  XiBachCuts->SetPID(AliPID::kPion, 999., nSigma);
+  AntiXiPosCuts->SetPID(AliPID::kPion, 999., nSigma);
+  AntiXiNegCuts->SetPID(AliPID::kProton, 999., nSigma);
+  AntiXiBachCuts->SetPID(AliPID::kPion, 999., nSigma);
+//remember to FIX K0 MASS in ttree !!!!
+
+
+
+/////////////////////////////////////////////////////////
+//  ---------------   OMEGA CUTS  -------------------- //
+/////////////////////////////////////////////////////////
+
   }else{
+//from p-Omega
 Float_t XiDaughterDCA = .8; //std
 Float_t v0MaxDaughterDCA = 1.2; //std
 Float_t v0MinDistToPrimVtx = 0.06; //std
@@ -221,7 +361,8 @@ Float_t RejectXis = 0.008; //std
 Float_t PtRangeXi = 0.000001; //std, no cut (cut in Vertexer?)
 bool PionCheckPileUp = false; //std
 
-  CascadeXiCuts->SetXiMassRange(1.67245, 0.015);                      // mass is open !!!
+  CascadeXiCuts->SetXiMassRange(1.67245, 0.005);                    
+  if(massopen) CascadeXiCuts->SetXiMassRange(1.67245, 0.025);                    
   CascadeXiCuts->SetCutXiDaughterDCA(XiDaughterDCA);
   CascadeXiCuts->SetCutv0MaxDaughterDCA(v0MaxDaughterDCA);
   CascadeXiCuts->SetCutv0MinDistToPrimVtx(v0MinDistToPrimVtx);
@@ -246,7 +387,8 @@ bool PionCheckPileUp = false; //std
   CascadeXiCuts->SetPtRangeXi(PtRangeXi, 999.9);
   XiNegCuts->SetCheckPileUp(PionCheckPileUp);
 
-  AntiCascadeXiCuts->SetXiMassRange(1.67245, 0.015);                      // mass is open !!!
+  AntiCascadeXiCuts->SetXiMassRange(1.67245, 0.005);                     
+  if(massopen)   AntiCascadeXiCuts->SetXiMassRange(1.67245, 0.025);                     
   AntiCascadeXiCuts->SetCutXiDaughterDCA(XiDaughterDCA);
   AntiCascadeXiCuts->SetCutv0MaxDaughterDCA(v0MaxDaughterDCA);
   AntiCascadeXiCuts->SetCutv0MinDistToPrimVtx(v0MinDistToPrimVtx);
@@ -314,20 +456,33 @@ bool PionCheckPileUp = false; //std
   for (int i = 0; i < nPairs; ++i) {
     closeRejection.push_back(false);
     pairQA.push_back(0);
-    if (suffix == "0") {
       NBins.push_back(1500);
       kMin.push_back(0.);
       kMax.push_back(6.);
-    } else {
-      NBins.push_back(250);
-      kMin.push_back(0.);
-      kMax.push_back(1.);
-    }
   }
 
-//  closeRejection[0] = true;  // k k
+  //so I guess here you write the number of tracks
+  pairQA[0] = 11;  // k k
+  pairQA[1] = 11;  // k k
+  pairQA[2] = 13;  // k Xi
+  pairQA[3] = 13;  // k Xi
+  pairQA[4] = 11;  // k k
+  pairQA[5] = 13;  // k Xi
+  pairQA[6] = 13;  // k Xi
+  pairQA[7] = 33;  // Xi Xi
+  pairQA[8] = 33;  // Xi Xi
+  pairQA[9] = 33;  // Xi Xi
 
-//  pairQA[0] = 13;  // k k
+
+
+  //close pair rejection for the meson track vs the Xi tracks (forget for the moment Yperon-Yperon)
+  closeRejection[0] = true;  // K+ K+
+  closeRejection[2] = true;  // K+ xi
+  closeRejection[3] = true;  // K+ xi+
+  closeRejection[4] = true;  // K- K-
+  closeRejection[5] = true;  // K- Xi-
+  closeRejection[6] = true;  // K- Xi+
+
 
   //We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -365,32 +520,43 @@ bool PionCheckPileUp = false; //std
   MultBins.push_back(72);
   MultBins.push_back(76);
   MultBins.push_back(80);
+  MultBins.push_back(84);
+  MultBins.push_back(88);
+  MultBins.push_back(92);
+  MultBins.push_back(96);
+  MultBins.push_back(100);
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto", false);
-  config->SetZBins(ZVtxBins);
-  config->SetMultBins(MultBins);
-  config->SetMultBinning(true);
-  config->SetPDGCodes(PDGParticles);
-  config->SetNBinsHist(NBins);
-  config->SetMinKRel(kMin);
-  config->SetMaxKRel(kMax);
-  config->SetClosePairRejection(closeRejection);
-  config->SetExtendedQAPairs(pairQA);
-  config->SetDeltaEtaMax(0.017); // and here you set the actual values
-  config->SetDeltaPhiMax(0.017); // and here you set the actual values
-  config->SetMixingDepth(10);
-  //config->SetmTBins(mTBins);
-  //config->SetDomTMultBinning(true);
-  //config->SetmTBinning(true);
-  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+    config->SetExtendedQAPairs(pairQA);  //(commented for systematics)
+    config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+    config->SetMultBinning(true);
+    config->SetZBins(ZVtxBins);     /// only the ones with same z and multiplicity will be compared
+    config->SetMultBins(MultBins);  // the event will be put in the correspondent multiplicity bin
+    config->SetPDGCodes(PDGParticles);
+    config->SetNBinsHist(NBins);
+    config->SetPhiEtaBinnign(true);
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+    config->SetClosePairRejection(closeRejection);
+    config->SetMinKRel(kMin);
+    config->SetMaxKRel(kMax);
+    config->SetUseEventMixing(true);
+    config->SetMixingDepth(10);  /// how many events i want to mix. 10 is usually okay
+
 
   if (isMC) {
     config->SetMomentumResolution(true);
+    if(DoAncestors){
+        config->SetAncestors(true);
+        config->GetDoAncestorsPlots();
+    }
   }
   if (fullBlastQA) {
    // config->SetkTBinning(true);
     config->SetPtQA(true);
   }
+
+
 
   if (!fullBlastQA) {
     evtCuts->SetMinimalBooking(true);
@@ -404,7 +570,8 @@ bool PionCheckPileUp = false; //std
 
   //Define here the analysis task
   AliAnalysisTaskOtonXx *task =
-   new AliAnalysisTaskOtonXx("ThisNameApparentlyStillUseless", false,false,false,isOmega,isPi);
+   new AliAnalysisTaskOtonXx("ThisNameApparentlyStillUseless", doFD,isMC,false,isOmega,isPi,OnlyXi);
+//                                                            doFDpairing,isMC,isMCtruth,isomega,ispi,FillOnlyXi
   task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
   if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);
@@ -489,6 +656,25 @@ bool PionCheckPileUp = false; //std
     AliAnalysisManager::kOutputContainer,
     Form("%s:%s", file.Data(), TreeName.Data()));
   mgr->ConnectOutput(task, 8, coutputTree);
+
+
+
+
+  if (isMC) {
+   TString TrackCutsKaonNameMC = Form("%sKaonMC%s", addon.Data(), suffix.Data());
+   AliAnalysisDataContainer *coutputTrkCutsKaonMC = mgr->CreateContainer(
+        TrackCutsKaonNameMC.Data(), TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), TrackCutsKaonNameMC.Data()));
+   mgr->ConnectOutput(task, 9, coutputTrkCutsKaonMC);
+
+   TString AntiTrackCutsKaonNameMC = Form("%sAntiKaonMC%s", addon.Data(), suffix.Data());
+   AliAnalysisDataContainer *coutputAntiTrkCutsKaonMC = mgr->CreateContainer(
+        AntiTrackCutsKaonNameMC.Data(), TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), AntiTrackCutsKaonNameMC.Data()));
+   mgr->ConnectOutput(task, 10, coutputAntiTrkCutsKaonMC);
+  }
 
   return task;
 }

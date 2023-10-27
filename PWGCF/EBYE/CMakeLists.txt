@@ -140,12 +140,20 @@ set(SRCS
   HMPTF/AliAnalysisTaskResonanceVsMultiplicityROOT6.cxx
   HMPTF/AliAnalysisTaskResonanceVsMultiplicity_MCnoESD.cxx
   HMPTF/AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2.cxx
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_trackinfo.cxx
   HMPTF/AliAnalysisTaskCorrPP.cxx
   HMPTF/AliAnalysisTaskCorrPbPb.cxx
+  HMPTF/AliAnalysisTaskCorrPbPb_v2.cxx
+  HMPTF/AliAnalysisTaskCorrPbPb_treemerge.cxx
   HMPTF/AliAnalysisTaskCorrPPHM.cxx
   HMPTF/AliAnalysisTaskCorrPbPbMC.cxx
   HMPTF/AliAnalysisTaskCorrPPMC.cxx
-  IntermittencyAnalysis/AliAnalysisTaskNFMs.cxx
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicityROOT6_new.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFStrange.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_detect.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_gen.cxx
+  IntermittencyAnalysis/AliAnalysisTaskNFactorialMoments.cxx
   )
 
 # Headers from sources
@@ -199,3 +207,4 @@ install(DIRECTORY FBCorrelationsWithPID/macros DESTINATION PWGCF/EBYE/FBCorrelat
 install(DIRECTORY KaonIsospinFluctuations/macros DESTINATION PWGCF/EBYE/KaonIsospinFluctuations)
 install(DIRECTORY ParticleYieldRatioCorrelations/macros DESTINATION PWGCF/EBYE/ParticleYieldRatioCorrelations)
 install(DIRECTORY HMPTF/macros DESTINATION PWGCF/EBYE/HMPTF)
+install(DIRECTORY DiffPTF/macros DESTINATION PWGCF/EBYE/DiffPTF)

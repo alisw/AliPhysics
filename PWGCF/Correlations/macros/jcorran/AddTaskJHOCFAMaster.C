@@ -14,7 +14,8 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     bool useEtaGap = true, float etaGap = 1.0,
     bool useWeightsNUE = true, bool useWeightsNUA = false,
     bool useWeightsCent = false,
-    bool getSC = true, bool getLower = true)
+    bool getSC = true, bool getLower = true,
+    bool Aside = false, bool Cside = false, bool saveQCNUA = false, bool frmBadArea18q = false, double eta = 0.8)
 {
   // Configuration of the analysis.
   double ESDslope = 3.38; bool saveQA_ESDpileup = false;
@@ -110,7 +111,19 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       break;
     case 23 :
       configNames.push_back("hybridBaseDCA");
-      break;  
+      break;
+    case 24 :
+      configNames.push_back("DCAz15");
+      break;
+    case 25 :
+      configNames.push_back("pileup500");
+      break; 
+    case 26 :
+      configNames.push_back("NTPC65");
+      break; 
+    case 27 :    // Syst: |zVtx < 8| changed to |zVtx < 4|. In order to check if the tracking quality make a difference to our measurements
+      configNames.push_back("zvtx4");
+      break;
     default :
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
         << std::endl;
@@ -164,7 +177,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       if (strcmp(configNames[i].Data(), "default") == 0) {
         MAPfileNames[i] = Form("%sPhiWeights_LHC%s_fullPUcuts_Default_s_%s.root",
           MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data());
-      } else if ((strcmp(configNames[i].Data(), "zvtx6") == 0) || (strcmp(configNames[i].Data(), "zvtx7") == 0)) {
+      } else if ((strcmp(configNames[i].Data(), "zvtx6") == 0)) {
         MAPfileNames[i] = Form("%sPhiWeights_LHC%s_fullPUcuts_s_zvtx10.root",
           MAPdirName.Data(), sCorrection[period].Data());
       } else {
@@ -182,11 +195,11 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       }
       break;
     case 5:   // Same as case 3 but for 18q
-      if (strcmp(configNames[i].Data(), "zvtx7") == 0) {
-        MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_zvtx9_s_zvtx9.root",
-          MAPdirName.Data(), sCorrection[period].Data());
-      } else if ((strcmp(configNames[i].Data(), "chi2low23") == 0)) {
+      if ((strcmp(configNames[i].Data(), "chi2low23") == 0)) {
         MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_Chi2low23_s_chi2low23.root",
+          MAPdirName.Data(), sCorrection[period].Data());
+      } else if ((strcmp(configNames[i].Data(), "zvtx4") == 0)) {
+        MAPfileNames[i] = Form("%sPhiWeights_LHC%s_fullPUcuts_s_zvtx8.root",
           MAPdirName.Data(), sCorrection[period].Data());
       } else {
         MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_%s_s_%s.root",
@@ -218,12 +231,17 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     selEvt = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
   }
 
+  
 
   for (int i = 0; i < Nsets; i++) {
     fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_s_%s", 
       taskName.Data(), configNames[i].Data()));
     std::cout << "Setting the catalyst: " << fJCatalyst[i]->GetJCatalystTaskName() << std::endl;
     fJCatalyst[i]->SetSaveAllQA(saveFullQA);
+    fJCatalyst[i]->SetSaveQCNUA(saveQCNUA);
+
+    if ((period == lhc18q || period == lhc18r ) && frmBadArea18q ) fJCatalyst[i]->SetRemoveBadArea18q(frmBadArea18q); 
+
 
     // Set the correct flags to use.
     if (strcmp(configNames[i].Data(), "noPileup") != 0) {     // Set flag only if we cut on pileup.
@@ -231,6 +249,8 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
 
       if (strcmp(configNames[i].Data(), "pileup10") == 0) {   // Vary the cut on the ESD pileup.
         fJCatalyst[i]->SetESDpileupCuts(true, ESDslope, 10000, saveQA_ESDpileup);
+      } else if (strcmp(configNames[i].Data(), "pileup500") == 0) {   // Vary the cut on the ESD pileup.
+        fJCatalyst[i]->SetESDpileupCuts(true, ESDslope, 500, saveQA_ESDpileup);
       } else {fJCatalyst[i]->SetESDpileupCuts(cutESDpileup, ESDslope, ESDintercept, saveQA_ESDpileup);}
 
       fJCatalyst[i]->SetTPCpileupCuts(cutTPCpileup, saveQA_TPCpileup); // Reject the TPC pileup.
@@ -255,6 +275,8 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       fJCatalyst[i]->SetZVertexCut(6.0);
     } else if (strcmp(configNames[i].Data(), "zvtx7") == 0) {
       fJCatalyst[i]->SetZVertexCut(7.0);
+    } else if (strcmp(configNames[i].Data(), "zvtx4") == 0) {
+      fJCatalyst[i]->SetZVertexCut(4.0);
     } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetZVertexCut(8.0);
     }
@@ -272,6 +294,8 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       fJCatalyst[i]->SetNumTPCClusters(90);
     } else if (strcmp(configNames[i].Data(), "NTPC100") == 0) {
       fJCatalyst[i]->SetNumTPCClusters(100);
+    }  else if (strcmp(configNames[i].Data(), "NTPC65") == 0) {
+      fJCatalyst[i]->SetNumTPCClusters(65);
     } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetNumTPCClusters(70);
     }
@@ -298,6 +322,8 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       fJCatalyst[i]->SetDCAzCut(1.0);
     } else if (strcmp(configNames[i].Data(), "DCAz05") == 0) {
       fJCatalyst[i]->SetDCAzCut(0.5);
+    } else if (strcmp(configNames[i].Data(), "DCAz15") == 0) {
+      fJCatalyst[i]->SetDCAzCut(1.5);
     } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetDCAzCut(2.0);
     }
@@ -314,7 +340,13 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
 
     /// Kinematic cuts and last fine tuning.
     fJCatalyst[i]->SetPtRange(ptMin, ptMax);
-    fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
+    if (Aside){
+      fJCatalyst[i]->SetEtaRange(0.0,eta);
+    } else if (Cside){
+      fJCatalyst[i]->SetEtaRange(-eta,0.0);
+    } else {
+      fJCatalyst[i]->SetEtaRange(-eta, eta);
+    }
     fJCatalyst[i]->SetPhiCorrectionIndex(i);
     fJCatalyst[i]->SetRemoveBadArea(removeBadArea);
     fJCatalyst[i]->SetTightCuts(useTightCuts);

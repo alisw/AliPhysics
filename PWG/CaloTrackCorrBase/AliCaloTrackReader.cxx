@@ -81,6 +81,9 @@ fEMCALTimeCutMin(-10000),    fEMCALTimeCutMax(10000),
 fEMCALParamTimeCutMin(),     fEMCALParamTimeCutMax(),
 fTrackTimeCutMin(-10000),    fTrackTimeCutMax(10000),
 fUseTrackDCACut(0),
+//Artificial Tracking efficiency
+fPeriodLetter(""), fApplyArtificialTrackEffCut(0),
+//
 fAODBranchList(0x0),
 fCTSTracks(0x0),             fEMCALClusters(0x0),
 fDCALClusters(0x0),          fPHOSClusters(0x0),
@@ -191,8 +194,6 @@ fhNEventsPerTriggerAfterCutCen(0),       fhNEventsPerTriggerMakerSelectedAfterCu
 fNMCGenerToAccept(0),        fMCGenerEventHeaderToAccept(""),
 fGenEventHeader(0),          fGenPythiaEventHeader(0),        fCheckPythiaEventHeader(1),
 fAcceptMCPromptPhotonOnly(0),fRejectMCFragmentationPhoton(0),
-//Artificial Tracking efficiency
-fPeriodLetter(""), fApplyArtificialTrackEffCut(0), 
 fRejectPileUpMCParticle(0)
 {
   for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsE   [i]= 0x0 ;

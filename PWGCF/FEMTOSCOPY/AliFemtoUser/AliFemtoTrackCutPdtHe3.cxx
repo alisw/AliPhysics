@@ -16,7 +16,7 @@ AliFemtoESDTrackCut()
     fNsigmaRejection = 3.;
     
     SwitchMom_p = 0.5;
-    SwitchMom_d = 0.8;
+    SwitchMom_d = 1.3;
     SwitchMom_t = 999;
     SwitchMom_He3 = 999;
     SwitchMom_Pi = 0.5;
@@ -52,6 +52,14 @@ AliFemtoESDTrackCut()
     AlldEdxmode = 0;
 
     wiolaCrossCheck = 0;
+    fUsePtotalCut = 0;
+    MinPtotal = 0.;
+    MaxPtotal = 100.;
+    pionrejectcut = 2.;
+
+    d_TPCCut_Stage1 = 2.;
+    d_TPCCut_Stage2 = 2.;
+    d_TOFCut = 2.;
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -101,7 +109,15 @@ AliFemtoESDTrackCut(aCut)
     AlldEdxmode = aCut.AlldEdxmode;
 
     wiolaCrossCheck = aCut.wiolaCrossCheck;
-   
+    
+    fUsePtotalCut = aCut.fUsePtotalCut;
+    MinPtotal = aCut.MinPtotal;
+    MaxPtotal = aCut.MaxPtotal;
+    pionrejectcut = aCut.pionrejectcut; 
+    d_TPCCut_Stage1 = aCut.d_TPCCut_Stage1;
+    d_TPCCut_Stage2 = aCut.d_TPCCut_Stage2;
+    d_TOFCut = aCut.d_TOFCut;
+
 }
 
 AliFemtoTrackCutPdtHe3::~AliFemtoTrackCutPdtHe3()
@@ -159,6 +175,14 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
     AlldEdxmode = aCut.AlldEdxmode;
 
     wiolaCrossCheck = aCut.wiolaCrossCheck;
+    fUsePtotalCut = aCut.fUsePtotalCut;
+    MinPtotal = MinPtotal;
+    MaxPtotal = MaxPtotal;
+    pionrejectcut = aCut.pionrejectcut;
+    d_TPCCut_Stage1 = aCut.d_TPCCut_Stage1;
+    d_TPCCut_Stage2 = aCut.d_TPCCut_Stage2;
+    d_TOFCut = aCut.d_TOFCut;
+
     return *this;
 }
 
@@ -335,6 +359,12 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 	    }
     }
 
+    if(fUsePtotalCut){
+        if((tTotalP < MinPtotal) || ( tTotalP > MaxPtotal)) { 
+		fNTracksFailed++;
+		return false;
+	}
+    }
 
     // dowang for pion+he3 cut
     if(fPionHe3cut){
@@ -371,7 +401,6 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 	}
     }
     if (fMostProbable>0) {
-        
         int imost=0;
 	int loose_imost = 0;
         //****N Sigma Method****
@@ -430,7 +459,6 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 	}//end inversPID
 
 		if(wiolaCrossCheck==1 && WiolaRejectPion(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) ){
-			
 			imost = 0;
 		}
             }
@@ -484,7 +512,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 
                 if ( fdEdxcut && !IsTritonTPCdEdx(track->Pt(), track->TPCsignal()) ){
                     imost = 0;
-                }   
+                }  
             }
  	    //\ for He3 PID
             else if (fMostProbable == 15){
@@ -514,8 +542,9 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
                 if ( fdEdxcut &&fMostProbable == 13 && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal()) ){
                     	imost = 0;
                 }
+//cout<<"xxx "<<imost<<" "<<fMostProbable<<endl;
 	    if (imost != fMostProbable) return false;
-	    if(fUseTOFMassCut){
+	if(fUseTOFMassCut){
 		//Mass square!
 		float TmpTOFMass = ReturnTOFMass(track,imost);
 		if(TmpTOFMass == -999) return false;	
@@ -993,26 +1022,37 @@ void AliFemtoTrackCutPdtHe3::SetwiolaCrossCheck(int aUse){
 	wiolaCrossCheck = aUse;
 }
 bool AliFemtoTrackCutPdtHe3::WiolaDCut(float mom, float nsigmaTPCD, float nsigmaTOFD){
-
-	if(mom < 1.3){
-		if(abs(nsigmaTPCD) < 2)	return true;
+	if(mom < SwitchMom_d){
+		if(abs(nsigmaTPCD) < d_TPCCut_Stage1)	return true;
 	}
 	else{
-		if((abs(nsigmaTPCD) < 2) && (abs(nsigmaTOFD) < 2)) return true;
+		if((abs(nsigmaTPCD) < d_TPCCut_Stage2) && (abs(nsigmaTOFD) < d_TOFCut)) return true;
 	}
 	return false;
 }
 bool AliFemtoTrackCutPdtHe3::WiolaRejectPion(float mom,float nsigmaTPCpi,float nsigmaTOFpi){
-
-	if (mom > 0.5) {
-	        if (TMath::Hypot( nsigmaTOFpi, nsigmaTPCpi ) < 2.)
-	            return true;	
+if (mom > 0.5) {
+	        if (TMath::Hypot( nsigmaTOFpi, nsigmaTPCpi ) < pionrejectcut) return true;	
 	}
     	else {
-        	if (TMath::Abs(nsigmaTPCpi) < 2.)
-            		return true;
+        	if (TMath::Abs(nsigmaTPCpi) < pionrejectcut) return true;
     	}
     	return false;
 
 }
+void AliFemtoTrackCutPdtHe3::SetUsePtotal(int aUse){
+fUsePtotalCut = aUse;
+}
+void AliFemtoTrackCutPdtHe3::SetPtotalRange(float aMin,float aMax){
+	 MinPtotal = aMin;
+         MaxPtotal = aMax;
+}
+void AliFemtoTrackCutPdtHe3::Setpionrejectcut(float aRejectCut){
+pionrejectcut = aRejectCut;
+}
+void AliFemtoTrackCutPdtHe3::SetPIDdNSigmaTPCAndTOF(float aTPC1,float aTPC2,float aTOF){
+	d_TPCCut_Stage1 = aTPC1;
+	d_TPCCut_Stage2 = aTPC2;
+	d_TOFCut = aTOF;
 
+}

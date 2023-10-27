@@ -13,13 +13,15 @@
 //The obtained output needs to be fed to The AliAnalysisTaskSEDvsEventShapes in order to obtain spherocity percentiles
 //For any questions text Marco Giacalone via Mattermost or email: mgiacalo@cern.ch
 
-void Quantiles(float minmul = 20., float maxmul = 82.) {
+void Quantiles(int year = 19, TString fname = "AnalysisResult.root", TString fnamemc = "AnalysisResult.root", float minmul = 1., float maxmul = 200.) {
 
   //GenComp is for computed Spherocity, while Gen is for true spherocity
 
-  TString baseSpline = "DStarSpline";
-  TString myfile ="../MC/FullMerge.root";
-  TString myfiledata ="../ExpData/FullMerge.root";
+  TString baseSpline = Form("DSplines%d", year);
+  if (year > 18 | year < 16)
+    baseSpline = "DSplines";
+  TString myfile = fnamemc.Data();//"MCGenPurpose/4380-2018/AnalysisResults.root"; //for now running only for MC
+  TString myfiledata = fname.Data();//"Data/4794-2018/AnalysisResults.root";
   TFile *fil_1 = TFile::Open(myfile.Data(),"READ");
   TFile *fildata = TFile::Open(myfiledata.Data(),"READ");
 
@@ -27,58 +29,25 @@ void Quantiles(float minmul = 20., float maxmul = 82.) {
   TList *listdata = (TList*)ddata->Get("coutputDStarmgiacalo_sph_TPConly_S0unweighted"); 
 
   TDirectoryFile *d_2 = (TDirectoryFile*)fil_1->Get("PWG3_D2H_DEvtShape_DStarmgiacaloMC_sph_TPConly_S0unweighted");
-  TList *list2 = (TList*)d_2->Get("coutputEffCorrDStarmgiacaloMC_sph_TPConly_S0unweighted"); 
   TList *listMC = (TList*)d_2->Get("coutputDStarmgiacaloMC_sph_TPConly_S0unweighted");
   
   //MC Steps Splines
 
-  THnSparse *thnReco = (THnSparse*)list2->FindObject("hMCRecoPrompt");
-  THnSparse *hMCAccGenPrompt =(THnSparse*)list2->FindObject("hMCAccGenPrompt");
-  THnSparse *thnRecoFD = (THnSparse*)list2->FindObject("hMCRecoFeeddown");
-  THnSparse *hMCAccGenFD =(THnSparse*)list2->FindObject("hMCAccGenBFeeddown");
-  thnRecoFD->GetAxis(1)->SetRangeUser(minmul,maxmul-1);
-  hMCAccGenFD->GetAxis(1)->SetRangeUser(minmul,maxmul-1);
-  thnReco->GetAxis(1)->SetRangeUser(minmul,maxmul-1);
-  hMCAccGenPrompt->GetAxis(1)->SetRangeUser(minmul,maxmul-1);
-  TH1D *hReco=(TH1D*)thnReco->Projection(2);
-  TH1D *hGen=(TH1D*)hMCAccGenPrompt->Projection(5);
-  TH1D *hGenComp=(TH1D*)hMCAccGenPrompt->Projection(2);
-  TH1D *hRecoFD=(TH1D*)thnRecoFD->Projection(2);
-  TH1D *hGenFD=(TH1D*)hMCAccGenFD->Projection(2);
-  const Int_t nBinsReco = hReco->GetXaxis()->GetNbins();
+  THnSparse *thnMC = (THnSparse*)listMC->FindObject("hTotalSparseEvtShape");
+  thnMC->GetAxis(1)->SetRangeUser(minmul,maxmul-1);
+  TH1D *hMC=(TH1D*)thnMC->Projection(0);
+  TH1D *hGen=(TH1D*)thnMC->Projection(2);
+  const Int_t nBinsMC = hMC->GetXaxis()->GetNbins();
   const Int_t nBinsGen = hGen->GetXaxis()->GetNbins();
-  const Int_t nBinsGenComp = hGenComp->GetXaxis()->GetNbins();
-  const Int_t nBinsRecoFD = hRecoFD->GetXaxis()->GetNbins();
-  const Int_t nBinsGenFD = hGenFD->GetXaxis()->GetNbins();
 
   //This is for Data Splines
 
-  THnSparse *thnData = (THnSparse*)listdata->FindObject("hSparseEvtShape");
-  thnData->GetAxis(3)->SetRangeUser(minmul,maxmul-1);
-  TH1D *hData=(TH1D*)thnData->Projection(2);
+  THnSparse *thnData = (THnSparse*)listdata->FindObject("hTotalSparseEvtShape");
+  thnData->GetAxis(1)->SetRangeUser(minmul,maxmul-1);
+  TH1D *hData=(TH1D*)thnData->Projection(0);
   const Int_t nBinsData = hData->GetXaxis()->GetNbins();
 
-  //This is for MC Splines
-  
-  THnSparse *thnMC = (THnSparse*)listMC->FindObject("hSparseEvtShape");
-  thnMC->SetName("hSparseEvtShapeMC");
-  thnMC->GetAxis(3)->SetRangeUser(minmul,maxmul-1);
-  TH1D *hMC=(TH1D*)thnMC->Projection(2);
-  const Int_t nBinsMC = hMC->GetXaxis()->GetNbins();
-
-  THnSparse *thnMCPrompt = (THnSparse*)listMC->FindObject("hSparseEvtShapePrompt");
-  thnMCPrompt->SetName("hSparseEvtShapeMCPrompt");
-  thnMCPrompt->GetAxis(3)->SetRangeUser(minmul,maxmul-1);
-  TH1D *hMCPrompt=(TH1D*)thnMCPrompt->Projection(2);
-  const Int_t nBinsMCPrompt = hMCPrompt->GetXaxis()->GetNbins();
-
-  THnSparse *thnMCFD = (THnSparse*)listMC->FindObject("hSparseEvtShapeFeeddown");
-  thnMCFD->SetName("hSparseEvtShapeMCFeeddown");
-  thnMCFD->GetAxis(3)->SetRangeUser(minmul,maxmul-1);
-  TH1D *hMCFD=(TH1D*)thnMCFD->Projection(2);
-  const Int_t nBinsMCFD = hMCFD->GetXaxis()->GetNbins();
-
-  const int numspline = 9;
+  const int numspline = 3;
 
   TH1F* splInt[numspline];
   
@@ -86,123 +55,47 @@ void Quantiles(float minmul = 20., float maxmul = 82.) {
   TList* splinelist = new TList();
   splinelist->SetOwner(0);
 
+  //Int stands for interpolation
+
   for(Int_t k=0; k<numspline; k++){
     Double_t hINT=0;
     if(k==0){
-      splInt[k] = new TH1F(Form("splIntReco%0.f%0.f",minmul,maxmul-1),Form("Reco Spherocity;Spherocity;Spherocity normalised integral"),nBinsReco,0.,1.);
-      printf("Fitting Spherocity Splines Reco with Multiplicity [%0.f,%0.f]\n", minmul, maxmul-1);
-      for(Int_t j=0; j<nBinsReco; j++){
-        hINT+=hReco->GetBinContent(j+1);
-        Double_t val = hReco->GetBinCenter(j+1);
-        splInt[k]->SetBinContent(j+1,hINT/hReco->Integral()*100);
-      }
-      spline[k] = new TSpline3(splInt[k]);
-      spline[k]->SetName(Form("%sReco_%0.f_%0.f",baseSpline.Data(),minmul,maxmul-1));
-      cout << "Spline at 0.6 for Reco is " << spline[k]->Eval(0.6) << endl;
-      splinelist->Add(spline[k]);
-    }
-    else if(k==1){
-      splInt[k] = new TH1F(Form("splIntGen%0.f%0.f",minmul,maxmul-1),Form("Gen Spherocity;Spherocity;Spherocity normalised integral"),nBinsGen,0.,1.);
-      printf("Fitting Spherocity Splines Gen with Multiplicity [%0.f,%0.f]\n", minmul, maxmul-1);
-      for(Int_t j=0; j<nBinsGen; j++){
-        hINT+=hGen->GetBinContent(j+1);
-        Double_t val = hGen->GetBinCenter(j+1);
-        splInt[k]->SetBinContent(j+1,hINT/hGen->Integral()*100);
-      }
-      spline[k] = new TSpline3(splInt[k]);
-      spline[k]->SetName(Form("%sGen_%0.f_%0.f",baseSpline.Data(),minmul,maxmul-1));
-      cout << "Spline at 0.6 for Gen is " << spline[k]->Eval(0.6) << endl;
-      splinelist->Add(spline[k]);
-    }
-    else if(k==2){
-      splInt[k] = new TH1F(Form("splIntGenComp%0.f%0.f",minmul,maxmul-1),Form("GenComp Spherocity;Spherocity;Spherocity normalised integral"),nBinsGenComp,0.,1.);
-      printf("Fitting Spherocity Splines GenComp with Multiplicity [%0.f,%0.f]\n", minmul, maxmul-1);
-      for(Int_t j=0; j<nBinsGenComp; j++){
-        hINT+=hGenComp->GetBinContent(j+1);
-        Double_t val = hGenComp->GetBinCenter(j+1);
-        splInt[k]->SetBinContent(j+1,hINT/hGenComp->Integral()*100);
-      }
-      spline[k] = new TSpline3(splInt[k]);
-      spline[k]->SetName(Form("%sGenComp_%0.f_%0.f",baseSpline.Data(),minmul,maxmul-1));
-      cout << "Spline at 0.6 for GenComp is " << spline[k]->Eval(0.6) << endl;
-      splinelist->Add(spline[k]);
-    }
-    else if(k==3){
-      splInt[k] = new TH1F(Form("splIntRecoFD%0.f%0.f",minmul,maxmul-1),Form("RecoFD Spherocity;Spherocity;Spherocity normalised integral"),nBinsRecoFD,0.,1.);
-      printf("Fitting Spherocity Splines RecoFD with Multiplicity [%0.f,%0.f]\n", minmul, maxmul-1);
-      for(Int_t j=0; j<nBinsRecoFD; j++){
-        hINT+=hRecoFD->GetBinContent(j+1);
-        Double_t val = hRecoFD->GetBinCenter(j+1);
-        splInt[k]->SetBinContent(j+1,hINT/hRecoFD->Integral()*100);
-      }
-      spline[k] = new TSpline3(splInt[k]);
-      spline[k]->SetName(Form("%sRecoFD_%0.f_%0.f",baseSpline.Data(),minmul,maxmul-1));
-      cout << "Spline at 0.6 for RecoFD is " << spline[k]->Eval(0.6) << endl;
-      splinelist->Add(spline[k]);
-    }
-    else if(k==4){
-      splInt[k] = new TH1F(Form("splIntGenFD%0.f%0.f",minmul,maxmul-1),Form("GenFD Spherocity;Spherocity;Spherocity normalised integral"),nBinsGenFD,0.,1.);
-      printf("Fitting Spherocity Splines GenFD with Multiplicity [%0.f,%0.f]\n", minmul, maxmul-1);
-      for(Int_t j=0; j<nBinsGenFD; j++){
-        hINT+=hGenFD->GetBinContent(j+1);
-        Double_t val = hGenFD->GetBinCenter(j+1);
-        splInt[k]->SetBinContent(j+1,hINT/hGenFD->Integral()*100);
-      }
-      spline[k] = new TSpline3(splInt[k]);
-      spline[k]->SetName(Form("%sGenFD_%0.f_%0.f",baseSpline.Data(),minmul,maxmul-1));
-      cout << "Spline at 0.6 for GenFD is " << spline[k]->Eval(0.6) << endl;
-      splinelist->Add(spline[k]);
-    }
-    else if(k==5){
-      splInt[k] = new TH1F(Form("splIntData%0.f%0.f",minmul,maxmul-1),Form("Data Spherocity;Spherocity;Spherocity normalised integral"),nBinsData,0.,1.);
-      printf("Fitting Spherocity Splines Data with Multiplicity [%0.f,%0.f]\n", minmul, maxmul-1);
-      for(Int_t j=0; j<nBinsData; j++){
-        hINT+=hData->GetBinContent(j+1);
-        Double_t val = hData->GetBinCenter(j+1);
-        splInt[k]->SetBinContent(j+1,hINT/hData->Integral()*100);
-      }
-      spline[k] = new TSpline3(splInt[k]);
-      spline[k]->SetName(Form("%sData_%0.f_%0.f",baseSpline.Data(),minmul,maxmul-1));
-      cout << "Spline at 0.6 for Data is " << spline[k]->Eval(0.6) << endl;
-      splinelist->Add(spline[k]);
-    }
-    else if(k==6){
-      splInt[k] = new TH1F(Form("splIntMC%0.f%0.f",minmul,maxmul-1),Form("MC Spherocity;Spherocity;Spherocity normalised integral"),nBinsMC,0.,1.);
-      printf("Fitting Spherocity Splines MC with Multiplicity [%0.f,%0.f]\n", minmul, maxmul-1);
+      splInt[k] = new TH1F(Form("splIntMC%0.f%0.f",minmul,maxmul-1),Form("MCRecoSpherocity%0.f%0.f;Spherocity;Spherocity normalised integral",minmul,maxmul-1),nBinsMC,0.,1.);
+      printf("Fitting Spherocity Splines MC Reco with Multiplicity [%0.f,%0.f]\n", minmul, maxmul-1);
       for(Int_t j=0; j<nBinsMC; j++){
         hINT+=hMC->GetBinContent(j+1);
         Double_t val = hMC->GetBinCenter(j+1);
         splInt[k]->SetBinContent(j+1,hINT/hMC->Integral()*100);
       }
       spline[k] = new TSpline3(splInt[k]);
-      spline[k]->SetName(Form("%sMC_%0.f_%0.f",baseSpline.Data(),minmul,maxmul-1));
-      cout << "Spline at 0.6 for MC is " << spline[k]->Eval(0.6) << endl;
+      spline[k]->SetName(Form("%sMC",baseSpline.Data()));
+      cout << "Spline at 0.6 for Reco is " << spline[k]->Eval(0.6) << endl;
       splinelist->Add(spline[k]);
     }
-    else if(k==7){
-      splInt[k] = new TH1F(Form("splIntMCPrompt%0.f%0.f",minmul,maxmul-1),Form("MCPrompt Spherocity;Spherocity;Spherocity normalised integral"),nBinsMCPrompt,0.,1.);
-      printf("Fitting Spherocity Splines MCPrompt with Multiplicity [%0.f,%0.f]\n", minmul, maxmul-1);
-      for(Int_t j=0; j<nBinsMC; j++){
-        hINT+=hMCPrompt->GetBinContent(j+1);
-        Double_t val = hMCPrompt->GetBinCenter(j+1);
-        splInt[k]->SetBinContent(j+1,hINT/hMCPrompt->Integral()*100);
+    else if(k==1){
+      splInt[k] = new TH1F(Form("splIntGen%0.f%0.f",minmul,maxmul-1),Form("GenSpherocity%0.f%0.f;Spherocity;Spherocity normalised integral",minmul,maxmul-1),nBinsGen,0.,1.);
+      printf("Fitting Spherocity Splines MC Gen with Multiplicity [%0.f,%0.f]\n", minmul, maxmul-1);
+      for(Int_t j=0; j<nBinsGen; j++){
+        hINT+=hGen->GetBinContent(j+1);
+        Double_t val = hGen->GetBinCenter(j+1);
+        splInt[k]->SetBinContent(j+1,hINT/hGen->Integral()*100);
       }
       spline[k] = new TSpline3(splInt[k]);
-      spline[k]->SetName(Form("%sMCPrompt_%0.f_%0.f",baseSpline.Data(),minmul,maxmul-1));
-      cout << "Spline at 0.6 for MCPrompt is " << spline[k]->Eval(0.6) << endl;
+      spline[k]->SetName(Form("%sMCGen",baseSpline.Data()));
+      cout << "Spline at 0.6 for Gen is " << spline[k]->Eval(0.6) << endl;
       splinelist->Add(spline[k]);
     }
-    else if(k==8){
-      splInt[k] = new TH1F(Form("splIntMCFD%0.f%0.f",minmul,maxmul-1),Form("MCFD Spherocity;Spherocity;Spherocity normalised integral"),nBinsMCFD,0.,1.);
-      printf("Fitting Spherocity Splines MCFD with Multiplicity [%0.f,%0.f]\n", minmul, maxmul-1);
-      for(Int_t j=0; j<nBinsMC; j++){
-        hINT+=hMCFD->GetBinContent(j+1);
-        Double_t val = hMCFD->GetBinCenter(j+1);
-        splInt[k]->SetBinContent(j+1,hINT/hMCFD->Integral()*100);
+    else if(k==2){
+      splInt[k] = new TH1F(Form("splIntData%0.f%0.f",minmul,maxmul-1),Form("DataSpherocity%0.f%0.f;Spherocity;Spherocity normalised integral",minmul,maxmul-1),nBinsData,0.,1.);
+      printf("Fitting Spherocity Splines Reco Data with Multiplicity [%0.f,%0.f]\n", minmul, maxmul-1);
+      for(Int_t j=0; j<nBinsData; j++){
+        hINT+=hData->GetBinContent(j+1);
+        Double_t val = hData->GetBinCenter(j+1);
+        splInt[k]->SetBinContent(j+1,hINT/hData->Integral()*100);
       }
       spline[k] = new TSpline3(splInt[k]);
-      spline[k]->SetName(Form("%sMCFD_%0.f_%0.f",baseSpline.Data(),minmul,maxmul-1));
-      cout << "Spline at 0.6 for MCFD is " << spline[k]->Eval(0.6) << endl;
+      spline[k]->SetName(Form("%sData",baseSpline.Data()));
+      cout << "Spline at 0.6 for Data is " << spline[k]->Eval(0.6) << endl;
       splinelist->Add(spline[k]);
     }
   }
@@ -216,23 +109,11 @@ void Quantiles(float minmul = 20., float maxmul = 82.) {
 
   for(int k=0; k<numspline; k++){
     if(k==0)
-      cspherohist[k] = new TCanvas(Form("cspheroHistReco_%0.f_%0.f",minmul,maxmul-1),"",800,800);
+      cspherohist[k] = new TCanvas(Form("cspheroHistMC_%0.f_%0.f",minmul,maxmul-1),"",800,800);
     else if(k==1)
       cspherohist[k] = new TCanvas(Form("cspheroHistGen_%0.f_%0.f",minmul,maxmul-1),"",800,800);
     else if(k==2)
-      cspherohist[k] = new TCanvas(Form("cspheroHistGenComp_%0.f_%0.f",minmul,maxmul-1),"",800,800);   
-    else if(k==3)
-      cspherohist[k] = new TCanvas(Form("cspheroHistRecoFD_%0.f_%0.f",minmul,maxmul-1),"",800,800); 
-    else if(k==4)
-      cspherohist[k] = new TCanvas(Form("cspheroHistGenFD_%0.f_%0.f",minmul,maxmul-1),"",800,800);     
-    else if(k==5)
-      cspherohist[k] = new TCanvas(Form("cspheroHistData_%0.f_%0.f",minmul,maxmul-1),"",800,800);     
-    else if(k==6)
-      cspherohist[k] = new TCanvas(Form("cspheroHistMC_%0.f_%0.f",minmul,maxmul-1),"",800,800); 
-    else if(k==7)
-      cspherohist[k] = new TCanvas(Form("cspheroHistMCPrompt_%0.f_%0.f",minmul,maxmul-1),"",800,800); 
-    else if(k==8)
-      cspherohist[k] = new TCanvas(Form("cspheroHistMCFD_%0.f_%0.f",minmul,maxmul-1),"",800,800);     
+      cspherohist[k] = new TCanvas(Form("cspheroHistData_%0.f_%0.f",minmul,maxmul-1),"",800,800);   
     leg->AddEntry(splInt[k],Form("Mult %0.f-%0.f%%",minmul,maxmul-1),"p"); 
     splInt[k]->Draw();
     TLine* line25 = new TLine(0.,25.,1., 25.);
@@ -248,23 +129,11 @@ void Quantiles(float minmul = 20., float maxmul = 82.) {
 
   for(int k=0; k<numspline; k++){
     if(k==0)
-      cspheroInt[k] = new TCanvas(Form("cspheroIntReco_%0.f_%0.f",minmul,maxmul-1),"",800,800);
+      cspheroInt[k] = new TCanvas(Form("cspheroIntMC_%0.f_%0.f",minmul,maxmul-1),"",800,800);
     else if(k==1)
       cspheroInt[k] = new TCanvas(Form("cspheroIntGen_%0.f_%0.f",minmul,maxmul-1),"",800,800); 
     else if(k==2)
-      cspheroInt[k] = new TCanvas(Form("cspheroIntGenComp_%0.f_%0.f",minmul,maxmul-1),"",800,800); 
-    else if(k==3)
-      cspheroInt[k] = new TCanvas(Form("cspheroIntRecoFD_%0.f_%0.f",minmul,maxmul-1),"",800,800);
-    else if(k==4)
-      cspheroInt[k] = new TCanvas(Form("cspheroIntGenFD_%0.f_%0.f",minmul,maxmul-1),"",800,800);   
-    else if(k==5)
-      cspheroInt[k] = new TCanvas(Form("cspheroIntData_%0.f_%0.f",minmul,maxmul-1),"",800,800);  
-    else if(k==6)
-      cspheroInt[k] = new TCanvas(Form("cspheroIntMC_%0.f_%0.f",minmul,maxmul-1),"",800,800);
-    else if(k==7)
-      cspheroInt[k] = new TCanvas(Form("cspheroIntMCPrompt_%0.f_%0.f",minmul,maxmul-1),"",800,800);
-    else if(k==8)
-      cspheroInt[k] = new TCanvas(Form("cspheroIntMCFD_%0.f_%0.f",minmul,maxmul-1),"",800,800);          
+      cspheroInt[k] = new TCanvas(Form("cspheroIntData_%0.f_%0.f",minmul,maxmul-1),"",800,800); 
     leg->AddEntry(splInt[k],Form("Mult %0.f-%0.f%%",minmul,maxmul-1),"p"); 
     splInt[k]->SetMarkerStyle(kFullCircle);
     splInt[k]->SetMarkerColor(kGreen+2);
@@ -272,11 +141,15 @@ void Quantiles(float minmul = 20., float maxmul = 82.) {
     spline[k]->SetLineColor(kGreen);
     spline[k]->SetLineWidth(2);
     spline[k]->Draw("same");   
+    cspheroInt[k]->Print(Form("%s.png", splInt[k]->GetTitle()));
   }
 
   //save splines in a file  
   TFile outfile("Splines.root","UPDATE");
-  splinelist->Write(Form("%s%0.f-%0.f", baseSpline.Data(), minmul, maxmul-1),1);
+  if(minmul == 1. && maxmul == 200.)
+    splinelist->Write(Form("%s", baseSpline.Data()),1);
+  else  
+    splinelist->Write(Form("%s%0.f-%0.f", baseSpline.Data(),minmul, maxmul-1),1);
   /*cspheroInt[0]->Write();
   cspheroInt[1]->Write();
   cspherohist[0]->Write();
@@ -309,12 +182,62 @@ void QuantileUsingSplines(TString splfile = "Splines.root"){
     else
       cout << "File " << splfile.Data() << " Deleted" << std::endl;   
   }
-  const int nmult = 2;
-  const float mults[nmult+1]{20.,31.,82.};
-  for(int k=0; k<=nmult; k++){
-    if(k==nmult)
-      Quantiles(mults[0],mults[k]);
-    else
-      Quantiles(mults[k],mults[k+1]); 
+  TString fname[] = {"Data/4803-4804-2016/AnalysisResults.root", "Data/4805-2017/AnalysisResults_merged.root", "Data/4806-2018/AnalysisResults_merged.root", "Data/FullMerge.root"};
+  TString fnamemc[] = {"MCGenPurpose/4390-2016/AnalysisResults.root", "MCGenPurpose/4392-2018/AnalysisResults.root", "MCGenPurpose/4393-2017/AnalysisResults.root", "MCGenPurpose/FullMerge.root"};
+  const float mults[] = {20.,31.,82.};
+  int years[] = {16, 17, 18, 19};
+  for(int k = 3; k < 4; k++){
+    for(int j = 0; j<=3; j++){
+      if(j == 2)
+        Quantiles(years[k], fname[k], fnamemc[k], mults[0],mults[j]);
+      else if(j == 3)
+        Quantiles(years[k], fname[k], fnamemc[k], 1., 200.);
+      else
+        Quantiles(years[k], fname[k], fnamemc[k], mults[j],mults[j+1]);
+    }
   }
+}
+
+void comparison(){
+  TFile * spl = new TFile("Splines.root", "READ");
+  TCanvas * c[3];
+  TLegend* leg[3];
+  TString names[] = {"Data", "MC", "MCGen"};
+  int years[] = {16, 17, 18, 19};
+  int col[] = {kRed, kBlue, kGreen, kBlack};
+  TList * li[4];
+  TString baseSpline = "SpheroSpline";
+  TSpline3 * splines[3];
+  for(int z = 0; z < 3; z++){
+    c[z] = new TCanvas(names[z].Data(),names[z].Data(), 1920, 1080);
+    leg[z] = new TLegend(0.6,0.2,0.8,0.4);
+    leg[z]->SetBorderSize(0);
+    leg[z]->SetTextSize(0.035);
+  }
+  for(int i = 0; i < 4; i++){
+    if(years[i] == 19)
+      li[i] = (TList*)spl->Get(Form("%s", baseSpline.Data()));
+    else 
+      li[i] = (TList*)spl->Get(Form("%s%d", baseSpline.Data(), years[i]));
+    for(int k = 0; k < 3; k++){
+      c[k]->cd();
+      if(years[i] == 19)
+        splines[k] = (TSpline3*)li[i]->FindObject(Form("%s%s", baseSpline.Data(), names[k].Data()));
+      else
+        splines[k] = (TSpline3*)li[i]->FindObject(Form("%s%d%s", baseSpline.Data(), years[i], names[k].Data()));
+      splines[k]->SetLineColor(col[i]);
+      if(years[i] == 19)
+        leg[k]->AddEntry(splines[k],Form("%s%sMerged", baseSpline.Data(), names[k].Data()),"l");  
+      else
+        leg[k]->AddEntry(splines[k],Form("%s%d%s", baseSpline.Data(), years[i], names[k].Data()),"l");
+      if(years[i] == 16)
+        splines[k]->Draw();
+      else  
+        splines[k]->Draw("SAME");  
+      leg[k]->Draw();  
+    }
+  }
+  c[0]->Print("DataSplines.png");
+  c[1]->Print("MCSplines.png");
+  c[2]->Print("MCGenSplines.png");
 }

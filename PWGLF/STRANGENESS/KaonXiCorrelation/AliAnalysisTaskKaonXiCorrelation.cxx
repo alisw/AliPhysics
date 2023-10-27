@@ -11,7 +11,9 @@ using std::string;
 // ROOT includes
 #include <TAxis.h>
 #include <TChain.h>
+#include <TFile.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TList.h>
 #include <TRandom3.h>
 #include <TTree.h>
@@ -26,6 +28,8 @@ using std::string;
 #include "AliVEventHandler.h"
 #include "AliAODMCHeader.h"
 #include "AliAnalysisUtils.h"
+
+#include "AliAODVZERO.h"
 
 ///\cond CLASSIMP
 ClassImp(AliAnalysisTaskKaonXiCorrelation);
@@ -112,6 +116,13 @@ void AliAnalysisTaskKaonXiCorrelation::UserCreateOutputObjects()
     }
   }
 
+  const char* det[] = {"ITS", "TPC", "TOF"};
+  TFile calib_file(fCustomPidPath.data());
+  for (int iD = 0; iD < 3; ++iD)
+  {
+    fCustomPidCalib[iD] = (TH3F*)calib_file.Get(Form("fCustom%spidCalib", det[iD]));
+  }
+
   fList = new TList();
   fList->SetOwner(kTRUE);
   fEventCuts.AddQAplotsToList(fList);
@@ -138,8 +149,8 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
     fMCEvent = MCEvent();
   }
 
-  double bFfield{ev->GetMagneticField()};
-  fRecCollision.fCent = fEventCuts.GetCentrality();
+  double bField{ev->GetMagneticField()};
+  fRecCollision.fCent = fEventCuts.GetCentrality(fEstimator);
   if (fRecCollision.fCent < fMinCentrality || fRecCollision.fCent > fMaxCentrality)
   {
     PostAllData();
@@ -161,9 +172,18 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
     tgr |= kCentral;
   if (handl->IsEventSelected() & AliVEvent::kSemiCentral)
     tgr |= kSemiCentral;
-  int magField = bFfield > 0 ? kPositiveB : 0;
+  int magField = bField > 0 ? kPositiveB : 0;
 
   fRecCollision.fTrigger = tgr + magField;
+
+  AliAODVZERO *vzero = ev->GetVZEROData();
+  fRecCollision.fV0MAmp = 0;
+  for (int i = 0; i < 64; ++i)
+  {
+    fRecCollision.fV0MAmp += vzero->GetMultiplicity(i);
+  }
+  fRecCollision.fNTrk = 0;
+
   fPID = handl->GetPIDResponse();
 
   std::vector<int> checkedLabelCasc, checkedLabelKaon;
@@ -185,15 +205,18 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
         continue;
       }
 
-      int nSPD = 0.;
-      int nITS = GetITScls(aodTrack, nSPD);
+      int nSPD = 0;
+      int nSDD = 0;
+      int nSSD = 0;
+      int nITS = GetITScls(aodTrack, nSPD, nSDD, nSSD);
       float dca[2]{0., 0.};
       aodTrack->GetImpactParameters(dca[0], dca[1]);
       double dcaMag = std::sqrt(dca[1] * dca[1] + dca[0] * dca[0]);
       bool tof = HasTOF(aodTrack);
 
-      double tpcNsigma = fPID->NumberOfSigmasTPC(aodTrack, AliPID::kKaon);
-      double tofNsigma = tof ? fPID->NumberOfSigmasTOF(aodTrack, AliPID::kKaon) : -999.f;
+      double itsNsigma = GetCustomNsigma(aodTrack, fRecCollision.fCent, 0);
+      double tpcNsigma = GetCustomNsigma(aodTrack, fRecCollision.fCent, 1);
+      double tofNsigma = tof ? GetCustomNsigma(aodTrack, fRecCollision.fCent, 2) : -999.f;
 
       if (!aodTrack->TestFilterBit(fFilterBit) && fFilterBit) continue;
 
@@ -201,14 +224,22 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
           !(aodTrack->GetStatus() & AliVTrack::kITSrefit) ||
           std::abs(Eta2y(aodTrack->Pt(), kKaonMass, aodTrack->Eta())) > fCutY ||
           std::abs(aodTrack->Eta()) > 0.8 ||
-          aodTrack->Chi2perNDF() > fCutMaxChi2 ||
-          aodTrack->GetTPCsignalN() < fCutTPCclsKaon ||
+          aodTrack->Chi2perNDF() > fCutChi2[2] ||
+          aodTrack->GetTPCsignalN() < fCutTPCcls[2] ||
           aodTrack->GetITSchi2() > fCutMaxITSChi2 ||
           nITS < fCutITSrecPoints ||
           nSPD < fCutSPDrecPoints ||
-          dcaMag > fCutDCA[2] ||
-          std::abs(tpcNsigma) > fCutKaonNsigmaTPC ||
-          (aodTrack->Pt() > fPtTofCut && std::abs(tofNsigma) > fCutKaonNsigmaTOF)
+          dcaMag > fCutDCA[2]
+        )
+      {
+        continue;
+      }
+      
+      fRecCollision.fNTrk += 1;
+
+      if ( std::abs(tpcNsigma) > fCutKaonNsigmaTPC ||
+          (aodTrack->Pt() > fPtTofCut && std::abs(tofNsigma) > fCutKaonNsigmaTOF) ||
+          !( (!fUseITSpid || aodTrack->Pt() > fCutPtITSpid) || (fUseITSpid && std::abs(itsNsigma) < fCutKaonNsigmaITS && ( nSDD + nSSD > fCutSDDSSDrecPoints) && aodTrack->Pt() < fCutPtITSpid) )
         )
       {
         continue;
@@ -238,16 +269,23 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
       bool charge = aodTrack->Charge() > 0;
       fKaon->fPt = charge ? aodTrack->Pt() : -aodTrack->Pt();
       fKaon->fEta = aodTrack->Eta();
+      fKaon->fNsigmaITS = itsNsigma;
       fKaon->fNsigmaTPC = tpcNsigma;
       fKaon->fNsigmaTOF = tofNsigma;
       fKaon->fCutBitMap = 0u;
       if (dcaMag < fCutDCA[0]) fKaon->fCutBitMap |= kDCAtightCut;
       else if (dcaMag < fCutDCA[1]) fKaon->fCutBitMap |= kDCAmidCut;
+      if (aodTrack->GetTPCsignalN() > fCutTPCcls[0]) fKaon->fCutBitMap |= kTPCclsTightCut;
+      else if (aodTrack->GetTPCsignalN() > fCutTPCcls[1]) fKaon->fCutBitMap |= kTPCclsMidCut;
+      if (aodTrack->Chi2perNDF() < fCutChi2[0]) fKaon->fCutBitMap |= kChi2TightCut;
+      else if (aodTrack->Chi2perNDF() < fCutChi2[1]) fKaon->fCutBitMap |= kChi2MidCut;
 
       if (!fMC)
         fRecKaons.push_back(*fKaon);
       else
         fGenKaons.push_back(fGenKaon);
+      
+      fRecCollision.fNTrk -= 1;
     }
   }
 
@@ -350,7 +388,7 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
       double cosPAV0 = casc->CosPointingAngle(pv);
 
       // TOF matching
-      bool hasTOFhit = !pTrackCasc->GetTOFBunchCrossing(bFfield) || !nTrackCasc->GetTOFBunchCrossing(bFfield) || !bTrackCasc->GetTOFBunchCrossing(bFfield);
+      bool hasTOFhit = !pTrackCasc->GetTOFBunchCrossing(bField) || !nTrackCasc->GetTOFBunchCrossing(bField) || !bTrackCasc->GetTOFBunchCrossing(bField);
 
       // track status: ( fCasc_NegTrackStatus & AliESDtrack::kITSrefit ) is the codition to check kITSrefit
       bool hasITSrefit = (nTrackCasc->GetStatus() & AliVTrack::kITSrefit) || (pTrackCasc->GetStatus() & AliVTrack::kITSrefit) || (bTrackCasc->GetStatus() & AliVTrack::kITSrefit);
@@ -653,12 +691,12 @@ int AliAnalysisTaskKaonXiCorrelation::WhichBDT(double pt)
   return iB;
 }
 
-int AliAnalysisTaskKaonXiCorrelation::GetITScls(AliAODTrack *track, int &nSPD)
+int AliAnalysisTaskKaonXiCorrelation::GetITScls(AliAODTrack *track, int &nSPD, int &nSDD, int &nSSD)
 {
   if (!track) return -1;
   nSPD = 0u;
-  int nSDD = 0u;
-  int nSSD = 0u;
+  nSDD = 0u;
+  nSSD = 0u;
   for (int i = 0; i < 6; ++i) {
     if (track->HasPointOnITSLayer(i)) {
       if (i < 2) nSPD++;
@@ -691,4 +729,31 @@ bool AliAnalysisTaskKaonXiCorrelation::HasTwoXiFromSameDaughters(std::vector<XiD
     }
   }
   return false;
+}
+
+double AliAnalysisTaskKaonXiCorrelation::GetCustomNsigma(AliAODTrack *t, double cent, int det)
+{
+  double nsigma = 0.;
+  switch (det) {
+    case 0:
+      nsigma = fPID->NumberOfSigmasITS(t, AliPID::kKaon);
+      break;
+    case 1:
+      nsigma = fPID->NumberOfSigmasTPC(t, AliPID::kKaon);
+      break;
+    case 2:
+      nsigma = fPID->NumberOfSigmasTOF(t, AliPID::kKaon);
+      break;
+  }
+  if (fUseCustomPid && fCustomPidCalib[det]) {
+    int binX = fCustomPidCalib[det]->GetXaxis()->FindBin(cent);
+    int binY = fCustomPidCalib[det]->GetYaxis()->FindBin(t->Pt());
+    int binZ = fCustomPidCalib[det]->GetZaxis()->FindBin(t->Eta());
+    double muCalib = fCustomPidCalib[det]->GetBinContent(binX, binY, binZ);
+    double sigCalib = fCustomPidCalib[det]->GetBinError(binX, binY, binZ);
+    if (muCalib > 1.e-12 || sigCalib > 1.e-12){
+      return ( nsigma - muCalib ) / sigCalib;
+    }
+  }
+  return nsigma;
 }

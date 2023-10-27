@@ -93,8 +93,8 @@ public:
   void FillHistograms(const AliVEvent* event, Bool_t onlineDecision, Bool_t offlineDecision);
   void FillTriggerClasses(const AliVEvent* event);
 
-  void SetSPDGFOEfficiency(TH1D* hist) { delete fSPDGFOEfficiency; fSPDGFOEfficiency = hist; }
-  void SetTOFMaxipadEfficiency(TH2F* hist) { delete fTOFMaxipadEfficiency; fTOFMaxipadEfficiency = hist; }
+  void SetSPDGFOEfficiency(TH1D* hist) { fSPDGFOEfficiency = hist; }
+  void SetTOFMaxipadEfficiency(TH2F* hist) { fTOFMaxipadEfficiency = hist; }
   void SetDoFMD(Bool_t flag = kTRUE) {fDoFMD = flag;}
 
   TObject* GetHistogram(const char* histName);
@@ -111,8 +111,8 @@ protected:
   // TOF trigger helpers
   void GetTOFFiredMaxipads(const AliVEvent* event, TBits& maxipads);
   void ApplyTOFefficiency(TBits& fired);
-  Bool_t IsOM2fired(const TBits& maxipads) { return maxipads.CountBits() >= 2; }
-  Bool_t IsOMUfired(const TBits& maxipads);
+  Bool_t IsOM2fired(TBits maxipads) { return maxipads.CountBits() >= 2; }
+  Bool_t IsOMUfired(TBits maxipads);
 
   // SPD trigger helpers
   void GetSPDFiredChips(const AliVEvent* event, TBits& chips);

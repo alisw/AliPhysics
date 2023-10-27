@@ -20,6 +20,7 @@
 #include <vector>
 
 #include <TRandom3.h>
+#include <TGrid.h>
 class TH1;
 class TH2;
 class TH3;
@@ -67,7 +68,10 @@ namespace PWGJE
 
       AliAnalysisTaskEmcalJetHdEdxCorrelations();
       AliAnalysisTaskEmcalJetHdEdxCorrelations(const char *name);
-      virtual ~AliAnalysisTaskEmcalJetHdEdxCorrelations() {}
+      virtual ~AliAnalysisTaskEmcalJetHdEdxCorrelations() {
+        //Make sure we close epCorrectionsFile if it is open
+
+      }
 
       Double_t GetTrackBias() const { return fTrackBias; }
       Double_t GetClusterBias() const { return fClusterBias; }
@@ -77,6 +81,23 @@ namespace PWGJE
       virtual void SetTrackBias(Double_t b) { fTrackBias = b; }
       /// Require a cluster with pt > b in jet
       virtual void SetClusterBias(Double_t b) { fClusterBias = b; }
+
+      // EPCorrectionsFileSetter
+      void SetEPcorrectionsTree(TString* filename) {
+        //Check if filename contains alien:// and connect to TGrid if it does
+        if (filename->Contains("alien://")) {
+          TGrid::Connect("alien://");
+        }
+        TFile *fEPcorrectionFile = TFile::Open(filename->Data());
+        if (!fEPcorrectionFile) {
+          AliError(Form("Could not open file %s", filename->Data()));
+        }
+        fEPCorrectionTree = (TTree *)(fEPcorrectionFile->Get("V0C"));
+        if (!fEPCorrectionTree)
+        {
+          AliError(Form("Could not open tree %s", "V0C"));
+        }
+      }
 
       // Event trigger/mixed selection - setters
       /// Set the trigger event trigger selection
@@ -111,10 +132,14 @@ namespace PWGJE
       // Setup JES correction
       void SetJESCorrectionHist(TH2D *hist) { fJESCorrectionHist = hist; }
       void SetNoMixedEventJESCorrection(Bool_t b) { fNoMixedEventJESCorrection = b; }
-
       Bool_t RetrieveAndInitializeJESCorrectionHist(TString filename, TString histName, Double_t trackBias = AliAnalysisTaskEmcalJetHdEdxCorrelations::kDisableBias, Double_t clusterBias = AliAnalysisTaskEmcalJetHdEdxCorrelations::kDisableBias);
 
+      void CreateHistograms();
+      void CreateSparses();
+      void CreateEventPool();
+      Bool_t MixEvents(AliJetContainer *jets, std::vector<unsigned int> rejectedTrackIndices, Int_t current_event_multiplicity, Double_t zVertex, UInt_t eventTrigger, Double_t flattened_EP_angle);
       virtual void UserCreateOutputObjects();
+      Double_t GetFlattenedEPAngle(Double_t uncorrectedAngle);
 
       // AddTask
       static AliAnalysisTaskEmcalJetHdEdxCorrelations *AddTaskEmcalJetHdEdxCorrelations(
@@ -137,7 +162,8 @@ namespace PWGJE
           const Bool_t JESCorrection = kFALSE,
           const char *JESCorrectionFilename = "alien:///alice/cern.ch/user/r/rehlersi/JESCorrection.root",
           const char *JESCorrectionHistName = "JESCorrection",
-          const char *suffix = "biased");
+          const char *epCorrectionsFilename = "alien:///alice/cern.ch/user/p/psteffan/epCorrections.root",
+           const char *suffix = "biased");
 
       bool ConfigureForStandardAnalysis(std::string trackName = "usedefault",
                                         std::string clusName = "usedefault",
@@ -244,6 +270,7 @@ namespace PWGJE
       Double_t fMinSharedMomentumFraction;    ///< Minimum shared momentum with matched jet
       bool fRequireMatchedPartLevelJet;       ///< True if matched jets are required to be matched to a particle level jet
       Double_t fMaxMatchedJetDistance;        ///< Maximum distance between two matched jets
+      TTree* fEPCorrectionTree;               ///< Tree containing the EP corrections
 
       // Histograms
       THistManager fHistManager; ///<  Histogram manager
@@ -263,7 +290,7 @@ namespace PWGJE
       AliAnalysisTaskEmcalJetHdEdxCorrelations(const AliAnalysisTaskEmcalJetHdEdxCorrelations &);            // not implemented
       AliAnalysisTaskEmcalJetHdEdxCorrelations &operator=(const AliAnalysisTaskEmcalJetHdEdxCorrelations &); // not implemented
 
-      ClassDef(AliAnalysisTaskEmcalJetHdEdxCorrelations, 20);
+      ClassDef(AliAnalysisTaskEmcalJetHdEdxCorrelations, 23);
     };
 
   } /* namespace EMCALJetTasks */

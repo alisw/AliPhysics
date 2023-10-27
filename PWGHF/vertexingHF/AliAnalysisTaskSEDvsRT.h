@@ -4,7 +4,7 @@
 /* Copyright(c) 1998-2008, ALICE Experiment at CERN, All rights reserved. *
  * See cxx source for full Copyright notice                               */
 
-/* $Id$ */ 
+/* $Id$ */
 
 //*************************************************************************
 /// \class Class AliAnalysisTaskSEDvsRT
@@ -42,7 +42,7 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    Double_t GetLowerMassLimit() const {return fLowmasslimit;}
    void SetNMassBins(Int_t nbins) {fNMassBins = nbins;}
    Int_t GetNMassBins() const {return fNMassBins;}
-   
+
    void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
    void SetReadMC(Bool_t readMC=kTRUE) {fReadMC = readMC;}
    void SetMCOption(Int_t option=0)    {fMCOption = option;}
@@ -50,13 +50,14 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    void SetUseBit(Bool_t option=kTRUE) {fUseBit = option;}
    void SetIsPPb(Bool_t option=kTRUE)  {fisPPbData = option;}
    void SetUseNsparse(Bool_t option=kTRUE) {fUseNsparse = option;}
-   
+
    void SetEtaCut(Double_t etacut)        {fEtaCut = etacut;}
    void SetPtLeadMin(Double_t pt)         {fLeadMin = pt;}
    void SetAveMultiInTrans(Double_t mult) {fAveMultiInTrans = mult;}
-   
+   void SetPIDsyst(Bool_t option=kFALSE)  {fPIDsyst = option;}
+
    void SetUseHybridTracks(Bool_t useHybrid) {fUseHybridTracks = useHybrid;}
-   
+
    /// Implementation of interface methods
    virtual void UserCreateOutputObjects();
    virtual void Init();
@@ -65,14 +66,14 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    virtual void Terminate(Option_t *option);
 
  private:
- 
+
    AliAnalysisTaskSEDvsRT(const AliAnalysisTaskSEDvsRT &source);
    AliAnalysisTaskSEDvsRT& operator=(const AliAnalysisTaskSEDvsRT& source);
 
    virtual Double_t CalculateRTVal(AliAODEvent* esdEvent);
    virtual ULong64_t GetEventIdAsLong(AliVHeader* header);
    virtual TObjArray* FindLeading(TObjArray* array);
-   virtual void QSortTracks(TObjArray &a, Int_t first, Int_t last); 
+   virtual void QSortTracks(TObjArray &a, Int_t first, Int_t last);
    virtual TObjArray* SortRegions(const AliVParticle* leading, TObjArray *array);
    virtual TObjArray* GetMinMaxRegion(TList *transv1, TList *transv2);
    virtual void FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t fPhiLeading, Double_t rtval,Double_t weight);
@@ -80,15 +81,15 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    TList *fListCuts;       ///list of cuts
    TList *fOutputCounters; //!<! list to send on output slot 3
    TList *fListQAhists;    //!<! list of QA plots on output slot 4
-   
-   
+
+
    Double_t fUpmasslimit;  /// upper inv. mass limit for histos
    Double_t fLowmasslimit; /// lower inv. mass limit for histos
    Int_t fNMassBins;       /// nbins for invariant mass
-   
+
    AliRDHFCuts *fRDCutsAnalysis; /// cuts for analysis
-   
-   
+
+
    TH1F *fHistNEvents;     //!<! hist. for number of events
    TH1F *fGlobalRT;        //!<! hist for RT distribution without D-meson selection
    TH1F *fHistPtLead;      //!<! hist for pT distribution of leading track
@@ -107,42 +108,41 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    TH1F *fPhiDistributionComplementaryTracks; //!<! hist for Phi distribution of selected complementary tracks
    TH1F *fPhiDistributionHybridTracks; //!<! hist for Phi distribution of selected hybrid tracks
    TH2F *fPhiEtaDistributionHybridTracks; //!<! hist for PhiEta distribution of selected hybrid tracks
-   
+
    AliNormalizationCounter *fCounter;  //!<! Counter for normalisation
    Bool_t fReadMC;         /// flag for reading MC
    Int_t  fMCOption;       /// 0 = keep all cand, 1 = keep only signal, 2 = keep only bkg
    Bool_t fUseBit;         /// flag to use bitmask
    Int_t fAODProtection;   /// flag to activate protection against AOD-dAOD mismatch
    /// -1: no protection, 0: check nEvents only, 1: check nEvents + TProcessID names
-   
-   
+
+
    Int_t fPdgSpecies; /// pdg code of analysed particle
    Bool_t fLctoV0;    /// flag for Lc->pK0 analysis
    Bool_t fisPPbData; /// flag for pPb running
 
-  
+
    Double_t fEtaCut;  /// cut on eta for RT track counting
    Double_t fLeadMin; /// minimum pt for leading
-   
-   Double_t fAveMultiInTrans; /// average multiplicity in transverse region   
+
+   Double_t fAveMultiInTrans; /// average multiplicity in transverse region
 
    Double_t fPhiLeading;      ///  phi of leading particle
    TH3D *fPtvsMassvsRTToward; //!<! output hist for mass vs RT (for candidates toward)
    TH3D *fPtvsMassvsRTAway;   //!<! output hist for mass vs RT (for candidates away)
    TH3D *fPtvsMassvsRTTrans;  //!<! output hist for mass vs RT (for transverse candidates)
-   TH3D *fPtvsMassvsRTTowardMC; //!<! output hist for mass vs RT (for MC candidates toward)
-   TH3D *fPtvsMassvsRTAwayMC;   //!<! output hist for mass vs RT (for MC candidates away)
-   TH3D *fPtvsMassvsRTTransMC;  //!<! output hist for mass vs RT (for MC transverse candidates)
+   TH3D *fPtvsMassvsRTMC; //!<! output hist for mass vs RT (for MC candidates toward)
    AliAnalysisFilter* fTrackFilter[18]; //! track filter
    AliAnalysisFilter* fTrackFilterGlobal; //! filter to select global tracks
    AliAnalysisFilter* fTrackFilterComplementary; //! filter to select complementary tracks
+   Bool_t fPIDsyst; ///flag to turn on noPID analysis
    Bool_t fUseHybridTracks; /// flag to chose the tracks to use for RT calculation
-   
+
    Bool_t fUseNsparse;        /// switch to give nsparse in output
    THnSparse *fOutNsparse;    //!<! output THnSparse for RT analysis
-   
+
    /// \cond CLASSIMP
-   ClassDef(AliAnalysisTaskSEDvsRT,6); /// charmed hadrons vs. RT task
+   ClassDef(AliAnalysisTaskSEDvsRT,8); /// charmed hadrons vs. RT task
    /// \endcond
 };
 

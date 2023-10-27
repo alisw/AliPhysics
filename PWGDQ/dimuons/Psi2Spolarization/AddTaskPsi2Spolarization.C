@@ -18,8 +18,11 @@ AliAnalysisTaskPsi2Spolarization* AddTaskPsi2Spolarization(TString name = "name"
     // now we create an instance of your task
     AliAnalysisTaskPsi2Spolarization* task = new AliAnalysisTaskPsi2Spolarization(name.Data());   
     if(!task) return 0x0;
-   task->SelectCollisionCandidates(AliVEvent::kMuonUnlikeLowPt7);
-//   task->SelectCollisionCandidates(AliVEvent::kINT7);
+  // task->SelectCollisionCandidates(AliVEvent::kMuonUnlikeLowPt7);
+ 
+    task->SelectCollisionCandidates(AliVEvent::kMuonUnlikeLowPt7 | AliVEvent::kMuonLikeLowPt7 | AliVEvent::kMuonSingleLowPt7 |   AliVEvent::kMuonSingleHighPt7  | AliVEvent::kINT7inMUON  | AliVEvent::kINT7);
+    
+    
     // add your task to the manager
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
@@ -29,7 +32,7 @@ AliAnalysisTaskPsi2Spolarization* AddTaskPsi2Spolarization(TString name = "name"
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
 
-       //  gROOT->ProcessLine(".L $ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
+    //     gROOT->ProcessLine(".L $ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
     // Bool_t isMC=kFALSE;
     // Bool_t enablePileupCuts=kTRUE;
     // AliPhysicsSelectionTask*physSelTask= new AliPhysicsSelectionTask();

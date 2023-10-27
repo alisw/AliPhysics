@@ -62,7 +62,7 @@ public:
         fIsS0Spline=IsS0Spline;
         fS0SplName=S0SplName;
         fnSplmult=nSplmult;
-        Printf("Printing content of Spline Lists for Spherocity percentages\n");
+        AliInfo("Printing content of Spline Lists for Spherocity percentages\n");
         for(int a=0; a <= fnSplmult+1; a++){
           fS0SplList[a] = S0SplList[a];
           fsplMult[a] = splMult[a];
@@ -375,6 +375,7 @@ private:
     TH3F *fHistSpheroAxisDeltaGenPhi;  //!<! hist. of Invariant mass, pt vs. deltaPhi of generated spherocity axis w.r.t. D-meson direction
 
     THnSparseD *fSparseEvtShape;//! THnSparse histograms for Spherocity
+    THnSparseD *fTotalSparseEvtShape[20]; //! THnSparse histograms vs spherocity for all particles
     THnSparseD *fSparseEvtShapewithNoPid;//! THnSparse histograms for D0 vs. Spherocity
     THnSparseD *fSparseEvtShapePrompt;//! THnSparse histograms for Prompt D0 vs. Spherocity
     THnSparseD *fSparseEvtShapeFeeddown;//! THnSparse histograms for feeddown D0 vs. Spherocity

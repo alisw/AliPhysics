@@ -421,13 +421,14 @@ class AliAnalysisTaskSED0MassTMVA : public AliAnalysisTaskSE
   Bool_t    fRejectOutOfBunchPileUp;
   TNtuple *fNtupleD0C;//!<!
   TNtuple *fNtupleD0B;//!<!
+  TNtuple *fNtuplebkg;//!<!
   TNtuple *fNtupleD0Data;//!<!
   TNtuple *fNtupleRefl;//!<!
 
 
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskSED0MassTMVA,25); /// AliAnalysisTaskSE for D0->Kpi
+  ClassDef(AliAnalysisTaskSED0MassTMVA,26); /// AliAnalysisTaskSE for D0->Kpi
   /// \endcond
 };
 

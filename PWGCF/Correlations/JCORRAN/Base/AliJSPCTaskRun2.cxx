@@ -53,6 +53,7 @@ AliJSPCTaskRun2::AliJSPCTaskRun2(const char *name):
 	fJCatalystTaskName("JCatalystTask"),
 	fIsMC(kFALSE),
 	fSPC(NULL),
+	fDebug(0),
 	bJSPCRun2SaveAllQA(kTRUE),
 	fAliSPCRun2cent_0(0.), fAliSPCRun2cent_1(0.), fAliSPCRun2cent_2(0.), fAliSPCRun2cent_3(0.), fAliSPCRun2cent_4(0.), fAliSPCRun2cent_5(0.), fAliSPCRun2cent_6(0.), fAliSPCRun2cent_7(0.), fAliSPCRun2cent_8(0.), fAliSPCRun2cent_9(0.), 
   fAliSPCRun2cent_10(0.), fAliSPCRun2cent_11(0.), fAliSPCRun2cent_12(0.), fAliSPCRun2cent_13(0.), fAliSPCRun2cent_14(0.), fAliSPCRun2cent_15(0.), fAliSPCRun2cent_16(0.),
@@ -123,7 +124,7 @@ void AliJSPCTaskRun2::UserCreateOutputObjects()
 
   fSPC->SetMinNuPar(fAliSPCRun2MinNumberPart);
 
-  //fSPC->SetUseWeights(bAliSPCRun2UseWeightsNUE, bAliSPCRun2UseWeightsNUA);
+  fSPC->SetUseWeights(bAliSPCRun2UseWeightsNUE, bAliSPCRun2UseWeightsNUA);	// LOKI: Decommented
 
   for (int i=0; i<12; i++) {
     fSPC->SetCorrSet(i, fAliSPCRun2HarmosArray[i]);

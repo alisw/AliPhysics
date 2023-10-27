@@ -25,6 +25,7 @@
 
 #include "AliAODpidUtil.h"
 #include "AliAnalysisUtils.h"
+#include "AliEventCuts.h"
 #include "AliGenHijingEventHeader.h"
 
 #include "AliExternalTrackParam.h"
@@ -82,6 +83,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fCascadePileUpRemoval(kFALSE),
   fV0PileUpRemoval(kFALSE),
   fTrackPileUpRemoval(kFALSE),
+  fRejectTPCPileupWithITSTPCnCluCorr(kFALSE),
   fMVPlp(kFALSE),
   fOutOfBunchPlp(kFALSE),
   fMinVtxContr(0),
@@ -215,6 +217,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fCascadePileUpRemoval(aReader.fCascadePileUpRemoval),
   fV0PileUpRemoval(aReader.fV0PileUpRemoval),
   fTrackPileUpRemoval(aReader.fTrackPileUpRemoval),
+  fRejectTPCPileupWithITSTPCnCluCorr(aReader.fRejectTPCPileupWithITSTPCnCluCorr),
   fMVPlp(aReader.fMVPlp),
   fOutOfBunchPlp(aReader.fOutOfBunchPlp),
   fMinVtxContr(aReader.fMinVtxContr),
@@ -337,6 +340,7 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fCascadePileUpRemoval = aReader.fCascadePileUpRemoval;
   fV0PileUpRemoval = aReader.fV0PileUpRemoval;
   fTrackPileUpRemoval = aReader.fTrackPileUpRemoval;
+  fRejectTPCPileupWithITSTPCnCluCorr = aReader.fRejectTPCPileupWithITSTPCnCluCorr;
   fMVPlp = aReader.fMVPlp;
   fOutOfBunchPlp = aReader.fOutOfBunchPlp;
   fMinVtxContr = aReader.fMinVtxContr;
@@ -539,7 +543,18 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 	}		
     }
   //**************************************
-  
+  //AliEventCuts
+    if (fRejectTPCPileupWithITSTPCnCluCorr){
+       fEventCuts = new AliEventCuts();
+       if(fRejectTPCPileupWithITSTPCnCluCorr) {
+         fEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(fRejectTPCPileupWithITSTPCnCluCorr);
+       }
+       if (!fEventCuts->AcceptEvent(fEvent)){
+         delete fEventCuts;
+         return nullptr;
+       }
+    }
+
   // AliAnalysisUtils
   if (fisPileUp || fpA2013) {
     fAnaUtils = new AliAnalysisUtils();
@@ -2678,6 +2693,11 @@ void AliFemtoEventReaderAOD::SetV0PileUpRemoval(Bool_t v0PileUpRemoval)
 void AliFemtoEventReaderAOD::SetTrackPileUpRemoval(Bool_t trackPileUpRemoval)
 {
   fTrackPileUpRemoval = trackPileUpRemoval;
+}
+
+void AliFemtoEventReaderAOD::SetRejectTPCPileupWithITSTPCnCluCorr(Bool_t RejectTPCPileupWithITSTPCnCluCorr)
+{
+  fRejectTPCPileupWithITSTPCnCluCorr = RejectTPCPileupWithITSTPCnCluCorr;
 }
 
 void AliFemtoEventReaderAOD::SetDCAglobalTrack(Int_t dcagt)

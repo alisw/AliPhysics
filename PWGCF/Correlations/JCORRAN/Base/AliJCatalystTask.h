@@ -37,6 +37,8 @@ using namespace std;
 
 class TH1D;
 class TH2D;
+class TH2F;
+class TH3D;
 class TList;
 class TTree;
 class AliMCEvent;
@@ -102,6 +104,8 @@ public:
 		cout << "setting z vertex cut = " << fzvtxCut << endl;}
   void SetRemoveBadArea( Bool_t shallweremove ){ fremovebadarea = shallweremove;
 		cout << "setting RemoveBadArea = " << fremovebadarea << endl;}
+  void SetRemoveBadArea18q( Bool_t shallweremove ){ fremovebadarea18q = shallweremove;
+		cout << "setting RemoveBadArea18q = " << fremovebadarea18q << endl;}
 	inline double GetZVertexCut() const{return fzvtxCut;}
 	void SetParticleCharge( int charge ){ fPcharge = charge;
 		cout << "setting particle charge = " << charge << endl;}
@@ -134,6 +138,7 @@ public:
 	virtual void FillControlHistograms(AliAODTrack *thisTrack, Int_t whichHisto, Float_t cent, Double_t *v);
   void SetSaveAllQA(Bool_t SaveQA){ bSaveAllQA = SaveQA; }
   void SetSaveHMOhist (Bool_t SaveHMO) {bSaveHMOhist = SaveHMO;}
+  void SetSaveQCNUA(Bool_t SaveQCNUA){ bSaveQCNUA = SaveQCNUA; }
   Int_t GetCentralityBin(Float_t cent);
   void SetCentrality(Float_t cen0, Float_t cen1, Float_t cen2, Float_t cen3, Float_t cen4, Float_t cen5, Float_t cen6, Float_t cen7, Float_t cen8, Float_t cen9, Float_t cen10, Float_t cen11, Float_t cen12, Float_t cen13, Float_t cen14, Float_t cen15, Float_t cen16 ) {fcent_0 = cen0; fcent_1 = cen1; fcent_2 = cen2; fcent_3 = cen3; fcent_4 = cen4; fcent_5 = cen5; fcent_6 = cen6; fcent_7 = cen7; fcent_8 = cen8; fcent_9 = cen9; fcent_10 = cen10; fcent_11 = cen11; fcent_12 = cen12; fcent_13 = cen13; fcent_14 = cen14; fcent_15 = cen15; fcent_16 = cen16;}
   void SetInitializeCentralityArray(); //Set Centrality array inside the task. Must be called in addTask.
@@ -195,13 +200,14 @@ private:
 	double fPt_max; //
 	double fzvtxCut; //
 	Bool_t fremovebadarea; //
+	Bool_t fremovebadarea18q; //
 
 	UInt_t flags; //
 	Int_t fJCatalystEntry; //
 	bool fIsGoodEvent; //
 	AliJCorrectionMapTask *fJCorMapTask; // Correction Map task
 	TString fJCorMapTaskName; //
-	TH1 *pPhiWeights;
+	TH3D *pPhiWeights;
 	TGraphErrors *grEffCor; // for one cent
 	TAxis *fCentBinEff; // for different cent bin for MC eff
 	UInt_t phiMapIndex; //
@@ -212,6 +218,7 @@ private:
 	TList *fMainList;		// Mother list containing all possible output of the catalyst task.
 	Bool_t bSaveAllQA;		// if kTRUE: All Standard QA Histograms are saved (default kFALSE).
 	Bool_t bSaveHMOhist;	// if kTRUE: Save the TH2D for the HMO in LHC10h (bSaveAllQA must be kTRUE as well).
+	Bool_t bSaveQCNUA; 		// if kTRUE: 
 	Int_t fCentralityBins;		// Set to 16, for at maximum 16 bins in case of centrality 0 to 80 in 5% steps. Less bins and different steps may be used.
 	Float_t fcent_0, fcent_1, fcent_2, fcent_3, fcent_4, fcent_5, fcent_6, fcent_7, fcent_8, fcent_9, fcent_10, fcent_11, fcent_12, fcent_13, fcent_14, fcent_15, fcent_16;
   		// fcent_i holds the edge of a centrality bin.
@@ -226,7 +233,7 @@ private:
 
 // Data members for the use of tighter cuts in Run2.
 	bool fUseTightCuts;		// if kTRUE: apply tighter cuts on DCAxy and goldenChi2
-	bool bUseDCAbaseCut;
+	bool bUseDCAbaseCut;	// 
 	bool fAddESDpileupCuts;	// if true: apply a cut on the correlations between ESD and TPConly tracks.
 	double fESDpileup_slope;	// Slope of the cut M_ESD >= 15000 + 3.38*M_TPC
 	double fESDpileup_inter;	// Intercept of the cut.
@@ -234,7 +241,9 @@ private:
 	bool fAddTPCpileupCuts;	// if true: apply a cut on the correlations between ITS and TPC clusters.
 	bool fSaveTPCpileupQA;	// if true: save the TH2D for the QA.
 
-  TList *fControlHistogramsList[16];		//! List to hold all control histograms for a specific centrality bin. Up to 16 centraliy bins possible. 
+  TList *fControlHistogramsList[16];		//! List to hold all control histograms for a specific centrality bin. Up to 16 centraliy bins possible.
+  TList *fControl2DNUAList[16]; 	//!
+  TList *fControlProfileList;		//!
   TH1F *fPTHistogram[16][3];		//! 0: P_t Before Track Selection, 1: P_t After Track Selection, 2: After correction.
   TH1F *fPhiHistogram[16][3];		//! 0: Phi Before Track Selection, 1: Phi After Track Selection, 2: after correction.
   TH1F *fEtaHistogram[16][2];		//! 0: Eta Before Track Selection, 1: Eta After Track Selection.
@@ -256,8 +265,14 @@ private:
   TH2D *fESDpileupHistogram[16][2];		//! 0: Correlations between ESD and TPC tracks before, 1: after cut.
   TH2I *fTPCpileupHistogram[16][2];		//! 0: Correlations between ITS and TPC clusters before, 1: after cut.
 
-  TH1F *fHistoCentWeight[138];		// Histograms to save the centrality correction for 15o per run.
+  TH1F *fHistoCentWeight[138];		//! Histograms to save the centrality correction for 15o per run.
 
-  ClassDef(AliJCatalystTask, 8);
+  TH2F *f2DEtaPhiHistogram[16][2];  //! 0: Eta-Phi Before correction, 1: Eta-Phi after correction
+  TProfile *fProfileCosVSCent[7];		//! 0: n=2, 1: n=3, 2: n=4, 3:n=5, 4:n=6, 5:n=7, 6:n=8
+  TProfile *fProfileSinVSCent[7];		//! 0: n=2, 1: n=3, 2: n=4, 3:n=5, 4:n=6, 5:n=7, 6:n=8
+
+  TH2F *fPtDCAxyHisto[16][2];		//! pT-DCAxy distribution before (0) and after (1) track cut.
+
+  ClassDef(AliJCatalystTask, 10);
 };
 #endif // AliJCatalystTask_H

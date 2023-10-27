@@ -78,7 +78,7 @@ AliAnalysisTaskEfficiencyFB128();
   TList *fHistoList; // histo list
   //TClonesArray *arrayMC;
   TH1F *fHistEv[4];
-
+  TH1F *fHistP[4];
   TH1F *fHistQA[11];
   TH2F *fHistQA2D[3];
   TH2F *fHistQAPID[5][PARTTYPES][2];
@@ -88,6 +88,7 @@ AliAnalysisTaskEfficiencyFB128();
   TH2F *fOriginLambdas[5][2];
   TH2F *fHistQAXi[2];
   TH2F *fOriginXi[5][2];
+  
 
   //TObjArray *recoParticleArray;
   TH2F *fGeneratedMCPrimaries[MULTBINS*PARTTYPES][2];

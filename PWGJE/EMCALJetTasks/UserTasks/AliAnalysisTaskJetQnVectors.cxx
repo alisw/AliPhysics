@@ -339,7 +339,6 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
         fHistNEvents->Fill(3);
         return;
     }
-    fHistCentrality->Fill(cent);
 
     const AliAODVertex *vertex = fAOD->GetPrimaryVertex();
     if(!vertex || TMath::Abs(vertex->GetZ())>10. || vertex->GetNContributors()<=0) {
@@ -353,6 +352,8 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
            fHistNEvents->Fill(5);
             return;}
     }
+
+    fHistCentrality->Fill(cent);
 
     //choose calibration file to use (run numbers specific to 2018 pass3)
     AliJEQnVectorHandler *fJEQnVecHandler;

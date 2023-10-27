@@ -770,7 +770,13 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     ana->SetMaxEnergy(1000);
     ana->SetMinDistanceToBadChannel(2, 4, 5); // could have been already applied at reader level
     if ( kAnaCaloTrackCorr.Contains("DistToBadOff") )
+    {
       ana->SetMinDistanceToBadChannel(0, 2, 4);
+
+      // Bad map open in reader, closed in analysis
+      if ( kAnaCutsString.Contains("DistToBadOn") )
+        ana->SetMinDistanceToBadChannel(2, 4, 6);
+    }
 
     ana->SetTimeCut(-1e10,1e10); // open cut
   }
@@ -782,8 +788,21 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     ana->SetTimeCut(-1e10,1e10); // open cut, usual time window of [425-825] ns if time recalibration is off
                                  // restrict to less than 100 ns when time calibration is on
     ana->SetMinDistanceToBadChannel(2, 4, 6); // could have been already applied at reader level
+
     if ( kAnaCaloTrackCorr.Contains("DistToBadOff") )
+    {
       ana->SetMinDistanceToBadChannel(0, 2, 4);
+
+      // Bad map open in reader, closed in analysis
+      if ( kAnaCaloTrackCorr.Contains("DistToBadOff") )
+      {
+        ana->SetMinDistanceToBadChannel(0, 2, 4);
+
+        // Bad map open in reader, closed in analysis
+        if ( kAnaCutsString.Contains("DistToBadOn") )
+          ana->SetMinDistanceToBadChannel(2, 4, 6);
+      }
+    }
 
     if ( kAnaCutsString.Contains("ExoCut") )
     {
@@ -835,7 +854,9 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   if ( tm > 1 ) caloPID->SwitchOnEMCTrackPtDepResMatching();
   
   // Branch AOD settings
-  ana->SetOutputAODName(Form("PhotonTrigger_%s",kAnaCaloTrackCorr.Data()));
+  TString refName = Form("PhotonTrigger_%s",kAnaCaloTrackCorr.Data());
+  printf("RefName photon %s\n",refName.Data());
+  ana->SetOutputAODName(refName);
   ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   
   //Set Histograms name tag, bins and ranges
@@ -960,7 +981,7 @@ AliAnaElectron* ConfigureElectronAnalysis(TString col,           Bool_t simulati
 /// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
 ///
 AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
-                                      Bool_t useSSIso,       Bool_t useAsy,
+                                      Bool_t  useSSIso,      Float_t isoCone,     Bool_t useAsy,
                                       TString col,           Bool_t simulation,
                                       TString calorimeter,   Int_t  year,  Int_t tm,
                                       Bool_t  printSettings, Int_t debug, 
@@ -1018,32 +1039,36 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
   {
     ana->SetInputAODName(Form("PhotonTrigger_%s",kAnaCaloTrackCorr.Data()));
     
-    ana->SetM02CutForInvMass(0.1,0.35); // Loose SS cut
-    
+    //ana->SetM02CutForInvMass(0.1,0.35); // Loose SS cut
+    ana->SetM02CutForInvMass(0.1,0.7); // Looser SS cut
+
     ana->SwitchOffSelectPairInIsolationCone();
-    ana->SetR(0.4);
-    ana->SetIsolationCandidateMinPt(5);
     
     if(useSSIso)
     {
+      ana->SetR(isoCone);
+      ana->SetIsolationCandidateMinPt(5);
+
       ana->SwitchOnSelectIsolatedDecay();
+      ana->SwitchOnSelectPairInIsolationCone();
+
       //ana->AddToHistogramsName(Form("Ana%s%sEbEIsoDecay_TM%d_",particle.Data(),opt.Data(),tm));
-      ana->AddToHistogramsName(Form("Ana%s%sEbEIsoDecay_",particle.Data(),opt.Data()));
-      ana->SetOutputAODName(Form("%s%sIsoDecayTrigger_%s",particle.Data(), opt.Data(), kAnaCaloTrackCorr.Data()));
+      ana->AddToHistogramsName(Form("Ana%s%sEbEIsoDecay_R%1.2f_",particle.Data(), opt.Data(), isoCone));
+      ana->SetOutputAODName(Form("%s%sIsoDecayTrigger_%s_R%1.2f",particle.Data(), opt.Data(), kAnaCaloTrackCorr.Data(), isoCone));
     }
     
-    if ( calorimeter.Contains("CAL") && !simulation ) ana->SetPairTimeCut(100);
+    //if ( calorimeter.Contains("CAL") && !simulation ) ana->SetPairTimeCut(100);
     
     AliNeutralMesonSelection *nms = ana->GetNeutralMesonSelection();
     nms->SetParticle(particle);
     
     //****
     nms->SetInvMassCutMaxParameters(0,0,0); // Overrule the setting in SetParticle for Pi0 option
-                                            //****
+    //****
     
     // Tighten a bit mass cut with respect to default window
-    if(particle=="Pi0") nms->SetInvMassCutRange(0.110,0.160);
-    if(particle=="Eta") nms->SetInvMassCutRange(0.520,0.580);
+    if(particle=="Pi0") nms->SetInvMassCutRange(0.110,0.165);
+    if(particle=="Eta") nms->SetInvMassCutRange(0.510,0.610);
     
     //if(!particle.Contains("SideBand")) nms->SwitchOnAngleSelection();
     //else nms->SwitchOnAngleSelection();
@@ -1051,10 +1076,10 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     nms->SwitchOffAngleSelection();
     
     if(particle.Contains("Pi0SideBand")) // For pi0, do not consider left band
-      nms->SetSideBandCutRanges(-1,0,0.190,0.240);
+      nms->SetSideBandCutRanges(-1,0,0.20,0.30);
     
     if(particle.Contains("EtaSideBand")) // For pi0, do not consider left band
-      nms->SetSideBandCutRanges(0.410,0.470,0.620,0.680);
+      nms->SetSideBandCutRanges(0.400,0.470,0.630,0.700);
     
     nms->KeepNeutralMesonSelectionHistos(kTRUE);
     //nms->SetAngleMaxParam(2,0.2);
@@ -1410,7 +1435,7 @@ void ConfigureIsolationCut(AliIsolationCut * ic,
     ic->SwitchOffConeExcessCorrection();
   
   ic->SetConeSizeBandGap(0.0);
-  if ( thresType >= AliIsolationCut::kSumBkgSubIC )
+  if ( thresType == AliIsolationCut::kSumBkgSubEtaBandIC ||  thresType == AliIsolationCut::kSumBkgSubPhiBandIC )
   {
     // do not count UE particles near the cone limit > R+x
 
@@ -1522,7 +1547,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
 
     if(kAnaCutsString.Contains("Decay"))
     {
-      ana->SwitchOffDecayTaggedHistoFill() ;
+      ana->SwitchOnDecayTaggedHistoFill() ;
       ana->SetNDecayBits(5);
     }
   }
@@ -1643,6 +1668,12 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
     refName += Form("_R%1.2f",ic->GetConeSize());
   if ( kAnaCutsString.Contains("MultiIsoR") &&  kAnaCutsString.Contains("AndGap"))
     refName += Form("_Rmin%1.2f_UEGap%1.2f",ic->GetMinDistToTrigger(),ic->GetConeSizeBandGap());
+
+  if ( histoString.Contains("_UEAreas") )
+        refName += Form("_UEAreas_Meth%d",thresType);
+  if ( bTrackCutUE )
+    refName +="_UEPtCut";
+  //printf("RefName: %s\n",refName.Data());
   ana->SetAODObjArrayName(refName);
   //
 
@@ -2359,8 +2390,26 @@ void ConfigureCaloTrackCorrAnalysis
   if ( analysisString.Contains("DistToBadOff") && !kAnaCaloTrackCorr.Contains("DistToBadOff") )
     kAnaCaloTrackCorr+= "_DistToBadOff";
 
-  if ( analysisString.Contains("ExoCut") )
-    kAnaCaloTrackCorr+= "_ExoCut";
+  if ( analysisString.Contains("DistToBadOn") && kAnaCaloTrackCorr.Contains("DistToBadOff") )
+    kAnaCaloTrackCorr+= "_DistToBadOn";
+
+  if ( analysisString.Contains("ExoCut0.92") )
+    kAnaCaloTrackCorr+= "_ExoCut0.92";
+  if ( analysisString.Contains("ExoCut0.90") )
+      kAnaCaloTrackCorr+= "_ExoCut0.90";
+  if ( analysisString.Contains("ExoCut0.95") )
+    kAnaCaloTrackCorr+= "_ExoCut0.95";
+  if ( analysisString.Contains("ExoCut0.96") )
+    kAnaCaloTrackCorr+= "_ExoCut0.96";
+  if ( analysisString.Contains("ExoCut0.97") )
+    kAnaCaloTrackCorr+= "_ExoCut0.97";
+  if ( analysisString.Contains("ExoCut0.94") )
+    kAnaCaloTrackCorr+= "_ExoCut0.94";
+  if ( analysisString.Contains("ExoCut0.93") )
+    kAnaCaloTrackCorr+= "_ExoCut0.93";
+
+  if ( analysisString.Contains("UESubMethods") )
+    kAnaCaloTrackCorr+= "_UESubMethods";
 
   if ( analysisString.Contains("NLMCut3" ) ) kAnaCaloTrackCorr+= "_NLMCut3";
   if ( analysisString.Contains("NLMCut4" ) ) kAnaCaloTrackCorr+= "_NLMCut4";
@@ -2422,22 +2471,22 @@ void ConfigureCaloTrackCorrAnalysis
     {
       // Pi0 event by event selection, invariant mass and photon tagging from decay
       anaList->AddAt(ConfigurePi0EbEAnalysis
-                     ("Pi0"        , AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
+                     ("Pi0"        , AliAnaPi0EbE::kIMCalo,kFALSE,isoCone,kFALSE,
                       col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
       
       // Eta event by event selection, invariant mass and photon tagging from decay
       anaList->AddAt(ConfigurePi0EbEAnalysis
-                     ("Eta"        , AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
+                     ("Eta"        , AliAnaPi0EbE::kIMCalo,kFALSE,isoCone,kFALSE,
                       col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
       
       // Pi0 out of peak event by event selection, and photon tagging from decay
       anaList->AddAt(ConfigurePi0EbEAnalysis
-                     ("Pi0SideBand", AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
+                     ("Pi0SideBand", AliAnaPi0EbE::kIMCalo,kFALSE,isoCone,kFALSE,
                       col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
       
       // Eta out of peak event by event selection, and photon tagging from decay
       anaList->AddAt(ConfigurePi0EbEAnalysis
-                     ("EtaSideBand", AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
+                     ("EtaSideBand", AliAnaPi0EbE::kIMCalo,kFALSE,isoCone,kFALSE,
                       col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
     }
     
@@ -2506,7 +2555,7 @@ void ConfigureCaloTrackCorrAnalysis
                         isoCone,isoConeMin,-1,isoPtTh,0,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
 
-        if ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+        if ( analysisString.Contains("UESubMethodsAndJetMedian") )
         {
           anaList->AddAt(ConfigureIsolationAnalysis
                          ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubJetRhoIC,
@@ -2519,7 +2568,7 @@ void ConfigureCaloTrackCorrAnalysis
         //printf("**** MultiIsoRUESub ****\n");
         for(Int_t isize = 0; isize < nsizes; isize++)
         {
-          if ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+          if ( analysisString.Contains("UESubMethodsAndJetMedian") )
           {
             anaList->AddAt(ConfigureIsolationAnalysis
                            ("Photon",leading,AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubJetRhoIC,
@@ -2609,7 +2658,31 @@ void ConfigureCaloTrackCorrAnalysis
           anaList->AddAt(ConfigureIsolationAnalysis
                          ("Photon",leading,isoContent,isoMethod,
                           conesize[isize],isoConeMin,-1,isoPtTh,0,
-                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          if ( analysisString.Contains("DecayPi0") )
+          {
+            printf("Activate Iso of Pi0EbE icone %d\n",isize);
+            // Pi0 event by event selection, invariant mass and photon tagging from decay
+            anaList->AddAt(ConfigurePi0EbEAnalysis
+                           ("Pi0"        , AliAnaPi0EbE::kIMCalo,kTRUE,conesize[isize],kFALSE,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+            // Eta event by event selection, invariant mass and photon tagging from decay
+            anaList->AddAt(ConfigurePi0EbEAnalysis
+                           ("Eta"        , AliAnaPi0EbE::kIMCalo,kTRUE,conesize[isize],kFALSE,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+            // Pi0 out of peak event by event selection, and photon tagging from decay
+            anaList->AddAt(ConfigurePi0EbEAnalysis
+                           ("Pi0SideBand", AliAnaPi0EbE::kIMCalo,kTRUE,conesize[isize],kFALSE,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+            // Eta out of peak event by event selection, and photon tagging from decay
+            anaList->AddAt(ConfigurePi0EbEAnalysis
+                           ("EtaSideBand", AliAnaPi0EbE::kIMCalo,kTRUE,conesize[isize],kFALSE,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+          }
         }
       }
       else // normal case
@@ -2617,6 +2690,30 @@ void ConfigureCaloTrackCorrAnalysis
         anaList->AddAt(ConfigureIsolationAnalysis
                        ("Photon", leading, isoContent,isoMethod,isoCone,isoConeMin,-1,isoPtTh,0,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+        if ( analysisString.Contains("DecayPi0") )
+        {
+          printf("Activate Iso of Pi0EbE\n");
+          // Pi0 event by event selection, invariant mass and photon tagging from decay
+          anaList->AddAt(ConfigurePi0EbEAnalysis
+                         ("Pi0"        , AliAnaPi0EbE::kIMCalo,kTRUE,isoCone,kFALSE,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          // Eta event by event selection, invariant mass and photon tagging from decay
+          anaList->AddAt(ConfigurePi0EbEAnalysis
+                         ("Eta"        , AliAnaPi0EbE::kIMCalo,kTRUE,isoCone,kFALSE,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          // Pi0 out of peak event by event selection, and photon tagging from decay
+          anaList->AddAt(ConfigurePi0EbEAnalysis
+                         ("Pi0SideBand", AliAnaPi0EbE::kIMCalo,kTRUE,isoCone,kFALSE,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          // Eta out of peak event by event selection, and photon tagging from decay
+          anaList->AddAt(ConfigurePi0EbEAnalysis
+                         ("EtaSideBand", AliAnaPi0EbE::kIMCalo,kTRUE,isoCone,kFALSE,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+        }
       }
       
     }
@@ -2641,10 +2738,10 @@ void ConfigureCaloTrackCorrAnalysis
           if ( analysisString.Contains("MultiBkgBoth")  )
           {
             printf("*** MULTI BKG NO ISOLATION ON\n");
-  //          anaList->AddAt(ConfigureHadronCorrelationAnalysis
-  //                         ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.35, 2,
-  //                          isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-  //                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.35, 1,
+                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
                            ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.4, 2,
@@ -2702,10 +2799,10 @@ void ConfigureCaloTrackCorrAnalysis
           if ( analysisString.Contains("MultiBkg")  )
           {
             printf("*** MULTI BKG ISOLATION ON\n");
-  //          anaList->AddAt(ConfigureHadronCorrelationAnalysis
-  //                         ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.35, 2,
-  //                          isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-  //                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.35, 1.,
+                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
                            ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.4, 2,
@@ -2779,7 +2876,7 @@ void ConfigureCaloTrackCorrAnalysis
     // Pi0 event by event selection, cluster splitting
     //
     anaList->AddAt(ConfigurePi0EbEAnalysis
-                   ("Pi0", AliAnaPi0EbE::kSSCalo,kTRUE,kTRUE,
+                   ("Pi0", AliAnaPi0EbE::kSSCalo,kTRUE,isoCone,kTRUE,
                     col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
     
     // Merged pi0 isolation
@@ -2846,7 +2943,7 @@ void ConfigureCaloTrackCorrAnalysis
                        ("Random", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubIC,
                         isoCone,isoConeMin,-1,isoPtTh,0,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
-        if ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+        if ( analysisString.Contains("UESubMethodsAndJetMedian") )
         {
           anaList->AddAt(ConfigureIsolationAnalysis
                          ("Random", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubJetRhoIC,
@@ -2881,7 +2978,7 @@ void ConfigureCaloTrackCorrAnalysis
                           conesize[isize],isoConeMin,-1,isoPtTh,0,
                           col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
 
-          if ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+          if ( analysisString.Contains("UESubMethodsAndJetMedian") )
           {
             anaList->AddAt(ConfigureIsolationAnalysis
                            ("Random",leading,AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubJetRhoIC,

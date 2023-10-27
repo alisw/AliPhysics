@@ -158,6 +158,7 @@ fYearNumber(16)
     for(Int_t i=0; i<14; i++) fMultEstimatorAvg[i]=0;
     for(Int_t i=0; i<20; i++) {
         fS0SplList[i]=nullptr;
+        fTotalSparseEvtShape[i] = 0,
         fsplMult[i]=0.;
         fSparseEvtShapeSpline[i] = 0;
         fSparseEvtShapePromptSpline[i] = 0;
@@ -166,7 +167,7 @@ fYearNumber(16)
         fMCAccGenFeeddownSpline[i] = 0;
         fMCRecoPromptSpline[i] = 0;
         fMCRecoFeeddownSpline[i] = 0;
-    }    
+    }
 }
 
 //________________________________________________________________________
@@ -274,8 +275,9 @@ fphiStepSizeDeg(0.1),
     
     for(Int_t i=0; i<5; i++) fHistMassPtImpPar[i]=0;
     for(Int_t i=0; i<14; i++) fMultEstimatorAvg[i]=0;
-    for(Int_t i=0; i<20; i++){
+    for(Int_t i=0; i<20; i++) {
         fS0SplList[i]=nullptr;
+        fTotalSparseEvtShape[i] = 0,
         fsplMult[i]=0.;
         fSparseEvtShapeSpline[i] = 0;
         fSparseEvtShapePromptSpline[i] = 0;
@@ -284,7 +286,7 @@ fphiStepSizeDeg(0.1),
         fMCAccGenFeeddownSpline[i] = 0;
         fMCRecoPromptSpline[i] = 0;
         fMCRecoFeeddownSpline[i] = 0;
-    }    
+    }   
     if(fPdgMeson==413){
         fNMassBins=200;
         SetMassLimits(0.12,0.2);
@@ -332,6 +334,7 @@ AliAnalysisTaskSEDvsEventShapes::~AliAnalysisTaskSEDvsEventShapes()
     if(fIsS0Spline){
         for(int k=0; k<=fnSplmult+1;k++){
             if(fS0SplList[k]){
+                delete fTotalSparseEvtShape[k];
                 delete fS0SplList[k];
                 delete fSparseEvtShapeSpline[k];
                 delete fSparseEvtShapePromptSpline[k];
@@ -341,8 +344,10 @@ AliAnalysisTaskSEDvsEventShapes::~AliAnalysisTaskSEDvsEventShapes()
                 delete fMCRecoPromptSpline[k];
                 delete fMCRecoFeeddownSpline[k];
             }
-        } 
+        }
     }
+    else
+        delete fTotalSparseEvtShape[0];
 }
 
 //_________________________________________________________________
@@ -629,6 +634,17 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     Double_t xminSoSpheriwithMultUncorr[6]={0., fLowmasslimit,0., firstMultBin, firstMultBin, 0.};
     Double_t xmaxSoSpheriwithMultUncorr[6]={24., fUpmasslimit, 1., lastMultBin, lastMultBin, 1.};
 
+    //Total
+
+    Int_t nbinstotSo[2]={1000, nMultBins};
+    Double_t xmintotSo[2]={0., firstMultBin};
+    Double_t xmaxtotSo[2]={1., lastMultBin};
+
+    Int_t nbinstotMCSo[3]={1000, nMultBins, 1000};
+    Double_t xmintotMCSo[3]={0., firstMultBin, 0.};
+    Double_t xmaxtotMCSo[3]={1., lastMultBin, 1.};
+
+
     //Spline 
 
     Int_t nbinsSoSpl[5]={48, fNMassBins, 20, nMultBins, 100};
@@ -647,10 +663,20 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     Double_t xminSoSpheriwithMultUncorrSpl[7]={0., fLowmasslimit,0., firstMultBin, firstMultBin, 0., 0.};
     Double_t xmaxSoSpheriwithMultUncorrSpl[7]={24., fUpmasslimit, 1., lastMultBin, lastMultBin, 1., 100.};
 
+    Int_t nbinstotSoSpline[2]={nMultBins, 100};
+    Double_t xmintotSoSpline[2]={firstMultBin, 0.};
+    Double_t xmaxtotSoSpline[2]={lastMultBin, 100.};
+
+    Int_t nbinstotMCSoSpline[3]={nMultBins, 100, 100};
+    Double_t xmintotMCSoSpline[3]={firstMultBin, 0., 0.};
+    Double_t xmaxtotMCSoSpline[3]={lastMultBin, 100., 100.};
+
     
     TString histoName = "hSparseEvtShape";
+    TString histoTotalName = "hTotalSparseEvtShape";
     TString histoNameNoPid = "hSparseEvtShapewithNoPid";
     TString parNameSo = "Spherocity";
+    TString parNameSoGen = "GenSpherocity";
     TString parNameSpheri = "Sphericity";
     TString histoNamePrompt = "hSparseEvtShapePrompt";
     TString histoNameFeeddown = "hSparseEvtShapeFeeddown";
@@ -666,7 +692,11 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
                 else{
                     if(fCalculateSphericity) fSparseEvtShapeSpline[ns] = new THnSparseD(Form("%s%s%0.f-%0.f",histoName.Data(),"QuantileMult",1.,199.), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; %s; QuantSpherocity;", parNameSo.Data(), parNameSpheri.Data()), 6 , nbinsSoSpheriSpl, xminSoSpheriSpl, xmaxSoSpheriSpl);
                     else fSparseEvtShapeSpline[ns] = new THnSparseD(Form("%s%s%0.f-%0.f",histoName.Data(),"QuantileMult",1.,199.), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; QuantSpherocity;", parNameSo.Data()), 5 , nbinsSoSpl, xminSoSpl, xmaxSoSpl);
-                }    
+                }
+                if(fReadMC)
+                    fTotalSparseEvtShape[ns] = new THnSparseD(Form("%s%0.f-%0.f", histoTotalName.Data(),1.,199.), "Events:; Multiplicity; QuantSpherocity; GenQuantSpherocity;", 3 , nbinstotMCSoSpline, xmintotMCSoSpline, xmaxtotMCSoSpline);
+                else    
+                    fTotalSparseEvtShape[ns] = new THnSparseD(Form("%s%0.f-%0.f", histoTotalName.Data(),1.,199.), "Events:; Multiplicity; QuantSpherocity;", 2, nbinstotSoSpline, xmintotSoSpline, xmaxtotSoSpline);
             }
             else if(ns==fnSplmult){
                 if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
@@ -676,7 +706,11 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
                 else{
                     if(fCalculateSphericity) fSparseEvtShapeSpline[ns] = new THnSparseD(Form("%s%s%0.f-%0.f",histoName.Data(),"QuantileMult",fsplMult[0],fsplMult[ns]-1), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; %s; QuantSpherocity;", parNameSo.Data(), parNameSpheri.Data()), 6 , nbinsSoSpheriSpl, xminSoSpheriSpl, xmaxSoSpheriSpl);
                     else fSparseEvtShapeSpline[ns] = new THnSparseD(Form("%s%s%0.f-%0.f",histoName.Data(),"QuantileMult",fsplMult[0],fsplMult[ns]-1), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; QuantSpherocity;", parNameSo.Data()), 5 , nbinsSoSpl, xminSoSpl, xmaxSoSpl);
-                }    
+                }
+                if(fReadMC)
+                    fTotalSparseEvtShape[ns] = new THnSparseD(Form("%s%0.f-%0.f", histoTotalName.Data(),fsplMult[0],fsplMult[ns]-1), "Events:; Multiplicity; QuantSpherocity; GenQuantSpherocity;", 3 , nbinstotMCSoSpline, xmintotMCSoSpline, xmaxtotMCSoSpline);
+                else    
+                    fTotalSparseEvtShape[ns] = new THnSparseD(Form("%s%0.f-%0.f", histoTotalName.Data(),fsplMult[0],fsplMult[ns]-1), "Events:; Multiplicity; QuantSpherocity;", 2, nbinstotSoSpline, xmintotSoSpline, xmaxtotSoSpline);
             }
             else{
                 if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
@@ -687,17 +721,31 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
                     if(fCalculateSphericity) fSparseEvtShapeSpline[ns] = new THnSparseD(Form("%s%s%0.f-%0.f",histoName.Data(),"QuantileMult",fsplMult[ns],fsplMult[ns+1]-1), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; %s; QuantSpherocity;", parNameSo.Data(), parNameSpheri.Data()), 6 , nbinsSoSpheriSpl, xminSoSpheriSpl, xmaxSoSpheriSpl);
                     else fSparseEvtShapeSpline[ns] = new THnSparseD(Form("%s%s%0.f-%0.f",histoName.Data(),"QuantileMult",fsplMult[ns],fsplMult[ns+1]-1), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; QuantSpherocity;", parNameSo.Data()), 5 , nbinsSoSpl, xminSoSpl, xmaxSoSpl);
                 }
-            }
-        }        
+                if(fReadMC)
+                    fTotalSparseEvtShape[ns] = new THnSparseD(Form("%s%0.f-%0.f", histoTotalName.Data(),fsplMult[ns],fsplMult[ns+1]-1), "Events:; Multiplicity; QuantSpherocity; GenQuantSpherocity;", 3 , nbinstotMCSoSpline, xmintotMCSoSpline, xmaxtotMCSoSpline);
+                else    
+                    fTotalSparseEvtShape[ns] = new THnSparseD(Form("%s%0.f-%0.f", histoTotalName.Data(),fsplMult[ns],fsplMult[ns+1]-1), "Events:; Multiplicity; QuantSpherocity;", 2, nbinstotSoSpline, xmintotSoSpline, xmaxtotSoSpline);
+            }   
+        }         
+    }
+    else{
+        if(fReadMC)
+            fTotalSparseEvtShape[0] = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; %s;", parNameSo.Data(), parNameSoGen.Data()), 3 , nbinstotMCSo, xmintotMCSo, xmaxtotMCSo);
+        else    
+            fTotalSparseEvtShape[0] = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity;", parNameSo.Data()), 2 , nbinstotSo, xmintotSo, xmaxtotSo);
     }
     
     if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
-        if(fCalculateSphericity) fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; MultiplicityUncorr; %s;", parNameSo.Data(), parNameSpheri.Data()), 6 , nbinsSoSpheriwithMultUncorr, xminSoSpheriwithMultUncorr, xmaxSoSpheriwithMultUncorr);
-        else fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; MultiplicityUncorr;", parNameSo.Data()), 5 , nbinsSowithMultUncorr, xminSowithMultUncorr, xmaxSowithMultUncorr);
+        if(fCalculateSphericity) 
+            fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; MultiplicityUncorr; %s;", parNameSo.Data(), parNameSpheri.Data()), 6 , nbinsSoSpheriwithMultUncorr, xminSoSpheriwithMultUncorr, xmaxSoSpheriwithMultUncorr);
+        else
+            fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; MultiplicityUncorr;", parNameSo.Data()), 5 , nbinsSowithMultUncorr, xminSowithMultUncorr, xmaxSowithMultUncorr);
     }
     else{
-        if(fCalculateSphericity) fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; %s;", parNameSo.Data(), parNameSpheri.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
-        else fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
+        if(fCalculateSphericity) 
+            fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; %s;", parNameSo.Data(), parNameSpheri.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
+        else
+            fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
     }
     
     if(fFillSoSparseChecks == 2|| fFillSoSparseChecks == 3) {
@@ -709,10 +757,13 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     
     fOutput->Add(fSparseEvtShape);
     if(fIsS0Spline){
-        for(int ns = 0; ns<=fnSplmult+1; ns++)
+        for(int ns = 0; ns<=fnSplmult+1; ns++){
             fOutput->Add(fSparseEvtShapeSpline[ns]);
-    }        
-
+            fOutput->Add(fTotalSparseEvtShape[ns]);
+        }
+    }
+    else
+        fOutput->Add(fTotalSparseEvtShape[0]);    
     if(fFillSoSparseChecks == 2 || fFillSoSparseChecks == 3) fOutput->Add(fSparseEvtShapewithNoPid);
     if(fRecomputeSpherocity) fOutput->Add(fSparseEvtShapeRecSphero);
     
@@ -794,7 +845,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
                         fSparseEvtShapePromptSpline[ns] = new THnSparseD(Form("%s%s%0.f-%0.f",histoNamePrompt.Data(),"QuantileMult",fsplMult[ns],fsplMult[ns+1]-1), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; RecSpherocity; QuantSpherocity;", parNameSo.Data()), 6 , nbinsSoSpheriSpl, xminSoSpheriSpl, xmaxSoSpheriSpl);
                         fSparseEvtShapeFeeddownSpline[ns] = new THnSparseD(Form("%s%s%0.f-%0.f",histoNameFeeddown.Data(),"QuantileMult",fsplMult[ns],fsplMult[ns+1]-1), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; RecSpherocity; QuantSpherocity;", parNameSo.Data()), 6 , nbinsSoSpheriSpl, xminSoSpheriSpl, xmaxSoSpheriSpl);
                     }
-                }   
+                }
             }
         }
         else{
@@ -821,7 +872,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
                         fSparseEvtShapeFeeddownSpline[ns] = new THnSparseD(Form("%s%s%0.f-%0.f",histoNameFeeddown.Data(),"QuantileMult",fsplMult[ns],fsplMult[ns+1]-1), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; QuantSpherocity;", parNameSo.Data()), 5 , nbinsSoSpl, xminSoSpl, xmaxSoSpl);    
                     }
                 }   
-            }
+            }   
         }
         if(fCalculateSphericity){
             fMCAccGenPromptSpheri = new THnSparseD("hMCAccGenPromptSpheri","kStepMCAcceptance:; p_{T} [GeV/c]; Multiplicity; Sphericity; y; - promptD",4,nbinsPrompt,xminPrompt,xmaxPrompt);
@@ -903,7 +954,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
                 fOutputEffCorr->Add(fMCAccGenFeeddownSpline[ns]);
                 fOutputEffCorr->Add(fMCRecoPromptSpline[ns]);
                 fOutputEffCorr->Add(fMCRecoFeeddownSpline[ns]);    
-            }
+            }    
         }       
     }
 
@@ -911,17 +962,26 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     
     fCounterC = new AliNormalizationCounter("NormCounterCorrMult");
     fCounterC->SetStudyMultiplicity(kTRUE,1.);
-    fCounterC->SetStudySpherocity(kTRUE,20.);
+    if(fIsS0Spline)
+        fCounterC->SetStudySpherocityQuant(kTRUE);
+    else
+        fCounterC->SetStudySpherocity(kTRUE,20.);    
     fCounterC->Init();
     
     fCounterU = new AliNormalizationCounter("NormCounterUnCorrMult");
     fCounterU->SetStudyMultiplicity(kTRUE,1.);
-    fCounterU->SetStudySpherocity(kTRUE,20.);
+    if(fIsS0Spline)
+        fCounterU->SetStudySpherocityQuant(kTRUE);
+    else
+        fCounterU->SetStudySpherocity(kTRUE,20.);
     fCounterU->Init();
     
     fCounterCandidates = new AliNormalizationCounter("NormCounterCorrMultCandidates");
     fCounterCandidates->SetStudyMultiplicity(kTRUE,1.);
-    fCounterCandidates->SetStudySpherocity(kTRUE,20.);
+    if(fIsS0Spline)
+        fCounterCandidates->SetStudySpherocityQuant(kTRUE);
+    else    
+        fCounterCandidates->SetStudySpherocity(kTRUE,20.);
     fCounterCandidates->Init();
     
     fOutputCounters = new TList();
@@ -1046,8 +1106,28 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
     }
     AliVertexingHFUtils::GetSpherocity(aod, spherocity, phiRef, fetaMin, fetaMax, fptMin, fptMax, ffiltbit1, ffiltbit2, fminMult, fphiStepSizeDeg, 0, 0x0, fS0unweight);
     
+    TList* contShapeSpline[20];
+    TSpline3* ShapeSpline[20];
+    TSpline3* GenSpline[20];
+    if(fIsS0Spline){
+        for(int ns = 0; ns<=fnSplmult+1; ns++){
+            if(fReadMC){
+                contShapeSpline[ns] = fS0SplList[ns];  
+                ShapeSpline[ns] = (TSpline3*)contShapeSpline[ns]->FindObject(Form("%sMC",fS0SplName.Data()));
+                GenSpline[ns] = (TSpline3*)contShapeSpline[ns]->FindObject(Form("%sMCGen",fS0SplName.Data()));
+            }    
+            else{
+                contShapeSpline[ns] = fS0SplList[ns];
+                ShapeSpline[ns] = (TSpline3*)contShapeSpline[ns]->FindObject(Form("%sData",fS0SplName.Data()));     
+            }    
+        }        
+    }
+
     Double_t St=1;
-    fCounterU->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countMult,spherocity);
+    if(fIsS0Spline)
+        fCounterU->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countMult,ShapeSpline[fnSplmult+1]->Eval(spherocity));
+    else
+        fCounterU->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countMult,spherocity);    
     fHistNEvents->Fill(0); // count event
     
     Double_t countTreta1corr=countTreta1;
@@ -1097,8 +1177,11 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
         }
     }
     
-    fCounterC->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countCorr,spherocity);
-    
+    if(fIsS0Spline)
+        fCounterC->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countCorr,ShapeSpline[fnSplmult+1]->Eval(spherocity));
+    else
+        fCounterC->StoreEvent(aod,fRDCutsAnalysis,fReadMC,countCorr,spherocity);    
+
     Bool_t isEvSel=fRDCutsAnalysis->IsEventSelected(aod);
     
     if(fRDCutsAnalysis->GetWhyRejection()==5) fHistNEvents->Fill(3);
@@ -1263,6 +1346,63 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
         
         fHistNchMCVsNchMCPrimaryVsNchMCPhysicalPrimary->Fill(nChargedMC,nChargedMCPrimary,nChargedMCPhysicalPrimary,nchWeight);
     }
+
+    if(fIsS0Spline){
+        for(int ns = 0; ns<=fnSplmult+1; ns++){
+            if(ns == fnSplmult+1){
+                if(countCorr >= 1. && countCorr <= 199.){
+                    if(fReadMC){
+                        Double_t arrayForSparseSo[3]={countCorr, ShapeSpline[ns]->Eval(spherocity), GenSpline[ns]->Eval(genspherocity)};
+                        fTotalSparseEvtShape[ns]->Fill(arrayForSparseSo, fWeight);
+                    }
+                    else{
+                        Double_t arrayForSparseSo[2]={countCorr, ShapeSpline[ns]->Eval(spherocity)};
+                        fTotalSparseEvtShape[ns]->Fill(arrayForSparseSo, fWeight);
+                    }
+                }
+                else
+                    continue;  
+            }
+            else if (ns == fnSplmult){
+                if(countCorr >= fsplMult[0] && countCorr <= fsplMult[ns]-1){
+                    if(fReadMC){
+                        Double_t arrayForSparseSo[3]={countCorr, ShapeSpline[ns]->Eval(spherocity), GenSpline[ns]->Eval(genspherocity)};
+                        fTotalSparseEvtShape[ns]->Fill(arrayForSparseSo, fWeight);
+                    }
+                    else{
+                        Double_t arrayForSparseSo[2]={countCorr, ShapeSpline[ns]->Eval(spherocity)};
+                        fTotalSparseEvtShape[ns]->Fill(arrayForSparseSo, fWeight);
+                    }
+                }
+                else
+                    continue; 
+            }
+            else{
+                if(countCorr >= fsplMult[ns] && countCorr <= fsplMult[ns+1]-1){
+                    if(fReadMC){
+                        Double_t arrayForSparseSo[3]={countCorr, ShapeSpline[ns]->Eval(spherocity), GenSpline[ns]->Eval(genspherocity)};
+                        fTotalSparseEvtShape[ns]->Fill(arrayForSparseSo, fWeight);
+                    }
+                    else{
+                        Double_t arrayForSparseSo[2]={countCorr, ShapeSpline[ns]->Eval(spherocity)};
+                        fTotalSparseEvtShape[ns]->Fill(arrayForSparseSo, fWeight);
+                    }
+                }
+                else
+                    continue; 
+            }
+        }    
+    }
+    else{
+        if(fReadMC){
+            Double_t arrayForSparseSo[3]={spherocity, countCorr, genspherocity};
+            fTotalSparseEvtShape[0]->Fill(arrayForSparseSo, fWeight);
+        }
+        else{
+            Double_t arrayForSparseSo[2]={spherocity, countCorr};
+            fTotalSparseEvtShape[0]->Fill(arrayForSparseSo, fWeight);
+        }
+    }
     
     Int_t nCand = arrayCand->GetEntriesFast();
     Int_t nSelectedNoPID=0,nSelectedPID=0,nSelectedInMassPeak=0;
@@ -1291,7 +1431,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
         Double_t rapid=d->Y(fPdgMeson);
         Bool_t isFidAcc=fRDCutsAnalysis->IsInFiducialAcceptance(ptCand,rapid);
         if(!isFidAcc) continue;
-        
+
         Int_t passAllCuts=fRDCutsAnalysis->IsSelected(d,AliRDHFCuts::kAll,aod);
         Int_t passTopolCuts=fRDCutsAnalysis->GetIsSelectedCuts();
         if(passTopolCuts==0) continue;
@@ -1394,49 +1534,6 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
         
         Int_t labD=-1;
         Int_t Origin = 0;
-        
-        TList* contShapeSpline[20];
-        TSpline3* ShapeSpline[20];
-        TSpline3* ShapePromptSpline[20];
-        TSpline3* ShapeFeedDownSpline[20];
-        if(fIsS0Spline){
-            for(int ns = 0; ns<=fnSplmult+1; ns++){
-                if(fReadMC){
-                    if(ns==fnSplmult+1){
-                        contShapeSpline[ns] = fS0SplList[ns]; 
-                        ShapeSpline[ns] = (TSpline3*)contShapeSpline[ns]->FindObject(Form("%sMC_%0.f_%0.f",fS0SplName.Data(),1.,199.));
-                        ShapePromptSpline[ns] = (TSpline3*)contShapeSpline[ns]->FindObject(Form("%sMCPrompt_%0.f_%0.f",fS0SplName.Data(),1.,199.));
-                        ShapeFeedDownSpline[ns] = (TSpline3*)contShapeSpline[ns]->FindObject(Form("%sMCFD_%0.f_%0.f",fS0SplName.Data(),1.,199.));
-                    }
-                    else if(ns==fnSplmult){
-                        contShapeSpline[ns] = fS0SplList[ns]; 
-                        ShapeSpline[ns] = (TSpline3*)contShapeSpline[ns]->FindObject(Form("%sMC_%0.f_%0.f",fS0SplName.Data(),fsplMult[0],fsplMult[ns]-1));
-                        ShapePromptSpline[ns] = (TSpline3*)contShapeSpline[ns]->FindObject(Form("%sMCPrompt_%0.f_%0.f",fS0SplName.Data(),fsplMult[0],fsplMult[ns]-1));
-                        ShapeFeedDownSpline[ns] = (TSpline3*)contShapeSpline[ns]->FindObject(Form("%sMCFD_%0.f_%0.f",fS0SplName.Data(),fsplMult[0],fsplMult[ns]-1));
-                    }
-                    else{
-                        contShapeSpline[ns] = fS0SplList[ns];  
-                        ShapeSpline[ns] = (TSpline3*)contShapeSpline[ns]->FindObject(Form("%sMC_%0.f_%0.f",fS0SplName.Data(),fsplMult[ns],fsplMult[ns+1]-1));
-                        ShapePromptSpline[ns] = (TSpline3*)contShapeSpline[ns]->FindObject(Form("%sMCPrompt_%0.f_%0.f",fS0SplName.Data(),fsplMult[ns],fsplMult[ns+1]-1));
-                        ShapeFeedDownSpline[ns] = (TSpline3*)contShapeSpline[ns]->FindObject(Form("%sMCFD_%0.f_%0.f",fS0SplName.Data(),fsplMult[ns],fsplMult[ns+1]-1));
-                    }
-                }    
-                else{
-                    if(ns==fnSplmult+1){
-                        contShapeSpline[ns] = fS0SplList[ns];
-                        ShapeSpline[ns] = (TSpline3*)contShapeSpline[ns]->FindObject(Form("%sData_%0.f_%0.f",fS0SplName.Data(),1.,199.));    
-                    }
-                    else if(ns==fnSplmult){
-                        contShapeSpline[ns] = fS0SplList[ns];
-                        ShapeSpline[ns] = (TSpline3*)contShapeSpline[ns]->FindObject(Form("%sData_%0.f_%0.f",fS0SplName.Data(),fsplMult[0],fsplMult[ns]-1));    
-                    }
-                    else{
-                        contShapeSpline[ns] = fS0SplList[ns];
-                        ShapeSpline[ns] = (TSpline3*)contShapeSpline[ns]->FindObject(Form("%sData_%0.f_%0.f",fS0SplName.Data(),fsplMult[ns],fsplMult[ns+1]-1));     
-                    }    
-                }    
-            }        
-        }
 
         for(Int_t iHyp=0; iHyp<2; iHyp++){
             if(mass[iHyp]<0.) continue; // for D+ and D* we have 1 mass hypothesis
@@ -1631,84 +1728,78 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
                     }
                     if(fIsS0Spline){
                         for(int ns = 0; ns<=fnSplmult+1; ns++){
-                            if(ShapePromptSpline[ns] && ShapeFeedDownSpline[ns]){
+                            if(ShapeSpline[ns]){
                                 if(ns==fnSplmult+1){
                                     if(multForCand >= 1. && multForCand <= 199.){
                                         if(fRecomputeSpherocity){
+                                            Double_t arrayForSparseSoPromptFD[6]={ptCand, invMass, spherocity, multForCand, recSpherocity, ShapeSpline[ns]->Eval(spherocity)};
                                             if(Origin==4){
-                                                Double_t arrayForSparseSoPromptFD[6]={ptCand, invMass, spherocity, multForCand, recSpherocity, ShapePromptSpline[ns]->Eval(spherocity)};
                                                 fSparseEvtShapePromptSpline[ns]->Fill(arrayForSparseSoPromptFD, fWeight);
                                             } 
                                             else if(Origin==5){
-                                                Double_t arrayForSparseSoPromptFD[6]={ptCand, invMass, spherocity, multForCand, recSpherocity, ShapeFeedDownSpline[ns]->Eval(spherocity)};
                                                 fSparseEvtShapeFeeddownSpline[ns]->Fill(arrayForSparseSoPromptFD, fWeight);
                                             } 
                                         }
                                         else{
+                                            Double_t arrayForSparseSoPromptFD[5]={ptCand, invMass, spherocity, multForCand, ShapeSpline[ns]->Eval(spherocity)};
                                             if(Origin==4){
-                                                Double_t arrayForSparseSoPromptFD[5]={ptCand, invMass, spherocity, multForCand, ShapePromptSpline[ns]->Eval(spherocity)};
                                                 fSparseEvtShapePromptSpline[ns]->Fill(arrayForSparseSoPromptFD, fWeight);
                                             } 
                                             else if(Origin==5){
-                                                Double_t arrayForSparseSoPromptFD[5]={ptCand, invMass, spherocity, multForCand, ShapeFeedDownSpline[ns]->Eval(spherocity)};
                                                 fSparseEvtShapeFeeddownSpline[ns]->Fill(arrayForSparseSoPromptFD, fWeight);
                                             }
-                                        }    
+                                        }
                                     }
                                     else
-                                        continue;    
+                                        continue;        
                                 }
                                 else if(ns==fnSplmult){
-                                    if(multForCand >= fsplMult[0] && multForCand <= fsplMult[ns]-1){
+                                    if(multForCand >= fsplMult[0] && multForCand <= fsplMult[ns]-1){   
                                         if(fRecomputeSpherocity){
+                                            Double_t arrayForSparseSoPromptFD[6]={ptCand, invMass, spherocity, multForCand, recSpherocity, ShapeSpline[ns]->Eval(spherocity)};
                                             if(Origin==4){
-                                                Double_t arrayForSparseSoPromptFD[6]={ptCand, invMass, spherocity, multForCand, recSpherocity, ShapePromptSpline[ns]->Eval(spherocity)};
                                                 fSparseEvtShapePromptSpline[ns]->Fill(arrayForSparseSoPromptFD, fWeight);
                                             } 
                                             else if(Origin==5){
-                                                Double_t arrayForSparseSoPromptFD[6]={ptCand, invMass, spherocity, multForCand, recSpherocity, ShapeFeedDownSpline[ns]->Eval(spherocity)};
                                                 fSparseEvtShapeFeeddownSpline[ns]->Fill(arrayForSparseSoPromptFD, fWeight);
                                             } 
                                         }
                                         else{
+                                            Double_t arrayForSparseSoPromptFD[5]={ptCand, invMass, spherocity, multForCand, ShapeSpline[ns]->Eval(spherocity)};
                                             if(Origin==4){
-                                                Double_t arrayForSparseSoPromptFD[5]={ptCand, invMass, spherocity, multForCand, ShapePromptSpline[ns]->Eval(spherocity)};
                                                 fSparseEvtShapePromptSpline[ns]->Fill(arrayForSparseSoPromptFD, fWeight);
                                             } 
                                             else if(Origin==5){
-                                                Double_t arrayForSparseSoPromptFD[5]={ptCand, invMass, spherocity, multForCand, ShapeFeedDownSpline[ns]->Eval(spherocity)};
                                                 fSparseEvtShapeFeeddownSpline[ns]->Fill(arrayForSparseSoPromptFD, fWeight);
                                             }
-                                        }    
+                                        }
                                     }
                                     else
-                                        continue;    
+                                        continue;        
                                 }
                                 else{
-                                    if(multForCand >= fsplMult[ns] && multForCand <= fsplMult[ns+1]-1){
+                                    if(multForCand >= fsplMult[ns] && multForCand <= fsplMult[ns+1]-1){ 
                                         if(fRecomputeSpherocity){
+                                            Double_t arrayForSparseSoPromptFD[6]={ptCand, invMass, spherocity, multForCand, recSpherocity, ShapeSpline[ns]->Eval(spherocity)};
                                             if(Origin==4){
-                                                Double_t arrayForSparseSoPromptFD[6]={ptCand, invMass, spherocity, multForCand, recSpherocity, ShapePromptSpline[ns]->Eval(spherocity)};
                                                 fSparseEvtShapePromptSpline[ns]->Fill(arrayForSparseSoPromptFD, fWeight);
                                             } 
                                             else if(Origin==5){
-                                                Double_t arrayForSparseSoPromptFD[6]={ptCand, invMass, spherocity, multForCand, recSpherocity, ShapeFeedDownSpline[ns]->Eval(spherocity)};
                                                 fSparseEvtShapeFeeddownSpline[ns]->Fill(arrayForSparseSoPromptFD, fWeight);
                                             } 
                                         }
                                         else{
+                                            Double_t arrayForSparseSoPromptFD[5]={ptCand, invMass, spherocity, multForCand, ShapeSpline[ns]->Eval(spherocity)};
                                             if(Origin==4){
-                                                Double_t arrayForSparseSoPromptFD[5]={ptCand, invMass, spherocity, multForCand, ShapePromptSpline[ns]->Eval(spherocity)};
                                                 fSparseEvtShapePromptSpline[ns]->Fill(arrayForSparseSoPromptFD, fWeight);
                                             } 
                                             else if(Origin==5){
-                                                Double_t arrayForSparseSoPromptFD[5]={ptCand, invMass, spherocity, multForCand, ShapeFeedDownSpline[ns]->Eval(spherocity)};
                                                 fSparseEvtShapeFeeddownSpline[ns]->Fill(arrayForSparseSoPromptFD, fWeight);
                                             }
-                                        }    
-                                    }
+                                        }
+                                    }    
                                     else
-                                        continue;    
+                                        continue;  
                                 }
                             }
                         }
@@ -1730,9 +1821,15 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
     }
     if(fSubtractTrackletsFromDau && nSelCand>0){
         aveMult/=nSelCand;
-        fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)(aveMult+0.5001),spherocity);
+        if(fIsS0Spline)
+            fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)(aveMult+0.5001),ShapeSpline[fnSplmult+1]->Eval(spherocity));
+        else
+            fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)(aveMult+0.5001),spherocity);    
     }else{
-        fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)countCorr,spherocity);
+        if(fIsS0Spline)
+            fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)countCorr,ShapeSpline[fnSplmult+1]->Eval(spherocity));
+        else
+            fCounterCandidates->StoreEvent(aod,fRDCutsAnalysis,fReadMC,(Int_t)countCorr,spherocity);
     }
     
     fCounterCandidates->StoreCandidates(aod,nSelectedNoPID,kTRUE);
@@ -2011,25 +2108,13 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, In
     Double_t rapid = partD->Y();
 
     TList* contSpline[20];
-    TSpline3* RecoSpline[20];
-    TSpline3* RecoFeedDownSpline[20];
+    TSpline3* ShapeSpline[20];
+    TSpline3* GenSpline[20];
     if(fIsS0Spline){
         for(int ns = 0; ns<=fnSplmult+1; ns++){
-            if(ns==fnSplmult+1){
-                contSpline[ns] = fS0SplList[ns];
-                RecoSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sReco_%0.f_%0.f",fS0SplName.Data(),1.,199.));
-                RecoFeedDownSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sRecoFD_%0.f_%0.f",fS0SplName.Data(),1.,199.));
-            }
-            else if(ns==fnSplmult){
-                contSpline[ns] = fS0SplList[ns];
-                RecoSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sReco_%0.f_%0.f",fS0SplName.Data(),fsplMult[0],fsplMult[ns]-1));
-                RecoFeedDownSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sRecoFD_%0.f_%0.f",fS0SplName.Data(),fsplMult[0],fsplMult[ns]-1));
-            }
-            else{
-                contSpline[ns] = fS0SplList[ns];     
-                RecoSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sReco_%0.f_%0.f",fS0SplName.Data(),fsplMult[ns],fsplMult[ns+1]-1));
-                RecoFeedDownSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sRecoFD_%0.f_%0.f",fS0SplName.Data(),fsplMult[ns],fsplMult[ns+1]-1));
-            }    
+            contSpline[ns] = fS0SplList[ns];     
+            ShapeSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sMC",fS0SplName.Data()));
+            GenSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sMCGen",fS0SplName.Data()));
         }
     }
     
@@ -2044,21 +2129,21 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, In
 
     if(fIsS0Spline){
         for(int ns = 0; ns<=fnSplmult+1; ns++){
-            if(RecoSpline[ns] && RecoFeedDownSpline[ns]){
+            if(ShapeSpline[ns] && GenSpline[ns]){
                 if(ns==fnSplmult+1){
-                    if(countMult >= 1. && countMult <= 199.){
+                    if(countMult >= 1. && countMult <= 199.){   
                         if(orig == 4){
                             //fill histo for prompt
-                            Double_t arrayMCRecoRecSpheroPrompt[6] = {pt, countMult, spherocity, rapid, recSpherocity, RecoSpline[ns]->Eval(spherocity)};
-                            Double_t arrayMCRecoPrompt[5] = {pt, countMult, spherocity, rapid, RecoSpline[ns]->Eval(spherocity)};
+                            Double_t arrayMCRecoRecSpheroPrompt[6] = {pt, countMult, spherocity, rapid, recSpherocity, ShapeSpline[ns]->Eval(spherocity)};
+                            Double_t arrayMCRecoPrompt[5] = {pt, countMult, spherocity, rapid, ShapeSpline[ns]->Eval(spherocity)};
                             if(fRecomputeSpherocity) fMCRecoPromptSpline[ns]->Fill(arrayMCRecoRecSpheroPrompt, fWeight);
                             else fMCRecoPromptSpline[ns]->Fill(arrayMCRecoPrompt, fWeight);
                         }
                         //for FD
                         else if(orig == 5){
                             //fill histo for FD
-                            Double_t arrayMCRecoRecSpheroFeeddown[6] = {pt, countMult, spherocity, rapid, recSpherocity, RecoFeedDownSpline[ns]->Eval(spherocity)};
-                            Double_t arrayMCRecoFeeddown[5] = {pt, countMult, spherocity, rapid, RecoFeedDownSpline[ns]->Eval(spherocity)};
+                            Double_t arrayMCRecoRecSpheroFeeddown[6] = {pt, countMult, spherocity, rapid, recSpherocity, ShapeSpline[ns]->Eval(spherocity)};
+                            Double_t arrayMCRecoFeeddown[5] = {pt, countMult, spherocity, rapid, ShapeSpline[ns]->Eval(spherocity)};
                             if(fRecomputeSpherocity) fMCRecoFeeddownSpline[ns]->Fill(arrayMCRecoRecSpheroFeeddown, fWeight);
                             else fMCRecoFeeddownSpline[ns]->Fill(arrayMCRecoFeeddown, fWeight);
                         }
@@ -2069,19 +2154,19 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, In
                         continue;    
                 }
                 else if(ns==fnSplmult){
-                    if(countMult >= fsplMult[0] && countMult <= fsplMult[ns]-1){
+                    if(countMult >= fsplMult[0] && countMult <= fsplMult[ns]-1){   
                         if(orig == 4){
                             //fill histo for prompt
-                            Double_t arrayMCRecoRecSpheroPrompt[6] = {pt, countMult, spherocity, rapid, recSpherocity, RecoSpline[ns]->Eval(spherocity)};
-                            Double_t arrayMCRecoPrompt[5] = {pt, countMult, spherocity, rapid, RecoSpline[ns]->Eval(spherocity)};
+                            Double_t arrayMCRecoRecSpheroPrompt[6] = {pt, countMult, spherocity, rapid, recSpherocity, ShapeSpline[ns]->Eval(spherocity)};
+                            Double_t arrayMCRecoPrompt[5] = {pt, countMult, spherocity, rapid, ShapeSpline[ns]->Eval(spherocity)};
                             if(fRecomputeSpherocity) fMCRecoPromptSpline[ns]->Fill(arrayMCRecoRecSpheroPrompt, fWeight);
                             else fMCRecoPromptSpline[ns]->Fill(arrayMCRecoPrompt, fWeight);
                         }
                         //for FD
                         else if(orig == 5){
                             //fill histo for FD
-                            Double_t arrayMCRecoRecSpheroFeeddown[6] = {pt, countMult, spherocity, rapid, recSpherocity, RecoFeedDownSpline[ns]->Eval(spherocity)};
-                            Double_t arrayMCRecoFeeddown[5] = {pt, countMult, spherocity, rapid, RecoFeedDownSpline[ns]->Eval(spherocity)};
+                            Double_t arrayMCRecoRecSpheroFeeddown[6] = {pt, countMult, spherocity, rapid, recSpherocity, ShapeSpline[ns]->Eval(spherocity)};
+                            Double_t arrayMCRecoFeeddown[5] = {pt, countMult, spherocity, rapid, ShapeSpline[ns]->Eval(spherocity)};
                             if(fRecomputeSpherocity) fMCRecoFeeddownSpline[ns]->Fill(arrayMCRecoRecSpheroFeeddown, fWeight);
                             else fMCRecoFeeddownSpline[ns]->Fill(arrayMCRecoFeeddown, fWeight);
                         }
@@ -2092,19 +2177,19 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, In
                         continue;    
                 }
                 else{
-                    if(countMult >= fsplMult[ns] && countMult <= fsplMult[ns+1]-1){     
+                    if(countMult >= fsplMult[ns] && countMult <= fsplMult[ns+1]-1){
                         if(orig == 4){
                             //fill histo for prompt
-                            Double_t arrayMCRecoRecSpheroPrompt[6] = {pt, countMult, spherocity, rapid, recSpherocity, RecoSpline[ns]->Eval(spherocity)};
-                            Double_t arrayMCRecoPrompt[5] = {pt, countMult, spherocity, rapid, RecoSpline[ns]->Eval(spherocity)};
+                            Double_t arrayMCRecoRecSpheroPrompt[6] = {pt, countMult, spherocity, rapid, recSpherocity, ShapeSpline[ns]->Eval(spherocity)};
+                            Double_t arrayMCRecoPrompt[5] = {pt, countMult, spherocity, rapid, ShapeSpline[ns]->Eval(spherocity)};
                             if(fRecomputeSpherocity) fMCRecoPromptSpline[ns]->Fill(arrayMCRecoRecSpheroPrompt, fWeight);
                             else fMCRecoPromptSpline[ns]->Fill(arrayMCRecoPrompt, fWeight);
                         }
                         //for FD
                         else if(orig == 5){
                             //fill histo for FD
-                            Double_t arrayMCRecoRecSpheroFeeddown[6] = {pt, countMult, spherocity, rapid, recSpherocity, RecoFeedDownSpline[ns]->Eval(spherocity)};
-                            Double_t arrayMCRecoFeeddown[5] = {pt, countMult, spherocity, rapid, RecoFeedDownSpline[ns]->Eval(spherocity)};
+                            Double_t arrayMCRecoRecSpheroFeeddown[6] = {pt, countMult, spherocity, rapid, recSpherocity, ShapeSpline[ns]->Eval(spherocity)};
+                            Double_t arrayMCRecoFeeddown[5] = {pt, countMult, spherocity, rapid, ShapeSpline[ns]->Eval(spherocity)};
                             if(fRecomputeSpherocity) fMCRecoFeeddownSpline[ns]->Fill(arrayMCRecoRecSpheroFeeddown, fWeight);
                             else fMCRecoFeeddownSpline[ns]->Fill(arrayMCRecoFeeddown, fWeight);
                         }
@@ -2112,10 +2197,10 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCMassHistos(TClonesArray *arrayMC, In
                             continue;
                     }
                     else
-                        continue;
+                        continue;    
                 }
             }
-        }    
+        }
     }  
 
     if(orig == 4){
@@ -2164,29 +2249,13 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
     Double_t recphiRef = -1.0;
     
     TList* contSpline[20];
+    TSpline3* ShapeSpline[20];
     TSpline3* GenSpline[20];
-    TSpline3* GenFeedDownSpline[20];
-    TSpline3* CompGenSpline[20]; //This spline is done to the computed spherocity of the kStepMCAccGen 
     if(fIsS0Spline){
         for(int ns = 0; ns<=fnSplmult+1; ns++){
-            if(ns==fnSplmult+1){
-                contSpline[ns] = fS0SplList[ns];  
-                GenSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sGen_%0.f_%0.f",fS0SplName.Data(),1.,199.));
-                GenFeedDownSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sGenFD_%0.f_%0.f",fS0SplName.Data(),1.,199.));
-                CompGenSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sGenComp_%0.f_%0.f",fS0SplName.Data(),1.,199.));
-            }
-            else if(ns==fnSplmult){
-                contSpline[ns] = fS0SplList[ns];  
-                GenSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sGen_%0.f_%0.f",fS0SplName.Data(),fsplMult[0],fsplMult[ns]-1));
-                GenFeedDownSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sGenFD_%0.f_%0.f",fS0SplName.Data(),fsplMult[0],fsplMult[ns]-1));
-                CompGenSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sGenComp_%0.f_%0.f",fS0SplName.Data(),fsplMult[0],fsplMult[ns]-1));
-            }
-            else{
-                contSpline[ns] = fS0SplList[ns];     
-                GenSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sGen_%0.f_%0.f",fS0SplName.Data(),fsplMult[ns],fsplMult[ns+1]-1));
-                GenFeedDownSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sGenFD_%0.f_%0.f",fS0SplName.Data(),fsplMult[ns],fsplMult[ns+1]-1));
-                CompGenSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sGenComp_%0.f_%0.f",fS0SplName.Data(),fsplMult[ns],fsplMult[ns+1]-1));
-            }    
+            contSpline[ns] = fS0SplList[ns];     
+            ShapeSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sMC",fS0SplName.Data()));
+            GenSpline[ns] = (TSpline3*)contSpline[ns]->FindObject(Form("%sMCGen",fS0SplName.Data()));
         }
     }
     
@@ -2291,78 +2360,78 @@ void AliAnalysisTaskSEDvsEventShapes::FillMCGenAccHistos(AliAODEvent* aod, TClon
 
                 if(fIsS0Spline){
                     for(int ns = 0; ns<=fnSplmult+1; ns++){
-                        if(GenSpline[ns] && CompGenSpline[ns] && GenFeedDownSpline[ns]){
+                        if(GenSpline[ns] && ShapeSpline[ns]){
                             if(ns==fnSplmult+1){
                                 if(countMult >= 1. && countMult <= 199.){
                                     if(orig == 4){
                                         //fill histo for prompt
-                                        Double_t arrayMCGenRecSpheroPrompt[8] = {pt, countMult, spherocity, rapid, recSpherocity, genspherocity, GenSpline[ns]->Eval(genspherocity), CompGenSpline[ns]->Eval(spherocity)};
-                                        Double_t arrayMCGenPrompt[7] = {pt, countMult, spherocity, rapid, genspherocity, GenSpline[ns]->Eval(genspherocity), CompGenSpline[ns]->Eval(spherocity)};
+                                        Double_t arrayMCGenRecSpheroPrompt[8] = {pt, countMult, spherocity, rapid, recSpherocity, genspherocity, GenSpline[ns]->Eval(genspherocity), ShapeSpline[ns]->Eval(spherocity)};
+                                        Double_t arrayMCGenPrompt[7] = {pt, countMult, spherocity, rapid, genspherocity, GenSpline[ns]->Eval(genspherocity), ShapeSpline[ns]->Eval(spherocity)};
                                         if(fRecomputeSpherocity) fMCAccGenPromptSpline[ns]->Fill(arrayMCGenRecSpheroPrompt, fWeight);
                                         else fMCAccGenPromptSpline[ns]->Fill(arrayMCGenPrompt, fWeight);
                                     }
                                     //for FD
                                     else if(orig == 5){
                                         //fill histo for FD
-                                        Double_t arrayMCGenRecSpheroFeeddown[6] = {pt, countMult, spherocity, rapid, recSpherocity, GenFeedDownSpline[ns]->Eval(spherocity)};
-                                        Double_t arrayMCGenFeeddown[5] = {pt, countMult, spherocity, rapid, GenFeedDownSpline[ns]->Eval(spherocity)};
+                                        Double_t arrayMCGenRecSpheroFeeddown[6] = {pt, countMult, spherocity, rapid, recSpherocity, ShapeSpline[ns]->Eval(spherocity)};
+                                        Double_t arrayMCGenFeeddown[5] = {pt, countMult, spherocity, rapid, ShapeSpline[ns]->Eval(spherocity)};
                                         if(fRecomputeSpherocity) fMCAccGenFeeddownSpline[ns]->Fill(arrayMCGenRecSpheroFeeddown, fWeight);
                                         else fMCAccGenFeeddownSpline[ns]->Fill(arrayMCGenFeeddown, fWeight);
                                     }
                                     else
                                         continue;
                                 }
-                                else
-                                    continue;    
+                                else 
+                                    continue;
                             }
                             else if(ns==fnSplmult){
                                 if(countMult >= fsplMult[0] && countMult <= fsplMult[ns]-1){
                                     if(orig == 4){
                                         //fill histo for prompt
-                                        Double_t arrayMCGenRecSpheroPrompt[8] = {pt, countMult, spherocity, rapid, recSpherocity, genspherocity, GenSpline[ns]->Eval(genspherocity), CompGenSpline[ns]->Eval(spherocity)};
-                                        Double_t arrayMCGenPrompt[7] = {pt, countMult, spherocity, rapid, genspherocity, GenSpline[ns]->Eval(genspherocity), CompGenSpline[ns]->Eval(spherocity)};
+                                        Double_t arrayMCGenRecSpheroPrompt[8] = {pt, countMult, spherocity, rapid, recSpherocity, genspherocity, GenSpline[ns]->Eval(genspherocity), ShapeSpline[ns]->Eval(spherocity)};
+                                        Double_t arrayMCGenPrompt[7] = {pt, countMult, spherocity, rapid, genspherocity, GenSpline[ns]->Eval(genspherocity), ShapeSpline[ns]->Eval(spherocity)};
                                         if(fRecomputeSpherocity) fMCAccGenPromptSpline[ns]->Fill(arrayMCGenRecSpheroPrompt, fWeight);
                                         else fMCAccGenPromptSpline[ns]->Fill(arrayMCGenPrompt, fWeight);
                                     }
                                     //for FD
                                     else if(orig == 5){
                                         //fill histo for FD
-                                        Double_t arrayMCGenRecSpheroFeeddown[6] = {pt, countMult, spherocity, rapid, recSpherocity, GenFeedDownSpline[ns]->Eval(spherocity)};
-                                        Double_t arrayMCGenFeeddown[5] = {pt, countMult, spherocity, rapid, GenFeedDownSpline[ns]->Eval(spherocity)};
+                                        Double_t arrayMCGenRecSpheroFeeddown[6] = {pt, countMult, spherocity, rapid, recSpherocity, ShapeSpline[ns]->Eval(spherocity)};
+                                        Double_t arrayMCGenFeeddown[5] = {pt, countMult, spherocity, rapid, ShapeSpline[ns]->Eval(spherocity)};
                                         if(fRecomputeSpherocity) fMCAccGenFeeddownSpline[ns]->Fill(arrayMCGenRecSpheroFeeddown, fWeight);
                                         else fMCAccGenFeeddownSpline[ns]->Fill(arrayMCGenFeeddown, fWeight);
                                     }
                                     else
                                         continue;
                                 }
-                                else
-                                    continue;    
+                                else 
+                                    continue;
                             }
                             else{
                                 if(countMult >= fsplMult[ns] && countMult <= fsplMult[ns+1]-1){
                                     if(orig == 4){
                                         //fill histo for prompt
-                                        Double_t arrayMCGenRecSpheroPrompt[8] = {pt, countMult, spherocity, rapid, recSpherocity, genspherocity, GenSpline[ns]->Eval(genspherocity), CompGenSpline[ns]->Eval(spherocity)};
-                                        Double_t arrayMCGenPrompt[7] = {pt, countMult, spherocity, rapid, genspherocity, GenSpline[ns]->Eval(genspherocity), GenSpline[ns]->Eval(spherocity)};
+                                        Double_t arrayMCGenRecSpheroPrompt[8] = {pt, countMult, spherocity, rapid, recSpherocity, genspherocity, GenSpline[ns]->Eval(genspherocity), ShapeSpline[ns]->Eval(spherocity)};
+                                        Double_t arrayMCGenPrompt[7] = {pt, countMult, spherocity, rapid, genspherocity, GenSpline[ns]->Eval(genspherocity), ShapeSpline[ns]->Eval(spherocity)};
                                         if(fRecomputeSpherocity) fMCAccGenPromptSpline[ns]->Fill(arrayMCGenRecSpheroPrompt, fWeight);
                                         else fMCAccGenPromptSpline[ns]->Fill(arrayMCGenPrompt, fWeight);
                                     }
                                     //for FD
                                     else if(orig == 5){
                                         //fill histo for FD
-                                        Double_t arrayMCGenRecSpheroFeeddown[6] = {pt, countMult, spherocity, rapid, recSpherocity, GenFeedDownSpline[ns]->Eval(spherocity)};
-                                        Double_t arrayMCGenFeeddown[5] = {pt, countMult, spherocity, rapid, GenFeedDownSpline[ns]->Eval(spherocity)};
+                                        Double_t arrayMCGenRecSpheroFeeddown[6] = {pt, countMult, spherocity, rapid, recSpherocity, ShapeSpline[ns]->Eval(spherocity)};
+                                        Double_t arrayMCGenFeeddown[5] = {pt, countMult, spherocity, rapid, ShapeSpline[ns]->Eval(spherocity)};
                                         if(fRecomputeSpherocity) fMCAccGenFeeddownSpline[ns]->Fill(arrayMCGenRecSpheroFeeddown, fWeight);
                                         else fMCAccGenFeeddownSpline[ns]->Fill(arrayMCGenFeeddown, fWeight);
                                     }
                                     else
                                         continue;
                                 }
-                                else
+                                else 
                                     continue;
                             }
                         }
-                    }    
+                    }
                 }
                 if(orig == 4){
                     //fill histo for prompt

@@ -1033,10 +1033,8 @@ public:
   TString          fPeriodLetter;                       ///<  Run name based on the Run number
   Bool_t           fApplyArtificialTrackEffCut;    ///<  Activate Artificial Tracking efficiency cut
   Float_t          fPtBinXTrackEffCut[17];         ///<  PtBinning for selecting the efficiency cut
-  Float_t          fTrackEfficiencyCentr[16];
-  Float_t          fTrackEfficiencyPeriph[16];
-  Int_t            nPtBinXTrackEff;  
-
+  Float_t          fTrackEfficiencyCentr[16];      ///<  Parameters for tracking efficiency, central events
+  Float_t          fTrackEfficiencyPeriph[16];     ///<  Parameters for tracking efficiency, peripheral events
 
   /// List with AOD branches created and needed in analysis.
   TList          * fAODBranchList ;                //-> 
@@ -1308,10 +1306,10 @@ public:
   TH2F  *          fhEMCALClusterCutsECen      [9];//!<! Control histogram on the different EMCal cluster selection cuts, E vs centrality
   TH2F  *          fhEMCALClusterCutsECenSignal[9];//!<! Control histogram on the different EMCal cluster selection cuts, E vs centrality. Embedded signal clusters.
   TH1F  *          fhPHOSClusterCutsE [7];         //!<! Control histogram on the different PHOS cluster selection cuts, E
-  TH1F  *          fhCTSTrackCutsPt   [6];         //!<! Control histogram on the different CTS tracks selection cuts, pT
-  TH1F  *          fhCTSTrackCutsPtSignal[6];      //!<! Control histogram on the different CTS tracks selection cuts, pT. Embedded signal
-  TH2F  *          fhCTSTrackCutsPtCen[6];         //!<! Control histogram on the different CTS tracks selection cuts, pT vs centrality
-  TH2F  *          fhCTSTrackCutsPtCenSignal[6];   //!<! Control histogram on the different CTS tracks selection cuts, pT vs centrality. Embedded signal
+  TH1F  *          fhCTSTrackCutsPt   [7];         //!<! Control histogram on the different CTS tracks selection cuts, pT
+  TH1F  *          fhCTSTrackCutsPtSignal[7];      //!<! Control histogram on the different CTS tracks selection cuts, pT. Embedded signal
+  TH2F  *          fhCTSTrackCutsPtCen[7];         //!<! Control histogram on the different CTS tracks selection cuts, pT vs centrality
+  TH2F  *          fhCTSTrackCutsPtCenSignal[7];   //!<! Control histogram on the different CTS tracks selection cuts, pT vs centrality. Embedded signal
   TH1F  *          fhEMCALClusterBadTrigger;       //!<! Control histogram on clusters E on bad triggered events
   TH1F  *          fhCentralityBadTrigger;         //!<! Control histogram on event centrality for bad triggered events
   TH2F  *          fhEMCALClusterCentralityBadTrigger; //!<! Control histogram on clusters E vs centrality on bad triggered events

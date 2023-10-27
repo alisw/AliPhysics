@@ -93,7 +93,6 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fisoEcut(0.05),
 	fisoTrcut(3),
 	fFlagZeeAssPhiCut(kFALSE),
-	fFlagZeeAssNtrkCut(kFALSE),
 	Nref(0),
 	NrefV0(0),
 	Nch(0),
@@ -274,6 +273,9 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHistZeOrgPos_w(0),
         fHistZeRec0(0),
         fHistZeRec1(0),
+        fHist_Zee_pT_pos(0),
+        fHist_Zee_pT_neg(0),
+        fHist_Zee_pT_neg2(0),
         fHist_Zpair_pos(0),
         fHist_Zpair_neg(0),
         fHistZrap(0),
@@ -323,7 +325,6 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fisoEcut(0.05),
 	fisoTrcut(3),
 	fFlagZeeAssPhiCut(kFALSE),
-	fFlagZeeAssNtrkCut(kFALSE),
 	Nref(0),
 	NrefV0(0),
 	Nch(0),
@@ -504,6 +505,9 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHistZeOrgPos_w(0),
         fHistZeRec0(0),
         fHistZeRec1(0),
+        fHist_Zee_pT_pos(0),
+        fHist_Zee_pT_neg(0),
+        fHist_Zee_pT_neg2(0),
         fHist_Zpair_pos(0),
         fHist_Zpair_neg(0),
         fHistZrap(0),
@@ -607,15 +611,18 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 
    
-        Int_t binsWh[5]=   { 50,  60,   80,  50, 200}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
-        Double_t xminWh[5]={ 20,   0, -2.0,   0,   0};
-        Double_t xmaxWh[5]={ 70,  60,  6.0, 0.5,   2};
+        Int_t binsWh[5]=   { 60,  120,   80,  50,  20}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
+        Double_t xminWh[5]={ 10,    0, -2.0,   0,   0};
+        Double_t xmaxWh[5]={ 70,   60,  6.0, 0.5,   2};
 	fWh_phidiff = new THnSparseD("fWh_phidiff","pT vs. dphi differnce",5,binsWh, xminWh, xmaxWh);
 	fhad_phidiff = new THnSparseD("fhad_phidiff","pT vs. dphi differnce had",5,binsWh, xminWh, xmaxWh);
 	
-        Int_t bins[11]=   { 90, 100, 200, 500, 100, 100, 100,  800, 500, 20,    3}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
-        Double_t xmin[11]={ 10,  -5,   0,   0,   0,   0,   0, -0.2,   0,  0, -1.5};
-        Double_t xmax[11]={100,   5,   2, 0.5, 100,   1,   1,  0.2, 0.5, 20,  1.5};
+        //Int_t bins[11]=   { 90, 100, 200, 500, 100, 100, 100,  800, 500, 20,    3}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
+        //Double_t xmin[11]={ 10,  -5,   0,   0,   0,   0,   0, -0.2,   0,  0, -1.5};
+        //Double_t xmax[11]={100,   5,   2, 0.5, 100,   1,   1,  0.2, 0.5, 20,  1.5};
+        Int_t bins[11]=   { 90, 100, 200, 500, 100, 100, 100,  400, 500,   20,    3}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
+        Double_t xmin[11]={ 10,  -5,   0,   0,   0,   0,   0, -0.2,   0, -0.5, -1.5};
+        Double_t xmax[11]={100,   5,   2, 5.0, 100,   1,   1,  0.2, 5.0, 19.5,  1.5};
         fIsoArray = new THnSparseD ("fIsoArray","Isolation ;pT;nSigma;eop;iso;truePt;m20;m02;DCA;isotrack;NtrCont;charge",11,bins,xmin,xmax);
         fOutputList->Add(fIsoArray);
 
@@ -668,6 +675,9 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHistZeOrgNeg_w        = new TH2F("fHistZeOrgNeg_w","particle level Z->e",150,0,150,100,0,100);
 	fHistZeRec0        = new TH1F("fHistZeRec0","particle level Z->e",90,10,100);
 	fHistZeRec1        = new TH1F("fHistZeRec1","particle level Z->e",90,10,100);
+	fHist_Zee_pT_pos   = new TH2F("fHist_Zee_pT_pos","pair Z->ee pT",100,0,100,100,0,100);
+	fHist_Zee_pT_neg   = new TH2F("fHist_Zee_pT_neg","pair Z->ee pT",100,0,100,100,0,100);
+	fHist_Zee_pT_neg2  = new TH2F("fHist_Zee_pT_neg2","pair Z->ee pT",100,0,100,100,0,100);
 	fHist_Zpair_pos        = new TH2F("fHist_Zpair_pos","pair Z->e",100,-5,5,100,0,100);
 	fHist_Zpair_neg        = new TH2F("fHist_Zpair_neg","pair Z->e",100,-5,5,100,0,100);
 	fHistZrap        = new TH1F("fHistZrap","parent Z rap",200,-5,5);
@@ -904,6 +914,9 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHistZeOrgPos_w); 
 	fOutputList->Add(fHistZeRec0); 
 	fOutputList->Add(fHistZeRec1); 
+	fOutputList->Add(fHist_Zee_pT_pos); 
+	fOutputList->Add(fHist_Zee_pT_neg); 
+	fOutputList->Add(fHist_Zee_pT_neg2); 
 	fOutputList->Add(fHist_Zpair_pos); 
 	fOutputList->Add(fHist_Zpair_neg); 
 	fOutputList->Add(fHistZrap); 
@@ -1586,7 +1599,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 			if(Matchphi <0){Matchphi += 2*TMath::Pi();}
 
 
-			if(TMath::Abs(etadiff)>0.05 || TMath::Abs(phidiff)>0.05) continue;
+			//if(TMath::Abs(etadiff)>0.05 || TMath::Abs(phidiff)>0.05) continue;
+			if(TMath::Abs(etadiff)>0.025 || TMath::Abs(phidiff)>0.025) continue; // vAN2023_0608
 			if(Matchphi>1.39 && Matchphi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187     
 			if(Matchphi>4.53 && Matchphi < 5.708) fClsTypeDCAL = kTRUE;//DCAL  : 260 < phi < 327
                         /*
@@ -1629,6 +1643,11 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 			fHistMatchE -> Fill(clE);
                         fHistoTimeEMC->Fill(clE,tof);
 			if(tof>-20.0 && tof<15.0)fHistMatchE_time -> Fill(clE);
+			if(!fMCarray)
+                          {
+                           if(tof<-20.0 || tof>15.0)continue; // vAN2023_0608
+                          } // timing cut only data
+
 			if(TrkP>0)eop= clE/TrkP;
 
 			fM02->Fill(TrkPt,m02);
@@ -1728,7 +1747,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                           }
 
                          // h-h correlation
-                         if(TrkPt>30.0 && fTPCnSigma<-3.0 && eop<0.7)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE,0);
+                         if(TrkPt>10.0 && fTPCnSigma<-3.0 && eop<0.7)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE,0);
 
 			//if(fTPCnSigma<6 && fTPCnSigma>-6 && eop < 1.2&& eop > 0.8 && m20>0.02 && m20<0.25){ //for MC
 			if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1] && eop>CutEop[0] && eop<CutEop[1] && m02>CutM02[0] && m02<CutM02[1]){
@@ -1748,7 +1767,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
                                      //////////// ---- W-h correlation /////////////
 
-                                     if(NtrackCone<=3 && TrkPt>30 && icaliso)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE,1);
+                                     //if(NtrackCone<=3 && TrkPt>10 && icaliso)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE,1);
+                                     if(NtrackCone<2.9 && TrkPt>10 && icaliso)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE,1);
 
 				if(pid_eleP)
 				{
@@ -1903,7 +1923,8 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		//-------loose cut on partner electron
 		if(ptAsso <CutptAsso) continue;
 		//if(ptAsso <0.2) continue;
-		//if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;  //for maximize finding Zee eff.
+		//if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;  //applied the cut (vAN in 07/27 - 08/10)
+		//if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue; 
 		if(nsigma < -3 || nsigma > 3) continue;
 		if(AssoTPCchi2perNDF >= 4) continue;
 		if(!(aAssotrack->GetStatus()&AliAODTrack::kITSrefit) || !(aAssotrack->GetStatus()&AliAODTrack::kTPCrefit)) continue;
@@ -1939,18 +1960,12 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 
                 if(fFlagZeeAssPhiCut) // for Z->ee, pair e is away-side
                   {
-                   if(dphiAss<2.0 || dphiAss>4.0)continue;
-                   fHistZeeDphi->Fill(TrkPt,dphiAss);
+                   Double_t MaxPhi = 1.5*TMath::Pi();
+                   Double_t MimPhi = 0.5*TMath::Pi();
+                   if(dphiAss<MimPhi || dphiAss>MaxPhi)continue;
+                   //fHistZeeDphi->Fill(TrkPt,dphiAss);
                   }
 
-                if(fFlagZeeAssNtrkCut)
-                 {
-                   Int_t AssNtrackCone = 999;
-                   Double_t IsoEnergyAssTrack = 999.9;
-                   IsolationTrackBase(jtrack, aAssotrack, 999.9 ,IsoEnergyAssTrack, AssNtrackCone);
-                   if(AssNtrackCone>3.1)continue;
-                 }
-          
 		//-------define KFParticle to get mass
 		AliKFParticle::SetField(fVevent->GetMagneticField());
 		AliKFParticle ge1 = AliKFParticle(*track, fPDGe1);
@@ -1966,9 +1981,13 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		MassCorrect = recg.GetMass(mass,width);
                 Double_t RecoPt = recg.GetPt();
                 Double_t RecoEta = recg.GetEta();
- 
-                Int_t iMassbin = ZmassWeight->FindBin(Zmass_gen);
-                Double_t powheg_w = ZmassWeight->GetBinContent(iMassbin);
+  
+                Double_t powheg_w = 999.9;
+                if(ZmassWeight)
+                  {
+                   Int_t iMassbin = ZmassWeight->FindBin(Zmass_gen);
+                   powheg_w = ZmassWeight->GetBinContent(iMassbin);
+                  }
 
 		if(fFlagLS){
 			//if(mass < 0.002)cout <<"Px="<<aAssotrack->Px() <<" Py="<<aAssotrack->Py()<<" Pz="<<aAssotrack->Pz()<<endl;
@@ -1998,6 +2017,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
                                     fInv_pT_ULS_forZ_pos->Fill(TrkPt,mass);
                                     if(TMath::Abs(pdgorg_ass)==23)fInv_pT_ULS_forZ_pos_true->Fill(TrkPt,mass);  // true Z->ee pair
                                     if(TMath::Abs(pdgorg_ass)==23)fInv_pT_ULS_forZ_pos_true_w->Fill(mass,TrkPt,powheg_w);  // true Z->ee pair
+                                    if(TMath::Abs(pdgorg_ass)==23)fHist_Zee_pT_pos->Fill(TrkPt,aAssotrack->Pt());  // true Z->ee pair
                                     if(mass>75.0 && mass<100.0)fHist_Zpair_pos->Fill(aAssotrack->Eta(),TrkPt);
                                     if(mass>75.0 && mass<100.0 && TrkPt>30.0)fHist_Zeta_pos->Fill(RecoEta);
                                    }
@@ -2006,6 +2026,9 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
                                     fInv_pT_ULS_forZ_neg->Fill(TrkPt,mass);
                                     if(TMath::Abs(pdgorg_ass)==23)fInv_pT_ULS_forZ_neg_true->Fill(TrkPt,mass);  // true Z->ee pair
                                     if(TMath::Abs(pdgorg_ass)==23)fInv_pT_ULS_forZ_neg_true_w->Fill(mass,TrkPt,powheg_w);  // true Z->ee pair
+                                    if(TMath::Abs(pdgorg_ass)==23)fHist_Zee_pT_neg->Fill(TrkPt,aAssotrack->Pt());  // true Z->ee pair
+                                    if(TMath::Abs(pdgorg_ass)==23 && (mass>60.0 && mass<108.0))fHist_Zee_pT_neg2->Fill(TrkPt,aAssotrack->Pt());  // true Z->ee pair
+                                    if(TMath::Abs(pdgorg_ass)==23)fHistZeeDphi->Fill(TrkPt,dphiAss);  // true Z->ee pair
                                     if(mass>75.0 && mass<100.0)fHist_Zpair_neg->Fill(aAssotrack->Eta(),TrkPt);
                                     if(mass>75.0 && mass<100.0 && TrkPt>30.0)fHist_Zeta_neg->Fill(RecoEta);
                                    }
@@ -2021,7 +2044,8 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 
 		//if(mass<0.1 && fFlagULS && !flagPhotonicElec)
 		if(mass<CutmassMin && fFlagULS && !flagPhotonicElec)flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised) 
-		if(mass>75.0 && mass<100 && iIsocut && fFlagULS)fFlagZdecay = kTRUE; //Tag Zee 
+                //if(mass>75.0 && mass<100 && iIsocut && fFlagULS)fFlagZdecay = kTRUE; //Tag Zee 
+		if(mass>60.0 && mass<108 && iIsocut && fFlagULS)fFlagZdecay = kTRUE; //Tag Zee 
 	}
 	fFlagPhotonicElec = flagPhotonicElec;
 }
@@ -2613,7 +2637,7 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 		TrackPhi        = track->Phi();
 
 		//if(ptWasso <1.0) continue;
-		if(ptWasso <3.0) continue;
+		//if(ptWasso <3.0) continue;  <--- removed after vAN09222023
 
 		/////////////////////////
 		// track cut
@@ -2627,7 +2651,7 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 		//==== 4.ITS cluster cut ====
 		if(aWassotrack->GetITSNcls() < CutITSNClsW) continue;  
 		//==== 5.SPD hit cut ====
-		//if(!(aWassotrack -> HasPointOnITSLayer(0) || aWassotrack -> HasPointOnITSLayer(1))) continue;
+		if(!(aWassotrack -> HasPointOnITSLayer(0) || aWassotrack -> HasPointOnITSLayer(1))) continue;
 		//==== 6.Eta cut ====
 		if(etaWasso>CutTrackEtaW[1] || etaWasso<CutTrackEtaW[0]) continue; 
 		//==== 7.DCA cut ====

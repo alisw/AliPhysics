@@ -50,6 +50,11 @@
 #include <vector>
 #include <map>
 
+#include <fastjet/PseudoJet.hh>
+#include <fastjet/JetDefinition.hh>
+#include <fastjet/AreaDefinition.hh>
+#include <fastjet/ClusterSequenceArea.hh>
+
 ClassImp(AliAnalysisTaskGammaPureMC)
 
 //________________________________________________________________________
@@ -136,12 +141,41 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fHistPtV0MultPi0GG(nullptr),
   fHistPtV0MultEtaGG(nullptr),
   fHistPtV0MultEtaPrimeGG(nullptr),
+  fHistPi0PtJetPt(nullptr),
+  fHistEtaPtJetPt(nullptr),
+  fHistPi0ZJetPt(nullptr),
+  fHistEtaZJetPt(nullptr),
+  fHistJetPtY(nullptr),
+  fHistJetEta(nullptr),
+  fHistJetPhi(nullptr),
   fIsK0(1),
   fIsMC(1),
   fMaxpT(100),
   fDoMultStudies(0),
   fNTracksInV0Acc(0),
-  fIsEvtINELgtZERO(0)
+  fIsEvtINELgtZERO(0),
+  fDoFeedDownStudies(false),
+  fHistPtPi0FromDecay(nullptr),
+  fHistPtEtaFromDecay(nullptr),
+  fHistPtOmegaFromDecay(nullptr),
+  fHistPtYPi0Primordial(nullptr),
+  fHistPtYEtaPrimordial(nullptr),
+  fHistPtYOmegaPrimordial(nullptr),
+  fDoJetStudies(false),
+  fJetRadius(0.4),
+  fJetMinE(1.),
+  fJetAccEta(0.8),
+  fJetParticleAcc(0.4),
+  fJetParticleAccFF(1.2),
+  fJetAlgorithm(fastjet::antikt_algorithm),
+  fJetStrategy(fastjet::Best),
+  fJetAreaType(fastjet::active_area),
+  fJetRecombScheme(fastjet::BIpt_scheme),
+  fJetGhostArea(0.01),
+  fGhostEtaMax(1.5),
+  fActiveAreaRepeats(1),
+  fAreaType(fastjet::active_area),
+  fVecJets({})
 {
 
 }
@@ -231,12 +265,41 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   fHistPtV0MultPi0GG(nullptr),
   fHistPtV0MultEtaGG(nullptr),
   fHistPtV0MultEtaPrimeGG(nullptr),
+  fHistPi0PtJetPt(nullptr),
+  fHistEtaPtJetPt(nullptr),
+  fHistPi0ZJetPt(nullptr),
+  fHistEtaZJetPt(nullptr),
+  fHistJetPtY(nullptr),
+  fHistJetEta(nullptr),
+  fHistJetPhi(nullptr),
   fIsK0(1),
   fIsMC(1),
   fMaxpT(100),
   fDoMultStudies(0),
   fNTracksInV0Acc(0),
-  fIsEvtINELgtZERO(0)
+  fIsEvtINELgtZERO(0),
+  fDoFeedDownStudies(false),
+  fHistPtPi0FromDecay(nullptr),
+  fHistPtEtaFromDecay(nullptr),
+  fHistPtOmegaFromDecay(nullptr),
+  fHistPtYPi0Primordial(nullptr),
+  fHistPtYEtaPrimordial(nullptr),
+  fHistPtYOmegaPrimordial(nullptr),
+  fDoJetStudies(false),
+  fJetRadius(0.4),
+  fJetMinE(1.),
+  fJetAccEta(0.8),
+  fJetParticleAcc(0.4),
+  fJetParticleAccFF(1.2),
+  fJetAlgorithm(fastjet::antikt_algorithm),
+  fJetStrategy(fastjet::Best),
+  fJetAreaType(fastjet::active_area),
+  fJetRecombScheme(fastjet::BIpt_scheme),
+  fJetGhostArea(0.01),
+  fGhostEtaMax(1.5),
+  fActiveAreaRepeats(1),
+  fAreaType(fastjet::active_area),
+  fVecJets({})
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -362,7 +425,7 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
   fHistPtYKMi->Sumw2();
   fOutputContainer->Add(fHistPtYKMi);
 
-  fHistPtYPi0FromEta          		= new TH2F("Pt_Y_Pi0FromEta","Pt_Y_Pi0FromEta", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+  fHistPtYPi0FromEta       		    = new TH2F("Pt_Y_Pi0FromEta","Pt_Y_Pi0FromEta", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPi0FromEta->Sumw2();
   fOutputContainer->Add(fHistPtYPi0FromEta);
 
@@ -573,6 +636,80 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
     fOutputContainer->Add(fHistPtV0MultEtaPrimeGG);
   }
 
+  if(fDoFeedDownStudies){
+    fHistPtYPi0Primordial = new TH2F("Pt_Y_Pi0Primordial","Pt_Y_Pi0Primordial", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+    fHistPtYPi0Primordial->Sumw2();
+    fOutputContainer->Add(fHistPtYPi0Primordial);
+    fHistPtYEtaPrimordial = new TH2F("Pt_Y_EtaPrimordial","Pt_Y_EtaPrimordial", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+    fHistPtYEtaPrimordial->Sumw2();
+    fOutputContainer->Add(fHistPtYEtaPrimordial);
+    fHistPtYOmegaPrimordial = new TH2F("Pt_Y_OmegaPrimordial","Pt_Y_OmegaPrimordial", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+    fHistPtYOmegaPrimordial->Sumw2();
+    fOutputContainer->Add(fHistPtYOmegaPrimordial);
+
+    const Int_t NFeedDownMothers = 20;
+    TString FeedDownMotherNames[NFeedDownMothers] = {"u","d","s","c","b","t","qq","g","#rho","#omega","#eta","#eta'","K^{*}","#Delta","#Lambda","#Sigma","#phi","D","#Xi^{0}","Other"};
+
+    fHistPtPi0FromDecay = new TH2F("Pt_Pi0FromDecay","Pt_Pi0FromDecay",20, 0.5, 20.5, fMaxpT*10, 0, fMaxpT);
+    for (Int_t iMother = 0; iMother < NFeedDownMothers; iMother++)
+      fHistPtPi0FromDecay->GetXaxis()->SetBinLabel(iMother+1,FeedDownMotherNames[iMother]);
+    fHistPtPi0FromDecay->Sumw2();
+    fOutputContainer->Add(fHistPtPi0FromDecay);
+
+    fHistPtEtaFromDecay = new TH2F("Pt_EtaFromDecay","Pt_EtaFromDecay",20, 0.5, 20.5, fMaxpT*10, 0, fMaxpT);
+    for (Int_t iMother = 0; iMother < NFeedDownMothers; iMother++)
+      fHistPtEtaFromDecay->GetXaxis()->SetBinLabel(iMother+1,FeedDownMotherNames[iMother]);
+    fHistPtEtaFromDecay->Sumw2();
+    fOutputContainer->Add(fHistPtEtaFromDecay);
+
+    fHistPtOmegaFromDecay = new TH2F("Pt_OmegaFromDecay","Pt_OmegaFromDecay",20, 0.5, 20.5, fMaxpT*10, 0, fMaxpT);
+    for (Int_t iMother = 0; iMother < NFeedDownMothers; iMother++)
+      fHistPtOmegaFromDecay->GetXaxis()->SetBinLabel(iMother+1,FeedDownMotherNames[iMother]);
+    fHistPtOmegaFromDecay->Sumw2();
+    fOutputContainer->Add(fHistPtOmegaFromDecay);
+  }
+
+  if(fDoJetStudies){
+    std::vector<double> vecJetPt;
+    double jetPt = 0.;
+    double maxJetPt = 500.;
+    double epsilon = 1e-20;
+    while(jetPt < maxJetPt){
+      vecJetPt.push_back(jetPt);
+      if(jetPt < 5. - epsilon) jetPt +=1.;
+      else if(jetPt < 50. - epsilon) jetPt +=5.;
+      else if(jetPt < 100. - epsilon) jetPt +=10.;
+      else if(jetPt < 200. - epsilon) jetPt +=50.;
+      else if(jetPt < 500. - epsilon) jetPt +=100.;
+      else vecJetPt.push_back(maxJetPt);
+    }
+    
+    fHistJetPtY = new TH2F("JetPtY", "JetPtY", vecJetPt.size()-1, vecJetPt.data(), 100, -2, 2);
+    fHistJetPtY->Sumw2();
+    fOutputContainer->Add(fHistJetPtY);
+    fHistJetEta = new TH1D("JetEta", "JetEta", 100, -1., 1.);
+    fHistJetEta->Sumw2();
+    fOutputContainer->Add(fHistJetEta);
+    fHistJetPhi = new TH1D("JetPhi", "JetPhi", 100, 0., 6.5);
+    fHistJetPhi->Sumw2();
+    fOutputContainer->Add(fHistJetPhi);
+
+    fHistPi0PtJetPt = new TH2F("Pi0PtVsJetPt_Eta08", "Pi0PtVsJetPt_Eta08", fMaxpT*10, 0., fMaxpT, vecJetPt.size()-1, vecJetPt.data());
+    fHistPi0PtJetPt->Sumw2();
+    fOutputContainer->Add(fHistPi0PtJetPt);
+
+    fHistEtaPtJetPt = new TH2F("EtaPtVsJetPt_Eta08", "EtaPtVsJetPt_Eta08", fMaxpT*10, 0., fMaxpT, vecJetPt.size()-1, vecJetPt.data());
+    fHistEtaPtJetPt->Sumw2();
+    fOutputContainer->Add(fHistEtaPtJetPt);
+
+    fHistPi0ZJetPt = new TH2F("Pi0ZVsJetPt_Eta08", "Pi0ZVsJetPt_Eta08", 100 ,0, 1, vecJetPt.size()-1, vecJetPt.data());
+    fHistPi0ZJetPt->Sumw2();
+    fOutputContainer->Add(fHistPi0ZJetPt);
+
+    fHistEtaZJetPt = new TH2F("EtaZVsJetPt_Eta08", "EtaZVsJetPt_Eta08", 100 ,0, 1, vecJetPt.size()-1, vecJetPt.data());
+    fHistEtaZJetPt->Sumw2();
+    fOutputContainer->Add(fHistEtaZJetPt);
+  }
 
   PostData(1, fOutputContainer);
 }
@@ -582,7 +719,7 @@ void AliAnalysisTaskGammaPureMC::UserExec(Option_t *)
 {
 
   fInputEvent = InputEvent();
-  //   cout << "I found an Event" << endl;
+    // std::cout << "I found an Event" << std::endl;
 
   fMCEvent = MCEvent();
   if(fMCEvent == nullptr) fIsMC = 0;
@@ -647,6 +784,10 @@ void AliAnalysisTaskGammaPureMC::UserExec(Option_t *)
     ProcessMultiplicity();
   }
 
+  if(fDoJetStudies){
+    ProcessJets();
+  }
+
   ProcessMCParticles();
 
 
@@ -688,6 +829,82 @@ void AliAnalysisTaskGammaPureMC::ProcessMultiplicity()
   }
 }
 
+
+int AliAnalysisTaskGammaPureMC::ReturnFeedDownBinFromPDG(int pdgcode) {
+  switch (TMath::Abs(pdgcode))
+  {
+  case 2:
+    return 1; // u
+  case 1:
+    return 2; // d
+  case 3:
+    return 3; // s
+  case 4:
+    return 4; // c
+  case 5:
+    return 5; // b
+  case 6:
+    return 6; // t
+  case 1103:
+  case 2101:
+  case 2103:
+  case 2203:
+  case 3101:
+  case 3103:
+  case 3201:
+  case 3203:
+  case 3303:
+    return 7; // diquark
+  case 21:
+  case 9:
+    return 8; // g
+  case 113:
+  case 213:
+    return 9; // charged rho
+  case 223:
+    return 10; // omega
+  case 221:
+    return 11; // eta
+  case 331:
+    return 12; // eta'
+  case 313:
+  case 323:
+  case 10311:
+    return 13; // K* 0 and +
+  case 2224:
+  case 2214:
+  case 2114:
+  case 1114:
+    return 14; // Delta
+  case 3122:
+  case 4122: // Lambda+C
+    return 15; // Lambda
+  case 3222:
+  case 3212:
+  case 3112:
+  case 3214:
+  case 3114:
+  case 3224:
+    return 16; // Sigma
+  case 333:
+    return 17; // phi
+  case 421:
+  case 411:
+  case 413:
+  case 423:
+  case 431:
+    return 18; // D
+  case 3322:
+  case 3312:
+  case 3324:
+  case 3314:
+    return 19; // Xi
+  default:
+    // std::cout << "Unknown PDG code of mother: " << pdgcode << std::endl;
+    return 20; // Other
+  }
+}
+
 //________________________________________________________________________
 void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 {
@@ -708,6 +925,10 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
       hasMother                 = kTRUE;
     else
       hasMother                 = kFALSE;
+
+    int absmotherpdg = 0;
+    if (hasMother)
+      absmotherpdg = TMath::Abs(motherParticle->PdgCode());
 
     const std::array<int, 19> kAcceptPdgCodes = {kPdgPi0, kPdgEta, kPdgEtaPrime, kPdgOmega, kPdgPiPlus, kPdgRho0, kPdgPhi, kPdgJPsi, kPdgSigma0, kPdgK0Short, kPdgDeltaPlus, kPdgDeltaPlusPlus, kPdgDeltaMinus, kPdgDelta0, kPdgRhoPlus, kPdgKStar, kPdgK0Long, kPdgLambda, kPdgKPlus};
     if(std::find(kAcceptPdgCodes.begin(), kAcceptPdgCodes.end(), TMath::Abs(particle->PdgCode())) ==  kAcceptPdgCodes.end()) continue;  // species not supported
@@ -734,7 +955,13 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
           fHistPtYPi0FromLambda->Fill(particle->Pt(), particle->Y());
         if (motherParticle->PdgCode() == kPdgEta)
           fHistPtYPi0FromEta->Fill(particle->Pt(), particle->Y());
+        if(fDoFeedDownStudies){
+          fHistPtPi0FromDecay->Fill(ReturnFeedDownBinFromPDG(absmotherpdg),particle->Pt());
+          if(ReturnFeedDownBinFromPDG(absmotherpdg) < 9)
+            fHistPtYPi0Primordial->Fill(particle->Pt(), particle->Y());
+        }
       }
+
       // fill primary pi0s in eta > 0.8
       if(fDoMultStudies){
         if(std::abs(particle->Y()) <= 0.8){
@@ -749,9 +976,29 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
           }
         }
       }
+      if(fDoJetStudies){
+        if(!IsSecondary(motherParticle)){
+          int index = -1;
+          double R = 0;
+          if(IsParticleInJet(fVecJets, particle->Eta(), particle->Phi(), index, R)){
+            if(std::abs(particle->Y()) <= fJetParticleAcc){
+              fHistPi0PtJetPt->Fill(particle->Pt(), fVecJets[index].pt());
+            }
+            if(std::abs(particle->Y()) <= fJetParticleAccFF){
+              fHistPi0ZJetPt->Fill(GetFrag(fVecJets[index], particle), fVecJets[index].pt());
+            }
+          }
+        }
+      }
       break;
     case kPdgEta:
       fHistPtYEta->Fill(particle->Pt(), particle->Y());
+      if(fDoFeedDownStudies){
+        if (hasMother)
+          fHistPtEtaFromDecay->Fill(ReturnFeedDownBinFromPDG(absmotherpdg),particle->Pt());
+        if(ReturnFeedDownBinFromPDG(absmotherpdg) < 9)
+          fHistPtYEtaPrimordial->Fill(particle->Pt(), particle->Y());
+      }
       // fill primary etas in eta > 0.8
       if(fDoMultStudies){
         if(std::abs(particle->Y()) <= 0.8){
@@ -762,6 +1009,20 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
               }
             } else {
               fHistPtV0MultEtaGG->Fill(particle->Pt(), fNTracksInV0Acc);
+            }
+          }
+        }
+      }
+      if(fDoJetStudies){
+        if(!IsSecondary(motherParticle)){
+          int index = -1;
+          double R = 0;
+          if(IsParticleInJet(fVecJets, particle->Eta(), particle->Phi(), index, R)){
+            if(std::abs(particle->Y()) <= fJetParticleAcc){
+              fHistEtaPtJetPt->Fill(particle->Pt(), fVecJets[index].pt());
+            }
+            if(std::abs(particle->Y()) <= fJetParticleAccFF){
+              fHistEtaZJetPt->Fill(GetFrag(fVecJets[index], particle), fVecJets[index].pt());
             }
           }
         }
@@ -785,6 +1046,12 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
       break;
     case kPdgOmega:
       fHistPtYOmega->Fill(particle->Pt(), particle->Y());
+      if(fDoFeedDownStudies){
+        if (hasMother)
+          fHistPtOmegaFromDecay->Fill(ReturnFeedDownBinFromPDG(absmotherpdg),particle->Pt());
+        if(ReturnFeedDownBinFromPDG(absmotherpdg) < 9)
+          fHistPtYOmegaPrimordial->Fill(particle->Pt(), particle->Y());
+      }
       break;
     case kPdgPiPlus:
       fHistPtYPiPl->Fill(particle->Pt(), particle->Y());
@@ -1184,4 +1451,74 @@ void AliAnalysisTaskGammaPureMC::SetLogBinningXTH2(TH2* histoRebin){
   for(Int_t i=1; i<=bins; ++i) newbins[i] = factor * newbins[i-1];
   axisafter->Set(bins, newbins);
   delete [] newbins;
+}
+
+//_________________________________________________________________________________
+void AliAnalysisTaskGammaPureMC::ProcessJets(){
+  fVecJets.clear();
+
+  std::vector<fastjet::PseudoJet> vecParticles;
+  for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
+    // fill primary histograms
+    AliVParticle* particle     = nullptr;
+    particle                    = (AliVParticle *)fMCEvent->GetTrack(i);
+    if (!particle) continue;
+
+    // only select stable particles for jet finder
+    if(fDoJetStudies == 1){ // reject all unstable particles
+      if(particle->GetDaughterFirst() > 0){
+        continue;
+      }
+    } else if(fDoJetStudies == 2){ // set pi0 and eta to stable and reject photons from those decays
+      if(particle->GetDaughterFirst() > 0 && (particle->PdgCode() != 111 && particle->PdgCode() != 221)){
+        continue;
+      } else if(particle->GetMother() > 0){
+        if(static_cast<AliVParticle*>(fMCEvent->GetTrack(particle->GetMother()))->PdgCode() == 111 || static_cast<AliVParticle*>(fMCEvent->GetTrack(particle->GetMother()))->PdgCode() == 221){
+          continue;
+        }
+      }
+    }
+  
+    fastjet::PseudoJet jetPart(particle->Px(), particle->Py(), particle->Pz(), particle->P());
+    jetPart.set_user_index(i);
+    vecParticles.push_back(jetPart);
+  }
+
+  fastjet::Selector sel_jets = fastjet::SelectorEMin(fJetMinE) * fastjet::SelectorEtaRange(-fJetAccEta, fJetAccEta);
+  fastjet::JetDefinition jet_def(fJetAlgorithm, fJetRadius, fJetRecombScheme, fJetStrategy);
+  fastjet::GhostedAreaSpec ghostSpec(fGhostEtaMax, fActiveAreaRepeats, fJetGhostArea, 0.1, 1e-100);
+  fastjet::AreaDefinition area_def = fastjet::AreaDefinition(fAreaType,ghostSpec);
+  fastjet::ClusterSequenceArea clust_seq_full(vecParticles, jet_def, area_def);
+  fVecJets = sel_jets(clust_seq_full.inclusive_jets());
+
+  for(const auto & jet : fVecJets){
+    fHistJetPtY->Fill(jet.pt(), jet.eta());
+    fHistJetEta->Fill(jet.eta());
+    fHistJetPhi->Fill(jet.phi());
+  }
+
+}
+
+//_________________________________________________________________________________
+bool AliAnalysisTaskGammaPureMC::IsParticleInJet(const std::vector<fastjet::PseudoJet>& vecJet, double eta, double phi, int& index, double& R){
+  R = 100; // some high value that will get replaced
+  for(unsigned int i = 0; i < vecJet.size(); ++i){
+    double dEta = std::abs(vecJet[i].eta() - eta);
+    double dPhi = std::abs(vecJet[i].phi() - phi);
+    double Rtmp = sqrt(dEta*dEta + dPhi * dPhi);
+    if(Rtmp < fJetRadius && Rtmp < R){
+      R = Rtmp;
+      index = i;
+    }
+  }
+  if(R >= 100) return false;
+  return true;
+}
+
+//_________________________________________________________________________________
+double AliAnalysisTaskGammaPureMC::GetFrag(const fastjet::PseudoJet& jet, const AliVParticle* part){
+  double ScalarProd = jet.px()*part->Px() + jet.py()*part->Py() + jet.pz()*part->Pz();
+  double jetP2 = jet.px()*jet.px() + jet.py()*jet.py() + jet.pz()*jet.pz();
+  double z = ScalarProd/jetP2;
+  return z;
 }

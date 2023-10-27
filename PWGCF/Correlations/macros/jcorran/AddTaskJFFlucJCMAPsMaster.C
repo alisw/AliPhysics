@@ -9,7 +9,8 @@
 AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_pass2", UInt_t period = 0,
   double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 2 4 5 8 11 13",
   bool saveQA = kFALSE, bool ESDpileup = false, double intercept = 15000,
-  bool TPCpileup = false, bool saveQA_TPCpileup = false)
+  bool TPCpileup = false, bool saveQA_TPCpileup = false,
+  bool Aside = false, bool Cside = false, bool saveQCNUA = false)
 {
   // Less essential global variables.
   bool removeBadArea = kFALSE;
@@ -18,12 +19,22 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
   double slope = 3.38; bool saveQA_ESDpileup = false;
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-
+  AliJCorrectionMapTask *cMapTask = new AliJCorrectionMapTask ("JCorrectionMapTask");
   // Prepare the configuration of the wagons.
   enum { lhc15o = 0, lhc18q = 1, lhc18r = 2 };
   TString speriod[3] = { "15o", "18q", "18r" };   // Needed to load correct map config.
   std::cout << "AddTaskJFFlucJCMAPsMaster:: period =" << period << "\t pT range = ("
     << ptMin << "," << ptMax << ")." << std::endl;
+
+  if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
+    cMapTask->EnableCentFlattening(Form(
+      "alien:///alice/cern.ch/user/j/jparkkil/legotrain/Cent/CentWeights_LHC%s_pass13.root",
+      speriod[period].Data() ));
+    cMapTask->EnableEffCorrection(Form(
+      "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC18l8-0-Lists.root",
+      speriod[period].Data() ));
+  }
+
 
   int iConfig = -1;
   int iOldConfig = -2;
@@ -109,6 +120,18 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     case 23 :
       configNames.push_back("hybridBaseDCA");
       break;
+    case 24 :
+      configNames.push_back("DCAz15");
+      break;
+    case 25 :
+      configNames.push_back("pileup500");
+      break;
+    case 26 :
+      configNames.push_back("NTPC65");
+      break;
+    case 27 :    // Syst: |zVtx < 8| changed to |zVtx < 4|. In order to check if the tracking quality make a difference to our measurements
+      configNames.push_back("zvtx4");
+      break;
     default :
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
         << std::endl;
@@ -124,14 +147,12 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
   TString MAPdirname = "alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
   AliJCorrectionMapTask *cmaptask = new AliJCorrectionMapTask("JCorrectionMapTask");
   TString sCorrection[3] = { "15o", "18q", "18r" }; // 17i2a for 15o?
-
   if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
     cmaptask->EnableCentFlattening(Form("alien:///alice/cern.ch/user/j/jparkkil/legotrain/Cent/CentWeights_LHC%s_pass13.root", speriod[period].Data()));
     cmaptask->EnableEffCorrection(Form("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC18l8-0-Lists.root", speriod[period].Data()));
   } else if (period == lhc15o) {    // 2015 PbPb dataset.
     cmaptask->EnableEffCorrection(Form("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC16g-0-Lists.root", speriod[period].Data()));
   }  
-
   MAPfilenames = Form("%sPhiWeights_LHC%s_Error_pt02_s_%s.root", MAPdirname.Data(), sCorrection[period].Data(), configName.Data());
   cmaptask->EnablePhiCorrection(0, MAPfilenames);  // i = 0: index for 'SetPhiCorrectionIndex(i)'.
   mgr->AddTask((AliAnalysisTask *) cmaptask);
@@ -155,7 +176,8 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_s_%s", taskName.Data(), configNames[i].Data()));
     std::cout << "Setting the catalyst: " << fJCatalyst[i]->GetJCatalystTaskName() << std::endl;
     fJCatalyst[i]->SetSaveAllQA(saveQA);
-
+    fJCatalyst[i]->SetSaveQCNUA(saveQCNUA);
+    
     /// Trigger and centrality selection.
     fJCatalyst[i]->SelectCollisionCandidates(selEvt);
     fJCatalyst[i]->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
@@ -169,13 +191,17 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     /// Event selection: pileup cuts and Zvtx.
     if (strcmp(configNames[i].Data(), "noPileup") != 0) {   // Set flag only if we cut on pileup.
       fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CUT_OUTLIERS);
-      if (strcmp(configNames[i].Data(), "pileup10") == 0) {fJCatalyst[i]->SetESDpileupCuts(true, slope, 10000, saveQA_ESDpileup);}
-      else {fJCatalyst[i]->SetESDpileupCuts(ESDpileup, slope, intercept, saveQA_ESDpileup);}
+      if (strcmp(configNames[i].Data(), "pileup10") == 0) {fJCatalyst[i]->SetESDpileupCuts(true, slope, 10000, saveQA_ESDpileup);
+      } else if (strcmp(configNames[i].Data(), "pileup500") == 0) {   // Vary the cut on the ESD pileup.
+        fJCatalyst[i]->SetESDpileupCuts(true, slope, 500, saveQA_ESDpileup);
+      } else {fJCatalyst[i]->SetESDpileupCuts(ESDpileup, slope, intercept, saveQA_ESDpileup);}
 
       fJCatalyst[i]->SetTPCpileupCuts(TPCpileup, saveQA_TPCpileup); // Reject the TPC pileup.
     }
  
-    //if (period == lhc18q || period == lhc18r) {fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CENT_FLATTENING);}    
+    if (period == lhc18q || period == lhc18r) {
+      printf("Using the cent flattening!\n"); 
+      fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CENT_FLATTENING);}    
 
     if (strcmp(configNames[i].Data(), "zvtx9") == 0) {    
       fJCatalyst[i]->SetZVertexCut(9.0);
@@ -183,7 +209,9 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
       fJCatalyst[i]->SetZVertexCut(6.0);
     } else if (strcmp(configNames[i].Data(), "zvtx7") == 0) {
       fJCatalyst[i]->SetZVertexCut(7.0);
-    } else {  // Default value for JCorran analyses in Run 2.
+    } else if (strcmp(configNames[i].Data(), "zvtx4") == 0) {
+      fJCatalyst[i]->SetZVertexCut(4.0);
+    }  else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetZVertexCut(8.0);
     }
 
@@ -200,6 +228,8 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
       fJCatalyst[i]->SetNumTPCClusters(90);
     } else if (strcmp(configNames[i].Data(), "NTPC100") == 0) {
       fJCatalyst[i]->SetNumTPCClusters(100);
+    } else if (strcmp(configNames[i].Data(), "NTPC65") == 0) {
+      fJCatalyst[i]->SetNumTPCClusters(65);
     } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetNumTPCClusters(70);
     }
@@ -226,6 +256,8 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
       fJCatalyst[i]->SetDCAzCut(1.0);
     } else if (strcmp(configNames[i].Data(), "DCAz05") == 0) {
       fJCatalyst[i]->SetDCAzCut(0.5);
+    } else if (strcmp(configNames[i].Data(), "DCAz15") == 0) {
+      fJCatalyst[i]->SetDCAzCut(1.5);
     } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetDCAzCut(2.0);
     }
@@ -235,6 +267,7 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     } else if (strcmp(configNames[i].Data(), "pqq") == 0) {
       fJCatalyst[i]->SetParticleCharge(1);
     }   // Default: charge = 0 to accept all charges.
+
     if (strcmp(configNames[i].Data(), "hybridBaseDCA") == 0) {
       fJCatalyst[i]->SetDCABaseCuts(true);
     }
@@ -242,7 +275,13 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     // TBA: subA systematics.
 
     fJCatalyst[i]->SetPtRange(ptMin, ptMax);
-    fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
+    if (Aside){
+      fJCatalyst[i]->SetEtaRange(0.0,0.8);
+    } else if (Cside){
+      fJCatalyst[i]->SetEtaRange(-0.8,0.0);
+    } else {
+      fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
+    }
     fJCatalyst[i]->SetPhiCorrectionIndex(i);
     fJCatalyst[i]->SetRemoveBadArea(removeBadArea);
     fJCatalyst[i]->SetTightCuts(useTightCuts);

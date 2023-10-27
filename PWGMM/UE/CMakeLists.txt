@@ -42,6 +42,7 @@ set(SRCS
   UeKNO/AliAnalysisTaskMcKnoUe.cxx
   UeKNO/AliAnalysisTaskMcKnoUeSystem.cxx
   UeKNO/AliAnalysisTaskGenMcKnoUe.cxx
+  UeKNO/AliAnalysisTaskGenMcFlattenicity.cxx
   UeKNO/AliAnalysisTaskGenUeVsMult.cxx
   UeKNO/AliAnalysisTaskMcKnoUeSyst.cxx
   UeKNO/AliAnalysisTaskMcKno.cxx
@@ -50,13 +51,19 @@ set(SRCS
   UeKNO/AliAnalysisTaskGenMcKno.cxx
   UeKNO/AliAnalysisTaskGenUeNchTS.cxx
   UeKNO/AliAnalysisTaskFlatenicity.cxx
+  UeKNO/AliAnalysisTaskFlatenicityMCpred.cxx
+  UeKNO/AliAnalysisTaskDeutFlucpp.cxx
   UeMpi/AliAnalysisTaskMpiUE.cxx
   Flatenicity/AliAnalysisTaskSpectraFlatenicity.cxx
   FlatenicityPiKp/AliAnalysisTaskFlatenicityPiKp.cxx
   FlatenicityLambdaK0s/AliAnalysisTaskFlatenicityLambdaK0s.cxx
+  FlatenicityLambdaK0s/AliAnalysisTaskFlatenicityLambdaK0sMC.cxx
   FlatenicityPiKp/AliAnalysisTaskdEdxCalibration.cxx
   FlatenicityPiKp/AliAnalysisTaskMCCorrections.cxx
   FlatenicityPiKp/AliAnalysisTaskOnlyFlatenicity.cxx
+  FlatenicityPiKp/AliAnalysisTaskSystematicsV0M.cxx
+  FlatenicityPiKp/AliAnalysisTaskFlatenicityMCclosure.cxx
+  SpeedOfSound/AliAnalysisTaskDataSpeedOfSound.cxx
   )
 
 # Headers from sources
@@ -129,3 +136,4 @@ install(DIRECTORY macros DESTINATION  PWGMM/UE)
 install(DIRECTORY Flatenicity DESTINATION  PWGMM/UE)
 install(DIRECTORY FlatenicityPiKp DESTINATION  PWGMM/UE)
 install(DIRECTORY FlatenicityLambdaK0s DESTINATION  PWGMM/UE)
+install(DIRECTORY SpeedOfSound DESTINATION  PWGMM/UE)

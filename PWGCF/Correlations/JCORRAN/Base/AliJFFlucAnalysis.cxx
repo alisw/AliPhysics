@@ -32,6 +32,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis() :
 	fh_phi(),
 	fh_phieta(),
 	fh_phietaz(),
+	fh_phietaz_altbin(),
 	//fh_Qvector(),
 	fh_ntracks(),
 	fh_vn(),
@@ -75,6 +76,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const char *name) :
 	fh_phi(),
 	fh_phieta(),
 	fh_phietaz(),
+	fh_phietaz_altbin(),
 	//fh_Qvector(),
 	fh_ntracks(),
 	fh_vn(),
@@ -117,6 +119,17 @@ UInt_t AliJFFlucAnalysis::NBin[3] = {
 Double_t AliJFFlucAnalysis::pttJacek[74] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95,1, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2, 2.2, 2.4, 2.6, 2.8, 3, 3.2, 3.4, 3.6, 3.8, 4, 4.5, 5, 5.5, 6, 6.5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 40, 45, 50, 60, 70, 80, 90, 100};
 UInt_t AliJFFlucAnalysis::NpttJacek = sizeof(AliJFFlucAnalysis::pttJacek)/sizeof(AliJFFlucAnalysis::pttJacek[0])-1;
 
+Double_t AliJFFlucAnalysis::altPhiBins[101] = {
+	-TMath::Pi(), -3.044, -2.946, -2.848, -2.751, -2.653, -2.555, -2.458, -2.360, -2.262, -2.165, -2.067, -1.969, -1.871, -1.774, -1.676, -1.578, -1.481, -1.383, 
+	-1.355, -1.327, -1.299, -1.271, -1.243, -1.215, -1.187, -1.159, -1.131, -1.103, -1.075, -1.047, -1.019, -0.991, -0.963, -0.935, -0.907, -0.879, -0.851, -0.823, -0.795, -0.767, -0.739, -0.711, -0.683, -0.655,
+	-0.557, -0.460, -0.362, -0.264, -0.167, -0.069, 0.029, 0.127, 0.224, 0.322, 0.420, 0.517, 0.615, 0.713, 0.810, 0.908, 1.006, 1.104, 1.201, 1.299, 1.397, 1.494, 1.592, 1.690, 1.787, 
+	1.815, 1.843, 1.871, 1.899, 1.927, 1.955, 1.983, 2.011, 2.039, 2.067, 2.095, 2.123, 2.151, 2.179, 2.207, 2.235, 2.263, 2.291, 2.319, 2.347, 2.375, 2.403, 2.431, 2.459, 2.557, 2.654, 2.752, 2.850, 2.948, 3.045, TMath::Pi()
+};
+Double_t AliJFFlucAnalysis::altEtaBins[41] = {
+	-1.00, -0.95, -0.90, -0.85, -0.80, -0.75, -0.70, -0.65, -0.60, -0.55, -0.50, -0.45, -0.40, -0.35, -0.30, -0.25, -0.20, -0.15, -0.10, -0.05, 0.00, 0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00
+};
+
+Double_t AliJFFlucAnalysis::altZBins[21] = {-10.00, -9.00, -8.00, -7.00, -6.00, -5.00, -4.00, -3.00, -2.00, -1.00, 0.00, 1.00, 2.00, 3.00, 4.00, 5.00, 6.00, 7.00, 8.00, 9.00, 10.00};
 //________________________________________________________________________
 AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	//AliAnalysisTaskSE(a.GetName()),
@@ -138,6 +151,7 @@ AliJFFlucAnalysis::AliJFFlucAnalysis(const AliJFFlucAnalysis& a):
 	fh_phi(a.fh_phi),
 	fh_phieta(a.fh_phieta),
 	fh_phietaz(a.fh_phietaz),
+	fh_phietaz_altbin(a.fh_phietaz_altbin),
 	//fh_Qvector(a.fh_Qvector),
 	fh_ntracks(a.fh_ntracks),
 	fh_vn(a.fh_vn),
@@ -228,7 +242,11 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 			<< fHistCentBin
 			<< "END";
 		fh_phietaz
-			<< TH3D("h_phietaz","h_phietaz",200,-TMath::Pi(),TMath::Pi(),40,-2.0,2.0,20,-10.0,10.0)
+			<< TH3D("h_phietaz","h_phietaz",400,-TMath::Pi(),TMath::Pi(),40,-1.0,1.0,20,-10.0,10.0)
+			<< fHistCentBin
+			<< "END";
+		fh_phietaz_altbin
+			<< TH3D("h_phietaz_altbin","h_phietaz_altbin",100,altPhiBins,40,altEtaBins,20,altZBins)
 			<< fHistCentBin
 			<< "END";
 	}
@@ -758,6 +776,7 @@ void AliJFFlucAnalysis::Fill_QA_plot( Double_t eta1, Double_t eta2 )
 		if(!(flags & FLUC_PHI_CORRECTION)) {
 			fh_phieta[fCBin]->Fill(phi,eta);
 			fh_phietaz[fCBin]->Fill(phi,eta,fVertex[2]);
+			fh_phietaz_altbin[fCBin]->Fill(phi,eta,fVertex[2]);
 		}
 
 		if(TMath::Abs(eta) < eta1 || TMath::Abs(eta) > eta2)

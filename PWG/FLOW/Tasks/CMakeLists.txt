@@ -29,6 +29,21 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/muon
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtasks
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtrigger
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv
+                    ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
+                    ${AliPhysics_SOURCE_DIR}/PWG/Cocktail
+                    ${AliPhysics_SOURCE_DIR}/PWG/FLOW
+                    ${AliPhysics_SOURCE_DIR}/PWG/JETFW
+                    ${AliPhysics_SOURCE_DIR}/PWG/TRD
+                    ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
+                    ${AliPhysics_SOURCE_DIR}/TENDER/Tender
+                    ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
 		    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/JCORRAN/Base
   )
 
@@ -121,7 +136,10 @@ set(SRCS
   AliAnalysisTaskGammaNonIsotropicCorr.cxx
   AliAnalysisTaskGammaNonIsotropicCorrUsingWeights.cxx
   AliAnalysisTaskCVEPIDCME.cxx
+  AliAnalysisTaskCVEPIDCMEDiff.cxx
   AliAnalysisTaskCVEVZEROCalib.cxx
+  AliAnalysisTaskChargeV1.cxx
+  AliAnalysisTaskGammaCaloV2.cxx
 )
 
 # Headers from sources

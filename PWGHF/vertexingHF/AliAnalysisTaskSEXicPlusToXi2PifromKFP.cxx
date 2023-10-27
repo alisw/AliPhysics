@@ -3455,17 +3455,25 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
     fVar_XicPlus[i] = -9999.;
   }
 
+  Double_t nSigmaTOF_PiFromXicPlus_trk1 = -999., nSigmaTOF_PiFromXicPlus_trk2 = -999., nSigmaTOF_PiFromXi = -999.;
+  AliAODPidHF *Pid_HF = fAnaCuts->GetPidHF();
+  if (Pid_HF) {
+    Pid_HF->GetnSigmaTOF(trackPiFromXicPlus_trk1, AliPID::kPion, nSigmaTOF_PiFromXicPlus_trk1);
+    Pid_HF->GetnSigmaTOF(trackPiFromXicPlus_trk2, AliPID::kPion, nSigmaTOF_PiFromXicPlus_trk2);
+    Pid_HF->GetnSigmaTOF(trackPiFromXiOrKaonFromOmega, AliPID::kPion, nSigmaTOF_PiFromXi);
+  }
+
   Float_t nSigmaTPC_PiFromXicPlus_trk1 = fPID->NumberOfSigmasTPC(trackPiFromXicPlus_trk1,AliPID::kPion);
-  Float_t nSigmaTOF_PiFromXicPlus_trk1 = fPID->NumberOfSigmasTOF(trackPiFromXicPlus_trk1,AliPID::kPion);
+//  Float_t nSigmaTOF_PiFromXicPlus_trk1 = fPID->NumberOfSigmasTOF(trackPiFromXicPlus_trk1,AliPID::kPion);
   Float_t nSigmaTPC_PiFromXicPlus_trk2 = fPID->NumberOfSigmasTPC(trackPiFromXicPlus_trk2,AliPID::kPion);
-  Float_t nSigmaTOF_PiFromXicPlus_trk2 = fPID->NumberOfSigmasTOF(trackPiFromXicPlus_trk2,AliPID::kPion);
+//  Float_t nSigmaTOF_PiFromXicPlus_trk2 = fPID->NumberOfSigmasTOF(trackPiFromXicPlus_trk2,AliPID::kPion);
 
   Float_t nSigmaTPC_PrFromLam  = fPID->NumberOfSigmasTPC(trkProton,AliPID::kProton);
   Float_t nSigmaTPC_PiFromLam  = fPID->NumberOfSigmasTPC(trkPion,AliPID::kPion);
 
-  Float_t nSigmaTPC_PiFromXi = -9999., nSigmaTOF_PiFromXi = -9999.;
+  Float_t nSigmaTPC_PiFromXi = -9999.;
   nSigmaTPC_PiFromXi = fPID->NumberOfSigmasTPC(trackPiFromXiOrKaonFromOmega,AliPID::kPion);
-  nSigmaTOF_PiFromXi = fPID->NumberOfSigmasTOF(trackPiFromXiOrKaonFromOmega,AliPID::kPion);
+//  nSigmaTOF_PiFromXi = fPID->NumberOfSigmasTOF(trackPiFromXiOrKaonFromOmega,AliPID::kPion);
 
   if ( fabs(nSigmaTPC_PiFromXicPlus_trk1)>=4. || fabs(nSigmaTPC_PiFromXicPlus_trk2)>=4. || fabs(nSigmaTPC_PiFromXi)>=4. || fabs(nSigmaTPC_PrFromLam)>=4. || fabs(nSigmaTPC_PiFromLam)>=4. ) return;
 

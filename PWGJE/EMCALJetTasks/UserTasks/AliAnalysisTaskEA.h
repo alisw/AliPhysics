@@ -529,6 +529,16 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
 
    THnSparse* fhNotMatchedJetPt[fkTTbins];  //!   fk    pt, area, eta, phi and Delta phi of jets which do not have matched particle level jet
 
+   //-------------------------------------------------
+   // New histo, added by KA
+   TH2D *fhPurity_InclusiveJets;        // purity: phi angle and pT of unmatched det level jets; upon IRC request
+   TH2D *fhNormalization_Purity;        
+   THnSparse *fhJetEnergy_Angle_Resol;  // for thesis and checks
+   THnSparse *fhInclusiveRespMatrix_HM; // check unfolding
+   TH3D      *fhMissedEvents_HM;        // check unfolding
+
+   //-------------------------------------------------
+
    Double_t fZVertexCut;                              // vertex cut in z
 
    Int_t    fnHadronTTBins;                           // number of TT bins charged hadron
@@ -609,7 +619,7 @@ class AliAnalysisTaskEA : public AliAnalysisTaskEmcalJet {
    AliAnalysisTaskEA(const AliAnalysisTaskEA&);
    AliAnalysisTaskEA& operator=(const AliAnalysisTaskEA&);
 
-   ClassDef(AliAnalysisTaskEA, 40); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
+   ClassDef(AliAnalysisTaskEA, 41); // Charged jet analysis for pAliAnalysisTaskHJetSpectra/home/fkrizek/z501.ALIC
 
 };
 }

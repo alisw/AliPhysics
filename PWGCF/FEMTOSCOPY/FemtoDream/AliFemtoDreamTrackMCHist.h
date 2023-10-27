@@ -1,5 +1,5 @@
 /*
- * AliFemtoDreamTrackMCHist.h
+ *fMCSecKchDCAXYPtBins AliFemtoDreamTrackMCHist.h
  *
  *  Created on: Nov 14, 2017
  *      Author: gu74req
@@ -157,6 +157,7 @@ class AliFemtoDreamTrackMCHist {
   TH2F *fMCSecKlongDCAXYPtBins;       //!
   TH2F *fMCSecKshortDCAXYPtBins;      //!
   TH2F *fMCSecKchDCAXYPtBins;         //!
+  TH2F *fMCSecpichDCAXYPtBins;         //!
 
   TH1F *fMCpTPCDist[4];           //!
   TH1F *fMCetaDist[4];            //!

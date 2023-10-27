@@ -29,6 +29,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskParticleEff.cxx
+  AliAnalysisTaskParticleEffWithDoubleCounting.cxx
+  AliAnalysisTaskParticleEfficiencyMezonPhiDR.cxx
   AliAnalysisTaskParticleEffpbpb5020.cxx
   )
 

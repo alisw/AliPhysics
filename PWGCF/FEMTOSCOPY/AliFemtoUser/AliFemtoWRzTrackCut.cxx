@@ -242,6 +242,12 @@ bool AliFemtoWRzTrackCut::Pass( const AliFemtoTrack* track)
         if ( fdEdxcut && (track->P().Mag() < 3) && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal(), fmaxmom) )
           imost = 0;
       }
+      else if (fMostProbable == 17) { //different option of sigma settings 
+        if (IsDeuteronNSigma17(track->P().Mag(), track->NSigmaTPCD(), track->NSigmaTOFD()) )
+          imost = 17;
+        if ( fdEdxcut && (track->P().Mag() < 3) && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal(), fmaxmom) )
+          imost = 0;
+      }
     }
 
     //****Contour Method****
@@ -369,6 +375,21 @@ bool AliFemtoWRzTrackCut::IsDeuteronNSigma16(float mom, float nsigmaTPCD, float 
   return false;
 }
 
+bool AliFemtoWRzTrackCut::IsDeuteronNSigma17(float mom, float nsigmaTPCD, float nsigmaTOFD)
+{
+  if (fNsigmaTPCTOF) {
+    //for purity crosscheck
+    if (mom > 1.3){
+      if (TMath::Sqrt(nsigmaTPCD*nsigmaTPCD + nsigmaTOFD*nsigmaTOFD) < fNsigma)
+        return true;
+    }
+    else{
+      if (TMath::Abs(nsigmaTPCD) < fNsigma)
+        return true;
+    } 
+  }
+  return false;
+}
 
 //rejection methods
 bool AliFemtoWRzTrackCut::IsPionNSigmaRejection(float mom, float nsigmaTPCPi, float nsigmaTOFPi)

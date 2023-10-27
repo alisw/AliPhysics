@@ -9,6 +9,7 @@
 #include "AliInputEventHandler.h"
 #include "AliMultSelection.h"
 #include "AliPIDResponse.h"
+#include "AliVertexingHFUtils.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
 #include "AliAODRecoDecayHF.h"
@@ -475,6 +476,19 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   if (!fEvtCuts->isSelected(fEvent))
     return;
 
+  // selected event
+  float centrality = -1.;
+  AliMultSelection *multSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+  if(!multSelection){
+    AliWarning("AliMultSelection could not be found in the aod event list of objects");
+  } else {
+    centrality = multSelection->GetMultiplicityPercentile("V0M");
+  }
+  int tracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(fInputEvent, -1., 1.);
+  fHistPercentileV0MAllEvents->Fill(centrality);
+  fHistNtrackletsAllEvents->Fill(tracklets);
+  fHistRef08AllEvents->Fill(fEvent->GetMultiplicity());
+
   if(fCheckProtonSPDHit) { // force usage of global tracks since TPC only tracks have no ITS hits
     fTrackCutsPartProton->SetFilterBit(96);
     fTrackCutsPartAntiProton->SetFilterBit(96);
@@ -538,10 +552,19 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     
     int protonMotherPdg = 0;
     int protonPdg = 0;
-    bool isProtonSelected = fTrackCutsPartProton->isSelected(fProtonTrack);
-    bool isAntiProtonSelected = fTrackCutsPartAntiProton->isSelected(fProtonTrack);
 
-    if (fIsMC && (isProtonSelected || isAntiProtonSelected)){
+    /*
+    Do not put the value of isSelected condition in a variable because this function changes the fUse flag. Calling
+    isSelected on different track cuts in a sequence changes the behavior of the code.
+    e.g.
+    
+      bool isProtonSelected = fTrackCutsPartProton->isSelected(fProtonTrack);
+      bool isAntiProtonSelected = fTrackCutsPartAntiProton->isSelected(fProtonTrack);
+
+    will never select protons because if fProtonTrack == proton => fTrackCutsPartAntiProton->isSelected(fProtonTrack)
+    sets fUse = false
+    */
+    if (fIsMC && (fTrackCutsPartProton->isSelected(fProtonTrack) || fTrackCutsPartAntiProton->isSelected(fProtonTrack))){
       mcPart = (AliAODMCParticle *)fArrayMCAOD->At(track->GetLabel());
       if(mcPart){
         mcpdg = mcPart->GetPdgCode();
@@ -552,7 +575,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
     }
     
-    if (isProtonSelected) {
+    if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
       if (fUseMCTruthReco && (mcpdg == fTrackCutsPartProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)){
         fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
         fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
@@ -562,6 +585,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
         fProtonTrack->SetPDGCode(mcpdg);
+        fProtonTrack->SetParticleOrigin(AliFemtoDreamBasePart::PartOrigin(GetBuddyOrigin(mcPart)));
+        fProtonTrack->SetIsPrim(IsPrimaryCustom(fArrayMCAOD, mcPart));
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         protons.push_back(*fProtonTrack);
       }
@@ -574,12 +599,14 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
         fProtonTrack->SetPDGCode(mcpdg);
+        fProtonTrack->SetParticleOrigin(AliFemtoDreamBasePart::PartOrigin(GetBuddyOrigin(mcPart)));
+        fProtonTrack->SetIsPrim(IsPrimaryCustom(fArrayMCAOD, mcPart));
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         protons.push_back(*fProtonTrack);
         fHistBuddyplusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
       }
     }
-    if (isAntiProtonSelected) {
+    if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
       if(fUseMCTruthReco && (mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)) {
         fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
         fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
@@ -589,6 +616,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
         fProtonTrack->SetPDGCode(mcpdg);
+        fProtonTrack->SetParticleOrigin(AliFemtoDreamBasePart::PartOrigin(GetBuddyOrigin(mcPart)));
+        fProtonTrack->SetIsPrim(IsPrimaryCustom(fArrayMCAOD, mcPart));
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         antiprotons.push_back(*fProtonTrack);
       }
@@ -601,6 +630,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
         fProtonTrack->SetPDGCode(mcpdg);
+        fProtonTrack->SetParticleOrigin(AliFemtoDreamBasePart::PartOrigin(GetBuddyOrigin(mcPart)));
+        fProtonTrack->SetIsPrim(IsPrimaryCustom(fArrayMCAOD, mcPart));
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         antiprotons.push_back(*fProtonTrack);
         fHistBuddyminusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
@@ -1214,6 +1245,13 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
   }
 
+  // we have at least a D-LF pair
+  if ((dplus.size() > 0 || dminus.size() > 0) && (protons.size() > 0 || antiprotons.size() > 0)) {
+    fHistPercentileV0MEventsWithD->Fill(centrality);
+    fHistNtrackletsEventsWithD->Fill(tracklets);
+    fHistRef08EventsWithD->Fill(fEvent->GetMultiplicity());
+  }
+
   // flush the data
   PostData(1, fQA);
   PostData(2, fEvtHistList);
@@ -1330,6 +1368,8 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       if(saveCol("light_dcaxy")) tree.second->Branch("light_dcaxy", &dummyfloat);
       if(saveCol("light_label")) tree.second->Branch("light_label", &dummyint);
       if(fIsMC && saveCol("light_pdg")) tree.second->Branch("light_pdg", &dummyint);
+      if(fIsMC && saveCol("light_origin")) tree.second->Branch("light_origin", &dummyint);
+      if(fIsMC && saveCol("light_isprim")) tree.second->Branch("light_isprim", &dummybool);
       if(fIsMC && saveCol("light_motherpdg")) tree.second->Branch("light_motherpdg", &dummyint);
     }
 
@@ -1374,6 +1414,8 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       if(saveCol("light_dcaxy")) tree.second->Branch("light_dcaxy", &dummyfloat);
       if(saveCol("light_label")) tree.second->Branch("light_label", &dummyint);
       if(fIsMC && saveCol("light_pdg")) tree.second->Branch("light_pdg", &dummyint);
+      if(fIsMC && saveCol("light_origin")) tree.second->Branch("light_origin", &dummyint);
+      if(fIsMC && saveCol("light_isprim")) tree.second->Branch("light_isprim", &dummybool);
       if(fIsMC && saveCol("light_motherpdg")) tree.second->Branch("light_motherpdg", &dummyint);
     }
   }
@@ -1394,6 +1436,13 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   fQA->SetName("QA");
   fQA->SetOwner(kTRUE);
 
+  fHistPercentileV0MAllEvents = new TH1F("fHistPercentileV0MAllEvents", "all events; V0M percentile; counts", 10000, 0., 100.);
+  fHistPercentileV0MEventsWithD = new TH1F("fHistPercentileV0MEventsWithD", "events with D-LF pair; V0M percentile; counts", 10000, 0., 100.);
+  fHistNtrackletsAllEvents = new TH1F("fHistNtrackletsAllEvents", "all events; #it{N}_{tracklets}; counts", 300, -0.5, 299.5);
+  fHistNtrackletsEventsWithD = new TH1F("fHistNtrackletsEventsWithD", "events with D-LF pair; #it{N}_{tracklets}; counts",  300, -0.5, 299.5);
+  fHistRef08AllEvents = new TH1F("fHistRef08AllEvents", "all events; Ref08 Mult; counts", 300, -0.5, 299.5);
+  fHistRef08EventsWithD = new TH1F("fHistRef08EventsWithD", "events with D-LF pair; Ref08 Mult; counts",  300, -0.5, 299.5);
+
   if (fEvtCuts) {
     fEvtCuts->InitQA();
     if (fEvent->GetEvtCutList() && !fIsLightweight) {
@@ -1408,7 +1457,17 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
     }
   } else {
     AliWarning("Event cuts are missing! \n");
+    fEvtHistList = new TList();
+    fEvtHistList->SetName("EvtCuts");
+    fEvtHistList->SetOwner(true);
   }
+
+  fEvtHistList->Add(fHistPercentileV0MAllEvents);
+  fEvtHistList->Add(fHistPercentileV0MEventsWithD);
+  fEvtHistList->Add(fHistNtrackletsAllEvents);
+  fEvtHistList->Add(fHistNtrackletsEventsWithD);
+  fEvtHistList->Add(fHistRef08AllEvents);
+  fEvtHistList->Add(fHistRef08EventsWithD);
 
   if (!fConfig->GetMinimalBookingME() && fPairCleaner
       && fPairCleaner->GetHistList()) {

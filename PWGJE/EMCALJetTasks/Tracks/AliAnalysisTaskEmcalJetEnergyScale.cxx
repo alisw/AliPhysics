@@ -178,7 +178,7 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
     fHistos->CreateTH2("hAngularityPartHigh", "Angularity at partilce level", kNPtBinsPart, 0., kPtPartMax, 100, 0., 1.);
   }
   if(fFillHSparse){
-    TLinearBinning jetPtBinningDet(kNPtBinsDet, 0., kPtDetMax), jetPtBinningPart(600, 0., 600), nefbinning(100, 0., 1.), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi()),
+    TLinearBinning jetPtBinningDet(kNPtBinsDet, 0., kPtDetMax), jetPtBinningPart(600, 0., 600), nefbinning(105, 0., 1.05), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi()),
                    subsampleBinning(2, -0.5, 1.5), deltaRbinning(20, 0., 1.), statusbinningEff(3, -0.5, 2.5);
 
     const TBinning *diffbinning[3] = {&jetPtBinningPart, &nefbinning, &ptdiffbinning},
@@ -195,23 +195,23 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   for(std::size_t iptbin = 0; iptbin < ptbins.size() -1; iptbin++){
     int ptbminI = ptbins[iptbin],
         ptbmaxI = ptbins[iptbin+1];
-    fHistos->CreateTH2(Form("hJESVsNEFdet_%d_%d", ptbminI, ptbmaxI), Form("JES vs. NEF_{det} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 100, 0.,  1., 200, -1., 1.);
-    fHistos->CreateTH2(Form("hJESVsNEFpart_%d_%d", ptbminI, ptbmaxI), Form("JES vs. NEF_{part} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 100, 0.,  1., 200, -1., 1.);
+    fHistos->CreateTH2(Form("hJESVsNEFdet_%d_%d", ptbminI, ptbmaxI), Form("JES vs. NEF_{det} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 105, 0.,  1.05, 200, -1., 1.);
+    fHistos->CreateTH2(Form("hJESVsNEFpart_%d_%d", ptbminI, ptbmaxI), Form("JES vs. NEF_{part} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 105, 0.,  1.05, 200, -1., 1.);
     fHistos->CreateTH2(Form("hJESVsNConstDet_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{const,det} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.);
     fHistos->CreateTH2(Form("hJESVsNChargedDet_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{charged,det} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.);
     fHistos->CreateTH2(Form("hJESVsNNeutralDet_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{neutral,det} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.);
     fHistos->CreateTH2(Form("hJESVsNConstPart_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{const,part} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.);
     fHistos->CreateTH2(Form("hJESVsNChargedPart_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{charged,part} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.);
     fHistos->CreateTH2(Form("hJESVsNNeutralPart_%d_%d", ptbminI, ptbmaxI), Form("JES vs. N_{neutral,part} for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5,  100.5, 200, -1., 1.);
-    fHistos->CreateTH2(Form("hCompNEF_%d_%d", ptbminI, ptbmaxI), Form("Comparisons NEF for part. and det. jets for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 100, 0., 1., 100, 0., 1.);
+    fHistos->CreateTH2(Form("hCompNEF_%d_%d", ptbminI, ptbmaxI), Form("Comparisons NEF for part. and det. jets for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 100, 0., 1.05, 100, 0., 1.);
     fHistos->CreateTH2(Form("hCompNConst_%d_%d", ptbminI, ptbmaxI), Form("Comparisons Nconst for part. and det. jets for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5, 100.5, 101, -0.5, 100.5);
     fHistos->CreateTH2(Form("hCompNCharged_%d_%d", ptbminI, ptbmaxI), Form("Comparisons Nch for part. and det. jets for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5, 100.5, 101, -0.5, 100.5);
     fHistos->CreateTH2(Form("hCompNNeutral_%d_%d", ptbminI, ptbmaxI), Form("Comparisons Nne for part. and det. jets for jets with %d GeV/c < p_{t,part} < %d GeV/c", ptbminI, ptbmaxI), 101, -0.5, 100.5, 101, -0.5, 100.5);
   }
 
   // A bit of QA stuff
-  fHistos->CreateTH2("hQANEFPtPart", "Neutral energy fraction at part. level; p_{t} (GeV/c); NEF", 350, 0., 350., 100, 0., 1.);
-  fHistos->CreateTH2("hQANEFPtDet", "Neutral energy fraction at det. level; p_{t} (GeV/c); NEF", 350, 0., 350., 100, 0., 1.);
+  fHistos->CreateTH2("hQANEFPtPart", "Neutral energy fraction at part. level; p_{t} (GeV/c); NEF", 350, 0., 350., 105, 0., 1.05);
+  fHistos->CreateTH2("hQANEFPtDet", "Neutral energy fraction at det. level; p_{t} (GeV/c); NEF", 350, 0., 350., 105, 0., 1.05);
   fHistos->CreateTH2("hQAZchPtPart", "z_{ch,max} at part. level; p_{t} (GeV/c); z_{ch,max}", 350, 0., 350., 100, 0., 1.);
   fHistos->CreateTH2("hQAZchPtDet", "z_{ch,max} at det. level; p_{t} (GeV/c); z_{ch,max}", 350, 0., 350., 100, 0., 1.);
   fHistos->CreateTH2("hQAZnePtPart", "z_{ne,max} at part. level; p_{t} (GeV/c); z_{ne,max}", 350, 0., 350., 100, 0., 1.);
@@ -248,8 +248,8 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   fHistos->CreateTH2("hQADeltaRMaxNeutralDet", "#DeltaR vs. p_{t,jet} of neutral constituents (det. level); p_{t, jet} (GeV/c); #DeltaR", 350., 0., 350, 100, 0., 1);
   fHistos->CreateTH2("hQAJetAreaVsJetPtPart", "Jet area vs. jet pt at particle level; p_{t} (GeV/c); Area", 350, 0., 350., 200, 0., 2.);
   fHistos->CreateTH2("hQAJetAreaVsJetPtDet", "Jet area vs. jet pt at detector level; p_{t} (GeV/c); Area", 350, 0., 350., 200, 0., 2.);
-  fHistos->CreateTH2("hQAJetAreaVsNEFPart", "Jet area vs. NEF at particle level; NEF; Area", 100, 0., 1., 200, 0.,2.);
-  fHistos->CreateTH2("hQAJetAreaVsNEFDet", "Jet area vs. NEF at detector level; NEF; Area", 100, 0., 1., 200, 0., 2.);
+  fHistos->CreateTH2("hQAJetAreaVsNEFPart", "Jet area vs. NEF at particle level; NEF; Area", 105, 0., 1.05, 200, 0.,2.);
+  fHistos->CreateTH2("hQAJetAreaVsNEFDet", "Jet area vs. NEF at detector level; NEF; Area", 105, 0., 1.05, 200, 0., 2.);
   fHistos->CreateTH2("hQAJetAreaVsNConstPart", "Jet area vs. number of consituents at particle level; Number of constituents; Area", 101, -0.5, 100.5, 200, 0., 2.);
   fHistos->CreateTH2("hQAJetAreaVsNConstDet", "Jet area vs. number of consituents at detector level; Number of constituents; Area", 101, -0.5, 100.5, 200, 0., 2.);
   fHistos->CreateTH1("hQAMatchingDRAbs", "Distance between part. level jet and  det. level jet", 100, 0., 1.);

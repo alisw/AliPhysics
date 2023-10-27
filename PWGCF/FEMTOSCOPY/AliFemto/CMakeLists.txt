@@ -129,6 +129,7 @@ set(SRCS
   AliFemtoSimpleAnalysisOnlyMixP1.cxx
   AliFemtoVertexMultAnalysisOnlyMixP1.cxx
   AliFemtoPairkTPairCut.cxx
+  AliFemtoCutMonitorParticlePIDpdtHe3.cxx
   )
 
 # Headers from sources
@@ -195,6 +196,7 @@ set(HDRS ${HDRS}
   AliFemtoSimpleAnalysisOnlyMixP1.h
   AliFemtoVertexMultAnalysisOnlyMixP1.h
   AliFemtoPairkTPairCut.h
+  AliFemtoCutMonitorParticlePIDpdtHe3.h
   )
 
 set ( FSRCS
