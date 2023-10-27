@@ -112,7 +112,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetDisablePileup(bool disable) { fDisablePileup = disable; };
   void SetRequirePositiveCharge(bool newval) {fRequirePositive = newval;};
   void SetOnTheFly(bool newval) {fOnTheFly = newval;}
-  void SetOTFGenerator(AliAnalysisTaskDeform::GENERATOR gen) { fGenerator = gen; }
+  void SetOTFGenerator(TString gen) { fGenerator = gen; }
   void SetFillMptPowers(bool newval) { fFillMptPowers = newval; }
   void SetIPBins(Int_t nBins, Double_t *multibins);
   void SetUsePIDNUA(bool newval) { fUsePIDNUA = newval; }
@@ -142,8 +142,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fUseOldPileup;
   TString fDCAxyFunctionalForm;
   Bool_t fOnTheFly;
-  GENERATOR fGenerator;
-  std::map<GENERATOR, const char*> generatorMap;
+  TString fGenerator;
   AliMCEvent *fMCEvent; //! MC event
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
   TRandom *fRndm; 
@@ -250,7 +249,6 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   vector<vector<double>>  wpPtSubP;
   vector<vector<double>>  wpPtSubN;
   std::map<double,double> centralitymap;  
-  std::map<double,double> centralitymapHJ;  
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
   Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);
@@ -270,8 +268,6 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t LoadWeights(const Int_t &runno);
   AliMCEvent *getMCEvent();
   double getGeneratorCentrality();
-  double getAMPTCentrality();
-  double getHIJINGCentrality();
   void ProcessOnTheFly();
   Double_t getEfficiency(double &lpt, int iCent);
   vector<Double_t> getPowerEfficiency(double &lpt, int iCent);
