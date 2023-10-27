@@ -71,7 +71,11 @@ class AliAnalysisTaskfnAODsp : public AliAnalysisTaskSE {
   Double_t CosThetaStarHel0(TLorentzVector mother, TLorentzVector daughter0);
   Double_t CosThetaStarHel1(TLorentzVector mother, TLorentzVector daughter1);
   Double_t CosThetaStarHel2(TLorentzVector mother, TLorentzVector daughter2);
+  Double_t CosThetaStarJack0(TLorentzVector mother, TLorentzVector daughter0);
+  Double_t CosThetaStarJack1(TLorentzVector mother, TLorentzVector daughter1);
+  Double_t CosThetaStarJack2(TLorentzVector mother, TLorentzVector daughter2);
 
+  
 
   void SetFilterBit(Int_t fb)                    {this->fFilterBit   =  fb;}
   void Setkkshmasscut(Double_t mc)               {this->kkshmasscut = mc;}
@@ -87,6 +91,7 @@ class AliAnalysisTaskfnAODsp : public AliAnalysisTaskSE {
   void SetLT(Double_t lt)              {this->lifetime = lt;}
   void SetPIDpion(Double_t pidpi)              {this->pidpion = pidpi;}
   void SetPTC(Float_t cr, Float_t crfc, Double_t chi2global, Double_t chi2ITS)     {this->nCRcut=cr; this->ratiocrfccut=crfc; this->chi2globalcut=chi2global; this->chi2cut=chi2ITS;}
+  void Setframe(Int_t fra)              {this->frame = fra;}
 
 
 
@@ -173,6 +178,7 @@ class AliAnalysisTaskfnAODsp : public AliAnalysisTaskSE {
   Float_t ratiocrfccut;
   Double_t chi2globalcut;
   Double_t chi2cut;
+  Int_t frame;
 
   
   AliAnalysisTaskfnAODsp(const AliAnalysisTaskfnAODsp&);
