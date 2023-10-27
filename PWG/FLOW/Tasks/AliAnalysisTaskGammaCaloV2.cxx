@@ -101,6 +101,7 @@ ClassImp(AliAnalysisTaskGammaCaloV2)
                                                                fSetEventCutsOutputlist(),
                                                                fHistoMotherInvMassPtPhi(NULL),
                                                                fHistoMotherInvMassPt(NULL),
+                                                               fdPhiPi0(NULL),
                                                                fSparseMotherInvMassPtZM(NULL),
                                                                fHistoMotherBackInvMassPt(NULL),
                                                                fHistoMotherBackInvMassPtdPhi(NULL),
@@ -470,6 +471,7 @@ AliAnalysisTaskGammaCaloV2::AliAnalysisTaskGammaCaloV2(const char *name) : AliAn
                                                                            fSetEventCutsOutputlist(),
                                                                            fHistoMotherInvMassPtPhi(NULL),
                                                                            fHistoMotherInvMassPt(NULL),
+                                                                           fdPhiPi0(NULL),
                                                                            fSparseMotherInvMassPtZM(NULL),
                                                                            fHistoMotherBackInvMassPt(NULL),
                                                                            fHistoMotherBackInvMassPtdPhi(NULL),
@@ -1377,6 +1379,7 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
   {
     fHistoMotherInvMassPtPhi = new TH3F *[fnCuts];
     fHistoMotherInvMassPt = new TH2F *[fnCuts];
+    fdPhiPi0 = new TH1F *[fnCuts];
     fHistoMotherBackInvMassPt = new TH2F *[fnCuts];
     fHistoMotherBackInvMassPtdPhi = new TH3F *[fnCuts];
     if (!fDoLightOutput || fDoPi0Only || fDoECalibOutput)
@@ -1957,13 +1960,13 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
 
     if (fDoMesonAnalysis)
     {
-      double minPhi = 0;
-      double maxPhi = TMath::TwoPi();
-      int nPhiBins = 6;
+      double minPhi = -TMath::Pi();
+      double maxPhi = TMath::Pi();
+      int nPhiBins = 12;
       double arrPhiBin[nPhiBins + 1];
       for (Int_t i = 0; i < nPhiBins + 1; i++)
       {
-        arrPhiBin[i] = ((maxPhi - minPhi) / nPhiBins) * i;
+        arrPhiBin[i] = minPhi + ((maxPhi - minPhi) / nPhiBins) * i;
       }
       double arrMinvBin[nBinsMinv + 1];
       for (Int_t i = 0; i < nBinsMinv + 1; i++)
@@ -1979,6 +1982,9 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
       fHistoMotherInvMassPt[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
       fHistoMotherInvMassPt[iCut]->SetYTitle("p_{T} (GeV/c)");
       fESDList[iCut]->Add(fHistoMotherInvMassPt[iCut]);
+      fdPhiPi0[iCut] = new TH1F("fdPhiPi0", "fdPhiPi0", 200, -TMath::TwoPi(), TMath::TwoPi());
+      fdPhiPi0[iCut]->SetXTitle("deta phi");
+      fESDList[iCut]->Add(fdPhiPi0[iCut]);
       fHistoMotherBackInvMassPt[iCut] = new TH2F("ESD_Background_InvMass_Pt", "ESD_Background_InvMass_Pt", nBinsMinv, 0, maxMinv, nBinsPt, arrPtBinning);
       fHistoMotherBackInvMassPt[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
       fHistoMotherBackInvMassPt[iCut]->SetYTitle("p_{T} (GeV/c)");
@@ -6190,13 +6196,34 @@ void AliAnalysisTaskGammaCaloV2::CalculatePi0Candidates()
           }
           fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), tempPi0CandWeight);
           //        centSPD1 = fInputEvent->GetCentrality()->GetCentralityPercentile("CL1");
+          double dphiV0A = pi0cand->Phi() - fPsi2V0A;
+          double dphiV0C = pi0cand->Phi() - fPsi2V0C;
+          if (dphiV0C > TMath::Pi())
+          {
+            dphiV0C -= TMath::TwoPi();
+          }
+          if (dphiV0C < -1 * TMath::Pi())
+          {
+            dphiV0C += TMath::TwoPi();
+          }
+          if (dphiV0A > TMath::Pi())
+          {
+            dphiV0A -= TMath::TwoPi();
+          }
+          if (dphiV0A < -1 * TMath::Pi())
+          {
+            dphiV0A += TMath::TwoPi();
+          }
+
           if (pi0cand->Eta() > 0)
           {
-            fHistoMotherInvMassPtPhi[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), pi0cand->Phi() - fPsi2V0C, tempPi0CandWeight);
+            fHistoMotherInvMassPtPhi[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), dphiV0C, tempPi0CandWeight);
+            fdPhiPi0[fiCut]->Fill(dphiV0C);
           }
           else
           {
-            fHistoMotherInvMassPtPhi[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), pi0cand->Phi() - fPsi2V0A, tempPi0CandWeight);
+            fHistoMotherInvMassPtPhi[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), dphiV0A, tempPi0CandWeight);
+            fdPhiPi0[fiCut]->Fill(dphiV0A);
           }
 
           // fill new histograms
@@ -7597,13 +7624,31 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackground()
               ((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonLeadTrackSelection(fInputEvent, backgroundCandidate))
           {
             fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), tempBGCandidateWeight);
+            double dphiV0C = backgroundCandidate->Phi() - fPsi2V0C;
+            double dphiV0A = backgroundCandidate->Phi() - fPsi2V0A;
+            if (dphiV0C > TMath::Pi())
+            {
+              dphiV0C -= TMath::TwoPi();
+            }
+            if (dphiV0C < -1 * TMath::Pi())
+            {
+              dphiV0C += TMath::TwoPi();
+            }
+            if (dphiV0A > TMath::Pi())
+            {
+              dphiV0A -= TMath::TwoPi();
+            }
+            if (dphiV0A < -1 * TMath::Pi())
+            {
+              dphiV0A += TMath::TwoPi();
+            }
             if (backgroundCandidate->Eta() > 0)
             {
-              fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), backgroundCandidate->Phi() - fPsi2V0C, tempBGCandidateWeight);
+              fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), dphiV0C, tempBGCandidateWeight);
             }
             else
             {
-              fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), backgroundCandidate->Phi() - fPsi2V0A, tempBGCandidateWeight);
+              fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), dphiV0A, tempBGCandidateWeight);
             }
             if (fDoTHnSparse)
             {
@@ -7719,13 +7764,31 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackground()
                   ((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonLeadTrackSelection(fInputEvent, backgroundCandidate))
               {
                 fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), tempBGCandidateWeight);
+                double dphiV0C = backgroundCandidate->Phi() - fPsi2V0C;
+                double dphiV0A = backgroundCandidate->Phi() - fPsi2V0A;
+                if (dphiV0C > TMath::Pi())
+                {
+                  dphiV0C -= TMath::TwoPi();
+                }
+                if (dphiV0C < -1 * TMath::Pi())
+                {
+                  dphiV0C += TMath::TwoPi();
+                }
+                if (dphiV0A > TMath::Pi())
+                {
+                  dphiV0A -= TMath::TwoPi();
+                }
+                if (dphiV0A < -1 * TMath::Pi())
+                {
+                  dphiV0A += TMath::TwoPi();
+                }
                 if (backgroundCandidate->Eta() > 0)
                 {
-                  fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), backgroundCandidate->Phi() - fPsi2V0C, tempBGCandidateWeight);
+                  fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), dphiV0C, tempBGCandidateWeight);
                 }
                 else
                 {
-                  fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), backgroundCandidate->Phi() - fPsi2V0A, tempBGCandidateWeight);
+                  fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), dphiV0A, tempBGCandidateWeight);
                 }
               }
               delete backgroundCandidate;
@@ -7765,13 +7828,31 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackground()
                     tempBGCandidateWeight = 1;
                 }
                 fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), tempBGCandidateWeight);
+                double dphiV0C = backgroundCandidate->Phi() - fPsi2V0C;
+                double dphiV0A = backgroundCandidate->Phi() - fPsi2V0A;
+                if (dphiV0C > TMath::Pi())
+                {
+                  dphiV0C -= TMath::TwoPi();
+                }
+                if (dphiV0C < -1 * TMath::Pi())
+                {
+                  dphiV0C += TMath::TwoPi();
+                }
+                if (dphiV0A > TMath::Pi())
+                {
+                  dphiV0A -= TMath::TwoPi();
+                }
+                if (dphiV0A < -1 * TMath::Pi())
+                {
+                  dphiV0A += TMath::TwoPi();
+                }
                 if (backgroundCandidate->Eta() > 0)
                 {
-                  fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), backgroundCandidate->Phi() - fPsi2V0C, tempBGCandidateWeight);
+                  fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), dphiV0C, tempBGCandidateWeight);
                 }
                 else
                 {
-                  fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), backgroundCandidate->Phi() - fPsi2V0A, tempBGCandidateWeight);
+                  fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), dphiV0A, tempBGCandidateWeight);
                 }
                 if (fDoTHnSparse)
                 {
@@ -7834,13 +7915,31 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackground()
                   tempBGCandidateWeight = 1;
               }
               fHistoMotherBackInvMassPt[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), tempBGCandidateWeight);
+              double dphiV0C = backgroundCandidate->Phi() - fPsi2V0C;
+              double dphiV0A = backgroundCandidate->Phi() - fPsi2V0A;
+              if (dphiV0C > TMath::Pi())
+              {
+                dphiV0C -= TMath::TwoPi();
+              }
+              if (dphiV0C < -1 * TMath::Pi())
+              {
+                dphiV0C += TMath::TwoPi();
+              }
+              if (dphiV0A > TMath::Pi())
+              {
+                dphiV0A -= TMath::TwoPi();
+              }
+              if (dphiV0A < -1 * TMath::Pi())
+              {
+                dphiV0A += TMath::TwoPi();
+              }
               if (backgroundCandidate->Eta() > 0)
               {
-                fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), backgroundCandidate->Phi() - fPsi2V0C, tempBGCandidateWeight);
+                fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), dphiV0C, tempBGCandidateWeight);
               }
               else
               {
-                fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), backgroundCandidate->Phi() - fPsi2V0A, tempBGCandidateWeight);
+                fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(backgroundCandidate->M(), backgroundCandidate->Pt(), dphiV0A, tempBGCandidateWeight);
               }
               if (fDoTHnSparse)
               {
@@ -8015,7 +8114,7 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackgroundSwapp()
               {
                 if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate2.get(), kFALSE, ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPhoton2, ((AliAODConversionPhoton *)kCurrentClusterCandidates)->GetLeadingCellID()) && ((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->MesonLeadTrackSelection(fInputEvent, backgroundCandidate2.get()))
                 {
-                  vSwappingInvMassPT.push_back({backgroundCandidate2->M(), backgroundCandidate2->Pt(), backgroundCandidate1->Phi(), backgroundCandidate1->Eta()});
+                  vSwappingInvMassPT.push_back({backgroundCandidate2->M(), backgroundCandidate2->Pt(), backgroundCandidate2->Phi(), backgroundCandidate2->Eta()});
                   if ((!fDoLightOutput || fDoPi0Only) && TMath::Abs(backgroundCandidate2->GetAlpha()) < 0.1)
                   {
                     vSwappingInvMassPTAlphaCut.push_back({backgroundCandidate2->M(), backgroundCandidate2->Pt()});
@@ -8034,13 +8133,31 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackgroundSwapp()
       for (Int_t i = 0; i < (Int_t)vSwappingInvMassPT.size(); i++)
       {
         fHistoMotherBackInvMassPt[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], tempMultWeightSwapping * fWeightJetJetMC);
+        double dphiV0A = vSwappingInvMassPT.at(i)[2] - fPsi2V0A;
+        double dphiV0C = vSwappingInvMassPT.at(i)[2] - fPsi2V0C;
+        if (dphiV0C > TMath::Pi())
+        {
+          dphiV0C -= TMath::TwoPi();
+        }
+        if (dphiV0C < -1 * TMath::Pi())
+        {
+          dphiV0C += TMath::TwoPi();
+        }
+        if (dphiV0A > TMath::Pi())
+        {
+          dphiV0A -= TMath::TwoPi();
+        }
+        if (dphiV0A < -1 * TMath::Pi())
+        {
+          dphiV0A += TMath::TwoPi();
+        }
         if (vSwappingInvMassPT.at(i)[3] > 0)
         {
-          fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], vSwappingInvMassPT.at(i)[2] - fPsi2V0C, tempMultWeightSwapping * fWeightJetJetMC);
+          fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], dphiV0C, tempMultWeightSwapping * fWeightJetJetMC);
         }
         else
         {
-          fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], vSwappingInvMassPT.at(i)[2] - fPsi2V0A, tempMultWeightSwapping * fWeightJetJetMC);
+          fHistoMotherBackInvMassPtdPhi[fiCut]->Fill(vSwappingInvMassPT.at(i)[0], vSwappingInvMassPT.at(i)[1], dphiV0A, tempMultWeightSwapping * fWeightJetJetMC);
         }
       }
       if (((AliConversionMesonCuts *)fMesonCutArray->At(fiCut))->DoWeightingInSwappBg() && vSwappingInvMassPTAlphaCut.size() > 0)
