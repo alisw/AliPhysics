@@ -46,10 +46,12 @@ AliFemtoCutMonitorParticlePIDpdtHe3::AliFemtoCutMonitorParticlePIDpdtHe3(const c
   , fDCAZPt(nullptr) 
 {
   // Normal constructor
-  fTPCdEdx        = new TH2D(TString::Format("TPCdEdx%s", aName), "TPC dEdx vs. momentum", 200, 0.0, 4.0, 250, 0.0, 500.0);
-  fTOFNSigma      = new TH2D(TString::Format("TOFNSigma%s", aName), "TOF NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
-  fTPCNSigma      = new TH2D(TString::Format("TPCNSigma%s", aName), "TPC NSigma vs. momentum", 100, 0.0, 5.0, 100, -5.0, 5.0);
-  fMass           = new TH2D(TString::Format("Mass%s", aName), "m2 vs. p", 100, 0.0, 5.0,MassBin,LowMass,UpMass);
+ 
+ fTPCdEdx        = new TH2D(TString::Format("TPCdEdx%s", aName), "TPC dEdx vs. momentum", 40, 0.0, 4.0, 100, 0.0, 500.0);
+  fTOFNSigma      = new TH2D(TString::Format("TOFNSigma%s", aName), "TOF NSigma vs. momentum", 40, 0.0, 4.0, 200, -10.0, 10.0);
+  fTPCNSigma      = new TH2D(TString::Format("TPCNSigma%s", aName), "TPC NSigma vs. momentum", 40, 0.0, 4.0, 200, -10.0, 10.0);
+  fMass           = new TH2D(TString::Format("Mass%s", aName), "m2 vs. p", 40, 0.0, 4.0,MassBin,LowMass,UpMass);
+
 }
 
 AliFemtoCutMonitorParticlePIDpdtHe3::AliFemtoCutMonitorParticlePIDpdtHe3(const AliFemtoCutMonitorParticlePIDpdtHe3 &aCut):
