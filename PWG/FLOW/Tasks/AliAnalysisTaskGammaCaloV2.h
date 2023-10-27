@@ -203,8 +203,9 @@ protected:
   map<TString, Bool_t> fSetEventCutsOutputlist;        //! Store, if Output list for Event Cut has already been added
 
   // histograms for mesons reconstructed quantities
-  TH3F **fHistoMotherInvMassPtPhi;           //! array of histogram with signal + BG for same event photon pairs in deta phi, inv Mass, pt
-  TH2F **fHistoMotherInvMassPt;              //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
+  TH3F **fHistoMotherInvMassPtPhi; //! array of histogram with signal + BG for same event photon pairs in deta phi, inv Mass, pt
+  TH2F **fHistoMotherInvMassPt;    //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
+  TH1F **fdPhiPi0;
   THnSparseF **fSparseMotherInvMassPtZM;     //! array of THnSparseF with signal + BG for same event photon pairs, inv Mass, pt
   TH2F **fHistoMotherBackInvMassPt;          //! array of histogram with BG for mixed event photon pairs, inv Mass, pt
   TH3F **fHistoMotherBackInvMassPtdPhi;      //! array of histogram with BG for mixed event photon pairs in deta phi, inv Mass, pt
