@@ -4263,31 +4263,27 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008e113","411790009feh2230000","0s631031000000d0"); // EG2, no FT
     cuts.AddCutCalo("0008d113","411790009feh2230000","0s631031000000d0"); // EG1, no FT
 
-    // configs with new FT and old FT
-  } else if (trainConfig == 2592){  // EMCAL+DCAL NLM = 1-100, INT7, NL , std TM, swapping back., NoNCell cut
-    cuts.AddCutCalo("00010113","411790109fe30230000","0s631031000000d0"); // INT7 NL 01, (new FT)
-    cuts.AddCutCalo("00010113","411790109fe3n230000","0s631031000000d0"); // INT7 NL 01, (new FT)
-  } else if (trainConfig == 2593){  // EMCAL+DCAL NLM = 1-100, INT7, NL , std TM, swapping back., NoNCell cut
-    cuts.AddCutCalo("00010113","411792109fe30230000","0s631031000000d0"); // INT7 NL 21 (old FT)
-    cuts.AddCutCalo("00010113","411792109fe3n230000","0s631031000000d0"); // INT7 NL 21 (old FT)
-
-  } else if (trainConfig == 2594){  // Standard cut, No NCell cut, with non-Lin for nomB which can also be applied to low-B
-    cuts.AddCutCalo("00010113","411799309fe30230000","0s631031000000d0"); // INT7 NL 01, (new FT)
-
-  } else if (trainConfig == 2595){  // run1 checks
-    cuts.AddCutCalo("00010103","111110106fe30220000","0s631031000000d0"); // INT7 NL 01
-    cuts.AddCutCalo("00010103","111110106fe30220003","0s631031000000d0"); // INT7 NL 01, NLM <=2
-    cuts.AddCutCalo("00010103","111110106fe3n220003","0s631031000000d0"); // INT7 NL 01, NLM <=2, NCells >= 2
-  } else if (trainConfig == 2596){  // run1 checks
-    cuts.AddCutCalo("00081103","111110106fe30220000","0s631031000000d0"); // INT7 NL 01
-    cuts.AddCutCalo("00081103","111110106fe30220003","0s631031000000d0"); // INT7 NL 01, NLM <=2
-
-  } else if (trainConfig == 2597){  // run1 checks
+  // Run1 material TRD checks
+  } else if (trainConfig == 2592){  // run1 checks
     cuts.AddCutCalo("00010103","111110006fe30220000","0s631031000000d0"); // INT7 NL in corr framework
     cuts.AddCutCalo("00010103","111110006fe3n220000","0s631031000000d0"); // INT7 NL in corr framework
-  } else if (trainConfig == 2598){  // run1 checks
+  } else if (trainConfig == 2593){  // run1 checks
     cuts.AddCutCalo("00081103","111110006fe30220000","0s631031000000d0"); // EGA NL in corr framework
     cuts.AddCutCalo("00081103","111110006fe3n220000","0s631031000000d0"); // EGA NL in corr framework
+  
+  } else if (trainConfig == 2594){  // run1 checks
+    cuts.AddCutCalo("00010103","111210006fe30220000","0s631031000000d0"); // INT7 NL in corr framework, Modules without TRD
+    cuts.AddCutCalo("00010103","111210006fe3n220000","0s631031000000d0"); // INT7 NL in corr framework, Modules without TRD
+  } else if (trainConfig == 2595){  // run1 checks
+    cuts.AddCutCalo("00081103","111210006fe30220000","0s631031000000d0"); // EGA NL in corr framework, Modules without TRD
+    cuts.AddCutCalo("00081103","111210006fe3n220000","0s631031000000d0"); // EGA NL in corr framework, Modules without TRD
+
+  } else if (trainConfig == 2596){  // run1 checks
+    cuts.AddCutCalo("00010103","111130006fe30220000","0s631031000000d0"); // INT7 NL in corr framework, Modules with TRD
+    cuts.AddCutCalo("00010103","111130006fe3n220000","0s631031000000d0"); // INT7 NL in corr framework, Modules with TRD
+  } else if (trainConfig == 2597){  // run1 checks
+    cuts.AddCutCalo("00081103","111130006fe30220000","0s631031000000d0"); // EGA NL in corr framework, Modules with TRD
+    cuts.AddCutCalo("00081103","111130006fe3n220000","0s631031000000d0"); // EGA NL in corr framework, Modules with TRD
 
 
     //*************************************************************************************************
@@ -4331,7 +4327,7 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2623){ // min energy variation std 0.3 GeV/c
     //                                     |
     // cuts.AddCutCalo("00010113","24466190sa00cc00000","0163103100000010"); //0:     off
-    cuts.AddCutCalo("00010113","24466190sa09cc00000","0163103100000010"); //9:     0.1 GeV/c
+    cuts.AddCutCalo("00010113","24466190sa07cc00000","0163103100000010"); //7:     0.2 GeV/c
     cuts.AddCutCalo("00010113","24466190sa02cc00000","0163103100000010"); //2:     0.5 GeV/c
     cuts.AddCutCalo("00010113","24466190sa03cc00000","0163103100000010"); //3:     0.6 GeV/c
     cuts.AddCutCalo("00010113","24466190sa04cc00000","0163103100000010"); //4:     0.7 GeV/c
