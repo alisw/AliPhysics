@@ -196,6 +196,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetVerbose(Bool_t v) {this->fVerbose = v;};
   void SetRandomSeed(UInt_t rs) {this->fRandomSeed = rs;};
   void SetTrigger(const char *t) {this->fTrigger = t; this->fUseTrigger = kTRUE;};
+  void SetInsanityChecksForEachParticle(Bool_t icfip) {this->fInsanityChecksForEachParticle = icfip;};
 
   void SetControlEventHistogramsList(TList* const cehl) {this->fControlEventHistogramsList = cehl;};
   TList* GetControlEventHistogramsList() const {return this->fControlEventHistogramsList;} 
@@ -660,6 +661,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fUseFixedNumberOfRandomlySelectedParticles; // use or not fixed number of randomly selected particles in each event. Use always in combination with SetUseFisherYates(kTRUE)
   Int_t fFixedNumberOfRandomlySelectedParticles; // set here a fixed number of randomly selected particles in each event. Use always in combination with SetUseFisherYates(kTRUE)
   Bool_t fHistogramBookingsWithRunInfoWereUpdated; // makes sure that UpdateHistogramBookingsWithRunInfo() is called only once in UserExec()
+  Bool_t fInsanityChecksForEachParticle; // do insanity checks for each particle
 
   // 1) QA:
   TList *fQAList; // base list to hold all QA output object
@@ -858,7 +860,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo() 
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,37);
+  ClassDef(AliAnalysisTaskMuPa,38);
 
 };
 
