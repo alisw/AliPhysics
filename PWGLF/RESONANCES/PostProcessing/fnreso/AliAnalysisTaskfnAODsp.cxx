@@ -1121,8 +1121,24 @@ Double_t AliAnalysisTaskfnAODsp::CosThetaStarJack0(TLorentzVector mother, TLoren
 
 {
 
-  daughter0.Boost(-mother.BoostVector());
-  return TMath::Abs(daughter0.CosTheta());
+  Double_t Ebeam = 6500;
+  Double_t beamMass = 0.93827231;
+  Double_t Pbeam = TMath::Sqrt((Ebeam*Ebeam)-(beamMass*beamMass));
+
+  TLorentzVector pProjCM(0,0, Pbeam, Ebeam);//projectile                                                                                      
+
+  Double_t betaX = -mother.X() / mother.E();
+  Double_t betaY = -mother.Y() / mother.E();
+  Double_t betaZ = -mother.Z() / mother.E();
+
+  daughter0.Boost(betaX, betaY, betaZ);
+  pProjCM.Boost(betaX, betaY, betaZ);
+
+
+  TVector3 zAxisJA = (pProjCM.Vect()).Unit();
+  Double_t thetaJA= zAxisJA.Dot((daughter0.Vect()).Unit());
+
+  return TMath::Abs(thetaJA);
 
 }
 
@@ -1131,16 +1147,48 @@ Double_t AliAnalysisTaskfnAODsp::CosThetaStarJack1(TLorentzVector mother, TLoren
 
 {
 
-  daughter1.Boost(-mother.BoostVector());
-  return TMath::Abs(daughter1.CosTheta());
+  Double_t Ebeam = 6500;
+  Double_t beamMass = 0.93827231;
+  Double_t Pbeam = TMath::Sqrt((Ebeam*Ebeam)-(beamMass*beamMass));
 
+  TLorentzVector pProjCM(0,0, Pbeam, Ebeam);//projectile                                                                                      
+
+  Double_t betaX = -mother.X() / mother.E();
+  Double_t betaY = -mother.Y() / mother.E();
+  Double_t betaZ = -mother.Z() / mother.E();
+
+  daughter1.Boost(betaX, betaY, betaZ);
+  pProjCM.Boost(betaX, betaY, betaZ);
+
+
+  TVector3 zAxisJA = (pProjCM.Vect()).Unit();
+  Double_t thetaJA= zAxisJA.Dot((daughter1.Vect()).Unit());
+
+  return TMath::Abs(thetaJA);
+  
 }
 
 Double_t AliAnalysisTaskfnAODsp::CosThetaStarJack2(TLorentzVector mother, TLorentzVector daughter2)
 
 {
 
-  daughter2.Boost(-mother.BoostVector());
-  return TMath::Abs(daughter2.CosTheta());
+  Double_t Ebeam = 6500;
+  Double_t beamMass = 0.93827231;
+  Double_t Pbeam = TMath::Sqrt((Ebeam*Ebeam)-(beamMass*beamMass));
 
+  TLorentzVector pProjCM(0,0, Pbeam, Ebeam);//projectile                                                                                      
+
+  Double_t betaX = -mother.X() / mother.E();
+  Double_t betaY = -mother.Y() / mother.E();
+  Double_t betaZ = -mother.Z() / mother.E();
+
+  daughter2.Boost(betaX, betaY, betaZ);
+  pProjCM.Boost(betaX, betaY, betaZ);
+
+
+  TVector3 zAxisJA = (pProjCM.Vect()).Unit();
+  Double_t thetaJA= zAxisJA.Dot((daughter2.Vect()).Unit());
+
+  return TMath::Abs(thetaJA);
+  
 }
