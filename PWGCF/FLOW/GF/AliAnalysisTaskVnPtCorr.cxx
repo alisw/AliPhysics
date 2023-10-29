@@ -2473,8 +2473,10 @@ Bool_t AliAnalysisTaskVnPtCorr::AcceptAOD(AliAODEvent *inEv) {
     fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true);
 
     const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
-    const auto v0Est = pms->GetEstimator("V0M");
-    if (v0Est->GetValue()/v0Est->GetMean() < fV0MRatioCut) return kFALSE;
+    if (pms) {
+      const auto v0Est = pms->GetEstimator("V0M");
+      if (v0Est->GetValue()/v0Est->GetMean() < fV0MRatioCut) return kFALSE;
+    }
   }
 
   if (fPeriod.EqualTo("LHC15o_pass2") || fPeriod.EqualTo("LHC15o_pass2_Closure")) {
