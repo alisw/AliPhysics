@@ -53,6 +53,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fUseFixedNumberOfRandomlySelectedParticles(kFALSE),
  fFixedNumberOfRandomlySelectedParticles(0),
  fHistogramBookingsWithRunInfoWereUpdated(kFALSE),
+ fInsanityChecksForEachParticle(kFALSE),
 
  // QA:
  fQAList(NULL),
@@ -224,6 +225,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fUseFixedNumberOfRandomlySelectedParticles(kFALSE),
  fFixedNumberOfRandomlySelectedParticles(0),
  fHistogramBookingsWithRunInfoWereUpdated(kFALSE),
+ fInsanityChecksForEachParticle(kFALSE),
 
  // QA:
  fQAList(NULL),
@@ -611,6 +613,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
   if(fUseDiffWeights[wPHIPT])
   {
    wPhi = DiffWeight(dPhi,dPt,wPHIPT); // corresponding differential phi weight as a function of pt
+   //cout<<"wPhi(pt) = "<<wPhi<<endl;
    if(!(wPhi > 0.))
    {
     cout<<"differential wPhi(Pt) is not positive, skipping this particle for the time being..."<<endl;
@@ -622,6 +625,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
   if(fUseDiffWeights[wPHIETA])
   {
    wPhi = DiffWeight(dPhi,dEta,wPHIETA); // corresponding differential phi weight as a function of eta
+   //cout<<"wPhi(eta) = "<<wPhi<<endl;
    if(!(wPhi > 0.))
    {
     cout<<"differential wPhi(eta) is not positive, skipping this particle for the time being..."<<endl;
@@ -635,8 +639,8 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
   {
    for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
    {
-    if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]){wToPowerP = pow(wPhi*wPt*wEta,wp);} 
-    fQvector[h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi));    
+    if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]||fUseDiffWeights[wPHIPT]||fUseDiffWeights[wPHIETA]){wToPowerP = pow(wPhi*wPt*wEta,wp);}
+    fQvector[h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi));   
    } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
   } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
 
@@ -674,7 +678,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    {
     for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
     {
-     if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]){wToPowerP = pow(wPhi*wPt*wEta,wp);} 
+     if(fUseDiffWeights[wPHIPT]){wToPowerP = pow(wPhi*wPt*wEta,wp);} // TBI 20231029 do I need here also || fUseDiffWeights[wPHIETA] ?
      fqvector[PTq][bin-1][h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi));
     } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
    } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
@@ -723,7 +727,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    {
     for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
     {
-     if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]){wToPowerP = pow(wPhi*wPt*wEta,wp);}
+     if(fUseDiffWeights[wPHIETA]){wToPowerP = pow(wPhi*wPt*wEta,wp);} // TBI 20231029 do I need here also || fUseDiffWeights[wPHIPT] ?
      fqvector[ETAq][bin-1][h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi)); 
     } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
    } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
@@ -1710,6 +1714,33 @@ void AliAnalysisTaskMuPa::InsanityChecks()
   if(fKineDependenceBins[ETAq]->GetSize()<2){cout<<__LINE__<<endl;exit(1);}
  }
 
+ // j) Particle weights:
+ if(fUseWeights[0] && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]) 
+ {
+  Red(Form("Not tested and finalized yet, in UserExec() I need to re-think how constant phi weights are used for fqvector[...] . Same for other weights. "));
+  cout<<__LINE__<<endl;exit(1);
+ }
+ if(fUseWeights[0] && fUseDiffWeights[wPHIPT]) 
+ {
+  Red(Form("Not tested and fianlized yet, in UserExec() I need to re-think the constraint if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]). Same for other weights."));
+  cout<<__LINE__<<endl;exit(1);
+ }
+ if(fUseDiffWeights[wPHIPT] && fUseDiffWeights[wPHIETA]) 
+ {
+  Red(Form("Not tested yet, see the comments next to filling of fqvector[...] in UserExec()"));
+  cout<<__LINE__<<endl;exit(1);
+ }
+ if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT] && fUseDiffWeights[wPHIETA]) 
+ {
+  Red(Form("Not tested and finalized yet, in UserExec() I need to re-think how in this case weights are used for fqvector[...] ."));
+  cout<<__LINE__<<endl;exit(1);
+ }
+ if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA] && fUseDiffWeights[wPHIPT]) 
+ {
+  Red(Form("Not tested and finalized yet, in UserExec() I need to re-think how in this case weights are used for fqvector[...] ."));
+  cout<<__LINE__<<endl;exit(1);
+ }
+
  //Green("=> Done with InsanityChecks()!");
 
 } // void AliAnalysisTaskMuPa::InsanityChecks()
@@ -1722,7 +1753,7 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
- fBasePro = new TProfile("fBasePro","flags for the whole analysis",16,0.,16.);
+ fBasePro = new TProfile("fBasePro","flags for the whole analysis",17,0.,17.);
  fBasePro->SetStats(kFALSE);
  fBasePro->SetLineColor(COLOR);
  fBasePro->SetFillColor(FILLCOLOR);
@@ -1742,6 +1773,7 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
  fBasePro->GetXaxis()->SetBinLabel(14,"fUseFixedNumberOfRandomlySelectedParticles"); fBasePro->Fill(13.5,fUseFixedNumberOfRandomlySelectedParticles);
  fBasePro->GetXaxis()->SetBinLabel(15,"fFixedNumberOfRandomlySelectedParticles"); fBasePro->Fill(14.5,fFixedNumberOfRandomlySelectedParticles);
  fBasePro->GetXaxis()->SetBinLabel(16,"fFillControlParticleHistograms"); fBasePro->Fill(15.5,fFillControlParticleHistograms);
+ fBasePro->GetXaxis()->SetBinLabel(17,"fInsanityChecksForEachParticle"); fBasePro->Fill(16.5,fInsanityChecksForEachParticle);
 
  fBaseList->Add(fBasePro);
 
@@ -4998,6 +5030,8 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
    Double_t nestedLoopValue = this->CalculateCustomNestedLoop(harmonics);
    if(TMath::Abs(nestedLoopValue) > 0. && TMath::Abs(twoC.Re() - nestedLoopValue)>1.e-5)
    {          
+    cout<<twoC.Re()<<endl;
+    cout<<nestedLoopValue<<endl;
     cout<<__LINE__<<endl; exit(1);
    } 
    else
@@ -5976,14 +6010,17 @@ Double_t AliAnalysisTaskMuPa::DiffWeight(const Double_t &valueY, const Double_t 
  //    Based on that, I decide from which histogram I fetch weight for y. See MakeWeights.C 
  // TBI 20231026 I do it at the moment this way just to move on, but this can be optimized clearly. 
  Int_t binX = 1;
- if(valueX<fKineDependenceBins[dw]->At(0))
+ if(fInsanityChecksForEachParticle)
  {
-  cout<<__LINE__<<endl; exit(1); // underflow. this means that I didn't use the same cuts now, and I was using when making the particle weights. Check the cuts.
- }
- if(valueX>=fKineDependenceBins[dw]->At(fKineDependenceBins[dw]->GetSize()-1))
- {
-  cout<<__LINE__<<endl; exit(1); // overflow. this means that I didn't use the same cuts now, and I was using when making the particle weights. Check the cuts.
- }
+  if(valueX<fKineDependenceBins[dw]->At(0))
+  {
+   cout<<__LINE__<<endl; exit(1); // underflow. this means that I didn't use the same cuts now, and I was using when making the particle weights. Check the cuts.
+  }
+  if(valueX>=fKineDependenceBins[dw]->At(fKineDependenceBins[dw]->GetSize()-1))
+  {
+   cout<<__LINE__<<endl; exit(1); // overflow. this means that I didn't use the same cuts now, and I was using when making the particle weights. Check the cuts.
+  }
+ } // fInsanityChecksForEachParticle
 
  for(Int_t e=1; e<fKineDependenceBins[dw]->GetSize(); e++) // TBI 20231026 this is a landmine, because it's not guaranteed that wPHIPT = PTq = 0, and wPHIETA = ETAq = 1, but it's fine now.
  {
@@ -6178,7 +6215,7 @@ TH1D *AliAnalysisTaskMuPa::GetHistogramWithWeights(const char *filePath, const c
  if(!weightsFile){cout<<__LINE__<<endl;exit(1);}
  hist = (TH1D*)(weightsFile->Get(Form("%s_%s",variable,fTaskName.Data())));
  if(!hist){hist = (TH1D*)(weightsFile->Get(Form("%s",variable)));} // yes, for some simple tests I can have only histogram named e.g. 'phi'
- if(!hist){Red(Form("%s_%s",variable,fTaskName.Data())); cout<<__LINE__<<endl;exit(1);}
+ if(!hist){Red(Form("%s_%s",variable,fTaskName.Data())); weightsFile->ls(); cout<<__LINE__<<endl;exit(1);}
  hist->SetDirectory(0);
  hist->SetTitle(filePath);
 
@@ -8030,6 +8067,8 @@ void AliAnalysisTaskMuPa::CalculateKineCorrelations(const char* kc)
     Double_t nestedLoopValue = this->CalculateKineCustomNestedLoop(harmonics,kc,b);  
     if(TMath::Abs(nestedLoopValue) > 0. && TMath::Abs(twoC.Re() - nestedLoopValue)>1.e-5)
     {          
+     cout<<twoC.Re()<<endl;
+     cout<<nestedLoopValue<<endl;
      cout<<__LINE__<<endl; exit(1);
     } 
     else
