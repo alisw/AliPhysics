@@ -573,7 +573,7 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
   AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
   AliMultSelection *mult_selection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
   Double_t  centper = alicent->GetCentralityPercentile("V0M");
-  if(mult_selection->GetMultiplicityPercentile("V0M") < 30.0 || mult_selection->GetMultiplicityPercentile("V0M") >  50.0) 
+  if(mult_selection->GetMultiplicityPercentile("V0M") < 0.000001 || mult_selection->GetMultiplicityPercentile("V0M") >  10.0) 
      return; 
 //if(mult_selection->GetMultiplicityPercentile("V0M") < fmincen || mult_selection->GetMultiplicityPercentile("V0M") >  fmaxce
 
