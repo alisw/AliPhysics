@@ -1,7 +1,7 @@
 AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
   TString	taskName = "beauty",
   TString	fDataType = "data",
-  TString	fPeriod = "period16",
+  TString	fPeriod = "16period",
   TString	fPass = "pass1",
   bool		isPP = true,
   double	multRef = 11.7,
@@ -15,9 +15,6 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
   double	tpcPIDhigh = 3,
   double	tofPID = 3)
 {
-  bool isMC = false;
-  TString flagMC(dtype);
-  if(!flagMC.EqualTo("data")) isMC = true;
   
   //TString taskName = "beauty";
   //TString itsLayer = citsLayer;
@@ -28,7 +25,10 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
   printf("Data type: %s \n", fDataType.Data());
   printf("Period info: %s \n", fPeriod.Data());
   printf("Reconstruction info: %s \n", fPass.Data());
-  printf("MC Flag: %d \n",isMC);
+  char *strMCflag;
+  if(fDataType.EqualTo("data")) strMCflag = "False";
+  else strMCflag = "True";
+  printf("MC Flag: %s \n", strMCflag);
   printf("Min. TPC crossed raw: %d \n", minTPCnCrossedRow);
   printf("Min. TPC clusters for PID: %d \n", minTPCnClsPID);
   printf("Max. TPC chi2/ndf: %.1f \n", maxTPCchi2);
@@ -52,7 +52,7 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
   // now we create an instance of your task
   AliAnalysisTaskBEpp13TeV* task = new AliAnalysisTaskBEpp13TeV(taskName.Data());   
   if(!task) return 0x0;
-  if(!isMC) task->SelectCollisionCandidates(AliVEvent::kINT7);
+  if(fDataType.EqualTo("data")) task->SelectCollisionCandidates(AliVEvent::kINT7);
   task->SetMinTPCnCrossedRow(minTPCnCrossedRow);
   task->SetMinTPCNclsPID(minTPCnClsPID);
   task->SetMaxTPCchi2(maxTPCchi2);
@@ -112,13 +112,13 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
     return 0x0;
   }
   printf("===============================================================\n");
-  printf("\n\nnfNtrkletAvg_%s will be used in the multiplcity correction!!!\n\n", period.Data());
+  printf("\n\nnfNtrkletAvg_%s will be used in the multiplcity correction!!!\n\n", fPeriod.Data());
   printf("===============================================================\n");
   task->SetEstimatorAvg(multEstimatorAvg);
   //===================================================================================================================
 
 
-  if(isMC){
+  if(!fDataType.EqualTo("data")){
     TString pathNchCorr = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/weightNtrkCorr.root";
     printf("Correction for Ntrklet to Nch conversion from %s \n", pathNchCorr.Data());
     TFile *fileNchCorr = TFile::Open(pathNchCorr.Data());
@@ -133,7 +133,7 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
   }
 
   
-  if(isMC){
+  if(!fDataType.EqualTo("data")){
 	task->SetMCanalysis();
 
 	// B meson pt correction
