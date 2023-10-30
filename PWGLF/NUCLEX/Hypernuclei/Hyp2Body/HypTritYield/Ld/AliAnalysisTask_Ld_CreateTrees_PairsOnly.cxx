@@ -4591,7 +4591,7 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
 
   // define open deuteron and antideuteron track cuts
-  double Deuteron_pT_min = 0.0;
+  double Deuteron_pT_min = 0.5;
   double Deuteron_pT_max = 3.0;
   double Deuteron_eta_min = -0.8;
   double Deuteron_eta_max = +0.8;
@@ -4605,7 +4605,7 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
   int Deuteron_TPC_nCluster_min = 70;
   int Deuteron_TPC_nCrossedRows_min = 60;
   int Deuteron_TPC_nSharedCluster_max = 2;
-  double Deuteron_TPC_Threshold = 1.5;
+  double Deuteron_TPC_Threshold = 1.2;
 
   double Deuteron_TOF_m2_nSigma_max = 4.0;
 
@@ -4651,7 +4651,14 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
   // apply TPC nSigma cut
   double TPC_dEdx_nSigma = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kDeuteron);
   if(TMath::IsNaN(TPC_dEdx_nSigma)) return PassedParticleCuts;
-  if(TMath::Abs(TPC_dEdx_nSigma) > Deuteron_TPC_dEdx_nSigma_max) return PassedParticleCuts;
+
+  if(fUseOpenCuts == false){
+    if(TMath::Abs(TPC_dEdx_nSigma) > Deuteron_TPC_dEdx_nSigma_max) return PassedParticleCuts;
+  }
+
+  if(fUseOpenCuts == true){
+    if(TMath::Abs(TPC_dEdx_nSigma) > 8.0) return PassedParticleCuts;
+  }
 
   // get DCA information
   float xv[2];
@@ -4785,17 +4792,7 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
     double TOF_m2	  = CalculateMassSquareTOF(Track);
     double TOF_m2_nSigma  = CalculateSigmaMassSquareTOF(pT,TOF_m2,ParticleSpecies,RunNumber);
 
-    if(fUseOpenCuts == true){
-
-      if(TOF_m2 < 2.0 || TOF_m2 > 6.0) return PassedParticleCuts;
-
-    }
-
-    if(fUseOpenCuts == false){
-
-      if(TMath::Abs(TOF_m2_nSigma) > Deuteron_TOF_m2_nSigma_max) return PassedParticleCuts;
- 
-    }
+    if(TMath::Abs(TOF_m2_nSigma) > Deuteron_TOF_m2_nSigma_max) return PassedParticleCuts;
 
   } // end of TOFisOK
 
