@@ -1,6 +1,6 @@
 #include "TString.h"
 #include "TGrid.h"
-#include "AliAnalysisPtCorr.h"
+#include "AliAnalysisTaskPtCorr.h"
 class AliAnalysisDataContainer;
 class TNamed;
 Bool_t ConnectToGrid() {
@@ -26,7 +26,7 @@ AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, TString efficiency
   //Full analysis
   TObjArray *AllContainers = mgr->GetContainers();
   Bool_t gridConnected=kFALSE;
-  if(!(IsMC) {
+  if(!IsMC) {
     if(!AllContainers->FindObject("Efficiency")) {
       printf("Getting input...\n");
       if(efficiencyPath.IsNull()) { printf("Efficiency path not provided!\n"); return 0; };

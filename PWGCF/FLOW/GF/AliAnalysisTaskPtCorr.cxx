@@ -563,7 +563,7 @@ void AliAnalysisTaskPtCorr::FillWPCounter(vector<vector<double>> &inarr, double 
   return;
 }
 void AliAnalysisTaskPtCorr::LoadCorrectionsFromLists(){
-  fEfficiencyList = (TList*)GetInputData(2); //Efficiencies start from input slot 2
+  fEfficiencyList = (TList*)GetInputData(1); //Efficiencies start from input slot 2
   fEfficiencies = new TH1D*[fNV0MBinsDefault];
   for(Int_t i=0;i<fNV0MBinsDefault;i++) {
       fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
