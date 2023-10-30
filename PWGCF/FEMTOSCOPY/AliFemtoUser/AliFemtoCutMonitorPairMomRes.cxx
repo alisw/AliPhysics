@@ -23,7 +23,7 @@ AliFemtoCutMonitorPairMomRes::AliFemtoCutMonitorPairMomRes():
   fMomResTrueMass = new TH2D("PairMomResTrueMass","PairMomResTrueMass",100,0,2,100,0,2);
   fMomRes_KPpairOnly = new TH2D("PairMomRes_KPpairOnly","PairMomRes_KPpairOnly",100,0,2,100,0,2);
   fMomResTrueMass_KPpairOnly = new TH2D("PairMomResTrueMass_KPpairOnly","PairMomResTrueMass_KPpairOnly",100,0,2,100,0,2);
-  fMomRes_pdpairOnly = new TH2D("PairMomRes_kdpairOnly","PairMomRes_kdpairOnly",200,0,2,200,0,2);
+  fMomRes_pdpairOnly = new TH2D("PairMomRes_pdpairOnly","PairMomRes_pdpairOnly",200,0,2,200,0,2);
   fMomResTrueMass_pppairOnly = new TH2D("PairMomResTrueMass_pppairOnly","PairMomResTrueMass_pppairOnly",200,0,2,200,0,2);
   fMomResTrueMass_kdpairOnly = new TH2D("PairMomResTrueMass_kdpairOnly","PairMomResTrueMass_kdpairOnly",200,0,2,200,0,2);
   fMomResTrueMass_pdpairOnly = new TH2D("PairMomResTrueMass_pdpairOnly","PairMomResTrueMass_pdpairOnly",200,0,2,200,0,2);
@@ -48,8 +48,8 @@ AliFemtoCutMonitorPairMomRes::AliFemtoCutMonitorPairMomRes(const char *aName, do
   snprintf(name, 200, "PairMomResTrueMass_KPpairOnly%s", aName);
   fMomResTrueMass_KPpairOnly = new TH2D(name, "PairMomResTrueMass_KPpairOnly", nbins, qmin, qmax, nbins, qmin, qmax);
 
-  snprintf(name, 200, "PairMomResModifMass_kdpairOnly%s", aName);
-  fMomRes_pdpairOnly = new TH2D(name, "PairMomRes_kdpairOnly", nbins, qmin, qmax, nbins, qmin, qmax);
+  snprintf(name, 200, "PairMomResModifMass_pdpairOnly%s", aName);
+  fMomRes_pdpairOnly = new TH2D(name, "PairMomRes_pdpairOnly", nbins, qmin, qmax, nbins, qmin, qmax);
 
   snprintf(name, 200, "PairMomResTrueMass_pppairOnly%s", aName);
   fMomResTrueMass_pppairOnly = new TH2D(name, "PairMomResTrueMass_pppairOnly", nbins, qmin, qmax, nbins, qmin, qmax);
