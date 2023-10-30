@@ -131,6 +131,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH2D *fESDvsFB128;
   TList *fptList;
   AliPtContainer  *fPtCont;
+  AliProfileBS *fMultiVsCent;
   UInt_t fTriggerType;
   TList *fSpectraList; //!
   TH3D **fSpectraGen; //!

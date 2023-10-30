@@ -74,6 +74,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fESDvsFB128(0),
   fptList(0),
   fPtCont(0),
+  fMultiVsCent(0),
   fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
   fDetectorResponse(0),
   fRunNo(0),
@@ -146,6 +147,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fESDvsFB128(0),
   fptList(0),
   fPtCont(0),
+  fMultiVsCent(0),
   fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
   fDetectorResponse(0),
   fRunNo(0),
@@ -228,6 +230,11 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
       fNchTrueVsReco = new TH2D("NchTrueVsReco",";Nch (MC-true); Nch (MC-reco)",fNMultiBins,fMultiBins,fNMultiBins,fMultiBins);
       fptList->Add(fNchTrueVsReco);
     }
+    const Int_t nFineCentBins=90;
+    Double_t *fineCentBins = new Double_t[nFineCentBins+1];
+    for(Int_t i=0;i<=nFineCentBins; i++) fineCentBins[i] = i;
+    fMultiVsCent = new AliProfileBS("MultiVsCent","Multi vs centrality",nFineCentBins,fineCentBins);
+    fptList->Add(fMultiVsCent);
     printf("Multiplicity objects created\n");
 
     PostData(1,fptList);
@@ -309,6 +316,7 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   if(l_Cent < 10) fEventCuts.fESDvsTPConlyLinearCut[0] = fCentralPU;
   else fEventCuts.fESDvsTPConlyLinearCut[0] = 15000.;
   fEventCount->Fill("Pileup",1);
+  
 
   wp.clear(); wp.resize(fPtMpar+1,vector<double>(fPtMpar+1));
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
@@ -342,7 +350,6 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
     nTotNoTracks = fUseRecoNchForMC?nTotNoTracksReco:nTotNoTracksMC;
     if(fUseRecoNchForMC) fNchTrueVsReco->Fill(nTotNoTracksMC,nTotNoTracksReco);
   } else {
-    //if(!LoadMyWeights(fAOD->GetRunNumber())) return; //Only load wieghts for data
     Bool_t usingPseudoEff = (fPseudoEfficiency<1);
     for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
       if(usingPseudoEff) if(fRndm->Uniform()>fPseudoEfficiency) continue;
@@ -380,8 +387,8 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   fPtCont->FillRecursiveProfiles(l_Multi,l_Random,kFALSE);
   fV0MMulti->Fill(l_Cent);
   fMultiDist->Fill(l_Multi);
+  fMultiVsCent->Fill(l_Cent,l_Multi);
   PostData(1,fptList);
-
 
   return;
 };
