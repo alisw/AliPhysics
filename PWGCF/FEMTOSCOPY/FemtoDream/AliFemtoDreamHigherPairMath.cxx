@@ -243,8 +243,16 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
     }
   }
   if (fillHists && fHists->GetDomTMultPlots()) {
-    fHists->FillSameEventmTMultDist(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, 
-				   RelativeK); 
+
+    if(fHists->GetDoRemoveAncestorsResonances()){
+        if(!CommonMotherResonance(part1,part2)){
+          fHists->FillSameEventmTMultDist(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, 
+				      RelativeK);
+        }
+    } else {
+       fHists->FillSameEventmTMultDist(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, 
+				      RelativeK); 
+    } 
   }   
   if (fillHists && fHists->GetDopTOnepTTwokStarPlotsmT()) {
     fHists->FillSameEventpTOnepTTwokStar(iHC, RelativePairmT(PartOne, PartTwo), Part1Momentum.Pt(), Part2Momentum.Pt(),
