@@ -1005,9 +1005,6 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::UserExec(Option_t *option) {
 //		c.1.1) Normal mixed
 //	   c.2)
 
-std::cout<<"I'm here 1 ------------------------"<<std::endl;
-std::cout<<"-----------------------------------"<<std::endl;
-
   AliAODEvent *Event = static_cast<AliAODEvent*>(InputEvent());
 
   if (!Event) {
@@ -1015,16 +1012,10 @@ std::cout<<"-----------------------------------"<<std::endl;
     return;
   } 
 
-  std::cout<<"I'm here 2 ------------------------"<<std::endl;
-std::cout<<"-----------------------------------"<<std::endl;
-  
   fEvent->SetEvent(Event);
   if (!fEventCuts->isSelected(fEvent)) {
        return;
   }
-
-  std::cout<<"I'm here 3 ------------------------"<<std::endl;
-std::cout<<"-----------------------------------"<<std::endl;
 
   //a) Particle Selection +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   ResetGlobalTrackReference();
@@ -1105,10 +1096,6 @@ std::cout<<"-----------------------------------"<<std::endl;
 
     if(fDoOnlyThreeBody){
        for(int iComb=0; iComb<6; iComb++){
-
-          std::cout<<"I'm here Triplet SE ------------------------"<<std::endl;
-          std::cout<<"iComb "<<iComb<<std::endl;
-          std::cout<<"-----------------------------------"<<std::endl;
          FillTripletDistribution( ParticleVector, fTripletCombinations[iComb][0], fTripletCombinations[iComb][1], fTripletCombinations[iComb][2], 
                                  fSameEventTripletArray[iComb],PDGCodes, 
                                  bins[1], fSameEventTripletMultArray[iComb], fSameEventTripletMultArray12[iComb] ,fSameEventTripletMultArray23[iComb], fSameEventTripletMultArray31[iComb], 
@@ -1123,10 +1110,6 @@ std::cout<<"-----------------------------------"<<std::endl;
     else {
       //Two Body Analyses...........
       for(int iComb=0; iComb<6; iComb++){
-                  std::cout<<"I'm here Pair SE ------------------------"<<std::endl;
-          std::cout<<"iComb "<<iComb<<std::endl;
-          std::cout<<"-----------------------------------"<<std::endl;
-
          FillPairDistribution( ParticleVector, fPairCombinations[iComb][0], fPairCombinations[iComb][1], 
                               fSameEventPairArray_TwoBody[iComb],PDGCodes, 
                               bins[1],fSameEventPairMultArray_TwoBody[iComb], fSameEventDphiArray_TwoBody[iComb], fSameEventMultArray_TwoBody[iComb], 
@@ -1162,9 +1145,6 @@ std::cout<<"-----------------------------------"<<std::endl;
       if(fDoOnlyThreeBody){
 
         for(int iComb=0; iComb<10; iComb++){
-                    std::cout<<"I'm here Triplet 2S1M ------------------------"<<std::endl;
-          std::cout<<"iComb "<<iComb<<std::endl;
-          std::cout<<"-----------------------------------"<<std::endl;
            FillTripletDistributionSE2ME1(ParticleVector, *VectItMult[0], fSameMixedCominations[iComb][0], fSameMixedCominations[iComb][1], fSameMixedCominations[iComb][2], 
                                         fSameEventTripletArray[iComb+6], PDGCodes,
                                         bins[1], fSameEventTripletMultArray[iComb+6], 
@@ -1180,9 +1160,6 @@ std::cout<<"-----------------------------------"<<std::endl;
       //c.1.1) Normal mixing ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       if(fDoOnlyThreeBody){
         for(int iComb=0; iComb<6; iComb++){
-                    std::cout<<"I'm here ME ------------------------"<<std::endl;
-          std::cout<<"iComb "<<iComb<<std::endl;
-          std::cout<<"-----------------------------------"<<std::endl;
           FillTripletDistributionME(ParticleVector, *VectItMult[0], fTripletCombinations[iComb][0], fTripletCombinations[iComb][1], fTripletCombinations[iComb][2],
                                    fMixedEventTripletArray[iComb], PDGCodes, 
                                    bins[1], fMixedEventTripletMultArray[iComb], fMixedEventTripletMultArray12[iComb], fMixedEventTripletMultArray23[iComb], fMixedEventTripletMultArray31[iComb], 
@@ -1194,9 +1171,6 @@ std::cout<<"-----------------------------------"<<std::endl;
       } else {
         //Two Body Analyses...........
         for(int iComb=0; iComb<6; iComb++){
-                    std::cout<<"I'm here Pair ME ------------------------"<<std::endl;
-          std::cout<<"iComb "<<iComb<<std::endl;
-          std::cout<<"-----------------------------------"<<std::endl;
          FillPairDistributionME( ParticleVector, *VectItMult[0], fPairCombinations[iComb][0], fPairCombinations[iComb][1],
                                 fMixedEventPairArray_TwoBody[iComb],PDGCodes, 
                                 bins[1],fMixedEventPairMultArray_TwoBody[iComb], fMixedEventDphiArray_TwoBody[iComb], 
