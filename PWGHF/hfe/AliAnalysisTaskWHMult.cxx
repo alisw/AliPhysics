@@ -457,7 +457,8 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
   //Int_t iTracks(fAOD->GetNumberOfTracks());		//original
   Int_t iTracks(fTracks_tender->GetEntries());		//updated
 
-  Int_t Nclust = fVevent->GetNumberOfCaloClusters();
+  //Int_t Nclust = fVevent->GetNumberOfCaloClusters();
+  Int_t Nclust = fCaloClusters_tender->GetEntries();
 
   //===== Global Vtx =====
   const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
