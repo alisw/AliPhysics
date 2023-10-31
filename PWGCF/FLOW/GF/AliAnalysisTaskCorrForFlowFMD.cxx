@@ -306,6 +306,12 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
     fHistFMDeta_phi = new TH2D("fHistFMDeta_phi", "FMD eta vs. phi; eta; phi", 90, -4, 5, 60, 0, 2*TMath::Pi());
     fOutputListCharged->Add(fHistFMDeta_phi);
 
+      fHistTPCeta_phi = new TH2D("fHistTPCeta_phi", "TPC eta vs. phi; eta; phi", 90, -0.8, 0.8, 60, 0, 2*TMath::Pi());
+      fOutputListCharged->Add(fHistTPCeta_phi);
+
+      fHistTPCeta_phi_trig = new TH2D("fHistTPCeta_phi_trig", "TPC eta vs. phi (trig); eta; phi", 90, -0.8, 0.8, 60, 0, 2*TMath::Pi());
+      fOutputListCharged->Add(fHistTPCeta_phi_trig);
+
       fh2D_TPCvsFMDA = new TH2D("fh2D_TPCvsFMDA", "TPC vs. FMDA; TPC; FMDA", 250,0,250, 250, 0, 1000);
       fOutputListCharged->Add(fh2D_TPCvsFMDA);
 
@@ -1225,6 +1231,8 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         trigEff = GetEff(trigPt, spec, trigEta);
         if(trigEff < 0.001) continue;
       }
+      if (spec == 0) fHistTPCeta_phi_trig->Fill(trigEta, trigPhi, 1.0/trigEff);
+
       binscont[5] = trigPt;
       if(spec > 3) binscont[4] = track->M();
 
@@ -1441,26 +1449,55 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::AreEfficienciesLoaded()
   TString part[6] = {"ch", "pi", "ka", "pr", "K0s", "Lambda"};
   if(fColSystem == sPPb){
     TString etaReg[8] = {"0020", "0200", "0204", "0402", "0406", "0604", "0608", "0806"};
-    for(Int_t p(0); p < 6; p++){
+    // Load efficiency of charged hadrons
+    for(Int_t eta(0); eta < 8; eta++){
+      fhEfficiencyEta[0][eta] = (TH2D*)fInputListEfficiency->FindObject(Form("LHC17f2b_%s_Eta_%s_%s_wFD",part[0].Data(), etaReg[eta].Data(),fSystematicsFlag.Data()));
+      if(!fhEfficiencyEta[0][eta]) {AliError(Form("Efficiency (%s, eta region %s, flag %s) not loaded",part[0].Data(),etaReg[eta].Data(),fSystematicsFlag.Data())); return kFALSE; }
+    }
+    // Load efficiency of pi, k, p
+    for(Int_t p(1); p < 4; p++){
       for(Int_t eta(0); eta < 8; eta++){
-        if(fDoV0 && p < 4) continue;
-        if(fDoPID && !fDoV0 && p > 3) continue;
+        if(!fDoPID && fDoV0 && p < 4) break;
         fhEfficiencyEta[p][eta] = (TH2D*)fInputListEfficiency->FindObject(Form("LHC17f2b_%s_Eta_%s_%s_wFD",part[p].Data(), etaReg[eta].Data(),fSystematicsFlag.Data()));
         if(!fhEfficiencyEta[p][eta]) {AliError(Form("Efficiency (%s, eta region %s, flag %s) not loaded",part[p].Data(),etaReg[eta].Data(),fSystematicsFlag.Data())); return kFALSE; }
       }
       if(!fDoPID && !fDoV0) break;
     }
+
+    // Load efficiency of K0s and Lambda, which only have efficiency for default setup
+    for(Int_t p(4); p < 6; p++){
+      for(Int_t eta(0); eta < 8; eta++){
+        if(fDoPID && !fDoV0 && p > 3) break;
+        fhEfficiencyEta[p][eta] = (TH2D*)fInputListEfficiency->FindObject(Form("LHC17f2b_%s_Eta_%s_Ev0_Tr0_wFD",part[p].Data(), etaReg[eta].Data()));
+        if(!fhEfficiencyEta[p][eta]) {AliError(Form("Efficiency (%s, eta region %s, flag Ev0_Tr0) not loaded",part[p].Data(),etaReg[eta].Data())); return kFALSE; }
+      }
+      if(!fDoPID && !fDoV0) break;
+    }
+
     fhEventCounter->Fill("Efficiencies loaded",1);
     return kTRUE;
   }
   else if(fColSystem == sPP){
-    for(Int_t p(0); p < 6; p++){
-      if(fDoV0 && p < 4) continue;
-      if(fDoPID && !fDoV0 && p > 3) continue;
+    // Load efficiency of charged hadrons
+    fhEfficiency[0] = (TH2D*)fInputListEfficiency->FindObject(Form("LHC%s_%s_%s_wFD",ReturnPPperiod(fAOD->GetRunNumber()).Data(),part[0].Data(),fSystematicsFlag.Data()));
+    if(!fhEfficiency[0]) {AliError(Form("Efficiency (run %d, part %s, flag %s) not loaded",fAOD->GetRunNumber(),part[0].Data(),fSystematicsFlag.Data())); return kFALSE; }    
+    
+    // Load efficiency of pi, k, p
+    for(Int_t p(1); p < 4; p++){
+      if(!fDoPID && fDoV0 && p < 4) break;
       fhEfficiency[p] = (TH2D*)fInputListEfficiency->FindObject(Form("LHC%s_%s_%s_wFD",ReturnPPperiod(fAOD->GetRunNumber()).Data(),part[p].Data(),fSystematicsFlag.Data()));
       if(!fhEfficiency[p]) {AliError(Form("Efficiency (run %d, part %s, flag %s) not loaded",fAOD->GetRunNumber(),part[p].Data(),fSystematicsFlag.Data())); return kFALSE; }
       if(!fDoPID && !fDoV0) break;
     }
+
+    // Load efficiency of K0s and Lambda, which only have efficiency for default setup
+    for(Int_t p(4); p < 6; p++){
+      if(fDoPID && !fDoV0 && p > 3) break;
+      fhEfficiency[p] = (TH2D*)fInputListEfficiency->FindObject(Form("LHC%s_%s_Ev0_Tr0_wFD",ReturnPPperiod(fAOD->GetRunNumber()).Data(),part[p].Data()));
+      if(!fhEfficiency[p]) {AliError(Form("Efficiency (run %d, part %s, flag Ev0_Tr0) not loaded",fAOD->GetRunNumber(),part[p].Data())); return kFALSE; }
+      if(!fDoPID && !fDoV0) break;
+    }
+
     fhEventCounter->Fill("Efficiencies loaded",1);
     return kTRUE;
   }
@@ -1722,7 +1759,12 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
           fTracksTrig[0]->Add((AliAODTrack*)track);
           fhTrigTracks[0]->Fill(binscont,0,1.);
 
-
+          Double_t trkEff = 1.0;
+          if(fUseEfficiency) {
+            trkEff = GetEff(track->Pt(), 0, track->Eta());
+           if(trkEff < 0.001) continue;
+          }
+          fHistTPCeta_phi->Fill(track->Eta(), track->Phi(), 1.0/trkEff);
 
           if(fDoPID){
             Int_t trackPid = IdentifyTrack(track);
