@@ -327,7 +327,7 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   constexpr int pt_Nbins{190};
   double pt_bins[pt_Nbins + 1] = {0};
   for (int i = 0; i <= pt_Nbins; ++i) {
-    pt_bins[i] = 0.1 + (i * 0.08);
+    pt_bins[i] = 0.15 + (i * 0.08);
   }
   // constexpr int pt_Nbins{41};
   // constexpr double pt_bins[pt_Nbins + 1] = {
