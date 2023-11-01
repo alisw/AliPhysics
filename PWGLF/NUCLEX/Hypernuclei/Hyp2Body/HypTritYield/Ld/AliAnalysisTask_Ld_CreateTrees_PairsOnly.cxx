@@ -1395,12 +1395,12 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       AliMCParticle *MCParticleDaughter1 = (AliMCParticle*) MCArray->At(Label_Daughter1);
       PDG_Daughter1 = MCParticleDaughter1->PdgCode();
 
-      int Label_v01 = TMath::Abs(MCParticleDaughter1->GetMother());
-      AliMCParticle *MCv01 = (AliMCParticle*) MCArray->At(Label_v01);
+      int Label_v01 = MCParticleDaughter1->GetMother();
+      AliMCParticle *MCv01 = (AliMCParticle*) MCArray->At(TMath::Abs(Label_v01));
       PDG_v01 = MCv01->PdgCode();
 
-      int Label_Mother1 = TMath::Abs(MCv01->GetMother());
-      AliMCParticle *MCParticleMother1 = (AliMCParticle*) MCArray->At(Label_Mother1);
+      int Label_Mother1 = MCv01->GetMother();
+      AliMCParticle *MCParticleMother1 = (AliMCParticle*) MCArray->At(TMath::Abs(Label_Mother1));
       PDG_Mother1 = MCParticleMother1->PdgCode();
 
 
@@ -1408,19 +1408,19 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       AliMCParticle *MCParticleDaughter2 = (AliMCParticle*) fMCEvent->GetTrack(Label_Daughter2);
       PDG_Daughter2 = MCParticleDaughter2->PdgCode();
 
-      int Label_v02 = TMath::Abs(MCParticleDaughter2->GetMother());
-      AliMCParticle *MCv02 = (AliMCParticle*) MCArray->At(Label_v02);
+      int Label_v02 = MCParticleDaughter2->GetMother();
+      AliMCParticle *MCv02 = (AliMCParticle*) MCArray->At(TMath::Abs(Label_v02));
       PDG_v02 = MCv02->PdgCode();
 
-      int Label_Mother2 = TMath::Abs(MCv02->GetMother());
-      AliMCParticle *MCParticleMother2 = (AliMCParticle*) MCArray->At(Label_Mother2);
+      int Label_Mother2 = MCv02->GetMother();
+      AliMCParticle *MCParticleMother2 = (AliMCParticle*) MCArray->At(TMath::Abs(Label_Mother2));
       PDG_Mother2 = MCParticleMother2->PdgCode();
 
 
 
       // check if daughters come from the same v0 
       SameV0 = false;
-      if(Label_v01 == Label_v02) SameV0 = true;
+      if((Label_v01 == Label_v02) && (Label_v01 > 0) && (Label_v02 > 0)) SameV0 = true;
 
 
       // where do the particles come from?
@@ -2495,12 +2495,12 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       AliMCParticle *MCParticleDaughter1 = (AliMCParticle*) MCArray->At(Label_Daughter1);
       PDG_Daughter1 = MCParticleDaughter1->PdgCode();
 
-      int Label_v01 = TMath::Abs(MCParticleDaughter1->GetMother());
-      AliMCParticle *MCv01 = (AliMCParticle*) MCArray->At(Label_v01);
+      int Label_v01 = MCParticleDaughter1->GetMother();
+      AliMCParticle *MCv01 = (AliMCParticle*) MCArray->At(TMath::Abs(Label_v01));
       PDG_v01 = MCv01->PdgCode();
 
-      int Label_Mother1 = TMath::Abs(MCv01->GetMother());
-      AliMCParticle *MCParticleMother1 = (AliMCParticle*) MCArray->At(Label_Mother1);
+      int Label_Mother1 = MCv01->GetMother();
+      AliMCParticle *MCParticleMother1 = (AliMCParticle*) MCArray->At(TMath::Abs(Label_Mother1));
       PDG_Mother1 = MCParticleMother1->PdgCode();
 
 
@@ -2508,19 +2508,19 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       AliMCParticle *MCParticleDaughter2 = (AliMCParticle*) fMCEvent->GetTrack(Label_Daughter2);
       PDG_Daughter2 = MCParticleDaughter2->PdgCode();
 
-      int Label_v02 = TMath::Abs(MCParticleDaughter2->GetMother());
-      AliMCParticle *MCv02 = (AliMCParticle*) MCArray->At(Label_v02);
+      int Label_v02 = MCParticleDaughter2->GetMother();
+      AliMCParticle *MCv02 = (AliMCParticle*) MCArray->At(TMath::Abs(Label_v02));
       PDG_v02 = MCv02->PdgCode();
 
-      int Label_Mother2 = TMath::Abs(MCv02->GetMother());
-      AliMCParticle *MCParticleMother2 = (AliMCParticle*) MCArray->At(Label_Mother2);
+      int Label_Mother2 = MCv02->GetMother();
+      AliMCParticle *MCParticleMother2 = (AliMCParticle*) MCArray->At(TMath::Abs(Label_Mother2));
       PDG_Mother2 = MCParticleMother2->PdgCode();
 
 
 
       // check if daughters come from the same v0 
       SameV0 = false;
-      if(Label_v01 == Label_v02) SameV0 = true;
+      if((Label_v01 == Label_v02) && (Label_v01 > 0) && (Label_v02 > 0)) SameV0 = true;
 
 
       // where do the particles come from?
