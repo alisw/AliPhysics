@@ -79,7 +79,8 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fLambda_Event_BField;
     unsigned int fLambda_Event_Multiplicity;
     unsigned long fLambda_Event_Identifier;
-    bool  fLambda_Event_IsFirstParticle;
+    unsigned short fLambda_Event_ParticleNumber;
+    unsigned short fLambda_Event_nParticles;
 
     float fLambda_Daughter_Proton_px;
     float fLambda_Daughter_Proton_py;
@@ -169,11 +170,12 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short    fDeuteron_ITS_nCluster;
     int		      fDeuteron_PDG;
     int		      fDeuteron_MotherPDG;
+    bool	      fDeuteron_FilterBit;
     unsigned int      fDeuteron_ID;
     unsigned int      fDeuteron_Event_Multiplicity;
     unsigned long     fDeuteron_Event_Identifier;
-    bool	      fDeuteron_Event_IsFirstParticle;
-
+    unsigned short    fDeuteron_Event_ParticleNumber;
+    unsigned short    fDeuteron_Event_nParticles;
 
     TTree *fSaveTree_AntiLambda;
     float fAntiLambda_px;
@@ -204,7 +206,8 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fAntiLambda_Event_BField;
     unsigned int fAntiLambda_Event_Multiplicity;
     unsigned long fAntiLambda_Event_Identifier;
-    bool	  fAntiLambda_Event_IsFirstParticle;
+    unsigned short fAntiLambda_Event_ParticleNumber;
+    unsigned short fAntiLambda_Event_nParticles;
 
     float fAntiLambda_Daughter_AntiProton_px;
     float fAntiLambda_Daughter_AntiProton_py;
@@ -295,10 +298,12 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short    fAntiDeuteron_ITS_nCluster;
     int		      fAntiDeuteron_PDG;
     int		      fAntiDeuteron_MotherPDG;
+    bool	      fAntiDeuteron_FilterBit;
     unsigned int      fAntiDeuteron_ID;
     unsigned int      fAntiDeuteron_Event_Multiplicity;
     unsigned long     fAntiDeuteron_Event_Identifier;
-    bool	      fAntiDeuteron_Event_IsFirstParticle;
+    unsigned short    fAntiDeuteron_Event_ParticleNumber;
+    unsigned short    fAntiDeuteron_Event_nParticles;
 
     TList     *fHistoList;
     TH2F      *h_Proton_TOF_m2_NoTOFcut;
