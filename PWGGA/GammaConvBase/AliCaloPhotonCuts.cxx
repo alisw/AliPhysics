@@ -6042,7 +6042,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fFuncNMatchedTracks = new TF1("fFuncNMatchedTracks29", "TMath::Poisson(x,[0])", 0., 10.);
       fDoEnergyCorrectionForOverlap = 1;
       fEOverPMax = 1.75;
-      if(fIsMC > 1){
+      if(fIsMC >= 1){
         // values for HIJING 5.02 TeV Pb--Pb simulations
         fParamMeanTrackPt[0] = +6.20104e-01;
         fParamMeanTrackPt[1] = -2.62817e-04;
@@ -6066,7 +6066,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fFuncNMatchedTracks = new TF1("fFuncNMatchedTracks30", "TMath::Poisson(x,[0])", 0., 10.);
       fDoEnergyCorrectionForOverlap = 2;
       fEOverPMax = 1.75;
-      if(fIsMC > 1){
+      if(fIsMC >= 1){
         // values for HIJING 5.02 TeV Pb--Pb simulations
         fParamMeanTrackPt[0] = +6.20104e-01;
         fParamMeanTrackPt[1] = -2.62817e-04;

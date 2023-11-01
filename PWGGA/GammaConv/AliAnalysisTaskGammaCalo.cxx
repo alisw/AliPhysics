@@ -3508,10 +3508,6 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
           clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
       }
       if(!clus) continue;
-      // energy correction for neutral overlap!
-      if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() > 0){
-        clus->SetE(clus->E() - ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent));
-      }
       totalClusterEnergy += clus->E();
       totalCellsinClusters += clus->GetNCells();
       delete clus;
@@ -3542,6 +3538,13 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
         clus = new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i));
     }
     if(!clus) continue;
+
+    // energy correction for neutral overlap!
+    if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoFlatEnergySubtraction()){
+      if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() > 0){
+        clus->SetE(clus->E() - ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent));
+      }
+    }
 
     if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoFlatEnergySubtraction()){
       if(totalUnclusteredE!=0 && totalActiveCells!=0 && totalCellsinClusters!=0){
