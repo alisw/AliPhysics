@@ -722,21 +722,22 @@ Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC17_AllPeriods_pp_NomB_Reduced
 
   if((fRun>=270531 && fRun<=282704))
   {
+    double globalScalingFac = 0.921; // factor to shift down the MC rejection factor to the data globally
     switch(ddl){
-        case 6 : return 0.000000/(TMath::Exp((1.000000-x)/3.100000)+1.)  ;
-        case 7 : return 0.904798/(TMath::Exp((3.273490-x)/0.325117)+1.)  ;
-        case 8 : return 0.806473/(TMath::Exp((3.777493-x)/0.327940)+1.)  ;
-        case 9 : return 0.761636/(TMath::Exp((3.592589-x)/0.349054)+1.)  ;
-        case 10 : return 0.689397/(TMath::Exp((3.530146-x)/0.310486)+1.)  ;
-        case 11 : return 0.651445/(TMath::Exp((3.792621-x)/0.339276)+1.)  ;
-        case 12 : return 0.869128/(TMath::Exp((3.722781-x)/0.353535)+1.)  ;
-        case 13 : return 0.728896/(TMath::Exp((3.736350-x)/0.322160)+1.)  ;
-        case 14 : return 0.900195/(TMath::Exp((3.873177-x)/0.364304)+1.)  ;
-        case 15 : return 0.841461/(TMath::Exp((3.663167-x)/0.339142)+1.)  ;
-        case 16 : return 0.812884/(TMath::Exp((4.035353-x)/0.372777)+1.)  ;
-        case 17 : return 0.902808/(TMath::Exp((3.875744-x)/0.335215)+1.)  ;
-        case 18 : return 0.935442/(TMath::Exp((3.737890-x)/0.412344)+1.)  ;
-        case 19 : return 0.826923/(TMath::Exp((3.837959-x)/0.424282)+1.)  ;
+        case 6 : return globalScalingFac*0.000000/(TMath::Exp((1.000000-x)/3.100000)+1.)  ;
+        case 7 : return globalScalingFac*0.904798/(TMath::Exp((3.273490-x)/0.325117)+1.)  ;
+        case 8 : return globalScalingFac*0.806473/(TMath::Exp((3.777493-x)/0.327940)+1.)  ;
+        case 9 : return globalScalingFac*0.761636/(TMath::Exp((3.592589-x)/0.349054)+1.)  ;
+        case 10 : return globalScalingFac*0.689397/(TMath::Exp((3.530146-x)/0.310486)+1.)  ;
+        case 11 : return globalScalingFac*0.651445/(TMath::Exp((3.792621-x)/0.339276)+1.)  ;
+        case 12 : return globalScalingFac*0.869128/(TMath::Exp((3.722781-x)/0.353535)+1.)  ;
+        case 13 : return globalScalingFac*0.728896/(TMath::Exp((3.736350-x)/0.322160)+1.)  ;
+        case 14 : return globalScalingFac*0.900195/(TMath::Exp((3.873177-x)/0.364304)+1.)  ;
+        case 15 : return globalScalingFac*0.841461/(TMath::Exp((3.663167-x)/0.339142)+1.)  ;
+        case 16 : return globalScalingFac*0.812884/(TMath::Exp((4.035353-x)/0.372777)+1.)  ;
+        case 17 : return globalScalingFac*0.902808/(TMath::Exp((3.875744-x)/0.335215)+1.)  ;
+        case 18 : return globalScalingFac*0.935442/(TMath::Exp((3.737890-x)/0.412344)+1.)  ;
+        case 19 : return globalScalingFac*0.826923/(TMath::Exp((3.837959-x)/0.424282)+1.)  ;
        default : return 0;
     }
   }
@@ -752,21 +753,22 @@ Double_t AliPHOSTriggerUtils::TriggerProbabilityLHC18_AllPeriods_pp_NomB_Reduced
 
   if((fRun>=284706 && fRun<=295232))
   {
+    double globalScalingFac = 0.917; // factor to shift down the MC rejection factor to the data globally
     switch(ddl){
-        case 6 : return 0.000000/(TMath::Exp((1.000000-x)/3.100000)+1.)  ;
-        case 7 : return 0.893996/(TMath::Exp((3.269444-x)/0.302399)+1.)  ;
-        case 8 : return 0.794809/(TMath::Exp((3.760528-x)/0.316707)+1.)  ;
-        case 9 : return 0.747269/(TMath::Exp((3.578636-x)/0.339992)+1.)  ;
-        case 10 : return 0.682974/(TMath::Exp((3.523663-x)/0.307008)+1.)  ;
-        case 11 : return 0.641487/(TMath::Exp((3.764244-x)/0.318594)+1.)  ;
-        case 12 : return 0.842815/(TMath::Exp((3.695465-x)/0.339353)+1.)  ;
-        case 13 : return 0.718297/(TMath::Exp((3.711332-x)/0.302959)+1.)  ;
-        case 14 : return 0.882216/(TMath::Exp((3.837787-x)/0.340828)+1.)  ;
-        case 15 : return 0.825137/(TMath::Exp((3.643524-x)/0.324275)+1.)  ;
-        case 16 : return 0.774034/(TMath::Exp((3.982144-x)/0.347221)+1.)  ;
-        case 17 : return 0.911440/(TMath::Exp((3.876243-x)/0.329877)+1.)  ;
-        case 18 : return 0.897499/(TMath::Exp((3.687409-x)/0.376437)+1.)  ;
-        case 19 : return 0.806301/(TMath::Exp((3.790602-x)/0.386806)+1.)  ;
+        case 6 : return globalScalingFac*0.000000/(TMath::Exp((1.000000-x)/3.100000)+1.)  ;
+        case 7 : return globalScalingFac*0.893996/(TMath::Exp((3.269444-x)/0.302399)+1.)  ;
+        case 8 : return globalScalingFac*0.794809/(TMath::Exp((3.760528-x)/0.316707)+1.)  ;
+        case 9 : return globalScalingFac*0.747269/(TMath::Exp((3.578636-x)/0.339992)+1.)  ;
+        case 10 : return globalScalingFac*0.682974/(TMath::Exp((3.523663-x)/0.307008)+1.)  ;
+        case 11 : return globalScalingFac*0.641487/(TMath::Exp((3.764244-x)/0.318594)+1.)  ;
+        case 12 : return globalScalingFac*0.842815/(TMath::Exp((3.695465-x)/0.339353)+1.)  ;
+        case 13 : return globalScalingFac*0.718297/(TMath::Exp((3.711332-x)/0.302959)+1.)  ;
+        case 14 : return globalScalingFac*0.882216/(TMath::Exp((3.837787-x)/0.340828)+1.)  ;
+        case 15 : return globalScalingFac*0.825137/(TMath::Exp((3.643524-x)/0.324275)+1.)  ;
+        case 16 : return globalScalingFac*0.774034/(TMath::Exp((3.982144-x)/0.347221)+1.)  ;
+        case 17 : return globalScalingFac*0.911440/(TMath::Exp((3.876243-x)/0.329877)+1.)  ;
+        case 18 : return globalScalingFac*0.897499/(TMath::Exp((3.687409-x)/0.376437)+1.)  ;
+        case 19 : return globalScalingFac*0.806301/(TMath::Exp((3.790602-x)/0.386806)+1.)  ;
        default : return 0;
     }
   }
