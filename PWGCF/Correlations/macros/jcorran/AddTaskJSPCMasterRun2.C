@@ -181,7 +181,7 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
     fJCatalyst[i]->SelectCollisionCandidates(selEvt);
    
     fJCatalyst[i]->SetSaveAllQA(saveCatalystQA);
-    fJCatalyst[i]->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
+    fJCatalyst[i]->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,-70.,-80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
     fJCatalyst[i]->SetInitializeCentralityArray();
 
     if (strcmp(configNames[i].Data(), "SPD") == 0) {
@@ -349,8 +349,8 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
   for (Int_t i = 0; i < PassedVariations; i++) {
     myTask[i] = new AliJSPCTaskRun2(Form("%s_%s_%s", taskName.Data(), configNames[i].Data(), SPC[doSPC].Data()));
     myTask[i]->SetJCatalystTaskName(fJCatalyst[i]->GetJCatalystTaskName());
-    myTask[i]->AliSPCRun2SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
-    myTask[i]->AliSPCRun2SetSaveAllQA(kTRUE);
+    myTask[i]->AliSPCRun2SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,-70.,-80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
+    myTask[i]->AliSPCRun2SetSaveAllQA(kFALSE);
     myTask[i]->AliSPCRun2SetMinNuPar(14.);
     myTask[i]->AliSPCRun2SetUseWeights(useWeightsNUE, useWeightsNUA);
     myTask[i]->AliSPCRun2SetEtaGaps(ComputeEtaGap, EtaMax);

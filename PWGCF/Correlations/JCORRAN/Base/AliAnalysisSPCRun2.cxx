@@ -31,10 +31,10 @@ AliAnalysisSPCRun2::AliAnalysisSPCRun2():
   fcent_5(0.), fcent_6(0.), fcent_7(0.), fcent_8(0.), fcent_9(0.),
   fcent_10(0.), fcent_11(0.), fcent_12(0.), fcent_13(0.), fcent_14(0.),
   fcent_15(0.), fcent_16(0.),
-  fCentralityBins(16), fMinNumberPart(14),
+  fCentralityBins(8), fMinNumberPart(14),
   bUseWeightsNUE(kTRUE), bUseWeightsNUA(kTRUE),
   bComputeEtaGap(kFALSE), fEtaGap(0.8),
-  bSaveAllQA(kTRUE),
+  bSaveAllQA(kFALSE),
   fCounterHistogram(NULL), fProfileTrackCuts(NULL)
 {
 // Dummy constructor of the class.
@@ -51,10 +51,10 @@ AliAnalysisSPCRun2::AliAnalysisSPCRun2(const char *name):
   fcent_5(0.), fcent_6(0.), fcent_7(0.), fcent_8(0.), fcent_9(0.),
   fcent_10(0.), fcent_11(0.), fcent_12(0.), fcent_13(0.), fcent_14(0.),
   fcent_15(0.), fcent_16(0.),
-  fCentralityBins(16), fMinNumberPart(14),
+  fCentralityBins(8), fMinNumberPart(14),
   bUseWeightsNUE(kTRUE), bUseWeightsNUA(kTRUE),
   bComputeEtaGap(kFALSE), fEtaGap(0.8),
-  bSaveAllQA(kTRUE),
+  bSaveAllQA(kFALSE),
   fCounterHistogram(NULL), fProfileTrackCuts(NULL)
 {
 // Constructor of the class.
@@ -112,6 +112,7 @@ void AliAnalysisSPCRun2::UserExec(Option_t *option)
 
   // Get the class bin corresponding to the centrality of the current event.
   Int_t centralityBin = SelectCentrality(fCentrality);
+  if (centralityBin<0) return;
 
   // Start the analysis over the AODs.
   // 'DoMixed' and Fiser-Yates from the Run1 analysis task not included as not needed here.
@@ -120,7 +121,7 @@ void AliAnalysisSPCRun2::UserExec(Option_t *option)
   Int_t nTracks = fInputList->GetEntriesFast();
   if (bSaveAllQA) {fMultHistogram[centralityBin]->Fill(nTracks);}
   if (nTracks < fMinNumberPart) {return;}
-  fCentralityHistogram[centralityBin]->Fill(fCentrality);
+  if (bSaveAllQA) {fCentralityHistogram[centralityBin]->Fill(fCentrality);}
 
   // Get the selected tracks information and store them into arrays for further use.
   Double_t* angles = new Double_t[nTracks];   // Azimuthal angles.
@@ -278,14 +279,14 @@ void AliAnalysisSPCRun2::BookControlHistograms()
   if (fCentralityArray[icent+1] < 0) {break;}
 
   // Transverse momentum spectrum.
-  fPTHistogram[icent] = new TH1F("fPTHistAfterTrackSelection","Pt Distribution", 1000, 0., 10.);
+  fPTHistogram[icent] = new TH1F("fPTHistAfterTrackSelection","Pt Distribution", 100, 0., 10.);
   fPTHistogram[icent]->GetXaxis()->SetTitle("P_t");
   fPTHistogram[icent]->SetLineColor(4);
   fControlHistogramsList[icent]->Add(fPTHistogram[icent]); 
    
   // Azimuthal angle spectrum.
   fPhiHistogram[icent] = new TH1F("fPhiHistAfterTrackSelection","Phi Distribution",
-    1000, -TMath::Pi(), TMath::Pi());
+    100, -TMath::Pi(), TMath::Pi());
   fPhiHistogram[icent]->GetXaxis()->SetTitle("Phi");
   fPhiHistogram[icent]->SetLineColor(4);
   fControlHistogramsList[icent]->Add(fPhiHistogram[icent]);
@@ -297,13 +298,13 @@ void AliAnalysisSPCRun2::BookControlHistograms()
   fControlHistogramsList[icent]->Add(fPhiWeightProfile[icent]);
 
   // Pseudorapidity spectrum.
-  fEtaHistogram[icent] = new TH1F("fEtaHistAfterTrackSelection","Eta Distribution", 1000,-1.,1.);
+  fEtaHistogram[icent] = new TH1F("fEtaHistAfterTrackSelection","Eta Distribution", 100,-1.,1.);
   fEtaHistogram[icent]->GetXaxis()->SetTitle("Eta");
   fEtaHistogram[icent]->SetLineColor(4);
   fControlHistogramsList[icent]->Add(fEtaHistogram[icent]);
 
   // Multiplicity spectrum.
-  fMultHistogram[icent] = new TH1F("fMultiHistoAfterTrackSelection","Multiplicity", 30000,0.,30000.);
+  fMultHistogram[icent] = new TH1F("fMultiHistoAfterTrackSelection","Multiplicity", 3000,0.,30000.);
   fMultHistogram[icent]->GetXaxis()->SetTitle("Multiplicity M");
   fControlHistogramsList[icent]->Add(fMultHistogram[icent]);
 
@@ -545,6 +546,7 @@ void AliAnalysisSPCRun2::MainTask(Int_t centBin, Int_t mult,
         hArrayDen[2*iH] = hArrayNum[iH];
         hArrayDen[2*iH+1] = -1*hArrayNum[iH];
       }
+
       Correlation(nPartDen, 14, hArrayDen, dataCorrelation);
       correlationDenom = dataCorrelation[0];
       weightCorrelationDenom = dataCorrelation[1];

@@ -171,10 +171,14 @@ public:
 
 	Int_t GetRunIndex15o(Int_t runNumber);
 	void SetInputCentralityWeight15o(bool useCentWeight, TString fileCentWeight);
+	// void SetFillJTree(Bool_t FillJTree) {bFillJTree=FillJTree;}
 
 private:
 	TClonesArray * fInputList;  // tracklist
 	TClonesArray * fInputListALICE;  // tracklist ALICE acceptance +-0.8 eta
+	TClonesArray * jevents;
+	TTree * jTree;
+	Bool_t bFillJTree;
 	//TDirectory *fOutput;     // output
 	TString fTaskName; //
 	TString fCentDetName; //
