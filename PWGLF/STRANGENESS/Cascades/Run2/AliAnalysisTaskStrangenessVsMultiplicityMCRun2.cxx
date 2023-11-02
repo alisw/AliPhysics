@@ -135,6 +135,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AliAnalysisTaskStrangenessVsMult
 fListXiMinus(0), fListXiPlus(0), fListOmegaMinus(0), fListOmegaPlus(0),
 fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
 fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fRand(0),
+fkCentralityEstimator("V0MNew"),
 
 //---> Pointers to ML Classes
 fXiMinusNN(0),
@@ -734,6 +735,7 @@ AliAnalysisTaskStrangenessVsMultiplicityMCRun2::AliAnalysisTaskStrangenessVsMult
 fListXiMinus(0), fListXiPlus(0), fListOmegaMinus(0), fListOmegaPlus(0),
 fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
 fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fRand(0),
+fkCentralityEstimator("V0MNew"),
 
 //---> Pointers to ML Classes
 fXiMinusNN(0),
@@ -2324,8 +2326,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     AliWarning("AliMultSelection object not found!");
   } else {
     //V0M Multiplicity Percentile
-    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
-    lPercentileEmbeddedSelection = MultSelection->GetMultiplicityPercentile("V0M", kTRUE );
+    lPercentile = MultSelection->GetMultiplicityPercentile(fkCentralityEstimator.Data());
+    lPercentileEmbeddedSelection = MultSelection->GetMultiplicityPercentile(fkCentralityEstimator.Data(), kTRUE );
     //Event Selection Code
     lEvSelCode = MultSelection->GetEvSelCode();
   }
