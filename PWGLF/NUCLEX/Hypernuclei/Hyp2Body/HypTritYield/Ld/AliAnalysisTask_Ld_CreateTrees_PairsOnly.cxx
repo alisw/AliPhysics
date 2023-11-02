@@ -178,6 +178,12 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly::AliAnalysisTask_Ld_CreateTrees_PairsOn
   fDeuteron_Event_Identifier(0),
   fDeuteron_Event_ParticleNumber(0),
   fDeuteron_Event_nParticles(0),
+  fDeuteron_ITS_Layer0(0),
+  fDeuteron_ITS_Layer1(0),
+  fDeuteron_ITS_Layer2(0),
+  fDeuteron_ITS_Layer3(0),
+  fDeuteron_ITS_Layer4(0),
+  fDeuteron_ITS_Layer5(0),
   fSaveTree_AntiLambda(0),
   fAntiLambda_px(0),
   fAntiLambda_py(0),
@@ -292,6 +298,12 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly::AliAnalysisTask_Ld_CreateTrees_PairsOn
   fAntiDeuteron_Event_Identifier(0),
   fAntiDeuteron_Event_ParticleNumber(0),
   fAntiDeuteron_Event_nParticles(0),
+  fAntiDeuteron_ITS_Layer0(0),
+  fAntiDeuteron_ITS_Layer1(0),
+  fAntiDeuteron_ITS_Layer2(0),
+  fAntiDeuteron_ITS_Layer3(0),
+  fAntiDeuteron_ITS_Layer4(0),
+  fAntiDeuteron_ITS_Layer5(0),
   fHistoList(0),
   h_Proton_TOF_m2_NoTOFcut(0),
   h_Deuteron_TOF_m2_NoTOFcut(0),
@@ -441,6 +453,12 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly::AliAnalysisTask_Ld_CreateTrees_PairsOn
   fDeuteron_Event_Identifier(0),
   fDeuteron_Event_ParticleNumber(0),
   fDeuteron_Event_nParticles(0),
+  fDeuteron_ITS_Layer0(0),
+  fDeuteron_ITS_Layer1(0),
+  fDeuteron_ITS_Layer2(0),
+  fDeuteron_ITS_Layer3(0),
+  fDeuteron_ITS_Layer4(0),
+  fDeuteron_ITS_Layer5(0),
   fSaveTree_AntiLambda(0),
   fAntiLambda_px(0),
   fAntiLambda_py(0),
@@ -561,6 +579,12 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly::AliAnalysisTask_Ld_CreateTrees_PairsOn
   fAntiDeuteron_Event_Identifier(0),
   fAntiDeuteron_Event_ParticleNumber(0),
   fAntiDeuteron_Event_nParticles(0),
+  fAntiDeuteron_ITS_Layer0(0),
+  fAntiDeuteron_ITS_Layer1(0),
+  fAntiDeuteron_ITS_Layer2(0),
+  fAntiDeuteron_ITS_Layer3(0),
+  fAntiDeuteron_ITS_Layer4(0),
+  fAntiDeuteron_ITS_Layer5(0),
   fHistoList(0),
   h_Proton_TOF_m2_NoTOFcut(0),
   h_Deuteron_TOF_m2_NoTOFcut(0),
@@ -821,6 +845,12 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_Deuteron->Branch("Deuteron_Event_Identifier",&fDeuteron_Event_Identifier,"Deuteron_Event_Identifier/l");
   fSaveTree_Deuteron->Branch("Deuteron_Event_ParticleNumber",&fDeuteron_Event_ParticleNumber,"Deuteron_Event_ParticleNumber/s");
   fSaveTree_Deuteron->Branch("Deuteron_Event_nParticles",&fDeuteron_Event_nParticles,"Deuteron_Event_nParticles/s");
+  fSaveTree_Deuteron->Branch("Deuteron_ITS_Layer0",&fDeuteron_ITS_Layer0,"Deuteron_ITS_Layer0/O");
+  fSaveTree_Deuteron->Branch("Deuteron_ITS_Layer1",&fDeuteron_ITS_Layer1,"Deuteron_ITS_Layer1/O");
+  fSaveTree_Deuteron->Branch("Deuteron_ITS_Layer2",&fDeuteron_ITS_Layer2,"Deuteron_ITS_Layer2/O");
+  fSaveTree_Deuteron->Branch("Deuteron_ITS_Layer3",&fDeuteron_ITS_Layer3,"Deuteron_ITS_Layer3/O");
+  fSaveTree_Deuteron->Branch("Deuteron_ITS_Layer4",&fDeuteron_ITS_Layer4,"Deuteron_ITS_Layer4/O");
+  fSaveTree_Deuteron->Branch("Deuteron_ITS_Layer5",&fDeuteron_ITS_Layer5,"Deuteron_ITS_Layer5/O");
 
 
   fSaveTree_AntiLambda = new TTree("fSaveTree_AntiLambda","fSaveTree_AntiLambda");
@@ -949,6 +979,12 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_Event_Identifier",&fAntiDeuteron_Event_Identifier,"AntiDeuteron_Event_Identifier/l");
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_Event_ParticleNumber",&fAntiDeuteron_Event_ParticleNumber,"AntiDeuteron_Event_ParticleNumber/s");
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_Event_nParticles",&fAntiDeuteron_Event_nParticles,"AntiDeuteron_Event_nParticles/s");
+  fSaveTree_AntiDeuteron->Branch("AntiDeuteron_ITS_Layer0",&fAntiDeuteron_ITS_Layer0,"AntiDeuteron_ITS_Layer0/O");
+  fSaveTree_AntiDeuteron->Branch("AntiDeuteron_ITS_Layer1",&fAntiDeuteron_ITS_Layer1,"AntiDeuteron_ITS_Layer1/O");
+  fSaveTree_AntiDeuteron->Branch("AntiDeuteron_ITS_Layer2",&fAntiDeuteron_ITS_Layer2,"AntiDeuteron_ITS_Layer2/O");
+  fSaveTree_AntiDeuteron->Branch("AntiDeuteron_ITS_Layer3",&fAntiDeuteron_ITS_Layer3,"AntiDeuteron_ITS_Layer3/O");
+  fSaveTree_AntiDeuteron->Branch("AntiDeuteron_ITS_Layer4",&fAntiDeuteron_ITS_Layer4,"AntiDeuteron_ITS_Layer4/O");
+  fSaveTree_AntiDeuteron->Branch("AntiDeuteron_ITS_Layer5",&fAntiDeuteron_ITS_Layer5,"AntiDeuteron_ITS_Layer5/O");
 
 
 
@@ -1686,6 +1722,12 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
   unsigned int	  Deuteron_ID;
   unsigned long   Deuteron_Event_Identifier;
   bool		  Deuteron_FilterBit = false;
+  bool		  Deuteron_ITS_Layer0 = false;
+  bool		  Deuteron_ITS_Layer1 = false;
+  bool		  Deuteron_ITS_Layer2 = false;
+  bool		  Deuteron_ITS_Layer3 = false;
+  bool		  Deuteron_ITS_Layer4 = false;
+  bool		  Deuteron_ITS_Layer5 = false;
 
   TTree *fTempTree_Deuteron = new TTree("fTempTree_Deuteron","fTempTree_Deuteron");
   fTempTree_Deuteron->Branch("Deuteron_px",&Deuteron_px,"Deuteron_px/F");
@@ -1714,6 +1756,12 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
   fTempTree_Deuteron->Branch("Deuteron_PDG",&Deuteron_PDG,"Deuteron_PDG/I");
   fTempTree_Deuteron->Branch("Deuteron_MotherPDG",&Deuteron_MotherPDG,"Deuteron_MotherPDG/I");
   fTempTree_Deuteron->Branch("Deuteron_FilterBit",&Deuteron_FilterBit,"Deuteron_FilterBit/O");
+  fTempTree_Deuteron->Branch("Deuteron_ITS_Layer0",&Deuteron_ITS_Layer0,"Deuteron_ITS_Layer0/O");
+  fTempTree_Deuteron->Branch("Deuteron_ITS_Layer1",&Deuteron_ITS_Layer1,"Deuteron_ITS_Layer1/O");
+  fTempTree_Deuteron->Branch("Deuteron_ITS_Layer2",&Deuteron_ITS_Layer2,"Deuteron_ITS_Layer2/O");
+  fTempTree_Deuteron->Branch("Deuteron_ITS_Layer3",&Deuteron_ITS_Layer3,"Deuteron_ITS_Layer3/O");
+  fTempTree_Deuteron->Branch("Deuteron_ITS_Layer4",&Deuteron_ITS_Layer4,"Deuteron_ITS_Layer4/O");
+  fTempTree_Deuteron->Branch("Deuteron_ITS_Layer5",&Deuteron_ITS_Layer5,"Deuteron_ITS_Layer5/O");
   fTempTree_Deuteron->Branch("Deuteron_ID",&Deuteron_ID,"Deuteron_ID/i");
   fTempTree_Deuteron->Branch("Deuteron_Event_Identifier",&Deuteron_Event_Identifier,"Deuteron_Event_Identifier/l");
 
@@ -1832,6 +1880,12 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     Deuteron_PDG		    = PDG;
     Deuteron_MotherPDG		    = MotherPDG;
     Deuteron_FilterBit		    = Track->TestFilterBit(BIT(0));
+    Deuteron_ITS_Layer0		    = Track->HasPointOnITSLayer(0);
+    Deuteron_ITS_Layer1		    = Track->HasPointOnITSLayer(1);
+    Deuteron_ITS_Layer2		    = Track->HasPointOnITSLayer(2);
+    Deuteron_ITS_Layer3		    = Track->HasPointOnITSLayer(3);
+    Deuteron_ITS_Layer4		    = Track->HasPointOnITSLayer(4);
+    Deuteron_ITS_Layer5		    = Track->HasPointOnITSLayer(5);
 
     fTempTree_Deuteron->Fill();
     nDeuteronsSelected++;
@@ -2132,6 +2186,12 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       TBranch *Branch_Deuteron_FilterBit	    = fTempTree_Deuteron->GetBranch("Deuteron_FilterBit");
       TBranch *Branch_Deuteron_ID		    = fTempTree_Deuteron->GetBranch("Deuteron_ID");
       TBranch *Branch_Deuteron_Event_Identifier	    = fTempTree_Deuteron->GetBranch("Deuteron_Event_Identifier");
+      TBranch *Branch_Deuteron_ITS_Layer0	    = fTempTree_Deuteron->GetBranch("Deuteron_ITS_Layer0");
+      TBranch *Branch_Deuteron_ITS_Layer1	    = fTempTree_Deuteron->GetBranch("Deuteron_ITS_Layer1");
+      TBranch *Branch_Deuteron_ITS_Layer2	    = fTempTree_Deuteron->GetBranch("Deuteron_ITS_Layer2");
+      TBranch *Branch_Deuteron_ITS_Layer3	    = fTempTree_Deuteron->GetBranch("Deuteron_ITS_Layer3");
+      TBranch *Branch_Deuteron_ITS_Layer4	    = fTempTree_Deuteron->GetBranch("Deuteron_ITS_Layer4");
+      TBranch *Branch_Deuteron_ITS_Layer5	    = fTempTree_Deuteron->GetBranch("Deuteron_ITS_Layer5");
 
 
       Branch_Deuteron_px->SetAddress(&fDeuteron_px);
@@ -2162,6 +2222,12 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       Branch_Deuteron_FilterBit->SetAddress(&fDeuteron_FilterBit);
       Branch_Deuteron_ID->SetAddress(&fDeuteron_ID);
       Branch_Deuteron_Event_Identifier->SetAddress(&fDeuteron_Event_Identifier);
+      Branch_Deuteron_ITS_Layer0->SetAddress(&fDeuteron_ITS_Layer0);
+      Branch_Deuteron_ITS_Layer1->SetAddress(&fDeuteron_ITS_Layer1);
+      Branch_Deuteron_ITS_Layer2->SetAddress(&fDeuteron_ITS_Layer2);
+      Branch_Deuteron_ITS_Layer3->SetAddress(&fDeuteron_ITS_Layer3);
+      Branch_Deuteron_ITS_Layer4->SetAddress(&fDeuteron_ITS_Layer4);
+      Branch_Deuteron_ITS_Layer5->SetAddress(&fDeuteron_ITS_Layer5);
 
 
       Branch_Deuteron_px->SetAutoDelete(true);
@@ -2189,6 +2255,12 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       Branch_Deuteron_FilterBit->SetAutoDelete(true);
       Branch_Deuteron_ID->SetAutoDelete(true);
       Branch_Deuteron_Event_Identifier->SetAutoDelete(true);
+      Branch_Deuteron_ITS_Layer0->SetAutoDelete(true);
+      Branch_Deuteron_ITS_Layer1->SetAutoDelete(true);
+      Branch_Deuteron_ITS_Layer2->SetAutoDelete(true);
+      Branch_Deuteron_ITS_Layer3->SetAutoDelete(true);
+      Branch_Deuteron_ITS_Layer4->SetAutoDelete(true);
+      Branch_Deuteron_ITS_Layer5->SetAutoDelete(true);
 
       fTempTree_Deuteron->GetEntry(Deuteron);
 
@@ -2791,6 +2863,12 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     unsigned int    AntiDeuteron_ID;
     unsigned long   AntiDeuteron_Event_Identifier;
     bool	    AntiDeuteron_FilterBit;
+    bool	    AntiDeuteron_ITS_Layer0 = false;
+    bool	    AntiDeuteron_ITS_Layer1 = false;
+    bool	    AntiDeuteron_ITS_Layer2 = false;
+    bool	    AntiDeuteron_ITS_Layer3 = false;
+    bool	    AntiDeuteron_ITS_Layer4 = false;
+    bool	    AntiDeuteron_ITS_Layer5 = false;
 
   fTempTree_AntiDeuteron = new TTree("fTempTree_AntiDeuteron","fTempTree_AntiDeuteron");
   fTempTree_AntiDeuteron->Branch("AntiDeuteron_px",&AntiDeuteron_px,"AntiDeuteron_px/F");
@@ -2819,6 +2897,12 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
   fTempTree_AntiDeuteron->Branch("AntiDeuteron_PDG",&AntiDeuteron_PDG,"AntiDeuteron_PDG/I");
   fTempTree_AntiDeuteron->Branch("AntiDeuteron_MotherPDG",&AntiDeuteron_MotherPDG,"AntiDeuteron_MotherPDG/I");
   fTempTree_AntiDeuteron->Branch("AntiDeuteron_FilterBit",&AntiDeuteron_FilterBit,"AntiDeuteron_FilterBit/O");
+  fTempTree_AntiDeuteron->Branch("AntiDeuteron_ITS_Layer0",&AntiDeuteron_ITS_Layer0,"AntiDeuteron_ITS_Layer0/O");
+  fTempTree_AntiDeuteron->Branch("AntiDeuteron_ITS_Layer1",&AntiDeuteron_ITS_Layer1,"AntiDeuteron_ITS_Layer1/O");
+  fTempTree_AntiDeuteron->Branch("AntiDeuteron_ITS_Layer2",&AntiDeuteron_ITS_Layer2,"AntiDeuteron_ITS_Layer2/O");
+  fTempTree_AntiDeuteron->Branch("AntiDeuteron_ITS_Layer3",&AntiDeuteron_ITS_Layer3,"AntiDeuteron_ITS_Layer3/O");
+  fTempTree_AntiDeuteron->Branch("AntiDeuteron_ITS_Layer4",&AntiDeuteron_ITS_Layer4,"AntiDeuteron_ITS_Layer4/O");
+  fTempTree_AntiDeuteron->Branch("AntiDeuteron_ITS_Layer5",&AntiDeuteron_ITS_Layer5,"AntiDeuteron_ITS_Layer5/O");
   fTempTree_AntiDeuteron->Branch("AntiDeuteron_ID",&AntiDeuteron_ID,"AntiDeuteron_ID/i");
   fTempTree_AntiDeuteron->Branch("AntiDeuteron_Event_Identifier",&AntiDeuteron_Event_Identifier,"AntiDeuteron_Event_Identifier/l");
 
@@ -2945,6 +3029,12 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     AntiDeuteron_PDG			= PDG;
     AntiDeuteron_MotherPDG		= MotherPDG;
     AntiDeuteron_FilterBit		= Track->TestFilterBit(BIT(0));
+    AntiDeuteron_ITS_Layer0		= Track->HasPointOnITSLayer(0);
+    AntiDeuteron_ITS_Layer1		= Track->HasPointOnITSLayer(1);
+    AntiDeuteron_ITS_Layer2		= Track->HasPointOnITSLayer(2);
+    AntiDeuteron_ITS_Layer3		= Track->HasPointOnITSLayer(3);
+    AntiDeuteron_ITS_Layer4		= Track->HasPointOnITSLayer(4);
+    AntiDeuteron_ITS_Layer5		= Track->HasPointOnITSLayer(5);
  
     fTempTree_AntiDeuteron->Fill();
     nAntiDeuteronsSelected++;
@@ -3250,6 +3340,12 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       TBranch *Branch_AntiDeuteron_FilterBit		= fTempTree_AntiDeuteron->GetBranch("AntiDeuteron_FilterBit");
       TBranch *Branch_AntiDeuteron_ID			= fTempTree_AntiDeuteron->GetBranch("AntiDeuteron_ID");
       TBranch *Branch_AntiDeuteron_Event_Identifier	= fTempTree_AntiDeuteron->GetBranch("AntiDeuteron_Event_Identifier");
+      TBranch *Branch_AntiDeuteron_ITS_Layer0		= fTempTree_AntiDeuteron->GetBranch("AntiDeuteron_ITS_Layer0");
+      TBranch *Branch_AntiDeuteron_ITS_Layer1		= fTempTree_AntiDeuteron->GetBranch("AntiDeuteron_ITS_Layer1");
+      TBranch *Branch_AntiDeuteron_ITS_Layer2		= fTempTree_AntiDeuteron->GetBranch("AntiDeuteron_ITS_Layer2");
+      TBranch *Branch_AntiDeuteron_ITS_Layer3		= fTempTree_AntiDeuteron->GetBranch("AntiDeuteron_ITS_Layer3");
+      TBranch *Branch_AntiDeuteron_ITS_Layer4		= fTempTree_AntiDeuteron->GetBranch("AntiDeuteron_ITS_Layer4");
+      TBranch *Branch_AntiDeuteron_ITS_Layer5		= fTempTree_AntiDeuteron->GetBranch("AntiDeuteron_ITS_Layer5");
 
 
       Branch_AntiDeuteron_px->SetAddress(&fAntiDeuteron_px);
@@ -3280,6 +3376,12 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       Branch_AntiDeuteron_FilterBit->SetAddress(&fAntiDeuteron_FilterBit);
       Branch_AntiDeuteron_ID->SetAddress(&fAntiDeuteron_ID);
       Branch_AntiDeuteron_Event_Identifier->SetAddress(&fAntiDeuteron_Event_Identifier);
+      Branch_AntiDeuteron_ITS_Layer0->SetAddress(&fAntiDeuteron_ITS_Layer0);
+      Branch_AntiDeuteron_ITS_Layer1->SetAddress(&fAntiDeuteron_ITS_Layer1);
+      Branch_AntiDeuteron_ITS_Layer2->SetAddress(&fAntiDeuteron_ITS_Layer2);
+      Branch_AntiDeuteron_ITS_Layer3->SetAddress(&fAntiDeuteron_ITS_Layer3);
+      Branch_AntiDeuteron_ITS_Layer4->SetAddress(&fAntiDeuteron_ITS_Layer4);
+      Branch_AntiDeuteron_ITS_Layer5->SetAddress(&fAntiDeuteron_ITS_Layer5);
 
 
       Branch_AntiDeuteron_px->SetAutoDelete(true);
@@ -3310,6 +3412,12 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
       Branch_AntiDeuteron_FilterBit->SetAutoDelete(true);
       Branch_AntiDeuteron_ID->SetAutoDelete(true);
       Branch_AntiDeuteron_Event_Identifier->SetAutoDelete(true);
+      Branch_AntiDeuteron_ITS_Layer0->SetAutoDelete(true);
+      Branch_AntiDeuteron_ITS_Layer1->SetAutoDelete(true);
+      Branch_AntiDeuteron_ITS_Layer2->SetAutoDelete(true);
+      Branch_AntiDeuteron_ITS_Layer3->SetAutoDelete(true);
+      Branch_AntiDeuteron_ITS_Layer4->SetAutoDelete(true);
+      Branch_AntiDeuteron_ITS_Layer5->SetAutoDelete(true);
 
       fTempTree_AntiDeuteron->GetEntry(AntiDeuteron);
 
@@ -4623,8 +4731,8 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
   double Deuteron_pT_max = 3.0;
   double Deuteron_eta_min = -0.8;
   double Deuteron_eta_max = +0.8;
-  double Deuteron_DCAxy_max = 0.3; // cm
-  double Deuteron_DCAz_max = 0.2; // cm
+  double Deuteron_DCAxy_max = 3.0; // cm
+  double Deuteron_DCAz_max = 0.3; // cm
 
   double Deuteron_TPC_RatioRowsFindableCluster_min = 0.73;
   double Deuteron_TPC_dEdx_nSigma_max = 4.0;

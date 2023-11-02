@@ -176,6 +176,12 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned long     fDeuteron_Event_Identifier;
     unsigned short    fDeuteron_Event_ParticleNumber;
     unsigned short    fDeuteron_Event_nParticles;
+    bool	      fDeuteron_ITS_Layer0;
+    bool	      fDeuteron_ITS_Layer1;
+    bool	      fDeuteron_ITS_Layer2;
+    bool	      fDeuteron_ITS_Layer3;
+    bool	      fDeuteron_ITS_Layer4;
+    bool	      fDeuteron_ITS_Layer5;
 
     TTree *fSaveTree_AntiLambda;
     float fAntiLambda_px;
@@ -304,6 +310,12 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned long     fAntiDeuteron_Event_Identifier;
     unsigned short    fAntiDeuteron_Event_ParticleNumber;
     unsigned short    fAntiDeuteron_Event_nParticles;
+    bool	      fAntiDeuteron_ITS_Layer0;
+    bool	      fAntiDeuteron_ITS_Layer1;
+    bool	      fAntiDeuteron_ITS_Layer2;
+    bool	      fAntiDeuteron_ITS_Layer3;
+    bool	      fAntiDeuteron_ITS_Layer4;
+    bool	      fAntiDeuteron_ITS_Layer5;
 
     TList     *fHistoList;
     TH2F      *h_Proton_TOF_m2_NoTOFcut;
