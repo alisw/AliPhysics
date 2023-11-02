@@ -141,6 +141,7 @@ fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
 fPIDResponse(0), fESDtrackCuts(0),
 fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0),
 fUtils(0), fRand(0),
+fkCentralityEstimator("V0MNew"),
 
 //---> Pointers to ML Classes
 fXiMinusNN(0),
@@ -551,6 +552,7 @@ fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
 fPIDResponse(0), fESDtrackCuts(0),
 fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0),
 fUtils(0), fRand(0),
+fkCentralityEstimator("V0MNew"),
 
 //---> Pointers to ML Classes
 fXiMinusNN(0),
@@ -1837,7 +1839,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
     AliWarning("AliMultSelection object not found!");
   } else {
     //V0M Multiplicity Percentile
-    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+    lPercentile = MultSelection->GetMultiplicityPercentile(fkCentralityEstimator.Data());
     //Event Selection Code
     lEvSelCode = MultSelection->GetEvSelCode();
   }
