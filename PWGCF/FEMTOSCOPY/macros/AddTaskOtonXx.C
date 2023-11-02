@@ -37,9 +37,10 @@ AliAnalysisTaskSE* AddTaskOtonXx(int isMCint = 0,
 bool massopen = false;
 if(OpenMass>0) massopen=true;
 
-//FDpairing
+//FDpairing ==> Will influence Xi cuts and OnlyXi cut!
 bool doFD = false;
 if(DoFDpairing>0)doFD=true;
+int TheMixingDepth = DoFDpairing; // define mixing depth via DoFDpairing
 
 //fill only Xi's (but require Xi-pi event) for optimization
 bool OnlyXi = false;
@@ -51,6 +52,18 @@ if(XiOpen) massopen = true; // XiOpen implies massopen !!!
 //open xi for ML? (no Minv cut! and cosPA open as well):
 bool forML = false;
 if(FillOnlyXi>2) forML = true; // in this case we will have massopen and XiOpen too 
+
+
+//RELATE FDPAIRING with the TTree and the Xi-Cuts (And overwritte "OnlyXi","XiOpen","massOpen" and "forML")
+//=========================================================================================================
+//Will do FD pairing for "signal-like" Xi's: 
+// i) to check pairing code and final Correlation function
+// ii) for resolution matrix
+if(doFD) OnlyXi = true;
+if(doFD) XiOpen = false;
+if(doFD) massopen = false;
+if(doFD) forML = false;
+
 
 
   const char fullBlastQA = true; //moved from arguments
@@ -246,37 +259,43 @@ Float_t XiDaughterDCA = 1.5; //std Georgios
 //Float_t XiMinDistBachToPrimVtx = 0.05; //std Georgios
 Float_t XiMinDistBachToPrimVtx = 0.03; //risky, but move it to the min
 if(XiOpen) XiMinDistBachToPrimVtx = 0.03;
+if(doFD) XiMinDistBachToPrimVtx = 0.05;
    CascadeXiCuts->SetCutXiMinDistBachToPrimVtx(XiMinDistBachToPrimVtx);
    AntiCascadeXiCuts->SetCutXiMinDistBachToPrimVtx(XiMinDistBachToPrimVtx);
 //in ttree: XiTrackDCA[][0,1]
 //Float_t v0MinDaugDistToPrimVtx = 0.05; //std Georgios
 Float_t v0MinDaugDistToPrimVtx = 0.03;//risky, but move it to the min(CAN WE OPEN IT EVEN MORE???
 if(XiOpen) v0MinDaugDistToPrimVtx = 0.03; //
+if(doFD) v0MinDaugDistToPrimVtx = 0.05; 
    CascadeXiCuts->SetCutv0MinDaugDistToPrimVtx(v0MinDaugDistToPrimVtx);
    AntiCascadeXiCuts->SetCutv0MinDaugDistToPrimVtx(v0MinDaugDistToPrimVtx);
 //in ttree: XiLambdaDCA
 //Float_t v0MinDistToPrimVtx = 0.07; //std Georgios
 Float_t v0MinDistToPrimVtx = 0.06; //risky, but move it to the min(CAN WE OPEN IT EVEN MORE???
 if(XiOpen) v0MinDistToPrimVtx = 0.05; //(cut in Vertexer 0.06?)
+if(doFD) v0MinDistToPrimVtx = 0.07; 
    CascadeXiCuts->SetCutv0MinDistToPrimVtx(v0MinDistToPrimVtx);
    AntiCascadeXiCuts->SetCutv0MinDistToPrimVtx(v0MinDistToPrimVtx);
 //in ttree: XiPA
 //Float_t XiCPA = 0.98; //std Georgios
 //Float_t XiCPA = 0.995; // NEW STD
 Float_t XiCPA = 0.98; //
-   if(forML) XiCPA = 0.95; //(cut in vertexer 0.98????)
+if(forML) XiCPA = 0.95; //(cut in vertexer 0.98????)
+if(doFD) XiCPA = 0.995; 
    CascadeXiCuts->SetCutXiCPA(XiCPA);
    AntiCascadeXiCuts->SetCutXiCPA(XiCPA);
 //in ttree: XiVr
 //Float_t XiTransverseRadius = 0.8; //std Georgios
 Float_t XiTransverseRadius = 0.000001; // (cut in Vertexer 0.4?)
 if(XiOpen) XiTransverseRadius = 0.000001; //no cut (cut in Vertexer 0.4?)
+if(doFD) XiTransverseRadius = 0.8;
    CascadeXiCuts->SetCutXiTransverseRadius(XiTransverseRadius, 200);
    AntiCascadeXiCuts->SetCutXiTransverseRadius(XiTransverseRadius, 200);
 //in ttree: XiLambdaVr
 //Float_t v0TransverseRadius = 1.4; //std Georgios
 Float_t v0TransverseRadius = 0.00001; //no cut (cut in Vertexer 0.4?)
 if(XiOpen) v0TransverseRadius = 0.000001; //no cut (cut in Vertexer 0.4?)
+if(doFD) v0TransverseRadius = 1.4;
    CascadeXiCuts->SetCutv0TransverseRadius(v0TransverseRadius, 200);
    AntiCascadeXiCuts->SetCutv0TransverseRadius(v0TransverseRadius, 200);
 //in ttree: XiMass
@@ -296,7 +315,7 @@ Float_t v0MaxDaughterDCA = 1.5; //std FD
   AntiCascadeXiCuts->SetCutv0MaxDaughterDCA(v0MaxDaughterDCA);
 //in ttree XiLambdaPA
 Float_t v0CPA = 0.97; //std FD (and vertexer)
-  if(forML) v0CPA = 0.95;
+if(forML) v0CPA = 0.95;
   CascadeXiCuts->SetCutv0CPA(v0CPA);
   AntiCascadeXiCuts->SetCutv0CPA(v0CPA);
 //in ttree:
@@ -310,7 +329,8 @@ Float_t RejectOmegas = 0.005; //std FD
 //in ttree:
 //Float_t PtRangeXi = 0.3; // std FD
 Float_t PtRangeXi = 0.5; // from BDT files, there is no signal at all below 0.5
-if(XiOpen) PtRangeXi = 0.000001; //no cut (cut in Vertexer 0.3?)
+if(XiOpen) PtRangeXi = 0.000001; //no cut (cut in Vertexer 0.3?
+if(doFD) PtRangeXi = 0.3;
   CascadeXiCuts->SetPtRangeXi(PtRangeXi, 999.9);
   AntiCascadeXiCuts->SetPtRangeXi(PtRangeXi, 999.9);
 //in ttree:
@@ -331,6 +351,7 @@ if(XiOpen) BachCheckPileUp = false;
 //Float_t nSigma = 4.; //std 
 Float_t nSigma = 5.; // BDT is gonna find the good ones! ;)
 if(XiOpen) nSigma = 5.; 
+if(doFD) nSigma = 5.;
   XiPosCuts->SetPID(AliPID::kProton, 999., nSigma);
   XiNegCuts->SetPID(AliPID::kPion, 999., nSigma);
   XiBachCuts->SetPID(AliPID::kPion, 999., nSigma);
@@ -545,7 +566,8 @@ bool PionCheckPileUp = false; //std
     config->SetMinKRel(kMin);
     config->SetMaxKRel(kMax);
     config->SetUseEventMixing(true);
-    config->SetMixingDepth(10);  /// how many events i want to mix. 10 is usually okay
+    //config->SetMixingDepth(10);  /// how many events i want to mix. 10 is usually okay
+    config->SetMixingDepth(TheMixingDepth);  /// Define Mixing Depth via DoFDpairing
 
 
   if (isMC) {
