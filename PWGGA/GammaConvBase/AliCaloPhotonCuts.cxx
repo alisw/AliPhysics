@@ -6030,18 +6030,16 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fMinDistTrackToClusterPhi = -0.1;
       fMaxDistTrackToClusterPhi = 0.1;
       break;
-    case 29: // cut char 't' (like f so standard TM but with mean energy correction for overlap)
+    case 29: // cut char 't' (no TM but with mean energy correction for overlap), only use with cell tm!
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
-      fUsePtDepTrackToCluster = 1;
-      fFuncPtDepEta = new TF1("funcEta29", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
-      fFuncPtDepPhi = new TF1("funcPhi29", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
+      fUseDistTrackToCluster = kFALSE;
+      fMaxDistTrackToClusterEta = 0;
+      fMinDistTrackToClusterPhi = 0;
+      fMaxDistTrackToClusterPhi = 0;
       fFuncPoissonParamCent = new TF1("fFuncPoissonParamCent29", "[0] * TMath::Exp( (x + [1] ) / [2] )", 0., 90.);
       fFuncNMatchedTracks = new TF1("fFuncNMatchedTracks29", "TMath::Poisson(x,[0])", 0., 10.);
       fDoEnergyCorrectionForOverlap = 1;
-      fEOverPMax = 1.75;
       if(fIsMC >= 1){
         // values for HIJING 5.02 TeV Pb--Pb simulations
         fParamMeanTrackPt[0] = +6.20104e-01;
@@ -6054,18 +6052,16 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
         fParamMeanTrackPt[2] = -1.93788e-05;
       }
       break;
-    case 30: // cut char 'u' (like f so standard TM but with random energy correction for overlap)
+    case 30: // cut char 'u' (no TM but with random energy correction for overlap), only use with cell tm!
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
-      fUsePtDepTrackToCluster = 1;
-      fFuncPtDepEta = new TF1("funcEta30", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
-      fFuncPtDepPhi = new TF1("funcPhi30", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-      fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
+      fUseDistTrackToCluster = kFALSE;
+      fMaxDistTrackToClusterEta = 0;
+      fMinDistTrackToClusterPhi = 0;
+      fMaxDistTrackToClusterPhi = 0;
       fFuncPoissonParamCent = new TF1("fFuncPoissonParamCent30", "[0] * TMath::Exp( (x + [1] ) / [2] )", 0., 90.);
       fFuncNMatchedTracks = new TF1("fFuncNMatchedTracks30", "TMath::Poisson(x,[0])", 0., 10.);
       fDoEnergyCorrectionForOverlap = 2;
-      fEOverPMax = 1.75;
       if(fIsMC >= 1){
         // values for HIJING 5.02 TeV Pb--Pb simulations
         fParamMeanTrackPt[0] = +6.20104e-01;

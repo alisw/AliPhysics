@@ -1301,24 +1301,24 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("13530e03","411790105fe30220000","01631031000000d0"); // 30-50%
     cuts.AddCutCalo("15910e03","411790105fe30220000","01631031000000d0"); // 50-90%
   // Mean neutral energy overlap correction!
-  } else if (trainConfig == 789){ // EMCAL+DCal clusters - 13 TeV emcal cuts with TM
+  } else if (trainConfig == 789){ // EMCAL+DCal clusters - 13 TeV emcal cuts w/o TM
     cuts.AddCutCalo("10130e03","411790105te30220000","0s631031000000d0"); // 00-10%
     cuts.AddCutCalo("11310e03","411790105te30220000","0s631031000000d0"); // 10-30%
     cuts.AddCutCalo("13530e03","411790105te30220000","0s631031000000d0"); // 30-50%
     cuts.AddCutCalo("15910e03","411790105te30220000","0s631031000000d0"); // 50-90%
   // Random neutral energy overlap correction!
-  } else if (trainConfig == 790){ // EMCAL+DCal clusters - 13 TeV emcal cuts with TM
+  } else if (trainConfig == 790){ // EMCAL+DCal clusters - 13 TeV emcal cuts w/o TM
     cuts.AddCutCalo("10130e03","411790105ue30220000","0s631031000000d0"); // 00-10%
     cuts.AddCutCalo("11310e03","411790105ue30220000","0s631031000000d0"); // 10-30%
     cuts.AddCutCalo("13530e03","411790105ue30220000","0s631031000000d0"); // 30-50%
     cuts.AddCutCalo("15910e03","411790105ue30220000","0s631031000000d0"); // 50-90%
-  } else if (trainConfig == 791){ // EMCAL+DCal clusters - 13 TeV emcal cuts with TM with Mean neutral energy overlap correction, cent and semi cent trigger with OOB pileup cut
+  } else if (trainConfig == 791){ // EMCAL+DCal clusters - 13 TeV emcal cuts w/o TM with Mean neutral energy overlap correction, cent and semi cent trigger with OOB pileup cut
     cuts.AddCutCalo("10130e13","411790105te30220000","0s631031000000d0"); // 00-10%
     cuts.AddCutCalo("11310e13","411790105te30220000","0s631031000000d0"); // 10-30%
     cuts.AddCutCalo("13530e13","411790105te30220000","0s631031000000d0"); // 30-50%
     cuts.AddCutCalo("15910e13","411790105te30220000","0s631031000000d0"); // 50-90%
   // Mean neutral energy overlap correction!
-  } else if (trainConfig == 792){ // EMCAL+DCal clusters - 13 TeV emcal cuts with TM with Mean neutral energy overlap correction, cent and semi cent trigger without OOB pileup cut
+  } else if (trainConfig == 792){ // EMCAL+DCal clusters - 13 TeV emcal cuts w/o TM with Mean neutral energy overlap correction, cent and semi cent trigger without OOB pileup cut
     cuts.AddCutCalo("10130013","411790105te30220000","0s631031000000d0"); // 00-10%
     cuts.AddCutCalo("11310013","411790105te30220000","0s631031000000d0"); // 10-30%
     cuts.AddCutCalo("13530013","411790105te30220000","0s631031000000d0"); // 30-50%
