@@ -326,9 +326,9 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
 //  fTree->Branch("KaonIs",&fTKaonIs,"fTKaonIs[fTnKaon]/O");
 //  fTree->Branch("KaonIsFD",&fTKaonIsFD,"fTKaonIsFD[fTnKaon]/O");
 //  fTree->Branch("KaonFilterBit",&fTKaonFilterBit,"fTKaonFilterBit[fTnKaon]/O");
-//  if(fIsMC||fIsMCtruth)fTree->Branch("KaonPDG",&fTKaonPDG,"fTKaonPDG[fTnKaon]/I");
-//  if(fIsMC||fIsMCtruth)fTree->Branch("KaonMotherWeak",&fTKaonMotherWeak,"fTKaonMotherWeak[fTnKaon]/I");
-//  if(fIsMC||fIsMCtruth)fTree->Branch("KaonOrigin",&fTKaonOrigin,"fTKaonOrigin[fTnKaon]/I");
+  if(fIsMC||fIsMCtruth)fTree->Branch("KaonPDG",&fTKaonPDG,"fTKaonPDG[fTnKaon]/I");
+  if(fIsMC||fIsMCtruth)fTree->Branch("KaonMotherWeak",&fTKaonMotherWeak,"fTKaonMotherWeak[fTnKaon]/I");
+  if(fIsMC||fIsMCtruth)fTree->Branch("KaonOrigin",&fTKaonOrigin,"fTKaonOrigin[fTnKaon]/I");
    if(fIsMC||fIsMCtruth)fTree->Branch("KaonMotherID",&fTKaonMotherID,"fTKaonMotherID[fTnKaon]/I");
   }
 
