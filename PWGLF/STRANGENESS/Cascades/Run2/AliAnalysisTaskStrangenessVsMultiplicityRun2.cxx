@@ -1832,6 +1832,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
   //------------------------------------------------
   
   Float_t lPercentile = 500;
+  Float_t lPercentileV0M = 500; // redundant for safety
+  Float_t lPercentileV0MNew = 500; // redundant for safety
   Int_t lEvSelCode = 100;
   AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
   if( !MultSelection) {
@@ -1840,6 +1842,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
   } else {
     //V0M Multiplicity Percentile
     lPercentile = MultSelection->GetMultiplicityPercentile(fkCentralityEstimator.Data());
+    lPercentileV0M = MultSelection->GetMultiplicityPercentile("V0M"); // redundant for safety
+    lPercentileV0MNew = MultSelection->GetMultiplicityPercentile("V0MNew"); // redundant for safety
     //Event Selection Code
     lEvSelCode = MultSelection->GetEvSelCode();
   }
@@ -2476,6 +2480,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
       lV0Result = lPointers[lcfg];
       histoout  = lV0Result->GetHistogram();
       
+      // Centrality relevant for this configuration
+      Float_t lThisResultCentrality = 500;
+      if(lV0Result->GetCentralityEstimator()==0) lThisResultCentrality = lPercentileV0M;
+      if(lV0Result->GetCentralityEstimator()==1) lThisResultCentrality = lPercentileV0MNew;
+      
       Float_t lMass = 0;
       Float_t lRap  = 0;
       Float_t lPDGMass = -1;
@@ -2622,7 +2631,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
           )//end major if
       {
         //This satisfies all my conditionals! Fill histogram
-        histoout -> Fill ( fCentrality, fTreeVariablePt, lMass );
+        histoout -> Fill ( lThisResultCentrality, fTreeVariablePt, lMass );
       }
     }
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -3687,6 +3696,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
       lpipy = fTreeCascVarBachPy;
       lpipz = fTreeCascVarBachPz;
       
+      // Centrality relevant for this configuration
+      Float_t lThisResultCentrality = 500;
+      if(lCascadeResult->GetCentralityEstimator()==0) lThisResultCentrality = lPercentileV0M;
+      if(lCascadeResult->GetCentralityEstimator()==1) lThisResultCentrality = lPercentileV0MNew;
+      
       //Local variable to cut ML selection threshold 
       Double_t lMLpred = 0;
       //Local variable to control model type (NN or BDT) in the output
@@ -4031,7 +4045,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
       {
         //This satisfies all my conditionals! Fill histogram
         if( lTheOne && fkSaveSpecificConfig ) fTreeCascade->Fill();
-        histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
+        histoout -> Fill ( lThisResultCentrality, fTreeCascVarPt, lMass );
       }
     }
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

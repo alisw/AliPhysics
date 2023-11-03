@@ -44,6 +44,8 @@ public:
     
     Long64_t Merge(TCollection *hlist);
 
+    void SetCentralityEstimator      ( Int_t lEst ) { fCentralityEstimator = lEst; }
+  
     //Acceptance
     void SetCutMinRapidity      ( Double_t lCut ) { fCutMinRapidity       = lCut; }
     void SetCutMaxRapidity      ( Double_t lCut ) { fCutMaxRapidity       = lCut; }
@@ -190,6 +192,8 @@ public:
     AliCascadeResult::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     Double_t GetMass() const;
     TString GetParticleName() const;    
+
+    Int_t GetCentralityEstimator      () const { return fCentralityEstimator; }
 
     //Getters for V0 Cuts
     Double_t GetCutMinRapidity     () const { return fCutMinRapidity; }
@@ -347,6 +351,8 @@ private:
     TProfile *fProtonProfile; //Histogram for bookkeeping proton momenta
     //------------------------------------------------------------------------
     
+    Int_t fCentralityEstimator; // centrality estimator
+  
     //Basic acceptance criteria
     Double_t fCutMinRapidity; //min rapidity
     Double_t fCutMaxRapidity; //max rapidity
@@ -457,7 +463,7 @@ private:
     Double_t fCutMLthrsh;
     Bool_t   fIsModelNN;
 
-    ClassDef(AliCascadeResult, 39)
+    ClassDef(AliCascadeResult, 40)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -497,5 +503,6 @@ private:
     // 37 - modern track selections: parametric length, crossed rows + cr/L
     // 38 - ITS or TOF requirement a la Fiorella added
     // 39 - Addition of Machine Learning selection data members
+    // 40 - addition of selectable centrality estimator
 };
 #endif

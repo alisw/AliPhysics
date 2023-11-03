@@ -2318,6 +2318,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
   //------------------------------------------------
   
   Float_t lPercentile = 500;
+  Float_t lPercentileV0M = 500;
+  Float_t lPercentileV0MNew = 500;
   Float_t lPercentileEmbeddedSelection = 500;
   Int_t lEvSelCode = 100;
   AliMultSelection *MultSelection = (AliMultSelection*) lESDevent -> FindListObject("MultSelection");
@@ -2327,6 +2329,8 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
   } else {
     //V0M Multiplicity Percentile
     lPercentile = MultSelection->GetMultiplicityPercentile(fkCentralityEstimator.Data());
+    lPercentileV0M = MultSelection->GetMultiplicityPercentile("V0M"); // redundant for safety
+    lPercentileV0MNew = MultSelection->GetMultiplicityPercentile("V0MNew"); // redundant for safety
     lPercentileEmbeddedSelection = MultSelection->GetMultiplicityPercentile(fkCentralityEstimator.Data(), kTRUE );
     //Event Selection Code
     lEvSelCode = MultSelection->GetEvSelCode();
@@ -3251,6 +3255,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
       histooutfeeddown    = lV0Result->GetHistogramFeeddown();
       histoProtonProfile  = lV0Result->GetProtonProfile();
       
+      // Centrality relevant for this configuration
+      Float_t lThisResultCentrality = 500;
+      if(lV0Result->GetCentralityEstimator()==0) lThisResultCentrality = lPercentileV0M;
+      if(lV0Result->GetCentralityEstimator()==1) lThisResultCentrality = lPercentileV0MNew;
+      
       Float_t lMass = 0;
       Float_t lRap  = 0;
       Float_t lPDGMass = -1;
@@ -3420,11 +3429,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
             ){
           //This satisfies all my conditionals! Fill histogram
           if( !lV0Result -> GetCutMCUseMCProperties() ){
-            histoout -> Fill ( fCentrality, fTreeVariablePt, lMass );
+            histoout -> Fill ( lThisResultCentrality, fTreeVariablePt, lMass );
             if(histoProtonProfile)
               histoProtonProfile -> Fill( fTreeVariablePt, lBaryonTransvMomMCForG3F );
           }else{
-            histoout -> Fill ( fCentrality, fTreeVariablePtMC, lMass );
+            histoout -> Fill ( lThisResultCentrality, fTreeVariablePtMC, lMass );
             if(histoProtonProfile)
               histoProtonProfile -> Fill( fTreeVariablePtMC, lBaryonTransvMomMCForG3F );
           }
@@ -3440,7 +3449,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
           //Rough invariant mass selection: could be better, but would be a correction
           //of the correction -> left as further improvement
           if( TMath::Abs(lMass-1.116) < 0.010 )
-            histooutfeeddown -> Fill ( fTreeVariablePt, fTreeVariablePtMother, fCentrality );
+            histooutfeeddown -> Fill ( fTreeVariablePt, fTreeVariablePtMother, lThisResultCentrality );
         }
       }
     }
@@ -5030,6 +5039,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
       histoout  = lCascadeResult->GetHistogram();
       histoProtonProfile  = lCascadeResult->GetProtonProfile();
       
+      // Centrality relevant for this configuration
+      Float_t lThisResultCentrality = 500;
+      if(lCascadeResult->GetCentralityEstimator()==0) lThisResultCentrality = lPercentileV0M;
+      if(lCascadeResult->GetCentralityEstimator()==1) lThisResultCentrality = lPercentileV0MNew;
+      
       Float_t lMass = 0;
       Float_t lRap  = 0;
       Float_t lPDGMass = -1;
@@ -5386,11 +5400,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         if( lTheOne && fkSaveSpecificConfig ) fTreeCascade->Fill();
         
         if( !lCascadeResult -> GetCutMCUseMCProperties() ){
-          histoout -> Fill ( fCentrality, fTreeCascVarPt, lMass );
+          histoout -> Fill ( lThisResultCentrality, fTreeCascVarPt, lMass );
           if(histoProtonProfile)
             histoProtonProfile -> Fill( fTreeCascVarPt, lBaryonTransvMomMCForG3F );
         }else{
-          histoout -> Fill ( fCentrality, fTreeCascVarPtMC, lMass );
+          histoout -> Fill ( lThisResultCentrality, fTreeCascVarPtMC, lMass );
           if(histoProtonProfile)
             histoProtonProfile -> Fill( fTreeCascVarPtMC, lBaryonTransvMomMCForG3F );
         }
