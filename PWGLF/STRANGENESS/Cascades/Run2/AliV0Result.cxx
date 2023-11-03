@@ -21,6 +21,7 @@ fhPtBinsFeeddown(0x0),
 fProtonProfile(0x0),
 fHisto(0x0),
 fHistoFeeddown(0x0),
+fCentralityEstimator(1),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
@@ -86,6 +87,7 @@ fhPtBinsFeeddown(0x0),
 fProtonProfile(0x0),
 fHisto(0x0),
 fHistoFeeddown(0x0),
+fCentralityEstimator(1),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
@@ -151,6 +153,7 @@ fhPtBinsFeeddown(0x0),
 fProtonProfile(0x0),
 fHisto(0x0),
 fHistoFeeddown(0x0),
+fCentralityEstimator(1),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
@@ -216,6 +219,7 @@ fhPtBinsFeeddown(0x0),
 fProtonProfile(0x0),
 fHisto(0x0),
 fHistoFeeddown(0x0),
+fCentralityEstimator(1),
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
 fCutV0Radius(5.0),
@@ -283,6 +287,7 @@ fhNPtBoundsFeeddown( lCopyMe.fhNPtBoundsFeeddown),
 fhNMassBins( lCopyMe.fhNMassBins),
 fhMinMass(lCopyMe.fhMinMass),
 fhMaxMass(lCopyMe.fhMaxMass),
+fCentralityEstimator(lCopyMe.fCentralityEstimator),
 //Acceptance Cuts
 fCutMinRapidity(lCopyMe.fCutMinRapidity),
 fCutMaxRapidity(lCopyMe.fCutMaxRapidity),
@@ -379,6 +384,7 @@ fHisto(0)
     fhNMassBins = lCopyMe->GetNMassBins();
     fhMinMass = lCopyMe->GetMinMass();
     fhMaxMass = lCopyMe->GetMaxMass();
+    fCentralityEstimator = lCopyMe->GetCentralityEstimator();
     
     //Acceptance Cuts
     fCutMinRapidity     = lCopyMe->GetCutMinRapidity();
@@ -503,6 +509,7 @@ AliV0Result& AliV0Result::operator=(const AliV0Result& lCopyMe)
     fhNMassBins = lCopyMe.GetNMassBins();
     fhMinMass = lCopyMe.GetMinMass();
     fhMaxMass = lCopyMe.GetMaxMass();
+    fCentralityEstimator = lCopyMe.GetCentralityEstimator();
     
     //Acceptance cuts
     fCutMinRapidity = lCopyMe.GetCutMinRapidity();
@@ -655,6 +662,7 @@ Bool_t AliV0Result::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx )
     AliV0Result *lCompareV0 = (AliV0Result*) lCompare;
     
     if( fMassHypo != lCompareV0->GetMassHypothesis() ) lReturnValue = kFALSE;
+    if( fCentralityEstimator != lCompareV0->GetCentralityEstimator() ) lReturnValue = kFALSE;
     
     //Acceptance
     if( TMath::Abs( fCutMinRapidity - lCompareV0->GetCutMinRapidity() ) > 1e-6 ) lReturnValue = kFALSE;

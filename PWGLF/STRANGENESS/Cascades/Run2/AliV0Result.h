@@ -43,6 +43,8 @@ public:
     
     Long64_t Merge(TCollection *hlist);
     
+    void SetCentralityEstimator      ( Int_t lEst ) { fCentralityEstimator = lEst; }
+  
     //Acceptance
     void SetCutMinRapidity      ( Double_t lCut ) { fCutMinRapidity       = lCut; }
     void SetCutMaxRapidity      ( Double_t lCut ) { fCutMaxRapidity       = lCut; }
@@ -112,6 +114,8 @@ public:
     Double_t GetMass() const;
     TString GetParticleName() const;
     
+    Int_t GetCentralityEstimator      () const { return fCentralityEstimator; }
+  
     //Getters for V0 Cuts
     Double_t GetCutMinRapidity     () const { return fCutMinRapidity; }
     Double_t GetCutMaxRapidity     () const { return fCutMaxRapidity; }
@@ -225,6 +229,8 @@ private:
     TH3F *fHistoFeeddown; //Feeddown matrix (optional)
     //------------------------------------------------------------------------
     
+    Int_t fCentralityEstimator; // centrality estimator
+  
     //Basic acceptance criteria
     Double_t fCutMinRapidity; //min rapidity
     Double_t fCutMaxRapidity; //max rapidity
