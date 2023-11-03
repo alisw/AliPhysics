@@ -18,7 +18,7 @@
 #include "AliESDtrackCuts.h"
 #include "AliESDEvent.h"
 #include "AliVMultiplicity.h"
-#include "AliPtContainer.h"
+#include "AliPtPtContainer.h"
 #include "TH3D.h"
 
 
@@ -62,7 +62,6 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetEtaAcceptance(Double_t newval) { fEtaAcceptance = newval; };
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
   void SetUseWeightsOne(Bool_t newvalNUE) { fUseNUEOne = newvalNUE; };
-  void SetUseEventWeightsOne(Bool_t newval) { fUseEventWeightOne = newval; };
   void SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
   void SetDCAxyFunctionalForm(TString newval) { fDCAxyFunctionalForm = newval; } //Call after SystFlag
   void SetCentralityEstimator(TString newval) { if(fCentEst) delete fCentEst; fCentEst = new TString(newval); };
@@ -118,7 +117,6 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Int_t fNV0MBinsDefault; //!
   Bool_t fUseNch;
   Bool_t fUseNUEOne;
-  Bool_t fUseEventWeightOne;
   Int_t fPtMpar;
   Double_t fEtaLow;
   Double_t fEtaAcceptance;
@@ -130,7 +128,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH2D *fNchTrueVsReco; //!
   TH2D *fESDvsFB128;
   TList *fptList;
-  AliPtContainer  *fPtCont;
+  AliPtPtContainer  *fPtCont;
   AliProfileBS *fMultiVsCent;
   UInt_t fTriggerType;
   TList *fSpectraList; //!
@@ -150,7 +148,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH2D *fWithinDCAvsPt_withChi2;
   TH3D *fDCAxyVsPt_withChi2;
   TH2D *fWithinDCAvsPt_noChi2;
-  TH3D *fMptVsNch;
+  TH2D *fMptVsNch;
   TH1D *fV0MMulti;
   TH2D *fITSvsTPCMulti;
   TH1D *fV2dPtMulti;
@@ -170,6 +168,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   int EventNo;
   unsigned int fEventWeight; 
   vector<vector<double>>  wp;
+  vector<vector<double>>  wpcm;
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);

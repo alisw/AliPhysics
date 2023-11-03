@@ -62,7 +62,6 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fNV0MBinsDefault(0),
   fUseNch(kFALSE),
   fUseNUEOne(kFALSE),
-  fUseEventWeightOne(kFALSE),
   fPtMpar(8),
   fEtaAcceptance(0.8),
   fQAList(0),
@@ -102,10 +101,11 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fCentralPU(1500),
   EventNo(0),
   fStdTPCITS2011(0),
-  fEventWeight(PtSpace::kWperms),
+  fEventWeight(PtPtSpace::kTuples),
   fRequireReloadOnRunChange(kFALSE),
   fEnableFB768dcaxy(kFALSE),
-  wp(0)
+  wp(0),
+  wpcm(0)
 {
 };
 AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TString ContSubfix):
@@ -136,7 +136,6 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fNV0MBinsDefault(0),
   fUseNch(kFALSE),
   fUseNUEOne(kFALSE),
-  fUseEventWeightOne(kFALSE),
   fPtMpar(8),
   fEtaAcceptance(0.8),
   fQAList(0),
@@ -175,10 +174,11 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fCentralPU(1500),
   EventNo(0),
   fStdTPCITS2011(0),
-  fEventWeight(PtSpace::kWperms),
+  fEventWeight(PtPtSpace::kTuples),
   fRequireReloadOnRunChange(kFALSE),
   fEnableFB768dcaxy(kFALSE),
-  wp(0)
+  wp(0),
+  wpcm(0)
 {
   SetContSubfix(ContSubfix);
   fCentEst = new TString("V0M");
@@ -207,8 +207,8 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
 
     fptList = new TList();
     fptList->SetOwner(kTRUE);
-    fPtCont = new AliPtContainer("ptcont_ch","ptcont_ch",fNMultiBins,fMultiBins,fPtMpar,kFALSE);
-    fPtCont->SetEventWeight((fUseEventWeightOne)?(PtSpace::kOne):fEventWeight);
+    fPtCont = new AliPtPtContainer("ptcont_ch","ptcont_ch",fNMultiBins,fMultiBins,fPtMpar);
+    fPtCont->SetEventWeight(fEventWeight);
     fptList->Add(fPtCont);
     if(fNBootstrapProfiles) fPtCont->InitializeSubsamples(fNBootstrapProfiles);
 
@@ -235,8 +235,12 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
     for(Int_t i=0;i<=nFineCentBins; i++) fineCentBins[i] = i;
     fMultiVsCent = new AliProfileBS("MultiVsCent","Multi vs centrality",nFineCentBins,fineCentBins);
     fptList->Add(fMultiVsCent);
+    const int nMptBins = 1000;
+    double *mptBins = new double[nMptBins+1];
+    for(int i=0;i<=nMptBins;++i) mptBins[i] = 0.00025*i + 0.55;
+    fMptVsNch = new TH2D("fMptVsNch","[#it{p}_{T}] vs N_{ch}; N_{ch}^{rec}; #LT[#it{p}_{T}]#GT",fNMultiBins,fMultiBins,nMptBins,mptBins);
+    fptList->Add(fMptVsNch);
     printf("Multiplicity objects created\n");
-
     PostData(1,fptList);
 
     printf("Creating QA objects\n");
@@ -248,13 +252,6 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
     TString eventCutLabel[7]={"Input","Centrality","Trigger","AliEventCuts","Vertex","Pileup","Tracks"};
     for(int i=0;i<nEventCutLabel;++i) fEventCount->GetXaxis()->SetBinLabel(i+1,eventCutLabel[i].Data());
     fQAList->Add(fEventCount);
-    int NNchBins = 3000;
-    double* NchBins = new double[NNchBins+1];
-    for(int i(0);i<=NNchBins;++i) NchBins[i] = i+0.5;
-    int NdummyCentBins = 5;
-    double dummyCentBins[] = {0,2,4,6,8,10};
-    fMptVsNch = new TH3D("fMptVsNch","[#it{p}_{T}] vs N_{ch}",NNchBins,NchBins,fNPtBins,fPtBins,NdummyCentBins,dummyCentBins);
-    fQAList->Add(fMptVsNch);
     fhQAEventsfMult32vsCentr = new TH2D("fhQAEventsfMult32vsCentr", "; centrality V0M; TPC multiplicity (FB32)", 100, 0, 100, 100, 0, 3000);
     fQAList->Add(fhQAEventsfMult32vsCentr);
     fhQAEventsMult128vsCentr = new TH2D("fhQAEventsfMult128vsCentr", "; centrality V0M; TPC multiplicity (FB128)", 100, 0, 100, 100, 0, 5000);
@@ -317,7 +314,6 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   else fEventCuts.fESDvsTPConlyLinearCut[0] = 15000.;
   fEventCount->Fill("Pileup",1);
   
-
   wp.clear(); wp.resize(fPtMpar+1,vector<double>(fPtMpar+1));
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
@@ -370,6 +366,7 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
     };
   };
   if(wp[1][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
+
   fEventCount->Fill("Tracks",1);
   fMultiVsV0MCorr[0]->Fill(l_Cent,nTotNoTracks);
   fMultiVsV0MCorr[1]->Fill(l_Cent,nTotNoTracks);
@@ -381,10 +378,12 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   AliAODHeader *head = (AliAODHeader*)fAOD->GetHeader();
   Int_t nESD = head->GetNumberOfESDTracks();
   fESDvsFB128->Fill(nTotTracksFB128,nESD);
-  if(l_Cent<10) fMptVsNch->Fill(nTotNoTracks,wp[1][1]/wp[1][0],l_Cent);
+  fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0]);
   Double_t l_Random = fRndm->Rndm();
-  fPtCont->FillRecursive(wp,0);
-  fPtCont->FillRecursiveProfiles(l_Multi,l_Random,kFALSE);
+
+  fPtCont->CalculateCorrelations(wp);
+  fPtCont->FillProfiles(l_Multi,l_Random);
+  fPtCont->FillCMProfiles(wp,l_Multi,l_Random);
   fV0MMulti->Fill(l_Cent);
   fMultiDist->Fill(l_Multi);
   fMultiVsCent->Fill(l_Cent,l_Multi);
