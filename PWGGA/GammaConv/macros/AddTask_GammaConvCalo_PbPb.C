@@ -1129,6 +1129,16 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("11310013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 10-30%
     cuts.AddCutPCMCalo("13530013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 30-50%
     cuts.AddCutPCMCalo("15910013","0dm00009f9730000dge0404000","411790105te30220000","0r63103100000010"); // 50-90%
+  } else if (trainConfig == 781){ // EMCAL+DCal clusters - with cent and semi cent trigger with OOB pileup cut w/o TM
+    cuts.AddCutPCMCalo("10130e13","0dm00009f9730000dge0404000","4117901050e30220000","0r63103100000010"); // 00-10%
+    cuts.AddCutPCMCalo("11310e13","0dm00009f9730000dge0404000","4117901050e30220000","0r63103100000010"); // 10-30%
+    cuts.AddCutPCMCalo("13530e13","0dm00009f9730000dge0404000","4117901050e30220000","0r63103100000010"); // 30-50%
+    cuts.AddCutPCMCalo("15910e13","0dm00009f9730000dge0404000","4117901050e30220000","0r63103100000010"); // 50-90%
+  } else if (trainConfig == 782){ // EMCAL+DCal clusters - with cent and semi cent trigger without OOB pileup cut w/o TM
+    cuts.AddCutPCMCalo("10130013","0dm00009f9730000dge0404000","4117901050e30220000","0r63103100000010"); // 00-10%
+    cuts.AddCutPCMCalo("11310013","0dm00009f9730000dge0404000","4117901050e30220000","0r63103100000010"); // 10-30%
+    cuts.AddCutPCMCalo("13530013","0dm00009f9730000dge0404000","4117901050e30220000","0r63103100000010"); // 30-50%
+    cuts.AddCutPCMCalo("15910013","0dm00009f9730000dge0404000","4117901050e30220000","0r63103100000010"); // 50-90%
 
   // **********************************************************************************************************
   // ***************************** PCM-PHOS       QA configurations PbPb run 2 2018 ***************************
