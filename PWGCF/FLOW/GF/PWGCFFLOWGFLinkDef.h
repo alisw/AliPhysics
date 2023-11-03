@@ -22,6 +22,7 @@
 #pragma link C++ class AliProfileSubset+;
 #pragma link C++ class AliProfileBS+;
 #pragma link C++ class AliPtContainer+;
+#pragma link C++ class AliPtPtContainer+;
 #pragma link C++ class AliCkContainer+;
 #pragma link C++ class AliGFWFlowContainer+;
 #pragma link C++ class AliUniFlowCorrTask+;
