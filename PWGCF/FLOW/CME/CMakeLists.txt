@@ -23,11 +23,13 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/CME)
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
   )
 
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskCMEv2A.cxx
+  AliAnalysisTaskCMEPIDCVE.cxx
   )
 
 # Headers from sources
