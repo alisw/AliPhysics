@@ -287,7 +287,7 @@ private:
     //Cowboy/sailor
     Int_t fCutIsCowboy; //-1: sailor, 0: don't select, 1: cowboy
     
-    ClassDef(AliV0Result, 23)
+    ClassDef(AliV0Result, 25)
     // 1 - original implementation
     // 2 - first implementation of MC association (to be adjusted)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -311,5 +311,6 @@ private:
     //22 - cowboy/sailor check
     //23 - modern track selections: parametric length, crossed rows + cr/L
     //24 - implementation of ITS||TOF requirement
+    //25 - configurable cent estimator
 };
 #endif
