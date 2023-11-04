@@ -207,7 +207,19 @@ void AddTask_GammaConvCalo_PbPb(
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
   task->SetCorrectionTaskSetting(corrTaskSetting);
-  if (enableLightOutput > 1) task->SetLightOutput(kTRUE);
+  if(enableLightOutput >= 20){  // eta
+    enableLightOutput -= 20;
+    task->SetPi0EtaSwitch(2);
+  } else if(enableLightOutput >= 10){  // pi0
+    enableLightOutput -= 10;
+    task->SetPi0EtaSwitch(1);
+  } else {
+    task->SetPi0EtaSwitch(0);
+  }
+  if (enableLightOutput >= 1 && enableLightOutput != 4) task->SetLightOutput(1);
+  else if (enableLightOutput == 4) task->SetLightOutput(2);
+  if (enableLightOutput == 5) task->SetECalibOutput(1);
+  if (enableLightOutput == 6) task->SetECalibOutput(2);
   task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
   if(trainConfig >= 950 && trainConfig <= 1000) task->SetDoHBTHistoOutput(kTRUE);
@@ -1519,7 +1531,7 @@ void AddTask_GammaConvCalo_PbPb(
       }
     }
 
-    if (enableLightOutput > 0) analysisEventCuts[i]->SetLightOutput(kTRUE);
+    if (enableLightOutput > 0) analysisEventCuts[i]->SetLightOutput(1);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     if (generatorName.CompareTo("LHC14a1b") ==0 || generatorName.CompareTo("LHC14a1c") ==0 ){
       if (headerSelectionInt == 1 || headerSelectionInt == 4 || headerSelectionInt == 12 ) analysisEventCuts[i]->SetAddedSignalPDGCode(111);
@@ -1605,7 +1617,7 @@ void AddTask_GammaConvCalo_PbPb(
       analysisCuts[i]->SetDoElecDeDxPostCalibration(kTRUE);
       cout << "Enabled TPC dEdx recalibration." << endl;
     }
-    if (enableLightOutput > 0) analysisCuts[i]->SetLightOutput(kTRUE);
+    if (enableLightOutput > 0) analysisCuts[i]->SetLightOutput(1);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
@@ -1615,13 +1627,13 @@ void AddTask_GammaConvCalo_PbPb(
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
-    if (enableLightOutput > 0) analysisClusterCuts[i]->SetLightOutput(kTRUE);
+    if (enableLightOutput > 0) analysisClusterCuts[i]->SetLightOutput(1);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
-    if (enableLightOutput > 0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
+    if (enableLightOutput > 0) analysisMesonCuts[i]->SetLightOutput(1);
     analysisMesonCuts[i]->SetRunningMode(2);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
