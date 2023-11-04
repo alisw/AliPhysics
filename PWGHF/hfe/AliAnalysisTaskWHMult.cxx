@@ -712,6 +712,8 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                 clust->GetPosition(aroclsx);
                 TVector3 aroClsPos(aroclsx[0],aroclsx[1],aroclsx[2]);
                 Double_t aroClsphi = aroClsPos.Phi();
+                if(aroClsphi<0.0){aroClsphi += 2.0*TMath::Pi();}  // added s.s.
+                if(Corephi<0.0){Corephi += 2.0*TMath::Pi();} // added s.s
                 Double_t aroClseta = aroClsPos.Eta();
                 Double_t R = sqrt(pow(Corephi - aroClsphi,2.0)+pow(Coreeta - aroClseta,2.0));
                 if (R < 0.3) RsumE[0] = RsumE[0] + clustE;
@@ -721,7 +723,8 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
             }
             for (Int_t isoR=0;isoR<3;isoR++) {
               Eiso[isoR] = (RsumE[isoR] - eleE)/eleE;
-              fREisolation[isoR]->Fill(Eiso[isoR]);
+              //fREisolation[isoR]->Fill(Eiso[isoR]);
+              if(track->Pt() > 30.0)fREisolation[isoR]->Fill(Eiso[isoR]);
             }
             //=====MC Data=====
             if (track->Pt() > 10.) {
