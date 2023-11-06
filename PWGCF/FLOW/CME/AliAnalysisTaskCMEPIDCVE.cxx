@@ -571,8 +571,7 @@ bool AliAnalysisTaskCMEPIDCVE::LoopTracks()
     }
     else continue;
 
-    int label = track->GetLabel();
-    vecParticle.emplace_back(std::array<double,5>{pt,eta,phi,(double)pid,(double)label});
+    vecParticle.emplace_back(std::array<double,5>{pt,eta,phi,(double)pid,(double)id});
   }
   return true;
 }
@@ -585,39 +584,39 @@ bool AliAnalysisTaskCMEPIDCVE::PairTrkTrk()
     double pt_1 = particle_1[0];
     double eta_1 = particle_1[1];
     double phi_1 = particle_1[2];
-    int id_1 = particle_1[3];
-    int label_1 = particle_1[4];
+    int pid_1 = particle_1[3];
+    int id_1 = particle_1[4];
 
     for (auto particle_2 : vecParticle) {
       double pt_2 = particle_2[0];
       double eta_2 = particle_2[1];
       double phi_2 = particle_2[2];
-      int id_2 = particle_2[3];
-      int label_2 = particle_2[4];
+      int pid_2 = particle_2[3];
+      int id_2 = particle_2[4];
 
-      if(label_1 == label_2) continue;
+      if(id_1 == id_2) continue;
       double delta = cos(phi_1 - phi_2);
 
-      //id    211  321 2212
+      //pid   211  321 2212
       //211    00   01   02
       //321    10   11   12
       //2212   20   21   22
 
-      int pid_row = 999;
-      int pid_col = 999;
-      if(abs(id_1) == 211 && abs(id_2) == 211)        {pid_row = 0; pid_col = 0;}
-      else if(abs(id_1) ==  211 && abs(id_2) ==  321) {pid_row = 0; pid_col = 1;}
-      else if(abs(id_1) ==  211 && abs(id_2) == 2212) {pid_row = 0; pid_col = 2;}
-      else if(abs(id_1) ==  321 && abs(id_2) ==  211) {pid_row = 1; pid_col = 0;}
-      else if(abs(id_1) ==  321 && abs(id_2) ==  321) {pid_row = 1; pid_col = 1;}
-      else if(abs(id_1) ==  321 && abs(id_2) == 2212) {pid_row = 1; pid_col = 2;}
-      else if(abs(id_1) == 2212 && abs(id_2) ==  211) {pid_row = 2; pid_col = 0;}
-      else if(abs(id_1) == 2212 && abs(id_2) ==  321) {pid_row = 2; pid_col = 1;}
-      else if(abs(id_1) == 2212 && abs(id_2) == 2212) {pid_row = 2; pid_col = 2;}
+      int row_pid = -999;
+      int col_pid = -999;
+      if(abs(pid_1) == 211 && abs(pid_2) == 211)        {row_pid = 0; col_pid = 0;}
+      else if(abs(pid_1) ==  211 && abs(pid_2) ==  321) {row_pid = 0; col_pid = 1;}
+      else if(abs(pid_1) ==  211 && abs(pid_2) == 2212) {row_pid = 0; col_pid = 2;}
+      else if(abs(pid_1) ==  321 && abs(pid_2) ==  211) {row_pid = 1; col_pid = 0;}
+      else if(abs(pid_1) ==  321 && abs(pid_2) ==  321) {row_pid = 1; col_pid = 1;}
+      else if(abs(pid_1) ==  321 && abs(pid_2) == 2212) {row_pid = 1; col_pid = 2;}
+      else if(abs(pid_1) == 2212 && abs(pid_2) ==  211) {row_pid = 2; col_pid = 0;}
+      else if(abs(pid_1) == 2212 && abs(pid_2) ==  321) {row_pid = 2; col_pid = 1;}
+      else if(abs(pid_1) == 2212 && abs(pid_2) == 2212) {row_pid = 2; col_pid = 2;}
       else continue;
 
-      if(id_1 * id_2 < 0) pDeltaOS[pid_row][pid_col]->Fill(fCent,delta);
-      else if(id_1 * id_2 > 0) pDeltaSS[pid_row][pid_col]->Fill(fCent,delta);
+      if(pid_1 * pid_2 < 0) pDeltaOS[row_pid][col_pid]->Fill(fCent,delta);
+      else if(pid_1 * pid_2 > 0) pDeltaSS[row_pid][col_pid]->Fill(fCent,delta);
       else continue;
     }
   }
