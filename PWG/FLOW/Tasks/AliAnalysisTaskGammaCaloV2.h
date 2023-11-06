@@ -168,10 +168,12 @@ public:
   bool GetVZEROPlane();
   double GetEventPlane(double qx, double qy, double harmonic);
   void SetListForVZEROCalib(TList *flist) { this->fListVZEROCalib = (TList *)flist->Clone(); }
+  void SetPeriod(TString period) { this->fPeriod = period; }
 
 protected:
   AliV0ReaderV1 *fV0Reader; // basic photon Selection Task
   TString fV0ReaderName;
+  TString fPeriod;
   TString fCaloTriggerHelperName;
   TString fCorrTaskSetting;
   AliGammaConversionAODBGHandler **fBGHandler;         // BG handler for Conversion
@@ -179,6 +181,7 @@ protected:
   AliMCEvent *fMCEvent;                                // corresponding MC event
   TList **fCutFolder;                                  // Array of lists for containers belonging to cut
   TList **fESDList;                                    // Array of lists with histograms with reconstructed properties
+  TList **fQAList;                                     // Array of lists with histograms with V0 plane QA
   TList **fBackList;                                   // Array of lists with BG THnSparseF
   TList **fMotherList;                                 // Array of lists with Signal THnSparseF
   TList **fTrueList;                                   // Array of lists with histograms with MC validated reconstructed properties
@@ -556,9 +559,34 @@ protected:
   AliOADBContainer *contQyncm;
   AliOADBContainer *contQxnam;
   AliOADBContainer *contQynam;
-
+  // 18q/r
+  TH2F *fHCorrectV0ChWeghts;
+  TH2D *hQnPercentile;
+  // V0C
+  TProfile **fProfileV0CQxCentGE;
+  TProfile **fProfileV0CQyCentGE;
+  TProfile **fProfileV0CQxVtxGE;
+  TProfile **fProfileV0CQyVtxGE;
+  TH2D **fHist2CalibPsi2V0CCentGE;
+  TProfile **fProfileV0AQxCentGE;
+  TProfile **fProfileV0AQyCentGE;
+  TProfile **fProfileV0AQxVtxGE;
+  TProfile **fProfileV0AQyVtxGE;
+  TH2D **fHist2CalibPsi2V0ACentGE;
+  TProfile **fProfileV0CQxCentRC;
+  TProfile **fProfileV0CQyCentRC;
+  TProfile **fProfileV0CQxVtxRC;
+  TProfile **fProfileV0CQyVtxRC;
+  TH2D **fHist2CalibPsi2V0CCentRC;
+  TProfile **fProfileV0AQxCentRC;
+  TProfile **fProfileV0AQyCentRC;
+  TProfile **fProfileV0AQxVtxRC;
+  TProfile **fProfileV0AQyVtxRC;
+  TH2D **fHist2CalibPsi2V0ACentRC;
+  TProfile **fHist2V0Res;
   TH1D *hQx2mV0[2];
   TH1D *hQy2mV0[2];
+  TSpline3 *splQ2c[90];
 
 private:
   AliAnalysisTaskGammaCaloV2(const AliAnalysisTaskGammaCaloV2 &);            // Prevent copy-construction

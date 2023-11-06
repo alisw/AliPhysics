@@ -70,6 +70,7 @@ ClassImp(AliAnalysisTaskGammaCaloV2)
     AliAnalysisTaskGammaCaloV2::AliAnalysisTaskGammaCaloV2() : AliAnalysisTaskSE(),
                                                                fV0Reader(NULL),
                                                                fV0ReaderName("V0ReaderV1_CF"),
+                                                               fPeriod(""),
                                                                fCaloTriggerHelperName(""),
                                                                fCorrTaskSetting(""),
                                                                fBGHandler(NULL),
@@ -77,6 +78,7 @@ ClassImp(AliAnalysisTaskGammaCaloV2)
                                                                fMCEvent(NULL),
                                                                fCutFolder(NULL),
                                                                fESDList(NULL),
+                                                               fQAList(NULL),
                                                                fBackList(NULL),
                                                                fMotherList(NULL),
                                                                fTrueList(NULL),
@@ -416,7 +418,7 @@ ClassImp(AliAnalysisTaskGammaCaloV2)
                                                                oldRunNum(0),
                                                                centSPD1(-999),
                                                                IsVZEROCalibOn(kFALSE),
-                                                               IsQAVZERO(kFALSE),
+                                                               IsQAVZERO(kTRUE),
                                                                fListVZEROCalib(NULL),
                                                                fPsi2V0C(-999),
                                                                fPsi2V0A(-999),
@@ -427,12 +429,39 @@ ClassImp(AliAnalysisTaskGammaCaloV2)
                                                                contQxncm(NULL),
                                                                contQyncm(NULL),
                                                                contQxnam(NULL),
-                                                               contQynam(NULL)
+                                                               contQynam(NULL),
+                                                               fHCorrectV0ChWeghts(NULL),
+                                                               hQnPercentile(NULL),
+                                                               fProfileV0CQxCentGE(NULL),
+                                                               fProfileV0CQyCentGE(NULL),
+                                                               fProfileV0CQxVtxGE(NULL),
+                                                               fProfileV0CQyVtxGE(NULL),
+                                                               fHist2CalibPsi2V0CCentGE(NULL),
+                                                               fProfileV0AQxCentGE(NULL),
+                                                               fProfileV0AQyCentGE(NULL),
+                                                               fProfileV0AQxVtxGE(NULL),
+                                                               fProfileV0AQyVtxGE(NULL),
+                                                               fHist2CalibPsi2V0ACentGE(NULL),
+                                                               fProfileV0CQxCentRC(NULL),
+                                                               fProfileV0CQyCentRC(NULL),
+                                                               fProfileV0CQxVtxRC(NULL),
+                                                               fProfileV0CQyVtxRC(NULL),
+                                                               fHist2CalibPsi2V0CCentRC(NULL),
+                                                               fProfileV0AQxCentRC(NULL),
+                                                               fProfileV0AQyCentRC(NULL),
+                                                               fProfileV0AQxVtxRC(NULL),
+                                                               fProfileV0AQyVtxRC(NULL),
+                                                               fHist2CalibPsi2V0ACentRC(NULL),
+                                                               fHist2V0Res(NULL)
 {
   for (int i = 0; i < 2; ++i)
   {
     hQx2mV0[i] = NULL;
     hQy2mV0[i] = NULL;
+  }
+  for (int i = 0; i < 90; i++)
+  {
+    splQ2c[i] = NULL;
   }
 }
 
@@ -440,6 +469,7 @@ ClassImp(AliAnalysisTaskGammaCaloV2)
 AliAnalysisTaskGammaCaloV2::AliAnalysisTaskGammaCaloV2(const char *name) : AliAnalysisTaskSE(name),
                                                                            fV0Reader(NULL),
                                                                            fV0ReaderName("V0ReaderV1_CF"),
+                                                                           fPeriod(""),
                                                                            fCaloTriggerHelperName(""),
                                                                            fCorrTaskSetting(""),
                                                                            fBGHandler(NULL),
@@ -447,6 +477,7 @@ AliAnalysisTaskGammaCaloV2::AliAnalysisTaskGammaCaloV2(const char *name) : AliAn
                                                                            fMCEvent(NULL),
                                                                            fCutFolder(NULL),
                                                                            fESDList(NULL),
+                                                                           fQAList(NULL),
                                                                            fBackList(NULL),
                                                                            fMotherList(NULL),
                                                                            fTrueList(NULL),
@@ -786,7 +817,7 @@ AliAnalysisTaskGammaCaloV2::AliAnalysisTaskGammaCaloV2(const char *name) : AliAn
                                                                            oldRunNum(0),
                                                                            centSPD1(-999),
                                                                            IsVZEROCalibOn(kFALSE),
-                                                                           IsQAVZERO(kFALSE),
+                                                                           IsQAVZERO(kTRUE),
                                                                            fListVZEROCalib(NULL),
                                                                            fPsi2V0C(-999),
                                                                            fPsi2V0A(-999),
@@ -797,12 +828,39 @@ AliAnalysisTaskGammaCaloV2::AliAnalysisTaskGammaCaloV2(const char *name) : AliAn
                                                                            contQxncm(NULL),
                                                                            contQyncm(NULL),
                                                                            contQxnam(NULL),
-                                                                           contQynam(NULL)
+                                                                           contQynam(NULL),
+                                                                           fHCorrectV0ChWeghts(NULL),
+                                                                           hQnPercentile(NULL),
+                                                                           fProfileV0CQxCentGE(NULL),
+                                                                           fProfileV0CQyCentGE(NULL),
+                                                                           fProfileV0CQxVtxGE(NULL),
+                                                                           fProfileV0CQyVtxGE(NULL),
+                                                                           fHist2CalibPsi2V0CCentGE(NULL),
+                                                                           fProfileV0AQxCentGE(NULL),
+                                                                           fProfileV0AQyCentGE(NULL),
+                                                                           fProfileV0AQxVtxGE(NULL),
+                                                                           fProfileV0AQyVtxGE(NULL),
+                                                                           fHist2CalibPsi2V0ACentGE(NULL),
+                                                                           fProfileV0CQxCentRC(NULL),
+                                                                           fProfileV0CQyCentRC(NULL),
+                                                                           fProfileV0CQxVtxRC(NULL),
+                                                                           fProfileV0CQyVtxRC(NULL),
+                                                                           fHist2CalibPsi2V0CCentRC(NULL),
+                                                                           fProfileV0AQxCentRC(NULL),
+                                                                           fProfileV0AQyCentRC(NULL),
+                                                                           fProfileV0AQxVtxRC(NULL),
+                                                                           fProfileV0AQyVtxRC(NULL),
+                                                                           fHist2CalibPsi2V0ACentRC(NULL),
+                                                                           fHist2V0Res(NULL)
 {
   for (int i = 0; i < 2; ++i)
   {
     hQx2mV0[i] = NULL;
     hQy2mV0[i] = NULL;
+  }
+  for (int i = 0; i < 90; i++)
+  {
+    splQ2c[i] = NULL;
   }
 
   // Define output slots here
@@ -1310,6 +1368,7 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
 
   fCutFolder = new TList *[fnCuts];
   fESDList = new TList *[fnCuts];
+  fQAList = new TList *[fnCuts];
   if (fDoTHnSparse)
   {
     fBackList = new TList *[fnCuts];
@@ -1342,6 +1401,27 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
   fHistoNGammaCandidatesBasic = new TH1F *[fnCuts];
   fHist2DPsi2V0CCent = new TH2D *[fnCuts];
   fHist2DPsi2V0ACent = new TH2D *[fnCuts];
+  fProfileV0CQxCentGE = new TProfile *[fnCuts];
+  fProfileV0CQyCentGE = new TProfile *[fnCuts];
+  fProfileV0CQxVtxGE = new TProfile *[fnCuts];
+  fProfileV0CQyVtxGE = new TProfile *[fnCuts];
+  fHist2CalibPsi2V0CCentGE = new TH2D *[fnCuts];
+  fProfileV0AQxCentGE = new TProfile *[fnCuts];
+  fProfileV0AQyCentGE = new TProfile *[fnCuts];
+  fProfileV0AQxVtxGE = new TProfile *[fnCuts];
+  fProfileV0AQyVtxGE = new TProfile *[fnCuts];
+  fHist2CalibPsi2V0ACentGE = new TH2D *[fnCuts];
+  fProfileV0CQxCentRC = new TProfile *[fnCuts];
+  fProfileV0CQyCentRC = new TProfile *[fnCuts];
+  fProfileV0CQxVtxRC = new TProfile *[fnCuts];
+  fProfileV0CQyVtxRC = new TProfile *[fnCuts];
+  fHist2CalibPsi2V0CCentRC = new TH2D *[fnCuts];
+  fProfileV0AQxCentRC = new TProfile *[fnCuts];
+  fProfileV0AQyCentRC = new TProfile *[fnCuts];
+  fProfileV0AQxVtxRC = new TProfile *[fnCuts];
+  fProfileV0AQyVtxRC = new TProfile *[fnCuts];
+  fHist2CalibPsi2V0ACentRC = new TH2D *[fnCuts];
+  fHist2V0Res = new TProfile *[fnCuts];
   if (EnableSphericity)
   {
     fHistoEventSphericity = new TH1F *[fnCuts];
@@ -1571,7 +1651,10 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
     fESDList[iCut] = new TList();
     fESDList[iCut]->SetName(Form("%s_%s_%s ESD histograms", cutstringEvent.Data(), cutstringCalo.Data(), cutstringMeson.Data()));
     fESDList[iCut]->SetOwner(kTRUE);
+    fQAList[iCut] = new TList();
+    fQAList[iCut]->SetName(Form("%s_%s_%s VZERO QA", cutstringEvent.Data(), cutstringCalo.Data(), cutstringMeson.Data()));
     fCutFolder[iCut]->Add(fESDList[iCut]);
+    fCutFolder[iCut]->Add(fQAList[iCut]);
 
     fHistoNEvents[iCut] = new TH1F("NEvents", "NEvents", 15, -0.5, 14.5);
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(1, "Accepted");
@@ -1741,10 +1824,52 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
       fHistoNGammaCandidates[iCut] = new TH1F("GammaCandidates", "GammaCandidates", 50, 0, 50);
     fHistoNGammaCandidates[iCut]->GetXaxis()->SetTitle("#cluster candidates with current cut");
     fESDList[iCut]->Add(fHistoNGammaCandidates[iCut]);
-    fHist2DPsi2V0CCent[iCut] = new TH2D("fHist2DPsi2V0CCent", "", 20, 0, 100, 100, 0, TMath::Pi());
-    fHist2DPsi2V0ACent[iCut] = new TH2D("fHist2DPsi2V0ACent", "", 20, 0, 100, 100, 0, TMath::Pi());
+    fHist2DPsi2V0CCent[iCut] = new TH2D("fHist2DPsi2V0CCent", "", 20, 0, 100, 100, -2 * TMath::Pi(), 2 * TMath::Pi());
+    fHist2DPsi2V0ACent[iCut] = new TH2D("fHist2DPsi2V0ACent", "", 20, 0, 100, 100, -2 * TMath::Pi(), 2 * TMath::Pi());
+    fProfileV0CQxCentGE[iCut] = new TProfile("fProfileV0CQxCentGE", "", 100, 0, 100.);
+    fProfileV0CQyCentGE[iCut] = new TProfile("fProfileV0CQyCentGE", "", 100, 0, 100.);
+    fProfileV0CQxVtxGE[iCut] = new TProfile("fProfileV0CQxVzGE", "", 20, -10, 10);
+    fProfileV0CQyVtxGE[iCut] = new TProfile("fProfileV0CQyVzGE", "", 20, -10, 10);
+    fHist2CalibPsi2V0CCentGE[iCut] = new TH2D("fHist2CalibPsi2V0CCentGE", "", 20, 0, 100, 50, 0, TMath::Pi());
+    fProfileV0AQxCentGE[iCut] = new TProfile("fProfileV0AQxCentGE", "", 100, 0, 100.);
+    fProfileV0AQyCentGE[iCut] = new TProfile("fProfileV0AQyCentGE", "", 100, 0, 100.);
+    fProfileV0AQxVtxGE[iCut] = new TProfile("fProfileV0AQxVzGE", "", 20, -10, 10);
+    fProfileV0AQyVtxGE[iCut] = new TProfile("fProfileV0AQyVzGE", "", 20, -10, 10);
+    fHist2CalibPsi2V0ACentGE[iCut] = new TH2D("fHist2CalibPsi2V0ACentGE", "", 20, 0, 100, 50, 0, TMath::Pi());
+    fProfileV0CQxCentRC[iCut] = new TProfile("fProfileV0CQxCentRC", "", 100, 0, 100.);
+    fProfileV0CQyCentRC[iCut] = new TProfile("fProfileV0CQyCentRC", "", 100, 0, 100.);
+    fProfileV0CQxVtxRC[iCut] = new TProfile("fProfileV0CQxVzRC", "", 20, -10, 10);
+    fProfileV0CQyVtxRC[iCut] = new TProfile("fProfileV0CQyVzRC", "", 20, -10, 10);
+    fHist2CalibPsi2V0CCentRC[iCut] = new TH2D("fHist2CalibPsi2V0CCentRC", "", 20, 0, 100, 50, 0, TMath::Pi());
+    fProfileV0AQxCentRC[iCut] = new TProfile("fProfileV0AQxCentRC", "", 100, 0, 100.);
+    fProfileV0AQyCentRC[iCut] = new TProfile("fProfileV0AQyCentRC", "", 100, 0, 100.);
+    fProfileV0AQxVtxRC[iCut] = new TProfile("fProfileV0AQxVzRC", "", 20, -10, 10);
+    fProfileV0AQyVtxRC[iCut] = new TProfile("fProfileV0AQyVzRC", "", 20, -10, 10);
+    fHist2CalibPsi2V0ACentRC[iCut] = new TH2D("fHist2CalibPsi2V0ACentRC", "", 20, 0, 100, 50, 0, TMath::Pi());
+    fHist2V0Res[iCut] = new TProfile("fHist2V0Res", "", 4, 0, 4);
     fESDList[iCut]->Add(fHist2DPsi2V0CCent[iCut]);
     fESDList[iCut]->Add(fHist2DPsi2V0ACent[iCut]);
+    fQAList[iCut]->Add(fProfileV0CQxCentGE[iCut]);
+    fQAList[iCut]->Add(fProfileV0CQyCentGE[iCut]);
+    fQAList[iCut]->Add(fProfileV0CQxVtxGE[iCut]);
+    fQAList[iCut]->Add(fProfileV0CQyVtxGE[iCut]);
+    fQAList[iCut]->Add(fHist2CalibPsi2V0CCentGE[iCut]);
+    fQAList[iCut]->Add(fProfileV0AQxCentGE[iCut]);
+    fQAList[iCut]->Add(fProfileV0AQyCentGE[iCut]);
+    fQAList[iCut]->Add(fProfileV0AQxVtxGE[iCut]);
+    fQAList[iCut]->Add(fProfileV0AQyVtxGE[iCut]);
+    fQAList[iCut]->Add(fHist2CalibPsi2V0ACentGE[iCut]);
+    fQAList[iCut]->Add(fProfileV0CQxCentRC[iCut]);
+    fQAList[iCut]->Add(fProfileV0CQyCentRC[iCut]);
+    fQAList[iCut]->Add(fProfileV0CQxVtxRC[iCut]);
+    fQAList[iCut]->Add(fProfileV0CQyVtxRC[iCut]);
+    fQAList[iCut]->Add(fHist2CalibPsi2V0CCentRC[iCut]);
+    fQAList[iCut]->Add(fProfileV0AQxCentRC[iCut]);
+    fQAList[iCut]->Add(fProfileV0AQyCentRC[iCut]);
+    fQAList[iCut]->Add(fProfileV0AQxVtxRC[iCut]);
+    fQAList[iCut]->Add(fProfileV0AQyVtxRC[iCut]);
+    fQAList[iCut]->Add(fHist2CalibPsi2V0ACentRC[iCut]);
+    fESDList[iCut]->Add(fHist2V0Res[iCut]);
 
     if (!fDoLightOutput)
     {
@@ -3594,8 +3719,19 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
       hQx2mV0[i] = new TH1D();
       hQy2mV0[i] = new TH1D();
     }
-    contMult = (AliOADBContainer *)fListVZEROCalib->FindObject("hMultV0BefCorPfpx");
-    hMultV0 = new TH1D();
+    // 15 V0 Mult
+    if (fPeriod.EqualTo("LHC15o"))
+    {
+      contMult = (AliOADBContainer *)fListVZEROCalib->FindObject("hMultV0BefCorPfpx");
+      hMultV0 = new TH1D();
+      for (int isp = 0; isp < 90; isp++)
+        splQ2c[isp] = (TSpline3 *)fListVZEROCalib->FindObject(Form("sp_q2V0C_%d", isp));
+    }
+    if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r"))
+    {
+      fHCorrectV0ChWeghts = new TH2F();
+      hQnPercentile = (TH2D *)fListVZEROCalib->FindObject("h_qncPercentile");
+    }
   }
 
   OpenFile(1);
@@ -3922,7 +4058,9 @@ void AliAnalysisTaskGammaCaloV2::UserExec(Option_t *)
       if (runNum != oldRunNum)
       {
         if (!LoadCalibHistForThisRun())
+        {
           return;
+        }
         oldRunNum = runNum;
       }
       if (!GetVZEROPlane())
@@ -3932,6 +4070,24 @@ void AliAnalysisTaskGammaCaloV2::UserExec(Option_t *)
     //  cout << "fPsi2V0A============" << fPsi2V0A << endl;
     fHist2DPsi2V0CCent[iCut]->Fill(centSPD1, fPsi2V0C);
     fHist2DPsi2V0ACent[iCut]->Fill(centSPD1, fPsi2V0A);
+    int centBin = 999;
+    if (centSPD1 >= 0 && centSPD1 < 10)
+    {
+      centBin = 0;
+    }
+    else if (centSPD1 >= 10 && centSPD1 < 30)
+    {
+      centBin = 1;
+    }
+    else if (centSPD1 >= 30 && centSPD1 < 50)
+    {
+      centBin = 2;
+    }
+    else if (centSPD1 >= 50 && centSPD1 < 90)
+    {
+      centBin = 3;
+    }
+    fHist2V0Res[iCut]->Fill(centBin + 0.5, cos(2 * (fPsi2V0A - fPsi2V0C)));
     // it is in the loop to have the same conversion cut string (used also for MC stuff that should be same for V0 and Cluster)
     ProcessClusters(); // process calo clusters
     if (((AliCaloPhotonCuts *)fClusterCutArray->At(fiCut))->GetDoSecondaryTrackMatching())
@@ -6218,12 +6374,12 @@ void AliAnalysisTaskGammaCaloV2::CalculatePi0Candidates()
           if (pi0cand->Eta() > 0)
           {
             fHistoMotherInvMassPtPhi[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), dphiV0C, tempPi0CandWeight);
-            fdPhiPi0[fiCut]->Fill(dphiV0C);
+            fdPhiPi0[fiCut]->Fill(pi0cand->Phi());
           }
           else
           {
             fHistoMotherInvMassPtPhi[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), dphiV0A, tempPi0CandWeight);
-            fdPhiPi0[fiCut]->Fill(dphiV0A);
+            fdPhiPi0[fiCut]->Fill(pi0cand->Phi());
           }
 
           // fill new histograms
@@ -9044,28 +9200,61 @@ void AliAnalysisTaskGammaCaloV2::DoClusterMergingStudiesAOD(AliVCluster *clus, v
 }
 bool AliAnalysisTaskGammaCaloV2::LoadCalibHistForThisRun()
 {
-  if (IsVZEROCalibOn)
+  if (fPeriod.EqualTo("LHC15o"))
   {
-    hMultV0->Reset();
+    if (IsVZEROCalibOn)
+    {
+      hMultV0->Reset();
+      for (int i = 0; i < 2; i++)
+      {
+        hQx2mV0[i]->Reset();
+        hQy2mV0[i]->Reset();
+      }
+      hMultV0 = ((TH1D *)contMult->GetObject(runNum));
+      hQx2mV0[0] = ((TH1D *)contQxncm->GetObject(runNum));
+      hQy2mV0[0] = ((TH1D *)contQyncm->GetObject(runNum));
+      hQx2mV0[1] = ((TH1D *)contQxnam->GetObject(runNum));
+      hQy2mV0[1] = ((TH1D *)contQynam->GetObject(runNum));
+      if (!hMultV0)
+        return false;
+      if (!hQx2mV0[0])
+        return false;
+      if (!hQy2mV0[0])
+        return false;
+      if (!hQx2mV0[1])
+        return false;
+      if (!hQy2mV0[1])
+        return false;
+    }
+  }
+  if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r"))
+  {
+    // 18q/r VZERO
     for (int i = 0; i < 2; i++)
     {
       hQx2mV0[i]->Reset();
       hQy2mV0[i]->Reset();
     }
-    hMultV0 = ((TH1D *)contMult->GetObject(runNum));
     hQx2mV0[0] = ((TH1D *)contQxncm->GetObject(runNum));
     hQy2mV0[0] = ((TH1D *)contQyncm->GetObject(runNum));
     hQx2mV0[1] = ((TH1D *)contQxnam->GetObject(runNum));
     hQy2mV0[1] = ((TH1D *)contQynam->GetObject(runNum));
-    if (!hMultV0)
-      return false;
-    if (!hQx2mV0[0])
-      return false;
-    if (!hQy2mV0[0])
-      return false;
-    if (!hQx2mV0[1])
-      return false;
-    if (!hQy2mV0[1])
+    for (int i = 0; i < 2; i++)
+    {
+      if (!hQx2mV0[i])
+      {
+        //      cout << "hQx2mV0 don't found" << endl;
+        return false;
+      }
+      if (!hQy2mV0[i])
+      {
+        //       cout << "hQy2mV0 don't found" << endl;
+        return false;
+      }
+    }
+    fHCorrectV0ChWeghts->Reset();
+    fHCorrectV0ChWeghts = (TH2F *)fListVZEROCalib->FindObject(Form("hWgtV0ChannelsvsVzRun%d", runNum));
+    if (!fHCorrectV0ChWeghts)
       return false;
   }
   return true;
@@ -9083,8 +9272,11 @@ bool AliAnalysisTaskGammaCaloV2::GetVZEROPlane()
   double psi2GE[3] = {0};
   double psi2RC[3] = {0};
 
-  for (int iCh = 0; iCh < 64; ++iCh)
-    multV0Ch[iCh] = hMultV0->GetBinContent(iCh + 1);
+  Double_t vertex[3] = {0};
+  InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
+  if (fPeriod.EqualTo("LHC15o"))
+    for (int iCh = 0; iCh < 64; ++iCh)
+      multV0Ch[iCh] = hMultV0->GetBinContent(iCh + 1);
   int iCentSPD = (int)centSPD1;
   if (iCentSPD >= 90)
     return false;
@@ -9105,16 +9297,26 @@ bool AliAnalysisTaskGammaCaloV2::GetVZEROPlane()
     if (iCh < 32)
     { // C
       double multChGEC = -1;
-      if (iCh < 8)
-        multChGEC = multCh / multV0Ch[iCh] * multV0Ch[0];
-      else if (iCh >= 8 && iCh < 16)
-        multChGEC = multCh / multV0Ch[iCh] * multV0Ch[8];
-      else if (iCh >= 16 && iCh < 24)
-        multChGEC = multCh / multV0Ch[iCh] * multV0Ch[16];
-      else if (iCh >= 24 && iCh < 32)
-        multChGEC = multCh / multV0Ch[iCh] * multV0Ch[24];
+      if (fPeriod.EqualTo("LHC15o"))
+      {
+        if (iCh < 8)
+          multChGEC = multCh / multV0Ch[iCh] * multV0Ch[0];
+        else if (iCh >= 8 && iCh < 16)
+          multChGEC = multCh / multV0Ch[iCh] * multV0Ch[8];
+        else if (iCh >= 16 && iCh < 24)
+          multChGEC = multCh / multV0Ch[iCh] * multV0Ch[16];
+        else if (iCh >= 24 && iCh < 32)
+          multChGEC = multCh / multV0Ch[iCh] * multV0Ch[24];
+      }
+      if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r"))
+      {
+        int ibinV0 = fHCorrectV0ChWeghts->FindBin(vertex[2], iCh);
+        double V0chGE = (double)fHCorrectV0ChWeghts->GetBinContent(ibinV0);
+        multChGEC = multCh * V0chGE;
+      }
       if (multChGEC < 0)
         continue;
+
       // for V0C GE
       qxGE[1] += multChGEC * TMath::Cos(2 * phi);
       qyGE[1] += multChGEC * TMath::Sin(2 * phi);
@@ -9123,14 +9325,23 @@ bool AliAnalysisTaskGammaCaloV2::GetVZEROPlane()
     else if (iCh >= 32 && iCh < 64)
     { // A
       double multChGEA = -1;
-      if (iCh >= 32 && iCh < 40)
-        multChGEA = multCh / multV0Ch[iCh] * multV0Ch[32];
-      else if (iCh >= 40 && iCh < 48)
-        multChGEA = multCh / multV0Ch[iCh] * multV0Ch[40];
-      else if (iCh >= 48 && iCh < 56)
-        multChGEA = multCh / multV0Ch[iCh] * multV0Ch[48];
-      else if (iCh >= 56 && iCh < 64)
-        multChGEA = multCh / multV0Ch[iCh] * multV0Ch[56];
+      if (fPeriod.EqualTo("LHC15o"))
+      {
+        if (iCh >= 32 && iCh < 40)
+          multChGEA = multCh / multV0Ch[iCh] * multV0Ch[32];
+        else if (iCh >= 40 && iCh < 48)
+          multChGEA = multCh / multV0Ch[iCh] * multV0Ch[40];
+        else if (iCh >= 48 && iCh < 56)
+          multChGEA = multCh / multV0Ch[iCh] * multV0Ch[48];
+        else if (iCh >= 56 && iCh < 64)
+          multChGEA = multCh / multV0Ch[iCh] * multV0Ch[56];
+      }
+      if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r"))
+      {
+        int ibinV0 = fHCorrectV0ChWeghts->FindBin(vertex[2], iCh);
+        double V0chGE = (double)fHCorrectV0ChWeghts->GetBinContent(ibinV0);
+        multChGEA = multCh * V0chGE;
+      }
       if (multChGEA < 0)
         continue;
       // for V0A GE
@@ -9164,6 +9375,34 @@ bool AliAnalysisTaskGammaCaloV2::GetVZEROPlane()
     psi2RC[i] = GetEventPlane(qxRC[i], qyRC[i], 2.);
     if (TMath::IsNaN(psi2RC[i]))
       return false;
+  }
+  // VZERO QA //0GE 1RC
+  if (IsQAVZERO)
+  {
+    // V0C
+    fProfileV0CQxCentGE[fiCut]->Fill(centSPD1, qxGE[1]);
+    fProfileV0CQyCentGE[fiCut]->Fill(centSPD1, qyGE[1]);
+    fProfileV0CQxVtxGE[fiCut]->Fill(vertex[2], qxGE[1]);
+    fProfileV0CQyVtxGE[fiCut]->Fill(vertex[2], qyGE[1]);
+    fHist2CalibPsi2V0CCentGE[fiCut]->Fill(centSPD1, psi2GE[1]);
+
+    fProfileV0CQxCentRC[fiCut]->Fill(centSPD1, qxRC[1]);
+    fProfileV0CQyCentRC[fiCut]->Fill(centSPD1, qyRC[1]);
+    fProfileV0CQxVtxRC[fiCut]->Fill(vertex[2], qxRC[1]);
+    fProfileV0CQyVtxRC[fiCut]->Fill(vertex[2], qyRC[1]);
+    fHist2CalibPsi2V0CCentRC[fiCut]->Fill(centSPD1, psi2RC[1]);
+    // V0A
+    fProfileV0AQxCentGE[fiCut]->Fill(centSPD1, qxGE[2]);
+    fProfileV0AQyCentGE[fiCut]->Fill(centSPD1, qyGE[2]);
+    fProfileV0AQxVtxGE[fiCut]->Fill(vertex[2], qxGE[2]);
+    fProfileV0AQyVtxGE[fiCut]->Fill(vertex[2], qyGE[2]);
+    fHist2CalibPsi2V0ACentGE[fiCut]->Fill(centSPD1, psi2GE[2]);
+
+    fProfileV0AQxCentRC[fiCut]->Fill(centSPD1, qxRC[2]);
+    fProfileV0AQyCentRC[fiCut]->Fill(centSPD1, qyRC[2]);
+    fProfileV0AQxVtxRC[fiCut]->Fill(vertex[2], qxRC[2]);
+    fProfileV0AQyVtxRC[fiCut]->Fill(vertex[2], qyRC[2]);
+    fHist2CalibPsi2V0ACentRC[fiCut]->Fill(centSPD1, psi2RC[2]);
   }
   fPsi2V0C = psi2RC[1];
   fPsi2V0A = psi2RC[2];
