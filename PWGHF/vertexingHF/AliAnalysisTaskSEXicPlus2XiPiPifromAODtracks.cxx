@@ -113,6 +113,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fHntracklet(0),
   fGenpT(0),
   fGenNtracklet(0),
+  fGenSPDtracklet(0),
   fLevFlag(0),
   foriginFlag(0),
   fntracklet(0),
@@ -230,6 +231,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fHntracklet(0),
   fGenpT(0),
   fGenNtracklet(0),
+  fGenSPDtracklet(0),
   fLevFlag(0),
   foriginFlag(0),
   fntracklet(0),
@@ -2401,6 +2403,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 		fLevFlag=ypart;
 		fGenpT=ptpart;
 		fGenNtracklet=fntracklet; 
+		fGenSPDtracklet = fNSPDTracklets;
 
 	}	
 	else if(checkXic2XiPiPi==2){	//Resonant
@@ -2408,6 +2411,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 		fLevFlag=ypart;
 		fGenpT=ptpart;
 		fGenNtracklet=fntracklet; 
+		fGenSPDtracklet = fNSPDTracklets;
 	}
 
 	if(TMath::Abs(ypart)<0.5){ // ypart < 0.5
@@ -2480,7 +2484,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	fLevFlag=-99;
 	fGenpT=-99;
 	fGenNtracklet=-99;
-	fNSPDTracklets=-99;
+	fGenSPDtracklet=-99;
 
 }
 
@@ -2662,7 +2666,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillGenParticleTree()
 	fVarGenTree[1] = foriginFlag;
 	fVarGenTree[2] = fLevFlag;
 	fVarGenTree[3] = fGenpT;//mcpart->Pt(); // GenpT 
-	fVarGenTree[4] = fNSPDTracklets;
+	fVarGenTree[4] = fGenSPDtracklet;
 
 	fGenTree->Fill();
 
