@@ -116,6 +116,7 @@ set(SRCS
   PostProcessing/fnreso/AliAnalysisTaskSA.cxx
   PostProcessing/fnreso/AliAnalysisTaskSAphi.cxx
   PostProcessing/fnreso/AliAnalysisTaskEP.cxx
+  PostProcessing/fnreso/AliAnalysisTaskSAEP.cxx	
   )
 
 # Headers from sources

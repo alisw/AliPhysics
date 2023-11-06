@@ -99,11 +99,12 @@
 #pragma link C++ class AliAnalysisTaskSA+;
 #pragma link C++ class AliAnalysisTaskEP+;
 #pragma link C++ class AliAnalysisTaskSAphi+;
+#pragma link C++ class AliAnalysisTaskSAEP+;
 #pragma link C++ class AliCompactTrack+;
 #pragma link C++ class AliReducedTrack+;
 #pragma link C++ class AliReducedspTrack+;
 #pragma link C++ class AliReducedPbPbTrack+;
 #pragma link C++ class AliCompTrack+;
 #pragma link C++ class AliCompphiTrack+;
-
+#pragma link C++ class AliCompSATrack+;
 #endif
