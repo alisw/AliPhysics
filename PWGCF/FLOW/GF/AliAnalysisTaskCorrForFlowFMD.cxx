@@ -1554,7 +1554,6 @@ TString AliAnalysisTaskCorrForFlowFMD::ReturnPPperiod(const Int_t runNumber) con
 Double_t AliAnalysisTaskCorrForFlowFMD::GetEff(const Double_t dPt, const Int_t spec, const Double_t dEta)
 {
   if(!fUseEfficiency) return 1.0;
-  if(fDoV0 && spec == eCharged) return 1.0;
   if(fColSystem == sPPb){
     Int_t region = GetEtaRegion(dEta);
     if(region < 0) { AliWarning("Invalid region, returning efficiency 1.0."); return 1.0; }
