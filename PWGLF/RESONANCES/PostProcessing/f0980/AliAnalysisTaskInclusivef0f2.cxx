@@ -1114,7 +1114,7 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 		if( trkbin == 0 ){
 			fHistos -> FillTH2("PID_TPC_NSIG",track->Pt(),fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion),1.0);
 			fHistos -> FillTH2("PID_TOF_NSIG",track->Pt(),fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion),1.0);
-			FillTHnSparse("TOFMisMatch", {fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion),
+			FillTHnSparse("TOFMisMatch", {fPIDResponse->GetTOFMismatchProbability( track ),
 				fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion),
 				fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion), track->Pt()}, 1.0 );
 		}
