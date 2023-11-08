@@ -1,9 +1,11 @@
-// Konstantin Mikhaylov: 26-October-2023
-// 006: PWGCF/FEMTOSCOPY/macros/Train/KM/pPb502/006/ConfigFemtoAnalysis.C
-// Test for K+K+(K-K-) same as pi+pi+(pi-pi-) for Elena w/ 3d
+// Konstantin Mikhaylov: 08-November-2023
+// comment in GIT:::  KM->13_70 and other as 007 
+// 008: PWGCF/FEMTOSCOPY/macros/Train/KM/pPb502/008/ConfigFemtoAnalysis.C
+// Test for pi+pi+(pi-pi-) for Elena w/ 3d
 // kT bins
 // for pions like in ALICE paper(polish):
 // https://journals.aps.org/prd/pdf/10.1103/PhysRevD.84.112004
+// and 0.13<pT<0.7 GeV/c (TPC PID !!!!) --> this is the difference between 007 wagon!!!
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #if !defined(__CINT__) || defined(__MAKECINT_)
 #include "AliFemtoManager.h"
@@ -72,8 +74,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   //int multbins[7] = {0.01, 50, 100, 200, 400, 600, 800};
 
   int runch[2] = {1, 1};
-  //const char *chrgs[2] = { "pip", "pim"};
-  const char *chrgs[2] = { "Kp", "Km"};
+  const char *chrgs[2] = { "pip", "pim"};//const char *chrgs[2] = { "Kp", "Km"};
 
   int runktdep = 1;
   const int cktbins=2; //corresponds to  number of kT ranges
@@ -209,33 +210,26 @@ AliFemtoManager* ConfigFemtoAnalysis() {
           mecetaphitpc[aniter]->AddCutMonitor(cutPassEvSpher[aniter], cutFailEvSpher[aniter]);*/
 	  ///Spericity ----<
 
-	  //PID for kaons or pions --->
+	  //PID for pions --->
 	  dtc1etaphitpc[aniter] = new AliFemtoESDTrackCut();//pipi(++,--)
 	  if (ichg == 0)
 	    dtc1etaphitpc[aniter]->SetCharge(1.0);
 	  else if (ichg == 1)
 	    dtc1etaphitpc[aniter]->SetCharge(-1.0);
-	  dtc1etaphitpc[aniter]->SetPt(0.13,1.5);//0.14 from Elena ??
+	  dtc1etaphitpc[aniter]->SetPt(0.13,0.7/*1.5*/);//same as in pp 7tev paper (0.13-0.7 mom range)
 	  dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
-	  //Kaon or pion 
-	  dtc1etaphitpc[aniter]->SetMass(KaonMass);//->SetMass(PionMass);
-	  dtc1etaphitpc[aniter]->SetMass(KaonMass);//->SetMostProbablePion();
-	  //----Kch special PID-------------------------->
-	  dtc1etaphitpc[aniter]->SetNsigmaTPCle250(2.0);
-	  dtc1etaphitpc[aniter]->SetNsigmaTPC250_400(2.0);
-	  dtc1etaphitpc[aniter]->SetNsigmaTPC400_450(1.0);//cut on e+e- orig(2.0);
-	  dtc1etaphitpc[aniter]->SetNsigmaTPC450_500(2.0);//cut on e+e- orig(2.0);
-	  dtc1etaphitpc[aniter]->SetNsigmaTPCge500(3.0);  
-	  //----Kch special PID--------------------------<
+	  dtc1etaphitpc[aniter]->SetMass(PionMass);
+	  dtc1etaphitpc[aniter]->SetMostProbablePion();
+	  
 	  dtc1etaphitpc[aniter]->SetminTPCncls(80);
 	  dtc1etaphitpc[aniter]->SetRemoveKinks(kTRUE);
 	  dtc1etaphitpc[aniter]->SetMaxTPCChiNdof(4.0);
 	  //dtc1etaphitpc[aniter]->SetMaxITSChiNdof(36);	  
 	  dtc1etaphitpc[aniter]->SetLabel(kFALSE);
-	  dtc1etaphitpc[aniter]->SetMaxImpactZ(DCAxy/*0.3*/);//0.13 - kaons
-	  dtc1etaphitpc[aniter]->SetMaxImpactXY(DCAz/*0.3*/);//0.135 - kaons
+	  dtc1etaphitpc[aniter]->SetMaxImpactZ(0.3);//0.13 - kaons
+	  dtc1etaphitpc[aniter]->SetMaxImpactXY(0.3);//0.135 - kaons
 
-	  //PID for kaons or pions ---<
+	  //PID for pions ---<
 
 
 	  cutPass1YPtetaphitpc[aniter] = new AliFemtoCutMonitorParticleYPt(Form("cutPass1%stpcM%i", chrgs[ichg], imult), 0.493677);
