@@ -84,6 +84,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetEnableFB768DCAxy(bool newval) { fEnableFB768dcaxy = newval;}
   void SetUseOldPileup(bool newval) { fUseOldPileup = newval; }
   void SetCentralPileup(double newval) {fCentralPU = newval;}
+  void SetCentSelectForMptVsNch(double newval) { fCentSelectForMptNch = newval; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -97,6 +98,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Bool_t fBypassTriggerAndEventCuts;
   Bool_t fDisablePileup;
   Bool_t fUseOldPileup;
+  Bool_t fCentSelectForMptNch;
   TString fDCAxyFunctionalForm;
   AliMCEvent *fMCEvent; //! MC event
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure

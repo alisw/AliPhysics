@@ -44,6 +44,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fBypassTriggerAndEventCuts(kFALSE),
   fDisablePileup(kFALSE),
   fUseOldPileup(kFALSE),
+  fCentSelectForMptNch(1.),
   fDCAxyFunctionalForm(0),
   fUseRecoNchForMC(kFALSE),
   fRndm(0),
@@ -118,6 +119,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fBypassTriggerAndEventCuts(kFALSE),
   fDisablePileup(kFALSE),
   fUseOldPileup(kFALSE),
+  fCentSelectForMptNch(1.),
   fDCAxyFunctionalForm(0),
   fUseRecoNchForMC(kFALSE),
   fRndm(0),
@@ -378,7 +380,6 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   AliAODHeader *head = (AliAODHeader*)fAOD->GetHeader();
   Int_t nESD = head->GetNumberOfESDTracks();
   fESDvsFB128->Fill(nTotTracksFB128,nESD);
-  fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0]);
   Double_t l_Random = fRndm->Rndm();
 
   fPtCont->CalculateCorrelations(wp);
@@ -387,6 +388,7 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   fV0MMulti->Fill(l_Cent);
   fMultiDist->Fill(l_Multi);
   fMultiVsCent->Fill(l_Cent,l_Multi);
+  if(l_Cent < fCentSelectForMptNch) fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0]);
   PostData(1,fptList);
 
   return;
