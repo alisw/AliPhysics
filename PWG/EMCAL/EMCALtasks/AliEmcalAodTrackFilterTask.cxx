@@ -2,8 +2,9 @@
 // Class to filter Aod tracks
 //
 // Author: C.Loizides
-// Updated for ROOT6 by C.Pliatskas in 2022
+// Updated for ROOT6 and pt-dependent tracking efficiency by C.Pliatskas 
 
+#include "AliProdInfo.h"
 #include "AliEmcalAodTrackFilterTask.h"
 #include <TClonesArray.h>
 #include <TRandom3.h>
@@ -33,6 +34,9 @@ AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask() :
   fKeepInvMassTag(kFALSE),
   fDist(440),
   fTrackEfficiency(0),
+  fTrackEfficiencyHistogram(nullptr),
+  fApplyPtDependentTrackingEfficiency(kFALSE),
+  fYAMLConfig(),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -58,6 +62,9 @@ AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask(const char *name) :
   fKeepInvMassTag(kFALSE),
   fDist(440),
   fTrackEfficiency(0),
+  fTrackEfficiencyHistogram(nullptr),
+  fApplyPtDependentTrackingEfficiency(kFALSE),
+  fYAMLConfig(),
   fTracksIn(0),
   fTracksOut(0)
 {
@@ -199,6 +206,7 @@ AliEmcalAodTrackFilterTask* AliEmcalAodTrackFilterTask::AddTaskEmcalAodTrackFilt
     aodTask->SetAttemptProp(doAttemptProp);
     aodTask->SetMC(isMC);
   
+    aodTask->AddArtificialTrackingEfficiencyConfig();
     //-------------------------------------------------------
     // Final settings, pass to manager and set the containers
     //-------------------------------------------------------
@@ -212,6 +220,8 @@ AliEmcalAodTrackFilterTask* AliEmcalAodTrackFilterTask::AddTaskEmcalAodTrackFilt
 }}
 void AliEmcalAodTrackFilterTask::ExecOnce(){
 
+  fYAMLConfig.Reinitialize();
+  if(fApplyPtDependentTrackingEfficiency){SetArtificialTrackingEfficiencyFromYAML();};
   AliParticleContainer* OutputCont= static_cast<AliParticleContainer*>(fParticleCollArray.Last());
     // add tracks to event if not yet there
     fTracksOut->Delete();
@@ -228,6 +238,80 @@ void AliEmcalAodTrackFilterTask::ExecOnce(){
    AliAnalysisTaskEmcal::ExecOnce();
 }
 
+
+/**
+ * Set the pt-dependent tracking efficiency from the loaded YAML file
+ */
+void AliEmcalJetTask::SetArtificialTrackingEfficiencyFromYAML() {
+   
+  std::vector <Double_t> ptBinning;
+  std::vector <Double_t> trackingUncertainty;
+  bool res = fYAMLConfig.GetProperty("ptBinning", ptBinning, false);
+  Int_t nPtBins = ptBinning.size()-1;
+  double* aptBinning = ptBinning.data();
+    
+  auto userInfo = fInputHandler->GetUserInfo();
+  AliProdInfo prodInfo(userInfo);
+  std::string period = prodInfo.GetAnchorProduction().Data();
+  if(period.size() == 0) {
+    // MC where anchor production is not saved - get the name of the MC production instead
+    period = prodInfo.GetTag(AliProdInfo::kProdTag).Data();
+    if(period.size() == 0) {
+      AliFatal("No information relating to anchored datset or MC tag in this MC production - can't get pT-dependent tracking efficiencies");
+    }
+    AliInfoStream() << "Get MC set tracking efficiency for " << period << "\n";
+  }
+  else {
+    AliInfoStream() << "Get anchor production set tracking efficiency for " << period << "\n";
+  }
+  
+  // index 0 always corresponds to centrality-integrated tracking efficiencies
+  // index 1-4 corresponds to the centrality bins defined below
+  // the vector entry is set to nullptr if the centralities don't exist in the yaml file
+  Double_t centMin[5] = {0,0,10,30,50};
+  Double_t centMax[5] = {100,10,30,50,90};
+  Int_t count = 0;
+  for (Int_t icent = 0; icent <= fNcentBins; icent++) {
+    std::string cent = TString::Format("%.0f_%.0f",centMin[icent],centMax[icent]).Data();
+
+    res = fYAMLConfig.GetProperty({period,cent},trackingUncertainty, false);
+    if(res) {
+      fTrackEfficiencyHistogram = new TH1D("fTrackEfficiencyHistogram","h",nPtBins,aptBinning);
+      for(Int_t i = 0; i < nPtBins; i++) {
+        fTrackEfficiencyHistogram->SetBinContent(i+1, trackingUncertainty.at(i));
+        AliDebug(2,TString::Format("pT %f - %f \t track uncertainty: %f", ptBinning.at(i), ptBinning.at(i+1), trackingUncertainty.at(i)).Data());
+      }
+      fTrackEfficiencyHistogramVector.push_back(fTrackEfficiencyHistogram);
+      count++;
+    }
+    else {
+      fTrackEfficiencyHistogramVector.push_back(nullptr);
+    }
+  }
+  if(count == 0) {
+    AliFatal(TString::Format("not able to find any pt-dependent uncertainties for the anchored period %s of the MC that you are running over",period.c_str()));
+  }
+  if(fNcentBins != 4 && fNcentBins != 5 && !fTrackEfficiencyHistogramVector.at(0) ) {
+    AliFatal("fNcentBins should be set to either 4 or 5 in order to correctly load the pt-dependent tracking efficiency histograms when running on Pb-Pb events");
+  }
+}
+
+/**
+ * Stream and initialise tracking efficiency yaml file
+ */
+
+void AliEmcalJetTask::AddArtificialTrackingEfficiencyConfig() {
+  std::string path = "$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/TrackEfficiencyConfiguration.yaml";
+  Printf("Get pT-dependent Tracking efficiency from %s", path.c_str());
+  int addedConfig = fYAMLConfig.AddConfiguration(path, "yamlConfig");
+  if (addedConfig < 0) {
+    AliFatal(TString::Format("YAML Configuration in set path %s not found!",path.c_str()).Data());
+  }
+  fYAMLConfig.Initialize();
+}
+
+
+
 Bool_t AliEmcalAodTrackFilterTask::Run(){
 
     // Main loop, called for each event.
@@ -242,6 +326,7 @@ AliParticleContainer* partCont = 0;
       while ((partCont = static_cast<AliParticleContainer*>(next()))) {
       Int_t nacc = 0;
       Int_t count =0;
+      Double_t trackEff=1.;
           if(TString(partCont->GetTitle()).Contains(fTracksOutName))continue;
     for(auto part : partCont->accepted()) {
           if (!part) continue;
@@ -278,9 +363,26 @@ if (fCutMaxFrShTPCClus > 0) {
       }
   
       if (fTrackEfficiency) {
+        if (fTrackEfficiencyOnlyForEmbedding == kFALSE || (fTrackEfficiencyOnlyForEmbedding == kTRUE && tracks->GetIsEmbedding())) { 
+       trackEff =fTrackEfficiency->Eval(track->Pt());
+         if(fApplyPtDependentTrackingEfficiency) {
+           // if it exists, centrality-integrated tracking efficiency taken from index 0 
+           if(fTrackEfficiencyHistogramVector.at(0) ) { 
+             trackEff -= (1. - fTrackEfficiencyHistogramVector.at(0)->GetBinContent(fTrackEfficiencyHistogramVector.at(0)->FindBin(track.Pt())));
+                                                       }   
+           // otherwise, tracking efficiency taken from corresponding centrality bin stored in index 1-4
+           else {
+             if(fTrackEfficiencyHistogramVector.at(fCentBin+1)) {
+               trackEff -= (1. - fTrackEfficiencyHistogramVector.at(fCentBin+1)->GetBinContent(fTrackEfficiencyHistogramVector.at(fCentBin+1)->FindBin(track.Pt())));
+                                                                }   
+            else {
+             AliFatal(TString::Format("You're running over centrality (%.0f) for which the pt-dependent tracking uncertainty has not been defined",fCent).Data());
+                  }   
+           }   
+                                               }
+                                  }
         Double_t r = gRandom->Rndm();
-        if (fTrackEfficiency->Eval(track->Pt()) < r)
-          continue;
+        if (trackEff < r){continue;}
       }
   
       AliAODTrack *newt = new ((*fTracksOut)[nacc]) AliAODTrack(*track);
