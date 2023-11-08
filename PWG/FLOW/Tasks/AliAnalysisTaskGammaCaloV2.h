@@ -206,12 +206,17 @@ protected:
   map<TString, Bool_t> fSetEventCutsOutputlist;        //! Store, if Output list for Event Cut has already been added
 
   // histograms for mesons reconstructed quantities
-  TH3F **fHistoMotherInvMassPtPhi; //! array of histogram with signal + BG for same event photon pairs in deta phi, inv Mass, pt
-  TH2F **fHistoMotherInvMassPt;    //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
-  TH1F **fdPhiPi0;
+  TH3F **fHistoMotherInvMassPtPhi;           //! array of histogram with signal + BG for same event photon pairs in deta phi, inv Mass, pt
+  TH2F **fHistoMotherInvMassPt;              //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
+  TH2F **fHistoMotherInvMassPhi;             //! array of histogram with signal + BG for same event photon pairs, inv Mass, phi
+  TH1F **fdPhiPi0;                           //! array of histgram with deta phi of pi0 candidates
+  TH1F **fdPhiBg;                            //! array of histgram with deta phi of pi0 background
+  TH1F **fphiPi0;                            //! array of histgram with phi of pi0 candidates
+  TH1F **fphiBg;                             //! array of histgram with phi of pi0 background
   THnSparseF **fSparseMotherInvMassPtZM;     //! array of THnSparseF with signal + BG for same event photon pairs, inv Mass, pt
   TH2F **fHistoMotherBackInvMassPt;          //! array of histogram with BG for mixed event photon pairs, inv Mass, pt
   TH3F **fHistoMotherBackInvMassPtdPhi;      //! array of histogram with BG for mixed event photon pairs in deta phi, inv Mass, pt
+  TH2F **fHistoMotherBackInvMassPhi;         //! array of histogram with BG for mixed event photon pairs in phi, inv Mass
   THnSparseF **fSparseMotherBackInvMassPtZM; //! array of THnSparseF with BG for same event photon pairs, inv Mass, pt
   TH2F **fHistoMotherPi0PtY;                 //! array of histograms with invariant mass cut of 0.05 && pi0cand->M() < 0.17, pt, Y
   TH2F **fHistoMotherEtaPtY;                 //! array of histograms with invariant mass cut of 0.45 && pi0cand->M() < 0.65, pt, Y
