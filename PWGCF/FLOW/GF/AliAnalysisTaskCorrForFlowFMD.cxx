@@ -62,6 +62,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fselectjetsinTPC(kFALSE),
     fRejectSecondariesFromMC(kFALSE),
     fBoostAMPT(kFALSE),
+    fApply_additional_pileupcut(kFALSE),
     fFilterBit(96),
     fbSign(0),
     fRunNumber(-1),
@@ -182,6 +183,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fselectjetsinTPC(kFALSE),
     fRejectSecondariesFromMC(kFALSE),
     fBoostAMPT(kFALSE),
+    fApply_additional_pileupcut(kFALSE),
     fFilterBit(96),
     fbSign(0),
     fRunNumber(-1),
@@ -629,10 +631,30 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsEventSelected()
   if(fIsHMpp) fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true);
   if(!fEventCuts.AcceptEvent(fAOD)) { return kFALSE; }
   fhEventCounter->Fill("CutsOK",1);
+	
 
   AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
   if(!multSelection) { return kFALSE; }
   fhEventCounter->Fill("MultOK",1);
+
+//additional pile up cut pile up cut only for pp (in both HM and MB)
+   if(fApply_additional_pileupcut)
+	{
+        Bool_t IsNotPileup = kFALSE;
+        Bool_t IsSelectedFromAliMultSelection=kFALSE;
+     if( !fAOD->IsPileupFromSPDInMultBins() ) IsNotPileup = kTRUE;
+
+     if( multSelection->GetThisEventIsNotPileup() &&
+	 multSelection->GetThisEventIsNotPileupInMultBins() &&
+	 multSelection->GetThisEventHasNoInconsistentVertices() &&
+	 multSelection->GetThisEventPassesTrackletVsCluster() ){
+       IsSelectedFromAliMultSelection = kTRUE;
+     }
+
+if (IsNotPileup == kFALSE || IsSelectedFromAliMultSelection == kFALSE) return kFALSE; 
+	}
+
+	
   if(!fUseCentralityCalibration){
     Float_t dPercentile = multSelection->GetMultiplicityPercentile(fCentEstimator);
     if(dPercentile > 100 || dPercentile < 0) { return kFALSE; }
