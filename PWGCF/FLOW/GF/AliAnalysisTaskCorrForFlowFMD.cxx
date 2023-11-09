@@ -637,7 +637,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsEventSelected()
   if(!multSelection) { return kFALSE; }
   fhEventCounter->Fill("MultOK",1);
 
-//additional pile up cut pile up cut for pp
+//additional pile up cut pile up cut only for pp (in both HM and MB)
    if(fApply_additional_pileupcut)
 	{
         Bool_t IsNotPileup = kFALSE;
