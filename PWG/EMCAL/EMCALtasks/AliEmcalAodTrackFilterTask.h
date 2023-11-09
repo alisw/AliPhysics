@@ -37,7 +37,7 @@ class AliEmcalAodTrackFilterTask : public AliAnalysisTaskEmcal {
   void               SetKeepInvMassTag(Bool_t f)                          { fKeepInvMassTag = f ; } 
   void               SetTrackEfficiency(TF1* eff)                         { fTrackEfficiency  = eff  ; }
 
-  void                   SetApplyPtDependentTrackingEfficiency(Bool_t b=kFALSE) { if (IsLocked())     return; fApplyPtDependentTrackingEfficiency = b; }
+  void                   SetApplyPtDependentTrackingEfficiency(Bool_t b=kFALSE) { fApplyPtDependentTrackingEfficiency = b; }
   void                   SetArtificialTrackingEfficiencyFromYAML();
   void                   AddArtificialTrackingEfficiencyConfig();
 
