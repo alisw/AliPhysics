@@ -92,11 +92,12 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   }
 
   //Set-up output ------------------------------------------------------------------------
+  //PDG codes need to stay positive. Weird implementation in FemtoDream
   std::vector<int> PDGParticles;
-  PDGParticles.push_back(2212); 
-  PDGParticles.push_back(-2212); 
-  PDGParticles.push_back(211); 
-  PDGParticles.push_back(-211); 
+  PDGParticles.push_back(2212); //proton
+  PDGParticles.push_back(2212); //antiproton
+  PDGParticles.push_back(211); //pi+
+  PDGParticles.push_back(211); //pi-
 
   std::vector<bool> closeRejection;
   std::vector<float> mTBins;
