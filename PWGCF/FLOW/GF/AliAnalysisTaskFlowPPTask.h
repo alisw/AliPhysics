@@ -221,6 +221,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		virtual void   SetDCAxyCut(Double_t dcaxy){fDCAxy = dcaxy;}
 		virtual void   SetDCAxyCutDefault(Double_t dcaxy){fDCAxyDefault = dcaxy;} // The dcaxy cut for NtrksCounter
 		virtual void   SetUseCL1Cent(Bool_t CL1cent){fUseCL1Centrality = CL1cent;}
+		virtual void   SetUseV0MNewCent(Bool_t V0MNewcent){fUseV0MNewCentrality = V0MNewcent;}
 		virtual void   SetIsSample(Int_t IsSample){fSample = IsSample;}
 		virtual void   SetCentFlag(Short_t nCent){fCentFlag = nCent;}
 		virtual void   SetTrigger(Int_t trig){fTrigger = trig;}
@@ -278,7 +279,8 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		Int_t			fMinITSClus;				// min ITS clusters, LHC15ijl
 		Double_t		fMaxChi2;				// max chi2 per ITS cluster, LHC15ijl
 		Bool_t			fUseDCAzCut;				// switch to choose whether I want to use DCAz cut or not (for systematic studies, otherwise it is in FB selection by default)
-		Bool_t			fUseCL1Centrality;				// switch to choose whether I want to use DCAz cut or not (for systematic studies, otherwise it is in FB selection by default)
+		Bool_t			fUseCL1Centrality;				// CL1 centrality determination
+		Bool_t			fUseV0MNewCentrality;				// V0MNew centrality determination
 		Double_t		fDCAz;					// max DCAz, for systematics
 		Double_t		fDCAzDefault;				// max DCAz, (for NtrksCounter)
 		Bool_t			fUseDCAxyCut;				// the same switch as for DCAxy
