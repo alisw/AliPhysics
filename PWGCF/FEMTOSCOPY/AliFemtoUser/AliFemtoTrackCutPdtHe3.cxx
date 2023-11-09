@@ -64,6 +64,10 @@ AliFemtoESDTrackCut()
     fUseKaonReject = 0;
     RejectkNsigma = 2.;
 
+    StrangePointCheck = 0;
+    InverseLowLimitpT = 1.05;
+    InverseUpLimitpT = 1.35;
+
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -124,6 +128,10 @@ AliFemtoESDTrackCut(aCut)
 
     fUseKaonReject = aCut.fUseKaonReject;
     RejectkNsigma = aCut.RejectkNsigma;
+
+    StrangePointCheck = aCut.StrangePointCheck;
+    InverseLowLimitpT = aCut.InverseLowLimitpT;
+    InverseUpLimitpT = aCut.InverseUpLimitpT;
 
 }
 
@@ -192,6 +200,12 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
 
     fUseKaonReject = aCut.fUseKaonReject;
     RejectkNsigma = aCut.RejectkNsigma;
+
+
+    StrangePointCheck = aCut.StrangePointCheck;
+    InverseLowLimitpT = aCut.InverseLowLimitpT;
+    InverseUpLimitpT = aCut.InverseUpLimitpT;
+
 
     return *this;
 }
@@ -554,6 +568,16 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
                 }
 	if(fUseKaonReject && IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK())) imost = 0;
 //cout<<"xxx "<<imost<<" "<<fMostProbable<<endl;
+
+
+	if(StrangePointCheck && InverseLowLimitpT <  track->Pt() &&  track->Pt() < InverseUpLimitpT){
+		if(imost!=fMostProbable){
+			imost = fMostProbable;
+		}
+		else if(imost == fMostProbable){
+			imost = 0;
+		}
+	}
 	    if (imost != fMostProbable) return false;
 
 	if(fUseTOFMassCut){
@@ -1068,9 +1092,14 @@ void AliFemtoTrackCutPdtHe3::SetPIDdNSigmaTPCAndTOF(float aTPC1,float aTPC2,floa
 	d_TOFCut = aTOF;
 
 }
-void AliFemtoTrackCutPdtHe3::SetKaonrejectcut(float aRejectCut,float aSigma){
+void AliFemtoTrackCutPdtHe3::SetKaonrejectcut(int aRejectCut,float aSigma){
 fUseKaonReject = aRejectCut;
 RejectkNsigma = aSigma;
 }
  
+void AliFemtoTrackCutPdtHe3::SetStrangePoint(int aUse,float aLow,float aUp){
+ StrangePointCheck = aUse;
+    InverseLowLimitpT = aLow;
+    InverseUpLimitpT = aUp;
 
+}
