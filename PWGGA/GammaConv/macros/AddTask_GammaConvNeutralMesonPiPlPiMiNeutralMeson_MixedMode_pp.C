@@ -668,6 +668,9 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   } else if(trainConfig == 215)  { //EDC 13TeV MB, NCell >=1
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30230000","32c51070m","0103603l00000000","0453503000000000"); // EG1
 
+  } else if(trainConfig == 220)  { //EDC 13TeV MB, NCell >=2 + NCell efficiency, wider cuts for 5TeV (selection window + mass cut)
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n230000","32c51070n","0103603m00000000","0453503000000000"); // INT7
+
   // PCM-PHOS
   } else if ( trainConfig == 250 ) { // INT7 + PHI7
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190wa01cc00000","32c510700","0103603l00000000","0453503000000000"); // INT7
