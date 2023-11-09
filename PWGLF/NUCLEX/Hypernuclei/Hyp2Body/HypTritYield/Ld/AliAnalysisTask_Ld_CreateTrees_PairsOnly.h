@@ -79,8 +79,7 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fLambda_Event_BField;
     unsigned int fLambda_Event_Multiplicity;
     unsigned long fLambda_Event_Identifier;
-    unsigned short fLambda_Event_ParticleNumber;
-    unsigned short fLambda_Event_nParticles;
+    int fLambda_Event_RunNumber;
 
     float fLambda_Daughter_Proton_px;
     float fLambda_Daughter_Proton_py;
@@ -174,8 +173,7 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned int      fDeuteron_ID;
     unsigned int      fDeuteron_Event_Multiplicity;
     unsigned long     fDeuteron_Event_Identifier;
-    unsigned short    fDeuteron_Event_ParticleNumber;
-    unsigned short    fDeuteron_Event_nParticles;
+    int      fDeuteron_Event_RunNumber;
     bool	      fDeuteron_ITS_Layer0;
     bool	      fDeuteron_ITS_Layer1;
     bool	      fDeuteron_ITS_Layer2;
@@ -212,8 +210,7 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fAntiLambda_Event_BField;
     unsigned int fAntiLambda_Event_Multiplicity;
     unsigned long fAntiLambda_Event_Identifier;
-    unsigned short fAntiLambda_Event_ParticleNumber;
-    unsigned short fAntiLambda_Event_nParticles;
+    int  fAntiLambda_Event_RunNumber;
 
     float fAntiLambda_Daughter_AntiProton_px;
     float fAntiLambda_Daughter_AntiProton_py;
@@ -308,8 +305,7 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned int      fAntiDeuteron_ID;
     unsigned int      fAntiDeuteron_Event_Multiplicity;
     unsigned long     fAntiDeuteron_Event_Identifier;
-    unsigned short    fAntiDeuteron_Event_ParticleNumber;
-    unsigned short    fAntiDeuteron_Event_nParticles;
+    int      fAntiDeuteron_Event_RunNumber;
     bool	      fAntiDeuteron_ITS_Layer0;
     bool	      fAntiDeuteron_ITS_Layer1;
     bool	      fAntiDeuteron_ITS_Layer2;
