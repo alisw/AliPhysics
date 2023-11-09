@@ -71,7 +71,8 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	void SetUsePtotal(int aUse);
 	void SetPtotalRange(float aMin,float aMax);
 	void Setpionrejectcut(float aRejectCut);
-	void SetPIDdNSigmaTPCAndTOF(float aTPC1,float aTPC2,float aTOF);	
+	void SetPIDdNSigmaTPCAndTOF(float aTPC1,float aTPC2,float aTOF);
+        void SetKaonrejectcut(float aRejectCut,float aSigma);
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -159,6 +160,9 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	float d_TPCCut_Stage1;
 	float d_TPCCut_Stage2;
 	float d_TOFCut;
+
+	int fUseKaonReject;
+	float RejectkNsigma; 
 };
 
 inline void AliFemtoTrackCutPdtHe3::SetMostProbableDeuteron() { fMostProbable = 13; }

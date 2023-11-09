@@ -60,6 +60,10 @@ AliFemtoESDTrackCut()
     d_TPCCut_Stage1 = 2.;
     d_TPCCut_Stage2 = 2.;
     d_TOFCut = 2.;
+
+    fUseKaonReject = 0;
+    RejectkNsigma = 2.;
+
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -117,6 +121,9 @@ AliFemtoESDTrackCut(aCut)
     d_TPCCut_Stage1 = aCut.d_TPCCut_Stage1;
     d_TPCCut_Stage2 = aCut.d_TPCCut_Stage2;
     d_TOFCut = aCut.d_TOFCut;
+
+    fUseKaonReject = aCut.fUseKaonReject;
+    RejectkNsigma = aCut.RejectkNsigma;
 
 }
 
@@ -182,6 +189,9 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
     d_TPCCut_Stage1 = aCut.d_TPCCut_Stage1;
     d_TPCCut_Stage2 = aCut.d_TPCCut_Stage2;
     d_TOFCut = aCut.d_TOFCut;
+
+    fUseKaonReject = aCut.fUseKaonReject;
+    RejectkNsigma = aCut.RejectkNsigma;
 
     return *this;
 }
@@ -542,8 +552,10 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
                 if ( fdEdxcut &&fMostProbable == 13 && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal()) ){
                     	imost = 0;
                 }
+	if(fUseKaonReject && IsKaonNSigma(track->P().Mag(), track->NSigmaTPCK(), track->NSigmaTOFK())) imost = 0;
 //cout<<"xxx "<<imost<<" "<<fMostProbable<<endl;
 	    if (imost != fMostProbable) return false;
+
 	if(fUseTOFMassCut){
 		//Mass square!
 		float TmpTOFMass = ReturnTOFMass(track,imost);
@@ -942,11 +954,11 @@ bool AliFemtoTrackCutPdtHe3::IsPionNSigma(float mom,float nsigmaTPCpi,float nsig
 bool AliFemtoTrackCutPdtHe3::IsKaonNSigma(float mom,float nsigmaTPCk,float nsigmaTOFk){
 	
 	if (mom > 0.5) {
-	        if (TMath::Hypot( nsigmaTPCk, nsigmaTOFk ) < 3)
+	        if (TMath::Hypot( nsigmaTPCk, nsigmaTOFk ) < RejectkNsigma)
 	            return true;	
 	}
     else {
-        if (TMath::Abs(nsigmaTPCk) < 3.)
+        if (TMath::Abs(nsigmaTPCk) < RejectkNsigma)
             return true;
     }
     return false;
@@ -1056,3 +1068,9 @@ void AliFemtoTrackCutPdtHe3::SetPIDdNSigmaTPCAndTOF(float aTPC1,float aTPC2,floa
 	d_TOFCut = aTOF;
 
 }
+void AliFemtoTrackCutPdtHe3::SetKaonrejectcut(float aRejectCut,float aSigma){
+fUseKaonReject = aRejectCut;
+RejectkNsigma = aSigma;
+}
+ 
+
