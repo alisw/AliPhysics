@@ -1,7 +1,7 @@
-// Konstantin Mikhaylov: 26-October-2023
-// 006: PWGCF/FEMTOSCOPY/macros/Train/KM/pPb502/006/ConfigFemtoAnalysis.C
-// Test for K+K+(K-K-) same as pi+pi+(pi-pi-) for Elena w/ 3d
-// kT bins
+// Konstantin Mikhaylov: 09-NOV-2023
+// 009: PWGCF/FEMTOSCOPY/macros/Train/KM/pPb502/009/ConfigFemtoAnalysis.C
+//          ____
+// Test for K+K+ -3,+3 GeV/c with kT bins 0.2, 0.3, 0.4 as
 // for pions like in ALICE paper(polish):
 // https://journals.aps.org/prd/pdf/10.1103/PhysRevD.84.112004
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -33,7 +33,7 @@
 #include "AliFemtoPairCutRadialDistance.h"
 #include "AliFemtoQinvCorrFctn.h"
 #include "AliFemtoShareQualityCorrFctn.h"
-//#include "AliFemtoPairCutRadialDistanceKKdist.h"
+#include "AliFemtoPairCutRadialDistanceKKdist.h" //KK
 #include "AliFemtoTPCInnerCorrFctn.h"
 #include "AliFemtoVertexMultAnalysis.h"
 #include "AliFemtoCorrFctn3DSpherical.h"
@@ -151,9 +151,9 @@ AliFemtoManager* ConfigFemtoAnalysis() {
     //AliFemtoCutMonitorEventSphericity *cutPassEvSpher[20];//??KM
     //AliFemtoCutMonitorEventSphericity *cutFailEvSpher[20];//??KM
   //AliFemtoPairCutAntiGamma      *sqpcetaphitpc[20];
-  AliFemtoShareQualityPairCut      *sqpcetaphitpc[20];//pipi not for K+K-
+  //AliFemtoShareQualityPairCut      *sqpcetaphitpc[20];//pipi not for K+K-
   //AliFemtoPairCutRadialDistance      *sqpcetaphitpc[20];
-  //AliFemtoPairCutRadialDistanceKKdist  *sqpcetaphitpc[20];//K+K-
+  AliFemtoPairCutRadialDistanceKKdist  *sqpcetaphitpc[20];//K+K- of KK(++,--)
   AliFemtoCorrFctnDirectYlm     *cylmetaphitpc[20];
   AliFemtoCorrFctnDEtaDPhi      *cdedpetaphi[20];
   AliFemtoChi2CorrFctn          *cchiqinvetaphitpc[20];
@@ -176,7 +176,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
   for (int imult=0; imult<3; imult++) {
     if (runmults[imult]) {
-      for (int ichg=0; ichg<1/*2*/; ichg++) {//'1' for K+K-
+      for (int ichg=0; ichg<1/*2*/; ichg++) {//'1' for K+K- or K+K+ ; 2 KK(++,--)
 	if (runch[ichg]) {
 	  aniter = ichg*3+imult;
 
@@ -215,9 +215,11 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  if (ichg == 0)
 	    dtc1etaphitpc[aniter]->SetCharge(1.0);
 	  else if (ichg == 1)
-	    dtc1etaphitpc[aniter]->SetCharge(-1.0);
+	  dtc1etaphitpc[aniter]->SetCharge(-1.0);
+	  //p_T, |eta| ---------------------------->
 	  dtc1etaphitpc[aniter]->SetPt(0.14/*0.13*/,1.5);//0.14 from Elena ??
 	  dtc1etaphitpc[aniter]->SetEta(-0.8,0.8);
+	  //p_T, |eta| ----------------------------<
 	  //Kaon or pion 
 	  dtc1etaphitpc[aniter]->SetMass(KaonMass);//->SetMass(PionMass);
 	  dtc1etaphitpc[aniter]->SetMostProbableKaon();//->SetMostProbablePion();
@@ -267,7 +269,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 
 	  anetaphitpc[aniter]->SetEventCut(mecetaphitpc[aniter]);
 	  anetaphitpc[aniter]->SetFirstParticleCut(dtc1etaphitpc[aniter]);
-	  anetaphitpc[aniter]->SetSecondParticleCut(dtc1etaphitpc[aniter]);
+	  anetaphitpc[aniter]->SetSecondParticleCut(dtc1etaphitpc[aniter]);// to be checked ????
 	  anetaphitpc[aniter]->SetPairCut(sqpcetaphitpc[aniter]);
 	  
 	  //Correlation functions
