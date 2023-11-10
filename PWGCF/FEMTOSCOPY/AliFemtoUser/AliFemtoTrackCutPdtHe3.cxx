@@ -571,6 +571,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 
 
 	if(StrangePointCheck && InverseLowLimitpT <  track->Pt() &&  track->Pt() < InverseUpLimitpT){
+	if(StrangePointCheck==1){
 		if(imost!=fMostProbable){
 			imost = fMostProbable;
 		}
@@ -578,6 +579,10 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 			imost = 0;
 		}
 	}
+	if(StrangePointCheck==2){
+		imost = 0;
+	}
+}
 	    if (imost != fMostProbable) return false;
 
 	if(fUseTOFMassCut){
