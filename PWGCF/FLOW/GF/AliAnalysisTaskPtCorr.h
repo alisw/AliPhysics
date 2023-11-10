@@ -84,7 +84,6 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetEnableFB768DCAxy(bool newval) { fEnableFB768dcaxy = newval;}
   void SetUseOldPileup(bool newval) { fUseOldPileup = newval; }
   void SetCentralPileup(double newval) {fCentralPU = newval;}
-  void SetCentSelectForMptVsNch(double newval) { fCentSelectForMptNch = newval; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -150,7 +149,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH2D *fWithinDCAvsPt_withChi2;
   TH3D *fDCAxyVsPt_withChi2;
   TH2D *fWithinDCAvsPt_noChi2;
-  TH2D *fMptVsNch;
+  TH3D *fMptVsNch;
   TH1D *fV0MMulti;
   TH2D *fITSvsTPCMulti;
   TH1D *fV2dPtMulti;

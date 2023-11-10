@@ -44,7 +44,6 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fBypassTriggerAndEventCuts(kFALSE),
   fDisablePileup(kFALSE),
   fUseOldPileup(kFALSE),
-  fCentSelectForMptNch(1.),
   fDCAxyFunctionalForm(0),
   fUseRecoNchForMC(kFALSE),
   fRndm(0),
@@ -119,7 +118,6 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fBypassTriggerAndEventCuts(kFALSE),
   fDisablePileup(kFALSE),
   fUseOldPileup(kFALSE),
-  fCentSelectForMptNch(1.),
   fDCAxyFunctionalForm(0),
   fUseRecoNchForMC(kFALSE),
   fRndm(0),
@@ -239,8 +237,8 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
     fptList->Add(fMultiVsCent);
     const int nMptBins = 1000;
     double *mptBins = new double[nMptBins+1];
-    for(int i=0;i<=nMptBins;++i) mptBins[i] = 0.00025*i + 0.55;
-    fMptVsNch = new TH2D("fMptVsNch","[#it{p}_{T}] vs N_{ch}; N_{ch}^{rec}; #LT[#it{p}_{T}]#GT",fNMultiBins,fMultiBins,nMptBins,mptBins);
+    for(int i=0;i<=nMptBins;++i) mptBins[i] = 0.0005*i + 0.5;
+    fMptVsNch = new TH3D("fMptVsNch","[#it{p}_{T}] vs N_{ch}; N_{ch}^{rec}; #LT[#it{p}_{T}]#GT;centrality (%)",fNMultiBins,fMultiBins,nMptBins,mptBins,nFineCentBins,fineCentBins);
     fptList->Add(fMptVsNch);
     printf("Multiplicity objects created\n");
     PostData(1,fptList);
@@ -388,7 +386,7 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   fV0MMulti->Fill(l_Cent);
   fMultiDist->Fill(l_Multi);
   fMultiVsCent->Fill(l_Cent,l_Multi);
-  if(l_Cent < fCentSelectForMptNch) fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0]);
+  fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0],l_Cent);
   PostData(1,fptList);
 
   return;
