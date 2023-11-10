@@ -676,7 +676,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
         if (TMath::Abs(pdg) == 11) fPtEoverPMCE->Fill(track->Pt(),EoverP);
 
         //to compare all tracks and electron M02
-        if (EoverP > 0.7 && EoverP < 1.5)
+        if (EoverP > 0.85 && EoverP < 1.3)
         {
           if (TMath::Abs(pdg) == 11) fHistMCClsLAE->Fill(clustLongE);
           fHistClustLongAxisE->Fill(clustLongE);
@@ -691,7 +691,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
           //////////////
           // ELECTRON //
           //////////////
-          if (EoverP > 0.7 && EoverP < 1.5)
+          if (EoverP > 0.85 && EoverP < 1.3)
           {
             Float_t showerx[3];
             clustMatch->GetPosition(showerx);
@@ -850,12 +850,12 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
       if (pidW == 1) fPt_TPCPIDMCWe->Fill(track->Pt());
       if (EMCalIndex >= 0) {
         if (pidW == 1) fPt_TrackMatchingMCWe->Fill(track->Pt());
-        if (clustLongE > 0.1 && clustLongE < 0.6 && EoverP > 0.7 && EoverP < 1.5 && Eiso[0] >= 0. && Eiso[0] <= 0.05) {
+        if (clustLongE > 0.1 && clustLongE < 0.6 && EoverP > 0.85 && EoverP < 1.3 && Eiso[0] >= 0. && Eiso[0] <= 0.05) {
           if (pidW == 1) fPt_EMCalPIDMCWe->Fill(track->Pt());
         }
       }
     }
-    if (clustLongE > 0.1 && clustLongE < 0.6 && EoverP > 0.7 && EoverP < 1.5) {
+    if (clustLongE > 0.1 && clustLongE < 0.6 && EoverP > 0.85 && EoverP < 1.3) {
       TPCSigForE->Fill(track->P(),track->GetTPCsignal());
       fNsigmaPtForE->Fill(track->Pt(),fTPCnSigma);
     }
