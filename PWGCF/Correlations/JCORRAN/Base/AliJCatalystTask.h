@@ -171,7 +171,7 @@ public:
 
 	Int_t GetRunIndex15o(Int_t runNumber);
 	void SetInputCentralityWeight15o(bool useCentWeight, TString fileCentWeight);
-	// void SetFillJTree(Bool_t FillJTree) {bFillJTree=FillJTree;}
+	void SetFillJTree(Bool_t FillJTree) {bFillJTree=FillJTree;}
 
 private:
 	TClonesArray * fInputList;  // tracklist

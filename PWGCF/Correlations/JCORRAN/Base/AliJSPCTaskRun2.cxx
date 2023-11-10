@@ -132,6 +132,7 @@ void AliJSPCTaskRun2::UserCreateOutputObjects()
 
   fSPC->SetEtaGaps(bAliSPCRun2ComputeEtaGap,fAliSPCRun2EtaGap);
 
+  fSPC->SetSaveAllQA(bJSPCRun2SaveAllQA);
 	fSPC->SetDebugLevel(fDebug);
 	OpenFile(1);
 
