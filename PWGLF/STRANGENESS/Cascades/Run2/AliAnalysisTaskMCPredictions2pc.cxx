@@ -130,29 +130,31 @@ fHist3dAssoXiPlus(0x0),
 fHist3dAssoOmegaMinus(0x0),
 fHist3dAssoOmegaPlus(0x0),
 
-fHist4d2pcPions(0x0),
-fHist4d2pcK0Short(0x0),
-fHist4d2pcLambda(0x0),
-fHist4d2pcAntiLambda(0x0),
-fHist4d2pcXiMinus(0x0),
-fHist4d2pcXiPlus(0x0),
-fHist4d2pcOmegaMinus(0x0),
-fHist4d2pcOmegaPlus(0x0),
+fHist5d2pcPions(0x0),
+fHist5d2pcK0Short(0x0),
+fHist5d2pcLambda(0x0),
+fHist5d2pcAntiLambda(0x0),
+fHist5d2pcXiMinus(0x0),
+fHist5d2pcXiPlus(0x0),
+fHist5d2pcOmegaMinus(0x0),
+fHist5d2pcOmegaPlus(0x0),
 
-fHist4d2pcMixedPions(0x0),
-fHist4d2pcMixedK0Short(0x0),
-fHist4d2pcMixedLambda(0x0),
-fHist4d2pcMixedAntiLambda(0x0),
-fHist4d2pcMixedXiMinus(0x0),
-fHist4d2pcMixedXiPlus(0x0),
-fHist4d2pcMixedOmegaMinus(0x0),
-fHist4d2pcMixedOmegaPlus(0x0),
+fHist5d2pcMixedPions(0x0),
+fHist5d2pcMixedK0Short(0x0),
+fHist5d2pcMixedLambda(0x0),
+fHist5d2pcMixedAntiLambda(0x0),
+fHist5d2pcMixedXiMinus(0x0),
+fHist5d2pcMixedXiPlus(0x0),
+fHist5d2pcMixedOmegaMinus(0x0),
+fHist5d2pcMixedOmegaPlus(0x0),
 fNMultBins(0),
-fNPtBins(0)
+fNPtAssoBins(0),
+fNPtTriBins(0)
 {
   for(Int_t ii=0; ii<100; ii++){
     fMultBinBounds[ii] = 0.0;
-    fPtBinBounds[ii] = 0.0;
+    fPtAssoBinBounds[ii] = 0.0;
+    fPtTriBinBounds[ii] = 0.0;
   }
   for(Int_t ii=0; ii<20; ii++){
     fEMBufferFull[ii]=0;
@@ -167,6 +169,7 @@ fNPtBins(0)
     for(Int_t jj=0; jj<20; jj++){
       fEMBufferEta[ii][jj]=0;
       fEMBufferPhi[ii][jj]=0;
+      fEMBufferPtTri[ii][jj]=0;
     }
   }
   for(Int_t ii=0; ii<10; ii++){
@@ -215,29 +218,31 @@ fHist3dAssoXiPlus(0x0),
 fHist3dAssoOmegaMinus(0x0),
 fHist3dAssoOmegaPlus(0x0),
 
-fHist4d2pcPions(0x0),
-fHist4d2pcK0Short(0x0),
-fHist4d2pcLambda(0x0),
-fHist4d2pcAntiLambda(0x0),
-fHist4d2pcXiMinus(0x0),
-fHist4d2pcXiPlus(0x0),
-fHist4d2pcOmegaMinus(0x0),
-fHist4d2pcOmegaPlus(0x0),
+fHist5d2pcPions(0x0),
+fHist5d2pcK0Short(0x0),
+fHist5d2pcLambda(0x0),
+fHist5d2pcAntiLambda(0x0),
+fHist5d2pcXiMinus(0x0),
+fHist5d2pcXiPlus(0x0),
+fHist5d2pcOmegaMinus(0x0),
+fHist5d2pcOmegaPlus(0x0),
 
-fHist4d2pcMixedPions(0x0),
-fHist4d2pcMixedK0Short(0x0),
-fHist4d2pcMixedLambda(0x0),
-fHist4d2pcMixedAntiLambda(0x0),
-fHist4d2pcMixedXiMinus(0x0),
-fHist4d2pcMixedXiPlus(0x0),
-fHist4d2pcMixedOmegaMinus(0x0),
-fHist4d2pcMixedOmegaPlus(0x0),
+fHist5d2pcMixedPions(0x0),
+fHist5d2pcMixedK0Short(0x0),
+fHist5d2pcMixedLambda(0x0),
+fHist5d2pcMixedAntiLambda(0x0),
+fHist5d2pcMixedXiMinus(0x0),
+fHist5d2pcMixedXiPlus(0x0),
+fHist5d2pcMixedOmegaMinus(0x0),
+fHist5d2pcMixedOmegaPlus(0x0),
 fNMultBins(0),
-fNPtBins(0)
+fNPtAssoBins(0),
+fNPtTriBins(0)
 {
   for(Int_t ii=0; ii<100; ii++){
     fMultBinBounds[ii] = 0.0;
-    fPtBinBounds[ii] = 0.0;
+    fPtAssoBinBounds[ii] = 0.0;
+    fPtTriBinBounds[ii] = 0.0;
   }
   for(Int_t ii=0; ii<20; ii++){
     fEMBufferFull[ii]=0;
@@ -252,6 +257,7 @@ fNPtBins(0)
     for(Int_t jj=0; jj<20; jj++){
       fEMBufferEta[ii][jj]=0;
       fEMBufferPhi[ii][jj]=0;
+      fEMBufferPtTri[ii][jj]=0;
     }
   }
   for(Int_t ii=0; ii<10; ii++){
@@ -308,6 +314,7 @@ void AliAnalysisTaskMCPredictions2pc::UserCreateOutputObjects()
   std::vector<double> edgesDeltaEta;
   std::vector<double> edgesDeltaPhi;
   std::vector<double> edgesPtTrigger;
+  std::vector<double> edgesPtAsso;
   std::vector<double> edgesMult;
   Double_t etaBoundary,phiBoundary = 0.0;
   for (int i=0; i<lNEtaBins+1; i++)
@@ -328,19 +335,24 @@ void AliAnalysisTaskMCPredictions2pc::UserCreateOutputObjects()
     phiBoundary = -0.5*TMath::Pi()+static_cast<float>(i)*phiBinWidth;
     edgesDeltaPhi.emplace_back(phiBoundary);
   }
-  for (int i=0; i<fNPtBins+1; i++)
+  for (int i=0; i<fNPtAssoBins+1; i++)
   {
-    edgesPtTrigger.emplace_back(fPtBinBounds[i]);
+    edgesPtAsso.emplace_back(fPtAssoBinBounds[i]);
+  }
+  for (int i=0; i<fNPtTriBins+1; i++)
+  {
+    edgesPtTrigger.emplace_back(fPtTriBinBounds[i]);
   }
   for (int i=0; i<fNMultBins+1; i++)
   {
     edgesMult.emplace_back(fMultBinBounds[i]);
   }
-  const Int_t nBins[4] = {lNEtaBins, fkNPhiBins, fNPtBins, fNMultBins};
+  const Int_t nBins[5] = {lNEtaBins, fkNPhiBins, fNPtAssoBins, fNMultBins, fNPtTriBins};
   expandedAxes.emplace_back(edgesDeltaEta);
   expandedAxes.emplace_back(edgesDeltaPhi);
-  expandedAxes.emplace_back(edgesPtTrigger);
+  expandedAxes.emplace_back(edgesPtAsso);
   expandedAxes.emplace_back(edgesMult);
+  expandedAxes.emplace_back(edgesPtTrigger);
   
   if(! fHistEventCounter ) {
     //Histogram Output: Event-by-Event
@@ -365,123 +377,123 @@ void AliAnalysisTaskMCPredictions2pc::UserCreateOutputObjects()
   //___________________________________________________
     if(! fHist3dTrigger ) {
     //Histogram Output: Event-by-Event
-    fHist3dTrigger = new TH3D( "fHist3dTrigger", " ",lNEtaBins,edgesEta.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dTrigger = new TH3D( "fHist3dTrigger", " ",lNEtaBins,edgesEta.data(), fNPtTriBins, edgesPtAsso.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dTrigger);
   }
   //___________________________________________________
     if(! fHist3dAssoPions ) {
     //Histogram Output: Event-by-Event
-    fHist3dAssoPions = new TH3D( "fHist3dAssoPions", " ",lNEtaBins,edgesEta.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dAssoPions = new TH3D( "fHist3dAssoPions", " ",lNEtaBins,edgesEta.data(), fNPtAssoBins, edgesPtAsso.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dAssoPions);
   }
   //___________________________________________________
       if(! fHist3dAssoK0Short ) {
     //Histogram Output: Event-by-Event
-    fHist3dAssoK0Short = new TH3D( "fHist3dAssoK0Short", " ",lNEtaBins,edgesEta.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dAssoK0Short = new TH3D( "fHist3dAssoK0Short", " ",lNEtaBins,edgesEta.data(), fNPtAssoBins, edgesPtAsso.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dAssoK0Short);
   }
   //___________________________________________________
       if(! fHist3dAssoLambda ) {
     //Histogram Output: Event-by-Event
-    fHist3dAssoLambda = new TH3D( "fHist3dAssoLambda", " ",lNEtaBins,edgesEta.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dAssoLambda = new TH3D( "fHist3dAssoLambda", " ",lNEtaBins,edgesEta.data(), fNPtAssoBins, edgesPtAsso.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dAssoLambda);
   }
   //___________________________________________________
       if(! fHist3dAssoAntiLambda ) {
     //Histogram Output: Event-by-Event
-    fHist3dAssoAntiLambda = new TH3D( "fHist3dAssoAntiLambda", " ",lNEtaBins,edgesEta.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dAssoAntiLambda = new TH3D( "fHist3dAssoAntiLambda", " ",lNEtaBins,edgesEta.data(), fNPtAssoBins, edgesPtAsso.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dAssoAntiLambda);
   }
   //___________________________________________________
       if(! fHist3dAssoXiMinus ) {
     //Histogram Output: Event-by-Event
-    fHist3dAssoXiMinus = new TH3D( "fHist3dAssoXiMinus", " ",lNEtaBins,edgesEta.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dAssoXiMinus = new TH3D( "fHist3dAssoXiMinus", " ",lNEtaBins,edgesEta.data(), fNPtAssoBins, edgesPtAsso.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dAssoXiMinus);
   }
   //___________________________________________________
       if(! fHist3dAssoXiPlus ) {
     //Histogram Output: Event-by-Event
-    fHist3dAssoXiPlus = new TH3D( "fHist3dAssoXiPlus", " ",lNEtaBins,edgesEta.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dAssoXiPlus = new TH3D( "fHist3dAssoXiPlus", " ",lNEtaBins,edgesEta.data(), fNPtAssoBins, edgesPtAsso.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dAssoXiPlus);
   }
   //___________________________________________________
       if(! fHist3dAssoOmegaMinus ) {
     //Histogram Output: Event-by-Event
-    fHist3dAssoOmegaMinus = new TH3D( "fHist3dAssoOmegaMinus", " ",lNEtaBins,edgesEta.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dAssoOmegaMinus = new TH3D( "fHist3dAssoOmegaMinus", " ",lNEtaBins,edgesEta.data(), fNPtAssoBins, edgesPtAsso.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dAssoOmegaMinus);
   }
   //___________________________________________________
       if(! fHist3dAssoOmegaPlus ) {
     //Histogram Output: Event-by-Event
-    fHist3dAssoOmegaPlus = new TH3D( "fHist3dAssoOmegaPlus", " ",lNEtaBins,edgesEta.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dAssoOmegaPlus = new TH3D( "fHist3dAssoOmegaPlus", " ",lNEtaBins,edgesEta.data(), fNPtAssoBins, edgesPtAsso.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dAssoOmegaPlus);
   }
   //___________________________________________________
 
-  if(! fHist4d2pcPions ) {
-    fHist4d2pcPions = new THnF("fHist4d2pcPions","",4, nBins, expandedAxes);
-    fListHist->Add(fHist4d2pcPions);
+  if(! fHist5d2pcPions ) {
+    fHist5d2pcPions = new THnF("fHist5d2pcPions","",5, nBins, expandedAxes);
+    fListHist->Add(fHist5d2pcPions);
   }
-  if(! fHist4d2pcK0Short ) {
-    fHist4d2pcK0Short = new THnF("fHist4d2pcK0Short","",4, nBins, expandedAxes);
-    fListHist->Add(fHist4d2pcK0Short);
+  if(! fHist5d2pcK0Short ) {
+    fHist5d2pcK0Short = new THnF("fHist5d2pcK0Short","",5, nBins, expandedAxes);
+    fListHist->Add(fHist5d2pcK0Short);
   }
-  if(! fHist4d2pcLambda ) {
-    fHist4d2pcLambda = new THnF("fHist4d2pcLambda","",4, nBins, expandedAxes);
-    fListHist->Add(fHist4d2pcLambda);
+  if(! fHist5d2pcLambda ) {
+    fHist5d2pcLambda = new THnF("fHist5d2pcLambda","",5, nBins, expandedAxes);
+    fListHist->Add(fHist5d2pcLambda);
   }
-  if(! fHist4d2pcAntiLambda ) {
-    fHist4d2pcAntiLambda = new THnF("fHist4d2pcAntiLambda","",4, nBins, expandedAxes);
-    fListHist->Add(fHist4d2pcAntiLambda);
+  if(! fHist5d2pcAntiLambda ) {
+    fHist5d2pcAntiLambda = new THnF("fHist5d2pcAntiLambda","",5, nBins, expandedAxes);
+    fListHist->Add(fHist5d2pcAntiLambda);
   }
-  if(! fHist4d2pcXiMinus ) {
-    fHist4d2pcXiMinus = new THnF("fHist4d2pcXiMinus","",4, nBins, expandedAxes);
-    fListHist->Add(fHist4d2pcXiMinus);
+  if(! fHist5d2pcXiMinus ) {
+    fHist5d2pcXiMinus = new THnF("fHist5d2pcXiMinus","",5, nBins, expandedAxes);
+    fListHist->Add(fHist5d2pcXiMinus);
   }
-  if(! fHist4d2pcXiPlus ) {
-    fHist4d2pcXiPlus = new THnF("fHist4d2pcXiPlus","",4, nBins, expandedAxes);
-    fListHist->Add(fHist4d2pcXiPlus);
+  if(! fHist5d2pcXiPlus ) {
+    fHist5d2pcXiPlus = new THnF("fHist5d2pcXiPlus","",5, nBins, expandedAxes);
+    fListHist->Add(fHist5d2pcXiPlus);
   }
-  if(! fHist4d2pcOmegaMinus ) {
-    fHist4d2pcOmegaMinus = new THnF("fHist4d2pcOmegaMinus","",4, nBins, expandedAxes);
-    fListHist->Add(fHist4d2pcOmegaMinus);
+  if(! fHist5d2pcOmegaMinus ) {
+    fHist5d2pcOmegaMinus = new THnF("fHist5d2pcOmegaMinus","",5, nBins, expandedAxes);
+    fListHist->Add(fHist5d2pcOmegaMinus);
   }
-  if(! fHist4d2pcOmegaPlus ) {
-    fHist4d2pcOmegaPlus = new THnF("fHist4d2pcOmegaPlus","",4, nBins, expandedAxes);
-    fListHist->Add(fHist4d2pcOmegaPlus);
+  if(! fHist5d2pcOmegaPlus ) {
+    fHist5d2pcOmegaPlus = new THnF("fHist5d2pcOmegaPlus","",5, nBins, expandedAxes);
+    fListHist->Add(fHist5d2pcOmegaPlus);
   }
   //___________________________________________________
-  if(! fHist4d2pcMixedPions && fkDoEventMixing ) {
-    fHist4d2pcMixedPions = new THnF("fHist4d2pcMixedPions","",4, nBins, expandedAxes);
-    fListHist->Add(fHist4d2pcMixedPions);
+  if(! fHist5d2pcMixedPions && fkDoEventMixing ) {
+    fHist5d2pcMixedPions = new THnF("fHist5d2pcMixedPions","",5, nBins, expandedAxes);
+    fListHist->Add(fHist5d2pcMixedPions);
   }
-  if(! fHist4d2pcMixedK0Short && fkDoEventMixing) {
-    fHist4d2pcMixedK0Short = new THnF("fHist4d2pcMixedK0Short","",4, nBins, expandedAxes);
-    fListHist->Add(fHist4d2pcMixedK0Short);
+  if(! fHist5d2pcMixedK0Short && fkDoEventMixing) {
+    fHist5d2pcMixedK0Short = new THnF("fHist5d2pcMixedK0Short","",5, nBins, expandedAxes);
+    fListHist->Add(fHist5d2pcMixedK0Short);
   }
-  if(! fHist4d2pcMixedLambda && fkDoEventMixing ) {
-    fHist4d2pcMixedLambda = new THnF("fHist4d2pcMixedLambda","",4, nBins, expandedAxes);
-    fListHist->Add(fHist4d2pcMixedLambda);
+  if(! fHist5d2pcMixedLambda && fkDoEventMixing ) {
+    fHist5d2pcMixedLambda = new THnF("fHist5d2pcMixedLambda","",5, nBins, expandedAxes);
+    fListHist->Add(fHist5d2pcMixedLambda);
   }
-  if(! fHist4d2pcMixedAntiLambda && fkDoEventMixing ) {
-    fHist4d2pcMixedAntiLambda = new THnF("fHist4d2pcMixedAntiLambda","",4, nBins, expandedAxes);
-    fListHist->Add(fHist4d2pcMixedAntiLambda);
+  if(! fHist5d2pcMixedAntiLambda && fkDoEventMixing ) {
+    fHist5d2pcMixedAntiLambda = new THnF("fHist5d2pcMixedAntiLambda","",5, nBins, expandedAxes);
+    fListHist->Add(fHist5d2pcMixedAntiLambda);
   }
-  if(! fHist4d2pcMixedXiMinus && fkDoEventMixing ) {
-    fHist4d2pcMixedXiMinus = new THnF("fHist4d2pcMixedXiMinus","",4, nBins, expandedAxes);
-    fListHist->Add(fHist4d2pcMixedXiMinus);
+  if(! fHist5d2pcMixedXiMinus && fkDoEventMixing ) {
+    fHist5d2pcMixedXiMinus = new THnF("fHist5d2pcMixedXiMinus","",5, nBins, expandedAxes);
+    fListHist->Add(fHist5d2pcMixedXiMinus);
   }
-  if(! fHist4d2pcMixedXiPlus && fkDoEventMixing ) {
-    fHist4d2pcMixedXiPlus = new THnF("fHist4d2pcMixedXiPlus","",4, nBins, expandedAxes);
-    fListHist->Add(fHist4d2pcMixedXiPlus);
+  if(! fHist5d2pcMixedXiPlus && fkDoEventMixing ) {
+    fHist5d2pcMixedXiPlus = new THnF("fHist5d2pcMixedXiPlus","",5, nBins, expandedAxes);
+    fListHist->Add(fHist5d2pcMixedXiPlus);
   }
-  if(! fHist4d2pcMixedOmegaMinus && fkDoEventMixing ) {
-    fHist4d2pcMixedOmegaMinus = new THnF("fHist4d2pcMixedOmegaMinus","",4, nBins, expandedAxes);
-    fListHist->Add(fHist4d2pcMixedOmegaMinus);
+  if(! fHist5d2pcMixedOmegaMinus && fkDoEventMixing ) {
+    fHist5d2pcMixedOmegaMinus = new THnF("fHist5d2pcMixedOmegaMinus","",5, nBins, expandedAxes);
+    fListHist->Add(fHist5d2pcMixedOmegaMinus);
   }
-  if(! fHist4d2pcMixedOmegaPlus && fkDoEventMixing ) {
-    fHist4d2pcMixedOmegaPlus = new THnF("fHist4d2pcMixedOmegaPlus","",4, nBins, expandedAxes);
-    fListHist->Add(fHist4d2pcMixedOmegaPlus);
+  if(! fHist5d2pcMixedOmegaPlus && fkDoEventMixing ) {
+    fHist5d2pcMixedOmegaPlus = new THnF("fHist5d2pcMixedOmegaPlus","",5, nBins, expandedAxes);
+    fListHist->Add(fHist5d2pcMixedOmegaPlus);
   }
 
   //List of Histograms: Normal
@@ -672,8 +684,8 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
   associatedIndices.emplace_back(omegaMinusIndices);
   associatedIndices.emplace_back(omegaPlusIndices);
 
-  THnF *h4dSame[8] = {fHist4d2pcPions, fHist4d2pcK0Short, fHist4d2pcLambda, fHist4d2pcAntiLambda, fHist4d2pcXiMinus, fHist4d2pcXiPlus, fHist4d2pcOmegaMinus, fHist4d2pcOmegaPlus};
-  THnF *h4dMixed[8] = {fHist4d2pcMixedPions, fHist4d2pcMixedK0Short, fHist4d2pcMixedLambda, fHist4d2pcMixedAntiLambda, fHist4d2pcMixedXiMinus, fHist4d2pcMixedXiPlus, fHist4d2pcMixedOmegaMinus, fHist4d2pcMixedOmegaPlus};
+  THnF *h5dSame[8] = {fHist5d2pcPions, fHist5d2pcK0Short, fHist5d2pcLambda, fHist5d2pcAntiLambda, fHist5d2pcXiMinus, fHist5d2pcXiPlus, fHist5d2pcOmegaMinus, fHist5d2pcOmegaPlus};
+  THnF *h5dMixed[8] = {fHist5d2pcMixedPions, fHist5d2pcMixedK0Short, fHist5d2pcMixedLambda, fHist5d2pcMixedAntiLambda, fHist5d2pcMixedXiMinus, fHist5d2pcMixedXiPlus, fHist5d2pcMixedOmegaMinus, fHist5d2pcMixedOmegaPlus};
 
   //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   //  Actually correlate stuff with stuff
@@ -683,6 +695,7 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
     
     Double_t geta = lTriggerParticle -> Eta();
     Double_t gphi = lTriggerParticle -> Phi();
+    Double_t gpt = lTriggerParticle -> Pt();
 
     for (Int_t iassocSpecies = 0;  iassocSpecies < associatedIndices.size(); iassocSpecies++){   // associated loop
       for (Int_t iassoc = 0;  iassoc < associatedIndices[iassocSpecies].size(); iassoc++){   // associated loop
@@ -695,7 +708,7 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
         Double_t geta2 = lAssociatedParticle -> Eta();
         Double_t gphi2 = lAssociatedParticle -> Phi();
         Double_t lThisPt    = lAssociatedParticle->Pt();
-        h4dSame[iassocSpecies]->Fill(geta2-geta, ComputeDeltaPhi(gphi,gphi2), lThisPt,lNchForward);
+        h5dSame[iassocSpecies]->Fill(geta2-geta, ComputeDeltaPhi(gphi,gphi2), lThisPt,lNchForward,gpt);
       }
     }
   }
@@ -705,6 +718,7 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
     for (Int_t iTrigger = 0;  iTrigger < TMath::Min(fEMBufferSize[multiplicityIndex], fEMBufferFull[multiplicityIndex]); iTrigger++){   // trigger loop
       Double_t geta = fEMBufferEta[iTrigger][multiplicityIndex]; //from previous events
       Double_t gphi = fEMBufferPhi[iTrigger][multiplicityIndex]; //from previous events
+      Double_t gpt = fEMBufferPtTri[iTrigger][multiplicityIndex]; //from previous events
 
       for (Int_t iassocSpecies = 0;  iassocSpecies < associatedIndices.size(); iassocSpecies++){   // associated loop
         for (Int_t iassoc = 0;  iassoc < associatedIndices[iassocSpecies].size(); iassoc++){   // associated loop
@@ -717,7 +731,7 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
           Double_t geta2 = lAssociatedParticle -> Eta();
           Double_t gphi2 = lAssociatedParticle -> Phi();
           Double_t lThisPt    = lAssociatedParticle->Pt();
-          h4dMixed[iassocSpecies]->Fill(geta2-geta, ComputeDeltaPhi(gphi,gphi2), lThisPt,lNchForward);
+          h5dMixed[iassocSpecies]->Fill(geta2-geta, ComputeDeltaPhi(gphi,gphi2), lThisPt,lNchForward,gpt);
         }
       }
     }
@@ -733,6 +747,7 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
       //Add to buffer
       fEMBufferEta[fEMBufferCycle[multiplicityIndex]][multiplicityIndex] = lThisParticle->Eta();
       fEMBufferPhi[fEMBufferCycle[multiplicityIndex]][multiplicityIndex] = lThisParticle->Phi();
+      fEMBufferPtTri[fEMBufferCycle[multiplicityIndex]][multiplicityIndex] = lThisParticle->Pt();
       fEMBufferCycle[multiplicityIndex]++;
       fEMBufferFull[multiplicityIndex]++;
       if(fEMBufferFull[multiplicityIndex]>fEMBufferSize[multiplicityIndex]) fEMBufferFull[multiplicityIndex] = fEMBufferSize[multiplicityIndex];
