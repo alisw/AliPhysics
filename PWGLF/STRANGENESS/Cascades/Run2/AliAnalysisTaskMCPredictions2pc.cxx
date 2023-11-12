@@ -377,7 +377,7 @@ void AliAnalysisTaskMCPredictions2pc::UserCreateOutputObjects()
   //___________________________________________________
     if(! fHist3dTrigger ) {
     //Histogram Output: Event-by-Event
-    fHist3dTrigger = new TH3D( "fHist3dTrigger", " ",lNEtaBins,edgesEta.data(), fNPtTriBins, edgesPtAsso.data(),fNMultBins,edgesMult.data());
+    fHist3dTrigger = new TH3D( "fHist3dTrigger", " ",lNEtaBins,edgesEta.data(), fNPtTriBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dTrigger);
   }
   //___________________________________________________
