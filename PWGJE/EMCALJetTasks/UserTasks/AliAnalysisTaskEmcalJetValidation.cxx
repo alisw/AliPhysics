@@ -265,7 +265,7 @@ void AliAnalysisTaskEmcalJetValidation::ExecOnceLocal(){
     //All implemented tracks similar to "hybrid tracks" in jetvalidationqa.cxx in O2Physics except for SetRequireGoldenChi2(true)
     fTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
     fTrackCuts->SetName("Global Hybrid tracks, loose DCA");
-    fTrackCuts->SetPtRange(0.15, 1.e15);
+    fTrackCuts->SetPtRange(0.15, 1.e15f);
     fTrackCuts->SetEtaRange(-0.9, +0.9);
     fTrackCuts->SetRequireITSRefit(kTRUE);
     fTrackCuts->SetRequireTPCRefit(kTRUE);
@@ -274,9 +274,8 @@ void AliAnalysisTaskEmcalJetValidation::ExecOnceLocal(){
     fTrackCuts->SetMaxChi2PerClusterTPC(4.0);
     fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
                                           AliESDtrackCuts::kAny);
-
     fTrackCuts->SetMaxChi2PerClusterITS(36.0);
-    fTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
+    //fTrackCuts->SetMaxFractionSharedTPCClusters(1.);
     fTrackCuts->SetMaxDCAToVertexXY(2.4);
     fTrackCuts->SetMaxDCAToVertexZ(3.2);
     fTrackCuts->SetDCAToVertex2D(kFALSE);
@@ -452,7 +451,7 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
     //END OF FILLING TRACK CUTS HISTOS
 
 
-     lVec.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), 0.13957);   //assume that track is pion
+     lVec.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), 0.139);   //assume that track is pion - with same pion as in the O2Physics jetfinder
      fFastJetWrapper->AddInputVector(lVec.Px(), lVec.Py(), lVec.Pz(), lVec.E()); //fill jet constituents
 
 
