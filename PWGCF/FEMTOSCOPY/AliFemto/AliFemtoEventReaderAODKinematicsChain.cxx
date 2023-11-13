@@ -30,6 +30,7 @@
 #include "AliAODMCParticle.h"
 #include "AliAODMCHeader.h"
 #include "AliVertexerTracks.h"
+#include "AliAnalysisUtils.h"
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
@@ -53,7 +54,9 @@ AliFemtoEventReaderAODKinematicsChain::AliFemtoEventReaderAODKinematicsChain():
   fEstEventMult(kGlobalCount),
   fRotateToEventPlane(0),
   fReadOnlyPrimaries(true),
-  fReadPrimariesSecWeakMaterial(false)
+  fReadPrimariesSecWeakMaterial(false),
+  fParticleFromOutOfBunchPileupCollision(false),
+  fPileupInGeneratedEvent(false)
 {
   //constructor with 0 parameters , look at default settings
 }
@@ -72,7 +75,9 @@ AliFemtoEventReaderAODKinematicsChain::AliFemtoEventReaderAODKinematicsChain(con
   fEstEventMult(aReader.fEstEventMult),
   fRotateToEventPlane(aReader.fRotateToEventPlane),
   fReadOnlyPrimaries(aReader.fReadOnlyPrimaries),
-  fReadPrimariesSecWeakMaterial(aReader.fReadPrimariesSecWeakMaterial)
+  fReadPrimariesSecWeakMaterial(aReader.fReadPrimariesSecWeakMaterial),
+  fParticleFromOutOfBunchPileupCollision(aReader.fParticleFromOutOfBunchPileupCollision),
+  fPileupInGeneratedEvent(aReader.fPileupInGeneratedEvent)
 {
   // Copy constructor
 }
@@ -99,6 +104,8 @@ AliFemtoEventReaderAODKinematicsChain& AliFemtoEventReaderAODKinematicsChain::op
   fRotateToEventPlane = aReader.fRotateToEventPlane;
   fReadOnlyPrimaries = aReader.fReadOnlyPrimaries;
   fReadPrimariesSecWeakMaterial = aReader.fReadPrimariesSecWeakMaterial;
+  fParticleFromOutOfBunchPileupCollision = aReader.fParticleFromOutOfBunchPileupCollision;
+  fPileupInGeneratedEvent = aReader.fPileupInGeneratedEvent;
   return *this;
 }
 //__________________
@@ -131,6 +138,18 @@ void AliFemtoEventReaderAODKinematicsChain::ReadPrimariesSecWeakMaterial(bool pr
 {
   fReadPrimariesSecWeakMaterial = primaries;
 }
+
+void AliFemtoEventReaderAODKinematicsChain::SetParticleFromOutOfBunchPileupCollision(bool PileUpTrack)
+{
+   fParticleFromOutOfBunchPileupCollision = PileUpTrack;
+}
+
+void AliFemtoEventReaderAODKinematicsChain::SetPileupInGeneratedEvent(bool PileUpEvent)
+{
+   fPileupInGeneratedEvent = PileUpEvent;
+}
+
+
 
 //__________________
 AliFemtoEvent* AliFemtoEventReaderAODKinematicsChain::ReturnHbtEvent()
@@ -192,16 +211,28 @@ AliFemtoEvent* AliFemtoEventReaderAODKinematicsChain::ReturnHbtEvent()
   if (!arrayMC) {
     cout << "AOD MC information requested, but no particle array found!" << endl;
   }
-
+ 
+  if(fPileupInGeneratedEvent){
+    Bool_t isPileupInGeneratedEvent = kFALSE;
+    isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcH,"Hijing");
+    if(isPileupInGeneratedEvent) return 0;
+  }
+  
   // loop over MC stack
-  for (Int_t ipart = 0; ipart < arrayMC->GetEntries(); ipart++) {
+  for (Int_t ipart = 0; ipart < arrayMC->GetEntriesFast(); ipart++) {
 
     AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(ipart);
     if (!MCtrk) continue;
-
+ 
+    if(fParticleFromOutOfBunchPileupCollision){
+     bool TrackoutOfBunchPileupCollision = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ipart, mcH, arrayMC);
+     if(TrackoutOfBunchPileupCollision) continue;
+    } 
+ 
     if (fReadOnlyPrimaries) {
       if(!(MCtrk->IsPhysicalPrimary())) continue;
     }
+    
     else if(fReadPrimariesSecWeakMaterial) {
       if(!(MCtrk->IsPhysicalPrimary() || MCtrk->IsSecondaryFromWeakDecay() || MCtrk->IsSecondaryFromMaterial())) {
         continue;
@@ -242,14 +273,17 @@ AliFemtoEvent* AliFemtoEventReaderAODKinematicsChain::ReturnHbtEvent()
       kinepid[pid_iter]=0;
     Int_t pdgcode = MCtrk->GetPdgCode();
     //proton
-    if(pdgcode==2212 || pdgcode==-2212)
+    if(pdgcode==2212 || pdgcode==-2212){
       kinepid[4]=1000;
+    }
     //kaon
-    else if(pdgcode==321 || pdgcode==-321 )
+    else if(pdgcode==321 || pdgcode==-321 ){
       kinepid[3]=1000;
+    }
     //pion
-    else if( pdgcode==211 || pdgcode==-211)
+    else if( pdgcode==211 || pdgcode==-211){
       kinepid[2]=1000;
+    }
     //electron
     else if(pdgcode==11 || pdgcode==-11)
       kinepid[0]=1000;
@@ -375,6 +409,7 @@ AliFemtoEvent* AliFemtoEventReaderAODKinematicsChain::ReturnHbtEvent()
 
   return hbtEvent;
 }
+
 
 
 //___________________
