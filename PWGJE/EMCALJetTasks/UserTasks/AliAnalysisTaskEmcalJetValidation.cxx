@@ -265,7 +265,7 @@ void AliAnalysisTaskEmcalJetValidation::ExecOnceLocal(){
     //All implemented tracks similar to "hybrid tracks" in jetvalidationqa.cxx in O2Physics except for SetRequireGoldenChi2(true)
     fTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
     fTrackCuts->SetName("Global Hybrid tracks, loose DCA");
-    fTrackCuts->SetPtRange(0.15, 1.e15f);
+    fTrackCuts->SetPtRange(0.15, 1.e15);
     fTrackCuts->SetEtaRange(-0.9, +0.9);
     fTrackCuts->SetRequireITSRefit(kTRUE);
     fTrackCuts->SetRequireTPCRefit(kTRUE);
