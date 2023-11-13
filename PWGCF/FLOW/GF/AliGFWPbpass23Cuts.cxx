@@ -214,11 +214,7 @@ void AliGFWPbpass23Cuts::SetupTrackCuts(Int_t sysflag) {
     break;
   case 9:
     fRequiresExtraWeight=kTRUE;
-    fFilterBit=768;
-    fDCAzCut=10;//Arbitrary large value to disable the cut -> implemented as 2.4 in the AliESDtrackCuts (2D cut)
-    fDCAxyCut=7;
-    fTPCChi2PerCluster=2.5;
-    fPtDepXYCut->SetParameter(0,fDCAxyCut);
+    fTPCChi2PerCluster=2.;
     break;
   case 10:
     fRequiresExtraWeight=kTRUE;
