@@ -34,33 +34,30 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t* option);
   virtual void Terminate(Option_t* option);
   void AnalyzeRecEvent(int& rec_nch, int& rec_nch_neg_eta, int& rec_nch_pos_eta,
-                       std::vector<float>& vec_rec_pt,
                        std::vector<float>& vec_rec_pt_neg_eta,
                        std::vector<float>& vec_rec_pt_pos_eta) const;
   void DCAxyDistributions() const;
   void TrackingEfficiency() const;
   void AnalyzeMCevent(int& true_nch, int& true_nch_v0, int& true_nch_neg_eta,
-                      int& true_nch_pos_eta, std::vector<float>& vec_true_pt,
+                      int& true_nch_pos_eta,
                       std::vector<float>& vec_true_pt_neg_eta,
                       std::vector<float>& vec_true_pt_pos_eta) const;
   void DetectorResponse(const int& true_nch, const int& rec_nch) const;
   void RecMultiplicityDistributions(
       const int& rec_nch, const int& rec_nch_neg_eta,
-      const int& rec_nch_pos_eta, const std::vector<float>& vec_rec_pt,
-      const std::vector<float>& vec_rec_pt_neg_eta,
+      const int& rec_nch_pos_eta, const std::vector<float>& vec_rec_pt_neg_eta,
       const std::vector<float>& vec_rec_pt_pos_eta) const;
-  void TrueMultiplicityDistributions(
-      const int& true_nch, const int& true_nch_v0,
-      const std::vector<float>& vec_true_pt) const;
+  // void TrueMultiplicityDistributions(
+  //     const int& true_nch, const int& true_nch_v0,
+  //     const std::vector<float>& vec_true_pt) const;
   void TrueMultiplicityDistributions(
       const int& true_nch, const int& true_nch_v0, const int& true_nch_neg_eta,
-      const int& true_nch_pos_eta, const std::vector<float>& vec_true_pt,
+      const int& true_nch_pos_eta,
       const std::vector<float>& vec_true_pt_neg_eta,
       const std::vector<float>& vec_true_pt_pos_eta) const;
   void MultiplicityDistributions(
       const int& rec_nch, const int& rec_nch_neg_eta,
-      const int& rec_nch_pos_eta, const std::vector<float>& vec_rec_pt,
-      const std::vector<float>& vec_rec_pt_neg_eta,
+      const int& rec_nch_pos_eta, const std::vector<float>& vec_rec_pt_neg_eta,
       const std::vector<float>& vec_rec_pt_pos_eta) const;
   void GetCalibratedV0Amplitude();
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
@@ -77,7 +74,11 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
     fTrigger = offlineTriggerMask;
   }
   bool HasRecVertex();
-  void ZDC(const int& rec_nch, const std::vector<float>& vec_rec_pt) const;
+  void ZDC(const int& rec_nch, const int& rec_nch_neg_eta,
+           const int& rec_nch_pos_eta,
+           const std::vector<float>& vec_rec_pt_neg_eta,
+           const std::vector<float>& vec_rec_pt_pos_eta) const;
+  void GetSPDMultiplicity();
 
  protected:
  private:
@@ -102,6 +103,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   double ftrackmult08;
   double fv0mpercentile;
   float fv0mamplitude;
+  int fTracklets;
   float fdcaxy;
   float fdcaz;
   AliMultSelection* fMultSelection;
@@ -115,10 +117,10 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TProfile* pPtEtaNegvsNchEtaPos;
   TProfile* pPtEtaPosvsNchEtaNeg;
   TProfile* pPtvsV0MAmp;
-  TH3D* hPtvsNchvsV0MAmp;
+  TH2D* hPtvsV0MAmp;
   TH2D* hNchEtaPosvsNchEtaNeg;
-  TH3D* hPtEtaNegvsNchEtaPosvsV0MAmp;
-  TH3D* hPtEtaPosvsNchEtaNegvsV0MAmp;
+  TH2D* hPtEtaNegvsNchEtaPos;
+  TH2D* hPtEtaPosvsNchEtaNeg;
   TH1F* hTrueVtxZ;
   TH3F* hTrueNchvsTrueV0MAmp;
   TH3F* hRecNchvsRecV0MAmp;
@@ -127,12 +129,12 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2D* hPtRecPrivsV0M;
   TH3D* hRecPtvsRecNchvsRecV0MAmp;
   TH2D* hNchEtaPosvsNchEtaNeg_MCRec;
-  TH3D* hPtEtaNegvsNchEtaPosvsV0MAmp_MCRec;
-  TH3D* hPtEtaPosvsNchEtaNegvsV0MAmp_MCRec;
+  TH2D* hPtEtaNegvsNchEtaPos_MCRec;
+  TH2D* hPtEtaPosvsNchEtaNeg_MCRec;
   TH3D* hTruePtvsTrueNchvsTrueV0MAmp;
   TH2D* hNchEtaPosvsNchEtaNeg_MCTrue;
-  TH3D* hPtEtaNegvsNchEtaPosvsV0MAmp_MCTrue;
-  TH3D* hPtEtaPosvsNchEtaNegvsV0MAmp_MCTrue;
+  TH2D* hPtEtaNegvsNchEtaPos_MCTrue;
+  TH2D* hPtEtaPosvsNchEtaNeg_MCTrue;
   TH2F* hDCAxyPri[1];
   TH2F* hDCAxyWeDe[1];
   TH2F* hDCAxyMaIn[1];
@@ -157,6 +159,10 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH3D* hPtvsNchvsZAHM;
   TH3D* hPtvsNchvsZCHM;
   TH3D* hPtvsNchvsZNHM;
+  TH2D* hPhiEtaSPD;
+  TH2D* hVtxZvsTracklets;
+  TH2D* hTrackletsvsV0MAmp;
+  TH2D* hPtvsTracklets;
   TProfile* pPtvsZA;
   TProfile* pPtvsZC;
   TProfile* pPtvsZN;
