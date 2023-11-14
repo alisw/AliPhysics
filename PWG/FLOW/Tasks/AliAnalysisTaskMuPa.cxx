@@ -1439,8 +1439,8 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Multiplicities:
- fSelectedTracksCuts[0] = 0;
- fSelectedTracksCuts[1] = 1e6;
+ fSelectedTracksCuts[0] = 0; // TBI 20231114 re-think if this shall be moved somewhere else
+ fSelectedTracksCuts[1] = 1e6; // TBI 20231114 re-think if this shall be moved somewhere else
  for(Int_t m=0;m<gCentralMultiplicity;m++)
  { 
   for(Int_t ba=0;ba<2;ba++) // before/after cuts
@@ -1454,8 +1454,8 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlEventHistograms()
  { 
   fCentralityHist[ba] = NULL;
  } // for(Int_t ba=0;ba<2;ba++) // before/after cuts
- fCentralityCuts[0] = 0.;
- fCentralityCuts[1] = 100.;
+ fCentralityCuts[0] = 0.; // TBI 20231114 re-think if this shall be moved somewhere else
+ fCentralityCuts[1] = 100.; // TBI 20231114 re-think if this shall be moved somewhere else, and so on for other default cuts repeated in this function
  for(Int_t ce1=0;ce1<gCentralityEstimators;ce1++) // first centrality estimator
  { 
   for(Int_t ce2=0;ce2<gCentralityEstimators;ce2++) // second centrality estimator
@@ -2612,7 +2612,7 @@ void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
  ftaNestedLoops[0] = new TArrayD(iMaxSize); // ebe container for azimuthal angles 
  ftaNestedLoops[1] = new TArrayD(iMaxSize); // ebe container for particle weights (product of all)  
 
- if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
+ if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]) 
  {
   if(!fCorrelationsPro[0][0][AFO_PT]){cout<<__LINE__<<endl;exit(1);} // it is natural to book first fCorrelationsPro, therefore I will get nBins from it, instead of overshooting with gMaxNoBinsKine
   for(Int_t b=0;b<fCorrelationsPro[0][0][AFO_PT]->GetNbinsX();b++)
@@ -5859,114 +5859,6 @@ void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations()
   } // if(fCorrelationsPro[0][0][v] && fNestedLoopsPro[0][0][v])
  } // for(Int_t v=0;v<eAsFunctionOf_N;v++) // variable, see content of enum eAsFunctionOf
 
-
-
-  // decide what is booked, then later valid pointer to fCorrelationsPro[k][n][v] is used as a boolean, in the standard wa
-
-
-
-
-/*
-
-
- // a) Integrated comparison:
- if(fCorrelationsPro[0][0][AFO_INTEGRATED] && fNestedLoopsPro[0][0][AFO_INTEGRATED])
- {
-  nBinsQV = fCorrelationsPro[0][0][AFO_INTEGRATED]->GetNbinsX();
-  nBinsNL = fNestedLoopsPro[0][0][AFO_INTEGRATED]->GetNbinsX();
-  if(nBinsQV != nBinsNL){cout<<__LINE__<<endl; exit(1);}
-  cout<<endl;
-  cout<<"   [0] : integrated"<<endl;
-  for(Int_t o=0;o<4;o++)
-  {
-   cout<<Form("   ==== <<%d>>-particle correlations ====",2*(o+1))<<endl;
-   for(Int_t h=0;h<gMaxHarmonic;h++)
-   {
-    for(Int_t b=1;b<=nBinsQV;b++)
-    {
-     if(fCorrelationsPro[o][h][0]){valueQV = fCorrelationsPro[o][h][0]->GetBinContent(b);}
-     if(fNestedLoopsPro[o][h][0]){valueNL = fNestedLoopsPro[o][h][0]->GetBinContent(b);}
-     if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
-     {
-      cout<<Form("   h=%d, Q-vectors:    ",h+1)<<valueQV<<endl; 
-      cout<<Form("   h=%d, Nested loops: ",h+1)<<valueNL<<endl; 
-      if(TMath::Abs(valueQV-valueNL)>1.e-5)
-      {          
-       cout<<Form("[%d][%d][%d]",o,h,0)<<endl; cout<<__LINE__<<endl; exit(1);
-      }
-     } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
-    } // for(Int_t b=1;b<=nBinsQV;b++) 
-   } // for(Int_t h=0;h<gMaxHarmonic;h++)
-   cout<<endl;
-  } // for(Int_t o=0;o<4;o++) 
- } // if(fCorrelationsPro[0][0][AFO_INTEGRATED] && fNestedLoopsPro[0][0][AFO_INTEGRATED])
- 
-
- cout<<endl;
-
- // b) Comparison vs. multiplicity:
- nBinsQV = fCorrelationsPro[0][0][1]->GetNbinsX();
- nBinsNL = fNestedLoopsPro[0][0][1]->GetNbinsX();
- if(nBinsQV != nBinsNL){cout<<__LINE__<<endl; exit(1);}
- cout<<endl;
- cout<<"   [1] : vs. multiplicity"<<endl;
- for(Int_t o=0;o<4;o++)
- {
-  cout<<Form("   ==== <<%d>>-particle correlations ====",2*(o+1))<<endl;
-  for(Int_t h=0;h<gMaxHarmonic;h++)
-  {
-   for(Int_t b=1;b<=nBinsQV;b++)
-   {
-    if(fCorrelationsPro[o][h][1]){valueQV = fCorrelationsPro[o][h][1]->GetBinContent(b);}
-    if(fNestedLoopsPro[o][h][1]){valueNL = fNestedLoopsPro[o][h][1]->GetBinContent(b);}
-    if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
-    {
-     cout<<Form("   h=%d, b=%d, Q-vectors:    ",h+1,b)<<valueQV<<endl; 
-     cout<<Form("   h=%d, b=%d, Nested loops: ",h+1,b)<<valueNL<<endl; 
-     if(TMath::Abs(valueQV-valueNL)>1.e-5)
-     {          
-      cout<<Form("[%d][%d][%d]",o,h,1)<<endl; cout<<__LINE__<<endl; exit(1);
-     }
-    } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
-   } // for(Int_t b=1;b<=nBinsQV;b++) 
-  } // for(Int_t h=0;h<gMaxHarmonic;h++)
-  cout<<endl;
- } // for(Int_t o=0;o<4;o++) 
-
- cout<<endl;
-
- // c) Comparison vs. centrality:
- nBinsQV = fCorrelationsPro[0][0][2]->GetNbinsX();
- nBinsNL = fNestedLoopsPro[0][0][2]->GetNbinsX();
- if(nBinsQV != nBinsNL){cout<<__LINE__<<endl; exit(1);}
- cout<<endl;
- cout<<"   [2] : vs. centrality"<<endl;
- for(Int_t o=0;o<4;o++)
- {
-  cout<<Form("   ==== <<%d>>-particle correlations ====",2*(o+1))<<endl;
-  for(Int_t h=0;h<gMaxHarmonic;h++)
-  {
-   for(Int_t b=1;b<=nBinsQV;b++)
-   {
-    if(fCorrelationsPro[o][h][2]){valueQV = fCorrelationsPro[o][h][2]->GetBinContent(b);}
-    if(fNestedLoopsPro[o][h][2]){valueNL = fNestedLoopsPro[o][h][2]->GetBinContent(b);}
-    if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
-    {
-     cout<<Form("   h=%d, b=%d, Q-vectors:    ",h+1,b)<<valueQV<<endl; 
-     cout<<Form("   h=%d, b=%d, Nested loops: ",h+1,b)<<valueNL<<endl; 
-     if(TMath::Abs(valueQV-valueNL)>1.e-5)
-     {          
-      cout<<Form("[%d][%d][%d]",o,h,2)<<endl; cout<<__LINE__<<endl; exit(1);
-     }
-    } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
-   } // for(Int_t b=1;b<=nBinsQV;b++) 
-  } // for(Int_t h=0;h<gMaxHarmonic;h++)
-  cout<<endl;
- } // for(Int_t o=0;o<4;o++) 
-
-*/
-
-
 } // void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations(void)
 
 //=======================================================================================================================
@@ -5999,7 +5891,6 @@ Double_t AliAnalysisTaskMuPa::Weight(const Double_t &value, const char *variable
 
 } // AliAnalysisTaskMuPa::Weight(const Double_t &value, const char *variable) // value, [phi,pt,eta]
 
-
 //=======================================================================================================================
 
 Double_t AliAnalysisTaskMuPa::DiffWeight(const Double_t &valueY, const Double_t &valueX, eDiffWeights dw) 
@@ -6027,17 +5918,6 @@ Double_t AliAnalysisTaskMuPa::DiffWeight(const Double_t &valueY, const Double_t 
   // Since I set binX = 1, intentionally I skip the first element in the loop, and start from e = 1, instead of e = 0. 
   if(valueX<fKineDependenceBins[dw]->At(e)) { binX = e; break; } // gotcha
  }
-
-// if(!(binX == fTest0Pro[(Int_t)dw == (Int_t)PHIPT ? AFO_PT : AFO_ETA]->FindBin(valueX)))
-// {
-//  cout<<__LINE__<<endl; // TBI 20231026 remove eventually 
-// } 
-
-
-// cout<<fDiffWeightsHist[dw][binX-1]->GetTitle()<<endl; 
-// cout<<valueX<<endl;
-// sleep(1);
-
 
  // *) Finally, determine weight for y(x):
  Int_t bin = fDiffWeightsHist[dw][binX-1]->FindBin(valueY); // binX - 1, because I histogram for first bin in X is labeled with "[0]", etc. 
@@ -7091,6 +6971,9 @@ void AliAnalysisTaskMuPa::InternalValidation()
 {
  // Internal validation against theoretical values in on-the-fly study for all implemented correlators. 
 
+ // To do: 
+ // 20231114 Do I need to add support for diff. weights also here?
+ 
  // a) Fourier like p.d.f. for azimuthal angles and flow amplitudes;
  // b) Loop over on-the-fly events.
  //    b0) Reset ebe quantities;
@@ -7659,7 +7542,7 @@ void AliAnalysisTaskMuPa::DefaultCuts()
  fTrigger = "kMB"; 
  fUseTrigger = kTRUE;
 
- // task->SetSelectedTracksCuts(12,3000);
+ // task->SetSelectedTracksCuts(12,3000); // applies both to Q (all particles in an event) and q (in this case, to all particles in a diff. bin of interest)
  fSelectedTracksCuts[0] = 12;
  fSelectedTracksCuts[1] = 3000;
  fUseSelectedTracksCuts = kTRUE;
@@ -8039,6 +7922,12 @@ void AliAnalysisTaskMuPa::CalculateKineCorrelations(const char* kc)
  // Uniform loop over bin for all kine variables:
  for(Int_t b=0;b<nBins;b++)
  {
+  // Ensures that in each bin of interest, I have the same cut on number of particles, like in integrated analysis:  
+  if(fUseSelectedTracksCuts)
+  {
+   if(fqVectorEntries[qv][b] < fSelectedTracksCuts[0]){continue;}
+   if(fqVectorEntries[qv][b] > fSelectedTracksCuts[1]){continue;}
+  }
 
   // Fill the generic Q-vectors for this bin:
   for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++) 
@@ -8216,6 +8105,13 @@ void AliAnalysisTaskMuPa::CalculateKineTest0(const char* kc)
  // Uniform loop over bin for all kine variables:
  for(Int_t b=0;b<nBins;b++)
  {
+  // Ensures that in each bin of interest, I have the same cut on number of particles, like in integrated analysis:
+  if(fUseSelectedTracksCuts)
+  {
+   if(fqVectorEntries[qv][b] < fSelectedTracksCuts[0]){continue;}
+   if(fqVectorEntries[qv][b] > fSelectedTracksCuts[1]){continue;}
+  }
+
   // Re-initialize Q-vector to be q-vector in this bin:
   // After that, I can call all standard Q-vector functions again:
   for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++) 
