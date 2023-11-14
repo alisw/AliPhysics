@@ -7484,14 +7484,14 @@ void AliAnalysisTaskMuPa::DefaultBinning()
  fParticleBins[ITSNcls][2] = 1000.;
 
  // task->SetParticleBins("ITSChi2perNDF",100,0.,1.); 
- fParticleBins[ITSChi2perNDF][0] = 100;
+ fParticleBins[ITSChi2perNDF][0] = 1000;
  fParticleBins[ITSChi2perNDF][1] = 0.;
- fParticleBins[ITSChi2perNDF][2] = 1.;
+ fParticleBins[ITSChi2perNDF][2] = 100.;
 
  // task->SetParticleBins("TPCNclsF",100,0.,1.); 
- fParticleBins[TPCNclsF][0] = 100;
+ fParticleBins[TPCNclsF][0] = 200;
  fParticleBins[TPCNclsF][1] = 0.;
- fParticleBins[TPCNclsF][2] = 1.;
+ fParticleBins[TPCNclsF][2] = 200.;
 
  // task->SetParticleBins("HasPointOnITSLayer",6,0.,6.); 
  fParticleBins[HasPointOnITSLayer][0] = 6;
