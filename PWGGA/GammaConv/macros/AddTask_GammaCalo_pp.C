@@ -2401,6 +2401,12 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411790109fei02v0000","0s631031000000d0"); // INT7 energy 0.2 GeV
     cuts.AddCutCalo("00010113","411790109feg02v0000","0s631031000000d0"); // INT7 energy 0.3 GeV
     cuts.AddCutCalo("00010113","411790109feh02v0000","0s631031000000d0"); // INT7 energy 0.4 GeV
+  } else if (trainConfig == 1926){  // pp 13 TeV variations: conversion rejection
+    cuts.AddCutCalo("00010113","411790109fe302v0a00","0s631031000000d0"); // INT7 with conversion rejection
+  } else if (trainConfig == 1927){  // pp 13 TeV variations: conversion rejection
+    cuts.AddCutCalo("00010113","411790109fe302v0b00","0s631031000000d0"); // INT7 with conversion rejection, min angle 0.02
+    cuts.AddCutCalo("00010113","411790109fe302v0c00","0s631031000000d0"); // INT7 with conversion rejection, min angle 0.05
+    cuts.AddCutCalo("00010113","411790109fe302v0d00","0s631031000000d0"); // INT7 with conversion rejection, min angle 0.1
 
 
   //-----------  EG2 std cut
@@ -2469,6 +2475,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008e113","411790109fe3l2v0000","0s631031000000d0"); // EG2 PCMEDC pi0 tagging for gamma clus, pol2 fit
   } else if (trainConfig == 1954){  // pp 13 TeV variations: cell track matching
     cuts.AddCutCalo("0008e113","4117901090e302v0000","0s631031000000d0"); // EG2 no TM
+  } else if (trainConfig == 1956){  // pp 13 TeV variations: conversion rejection
+    cuts.AddCutCalo("0008e113","411790109fe302v0a00","0s631031000000d0"); // EG2 with conversion rejection
 
 
   //-----------  EG1 std cut
@@ -2537,6 +2545,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008d113","411790109fe3l2v0000","0s631031000000d0"); // EG1 PCMEDC pi0 tagging for gamma clus, pol2 fit
   } else if (trainConfig == 1984){  // pp 13 TeV variations: cell track matching
     cuts.AddCutCalo("0008d113","4117901090e302v0000","0s631031000000d0"); // EG1 no TM
+  } else if (trainConfig == 1986){  // pp 13 TeV variations: conversion rejection
+    cuts.AddCutCalo("0008d113","411790109fe302v0a00","0s631031000000d0"); // EG1 with conversion rejection
 
   } else if (trainConfig == 1990){ // only track matched clusters
     cuts.AddCutCalo("00010113","411790109qe3n2v0000","0s631031000000d0"); // with NCell effi
