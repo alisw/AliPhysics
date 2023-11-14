@@ -33,33 +33,11 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t* option);
   virtual void Terminate(Option_t* option);
-  void AnalyzeRecEvent(int& rec_nch, int& rec_nch_neg_eta, int& rec_nch_pos_eta,
-                       std::vector<float>& vec_rec_pt_neg_eta,
-                       std::vector<float>& vec_rec_pt_pos_eta) const;
   void DCAxyDistributions() const;
-  void TrackingEfficiency() const;
-  void AnalyzeMCevent(int& true_nch, int& true_nch_v0, int& true_nch_neg_eta,
-                      int& true_nch_pos_eta,
-                      std::vector<float>& vec_true_pt_neg_eta,
-                      std::vector<float>& vec_true_pt_pos_eta) const;
-  void DetectorResponse(const int& true_nch, const int& rec_nch) const;
-  void RecMultiplicityDistributions(
-      const int& rec_nch, const int& rec_nch_neg_eta,
-      const int& rec_nch_pos_eta, const std::vector<float>& vec_rec_pt_neg_eta,
-      const std::vector<float>& vec_rec_pt_pos_eta) const;
-  // void TrueMultiplicityDistributions(
-  //     const int& true_nch, const int& true_nch_v0,
-  //     const std::vector<float>& vec_true_pt) const;
-  void TrueMultiplicityDistributions(
-      const int& true_nch, const int& true_nch_v0, const int& true_nch_neg_eta,
-      const int& true_nch_pos_eta,
-      const std::vector<float>& vec_true_pt_neg_eta,
-      const std::vector<float>& vec_true_pt_pos_eta) const;
-  void MultiplicityDistributions(
-      const int& rec_nch, const int& rec_nch_neg_eta,
-      const int& rec_nch_pos_eta, const std::vector<float>& vec_rec_pt_neg_eta,
-      const std::vector<float>& vec_rec_pt_pos_eta) const;
+  void GetSPDMultiplicity();
+  void MultiplicityDistributions();
   void GetCalibratedV0Amplitude();
+  void GetZDCCentrality();
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetHMCut(double HMcut) { fHMCut = HMcut; }      // Set V0M max value
@@ -70,15 +48,8 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void SetEtaMaxCut(const double& etamax) { fEtaMax = etamax; }
   void SetPtMin(const double& ptmin) { fPtMin = ptmin; }
   void SetTrackCuts(bool TPConly = true) { fIsTPConly = TPConly; }
-  void SetTrigger(UInt_t offlineTriggerMask = AliVEvent::kINT7) {
-    fTrigger = offlineTriggerMask;
-  }
+  void SetTrigger(UInt_t trigger = AliVEvent::kINT7) { fTrigger = trigger; }
   bool HasRecVertex();
-  void ZDC(const int& rec_nch, const int& rec_nch_neg_eta,
-           const int& rec_nch_pos_eta,
-           const std::vector<float>& vec_rec_pt_neg_eta,
-           const std::vector<float>& vec_rec_pt_pos_eta) const;
-  void GetSPDMultiplicity();
 
  protected:
  private:
@@ -103,15 +74,19 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   double ftrackmult08;
   double fv0mpercentile;
   float fv0mamplitude;
-  int fTracklets;
+  int fTracklets14;
+  int fTracklets10;
+  double fza;
+  double fzc;
+  double fzn;
   float fdcaxy;
   float fdcaz;
   AliMultSelection* fMultSelection;
-  TH2D* hNchvsV0M;
-  TH2D* hNchvsV0MAmp;
-  TH2D* hV0MvsV0MAmp;
+  TH2F* hNchvsV0M;
+  TH2F* hNchvsV0MAmp;
+  TH2F* hV0MvsV0MAmp;
   TProfile* pV0MAmpChannel;
-  TH1D* hV0MAmplitude;
+  TH1F* hV0MAmplitude;
   TH1F* hV0Mmult;
   TProfile* pPtvsNch;
   TProfile* pPtEtaNegvsNchEtaPos;
@@ -121,48 +96,22 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2D* hNchEtaPosvsNchEtaNeg;
   TH2D* hPtEtaNegvsNchEtaPos;
   TH2D* hPtEtaPosvsNchEtaNeg;
-  TH1F* hTrueVtxZ;
-  TH3F* hTrueNchvsTrueV0MAmp;
-  TH3F* hRecNchvsRecV0MAmp;
-  TH2D* hNchResponse;
-  TH2D* hPtTruePrivsV0M;
-  TH2D* hPtRecPrivsV0M;
-  TH3D* hRecPtvsRecNchvsRecV0MAmp;
-  TH2D* hNchEtaPosvsNchEtaNeg_MCRec;
-  TH2D* hPtEtaNegvsNchEtaPos_MCRec;
-  TH2D* hPtEtaPosvsNchEtaNeg_MCRec;
-  TH3D* hTruePtvsTrueNchvsTrueV0MAmp;
-  TH2D* hNchEtaPosvsNchEtaNeg_MCTrue;
-  TH2D* hPtEtaNegvsNchEtaPos_MCTrue;
-  TH2D* hPtEtaPosvsNchEtaNeg_MCTrue;
-  TH2F* hDCAxyPri[1];
-  TH2F* hDCAxyWeDe[1];
-  TH2F* hDCAxyMaIn[1];
   TH2F* hDCAxyData[1];
-  TH2F* hAllpTRec;
-  TH2F* hAllpTTrue;
-  TH2F* hPripTRec;
-  TH2F* hPripTTrue;
-  TH2F* hTrueNchHM;
-  TH2F* hTrueNchHMWithTrigger;
-  TH2F* hTrueNchHMWithEventCuts;
-  TH2F* hTrueNchHMWithVtxSel;
-  TH2D* hZNCvsZNA;
-  TH2D* hZPCvsZPA;
-  TH2D* hZEM;
-  TH2D* hZNvsNch;
-  TH2D* hZAvsNchHM;
-  TH2D* hZCvsNchHM;
-  TH2D* hZNvsNchHM;
-  TH2D* hZNvsV0MAmp;
-  TH2D* hZNvsV0MAmpHM;
-  TH3D* hPtvsNchvsZAHM;
-  TH3D* hPtvsNchvsZCHM;
-  TH3D* hPtvsNchvsZNHM;
-  TH2D* hPhiEtaSPD;
-  TH2D* hVtxZvsTracklets;
-  TH2D* hTrackletsvsV0MAmp;
-  TH2D* hPtvsTracklets;
+  TH2F* hZAvsNchHM;
+  TH2F* hZCvsNchHM;
+  TH2F* hZNvsNchHM;
+  TH2F* hZNvsV0MAmpHM;
+  TH2D* hPtvsZAHM;
+  TH2D* hPtvsZCHM;
+  TH2D* hPtvsZNHM;
+  TH2F* hPhiEtaSPD;
+  TH2F* hVtxZvsTracklets;
+  TH2F* hTrackletsvsV0MAmp14;
+  TH2F* hTrackletsvsV0MAmp10;
+  TH2D* hPtvsTracklets14;
+  TH2D* hPtvsTracklets10;
+  TProfile* pPtvsTracklets14;
+  TProfile* pPtvsTracklets10;
   TProfile* pPtvsZA;
   TProfile* pPtvsZC;
   TProfile* pPtvsZN;
