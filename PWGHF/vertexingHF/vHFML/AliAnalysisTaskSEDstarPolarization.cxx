@@ -1234,7 +1234,7 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparsesFor2DFit()
     double xmaxRecoCosDeltaPhiStar[knVarForSparseRecoFor2DFit] = {massMax, ptLims[nPtBinsCutObj], 1., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
 
     fnSparseRecoFor2DFit[0] = new THnSparseF("fnSparseRecoFor2DFit_Cos2ThetaStar", "Reco sparse cos2t*", knVarForSparseRecoFor2DFit, nBinsCosnThetaStar, xminRecoCosnThetaStar, xmaxRecoCosnThetaStar);
-    fnSparseRecoFor2DFit[1] = new THnSparseF("fnSparseRecoFor2DFit_Cos4ThetaStar", "Reco sparse cos2t*", knVarForSparseRecoFor2DFit, nBinsCosnThetaStar, xminRecoCosnThetaStar, xmaxRecoCosnThetaStar);
+    fnSparseRecoFor2DFit[1] = new THnSparseF("fnSparseRecoFor2DFit_Cos4ThetaStar", "Reco sparse cos4t*", knVarForSparseRecoFor2DFit, nBinsCosnThetaStar, xminRecoCosnThetaStar, xmaxRecoCosnThetaStar);
     fnSparseRecoFor2DFit[2] = new THnSparseF("fnSparseRecoFor2DFit_Cos2DeltaPhiStar", "Reco sparse cos2phi*", knVarForSparseRecoFor2DFit, nBinsCosDeltaPhiStar, xminRecoCosDeltaPhiStar, xmaxRecoCosDeltaPhiStar);
     for (int iHist = 0; iHist < 3; iHist++)
     {
