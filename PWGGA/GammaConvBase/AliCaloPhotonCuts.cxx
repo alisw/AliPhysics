@@ -192,6 +192,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fMinM20(0),
   fUseM20(0),
   fMaxMGGRecConv(0),
+  fConvRejMinAngle(0),
+  fConvRejMaxOpenAngle(0.),
   fUseRecConv(0),
   fMaxDispersion(1000),
   fUseDispersion(0),
@@ -332,6 +334,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistElectronClusterNCellsVsE(NULL),
   fHistInvMassDiCluster(NULL),
   fHistInvMassConvFlagging(NULL),
+  fHistDiClusterAngle(NULL),
   fNMaxDCalModules(8),
   fgkDCALCols(32),
   fIsAcceptedForBasic(kFALSE)
@@ -442,6 +445,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fMinM20(ref.fMinM20),
   fUseM20(ref.fUseM20),
   fMaxMGGRecConv(ref.fMaxMGGRecConv),
+  fConvRejMinAngle(ref.fConvRejMinAngle),
+  fConvRejMaxOpenAngle(ref.fConvRejMaxOpenAngle),
   fUseRecConv(ref.fUseRecConv),
   fMaxDispersion(ref.fMaxDispersion),
   fUseDispersion(ref.fUseDispersion),
@@ -582,6 +587,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistElectronClusterNCellsVsE(NULL),
   fHistInvMassDiCluster(NULL),
   fHistInvMassConvFlagging(NULL),
+  fHistDiClusterAngle(NULL),
   fNMaxDCalModules(ref.fNMaxDCalModules),
   fgkDCALCols(ref.fgkDCALCols),
   fIsAcceptedForBasic(ref.fIsAcceptedForBasic)
@@ -991,7 +997,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistNLMVsEAfterQA->GetYaxis()->SetTitle("E_{cl} (GeV)");
     fHistograms->Add(fHistNLMVsEAfterQA);
 
-    if (GetIsConversionRecovery() > 0){
+    if (GetIsConversionRecovery() == 1){
       fHistInvMassDiCluster      = new TH2F(Form("InvMass_ClusterPair %s",GetCutNumber().Data()),"InvMass_ClusterPair",100,0,0.1,100,0,20);
       fHistInvMassDiCluster->GetXaxis()->SetTitle("M_{cl,cl} (GeV/c^{2})");
       fHistInvMassDiCluster->GetYaxis()->SetTitle("p_{T} (GeV/c)");
@@ -1000,6 +1006,10 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistInvMassConvFlagging->GetXaxis()->SetTitle("M_{cl,cl} (GeV/c^{2})");
       fHistInvMassConvFlagging->GetYaxis()->SetTitle("p_{T} (GeV/c)");
       fHistograms->Add(fHistInvMassConvFlagging);
+    } else if ( GetIsConversionRecovery() == 2){
+      fHistDiClusterAngle = new TH1F(Form("DiClusterAngle %s", GetCutNumber().Data()), Form("DiClusterAngle %s", GetCutNumber().Data()), 100, 0, 3.5);
+      fHistDiClusterAngle->GetXaxis()->SetTitle("tan^{-1}(#Delta #Theta / #Delta #Phi)");
+      fHistograms->Add(fHistDiClusterAngle);
     }
 
     if(fExtendedMatchAndQA > 0 || fIsPureCalo > 0){
@@ -5052,7 +5062,8 @@ void AliCaloPhotonCuts::PrintCutsWithValues(const TString analysisCutSelection) 
   if (fUseM02 == 1) printf("\t %3.2f < M02 < %3.2f\n", fMinM02, fMaxM02 );
   if (fUseM02 == 2) printf("\t energy dependent M02 cut used with cutnumber min: %d  max: %d \n", fMinM02CutNr, fMaxM02CutNr );
   if (fUseM20) printf("\t %3.2f < M20 < %3.2f\n", fMinM20, fMaxM20 );
-  if (fUseRecConv) printf("\t recovering conversions for  Mgg < %3.3f\n", fMaxMGGRecConv );
+  if (fUseRecConv == 1) printf("\t recovering conversions for  Mgg < %3.3f\n", fMaxMGGRecConv );
+  else if (fUseRecConv == 2) printf("\t recovering conversions with angles below < %3.3f, max. opening angle = %3.3f\n", fConvRejMinAngle, fConvRejMaxOpenAngle );
   if (fUseDispersion) printf("\t dispersion < %3.2f\n", fMaxDispersion );
   if (fUseNLM) printf("\t %d < NLM < %d\n", fMinNLM, fMaxNLM );
   printf("Correction Task Setting: %s \n",fCorrTaskSetting.Data());
@@ -7235,6 +7246,26 @@ Bool_t AliCaloPhotonCuts::SetRecConv(Int_t recConv)
     case 9:
       if (!fUseRecConv) fUseRecConv=1;
       fMaxMGGRecConv=0.007;
+      break;
+    case 10: // open cut to allow histograms to be enabled for conv. rejection
+      if (!fUseRecConv) fUseRecConv=2;
+      fConvRejMinAngle = 0.;
+      fConvRejMaxOpenAngle = 1.;
+      break;
+    case 11:
+      if (!fUseRecConv) fUseRecConv=2;
+      fConvRejMinAngle = 0.02;
+      fConvRejMaxOpenAngle = 0.2;
+      break;
+    case 12:
+      if (!fUseRecConv) fUseRecConv=2;
+      fConvRejMinAngle = 0.05;
+      fConvRejMaxOpenAngle = 0.2;
+      break;
+    case 13:
+      if (!fUseRecConv) fUseRecConv=2;
+      fConvRejMinAngle = 0.1;
+      fConvRejMaxOpenAngle = 0.2;
       break;
     default:
       AliError(Form("Conversion Recovery Cut not defined %d",recConv));
@@ -10416,40 +10447,71 @@ Bool_t AliCaloPhotonCuts::CheckForReconstructedConversionPairs( vector<AliAODCon
 
   Bool_t rejected   = kFALSE;
   if(vecPhotons.size()>0){
-    for(Int_t firstGammaIndex=0;firstGammaIndex<(Int_t)vecPhotons.size();firstGammaIndex++){
-      AliAODConversionPhoton *gamma1=vecPhotons.at(firstGammaIndex);
-      if (gamma1==NULL){
-        CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kTRUE);
-        continue;
-      }
-      TLorentzVector photon1;
-      photon1.SetPxPyPzE (gamma1->Px(), gamma1->Py(), gamma1->Pz(), gamma1->E() );
 
-      for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<(Int_t)vecPhotons.size();secondGammaIndex++){
-        AliAODConversionPhoton *gamma2=vecPhotons.at(secondGammaIndex);
-        if (gamma2==NULL){
-          CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kTRUE);
+    // method 1: Reject 2 clusters based on their combined invariant mass. If mass is below threshold, likely to be conversions
+    if(fUseRecConv == 1){
+      for(Int_t firstGammaIndex=0;firstGammaIndex<(Int_t)vecPhotons.size();firstGammaIndex++){
+        AliAODConversionPhoton *gamma1=vecPhotons.at(firstGammaIndex);
+        if (gamma1==NULL){
+          CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kTRUE);
           continue;
         }
-        TLorentzVector photon2;
-        photon2.SetPxPyPzE (gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E() );
+        TLorentzVector photon1;
+        photon1.SetPxPyPzE (gamma1->Px(), gamma1->Py(), gamma1->Pz(), gamma1->E() );
 
-        TLorentzVector mesonCand;
-        mesonCand = photon1+photon2;
-        fHistInvMassDiCluster->Fill(mesonCand.M(), mesonCand.Pt());
-        if (mesonCand.M() < fMaxMGGRecConv){
-          fHistInvMassConvFlagging->Fill(mesonCand.M(), mesonCand.Pt());
-          if (CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kFALSE)) AliDebug(2,"1st gamma already rejected");
-          if (CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kFALSE)) AliDebug(2,"2nd gamma already rejected");
-          rejected = kTRUE;
-          if (gamma1->E() < gamma2->E())
-            CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kTRUE);
-          else
+        for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<(Int_t)vecPhotons.size();secondGammaIndex++){
+          AliAODConversionPhoton *gamma2=vecPhotons.at(secondGammaIndex);
+          if (gamma2==NULL){
             CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kTRUE);
+            continue;
+          }
+          TLorentzVector photon2;
+          photon2.SetPxPyPzE (gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E() );
+
+          TLorentzVector mesonCand;
+          mesonCand = photon1+photon2;
+          fHistInvMassDiCluster->Fill(mesonCand.M(), mesonCand.Pt());
+          if (mesonCand.M() < fMaxMGGRecConv){
+            fHistInvMassConvFlagging->Fill(mesonCand.M(), mesonCand.Pt());
+            if (CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kFALSE)) AliDebug(2,"1st gamma already rejected");
+            if (CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kFALSE)) AliDebug(2,"2nd gamma already rejected");
+            rejected = kTRUE;
+            if (gamma1->E() < gamma2->E())
+              CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kTRUE);
+            else
+              CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kTRUE);
+          }
+        }
+      }
+      // method 2: Angular cut (PsiPair like): Conversion should only bend due to magnetic field. Therefore, a cut on the difference in the z-position is performed
+    } else if (fUseRecConv == 2) {
+
+      for(Int_t firstGammaIndex=0;firstGammaIndex<(Int_t)vecPhotons.size();firstGammaIndex++){
+        AliAODConversionPhoton *gamma1=vecPhotons.at(firstGammaIndex);
+        if (gamma1==NULL){
+          CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kTRUE);
+          continue;
+        }
+        for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<(Int_t)vecPhotons.size();secondGammaIndex++){
+          AliAODConversionPhoton *gamma2=vecPhotons.at(secondGammaIndex);
+          if (gamma2==NULL){
+            CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kTRUE);
+            continue;
+          }
+          
+          auto convRejAngles = GetAngleForConvReject(gamma1, gamma2);
+          fHistDiClusterAngle->Fill(convRejAngles.first);
+          if(convRejAngles.first < fConvRejMinAngle && convRejAngles.second < fConvRejMaxOpenAngle){
+            CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kTRUE);
+            CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kTRUE);
+            rejected=true;
+          }
         }
       }
     }
   }
+
+  // 
   if (rejected){
     AliDebug(2,"================================================================================");
     AliDebug(2,"================================================================================");
@@ -10459,6 +10521,36 @@ Bool_t AliCaloPhotonCuts::CheckForReconstructedConversionPairs( vector<AliAODCon
     AliDebug(2,"================================================================================");
   }
   return rejected;
+}
+
+//_________________________________________________________________________________
+// Function to calculate the angle between two clusters relative to the z-direction
+// Similar to Psi-Pair cut: Conversion are supposed to only bend in mag. field and therefore
+// dTheta(and with that also atanAngle) should be close to 0
+//_________________________________________________________________________________
+std::pair<double, double> AliCaloPhotonCuts::GetAngleForConvReject(const TLorentzVector &photon1, const TLorentzVector &photon2)
+{
+  double theta1 = photon1.Theta();
+  double theta2 = photon2.Theta();
+  double dTheta = std::abs(theta1-theta2);
+  double phi1 = photon1.Phi();
+  double phi2 = photon2.Phi();
+  double dPhi = std::abs(phi1 - phi2);
+  double atanAngle = dPhi == 0 ? TMath::Pi() : atan(dTheta/dPhi);
+  std::pair<double, double> arr(atanAngle, photon1.Angle(photon2.Vect()));
+  return arr;
+}
+
+//_________________________________________________________________________________
+// Wrapper function for AliAODConversionPhoton. For explanation see function above
+//_________________________________________________________________________________
+std::pair<double, double> AliCaloPhotonCuts::GetAngleForConvReject(const AliAODConversionPhoton *photon1, const AliAODConversionPhoton *photon2)
+{
+  TLorentzVector LV1;
+  LV1.SetPxPyPzE (photon1->Px(), photon1->Py(), photon1->Pz(), photon1->E() );
+  TLorentzVector LV2;
+  LV2.SetPxPyPzE (photon2->Px(), photon2->Py(), photon2->Pz(), photon2->E() );
+  return GetAngleForConvReject(LV1, LV2);
 }
 
 //_________________________________________________________________________________
