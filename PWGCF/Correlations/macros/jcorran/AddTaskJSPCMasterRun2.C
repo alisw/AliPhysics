@@ -12,7 +12,7 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
                                   bool cutTPCpileup = false, bool saveQA_TPCpileup = false,
                                   Bool_t ComputeEtaGap = kFALSE, Float_t EtaMin = -0.8, Float_t EtaMax = 0.8,
                                   Bool_t useWeightsNUE = kTRUE, Bool_t useWeightsNUA = kFALSE,
-                                  Int_t doSPC = 0, Bool_t frmBadArea18q = kFALSE)
+                                  Int_t doSPC = 0, Bool_t frmBadArea18q = kFALSE, TString extra ="")
 {
   double ESDslope = 3.38; bool saveQA_ESDpileup = false;
   bool removeBadArea = kFALSE; bool useTightCuts = kFALSE;
@@ -31,7 +31,7 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
 
   const int NPossibleVariations = 19;
   std::string PossibleVariations[NPossibleVariations] = { "default","hybrid", "SPD", "noPileup",
-                                                          "pileup10", "zvtx6","zvtx10","zvtx7",
+                                                          "pileup10", "zvtx6","zvtx9","zvtx7",
                                                           "NTPC80", "NTPC90", "NTPC100",
                                                           "chi2def", "chi2tight23", "DCAz1", "DCAz05",
                                                           "nqq", "pqq", "subA", "hybridBaseDCA"}; //for reference, these variations are allowed
@@ -87,12 +87,8 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
   for (int i = 0; i < Nsets; i++) {
     switch (whichNUAmap) {
     case 0:   // 0: Coarse binning, minPt = 0.2 for all.
-      MAPfileNames[i] = Form("%sPhiWeights_LHC%s_Error_pt02_s_%s.root",
+      MAPfileNames[i] = Form("%sPhiWeights_LHC%s_%s.root",
         MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data());
-    if (strcmp(configNames[i].Data(),"default")==0) {
-      MAPfileNames[i] = Form("%sPhiWeights_LHC%s_Error_pt02_s_global.root",
-            MAPdirName.Data(), sCorrection[period].Data());
-    }
      break;
     case 1:   // 1: Coarse binning, tuned minPt map.
       MAPfileNames[i] = Form("%sPhiWeights_LHC%s_Error_pt%02d_s_%s.root",
@@ -155,11 +151,12 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
   }
 
   const int SPCCombination = 4;
-  TString SPC[SPCCombination] = { "2SPC", "3SPC", "4SPC", "5SPC"};
+  TString SPC[SPCCombination] = { "2SPC", "5SPC", "3SPC", "4SPC"};
+  TString CatalystSPC[SPCCombination] = { "2SPC_5SPC", "3SPC_4SPC"};
 
   AliJCatalystTask *fJCatalyst[Nsets];  // One catalyst needed per configuration.
   for (Int_t i = 0; i < PassedVariations; i++) {
-    fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_%s_%s", taskName.Data(), configNames[i].Data(), SPC[doSPC].Data()));
+    fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_%s_%s", taskName.Data(), configNames[i].Data(), CatalystSPC[doSPC].Data()));
     cout << "Setting the catalyst: " << fJCatalyst[i]->GetJCatalystTaskName() << endl;
 
     if ((period == lhc18q || period == lhc18r ) && frmBadArea18q ) fJCatalyst[i]->SetRemoveBadArea18q(frmBadArea18q);
@@ -181,7 +178,7 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
     fJCatalyst[i]->SelectCollisionCandidates(selEvt);
    
     fJCatalyst[i]->SetSaveAllQA(saveCatalystQA);
-    fJCatalyst[i]->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
+    fJCatalyst[i]->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,-70.,-80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
     fJCatalyst[i]->SetInitializeCentralityArray();
 
     if (strcmp(configNames[i].Data(), "SPD") == 0) {
@@ -190,8 +187,8 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
       fJCatalyst[i]->SetCentDetName("V0M");
     } 
 
-    if (strcmp(configNames[i].Data(), "zvtx10") == 0) {
-      fJCatalyst[i]->SetZVertexCut(10.0);
+    if (strcmp(configNames[i].Data(), "zvtx9") == 0) {
+      fJCatalyst[i]->SetZVertexCut(9.0);
     } else if (strcmp(configNames[i].Data(), "zvtx6") == 0) {
       fJCatalyst[i]->SetZVertexCut(6.0);
     } else if (strcmp(configNames[i].Data(), "zvtx7") == 0) {
@@ -249,12 +246,14 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
     fJCatalyst[i]->SetPhiCorrectionIndex(i);
     fJCatalyst[i]->SetRemoveBadArea(removeBadArea);
     fJCatalyst[i]->SetTightCuts(useTightCuts);
+    fJCatalyst[i]->SetFillJTree(kFALSE);
     mgr->AddTask((AliAnalysisTask *)fJCatalyst[i]);
   }
 
 // Configuration of the analysis task itself.
-  AliJSPCTaskRun2 *myTask[Nsets];
-  Int_t harmonicArray[maxNrComb][8] = {{0}};
+  AliJSPCTaskRun2 *myTask[Nsets][2];
+  Int_t harmonicArray_1[maxNrComb][8] = {{0}};
+  Int_t harmonicArray_2[maxNrComb][8] = {{0}};
   // Int_t *harmonicArray = (Int_t*)malloc(sizeof(Int_t)*maxNrComb*8);
 
   // Switch to set up correct symmetry plane combinations
@@ -275,7 +274,23 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
                     {0, 0, 0,0, 0, 0, 0,0}
                     };
 
-    memcpy(harmonicArray, harmonicArray1, sizeof(Int_t)*maxNrComb*8);
+    memcpy(harmonicArray_1, harmonicArray1, sizeof(Int_t)*maxNrComb*8);
+    Int_t harmonicArray4[maxNrComb][8] = {
+                    {5, 2, 3, -4, 5, -6, 0,0},
+                    {6, 2, 3, 4, 4, -6, -7,0},
+                    {0, 0, 0,0, 0, 0, 0,0},
+                    {4, 2, 2, 3, -7, 0, 0,0}, // These are three harmonic SPC!!
+                    {3, 3, 4, -7, 0, 0, 0,0}, // These are three harmonic SPC!!
+                    {3, 2, 5, -7, 0, 0, 0,0}, // These are three harmonic SPC!!
+                    {3, 3, 5, -8, 0, 0, 0,0}, // These are three harmonic SPC!!
+                    {4, 2, 2, 4, -8, 0, 0,0}, // These are three harmonic SPC!!
+                    {0, 0, 0,0, 0, 0, 0,0},
+                    {0, 0, 0,0, 0, 0, 0,0},
+                    {0, 0, 0,0, 0, 0, 0,0},
+                    {0, 0, 0,0, 0, 0, 0,0}
+                    };
+
+    memcpy(harmonicArray_2, harmonicArray4, sizeof(Int_t)*maxNrComb*8);
     break;
   }
 
@@ -296,11 +311,8 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
                     // {0, 2, 2, 2, 2, 2, -4,-6} // Too heavy for the moment.
                     };
 
-    memcpy(harmonicArray, harmonicArray2, sizeof(Int_t)*maxNrComb*8);
-    break;
-  }
+    memcpy(harmonicArray_1, harmonicArray2, sizeof(Int_t)*maxNrComb*8);
 
-  case 2:{
     Int_t harmonicArray3[maxNrComb][8] = {
                     {4, 2,-3,-4, 5, 0, 0,0}, 
                     {6, 2, 2, 2, 3,-4,-5,0}, 
@@ -316,27 +328,7 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
                     {0, 0, 0,0, 0, 0, 0,0}
                     };
 
-    memcpy(harmonicArray, harmonicArray3, sizeof(Int_t)*maxNrComb*8);
-    break;
-  }
-
-  case 3:{
-    Int_t harmonicArray4[maxNrComb][8] = {
-                    {5, 2, 3, -4, 5, -6, 0,0},
-                    {6, 2, 3, 4, 4, -6, -7,0},
-                    {0, 0, 0,0, 0, 0, 0,0},
-                    {4, 2, 2, 3, -7, 0, 0,0}, // These are three harmonic SPC!!
-                    {3, 3, 4, -7, 0, 0, 0,0}, // These are three harmonic SPC!!
-                    {3, 2, 5, -7, 0, 0, 0,0}, // These are three harmonic SPC!!
-                    {3, 3, 5, -8, 0, 0, 0,0}, // These are three harmonic SPC!!
-                    {4, 2, 2, 4, -8, 0, 0,0}, // These are three harmonic SPC!!
-                    {0, 0, 0,0, 0, 0, 0,0},
-                    {0, 0, 0,0, 0, 0, 0,0},
-                    {0, 0, 0,0, 0, 0, 0,0},
-                    {0, 0, 0,0, 0, 0, 0,0}
-                    };
-
-    memcpy(harmonicArray, harmonicArray4, sizeof(Int_t)*maxNrComb*8);
+    memcpy(harmonicArray_2, harmonicArray3, sizeof(Int_t)*maxNrComb*8);
     break;
   }
 
@@ -347,41 +339,53 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
 
   // Add relevant information to the task
   for (Int_t i = 0; i < PassedVariations; i++) {
-    myTask[i] = new AliJSPCTaskRun2(Form("%s_%s_%s", taskName.Data(), configNames[i].Data(), SPC[doSPC].Data()));
-    myTask[i]->SetJCatalystTaskName(fJCatalyst[i]->GetJCatalystTaskName());
-    myTask[i]->AliSPCRun2SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
-    myTask[i]->AliSPCRun2SetSaveAllQA(kTRUE);
-    myTask[i]->AliSPCRun2SetMinNuPar(14.);
-    myTask[i]->AliSPCRun2SetUseWeights(useWeightsNUE, useWeightsNUA);
-    myTask[i]->AliSPCRun2SetEtaGaps(ComputeEtaGap, EtaMax);
-
-    for (int k = 0; k<maxNrComb; k++){
-      myTask[i]->AliSPCRun2SetCorrSet(k,harmonicArray[k]);
+    for (int j = 0; j < 2; ++j) {
+      myTask[i][j] = new AliJSPCTaskRun2(Form("%s_%s_%s", taskName.Data(), configNames[i].Data(), SPC[doSPC*2+j].Data()));
+      myTask[i][j]->SetJCatalystTaskName(fJCatalyst[i]->GetJCatalystTaskName());
+      myTask[i][j]->AliSPCRun2SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,-70.,-80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
+      myTask[i][j]->AliSPCRun2SetSaveAllQA(kTRUE);
+      myTask[i][j]->AliSPCRun2SetMinNuPar(14.);
+      myTask[i][j]->AliSPCRun2SetUseWeights(useWeightsNUE, useWeightsNUA);
+      myTask[i][j]->AliSPCRun2SetEtaGaps(ComputeEtaGap, EtaMax);
     }
 
-    mgr->AddTask((AliAnalysisTask *) myTask[i]);
+    for (int k = 0; k<maxNrComb; k++){
+      myTask[i][0]->AliSPCRun2SetCorrSet(k,harmonicArray_1[k]);
+      myTask[i][1]->AliSPCRun2SetCorrSet(k,harmonicArray_2[k]);
+    }
+
+    mgr->AddTask((AliAnalysisTask *) myTask[i][0]);
+    mgr->AddTask((AliAnalysisTask *) myTask[i][1]);
   } // End for (Int_t i = 0; i < PassedVariations; i++)
 
   // Connect the input and output.
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  AliAnalysisDataContainer *jHist[Nsets][2];
+  AliAnalysisDataContainer *jHist[Nsets][3];
 
   for (Int_t i = 0; i < PassedVariations; i++) {
     mgr->ConnectInput(fJCatalyst[i], 0, cinput);
-    mgr->ConnectInput(myTask[i], 0, cinput);
+    mgr->ConnectInput(myTask[i][0], 0, cinput);
+    mgr->ConnectInput(myTask[i][1], 0, cinput);
 
     jHist[i][0] = new AliAnalysisDataContainer();     
-    jHist[i][0] = mgr->CreateContainer(Form ("%s", myTask[i]->GetName()),
+    jHist[i][0] = mgr->CreateContainer(Form ("%s", myTask[i][0]->GetName()),
       TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s:outputAnalysis", AliAnalysisManager::GetCommonFileName()));
-    mgr->ConnectOutput(myTask[i], 1, jHist[i][0]);
+    mgr->ConnectOutput(myTask[i][0], 1, jHist[i][0]);
 
     jHist[i][1] = new AliAnalysisDataContainer();     
-    jHist[i][1] = mgr->CreateContainer(Form ("%s", fJCatalyst[i]->GetName()),
+    jHist[i][1] = mgr->CreateContainer(Form ("%s", myTask[i][1]->GetName()),
+      TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("%s:outputAnalysis", AliAnalysisManager::GetCommonFileName()));
+    mgr->ConnectOutput(myTask[i][1], 1, jHist[i][1]);
+
+    jHist[i][2] = new AliAnalysisDataContainer();     
+    jHist[i][2] = mgr->CreateContainer(Form ("%s", fJCatalyst[i]->GetName()),
       TList::Class(), AliAnalysisManager::kOutputContainer,
       Form("%s", AliAnalysisManager::GetCommonFileName()));
-    mgr->ConnectOutput(fJCatalyst[i], 1, jHist[i][1]);
+    mgr->ConnectOutput(fJCatalyst[i], 1, jHist[i][2]);
+
   } // End for (Int_t i = 0; i < PassedVariations; i++)
 
-  return myTask[0];
+  return myTask[0][0];
 }

@@ -16,7 +16,7 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
                                               const char *sTcut = "0",
                                               bool DoAncestors = false,
                                               bool IsSystematics = false,
-                                              bool isNewPC = false,
+                                              AliAnalysisTaskLambdaPion::PCSettings pcsettings = AliAnalysisTaskLambdaPion::PCSettings::NoPC,
                                               const char *cutVariation = "0")
 {
   TString suffix = TString::Format("%s", cutVariation);
@@ -79,34 +79,6 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
   TrackCutsAntiPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
   TrackCutsAntiPion->SetFilterBit(96);
   TrackCutsAntiPion->SetCutCharge(-1);
-
-  // ORIGINAL
-
-  // AliFemtoDreamTrackCuts *TrackPosPionCuts =
-  //     AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
-  // TrackPosPionCuts->SetCutCharge(1);  // Positive Pion charge
-  // TrackPosPionCuts->SetFilterBit(filterBit);
-  // if (WhichPionCut == 0)
-  // {
-  //   TrackPosPionCuts->SetPIDkd(); // Oton
-  // }
-  // else if (WhichPionCut == 1)
-  // {
-  //   TrackPosPionCuts->SetPIDkd(true, true); // Ramona
-  // }
-// 
-  // AliFemtoDreamTrackCuts *TrackCutsAntiPion =
-  //     AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
-  // TrackCutsAntiPion->SetCutCharge(-1);  // Negative Pion charge
-  // TrackCutsAntiPion->SetFilterBit(filterBit);
-  // if (WhichPionCut == 0)
-  // {
-  //   TrackCutsAntiPion->SetPIDkd(); // Oton
-  // }
-  // else if (WhichPionCut == 1)
-  // {
-  //   TrackCutsAntiPion->SetPIDkd(true, true); // Ramona
-  // }
 
   if (IsSystematics)
   {
@@ -1210,7 +1182,7 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
   // now we create the task
   AliAnalysisTaskLambdaPion *task =
       new AliAnalysisTaskLambdaPion(
-          "AliAnalysisTaskLambdaPion", isMC, isNewPC);
+          "AliAnalysisTaskLambdaPion", isMC, pcsettings);
 
   // THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
   // kINT7 == Minimum bias

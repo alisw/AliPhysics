@@ -48,5 +48,6 @@ private:
     // 1 - original implementation
     // 2 - adjustments for general-purpose functionality
     // 3 - adjustments for proton profile
+    // 4 - centrality estimator
 };
 #endif

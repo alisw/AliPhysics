@@ -95,6 +95,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetUseNchRange(Bool_t range, Int_t min, Int_t max) { fUseNch = range; fNchMin = min; fNchMax = max; }
 	void                    SetUseNchfor_eventmixing(Bool_t range) { fUseNchfor_eventmixing = range; }
         void                    SetCentrality(TString cent, Double_t min = 0.0, Double_t max = 20.0) { fCentEstimator = cent; fCentMin = min; fCentMax = max; }
+	void                    SetAdditionalPileUpforPP(Bool_t pileup) { fApply_additional_pileupcut = pileup; }
 
         //track selection (charged + PID + som global )
         void                    SetFilterBit(UInt_t filter) { fFilterBit = filter; }
@@ -199,6 +200,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         TH2D*                   fhEfficiencyEta[6][8]; //! eta dependent (8 sectors)
         TH2D*                   fHistFMDeta; //! vs PVz
 	TH2D*                   fHistFMDeta_phi; //! vs phi
+        TH2D*                   fHistTPCeta_phi; //! eta vs phi of TPC
+        TH2D*                   fHistTPCeta_phi_trig; //! eta vs phi of TPC after Nch cut
         TH1D*                   fhV0Counter[3]; //!
         TH1D*                   fhK0sphi; //!
 	TH1D*                   fhLambdaphi; //!
@@ -239,6 +242,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 	Bool_t                  fselectjetsinTPC; // [kFALSE]
         Bool_t                  fRejectSecondariesFromMC; // [kFALSE]
         Bool_t                  fBoostAMPT; // [kFALSE] = boost to CMS in pPb collisions for the gen level of AMPT
+	Bool_t                  fApply_additional_pileupcut; //kFALSE only applied for pp collisons in Yuko's analysis
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fRunNumber; // previous run

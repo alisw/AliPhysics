@@ -44,9 +44,11 @@ const Int_t gCentralityEstimators = 4; // set here number of supported centralit
 const Int_t gKinematicVariables = 5; // number of supported kinematic variables: [phi,pt,eta,e,charge]
 const Int_t gFilterBits = 17; // number of filterbits to scan
 const Int_t gEventHistograms = 2; // total number of non-classified event histograms
-const Int_t gParticleHistograms = 12; // total number of non-classified particle histograms, keep in sync. with eParticle 
+// const Int_t gParticleHistograms = 12; // total number of non-classified particle histograms, keep in sync. with eParticleHistograms 
 const Int_t gCentralMultiplicity = 1; // multiplicities defined centrally, e.g. ref. mult.
 const Int_t gWeights = 3; // phi, pt, eta
+//const Int_t gDiffWeights = 2; // phipt, phieta, ...
+const Int_t fMaxBinsDiffWeights = 100; // max number of bins for differential weights, see MakeWeights.C
 const Int_t gQAAnomalousEvents = 1; // |vertex| = 0; 
 const Int_t gQASelfCorrelations = 3; // phi, pt, eta
 const Int_t gQAEventCutCounter = 23; // see TString secc[gQAEventCutCounter] in .cxx
@@ -66,11 +68,13 @@ enum eBeforeAfter { BEFORE = 0, AFTER = 1 };
 enum eRecoSim { RECO = 0, SIM = 1 };
 enum eKinematics { PHI = 0, PT = 1, ETA = 2, E = 3, CHARGE = 4 };
 enum eDefaultColors { COLOR = kBlack, FILLCOLOR = kGray };
-enum eParticle { TPCNcls, TPCnclsS, TPCnclsFractionShared, TPCNCrossedRows, TPCChi2perNDF, TPCFoundFraction, Chi2TPCConstrainedVsGlobal, ITSNcls, ITSChi2perNDF, TPCNclsF, HasPointOnITSLayer, IsGlobalConstrained };
+enum eParticleHistograms { TPCNcls, TPCnclsS, TPCnclsFractionShared, TPCNCrossedRows, TPCChi2perNDF, TPCFoundFraction, Chi2TPCConstrainedVsGlobal, ITSNcls, ITSChi2perNDF, TPCNclsF, HasPointOnITSLayer, IsGlobalConstrained, eParticleHistograms_N };
+enum eParticleHistograms2D { PHIPT, PHIETA, eParticleHistograms2D_N };
 enum eEvent { MagneticField, PrimaryVertex };
 enum eCentralMultiplicity { RefMultComb08 };
 enum eqvectorKine { PTq = 0, ETAq = 1 };
 enum eAsFunctionOf { AFO_INTEGRATED = 0, AFO_MULTIPLICITY = 1, AFO_CENTRALITY = 2, AFO_PT = 3, AFO_ETA = 4, eAsFunctionOf_N }; // prefix is needed, to avoid conflict with enum eKinematics
+enum eDiffWeights { wPHIPT, wPHIETA, eDiffWeights_N };
 
 //================================================================================================================
 
@@ -138,6 +142,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void ParticleCutCounter(AliVParticle *vParticle); // only for QA
   void SequentialParticleCutCounter(AliVParticle *vParticle); // only for QA
   virtual Double_t Weight(const Double_t &value, const char *variable);
+  virtual Double_t DiffWeight(const Double_t &valueY, const Double_t &valueX, eDiffWeights dw);
   virtual Double_t CentralityWeight(const Double_t &value);
   virtual void CalculateCorrelations();
   virtual void CalculateNestedLoops(); // calculate all standard isotropic correlations  
@@ -191,6 +196,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetVerbose(Bool_t v) {this->fVerbose = v;};
   void SetRandomSeed(UInt_t rs) {this->fRandomSeed = rs;};
   void SetTrigger(const char *t) {this->fTrigger = t; this->fUseTrigger = kTRUE;};
+  void SetInsanityChecksForEachParticle(Bool_t icfip) {this->fInsanityChecksForEachParticle = icfip;};
 
   void SetControlEventHistogramsList(TList* const cehl) {this->fControlEventHistogramsList = cehl;};
   TList* GetControlEventHistogramsList() const {return this->fControlEventHistogramsList;} 
@@ -346,8 +352,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetFilterGlobalTracksAOD(const Bool_t fgta){this->fFilterGlobalTracksAOD = fgta;}; 
 
   // Kinematics:
-  void SetKinematicsBins(const char* kv, const Double_t nbins, const Double_t min, const Double_t max) // used for control histograms. See also SetKineDependenceBins(...)
+  void SetKinematicsBins(const char* kv, const Double_t nbins, const Double_t min, const Double_t max) // used for control histograms. See also SetKineDependenceBins(...) for final results
   {
+   // TBI 20231025 If I want to change binning of 2D histograms from default to custom, use SetKineDependenceBins() below (yes, for the time being it's that way...)
    Int_t var = -44;
    if(TString(kv).EqualTo("phi")){var = PHI;} 
    else if (TString(kv).EqualTo("pt")){var = PT;} 
@@ -360,8 +367,11 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fKinematicsBins[var][2] = max;
   }
 
-  void SetKineDependenceBins(const char* kv, TArrayD *iva) // used for custom binning of all histos related to results. See also SetKinematicsBins(...)
+  void SetKineDependenceBins(const char* kv, TArrayD *iva) // used for custom binning of all histos related to results. See also SetKinematicsBins(...) for control histograms
   {
+   // TBI 20231025 As of today, I also use this setter to change default binning to custom binning ONLY in 2D control histograms. 
+   //              Other 1D control histograms are NOT affected by this setter. Re-think eventually how to implement all this, and make it more uniform
+   //              across control histograms and histograms for final results.
    Int_t var = -44;
    if (TString(kv).EqualTo("pt")){var = PTq;} 
    else if (TString(kv).EqualTo("eta")){var = ETAq;}
@@ -460,7 +470,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fParticleCuts[var][1] = max;
    this->fUseParticleCuts[var] = kTRUE;
   }  
-  void SetUseParticleCuts(const char* type, const Bool_t b) // use this setter just to switch on/off sum cut, with was set either by default, or via SetParticleCuts(...)
+  void SetUseParticleCuts(const char* type, const Bool_t b) // use this setter just to switch on/off some cut, with was set either by default, or via SetParticleCuts(...)
   {
    Int_t var = -44;
    if(TString(type).EqualTo("TPCNcls")){var = TPCNcls;} 
@@ -476,6 +486,15 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    else { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); }
    this->fUseParticleCuts[var] = b;
   }  
+  void SetFillParticleHist2D(const char* type, const Bool_t b) // use this setter just to switch on/off some 2D particle histogram. Keep in sync with enum eParticleHistograms2D
+  {
+   Int_t var = -44;
+   if(TString(type).EqualTo("phipt")){var = PHIPT;} 
+   else if (TString(type).EqualTo("phieta")){var = PHIETA;}
+   else { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); }
+   this->fFillParticleHist2D[var] = b;
+  }  
+
   void SetAtLeastOnePointInTheSPD(Bool_t alopits) {this->fAtLeastOnePointInTheSPD = alopits;};
   void SetIgnoreGlobalConstrained(Bool_t igc) {this->fIgnoreGlobalConstrained = igc;};
 
@@ -525,7 +544,12 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetWeightsHist(TH1D* const hist, const char *variable); // .cxx
   TH1D* GetWeightsHist(const char *variable); // . cxx
   TH1D* GetHistogramWithWeights(const char *filePath, const char *variable); // .cxx
- 
+
+  // Differential particle weights:
+  void SetDiffWeightsHist(TH1D* const hist, const char *variable, Int_t bin); // .cxx
+  TH1D* GetDiffWeightsHist(const char *variable, Int_t bin); // . cxx
+  TH1D* GetHistogramWithDiffWeights(const char *filePath, const char *variable, Int_t bin); // .cxx
+
   // Centrality weights:
   void SetCentralityWeightsHist(TH1D* const hist); // .cxx
   TH1D* GetCentralityWeightsHist() const {return this->fCentralityWeightsHist;} 
@@ -637,6 +661,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fUseFixedNumberOfRandomlySelectedParticles; // use or not fixed number of randomly selected particles in each event. Use always in combination with SetUseFisherYates(kTRUE)
   Int_t fFixedNumberOfRandomlySelectedParticles; // set here a fixed number of randomly selected particles in each event. Use always in combination with SetUseFisherYates(kTRUE)
   Bool_t fHistogramBookingsWithRunInfoWereUpdated; // makes sure that UpdateHistogramBookingsWithRunInfo() is called only once in UserExec()
+  Bool_t fInsanityChecksForEachParticle; // do insanity checks for each particle
 
   // 1) QA:
   TList *fQAList; // base list to hold all QA output object
@@ -728,14 +753,18 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fUsePtDependentDCAxyParameterization; // use instead the pT dependent cut for DCAxy, see the setter SetPtDependentDCAxyCut(const char* parameterization)
   TString fPtDependentDCAxyParameterization; // math. parameterization for DCAxy vs. pT, see the setter SetPtDependentDCAxyCut(const char* parameterization)
   TFormula *fPtDependentDCAxyFormula; // the actual formula, used to evaluate for a given pT, the corresponding DCAxy, where the parameterization is given by fPtDependentDCAxyParameterization
-  //    All remaining particle histograms: 
-  TH1D *fParticleHist[2][2][gParticleHistograms]; //! distributions [before,after particle cuts][reco,sim][type - see enum]
-  Double_t fParticleBins[gParticleHistograms][3]; // [nBins,min,max]
-  Double_t fParticleCuts[gParticleHistograms][2]; // [type - see enum][min,max]
-  Bool_t fUseParticleCuts[gParticleHistograms];   // set to kTRUE, only if the correspondign SetParticleCuts(...) was used in the steering macros
+  //    All remaining 1D particle histograms: 
+  TH1D *fParticleHist[2][2][eParticleHistograms_N]; //! distributions [before,after particle cuts][reco,sim][type - see enum]
+  Double_t fParticleBins[eParticleHistograms_N][3]; // [nBins,min,max]
+  Double_t fParticleCuts[eParticleHistograms_N][2]; // [type - see enum][min,max]
+  Bool_t fUseParticleCuts[eParticleHistograms_N];   // set to kTRUE, only if the correspondign SetParticleCuts(...) was used in the steering macros
   Bool_t fAtLeastOnePointInTheSPD; // set to kTRUE via SetAtLeastOnePointInTheSPD( ... ), only tracks with one or two points in the SPD are taken
   Bool_t fIgnoreGlobalConstrained; // set to kTRUE by default, to avouid double counting in some cases.
-
+  //    All remaining 2D particle histograms: // enum eParticleHistograms2D { PTETA, eParticleHistograms2D_N };
+  TH2D *fParticleHist2D[2][2][eParticleHistograms2D_N]; //! distributions [before,after particle cuts][reco,sim][type - see enum]
+  Double_t fParticleBins2D[eParticleHistograms2D_N][2][3]; // [type - see enum][x,y][nBins,min,max]
+  Bool_t fFillParticleHist2D[eParticleHistograms2D_N]; //! fill or not this histogram, set via SetFillParticleHist2D(...)
+ 
   // 4) Q-vectors:
   TList *fQvectorList;        // list to hold all Q-vector objects       
   TProfile *fQvectorFlagsPro; // profile to hold all flags for Q-vector
@@ -753,6 +782,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TProfile *fWeightsFlagsPro;   // profile to hold all flags for weights
   Bool_t fUseWeights[gWeights]; // use weights [phi,pt,eta]
   TH1D *fWeightsHist[gWeights]; // histograms holding weights [phi,pt,eta]
+  Bool_t fUseDiffWeights[eDiffWeights_N]; // use differential weights [phipt,phieta]
+  TH1D *fDiffWeightsHist[eDiffWeights_N][fMaxBinsDiffWeights]; // histograms holding differential weights [phipt,phieta][bin number]
 
   // 6) Centrality weights: 
   TList *fCentralityWeightsList;        // list to hold all Q-vector objects       
@@ -829,7 +860,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo() 
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,36);
+  ClassDef(AliAnalysisTaskMuPa,38);
 
 };
 

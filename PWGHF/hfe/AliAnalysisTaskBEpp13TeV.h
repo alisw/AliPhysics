@@ -184,12 +184,12 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	// generated level
 	TH1F		*hBhadronPt;
 	TH1F		*hBhadronPtCorr;
-	TH2F		*hTrklet_BhadronPt;
-	TH2F		*hTrklet_BhadronPtCorr;
+	TH2F		*hBhadronPtMult;
+	TH2F		*hBhadronPtMultCorr;
 	TH1F		*hD0Pt;
 	TH1F		*hD0PtCorr;
-	TH2F		*hTrklet_D0Pt;
-	TH2F		*hTrklet_D0PtCorr;
+	TH2F		*hD0PtMult;
+	TH2F		*hD0PtMultCorr;
 	TH1F		*hLcPt;
 
 	TH1F		*hGenBePt;
@@ -220,10 +220,6 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	TH2F		*dcaBeautyCorr;
 	TH2F		*dcaBeautyCorrVar1;
 	TH2F		*dcaBeautyCorrVar2;
-	TH2F		*dcaBzero;
-	TH2F		*dcaBplus;
-	TH2F		*dcaBszero;
-	TH2F		*dcaLb;
 	TH2F		*DelecVsDmother;
 	TH2F		*dcaCharm;
 	TH2F		*dcaDmeson;
@@ -236,10 +232,6 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	TH2F		*dcaLc;
 	TH2F		*dcaDalitz;
 	TH2F		*dcaConv;
-	TH2F		*dcaB2M;
-	TH2F		*dcaD2M;
-	TH2F		*dcaGammaB2M;
-	TH2F		*dcaGammaD2M;
 	
 	// B corr
     TF1         *fBmesonCorrCentLow;
@@ -259,9 +251,9 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 
     TRandom3    *fRnd;
 		
-	static const int fgkMaxIter = 100;
-	static const int fNparents = 7;
-	int fParentSelect[2][7];
+		static const int fgkMaxIter = 100;
+		static const int fNparents = 7;
+		int fParentSelect[2][7];
 	
     AliAnalysisTaskBEpp13TeV(const AliAnalysisTaskBEpp13TeV&); // not implemented
     AliAnalysisTaskBEpp13TeV& operator=(const AliAnalysisTaskBEpp13TeV&); // not implemented

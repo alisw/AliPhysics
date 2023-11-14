@@ -224,6 +224,7 @@ void AddTask_GammaCalo_PbPbV2(
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+  task->SetPeriod(periodNameV0Reader);
   task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetLightOutput(enableLightOutput);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
@@ -236,9 +237,21 @@ void AddTask_GammaCalo_PbPbV2(
     TGrid::Connect("alien://");
   if (v0calibOn)
   {
-    fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC15o/VZEROCalibFile15o.root", "READ");
-    // fVZEROCalibFile = TFile::Open("./VZEROCalibFile15o.root", "READ");
-    fVZEROCalibList = dynamic_cast<TList *>(fVZEROCalibFile->Get("VZEROCalibList"));
+    if (periodNameV0Reader.EqualTo("LHC15o"))
+    {
+      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC15o/VZEROCalibFile15o.root", "READ");
+      fVZEROCalibList = dynamic_cast<TList *>(fVZEROCalibFile->Get("VZEROCalibList"));
+    }
+    if (periodNameV0Reader.EqualTo("LHC18q"))
+    {
+      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/calibq2V0C18qP3.root", "READ");
+      fVZEROCalibList = dynamic_cast<TList *>(fVZEROCalibFile->Get("18qlistspPerc"));
+    }
+    if (periodNameV0Reader.EqualTo("LHC18r"))
+    {
+      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/calibq2V0C18rP3.root", "READ");
+      fVZEROCalibList = dynamic_cast<TList *>(fVZEROCalibFile->Get("18rlistspPerc"));
+    }
     if (fVZEROCalibList)
     {
       task->SetListForVZEROCalib(fVZEROCalibList);

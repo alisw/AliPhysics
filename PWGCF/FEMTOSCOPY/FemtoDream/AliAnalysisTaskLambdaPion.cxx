@@ -16,7 +16,7 @@ ClassImp(AliAnalysisTaskLambdaPion)
     : AliAnalysisTaskSE(),
       fIsMC(false),
       fUseOMixing(false),
-      fIsNewPC(false),
+      fPCSettings(NoPC),
       fTrigger(AliVEvent::kINT7),
       fQA(nullptr),
       fEvtList(nullptr),
@@ -49,11 +49,11 @@ ClassImp(AliAnalysisTaskLambdaPion)
 }
 
 AliAnalysisTaskLambdaPion::AliAnalysisTaskLambdaPion(
-    const char *name, bool isMC, bool isNewPC)
+    const char *name, bool isMC, PCSettings pcsettings)
     : AliAnalysisTaskSE(name),
       fIsMC(isMC),
       fUseOMixing(false),
-      fIsNewPC(isNewPC),
+      fPCSettings(pcsettings),
       fTrigger(AliVEvent::kINT7),
       fQA(nullptr),
       fEvtList(nullptr),
@@ -383,14 +383,28 @@ void AliAnalysisTaskLambdaPion::UserExec(Option_t *)
   }
 
   fPairCleaner->ResetArray();
-  fPairCleaner->CleanTrackAndDecay(&PionPlus, &Lambdas, 0, fIsNewPC);
-  fPairCleaner->CleanTrackAndDecay(&PionMinus, &AntiLambdas, 1, fIsNewPC);
-  fPairCleaner->CleanTrackAndDecay(&PionPlus, &AntiLambdas, 2, fIsNewPC);
-  fPairCleaner->CleanTrackAndDecay(&PionMinus, &Lambdas, 3, fIsNewPC);
-
-  fPairCleaner->CleanDecay(&Lambdas, 0);
-  fPairCleaner->CleanDecay(&AntiLambdas, 1);
-  fPairCleaner->CleanDecayAndDecay(&Lambdas, &AntiLambdas, 2);
+  switch(fPCSettings)
+  {
+      case NoPC : break;
+      case OldPC :    fPairCleaner->CleanTrackAndDecay(&PionPlus, &Lambdas, 0, 0);
+                      fPairCleaner->CleanTrackAndDecay(&PionMinus, &AntiLambdas, 1, 0);
+                      fPairCleaner->CleanTrackAndDecay(&PionPlus, &AntiLambdas, 2, 0);
+                      fPairCleaner->CleanTrackAndDecay(&PionMinus, &Lambdas, 3, 0);
+                    
+                      fPairCleaner->CleanDecay(&Lambdas, 0);
+                      fPairCleaner->CleanDecay(&AntiLambdas, 1);
+                      fPairCleaner->CleanDecayAndDecay(&Lambdas, &AntiLambdas, 2); 
+                      break;
+      case NewPC :    fPairCleaner->CleanTrackAndDecay(&PionPlus, &Lambdas, 0, 1);
+                      fPairCleaner->CleanTrackAndDecay(&PionMinus, &AntiLambdas, 1, 1);
+                      fPairCleaner->CleanTrackAndDecay(&PionPlus, &AntiLambdas, 2, 1);
+                      fPairCleaner->CleanTrackAndDecay(&PionMinus, &Lambdas, 3, 1);
+                    
+                      fPairCleaner->CleanDecay(&Lambdas, 0);
+                      fPairCleaner->CleanDecay(&AntiLambdas, 1);
+                      fPairCleaner->CleanDecayAndDecay(&Lambdas, &AntiLambdas, 2); 
+                      break;
+  }
 
   fPairCleaner->StoreParticle(PionPlus);
   fPairCleaner->StoreParticle(PionMinus);

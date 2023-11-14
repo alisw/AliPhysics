@@ -457,7 +457,8 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
   //Int_t iTracks(fAOD->GetNumberOfTracks());		//original
   Int_t iTracks(fTracks_tender->GetEntries());		//updated
 
-  Int_t Nclust = fVevent->GetNumberOfCaloClusters();
+  //Int_t Nclust = fVevent->GetNumberOfCaloClusters();
+  Int_t Nclust = fCaloClusters_tender->GetEntries();
 
   //===== Global Vtx =====
   const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
@@ -675,7 +676,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
         if (TMath::Abs(pdg) == 11) fPtEoverPMCE->Fill(track->Pt(),EoverP);
 
         //to compare all tracks and electron M02
-        if (EoverP > 0.7 && EoverP < 1.5)
+        if (EoverP > 0.9 && EoverP < 1.3)
         {
           if (TMath::Abs(pdg) == 11) fHistMCClsLAE->Fill(clustLongE);
           fHistClustLongAxisE->Fill(clustLongE);
@@ -690,7 +691,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
           //////////////
           // ELECTRON //
           //////////////
-          if (EoverP > 0.7 && EoverP < 1.5)
+          if (EoverP > 0.9 && EoverP < 1.3)
           {
             Float_t showerx[3];
             clustMatch->GetPosition(showerx);
@@ -711,6 +712,8 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                 clust->GetPosition(aroclsx);
                 TVector3 aroClsPos(aroclsx[0],aroclsx[1],aroclsx[2]);
                 Double_t aroClsphi = aroClsPos.Phi();
+                if(aroClsphi<0.0){aroClsphi += 2.0*TMath::Pi();}  // added s.s.
+                if(Corephi<0.0){Corephi += 2.0*TMath::Pi();} // added s.s
                 Double_t aroClseta = aroClsPos.Eta();
                 Double_t R = sqrt(pow(Corephi - aroClsphi,2.0)+pow(Coreeta - aroClseta,2.0));
                 if (R < 0.3) RsumE[0] = RsumE[0] + clustE;
@@ -720,7 +723,8 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
             }
             for (Int_t isoR=0;isoR<3;isoR++) {
               Eiso[isoR] = (RsumE[isoR] - eleE)/eleE;
-              fREisolation[isoR]->Fill(Eiso[isoR]);
+              //fREisolation[isoR]->Fill(Eiso[isoR]);
+              if(track->Pt() > 30.0)fREisolation[isoR]->Fill(Eiso[isoR]);
             }
             //=====MC Data=====
             if (track->Pt() > 10.) {
@@ -846,12 +850,12 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
       if (pidW == 1) fPt_TPCPIDMCWe->Fill(track->Pt());
       if (EMCalIndex >= 0) {
         if (pidW == 1) fPt_TrackMatchingMCWe->Fill(track->Pt());
-        if (clustLongE > 0.1 && clustLongE < 0.6 && EoverP > 0.7 && EoverP < 1.5 && Eiso[0] >= 0. && Eiso[0] <= 0.05) {
+        if (clustLongE > 0.1 && clustLongE < 0.6 && EoverP > 0.9 && EoverP < 1.3 && Eiso[0] >= 0. && Eiso[0] <= 0.05) {
           if (pidW == 1) fPt_EMCalPIDMCWe->Fill(track->Pt());
         }
       }
     }
-    if (clustLongE > 0.1 && clustLongE < 0.6 && EoverP > 0.7 && EoverP < 1.5) {
+    if (clustLongE > 0.1 && clustLongE < 0.6 && EoverP > 0.9 && EoverP < 1.3) {
       TPCSigForE->Fill(track->P(),track->GetTPCsignal());
       fNsigmaPtForE->Fill(track->Pt(),fTPCnSigma);
     }

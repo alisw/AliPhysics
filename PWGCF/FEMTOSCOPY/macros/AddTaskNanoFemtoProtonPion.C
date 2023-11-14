@@ -18,8 +18,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     int PionFilterbit = 96, //7
     bool DoPairCleaning = false, //8
     bool DoAncestors = false, //9
-    bool RemoveMCResonances = true, //10
-    bool RemoveMCResonanceDaughters = true, //11
+    bool RemoveMCResonances = false, //10
+    bool RemoveMCResonanceDaughters = false, //11
     bool DoInvMass = false, //12
     bool DoResonanceLorentzFactor = false, //13
     bool DoFinemTBinning = false, //14
@@ -28,7 +28,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     float pTOnepTTwokStarCutOff = 3., //17
     bool DoKine = false, //18
     bool DoReco = false, //19
-    const char *cutVariation = "0" //20
+    bool SwitchOffCPR = false, //20
+    const char *cutVariation = "0" //21
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -91,11 +92,12 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   }
 
   //Set-up output ------------------------------------------------------------------------
+  //PDG codes need to stay positive. Weird implementation in FemtoDream
   std::vector<int> PDGParticles;
-  PDGParticles.push_back(2212); 
-  PDGParticles.push_back(-2212); 
-  PDGParticles.push_back(211); 
-  PDGParticles.push_back(-211); 
+  PDGParticles.push_back(2212); //proton
+  PDGParticles.push_back(2212); //antiproton
+  PDGParticles.push_back(211); //pi+
+  PDGParticles.push_back(211); //pi-
 
   std::vector<bool> closeRejection;
   std::vector<float> mTBins;
@@ -165,12 +167,23 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
 
   closeRejection[0] = true;  // pp
   closeRejection[2] = true;  // ppi+
-  closeRejection[3] = true;  // ppi-
+  closeRejection[3] = false;  // ppi-
   closeRejection[4] = true;  // barp barp
-  closeRejection[5] = true;  // barp pi+
+  closeRejection[5] = false;  // barp pi+
   closeRejection[6] = true;  // barp pi-
   closeRejection[7] = true;  // pi+pi+
   closeRejection[9] = true;  // pi-pi-
+
+  if(SwitchOffCPR){
+    closeRejection[0] = false;  // pp
+    closeRejection[2] = false;  // ppi+
+    closeRejection[3] = false;  // ppi-
+    closeRejection[4] = false;  // barp barp
+    closeRejection[5] = false;  // barp pi+
+    closeRejection[6] = false;  // barp pi-
+    closeRejection[7] = false;  // pi+pi+
+    closeRejection[9] = false;  // pi-pi- 
+  }
 
   /*if(DoKine){
     closeRejection[0] = false;  // pp
@@ -255,6 +268,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     if(DoAncestors){
       config->SetAncestors(true);
       config->GetDoAncestorsPlots();
+      config->SetRemoveAncestorsResonances(RemoveMCResonances);
     }
   }
   if (fullBlastQA) {

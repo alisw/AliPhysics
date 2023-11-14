@@ -6,6 +6,7 @@
 #include "AliAnalysisTaskEmcalJetHdEdxCorrelations.h"
 
 #include <bitset>
+#include <vector>
 
 #include <TH1F.h>
 #include <TH2F.h>
@@ -210,23 +211,8 @@ namespace PWGJE
       }
     }
 
-    /**
-     * Perform run independent initializations, such as histograms and the event pool.
-     */
-    void AliAnalysisTaskEmcalJetHdEdxCorrelations::UserCreateOutputObjects()
-    {
-      // Called once
-      AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+    void AliAnalysisTaskEmcalJetHdEdxCorrelations::CreateHistograms(){
 
-      // Check that the task was initialized
-      if (!fConfigurationInitialized)
-      {
-        AliFatal("Task was not initialized. Please ensure that Initialize() was called!");
-      }
-      // Reinitialize the YAML configuration
-      fYAMLConfig.Reinitialize();
-
-      // Create histograms
       fHistJetHTrackPt = new TH1F("fHistJetHTrackPt", "P_{T} distribution", 1000, 0.0, 100.0);
       fHistEPAngle = new TH1F("fHistEPAngle", "#Psi_{2} distribution for 2018 calib", 100, -TMath::Pi(), 3. * TMath::Pi());
       fHistJetEtaPhi = new TH2F("fHistJetEtaPhi", "Jet eta-phi", 900, -1.8, 1.8, 720, -3.2, 3.2);
@@ -275,23 +261,84 @@ namespace PWGJE
         }
       }
 
+      // Store hist manager output in the output list
+      TIter next(fHistManager.GetListOfHistograms());
+      TObject *obj = 0;
+      while ((obj = next()))
+      {
+        fOutput->Add(obj);
+      }
+    }
+
+    enum SparseAxes{
+      centrality = 0,
+      trigger_pT = 1,
+      associated_pT = 2,
+      delta_eta = 3,
+      delta_phi = 4,
+      is_leading_jet = 5,
+      is_trigger_track = 6, // I have never used this, nor do I understand it. It is not used in the analysis.
+      event_plane_angle = 7,
+      z_vertex = 8,
+      delta_R = 9,
+      is_leading_track = 10,
+      track_eta = 11,
+      pion_TPC_nSigma = 12,
+      pion_TOF_nSigma = 13,
+      proton_TOF_nSigma = 14,
+      kaon_TOF_nSigma = 15,
+      electron_TOF_nSigma = 16,
+      has_TOF_hit = 17,
+    };
+
+    void AliAnalysisTaskEmcalJetHdEdxCorrelations::CreateSparses(){
       // NOTE: The bit encoding doesn't preserve the order defined here. It's
       //       just using the bit values.
-      UInt_t cifras = 0; // bit coded, see GetDimParams() below
-      if (fDoLessSparseAxes)
+      UInt_t jetHadronAxesBitCode = 0; // bit coded, see GetDimParams() below
+      if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1<<8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15 | 1<<17;
+        vector<SparseAxes> jetHadronAxes = {
+            centrality,
+            trigger_pT,
+            associated_pT,
+            delta_eta,
+            delta_phi,
+            z_vertex,
+            track_eta,
+            pion_TPC_nSigma,
+            pion_TOF_nSigma,
+            proton_TOF_nSigma,
+            kaon_TOF_nSigma,
+            has_TOF_hit
+            };
+        for (auto axis : jetHadronAxes)
+        {
+          jetHadronAxesBitCode |= 1 << axis;
+        }
       }
       else
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15 | 1 << 17;
-        ;
+        vector<SparseAxes> jetHadronAxes = {
+            centrality,
+            trigger_pT,
+            associated_pT,
+            delta_eta,
+            delta_phi,
+            event_plane_angle,
+            z_vertex,
+            track_eta,
+            pion_TPC_nSigma,
+            pion_TOF_nSigma,
+            proton_TOF_nSigma,
+            kaon_TOF_nSigma,
+            has_TOF_hit
+            };
+        for (auto axis : jetHadronAxes)
+        {
+          jetHadronAxesBitCode |= 1 << axis;
+        }
       }
-      if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
-      {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15 | 1 << 17;
-      }
-      fhnJH = NewTHnSparseF("fhnJH", cifras);
+      fhnJH = NewTHnSparseF("fhnJH", jetHadronAxesBitCode);
       fhnJH->Sumw2();
       fOutput->Add(fhnJH);
 
@@ -300,44 +347,76 @@ namespace PWGJE
         // The event plane angle does not need to be included because the semi-central determined that the EP angle didn't change
         // significantly for any of the EP orientations. However, it will be included so this can be demonstrated for the central
         // analysis if so desired.
-        if (fDoLessSparseAxes)
+        UInt_t mixedEventAxesBitCode = 0;
+        if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
         {
-          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 8 | 1 << 17;
+          vector<SparseAxes> mixedEventAxes = {
+              centrality,
+              trigger_pT,
+              associated_pT,
+              delta_eta,
+              delta_phi,
+              z_vertex,
+              has_TOF_hit
+              };
+          for (auto axis : mixedEventAxes)
+          {
+            mixedEventAxesBitCode |= 1 << axis;
+          }
         }
         else
         {
-          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 8 | 1 << 9 | 1 << 17;
+          vector<SparseAxes> mixedEventAxes = {
+              centrality,
+              trigger_pT,
+              associated_pT,
+              delta_eta,
+              delta_phi,
+              event_plane_angle,
+              z_vertex,
+              has_TOF_hit
+              };
+          for (auto axis : mixedEventAxes)
+          {
+            mixedEventAxesBitCode |= 1 << axis;
+          }
         }
-        if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
-        {
-          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 8 | 1 << 17;
-        }
-        fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);
+        fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", mixedEventAxesBitCode);
         fhnMixedEvents->Sumw2();
         fOutput->Add(fhnMixedEvents);
       }
 
       // Trigger THnSparse
-      cifras = 1 << 0 | 1 << 1 | 1 << 7 | 1<< 8;
+      UInt_t triggerAxesBitCode = 0;
       if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 8;
+        vector<SparseAxes> triggerAxes = {
+            centrality,
+            trigger_pT,
+            z_vertex,
+            };
+        for(auto axis : triggerAxes){
+          triggerAxesBitCode |= 1 << axis;
+        }
       }
-      fhnTrigger = NewTHnSparseF("fhnTrigger", cifras);
+      else{
+        vector<SparseAxes> triggerAxes = {
+            centrality,
+            trigger_pT,
+            event_plane_angle,
+            z_vertex,
+            };
+        for (auto axis : triggerAxes)
+        {
+          triggerAxesBitCode |= 1 << axis;
+        }
+      }
+      fhnTrigger = NewTHnSparseF("fhnTrigger", triggerAxesBitCode);
       fhnTrigger->Sumw2();
       fOutput->Add(fhnTrigger);
+    }
 
-      // Store hist manager output in the output list
-      TIter next(fHistManager.GetListOfHistograms());
-      TObject *obj = 0;
-      while ((obj = next()))
-      {
-        fOutput->Add(obj);
-      }
-
-      PostData(1, fOutput);
-
-      // Event Mixing
+    void AliAnalysisTaskEmcalJetHdEdxCorrelations::CreateEventPool(){
       Int_t poolSize = -1; // Maximum number of events. Set to -1 to avoid limits on number of events
       // ZVertex
       Int_t nZVertexBins = 10;
@@ -365,6 +444,32 @@ namespace PWGJE
 
       // Print pool properties
       fPoolMgr->Validate();
+    }
+
+    /**
+     * Perform run independent initializations, such as histograms and the event pool.
+     */
+    void AliAnalysisTaskEmcalJetHdEdxCorrelations::UserCreateOutputObjects()
+    {
+      // Call the base class implementation to get the base output.
+      AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
+
+      // Check that the task was initialized
+      if (!fConfigurationInitialized)
+      {
+        AliFatal("Task was not initialized. Please ensure that Initialize() was called!");
+      }
+      // Reinitialize the YAML configuration
+      fYAMLConfig.Reinitialize();
+
+      CreateHistograms();
+
+      CreateSparses();
+
+      PostData(1, fOutput);
+
+      // Event Mixing
+      CreateEventPool();
     }
 
     /**
@@ -444,6 +549,179 @@ namespace PWGJE
       return eventTrigger;
     }
 
+    void AliAnalysisTaskEmcalJetHdEdxCorrelations::MixEvents(AliJetContainer *jets, AliPIDResponse *pidResponse, TObjArray *tracksClone, std::vector<unsigned int> rejectedTrackIndices, bool useListOfRejectedIndices, Int_t current_event_multiplicity, Double_t zVertex, UInt_t eventTrigger, Double_t flattened_EP_angle)
+    {
+        
+      // event mixing
+
+      // 1. First get an event pool corresponding in mult (cent) and
+      //    zvertex to the current event. Once initialized, the pool
+      //    should contain nMix (reduced) events. This routine does not
+      //    pre-scan the chain. The first several events of every chain
+      //    will be skipped until the needed pools are filled to the
+      //    specified depth. If the pool categories are not too rare, this
+      //    should not be a problem. If they are rare, you could lose
+      //    statistics.
+
+      // 2. Collect the whole pool's content of tracks into one TObjArray
+      //    (bgTracks), which is effectively a single background super-event.
+
+      // 3. The reduced and bgTracks arrays must both be passed into
+      //    FillCorrelations(). Also nMix should be passed in, so a weight
+      //    of 1./nMix can be applied.
+
+      Double_t deltaPhi = 0;
+      Double_t deltaEta = 0;
+      Double_t deltaR = 0;
+      Double_t epAngle = 0;
+      Double_t eventActivity = 0;
+      Double_t jetPt = 0;
+      Double_t efficiency = -999;
+      Bool_t leadJet = kFALSE;
+      Bool_t isBiasedJet = kFALSE;
+      AliPIDResponse::EDetPidStatus TOFPIDstatus;
+      AliVTrack *bgTrack;
+
+      AliTLorentzVector bgTrackVec;
+
+      AliEventPool *pool = 0;
+      if (fBeamType == kAA || fBeamType == kpA)
+      { // everything but pp
+        pool = fPoolMgr->GetEventPool(fCent, zVertex);
+      }
+      else if (fBeamType == kpp)
+      { // pp only
+        pool = fPoolMgr->GetEventPool(static_cast<Double_t>(current_event_multiplicity), zVertex);
+      }
+
+      if (!pool)
+      {
+        if (fBeamType == kAA || fBeamType == kpA)
+          AliFatal(Form("No pool found for centrality = %f, zVertex = %f", fCent, zVertex));
+        else if (fBeamType == kpp)
+          AliFatal(Form("No pool found for ntracks_pp = %d, zVertex = %f", current_event_multiplicity, zVertex));
+          return;
+      }
+
+      // The number of events in the pool
+      Int_t nMix = pool->GetCurrentNEvents();
+      Double_t rhoVal = jets->GetRhoVal();
+      AliEmcalJet *leadingJet = jets->GetLeadingJet();
+      // The two bitwise and to zero yet are still equal when both are 0, so we allow for that possibility
+      if ((eventTrigger & fTriggerType) || eventTrigger == fTriggerType)
+      {
+        // check for a trigger jet
+        if (pool->IsReady() || pool->NTracksInPool() >= fMinNTracksMixedEvents || nMix >= fMinNEventsMixedEvents)
+        {
+
+          for (auto jet : jets->accepted())
+          {
+            // Require the found jet to be matched
+            // This match should be between detector and particle level MC
+            if (fIsEmbedded && fRequireMatchedJetWhenEmbedding)
+            {
+              bool foundMatchedJet = CheckForMatchedJet(jets, jet, "fHistJetMatchingMixedEventCuts");
+              if (foundMatchedJet == false)
+              {
+                continue;
+              }
+            }
+
+            if (fBeamType == kAA || fBeamType == kpA)
+            { // pA and AA
+              eventActivity = fCent;
+            }
+            else if (fBeamType == kpp)
+            {
+              eventActivity = static_cast<Double_t>(current_event_multiplicity);
+            }
+
+            // Jet properties
+            jetPt = AliAnalysisTaskEmcalJetHUtils::GetJetPt(jet, rhoVal);
+            // Determine if we have the lead jet
+            leadJet = kFALSE;
+            if (jet == leadingJet)
+            {
+              leadJet = kTRUE;
+            }
+            isBiasedJet = BiasedJet(jet);
+            // epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
+            // new way of getting qnvectors
+            if (fBeamType != kpp)
+            {
+              epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), flattened_EP_angle);
+            }
+
+            // Make sure event contains a biased jet above our threshold (reduce stats of sparse)
+            if (jetPt < 15 || isBiasedJet == kFALSE)
+              continue;
+
+            // Fill mixed-event histos here
+            for (Int_t jMix = 0; jMix < nMix; jMix++)
+            {
+              TObjArray *bgTracks = pool->GetEvent(jMix);
+
+              for (Int_t ibg = 0; ibg < bgTracks->GetEntries(); ibg++)
+              {
+                
+                bgTrack = dynamic_cast<AliVTrack *>(bgTracks->At(ibg));
+                if (!bgTrack)
+                {
+                  AliError(Form("%s:Failed to retrieve track from mixed events", GetName()));
+                  continue;
+                }
+
+                // NOTE: We don't need to apply the artificial track inefficiency here because we already applied
+                //       it when will filling into the event pool (in CloneAndReduceTrackList()).
+                Double_t hasTOFhit;
+
+                TOFPIDstatus = pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, bgTrack);
+                if (TOFPIDstatus == AliPIDResponse::kDetPidOk)
+                {
+                  hasTOFhit = 1;
+                }
+                else
+                {
+                  hasTOFhit = 0;
+                }
+
+                // Fill into TLorentzVector for use with functions below
+                bgTrackVec.Clear();
+                bgTrackVec.SetPtEtaPhiE(bgTrack->Pt(), bgTrack->Eta(), bgTrack->Phi(), 0);
+
+                // Calculate single particle tracking efficiency of mixed events for correlations
+                efficiency = EffCorrection(bgTrackVec.Eta(), bgTrackVec.Pt());
+
+                // Phi is [-0.5*TMath::Pi(), 3*TMath::Pi()/2.]
+                GetDeltaEtaDeltaPhiDeltaR(bgTrackVec, jet, deltaEta, deltaPhi, deltaR);
+                if (fBeamType != AliAnalysisTaskEmcal::kpp)
+                {
+                    double triggerEntries[] = {eventActivity, jetPt, bgTrackVec.Pt(), deltaEta, deltaPhi, epAngle, zVertex, hasTOFhit};
+                    FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
+                }
+                else
+                {
+                  double triggerEntries[] = {eventActivity, jetPt, bgTrackVec.Pt(), deltaEta, deltaPhi, zVertex, hasTOFhit};
+                  FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      
+      // The two bitwise and to zero yet are still equal when both are 0, so we allow for that possibility
+      if ((eventTrigger & fMixingEventType) || eventTrigger == fMixingEventType)
+      {
+        tracksClone = CloneAndReduceTrackList(rejectedTrackIndices, useListOfRejectedIndices);
+
+        // update pool if jet in event or not
+        pool->UpdatePool(tracksClone);
+      }
+      return;
+    }
+
     /**
      * Main loop called for each event by AliAnalysisTaskEmcal.
      */
@@ -465,6 +743,7 @@ namespace PWGJE
         AliError(Form("%s: Unable to retrieve jets!", GetName()));
         return kFALSE;
       }
+    
 
       // Keep track of the tracks which are rejected with an aritificial track inefficiency
       std::vector<unsigned int> rejectedTrackIndices;
@@ -492,8 +771,9 @@ namespace PWGJE
       Double_t epAngle = 0;
       // Event plane angle from V0C
       Double_t EP_angle_from_calib = 0;
-      // Event activity (centrality or multipilicity)
-      Double_t eventActivity = 0;
+      Double_t flattenedEPangle = 0;
+          // Event activity (centrality or multipilicity)
+          Double_t eventActivity = 0;
       // Efficiency correction
       Double_t efficiency = -999;
       // For comparison to the current jet
@@ -501,14 +781,17 @@ namespace PWGJE
       // For getting the proper properties of tracks
       AliTLorentzVector track;
       AliPIDResponse::EDetPidStatus TOFPIDstatus;
+      TObjArray *tracksClone = 0;
 
-          // Get PID Response
-          AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
+      // Get PID Response
+      AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
       if (!pidResponse)
       {
         AliErrorStream() << "PID Response not available\n";
         return kFALSE;
       }
+
+
 
       // Determine the trigger for the current event
       UInt_t eventTrigger = RetrieveTriggerMask();
@@ -528,7 +811,7 @@ namespace PWGJE
         // and applying them to the EP angle
         // The formula for the correction to the n=2 event plane is:
         // EP_angle_corrected = EP_angle + 1/2*(2*(-sin_average)*cos(2*EP_angle) + 2*(cos_average)*sin(2*EP_angle)+(-sin_average)*cos(4*EP_angle)+(-cos_average)*sin(4*EP_angle))
-        Double_t flattenedEPangle = GetFlattenedEPAngle(EP_angle_from_calib);
+        flattenedEPangle = GetFlattenedEPAngle(EP_angle_from_calib);
         fHistEPAngle->Fill(flattenedEPangle);
       }
 
@@ -597,7 +880,7 @@ namespace PWGJE
         // new way of getting qnvectors
         if (fBeamType != kpp)
         {
-          epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), EP_angle_from_calib);
+          epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), flattenedEPangle);
         }
         // Fill jet properties
         fHistJetEtaPhi->Fill(jet->Eta(), jet->Phi());
@@ -630,7 +913,7 @@ namespace PWGJE
             // Get proper track properties
             track.Clear();
             track = trackIter->first;
-            const AliVTrack *vTrack = dynamic_cast<AliVTrack *>(trackIter->second);
+            const AliVTrack *vTrack = dynamic_cast<const AliVTrack *>(trackIter->second);
             if (!vTrack)
             {
               AliErrorStream() << "Could not retrieve associated track from trackIter, skipping track.\n";
@@ -715,166 +998,10 @@ namespace PWGJE
       }
         // Prepare to do event mixing
 
-        // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
-        TObjArray *tracksClone = 0;
 
         if (fDoEventMixing == kTRUE)
         {
-
-          // event mixing
-
-          // 1. First get an event pool corresponding in mult (cent) and
-          //    zvertex to the current event. Once initialized, the pool
-          //    should contain nMix (reduced) events. This routine does not
-          //    pre-scan the chain. The first several events of every chain
-          //    will be skipped until the needed pools are filled to the
-          //    specified depth. If the pool categories are not too rare, this
-          //    should not be a problem. If they are rare, you could lose
-          //    statistics.
-
-          // 2. Collect the whole pool's content of tracks into one TObjArray
-          //    (bgTracks), which is effectively a single background super-event.
-
-          // 3. The reduced and bgTracks arrays must both be passed into
-          //    FillCorrelations(). Also nMix should be passed in, so a weight
-          //    of 1./nMix can be applied.
-
-          AliEventPool *pool = 0;
-          if (fBeamType == kAA || fBeamType == kpA)
-          { // everything but pp
-            pool = fPoolMgr->GetEventPool(fCent, zVertex);
-          }
-          else if (fBeamType == kpp)
-          { // pp only
-            pool = fPoolMgr->GetEventPool(static_cast<Double_t>(tracks->GetNTracks()), zVertex);
-          }
-
-          if (!pool)
-          {
-            if (fBeamType == kAA || fBeamType == kpA)
-              AliFatal(Form("No pool found for centrality = %f, zVertex = %f", fCent, zVertex));
-            else if (fBeamType == kpp)
-              AliFatal(Form("No pool found for ntracks_pp = %d, zVertex = %f", tracks->GetNTracks(), zVertex));
-            return kTRUE;
-          }
-
-          // The number of events in the pool
-          Int_t nMix = pool->GetCurrentNEvents();
-
-          // The two bitwise and to zero yet are still equal when both are 0, so we allow for that possibility
-          if ((eventTrigger & fTriggerType) || eventTrigger == fTriggerType)
-          {
-            // check for a trigger jet
-            if (pool->IsReady() || pool->NTracksInPool() >= fMinNTracksMixedEvents || nMix >= fMinNEventsMixedEvents)
-            {
-
-              for (auto jet : jets->accepted())
-              {
-                // Require the found jet to be matched
-                // This match should be between detector and particle level MC
-                if (fIsEmbedded && fRequireMatchedJetWhenEmbedding)
-                {
-                  bool foundMatchedJet = CheckForMatchedJet(jets, jet, "fHistJetMatchingMixedEventCuts");
-                  if (foundMatchedJet == false)
-                  {
-                    continue;
-                  }
-                }
-
-                if (fBeamType == kAA || fBeamType == kpA)
-                { // pA and AA
-                  eventActivity = fCent;
-                }
-                else if (fBeamType == kpp)
-                {
-                  eventActivity = static_cast<Double_t>(tracks->GetNTracks());
-                }
-
-                // Jet properties
-                jetPt = AliAnalysisTaskEmcalJetHUtils::GetJetPt(jet, rhoVal);
-                // Determine if we have the lead jet
-                leadJet = kFALSE;
-                if (jet == leadingJet)
-                {
-                  leadJet = kTRUE;
-                }
-                isBiasedJet = BiasedJet(jet);
-                // epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
-                // new way of getting qnvectors
-                if (fBeamType != kpp)
-                {
-                  epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), EP_angle_from_calib);
-                }
-                // Make sure event contains a biased jet above our threshold (reduce stats of sparse)
-                if (jetPt < 15 || isBiasedJet == kFALSE)
-                  continue;
-
-                // Fill mixed-event histos here
-                for (Int_t jMix = 0; jMix < nMix; jMix++)
-                {
-                  TObjArray *bgTracks = pool->GetEvent(jMix);
-
-                  for (Int_t ibg = 0; ibg < bgTracks->GetEntries(); ibg++)
-                  {
-                    AliVTrack *bgTrack = static_cast<AliVTrack *>(bgTracks->At(ibg));
-                    if (!bgTrack)
-                    {
-                      AliError(Form("%s:Failed to retrieve tracks from mixed events", GetName()));
-                    }
-
-                    // NOTE: We don't need to apply the artificial track inefficiency here because we already applied
-                    //       it when will filling into the event pool (in CloneAndReduceTrackList()).
-                    Double_t hasTOFhit;
-
-                    AliPIDResponse::EDetPidStatus status = pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, bgTrack);
-                    if(status == AliPIDResponse::kDetPidOk){
-                      hasTOFhit = 1;
-                    } else {
-                      hasTOFhit = 0;
-                    }
-
-                    // Fill into TLorentzVector for use with functions below
-                    track.Clear();
-                    track.SetPtEtaPhiE(bgTrack->Pt(), bgTrack->Eta(), bgTrack->Phi(), 0);
-
-                    // Calculate single particle tracking efficiency of mixed events for correlations
-                    efficiency = EffCorrection(track.Eta(), track.Pt());
-
-                    // Phi is [-0.5*TMath::Pi(), 3*TMath::Pi()/2.]
-                    GetDeltaEtaDeltaPhiDeltaR(track, jet, deltaEta, deltaPhi, deltaR);
-                    if (fBeamType != AliAnalysisTaskEmcal::kpp)
-                    {
-                      if (fDoLessSparseAxes)
-                      { // check if we want all the axis filled
-                        double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, epAngle, zVertex, hasTOFhit};
-                        FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
-                      }
-                      else
-                      {
-                        double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, epAngle, zVertex, deltaR, hasTOFhit};
-                        FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
-                      }
-                    }
-                    else
-                    {
-                      double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, zVertex, hasTOFhit};
-                      FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
-                    }
-                  }
-                }
-              }
-            }
-          }
-
-          // The two bitwise and to zero yet are still equal when both are 0, so we allow for that possibility
-          if ((eventTrigger & fMixingEventType) || eventTrigger == fMixingEventType)
-          {
-            tracksClone = CloneAndReduceTrackList(rejectedTrackIndices, useListOfRejectedIndices);
-
-            // update pool if jet in event or not
-            pool->UpdatePool(tracksClone);
-          }
-
+          MixEvents(jets, pidResponse, tracksClone, rejectedTrackIndices, useListOfRejectedIndices, tracks->GetNTracks(), zVertex, eventTrigger, flattenedEPangle);
         } // end of event mixing
 
         return kTRUE;
@@ -1257,18 +1384,22 @@ namespace PWGJE
     {
       // clones a track list by using AliBasicTrack which uses much less memory (used for event mixing)
       TObjArray *tracksClone = new TObjArray;
-      tracksClone->SetOwner(kTRUE);
+      // tracksClone->SetOwner(kTRUE);
 
       // Loop over all tracks
-      AliVParticle *particle = 0;
-      AliBasicParticle *clone = 0;
+      AliVTrack *particle;
+      // AliBasicParticle *clone = 0;
       AliTrackContainer *tracks = GetTrackContainer("tracksForCorrelations");
 
       auto particlesIter = tracks->accepted_momentum();
       for (auto particleIter = particlesIter.begin(); particleIter != particlesIter.end(); particleIter++)
       {
         // Retrieve the particle
-        particle = particleIter->second;
+        particle = dynamic_cast<AliVTrack *>(particleIter->second);
+        if(!particle){
+          AliDebugStream(4) << "Could not retrieve associated track from particleIter, skipping track.\n";
+          continue;
+        }
 
         // Artificial inefficiency
         bool rejectParticle = CheckArtificialTrackEfficiency(particleIter.current_index(), rejectedTrackIndices, useRejectedList);
@@ -1283,12 +1414,12 @@ namespace PWGJE
         if (trackPtBin > -1)
           fHistTrackEtaPhi[trackPtBin]->Fill(particle->Eta(), particle->Phi());
 
-        // Create new particle
-        clone = new AliBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
-        // Set so that we can do comparisons using the IsEqual() function.
-        clone->SetUniqueID(particle->GetUniqueID());
+        // // Create new particle
+        // clone = new AliBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
+        // // Set so that we can do comparisons using the IsEqual() function.
+        // clone->SetUniqueID(particle->GetUniqueID());
 
-        tracksClone->Add(clone);
+        tracksClone->Add(particle);
       }
 
       return tracksClone;

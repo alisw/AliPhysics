@@ -233,6 +233,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC18e1a,        //!< anchored LHC15o pass1 - general purpose - 0-10%
         kLHC18e1b,        //!< anchored LHC15o pass1 - general purpose - 10-50%
         kLHC18e1c,        //!< anchored LHC15o pass1 - general purpose - 50-90%
+        kLHC20j6a,        //!< anchored LHC15o pass2 - general purpose - MB
+        kLHC20j6b,        //!< anchored LHC15o pass2 - general purpose - 0-10%
+        kLHC20j6c,        //!< anchored LHC15o pass2 - general purpose - 10-50%
+        kLHC20j6d,        //!< anchored LHC15o pass2 - general purpose - 50-90%
         kLHC18l8a,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC18l8b,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC18l8c,        //!< anchored to LHC18qr    - general purpose Pythia8
@@ -240,9 +244,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC19h2b,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC19h2c,        //!< anchored to LHC18qr    - general purpose Pythia8
         kLHC19h3,         //!< anchored to LHC18qr    - general purpose Pythia8 with added GA signals
-        kLHC20e3a,        //!< anchored to LHC18qr pass3 - general purpose Pythia8
-        kLHC20e3b,        //!< anchored to LHC18qr pass3 - general purpose Pythia8
-        kLHC20e3c,        //!< anchored to LHC18qr pass3 - general purpose Pythia8
+        kLHC20e3a,        //!< anchored to LHC18qr pass3 - general purpose Pythia8 - MB
+        kLHC20e3b,        //!< anchored to LHC18qr pass3 - general purpose Pythia8 - 0-10%
+        kLHC20e3c,        //!< anchored to LHC18qr pass3 - general purpose Pythia8 - 30-50%
+        kLHC22b5,         //!< anchored to LHC18qr pass3 - general purpose Pythia8 - 50-90%
         kLHC20g10,        //!< anchored to LHC18qr pass3 - general purpose Pythia8, with added GA signals
 
         // MC upgrade

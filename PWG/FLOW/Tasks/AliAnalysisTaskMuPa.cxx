@@ -53,6 +53,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fUseFixedNumberOfRandomlySelectedParticles(kFALSE),
  fFixedNumberOfRandomlySelectedParticles(0),
  fHistogramBookingsWithRunInfoWereUpdated(kFALSE),
+ fInsanityChecksForEachParticle(kFALSE),
 
  // QA:
  fQAList(NULL),
@@ -224,6 +225,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fUseFixedNumberOfRandomlySelectedParticles(kFALSE),
  fFixedNumberOfRandomlySelectedParticles(0),
  fHistogramBookingsWithRunInfoWereUpdated(kFALSE),
+ fInsanityChecksForEachParticle(kFALSE),
 
  // QA:
  fQAList(NULL),
@@ -607,12 +609,38 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    } 
   } // if(fUseWeights[2])
 
+  // Differential particle weights:
+  if(fUseDiffWeights[wPHIPT])
+  {
+   wPhi = DiffWeight(dPhi,dPt,wPHIPT); // corresponding differential phi weight as a function of pt
+   //cout<<"wPhi(pt) = "<<wPhi<<endl;
+   if(!(wPhi > 0.))
+   {
+    cout<<"differential wPhi(Pt) is not positive, skipping this particle for the time being..."<<endl;
+    cout<<Form("iTrack = %d\ndPhi = %f\ndPt = %f\nwPhi(Pt) = %f",iTrack,dPhi,dPt,wPhi)<<endl;
+    sleep(2);
+    continue;
+   } 
+  } // if(fUseDiffWeights[wPHIPT])
+  if(fUseDiffWeights[wPHIETA])
+  {
+   wPhi = DiffWeight(dPhi,dEta,wPHIETA); // corresponding differential phi weight as a function of eta
+   //cout<<"wPhi(eta) = "<<wPhi<<endl;
+   if(!(wPhi > 0.))
+   {
+    cout<<"differential wPhi(eta) is not positive, skipping this particle for the time being..."<<endl;
+    cout<<Form("iTrack = %d\ndPhi = %f\ndEta = %f\nwPhi(Eta) = %f",iTrack,dPhi,dEta,wPhi)<<endl;
+    sleep(2);
+    continue;
+   } 
+  } // if(fUseDiffWeights[wPHIETA])
+
   for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
   {
    for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
    {
-    if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]){wToPowerP = pow(wPhi*wPt*wEta,wp);} 
-    fQvector[h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi));    
+    if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]||fUseDiffWeights[wPHIPT]||fUseDiffWeights[wPHIETA]){wToPowerP = pow(wPhi*wPt*wEta,wp);}
+    fQvector[h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi));   
    } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
   } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
 
@@ -622,7 +650,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    Int_t bin = -1;
    if(fCalculateCorrelations)
    {
-    bin = fCorrelationsPro[0][0][AFO_PT]->FindBin(dPt);
+    bin = fCorrelationsPro[0][0][AFO_PT]->FindBin(dPt); // TBI 20231026 When diff wights are used, I need to unity this with DiffWeight(...), so as not to duplicate
     if(0>=bin || fCorrelationsPro[0][0][AFO_PT]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
     {
      Red(Form("dPt = %f, bin = %d",dPt,bin));
@@ -635,7 +663,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
     { 
      if(fTest0Pro[o][0][AFO_PT]) 
      {
-      bin = fTest0Pro[o][0][AFO_PT]->FindBin(dPt);
+      bin = fTest0Pro[o][0][AFO_PT]->FindBin(dPt); // TBI 20231026 When diff wights are used, I need to unity this with DiffWeight(...), so as not to duplicate
       if(0>=bin || fTest0Pro[o][0][AFO_PT]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
       {
        Red(Form("dPt = %f, bin = %d",dPt,bin));
@@ -650,7 +678,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    {
     for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
     {
-     if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]){wToPowerP = pow(wPhi*wPt*wEta,wp);} 
+     if(fUseDiffWeights[wPHIPT]){wToPowerP = pow(wPhi*wPt*wEta,wp);} // TBI 20231029 do I need here also || fUseDiffWeights[wPHIETA] ?
      fqvector[PTq][bin-1][h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi));
     } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
    } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
@@ -671,7 +699,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    Int_t bin = -1;
    if(fCalculateCorrelations)
    {
-    bin = fCorrelationsPro[0][0][AFO_ETA]->FindBin(dEta);
+    bin = fCorrelationsPro[0][0][AFO_ETA]->FindBin(dEta); // TBI 20231026 When diff wights are used, I need to unity this with DiffWeight(...), so as not to duplicate
     if(0>=bin || fCorrelationsPro[0][0][AFO_ETA]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
     {
      Red(Form("dEta = %f, bin = %d",dEta,bin));
@@ -684,7 +712,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
     { 
      if(fTest0Pro[o][0][AFO_ETA]) 
      {
-      bin = fTest0Pro[o][0][AFO_ETA]->FindBin(dEta);
+      bin = fTest0Pro[o][0][AFO_ETA]->FindBin(dEta); // TBI 20231026 When diff wights are used, I need to unity this with DiffWeight(...), so as not to duplicate
       if(0>=bin || fTest0Pro[o][0][AFO_ETA]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
       {
        Red(Form("dEta = %f, bin = %d",dEta,bin));
@@ -699,7 +727,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    {
     for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
     {
-     if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]){wToPowerP = pow(wPhi*wPt*wEta,wp);}
+     if(fUseDiffWeights[wPHIETA]){wToPowerP = pow(wPhi*wPt*wEta,wp);} // TBI 20231029 do I need here also || fUseDiffWeights[wPHIPT] ?
      fqvector[ETAq][bin-1][h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi)); 
     } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
    } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
@@ -1202,6 +1230,15 @@ void AliAnalysisTaskMuPa::InitializeArraysForWeights()
   fWeightsHist[w] = NULL;
  }
 
+ for(Int_t w=0;w<eDiffWeights_N;w++) 
+ {
+  fUseDiffWeights[w] = kFALSE;
+  for(Int_t b=0;b<fMaxBinsDiffWeights;b++) 
+  {
+   fDiffWeightsHist[w][b] = NULL;
+  }
+ }
+
 } // void AliAnalysisTaskMuPa::InitializeArraysForWeights()
 
 //================================================================================================================
@@ -1493,7 +1530,8 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
  // a) Kinematics; 
  // b) DCA;
  // c) Remaining particle histograms; 
- // d) The default particle cuts. 
+ // d) The default particle cuts;
+ // e) 2D particle histograms.
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
@@ -1526,10 +1564,25 @@ void AliAnalysisTaskMuPa::InitializeArraysForControlParticleHistograms()
  {
   for(Int_t rs=0;rs<2;rs++)
   {
-   for(Int_t t=0;t<gParticleHistograms;t++) // type, see enum 'eParticle'
+   for(Int_t t=0;t<eParticleHistograms_N;t++) // type, see enum 'eParticleHistograms'
    {
     fParticleHist[ba][rs][t] = NULL; 
-   } // for(Int_t t=0;t<gParticleHistograms;t++)
+   } // for(Int_t t=0;t<eParticleHistograms_N;t++)
+  } // for(Int_t rs=0;rs<2;rs++)
+ } // for(Int_t ba=0;ba<2;ba++)
+
+ // d) The default particle cuts: 
+ // ...
+
+ // e) 2D particle histograms:
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t rs=0;rs<2;rs++)
+  {
+   for(Int_t t=0;t<eParticleHistograms2D_N;t++) // type, see enum 'eParticleHistograms2D'
+   {
+    fParticleHist2D[ba][rs][t] = NULL; 
+   } // for(Int_t t=0;t<eParticleHistograms2D_N;t++)
   } // for(Int_t rs=0;rs<2;rs++)
  } // for(Int_t ba=0;ba<2;ba++)
 
@@ -1661,6 +1714,33 @@ void AliAnalysisTaskMuPa::InsanityChecks()
   if(fKineDependenceBins[ETAq]->GetSize()<2){cout<<__LINE__<<endl;exit(1);}
  }
 
+ // j) Particle weights:
+ if(fUseWeights[0] && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]) 
+ {
+  Red(Form("Not tested and finalized yet, in UserExec() I need to re-think how constant phi weights are used for fqvector[...] . Same for other weights. "));
+  cout<<__LINE__<<endl;exit(1);
+ }
+ if(fUseWeights[0] && fUseDiffWeights[wPHIPT]) 
+ {
+  Red(Form("Not tested and fianlized yet, in UserExec() I need to re-think the constraint if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]). Same for other weights."));
+  cout<<__LINE__<<endl;exit(1);
+ }
+ if(fUseDiffWeights[wPHIPT] && fUseDiffWeights[wPHIETA]) 
+ {
+  Red(Form("Not tested yet, see the comments next to filling of fqvector[...] in UserExec()"));
+  cout<<__LINE__<<endl;exit(1);
+ }
+ if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT] && fUseDiffWeights[wPHIETA]) 
+ {
+  Red(Form("Not tested and finalized yet, in UserExec() I need to re-think how in this case weights are used for fqvector[...] ."));
+  cout<<__LINE__<<endl;exit(1);
+ }
+ if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA] && fUseDiffWeights[wPHIPT]) 
+ {
+  Red(Form("Not tested and finalized yet, in UserExec() I need to re-think how in this case weights are used for fqvector[...] ."));
+  cout<<__LINE__<<endl;exit(1);
+ }
+
  //Green("=> Done with InsanityChecks()!");
 
 } // void AliAnalysisTaskMuPa::InsanityChecks()
@@ -1673,7 +1753,7 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
- fBasePro = new TProfile("fBasePro","flags for the whole analysis",16,0.,16.);
+ fBasePro = new TProfile("fBasePro","flags for the whole analysis",17,0.,17.);
  fBasePro->SetStats(kFALSE);
  fBasePro->SetLineColor(COLOR);
  fBasePro->SetFillColor(FILLCOLOR);
@@ -1693,6 +1773,7 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
  fBasePro->GetXaxis()->SetBinLabel(14,"fUseFixedNumberOfRandomlySelectedParticles"); fBasePro->Fill(13.5,fUseFixedNumberOfRandomlySelectedParticles);
  fBasePro->GetXaxis()->SetBinLabel(15,"fFixedNumberOfRandomlySelectedParticles"); fBasePro->Fill(14.5,fFixedNumberOfRandomlySelectedParticles);
  fBasePro->GetXaxis()->SetBinLabel(16,"fFillControlParticleHistograms"); fBasePro->Fill(15.5,fFillControlParticleHistograms);
+ fBasePro->GetXaxis()->SetBinLabel(17,"fInsanityChecksForEachParticle"); fBasePro->Fill(16.5,fInsanityChecksForEachParticle);
 
  fBaseList->Add(fBasePro);
 
@@ -2265,7 +2346,8 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
  // b) Common local labels;
  // c) Kinematics;
  // d) DCA;
- // e) Remaining.
+ // e) Remaining 1D;
+ // f) 2D.
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);} 
 
@@ -2298,7 +2380,7 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
  TString sba[2] = {"before particle cuts","after particle cuts"};
  TString srs[2] = {"reconstructed","simulated"};
  TString skv[gKinematicVariables] = {"#varphi","p_{T}","#eta","energy","charge"};
- TString stype[gParticleHistograms] = {"TPCNcls","TPCnclsS","TPCnclsFractionShared","TPCNCrossedRows","TPCChi2perNDF","TPCFoundFraction","Chi2TPCConstrainedVsGlobal","ITSNcls","ITSChi2perNDF",
+ TString stype[eParticleHistograms_N] = {"TPCNcls","TPCnclsS","TPCnclsFractionShared","TPCNCrossedRows","TPCChi2perNDF","TPCFoundFraction","Chi2TPCConstrainedVsGlobal","ITSNcls","ITSChi2perNDF",
                                        "TPCNclsF","HasPointOnITSLayer","IsGlobalConstrained"};
 
  // c) Kinematics:
@@ -2350,13 +2432,13 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
   Green(" OK!"); sleep(1);
  }
 
- // e) Remaining:
+ // e) Remaining 2D:
  for(Int_t ba=0;ba<2;ba++)
  {
   for(Int_t rs=0;rs<2;rs++)
   {
    if(fRealData && 1==rs){continue;}
-   for(Int_t t=0;t<gParticleHistograms;t++) // type, see enum 'eParticle'
+   for(Int_t t=0;t<eParticleHistograms_N;t++) // type, see enum 'eParticleHistograms'
    {
     fParticleHist[ba][rs][t] = new TH1D(Form("fParticleHist[%d][%d][%d]",ba,rs,t),Form("%s, %d, %s, %s",fRunNumber.Data(),fFilterBit,sba[ba].Data(),srs[rs].Data()),(Int_t)fParticleBins[t][0],fParticleBins[t][1],fParticleBins[t][2]);  
     fParticleHist[ba][rs][t]->GetXaxis()->SetTitle(stype[t].Data());
@@ -2364,12 +2446,55 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
     fParticleHist[ba][rs][t]->SetLineColor(fBeforeAfterColor[ba]);
     fParticleHist[ba][rs][t]->SetFillColor(fBeforeAfterColor[ba]-10);
     fControlParticleHistogramsList->Add(fParticleHist[ba][rs][t]); 
-   } // for(Int_t t=0;t<gParticleHistograms;t++)
+   } // for(Int_t t=0;t<eParticleHistograms_N;t++)
 
    // fine tuning for some histograms:
    fParticleHist[ba][rs][IsGlobalConstrained]->GetXaxis()->SetBinLabel(1,"IsGlobalConstrained = kTRUE"); 
    fParticleHist[ba][rs][IsGlobalConstrained]->GetXaxis()->SetBinLabel(2,"IsGlobalConstrained = kFALSE"); 
 
+  } // for(Int_t rs=0;rs<2;rs++)
+ } // for(Int_t ba=0;ba<2;ba++)
+
+ // f) 2D:
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t rs=0;rs<2;rs++)
+  {
+   if(fRealData && 1==rs){continue;}
+
+   // *) phi vs pt:
+   // per demand, custom binning for pT axis:
+   if(fUseCustomKineDependenceBins[PTq])
+   {
+    fParticleHist2D[ba][rs][PHIPT] = new TH2D(Form("fParticleHist2D[%d][%d][%d]",ba,rs,PHIPT),Form("%s, %d, %s, %s",fRunNumber.Data(),fFilterBit,sba[ba].Data(),srs[rs].Data()),(Int_t)fParticleBins2D[PHIPT][X][0],fParticleBins2D[PHIPT][X][1],fParticleBins2D[PHIPT][X][2], // TBI 20231025 yes, at the moment for phi bins I do not have support for variable bin width. 
+    fKineDependenceBins[PTq]->GetSize()-1,fKineDependenceBins[PTq]->GetArray());
+   }
+   else
+   {
+    // default binning for both phi and pt axis:
+    fParticleHist2D[ba][rs][PHIPT] = new TH2D(Form("fParticleHist2D[%d][%d][%d]",ba,rs,PHIPT),Form("%s, %d, %s, %s",fRunNumber.Data(),fFilterBit,sba[ba].Data(),srs[rs].Data()),(Int_t)fParticleBins2D[PHIPT][X][0],fParticleBins2D[PHIPT][X][1],fParticleBins2D[PHIPT][X][2], // TBI 20231025 yes, at the moment for phi bins I do not have support for variable bin width. 
+(Int_t)fParticleBins2D[PHIPT][Y][0],fParticleBins2D[PHIPT][Y][1],fParticleBins2D[PHIPT][Y][2]);
+   }
+   fParticleHist2D[ba][rs][PHIPT]->GetXaxis()->SetTitle("#varphi");
+   fParticleHist2D[ba][rs][PHIPT]->GetYaxis()->SetTitle("p_{T}");
+   fControlParticleHistogramsList->Add(fParticleHist2D[ba][rs][PHIPT]); 
+ 
+   // *) phi vs eta:
+   // per demand, custom binning for eta axis:
+   if(fUseCustomKineDependenceBins[ETAq])
+   {
+    fParticleHist2D[ba][rs][PHIETA] = new TH2D(Form("fParticleHist2D[%d][%d][%d]",ba,rs,PHIETA),Form("%s, %d, %s, %s",fRunNumber.Data(),fFilterBit,sba[ba].Data(),srs[rs].Data()),(Int_t)fParticleBins2D[PHIETA][X][0],fParticleBins2D[PHIETA][X][1],fParticleBins2D[PHIETA][X][2], // TBI 20231025 yes, at the moment for phi bins I do not have support for variable bin width. 
+    fKineDependenceBins[ETAq]->GetSize()-1,fKineDependenceBins[ETAq]->GetArray());
+   }
+   else
+   {
+    // default binning for both phi and pt axis:
+    fParticleHist2D[ba][rs][PHIETA] = new TH2D(Form("fParticleHist2D[%d][%d][%d]",ba,rs,PHIETA),Form("%s, %d, %s, %s",fRunNumber.Data(),fFilterBit,sba[ba].Data(),srs[rs].Data()),(Int_t)fParticleBins2D[PHIETA][X][0],fParticleBins2D[PHIETA][X][1],fParticleBins2D[PHIETA][X][2], // TBI 20231025 yes, at the moment for phi bins I do not have support for variable bin width. 
+(Int_t)fParticleBins2D[PHIETA][Y][0],fParticleBins2D[PHIETA][Y][1],fParticleBins2D[PHIETA][Y][2]);
+   }
+   fParticleHist2D[ba][rs][PHIETA]->GetXaxis()->SetTitle("#varphi");
+   fParticleHist2D[ba][rs][PHIETA]->GetYaxis()->SetTitle("#eta");
+   fControlParticleHistogramsList->Add(fParticleHist2D[ba][rs][PHIETA]); 
   } // for(Int_t rs=0;rs<2;rs++)
  } // for(Int_t ba=0;ba<2;ba++)
 
@@ -2759,12 +2884,13 @@ void AliAnalysisTaskMuPa::BookWeightsHistograms()
 
  // a) Book the profile holding flags;
  // b) Common local labels;
- // c) Histograms.
+ // c) Histograms for weights;
+ // d) Histograms for differential weights.
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);} 
 
  // a) Book the profile holding flags:
- fWeightsFlagsPro = new TProfile("fWeightsFlagsPro","flags for particle weights",3,0.,3.);
+ fWeightsFlagsPro = new TProfile("fWeightsFlagsPro","flags for particle weights",5,0.,5.);
  fWeightsFlagsPro->SetStats(kFALSE);
  fWeightsFlagsPro->SetLineColor(COLOR);
  fWeightsFlagsPro->SetFillColor(FILLCOLOR);
@@ -2772,9 +2898,16 @@ void AliAnalysisTaskMuPa::BookWeightsHistograms()
  fWeightsFlagsPro->GetXaxis()->SetBinLabel(1,"w_{#varphi}");  
  fWeightsFlagsPro->GetXaxis()->SetBinLabel(2,"w_{p_{t}}");  
  fWeightsFlagsPro->GetXaxis()->SetBinLabel(3,"w_{#eta}"); 
+ fWeightsFlagsPro->GetXaxis()->SetBinLabel(4,"w_{#varphi}(p_{t})"); 
+ fWeightsFlagsPro->GetXaxis()->SetBinLabel(5,"w_{#varphi}(#eta)"); 
+
  for(Int_t w=0;w<gWeights;w++) // use weights [phi,pt,eta]
  { 
   if(fUseWeights[w])fWeightsFlagsPro->Fill(w+0.5,1.);
+ }
+ for(Int_t w=0;w<eDiffWeights_N;w++) // use differential weights [phipt,phieta,...]
+ { 
+  if(fUseDiffWeights[w])fWeightsFlagsPro->Fill(w+3.5,1.); // TBI 20231026 This hadrwired offset of +3.5 will bite me sooner or later, but nevermind now...
  }
  fWeightsList->Add(fWeightsFlagsPro);
 
@@ -2782,7 +2915,7 @@ void AliAnalysisTaskMuPa::BookWeightsHistograms()
  TString sVariable[gWeights] = {"#varphi","p_{t}","#eta"}; // [phi,pt,eta,rapidity]
  TString sWeights[gWeights] = {"w_{#varphi}","w_{p_{t}}","w_{#eta}"};
 
- // c) Histograms:
+ // c) Histograms for weights:
  for(Int_t w=0;w<gWeights;w++) // use weights [phi,pt,eta]
  {
   if(!fUseWeights[w]){continue;}
@@ -2797,6 +2930,32 @@ void AliAnalysisTaskMuPa::BookWeightsHistograms()
   }
   fWeightsList->Add(fWeightsHist[w]);
  } // for(Int_t w=0;w<gWeights;w++) // use weights [phi,pt,eta]
+
+ // d) Histograms for differential weights:
+ Int_t nBinsForDiffWeights[eDiffWeights_N] = { fKineDependenceBins[PTq]->GetSize()-1, fKineDependenceBins[ETAq]->GetSize()-1 }; // TBI 20231026 this is shaky, it works only because PTq = 0 and ETAq = 1, but I will have to reimplement this, when this is generalized further. 
+ for(Int_t w=0;w<eDiffWeights_N;w++) // use differential weights [phipt,phieta,...]
+ {
+  if(!fUseDiffWeights[w]){continue;}
+  for(Int_t b=0;b<nBinsForDiffWeights[w];b++) // TBI 20231026 nBinsForDiffWeights[w] is a landmine, see the comment above for  Int_t nBinsForDiffWeights[eDiffWeights_N]
+  {
+   if(!fDiffWeightsHist[w][b]) // yes, because these histos are cloned from the external ones, see SetWeightsHist(TH1D* const hist, const char *variable)
+   {
+
+    cout << " TBI 20231026 not implemented yet. Just review, finalize and enable the commented lines below." << endl; cout<<__LINE__<<endl; exit(1);
+/*
+    fDiffWeightsHist[w][b] = new TH1D(Form("fDiffWeightsHist[%d][%d]",w,b),"",(Int_t)fKinematicsBins[w][0],fKinematicsBins[w][1],fKinematicsBins[w][2]);
+    fDiffWeightsHist[w][b]->SetTitle(Form("Particle weights for %s",sWeights[w].Data()));
+    fDiffWeightsHist[w][b]->SetStats(kFALSE);
+    fDiffWeightsHist[w][b]->GetXaxis()->SetTitle(sVariable[w].Data());
+    fDiffWeightsHist[w][b]->SetFillColor(FILLCOLOR);
+    fDiffWeightsHist[w][b]->SetLineColor(COLOR);
+*/
+
+   }
+   fWeightsList->Add(fDiffWeightsHist[w][b]);
+  } //  for(Int_t b=0;b<nBinsForDiffWeights[w];b++)
+ } // for(Int_t w=0;w<eDiffWeights_N;w++) // use differential weights [phipt,phieta,...]
+
 
 } // void AliAnalysisTaskMuPa::BookWeightsHistograms()
 
@@ -3152,7 +3311,13 @@ void AliAnalysisTaskMuPa::FillControlParticleHistograms(AliVParticle *vParticle,
     fParticleHist[ba][rs][IsGlobalConstrained]->Fill(1.44); // keep in sync. with the booking of this histogram
    }  
   }
+
+  // 2D:
+  if(fParticleHist2D[ba][rs][PHIPT]){fParticleHist2D[ba][rs][PHIPT]->Fill(aodTrack->Phi(),aodTrack->Pt());}
+  if(fParticleHist2D[ba][rs][PHIETA]){fParticleHist2D[ba][rs][PHIETA]->Fill(aodTrack->Phi(),aodTrack->Eta());}
+
  } // if(aodTrack)
+
 
  // c) Fill histograms for AOD MC particle:
  if(aodmcParticle)
@@ -3163,6 +3328,9 @@ void AliAnalysisTaskMuPa::FillControlParticleHistograms(AliVParticle *vParticle,
   if(fKinematicsHist[ba][rs][ETA]){fKinematicsHist[ba][rs][ETA]->Fill(aodmcParticle->Eta());}
   if(fKinematicsHist[ba][rs][E]){fKinematicsHist[ba][rs][E]->Fill(aodmcParticle->E());}
   if(fKinematicsHist[ba][rs][CHARGE]){fKinematicsHist[ba][rs][CHARGE]->Fill(aodmcParticle->Charge());} 
+  // 2D:
+  if(fParticleHist2D[ba][rs][PHIPT]){fParticleHist2D[ba][rs][PHIPT]->Fill(aodmcParticle->Phi(),aodmcParticle->Pt());}
+  if(fParticleHist2D[ba][rs][PHIETA]){fParticleHist2D[ba][rs][PHIETA]->Fill(aodmcParticle->Phi(),aodmcParticle->Eta());}
  } // if(aodmcParticle)
 
 } // AliAnalysisTaskMuPa::FillControlParticleHistograms(AliVTrack *vTrack, const Int_t ba, const Int_t rs)
@@ -4862,6 +5030,8 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
    Double_t nestedLoopValue = this->CalculateCustomNestedLoop(harmonics);
    if(TMath::Abs(nestedLoopValue) > 0. && TMath::Abs(twoC.Re() - nestedLoopValue)>1.e-5)
    {          
+    cout<<twoC.Re()<<endl;
+    cout<<nestedLoopValue<<endl;
     cout<<__LINE__<<endl; exit(1);
    } 
    else
@@ -5829,6 +5999,62 @@ Double_t AliAnalysisTaskMuPa::Weight(const Double_t &value, const char *variable
 
 } // AliAnalysisTaskMuPa::Weight(const Double_t &value, const char *variable) // value, [phi,pt,eta]
 
+
+//=======================================================================================================================
+
+Double_t AliAnalysisTaskMuPa::DiffWeight(const Double_t &valueY, const Double_t &valueX, eDiffWeights dw) 
+{
+ // Determine differential particle weight y(x).
+
+ // *) Determine first to which bin the 'valueX' corresponds to.
+ //    Based on that, I decide from which histogram I fetch weight for y. See MakeWeights.C 
+ // TBI 20231026 I do it at the moment this way just to move on, but this can be optimized clearly. 
+ Int_t binX = 1;
+ if(fInsanityChecksForEachParticle)
+ {
+  if(valueX<fKineDependenceBins[dw]->At(0))
+  {
+   cout<<__LINE__<<endl; exit(1); // underflow. this means that I didn't use the same cuts now, and I was using when making the particle weights. Check the cuts.
+  }
+  if(valueX>=fKineDependenceBins[dw]->At(fKineDependenceBins[dw]->GetSize()-1))
+  {
+   cout<<__LINE__<<endl; exit(1); // overflow. this means that I didn't use the same cuts now, and I was using when making the particle weights. Check the cuts.
+  }
+ } // fInsanityChecksForEachParticle
+
+ for(Int_t e=1; e<fKineDependenceBins[dw]->GetSize(); e++) // TBI 20231026 this is a landmine, because it's not guaranteed that wPHIPT = PTq = 0, and wPHIETA = ETAq = 1, but it's fine now.
+ {
+  // Since I set binX = 1, intentionally I skip the first element in the loop, and start from e = 1, instead of e = 0. 
+  if(valueX<fKineDependenceBins[dw]->At(e)) { binX = e; break; } // gotcha
+ }
+
+// if(!(binX == fTest0Pro[(Int_t)dw == (Int_t)PHIPT ? AFO_PT : AFO_ETA]->FindBin(valueX)))
+// {
+//  cout<<__LINE__<<endl; // TBI 20231026 remove eventually 
+// } 
+
+
+// cout<<fDiffWeightsHist[dw][binX-1]->GetTitle()<<endl; 
+// cout<<valueX<<endl;
+// sleep(1);
+
+
+ // *) Finally, determine weight for y(x):
+ Int_t bin = fDiffWeightsHist[dw][binX-1]->FindBin(valueY); // binX - 1, because I histogram for first bin in X is labeled with "[0]", etc. 
+ Double_t weight = 0.; 
+ if(bin > fDiffWeightsHist[dw][binX-1]->GetNbinsX())
+ {
+  cout<<__LINE__<<endl; // TBI 20231026 re-think what to do here
+ } 
+ else
+ {
+  weight = fDiffWeightsHist[dw][binX-1]->GetBinContent(bin);
+ }
+ 
+ return weight;
+
+} // AliAnalysisTaskMuPa::DiffWeight(const Double_t &valueY, const Double_t &valueX, eDiffWeights dw)
+
 //=======================================================================================================================
 
 Double_t AliAnalysisTaskMuPa::CentralityWeight(const Double_t &value) // centrality value
@@ -5864,7 +6090,7 @@ void AliAnalysisTaskMuPa::SetWeightsHist(TH1D* const hist, const char *variable)
  // Basic protection:
  if(!(TString(variable).EqualTo("phi") || TString(variable).EqualTo("pt") || TString(variable).EqualTo("eta"))){cout<<__LINE__<<endl;exit(1);}
 
- Int_t ppe=-1;
+ Int_t ppe=-1; // TBI 20231026 I do not really need this gym, use enum's instead
  if(TString(variable).EqualTo("phi")){ppe=0;} 
  if(TString(variable).EqualTo("pt")){ppe=1;} 
  if(TString(variable).EqualTo("eta")){ppe=2;} 
@@ -5877,7 +6103,33 @@ void AliAnalysisTaskMuPa::SetWeightsHist(TH1D* const hist, const char *variable)
  // Flag:
  fUseWeights[ppe] = kTRUE; 
 
-} // void AliAnalysisTaskMuPa::SetWeightsHist(TH1D* const hwh, const char *type, const char *variable)
+} // void AliAnalysisTaskMuPa::SetWeightsHist(TH1D* const hist, const char *variable)
+
+//=======================================================================================================================
+
+void AliAnalysisTaskMuPa::SetDiffWeightsHist(TH1D* const hist, const char *variable, Int_t bin)
+{
+ // Copy histogram holding differential weights from an external file to the corresponding data member. 
+  
+ // Basic protection:
+ if(!(TString(variable).EqualTo("phipt") || TString(variable).EqualTo("phieta"))){cout<<__LINE__<<endl; exit(1);}
+
+ Int_t ppe=-1; // TBI 20231026 I do not really need this gym, use enum's instead
+ if(TString(variable).EqualTo("phipt")){ppe=0;} 
+ if(TString(variable).EqualTo("phieta")){ppe=1;}  
+
+ // Finally:
+ hist->SetDirectory(0);
+ fDiffWeightsHist[ppe][bin] = (TH1D*)hist->Clone();
+ if(!fDiffWeightsHist[ppe][bin]){cout<<__LINE__<<endl; exit(1);}
+
+ // Flag:
+ if(!fUseDiffWeights[ppe]) // yes, set it only once to kTRUE, for all bins
+ {
+  fUseDiffWeights[ppe] = kTRUE; 
+ }
+
+} // void AliAnalysisTaskMuPa::SetDiffWeightsHist(TH1D* const hist, const char *variable, Int_t bin)
 
 //=======================================================================================================================
 
@@ -5903,7 +6155,7 @@ TH1D* AliAnalysisTaskMuPa::GetWeightsHist(const char *variable)
  // Basic protection:
  if(!(TString(variable).EqualTo("phi") || TString(variable).EqualTo("pt") || TString(variable).EqualTo("eta"))){cout<<__LINE__<<endl;exit(1);}
 
- Int_t ppe=-1;
+ Int_t ppe=-1; // TBI 20231026 I do not really need this gym, use enum's instead
  if(TString(variable).EqualTo("phi")){ppe=0;} 
  if(TString(variable).EqualTo("pt")){ppe=1;} 
  if(TString(variable).EqualTo("eta")){ppe=2;} 
@@ -5912,6 +6164,24 @@ TH1D* AliAnalysisTaskMuPa::GetWeightsHist(const char *variable)
  return fWeightsHist[ppe];
 
 } // TH1D* AliAnalysisTaskMuPa::GetWeightsHist(const char *variable)
+
+//=======================================================================================================================
+
+TH1D* AliAnalysisTaskMuPa::GetDiffWeightsHist(const char *variable, Int_t bin)
+{
+ // The standard getter. 
+  
+ // Basic protection:
+ if(!(TString(variable).EqualTo("phipt") || TString(variable).EqualTo("phieta"))){cout<<__LINE__<<endl; exit(1);}
+
+ Int_t ppe=-1; // TBI 20231026 I do not really need this gym, use enum's instead
+ if(TString(variable).EqualTo("phipt")){ppe=0;} 
+ if(TString(variable).EqualTo("phieta")){ppe=1;} 
+
+ // Finally:
+ return fDiffWeightsHist[ppe][bin];
+
+} // TH1D* AliAnalysisTaskMuPa::GetDiffWeightsHist(const char *variable, Int_t bin)
 
 //=======================================================================================
 
@@ -5945,7 +6215,7 @@ TH1D *AliAnalysisTaskMuPa::GetHistogramWithWeights(const char *filePath, const c
  if(!weightsFile){cout<<__LINE__<<endl;exit(1);}
  hist = (TH1D*)(weightsFile->Get(Form("%s_%s",variable,fTaskName.Data())));
  if(!hist){hist = (TH1D*)(weightsFile->Get(Form("%s",variable)));} // yes, for some simple tests I can have only histogram named e.g. 'phi'
- if(!hist){Red(Form("%s_%s",variable,fTaskName.Data())); cout<<__LINE__<<endl;exit(1);}
+ if(!hist){Red(Form("%s_%s",variable,fTaskName.Data())); weightsFile->ls(); cout<<__LINE__<<endl;exit(1);}
  hist->SetDirectory(0);
  hist->SetTitle(filePath);
 
@@ -5955,6 +6225,57 @@ TH1D *AliAnalysisTaskMuPa::GetHistogramWithWeights(const char *filePath, const c
  return hist;
 
 } // TH1D *AliAnalysisTaskMuPa::GetHistogramWithWeights(const char *filePath, const char *variable)
+
+//=======================================================================================
+
+TH1D *AliAnalysisTaskMuPa::GetHistogramWithDiffWeights(const char *filePath, const char *variable, Int_t bin)
+{
+ // Access from external ROOT file the desired histogram with differential particle weights. 
+ // 'filePath' can be both abs and relative path (e.g. pwd)
+ // See MakeWeights.C how differential weights are named and organized.
+
+ // a) Return value; 
+ // b) Basic protection for arguments; 
+ // c) Check if the external ROOT file exists at specified path; 
+ // d) Access the external ROOT file and fetch the desired histogram with weights;
+ // e) Close the external ROOT file. 
+
+ // a) Return value:
+ TH1D *hist = NULL; 
+
+ // b) Basic protection for arguments:
+ if(!(TString(variable).EqualTo("phipt") || TString(variable).EqualTo("phieta"))){cout<<__LINE__<<endl; exit(1);}
+
+ // c) Check if the external ROOT file exists at specified path:
+ if(gSystem->AccessPathName(filePath,kFileExists))
+ {
+  Red(Form("if(gSystem->AccessPathName(filePath,kFileExists)), filePath = %s",filePath)); 
+  cout<<__LINE__<<endl;
+  exit(1);
+ }
+
+ // d) Access the external ROOT file and fetch the desired histogram with weights:
+ TFile *weightsFile = TFile::Open(filePath,"READ");
+ if(!weightsFile){cout<<__LINE__<<endl;exit(1);}
+ hist = (TH1D*)(weightsFile->Get(Form("%s[%d]_%s",variable,bin,fTaskName.Data())));
+ if(!hist){hist = (TH1D*)(weightsFile->Get(Form("%s[%d]",variable,bin)));} // yes, for some simple tests I can have only histogram named e.g. 'phipt[0]'
+ if(!hist){Red(Form("%s_%s",variable,fTaskName.Data())); cout<<__LINE__<<endl;exit(1);}
+ hist->SetDirectory(0);
+ if(TString(variable).EqualTo("phipt"))
+ {
+  hist->SetTitle(Form("%s, %.2f < p_{T} < %.2f",filePath,fKineDependenceBins[PTq]->At(bin),fKineDependenceBins[PTq]->At(bin+1)));
+ }
+ if(TString(variable).EqualTo("phieta"))
+ {
+  hist->SetTitle(Form("%s, %.2f < #eta < %.2f",filePath,fKineDependenceBins[ETAq]->At(bin),fKineDependenceBins[ETAq]->At(bin+1)));
+ }
+
+ // e) Close the external ROOT file:  
+ weightsFile->Close(); delete weightsFile; weightsFile = NULL;
+
+ return hist;
+
+} // TH1D *AliAnalysisTaskMuPa::GetHistogramWithDiffWeights(const char *filePath, const char *variable, Int_t bin)
 
 //=======================================================================================
 
@@ -7299,6 +7620,26 @@ void AliAnalysisTaskMuPa::DefaultBinning()
  fParticleBins[IsGlobalConstrained][1] = 0.;
  fParticleBins[IsGlobalConstrained][2] = 2.;
 
+ // TBI 20231024 there is no direct setter, use
+ // a) for default binning: e.g. task->SetKinematicsBins("pt",1000,0.,20.); and task->SetKinematicsBins("eta",200,-1.,1.);
+ // b) for custom variable binning: use SetKineDependenceBins(const char* kv, TArrayD *iva) + see AddTask.C for examples
+
+ // phi vs pt:
+ fParticleBins2D[PHIPT][X][0] = fKinematicsBins[PHI][0];
+ fParticleBins2D[PHIPT][X][1] = fKinematicsBins[PHI][1];
+ fParticleBins2D[PHIPT][X][2] = fKinematicsBins[PHI][2];
+ fParticleBins2D[PHIPT][Y][0] = fKinematicsBins[PT][0];
+ fParticleBins2D[PHIPT][Y][1] = fKinematicsBins[PT][1];
+ fParticleBins2D[PHIPT][Y][2] = fKinematicsBins[PT][2];
+
+ // phi vs eta:
+ fParticleBins2D[PHIETA][X][0] = fKinematicsBins[PHI][0];
+ fParticleBins2D[PHIETA][X][1] = fKinematicsBins[PHI][1];
+ fParticleBins2D[PHIETA][X][2] = fKinematicsBins[PHI][2];
+ fParticleBins2D[PHIETA][Y][0] = fKinematicsBins[ETA][0];
+ fParticleBins2D[PHIETA][Y][1] = fKinematicsBins[ETA][1];
+ fParticleBins2D[PHIETA][Y][2] = fKinematicsBins[ETA][2];
+
 } // void AliAnalysisTaskMuPa::DefaultBinning()
 
 //=======================================================================================
@@ -7509,7 +7850,11 @@ void AliAnalysisTaskMuPa::DefaultConfiguration()
 
  // task->SetFillControlParticleHistograms(kTRUE);
  fFillControlParticleHistograms = kTRUE;
- 
+
+ // task->SetFillParticleHist2D("phipt", kTRUE);
+ fFillParticleHist2D[PHIPT] = kFALSE;
+ fFillParticleHist2D[PHIETA] = kFALSE;
+
  // task->SetFillQAHistograms(kTRUE); // by default, only selection of most important ones 
  fFillQAHistograms = kFALSE;
 
@@ -7722,6 +8067,8 @@ void AliAnalysisTaskMuPa::CalculateKineCorrelations(const char* kc)
     Double_t nestedLoopValue = this->CalculateKineCustomNestedLoop(harmonics,kc,b);  
     if(TMath::Abs(nestedLoopValue) > 0. && TMath::Abs(twoC.Re() - nestedLoopValue)>1.e-5)
     {          
+     cout<<twoC.Re()<<endl;
+     cout<<nestedLoopValue<<endl;
      cout<<__LINE__<<endl; exit(1);
     } 
     else
@@ -8094,7 +8441,7 @@ void AliAnalysisTaskMuPa::UpdateHistogramBookingsWithRunInfo(AliVEvent *ave)
  TString sba[2] = {"before particle cuts","after particle cuts"};
  TString srs[2] = {"reconstructed","simulated"};
  TString skv[gKinematicVariables] = {"#varphi","p_{T}","#eta","energy","charge"};
- TString stype[gParticleHistograms] = {"TPCNcls","TPCnclsS","TPCnclsFractionShared","TPCNCrossedRows","TPCChi2perNDF","TPCFoundFraction","Chi2TPCConstrainedVsGlobal","ITSNcls","ITSChi2perNDF",
+ TString stype[eParticleHistograms_N] = {"TPCNcls","TPCnclsS","TPCnclsFractionShared","TPCNCrossedRows","TPCChi2perNDF","TPCFoundFraction","Chi2TPCConstrainedVsGlobal","ITSNcls","ITSChi2perNDF",
                                        "TPCNclsF","HasPointOnITSLayer","IsGlobalConstrained"};
 
  // histos:  
@@ -8160,7 +8507,7 @@ void AliAnalysisTaskMuPa::UpdateHistogramBookingsWithRunInfo(AliVEvent *ave)
  {
   for(Int_t rs=0;rs<2;rs++)
   {
-   for(Int_t t=0;t<gParticleHistograms;t++) // type, see enum 'eParticle'
+   for(Int_t t=0;t<eParticleHistograms_N;t++) // type, see enum 'eParticleHistograms'
    {
     if(fParticleHist[ba][rs][t]) { fParticleHist[ba][rs][t]->SetTitle(Form("%s, %d, %s, %s",fRunNumber.Data(),fFilterBit,sba[ba].Data(),srs[rs].Data())); }
    }

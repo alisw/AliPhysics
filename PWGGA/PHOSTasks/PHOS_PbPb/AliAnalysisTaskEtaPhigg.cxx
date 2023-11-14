@@ -197,35 +197,31 @@ void AliAnalysisTaskEtaPhigg::UserCreateOutputObjects() {
       new TH2F("hTofM4", "TOF in M3", 100, 0., 20., 400, -4.e-6, 4.e-6));
 
   fOutputContainer->Add(
-      new TH2F("hAllSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+      new TH2F("hAllSp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
   fOutputContainer->Add(
-      new TH2F("hMod3Sp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+      new TH2F("hMod3Sp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
   fOutputContainer->Add(
-      new TH2F("hDispSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+      new TH2F("hDispSp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
   fOutputContainer->Add(
-      new TH2F("hTrackVetoSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
-  fOutputContainer->Add(new TH2F("hDispTrackVetoSp", "Spectrum in PHOS", 100,
-                                 0., 10., 20, 0., 100.));
+      new TH2F("hCTSSp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
   fOutputContainer->Add(
-      new TH2F("hCPVVetoSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
-  fOutputContainer->Add(new TH2F("hDispCPVVetoSp", "Spectrum in PHOS", 100, 0.,
-                                 10., 20, 0., 100.));
+      new TH2F("hDispCTSSp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
   fOutputContainer->Add(
-      new TH2F("hBothVetoSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+      new TH2F("hCTS2Sp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
+  fOutputContainer->Add(
+      new TH2F("hDispCTS2Sp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
+  fOutputContainer->Add(
+      new TH2F("hCPVSp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
+  fOutputContainer->Add(
+      new TH2F("hDispCPVSp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
+  fOutputContainer->Add(
+      new TH2F("hCPV2Sp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
+  fOutputContainer->Add(
+      new TH2F("hDispCPV2Sp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
+  fOutputContainer->Add(
+      new TH2F("hBothVetoSp", "Spectrum in PHOS", 100, 0., 5., 20, 0., 100.));
   fOutputContainer->Add(new TH2F("hDispBothVetoSp", "Spectrum in PHOS", 100, 0.,
-                                 10., 20, 0., 100.));
-  fOutputContainer->Add(new TH2F("hNotCPVVetoSp", "Spectrum in PHOS", 100, 0.,
-                                 10., 20, 0., 100.));
-  fOutputContainer->Add(new TH2F("hDispNotCPVVetoSp", "Spectrum in PHOS", 100,
-                                 0., 10., 20, 0., 100.));
-  fOutputContainer->Add(new TH2F("hNotTrackVetoSp", "Spectrum in PHOS", 100, 0.,
-                                 10., 20, 0., 100.));
-  fOutputContainer->Add(new TH2F("hDispNotTrackVetoSp", "Spectrum in PHOS", 100,
-                                 0., 10., 20, 0., 100.));
-  fOutputContainer->Add(new TH2F("hNotBothVetoSp", "Spectrum in PHOS", 100, 0.,
-                                 10., 20, 0., 100.));
-  fOutputContainer->Add(new TH2F("hDispNotBothVetoSp", "Spectrum in PHOS", 100,
-                                 0., 10., 20, 0., 100.));
+                                 5., 20, 0., 100.));
 
   SetCutNames();
   // HBT part
@@ -516,20 +512,52 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *) {
     clu->GetMomentum(pv1, vtx5);
 
     FillHistogram(Form("hCluLowM%d", mod), cellX, cellZ, 1.);
-
-    FillHistogram("hAllSp", clu->E(), fCentrality);
-    bool disp = clu->Chi2() < 2.5 * 2.5;
-    if (disp) {
-      FillHistogram("hDisp", cellX, cellZ, 1.);
-      FillHistogram("hDispSp", clu->E(), fCentrality);
-    }
-
     float dxMin, dzMin;
     int itr = FindTrackMatching(1, global, mod, dxMin, dzMin);
 
     // Set veto bits, true: neutral
     int cpvBits =
         TestCPV(mod, clu->E(), local.X(), local.Z(), dxMin, dzMin, itr);
+
+    FillHistogram("hAllSp", clu->E(), fCentrality);
+    if (mod == 3)
+      FillHistogram("hMod3Sp", clu->E(), fCentrality);
+    bool disp = clu->Chi2() < 2.5 * 2.5;
+    if (disp) {
+      FillHistogram("hDisp", cellX, cellZ, 1.);
+      FillHistogram("hDispSp", clu->E(), fCentrality);
+    }
+    bool trackCPV = cpvBits & (1 << 1);
+    bool trackCPV2 = cpvBits & (1 << 2);
+    bool cpvCPV = cpvBits & (1 << 3);
+    bool cpvCPV2 = cpvBits & (1 << 4);
+    bool cpvAndTrack = cpvBits & (1 << 5);
+
+    if (trackCPV) {
+      FillHistogram("hCTSSp", clu->E(), fCentrality);
+      if (disp)
+        FillHistogram("hDispCTSSp", clu->E(), fCentrality);
+    }
+    if (trackCPV2) {
+      FillHistogram("hCTS2Sp", clu->E(), fCentrality);
+      if (disp)
+        FillHistogram("hDispCTS2Sp", clu->E(), fCentrality);
+    }
+    if (cpvCPV && mod == 3) {
+      FillHistogram("hCPVSp", clu->E(), fCentrality);
+      if (disp)
+        FillHistogram("hDispCPVSp", clu->E(), fCentrality);
+    }
+    if (cpvCPV2 && mod == 3) {
+      FillHistogram("hCPV2Sp", clu->E(), fCentrality);
+      if (disp)
+        FillHistogram("hDispCPV2Sp", clu->E(), fCentrality);
+    }
+    if (cpvAndTrack && mod == 3) {
+      FillHistogram("hBothVetoSp", clu->E(), fCentrality);
+      if (disp)
+        FillHistogram("hDispBothVetoSp", clu->E(), fCentrality);
+    }
 
     if (inPHOS >= fPHOSEvent->GetSize()) {
       fPHOSEvent->Expand(inPHOS + 20);
@@ -836,7 +864,7 @@ bool AliAnalysisTaskEtaPhigg::PairCut(const AliCaloPhoton *ph1,
     if (iPID == 2)
       return ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV &&
              ph1->IsDispOK() && cpv2CPV && ph2->IsDispOK(); // Disp & CTS
-    if (iPID == 2)
+    if (iPID == 3)
       return ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 &&
              ph1->IsDispOK() && cpv2CPV2 && ph2->IsDispOK(); // Disp & CTS
   }
@@ -1835,21 +1863,22 @@ int AliAnalysisTaskEtaPhigg::TestCPV(int mod, double e, double xPHOS,
           dxMax * dxMax / sigmaX / sigmaX + dzCPV * dzCPV / sigmaZ / sigmaZ;
       double r2 =
           dxMin * dxMin / sigmaX / sigmaX + dzCPV * dzCPV / sigmaZ / sigmaZ;
-      cpvCPV = (r1 > 2.5 * 2.5) && (r2 > 2.5 * 2.5);
+      cpvCPV = (r1 > 1.5 * 1.5) && (r2 > 1.5 * 1.5);
+      cpvCPV2 = (r1 > 2.5 * 2.5) && (r2 > 2.5 * 2.5);
     }
 
-    // account conversion
-    double mX = -1.07550e+01 * TMath::Exp(-e / 1.75354) + 4.16349e-01;
-    double wX = 2.94202e+00 * TMath::Exp(-e / 5.52975) + 2.18075e+00;
-    double mZ = 0.2;
-    double wZ = 6.32082e-01 * TMath::Exp(-e / 1.04274e+00) + 1.71270e+00;
+    // // account conversion
+    // double mX = -1.07550e+01 * TMath::Exp(-e / 1.75354) + 4.16349e-01;
+    // double wX = 2.94202e+00 * TMath::Exp(-e / 5.52975) + 2.18075e+00;
+    // double mZ = 0.2;
+    // double wZ = 6.32082e-01 * TMath::Exp(-e / 1.04274e+00) + 1.71270e+00;
 
-    cpvCPV2 = ((dxCPV - mX) * (dxCPV - mX) / (2. * wX * wX) +
-                   (dzCPV - mZ) * (dzCPV - mZ) / (2. * wZ * wZ) >
-               9.) &&
-              ((dxCPV + mX) * (dxCPV + mX) / (2. * wX * wX) +
-                   (dzCPV - mZ) * (dzCPV - mZ) / (2. * wZ * wZ) >
-               9.);
+    // cpvCPV2 = ((dxCPV - mX) * (dxCPV - mX) / (2. * wX * wX) +
+    //                (dzCPV - mZ) * (dzCPV - mZ) / (2. * wZ * wZ) >
+    //            9.) &&
+    //           ((dxCPV + mX) * (dxCPV + mX) / (2. * wX * wX) +
+    //                (dzCPV - mZ) * (dzCPV - mZ) / (2. * wZ * wZ) >
+    //            9.);
 
     // correlated CPV-PHOS vs track
     if (itr == icpvTr) {

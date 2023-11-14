@@ -134,6 +134,10 @@ namespace PWGJE
       void SetNoMixedEventJESCorrection(Bool_t b) { fNoMixedEventJESCorrection = b; }
       Bool_t RetrieveAndInitializeJESCorrectionHist(TString filename, TString histName, Double_t trackBias = AliAnalysisTaskEmcalJetHdEdxCorrelations::kDisableBias, Double_t clusterBias = AliAnalysisTaskEmcalJetHdEdxCorrelations::kDisableBias);
 
+      void CreateHistograms();
+      void CreateSparses();
+      void CreateEventPool();
+      void MixEvents(AliJetContainer *jets, AliPIDResponse *pidResponse, TObjArray *tracksClone, std::vector<unsigned int> rejectedTrackIndices, bool useListOfRejectedIndices, Int_t current_event_multiplicity, Double_t zVertex, UInt_t eventTrigger, Double_t flattened_EP_angle);
       virtual void UserCreateOutputObjects();
       Double_t GetFlattenedEPAngle(Double_t uncorrectedAngle);
 
@@ -286,7 +290,7 @@ namespace PWGJE
       AliAnalysisTaskEmcalJetHdEdxCorrelations(const AliAnalysisTaskEmcalJetHdEdxCorrelations &);            // not implemented
       AliAnalysisTaskEmcalJetHdEdxCorrelations &operator=(const AliAnalysisTaskEmcalJetHdEdxCorrelations &); // not implemented
 
-      ClassDef(AliAnalysisTaskEmcalJetHdEdxCorrelations, 23);
+      ClassDef(AliAnalysisTaskEmcalJetHdEdxCorrelations, 25);
     };
 
   } /* namespace EMCALJetTasks */

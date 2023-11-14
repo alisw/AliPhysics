@@ -31,10 +31,11 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     double CalculateMassSquareTOF(AliAODTrack &track);
     double CalculateSigmaMassSquareTOF(double pT, double massSq, int ParticleSpecies, int RunNumber);
     bool CheckProtonCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber);
-    bool CheckPionCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber);
-    bool CheckLambdaCuts(AliAODv0 &v0,double PrimaryVertexPos[3], AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber);
+    bool CheckPionCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, double Pion_DCAxy_min, double Pion_DCAz_min);
+    bool CheckLambdaCuts(AliAODv0 &v0,double PrimaryVertexPos[3], AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, double MassInvariant, double WrongMassInvariant);
     bool CheckDeuteronCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber);
     double CalculateSigmadEdxITS(AliAODTrack &Track, int ParticleSpecies, int RunNumber);
+    double CalculateInvariantMassLambda(double Momentum1[3], double Momentum2[3], bool isMatter);
 
 
   private:
@@ -78,7 +79,7 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fLambda_Event_BField;
     unsigned int fLambda_Event_Multiplicity;
     unsigned long fLambda_Event_Identifier;
-    bool  fLambda_Event_IsFirstParticle;
+    int fLambda_Event_RunNumber;
 
     float fLambda_Daughter_Proton_px;
     float fLambda_Daughter_Proton_py;
@@ -168,11 +169,17 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short    fDeuteron_ITS_nCluster;
     int		      fDeuteron_PDG;
     int		      fDeuteron_MotherPDG;
+    bool	      fDeuteron_FilterBit;
     unsigned int      fDeuteron_ID;
     unsigned int      fDeuteron_Event_Multiplicity;
     unsigned long     fDeuteron_Event_Identifier;
-    bool	      fDeuteron_Event_IsFirstParticle;
-
+    int      fDeuteron_Event_RunNumber;
+    bool	      fDeuteron_ITS_Layer0;
+    bool	      fDeuteron_ITS_Layer1;
+    bool	      fDeuteron_ITS_Layer2;
+    bool	      fDeuteron_ITS_Layer3;
+    bool	      fDeuteron_ITS_Layer4;
+    bool	      fDeuteron_ITS_Layer5;
 
     TTree *fSaveTree_AntiLambda;
     float fAntiLambda_px;
@@ -203,7 +210,7 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fAntiLambda_Event_BField;
     unsigned int fAntiLambda_Event_Multiplicity;
     unsigned long fAntiLambda_Event_Identifier;
-    bool	  fAntiLambda_Event_IsFirstParticle;
+    int  fAntiLambda_Event_RunNumber;
 
     float fAntiLambda_Daughter_AntiProton_px;
     float fAntiLambda_Daughter_AntiProton_py;
@@ -294,10 +301,17 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short    fAntiDeuteron_ITS_nCluster;
     int		      fAntiDeuteron_PDG;
     int		      fAntiDeuteron_MotherPDG;
+    bool	      fAntiDeuteron_FilterBit;
     unsigned int      fAntiDeuteron_ID;
     unsigned int      fAntiDeuteron_Event_Multiplicity;
     unsigned long     fAntiDeuteron_Event_Identifier;
-    bool	      fAntiDeuteron_Event_IsFirstParticle;
+    int      fAntiDeuteron_Event_RunNumber;
+    bool	      fAntiDeuteron_ITS_Layer0;
+    bool	      fAntiDeuteron_ITS_Layer1;
+    bool	      fAntiDeuteron_ITS_Layer2;
+    bool	      fAntiDeuteron_ITS_Layer3;
+    bool	      fAntiDeuteron_ITS_Layer4;
+    bool	      fAntiDeuteron_ITS_Layer5;
 
     TList     *fHistoList;
     TH2F      *h_Proton_TOF_m2_NoTOFcut;

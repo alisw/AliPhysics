@@ -157,6 +157,7 @@ public:
   void   SetFilljetsFJBGTree(const Bool_t ifjetsFJBGTree = kTRUE)     {fFilljetsFJBGTree    = ifjetsFJBGTree;}
   void   SetFillJetsFJBGConst(const Bool_t ifJetsFJBGConst = kTRUE)     {fFillJetsFJBGConst     = ifJetsFJBGConst;}
   void   SetFilldscaledTree(const Bool_t ifdscaledTree = kTRUE)       {fFilldscaledTree     = ifdscaledTree;}
+  void   SetDoIncTracks(const Bool_t ifdoIncTracks = kTRUE)               {fDoIncTracks        = ifdoIncTracks;}
   void   SetDoFastJet(const Bool_t ifFastJet = kTRUE)               {fDoFastJet         = ifFastJet;}
   void   SetDoEMCJet(const Bool_t ifEMCJet = kTRUE)               {fDoEMCJet         = ifEMCJet;}
   void   SetFillFastJet(const Bool_t ifFastJet = kTRUE)               {fFillFastJet         = ifFastJet;}
@@ -176,10 +177,13 @@ public:
   void   SetRunFastSimulation(const Bool_t ifFastSimul = kFALSE)      {fRunFastSimulation   = ifFastSimul;}
   void   SetFillTreeMC(const Bool_t ifTreeMC = kFALSE)                {fFillTreeMC= ifTreeMC;}
   void   SetFillIncTracks(const Bool_t ifIncTracks = kTRUE)           {fFillIncTracks       = ifIncTracks;}
-  void   SetFillpTPC(const Bool_t ifpTPC = kTRUE)           {fFillpTPC       = ifpTPC;}
-  void   SetFillp(const Bool_t ifp = kTRUE)           {fFillp       = ifp;}
-  void   SetFillpT(const Bool_t ifpT = kTRUE)           {fFillpT       = ifpT;}
-
+  void   SetFill_TPC(const Bool_t if_TPC = kTRUE)           {fFill_TPC       = if_TPC;}
+  void   SetFillpTPC_pT(const Bool_t ifpTPC_pT = kTRUE)           {fFillpTPC_pT       = ifpTPC_pT;}
+  void   SetFillp_pT(const Bool_t ifp_pT = kTRUE)           {fFillp_pT       = ifp_pT;}
+  void   SetFillpTPC_p(const Bool_t ifpTPC_p = kTRUE)           {fFillpTPC_p       = ifpTPC_p;}
+  void   SetFill_TOF(const Bool_t if_TOF = kTRUE)           {fFill_TOF       = if_TOF;}
+  void   SetFill_TOF_expecs(const Bool_t if_TOF_expecs = kTRUE)           {fFill_TOF_expecs       = if_TOF_expecs;}
+  void   SetFill_TPC_expecs(const Bool_t if_TPC_expecs = kTRUE)           {fFill_TPC_expecs       = if_TPC_expecs;}
   void   SetDefaultTrackCuts(const Bool_t ifDefaultTrackCuts = kFALSE){fDefaultTrackCuts= ifDefaultTrackCuts;}
   void   SetDefaultEventCuts(const Bool_t ifDefaultEventCuts = kFALSE){fDefaultEventCuts= ifDefaultEventCuts;}
   void   SetCorrectForMissCl(const Int_t ifCorrectForMissCl = kFALSE)    {fCorrectForMissCl= ifCorrectForMissCl;}
@@ -206,6 +210,14 @@ public:
   void   SetDeDxLowerEdge(const Float_t dEdxLowerEdge = 0.)      {fDEdxDown            = dEdxLowerEdge;}
   void   SetDeDxUpperEdge(const Float_t dEdxUpperEdge = 2000.)    {fDEdxUp              = dEdxUpperEdge;}
 
+  void   SetNBetaBins(const Float_t nbetaBins = 1000)              {fNBetaBins        = nbetaBins;}
+  void   SetBetaLowerEdge(const Float_t betaLowerEdge = 0.)      {fBetaDown            = betaLowerEdge;}
+  void   SetBetaUpperEdge(const Float_t betaUpperEdge = 2.)    {fBetaUp              = betaUpperEdge;}
+
+  void   SetTOFNSigmaBins(const Float_t nTOFNSigmaBins = 1000)              {fTOFNSigmaBins        = nTOFNSigmaBins;}
+  void   SetTOFNSigmaLowerEdge(const Float_t TOFNSigmaLowerEdge = -100.)      {fTOFNSigmaDown            = TOFNSigmaLowerEdge;}
+  void   SetTOFNSigmaUpperEdge(const Float_t TOFNSigmaUpperEdge = 100.)    {fTOFNSigmaUp              = TOFNSigmaUpperEdge;}
+
   void   SetEtaLowerEdge(const Float_t etaLowerEdge = -0.8)      {fEtaDown             = etaLowerEdge;}
   void   SetEtaUpperEdge(const Float_t etaUpperEdge = 0.8)       {fEtaUp               = etaUpperEdge;}
   void   SetNEtabins(const Int_t nEtaBins = 20)                   {fNEtaBins            = nEtaBins;}
@@ -214,9 +226,17 @@ public:
   void   SetNMomBins(const Int_t nMombins = 600)                  {fNMomBins            = nMombins;}
   void   SetNGenprotonBins(const Int_t nGenprotonBins = 100)      {fGenprotonBins       = nGenprotonBins;}
 
+  void   SetTPCmom_choice(const Float_t TPCmom = 0.)         {fSetTPCmom            = TPCmom;}
+  void   SetTOFmom_choice(const Float_t TOFmom = 0.)         {fSetTOFmom            = TOFmom;}
+  void   SetBetamom_choice(const Float_t Betamom = 0.)         {fSetBetamom            = Betamom;}
+
   void   SetMomExpec_LowerEdge(const Float_t momLowerEdge = 0.)         {fMomExpec_Low             = momLowerEdge;}
   void   SetMomExpec_UpperEdge(const Float_t momUpperEdge = 20.0)        {fMomExpec_High               = momUpperEdge;}
   void   SetMomExpec_NBins(const Int_t nMombins = 2000)                  {fMomExpec_NBins            = nMombins;}
+
+  void   SetTOFMom_LowerEdge(const Float_t TOFmomLowerEdge = 0.)         {fTOFMom_Low             = TOFmomLowerEdge;}
+  void   SetTOFMom_UpperEdge(const Float_t TOFmomUpperEdge = 10.0)        {fTOFMom_High               = TOFmomUpperEdge;}
+  void   SetTOFMom_NBins(const Int_t nTOFMombins = 1000)                  {fTOFMom_NBins            = nTOFMombins;}
 
   void   SetEtaExpec_LowerEdge(const Float_t EtaLowerEdge = 0.)         {fEtaExpec_Low             = EtaLowerEdge;}
   void   SetEtaExpec_UpperEdge(const Float_t EtaUpperEdge = 20.0)        {fEtaExpec_High               = EtaUpperEdge;}
@@ -300,7 +320,7 @@ private:
 
   void FindJetsEMC();                          // Find and Fill Jets with EMCAL framework
   void FindJetsFJ();                          // Find and Fill Jets with FJ framework
-  void FillTPCdEdxReal();                   // Main function to fill all info + TIden
+  void FillIncTracksReal();                   // Fill all inclusive track information
   void FillTreeMC();
   void FastGen();                           // Run over galice.root for Fastgen 2nd moments
   void GetExpecteds(AliESDtrack *track, Double_t closestPar[3]);
@@ -322,6 +342,7 @@ private:
   AliESDEvent      * fESD;                    //! ESD object
   TList            * fListHist;               //! list for histograms
   AliESDtrackCuts  * fESDtrackCuts;           //! basic cut variables
+  AliESDtrackCuts  * fESDtrackCuts_2015;      //! basic cut variables
   AliESDtrackCuts  * fESDtrackCuts_Bit96;     //! basic cut variables
   AliESDtrackCuts  * fESDtrackCuts_Bit128;    //! basic cut variables
   AliESDtrackCuts  * fESDtrackCuts_Bit768;    //! basic cut variables
@@ -375,9 +396,13 @@ private:
   Bool_t            fDEdxCheck;              // flag to check only the dEdx performance
   Bool_t            fIncludeITS;             // decide whether to use ITS or not
   Bool_t            fFillIncTracks;          // switch whether to fill tracks tree
-  Bool_t            fFillpTPC;               // switch whether to fill histos with pTPC
-  Bool_t            fFillp;               // switch whether to fill histos with p
-  Bool_t            fFillpT;               // switch whether to fill histos with pT
+  Bool_t            fFill_TPC;               // switch whether to fill TPC histos
+  Bool_t            fFillpTPC_pT;           // switch whether to fill pTPC v pT conversion histo
+  Bool_t            fFillp_pT;           // switch whether to fill p v pT conversion histo
+  Bool_t            fFillpTPC_p;           // switch whether to fill pTPC v p conversion histo
+  Bool_t            fFill_TOF;           // switch whether to fill TOF histos
+  Bool_t            fFill_TOF_expecs;           // switch whether to fill expected TOF histos
+  Bool_t            fFill_TPC_expecs;           // switch whether to fill expected TPC histos
   Bool_t            fFillOnlyHists;          //
   Bool_t            fFillEffLookUpTable;     //
   Bool_t            fFillArmPodTree;         // switch whether to fill clean sample tree
@@ -386,6 +411,7 @@ private:
   Bool_t            fFilldscaledTree;         // switch whether to fill dscaled tree
   Bool_t            fFillFastJet;         // switch whether to fill FJ tree
   Bool_t            fFillEMCJet;         // switch whether to fill EMC tree
+  Bool_t            fDoIncTracks;         // switch whether to use inclusive tracks
   Bool_t            fDoFastJet;         // switch whether to use FJ jets
   Bool_t            fDoEMCJet;         // switch whether to use EMC jets
   Bool_t            fFillJetsEMCConst;        // switch whether to fill jetsEMC constituent tree
@@ -414,16 +440,29 @@ private:
   Bool_t            fFillExpecteds;
 
   Int_t             fNSettings;
+  Int_t             fSetTPCmom;
+  Int_t             fSetTOFmom;
+  Int_t             fSetBetamom;
   Int_t             fNMomBins;               // number of mombins --> for 20MeV slice 150 and 10MeV 300
   Float_t           fMomDown;                // bottom limit for the momentum range (default 0.2)
   Float_t           fMomUp;                  // uppper limit for the momentum range (default 3.2)
   Float_t           fNdEdxBins;           // bin width for the dEdx histograms (default 2.5)
   Float_t           fDEdxUp;                 // bottom limit for dEdx histogram (default 20)
   Float_t           fDEdxDown;               // upper limit for dEdx histogram (default 1020)
+  Int_t             fNBetaBins;              //number of bins for the beta histogram (default 1000)
+  Float_t           fBetaUp;              //upper limit for the beta histogram (default 2.0)
+  Float_t           fBetaDown;              //lower limit for the beta histogram (default 0.0)
+  Int_t             fTOFNSigmaBins;              //number of bins for the TOF nsigma histograms (default 1000)
+  Float_t           fTOFNSigmaUp;              //upper limit for the TOF nsigma histograms (default 100)
+  Float_t           fTOFNSigmaDown;              //upper limit for the TOF nsigma histograms (default -100)
+
   Float_t           fDEdxCleanUp;            // upper limit for dEdx histogram of clean kaons and electrons (default 140)
   Int_t             fMomExpec_NBins;         // number of mom bins for expecteds (default 2000)
   Float_t           fMomExpec_Low;           // bottom limit for the momentum range for expecteds (default 0.0)
   Float_t           fMomExpec_High;          // uppper limit for the momentum range for expecteds (default 20.0)
+  Int_t             fTOFMom_NBins;           // number of TOF momentum bins (default 1000)
+  Float_t           fTOFMom_Low;             // lower limit for the TOF momentum range (default 0.0)
+  Float_t           fTOFMom_High;            // uppper limit for the TOF momentum range (default 10.0)
   Int_t             fEtaExpec_NBins;         // number of absolute eta bins for expecteds (default 9)
   Float_t           fEtaExpec_Low;           // bottom limit for the absolute eta range for expecteds (default 0.0)
   Float_t           fEtaExpec_High;          // uppper limit for the absolute eta range for expecteds (default 0.9)
@@ -634,19 +673,33 @@ private:
   TH1F             * fHistCentralityImpPar;      // control histogram for centrality
   TH1F             * fHistImpParam;              // control histogram for impact parameter
   TH1F             * fHistVertex;                // control histogram for vertexZ
-  TH3F             * fHistIncTracks_dEdx;        // histogram for inclusive tracks dEdx all eta v ptpc
-  TH3F             * fHistIncTracks_dEdx_p;      // histogram for inclusive tracks dEdx all eta v p
-  TH3F             * fHistIncTracks_dEdx_pT;     // histogram for inclusive tracks dEdx all eta v pT
+  TH3F             * fHistIncTracks_dEdx;        // histogram for inclusive tracks dEdx all eta v some momentum form
   TH2F             * fHistIncTracks_moms;        // histogram for inclusive tracks ptpc to pT
   TH2F             * fHistIncTracks_moms_p;        // histogram for inclusive tracks p to pT
+  TH2F             * fHistIncTracks_moms_pTPC_p;        // histogram for inclusive tracks pTPC to p
   TH3F             * fHistIncTracks_kin;        // histogram for inclusive tracks dEdx all eta
+  TH2F             * fHistIncTracks_beta;        // histogram for inclusive tracks beta all eta v p
+  TH2F             * fHistIncTracks_TOFpi_nsigma;        // histogram for inclusive tracks TOF nsigma under pion hypothesis vs pT
+  TH2F             * fHistIncTracks_TOFka_nsigma;        // histogram for inclusive tracks TOF nsigma under kaon hypothesis vs pT
+  TH2F             * fHistIncTracks_TOFpr_nsigma;        // histogram for inclusive tracks TOF nsigma under proton hypothesis vs pT
 
-  TH3F             * fHistJetTracks_dEdx;        // histogram for jet tracks dEdx all eta v ptpc
-  TH3F             * fHistJetTracks_dEdx_p;        // histogram for jet tracks dEdx all eta v p
-  TH3F             * fHistJetTracks_dEdx_pT;        // histogram for jet tracks dEdx all eta v pt
+  TH3F             * fHistJetTracks_dEdx;        // histogram for jet tracks dEdx all eta v some momentum form
   TH2F             * fHistJetTracks_moms;        // histogram for jet tracks ptpc to pT
   TH2F             * fHistJetTracks_moms_p;        // histogram for jet tracks p to Pt
+  TH2F             * fHistJetTracks_moms_pTPC_p;        // histogram for jet tracks pTPC to p
   TH3F             * fHistJetTracks_kin;         // histogram for jet tracks dEdx all eta
+  TH2F             * fHistJetTracks_beta;        // histogram for jet tracks beta all eta v p
+  TH2F             * fHistJetTracks_TOFpi_nsigma;        // histogram for jet tracks TOF nsigma under pion hypothesis vs pT
+  TH2F             * fHistJetTracks_TOFka_nsigma;        // histogram for jet tracks TOF nsigma under kaon hypothesis vs pT
+  TH2F             * fHistJetTracks_TOFpr_nsigma;        // histogram for jet tracks TOF nsigma under proton hypothesis vs pT
+
+  TH2F             * fHistBetaExpec_pi; // histogram for expected pion beta v pT
+  TH2F             * fHistBetaExpec_ka; // histogram for expected kaon beta v pT
+  TH2F             * fHistBetaExpec_pr; // histogram for expected proton beta v pT
+  TH2F             * fHistTOFSigmaExpec_pi; // histogram for expected pion TOF Sigma v pT
+  TH2F             * fHistTOFSigmaExpec_ka; // histogram for expected kaon TOF Sigma v pT
+  TH2F             * fHistTOFSigmaExpec_pr; // histogram for expected proton TOF Sigma v pT
+
 /*
   TH2D             * fHistIncTracks_mpi_small;        // histogram for inclusive tracks dEdx expected pion mean
   TH2D             * fHistIncTracks_spi_small;        // histogram for inclusive tracks dEdx expected pion sigma
@@ -682,7 +735,7 @@ private:
   AliEventCuts* fPileUpTightnessCut1;
   Double_t fEffMatrixNSigmasTOF;
 
-  ClassDef(AliAnalysisJetHadro, 11);
+  ClassDef(AliAnalysisJetHadro, 12);
 
 };
 

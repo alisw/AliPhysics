@@ -102,7 +102,8 @@ AliAnalysisTaskEmcalJetValidation::AliAnalysisTaskEmcalJetValidation() :
    fJetR(0.4),
    fJetAlgo(AliJetContainer::antikt_algorithm),
    fGhostArea(0.005),
-   fRecoScheme(AliJetContainer::E_scheme)
+   fRecoScheme(AliJetContainer::E_scheme),
+   fUseAliEventCuts(kFALSE)
 
    {
 
@@ -135,7 +136,8 @@ AliAnalysisTaskEmcalJetValidation::AliAnalysisTaskEmcalJetValidation(const char*
    fJetR(0.4),
    fJetAlgo(AliJetContainer::antikt_algorithm),
    fGhostArea(0.005),
-   fRecoScheme(AliJetContainer::E_scheme)
+   fRecoScheme(AliJetContainer::E_scheme),
+   fUseAliEventCuts(kFALSE)
 
 {
     // constructor
@@ -272,9 +274,8 @@ void AliAnalysisTaskEmcalJetValidation::ExecOnceLocal(){
     fTrackCuts->SetMaxChi2PerClusterTPC(4.0);
     fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
                                           AliESDtrackCuts::kAny);
-
     fTrackCuts->SetMaxChi2PerClusterITS(36.0);
-    fTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
+    //fTrackCuts->SetMaxFractionSharedTPCClusters(1.);
     fTrackCuts->SetMaxDCAToVertexXY(2.4);
     fTrackCuts->SetMaxDCAToVertexZ(3.2);
     fTrackCuts->SetDCAToVertex2D(kFALSE);
@@ -298,12 +299,15 @@ void AliAnalysisTaskEmcalJetValidation::UserCreateOutputObjects()
    fOutputList->SetOwner(kTRUE);
    fOutputList->SetName("OutputHistos");
 
-   fHistNEvents = new TH1F("hNEvents", "Number of processed events", 1, 0, 1);
-   fHistNEventVtx =  new TH1F("Events Vertex Distribution", "", 200, -15, 15);
+   fHistNEvents = new TH1F("hNEvents", "Number of processed events", 15, -0.5, 14.5);
+   fHistNEvents->SetMinimum(0);
+   fHistNEvents->GetXaxis()->SetBinLabel(1, "All selected events after trigger selection");
+   fHistNEvents->GetXaxis()->SetBinLabel(2, "events after AliEventCuts are applied");
+   fHistNEventVtx =  new TH1F("Events Vertex Distribution", "", 200, -20, 20);
 
    //JET QA
    fHistJetPt = new TH1F("jetPt", "inclusive jetPt ; p_{T} (GeV/#it{c})", 200, 0, 100);
-   fHistJetPhi = new TH1F("jetPhi", "inclusive jetPhi; #phi ", 180, 0, 6.4);// we have 18 sectors to be covered 
+   fHistJetPhi = new TH1F("jetPhi", "inclusive jetPhi; #phi ", 180, 0, 6.4);// we have 18 sectors to be covered
    fHistJetEta = new TH1F("jetEta", "inclusive jetEta; #eta ", 200, -0.9, 0.9);
 
    //TRACK QA
@@ -367,6 +371,13 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
      return;
    }
 
+   if (fUseAliEventCuts) {
+     Bool_t alieventcut = fEventCuts.AcceptEvent(vevt);
+     if (!alieventcut)
+      return;
+   }
+
+   fHistNEvents->Fill(2);
   //DO SOME EVENT SELECTION HERE
   const AliESDVertex* vertex = (AliESDVertex*)fESD->GetPrimaryVertex();
   if(TMath::Abs(vertex->GetZ()) > 10.) return;      // vertex selection
@@ -375,15 +386,23 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
   Bool_t passedTrigger = kFALSE;
   UInt_t triggerMask = fInputHandler->IsEventSelected();
   {
-  if(triggerMask & AliVEvent::kINT7){
+  if(triggerMask & AliVEvent::kINT7){      // for sel7 in Run3
          passedTrigger = kTRUE;
   }
+
+  // if(triggerMask & AliVEvent::kAny){     // for noSel in Run3
+  //        passedTrigger = kTRUE;
+  // }
+  // if(triggerMask & AliVEvent::kINT8){       // for sel8 in Run3
+  //        passedTrigger = kTRUE;
+  // }
   }
   if(passedTrigger == kTRUE){
 
     //EVENTS WHICH PASSED
     fHistNEvents->Fill(1);
     fHistNEventVtx->Fill((vertex->GetZ()));
+  //  std::cout << "vertex positions for selected events" << vertex->GetZ() << '\n';
 
 
   fFastJetWrapper->Clear();
@@ -432,7 +451,7 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
     //END OF FILLING TRACK CUTS HISTOS
 
 
-     lVec.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), 0.13957);   //assume that track is pion
+     lVec.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), 0.139);   //assume that track is pion - with same pion as in the O2Physics jetfinder
      fFastJetWrapper->AddInputVector(lVec.Px(), lVec.Py(), lVec.Pz(), lVec.E()); //fill jet constituents
 
 

@@ -44,19 +44,9 @@ class AliGFWFlowContainer;
 class AliPIDResponse;
 class AliPIDCombined;
 
-namespace EFF_FLAG {
-    enum {
-      noeff = 1,
-      consteff = 2,
-      gausseff = 4,
-      flateff = 8,
-      powereff = 16,
-      inputeff = 32
-    };
-}
-enum {kCh = 0, kPi = 1, kKa = 2, kPr = 4};
 class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
  public:
+  enum GENERATOR {kAMPT,kHIJING};
   AliAnalysisTaskDeform();
   AliAnalysisTaskDeform(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="", TString ContainerSubfix="");
   virtual ~AliAnalysisTaskDeform();
@@ -122,6 +112,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetDisablePileup(bool disable) { fDisablePileup = disable; };
   void SetRequirePositiveCharge(bool newval) {fRequirePositive = newval;};
   void SetOnTheFly(bool newval) {fOnTheFly = newval;}
+  void SetOTFGenerator(TString gen) { fGenerator = gen; }
   void SetFillMptPowers(bool newval) { fFillMptPowers = newval; }
   void SetIPBins(Int_t nBins, Double_t *multibins);
   void SetUsePIDNUA(bool newval) { fUsePIDNUA = newval; }
@@ -151,6 +142,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fUseOldPileup;
   TString fDCAxyFunctionalForm;
   Bool_t fOnTheFly;
+  TString fGenerator;
   AliMCEvent *fMCEvent; //! MC event
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
   TRandom *fRndm; 
@@ -275,7 +267,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t AcceptCustomEvent(AliESDEvent*);
   Bool_t LoadWeights(const Int_t &runno);
   AliMCEvent *getMCEvent();
-  double getAMPTCentrality();
+  double getGeneratorCentrality();
   void ProcessOnTheFly();
   Double_t getEfficiency(double &lpt, int iCent);
   vector<Double_t> getPowerEfficiency(double &lpt, int iCent);

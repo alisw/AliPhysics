@@ -227,7 +227,7 @@ void AddTask_GammaConvCalo_pp(
   } else {
     task->SetPi0EtaSwitch(0);
   }
-  if (enableLightOutput > 1 && enableLightOutput != 4) task->SetLightOutput(1);
+  if (enableLightOutput >= 1 && enableLightOutput != 4) task->SetLightOutput(1);
   else if (enableLightOutput == 4) task->SetLightOutput(2);
   if (enableLightOutput == 5) task->SetECalibOutput(1);
   if (enableLightOutput == 6) task->SetECalibOutput(2);
@@ -2621,6 +2621,32 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dh00009327000008250400000","4117918077032230000","0163103100000010"); // INT7
     cuts.AddCutPCMCalo("00010113","0di00009327000008250400000","4117918077032230000","0163103100000010"); // INT7
 
+  // Material TRD study
+  // run1 settings for NonLin studies
+  } else if (trainConfig == 2123){ // nom Bfield
+    cuts.AddCutPCMCalo("00010103","0dm00009f9730000dge0404000","111110006fe30220000","0r63103100000010"); // INT7, NL in CF, all modules
+    cuts.AddCutPCMCalo("00010103","0dm00009f9730000dge0404000","111110006fe3n220000","0r63103100000010"); // INT7, NL in CF, all modules
+  } else if (trainConfig == 2124){ // nom Bfield
+    cuts.AddCutPCMCalo("00081103","0dm00009f9730000dge0404000","111110006fe30220000","0r63103100000010"); // EGA, NL in CF, all modules
+    cuts.AddCutPCMCalo("00081103","0dm00009f9730000dge0404000","111110006fe3n220000","0r63103100000010"); // EGA, NL in CF, all modules
+
+    // run1 settings for NonLin studies
+  } else if (trainConfig == 2125){ // nom Bfield
+    cuts.AddCutPCMCalo("00010103","0dm00009f9730000dge0404000","111210006fe30220000","0r63103100000010"); // INT7, NL in CF, only with TRD
+    cuts.AddCutPCMCalo("00010103","0dm00009f9730000dge0404000","111210006fe3n220000","0r63103100000010"); // INT7, NL in CF, only with TRD
+  } else if (trainConfig == 2126){ // nom Bfield
+    cuts.AddCutPCMCalo("00081103","0dm00009f9730000dge0404000","111210006fe30220000","0r63103100000010"); // EGA, NL in CF, only with TRD
+    cuts.AddCutPCMCalo("00081103","0dm00009f9730000dge0404000","111210006fe3n220000","0r63103100000010"); // EGA, NL in CF, only with TRD
+
+    // run1 settings for NonLin studies
+  } else if (trainConfig == 2127){ // nom Bfield
+    cuts.AddCutPCMCalo("00010103","0dm00009f9730000dge0404000","111130006fe30220000","0r63103100000010"); // INT7, NL in CF, only without TRD
+    cuts.AddCutPCMCalo("00010103","0dm00009f9730000dge0404000","111130006fe3n220000","0r63103100000010"); // INT7, NL in CF, only without TRD
+  } else if (trainConfig == 2128){ // nom Bfield
+    cuts.AddCutPCMCalo("00081103","0dm00009f9730000dge0404000","111130006fe30220000","0r63103100000010"); // EGA, NL in CF, only without TRD
+    cuts.AddCutPCMCalo("00081103","0dm00009f9730000dge0404000","111130006fe3n220000","0r63103100000010"); // EGA, NL in CF, only without TRD
+
+
   // NCell efficiency pp 13TeV
   } else if (trainConfig == 2130){ // EMCAL+DCAL clusters standard cuts, INT7, NL 01, std TM,NonLin for without new cell scale
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); // No NCell cut (NCell >= 1)
@@ -3188,7 +3214,7 @@ void AddTask_GammaConvCalo_pp(
   } else if (trainConfig == 2623){ // min energy variation std 0.3 GeV/c
     //                                                                     |
     // cuts.AddCutPCMCalo("00010113","0dd00009f9730000dge0404000","24466190sa00cc00000","0163103100000010"); //0:     off
-    cuts.AddCutPCMCalo("00010113","0dd00009f9730000dge0404000","24466190sa09cc00000","0163103100000010"); //9:     0.1 GeV/c
+    cuts.AddCutPCMCalo("00010113","0dd00009f9730000dge0404000","24466190sa07cc00000","0163103100000010"); //7:     0.2 GeV/c
     cuts.AddCutPCMCalo("00010113","0dd00009f9730000dge0404000","24466190sa02cc00000","0163103100000010"); //2:     0.5 GeV/c
     cuts.AddCutPCMCalo("00010113","0dd00009f9730000dge0404000","24466190sa03cc00000","0163103100000010"); //3:     0.6 GeV/c
     cuts.AddCutPCMCalo("00010113","0dd00009f9730000dge0404000","24466190sa04cc00000","0163103100000010"); //4:     0.7 GeV/c
@@ -4800,7 +4826,7 @@ void AddTask_GammaConvCalo_pp(
           return;
         }
         int lNFnames = lArrFnamesdEdxPostCalib->GetEntriesFast();
-        if (lNFnames && lNFnames != numberOfCuts){
+        if (!(lNFnames == 1) && !(lNFnames == numberOfCuts)){
           cout << "ERROR: FEPC either has to be one filename or several separated by a '+' where the number of filenames has to match the number of cuts in the trainconfig.\nOr no filename at all if the file from the OADB is to be taken\n";
           return;
         }

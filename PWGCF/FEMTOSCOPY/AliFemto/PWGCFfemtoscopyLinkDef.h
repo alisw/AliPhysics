@@ -118,6 +118,7 @@
 // Dong-Fang: 2021.9.14
 #pragma link C++ class AliFemtoSimpleAnalysisOnlyMixP1+;
 #pragma link C++ class AliFemtoVertexMultAnalysisOnlyMixP1+;
+#pragma link C++ class AliFemtoCutMonitorParticlePIDpdtHe3+;
 
 #pragma link C++ class AliFemtoPairkTPairCut+;
 

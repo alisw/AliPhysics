@@ -678,6 +678,10 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
         continue;
       }
 
+      if(!(mcPart->IsPhysicalPrimary())){
+        continue;
+      }
+
       if(PassedMCKineCuts(mcPart)){
         AliFemtoDreamBasePart partMC;
         partMC.SetMCParticleRePart(mcPart);
@@ -746,7 +750,7 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
 
       fTrack->SetTrack(track);
 
-      if (fIsMC && fRemoveMCResonances) {
+      /*if (fIsMC && fRemoveMCResonances) {
         TClonesArray *mcarray = dynamic_cast<TClonesArray *>(Event->FindListObject(AliAODMCParticle::StdBranchName()));
         if (!mcarray) {
           AliError("SPTrack: MC Array not found");
@@ -788,7 +792,7 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
         } else {
           continue;  // if we don't have MC Information, don't use that track
         }
-      } //if (fIsMC && fRemoveMCResonances)
+      } //if (fIsMC && fRemoveMCResonances)*/ 
 
       //...........................
 

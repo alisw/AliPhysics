@@ -181,7 +181,11 @@ void AliAnalysisTaskSEDstarPolarization::UserCreateOutputObjects()
         }
     }
 
-    CreateRecoSparses();
+    if (fSparseOption == 0) {
+        CreateRecoSparses();
+    } else {
+        CreateRecoSparsesFor2DFit();
+    }
 
     if (fRecomputeDstarCombinatorial) {
         fEsdTrackCutsSoftPi = new AliESDtrackCuts("AliESDtrackCuts", "default");
@@ -531,37 +535,48 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
             double mass = dStar->DeltaInvMass();
 
             double deltaPhi = fReadMC ? GetPhiInRange(dMeson->Phi() - phiRandom) : GetPhiInRange(dMeson->Phi() - PsinFullV0);
+            double deltaPhiStar = GetPhiInRange(phiStarBeam - PsinFullV0);
 
-            std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarEvPlane, cosThetaStarRandom, deltaPhi, centrality, scores[0], scores[1], scores[2], cosThetaQvector, cosPhiStar};
-            if (fApplyTrackCutVariations) {
-                for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
-                    var4nSparse.push_back((double)trackCutFlags[iTrkCut]);
-                }
-            }
-            std::vector<double> var4nSparseThetaPhiStar = {mass, ptCand, thetaStarBeam, phiStarBeam};
+            if (fSparseOption == 0) {
 
-            if (!fReadMC) {
-                fnSparseReco[0]->Fill(var4nSparse.data());
-                fnSparseRecoThetaPhiStar[0]->Fill(var4nSparseThetaPhiStar.data());
-            }
-            else
-            {
-                if (labD > 0) {
-                    if (orig == 4) {
-                        fnSparseReco[1]->Fill(var4nSparse.data());
-                        fnSparseRecoThetaPhiStar[1]->Fill(var4nSparseThetaPhiStar.data());
-                    }
-                    else if (orig == 5) {
-                        fnSparseReco[2]->Fill(var4nSparse.data());
-                        fnSparseRecoThetaPhiStar[2]->Fill(var4nSparseThetaPhiStar.data());
+                std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarEvPlane, cosThetaStarRandom, deltaPhi, centrality, scores[0], scores[1], scores[2], cosThetaQvector, cosPhiStar};
+                if (fApplyTrackCutVariations) {
+                    for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
+                        var4nSparse.push_back((double)trackCutFlags[iTrkCut]);
                     }
                 }
-                else {
-                    if(fFillBkgSparse) {
-                        fnSparseReco[3]->Fill(var4nSparse.data());
-                        fnSparseRecoThetaPhiStar[3]->Fill(var4nSparseThetaPhiStar.data());
+                std::vector<double> var4nSparseThetaPhiStar = {mass, ptCand, thetaStarBeam, phiStarBeam};
+
+                if (!fReadMC) {
+                    fnSparseReco[0]->Fill(var4nSparse.data());
+                    fnSparseRecoThetaPhiStar[0]->Fill(var4nSparseThetaPhiStar.data());
+                }
+                else
+                {
+                    if (labD > 0) {
+                        if (orig == 4) {
+                            fnSparseReco[1]->Fill(var4nSparse.data());
+                            fnSparseRecoThetaPhiStar[1]->Fill(var4nSparseThetaPhiStar.data());
+                        }
+                        else if (orig == 5) {
+                            fnSparseReco[2]->Fill(var4nSparse.data());
+                            fnSparseRecoThetaPhiStar[2]->Fill(var4nSparseThetaPhiStar.data());
+                        }
+                    }
+                    else {
+                        if(fFillBkgSparse) {
+                            fnSparseReco[3]->Fill(var4nSparse.data());
+                            fnSparseRecoThetaPhiStar[3]->Fill(var4nSparseThetaPhiStar.data());
+                        }
                     }
                 }
+            } else {
+                std::vector<double> var4nSparseCos2ThetaStar = {mass, ptCand, cosThetaStarEvPlane*cosThetaStarEvPlane, scores[0], scores[1], scores[2]};
+                std::vector<double> var4nSparseCos4ThetaStar = {mass, ptCand, cosThetaStarEvPlane*cosThetaStarEvPlane*cosThetaStarEvPlane*cosThetaStarEvPlane, scores[0], scores[1], scores[2]};
+                std::vector<double> var4nSparseCos2DeltaPhiStar = {mass, ptCand, TMath::Cos(2*deltaPhiStar), scores[0], scores[1], scores[2]};
+                fnSparseRecoFor2DFit[0]->Fill(var4nSparseCos2ThetaStar.data());
+                fnSparseRecoFor2DFit[1]->Fill(var4nSparseCos4ThetaStar.data());
+                fnSparseRecoFor2DFit[2]->Fill(var4nSparseCos2DeltaPhiStar.data());
             }
 
             if (unsetVtx)
@@ -602,44 +617,54 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                 double mass = dynamic_cast<AliAODRecoDecayHF2Prong *>(dMeson)->InvMassD0();
 
                 double deltaPhi = fReadMC ? GetPhiInRange(dMeson->Phi() - phiRandom) : GetPhiInRange(dMeson->Phi() - PsinFullV0);
+                double deltaPhiStar = GetPhiInRange(phiStarBeam - PsinFullV0);
 
-                std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarEvPlane, cosThetaStarRandom, deltaPhi, centrality, scores[0], scores[1], scores[2], cosThetaQvector, cosPhiStar};
-                if (fApplyTrackCutVariations) {
-                    for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
-                        var4nSparse.push_back((double)trackCutFlags[iTrkCut]);
+                if (fSparseOption) {
+                    std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarEvPlane, cosThetaStarRandom, deltaPhi, centrality, scores[0], scores[1], scores[2], cosThetaQvector, cosPhiStar};
+                    if (fApplyTrackCutVariations) {
+                        for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
+                            var4nSparse.push_back((double)trackCutFlags[iTrkCut]);
+                        }
                     }
-                }
-                std::vector<double> var4nSparseThetaPhiStar = {mass, ptCand, thetaStarBeam, phiStarBeam};
+                    std::vector<double> var4nSparseThetaPhiStar = {mass, ptCand, thetaStarBeam, phiStarBeam};
 
-                if (!fReadMC) {
-                    fnSparseReco[0]->Fill(var4nSparse.data());
-                    fnSparseRecoThetaPhiStar[0]->Fill(var4nSparseThetaPhiStar.data());
-                }
-                else
-                {
-                    if (labD >= 0) {
-                        //check if reflected signal
-                        int labDauFirst = dauPi->GetLabel();
-                        AliAODMCParticle* dauFirst = nullptr;
-                        if (labDauFirst >= 0)
-                            dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(labDauFirst));
-                        if (dauFirst && TMath::Abs(dauFirst->GetPdgCode()) == 211) {
-                            if (orig == 4) {
-                                fnSparseReco[1]->Fill(var4nSparse.data());
-                                fnSparseRecoThetaPhiStar[1]->Fill(var4nSparseThetaPhiStar.data());
+                    if (!fReadMC) {
+                        fnSparseReco[0]->Fill(var4nSparse.data());
+                        fnSparseRecoThetaPhiStar[0]->Fill(var4nSparseThetaPhiStar.data());
+                    }
+                    else
+                    {
+                        if (labD >= 0) {
+                            //check if reflected signal
+                            int labDauFirst = dauPi->GetLabel();
+                            AliAODMCParticle* dauFirst = nullptr;
+                            if (labDauFirst >= 0)
+                                dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(labDauFirst));
+                            if (dauFirst && TMath::Abs(dauFirst->GetPdgCode()) == 211) {
+                                if (orig == 4) {
+                                    fnSparseReco[1]->Fill(var4nSparse.data());
+                                    fnSparseRecoThetaPhiStar[1]->Fill(var4nSparseThetaPhiStar.data());
+                                }
+                                else if (orig == 5) {
+                                    fnSparseReco[2]->Fill(var4nSparse.data());
+                                    fnSparseRecoThetaPhiStar[2]->Fill(var4nSparseThetaPhiStar.data());
+                                }
                             }
-                            else if (orig == 5) {
-                                fnSparseReco[2]->Fill(var4nSparse.data());
-                                fnSparseRecoThetaPhiStar[2]->Fill(var4nSparseThetaPhiStar.data());
+                        }
+                        else {
+                            if(fFillBkgSparse) {
+                                fnSparseReco[3]->Fill(var4nSparse.data());
+                                fnSparseRecoThetaPhiStar[3]->Fill(var4nSparseThetaPhiStar.data());
                             }
                         }
                     }
-                    else {
-                        if(fFillBkgSparse) {
-                            fnSparseReco[3]->Fill(var4nSparse.data());
-                            fnSparseRecoThetaPhiStar[3]->Fill(var4nSparseThetaPhiStar.data());
-                        }
-                    }
+                } else {
+                    std::vector<double> var4nSparseCos2ThetaStar = {mass, ptCand, cosThetaStarEvPlane*cosThetaStarEvPlane, scores[0], scores[1], scores[2]};
+                    std::vector<double> var4nSparseCos4ThetaStar = {mass, ptCand, cosThetaStarEvPlane*cosThetaStarEvPlane*cosThetaStarEvPlane*cosThetaStarEvPlane, scores[0], scores[1], scores[2]};
+                    std::vector<double> var4nSparseCos2DeltaPhiStar = {mass, ptCand, TMath::Cos(2*deltaPhiStar), scores[0], scores[1], scores[2]};
+                    fnSparseRecoFor2DFit[0]->Fill(var4nSparseCos2ThetaStar.data());
+                    fnSparseRecoFor2DFit[1]->Fill(var4nSparseCos4ThetaStar.data());
+                    fnSparseRecoFor2DFit[2]->Fill(var4nSparseCos2DeltaPhiStar.data());
                 }
             }
             if (isSelected >= 2) {
@@ -674,44 +699,54 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                 double mass = dynamic_cast<AliAODRecoDecayHF2Prong *>(dMeson)->InvMassD0bar();
 
                 double deltaPhi = fReadMC ? GetPhiInRange(dMeson->Phi() - phiRandom) : GetPhiInRange(dMeson->Phi() - PsinFullV0);
+                double deltaPhiStar = GetPhiInRange(phiStarBeam - PsinFullV0);
 
-                std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarEvPlane, cosThetaStarRandom, deltaPhi, centrality, scoresSecond[0], scoresSecond[1], scoresSecond[2], cosThetaQvector, cosPhiStar};
-                if (fApplyTrackCutVariations) {
-                    for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
-                        var4nSparse.push_back((double)trackCutFlags[iTrkCut]);
+                if (fSparseOption) {
+                    std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarEvPlane, cosThetaStarRandom, deltaPhi, centrality, scoresSecond[0], scoresSecond[1], scoresSecond[2], cosThetaQvector, cosPhiStar};
+                    if (fApplyTrackCutVariations) {
+                        for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
+                            var4nSparse.push_back((double)trackCutFlags[iTrkCut]);
+                        }
                     }
-                }
-                std::vector<double> var4nSparseThetaPhiStar = {mass, ptCand, thetaStarBeam, phiStarBeam};
+                    std::vector<double> var4nSparseThetaPhiStar = {mass, ptCand, thetaStarBeam, phiStarBeam};
 
-                if (!fReadMC) {
-                    fnSparseReco[0]->Fill(var4nSparse.data());
-                    fnSparseRecoThetaPhiStar[0]->Fill(var4nSparseThetaPhiStar.data());
-                }
-                else
-                {
-                    if (labD >= 0) {
-                        //check if reflected signal
-                        int labDauFirst = dauPi->GetLabel();
-                        AliAODMCParticle* dauFirst = nullptr;
-                        if (labDauFirst >= 0)
-                            dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(labDauFirst));
-                        if (dauFirst && TMath::Abs(dauFirst->GetPdgCode()) == 211) {
-                            if (orig == 4) {
-                                fnSparseReco[1]->Fill(var4nSparse.data());
-                                fnSparseRecoThetaPhiStar[1]->Fill(var4nSparseThetaPhiStar.data());
+                    if (!fReadMC) {
+                        fnSparseReco[0]->Fill(var4nSparse.data());
+                        fnSparseRecoThetaPhiStar[0]->Fill(var4nSparseThetaPhiStar.data());
+                    }
+                    else
+                    {
+                        if (labD >= 0) {
+                            //check if reflected signal
+                            int labDauFirst = dauPi->GetLabel();
+                            AliAODMCParticle* dauFirst = nullptr;
+                            if (labDauFirst >= 0)
+                                dauFirst = dynamic_cast<AliAODMCParticle *>(arrayMC->UncheckedAt(labDauFirst));
+                            if (dauFirst && TMath::Abs(dauFirst->GetPdgCode()) == 211) {
+                                if (orig == 4) {
+                                    fnSparseReco[1]->Fill(var4nSparse.data());
+                                    fnSparseRecoThetaPhiStar[1]->Fill(var4nSparseThetaPhiStar.data());
+                                }
+                                else if (orig == 5) {
+                                    fnSparseReco[2]->Fill(var4nSparse.data());
+                                    fnSparseRecoThetaPhiStar[2]->Fill(var4nSparseThetaPhiStar.data());
+                                }
                             }
-                            else if (orig == 5) {
-                                fnSparseReco[2]->Fill(var4nSparse.data());
-                                fnSparseRecoThetaPhiStar[2]->Fill(var4nSparseThetaPhiStar.data());
+                        }
+                        else {
+                            if(fFillBkgSparse) {
+                                fnSparseReco[3]->Fill(var4nSparse.data());
+                                fnSparseRecoThetaPhiStar[3]->Fill(var4nSparseThetaPhiStar.data());
                             }
                         }
                     }
-                    else {
-                        if(fFillBkgSparse) {
-                            fnSparseReco[3]->Fill(var4nSparse.data());
-                            fnSparseRecoThetaPhiStar[3]->Fill(var4nSparseThetaPhiStar.data());
-                        }
-                    }
+                } else {
+                    std::vector<double> var4nSparseCos2ThetaStar = {mass, ptCand, cosThetaStarEvPlane*cosThetaStarEvPlane, scoresSecond[0], scoresSecond[1], scoresSecond[2]};
+                    std::vector<double> var4nSparseCos4ThetaStar = {mass, ptCand, cosThetaStarEvPlane*cosThetaStarEvPlane*cosThetaStarEvPlane*cosThetaStarEvPlane, scoresSecond[0], scoresSecond[1], scoresSecond[2]};
+                    std::vector<double> var4nSparseCos2DeltaPhiStar = {mass, ptCand, TMath::Cos(2*deltaPhiStar), scoresSecond[0], scoresSecond[1], scoresSecond[2]};
+                    fnSparseRecoFor2DFit[0]->Fill(var4nSparseCos2ThetaStar.data());
+                    fnSparseRecoFor2DFit[1]->Fill(var4nSparseCos4ThetaStar.data());
+                    fnSparseRecoFor2DFit[2]->Fill(var4nSparseCos2DeltaPhiStar.data());
                 }
             }
             if (unsetVtx)
@@ -1169,6 +1204,53 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
         fnSparseRecoThetaPhiStar[iHist]->GetAxis(2)->SetTitle("#theta* (beam)");
         fnSparseRecoThetaPhiStar[iHist]->GetAxis(3)->SetTitle("#varphi* (beam)");
         fOutput->Add(fnSparseRecoThetaPhiStar[iHist]);
+    }
+}
+
+//_________________________________________________________________________
+void AliAnalysisTaskSEDstarPolarization::CreateRecoSparsesFor2DFit()
+{
+    int nPtBinsCutObj = fRDCuts->GetNPtBins();
+    float *ptLims = fRDCuts->GetPtBinLimits();
+    int nPtBins = (int)ptLims[nPtBinsCutObj];
+    if (fUseFinPtBinsForSparse)
+        nPtBins = nPtBins * 10;
+
+    int nMassBins = 500;
+    double massMin = 0.138, massMax = 0.160;
+    TString massTitle = "#it{M}(K#pi#pi) #minus #it{M}(K#pi)";
+    if (fDecChannel == kD0toKpi) {
+        massMin = 1.65;
+        massMax = 2.15;
+        massTitle = "#it{M}(K#pi)";
+    }
+
+    int nBinsCosnThetaStar[knVarForSparseRecoFor2DFit] = {nMassBins, nPtBins, 100, fNBinsML[0], fNBinsML[1], fNBinsML[2]};
+    int nBinsCosDeltaPhiStar[knVarForSparseRecoFor2DFit] = {nMassBins, nPtBins, 200, fNBinsML[0], fNBinsML[1], fNBinsML[2]};
+
+    double xminRecoCosnThetaStar[knVarForSparseRecoFor2DFit] = {massMin, 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+    double xmaxRecoCosnThetaStar[knVarForSparseRecoFor2DFit] = {massMax, ptLims[nPtBinsCutObj], 1., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+    double xminRecoCosDeltaPhiStar[knVarForSparseRecoFor2DFit] = {massMin, 0., -1., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+    double xmaxRecoCosDeltaPhiStar[knVarForSparseRecoFor2DFit] = {massMax, ptLims[nPtBinsCutObj], 1., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+
+    fnSparseRecoFor2DFit[0] = new THnSparseF("fnSparseRecoFor2DFit_Cos2ThetaStar", "Reco sparse cos2t*", knVarForSparseRecoFor2DFit, nBinsCosnThetaStar, xminRecoCosnThetaStar, xmaxRecoCosnThetaStar);
+    fnSparseRecoFor2DFit[1] = new THnSparseF("fnSparseRecoFor2DFit_Cos4ThetaStar", "Reco sparse cos2t*", knVarForSparseRecoFor2DFit, nBinsCosnThetaStar, xminRecoCosnThetaStar, xmaxRecoCosnThetaStar);
+    fnSparseRecoFor2DFit[2] = new THnSparseF("fnSparseRecoFor2DFit_Cos2DeltaPhiStar", "Reco sparse cos2phi*", knVarForSparseRecoFor2DFit, nBinsCosDeltaPhiStar, xminRecoCosDeltaPhiStar, xmaxRecoCosDeltaPhiStar);
+    for (int iHist = 0; iHist < 3; iHist++)
+    {
+        fnSparseRecoFor2DFit[iHist]->GetAxis(0)->SetTitle(Form("%s (GeV/#it{c}^{2})", massTitle.Data()));
+        fnSparseRecoFor2DFit[iHist]->GetAxis(1)->SetTitle("#it{p}_{T} (GeV/#it{c})");
+        fnSparseRecoFor2DFit[iHist]->GetAxis(3)->SetTitle("ML bkg output score");
+        fnSparseRecoFor2DFit[iHist]->GetAxis(4)->SetTitle("ML prompt output score");
+        fnSparseRecoFor2DFit[iHist]->GetAxis(5)->SetTitle("ML non-prompt output score");
+    }
+    fnSparseRecoFor2DFit[0]->GetAxis(2)->SetTitle("cos^{2}(#theta*)");
+    fnSparseRecoFor2DFit[1]->GetAxis(2)->SetTitle("cos^{4}(#theta*)");
+    fnSparseRecoFor2DFit[2]->GetAxis(2)->SetTitle("cos(2#Delta#varphi*)");
+
+    for (int iHist = 0; iHist < 3; iHist++)
+    {
+        fOutput->Add(fnSparseRecoFor2DFit[iHist]);
     }
 }
 

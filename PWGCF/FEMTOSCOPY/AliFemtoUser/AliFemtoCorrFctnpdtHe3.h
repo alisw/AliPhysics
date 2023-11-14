@@ -197,7 +197,10 @@ int nbinsmT,float lowmT,float upmT
 	int IsSameParticlePair;
 	TH2F *KStarVspT_P1Hist;
 	TH2F *KStarVspT_P2Hist;
+	TH2F *KStarVspT_P1Hist_Dum;
+	TH2F *KStarVspT_P2Hist_Dum;
 
+	
 	int fUse3DkTvsKStarvsmT;
 	TH3F *fNum3DkTvsKStarvsmT;
 	TH3F *fDum3DkTvsKStarvsmT;
@@ -211,7 +214,11 @@ int nbinsmT,float lowmT,float upmT
 	TH2F *f2DkSVsMass;
 	
 	int fUsemTCheck;
-	TH3F *f3DmTDepkSVspT;
+	TH3F *f3DmTDepkSVspT1_num;
+	TH3F *f3DmTDepkSVspT1_dum;
+	TH3F *f3DmTDepkSVspT2_num;
+        TH3F *f3DmTDepkSVspT2_dum;
+
 
 	int EscapePairCut;
 	int WhichCutIndEtadPhi;
