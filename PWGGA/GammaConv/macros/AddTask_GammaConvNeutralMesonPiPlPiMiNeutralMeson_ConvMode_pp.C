@@ -960,14 +960,14 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
   //connect containers
   AliAnalysisDataContainer *couttree  = 0;
   AliAnalysisDataContainer *coutput =
-  mgr->CreateContainer( (usePreSelection) ? Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig) : Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i_PreSel%s.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig, PionCuts.Data()), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig));
+  mgr->CreateContainer( (usePreSelection) ? Form("NMPipPimNm_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig) : Form("NMPipPimNm_%i_%i_%i_PreSel%s.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig, PionCuts.Data()), TList::Class(),
+              AliAnalysisManager::kOutputContainer,Form("NMPipPimNm_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig));
 
   if(enableMLBckRedStudy){
-    couttree = mgr->CreateContainer( Form("GammaConvNeutralMesonPiPlPiMiNeutralMesonTree_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig),
+    couttree = mgr->CreateContainer( Form("NMPipPimNmTree_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig),
                                     TTree::Class(),
                                     AliAnalysisManager::kOutputContainer,
-                                    Form("GammaConvNeutralMesonPiPlPiMiNeutralMesonTree_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig) );
+                                    Form("NMPipPimNmTree_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig) );
   }
   
   mgr->AddTask(task);

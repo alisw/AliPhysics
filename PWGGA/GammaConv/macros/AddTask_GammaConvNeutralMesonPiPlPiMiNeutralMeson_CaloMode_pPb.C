@@ -660,21 +660,21 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
 
 //************************************************ PCM- EDC analysis 5 TeV pPb *********************************************
   } else if (trainConfig == 2020 ) { // EDC 13TeV MB, NCell >=2 + NCell efficiency, wider cuts for eta (selection window + mass cut), run1 triggers: INT7
-    cuts.AddCutHeavyMesonPCMCalo("80010113","411790109fe3n230000","32c51070n","0103603m00000000","0453503000000000"); 
+    cuts.AddCutHeavyMesonCalo("80010113","411790109fe3n230000","32c51070n","0103603m00000000","0453503000000000"); 
   } else if (trainConfig == 2021) { //EDC 13TeV MB, NCell >=2 + NCell efficiency, wider cuts for eta (selection window + mass cut), run1 triggers: EG2
-    cuts.AddCutHeavyMesonPCMCalo("80085113","411790109fe3n230000","32c51070n","0103603m00000000","0453503000000000"); 
+    cuts.AddCutHeavyMesonCalo("80085113","411790109fe3n230000","32c51070n","0103603m00000000","0453503000000000"); 
   } else if (trainConfig == 2022) { //EDC 13TeV MB, NCell >=2 + NCell efficiency, wider cuts for eta (selection window + mass cut), run1 triggers: EG1
-    cuts.AddCutHeavyMesonPCMCalo("80083113","411790109fe3n230000","32c51070n","0103603m00000000","0453503000000000"); 
+    cuts.AddCutHeavyMesonCalo("80083113","411790109fe3n230000","32c51070n","0103603m00000000","0453503000000000"); 
   } else if (trainConfig == 2023) { //EDC 13TeV MB, NCell >=2 + NCell efficiency, wider cuts for eta (selection window + mass cut), run1 triggers: EMC7
-    cuts.AddCutHeavyMesonPCMCalo("80052113","411790109fe3n230000","32c51070n","0103603m00000000","0453503000000000"); 
+    cuts.AddCutHeavyMesonCalo("80052113","411790109fe3n230000","32c51070n","0103603m00000000","0453503000000000"); 
   } else if (trainConfig == 2024 ) { // EDC 13TeV MB, NCell >=2 + NCell efficiency, run1 triggers: INT7
-    cuts.AddCutHeavyMesonPCMCalo("80010113","411790109fe3n230000","32c51070m","0103603l00000000","0453503000000000"); 
+    cuts.AddCutHeavyMesonCalo("80010113","411790109fe3n230000","32c51070m","0103603l00000000","0453503000000000"); 
   } else if (trainConfig == 2025) { //EDC 13TeV MB, NCell >=2 + NCell efficiency, run1 triggers: EG2
-    cuts.AddCutHeavyMesonPCMCalo("80085113","411790109fe3n230000","32c51070m","0103603l00000000","0453503000000000"); 
+    cuts.AddCutHeavyMesonCalo("80085113","411790109fe3n230000","32c51070m","0103603l00000000","0453503000000000"); 
   } else if (trainConfig == 2026) { //EDC 13TeV MB, NCell >=2 + NCell efficiency, run1 triggers: EG1
-    cuts.AddCutHeavyMesonPCMCalo("80083113","411790109fe3n230000","32c51070m","0103603l00000000","0453503000000000"); 
+    cuts.AddCutHeavyMesonCalo("80083113","411790109fe3n230000","32c51070m","0103603l00000000","0453503000000000"); 
   } else if (trainConfig == 2027) { //EDC 13TeV MB, NCell >=2 + NCell efficiency, run1 triggers: EMC7
-    cuts.AddCutHeavyMesonPCMCalo("80083113","411790109fe3n230000","32c51070m","0103603l00000000","0453503000000000"); 
+    cuts.AddCutHeavyMesonCalo("80083113","411790109fe3n230000","32c51070m","0103603l00000000","0453503000000000"); 
 
   } else {
     Error(Form("GammaConvNeutralMeson_CaloMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -827,8 +827,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-  mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig) : Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i_%s.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig, corrTaskSetting.Data()), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig));
+  mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("NMPipPimNm_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig) : Form("NMPipPimNm_%i_%i_%i_%s.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig, corrTaskSetting.Data()), TList::Class(),
+              AliAnalysisManager::kOutputContainer,Form("NMPipPimNm_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
