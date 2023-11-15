@@ -537,7 +537,7 @@ void AddTask_MesonJetCorr_Calo(
 
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_Calo_%i_%i%s%s", meson, trainConfig, corrTaskSetting.EqualTo("") == true ? "" : Form("_%s", corrTaskSetting.Data()), nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );
-  AliAnalysisDataContainer* coutput = mgr->CreateContainer(nameContainer, TList::Class(), AliAnalysisManager::kOutputContainer, Form("MesonJetCorrelation_Calo_%i_%i.root", meson, trainConfig));
+  AliAnalysisDataContainer* coutput = mgr->CreateContainer(nameContainer, TList::Class(), AliAnalysisManager::kOutputContainer, Form("MJC_Ca_%i_%i.root", meson, trainConfig));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, cinput);
