@@ -343,6 +343,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
   //************************************************ PCM- EDC analysis 13 TeV pPb *********************************************
   } else if (trainConfig == 2010) { // min bias only
     cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51070m","0103603l00000000","0453503000000000"); // INT7
+  
+  //************************************************ PCM- EDC analysis 5 TeV pPb *********************************************
+  } else if (trainConfig == 2020) { // min bias only, wider cuts for eta (selection window + mass cut)
+    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51070n","0103603m00000000","0453503000000000"); // INT7
   } else {
     Error(Form("GammaConvNeutralMeson_ConvMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
