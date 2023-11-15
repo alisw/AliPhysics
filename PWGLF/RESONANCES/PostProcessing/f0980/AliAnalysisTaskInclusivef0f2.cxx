@@ -152,7 +152,7 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  Double1D verzbin = {-15,-10,-7,7,10,15};
  binZ = AxisVar("Z",verzbin);
 
- Double1D verptbin = {0.0, 0.3, 0.6, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0, 13.0};
+ Double1D verptbin = {0.0, 0.3, 0.6, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 13.0};
 
  Double1D verLOWptbin = {0.0, 0.01, 0.02, 0.05, 0.1, 0.2};
 
