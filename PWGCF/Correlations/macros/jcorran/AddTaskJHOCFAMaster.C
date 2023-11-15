@@ -15,7 +15,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     bool useWeightsNUE = true, bool useWeightsNUA = false,
     bool useWeightsCent = false,
     bool getSC = true, bool getLower = true,
-    bool Aside = false, bool Cside = false, bool saveQCNUA = false, bool frmBadArea18q = false, double eta = 0.8)
+    bool Aside = false, bool Cside = false, bool saveQCNUA = false, bool frmBadArea18q = false, double eta = 0.8, TString extra ="")
 {
   // Configuration of the analysis.
   double ESDslope = 3.38; bool saveQA_ESDpileup = false;
@@ -154,15 +154,14 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
 
   const int Nsets = index;
   TString MAPfileNames[Nsets];  // NUA correction maps.
-  TString MAPdirName = "";
-  //TString MAPdirName = "alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
+  TString MAPdirName = "alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
   TString sCorrection[3] = { "15o", "18q", "18r" };
 
   for (int i = 0; i < Nsets; i++) {
     switch (whichNUAmap) {
     case 0:   // 0: Coarse binning, minPt = 0.2 for all.
-      MAPfileNames[i] = Form("%sPhiWeights_LHC%s_Error_pt02_s_%s.root",
-        MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data());
+      MAPfileNames[i] = Form("%sPhiWeights_LHC%s_%s%s.root",
+        MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data(),extra.Data());
       break;
     case 1:   // 1: Coarse binning, tuned minPt map.
       MAPfileNames[i] = Form("%sPhiWeights_LHC%s_Error_pt%02d_s_%s.root",
@@ -178,7 +177,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       }
       break;
     case 3:   // 3: Coarse binning, full PU cuts (15000), minPt = 0.2 for all.
-      /*if (strcmp(configNames[i].Data(), "default") == 0) {
+      if (strcmp(configNames[i].Data(), "default") == 0) {
         MAPfileNames[i] = Form("%sPhiWeights_LHC%s_fullPUcuts_Default_s_%s.root",
           MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data());
       } else if ((strcmp(configNames[i].Data(), "zvtx6") == 0)) {
@@ -187,10 +186,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       } else {
         MAPfileNames[i] = Form("%sPhiWeights_LHC%s_fullPUcuts_s_%s.root",
           MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data());
-      }*/
-
-      MAPfileNames[i] = "PhiWeights_LHC15o_fullPUcuts_FinerBinsToBeRenamed_s_default.root";
-
+      }
       break;
     case 4:   // Same as case 3 but with PU=500
       if (strcmp(configNames[i].Data(), "zvtx7") == 0) {
@@ -209,8 +205,8 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
         MAPfileNames[i] = Form("%sPhiWeights_LHC%s_fullPUcuts_s_zvtx10.root",
           MAPdirName.Data(), sCorrection[period].Data());
       } else {
-        MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_%s_s_MingruiBins.root",
-          MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data());
+        MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_%s_s_%s.root",
+          MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data(), configNames[i].Data());
       }
       break;
     default:
