@@ -2,8 +2,8 @@
 /* See cxx source for full Copyright notice */
 /* Add a description of your MPI analysis */
 
-#ifndef AliAnalysisTaskDataSpeedOfSound_H
-#define AliAnalysisTaskDataSpeedOfSound_H
+#ifndef AliAnalysisTaskDataSpeedOfSoundSim_H
+#define AliAnalysisTaskDataSpeedOfSoundSim_H
 
 class AliESDtrackCuts;
 class AliESDEvent;
@@ -25,31 +25,35 @@ class TProfile;
 #include "AliVEvent.h"
 #include "TParticle.h"
 
-class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
+class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskDataSpeedOfSound();
-  AliAnalysisTaskDataSpeedOfSound(const char* name);
-  virtual ~AliAnalysisTaskDataSpeedOfSound();
+  AliAnalysisTaskDataSpeedOfSoundSim();
+  AliAnalysisTaskDataSpeedOfSoundSim(const char* name);
+  virtual ~AliAnalysisTaskDataSpeedOfSoundSim();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t* option);
   virtual void Terminate(Option_t* option);
-  void DCAxyDistributions() const;
-  void GetSPDMultiplicity();
+  void DCAxyDistributions();
+  void TrackingEfficiency();
+  void DetectorResponse();
+  void ReadMCEvent();
+  void TrueMultiplicityDistributions();
   void MultiplicityDistributions();
   void GetCalibratedV0Amplitude();
-  void GetZDCCentrality();
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetHMCut(double HMcut) { fHMCut = HMcut; }      // Set V0M max value
   void SetUseMC(bool mc = false) { fUseMC = mc; }      // use to analyse MC data
-  void SetUseZDC(bool zdc = false) { fUseZDC = zdc; }  // use ZDC selection
   void SetEtaCut(const double& etacut) { fEtaCut = etacut; }
   void SetEtaMinCut(const double& etamin) { fEtaMin = etamin; }
   void SetEtaMaxCut(const double& etamax) { fEtaMax = etamax; }
   void SetPtMin(const double& ptmin) { fPtMin = ptmin; }
   void SetTrackCuts(bool TPConly = true) { fIsTPConly = TPConly; }
-  void SetTrigger(UInt_t trigger = AliVEvent::kINT7) { fTrigger = trigger; }
+  void SetTrigger(UInt_t offlineTriggerMask = AliVEvent::kINT7) {
+    fTrigger = offlineTriggerMask;
+  }
   bool HasRecVertex();
+  void GetSPDMultiplicity();
 
  protected:
  private:
@@ -57,7 +61,6 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   AliEventCuts fEventCuts;
   AliStack* fMCStack;
   AliMCEvent* fMC;
-  bool fUseZDC;
   bool fUseMC;
   bool fIsTPConly;
   UInt_t fTrigger;
@@ -71,23 +74,29 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   double fV0Mmin;
   double fV0Mmax;
   double fHMCut;
-  double ftrackmult08;
   double fv0mpercentile;
   float fv0mamplitude;
+  int fRecNch;
+  int fTrueNch;
+  int fTrueNch14;
+  int fTrueNch10;
+  int fTrueNchEtaPos;
+  int fTrueNchEtaNeg;
+  int fTrueV0;
   int fTracklets14;
   int fTracklets10;
-  double fza;
-  double fzc;
-  double fzn;
   float fdcaxy;
   float fdcaz;
   AliMultSelection* fMultSelection;
-  TH2F* hNchvsV0M;
-  TH2F* hNchvsV0MAmp;
-  TH2F* hV0MvsV0MAmp;
+  TH2D* hNchvsV0M;
+  TH2D* hNchvsV0MAmp;
+  TH2D* hV0MvsV0MAmp;
   TProfile* pV0MAmpChannel;
-  TH1F* hV0MAmplitude;
+  TH1D* hV0MAmplitude;
+  TH1F* hCounter;
   TH1F* hV0Mmult;
+  TH1F* hSPDmult14;
+  TH1F* hSPDmult10;
   TProfile* pPtvsNch;
   TProfile* pPtEtaNegvsNchEtaPos;
   TProfile* pPtEtaPosvsNchEtaNeg;
@@ -96,31 +105,55 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2D* hNchEtaPosvsNchEtaNeg;
   TH2D* hPtEtaNegvsNchEtaPos;
   TH2D* hPtEtaPosvsNchEtaNeg;
-  TH2F* hDCAxyData[1];
-  TH2F* hZAvsNchHM;
-  TH2F* hZCvsNchHM;
-  TH2F* hZNvsNchHM;
-  TH2F* hZNvsV0MAmpHM;
-  TH2D* hPtvsZAHM;
-  TH2D* hPtvsZCHM;
-  TH2D* hPtvsZNHM;
-  TH2F* hPhiEtaSPD;
-  TH2F* hVtxZvsTracklets;
-  TH2F* hTrackletsvsV0MAmp14;
-  TH2F* hTrackletsvsV0MAmp10;
+  TH1F* hTrueVtxZ;
+  TH1F* hTrueNch;
+  TH1F* hTrueV0MAmp;
+  TH2D* hNchResponse;
+  TH2D* hTruePtvsTrueNch;
+  TH2D* hTrueNchEtaPosvsTrueNchEtaNeg;
+  TH2D* hTruePtEtaNegvsTrueNchEtaPos;
+  TH2D* hTruePtEtaPosvsTrueNchEtaNeg;
+  TH1F* hTrueNch14;
+  TH1F* hTrueNch10;
+  TH2D* hTruePtvsTrueNch14;
+  TH2D* hTruePtvsTrueNch10;
+  TH2F* hDCAxyPri[1];
+  TH2F* hDCAxyWeDe[1];
+  TH2F* hDCAxyMaIn[1];
+  TH1F* hPtInPrim_ch;
+  TH1F* hPtInPrim_pion;
+  TH1F* hPtInPrim_kaon;
+  TH1F* hPtInPrim_proton;
+  TH1F* hPtInPrim_sigmap;
+  TH1F* hPtInPrim_sigmam;
+  TH1F* hPtInPrim_omega;
+  TH1F* hPtInPrim_xi;
+  TH1F* hPtInPrim_rest;
+  TH1F* hPtOutAll_ch;
+  TH1F* hPtOutPrim_ch;
+  TH1F* hPtOutPrim_pion;
+  TH1F* hPtOutPrim_kaon;
+  TH1F* hPtOutPrim_proton;
+  TH1F* hPtOutPrim_sigmap;
+  TH1F* hPtOutPrim_sigmam;
+  TH1F* hPtOutPrim_omega;
+  TH1F* hPtOutPrim_xi;
+  TH1F* hPtOutPrim_rest;
+  // TH2F* hTrueNchHM;
+  // TH2F* hTrueNchHMWithTrigger;
+  // TH2F* hTrueNchHMWithEventCuts;
+  // TH2F* hTrueNchHMWithVtxSel;
+  TH2D* hPhiEtaSPD;
+  TH2D* hVtxZvsTracklets;
+  TH2D* hTrackletsvsV0MAmp;
   TH2D* hPtvsTracklets14;
   TH2D* hPtvsTracklets10;
-  TProfile* pPtvsTracklets14;
-  TProfile* pPtvsTracklets10;
-  TProfile* pPtvsZA;
-  TProfile* pPtvsZC;
-  TProfile* pPtvsZN;
 
-  AliAnalysisTaskDataSpeedOfSound(
-      const AliAnalysisTaskDataSpeedOfSound&);  // not implemented
-  AliAnalysisTaskDataSpeedOfSound& operator=(
-      const AliAnalysisTaskDataSpeedOfSound&);  // not implemented
+  AliAnalysisTaskDataSpeedOfSoundSim(
+      const AliAnalysisTaskDataSpeedOfSoundSim&);  // not implemented
+  AliAnalysisTaskDataSpeedOfSoundSim& operator=(
+      const AliAnalysisTaskDataSpeedOfSoundSim&);  // not implemented
 
-  ClassDef(AliAnalysisTaskDataSpeedOfSound, 3);
+  ClassDef(AliAnalysisTaskDataSpeedOfSoundSim, 3);
 };
 #endif

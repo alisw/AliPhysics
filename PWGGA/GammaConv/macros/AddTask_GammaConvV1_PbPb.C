@@ -4672,7 +4672,7 @@ void AddTask_GammaConvV1_PbPb(
   //connect containers
   AliAnalysisDataContainer *coutput =
     mgr->CreateContainer(Form("GammaConvV1_%i",trainConfig), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("GammaConvV1_%i.root",trainConfig));
+              AliAnalysisManager::kOutputContainer,Form("GCo_%i.root",trainConfig));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
@@ -4681,26 +4681,26 @@ void AddTask_GammaConvV1_PbPb(
   for(Int_t i = 0; i<numberOfCuts; i++){
     if(enableQAPhotonTask>1){
       if (initializedMatBudWeigths_existing) {
-	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s MBW Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s MBW Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCo_%i.root",trainConfig)) );
       }else{
-	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCo_%i.root",trainConfig)) );
       }
       nContainer++;
     }
     if(enableQAMesonTask>1){
       if (initializedMatBudWeigths_existing) {
-	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s MBW Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s MBW Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCo_%i.root",trainConfig)) );
       }else{
-	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCo_%i.root",trainConfig)) );
       }
       nContainer++;
     }
     if(enablePhotonTree){
-	    mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("TreeForPhotonMLData_%s_%s_%s",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+	    mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("TreeForPhotonMLData_%s_%s_%s",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCo_%i.root",trainConfig)) );
       nContainer++;
     }
     if(enableMesonTree){
-	    mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("TreeForMesonMLData_%s_%s_%s",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+	    mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("TreeForMesonMLData_%s_%s_%s",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCo_%i.root",trainConfig)) );
       nContainer++;
     }
   }
