@@ -86,7 +86,6 @@ using std::endl;
 using std::vector;
 
 static constexpr int v0m_Nbins{1};
-static constexpr double v0m_bins[v0m_Nbins + 1] = {0.0, 5.0};
 static constexpr double uc_v0m_bins_high[v0m_Nbins] = {5.0};
 static constexpr double uc_v0m_bins_low[v0m_Nbins] = {0.0};
 static const char* uc_v0m_bins_name[v0m_Nbins] = {"0_5"};
@@ -118,8 +117,6 @@ ClassImp(AliAnalysisTaskDataSpeedOfSoundSim)  // classimp: necessary for root
       fHMCut(10.0),
       fv0mpercentile(0),
       fv0mamplitude(0),
-      fTracklets14(0),
-      fTracklets10(0),
       fRecNch(0),
       fTrueNch(0),
       fTrueNch14(0),
@@ -127,6 +124,8 @@ ClassImp(AliAnalysisTaskDataSpeedOfSoundSim)  // classimp: necessary for root
       fTrueNchEtaPos(0),
       fTrueNchEtaNeg(0),
       fTrueV0(0),
+      fTracklets14(0),
+      fTracklets10(0),
       fdcaxy(-999),
       fdcaz(-999),
       fMultSelection(0x0),
@@ -178,10 +177,6 @@ ClassImp(AliAnalysisTaskDataSpeedOfSoundSim)  // classimp: necessary for root
       hPtOutPrim_omega(0),
       hPtOutPrim_xi(0),
       hPtOutPrim_rest(0),
-      // hTrueNchHM(0),
-      // hTrueNchHMWithTrigger(0),
-      // hTrueNchHMWithEventCuts(0),
-      // hTrueNchHMWithVtxSel(0),
       hPhiEtaSPD(0),
       hVtxZvsTracklets(0),
       hTrackletsvsV0MAmp(0),
@@ -216,8 +211,6 @@ AliAnalysisTaskDataSpeedOfSoundSim::AliAnalysisTaskDataSpeedOfSoundSim(
       fHMCut(10.0),
       fv0mpercentile(0),
       fv0mamplitude(0),
-      fTracklets14(0),
-      fTracklets10(0),
       fRecNch(0),
       fTrueNch(0),
       fTrueNch14(0),
@@ -225,6 +218,8 @@ AliAnalysisTaskDataSpeedOfSoundSim::AliAnalysisTaskDataSpeedOfSoundSim(
       fTrueNchEtaPos(0),
       fTrueNchEtaNeg(0),
       fTrueV0(0),
+      fTracklets14(0),
+      fTracklets10(0),
       fdcaxy(-999),
       fdcaz(-999),
       fMultSelection(0x0),
@@ -276,10 +271,6 @@ AliAnalysisTaskDataSpeedOfSoundSim::AliAnalysisTaskDataSpeedOfSoundSim(
       hPtOutPrim_omega(0),
       hPtOutPrim_xi(0),
       hPtOutPrim_rest(0),
-      // hTrueNchHM(0),
-      // hTrueNchHMWithTrigger(0),
-      // hTrueNchHMWithEventCuts(0),
-      // hTrueNchHMWithVtxSel(0),
       hPhiEtaSPD(0),
       hVtxZvsTracklets(0),
       hTrackletsvsV0MAmp(0),
@@ -678,7 +669,6 @@ void AliAnalysisTaskDataSpeedOfSoundSim::UserCreateOutputObjects() {
     fOutputList->Add(hTrueNch14);
     fOutputList->Add(hTrueNch10);
     fOutputList->Add(hNchResponse);
-    fOutputList->Add(hTrueV0MAmp);
     fOutputList->Add(hPtInPrim_ch);
     fOutputList->Add(hPtInPrim_pion);
     fOutputList->Add(hPtInPrim_kaon);
@@ -829,7 +819,7 @@ void AliAnalysisTaskDataSpeedOfSoundSim::UserExec(Option_t*) {
     if (!fill_corrections) {
       MultiplicityDistributions();
     } else {
-      // DetectorResponse();
+      DetectorResponse();
       TrackingEfficiency();
       DCAxyDistributions();
     }
@@ -1247,7 +1237,6 @@ void AliAnalysisTaskDataSpeedOfSoundSim::DetectorResponse() {
   fRecNch = 0;
   const int n_tracks{fESD->GetNumberOfTracks()};
   for (int i = 0; i < n_tracks; ++i) {
-    const int n_tracks{fESD->GetNumberOfTracks()};
     AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
     if (!track) {
       continue;
