@@ -580,11 +580,12 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 		}
 	}
 	if(StrangePointCheck==2){
+	//	if(imost==4) cout<<"ss track->Pt "<<track->Pt() <<endl;
 		imost = 0;
 	}
 }
-	    if (imost != fMostProbable) return false;
-
+ 
+	if (imost != fMostProbable) return false;
 	if(fUseTOFMassCut){
 		//Mass square!
 		float TmpTOFMass = ReturnTOFMass(track,imost);

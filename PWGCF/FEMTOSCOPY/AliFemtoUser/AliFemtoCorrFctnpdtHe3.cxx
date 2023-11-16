@@ -658,6 +658,9 @@ if(fUsePairCutEtaPhi){
 	    }
 	}
 if(fUse2DpTvsKStar){
+if(aPair->Track1()->Track()->Pt()<1.35 && aPair->Track1()->Track()->Pt()>1.05) cout<<"ppp"<<endl;
+	if(fPair->Track1()->Track()->Pt()<1.35 && fPair->Track1()->Track()->Pt()>1.05) cout<<"ttt"<<endl; 
+
 	KStarVspT_P1Hist->Fill(tKStar,fPair->Track1()->Track()->Pt());
 	if(IsSameParticlePair!=1) KStarVspT_P2Hist->Fill(tKStar,fPair->Track2()->Track()->Pt());
         
@@ -1297,11 +1300,12 @@ fUse2DkStarVsmT = aUse;
 }
 void AliFemtoCorrFctnpdtHe3::Set2DkStarVsmTInit(bool aInit,
                 int nbinsks,float lowks,float upks,
-                int nbinsmT,float lowmT,float upmT){
+                int nbinsmT,float lowmT,float upmT,
+		int nbinsksME,float lowksME,float upksME){
 
 
 fNum2DkStarVsmT = new TH2F(TString::Format("fNum2DkStarVsmT%s", fTitle.Data())," ",nbinsks,lowks,upks,nbinsmT,lowmT,upmT);
-fDum2DkStarVsmT = new TH2F(TString::Format("fDum2DkStarVsmT%s", fTitle.Data())," ",nbinsks,lowks,upks,nbinsmT,lowmT,upmT);
+fDum2DkStarVsmT = new TH2F(TString::Format("fDum2DkStarVsmT%s", fTitle.Data())," ",nbinsksME,lowksME,upksME,nbinsmT,lowmT,upmT);
 
 }
 
