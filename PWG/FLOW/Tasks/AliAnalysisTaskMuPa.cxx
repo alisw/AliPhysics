@@ -678,7 +678,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    {
     for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
     {
-     if(fUseDiffWeights[wPHIPT]){wToPowerP = pow(wPhi*wPt*wEta,wp);} // TBI 20231029 do I need here also || fUseDiffWeights[wPHIETA] ?
+     if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]||fUseDiffWeights[wPHIPT]||fUseDiffWeights[wPHIETA]){wToPowerP = pow(wPhi*wPt*wEta,wp);}
      fqvector[PTq][bin-1][h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi));
     } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
    } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
@@ -727,7 +727,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    {
     for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
     {
-     if(fUseDiffWeights[wPHIETA]){wToPowerP = pow(wPhi*wPt*wEta,wp);} // TBI 20231029 do I need here also || fUseDiffWeights[wPHIPT] ?
+     if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]||fUseDiffWeights[wPHIPT]||fUseDiffWeights[wPHIETA]){wToPowerP = pow(wPhi*wPt*wEta,wp);}
      fqvector[ETAq][bin-1][h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi)); 
     } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
    } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
@@ -960,7 +960,6 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
   } // for(Int_t b=0;b<this->fKinematicsBins[PT][0];b++)
  } // if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
 
-
  if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA])
  {
   // if-else code snippet below is is fine, as long as binning in Correlations and Test0 are identical, as well as along different orders, which is the case
@@ -1032,13 +1031,13 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
      }
     }   
    }
-
    for(Int_t b=0;b<nBins;b++)
    {
     ftaNestedLoopsKine[PTq][b][0]->Reset();
     ftaNestedLoopsKine[PTq][b][1]->Reset();
    }
   } // if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
+
   if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA])
   {
    // if-else code snippet below is is fine, as long as binning in Correlations and Test0 are identical, as well as along different orders, which is the case
@@ -1047,9 +1046,9 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
    {
     for(Int_t o=0;o<4;o++) // loop over order of correlator, 4 is hardcoded also in .h, when I generalize is there, I need to update also here
     {
-     if(fCorrelationsPro[o][0][AFO_PT])
+     if(fCorrelationsPro[o][0][AFO_ETA])
      {
-      nBins = fCorrelationsPro[o][0][AFO_PT]->GetNbinsX();
+      nBins = fCorrelationsPro[o][0][AFO_ETA]->GetNbinsX();
       break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
      }
     }   
@@ -1058,9 +1057,9 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
    {
     for(Int_t o=0;o<gMaxCorrelator;o++) // loop over order of correlator
     {
-     if(fTest0Pro[o][0][AFO_PT]) 
+     if(fTest0Pro[o][0][AFO_ETA]) 
      { 
-      nBins = fTest0Pro[o][0][AFO_PT]->GetNbinsX();
+      nBins = fTest0Pro[o][0][AFO_ETA]->GetNbinsX();
       break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
      }
     }   
@@ -1715,11 +1714,6 @@ void AliAnalysisTaskMuPa::InsanityChecks()
  }
 
  // j) Particle weights:
- if(fUseWeights[0] && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]) 
- {
-  Red(Form("Not tested and finalized yet, in UserExec() I need to re-think how constant phi weights are used for fqvector[...] . Same for other weights. "));
-  cout<<__LINE__<<endl;exit(1);
- }
  if(fUseWeights[0] && fUseDiffWeights[wPHIPT]) 
  {
   Red(Form("Not tested and fianlized yet, in UserExec() I need to re-think the constraint if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]). Same for other weights."));
@@ -1727,7 +1721,7 @@ void AliAnalysisTaskMuPa::InsanityChecks()
  }
  if(fUseDiffWeights[wPHIPT] && fUseDiffWeights[wPHIETA]) 
  {
-  Red(Form("Not tested yet, see the comments next to filling of fqvector[...] in UserExec()"));
+  Red(Form("Not finalized yet. If both of them are kTRUE, at the moment, the 2nd one will owerwrite the 1st one. Since it's unlikely I will ever need both, that is fine for the time being..."));
   cout<<__LINE__<<endl;exit(1);
  }
  if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT] && fUseDiffWeights[wPHIETA]) 
@@ -1740,8 +1734,6 @@ void AliAnalysisTaskMuPa::InsanityChecks()
   Red(Form("Not tested and finalized yet, in UserExec() I need to re-think how in this case weights are used for fqvector[...] ."));
   cout<<__LINE__<<endl;exit(1);
  }
-
- //Green("=> Done with InsanityChecks()!");
 
 } // void AliAnalysisTaskMuPa::InsanityChecks()
 
