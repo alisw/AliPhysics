@@ -5846,7 +5846,7 @@ void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations()
       } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
      } // for(Int_t b=1;b<=nBinsQV;b++) 
     } // for(Int_t h=0;h<gMaxHarmonic;h++)
-    cout<<endl;
+    cout<<endl; 
    } // for(Int_t o=0;o<4;o++) 
   } // if(fCorrelationsPro[0][0][v] && fNestedLoopsPro[0][0][v])
  } // for(Int_t v=0;v<eAsFunctionOf_N;v++) // variable, see content of enum eAsFunctionOf
@@ -7054,14 +7054,6 @@ void AliAnalysisTaskMuPa::InternalValidation()
   fEventCounter++; 
   cout<<Form("Simulated %d events on-the-fly.",fEventCounter)<<endl;
 
-  /*
-  if(1.*e/(fEventCounter) > step/100.)
-  {
-   cout<<Form("Simulated %d%% events of requested %d",(Int_t)step,fEventCounter)<<endl;
-   watch.Print(); watch.Continue();
-   step+=10.;
-  } 
-  */
 
   // b0) Reset ebe quantities:
   this->ResetEventByEventQuantities();
@@ -7243,7 +7235,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
 
  /*
 
- // d) Bail out directly from here when done:
+ // d) Bail out directly from here when done:  
  if(fCalculateNestedLoops){this->ComparisonNestedLoopsVsCorrelations();}
  //    For the file name, I use again "AnalysisResults.root", not to bother with updating all scripts
  cout<<Form("\nInternal validation is over after %d events on-the-fly.\nDumping results in the file %s ....",fnEventsInternalValidation,"AnalysisResults.root")<<endl;
@@ -7254,7 +7246,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
  cout<<"Dumped!\n"<<endl;
  
 
- // e) Printout of comparison: standard isotropic vs. Test0:
+ // e) Printout of comparison: standard isotropic vs. Test0:  
  //    e0) Standard isotropic:
  if(fCalculateCorrelations && !fCalculateNestedLoops)
  {
