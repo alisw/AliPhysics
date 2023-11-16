@@ -9,6 +9,7 @@
 #include "AliKFConversionPhoton.h"
 #include "AliGammaConversionAODBGHandler.h"
 #include "AliConversionAODBGHandlerRP.h"
+#include "AliConversionCuts.h"
 #include "AliConversionMesonCuts.h"
 #include "AliAnalysisManager.h"
 #include "TProfile2D.h"
@@ -378,7 +379,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Int_t                             fKind_Gamma0;                    
     Int_t                             fKind_Gamma1;                    
 
-    TTree**                           TreeForPhotonMLData;             
+    TTree**                           TreeForPhotonML;             
 
     Float_t                           fInvMass_PhotonML;                          
     Float_t                           fPt_PhotonML;                               
@@ -388,6 +389,12 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Float_t                           fEta_PhotonML;                              
     Float_t                           fPhi_PhotonML;                              
     Float_t                           fR_PhotonML;                              
+    Float_t                           fCosThetaPA_PhotonML;
+    Float_t                           fChi2PerNDF_PhotonML;
+    Float_t                           fPhotonQuality_PhotonML;
+    Float_t                           fDCAr_PhotonML;
+    Float_t                           fNegClusterTPCToF_PhotonML;
+    Float_t                           fPosClusterTPCToF_PhotonML;
 
     Float_t                           fDeDx_ITS_ENeg_PhotonML;  
     Float_t                           fDeDx_TPC_ENeg_PhotonML;  
@@ -395,6 +402,13 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Float_t                           fAlpha_ENeg_PhotonML;  
     Float_t                           fPt_ENeg_PhotonML;  
     Float_t                           fEta_ENeg_PhotonML;
+  
+    Float_t                           fDeDx_PiM_ITS_PhotonML;
+    Float_t                           fDeDx_PiM_TPC_PhotonML;
+    Float_t                           fTOF_PiM_PhotonML;
+    Float_t                           fDeDx_PiP_ITS_PhotonML;
+    Float_t                           fDeDx_PiP_TPC_PhotonML;
+    Float_t                           fTOF_PiP_PhotonML;
   
     Float_t                           fDeDx_ITS_EPos_PhotonML;  
     Float_t                           fDeDx_TPC_EPos_PhotonML;  
@@ -405,7 +419,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Float_t                           fPAsymmetry_EPos_PhotonML;  
 
     Int_t                             fDoTreeForMesonML;                             
-    TTree**                           TreeForMesonMLData;  
+    TTree**                           TreeForMesonML;  
 
     Float_t                           fInvMass_MesonML;                          
     Float_t                           fPt_MesonML;                               
@@ -413,42 +427,74 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Float_t                           fRapidity_MesonML;                          
     Float_t                           fPhi_MesonML;    
 
+    Float_t                           fInvMass_Gamma0_MesonML;
     Float_t                           fPt_Gamma0_MesonML;  
     Float_t                           fAlpha_Gamma0_MesonML;  
     Float_t                           fQt_Gamma0_MesonML;  
     Float_t                           fPsiPair_Gamma0_MesonML;  
-    Float_t                           fEta_Gamma0_MesonML;  
+    Float_t                           fEta_Gamma0_MesonML;
+    Float_t                           fPhi_Gamma0_MesonML;  
     Float_t                           fR_Gamma0_MesonML; 
+    Float_t                           fCosThetaPA_Gamma0_MesonML; 
+    Float_t                           fChi2PerNDF_Gamma0_MesonML;
+    Float_t                           fPhotonQuality_Gamma0_MesonML;
+    Float_t                           fDCAr_Gamma0_MesonML;    
+    Float_t                           fNegClusterTPCToF_Gamma0_MesonML;
+    Float_t                           fPosClusterTPCToF_Gamma0_MesonML;
 
+
+    Float_t                           fDeDx_ITS_ENeg_Gamma0_MesonML;  
+    Float_t                           fDeDx_TPC_ENeg_Gamma0_MesonML;  
+    Float_t                           fTOF_ENeg_Gamma0_MesonML; 
+    Float_t                           fDeDx_PiM_ITS_Gamma0_MesonML;
+    Float_t                           fDeDx_PiM_TPC_Gamma0_MesonML;
+    Float_t                           fTOF_PiM_Gamma0_MesonML; 
+    Float_t                           fPt_ENeg_Gamma0_MesonML;  
+    Float_t                           fEta_ENeg_Gamma0_MesonML; 
+
+    Float_t                           fDeDx_ITS_EPos_Gamma0_MesonML;  
+    Float_t                           fDeDx_TPC_EPos_Gamma0_MesonML;  
+    Float_t                           fTOF_EPos_Gamma0_MesonML;
+    Float_t                           fDeDx_PiP_ITS_Gamma0_MesonML;
+    Float_t                           fDeDx_PiP_TPC_Gamma0_MesonML;
+    Float_t                           fTOF_PiP_Gamma0_MesonML;
+    Float_t                           fPt_EPos_Gamma0_MesonML;  
+    Float_t                           fEta_EPos_Gamma0_MesonML;  
+    Float_t                           fPAsymmetry_EPos_Gamma0_MesonML; 
+
+    Float_t                           fInvMass_Gamma1_MesonML;
     Float_t                           fPt_Gamma1_MesonML;  
     Float_t                           fAlpha_Gamma1_MesonML;  
     Float_t                           fQt_Gamma1_MesonML;  
     Float_t                           fPsiPair_Gamma1_MesonML;  
-    Float_t                           fEta_Gamma1_MesonML;  
     Float_t                           fR_Gamma1_MesonML; 
+    Float_t                           fEta_Gamma1_MesonML;  
+    Float_t                           fPhi_Gamma1_MesonML;
+    Float_t                           fCosThetaPA_Gamma1_MesonML;
+    Float_t                           fChi2PerNDF_Gamma1_MesonML;
+    Float_t                           fPhotonQuality_Gamma1_MesonML;
+    Float_t                           fDCAr_Gamma1_MesonML;
+    Float_t                           fNegClusterTPCToF_Gamma1_MesonML;
+    Float_t                           fPosClusterTPCToF_Gamma1_MesonML;
 
-    Float_t                           fDeDx_ITS_ENeg_Gamma0_MesonML;  
-    Float_t                           fDeDx_TPC_ENeg_Gamma0_MesonML;  
-    Float_t                           fTOF_ENeg_Gamma0_MesonML;  
-    Float_t                           fPt_ENeg_Gamma0_MesonML;  
-    Float_t                           fEta_ENeg_Gamma0_MesonML; 
-    Float_t                           fDeDx_ITS_EPos_Gamma0_MesonML;  
-    Float_t                           fDeDx_TPC_EPos_Gamma0_MesonML;  
-    Float_t                           fTOF_EPos_Gamma0_MesonML;  
-    Float_t                           fPt_EPos_Gamma0_MesonML;  
-    Float_t                           fPAsymmetry_EPos_Gamma0_MesonML;  
-    Float_t                           fEta_EPos_Gamma0_MesonML;  
     Float_t                           fDeDx_ITS_ENeg_Gamma1_MesonML;  
     Float_t                           fDeDx_TPC_ENeg_Gamma1_MesonML;  
     Float_t                           fTOF_ENeg_Gamma1_MesonML;  
+    Float_t                           fDeDx_PiM_ITS_Gamma1_MesonML;
+    Float_t                           fDeDx_PiM_TPC_Gamma1_MesonML;
+    Float_t                           fTOF_PiM_Gamma1_MesonML;
     Float_t                           fPt_ENeg_Gamma1_MesonML;  
-    Float_t                           fEta_ENeg_Gamma1_MesonML;  
+    Float_t                           fEta_ENeg_Gamma1_MesonML; 
+
     Float_t                           fDeDx_ITS_EPos_Gamma1_MesonML;  
     Float_t                           fDeDx_TPC_EPos_Gamma1_MesonML;  
-    Float_t                           fTOF_EPos_Gamma1_MesonML;  
+    Float_t                           fTOF_EPos_Gamma1_MesonML; 
+    Float_t                           fDeDx_PiP_ITS_Gamma1_MesonML;
+    Float_t                           fDeDx_PiP_TPC_Gamma1_MesonML;
+    Float_t                           fTOF_PiP_Gamma1_MesonML; 
     Float_t                           fPt_EPos_Gamma1_MesonML;  
-    Float_t                           fPAsymmetry_EPos_Gamma1_MesonML;  
     Float_t                           fEta_EPos_Gamma1_MesonML;  
+    Float_t                           fPAsymmetry_EPos_Gamma1_MesonML;  
 
     TList**                           fMLFolder;                                  //End ML Variables
 

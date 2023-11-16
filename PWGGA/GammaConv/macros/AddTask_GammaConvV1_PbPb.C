@@ -79,7 +79,7 @@ void AddTask_GammaConvV1_PbPb(
   
   Bool_t    enablePhotonTree      =  kFALSE;
   Bool_t    enableMesonTree       =  kFALSE;
-  Float_t   meson_m1_range_left = 0.1; 
+  Float_t   meson_m1_range_left = 0.04; 
   Float_t   meson_m1_range_right = 0.2; 
   Float_t   meson_m2_range_left = 0.4; 
   Float_t   meson_m2_range_right = 0.7;  
@@ -4082,7 +4082,11 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("15910053", "0d200009ab770c00amd0400000", "0152101500000000"); // 50-90%
 
 
-  } else {
+  } else if (trainConfig == 3000){ // Machine Learning PCM OPEN CUTS
+    cuts.AddCutPCM("10130e03", "00000008d00000001100004000", "015201300000000"); // 0-10%
+    cuts.AddCutPCM("11310e03", "00000008d00000001100004000", "015201300000000"); // 10-30%
+    cuts.AddCutPCM("13530e03", "00000008d00000001100004000", "015201300000000"); // 30-50%
+    cuts.AddCutPCM("15910e03", "00000008d00000001100004000", "015201300000000"); // 50-90%else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
