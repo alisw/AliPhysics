@@ -445,7 +445,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("8008d113","0dm00009f9730000dge0404000","411790009fe3n230000","32c51070m","0103603l00000000","0453503000000000"); // 0-100% without NL
 
 //************************************************ PCM- EDC analysis 5 TeV pPb *********************************************
-  } else if (trainConfig == 2020 ) { // EDC 13TeV MB, NCell >=2 + NCell efficiency, wider cuts for eta (selection window + mass cut), run1 triggers: INT7
+  } else if (trainConfig == 2020) { // EDC 13TeV MB, NCell >=2 + NCell efficiency, wider cuts for eta (selection window + mass cut), run1 triggers: INT7
     cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790109fe3n230000","32c51070n","0103603m00000000","0453503000000000"); 
   } else if (trainConfig == 2021) { //EDC 13TeV MB, NCell >=2 + NCell efficiency, wider cuts for eta (selection window + mass cut), run1 triggers: EG2
     cuts.AddCutHeavyMesonPCMCalo("80085113","0dm00009f9730000dge0404000","411790109fe3n230000","32c51070n","0103603m00000000","0453503000000000"); 
@@ -453,7 +453,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("80083113","0dm00009f9730000dge0404000","411790109fe3n230000","32c51070n","0103603m00000000","0453503000000000"); 
   } else if (trainConfig == 2023) { //EDC 13TeV MB, NCell >=2 + NCell efficiency, wider cuts for eta (selection window + mass cut), run1 triggers: EMC7
     cuts.AddCutHeavyMesonPCMCalo("80052113","0dm00009f9730000dge0404000","411790109fe3n230000","32c51070n","0103603m00000000","0453503000000000"); 
-  } else if (trainConfig == 2024 ) { // EDC 13TeV MB, NCell >=2 + NCell efficiency, run1 triggers: INT7
+  } else if (trainConfig == 2024) { // EDC 13TeV MB, NCell >=2 + NCell efficiency, run1 triggers: INT7
     cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790109fe3n230000","32c51070m","0103603l00000000","0453503000000000"); 
   } else if (trainConfig == 2025) { //EDC 13TeV MB, NCell >=2 + NCell efficiency, run1 triggers: EG2
     cuts.AddCutHeavyMesonPCMCalo("80085113","0dm00009f9730000dge0404000","411790109fe3n230000","32c51070m","0103603l00000000","0453503000000000"); 
@@ -584,7 +584,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     if(runLightOutput>0) analysisCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data()) ) {
       cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
-      return 0;
+      return;
     } else {
       ConvCutList->Add(analysisCuts[i]);
       analysisCuts[i]->SetFillCutHistograms("",kFALSE);
@@ -598,7 +598,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
     if( ! analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data()) ) {
       cout<<"ERROR: analysisClusterCuts [" <<i<<"]"<<endl;
-      return 0;
+      return;
     } else {
       ClusterCutList->Add(analysisClusterCuts[i]);
       analysisClusterCuts[i]->SetFillCutHistograms("");
@@ -609,7 +609,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     if(runLightOutput>0) analysisNeutralPionCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNDMCut(i)).Data()) ) {
       cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
-      return 0;
+      return;
     } else {
       NeutralPionCutList->Add(analysisNeutralPionCuts[i]);
       analysisNeutralPionCuts[i]->SetFillCutHistograms("");
@@ -619,7 +619,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     if(runLightOutput>0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data()) ) {
       cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
-      return 0;
+      return;
     } else {
       MesonCutList->Add(analysisMesonCuts[i]);
       analysisMesonCuts[i]->SetFillCutHistograms("");
@@ -634,7 +634,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
     if( !analysisPionCuts[i]->InitializeCutsFromCutString((cuts.GetPionCut(i)).Data())) {
       cout<< "ERROR:  analysisPionCuts [ " <<i<<" ] "<<endl;
-      return 0;
+      return;
     } else {
       PionCutList->Add(analysisPionCuts[i]);
       analysisPionCuts[i]->SetFillCutHistograms("",kFALSE,cutName);
