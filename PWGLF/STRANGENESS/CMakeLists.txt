@@ -143,6 +143,7 @@ set(SRCS
   StrPDF/AliAnalysisTaskMultspec.cxx
   StrPDF/AliAnalysisTaskMultspec_MCpred.cxx
   StrPDF/AliAnalysisTaskMultspec_evbased.cxx
+  StrPDF/AliAnalysisTaskMultspec_FDcorr.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
