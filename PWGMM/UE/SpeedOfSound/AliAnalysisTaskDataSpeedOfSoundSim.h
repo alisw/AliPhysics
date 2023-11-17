@@ -139,10 +139,6 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   TH1F* hPtOutPrim_omega;
   TH1F* hPtOutPrim_xi;
   TH1F* hPtOutPrim_rest;
-  // TH2F* hTrueNchHM;
-  // TH2F* hTrueNchHMWithTrigger;
-  // TH2F* hTrueNchHMWithEventCuts;
-  // TH2F* hTrueNchHMWithVtxSel;
   TH2D* hPhiEtaSPD;
   TH2D* hVtxZvsTracklets;
   TH2D* hTrackletsvsV0MAmp;
