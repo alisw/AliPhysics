@@ -9,15 +9,17 @@
 #include "AliFemtoDreamCollConfig.h"
 #endif
 
-AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
-                                              TString CentEst = "kInt7",
-                                              int filterBit = 128,
-                                              int WhichPionCut = 0,
-                                              const char *sTcut = "0",
-                                              bool DoAncestors = false,
-                                              bool IsSystematics = false,
-                                              AliAnalysisTaskLambdaPion::PCSettings pcsettings = AliAnalysisTaskLambdaPion::PCSettings::NoPC,
+AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // MC run or not
+                                              TString CentEst = "kInt7",    // trigger selection, "kInt7" = Minimum bias, "kHighMultV0" high multiplicity triggered by the V0 detector
+                                              int filterBit = 128,          // Track selection feature
+                                              int WhichPionCut = 0,         // Irrelevant for now
+                                              const char *sTcut = "0",      // "0" to avoid spericity cuts, "1" to have them
+                                              bool DoAncestors = false,     // only important when running MC
+                                              bool IsSystematics = false,   // true to evaluate systematic uncertainties
+                                              AliAnalysisTaskLambdaPion::PCSettings pcsettings = AliAnalysisTaskLambdaPion::PCSettings::NoPC,  // choose pair cleaner
+                                              bool usenolambdaevt = true,            // true to discard events with neither Lambda or AntiLambda
                                               const char *cutVariation = "0")
+//                                              int binwidth = 1)             // relative bin width for k* histos with respect to 4 MeV/c
 {
   TString suffix = TString::Format("%s", cutVariation);
   TString sTsuffix = TString::Format("%s", sTcut);
@@ -37,27 +39,30 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
 
   //========= Init subtasks and start analysis ============================
   // Event Cuts 
-  AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
-  evtCuts->CleanUpMult(false, false, false, true);
+  AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2(); // uses cuts for events selected by ALICE collaboration
+  evtCuts->CleanUpMult(false, false, false, true); // the arguments allow to choose which detectors' multiplicity one wants to consider,
+                                                   // first we have SPD, then V0A, then V0C and then Ref08Mult
 
   if (sTsuffix == "1")
   {
     evtCuts->SetSphericityCuts(0.7,1);
   }
 
-  // Lambda Cuts
-  AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
-  AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false); // PileUpRej, false
+  // Lambda --> p + pi- cuts
+  AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);  // enable PCA plots and Split Contrib, this method sets
+                                                                                    // all cuts parameters for pT, charge, DCA, invmass
+  AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false); // (bool isMC, bool PileUpRej, bool ContribSplitting)
   AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
 
-  v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);
+  v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);  // saves selected track cuts criteria for charged daughter of neutral particle
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
   v0Cuts->SetPDGCodePosDaug(2212); // Proton
   v0Cuts->SetPDGCodeNegDaug(211);  // Pion
   v0Cuts->SetPDGCodev0(3122);      // Lambda
 
+  // AntiLambda --> Antip + pi+ cuts
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
-  AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
+  AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);  // Select Pi+ as positive daughter, this means we are considering AntiLambda 
   PosAntiv0Daug->SetCutCharge(1);
   AliFemtoDreamTrackCuts *NegAntiv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);
   NegAntiv0Daug->SetCutCharge(-1);
@@ -68,32 +73,30 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
   Antiv0Cuts->SetPDGCodeNegDaug(2212); // Proton
   Antiv0Cuts->SetPDGCodev0(-3122);     // Lambda
 
-  // MARCEL
-
+  // Cuts on correlation pions (Marcel)
   AliFemtoDreamTrackCuts *TrackPosPionCuts = NULL;
   AliFemtoDreamTrackCuts *TrackCutsAntiPion = NULL;
 
-  TrackPosPionCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+  TrackPosPionCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false); // (bool isMC, bool DCAPlots, bool CombSigma, bool ContribSplitting), sets options for plot
+                                                                                     // of DCA distribution, CombSigma, ContribSplitting
   TrackPosPionCuts->SetFilterBit(96);
+  TrackPosPionCuts->SetPtRange(0.14, 2.);
   TrackPosPionCuts->SetCutCharge(1);
   TrackCutsAntiPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
   TrackCutsAntiPion->SetFilterBit(96);
+  TrackCutsAntiPion->SetPtRange(0.14, 2.);
   TrackCutsAntiPion->SetCutCharge(-1);
 
   if (IsSystematics)
   {
-    evtCuts->SetMinimalBooking(true);
+    evtCuts->SetMinimalBooking(true); // minimal booking defines which histograms to save since with systematics many repeat each other
     TrackPosPionCuts->SetMinimalBooking(true);
     TrackCutsAntiPion->SetMinimalBooking(true);
     v0Cuts->SetMinimalBooking(true);
     Antiv0Cuts->SetMinimalBooking(true);
   }
 
-  // Now we define stuff we want for our Particle collection
-  // Thanks, CINT - will not compile due to an illegal constructor
-  // std::vector<int> PDGParticles ={2212,2212,3122,3122,3312,3312};
-  // First we need to tell him about the particles we mix, from the
-  // PDG code the mass is obtained.
+  // Correlated particles definition by PDG code
   std::vector<int> PDGParticles;
   PDGParticles.push_back(211);  // 0 Pion Plus
   PDGParticles.push_back(211);  // 1 Pion Minus
@@ -142,7 +145,7 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
   MultBins.push_back(96);
   MultBins.push_back(100);
 
-  // Number of bins
+  // Number of bins of hitograms
   std::vector<int> NBins;
   // minimum k* value
   std::vector<float> kMin;
@@ -154,21 +157,22 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
   std::vector<float> mTBins = {0.9, 1.15, 1.4, 4.5, 999.};
 
   // pairs:
-  // K+K+               0
-  // K+K-               1
-  // K+ La              2
-  // K+ bar La          3
-  // K-K-               4
-  // K- La              5
-  // K- bar La          6
-  // La La              7
-  // La La bar          8
-  // La bar La bar      9
+  // Pi+Pi+         0
+  // Pi+Pi-         1
+  // Pi+ La         2
+  // Pi+ bar La     3
+  // Pi-Pi-         4
+  // Pi- La         5
+  // Pi- bar La     6
+  // La La          7
+  // La La bar      8
+  // La bar La bar  9
 
   const int npairs = 10;
+  // settings for k* distribution histos
   for (int i = 0; i < npairs; i++)
   {
-    NBins.push_back(1500);
+    NBins.push_back(3000);
     closeRejection.push_back(false);
     kMin.push_back(0.);
     kMax.push_back(6.);
@@ -204,15 +208,15 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
   config->SetPDGCodes(PDGParticles);
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
-  config->SetMultBinning(true);
-  config->SetClosePairRejection(closeRejection);
+  config->SetMultBinning(true);  // save k* distro for each multiplicity bin both for SE and ME
+  config->SetClosePairRejection(closeRejection); // true only if we don't calculate systematic effects
   config->SetDeltaEtaMax(0.012);
   config->SetDeltaPhiMax(0.012);
   config->SetExtendedQAPairs(pairQA);
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
-  config->SetUseEventMixing(true);
+  config->SetUseEventMixing(true); // ????
   config->SetMixingDepth(30);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
 
@@ -257,8 +261,8 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
 
   AliPID::EParticleType aliPIDParticle;
   aliPIDParticle = AliPID::kPion;
-  std::map<std::string, float> PionPIDTight;
-  std::map<std::string, float> PionPIDLoose;
+  std::map<std::string, float> PionPIDTight; // tight pion selection criteria
+  std::map<std::string, float> PionPIDLoose; // loose pion selection criteria
 
   PionPIDTight = {
       {"COMB", 2.7},
@@ -271,23 +275,23 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
       {"EXCLUSION", 2.7},
   };
 
-  /// Systematic variations (taken from pφ and ΛΚ)
+  // Systematic variations (taken from pφ and ΛΚ)
   if (IsSystematics)
   {
     if (suffix == "1")
     {
-      TrackPosPionCuts->SetNClsTPC(PionNClsUp);
+      TrackPosPionCuts->SetNClsTPC(PionNClsUp);   // Number of TPC clusters
       TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
 
-      v0Cuts->SetCutCPA(0.995);
+      v0Cuts->SetCutCPA(0.995);     // CPA stands for cosine of pointing angle
       Antiv0Cuts->SetCutCPA(0.995);
 
-      Posv0Daug->SetNClsTPC(80);
+      Posv0Daug->SetNClsTPC(80);     
       Negv0Daug->SetNClsTPC(80);
       PosAntiv0Daug->SetNClsTPC(80);
       NegAntiv0Daug->SetNClsTPC(80);
 
-      v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+      v0Cuts->SetCutDCADaugToPrimVtx(0.06);  // DCA cut with respect to the primary vertex
       Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
     }
     else if (suffix == "2")
@@ -298,7 +302,7 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
       TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
       TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
 
-      Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+      Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);  // (AliPID::EParticleType pid, float pTPCThresh, float sigVal = 3)
       Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
       PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
       NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
@@ -338,7 +342,9 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
       TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
       TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
 
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
+      // CHANGE!!!
+      TrackPosPionCuts->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]); 
+      // (bool iskaon = true, bool isramona = false, float COMBcut = 3., float TPCcut = 3., float EXCLUSIONcut = 3.)
       TrackCutsAntiPion->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
 
       v0Cuts->SetCutCPA(0.995);
@@ -1182,11 +1188,9 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
   // now we create the task
   AliAnalysisTaskLambdaPion *task =
       new AliAnalysisTaskLambdaPion(
-          "AliAnalysisTaskLambdaPion", isMC, pcsettings);
+          "AliAnalysisTaskLambdaPion", isMC, pcsettings, usenolambdaevt);
 
-  // THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
-  // kINT7 == Minimum bias
-  // kHighMultV0 high multiplicity triggered by the V0 detector
+  // trigger selection according to macro arguments
   if (CentEst == "kInt7")
   {
     task->SetTrigger(AliVEvent::kINT7);
@@ -1226,6 +1230,7 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
   task->SetNegPionCuts(TrackCutsAntiPion);
   task->SetCollectionConfig(config);
 
+  // mgr adds a user task to the global list of tasks
   mgr->AddTask(task);
 
   TString file = AliAnalysisManager::GetCommonFileName();
@@ -1244,6 +1249,7 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
     addon += "HM";
   }
 
+  // Output file structure definition
   TString QAName = Form("%sQA%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputQA = mgr->CreateContainer(
       QAName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
@@ -1309,6 +1315,7 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = false,
       Form("%s:%s", file.Data(), ResultsQAName.Data()));
   mgr->ConnectOutput(task, 8, coutputResultsQA);
 
+  // other histograms specific for MC
   if (isMC)
   {
     AliAnalysisDataContainer *coutputv0CutsMC;

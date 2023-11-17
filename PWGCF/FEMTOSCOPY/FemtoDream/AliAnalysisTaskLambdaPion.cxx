@@ -16,7 +16,8 @@ ClassImp(AliAnalysisTaskLambdaPion)
     : AliAnalysisTaskSE(),
       fIsMC(false),
       fUseOMixing(false),
-      fPCSettings(NoPC),
+      fPCSettings(NewPC),
+      fUseEvtNoLambda(false),
       fTrigger(AliVEvent::kINT7),
       fQA(nullptr),
       fEvtList(nullptr),
@@ -49,11 +50,12 @@ ClassImp(AliAnalysisTaskLambdaPion)
 }
 
 AliAnalysisTaskLambdaPion::AliAnalysisTaskLambdaPion(
-    const char *name, bool isMC, PCSettings pcsettings)
+    const char *name, bool isMC, PCSettings pcsettings, bool usenolambdaevt)
     : AliAnalysisTaskSE(name),
       fIsMC(isMC),
       fUseOMixing(false),
       fPCSettings(pcsettings),
+      fUseEvtNoLambda(usenolambdaevt),
       fTrigger(AliVEvent::kINT7),
       fQA(nullptr),
       fEvtList(nullptr),
@@ -406,6 +408,11 @@ void AliAnalysisTaskLambdaPion::UserExec(Option_t *)
                       break;
   }
 
+  if(fUseEvtNoLambda){
+    if(Lambdas.size() == 0 && AntiLambdas.size() == 0){
+      return;
+    }
+  } 
   fPairCleaner->StoreParticle(PionPlus);
   fPairCleaner->StoreParticle(PionMinus);
   fPairCleaner->StoreParticle(Lambdas);
