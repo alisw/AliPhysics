@@ -160,8 +160,8 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
   for (int i = 0; i < Nsets; i++) {
     switch (whichNUAmap) {
     case 0:   // 0: Coarse binning, minPt = 0.2 for all.
-      MAPfileNames[i] = Form("%sPhiWeights_LHC%s_%s%s.root",
-        MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data(),extra.Data());
+      MAPfileNames[i] = Form("%sPhiWeights_LHC%s_Error_pt02_s_%s.root",
+        MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data());
       break;
     case 1:   // 1: Coarse binning, tuned minPt map.
       MAPfileNames[i] = Form("%sPhiWeights_LHC%s_Error_pt%02d_s_%s.root",
@@ -208,6 +208,10 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
         MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_%s_s_%s.root",
           MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data(), configNames[i].Data());
       }
+      break;
+    case 6:   // 0: Coarse binning, minPt = 0.2 for all.
+      MAPfileNames[i] = Form("%sPhiWeights_LHC%s_%s%s.root",
+        MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data(),extra.Data());
       break;
     default:
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
