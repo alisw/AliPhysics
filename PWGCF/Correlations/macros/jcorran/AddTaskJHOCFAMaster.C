@@ -144,9 +144,6 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC18l8-0-Lists.root",
       sPeriod[period].Data() ));
   } else if (period == lhc15o) {                // 2015 PbPb dataset.
-    /*cMapTask->EnableEffCorrection(Form(
-      "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC16g-0-Lists.root",
-      sPeriod[period].Data() ));*/
     cMapTask->EnableEffCorrection(Form(
       "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC16g-0-Lists.root",
       sPeriod[period].Data() ));
