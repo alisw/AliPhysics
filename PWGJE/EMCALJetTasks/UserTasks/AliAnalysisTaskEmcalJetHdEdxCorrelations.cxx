@@ -691,6 +691,11 @@ namespace PWGJE
 
                 // Calculate single particle tracking efficiency of mixed events for correlations
                 efficiency = EffCorrection(bgTrackVec.Eta(), bgTrackVec.Pt());
+                if(efficiency==0){
+                  cout<<efficiency<<" <- Efficiency for eta="<<bgTrackVec.Eta()<<" and pt="<<bgTrackVec.Pt()<<" Skipping"<<endl;
+                  continue;
+                }
+
 
                 // Phi is [-0.5*TMath::Pi(), 3*TMath::Pi()/2.]
                 GetDeltaEtaDeltaPhiDeltaR(bgTrackVec, jet, deltaEta, deltaPhi, deltaR);
