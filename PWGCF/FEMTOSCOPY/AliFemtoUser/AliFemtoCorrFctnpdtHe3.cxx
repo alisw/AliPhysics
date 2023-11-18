@@ -658,8 +658,6 @@ if(fUsePairCutEtaPhi){
 	    }
 	}
 if(fUse2DpTvsKStar){
-if(aPair->Track1()->Track()->Pt()<1.35 && aPair->Track1()->Track()->Pt()>1.05) cout<<"ppp"<<endl;
-	if(fPair->Track1()->Track()->Pt()<1.35 && fPair->Track1()->Track()->Pt()>1.05) cout<<"ttt"<<endl; 
 
 	KStarVspT_P1Hist->Fill(tKStar,fPair->Track1()->Track()->Pt());
 	if(IsSameParticlePair!=1) KStarVspT_P2Hist->Fill(tKStar,fPair->Track2()->Track()->Pt());
