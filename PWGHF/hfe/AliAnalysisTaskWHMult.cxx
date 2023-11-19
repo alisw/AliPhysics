@@ -75,16 +75,15 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult() : AliAnalysisTaskSE(),
   fPDG(0),
   fMPDG(0),
   fFPDG(0),
-  fHistClustE(0),
   fHistClustEMatch(0),
-  fHistClustLongAxis(0),
-  fHistClustLongAxisE(0),
+  fHistClustMCM02H(0),
+  fHistClustMCM02E(0),
   fHistNsigmaP(0),
   fHistMCNsigmaP(0),
   fPtEoverPE(0),
   fPtEoverPMCE(0),
   fPtEoverPEGeo(0),
-  fHistMCClsLAE(0),
+  fHistClustM02E(0),
   fPtEoverPH(0),
   fREisolation(),
   fREiso_MCW(0),
@@ -142,16 +141,15 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult(const char* name) : AliAnalysisTask
   fPDG(0),
   fMPDG(0),
   fFPDG(0),
-  fHistClustE(0),
   fHistClustEMatch(0),
-  fHistClustLongAxis(0),
-  fHistClustLongAxisE(0),
+  fHistClustMCM02H(0),
+  fHistClustMCM02E(0),
   fHistNsigmaP(0),
   fHistMCNsigmaP(0),
   fPtEoverPE(0),
   fPtEoverPMCE(0),
   fPtEoverPEGeo(0),
-  fHistMCClsLAE(0),
+  fHistClustM02E(0),
   fPtEoverPH(0),
   fREisolation(),
   fREiso_MCW(0),
@@ -233,19 +231,18 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
   fMPDG = new TH1F("fMPDG","mother pdg code",2000,-1000,1000);
   fFPDG = new TH1F("fFPDG","father pdg code",2000,-1000,1000);
 
-  fHistClustE = new TH1F("fHistClustE","Cluster Energy ;E (GeV) ;Entries",100,0,100);
   fHistClustEMatch = new TH1F("fHistClustEMatch","Cluster Energy after track matching ;E (GeV) ;Entries",2000,0,100);
 
-  fHistClustLongAxis = new TH1F("fHistClustLongAxis","Events in M02;M02;Entries",100,0,2);
-  fHistClustLongAxisE = new TH1F("fHistClustLongAxisE","Events in M02 (-1 < n#sigma < 3) (0.7 < E/p < 1.5) (P_{T} > 1.5);M02;Entries",100,0,2);
+  fHistClustMCM02H = new TH2F("fHistClustMCM02H","MC non-electron M02;p_{T} (GeV/c);M02",1000,0,100,100,0,2);
+  fHistClustMCM02E = new TH2F("fHistClustMCM02E","MC electron M02;p_{T} (GeV/c);M02",1000,0,100,100,0,2);
 
   fHistNsigmaP = new TH2F("fHistNsigmaP","n#sigma vs p ;p (GeV/c) ;n#sigma",800,0,80,200,-10,10);
   fHistMCNsigmaP = new TH2F("fHistMCNsigmaP","MC n#sigma vs p ;p (GeV/c) ;n#sigma",800,0,80,200,-10,10);
 
   fPtEoverPE = new TH2F("fPtvsEoverPE","p_{T} vs E/p (-1 < n#sigma < 3) ;p_{T} (GeV/c) ;E/p",1000,0,100,100,0,3);
   fPtEoverPMCE = new TH2F("fPtEoverPMCE","MC Events p_{T} vs E/p (-1 < n#sigma < 3) ;p_{T} (GeV/c) ;E/p",1000,0,100,100,0,3);
-  fPtEoverPEGeo = new TH2F("fPtEoverPEGeo","p_{T} vs E/p (-1 < n#sigma < 3) (0.1 < M02 < 0.6) ;p_{T} (GeV/c) ;E/p",1000,0,100,100,0,3);
-  fHistMCClsLAE = new TH1F("fHistMCClsLAE","MC Events in M02 (-1 < n#sigma < 3);M02;Entries",100,0,2);
+  fPtEoverPEGeo = new TH2F("fPtEoverPEGeo","p_{T} vs E/p (-1 < n#sigma < 3) (0.1 < M02 < 0.3) ;p_{T} (GeV/c) ;E/p",1000,0,100,100,0,3);
+  fHistClustM02E = new TH2F("fHistClustM02E","M02 (-1 < n#sigma < 3) (0.9 < E/p < 1.3);p_{T} (GeV/c);M02",1000,0,100,100,0,2);
   fPtEoverPH = new TH2F("fPtvsEoverPH","p_{T} vs E/p (n#sigma < -3) ;p_{T} (GeV/c) ;E/p",1000,0,100,100,0,3);
 
   for (Int_t isoR=0;isoR<3;isoR++) {
@@ -344,16 +341,15 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
   fOutputList->Add(fPDG);
   fOutputList->Add(fMPDG);
   fOutputList->Add(fFPDG);
-  fOutputList->Add(fHistClustE);
   fOutputList->Add(fHistClustEMatch);
-  fOutputList->Add(fHistClustLongAxis);
-  fOutputList->Add(fHistClustLongAxisE);
+  fOutputList->Add(fHistClustMCM02H);
+  fOutputList->Add(fHistClustMCM02E);
   fOutputList->Add(fHistNsigmaP);
   fOutputList->Add(fHistMCNsigmaP);
   fOutputList->Add(fPtEoverPE);
   fOutputList->Add(fPtEoverPMCE);
   fOutputList->Add(fPtEoverPEGeo);
-  fOutputList->Add(fHistMCClsLAE);
+  fOutputList->Add(fHistClustM02E);
   fOutputList->Add(fPtEoverPH);
   fOutputList->Add(fREisolation[0]);
   fOutputList->Add(fREisolation[1]);
@@ -565,11 +561,14 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
     ////////////////////////////
     // Set cutting parameters //
     ////////////////////////////
-    Int_t EMCalIndex = -1;				//TrackMatching
-    Double_t clustLongE = -1;				//M02
-    Double_t EoverP = -1;				//E/p
-    Double_t fTPCnSigma = 1000;				//nsigma
-    Double_t Eiso[3] = {0,0,0};				//isolation energy
+    Int_t EMCalIndex = -1;				//Has EMCal ID
+    Bool_t ClsTypeEMCal = kFALSE;			//within EMCal
+    Bool_t HasEMCalInfo = kFALSE;			//TrackMatching
+    Double_t clustLongE = 0;				//M02
+    Double_t EoverP = 0;				//E/p
+    Double_t fTPCnSigma = 999;				//nsigma
+    Double_t Eiso[3] = {0};				//isolation energy
+    Double_t clustEmatch = 0;				//cluster energy
 
     ////////////////////////
     // Get MC information //
@@ -661,12 +660,26 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
     {
       //clustMatch = (AliVCluster*)fVevent->GetCaloCluster(EMCalIndex);			//original
       clustMatch = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(EMCalIndex));	//updated
-      Double_t clustEmatch = clustMatch->E();
+
+      Float_t showerx[3];
+      clustMatch->GetPosition(showerx);
+      TVector3 Corepos(showerx[0],showerx[1],showerx[2]);
+      Double_t Corephi = Corepos.Phi();
+      Double_t Coreeta = Corepos.Eta();
+      if (Corephi < 0.) Corephi = Corephi + (2.*TMath::Pi());
+      if (Corephi > 1.39 && Corephi < 3.265) ClsTypeEMCal = kTRUE;
+      if (!ClsTypeEMCal) continue;
+
+      if (TMath::Abs(clustMatch->GetTrackDx()) > 0.05 || TMath::Abs(clustMatch->GetTrackDz()) > 0.05) continue;
+      HasEMCalInfo = kTRUE;
+
+      clustEmatch = clustMatch->E();
       fHistClustEMatch->Fill(clustEmatch);
       fNtrkl_ClustE->Fill(corr_nAcc,clustEmatch);
 
       clustLongE = clustMatch->GetM02();
-      fHistClustLongAxis->Fill(clustLongE);
+      if (TMath::Abs(pdg) == 11) fHistClustMCM02E->Fill(track->Pt(),clustLongE);
+      if (TMath::Abs(pdg) != 11) fHistClustMCM02H->Fill(track->Pt(),clustLongE);
       EoverP = clustEmatch/track->P();
 
 //---------------nsigma cut (electron)---------------
@@ -676,14 +689,10 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
         if (TMath::Abs(pdg) == 11) fPtEoverPMCE->Fill(track->Pt(),EoverP);
 
         //to compare all tracks and electron M02
-        if (EoverP > 0.9 && EoverP < 1.3)
-        {
-          if (TMath::Abs(pdg) == 11) fHistMCClsLAE->Fill(clustLongE);
-          fHistClustLongAxisE->Fill(clustLongE);
-        }
+        if (EoverP > 0.9 && EoverP < 1.3) fHistClustM02E->Fill(track->Pt(),clustLongE);
 
 //---------------M02 cut (electron)---------------
-        if (clustLongE > 0.1 && clustLongE < 0.6)
+        if (clustLongE > 0.1 && clustLongE < 0.3)
         {
           fPtEoverPEGeo->Fill(track->Pt(),EoverP);
 
@@ -693,12 +702,6 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
           //////////////
           if (EoverP > 0.9 && EoverP < 1.3)
           {
-            Float_t showerx[3];
-            clustMatch->GetPosition(showerx);
-            TVector3 Corepos(showerx[0],showerx[1],showerx[2]);
-            Double_t Corephi = Corepos.Phi();
-            Double_t Coreeta = Corepos.Eta();
-            Double_t eleE = clustMatch->E();
             Double_t RsumE[3] = {0};
 //---------------EMCal Cluster loop for Isolation cut start---------------
             for(Int_t icl=0;icl<Nclust;icl++){
@@ -707,13 +710,11 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
               clust = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(icl));	//updated
               if(clust && clust->IsEMCAL()){
                 Double_t clustE = clust->E();
-                fHistClustE->Fill(clustE);
                 Float_t aroclsx[3];
                 clust->GetPosition(aroclsx);
                 TVector3 aroClsPos(aroclsx[0],aroclsx[1],aroclsx[2]);
                 Double_t aroClsphi = aroClsPos.Phi();
-                if(aroClsphi<0.0){aroClsphi += 2.0*TMath::Pi();}  // added s.s.
-                if(Corephi<0.0){Corephi += 2.0*TMath::Pi();} // added s.s
+                if (aroClsphi<0.0) aroClsphi = aroClsphi + (2.0*TMath::Pi());  // added s.s.
                 Double_t aroClseta = aroClsPos.Eta();
                 Double_t R = sqrt(pow(Corephi - aroClsphi,2.0)+pow(Coreeta - aroClseta,2.0));
                 if (R < 0.3) RsumE[0] = RsumE[0] + clustE;
@@ -722,9 +723,9 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
               }
             }
             for (Int_t isoR=0;isoR<3;isoR++) {
-              Eiso[isoR] = (RsumE[isoR] - eleE)/eleE;
+              Eiso[isoR] = (RsumE[isoR] - clustEmatch)/clustEmatch;
               //fREisolation[isoR]->Fill(Eiso[isoR]);
-              if(track->Pt() > 30.0)fREisolation[isoR]->Fill(Eiso[isoR]);
+              if (track->Pt() > 30.0) fREisolation[isoR]->Fill(Eiso[isoR]);
             }
             //=====MC Data=====
             if (track->Pt() > 10.) {
@@ -848,14 +849,14 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
     if (pidW == 1) fPt_TrackingMCWe->Fill(track->Pt());
     if (fTPCnSigma > -1. && fTPCnSigma < 3.) {
       if (pidW == 1) fPt_TPCPIDMCWe->Fill(track->Pt());
-      if (EMCalIndex >= 0) {
+      if (HasEMCalInfo) {
         if (pidW == 1) fPt_TrackMatchingMCWe->Fill(track->Pt());
-        if (clustLongE > 0.1 && clustLongE < 0.6 && EoverP > 0.9 && EoverP < 1.3 && Eiso[0] >= 0. && Eiso[0] <= 0.05) {
+        if (clustLongE > 0.1 && clustLongE < 0.3 && EoverP > 0.9 && EoverP < 1.3 && Eiso[0] >= 0. && Eiso[0] <= 0.05) {
           if (pidW == 1) fPt_EMCalPIDMCWe->Fill(track->Pt());
         }
       }
     }
-    if (clustLongE > 0.1 && clustLongE < 0.6 && EoverP > 0.9 && EoverP < 1.3) {
+    if (clustLongE > 0.1 && clustLongE < 0.3 && EoverP > 0.9 && EoverP < 1.3) {
       TPCSigForE->Fill(track->P(),track->GetTPCsignal());
       fNsigmaPtForE->Fill(track->Pt(),fTPCnSigma);
     }

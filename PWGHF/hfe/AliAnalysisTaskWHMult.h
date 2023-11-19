@@ -63,17 +63,16 @@ class AliAnalysisTaskWHMult : public AliAnalysisTaskSE
 	TH1F*			fMPDG;				//! histogram of mother's pdg code						//16
 	TH1F*			fFPDG;				//! histogram of father's pdg code						//17
 
-	TH1F*			fHistClustE;			//! histogram of Energy in EMCal Cluster					//18
 	TH1F*			fHistClustEMatch;		//! histogram of Energy in EMCal Cluster					//19
-	TH1F*			fHistClustLongAxis;		//! histogram of events on M02							//20
-	TH1F*			fHistClustLongAxisE;		//! histogram of events on M02 about Electron					//21
+	TH2F*			fHistClustMCM02H;		//! histogram of MC non-electron M02						//20
+	TH2F*			fHistClustMCM02E;		//! histogram of MC electron M02						//21
 
 	TH2F*			fHistNsigmaP;			//! histogram of nsigma vs P							//22
 	TH2F*			fHistMCNsigmaP;			//! histogram of nsigma vs P of MC events					//23
 	TH2F*			fPtEoverPE;			//! histogram of Pt vs E/P of electron						//24
 	TH2F*			fPtEoverPMCE;			//! histogram of Pt vs E/P of MC electron					//25
 	TH2F*			fPtEoverPEGeo;			//! histogram of Pt vs E/P of electron in M02					//26
-	TH1F*			fHistMCClsLAE;			//! histogram of MC events on M02						//27
+	TH2F*			fHistClustM02E;			//! histogram of MC events on M02						//27
         TH2F*			fPtEoverPH;			//! histogram of Pt vs E/P of hadron						//28
 	TH1F*			fREisolation[3];		//! histogram of Eiso in R<0.3,0.4,0.5						//29,30,31
         TH1F*                   fREiso_MCW;			//! histogram of Eiso in R<0.3 of W more 10GeV					//32
