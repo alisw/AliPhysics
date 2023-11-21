@@ -1228,7 +1228,7 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparsesFor2DFit()
     int nBinsCosnThetaStar[knVarForSparseRecoFor2DFit] = {nMassBins, nPtBins, 20, 100, fNBinsML[0], fNBinsML[1], fNBinsML[2]};
     int nBinsCosDeltaPhiStar[knVarForSparseRecoFor2DFit] = {nMassBins, nPtBins, 20, 200, fNBinsML[0], fNBinsML[1], fNBinsML[2]};
 
-    double xminRecoCosnThetaStar[knVarForSparseRecoFor2DFit] = {massMin, 0., 0., -1., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+    double xminRecoCosnThetaStar[knVarForSparseRecoFor2DFit] = {massMin, 0., -1., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
     double xmaxRecoCosnThetaStar[knVarForSparseRecoFor2DFit] = {massMax, ptLims[nPtBinsCutObj], 1., 1., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
     double xminRecoCosDeltaPhiStar[knVarForSparseRecoFor2DFit] = {massMin, 0., -1., -1., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
     double xmaxRecoCosDeltaPhiStar[knVarForSparseRecoFor2DFit] = {massMax, ptLims[nPtBinsCutObj], 1., 1., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
