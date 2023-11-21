@@ -93,7 +93,7 @@ private:
     {
         knVarForSparseAcc            = 11,
         knVarForSparseReco           = 19,
-        knVarForSparseRecoFor2DFit   = 6,
+        knVarForSparseRecoFor2DFit   = 7,
     };
 
     AliAnalysisTaskSEDstarPolarization(const AliAnalysisTaskSEDstarPolarization &source);
