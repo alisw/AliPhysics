@@ -53,6 +53,7 @@ class AliJSPCTaskRun2 : public AliAnalysisTaskSE {
 
   // Task specific setters
   void AliSPCRun2SetSaveAllQA(Bool_t SaveQA) {bJSPCRun2SaveAllQA=SaveQA;}
+  void AliSPCRun2SetUseJoinedCov(Bool_t joinedCov) {this->bAliSPCRun2UseJoinedCov = joinedCov;}
   void AliSPCRun2SetUseWeights(Bool_t WeightsNUE, Bool_t WeightsNUA) {
     bAliSPCRun2UseWeightsNUE = WeightsNUE;
     bAliSPCRun2UseWeightsNUA = WeightsNUA;
@@ -101,7 +102,8 @@ class AliJSPCTaskRun2 : public AliAnalysisTaskSE {
 
   Bool_t bAliSPCRun2UseWeightsNUE;    // kTRUE: Use non-unit NUE weights.
   Bool_t bAliSPCRun2UseWeightsNUA;    // kTRUE: Use non-unit NUA weights.
- 
+  Bool_t bAliSPCRun2UseJoinedCov;
+
   Bool_t bJSPCRun2SaveAllQA;
   Int_t fAliSPCRun2HarmosArray[12][8];  // Array of combinations of harmonics for the SPC.
     // Can deal with maximum 10 different SPC.
