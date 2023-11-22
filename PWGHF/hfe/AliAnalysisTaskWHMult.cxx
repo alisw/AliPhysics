@@ -265,20 +265,20 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
   fREiso_MCHFhpt->GetYaxis()->SetTitle("Entries");
 
   for (Int_t isoR=0;isoR<3;isoR++) {
-    fdPhi_trkW_Pt[isoR] = new TH2F(Form("fdPhi_trkW_Pt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
+    fdPhi_trkW_Pt[isoR] = new TH2F(Form("fdPhi_trkW_Pt_%d",isoR),"",200,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
     fdPhi_trkW_Pt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{can} (Eiso_{R<0.%d})",3+isoR));
     fdPhi_trkW_Pt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
     fdPhi_trkW_Pt[isoR]->GetYaxis()->SetTitle("p_{T,trk}(GeV/c)");
-    fdPhi_trkHF_Pt[isoR] = new TH2F(Form("fdPhi_trkHF_Pt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
+    fdPhi_trkHF_Pt[isoR] = new TH2F(Form("fdPhi_trkHF_Pt_%d",isoR),"",200,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
     fdPhi_trkHF_Pt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{HFcan} (Eiso_{R<0.%d})",3+isoR));
     fdPhi_trkHF_Pt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
     fdPhi_trkHF_Pt[isoR]->GetYaxis()->SetTitle("p_{T,trk}(GeV/c)");
 
-    fdPhi_trkW_ePt[isoR] = new TH2F(Form("fdPhi_trkW_ePt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,200,0,200);
+    fdPhi_trkW_ePt[isoR] = new TH2F(Form("fdPhi_trkW_ePt_%d",isoR),"",200,-TMath::Pi()/3.,5.*TMath::Pi()/3.,200,0,200);
     fdPhi_trkW_ePt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{can} (Eiso_{R<0.%d})",3+isoR));
     fdPhi_trkW_ePt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
     fdPhi_trkW_ePt[isoR]->GetYaxis()->SetTitle("p_{T,can}(GeV/c)");
-    fdPhi_trkHF_ePt[isoR] = new TH2F(Form("fdPhi_trkHF_ePt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,200,0,200);
+    fdPhi_trkHF_ePt[isoR] = new TH2F(Form("fdPhi_trkHF_ePt_%d",isoR),"",200,-TMath::Pi()/3.,5.*TMath::Pi()/3.,200,0,200);
     fdPhi_trkHF_ePt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{HFcan} (Eiso_{R<0.%d})",3+isoR));
     fdPhi_trkHF_ePt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
     fdPhi_trkHF_ePt[isoR]->GetYaxis()->SetTitle("p_{T,HFcan}(GeV/c)");
@@ -738,13 +738,11 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
             }
             //=================
             for (Int_t isoR=0;isoR<3;isoR++) {
-              if (Eiso[isoR] >= 0.1) fHistPt_HFe[isoR]->Fill(track->Pt());
-              if (Eiso[isoR] <= 0.05) {
-                fHistPt_We[isoR]->Fill(track->Pt());
-              }
+              if (Eiso[isoR] >= 0.1 && Eiso[isoR] <= 0.50) fHistPt_HFe[isoR]->Fill(track->Pt());
+              if (Eiso[isoR] >= 0.0 && Eiso[isoR] <= 0.05) fHistPt_We[isoR]->Fill(track->Pt());
 
 //---------------Pt cut---------------
-              if (track->Pt() > 30.)
+              if (track->Pt() > 33. && track->Pt() < 55.)
               {
                 Double_t sumPt_OppTrks = 0;
 //---------------another track loop start---------------
@@ -787,17 +785,17 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                   Double_t anoeta = -log(TMath::Tan((anotrack->Theta())/2.));
                   Double_t dPhi = anotrack->Phi() - track->Phi();
 
-                  if (Eiso[isoR] >= 0. && Eiso[isoR] <= 0.05) fdPhi_trkW_full[isoR]->Fill(dPhi,anotrack->Pt());
-                  if (Eiso[isoR] >= 0.1) fdPhi_trkHF_full[isoR]->Fill(dPhi,anotrack->Pt());
+                  if (Eiso[isoR] >= 0.0 && Eiso[isoR] <= 0.05) fdPhi_trkW_full[isoR]->Fill(dPhi,anotrack->Pt());
+                  if (Eiso[isoR] >= 0.1 && Eiso[isoR] <= 0.50) fdPhi_trkHF_full[isoR]->Fill(dPhi,anotrack->Pt());
                   //=== change dPhi range ===
                   if (dPhi < -1.*TMath::Pi()/3.) dPhi = dPhi + 2.*TMath::Pi();
                   if (dPhi > 5.*TMath::Pi()/3.) dPhi = dPhi - 2.*TMath::Pi();
 
-                  if (Eiso[isoR] >= 0. && Eiso[isoR] <= 0.05) {
+                  if (Eiso[isoR] >= 0.0 && Eiso[isoR] <= 0.05) {
                     fdPhi_trkW_Pt[isoR]->Fill(dPhi,anotrack->Pt());
                     fdPhi_trkW_ePt[isoR]->Fill(dPhi,track->Pt());
                   }
-                  if (Eiso[isoR] >= 0.1) {
+                  if (Eiso[isoR] >= 0.1 && Eiso[isoR] <= 0.50) {
                     fdPhi_trkHF_Pt[isoR]->Fill(dPhi,anotrack->Pt());
                     fdPhi_trkHF_ePt[isoR]->Fill(dPhi,track->Pt());
                   }
@@ -815,7 +813,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                     //=== higher Pt track ===
                     if (anotrack->Pt() >= MaxTrk->Pt()) MaxPtTrackNum = j;
                     //=== Pt sum ==
-                    if (anotrack->Pt() > 1.5) sumPt_OppTrks += anotrack->Pt();
+                    if (anotrack->Pt() > 5.) sumPt_OppTrks += anotrack->Pt();
                   }
                 }   //other track loop end
 
@@ -827,7 +825,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                 //////////////////////
                 // e <- W candidate //
                 //////////////////////
-                if (Eiso[isoR] >= 0. && Eiso[isoR] <= 0.05) {
+                if (Eiso[isoR] >= 0.0 && Eiso[isoR] <= 0.05) {
                   fPt_maxtrack_W[isoR]->Fill(MaxPtTrk->Pt()/track->Pt());
                   fNtrkl_PtOfMaxTrk_W[isoR]->Fill(corr_nAcc,MaxPtTrk->Pt()/track->Pt());
                   fNtrkl_PtOfTrks_W[isoR]->Fill(corr_nAcc,sumPt_OppTrks/track->Pt());
@@ -856,7 +854,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
         }
       }
     }
-    if (clustLongE > 0.1 && clustLongE < 0.3 && EoverP > 0.9 && EoverP < 1.3) {
+    if (HasEMCalInfo && clustLongE > 0.1 && clustLongE < 0.3 && EoverP > 0.9 && EoverP < 1.3) {
       TPCSigForE->Fill(track->P(),track->GetTPCsignal());
       fNsigmaPtForE->Fill(track->Pt(),fTPCnSigma);
     }
