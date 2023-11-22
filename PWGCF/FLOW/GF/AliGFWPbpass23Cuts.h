@@ -39,7 +39,8 @@ class AliGFWPbpass23Cuts {
   Int_t fFilterBit;//=96;
   Double_t fDCAxyCut;//=-1;
   Double_t fDCAzCut;//=2;
-  Int_t fTPCNcls;//=70;
+  Int_t fTPCNcls;//=50;
+  Int_t fTPCNCrossedRows;//=70;
   Double_t fTPCChi2PerCluster;//= 4 or 2.5?
   Double_t fVtxZ;// = 10
   Double_t fEta;
