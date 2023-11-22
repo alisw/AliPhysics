@@ -3142,10 +3142,14 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC20e3c :
     case kLHC22b5 : // quasi LHC20e3d	  
     case kLHC20g10 :
+    case kLHC20g2a_2 :
+    case kLHC20g2b_2 :
+    case kLHC20k6c :
+    case kLHC23d8b :
     case kLHC20j6a :
     case kLHC20j6b :
     case kLHC20j6c :
-    case kLHC20j6d :	    
+    case kLHC20j6d :		    
       return kTRUE;
       break;
     default :
@@ -7708,7 +7712,8 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
       fPeriodEnum == kLHC17l3b || fPeriodEnum == kLHC18j2 || //LHC17pq MCs
       fPeriodEnum == kLHC18l8a || fPeriodEnum == kLHC18l8b ||  fPeriodEnum == kLHC18l8c || // LHC18qr MC
       fPeriodEnum == kLHC19h2a || fPeriodEnum == kLHC19h2b ||  fPeriodEnum == kLHC19h2c || // LHC18qr MC
-      fPeriodEnum == kLHC20e3a || fPeriodEnum == kLHC20e3b ||  fPeriodEnum == kLHC20e3c ||  fPeriodEnum == kLHC22b5 || // LHC18qr MC pass3
+      fPeriodEnum == kLHC20e3a || fPeriodEnum == kLHC20e3b ||  fPeriodEnum == kLHC20e3c ||  fPeriodEnum == kLHC22b5 || // LHC18qr MC pass3 GenPurpose MCs
+      fPeriodEnum == kLHC20g2a_2 || fPeriodEnum == kLHC20g2b_2 ||  fPeriodEnum == kLHC20k6c ||  fPeriodEnum == kLHC23d8b || // LHC18qr MC pass3	other PWGs injected Particles MCs  
       fPeriodEnum == kLHC20j6a || fPeriodEnum == kLHC20j6b ||  fPeriodEnum == kLHC20j6c ||  fPeriodEnum == kLHC20j6d  ) // LHC15o pass2 MCs  
     kCaseGen = 2;  // regular MC
 
@@ -8904,6 +8909,18 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = kPbPb5TeV;
   } else if ( periodName.CompareTo("LHC22b5") == 0 ){ // quasi LHC20e3d
     fPeriodEnum = kLHC22b5;
+    fEnergyEnum = kPbPb5TeV;
+    else if ( periodName.CompareTo("LHC20g2a_2") == 0 ){
+    fPeriodEnum = kLHC20g2a_2;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC20g2b_2") == 0 ){
+    fPeriodEnum = kLHC20g2b_2;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC20k6c") == 0 ){
+    fPeriodEnum = kLHC20k6c;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.CompareTo("LHC23d8b") == 0 ){ // quasi LHC20e3d
+    fPeriodEnum = kLHC23d8b;
     fEnergyEnum = kPbPb5TeV;
   } else if ( periodName.CompareTo("LHC20g10") == 0 ){
     fPeriodEnum = kLHC20g10;
