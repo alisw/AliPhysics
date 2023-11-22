@@ -199,7 +199,7 @@ AliAnalysisTask *AddTaskSubJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_
     }
 
     /// Filtering and detector cuts.
-    if (strcmp(configNames[i].Data(), "hybrid") == 0) {
+    if (strcmp(configNames[i].Data(), "hybrid") == 0 || strcmp(configNames[i].Data(), "hybridBaseDCA")==0) {
       fJCatalyst[i]->SetTestFilterBit(hybridCut);
     } else {  // Default: global tracks.
       fJCatalyst[i]->SetTestFilterBit(globalCut);
