@@ -197,7 +197,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
   double DeltaEtaPP = 0.017; 
 
   double DeltaPhiPPrim = 0.04; 
-  double DeltaEtaPPrim = 0.017
+  double DeltaEtaPPrim = 0.017; 
 
  Float_t Proton_pT_VarLow = 0.4;
  Float_t Proton_pT_VarHigh = 0.6;
