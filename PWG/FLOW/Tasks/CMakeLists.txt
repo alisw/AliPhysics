@@ -140,6 +140,7 @@ set(SRCS
   AliAnalysisTaskCVEVZEROCalib.cxx
   AliAnalysisTaskChargeV1.cxx
   AliAnalysisTaskGammaCaloV2.cxx
+  AliAnalysisTaskPi0EtaV2.cxx
 )
 
 # Headers from sources
