@@ -1,5 +1,5 @@
-#ifndef ALIANLYSISTASKGAMMACALOV2_cxx
-#define ALIANLYSISTASKGAMMACALOV2_cxx
+#ifndef ALIANALYSISTASKGAMMACALOV2_CXX
+#define ALIANALYSISTASKGAMMACALOV2_CXX
 
 #include "AliAnalysisTaskSE.h"
 #include "AliESDtrack.h"
@@ -99,7 +99,24 @@ public:
     fnCuts = nCuts;
     fEventCutArray = CutArray;
   }
-
+  // Getting the cut lists for the conversion photons
+  // Int_t GetEventCutList(TList *CutArray)
+  // {
+  //   CutArray = fEventCutArray;
+  //   return fnCuts;
+  // }
+  TList *GetEventCutList()
+  {
+    return fEventCutArray;
+  }
+  Int_t GetCutsNumber()
+  {
+    return fnCuts;
+  }
+  Double_t GetCent()
+  {
+    return centSPD1;
+  }
   // Setting the cut lists for the calo photons
   void SetCaloCutList(Int_t nCuts, TList *CutArray)
   {
@@ -169,6 +186,7 @@ public:
   double GetEventPlane(double qx, double qy, double harmonic);
   void SetListForVZEROCalib(TList *flist) { this->fListVZEROCalib = (TList *)flist->Clone(); }
   void SetPeriod(TString period) { this->fPeriod = period; }
+  void SetEventBranch();
 
 protected:
   AliV0ReaderV1 *fV0Reader; // basic photon Selection Task
@@ -206,6 +224,12 @@ protected:
   map<TString, Bool_t> fSetEventCutsOutputlist;        //! Store, if Output list for Event Cut has already been added
 
   // histograms for mesons reconstructed quantities
+  TClonesArray *fOutputAODBranch;            //!<! AOD Branch with output clusters
+  TString fOutputAODBranchName;              ///<  New of output clusters AOD branch
+  TClonesArray *fOutputBGBranch;             //!<! AOD Branch with output clusters
+  TString fOutputBGBranchName;               ///<  New of output of background
+  Bool_t fOutputAODBranchSet;                ///<  Set the background branch in the input event once, only once!
+  Bool_t fBranchSet;                         ///<  switch to Set the AOD clusters branch in the input event
   TH3F **fHistoMotherInvMassPtPhi;           //! array of histogram with signal + BG for same event photon pairs in deta phi, inv Mass, pt
   TH2F **fHistoMotherInvMassPt;              //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
   TH2F **fHistoMotherInvMassPhi;             //! array of histogram with signal + BG for same event photon pairs, inv Mass, phi
