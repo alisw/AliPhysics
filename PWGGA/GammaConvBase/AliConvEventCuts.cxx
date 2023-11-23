@@ -8910,7 +8910,7 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if ( periodName.CompareTo("LHC22b5") == 0 ){ // quasi LHC20e3d
     fPeriodEnum = kLHC22b5;
     fEnergyEnum = kPbPb5TeV;
-    else if ( periodName.CompareTo("LHC20g2a_2") == 0 ){
+  } else if ( periodName.CompareTo("LHC20g2a_2") == 0 ){
     fPeriodEnum = kLHC20g2a_2;
     fEnergyEnum = kPbPb5TeV;
   } else if ( periodName.CompareTo("LHC20g2b_2") == 0 ){
