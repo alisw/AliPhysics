@@ -2185,7 +2185,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
 						if(Mother->GetPdgCode() == 333){
 							
 							if(MCtrk->Pt() > 0.2 && MCtrk->Pt() < 5 && MCtrk2->Pt() > 0.2 && MCtrk2->Pt() < 5){
-								
+								/*
 								double px1 = MCtrk->Px();
 								double py1 = MCtrk->Py();
 								double pz1 = MCtrk->Pz();
@@ -2204,10 +2204,10 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
 								double minv = TMath::Sqrt((E1+E2)*(E1+E2)-(px1+px2)*(px1+px2)-(py1+py2)*(py1+py2)-(pz1+pz2)*(pz1+pz2));
 
 								double pt = TMath::Sqrt((E1+E2)*(E1+E2) - (minv*minv) - (pz1+pz2)*(pz1+pz2));
-								
-							//double minv = Mother->M();
+								*/
+							double minv = Mother->M();
 
-							//double pt = Mother->Pt();
+							double pt = Mother->Pt();
 								
 							fGeneratedMCPhiPrimaries->Fill(pt,minv);
 							}
@@ -2286,7 +2286,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
 						if(Mother->GetPdgCode() == 333){
 							if(MCtrk->Pt() > 0.2 && MCtrk->Pt() < 5 && MCtrk2->Pt() > 0.2 && MCtrk2->Pt() < 5){
 								
-								
+								/*
 								double px1 = MCtrk->Px();
 								double py1 = MCtrk->Py();
 								double pz1 = MCtrk->Pz();
@@ -2305,11 +2305,11 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
 								double minv = TMath::Sqrt((E1+E2)*(E1+E2)-(px1+px2)*(px1+px2)-(py1+py2)*(py1+py2)-(pz1+pz2)*(pz1+pz2));
 
 								double pt = TMath::Sqrt((E1+E2)*(E1+E2) - (minv*minv) - (pz1+pz2)*(pz1+pz2));
+								*/
 								
-								
-							//double minv = Mother->M();
+							double minv = Mother->M();
 
-							//double pt = Mother->Pt();
+							double pt = Mother->Pt();
 								
 							fMCPrimariesPhiThatAreReconstructed->Fill(pt,minv);
 							}
