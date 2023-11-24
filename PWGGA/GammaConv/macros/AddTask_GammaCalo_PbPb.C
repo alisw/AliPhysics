@@ -1323,6 +1323,11 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11310013","411790105te30220000","0s631031000000d0"); // 10-30%
     cuts.AddCutCalo("13530013","411790105te30220000","0s631031000000d0"); // 30-50%
     cuts.AddCutCalo("15910013","411790105te30220000","0s631031000000d0"); // 50-90%
+  } else if (trainConfig == 793){ // EMCAL+DCal clusters - 13 TeV emcal cuts w/o TM with Mean neutral energy overlap correction using Ncharge per cell, cent and semi cent trigger with OOB pileup cut
+    cuts.AddCutCalo("10130e13","411790105ve30220000","0s631031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310e13","411790105ve30220000","0s631031000000d0"); // 10-30%
+    cuts.AddCutCalo("13530e13","411790105ve30220000","0s631031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910e13","411790105ve30220000","0s631031000000d0"); // 50-90%
   // **********************************************************************************************************
   // ***************************** PHOS       QA configurations PbPb run 2 2018 *******************************
   // **********************************************************************************************************

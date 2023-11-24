@@ -6085,6 +6085,28 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
         fParamMeanTrackPt[2] = -1.93788e-05;
       }
       break;
+    case 31: // cut char 'v' (no TM but with mean energy correction for overlap using mean charge particle per cell), only use with cell tm!
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
+      fUseDistTrackToCluster = kFALSE;
+      fMaxDistTrackToClusterEta = 0;
+      fMinDistTrackToClusterPhi = 0;
+      fMaxDistTrackToClusterPhi = 0;
+      fFuncNMatchedTracks = new TF1("fFuncNMatchedTracks31", "Pol3)", 0., 90.);
+      fDoEnergyCorrectionForOverlap = 3;
+      fFuncNMatchedTracks->SetParameters(6.79381e-02, -2.29978e-03, 2.80462e-05, -1.22743e-07);
+      if(fIsMC >= 1){
+        // values for HIJING 5.02 TeV Pb--Pb simulations
+        fParamMeanTrackPt[0] = +6.20104e-01;
+        fParamMeanTrackPt[1] = -2.62817e-04;
+        fParamMeanTrackPt[2] = -2.13551e-06;
+      } else{
+        // values for data 5.02 TeV Pb--Pb
+        fParamMeanTrackPt[0] = +6.82971e-01;
+        fParamMeanTrackPt[1] = +2.33711e-04;
+        fParamMeanTrackPt[2] = -1.93788e-05;
+      }
+      break;
 
     default:
       AliError(Form("Track Matching Cut not defined %d",trackMatching));
@@ -10685,6 +10707,10 @@ void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,AliMCEvent *mcEvent
 // number of primary matched tracks per cluster in PbPb 5 TeV
 Bool_t AliCaloPhotonCuts::SetPoissonParamCentFunction(int isMC){
 
+  if(fDoEnergyCorrectionForOverlap > 2){
+    return true;
+  }
+
   switch (isMC){
     if(!fFuncPoissonParamCent){
       AliFatal("fFuncPoissonParamCent is still NULL!");
@@ -10719,6 +10745,10 @@ Bool_t AliCaloPhotonCuts::SetNMatchedTracksFunc(float meanCent){
     AliFatal("fFuncPoissonParamCent or fFuncNMatchedTracks is still NULL!");
     return false;
   }
+  if(fDoEnergyCorrectionForOverlap > 2){
+    AliFatal("fFuncPoissonParamCent not needed in this case!");
+    return false;
+  }
 
   fFuncNMatchedTracks->SetParameter(0, fFuncPoissonParamCent->Eval(meanCent));
   fMeanNMatchedTracks = fFuncNMatchedTracks->Mean(0.0, 8.0);
@@ -10735,6 +10765,8 @@ Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent){
       return 0.5 * fMeanNMatchedTracks * GetMeanEForOverlap(meanCent, fParamMeanTrackPt);
     case 2:
       return 0.5 * fFuncNMatchedTracks->GetRandom(0.0, 8.0) * GetMeanEForOverlap(meanCent, fParamMeanTrackPt);
+    case 3:
+      return 0.5 * fFuncNMatchedTracks->Eval(meanCent) * GetMeanEForOverlap(meanCent, fParamMeanTrackPt);
     default:
       return 0;
   }
