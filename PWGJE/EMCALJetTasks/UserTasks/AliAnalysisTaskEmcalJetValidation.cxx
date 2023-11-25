@@ -70,7 +70,7 @@
 
 #include "AliFJWrapper.h"
 
-ClassImp(AliAnalysisTaskEmcalJetValidation) 
+ClassImp(AliAnalysisTaskEmcalJetValidation)
 
 using namespace std;
 
@@ -369,11 +369,6 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
      if (!alieventcut)
       return;
    }
-
-   AliVHeader* eventIDHeader = InputEvent()->GetHeader();
-       if(eventIDHeader) {
-        eventID = eventIDHeader->GetEventIdAsLong();
-      }
 
    fHistNEvents->Fill(2);
   //DO SOME EVENT SELECTION HERE
