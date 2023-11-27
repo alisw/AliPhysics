@@ -29,6 +29,11 @@ public:
   virtual void Terminate(Option_t *){};
   void SetEventCuts(AliFemtoDreamEventCuts *evtCuts) { fEventCuts = evtCuts; };
 
+  void SetSphericity(double min, double max)
+  {
+    fEventCuts->SetSphericityCuts(min, max);
+  }
+
   void SetPairCleaner(AliAnalysisTaskLambdaPion::PCSettings pairCleaner)
   {
     fPCSettings = pairCleaner;
