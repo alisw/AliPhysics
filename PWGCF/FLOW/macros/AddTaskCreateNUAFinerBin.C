@@ -1,7 +1,7 @@
 AliAnalysisTaskCreateNUAFinerBin* AddTaskCreateNUAFinerBin(
-    TString fPeriod         ="LHC17",
+    TString fPeriod         ="LHC15o_pass2",
     Int_t   fSystFlag       =0,
-    Bool_t  fUseHM          =true,
+    Bool_t  fUseHM          =false,
     TString	uniqueID        = "Default"
 )
 {
