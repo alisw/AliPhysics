@@ -21,6 +21,8 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 		Bool_t		fNUE 				= true,
 		Bool_t		fNUA				= true,
 		Bool_t		UseCorrectedNTracks = true,
+		Bool_t		setNUA				= false,
+		TString		NUAfile				= "NUA",
 		TString		uniqueID        	= "Default"
     )
 {
@@ -223,7 +225,12 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
                         //inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC18/weights_LHC18_periods.root");
 					//	inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC18/weights_LHC18_allHM.root");
 					//}
-            } 
+            }
+
+			if(setNUA){
+				//overwrite NUA
+				inNUA = TFile::Open(NUAfile);
+			}
 
 			if(!inNUA){
 				printf("Can't Access NUA File\n");
