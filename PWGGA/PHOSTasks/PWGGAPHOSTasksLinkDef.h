@@ -156,5 +156,6 @@
 //Gamma
 #pragma link C++ class AliAnalysisTaskGammaPHOSPP+ ;
 #pragma link C++ class AliAnalysisTaskPHOSPbPbQARun2+;
+#pragma link C++ class AliAnalysisTaskGammaPHOSPbPbRun2+;
 
 #endif
