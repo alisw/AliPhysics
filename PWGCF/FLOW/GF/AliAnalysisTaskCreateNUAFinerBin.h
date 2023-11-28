@@ -6,7 +6,7 @@
 #define AliAnalysisTaskCreateNUAFinerBin_H
 
 #include "AliAnalysisTaskSE.h"
-#include "AliGFWWeights.h"
+#include "AliGFWWeightsFinerBin.h"
 #include "AliGFWXXCuts.h"
 #include "AliGFWPbpass23Cuts.h"
 #include "AliEventCuts.h"
@@ -33,7 +33,7 @@ class AliAnalysisTaskCreateNUAFinerBin : public AliAnalysisTaskSE
     private:
         AliAODEvent*            fAOD;           //! input event
         TList*                  fOutputList;    //! output list
-        AliGFWWeights*          weights;        //!
+        AliGFWWeightsFinerBin*          weights;        //!
         std::vector<int>        RunNumber_LHC16;//!
         std::vector<int>        RunNumber_LHC17;//!
         std::vector<int>        RunNumber_LHC18;//!
