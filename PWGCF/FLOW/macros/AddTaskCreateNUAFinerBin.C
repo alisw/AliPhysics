@@ -52,3 +52,5 @@ AliAnalysisTaskCreateNUAFinerBin* AddTaskCreateNUAFinerBin(
     // when you will run your analysis in an analysis train on grid
     return task;
 }
+
+// EOF
