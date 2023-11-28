@@ -29,6 +29,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     bool DoKine = false, //18
     bool DoReco = false, //19
     bool SwitchOffCPR = false, //20
+    float PionMinPt = 0.14;
     const char *cutVariation = "0" //21
     ) {
 
@@ -74,6 +75,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   TrackCutsPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
   TrackCutsPion->SetFilterBit(PionFilterbit);
   TrackCutsPion->SetCutCharge(1);
+  TrackCutsPion->SetPtRange(PionMinPt, 4.0);
 
   if(isMC && PionFilterbit == 128){ //for MC template fits
     TrackCutsPion->CheckParticleMothers(true);
@@ -84,6 +86,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   TrackCutsAntiPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
   TrackCutsAntiPion->SetFilterBit(PionFilterbit);
   TrackCutsAntiPion->SetCutCharge(-1);
+  TrackCutsAntiPion->SetPtRange(PionMinPt, 4.0);
   
   if(isMC && PionFilterbit == 128){ //for MC template fits
     TrackCutsAntiPion->CheckParticleMothers(true);
