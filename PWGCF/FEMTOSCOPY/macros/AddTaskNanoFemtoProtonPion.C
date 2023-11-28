@@ -29,8 +29,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     bool DoKine = false, //18
     bool DoReco = false, //19
     bool SwitchOffCPR = false, //20
-    float PionMinPt = 0.14;
-    const char *cutVariation = "0" //21
+    float PionMinPt = 0.14, //21
+    const char *cutVariation = "0" //22
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
