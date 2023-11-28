@@ -1,10 +1,10 @@
-AliAnalysisTaskGammmaPHOSPbPbRun2* AddTaskPHOSGammaPbPbRun2 (TString name = "PHOSGammaPbPbRun2",
-					    TString mode = "12468",
+AliAnalysisTaskGammaPHOSPbPbRun2* AddTaskGammaPHOSPbPbRun2 (TString name = "PHOSGammaPbPbRun2",
+					    TString mode = "2468",
 					    UInt_t offlineTriggerMask = AliVEvent::kINT7,
 					    Int_t harmonics = 2
 					    )
 {
-  //Add a task AliAnalysisTaskGammmaPHOSPbPbRun2 to the analysis train
+  //Add a task AliAnalysisTaskGammaPHOSPbPbRun2 to the analysis train
   //Author: Dmitri Peressounko
   /* $Id$ */
 
@@ -24,7 +24,7 @@ AliAnalysisTaskGammmaPHOSPbPbRun2* AddTaskPHOSGammaPbPbRun2 (TString name = "PHO
     return NULL;    
   }
   */
-  AliAnalysisTaskGammmaPHOSPbPbRun2* task = new AliAnalysisTaskGammmaPHOSPbPbRun2(Form("%s_%s", name.Data(), mode.Data()));
+  AliAnalysisTaskGammaPHOSPbPbRun2* task = new AliAnalysisTaskGammaPHOSPbPbRun2(Form("%s_%s", name.Data(), mode.Data()));
 
   mgr->AddTask(task);
 
@@ -46,7 +46,7 @@ AliAnalysisTaskGammmaPHOSPbPbRun2* AddTaskPHOSGammaPbPbRun2 (TString name = "PHO
   AliAnalysisDataContainer *cinput   = mgr->GetCommonInputContainer(); 
   mgr->ConnectInput(task , 0, cinput);
 
-  TString contName = Form("%s:GammaPHOSPbPb", AliAnalysisManager::GetCommonFileName(),mode.Data());
+  TString contName = Form("%s:GammaPHOSPbPb_%s", AliAnalysisManager::GetCommonFileName(), mode.Data());
 
   AliAnalysisDataContainer *coutput1 =
     mgr->CreateContainer("QA", THashList::Class(), AliAnalysisManager::kOutputContainer, contName);

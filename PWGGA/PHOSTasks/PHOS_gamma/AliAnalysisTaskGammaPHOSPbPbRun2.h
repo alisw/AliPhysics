@@ -92,6 +92,7 @@ private:
 
   TList * fPHOSEvents[1][10][11] ; // Containers for events with PHOS photons
   TClonesArray * fPHOSEvent ;      // PHOS photons in current event
+  AliPIDResponse *     fPIDResponse;    // Pid response
  
   //Vector value
   Double_t fQV0A ;   //Lengths of flow vectors
@@ -131,6 +132,8 @@ private:
   AliPHOSGeometry  *fPHOSGeo;  //! PHOS geometry
   Int_t fEventCounter;         // number of analyzed events
 
+  Int_t fInPHOS;
+
   TH1D*  fTPCfinalC2 ;   //! HIstos with flattening parameters
   TH1D*  fTPCfinalS2 ;   //!
   TH1D*  fTPCfinalC4 ;   //!
@@ -160,13 +163,13 @@ private:
   TH1D*  fV0CfinalQS2 ;   //!
   TH1D*  fV0CfinalQC4 ;   //!
   TH1D*  fV0CfinalQS4 ;    //!
+			   
   AliFlowTrackCuts * fCutsV0 ; //! 
   AliFlowTrackCuts * fCutsTPC ; //!
   AliFlowEvent     * fFlowEvent ; //!
 
   TClonesArray *       fMCArray;  // MC array
 
-  AliPIDResponse *     fPIDResponse;    // Pid response
 					
   Int_t GetPrimaryLabel(AliVCluster *clu);
   Int_t GetPrimaryLabelAtVertex(AliVCluster *clu);
@@ -175,7 +178,6 @@ private:
 	   fVtx5[3] = {0., 0., 0.};
 
    
-  Int_t fInPHOS;
 
   void ProcessMC();
 
