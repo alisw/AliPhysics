@@ -3,8 +3,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     UInt_t trigger = AliVEvent::kINT7,
     const TString CollisionSystem = "PbPb",
     const Bool_t isMC = kFALSE,
-    const Int_t L1input = -1,//L1H,L1M,L1L
-    const Int_t L0input = -1,//L0
+    const Int_t L1input = -1, //L1H,L1M,L1L
+    const Int_t L0input = -1, //L0
     const Float_t CenMin = 0.,
     const Float_t CenMax = 90.,
     const Int_t NMixed   = 10,
@@ -27,7 +27,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     const TString MCtype = "MBMC",
     const Bool_t ForceActiveTRU = kFALSE,
     const Bool_t ApplyTOFTrigger = kFALSE,
-    const AliPHOSEventCuts::PileupFinder pf = AliPHOSEventCuts::kMultiVertexer
+    const AliPHOSEventCuts::PileupFinder pf = AliPHOSEventCuts::kMultiVertexer,
+    const char *sub_name = "0_10"
     )
 {
   //Add a task AliAnalysisTaskPHOSPi0EtaToGammaGamma to the analysis train
@@ -278,7 +279,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   TString outputFile = AliAnalysisManager::GetCommonFileName();
   TString prefix = Form("hist_%s",taskname.Data());
 
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("%s",prefix.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s",outputFile.Data(),"PWGGA_PHOSTasks_PHOSRun2"));
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("%s",prefix.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s",outputFile.Data(),Form("PWGGA_PHOSTasks_PHOSRun2_%s", sub_name)));
   mgr->ConnectOutput(task, 1, coutput1);
 
   return task;
