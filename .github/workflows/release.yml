@@ -29,10 +29,6 @@ jobs:
         env:
           TAG: ${{ github.event.inputs.tag }}
 
-      - uses: actions/checkout@v3
-        with:
-          ref: "master"
-
       - name: Tag and create release
         uses: alisw/release-action@v1
         with:
