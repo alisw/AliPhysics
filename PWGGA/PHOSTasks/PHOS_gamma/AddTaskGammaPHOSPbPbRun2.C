@@ -10,12 +10,12 @@ AliAnalysisTaskGammaPHOSPbPbRun2* AddTaskGammaPHOSPbPbRun2 (TString name = "PHOS
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    ::Error("AddTaskPHOSGammaFlow", "No analysis manager to connect to");
+    ::Error("AddTaskGammaPHOSPbPbRun2", "No analysis manager to connect to");
     return NULL;
   }
   
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskPHOSGammaFlow", "This task requires an input event handler");
+    ::Error("AddTaskGammaPHOSPbPbRun2", "This task requires an input event handler");
     return NULL;
   }
 /*
@@ -32,7 +32,6 @@ AliAnalysisTaskGammaPHOSPbPbRun2* AddTaskGammaPHOSPbPbRun2 (TString name = "PHOS
   task->SetHarmonics(harmonics) ;  
   task->SelectCollisionCandidates(offlineTriggerMask);
 
-  //std::vector<Double_t> 
   //mode  = "2468";               // 0) 1% 1) 5% 2) 10% 3) 15% 4) 20% 5) 30% 6) 40% 7) 50% 8) 60% 9) 70% a) 80% b) 90%
 				 // examples: 
 				 // centrMode = "1", fCenBinEdges = {0, 5, 100}
