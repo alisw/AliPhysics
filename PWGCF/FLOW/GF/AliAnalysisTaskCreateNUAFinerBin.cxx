@@ -43,6 +43,8 @@ ClassImp(AliAnalysisTaskCreateNUAFinerBin) // classimp: necessary for root
   Last_Position(-1),
   fGFWSelection(NULL),
   fGFWSelection15o(NULL),
+  fAddTPCPileupCuts(false),
+  fESDvsTPConlyLinearCut(15000),
   fMinPt(0.2), fMaxPt(3.0), hEventCount(0)
 {
   // default constructor, don't allocate memory here!
@@ -56,6 +58,8 @@ AliAnalysisTaskCreateNUAFinerBin::AliAnalysisTaskCreateNUAFinerBin(const char *n
   Last_Position(-1),
   fGFWSelection(NULL),
   fGFWSelection15o(NULL),
+  fAddTPCPileupCuts(false),
+  fESDvsTPConlyLinearCut(15000),
   fMinPt(0.2),
   fMaxPt(3.0),
   hEventCount(0)
@@ -306,6 +310,17 @@ void AliAnalysisTaskCreateNUAFinerBin::UserCreateOutputObjects()
                             // fOutputList object. the manager will in the end take care of writing your output to file
                             // so it needs to know what's in the output
 }
+
+//_________________________________________________________________
+void AliAnalysisTaskCreateNUAFinerBin::NotifyRun() {
+    if (fAddTPCPileupCuts) {
+      Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
+	  fEventCuts.fUseVariablesCorrelationCuts = true;
+      fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+      fEventCuts.fESDvsTPConlyLinearCut[0] = fESDvsTPConlyLinearCut;
+    }
+}
+
 //_____________________________________________________________________________
 void AliAnalysisTaskCreateNUAFinerBin::UserExec(Option_t *)
 {
