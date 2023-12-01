@@ -104,8 +104,8 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV():
   hGenBePtMult(0),
   hRecBePt_track(0),
   hRecBePt_tof(0),
+  hRecBePt_tofMult(0),
   hRecBePt_tpc(0),
-  hRecBePt_tpcMult(0),
   hITSnsigma(0),
   hITSnsigmaTOFcut(0),
   hITSnsigmaTOFTPCcut(0),
@@ -268,8 +268,8 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV(const char *name):
   hGenBePtMult(0),
   hRecBePt_track(0),
   hRecBePt_tof(0),
+  hRecBePt_tofMult(0),
   hRecBePt_tpc(0),
-  hRecBePt_tpcMult(0),
   hITSnsigma(0),
   hITSnsigmaTOFcut(0),
   hITSnsigmaTOFTPCcut(0),
@@ -565,11 +565,11 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   hRecBePt_tof = new TH1F("hRecBePt_tof", "", nPtBins, ptbinningX);
   fOutputList->Add(hRecBePt_tof);
 
+  hRecBePt_tofMult = new TH2F("hRecBePt_tofMult", "", nPtBins, ptbinningX, 6, multbinning);
+  fOutputList->Add(hRecBePt_tofMult);
+
   hRecBePt_tpc = new TH1F("hRecBePt_tpc", "", nPtBins, ptbinningX);
   fOutputList->Add(hRecBePt_tpc);
-
-  hRecBePt_tpcMult = new TH2F("hRecBePt_tpcMult", "", nPtBins, ptbinningX, 6, multbinning);
-  fOutputList->Add(hRecBePt_tpcMult);
 
   hITSnsigma = new TH2F("hITSnsigma", "n#sigma_{ITS} vs #it{p}; #it{p} (GeV/#it{c}); n#sigma_{ITS}", 700, 0., 14., 800, -20., 20.);
   fOutputList->Add(hITSnsigma);
@@ -1253,8 +1253,10 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
 
     if(TMath::Abs(fTOFnSigma)>fTOFnsigma) continue;
     if(fIsMC){
-      if(mcelectronSource==kDirectBeauty || mcelectronSource==kBeautyCharm)
+      if(mcelectronSource==kDirectBeauty || mcelectronSource==kBeautyCharm){
         hRecBePt_tof->Fill(pt);
+        hRecBePt_tofMult->Fill(pt, Corrected_Ntr);
+	  }
     }
 
     hITSnsigmaTOFcut->Fill(aodTrack->P(), fITSnSigma);
@@ -1270,7 +1272,6 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
     if(fIsMC){
       if(mcelectronSource==kDirectBeauty || mcelectronSource==kBeautyCharm){
         hRecBePt_tpc->Fill(pt);
-        hRecBePt_tpcMult->Fill(pt, Corrected_Ntr);
 	  }
     }
 

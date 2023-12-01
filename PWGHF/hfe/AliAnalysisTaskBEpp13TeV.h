@@ -199,8 +199,8 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	TH2F		*hGenBePtMult;
 	TH1F		*hRecBePt_track;
 	TH1F		*hRecBePt_tof;
+	TH2F		*hRecBePt_tofMult;
 	TH1F		*hRecBePt_tpc;
-	TH2F		*hRecBePt_tpcMult;
 
 	// pid cut
 	TH2F		*hITSnsigma;
