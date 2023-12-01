@@ -1223,6 +1223,7 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
 	  }
       // Fill conversion dca information
       if(mcelectronSource>=kGammaPi0 && mcelectronSource<=kGammaK2P){
+		dcaConv->Fill(pt, IP);
 		dcaConvMult->Fill(pt, IP, Corrected_Ntr);
 	  }
     }
@@ -1267,9 +1268,10 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
 
     if(fTPCnSigma<fTPCnsigmaLow || fTPCnSigma>fTPCnsigmaHigh) continue;
     if(fIsMC){
-      if(mcelectronSource==kDirectBeauty || mcelectronSource==kBeautyCharm)
+      if(mcelectronSource==kDirectBeauty || mcelectronSource==kBeautyCharm){
         hRecBePt_tpc->Fill(pt);
         hRecBePt_tpcMult->Fill(pt, Corrected_Ntr);
+	  }
     }
 
     hITSnsigmaTOFTPCcut->Fill(aodTrack->P(), fITSnSigma);
