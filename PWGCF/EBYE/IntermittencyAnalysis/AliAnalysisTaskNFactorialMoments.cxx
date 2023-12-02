@@ -110,8 +110,8 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
   fQAList2->Add(fHistdPhi);
 
   for (Int_t i = 0; i < mPtBins; ++i) {
-    fHistbeforeHBT[i] = new TH2D(Form("fdEtadPhiBefore%d", i), Form("dEta dPhi for ptbin %d;#Delta#eta;#Delta#phi", i), 50, -1.6, 1.6, 50, -TMath::Pi(), TMath::Pi());
-    fHistafterHBT[i] = new TH2D(Form("fdEtadPhiAfter%d", i), Form("dEta dPhi for ptbin %d;#Delta#eta;#Delta#phi", i), 50, -1.6, 1.6, 50, -TMath::Pi(), TMath::Pi());
+    fHistbeforeHBT[i] = new TH2D(Form("fdEtadPhiBefore%d", i), Form("dEta dPhi for ptbin %d;#Delta#eta;#Delta#phi", i), 35, -1.75, 1.75, 67, -1.75, 4.95);
+    fHistafterHBT[i] = new TH2D(Form("fdEtadPhiAfter%d", i), Form("dEta dPhi for ptbin %d;#Delta#eta;#Delta#phi", i), 50, -1.75, 1.75, 50, -1.75, 4.95);
     fQAList2->Add(fHistbeforeHBT[i]);
     fQAList2->Add(fHistafterHBT[i]);
   }
@@ -411,7 +411,6 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
   Int_t nTracks(fAOD->GetNumberOfTracks());
   Float_t dpstar, deta, dphi;
   Float_t dcaXY, dcaZ;
-  Int_t trackbefore = 0, trackafter = 0, twotrackscount = 0;
 
   // Track Loop:
   for (Int_t i = 0; i < nTracks; i++) {
@@ -496,67 +495,6 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
     fHistNShClsFra[1]->Fill(nSharedCls / nCls, nSharedCls / nCrossedRows);
     fHistNFoundClsFra[1]->Fill(nSharedCls / nCls, nCrossedRows / nFindableCls);
 
-    TBits clusmap = track->GetTPCClusterMap();
-    TBits sharedmap = track->GetTPCSharedMap();
-
-    for (Int_t j = 0; j < nTracks; j++) {
-      AliAODTrack* track2 = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
-      if (!(track2->TestFilterBit(filterBit)))
-        continue;
-
-      Int_t charge2 = track2->Charge();
-      Float_t pt2 = track2->Pt();
-      Float_t eta2 = track2->Eta();
-      Float_t phi2 = track2->Phi();
-      Int_t id2 = track2->GetID();
-
-      if (GetParticleID(track2, kFALSE))
-        continue;
-
-      if (id == id2 || fabs(eta2) > 0.8 || fabs(pt2) < 0.2 || charge2 == 0 ||
-          pt < pt2)
-        continue;
-
-      TBits clusmap2 = track2->GetTPCClusterMap();
-      TBits sharedmap2 = track2->GetTPCSharedMap();
-      Float_t sharity =
-        SharedClusterFraction(clusmap, clusmap2, sharedmap, sharedmap2);
-      if (sharity > fSharedFraction) {
-        mSharedTrack = kTRUE;
-        twotrackscount++;
-      }
-
-      if ((flagSharity) && (mSharedTrack))
-        break;
-
-      dpstar = dphistarcalculation(phi, eta, pt, charge, phi2, eta2, pt2,
-                                   charge2, mfield);
-      if (dpstar == 999)
-        continue;
-      deta = eta2 - eta;
-      if (fabs(deta) < fdeta && fabs(dpstar) < fdphi && charge == charge2)
-        mSkipTracks = kTRUE;
-
-      if (mSkipTracks) {
-        for (Int_t k = 0; k < mPtBins; ++k) {
-          if (ptbin[k]) {
-            fHistafterHBT[k]->Fill(deta, dpstar);
-          }
-        }
-        twotrackscount++;
-        if (flag2Track)
-          break;
-      }
-    }
-
-    if (((flag2Track) && (mSharedTrack)) || ((flagSharity) && (mSharedTrack))) {
-      continue;
-    }
-    trackafter++;
-    fTrackCounter->Fill(10);
-    fHistQAEta[0]->Fill(eta);
-    fHistQAPhi[0]->Fill(phi);
-
     Double_t profileVal[16] = { 0 };
 
     if (minCent == 0 && maxCent == 5) {
@@ -587,6 +525,72 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
           continue;
       }
     }
+
+    // Two Track Loop:
+    TBits clusmap = track->GetTPCClusterMap();
+    TBits sharedmap = track->GetTPCSharedMap();
+
+    for (Int_t j = 0; j < nTracks; j++) {
+      AliAODTrack* track2 = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
+      if (!(track2->TestFilterBit(filterBit)))
+        continue;
+
+      Int_t charge2 = track2->Charge();
+      Float_t pt2 = track2->Pt();
+      Float_t eta2 = track2->Eta();
+      Float_t phi2 = track2->Phi();
+      Int_t id2 = track2->GetID();
+
+      if (GetParticleID(track2, kFALSE))
+        continue;
+
+      if (id == id2 || fabs(eta2) > 0.8 || fabs(pt2) < 0.2 || charge2 == 0 ||
+          pt < pt2)
+        continue;
+
+      TBits clusmap2 = track2->GetTPCClusterMap();
+      TBits sharedmap2 = track2->GetTPCSharedMap();
+      Float_t sharity =
+        SharedClusterFraction(clusmap, clusmap2, sharedmap, sharedmap2);
+      if (sharity > fSharedFraction) {
+        mSharedTrack = kTRUE;
+      }
+
+      if ((flagSharity) && (mSharedTrack)) {
+        break;
+      }
+
+      dpstar = CalculateDPhiStar(phi, eta, pt, charge, phi2, eta2, pt2,
+                                 charge2, mfield);
+      if (dpstar == 999)
+        continue;
+      deta = eta2 - eta;
+      dphi = phi2 - phi;
+      if (fabs(deta) < fdeta && fabs(dpstar) < fdphi && charge == charge2)
+        mSkipTracks = kTRUE;
+
+      for (Int_t iPt = 0; iPt < mPtBins; ++iPt) {
+        if (ptbin[iPt]) {
+          fHistbeforeHBT[iPt]->Fill(deta, dphi);
+        }
+      }
+      if ((flag2Track) && (mSkipTracks)) {
+        break;
+      } else {
+        for (Int_t k = 0; k < mPtBins; ++k) {
+          if (ptbin[k]) {
+            fHistafterHBT[k]->Fill(deta, dphi);
+          }
+        }
+      }
+    } // End of Two Track Loop
+
+    if (((flag2Track) && (mSharedTrack)) || ((flagSharity) && (mSharedTrack))) {
+      continue;
+    }
+    fTrackCounter->Fill(10);
+    fHistQAEta[0]->Fill(eta);
+    fHistQAPhi[0]->Fill(phi);
 
     for (Int_t iPt = 0; iPt < mPtBins; ++iPt) {
       if (ptbin[iPt]) {
@@ -701,7 +705,7 @@ void AliAnalysisTaskNFactorialMoments::GetPtBin(Double_t pt)
 ________________________________________________________________________*/
 
 Bool_t AliAnalysisTaskNFactorialMoments::GetParticleID(AliAODTrack* trk,
-                                                           Bool_t fQA)
+                                                       Bool_t fQA)
 {
 
   if (!flagMC) {
@@ -789,7 +793,7 @@ Bool_t AliAnalysisTaskNFactorialMoments::GetParticleID(AliAODTrack* trk,
               Two Track Calculation of dphistar
 ________________________________________________________________________*/
 
-Float_t AliAnalysisTaskNFactorialMoments::dphistarcalculation(
+Float_t AliAnalysisTaskNFactorialMoments::CalculateDPhiStar(
   Float_t phi1, Float_t eta1, Float_t pt1, Int_t charge1, Float_t phi2, Float_t eta2,
   Float_t pt2, Int_t charge2, Float_t bSign)
 {
@@ -801,6 +805,9 @@ Float_t AliAnalysisTaskNFactorialMoments::dphistarcalculation(
   Double_t kPi = TMath::Pi();
   Float_t deltaPhi = phi2 - phi1;
   bSign = (bSign > 0) ? 1 : -1;
+  fHistdEta->Fill(deta);
+  fHistdPhi->Fill(deltaPhi);
+
   // variables and cuts have been taken from
   // https://indico.cern.ch/materialDisplay.py?contribId=36&sessionId=6&materialId=slides&confId=142700
   if (abs(eta1 - eta2) < fdeta * 2.5 * 3) {
@@ -832,19 +839,6 @@ Float_t AliAnalysisTaskNFactorialMoments::dphistarcalculation(
         deltaPhi += TMath::TwoPi();
       if (deltaPhi > 1.5 * TMath::Pi())
         deltaPhi -= TMath::TwoPi();
-      fHistdPhi->Fill(deltaPhi);
-    }
-    if (dphistar != 999) {
-      fHistdEta->Fill(dphistar);
-      GetPtBin(pt1);
-      if (ptbin[0])
-        fHistbeforeHBT[0]->Fill(deta, dphistar);
-      if (ptbin[1])
-        fHistbeforeHBT[1]->Fill(deta, dphistar);
-      if (ptbin[2])
-        fHistbeforeHBT[2]->Fill(deta, dphistar);
-      if (ptbin[3])
-        fHistbeforeHBT[3]->Fill(deta, dphistar);
     }
   }
   return dphistar;
@@ -855,9 +849,9 @@ Float_t AliAnalysisTaskNFactorialMoments::dphistarcalculation(
 ________________________________________________________________________*/
 
 Float_t AliAnalysisTaskNFactorialMoments::SharedClusterFraction(TBits& cl1,
-                                                                    TBits& cl2,
-                                                                    TBits& sh1,
-                                                                    TBits& sh2)
+                                                                TBits& cl2,
+                                                                TBits& sh1,
+                                                                TBits& sh2)
 {
   Int_t ncl1 = cl1.GetNbits();
   Int_t ncl2 = cl2.GetNbits();
@@ -892,9 +886,9 @@ Float_t AliAnalysisTaskNFactorialMoments::SharedClusterFraction(TBits& cl1,
 ________________________________________________________________________*/
 
 Float_t AliAnalysisTaskNFactorialMoments::GetDPhiStar(Float_t phi1, Float_t pt1,
-                                                          Float_t charge1, Float_t phi2,
-                                                          Float_t pt2, Float_t charge2,
-                                                          Float_t radius, Float_t bSign)
+                                                      Float_t charge1, Float_t phi2,
+                                                      Float_t pt2, Float_t charge2,
+                                                      Float_t radius, Float_t bSign)
 {
   Double_t kPi = TMath::Pi();
   Double_t deltaPhi = phi2 - phi1;
@@ -927,7 +921,8 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[mPtBins][mMBins], 
   for (Int_t iPt = 0; iPt < mPtBins; ++iPt) {
     for (Int_t iM = 0; iM < mMBins; iM++) {
 
-      Double_t NoOfBins, MSquare;
+      Double_t NoOfBins = 0;
+      Double_t MSquare = 0;
       if (Mmax == 123)
         NoOfBins = 3 * (iM + 2);
       if (Mmax == 82)
@@ -940,7 +935,7 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[mPtBins][mMBins], 
       Double_t SumOfbincontent = 0;
       Double_t FqEvent[mQs];
       Double_t sumoff[mQs];
-      Double_t bincontent;
+      Double_t bincontent = 0.0;
       Double_t Mbin = NoOfBins;
       Int_t NofXetabins = 0;
       Int_t NofXphibins = 0;

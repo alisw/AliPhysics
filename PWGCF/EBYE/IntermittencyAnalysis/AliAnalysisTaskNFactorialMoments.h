@@ -105,9 +105,9 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   float GetDPhiStar(float phi1, float pt1, float charge1, float phi2, float pt2,
                     float charge2, float radius, float bSign);
   Bool_t GetParticleID(AliAODTrack* track, Bool_t fQA);
-  float dphistarcalculation(float phi1, float eta1, float pt1, Int_t charge1,
-                            float phi2, float eta2, float pt2, Int_t charge2,
-                            float bSign);
+  float CalculateDPhiStar(float phi1, float eta1, float pt1, Int_t charge1,
+                          float phi2, float eta2, float pt2, Int_t charge2,
+                          float bSign);
   float SharedClusterFraction(TBits&, TBits&, TBits&, TBits&);
   void GetPtBin(Double_t);
   void CalculateNFMs(TH2D* h1[mPtBins][mMBins], Bool_t mcGen);
