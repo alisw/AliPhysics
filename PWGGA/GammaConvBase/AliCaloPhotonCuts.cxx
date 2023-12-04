@@ -6092,7 +6092,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fMaxDistTrackToClusterEta = 0;
       fMinDistTrackToClusterPhi = 0;
       fMaxDistTrackToClusterPhi = 0;
-      fFuncNMatchedTracks = new TF1("fFuncNMatchedTracks31", "Pol3)", 0., 90.);
+      fFuncNMatchedTracks = new TF1("fFuncNMatchedTracks31", "pol3", 0., 90.);
       fDoEnergyCorrectionForOverlap = 3;
       fFuncNMatchedTracks->SetParameters(6.79381e-02, -2.29978e-03, 2.80462e-05, -1.22743e-07);
       if(fIsMC >= 1){
