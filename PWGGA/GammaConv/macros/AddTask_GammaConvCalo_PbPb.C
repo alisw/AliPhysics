@@ -1417,11 +1417,6 @@ void AddTask_GammaConvCalo_PbPb(
     } else if (headerSelectionInt == 2){
       TObjString *Header1 = new TObjString("Injector (eta)_2");
       HeaderList->Add(Header1);
-    } else {
-      TObjString *Header1 = new TObjString("Injector (pi0)_1");
-      HeaderList->Add(Header1);
-      TObjString *Header2 = new TObjString("Injector (eta)_2");
-      HeaderList->Add(Header2);
     } else if (generatorName.CompareTo("LHC20g10")==0){
 
       auto fillSingle = [&HeaderList](Size_t theSwitch){
@@ -1453,7 +1448,12 @@ void AddTask_GammaConvCalo_PbPb(
         Error(Form("%s_%i", addTaskName.Data(),  trainConfig), "No valid header selection");
         return;
       }
-    }
+    } else {
+      TObjString *Header1 = new TObjString("Injector (pi0)_1");
+      HeaderList->Add(Header1);
+      TObjString *Header2 = new TObjString("Injector (eta)_2");
+      HeaderList->Add(Header2);
+    } 
   }
 
   EventCutList->SetOwner(kTRUE);
