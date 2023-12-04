@@ -28,6 +28,7 @@ AliFemtoDreamTrack::AliFemtoDreamTrack()
       fPassFiltering(false),
       fdcaXY(-99),
       fdcaZ(-99),
+      fRealMotherPDG(0),
       fdcaXYProp(-99),
       fdcaZProp(-99),
       fNClsTPC(0),
@@ -775,7 +776,6 @@ void AliFemtoDreamTrack::SetMCInformation(TClonesArray* mcarray, int label) {
       this->SetMCPDGCode(mcPart->PdgCode());
       this->SetMCPt(mcPart->Pt());
       this->SetMCMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz());
-
       //check for secondary and set origin and mother
       if (mcPart->IsPhysicalPrimary() && !mcPart->IsSecondaryFromWeakDecay()) {
         this->SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
@@ -792,6 +792,15 @@ void AliFemtoDreamTrack::SetMCInformation(TClonesArray* mcarray, int label) {
       int motherID = mcPart->GetMother();
       int lastMother = motherID;
       AliAODMCParticle *mcMother = nullptr;
+
+                       // Oton. 4/12/2023
+                       // ADD three lines TO GET THE REAL MOTHER PDG BEFORE LOOPING FOR THE ANCESTOR
+                       mcMother = (AliAODMCParticle *) mcarray->At(motherID);
+                       if (mcMother) {
+                        this->fRealMotherPDG =  mcMother->GetPdgCode() ;
+                        //cout<<"AliFemtoDreamTrack REAL MOTHER pdg= "<<mcMother->GetPdgCode()<<" with ID="<<motherID<<endl;
+                       }
+
       while (motherID != -1) {
         lastMother = motherID;
         mcMother = (AliAODMCParticle *) mcarray->At(motherID);
@@ -825,7 +834,6 @@ void AliFemtoDreamTrack::SetMCInformation(AliMCEvent *mcEvent) {
       this->SetMCPDGCode(mcPart->PdgCode());
       this->SetMCPt(mcPart->Pt());
       this->SetMCMomentum(mcPart->Px(), mcPart->Py(), mcPart->Pz());
-
       //check for secondary and set origin and mother
       if (mcPart->IsPhysicalPrimary() && !mcPart->IsSecondaryFromWeakDecay()) {
         this->SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
@@ -913,6 +921,7 @@ void AliFemtoDreamTrack::Reset() {
     fFilterMap = 0;
     fdcaXY = -99;
     fdcaZ = -99;
+    fRealMotherPDG = 0;
     fdcaXYProp = -99;
     fdcaZProp = -99;
     fNClsTPC = 0;
