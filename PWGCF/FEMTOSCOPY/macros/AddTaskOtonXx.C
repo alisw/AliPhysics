@@ -39,8 +39,16 @@ if(OpenMass>0) massopen=true;
 
 //FDpairing ==> Will influence Xi cuts and OnlyXi cut!
 bool doFD = false;
-if(DoFDpairing>0)doFD=true;
-int TheMixingDepth = DoFDpairing; // define mixing depth via DoFDpairing
+int TheMixingDepth = 0;
+bool DoClosePairRejection = false;
+// DoFDpairing = 0 -> No FD pairing
+// DoDFpairing <0 -> Do FD pairing but no detadphi cut
+// DoDFpairing >0 -> Do FD pairing AND detadphi cut
+if(DoFDpairing!=0){
+ doFD=true;
+ TheMixingDepth = abs(DoFDpairing);  // mixing depth is defined by DoFDpairing value
+ if(DoFDpairing>0) DoClosePairRejection = true;
+}
 
 //fill only Xi's (but require Xi-pi event) for optimization
 bool OnlyXi = false;
@@ -501,12 +509,12 @@ bool PionCheckPileUp = false; //std
 
 
   //close pair rejection for the meson track vs the Xi tracks (forget for the moment Yperon-Yperon)
-  closeRejection[0] = true;  // K+ K+
-  closeRejection[2] = true;  // K+ xi
-  closeRejection[3] = true;  // K+ xi+
-  closeRejection[4] = true;  // K- K-
-  closeRejection[5] = true;  // K- Xi-
-  closeRejection[6] = true;  // K- Xi+
+  closeRejection[0] = DoClosePairRejection;  // K+ K+
+  closeRejection[2] = DoClosePairRejection;  // K+ xi
+  closeRejection[3] = DoClosePairRejection;  // K+ xi+
+  closeRejection[4] = DoClosePairRejection;  // K- K-
+  closeRejection[5] = DoClosePairRejection;  // K- Xi-
+  closeRejection[6] = DoClosePairRejection;  // K- Xi+
 
 
   //We need to set the ZVtx bins
