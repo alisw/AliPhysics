@@ -46,6 +46,10 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
     return fdcaZ;
   }
   ;
+  int GetRealMotherPDG() const {
+    return fRealMotherPDG;
+  }
+  ;
   float GetDCAZProp() const {
     return fdcaZProp;
   }
@@ -178,6 +182,7 @@ class AliFemtoDreamTrack : public AliFemtoDreamBasePart {
   bool fPassFiltering;
   float fdcaXY;
   float fdcaZ;
+  float fRealMotherPDG;
   float fdcaXYProp;
   float fdcaZProp;
   float fNClsTPC;

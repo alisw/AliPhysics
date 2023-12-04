@@ -79,11 +79,11 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
 
   TrackPosPionCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false); // (bool isMC, bool DCAPlots, bool CombSigma, bool ContribSplitting), sets options for plot
                                                                                      // of DCA distribution, CombSigma, ContribSplitting
-  TrackPosPionCuts->SetFilterBit(96);
+  TrackPosPionCuts->SetFilterBit(filterBit);
   TrackPosPionCuts->SetPtRange(0.14, 2.);
   TrackPosPionCuts->SetCutCharge(1);
   TrackCutsAntiPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
-  TrackCutsAntiPion->SetFilterBit(96);
+  TrackCutsAntiPion->SetFilterBit(filterBit);
   TrackCutsAntiPion->SetPtRange(0.14, 2.);
   TrackCutsAntiPion->SetCutCharge(-1);
 

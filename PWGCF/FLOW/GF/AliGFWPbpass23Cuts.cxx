@@ -22,7 +22,8 @@ AliGFWPbpass23Cuts::AliGFWPbpass23Cuts():
   fFilterBit(96),
   fDCAxyCut(7.),
   fDCAzCut(2),
-  fTPCNcls(70),
+  fTPCNcls(50),
+  fTPCNCrossedRows(70),
   fTPCChi2PerCluster(2.5),
   fVtxZ(10),
   fEta(0.8),
@@ -37,6 +38,7 @@ Int_t AliGFWPbpass23Cuts::AcceptTrack(AliAODTrack *&l_Tr, Double_t *l_DCA, const
   if(!l_Tr->TestFilterBit(fFilterBit)) return 0;
   if(fFilterBit!=2) {//Check is not valid for ITSsa tracks
     if(l_Tr->GetTPCNclsF()<fTPCNcls) return 0;
+    if(l_Tr->GetTPCNCrossedRows()<fTPCNCrossedRows) return 0;
   } else {
     UInt_t status = l_Tr->GetStatus();
     if ((status&AliESDtrack::kITSrefit)==0) return 0;
@@ -147,7 +149,8 @@ void AliGFWPbpass23Cuts::ResetCuts() {
   fFilterBit=96;
   fDCAxyCut=7;
   fDCAzCut=2;
-  fTPCNcls=70;
+  fTPCNcls=50;
+  fTPCNCrossedRows=70,
   fVtxZ=10;
   fEta=0.8;
   fTPCChi2PerCluster=2.5;
@@ -214,11 +217,7 @@ void AliGFWPbpass23Cuts::SetupTrackCuts(Int_t sysflag) {
     break;
   case 9:
     fRequiresExtraWeight=kTRUE;
-    fFilterBit=768;
-    fDCAzCut=10;//Arbitrary large value to disable the cut -> implemented as 2.4 in the AliESDtrackCuts (2D cut)
-    fDCAxyCut=7;
-    fTPCChi2PerCluster=2.5;
-    fPtDepXYCut->SetParameter(0,fDCAxyCut);
+    fTPCChi2PerCluster=2.;
     break;
   case 10:
     fRequiresExtraWeight=kTRUE;

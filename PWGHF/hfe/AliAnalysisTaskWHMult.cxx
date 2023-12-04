@@ -105,6 +105,9 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult() : AliAnalysisTaskSE(),
   fNtrkl_ClustE(0),
   TPCSigForE(0),
   fNsigmaPtForE(0),
+  fHistNtrk_W(),
+  fHistNtrk_HF(),
+  fHistEiso_Ntrk(),
   fEMCEG1(kFALSE)
 {
   // default constructor, don't allocate memory here!
@@ -171,6 +174,9 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult(const char* name) : AliAnalysisTask
   fNtrkl_ClustE(0),
   TPCSigForE(0),
   fNsigmaPtForE(0),
+  fHistNtrk_W(),
+  fHistNtrk_HF(),
+  fHistEiso_Ntrk(),
   fEMCEG1(kFALSE)
 {
   // constructor
@@ -265,20 +271,20 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
   fREiso_MCHFhpt->GetYaxis()->SetTitle("Entries");
 
   for (Int_t isoR=0;isoR<3;isoR++) {
-    fdPhi_trkW_Pt[isoR] = new TH2F(Form("fdPhi_trkW_Pt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
+    fdPhi_trkW_Pt[isoR] = new TH2F(Form("fdPhi_trkW_Pt_%d",isoR),"",200,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
     fdPhi_trkW_Pt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{can} (Eiso_{R<0.%d})",3+isoR));
     fdPhi_trkW_Pt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
     fdPhi_trkW_Pt[isoR]->GetYaxis()->SetTitle("p_{T,trk}(GeV/c)");
-    fdPhi_trkHF_Pt[isoR] = new TH2F(Form("fdPhi_trkHF_Pt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
+    fdPhi_trkHF_Pt[isoR] = new TH2F(Form("fdPhi_trkHF_Pt_%d",isoR),"",200,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
     fdPhi_trkHF_Pt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{HFcan} (Eiso_{R<0.%d})",3+isoR));
     fdPhi_trkHF_Pt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
     fdPhi_trkHF_Pt[isoR]->GetYaxis()->SetTitle("p_{T,trk}(GeV/c)");
 
-    fdPhi_trkW_ePt[isoR] = new TH2F(Form("fdPhi_trkW_ePt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,200,0,200);
+    fdPhi_trkW_ePt[isoR] = new TH2F(Form("fdPhi_trkW_ePt_%d",isoR),"",200,-TMath::Pi()/3.,5.*TMath::Pi()/3.,200,0,200);
     fdPhi_trkW_ePt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{can} (Eiso_{R<0.%d})",3+isoR));
     fdPhi_trkW_ePt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
     fdPhi_trkW_ePt[isoR]->GetYaxis()->SetTitle("p_{T,can}(GeV/c)");
-    fdPhi_trkHF_ePt[isoR] = new TH2F(Form("fdPhi_trkHF_ePt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,200,0,200);
+    fdPhi_trkHF_ePt[isoR] = new TH2F(Form("fdPhi_trkHF_ePt_%d",isoR),"",200,-TMath::Pi()/3.,5.*TMath::Pi()/3.,200,0,200);
     fdPhi_trkHF_ePt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{HFcan} (Eiso_{R<0.%d})",3+isoR));
     fdPhi_trkHF_ePt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
     fdPhi_trkHF_ePt[isoR]->GetYaxis()->SetTitle("p_{T,HFcan}(GeV/c)");
@@ -321,6 +327,19 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
   TPCSigForE->GetYaxis()->SetTitle("dE/dx");
   TPCSigForE->SetMarkerStyle(7);
   fNsigmaPtForE = new TH2F("fNsigmaPtForE","n#sigma vs p_{T} for electron EMCal cut ;p_{T} (GeV/c) ;n#sigma",800,0,80,200,-10,10);
+
+  for (Int_t isoR=0;isoR<3;isoR++) {
+    fHistNtrk_W[isoR] = new TH2F(Form("fHistNtrk_W_%d",isoR),Form("N_{trk} vs p_{T,W} (R<0.%d)",3+isoR),20,0,20,200,0,200);
+    fHistNtrk_W[isoR]->GetXaxis()->SetTitle("N_{trk}");
+    fHistNtrk_W[isoR]->GetYaxis()->SetTitle("p_{T,W} (GeV/c)");
+    fHistNtrk_HF[isoR] = new TH2F(Form("fHistNtrk_HF_%d",isoR),Form("N_{trk} vs p_{T,HF} (R<0.%d)",3+isoR),20,0,20,200,0,200);
+    fHistNtrk_HF[isoR]->GetXaxis()->SetTitle("N_{trk}");
+    fHistNtrk_HF[isoR]->GetYaxis()->SetTitle("p_{T,HF} (GeV/c)");
+
+    fHistEiso_Ntrk[isoR] = new TH2F(Form("fHistEiso_Ntrk_%d",isoR),Form("E_{iso} vs N_{trk} (R<0.%d)",3+isoR),100,0,1,10,0,10);
+    fHistEiso_Ntrk[isoR]->GetXaxis()->SetTitle("E_{iso}");
+    fHistEiso_Ntrk[isoR]->GetYaxis()->SetTitle("N_{trk}");
+  }
 
 
   fOutputList->Add(fNevents);
@@ -397,6 +416,15 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
   fOutputList->Add(fNtrkl_ClustE);
   fOutputList->Add(TPCSigForE);
   fOutputList->Add(fNsigmaPtForE);
+  fOutputList->Add(fHistNtrk_W[0]);
+  fOutputList->Add(fHistNtrk_W[1]);
+  fOutputList->Add(fHistNtrk_W[2]);
+  fOutputList->Add(fHistNtrk_HF[0]);
+  fOutputList->Add(fHistNtrk_HF[1]);
+  fOutputList->Add(fHistNtrk_HF[2]);
+  fOutputList->Add(fHistEiso_Ntrk[0]);
+  fOutputList->Add(fHistEiso_Ntrk[1]);
+  fOutputList->Add(fHistEiso_Ntrk[2]);
 
   PostData(1, fOutputList);
 }
@@ -569,6 +597,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
     Double_t fTPCnSigma = 999;				//nsigma
     Double_t Eiso[3] = {0};				//isolation energy
     Double_t clustEmatch = 0;				//cluster energy
+    Int_t isoNtrk[3] = {0};				//number of tracks in R
 
     ////////////////////////
     // Get MC information //
@@ -702,8 +731,57 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
           //////////////
           if (EoverP > 0.9 && EoverP < 1.3)
           {
-            Double_t RsumE[3] = {0};
+//---------------track loop for counts in R---------------
+            for(Int_t k(0); k < iTracks; k++) {
+              if (k == i) continue;
+              //AliAODTrack* track2 = static_cast<AliAODTrack*>(fAOD->GetTrack(k));
+              AliAODTrack* track2 = dynamic_cast<AliAODTrack*>(fTracks_tender->At(k));
+              if(!track2 || !track2->TestFilterBit(1)) continue;
+
+              // Comparison with TPC analysis
+              Double_t DCA2[2] = {-999.,-999.}, covar2[3];
+              /////////////////////////
+              //      track cut      //
+              /////////////////////////
+            //===== 1. TPC and ITS refit cut =====
+              if (!(track2->GetStatus()&AliAODTrack::kITSrefit) || !(track2->GetStatus()&AliAODTrack::kTPCrefit)) continue;
+            //===== 2. AOD filter bit required =====
+              if (!track2->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
+            //===== 3. TPC cluster cut =====
+              if (track2->GetTPCNcls() < 80) continue;
+            //===== 4. ITS cluster cut =====
+              if (track2->GetITSNcls() < 2) continue;
+            //===== 5. SPD hit cut =====
+              if (!(track2->HasPointOnITSLayer(0) || track2->HasPointOnITSLayer(1))) continue;
+            //===== 6. Eta cut =====
+              if (track2->Eta() > 0.9 || track2->Eta() < -0.9) continue;
+            //===== 7. DCA cut =====
+              if (track2 -> PropagateToDCA(pVtx,fAOD -> GetMagneticField(),20.,DCA2,covar2))
+              {
+                if (TMath::Abs(DCA2[0]) > 2.4 || TMath::Abs(DCA2[1]) > 3.2) continue;
+              }
+            //===== 8. chi2 cut =====
+              Double_t TPCchi2NDF2 = track2->GetTPCchi2perNDF();
+              Double_t ITSchi2_2 = track2->GetITSchi2();
+              if ((ITSchi2_2 >= 25) || (TPCchi2NDF2 >= 4)) continue;
+            //===== 9. NCrossedRow cut =====
+              if (track2->GetTPCCrossedRows() < 100) continue;
+
+              Double_t eta2 = track2->Eta();
+              Double_t phi2 = track2->Phi();
+              if (phi2 < 0.0) phi2 = phi2 + (2.*TMath::Pi());
+              Double_t Rtrk = sqrt(pow(track->Phi() - phi2,2.0)+pow(track->Eta() - eta2,2.0));
+              if (Rtrk < 0.3) isoNtrk[0] += 1;
+              if (Rtrk < 0.4) isoNtrk[1] += 1;
+              if (Rtrk < 0.5) isoNtrk[2] += 1;
+            }
+            for (Int_t isoR=0;isoR<3;isoR++) {
+              if (pidW == 1) fHistNtrk_W[isoR]->Fill(isoNtrk[isoR],track->Pt());
+              if (pidHF == 1) fHistNtrk_HF[isoR]->Fill(isoNtrk[isoR],track->Pt());
+            }
+
 //---------------EMCal Cluster loop for Isolation cut start---------------
+            Double_t RsumE[3] = {0};
             for(Int_t icl=0;icl<Nclust;icl++){
               AliVCluster*clust = 0x0;
               //clust = (AliVCluster*)fVevent->GetCaloCluster(icl);			//original
@@ -724,8 +802,8 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
             }
             for (Int_t isoR=0;isoR<3;isoR++) {
               Eiso[isoR] = (RsumE[isoR] - clustEmatch)/clustEmatch;
-              //fREisolation[isoR]->Fill(Eiso[isoR]);
               if (track->Pt() > 30.0) fREisolation[isoR]->Fill(Eiso[isoR]);
+              fHistEiso_Ntrk[isoR]->Fill(Eiso[isoR],isoNtrk[isoR]);
             }
             //=====MC Data=====
             if (track->Pt() > 10.) {
@@ -738,13 +816,11 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
             }
             //=================
             for (Int_t isoR=0;isoR<3;isoR++) {
-              if (Eiso[isoR] >= 0.1) fHistPt_HFe[isoR]->Fill(track->Pt());
-              if (Eiso[isoR] <= 0.05) {
-                fHistPt_We[isoR]->Fill(track->Pt());
-              }
+              if (Eiso[isoR] >= 0.1 && Eiso[isoR] <= 0.50 && isoNtrk[isoR] < 3) fHistPt_HFe[isoR]->Fill(track->Pt());
+              if (Eiso[isoR] >= 0.0 && Eiso[isoR] <= 0.05 && isoNtrk[isoR] < 3) fHistPt_We[isoR]->Fill(track->Pt());
 
 //---------------Pt cut---------------
-              if (track->Pt() > 30.)
+              if (track->Pt() > 33. && track->Pt() < 55.)
               {
                 Double_t sumPt_OppTrks = 0;
 //---------------another track loop start---------------
@@ -787,17 +863,17 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                   Double_t anoeta = -log(TMath::Tan((anotrack->Theta())/2.));
                   Double_t dPhi = anotrack->Phi() - track->Phi();
 
-                  if (Eiso[isoR] >= 0. && Eiso[isoR] <= 0.05) fdPhi_trkW_full[isoR]->Fill(dPhi,anotrack->Pt());
-                  if (Eiso[isoR] >= 0.1) fdPhi_trkHF_full[isoR]->Fill(dPhi,anotrack->Pt());
+                  if (Eiso[isoR] >= 0.0 && Eiso[isoR] <= 0.05 && isoNtrk[isoR] < 3) fdPhi_trkW_full[isoR]->Fill(dPhi,anotrack->Pt());
+                  if (Eiso[isoR] >= 0.1 && Eiso[isoR] <= 0.50 && isoNtrk[isoR] < 3) fdPhi_trkHF_full[isoR]->Fill(dPhi,anotrack->Pt());
                   //=== change dPhi range ===
                   if (dPhi < -1.*TMath::Pi()/3.) dPhi = dPhi + 2.*TMath::Pi();
                   if (dPhi > 5.*TMath::Pi()/3.) dPhi = dPhi - 2.*TMath::Pi();
 
-                  if (Eiso[isoR] >= 0. && Eiso[isoR] <= 0.05) {
+                  if (Eiso[isoR] >= 0.0 && Eiso[isoR] <= 0.05 && isoNtrk[isoR] < 3) {
                     fdPhi_trkW_Pt[isoR]->Fill(dPhi,anotrack->Pt());
                     fdPhi_trkW_ePt[isoR]->Fill(dPhi,track->Pt());
                   }
-                  if (Eiso[isoR] >= 0.1) {
+                  if (Eiso[isoR] >= 0.1 && Eiso[isoR] <= 0.50 && isoNtrk[isoR] < 3) {
                     fdPhi_trkHF_Pt[isoR]->Fill(dPhi,anotrack->Pt());
                     fdPhi_trkHF_ePt[isoR]->Fill(dPhi,track->Pt());
                   }
@@ -815,7 +891,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                     //=== higher Pt track ===
                     if (anotrack->Pt() >= MaxTrk->Pt()) MaxPtTrackNum = j;
                     //=== Pt sum ==
-                    if (anotrack->Pt() > 1.5) sumPt_OppTrks += anotrack->Pt();
+                    if (anotrack->Pt() > 0.5) sumPt_OppTrks += anotrack->Pt();
                   }
                 }   //other track loop end
 
@@ -827,13 +903,17 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                 //////////////////////
                 // e <- W candidate //
                 //////////////////////
-                if (Eiso[isoR] >= 0. && Eiso[isoR] <= 0.05) {
-                  fPt_maxtrack_W[isoR]->Fill(MaxPtTrk->Pt()/track->Pt());
-                  fNtrkl_PtOfMaxTrk_W[isoR]->Fill(corr_nAcc,MaxPtTrk->Pt()/track->Pt());
-                  fNtrkl_PtOfTrks_W[isoR]->Fill(corr_nAcc,sumPt_OppTrks/track->Pt());
+                if (Eiso[isoR] >= 0.0 && Eiso[isoR] <= 0.05 && isoNtrk[isoR] < 3) {
+                  if (MaxPtTrk->Pt() > 0.5) {
+                    fPt_maxtrack_W[isoR]->Fill(MaxPtTrk->Pt()/track->Pt());
+                    fNtrkl_PtOfMaxTrk_W[isoR]->Fill(corr_nAcc,MaxPtTrk->Pt()/track->Pt());
+                  }
+                  if (sumPt_OppTrks > 0.) {
+                    fNtrkl_PtOfTrks_W[isoR]->Fill(corr_nAcc,sumPt_OppTrks/track->Pt());
+                  }
                   fHistPt_We_Ntrkl[isoR]->Fill(track->Pt(),corr_nAcc);
                 }       //isolation cut end
-              }         //standard Pt cut end
+              }         //Pt cut end
             }           //varied R of Eiso loop end
           }             //M02 cut
         }               //EoverP cut
@@ -847,7 +927,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
     }		//track match end
     //===== track reconstruction efficiency =====
     if (pidW == 1) fPt_TrackingMCWe->Fill(track->Pt());
-    if (fTPCnSigma > -1. && fTPCnSigma < 3.) {
+    if (fTPCnSigma > -1. && fTPCnSigma < 3. && isoNtrk[0] < 3) {
       if (pidW == 1) fPt_TPCPIDMCWe->Fill(track->Pt());
       if (HasEMCalInfo) {
         if (pidW == 1) fPt_TrackMatchingMCWe->Fill(track->Pt());
@@ -856,7 +936,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
         }
       }
     }
-    if (clustLongE > 0.1 && clustLongE < 0.3 && EoverP > 0.9 && EoverP < 1.3) {
+    if (HasEMCalInfo && clustLongE > 0.1 && clustLongE < 0.3 && EoverP > 0.9 && EoverP < 1.3) {
       TPCSigForE->Fill(track->P(),track->GetTPCsignal());
       fNsigmaPtForE->Fill(track->Pt(),fTPCnSigma);
     }

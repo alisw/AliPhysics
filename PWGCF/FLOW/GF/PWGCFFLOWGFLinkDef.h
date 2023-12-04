@@ -18,6 +18,7 @@
 #pragma link C++ class AliGFWCumulant+;
 #pragma link C++ class AliGFW+;
 #pragma link C++ class AliGFWWeights+;
+#pragma link C++ class AliGFWWeightsFinerBin+;
 #pragma link C++ class AliPartSimpleForCorr+;
 #pragma link C++ class AliProfileSubset+;
 #pragma link C++ class AliProfileBS+;
@@ -42,6 +43,7 @@
 #ifdef __CLING__
 
 #pragma link C++ class AliAnalysisTaskCreateNUA+;
+#pragma link C++ class AliAnalysisTaskCreateNUAFinerBin+;
 #pragma link C++ class AliAnalysisTaskCreatePeriodNUA+;
 #pragma link C++ class AliAnalysisTaskCreateNUE+;
 #pragma link C++ class AliAnalysisTaskEffFDExample+;

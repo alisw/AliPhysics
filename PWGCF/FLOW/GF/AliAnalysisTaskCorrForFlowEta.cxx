@@ -654,8 +654,17 @@ void AliAnalysisTaskCorrForFlowEta::CreateTHnCorrelations(){
   const Int_t sizeOfSamples = (Int_t) fNOfSamples;
 
   //Calculating dEta vector
-  Double_t MindEta = TMath::Abs(fBinsTPCeta.back() - fBinsFMDeta.front());
-  Double_t MaxdEta = TMath::Abs(fBinsTPCeta.front() - fBinsFMDeta.back());
+  Double_t MindEta = 0;
+  Double_t MaxdEta = 0;
+  if(fAnalType==eTPCFMDA){
+    MindEta =TMath::Abs(fBinsTPCeta.back() - fBinsFMDeta.front());
+    MaxdEta = TMath::Abs(fBinsTPCeta.front() - fBinsFMDeta.back());
+  }else{//This case corresponds fAnalType==TPCFMDC
+    MindEta =TMath::Abs(fBinsTPCeta.front() + fBinsFMDeta.front());
+    MaxdEta = TMath::Abs(fBinsTPCeta.back() + fBinsFMDeta.back());
+  }
+    
+    
   Double_t Incriment = (MaxdEta-MindEta)/fNBinsdEta;
   Double_t binning_deta[fNBinsdEta];
 

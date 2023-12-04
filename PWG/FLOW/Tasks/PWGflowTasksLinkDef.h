@@ -97,4 +97,5 @@
 #pragma link C++ class AliAnalysisTaskCVEVZEROCalib + ;
 #pragma link C++ class AliAnalysisTaskChargeV1 + ;
 #pragma link C++ class AliAnalysisTaskGammaCaloV2 + ;
+#pragma link C++ class AliAnalysisTaskPi0EtaV2 + ;
 #endif

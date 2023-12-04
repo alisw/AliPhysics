@@ -3580,7 +3580,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
 
   // energy correction for neutral overlap!
   float cent = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetCentrality(fInputEvent);
-  if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() > 0){
+  if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() > 0 && ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() <= 2){
     ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SetPoissonParamCentFunction(fIsMC);
     ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SetNMatchedTracksFunc(cent);
   }
@@ -3660,7 +3660,12 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
     // energy correction for neutral overlap!
     if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoFlatEnergySubtraction()){
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() > 0){
-        clus->SetE(clus->E() - ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent));
+        if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() <= 2){
+          clus->SetE(clus->E() - ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent));
+        }
+        else if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() == 3){
+          clus->SetE(clus->E() - (float) clus->GetNCells() * ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent));
+        }
       }
     }
 
