@@ -31,10 +31,14 @@ find_path(ROOUNFOLD_INCLUDE_DIR RooUnfold.h
 find_package_handle_standard_args(RooUnfold DEFAULT_MSG
                                   ROOUNFOLD_LIBPATH ROOUNFOLD_INCLUDE_DIR)
 
+get_filename_component(ROOUNFOLD_LIBDIR "${ROOUNFOLD_LIBPATH}" DIRECTORY)
+link_directories(${ROOUNFOLD_LIBDIR})
+
 # Set RooUnfold::RooUnfold target
 add_library(RooUnfold::RooUnfold SHARED IMPORTED)
 set_target_properties(RooUnfold::RooUnfold PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${ROOUNFOLD_INCLUDE_DIR}"
+  INTERFACE_LINK_DIRECTORIES    "${ROOUNFOLD_LIBDIR}"
   IMPORTED_LOCATION             "${ROOUNFOLD_LIBPATH}"
   INTERFACE_COMPILE_DEFINITIONS "WITH_ROOUNFOLD")
 
