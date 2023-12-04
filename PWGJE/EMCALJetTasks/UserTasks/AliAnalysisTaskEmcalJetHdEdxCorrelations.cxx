@@ -7,6 +7,7 @@
 
 #include <bitset>
 #include <vector>
+#include <math.h>
 
 #include <TH1F.h>
 #include <TH2F.h>
@@ -549,7 +550,7 @@ namespace PWGJE
       return eventTrigger;
     }
 
-    void AliAnalysisTaskEmcalJetHdEdxCorrelations::MixEvents(AliJetContainer *jets, AliPIDResponse *pidResponse, TObjArray *tracksClone, std::vector<unsigned int> rejectedTrackIndices, bool useListOfRejectedIndices, Int_t current_event_multiplicity, Double_t zVertex, UInt_t eventTrigger, Double_t flattened_EP_angle)
+    void AliAnalysisTaskEmcalJetHdEdxCorrelations::MixEvents(AliJetContainer *jets, AliPIDResponse *pidResponse, std::vector<unsigned int> rejectedTrackIndices, bool useListOfRejectedIndices, Int_t current_event_multiplicity, Double_t zVertex, UInt_t eventTrigger, Double_t flattened_EP_angle)
     {
         
       // event mixing
@@ -576,13 +577,11 @@ namespace PWGJE
       Double_t epAngle = 0;
       Double_t eventActivity = 0;
       Double_t jetPt = 0;
-      Double_t efficiency = -999;
+      Float_t efficiency = -999;
       Bool_t leadJet = kFALSE;
       Bool_t isBiasedJet = kFALSE;
       AliPIDResponse::EDetPidStatus TOFPIDstatus;
-      AliVTrack *bgTrack;
-
-      AliTLorentzVector bgTrackVec;
+      AliVTrack *bgTrackSecond;
 
       AliEventPool *pool = 0;
       if (fBeamType == kAA || fBeamType == kpA)
@@ -653,8 +652,9 @@ namespace PWGJE
             }
 
             // Make sure event contains a biased jet above our threshold (reduce stats of sparse)
-            if (jetPt < 15 || isBiasedJet == kFALSE)
+            if (jetPt < 1 || isBiasedJet == kFALSE){
               continue;
+            }
 
             // Fill mixed-event histos here
             for (Int_t jMix = 0; jMix < nMix; jMix++)
@@ -664,8 +664,8 @@ namespace PWGJE
               for (Int_t ibg = 0; ibg < bgTracks->GetEntries(); ibg++)
               {
                 
-                bgTrack = dynamic_cast<AliVTrack *>(bgTracks->At(ibg));
-                if (!bgTrack)
+                bgTrackSecond = dynamic_cast<AliVTrack*>(bgTracks->At(ibg));
+                if (!bgTrackSecond)
                 {
                   AliError(Form("%s:Failed to retrieve track from mixed events", GetName()));
                   continue;
@@ -675,7 +675,7 @@ namespace PWGJE
                 //       it when will filling into the event pool (in CloneAndReduceTrackList()).
                 Double_t hasTOFhit;
 
-                TOFPIDstatus = pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, bgTrack);
+                TOFPIDstatus = pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, bgTrackSecond);
                 if (TOFPIDstatus == AliPIDResponse::kDetPidOk)
                 {
                   hasTOFhit = 1;
@@ -685,28 +685,32 @@ namespace PWGJE
                   hasTOFhit = 0;
                 }
 
-                // Fill into TLorentzVector for use with functions below
-                bgTrackVec.Clear();
-                bgTrackVec.SetPtEtaPhiE(bgTrack->Pt(), bgTrack->Eta(), bgTrack->Phi(), 0);
+                
+
 
                 // Calculate single particle tracking efficiency of mixed events for correlations
-                efficiency = EffCorrection(bgTrackVec.Eta(), bgTrackVec.Pt());
-                if(efficiency==0){
-                  cout<<efficiency<<" <- Efficiency for eta="<<bgTrackVec.Eta()<<" and pt="<<bgTrackVec.Pt()<<" Skipping"<<endl;
+                efficiency = EffCorrection(bgTrackSecond->Eta(), bgTrackSecond->Pt());
+                if(isinf(1.0/efficiency) || isnan(1.0/efficiency)){
+                  cout<<efficiency<<" <- Efficiency for eta="<<bgTrackSecond->Eta()<<" and pt="<<bgTrackSecond->Pt()<<" Skipping"<<endl;
                   continue;
                 }
 
-
+                AliTLorentzVector temp_track;
+                temp_track.SetPtEtaPhiM(bgTrackSecond->Pt(), bgTrackSecond->Eta(), bgTrackSecond->Phi(), 0);
                 // Phi is [-0.5*TMath::Pi(), 3*TMath::Pi()/2.]
-                GetDeltaEtaDeltaPhiDeltaR(bgTrackVec, jet, deltaEta, deltaPhi, deltaR);
+                GetDeltaEtaDeltaPhiDeltaR(temp_track, jet, deltaEta, deltaPhi, deltaR);
                 if (fBeamType != AliAnalysisTaskEmcal::kpp)
                 {
-                    double triggerEntries[] = {eventActivity, jetPt, bgTrackVec.Pt(), deltaEta, deltaPhi, epAngle, zVertex, hasTOFhit};
+                  if(nMix*efficiency==0){
+                    cout<<nMix<<" <- nMix and "<<efficiency<<" <- Efficiency for eta="<<bgTrackSecond->Eta()<<" and pt="<<bgTrackSecond->Pt()<<" Skipping"<<endl;
+                    continue;
+                  }
+                    double triggerEntries[] = {eventActivity, jetPt, bgTrackSecond->Pt(), deltaEta, deltaPhi, epAngle, zVertex, hasTOFhit};
                     FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
                 }
                 else
                 {
-                  double triggerEntries[] = {eventActivity, jetPt, bgTrackVec.Pt(), deltaEta, deltaPhi, zVertex, hasTOFhit};
+                  double triggerEntries[] = {eventActivity, jetPt, bgTrackSecond->Pt(), deltaEta, deltaPhi, zVertex, hasTOFhit};
                   FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
                 }
               }
@@ -719,7 +723,7 @@ namespace PWGJE
       // The two bitwise and to zero yet are still equal when both are 0, so we allow for that possibility
       if ((eventTrigger & fMixingEventType) || eventTrigger == fMixingEventType)
       {
-        tracksClone = CloneAndReduceTrackList(rejectedTrackIndices, useListOfRejectedIndices);
+        TObjArray* tracksClone = CloneAndReduceTrackList(rejectedTrackIndices, useListOfRejectedIndices);
 
         // update pool if jet in event or not
         pool->UpdatePool(tracksClone);
@@ -786,7 +790,6 @@ namespace PWGJE
       // For getting the proper properties of tracks
       AliTLorentzVector track;
       AliPIDResponse::EDetPidStatus TOFPIDstatus;
-      TObjArray *tracksClone = 0;
 
       // Get PID Response
       AliPIDResponse *pidResponse = fInputHandler->GetPIDResponse();
@@ -907,7 +910,7 @@ namespace PWGJE
         }
 
         // Cut on jet pt of 15 to reduce the size of the sparses
-        if (jetPt > 15)
+        if (jetPt > 1)
         {
 
           AliDebugStream(4) << "Passed min jet pt cut of 15. Jet: " << jet->toString().Data() << "\n";
@@ -927,10 +930,12 @@ namespace PWGJE
 
             // Artificial inefficiency
             // Note that we already randomly rejected tracks so that the same tracks will be rejected for the mixed events
-            bool rejectParticle = kTRUE; // CheckArtificialTrackEfficiency(trackIter.current_index(), rejectedTrackIndices, useListOfRejectedIndices);
+            bool rejectParticle = CheckArtificialTrackEfficiency(trackIter.current_index(), rejectedTrackIndices, useListOfRejectedIndices);
             if (rejectParticle)
             {
               AliDebugStream(4) << "Track rejected in signal correlation loop.\n";
+              continue;
+            }
 
               GetDeltaEtaDeltaPhiDeltaR(track, jet, deltaEta, deltaPhi, deltaR);
 
@@ -991,7 +996,7 @@ namespace PWGJE
                 }
               }
 
-            } // track loop
+            }// track loop
 
             // After one jet (and looping over whatever tracks are available in this event), we want to use the list of rejected indices,
             // both for the next possible signal jet in the event and for the mixed events
@@ -1000,13 +1005,13 @@ namespace PWGJE
 
           } // jet pt cut
         }   // jet loop
-      }
+    
         // Prepare to do event mixing
 
 
         if (fDoEventMixing == kTRUE)
         {
-          MixEvents(jets, pidResponse, tracksClone, rejectedTrackIndices, useListOfRejectedIndices, tracks->GetNTracks(), zVertex, eventTrigger, flattenedEPangle);
+          MixEvents(jets, pidResponse, rejectedTrackIndices, useListOfRejectedIndices, tracks->GetNTracks(), zVertex, eventTrigger, flattenedEPangle);
         } // end of event mixing
 
         return kTRUE;
@@ -1392,22 +1397,17 @@ namespace PWGJE
       // tracksClone->SetOwner(kTRUE);
 
       // Loop over all tracks
-      AliVTrack *particle;
+      pair<AliTLorentzVector, AliVTrack *> particle;
       // AliBasicParticle *clone = 0;
-      AliTrackContainer *tracks = GetTrackContainer("tracksForCorrelations");
+      AliTrackContainer *tracks = static_cast<AliTrackContainer*>(GetTrackContainer("tracksForCorrelations"));
 
       auto particlesIter = tracks->accepted_momentum();
       for (auto particleIter = particlesIter.begin(); particleIter != particlesIter.end(); particleIter++)
       {
-        // Retrieve the particle
-        particle = dynamic_cast<AliVTrack *>(particleIter->second);
-        if(!particle){
-          AliDebugStream(4) << "Could not retrieve associated track from particleIter, skipping track.\n";
-          continue;
-        }
+        particle = make_pair(particleIter->first, particleIter->second);
 
         // Artificial inefficiency
-        bool rejectParticle = CheckArtificialTrackEfficiency(particleIter.current_index(), rejectedTrackIndices, useRejectedList);
+        bool rejectParticle = kFALSE;//CheckArtificialTrackEfficiency(particleIter->current_index(), rejectedTrackIndices, useRejectedList);
         if (rejectParticle)
         {
           AliDebugStream(4) << "Track rejected in CloneAndReduceTrackList()\n";
@@ -1415,16 +1415,17 @@ namespace PWGJE
         }
 
         // Fill some QA information about the tracks
-        Int_t trackPtBin = GetTrackPtBin(particle->Pt());
+        Int_t trackPtBin = GetTrackPtBin((particle.first).Pt());
         if (trackPtBin > -1)
-          fHistTrackEtaPhi[trackPtBin]->Fill(particle->Eta(), particle->Phi());
+          fHistTrackEtaPhi[trackPtBin]->Fill((particle.first).Eta(), (particle.first).Phi());
 
         // // Create new particle
         // clone = new AliBasicParticle(particle->Eta(), particle->Phi(), particle->Pt(), particle->Charge());
         // // Set so that we can do comparisons using the IsEqual() function.
         // clone->SetUniqueID(particle->GetUniqueID());
 
-        tracksClone->Add(particle);
+        
+        tracksClone->Add(particle.second);
       }
 
       return tracksClone;
