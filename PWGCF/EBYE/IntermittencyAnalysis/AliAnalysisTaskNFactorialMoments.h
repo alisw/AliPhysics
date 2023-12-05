@@ -37,11 +37,12 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   virtual void Terminate(Option_t* option);
 
   // Analysis Setters
-  void SetTwoTrackCuts(Double_t deta, Double_t dphi, Bool_t twotrack)
+  void SetTwoTrackCuts(Double_t deta, Double_t dphi, Bool_t twotrack, Bool_t QA)
   {
     this->fdeta = deta;
     this->fdphi = dphi;
     this->flag2Track = twotrack;
+    this->flag2TrackQA = QA;
   }
   void SetSharingFraction(Double_t fshfr, Bool_t sharity)
   {
@@ -131,6 +132,7 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   Double_t fITSCls, fTPCCls, fTPCRows;
   Bool_t flagShClPro;
   Int_t fBfield;
+  Bool_t flag2TrackQA;
 
   // Output lists
   TList* fHistList;

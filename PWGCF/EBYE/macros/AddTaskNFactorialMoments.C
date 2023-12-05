@@ -1,7 +1,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskNFactorialMoments.h"
 
-AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(TString year = "2015", bool fSelfAffAnalysis = kFALSE, Double_t pt1 = 0.4, Double_t pt2 = 0.6, Double_t pt3 = 0.4, Double_t pt4 = 1.0, Double_t pt5 = 0.6, Double_t pt6 = 0.8, Double_t pt7 = 0.6, Double_t pt8 = 2.0, Int_t Mmax = 123, bool fIsMC = kTRUE, const char* suffix = "")
+AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(Double_t pt1 = 0.4, Double_t pt2 = 0.6, Double_t pt3 = 0.4, Double_t pt4 = 1.0, Double_t pt5 = 0.6, Double_t pt6 = 0.8, Double_t pt7 = 0.6, Double_t pt8 = 2.0, Int_t Mmax = 82, const char* suffix = "")
 {
 
   // year = "2010" or "2015"
@@ -9,29 +9,11 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(TString year = "2015"
   // cuts on detas and dphis work only if fTwoTrack = kTRUE
   // cuts on DCA, ITS/TPC clusters, ncrssed rows work only if they have non-zero
 
-  Double_t ptarr[8] = { pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8 };
-  TArrayD ptarrD(8, ptarr);
-  Int_t fNumberofPtBins = ptarrD.GetSize() / 2;
-
-  Int_t Mbinsarr[40];
-  Int_t Nbinsarr[40]; // used in case of selfaffine analysis
-  for (size_t nMB = 0; nMB < 40; nMB++) {
-    if (Mmax == 123)
-      Mbinsarr[nMB] = 3 * (nMB + 2);
-    if (Mmax == 82)
-      Mbinsarr[nMB] = 2 * (nMB + 2);
-  }
-  if (fSelfAffAnalysis) {
-    for (Int_t nMB = 0; nMB < 40; nMB++) {
-      Mbinsarr[nMB] = nMB + 1;
-      Nbinsarr[nMB] = 4 * (nMB + 1);
-    }
-  }
-
-  TArrayI Mbins(40, Mbinsarr);
-  TArrayI Nbins(40, Nbinsarr);
-
   // Initialize variables
+  TString year = "2015";
+  Bool_t fSelfAffAnalysis = kFALSE;
+  Bool_t f2TrackQA = kFALSE;
+  Bool_t fIsMC = kFALSE;
   Bool_t fPileup = kTRUE;
   Double_t fEtaMin = -0.8;
   Double_t fEtaMax = 0.8;
@@ -57,8 +39,29 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(TString year = "2015"
   Double_t fFindableCls = 0.0;
   Bool_t defSharedFrac = kTRUE;
   Int_t bField = 0;
-  Bool_t fPrAnalysis = kFALSE;
   Double_t nSigmaCutPr = 3.0;
+
+  Double_t ptarr[8] = { pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8 };
+  TArrayD ptarrD(8, ptarr);
+  Int_t fNumberofPtBins = ptarrD.GetSize() / 2;
+
+  Int_t Mbinsarr[40];
+  Int_t Nbinsarr[40]; // used in case of selfaffine analysis
+  for (size_t nMB = 0; nMB < 40; nMB++) {
+    if (Mmax == 123)
+      Mbinsarr[nMB] = 3 * (nMB + 2);
+    if (Mmax == 82)
+      Mbinsarr[nMB] = 2 * (nMB + 2);
+  }
+  if (fSelfAffAnalysis) {
+    for (Int_t nMB = 0; nMB < 40; nMB++) {
+      Mbinsarr[nMB] = nMB + 1;
+      Nbinsarr[nMB] = 4 * (nMB + 1);
+    }
+  }
+
+  TArrayI Mbins(40, Mbinsarr);
+  TArrayI Nbins(40, Nbinsarr);
 
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -80,7 +83,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(TString year = "2015"
   tasknfms->SetPtArray(ptarrD);
   tasknfms->Setfbit(fBit);
   tasknfms->SetBfield(bField);
-  tasknfms->SetTwoTrackCuts(fDeta, fDphi, fTwoTrack);
+  tasknfms->SetTwoTrackCuts(fDeta, fDphi, fTwoTrack, f2TrackQA);
   tasknfms->SetSharingFraction(fSharedFraction, fSharity);
   tasknfms->SetVtxCut(fVxMax, fVyMax, fVzMax);
   tasknfms->SetRejectElectrons(fRejectElectrons);
