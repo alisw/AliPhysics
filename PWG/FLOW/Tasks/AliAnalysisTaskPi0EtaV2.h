@@ -38,6 +38,7 @@ private:
     AliVEvent *fInputEvent; // current event
     Int_t fnCuts;           // total cuts
     Int_t fiCut;            // current cut
+    Int_t runMode;          // runMode
     TString fPeriod;
     TList *fEventCutArray;                   // List with Event Cuts
     TList *fOutputContainer;                 // Output container
