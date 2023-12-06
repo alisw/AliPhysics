@@ -2100,51 +2100,54 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
     fHistCentrality = new TH1D( "fHistCentrality", "WARNING: no pileup rejection applied!;Centrality;Event Count",100,0,100);
     fListHist->Add(fHistCentrality);
   }
-  
+	
+  Int_t CentralityUpperLimit = 100.;
+  if(fisHM){ CentralityUpperLimit = 1. }
+ 
     if(! fHistGeneratedPtVsYVsCentralityK0Short ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityK0Short = new TH3D( "fHistGeneratedPtVsYVsCentralityK0Short", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,100);
+    fHistGeneratedPtVsYVsCentralityK0Short = new TH3D( "fHistGeneratedPtVsYVsCentralityK0Short", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,CentralityUpperLimit);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityK0Short);
   }
   if(! fHistGeneratedPtVsYVsCentralityLambda ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityLambda", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,100);
+    fHistGeneratedPtVsYVsCentralityLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityLambda", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,CentralityUpperLimit);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityLambda);
   }
   if(! fHistGeneratedPtVsYVsCentralityAntiLambda ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityAntiLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityAntiLambda", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,100);
+    fHistGeneratedPtVsYVsCentralityAntiLambda = new TH3D( "fHistGeneratedPtVsYVsCentralityAntiLambda", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,CentralityUpperLimit);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityAntiLambda);
   }
   if(! fHistGeneratedPtVsYVsCentralityXiMinus ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityXiMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiMinus", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,100);
+    fHistGeneratedPtVsYVsCentralityXiMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiMinus", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,CentralityUpperLimit);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityXiMinus);
   }
   if(! fHistGeneratedPtVsYVsCentralityXiPlus ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityXiPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiPlus", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,100);
+    fHistGeneratedPtVsYVsCentralityXiPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityXiPlus", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,CentralityUpperLimit);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityXiPlus);
   }
   if(! fHistGeneratedPtVsYVsCentralityOmegaMinus ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityOmegaMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaMinus", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,100);
+    fHistGeneratedPtVsYVsCentralityOmegaMinus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaMinus", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,CentralityUpperLimit);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityOmegaMinus);
   }
   if(! fHistGeneratedPtVsYVsCentralityOmegaPlus ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityOmegaPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaPlus", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,100);
+    fHistGeneratedPtVsYVsCentralityOmegaPlus = new TH3D( "fHistGeneratedPtVsYVsCentralityOmegaPlus", ";pT;y;centrality",2500,0,25,20,-1.0,1.0,100,0,CentralityUpperLimit);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityOmegaPlus);
   }
   
   if(! fHistGeneratedPtVsYVsCentralityHypertriton ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityHypertriton = new TH3D( "fHistGeneratedPtVsYVsCentralityHypertriton", ";pT;y;centrality",2500,0,25,4,-1.0,1.0,10,0,100);
+    fHistGeneratedPtVsYVsCentralityHypertriton = new TH3D( "fHistGeneratedPtVsYVsCentralityHypertriton", ";pT;y;centrality",2500,0,25,4,-1.0,1.0,10,0,CentralityUpperLimit);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityHypertriton);
   }
   if(! fHistGeneratedPtVsYVsCentralityAntihypertriton ) {
     //Histogram Output: Efficiency Denominator
-    fHistGeneratedPtVsYVsCentralityAntihypertriton = new TH3D( "fHistGeneratedPtVsYVsCentralityAntihypertriton", ";pT;y;centrality",2500,0,25,4,-1.0,1.0,10,0,100);
+    fHistGeneratedPtVsYVsCentralityAntihypertriton = new TH3D( "fHistGeneratedPtVsYVsCentralityAntihypertriton", ";pT;y;centrality",2500,0,25,4,-1.0,1.0,10,0,CentralityUpperLimit);
     fListHist->Add(fHistGeneratedPtVsYVsCentralityAntihypertriton);
   }
   
