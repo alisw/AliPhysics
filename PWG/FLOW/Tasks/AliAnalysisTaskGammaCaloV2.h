@@ -16,6 +16,7 @@
 #include "TProfile2D.h"
 #include "TH3.h"
 #include "TH3F.h"
+#include "TClonesArray.h"
 #include "TGenPhaseSpace.h"
 #include <vector>
 #include <map>
@@ -230,6 +231,7 @@ protected:
   TString fOutputBGBranchName;               ///<  New of output of background
   Bool_t fOutputAODBranchSet;                ///<  Set the background branch in the input event once, only once!
   Bool_t fBranchSet;                         ///<  switch to Set the AOD clusters branch in the input event
+  TH1D **fEventCount;                        //! array of histogram of event count in centBins
   TH3F **fHistoMotherInvMassPtPhi;           //! array of histogram with signal + BG for same event photon pairs in deta phi, inv Mass, pt
   TH2F **fHistoMotherInvMassPt;              //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
   TH2F **fHistoMotherInvMassPhi;             //! array of histogram with signal + BG for same event photon pairs, inv Mass, phi

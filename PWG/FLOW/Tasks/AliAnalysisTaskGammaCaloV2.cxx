@@ -29,6 +29,7 @@
 #include "THnSparse.h"
 #include "TCanvas.h"
 #include "TNtuple.h"
+#include "TClonesArray.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliESDEvent.h"
@@ -107,6 +108,7 @@ ClassImp(AliAnalysisTaskGammaCaloV2)
                                                                fOutputBGBranchName(""),
                                                                fOutputAODBranchSet(kFALSE),
                                                                fBranchSet(kTRUE),
+                                                               fEventCount(NULL),
                                                                fHistoMotherInvMassPtPhi(NULL),
                                                                fHistoMotherInvMassPt(NULL),
                                                                fHistoMotherInvMassPhi(NULL),
@@ -517,6 +519,7 @@ AliAnalysisTaskGammaCaloV2::AliAnalysisTaskGammaCaloV2(const char *name) : AliAn
                                                                            fOutputBGBranchName(""),
                                                                            fOutputAODBranchSet(kFALSE),
                                                                            fBranchSet(kTRUE),
+                                                                           fEventCount(NULL),
                                                                            fHistoMotherInvMassPtPhi(NULL),
                                                                            fHistoMotherInvMassPt(NULL),
                                                                            fHistoMotherInvMassPhi(NULL),
@@ -914,16 +917,16 @@ AliAnalysisTaskGammaCaloV2::~AliAnalysisTaskGammaCaloV2()
     delete[] fBGHandler;
     fBGHandler = 0x0;
   }
-  // if (fOutputAODBranch)
-  // {
-  //   delete fOutputAODBranch;
-  //   fOutputAODBranch = 0x0;
-  // }
-  // if (fOutputBGBranch)
-  // {
-  //   delete fOutputBGBranch;
-  //   fOutputBGBranch = 0x0;
-  // }
+  if (fOutputAODBranch)
+  {
+    delete fOutputAODBranch;
+    fOutputAODBranch = 0x0;
+  }
+  if (fOutputBGBranch)
+  {
+    delete fOutputBGBranch;
+    fOutputBGBranch = 0x0;
+  }
 }
 //___________________________________________________________
 void AliAnalysisTaskGammaCaloV2::InitBack()
@@ -1021,8 +1024,9 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
   if (fBranchSet)
   {
     fOutputAODBranch = new TClonesArray("AliAODConversionMother", 0);
-    fOutputBGBranch = new TClonesArray("AliAODConversionMother", 1);
-
+    fOutputBGBranch = new TClonesArray("AliAODConversionMother", 0);
+    fOutputAODBranch->SetOwner(kTRUE);
+    fOutputBGBranch->SetOwner(kTRUE);
     if (fOutputAODBranchName.Length() == 0)
     {
       fOutputAODBranchName = "pi0Array";
@@ -1473,6 +1477,7 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
   fProfileV0AQyVtxRC = new TProfile *[fnCuts];
   fHist2CalibPsi2V0ACentRC = new TH2D *[fnCuts];
   fHist2V0Res = new TProfile *[fnCuts];
+  fEventCount = new TH1D *[fnCuts];
   if (EnableSphericity)
   {
     fHistoEventSphericity = new TH1F *[fnCuts];
@@ -1903,6 +1908,8 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
     fProfileV0AQyVtxRC[iCut] = new TProfile("fProfileV0AQyVzRC", "", 20, -10, 10);
     fHist2CalibPsi2V0ACentRC[iCut] = new TH2D("fHist2CalibPsi2V0ACentRC", "", 20, 0, 100, 50, 0, TMath::Pi());
     fHist2V0Res[iCut] = new TProfile("fHist2V0Res", "", 4, 0, 4);
+    fEventCount[iCut] = new TH1D("EventCount", "EventCount", 100, 0, 100);
+    fESDList[iCut]->Add(fEventCount[iCut]);
     fESDList[iCut]->Add(fHist2DPsi2V0CCent[iCut]);
     fESDList[iCut]->Add(fHist2DPsi2V0ACent[iCut]);
     fQAList[iCut]->Add(fProfileV0CQxCentGE[iCut]);
@@ -3785,10 +3792,11 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
     // V0C Qy Mean
     // V0A Qx Mean
     // V0A Qy Mean
-    contQxncm = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqxc%im", 2));
-    contQyncm = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqyc%im", 2));
-    contQxnam = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqxa%im", 2));
-    contQynam = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqya%im", 2));
+    contQxncm = (AliOADBContainer *)fListVZEROCalib->FindObject("fqxc2m");
+    contQyncm = (AliOADBContainer *)fListVZEROCalib->FindObject("fqyc2m");
+    contQxnam = (AliOADBContainer *)fListVZEROCalib->FindObject("fqxa2m");
+    contQynam = (AliOADBContainer *)fListVZEROCalib->FindObject("fqya2m");
+
     for (int i = 0; i < 2; i++)
     {
       hQx2mV0[i] = new TH1D();
@@ -4153,6 +4161,7 @@ void AliAnalysisTaskGammaCaloV2::UserExec(Option_t *)
     //  cout << "fPsi2V0A============" << fPsi2V0A << endl;
     fHist2DPsi2V0CCent[iCut]->Fill(centSPD1, fPsi2V0C);
     fHist2DPsi2V0ACent[iCut]->Fill(centSPD1, fPsi2V0A);
+    fEventCount[iCut]->Fill(centSPD1);
     int centBin = 999;
     if (centSPD1 >= 0 && centSPD1 < 10)
     {
@@ -4209,6 +4218,10 @@ void AliAnalysisTaskGammaCaloV2::UserExec(Option_t *)
   }
   if (fCloseHighPtClusters)
     delete fCloseHighPtClusters;
+  // if (fBranchSet)
+  // {
+  //   cout << "=======Npi0=======" << fOutputAODBranch->GetEntriesFast() << endl;
+  // }
   PostData(1, fOutputContainer);
 }
 
@@ -6438,6 +6451,9 @@ void AliAnalysisTaskGammaCaloV2::CalculatePi0Candidates()
           {
             pi0cand->SetWeight(tempPi0CandWeight);
             new ((*fOutputAODBranch)[pi0Count]) AliAODConversionMother(*pi0cand);
+            //   AliAODConversionMother *pi0AODCand = (AliAODConversionMother *)fOutputAODBranch->ConstructedAt(pi0Count);
+            //   pi0AODCand->SetPtEtaPhiM(pi0cand->Pt(), pi0cand->Eta(), pi0cand->Phi(), pi0cand->M());
+            //   pi0AODCand->SetWeight(tempPi0CandWeight);
           }
           pi0Count++;
           fHistoMotherInvMassPt[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), tempPi0CandWeight);
@@ -7898,6 +7914,9 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackground()
             {
               backgroundCandidate->SetWeight(tempBGCandidateWeight);
               new ((*fOutputBGBranch)[pi0BGCount]) AliAODConversionMother(*backgroundCandidate);
+              //  AliAODConversionMother *backgroundCand = (AliAODConversionMother *)fOutputBGBranch->ConstructedAt(pi0BGCount);
+              //  backgroundCand->SetPtEtaPhiM(backgroundCandidate->Pt(), backgroundCandidate->Eta(), backgroundCandidate->Phi(), backgroundCandidate->M());
+              //  backgroundCand->SetWeight(tempBGCandidateWeight);
             }
             pi0BGCount++;
             //   double dphiV0C = backgroundCandidate->Phi() - fPsi2V0C;
@@ -8045,6 +8064,9 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackground()
                 {
                   backgroundCandidate->SetWeight(tempBGCandidateWeight);
                   new ((*fOutputBGBranch)[pi0BGCount]) AliAODConversionMother(*backgroundCandidate);
+                  //   AliAODConversionMother *backgroundCand = (AliAODConversionMother *)fOutputBGBranch->ConstructedAt(pi0BGCount);
+                  //   backgroundCand->SetPtEtaPhiM(backgroundCandidate->Pt(), backgroundCandidate->Eta(), backgroundCandidate->Phi(), backgroundCandidate->M());
+                  //   backgroundCand->SetWeight(tempBGCandidateWeight);
                 }
                 pi0BGCount++;
                 //    double dphiV0C = backgroundCandidate->Phi() - fPsi2V0C;
@@ -8116,6 +8138,9 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackground()
                 {
                   backgroundCandidate->SetWeight(tempBGCandidateWeight);
                   new ((*fOutputBGBranch)[pi0BGCount]) AliAODConversionMother(*backgroundCandidate);
+                  ///     AliAODConversionMother *backgroundCand = (AliAODConversionMother *)fOutputBGBranch->ConstructedAt(pi0BGCount);
+                  ///     backgroundCand->SetPtEtaPhiM(backgroundCandidate->Pt(), backgroundCandidate->Eta(), backgroundCandidate->Phi(), backgroundCandidate->M());
+                  ///     backgroundCand->SetWeight(tempBGCandidateWeight);
                 }
                 pi0BGCount++;
                 double dphiV0C = backgroundCandidate->Phi() - fPsi2V0C;
@@ -8210,6 +8235,9 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackground()
               {
                 backgroundCandidate->SetWeight(tempBGCandidateWeight);
                 new ((*fOutputBGBranch)[pi0BGCount]) AliAODConversionMother(*backgroundCandidate);
+                //     AliAODConversionMother *backgroundCand = (AliAODConversionMother *)fOutputBGBranch->ConstructedAt(pi0BGCount);
+                //     backgroundCand->SetPtEtaPhiM(backgroundCandidate->Pt(), backgroundCandidate->Eta(), backgroundCandidate->Phi(), backgroundCandidate->M());
+                //     backgroundCand->SetWeight(tempBGCandidateWeight);
               }
               pi0BGCount++;
               double dphiV0C = backgroundCandidate->Phi() - fPsi2V0C;
@@ -8441,6 +8469,11 @@ void AliAnalysisTaskGammaCaloV2::CalculateBackgroundSwapp()
           backgroundCandidate0->SetPtEtaPhiM(vSwappingInvMassPT.at(i)[1], vSwappingInvMassPT.at(i)[3], vSwappingInvMassPT.at(i)[2], vSwappingInvMassPT.at(i)[0]);
           backgroundCandidate0->SetWeight(tempMultWeightSwapping * fWeightJetJetMC);
           new ((*fOutputBGBranch)[i]) AliAODConversionMother(*backgroundCandidate0);
+          //   AliAODConversionMother *backgroundCand = (AliAODConversionMother *)fOutputBGBranch->ConstructedAt(i);
+          //   backgroundCand->SetPtEtaPhiM(vSwappingInvMassPT.at(i)[1], vSwappingInvMassPT.at(i)[3], vSwappingInvMassPT.at(i)[2], vSwappingInvMassPT.at(i)[0]);
+          //   backgroundCand->SetWeight(tempMultWeightSwapping * fWeightJetJetMC);
+          delete backgroundCandidate0;
+          backgroundCandidate0 = 0x0;
         }
         double dphiV0A = vSwappingInvMassPT.at(i)[2] - fPsi2V0A;
         double dphiV0C = vSwappingInvMassPT.at(i)[2] - fPsi2V0C;
@@ -9392,20 +9425,30 @@ bool AliAnalysisTaskGammaCaloV2::LoadCalibHistForThisRun()
       hQx2mV0[i]->Reset();
       hQy2mV0[i]->Reset();
     }
+    cout << (fV0Reader->GetPeriodName()).Data() << endl;
     hQx2mV0[0] = ((TH1D *)contQxncm->GetObject(runNum));
     hQy2mV0[0] = ((TH1D *)contQyncm->GetObject(runNum));
     hQx2mV0[1] = ((TH1D *)contQxnam->GetObject(runNum));
     hQy2mV0[1] = ((TH1D *)contQynam->GetObject(runNum));
+    /// char num_str = static_cast<char>(runNum);
+    /// hQx2mV0[0] = ((TH1D *)contQxncm->GetObject(Form("hV0QxMeanCRun%c", num_str)));
+    /// hQy2mV0[0] = ((TH1D *)contQyncm->GetObject(Form("hV0QyMeanCRun%c", num_str)));
+    /// hQx2mV0[1] = ((TH1D *)contQxnam->GetObject(Form("hV0QxMeanARun%c", num_str)));
+    /// hQy2mV0[1] = ((TH1D *)contQynam->GetObject(Form("hV0QyMeanARun%c", num_str)));
+    //  hQx2mV0[0] = ((TH1D *)contQxncm->GetObject("hV0QxMeanCRun297222"));
+    //  hQy2mV0[0] = ((TH1D *)contQyncm->GetObject("hV0QyMeanCRun297222"));
+    //  hQx2mV0[1] = ((TH1D *)contQxnam->GetObject("hV0QxMeanARun297222"));
+    //  hQy2mV0[1] = ((TH1D *)contQynam->GetObject("hV0QyMeanARun297222"));
     for (int i = 0; i < 2; i++)
     {
       if (!hQx2mV0[i])
       {
-        //      cout << "hQx2mV0 don't found" << endl;
+        cout << "hQx2mV0 don't found" << endl;
         return false;
       }
       if (!hQy2mV0[i])
       {
-        //       cout << "hQy2mV0 don't found" << endl;
+        cout << "hQy2mV0 don't found" << endl;
         return false;
       }
     }

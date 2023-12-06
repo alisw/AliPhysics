@@ -51,6 +51,7 @@ ClassImp(AliAnalysisTaskPi0EtaV2)
                                                          fInputEvent(NULL),
                                                          fnCuts(0),
                                                          fiCut(0),
+                                                         runMode(0),
                                                          fPeriod(""),
                                                          fEventCutArray(NULL),
                                                          fOutputContainer(NULL),
@@ -115,6 +116,7 @@ AliAnalysisTaskPi0EtaV2::AliAnalysisTaskPi0EtaV2(const char *name) : AliAnalysis
                                                                      fInputEvent(NULL),
                                                                      fnCuts(0),
                                                                      fiCut(0),
+                                                                     runMode(0),
                                                                      fPeriod(""),
                                                                      fEventCutArray(NULL),
                                                                      fOutputContainer(NULL),
@@ -235,7 +237,7 @@ void AliAnalysisTaskPi0EtaV2::UserCreateOutputObjects()
     fHist2V0Res = new TProfile *[fnCuts];
 
     Int_t nBinsPt = 108;
-    Double_t minPt = 0;
+    Double_t minPt = 0.;
     Double_t maxPt = 40;
     Double_t *arrPtBinning = new Double_t[1200];
     Int_t nBinsMinv = 800;
@@ -371,6 +373,7 @@ void AliAnalysisTaskPi0EtaV2::UserCreateOutputObjects()
         contQyncm = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqyc%im", 2));
         contQxnam = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqxa%im", 2));
         contQynam = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqya%im", 2));
+
         for (int i = 0; i < 2; i++)
         {
             hQx2mV0[i] = new TH1D();
@@ -428,8 +431,8 @@ void AliAnalysisTaskPi0EtaV2::UserExec(Option_t *)
         arrClustersBg = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("pi0BackgroundArray"));
         if (!arrClustersPi0 || !arrClustersBg)
             return;
-        int nclusPi0 = arrClustersPi0->GetEntries();
-        int nclusBg = arrClustersBg->GetEntries();
+        int nclusPi0 = arrClustersPi0->GetEntriesFast();
+        int nclusBg = arrClustersBg->GetEntriesFast();
         if (nclusPi0 == 0)
             return;
         // VZERO Plane
@@ -468,6 +471,8 @@ void AliAnalysisTaskPi0EtaV2::UserExec(Option_t *)
             }
             fHistoMotherInvMassPtPhiV0C[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), dphiV0C, pi0cand->GetWeight());
             fHistoMotherInvMassPtPhiV0A[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), dphiV0A, pi0cand->GetWeight());
+            delete pi0cand;
+            pi0cand = 0x0;
         }
         // Mix Event Background
         for (Long_t i = 0; i < nclusBg; i++)
@@ -486,6 +491,8 @@ void AliAnalysisTaskPi0EtaV2::UserExec(Option_t *)
             }
             fHistoMotherBackInvMassPtdPhiV0C[fiCut]->Fill(Bgcand->M(), Bgcand->Pt(), dphiV0C, Bgcand->GetWeight());
             fHistoMotherBackInvMassPtdPhiV0A[fiCut]->Fill(Bgcand->M(), Bgcand->Pt(), dphiV0A, Bgcand->GetWeight());
+            delete Bgcand;
+            Bgcand = 0x0;
         }
     }
     PostData(1, fOutputContainer);
@@ -511,6 +518,8 @@ bool AliAnalysisTaskPi0EtaV2::LoadCalibHistForThisRun()
                 hQx2mV0[i]->Reset();
                 hQy2mV0[i]->Reset();
             }
+            if (!contQxncm || !contQyncm || !contQxnam || !contQynam)
+                return false;
             hMultV0 = ((TH1D *)contMult->GetObject(runNum));
             hQx2mV0[0] = ((TH1D *)contQxncm->GetObject(runNum));
             hQy2mV0[0] = ((TH1D *)contQyncm->GetObject(runNum));
@@ -536,22 +545,28 @@ bool AliAnalysisTaskPi0EtaV2::LoadCalibHistForThisRun()
             hQx2mV0[i]->Reset();
             hQy2mV0[i]->Reset();
         }
+        if (!contQxncm || !contQyncm || !contQxnam || !contQynam)
+            return false;
         hQx2mV0[0] = ((TH1D *)contQxncm->GetObject(runNum));
         hQy2mV0[0] = ((TH1D *)contQyncm->GetObject(runNum));
         hQx2mV0[1] = ((TH1D *)contQxnam->GetObject(runNum));
         hQy2mV0[1] = ((TH1D *)contQynam->GetObject(runNum));
-        for (int i = 0; i < 2; i++)
+        // char num_str = static_cast<char>(runNum);
+        // hQx2mV0[0] = ((TH1D *)contQxncm->GetObject(Form("hV0QxMeanCRun%c", num_str)));
+        // hQy2mV0[0] = ((TH1D *)contQyncm->GetObject(Form("hV0QyMeanCRun%c", num_str)));
+        // hQx2mV0[1] = ((TH1D *)contQxnam->GetObject(Form("hV0QxMeanARun%c", num_str)));
+        // hQy2mV0[1] = ((TH1D *)contQynam->GetObject(Form("hV0QyMeanARun%c", num_str)));
+        //  hQx2mV0[0] = ((TH1D *)contQxncm->GetObject("hV0QxMeanCRun297222"));
+        //  hQy2mV0[0] = ((TH1D *)contQyncm->GetObject("hV0QyMeanCRun297222"));
+        //  hQx2mV0[1] = ((TH1D *)contQxnam->GetObject("hV0QxMeanARun297222"));
+        //  hQy2mV0[1] = ((TH1D *)contQynam->GetObject("hV0QyMeanARun297222"));
+        if (!hQx2mV0[0] || !hQy2mV0[0] || !hQx2mV0[1] || !hQy2mV0[1])
         {
-            if (!hQx2mV0[i])
-            {
-                //      cout << "hQx2mV0 don't found" << endl;
-                return false;
-            }
-            if (!hQy2mV0[i])
-            {
-                //       cout << "hQy2mV0 don't found" << endl;
-                return false;
-            }
+            hQx2mV0[0] = NULL;
+            hQy2mV0[0] = NULL;
+            hQx2mV0[1] = NULL;
+            hQy2mV0[1] = NULL;
+            return false;
         }
         fHCorrectV0ChWeghts->Reset();
         fHCorrectV0ChWeghts = (TH2F *)fListVZEROCalib->FindObject(Form("hWgtV0ChannelsvsVzRun%d", runNum));
