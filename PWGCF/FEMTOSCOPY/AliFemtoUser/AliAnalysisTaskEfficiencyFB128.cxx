@@ -881,7 +881,7 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
   if(mult >= 0 && mult <=20)  fcent2 = 10;
   else if(mult >= 20 && mult <=40) fcent2 = 1;
   else if(mult >= 40 && mult <=70) fcent2 = 2;
-  else if(mult >= 70 && mult <=100) fcent2 = 3;
+  else if(mult >= 70 && mult <=90) fcent2 = 3;
   //if(fcent2!=3) return; // check this
  // else return;
 
