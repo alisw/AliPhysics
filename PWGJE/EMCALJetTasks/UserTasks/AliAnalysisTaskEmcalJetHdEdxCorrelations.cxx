@@ -652,7 +652,7 @@ namespace PWGJE
             }
 
             // Make sure event contains a biased jet above our threshold (reduce stats of sparse)
-            if (jetPt < 1 || isBiasedJet == kFALSE){
+            if (jetPt < 15 || isBiasedJet == kFALSE){
               continue;
             }
 
@@ -920,7 +920,7 @@ namespace PWGJE
         }
 
         // Cut on jet pt of 15 to reduce the size of the sparses
-        if (jetPt > 1)
+        if (jetPt > 15)
         {
 
           AliDebugStream(4) << "Passed min jet pt cut of 15. Jet: " << jet->toString().Data() << "\n";
