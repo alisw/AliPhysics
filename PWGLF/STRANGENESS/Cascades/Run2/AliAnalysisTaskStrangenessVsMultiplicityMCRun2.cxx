@@ -2102,7 +2102,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
   }
 	
   Int_t CentralityUpperLimit = 100.;
-  if(fisHM){ CentralityUpperLimit = 1. }
+  if(fisHM){ CentralityUpperLimit = 1. ;}
  
     if(! fHistGeneratedPtVsYVsCentralityK0Short ) {
     //Histogram Output: Efficiency Denominator
