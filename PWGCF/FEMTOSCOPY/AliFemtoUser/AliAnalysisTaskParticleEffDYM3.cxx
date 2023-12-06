@@ -896,7 +896,7 @@ int fcent2=0;
   if(mult >= 0 && mult <=20)  fcent2 = 10;
   else if(mult >= 20 && mult <=40) fcent2 = 1;
   else if(mult >= 40 && mult <=70) fcent2 = 2;
-  else if(mult >= 70 && mult <=100) fcent2 = 3;
+  else if(mult >= 70 && mult <=90) fcent2 = 3;
   if(fcent2!=3) return; // check this
  // else return;
 
@@ -926,8 +926,9 @@ int fcent2=0;
   Bool_t fisPileUp = kFALSE;
   Int_t fMinPlpContribMV = 0;
   Int_t fMinPlpContribSPD = 3;
+  Bool_t fRejectTPCPileupWithITSTPCnCluCorr = kFALSE;
 
-  if(fpA2013)
+  /*if(fpA2013)
   if(anaUtil->IsVertexSelected2013pA(aodEvent)==kFALSE) return;
  
   if(fMVPlp) anaUtil->SetUseMVPlpSelection(kTRUE);
@@ -940,6 +941,24 @@ int fcent2=0;
   if(anaUtil->IsPileUpEvent(aodEvent)) return;
 
   delete anaUtil;   
+
+  if(fIfAliEventCuts){
+   if(fRejectTPCPileupWithITSTPCnCluCorr) fEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+   // if (!fEventCuts->fUseITSTPCCluCorrelationCut ==kTRUE) {
+   //   return;
+   // }
+  }*/
+   //pileup for LHC20e3a -> Injective Pileup over events 
+  AliAODMCHeader *mcHeader = 0;
+  mcHeader = (AliAODMCHeader*)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  if(!mcHeader) {
+    printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
+    return;
+  }
+  Bool_t isPileupInGeneratedEvent = kFALSE;
+  isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,"Hijing");
+  if(isPileupInGeneratedEvent) return;
+  
 
   fHistQA[9]->Fill(3);
   if(fcent2==10)fHistEvCuts[0]->Fill(3);
@@ -1148,7 +1167,11 @@ if(collect[2]==true){
       continue; 
     fHistQA[10]->Fill(4);
 
-    
+     //pileup for LHC20e3a -> Injective Pileup over tracks 
+   Bool_t isParticleFromOutOfBunchPileupCollision = kFALSE;
+   isParticleFromOutOfBunchPileupCollision = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iTracks,mcHeader,arrayMC);
+   if(isParticleFromOutOfBunchPileupCollision) continue;
+   
     //DCA
     
     Double_t DCAXY;
@@ -1651,7 +1674,9 @@ if(collect[2]==true){
 
       if(MCtrk->IsPhysicalPrimary()) // Not from weak decay!
 	{
-
+	Bool_t isParticleFromOutOfBunchPileupCollision = kFALSE;
+        isParticleFromOutOfBunchPileupCollision = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ipart,mcHeader,arrayMC);
+        if(isParticleFromOutOfBunchPileupCollision) continue;
 	// Filling histograms for MC truth particles
 	fGeneratedMCPrimaries[fcent*PARTTYPES][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
 
