@@ -410,7 +410,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Bool_t      SetPoissonParamCentFunction(int isMC);
     Bool_t      SetNMatchedTracksFunc(float meanCent);
-    Double_t    CorrectEnergyForOverlap(float meanCent);
+    Double_t    CorrectEnergyForOverlap(float meanCent, float E = 0);
     Int_t       GetDoEnergyCorrectionForOverlap()               {return fDoEnergyCorrectionForOverlap;}
     Double_t    GetMeanEForOverlap(Double_t cent, Double_t* par);
 
