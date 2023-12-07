@@ -151,6 +151,7 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	TH1F		*hVtxZafterCut;
 	TH2F		*hVtxZ;
 	TH1F		*hNrEvents;
+	TH2F		*hNrEventsMult;
 
     // multiplicity
     TH1F		*hSPDtracklet;
@@ -163,8 +164,10 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
     TH1F		*histNchCorr;
     TF1			*funcNchCorr;
     TH1F		*hNtrkletCorr;
+    TH1F		*hNtrkletCorr2;
     TH2F		*hSPDtrklet_Nch;
     TH2F		*hSPDtrklet_Nch_Corr;
+    TH2F		*hSPDtrklet_Nch_Corr2;
     TH2F		*hNch_vtxZ;
 	
 	// track cut QA
@@ -193,8 +196,10 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	TH1F		*hLcPt;
 
 	TH1F		*hGenBePt;
+	TH2F		*hGenBePtMult;
 	TH1F		*hRecBePt_track;
 	TH1F		*hRecBePt_tof;
+	TH2F		*hRecBePt_tofMult;
 	TH1F		*hRecBePt_tpc;
 
 	// pid cut
@@ -215,23 +220,38 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 
 	// dca
 	TH2F		*dcaTrack;
+	TH3F		*dcaTrackMult;
 	TH2F		*dcaPion;
 	TH2F		*dcaBeauty;
 	TH2F		*dcaBeautyCorr;
 	TH2F		*dcaBeautyCorrVar1;
 	TH2F		*dcaBeautyCorrVar2;
+	TH3F		*dcaBeautyMult;
+	TH3F		*dcaBeautyMultCorr;
+	TH3F		*dcaBeautyMultCorrVar1;
+	TH3F		*dcaBeautyMultCorrVar2;
 	TH2F		*DelecVsDmother;
 	TH2F		*dcaCharm;
 	TH2F		*dcaDmeson;
 	TH2F		*dcaDmesonCorr;
 	TH2F		*dcaDmesonCorrVar1;
 	TH2F		*dcaDmesonCorrVar2;
+	TH3F		*dcaDmesonMult;
+	TH3F		*dcaDmesonMultCorr;
+	TH3F		*dcaDmesonMultCorrVar1;
+	TH3F		*dcaDmesonMultCorrVar2;
 	TH2F		*dcaDzero;
+	TH3F		*dcaDzeroMult;
 	TH2F		*dcaDplus;
+	TH3F		*dcaDplusMult;
 	TH2F		*dcaDsplus;
+	TH3F		*dcaDsplusMult;
 	TH2F		*dcaLc;
+	TH3F		*dcaLcMult;
 	TH2F		*dcaDalitz;
+	TH3F		*dcaDalitzMult;
 	TH2F		*dcaConv;
+	TH3F		*dcaConvMult;
 	
 	// B corr
     TF1         *fBmesonCorrCentLow;
@@ -245,6 +265,27 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
     TF1         *fDmesonCorr;
     TF1         *fDmesonCorrVar1;
     TF1         *fDmesonCorrVar2;
+    
+	TF1         *fDmesonCorrMultBin1;
+	TF1         *fDmesonCorrMultBin2;
+	TF1         *fDmesonCorrMultBin3;
+	TF1         *fDmesonCorrMultBin4;
+	TF1         *fDmesonCorrMultBin5;
+	TF1         *fDmesonCorrMultBin6;
+	
+	TF1         *fDmesonCorrMultBin1_var1;
+	TF1         *fDmesonCorrMultBin2_var1;
+	TF1         *fDmesonCorrMultBin3_var1;
+	TF1         *fDmesonCorrMultBin4_var1;
+	TF1         *fDmesonCorrMultBin5_var1;
+	TF1         *fDmesonCorrMultBin6_var1;
+
+	TF1         *fDmesonCorrMultBin1_var2;
+	TF1         *fDmesonCorrMultBin2_var2;
+	TF1         *fDmesonCorrMultBin3_var2;
+	TF1         *fDmesonCorrMultBin4_var2;
+	TF1         *fDmesonCorrMultBin5_var2;
+	TF1         *fDmesonCorrMultBin6_var2;
 
     // Lc corr
     TF1         *fLcCorr;

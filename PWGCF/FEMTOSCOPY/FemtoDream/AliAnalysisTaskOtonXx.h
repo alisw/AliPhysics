@@ -145,6 +145,10 @@ class AliAnalysisTaskOtonXx : public AliAnalysisTaskSE {
   Int_t fTKaonMotherWeak[300];
   Short_t fTKaonOrigin[300];
   Int_t fTKaonMotherID[300];
+  Int_t fTKaonMotherPDG[300];
+  Float_t fTKaonPxTRUE[300];
+  Float_t fTKaonPyTRUE[300];
+  Float_t fTKaonPzTRUE[300];
 
   const Int_t MAXXiS = 100;
   Int_t fTnXi;
@@ -180,6 +184,9 @@ class AliAnalysisTaskOtonXx : public AliAnalysisTaskSE {
   Int_t fTXiMotherID[100];
    Int_t fTXiPDG[100];
    Int_t fTXiMotherPDG[100];
+ Float_t fTXiPxTRUE[300];
+ Float_t fTXiPyTRUE[300];
+ Float_t fTXiPzTRUE[300];
    Int_t fTXiMotherWeak[100];
    Int_t fTXiOrigin[100];
   Float_t fTXiBachelorBaryonPA[100];

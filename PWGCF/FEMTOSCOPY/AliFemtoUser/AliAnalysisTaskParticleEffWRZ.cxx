@@ -375,8 +375,8 @@ void AliAnalysisTaskParticleEffWRZ::UserCreateOutputObjects()
   fHistQA[10]->GetXaxis()->SetBinLabel(6,"DCA");
   fHistQA[10]->GetXaxis()->SetBinLabel(7,"Electron Rejection");
 
-  fHistQA2D[0] = new TH2F("dcaHistDcaXY","DCA XY",50, 0, 5,210, -2.1, 2.1);
-  fHistQA2D[1] = new TH2F("dcaHistDcaZ","DCA Z", 50, 0, 5, 210, -2.1, 2.1);
+  fHistQA2D[0] = new TH2F("dcaHistDcaXY","DCA XY",50, 0, 5,400, -3.0, 3.0);
+  fHistQA2D[1] = new TH2F("dcaHistDcaZ","DCA Z", 50, 0, 5, 400, -3.0, 3.0);
   fHistQA2D[2] = new TH2F("fPhiEta","Eta-Phi",100, -2, 2, 100, -TMath::Pi(), TMath::Pi());
 
   for ( Int_t i = 0; i < 11; i++)

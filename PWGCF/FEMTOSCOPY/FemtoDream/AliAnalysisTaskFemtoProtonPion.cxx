@@ -750,7 +750,7 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
 
       fTrack->SetTrack(track);
 
-      /*if (fIsMC && fRemoveMCResonances) {
+      if (fIsMC && fRemoveMCResonances) {
         TClonesArray *mcarray = dynamic_cast<TClonesArray *>(Event->FindListObject(AliAODMCParticle::StdBranchName()));
         if (!mcarray) {
           AliError("SPTrack: MC Array not found");
@@ -766,7 +766,7 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
           int motherID = mcPart->GetMother();
           int lastMother = motherID;
           AliAODMCParticle *mcMother = nullptr;
-          bool RemoveTrack = false;
+          /*bool RemoveTrack = false;
           while (motherID != -1) {
             lastMother = motherID;
             mcMother = (AliAODMCParticle *)mcarray->At(motherID);
@@ -775,7 +775,7 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
                fTrack->SetMotherPDG(mcMother->GetPdgCode()); //Change the PDG of the mother so it is set to the resonance. The Mother ID keeps set to the original parton
                RemoveTrack = true;
             }
-          }
+          }*/ 
           if ((lastMother != -1)) {
             mcMother = (AliAODMCParticle *)mcarray->At(lastMother);
           }
@@ -783,16 +783,16 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
             int motherPDG = mcMother->GetPdgCode(); 
             if(IsResonance(motherPDG)){
               fTrack->SetMotherPDG(motherPDG); //Change the PDG of the mother so it is set to the resonance. The Mother ID keeps set to the original parton
-              RemoveTrack = true;
+              //RemoveTrack = true;
             }
           }
-          if (RemoveTrack && fRemoveMCResonanceDaughters){
-            continue; 
-          }
+          //if (RemoveTrack && fRemoveMCResonanceDaughters){
+          //  continue; 
+          //}
         } else {
           continue;  // if we don't have MC Information, don't use that track
         }
-      } //if (fIsMC && fRemoveMCResonances)*/ 
+      } //if (fIsMC && fRemoveMCResonances)
 
       //...........................
 
@@ -1462,13 +1462,19 @@ bool AliAnalysisTaskFemtoProtonPion::CommonMotherResonance(AliFemtoDreamBasePart
 
 bool AliAnalysisTaskFemtoProtonPion::IsResonance(int PDG) {
 
-  int ProtonAntiPion[33] = {2114, 12112, 1214, 22112, 32114, 1212, 32112, 2116, 12116, 12114, 42112, 21214, 31214, 11212, 9902114, 1216, 9902112, 9912112, 21212, 22114, 9912114, 2118, 11216, 9902116, 9922112, 9922114, 1218, 9901218, 99021110, 99121110, 99012112, 99021112, 3122};
+  /*int ProtonAntiPion[33] = {2114, 12112, 1214, 22112, 32114, 1212, 32112, 2116, 12116, 12114, 42112, 21214, 31214, 11212, 9902114, 1216, 9902112, 9912112, 21212, 22114, 9912114, 2118, 11216, 9902116, 9922112, 9922114, 1218, 9901218, 99021110, 99121110, 99012112, 99021112, 3122};
   int ProtonPion[12] = {2224, 32224, 2222, 12224, 12222, 2226, 22222, 22224, 2228, 12226, 9902228, 99022212};
 
   // When the element is not found, std::find returns the end of the range
   if ( std::find(std::begin(ProtonAntiPion), std::end(ProtonAntiPion), abs(PDG)) != std::end(ProtonAntiPion) ) {
     return true;
   } else if ( std::find(std::begin(ProtonPion), std::end(ProtonPion), abs(PDG)) != std::end(ProtonPion) ) {
+    return true;
+  } else {
+    return false;
+  }*/
+
+  if(abs(PDG) == 2114 || abs(PDG) == 3122 ||  abs(PDG) == 2224 ){
     return true;
   } else {
     return false;

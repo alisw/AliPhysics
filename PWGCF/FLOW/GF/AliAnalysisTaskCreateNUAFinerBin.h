@@ -6,7 +6,7 @@
 #define AliAnalysisTaskCreateNUAFinerBin_H
 
 #include "AliAnalysisTaskSE.h"
-#include "AliGFWWeights.h"
+#include "AliGFWWeightsFinerBin.h"
 #include "AliGFWXXCuts.h"
 #include "AliGFWPbpass23Cuts.h"
 #include "AliEventCuts.h"
@@ -21,6 +21,7 @@ class AliAnalysisTaskCreateNUAFinerBin : public AliAnalysisTaskSE
 
         virtual void            UserCreateOutputObjects();
         virtual void            UserExec(Option_t* option);
+        virtual void   			NotifyRun();
         virtual void            Terminate(Option_t* option);
         virtual void   SetPeriod(TString period) { fPeriod = period; }
         virtual void   SetSystFlag(int flag) { fCurrSystFlag = flag; }
@@ -29,11 +30,13 @@ class AliAnalysisTaskCreateNUAFinerBin : public AliAnalysisTaskSE
 		virtual void   SetMaxPt(Double_t maxPt){fMaxPt = maxPt;}
 		virtual void   SetUseHM(Bool_t useHM){fUseHM = useHM;}
 		virtual void   SetUseCuts(Bool_t useCuts){fUseCuts = useCuts;}
+        virtual void	SetAddTPCPileupCuts(Bool_t usePileupCuts){fAddTPCPileupCuts=usePileupCuts;} // use TPC pile up Cuts
+        virtual void   SetESDvsTPConlyLinearCut(double cut = 15000) {fESDvsTPConlyLinearCut = cut;}
 
     private:
         AliAODEvent*            fAOD;           //! input event
         TList*                  fOutputList;    //! output list
-        AliGFWWeights*          weights;        //!
+        AliGFWWeightsFinerBin*          weights;        //!
         std::vector<int>        RunNumber_LHC16;//!
         std::vector<int>        RunNumber_LHC17;//!
         std::vector<int>        RunNumber_LHC18;//!
@@ -54,6 +57,8 @@ class AliAnalysisTaskCreateNUAFinerBin : public AliAnalysisTaskSE
         Bool_t                  fUseHM;         // if use High Multiplicity Trigger
         Bool_t                  fUseCuts;       // if use Cuts in code
         Bool_t                  fPbPb;          // if use Pb-Pb dataset
+        Bool_t			fAddTPCPileupCuts;			// Pile up Cuts in TPC
+		Double_t		fESDvsTPConlyLinearCut;     // ESDvsTPConlyLinearCut : default = 15000        
 
         //Standard Cuts and Systematics
         AliEventCuts	fEventCuts;					// Event cuts

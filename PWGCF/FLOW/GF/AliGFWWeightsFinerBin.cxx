@@ -59,7 +59,7 @@ void AliGFWWeightsFinerBin::Init(Bool_t AddData, Bool_t AddMC)
     fW_data->SetName("AliGFWWeightsFinerBin_Data");
     fW_data->SetOwner(kTRUE);
     const char *tnd = GetBinName(0,0,Form("data_%s",this->GetName()));
-    fW_data->Add(new TH3D(tnd,";#varphi;#eta;v_{z}",200,0,TMath::TwoPi(),128,-1.6,1.6,200,-10,10));
+    fW_data->Add(new TH3D(tnd,";#varphi;#eta;v_{z}",128,0,TMath::TwoPi(),32,-0.8,0.8,80,-10,10));
     fDataFilled = kTRUE;
   };
   if(AddMC) {
@@ -71,8 +71,8 @@ void AliGFWWeightsFinerBin::Init(Bool_t AddData, Bool_t AddMC)
     fW_mcgen->SetOwner(kTRUE);
     const char *tnr = GetBinName(0,0,"mcrec"); //all integrated over cent. anyway
     const char *tng = GetBinName(0,0,"mcgen"); //all integrated over cent. anyway
-    fW_mcrec->Add(new TH3D(tnr,";#it{p}_{T};#eta;v_{z}",fNbinsPt,0,20,128,-1.6,1.6,200,-10,10));
-    fW_mcgen->Add(new TH3D(tng,";#it{p}_{T};#eta;v_{z}",fNbinsPt,0,20,128,-1.6,1.6,200,-10,10));
+    fW_mcrec->Add(new TH3D(tnr,";#it{p}_{T};#eta;v_{z}",fNbinsPt,0,20,32,-0.8,0.8,80,-10,10));
+    fW_mcgen->Add(new TH3D(tng,";#it{p}_{T};#eta;v_{z}",fNbinsPt,0,20,32,-0.8,0.8,80,-10,10));
     ((TH3D*)fW_mcrec->At(fW_mcrec->GetEntries()-1))->GetXaxis()->Set(fNbinsPt,fbinsPt);
     ((TH3D*)fW_mcgen->At(fW_mcgen->GetEntries()-1))->GetXaxis()->Set(fNbinsPt,fbinsPt);
     fMCFilled = kTRUE;
@@ -88,7 +88,7 @@ void AliGFWWeightsFinerBin::Fill(Double_t phi, Double_t eta, Double_t vz, Double
   if(!tar) return;
   TH3D *th3 = (TH3D*)tar->FindObject(GetBinName(0,0,pf)); //pT bin 0, V0M bin 0, since all integrated
   if(!th3) {
-    if(!htype) tar->Add(new TH3D(GetBinName(0,0,pf),";#varphi;#eta;v_{z}",200,0,TMath::TwoPi(),128,-1.6,1.6,200,-10,10)); //0,0 since all integrated
+    if(!htype) tar->Add(new TH3D(GetBinName(0,0,pf),";#varphi;#eta;v_{z}",128,0,TMath::TwoPi(),32,-0.8,0.8,80,-10,10)); //0,0 since all integrated
     th3 = (TH3D*)tar->At(tar->GetEntries()-1);
   };
   th3->Fill(htype?pt:phi,eta,vz, weight);

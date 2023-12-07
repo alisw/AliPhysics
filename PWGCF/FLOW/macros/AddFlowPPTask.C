@@ -229,7 +229,8 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 
 			if(setNUA){
 				//overwrite NUA
-				inNUA = TFile::Open(NUAfile);
+				inNUA = TFile::Open(NUAfile.Data());
+				Printf(Form("\n\nOverwriting NUA file:\n%s\n",NUAfile.Data()));
 			}
 
 			if(!inNUA){
@@ -237,7 +238,17 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 				return 0;
 			}
             TList* weight_list = NULL;
-			weight_list = dynamic_cast<TList*>(inNUA->Get("WeightList"));
+			if(!setNUA)weight_list = dynamic_cast<TList*>(inNUA->Get("WeightList"));
+			if(setNUA){
+				if(uniqueID.BeginsWith("Sys")){
+					weight_list = dynamic_cast<TList*>(inNUA->Get(Form("WeightList_%s",uniqueID.Data())));
+					Printf(Form("\n\nGet WeightList_%s\n",uniqueID.Data()));
+				}
+				else{
+					weight_list = dynamic_cast<TList*>(inNUA->Get("WeightList_Default"));
+					Printf(Form("\n\nGet WeightList_Default for %s\n",uniqueID.Data()));
+				}
+			}
 			//if (fSystFlag == 0 && !fPeriod.EqualTo("LHC15o")) {
 			//	weight_list = dynamic_cast<TList*>(inNUA->Get("weights"));
 			//} else {

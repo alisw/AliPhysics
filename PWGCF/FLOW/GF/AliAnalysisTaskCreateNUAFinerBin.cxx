@@ -43,6 +43,8 @@ ClassImp(AliAnalysisTaskCreateNUAFinerBin) // classimp: necessary for root
   Last_Position(-1),
   fGFWSelection(NULL),
   fGFWSelection15o(NULL),
+  fAddTPCPileupCuts(false),
+  fESDvsTPConlyLinearCut(15000),
   fMinPt(0.2), fMaxPt(3.0), hEventCount(0)
 {
   // default constructor, don't allocate memory here!
@@ -56,6 +58,8 @@ AliAnalysisTaskCreateNUAFinerBin::AliAnalysisTaskCreateNUAFinerBin(const char *n
   Last_Position(-1),
   fGFWSelection(NULL),
   fGFWSelection15o(NULL),
+  fAddTPCPileupCuts(false),
+  fESDvsTPConlyLinearCut(15000),
   fMinPt(0.2),
   fMaxPt(3.0),
   hEventCount(0)
@@ -118,8 +122,8 @@ void AliAnalysisTaskCreateNUAFinerBin::UserCreateOutputObjects()
     {
       for (auto RunIter = Period_LHC16.begin(); RunIter != Period_LHC16.end(); RunIter++)
       {
-        fOutputList->Add(new AliGFWWeights());
-        AliGFWWeights *fWeights = (AliGFWWeights *)fOutputList->Last();
+        fOutputList->Add(new AliGFWWeightsFinerBin());
+        AliGFWWeightsFinerBin *fWeights = (AliGFWWeightsFinerBin *)fOutputList->Last();
         if (fCurrSystFlag == 0)
         {
           fWeights->SetName(Form("w%s", (*RunIter).Data()));
@@ -147,8 +151,8 @@ void AliAnalysisTaskCreateNUAFinerBin::UserCreateOutputObjects()
     {
       for (auto RunIter = Period_LHC17.begin(); RunIter != Period_LHC17.end(); RunIter++)
       {
-        fOutputList->Add(new AliGFWWeights());
-        AliGFWWeights *fWeights = (AliGFWWeights *)fOutputList->Last();
+        fOutputList->Add(new AliGFWWeightsFinerBin());
+        AliGFWWeightsFinerBin *fWeights = (AliGFWWeightsFinerBin *)fOutputList->Last();
         if (fCurrSystFlag == 0)
         {
           fWeights->SetName(Form("w%s", (*RunIter).Data()));
@@ -175,8 +179,8 @@ void AliAnalysisTaskCreateNUAFinerBin::UserCreateOutputObjects()
     {
       for (auto RunIter = Period_LHC18.begin(); RunIter != Period_LHC18.end(); RunIter++)
       {
-        fOutputList->Add(new AliGFWWeights());
-        AliGFWWeights *fWeights = (AliGFWWeights *)fOutputList->Last();
+        fOutputList->Add(new AliGFWWeightsFinerBin());
+        AliGFWWeightsFinerBin *fWeights = (AliGFWWeightsFinerBin *)fOutputList->Last();
         if (fCurrSystFlag == 0)
         {
           fWeights->SetName(Form("w%s", (*RunIter).Data()));
@@ -203,8 +207,8 @@ void AliAnalysisTaskCreateNUAFinerBin::UserCreateOutputObjects()
     {
       for (auto RunIter = RunNumber_LHC15o.begin(); RunIter != RunNumber_LHC15o.end(); RunIter++)
       {
-        fOutputList->Add(new AliGFWWeights());
-        AliGFWWeights *fWeights = (AliGFWWeights *)fOutputList->Last();
+        fOutputList->Add(new AliGFWWeightsFinerBin());
+        AliGFWWeightsFinerBin *fWeights = (AliGFWWeightsFinerBin *)fOutputList->Last();
         if (fCurrSystFlag == 0)
         {
           fWeights->SetName(Form("w%s", to_string(*RunIter).c_str()));
@@ -225,8 +229,8 @@ void AliAnalysisTaskCreateNUAFinerBin::UserCreateOutputObjects()
     {
       for (auto RunIter = RunNumber_LHC15opass2.begin(); RunIter != RunNumber_LHC15opass2.end(); RunIter++)
       {
-        fOutputList->Add(new AliGFWWeights());
-        AliGFWWeights *fWeights = (AliGFWWeights *)fOutputList->Last();
+        fOutputList->Add(new AliGFWWeightsFinerBin());
+        AliGFWWeightsFinerBin *fWeights = (AliGFWWeightsFinerBin *)fOutputList->Last();
         if (fCurrSystFlag == 0)
         {
           fWeights->SetName(Form("w%s", to_string(*RunIter).c_str()));
@@ -249,8 +253,8 @@ void AliAnalysisTaskCreateNUAFinerBin::UserCreateOutputObjects()
       {
         for (auto RunIter = RunNumber_LHC18qrpass3.begin(); RunIter != RunNumber_LHC18qrpass3.end(); RunIter++)
           {
-            fOutputList->Add(new AliGFWWeights());
-            AliGFWWeights *fWeights = (AliGFWWeights *)fOutputList->Last();
+            fOutputList->Add(new AliGFWWeightsFinerBin());
+            AliGFWWeightsFinerBin *fWeights = (AliGFWWeightsFinerBin *)fOutputList->Last();
             if (fCurrSystFlag == 0)
               {
                 fWeights->SetName(Form("w%s", to_string(*RunIter).c_str()));
@@ -275,8 +279,8 @@ void AliAnalysisTaskCreateNUAFinerBin::UserCreateOutputObjects()
       {
         for (auto RunIter = RunNumber_LHC16qt.begin(); RunIter != RunNumber_LHC16qt.end(); RunIter++)
           {
-            fOutputList->Add(new AliGFWWeights());
-            AliGFWWeights *fWeights = (AliGFWWeights *)fOutputList->Last();
+            fOutputList->Add(new AliGFWWeightsFinerBin());
+            AliGFWWeightsFinerBin *fWeights = (AliGFWWeightsFinerBin *)fOutputList->Last();
             if (fCurrSystFlag == 0)
               {
                 fWeights->SetName(Form("w%s", to_string(*RunIter).c_str()));
@@ -306,6 +310,17 @@ void AliAnalysisTaskCreateNUAFinerBin::UserCreateOutputObjects()
                             // fOutputList object. the manager will in the end take care of writing your output to file
                             // so it needs to know what's in the output
 }
+
+//_________________________________________________________________
+void AliAnalysisTaskCreateNUAFinerBin::NotifyRun() {
+    if (fAddTPCPileupCuts) {
+      Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
+	  fEventCuts.fUseVariablesCorrelationCuts = true;
+      fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+      fEventCuts.fESDvsTPConlyLinearCut[0] = fESDvsTPConlyLinearCut;
+    }
+}
+
 //_____________________________________________________________________________
 void AliAnalysisTaskCreateNUAFinerBin::UserExec(Option_t *)
 {
@@ -387,11 +402,11 @@ void AliAnalysisTaskCreateNUAFinerBin::UserExec(Option_t *)
         delete track;
         continue;
       } // if we failed, skip this track
-      //((AliGFWWeights *)fOutputList->At(674))->Fill(track->Phi(), track->Eta(), vz, track->Pt(), cent, 0);
+      //((AliGFWWeightsFinerBin *)fOutputList->At(674))->Fill(track->Phi(), track->Eta(), vz, track->Pt(), cent, 0);
       track->GetXYZ(pos);
       if (!AcceptAODTrack(track, pos, vtxp))
         continue;
-      ((AliGFWWeights *)fOutputList->At(index))->Fill(track->Phi(), track->Eta(), vz, track->Pt(), cent, 0);
+      ((AliGFWWeightsFinerBin *)fOutputList->At(index))->Fill(track->Phi(), track->Eta(), vz, track->Pt(), cent, 0);
       //weights->Fill(track->Phi(),track->Eta(),vz,track->Pt(),cent,0);
     } // continue until all the tracks are processed
   }
@@ -669,8 +684,8 @@ const char *AliAnalysisTaskCreateNUAFinerBin::ReturnPPperiod(const Int_t runNumb
     {
       for (auto RunIter = RunNumber_LHC16.begin(); RunIter != RunNumber_LHC16.end(); RunIter++)
       {
-        fOutputList->Add(new AliGFWWeights());
-        AliGFWWeights *fWeights = (AliGFWWeights *)fOutputList->Last();
+        fOutputList->Add(new AliGFWWeightsFinerBin());
+        AliGFWWeightsFinerBin *fWeights = (AliGFWWeightsFinerBin *)fOutputList->Last();
         if (fCurrSystFlag == 0)
         {
           fWeights->SetName(Form("w%s", to_string(*RunIter).c_str()));
@@ -697,8 +712,8 @@ const char *AliAnalysisTaskCreateNUAFinerBin::ReturnPPperiod(const Int_t runNumb
     {
       for (auto RunIter = RunNumber_LHC17.begin(); RunIter != RunNumber_LHC17.end(); RunIter++)
       {
-        fOutputList->Add(new AliGFWWeights());
-        AliGFWWeights *fWeights = (AliGFWWeights *)fOutputList->Last();
+        fOutputList->Add(new AliGFWWeightsFinerBin());
+        AliGFWWeightsFinerBin *fWeights = (AliGFWWeightsFinerBin *)fOutputList->Last();
         if (fCurrSystFlag == 0)
         {
           fWeights->SetName(Form("w%s", to_string(*RunIter).c_str()));
@@ -725,8 +740,8 @@ const char *AliAnalysisTaskCreateNUAFinerBin::ReturnPPperiod(const Int_t runNumb
     {
       for (auto RunIter = RunNumber_LHC18.begin(); RunIter != RunNumber_LHC18.end(); RunIter++)
       {
-        fOutputList->Add(new AliGFWWeights());
-        AliGFWWeights *fWeights = (AliGFWWeights *)fOutputList->Last();
+        fOutputList->Add(new AliGFWWeightsFinerBin());
+        AliGFWWeightsFinerBin *fWeights = (AliGFWWeightsFinerBin *)fOutputList->Last();
         if (fCurrSystFlag == 0)
         {
           fWeights->SetName(Form("w%s", to_string(*RunIter).c_str()));

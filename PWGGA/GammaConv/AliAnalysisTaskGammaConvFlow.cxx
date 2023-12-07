@@ -1184,7 +1184,7 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforV2()
 {
 
   // Loop over Photon Candidates allocated by ReaderV1	
-//   cout << "number of gamma's: " << fGammaCandidates->GetEntries() << endl;
+  // cout << "number of gamma's: " << fGammaCandidates->GetEntries() << endl;
   for(Int_t i = 0; i < fGammaCandidates->GetEntries(); i++){
     
     AliAODConversionPhoton *gammaForv2=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(i));
@@ -1232,7 +1232,7 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforV2()
     } //end of for loop on RPs*/
     fFlowEvent[fiCut]->InsertTrack(((AliFlowTrack*) sTrack));
     fFlowEvent[fiCut]->SetNumberOfPOIs(fFlowEvent[fiCut]->GetNumberOfPOIs()+1);
-//     cout << "cutnumber: " << fiCut << " nPoi " << fFlowEvent[fiCut]->GetNumberOfPOIs() << " ntracks " << fFlowEvent[fiCut]->NumberOfTracks() << endl;
+    // cout << "cutnumber: " << fiCut << " nPoi " << fFlowEvent[fiCut]->GetNumberOfPOIs() << " ntracks " << fFlowEvent[fiCut]->NumberOfTracks() << endl;
   }
 }
 //________________________________________________________________________
@@ -1270,7 +1270,7 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforLTM()
         if(dPhi > TMath::Pi()) dPhi = TMath::Abs(dPhi-2.0*TMath::Pi());
         if(TMath::Sqrt(pow((LTMpart_Eta-gamma_Eta),2)+pow(dPhi,2))<0.2) nCloseByTracks+=1;
       }
-//       cout << "nCloseByTracks MCgen= " << nCloseByTracks << " with pt= " << gamma_Pt <<  endl;
+      // cout << "nCloseByTracks MCgen= " << nCloseByTracks << " with pt= " << gamma_Pt <<  endl;
       hLTMPt_MC[fiCut]->Fill(nCloseByTracks,gamma_Pt);
     }
   }
@@ -1290,7 +1290,7 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforLTM()
       if(dPhi > TMath::Pi()) dPhi = TMath::Abs(dPhi-2.0*TMath::Pi());
       if(TMath::Sqrt(pow((LTMpart_Eta-gamma_Eta),2)+pow(dPhi,2))<0.2) nCloseByTracks+=1;
     }
-//     cout << "nCloseByTracks= " << nCloseByTracks << " with pt= " << gamma_Pt <<  endl;
+    // cout << "nCloseByTracks= " << nCloseByTracks << " with pt= " << gamma_Pt <<  endl;
     hLTMPt[fiCut]->Fill(nCloseByTracks,gamma_Pt);
   }
 }
