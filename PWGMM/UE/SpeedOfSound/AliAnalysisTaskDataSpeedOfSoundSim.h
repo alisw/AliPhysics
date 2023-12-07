@@ -43,7 +43,8 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetHMCut(double HMcut) { fHMCut = HMcut; }      // Set V0M max value
-  void SetUseMC(bool mc = false) { fUseMC = mc; }      // use to analyse MC data
+  void SetRandomNumberCut(double rdcut) { fRandomNumberCut = rdcut; }
+  void SetUseMC(bool mc = false) { fUseMC = mc; }  // use to analyse MC data
   void SetEtaCut(const double& etacut) { fEtaCut = etacut; }
   void SetEtaMinCut(const double& etamin) { fEtaMin = etamin; }
   void SetEtaMaxCut(const double& etamax) { fEtaMax = etamax; }
@@ -74,6 +75,7 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   double fV0Mmin;
   double fV0Mmax;
   double fHMCut;
+  double fRandomNumberCut;
   double fv0mpercentile;
   float fv0mamplitude;
   int fRecNch;

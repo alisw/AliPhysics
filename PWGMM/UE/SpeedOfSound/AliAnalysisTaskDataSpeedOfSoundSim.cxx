@@ -115,6 +115,7 @@ ClassImp(AliAnalysisTaskDataSpeedOfSoundSim)  // classimp: necessary for root
       fV0Mmin(0.0),
       fV0Mmax(100.0),
       fHMCut(10.0),
+      fRandomNumberCut(0.5),
       fv0mpercentile(0),
       fv0mamplitude(0),
       fRecNch(0),
@@ -209,6 +210,7 @@ AliAnalysisTaskDataSpeedOfSoundSim::AliAnalysisTaskDataSpeedOfSoundSim(
       fV0Mmin(0.0),
       fV0Mmax(100.0),
       fHMCut(10.0),
+      fRandomNumberCut(0.5),
       fv0mpercentile(0),
       fv0mamplitude(0),
       fRecNch(0),
@@ -743,7 +745,7 @@ void AliAnalysisTaskDataSpeedOfSoundSim::UserExec(Option_t*) {
   random_number = gRandom->Uniform(0.0, 1.0);
   // if random_number < 0.5 --> Multiplicity Distributions
   // if random_number >= 0.5 --> Detector Response & Corrections
-  if (random_number >= 0.5) {
+  if (random_number >= fRandomNumberCut) {
     fill_corrections = true;
   }
 
