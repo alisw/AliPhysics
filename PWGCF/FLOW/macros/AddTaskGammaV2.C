@@ -33,22 +33,22 @@ void AddTaskGammaV2(
     }
     if (runMode == 2)
     {
-        AliAnalysisTaskGammaConvV1 *fGammaCalo = nullptr;
-        fGammaCalo = (AliAnalysisTaskGammaConvV1 *)mgr->GetTask(Form("GammaConvV1_%i", trainConfig.Atoi()));
-        if (!fGammaCalo)
+        AliAnalysisTaskGammaConvFlowV1 *fGammaCaloV1 = nullptr;
+        fGammaCaloV1 = (AliAnalysisTaskGammaConvFlowV1 *)mgr->GetTask(Form("GammaConvV1_%i", trainConfig.Atoi()));
+        if (!fGammaCaloV1)
         {
-            cout << "===============GammaCalo not found!!!!===================" << endl;
+            cout << "===============GammaCaloV1 not found!!!!===================" << endl;
             return;
         }
-        nCuts = fGammaCalo->GetCutsNumber();
-        EventCutList = fGammaCalo->GetEventCutList();
+        nCuts = fGammaCaloV1->GetCutsNumber();
+        EventCutList = fGammaCaloV1->GetEventCutList();
     }
 
     //  Double_t cent = fGammaCalo->GetCent();//
     //  TString fileName = AliAnalysisManager::GetCommonFileName();
     //  fileName += ":MyTask"; // create a subfolder in the file
     // now we create an instance of your task
-    AliAnalysisTaskPi0EtaV2 *task = new AliAnalysisTaskPi0EtaV2("MyTask"); //
+    AliAnalysisTaskPi0EtaV2 *task = new AliAnalysisTaskPi0EtaV2(Form("FlowTask_%i", trainConfig.Atoi())); //
     if (!task)
     {
         return;
@@ -94,6 +94,7 @@ void AddTaskGammaV2(
     //  task->SetCent(cent);
     task->SetPeriod(period);
     task->SetCutList(EventCutList);
+    task->SetTrainconfig(trainConfig.Atoi());
     mgr->AddTask(task);
 
     //  mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());

@@ -33,13 +33,19 @@ public:
     {
         fEventCutArray = CutArray;
     }
+    void SetTrainconfig(Int_t config)
+    {
+        fTrainConfig = config;
+    }
 
 private:
     AliVEvent *fInputEvent; // current event
     Int_t fnCuts;           // total cuts
     Int_t fiCut;            // current cut
-    Int_t runMode;          // runMode
+    Int_t fTrainConfig;     // fTrainConfig
     TString fPeriod;
+    TString fOutputAODBranchName;            ///<  Name of output clusters AOD branch
+    TString fOutputBGBranchName;             ///<  Name of output of background
     TList *fEventCutArray;                   // List with Event Cuts
     TList *fOutputContainer;                 // Output container
     TList **fCutFolder;                      // Array of lists for containers belonging to cut
@@ -51,6 +57,7 @@ private:
     TH3F **fHistoMotherBackInvMassPtdPhiV0C; //! array of histogram with BG for mixed event photon pairs in deta phi, inv Mass, pt
     TH1D **fEventCount;                      //! array of histogram of event count in centBins
                                              // VZERO
+
     int runNum;
     int oldRunNum;
     double centSPD1;

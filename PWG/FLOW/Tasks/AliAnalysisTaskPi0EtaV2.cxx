@@ -51,8 +51,10 @@ ClassImp(AliAnalysisTaskPi0EtaV2)
                                                          fInputEvent(NULL),
                                                          fnCuts(0),
                                                          fiCut(0),
-                                                         runMode(0),
+                                                         fTrainConfig(0),
                                                          fPeriod(""),
+                                                         fOutputAODBranchName(""),
+                                                         fOutputBGBranchName(""),
                                                          fEventCutArray(NULL),
                                                          fOutputContainer(NULL),
                                                          fCutFolder(NULL),
@@ -116,8 +118,10 @@ AliAnalysisTaskPi0EtaV2::AliAnalysisTaskPi0EtaV2(const char *name) : AliAnalysis
                                                                      fInputEvent(NULL),
                                                                      fnCuts(0),
                                                                      fiCut(0),
-                                                                     runMode(0),
+                                                                     fTrainConfig(0),
                                                                      fPeriod(""),
+                                                                     fOutputAODBranchName(""),
+                                                                     fOutputBGBranchName(""),
                                                                      fEventCutArray(NULL),
                                                                      fOutputContainer(NULL),
                                                                      fCutFolder(NULL),
@@ -425,16 +429,26 @@ void AliAnalysisTaskPi0EtaV2::UserExec(Option_t *)
         }
         if (iCut != centBin)
             continue;
+        fOutputAODBranchName = Form("pi0Array_%i", fTrainConfig);
+        fOutputBGBranchName = Form("pi0BackgroundArray_%i", fTrainConfig);
+        //      cout << "fOutputAODBranchName===" << fOutputAODBranchName.Data() << endl;
         TClonesArray *arrClustersPi0 = NULL;
         TClonesArray *arrClustersBg = NULL;
-        arrClustersPi0 = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("pi0Array"));
-        arrClustersBg = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("pi0BackgroundArray"));
+        arrClustersPi0 = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(fOutputAODBranchName.Data()));
+        arrClustersBg = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(fOutputBGBranchName.Data()));
         if (!arrClustersPi0 || !arrClustersBg)
+        {
+            //         cout << "No Clusters found in this event" << endl;
             return;
+        }
         int nclusPi0 = arrClustersPi0->GetEntriesFast();
         int nclusBg = arrClustersBg->GetEntriesFast();
-        if (nclusPi0 == 0)
-            return;
+        //   if (nclusPi0 == 0)
+        //   {
+        //       //          cout << "No pi0Cand found in this event" << endl;
+        //       return;
+        //   }
+        //   cout << "nclusPi0==" << nclusPi0 << endl;
         // VZERO Plane
         runNum = fInputEvent->GetRunNumber();
         if (IsVZEROCalibOn)
