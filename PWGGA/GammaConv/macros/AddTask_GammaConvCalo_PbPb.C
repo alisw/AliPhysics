@@ -1033,43 +1033,52 @@ void AddTask_GammaConvCalo_PbPb(
   // ***************************** PCM-EMC configurations PbPb run 2 2018 *************************************
   // **********************************************************************************************************
   } else if (trainConfig == 750){ // EMCAL clusters - 0-100%
-    cuts.AddCutPCMCalo("10930013","0dm00009ab770c00amd0404000","411790105te30220000","0r63103100000010"); //  0-100%
-  } else if (trainConfig == 751){ // EMCAL clusters - 4 cent classes with 0-10 and 30-50 triggered
-    cuts.AddCutPCMCalo("10130e03","0dm00009ab770c00amd0404000","411790105te30220000","0r63103100000010"); //  0-10%
-    cuts.AddCutPCMCalo("11310e03","0dm00009ab770c00amd0404000","411790105te30220000","0r63103100000010"); // 10-30%
-    cuts.AddCutPCMCalo("13530e03","0dm00009ab770c00amd0404000","411790105te30220000","0r63103100000010"); // 30-50%
-    cuts.AddCutPCMCalo("15910e03","0dm00009ab770c00amd0404000","411790105te30220000","0r63103100000010"); // 50-90%
+    cuts.AddCutPCMCalo("10930013","0dm00009ab770c00amd0404000","411790105te30220000","0163103100000010"); //  0-100%
+  } else if (trainConfig == 751){ // EMCAL clusters - 4 cent classes with 0-10 and 30-50 triggered with neutral overlap correction via N matched tracks per cluster
+    cuts.AddCutPCMCalo("10130e03","0dm00009ab770c00amd0404000","411790105te30220000","0163103100000010"); //  0-10%
+    cuts.AddCutPCMCalo("11310e03","0dm00009ab770c00amd0404000","411790105te30220000","0163103100000010"); // 10-30%
+    cuts.AddCutPCMCalo("13530e03","0dm00009ab770c00amd0404000","411790105te30220000","0163103100000010"); // 30-50%
+    cuts.AddCutPCMCalo("15910e03","0dm00009ab770c00amd0404000","411790105te30220000","0163103100000010"); // 50-90%
   } else if (trainConfig == 752){ // EMCAL clusters - 4 cent classes with 0-10 and 30-50 triggered - w/o track matching
-    cuts.AddCutPCMCalo("10130e03","0dm00009ab770c00amd0404000","4117901050e30220000","0r63103100000010"); //  0-10%
-    cuts.AddCutPCMCalo("11310e03","0dm00009ab770c00amd0404000","4117901050e30220000","0r63103100000010"); // 10-30%
-    cuts.AddCutPCMCalo("13530e03","0dm00009ab770c00amd0404000","4117901050e30220000","0r63103100000010"); // 30-50%
-    cuts.AddCutPCMCalo("15910e03","0dm00009ab770c00amd0404000","4117901050e30220000","0r63103100000010"); // 50-90%
-  } else if (trainConfig == 753){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC
-    cuts.AddCutPCMCalo("10130053","0dm00009ab770c00amd0404000","411790105te30220000","0r63103100000010"); //  0-10%
-    cuts.AddCutPCMCalo("11310053","0dm00009ab770c00amd0404000","411790105te30220000","0r63103100000010"); // 10-30%
-    cuts.AddCutPCMCalo("13530053","0dm00009ab770c00amd0404000","411790105te30220000","0r63103100000010"); // 30-50%
-    cuts.AddCutPCMCalo("15910053","0dm00009ab770c00amd0404000","411790105te30220000","0r63103100000010"); // 50-90%
+    cuts.AddCutPCMCalo("10130e03","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); //  0-10%
+    cuts.AddCutPCMCalo("11310e03","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); // 10-30%
+    cuts.AddCutPCMCalo("13530e03","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); // 30-50%
+    cuts.AddCutPCMCalo("15910e03","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); // 50-90%
+  } else if (trainConfig == 753){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC with neutral overlap correction via N matched tracks per cluster
+    cuts.AddCutPCMCalo("10130053","0dm00009ab770c00amd0404000","411790105te30220000","0163103100000010"); //  0-10%
+    cuts.AddCutPCMCalo("11310053","0dm00009ab770c00amd0404000","411790105te30220000","0163103100000010"); // 10-30%
+    cuts.AddCutPCMCalo("13530053","0dm00009ab770c00amd0404000","411790105te30220000","0163103100000010"); // 30-50%
+    cuts.AddCutPCMCalo("15910053","0dm00009ab770c00amd0404000","411790105te30220000","0163103100000010"); // 50-90%
   } else if (trainConfig == 754){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC - w/o track matching
-    cuts.AddCutPCMCalo("10130053","0dm00009ab770c00amd0404000","4117901050e30220000","0r63103100000010"); //  0-10%
-    cuts.AddCutPCMCalo("11310053","0dm00009ab770c00amd0404000","4117901050e30220000","0r63103100000010"); // 10-30%
-    cuts.AddCutPCMCalo("13530053","0dm00009ab770c00amd0404000","4117901050e30220000","0r63103100000010"); // 30-50%
-    cuts.AddCutPCMCalo("15910053","0dm00009ab770c00amd0404000","4117901050e30220000","0r63103100000010"); // 50-90%
-  } else if (trainConfig == 755){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC with added Signal!
-    cuts.AddCutPCMCalo("10130023","0dm00009ab770c00amd0404000","411790105te30220000","0r63103100000010"); //  0-10%
-    cuts.AddCutPCMCalo("11310023","0dm00009ab770c00amd0404000","411790105te30220000","0r63103100000010"); // 10-30%
-    cuts.AddCutPCMCalo("13530023","0dm00009ab770c00amd0404000","411790105te30220000","0r63103100000010"); // 30-50%
-    cuts.AddCutPCMCalo("15910023","0dm00009ab770c00amd0404000","411790105te30220000","0r63103100000010"); // 50-90%
+    cuts.AddCutPCMCalo("10130053","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); //  0-10%
+    cuts.AddCutPCMCalo("11310053","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); // 10-30%
+    cuts.AddCutPCMCalo("13530053","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); // 30-50%
+    cuts.AddCutPCMCalo("15910053","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); // 50-90%
+  } else if (trainConfig == 755){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC with added Signal! with neutral overlap correction via N matched tracks per cluster
+    cuts.AddCutPCMCalo("10130023","0dm00009ab770c00amd0404000","411790105te30220000","0163103100000010"); //  0-10%
+    cuts.AddCutPCMCalo("11310023","0dm00009ab770c00amd0404000","411790105te30220000","0163103100000010"); // 10-30%
+    cuts.AddCutPCMCalo("13530023","0dm00009ab770c00amd0404000","411790105te30220000","0163103100000010"); // 30-50%
+    cuts.AddCutPCMCalo("15910023","0dm00009ab770c00amd0404000","411790105te30220000","0163103100000010"); // 50-90%
   } else if (trainConfig == 756){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC with added Signal! - w/o track matching
-    cuts.AddCutPCMCalo("10130023","0dm00009ab770c00amd0404000","4117901050e30220000","0r63103100000010"); //  0-10%
-    cuts.AddCutPCMCalo("11310023","0dm00009ab770c00amd0404000","4117901050e30220000","0r63103100000010"); // 10-30%
-    cuts.AddCutPCMCalo("13530023","0dm00009ab770c00amd0404000","4117901050e30220000","0r63103100000010"); // 30-50%
-    cuts.AddCutPCMCalo("15910023","0dm00009ab770c00amd0404000","4117901050e30220000","0r63103100000010"); // 50-90%
-  } else if (trainConfig == 757){ // EMCAL clusters - 0-10 triggered without OOB pile up correction for MC
-    cuts.AddCutPCMCalo("10130053","0dm00009ab770c00amd0404000","411790105te30220000","0r63103100000010"); //  0-10%
-  } else if (trainConfig == 758){ // EMCAL clusters - 30-50 triggered without OOB pile up correction for MC
-    cuts.AddCutPCMCalo("13530053","0dm00009ab770c00amd0404000","411790105te30220000","0r63103100000010"); // 30-50%
-  } else if (trainConfig == 759){ // EMCAL clusters - 0-10 triggered without OOB pile up correction for MC - w/o track matching
-    cuts.AddCutPCMCalo("10130053","0dm00009ab770c00amd0404000","4117901050e30220000","0r63103100000010"); //  0-10%
+    cuts.AddCutPCMCalo("10130023","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); //  0-10%
+    cuts.AddCutPCMCalo("11310023","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); // 10-30%
+    cuts.AddCutPCMCalo("13530023","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); // 30-50%
+    cuts.AddCutPCMCalo("15910023","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); // 50-90%
+  } else if (trainConfig == 757){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered with neutral overlap correction NonLin like
+    cuts.AddCutPCMCalo("10130e03","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); //  0-10%
+    cuts.AddCutPCMCalo("11310e03","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); // 10-30%
+    cuts.AddCutPCMCalo("13530e03","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); // 30-50%
+    cuts.AddCutPCMCalo("15910e03","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); // 50-90%
+  } else if (trainConfig == 758){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC with added Signal! with neutral overlap correction NonLin like
+    cuts.AddCutPCMCalo("10130023","0dm00009ab770c00amd0404000","411790105te30220000","0163103100000010"); //  0-10%
+    cuts.AddCutPCMCalo("11310023","0dm00009ab770c00amd0404000","411790105te30220000","0163103100000010"); // 10-30%
+    cuts.AddCutPCMCalo("13530023","0dm00009ab770c00amd0404000","411790105te30220000","0163103100000010"); // 30-50%
+    cuts.AddCutPCMCalo("15910023","0dm00009ab770c00amd0404000","411790105te30220000","0163103100000010"); // 50-90%
+  } else if (trainConfig == 759){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC - with neutral overlap correction NonLin like
+    cuts.AddCutPCMCalo("10130053","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); //  0-10%
+    cuts.AddCutPCMCalo("11310053","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); // 10-30%
+    cuts.AddCutPCMCalo("13530053","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); // 30-50%
+    cuts.AddCutPCMCalo("15910053","0dm00009ab770c00amd0404000","4117901050e30220000","0163103100000010"); // 50-90%
   } else if (trainConfig == 760){ // EMCAL clusters - 30-50 triggered without OOB pile up correction for MC - w/o track matching
     cuts.AddCutPCMCalo("13530053","0dm00009ab770c00amd0404000","4117901050e30220000","0r63103100000010"); // 30-50%
   } else if (trainConfig == 764){ // EMCAL+DCal clusters - 13 TeV PCM-EMC cuts

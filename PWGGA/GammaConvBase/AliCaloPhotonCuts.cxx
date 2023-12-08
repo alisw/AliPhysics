@@ -6063,6 +6063,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
         fParamMeanTrackPt[2] = -1.93788e-05;
       }
       break;
+
     case 30: // cut char 'u' (no TM but with random energy correction for overlap), only use with cell tm!
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
@@ -6085,6 +6086,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
         fParamMeanTrackPt[2] = -1.93788e-05;
       }
       break;
+
     case 31: // cut char 'v' (no TM but with mean energy correction for overlap using mean charge particle per cell), only use with cell tm!
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
@@ -6106,6 +6108,16 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
         fParamMeanTrackPt[1] = +2.33711e-04;
         fParamMeanTrackPt[2] = -1.93788e-05;
       }
+      break;
+    
+    case 32: // cut char 'w' NonLin like fitted to pp 13 TeV
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
+      fUseDistTrackToCluster = kFALSE;
+      fMaxDistTrackToClusterEta = 0;
+      fMinDistTrackToClusterPhi = 0;
+      fMaxDistTrackToClusterPhi = 0;
+      fDoEnergyCorrectionForOverlap = 4;
       break;
 
     default:
@@ -10757,7 +10769,7 @@ Bool_t AliCaloPhotonCuts::SetNMatchedTracksFunc(float meanCent){
 
 // Function to get the energy value to subtract from a cluster to account for
 // neutral overlap in PbPb 5 TeV
-Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent){
+Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent, float E){
   switch (fDoEnergyCorrectionForOverlap){
     case 0:
       return 0.;
@@ -10767,6 +10779,20 @@ Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent){
       return 0.5 * fFuncNMatchedTracks->GetRandom(0.0, 8.0) * GetMeanEForOverlap(meanCent, fParamMeanTrackPt);
     case 3:
       return 0.5 * fFuncNMatchedTracks->Eval(meanCent) * GetMeanEForOverlap(meanCent, fParamMeanTrackPt);
+    case 4:
+      if(meanCent < 10){
+        if(E > 3.5) E = 3.5;
+        return 1.09645e+00 - 3.49489e-01 * E + 1.56646e-01 * E * E - 2.03620e-02 * E * E * E;
+      } else if (meanCent < 30){
+        if(E > 3.8) E = 3.8;
+        return 1.03972e+00 - 1.79650e-01 * E + 8.41570e-02 * E * E - 1.13454e-02 * E * E * E;
+      } else if (meanCent < 50){
+        if(E > 3.3) E = 3.3;
+        return 1.00734e+00 - 6.42114e-02 * E + 3.03931e-02 * E * E - 4.16131e-03 * E * E * E;
+      } else {
+        if(E > 3.5) E = 3.5;
+        return 9.95241e-01 - 1.49339e-02 * E + 8.08355e-03 * E * E - 1.33936e-03 * E * E * E;
+      }
     default:
       return 0;
   }
