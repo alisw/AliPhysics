@@ -99,6 +99,7 @@ class AliAnalysisTaskWHMult : public AliAnalysisTaskSE
 	TH2F*			fHistNtrk_W[3];			//! histogram of Ntrack in R<0.3,0.4,0.5 of W					//74,75,76
 	TH2F*			fHistNtrk_HF[3];		//! histogram of Ntrack in R<0.3,0.4,0.5 of HF					//77,78,79
 	TH2F*			fHistEiso_Ntrk[3];		//! histogram of Eiso vs Ntrk in R<0.3,0.4,0.5					//80,81,82
+	TH2F*			fHistUEmult[3];			//! histogram of Mult vs UE pT in R<0.3,0.4,0.5					//83,84,85
 
 	Bool_t                  fEMCEG1;//EMcal Threshold EG1
 

@@ -108,6 +108,7 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult() : AliAnalysisTaskSE(),
   fHistNtrk_W(),
   fHistNtrk_HF(),
   fHistEiso_Ntrk(),
+  fHistUEmult(),
   fEMCEG1(kFALSE)
 {
   // default constructor, don't allocate memory here!
@@ -177,6 +178,7 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult(const char* name) : AliAnalysisTask
   fHistNtrk_W(),
   fHistNtrk_HF(),
   fHistEiso_Ntrk(),
+  fHistUEmult(),
   fEMCEG1(kFALSE)
 {
   // constructor
@@ -339,6 +341,10 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
     fHistEiso_Ntrk[isoR] = new TH2F(Form("fHistEiso_Ntrk_%d",isoR),Form("E_{iso} vs N_{trk} (R<0.%d)",3+isoR),100,0,1,10,0,10);
     fHistEiso_Ntrk[isoR]->GetXaxis()->SetTitle("E_{iso}");
     fHistEiso_Ntrk[isoR]->GetYaxis()->SetTitle("N_{trk}");
+
+    fHistUEmult[isoR] = new TH2F(Form("fHistUEmult_%d",isoR),Form("Mult vs p_{T,ass} (#pi/4 < #Delta#phi < 3#pi/4) (R<0.%d)",3+isoR),200,0,200,200,0,20);
+    fHistUEmult[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fHistUEmult[isoR]->GetYaxis()->SetTitle("p_{T,ass} (GeV/c)");
   }
 
 
@@ -425,6 +431,9 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
   fOutputList->Add(fHistEiso_Ntrk[0]);
   fOutputList->Add(fHistEiso_Ntrk[1]);
   fOutputList->Add(fHistEiso_Ntrk[2]);
+  fOutputList->Add(fHistUEmult[0]);
+  fOutputList->Add(fHistUEmult[1]);
+  fOutputList->Add(fHistUEmult[2]);
 
   PostData(1, fOutputList);
 }
@@ -820,7 +829,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
               if (Eiso[isoR] >= 0.0 && Eiso[isoR] <= 0.05 && isoNtrk[isoR] < 3) fHistPt_We[isoR]->Fill(track->Pt());
 
 //---------------Pt cut---------------
-              if (track->Pt() > 33. && track->Pt() < 55.)
+              if (track->Pt() > 30. && track->Pt() < 60.)
               {
                 Double_t sumPt_OppTrks = 0;
 //---------------another track loop start---------------
@@ -872,6 +881,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                   if (Eiso[isoR] >= 0.0 && Eiso[isoR] <= 0.05 && isoNtrk[isoR] < 3) {
                     fdPhi_trkW_Pt[isoR]->Fill(dPhi,anotrack->Pt());
                     fdPhi_trkW_ePt[isoR]->Fill(dPhi,track->Pt());
+                    if (dPhi >= 1.*TMath::Pi()/4. && dPhi <= 3.*TMath::Pi()/4.) fHistUEmult[isoR]->Fill(corr_nAcc,anotrack->Pt());
                   }
                   if (Eiso[isoR] >= 0.1 && Eiso[isoR] <= 0.50 && isoNtrk[isoR] < 3) {
                     fdPhi_trkHF_Pt[isoR]->Fill(dPhi,anotrack->Pt());
@@ -890,7 +900,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                     if (dPhiMaxTrk < 5.*TMath::Pi()/6. || dPhiMaxTrk > 7.*TMath::Pi()/6.) MaxPtTrackNum = j;
                     //=== higher Pt track ===
                     if (anotrack->Pt() >= MaxTrk->Pt()) MaxPtTrackNum = j;
-                    //=== Pt sum ==
+                    //=== Pt sum ===
                     if (anotrack->Pt() > 0.5) sumPt_OppTrks += anotrack->Pt();
                   }
                 }   //other track loop end
