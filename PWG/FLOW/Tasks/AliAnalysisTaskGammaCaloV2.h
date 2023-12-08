@@ -104,6 +104,7 @@ public:
   // Int_t GetEventCutList(TList *CutArray)
   // {
   //   CutArray = fEventCutArray;
+
   //   return fnCuts;
   // }
   TList *GetEventCutList()
@@ -130,6 +131,10 @@ public:
   {
     fnCuts = nCuts;
     fMesonCutArray = CutArray;
+  }
+  void SetTrainconfig(Int_t config)
+  {
+    fTrainConfig = config;
   }
 
   // BG HandlerSettings
@@ -230,6 +235,7 @@ protected:
   TClonesArray *fOutputBGBranch;             //!<! AOD Branch with output clusters
   TString fOutputBGBranchName;               ///<  New of output of background
   Bool_t fOutputAODBranchSet;                ///<  Set the background branch in the input event once, only once!
+  Int_t fTrainConfig;                        ///<  Tranfig
   Bool_t fBranchSet;                         ///<  switch to Set the AOD clusters branch in the input event
   TH1D **fEventCount;                        //! array of histogram of event count in centBins
   TH3F **fHistoMotherInvMassPtPhi;           //! array of histogram with signal + BG for same event photon pairs in deta phi, inv Mass, pt

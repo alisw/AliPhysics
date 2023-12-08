@@ -107,6 +107,7 @@ ClassImp(AliAnalysisTaskGammaCaloV2)
                                                                fOutputBGBranch(NULL),
                                                                fOutputBGBranchName(""),
                                                                fOutputAODBranchSet(kFALSE),
+                                                               fTrainConfig(-999),
                                                                fBranchSet(kTRUE),
                                                                fEventCount(NULL),
                                                                fHistoMotherInvMassPtPhi(NULL),
@@ -518,6 +519,7 @@ AliAnalysisTaskGammaCaloV2::AliAnalysisTaskGammaCaloV2(const char *name) : AliAn
                                                                            fOutputBGBranch(NULL),
                                                                            fOutputBGBranchName(""),
                                                                            fOutputAODBranchSet(kFALSE),
+                                                                           fTrainConfig(-999),
                                                                            fBranchSet(kTRUE),
                                                                            fEventCount(NULL),
                                                                            fHistoMotherInvMassPtPhi(NULL),
@@ -1029,12 +1031,12 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
     fOutputBGBranch->SetOwner(kTRUE);
     if (fOutputAODBranchName.Length() == 0)
     {
-      fOutputAODBranchName = "pi0Array";
+      fOutputAODBranchName = Form("pi0Array_%i", fTrainConfig);
       AliInfo("Cluster branch name not set, set it to pi0Array");
     }
     if (fOutputBGBranchName.Length() == 0)
     {
-      fOutputBGBranchName = "pi0BackgroundArray";
+      fOutputBGBranchName = Form("pi0BackgroundArray_%i", fTrainConfig);
       AliInfo("Cluster background branch name not set, set it to pi0BackgroundArray");
     }
 
@@ -4218,10 +4220,10 @@ void AliAnalysisTaskGammaCaloV2::UserExec(Option_t *)
   }
   if (fCloseHighPtClusters)
     delete fCloseHighPtClusters;
-  // if (fBranchSet)
-  // {
-  //   cout << "=======Npi0=======" << fOutputAODBranch->GetEntriesFast() << endl;
-  // }
+  /// if (fBranchSet)
+  /// {
+  ///   cout << "=======Npi0=======" << fOutputAODBranch->GetEntriesFast() << endl;
+  /// }
   PostData(1, fOutputContainer);
 }
 
