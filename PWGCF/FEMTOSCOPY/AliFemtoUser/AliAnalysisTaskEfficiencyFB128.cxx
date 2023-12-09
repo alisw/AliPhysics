@@ -7,8 +7,6 @@
 #include "TObjArray.h"
 #include "TString.h"
 #include "TParticle.h"
-#include <list>
-#include <algorithm>
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -77,31 +75,27 @@ void AliAnalysisTaskEfficiencyFB128::SetPidMethod(int method)
 
 //_______________________________________________________
 
-AliAnalysisTaskEfficiencyFB128::AliAnalysisTaskEfficiencyFB128() :  AliAnalysisTaskSE(), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0),fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fEstEventMult(kRefMult), fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0), fTrackPileUpRemoval(kFALSE), fV0PileUpRemoval(kFALSE)
+AliAnalysisTaskEfficiencyFB128::AliAnalysisTaskEfficiencyFB128() :  AliAnalysisTaskSE(), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0),fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fEstEventMult(kRefMult), fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0), fTrackPileUpRemoval(kFALSE), fV0PileUpRemoval(kFALSE){
 
-    {
+  for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
+    for(Int_t chg=0;chg<2;chg++){
+       fGeneratedMCPrimaries[i][chg] = NULL;
+       fMCPrimariesThatAreReconstructed[i][chg] = NULL;
+       fGeneratedMCPrimaries4D[i][chg] = NULL;
+       fMCPrimariesThatAreReconstructed4D[i][chg] = NULL;
+       fMCPrimariesThatAreReconstructedNoNsigma[i][chg] = NULL;
+       fReconstructedAfterCuts[i][chg] = NULL;
+       fReconstructedNotPrimaries[i][chg] = NULL;
+       fReconstructedPrimaries[i][chg] = NULL;
+       fContamination[i][chg] = NULL;
+     }
+  }
 
-      for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
-	for(Int_t chg=0;chg<2;chg++){
-	  fGeneratedMCPrimaries[i][chg] = NULL;
-	  fMCPrimariesThatAreReconstructed[i][chg] = NULL;
-	  fGeneratedMCPrimaries4D[i][chg] = NULL;
-	  fMCPrimariesThatAreReconstructed4D[i][chg] = NULL;
-	  fMCPrimariesThatAreReconstructedNoNsigma[i][chg] = NULL;
-	  fReconstructedAfterCuts[i][chg] = NULL;
-	  fReconstructedNotPrimaries[i][chg] = NULL;
-	  fReconstructedPrimaries[i][chg] = NULL;
-	  fContamination[i][chg] = NULL;
-	}
-      }
-
-      for ( Int_t i = 0; i < 11; i++) {
-	fHistQA[i] = NULL;
-	if(i<3) fHistQA2D[i] = NULL;
-      }
-    }
-
-
+  for ( Int_t i = 0; i < 11; i++) {
+    fHistQA[i] = NULL;
+    if(i<3) fHistQA2D[i] = NULL;
+  }
+}
 
 AliAnalysisTaskEfficiencyFB128::AliAnalysisTaskEfficiencyFB128(TString name, int pidMethod, int filterbit) :
   AliAnalysisTaskSE(name), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0), fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection),  fEstEventMult(kRefMult),fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
@@ -131,7 +125,7 @@ AliAnalysisTaskEfficiencyFB128::AliAnalysisTaskEfficiencyFB128(TString name, int
       fGeneratedMCPrimaries4D[i][chg] = NULL;
     }
   }
- for ( Int_t i = 0; i < 11; i++) {
+  for ( Int_t i = 0; i < 11; i++) {
     if(i<4) fHistEv[i] = NULL;
     fHistQA[i] = NULL;
     if(i<3) fHistQA2D[i] = NULL;
@@ -143,10 +137,7 @@ AliAnalysisTaskEfficiencyFB128::AliAnalysisTaskEfficiencyFB128(TString name, int
   /*fTrackCuts =  AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     if( !fTrackCuts ) return;
     fTrackCuts->SetMinNClustersTPC(70);*/
-  
-  
-
-
+ 
   //DefineInput(0, TChain::Class());
   //DefineOutput(0, TTree::Class()); 
   DefineOutput(1, TList::Class());
@@ -192,7 +183,7 @@ void AliAnalysisTaskEfficiencyFB128::UserCreateOutputObjects()
     else if (j==3) parttypename="Proton";
     else if (j==4) parttypename="Lambda";
 
-    for(Int_t i = 0; i < MULTBINS; i++)  {
+    for(Int_t i = 0; i < 1; i++)  {
       hname1  = "hGeneratedMCPrimariesEffM"; hname1+=i; hname1+=parttypename;
       htitle1 = "Kinematic level Y_pT (prim only) M"; htitle1+=i; htitle1+=parttypename;
       fGeneratedMCPrimaries[i*PARTTYPES+j][0] = new TH2F(hname1.Data(),htitle1.Data(),50, -1.5, 1.5,1000,0.,10.0);
@@ -449,7 +440,7 @@ void AliAnalysisTaskEfficiencyFB128::UserCreateOutputObjects()
     fHistoList->Add(fHistEv[i]);
 
 
-  for(Int_t i = 0; i < 4; i++)  {
+  for(Int_t i = 0; i < MULTBINS; i++)  {
     hname = "fHistEventCutsM";
     hname+= i;
     
@@ -572,7 +563,7 @@ void AliAnalysisTaskEfficiencyFB128::UserCreateOutputObjects()
       }
     }
     
-  for (Int_t i = 0; i < MULTBINS*PARTTYPES; i++){
+  for (Int_t i = 0; i < 1*PARTTYPES; i++){
     for(Int_t chg=0;chg<2;chg++){
       fHistoList->Add(fGeneratedMCPrimaries[i][chg]);
       fHistoList->Add(fMCPrimariesThatAreReconstructed[i][chg]);
@@ -660,174 +651,121 @@ void AliAnalysisTaskEfficiencyFB128::UserCreateOutputObjects()
 
 //_____________________________________________________________________
 
-bool IsPionNSigmaFB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
-{
-
-    if (mom > 0.5) {
-        if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < 2)
-            return true;
-	}
-    else {
-        if (TMath::Abs(nsigmaTPCPi) < 2)
-            return true;
-    }
-
-  return false;
-}
-
-bool IsPionNSigmaV0FB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
-{
-
-  if (TMath::Abs(nsigmaTPCPi) < 3.0) return true;
-
-  return false;
-}
-
-bool IsPionNSigmaV0TPC5FB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
-{
-
-  if (TMath::Abs(nsigmaTPCPi) < 5.0) return true;
-
-  return false;
-}
-
-
-bool IsProtonNSigmaV0TPC5FB128(float mom, float nsigmaTPCP, float nsigmaTOFP)
-{
-
-  if (TMath::Abs(nsigmaTPCP) < 5.0) return true;
-
-  return false;
-}
-
-bool IsPionNSigma3FB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
-{
-
-    if (mom > 0.5) {
-        if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < 3)
-            return true;
-	}
-    else {
-        if (TMath::Abs(nsigmaTPCPi) < 3)
-            return true;
-    }
-
-  return false;
-}
-
-bool IsKaonNSigmaFB128(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
-{
-    if (mom > 0.5) {
-      //rejection of unwanted contamination
-      if(mom>1 && TOFtime<-400)
-	return false;
-
-      if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < 2)
-	return true;
-	}
-    else {
-        if (TMath::Abs(nsigmaTPCK) < 2)
-            return true;
-    }
-
-
-  return false;
-}
-
-bool IsKaonNSigma3FB128(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
-{
+bool IsPionNSigmaFB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime){
+  
   if (mom > 0.5) {
-    //rejection of unwanted contamination
-   // if(mom>1 && TOFtime<-400)
-     // return false;
- 
-    if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < 3)
-      return true;
+    if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < 2) return true;
   }
   else {
-    if (TMath::Abs(nsigmaTPCK) < 3)
-      return true;
+    if (TMath::Abs(nsigmaTPCPi) < 2) return true;
   }
-
-
   return false;
 }
 
-bool IsProtonNSigmaFB128(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
-{
+bool IsPionNSigmaV0FB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi){
+
+  if (TMath::Abs(nsigmaTPCPi) < 3.0) return true;
+    return false;
+}
+
+bool IsPionNSigmaV0TPC5FB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi){
+ 
+  if (TMath::Abs(nsigmaTPCPi) < 5.0) return true;
+    return false;
+}
+
+
+bool IsProtonNSigmaV0TPC5FB128(float mom, float nsigmaTPCP, float nsigmaTOFP){
+
+  if (TMath::Abs(nsigmaTPCP) < 5.0) return true;
+    return false;
+}
+
+bool IsPionNSigma3FB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime){
+
+  if (mom > 0.5) {
+    if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < 3) return true;
+  }
+  else {
+    if (TMath::Abs(nsigmaTPCPi) < 3) return true;
+  }
+  return false;
+}
+
+bool IsKaonNSigmaFB128(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime){
+   
+   if (mom > 0.5) {
+     //rejection of unwanted contamination
+     if(mom>1 && TOFtime<-400) return false;
+     if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < 2) return true;
+   }
+   else {
+     if (TMath::Abs(nsigmaTPCK) < 2) return true;
+   }
+   return false;
+}
+
+bool IsKaonNSigma3FB128(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime){
+   
+   if (mom > 0.5) {
+     if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < 3) return true;
+   }
+   else {
+     if (TMath::Abs(nsigmaTPCK) < 3) return true;
+   }
+   return false;
+}
+
+bool IsProtonNSigmaFB128(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime){
 
     if (mom > 0.5) {
-      if(mom>1.8 && TOFtime<-300)
-	return false;
-
-
-
-        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < 2)
-            return true;
-	}
-    else {
-        if (TMath::Abs(nsigmaTPCP) < 2)
-            return true;
+      if(mom>1.8 && TOFtime<-300) return false;
+      if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < 2) return true;
     }
-
-
-
-  return false;
+    else {
+      if (TMath::Abs(nsigmaTPCP) < 2) return true;
+    }
+    return false;
 }
 
-bool IsProtonNSigmaV0FB128(float mom, float nsigmaTPCP, float nsigmaTOFP)
-{
+bool IsProtonNSigmaV0FB128(float mom, float nsigmaTPCP, float nsigmaTOFP){
 
   if (mom < 0.8) {
     if (TMath::Abs(nsigmaTPCP) < 3.0) return true;
-  } else {
-    if (nsigmaTOFP < -999.) {
-      if (TMath::Abs(nsigmaTPCP) < 3.0) return true;
-    } else {
-      if (TMath::Abs(nsigmaTPCP) < 3.0 && TMath::Abs(nsigmaTOFP) < 3.0) return true;
-    }
-    }
-
-  return false;
-}
-
-bool IsProtonNSigma3FB128(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
-{
-  if (mom > 0.5) {
-   
-   // if(mom>1.8 && TOFtime<-300)
-     
-     // return false;
-
-
-    if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < 3)
-      return true;
   }
   else {
-    if (TMath::Abs(nsigmaTPCP) < 3)
-      return true;
+    if (nsigmaTOFP < -999.) {
+      if (TMath::Abs(nsigmaTPCP) < 3.0) return true;
+    }
+    else {
+      if (TMath::Abs(nsigmaTPCP) < 3.0 && TMath::Abs(nsigmaTOFP) < 3.0) return true;
+    }
   }
-  
+  return false;
+}
 
+bool IsProtonNSigma3FB128(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime){
+  
+  if (mom > 0.5) {
+    if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < 3) return true;
+  }
+  else {
+    if (TMath::Abs(nsigmaTPCP) < 3) return true;
+  }
   return false;
 }
 
 
-bool IsElectronFB128(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
-{
-  if(TMath::Abs(nsigmaTPCe)<3 && TMath::Abs(nsigmaTPCPi)>3 && TMath::Abs(nsigmaTPCK)>3 && TMath::Abs(nsigmaTPCP)>3)
-      return true;
-   else
-     return false;
+bool IsElectronFB128(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP){
+  
+  if(TMath::Abs(nsigmaTPCe)<3 && TMath::Abs(nsigmaTPCPi)>3 && TMath::Abs(nsigmaTPCK)>3 && TMath::Abs(nsigmaTPCP)>3) return true;
+  else return false;
 }
 
 //_______________________________________________________
 
 void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
 {
-  int iter=0;
-  iter++;
-  std::cout << "Event" <<  iter  << "" << std::endl; 
   AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   AliAODEvent *fAOD = aodH->GetEvent();
   fAODpidUtil = aodH->GetAODpidUtil();
@@ -838,32 +776,26 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
 
   Double_t mult;
   
-    if(fEstEventMult == kV0M)
-    {
-      AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
-      AliMultSelection *mult_selection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
-      mult = mult_selection->GetMultiplicityPercentile("V0M"); 
-    }
-    else if(fEstEventMult == kRefMult)
-    {
-      AliAODHeader *fAODheader = (AliAODHeader*)aodEvent->GetHeader();
-      mult = fAODheader->GetRefMultiplicity(); 
-
-   }
-   else if(fEstEventMult == kV0A)
-    {
-      AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
-      mult = alicent->GetCentralityPercentile("V0A"); 
-
-    }
-
-
+  if(fEstEventMult == kV0M){
+    AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
+    AliMultSelection *mult_selection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
+    mult = mult_selection->GetMultiplicityPercentile("V0M"); 
+  }
+  else if(fEstEventMult == kRefMult){
+    AliAODHeader *fAODheader = (AliAODHeader*)aodEvent->GetHeader();
+    mult = fAODheader->GetRefMultiplicity(); 
+  }
+  else if(fEstEventMult == kV0A){
+    AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
+    mult = alicent->GetCentralityPercentile("V0A"); 
+  }
+ 
   if(fIfAliEventCuts){
-    //******* Ali Event Cuts - applied on AOD event - standard cuts for Run2 as prepared by DPG group ************
+  //******* Ali Event Cuts - applied on AOD event - standard cuts for Run2 as prepared by DPG group ************
     if (!fEventCuts->AcceptEvent(aodEvent)) {
       return;
     }
-    //******************************************
+  //******************************************
   }
 
   // EVENT SELECTION ********************
@@ -911,6 +843,7 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
   Int_t fMinPlpContribMV = 0;
   Int_t fMinPlpContribSPD = 3;
   Bool_t fRejectTPCPileupWithITSTPCnCluCorr = kFALSE; //good for removing pileup in the data
+
    /*if(anaUtil->IsVertexSelected2013pA(aodEvent)==kFALSE) return;
 
   if(fpA2013)
@@ -935,7 +868,7 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
   }*/
 
   //pileup for LHC20e3a -> Injective Pileup over events 
-  AliAODMCHeader *mcHeader = 0;
+  /* AliAODMCHeader *mcHeader = 0;
   mcHeader = (AliAODMCHeader*)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
   if(!mcHeader) {
     printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
@@ -944,7 +877,7 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
   Bool_t isPileupInGeneratedEvent = kFALSE;
   isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,"Hijing");
   if(isPileupInGeneratedEvent) return;
-  
+  */
 
   fHistQA[9]->Fill(3);
   if(fcent2==10)fHistEvCuts[0]->Fill(3);
@@ -984,25 +917,7 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
       
     }
   }
-  double tr;
-  double tr1;
-  int ipart;
- 
-  for(ipart = 0; ipart <arrayMC->GetEntriesFast(); ipart++){  
-    AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(ipart);
-    tr = MCtrk->P();
-    tr1 = MCtrk->Theta();
-    std::cout << "P  " <<  tr << " " << "Theta  " << tr1 << " " << " ipart "<< ipart <<  std::endl; 
-    if(ipart == 5)
-      break;
-    
-  } 
- 
-
   
-
-
-
   //RECONSTRUCTED TRACKS 
   TObjArray recoParticleArray[PARTTYPES];
 ////////////// necessary cuts to estimate the Nav for reconstructed and true data in similar way /////////////////////
@@ -1124,13 +1039,7 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
     if(track->Y() < -0.5 || track->Y() > 0.5) continue; 
     fHistQA[10]->Fill(4);
 
-    //pileup for LHC20e3a -> Injective Pileup over tracks 
-    Bool_t isParticleFromOutOfBunchPileupCollision = kFALSE;
-    isParticleFromOutOfBunchPileupCollision = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iTracks,mcHeader,arrayMC);
-    if(isParticleFromOutOfBunchPileupCollision) continue;
-    	
-
-    //DCA
+   //DCA
     Double_t DCAXY;
     Double_t DCAZ;
 
@@ -1589,10 +1498,6 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
     // check physical primary 
    if(MCtrk->IsPhysicalPrimary()) // Not from weak decay!
    {
-     Bool_t isParticleFromOutOfBunchPileupCollision = kFALSE;
-     isParticleFromOutOfBunchPileupCollision = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ipart,mcHeader,arrayMC);
-     if(isParticleFromOutOfBunchPileupCollision) continue;
-   
      // Filling histograms for MC truth particles
      fGeneratedMCPrimaries[fcent*PARTTYPES][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
      Double_t val[] = {MCtrk->Y(), MCtrk->Pt(), MCtrk->Zv() ,MCtrk->Phi()};
