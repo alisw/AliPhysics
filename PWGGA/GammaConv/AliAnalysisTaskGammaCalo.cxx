@@ -3665,7 +3665,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
           clus->SetE(clus->E() - ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent));
         } else if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() == 3){
           // Neutral Overlap correction via mean number of charged particles per cell
-          clus->SetE(clus->E() - (float) clus->GetNCells() * ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent));
+          clus->SetE(clus->E() - 12.f * ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent));
         } else if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() == 4){
           // Neutral Overlap correction via NonLin like correction
           clus->SetE(clus->E() * ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent, clus->E()));
