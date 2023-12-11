@@ -128,8 +128,7 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   TH1F* hPtInPrim_proton;
   TH1F* hPtInPrim_sigmap;
   TH1F* hPtInPrim_sigmam;
-  TH1F* hPtInPrim_omega;
-  TH1F* hPtInPrim_xi;
+  TH1F* hPtInPrim_lambda;
   TH1F* hPtInPrim_rest;
   TH1F* hPtOutAll_ch;
   TH1F* hPtOutPrim_ch;
@@ -138,8 +137,6 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   TH1F* hPtOutPrim_proton;
   TH1F* hPtOutPrim_sigmap;
   TH1F* hPtOutPrim_sigmam;
-  TH1F* hPtOutPrim_omega;
-  TH1F* hPtOutPrim_xi;
   TH1F* hPtOutPrim_rest;
   TH2D* hPhiEtaSPD;
   TH2D* hVtxZvsTracklets;
