@@ -86,20 +86,36 @@ class AliAnalysisTaskWHMult : public AliAnalysisTaskSE
 	TH1F*			fHistPt_We[3];			//! histogram of Pt (W candidate) R<0.3,0.4,0.5					//47,48,49
 	TH1F*			fHistPt_HFe[3];			//! histogram of Pt (HF candidate) R<0.3,0.4,0.5				//50,51,52
 	TH1F*			fPt_maxtrack_W[3];		//! histogram of max pT track/e<-W R<0.3,0.4,0.5				//53,54,55
-	TH2F*			fNtrkl_PtOfMaxTrk_W[3];		//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5			//56,57,58
-	TH2F*			fNtrkl_PtOfTrks_W[3];		//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5			//59,60,61
-	TH2F*			fHistPt_We_Ntrkl[3];		//! histogram of Pt of e<-W vs tracklets R<0.3,0.4,0.5				//62,63,64
+	TH2F*			fNtrkl_PtOfMaxTrk_W80[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 80% UE		//56,57,58
+	TH2F*			fNtrkl_PtOfMaxTrk_W85[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 85% UE		//59,60,61
+	TH2F*			fNtrkl_PtOfMaxTrk_W90[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 90% UE		//62,63,64
+	TH2F*			fNtrkl_PtOfMaxTrk_W95[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 95% UE		//65,66,67
+	TH2F*			fNtrkl_PtOfTrks_W[3];		//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5			//68,69,70
+	TH2F*			fNtrkl_PtOfTrks_W80[3];		//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 80% UE		//71,72,73
+	TH2F*			fNtrkl_PtOfTrks_W85[3];		//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 85% UE		//74,75,76
+	TH2F*			fNtrkl_PtOfTrks_W90[3];		//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 90% UE		//77,78,79
+	TH2F*			fNtrkl_PtOfTrks_W95[3];		//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 95% UE		//80,81,82
+	TH2F*			fNtrkl_PtOfMaxTrk_HF80[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 80% UE		//83,84,85
+	TH2F*			fNtrkl_PtOfMaxTrk_HF85[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 85% UE		//86,87,88
+	TH2F*			fNtrkl_PtOfMaxTrk_HF90[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 90% UE		//89,90,91
+	TH2F*			fNtrkl_PtOfMaxTrk_HF95[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 95% UE		//92,93,94
+	TH2F*			fNtrkl_PtOfTrks_HF[3];		//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5			//95,96,97
+	TH2F*			fNtrkl_PtOfTrks_HF80[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 80% UE		//98,99,100
+	TH2F*			fNtrkl_PtOfTrks_HF85[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 85% UE		//101,102,103
+	TH2F*			fNtrkl_PtOfTrks_HF90[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 90% UE		//104,105,106
+	TH2F*			fNtrkl_PtOfTrks_HF95[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 95% UE		//107,108,109
+	TH2F*			fHistPt_We_Ntrkl[3];		//! histogram of Pt of e<-W vs tracklets R<0.3,0.4,0.5				//110,111,112
 
-	TH2F*			fdPhi_trkW_full[3];		//! tryal hist R<0.3,0.4,0.5							//65,66,67
-	TH2F*			fdPhi_trkHF_full[3];		//! Eiso>0.1 tryal hist R<0.3,0.4,0.5						//68,69,70
+	TH2F*			fdPhi_trkW_full[3];		//! tryal hist R<0.3,0.4,0.5							//113,114,115
+	TH2F*			fdPhi_trkHF_full[3];		//! Eiso>0.1 tryal hist R<0.3,0.4,0.5						//116,117,118
 
-	TH2F*			fNtrkl_ClustE;			//! histogram for rejection factor						//71
-	TH2F*			TPCSigForE;			//! hist of TPC signal (dE/dx) and p						//72
-	TH2F*			fNsigmaPtForE;			//! histogram of nsigma vs Pt with e EMCal cut					//73
-	TH2F*			fHistNtrk_W[3];			//! histogram of Ntrack in R<0.3,0.4,0.5 of W					//74,75,76
-	TH2F*			fHistNtrk_HF[3];		//! histogram of Ntrack in R<0.3,0.4,0.5 of HF					//77,78,79
-	TH2F*			fHistEiso_Ntrk[3];		//! histogram of Eiso vs Ntrk in R<0.3,0.4,0.5					//80,81,82
-	TH2F*			fHistUEmult[3];			//! histogram of Mult vs UE pT in R<0.3,0.4,0.5					//83,84,85
+	TH2F*			fNtrkl_ClustE;			//! histogram for rejection factor						//119
+	TH2F*			TPCSigForE;			//! hist of TPC signal (dE/dx) and p						//120
+	TH2F*			fNsigmaPtForE;			//! histogram of nsigma vs Pt with e EMCal cut					//121
+	TH2F*			fHistNtrk_W[3];			//! histogram of Ntrack in R<0.3,0.4,0.5 of W					//122,123,124
+	TH2F*			fHistNtrk_HF[3];		//! histogram of Ntrack in R<0.3,0.4,0.5 of HF					//125,126,127
+	TH2F*			fHistEiso_Ntrk[3];		//! histogram of Eiso vs Ntrk in R<0.3,0.4,0.5					//128,129,130
+	TH2F*			fHistUEmult[3];			//! histogram of Mult vs UE pT in R<0.3,0.4,0.5					//131,132,133
 
 	Bool_t                  fEMCEG1;//EMcal Threshold EG1
 
