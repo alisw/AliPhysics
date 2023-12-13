@@ -183,6 +183,7 @@ protected:
   TClonesArray *fOutputBGBranch;                               //!<! AOD Branch with output clusters
   TString fOutputBGBranchName;                                 ///<  New of output of background
   Bool_t fOutputAODBranchSet;                                  ///<  Set the background branch in the input event once, only once!
+  TH1D **fEventCount;                                          //! array of histogram of event count in centBins
   Bool_t fBranchSet;                                           ///<  switch to Set the AOD clusters branch in the input event
   TH2F **fHistoMotherInvMassPt;                                //!
   TH2F **fHistoMotherInvMassPtIso;                             //!

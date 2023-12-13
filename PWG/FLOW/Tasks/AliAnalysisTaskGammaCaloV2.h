@@ -190,7 +190,6 @@ public:
   bool LoadCalibHistForThisRun();
   bool GetVZEROPlane();
   double GetEventPlane(double qx, double qy, double harmonic);
-  void SetListForVZEROCalib(TList *flist) { this->fListVZEROCalib = (TList *)flist->Clone(); }
   void SetPeriod(TString period) { this->fPeriod = period; }
   void SetEventBranch();
 
@@ -586,6 +585,7 @@ protected:
   bool IsVZEROCalibOn; // switch for VZERO qn calib
   bool IsQAVZERO;
   TList *fListVZEROCalib; // read list for V0 Calib
+  TFile *fVZEROCalibFile;
   double fPsi2V0C;
   double fPsi2V0A;
   TH2D **fHist2DPsi2V0CCent;
@@ -623,7 +623,6 @@ protected:
   TProfile **fHist2V0Res;
   TH1D *hQx2mV0[2];
   TH1D *hQy2mV0[2];
-  TSpline3 *splQ2c[90];
 
 private:
   AliAnalysisTaskGammaCaloV2(const AliAnalysisTaskGammaCaloV2 &);            // Prevent copy-construction

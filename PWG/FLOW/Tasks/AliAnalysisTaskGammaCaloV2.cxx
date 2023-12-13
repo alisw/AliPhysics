@@ -26,6 +26,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
+#include "TGrid.h"
 #include "THnSparse.h"
 #include "TCanvas.h"
 #include "TNtuple.h"
@@ -434,6 +435,7 @@ ClassImp(AliAnalysisTaskGammaCaloV2)
                                                                IsVZEROCalibOn(kFALSE),
                                                                IsQAVZERO(kTRUE),
                                                                fListVZEROCalib(NULL),
+                                                               fVZEROCalibFile(NULL),
                                                                fPsi2V0C(-999),
                                                                fPsi2V0A(-999),
                                                                fHist2DPsi2V0CCent(NULL),
@@ -472,10 +474,6 @@ ClassImp(AliAnalysisTaskGammaCaloV2)
   {
     hQx2mV0[i] = NULL;
     hQy2mV0[i] = NULL;
-  }
-  for (int i = 0; i < 90; i++)
-  {
-    splQ2c[i] = NULL;
   }
 }
 
@@ -846,6 +844,7 @@ AliAnalysisTaskGammaCaloV2::AliAnalysisTaskGammaCaloV2(const char *name) : AliAn
                                                                            IsVZEROCalibOn(kFALSE),
                                                                            IsQAVZERO(kTRUE),
                                                                            fListVZEROCalib(NULL),
+                                                                           fVZEROCalibFile(NULL),
                                                                            fPsi2V0C(-999),
                                                                            fPsi2V0A(-999),
                                                                            fHist2DPsi2V0CCent(NULL),
@@ -885,10 +884,7 @@ AliAnalysisTaskGammaCaloV2::AliAnalysisTaskGammaCaloV2(const char *name) : AliAn
     hQx2mV0[i] = NULL;
     hQy2mV0[i] = NULL;
   }
-  for (int i = 0; i < 90; i++)
-  {
-    splQ2c[i] = NULL;
-  }
+
 
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -3784,38 +3780,46 @@ void AliAnalysisTaskGammaCaloV2::UserCreateOutputObjects()
   ////////////////////////
   if (IsVZEROCalibOn)
   {
-    if (!fListVZEROCalib)
+    if (!gGrid)
     {
-      std::cout << ("VZERO calibration list not found") << std::endl;
-      return;
+        TGrid::Connect("alien://");
     }
 
-    // V0C Qx Mean
-    // V0C Qy Mean
-    // V0A Qx Mean
-    // V0A Qy Mean
-    contQxncm = (AliOADBContainer *)fListVZEROCalib->FindObject("fqxc2m");
-    contQyncm = (AliOADBContainer *)fListVZEROCalib->FindObject("fqyc2m");
-    contQxnam = (AliOADBContainer *)fListVZEROCalib->FindObject("fqxa2m");
-    contQynam = (AliOADBContainer *)fListVZEROCalib->FindObject("fqya2m");
-
-    for (int i = 0; i < 2; i++)
-    {
-      hQx2mV0[i] = new TH1D();
-      hQy2mV0[i] = new TH1D();
-    }
-    // 15 V0 Mult
     if (fPeriod.EqualTo("LHC15o"))
     {
-      contMult = (AliOADBContainer *)fListVZEROCalib->FindObject("hMultV0BefCorPfpx");
-      hMultV0 = new TH1D();
-      for (int isp = 0; isp < 90; isp++)
-        splQ2c[isp] = (TSpline3 *)fListVZEROCalib->FindObject(Form("sp_q2V0C_%d", isp));
+            fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC15o/VZEROCalibFile15o.root", "READ");
+            fListVZEROCalib = dynamic_cast<TList *>(fVZEROCalibFile->Get("VZEROCalibList"));
+            if (fListVZEROCalib)
+            {
+                // V0C Qx Mean
+                // V0C Qy Mean
+                // V0A Qx Mean
+                // V0A Qy Mean
+                contQxncm = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqxc%im", 2));
+                contQyncm = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqyc%im", 2));
+                contQxnam = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqxa%im", 2));
+                contQynam = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqya%im", 2));
+                contMult = (AliOADBContainer *)fListVZEROCalib->FindObject("hMultV0BefCorPfpx");
+            }
+            else
+                std::cout << "!!!!!!!!!!!!!!!VZERO List not Found!!!!!!!!!!!!!!!" << std::endl;
     }
     if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r"))
     {
-      fHCorrectV0ChWeghts = new TH2F();
-      hQnPercentile = (TH2D *)fListVZEROCalib->FindObject("h_qncPercentile");
+            fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/j/jwan/CalibFile/calibq2V0C18qrP3.root", "READ");
+            if (fVZEROCalibFile)
+            {
+                // V0C Qx Mean
+                // V0C Qy Mean
+                // V0A Qx Mean
+                // V0A Qy Mean
+                contQxncm = (AliOADBContainer *)fVZEROCalibFile->GetObjectChecked("fqxc2m", "AliOADBContainer");
+                contQyncm = (AliOADBContainer *)fVZEROCalibFile->GetObjectChecked("fqyc2m", "AliOADBContainer");
+                contQxnam = (AliOADBContainer *)fVZEROCalibFile->GetObjectChecked("fqxa2m", "AliOADBContainer");
+                contQynam = (AliOADBContainer *)fVZEROCalibFile->GetObjectChecked("fqya2m", "AliOADBContainer");
+            }
+            else
+                std::cout << "!!!!!!!!!!!!!!!VZERO File not Found!!!!!!!!!!!!!!!" << std::endl;
     }
   }
 
@@ -9396,12 +9400,12 @@ bool AliAnalysisTaskGammaCaloV2::LoadCalibHistForThisRun()
   {
     if (IsVZEROCalibOn)
     {
-      hMultV0->Reset();
-      for (int i = 0; i < 2; i++)
-      {
-        hQx2mV0[i]->Reset();
-        hQy2mV0[i]->Reset();
-      }
+     /// hMultV0->Reset();
+     /// for (int i = 0; i < 2; i++)
+     /// {
+     ///   hQx2mV0[i]->Reset();
+     ///   hQy2mV0[i]->Reset();
+     /// }
       hMultV0 = ((TH1D *)contMult->GetObject(runNum));
       hQx2mV0[0] = ((TH1D *)contQxncm->GetObject(runNum));
       hQy2mV0[0] = ((TH1D *)contQyncm->GetObject(runNum));
@@ -9422,43 +9426,33 @@ bool AliAnalysisTaskGammaCaloV2::LoadCalibHistForThisRun()
   if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r"))
   {
     // 18q/r VZERO
-    for (int i = 0; i < 2; i++)
-    {
-      hQx2mV0[i]->Reset();
-      hQy2mV0[i]->Reset();
+     if (!contQxncm || !contQyncm || !contQxnam || !contQynam)
+        {
+            cout << "contQncm not found" << endl;
+            return false;
+        }
+        //  hQx2mV0[0] = ((TH1D *)contQxncm->GetObject(runNum));
+        //  hQy2mV0[0] = ((TH1D *)contQyncm->GetObject(runNum));
+        //  hQx2mV0[1] = ((TH1D *)contQxnam->GetObject(runNum));
+        //  hQy2mV0[1] = ((TH1D *)contQynam->GetObject(runNum));
+
+        hQx2mV0[0] = ((TH1D *)contQxncm->GetDefaultObject(Form("hV0QxMeanCRun%d", runNum)));
+        hQy2mV0[0] = ((TH1D *)contQyncm->GetDefaultObject(Form("hV0QyMeanCRun%d", runNum)));
+        hQx2mV0[1] = ((TH1D *)contQxnam->GetDefaultObject(Form("hV0QxMeanARun%d", runNum)));
+        hQy2mV0[1] = ((TH1D *)contQynam->GetDefaultObject(Form("hV0QyMeanARun%d", runNum)));
+        if (!hQx2mV0[0] || !hQy2mV0[0] || !hQx2mV0[1] || !hQy2mV0[1])
+        {
+            //     cout << "=======hQ2mV0 not found======" << endl;
+            return false;
+        }
+        //    fHCorrectV0ChWeghts->Reset();
+        fHCorrectV0ChWeghts = (TH2F *)fVZEROCalibFile->GetObjectChecked(Form("hWgtV0ChannelsvsVzRun%d", runNum), "TH2F");
+        if (!fHCorrectV0ChWeghts)
+        {
+            //       cout << "=======fHCorrectV0ChWeghts not found======" << endl;
+            return false;
+        }
     }
-    cout << (fV0Reader->GetPeriodName()).Data() << endl;
-    hQx2mV0[0] = ((TH1D *)contQxncm->GetObject(runNum));
-    hQy2mV0[0] = ((TH1D *)contQyncm->GetObject(runNum));
-    hQx2mV0[1] = ((TH1D *)contQxnam->GetObject(runNum));
-    hQy2mV0[1] = ((TH1D *)contQynam->GetObject(runNum));
-    /// char num_str = static_cast<char>(runNum);
-    /// hQx2mV0[0] = ((TH1D *)contQxncm->GetObject(Form("hV0QxMeanCRun%c", num_str)));
-    /// hQy2mV0[0] = ((TH1D *)contQyncm->GetObject(Form("hV0QyMeanCRun%c", num_str)));
-    /// hQx2mV0[1] = ((TH1D *)contQxnam->GetObject(Form("hV0QxMeanARun%c", num_str)));
-    /// hQy2mV0[1] = ((TH1D *)contQynam->GetObject(Form("hV0QyMeanARun%c", num_str)));
-    //  hQx2mV0[0] = ((TH1D *)contQxncm->GetObject("hV0QxMeanCRun297222"));
-    //  hQy2mV0[0] = ((TH1D *)contQyncm->GetObject("hV0QyMeanCRun297222"));
-    //  hQx2mV0[1] = ((TH1D *)contQxnam->GetObject("hV0QxMeanARun297222"));
-    //  hQy2mV0[1] = ((TH1D *)contQynam->GetObject("hV0QyMeanARun297222"));
-    for (int i = 0; i < 2; i++)
-    {
-      if (!hQx2mV0[i])
-      {
-        cout << "hQx2mV0 don't found" << endl;
-        return false;
-      }
-      if (!hQy2mV0[i])
-      {
-        cout << "hQy2mV0 don't found" << endl;
-        return false;
-      }
-    }
-    fHCorrectV0ChWeghts->Reset();
-    fHCorrectV0ChWeghts = (TH2F *)fListVZEROCalib->FindObject(Form("hWgtV0ChannelsvsVzRun%d", runNum));
-    if (!fHCorrectV0ChWeghts)
-      return false;
-  }
   return true;
 }
 bool AliAnalysisTaskGammaCaloV2::GetVZEROPlane()

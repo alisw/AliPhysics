@@ -44,51 +44,12 @@ void AddTaskGammaV2(
         EventCutList = fGammaCaloV1->GetEventCutList();
     }
 
-    //  Double_t cent = fGammaCalo->GetCent();//
-    //  TString fileName = AliAnalysisManager::GetCommonFileName();
-    //  fileName += ":MyTask"; // create a subfolder in the file
-    // now we create an instance of your task
+    // now  create an instance of task
     AliAnalysisTaskPi0EtaV2 *task = new AliAnalysisTaskPi0EtaV2(Form("FlowTask_%i", trainConfig.Atoi())); //
     if (!task)
     {
         return;
     }
-    TFile *fVZEROCalibFile = nullptr;
-    TList *fVZEROCalibList = nullptr;
-
-    if (!gGrid)
-        TGrid::Connect("alien://");
-
-    if (period.EqualTo("LHC15o"))
-    {
-        fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC15o/VZEROCalibFile15o.root", "READ");
-        //    fVZEROCalibFile = TFile::Open("/Users/mojie/Works/legotrain_helpers-master/VZEROCalibFile15o.root", "READ");
-        fVZEROCalibList = dynamic_cast<TList *>(fVZEROCalibFile->Get("VZEROCalibList"));
-    }
-    if (period.EqualTo("LHC18q"))
-    {
-        fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/calibq2V0C18qP3.root", "READ");
-        fVZEROCalibList = dynamic_cast<TList *>(fVZEROCalibFile->Get("18qlistspPerc"));
-    }
-    if (period.EqualTo("LHC18r"))
-    {
-        fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/calibq2V0C18rP3.root", "READ");
-        fVZEROCalibList = dynamic_cast<TList *>(fVZEROCalibFile->Get("18rlistspPerc"));
-    }
-    //  if (period.EqualTo("LHC18r") || period.EqualTo("LHC18q"))
-    //  {
-    //      //   fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/calibq2V0C18rP3.root", "READ");
-    //      fVZEROCalibFile = TFile::Open("/Users/mojie/Works/legotrain_helpers-master/calibq2V0C18qrP3.root", "READ");
-    //      fVZEROCalibList = dynamic_cast<TList *>(fVZEROCalibFile);
-    //  }
-    if (fVZEROCalibList)
-    {
-        task->SetListForVZEROCalib(fVZEROCalibList);
-        std::cout << "================  VZERO List Set in GammaTest =================" << std::endl;
-    }
-    else
-        std::cout << "!!!!!!!!!!!!!!!VZERO List not Found!!!!!!!!!!!!!!!" << std::endl;
-
     task->SetnCuts(nCuts);
     // tsak->SetRunMode(runMode);
     //  task->SetCent(cent);
