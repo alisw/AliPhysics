@@ -49,11 +49,13 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   virtual void NotifyRun();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
+  AliMCEvent *getMCEvent();
   Bool_t CheckTrigger(Double_t);
   Bool_t AcceptAOD(AliAODEvent*, Double_t lvtxXYZ[3]);
   Bool_t IsPileupEvent(AliAODEvent* ev, double centrality);
   void SetTriggerType(UInt_t newval) {fTriggerType = newval; };
   void LoadCorrectionsFromLists();
+  void ProcessOnTheFly();
   void FillWPCounter(vector<vector<double>> &inarr, double w, double p);
   void SetPtBins(Int_t nBins, Double_t *ptbins);
   void SetEtaBins(Int_t nBins, Double_t *etabins);
@@ -84,6 +86,9 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetEnableFB768DCAxy(bool newval) { fEnableFB768dcaxy = newval;}
   void SetUseOldPileup(bool newval) { fUseOldPileup = newval; }
   void SetCentralPileup(double newval) {fCentralPU = newval;}
+  void SetOnTheFly(bool newval) {fOnTheFly = newval;}
+  double getGeneratorCentrality();
+  void SetOTFGenerator(TString gen) { fGenerator = gen; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -99,9 +104,11 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Bool_t fUseOldPileup;
   Bool_t fCentSelectForMptNch;
   TString fDCAxyFunctionalForm;
+  Bool_t fOnTheFly;
+  TString fGenerator;
   AliMCEvent *fMCEvent; //! MC event
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
-  TRandom *fRndm; 
+  TRandom *fRndm;
   Int_t fNBootstrapProfiles; //Number of profiles for bootstrapping
   Bool_t fFillAdditionalQA;
   TAxis *fPtAxis;
@@ -121,6 +128,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Int_t fPtMpar;
   Double_t fEtaLow;
   Double_t fEtaAcceptance;
+  Double_t fImpactParameterMC;
   TList *fQAList; //
   TH1D* fEventCount; //!
   TH1D *fMultiDist;
@@ -167,9 +175,10 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH2D* fhQAEventsfMultTPCvsTOF; //!
   TH2D* fhQAEventsfMultTPCvsESD; //!
   int EventNo;
-  unsigned int fEventWeight; 
+  unsigned int fEventWeight;
   vector<vector<double>>  wp;
   vector<vector<double>>  wpcm;
+  std::map<double,double> centralitymap;
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
