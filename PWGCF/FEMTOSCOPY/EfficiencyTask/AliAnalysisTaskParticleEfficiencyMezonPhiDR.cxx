@@ -1463,6 +1463,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
     if (IsKaonNSigma){
       fReconstructedAfterCuts[PARTTYPES*fcent+2][charge]->Fill(track->Eta(), track->Pt());
       
+     
 	
      }
     //Fills for all identified kaons found after cuts (reconstructed) - numerator for Efficiency
@@ -2143,33 +2144,13 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
 						if(MCtrk->GetMother() == MCtrk2->GetMother()){
 							AliAODMCParticle *Mother = (AliAODMCParticle*)arrayMC->At(MCtrk->GetMother());
 							if(Mother->GetPdgCode() == 333){
-								
 								if(MCtrk->Pt() > 0.2 && MCtrk->Pt() < 5 && MCtrk2->Pt() > 0.2 && MCtrk2->Pt() < 5){
-								/*
-								double px1 = MCtrk->Px();
-								double py1 = MCtrk->Py();
-								double pz1 = MCtrk->Pz();
-								double px2 = MCtrk2->Px();
-								double py2 = MCtrk2->Py();
-								double pz2 = MCtrk2->Pz();
 								
-								double mass1 = MCtrk->M();
+									double minv = Mother->M();
 
-								double E1 = TMath::Sqrt(px1*px1+py1*py1+pz1*pz1+mass1*mass1);
+									double pt = Mother->Pt();
 								
-								double mass2 = MCtrk2->M();
-								
-								double E2 = TMath::Sqrt(px2*px2+py2*py2+pz2*pz2+mass2*mass2);
-								
-								double minv = TMath::Sqrt((E1+E2)*(E1+E2)-(px1+px2)*(px1+px2)-(py1+py2)*(py1+py2)-(pz1+pz2)*(pz1+pz2));
-
-								double pt = TMath::Sqrt((E1+E2)*(E1+E2) - (minv*minv) - (pz1+pz2)*(pz1+pz2));
-								*/
-								double minv = Mother->M();
-
-								double pt = Mother->Pt();
-								
-								fGeneratedMCPhiPrimaries->Fill(pt,minv);
+									fGeneratedMCPhiPrimaries->Fill(pt,minv);
 								}
 							}
 						}
@@ -2246,33 +2227,12 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
 						if(MCtrk->GetMother() == MCtrk2->GetMother()){
 							AliAODMCParticle *Mother = (AliAODMCParticle*)arrayMC->At(MCtrk->GetMother());
 							if(Mother->GetPdgCode() == 333){
-								
 								if(MCtrk->Pt() > 0.2 && MCtrk->Pt() < 5 && MCtrk2->Pt() > 0.2 && MCtrk2->Pt() < 5){
-								/*
-								double px1 = MCtrk->Px();
-								double py1 = MCtrk->Py();
-								double pz1 = MCtrk->Pz();
-								double px2 = MCtrk2->Px();
-								double py2 = MCtrk2->Py();
-								double pz2 = MCtrk2->Pz();
-								
-								double mass1 = MCtrk->M();
+									double minv = Mother->M();
 
-								double E1 = TMath::Sqrt(px1*px1+py1*py1+pz1*pz1+mass1*mass1);
+									double pt = Mother->Pt();
 								
-								double mass2 = MCtrk2->M();
-								
-								double E2 = TMath::Sqrt(px2*px2+py2*py2+pz2*pz2+mass2*mass2);
-								
-								double minv = TMath::Sqrt((E1+E2)*(E1+E2)-(px1+px2)*(px1+px2)-(py1+py2)*(py1+py2)-(pz1+pz2)*(pz1+pz2));
-
-								double pt = TMath::Sqrt((E1+E2)*(E1+E2) - (minv*minv) - (pz1+pz2)*(pz1+pz2));
-								*/
-								double minv = Mother->M();
-
-								double pt = Mother->Pt();
-								
-								fGeneratedMCPhiPrimaries->Fill(pt,minv);
+									fMCPrimariesPhiThatAreReconstructed->Fill(pt,minv);
 								}
 							}
 						}
