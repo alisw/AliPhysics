@@ -110,6 +110,7 @@ ClassImp(AliAnalysisTaskGammaConvFlowV1)
                                                                        fOutputBGBranch(NULL),
                                                                        fOutputBGBranchName(""),
                                                                        fOutputAODBranchSet(kFALSE),
+                                                                       fEventCount(NULL),
                                                                        fBranchSet(kTRUE),
                                                                        fHistoMotherInvMassPt(NULL),
                                                                        fHistoMotherInvMassPtIso(NULL),
@@ -365,6 +366,7 @@ AliAnalysisTaskGammaConvFlowV1::AliAnalysisTaskGammaConvFlowV1(const char *name)
                                                                                    fOutputBGBranch(NULL),
                                                                                    fOutputBGBranchName(""),
                                                                                    fOutputAODBranchSet(kFALSE),
+                                                                                   fEventCount(NULL),
                                                                                    fBranchSet(kTRUE),
                                                                                    fHistoMotherInvMassPt(NULL),
                                                                                    fHistoMotherInvMassPtIso(NULL),
@@ -1058,6 +1060,8 @@ void AliAnalysisTaskGammaConvFlowV1::UserCreateOutputObjects()
 
   fCutFolder = new TList *[fnCuts];
   fESDList = new TList *[fnCuts];
+  fEventCount = new TH1D *[fnCuts];
+
   if (fDoTHnSparse)
   {
     fBackList = new TList *[fnCuts];
@@ -1207,6 +1211,8 @@ void AliAnalysisTaskGammaConvFlowV1::UserCreateOutputObjects()
     fESDList[iCut]->SetOwner(kTRUE);
     fCutFolder[iCut]->Add(fESDList[iCut]);
 
+    fEventCount[iCut] = new TH1D("EventCountBeforeVZERO", "EventCountBeforeVZERO", 100, 0, 100);
+    fESDList[iCut]->Add(fEventCount[iCut]);
     if (fDoCentralityFlat > 0)
       fHistoNEvents[iCut] = new TH1F("NEventsUnweighted", "NEventsUnweighted", 14, -0.5, 13.5);
     else
@@ -2690,6 +2696,8 @@ void AliAnalysisTaskGammaConvFlowV1::UserExec(Option_t *)
       }
 
       CalculatePi0Candidates(); // Combine Gammas
+      Int_t centSPD1 = ((AliConvEventCuts *)fEventCutArray->At(fiCut))->GetCentrality(fInputEvent);
+      fEventCount[iCut]->Fill(centSPD1);
       if (((AliConversionMesonCuts *)fMesonCutArray->At(iCut))->DoBGCalculation())
       {
         if (((AliConversionMesonCuts *)fMesonCutArray->At(iCut))->BackgroundHandlerType() == 0)
@@ -2750,7 +2758,7 @@ void AliAnalysisTaskGammaConvFlowV1::UserExec(Option_t *)
     fV0Reader->RelabelAODs(kFALSE);
   }
   /// if (fBranchSet)
-  /// {
+  ///{
   ///   cout << "=======Npi0=======" << fOutputAODBranch->GetEntriesFast() << endl;
   /// }
   PostData(1, fOutputContainer);

@@ -19,7 +19,6 @@ public:
     bool LoadCalibHistForThisRun();
     bool GetVZEROPlane();
     double GetEventPlane(double qx, double qy, double harmonic);
-    void SetListForVZEROCalib(TList *flist) { this->fListVZEROCalib = (TList *)flist->Clone(); }
     void SetPeriod(TString period) { this->fPeriod = period; }
     void SetnCuts(Int_t nCuts)
     {
@@ -64,6 +63,7 @@ private:
     bool IsVZEROCalibOn; // switch for VZERO qn calib
     bool IsQAVZERO;
     TList *fListVZEROCalib; // read list for V0 Calib
+    TFile *fVZEROCalibFile;
     double fPsi2V0C;
     double fPsi2V0A;
     TH2D **fHist2DPsi2V0CCent;
@@ -76,7 +76,6 @@ private:
     AliOADBContainer *contQynam;
     // 18q/r
     TH2F *fHCorrectV0ChWeghts;
-    TH2D *hQnPercentile;
     // V0C
     TProfile **fProfileV0CQxCentGE;
     TProfile **fProfileV0CQyCentGE;
@@ -105,7 +104,7 @@ private:
     AliAnalysisTaskPi0EtaV2(const AliAnalysisTaskPi0EtaV2 &);            // not implemented
     AliAnalysisTaskPi0EtaV2 &operator=(const AliAnalysisTaskPi0EtaV2 &); // not implemented
 
-    ClassDef(AliAnalysisTaskPi0EtaV2, 1);
+    ClassDef(AliAnalysisTaskPi0EtaV2, 2);
 };
 
 #endif

@@ -230,46 +230,6 @@ void AddTask_GammaCalo_PbPbV2(
   task->IfVZEROCalibOn(v0calibOn);
   task->SetTrainconfig(trainConfig);
 
-  TFile *fVZEROCalibFile = nullptr;
-  TList *fVZEROCalibList = nullptr;
-
-  if (!gGrid)
-    TGrid::Connect("alien://");
-  if (v0calibOn)
-  {
-    if (periodNameV0Reader.EqualTo("LHC15o"))
-    {
-      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC15o/VZEROCalibFile15o.root", "READ");
-      //   fVZEROCalibFile = TFile::Open("/Users/mojie/Works/legotrain_helpers-master/VZEROCalibFile15o.root", "READ");
-      fVZEROCalibList = dynamic_cast<TList *>(fVZEROCalibFile->Get("VZEROCalibList"));
-    }
-    if (periodNameV0Reader.EqualTo("LHC18q"))
-    {
-      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/calibq2V0C18qP3.root", "READ");
-      fVZEROCalibList = dynamic_cast<TList *>(fVZEROCalibFile->Get("18qlistspPerc"));
-    }
-    if (periodNameV0Reader.EqualTo("LHC18r"))
-    {
-      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/calibq2V0C18rP3.root", "READ");
-      // fVZEROCalibFile = TFile::Open("/Users/mojie/Works/legotrain_helpers-master/calibq2V0C18rP3.root", "READ");
-      fVZEROCalibList = dynamic_cast<TList *>(fVZEROCalibFile->Get("18rlistspPerc"));
-    }
-    //  if (periodNameV0Reader.EqualTo("LHC18r") || periodNameV0Reader.EqualTo("LHC18q"))
-    //  {
-    //    //   fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/calibq2V0C18rP3.root", "READ");
-    //    fVZEROCalibFile = TFile::Open("/Users/mojie/Works/legotrain_helpers-master/calibq2V0C18qrP3.root", "READ");
-    //    fVZEROCalibList = dynamic_cast<TList *>(fVZEROCalibFile);
-    //  }
-
-    if (fVZEROCalibList)
-    {
-      task->SetListForVZEROCalib(fVZEROCalibList);
-      std::cout << "================  VZERO List Set =================" << std::endl;
-    }
-    else
-      std::cout << "!!!!!!!!!!!!!!!VZERO List not Found!!!!!!!!!!!!!!!" << std::endl;
-  }
-
   // meson cuts
   // meson type (Dalitz or not), BG scheme, pool depth, rotation degrees, rapidity cut, radius cut, alpha, chi2, shared electrons, reject to close v0, MC smearing, dca, dca, dca
 
