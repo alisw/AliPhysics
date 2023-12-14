@@ -993,7 +993,7 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
       fAODMCParticle = (AliAODMCParticle *)fAODArrayMCInfo->At(iMC);
 
       int hf = -999;
-      double hfpt = -999., hfeta = -999., wghtD = -999., wghtB = -999.;
+      double hfpt = -999., hfeta = -999., wghtD = -999., wghtmultD = -999., wghtB = -999.;
       hf = GetHeavyFlavours(fAODMCParticle, hfpt, hfeta);
 
       if(TMath::Abs(hfeta) < 0.5){
@@ -1002,7 +1002,14 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
           hD0PtMult->Fill(hfpt, Corrected_Ntr);
           wghtD = fDmesonCorr->Eval(hfpt);
           hD0PtCorr->Fill(hfpt, wghtD);
-          hD0PtMultCorr->Fill(hfpt, Corrected_Ntr, wghtD);
+		  if(Corrected_Ntr>=1 && Corrected_Ntr<9) wghtmultD = fDmesonCorrMultBin1->Eval(hfpt);
+		  else if(Corrected_Ntr>=9 && Corrected_Ntr<14) wghtmultD = fDmesonCorrMultBin2->Eval(hfpt);
+		  else if(Corrected_Ntr>=14 && Corrected_Ntr<20) wghtmultD = fDmesonCorrMultBin3->Eval(hfpt);
+		  else if(Corrected_Ntr>=20 && Corrected_Ntr<31) wghtmultD = fDmesonCorrMultBin4->Eval(hfpt);
+		  else if(Corrected_Ntr>=31 && Corrected_Ntr<60) wghtmultD = fDmesonCorrMultBin5->Eval(hfpt);
+		  else if(Corrected_Ntr>=60 && Corrected_Ntr<100) wghtmultD = fDmesonCorrMultBin6->Eval(hfpt);
+		  else wghtmultD = 1.;
+          hD0PtMultCorr->Fill(hfpt, Corrected_Ntr, wghtmultD);
         }
         if(hf==kPromptLc) hLcPt->Fill(hfpt);
       }
@@ -1034,9 +1041,8 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
     double nchCorr = 1.;
     double nchCorr2 = 1.;
     if(Corrected_Ntr>50 && Corrected_Ntr<=100) nchCorr = funcNchCorr->Eval(Corrected_Ntr);
-    else if(Corrected_Ntr<=50) nchCorr = histNchCorr->GetBinContent(histNchCorr->GetBin(Corrected_Ntr));
-    nchCorr2 = histNchCorr->GetBinContent(histNchCorr->GetBin(Corrected_Ntr));
-
+    else if(Corrected_Ntr<=50) nchCorr = histNchCorr->GetBinContent(histNchCorr->FindBin(Corrected_Ntr));
+    nchCorr2 = histNchCorr->GetBinContent(histNchCorr->FindBin(Corrected_Ntr));
     hNtrkletCorr->Fill(Corrected_Ntr, nchCorr);
     hNtrkletCorr2->Fill(Corrected_Ntr, nchCorr2);
     int nch = GetNcharged();
