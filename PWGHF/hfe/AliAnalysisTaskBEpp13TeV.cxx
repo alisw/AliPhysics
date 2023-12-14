@@ -30,15 +30,15 @@
 #include "TRandom3.h"
 #include "TProfile.h"
 #include "AliHFEV0taginfo.h"
-#include "AliAnalysisTaskBEpp13TeV.h"
+#include "AliAnalysisTaskBEpp13TeVNew.h"
 
-class AliAnalysisTaskBEpp13TeV; // your analysis class
+class AliAnalysisTaskBEpp13TeVNew; // your analysis class
 
 using namespace std; // std namespace: so you can do things like 'cout'
 
-ClassImp(AliAnalysisTaskBEpp13TeV) // classimp: necessary for root
+ClassImp(AliAnalysisTaskBEpp13TeVNew) // classimp: necessary for root
 
-AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV():
+AliAnalysisTaskBEpp13TeVNew::AliAnalysisTaskBEpp13TeVNew():
   AliAnalysisTaskSE(),
   fAOD(0),
   fOutputList(0),
@@ -202,7 +202,7 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV():
   fParentSelect[1][6] = 5332; // Omegab-
 }
 //_____________________________________________________________________________
-AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV(const char *name):
+AliAnalysisTaskBEpp13TeVNew::AliAnalysisTaskBEpp13TeVNew(const char *name):
   AliAnalysisTaskSE(name),
   fAOD(0),
   fOutputList(0),
@@ -374,7 +374,7 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV(const char *name):
   fV0Tagger = new AliHFEV0taginfo("Tagger");
 }
 //_____________________________________________________________________________
-AliAnalysisTaskBEpp13TeV::~AliAnalysisTaskBEpp13TeV(){
+AliAnalysisTaskBEpp13TeVNew::~AliAnalysisTaskBEpp13TeVNew(){
   // destructor
   if (fOutputList) delete fOutputList;
   if (fTrackQA) delete fTrackQA;
@@ -382,7 +382,7 @@ AliAnalysisTaskBEpp13TeV::~AliAnalysisTaskBEpp13TeV(){
   if (fV0Tagger) delete fV0Tagger;
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
+void AliAnalysisTaskBEpp13TeVNew::UserCreateOutputObjects(){
   fParentSelect[0][0] = 411;  // D+
   fParentSelect[0][1] = 421;  // D0
   fParentSelect[0][2] = 431;  // Ds+
@@ -903,7 +903,7 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   PostData(2, fTrackQA);
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
+void AliAnalysisTaskBEpp13TeVNew::UserExec(Option_t *){
 
   fAOD = dynamic_cast<AliAODEvent *>(InputEvent());
   if(!fAOD) return;
@@ -993,7 +993,7 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
       fAODMCParticle = (AliAODMCParticle *)fAODArrayMCInfo->At(iMC);
 
       int hf = -999;
-      double hfpt = -999., hfeta = -999., wghtD = -999., wghtB = -999.;
+      double hfpt = -999., hfeta = -999., wghtD = -999., wghtmultD = -999., wghtB = -999.;
       hf = GetHeavyFlavours(fAODMCParticle, hfpt, hfeta);
 
       if(TMath::Abs(hfeta) < 0.5){
@@ -1002,7 +1002,14 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
           hD0PtMult->Fill(hfpt, Corrected_Ntr);
           wghtD = fDmesonCorr->Eval(hfpt);
           hD0PtCorr->Fill(hfpt, wghtD);
-          hD0PtMultCorr->Fill(hfpt, Corrected_Ntr, wghtD);
+		  if(Corrected_Ntr>=1 && Corrected_Ntr<9) wghtmultD = fDmesonCorrMultBin1->Eval(hfpt);
+		  else if(Corrected_Ntr>=9 && Corrected_Ntr<14) wghtmultD = fDmesonCorrMultBin2->Eval(hfpt);
+		  else if(Corrected_Ntr>=14 && Corrected_Ntr<20) wghtmultD = fDmesonCorrMultBin3->Eval(hfpt);
+		  else if(Corrected_Ntr>=20 && Corrected_Ntr<31) wghtmultD = fDmesonCorrMultBin4->Eval(hfpt);
+		  else if(Corrected_Ntr>=31 && Corrected_Ntr<60) wghtmultD = fDmesonCorrMultBin5->Eval(hfpt);
+		  else if(Corrected_Ntr>=60 && Corrected_Ntr<100) wghtmultD = fDmesonCorrMultBin6->Eval(hfpt);
+		  else wghtmultD = 1.;
+          hD0PtMultCorr->Fill(hfpt, Corrected_Ntr, wghtmultD);
         }
         if(hf==kPromptLc) hLcPt->Fill(hfpt);
       }
@@ -1034,9 +1041,8 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
     double nchCorr = 1.;
     double nchCorr2 = 1.;
     if(Corrected_Ntr>50 && Corrected_Ntr<=100) nchCorr = funcNchCorr->Eval(Corrected_Ntr);
-    else if(Corrected_Ntr<=50) nchCorr = histNchCorr->GetBinContent(histNchCorr->GetBin(Corrected_Ntr));
-    nchCorr2 = histNchCorr->GetBinContent(histNchCorr->GetBin(Corrected_Ntr));
-
+    else if(Corrected_Ntr<=50) nchCorr = histNchCorr->GetBinContent(histNchCorr->FindBin(Corrected_Ntr));
+    nchCorr2 = histNchCorr->GetBinContent(histNchCorr->FindBin(Corrected_Ntr));
     hNtrkletCorr->Fill(Corrected_Ntr, nchCorr);
     hNtrkletCorr2->Fill(Corrected_Ntr, nchCorr2);
     int nch = GetNcharged();
@@ -1289,13 +1295,13 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
   PostData(2, fTrackQA);
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskBEpp13TeV::Terminate(Option_t *)
+void AliAnalysisTaskBEpp13TeVNew::Terminate(Option_t *)
 {
   // terminate
   // called at the END of the analysis (when all events are processed)
 }
 //__________________________________________________________________
-bool AliAnalysisTaskBEpp13TeV::PassEventCuts(AliAODEvent *event){
+bool AliAnalysisTaskBEpp13TeVNew::PassEventCuts(AliAODEvent *event){
 
   // event selection cuts
   const AliAODVertex *vtx = event->GetPrimaryVertex();
@@ -1315,7 +1321,7 @@ bool AliAnalysisTaskBEpp13TeV::PassEventCuts(AliAODEvent *event){
   return true;
 }
 //_________________________________________________________________
-bool AliAnalysisTaskBEpp13TeV::PassPileUpEvent(AliAODEvent *event){
+bool AliAnalysisTaskBEpp13TeVNew::PassPileUpEvent(AliAODEvent *event){
   // This function checks if there was a pile up reconstructed with SPD
   bool isPileupfromSPDmulbins = event->IsPileupFromSPDInMultBins();
   if(isPileupfromSPDmulbins)
@@ -1330,7 +1336,7 @@ bool AliAnalysisTaskBEpp13TeV::PassPileUpEvent(AliAODEvent *event){
   return isPileupFromMV;
 }
 //_________________________________________________________________
-double AliAnalysisTaskBEpp13TeV::GetCorrectedNtracklets(TProfile *estimatorAvg, double rawNtr, double vtxz, double refmult){
+double AliAnalysisTaskBEpp13TeVNew::GetCorrectedNtracklets(TProfile *estimatorAvg, double rawNtr, double vtxz, double refmult){
   if(TMath::Abs(vtxz) > 10) return rawNtr;
   if (!estimatorAvg) return rawNtr;
   double Ntr_mean = estimatorAvg->GetBinContent(estimatorAvg->FindBin(vtxz));
@@ -1339,7 +1345,7 @@ double AliAnalysisTaskBEpp13TeV::GetCorrectedNtracklets(TProfile *estimatorAvg, 
   return correctedNtr;
 }
 //_________________________________________________________________
-bool AliAnalysisTaskBEpp13TeV::PassTrackCuts(AliAODTrack *track){
+bool AliAnalysisTaskBEpp13TeVNew::PassTrackCuts(AliAODTrack *track){
 
   if(!track->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) return false;
   if(TMath::Abs(track->Eta())>0.8) return false;
@@ -1396,7 +1402,7 @@ bool AliAnalysisTaskBEpp13TeV::PassTrackCuts(AliAODTrack *track){
   return true;
 }
 //_________________________________________________________________________________________________________
-int AliAnalysisTaskBEpp13TeV::GetElecSource(const AliAODMCParticle *const mcpart, double &mpt, int &mpdg){
+int AliAnalysisTaskBEpp13TeVNew::GetElecSource(const AliAODMCParticle *const mcpart, double &mpt, int &mpdg){
   // printf("Modified version of source selection \n");
   if(!mcpart) return kMisID;
   if(!fAODArrayMCInfo) return -1;
@@ -1644,7 +1650,7 @@ int AliAnalysisTaskBEpp13TeV::GetElecSource(const AliAODMCParticle *const mcpart
   return origin;
 }
 //_______________________________________________________________________________________________________________
-int AliAnalysisTaskBEpp13TeV::GetHeavyFlavours(const AliAODMCParticle *const mcpart, double &hfpt, double &hfeta){
+int AliAnalysisTaskBEpp13TeVNew::GetHeavyFlavours(const AliAODMCParticle *const mcpart, double &hfpt, double &hfeta){
 
   if (!mcpart) return -1;
   if (!fAODArrayMCInfo) return -1;
@@ -1694,7 +1700,7 @@ int AliAnalysisTaskBEpp13TeV::GetHeavyFlavours(const AliAODMCParticle *const mcp
   return -1;
 }
 //_______________________________________________________________________________________________________________
-int AliAnalysisTaskBEpp13TeV::GetElecSource(const AliAODMCParticle *const mcpart, bool isElec, double &mpt, int &mpdg) const
+int AliAnalysisTaskBEpp13TeVNew::GetElecSource(const AliAODMCParticle *const mcpart, bool isElec, double &mpt, int &mpdg) const
 {
   // printf("Original version of source selection \n");
 
@@ -2154,12 +2160,12 @@ int AliAnalysisTaskBEpp13TeV::GetElecSource(const AliAODMCParticle *const mcpart
   return origin;
 }
 
-TProfile *AliAnalysisTaskBEpp13TeV::GetEstimatorHistogram()
+TProfile *AliAnalysisTaskBEpp13TeVNew::GetEstimatorHistogram()
 {
   return fMultEstimatorAvg;
 }
 
-int AliAnalysisTaskBEpp13TeV::GetNcharged()
+int AliAnalysisTaskBEpp13TeVNew::GetNcharged()
 {
 
   int Nch = 0;
