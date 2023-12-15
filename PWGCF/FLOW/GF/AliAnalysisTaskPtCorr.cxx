@@ -416,7 +416,7 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   fMultiVsCent->Fill(l_Cent,l_Multi);
   fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0],l_Cent);
   PostData(1,fptList);
-
+  PostData(2,fQAList);
   return;
 };
 void AliAnalysisTaskPtCorr::NotifyRun() {
@@ -495,7 +495,7 @@ void AliAnalysisTaskPtCorr::ProcessOnTheFly() {
   fMultiVsCent->Fill(l_Cent,l_Multi);
   fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0],l_Cent);
   PostData(1,fptList);
-
+  PostData(2,fQAList);
   return;
 }
 double AliAnalysisTaskPtCorr::getGeneratorCentrality()
