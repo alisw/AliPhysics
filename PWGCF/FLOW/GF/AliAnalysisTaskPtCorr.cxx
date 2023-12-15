@@ -265,7 +265,9 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   const int nMptBins = 1000;
   double *mptBins = new double[nMptBins+1];
   for(int i=0;i<=nMptBins;++i) mptBins[i] = 0.0005*i + 0.5;
-  fMptVsNch = new TH3D("fMptVsNch","[#it{p}_{T}] vs N_{ch}; N_{ch}^{rec}; #LT[#it{p}_{T}]#GT;centrality (%)",fNMultiBins,fMultiBins,nMptBins,mptBins,nFineCentBins,fineCentBins);
+  const int nCentBinsMpt = 3;
+  double centbinsMpt[] = {0,1,5,90};
+  fMptVsNch = new TH3D("fMptVsNch","[#it{p}_{T}] vs N_{ch}; N_{ch}^{rec}; #LT[#it{p}_{T}]#GT;centrality (%)",fNMultiBins,fMultiBins,nMptBins,mptBins,nCentBinsMpt,centbinsMpt);
   fptList->Add(fMptVsNch);
   printf("Multiplicity objects created\n");
   PostData(1,fptList);
@@ -416,7 +418,7 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   fMultiVsCent->Fill(l_Cent,l_Multi);
   fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0],l_Cent);
   PostData(1,fptList);
-
+  PostData(2,fQAList);
   return;
 };
 void AliAnalysisTaskPtCorr::NotifyRun() {
@@ -495,7 +497,7 @@ void AliAnalysisTaskPtCorr::ProcessOnTheFly() {
   fMultiVsCent->Fill(l_Cent,l_Multi);
   fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0],l_Cent);
   PostData(1,fptList);
-
+  PostData(2,fQAList);
   return;
 }
 double AliAnalysisTaskPtCorr::getGeneratorCentrality()
