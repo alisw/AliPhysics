@@ -718,7 +718,12 @@ Bool_t AliAnalysisTaskNFactorialMoments::GetParticleID(AliAODTrack* trk,
     fPIDCombined = new AliPIDCombined();
     fPIDCombined->SetDefaultTPCPriors();
 
-    Float_t dEdx = trk->GetDetPid()->GetTPCsignal();
+    Float_t dEdx;
+    if (filterBit == 128) {
+      dEdx = trk->GetTPCsignal();
+    } else {
+      dEdx = trk->GetDetPid()->GetTPCsignal();
+    }
     for (Int_t isp(0); isp < AliPID::kSPECIES; isp++) {
       nsigmaTPC[isp] =
         fPIDResponse->NumberOfSigmasTPC(trk, (AliPID::EParticleType)isp);
