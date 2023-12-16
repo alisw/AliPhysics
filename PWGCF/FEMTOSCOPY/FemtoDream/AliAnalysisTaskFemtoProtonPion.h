@@ -162,6 +162,9 @@ class AliAnalysisTaskFemtoProtonPion : public AliAnalysisTaskSE {
   TH1F **fEtaKineOrReco;
   TH1F **fPhiKineOrReco;
 
-  ClassDef(AliAnalysisTaskFemtoProtonPion, 4) 
+  TH2F *ProtonID; 
+  TH2F *AntiProtonID; 
+
+  ClassDef(AliAnalysisTaskFemtoProtonPion, 5) 
 };
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKFEMTOPROTONPION_H_ */
