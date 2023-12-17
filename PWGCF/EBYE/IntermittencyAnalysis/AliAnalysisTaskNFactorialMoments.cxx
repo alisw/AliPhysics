@@ -962,12 +962,6 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[mPtBins][mMBins], 
           bincontent = h1[iPt][iM]->GetBinContent(etabin, phibin);
           SumOfbincontent += bincontent;
 
-      for (Int_t etabin = 1; etabin <= NofXetabins; etabin++) {
-        for (Int_t phibin = 1; phibin <= NofXphibins; phibin++) {
-          bincontent = 0.0;
-          bincontent = h1[iPt][iM]->GetBinContent(etabin, phibin);
-          SumOfbincontent += bincontent;
-
           for (Int_t q = 0; q < mQs; q++) {
             if (bincontent >= (q + 2)) {
               Double_t Fqeofbin = 0.0;
