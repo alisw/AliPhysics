@@ -97,6 +97,14 @@ class AliAnalysisTaskParticleEffWRZ :public AliAnalysisTaskSE{
   TH2D *fSecMat_DCAz_Pt[MULTBINS*PARTTYPES][2];
   TH2D *fSecWeak_DCAz_Pt[MULTBINS*PARTTYPES][2];
 
+  TH2D *fPrim_DCAxy_PtTrack[MULTBINS*PARTTYPES][2];
+  TH2D *fSecMat_DCAxy_PtTrack[MULTBINS*PARTTYPES][2];
+  TH2D *fSecWeak_DCAxy_PtTrack[MULTBINS*PARTTYPES][2];
+
+  TH2D *fPrim_DCAz_PtTrack[MULTBINS*PARTTYPES][2];
+  TH2D *fSecMat_DCAz_PtTrack[MULTBINS*PARTTYPES][2];
+  TH2D *fSecWeak_DCAz_PtTrack[MULTBINS*PARTTYPES][2];
+
   double fDCAtoPrimVtx;
   double get_mass_squared(AliAODTrack *track);
   AliPIDResponse *fpidResponse;
