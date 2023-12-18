@@ -1644,12 +1644,13 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     if (fDoTreeForMesonML)
     {
       TreeForMesonML[iCut] = new TTree(Form("TreeForMesonML_%s_%s_%s", cutstringEvent.Data(), cutstringPhoton.Data(), cutstringMeson.Data()), "TreeForMesonML_Cuts");
+      TreeForMesonML[iCut]->SetMaxTreeSize(10000LL); // After ~1 GB, new file is created
+      TreeForMesonML[iCut]->SetAutoFlush(-5000); // -50000000 = 5 MB and then write to file
       TreeForMesonML[iCut]->Branch("InvMass", &fInvMass_MesonML, "fInvMass_MesonML/F");
       TreeForMesonML[iCut]->Branch("Pt", &fPt_MesonML, "fPt_MesonML/F");
       TreeForMesonML[iCut]->Branch("Alpha", &fAlpha_MesonML, "fAlpha_MesonML/F");
       TreeForMesonML[iCut]->Branch("Rapidity", &fRapidity_MesonML, "fRapidity_MesonML/F");
       TreeForMesonML[iCut]->Branch("Phi", &fPhi_MesonML, "fPhi_MesonML/F"); 
-      // Include photon inv-mass in this list  
 
       TreeForMesonML[iCut]->Branch("Daughter_Gamma0_InvMass", &fInvMass_Gamma0_MesonML, "fInvMass_Gamma0_MesonML/F");
       TreeForMesonML[iCut]->Branch("Daughter_Gamma0_pT", &fPt_Gamma0_MesonML, "fPt_Gamma0_MesonML/F");
@@ -1667,21 +1668,21 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PosClsTPCToF", &fPosClusterTPCToF_Gamma0_MesonML, "fPosClusterTPCToF_Gamma0_MesonML/F");
       TreeForMesonML[iCut]->Branch("Daughter_Gamma0_Kind",               &fKind_Gamma0,          "fKind_Gamma0/b");
 
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_NegativeTrack_ITS_dEdX", &fDeDx_ITS_ENeg_Gamma0_MesonML, "fDeDx_ITS_ENeg_Gamma0_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_NegativeTrack_TPC_dEdX", &fDeDx_TPC_ENeg_Gamma0_MesonML, "fDeDx_TPC_ENeg_Gamma0_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_NegativeTrack_TOF", &fTOF_ENeg_Gamma0_MesonML, "fTOF_ENeg_Gamma0_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PiM_NegativeTrack_ITS_dEdX", &fDeDx_PiM_ITS_Gamma0_MesonML, "fDeDx_PiM_ITS_Gamma0_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PiM_NegativeTrack_TPC_dEdX", &fDeDx_PiM_TPC_Gamma0_MesonML, "fDeDx_PiM_TPC_Gamma0_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PiM_NegativeTrack_TOF", &fTOF_PiM_Gamma0_MesonML, "fTOF_PiM_Gamma0_MesonML/F");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_NegativeTrack_ITS_dEdX", &fDeDx_ITS_ENeg_Gamma0_MesonML, "fDeDx_ITS_ENeg_Gamma0_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_NegativeTrack_TPC_dEdX", &fDeDx_TPC_ENeg_Gamma0_MesonML, "fDeDx_TPC_ENeg_Gamma0_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_NegativeTrack_TOF", &fTOF_ENeg_Gamma0_MesonML, "fTOF_ENeg_Gamma0_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PiM_NegativeTrack_ITS_dEdX", &fDeDx_PiM_ITS_Gamma0_MesonML, "fDeDx_PiM_ITS_Gamma0_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PiM_NegativeTrack_TPC_dEdX", &fDeDx_PiM_TPC_Gamma0_MesonML, "fDeDx_PiM_TPC_Gamma0_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PiM_NegativeTrack_TOF", &fTOF_PiM_Gamma0_MesonML, "fTOF_PiM_Gamma0_MesonML/f");
       TreeForMesonML[iCut]->Branch("Daughter_Gamma0_NegativeTrack_Pt", &fPt_ENeg_Gamma0_MesonML, "fPt_ENeg_Gamma0_MesonML/F");
       TreeForMesonML[iCut]->Branch("Daughter_Gamma0_NegativeTrack_Eta", &fEta_ENeg_Gamma0_MesonML, "fEta_ENeg_Gamma0_MesonML/F");
 
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PositiveTrack_ITS_dEdX", &fDeDx_ITS_EPos_Gamma0_MesonML, "fDeDx_ITS_EPos_Gamma0_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PositiveTrack_TPC_dEdX", &fDeDx_TPC_EPos_Gamma0_MesonML, "fDeDx_TPC_EPos_Gamma0_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PositiveTrack_TOF", &fTOF_EPos_Gamma0_MesonML, "fTOF_EPos_Gamma0_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PiP_PositiveTrack_ITS_dEdX", &fDeDx_PiP_ITS_Gamma0_MesonML, "fDeDx_PiP_ITS_Gamma0_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PiP_PositiveTrack_TPC_dEdX", &fDeDx_PiP_TPC_Gamma0_MesonML, "fDeDx_PiP_TPC_Gamma0_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PiP_PositiveTrack_TOF", &fTOF_PiP_Gamma0_MesonML, "fTOF_PiP_Gamma0_MesonML/F");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PositiveTrack_ITS_dEdX", &fDeDx_ITS_EPos_Gamma0_MesonML, "fDeDx_ITS_EPos_Gamma0_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PositiveTrack_TPC_dEdX", &fDeDx_TPC_EPos_Gamma0_MesonML, "fDeDx_TPC_EPos_Gamma0_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PositiveTrack_TOF", &fTOF_EPos_Gamma0_MesonML, "fTOF_EPos_Gamma0_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PiP_PositiveTrack_ITS_dEdX", &fDeDx_PiP_ITS_Gamma0_MesonML, "fDeDx_PiP_ITS_Gamma0_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PiP_PositiveTrack_TPC_dEdX", &fDeDx_PiP_TPC_Gamma0_MesonML, "fDeDx_PiP_TPC_Gamma0_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PiP_PositiveTrack_TOF", &fTOF_PiP_Gamma0_MesonML, "fTOF_PiP_Gamma0_MesonML/f");
       TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PositiveTrack_Pt", &fPt_EPos_Gamma0_MesonML, "fPt_EPos_Gamma0_MesonML/F");
       TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PositiveTrack_Eta", &fEta_EPos_Gamma0_MesonML, "fEta_EPos_Gamma0_MesonML/F");
       TreeForMesonML[iCut]->Branch("Daughter_Gamma0_PositiveTrack_Asymmetry", &fPAsymmetry_EPos_Gamma0_MesonML, "fPAsymmetry_EPos_Gamma0_MesonML/F");
@@ -1704,21 +1705,21 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PosClsTPCToF", &fPosClusterTPCToF_Gamma1_MesonML, "fPosClusterTPCToF_Gamma1_MesonML/F");
       TreeForMesonML[iCut]->Branch("Daughter_Gamma1_Kind",               &fKind_Gamma1,          "fKind_Gamma1/b");
 
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_NegativeTrack_ITS_dEdX", &fDeDx_ITS_ENeg_Gamma1_MesonML, "fDeDx_ITS_ENeg_Gamma1_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_NegativeTrack_TPC_dEdX", &fDeDx_TPC_ENeg_Gamma1_MesonML, "fDeDx_TPC_ENeg_Gamma1_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_NegativeTrack_TOF", &fTOF_ENeg_Gamma1_MesonML, "fTOF_ENeg_Gamma1_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PiM_NegativeTrack_ITS_dEdX", &fDeDx_PiM_ITS_Gamma1_MesonML, "fDeDx_PiM_ITS_Gamma1_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PiM_NegativeTrack_TPC_dEdX", &fDeDx_PiM_TPC_Gamma1_MesonML, "fDeDx_PiM_TPC_Gamma1_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PiM_NegativeTrack_TOF", &fTOF_PiM_Gamma1_MesonML, "fTOF_PiM_Gamma1_MesonML/F");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_NegativeTrack_ITS_dEdX", &fDeDx_ITS_ENeg_Gamma1_MesonML, "fDeDx_ITS_ENeg_Gamma1_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_NegativeTrack_TPC_dEdX", &fDeDx_TPC_ENeg_Gamma1_MesonML, "fDeDx_TPC_ENeg_Gamma1_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_NegativeTrack_TOF", &fTOF_ENeg_Gamma1_MesonML, "fTOF_ENeg_Gamma1_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PiM_NegativeTrack_ITS_dEdX", &fDeDx_PiM_ITS_Gamma1_MesonML, "fDeDx_PiM_ITS_Gamma1_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PiM_NegativeTrack_TPC_dEdX", &fDeDx_PiM_TPC_Gamma1_MesonML, "fDeDx_PiM_TPC_Gamma1_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PiM_NegativeTrack_TOF", &fTOF_PiM_Gamma1_MesonML, "fTOF_PiM_Gamma1_MesonML/f");
       TreeForMesonML[iCut]->Branch("Daughter_Gamma1_NegativeTrack_Pt", &fPt_ENeg_Gamma1_MesonML, "fPt_ENeg_Gamma1_MesonML/F");
       TreeForMesonML[iCut]->Branch("Daughter_Gamma1_NegativeTrack_Eta", &fEta_ENeg_Gamma1_MesonML, "fEta_ENeg_Gamma1_MesonML/F");
 
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PositiveTrack_ITS_dEdX", &fDeDx_ITS_EPos_Gamma1_MesonML, "fDeDx_ITS_EPos_Gamma1_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PositiveTrack_TPC_dEdX", &fDeDx_TPC_EPos_Gamma1_MesonML, "fDeDx_TPC_EPos_Gamma1_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PositiveTrack_TOF", &fTOF_EPos_Gamma1_MesonML, "fTOF_EPos_Gamma1_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PiP_PositiveTrack_ITS_dEdX", &fDeDx_PiP_ITS_Gamma1_MesonML, "fDeDx_PiP_ITS_Gamma1_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PiP_PositiveTrack_TPC_dEdX", &fDeDx_PiP_TPC_Gamma1_MesonML, "fDeDx_PiP_TPC_Gamma1_MesonML/F");
-      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PiP_PositiveTrack_TOF", &fTOF_PiP_Gamma1_MesonML, "fTOF_PiP_Gamma1_MesonML/F");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PositiveTrack_ITS_dEdX", &fDeDx_ITS_EPos_Gamma1_MesonML, "fDeDx_ITS_EPos_Gamma1_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PositiveTrack_TPC_dEdX", &fDeDx_TPC_EPos_Gamma1_MesonML, "fDeDx_TPC_EPos_Gamma1_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PositiveTrack_TOF", &fTOF_EPos_Gamma1_MesonML, "fTOF_EPos_Gamma1_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PiP_PositiveTrack_ITS_dEdX", &fDeDx_PiP_ITS_Gamma1_MesonML, "fDeDx_PiP_ITS_Gamma1_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PiP_PositiveTrack_TPC_dEdX", &fDeDx_PiP_TPC_Gamma1_MesonML, "fDeDx_PiP_TPC_Gamma1_MesonML/f");
+      TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PiP_PositiveTrack_TOF", &fTOF_PiP_Gamma1_MesonML, "fTOF_PiP_Gamma1_MesonML/f");
       TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PositiveTrack_Pt", &fPt_EPos_Gamma1_MesonML, "fPt_EPos_Gamma1_MesonML/F");
       TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PositiveTrack_Eta", &fEta_EPos_Gamma1_MesonML, "fEta_EPos_Gamma1_MesonML/F");
       TreeForMesonML[iCut]->Branch("Daughter_Gamma1_PositiveTrack_Asymmetry", &fPAsymmetry_EPos_Gamma1_MesonML, "fPAsymmetry_EPos_Gamma1_MesonML/F");
@@ -2652,7 +2653,7 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
       if(fInputEvent->IsA()==AliESDEvent::Class()) ProcessMCParticles();
       if(fInputEvent->IsA()==AliAODEvent::Class()) ProcessAODMCParticles();
     }
-
+    
     ProcessPhotonCandidates(); // Process this cuts gammas
     if(fEnableBDT) ProcessPhotonBDT(); //
     if(fDoHighPtHadronAnalysis) ProcessPhotonsHighPtHadronAnalysis();
@@ -2791,6 +2792,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
   Bool_t lUseElecShareCut = fiPhotonCut->UseElecSharingCut();
   Bool_t lUseTooCloseCut  = fiPhotonCut->UseToCloseV0sCut();
 
+
   // Loop over Photon Candidates allocated by ReaderV1
   for (TObject *iObj : *fReaderGammas){
 
@@ -2822,9 +2824,9 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
   if (lUseElecShareCut) fiPhotonCut->RemovePhotonsWithSharedTracks(fMapPhotonHeaders);
   if (lUseTooCloseCut) fiPhotonCut->RemoveTooClosePhotons(fMapPhotonHeaders);
 
+
   if (fDoTreeForPhotonML) // Getting all Photon candidates and noting down their properties 
   {
-
     AliPIDResponse* pidResonse = ((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetPIDResponse();
 
     for(Int_t i = 0; i < fGammaCandidates->GetEntries(); i++){
@@ -2832,8 +2834,8 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 
     AliVTrack * ENegTrack = fiPhotonCut->GetTrack(fInputEvent, PhotonCandidate->GetTrackLabelNegative());
     AliVTrack * EPosTrack = fiPhotonCut->GetTrack(fInputEvent, PhotonCandidate->GetTrackLabelPositive());
-
-    if(ENegTrack && EPosTrack && (PhotonCandidate->GetConversionRadius()>5)) {
+  
+    if(ENegTrack && EPosTrack ) {
       fInvMass_PhotonML = PhotonCandidate->M();
       fPt_PhotonML = PhotonCandidate->Pt();
       fAlpha_PhotonML = PhotonCandidate->GetArmenterosAlpha();
@@ -2853,7 +2855,9 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       //fPAsymmetry_ENeg_PhotonML = ENegTrack->P()/PhotonCandidate->GetPhotonP();
 
       fDeDx_ITS_ENeg_PhotonML =  pidResonse->NumberOfSigmasITS(ENegTrack,AliPID::kElectron);
-      fDeDx_TPC_ENeg_PhotonML =  pidResonse->NumberOfSigmasTPC(ENegTrack,AliPID::kElectron);
+      //fDeDx_TPC_ENeg_PhotonML =  pidResonse->NumberOfSigmasTPC(ENegTrack,AliPID::kElectron); 
+      fDeDx_TPC_ENeg_PhotonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(ENegTrack->Charge(),pidResonse->NumberOfSigmasTPC(ENegTrack,AliPID::kElectron), ENegTrack->P(), ENegTrack->Eta(), ENegTrack->GetTPCNcls(),PhotonCandidate->GetConversionRadius() ); 
+      //electronNSigmaTPCCor = GetCorrectedElectronTPCResponse(Charge,electronNSigmaTPC,P,Eta,fCurrentTrack->GetTPCNcls(),photon->GetConversionRadius()); 
       fTOF_ENeg_PhotonML = pidResonse->NumberOfSigmasTOF(ENegTrack,AliPID::kElectron);
       fDeDx_PiM_ITS_PhotonML =  pidResonse->NumberOfSigmasITS(ENegTrack,AliPID::kPion);
       fDeDx_PiM_TPC_PhotonML =  pidResonse->NumberOfSigmasTPC(ENegTrack,AliPID::kPion);
@@ -2863,7 +2867,8 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       fEta_ENeg_PhotonML = ENegTrack->Eta();
            
       fDeDx_ITS_EPos_PhotonML = pidResonse->NumberOfSigmasITS(EPosTrack,AliPID::kElectron);
-      fDeDx_TPC_EPos_PhotonML = pidResonse->NumberOfSigmasTPC(EPosTrack,AliPID::kElectron);
+      //fDeDx_TPC_EPos_PhotonML = pidResonse->NumberOfSigmasTPC(EPosTrack,AliPID::kElectron);
+      fDeDx_TPC_EPos_PhotonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(EPosTrack->Charge(),pidResonse->NumberOfSigmasTPC(ENegTrack,AliPID::kElectron), EPosTrack->P(), EPosTrack->Eta(), EPosTrack->GetTPCNcls(),PhotonCandidate->GetConversionRadius() ); 
       fTOF_EPos_PhotonML = pidResonse->NumberOfSigmasTOF(EPosTrack,AliPID::kElectron);
 
       fDeDx_PiP_ITS_PhotonML =  pidResonse->NumberOfSigmasITS(EPosTrack,AliPID::kPion);
@@ -2873,7 +2878,6 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       fPt_EPos_PhotonML = EPosTrack->Pt();
       fEta_EPos_PhotonML = EPosTrack->Eta();
       fPAsymmetry_EPos_PhotonML = EPosTrack->P()/PhotonCandidate->GetPhotonP();
-
       fKind = 9;
       if (fIsMC)
       {
@@ -2888,7 +2892,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
         }
       }
       
-        TreeForPhotonML[fiCut]->Fill();
+         TreeForPhotonML[fiCut]->Fill();
       }
     }
   }
@@ -3925,7 +3929,7 @@ void AliAnalysisTaskGammaConvV1::ProcessMCParticles(int isCurrentEventSelected)
 void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
   
   // Conversion Gammas
-  if(fGammaCandidates->GetEntries()>1){
+  if(fGammaCandidates->GetEntries()>1){ 
     for(Int_t firstGammaIndex=0;firstGammaIndex<fGammaCandidates->GetEntries()-1;firstGammaIndex++){
       AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(firstGammaIndex));
       if (gamma0==NULL) continue;
@@ -3952,7 +3956,8 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
         fKind_Gamma1 = 9;
 
         if((fiMesonCut->MesonIsSelected(pi0cand,kTRUE,fiEventCut->GetEtaShift()))){
-          if (fDoTreeForMesonML && (gamma0->GetConversionRadius()>5) && (gamma1->GetConversionRadius()>5)){
+         
+          if (fDoTreeForMesonML){
 
             AliPIDResponse* pidResonse = ((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetPIDResponse();
 
@@ -3984,17 +3989,18 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
             }
             
             fDeDx_ITS_ENeg_Gamma0_MesonML = pidResonse->NumberOfSigmasITS(ENegTrack_Gamma0,AliPID::kElectron);
-            fDeDx_TPC_ENeg_Gamma0_MesonML = pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma0,AliPID::kElectron);
+            //fDeDx_TPC_ENeg_Gamma0_MesonML = pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma0,AliPID::kElectron);
+            fDeDx_TPC_ENeg_Gamma0_MesonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(ENegTrack_Gamma0->Charge(),pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma0,AliPID::kElectron), ENegTrack_Gamma0->P(), ENegTrack_Gamma0->Eta(), ENegTrack_Gamma0->GetTPCNcls(),gamma0->GetConversionRadius() ); 
             fTOF_ENeg_Gamma0_MesonML = pidResonse->NumberOfSigmasTOF(ENegTrack_Gamma0,AliPID::kElectron);
             fDeDx_PiM_ITS_Gamma0_MesonML =  pidResonse->NumberOfSigmasITS(ENegTrack_Gamma0,AliPID::kPion);
             fDeDx_PiM_TPC_Gamma0_MesonML =  pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma0,AliPID::kPion);
             fTOF_PiM_Gamma0_MesonML = pidResonse->NumberOfSigmasTOF(ENegTrack_Gamma0,AliPID::kPion);
-
             fPt_ENeg_Gamma0_MesonML = ENegTrack_Gamma0->Pt();
             fEta_ENeg_Gamma0_MesonML = ENegTrack_Gamma0->Eta();
 
             fDeDx_ITS_EPos_Gamma0_MesonML = pidResonse->NumberOfSigmasITS(EPosTrack_Gamma0,AliPID::kElectron);
-            fDeDx_TPC_EPos_Gamma0_MesonML = pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma0,AliPID::kElectron);
+            //fDeDx_TPC_EPos_Gamma0_MesonML = pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma0,AliPID::kElectron);
+            fDeDx_TPC_ENeg_Gamma0_MesonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(EPosTrack_Gamma0->Charge(),pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma0,AliPID::kElectron), EPosTrack_Gamma0->P(), EPosTrack_Gamma0->Eta(), EPosTrack_Gamma0->GetTPCNcls(),gamma0->GetConversionRadius() ); 
             fTOF_EPos_Gamma0_MesonML = pidResonse->NumberOfSigmasTOF(EPosTrack_Gamma0,AliPID::kElectron);
             fDeDx_PiP_ITS_Gamma0_MesonML =  pidResonse->NumberOfSigmasITS(EPosTrack_Gamma0,AliPID::kPion);
             fDeDx_PiP_TPC_Gamma0_MesonML =  pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma0,AliPID::kPion);
@@ -4023,17 +4029,18 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
             }
 
             fDeDx_ITS_ENeg_Gamma1_MesonML = pidResonse->NumberOfSigmasITS(ENegTrack_Gamma1,AliPID::kElectron);
-            fDeDx_TPC_ENeg_Gamma1_MesonML = pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma1,AliPID::kElectron);
+            //fDeDx_TPC_ENeg_Gamma1_MesonML = pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma1,AliPID::kElectron);
+            fDeDx_TPC_ENeg_Gamma1_MesonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(ENegTrack_Gamma1->Charge(),pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma1,AliPID::kElectron), ENegTrack_Gamma1->P(), ENegTrack_Gamma1->Eta(), ENegTrack_Gamma1->GetTPCNcls(),gamma1->GetConversionRadius() ); 
             fTOF_ENeg_Gamma1_MesonML = pidResonse->NumberOfSigmasTOF(ENegTrack_Gamma1,AliPID::kElectron);
             fDeDx_PiM_ITS_Gamma1_MesonML =  pidResonse->NumberOfSigmasITS(ENegTrack_Gamma1,AliPID::kPion);
             fDeDx_PiM_TPC_Gamma1_MesonML =  pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma1,AliPID::kPion);
             fTOF_PiM_Gamma1_MesonML = pidResonse->NumberOfSigmasTOF(ENegTrack_Gamma1,AliPID::kPion);
-
             fPt_ENeg_Gamma1_MesonML = ENegTrack_Gamma1->Pt();
             fEta_ENeg_Gamma1_MesonML = ENegTrack_Gamma1->Eta();
 
             fDeDx_ITS_EPos_Gamma1_MesonML = pidResonse->NumberOfSigmasITS(EPosTrack_Gamma1,AliPID::kElectron);
-            fDeDx_TPC_EPos_Gamma1_MesonML = pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma1,AliPID::kElectron);
+            //fDeDx_TPC_EPos_Gamma1_MesonML = pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma1,AliPID::kElectron);
+            fDeDx_TPC_EPos_Gamma1_MesonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(EPosTrack_Gamma1->Charge(),pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma1,AliPID::kElectron), EPosTrack_Gamma1->P(), EPosTrack_Gamma1->Eta(), EPosTrack_Gamma1->GetTPCNcls(),gamma1->GetConversionRadius() ); 
             fTOF_EPos_Gamma1_MesonML = pidResonse->NumberOfSigmasTOF(EPosTrack_Gamma1,AliPID::kElectron);
             fDeDx_PiP_ITS_Gamma1_MesonML =  pidResonse->NumberOfSigmasITS(EPosTrack_Gamma1,AliPID::kPion);
             fDeDx_PiP_TPC_Gamma1_MesonML =  pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma1,AliPID::kPion);
@@ -4115,11 +4122,11 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
                     }
               }
             }
-
-            else  TreeForMesonML[fiCut]->Fill();
-
+            else {
+              if ((fGammaCandidates->GetEntries())%20==1) TreeForMesonML[fiCut]->AutoSave("FlushBaskets");
+               TreeForMesonML[fiCut]->Fill();
+            } 
           }
-
 
 
 
