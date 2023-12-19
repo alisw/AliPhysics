@@ -1,11 +1,14 @@
 AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
+                                        bool doMcTruth = false,
+                                        bool doAncestors = false,
                                         TString CentEst = "kHM",
                                         float fdPhidEta = 0.01,
                                         bool MCtemplatefit = false,
                                         float fSpherDown = 0.7,
                                         bool doCleaning = false,
                                         bool rejectKaon = false,
-                                        bool doNoSpherSelect = false,
+                                        bool doSpherSelect = false,
+                                        bool doClosePairRejection = false,
                                         const char *cutVariation = "0")
 {
 
@@ -33,7 +36,21 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
 
   evtCuts->SetSphericityCuts(0.0, 1);
 
-  if (doNoSpherSelect)
+  float fdPhi = 0;
+  float fdEta = 0;
+
+  if (doClosePairRejection)
+  {
+    fdPhi = fdPhidEta;
+    fdEta = fdPhidEta;
+  }
+  else
+  {
+    fdPhi = 0;
+    fdEta = 0;
+  }
+
+  if (doSpherSelect)
   {
     evtCuts->SetSphericityCuts(fSpherDown, 1.0, 0.5);
   }
@@ -181,6 +198,10 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   {
     TrackCutsRho->SetCutWindow(0.650, 0.700);
   }
+  if (suffix == "999")
+  {
+    TrackCutsRho->SetCutWindow(0., 5.0);
+  }
 
   // This needs further implementation
   // TrackCutsRho->SetEtaRange(-0.8, 0.8); //For now we also cut on the reconstructed rho, as to not be "too" forward (these are anyway probably not usable for femto due to the large Deta with the protons)
@@ -189,20 +210,12 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   {
     TrackCutsRho->SetKaonRejection(0.4, 0.6); // inv mass down and up
   }
-  AliFemtoDreamTrackCuts *TrackCutsRhoMCTrue = new AliFemtoDreamTrackCuts();
 
-  // if (isMC) // run only if MC is on synchornise with the QA for the pairs etc
-  //{
-  //  AliFemtoDreamTrackCuts *TrackCutsRhoMCTrue = new AliFemtoDreamTrackCuts();
-  //  TrackCutsRhoMCTrue->SetIsMonteCarlo(false); // here we need to set false as in the task we want to treat these are real particles
-  // TrackCutsRhoMCTrue->SetPtRange(0.14, 5.);
-  // TrackCutsRhoMCTrue->SetEtaRange(-0.8, 0.8);
-  // TrackCutsRhoMCTrue->SetFillQALater(true);
-  //}
+  AliFemtoDreamTrackCuts *TrackCutsRhoMCTrue = new AliFemtoDreamTrackCuts();
 
   // now we create the task
   AliAnalysisTaskFemtoDreamRho *task =
-      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doCleaning);
+      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doMcTruth, doCleaning, doAncestors);
   // THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
   // kINT7 == Minimum bias
   // kHighMultV0 high multiplicity triggered by the V0 detector
@@ -248,7 +261,10 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   PDGParticles.push_back(113);  // 2 //rho
   PDGParticles.push_back(2212); // 3 //proton+
   PDGParticles.push_back(2212); // 4 //proton-
-  // PDGParticles.push_back(113);  // 5 //rhoMCTrue
+  // if (doMCtrueRho)
+  //{
+  //   PDGParticles.push_back(113); // 5 //rhoMCTrue
+  // }
 
   // We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -297,6 +313,29 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   // Particle 1       Hist 1         Hist2
   //
   // Particle 2                      Hist3
+
+  //          pi+       pi-       rho       p       Ap
+  // pi+      pi+pi+1   pi+pi-2   pi+rho4   pi+p7   pi+Ap11
+  //
+  // pi-                pi+pi+3   pi-rho5   pi-p8   pi-Ap12
+  //
+  // rho                          rhorho6   rhop9   rhoAp13
+  //
+  // p                                      pp10    pAp14
+  //
+  // Ap                                             ApAp15
+
+  //          pi+       pi-       rho       p       Ap
+  // pi+      pi+pi+1   pi+pi-2   pi+rho3   pi+p4   pi+Ap5
+  //
+  // pi-                pi-pi-6   pi-rho7   pi-p8   pi-Ap9
+  //
+  // rho                          rhorho10  rhop11  rhoAp12
+  //
+  // p                                      pp13    pAp14
+  //
+  // Ap                                             ApAp15
+
   // The same way the values for binning, minimum and maximum k* range have to be set!
   //  Number of bins
   std::vector<int> NBins;
@@ -308,84 +347,90 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
 
   // maximum k* value
   std::vector<float> kMax;
-  //  kMax.push_back(3.);
 
   std::vector<int> pairQA;
   //  pairQA.push_back(11);
 
+  bool doMCtrueRho = false;
+  float numberOfPart = (doMCtrueRho) ? 6. : 5.;
+
   for (int i = 0; i < (5 * (5 + 1) / 2); i++) // change from 5 to 6 is fIsMCTrue is set
   {
+    std::cout << "check int i: " << i << std::endl;
     NBins.push_back(750);
     kMin.push_back(0.);
     kMax.push_back(3.);
     pairQA.push_back(0);
   }
 
-  pairQA[0] = 11;  // pp
-  pairQA[1] = 11;  // pap
-  pairQA[2] = 11;  // prho
-  pairQA[3] = 11;  // apap
-  pairQA[4] = 11;  // apphi
-  pairQA[5] = 11;  // phiphi
-  pairQA[6] = 11;  // pp
-  pairQA[7] = 11;  // pap
-  pairQA[8] = 11;  // prho
-  pairQA[9] = 11;  // apap
-  pairQA[10] = 11; // apphi
-  pairQA[11] = 11; // phiphi
-  pairQA[12] = 11; // pp
-  pairQA[13] = 11; // pap
-  pairQA[14] = 11; // prho
+  pairQA[0] = 11;  /// pi+ pi+     //pi+pi+
+  pairQA[1] = 11;  /// pi+ pi-     //pi+pi-
+  pairQA[2] = 12;  /// pi- pi-     //pi+rho //this needs the CPR check how the framwork handels these cases
+  pairQA[3] = 11;  /// rho pi+     //pi+p
+  pairQA[4] = 11;  /// rho pi-     //pi+Ap
+  pairQA[5] = 11;  /// rho rho     //pi-pi-
+  pairQA[6] = 12;  /// p   pi+     //pi-rho
+  pairQA[7] = 11;  /// p   pi-     //pi-p
+  pairQA[8] = 11;  /// p   rho     //pi-Ap
+  pairQA[9] = 22;  /// p   p       //rhorho
+  pairQA[10] = 21; /// p-  pi+     //rhop  //May not need CPR
+  pairQA[11] = 21; /// p-  pi-     //rhoAp
+  pairQA[12] = 11; /// p-  rho     //pp
+  pairQA[13] = 11; /// p-  p       //pAp
+  pairQA[14] = 11; /// p-  p-      //ApAp
 
-  for (int i = 0; i < (5 * (5 + 1) / 2); i++) // change from 5 to 6 is fIsMCTrue is set
+  // for (int i = 0; i < (numberOfPart * (numberOfPart + 1) / 2); i++) // change from 5 to 6 is fIsMCTrue is set
+  //{
+  //   std::cout << "check2 int i: " << i << std::endl;
+  //   pairQA[i] = 11; // phiphi
+  //  }
+
+  if (isMC && doMcTruth) // override the values in case the MC True is used we don't need any of that
   {
-    pairQA[i] = 11; // phiphi
+    pairQA[0] = 00;  // pi+pi+
+    pairQA[1] = 00;  // pi+pi-
+    pairQA[2] = 00;  // pi+rho
+    pairQA[3] = 00;  // pi+p
+    pairQA[4] = 00;  // pi+Ap
+    pairQA[5] = 00;  // pi-pi-
+    pairQA[6] = 00;  // pi-rho
+    pairQA[7] = 00;  // pi-p
+    pairQA[8] = 00;  // pi-Ap
+    pairQA[9] = 00;  // rhorho
+    pairQA[10] = 00; // rhop
+    pairQA[11] = 00; // rhoAp
+    pairQA[12] = 00; // pp
+    pairQA[13] = 00; // pAp
+    pairQA[14] = 00; // ApAp
   }
 
-  if (isMC)
-  {
-    pairQA[0] = 11;  // pp
-    pairQA[1] = 11;  // pap
-    pairQA[2] = 11;  // prho
-    pairQA[3] = 11;  // apap
-    pairQA[4] = 11;  // apphi
-    pairQA[5] = 11;  // phiphi
-    pairQA[6] = 11;  // pp
-    pairQA[7] = 11;  // pap
-    pairQA[8] = 11;  // prho
-    pairQA[9] = 11;  // apap
-    pairQA[10] = 11; // apphi
-    pairQA[11] = 11; // phiphi
-    pairQA[12] = 11; // pp
-    pairQA[13] = 11; // pap
-    pairQA[14] = 11; // prho
-  }
+  std::vector<bool> closeRejection; // for now we don't use it, verify with MC if that is needed
 
   // pair rejection
-  std::vector<bool> closeRejection;
-  closeRejection.push_back(true);  // pi+ pi+
+  closeRejection.push_back(false); // pi+ pi+
   closeRejection.push_back(false); // pi+ pi-
-  closeRejection.push_back(true);  // pi- pi-
-  closeRejection.push_back(false); // rho pi+
-  closeRejection.push_back(false); // rho pi-
-  closeRejection.push_back(false); // rho rho
-  closeRejection.push_back(true);  // p   pi+
-  closeRejection.push_back(false); // p   pi-
-  closeRejection.push_back(false); // p   rho
-  closeRejection.push_back(true);  // p   p
-  closeRejection.push_back(false); // p-  pi+
-  closeRejection.push_back(true);  // p-  pi-
-  closeRejection.push_back(false); // p-  rho
-  closeRejection.push_back(false); // p-  p
-  closeRejection.push_back(true);  // p-  p-
+  closeRejection.push_back(false); // pi+rho
+  closeRejection.push_back(false); // pi+p
+  closeRejection.push_back(false); // pi+Ap
+  closeRejection.push_back(false); // pi-pi-
+  closeRejection.push_back(false); // pi-rho
+  closeRejection.push_back(false); // pi-p
+  closeRejection.push_back(false); // pi-Ap
+  closeRejection.push_back(false); // rhorho
+  closeRejection.push_back(false); // rhop
+  closeRejection.push_back(false); // rhoAp
+  closeRejection.push_back(false); // pp
+  closeRejection.push_back(false); // pAp
+  closeRejection.push_back(false); // ApAp
 
-  for (int i = 0; i < (5 * (5 + 1) / 2); i++) // change from 5 to 6 is fIsMCTrue is set
-  {
-    if (i > 14)
-    {
-      closeRejection.push_back(true);
-    }
-  }
+  // for (int i = 0; i < (numberOfPart * (numberOfPart + 1) / 2); i++) // change from 5 to 6 is fIsMCTrue is set
+  //{
+  //   if (i > 14)
+  //   {
+  //     std::cout << "check2 int i: " << i << std::endl;
+  //    closeRejection.push_back(true);
+  //   }
+  //}
 
   if (suffix == "99")
   {
@@ -407,6 +452,15 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
     closeRejection.push_back(false); // p-  rho
     closeRejection.push_back(false); // p-  p
     closeRejection.push_back(false); // p-  p-
+    if (false)
+    {
+      closeRejection.push_back(false); // pi+ rhoMC
+      closeRejection.push_back(false); // pi+ rhoMC
+      closeRejection.push_back(false); // prho
+      closeRejection.push_back(false); // apap
+      closeRejection.push_back(false); // apphi
+      closeRejection.push_back(false); // phiphi
+    }
   }
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto");
@@ -420,21 +474,37 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
-  config->SetDeltaEtaMax(fdPhidEta); // https://alice-notes.web.cern.ch/system/files/notes/analysis/616/2018-08-10-NotepPb.pdf
-  config->SetDeltaPhiMax(fdPhidEta);
+  config->SetDeltaEtaMax(fdEta); // https://alice-notes.web.cern.ch/system/files/notes/analysis/616/2018-08-10-NotepPb.pdf
+  config->SetDeltaPhiMax(fdPhi);
   config->SetMixingDepth(10); // AN
   config->SetkTBinning(true);
   config->SetmTBinning(true);
   config->SetExtendedQAPairs(pairQA);
-  config->SetUseEventMixing(true); // Check this flag
+  config->SetUseEventMixing(true);
   config->SetMinimalBookingME(false);
   config->SetdPhidEtaPlots(true);
   config->SetdPhidEtaPlotsSmallK(true);
+
+  std::cout << "Check the addTask config" << std::endl;
+  std::cout << "  ZVtxBins.size() " << ZVtxBins.size() << std::endl;
+  std::cout << "  MultBins.size() " << MultBins.size() << std::endl;
+  std::cout << "  PDGParticles.size() " << PDGParticles.size() << std::endl;
+  std::cout << "  NBins.size() " << NBins.size() << std::endl;
+  std::cout << "  kMin.size() " << kMin.size() << std::endl;
+  std::cout << "  kMax.size() " << kMax.size() << std::endl;
+  std::cout << "  closeRejection.size() " << closeRejection.size() << std::endl;
+  std::cout << "  pairQA.size() " << pairQA.size() << std::endl;
+  std::cout << "  config->SetDeltaEtaMax(fdEta); " << fdEta << std::endl;
+  std::cout << "  config->SetDeltaPhiMax(fdPhi); " << fdPhi << std::endl;
 
   if (isMC)
   {
     config->SetMomentumResolution(true);
     config->SetPhiEtaBinnign(true);
+    if (doAncestors)
+    {
+      config->SetAncestors(true);
+    }
   }
   else
   {
@@ -447,8 +517,9 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   task->SetProtonCuts(TrackPosProtonCuts);
   task->SetAntiProtonCuts(TrackNegProtonCuts);
   task->SetRhoCuts(TrackCutsRho);
+
   // if (TrackCutsRhoMCTrue)
-  //{
+  // {
   //   task->SetRhoMCTrueCuts(TrackCutsRhoMCTrue);
   //  }
   task->SetPosPionCuts(TrackPosPionCuts);
@@ -456,6 +527,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   task->SetCollectionConfig(config);
   task->SetDoCleaning(doCleaning);
   task->SetIsMC(isMC);
+  task->SetDoMcTruth(doMcTruth);
+  task->SetDoAncestors(doAncestors);
 
   mgr->AddTask(task);
 

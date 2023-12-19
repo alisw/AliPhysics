@@ -23,6 +23,7 @@
 //***************************************************************************************
 // main function
 //***************************************************************************************
+
 void AddTask_GammaCalo_PbPbV2(
     Int_t trainConfig = 1,                // change different set of cuts
     Int_t isMC = 0,                       // run MC
@@ -70,12 +71,10 @@ void AddTask_GammaCalo_PbPbV2(
   TString corrTaskSetting = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "", addTaskName);
   if (corrTaskSetting.CompareTo(""))
     cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
-
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   TString strTrackMatcherRunningMode = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "TM", "", addTaskName);
   if (additionalTrainConfig.Contains("TM"))
     trackMatcherRunningMode = strTrackMatcherRunningMode.Atoi();
-
   Bool_t doTreeEOverP = kFALSE; // switch to produce EOverP tree
   TString strdoTreeEOverP = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "EPCLUSTree", "", addTaskName);
   if (strdoTreeEOverP.Atoi() == 1)
@@ -229,37 +228,7 @@ void AddTask_GammaCalo_PbPbV2(
   task->SetLightOutput(enableLightOutput);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
   task->IfVZEROCalibOn(v0calibOn);
-
-  TFile *fVZEROCalibFile = nullptr;
-  TList *fVZEROCalibList = nullptr;
-
-  if (!gGrid)
-    TGrid::Connect("alien://");
-  if (v0calibOn)
-  {
-    if (periodNameV0Reader.EqualTo("LHC15o"))
-    {
-      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC15o/VZEROCalibFile15o.root", "READ");
-      fVZEROCalibList = dynamic_cast<TList *>(fVZEROCalibFile->Get("VZEROCalibList"));
-    }
-    if (periodNameV0Reader.EqualTo("LHC18q"))
-    {
-      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/calibq2V0C18qP3.root", "READ");
-      fVZEROCalibList = dynamic_cast<TList *>(fVZEROCalibFile->Get("18qlistspPerc"));
-    }
-    if (periodNameV0Reader.EqualTo("LHC18r"))
-    {
-      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/calibq2V0C18rP3.root", "READ");
-      fVZEROCalibList = dynamic_cast<TList *>(fVZEROCalibFile->Get("18rlistspPerc"));
-    }
-    if (fVZEROCalibList)
-    {
-      task->SetListForVZEROCalib(fVZEROCalibList);
-      std::cout << "================  VZERO List Set =================" << std::endl;
-    }
-    else
-      std::cout << "!!!!!!!!!!!!!!!VZERO List not Found!!!!!!!!!!!!!!!" << std::endl;
-  }
+  task->SetTrainconfig(trainConfig);
 
   // meson cuts
   // meson type (Dalitz or not), BG scheme, pool depth, rotation degrees, rapidity cut, radius cut, alpha, chi2, shared electrons, reject to close v0, MC smearing, dca, dca, dca

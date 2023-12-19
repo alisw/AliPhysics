@@ -28,7 +28,7 @@
 #include "AliAODMCParticle.h"
 #include "AliPIDResponse.h"
 #include "AliMultSelection.h"
-//#include "AliAnalysisUtils.h"
+#include "AliAnalysisUtils.h"
 
 #include "AliAODpidUtil.h"
 #include "AliAODHeader.h"
@@ -75,31 +75,27 @@ void AliAnalysisTaskEfficiencyFB128::SetPidMethod(int method)
 
 //_______________________________________________________
 
-AliAnalysisTaskEfficiencyFB128::AliAnalysisTaskEfficiencyFB128() :  AliAnalysisTaskSE(), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0),fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fEstEventMult(kRefMult), fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0), fTrackPileUpRemoval(kFALSE), fV0PileUpRemoval(kFALSE)
+AliAnalysisTaskEfficiencyFB128::AliAnalysisTaskEfficiencyFB128() :  AliAnalysisTaskSE(), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0),fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fEstEventMult(kRefMult), fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0), fTrackPileUpRemoval(kFALSE), fV0PileUpRemoval(kFALSE){
 
-    {
+  for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
+    for(Int_t chg=0;chg<2;chg++){
+       fGeneratedMCPrimaries[i][chg] = NULL;
+       fMCPrimariesThatAreReconstructed[i][chg] = NULL;
+       fGeneratedMCPrimaries4D[i][chg] = NULL;
+       fMCPrimariesThatAreReconstructed4D[i][chg] = NULL;
+       fMCPrimariesThatAreReconstructedNoNsigma[i][chg] = NULL;
+       fReconstructedAfterCuts[i][chg] = NULL;
+       fReconstructedNotPrimaries[i][chg] = NULL;
+       fReconstructedPrimaries[i][chg] = NULL;
+       fContamination[i][chg] = NULL;
+     }
+  }
 
-      for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
-	for(Int_t chg=0;chg<2;chg++){
-	  fGeneratedMCPrimaries[i][chg] = NULL;
-	  fMCPrimariesThatAreReconstructed[i][chg] = NULL;
-	  fGeneratedMCPrimaries4D[i][chg] = NULL;
-	  fMCPrimariesThatAreReconstructed4D[i][chg] = NULL;
-	  fMCPrimariesThatAreReconstructedNoNsigma[i][chg] = NULL;
-	  fReconstructedAfterCuts[i][chg] = NULL;
-	  fReconstructedNotPrimaries[i][chg] = NULL;
-	  fReconstructedPrimaries[i][chg] = NULL;
-	  fContamination[i][chg] = NULL;
-	}
-      }
-
-      for ( Int_t i = 0; i < 11; i++) {
-	fHistQA[i] = NULL;
-	if(i<3) fHistQA2D[i] = NULL;
-      }
-    }
-
-
+  for ( Int_t i = 0; i < 11; i++) {
+    fHistQA[i] = NULL;
+    if(i<3) fHistQA2D[i] = NULL;
+  }
+}
 
 AliAnalysisTaskEfficiencyFB128::AliAnalysisTaskEfficiencyFB128(TString name, int pidMethod, int filterbit) :
   AliAnalysisTaskSE(name), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0), fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection),  fEstEventMult(kRefMult),fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
@@ -129,7 +125,7 @@ AliAnalysisTaskEfficiencyFB128::AliAnalysisTaskEfficiencyFB128(TString name, int
       fGeneratedMCPrimaries4D[i][chg] = NULL;
     }
   }
- for ( Int_t i = 0; i < 11; i++) {
+  for ( Int_t i = 0; i < 11; i++) {
     if(i<4) fHistEv[i] = NULL;
     fHistQA[i] = NULL;
     if(i<3) fHistQA2D[i] = NULL;
@@ -141,10 +137,7 @@ AliAnalysisTaskEfficiencyFB128::AliAnalysisTaskEfficiencyFB128(TString name, int
   /*fTrackCuts =  AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     if( !fTrackCuts ) return;
     fTrackCuts->SetMinNClustersTPC(70);*/
-  
-  
-
-
+ 
   //DefineInput(0, TChain::Class());
   //DefineOutput(0, TTree::Class()); 
   DefineOutput(1, TList::Class());
@@ -190,7 +183,7 @@ void AliAnalysisTaskEfficiencyFB128::UserCreateOutputObjects()
     else if (j==3) parttypename="Proton";
     else if (j==4) parttypename="Lambda";
 
-    for(Int_t i = 0; i < MULTBINS; i++)  {
+    for(Int_t i = 0; i < 1; i++)  {
       hname1  = "hGeneratedMCPrimariesEffM"; hname1+=i; hname1+=parttypename;
       htitle1 = "Kinematic level Y_pT (prim only) M"; htitle1+=i; htitle1+=parttypename;
       fGeneratedMCPrimaries[i*PARTTYPES+j][0] = new TH2F(hname1.Data(),htitle1.Data(),50, -1.5, 1.5,1000,0.,10.0);
@@ -570,7 +563,7 @@ void AliAnalysisTaskEfficiencyFB128::UserCreateOutputObjects()
       }
     }
     
-  for (Int_t i = 0; i < MULTBINS*PARTTYPES; i++){
+  for (Int_t i = 0; i < 1*PARTTYPES; i++){
     for(Int_t chg=0;chg<2;chg++){
       fHistoList->Add(fGeneratedMCPrimaries[i][chg]);
       fHistoList->Add(fMCPrimariesThatAreReconstructed[i][chg]);
@@ -658,173 +651,121 @@ void AliAnalysisTaskEfficiencyFB128::UserCreateOutputObjects()
 
 //_____________________________________________________________________
 
-bool IsPionNSigmaFB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
-{
-
-    if (mom > 0.5) {
-        if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < 2)
-            return true;
-	}
-    else {
-        if (TMath::Abs(nsigmaTPCPi) < 2)
-            return true;
-    }
-
-  return false;
-}
-
-bool IsPionNSigmaV0FB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
-{
-
-  if (TMath::Abs(nsigmaTPCPi) < 3.0) return true;
-
-  return false;
-}
-
-bool IsPionNSigmaV0TPC5FB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
-{
-
-  if (TMath::Abs(nsigmaTPCPi) < 5.0) return true;
-
-  return false;
-}
-
-
-bool IsProtonNSigmaV0TPC5FB128(float mom, float nsigmaTPCP, float nsigmaTOFP)
-{
-
-  if (TMath::Abs(nsigmaTPCP) < 5.0) return true;
-
-  return false;
-}
-
-bool IsPionNSigma3FB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
-{
-
-    if (mom > 0.5) {
-        if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < 3)
-            return true;
-	}
-    else {
-        if (TMath::Abs(nsigmaTPCPi) < 3)
-            return true;
-    }
-
-  return false;
-}
-
-bool IsKaonNSigmaFB128(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
-{
-    if (mom > 0.5) {
-      //rejection of unwanted contamination
-      if(mom>1 && TOFtime<-400)
-	return false;
-
-      if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < 2)
-	return true;
-	}
-    else {
-        if (TMath::Abs(nsigmaTPCK) < 2)
-            return true;
-    }
-
-
-  return false;
-}
-
-bool IsKaonNSigma3FB128(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
-{
+bool IsPionNSigmaFB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime){
+  
   if (mom > 0.5) {
-    //rejection of unwanted contamination
-   // if(mom>1 && TOFtime<-400)
-     // return false;
- 
-    if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < 3)
-      return true;
+    if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < 2) return true;
   }
   else {
-    if (TMath::Abs(nsigmaTPCK) < 3)
-      return true;
+    if (TMath::Abs(nsigmaTPCPi) < 2) return true;
   }
-
-
   return false;
 }
 
-bool IsProtonNSigmaFB128(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
-{
+bool IsPionNSigmaV0FB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi){
+
+  if (TMath::Abs(nsigmaTPCPi) < 3.0) return true;
+    return false;
+}
+
+bool IsPionNSigmaV0TPC5FB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi){
+ 
+  if (TMath::Abs(nsigmaTPCPi) < 5.0) return true;
+    return false;
+}
+
+
+bool IsProtonNSigmaV0TPC5FB128(float mom, float nsigmaTPCP, float nsigmaTOFP){
+
+  if (TMath::Abs(nsigmaTPCP) < 5.0) return true;
+    return false;
+}
+
+bool IsPionNSigma3FB128(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime){
+
+  if (mom > 0.5) {
+    if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < 3) return true;
+  }
+  else {
+    if (TMath::Abs(nsigmaTPCPi) < 3) return true;
+  }
+  return false;
+}
+
+bool IsKaonNSigmaFB128(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime){
+   
+   if (mom > 0.5) {
+     //rejection of unwanted contamination
+     if(mom>1 && TOFtime<-400) return false;
+     if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < 2) return true;
+   }
+   else {
+     if (TMath::Abs(nsigmaTPCK) < 2) return true;
+   }
+   return false;
+}
+
+bool IsKaonNSigma3FB128(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime){
+   
+   if (mom > 0.5) {
+     if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < 3) return true;
+   }
+   else {
+     if (TMath::Abs(nsigmaTPCK) < 3) return true;
+   }
+   return false;
+}
+
+bool IsProtonNSigmaFB128(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime){
 
     if (mom > 0.5) {
-      if(mom>1.8 && TOFtime<-300)
-	return false;
-
-
-
-        if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < 2)
-            return true;
-	}
-    else {
-        if (TMath::Abs(nsigmaTPCP) < 2)
-            return true;
+      if(mom>1.8 && TOFtime<-300) return false;
+      if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < 2) return true;
     }
-
-
-
-  return false;
+    else {
+      if (TMath::Abs(nsigmaTPCP) < 2) return true;
+    }
+    return false;
 }
 
-bool IsProtonNSigmaV0FB128(float mom, float nsigmaTPCP, float nsigmaTOFP)
-{
+bool IsProtonNSigmaV0FB128(float mom, float nsigmaTPCP, float nsigmaTOFP){
 
   if (mom < 0.8) {
     if (TMath::Abs(nsigmaTPCP) < 3.0) return true;
-  } else {
-    if (nsigmaTOFP < -999.) {
-      if (TMath::Abs(nsigmaTPCP) < 3.0) return true;
-    } else {
-      if (TMath::Abs(nsigmaTPCP) < 3.0 && TMath::Abs(nsigmaTOFP) < 3.0) return true;
-    }
-    }
-
-  return false;
-}
-
-bool IsProtonNSigma3FB128(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
-{
-  if (mom > 0.5) {
-   
-   // if(mom>1.8 && TOFtime<-300)
-     
-     // return false;
-
-
-    if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < 3)
-      return true;
   }
   else {
-    if (TMath::Abs(nsigmaTPCP) < 3)
-      return true;
+    if (nsigmaTOFP < -999.) {
+      if (TMath::Abs(nsigmaTPCP) < 3.0) return true;
+    }
+    else {
+      if (TMath::Abs(nsigmaTPCP) < 3.0 && TMath::Abs(nsigmaTOFP) < 3.0) return true;
+    }
   }
-  
+  return false;
+}
 
+bool IsProtonNSigma3FB128(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime){
+  
+  if (mom > 0.5) {
+    if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < 3) return true;
+  }
+  else {
+    if (TMath::Abs(nsigmaTPCP) < 3) return true;
+  }
   return false;
 }
 
 
-bool IsElectronFB128(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
-{
-  if(TMath::Abs(nsigmaTPCe)<3 && TMath::Abs(nsigmaTPCPi)>3 && TMath::Abs(nsigmaTPCK)>3 && TMath::Abs(nsigmaTPCP)>3)
-      return true;
-   else
-     return false;
+bool IsElectronFB128(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP){
+  
+  if(TMath::Abs(nsigmaTPCe)<3 && TMath::Abs(nsigmaTPCPi)>3 && TMath::Abs(nsigmaTPCK)>3 && TMath::Abs(nsigmaTPCP)>3) return true;
+  else return false;
 }
 
 //_______________________________________________________
 
 void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
 {
-
-
   AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   AliAODEvent *fAOD = aodH->GetEvent();
   fAODpidUtil = aodH->GetAODpidUtil();
@@ -832,35 +773,29 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!aodEvent) return;
   fHistEvCuts[0]->Fill(0);
-  
+
   Double_t mult;
   
-    if(fEstEventMult == kV0M)
-    {
-      AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
-      AliMultSelection *mult_selection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
-      mult = mult_selection->GetMultiplicityPercentile("V0M"); 
-    }
-    else if(fEstEventMult == kRefMult)
-    {
-      AliAODHeader *fAODheader = (AliAODHeader*)aodEvent->GetHeader();
-      mult = fAODheader->GetRefMultiplicity(); 
-
-   }
-   else if(fEstEventMult == kV0A)
-    {
-      AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
-      mult = alicent->GetCentralityPercentile("V0A"); 
-
-    }
-
-
+  if(fEstEventMult == kV0M){
+    AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
+    AliMultSelection *mult_selection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
+    mult = mult_selection->GetMultiplicityPercentile("V0M"); 
+  }
+  else if(fEstEventMult == kRefMult){
+    AliAODHeader *fAODheader = (AliAODHeader*)aodEvent->GetHeader();
+    mult = fAODheader->GetRefMultiplicity(); 
+  }
+  else if(fEstEventMult == kV0A){
+    AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
+    mult = alicent->GetCentralityPercentile("V0A"); 
+  }
+ 
   if(fIfAliEventCuts){
-    //******* Ali Event Cuts - applied on AOD event - standard cuts for Run2 as prepared by DPG group ************
+  //******* Ali Event Cuts - applied on AOD event - standard cuts for Run2 as prepared by DPG group ************
     if (!fEventCuts->AcceptEvent(aodEvent)) {
       return;
     }
-    //******************************************
+  //******************************************
   }
 
   // EVENT SELECTION ********************
@@ -878,7 +813,7 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
   if(mult >= 0 && mult <=20)  fcent2 = 10;
   else if(mult >= 20 && mult <=40) fcent2 = 1;
   else if(mult >= 40 && mult <=70) fcent2 = 2;
-  else if(mult >= 70 && mult <=100) fcent2 = 3;
+  else if(mult >= 70 && mult <=90) fcent2 = 3;
   //if(fcent2!=3) return; // check this
  // else return;
 
@@ -907,6 +842,9 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
   Bool_t fisPileUp = kFALSE;
   Int_t fMinPlpContribMV = 0;
   Int_t fMinPlpContribSPD = 3;
+  Bool_t fRejectTPCPileupWithITSTPCnCluCorr = kFALSE; //good for removing pileup in the data
+
+   /*if(anaUtil->IsVertexSelected2013pA(aodEvent)==kFALSE) return;
 
   if(fpA2013)
   if(anaUtil->IsVertexSelected2013pA(aodEvent)==kFALSE) return;
@@ -921,6 +859,25 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
   if(anaUtil->IsPileUpEvent(aodEvent)) return;
 
   delete anaUtil;   
+
+  if(fIfAliEventCuts){
+   if(fRejectTPCPileupWithITSTPCnCluCorr) fEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+   // if (!fEventCuts->fUseITSTPCCluCorrelationCut ==kTRUE) { 
+   //   return;
+   // }
+  }*/
+
+  //pileup for LHC20e3a -> Injective Pileup over events 
+  /* AliAODMCHeader *mcHeader = 0;
+  mcHeader = (AliAODMCHeader*)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  if(!mcHeader) {
+    printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
+    return;
+  }
+  Bool_t isPileupInGeneratedEvent = kFALSE;
+  isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,"Hijing");
+  if(isPileupInGeneratedEvent) return;
+  */
 
   fHistQA[9]->Fill(3);
   if(fcent2==10)fHistEvCuts[0]->Fill(3);
@@ -940,9 +897,11 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
   else if(fcent2==3)fHistEvCuts[3]->Fill(4);
   
  //**** getting MC array ******
+
   TClonesArray  *arrayMC;
 
   arrayMC = dynamic_cast<TClonesArray*>(aodEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+
 
 //copying pid information for FB 128
   int labels[20000];
@@ -955,169 +914,144 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
     if (!aodtrack->TestFilterBit(128)) {
       if(aodtrack->GetID() < 0) continue;
       labels[aodtrack->GetID()] = i;
+      
     }
   }
-
-
-
+  
   //RECONSTRUCTED TRACKS 
-
   TObjArray recoParticleArray[PARTTYPES];
-
+////////////// necessary cuts to estimate the Nav for reconstructed and true data in similar way /////////////////////
   bool evpass=true;  	
   bool collect[3] = {false,false,false};  	
  
   int hmPionsR=0, hmKaonsR=0, hmProtonsR=0;
 
-
   fHistQA[10]->Fill(1,aodEvent->GetNumberOfTracks());
   //loop over AOD tracks 
   for (Int_t iTracks = 0; iTracks < aodEvent->GetNumberOfTracks(); iTracks++) {
-  	AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iTracks); 
-	if (!track)continue;
-	if(track->Y() < -0.5 || track->Y() > 0.5)
-      		continue; 
-      	
-	
-	UInt_t filterBit = fFB;
-	if(!track->TestFilterBit(filterBit))continue;		
-        
-	bool isPionNsigma = 0;
-	bool isKaonNsigma = 0;
-	bool isProtonNsigma  = 0;
-
-    	if (isPionNsigma){
-		if (track->Pt() > 0.2 || track->Pt() < 2.5){
-		continue;
-		}
-	}
-	if (isKaonNsigma){
-     		if (track->Pt() > 0.5 || track->Pt() < 2.5){
-     		continue;
-     		}
-        }
-     	if (isProtonNsigma){
-     		if (track->Pt() > 0.5 || track->Pt() < 2.5){
-     		continue;
-     		}
-        }
-        
-	AliAODTrack* aodtrackpid;
-		
-	if(filterBit==(1 << (7)))
-	aodtrackpid =(AliAODTrack*)aodEvent->GetTrack(labels[-1-aodEvent->GetTrack(iTracks)->GetID()]);
-	else
-	aodtrackpid = track;
-
-	float nSigmaTPCPi = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kPion);
-	float nSigmaTPCK = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kKaon);
-	float nSigmaTPCP = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kProton);
+    AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iTracks); 
+    if (!track)continue;
+    if(track->Y() < -0.5 || track->Y() > 0.5)
+     continue; 
     
-	double nSigmaTOFPi = fpidResponse->NumberOfSigmasTOF(aodtrackpid,AliPID::kPion);
-	double nSigmaTOFK = fpidResponse->NumberOfSigmasTOF(aodtrackpid,AliPID::kKaon);
-	double nSigmaTOFP = fpidResponse->NumberOfSigmasTOF(aodtrackpid,AliPID::kProton);
-
-
-	float tTofSig = aodtrackpid->GetTOFsignal();
-	double pidTime[5]; aodtrackpid->GetIntegratedTimes(pidTime);
-
-	isPionNsigma = (IsPionNSigmaFB128(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma3FB128(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3FB128(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-	isKaonNsigma = (!IsPionNSigma3FB128(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigma3FB128(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3FB128(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-	isProtonNsigma = (!IsPionNSigma3FB128(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3FB128(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaFB128(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+    UInt_t filterBit = fFB;
+    if(!track->TestFilterBit(filterBit)) continue;		
+    
+    bool isPionNsigma = 0;
+    bool isKaonNsigma = 0;
+    bool isProtonNsigma  = 0;
+    
+    if (isPionNsigma){
+      if (track->Pt() > 0.2 || track->Pt() < 2.5) continue;
+    }
+    if (isKaonNsigma){
+      if (track->Pt() > 0.5 || track->Pt() < 2.5) continue;
+    }
+    if (isProtonNsigma){
+      if (track->Pt() > 0.5 || track->Pt() < 2.5) continue;
+    }
+    
+    AliAODTrack* aodtrackpid;
+    if(filterBit==(1 << (7)))
+      aodtrackpid =(AliAODTrack*)aodEvent->GetTrack(labels[-1-aodEvent->GetTrack(iTracks)->GetID()]);
+    else
+      aodtrackpid = track;
+    
+    float nSigmaTPCPi = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kPion);
+    float nSigmaTPCK = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kKaon);
+    float nSigmaTPCP = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kProton);
+    double nSigmaTOFPi = fpidResponse->NumberOfSigmasTOF(aodtrackpid,AliPID::kPion);
+    double nSigmaTOFK = fpidResponse->NumberOfSigmasTOF(aodtrackpid,AliPID::kKaon);
+    double nSigmaTOFP = fpidResponse->NumberOfSigmasTOF(aodtrackpid,AliPID::kProton);
+    
+    float tTofSig = aodtrackpid->GetTOFsignal();
+    double pidTime[5]; aodtrackpid->GetIntegratedTimes(pidTime);
+    
+    isPionNsigma = (IsPionNSigmaFB128(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma3FB128(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3FB128(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+    isKaonNsigma = (!IsPionNSigma3FB128(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigma3FB128(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3FB128(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+    isProtonNsigma = (!IsPionNSigma3FB128(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3FB128(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaFB128(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
    
-   
-   
-   	if (isPionNsigma){
-	collect[0]=true; 
-	if(fcent2==10)fHistP[0]->Fill(1);
-	else if(fcent2==1)fHistP[1]->Fill(1);
-	else if(fcent2==2)fHistP[2]->Fill(1);
-	else if(fcent2==3)fHistP[3]->Fill(1);
-	}
-  	if (isKaonNsigma){
-	collect[1]=true; 
-	if(fcent2==10)fHistP[0]->Fill(2);
-	else if(fcent2==1)fHistP[1]->Fill(2);
-	else if(fcent2==2)fHistP[2]->Fill(2);
-	else if(fcent2==3)fHistP[3]->Fill(2);
-	}
-	if (isProtonNsigma){
-	collect[2]=true;
-	if(fcent2==10)fHistP[0]->Fill(3);
-	else if(fcent2==1)fHistP[1]->Fill(3);
-	else if(fcent2==2)fHistP[2]->Fill(3);
-	else if(fcent2==3)fHistP[3]->Fill(3);
-	}	
-  	}
+    if (isPionNsigma){
+      collect[0]=true; 
+      if(fcent2==10)fHistP[0]->Fill(1);
+      else if(fcent2==1)fHistP[1]->Fill(1);
+      else if(fcent2==2)fHistP[2]->Fill(1);
+      else if(fcent2==3)fHistP[3]->Fill(1);
+    }
+    if (isKaonNsigma){
+      collect[1]=true; 
+      if(fcent2==10)fHistP[0]->Fill(2);
+      else if(fcent2==1)fHistP[1]->Fill(2);
+      else if(fcent2==2)fHistP[2]->Fill(2);
+      else if(fcent2==3)fHistP[3]->Fill(2);
+    }
+    if (isProtonNsigma){
+      collect[2]=true;
+      if(fcent2==10)fHistP[0]->Fill(3);
+      else if(fcent2==1)fHistP[1]->Fill(3);
+      else if(fcent2==2)fHistP[2]->Fill(3);
+      else if(fcent2==3)fHistP[3]->Fill(3);
+    }	
+ }
+ 
+ if(collect[0]==true){
+   fHistQA[9]->Fill(5);
+   if(fcent2==10)fHistEvCuts[0]->Fill(5);
+   else if(fcent2==1)fHistEvCuts[1]->Fill(5);
+   else if(fcent2==2)fHistEvCuts[2]->Fill(5);
+   else if(fcent2==3)fHistEvCuts[3]->Fill(5);
+ }
+
+ if(collect[1]==true){ 
+   fHistQA[9]->Fill(6);
+   if(fcent2==10)fHistEvCuts[0]->Fill(6);
+   else if(fcent2==1)fHistEvCuts[1]->Fill(6);
+   else if(fcent2==2)fHistEvCuts[2]->Fill(6);
+   else if(fcent2==3)fHistEvCuts[3]->Fill(6);
+ }
+ 
+ if(collect[2]==true){
+   fHistQA[9]->Fill(7);
+   if(fcent2==10)fHistEvCuts[0]->Fill(7);
+   else if(fcent2==1)fHistEvCuts[1]->Fill(7);
+   else if(fcent2==2)fHistEvCuts[2]->Fill(7);
+   else if(fcent2==3)fHistEvCuts[3]->Fill(7);
+ }
+////////////// END --->>>> necessary cuts to estimate the Nav for reconstructed and true data in similar way /////////////////////
 
 
-
-if(collect[0]==true){
-	fHistQA[9]->Fill(5);
-	if(fcent2==10)fHistEvCuts[0]->Fill(5);
-	else if(fcent2==1)fHistEvCuts[1]->Fill(5);
-	else if(fcent2==2)fHistEvCuts[2]->Fill(5);
-	else if(fcent2==3)fHistEvCuts[3]->Fill(5);
-}
-
-if(collect[1]==true){
-	fHistQA[9]->Fill(6);
-	if(fcent2==10)fHistEvCuts[0]->Fill(6);
-	else if(fcent2==1)fHistEvCuts[1]->Fill(6);
-	else if(fcent2==2)fHistEvCuts[2]->Fill(6);
-	else if(fcent2==3)fHistEvCuts[3]->Fill(6);
-}
-
-
-if(collect[2]==true){
-	fHistQA[9]->Fill(7);
-	if(fcent2==10)fHistEvCuts[0]->Fill(7);
-	else if(fcent2==1)fHistEvCuts[1]->Fill(7);
-	else if(fcent2==2)fHistEvCuts[2]->Fill(7);
-	else if(fcent2==3)fHistEvCuts[3]->Fill(7);
-}
-
-
-
-
-	//if(!evpass) return;
-	
+//CUTS USED FOR RECONSTRUCTED PARTICLES
   for (Int_t iTracks = 0; iTracks < aodEvent->GetNumberOfTracks(); iTracks++) {
     //get track 
     
-
     AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iTracks); 
     if (!track)continue;
     fHistQA[10]->Fill(2);
 
-      UInt_t filterBit = fFB;
-    if(!track->TestFilterBit(filterBit))continue;		
+    UInt_t filterBit = fFB;
+    if(!track->TestFilterBit(filterBit)) continue;		
 
     Int_t charge = 0;
     if(track->Charge() > 0 ) charge=0;
     else if (track->Charge() < 0 ) charge=1; 
-  
     fHistQA[10]->Fill(3);
      
-    if(track->Y() < -0.5 || track->Y() > 0.5)
-      continue; 
+    if(track->Y() < -0.5 || track->Y() > 0.5) continue; 
     fHistQA[10]->Fill(4);
 
-    
-    //DCA
-    
+   //DCA
     Double_t DCAXY;
     Double_t DCAZ;
 
     DCAXY = -TMath::Abs(track->DCA());
     DCAZ = -TMath::Abs(track->ZAtDCA());
  
-      if(!(DCAXY==-999 || DCAZ==-999)){
+    if(!(DCAXY==-999 || DCAZ==-999)){
 	//if(TMath::Abs(DCAXY) > 0.0182 + 0.035*TMath::Power(track->Pt(), -1.01)) continue; //XY, Pt dep
 	//no DCA cut
 	//if(TMath::Abs(DCAXY) > 1000.0) {continue;} //XY
 	//if(TMath::Abs(DCAZ) > 1000.0) {continue;} //Z
-      }
+    }
     else {
       // code from Michael and Prabhat from AliAnalysisTaskDptDptCorrelations
       // const AliAODVertex* vertex = (AliAODVertex*) aodEvent->GetPrimaryVertex(); (already defined above)
@@ -1133,7 +1067,6 @@ if(collect[2]==true){
 	    vertexX = vertex->GetX();
 	    vertexY = vertex->GetY();
 	    vertexZ = vertex->GetZ();
-
 	  }
 	}
       }
@@ -1146,11 +1079,9 @@ if(collect[2]==true){
       DCAZ = pos[2] - vertexZ;
       DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
     }
-
     fHistQA[10]->Fill(6);
 
     AliAODTrack* aodtrackpid;
-
     //for FB 128 - tpc only tracks
     if(filterBit==(1 << (7)))
       aodtrackpid =(AliAODTrack*)aodEvent->GetTrack(labels[-1-aodEvent->GetTrack(iTracks)->GetID()]);
@@ -1405,8 +1336,6 @@ if(collect[2]==true){
 	if(!isPionNsigma && !isKaonNsigma && !isProtonNsigma)
 	  if(status)
 	    fMisidentification[fcent][charge]-> Fill(1,3.5);
-
-
       }
     else if(abs(PDGcode)==321)
       {
@@ -1419,8 +1348,6 @@ if(collect[2]==true){
 	if(!isPionNsigma && !isKaonNsigma && !isProtonNsigma)
 	  if(status)
 	    fMisidentification[fcent][charge]-> Fill(2,3.5);
-
-
       }
     else if(abs(PDGcode) == 2212)
       {
@@ -1463,7 +1390,7 @@ if(collect[2]==true){
     AliError("Array of MC particles not found");
     return;
   }
-
+ ///////// CUTS used to estimate the Nav similar for reconstructed and true data from MC data////////////////////
   bool evpassT=true;  	
   bool collectT[3] = {false,false,false};  	
   	
@@ -1471,98 +1398,80 @@ if(collect[2]==true){
   int hmPionsT=0, hmKaonsT=0, hmProtonsT=0;
   for (Int_t ipart = 0; ipart < arrayMC->GetEntriesFast(); ipart++) {
     AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(ipart);
-
     if (!MCtrk) continue;
     
-	if(MCtrk->Y() < -0.5 || MCtrk->Y() > 0.5){
-	continue; }
-	
-      if(MCtrk->GetPdgCode() == 211){
-      	if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 2.5){
-	continue;
-	}
-      }
-      if(MCtrk->GetPdgCode() == 321){
-      	if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5){
-	continue;
-	}
-       }
-       if(MCtrk->GetPdgCode() == 3122){
-      	if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5){
-	continue;
-	}
-       }
+    if(MCtrk->Y() < -0.5 || MCtrk->Y() > 0.5) continue; 
+    if(MCtrk->GetPdgCode() == 211){
+      if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 2.5) continue;
+    }
+    if(MCtrk->GetPdgCode() == 321){
+      if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
+    }
+    if(MCtrk->GetPdgCode() == 3122){
+      if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
+    }
       
-      // check physical primary 
+    // check physical primary 
 
-      if(MCtrk->IsPhysicalPrimary()) // Not from weak decay!
-	{
-    
-    Int_t PDGcode = TMath::Abs(MCtrk->GetPdgCode()); 
-
-   	if (PDGcode==211){
+    if(MCtrk->IsPhysicalPrimary()){
+      Int_t PDGcode = TMath::Abs(MCtrk->GetPdgCode()); 
+      if (PDGcode==211){
 	collectT[0]=true; 
 	if(fcent2==10)fHistP[0]->Fill(4);
 	else if(fcent2==1)fHistP[1]->Fill(4);
 	else if(fcent2==2)fHistP[2]->Fill(4);
 	else if(fcent2==3)fHistP[3]->Fill(4);
-	}
-  	if (PDGcode==321){
-	collectT[1]=true; 
+      }
+      if (PDGcode==321){
+        collectT[1]=true; 
 	if(fcent2==10)fHistP[0]->Fill(5);
 	else if(fcent2==1)fHistP[1]->Fill(5);
 	else if(fcent2==2)fHistP[2]->Fill(5);
 	else if(fcent2==3)fHistP[3]->Fill(5);
-	}
-	if (PDGcode==2212){
+      }
+      if (PDGcode==2212){
 	collectT[2]=true;
 	if(fcent2==10)fHistP[0]->Fill(6);
 	else if(fcent2==1)fHistP[1]->Fill(6);
 	else if(fcent2==2)fHistP[2]->Fill(6);
 	else if(fcent2==3)fHistP[3]->Fill(6);
-	}
-	}
-   }
+      }
+    }
+  }
   	
-
-        if(collectT[0]==true){
-        	fHistQA[9]->Fill(8);
-		if(fcent2==10)fHistEvCuts[0]->Fill(8);
-		else if(fcent2==1)fHistEvCuts[1]->Fill(8);
-		else if(fcent2==2)fHistEvCuts[2]->Fill(8);
-		else if(fcent2==3)fHistEvCuts[3]->Fill(8);
-        }
-
-	if(collectT[1]==true){
-		fHistQA[9]->Fill(9);
-		if(fcent2==10)fHistEvCuts[0]->Fill(9);
-		else if(fcent2==1)fHistEvCuts[1]->Fill(9);
-		else if(fcent2==2)fHistEvCuts[2]->Fill(9);
-		else if(fcent2==3)fHistEvCuts[3]->Fill(9);
-	}
-
-
-	if(collectT[2]==true){
-		fHistQA[9]->Fill(10);
-		if(fcent2==10)fHistEvCuts[0]->Fill(10);
-		else if(fcent2==1)fHistEvCuts[1]->Fill(10);
-		else if(fcent2==2)fHistEvCuts[2]->Fill(10);
-		else if(fcent2==3)fHistEvCuts[3]->Fill(10);
-
-	}
+  if(collectT[0]==true){
+    fHistQA[9]->Fill(8);
+    if(fcent2==10)fHistEvCuts[0]->Fill(8);
+    else if(fcent2==1)fHistEvCuts[1]->Fill(8);
+    else if(fcent2==2)fHistEvCuts[2]->Fill(8);
+    else if(fcent2==3)fHistEvCuts[3]->Fill(8);
+  }
+  if(collectT[1]==true){
+    fHistQA[9]->Fill(9);
+    if(fcent2==10)fHistEvCuts[0]->Fill(9);
+    else if(fcent2==1)fHistEvCuts[1]->Fill(9);
+    else if(fcent2==2)fHistEvCuts[2]->Fill(9);
+    else if(fcent2==3)fHistEvCuts[3]->Fill(9);
+  }
+  if(collectT[2]==true){
+    fHistQA[9]->Fill(10);
+    if(fcent2==10)fHistEvCuts[0]->Fill(10);
+    else if(fcent2==1)fHistEvCuts[1]->Fill(10);
+    else if(fcent2==2)fHistEvCuts[2]->Fill(10);
+    else if(fcent2==3)fHistEvCuts[3]->Fill(10);
+  }
   
+   ///////// END ---->>>>>>CUTS used to estimate the Nav similar for reconstructed and true data from MC data////////////////////
   
-  
-  
-      for (Int_t ipart = 0; ipart < arrayMC->GetEntriesFast(); ipart++) {
+ 
+  //MC GENERATED DATA CUTS
+  for (Int_t ipart = 0; ipart < arrayMC->GetEntriesFast(); ipart++) {
     AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(ipart);
-
     if (!MCtrk) continue;
     //std::cout<<"particle obtained"<<std::endl;
-    
+       
     Int_t PDGcode = TMath::Abs(MCtrk->GetPdgCode()); 
-
-    
+   
     //if(MCtrk->Charge() == 0) continue;
     Int_t charge=0;
 
@@ -1570,111 +1479,90 @@ if(collect[2]==true){
     else if(MCtrk->Charge() > 0) charge=0;
 
 
-    if(MCtrk->Charge() == 0)
-      {	
-	if(MCtrk->GetPdgCode() == 3122) charge = 0;
-	else if(MCtrk->GetPdgCode() == -3122) charge = 1;
-      }
-
-
+    if(MCtrk->Charge() == 0){	
+      if(MCtrk->GetPdgCode() == 3122) charge = 0;
+      else if(MCtrk->GetPdgCode() == -3122) charge = 1;
+    }
+    if(MCtrk->Y() < -0.5 || MCtrk->Y() > 0.5) continue;
+	
+    if(MCtrk->GetPdgCode() == 211){
+      if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 2.5) continue;
+    }
+    if(MCtrk->GetPdgCode() == 321){
+      if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
+    }
+    if(MCtrk->GetPdgCode() == 3122){
+      if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
+    }
      
-    //*** PID - check if pion ***
-    //if(PDGcode!=211) continue; //(PDGcode==11 || PDGcode==321 || PDGcode==2212 || PDGcode==13)
+    // check physical primary 
+   if(MCtrk->IsPhysicalPrimary()) // Not from weak decay!
+   {
+     // Filling histograms for MC truth particles
+     fGeneratedMCPrimaries[fcent*PARTTYPES][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
+     Double_t val[] = {MCtrk->Y(), MCtrk->Pt(), MCtrk->Zv() ,MCtrk->Phi()};
+     fGeneratedMCPrimaries4D[fcent*PARTTYPES][charge]->Fill(val);
+     if(PDGcode==211){
+       fGeneratedMCPrimaries[fcent*PARTTYPES+1][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
+       fGeneratedMCPrimaries4D[fcent*PARTTYPES+1][charge]->Fill(val);
+     }
+     else if(PDGcode==321){
+       fGeneratedMCPrimaries[fcent*PARTTYPES+2][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
+       fGeneratedMCPrimaries4D[fcent*PARTTYPES+2][charge]->Fill(val);
+     }
+     else if(PDGcode==2212){
+       fGeneratedMCPrimaries[fcent*PARTTYPES+3][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
+       fGeneratedMCPrimaries4D[fcent*PARTTYPES+3][charge]->Fill(val);
+     }
+     else if(PDGcode==3122){
+       fGeneratedMCPrimaries[fcent*PARTTYPES+4][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
+       fGeneratedMCPrimaries4D[fcent*PARTTYPES+4][charge]->Fill(val);
+     }
 
-      if(MCtrk->Y() < -0.5 || MCtrk->Y() > 0.5){
-	continue; }
-	
-      if(MCtrk->GetPdgCode() == 211){
-      	if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 2.5){
-	continue;
-	}
+     //Filling data from MC truth particles only for particles that were reconstruced
+     if (recoParticleArray[0].Contains(MCtrk)){ //All
+       fMCPrimariesThatAreReconstructed[fcent*PARTTYPES][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
+       Double_t val[] = {MCtrk->Y(), MCtrk->Pt(), MCtrk->Zv() ,MCtrk->Phi()};
+       fMCPrimariesThatAreReconstructed4D[fcent*PARTTYPES][charge]->Fill(val);
+       fMCPrimariesThatAreReconstructedNoNsigma[fcent*PARTTYPES][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
+       if(PDGcode==211)
+	fMCPrimariesThatAreReconstructedNoNsigma[fcent*PARTTYPES+1][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
+       if(PDGcode==321)
+	fMCPrimariesThatAreReconstructedNoNsigma[fcent*PARTTYPES+2][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
+       if(PDGcode==2212)
+	fMCPrimariesThatAreReconstructedNoNsigma[fcent*PARTTYPES+3][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
+       if(PDGcode==3212)
+	fMCPrimariesThatAreReconstructedNoNsigma[fcent*PARTTYPES+4][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
+     }
+     if (recoParticleArray[1].Contains(MCtrk)){ //Pions
+       if(PDGcode==211){
+        fMCPrimariesThatAreReconstructed[fcent*PARTTYPES+1][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
+	Double_t val[] = {MCtrk->Y(), MCtrk->Pt(), MCtrk->Zv() ,MCtrk->Phi()};
+	fMCPrimariesThatAreReconstructed4D[fcent*PARTTYPES+1][charge]->Fill(val);
+       }
+     }
+     if (recoParticleArray[2].Contains(MCtrk)){ //Kaons
+       if(PDGcode==321){
+	fMCPrimariesThatAreReconstructed[fcent*PARTTYPES+2][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
+	Double_t val[] = {MCtrk->Y(), MCtrk->Pt(), MCtrk->Zv() ,MCtrk->Phi()};
+	fMCPrimariesThatAreReconstructed4D[fcent*PARTTYPES+2][charge]->Fill(val);
+       }
       }
-      if(MCtrk->GetPdgCode() == 321){
-      	if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5){
-	continue;
-	}
-       }
-       if(MCtrk->GetPdgCode() == 3122){
-      	if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5){
-	continue;
-	}
-       }
-
-
-      
-      // check physical primary 
-
-      if(MCtrk->IsPhysicalPrimary()) // Not from weak decay!
-	{
-
-	// Filling histograms for MC truth particles
-	fGeneratedMCPrimaries[fcent*PARTTYPES][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
-
-	 Double_t val[] = {MCtrk->Y(), MCtrk->Pt(), MCtrk->Zv() ,MCtrk->Phi()};
-	 fGeneratedMCPrimaries4D[fcent*PARTTYPES][charge]->Fill(val);
-
-	 if(PDGcode==211){
-	  fGeneratedMCPrimaries[fcent*PARTTYPES+1][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
-	  fGeneratedMCPrimaries4D[fcent*PARTTYPES+1][charge]->Fill(val);}
-	 else if(PDGcode==321){
-	  fGeneratedMCPrimaries[fcent*PARTTYPES+2][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
-	  fGeneratedMCPrimaries4D[fcent*PARTTYPES+2][charge]->Fill(val);}
-	 else if(PDGcode==2212){
-	  fGeneratedMCPrimaries[fcent*PARTTYPES+3][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
-	  fGeneratedMCPrimaries4D[fcent*PARTTYPES+3][charge]->Fill(val);}
-	 else if(PDGcode==3122){
-	  fGeneratedMCPrimaries[fcent*PARTTYPES+4][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
-	  fGeneratedMCPrimaries4D[fcent*PARTTYPES+4][charge]->Fill(val);}
-
-	  //Filling data from MC truth particles only for particles that were reconstruced
-	if (recoParticleArray[0].Contains(MCtrk)){ //All
-	  fMCPrimariesThatAreReconstructed[fcent*PARTTYPES][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
-	  
+      if (recoParticleArray[3].Contains(MCtrk)){ //Protons
+	if(PDGcode==2212){
+	  fMCPrimariesThatAreReconstructed[fcent*PARTTYPES+3][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
 	  Double_t val[] = {MCtrk->Y(), MCtrk->Pt(), MCtrk->Zv() ,MCtrk->Phi()};
-	  fMCPrimariesThatAreReconstructed4D[fcent*PARTTYPES][charge]->Fill(val);
-	  
-	  fMCPrimariesThatAreReconstructedNoNsigma[fcent*PARTTYPES][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
-	  if(PDGcode==211)
-	    fMCPrimariesThatAreReconstructedNoNsigma[fcent*PARTTYPES+1][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
-	  if(PDGcode==321)
-	    fMCPrimariesThatAreReconstructedNoNsigma[fcent*PARTTYPES+2][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
-	  if(PDGcode==2212)
-	    fMCPrimariesThatAreReconstructedNoNsigma[fcent*PARTTYPES+3][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
-	  if(PDGcode==3212)
-	    fMCPrimariesThatAreReconstructedNoNsigma[fcent*PARTTYPES+4][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
+	  fMCPrimariesThatAreReconstructed4D[fcent*PARTTYPES+3][charge]->Fill(val);
 	}
-	if (recoParticleArray[1].Contains(MCtrk)){ //Pions
-	
-	  if(PDGcode==211){
-	    fMCPrimariesThatAreReconstructed[fcent*PARTTYPES+1][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
-	    Double_t val[] = {MCtrk->Y(), MCtrk->Pt(), MCtrk->Zv() ,MCtrk->Phi()};
-	    fMCPrimariesThatAreReconstructed4D[fcent*PARTTYPES+1][charge]->Fill(val);
-	  }
-	}
-	if (recoParticleArray[2].Contains(MCtrk)){ //Kaons
-	  if(PDGcode==321){
-	    fMCPrimariesThatAreReconstructed[fcent*PARTTYPES+2][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
-	    Double_t val[] = {MCtrk->Y(), MCtrk->Pt(), MCtrk->Zv() ,MCtrk->Phi()};
-	    fMCPrimariesThatAreReconstructed4D[fcent*PARTTYPES+2][charge]->Fill(val);
-	  }
-	}
-	if (recoParticleArray[3].Contains(MCtrk)){ //Protons
-	  if(PDGcode==2212){
-	    fMCPrimariesThatAreReconstructed[fcent*PARTTYPES+3][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
-	    Double_t val[] = {MCtrk->Y(), MCtrk->Pt(), MCtrk->Zv() ,MCtrk->Phi()};
-	    fMCPrimariesThatAreReconstructed4D[fcent*PARTTYPES+3][charge]->Fill(val);
-	  }
-	}
-	if (recoParticleArray[4].Contains(MCtrk)){ //Lambdas
-	  if(PDGcode==3122){
-	    fMCPrimariesThatAreReconstructed[fcent*PARTTYPES+4][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
-	    Double_t val[] = {MCtrk->Y(), MCtrk->Pt(), MCtrk->Zv() ,MCtrk->Phi()};
-	    fMCPrimariesThatAreReconstructed4D[fcent*PARTTYPES+4][charge]->Fill(val);
-	  }
-	}
-
       }
-
+      if (recoParticleArray[4].Contains(MCtrk)){ //Lambdas
+	if(PDGcode==3122){
+	 fMCPrimariesThatAreReconstructed[fcent*PARTTYPES+4][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
+	 Double_t val[] = {MCtrk->Y(), MCtrk->Pt(), MCtrk->Zv() ,MCtrk->Phi()};
+	 fMCPrimariesThatAreReconstructed4D[fcent*PARTTYPES+4][charge]->Fill(val);
+	}
+      }
+    }
   }
   PostData(1, fHistoList);
 }

@@ -2,8 +2,8 @@
 #define ALIANALYSISEFFTASKFILTERBIT128
 
 
-
-#define MULTBINS 1
+#include <list>
+#define MULTBINS 4
 #define PARTTYPES 6
 
 #include "AliAnalysisTaskSE.h"
@@ -12,6 +12,7 @@
 #include "THnSparse.h"
 #include "AliPIDResponse.h"
 #include "AliAODpidUtil.h"
+
 class AliAnalysisUtils;
 
 class AliAnalysisTaskEfficiencyFB128 :public AliAnalysisTaskSE{
@@ -173,7 +174,6 @@ AliAnalysisTaskEfficiencyFB128();
   PidMethod    fPidMethod; //PID method
   EstEventMult   fEstEventMult;  // Type of the event multiplicity estimator
   Bool_t fIfXiAnalysis;
-
   //******************************************
 
   AliPIDResponse *fpidResponse;
@@ -182,6 +182,7 @@ AliAnalysisTaskEfficiencyFB128();
   ClassDef(AliAnalysisTaskEfficiencyFB128, 0);
   Bool_t fTrackPileUpRemoval;
   Bool_t fV0PileUpRemoval;
+
   
   
 

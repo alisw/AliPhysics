@@ -16,6 +16,7 @@
 #include "TProfile2D.h"
 #include "TH3.h"
 #include "TH3F.h"
+#include "TClonesArray.h"
 #include "TGenPhaseSpace.h"
 #include <vector>
 #include <map>
@@ -103,6 +104,7 @@ public:
   // Int_t GetEventCutList(TList *CutArray)
   // {
   //   CutArray = fEventCutArray;
+
   //   return fnCuts;
   // }
   TList *GetEventCutList()
@@ -129,6 +131,10 @@ public:
   {
     fnCuts = nCuts;
     fMesonCutArray = CutArray;
+  }
+  void SetTrainconfig(Int_t config)
+  {
+    fTrainConfig = config;
   }
 
   // BG HandlerSettings
@@ -184,7 +190,6 @@ public:
   bool LoadCalibHistForThisRun();
   bool GetVZEROPlane();
   double GetEventPlane(double qx, double qy, double harmonic);
-  void SetListForVZEROCalib(TList *flist) { this->fListVZEROCalib = (TList *)flist->Clone(); }
   void SetPeriod(TString period) { this->fPeriod = period; }
   void SetEventBranch();
 
@@ -229,7 +234,9 @@ protected:
   TClonesArray *fOutputBGBranch;             //!<! AOD Branch with output clusters
   TString fOutputBGBranchName;               ///<  New of output of background
   Bool_t fOutputAODBranchSet;                ///<  Set the background branch in the input event once, only once!
+  Int_t fTrainConfig;                        ///<  Tranfig
   Bool_t fBranchSet;                         ///<  switch to Set the AOD clusters branch in the input event
+  TH1D **fEventCount;                        //! array of histogram of event count in centBins
   TH3F **fHistoMotherInvMassPtPhi;           //! array of histogram with signal + BG for same event photon pairs in deta phi, inv Mass, pt
   TH2F **fHistoMotherInvMassPt;              //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
   TH2F **fHistoMotherInvMassPhi;             //! array of histogram with signal + BG for same event photon pairs, inv Mass, phi
@@ -578,6 +585,7 @@ protected:
   bool IsVZEROCalibOn; // switch for VZERO qn calib
   bool IsQAVZERO;
   TList *fListVZEROCalib; // read list for V0 Calib
+  TFile *fVZEROCalibFile;
   double fPsi2V0C;
   double fPsi2V0A;
   TH2D **fHist2DPsi2V0CCent;
@@ -615,7 +623,6 @@ protected:
   TProfile **fHist2V0Res;
   TH1D *hQx2mV0[2];
   TH1D *hQy2mV0[2];
-  TSpline3 *splQ2c[90];
 
 private:
   AliAnalysisTaskGammaCaloV2(const AliAnalysisTaskGammaCaloV2 &);            // Prevent copy-construction

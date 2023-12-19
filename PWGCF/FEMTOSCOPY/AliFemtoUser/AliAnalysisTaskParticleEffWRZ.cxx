@@ -62,6 +62,13 @@ AliAnalysisTaskParticleEffWRZ::AliAnalysisTaskParticleEffWRZ(const Char_t *partN
       fPrim_DCAz_Pt[i][chg] = NULL;
       fSecMat_DCAz_Pt[i][chg] = NULL;
       fSecWeak_DCAz_Pt[i][chg] = NULL;
+      
+      fPrim_DCAxy_PtTrack[i][chg] = NULL;
+      fSecMat_DCAxy_PtTrack[i][chg] = NULL;
+      fSecWeak_DCAxy_PtTrack[i][chg] = NULL;
+      fPrim_DCAz_PtTrack[i][chg] = NULL;
+      fSecMat_DCAz_PtTrack[i][chg] = NULL;
+      fSecWeak_DCAz_PtTrack[i][chg] = NULL;      
       //part 4
       fMCPrimariesThatAreReconstructed4D[i][chg] = NULL;
       fGeneratedMCPrimaries4D[i][chg] = NULL;
@@ -215,6 +222,44 @@ void AliAnalysisTaskParticleEffWRZ::UserCreateOutputObjects()
       fSecMat_DCAz_Pt[i*PARTTYPES+j][1] = new TH2D(Form("SecMat_DCAz_Pt1%s",hname[16].Data()),Form("SecMat_DCAz_Pt1%s",htitle[16].Data()),320,-3.2,3.2,50,0,4.0);
 
 
+
+
+      hname[11] = "Prim_DCAxy_PtTrack"; hname[11]+=i; hname[11]+=parttypename;
+      htitle[11] = "Prim_DCAxy_PtTrack M"; htitle[11]+=i; htitle[11]+=parttypename;     
+      fPrim_DCAxy_Pt[i*PARTTYPES+j][0] = new TH2D(Form("Prim_DCAxy_PtTrack%s",hname[11].Data()),Form("Prim_DCAxy_PtTrack%s",hname[11].Data()),480,-2.4,2.4,50,0,4.0);
+      hname[11]+="Minus"; htitle[11]+="Minus";
+      fPrim_DCAxy_Pt[i*PARTTYPES+j][1] = new TH2D(Form("Prim_DCAxy_PtTrack1%s",htitle[11].Data()),Form("Prim_DCAxy_PtTrack1%s",htitle[11].Data()),480,-2.4,2.4,50,0,4.0);
+      
+      hname[12] = "Prim_DCAz_PtTrack"; hname[12]+=i; hname[12]+=parttypename;
+      htitle[12] = "Prim_DCAz_PtTrack M"; htitle[12]+=i; htitle[12]+=parttypename;   
+      fPrim_DCAz_PtTrack[i*PARTTYPES+j][0] = new TH2D(Form("Prim_DCAz_PtTrack%s",hname[12].Data()),Form("Prim_DCAz_PtTrack%s",htitle[12].Data()),320,-3.2,3.2,50,0,4.0);
+      hname[12]+="Minus"; htitle[12]+="Minus";
+      fPrim_DCAz_PtTrack[i*PARTTYPES+j][1] = new TH2D(Form("Prim_DCAz_PtTrack1%s",hname[12].Data()),Form("Prim_DCAz_PtTrack1%s",htitle[12].Data()),320,-3.2,3.2,50,0,4.0);
+
+      hname[13] = "secweak_DCAxy_PtTrack M"; hname[13]+=i; hname[13]+=parttypename;      
+      htitle[13] = "SecWeak_DCAxy_PtTrack"; htitle[13]+=i; htitle[13]+=parttypename;
+      fSecWeak_DCAxy_PtTrack[i*PARTTYPES+j][0] = new TH2D(Form("SecWeak_DCAxy_PtTrack%s",hname[13].Data()),Form("SecWeak_DCAxy_PtTrack%s",htitle[13].Data()),480,-2.4,2.4,50,0,4.0);
+      hname[13]+="Minus"; htitle[13]+="Minus";
+      fSecWeak_DCAxy_PtTrack[i*PARTTYPES+j][1] = new TH2D(Form("SecWeak_DCAxy_PtTrack1%s",hname[13].Data()),Form("SecWeak_DCAxy_PtTrack1%s",htitle[13].Data()),480,-2.4,2.4,50,0,4.0);
+      
+      hname[14] = "secweak_DCAz_PtTrack M"; hname[14]+=i; hname[14]+=parttypename;      
+      htitle[14] = "SecWeak_DCAz_PtTrack"; htitle[14]+=i; htitle[14]+=parttypename;
+      fSecWeak_DCAz_PtTrack[i*PARTTYPES+j][0] = new TH2D(Form("SecWeak_DCAz_PtTrack%s",hname[14].Data()),Form("SecWeak_DCAz_PtTrack%s",htitle[14].Data()),320,-3.2,3.2,50,0,4.0);
+      hname[14]+="Minus"; htitle[14]+="Minus";
+      fSecWeak_DCAz_PtTrack[i*PARTTYPES+j][1] = new TH2D(Form("SecWeak_DCAz_PtTrack1%s",hname[14].Data()),Form("SecWeak_DCAz_PtTrack1%s",htitle[14].Data()),320,-3.2,3.2,50,0,4.0);
+
+      hname[15] = "secmat_DCAxy_PtTrack M"; hname[15]+=i; hname[15]+=parttypename;      
+      htitle[15] = "SecMat_DCAxy_PtTrack"; htitle[15]+=i; htitle[15]+=parttypename;
+      fSecMat_DCAxy_PtTrack[i*PARTTYPES+j][0] = new TH2D(Form("SecMat_DCAxy_PtTrack%s",hname[15].Data()),Form("SecMat_DCAxy_PtTrack%s",htitle[15].Data()),480,-2.4,2.4,50,0,4.0);
+      hname[15]+="Minus"; htitle[15]+="Minus";
+      fSecMat_DCAxy_PtTrack[i*PARTTYPES+j][1] = new TH2D(Form("SecMat_DCAxy_PtTrack1%s",hname[15].Data()),Form("SecMat_DCAxy_PtTrack1%s",htitle[15].Data()),480,-2.4,2.4,50,0,4.0);
+      
+      hname[16] = "secmat_DCAz_PtTrack M"; hname[16]+=i; hname[16]+=parttypename;      
+      htitle[16] = "SecMat_DCAz_PtTrack"; htitle[16]+=i; htitle[16]+=parttypename;
+      fSecMat_DCAz_PtTrack[i*PARTTYPES+j][0] = new TH2D(Form("SecMat_DCAz_PtTrack%s",hname[16].Data()),Form("SecMat_DCAz_PtTrack%s",htitle[16].Data()),320,-3.2,3.2,50,0,4.0);
+      hname[16]+="Minus"; htitle[16]+="Minus";
+      fSecMat_DCAz_PtTrack[i*PARTTYPES+j][1] = new TH2D(Form("SecMat_DCAz_PtTrack1%s",hname[16].Data()),Form("SecMat_DCAz_PtTrack1%s",htitle[16].Data()),320,-3.2,3.2,50,0,4.0);
+
       //---------------part 4--------------------------------
       Double_t min[]={-1.0,0,-10,0};
       Double_t max[]={1.0,10,10,2*TMath::Pi()};
@@ -250,6 +295,15 @@ void AliAnalysisTaskParticleEffWRZ::UserCreateOutputObjects()
          fPrim_DCAz_Pt[i*PARTTYPES+j][iter]->Sumw2();
          fSecMat_DCAz_Pt[i*PARTTYPES+j][iter]->Sumw2();
          fSecWeak_DCAz_Pt[i*PARTTYPES+j][iter]->Sumw2();
+         
+         fPrim_DCAxy_PtTrack[i*PARTTYPES+j][iter]->Sumw2();
+         fSecMat_DCAxy_PtTrack[i*PARTTYPES+j][iter]->Sumw2();
+         fSecWeak_DCAxy_PtTrack[i*PARTTYPES+j][iter]->Sumw2();
+         fPrim_DCAz_PtTrack[i*PARTTYPES+j][iter]->Sumw2();
+         fSecMat_DCAz_PtTrack[i*PARTTYPES+j][iter]->Sumw2();
+         fSecWeak_DCAz_PtTrack[i*PARTTYPES+j][iter]->Sumw2();
+
+
          //part 2
 
          fPrimVsCosPointingAngle[i*PARTTYPES+j][iter]->Sumw2();
@@ -375,8 +429,8 @@ void AliAnalysisTaskParticleEffWRZ::UserCreateOutputObjects()
   fHistQA[10]->GetXaxis()->SetBinLabel(6,"DCA");
   fHistQA[10]->GetXaxis()->SetBinLabel(7,"Electron Rejection");
 
-  fHistQA2D[0] = new TH2F("dcaHistDcaXY","DCA XY",50, 0, 5,210, -2.1, 2.1);
-  fHistQA2D[1] = new TH2F("dcaHistDcaZ","DCA Z", 50, 0, 5, 210, -2.1, 2.1);
+  fHistQA2D[0] = new TH2F("dcaHistDcaXY","DCA XY",50, 0, 5,400, -3.0, 3.0);
+  fHistQA2D[1] = new TH2F("dcaHistDcaZ","DCA Z", 50, 0, 5, 400, -3.0, 3.0);
   fHistQA2D[2] = new TH2F("fPhiEta","Eta-Phi",100, -2, 2, 100, -TMath::Pi(), TMath::Pi());
 
   for ( Int_t i = 0; i < 11; i++)
@@ -411,7 +465,13 @@ void AliAnalysisTaskParticleEffWRZ::UserCreateOutputObjects()
       fHistoList->Add(fPrim_DCAz_Pt[i][chg]);
       fHistoList->Add(fSecWeak_DCAz_Pt[i][chg]);
       fHistoList->Add(fSecMat_DCAz_Pt[i][chg]);
-      
+
+      fHistoList->Add(fPrim_DCAxy_PtTrack[i][chg]);
+      fHistoList->Add(fSecWeak_DCAxy_PtTrack[i][chg]);
+      fHistoList->Add(fSecMat_DCAxy_PtTrack[i][chg]);
+      fHistoList->Add(fPrim_DCAz_PtTrack[i][chg]);
+      fHistoList->Add(fSecWeak_DCAz_PtTrack[i][chg]);
+      fHistoList->Add(fSecMat_DCAz_PtTrack[i][chg]);      
       //if(i==4){ //works only for MULTBINS == 1!!!!
 	fHistoList->Add(fPrimVsCosPointingAngle[i][chg]);
 	fHistoList->Add(fSecWeakVsCosPointingAngle[i][chg]);
@@ -663,7 +723,7 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
     if (!track)continue;
     fHistQA[10]->Fill(2);
 
-    UInt_t filterBit = (1 << (0));
+    UInt_t filterBit = (1 << (7));
   //  UInt_t filterBit = (1 << (4));
   //  UInt_t filterBit = 1;//(1 << 0);
     if(!track->TestFilterBit(filterBit))continue;	
@@ -684,6 +744,17 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 
     //single track cuts
      if(track->GetTPCNcls() < 70) continue;
+
+
+    //DCA check
+
+    Double_t DCAXYTrack;
+    Double_t DCAZTrack;
+    //  if(filterBit==(1 << (7))){
+    DCAXYTrack = TMath::Abs(track->DCA());
+    DCAZTrack = TMath::Abs(track->ZAtDCA());
+
+
 
     //DCA
     float vertexX  = -999.;
@@ -875,6 +946,8 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 	{
 	    fPrim_DCAxy_Pt[PARTTYPES*fcent+3][0]->Fill(DCAXY,track->Pt());
 	    fPrim_DCAz_Pt[PARTTYPES*fcent+3][0]->Fill(DCAZ,track->Pt());  
+	    fPrim_DCAxy_PtTrack[PARTTYPES*fcent+3][0]->Fill(DCAXYTrack,track->Pt());
+	    fPrim_DCAz_PtTrack[PARTTYPES*fcent+3][0]->Fill(DCAZTrack,track->Pt());  	    
 	    fPrimVsCosPointingAngle[PARTTYPES*fcent+3][0]->Fill(track->Eta(),track->Pt()); 
  	    fPrimVsCosPointingAngle[PARTTYPES*fcent+3][0]->GetXaxis()->SetRangeUser(-1,1);
 	}
@@ -882,6 +955,8 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 	{
 	    fPrim_DCAxy_Pt[PARTTYPES*fcent+3][1]->Fill(DCAXY,track->Pt());
 	    fPrim_DCAz_Pt[PARTTYPES*fcent+3][1]->Fill(DCAZ,track->Pt());  
+	    fPrim_DCAxy_PtTrack[PARTTYPES*fcent+3][1]->Fill(DCAXYTrack,track->Pt());
+	    fPrim_DCAz_PtTrack[PARTTYPES*fcent+3][1]->Fill(DCAZTrack,track->Pt());  	    
 	    fPrimVsCosPointingAngle[PARTTYPES*fcent+3][1]->Fill(track->Eta(),track->Pt()); 
  	    fPrimVsCosPointingAngle[PARTTYPES*fcent+3][1]->GetXaxis()->SetRangeUser(-1,1);
 
@@ -889,14 +964,18 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
       else if(MCtrk->IsSecondaryFromWeakDecay() && (isProtonNsigma && PDGcode==2212) )
 	{
 	    fSecWeak_DCAxy_Pt[PARTTYPES*fcent+3][0]->Fill(DCAXY,track->Pt());
-	    fSecWeak_DCAz_Pt[PARTTYPES*fcent+3][0]->Fill(DCAZ,track->Pt());    
+	    fSecWeak_DCAz_Pt[PARTTYPES*fcent+3][0]->Fill(DCAZ,track->Pt()); 
+	    fSecWeak_DCAxy_PtTrack[PARTTYPES*fcent+3][0]->Fill(DCAXYTrack,track->Pt());
+	    fSecWeak_DCAz_PtTrack[PARTTYPES*fcent+3][0]->Fill(DCAZTrack,track->Pt()); 	       
 	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+3][0]->Fill(track->Eta(),track->Pt()); 
 	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+3][0]->GetXaxis()->SetRangeUser(-1,1);
 	}
       else if(MCtrk->IsSecondaryFromWeakDecay() && (isProtonNsigma && PDGcode==-2212) )
 	{
 	    fSecWeak_DCAxy_Pt[PARTTYPES*fcent+3][1]->Fill(DCAXY,track->Pt());
-	    fSecWeak_DCAz_Pt[PARTTYPES*fcent+3][1]->Fill(DCAZ,track->Pt());    
+	    fSecWeak_DCAz_Pt[PARTTYPES*fcent+3][1]->Fill(DCAZ,track->Pt());  
+	    fSecWeak_DCAxy_PtTrack[PARTTYPES*fcent+3][1]->Fill(DCAXYTrack,track->Pt());
+	    fSecWeak_DCAz_PtTrack[PARTTYPES*fcent+3][1]->Fill(DCAZTrack,track->Pt());  	      
 	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+3][1]->Fill(track->Eta(),track->Pt()); 
 	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+3][1]->GetXaxis()->SetRangeUser(-1,1);
 	 
@@ -906,6 +985,8 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 
 	    fSecMat_DCAxy_Pt[PARTTYPES*fcent+3][0]->Fill(DCAXY,track->Pt());
 	    fSecMat_DCAz_Pt[PARTTYPES*fcent+3][0]->Fill(DCAZ,track->Pt()); 
+	    fSecMat_DCAxy_PtTrack[PARTTYPES*fcent+3][0]->Fill(DCAXYTrack,track->Pt());
+	    fSecMat_DCAz_PtTrack[PARTTYPES*fcent+3][0]->Fill(DCAZTrack,track->Pt()); 	    
 	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+3][0]->Fill(track->Eta(),track->Pt()); 
 	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+3][0]->GetXaxis()->SetRangeUser(-1,1);
 
@@ -914,6 +995,8 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 	{
 	    fSecMat_DCAxy_Pt[PARTTYPES*fcent+3][1]->Fill(DCAXY,track->Pt());
 	    fSecMat_DCAz_Pt[PARTTYPES*fcent+3][1]->Fill(DCAZ,track->Pt()); 
+	    fSecMat_DCAxy_PtTrack[PARTTYPES*fcent+3][1]->Fill(DCAXYTrack,track->Pt());
+	    fSecMat_DCAz_PtTrack[PARTTYPES*fcent+3][1]->Fill(DCAZTrack,track->Pt()); 	    
 	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+3][1]->Fill(track->Eta(),track->Pt()); 
 	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+3][1]->GetXaxis()->SetRangeUser(-1,1);
 	}         
@@ -922,7 +1005,9 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
       if (MCtrk->IsPhysicalPrimary() && (isKaonNsigma && PDGcode==321))
 	{
 	    fPrim_DCAxy_Pt[PARTTYPES*fcent+2][0]->Fill(DCAXY,track->Pt());
-	    fPrim_DCAz_Pt[PARTTYPES*fcent+2][0]->Fill(DCAZ,track->Pt());  
+	    fPrim_DCAz_Pt[PARTTYPES*fcent+2][0]->Fill(DCAZ,track->Pt()); 
+	    fPrim_DCAxy_PtTrack[PARTTYPES*fcent+2][0]->Fill(DCAXYTrack,track->Pt());
+	    fPrim_DCAz_PtTrack[PARTTYPES*fcent+2][0]->Fill(DCAZTrack,track->Pt()); 	     
 	    fPrimVsCosPointingAngle[PARTTYPES*fcent+3][0]->Fill(track->Eta(),track->Pt()); 
  	    fPrimVsCosPointingAngle[PARTTYPES*fcent+3][0]->GetXaxis()->SetRangeUser(-1,1);
 	}
@@ -930,6 +1015,8 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 	{
 	    fPrim_DCAxy_Pt[PARTTYPES*fcent+2][1]->Fill(DCAXY,track->Pt());
 	    fPrim_DCAz_Pt[PARTTYPES*fcent+2][1]->Fill(DCAZ,track->Pt());  
+	    fPrim_DCAxy_PtTrack[PARTTYPES*fcent+2][1]->Fill(DCAXYTrack,track->Pt());
+	    fPrim_DCAz_PtTrack[PARTTYPES*fcent+2][1]->Fill(DCAZTrack,track->Pt());  	    
 	    fPrimVsCosPointingAngle[PARTTYPES*fcent+2][1]->Fill(track->Eta(),track->Pt()); 
  	    fPrimVsCosPointingAngle[PARTTYPES*fcent+2][1]->GetXaxis()->SetRangeUser(-1,1);
 
@@ -937,14 +1024,18 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
       else if(MCtrk->IsSecondaryFromWeakDecay() && (isKaonNsigma && PDGcode==321) )
 	{
 	    fSecWeak_DCAxy_Pt[PARTTYPES*fcent+2][0]->Fill(DCAXY,track->Pt());
-	    fSecWeak_DCAz_Pt[PARTTYPES*fcent+2][0]->Fill(DCAZ,track->Pt());    
+	    fSecWeak_DCAz_Pt[PARTTYPES*fcent+2][0]->Fill(DCAZ,track->Pt());  
+	    fSecWeak_DCAxy_PtTrack[PARTTYPES*fcent+2][0]->Fill(DCAXYTrack,track->Pt());
+	    fSecWeak_DCAz_PtTrack[PARTTYPES*fcent+2][0]->Fill(DCAZTrack,track->Pt());  	      
 	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+2][0]->Fill(track->Eta(),track->Pt()); 
 	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+2][0]->GetXaxis()->SetRangeUser(-1,1);
 	}
       else if(MCtrk->IsSecondaryFromWeakDecay() && (isKaonNsigma && PDGcode==-321) )
 	{
 	    fSecWeak_DCAxy_Pt[PARTTYPES*fcent+2][1]->Fill(DCAXY,track->Pt());
-	    fSecWeak_DCAz_Pt[PARTTYPES*fcent+2][1]->Fill(DCAZ,track->Pt());    
+	    fSecWeak_DCAz_Pt[PARTTYPES*fcent+2][1]->Fill(DCAZ,track->Pt()); 
+	    fSecWeak_DCAxy_PtTrack[PARTTYPES*fcent+2][1]->Fill(DCAXYTrack,track->Pt());
+	    fSecWeak_DCAz_PtTrack[PARTTYPES*fcent+2][1]->Fill(DCAZTrack,track->Pt()); 	       
 	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+2][1]->Fill(track->Eta(),track->Pt()); 
 	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+2][1]->GetXaxis()->SetRangeUser(-1,1);
 	 
@@ -953,7 +1044,9 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 	{
 
 	    fSecMat_DCAxy_Pt[PARTTYPES*fcent+2][0]->Fill(DCAXY,track->Pt());
-	    fSecMat_DCAz_Pt[PARTTYPES*fcent+2][0]->Fill(DCAZ,track->Pt()); 
+	    fSecMat_DCAz_Pt[PARTTYPES*fcent+2][0]->Fill(DCAZ,track->Pt());
+	    fSecMat_DCAxy_PtTrack[PARTTYPES*fcent+2][0]->Fill(DCAXYTrack,track->Pt());
+	    fSecMat_DCAz_PtTrack[PARTTYPES*fcent+2][0]->Fill(DCAZTrack,track->Pt());	     
 	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+2][0]->Fill(track->Eta(),track->Pt()); 
 	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+2][0]->GetXaxis()->SetRangeUser(-1,1);
 
@@ -962,6 +1055,8 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 	{
 	    fSecMat_DCAxy_Pt[PARTTYPES*fcent+2][1]->Fill(DCAXY,track->Pt());
 	    fSecMat_DCAz_Pt[PARTTYPES*fcent+2][1]->Fill(DCAZ,track->Pt()); 
+	    fSecMat_DCAxy_PtTrack[PARTTYPES*fcent+2][1]->Fill(DCAXYTrack,track->Pt());
+	    fSecMat_DCAz_PtTrack[PARTTYPES*fcent+2][1]->Fill(DCAZTrack,track->Pt()); 	    
 	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+2][1]->Fill(track->Eta(),track->Pt()); 
 	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+2][1]->GetXaxis()->SetRangeUser(-1,1);
 	}        
@@ -970,14 +1065,18 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
      if (MCtrk->IsPhysicalPrimary() && (isPionNsigma && PDGcode==211))
 	{
 	    fPrim_DCAxy_Pt[PARTTYPES*fcent+1][0]->Fill(DCAXY,track->Pt());
-	    fPrim_DCAz_Pt[PARTTYPES*fcent+1][0]->Fill(DCAZ,track->Pt());  
+	    fPrim_DCAz_Pt[PARTTYPES*fcent+1][0]->Fill(DCAZ,track->Pt()); 
+	    fPrim_DCAxy_PtTrack[PARTTYPES*fcent+1][0]->Fill(DCAXYTrack,track->Pt());
+	    fPrim_DCAz_PtTrack[PARTTYPES*fcent+1][0]->Fill(DCAZTrack,track->Pt()); 	     
 	    fPrimVsCosPointingAngle[PARTTYPES*fcent+1][0]->Fill(track->Eta(),track->Pt()); 
  	    fPrimVsCosPointingAngle[PARTTYPES*fcent+1][0]->GetXaxis()->SetRangeUser(-1,1);
 	}
       else if (MCtrk->IsPhysicalPrimary() && (isPionNsigma && PDGcode==-211))
 	{
 	    fPrim_DCAxy_Pt[PARTTYPES*fcent+1][1]->Fill(DCAXY,track->Pt());
-	    fPrim_DCAz_Pt[PARTTYPES*fcent+1][1]->Fill(DCAZ,track->Pt());  
+	    fPrim_DCAz_Pt[PARTTYPES*fcent+1][1]->Fill(DCAZ,track->Pt()); 
+	    fPrim_DCAxy_PtTrack[PARTTYPES*fcent+1][1]->Fill(DCAXYTrack,track->Pt());
+	    fPrim_DCAz_PtTrack[PARTTYPES*fcent+1][1]->Fill(DCAZTrack,track->Pt()); 	     
 	    fPrimVsCosPointingAngle[PARTTYPES*fcent+1][1]->Fill(track->Eta(),track->Pt()); 
  	    fPrimVsCosPointingAngle[PARTTYPES*fcent+1][1]->GetXaxis()->SetRangeUser(-1,1);
 
@@ -985,14 +1084,18 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
       else if(MCtrk->IsSecondaryFromWeakDecay() && (isPionNsigma && PDGcode==211) )
 	{
 	    fSecWeak_DCAxy_Pt[PARTTYPES*fcent+1][0]->Fill(DCAXY,track->Pt());
-	    fSecWeak_DCAz_Pt[PARTTYPES*fcent+1][0]->Fill(DCAZ,track->Pt());    
+	    fSecWeak_DCAz_Pt[PARTTYPES*fcent+1][0]->Fill(DCAZ,track->Pt()); 
+	    fSecWeak_DCAxy_PtTrack[PARTTYPES*fcent+1][0]->Fill(DCAXYTrack,track->Pt());
+	    fSecWeak_DCAz_PtTrack[PARTTYPES*fcent+1][0]->Fill(DCAZTrack,track->Pt()); 	       
 	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+1][0]->Fill(track->Eta(),track->Pt()); 
 	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+1][0]->GetXaxis()->SetRangeUser(-1,1);
 	}
       else if(MCtrk->IsSecondaryFromWeakDecay() && (isPionNsigma && PDGcode==-211) )
 	{
 	    fSecWeak_DCAxy_Pt[PARTTYPES*fcent+1][1]->Fill(DCAXY,track->Pt());
-	    fSecWeak_DCAz_Pt[PARTTYPES*fcent+1][1]->Fill(DCAZ,track->Pt());    
+	    fSecWeak_DCAz_Pt[PARTTYPES*fcent+1][1]->Fill(DCAZ,track->Pt());
+	    fSecWeak_DCAxy_PtTrack[PARTTYPES*fcent+1][1]->Fill(DCAXYTrack,track->Pt());
+	    fSecWeak_DCAz_PtTrack[PARTTYPES*fcent+1][1]->Fill(DCAZTrack,track->Pt());	        
 	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+1][1]->Fill(track->Eta(),track->Pt()); 
 	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+1][1]->GetXaxis()->SetRangeUser(-1,1);
 	 
@@ -1002,6 +1105,8 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 
 	    fSecMat_DCAxy_Pt[PARTTYPES*fcent+1][0]->Fill(DCAXY,track->Pt());
 	    fSecMat_DCAz_Pt[PARTTYPES*fcent+1][0]->Fill(DCAZ,track->Pt()); 
+	    fSecMat_DCAxy_PtTrack[PARTTYPES*fcent+1][0]->Fill(DCAXYTrack,track->Pt());
+	    fSecMat_DCAz_PtTrack[PARTTYPES*fcent+1][0]->Fill(DCAZTrack,track->Pt()); 	    
 	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+1][0]->Fill(track->Eta(),track->Pt()); 
 	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+1][0]->GetXaxis()->SetRangeUser(-1,1);
 
@@ -1010,6 +1115,8 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 	{
 	    fSecMat_DCAxy_Pt[PARTTYPES*fcent+1][1]->Fill(DCAXY,track->Pt());
 	    fSecMat_DCAz_Pt[PARTTYPES*fcent+1][1]->Fill(DCAZ,track->Pt()); 
+	    fSecMat_DCAxy_PtTrack[PARTTYPES*fcent+1][1]->Fill(DCAXYTrack,track->Pt());
+	    fSecMat_DCAz_PtTrack[PARTTYPES*fcent+1][1]->Fill(DCAZTrack,track->Pt()); 	    
 	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+1][1]->Fill(track->Eta(),track->Pt()); 
 	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+1][1]->GetXaxis()->SetRangeUser(-1,1);
 	}
@@ -1156,30 +1263,38 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
      if (MCtrk->IsPhysicalPrimary() && (isDeuteronNsigma && PDGcode==1000010020))
 	{
 	    fPrim_DCAxy_Pt[PARTTYPES*fcent+4][0]->Fill(DCAXY,track->Pt());
-	    fPrim_DCAz_Pt[PARTTYPES*fcent+4][0]->Fill(DCAZ,track->Pt());  
-	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(track->Eta(),track->Pt()); 
+	    fPrim_DCAz_Pt[PARTTYPES*fcent+4][0]->Fill(DCAZ,track->Pt());
+	    fPrim_DCAxy_PtTrack[PARTTYPES*fcent+4][0]->Fill(DCAXYTrack,track->Pt());
+	    fPrim_DCAz_PtTrack[PARTTYPES*fcent+4][0]->Fill(DCAZTrack,track->Pt());
+	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(track->Eta(),track->Pt());
  	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][0]->GetXaxis()->SetRangeUser(-1,1);
 	}
       else if (MCtrk->IsPhysicalPrimary() && (isDeuteronNsigma && PDGcode==-1000010020))
 	{
 	    fPrim_DCAxy_Pt[PARTTYPES*fcent+4][1]->Fill(DCAXY,track->Pt());
-	    fPrim_DCAz_Pt[PARTTYPES*fcent+4][1]->Fill(DCAZ,track->Pt());  
-	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(track->Eta(),track->Pt()); 
+	    fPrim_DCAz_Pt[PARTTYPES*fcent+4][1]->Fill(DCAZ,track->Pt());
+	    fPrim_DCAxy_PtTrack[PARTTYPES*fcent+4][1]->Fill(DCAXYTrack,track->Pt());
+	    fPrim_DCAz_PtTrack[PARTTYPES*fcent+4][1]->Fill(DCAZTrack,track->Pt());
+	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(track->Eta(),track->Pt());
  	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][1]->GetXaxis()->SetRangeUser(-1,1);
 
 	}
-      else if(MCtrk->IsSecondaryFromWeakDecay() && (isDeuteronNsigma && PDGcode==1000010020) )
+      else if(!MCtrk->IsSecondaryFromMaterial() && !MCtrk->IsPhysicalPrimary() && (isDeuteronNsigma && PDGcode==1000010020) )
 	{
 	    fSecWeak_DCAxy_Pt[PARTTYPES*fcent+4][0]->Fill(DCAXY,track->Pt());
-	    fSecWeak_DCAz_Pt[PARTTYPES*fcent+4][0]->Fill(DCAZ,track->Pt());    
-	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(track->Eta(),track->Pt()); 
+	    fSecWeak_DCAz_Pt[PARTTYPES*fcent+4][0]->Fill(DCAZ,track->Pt());
+	    fSecWeak_DCAxy_PtTrack[PARTTYPES*fcent+4][0]->Fill(DCAXYTrack,track->Pt());
+	    fSecWeak_DCAz_PtTrack[PARTTYPES*fcent+4][0]->Fill(DCAZTrack,track->Pt());
+	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(track->Eta(),track->Pt());
 	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][0]->GetXaxis()->SetRangeUser(-1,1);
 	}
-      else if(MCtrk->IsSecondaryFromWeakDecay() && (isDeuteronNsigma && PDGcode==-1000010020) )
+      else if(!MCtrk->IsSecondaryFromMaterial() && !MCtrk->IsPhysicalPrimary() && (isDeuteronNsigma && PDGcode==-1000010020) )
 	{
 	    fSecWeak_DCAxy_Pt[PARTTYPES*fcent+4][1]->Fill(DCAXY,track->Pt());
-	    fSecWeak_DCAz_Pt[PARTTYPES*fcent+4][1]->Fill(DCAZ,track->Pt());    
-	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(track->Eta(),track->Pt()); 
+	    fSecWeak_DCAz_Pt[PARTTYPES*fcent+4][1]->Fill(DCAZ,track->Pt());
+	    fSecWeak_DCAxy_PtTrack[PARTTYPES*fcent+4][1]->Fill(DCAXYTrack,track->Pt());
+	    fSecWeak_DCAz_PtTrack[PARTTYPES*fcent+4][1]->Fill(DCAZTrack,track->Pt());
+	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(track->Eta(),track->Pt());
 	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][1]->GetXaxis()->SetRangeUser(-1,1);
 	 
 	}
@@ -1187,16 +1302,20 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 	{
 
 	    fSecMat_DCAxy_Pt[PARTTYPES*fcent+4][0]->Fill(DCAXY,track->Pt());
-	    fSecMat_DCAz_Pt[PARTTYPES*fcent+4][0]->Fill(DCAZ,track->Pt()); 
-	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(track->Eta(),track->Pt()); 
+	    fSecMat_DCAz_Pt[PARTTYPES*fcent+4][0]->Fill(DCAZ,track->Pt());
+	    fSecMat_DCAxy_PtTrack[PARTTYPES*fcent+4][0]->Fill(DCAXYTrack,track->Pt());
+	    fSecMat_DCAz_PtTrack[PARTTYPES*fcent+4][0]->Fill(DCAZTrack,track->Pt());
+	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(track->Eta(),track->Pt());
 	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][0]->GetXaxis()->SetRangeUser(-1,1);
 
 	}
       else if(MCtrk->IsSecondaryFromMaterial() && (isDeuteronNsigma && PDGcode==-1000010020) )
 	{
 	    fSecMat_DCAxy_Pt[PARTTYPES*fcent+4][1]->Fill(DCAXY,track->Pt());
-	    fSecMat_DCAz_Pt[PARTTYPES*fcent+4][1]->Fill(DCAZ,track->Pt()); 
-	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(track->Eta(),track->Pt()); 
+	    fSecMat_DCAz_Pt[PARTTYPES*fcent+4][1]->Fill(DCAZ,track->Pt());
+	    fSecMat_DCAxy_PtTrack[PARTTYPES*fcent+4][1]->Fill(DCAXYTrack,track->Pt());
+	    fSecMat_DCAz_PtTrack[PARTTYPES*fcent+4][1]->Fill(DCAZTrack,track->Pt());
+	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(track->Eta(),track->Pt());
 	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][1]->GetXaxis()->SetRangeUser(-1,1);
 	}
 

@@ -131,7 +131,7 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
   fHistQAPID[12] = new TH2D("TPCNsigmaProtonAfter", "TPCNsigmaProton vs momentum;#it{p};TPCNsigmaProton", 100, 0.0, 2.0, 100, -5.0, 5.0);
   fHistPDG[0] = new TH1D("PDGHist", "PDG code of the generated particles;PDG code;Counts", 1000, -500, 500);
   fHistPDG[1] = new TH1D("ElPosPDGHist", "PDG code of the generated electrons and positrons;PDG code;Counts", 100, -100, 100);
-  for (Int_t i = 0; i < 15; ++i) {
+  for (Int_t i = 0; i < 13; ++i) {
     fQAList2->Add(fHistQAPID[i]);
   }
   for (Int_t i = 0; i < 2; ++i) {
@@ -228,9 +228,9 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
     fHistList->Add(fHistNFoundClsFra[i]);
     fHistList->Add(fHistNFcls[i]);
   }
-  fHistNShClsFravspt[0] = new TH2F("fHistNShClsFraVsPtBef", "TPC nshared clusters vs #it{p_{T}} before", 500, 0, 5, 400, 0.02, 1);
-  fHistList->Add(fHistNShClsFravspt[0]);
-  for (Int_t i = 1; i < mPtBins; ++i) {
+  fHistNShClsFravspt[4] = new TH2F("fHistNShClsFraVsPtBef", "TPC nshared clusters vs #it{p_{T}} before", 500, 0, 5, 400, 0.02, 1);
+  fHistList->Add(fHistNShClsFravspt[4]);
+  for (Int_t i = 0; i < mPtBins; ++i) {
     fHistNShClsFravspt[i] = new TH2F(Form("fHistNShClsFraVsPt%d", i), Form("TPC nshared clusters vs #it{p_{T}} %i", i), 500, 0, 5, 400, 0.02, 1);
     fHistList->Add(fHistNShClsFravspt[i]);
   }
@@ -517,7 +517,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
       std::copy(profileVal1, profileVal1 + 16, profileVal);
     }
 
-    fHistNShClsFravspt[0]->Fill(pt, nSharedCls / nCrossedRows);
+    fHistNShClsFravspt[4]->Fill(pt, nSharedCls / nCrossedRows);
 
     for (Int_t k = 0; k < 16; ++k) {
       if (pt > 0.4 + (k * 0.1) && pt < 0.5 + (k * 0.1)) {
@@ -527,67 +527,70 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
     }
 
     // Two Track Loop:
-    TBits clusmap = track->GetTPCClusterMap();
-    TBits sharedmap = track->GetTPCSharedMap();
 
-    for (Int_t j = 0; j < nTracks; j++) {
-      AliAODTrack* track2 = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
-      if (!(track2->TestFilterBit(filterBit)))
-        continue;
+    if (flag2TrackQA) {
+      TBits clusmap = track->GetTPCClusterMap();
+      TBits sharedmap = track->GetTPCSharedMap();
 
-      Int_t charge2 = track2->Charge();
-      Float_t pt2 = track2->Pt();
-      Float_t eta2 = track2->Eta();
-      Float_t phi2 = track2->Phi();
-      Int_t id2 = track2->GetID();
+      for (Int_t j = 0; j < nTracks; j++) {
+        AliAODTrack* track2 = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
+        if (!(track2->TestFilterBit(filterBit)))
+          continue;
 
-      if (GetParticleID(track2, kFALSE))
-        continue;
+        Int_t charge2 = track2->Charge();
+        Float_t pt2 = track2->Pt();
+        Float_t eta2 = track2->Eta();
+        Float_t phi2 = track2->Phi();
+        Int_t id2 = track2->GetID();
 
-      if (id == id2 || fabs(eta2) > 0.8 || fabs(pt2) < 0.2 || charge2 == 0 ||
-          pt < pt2)
-        continue;
+        if (GetParticleID(track2, kFALSE))
+          continue;
 
-      TBits clusmap2 = track2->GetTPCClusterMap();
-      TBits sharedmap2 = track2->GetTPCSharedMap();
-      Float_t sharity =
-        SharedClusterFraction(clusmap, clusmap2, sharedmap, sharedmap2);
-      if (sharity > fSharedFraction) {
-        mSharedTrack = kTRUE;
-      }
+        if (id == id2 || fabs(eta2) > 0.8 || fabs(pt2) < 0.2 || charge2 == 0 ||
+            pt < pt2)
+          continue;
 
-      if ((flagSharity) && (mSharedTrack)) {
-        break;
-      }
-
-      dpstar = CalculateDPhiStar(phi, eta, pt, charge, phi2, eta2, pt2,
-                                 charge2, mfield);
-      if (dpstar == 999)
-        continue;
-      deta = eta2 - eta;
-      dphi = phi2 - phi;
-      if (fabs(deta) < fdeta && fabs(dpstar) < fdphi && charge == charge2)
-        mSkipTracks = kTRUE;
-
-      for (Int_t iPt = 0; iPt < mPtBins; ++iPt) {
-        if (ptbin[iPt]) {
-          fHistbeforeHBT[iPt]->Fill(deta, dphi);
+        TBits clusmap2 = track2->GetTPCClusterMap();
+        TBits sharedmap2 = track2->GetTPCSharedMap();
+        Float_t sharity =
+          SharedClusterFraction(clusmap, clusmap2, sharedmap, sharedmap2);
+        if (sharity > fSharedFraction) {
+          mSharedTrack = kTRUE;
         }
-      }
-      if ((flag2Track) && (mSkipTracks)) {
-        break;
-      } else {
-        for (Int_t k = 0; k < mPtBins; ++k) {
-          if (ptbin[k]) {
-            fHistafterHBT[k]->Fill(deta, dphi);
+
+        if ((flagSharity) && (mSharedTrack)) {
+          break;
+        }
+
+        dpstar = CalculateDPhiStar(phi, eta, pt, charge, phi2, eta2, pt2,
+                                   charge2, mfield);
+        if (dpstar == 999)
+          continue;
+        deta = eta2 - eta;
+        dphi = phi2 - phi;
+        if (fabs(deta) < fdeta && fabs(dpstar) < fdphi && charge == charge2)
+          mSkipTracks = kTRUE;
+
+        for (Int_t iPt = 0; iPt < mPtBins; ++iPt) {
+          if (ptbin[iPt]) {
+            fHistbeforeHBT[iPt]->Fill(deta, dphi);
           }
         }
-      }
-    } // End of Two Track Loop
+        if ((flag2Track) && (mSkipTracks)) {
+          break;
+        } else {
+          for (Int_t k = 0; k < mPtBins; ++k) {
+            if (ptbin[k]) {
+              fHistafterHBT[k]->Fill(deta, dphi);
+            }
+          }
+        }
+      } // End of Two Track Loop
 
-    if (((flag2Track) && (mSharedTrack)) || ((flagSharity) && (mSharedTrack))) {
-      continue;
-    }
+      if (((flag2Track) && (mSharedTrack)) || ((flagSharity) && (mSharedTrack))) {
+        continue;
+      }
+    } // End of Two Track QA
     fTrackCounter->Fill(10);
     fHistQAEta[0]->Fill(eta);
     fHistQAPhi[0]->Fill(phi);
@@ -715,7 +718,12 @@ Bool_t AliAnalysisTaskNFactorialMoments::GetParticleID(AliAODTrack* trk,
     fPIDCombined = new AliPIDCombined();
     fPIDCombined->SetDefaultTPCPriors();
 
-    Float_t dEdx = trk->GetDetPid()->GetTPCsignal();
+    Float_t dEdx;
+    if (filterBit == 128) {
+      dEdx = trk->GetTPCsignal();
+    } else {
+      dEdx = trk->GetDetPid()->GetTPCsignal();
+    }
     for (Int_t isp(0); isp < AliPID::kSPECIES; isp++) {
       nsigmaTPC[isp] =
         fPIDResponse->NumberOfSigmasTPC(trk, (AliPID::EParticleType)isp);
@@ -953,20 +961,20 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[mPtBins][mMBins], 
           bincontent = 0.0;
           bincontent = h1[iPt][iM]->GetBinContent(etabin, phibin);
           SumOfbincontent += bincontent;
-        }
 
-        for (Int_t q = 0; q < mQs; q++) {
-          if (bincontent >= (q + 2)) {
-            Double_t Fqeofbin = 0.0;
-            Fqeofbin = TMath::Factorial(bincontent) /
-                       TMath::Factorial(bincontent - (q + 2));
+          for (Int_t q = 0; q < mQs; q++) {
+            if (bincontent >= (q + 2)) {
+              Double_t Fqeofbin = 0.0;
+              Fqeofbin = TMath::Factorial(bincontent) /
+                         TMath::Factorial(bincontent - (q + 2));
 
-            if (flagMC) {
-              if (TMath::IsNaN(Fqeofbin)) {
-                break;
+              if (flagMC) {
+                if (TMath::IsNaN(Fqeofbin)) {
+                  break;
+                }
               }
+              sumoff[q] += Fqeofbin;
             }
-            sumoff[q] += Fqeofbin;
           }
         }
       }

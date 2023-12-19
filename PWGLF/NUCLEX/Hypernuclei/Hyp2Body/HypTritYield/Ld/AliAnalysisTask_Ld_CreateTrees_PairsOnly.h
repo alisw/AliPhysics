@@ -79,7 +79,8 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fLambda_Event_BField;
     unsigned int fLambda_Event_Multiplicity;
     unsigned long fLambda_Event_Identifier;
-    int fLambda_Event_RunNumber;
+    bool fLambda_Event_IsFirstParticle;
+    unsigned short fLambda_Event_RandomCrossCheckNumber;
 
     float fLambda_Daughter_Proton_px;
     float fLambda_Daughter_Proton_py;
@@ -173,13 +174,14 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned int      fDeuteron_ID;
     unsigned int      fDeuteron_Event_Multiplicity;
     unsigned long     fDeuteron_Event_Identifier;
-    int      fDeuteron_Event_RunNumber;
     bool	      fDeuteron_ITS_Layer0;
     bool	      fDeuteron_ITS_Layer1;
     bool	      fDeuteron_ITS_Layer2;
     bool	      fDeuteron_ITS_Layer3;
     bool	      fDeuteron_ITS_Layer4;
     bool	      fDeuteron_ITS_Layer5;
+    bool fDeuteron_Event_IsFirstParticle;
+    unsigned short fDeuteron_Event_RandomCrossCheckNumber;
 
     TTree *fSaveTree_AntiLambda;
     float fAntiLambda_px;
@@ -210,7 +212,8 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fAntiLambda_Event_BField;
     unsigned int fAntiLambda_Event_Multiplicity;
     unsigned long fAntiLambda_Event_Identifier;
-    int  fAntiLambda_Event_RunNumber;
+    bool fAntiLambda_Event_IsFirstParticle;
+    unsigned short fAntiLambda_Event_RandomCrossCheckNumber;
 
     float fAntiLambda_Daughter_AntiProton_px;
     float fAntiLambda_Daughter_AntiProton_py;
@@ -305,13 +308,14 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned int      fAntiDeuteron_ID;
     unsigned int      fAntiDeuteron_Event_Multiplicity;
     unsigned long     fAntiDeuteron_Event_Identifier;
-    int      fAntiDeuteron_Event_RunNumber;
     bool	      fAntiDeuteron_ITS_Layer0;
     bool	      fAntiDeuteron_ITS_Layer1;
     bool	      fAntiDeuteron_ITS_Layer2;
     bool	      fAntiDeuteron_ITS_Layer3;
     bool	      fAntiDeuteron_ITS_Layer4;
     bool	      fAntiDeuteron_ITS_Layer5;
+    bool fAntiDeuteron_Event_IsFirstParticle;
+    unsigned short fAntiDeuteron_Event_RandomCrossCheckNumber;
 
     TList     *fHistoList;
     TH2F      *h_Proton_TOF_m2_NoTOFcut;
