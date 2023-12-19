@@ -781,7 +781,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     std::vector<Float_t> fBuffer_JetPy;     //!<! array buffer
     std::vector<Float_t> fBuffer_JetPz;     //!<! array buffer
     std::vector<Float_t> fBuffer_JetArea;     //!<! array buffer
-    std::vector<Float_t> fBuffer_JetNch;     //!<! array buffer
+    std::vector<UShort_t> fBuffer_JetNch;     //!<! array buffer
     std::vector<UShort_t> fBuffer_JetNclus;     //!<! array buffer
 
     std::vector<Float_t> fBuffer_TrueJetPx;     //!<! array buffer
