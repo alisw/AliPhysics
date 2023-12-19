@@ -76,10 +76,18 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly* AddTask_Ld_CreateTrees_PairsOnly(
   if(DebugAddTask) std::cout << "AddTask_Ld_CreateTrees_PairsOnly: Input container connected" << std::endl;
  
 
-  if((CollisionSystem == 1) || (CollisionSystem == 2)){
+  if(CollisionSystem == 1){
 
-    task->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
-    std::cout << "AddTask_Ld_CreateTrees_PairsOnly: SelectCollisionCandidates(AliVEvent::kSemiCentral || AliVEvent::kCentral)" << std::endl;
+    task->SelectCollisionCandidates(AliVEvent::kCentral);
+    std::cout << "AddTask_Ld_CreateTrees_PairsOnly: SelectCollisionCandidates(AliVEvent::kCentral)" << std::endl;
+
+  }
+
+
+  if(CollisionSystem == 2){
+
+    task->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+    std::cout << "AddTask_Ld_CreateTrees_PairsOnly: SelectCollisionCandidates(AliVEvent::kSemiCentral)" << std::endl;
 
   }
 
