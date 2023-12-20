@@ -54,10 +54,10 @@ public:
   virtual void Terminate(Option_t *opt = "");
   virtual Bool_t Run();
 
-  TClonesArray *GetInputList() const { return fInputList; }
-  TClonesArray *GetInputListb() const { return fInputListb; }
-  TClonesArray *GetInputListc() const { return fInputListc; }
-  TClonesArray *GetInputListlf() const { return fInputListlf; }
+  TClonesArray *GetInputList() const { return fInputList; }     //! This is for both data and MC
+  TClonesArray *GetInputListb() const { return fInputListb; }   //! This is for MC
+  TClonesArray *GetInputListc() const { return fInputListc; }   //! This is for MC
+  TClonesArray *GetInputListlf() const { return fInputListlf; } //! This is for MC
 
   double GetDeltaPtRandomCone();
   double GetDeltaPtPerpEmbedding(double signalEta, double signalPhi);
@@ -152,6 +152,12 @@ private:
   TH1D *fh1dJetGenPtudsg;         //!
   TH1D *fh1dJetGenPtc;            //!
   TH1D *fh1dJetGenPtb;            //!
+
+  TH1I *fh1dJetNCanditate;             //! Number of selected candidate jets
+  TH1I *fh1dJetNCanditateUnidentified; //!
+  TH1I *fh1dJetNCanditateudsg;         //!
+  TH1I *fh1dJetNCanditatec;            //!
+  TH1I *fh1dJetNCanditateb;            //!
 
   TH1D *fh1dJetRecPt;             //! Detector level jets
   TH1D *fh1dJetRecPtAccepted;     //! Detector level jets accepted
