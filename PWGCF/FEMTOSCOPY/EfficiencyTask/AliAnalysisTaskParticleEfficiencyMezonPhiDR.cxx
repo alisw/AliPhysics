@@ -2221,7 +2221,7 @@ void AliAnalysisTaskParticleEfficiencyMezonPhiDR::UserExec(Option_t *)
     	   for(Int_t jpart = 0; jpart < arrayMC->GetEntries(); jpart++){
 		if(ipart != jpart){
 			AliAODMCParticle *MCtrk2 = (AliAODMCParticle*)arrayMC->At(jpart);
-			if(MCtrk2->IsPhysicalPrimary()){
+			if(MCtrk2->IsPhysicalPrimary() && recoParticleArray[2].Contains(MCtrk2)){
 				if(MCtrk->GetPdgCode() == 321){
 					if(MCtrk2->GetPdgCode() == -321){
 						if(MCtrk->GetMother() == MCtrk2->GetMother()){
