@@ -100,6 +100,7 @@ if(${ROOT_VERSION} GREATER_EQUAL 6.0)
   list(APPEND SRCS AliGFWNFCuts.cxx)
   list(APPEND SRCS AliGFWXXCuts.cxx)
   list(APPEND SRCS AliGFWPbpass23Cuts.cxx)
+  list(APPEND SRCS AliAnalysisPtN.cxx)
 endif()
 
 # Headers from sources
