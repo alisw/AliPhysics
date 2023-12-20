@@ -9641,10 +9641,11 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC19h2b") == 0 ||
             namePeriod.CompareTo("LHC19h2c") == 0 ||
             namePeriod.CompareTo("LHC19h3")  == 0 ||
-            namePeriod.CompareTo("LHC20e3a")  == 0 ||
-            namePeriod.CompareTo("LHC20e3b")  == 0 ||
-            namePeriod.CompareTo("LHC20e3c")  == 0 ||
-            namePeriod.CompareTo("LHC20g10")  == 0)   return kPbPb5T18HIJING;
+            namePeriod.CompareTo("LHC20e3a") == 0 ||
+            namePeriod.CompareTo("LHC20e3b") == 0 ||
+            namePeriod.CompareTo("LHC20e3c") == 0 ||
+            namePeriod.CompareTo("LHC20g10") == 0 ||
+            namePeriod.CompareTo("LHC22b5")  == 0)   return kPbPb5T18HIJING;
 
   // pp 13 TeV 2016 MB prod
   else if ( namePeriod.CompareTo("LHC16P1Pyt8") == 0 ||
