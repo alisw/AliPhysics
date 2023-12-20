@@ -28,6 +28,7 @@
 #include "AliRhoParameter.h"
 #include "AliCaloTrackMatcher.h"
 #include "AliMCAnalysisUtils.h"
+#include "AliAnalysisTaskConvJet.h"
 
 #ifndef AliAnalysisTaskGammaIsoTree_cxx
 #define AliAnalysisTaskGammaIsoTree_cxx
@@ -265,6 +266,10 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
       fDebug = debug;
     }
     void SetMCFlag(UInt_t m){ fMCFlag= m ;}
+    void SetSaveJets(Bool_t b){
+        fSaveJets = b;
+    }
+    void SetJetContainerAddName(TString name) { fAddNameConvJet = name; }
   protected:
     AliVEvent*                  fInputEvent;                //!<!
     AliMCEvent*                 fMCEvent;                   //!<!
@@ -338,6 +343,10 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Bool_t                      fSaveEMCClusters; //
     Bool_t                      fSavePHOSClusters; //
     Bool_t                      fSaveTracks; //
+
+    Bool_t                      fSaveJets; //
+    AliAnalysisTaskConvJet*     fConvJetReader;  // JetReader
+    TString                     fAddNameConvJet; // Jet container additional name
 
     Bool_t                      fUseHistograms; // if activated, histograms will be used instead of a tree
     Int_t                       fUseTree; // 0 no tree, 1, light tree, 2 full tree (OBSOLETE)
@@ -767,11 +776,22 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     std::vector<Bool_t> fBuffer_GenPhotonIsConv;
     std::vector<Int_t> fBuffer_GenPhotonMCTag;
 
+    // Jet stuff
+    std::vector<Float_t> fBuffer_JetPx;     //!<! array buffer
+    std::vector<Float_t> fBuffer_JetPy;     //!<! array buffer
+    std::vector<Float_t> fBuffer_JetPz;     //!<! array buffer
+    std::vector<Float_t> fBuffer_JetArea;     //!<! array buffer
+    std::vector<UShort_t> fBuffer_JetNch;     //!<! array buffer
+    std::vector<UShort_t> fBuffer_JetNclus;     //!<! array buffer
+
+    std::vector<Float_t> fBuffer_TrueJetPx;     //!<! array buffer
+    std::vector<Float_t> fBuffer_TrueJetPy;     //!<! array buffer
+    std::vector<Float_t> fBuffer_TrueJetPz;     //!<! array buffer
+    std::vector<Float_t> fBuffer_TrueJetArea;     //!<! array buffer
+    std::vector<UShort_t> fBuffer_TrueJetNPart;     //!<! array buffer
+
+
     UInt_t fMCFlag;                        ///< select MC particles with flags    
-
-
-
-
 
 
   private:
@@ -784,6 +804,8 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     void ProcessCaloPhotons();
     Bool_t TrackIsSelectedAOD(AliAODTrack* lTrack,  Bool_t requirePosID);
     void ProcessTracks();
+    void ProcessJets();
+    void ProcessTrueJets();
     void ProcessMCParticles();
     Int_t ProcessTrackMatching(AliAODCaloCluster* clus, TList* tracks);
     vector<Double32_t> ProcessChargedIsolation(AliAODConversionPhoton* photon);

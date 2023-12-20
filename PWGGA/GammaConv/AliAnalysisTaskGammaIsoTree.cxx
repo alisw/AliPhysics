@@ -98,6 +98,9 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fSaveEMCClusters(kTRUE),
   fSavePHOSClusters(kTRUE),
   fSaveTracks(kTRUE),
+  fSaveJets(kFALSE),
+  fConvJetReader(nullptr),
+  fAddNameConvJet(""),
   fUseHistograms(kFALSE),
   fUseTree(0),
   fRecPtCut(0),
@@ -463,6 +466,17 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fBuffer_GenPhotonMCIsoBckPerp(0),
   fBuffer_GenPhotonIsConv(0),
   fBuffer_GenPhotonMCTag(0),
+  fBuffer_JetPx(0),
+  fBuffer_JetPy(0),
+  fBuffer_JetPz(0),
+  fBuffer_JetArea(0),
+  fBuffer_JetNch(0),
+  fBuffer_JetNclus(0),
+  fBuffer_TrueJetPx(0),
+  fBuffer_TrueJetPy(0),
+  fBuffer_TrueJetPz(0),
+  fBuffer_TrueJetArea(0),
+  fBuffer_TrueJetNPart(0),
   fMCFlag(AliAODMCParticle::kPhysicalPrim)
 {
 
@@ -545,6 +559,9 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fSaveEMCClusters(kTRUE),
   fSavePHOSClusters(kTRUE),
   fSaveTracks(kTRUE),
+  fSaveJets(kFALSE),
+  fConvJetReader(nullptr),
+  fAddNameConvJet(""),
   fUseHistograms(kFALSE),
   fUseTree(0),
   fRecPtCut(0),
@@ -912,6 +929,17 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fBuffer_GenPhotonMCIsoBckPerp(0),
   fBuffer_GenPhotonIsConv(0),
   fBuffer_GenPhotonMCTag(0),
+  fBuffer_JetPx(0),
+  fBuffer_JetPy(0),
+  fBuffer_JetPz(0),
+  fBuffer_JetArea(0),
+  fBuffer_JetNch(0),
+  fBuffer_JetNclus(0),
+  fBuffer_TrueJetPx(0),
+  fBuffer_TrueJetPy(0),
+  fBuffer_TrueJetPz(0),
+  fBuffer_TrueJetArea(0),
+  fBuffer_TrueJetNPart(0),
   fMCFlag(AliAODMCParticle::kPhysicalPrim)
 {
   DefineInput(0, TChain::Class());
@@ -1011,12 +1039,19 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   }
 
   // If requested, load Jet finder for outlier removal
-    if(fEventCuts->GetUseJetFinderForOutliers()){
+  if(fEventCuts->GetUseJetFinderForOutliers()){
     fOutlierJetReader=(AliAnalysisTaskJetOutlierRemoval*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetOutlierRemoval");
     if(!fOutlierJetReader){AliFatal("Error: No AliAnalysisTaskJetOutlierRemoval");} // GetV0Reader
     else{printf("Found AliAnalysisTaskJetOutlierRemoval used for outlier removal!\n");}
   }
 
+  // If JetCorrelation analysis is requested, load the ConvJet reader
+  if(fSaveJets){
+    TString JetReaderTaskName = Form("AliAnalysisTaskConvJet%s", fAddNameConvJet.EqualTo("") == true ? "" : Form("_%s",fAddNameConvJet.Data()));
+    fConvJetReader = (AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask(JetReaderTaskName);
+    if (!fConvJetReader){AliFatal(Form("Error: No %s found",JetReaderTaskName.Data()));}
+    else{printf(Form("Found %s!\n",JetReaderTaskName.Data()));}
+  }
 
   fGeneralFolder          = new TList();
   fGeneralFolder->SetName("general");
@@ -2554,6 +2589,17 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
     fAnalysisTree->Branch("Cluster_MatchTrackPt","std::vector<Float_t>",&fBuffer_ClusterMatchTrackPt);
     fAnalysisTree->Branch("Cluster_MatchTrackIsConv","std::vector<Bool_t>",&fBuffer_ClusterMatchTrackIsConv);
     fAnalysisTree->Branch("Cluster_DistanceToBadChannel","std::vector<Float_t>",&fBuffer_ClusterDistanceToBadChannel);
+
+    if(fSaveJets){
+      fAnalysisTree->Branch("Jet_Px","std::vector<Float_t>",&fBuffer_JetPx);
+      fAnalysisTree->Branch("Jet_Py","std::vector<Float_t>",&fBuffer_JetPy);
+      fAnalysisTree->Branch("Jet_Pz","std::vector<Float_t>",&fBuffer_JetPz);
+      fAnalysisTree->Branch("Jet_Area","std::vector<Float_t>",&fBuffer_JetArea);
+      fAnalysisTree->Branch("Jet_Nch","std::vector<UShort_t>",&fBuffer_JetNch);
+      fAnalysisTree->Branch("Jet_Nclus","std::vector<UShort_t>",&fBuffer_JetNclus);
+    }
+
+
     if(fIsMC>0){
       fAnalysisTree->Branch("TrueCluster_E","std::vector<Float_t>",&fBuffer_TrueClusterE);
       fAnalysisTree->Branch("TrueCluster_Px","std::vector<Float_t>",&fBuffer_TrueClusterPx);
@@ -2577,6 +2623,14 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
       fAnalysisTree->Branch("GenPhoton_MCIsoBckPerp","std::vector<Float_t>",&fBuffer_GenPhotonMCIsoBckPerp);
       fAnalysisTree->Branch("GenPhoton_IsConv","std::vector<Bool_t>",&fBuffer_GenPhotonIsConv);  
       fAnalysisTree->Branch("GenPhoton_MCTag","std::vector<Int_t>",&fBuffer_GenPhotonMCTag);  
+
+      if(fSaveJets){
+        fAnalysisTree->Branch("TrueJet_Px","std::vector<Float_t>",&fBuffer_TrueJetPx);  
+        fAnalysisTree->Branch("TrueJet_Py","std::vector<Float_t>",&fBuffer_TrueJetPy);  
+        fAnalysisTree->Branch("TrueJet_Pz","std::vector<Float_t>",&fBuffer_TrueJetPz);  
+        fAnalysisTree->Branch("TrueJet_Area","std::vector<Float_t>",&fBuffer_TrueJetArea);  
+        fAnalysisTree->Branch("TrueJet_NPart","std::vector<UShort_t>",&fBuffer_TrueJetNPart);  
+      }
     }
   }
 
@@ -2717,6 +2771,10 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   // always process MC Gen Level particles unless when vertex is out of z range ( to avoid double counting)
   if (fIsMC > 0 && eventQuality != 4){
     ProcessMCParticles();
+    // For MC process all jets here already before triggering. 
+    // Event will get the trigger label "fBuffer_EventIsTriggered" later, and only triggered jets will be used in the analysis in postprocessing. 
+    // Not triggered jets are used for trigger efficiency
+    if(fSaveJets) ProcessTrueJets(); 
   }
 
 // check if gen particles are filled for vertex outside z range !!! TODO
@@ -2821,6 +2879,9 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   // processing was needed anyways because of track matching
   // and isolation
 
+  if(fSaveJets) ProcessJets(); // 
+  
+
   // fill output
   if(!fUseHistograms){
     fBuffer_EventRho = fChargedRho;
@@ -2924,6 +2985,19 @@ void AliAnalysisTaskGammaIsoTree::ResetBuffer(){
   fBuffer_GenPhotonMCIsoBckPerp.clear();
   fBuffer_GenPhotonIsConv.clear();
   fBuffer_GenPhotonMCTag.clear();
+
+  fBuffer_JetPx.clear(); 
+  fBuffer_JetPy.clear(); 
+  fBuffer_JetPz.clear(); 
+  fBuffer_JetArea.clear(); 
+  fBuffer_JetNch.clear(); 
+  fBuffer_JetNclus.clear(); 
+
+  fBuffer_TrueJetPx.clear(); 
+  fBuffer_TrueJetPy.clear(); 
+  fBuffer_TrueJetPz.clear(); 
+  fBuffer_TrueJetArea.clear(); 
+  fBuffer_TrueJetNPart.clear(); 
 
   fBuffer_EventNPrimaryTracks = 0;
 
@@ -3926,6 +4000,37 @@ void AliAnalysisTaskGammaIsoTree::ProcessTracks(){
   }
   fBuffer_EventNPrimaryTracks = prim;
   return;
+}
+
+
+//________________________________________________________________________
+void AliAnalysisTaskGammaIsoTree::ProcessJets()
+{
+  for (UInt_t iJet = 0; iJet < fConvJetReader->GetNJets(); iJet++) {
+    fBuffer_JetPx.push_back((Float_t)fConvJetReader->GetVectorJetPx().at(iJet));
+    fBuffer_JetPy.push_back((Float_t)fConvJetReader->GetVectorJetPy().at(iJet));
+    fBuffer_JetPz.push_back((Float_t)fConvJetReader->GetVectorJetPz().at(iJet));
+    fBuffer_JetArea.push_back((Float_t)fConvJetReader->GetVectorJetArea().at(iJet));
+    fBuffer_JetNch.push_back((UShort_t)fConvJetReader->GetVectorJetNtracks().at(iJet));
+    fBuffer_JetNclus.push_back((UShort_t)fConvJetReader->GetVectorJetNclus().at(iJet));
+  }
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskGammaIsoTree::ProcessTrueJets()
+{
+  if (!fAODMCTrackArray)
+    fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  fConvJetReader->FindPartonsJet(fAODMCTrackArray);
+  for (UInt_t iJet = 0; iJet < fConvJetReader->GetTrueNJets(); iJet++) {
+    if((fConvJetReader->GetTrueVectorJetPt().at(iJet)>fGenPtCut)){
+      fBuffer_TrueJetPx.push_back((Float_t)fConvJetReader->GetTrueVectorJetPx().at(iJet));
+      fBuffer_TrueJetPy.push_back((Float_t)fConvJetReader->GetTrueVectorJetPy().at(iJet));
+      fBuffer_TrueJetPz.push_back((Float_t)fConvJetReader->GetTrueVectorJetPz().at(iJet));
+      fBuffer_TrueJetArea.push_back((Float_t)fConvJetReader->GetTrueVectorJetArea().at(iJet));
+      fBuffer_TrueJetNPart.push_back((UShort_t)fConvJetReader->GetTrueVectorJetNPart().at(iJet));
+    }
+  }
 }
 
 //_____________________________________________________________________________
