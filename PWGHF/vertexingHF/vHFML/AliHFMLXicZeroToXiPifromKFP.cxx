@@ -6166,7 +6166,7 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
     if (
         // Xic0 cuts
         fabs(fVar_Xic0[23])<0.8 && // rapidity of Xic0 or Omegac0
-        fVar_Xic0[44]==1. && // unlike-sign selection
+//        fVar_Xic0[44]==1. && // unlike-sign selection
         fVar_Xic0[33]>-0.5 && fVar_Xic0[33]<0.5 && // DecayLxy_Xic0
         fVar_Xic0[34]<10. && fVar_Xic0[34]>0. && // chi2geo_Xic0
         fVar_Xic0[37]<0.5 && fVar_Xic0[37]>0. && // DCA_Xic0Dau_KF
