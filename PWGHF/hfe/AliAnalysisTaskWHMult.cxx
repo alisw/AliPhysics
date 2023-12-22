@@ -96,25 +96,87 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult() : AliAnalysisTaskSE(),
   fdPhi_trkHF_ePt(),
   fHistPt_We(),
   fHistPt_HFe(),
-  fPt_maxtrack_W(),
-  fNtrkl_PtOfMaxTrk_W80(),
-  fNtrkl_PtOfMaxTrk_W85(),
-  fNtrkl_PtOfMaxTrk_W90(),
-  fNtrkl_PtOfMaxTrk_W95(),
-  fNtrkl_PtOfTrks_W(),
-  fNtrkl_PtOfTrks_W80(),
-  fNtrkl_PtOfTrks_W85(),
-  fNtrkl_PtOfTrks_W90(),
-  fNtrkl_PtOfTrks_W95(),
-  fNtrkl_PtOfMaxTrk_HF80(),
-  fNtrkl_PtOfMaxTrk_HF85(),
-  fNtrkl_PtOfMaxTrk_HF90(),
-  fNtrkl_PtOfMaxTrk_HF95(),
-  fNtrkl_PtOfTrks_HF(),
-  fNtrkl_PtOfTrks_HF80(),
-  fNtrkl_PtOfTrks_HF85(),
-  fNtrkl_PtOfTrks_HF90(),
-  fNtrkl_PtOfTrks_HF95(),
+  fPt_maxtrack_W_n(),
+  fNtrkl_PtOfMaxTrk_W70_n(),
+  fNtrkl_PtOfMaxTrk_W80_n(),
+  fNtrkl_PtOfMaxTrk_W85_n(),
+  fNtrkl_PtOfMaxTrk_W90_n(),
+  fNtrkl_PtOfMaxTrk_W93_n(),
+  fNtrkl_PtOfMaxTrk_W95_n(),
+  fNtrkl_PtOfTrks_W_n(),
+  fNtrkl_PtOfTrks_W70_n(),
+  fNtrkl_PtOfTrks_W80_n(),
+  fNtrkl_PtOfTrks_W85_n(),
+  fNtrkl_PtOfTrks_W90_n(),
+  fNtrkl_PtOfTrks_W93_n(),
+  fNtrkl_PtOfTrks_W95_n(),
+  fNtrkl_PtOfMaxTrk_HF70_n(),
+  fNtrkl_PtOfMaxTrk_HF80_n(),
+  fNtrkl_PtOfMaxTrk_HF85_n(),
+  fNtrkl_PtOfMaxTrk_HF90_n(),
+  fNtrkl_PtOfMaxTrk_HF93_n(),
+  fNtrkl_PtOfMaxTrk_HF95_n(),
+  fNtrkl_PtOfTrks_HF_n(),
+  fNtrkl_PtOfTrks_HF70_n(),
+  fNtrkl_PtOfTrks_HF80_n(),
+  fNtrkl_PtOfTrks_HF85_n(),
+  fNtrkl_PtOfTrks_HF90_n(),
+  fNtrkl_PtOfTrks_HF93_n(),
+  fNtrkl_PtOfTrks_HF95_n(),
+  fPt_maxtrack_W_m(),
+  fNtrkl_PtOfMaxTrk_W70_m(),
+  fNtrkl_PtOfMaxTrk_W80_m(),
+  fNtrkl_PtOfMaxTrk_W85_m(),
+  fNtrkl_PtOfMaxTrk_W90_m(),
+  fNtrkl_PtOfMaxTrk_W93_m(),
+  fNtrkl_PtOfMaxTrk_W95_m(),
+  fNtrkl_PtOfTrks_W_m(),
+  fNtrkl_PtOfTrks_W70_m(),
+  fNtrkl_PtOfTrks_W80_m(),
+  fNtrkl_PtOfTrks_W85_m(),
+  fNtrkl_PtOfTrks_W90_m(),
+  fNtrkl_PtOfTrks_W93_m(),
+  fNtrkl_PtOfTrks_W95_m(),
+  fNtrkl_PtOfMaxTrk_HF70_m(),
+  fNtrkl_PtOfMaxTrk_HF80_m(),
+  fNtrkl_PtOfMaxTrk_HF85_m(),
+  fNtrkl_PtOfMaxTrk_HF90_m(),
+  fNtrkl_PtOfMaxTrk_HF93_m(),
+  fNtrkl_PtOfMaxTrk_HF95_m(),
+  fNtrkl_PtOfTrks_HF_m(),
+  fNtrkl_PtOfTrks_HF70_m(),
+  fNtrkl_PtOfTrks_HF80_m(),
+  fNtrkl_PtOfTrks_HF85_m(),
+  fNtrkl_PtOfTrks_HF90_m(),
+  fNtrkl_PtOfTrks_HF93_m(),
+  fNtrkl_PtOfTrks_HF95_m(),
+  fPt_maxtrack_W_w(),
+  fNtrkl_PtOfMaxTrk_W70_w(),
+  fNtrkl_PtOfMaxTrk_W80_w(),
+  fNtrkl_PtOfMaxTrk_W85_w(),
+  fNtrkl_PtOfMaxTrk_W90_w(),
+  fNtrkl_PtOfMaxTrk_W93_w(),
+  fNtrkl_PtOfMaxTrk_W95_w(),
+  fNtrkl_PtOfTrks_W_w(),
+  fNtrkl_PtOfTrks_W70_w(),
+  fNtrkl_PtOfTrks_W80_w(),
+  fNtrkl_PtOfTrks_W85_w(),
+  fNtrkl_PtOfTrks_W90_w(),
+  fNtrkl_PtOfTrks_W93_w(),
+  fNtrkl_PtOfTrks_W95_w(),
+  fNtrkl_PtOfMaxTrk_HF70_w(),
+  fNtrkl_PtOfMaxTrk_HF80_w(),
+  fNtrkl_PtOfMaxTrk_HF85_w(),
+  fNtrkl_PtOfMaxTrk_HF90_w(),
+  fNtrkl_PtOfMaxTrk_HF93_w(),
+  fNtrkl_PtOfMaxTrk_HF95_w(),
+  fNtrkl_PtOfTrks_HF_w(),
+  fNtrkl_PtOfTrks_HF70_w(),
+  fNtrkl_PtOfTrks_HF80_w(),
+  fNtrkl_PtOfTrks_HF85_w(),
+  fNtrkl_PtOfTrks_HF90_w(),
+  fNtrkl_PtOfTrks_HF93_w(),
+  fNtrkl_PtOfTrks_HF95_w(),
   fHistPt_We_Ntrkl(),
   fdPhi_trkW_full(),
   fdPhi_trkHF_full(),
@@ -182,25 +244,87 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult(const char* name) : AliAnalysisTask
   fdPhi_trkHF_ePt(),
   fHistPt_We(),
   fHistPt_HFe(),
-  fPt_maxtrack_W(),
-  fNtrkl_PtOfMaxTrk_W80(),
-  fNtrkl_PtOfMaxTrk_W85(),
-  fNtrkl_PtOfMaxTrk_W90(),
-  fNtrkl_PtOfMaxTrk_W95(),
-  fNtrkl_PtOfTrks_W(),
-  fNtrkl_PtOfTrks_W80(),
-  fNtrkl_PtOfTrks_W85(),
-  fNtrkl_PtOfTrks_W90(),
-  fNtrkl_PtOfTrks_W95(),
-  fNtrkl_PtOfMaxTrk_HF80(),
-  fNtrkl_PtOfMaxTrk_HF85(),
-  fNtrkl_PtOfMaxTrk_HF90(),
-  fNtrkl_PtOfMaxTrk_HF95(),
-  fNtrkl_PtOfTrks_HF(),
-  fNtrkl_PtOfTrks_HF80(),
-  fNtrkl_PtOfTrks_HF85(),
-  fNtrkl_PtOfTrks_HF90(),
-  fNtrkl_PtOfTrks_HF95(),
+  fPt_maxtrack_W_n(),
+  fNtrkl_PtOfMaxTrk_W70_n(),
+  fNtrkl_PtOfMaxTrk_W80_n(),
+  fNtrkl_PtOfMaxTrk_W85_n(),
+  fNtrkl_PtOfMaxTrk_W90_n(),
+  fNtrkl_PtOfMaxTrk_W93_n(),
+  fNtrkl_PtOfMaxTrk_W95_n(),
+  fNtrkl_PtOfTrks_W_n(),
+  fNtrkl_PtOfTrks_W70_n(),
+  fNtrkl_PtOfTrks_W80_n(),
+  fNtrkl_PtOfTrks_W85_n(),
+  fNtrkl_PtOfTrks_W90_n(),
+  fNtrkl_PtOfTrks_W93_n(),
+  fNtrkl_PtOfTrks_W95_n(),
+  fNtrkl_PtOfMaxTrk_HF70_n(),
+  fNtrkl_PtOfMaxTrk_HF80_n(),
+  fNtrkl_PtOfMaxTrk_HF85_n(),
+  fNtrkl_PtOfMaxTrk_HF90_n(),
+  fNtrkl_PtOfMaxTrk_HF93_n(),
+  fNtrkl_PtOfMaxTrk_HF95_n(),
+  fNtrkl_PtOfTrks_HF_n(),
+  fNtrkl_PtOfTrks_HF70_n(),
+  fNtrkl_PtOfTrks_HF80_n(),
+  fNtrkl_PtOfTrks_HF85_n(),
+  fNtrkl_PtOfTrks_HF90_n(),
+  fNtrkl_PtOfTrks_HF93_n(),
+  fNtrkl_PtOfTrks_HF95_n(),
+  fPt_maxtrack_W_m(),
+  fNtrkl_PtOfMaxTrk_W70_m(),
+  fNtrkl_PtOfMaxTrk_W80_m(),
+  fNtrkl_PtOfMaxTrk_W85_m(),
+  fNtrkl_PtOfMaxTrk_W90_m(),
+  fNtrkl_PtOfMaxTrk_W93_m(),
+  fNtrkl_PtOfMaxTrk_W95_m(),
+  fNtrkl_PtOfTrks_W_m(),
+  fNtrkl_PtOfTrks_W70_m(),
+  fNtrkl_PtOfTrks_W80_m(),
+  fNtrkl_PtOfTrks_W85_m(),
+  fNtrkl_PtOfTrks_W90_m(),
+  fNtrkl_PtOfTrks_W93_m(),
+  fNtrkl_PtOfTrks_W95_m(),
+  fNtrkl_PtOfMaxTrk_HF70_m(),
+  fNtrkl_PtOfMaxTrk_HF80_m(),
+  fNtrkl_PtOfMaxTrk_HF85_m(),
+  fNtrkl_PtOfMaxTrk_HF90_m(),
+  fNtrkl_PtOfMaxTrk_HF93_m(),
+  fNtrkl_PtOfMaxTrk_HF95_m(),
+  fNtrkl_PtOfTrks_HF_m(),
+  fNtrkl_PtOfTrks_HF70_m(),
+  fNtrkl_PtOfTrks_HF80_m(),
+  fNtrkl_PtOfTrks_HF85_m(),
+  fNtrkl_PtOfTrks_HF90_m(),
+  fNtrkl_PtOfTrks_HF93_m(),
+  fNtrkl_PtOfTrks_HF95_m(),
+  fPt_maxtrack_W_w(),
+  fNtrkl_PtOfMaxTrk_W70_w(),
+  fNtrkl_PtOfMaxTrk_W80_w(),
+  fNtrkl_PtOfMaxTrk_W85_w(),
+  fNtrkl_PtOfMaxTrk_W90_w(),
+  fNtrkl_PtOfMaxTrk_W93_w(),
+  fNtrkl_PtOfMaxTrk_W95_w(),
+  fNtrkl_PtOfTrks_W_w(),
+  fNtrkl_PtOfTrks_W70_w(),
+  fNtrkl_PtOfTrks_W80_w(),
+  fNtrkl_PtOfTrks_W85_w(),
+  fNtrkl_PtOfTrks_W90_w(),
+  fNtrkl_PtOfTrks_W93_w(),
+  fNtrkl_PtOfTrks_W95_w(),
+  fNtrkl_PtOfMaxTrk_HF70_w(),
+  fNtrkl_PtOfMaxTrk_HF80_w(),
+  fNtrkl_PtOfMaxTrk_HF85_w(),
+  fNtrkl_PtOfMaxTrk_HF90_w(),
+  fNtrkl_PtOfMaxTrk_HF93_w(),
+  fNtrkl_PtOfMaxTrk_HF95_w(),
+  fNtrkl_PtOfTrks_HF_w(),
+  fNtrkl_PtOfTrks_HF70_w(),
+  fNtrkl_PtOfTrks_HF80_w(),
+  fNtrkl_PtOfTrks_HF85_w(),
+  fNtrkl_PtOfTrks_HF90_w(),
+  fNtrkl_PtOfTrks_HF93_w(),
+  fNtrkl_PtOfTrks_HF95_w(),
   fHistPt_We_Ntrkl(),
   fdPhi_trkW_full(),
   fdPhi_trkHF_full(),
@@ -330,83 +454,335 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
     fHistPt_HFe[isoR]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
     fHistPt_HFe[isoR]->GetYaxis()->SetTitle("Counts");
 
-    fPt_maxtrack_W[isoR] = new TH1F(Form("fPt_maxtrack_W_%d",isoR),Form("p_{T,trk}/p_{T,can} (Eiso_{R<0.%d})",3+isoR),200,0,2);
-    fPt_maxtrack_W[isoR]->GetXaxis()->SetTitle("p_{T,trk}/p_{T,can}");
-    fPt_maxtrack_W[isoR]->GetYaxis()->SetTitle("Counts");
+    fPt_maxtrack_W_n[isoR] = new TH1F(Form("fPt_maxtrack_W_n_%d",isoR),Form("p_{T,trk}/p_{T,can} (Eiso_{R<0.%d})",3+isoR),200,0,2);
+    fPt_maxtrack_W_n[isoR]->GetXaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fPt_maxtrack_W_n[isoR]->GetYaxis()->SetTitle("Counts");
 
-    fNtrkl_PtOfMaxTrk_W80[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W80_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfMaxTrk_W80[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 80% (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfMaxTrk_W80[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfMaxTrk_W80[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
-    fNtrkl_PtOfMaxTrk_W85[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W85_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfMaxTrk_W85[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 85% (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfMaxTrk_W85[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfMaxTrk_W85[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
-    fNtrkl_PtOfMaxTrk_W90[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W90_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfMaxTrk_W90[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 90% (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfMaxTrk_W90[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfMaxTrk_W90[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
-    fNtrkl_PtOfMaxTrk_W95[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W95_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfMaxTrk_W95[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 95% (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfMaxTrk_W95[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfMaxTrk_W95[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
-    fNtrkl_PtOfTrks_W[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfTrks_W[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfTrks_W[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfTrks_W[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
-    fNtrkl_PtOfTrks_W80[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W80_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfTrks_W80[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 80% (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfTrks_W80[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfTrks_W80[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
-    fNtrkl_PtOfTrks_W85[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W85_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfTrks_W85[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 85% (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfTrks_W85[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfTrks_W85[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
-    fNtrkl_PtOfTrks_W90[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W90_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfTrks_W90[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 90% (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfTrks_W90[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfTrks_W90[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
-    fNtrkl_PtOfTrks_W95[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W95_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfTrks_W95[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 95% (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfTrks_W95[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfTrks_W95[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_W70_n[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W70_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W70_n[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 70% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W70_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W70_n[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_W80_n[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W80_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W80_n[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 80% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W80_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W80_n[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_W85_n[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W85_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W85_n[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 85% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W85_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W85_n[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_W90_n[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W90_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W90_n[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 90% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W90_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W90_n[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_W93_n[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W93_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W93_n[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 93% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W93_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W93_n[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_W95_n[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W95_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W95_n[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 95% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W95_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W95_n[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W_n[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W_n[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W_n[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W70_n[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W70_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W70_n[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 70% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W70_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W70_n[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W80_n[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W80_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W80_n[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 80% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W80_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W80_n[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W85_n[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W85_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W85_n[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 85% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W85_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W85_n[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W90_n[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W90_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W90_n[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 90% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W90_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W90_n[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W93_n[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W93_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W93_n[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 93% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W93_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W93_n[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W95_n[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W95_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W95_n[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 95% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W95_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W95_n[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
 
-    fNtrkl_PtOfMaxTrk_HF80[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF80_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfMaxTrk_HF80[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 80% (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfMaxTrk_HF80[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfMaxTrk_HF80[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
-    fNtrkl_PtOfMaxTrk_HF85[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF85_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfMaxTrk_HF85[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 85% (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfMaxTrk_HF85[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfMaxTrk_HF85[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
-    fNtrkl_PtOfMaxTrk_HF90[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF90_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfMaxTrk_HF90[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 90% (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfMaxTrk_HF90[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfMaxTrk_HF90[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
-    fNtrkl_PtOfMaxTrk_HF95[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF95_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfMaxTrk_HF95[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 95% (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfMaxTrk_HF95[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfMaxTrk_HF95[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
-    fNtrkl_PtOfTrks_HF[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfTrks_HF[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfTrks_HF[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfTrks_HF[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
-    fNtrkl_PtOfTrks_HF80[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF80_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfTrks_HF80[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 80% (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfTrks_HF80[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfTrks_HF80[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
-    fNtrkl_PtOfTrks_HF85[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF85_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfTrks_HF85[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 85% (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfTrks_HF85[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfTrks_HF85[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
-    fNtrkl_PtOfTrks_HF90[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF90_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfTrks_HF90[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 90% (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfTrks_HF90[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfTrks_HF90[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
-    fNtrkl_PtOfTrks_HF95[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF95_%d",isoR),"",200,0,200,200,0,2);
-    fNtrkl_PtOfTrks_HF95[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 95% (Eiso_{R<0.%d})",3+isoR));
-    fNtrkl_PtOfTrks_HF95[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
-    fNtrkl_PtOfTrks_HF95[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_HF70_n[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF70_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF70_n[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 70% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF70_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF70_n[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_HF80_n[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF80_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF80_n[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 80% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF80_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF80_n[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_HF85_n[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF85_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF85_n[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 85% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF85_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF85_n[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_HF90_n[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF90_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF90_n[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 90% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF90_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF90_n[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_HF93_n[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF93_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF93_n[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 93% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF93_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF93_n[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_HF95_n[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF95_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF95_n[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 95% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF95_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF95_n[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF_n[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF_n[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF_n[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF70_n[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF70_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF70_n[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 70% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF70_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF70_n[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF80_n[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF80_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF80_n[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 80% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF80_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF80_n[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF85_n[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF85_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF85_n[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 85% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF85_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF85_n[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF90_n[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF90_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF90_n[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 90% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF90_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF90_n[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF93_n[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF93_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF93_n[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 93% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF93_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF93_n[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF95_n[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF95_n_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF95_n[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 95% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF95_n[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF95_n[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+
+    fPt_maxtrack_W_m[isoR] = new TH1F(Form("fPt_maxtrack_W_m_%d",isoR),Form("p_{T,trk}/p_{T,can} (Eiso_{R<0.%d})",3+isoR),200,0,2);
+    fPt_maxtrack_W_m[isoR]->GetXaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fPt_maxtrack_W_m[isoR]->GetYaxis()->SetTitle("Counts");
+
+    fNtrkl_PtOfMaxTrk_W70_m[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W70_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W70_m[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 70% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W70_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W70_m[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_W80_m[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W80_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W80_m[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 80% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W80_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W80_m[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_W85_m[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W85_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W85_m[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 85% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W85_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W85_m[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_W90_m[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W90_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W90_m[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 90% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W90_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W90_m[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_W93_m[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W93_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W93_m[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 93% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W93_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W93_m[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_W95_m[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W95_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W95_m[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 95% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W95_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W95_m[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W_m[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W_m[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W_m[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W70_m[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W70_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W70_m[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 70% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W70_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W70_m[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W80_m[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W80_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W80_m[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 80% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W80_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W80_m[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W85_m[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W85_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W85_m[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 85% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W85_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W85_m[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W90_m[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W90_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W90_m[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 90% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W90_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W90_m[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W93_m[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W93_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W93_m[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 93% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W93_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W93_m[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W95_m[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W95_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W95_m[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 95% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W95_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W95_m[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+
+    fNtrkl_PtOfMaxTrk_HF70_m[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF70_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF70_m[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 70% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF70_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF70_m[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_HF80_m[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF80_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF80_m[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 80% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF80_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF80_m[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_HF85_m[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF85_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF85_m[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 85% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF85_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF85_m[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_HF90_m[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF90_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF90_m[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 90% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF90_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF90_m[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_HF93_m[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF93_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF93_m[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 93% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF93_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF93_m[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_HF95_m[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF95_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF95_m[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 95% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF95_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF95_m[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF_m[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF_m[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF_m[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF70_m[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF70_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF70_m[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 70% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF70_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF70_m[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF80_m[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF80_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF80_m[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 80% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF80_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF80_m[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF85_m[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF85_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF85_m[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 85% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF85_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF85_m[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF90_m[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF90_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF90_m[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 90% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF90_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF90_m[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF93_m[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF93_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF93_m[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 93% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF93_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF93_m[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF95_m[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF95_m_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF95_m[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 95% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF95_m[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF95_m[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+
+    fPt_maxtrack_W_w[isoR] = new TH1F(Form("fPt_maxtrack_W_w_%d",isoR),Form("p_{T,trk}/p_{T,can} (Eiso_{R<0.%d})",3+isoR),200,0,2);
+    fPt_maxtrack_W_w[isoR]->GetXaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fPt_maxtrack_W_w[isoR]->GetYaxis()->SetTitle("Counts");
+
+    fNtrkl_PtOfMaxTrk_W70_w[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W70_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W70_w[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 70% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W70_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W70_w[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_W80_w[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W80_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W80_w[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 80% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W80_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W80_w[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_W85_w[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W85_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W85_w[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 85% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W85_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W85_w[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_W90_w[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W90_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W90_w[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 90% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W90_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W90_w[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_W93_w[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W93_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W93_w[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 93% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W93_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W93_w[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_W95_w[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W95_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W95_w[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 95% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W95_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W95_w[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W_w[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W_w[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W_w[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W70_w[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W70_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W70_w[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 70% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W70_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W70_w[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W80_w[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W80_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W80_w[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 80% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W80_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W80_w[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W85_w[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W85_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W85_w[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 85% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W85_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W85_w[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W90_w[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W90_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W90_w[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 90% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W90_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W90_w[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W93_w[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W93_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W93_w[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 93% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W93_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W93_w[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_W95_w[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_W95_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_W95_w[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 95% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_W95_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_W95_w[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+
+    fNtrkl_PtOfMaxTrk_HF70_w[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF70_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF70_w[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 70% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF70_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF70_w[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_HF80_w[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF80_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF80_w[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 80% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF80_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF80_w[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_HF85_w[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF85_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF85_w[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 85% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF85_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF85_w[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_HF90_w[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF90_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF90_w[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 90% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF90_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF90_w[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_HF93_w[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF93_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF93_w[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 93% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF93_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF93_w[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_HF95_w[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_HF95_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_HF95_w[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} 95% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_HF95_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_HF95_w[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF_w[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF_w[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF_w[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF70_w[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF70_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF70_w[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 70% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF70_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF70_w[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF80_w[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF80_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF80_w[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 80% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF80_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF80_w[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF85_w[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF85_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF85_w[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 85% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF85_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF85_w[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF90_w[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF90_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF90_w[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 90% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF90_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF90_w[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF93_w[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF93_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF93_w[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 93% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF93_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF93_w[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfTrks_HF95_w[isoR] = new TH2F(Form("fNtrkl_PtOfTrks_HF95_w_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfTrks_HF95_w[isoR]->SetTitle(Form("N_{tracklets} vs #sum_{#leftrightarrow}p_{T,trk}/p_{T,can} 95% (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfTrks_HF95_w[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfTrks_HF95_w[isoR]->GetYaxis()->SetTitle("#sum_{#leftrightarrow}p_{T,trk}/p_{T,can}");
 
     fHistPt_We_Ntrkl[isoR] = new TH2F(Form("fHistPt_We_Ntrkl_%d",isoR),Form("p_{T,can} vs N_{tracklets} (Eiso_{R<0.%d})",3+isoR),200,0,200,200,0,200);
     fHistPt_We_Ntrkl[isoR]->GetXaxis()->SetTitle("p_{T,can} (GeV/c)");
@@ -498,63 +874,249 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
   fOutputList->Add(fHistPt_HFe[0]);
   fOutputList->Add(fHistPt_HFe[1]);
   fOutputList->Add(fHistPt_HFe[2]);
-  fOutputList->Add(fPt_maxtrack_W[0]);
-  fOutputList->Add(fPt_maxtrack_W[1]);
-  fOutputList->Add(fPt_maxtrack_W[2]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_W80[0]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_W80[1]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_W80[2]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_W85[0]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_W85[1]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_W85[2]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_W90[0]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_W90[1]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_W90[2]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_W95[0]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_W95[1]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_W95[2]);
-  fOutputList->Add(fNtrkl_PtOfTrks_W[0]);
-  fOutputList->Add(fNtrkl_PtOfTrks_W[1]);
-  fOutputList->Add(fNtrkl_PtOfTrks_W[2]);
-  fOutputList->Add(fNtrkl_PtOfTrks_W80[0]);
-  fOutputList->Add(fNtrkl_PtOfTrks_W80[1]);
-  fOutputList->Add(fNtrkl_PtOfTrks_W80[2]);
-  fOutputList->Add(fNtrkl_PtOfTrks_W85[0]);
-  fOutputList->Add(fNtrkl_PtOfTrks_W85[1]);
-  fOutputList->Add(fNtrkl_PtOfTrks_W85[2]);
-  fOutputList->Add(fNtrkl_PtOfTrks_W90[0]);
-  fOutputList->Add(fNtrkl_PtOfTrks_W90[1]);
-  fOutputList->Add(fNtrkl_PtOfTrks_W90[2]);
-  fOutputList->Add(fNtrkl_PtOfTrks_W95[0]);
-  fOutputList->Add(fNtrkl_PtOfTrks_W95[1]);
-  fOutputList->Add(fNtrkl_PtOfTrks_W95[2]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF80[0]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF80[1]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF80[2]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF85[0]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF85[1]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF85[2]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF90[0]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF90[1]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF90[2]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF95[0]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF95[1]);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF95[2]);
-  fOutputList->Add(fNtrkl_PtOfTrks_HF[0]);
-  fOutputList->Add(fNtrkl_PtOfTrks_HF[1]);
-  fOutputList->Add(fNtrkl_PtOfTrks_HF[2]);
-  fOutputList->Add(fNtrkl_PtOfTrks_HF80[0]);
-  fOutputList->Add(fNtrkl_PtOfTrks_HF80[1]);
-  fOutputList->Add(fNtrkl_PtOfTrks_HF80[2]);
-  fOutputList->Add(fNtrkl_PtOfTrks_HF85[0]);
-  fOutputList->Add(fNtrkl_PtOfTrks_HF85[1]);
-  fOutputList->Add(fNtrkl_PtOfTrks_HF85[2]);
-  fOutputList->Add(fNtrkl_PtOfTrks_HF90[0]);
-  fOutputList->Add(fNtrkl_PtOfTrks_HF90[1]);
-  fOutputList->Add(fNtrkl_PtOfTrks_HF90[2]);
-  fOutputList->Add(fNtrkl_PtOfTrks_HF95[0]);
-  fOutputList->Add(fNtrkl_PtOfTrks_HF95[1]);
-  fOutputList->Add(fNtrkl_PtOfTrks_HF95[2]);
+  fOutputList->Add(fPt_maxtrack_W_n[0]);
+  fOutputList->Add(fPt_maxtrack_W_n[1]);
+  fOutputList->Add(fPt_maxtrack_W_n[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W70_n[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W70_n[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W70_n[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W80_n[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W80_n[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W80_n[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W85_n[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W85_n[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W85_n[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W90_n[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W90_n[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W90_n[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W93_n[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W93_n[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W93_n[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W95_n[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W95_n[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W95_n[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W_n[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W_n[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W_n[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W70_n[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W70_n[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W70_n[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W80_n[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W80_n[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W80_n[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W85_n[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W85_n[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W85_n[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W90_n[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W90_n[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W90_n[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W93_n[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W93_n[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W93_n[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W95_n[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W95_n[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W95_n[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF70_n[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF70_n[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF70_n[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF80_n[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF80_n[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF80_n[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF85_n[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF85_n[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF85_n[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF90_n[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF90_n[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF90_n[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF93_n[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF93_n[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF93_n[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF95_n[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF95_n[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF95_n[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF_n[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF_n[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF_n[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF70_n[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF70_n[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF70_n[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF80_n[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF80_n[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF80_n[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF85_n[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF85_n[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF85_n[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF90_n[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF90_n[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF90_n[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF93_n[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF93_n[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF93_n[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF95_n[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF95_n[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF95_n[2]);
+  fOutputList->Add(fPt_maxtrack_W_m[0]);
+  fOutputList->Add(fPt_maxtrack_W_m[1]);
+  fOutputList->Add(fPt_maxtrack_W_m[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W70_m[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W70_m[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W70_m[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W80_m[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W80_m[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W80_m[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W85_m[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W85_m[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W85_m[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W90_m[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W90_m[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W90_m[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W93_m[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W93_m[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W93_m[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W95_m[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W95_m[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W95_m[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W_m[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W_m[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W_m[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W70_m[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W70_m[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W70_m[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W80_m[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W80_m[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W80_m[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W85_m[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W85_m[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W85_m[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W90_m[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W90_m[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W90_m[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W93_m[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W93_m[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W93_m[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W95_m[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W95_m[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W95_m[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF70_m[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF70_m[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF70_m[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF80_m[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF80_m[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF80_m[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF85_m[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF85_m[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF85_m[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF90_m[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF90_m[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF90_m[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF93_m[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF93_m[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF93_m[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF95_m[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF95_m[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF95_m[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF_m[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF_m[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF_m[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF70_m[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF70_m[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF70_m[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF80_m[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF80_m[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF80_m[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF85_m[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF85_m[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF85_m[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF90_m[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF90_m[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF90_m[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF93_m[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF93_m[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF93_m[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF95_m[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF95_m[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF95_m[2]);
+  fOutputList->Add(fPt_maxtrack_W_w[0]);
+  fOutputList->Add(fPt_maxtrack_W_w[1]);
+  fOutputList->Add(fPt_maxtrack_W_w[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W70_w[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W70_w[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W70_w[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W80_w[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W80_w[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W80_w[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W85_w[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W85_w[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W85_w[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W90_w[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W90_w[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W90_w[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W93_w[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W93_w[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W93_w[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W95_w[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W95_w[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W95_w[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W_w[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W_w[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W_w[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W70_w[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W70_w[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W70_w[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W80_w[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W80_w[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W80_w[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W85_w[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W85_w[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W85_w[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W90_w[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W90_w[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W90_w[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W93_w[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W93_w[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W93_w[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W95_w[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W95_w[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_W95_w[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF70_w[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF70_w[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF70_w[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF80_w[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF80_w[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF80_w[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF85_w[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF85_w[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF85_w[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF90_w[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF90_w[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF90_w[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF93_w[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF93_w[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF93_w[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF95_w[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF95_w[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_HF95_w[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF_w[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF_w[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF_w[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF70_w[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF70_w[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF70_w[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF80_w[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF80_w[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF80_w[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF85_w[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF85_w[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF85_w[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF90_w[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF90_w[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF90_w[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF93_w[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF93_w[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF93_w[2]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF95_w[0]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF95_w[1]);
+  fOutputList->Add(fNtrkl_PtOfTrks_HF95_w[2]);
   fOutputList->Add(fHistPt_We_Ntrkl[0]);
   fOutputList->Add(fHistPt_We_Ntrkl[1]);
   fOutputList->Add(fHistPt_We_Ntrkl[2]);
@@ -705,52 +1267,71 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
     fNtrklNch->Fill(corr_nAcc,Nch);
   }
 
+  //===== detector effect correction =====
+  Double_t PtCorr_had_ele = 1.00/1.02;		//hadron/electron detctor->particle
+
   //===== Self UE contribution estimate via mult =====
+  Double_t fAssoHadPtLow70 = 0.;
   Double_t fAssoHadPtLow80 = 0.;
   Double_t fAssoHadPtLow85 = 0.;
   Double_t fAssoHadPtLow90 = 0.;
+  Double_t fAssoHadPtLow93 = 0.;
   Double_t fAssoHadPtLow95 = 0.;
   if (corr_nAcc >= 0 && corr_nAcc <= 150) {
     if (corr_nAcc > 0 && corr_nAcc < 11) {
+      fAssoHadPtLow70 = 0.85;
       fAssoHadPtLow80 = 1.03;
       fAssoHadPtLow85 = 1.21;
       fAssoHadPtLow90 = 1.44;
+      fAssoHadPtLow93 = 1.74;
       fAssoHadPtLow95 = 2.04;
     }
     if (corr_nAcc > 10 && corr_nAcc < 21) {
+      fAssoHadPtLow70 = 0.75;
       fAssoHadPtLow80 = 0.98;
       fAssoHadPtLow85 = 1.16;
       fAssoHadPtLow90 = 1.42;
+      fAssoHadPtLow93 = 1.66;
       fAssoHadPtLow95 = 1.96;
     }
     if (corr_nAcc > 20 && corr_nAcc < 31) {
+      fAssoHadPtLow70 = 0.83;
       fAssoHadPtLow80 = 1.11;
-      fAssoHadPtLow85 = 1.3;
+      fAssoHadPtLow85 = 1.30;
       fAssoHadPtLow90 = 1.63;
+      fAssoHadPtLow93 = 1.94;
       fAssoHadPtLow95 = 2.21;
     }
     if (corr_nAcc > 30 && corr_nAcc < 41) {
+      fAssoHadPtLow70 = 0.84;
       fAssoHadPtLow80 = 1.09;
-      fAssoHadPtLow85 = 1.3;
+      fAssoHadPtLow85 = 1.30;
       fAssoHadPtLow90 = 1.72;
+      fAssoHadPtLow93 = 2.04;
       fAssoHadPtLow95 = 2.38;
     }
     if (corr_nAcc > 40 && corr_nAcc < 51) {
+      fAssoHadPtLow70 = 0.88;
       fAssoHadPtLow80 = 1.14;
       fAssoHadPtLow85 = 1.35;
       fAssoHadPtLow90 = 1.73;
+      fAssoHadPtLow93 = 2.02;
       fAssoHadPtLow95 = 2.36;
     }
     if (corr_nAcc > 50 && corr_nAcc < 66) {
+      fAssoHadPtLow70 = 0.93;
       fAssoHadPtLow80 = 1.22;
       fAssoHadPtLow85 = 1.43;
-      fAssoHadPtLow90 = 1.8;
+      fAssoHadPtLow90 = 1.80;
+      fAssoHadPtLow93 = 2.26;
       fAssoHadPtLow95 = 2.93;
     }
     if (corr_nAcc > 65 && corr_nAcc < 150) {
+      fAssoHadPtLow70 = 1.03;
       fAssoHadPtLow80 = 1.42;
       fAssoHadPtLow85 = 1.54;
       fAssoHadPtLow90 = 1.94;
+      fAssoHadPtLow93 = 2.93;
       fAssoHadPtLow95 = 3.53;
     }
   }
@@ -1026,14 +1607,17 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
 //---------------Pt cut---------------
               if (track->Pt() > 30. && track->Pt() < 60.)
               {
-                Double_t sumPt_OppTrks = 0;
-                Double_t sumPt_OppTrks80 = 0;
-                Double_t sumPt_OppTrks85 = 0;
-                Double_t sumPt_OppTrks90 = 0;
-                Double_t sumPt_OppTrks95 = 0;
+//---------------R=0.2 from here--------------
+                Double_t sumPt_OppTrks_n = 0;
+                Double_t sumPt_OppTrks70_n = 0;
+                Double_t sumPt_OppTrks80_n = 0;
+                Double_t sumPt_OppTrks85_n = 0;
+                Double_t sumPt_OppTrks90_n = 0;
+                Double_t sumPt_OppTrks93_n = 0;
+                Double_t sumPt_OppTrks95_n = 0;
 //---------------another track loop start---------------
-                Int_t MaxPtTrackNum = 0;
-                if (MaxPtTrackNum == i) MaxPtTrackNum = 1;
+                Int_t MaxPtTrackNum_n = 0;
+                if (MaxPtTrackNum_n == i) MaxPtTrackNum_n = 1;
                 for(Int_t j(0); j < iTracks; j++) {
                   //AliAODTrack* anotrack = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
                   AliAODTrack* anotrack = dynamic_cast<AliAODTrack*>(fTracks_tender->At(j));
@@ -1088,57 +1672,298 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                   }
 
                   //===== Highest Pt track selection =====
-                  if (dPhi >= 5.*TMath::Pi()/6. && dPhi <= 7.*TMath::Pi()/6.) {
-                    //AliAODTrack* MaxTrk = static_cast<AliAODTrack*>(fAOD->GetTrack(MaxPtTrackNum));
-                    AliAODTrack* MaxTrk = dynamic_cast<AliAODTrack*>(fTracks_tender->At(MaxPtTrackNum));
+                  if (dPhi >= TMath::Pi()-0.2 && dPhi <= TMath::Pi()+0.2) {
+                    //AliAODTrack* MaxTrk = static_cast<AliAODTrack*>(fAOD->GetTrack(MaxPtTrackNum_n));
+                    AliAODTrack* MaxTrk = dynamic_cast<AliAODTrack*>(fTracks_tender->At(MaxPtTrackNum_n));
                     Double_t dPhiMaxTrk = (MaxTrk->Phi()) - (track->Phi());
                     //=== change dPhi range ===
                     if (dPhiMaxTrk < -1.*TMath::Pi()/3.) dPhiMaxTrk = dPhiMaxTrk + 2.*TMath::Pi();
                     if (dPhiMaxTrk > 5.*TMath::Pi()/3.) dPhiMaxTrk = dPhiMaxTrk - 2.*TMath::Pi();
                     //=== select back-to-back track ===
-                    if (dPhiMaxTrk < 5.*TMath::Pi()/6. || dPhiMaxTrk > 7.*TMath::Pi()/6.) MaxPtTrackNum = j;
+                    if (dPhiMaxTrk < TMath::Pi()-0.2 || dPhiMaxTrk > TMath::Pi()+0.2) MaxPtTrackNum_n = j;
                     //=== higher Pt track ===
-                    if (anotrack->Pt() >= MaxTrk->Pt()) MaxPtTrackNum = j;
+                    if (anotrack->Pt() >= MaxTrk->Pt()) MaxPtTrackNum_n = j;
                     //=== Pt sum ===
-                    if (anotrack->Pt() > 3.0) sumPt_OppTrks += anotrack->Pt();
-                    if (anotrack->Pt() > fAssoHadPtLow80) sumPt_OppTrks80 += anotrack->Pt();
-                    if (anotrack->Pt() > fAssoHadPtLow85) sumPt_OppTrks85 += anotrack->Pt();
-                    if (anotrack->Pt() > fAssoHadPtLow90) sumPt_OppTrks90 += anotrack->Pt();
-                    if (anotrack->Pt() > fAssoHadPtLow95) sumPt_OppTrks95 += anotrack->Pt();
+                    if (anotrack->Pt() > 1.5) sumPt_OppTrks_n += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow70) sumPt_OppTrks70_n += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow80) sumPt_OppTrks80_n += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow85) sumPt_OppTrks85_n += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow90) sumPt_OppTrks90_n += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow93) sumPt_OppTrks93_n += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow95) sumPt_OppTrks95_n += anotrack->Pt();
                   }
                 }   //other track loop end
 
                 //===== Highest Pt Track / e<-W Pt Track =====
                 //AliAODTrack* MaxPtTrk = static_cast<AliAODTrack*>(fAOD->GetTrack(MaxPtTrackNum));
-                AliAODTrack* MaxPtTrk = dynamic_cast<AliAODTrack*>(fTracks_tender->At(MaxPtTrackNum));
+                AliAODTrack* MaxPtTrk_n = dynamic_cast<AliAODTrack*>(fTracks_tender->At(MaxPtTrackNum_n));
+                Double_t leadPt_n = MaxPtTrk_n->Pt();
 
 //---------------e<-W isolation cut---------------
                 //////////////////////
                 // e <- W candidate //
                 //////////////////////
                 if (Eiso[isoR] >= 0.0 && Eiso[isoR] <= 0.05 && isoNtrk[isoR] < 3) {
-                  fPt_maxtrack_W[isoR]->Fill(MaxPtTrk->Pt()/track->Pt());
-                  if (MaxPtTrk->Pt() > fAssoHadPtLow80) fNtrkl_PtOfMaxTrk_W80[isoR]->Fill(corr_nAcc,MaxPtTrk->Pt()/track->Pt());
-                  if (MaxPtTrk->Pt() > fAssoHadPtLow85) fNtrkl_PtOfMaxTrk_W85[isoR]->Fill(corr_nAcc,MaxPtTrk->Pt()/track->Pt());
-                  if (MaxPtTrk->Pt() > fAssoHadPtLow90) fNtrkl_PtOfMaxTrk_W90[isoR]->Fill(corr_nAcc,MaxPtTrk->Pt()/track->Pt());
-                  if (MaxPtTrk->Pt() > fAssoHadPtLow95) fNtrkl_PtOfMaxTrk_W95[isoR]->Fill(corr_nAcc,MaxPtTrk->Pt()/track->Pt());
-                  if (sumPt_OppTrks > 0.) fNtrkl_PtOfTrks_W[isoR]->Fill(corr_nAcc,sumPt_OppTrks/track->Pt());
-                  if (sumPt_OppTrks80 > 0.) fNtrkl_PtOfTrks_W80[isoR]->Fill(corr_nAcc,sumPt_OppTrks80/track->Pt());
-                  if (sumPt_OppTrks85 > 0.) fNtrkl_PtOfTrks_W85[isoR]->Fill(corr_nAcc,sumPt_OppTrks85/track->Pt());
-                  if (sumPt_OppTrks90 > 0.) fNtrkl_PtOfTrks_W90[isoR]->Fill(corr_nAcc,sumPt_OppTrks90/track->Pt());
-                  if (sumPt_OppTrks95 > 0.) fNtrkl_PtOfTrks_W95[isoR]->Fill(corr_nAcc,sumPt_OppTrks95/track->Pt());
+                  fPt_maxtrack_W_n[isoR]->Fill(PtCorr_had_ele*leadPt_n/track->Pt());
+                  if (leadPt_n > fAssoHadPtLow70) fNtrkl_PtOfMaxTrk_W70_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_n/track->Pt());
+                  if (leadPt_n > fAssoHadPtLow80) fNtrkl_PtOfMaxTrk_W80_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_n/track->Pt());
+                  if (leadPt_n > fAssoHadPtLow85) fNtrkl_PtOfMaxTrk_W85_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_n/track->Pt());
+                  if (leadPt_n > fAssoHadPtLow90) fNtrkl_PtOfMaxTrk_W90_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_n/track->Pt());
+                  if (leadPt_n > fAssoHadPtLow93) fNtrkl_PtOfMaxTrk_W93_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_n/track->Pt());
+                  if (leadPt_n > fAssoHadPtLow95) fNtrkl_PtOfMaxTrk_W95_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_n/track->Pt());
+                  if (sumPt_OppTrks_n > 0.) fNtrkl_PtOfTrks_W_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks_n/track->Pt());
+                  if (sumPt_OppTrks70_n > 0.) fNtrkl_PtOfTrks_W70_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks70_n/track->Pt());
+                  if (sumPt_OppTrks80_n > 0.) fNtrkl_PtOfTrks_W80_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks80_n/track->Pt());
+                  if (sumPt_OppTrks85_n > 0.) fNtrkl_PtOfTrks_W85_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks85_n/track->Pt());
+                  if (sumPt_OppTrks90_n > 0.) fNtrkl_PtOfTrks_W90_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks90_n/track->Pt());
+                  if (sumPt_OppTrks93_n > 0.) fNtrkl_PtOfTrks_W93_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks93_n/track->Pt());
+                  if (sumPt_OppTrks95_n > 0.) fNtrkl_PtOfTrks_W95_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks95_n/track->Pt());
                   fHistPt_We_Ntrkl[isoR]->Fill(track->Pt(),corr_nAcc);
                 }       //for W isolation cut end
                 if (Eiso[isoR] >= 0.1 && Eiso[isoR] <= 0.50 && isoNtrk[isoR] < 3) {
-                  if (MaxPtTrk->Pt() > fAssoHadPtLow80) fNtrkl_PtOfMaxTrk_HF80[isoR]->Fill(corr_nAcc,MaxPtTrk->Pt()/track->Pt());
-                  if (MaxPtTrk->Pt() > fAssoHadPtLow85) fNtrkl_PtOfMaxTrk_HF85[isoR]->Fill(corr_nAcc,MaxPtTrk->Pt()/track->Pt());
-                  if (MaxPtTrk->Pt() > fAssoHadPtLow90) fNtrkl_PtOfMaxTrk_HF90[isoR]->Fill(corr_nAcc,MaxPtTrk->Pt()/track->Pt());
-                  if (MaxPtTrk->Pt() > fAssoHadPtLow95) fNtrkl_PtOfMaxTrk_HF95[isoR]->Fill(corr_nAcc,MaxPtTrk->Pt()/track->Pt());
-                  if (sumPt_OppTrks > 0.) fNtrkl_PtOfTrks_HF[isoR]->Fill(corr_nAcc,sumPt_OppTrks/track->Pt());
-                  if (sumPt_OppTrks80 > 0.) fNtrkl_PtOfTrks_HF80[isoR]->Fill(corr_nAcc,sumPt_OppTrks80/track->Pt());
-                  if (sumPt_OppTrks85 > 0.) fNtrkl_PtOfTrks_HF85[isoR]->Fill(corr_nAcc,sumPt_OppTrks85/track->Pt());
-                  if (sumPt_OppTrks90 > 0.) fNtrkl_PtOfTrks_HF90[isoR]->Fill(corr_nAcc,sumPt_OppTrks90/track->Pt());
-                  if (sumPt_OppTrks95 > 0.) fNtrkl_PtOfTrks_HF95[isoR]->Fill(corr_nAcc,sumPt_OppTrks95/track->Pt());
+                  if (leadPt_n > fAssoHadPtLow70) fNtrkl_PtOfMaxTrk_HF70_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_n/track->Pt());
+                  if (leadPt_n > fAssoHadPtLow80) fNtrkl_PtOfMaxTrk_HF80_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_n/track->Pt());
+                  if (leadPt_n > fAssoHadPtLow85) fNtrkl_PtOfMaxTrk_HF85_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_n/track->Pt());
+                  if (leadPt_n > fAssoHadPtLow90) fNtrkl_PtOfMaxTrk_HF90_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_n/track->Pt());
+                  if (leadPt_n > fAssoHadPtLow93) fNtrkl_PtOfMaxTrk_HF93_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_n/track->Pt());
+                  if (leadPt_n > fAssoHadPtLow95) fNtrkl_PtOfMaxTrk_HF95_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_n/track->Pt());
+                  if (sumPt_OppTrks_n > 0.) fNtrkl_PtOfTrks_HF_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks_n/track->Pt());
+                  if (sumPt_OppTrks70_n > 0.) fNtrkl_PtOfTrks_HF70_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks70_n/track->Pt());
+                  if (sumPt_OppTrks80_n > 0.) fNtrkl_PtOfTrks_HF80_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks80_n/track->Pt());
+                  if (sumPt_OppTrks85_n > 0.) fNtrkl_PtOfTrks_HF85_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks85_n/track->Pt());
+                  if (sumPt_OppTrks90_n > 0.) fNtrkl_PtOfTrks_HF90_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks90_n/track->Pt());
+                  if (sumPt_OppTrks93_n > 0.) fNtrkl_PtOfTrks_HF93_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks93_n/track->Pt());
+                  if (sumPt_OppTrks95_n > 0.) fNtrkl_PtOfTrks_HF95_n[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks95_n/track->Pt());
+                }       //for HF isolation cut end
+//---------------R=0.3 from here--------------
+                Double_t sumPt_OppTrks_m = 0;
+                Double_t sumPt_OppTrks70_m = 0;
+                Double_t sumPt_OppTrks80_m = 0;
+                Double_t sumPt_OppTrks85_m = 0;
+                Double_t sumPt_OppTrks90_m = 0;
+                Double_t sumPt_OppTrks93_m = 0;
+                Double_t sumPt_OppTrks95_m = 0;
+//---------------another track loop start---------------
+                Int_t MaxPtTrackNum_m = 0;
+                if (MaxPtTrackNum_m == i) MaxPtTrackNum_m = 1;
+                for(Int_t j(0); j < iTracks; j++) {
+                  //AliAODTrack* anotrack = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
+                  AliAODTrack* anotrack = dynamic_cast<AliAODTrack*>(fTracks_tender->At(j));
+                  if(!anotrack || !anotrack->TestFilterBit(1)) continue;
+                  if (j == i) continue;     //reject e<-W candidate
+
+                  /////////////////////////
+                  //      track cut      //
+                  /////////////////////////
+                  //===== 1. TPC and ITS refit cut =====
+                  if (!(anotrack->GetStatus()&AliAODTrack::kITSrefit) || !(anotrack->GetStatus()&AliAODTrack::kTPCrefit)) continue;
+                  //===== 2. AOD filter bit required =====
+                  if (!anotrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
+                  //===== 3. TPC cluster cut =====
+                  if (anotrack->GetTPCNcls() < 80) continue;
+                  //===== 4. ITS cluster cut =====
+                  if (anotrack->GetITSNcls() < 2) continue;
+                  //===== 5. SPD hit cut =====
+                  if (!(anotrack->HasPointOnITSLayer(0) || anotrack->HasPointOnITSLayer(1))) continue;
+                  //===== 6. Eta cut =====
+                  if (anotrack->Eta() > 0.9 || anotrack->Eta() < -0.9) continue;
+                  //===== 7. DCA cut =====
+                  Double_t anoDCA[2] = {-999.,-999.}, anocovar[3];
+                  if (anotrack -> PropagateToDCA(pVtx,fAOD -> GetMagneticField(),20.,anoDCA,anocovar))
+                  {
+                    if (TMath::Abs(anoDCA[0]) > 2.4 || TMath::Abs(anoDCA[1]) > 3.2) continue;
+                  }
+                  //===== 8. chi2 cut =====
+                  Double_t anoITSchi2 = anotrack->GetITSchi2();
+                  Double_t anoTPCchi2NDF = anotrack->GetTPCchi2perNDF();
+                  if ((anoITSchi2 >= 25) || (anoTPCchi2NDF >= 4)) continue;
+                  //===== 9. NCrossedRow cut =====
+                  if (anotrack->GetTPCCrossedRows() < 100) continue;
+
+                  Double_t anoeta = -log(TMath::Tan((anotrack->Theta())/2.));
+                  Double_t dPhi = anotrack->Phi() - track->Phi();
+
+                  //=== change dPhi range ===
+                  if (dPhi < -1.*TMath::Pi()/3.) dPhi = dPhi + 2.*TMath::Pi();
+                  if (dPhi > 5.*TMath::Pi()/3.) dPhi = dPhi - 2.*TMath::Pi();
+
+                  //===== Highest Pt track selection =====
+                  if (dPhi >= TMath::Pi()-0.3 && dPhi <= TMath::Pi()+0.3) {
+                    //AliAODTrack* MaxTrk = static_cast<AliAODTrack*>(fAOD->GetTrack(MaxPtTrackNum_m));
+                    AliAODTrack* MaxTrk = dynamic_cast<AliAODTrack*>(fTracks_tender->At(MaxPtTrackNum_m));
+                    Double_t dPhiMaxTrk = (MaxTrk->Phi()) - (track->Phi());
+                    //=== change dPhi range ===
+                    if (dPhiMaxTrk < -1.*TMath::Pi()/3.) dPhiMaxTrk = dPhiMaxTrk + 2.*TMath::Pi();
+                    if (dPhiMaxTrk > 5.*TMath::Pi()/3.) dPhiMaxTrk = dPhiMaxTrk - 2.*TMath::Pi();
+                    //=== select back-to-back track ===
+                    if (dPhiMaxTrk < TMath::Pi()-0.3 || dPhiMaxTrk > TMath::Pi()+0.3) MaxPtTrackNum_m = j;
+                    //=== higher Pt track ===
+                    if (anotrack->Pt() >= MaxTrk->Pt()) MaxPtTrackNum_m = j;
+                    //=== Pt sum ===
+                    if (anotrack->Pt() > 1.5) sumPt_OppTrks_m += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow70) sumPt_OppTrks70_m += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow80) sumPt_OppTrks80_m += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow85) sumPt_OppTrks85_m += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow90) sumPt_OppTrks90_m += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow93) sumPt_OppTrks93_m += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow95) sumPt_OppTrks95_m += anotrack->Pt();
+                  }
+                }   //other track loop end
+
+                //===== Highest Pt Track / e<-W Pt Track =====
+                //AliAODTrack* MaxPtTrk = static_cast<AliAODTrack*>(fAOD->GetTrack(MaxPtTrackNum));
+                AliAODTrack* MaxPtTrk_m = dynamic_cast<AliAODTrack*>(fTracks_tender->At(MaxPtTrackNum_m));
+                Double_t leadPt_m = MaxPtTrk_m->Pt();
+
+//---------------e<-W isolation cut---------------
+                //////////////////////
+                // e <- W candidate //
+                //////////////////////
+                if (Eiso[isoR] >= 0.0 && Eiso[isoR] <= 0.05 && isoNtrk[isoR] < 3) {
+                  fPt_maxtrack_W_m[isoR]->Fill(PtCorr_had_ele*leadPt_m/track->Pt());
+                  if (leadPt_m > fAssoHadPtLow70) fNtrkl_PtOfMaxTrk_W70_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_m/track->Pt());
+                  if (leadPt_m > fAssoHadPtLow80) fNtrkl_PtOfMaxTrk_W80_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_m/track->Pt());
+                  if (leadPt_m > fAssoHadPtLow85) fNtrkl_PtOfMaxTrk_W85_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_m/track->Pt());
+                  if (leadPt_m > fAssoHadPtLow90) fNtrkl_PtOfMaxTrk_W90_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_m/track->Pt());
+                  if (leadPt_m > fAssoHadPtLow93) fNtrkl_PtOfMaxTrk_W93_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_m/track->Pt());
+                  if (leadPt_m > fAssoHadPtLow95) fNtrkl_PtOfMaxTrk_W95_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_m/track->Pt());
+                  if (sumPt_OppTrks_m > 0.) fNtrkl_PtOfTrks_W_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks_m/track->Pt());
+                  if (sumPt_OppTrks70_m > 0.) fNtrkl_PtOfTrks_W70_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks70_m/track->Pt());
+                  if (sumPt_OppTrks80_m > 0.) fNtrkl_PtOfTrks_W80_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks80_m/track->Pt());
+                  if (sumPt_OppTrks85_m > 0.) fNtrkl_PtOfTrks_W85_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks85_m/track->Pt());
+                  if (sumPt_OppTrks90_m > 0.) fNtrkl_PtOfTrks_W90_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks90_m/track->Pt());
+                  if (sumPt_OppTrks93_m > 0.) fNtrkl_PtOfTrks_W93_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks93_m/track->Pt());
+                  if (sumPt_OppTrks95_m > 0.) fNtrkl_PtOfTrks_W95_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks95_m/track->Pt());
+                }       //for W isolation cut end
+                if (Eiso[isoR] >= 0.1 && Eiso[isoR] <= 0.50 && isoNtrk[isoR] < 3) {
+                  if (leadPt_m > fAssoHadPtLow70) fNtrkl_PtOfMaxTrk_HF70_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_m/track->Pt());
+                  if (leadPt_m > fAssoHadPtLow80) fNtrkl_PtOfMaxTrk_HF80_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_m/track->Pt());
+                  if (leadPt_m > fAssoHadPtLow85) fNtrkl_PtOfMaxTrk_HF85_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_m/track->Pt());
+                  if (leadPt_m > fAssoHadPtLow90) fNtrkl_PtOfMaxTrk_HF90_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_m/track->Pt());
+                  if (leadPt_m > fAssoHadPtLow93) fNtrkl_PtOfMaxTrk_HF93_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_m/track->Pt());
+                  if (leadPt_m > fAssoHadPtLow95) fNtrkl_PtOfMaxTrk_HF95_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_m/track->Pt());
+                  if (sumPt_OppTrks_m > 0.) fNtrkl_PtOfTrks_HF_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks_m/track->Pt());
+                  if (sumPt_OppTrks70_m > 0.) fNtrkl_PtOfTrks_HF70_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks70_m/track->Pt());
+                  if (sumPt_OppTrks80_m > 0.) fNtrkl_PtOfTrks_HF80_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks80_m/track->Pt());
+                  if (sumPt_OppTrks85_m > 0.) fNtrkl_PtOfTrks_HF85_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks85_m/track->Pt());
+                  if (sumPt_OppTrks90_m > 0.) fNtrkl_PtOfTrks_HF90_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks90_m/track->Pt());
+                  if (sumPt_OppTrks93_m > 0.) fNtrkl_PtOfTrks_HF93_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks93_m/track->Pt());
+                  if (sumPt_OppTrks95_m > 0.) fNtrkl_PtOfTrks_HF95_m[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks95_m/track->Pt());
+                }       //for HF isolation cut end
+//---------------R=0.4 from here--------------
+                Double_t sumPt_OppTrks_w = 0;
+                Double_t sumPt_OppTrks70_w = 0;
+                Double_t sumPt_OppTrks80_w = 0;
+                Double_t sumPt_OppTrks85_w = 0;
+                Double_t sumPt_OppTrks90_w = 0;
+                Double_t sumPt_OppTrks93_w = 0;
+                Double_t sumPt_OppTrks95_w = 0;
+//---------------another track loop start---------------
+                Int_t MaxPtTrackNum_w = 0;
+                if (MaxPtTrackNum_w == i) MaxPtTrackNum_w = 1;
+                for(Int_t j(0); j < iTracks; j++) {
+                  //AliAODTrack* anotrack = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
+                  AliAODTrack* anotrack = dynamic_cast<AliAODTrack*>(fTracks_tender->At(j));
+                  if(!anotrack || !anotrack->TestFilterBit(1)) continue;
+                  if (j == i) continue;     //reject e<-W candidate
+
+                  /////////////////////////
+                  //      track cut      //
+                  /////////////////////////
+                  //===== 1. TPC and ITS refit cut =====
+                  if (!(anotrack->GetStatus()&AliAODTrack::kITSrefit) || !(anotrack->GetStatus()&AliAODTrack::kTPCrefit)) continue;
+                  //===== 2. AOD filter bit required =====
+                  if (!anotrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
+                  //===== 3. TPC cluster cut =====
+                  if (anotrack->GetTPCNcls() < 80) continue;
+                  //===== 4. ITS cluster cut =====
+                  if (anotrack->GetITSNcls() < 2) continue;
+                  //===== 5. SPD hit cut =====
+                  if (!(anotrack->HasPointOnITSLayer(0) || anotrack->HasPointOnITSLayer(1))) continue;
+                  //===== 6. Eta cut =====
+                  if (anotrack->Eta() > 0.9 || anotrack->Eta() < -0.9) continue;
+                  //===== 7. DCA cut =====
+                  Double_t anoDCA[2] = {-999.,-999.}, anocovar[3];
+                  if (anotrack -> PropagateToDCA(pVtx,fAOD -> GetMagneticField(),20.,anoDCA,anocovar))
+                  {
+                    if (TMath::Abs(anoDCA[0]) > 2.4 || TMath::Abs(anoDCA[1]) > 3.2) continue;
+                  }
+                  //===== 8. chi2 cut =====
+                  Double_t anoITSchi2 = anotrack->GetITSchi2();
+                  Double_t anoTPCchi2NDF = anotrack->GetTPCchi2perNDF();
+                  if ((anoITSchi2 >= 25) || (anoTPCchi2NDF >= 4)) continue;
+                  //===== 9. NCrossedRow cut =====
+                  if (anotrack->GetTPCCrossedRows() < 100) continue;
+
+                  Double_t anoeta = -log(TMath::Tan((anotrack->Theta())/2.));
+                  Double_t dPhi = anotrack->Phi() - track->Phi();
+
+                  //=== change dPhi range ===
+                  if (dPhi < -1.*TMath::Pi()/3.) dPhi = dPhi + 2.*TMath::Pi();
+                  if (dPhi > 5.*TMath::Pi()/3.) dPhi = dPhi - 2.*TMath::Pi();
+
+                  //===== Highest Pt track selection =====
+                  if (dPhi >= TMath::Pi()-0.4 && dPhi <= TMath::Pi()+0.4) {
+                    //AliAODTrack* MaxTrk = static_cast<AliAODTrack*>(fAOD->GetTrack(MaxPtTrackNum_w));
+                    AliAODTrack* MaxTrk = dynamic_cast<AliAODTrack*>(fTracks_tender->At(MaxPtTrackNum_w));
+                    Double_t dPhiMaxTrk = (MaxTrk->Phi()) - (track->Phi());
+                    //=== change dPhi range ===
+                    if (dPhiMaxTrk < -1.*TMath::Pi()/3.) dPhiMaxTrk = dPhiMaxTrk + 2.*TMath::Pi();
+                    if (dPhiMaxTrk > 5.*TMath::Pi()/3.) dPhiMaxTrk = dPhiMaxTrk - 2.*TMath::Pi();
+                    //=== select back-to-back track ===
+                    if (dPhiMaxTrk < TMath::Pi()-0.4 || dPhiMaxTrk > TMath::Pi()+0.4) MaxPtTrackNum_w = j;
+                    //=== higher Pt track ===
+                    if (anotrack->Pt() >= MaxTrk->Pt()) MaxPtTrackNum_w = j;
+                    //=== Pt sum ===
+                    if (anotrack->Pt() > 1.5) sumPt_OppTrks_w += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow70) sumPt_OppTrks70_w += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow80) sumPt_OppTrks80_w += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow85) sumPt_OppTrks85_w += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow90) sumPt_OppTrks90_w += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow93) sumPt_OppTrks93_w += anotrack->Pt();
+                    if (anotrack->Pt() > fAssoHadPtLow95) sumPt_OppTrks95_w += anotrack->Pt();
+                  }
+                }   //other track loop end
+
+                //===== Highest Pt Track / e<-W Pt Track =====
+                //AliAODTrack* MaxPtTrk = static_cast<AliAODTrack*>(fAOD->GetTrack(MaxPtTrackNum));
+                AliAODTrack* MaxPtTrk_w = dynamic_cast<AliAODTrack*>(fTracks_tender->At(MaxPtTrackNum_w));
+                Double_t leadPt_w = MaxPtTrk_w->Pt();
+
+//---------------e<-W isolation cut---------------
+                //////////////////////
+                // e <- W candidate //
+                //////////////////////
+                if (Eiso[isoR] >= 0.0 && Eiso[isoR] <= 0.05 && isoNtrk[isoR] < 3) {
+                  fPt_maxtrack_W_w[isoR]->Fill(PtCorr_had_ele*leadPt_w/track->Pt());
+                  if (leadPt_w > fAssoHadPtLow70) fNtrkl_PtOfMaxTrk_W70_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_w/track->Pt());
+                  if (leadPt_w > fAssoHadPtLow80) fNtrkl_PtOfMaxTrk_W80_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_w/track->Pt());
+                  if (leadPt_w > fAssoHadPtLow85) fNtrkl_PtOfMaxTrk_W85_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_w/track->Pt());
+                  if (leadPt_w > fAssoHadPtLow90) fNtrkl_PtOfMaxTrk_W90_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_w/track->Pt());
+                  if (leadPt_w > fAssoHadPtLow93) fNtrkl_PtOfMaxTrk_W93_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_w/track->Pt());
+                  if (leadPt_w > fAssoHadPtLow95) fNtrkl_PtOfMaxTrk_W95_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_w/track->Pt());
+                  if (sumPt_OppTrks_w > 0.) fNtrkl_PtOfTrks_W_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks_w/track->Pt());
+                  if (sumPt_OppTrks70_w > 0.) fNtrkl_PtOfTrks_W70_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks70_w/track->Pt());
+                  if (sumPt_OppTrks80_w > 0.) fNtrkl_PtOfTrks_W80_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks80_w/track->Pt());
+                  if (sumPt_OppTrks85_w > 0.) fNtrkl_PtOfTrks_W85_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks85_w/track->Pt());
+                  if (sumPt_OppTrks90_w > 0.) fNtrkl_PtOfTrks_W90_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks90_w/track->Pt());
+                  if (sumPt_OppTrks93_w > 0.) fNtrkl_PtOfTrks_W93_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks93_w/track->Pt());
+                  if (sumPt_OppTrks95_w > 0.) fNtrkl_PtOfTrks_W95_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks95_w/track->Pt());
+                }       //for W isolation cut end
+                if (Eiso[isoR] >= 0.1 && Eiso[isoR] <= 0.50 && isoNtrk[isoR] < 3) {
+                  if (leadPt_w > fAssoHadPtLow70) fNtrkl_PtOfMaxTrk_HF70_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_w/track->Pt());
+                  if (leadPt_w > fAssoHadPtLow80) fNtrkl_PtOfMaxTrk_HF80_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_w/track->Pt());
+                  if (leadPt_w > fAssoHadPtLow85) fNtrkl_PtOfMaxTrk_HF85_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_w/track->Pt());
+                  if (leadPt_w > fAssoHadPtLow90) fNtrkl_PtOfMaxTrk_HF90_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_w/track->Pt());
+                  if (leadPt_w > fAssoHadPtLow93) fNtrkl_PtOfMaxTrk_HF93_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_w/track->Pt());
+                  if (leadPt_w > fAssoHadPtLow95) fNtrkl_PtOfMaxTrk_HF95_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*leadPt_w/track->Pt());
+                  if (sumPt_OppTrks_w > 0.) fNtrkl_PtOfTrks_HF_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks_w/track->Pt());
+                  if (sumPt_OppTrks70_w > 0.) fNtrkl_PtOfTrks_HF70_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks70_w/track->Pt());
+                  if (sumPt_OppTrks80_w > 0.) fNtrkl_PtOfTrks_HF80_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks80_w/track->Pt());
+                  if (sumPt_OppTrks85_w > 0.) fNtrkl_PtOfTrks_HF85_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks85_w/track->Pt());
+                  if (sumPt_OppTrks90_w > 0.) fNtrkl_PtOfTrks_HF90_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks90_w/track->Pt());
+                  if (sumPt_OppTrks93_w > 0.) fNtrkl_PtOfTrks_HF93_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks93_w/track->Pt());
+                  if (sumPt_OppTrks95_w > 0.) fNtrkl_PtOfTrks_HF95_w[isoR]->Fill(corr_nAcc,PtCorr_had_ele*sumPt_OppTrks95_w/track->Pt());
                 }       //for HF isolation cut end
               }         //Pt cut end
             }           //varied R of Eiso loop end
