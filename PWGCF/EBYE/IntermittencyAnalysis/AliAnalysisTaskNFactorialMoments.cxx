@@ -431,7 +431,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
       continue;
     fTrackCounter->Fill(3);
 
-    if (((eta >= minEta) && (eta <= maxEta)) || (fabs(pt) < 0.2) || charge == 0)
+    if ((eta < minEta) || (eta > maxEta) || (fabs(pt) < 0.2) || charge == 0)
       continue;
 
     // calculate if pt is in the pt bin range
@@ -663,7 +663,7 @@ void AliAnalysisTaskNFactorialMoments::FillMCTrackInfo()
         continue;
 
     if (!lPart || !lPart->IsPhysicalPrimary() || isoobPileup || lpt < 0.2 ||
-        ((leta >= minEta) && (leta <= maxEta)) || lcharge == 0)
+        (leta < minEta) || (leta > maxEta) || lcharge == 0)
       continue;
     GetPtBin(lpt);
 
