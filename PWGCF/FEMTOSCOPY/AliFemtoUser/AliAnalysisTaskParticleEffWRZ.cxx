@@ -226,9 +226,9 @@ void AliAnalysisTaskParticleEffWRZ::UserCreateOutputObjects()
 
       hname[11] = "Prim_DCAxy_PtTrack"; hname[11]+=i; hname[11]+=parttypename;
       htitle[11] = "Prim_DCAxy_PtTrack M"; htitle[11]+=i; htitle[11]+=parttypename;     
-      fPrim_DCAxy_Pt[i*PARTTYPES+j][0] = new TH2D(Form("Prim_DCAxy_PtTrack%s",hname[11].Data()),Form("Prim_DCAxy_PtTrack%s",hname[11].Data()),480,-2.4,2.4,50,0,4.0);
+      fPrim_DCAxy_PtTrack[i*PARTTYPES+j][0] = new TH2D(Form("Prim_DCAxy_PtTrack%s",hname[11].Data()),Form("Prim_DCAxy_PtTrack%s",hname[11].Data()),480,-2.4,2.4,50,0,4.0);
       hname[11]+="Minus"; htitle[11]+="Minus";
-      fPrim_DCAxy_Pt[i*PARTTYPES+j][1] = new TH2D(Form("Prim_DCAxy_PtTrack1%s",htitle[11].Data()),Form("Prim_DCAxy_PtTrack1%s",htitle[11].Data()),480,-2.4,2.4,50,0,4.0);
+      fPrim_DCAxy_PtTrack[i*PARTTYPES+j][1] = new TH2D(Form("Prim_DCAxy_PtTrack1%s",htitle[11].Data()),Form("Prim_DCAxy_PtTrack1%s",htitle[11].Data()),480,-2.4,2.4,50,0,4.0);
       
       hname[12] = "Prim_DCAz_PtTrack"; hname[12]+=i; hname[12]+=parttypename;
       htitle[12] = "Prim_DCAz_PtTrack M"; htitle[12]+=i; htitle[12]+=parttypename;   
