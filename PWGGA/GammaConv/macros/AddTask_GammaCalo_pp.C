@@ -4313,6 +4313,13 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00062113","24466110sa01cc00000","0163103100000010"); // PHI7  NL11
     cuts.AddCutCalo("00062113","24466120sa01cc00000","0163103100000010"); // PHI7  NL12
     // cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); // PHI7  NL19
+  
+  } else if (trainConfig == 2602){ // PHOS INT7, 300MeV, Open cuts
+    cuts.AddCutCalo("00010113","24466190s0010000000","0163103100000010"); // Open cuts
+  } else if (trainConfig == 2603){ // PHOS INT7, 300MeV, timing cut study
+    cuts.AddCutCalo("00010113","2446619030010000000","0163103100000010"); //Int7 200ns timing
+    cuts.AddCutCalo("00010113","2446619040010000000","0163103100000010"); //Int7 100ns timing
+    cuts.AddCutCalo("00010113","2446619050010000000","0163103100000010"); //Int7 50ns timing
     //----------------------------------------------------------------------------------------------------------------------------------------
     // Variations of PHOS Part
     //Standard: "24466190sa01cc00000"
