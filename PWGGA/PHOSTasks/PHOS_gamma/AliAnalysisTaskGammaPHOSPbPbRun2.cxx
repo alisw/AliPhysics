@@ -133,7 +133,7 @@ AliAnalysisTaskGammaPHOSPbPbRun2::AliAnalysisTaskGammaPHOSPbPbRun2(const char *n
   fIsMC(kFALSE),
   fPidCuts(0),
   fCenBinEdges(0),
-  fTOF(30.e-9),
+  fTOF(50.e-9),
   fNCenBins(0),
   fCurrFileName(0), 
   fCheckMCCrossSection(kFALSE),
