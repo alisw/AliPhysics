@@ -86,99 +86,105 @@ class AliAnalysisTaskWHMult : public AliAnalysisTaskSE
 	TH1F*			fHistPt_We[3];			//! histogram of Pt (W candidate) R<0.3,0.4,0.5					//47,48,49
 	TH1F*			fHistPt_HFe[3];			//! histogram of Pt (HF candidate) R<0.3,0.4,0.5				//50,51,52
 	TH1F*			fPt_maxtrack_W_n[3];		//! histogram of max pT track/e<-W R<0.3,0.4,0.5 R=0.2				//53,54,55
-	TH2F*			fNtrkl_PtOfMaxTrk_W70_n[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 70% UE		//56,57,58
-	TH2F*			fNtrkl_PtOfMaxTrk_W80_n[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 80% UE		//59,60,61
-	TH2F*			fNtrkl_PtOfMaxTrk_W85_n[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 85% UE		//62,63,64
-	TH2F*			fNtrkl_PtOfMaxTrk_W90_n[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 90% UE		//65,66,67
-	TH2F*			fNtrkl_PtOfMaxTrk_W93_n[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 93% UE		//68,69,70
-	TH2F*			fNtrkl_PtOfMaxTrk_W95_n[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 95% UE		//71,72,73
-	TH2F*			fNtrkl_PtOfTrks_W_n[3];		//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5			//74,75,76
-	TH2F*			fNtrkl_PtOfTrks_W70_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 70% UE		//77,78,79
-	TH2F*			fNtrkl_PtOfTrks_W80_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 80% UE		//80,81,82
-	TH2F*			fNtrkl_PtOfTrks_W85_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 85% UE		//83,84,85
-	TH2F*			fNtrkl_PtOfTrks_W90_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 90% UE		//86,87,88
-	TH2F*			fNtrkl_PtOfTrks_W93_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 93% UE		//89,90,91
-	TH2F*			fNtrkl_PtOfTrks_W95_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 95% UE		//92,93,94
-	TH2F*			fNtrkl_PtOfMaxTrk_HF70_n[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 70% UE		//95,96,97
-	TH2F*			fNtrkl_PtOfMaxTrk_HF80_n[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 80% UE		//98,99,100
-	TH2F*			fNtrkl_PtOfMaxTrk_HF85_n[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 85% UE		//101,102,103
-	TH2F*			fNtrkl_PtOfMaxTrk_HF90_n[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 90% UE		//104,105,106
-	TH2F*			fNtrkl_PtOfMaxTrk_HF93_n[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 93% UE		//107,108,109
-	TH2F*			fNtrkl_PtOfMaxTrk_HF95_n[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 95% UE		//110,111,112
-	TH2F*			fNtrkl_PtOfTrks_HF_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5			//113,114,115
-	TH2F*			fNtrkl_PtOfTrks_HF70_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 70% UE		//116,117,118
-	TH2F*			fNtrkl_PtOfTrks_HF80_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 80% UE		//119,120,121
-	TH2F*			fNtrkl_PtOfTrks_HF85_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 85% UE		//122,123,124
-	TH2F*			fNtrkl_PtOfTrks_HF90_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 90% UE		//125,126,127
-	TH2F*			fNtrkl_PtOfTrks_HF93_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 93% UE		//128,129,130
-	TH2F*			fNtrkl_PtOfTrks_HF95_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 95% UE		//131,132,133
-	TH1F*			fPt_maxtrack_W_m[3];		//! histogram of max pT track/e<-W R<0.3,0.4,0.5 R=0.3				//134,135,136
-	TH2F*			fNtrkl_PtOfMaxTrk_W70_m[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 70% UE		//137,138,139
-	TH2F*			fNtrkl_PtOfMaxTrk_W80_m[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 80% UE		//140,141,142
-	TH2F*			fNtrkl_PtOfMaxTrk_W85_m[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 85% UE		//143,144,145
-	TH2F*			fNtrkl_PtOfMaxTrk_W90_m[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 90% UE		//146,147,148
-	TH2F*			fNtrkl_PtOfMaxTrk_W93_m[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 93% UE		//149,150,151
-	TH2F*			fNtrkl_PtOfMaxTrk_W95_m[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 95% UE		//156,157,158
-	TH2F*			fNtrkl_PtOfTrks_W_m[3];		//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5			//159,160,161
-	TH2F*			fNtrkl_PtOfTrks_W70_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 70% UE		//162,163,164
-	TH2F*			fNtrkl_PtOfTrks_W80_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 80% UE		//165,166,167
-	TH2F*			fNtrkl_PtOfTrks_W85_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 85% UE		//168,169,170
-	TH2F*			fNtrkl_PtOfTrks_W90_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 90% UE		//171,172,173
-	TH2F*			fNtrkl_PtOfTrks_W93_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 93% UE		//174,175,176
-	TH2F*			fNtrkl_PtOfTrks_W95_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 95% UE		//177,178,179
-	TH2F*			fNtrkl_PtOfMaxTrk_HF70_m[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 70% UE		//180,181,182
-	TH2F*			fNtrkl_PtOfMaxTrk_HF80_m[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 80% UE		//183,184,185
-	TH2F*			fNtrkl_PtOfMaxTrk_HF85_m[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 85% UE		//186,187,188
-	TH2F*			fNtrkl_PtOfMaxTrk_HF90_m[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 90% UE		//189,190,191
-	TH2F*			fNtrkl_PtOfMaxTrk_HF93_m[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 93% UE		//192,193,194
-	TH2F*			fNtrkl_PtOfMaxTrk_HF95_m[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 95% UE		//195,196,197
-	TH2F*			fNtrkl_PtOfTrks_HF_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5			//198,199,200
-	TH2F*			fNtrkl_PtOfTrks_HF70_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 70% UE		//201,202,203
-	TH2F*			fNtrkl_PtOfTrks_HF80_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 80% UE		//204,205,206
-	TH2F*			fNtrkl_PtOfTrks_HF85_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 85% UE		//207,208,209
-	TH2F*			fNtrkl_PtOfTrks_HF90_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 90% UE		//210,211,212
-	TH2F*			fNtrkl_PtOfTrks_HF93_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 93% UE		//213,214,215
-	TH2F*			fNtrkl_PtOfTrks_HF95_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 95% UE		//216,217,218
-	TH1F*			fPt_maxtrack_W_w[3];		//! histogram of max pT track/e<-W R<0.3,0.4,0.5 R=0.4				//219,220,221
-	TH2F*			fNtrkl_PtOfMaxTrk_W70_w[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 70% UE		//222,223,224
-	TH2F*			fNtrkl_PtOfMaxTrk_W80_w[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 80% UE		//225,226,227
-	TH2F*			fNtrkl_PtOfMaxTrk_W85_w[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 85% UE		//228,229,230
-	TH2F*			fNtrkl_PtOfMaxTrk_W90_w[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 90% UE		//231,232,233
-	TH2F*			fNtrkl_PtOfMaxTrk_W93_w[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 93% UE		//234,235,236
-	TH2F*			fNtrkl_PtOfMaxTrk_W95_w[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 95% UE		//237,238,239
-	TH2F*			fNtrkl_PtOfTrks_W_w[3];		//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5			//240,241,242
-	TH2F*			fNtrkl_PtOfTrks_W70_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 70% UE		//243,244,245
-	TH2F*			fNtrkl_PtOfTrks_W80_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 80% UE		//246,247,248
-	TH2F*			fNtrkl_PtOfTrks_W85_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 85% UE		//249,250,251
-	TH2F*			fNtrkl_PtOfTrks_W90_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 90% UE		//252,253,254
-	TH2F*			fNtrkl_PtOfTrks_W93_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 93% UE		//255,256,257
-	TH2F*			fNtrkl_PtOfTrks_W95_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 95% UE		//258,259,260
-	TH2F*			fNtrkl_PtOfMaxTrk_HF70_w[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 70% UE		//261,262,263
-	TH2F*			fNtrkl_PtOfMaxTrk_HF80_w[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 80% UE		//264,265,266
-	TH2F*			fNtrkl_PtOfMaxTrk_HF85_w[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 85% UE		//267,268,269
-	TH2F*			fNtrkl_PtOfMaxTrk_HF90_w[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 90% UE		//270,271,272
-	TH2F*			fNtrkl_PtOfMaxTrk_HF93_w[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 93% UE		//273,274,275
-	TH2F*			fNtrkl_PtOfMaxTrk_HF95_w[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 95% UE		//276,277,278
-	TH2F*			fNtrkl_PtOfTrks_HF_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5			//279,280,281
-	TH2F*			fNtrkl_PtOfTrks_HF70_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 70% UE		//282,283,284
-	TH2F*			fNtrkl_PtOfTrks_HF80_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 80% UE		//285,286,287
-	TH2F*			fNtrkl_PtOfTrks_HF85_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 85% UE		//288,289,290
-	TH2F*			fNtrkl_PtOfTrks_HF90_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 90% UE		//291,292,293
-	TH2F*			fNtrkl_PtOfTrks_HF93_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 93% UE		//294,295,296
-	TH2F*			fNtrkl_PtOfTrks_HF95_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 95% UE		//297,298,299
+	TH2F*			fNtrkl_PtOfMaxTrk_W_n[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 non UE sub.		//56,57,58
+	TH2F*			fNtrkl_PtOfMaxTrk_W70_n[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 70% UE		//59,60,61
+	TH2F*			fNtrkl_PtOfMaxTrk_W80_n[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 80% UE		//62,63,64
+	TH2F*			fNtrkl_PtOfMaxTrk_W85_n[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 85% UE		//65,66,67
+	TH2F*			fNtrkl_PtOfMaxTrk_W90_n[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 90% UE		//68,69,70
+	TH2F*			fNtrkl_PtOfMaxTrk_W93_n[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 93% UE		//71,72,73
+	TH2F*			fNtrkl_PtOfMaxTrk_W95_n[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 95% UE		//74,75,76
+	TH2F*			fNtrkl_PtOfTrks_W_n[3];		//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5			//77,78,79
+	TH2F*			fNtrkl_PtOfTrks_W70_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 70% UE		//80,81,82
+	TH2F*			fNtrkl_PtOfTrks_W80_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 80% UE		//83,84,85
+	TH2F*			fNtrkl_PtOfTrks_W85_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 85% UE		//86,87,88
+	TH2F*			fNtrkl_PtOfTrks_W90_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 90% UE		//89,90,91
+	TH2F*			fNtrkl_PtOfTrks_W93_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 93% UE		//92,93,94
+	TH2F*			fNtrkl_PtOfTrks_W95_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 95% UE		//95,96,97
+	TH2F*			fNtrkl_PtOfMaxTrk_HF_n[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 non UE sub.		//98,99,100
+	TH2F*			fNtrkl_PtOfMaxTrk_HF70_n[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 70% UE		//101,102,103
+	TH2F*			fNtrkl_PtOfMaxTrk_HF80_n[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 80% UE		//104,105,106
+	TH2F*			fNtrkl_PtOfMaxTrk_HF85_n[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 85% UE		//107,108,109
+	TH2F*			fNtrkl_PtOfMaxTrk_HF90_n[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 90% UE		//110,111,112
+	TH2F*			fNtrkl_PtOfMaxTrk_HF93_n[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 93% UE		//113,114,115
+	TH2F*			fNtrkl_PtOfMaxTrk_HF95_n[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 95% UE		//116,117,118
+	TH2F*			fNtrkl_PtOfTrks_HF_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5			//119,120,121
+	TH2F*			fNtrkl_PtOfTrks_HF70_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 70% UE		//122,123,124
+	TH2F*			fNtrkl_PtOfTrks_HF80_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 80% UE		//125,126,127
+	TH2F*			fNtrkl_PtOfTrks_HF85_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 85% UE		//128,129,130
+	TH2F*			fNtrkl_PtOfTrks_HF90_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 90% UE		//131,132,133
+	TH2F*			fNtrkl_PtOfTrks_HF93_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 93% UE		//134,135,136
+	TH2F*			fNtrkl_PtOfTrks_HF95_n[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 95% UE		//137,138,139
+	TH1F*			fPt_maxtrack_W_m[3];		//! histogram of max pT track/e<-W R<0.3,0.4,0.5 R=0.3				//140,141,142
+	TH2F*			fNtrkl_PtOfMaxTrk_W_m[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 non UE sub.		//143,144,145
+	TH2F*			fNtrkl_PtOfMaxTrk_W70_m[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 70% UE		//146,147,148
+	TH2F*			fNtrkl_PtOfMaxTrk_W80_m[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 80% UE		//149,150,151
+	TH2F*			fNtrkl_PtOfMaxTrk_W85_m[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 85% UE		//152,153,154
+	TH2F*			fNtrkl_PtOfMaxTrk_W90_m[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 90% UE		//155,156,157
+	TH2F*			fNtrkl_PtOfMaxTrk_W93_m[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 93% UE		//158,159,160
+	TH2F*			fNtrkl_PtOfMaxTrk_W95_m[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 95% UE		//161,162,163
+	TH2F*			fNtrkl_PtOfTrks_W_m[3];		//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5			//164,165,166
+	TH2F*			fNtrkl_PtOfTrks_W70_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 70% UE		//167,168,169
+	TH2F*			fNtrkl_PtOfTrks_W80_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 80% UE		//170,171,172
+	TH2F*			fNtrkl_PtOfTrks_W85_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 85% UE		//173,174,175
+	TH2F*			fNtrkl_PtOfTrks_W90_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 90% UE		//176,177,178
+	TH2F*			fNtrkl_PtOfTrks_W93_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 93% UE		//179,180,181
+	TH2F*			fNtrkl_PtOfTrks_W95_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 95% UE		//182,183,184
+	TH2F*			fNtrkl_PtOfMaxTrk_HF_m[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 non UE sub.		//185,186,187
+	TH2F*			fNtrkl_PtOfMaxTrk_HF70_m[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 70% UE		//188,189,190
+	TH2F*			fNtrkl_PtOfMaxTrk_HF80_m[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 80% UE		//191,192,193
+	TH2F*			fNtrkl_PtOfMaxTrk_HF85_m[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 85% UE		//194,195,196
+	TH2F*			fNtrkl_PtOfMaxTrk_HF90_m[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 90% UE		//197,198,199
+	TH2F*			fNtrkl_PtOfMaxTrk_HF93_m[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 93% UE		//200,201,202
+	TH2F*			fNtrkl_PtOfMaxTrk_HF95_m[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 95% UE		//203,204,205
+	TH2F*			fNtrkl_PtOfTrks_HF_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5			//206,207,208
+	TH2F*			fNtrkl_PtOfTrks_HF70_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 70% UE		//209,210,211
+	TH2F*			fNtrkl_PtOfTrks_HF80_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 80% UE		//212,213,214
+	TH2F*			fNtrkl_PtOfTrks_HF85_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 85% UE		//215,216,217
+	TH2F*			fNtrkl_PtOfTrks_HF90_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 90% UE		//218,219,220
+	TH2F*			fNtrkl_PtOfTrks_HF93_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 93% UE		//221,222,223
+	TH2F*			fNtrkl_PtOfTrks_HF95_m[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 95% UE		//224,225,226
+	TH1F*			fPt_maxtrack_W_w[3];		//! histogram of max pT track/e<-W R<0.3,0.4,0.5 R=0.4				//227,228,229
+	TH2F*			fNtrkl_PtOfMaxTrk_W_w[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 non UE sub.		//230,231,232
+	TH2F*			fNtrkl_PtOfMaxTrk_W70_w[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 70% UE		//233,234,235
+	TH2F*			fNtrkl_PtOfMaxTrk_W80_w[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 80% UE		//236,237,238
+	TH2F*			fNtrkl_PtOfMaxTrk_W85_w[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 85% UE		//239,240,241
+	TH2F*			fNtrkl_PtOfMaxTrk_W90_w[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 90% UE		//242,243,244
+	TH2F*			fNtrkl_PtOfMaxTrk_W93_w[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 93% UE		//245,246,247
+	TH2F*			fNtrkl_PtOfMaxTrk_W95_w[3];	//! histogram of Ntrkl vs max pT track/e<-W R<0.3,0.4,0.5 95% UE		//248,249,250
+	TH2F*			fNtrkl_PtOfTrks_W_w[3];		//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5			//251,252,253
+	TH2F*			fNtrkl_PtOfTrks_W70_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 70% UE		//254,255,256
+	TH2F*			fNtrkl_PtOfTrks_W80_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 80% UE		//257,258,259
+	TH2F*			fNtrkl_PtOfTrks_W85_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 85% UE		//260,261,262
+	TH2F*			fNtrkl_PtOfTrks_W90_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 90% UE		//263,264,265
+	TH2F*			fNtrkl_PtOfTrks_W93_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 93% UE		//266,267,268
+	TH2F*			fNtrkl_PtOfTrks_W95_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-W R<0.3,0.4,0.5 95% UE		//269,270,271
+	TH2F*			fNtrkl_PtOfMaxTrk_HF_w[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 non UE sub.		//272,273,274
+	TH2F*			fNtrkl_PtOfMaxTrk_HF70_w[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 70% UE		//275,276,277
+	TH2F*			fNtrkl_PtOfMaxTrk_HF80_w[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 80% UE		//278,279,280
+	TH2F*			fNtrkl_PtOfMaxTrk_HF85_w[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 85% UE		//281,282,283
+	TH2F*			fNtrkl_PtOfMaxTrk_HF90_w[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 90% UE		//284,285,286
+	TH2F*			fNtrkl_PtOfMaxTrk_HF93_w[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 93% UE		//287,288,289
+	TH2F*			fNtrkl_PtOfMaxTrk_HF95_w[3];	//! histogram of Ntrkl vs max pT track/e<-HF R<0.3,0.4,0.5 95% UE		//290,291,292
+	TH2F*			fNtrkl_PtOfTrks_HF_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5			//293,294,295
+	TH2F*			fNtrkl_PtOfTrks_HF70_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 70% UE		//296,297,298
+	TH2F*			fNtrkl_PtOfTrks_HF80_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 80% UE		//299,300,301
+	TH2F*			fNtrkl_PtOfTrks_HF85_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 85% UE		//302,303,304
+	TH2F*			fNtrkl_PtOfTrks_HF90_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 90% UE		//305,306,307
+	TH2F*			fNtrkl_PtOfTrks_HF93_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 93% UE		//308,309,310
+	TH2F*			fNtrkl_PtOfTrks_HF95_w[3];	//! histogram of Ntrkl vs sum of pT track/e<-HF R<0.3,0.4,0.5 95% UE		//311,312,313
 
-	TH2F*			fHistPt_We_Ntrkl[3];		//! histogram of Pt of e<-W vs tracklets R<0.3,0.4,0.5				//300,301,302
+	TH2F*			fHistPt_We_Ntrkl[3];		//! histogram of Pt of e<-W vs tracklets R<0.3,0.4,0.5				//314,315,316
 
-	TH2F*			fdPhi_trkW_full[3];		//! tryal hist R<0.3,0.4,0.5							//303,304,305
-	TH2F*			fdPhi_trkHF_full[3];		//! Eiso>0.1 tryal hist R<0.3,0.4,0.5						//302,303,304
+	TH2F*			fdPhi_trkW_full[3];		//! tryal hist R<0.3,0.4,0.5							//317,318,319
+	TH2F*			fdPhi_trkHF_full[3];		//! Eiso>0.1 tryal hist R<0.3,0.4,0.5						//320,321,322
 
-	TH2F*			fNtrkl_ClustE;			//! histogram for rejection factor						//305
-	TH2F*			TPCSigForE;			//! hist of TPC signal (dE/dx) and p						//306
-	TH2F*			fNsigmaPtForE;			//! histogram of nsigma vs Pt with e EMCal cut					//307
-	TH2F*			fHistNtrk_W[3];			//! histogram of Ntrack in R<0.3,0.4,0.5 of W					//308,309,310
-	TH2F*			fHistNtrk_HF[3];		//! histogram of Ntrack in R<0.3,0.4,0.5 of HF					//311,312,313
-	TH2F*			fHistEiso_Ntrk[3];		//! histogram of Eiso vs Ntrk in R<0.3,0.4,0.5					//314,315,316
-	TH2F*			fHistUEmult[3];			//! histogram of Mult vs UE pT in R<0.3,0.4,0.5					//317,318,319
+	TH2F*			fNtrkl_ClustE;			//! histogram for rejection factor						//323
+	TH2F*			TPCSigForE;			//! hist of TPC signal (dE/dx) and p						//324
+	TH2F*			fNsigmaPtForE;			//! histogram of nsigma vs Pt with e EMCal cut					//325
+	TH2F*			fHistNtrk_W[3];			//! histogram of Ntrack in R<0.3,0.4,0.5 of W					//326,327,328
+	TH2F*			fHistNtrk_HF[3];		//! histogram of Ntrack in R<0.3,0.4,0.5 of HF					//329,330,331
+	TH2F*			fHistEiso_Ntrk[3];		//! histogram of Eiso vs Ntrk in R<0.3,0.4,0.5					//332,333,334
+	TH2F*			fHistUEmult[3];			//! histogram of Mult vs UE pT in R<0.3,0.4,0.5					//335,336,337
 
 	Bool_t                  fEMCEG1;//EMcal Threshold EG1
 
