@@ -49,16 +49,16 @@
 
 ClassImp(AliPHOSEmbedggHBT)
 
-  //________________________________________________________________________
-  AliPHOSEmbedggHBT::AliPHOSEmbedggHBT(const char* name)
-  : AliAnalysisTaskEtaPhigg(name), fSignalEvent(nullptr), fSignalEvents(nullptr)
-{
+    //________________________________________________________________________
+    AliPHOSEmbedggHBT::AliPHOSEmbedggHBT(const char *name)
+    : AliAnalysisTaskEtaPhigg(name), fSignalEvent(nullptr),
+      fSignalEvents(nullptr) {
   // Constructor
 }
 //________________________________________________________________________
-AliPHOSEmbedggHBT::~AliPHOSEmbedggHBT()
-{
-  // Note that histograms are stored in fOutputContainer and should not be deleted explicitely
+AliPHOSEmbedggHBT::~AliPHOSEmbedggHBT() {
+  // Note that histograms are stored in fOutputContainer and should not be
+  // deleted explicitely
   if (fMCEvents) {
     delete fMCEvents;
     fMCEvents = nullptr;
@@ -77,8 +77,7 @@ AliPHOSEmbedggHBT::~AliPHOSEmbedggHBT()
   }
 }
 //________________________________________________________________________
-void AliPHOSEmbedggHBT::UserCreateOutputObjects()
-{
+void AliPHOSEmbedggHBT::UserCreateOutputObjects() {
   // Create histograms
   // Called once
 
@@ -91,75 +90,112 @@ void AliPHOSEmbedggHBT::UserCreateOutputObjects()
   //========QA histograms=======
 
   // Event selection
-  fOutputContainer->Add(new TH1F("hTotSelEvents", "Event selection", 10, 0., 10.));
+  fOutputContainer->Add(
+      new TH1F("hTotSelEvents", "Event selection", 10, 0., 10.));
 
-  fOutputContainer->Add(new TH2F("phiRP", "Event plane", 100, 0., TMath::Pi(), 100, 0., 100.));
-  fOutputContainer->Add(new TH2F("phiRPV0A", "Event plane", 100, 0., TMath::Pi(), 100, 0., 100.));
-  fOutputContainer->Add(new TH2F("phiRPV0Aflat", "Event plane", 100, 0., TMath::Pi(), 100, 0., 100.));
-  fOutputContainer->Add(new TH2F("phiRPV0C", "Event plane", 100, 0., TMath::Pi(), 100, 0., 100.));
-  fOutputContainer->Add(new TH2F("phiRPV0Cflat", "Event plane", 100, 0., TMath::Pi(), 100, 0., 100.));
-  fOutputContainer->Add(new TH2F("phiRPV0AC", "Event plane", 100, 0., TMath::Pi(), 100, 0., TMath::Pi()));
-  fOutputContainer->Add(new TH2F("phiRPV0ACflat", "Event plane", 100, 0., TMath::Pi(), 100, 0., TMath::Pi()));
-  fOutputContainer->Add(new TH2F("phiRPvsV0A", "Event plane", 100, 0., TMath::Pi(), 100, 0., TMath::Pi()));
-  fOutputContainer->Add(new TH2F("phiRPvsV0C", "Event plane", 100, 0., TMath::Pi(), 100, 0., TMath::Pi()));
+  fOutputContainer->Add(
+      new TH2F("phiRP", "Event plane", 100, 0., TMath::Pi(), 100, 0., 100.));
+  fOutputContainer->Add(
+      new TH2F("phiRPV0A", "Event plane", 100, 0., TMath::Pi(), 100, 0., 100.));
+  fOutputContainer->Add(new TH2F("phiRPV0Aflat", "Event plane", 100, 0.,
+                                 TMath::Pi(), 100, 0., 100.));
+  fOutputContainer->Add(
+      new TH2F("phiRPV0C", "Event plane", 100, 0., TMath::Pi(), 100, 0., 100.));
+  fOutputContainer->Add(new TH2F("phiRPV0Cflat", "Event plane", 100, 0.,
+                                 TMath::Pi(), 100, 0., 100.));
+  fOutputContainer->Add(new TH2F("phiRPV0AC", "Event plane", 100, 0.,
+                                 TMath::Pi(), 100, 0., TMath::Pi()));
+  fOutputContainer->Add(new TH2F("phiRPV0ACflat", "Event plane", 100, 0.,
+                                 TMath::Pi(), 100, 0., TMath::Pi()));
+  fOutputContainer->Add(new TH2F("phiRPvsV0A", "Event plane", 100, 0.,
+                                 TMath::Pi(), 100, 0., TMath::Pi()));
+  fOutputContainer->Add(new TH2F("phiRPvsV0C", "Event plane", 100, 0.,
+                                 TMath::Pi(), 100, 0., TMath::Pi()));
 
   // vertex distribution
-  fOutputContainer->Add(new TH1F("hZvertex", "Z vertex position", 50, -25., 25.));
+  fOutputContainer->Add(
+      new TH1F("hZvertex", "Z vertex position", 50, -25., 25.));
 
   // Centrality
-  fOutputContainer->Add(new TH1F("hCentrality", "Event centrality", 100, 0., 100.));
+  fOutputContainer->Add(
+      new TH1F("hCentrality", "Event centrality", 100, 0., 100.));
 
-  fOutputContainer->Add(new TH2F("hSignalTofM1", "Time vs E", 100, 0., 10., 200, -400.e-9, 400.e-9));
-  fOutputContainer->Add(new TH2F("hSignalTofM2", "Time vs E", 100, 0., 10., 200, -400.e-9, 400.e-9));
-  fOutputContainer->Add(new TH2F("hSignalTofM3", "Time vs E", 100, 0., 10., 200, -400.e-9, 400.e-9));
-  fOutputContainer->Add(new TH2F("hSignalTofM4", "Time vs E", 100, 0., 10., 200, -400.e-9, 400.e-9));
+  fOutputContainer->Add(new TH2F("hSignalTofM1", "Time vs E", 100, 0., 10., 200,
+                                 -400.e-9, 400.e-9));
+  fOutputContainer->Add(new TH2F("hSignalTofM2", "Time vs E", 100, 0., 10., 200,
+                                 -400.e-9, 400.e-9));
+  fOutputContainer->Add(new TH2F("hSignalTofM3", "Time vs E", 100, 0., 10., 200,
+                                 -400.e-9, 400.e-9));
+  fOutputContainer->Add(new TH2F("hSignalTofM4", "Time vs E", 100, 0., 10., 200,
+                                 -400.e-9, 400.e-9));
 
-  fOutputContainer->Add(new TH2F("hTofM1", "Time vs E", 100, 0., 10., 200, -400.e-9, 400.e-9));
-  fOutputContainer->Add(new TH2F("hTofM2", "Time vs E", 100, 0., 10., 200, -400.e-9, 400.e-9));
-  fOutputContainer->Add(new TH2F("hTofM3", "Time vs E", 100, 0., 10., 200, -400.e-9, 400.e-9));
-  fOutputContainer->Add(new TH2F("hTofM4", "Time vs E", 100, 0., 10., 200, -400.e-9, 400.e-9));
-  fOutputContainer->Add(new TH2F("hAllSp", "Sp vs cen", 100, 0., 10., 5, 0., 100.));
-  fOutputContainer->Add(new TH2F("hCluM1", "Cell (X,Z), M3", 64, 0.5, 64.5, 56, 0.5, 56.5));
-  fOutputContainer->Add(new TH2F("hCluM2", "Cell (X,Z), M3", 64, 0.5, 64.5, 56, 0.5, 56.5));
-  fOutputContainer->Add(new TH2F("hCluM3", "Cell (X,Z), M3", 64, 0.5, 64.5, 56, 0.5, 56.5));
-  fOutputContainer->Add(new TH2F("hCluM4", "Cell (X,Z), M3", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(
+      new TH2F("hTofM1", "Time vs E", 100, 0., 10., 200, -400.e-9, 400.e-9));
+  fOutputContainer->Add(
+      new TH2F("hTofM2", "Time vs E", 100, 0., 10., 200, -400.e-9, 400.e-9));
+  fOutputContainer->Add(
+      new TH2F("hTofM3", "Time vs E", 100, 0., 10., 200, -400.e-9, 400.e-9));
+  fOutputContainer->Add(
+      new TH2F("hTofM4", "Time vs E", 100, 0., 10., 200, -400.e-9, 400.e-9));
+  fOutputContainer->Add(
+      new TH2F("hAllSp", "Sp vs cen", 100, 0., 10., 5, 0., 100.));
+  fOutputContainer->Add(
+      new TH2F("hCluM1", "Cell (X,Z), M3", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(
+      new TH2F("hCluM2", "Cell (X,Z), M3", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(
+      new TH2F("hCluM3", "Cell (X,Z), M3", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(
+      new TH2F("hCluM4", "Cell (X,Z), M3", 64, 0.5, 64.5, 56, 0.5, 56.5));
 
   SetCutNames();
 
   // MC
-  fhReQinvMCprim = new TH2F("hReQinvMCprim", "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+  fhReQinvMCprim =
+      new TH2F("hReQinvMCprim", "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
   fOutputContainer->Add(fhReQinvMCprim);
-  fhReqMCprim = new TH2F("hReqMCprim", "q distribution", 100, 0., 0.25, 40, 0., 2.);
+  fhReqMCprim =
+      new TH2F("hReqMCprim", "q distribution", 100, 0., 0.25, 40, 0., 2.);
   fOutputContainer->Add(fhReqMCprim);
-  fhReQinvMC = new TH2F("hReQinvMC", "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+  fhReQinvMC =
+      new TH2F("hReQinvMC", "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
   fOutputContainer->Add(fhReQinvMC);
   fhReqMC = new TH2F("hReqMC", "q distribution", 100, 0., 0.25, 40, 0., 2.);
   fOutputContainer->Add(fhReqMC);
-  fhMiQinvMCprim = new TH2F("hMiQinvMCprim", "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+  fhMiQinvMCprim =
+      new TH2F("hMiQinvMCprim", "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
   fOutputContainer->Add(fhMiQinvMCprim);
-  fhMiQinvMC = new TH2F("hMiQinvMC", "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+  fhMiQinvMC =
+      new TH2F("hMiQinvMC", "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
   fOutputContainer->Add(fhMiQinvMC);
-  fhMiqMCprim = new TH2F("hMiqMCprim", "q distribution", 100, 0., 0.25, 40, 0., 2.);
+  fhMiqMCprim =
+      new TH2F("hMiqMCprim", "q distribution", 100, 0., 0.25, 40, 0., 2.);
   fOutputContainer->Add(fhMiqMCprim);
   fhMiqMC = new TH2F("hMiqMC", "q distribution", 100, 0., 0.25, 40, 0., 2.);
   fOutputContainer->Add(fhMiqMC);
   // Signal
   for (Int_t iCut = 0; iCut < kCuts; iCut++) {
     fhReQinvSignal[iCut] =
-      new TH2F(Form("hReQinv_signal_%s", fcut[iCut]), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+        new TH2F(Form("hReQinv_signal_%s", fcut[iCut]), "Qinv distribution",
+                 100, 0., 0.25, 40, 0., 2.);
     fOutputContainer->Add(fhReQinvSignal[iCut]);
     fhReQinvSignalConv[iCut] =
-      new TH2F(Form("hReQinv_signalConv_%s", fcut[iCut]), "Qinv distribution, conv", 100, 0., 0.25, 40, 0., 2.);
+        new TH2F(Form("hReQinv_signalConv_%s", fcut[iCut]),
+                 "Qinv distribution, conv", 100, 0., 0.25, 40, 0., 2.);
     fOutputContainer->Add(fhReQinvSignalConv[iCut]);
     fhMiQinvSignal[iCut] =
-      new TH2F(Form("hMiQinv_signal_%s", fcut[iCut]), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+        new TH2F(Form("hMiQinv_signal_%s", fcut[iCut]), "Qinv distribution",
+                 100, 0., 0.25, 40, 0., 2.);
     fOutputContainer->Add(fhMiQinvSignal[iCut]);
-    fhReqSignal[iCut] = new TH2F(Form("hReq_signal_%s", fcut[iCut]), "q distribution", 100, 0., 0.25, 40, 0., 2.);
+    fhReqSignal[iCut] = new TH2F(Form("hReq_signal_%s", fcut[iCut]),
+                                 "q distribution", 100, 0., 0.25, 40, 0., 2.);
     fOutputContainer->Add(fhReqSignal[iCut]);
     fhReqSignalConv[iCut] =
-      new TH2F(Form("hReq_signalConv_%s", fcut[iCut]), "q distribution", 100, 0., 0.25, 40, 0., 2.);
+        new TH2F(Form("hReq_signalConv_%s", fcut[iCut]), "q distribution", 100,
+                 0., 0.25, 40, 0., 2.);
     fOutputContainer->Add(fhReqSignalConv[iCut]);
-    fhMiqSignal[iCut] = new TH2F(Form("hMiq_signal_%s", fcut[iCut]), "q distribution", 100, 0., 0.25, 40, 0., 2.);
+    fhMiqSignal[iCut] = new TH2F(Form("hMiq_signal_%s", fcut[iCut]),
+                                 "q distribution", 100, 0., 0.25, 40, 0., 2.);
     fOutputContainer->Add(fhMiqSignal[iCut]);
   }
 
@@ -167,20 +203,26 @@ void AliPHOSEmbedggHBT::UserCreateOutputObjects()
   for (Int_t cen = 0; cen < kCentBins; cen++) {
     for (Int_t iCut = 0; iCut < kCuts; iCut++) {
       fhReQinv[cen][iCut] =
-        new TH2F(Form("hReQinv_%s_cen%d", fcut[iCut], cen), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+          new TH2F(Form("hReQinv_%s_cen%d", fcut[iCut], cen),
+                   "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
       fOutputContainer->Add(fhReQinv[cen][iCut]);
       fhReQinvConv[cen][iCut] =
-        new TH2F(Form("hReQinvConv_%s_cen%d", fcut[iCut], cen), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+          new TH2F(Form("hReQinvConv_%s_cen%d", fcut[iCut], cen),
+                   "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
       fOutputContainer->Add(fhReQinvConv[cen][iCut]);
       fhMiQinv[cen][iCut] =
-        new TH2F(Form("hMiQinv_%s_cen%d", fcut[iCut], cen), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+          new TH2F(Form("hMiQinv_%s_cen%d", fcut[iCut], cen),
+                   "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
       fOutputContainer->Add(fhMiQinv[cen][iCut]);
-      fhReq[cen][iCut] = new TH2F(Form("hReq_%s_cen%d", fcut[iCut], cen), "q distribution", 100, 0., 0.25, 40, 0., 2.);
+      fhReq[cen][iCut] = new TH2F(Form("hReq_%s_cen%d", fcut[iCut], cen),
+                                  "q distribution", 100, 0., 0.25, 40, 0., 2.);
       fOutputContainer->Add(fhReq[cen][iCut]);
       fhReqConv[cen][iCut] =
-        new TH2F(Form("hReqConv_%s_cen%d", fcut[iCut], cen), "q distribution", 100, 0., 0.25, 40, 0., 2.);
+          new TH2F(Form("hReqConv_%s_cen%d", fcut[iCut], cen), "q distribution",
+                   100, 0., 0.25, 40, 0., 2.);
       fOutputContainer->Add(fhReqConv[cen][iCut]);
-      fhMiq[cen][iCut] = new TH2F(Form("hMiq_%s_cen%d", fcut[iCut], cen), "q distribution", 100, 0., 0.25, 40, 0., 2.);
+      fhMiq[cen][iCut] = new TH2F(Form("hMiq_%s_cen%d", fcut[iCut], cen),
+                                  "q distribution", 100, 0., 0.25, 40, 0., 2.);
       fOutputContainer->Add(fhMiq[cen][iCut]);
     }
   }
@@ -191,13 +233,12 @@ void AliPHOSEmbedggHBT::UserCreateOutputObjects()
   PostData(1, fOutputContainer);
 }
 //________________________________________________________________________
-void AliPHOSEmbedggHBT::UserExec(Option_t*)
-{
+void AliPHOSEmbedggHBT::UserExec(Option_t *) {
   printf(" %s: Start event %d\n", GetName(), fEventCounter);
   // Main loop, called for each event
   FillHistogram("hTotSelEvents", 0.5);
 
-  fEvent = dynamic_cast<AliAODEvent*>(InputEvent());
+  fEvent = dynamic_cast<AliAODEvent *>(InputEvent());
   if (!fEvent) {
     Printf("ERROR: AliPHOSEmbedggHBT::UserExec Could not retrieve event");
     return;
@@ -214,9 +255,9 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
 
   // Checks if we have a primary vertex
   // Get primary vertices form AOD
-  const AliAODVertex* esdVertex5 = fEvent->GetPrimaryVertex();
+  const AliAODVertex *esdVertex5 = fEvent->GetPrimaryVertex();
 
-  double vtx5[3] = { 0., 0., 0. };
+  double vtx5[3] = {0., 0., 0.};
 
   vtx5[0] = esdVertex5->GetX();
   vtx5[1] = esdVertex5->GetY();
@@ -238,7 +279,8 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
   FillHistogram("hTotSelEvents", 3.5);
 
   fCentrality = 300;
-  AliMultSelection* MultSelection = (AliMultSelection*)fEvent->FindListObject("MultSelection");
+  AliMultSelection *MultSelection =
+      (AliMultSelection *)fEvent->FindListObject("MultSelection");
   if (!MultSelection) {
     AliWarning("AliMultSelection object not found!");
   } else {
@@ -268,7 +310,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     fCenBin = 6;
 
   // reaction plane
-  AliEventplane* eventPlane = fEvent->GetEventplane();
+  AliEventplane *eventPlane = fEvent->GetEventplane();
   if (!eventPlane) { // Event has no event plane
     PostData(1, fOutputContainer);
     return;
@@ -293,7 +335,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
 
   if (!fPHOSEvents[zvtx][fCenBin][irp])
     fPHOSEvents[zvtx][fCenBin][irp] = new TList();
-  TList* prevPHOS = fPHOSEvents[zvtx][fCenBin][irp];
+  TList *prevPHOS = fPHOSEvents[zvtx][fCenBin][irp];
 
   if (fSignalEvent)
     fSignalEvent->Clear();
@@ -310,7 +352,8 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
   else
     fCPVEvent = new TClonesArray("AliCaloPhoton", 100);
 
-  TClonesArray* embedded = static_cast<TClonesArray*>(fEvent->FindListObject("EmbeddedCaloClusters"));
+  TClonesArray *embedded = static_cast<TClonesArray *>(
+      fEvent->FindListObject("EmbeddedCaloClusters"));
   int multClust = embedded->GetEntriesFast();
   // CPV clusters
   Float_t position[3];
@@ -321,7 +364,8 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
   const double slopeZCPV = -0.034745; // tilt of module
 
   for (Int_t j = 0; j < multClust; j++) {
-    AliAODCaloCluster* cluCPV = static_cast<AliAODCaloCluster*>(embedded->At(j));
+    AliAODCaloCluster *cluCPV =
+        static_cast<AliAODCaloCluster *>(embedded->At(j));
     if (cluCPV->GetType() != AliVCluster::kPHOSCharged)
       continue;
     if (cluCPV->E() < 100.)
@@ -332,8 +376,8 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     position[2] -= dzCPV + slopeZCPV * position[2];
     TVector3 globalCPV(position);
     Float_t dxMin, dzMin;
-    AliCaloPhoton* p =
-      new ((*fCPVEvent)[inCPV]) AliCaloPhoton(globalCPV.Px(), globalCPV.Py(), globalCPV.Pz(), globalCPV.Mag());
+    AliCaloPhoton *p = new ((*fCPVEvent)[inCPV]) AliCaloPhoton(
+        globalCPV.Px(), globalCPV.Py(), globalCPV.Pz(), globalCPV.Mag());
     inCPV++;
     int itr = FindTrackMatching(0, globalCPV, 3, dxMin, dzMin);
     p->SetLambdas(dxMin, dzMin);
@@ -343,12 +387,16 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
   Int_t inPHOS = 0, inSignal = 0;
   TVector3 localPos;
 
-  double vtx0[3] = { 0., 0., 0. };
+  double vtx0[3] = {0., 0., 0.};
 
-  TClonesArray* signal = static_cast<TClonesArray*>(fEvent->FindListObject("SignalCaloClusters"));
+  TClonesArray *fStack = static_cast<TClonesArray *>(
+      fEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+
+  TClonesArray *signal =
+      static_cast<TClonesArray *>(fEvent->FindListObject("SignalCaloClusters"));
   int multSignal = signal->GetEntriesFast();
   for (Int_t i = 0; i < multSignal; i++) {
-    AliAODCaloCluster* clu = static_cast<AliAODCaloCluster*>(signal->At(i));
+    AliAODCaloCluster *clu = static_cast<AliAODCaloCluster *>(signal->At(i));
     if (clu->GetType() != AliVCluster::kPHOSNeutral)
       continue;
     if (clu->E() < 0.1)
@@ -361,7 +409,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     fPHOSGeo->GlobalPos2RelId(global, relId);
     Int_t mod = relId[0];
     Int_t cellX = relId[2];
-    Int_t cellZ = relId[3];
+    // Int_t cellZ = relId[3];
     TVector3 local;
     fPHOSGeo->Global2Local(local, global, mod);
 
@@ -380,7 +428,8 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     if (inSignal >= fSignalEvent->GetSize()) {
       fSignalEvent->Expand(inSignal + 20);
     }
-    AliCaloPhoton* ph = new ((*fSignalEvent)[inSignal++]) AliCaloPhoton(pv1.X(), pv1.Py(), pv1.Z(), pv1.E());
+    AliCaloPhoton *ph = new ((*fSignalEvent)[inSignal++])
+        AliCaloPhoton(pv1.X(), pv1.Py(), pv1.Z(), pv1.E());
     ph->SetModule(mod);
     pv1 *= clu->GetCoreEnergy() / pv1.E();
     ph->SetMomV2(&pv1);
@@ -391,7 +440,8 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     int itr = FindTrackMatching(1, global, mod, dxMin, dzMin);
 
     // Set veto bits, true: neutral
-    int cpvBits = TestCPV(mod, clu->E(), local.X(), local.Z(), dxMin, dzMin, itr);
+    int cpvBits =
+        TestCPV(mod, clu->E(), local.X(), local.Z(), dxMin, dzMin, itr);
 
     ph->SetTagInfo(cpvBits);
 
@@ -401,10 +451,41 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     ph->SetUnfolded(clu->GetNExMax() < 2); // Remember, if it is unfolded
     ph->SetDistToBad(cellX);
     ph->SetPrimary(clu->GetLabelAt(0));
+    if (clu->GetNLabels() > 1) {
+      if (clu->GetNLabels() == 2) { // Ecactly 2 - OK
+        ph->SetPrimaryAtVertex(clu->GetLabelAt(1));
+      } else { // If more, skip parents with common ancestor and leave two
+               // independent
+        bool notFound = true;
+        ;
+        ph->SetPrimaryAtVertex(-1); // if all labels will be the same
+        for (UInt_t il = 1; notFound && il < clu->GetNLabels(); il++) {
+          int prim1 = clu->GetLabelAt(0);
+          bool same = false;
+          while (notFound && prim1 != -1) {
+            int prim2 = clu->GetLabelAt(il);
+            while (prim2 != -1) {
+              if (prim1 == prim2) {
+                same = true;
+                break;
+              }
+              prim2 = ((AliAODMCParticle *)fStack->At(prim2))->GetMother();
+            }
+            if (!same) {
+              ph->SetPrimaryAtVertex(clu->GetLabelAt(il));
+              notFound = false;
+              break;
+            }
+          }
+        }
+      }
+    } else {
+      ph->SetPrimaryAtVertex(-1);
+    }
   }
 
   for (Int_t i = 0; i < multClust; i++) {
-    AliAODCaloCluster* clu = static_cast<AliAODCaloCluster*>(embedded->At(i));
+    AliAODCaloCluster *clu = static_cast<AliAODCaloCluster *>(embedded->At(i));
     if (clu->GetType() != AliVCluster::kPHOSNeutral)
       continue;
     if (clu->E() < 0.1)
@@ -443,7 +524,8 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     if (inPHOS >= fPHOSEvent->GetSize()) {
       fPHOSEvent->Expand(inPHOS + 20);
     }
-    AliCaloPhoton* ph = new ((*fPHOSEvent)[inPHOS]) AliCaloPhoton(pv1.X(), pv1.Py(), pv1.Z(), pv1.E());
+    AliCaloPhoton *ph = new ((*fPHOSEvent)[inPHOS])
+        AliCaloPhoton(pv1.X(), pv1.Py(), pv1.Z(), pv1.E());
     inPHOS++;
     ph->SetModule(mod);
     pv1 *= clu->GetCoreEnergy() / pv1.E();
@@ -456,7 +538,8 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     int itr = FindTrackMatching(1, global, mod, dxMin, dzMin);
 
     // Set veto bits, true: neutral
-    int cpvBits = TestCPV(mod, clu->E(), local.X(), local.Z(), dxMin, dzMin, itr);
+    int cpvBits =
+        TestCPV(mod, clu->E(), local.X(), local.Z(), dxMin, dzMin, itr);
 
     ph->SetTagInfo(cpvBits);
 
@@ -466,18 +549,50 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     ph->SetUnfolded(clu->GetNExMax() < 2); // Remember, if it is unfolded
     ph->SetDistToBad(cellX);
     ph->SetPrimary(clu->GetLabelAt(0));
+    if (clu->GetNLabels() > 1) {
+      if (clu->GetNLabels() == 2) { // Ecactly 2 - OK
+        ph->SetPrimaryAtVertex(clu->GetLabelAt(1));
+      } else { // If more, skip parents with common ancestor and leave two
+               // independent
+        bool notFound = true;
+        ;
+        ph->SetPrimaryAtVertex(-1); // if all labels will be the same
+        for (UInt_t il = 1; notFound && il < clu->GetNLabels(); il++) {
+          int prim1 = clu->GetLabelAt(0);
+          bool same = false;
+          while (notFound && prim1 != -1) {
+            int prim2 = clu->GetLabelAt(il);
+            while (prim2 != -1) {
+              if (prim1 == prim2) {
+                same = true;
+                break;
+              }
+              prim2 = ((AliAODMCParticle *)fStack->At(prim2))->GetMother();
+            }
+            if (!same) {
+              ph->SetPrimaryAtVertex(clu->GetLabelAt(il));
+              notFound = false;
+              break;
+            }
+          }
+        }
+      }
+    } else {
+      ph->SetPrimaryAtVertex(-1);
+    }
   }
 
   // Real
-  TClonesArray* mc = static_cast<TClonesArray*>(fEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  TClonesArray *mc = static_cast<TClonesArray *>(
+      fEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   TLorentzVector ph1, ph2;
   TLorentzVector rec1, rec2;
   for (Int_t i1 = 0; i1 < mc->GetEntriesFast() - 1; i1++) {
-    AliAODMCParticle* p1 = (AliAODMCParticle*)mc->At(i1);
+    AliAODMCParticle *p1 = (AliAODMCParticle *)mc->At(i1);
     p1->Momentum(ph1);
 
     // Module acceptance
-    double vtx[3] = { p1->Xv(), p1->Yv(), p1->Zv() };
+    double vtx[3] = {p1->Xv(), p1->Yv(), p1->Zv()};
     int mod1;
     double x1, z1;
     if (!fPHOSGeo->ImpactOnEmc(vtx, p1->Theta(), p1->Phi(), mod1, x1, z1))
@@ -488,11 +603,11 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     globaPos.SetMag(p1->E());
     rec1.SetPxPyPzE(globaPos.X(), globaPos.Y(), globaPos.Z(), p1->E());
     for (Int_t i2 = i1 + 1; i2 < mc->GetEntriesFast(); i2++) {
-      AliAODMCParticle* p2 = (AliAODMCParticle*)mc->At(i2);
+      AliAODMCParticle *p2 = (AliAODMCParticle *)mc->At(i2);
 
       p2->Momentum(ph2);
       // Module acceptance
-      double vtx2[3] = { p2->Xv(), p2->Yv(), p2->Zv() };
+      double vtx2[3] = {p2->Xv(), p2->Yv(), p2->Zv()};
       int mod2;
       double x2, z2;
       if (!fPHOSGeo->ImpactOnEmc(vtx2, p2->Theta(), p2->Phi(), mod2, x2, z2)) {
@@ -539,10 +654,10 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
 
   // Signal
   for (Int_t i1 = 0; i1 < inSignal - 1; i1++) {
-    AliCaloPhoton* ph1 = (AliCaloPhoton*)fSignalEvent->At(i1);
+    AliCaloPhoton *ph1 = (AliCaloPhoton *)fSignalEvent->At(i1);
 
     for (Int_t i2 = i1 + 1; i2 < inSignal; i2++) {
-      AliCaloPhoton* ph2 = (AliCaloPhoton*)fSignalEvent->At(i2);
+      AliCaloPhoton *ph2 = (AliCaloPhoton *)fSignalEvent->At(i2);
 
       TLorentzVector sum = *ph1 + *ph2;
       TVector3 gammaBeta(sum.BoostVector());
@@ -569,9 +684,9 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     }
   }
   for (Int_t i1 = 0; i1 < inPHOS - 1; i1++) {
-    AliCaloPhoton* ph1 = (AliCaloPhoton*)fPHOSEvent->At(i1);
+    AliCaloPhoton *ph1 = (AliCaloPhoton *)fPHOSEvent->At(i1);
     for (Int_t i2 = i1 + 1; i2 < inPHOS; i2++) {
-      AliCaloPhoton* ph2 = (AliCaloPhoton*)fPHOSEvent->At(i2);
+      AliCaloPhoton *ph2 = (AliCaloPhoton *)fPHOSEvent->At(i2);
       TLorentzVector sum(*ph1 + *ph2);
       double qinv = sum.M();
       double kT = 0.5 * sum.Pt();
@@ -598,10 +713,10 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
 
   // now mixed
   for (Int_t i1 = 0; i1 < mc->GetEntriesFast(); i1++) {
-    AliAODMCParticle* p1 = (AliAODMCParticle*)mc->At(i1);
+    AliAODMCParticle *p1 = (AliAODMCParticle *)mc->At(i1);
     p1->Momentum(ph1);
     // Module acceptance
-    double vtx[3] = { p1->Xv(), p1->Yv(), p1->Zv() };
+    double vtx[3] = {p1->Xv(), p1->Yv(), p1->Zv()};
     int mod1;
     double x1, z1;
     if (!fPHOSGeo->ImpactOnEmc(vtx, p1->Theta(), p1->Phi(), mod1, x1, z1))
@@ -613,15 +728,16 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     rec1.SetPxPyPzE(globaPos.X(), globaPos.Y(), globaPos.Z(), p1->E());
 
     for (Int_t ev = 0; ev < fMCEvents->GetSize(); ev++) {
-      TClonesArray* mixMC = static_cast<TClonesArray*>(fMCEvents->At(ev));
+      TClonesArray *mixMC = static_cast<TClonesArray *>(fMCEvents->At(ev));
       for (Int_t i2 = 0; i2 < mixMC->GetEntriesFast(); i2++) {
-        AliAODMCParticle* p2 = (AliAODMCParticle*)mixMC->At(i2);
+        AliAODMCParticle *p2 = (AliAODMCParticle *)mixMC->At(i2);
         p2->Momentum(ph2);
         // Module acceptance
-        double vtx2[3] = { p2->Xv(), p2->Yv(), p2->Zv() };
+        double vtx2[3] = {p2->Xv(), p2->Yv(), p2->Zv()};
         int mod2;
         double x2, z2;
-        if (!fPHOSGeo->ImpactOnEmc(vtx2, p2->Theta(), p2->Phi(), mod2, x2, z2)) {
+        if (!fPHOSGeo->ImpactOnEmc(vtx2, p2->Theta(), p2->Phi(), mod2, x2,
+                                   z2)) {
           continue;
         }
 
@@ -666,12 +782,13 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
 
   // mixed-Signal
   for (Int_t i1 = 0; i1 < inSignal; i1++) {
-    AliCaloPhoton* ph1 = (AliCaloPhoton*)fSignalEvent->At(i1);
+    AliCaloPhoton *ph1 = (AliCaloPhoton *)fSignalEvent->At(i1);
 
     for (Int_t ev = 0; ev < fSignalEvents->GetSize(); ev++) {
-      TClonesArray* mixSignal = static_cast<TClonesArray*>(fSignalEvents->At(ev));
+      TClonesArray *mixSignal =
+          static_cast<TClonesArray *>(fSignalEvents->At(ev));
       for (Int_t i2 = 0; i2 < mixSignal->GetEntriesFast(); i2++) {
-        AliCaloPhoton* ph2 = (AliCaloPhoton*)mixSignal->At(i2);
+        AliCaloPhoton *ph2 = (AliCaloPhoton *)mixSignal->At(i2);
 
         TLorentzVector sum = *ph1 + *ph2;
         TVector3 gammaBeta(sum.BoostVector());
@@ -695,11 +812,11 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
   }
   // Embedded
   for (Int_t i1 = 0; i1 < inPHOS; i1++) {
-    AliCaloPhoton* ph1 = (AliCaloPhoton*)fPHOSEvent->At(i1);
+    AliCaloPhoton *ph1 = (AliCaloPhoton *)fPHOSEvent->At(i1);
     for (Int_t ev = 0; ev < prevPHOS->GetSize(); ev++) {
-      TClonesArray* mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
+      TClonesArray *mixPHOS = static_cast<TClonesArray *>(prevPHOS->At(ev));
       for (Int_t i2 = 0; i2 < mixPHOS->GetEntriesFast(); i2++) {
-        AliCaloPhoton* ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
+        AliCaloPhoton *ph2 = (AliCaloPhoton *)mixPHOS->At(i2);
         TLorentzVector sum(*ph1 + *ph2);
         double qinv = sum.M();
         double kT = 0.5 * sum.Pt();
@@ -721,14 +838,15 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
   }
 
   if (mc->GetEntriesFast() > 0) {
-    TClonesArray* tmpMC = new TClonesArray("AliAODMCParticle", mc->GetEntriesFast());
+    TClonesArray *tmpMC =
+        new TClonesArray("AliAODMCParticle", mc->GetEntriesFast());
     for (int i = 0; i < mc->GetEntriesFast(); i++) {
-      AliAODMCParticle* a = (AliAODMCParticle*)mc->At(i);
+      AliAODMCParticle *a = (AliAODMCParticle *)mc->At(i);
       new ((*tmpMC)[i]) AliAODMCParticle(*a);
     }
     fMCEvents->AddFirst(tmpMC);
     if (fMCEvents->GetSize() > 5) { // Remove redundant events
-      TClonesArray* tmp = static_cast<TClonesArray*>(fMCEvents->Last());
+      TClonesArray *tmp = static_cast<TClonesArray *>(fMCEvents->Last());
       fMCEvents->RemoveLast();
       delete tmp;
     }
@@ -736,13 +854,13 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
 
   // Now we either add current events to stack or remove
   // If no photons in current event - no need to add it to mixed
-  const Int_t kMixEvents[kCentBins] = { 20, 20, 20, 30, 30, 40, 40 };
+  const Int_t kMixEvents[kCentBins] = {20, 20, 20, 30, 30, 40, 40};
   if (fPHOSEvent->GetEntriesFast() > 0) {
     fPHOSEvent->Expand(fPHOSEvent->GetEntriesFast());
     prevPHOS->AddFirst(fPHOSEvent);
     fPHOSEvent = 0;
     if (prevPHOS->GetSize() > kMixEvents[fCenBin]) { // Remove redundant events
-      TClonesArray* tmp = static_cast<TClonesArray*>(prevPHOS->Last());
+      TClonesArray *tmp = static_cast<TClonesArray *>(prevPHOS->Last());
       prevPHOS->RemoveLast();
       delete tmp;
     }
@@ -753,7 +871,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     fSignalEvents->AddFirst(fSignalEvent);
     fSignalEvent = 0;
     if (fSignalEvents->GetSize() > kMixEvents[0]) { // Remove redundant events
-      TClonesArray* tmp = static_cast<TClonesArray*>(fSignalEvents->Last());
+      TClonesArray *tmp = static_cast<TClonesArray *>(fSignalEvents->Last());
       fSignalEvents->RemoveLast();
       delete tmp;
     }
@@ -764,8 +882,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
   fEventCounter++;
 }
 //___________________________________________________________________________
-Int_t AliPHOSEmbedggHBT::JetRejection(Int_t module) const
-{
+Int_t AliPHOSEmbedggHBT::JetRejection(Int_t module) const {
   // We reject events with hard tracks in the vicinity of center of PHOS module
   // track pT thresholds
   const double cutPt1 = 10.; // Maximal Track pT
@@ -778,11 +895,13 @@ Int_t AliPHOSEmbedggHBT::JetRejection(Int_t module) const
   Int_t result = 0;
 
   // azimuthal angle of PHOS module
-  double phiPHOS = TMath::DegToRad() * (270. + fPHOSGeo->GetPHOSAngle(module)); // (40,20,0,-20,-40) degrees
+  double phiPHOS =
+      TMath::DegToRad() *
+      (270. + fPHOSGeo->GetPHOSAngle(module)); // (40,20,0,-20,-40) degrees
 
   Int_t nt = fEvent->GetNumberOfTracks();
   for (Int_t i = 0; i < nt; i++) {
-    AliAODTrack* aodTrack = static_cast<AliAODTrack*>(fEvent->GetTrack(i));
+    AliAODTrack *aodTrack = static_cast<AliAODTrack *>(fEvent->GetTrack(i));
 
     if (aodTrack->GetTPCncls() < 70) {
       continue;
@@ -796,7 +915,8 @@ Int_t AliPHOSEmbedggHBT::JetRejection(Int_t module) const
     }
     if (aodTrack->GetKinkIndex(0) > 0)
       continue;
-    if (Float_t(aodTrack->GetTPCnclsS()) / Float_t(aodTrack->GetTPCncls()) > 0.4)
+    if (Float_t(aodTrack->GetTPCnclsS()) / Float_t(aodTrack->GetTPCncls()) >
+        0.4)
       continue;
     // ITS
     if ((status & AliAODTrack::kITSrefit) == 0)
@@ -825,8 +945,7 @@ Int_t AliPHOSEmbedggHBT::JetRejection(Int_t module) const
   return result;
 }
 //_____________________________________________________________________________
-void AliPHOSEmbedggHBT::ReclusterizeCPV()
-{
+void AliPHOSEmbedggHBT::ReclusterizeCPV() {
   // Jet-finder like algorithm:
   // find the highest cell, add m*n cells around it,
   // next highest cell, etc. while there will be no cells above the threshold
@@ -844,13 +963,13 @@ void AliPHOSEmbedggHBT::ReclusterizeCPV()
   const Int_t nCluX = 5; // cluster size
   const Int_t nCluZ = 3; // cluster size
 
-  double cpvAmp[nCPVPadsX + 1][nCPVPadsZ + 1] = { 0 };
+  double cpvAmp[nCPVPadsX + 1][nCPVPadsZ + 1] = {0};
 
   Int_t nCpvClu = 0;
 
   // Copy CPV digits to 2D matrix
-  AliAODEvent* event = dynamic_cast<AliAODEvent*>(InputEvent());
-  AliAODCaloCells* cells = event->GetPHOSCells();
+  AliAODEvent *event = dynamic_cast<AliAODEvent *>(InputEvent());
+  AliAODCaloCells *cells = event->GetPHOSCells();
   const Int_t nCells = cells->GetNumberOfCells();
   Int_t relId[4];
   pairs arr[nCells];
@@ -874,7 +993,8 @@ void AliPHOSEmbedggHBT::ReclusterizeCPV()
   // Sort in increasing energy
   std::sort(arr, arr + nCPV);
 
-  // Find cell with highest amplitude and if it is above threshold, combine cluster n*m and remove cells from the matrix
+  // Find cell with highest amplitude and if it is above threshold, combine
+  // cluster n*m and remove cells from the matrix
   for (Int_t iCPV = nCPV - 1; iCPV >= 0; iCPV--) {
     fPHOSGeo->AbsToRelNumbering(arr[iCPV].second, relId);
     if (cpvAmp[relId[2]][relId[3]] > 0) {
@@ -901,7 +1021,8 @@ void AliPHOSEmbedggHBT::ReclusterizeCPV()
           fPHOSGeo->RelPosInModule(relId, xi, zi);
 
           if (cpvAmp[ix][iz] > 0) {
-            double w = TMath::Max(0., logWeight + TMath::Log(cpvAmp[ix][iz] / totE));
+            double w =
+                TMath::Max(0., logWeight + TMath::Log(cpvAmp[ix][iz] / totE));
             x += xi * w;
             z += zi * w;
             wtot += w;
@@ -931,8 +1052,7 @@ void AliPHOSEmbedggHBT::ReclusterizeCPV()
   }
 }
 //_________________________________________________________________________
-bool AliPHOSEmbedggHBT::IsGoodChannel(Int_t cellX, Int_t cellZ)
-{
+bool AliPHOSEmbedggHBT::IsGoodChannel(Int_t cellX, Int_t cellZ) {
   if (fBadMap)
     if (fBadMap->GetBinContent(cellX, cellZ) == 1)
       return kFALSE;
@@ -940,10 +1060,11 @@ bool AliPHOSEmbedggHBT::IsGoodChannel(Int_t cellX, Int_t cellZ)
   return kTRUE;
 }
 //_________________________________________________________________________
-int AliPHOSEmbedggHBT::CommonParent(const AliCaloPhoton* p1, const AliCaloPhoton* p2) const
-{
+int AliPHOSEmbedggHBT::CommonParent(const AliCaloPhoton *p1,
+                                    const AliCaloPhoton *p2) const {
   // Looks through parents and finds if there was commont pi0 among ancestors
-  TClonesArray* fStack = static_cast<TClonesArray*>(fEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  TClonesArray *fStack = static_cast<TClonesArray *>(
+      fEvent->FindListObject(AliAODMCParticle::StdBranchName()));
 
   if (!fStack) {
     return -1; // can not say anything
@@ -951,14 +1072,39 @@ int AliPHOSEmbedggHBT::CommonParent(const AliCaloPhoton* p1, const AliCaloPhoton
   Int_t prim1 = p1->GetPrimary();
   while (prim1 != -1) {
     Int_t prim2 = p2->GetPrimary();
-
     while (prim2 != -1) {
       if (prim1 == prim2) {
         return prim1;
       }
-      prim2 = ((AliAODMCParticle*)fStack->At(prim2))->GetMother();
+      prim2 = ((AliAODMCParticle *)fStack->At(prim2))->GetMother();
     }
-    prim1 = ((AliAODMCParticle*)fStack->At(prim1))->GetMother();
+    prim2 = p2->GetPrimaryAtVertex();
+    while (prim2 != -1) {
+      if (prim1 == prim2) {
+        return prim1;
+      }
+      prim2 = ((AliAODMCParticle *)fStack->At(prim2))->GetMother();
+    }
+    prim1 = ((AliAODMCParticle *)fStack->At(prim1))->GetMother();
+  }
+  // if not found, check second parent
+  prim1 = p1->GetPrimaryAtVertex();
+  while (prim1 != -1) {
+    Int_t prim2 = p2->GetPrimary();
+    while (prim2 != -1) {
+      if (prim1 == prim2) {
+        return prim1;
+      }
+      prim2 = ((AliAODMCParticle *)fStack->At(prim2))->GetMother();
+    }
+    prim2 = p2->GetPrimaryAtVertex();
+    while (prim2 != -1) {
+      if (prim1 == prim2) {
+        return prim1;
+      }
+      prim2 = ((AliAODMCParticle *)fStack->At(prim2))->GetMother();
+    }
+    prim1 = ((AliAODMCParticle *)fStack->At(prim1))->GetMother();
   }
   return -1;
 }
