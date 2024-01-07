@@ -113,7 +113,7 @@ void AliAnalysisTaskParticleEffWRZ::UserCreateOutputObjects()
     else if (j==3) parttypename="Proton";
     else if (j==4) parttypename="Deuteron";
     
-    for(Int_t i = 0; i < MULTBINS; i++){
+    for(Int_t i = 0; i < MULTBINS; i++)  {
       //---------------part 1----------------------
       hname[0] = "hGeneratedMCPrimariesEffM"; hname[0]+=i; hname[0]+=parttypename;
       htitle[0] = "Kinematic level eta_pT (prim only) M"; htitle[0]+=i; htitle[0]+=parttypename;
@@ -374,7 +374,6 @@ void AliAnalysisTaskParticleEffWRZ::UserCreateOutputObjects()
     
   fHistEv = new TH1F("fHistEv", "Multiplicity", 100, 0, 100);
   fHistoList->Add(fHistEv);
-    std::cout<<"Dupaaaa 3"<<std::endl;
   for(Int_t i = 0; i < MULTBINS; i++)  {
     hna= "fHistEventCutsM";
     hna+= i;
@@ -633,19 +632,12 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
   AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
   AliMultSelection *mult_selection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
   Double_t  centper = alicent->GetCentralityPercentile("V0M");
-  if(mult_selection->GetMultiplicityPercentile("V0M") < 0.000001 || mult_selection->GetMultiplicityPercentile("V0M") >  50.0) 
+  if(mult_selection->GetMultiplicityPercentile("V0M") < 10 || mult_selection->GetMultiplicityPercentile("V0M") >  30.0) 
      return; 
 //if(mult_selection->GetMultiplicityPercentile("V0M") < fmincen || mult_selection->GetMultiplicityPercentile("V0M") >  fmaxce
+
   fHistEv->Fill(centper);
-  
-  int fcent = 0;
-  if(mult_selection->GetMultiplicityPercentile("V0M") > 0.000001 && mult_selection->GetMultiplicityPercentile("V0M") <  10.0) 
-   fcent = 0;
-  else if(mult_selection->GetMultiplicityPercentile("V0M") > 10.0 && mult_selection->GetMultiplicityPercentile("V0M") <  30.0) 
-   fcent = 1;
-  else if(mult_selection->GetMultiplicityPercentile("V0M") > 30.0 && mult_selection->GetMultiplicityPercentile("V0M") <  50.0) 
-   fcent = 2;   
-   
+
   // EVENT SELECTION ********************
   fHistQA[9]->Fill(1);
   fHistEvCuts[0]->Fill(1);
@@ -941,7 +933,7 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 	fHistQAPIDFail[3][4][charge]->Fill(tP,nSigmaTPCD);
 	fHistQAPIDFail[4][4][charge]->Fill(nSigmaTPCD,nSigmaTOFD);
       }
-//    int fcent=0;
+    int fcent=0;
     fReconstructedAfterCuts[PARTTYPES*fcent][charge]->Fill(track->Eta(), track->Pt());//Fills hist. for all reconstructed particles after cuts
  
       
@@ -1364,7 +1356,7 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
       // check physical primary 
       if(MCtrk->IsPhysicalPrimary() || (PDGcode==1000010020 && !MCtrk->IsSecondaryFromMaterial())) // Not from weak decay!
 	{
-	//    int fcent=0;
+	    int fcent=0;
 	// Filling histograms for MC truth particles
 	fGeneratedMCPrimaries[fcent*PARTTYPES][charge]->Fill(MCtrk->Eta(), MCtrk->Pt());
 
@@ -1436,6 +1428,7 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
     
   PostData(1, fHistoList);
 }
+
 
 
 
