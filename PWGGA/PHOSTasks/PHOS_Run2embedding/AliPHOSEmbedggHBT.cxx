@@ -452,12 +452,11 @@ void AliPHOSEmbedggHBT::UserExec(Option_t *) {
     ph->SetDistToBad(cellX);
     ph->SetPrimary(clu->GetLabelAt(0));
     if (clu->GetNLabels() > 1) {
-      if (clu->GetNLabels() == 2) { // Ecactly 2 - OK
+      if (clu->GetNLabels() == 2) { // Exactly 2 - OK
         ph->SetPrimaryAtVertex(clu->GetLabelAt(1));
       } else { // If more, skip parents with common ancestor and leave two
                // independent
         bool notFound = true;
-        ;
         ph->SetPrimaryAtVertex(-1); // if all labels will be the same
         for (UInt_t il = 1; notFound && il < clu->GetNLabels(); il++) {
           int prim1 = clu->GetLabelAt(0);
@@ -476,6 +475,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t *) {
               notFound = false;
               break;
             }
+            prim1 = ((AliAODMCParticle *)fStack->At(prim1))->GetMother();            
           }
         }
       }
@@ -555,7 +555,6 @@ void AliPHOSEmbedggHBT::UserExec(Option_t *) {
       } else { // If more, skip parents with common ancestor and leave two
                // independent
         bool notFound = true;
-        ;
         ph->SetPrimaryAtVertex(-1); // if all labels will be the same
         for (UInt_t il = 1; notFound && il < clu->GetNLabels(); il++) {
           int prim1 = clu->GetLabelAt(0);
@@ -574,6 +573,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t *) {
               notFound = false;
               break;
             }
+            prim1 = ((AliAODMCParticle *)fStack->At(prim1))->GetMother();            
           }
         }
       }
