@@ -113,7 +113,7 @@ void AliAnalysisTaskParticleEffWRZ::UserCreateOutputObjects()
     else if (j==3) parttypename="Proton";
     else if (j==4) parttypename="Deuteron";
     
-    for(Int_t i = 0; i < MULTBINS; i++)  {
+    for(Int_t i = 0; i < MULTBINS; i++){
       //---------------part 1----------------------
       hname[0] = "hGeneratedMCPrimariesEffM"; hname[0]+=i; hname[0]+=parttypename;
       htitle[0] = "Kinematic level eta_pT (prim only) M"; htitle[0]+=i; htitle[0]+=parttypename;
@@ -482,7 +482,6 @@ void AliAnalysisTaskParticleEffWRZ::UserCreateOutputObjects()
 
   }
 
-
   
   AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   fAODpidUtil = aodH->GetAODpidUtil();
@@ -632,11 +631,18 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
   AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
   AliMultSelection *mult_selection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
   Double_t  centper = alicent->GetCentralityPercentile("V0M");
-  if(mult_selection->GetMultiplicityPercentile("V0M") < 10 || mult_selection->GetMultiplicityPercentile("V0M") >  30.0) 
+  if(mult_selection->GetMultiplicityPercentile("V0M") < 0.000001 || mult_selection->GetMultiplicityPercentile("V0M") >  50.0) 
      return; 
 //if(mult_selection->GetMultiplicityPercentile("V0M") < fmincen || mult_selection->GetMultiplicityPercentile("V0M") >  fmaxce
-
   fHistEv->Fill(centper);
+  
+  int fcent = 0;
+  if(mult_selection->GetMultiplicityPercentile("V0M") > 0.000001 && mult_selection->GetMultiplicityPercentile("V0M") <  10.0) 
+   fcent = 0;
+  else if(mult_selection->GetMultiplicityPercentile("V0M") > 10.0 && mult_selection->GetMultiplicityPercentile("V0M") <  30.0) 
+   fcent = 1;
+  else if(mult_selection->GetMultiplicityPercentile("V0M") > 30.0 && mult_selection->GetMultiplicityPercentile("V0M") <  50.0) 
+   fcent = 2;   
 
   // EVENT SELECTION ********************
   fHistQA[9]->Fill(1);
@@ -717,7 +723,6 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 //   Bool_t isITSPileup = AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(aodEvent, "Hijing");
   // if (isTPCPileup || isITSPileup) continue;
    
-
     
     if (!track)continue;
     fHistQA[10]->Fill(2);
@@ -754,7 +759,6 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
     DCAZTrack = TMath::Abs(track->ZAtDCA());
 
 
-
     //DCA
     float vertexX  = -999.;
     float vertexY  = -999.;
@@ -788,18 +792,19 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
    AliAODTrack* aodtrackpid;
    //if(filterBit==(1 << (7)))
    //for FB 128 - tpc only tracks
-    if(filterBit==(1 << (7)))
+
+    if(filterBit==(1 << (7))){
       aodtrackpid =(AliAODTrack*)aodEvent->GetTrack(labels[-1-aodEvent->GetTrack(iTracks)->GetID()]);
-    else
+      }
+    else{
       aodtrackpid = track;
-      
+      }
     //Electron rejection
     double nSigmaTPCPi = fAODpidUtil->NumberOfSigmasTPC(aodtrackpid,AliPID::kPion);
     double nSigmaTPCK = fAODpidUtil->NumberOfSigmasTPC(aodtrackpid,AliPID::kKaon);
     double nSigmaTPCP = fAODpidUtil->NumberOfSigmasTPC(aodtrackpid,AliPID::kProton);
     double nSigmaTPCe = fAODpidUtil->NumberOfSigmasTPC(aodtrackpid,AliPID::kElectron);
     double nSigmaTPCD = fAODpidUtil->NumberOfSigmasTPC(aodtrackpid,AliPID::kDeuteron);
-    
     if(IsElectron(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP,nSigmaTPCD))
       continue;
       
@@ -810,7 +815,6 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
     Float_t chi2Tpc = track->Chi2perNDF();
     fHistQA[5]->Fill(chi2Tpc);
     fHistQA[6]->Fill(track->Pt());
-
     float px=track->Px(); float py=track->Py();  float ph=atan2(py,px); //track->Phi()
     float tPt = track->Pt();
     float tP = track->P();
@@ -839,7 +843,6 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
         nSigmaTOFD = fAODpidUtil->NumberOfSigmasTOF(aodtrackpid,AliPID::kDeuteron);
       }
     }
-    
     float tdEdx = aodtrackpid->GetTPCsignal();
     float tTofSig = aodtrackpid->GetTOFsignal();
     double pidTime[5]; aodtrackpid->GetIntegratedTimes(pidTime);
@@ -875,7 +878,6 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
       if(track->P() < 2.2)
     	if(!(IsDeuteronTPCdEdx(track->P(), tdEdx, 2.2)))
     	  isDeuteronNsigma = false;
-
 
     if (isPionNsigma){
       fHistQAPID[0][1][charge]->Fill(tPt,tdEdx);
@@ -933,7 +935,8 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 	fHistQAPIDFail[3][4][charge]->Fill(tP,nSigmaTPCD);
 	fHistQAPIDFail[4][4][charge]->Fill(nSigmaTPCD,nSigmaTOFD);
       }
-    int fcent=0;
+
+//    int fcent=0;
     fReconstructedAfterCuts[PARTTYPES*fcent][charge]->Fill(track->Eta(), track->Pt());//Fills hist. for all reconstructed particles after cuts
  
       
@@ -1120,7 +1123,6 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+1][1]->GetXaxis()->SetRangeUser(-1,1);
 	}
         
-         
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1188,7 +1190,6 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 	  if(statusTOF)
 	    fMisidentification[fcent][charge]-> Fill(4,4.5);
       }
-
     if(PDGcode==1000010020)
       PDGcode=777;
     else if(PDGcode==-1000010020)
@@ -1251,7 +1252,6 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
       fReconstructedPrimaries[PARTTYPES*fcent][charge]->Fill(track->Eta(), track->Pt());
     }
 
- 
 //    int PDGcode = MCtrk->GetPdgCode();
    //And secondaries for different particle species:
 
@@ -1321,14 +1321,13 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 }
 
 
-
   // MONTECARLO PARTICLES 
   if(!arrayMC){
     AliError("Array of MC particles not found");
     return;
   }
   // loop over MC stack 
-  for (Int_t ipart = 0; ipart < arrayMC->GetEntries(); ipart++) {
+  for (Int_t ipart = 0; ipart < arrayMC->GetEntriesFast(); ipart++) {
     //std::cout<<"Entered MC loop"<<std::endl;
     
     AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(ipart);
@@ -1352,11 +1351,10 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
       if(MCtrk->Pt() < 0. || MCtrk->Pt() > 20){
 	continue;}
 
-
       // check physical primary 
       if(MCtrk->IsPhysicalPrimary() || (PDGcode==1000010020 && !MCtrk->IsSecondaryFromMaterial())) // Not from weak decay!
 	{
-	    int fcent=0;
+	//    int fcent=0;
 	// Filling histograms for MC truth particles
 	fGeneratedMCPrimaries[fcent*PARTTYPES][charge]->Fill(MCtrk->Eta(), MCtrk->Pt());
 
@@ -1428,7 +1426,6 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
     
   PostData(1, fHistoList);
 }
-
 
 
 
