@@ -1,7 +1,7 @@
 #ifndef ALIANALYSISTASKPARTICLEEFFWRZ
 #define ALIANALYSISTASKPARTICLEEFFWRZ
 
-#define MULTBINS 3
+#define MULTBINS 1
 #define PARTTYPES 5
 
 #include "AliAnalysisTaskSE.h"
