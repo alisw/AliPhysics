@@ -27,6 +27,8 @@
 #include "TObjArray.h"
 #include "TObject.h"
 #include "TList.h"
+#include "TGrid.h"
+#include "TFile.h"
 #include "TMath.h"
 #include "THnSparse.h"
 #include "TString.h"

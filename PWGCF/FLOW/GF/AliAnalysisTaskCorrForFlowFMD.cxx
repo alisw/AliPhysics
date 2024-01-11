@@ -139,6 +139,8 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fMinEventsToMix(5),
     fNzVtxBins(10),
     fNCentBins(15),
+    fUseFMDcorrection(kFALSE),
+    fFMD_correctoion_file(""),
     fMergingCut(0.0)
 {}
 //_____________________________________________________________________________
@@ -260,6 +262,8 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fMinEventsToMix(5),
     fNzVtxBins(10),
     fNCentBins(15),
+    fUseFMDcorrection(kFALSE),
+    fFMD_correctoion_file(""),
     fMergingCut(0.0)
 {
     DefineInput(0, TChain::Class());
@@ -461,6 +465,21 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
       if(!fhCentCalib) { AliError("Centrality calibration histogram not loaded!"); return; }
     }
 
+
+    if(fUseFMDcorrection)
+   {
+   if (TString(fFMD_correctoion_file).BeginsWith("alien:"))
+    TGrid::Connect("alien:");
+   TFile *fileT=TFile::Open(fFMD_correctoion_file);
+
+  // TFile *f = TFile::Open("FMD_correction_file.root");
+  TDirectory * d1 =(TDirectory*) fileT->Get("Forward");
+  TF1 *fFMD_correctoion = (TF1 *) d1->Get("param");
+  fileT->Close();
+
+   }
+
+	
     if(fAnalType == eFMDAFMDC && fUseEfficiency){ AliWarning("Efficeincies inserted when running FMDA-FMDC. Turning off the flag."); fUseEfficiency = kFALSE; }
 
     PostData(1, fOutputListCharged);
@@ -1890,8 +1909,17 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
     {
       // Bin content is most probable number of particles!
       Float_t phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi);
-      Float_t mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
+      Float_t mostProbableN_temp = d2Ndetadphi.GetBinContent(iEta, iPhi);
+    
+      Double_t fmd_correc_factor = 1.0;
+	    
+      if(fUseFMDcorrection) {
+      fmd_correc_factor = fFMD_correctoion->Eval(eta);    
+       if(fmd_correc_factor < 0.001 || fmd_correc_factor > 5) continue;
+      }
 
+      Float_t mostProbableN =  mostProbableN_temp / fmd_correc_factor;
+	    
       if(mostProbableN > 0) {
     	   if(eta > 0){
     	     nFMD_fwd_hits+=mostProbableN;
