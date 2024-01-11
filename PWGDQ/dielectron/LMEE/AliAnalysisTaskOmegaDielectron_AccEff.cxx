@@ -125,6 +125,10 @@ void AliAnalysisTaskOmegaDielectron_AccEff::UserCreateOutputObjects() {
 
   for (unsigned int i_cv = 0; i_cv < fFilter_TrackCuts.size(); ++i_cv){
 
+    TH3D* th3_tmp_fHist_Rec_Omegas_TrackCuts = new TH3D(Form("Hist_Rec_Omegas_TrackCuts_Cut%d", i_cv+1), Form("Hist_Rec_Omegas_TrackCuts_Cut%d;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});y", i_cv+1),  bins_mee,edges_mee[0],edges_mee[1], bins_pTomega,edges_pTomega[0],edges_pTomega[1], bins_y,edges_y[0],edges_y[1]);
+    th3_tmp_fHist_Rec_Omegas_TrackCuts->Sumw2();
+    fHist_Rec_Omegas_TrackCuts.push_back(th3_tmp_fHist_Rec_Omegas_TrackCuts);
+    fOutputList->Add(th3_tmp_fHist_Rec_Omegas_TrackCuts);
     TH3D* th3_tmp_fHist_Rec_Omegas_TrackPID = new TH3D(Form("Hist_Rec_Omegas_TrackPID_Cut%d", i_cv+1), Form("Hist_Rec_Omegas_TrackPID_Cut%d;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});y", i_cv+1),  bins_mee,edges_mee[0],edges_mee[1], bins_pTomega,edges_pTomega[0],edges_pTomega[1], bins_y,edges_y[0],edges_y[1]);
     th3_tmp_fHist_Rec_Omegas_TrackPID->Sumw2();
     fHist_Rec_Omegas_TrackPID.push_back(th3_tmp_fHist_Rec_Omegas_TrackPID);
@@ -172,11 +176,6 @@ void AliAnalysisTaskOmegaDielectron_AccEff::UserCreateOutputObjects() {
       th3_tmp_fHist_MC_Omegas_TrackPID->Sumw2();
       fHist_MC_Omegas_TrackPID.push_back(th3_tmp_fHist_MC_Omegas_TrackPID);
       fOutputList->Add(th3_tmp_fHist_MC_Omegas_TrackPID);
-
-      TH3D* th3_tmp_fHist_Rec_Omegas_TrackCuts = new TH3D(Form("Hist_Rec_Omegas_TrackCuts_Cut%d", i_cv+1), Form("Hist_Rec_Omegas_TrackCuts_Cut%d;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});y", i_cv+1),  bins_mee,edges_mee[0],edges_mee[1], bins_pTomega,edges_pTomega[0],edges_pTomega[1], bins_y,edges_y[0],edges_y[1]);
-      th3_tmp_fHist_Rec_Omegas_TrackCuts->Sumw2();
-      fHist_Rec_Omegas_TrackCuts.push_back(th3_tmp_fHist_Rec_Omegas_TrackCuts);
-      fOutputList->Add(th3_tmp_fHist_Rec_Omegas_TrackCuts);
     }
 
   }
@@ -184,13 +183,13 @@ void AliAnalysisTaskOmegaDielectron_AccEff::UserCreateOutputObjects() {
   fHist_MC_Omegas_gen_DaughtersinAcc = new TH3D("fHist_MC_Omegas_gen_DaughtersinAcc", "fHist_MC_Omegas_gen_DaughtersinAcc;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});y",  bins_mee,edges_mee[0],edges_mee[1], bins_pTomega,edges_pTomega[0],edges_pTomega[1], bins_y,edges_y[0],edges_y[1]);
   fOutputList->Add(fHist_MC_Omegas_gen_DaughtersinAcc);
 
+  fHistVertex             = new TH2D("zVertex", "zVertex; Event selection ; z(cm)", 3, 0.5, 3.5, 300, -15.0, 15.0);
+  fHistVertex->GetXaxis()->SetBinLabel(1, vector_EventCut_Names.at(0).c_str());
+  fHistVertex->GetXaxis()->SetBinLabel(2, vector_EventCut_Names.at(1).c_str());
+  fHistVertex->GetXaxis()->SetBinLabel(3, vector_EventCut_Names.at(2).c_str());
+  fOutputList->Add(fHistVertex);
+  
   if(!fsysUnc){
-    fHistVertex             = new TH2D("zVertex", "zVertex; Event selection ; z(cm)", 3, 0.5, 3.5, 300, -15.0, 15.0);
-    fHistVertex->GetXaxis()->SetBinLabel(1, vector_EventCut_Names.at(0).c_str());
-    fHistVertex->GetXaxis()->SetBinLabel(2, vector_EventCut_Names.at(1).c_str());
-    fHistVertex->GetXaxis()->SetBinLabel(3, vector_EventCut_Names.at(2).c_str());
-    fOutputList->Add(fHistVertex);
-
     // Histogram to check Rapidity distribution
     fHist_MC_Omegas_Rapidity = new TH1F("fHist_MC_Omegas_Rapidity", "Omega - Rapidity;y;#it{N}_{events}", 200, -10, 10);
     fOutputList->Add(fHist_MC_Omegas_Rapidity);
@@ -278,10 +277,10 @@ void AliAnalysisTaskOmegaDielectron_AccEff::UserExec(Option_t *) {
       if (!fEventCuts_VertexZ->IsSelected(fEvent)){ return; }
     }
 
-    if(!fsysUnc){
+    //if(!fsysUnc){
       ///-------------------- Fill Events in Histogramm :: All;Selected--------------------///
       fHistVertex->Fill(i_EventC+1.0, vtxZGlobal); // all events Vertex z
-    }
+    //}
 
 
 
@@ -478,8 +477,8 @@ void AliAnalysisTaskOmegaDielectron_AccEff::UserExec(Option_t *) {
             cutMask_electron[i_cutV_2] = fFilter_TrackCuts.at(i_cutV_2)->IsSelected(ele_from_same_mother_track);
             cutMask_positron[i_cutV_2] = fFilter_TrackCuts.at(i_cutV_2)->IsSelected(pos_from_same_mother_track);
             if (cutMask_electron[i_cutV_2] == selectedMask_Track[i_cutV_2] && cutMask_positron[i_cutV_2] == selectedMask_Track[i_cutV_2]) {
+              fHist_Rec_Omegas_TrackCuts.at(i_cutV_2)->Fill(mass, pairpt, pairy);
               if(!fsysUnc){
-                fHist_Rec_Omegas_TrackCuts.at(i_cutV_2)->Fill(mass, pairpt, pairy);
                 fHist_MC_Omegas_TrackCuts.at(i_cutV_2)->Fill(mcParticle_same_mother->M(), mcParticle_same_mother->Pt(), mcParticle_same_mother->Y());
               }
 
