@@ -33,7 +33,7 @@ AliAnalysisSPCRun2::AliAnalysisSPCRun2():
   fcent_15(0.), fcent_16(0.),
   fCentralityBins(8), fMinNumberPart(14),
   bUseWeightsNUE(kTRUE), bUseWeightsNUA(kTRUE),
-  bComputeEtaGap(kFALSE), fEtaGap(0.8),
+  bComputeEtaGap(kFALSE), bUseJoinedCov(kFALSE), fEtaGap(0.8),
   bSaveAllQA(kFALSE),
   fCounterHistogram(NULL), fProfileTrackCuts(NULL)
 {
@@ -53,7 +53,7 @@ AliAnalysisSPCRun2::AliAnalysisSPCRun2(const char *name):
   fcent_15(0.), fcent_16(0.),
   fCentralityBins(8), fMinNumberPart(14),
   bUseWeightsNUE(kTRUE), bUseWeightsNUA(kTRUE),
-  bComputeEtaGap(kFALSE), fEtaGap(0.8),
+  bComputeEtaGap(kFALSE), bUseJoinedCov(kFALSE), fEtaGap(0.8),
   bSaveAllQA(kFALSE),
   fCounterHistogram(NULL), fProfileTrackCuts(NULL)
 {
@@ -514,6 +514,7 @@ void AliAnalysisSPCRun2::MainTask(Int_t centBin, Int_t mult,
   if (mult >= fMinNumberPart) {
     // Calculate all the Q-vectors for this current event.
     CalculateQvectors(mult, m_angles, m_weights);
+    for (int i=0;i<14;i++) fCorrelDenoms[i]=NULL; // Set to NULL in the beginning, will be computed only once.
 
     // Declare the arrays to later fill all the needed bins for the correlators
     // and the error terms.
@@ -553,7 +554,7 @@ void AliAnalysisSPCRun2::MainTask(Int_t centBin, Int_t mult,
 
       // Calculate the joined product of num*den as one single term.
       // Works only if the order of the correlator is <= 4
-      if (fHarmosArray[j][0] <= 4) {
+      if (fHarmosArray[j][0] <= 4 && bUseJoinedCov) {
         if (fDebugLevel > 5) {printf("Calculating joined term.\n");}
         Int_t nPartJoinedCov = 3*fHarmosArray[j][0];
         Int_t hArrayJoinedCov[12] = {0};
@@ -622,66 +623,90 @@ void AliAnalysisSPCRun2::Correlation(Int_t c_nPart, Int_t c_nHarmo, Int_t* harmo
   case 2:{
         Int_t harmonicsTwoNum[2] = {harmo[0], harmo[1]};     
         Int_t harmonicsTwoDen[2] = {0,0};      
-        Double_t wTwoRecursion = Recursion(2,harmonicsTwoDen).Re(); 
-        TComplex twoRecursion = Recursion(2,harmonicsTwoNum)/wTwoRecursion;
+  
+        if (!fCorrelDenoms[1]) {
+        fCorrelDenoms[1] = Recursion(2,harmonicsTwoDen).Re();
+      }
+         
+        TComplex twoRecursion = Recursion(2,harmonicsTwoNum)/fCorrelDenoms[1];
     
         correlData[0] = twoRecursion.Re();  // <cos(h1*phi1+h2*phi2)>
-        correlData[1] = wTwoRecursion;      // weight
+        correlData[1] = fCorrelDenoms[1];      // weight
         correlData[2] = twoRecursion.Im();  // <sin(h1*phi1+h2*phi2)>
       }
     break;
   case 3:{
       Int_t harmonicsThreeNum[3] = {harmo[0],harmo[1],harmo[2]};       
       Int_t harmonicsThreeDen[3] = {0,0,0}; 
-      Double_t wThreeRecursion = Recursion(3,harmonicsThreeDen).Re();      
-      TComplex threeRecursion = Recursion(3,harmonicsThreeNum)/wThreeRecursion;
+
+      if (!fCorrelDenoms[2]) {
+        fCorrelDenoms[2] = Recursion(3,harmonicsThreeDen).Re();
+      }
+              
+      TComplex threeRecursion = Recursion(3,harmonicsThreeNum)/fCorrelDenoms[2];
   
       correlData[0] = threeRecursion.Re(); // <cos(h1*phi1+h2*phi2+h3*phi3)>
-      correlData[1] = wThreeRecursion;     // weight
+      correlData[1] = fCorrelDenoms[2];     // weight
       correlData[2] = threeRecursion.Im(); // <sin(h1*phi1+h2*phi2+h3*phi3)>
     }
     break;
   case 4:{
       Int_t harmonicsFourNum[4] = {harmo[0],harmo[1],harmo[2],harmo[3]};       
       Int_t harmonicsFourDen[4] = {0,0,0,0}; 
-      Double_t wFourRecursion = Recursion(4,harmonicsFourDen).Re();      
-      TComplex fourRecursion = Recursion(4,harmonicsFourNum)/wFourRecursion;
+
+      if (!fCorrelDenoms[3]) {
+        fCorrelDenoms[3] = Recursion(4,harmonicsFourDen).Re();
+      }
+              
+      TComplex fourRecursion = Recursion(4,harmonicsFourNum)/fCorrelDenoms[3];
   
       correlData[0] = fourRecursion.Re(); // <cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4)>
-      correlData[1] = wFourRecursion;     // weight
+      correlData[1] = fCorrelDenoms[3];     // weight
       correlData[2] = fourRecursion.Im(); // <sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4)>
     }
     break;
   case 5:{
       Int_t harmonicsFiveNum[5] = {harmo[0],harmo[1],harmo[2],harmo[3],harmo[4]};       
       Int_t harmonicsFiveDen[5] = {0,0,0,0,0};       
-      Double_t wFiveRecursion = Recursion(5,harmonicsFiveDen).Re();
-      TComplex fiveRecursion = Recursion(5,harmonicsFiveNum)/wFiveRecursion;
+
+      if (!fCorrelDenoms[4]) {
+        fCorrelDenoms[4] = Recursion(5,harmonicsFiveDen).Re();
+      }
+        
+      TComplex fiveRecursion = Recursion(5,harmonicsFiveNum)/fCorrelDenoms[4];
   
       correlData[0] = fiveRecursion.Re(); // <cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5)>
-      correlData[1] = wFiveRecursion;     // weight
+      correlData[1] = fCorrelDenoms[4];     // weight
       correlData[2] = fiveRecursion.Im(); // <sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5)>
     }
     break;
   case 6:{
       Int_t harmonicsSixNum[6] = {harmo[0],harmo[1],harmo[2],harmo[3],harmo[4],harmo[5]};       
       Int_t harmonicsSixDen[6] = {0,0,0,0,0,0}; 
-      Double_t wSixRecursion = Recursion(6,harmonicsSixDen).Re();      
-      TComplex sixRecursion = Recursion(6,harmonicsSixNum)/wSixRecursion;
+
+      if (!fCorrelDenoms[5]) {
+        fCorrelDenoms[5] = Recursion(6,harmonicsSixDen).Re();
+      }
+              
+      TComplex sixRecursion = Recursion(6,harmonicsSixNum)/fCorrelDenoms[5];
   
       correlData[0] = sixRecursion.Re(); // <cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6)>
-      correlData[1] = wSixRecursion;     // weight
+      correlData[1] = fCorrelDenoms[5];     // weight
       correlData[2] = sixRecursion.Im(); // <sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6)>
     }
     break;
   case 7:{
       Int_t harmonicsSevenNum[7] = {harmo[0],harmo[1],harmo[2],harmo[3],harmo[4],harmo[5],harmo[6]};       
       Int_t harmonicsSevenDen[7] = {0,0,0,0,0,0,0};  
-      Double_t wSevenRecursion = Recursion(7,harmonicsSevenDen).Re();     
-      TComplex sevenRecursion = Recursion(7,harmonicsSevenNum)/wSevenRecursion;
+
+      if (!fCorrelDenoms[6]) {
+        fCorrelDenoms[6] = Recursion(7,harmonicsSevenDen).Re();
+      }
+             
+      TComplex sevenRecursion = Recursion(7,harmonicsSevenNum)/fCorrelDenoms[6];
   
       correlData[0] = sevenRecursion.Re(); // <cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7)>
-      correlData[1] = wSevenRecursion;     // weight
+      correlData[1] = fCorrelDenoms[6];     // weight
       correlData[2] = sevenRecursion.Im(); // <sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7)>
     }
     break;
@@ -689,11 +714,15 @@ void AliAnalysisSPCRun2::Correlation(Int_t c_nPart, Int_t c_nHarmo, Int_t* harmo
       Int_t harmonicsEightNum[8] = {harmo[0],harmo[1],harmo[2],harmo[3],
         harmo[4],harmo[5],harmo[6],harmo[7]};       
       Int_t harmonicsEightDen[8] = {0,0,0,0,0,0,0,0};       
-      Double_t wEightRecursion = Recursion(8,harmonicsEightDen).Re();
-      TComplex eightRecursion = Recursion(8,harmonicsEightNum)/wEightRecursion;
+
+      if (!fCorrelDenoms[7]) {
+        fCorrelDenoms[7] = Recursion(8,harmonicsEightDen).Re();
+      }
+        
+      TComplex eightRecursion = Recursion(8,harmonicsEightNum)/fCorrelDenoms[7];
   
       correlData[0] = eightRecursion.Re(); // <cos(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>
-      correlData[1] = wEightRecursion;     // weight
+      correlData[1] = fCorrelDenoms[7];     // weight
       correlData[2] = eightRecursion.Im(); // <sin(h1*phi1+h2*phi2+h3*phi3+h4*phi4+h5*phi5+h6*phi6+h7*phi7+h8*phi8)>
     }
     break;    
@@ -701,44 +730,60 @@ void AliAnalysisSPCRun2::Correlation(Int_t c_nPart, Int_t c_nHarmo, Int_t* harmo
       Int_t harmonicsNineNum[9] = {harmo[0],harmo[1],harmo[2],harmo[3],harmo[4],
         harmo[5],harmo[6],harmo[7],harmo[8]};       
       Int_t harmonicsNineDen[9] = {0,0,0,0,0,0,0,0,0};    
-      Double_t wNineRecursion = Recursion(9,harmonicsNineDen).Re();   
-      TComplex nineRecursion = Recursion(9,harmonicsNineNum)/wNineRecursion;
+
+      if (!fCorrelDenoms[8]) {
+        fCorrelDenoms[8] = Recursion(9,harmonicsNineDen).Re();
+      }
+           
+      TComplex nineRecursion = Recursion(9,harmonicsNineNum)/fCorrelDenoms[8];
   
       correlData[0] = nineRecursion.Re(); 
-      correlData[1] = wNineRecursion;
+      correlData[1] = fCorrelDenoms[8];
       correlData[2] = nineRecursion.Im(); } 
     break;
   case 10:{
       Int_t harmonicsTenNum[10] = {harmo[0],harmo[1],harmo[2],harmo[3],harmo[4],
         harmo[5],harmo[6],harmo[7],harmo[8],harmo[9]};       
-      Int_t harmonicsTenDen[10] = {0,0,0,0,0,0,0,0,0,0};  
-      Double_t wTenRecursion = Recursion(10,harmonicsTenDen).Re();     
-      TComplex tenRecursion = Recursion(10,harmonicsTenNum)/wTenRecursion;
+      Int_t harmonicsTenDen[10] = {0,0,0,0,0,0,0,0,0,0};
+
+      if (!fCorrelDenoms[9]) {
+        fCorrelDenoms[9] = Recursion(10,harmonicsTenDen).Re();
+      }
+        
+      TComplex tenRecursion = Recursion(10,harmonicsTenNum)/fCorrelDenoms[9];
   
       correlData[0] = tenRecursion.Re(); 
-      correlData[1] = wTenRecursion;
+      correlData[1] = fCorrelDenoms[9];
       correlData[2] = tenRecursion.Im();}
     break;
   case 12:{
       Int_t harmonicsTwelveNum[12] = {harmo[0],harmo[1],harmo[2],harmo[3],harmo[4],harmo[5],
         harmo[6],harmo[7],harmo[8],harmo[9],harmo[10],harmo[11]};       
       Int_t harmonicsTwelveDen[12] = {0,0,0,0,0,0,0,0,0,0,0,0};     
-      Double_t wTwelveRecursion = Recursion(12,harmonicsTwelveDen).Re();  
-      TComplex twelveRecursion = Recursion(12,harmonicsTwelveNum)/wTwelveRecursion;
+
+      if (!fCorrelDenoms[11]) {
+        fCorrelDenoms[11] = Recursion(12,harmonicsTwelveDen).Re();
+      }
+          
+      TComplex twelveRecursion = Recursion(12,harmonicsTwelveNum)/fCorrelDenoms[11];
   
       correlData[0] = twelveRecursion.Re(); 
-      correlData[1] = wTwelveRecursion;
+      correlData[1] = fCorrelDenoms[11];
       correlData[2] = twelveRecursion.Im();}
     break;
   case 14:{
       Int_t harmonicsFourteenNum[14] = {harmo[0],harmo[1],harmo[2],harmo[3],harmo[4],harmo[5],harmo[6],
         harmo[7],harmo[8],harmo[9],harmo[10],harmo[11],harmo[12],harmo[13]};       
       Int_t harmonicsFourteenDen[14] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0}; 
-      Double_t wFourteenRecursion = Recursion(14,harmonicsFourteenDen).Re();      
-      TComplex fourteenRecursion = Recursion(14,harmonicsFourteenNum)/wFourteenRecursion;
+
+      if (!fCorrelDenoms[13]) {
+        fCorrelDenoms[13] = Recursion(14,harmonicsFourteenDen).Re();
+      }
+              
+      TComplex fourteenRecursion = Recursion(14,harmonicsFourteenNum)/fCorrelDenoms[13];
   
       correlData[0] = fourteenRecursion.Re(); 
-      correlData[1] = wFourteenRecursion;
+      correlData[1] = fCorrelDenoms[13];
       correlData[2] = fourteenRecursion.Im();}
     break;
   default:

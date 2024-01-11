@@ -81,6 +81,8 @@ public:
     void SetQnVecTaskName(std::string name)                                                                     {fTenderTaskName = name;}
     void SetQnCalibFileName(std::string name)                                                                   {fQnCalibFileName = name;}
 
+    void SetSparseOption(int option = 0)                                                                        {fSparseOption = option;}
+
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
     virtual void LocalInit();
@@ -89,8 +91,9 @@ public:
 private:
     enum
     {
-        knVarForSparseAcc    = 11,
-        knVarForSparseReco   = 19,
+        knVarForSparseAcc            = 11,
+        knVarForSparseReco           = 19,
+        knVarForSparseRecoFor2DFit   = 7,
     };
 
     AliAnalysisTaskSEDstarPolarization(const AliAnalysisTaskSEDstarPolarization &source);
@@ -106,6 +109,7 @@ private:
     bool CheckDaugAcc(TClonesArray *arrayMC, int nProng, int *labDau);
     void CreateEffSparses();
     void CreateRecoSparses();
+    void CreateRecoSparsesFor2DFit();
     double GetPhiInRange(double phi);
     double GetDeltaPsiSubInRange(double psi1, double psi2);
 
@@ -131,6 +135,7 @@ private:
     // ML tree application
     THnSparseF* fnSparseReco[4] = {nullptr, nullptr, nullptr, nullptr};             //!<! THnSparse for reco candidates
     THnSparseF* fnSparseRecoThetaPhiStar[4] = {nullptr, nullptr, nullptr, nullptr}; //!<! THnSparse for reco candidates
+    THnSparseF* fnSparseRecoFor2DFit[3] = {nullptr, nullptr, nullptr};              //!<! THnSparse for reco candidates for 2D fit method
 
     TH1F* fHistEvPlane[3] = {nullptr, nullptr, nullptr};                            //!<! Histograms with event plane angle
     TH2F* fHistEvPlaneResol[3] = {nullptr, nullptr, nullptr};                        //!<! Histograms for event plane resolution estimation
@@ -168,6 +173,8 @@ private:
     bool fComputeQnVectors = false;                                                 /// flag to enable computation of Qn-vectors
     std::string fTenderTaskName = "HFTenderQnVectors";                              /// name of tender task needed to get the calibrated Qn vectors
     std::string fQnCalibFileName = "";                                              /// AODB file name for calibrations (if Qn-framework not used)
+
+    int fSparseOption{0};                                                           /// sparse option (0 -> normal one, 1 -> 2D fit)
 
     /// \cond CLASSIMP
     ClassDef(AliAnalysisTaskSEDstarPolarization, 11); /// AliAnalysisTaskSE for production of D-meson trees

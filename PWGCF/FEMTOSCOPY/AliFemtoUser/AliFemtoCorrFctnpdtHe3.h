@@ -94,7 +94,8 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	void Set2DKstarVsmT(int aUse);
 	void Set2DkStarVsmTInit(bool aInit,
 		int nbinsks,float lowks,float upks,
-                int nbinsmT,float lowmT,float upmT);
+                int nbinsmT,float lowmT,float upmT,
+		int nbinsksME,float lowksME,float upksME);
 
 void SetdBumpCheck(int aUse);
 void SetdBumpCheckInit(bool aInit,

@@ -22,12 +22,17 @@ class AliAnalysisTaskLambdaPion : public AliAnalysisTaskSE
 public:
   enum PCSettings {NoPC, OldPC, NewPC};
   AliAnalysisTaskLambdaPion();
-  AliAnalysisTaskLambdaPion(const char *name, bool isMC, PCSettings pcsettings);
+  AliAnalysisTaskLambdaPion(const char *name, bool isMC, PCSettings pcsettings, bool usenolambdaevt);
   virtual ~AliAnalysisTaskLambdaPion();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *){};
   void SetEventCuts(AliFemtoDreamEventCuts *evtCuts) { fEventCuts = evtCuts; };
+
+  void SetSphericity(double min, double max)
+  {
+    fEventCuts->SetSphericityCuts(min, max);
+  }
 
   void SetPairCleaner(AliAnalysisTaskLambdaPion::PCSettings pairCleaner)
   {
@@ -49,6 +54,10 @@ public:
   {
     fNegPionCuts = trkCuts;
   }
+  void SetMixingEvt(bool usenolambdaevt)
+  {
+    fUseEvtNoLambda = usenolambdaevt;
+  }
   void SetCollectionConfig(AliFemtoDreamCollConfig *config)
   {
     fConfig = config;
@@ -62,6 +71,7 @@ private:
   void StoreGlobalTrackReference(AliAODTrack *track);
   bool fIsMC;                             //
   bool fUseOMixing;                       //
+  bool fUseEvtNoLambda;                   //
   PCSettings fPCSettings;                 //
   UInt_t fTrigger;                        //
   TList *fResults;                        //!
@@ -95,6 +105,3 @@ private:
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKLAMBDAPION_H_ */
-
-
-// CHANGING KAON -> PION DONE

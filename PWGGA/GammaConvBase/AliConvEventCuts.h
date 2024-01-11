@@ -248,6 +248,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC20e3b,        //!< anchored to LHC18qr pass3 - general purpose Pythia8 - 0-10%
         kLHC20e3c,        //!< anchored to LHC18qr pass3 - general purpose Pythia8 - 30-50%
         kLHC22b5,         //!< anchored to LHC18qr pass3 - general purpose Pythia8 - 50-90%
+        kLHC20g2a_2,      //!< anchored to LHC18qr pass3 - HF injected, 0-10%
+        kLHC20g2b_2,      //!< anchored to LHC18qr pass3 - HF injected, 10-50%
+        kLHC20k6c,        //!< anchored to LHC18qr pass3 - cascade-injected, 30-50% centrality
+        kLHC23d8b,        //!< anchored to LHC18qr pass3 - HF, 2018 Pb-Pb central barrel analyses (HFE) Pass3, 10-50% centrality 
         kLHC20g10,        //!< anchored to LHC18qr pass3 - general purpose Pythia8, with added GA signals
 
         // MC upgrade

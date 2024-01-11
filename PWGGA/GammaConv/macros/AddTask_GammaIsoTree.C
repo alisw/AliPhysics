@@ -16,6 +16,7 @@ void AddTask_GammaIsoTree(
   Bool_t    storeConversions              = kTRUE,
   Bool_t    doIsolation                   = kTRUE,
   Bool_t    doOwnTrackMatching            = kFALSE,
+  Bool_t    doJetCorrelation              = kFALSE,
   // subwagon config
   TString   fileNameExternalInputs        = "",
   Double_t  genPtCut                      = 0, // only save particles from stack with gen pt > genPtCut
@@ -67,6 +68,10 @@ void AddTask_GammaIsoTree(
   TString fileNameCustomTriggerMimicOADB   = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FTRM:");
 
   TString corrTaskSetting             = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "", addTaskName);
+
+  TString nameJetFinder = (additionalTrainConfig.Contains("JET") == true) ? cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "JET", "", addTaskName) : "";
+  printf("nameJetFinder: %s\n", nameJetFinder.Data());
+
   if(corrTaskSetting.CompareTo(""))
     cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
   
@@ -790,18 +795,18 @@ void AddTask_GammaIsoTree(
     cout << "V0Reader: " << V0ReaderName.Data() << " found!!"<< endl;
   }
 
-  AliAnalysisTaskGammaIsoTree *fQA = new AliAnalysisTaskGammaIsoTree("GammaIsoTree");
+  AliAnalysisTaskGammaIsoTree *fGammaIsoTreeTask = new AliAnalysisTaskGammaIsoTree("GammaIsoTree");
   
-  fQA->SetV0ReaderName(V0ReaderName);
-  fQA->SetIsMC(isMC);
-  fQA->SetYCutMC(0.9);
-  fQA->SetAntiIsolationE(fAntiIsolation[0],fAntiIsolation[1]);
-  fQA->SetRecPtCut(recPtCut);
-  fQA->SetGenPtCut(genPtCut);
+  fGammaIsoTreeTask->SetV0ReaderName(V0ReaderName);
+  fGammaIsoTreeTask->SetIsMC(isMC);
+  fGammaIsoTreeTask->SetYCutMC(0.9);
+  fGammaIsoTreeTask->SetAntiIsolationE(fAntiIsolation[0],fAntiIsolation[1]);
+  fGammaIsoTreeTask->SetRecPtCut(recPtCut);
+  fGammaIsoTreeTask->SetGenPtCut(genPtCut);
   
-  // fQA->SetSaveClusterCells(doSaveClusterCells);
-  // fQA->SetSaveEventProperties(doSaveEventProp);
-  // fQA->SetDoAdditionalHistos(makeAdditionalHistos);
+  // fGammaIsoTreeTask->SetSaveClusterCells(doSaveClusterCells);
+  // fGammaIsoTreeTask->SetSaveEventProperties(doSaveEventProp);
+  // fGammaIsoTreeTask->SetDoAdditionalHistos(makeAdditionalHistos);
 
   TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
   if(rmaxFacPtHardSetting->GetEntries()<1){cout << "ERROR: AddTask_GammaIsoTree during parsing of settingMaxFacPtHard String '" << settingMaxFacPtHard.Data() << "'" << endl; return;}
@@ -957,48 +962,50 @@ void AddTask_GammaIsoTree(
   analysisConvCuts->InitializeCutsFromCutString(TaskConvCutnumber.Data());
   analysisConvCuts->SetFillCutHistograms("");
   
-  fQA->SetEventCuts(analysisEventCuts,IsHeavyIon);
-  fQA->SetClusterCutsEMC(analysisClusterCutsEMC,IsHeavyIon);
-  fQA->SetClusterCutsEMCTrackMatching(analysisClusterCutsEMCTrackMatching,IsHeavyIon);
-  fQA->SetClusterCutsIsolationEMC(analysisClusterCutsIsolationEMC,IsHeavyIon);
-  fQA->SetClusterCutsTaggingEMC(analysisClusterCutsTaggingEMC,IsHeavyIon);
-  fQA->SetClusterCutsPHOS(analysisClusterCutsPHOS,IsHeavyIon);
-  fQA->SetConvCuts(analysisConvCuts,IsHeavyIon);
-  fQA->SetDoTrackIso(kTRUE);
-  fQA->SetDoBackgroundTrackMatching(backgroundTrackMatching);
-  fQA->SetDoTrackIso(doChargedIso);
-  fQA->SetDoNeutralIso(doNeutralIso);
-  fQA->SetDoTagging(doTagging);
-  fQA->SetDoCellIso(doCellIso);
-  fQA->SetTrackIsoR(trackIsoR);
-  fQA->SetNeutralIsoR(neutralIsoR);
-  fQA->SetTrackIsoE(trackIsoE);
-  fQA->SetNeutralIsoE(neutralIsoE);
-  fQA->SetCorrectionTaskSetting(corrTaskSetting);
-  fQA->SetSaveConversions(storeConversions);
-  fQA->SetSaveEMCClusters(storeEMCalCluster);
-  fQA->SetSavePHOSClusters(storePHOSCluster);
-  fQA->SetSaveTracks(storeTracks);
-  fQA->SetBuffSize(60*1024*1024);
-  fQA->SetTrackMatcherRunningMode(trackMatcherRunningMode);
-  fQA->SetDoOwnTrackMatching(doOwnTrackMatching);
-  fQA->SetUseHistograms(useHistograms);
-  fQA->SetMinClsTPC(fMinClsTPC);
-  fQA->SetMinClsITS(fMinClsITS);
-  fQA->SetChi2PerClsTPC(fChi2PerClsTPC);
-  fQA->SetEtaCut(fEtaCut);
-  fQA->SetMinPtCut(fPtCut);
-  fQA->SetDebugFlag(debugFlag);
+  fGammaIsoTreeTask->SetEventCuts(analysisEventCuts,IsHeavyIon);
+  fGammaIsoTreeTask->SetClusterCutsEMC(analysisClusterCutsEMC,IsHeavyIon);
+  fGammaIsoTreeTask->SetClusterCutsEMCTrackMatching(analysisClusterCutsEMCTrackMatching,IsHeavyIon);
+  fGammaIsoTreeTask->SetClusterCutsIsolationEMC(analysisClusterCutsIsolationEMC,IsHeavyIon);
+  fGammaIsoTreeTask->SetClusterCutsTaggingEMC(analysisClusterCutsTaggingEMC,IsHeavyIon);
+  fGammaIsoTreeTask->SetClusterCutsPHOS(analysisClusterCutsPHOS,IsHeavyIon);
+  fGammaIsoTreeTask->SetConvCuts(analysisConvCuts,IsHeavyIon);
+  fGammaIsoTreeTask->SetDoTrackIso(kTRUE);
+  fGammaIsoTreeTask->SetDoBackgroundTrackMatching(backgroundTrackMatching);
+  fGammaIsoTreeTask->SetDoTrackIso(doChargedIso);
+  fGammaIsoTreeTask->SetDoNeutralIso(doNeutralIso);
+  fGammaIsoTreeTask->SetDoTagging(doTagging);
+  fGammaIsoTreeTask->SetDoCellIso(doCellIso);
+  fGammaIsoTreeTask->SetTrackIsoR(trackIsoR);
+  fGammaIsoTreeTask->SetNeutralIsoR(neutralIsoR);
+  fGammaIsoTreeTask->SetTrackIsoE(trackIsoE);
+  fGammaIsoTreeTask->SetNeutralIsoE(neutralIsoE);
+  fGammaIsoTreeTask->SetCorrectionTaskSetting(corrTaskSetting);
+  fGammaIsoTreeTask->SetSaveConversions(storeConversions);
+  fGammaIsoTreeTask->SetSaveEMCClusters(storeEMCalCluster);
+  fGammaIsoTreeTask->SetSavePHOSClusters(storePHOSCluster);
+  fGammaIsoTreeTask->SetSaveTracks(storeTracks);
+  fGammaIsoTreeTask->SetSaveJets(doJetCorrelation);
+  if(additionalTrainConfig.Contains("JET")){fGammaIsoTreeTask->SetJetContainerAddName(nameJetFinder);}
+  fGammaIsoTreeTask->SetBuffSize(60*1024*1024);
+  fGammaIsoTreeTask->SetTrackMatcherRunningMode(trackMatcherRunningMode);
+  fGammaIsoTreeTask->SetDoOwnTrackMatching(doOwnTrackMatching);
+  fGammaIsoTreeTask->SetUseHistograms(useHistograms);
+  fGammaIsoTreeTask->SetMinClsTPC(fMinClsTPC);
+  fGammaIsoTreeTask->SetMinClsITS(fMinClsITS);
+  fGammaIsoTreeTask->SetChi2PerClsTPC(fChi2PerClsTPC);
+  fGammaIsoTreeTask->SetEtaCut(fEtaCut);
+  fGammaIsoTreeTask->SetMinPtCut(fPtCut);
+  fGammaIsoTreeTask->SetDebugFlag(debugFlag);
 
-  fQA->SetSignalMinM02(minSignalM02);
-  fQA->SetSignalMaxM02(maxSignalM02);
+  fGammaIsoTreeTask->SetSignalMinM02(minSignalM02);
+  fGammaIsoTreeTask->SetSignalMaxM02(maxSignalM02);
 
   UInt_t status_acc = 1<<16;
-  fQA->SetMCFlag(AliAODMCParticle::kPhysicalPrim | status_acc);
+  fGammaIsoTreeTask->SetMCFlag(AliAODMCParticle::kPhysicalPrim | status_acc);
   
-  mgr->AddTask(fQA);
+  mgr->AddTask(fGammaIsoTreeTask);
 
-  mgr->ConnectInput(fQA, 0,  cinput );
+  mgr->ConnectInput(fGammaIsoTreeTask, 0,  cinput );
   AliAnalysisDataContainer *coutput = NULL;
   AliAnalysisDataContainer *histos = NULL;
 
@@ -1027,9 +1034,9 @@ void AddTask_GammaIsoTree(
    
   }
   
-  mgr->ConnectOutput (fQA, 1, histos );
-  mgr->ConnectOutput (fQA, 2, coutput );
+  mgr->ConnectOutput (fGammaIsoTreeTask, 1, histos );
+  mgr->ConnectOutput (fGammaIsoTreeTask, 2, coutput );
 
-  // mgr->ConnectOutput (fQA, 2, "GammaIsoTreeHistos", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TreeAnalysisHistos", mgr->GetCommonFileName())) );
+  // mgr->ConnectOutput (fGammaIsoTreeTask, 2, "GammaIsoTreeHistos", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:TreeAnalysisHistos", mgr->GetCommonFileName())) );
   return;
 }

@@ -16,7 +16,6 @@ class AliTaskLeadingMC : public AliAnalysisTask {
   AliTaskLeadingMC(const char *name = "AliTaskLeadingMC"); 
   AliTaskLeadingMC(const AliTaskLeadingMC& source):AliAnalysisTask(source) {}
   virtual ~AliTaskLeadingMC() {}
-  AliTaskLeadingMC& operator=(const AliTaskLeadingMC& source) {}
   
   virtual void   ConnectInputData(Option_t *);
   virtual void   CreateOutputObjects();
@@ -45,6 +44,7 @@ class AliTaskLeadingMC : public AliAnalysisTask {
 private: 
   // Notation
   // 1=(C)lockwise - 2=(A)nticlockwise
+  AliTaskLeadingMC& operator=(const AliTaskLeadingMC& source);
 
   static const int fgkDim = 50; // max array dimension
   Double_t ComputeSpherocity();

@@ -42,6 +42,10 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
     return fOmegaMass;
   }
   ;
+  float GetRealMotherPDG() {
+    return fRealMotherPDG;
+  }
+  ;
   float GetDCAXiPrimVtx() {
     return fDCAXiPrimVtx;
   }
@@ -180,6 +184,7 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   float fMass;
   float fXiMass;
   float fOmegaMass;
+  int fRealMotherPDG;
   float fDCAXiDaug;
   float fTransRadius;
   float fRapXi;

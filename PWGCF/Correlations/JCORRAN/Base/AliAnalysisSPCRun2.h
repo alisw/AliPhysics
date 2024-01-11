@@ -83,6 +83,7 @@ class AliAnalysisSPCRun2 {
 
   // LOKI: Added in HIJING investigations.
  void SetUseWeights(Bool_t WeightsNUE, Bool_t WeightsNUA){this->bUseWeightsNUE = WeightsNUE; this->bUseWeightsNUA = WeightsNUA;}
+ void SetUseJoinedCov(Bool_t joinedCov) {this->bUseJoinedCov = joinedCov;}
 
  private:
   AliAnalysisSPCRun2(const AliAnalysisSPCRun2& aat);
@@ -102,6 +103,7 @@ class AliAnalysisSPCRun2 {
   Bool_t bUseWeightsNUE;            // kTRUE: Use non-unit particle weights for NUE corrections.
   Bool_t bUseWeightsNUA;            // kTRUE: Use non-unit particle weights for NUA corrections.
   Bool_t bComputeEtaGap;            // kTRUE: Calculate 2-particle eta gaps (default: kFALSE).
+  Bool_t bUseJoinedCov;            // kTRUE: Calculate 2-particle eta gaps (default: kFALSE).
   Float_t fEtaGap;                  // Value of the eta gap itself.
 
   Bool_t bSaveAllQA;                // kTRUE: Save the standard QA histograms (default: kTRUE).
@@ -110,6 +112,7 @@ class AliAnalysisSPCRun2 {
 
   TComplex fQvector[113][15];       // All combinations of Q-vectors.
   Int_t fHarmosArray[12][8];        // Array of combinations of harmonics for the SPC.
+  Double_t fCorrelDenoms[14];
   
   TList *fCentralityList[8];       //! Results per centrality bins. Up to 8 possible bins.
     // Size: [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]

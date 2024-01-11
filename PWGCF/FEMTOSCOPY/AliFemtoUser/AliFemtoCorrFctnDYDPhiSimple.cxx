@@ -250,8 +250,14 @@ void AliFemtoCorrFctnDYDPhiSimple::AddMixedPair( AliFemtoPair* pair){
 
   double dy = y1 - y2;
 
-
+  if(p1!=p2)
   fDPhiDYDenominator->Fill(dphi, dy);
+  
+ // if(fDPhiDYDenominator->GetXaxis()->FindBin(fDPhiDYDenominator->GetBinCenter(0))==fDPhiDYDenominator->GetXaxis()->FindBin(fDPhiDYDenominator->GetBinCenter(dphi))){
+ //  if(fDPhiDYDenominator->GetYaxis()->FindBin(fDPhiDYDenominator->GetBinCenter(0))==fDPhiDYDenominator->GetYaxis()->FindBin(fDPhiDYDenominator->GetBinCenter(dy))){
+   //     std::cout << "track1 : p1  " << p1 << "track2 : p2  " << p2 << std::endl;
+     // }
+   //}
 
 }
 

@@ -15,7 +15,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     bool useWeightsNUE = true, bool useWeightsNUA = false,
     bool useWeightsCent = false,
     bool getSC = true, bool getLower = true,
-    bool Aside = false, bool Cside = false, bool saveQCNUA = false, bool frmBadArea18q = false, double eta = 0.8)
+    bool Aside = false, bool Cside = false, bool saveQCNUA = false, bool frmBadArea18q = false, double eta = 0.8, TString extra ="")
 {
   // Configuration of the analysis.
   double ESDslope = 3.38; bool saveQA_ESDpileup = false;
@@ -199,12 +199,16 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
         MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_Chi2low23_s_chi2low23.root",
           MAPdirName.Data(), sCorrection[period].Data());
       } else if ((strcmp(configNames[i].Data(), "zvtx4") == 0)) {
-        MAPfileNames[i] = Form("%sPhiWeights_LHC%s_fullPUcuts_s_zvtx8.root",
+        MAPfileNames[i] = Form("%sPhiWeights_LHC%s_fullPUcuts_s_zvtx10.root",
           MAPdirName.Data(), sCorrection[period].Data());
       } else {
         MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_%s_s_%s.root",
-          MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data(),configNames[i].Data());
+          MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data(), configNames[i].Data());
       }
+      break;
+    case 6:   // 0: Coarse binning, minPt = 0.2 for all.
+      MAPfileNames[i] = Form("%sPhiWeights_LHC%s_%s%s.root",
+        MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data(),extra.Data());
       break;
     default:
       std::cout << "ERROR: Invalid configuration index. Skipping this element."

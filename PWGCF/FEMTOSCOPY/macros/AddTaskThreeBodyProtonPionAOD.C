@@ -54,15 +54,15 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
   }
 
 // Track Cuts for Protons and Antiprotons ================================================================================================
-  AliFemtoDreamTrackCuts *TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(
+  AliFemtoDreamTrackCuts *TrackCutsProton = AliFemtoDreamTrackCuts::PrimProtonCuts(
       isMC, true, false, false);
-  TrackCuts->SetFilterBit(128);
-  TrackCuts->SetCutCharge(1);
+  TrackCutsProton->SetFilterBit(128);
+  TrackCutsProton->SetCutCharge(1);
 
-  AliFemtoDreamTrackCuts *AntiTrackCuts =
+  AliFemtoDreamTrackCuts *TrackCutsAntiProton =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
-  AntiTrackCuts->SetFilterBit(128);
-  AntiTrackCuts->SetCutCharge(-1);
+  TrackCutsAntiProton->SetFilterBit(128);
+  TrackCutsAntiProton->SetCutCharge(-1);
 
   // Track Cuts for Pions  =================================================================================================================
 
@@ -73,6 +73,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
   TrackCutsPion->SetPtRange(0.14, PionMaxPt);
   TrackCutsPion->SetFilterBit(96);
   TrackCutsPion->SetCutCharge(1);
+
   TrackCutsAntiPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
   TrackCutsAntiPion->SetPtRange(0.14, PionMaxPt);
   TrackCutsAntiPion->SetFilterBit(96);
@@ -80,8 +81,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
 
   if (!fullBlastQA) {
     evtCuts->SetMinimalBooking(true);
-    TrackCuts->SetMinimalBooking(true);
-    AntiTrackCuts->SetMinimalBooking(true);
+    TrackCutsProton->SetMinimalBooking(true);
+    TrackCutsAntiProton->SetMinimalBooking(true);
     TrackCutsPion->SetMinimalBooking(true);
     TrackCutsAntiPion->SetMinimalBooking(true);
   }
@@ -191,6 +192,885 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
   }
+
+  double DeltaPhiPP = 0.017; //default 
+  double DeltaEtaPP = 0.017; 
+
+  double DeltaPhiPPrim = 0.04; 
+  double DeltaEtaPPrim = 0.017; 
+
+ Float_t Proton_pT_VarLow = 0.4;
+ Float_t Proton_pT_VarHigh = 0.6;
+ Float_t Proton_Eta_VarLow = 0.77;
+ Float_t Proton_Eta_VarHigh = 0.85;
+ Float_t Proton_Clusters_VarLow = 70.;
+ Float_t Proton_Clusters_VarHigh = 90.;
+ Float_t Proton_Sigma_VarLow = 2.5;
+ Float_t Proton_Sigma_VarHigh = 3.5;
+
+ Float_t Pion_pT_VarLow = 0.12;
+ Float_t Pion_pT_VarHigh = 0.15;
+ Float_t Pion_Eta_VarLow = 0.7;
+ Float_t Pion_Eta_VarHigh = 0.9;
+ Float_t Pion_Clusters_VarLow = 70;
+ Float_t Pion_Clusters_VarHigh = 90;
+ Float_t Pion_Sigma_VarLow = 2.7;
+ Float_t Pion_Sigma_VarHigh = 3.3;
+
+ Float_t DPhi_VarLow = 0.035;
+ Float_t DPhi_VarHigh = 0.045;
+ Float_t DEta_VarLow = 0.015;
+ Float_t DEta_VarHigh = 0.019;
+
+ Float_t DPhi_PP_Default = 0.017;
+ Float_t DPhi_PP_VarHigh = 0.019;
+ Float_t DEta_PP_Default = 0.017;
+ Float_t DEta_PP_VarHigh = 0.019;
+
+ if (suffix == "1"){
+ 
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+ 
+    DeltaEtaPPrim = DEta_VarLow;
+ 
+    DeltaPhiPP = DEta_VarLow;
+    DeltaEtaPP = DPhi_PP_Default;
+ 
+  } else if (suffix == "2"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+ 
+    DeltaPhiPPrim = DPhi_VarLow;
+    DeltaEtaPPrim = DEta_VarHigh;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+ 
+  } else if (suffix == "3"){
+ 
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarHigh,4.0);
+ 
+    DeltaPhiPPrim = DPhi_VarHigh;
+    DeltaEtaPPrim = DEta_VarHigh;
+ 
+    DeltaPhiPP = DEta_VarLow;
+    DeltaEtaPP = DPhi_PP_Default;
+ 
+  } else if (suffix == "4"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarHigh);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarHigh);
+ 
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+    DeltaEtaPP = DPhi_PP_Default;
+ 
+  } else if (suffix == "5"){
+ 
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarLow,4.0);
+ 
+    DeltaPhiPPrim = DPhi_VarHigh;
+    DeltaEtaPPrim = DEta_VarHigh;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+    DeltaEtaPP = DEta_PP_VarHigh;
+ 
+  } else if (suffix == "6"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarLow);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarLow);
+ 
+    DeltaPhiPPrim = DPhi_VarLow;
+    DeltaEtaPPrim = DEta_VarLow;
+ 
+    DeltaPhiPP = DEta_VarLow;
+ 
+  } else if (suffix == "7"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarHigh);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarHigh);
+ 
+    DeltaEtaPPrim = DEta_VarHigh;
+ 
+ 
+  } else if (suffix == "8"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+ 
+    DeltaPhiPPrim = DPhi_VarLow;
+ 
+    DeltaEtaPP = DPhi_PP_Default;
+ 
+  } else if (suffix == "9"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarLow);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarLow);
+ 
+    DeltaPhiPPrim = DPhi_VarHigh;
+    DeltaEtaPPrim = DEta_VarHigh;
+ 
+    DeltaPhiPP = DEta_VarLow;
+ 
+  } else if (suffix == "10"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarHigh);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarHigh);
+ 
+    DeltaEtaPPrim = DEta_VarHigh;
+ 
+    DeltaPhiPP = DEta_VarLow;
+ 
+  } else if (suffix == "11"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+ 
+    TrackCutsPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarHigh);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarHigh);
+ 
+    DeltaPhiPPrim = DPhi_VarLow;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+    DeltaEtaPP = DPhi_PP_Default;
+ 
+  } else if (suffix == "12"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarHigh);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarHigh);
+ 
+    DeltaEtaPPrim = DEta_VarLow;
+ 
+    DeltaPhiPP = DEta_VarLow;
+ 
+  } else if (suffix == "13"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarLow);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarLow);
+ 
+    DeltaPhiPPrim = DPhi_VarLow;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+ 
+  } else if (suffix == "14"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarLow);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarLow);
+ 
+    DeltaPhiPPrim = DPhi_VarLow;
+    DeltaEtaPPrim = DEta_VarHigh;
+ 
+ 
+  } else if (suffix == "15"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarLow,4.0);
+ 
+    DeltaEtaPPrim = DEta_VarHigh;
+ 
+    DeltaPhiPP = DEta_VarLow;
+    DeltaEtaPP = DPhi_PP_Default;
+ 
+  } else if (suffix == "16"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackCutsPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarHigh);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarHigh);
+ 
+ 
+    DeltaPhiPP = DEta_VarLow;
+    DeltaEtaPP = DPhi_PP_Default;
+ 
+  } else if (suffix == "17"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarLow);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarLow);
+ 
+    DeltaEtaPPrim = DEta_VarHigh;
+ 
+    DeltaEtaPP = DPhi_PP_Default;
+ 
+  } else if (suffix == "18"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarLow,4.0);
+ 
+    DeltaEtaPPrim = DEta_VarHigh;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+ 
+  } else if (suffix == "19"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarHigh);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarHigh);
+ 
+    DeltaPhiPPrim = DPhi_VarHigh;
+    DeltaEtaPPrim = DEta_VarHigh;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+    DeltaEtaPP = DEta_PP_VarHigh;
+ 
+  } else if (suffix == "20"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarLow);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarLow);
+ 
+    DeltaPhiPPrim = DPhi_VarHigh;
+    DeltaEtaPPrim = DEta_VarHigh;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+    DeltaEtaPP = DPhi_PP_Default;
+ 
+  } else if (suffix == "21"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarHigh,4.0);
+ 
+    DeltaEtaPPrim = DEta_VarLow;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+    DeltaEtaPP = DEta_PP_VarHigh;
+ 
+  } else if (suffix == "22"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarLow,4.0);
+ 
+    DeltaEtaPPrim = DEta_VarLow;
+ 
+ 
+  } else if (suffix == "23"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarLow);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarLow);
+ 
+    DeltaPhiPPrim = DPhi_VarLow;
+    DeltaEtaPPrim = DEta_VarHigh;
+ 
+    DeltaPhiPP = DEta_VarLow;
+    DeltaEtaPP = DEta_PP_VarHigh;
+ 
+  } else if (suffix == "24"){
+ 
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarHigh);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarHigh);
+ 
+    DeltaPhiPPrim = DPhi_VarHigh;
+    DeltaEtaPPrim = DEta_VarHigh;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+    DeltaEtaPP = DPhi_PP_Default;
+ 
+  } else if (suffix == "25"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarLow,4.0);
+ 
+    DeltaEtaPPrim = DEta_VarLow;
+ 
+    DeltaPhiPP = DEta_VarLow;
+ 
+  } else if (suffix == "26"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarLow);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarLow);
+ 
+    DeltaEtaPPrim = DEta_VarLow;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+    DeltaEtaPP = DEta_PP_VarHigh;
+ 
+  } else if (suffix == "27"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+ 
+    DeltaPhiPPrim = DPhi_VarHigh;
+    DeltaEtaPPrim = DEta_VarLow;
+ 
+    DeltaPhiPP = DEta_VarLow;
+    DeltaEtaPP = DPhi_PP_Default;
+ 
+  } else if (suffix == "28"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarHigh);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarHigh);
+ 
+    DeltaPhiPPrim = DPhi_VarLow;
+    DeltaEtaPPrim = DEta_VarLow;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+    DeltaEtaPP = DEta_PP_VarHigh;
+ 
+  } else if (suffix == "29"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackCutsPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarHigh);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarHigh);
+ 
+    DeltaPhiPPrim = DPhi_VarLow;
+    DeltaEtaPPrim = DEta_VarHigh;
+ 
+    DeltaPhiPP = DEta_VarLow;
+ 
+  } else if (suffix == "30"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarLow);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarLow);
+ 
+    DeltaPhiPPrim = DPhi_VarLow;
+    DeltaEtaPPrim = DEta_VarHigh;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+    DeltaEtaPP = DEta_PP_VarHigh;
+ 
+  } else if (suffix == "31"){
+ 
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarHigh,4.0);
+ 
+ 
+    DeltaEtaPP = DPhi_PP_Default;
+ 
+  } else if (suffix == "32"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarHigh);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarHigh);
+ 
+    DeltaEtaPPrim = DEta_VarLow;
+ 
+    DeltaPhiPP = DEta_VarLow;
+    DeltaEtaPP = DEta_PP_VarHigh;
+ 
+  } else if (suffix == "33"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarHigh);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarHigh);
+ 
+    DeltaPhiPPrim = DPhi_VarHigh;
+    DeltaEtaPPrim = DEta_VarLow;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+    DeltaEtaPP = DPhi_PP_Default;
+ 
+  } else if (suffix == "34"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarHigh);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarHigh);
+ 
+    DeltaPhiPPrim = DPhi_VarHigh;
+    DeltaEtaPPrim = DEta_VarHigh;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+    DeltaEtaPP = DEta_PP_VarHigh;
+ 
+  } else if (suffix == "35"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarHigh);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarHigh);
+ 
+ 
+    DeltaPhiPP = DEta_VarLow;
+ 
+  } else if (suffix == "36"){
+ 
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarHigh);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarHigh);
+ 
+    DeltaPhiPPrim = DPhi_VarHigh;
+    DeltaEtaPPrim = DEta_VarLow;
+ 
+    DeltaEtaPP = DPhi_PP_Default;
+ 
+  } else if (suffix == "37"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+ 
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarLow,Pion_Eta_VarLow);
+    TrackCutsPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarLow);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarLow);
+ 
+    DeltaPhiPPrim = DPhi_VarHigh;
+ 
+    DeltaPhiPP = DEta_VarLow;
+    DeltaEtaPP = DPhi_PP_Default;
+ 
+  } else if (suffix == "38"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+ 
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarLow);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarLow);
+ 
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+ 
+  } else if (suffix == "39"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarLow);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarLow);
+ 
+    DeltaPhiPPrim = DPhi_VarLow;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+    DeltaEtaPP = DEta_PP_VarHigh;
+ 
+  } else if (suffix == "40"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarHigh);
+    TrackCutsPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsAntiPion->SetEtaRange(-Pion_Eta_VarHigh,Pion_Eta_VarHigh);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarHigh);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarHigh);
+ 
+    DeltaPhiPPrim = DPhi_VarHigh;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+ 
+  } else if (suffix == "41"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+ 
+    DeltaPhiPPrim = DPhi_VarHigh;
+ 
+    DeltaPhiPP = DEta_VarLow;
+ 
+  } else if (suffix == "42"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackCutsPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarHigh,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarHigh);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarHigh);
+ 
+    DeltaEtaPPrim = DEta_VarLow;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+    DeltaEtaPP = DPhi_PP_Default;
+ 
+  } else if (suffix == "43"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsAntiPion->SetPtRange(Pion_pT_VarLow,4.0);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarLow);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarLow);
+ 
+    DeltaPhiPPrim = DPhi_VarLow;
+ 
+    DeltaPhiPP = DPhi_PP_VarHigh;
+    DeltaEtaPP = DEta_PP_VarHigh;
+ 
+  } else if (suffix == "44"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackCutsPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5,Pion_Sigma_VarLow);
+    TrackCutsPion->SetNClsTPC(Pion_Clusters_VarLow);
+    TrackCutsAntiPion->SetNClsTPC(Pion_Clusters_VarLow);
+ 
+ 
+    DeltaPhiPP = DEta_VarLow;
+    DeltaEtaPP = DEta_PP_VarHigh;
+ 
+  }
+
 
   TString addon = "";
   if (trigger == "kINT7") {
@@ -340,9 +1220,11 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
       taskAOD->SetRunTaskLightWeight(true);
     }
 
+  
+
     taskAOD->SetEventCuts(evtCuts);
-    taskAOD->SetProtonCuts(TrackCuts);
-    taskAOD->SetAntiProtonCuts(AntiTrackCuts);
+    taskAOD->SetProtonCuts(TrackCutsProton);
+    taskAOD->SetAntiProtonCuts(TrackCutsAntiProton);
     taskAOD->SetPrimaryCuts(TrackCutsPion);
     taskAOD->SetAntiPrimaryCuts(TrackCutsAntiPion);
     taskAOD->SetCorrelationConfig(config);
@@ -352,10 +1234,10 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
 
     taskAOD->SetturnoffClosePairRejectionCompletely(turnoffClosePairRejectionCompletely);
     taskAOD->SetClosePairRejectionForAll(ClosePairRejectionForAll);
-    taskAOD->SetDeltaPhiMaxPP(0.017);    
-    taskAOD->SetDeltaEtaMaxPP(0.017);
-    taskAOD->SetDeltaPhiMaxPPrim(0.04);
-    taskAOD->SetDeltaEtaMaxPPrim(0.017);
+    taskAOD->SetDeltaPhiMaxPP(DeltaPhiPP);    
+    taskAOD->SetDeltaEtaMaxPP(DeltaEtaPP);
+    taskAOD->SetDeltaPhiMaxPPrim(DeltaPhiPPrim);
+    taskAOD->SetDeltaEtaMaxPPrim(DeltaEtaPPrim);
     taskAOD->SetDeltaPhiMaxPAPrim(0.0); 
     taskAOD->SetDeltaEtaMaxPAPrim(0.0); 
 

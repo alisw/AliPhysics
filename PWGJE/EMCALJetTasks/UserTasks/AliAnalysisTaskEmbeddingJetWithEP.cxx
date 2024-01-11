@@ -118,6 +118,7 @@ AliAnalysisTaskEmbeddingJetWithEP::AliAnalysisTaskEmbeddingJetWithEP() :
     f2DRMwithEP2(kFALSE),
     f2DRMwithEP3(kFALSE),
     fSepEP(kFALSE),
+    fQuartPhiRange(kFALSE),
     fV0Combin(kFALSE),
     fRhoLocalSubType(kFALSE),
     fFitModulationType(kNoFit),
@@ -312,6 +313,7 @@ AliAnalysisTaskEmbeddingJetWithEP::AliAnalysisTaskEmbeddingJetWithEP(const char 
     f2DRMwithEP2(kFALSE),
     f2DRMwithEP3(kFALSE),
     fSepEP(kFALSE),
+    fQuartPhiRange(kFALSE),
     fV0Combin(kFALSE),
     fRhoLocalSubType(kFALSE),
     fFitModulationType(kNoFit),
@@ -866,30 +868,79 @@ void AliAnalysisTaskEmbeddingJetWithEP::AllocateMatchedJetHistograms()
     
     //setup the THnSparse
     Int_t nCentBins=20;
+    Double_t maxPhi = TMath::TwoPi();
+    Int_t epPhiNumBins = 48;
+    if(fQuartPhiRange){
+        maxPhi = TMath::Pi()/2.;
+        epPhiNumBins = 12;
+    }
+
     TString titleThFiveForV2[5]= {"#it{p}_{T}^{truth} (GeV/#it{c})", "#it{p}_{T,corr}^{det} (GeV/#it{c})", "#phi^{truth jet}-#Psi_{EP, 2}", "#phi^{det jet}-#Psi_{EP, 2}" , "Centrality (%)"};
-    Int_t nbinsThFiveForV2[5]  = {(Int_t)fMaxPt, (Int_t)fMaxPt, 48, 48, nCentBins};
+    Int_t nbinsThFiveForV2[5]  = {(Int_t)fMaxPt, (Int_t)fMaxPt, epPhiNumBins, epPhiNumBins, nCentBins};
     Double_t minThFiveForV2[5] = {0., 0., 0., 0.,0.};
-    Double_t maxThFiveForV2[5] = {fMaxPt, fMaxPt, TMath::TwoPi(), TMath::TwoPi(), 100};
-    histname = "hRMWithEP2Angle";
+    Double_t maxThFiveForV2[5] = {fMaxPt, fMaxPt, maxPhi, maxPhi, 100};
+    histname = "hRMWithEp2Angle";
     if(f2DRMwithEP2){
-        THnSparse* hRMWithEP2 = fHistManager.CreateTHnSparse(histname.Data(), histname.Data(), 5, nbinsThFiveForV2, minThFiveForV2, maxThFiveForV2);
+        THnSparse* hRMWithEp2 = fHistManager.CreateTHnSparse(histname.Data(), histname.Data(), 5, nbinsThFiveForV2, minThFiveForV2, maxThFiveForV2);
         for (Int_t i = 0; i < 5; i++) {
-            hRMWithEP2->GetAxis(i)->SetTitle(titleThFiveForV2[i]);
+            hRMWithEp2->GetAxis(i)->SetTitle(titleThFiveForV2[i]);
         }
     }
 
+    maxPhi = TMath::TwoPi();
+    epPhiNumBins = 72;
+    if(fQuartPhiRange){
+        maxPhi = TMath::Pi()/3.;
+        epPhiNumBins = 12;
+    }
     TString titleThFiveForV3[5]= {"#it{p}_{T}^{truth} (GeV/#it{c})", "#it{p}_{T,corr}^{det} (GeV/#it{c})", "#phi^{truth jet}-#Psi_{EP, 3}", "#phi^{det jet}-#Psi_{EP, 3}" , "Centrality (%)"};
-    Int_t nbinsThFiveForV3[5]  = {(Int_t)fMaxPt, (Int_t)fMaxPt, 72, 72, nCentBins};
+    Int_t nbinsThFiveForV3[5]  = {(Int_t)fMaxPt, (Int_t)fMaxPt, epPhiNumBins, epPhiNumBins, nCentBins};
     Double_t minThFiveForV3[5] = {0., 0., 0., 0.,0.};
-    Double_t maxThFiveForV3[5] = {fMaxPt, fMaxPt, TMath::TwoPi(), TMath::TwoPi(), 100};
-    histname = "hRMWithEP3Angle";
+    Double_t maxThFiveForV3[5] = {fMaxPt, fMaxPt, maxPhi, maxPhi, 100};
+    histname = "hRMWithEp3Angle";
     if(f2DRMwithEP3){
-        THnSparse* hRMWithEP3 = fHistManager.CreateTHnSparse(histname.Data(), histname.Data(), 5, nbinsThFiveForV3, minThFiveForV3, maxThFiveForV3);
-        for (Int_t i = 0; i < 5; i++) {
-            hRMWithEP3->GetAxis(i)->SetTitle(titleThFiveForV3[i]);
-        }
+        THnSparse* hRMWithEp3 = fHistManager.CreateTHnSparse(histname.Data(), histname.Data(), 5, nbinsThFiveForV3, minThFiveForV3, maxThFiveForV3);
+        for (Int_t i = 0; i < 5; i++) hRMWithEp3->GetAxis(i)->SetTitle(titleThFiveForV3[i]);
     }
 
+    maxPhi = TMath::TwoPi();
+    epPhiNumBins = 48;
+    if(fQuartPhiRange){
+        maxPhi = TMath::Pi()/2.;
+        epPhiNumBins = 12;
+    }
+    histname = "hHybJetNonCorrPtEp2Cnet";
+    title = histname + ";#it{p}_{T}^{hyb jet (non-corr)} [GeV/#it{c}];#phi^{hyb jet}-#Psi_{EP, 2}; Centrality (%)";
+    fHistManager.CreateTH3(histname.Data(),title.Data(),250,0.,250.,epPhiNumBins,0.,maxPhi,50,0.,100.);
+    histname = "hHybJetCorrPtEp2Cnet";
+    title = histname + ";#it{p}_{T}^{hyb jet (corr)} [GeV/#it{c}];#phi^{hyb jet}-#Psi_{EP, 2}; Centrality (%)";
+    fHistManager.CreateTH3(histname.Data(),title.Data(),250,0.,250.,epPhiNumBins,0.,maxPhi,50,0.,100.);
+    histname = "hParJetPtEp2Cnet";
+    title = histname + ";#it{p}_{T}^{par jet (non-corr)} [GeV/#it{c}];#phi^{par jet}-#Psi_{EP, 2}; Centrality (%)";
+    fHistManager.CreateTH3(histname.Data(),title.Data(),250,0.,250.,epPhiNumBins,0.,maxPhi,50,0.,100.);
+    histname = "hBkgPtEp2Cnet";
+    title = histname + ";#it{p}_{T}^{BKG} [GeV/#it{c}];#phi^{par jet}-#Psi_{EP, 2}; Centrality (%)";
+    fHistManager.CreateTH3(histname.Data(),title.Data(),250,0.,250.,epPhiNumBins,0.,maxPhi,50,0.,100.);
+    
+    maxPhi = TMath::TwoPi();
+    epPhiNumBins = 72;
+    if(fQuartPhiRange){
+        maxPhi = TMath::Pi()/3.;
+        epPhiNumBins = 12;
+    }
+    histname = "hHybJetNonCorrPtEp3Cnet";
+    title = histname + ";#it{p}_{T}^{hyb jet (non-corr)} [GeV/#it{c}];#phi^{hyb jet}-#Psi_{EP, 3}; Centrality (%)";
+    fHistManager.CreateTH3(histname.Data(),title.Data(),250,0.,250.,epPhiNumBins,0.,maxPhi,50,0.,100.);
+    histname = "hHybJetCorrPtEp3Cnet";
+    title = histname + ";#it{p}_{T}^{hyb jet (corr)} [GeV/#it{c}];#phi^{hyb jet}-#Psi_{EP, 3}; Centrality (%)";
+    fHistManager.CreateTH3(histname.Data(),title.Data(),250,0.,250.,epPhiNumBins,0.,maxPhi,50,0.,100.);
+    histname = "hParJetPtEp3Cnet";
+    title = histname + ";#it{p}_{T}^{par jet (non-corr)} [GeV/#it{c}];#phi^{par jet}-#Psi_{EP, 3}; Centrality (%)";
+    fHistManager.CreateTH3(histname.Data(),title.Data(),250,0.,250.,epPhiNumBins,0.,maxPhi,50,0.,100.);
+    histname = "hBkgPtEp3Cnet";
+    title = histname + ";#it{p}_{T}^{BKG} [GeV/#it{c}];#phi^{par jet}-#Psi_{EP, 3}; Centrality (%)";
+    fHistManager.CreateTH3(histname.Data(),title.Data(),250,0.,250.,epPhiNumBins,0.,maxPhi,50,0.,100.);
+    
     histname = "hCentGRhoLRho";
     title = histname + ";Centrality (%);#rho [GeV/#it{c} / (m^{2})]; local #rho [GeV/#it{c} / (m^{2})]";
     fHistManager.CreateTH3(histname.Data(), title.Data(), 100, 0, 100, 250, 0, 250, 250, 0., 250.);
@@ -1640,8 +1691,6 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
     for(auto parJet : parJetsCont->all()) parJet->ResetMatching();
     PerformGeometricalJetMatching(*hybJetsCont, *parJetsCont, fJetMatchingR);
     
-
-
     // for(auto hybJet : hybJetsCont->all()) hybJet->ResetMatching();
     // for(auto detJet : detJetsCont->all()) detJet->ResetMatching();
     // PerformGeometricalJetMatching(*hybJetsCont, *detJetsCont, fJetMatchingR);
@@ -1694,7 +1743,6 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
     Double_t rhoVal = 0;
     // if (fDetJetContainer->GetRhoParameter()) rhoVal = fDetJetContainer->GetRhoVal();
     
-
     Int_t iCentBin = GetCentBin(); //fCentBin
     
     //if (jetCont->GetRhoParameter()) {
@@ -1705,7 +1753,6 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
     Double_t deltaPhiJetEP = -999.0;
     
     TString jetKindName[3] = {"hybridRawJet", "detectorRawJet", "particleRawJet"};
-
     
     // for (auto jet : fDetJetContainer->accepted()) {
     for (auto jet : hybJetsCont->accepted()) {
@@ -1725,9 +1772,11 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
             localRhoValScaled = fLocalRho->GetLocalVal(\
                 jet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
         }
-
-        if(fRhoLocalSubType) detJetPtCorr = jet->Pt() - localRhoValScaled * jet->Area();
-        else detJetPtCorr = jet->Pt() - rhoVal * jet->Area();
+        
+        Double_t bkgPt = 0.;
+        if(fRhoLocalSubType) bkgPt = localRhoValScaled * jet->Area();
+        else bkgPt = rhoVal * jet->Area();
+        detJetPtCorr = jet->Pt() - bkgPt;
 
         Int_t v0Angle = (Int_t) jet->Phi() / (TMath::Pi()/4);
         Double_t tempV0Mult = V0MultForAngle[v0Angle];
@@ -1749,23 +1798,54 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
         if(angleTruJetVsEP3 < 0.) angleTruJetVsEP3 += TMath::TwoPi();
         Double_t angleDetJetVsEP3 = jet->Phi() - psi3V0[0];
         if(angleDetJetVsEP3 < 0.) angleDetJetVsEP3 += TMath::TwoPi();
-        
+
+        // Double_t angleTruJetVsEP2 = matchedPartLvJet->Phi();
+        // Double_t angleDetJetVsEP2 = jet->Phi();
+        // Double_t angleTruJetVsEP3 = matchedPartLvJet->Phi();
+        // Double_t angleDetJetVsEP3 = jet->Phi();
+        if(fQuartPhiRange){
+            angleTruJetVsEP2 = movePhaseShiftTwoEP(angleTruJetVsEP2);
+            angleDetJetVsEP2 = movePhaseShiftTwoEP(angleDetJetVsEP2);
+            angleTruJetVsEP3 = movePhaseShiftThreeEP(angleTruJetVsEP3);
+            angleDetJetVsEP3 = movePhaseShiftThreeEP(angleDetJetVsEP3);
+        }
+
         Double_t angularity     = GetAngularity(matchedPartLvJet);
         Double_t matchDistance  = matchedPartLvJet->ClosestJetDistance();
         Double_t sharedFraction = detJetsCont->GetFractionSharedPt(jet, nullptr);
 
-        if(fMinSharedMomentumFraction >=  sharedFraction && matchDistance < fJetMatchingR){
+        if(fMinSharedMomentumFraction >= sharedFraction && matchDistance < fJetMatchingR){
             Double_t xForV2[5] = {truthPt, detJetPtCorr, angleTruJetVsEP2, angleDetJetVsEP2, fCent};
             if(f2DRMwithEP2){
-                histName = TString::Format("%s/hRMWithEP2Angle", groupName.Data());
+                histName = TString::Format("%s/hRMWithEp2Angle", groupName.Data());
                 fHistManager.FillTHnSparse(histName, xForV2);
+                
+                histName = TString::Format("%s/hHybJetNonCorrPtEp2Cnet", groupName.Data());
+                fHistManager.FillTH3(histName, jet->Pt(), angleDetJetVsEP2, fCent);
+                histName = TString::Format("%s/hHybJetCorrPtEp2Cnet", groupName.Data());
+                fHistManager.FillTH3(histName, detJetPtCorr, angleDetJetVsEP2, fCent);
+                histName = TString::Format("%s/hParJetPtEp2Cnet", groupName.Data());
+                fHistManager.FillTH3(histName,truthPt,angleTruJetVsEP2,fCent);
+                histName = TString::Format("%s/hBkgPtEp2Cnet",groupName.Data());
+                fHistManager.FillTH3(histName, bkgPt, angleDetJetVsEP2, fCent);
             }
             
             Double_t xForV3[5] = {truthPt, detJetPtCorr, angleTruJetVsEP3, angleDetJetVsEP3, fCent};
             if(f2DRMwithEP3){
-                histName = TString::Format("%s/hRMWithEP3Angle", groupName.Data());
+                histName = TString::Format("%s/hRMWithEp3Angle", groupName.Data());
                 fHistManager.FillTHnSparse(histName, xForV3);
+                
+                histName = TString::Format("%s/hHybJetNonCorrPtEp3Cnet", groupName.Data());
+                fHistManager.FillTH3(histName, jet->Pt(), angleDetJetVsEP3, fCent);
+                histName = TString::Format("%s/hHybJetCorrPtEp3Cnet", groupName.Data());
+                fHistManager.FillTH3(histName, detJetPtCorr, angleDetJetVsEP3, fCent);
+                histName = TString::Format("%s/hParJetPtEp3Cnet", groupName.Data());
+                fHistManager.FillTH3(histName,truthPt,angleTruJetVsEP3,fCent);
+                histName = TString::Format("%s/hBkgPtEp3Cnet",groupName.Data());
+                fHistManager.FillTH3(histName, bkgPt, angleDetJetVsEP3, fCent);
             }
+            
+            
         }
 
         histName = TString::Format("%s/hCentGRhoLRho", groupName.Data());
@@ -2036,8 +2116,8 @@ const AliEmcalJet* AliAnalysisTaskEmbeddingJetWithEP::GetMatchedPartLevelJet(con
             // Check if match is unique
             if (partLevelJet->ClosestJet() != detJet) returnValue = false;
             else {
-                    Double_t truthPt=partLevelJet->Pt();
-                    fHistManager.FillTH1(histNameQA, "uniqueMatch");
+                Double_t truthPt=partLevelJet->Pt();
+                fHistManager.FillTH1(histNameQA, "uniqueMatch");
             }
             
             // Check if the matching distance cut is passed
@@ -2802,7 +2882,6 @@ void AliAnalysisTaskEmbeddingJetWithEP::GetLeadingAndSubJet() {
     }
     
 }
-
 
 
 Bool_t AliAnalysisTaskEmbeddingJetWithEP::CheckEventIsPileUp2018(){

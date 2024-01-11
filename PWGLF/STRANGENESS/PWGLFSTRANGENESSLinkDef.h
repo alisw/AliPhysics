@@ -98,6 +98,7 @@
 #pragma link C++ class AliAnalysisTaskMultspec+;
 #pragma link C++ class AliAnalysisTaskMultspec_MCpred+;
 #pragma link C++ class AliAnalysisTaskMultspec_evbased+;
+#pragma link C++ class AliAnalysisTaskMultspec_FDcorr+;
 //#pragma link C++ class AliRunningCascadeEvent+;
 //#pragma link C++ class AliRunningCascadeTrack+;
 #endif
@@ -130,6 +131,7 @@
 #pragma link C++ class Cascfiller+;
 #pragma link C++ class V0filler_Mult+;
 #pragma link C++ class Cascfiller_Mult+;
+#pragma link C++ class LamFiller_FD+;
 //#pragma link C++ class std::vector<FindableHyperTriton<2>>+;
 //#pragma link C++ class std::vector<FindableHyperTriton<3>>+;
 #endif

@@ -35,6 +35,7 @@ class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader
                  };
   typedef enum EventMult EstEventMult;
 
+
   AliFemtoEventReaderAODKinematicsChain();
   AliFemtoEventReaderAODKinematicsChain(const AliFemtoEventReaderAODKinematicsChain& aReader);
   ~AliFemtoEventReaderAODKinematicsChain();
@@ -45,7 +46,8 @@ class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader
   AliFemtoString Report();
   void SetConstrained(const bool constrained);
   bool GetConstrained() const;
-
+  void SetParticleFromOutOfBunchPileupCollision(bool PileUpTrack);
+  void SetPileupInGeneratedEvent(bool PileUpEvent);
   void SetGenEventHeader(AliGenEventHeader *aGenHeader);
   void SetRotateToEventPlane(short dorotate);
   void SetUseMultiplicity(EstEventMult aType);
@@ -55,6 +57,7 @@ class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader
 
   void ReadOnlyPrimaries(bool primaries);
   void ReadPrimariesSecWeakMaterial(bool primaries);
+
 
  protected:
   AliAODHeader *fAODheader;
@@ -68,7 +71,8 @@ class AliFemtoEventReaderAODKinematicsChain : public AliFemtoEventReader
   AliGenEventHeader *fGenHeader; // Link to the generator event header
   EstEventMult   fEstEventMult;  // Type of the event multiplicity estimator
   short          fRotateToEventPlane; // Rotate the event so that event plane is at x=0
-
+  bool           fParticleFromOutOfBunchPileupCollision; //injected pileup for LHC20e3a PbPb over tracks 
+  bool           fPileupInGeneratedEvent; //injected pileup for LHC20e3a PbPb over events
   bool           fReadOnlyPrimaries; // read only primaries
   bool           fReadPrimariesSecWeakMaterial; //read only primaries, secondaries from weak decays and secondaries from material
 

@@ -234,6 +234,16 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoTrueEtaPtAlpha(NULL),
   fHistoTruePi0PtOpenAngle(NULL),
   fHistoTrueEtaPtOpenAngle(NULL),
+  fHistoTruePi0GGClusterAngleVsPt(NULL),
+  fHistoTruePi0GCClusterAngleVsPt(NULL),
+  fHistoTruePi0CCClusterAngleVsPt(NULL),
+  fHistoTruePi0CCSameGammaClusterAngleVsPt(NULL),
+  fHistoTruePi0CCSameGammaClusterZDiffVsPt(NULL),
+  fHistoTruePi0GGClusterZDiffVsPt(NULL),
+  fHistoTruePi0GGClusterOAVsPt(NULL),
+  fHistoTruePi0GCClusterOAVsPt(NULL),
+  fHistoTruePi0CCClusterOAVsPt(NULL),
+  fHistoTruePi0CCSameGammaClusterOAVsPt(NULL),
   fHistoClusPhotonBGPt(NULL),
   fHistoClusPhotonPlusConvBGPt(NULL),
   fHistoClustPhotonElectronBGPtM02(NULL),
@@ -583,6 +593,16 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoTrueEtaPtAlpha(NULL),
   fHistoTruePi0PtOpenAngle(NULL),
   fHistoTrueEtaPtOpenAngle(NULL),
+  fHistoTruePi0GGClusterAngleVsPt(NULL),
+  fHistoTruePi0GCClusterAngleVsPt(NULL),
+  fHistoTruePi0CCClusterAngleVsPt(NULL),
+  fHistoTruePi0CCSameGammaClusterAngleVsPt(NULL),
+  fHistoTruePi0CCSameGammaClusterZDiffVsPt(NULL),
+  fHistoTruePi0GGClusterZDiffVsPt(NULL),
+  fHistoTruePi0GGClusterOAVsPt(NULL),
+  fHistoTruePi0GCClusterOAVsPt(NULL),
+  fHistoTruePi0CCClusterOAVsPt(NULL),
+  fHistoTruePi0CCSameGammaClusterOAVsPt(NULL),
   fHistoClusPhotonBGPt(NULL),
   fHistoClusPhotonPlusConvBGPt(NULL),
   fHistoClustPhotonElectronBGPtM02(NULL),
@@ -2105,6 +2125,18 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoTrueBckFullMesonContainedInOneClusterInvMassPt = new TH2F*[fnCuts];
         fHistoTrueBckAsymEClustersInvMassPt                  = new TH2F*[fnCuts];
         fHistoTrueBckContInvMassPt        = new TH2F*[fnCuts];
+
+        fHistoTruePi0GGClusterAngleVsPt           = new TH2F*[fnCuts];
+        fHistoTruePi0GCClusterAngleVsPt           = new TH2F*[fnCuts];
+        fHistoTruePi0CCClusterAngleVsPt           = new TH2F*[fnCuts];
+        fHistoTruePi0CCSameGammaClusterAngleVsPt  = new TH2F*[fnCuts];
+        fHistoTruePi0CCSameGammaClusterZDiffVsPt  = new TH2F*[fnCuts];
+        fHistoTruePi0GGClusterZDiffVsPt           = new TH2F*[fnCuts];
+        fHistoTruePi0GGClusterOAVsPt              = new TH2F*[fnCuts];
+        fHistoTruePi0GCClusterOAVsPt              = new TH2F*[fnCuts];
+        fHistoTruePi0CCClusterOAVsPt              = new TH2F*[fnCuts];
+        fHistoTruePi0CCSameGammaClusterOAVsPt     = new TH2F*[fnCuts];
+
         if( !fDoPi0Only ){
           fHistoTrueEtaPtOpenAngle          = new TH2F*[fnCuts];
           fHistoTrueEtaPtAlpha              = new TH2F*[fnCuts];
@@ -2914,6 +2946,60 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           fHistoTruePi0PtY[iCut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           fHistoTruePi0PtY[iCut]->SetYTitle("y");
           fTrueList[iCut]->Add(fHistoTruePi0PtY[iCut]);
+
+          if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetIsConversionRecovery() == 2){
+            fHistoTruePi0GGClusterAngleVsPt[iCut] = new TH2F("ESD_True_Pi0_GG_AngleBetweenClusters_Pt", "ESD_True_Pi0_GG_AngleBetweenClusters_Pt", 160, 0, 1.6, nBinsPt, arrPtBinning);
+            fHistoTruePi0GGClusterAngleVsPt[iCut]->SetXTitle("tan^{-1}(#Delta #Theta / #Delta #phi)");
+            fHistoTruePi0GGClusterAngleVsPt[iCut]->SetYTitle("#it{p}_{T} (GeV/#it{c})");
+            fTrueList[iCut]->Add(fHistoTruePi0GGClusterAngleVsPt[iCut]);
+
+            fHistoTruePi0GCClusterAngleVsPt[iCut] = new TH2F("ESD_True_Pi0_GC_AngleBetweenClusters_Pt", "ESD_True_Pi0_GC_AngleBetweenClusters_Pt", 160, 0, 1.6, nBinsPt, arrPtBinning);
+            fHistoTruePi0GCClusterAngleVsPt[iCut]->SetXTitle("tan^{-1}(#Delta #Theta / #Delta #phi)");
+            fHistoTruePi0GCClusterAngleVsPt[iCut]->SetYTitle("#it{p}_{T} (GeV/#it{c})");
+            fTrueList[iCut]->Add(fHistoTruePi0GCClusterAngleVsPt[iCut]);
+
+            fHistoTruePi0CCClusterAngleVsPt[iCut] = new TH2F("ESD_True_Pi0_CC_AngleBetweenClusters_Pt", "ESD_True_Pi0_CC_AngleBetweenClusters_Pt", 160, 0, 1.6, nBinsPt, arrPtBinning);
+            fHistoTruePi0CCClusterAngleVsPt[iCut]->SetXTitle("tan^{-1}(#Delta #Theta / #Delta #phi)");
+            fHistoTruePi0CCClusterAngleVsPt[iCut]->SetYTitle("#it{p}_{T} (GeV/#it{c})");
+            fTrueList[iCut]->Add(fHistoTruePi0CCClusterAngleVsPt[iCut]);
+
+            fHistoTruePi0CCSameGammaClusterAngleVsPt[iCut] = new TH2F("ESD_True_Pi0_CC_SameGamma_AngleBetweenClusters_Pt", "ESD_True_Pi0_CC_SameGamma_AngleBetweenClusters_Pt", 160, 0, 1.6, nBinsPt, arrPtBinning);
+            fHistoTruePi0CCSameGammaClusterAngleVsPt[iCut]->SetXTitle("tan^{-1}(#Delta #Theta / #Delta #phi)");
+            fHistoTruePi0CCSameGammaClusterAngleVsPt[iCut]->SetYTitle("#it{p}_{T} (GeV/#it{c})");
+            fTrueList[iCut]->Add(fHistoTruePi0CCSameGammaClusterAngleVsPt[iCut]);
+
+            fHistoTruePi0GGClusterZDiffVsPt[iCut] = new TH2F("ESD_True_Pi0_GG_DeltaEtaBetweenClusters_Pt", "ESD_True_Pi0_GG_DeltaEtaBetweenClusters_Pt", 50, 0, 0.5, nBinsPt, arrPtBinning);
+            fHistoTruePi0GGClusterZDiffVsPt[iCut]->SetXTitle("#Delta #eta");
+            fHistoTruePi0GGClusterZDiffVsPt[iCut]->SetYTitle("#it{p}_{T} (GeV/#it{c})");
+            fTrueList[iCut]->Add(fHistoTruePi0GGClusterZDiffVsPt[iCut]);
+
+            fHistoTruePi0CCSameGammaClusterZDiffVsPt[iCut] = new TH2F("ESD_True_Pi0_CC_SameGamma_DeltaEtaBetweenClusters_Pt", "ESD_True_Pi0_CC_SameGamma_DeltaEtaBetweenClusters_Pt", 50, 0, 0.5, nBinsPt, arrPtBinning);
+            fHistoTruePi0CCSameGammaClusterZDiffVsPt[iCut]->SetXTitle("#Delta #eta");
+            fHistoTruePi0CCSameGammaClusterZDiffVsPt[iCut]->SetYTitle("#it{p}_{T} (GeV/#it{c})");
+            fTrueList[iCut]->Add(fHistoTruePi0CCSameGammaClusterZDiffVsPt[iCut]);
+
+            fHistoTruePi0GGClusterOAVsPt[iCut] = new TH2F("ESD_True_Pi0_GG_OABetweenClusters_Pt", "ESD_True_Pi0_GG_OABetweenClusters_Pt", 160, 0, 1.6, 20, 0, 0.4);
+            fHistoTruePi0GGClusterOAVsPt[iCut]->SetXTitle("tan^{-1}(#Delta #Theta / #Delta #phi)");
+            fHistoTruePi0GGClusterOAVsPt[iCut]->SetYTitle("opening angle");
+            fTrueList[iCut]->Add(fHistoTruePi0GGClusterOAVsPt[iCut]);
+
+            fHistoTruePi0GCClusterOAVsPt[iCut] = new TH2F("ESD_True_Pi0_GC_OABetweenClusters_Pt", "ESD_True_Pi0_GC_OABetweenClusters_Pt", 160, 0, 1.6, 20, 0, 0.4);
+            fHistoTruePi0GCClusterOAVsPt[iCut]->SetXTitle("tan^{-1}(#Delta #Theta / #Delta #phi)");
+            fHistoTruePi0GCClusterOAVsPt[iCut]->SetYTitle("opening angle");
+            fTrueList[iCut]->Add(fHistoTruePi0GCClusterOAVsPt[iCut]);
+
+            fHistoTruePi0CCClusterOAVsPt[iCut] = new TH2F("ESD_True_Pi0_CC_OABetweenClusters_Pt", "ESD_True_Pi0_CC_OABetweenClusters_Pt", 160, 0, 1.6, 20, 0, 0.4);
+            fHistoTruePi0CCClusterOAVsPt[iCut]->SetXTitle("tan^{-1}(#Delta #Theta / #Delta #phi)");
+            fHistoTruePi0CCClusterOAVsPt[iCut]->SetYTitle("opening angle");
+            fTrueList[iCut]->Add(fHistoTruePi0CCClusterOAVsPt[iCut]);
+
+            fHistoTruePi0CCSameGammaClusterOAVsPt[iCut] = new TH2F("ESD_True_Pi0_CC_SameGamma_OABetweenClusters_Pt", "ESD_True_Pi0_CC_SameGamma_OABetweenClusters_Pt", 160, 0, 1.6, 20, 0, 0.4);
+            fHistoTruePi0CCSameGammaClusterOAVsPt[iCut]->SetXTitle("tan^{-1}(#Delta #Theta / #Delta #phi)");
+            fHistoTruePi0CCSameGammaClusterOAVsPt[iCut]->SetYTitle("opening angle");
+            fTrueList[iCut]->Add(fHistoTruePi0CCSameGammaClusterOAVsPt[iCut]);
+          }
+          
+
           if( !fDoPi0Only ){
             fHistoTrueEtaPtY[iCut]          = new TH2F("ESD_TrueEta_Pt_Y", "ESD_TrueEta_Pt_Y", nBinsQAPt, arrQAPtBinning, 150, -1.5, 1.5);
             fHistoTrueEtaPtY[iCut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -2995,6 +3081,19 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
             fHistoTrueBckAsymEClustersInvMassPt[iCut]->Sumw2();
             fHistoTrueBckContInvMassPt[iCut]->Sumw2();
 
+            if(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetIsConversionRecovery() == 2){
+              fHistoTruePi0GGClusterAngleVsPt[iCut]->Sumw2();
+              fHistoTruePi0GCClusterAngleVsPt[iCut]->Sumw2();
+              fHistoTruePi0CCClusterAngleVsPt[iCut]->Sumw2();
+              fHistoTruePi0CCSameGammaClusterAngleVsPt[iCut]->Sumw2();
+              fHistoTruePi0GGClusterZDiffVsPt[iCut]->Sumw2();
+              fHistoTruePi0CCSameGammaClusterZDiffVsPt[iCut]->Sumw2();
+              fHistoTruePi0GGClusterOAVsPt[iCut]->Sumw2();
+              fHistoTruePi0GCClusterOAVsPt[iCut]->Sumw2();
+              fHistoTruePi0CCClusterOAVsPt[iCut]->Sumw2();
+              fHistoTruePi0CCSameGammaClusterOAVsPt[iCut]->Sumw2();
+            }
+            
             fHistoTruePi0CaloPhotonInvMassPt[iCut]->Sumw2();
             fHistoTruePi0CaloMixedPhotonConvPhotonInvMassPt[iCut]->Sumw2();
             fHistoTruePi0CaloConvertedPhotonInvMassPt[iCut]->Sumw2();
@@ -3481,7 +3580,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
 
   // energy correction for neutral overlap!
   float cent = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetCentrality(fInputEvent);
-  if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() > 0){
+  if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() > 0 && ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() <= 2){
     ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SetPoissonParamCentFunction(fIsMC);
     ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SetNMatchedTracksFunc(cent);
   }
@@ -3561,7 +3660,16 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
     // energy correction for neutral overlap!
     if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoFlatEnergySubtraction()){
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() > 0){
-        clus->SetE(clus->E() - ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent));
+        // Neutral Overlap correction via mean number of matched primary tracks per cluster
+        if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() <= 2){
+          clus->SetE(clus->E() - ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent));
+        } else if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() == 3){
+          // Neutral Overlap correction via mean number of charged particles per cell
+          clus->SetE(clus->E() - 12.f * ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent));
+        } else if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() == 4){
+          // Neutral Overlap correction via NonLin like correction
+          clus->SetE(clus->E() * ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent, clus->E()));
+        }
       }
     }
 
@@ -5905,9 +6013,17 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
       if(previouslyNotFoundTrueMesons && !fDoLightOutput && fHistoTrueEtaInvMassPtAdditional[fiCut]) fHistoTrueEtaInvMassPtAdditional[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),tempTruePi0CandWeight);
     }
     if (fDoMesonQA > 0 && fDoMesonQA < 3){
+      auto arrConvRej = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetAngleForConvReject(TrueGammaCandidate0, TrueGammaCandidate1); // get information about angular position of two clusters
       // both gammas are real gammas
       if (TrueGammaCandidate0->IsLargestComponentPhoton() && TrueGammaCandidate1->IsLargestComponentPhoton()) {
-        if (isTruePi0)fHistoTruePi0CaloPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), tempTruePi0CandWeight);
+        if (isTruePi0){
+          fHistoTruePi0CaloPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), tempTruePi0CandWeight);
+          if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetIsConversionRecovery() == 2){
+            fHistoTruePi0GGClusterAngleVsPt[fiCut]->Fill( arrConvRej.first, Pi0Candidate->Pt(), tempTruePi0CandWeight);
+            fHistoTruePi0GGClusterZDiffVsPt[fiCut]->Fill( std::abs(TrueGammaCandidate0->Eta() - TrueGammaCandidate1->Eta()), Pi0Candidate->Pt(), tempTruePi0CandWeight);
+            fHistoTruePi0GGClusterOAVsPt[fiCut]->Fill( arrConvRej.first, arrConvRej.second, tempTruePi0CandWeight);
+          }
+        }
         if (isTrueEta && !fDoPi0Only)fHistoTrueEtaCaloPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), tempTruePi0CandWeight);
       }
       // both particles are electrons
@@ -5917,14 +6033,33 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
       }
       // both particles are converted electrons
       if ((TrueGammaCandidate0->IsLargestComponentElectron() && TrueGammaCandidate0->IsConversion()) && (TrueGammaCandidate1->IsLargestComponentElectron() && TrueGammaCandidate1->IsConversion()) ){
-        if (isTruePi0 )fHistoTruePi0CaloConvertedPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), tempTruePi0CandWeight);
+        if (isTruePi0 ){
+          fHistoTruePi0CaloConvertedPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), tempTruePi0CandWeight);
+          if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetIsConversionRecovery() == 2){
+            fHistoTruePi0CCClusterAngleVsPt[fiCut]->Fill( arrConvRej.first, Pi0Candidate->Pt(), tempTruePi0CandWeight);
+            fHistoTruePi0CCClusterOAVsPt[fiCut]->Fill( arrConvRej.first, arrConvRej.second, tempTruePi0CandWeight);
+          }
+        }
         if (isTrueEta && !fDoPi0Only)fHistoTrueEtaCaloConvertedPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), tempTruePi0CandWeight);
+        if(isSameConvertedGamma){
+          if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetIsConversionRecovery() == 2){
+            fHistoTruePi0CCSameGammaClusterAngleVsPt[fiCut]->Fill( arrConvRej.first, Pi0Candidate->Pt(), tempTruePi0CandWeight);
+            fHistoTruePi0CCSameGammaClusterZDiffVsPt[fiCut]->Fill( std::abs(TrueGammaCandidate0->Eta() - TrueGammaCandidate1->Eta()), Pi0Candidate->Pt(), tempTruePi0CandWeight);
+            fHistoTruePi0CCSameGammaClusterOAVsPt[fiCut]->Fill( arrConvRej.first, arrConvRej.second, tempTruePi0CandWeight);
+          }
+        }
       }
       // 1 gamma is converted the other one is normals
       if ( (TrueGammaCandidate0->IsLargestComponentPhoton() && TrueGammaCandidate1->IsLargestComponentElectron() && TrueGammaCandidate1->IsConversion()) ||
         (TrueGammaCandidate1->IsLargestComponentPhoton() && TrueGammaCandidate0->IsLargestComponentElectron() && TrueGammaCandidate0->IsConversion())
       ) {
-        if (isTruePi0) fHistoTruePi0CaloMixedPhotonConvPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), tempTruePi0CandWeight);
+        if (isTruePi0){
+          if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetIsConversionRecovery() == 2){
+            fHistoTruePi0GCClusterAngleVsPt[fiCut]->Fill( arrConvRej.first, Pi0Candidate->Pt(), tempTruePi0CandWeight);
+            fHistoTruePi0GCClusterOAVsPt[fiCut]->Fill( arrConvRej.first, arrConvRej.second, tempTruePi0CandWeight);
+          }
+          fHistoTruePi0CaloMixedPhotonConvPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), tempTruePi0CandWeight);
+        }
         if (isTrueEta && !fDoPi0Only) fHistoTrueEtaCaloMixedPhotonConvPhotonInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), tempTruePi0CandWeight);
       }
 

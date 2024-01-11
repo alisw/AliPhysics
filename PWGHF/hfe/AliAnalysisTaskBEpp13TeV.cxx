@@ -15,6 +15,7 @@
 
 #include "TChain.h"
 #include "TH1F.h"
+#include "TH3F.h"
 #include "TList.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
@@ -62,6 +63,7 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV():
   hVtxZafterCut(0),
   hVtxZ(0),
   hNrEvents(0),
+  hNrEventsMult(0),
   hSPDtracklet(0),
   hNtrklet_vtxZ(0),
   hMultEstimatorAvg(0),
@@ -72,8 +74,10 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV():
   histNchCorr(0),
   funcNchCorr(0),
   hNtrkletCorr(0),
+  hNtrkletCorr2(0),
   hSPDtrklet_Nch(0),
   hSPDtrklet_Nch_Corr(0),
+  hSPDtrklet_Nch_Corr2(0),
   hNch_vtxZ(0),
   hFilterMask(0),
   hTPCnCrossedRow(0),
@@ -97,8 +101,10 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV():
   hD0PtMultCorr(0),
   hLcPt(0),
   hGenBePt(0),
+  hGenBePtMult(0),
   hRecBePt_track(0),
   hRecBePt_tof(0),
+  hRecBePt_tofMult(0),
   hRecBePt_tpc(0),
   hITSnsigma(0),
   hITSnsigmaTOFcut(0),
@@ -115,23 +121,38 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV():
   hV0ElecTOFnsigmaDeno(0),
   hV0ElecTOFnsigmaNume(0),
   dcaTrack(0),
+  dcaTrackMult(0),
   dcaPion(0),
   dcaBeauty(0),
   dcaBeautyCorr(0),
   dcaBeautyCorrVar1(0),
   dcaBeautyCorrVar2(0),
+  dcaBeautyMult(0),
+  dcaBeautyMultCorr(0),
+  dcaBeautyMultCorrVar1(0),
+  dcaBeautyMultCorrVar2(0),
   DelecVsDmother(0),
   dcaCharm(0),
   dcaDmeson(0),
   dcaDmesonCorr(0),
   dcaDmesonCorrVar1(0),
   dcaDmesonCorrVar2(0),
+  dcaDmesonMult(0),
+  dcaDmesonMultCorr(0),
+  dcaDmesonMultCorrVar1(0),
+  dcaDmesonMultCorrVar2(0),
   dcaDzero(0),
+  dcaDzeroMult(0),
   dcaDplus(0),
+  dcaDplusMult(0),
   dcaDsplus(0),
+  dcaDsplusMult(0),
   dcaLc(0),
+  dcaLcMult(0),
   dcaDalitz(0),
+  dcaDalitzMult(0),
   dcaConv(0),
+  dcaConvMult(0),
   fBmesonCorrCentLow(0),
   fBmesonCorrCentHigh(0),
   fBmesonCorrMinLow(0),
@@ -141,6 +162,24 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV():
   fDmesonCorr(0),
   fDmesonCorrVar1(0),
   fDmesonCorrVar2(0),
+  fDmesonCorrMultBin1(0),
+  fDmesonCorrMultBin2(0),
+  fDmesonCorrMultBin3(0),
+  fDmesonCorrMultBin4(0),
+  fDmesonCorrMultBin5(0),
+  fDmesonCorrMultBin6(0),
+  fDmesonCorrMultBin1_var1(0),
+  fDmesonCorrMultBin2_var1(0),
+  fDmesonCorrMultBin3_var1(0),
+  fDmesonCorrMultBin4_var1(0),
+  fDmesonCorrMultBin5_var1(0),
+  fDmesonCorrMultBin6_var1(0),
+  fDmesonCorrMultBin1_var2(0),
+  fDmesonCorrMultBin2_var2(0),
+  fDmesonCorrMultBin3_var2(0),
+  fDmesonCorrMultBin4_var2(0),
+  fDmesonCorrMultBin5_var2(0),
+  fDmesonCorrMultBin6_var2(0),
   fLcCorr(0),
   fRnd(0)
 {
@@ -188,6 +227,7 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV(const char *name):
   hVtxZafterCut(0),
   hVtxZ(0),
   hNrEvents(0),
+  hNrEventsMult(0),
   hSPDtracklet(0),
   hNtrklet_vtxZ(0),
   hMultEstimatorAvg(0),
@@ -198,8 +238,10 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV(const char *name):
   histNchCorr(0),
   funcNchCorr(0),
   hNtrkletCorr(0),
+  hNtrkletCorr2(0),
   hSPDtrklet_Nch(0),
   hSPDtrklet_Nch_Corr(0),
+  hSPDtrklet_Nch_Corr2(0),
   hNch_vtxZ(0),
   hFilterMask(0),
   hTPCnCrossedRow(0),
@@ -223,8 +265,10 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV(const char *name):
   hD0PtMultCorr(0),
   hLcPt(0),
   hGenBePt(0),
+  hGenBePtMult(0),
   hRecBePt_track(0),
   hRecBePt_tof(0),
+  hRecBePt_tofMult(0),
   hRecBePt_tpc(0),
   hITSnsigma(0),
   hITSnsigmaTOFcut(0),
@@ -241,23 +285,38 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV(const char *name):
   hV0ElecTOFnsigmaDeno(0),
   hV0ElecTOFnsigmaNume(0),
   dcaTrack(0),
+  dcaTrackMult(0),
   dcaPion(0),
   dcaBeauty(0),
   dcaBeautyCorr(0),
   dcaBeautyCorrVar1(0),
   dcaBeautyCorrVar2(0),
+  dcaBeautyMult(0),
+  dcaBeautyMultCorr(0),
+  dcaBeautyMultCorrVar1(0),
+  dcaBeautyMultCorrVar2(0),
   DelecVsDmother(0),
   dcaCharm(0),
   dcaDmeson(0),
   dcaDmesonCorr(0),
   dcaDmesonCorrVar1(0),
   dcaDmesonCorrVar2(0),
+  dcaDmesonMult(0),
+  dcaDmesonMultCorr(0),
+  dcaDmesonMultCorrVar1(0),
+  dcaDmesonMultCorrVar2(0),
   dcaDzero(0),
+  dcaDzeroMult(0),
   dcaDplus(0),
+  dcaDplusMult(0),
   dcaDsplus(0),
+  dcaDsplusMult(0),
   dcaLc(0),
+  dcaLcMult(0),
   dcaDalitz(0),
+  dcaDalitzMult(0),
   dcaConv(0),
+  dcaConvMult(0),
   fBmesonCorrCentLow(0),
   fBmesonCorrCentHigh(0),
   fBmesonCorrMinLow(0),
@@ -267,6 +326,24 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV(const char *name):
   fDmesonCorr(0),
   fDmesonCorrVar1(0),
   fDmesonCorrVar2(0),
+  fDmesonCorrMultBin1(0),
+  fDmesonCorrMultBin2(0),
+  fDmesonCorrMultBin3(0),
+  fDmesonCorrMultBin4(0),
+  fDmesonCorrMultBin5(0),
+  fDmesonCorrMultBin6(0),
+  fDmesonCorrMultBin1_var1(0),
+  fDmesonCorrMultBin2_var1(0),
+  fDmesonCorrMultBin3_var1(0),
+  fDmesonCorrMultBin4_var1(0),
+  fDmesonCorrMultBin5_var1(0),
+  fDmesonCorrMultBin6_var1(0),
+  fDmesonCorrMultBin1_var2(0),
+  fDmesonCorrMultBin2_var2(0),
+  fDmesonCorrMultBin3_var2(0),
+  fDmesonCorrMultBin4_var2(0),
+  fDmesonCorrMultBin5_var2(0),
+  fDmesonCorrMultBin6_var2(0),
   fLcCorr(0),
   fRnd(0)
 {
@@ -341,6 +418,7 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   double ptbinningLc[7] = {1., 2., 4., 6., 8., 12., 24.};
   double ptbinningH[18] = {0.3, 0.5, 0.75, 1., 1.25, 1.5, 2., 2.5, 3., 4., 5., 6., 7., 8., 10., 12., 16., 20.};
   double multbinning[7] = {1., 9., 14., 20., 31., 60., 100.};
+  double evtbinning[2] = {0., 1.};
 
   int nBinsB = 100;
   double minB = 0.;
@@ -373,6 +451,9 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   hNrEvents = new TH1F("hNrEvents", "number of events", 1, 0., 1.);
   fOutputList->Add(hNrEvents);
 
+  hNrEventsMult = new TH2F("hNrEventsMult", "number of events", 1, evtbinning, 6, multbinning);
+  fOutputList->Add(hNrEventsMult);
+
   hSPDtracklet = new TH1F("hSPDtracklet", "SPD tracklet distribution", 180, 0, 180);
   fOutputList->Add(hSPDtracklet);
 
@@ -394,11 +475,17 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   hNtrkletCorr = new TH1F("hNtrkletCorr", "", 180, 0, 180);
   fOutputList->Add(hNtrkletCorr);
 
+  hNtrkletCorr2 = new TH1F("hNtrkletCorr2", "", 180, 0, 180);
+  fOutputList->Add(hNtrkletCorr2);
+
   hSPDtrklet_Nch = new TH2F("hSPDtrklet_Nch", "", 180, 0, 180, 180, 0, 180);
   fOutputList->Add(hSPDtrklet_Nch);
 
   hSPDtrklet_Nch_Corr = new TH2F("hSPDtrklet_Nch_Corr", "", 180, 0, 180, 180, 0, 180);
   fOutputList->Add(hSPDtrklet_Nch_Corr);
+
+  hSPDtrklet_Nch_Corr2 = new TH2F("hSPDtrklet_Nch_Corr2", "", 180, 0, 180, 180, 0, 180);
+  fOutputList->Add(hSPDtrklet_Nch_Corr2);
 
   hNch_vtxZ = new TH2F("hNch_vtxZ", "", 300, -15, 15, 300, 0, 300);
   fOutputList->Add(hNch_vtxZ);
@@ -469,11 +556,17 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   hGenBePt = new TH1F("hGenBePt", "", nPtBins, ptbinningX);
   fOutputList->Add(hGenBePt);
 
+  hGenBePtMult = new TH2F("hGenBePtMult", "", nPtBins, ptbinningX, 6, multbinning);
+  fOutputList->Add(hGenBePtMult);
+
   hRecBePt_track = new TH1F("hRecBePt_track", "", nPtBins, ptbinningX);
   fOutputList->Add(hRecBePt_track);
 
   hRecBePt_tof = new TH1F("hRecBePt_tof", "", nPtBins, ptbinningX);
   fOutputList->Add(hRecBePt_tof);
+
+  hRecBePt_tofMult = new TH2F("hRecBePt_tofMult", "", nPtBins, ptbinningX, 6, multbinning);
+  fOutputList->Add(hRecBePt_tofMult);
 
   hRecBePt_tpc = new TH1F("hRecBePt_tpc", "", nPtBins, ptbinningX);
   fOutputList->Add(hRecBePt_tpc);
@@ -523,6 +616,9 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   dcaTrack = new TH2F("dcaTrack", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaTrack);
 
+  dcaTrackMult = new TH3F("dcaTrackMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
+  fOutputList->Add(dcaTrackMult);
+
   dcaPion = new TH2F("dcaPion", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaPion);
 
@@ -537,6 +633,18 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
 
   dcaBeautyCorrVar2 = new TH2F("dcaBeautyCorrVar2", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaBeautyCorrVar2);
+
+  dcaBeautyMult = new TH3F("dcaBeautyMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
+  fOutputList->Add(dcaBeautyMult);
+
+  dcaBeautyMultCorr = new TH3F("dcaBeautyMultCorr", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
+  fOutputList->Add(dcaBeautyMultCorr);
+
+  dcaBeautyMultCorrVar1 = new TH3F("dcaBeautyMultCorrVar1", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
+  fOutputList->Add(dcaBeautyMultCorrVar1);
+
+  dcaBeautyMultCorrVar2 = new TH3F("dcaBeautyMultCorrVar2", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
+  fOutputList->Add(dcaBeautyMultCorrVar2);
 
   DelecVsDmother = new TH2F("DelecVsDmother", "", 10, ptbinningD0, nPtBins, ptbinningX);
   fOutputList->Add(DelecVsDmother);
@@ -556,25 +664,238 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   dcaDmesonCorrVar2 = new TH2F("dcaDmesonCorrVar2", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaDmesonCorrVar2);
 
+  dcaDmesonMult = new TH3F("dcaDmesonMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
+  fOutputList->Add(dcaDmesonMult);
+
+  dcaDmesonMultCorr = new TH3F("dcaDmesonMultCorr", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
+  fOutputList->Add(dcaDmesonMultCorr);
+
+  dcaDmesonMultCorrVar1 = new TH3F("dcaDmesonMultCorrVar1", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
+  fOutputList->Add(dcaDmesonMultCorrVar1);
+
+  dcaDmesonMultCorrVar2 = new TH3F("dcaDmesonMultCorrVar2", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
+  fOutputList->Add(dcaDmesonMultCorrVar2);
+
   dcaDzero = new TH2F("dcaDzero", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaDzero);
+
+  dcaDzeroMult = new TH3F("dcaDzeroMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
+  fOutputList->Add(dcaDzeroMult);
 
   dcaDplus = new TH2F("dcaDplus", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaDplus);
 
+  dcaDplusMult = new TH3F("dcaDplusMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
+  fOutputList->Add(dcaDplusMult);
+
   dcaDsplus = new TH2F("dcaDsplus", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaDsplus);
+
+  dcaDsplusMult = new TH3F("dcaDsplusMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
+  fOutputList->Add(dcaDsplusMult);
 
   dcaLc = new TH2F("dcaLc", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaLc);
 
+  dcaLcMult = new TH3F("dcaLcMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
+  fOutputList->Add(dcaLcMult);
+
   dcaDalitz = new TH2F("dcaDalitz", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaDalitz);
+
+  dcaDalitzMult = new TH3F("dcaDalitzMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
+  fOutputList->Add(dcaDalitzMult);
 
   dcaConv = new TH2F("dcaConv", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaConv);
 
+  dcaConvMult = new TH3F("dcaConvMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
+  fOutputList->Add(dcaConvMult);
+
   fRnd = new TRandom3(0);
+
+  
+  fDmesonCorrMultBin1 = new TF1("fDmesonCorrMultBin1", "(1/1.038302)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin1->FixParameter(0, 6.80225e+00);
+  fDmesonCorrMultBin1->FixParameter(1, 1.44558e+01);
+  fDmesonCorrMultBin1->FixParameter(2, 1.20305e+00);
+  fDmesonCorrMultBin1->FixParameter(3, 2.23080e+00);
+  fDmesonCorrMultBin1->FixParameter(4, 1.63620e+00);
+  fDmesonCorrMultBin1->FixParameter(5, 5.37149e+00);
+  fDmesonCorrMultBin1->FixParameter(6, 3.89111e-01);
+  fDmesonCorrMultBin1->FixParameter(7, 1.56282e+01);
+
+
+  fDmesonCorrMultBin2 = new TF1("fDmesonCorrMultBin2", "(1/1.146876)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin2->FixParameter(0, 6.71029e+00);
+  fDmesonCorrMultBin2->FixParameter(1, 2.37157e+00);
+  fDmesonCorrMultBin2->FixParameter(2, 2.64314e-02);
+  fDmesonCorrMultBin2->FixParameter(3, 4.57065e-01);
+  fDmesonCorrMultBin2->FixParameter(4, 2.26636e+00);
+  fDmesonCorrMultBin2->FixParameter(5, 2.33583e+00);
+  fDmesonCorrMultBin2->FixParameter(6, 2.61640e-01);
+  fDmesonCorrMultBin2->FixParameter(7, 6.22554e-01);
+
+  fDmesonCorrMultBin3 = new TF1("fDmesonCorrMultBin3", "(1/1.146876)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin3->FixParameter(0, 5.47737e+00);
+  fDmesonCorrMultBin3->FixParameter(1, 2.40699e+00);
+  fDmesonCorrMultBin3->FixParameter(2, 4.90741e-02);
+  fDmesonCorrMultBin3->FixParameter(3, 8.71897e-01);
+  fDmesonCorrMultBin3->FixParameter(4, 5.67444e+00);
+  fDmesonCorrMultBin3->FixParameter(5, 2.44888e+00);
+  fDmesonCorrMultBin3->FixParameter(6, 1.29810e-01);
+  fDmesonCorrMultBin3->FixParameter(7, 3.10050e-01);
+
+  fDmesonCorrMultBin4 = new TF1("fDmesonCorrMultBin4", "(1/1.109676)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin4->FixParameter(0, 5.29029e+00);
+  fDmesonCorrMultBin4->FixParameter(1, 2.37934e+00);
+  fDmesonCorrMultBin4->FixParameter(2, 4.68272e-02);
+  fDmesonCorrMultBin4->FixParameter(3, 1.09655e+00);
+  fDmesonCorrMultBin4->FixParameter(4, 6.34543e+00);
+  fDmesonCorrMultBin4->FixParameter(5, 2.38059e+00);
+  fDmesonCorrMultBin4->FixParameter(6, 1.01869e-01);
+  fDmesonCorrMultBin4->FixParameter(7, 4.71452e-01);
+
+  fDmesonCorrMultBin5 = new TF1("fDmesonCorrMultBin5", "(1/1.054812)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin5->FixParameter(0, 4.79937e+00);
+  fDmesonCorrMultBin5->FixParameter(1, 2.99546e+00);
+  fDmesonCorrMultBin5->FixParameter(2, 2.03118e-01);
+  fDmesonCorrMultBin5->FixParameter(3, 4.60345e+00);
+  fDmesonCorrMultBin5->FixParameter(4, 6.29361e+00);
+  fDmesonCorrMultBin5->FixParameter(5, 2.86359e+00);
+  fDmesonCorrMultBin5->FixParameter(6, 3.11677e-01);
+  fDmesonCorrMultBin5->FixParameter(7, 4.18799e+00);
+
+  fDmesonCorrMultBin6 = new TF1("fDmesonCorrMultBin6", "(1/1.268888)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin6->FixParameter(0, 6.05818e+00);
+  fDmesonCorrMultBin6->FixParameter(1, 3.07025e+00);
+  fDmesonCorrMultBin6->FixParameter(2, 2.42087e-02);
+  fDmesonCorrMultBin6->FixParameter(3, 4.78095e-01);
+  fDmesonCorrMultBin6->FixParameter(4, 2.54327e+00);
+  fDmesonCorrMultBin6->FixParameter(5, 2.03081e+00);
+  fDmesonCorrMultBin6->FixParameter(6, 2.16818e-01);
+  fDmesonCorrMultBin6->FixParameter(7, 1.47484e+00);
+
+  fDmesonCorrMultBin1_var1 = new TF1("fDmesonCorrMultBin1_var1", "(1/1.096594)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin1_var1->FixParameter(0, 6.80225e+00);
+  fDmesonCorrMultBin1_var1->FixParameter(1, 1.44558e+01);
+  fDmesonCorrMultBin1_var1->FixParameter(2, 1.20305e+00);
+  fDmesonCorrMultBin1_var1->FixParameter(3, 2.23080e+00);
+  fDmesonCorrMultBin1_var1->FixParameter(4, 1.63620e+00);
+  fDmesonCorrMultBin1_var1->FixParameter(5, 5.37149e+00);
+  fDmesonCorrMultBin1_var1->FixParameter(6, 4.09111e-01);
+  fDmesonCorrMultBin1_var1->FixParameter(7, 1.56282e+01);
+
+  fDmesonCorrMultBin2_var1 = new TF1("fDmesonCorrMultBin2_var1", "(1/1.306064)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin2_var1->FixParameter(0, 6.71029e+00);
+  fDmesonCorrMultBin2_var1->FixParameter(1, 2.37157e+00);
+  fDmesonCorrMultBin2_var1->FixParameter(2, 2.64314e-02);
+  fDmesonCorrMultBin2_var1->FixParameter(3, 4.57065e-01);
+  fDmesonCorrMultBin2_var1->FixParameter(4, 2.26636e+00);
+  fDmesonCorrMultBin2_var1->FixParameter(5, 2.33583e+00);
+  fDmesonCorrMultBin2_var1->FixParameter(6, 3.31640e-01);
+  fDmesonCorrMultBin2_var1->FixParameter(7, 6.22554e-01);
+
+  fDmesonCorrMultBin3_var1 = new TF1("fDmesonCorrMultBin3_var1", "(1/1.100170)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin3_var1->FixParameter(0, 5.47737e+00);
+  fDmesonCorrMultBin3_var1->FixParameter(1, 2.40699e+00);
+  fDmesonCorrMultBin3_var1->FixParameter(2, 4.90741e-02);
+  fDmesonCorrMultBin3_var1->FixParameter(3, 8.71897e-01);
+  fDmesonCorrMultBin3_var1->FixParameter(4, 5.67444e+00);
+  fDmesonCorrMultBin3_var1->FixParameter(5, 2.44888e+00);
+  fDmesonCorrMultBin3_var1->FixParameter(6, 1.39810e-01);
+  fDmesonCorrMultBin3_var1->FixParameter(7, 3.10050e-01);
+
+  fDmesonCorrMultBin4_var1 = new TF1("fDmesonCorrMultBin4_var1", "(1/1.060610)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin4_var1->FixParameter(0, 5.29029e+00);
+  fDmesonCorrMultBin4_var1->FixParameter(1, 2.37934e+00);
+  fDmesonCorrMultBin4_var1->FixParameter(2, 4.68272e-02);
+  fDmesonCorrMultBin4_var1->FixParameter(3, 1.09655e+00);
+  fDmesonCorrMultBin4_var1->FixParameter(4, 6.34543e+00);
+  fDmesonCorrMultBin4_var1->FixParameter(5, 2.38059e+00);
+  fDmesonCorrMultBin4_var1->FixParameter(6, 1.11869e-01);
+  fDmesonCorrMultBin4_var1->FixParameter(7, 4.71452e-01);
+
+  fDmesonCorrMultBin5_var1 = new TF1("fDmesonCorrMultBin5_var1", "(1/1.100586)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin5_var1->FixParameter(0, 4.79937e+00);
+  fDmesonCorrMultBin5_var1->FixParameter(1, 2.99546e+00);
+  fDmesonCorrMultBin5_var1->FixParameter(2, 2.03118e-01);
+  fDmesonCorrMultBin5_var1->FixParameter(3, 4.60345e+00);
+  fDmesonCorrMultBin5_var1->FixParameter(4, 6.29361e+00);
+  fDmesonCorrMultBin5_var1->FixParameter(5, 2.86359e+00);
+  fDmesonCorrMultBin5_var1->FixParameter(6, 3.31677e-01);
+  fDmesonCorrMultBin5_var1->FixParameter(7, 4.18799e+00);
+
+  fDmesonCorrMultBin6_var1 = new TF1("fDmesonCorrMultBin6_var1", "(1/1.852835)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin6_var1->FixParameter(0, 6.05818e+00);
+  fDmesonCorrMultBin6_var1->FixParameter(1, 3.07025e+00);
+  fDmesonCorrMultBin6_var1->FixParameter(2, 2.42087e-02);
+  fDmesonCorrMultBin6_var1->FixParameter(3, 4.78095e-01);
+  fDmesonCorrMultBin6_var1->FixParameter(4, 2.54327e+00);
+  fDmesonCorrMultBin6_var1->FixParameter(5, 2.03081e+00);
+  fDmesonCorrMultBin6_var1->FixParameter(6, 3.16818e-01);
+  fDmesonCorrMultBin6_var1->FixParameter(7, 1.47484e+00);
+
+  fDmesonCorrMultBin1_var2 = new TF1("fDmesonCorrMultBin1_var2", "(1/0.981082)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin1_var2->FixParameter(0, 6.80225e+00);
+  fDmesonCorrMultBin1_var2->FixParameter(1, 1.44558e+01);
+  fDmesonCorrMultBin1_var2->FixParameter(2, 1.20305e+00);
+  fDmesonCorrMultBin1_var2->FixParameter(3, 2.23080e+00);
+  fDmesonCorrMultBin1_var2->FixParameter(4, 1.63620e+00);
+  fDmesonCorrMultBin1_var2->FixParameter(5, 5.37149e+00);
+  fDmesonCorrMultBin1_var2->FixParameter(6, 3.69111e-01);
+  fDmesonCorrMultBin1_var2->FixParameter(7, 1.56282e+01);
+
+  fDmesonCorrMultBin2_var2 = new TF1("fDmesonCorrMultBin2_var2", "(1/1.057155)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin2_var2->FixParameter(0, 6.71029e+00);
+  fDmesonCorrMultBin2_var2->FixParameter(1, 2.37157e+00);
+  fDmesonCorrMultBin2_var2->FixParameter(2, 2.64314e-02);
+  fDmesonCorrMultBin2_var2->FixParameter(3, 4.57065e-01);
+  fDmesonCorrMultBin2_var2->FixParameter(4, 2.26636e+00);
+  fDmesonCorrMultBin2_var2->FixParameter(5, 2.33583e+00);
+  fDmesonCorrMultBin2_var2->FixParameter(6, 2.11640e-01);
+  fDmesonCorrMultBin2_var2->FixParameter(7, 6.22554e-01);
+
+  fDmesonCorrMultBin3_var2 = new TF1("fDmesonCorrMultBin3_var2", "(1/1.174481)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin3_var2->FixParameter(0, 5.47737e+00);
+  fDmesonCorrMultBin3_var2->FixParameter(1, 2.40699e+00);
+  fDmesonCorrMultBin3_var2->FixParameter(2, 4.90741e-02);
+  fDmesonCorrMultBin3_var2->FixParameter(3, 8.71897e-01);
+  fDmesonCorrMultBin3_var2->FixParameter(4, 5.67444e+00);
+  fDmesonCorrMultBin3_var2->FixParameter(5, 2.44888e+00);
+  fDmesonCorrMultBin3_var2->FixParameter(6, 1.19810e-01);
+  fDmesonCorrMultBin3_var2->FixParameter(7, 3.10050e-01);
+
+  fDmesonCorrMultBin4_var2 = new TF1("fDmesonCorrMultBin4_var2", "(1/1.173915)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin4_var2->FixParameter(0, 5.29029e+00);
+  fDmesonCorrMultBin4_var2->FixParameter(1, 2.37934e+00);
+  fDmesonCorrMultBin4_var2->FixParameter(2, 4.68272e-02);
+  fDmesonCorrMultBin4_var2->FixParameter(3, 1.09655e+00);
+  fDmesonCorrMultBin4_var2->FixParameter(4, 6.34543e+00);
+  fDmesonCorrMultBin4_var2->FixParameter(5, 2.38059e+00);
+  fDmesonCorrMultBin4_var2->FixParameter(6, 0.91869e-01);
+  fDmesonCorrMultBin4_var2->FixParameter(7, 4.71452e-01);
+
+  fDmesonCorrMultBin5_var2 = new TF1("fDmesonCorrMultBin5_var2", "(1/1.010567)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin5_var2->FixParameter(0, 4.79937e+00);
+  fDmesonCorrMultBin5_var2->FixParameter(1, 2.99546e+00);
+  fDmesonCorrMultBin5_var2->FixParameter(2, 2.03118e-01);
+  fDmesonCorrMultBin5_var2->FixParameter(3, 4.60345e+00);
+  fDmesonCorrMultBin5_var2->FixParameter(4, 6.29361e+00);
+  fDmesonCorrMultBin5_var2->FixParameter(5, 2.86359e+00);
+  fDmesonCorrMultBin5_var2->FixParameter(6, 2.91677e-01);
+  fDmesonCorrMultBin5_var2->FixParameter(7, 4.18799e+00);
+
+  fDmesonCorrMultBin6_var2 = new TF1("fDmesonCorrMultBin6_var2", "(1/0.806620)*(([0]*(([1]-1.)*([1]-2.))/([1]*[2]*([1]*[2]+[3]*([1]-2.)))*pow(1.+(sqrt([3]*[3] + x*x)-[3])/([1]*[2]),-[1])) / ([4]*(([5]-1.)*([5]-2.))/([5]*[6]*([5]*[6]+[3]*([5]-2.)))*pow(1.+(sqrt([7]*[7] + x*x)-[7])/([5]*[6]),-[5])))", 1., 100.);
+  fDmesonCorrMultBin6_var2->FixParameter(0, 6.05818e+00);
+  fDmesonCorrMultBin6_var2->FixParameter(1, 3.07025e+00);
+  fDmesonCorrMultBin6_var2->FixParameter(2, 2.42087e-02);
+  fDmesonCorrMultBin6_var2->FixParameter(3, 4.78095e-01);
+  fDmesonCorrMultBin6_var2->FixParameter(4, 2.54327e+00);
+  fDmesonCorrMultBin6_var2->FixParameter(5, 2.03081e+00);
+  fDmesonCorrMultBin6_var2->FixParameter(6, 1.16818e-01);
+  fDmesonCorrMultBin6_var2->FixParameter(7, 1.47484e+00);
+
 
   PostData(1, fOutputList); // postdata will notify the analysis manager of changes / updates to the
                             // fOutputList object. the manager will in the end take care of writing your output to file
@@ -650,7 +971,7 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
   hNtrklet_vtxZ->Fill(vtxZ, nAcceta);
   hMultEstimatorAvg->Fill(vtxZ, nAcceta);
 
-  double Corrected_Ntr = nAcceta;
+  int Corrected_Ntr = nAcceta;
 
   TProfile *estimatorAvg = GetEstimatorHistogram();
   if(estimatorAvg) Corrected_Ntr = static_cast<int>(GetCorrectedNtracklets(estimatorAvg, nAcceta, vtxZ, fMultRef));
@@ -672,7 +993,7 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
       fAODMCParticle = (AliAODMCParticle *)fAODArrayMCInfo->At(iMC);
 
       int hf = -999;
-      double hfpt = -999., hfeta = -999., wghtD = -999., wghtB = -999.;
+      double hfpt = -999., hfeta = -999., wghtD = -999., wghtmultD = -999., wghtB = -999.;
       hf = GetHeavyFlavours(fAODMCParticle, hfpt, hfeta);
 
       if(TMath::Abs(hfeta) < 0.5){
@@ -681,7 +1002,14 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
           hD0PtMult->Fill(hfpt, Corrected_Ntr);
           wghtD = fDmesonCorr->Eval(hfpt);
           hD0PtCorr->Fill(hfpt, wghtD);
-          hD0PtMultCorr->Fill(hfpt, Corrected_Ntr, wghtD);
+		  if(Corrected_Ntr>=1 && Corrected_Ntr<9) wghtmultD = fDmesonCorrMultBin1->Eval(hfpt);
+		  else if(Corrected_Ntr>=9 && Corrected_Ntr<14) wghtmultD = fDmesonCorrMultBin2->Eval(hfpt);
+		  else if(Corrected_Ntr>=14 && Corrected_Ntr<20) wghtmultD = fDmesonCorrMultBin3->Eval(hfpt);
+		  else if(Corrected_Ntr>=20 && Corrected_Ntr<31) wghtmultD = fDmesonCorrMultBin4->Eval(hfpt);
+		  else if(Corrected_Ntr>=31 && Corrected_Ntr<60) wghtmultD = fDmesonCorrMultBin5->Eval(hfpt);
+		  else if(Corrected_Ntr>=60 && Corrected_Ntr<100) wghtmultD = fDmesonCorrMultBin6->Eval(hfpt);
+		  else wghtmultD = 1.;
+          hD0PtMultCorr->Fill(hfpt, Corrected_Ntr, wghtmultD);
         }
         if(hf==kPromptLc) hLcPt->Fill(hfpt);
       }
@@ -703,6 +1031,7 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
       if(TMath::Abs(fAODMCParticle->Eta())<0.8){
         if(src==kDirectBeauty || src==kBeautyCharm){
           hGenBePt->Fill(fAODMCParticle->Pt());
+          hGenBePtMult->Fill(fAODMCParticle->Pt(), Corrected_Ntr);
         }
       }
     }
@@ -710,24 +1039,29 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
 
   if(fIsMC){
     double nchCorr = 1.;
+    double nchCorr2 = 1.;
     if(Corrected_Ntr>50 && Corrected_Ntr<=100) nchCorr = funcNchCorr->Eval(Corrected_Ntr);
-    else if(Corrected_Ntr<=50) nchCorr = histNchCorr->GetBinContent(histNchCorr->GetBin(Corrected_Ntr));
-
+    else if(Corrected_Ntr<=50) nchCorr = histNchCorr->GetBinContent(histNchCorr->FindBin(Corrected_Ntr));
+    nchCorr2 = histNchCorr->GetBinContent(histNchCorr->FindBin(Corrected_Ntr));
     hNtrkletCorr->Fill(Corrected_Ntr, nchCorr);
+    hNtrkletCorr2->Fill(Corrected_Ntr, nchCorr2);
     int nch = GetNcharged();
 
     hSPDtrklet_Nch->Fill(Corrected_Ntr, nch);
     hSPDtrklet_Nch_Corr->Fill(Corrected_Ntr, nch, nchCorr);
+    hSPDtrklet_Nch_Corr2->Fill(Corrected_Ntr, nch, nchCorr2);
     hNch_vtxZ->Fill(vtxZ, nch);
+	
+	//printf("%d---%d\n", Corrected_Ntr, nch);
   }
 
   double fBz = -999.;
   if(fAOD->GetMagneticField()<0) fBz = -1.;
   else if(fAOD->GetMagneticField()>0) fBz = 1.;
   else return;
-
-  hNrEvents->Fill(0);
-
+  
+  hNrEvents->Fill(0.5);
+  hNrEventsMult->Fill(0.5, Corrected_Ntr);
   for(int iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++){
     AliAODTrack *aodTrack = static_cast<AliAODTrack *>(fAOD->GetTrack(iTracks));
     if (!aodTrack) continue;
@@ -766,6 +1100,7 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
         // if(mcelectronSourcePt>70.) continue;
         hRecBePt_track->Fill(pt);
         dcaBeauty->Fill(pt, IP);
+        dcaBeautyMult->Fill(pt, IP, Corrected_Ntr);
 
         double wghtB = -99., wghtBvar1 = -99., wghtBvar2 = -99.;
         if(pt>mcelectronSourcePt){
@@ -788,9 +1123,18 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
 
         // B hadron dca correction
         double rndmB = fRnd->Rndm();
-        if(rndmB<wghtB) dcaBeautyCorr->Fill(pt, IP);
-        if(rndmB<wghtBvar1) dcaBeautyCorrVar1->Fill(pt, IP);
-        if(rndmB<wghtBvar2) dcaBeautyCorrVar2->Fill(pt, IP);
+        if(rndmB<wghtB){
+		  dcaBeautyCorr->Fill(pt, IP);
+		  dcaBeautyMultCorr->Fill(pt, IP, Corrected_Ntr);
+		}
+        if(rndmB<wghtBvar1){
+		  dcaBeautyCorrVar1->Fill(pt, IP);
+		  dcaBeautyMultCorrVar1->Fill(pt, IP, Corrected_Ntr);
+		}
+        if(rndmB<wghtBvar2){
+		  dcaBeautyCorrVar2->Fill(pt, IP);
+		  dcaBeautyMultCorrVar2->Fill(pt, IP, Corrected_Ntr);
+		}
       }
 
       // Fill charm dca information
@@ -799,11 +1143,16 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
         if(TMath::Abs(mcelectronSourcePDG)==421 || TMath::Abs(mcelectronSourcePDG)==411 || TMath::Abs(mcelectronSourcePDG)==431){
           DelecVsDmother->Fill(mcelectronSourcePt, pt);
           dcaDmeson->Fill(pt, IP);
+          dcaDmesonMult->Fill(pt, IP, Corrected_Ntr);
           double wghtD = -99., wghtDvar1 = -99., wghtDvar2 = -99.;
+          double wghtmultD = -99., wghtmultDvar1 = -99., wghtmultDvar2 = -99.;
           if(pt>mcelectronSourcePt){
             wghtD = 1.;
             wghtDvar1 = 1.;
             wghtDvar2 = 1.;
+            wghtmultD = 1.;
+            wghtmultDvar1 = 1.;
+            wghtmultDvar2 = 1.;
           }else{
             wghtD = fDmesonCorr->Eval(mcelectronSourcePt);
             wghtDvar1 = fDmesonCorrVar1->Eval(mcelectronSourcePt);
@@ -820,7 +1169,36 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
             // if(pt>=6. && pt<8.)   wghtD = fDmesonCorr->Eval(mcelectronSourcePt);
             // if(pt>=8. && pt<10.)  wghtD = fDmesonCorr->Eval(mcelectronSourcePt);
             // if(pt>=10.)           wghtD = fDmesonCorr->Eval(mcelectronSourcePt);
-          }
+			if(Corrected_Ntr>=1 && Corrected_Ntr<9){
+			  wghtmultD = fDmesonCorrMultBin1->Eval(mcelectronSourcePt);
+			  wghtmultDvar1 = fDmesonCorrMultBin1_var1->Eval(mcelectronSourcePt);
+			  wghtmultDvar2 = fDmesonCorrMultBin1_var2->Eval(mcelectronSourcePt);
+			}else if(Corrected_Ntr>=9 && Corrected_Ntr<14){
+			  wghtmultD = fDmesonCorrMultBin2->Eval(mcelectronSourcePt);
+			  wghtmultDvar1 = fDmesonCorrMultBin2_var1->Eval(mcelectronSourcePt);
+			  wghtmultDvar2 = fDmesonCorrMultBin2_var2->Eval(mcelectronSourcePt);
+			}else if(Corrected_Ntr>=14 && Corrected_Ntr<20){
+			  wghtmultD = fDmesonCorrMultBin3->Eval(mcelectronSourcePt);
+			  wghtmultDvar1 = fDmesonCorrMultBin3_var1->Eval(mcelectronSourcePt);
+			  wghtmultDvar2 = fDmesonCorrMultBin3_var2->Eval(mcelectronSourcePt);
+			}else if(Corrected_Ntr>=20 && Corrected_Ntr<31){
+			  wghtmultD = fDmesonCorrMultBin4->Eval(mcelectronSourcePt);
+			  wghtmultDvar1 = fDmesonCorrMultBin4_var1->Eval(mcelectronSourcePt);
+			  wghtmultDvar2 = fDmesonCorrMultBin4_var2->Eval(mcelectronSourcePt);
+			}else if(Corrected_Ntr>=31 && Corrected_Ntr<60){
+			  wghtmultD = fDmesonCorrMultBin5->Eval(mcelectronSourcePt);
+			  wghtmultDvar1 = fDmesonCorrMultBin5_var1->Eval(mcelectronSourcePt);
+			  wghtmultDvar2 = fDmesonCorrMultBin5_var2->Eval(mcelectronSourcePt);
+			}else if(Corrected_Ntr>=60 && Corrected_Ntr<100){
+			  wghtmultD = fDmesonCorrMultBin6->Eval(mcelectronSourcePt);
+			  wghtmultDvar1 = fDmesonCorrMultBin6_var1->Eval(mcelectronSourcePt);
+			  wghtmultDvar2 = fDmesonCorrMultBin6_var2->Eval(mcelectronSourcePt);
+			}else{
+			  wghtmultD = 1.;
+			  wghtmultDvar1 = 1.;
+			  wghtmultDvar2 = 1.;
+			}
+		  }
           double rndmD = fRnd->Rndm();
           if(rndmD<wghtD){
             dcaDmesonCorr->Fill(pt, IP);
@@ -828,15 +1206,32 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
             if(TMath::Abs(mcelectronSourcePDG)==411) dcaDplus->Fill(pt, IP);
             if(TMath::Abs(mcelectronSourcePDG)==431) dcaDsplus->Fill(pt, IP);
           }
+		  if(rndmD<wghtmultD){
+            dcaDmesonMultCorr->Fill(pt, IP, Corrected_Ntr);
+            if(TMath::Abs(mcelectronSourcePDG)==421) dcaDzeroMult->Fill(pt, IP, Corrected_Ntr);
+            if(TMath::Abs(mcelectronSourcePDG)==411) dcaDplusMult->Fill(pt, IP, Corrected_Ntr);
+            if(TMath::Abs(mcelectronSourcePDG)==431) dcaDsplusMult->Fill(pt, IP, Corrected_Ntr);
+		  }
           if(rndmD<wghtDvar1) dcaDmesonCorrVar1->Fill(pt, IP);
           if(rndmD<wghtDvar2) dcaDmesonCorrVar2->Fill(pt, IP);
+		  if(rndmD<wghtmultDvar1) dcaDmesonMultCorrVar1->Fill(pt, IP, Corrected_Ntr);
+		  if(rndmD<wghtmultDvar2) dcaDmesonMultCorrVar2->Fill(pt, IP, Corrected_Ntr);
         }
-        if(TMath::Abs(mcelectronSourcePDG)==4122) dcaLc->Fill(pt, IP);
+        if(TMath::Abs(mcelectronSourcePDG)==4122){
+		  dcaLc->Fill(pt, IP);
+		  dcaLcMult->Fill(pt, IP, Corrected_Ntr);
+		}
       }
       // Fill Dalitz dca information
-      if(mcelectronSource>=kPi0 && mcelectronSource<=kK2P) dcaDalitz->Fill(pt, IP);
+      if(mcelectronSource>=kPi0 && mcelectronSource<=kK2P){
+		dcaDalitz->Fill(pt, IP);
+		dcaDalitzMult->Fill(pt, IP, Corrected_Ntr);
+	  }
       // Fill conversion dca information
-      if(mcelectronSource>=kGammaPi0 && mcelectronSource<=kGammaK2P) dcaConv->Fill(pt, IP);
+      if(mcelectronSource>=kGammaPi0 && mcelectronSource<=kGammaK2P){
+		dcaConv->Fill(pt, IP);
+		dcaConvMult->Fill(pt, IP, Corrected_Ntr);
+	  }
     }
 
     // electron identification
@@ -864,8 +1259,10 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
 
     if(TMath::Abs(fTOFnSigma)>fTOFnsigma) continue;
     if(fIsMC){
-      if(mcelectronSource==kDirectBeauty || mcelectronSource==kBeautyCharm)
+      if(mcelectronSource==kDirectBeauty || mcelectronSource==kBeautyCharm){
         hRecBePt_tof->Fill(pt);
+        hRecBePt_tofMult->Fill(pt, Corrected_Ntr);
+	  }
     }
 
     hITSnsigmaTOFcut->Fill(aodTrack->P(), fITSnSigma);
@@ -879,15 +1276,17 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
 
     if(fTPCnSigma<fTPCnsigmaLow || fTPCnSigma>fTPCnsigmaHigh) continue;
     if(fIsMC){
-      if(mcelectronSource==kDirectBeauty || mcelectronSource==kBeautyCharm)
+      if(mcelectronSource==kDirectBeauty || mcelectronSource==kBeautyCharm){
         hRecBePt_tpc->Fill(pt);
+	  }
     }
 
     hITSnsigmaTOFTPCcut->Fill(aodTrack->P(), fITSnSigma);
     hTPCnsigmaQA->Fill(aodTrack->P(), fTPCnSigma);
     hTOFnsigmaQA->Fill(aodTrack->P(), fTOFnSigma);
 
-    dcaTrack->Fill(pt, hfeImpactParam * fBz * aodTrack->Charge());
+    dcaTrack->Fill(pt, IP);
+    dcaTrackMult->Fill(pt, IP, Corrected_Ntr);
   }
 
   PostData(1, fOutputList); // stream the results the analysis of this event to
@@ -1775,17 +2174,17 @@ int AliAnalysisTaskBEpp13TeV::GetNcharged()
     return Nch; // if no MC info return 0
 
   // loop over all tracks
-  for (int igen = 0; igen < fAODArrayMCInfo->GetEntriesFast(); igen++)
+  for(int igen = 0; igen < fAODArrayMCInfo->GetEntriesFast(); igen++)
   {
     AliAODMCParticle *mctrack = (AliAODMCParticle *)fAODArrayMCInfo->UncheckedAt(igen);
     int charge = mctrack->Charge();
     double eta = mctrack->Eta();
     bool isPhysPrim = mctrack->IsPhysicalPrimary();
-    if (charge != 0)
+    if(charge != 0)
     {
-      if (eta > -1.0 && eta < 1.0)
+      if(eta > -1.0 && eta < 1.0)
       {
-        if (isPhysPrim)
+        if(isPhysPrim)
         {
           Nch++;
         }

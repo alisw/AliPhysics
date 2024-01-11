@@ -40,7 +40,8 @@ AliJSPCTaskRun2::AliJSPCTaskRun2() :
   fAliSPCRun2cent_10(0.), fAliSPCRun2cent_11(0.), fAliSPCRun2cent_12(0.), fAliSPCRun2cent_13(0.), fAliSPCRun2cent_14(0.), fAliSPCRun2cent_15(0.), fAliSPCRun2cent_16(0.),
   fAliSPCRun2MinNumberPart(14),
   bAliSPCRun2UseWeightsNUE(kTRUE),
-  bAliSPCRun2UseWeightsNUA(kFALSE), 
+  bAliSPCRun2UseWeightsNUA(kFALSE),
+  bAliSPCRun2UseJoinedCov(kFALSE),
   bAliSPCRun2ComputeEtaGap(kFALSE),		// Do eta gap computation if kTRUE. Default kFALSE
   fAliSPCRun2EtaGap(0.8)			// Value of eta gap
 {
@@ -60,6 +61,7 @@ AliJSPCTaskRun2::AliJSPCTaskRun2(const char *name):
   fAliSPCRun2MinNumberPart(14),
   bAliSPCRun2UseWeightsNUE(kTRUE),
   bAliSPCRun2UseWeightsNUA(kFALSE),
+  bAliSPCRun2UseJoinedCov(kFALSE),
   bAliSPCRun2ComputeEtaGap(kFALSE),		// Do eta gap computation if kTRUE. Default kFALSE
   fAliSPCRun2EtaGap(0.8)			// Value of eta gap
 {
@@ -125,6 +127,7 @@ void AliJSPCTaskRun2::UserCreateOutputObjects()
   fSPC->SetMinNuPar(fAliSPCRun2MinNumberPart);
 
   fSPC->SetUseWeights(bAliSPCRun2UseWeightsNUE, bAliSPCRun2UseWeightsNUA);	// LOKI: Decommented
+  fSPC->SetUseJoinedCov(bAliSPCRun2UseJoinedCov);
 
   for (int i=0; i<12; i++) {
     fSPC->SetCorrSet(i, fAliSPCRun2HarmosArray[i]);
@@ -132,6 +135,7 @@ void AliJSPCTaskRun2::UserCreateOutputObjects()
 
   fSPC->SetEtaGaps(bAliSPCRun2ComputeEtaGap,fAliSPCRun2EtaGap);
 
+  fSPC->SetSaveAllQA(bJSPCRun2SaveAllQA);
 	fSPC->SetDebugLevel(fDebug);
 	OpenFile(1);
 

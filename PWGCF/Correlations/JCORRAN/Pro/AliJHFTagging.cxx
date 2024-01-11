@@ -93,6 +93,11 @@ AliJHFTagging::AliJHFTagging() : AliAnalysisTaskEmcalJet(),
                                  fh1dJetGenPtudsg(0x0),
                                  fh1dJetGenPtc(0x0),
                                  fh1dJetGenPtb(0x0),
+                                 fh1dJetNCanditate(0x0),
+                                 fh1dJetNCanditateUnidentified(0x0),
+                                 fh1dJetNCanditateudsg(0x0),
+                                 fh1dJetNCanditatec(0x0),
+                                 fh1dJetNCanditateb(0x0),
                                  fh1dJetRecPt(0x0),
                                  fh1dJetRecPtAccepted(0x0),
                                  fh1dJetRecEtaPhiAccepted(0x0),
@@ -223,6 +228,11 @@ AliJHFTagging::AliJHFTagging(const char *name) : AliAnalysisTaskEmcalJet(name, t
                                                  fh1dJetGenPtudsg(0x0),
                                                  fh1dJetGenPtc(0x0),
                                                  fh1dJetGenPtb(0x0),
+                                                 fh1dJetNCanditate(0x0),
+                                                 fh1dJetNCanditateUnidentified(0x0),
+                                                 fh1dJetNCanditateudsg(0x0),
+                                                 fh1dJetNCanditatec(0x0),
+                                                 fh1dJetNCanditateb(0x0),
                                                  fh1dJetRecPt(0x0),
                                                  fh1dJetRecPtAccepted(0x0),
                                                  fh1dJetRecEtaPhiAccepted(0x0),
@@ -601,8 +611,16 @@ void AliJHFTagging::MakeControlHistograms()
   fh1dJetRecPt = new TH1D("fh1dJetRecPt", "detector level jets;#it{p}_{T} (GeV/#it{c}); count", 500, 0, 250);
   fh1dJetRecPtAccepted = new TH1D("fh1dJetRecPtAccepted", "accepted detector level jets;#it{p}_{T} (GeV/#it{c}); count", 500, 0, 250);
 
+  fh1dJetNCanditate = new TH1I("fh1dJetNCanditate", "Number of candidate jets;#it{p}_{T} (GeV/#it{c}); count", 10, 0, 10);
+
   if (fIsPythia)
   {
+
+    fh1dJetNCanditateUnidentified = new TH1I("fh1dJetNCanditateUnidentified", "Number of candidate jets (no flavour assigned);#it{p}_{T} (GeV/#it{c}); count", 10, 0, 10);
+    fh1dJetNCanditateudsg = new TH1I("fh1dJetNCanditateudsg", "Number of candidate udsg jets;#it{p}_{T} (GeV/#it{c}); count", 10, 0, 10);
+    fh1dJetNCanditatec = new TH1I("fh1dJetNCanditatec", "Number of candidate c jets;#it{p}_{T} (GeV/#it{c}); count", 10, 0, 10);
+    fh1dJetNCanditateb = new TH1I("fh1dJetNCanditateb", "Number of candidate b jets;#it{p}_{T} (GeV/#it{c}); count", 10, 0, 10);
+
     fh1dJetRecPtUnidentified = new TH1D("fh1dJetRecPtUnidentified", "detector level jets;#it{p}_{T} (GeV/#it{c}); count", 500, 0, 250);
     fh1dJetRecPtudsg = new TH1D("fh1dJetRecPtudsg", "detector level jets;#it{p}_{T} (GeV/#it{c}); count", 500, 0, 250);
     fh1dJetRecPtc = new TH1D("fh1dJetRecPtc", "detector level jets;#it{p}_{T} (GeV/#it{c}); count", 500, 0, 250);
@@ -738,8 +756,15 @@ void AliJHFTagging::MakeControlHistograms()
   fOutput->Add(fh1dJetRecPtAccepted);
   fOutput->Add(fh1dJetRecEtaPhiAccepted);
 
+  fOutput->Add(fh1dJetNCanditate);
+
   if (fIsPythia)
   {
+
+    fOutput->Add(fh1dJetNCanditateUnidentified);
+    fOutput->Add(fh1dJetNCanditateudsg);
+    fOutput->Add(fh1dJetNCanditatec);
+    fOutput->Add(fh1dJetNCanditateb);
 
     fOutput->Add(fh1dJetRecPtUnidentified);
     fOutput->Add(fh1dJetRecPtudsg);
@@ -962,6 +987,8 @@ Bool_t AliJHFTagging::Run()
   bool taggedSV2Prong(0), taggedSV3Prong(0);
 
   bool firstJetFound = false;
+
+  int nCand(0), nCandb(0), nCandc(0), nCandlf(0), nCandUnidentified(0);
 
   while ((jetrec = fJetContainerData->GetNextJet()))
   {
@@ -1546,23 +1573,52 @@ Bool_t AliJHFTagging::Run()
 
     if (TaggedSecond)
     {
+      nCand++;
       FillCandidateHFJet(jetrec, fInputList);
       if (fIsPythia)
       {
+        if (jetFlavor == 0)
+          nCandUnidentified++;
+        if (jetFlavor == 1)
+          nCandlf++;
+        if (jetFlavor == 2)
+          nCandc++;
+        if (jetFlavor == 3)
+          nCandb++;
+
         FillCandidateHFJetMC(jetrec, jetFlavor);
       }
     }
 
     if (taggedSV3Prong)
     {
+      nCand++;
       FillCandidateHFJet(jetrec, fInputList);
       if (fIsPythia)
       {
+        if (jetFlavor == 0)
+          nCandUnidentified++;
+        if (jetFlavor == 1)
+          nCandlf++;
+        if (jetFlavor == 2)
+          nCandc++;
+        if (jetFlavor == 3)
+          nCandb++;
+
         FillCandidateHFJetMC(jetrec, jetFlavor);
       }
     }
 
   } // End jet loop
+
+  fh1dJetNCanditate->Fill(nCand);
+  if (fIsPythia)
+  {
+    fh1dJetNCanditateUnidentified->Fill(nCandUnidentified);
+    fh1dJetNCanditateudsg->Fill(nCandlf);
+    fh1dJetNCanditatec->Fill(nCandc);
+    fh1dJetNCanditateb->Fill(nCandb);
+  }
 
   if (fFillControlHists)
   {
@@ -2047,7 +2103,7 @@ void AliJHFTagging::FillCandidateHFJet(AliEmcalJet *jet, TClonesArray *inputList
 void AliJHFTagging::FillCandidateHFJetMC(AliEmcalJet *jet, short jetFlavor)
 {
   if (jetFlavor == 3)
-    new ((*fInputListb)[fInputListc->GetEntriesFast()])(AliEmcalJet *)(jet);
+    new ((*fInputListb)[fInputListb->GetEntriesFast()])(AliEmcalJet *)(jet);
   if (jetFlavor == 2)
     new ((*fInputListc)[fInputListc->GetEntriesFast()])(AliEmcalJet *)(jet);
   if (jetFlavor == 0 || jetFlavor == 1)

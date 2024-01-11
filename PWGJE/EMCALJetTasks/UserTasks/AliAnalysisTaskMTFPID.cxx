@@ -821,13 +821,13 @@ void AliAnalysisTaskMTFPID::UserCreateOutputObjects()
   const Double_t tofPIDinfoMin = kNoTOFinfo;
   const Double_t tofPIDinfoMax = kNoTOFinfo + kNumTOFpidInfoBins;
   
-  const Int_t nDistanceBins = 30;
+  const Int_t nDistanceBins = 15;
   const Double_t distanceBinsMin = 0.;
   const Double_t distanceBinsMax = 0.6;
   
   // jT binning - to have binning down to zero and log binning at the same time,
   // use first bin from zero extending to real start of log binning
-  const Int_t nJtBins = 30 + 1;
+  const Int_t nJtBins = 15 + 1;
   Double_t binsJt[nJtBins + 1];
 
   const Double_t fromLowJt = 0.05;

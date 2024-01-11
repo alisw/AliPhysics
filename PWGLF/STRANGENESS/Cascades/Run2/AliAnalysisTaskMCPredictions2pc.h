@@ -65,10 +65,6 @@ public:
   void SetMinimumMultiplicity ( Long_t lMinMult ) { fkMinimumMultiplicity = lMinMult; } ;
   void SetVerboseMode( Bool_t lOpt = kTRUE ) { fkVerboseMode = lOpt; }
   void SetDoEventMixing( Bool_t lOpt = kTRUE ) { fkDoEventMixing = lOpt; }
-  void SetEtaWindow( Float_t lOpt = 0.8 ) { 
-    fkMinEta = -lOpt;
-    fkMaxEta = +lOpt;
-  }
   void SetEMBufferSize ( Long_t lEMBufferSize ) { 
     for(Int_t ii=0; ii<20; ii++)
       fEMBufferSize[ii]=lEMBufferSize;
@@ -76,17 +72,18 @@ public:
   
   void SetMultiplicityBinning( Int_t lNbins, Float_t *lNbinbounds ) {
     fNMultBins = lNbins; 
-    for(Int_t ii=0; ii<lNbins+1; ii++){
-      Printf("Multiplicity bin %i lower boundary: %.1f set", ii, lNbinbounds[ii]);
+    for(Int_t ii=0; ii<lNbins+1; ii++)
       fMultBinBounds[ii]=lNbinbounds[ii];
-    }
   } ;
-  void SetPtBinning( Int_t lNbins, Float_t *lNbinbounds ) {
-    fNPtBins = lNbins; 
-    for(Int_t ii=0; ii<lNbins+1; ii++){
-      Printf("Pt bin %i lower boundary: %.1f set", ii, lNbinbounds[ii]);
-      fPtBinBounds[ii]=lNbinbounds[ii];
-    }
+  void SetPtAssoBinning( Int_t lNbins, Float_t *lNbinbounds ) {
+    fNPtAssoBins = lNbins; 
+    for(Int_t ii=0; ii<lNbins+1; ii++)
+      fPtAssoBinBounds[ii]=lNbinbounds[ii];
+  } ;
+  void SetPtTriBinning( Int_t lNbins, Float_t *lNbinbounds ) {
+    fNPtTriBins = lNbins; 
+    for(Int_t ii=0; ii<lNbins+1; ii++)
+      fPtTriBinBounds[ii]=lNbinbounds[ii];
   } ;
 
   //configure intervals
@@ -137,6 +134,7 @@ private:
   Bool_t fkVerboseMode;
   Bool_t fkDoEventMixing;
 
+  TH2D *fHistEtaVsPtTrigger; //!
   TH3D *fHist3dTrigger; //!
   TH3D *fHist3dAssoPions; //!
   TH3D *fHist3dAssoK0Short; //!
@@ -147,28 +145,30 @@ private:
   TH3D *fHist3dAssoOmegaMinus; //!
   TH3D *fHist3dAssoOmegaPlus; //!
   
-  THnF *fHist4d2pcPions; //!
-  THnF *fHist4d2pcK0Short; //!
-  THnF *fHist4d2pcLambda; //!
-  THnF *fHist4d2pcAntiLambda; //!
-  THnF *fHist4d2pcXiMinus; //!
-  THnF *fHist4d2pcXiPlus; //!
-  THnF *fHist4d2pcOmegaMinus; //!
-  THnF *fHist4d2pcOmegaPlus; //!
+  THnF *fHist5d2pcPions; //!
+  THnF *fHist5d2pcK0Short; //!
+  THnF *fHist5d2pcLambda; //!
+  THnF *fHist5d2pcAntiLambda; //!
+  THnF *fHist5d2pcXiMinus; //!
+  THnF *fHist5d2pcXiPlus; //!
+  THnF *fHist5d2pcOmegaMinus; //!
+  THnF *fHist5d2pcOmegaPlus; //!
 
-  THnF *fHist4d2pcMixedPions; //!
-  THnF *fHist4d2pcMixedK0Short; //!
-  THnF *fHist4d2pcMixedLambda; //!
-  THnF *fHist4d2pcMixedAntiLambda; //!
-  THnF *fHist4d2pcMixedXiMinus; //!
-  THnF *fHist4d2pcMixedXiPlus; //!
-  THnF *fHist4d2pcMixedOmegaMinus; //!
-  THnF *fHist4d2pcMixedOmegaPlus; //!
+  THnF *fHist5d2pcMixedPions; //!
+  THnF *fHist5d2pcMixedK0Short; //!
+  THnF *fHist5d2pcMixedLambda; //!
+  THnF *fHist5d2pcMixedAntiLambda; //!
+  THnF *fHist5d2pcMixedXiMinus; //!
+  THnF *fHist5d2pcMixedXiPlus; //!
+  THnF *fHist5d2pcMixedOmegaMinus; //!
+  THnF *fHist5d2pcMixedOmegaPlus; //!
   
   Int_t fNMultBins;
   Float_t fMultBinBounds[100];
-  Int_t fNPtBins; 
-  Float_t fPtBinBounds[100];
+  Int_t fNPtAssoBins; 
+  Float_t fPtAssoBinBounds[100];
+  Int_t fNPtTriBins; 
+  Float_t fPtTriBinBounds[100];
 
   //for event mixing
   Int_t fEMBufferFull[20];
@@ -176,7 +176,7 @@ private:
   Int_t fEMBufferSize[20];
   Float_t fEMBufferEta[50][20];
   Float_t fEMBufferPhi[50][20];
-  
+  Float_t fEMBufferPtTri[50][20];
   AliAnalysisTaskMCPredictions2pc(const AliAnalysisTaskMCPredictions2pc&);            // not implemented
   AliAnalysisTaskMCPredictions2pc& operator=(const AliAnalysisTaskMCPredictions2pc&); // not implemented
   

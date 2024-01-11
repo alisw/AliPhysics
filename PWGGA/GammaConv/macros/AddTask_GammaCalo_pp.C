@@ -2401,6 +2401,12 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411790109fei02v0000","0s631031000000d0"); // INT7 energy 0.2 GeV
     cuts.AddCutCalo("00010113","411790109feg02v0000","0s631031000000d0"); // INT7 energy 0.3 GeV
     cuts.AddCutCalo("00010113","411790109feh02v0000","0s631031000000d0"); // INT7 energy 0.4 GeV
+  } else if (trainConfig == 1926){  // pp 13 TeV variations: conversion rejection
+    cuts.AddCutCalo("00010113","411790109fe302v0a00","0s631031000000d0"); // INT7 with conversion rejection
+  } else if (trainConfig == 1927){  // pp 13 TeV variations: conversion rejection
+    cuts.AddCutCalo("00010113","411790109fe302v0b00","0s631031000000d0"); // INT7 with conversion rejection, min angle 0.02
+    cuts.AddCutCalo("00010113","411790109fe302v0c00","0s631031000000d0"); // INT7 with conversion rejection, min angle 0.05
+    cuts.AddCutCalo("00010113","411790109fe302v0d00","0s631031000000d0"); // INT7 with conversion rejection, min angle 0.1
 
 
   //-----------  EG2 std cut
@@ -2469,6 +2475,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008e113","411790109fe3l2v0000","0s631031000000d0"); // EG2 PCMEDC pi0 tagging for gamma clus, pol2 fit
   } else if (trainConfig == 1954){  // pp 13 TeV variations: cell track matching
     cuts.AddCutCalo("0008e113","4117901090e302v0000","0s631031000000d0"); // EG2 no TM
+  } else if (trainConfig == 1956){  // pp 13 TeV variations: conversion rejection
+    cuts.AddCutCalo("0008e113","411790109fe302v0a00","0s631031000000d0"); // EG2 with conversion rejection
 
 
   //-----------  EG1 std cut
@@ -2537,6 +2545,8 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008d113","411790109fe3l2v0000","0s631031000000d0"); // EG1 PCMEDC pi0 tagging for gamma clus, pol2 fit
   } else if (trainConfig == 1984){  // pp 13 TeV variations: cell track matching
     cuts.AddCutCalo("0008d113","4117901090e302v0000","0s631031000000d0"); // EG1 no TM
+  } else if (trainConfig == 1986){  // pp 13 TeV variations: conversion rejection
+    cuts.AddCutCalo("0008d113","411790109fe302v0a00","0s631031000000d0"); // EG1 with conversion rejection
 
   } else if (trainConfig == 1990){ // only track matched clusters
     cuts.AddCutCalo("00010113","411790109qe3n2v0000","0s631031000000d0"); // with NCell effi
@@ -2842,6 +2852,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("0008d113","411790109he302v0000","0s631031000000d0"); // EG1 TM var fEOverPMax = 1.25
 
   } else if (trainConfig == 2070){  // Cut studie with V2 Clusters
+    cuts.AddCutCalo("00010113","4117901040030000000","0s631031000000d0"); // INT7 loose time + min energy
     cuts.AddCutCalo("00010113","4117901090030000000","0s631031000000d0"); // INT7 time + min energy
     cuts.AddCutCalo("00010113","4117901090e30000000","0s631031000000d0"); // INT7 above + exotics
     cuts.AddCutCalo("00010113","4117901090e3n000000","0s631031000000d0"); // INT7 above + NCell
@@ -4302,6 +4313,13 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00062113","24466110sa01cc00000","0163103100000010"); // PHI7  NL11
     cuts.AddCutCalo("00062113","24466120sa01cc00000","0163103100000010"); // PHI7  NL12
     // cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); // PHI7  NL19
+  
+  } else if (trainConfig == 2602){ // PHOS INT7, 300MeV, Open cuts
+    cuts.AddCutCalo("00010113","24466190s0010000000","0163103100000010"); // Open cuts
+  } else if (trainConfig == 2603){ // PHOS INT7, 300MeV, timing cut study
+    cuts.AddCutCalo("00010113","2446619030010000000","0163103100000010"); //Int7 200ns timing
+    cuts.AddCutCalo("00010113","2446619040010000000","0163103100000010"); //Int7 100ns timing
+    cuts.AddCutCalo("00010113","2446619050010000000","0163103100000010"); //Int7 50ns timing
     //----------------------------------------------------------------------------------------------------------------------------------------
     // Variations of PHOS Part
     //Standard: "24466190sa01cc00000"
@@ -4908,7 +4926,7 @@ void AddTask_GammaCalo_pp(
   //connect containers
   AliAnalysisDataContainer *coutput =
     mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaCalo_%i",trainConfig) : Form("GammaCalo_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("GammaCalo_%i.root",trainConfig));
+              AliAnalysisManager::kOutputContainer,Form("GCa_%i.root",trainConfig));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
@@ -4917,7 +4935,7 @@ void AddTask_GammaCalo_pp(
   Int_t nContainer = 2;
   for(Int_t i = 0; i<numberOfCuts; i++){
       if(enableQAMesonTask==5){
-          mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s ClusterTimingEff",(cuts.GetEventCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaCalo_%i.root",trainConfig)) );
+          mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s ClusterTimingEff",(cuts.GetEventCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCa_%i.root",trainConfig)) );
           nContainer++;
       }
   }

@@ -25,10 +25,10 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
   printf("Data type: %s \n", fDataType.Data());
   printf("Period info: %s \n", fPeriod.Data());
   printf("Reconstruction info: %s \n", fPass.Data());
-  char *strMCflag;
+  TString strMCflag;
   if(fDataType.EqualTo("data")) strMCflag = "False";
   else strMCflag = "True";
-  printf("MC Flag: %s \n", strMCflag);
+  printf("MC Flag: %s \n", strMCflag.Data());
   printf("Min. TPC crossed raw: %d \n", minTPCnCrossedRow);
   printf("Min. TPC clusters for PID: %d \n", minTPCnClsPID);
   printf("Max. TPC chi2/ndf: %.1f \n", maxTPCchi2);
@@ -99,12 +99,21 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
   task->SetMultReference(multRef);
 
   TProfile *multEstimatorAvg;
-  if(fPeriod.EqualTo("16period"))
+  if(fPeriod.EqualTo("16period")){
 	multEstimatorAvg = (TProfile*)fileEstimator->Get("fNtrkletAvg_16period")->Clone("fNtrkletAvg_16period");
-  else if(fPeriod.EqualTo("17period"))
+	printf("\n +++++ File !!!fNtrkletAvg_16period!!! selected for Ntrklet equalization +++++\n");
+  }else if(fPeriod.EqualTo("17period")){
 	multEstimatorAvg = (TProfile*)fileEstimator->Get("fNtrkletAvg_17period")->Clone("fNtrkletAvg_17period");
-  else if(fPeriod.EqualTo("18period"))
+	printf("\n +++++ File !!!fNtrkletAvg_17period!!! selected for Ntrklet equalization +++++\n");
+  }
+  else if(fPeriod.EqualTo("18period")){
 	multEstimatorAvg = (TProfile*)fileEstimator->Get("fNtrkletAvg_18period")->Clone("fNtrkletAvg_18period");
+	printf("\n +++++ File !!!fNtrkletAvg_18period!!! selected for Ntrklet equalization +++++\n");
+  }
+  else if(fPeriod.EqualTo("16kl")){
+	multEstimatorAvg = (TProfile*)fileEstimator->Get("fNtrkletAvg_16kl")->Clone("fNtrkletAvg_16kl");
+	printf("\n +++++ File !!!fNtrkletAvg_16kl!!! selected for Ntrklet equalization +++++\n");
+  }
   else return 0x0;
 
   if(!multEstimatorAvg) {
@@ -112,7 +121,7 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
     return 0x0;
   }
   printf("===============================================================\n");
-  printf("\n\nnfNtrkletAvg_%s will be used in the multiplcity correction!!!\n\n", fPeriod.Data());
+  printf("\n\n fNtrkletAvg_%s will be used in the multiplcity correction!!!\n\n", fPeriod.Data());
   printf("===============================================================\n");
   task->SetEstimatorAvg(multEstimatorAvg);
   //===================================================================================================================

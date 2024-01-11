@@ -84,6 +84,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fV0PileUpRemoval(kFALSE),
   fTrackPileUpRemoval(kFALSE),
   fRejectTPCPileupWithITSTPCnCluCorr(kFALSE),
+  fParticleFromOutOfBunchPileupCollision(kFALSE),
+  fPileupInGeneratedEvent(kFALSE),
   fMVPlp(kFALSE),
   fOutOfBunchPlp(kFALSE),
   fMinVtxContr(0),
@@ -195,7 +197,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fAllFalse(160),
   fFilterBit(aReader.fFilterBit),
   fFilterMask(aReader.fFilterMask),
-  //  fPWG2AODTracks(0x0),
+  //fPWG2AODTracks(0x0),
   fReadMC(aReader.fReadMC),
   fReadV0(aReader.fReadV0),
   fReadCascade(aReader.fReadCascade),
@@ -218,6 +220,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fV0PileUpRemoval(aReader.fV0PileUpRemoval),
   fTrackPileUpRemoval(aReader.fTrackPileUpRemoval),
   fRejectTPCPileupWithITSTPCnCluCorr(aReader.fRejectTPCPileupWithITSTPCnCluCorr),
+  fParticleFromOutOfBunchPileupCollision(aReader.fParticleFromOutOfBunchPileupCollision),
+  fPileupInGeneratedEvent(aReader.fPileupInGeneratedEvent),
   fMVPlp(aReader.fMVPlp),
   fOutOfBunchPlp(aReader.fOutOfBunchPlp),
   fMinVtxContr(aReader.fMinVtxContr),
@@ -341,6 +345,8 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fV0PileUpRemoval = aReader.fV0PileUpRemoval;
   fTrackPileUpRemoval = aReader.fTrackPileUpRemoval;
   fRejectTPCPileupWithITSTPCnCluCorr = aReader.fRejectTPCPileupWithITSTPCnCluCorr;
+  fParticleFromOutOfBunchPileupCollision = aReader.fParticleFromOutOfBunchPileupCollision;
+  fPileupInGeneratedEvent = aReader.fPileupInGeneratedEvent;
   fMVPlp = aReader.fMVPlp;
   fOutOfBunchPlp = aReader.fOutOfBunchPlp;
   fMinVtxContr = aReader.fMinVtxContr;
@@ -445,7 +451,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::ReturnHbtEvent()
       fEvent = new AliAODEvent();
       fEvent->ReadFromTree(fTree);
 
-      fNumberofEvent = fTree->GetEntries();
+      fNumberofEvent = fTree->GetEntriesFast();
       // cout << "Number of entries in file " << fNumberofEvent << endl;
       fCurEvent = 0;
     } else {
@@ -489,6 +495,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   TClonesArray *mcP = nullptr;
 
   if (fReadMC) {
+    
     mcH = (AliAODMCHeader *)fEvent->FindListObject(AliAODMCHeader::StdBranchName());
     if (!mcH) {
       cout << "AOD MC information requested, but no header found!" << endl;
@@ -499,20 +506,20 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       cout << "AOD MC information requested, but no particle array found!" << endl;
     }
   }
-
+  
   AliAODHeader *header = dynamic_cast<AliAODHeader *>(fEvent->GetHeader());
   assert(header && "Not a standard AOD");
+
 
   tEvent->SetReactionPlaneAngle(header->GetQTheta(0) / 2.0);
   // Int_t *motherids=0;
   // if (mcP) {
-  //   const int motherTabSize = ((AliAODMCParticle *) mcP->At(mcP->GetEntries()-1))->GetLabel();
+  //   const int motherTabSize = ((AliAODMCParticle *) mcP->At(mcP->GetEntriesFast()-1))->GetLabel();
   //   motherids = new int[motherTabSize+1];
   //   for (int ip=0; ip<motherTabSize+1; ip++) motherids[ip] = 0;
 
   //   // Read in mother ids
   //   AliAODMCParticle *motherpart;
-  //   for (int ip=0; ip<mcP->GetEntries(); ip++) {
   //     motherpart = (AliAODMCParticle *) mcP->At(ip);
   //     if (motherpart->GetDaughter(0) > 0)
   //       motherids[motherpart->GetDaughter(0)] = ip;
@@ -522,12 +529,13 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   // }
 
   //******* Ali Event Cuts - applied on AOD event ************
+  
   if (fUseAliEventCuts) {
     if (!fEventCuts->AcceptEvent(fEvent)) {
       return nullptr;
     }
   }
-
+  
     // LHC15o pass2 event cut dowang
     if(fEventReject > 0){
         if(!Reject15oPass2Event(fEvent,fEventReject)){
@@ -583,10 +591,18 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       delete tEvent;
       return nullptr; // Pile-up rejection.
     }
-
     delete fAnaUtils;
   }
   
+  
+  if(fPileupInGeneratedEvent){
+      if(mcH){
+        Bool_t isPileupInGeneratedEvent = kFALSE;
+        isPileupInGeneratedEvent = fAnaUtils->IsPileupInGeneratedEvent(mcH,"Hijing");
+        if(isPileupInGeneratedEvent) return nullptr;
+      }
+    }
+
   // Primary Vertex position
   const auto *aodvertex = (fUseAliEventCuts)
                         ? static_cast<const AliAODVertex *>(fEventCuts->GetPrimaryVertex())
@@ -904,7 +920,14 @@ if(fjets>0){
         continue;
       }
     }
-
+    
+    if(fParticleFromOutOfBunchPileupCollision){
+    Bool_t TrackoutOfBunchPileupCollision =kFALSE;
+     if(mcH && mcP){
+       TrackoutOfBunchPileupCollision = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, mcH, mcP);
+       if(TrackoutOfBunchPileupCollision) continue;
+     }
+    } 
 
     CopyPIDtoFemtoTrack(aodtrackpid, trackCopy.get());
 	// dowang for Pb-Pb 15 pass2 filter bit7 MC
@@ -2254,7 +2277,7 @@ AliAODMCParticle *AliFemtoEventReaderAOD::GetParticleWithLabel(TClonesArray *mcP
     return nullptr;
   }
 
-  Int_t posstack = TMath::Min(aLabel, mcP->GetEntries());
+  Int_t posstack = TMath::Min(aLabel, mcP->GetEntriesFast());
   AliAODMCParticle *aodP = static_cast<AliAODMCParticle *>(mcP->At(posstack));
 
   if (aodP->GetLabel() > posstack) {
@@ -2272,7 +2295,7 @@ AliAODMCParticle *AliFemtoEventReaderAOD::GetParticleWithLabel(TClonesArray *mcP
         return aodP;
       }
       posstack++;
-    } while (posstack < mcP->GetEntries());
+    } while (posstack < mcP->GetEntriesFast());
   }
 
   return nullptr;
@@ -2698,6 +2721,16 @@ void AliFemtoEventReaderAOD::SetTrackPileUpRemoval(Bool_t trackPileUpRemoval)
 void AliFemtoEventReaderAOD::SetRejectTPCPileupWithITSTPCnCluCorr(Bool_t RejectTPCPileupWithITSTPCnCluCorr)
 {
   fRejectTPCPileupWithITSTPCnCluCorr = RejectTPCPileupWithITSTPCnCluCorr;
+}
+
+void AliFemtoEventReaderAOD::SetParticleFromOutOfBunchPileupCollision(bool PileUpTrack)
+{
+   fParticleFromOutOfBunchPileupCollision = PileUpTrack;
+}
+
+void AliFemtoEventReaderAOD::SetPileupInGeneratedEvent(bool PileUpEvent)
+{
+   fPileupInGeneratedEvent = PileUpEvent;
 }
 
 void AliFemtoEventReaderAOD::SetDCAglobalTrack(Int_t dcagt)

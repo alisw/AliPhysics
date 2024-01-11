@@ -324,6 +324,16 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                fHistoTrueEtaPtAlpha;                                 //! array of histos with validated eta, pt, alpha
     TH2F**                fHistoTruePi0PtOpenAngle;                             //! array of histos with validated pi0, pt, openAngle
     TH2F**                fHistoTrueEtaPtOpenAngle;                             //! array of histos with validated eta, pt, openAngle
+    TH2F**                fHistoTruePi0GGClusterAngleVsPt;                      //! array of histos with validated pi0 vs angle between clusters with respect to z-direction for true GG pairs
+    TH2F**                fHistoTruePi0GCClusterAngleVsPt;                      //! array of histos with validated pi0 vs angle between clusters with respect to z-direction for true GC pairs
+    TH2F**                fHistoTruePi0CCClusterAngleVsPt;                      //! array of histos with validated pi0 vs angle between clusters with respect to z-direction for true CC pairs
+    TH2F**                fHistoTruePi0CCSameGammaClusterAngleVsPt;             //! array of histos with validated pi0 vs angle between clusters with respect to z-direction for true CC pairs coming from the same photon
+    TH2F**                fHistoTruePi0GGClusterZDiffVsPt;                      //! array of histos with validated pi0 vs angle between clusters with respect to z-direction for true GG pairs
+    TH2F**                fHistoTruePi0CCSameGammaClusterZDiffVsPt;             //! array of histos with validated pi0 vs delta eta clusters for true CC pairs coming from the same photon
+    TH2F**                fHistoTruePi0GGClusterOAVsPt;                         //! array of histos with validated pi0 vs angle between clusters for true GG pairs
+    TH2F**                fHistoTruePi0GCClusterOAVsPt;                         //! array of histos with validated pi0 vs angle between clusters for true GC pairs
+    TH2F**                fHistoTruePi0CCClusterOAVsPt;                         //! array of histos with validated pi0 vs angle between clusters for true CC pairs
+    TH2F**                fHistoTruePi0CCSameGammaClusterOAVsPt;                //! array of histos with validated pi0 vs angle between clusters for true CC pairs coming from the same photon
     // MC validated reconstructed quantities photons
     TH2F**                fHistoClusPhotonBGPt;                                 //! array of histos with cluster photon BG, pt, source
     TH2F**                fHistoClusPhotonPlusConvBGPt;                         //! array of histos with cluster photon plus conv BG, pt, source
@@ -521,7 +531,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 94);
+    ClassDef(AliAnalysisTaskGammaCalo, 95);
 };
 
 #endif

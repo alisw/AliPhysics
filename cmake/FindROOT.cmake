@@ -81,9 +81,9 @@ if(ROOTSYS)
     string(STRIP "${ROOT_VERSION}" ROOT_VERSION)
 
     # Extract major, minor, and patch versions from
-    string(REGEX REPLACE "^([0-9]+)\\.[0-9][0-9]+\\/[0-9][0-9]+.*" "\\1" ROOT_VERSION_MAJOR "${ROOT_VERSION}")
-    string(REGEX REPLACE "^[0-9]+\\.([0-9][0-9])+\\/[0-9][0-9]+.*" "\\1" ROOT_VERSION_MINOR "${ROOT_VERSION}")
-    string(REGEX REPLACE "^[0-9]+\\.[0-9][0-9]+\\/([0-9][0-9]+).*" "\\1" ROOT_VERSION_PATCH "${ROOT_VERSION}")
+    string(REGEX REPLACE "^([0-9]+)\\.[0-9][0-9]+[\\/.][0-9][0-9]+.*" "\\1" ROOT_VERSION_MAJOR "${ROOT_VERSION}")
+    string(REGEX REPLACE "^[0-9]+\\.([0-9][0-9])+[\\/.][0-9][0-9]+.*" "\\1" ROOT_VERSION_MINOR "${ROOT_VERSION}")
+    string(REGEX REPLACE "^[0-9]+\\.[0-9][0-9]+[\\/.]([0-9][0-9]+).*" "\\1" ROOT_VERSION_PATCH "${ROOT_VERSION}")
     string(REGEX REPLACE "/" "." ROOT_VERSION_NORM "${ROOT_VERSION}")
     message(STATUS "Found ROOT version ${ROOT_VERSION_NORM}")
 

@@ -31,6 +31,10 @@
 #include "TMath.h"
 #include "TObjArray.h"
 #include "TNamed.h"
+#include "AliAODMCHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliCollisionGeometry.h"
+#include "AliGenHijingEventHeader.h"
 
 ClassImp(AliAnalysisTaskPtCorr);
 
@@ -44,8 +48,9 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fBypassTriggerAndEventCuts(kFALSE),
   fDisablePileup(kFALSE),
   fUseOldPileup(kFALSE),
-  fCentSelectForMptNch(1.),
   fDCAxyFunctionalForm(0),
+  fOnTheFly(false),
+  fGenerator("AMPT"),
   fUseRecoNchForMC(kFALSE),
   fRndm(0),
   fNBootstrapProfiles(10),
@@ -65,6 +70,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fUseNUEOne(kFALSE),
   fPtMpar(8),
   fEtaAcceptance(0.8),
+  fImpactParameterMC(-1.0),
   fQAList(0),
   fEventCount(0),
   fMultiDist(0),
@@ -119,8 +125,9 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fBypassTriggerAndEventCuts(kFALSE),
   fDisablePileup(kFALSE),
   fUseOldPileup(kFALSE),
-  fCentSelectForMptNch(1.),
   fDCAxyFunctionalForm(0),
+  fOnTheFly(false),
+  fGenerator("AMPT"),
   fUseRecoNchForMC(kFALSE),
   fRndm(0),
   fNBootstrapProfiles(10),
@@ -140,6 +147,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fUseNUEOne(kFALSE),
   fPtMpar(8),
   fEtaAcceptance(0.8),
+  fImpactParameterMC(-1.0),
   fQAList(0),
   fEventCount(0),
   fMultiDist(0),
@@ -202,95 +210,115 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   if(!fDCAxyFunctionalForm.IsNull()) { fGFWSelection->SetPtDepDCAXY(fDCAxyFunctionalForm); }
   OpenFile(1);
   SetupAxes();
- 
-    fRndm = new TRandom(0);
-    fRequireReloadOnRunChange = kFALSE;
-    if(!fIsMC) LoadCorrectionsFromLists(); //Efficiencies and NUA are only for the data or if specified for pseudoefficiencies
-
-    fptList = new TList();
-    fptList->SetOwner(kTRUE);
-    fPtCont = new AliPtPtContainer("ptcont_ch","ptcont_ch",fNMultiBins,fMultiBins,fPtMpar);
-    fPtCont->SetEventWeight(fEventWeight);
-    fptList->Add(fPtCont);
-    if(fNBootstrapProfiles) fPtCont->InitializeSubsamples(fNBootstrapProfiles);
-
-    fMultiDist = new TH1D("MultiDistribution","Multiplicity distribution; #it{N}_{ch}; N(events)",fNMultiBins,fMultiBins);
-    fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",fNV0MBinsDefault,fV0MBinsDefault);
-    fptList->Add(fMultiDist);
-    fptList->Add(fV0MMulti);
-    fMultiVsV0MCorr = new TH2D*[2];
-    fMultiVsV0MCorr[0] = new TH2D("MultVsV0M_BeforeConsistency","MultVsV0M_BeforeConsistency",103,0,103,fNMultiBins,fMultiBins[0],fMultiBins[fNMultiBins]);
-    fMultiVsV0MCorr[1] = new TH2D("MultVsV0M_AfterConsistency","MultVsV0M_AfterConsistency",103,0,103,fNMultiBins,fMultiBins[0],fMultiBins[fNMultiBins]);
-    fESDvsFB128 = new TH2D("ESDvsFB128","; N(FB128); N(ESD)",500,-0.5,4999.5,1500,-0.5,14999.5);
-    fptList->Add(fMultiVsV0MCorr[0]);
-    fptList->Add(fMultiVsV0MCorr[1]);
-    fptList->Add(fESDvsFB128);
-    //ITS vs TPC tracklets cut for PU
-    fITSvsTPCMulti = new TH2D("TPCvsITSclusters",";TPC clusters; ITS clusters",1000,0,10000,5000,0,50000);
-    fptList->Add(fITSvsTPCMulti);
-    if(fIsMC) {
-      fNchTrueVsReco = new TH2D("NchTrueVsReco",";Nch (MC-true); Nch (MC-reco)",fNMultiBins,fMultiBins,fNMultiBins,fMultiBins);
-      fptList->Add(fNchTrueVsReco);
+  if(fOnTheFly)
+  {
+    printf("Creating OTF objects\n");
+    printf("Generator is %s\n",fGenerator.Data());
+    if(centralitymap.empty() && fGenerator.EqualTo("AMPT")) {
+      vector<double> b = {0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,13.50,14.51,100.0};
+      vector<double> cent = {0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,100.0};
+      for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i];
     }
-    const Int_t nFineCentBins=90;
-    Double_t *fineCentBins = new Double_t[nFineCentBins+1];
-    for(Int_t i=0;i<=nFineCentBins; i++) fineCentBins[i] = i;
-    fMultiVsCent = new AliProfileBS("MultiVsCent","Multi vs centrality",nFineCentBins,fineCentBins);
-    fptList->Add(fMultiVsCent);
-    const int nMptBins = 1000;
-    double *mptBins = new double[nMptBins+1];
-    for(int i=0;i<=nMptBins;++i) mptBins[i] = 0.00025*i + 0.55;
-    fMptVsNch = new TH2D("fMptVsNch","[#it{p}_{T}] vs N_{ch}; N_{ch}^{rec}; #LT[#it{p}_{T}]#GT",fNMultiBins,fMultiBins,nMptBins,mptBins);
-    fptList->Add(fMptVsNch);
-    printf("Multiplicity objects created\n");
-    PostData(1,fptList);
+    if(centralitymap.empty() && fGenerator.EqualTo("HIJING")) {
+      vector<double> b = {0.0,1.60,2.27,2.79,3.22,3.60,5.09,7.20,8.83,10.20,11.40,12.49,13.49,14.44,15.46,100.0};
+      vector<double> cent = {0.0,1.0,2.0,3.0,4.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0};
+      for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i];
+    }
 
-    printf("Creating QA objects\n");
-    fQAList = new TList();
-    fQAList->SetOwner(kTRUE);
-    fEventCuts.AddQAplotsToList(fQAList,kTRUE);
-    int nEventCutLabel = 7; 
-    fEventCount = new TH1D("fEventCount","Event counter",nEventCutLabel,0,nEventCutLabel);
-    TString eventCutLabel[7]={"Input","Centrality","Trigger","AliEventCuts","Vertex","Pileup","Tracks"};
-    for(int i=0;i<nEventCutLabel;++i) fEventCount->GetXaxis()->SetBinLabel(i+1,eventCutLabel[i].Data());
-    fQAList->Add(fEventCount);
-    fhQAEventsfMult32vsCentr = new TH2D("fhQAEventsfMult32vsCentr", "; centrality V0M; TPC multiplicity (FB32)", 100, 0, 100, 100, 0, 3000);
-    fQAList->Add(fhQAEventsfMult32vsCentr);
-    fhQAEventsMult128vsCentr = new TH2D("fhQAEventsfMult128vsCentr", "; centrality V0M; TPC multiplicity (FB128)", 100, 0, 100, 100, 0, 5000);
-    fQAList->Add(fhQAEventsMult128vsCentr);
-    fhQAEventsfMultTPCvsTOF = new TH2D("fhQAEventsfMultTPCvsTOF", "; TPC FB32 multiplicity; TOF multiplicity", 200, 0, 4000, 200, 0, 2000);
-    fQAList->Add(fhQAEventsfMultTPCvsTOF);
-    fhQAEventsfMultTPCvsESD = new TH2D("fhQAEventsfMultTPCvsESD", "; TPC FB128 multiplicity; ESD multiplicity", 200, 0, 7000, 300, -1000, 35000);
-    fQAList->Add(fhQAEventsfMultTPCvsESD);
-    printf("QA objects created!\n");
-    PostData(2,fQAList);
-    fEventCuts.OverrideAutomaticTriggerSelection(fTriggerType,true);
+    fIP = new TH1D("fIP","Impact parameter",1000,0.0,30.0);
+    printf("OTF objects created\n");
+  }
+  fRndm = new TRandom(0);
+  fRequireReloadOnRunChange = kFALSE;
+  if(!fIsMC) LoadCorrectionsFromLists(); //Efficiencies and NUA are only for the data or if specified for pseudoefficiencies
 
-    //Creating cuts for 15o_pass2 and 18qr_pass3. 18qr_pass3 not implemented yet.
-    //Would like to do that in a more elegant way, but not at this point, unfortunatelly
-    if(fEventCutFlag) { //Only initialize them if necessary
-      fSPDCutPU = new TF1("fSPDCutPU", "450. + 3.9*x", 0, 50000);
-      if(!fV0CutPU) fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000); //Only if not initialized externally. Set to 0 for ESD MC, as that seems to be problematic?
-      fCenCutLowPU = new TF1("fCenCutLowPU", "[0]+[1]*x - 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
-      fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
-      fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 6.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
-      if(fEventCutFlag==1 || fEventCutFlag==101) {
-        Double_t parV0[8] = {33.4237, 0.953516, 0.0712137, 227.923, 8.9239, -0.00319679, 0.000306314, -7.6627e-07};
-        fV0CutPU->SetParameters(parV0);
-        Double_t parV0CL0[6] = {0.0193587, 0.975914, 0.675714, 0.0292263, -0.000549509, 5.86421e-06};
-        fCenCutLowPU->SetParameters(parV0CL0);
-        fCenCutHighPU->SetParameters(parV0CL0);
-        Double_t parFB32[9] = {-812.822, 6.41796, 5421.83, -0.382601, 0.0299686, -26.6249, 321.388, -0.82615, 0.0167828};
-        fMultCutPU->SetParameters(parFB32);
-      }
-    };
-    fGFWNtotSelection = new AliGFWCuts();
-    fGFWNtotSelection->SetupCuts(0);
-    fGFWNtotSelection->SetEta(fEtaAcceptance);
+  fptList = new TList();
+  fptList->SetOwner(kTRUE);
+  fPtCont = new AliPtPtContainer("ptcont_ch","ptcont_ch",fNMultiBins,fMultiBins,fPtMpar);
+  fPtCont->SetEventWeight(fEventWeight);
+  fptList->Add(fPtCont);
+  if(fNBootstrapProfiles) fPtCont->InitializeSubsamples(fNBootstrapProfiles);
+
+  fMultiDist = new TH1D("MultiDistribution","Multiplicity distribution; #it{N}_{ch}; N(events)",fNMultiBins,fMultiBins);
+  fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",fNV0MBinsDefault,fV0MBinsDefault);
+  fptList->Add(fMultiDist);
+  fptList->Add(fV0MMulti);
+  fMultiVsV0MCorr = new TH2D*[2];
+  fMultiVsV0MCorr[0] = new TH2D("MultVsV0M_BeforeConsistency","MultVsV0M_BeforeConsistency",103,0,103,fNMultiBins,fMultiBins[0],fMultiBins[fNMultiBins]);
+  fMultiVsV0MCorr[1] = new TH2D("MultVsV0M_AfterConsistency","MultVsV0M_AfterConsistency",103,0,103,fNMultiBins,fMultiBins[0],fMultiBins[fNMultiBins]);
+  fESDvsFB128 = new TH2D("ESDvsFB128","; N(FB128); N(ESD)",500,-0.5,4999.5,1500,-0.5,14999.5);
+  fptList->Add(fMultiVsV0MCorr[0]);
+  fptList->Add(fMultiVsV0MCorr[1]);
+  fptList->Add(fESDvsFB128);
+  //ITS vs TPC tracklets cut for PU
+  fITSvsTPCMulti = new TH2D("TPCvsITSclusters",";TPC clusters; ITS clusters",1000,0,10000,5000,0,50000);
+  fptList->Add(fITSvsTPCMulti);
+  if(fIsMC) {
+    fNchTrueVsReco = new TH2D("NchTrueVsReco",";Nch (MC-true); Nch (MC-reco)",fNMultiBins,fMultiBins,fNMultiBins,fMultiBins);
+    fptList->Add(fNchTrueVsReco);
+  }
+  const Int_t nFineCentBins=90;
+  Double_t *fineCentBins = new Double_t[nFineCentBins+1];
+  for(Int_t i=0;i<=nFineCentBins; i++) fineCentBins[i] = i;
+  fMultiVsCent = new AliProfileBS("MultiVsCent","Multi vs centrality",nFineCentBins,fineCentBins);
+  fptList->Add(fMultiVsCent);
+  const int nMptBins = 1000;
+  double *mptBins = new double[nMptBins+1];
+  for(int i=0;i<=nMptBins;++i) mptBins[i] = 0.0005*i + 0.5;
+  const int nCentBinsMpt = 3;
+  double centbinsMpt[] = {0,1,5,90};
+  fMptVsNch = new TH3D("fMptVsNch","[#it{p}_{T}] vs N_{ch}; N_{ch}^{rec}; #LT[#it{p}_{T}]#GT;centrality (%)",fNMultiBins,fMultiBins,nMptBins,mptBins,nCentBinsMpt,centbinsMpt);
+  fptList->Add(fMptVsNch);
+  printf("Multiplicity objects created\n");
+  PostData(1,fptList);
+
+  printf("Creating QA objects\n");
+  fQAList = new TList();
+  fQAList->SetOwner(kTRUE);
+  fEventCuts.AddQAplotsToList(fQAList,kTRUE);
+  int nEventCutLabel = 7;
+  fEventCount = new TH1D("fEventCount","Event counter",nEventCutLabel,0,nEventCutLabel);
+  TString eventCutLabel[7]={"Input","Centrality","Trigger","AliEventCuts","Vertex","Pileup","Tracks"};
+  for(int i=0;i<nEventCutLabel;++i) fEventCount->GetXaxis()->SetBinLabel(i+1,eventCutLabel[i].Data());
+  fQAList->Add(fEventCount);
+  fhQAEventsfMult32vsCentr = new TH2D("fhQAEventsfMult32vsCentr", "; centrality V0M; TPC multiplicity (FB32)", 100, 0, 100, 100, 0, 3000);
+  fQAList->Add(fhQAEventsfMult32vsCentr);
+  fhQAEventsMult128vsCentr = new TH2D("fhQAEventsfMult128vsCentr", "; centrality V0M; TPC multiplicity (FB128)", 100, 0, 100, 100, 0, 5000);
+  fQAList->Add(fhQAEventsMult128vsCentr);
+  fhQAEventsfMultTPCvsTOF = new TH2D("fhQAEventsfMultTPCvsTOF", "; TPC FB32 multiplicity; TOF multiplicity", 200, 0, 4000, 200, 0, 2000);
+  fQAList->Add(fhQAEventsfMultTPCvsTOF);
+  fhQAEventsfMultTPCvsESD = new TH2D("fhQAEventsfMultTPCvsESD", "; TPC FB128 multiplicity; ESD multiplicity", 200, 0, 7000, 300, -1000, 35000);
+  fQAList->Add(fhQAEventsfMultTPCvsESD);
+  printf("QA objects created!\n");
+  PostData(2,fQAList);
+  fEventCuts.OverrideAutomaticTriggerSelection(fTriggerType,true);
+
+  //Creating cuts for 15o_pass2 and 18qr_pass3. 18qr_pass3 not implemented yet.
+  //Would like to do that in a more elegant way, but not at this point, unfortunatelly
+  if(fEventCutFlag) { //Only initialize them if necessary
+    fSPDCutPU = new TF1("fSPDCutPU", "450. + 3.9*x", 0, 50000);
+    if(!fV0CutPU) fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000); //Only if not initialized externally. Set to 0 for ESD MC, as that seems to be problematic?
+    fCenCutLowPU = new TF1("fCenCutLowPU", "[0]+[1]*x - 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 6.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
+    if(fEventCutFlag==1 || fEventCutFlag==101) {
+      Double_t parV0[8] = {33.4237, 0.953516, 0.0712137, 227.923, 8.9239, -0.00319679, 0.000306314, -7.6627e-07};
+      fV0CutPU->SetParameters(parV0);
+      Double_t parV0CL0[6] = {0.0193587, 0.975914, 0.675714, 0.0292263, -0.000549509, 5.86421e-06};
+      fCenCutLowPU->SetParameters(parV0CL0);
+      fCenCutHighPU->SetParameters(parV0CL0);
+      Double_t parFB32[9] = {-812.822, 6.41796, 5421.83, -0.382601, 0.0299686, -26.6249, 321.388, -0.82615, 0.0167828};
+      fMultCutPU->SetParameters(parFB32);
+    }
+  };
+  fGFWNtotSelection = new AliGFWCuts();
+  fGFWNtotSelection->SetupCuts(0);
+  fGFWNtotSelection->SetEta(fEtaAcceptance);
 };
 
 void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   EventNo++;
+  if(fOnTheFly) { ProcessOnTheFly(); return; }
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fAOD) return;
   if(fIsMC) {
@@ -315,7 +343,7 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   if(l_Cent < 10) fEventCuts.fESDvsTPConlyLinearCut[0] = fCentralPU;
   else fEventCuts.fESDvsTPConlyLinearCut[0] = 15000.;
   fEventCount->Fill("Pileup",1);
-  
+
   wp.clear(); wp.resize(fPtMpar+1,vector<double>(fPtMpar+1));
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
@@ -342,7 +370,7 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
       if(TMath::Abs(leta) > fEtaAcceptance) continue;
       Double_t pt = lPart->Pt();
       if(pt<ptMin || pt>ptMax) continue;
-      nTotNoTracksMC++; 
+      nTotNoTracksMC++;
       FillWPCounter(wp,1,pt);
     };
     nTotNoTracks = fUseRecoNchForMC?nTotNoTracksReco:nTotNoTracksMC;
@@ -363,7 +391,7 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
       Double_t lpt = lTrack->Pt();
       Double_t weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lpt));
       if(weff==0.0) continue;
-      weff = 1./weff; 
+      weff = 1./weff;
       FillWPCounter(wp,(fUseNUEOne)?1.0:weff,lpt);
     };
   };
@@ -388,9 +416,9 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   fV0MMulti->Fill(l_Cent);
   fMultiDist->Fill(l_Multi);
   fMultiVsCent->Fill(l_Cent,l_Multi);
-  if(l_Cent < fCentSelectForMptNch) fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0]);
+  fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0],l_Cent);
   PostData(1,fptList);
-
+  PostData(2,fQAList);
   return;
 };
 void AliAnalysisTaskPtCorr::NotifyRun() {
@@ -406,6 +434,81 @@ void AliAnalysisTaskPtCorr::NotifyRun() {
 }
 void AliAnalysisTaskPtCorr::Terminate(Option_t*) {
 };
+AliMCEvent *AliAnalysisTaskPtCorr::getMCEvent() {
+  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(MCEvent());
+  if(!ev) { AliFatal("MC event not found!"); return 0; }
+  AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(ev->GenEventHeader());
+  if(!header) { AliFatal("MC event not generated!"); return 0; }
+  AliCollisionGeometry* headerH;
+  TString genName;
+  TList *ltgen = (TList*)ev->GetCocktailList();
+  if (ltgen) {
+  for(auto&& listObject: *ltgen){
+    genName = Form("%s",listObject->GetName());
+    if (genName.Contains("Hijing")) {
+      headerH = dynamic_cast<AliCollisionGeometry*>(listObject);
+      break;
+      }
+    }
+  }
+  else headerH = dynamic_cast<AliCollisionGeometry*>(ev->GenEventHeader());
+  if(headerH){
+      fImpactParameterMC = headerH->ImpactParameter();
+  }
+  return ev;
+}
+void AliAnalysisTaskPtCorr::ProcessOnTheFly() {
+  fMCEvent = getMCEvent();
+  fIP->Fill(fImpactParameterMC);
+  Double_t l_Cent = getGeneratorCentrality();
+  Int_t nTracks = fMCEvent->GetNumberOfPrimaries();
+  if(nTracks < 1) { return; }
+  wp.clear(); wp.resize(fPtMpar+1,vector<double>(fPtMpar+1));
+  Double_t ptMin = fPtBins[0];
+  Double_t ptMax = fPtBins[fNPtBins];
+  Int_t nTotNoTracks=0;
+  for(Int_t i=0;i<nTracks;i++) {
+    AliMCParticle* lPart = dynamic_cast<AliMCParticle*>(fMCEvent->GetTrack(i));
+    if(!lPart) { continue; };
+    if (!lPart->IsPhysicalPrimary()) continue;
+    if (lPart->Charge()==0.) continue;
+    //Hardcoded cuts to inhereted from AcceptAODTrack
+    Double_t leta = lPart->Eta();
+    if(TMath::Abs(leta) > fEtaAcceptance) continue;
+    Double_t pt = lPart->Pt();
+    if(pt<ptMin || pt>ptMax) continue;
+    nTotNoTracks++;
+    FillWPCounter(wp,1,pt);
+  };
+  if(wp[1][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
+
+  fEventCount->Fill("Tracks",1);
+  //Filling pT variance
+  Double_t l_Multi = fUseNch?(1.0*nTotNoTracks):l_Cent;
+  //A check in case l_Multi is completely off the charts (in MC, sometimes it ends up being... -Xe-310???)
+  if(fUseNch && l_Multi<1) return;
+  Double_t l_Random = fRndm->Rndm();
+
+  fPtCont->CalculateCorrelations(wp);
+  fPtCont->FillProfiles(l_Multi,l_Random);
+  fPtCont->FillCMProfiles(wp,l_Multi,l_Random);
+  fV0MMulti->Fill(l_Cent);
+  fMultiDist->Fill(l_Multi);
+  fMultiVsCent->Fill(l_Cent,l_Multi);
+  fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0],l_Cent);
+  PostData(1,fptList);
+  PostData(2,fQAList);
+  return;
+}
+double AliAnalysisTaskPtCorr::getGeneratorCentrality()
+{
+  vector<double> b;
+  if(centralitymap.empty()) AliFatal("Centralitymap is empty!");
+  for (auto const& element : centralitymap) b.push_back(element.first);
+  vector<double>::iterator it = upper_bound(b.begin(),b.end(),fImpactParameterMC);
+  double l_cent = (fImpactParameterMC<0)?-1.0:(centralitymap[b[it-b.begin()]]+centralitymap[b[it-b.begin()-1]])/2.0;
+  return l_cent;
+}
 Bool_t AliAnalysisTaskPtCorr::CheckTrigger(Double_t lCent) {
   UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   //Apparently, MB trigger can also mark special triggers, leaving depleted regions in multi. To avoid this, pass true, if MB has been triggered.
@@ -491,7 +594,7 @@ Bool_t AliAnalysisTaskPtCorr::IsPileupEvent(AliAODEvent* ev, double centrality){
   {
     multESDTPCdif = multESD - 3.38*multTPC128;
     if(multESDTPCdif > fPileupCut) { return kTRUE; }
-      
+
   }
 
   // QA Plots
@@ -586,7 +689,7 @@ void AliAnalysisTaskPtCorr::LoadCorrectionsFromLists(){
 }
 void AliAnalysisTaskPtCorr::SetupAxes() {
  const Int_t temp_NV0MBinsDefault=10;
-  Double_t temp_V0MBinsDefault[11] = {0,5,10,20,30,40,50,60,70,80,90}; 
+  Double_t temp_V0MBinsDefault[11] = {0,5,10,20,30,40,50,60,70,80,90};
   if(!fV0MMultiAxis) SetV0MBins(temp_NV0MBinsDefault,temp_V0MBinsDefault);
   fV0MBinsDefault=GetBinsFromAxis(fV0MMultiAxis);
   fNV0MBinsDefault=fV0MMultiAxis->GetNbins();

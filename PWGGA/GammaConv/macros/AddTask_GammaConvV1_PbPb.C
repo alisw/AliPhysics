@@ -79,7 +79,7 @@ void AddTask_GammaConvV1_PbPb(
   
   Bool_t    enablePhotonTree      =  kFALSE;
   Bool_t    enableMesonTree       =  kFALSE;
-  Float_t   meson_m1_range_left = 0.1; 
+  Float_t   meson_m1_range_left = 0.04; 
   Float_t   meson_m1_range_right = 0.2; 
   Float_t   meson_m2_range_left = 0.4; 
   Float_t   meson_m2_range_right = 0.7;  
@@ -4081,7 +4081,17 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("13530053", "0d200009ab770c00amd0400000", "0152101500000000"); // 30-50%
     cuts.AddCutPCM("15910053", "0d200009ab770c00amd0400000", "0152101500000000"); // 50-90%
 
-
+                              
+                              
+                       ///----  Machine Learning PCM OPEN CUTS   ---//       
+  } else if (trainConfig == 3000){ 
+    cuts.AddCutPCM("10130e03", "00200008100000001100400000", "0452103500000000"); // 0-10%
+    cuts.AddCutPCM("11310e03", "00200008100000001100400000", "0452103500000000"); // 10-30%
+    cuts.AddCutPCM("13530e03", "00200008100000001100400000", "0452103500000000"); // 30-50%
+    cuts.AddCutPCM("15910e03", "00200008100000001100400000", "0452103500000000"); // 50-90%
+//  cuts.AddCutPCM("15910e03", "0d200009ab770c00amd0400000", "0152101500000000"); // 990
+//  cuts.AddCutPCM("15910e03", "00200008d00000001100000000", "0452103500000000"); // 3000
+                                                            //0452103500000000
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -4094,6 +4104,7 @@ void AddTask_GammaConvV1_PbPb(
     return;
   }
 
+  cout << "Using Train Config " << trainConfig << endl;
   Int_t numberOfCuts = cuts.GetNCuts();
 
   // extract single filenames from fileNamedEdxPostCalib
@@ -4672,35 +4683,36 @@ void AddTask_GammaConvV1_PbPb(
   //connect containers
   AliAnalysisDataContainer *coutput =
     mgr->CreateContainer(Form("GammaConvV1_%i",trainConfig), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("GammaConvV1_%i.root",trainConfig));
+              AliAnalysisManager::kOutputContainer,Form("GCo_%i.root",trainConfig));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
   Int_t nContainer = 2;
   for(Int_t i = 0; i<numberOfCuts; i++){
+    
     if(enableQAPhotonTask>1){
       if (initializedMatBudWeigths_existing) {
-	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s MBW Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s MBW Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCo_%i.root",trainConfig)) );
       }else{
-	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCo_%i.root",trainConfig)) );
       }
       nContainer++;
     }
     if(enableQAMesonTask>1){
       if (initializedMatBudWeigths_existing) {
-	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s MBW Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s MBW Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCo_%i.root",trainConfig)) );
       }else{
-	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCo_%i.root",trainConfig)) );
       }
       nContainer++;
     }
     if(enablePhotonTree){
-	    mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("TreeForPhotonMLData_%s_%s_%s",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+	    mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("TreeForPhotonMLData_%s_%s_%s",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCo_%i.root",trainConfig)) );
       nContainer++;
     }
     if(enableMesonTree){
-	    mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("TreeForMesonMLData_%s_%s_%s",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+	    mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("TreeForMesonMLData_%s_%s_%s",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCo_%i.root",trainConfig)) );
       nContainer++;
     }
   }

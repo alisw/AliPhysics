@@ -329,7 +329,11 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
   if(fIsMC||fIsMCtruth)fTree->Branch("KaonPDG",&fTKaonPDG,"fTKaonPDG[fTnKaon]/I");
   if(fIsMC||fIsMCtruth)fTree->Branch("KaonMotherWeak",&fTKaonMotherWeak,"fTKaonMotherWeak[fTnKaon]/I");
   if(fIsMC||fIsMCtruth)fTree->Branch("KaonOrigin",&fTKaonOrigin,"fTKaonOrigin[fTnKaon]/I");
-   if(fIsMC||fIsMCtruth)fTree->Branch("KaonMotherID",&fTKaonMotherID,"fTKaonMotherID[fTnKaon]/I");
+  if(fIsMC||fIsMCtruth)fTree->Branch("KaonMotherID",&fTKaonMotherID,"fTKaonMotherID[fTnKaon]/I");
+  if(fIsMC||fIsMCtruth)fTree->Branch("KaonMotherPDG",&fTKaonMotherPDG,"fTKaonMotherPDG[fTnKaon]/I");
+  if(fIsMC||fIsMCtruth)fTree->Branch("KaonPxTRUE",&fTKaonPxTRUE,"fTKaonPxTRUE[fTnKaon]/F");
+  if(fIsMC||fIsMCtruth)fTree->Branch("KaonPyTRUE",&fTKaonPyTRUE,"fTKaonPyTRUE[fTnKaon]/F");
+  if(fIsMC||fIsMCtruth)fTree->Branch("KaonPzTRUE",&fTKaonPzTRUE,"fTKaonPzTRUE[fTnKaon]/F");
   }
 
 
@@ -352,6 +356,8 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
   fTree->Branch("XiTrackPx",&fTXiTrackPx,"fTXiTrackPx[fTnXi][3]/F");
   fTree->Branch("XiTrackPy",&fTXiTrackPy,"fTXiTrackPy[fTnXi][3]/F");
   fTree->Branch("XiTrackPz",&fTXiTrackPz,"fTXiTrackPz[fTnXi][3]/F");
+  fTree->Branch("XiTrackPy",&fTXiTrackPy,"fTXiTrackPy[fTnXi][3]/F");
+  fTree->Branch("XiTrackPz",&fTXiTrackPz,"fTXiTrackPz[fTnXi][3]/F");
   if(fOnlyXi) fTree->Branch("XiTrackTPCmom",&fTXiTrackTPCmom,"fTXiTrackTPCmom[fTnXi][3]/F");
   fTree->Branch("XiTrackDCA",&fTXiTrackDCA,"fTXiTrackDCA[fTnXi][3]/F");
   fTree->Branch("XiTrackTPCsigma",&fTXiTrackTPCsigma,"fTXiTrackTPCsigma[fTnXi][3]/F");
@@ -366,8 +372,11 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
   if(fIsMC||fIsMCtruth) fTree->Branch("XiMotherID",&fTXiMotherID,"fTXiMotherID[fTnXi]/I");
   if(fIsMC||fIsMCtruth) fTree->Branch("XiPDG",&fTXiPDG,"fTXiPDG[fTnXi]/I");
   if(fIsMC||fIsMCtruth) fTree->Branch("XiMotherPDG",&fTXiMotherPDG,"fTXiMotherPDG[fTnXi]/I");
-  if(fIsMC||fIsMCtruth) fTree->Branch("XiMotherWeak",&fTXiMotherWeak,"fTXiMotherWeak[fTnXi]/I");
-  if(fIsMC||fIsMCtruth) fTree->Branch("XiOrigin",&fTXiOrigin,"fTXiOrigin[fTnXi]/I");
+  if(fIsMC||fIsMCtruth) fTree->Branch("XiPxTRUE",&fTXiPxTRUE,"fTXiPxTRUE[fTnXi]/F");
+  if(fIsMC||fIsMCtruth) fTree->Branch("XiPyTRUE",&fTXiPyTRUE,"fTXiPyTRUE[fTnXi]/F");
+  if(fIsMC||fIsMCtruth) fTree->Branch("XiPzTRUE",&fTXiPzTRUE,"fTXiPzTRUE[fTnXi]/F");
+  //if(fIsMC||fIsMCtruth) fTree->Branch("XiMotherWeak",&fTXiMotherWeak,"fTXiMotherWeak[fTnXi]/I");
+  //if(fIsMC||fIsMCtruth) fTree->Branch("XiOrigin",&fTXiOrigin,"fTXiOrigin[fTnXi]/I");
   //if(fOnlyXi) fTree->Branch("XiBachelorBaryonPA",&fTXiBachelorBaryonPA,"fTXiBachelorBaryonPA[fTnXi]/F");
 
   PostData(1, fEvtList);
@@ -453,6 +462,10 @@ void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
    fTKaonMotherWeak[ii]=0.;//sure Zero?
    fTKaonOrigin[ii]=-1;
    fTKaonMotherID[ii]=-1;
+   fTKaonMotherPDG[ii]=-1;
+   fTKaonPxTRUE[ii]=-9999;
+   fTKaonPyTRUE[ii]=-9999;
+   fTKaonPzTRUE[ii]=-9999;
   }
   fTnKaon=0;
 
@@ -571,6 +584,9 @@ void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
    fTXiMotherID[ii]=-1;
    fTXiPDG[ii]=-1;
    fTXiMotherPDG[ii]=-1;
+   fTXiPxTRUE[ii]=-9999.;
+   fTXiPyTRUE[ii]=-9999.;
+   fTXiPzTRUE[ii]=-9999;
    fTXiMotherWeak[ii]=-1;
    fTXiOrigin[ii]=-1;
    fTXiBachelorBaryonPA[ii]=-99.;
@@ -606,6 +622,19 @@ void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
 
 
   }//cascade loop
+
+
+
+       // FOR MC TESTING PURPOSES, LOOP OVER MC PARTICLES
+       //AliAODInputHandler *eventHandler =
+       //    dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()
+       //    ->GetInputEventHandler());
+       //AliMCEvent* fMC = eventHandler->MCEvent();
+       //for(int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
+       // AliAODMCParticle *mcPart = (AliAODMCParticle*) fMC->GetTrack(iPart);
+       // cout<<iPart<<"  pdg="<<mcPart->GetPdgCode()<<" mother="<<mcPart->GetMother()<<" px="<<mcPart->Px()<<endl;
+       //}//MC part loop
+
 
 
       //fill tree:
@@ -787,6 +816,12 @@ Bool_t AliAnalysisTaskOtonXx::FillKaon(AliFemtoDreamTrack *TheTrack) {
         break;
      }
  fTKaonMotherID[fTnKaon] = TheTrack->GetMotherID();
+ //fTKaonMotherPDG[fTnKaon] = TheTrack->GetMotherPDG();
+ fTKaonMotherPDG[fTnKaon] = TheTrack->GetRealMotherPDG();
+
+  fTKaonPxTRUE[fTnKaon] = TheTrack->GetMCMomentum().X();
+  fTKaonPyTRUE[fTnKaon] = TheTrack->GetMCMomentum().Y();
+  fTKaonPzTRUE[fTnKaon] = TheTrack->GetMCMomentum().Z();
 
 
  fTnKaon++;
@@ -876,9 +911,14 @@ Bool_t AliAnalysisTaskOtonXx::FillXi(AliFemtoDreamCascade *TheCasc, bool isomega
  fTXiMotherID[fTnXi] = TheCasc->GetMotherID();
 
   fTXiPDG[fTnXi] = TheCasc->GetMCPDGCode();
-  fTXiMotherPDG[fTnXi] = TheCasc->GetMotherPDG();
+  //fTXiMotherPDG[fTnXi] = TheCasc->GetMotherPDG();
+  fTXiMotherPDG[fTnXi] = TheCasc->GetRealMotherPDG();
   fTXiMotherWeak[fTnXi] = TheCasc->GetMotherWeak();
   fTXiOrigin[fTnXi] =  TheCasc->GetParticleOrigin();
+
+  fTXiPxTRUE[fTnXi] = TheCasc->GetMCMomentum().X();
+  fTXiPyTRUE[fTnXi] = TheCasc->GetMCMomentum().Y();
+  fTXiPzTRUE[fTnXi] = TheCasc->GetMCMomentum().Z();
 
  fTXiBachelorBaryonPA[fTnXi] = TheCasc->GetBachelorBaryonCosPA();
 
