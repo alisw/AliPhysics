@@ -3251,13 +3251,15 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
                                           fInputEvent);
         }
 
-        if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetAcceptedHeader()){
-          for(Int_t i = 0;i<(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetAcceptedHeader())->GetEntries();i++){
-            TString nameBin= fHistoMCHeaders[iCut]->GetXaxis()->GetBinLabel(i+1);
-            if (nameBin.CompareTo("")== 0){
-              TString nameHeader = ((TObjString*)((TList*)((AliConvEventCuts*)fEventCutArray->At(iCut))
-                                ->GetAcceptedHeader())->At(i))->GetString();
-              fHistoMCHeaders[iCut]->GetXaxis()->SetBinLabel(i+1,nameHeader.Data());
+        if(!fDoLightOutput){
+          if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetAcceptedHeader()){
+            for(Int_t i = 0;i<(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetAcceptedHeader())->GetEntries();i++){
+              TString nameBin= fHistoMCHeaders[iCut]->GetXaxis()->GetBinLabel(i+1);
+              if (nameBin.CompareTo("")== 0){
+                TString nameHeader = ((TObjString*)((TList*)((AliConvEventCuts*)fEventCutArray->At(iCut))
+                                  ->GetAcceptedHeader())->At(i))->GetString();
+                fHistoMCHeaders[iCut]->GetXaxis()->SetBinLabel(i+1,nameHeader.Data());
+              }
             }
           }
         }
