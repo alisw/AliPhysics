@@ -23,6 +23,7 @@
 #include "TH1D.h"
 #include "TH2D.h"
 #include "TH3D.h"
+#include "TF1.h"
 #include "TObjArray.h"
 #include "TObject.h"
 #include "TList.h"
@@ -142,6 +143,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetFMDcutParameters(Double_t par0a, Double_t par1a, Double_t par0c, Double_t par1c) { fFMDcutapar0 = par0a; fFMDcutapar1 = par1a; fFMDcutcpar0 = par0c; fFMDcutcpar1 = par1c; }
         void                    SetFMDacceptanceCuts(Double_t cutAlower, Double_t cutAupper, Double_t cutClower, Double_t cutCupper) { fFMDAacceptanceCutLower = cutAlower; fFMDAacceptanceCutUpper = cutAupper; fFMDCacceptanceCutLower = cutClower; fFMDCacceptanceCutUpper = cutCupper; }
         void                    SetBoostAMPT(Bool_t flag = kTRUE){ fBoostAMPT = flag; }
+	void                    setUseFMDcorrection(Bool_t Use_FMDcorrection, TString fmdcorrfilename){ fUseFMDcorrection = Use_FMDcorrection; fFMD_correctoion_file = fmdcorrfilename;}
 
     private:
 
@@ -215,6 +217,9 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 	TH2D*                   fh2D_TPCvsFMDA; //!
 	TH2D*                   fh2D_TPCvsFMDC; //!
 	TH2D*                   fh2D_TPCvsFMD_AC; //!
+	TF1*                    fFMD_correctoion; //!
+        TString                 fFMD_correctoion_file;
+	Bool_t                  fUseFMDcorrection;
 
         //event and track selection
         AnaType                 fAnalType;
