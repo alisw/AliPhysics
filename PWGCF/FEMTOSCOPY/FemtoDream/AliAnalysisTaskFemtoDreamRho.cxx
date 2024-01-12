@@ -52,6 +52,13 @@ ClassImp(AliAnalysisTaskFemtoDreamRho)
       fHist2D_massVSpt_RhoCandidateCommon(nullptr),
       fHist2D_massVSpt_RhoCandidateUncommon(nullptr),
       fHist2D_massVSpt_RhoCandidateCommonFullInvM(nullptr),
+      fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances(nullptr),
+      fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances(nullptr),
+      fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances(nullptr),
+      fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances(nullptr),
+      fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances(nullptr),
+      fHist2D_massVSpt_RhoCandidateCommonFullInvM_ftwoResonances(nullptr),
+      fHist2D_massVSpt_RhoCandidateCommonFullInvM_otherResonances(nullptr),
       fHist2D_massVSpt_RhoCandidateUncommonFullInvM(nullptr),
       fHist1D_pt_RhoTrue(nullptr),
       fHist2D_pt1VSpt2_RhoTrue(nullptr),
@@ -63,6 +70,7 @@ ClassImp(AliAnalysisTaskFemtoDreamRho)
       fHist2D_PDGvsmT_noRho_MC(nullptr),
       fHist2D_pTvsmT_isRho(nullptr),
       fHist2D_pTvsmT_isRho_MC(nullptr),
+      fHist2D_PDGvsMInv_CommonAncestorResonances(nullptr),
       fGTI(0),
       fTrackBufferSize(0)
 {
@@ -105,6 +113,13 @@ AliAnalysisTaskFemtoDreamRho::AliAnalysisTaskFemtoDreamRho(const char *name,
       fHist2D_massVSpt_RhoCandidateCommon(nullptr),
       fHist2D_massVSpt_RhoCandidateUncommon(nullptr),
       fHist2D_massVSpt_RhoCandidateCommonFullInvM(nullptr),
+      fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances(nullptr),
+      fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances(nullptr),
+      fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances(nullptr),
+      fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances(nullptr),
+      fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances(nullptr),
+      fHist2D_massVSpt_RhoCandidateCommonFullInvM_ftwoResonances(nullptr),
+      fHist2D_massVSpt_RhoCandidateCommonFullInvM_otherResonances(nullptr),
       fHist2D_massVSpt_RhoCandidateUncommonFullInvM(nullptr),
       fHist1D_pt_RhoTrue(nullptr),
       fHist2D_pt1VSpt2_RhoTrue(nullptr),
@@ -116,6 +131,7 @@ AliAnalysisTaskFemtoDreamRho::AliAnalysisTaskFemtoDreamRho(const char *name,
       fHist2D_PDGvsmT_noRho_MC(nullptr),
       fHist2D_pTvsmT_isRho(nullptr),
       fHist2D_pTvsmT_isRho_MC(nullptr),
+      fHist2D_PDGvsMInv_CommonAncestorResonances(nullptr),
       fGTI(nullptr),
       fTrackBufferSize(2000)
 {
@@ -255,16 +271,71 @@ void AliAnalysisTaskFemtoDreamRho::UserCreateOutputObjects()
     fHist2D_massVSpt_RhoCandidateCommonFullInvM->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_massVSpt_RhoCandidateCommonFullInvM->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
 
+    TString massPtHistName_CommonFullInvM_NoResonances = TString::Format("histInvariantMassPt_Common_FullMinv_noResonances%s", NameIngaAnc.Data());
+    TString massPtHistTitle_CommonFullInvM_NoResonances = TString::Format("%s Invariant Mass vs. pT Common No Resonances", NameIngaAnc.Data());
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances = new TH2F(massPtHistName_CommonFullInvM_NoResonances, massPtHistTitle_CommonFullInvM_NoResonances, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances->GetXaxis()->SetTitle("pT (GeV/c)");
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
+
+    TString massPtHistName_CommonFullInvM_kShortResonances = TString::Format("histInvariantMassPt_Common_FullMinv_kShortResonances%s", NameIngaAnc.Data());
+    TString massPtHistTitle_CommonFullInvM_kShortResonances = TString::Format("%s Invariant Mass vs. pT Common KShort Resonances", NameIngaAnc.Data());
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances = new TH2F(massPtHistName_CommonFullInvM_kShortResonances, massPtHistTitle_CommonFullInvM_kShortResonances, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances->GetXaxis()->SetTitle("pT (GeV/c)");
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
+
+    TString massPtHistName_CommonFullInvM_rhoResonances = TString::Format("histInvariantMassPt_Common_FullMinv_rhoResonances%s", NameIngaAnc.Data());
+    TString massPtHistTitle_CommonFullInvM_rhoResonances = TString::Format("%s Invariant Mass vs. pT Common Rho Resonances", NameIngaAnc.Data());
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances = new TH2F(massPtHistName_CommonFullInvM_rhoResonances, massPtHistTitle_CommonFullInvM_rhoResonances, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances->GetXaxis()->SetTitle("pT (GeV/c)");
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
+
+    TString massPtHistName_CommonFullInvM_omegaResonances = TString::Format("histInvariantMassPt_Common_FullMinv_omegaResonances%s", NameIngaAnc.Data());
+    TString massPtHistTitle_CommonFullInvM_omegaResonances = TString::Format("%s Invariant Mass vs. pT Common omega Resonances", NameIngaAnc.Data());
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances = new TH2F(massPtHistName_CommonFullInvM_omegaResonances, massPtHistTitle_CommonFullInvM_omegaResonances, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances->GetXaxis()->SetTitle("pT (GeV/c)");
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
+
+    TString massPtHistName_CommonFullInvM_fzeroResonances = TString::Format("histInvariantMassPt_Common_FullMinv_fzeroResonances%s", NameIngaAnc.Data());
+    TString massPtHistTitle_CommonFullInvM_fzeroResonances = TString::Format("%s Invariant Mass vs. pT Common f0 Resonances", NameIngaAnc.Data());
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances = new TH2F(massPtHistName_CommonFullInvM_fzeroResonances, massPtHistTitle_CommonFullInvM_fzeroResonances, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances->GetXaxis()->SetTitle("pT (GeV/c)");
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
+
+    TString massPtHistName_CommonFullInvM_ftwoResonances = TString::Format("histInvariantMassPt_Common_FullMinv_ftwoResonances%s", NameIngaAnc.Data());
+    TString massPtHistTitle_CommonFullInvM_ftwoResonances = TString::Format("%s Invariant Mass vs. pT Common f2 Resonances", NameIngaAnc.Data());
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_ftwoResonances = new TH2F(massPtHistName_CommonFullInvM_ftwoResonances, massPtHistTitle_CommonFullInvM_ftwoResonances, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_ftwoResonances->GetXaxis()->SetTitle("pT (GeV/c)");
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_ftwoResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
+
+    TString massPtHistName_CommonFullInvM_otherResonances = TString::Format("histInvariantMassPt_Common_FullMinv_otherResonances%s", NameIngaAnc.Data());
+    TString massPtHistTitle_CommonFullInvM_otherResonances = TString::Format("%s Invariant Mass vs. pT Common other Resonances", NameIngaAnc.Data());
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_otherResonances = new TH2F(massPtHistName_CommonFullInvM_otherResonances, massPtHistTitle_CommonFullInvM_otherResonances, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_otherResonances->GetXaxis()->SetTitle("pT (GeV/c)");
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_otherResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
+
     TString massPtHistName_UncommonFullInvM = TString::Format("histInvariantMassPt_Uncommon_FullMinv%s", NameIngaAnc.Data());
     TString massPtHistTitle_UncommonFullInvM = TString::Format("%s Invariant Mass vs. pT Uncommon", NameIngaAnc.Data());
     fHist2D_massVSpt_RhoCandidateUncommonFullInvM = new TH2F(massPtHistName_UncommonFullInvM, massPtHistTitle_UncommonFullInvM, 500, 0.0, 5.0, 500, 0.0, 5.0);
     fHist2D_massVSpt_RhoCandidateUncommonFullInvM->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_massVSpt_RhoCandidateUncommonFullInvM->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
 
+    // Ancestor PDG resonance tracking
+    fHist2D_PDGvsMInv_CommonAncestorResonances = new TH2F("fHist2D_PDGvsMInv_CommonAncestorResonances", "fHist2D_PDGvsMInv_CommonAncestorResonances", 5001, -2500, 2500, 500, 0.0, 5.0);
+    fHist2D_PDGvsMInv_CommonAncestorResonances->GetXaxis()->SetTitle("PDG");
+    fHist2D_PDGvsMInv_CommonAncestorResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
+
     fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateCommon);
     fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateUncommon);
     fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateCommonFullInvM);
+    fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances);
+    fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
+    fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances);
+    fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances);
+    fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances);
+    fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateCommonFullInvM_ftwoResonances);
+    fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateCommonFullInvM_otherResonances);
     fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateUncommonFullInvM);
+    fHistListRhoCandidatesMCAncestors->Add(fHist2D_PDGvsMInv_CommonAncestorResonances);
 
     fOutput->Add(fHistListRhoCandidatesMCAncestors); // Add the list to your output list
   }
@@ -466,6 +537,8 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
   Particles_Combinations_LV.clear();
   static std::vector<TLorentzVector> AntiParticles_Combinations_LV; // pi- candidates combinations
   AntiParticles_Combinations_LV.clear();
+  static std::vector<int> Ancestor_Combinations; // Same or different Ancestor
+  Ancestor_Combinations.clear();
 
   static float massChargedPion =
       TDatabasePDG::Instance()->GetParticle(fPosPionCuts->GetPDGCode())->Mass(); // as usual to minimize uncert.
@@ -499,6 +572,7 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
   }
 
   // Construct the V0 for the Rho decay, just simple combinatorics for now
+  int counter = 0;
   for (const auto &posPion : Particles)
   { // Build charged pion pairs!
     for (const auto &negPion : AntiParticles)
@@ -506,11 +580,46 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
       fRhoParticle->Setv0(posPion, negPion, Event, false, false, true);
       if (fDoAncestors && fIsMC && AncestorIsSelected(fRhoParticle, fRhoCuts)) // Select everything as the RhoCandidate except the mass
       {
-        bool isCommon = CommonAncestors(posPion, negPion);
+        bool isCommon = CommonAncestors(posPion, negPion, Event, true);
+        Ancestor_Combinations.push_back(isCommon);
+
         // prepare plots for the pT vs minv
-        if (isCommon)
+        if (isCommon) // isCommon
         {
+          int pdg_resonance = -99999;
+          bool isResonance = CommonResonance(posPion, negPion, pdg_resonance, Event, true);
           FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM);
+          if (isResonance)
+          {
+            FillAncestorHist2D_PDGvsMinv(posPion, negPion, fHist2D_PDGvsMInv_CommonAncestorResonances, pdg_resonance);
+
+            // Use a switch statement to handle different values of pdg_resonance
+            switch (pdg_resonance)
+            {
+            case 311: // K0short
+              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
+              break;
+            case 113: // RhoMeson
+              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances);
+              break;
+            case 223: // OmegaMeson
+              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances);
+              break;
+            case 9000221: // F0Meson
+              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances);
+              break;
+            case 9000223: // F2Meson
+              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_ftwoResonances);
+              break;
+            default:
+              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_otherResonances);
+              break;
+            }
+          }
+          else
+          {
+            FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances);
+          }
         }
         else
         {
@@ -533,11 +642,67 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
           trackNeg.SetXYZM(negP[0], negP[1], negP[2], negPion.GetInvMass());
           Particles_Combinations_LV.push_back(trackPos);
           AntiParticles_Combinations_LV.push_back(trackNeg);
+          // temp move this here in order to check the resonances
+          /*if (fDoAncestors && fIsMC && AncestorIsSelected(fRhoParticle, fRhoCuts)) // Select everything as the RhoCandidate except the mass
+          {
+            bool isCommon = CommonAncestors(posPion, negPion, Event, true);
+            Ancestor_Combinations.push_back(isCommon);
+            // prepare plots for the pT vs minv
+            if (isCommon) // isCommon
+            {
+              int pdg_resonance = -99999;
+              bool isResonance = CommonResonance(posPion, negPion, pdg_resonance, Event, true);
+              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM);
+              if (isResonance)
+              {
+                FillAncestorHist2D_PDGvsMinv(posPion, negPion, fHist2D_PDGvsMInv_CommonAncestorResonances, pdg_resonance);
+
+                // std::cout << "pdg_resonance: " << pdg_resonance << std::endl;
+
+                // Use a switch statement to handle different values of pdg_resonance
+                switch (pdg_resonance)
+                {
+                case 310: // K0short
+                  FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
+                  break;
+                case 130: // K0Long
+                  FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
+                  break;
+                case 311: // K0
+                  FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
+                  break;
+                case 113: // RhoMeson
+                  FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances);
+                  break;
+                case 223: // OmegaMeson
+                  FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances);
+                  break;
+                case 9000221: // F0Meson
+                  FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances);
+                  break;
+                case 9000223: // F2Meson
+                  FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_ftwoResonances);
+                  break;
+                default:
+                  FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_otherResonances);
+                  break;
+                }
+              }
+              else
+              {
+                FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances);
+              }
+            }
+            else
+            {
+              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateUncommonFullInvM);
+            }
+          }*/
         }
         if (fDoAncestors && fIsMC)
         {
-          bool isCommon = CommonAncestors(posPion, negPion);
-          // prepare plots for the pT vs minv
+          bool isCommon = CommonAncestors(posPion, negPion, Event, true);
+          //  prepare plots for the pT vs minv
           if (isCommon)
           {
             FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommon);
@@ -576,6 +741,7 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
 
     for (const auto &V0Candidates : V0Particles)
     {
+
       TLorentzVector trackPos = Particles_Combinations_LV[counterLabels];
       TLorentzVector trackNeg = AntiParticles_Combinations_LV[counterLabels];
       TLorentzVector trackSum = trackPos + trackNeg;
@@ -588,17 +754,22 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
       {
         AliFatal("No MC Array found\n");
       }
-
-      // std::cout << "I am here 1" << std::endl;
-
       int noPart = fArrayMCAOD->GetEntriesFast();
 
-      // const int posID = V0.GetIDTracks().at(1); // this seems to be wrongly assigned need still to figure out why the class does not save daughter info
+      // const int posID = V0.GetIDTracks().at(1); // this seems to be wrongly assigned need still to figure out why the class does not save daughter info Update: The track object does not save this would require some changes for now use the construction below
       // const int negID = V0.GetIDTracks().at(0); // this seems to be wrongly assigned need still to figure out why the class does not save daughter info
 
       const int posID = (int)Particles_Combinations[counterLabels];     // this is a fix for the issue above
       const int negID = (int)AntiParticles_Combinations[counterLabels]; // this is a fix for the issue above
-      counterLabels++;                                                  // increase the counter for the combination
+
+      // only check those which have the same ancestor
+      bool sameAncestor = Ancestor_Combinations[counterLabels];
+      counterLabels++; // increase the counter for the combination
+
+      if (!sameAncestor)
+      {
+        continue;
+      }
 
       if (posID > noPart || negID > noPart)
       {
@@ -617,28 +788,24 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
 
       const float posDauPDG = mcPartPos->GetPdgCode();
       const float negDauPDG = mcPartNeg->GetPdgCode();
-      // std::cout << "I am here 2" << std::endl;
+
+      // Seperate here the common template according to all contributions?
 
       if (pdgIdealDaughters != std::abs(posDauPDG) || pdgIdealDaughters != std::abs(negDauPDG))
       {
         // track the PDG for the misidenified PDG1 vs PDG2
         // track their pTvsMass
-
-        // Fill histograms with some data (replace this with your data)
         fHist2D_pTvsmT_noPions->Fill(motherpT, daughterInvM);
         continue; // jump to next combination
       }
-      // std::cout << "I am here 3" << std::endl;
 
       if (!mcPartPos->IsPhysicalPrimary() || !mcPartNeg->IsPhysicalPrimary())
       {
         // track the PDG for the misidenified PDG1 vs PDG2
         // track their pTvsMass
-        // Fill histograms with some data (replace this with your data)
         fHist2D_pTvsmT_noPrims->Fill(motherpT, daughterInvM);
         continue; // jump to next combination
       }
-      // std::cout << "I am here 4" << std::endl;
 
       const int motherIDposDau = mcPartPos->GetMother();
       const int motherIDnegDau = mcPartNeg->GetMother();
@@ -674,7 +841,6 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
         fArmenterosNoCommonMother_alphaDaughBoth->Fill(alpha_NoCommonMother_pos, alpha_NoCommonMother_neg);
         continue;
       }
-      // std::cout << "I am here 5" << std::endl;
 
       const float negMotherPDG = mcPartNegMother->GetPdgCode();
       const float posMotherPDG = mcPartPosMother->GetPdgCode();
@@ -684,7 +850,7 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
         // track their pTvsMass
         // Fill histograms with some data (replace this with your data)
         fHist2D_pTvsmT_noRho->Fill(motherpT, daughterInvM);
-        fHist2D_pTvsmT_noRho_MC->Fill(mcPartPosMother->Pt(), mcPartPosMother->GetCalcMass()); // here the pos mohter was chosen could also take the neg one
+        fHist2D_pTvsmT_noRho_MC->Fill(mcPartPosMother->Pt(), mcPartPosMother->GetCalcMass()); // here the pos mother was chosen could also take the neg one
         fHist2D_PDGvsmT_noRho_MC->Fill(posMotherPDG, mcPartPosMother->GetCalcMass());
         fHist2D_PDGvsmT_noRho_MC->Fill(-negMotherPDG, mcPartNegMother->GetCalcMass());
         // track Armenteros plot
@@ -700,7 +866,6 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
         fArmenterosNoRhoTrue_Reconstr_alphaDaughBoth->Fill(alpha_pos, alpha_neg);
         continue;
       }
-      // std::cout << "I am here 6" << std::endl;
       //  At this point we have a proper rho candidate,
       //  now we can record the kinemtic distribution from the rhoMC instance reconstructed and MCtruth
 
@@ -944,9 +1109,10 @@ void AliAnalysisTaskFemtoDreamRho::SetPhiAtRadiusMCTruth(
 }
 
 bool AliAnalysisTaskFemtoDreamRho::CommonAncestors(const AliFemtoDreamBasePart &part1,
-                                                   const AliFemtoDreamBasePart &part2)
+                                                   const AliFemtoDreamBasePart &part2, AliAODEvent *Event, bool verbose)
 {
   bool IsCommon = false;
+
   if (part1.GetMotherID() == part2.GetMotherID())
   {
     IsCommon = true;
@@ -955,6 +1121,7 @@ bool AliAnalysisTaskFemtoDreamRho::CommonAncestors(const AliFemtoDreamBasePart &
   {
     IsCommon = false;
   }
+
   return IsCommon;
 }
 
@@ -974,6 +1141,23 @@ void AliAnalysisTaskFemtoDreamRho::FillAncestorHist2D_pTvsMinv(const AliFemtoDre
   float V0mInv = trackSum.Mag();
 
   hist2D->Fill(V0pt, V0mInv);
+}
+
+void AliAnalysisTaskFemtoDreamRho::FillAncestorHist2D_PDGvsMinv(const AliFemtoDreamBasePart &posDaughter,
+                                                                const AliFemtoDreamBasePart &negDaughter,
+                                                                TH2F *hist2D, int &PDG)
+{
+  float posP[3], negP[3];
+  posDaughter.GetMomentum().GetXYZ(posP);
+  negDaughter.GetMomentum().GetXYZ(negP);
+  TLorentzVector trackPos, trackNeg;
+  trackPos.SetXYZM(posP[0], posP[1], posP[2], posDaughter.GetInvMass());
+  trackNeg.SetXYZM(negP[0], negP[1], negP[2], negDaughter.GetInvMass());
+  TLorentzVector trackSum = trackPos + trackNeg;
+
+  float V0mInv = trackSum.Mag();
+
+  hist2D->Fill(PDG, V0mInv);
 }
 
 bool AliAnalysisTaskFemtoDreamRho::AncestorIsSelected(AliFemtoDreamv0 *v0, AliFemtoDreamv0Cuts *V0Selections)
@@ -1112,4 +1296,61 @@ void AliAnalysisTaskFemtoDreamRho::CalculateAlphaAndQT(const AliFemtoDreamBasePa
 
   // Calculate qT
   qT = posP.Perp(v0P);
+}
+
+bool AliAnalysisTaskFemtoDreamRho::CommonResonance(const AliFemtoDreamBasePart &part1, const AliFemtoDreamBasePart &part2, int &pdg_resonance, AliAODEvent *Event, bool verbose)
+{
+  bool IsResonance = true;
+
+  if (part1.GetMotherID() != part2.GetMotherID())
+  {
+    AliFatal("AliAnalysisTaskFemtoDreamRho::CommonResonance: The two particle should have a common mother");
+  }
+
+  // std::cout << "part1.GetMotherID(): " << part1.GetMotherID() << "    part2.GetMotherID(): " << part2.GetMotherID() << std::endl;
+  //  do the mc matching and figure out if the PDG codes of the mothers are the same as the GetMotherPDG
+  TClonesArray *fArrayMCAOD = dynamic_cast<TClonesArray *>(Event->FindListObject(
+      AliAODMCParticle::StdBranchName()));
+  if (!fArrayMCAOD)
+  {
+    AliFatal("No MC Array found\n");
+  }
+  // here we need to take the first MC mother of the particles.
+  AliAODMCParticle *mcPartPos = (AliAODMCParticle *)fArrayMCAOD->At(part1.GetID());
+  AliAODMCParticle *mcPartNeg = (AliAODMCParticle *)fArrayMCAOD->At(part2.GetID());
+  if (!mcPartPos || !mcPartNeg)
+  {
+    AliFatal("MC particle for daughters are NULL\n");
+  }
+  const float posDauPDG = mcPartPos->GetPdgCode();
+  const float negDauPDG = mcPartNeg->GetPdgCode();
+  if (211 != std::abs(posDauPDG) || 211 != std::abs(negDauPDG)) // must be pions
+  {
+    return false;
+  }
+  // if (!mcPartPos->IsPhysicalPrimary() || !mcPartNeg->IsPhysicalPrimary()) // has to be primary
+  // {
+  //    return false;
+  // }
+  if (mcPartPos->GetMother() != mcPartNeg->GetMother()) // make sure that we have the same mother resonance
+  {
+    return false;
+  }
+
+  AliAODMCParticle *mcPartPosMother = (AliAODMCParticle *)fArrayMCAOD->At(mcPartPos->GetMother());
+  AliAODMCParticle *mcPartNegMother = (AliAODMCParticle *)fArrayMCAOD->At(mcPartNeg->GetMother());
+  const float posMotherPDG = mcPartPosMother->GetPdgCode();
+  const float negMotherPDG = mcPartNegMother->GetPdgCode();
+
+  // std::cout << "mcPartPos->GetPdgCode(): " << posDauPDG << "    mcPartNeg->GetPdgCode(): " << negDauPDG << std::endl;
+  // std::cout << "part1.GetMotherPDG(): " << part1.GetMotherPDG() << "    part2.GetMotherPDG(): " << part2.GetMotherPDG() << std::endl;
+
+  if (posMotherPDG != negMotherPDG)
+  { // the ID is the same, but the PDG different -> Two tracks from same hard scattering but different resonances.
+    return false;
+  }
+
+  pdg_resonance = posMotherPDG; // keep track of the resonances
+
+  return IsResonance;
 }
