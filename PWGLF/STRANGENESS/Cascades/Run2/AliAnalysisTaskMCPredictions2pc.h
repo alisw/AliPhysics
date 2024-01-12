@@ -134,6 +134,8 @@ private:
   Bool_t fkVerboseMode;
   Bool_t fkDoEventMixing;
 
+  TH1D *fHistTriggerParticleEta; //!
+  TH1D *fHistK0ShortEta; //!
   TH2D *fHistEtaVsPtTrigger; //!
   TH3D *fHist3dTrigger; //!
   TH3D *fHist3dAssoPions; //!
