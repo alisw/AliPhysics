@@ -41,7 +41,7 @@ AliAnalysisTaskParticleEffWRZ *AddTaskEfficiencyWRZ(TString containerName="femto
 //   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  AliAnalysisTaskParticleEffWRZ *taskEfficiency = new AliAnalysisTaskParticleEffWRZ("EfficiencyTask", cens);
+  AliAnalysisTaskParticleEffWRZ *taskEfficiency = new AliAnalysisTaskParticleEffWRZ("EfficiencyTask", cen);
   mgr->AddTask(taskEfficiency);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
