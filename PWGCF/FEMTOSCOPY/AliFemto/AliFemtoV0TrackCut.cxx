@@ -384,6 +384,13 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
   if (aV0->DecayLengthV0() > fMaxDecayLength)
     return false;
 
+  // armenteros podolanski cut
+  Double_t armpt = aV0->PtArmV0();
+  Double_t alpha = aV0->AlphaV0();
+    
+  if (armpt < 0.2*fabs(alpha)) 
+    return false;
+
   //transverse decay vertex
   //TO BE IMPLEMENTED (maybe in future)
 
