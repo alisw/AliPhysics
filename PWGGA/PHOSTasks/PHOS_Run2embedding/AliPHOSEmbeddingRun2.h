@@ -77,7 +77,7 @@ class AliPHOSEmbeddingRun2 : public AliAnalysisTaskSE
   bool fAddNoiseMC = false;
   float fNoiseMC = 0.001;
   float fZScut = 0.;
-  float fSelEventsPart = 0.2; // only fSelEventsPart will pass selection, simulate smaller number of events
+  float fSelEventsPart = 0.3; // only fSelEventsPart will pass selection, simulate smaller number of events
 
   TChain* fAODChain;    //! Signal
   AliAODEvent* fSignal; //!
@@ -115,8 +115,9 @@ class AliPHOSEmbeddingRun2 : public AliAnalysisTaskSE
   int fMF;                                 //! Magnetic field
   bool fInitialized;                       //!
   TVector3 fVtx;                           //! vertex in current event
+  TBits     fSignalUsed;                   //! mark used signal events
 
-  ClassDef(AliPHOSEmbeddingRun2, 7); // PHOS analysis task
+  ClassDef(AliPHOSEmbeddingRun2, 8); // PHOS analysis task
 };
 
 #endif
