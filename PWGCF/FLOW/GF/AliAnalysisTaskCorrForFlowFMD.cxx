@@ -140,6 +140,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fNzVtxBins(10),
     fNCentBins(15),
     fUseFMDcorrection(kFALSE),
+    fFMD_correctoion(0),								 
     fFMD_correctoion_file(""),
     fMergingCut(0.0)
 {}
@@ -263,6 +264,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fNzVtxBins(10),
     fNCentBins(15),
     fUseFMDcorrection(kFALSE),
+    fFMD_correctoion(0),								 
     fFMD_correctoion_file(""),
     fMergingCut(0.0)
 {
@@ -466,16 +468,23 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
     }
 
 
-    if(fUseFMDcorrection)
+if(fUseFMDcorrection)
    {
    if (TString(fFMD_correctoion_file).BeginsWith("alien:"))
     TGrid::Connect("alien:");
-   TFile *fileT=TFile::Open(fFMD_correctoion_file);
+    TFile *fileT=TFile::Open(fFMD_correctoion_file);
+    if(!fileT) { AliError("FMD correction file not loaded!"); return; }
 
-  // TFile *f = TFile::Open("FMD_correction_file.root");
-  TDirectory * d1 =(TDirectory*) fileT->Get("Forward");
-  TF1 *fFMD_correctoion = (TF1 *) d1->Get("param");
-  fileT->Close();
+   TDirectory * d1 =(TDirectory*) fileT->Get("Forward");
+   if(!d1) { AliError("FMD correction directory not loaded!"); return; }
+
+     fFMD_correctoion = (TF1 *) d1->Get("param");
+     if(!fFMD_correctoion) { AliError("FMD correction TF1 not loaded!"); return; }
+
+     fFMD_correctoion->SetDirectory(0);
+
+
+      fileT->Close();
 
    }
 
