@@ -481,9 +481,6 @@ if(fUseFMDcorrection)
      fFMD_correctoion = (TF1 *) d1->Get("param");
      if(!fFMD_correctoion) { AliError("FMD correction TF1 not loaded!"); return; }
 
-     fFMD_correctoion->SetDirectory(0);
-
-
       fileT->Close();
 
    }
