@@ -89,6 +89,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetOnTheFly(bool newval) {fOnTheFly = newval;}
   double getGeneratorCentrality();
   void SetOTFGenerator(TString gen) { fGenerator = gen; }
+  void SetUseIP(bool newval) { fUseIP = newval;}
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -103,6 +104,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Bool_t fDisablePileup;
   Bool_t fUseOldPileup;
   Bool_t fCentSelectForMptNch;
+  Bool_t fUseIP;
   TString fDCAxyFunctionalForm;
   Bool_t fOnTheFly;
   TString fGenerator;
