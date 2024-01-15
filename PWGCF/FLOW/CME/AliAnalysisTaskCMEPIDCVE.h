@@ -65,6 +65,7 @@ class AliAnalysisTaskCMEPIDCVE : public AliAnalysisTaskSE
   bool LoopV0s();
   bool PairTrkTrk();
   bool PairV0Trk();
+  bool PairV0V0();
 
   ////////////////////////
   // Functional function
@@ -87,6 +88,7 @@ class AliAnalysisTaskCMEPIDCVE : public AliAnalysisTaskSE
   ////////////////////////
   // input variables
   ////////////////////////
+  double fMASS_LAMBDA = 1.115683;
   // Switch
   bool isTightPileUp;
 
@@ -226,6 +228,15 @@ class AliAnalysisTaskCMEPIDCVE : public AliAnalysisTaskSE
   TProfile* pGammaSS_LambdaProton;
   TProfile* pGammaOS_LambdaPion;
   TProfile* pGammaSS_LambdaPion;
+
+  TProfile* pDeltaOS_LambdaLambda;
+  TProfile* pDeltaSS_LambdaLambda;
+  TProfile* pGammaOS_LambdaLambda;
+  TProfile* pGammaSS_LambdaLambda;
+
+  TProfile3D* p3DeltaCentMassMass[3];
+  TProfile3D* p3GammaCentMassMass[3];
+  TH3D* h3LambdaCentMassMass[3];
 
   AliAnalysisTaskCMEPIDCVE(const AliAnalysisTaskCMEPIDCVE&);
   AliAnalysisTaskCMEPIDCVE& operator=(const AliAnalysisTaskCMEPIDCVE&);
