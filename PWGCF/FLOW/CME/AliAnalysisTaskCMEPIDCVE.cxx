@@ -79,6 +79,7 @@ ClassImp(AliAnalysisTaskCMEPIDCVE);
 //---------------------------------------------------
 AliAnalysisTaskCMEPIDCVE::AliAnalysisTaskCMEPIDCVE() :
   AliAnalysisTaskSE(),
+  fMASS_LAMBDA(1.115683),
   isTightPileUp(false),
   fTrigger("kINT7"),
   fPeriod("LHC18q"),
@@ -164,11 +165,19 @@ AliAnalysisTaskCMEPIDCVE::AliAnalysisTaskCMEPIDCVE() :
   pGammaSS_LambdaProton = nullptr;
   pGammaOS_LambdaPion = nullptr;
   pGammaSS_LambdaPion = nullptr;
+  pDeltaOS_LambdaLambda = nullptr;
+  pDeltaSS_LambdaLambda = nullptr;
+  pGammaOS_LambdaLambda = nullptr;
+  pGammaSS_LambdaLambda = nullptr;
+  for (int i = 0; i < 3; i++) p3DeltaCentMassMass[i] = nullptr;
+  for (int i = 0; i < 3; i++) p3GammaCentMassMass[i] = nullptr;
+  for (int i = 0; i < 3; i++) h3LambdaCentMassMass[i] = nullptr;
 }
 
 //---------------------------------------------------
 AliAnalysisTaskCMEPIDCVE::AliAnalysisTaskCMEPIDCVE(const char *name) :
   AliAnalysisTaskSE(name),
+  fMASS_LAMBDA(1.115683),
   isTightPileUp(false),
   fTrigger("kINT7"),
   fPeriod("LHC18q"),
@@ -254,6 +263,13 @@ AliAnalysisTaskCMEPIDCVE::AliAnalysisTaskCMEPIDCVE(const char *name) :
   pGammaSS_LambdaProton = nullptr;
   pGammaOS_LambdaPion = nullptr;
   pGammaSS_LambdaPion = nullptr;
+  pDeltaOS_LambdaLambda = nullptr;
+  pDeltaSS_LambdaLambda = nullptr;
+  pGammaOS_LambdaLambda = nullptr;
+  pGammaSS_LambdaLambda = nullptr;
+  for (int i = 0; i < 3; i++) p3DeltaCentMassMass[i] = nullptr;
+  for (int i = 0; i < 3; i++) p3GammaCentMassMass[i] = nullptr;
+  for (int i = 0; i < 3; i++) h3LambdaCentMassMass[i] = nullptr;
 
   DefineInput(0,TChain::Class());
   DefineOutput(1,TList::Class());
@@ -441,6 +457,23 @@ void AliAnalysisTaskCMEPIDCVE::UserCreateOutputObjects()
   listResults->Add(pGammaOS_LambdaPion);
   listResults->Add(pGammaSS_LambdaPion);
 
+  pDeltaOS_LambdaLambda = new TProfile("pDeltaOS_LambdaLambda", ";centrality;#delta_{OS}", 7, 0, 70);
+  pDeltaSS_LambdaLambda = new TProfile("pDeltaSS_LambdaLambda", ";centrality;#delta_{SS}", 7, 0, 70);
+  pGammaOS_LambdaLambda = new TProfile("pGammaOS_LambdaLambda", ";centrality;#gamma_{OS}", 7, 0, 70);
+  pGammaSS_LambdaLambda = new TProfile("pGammaSS_LambdaLambda", ";centrality;#gamma_{SS}", 7, 0, 70);
+  listResults->Add(pDeltaOS_LambdaLambda);
+  listResults->Add(pDeltaSS_LambdaLambda);
+  listResults->Add(pGammaOS_LambdaLambda);
+  listResults->Add(pGammaSS_LambdaLambda);
+
+  //obv - (cent - mass - mass)
+  for (int i = 0; i < 3; i++) p3DeltaCentMassMass[i] = new TProfile3D(Form("p3DeltaCentMassMass_%i",i), ";centrality;mass_{p#pi};mass_{p#pi}", 7, 0, 70, 15, fMASS_LAMBDA - 0.02, fMASS_LAMBDA + 0.02, 15, fMASS_LAMBDA - 0.02, fMASS_LAMBDA + 0.02);
+  for (int i = 0; i < 3; i++) p3GammaCentMassMass[i] = new TProfile3D(Form("p3GammaCentMassMass_%i",i), ";centrality;mass_{p#pi};mass_{p#pi}", 7, 0, 70, 15, fMASS_LAMBDA - 0.02, fMASS_LAMBDA + 0.02, 15, fMASS_LAMBDA - 0.02, fMASS_LAMBDA + 0.02);
+  for (int i = 0; i < 3; i++) h3LambdaCentMassMass[i] = new TH3D(Form("h3LambdaCentMassMass_%i",i), ";centrality;mass_{p#pi};mass_{#pi#pi}", 7, 0, 70, 15, fMASS_LAMBDA - 0.02, fMASS_LAMBDA + 0.02, 15, fMASS_LAMBDA - 0.02, fMASS_LAMBDA + 0.02);
+  for (int i = 0; i < 3; i++) listResults->Add(p3DeltaCentMassMass[i]);
+  for (int i = 0; i < 3; i++) listResults->Add(p3GammaCentMassMass[i]);
+  for (int i = 0; i < 3; i++) listResults->Add(h3LambdaCentMassMass[i]);
+
   PostData(2,listResults);
   if (fDebug) Printf("Post fResultsList Data Success!");
 }
@@ -581,11 +614,14 @@ void AliAnalysisTaskCMEPIDCVE::UserExec(Option_t *)
   // Pair
   //----------------------------
   // if (!PairTrkTrk()) return;
-  // hEvtCount->Fill("Pair Tracks",1);
+  // hEvtCount->Fill("Pair Trk-Trk",1);
   // if (fDebug) Printf("Pair V0 & Trk done!");
-  if (!PairV0Trk()) return;
-  hEvtCount->Fill("Pair V0s",1);
-  if (fDebug) Printf("Pair V0 & Trk done!");
+  // if (!PairV0Trk()) return;
+  // hEvtCount->Fill("Pair V0-Trk",1);
+  // if (fDebug) Printf("Pair V0 & Trk done!");
+  if (!PairV0V0()) return;
+  hEvtCount->Fill("Pair V0-V0",1);
+  if (fDebug) Printf("Pair V0 & V0 done!");
   //------------------
   // Post output data.
   //------------------
@@ -926,7 +962,7 @@ bool AliAnalysisTaskCMEPIDCVE::LoopV0s()
     double mass = -999;
     if (pid > 0) mass = v0->MassLambda();
     else mass = v0->MassAntiLambda();
-    if( mass < 1.115683 - 0.001 || mass > 1.115683 + 0.001) continue;
+    if( mass < fMASS_LAMBDA - 0.02 || mass > fMASS_LAMBDA + 0.02) continue;
   
     double phi = v0->Phi();
     //QA
@@ -1118,4 +1154,60 @@ inline double AliAnalysisTaskCMEPIDCVE::GetEventPlane(double qx, double qy, doub
   double psi = (1./harmonic)*TMath::ATan2(qy,qx);
   if (psi < 0) return psi += TMath::TwoPi()/harmonic;
   else return psi;
+}
+
+//---------------------------------------------------
+
+bool AliAnalysisTaskCMEPIDCVE::PairV0V0()
+{
+  for (auto lambda_1 : vecLambda) {
+    double pt_1 = lambda_1.first->Pt();
+    double eta_1 = lambda_1.first->Eta();
+    double phi_1 = lambda_1.first->Phi();
+    int pid_1 = lambda_1.second;
+
+    int id_daughter_1 = lambda_1.first->GetPosID();
+    int id_daughter_2 = lambda_1.first->GetNegID();
+
+    for (auto lambda_2 : vecLambda) {
+      double pt_2 = lambda_2.first->Pt();
+      double eta_2 = lambda_2.first->Eta();
+      double phi_2 = lambda_2.first->Phi();
+      int pid_2 = lambda_2.second;
+
+      int id_daughter_3 = lambda_2.first->GetPosID();
+      int id_daughter_4 = lambda_2.first->GetNegID();
+
+      if (id_daughter_1 == id_daughter_3 || id_daughter_1 == id_daughter_4) continue;
+      if (id_daughter_2 == id_daughter_3 || id_daughter_2 == id_daughter_4) continue;
+
+      double delta = cos(phi_1 - phi_2);
+      double psi = GetTPCPlaneNoAutoCorr({id_daughter_1, id_daughter_2, id_daughter_3, id_daughter_4});
+      if (isnan(psi)) continue;
+      double gamma = cos(phi_1 + phi_2 - 2 * psi);
+
+      if (pid_2 * pid_1 < 0) {
+        pDeltaOS_LambdaLambda->Fill(fCent,delta);
+        pGammaOS_LambdaLambda->Fill(fCent,gamma);
+      } else if (pid_2 * pid_1 > 0) {
+        pDeltaSS_LambdaLambda->Fill(fCent,delta);
+        pGammaSS_LambdaLambda->Fill(fCent,gamma);
+      } else continue;
+
+      if (pid_1 == 3122 && pid_2 == 3122) {
+        p3DeltaCentMassMass[0] -> Fill(fCent,lambda_1.first->MassLambda(),lambda_2.first->MassLambda(),delta);
+        p3GammaCentMassMass[0] -> Fill(fCent,lambda_1.first->MassLambda(),lambda_2.first->MassLambda(),gamma);
+        h3LambdaCentMassMass[0] -> Fill(fCent,lambda_1.first->MassLambda(),lambda_2.first->MassLambda());
+      } else if (pid_1 == 3122 && pid_2 == -3122) {
+        p3DeltaCentMassMass[1] -> Fill(fCent,lambda_1.first->MassLambda(),lambda_2.first->MassAntiLambda(),delta);
+        p3GammaCentMassMass[1] -> Fill(fCent,lambda_1.first->MassLambda(),lambda_2.first->MassAntiLambda(),gamma);
+        h3LambdaCentMassMass[1] -> Fill(fCent,lambda_1.first->MassLambda(),lambda_2.first->MassAntiLambda());
+      } else if (pid_1 == -3122 && pid_2 == -3122) {
+        p3DeltaCentMassMass[2] -> Fill(fCent,lambda_1.first->MassAntiLambda(),lambda_2.first->MassAntiLambda(),delta);
+        p3GammaCentMassMass[2] -> Fill(fCent,lambda_1.first->MassAntiLambda(),lambda_2.first->MassAntiLambda(),gamma);
+        h3LambdaCentMassMass[2] -> Fill(fCent,lambda_1.first->MassAntiLambda(),lambda_2.first->MassAntiLambda());
+      }
+    }
+  }
+  return true;
 }
