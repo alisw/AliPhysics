@@ -1,5 +1,5 @@
-//Task for EEC in pp collisions
-//Code inherited and modified from AliAnalysisTaskJetsEEC.cxx authored by Leticia Cunqueiro and Laura Havener
+//Task for ENC in pp collisions
+//Code inherited and modified from AliAnalysisTaskLundPlane.cxx authored by Leticia Cunqueiro and Laura Havener
 //Authors: Ananya Rai, Laura Havener
 #include "AliAODMCHeader.h"
 #include "AliAnalysisManager.h"
@@ -60,7 +60,7 @@ fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.02), fDerivSubtrOrder(0),
-fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(1), fMatchJetTrack(1), fMaxPtTrack(0), fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0), R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0),pt_tru1(0), pt_tru2(0)
+fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(1), fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(0), fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0), R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0),pt_tru1(0), pt_tru2(0), eec_Mm(0), eec_mm(0), e3c_MMm(0), e3c_Mmm(0), e3c_mmm(0), eec_Mf(0), eec_ff(0), e3c_MMf(0), e3c_Mff(0), e3c_fff(0), eec_matched_det(0), eec_matched_tru(0), e3c_matched_det(0), e3c_matched_tru(0)
 {
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
@@ -76,7 +76,7 @@ fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.02), fDerivSubtrOrder(0),
-fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(1), fMatchJetTrack(1), fMaxPtTrack(0), fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0),R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0), pt_tru1(0), pt_tru2(0)
+fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(1), fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(0), fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0), R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0),pt_tru1(0), pt_tru2(0), eec_Mm(0), eec_mm(0), e3c_MMm(0), e3c_Mmm(0), e3c_mmm(0), eec_Mf(0), eec_ff(0), e3c_MMf(0), e3c_Mff(0), e3c_fff(0), eec_matched_det(0), eec_matched_tru(0), e3c_matched_det(0), e3c_matched_tru(0)
 
 {
   SetMakeGeneralHistograms(kTRUE);
@@ -222,12 +222,14 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     fGeneratorLevel = GetMCParticleContainer(fGeneratorLevelName);
     
     R_match_eec = new TH2D("R_match_eec", "Matched Track R", 100, new_bins, 100, new_bins);
+    R_match_eec->RebinX(2);
     fOutput->Add(R_match_eec);
     
     wt_match_eec = new TH2D("wt_match_eec", "Matched Track Wt", 200, 0 ,1 , 200, 0, 1);
     fOutput->Add(wt_match_eec);
     
     R_match_e3c = new TH2D("R_match_e3c", "Matched Track R e3c", 100, new_bins, 100, new_bins);
+    R_match_e3c->RebinX(2);
     fOutput->Add(R_match_e3c);
     
     wt_match_e3c = new TH2D("wt_match_e3c", "Matched Track Wt e3c", 200, 0 ,1 , 200, 0, 1);
@@ -244,7 +246,64 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     
     pt_tru2 = new TH1D("pt_tru2","pt tru2",1000, 0, 200);
     fOutput->Add(pt_tru2);
-//    N_match =
+    
+    //Track matching ENC histograms
+    eec_Mm = new TH2D("EEC_Mm", "EEC match miss tracks", 100, new_bins, 21, 15, 120);
+    eec_Mm->RebinX(2);
+    fOutput->Add(eec_Mm);
+    
+    eec_mm = new TH2D("EEC_mm", "EEC miss miss tracks", 100, new_bins, 21, 15, 120);
+    eec_mm->RebinX(2);
+    fOutput->Add(eec_mm);
+    
+    e3c_MMm = new TH2D("E3C_MMm", "E3C match match miss tracks", 100, new_bins, 21, 15, 120);
+    e3c_MMm->RebinX(2);
+    fOutput->Add(e3c_MMm);
+    
+    e3c_Mmm = new TH2D("E3C_Mmm", "E3C match miss miss tracks", 100, new_bins, 21, 15, 120);
+    e3c_Mmm->RebinX(2);
+    fOutput->Add(e3c_Mmm);
+    
+    e3c_mmm = new TH2D("E3C_mmm", "E3C miss miss miss tracks", 100, new_bins, 21, 15, 120);
+    e3c_mmm->RebinX(2);
+    fOutput->Add(e3c_mmm);
+  
+    eec_Mf = new TH2D("EEC_Mf", "EEC match fake tracks", 100, new_bins, 21, 15, 120);
+    eec_Mf->RebinX(2);
+    fOutput->Add(eec_Mf);
+    
+    eec_ff = new TH2D("EEC_ff", "EEC fake fake tracks", 100, new_bins, 21, 15, 120);
+    eec_ff->RebinX(2);
+    fOutput->Add(eec_ff);
+    
+    e3c_MMf = new TH2D("E3C_MMf", "E3C match match fake tracks", 100, new_bins, 21, 15, 120);
+    e3c_MMf->RebinX(2);
+    fOutput->Add(e3c_MMf);
+    
+    e3c_Mff = new TH2D("E3C_Mff", "E3C match fake fake tracks", 100, new_bins, 21, 15, 120);
+    e3c_Mff->RebinX(2);
+    fOutput->Add(e3c_Mff);
+    
+    e3c_fff = new TH2D("E3C_fff", "E3C fake fake fake tracks", 100, new_bins, 21, 15, 120);
+    e3c_fff->RebinX(2);
+    fOutput->Add(e3c_fff);
+    
+    eec_matched_det = new TH2D("EEC_MM_det", "EEC match match det tracks", 100, new_bins, 21, 15, 120);
+    eec_matched_det->RebinX(2);
+    fOutput->Add(eec_matched_det);
+  
+    eec_matched_tru = new TH2D("EEC_MM_tru", "EEC match match tru tracks", 100, new_bins, 21, 15, 120);
+    eec_matched_tru->RebinX(2);
+    fOutput->Add(eec_matched_tru);
+    
+    e3c_matched_det = new TH2D("E3C_MMM_det", "E3C match match match det tracks", 100, new_bins, 21, 15, 120);
+    e3c_matched_det->RebinX(2);
+    fOutput->Add(e3c_matched_det);
+  
+    e3c_matched_tru = new TH2D("E3C_MMM_tru", "E3C match match match tru tracks", 100, new_bins, 21, 15, 120);
+    e3c_matched_tru->RebinX(2);
+    fOutput->Add(e3c_matched_tru);
+  
     PostData(1, fOutput);
 
 
@@ -446,7 +505,7 @@ Bool_t AliAnalysisTaskJetsEEC::FillHistograms()
                 }
             }
             
-            //These are options for pb analysis
+            //These are options for pb-pb analysis
             Double_t ptSubtracted = 0;
             if (fJetShapeSub == kConstSub || fJetShapeSub == kEventSub) ptSubtracted = jet1->Pt();
             else if (fJetShapeSub == kDerivSub)
@@ -713,21 +772,21 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
     
     if(fMatchJetTrack==1)
     {
-        for(int j=0; j<int(fConstituents.size()); j++)
+        for(int j=0; j<int(fConstituents.size()); j++)//det level loop
         {
             int j_index = fConstituents[j].user_index();
             
-            for(int i=0; i<int(fConstituents_tru.size()); i++)
+            for(int i=0; i<int(fConstituents_tru.size()); i++)//tru level loop
             {
                 int i_index = fConstituents_tru[i].user_index();
                 
                 if(i_index == j_index) //does the det particle have a matching truth particle
                 {
-                    for(int s=0; s<j; s++)
+                    for(int s=0; s<j; s++)//det level loop
                     {
                         int s_index = fConstituents[s].user_index();
                         
-                        for(int l=0; l<int(fConstituents_tru.size()); l++)
+                        for(int l=0; l<i; l++)//tru level loop
                         {
                             int l_index = fConstituents_tru[l].user_index();
                             if(l_index == s_index && l_index != j_index) //does the det particle have a matching truth particle & is it a unique match
@@ -742,8 +801,14 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                                 double R_jss_det = fConstituents[j].delta_R(fConstituents[s]);
                                 double R_jss_tru = fConstituents_tru[i].delta_R(fConstituents_tru[l]);
                                 
+                                eec_matched_det->Fill(R_det,jet_pt,ee_det);
+                                eec_matched_tru->Fill(R_tru,jet_pt_tru,ee_tru);
+                                
                                 R_match_eec->Fill(R_tru,R_det);
                                 wt_match_eec->Fill(ee_tru,ee_det);
+                                
+                                e3c_matched_det->Fill(R_jss_det,jet_pt,ee_jss_det);
+                                e3c_matched_tru->Fill(R_jss_tru,jet_pt_tru,ee_jss_tru);
                                 
                                 R_match_e3c->Fill(R_jss_tru,R_jss_det);
                                 wt_match_e3c->Fill(ee_jss_tru,ee_jss_det);
@@ -778,6 +843,9 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                                             R_dist_tru.push_back(deltaR_sm_tru);
                                             int max_R_tru = distance(R_dist_tru.begin(), max_element(R_dist_tru.begin(), R_dist_tru.end()));
                                             
+                                            e3c_matched_det->Fill(R_dist_det[max_R_det],jet_pt,ee_jsm_det);
+                                            e3c_matched_tru->Fill(R_dist_tru[max_R_tru],jet_pt_tru,ee_jsm_tru);
+                                            
                                             R_match_e3c->Fill(R_dist_tru[max_R_tru],R_dist_det[max_R_det]);
                                             wt_match_e3c->Fill(ee_jsm_tru,ee_jsm_det);
                                             
@@ -795,6 +863,283 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
         }
     }
     
+    std::vector<int> det_index,tru_index;
+    std::vector<fastjet::PseudoJet> matchtracks_det, matchtracks_tru, misstracks ,faketracks;
+    
+    for(int j=0; j<int(fConstituents.size()); j++)
+    {
+        det_index.push_back(fConstituents[j].user_index());
+    }
+    for(int i=0; i<int(fConstituents_tru.size()); i++)
+    {
+        tru_index.push_back(fConstituents_tru[i].user_index());
+    }
+    
+    for(int j = 0;j<int(fConstituents.size()); j++)
+    {
+        int valueToCheck = fConstituents[j].user_index();
+        auto it = std::find(tru_index.begin(), tru_index.end(), valueToCheck);
+        if (it != tru_index.end()){matchtracks_det.push_back(fConstituents[j]);}
+        else {faketracks.push_back(fConstituents[j]);}
+    }
+    
+    for(int i=0; i<int(fConstituents_tru.size()); i++)
+    {
+        int valueToCheck = fConstituents_tru[i].user_index();
+        auto it = std::find(det_index.begin(), det_index.end(), valueToCheck);
+        if (it != det_index.end()){matchtracks_tru.push_back(fConstituents_tru[i]);}
+        else {misstracks.push_back(fConstituents_tru[i]);}
+    }
+   
+    if(fMissJetTrack==1) //compute (match,miss) & (miss,miss) for eec and (match,match,miss), (match,miss,miss) & (miss,miss,miss) for the E3C
+    {
+        for (int j = 0; j < int(matchtracks_tru.size()); j++) // match
+        {
+            for (int s = 0; s < int(misstracks.size()); s++) // miss
+            {
+                double ee_js_tru = matchtracks_tru[j].pt() * misstracks[s].pt() / (pow(jet_pt_tru, 2));
+                double R_js_tru = matchtracks_tru[j].delta_R(misstracks[s]);
+                
+                // Fill histograms for match, miss
+                eec_Mm->Fill(R_js_tru, jet_pt_tru, ee_js_tru);
+                
+                for (int m = 0; m < int(misstracks.size()); m++) // miss
+                {
+                    if (j != 0)
+                        break;
+                    
+                    if (m == s)
+                        continue;
+                    
+                    double ee_jm_tru = matchtracks_tru[j].pt() * misstracks[m].pt() / (pow(jet_pt_tru, 2));
+                    double R_jm_tru = matchtracks_tru[j].delta_R(misstracks[m]);
+                    
+                    // Fill histograms for miss, miss
+                    eec_mm->Fill(R_jm_tru, jet_pt_tru, ee_jm_tru);
+                    
+                    double ee_jsm_tru = matchtracks_tru[j].pt() * misstracks[s].pt() * misstracks[m].pt() / (pow(jet_pt_tru, 3));
+                    double deltaR_js_tru = matchtracks_tru[j].delta_R(misstracks[s]);
+                    double deltaR_jm_tru = matchtracks_tru[j].delta_R(misstracks[m]);
+                    double deltaR_sm_tru = misstracks[s].delta_R(misstracks[m]);
+                    
+                    std::vector<double> R_dist_tru_Mmm = {deltaR_js_tru, deltaR_jm_tru, deltaR_sm_tru};
+                    int max_R_index_tru = std::distance(R_dist_tru_Mmm.begin(), std::max_element(R_dist_tru_Mmm.begin(), R_dist_tru_Mmm.end()));
+                    
+                    // Fill histograms for match miss miss
+                    e3c_Mmm->Fill(R_dist_tru_Mmm[max_R_index_tru], jet_pt_tru, ee_jsm_tru);
+                    
+                    for (int n = 0; n < int(misstracks.size()); n++) // miss
+                    {
+                        if (j != 0)
+                            break;
+                        
+                        if (n == m || n == s)
+                            continue;
+                        
+                        double ee_snm_tru = misstracks[n].pt() * misstracks[s].pt() * misstracks[m].pt() / (pow(jet_pt_tru, 3));
+                        double deltaR_nm_tru = misstracks[n].delta_R(misstracks[m]);
+                        double deltaR_sn_tru = misstracks[s].delta_R(misstracks[n]);
+                        double deltaR_sm_tru = misstracks[s].delta_R(misstracks[m]);
+                        
+                        std::vector<double> R_dist_tru_mmm = {deltaR_nm_tru, deltaR_sn_tru, deltaR_sm_tru};
+                        int max_R_index_tru = std::distance(R_dist_tru_mmm.begin(), std::max_element(R_dist_tru_mmm.begin(), R_dist_tru_mmm.end()));
+                        
+                        // Fill histograms for miss miss miss
+                        e3c_mmm->Fill(R_dist_tru_mmm[max_R_index_tru], jet_pt_tru, ee_snm_tru);
+                    }
+                }
+            }
+            
+            for(int k=0; k<int(matchtracks_tru.size()); k++) //match match miss
+            {
+                if(k==j) continue;
+                for(int l=0; l<int(misstracks.size()); l++) //miss
+                {
+                    double ee_jkl_tru = matchtracks_tru[j].pt()*matchtracks_tru[k].pt()*misstracks[l].pt()/(pow(jet_pt_tru,3));
+                    double deltaR_jk_tru = matchtracks_tru[j].delta_R(matchtracks_tru[k]);
+                    double deltaR_jl_tru = matchtracks_tru[j].delta_R(misstracks[l]);
+                    double deltaR_kl_tru = matchtracks_tru[k].delta_R(misstracks[l]);
+                    std::vector<double> R_dist_tru_MMm = {deltaR_jk_tru,deltaR_jl_tru,deltaR_kl_tru};
+                    
+                    int max_R_tru = distance(R_dist_tru_MMm.begin(), max_element(R_dist_tru_MMm.begin(), R_dist_tru_MMm.end()));
+                    
+                    e3c_MMm->Fill(R_dist_tru_MMm[max_R_tru],jet_pt_tru,ee_jkl_tru);
+                    
+                    R_dist_tru_MMm.clear();
+                }
+            }
+        }
+    }
+    
+    if(fFakeJetTrack==1)
+    {
+        for (int j = 0; j < int(matchtracks_tru.size()); j++) // match
+        {
+            for (int s = 0; s < int(faketracks.size()); s++) // fake
+            {
+                double ee_js_tru = matchtracks_tru[j].pt() * faketracks[s].pt() / (pow(jet_pt_tru, 2));
+                double R_js_tru = matchtracks_tru[j].delta_R(faketracks[s]);
+                
+                // Fill histograms for match, fake
+                eec_Mf->Fill(R_js_tru, jet_pt_tru, ee_js_tru);
+                
+                for (int m = 0; m < int(faketracks.size()); m++) // fake
+                {
+                    if (j != 0)
+                        break;
+                    
+                    if (m == s)
+                        continue;
+                    
+                    double ee_jm_tru = matchtracks_tru[j].pt() * faketracks[m].pt() / (pow(jet_pt_tru, 2));
+                    double R_jm_tru = matchtracks_tru[j].delta_R(faketracks[m]);
+                    
+                    // Fill histograms for fake fake
+                    eec_ff->Fill(R_jm_tru, jet_pt_tru, ee_jm_tru);
+                    
+                    double ee_jsm_tru = matchtracks_tru[j].pt() * faketracks[s].pt() * faketracks[m].pt() / (pow(jet_pt_tru, 3));
+                    double deltaR_js_tru = matchtracks_tru[j].delta_R(faketracks[s]);
+                    double deltaR_jm_tru = matchtracks_tru[j].delta_R(faketracks[m]);
+                    double deltaR_sm_tru = faketracks[s].delta_R(faketracks[m]);
+                    
+                    std::vector<double> R_dist_tru_Mff = {deltaR_js_tru, deltaR_jm_tru, deltaR_sm_tru};
+                    int max_R_index_tru = std::distance(R_dist_tru_Mff.begin(), std::max_element(R_dist_tru_Mff.begin(), R_dist_tru_Mff.end()));
+                    
+                    // Fill histograms for match fake fake
+                    e3c_Mff->Fill(R_dist_tru_Mff[max_R_index_tru], jet_pt_tru, ee_jsm_tru);
+                    
+                    for (int n = 0; n < int(faketracks.size()); n++) // fake
+                    {
+                        if (j != 0)
+                            break;
+                        
+                        if (n == m || n == s)
+                            continue;
+                        
+                        double ee_snm_tru = faketracks[n].pt() * faketracks[s].pt() * faketracks[m].pt() / (pow(jet_pt_tru, 3));
+                        double deltaR_nm_tru = faketracks[n].delta_R(faketracks[m]);
+                        double deltaR_sn_tru = faketracks[s].delta_R(faketracks[n]);
+                        double deltaR_sm_tru = faketracks[s].delta_R(faketracks[m]);
+                        
+                        std::vector<double> R_dist_tru_fff = {deltaR_nm_tru, deltaR_sn_tru, deltaR_sm_tru};
+                        int max_R_index_tru = std::distance(R_dist_tru_fff.begin(), std::max_element(R_dist_tru_fff.begin(), R_dist_tru_fff.end()));
+                        
+                        // Fill histograms for fake fake fake
+                        e3c_fff->Fill(R_dist_tru_fff[max_R_index_tru], jet_pt_tru, ee_snm_tru);
+                    }
+                }
+            }
+            
+            for(int k=0; k<int(matchtracks_tru.size()); k++) //match match fake
+            {
+                if(k==j) continue;
+                for(int l=0; l<int(faketracks.size()); l++) //fake
+                {
+                    double ee_jkl_tru = matchtracks_tru[j].pt()*matchtracks_tru[k].pt()*faketracks[l].pt()/(pow(jet_pt_tru,3));
+                    double deltaR_jk_tru = matchtracks_tru[j].delta_R(matchtracks_tru[k]);
+                    double deltaR_jl_tru = matchtracks_tru[j].delta_R(faketracks[l]);
+                    double deltaR_kl_tru = matchtracks_tru[k].delta_R(faketracks[l]);
+                    std::vector<double> R_dist_tru_MMf = {deltaR_jk_tru,deltaR_jl_tru,deltaR_kl_tru};
+                    
+                    int max_R_tru = distance(R_dist_tru_MMf.begin(), max_element(R_dist_tru_MMf.begin(), R_dist_tru_MMf.end()));
+                    
+                    e3c_MMf->Fill(R_dist_tru_MMf[max_R_tru],jet_pt_tru,ee_jkl_tru);
+                    
+                    R_dist_tru_MMf.clear();
+                }
+            }
+        }
+    }
+    
+    
+    matchtracks_tru.clear();
+    matchtracks_det.clear();
+    faketracks.clear();
+    misstracks.clear();
+    
+ 
+//    if(fMissJetTrack==1) //compute (match,miss) & (miss,miss) for eec and (match,match,miss), (match,miss,miss) & (miss,miss,miss) for the E3C
+//    {
+//        for(int j=0; j<int(fConstituents.size()); j++)
+//        {
+//            int j_index = fConstituents[j].user_index();
+//            for(int s=0; s<int(fConstituents.size()); s++)
+//            {
+//                if(j==s) continue;
+//                int s_index = fConstituents[s].user_index();
+//                for(int i=0; i<int(fConstituents_tru.size()); i++)
+//                {
+//                    int i_index = fConstituents_tru[i].user_index();
+//                    for(int l=0; l<int(fConstituents_tru.size()); l++)
+//                    {
+//                        if(i==l) continue;
+//                        int l_index = fConstituents_tru[l].user_index();
+//
+//                        double ee_det = fConstituents[j].pt()*fConstituents[s].pt()/(pow(jet_pt,2));
+//                        double ee_tru = fConstituents_tru[i].pt()*fConstituents_tru[l].pt()/(pow(jet_pt_tru,2));
+//                        double R_det = fConstituents[j].delta_R(fConstituents[s]);
+//                        double R_tru = fConstituents_tru[i].delta_R(fConstituents_tru[l]);
+//
+//                        if(j_index == i_index && l_index != s_index && l_index != j_index)//match,miss
+//                        {
+//                            eec_Mm->Fill(R_tru,jet_pt_tru,ee_tru);
+//                        }
+//                        if(j_index != i_index && l_index != s_index && l_index != j_index)//miss,miss
+//                        {
+//                            eec_mm->Fill(R_tru,jet_pt_tru,ee_tru);
+//                        }
+//
+//                        for(int m=0; m<int(fConstituents.size()); m++)
+//                        {
+//                            if(m==j && m==s) continue;
+//                            int m_index = fConstituents[m].user_index();
+//                            for(int k=0;k<int(fConstituents_tru.size()); k++)
+//                            {
+//                                if(k==l && k==i) continue;
+//                                int k_index = fConstituents_tru[k].user_index();
+//                                double ee_jsm_det = fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt()/(pow(jet_pt,3));
+//                                double ee_jsm_tru = fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[k].pt()/(pow(jet_pt_tru,3));
+//
+//                                double deltaR_js_det = fConstituents[j].delta_R(fConstituents[s]);
+//                                double deltaR_jm_det = fConstituents[j].delta_R(fConstituents[m]);
+//                                double deltaR_sm_det = fConstituents[s].delta_R(fConstituents[m]);
+//                                R_dist_det.push_back(deltaR_js_det);
+//                                R_dist_det.push_back(deltaR_jm_det);
+//                                R_dist_det.push_back(deltaR_sm_det);
+//                                int max_R_det = distance(R_dist_det.begin(), max_element(R_dist_det.begin(), R_dist_det.end()));
+//
+//                                double deltaR_js_tru = fConstituents_tru[i].delta_R(fConstituents_tru[l]);
+//                                double deltaR_jm_tru = fConstituents_tru[i].delta_R(fConstituents_tru[k]);
+//                                double deltaR_sm_tru = fConstituents_tru[l].delta_R(fConstituents_tru[k]);
+//                                R_dist_tru.push_back(deltaR_js_tru);
+//                                R_dist_tru.push_back(deltaR_jm_tru);
+//                                R_dist_tru.push_back(deltaR_sm_tru);
+//                                int max_R_tru = distance(R_dist_tru.begin(), max_element(R_dist_tru.begin(), R_dist_tru.end()));
+//
+//                                if(k_index != m_index && l_index == s_index && j_index == i_index  && k_index != s_index && k_index != j_index)//miss one particles
+//                                {
+//                                    e3c_MMm->Fill(R_dist_tru[max_R_tru],jet_pt_tru,ee_jsm_tru);
+//                                }
+//                                if(k_index != m_index && l_index != s_index && j_index == i_index && k_index != s_index && k_index != j_index)//miss two particles
+//                                {
+//                                    e3c_Mmm->Fill(R_dist_tru[max_R_tru],jet_pt_tru,ee_jsm_tru);
+//                                }
+//                                if(k_index != m_index && l_index != s_index && j_index != i_index && k_index != s_index && k_index != j_index)//miss three particles
+//                                {
+//                                    e3c_mmm->Fill(R_dist_tru[max_R_tru],jet_pt_tru,ee_jsm_tru);
+//                                }
+//
+//                                R_dist_det.clear();
+//                                R_dist_tru.clear();
+//
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+
     if(fpTcorr == 1)
     {   jet_pt = jet_pt/(0.85); //applying JES correction to jet pT spectra to study spectra shape dependence of ENC
         jet_pt_hist->Fill(jet_pt); //filling histogram with momentum of jets

@@ -148,6 +148,8 @@ protected:
     Int_t fpaircut; ///<flag for pT pair cut
     Int_t fpairfastsim; ///<flag for pair eff for fast sim
     Int_t fMatchJetTrack; ///<flag for pair eff for fast sim
+    Int_t fMissJetTrack; ///<flag for looking at missed tracks in matched jets
+    Int_t fFakeJetTrack; ///<flag for looking at missed tracks in matched jets
     Float_t fMaxPtTrack; ///< max track pt cutoff
     
     //Adding for tracks at the particle level (not jet level)
@@ -221,13 +223,33 @@ protected:
     //!
     TH1D *pt_tru1;//!<! q/pt vs R histogram for input to fast sim
     TH1D *pt_tru2;//!<! q/pt vs R histogram for input to fast sim
+    
+    TH2D *eec_Mm; //!<! initializing 2D histogram of det level EEC and det jet pt
+    TH2D *eec_mm; //!<! initializing 2D histogram of tru level EEC and tru jet pt
+    TH2D *e3c_MMm; //!<! initializing 2D histogram of det level EEC and det jet pt
+    TH2D *e3c_Mmm; //!<! initializing 2D histogram of tru level EEC and tru jet pt
+    TH2D *e3c_mmm; //!<! initializing 2D histogram of det level EEC and det jet pt
+    
+    TH2D *eec_Mf; //!<! initializing 2D histogram of det level EEC and det jet pt
+    TH2D *eec_ff; //!<! initializing 2D histogram of tru level EEC and tru jet pt
+    TH2D *e3c_MMf; //!<! initializing 2D histogram of det level EEC and det jet pt
+    TH2D *e3c_Mff; //!<! initializing 2D histogram of tru level EEC and tru jet pt
+    TH2D *e3c_fff; //!<! initializing 2D histogram of det level EEC and det jet pt
+
+    TH2D *eec_matched_det; //!<! initializing 2D histogram of det level EEC and det jet pt
+    TH2D *eec_matched_tru; //!<! initializing 2D histogram of tru level EEC and tru jet pt
+    TH2D *e3c_matched_det; //!<! initializing 2D histogram of det level EEC and det jet pt
+    TH2D *e3c_matched_tru; //!<! initializing 2D histogram of tru level EEC and tru jet pt
+    
+    
+
 private:
     AliAnalysisTaskJetsEEC(
                            const AliAnalysisTaskJetsEEC &); // not implemented
     AliAnalysisTaskJetsEEC &
     operator=(const AliAnalysisTaskJetsEEC &); // not implemented
     
-    ClassDef(AliAnalysisTaskJetsEEC, 47) //change this to 46 if you add something new
+    ClassDef(AliAnalysisTaskJetsEEC, 49) //change this to 46 if you add something new
 };
 #endif
 
