@@ -1646,6 +1646,24 @@ void AddTask_GammaConvCalo_PbPb(
       }
     }
 
+    TString histoNameMCPi0PT = "";  TString histoNameMCEtaPT = "";  TString histoNameMCK0sPT = "";    // pT spectra to be weighted
+    TString fitNamePi0PT = "";      TString fitNameEtaPT = "";      TString fitNameK0sPT = "";        // fit to correct shape of pT spectra
+    Bool_t weightPi0 = kFALSE;      Bool_t weightEta = kFALSE;      Bool_t weightK0s = kFALSE;
+    if(doWeightingPart){
+      cout << "INFO enabeling pT weighting" << endl;
+      if(periodNameAnchor.CompareTo("LHC18q")==0){
+        TString eventCutString  = cuts.GetEventCut(i);
+        TString eventCutShort   = eventCutString(0,6);   // first six digits
+        weightPi0         = kTRUE;
+        histoNameMCPi0PT  = Form("Pi0_%s_5TeV_%s",   periodNameV0Reader.Data(), eventCutString.Data());  // MC
+        fitNamePi0PT      = Form("Pi0_Data_5TeV_%s", eventCutShort.Data());                              // fit to data
+        weightEta         = kTRUE;
+        histoNameMCEtaPT  = Form("Eta_%s_5TeV_%s",   periodNameV0Reader.Data(), eventCutString.Data());
+        fitNameEtaPT      = Form("Eta_Data_5TeV_%s", eventCutShort.Data());
+      }
+      analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(weightPi0, weightEta, weightK0s, fileNamePtWeights, histoNameMCPi0PT, histoNameMCEtaPT, histoNameMCK0sPT, fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);
+    }
+
     TString dataInputMultHisto  = "";
     TString mcInputMultHisto    = "";
     if (enableMultiplicityWeighting){
