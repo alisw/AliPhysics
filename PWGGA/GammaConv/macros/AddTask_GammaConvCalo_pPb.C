@@ -1998,6 +1998,9 @@ void AddTask_GammaConvCalo_pPb(
     }
 
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
+    
+    // extract single filenames from fileNamedEdxPostCalib
+    TObjArray *lArrFnamesdEdxPostCalib = nullptr;
     if (enableElecDeDxPostCalibration == 2){
       if (isMC){
         cout << "ERROR enableElecDeDxPostCalibration set to 2 even if MC file. Automatically reset to 0"<< endl;
