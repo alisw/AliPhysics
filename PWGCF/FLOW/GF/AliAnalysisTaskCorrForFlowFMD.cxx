@@ -1293,12 +1293,20 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
 
         binscont[0] = trigEta - assEta;
         binscont[1] = RangePhi(trigPhi - assPhi);
+	      
+      Double_t fmd_correc_factor = 1.0;
+      if(fUseFMDcorrection) {
+	fmd_correc_factor = fFMD_correctoion->Eval(assEta);    
+	if(fmd_correc_factor < 0.001 || fmd_correc_factor > 5) continue;
+      }
 
-        fhSE[spec]->Fill(binscont,0,assMult/(trigEff));
+        fhSE[spec]->Fill(binscont,0,assMult/(trigEff*fmd_correc_factor));
+        
       }
     }
   } // end TPC - FMD
-  else{
+	  
+   else{
     Double_t binscont[4];
     binscont[2] = fPVz;
     binscont[3] = fSampleIndex;
@@ -1311,6 +1319,13 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       Double_t trigPhi = track->Phi();
       Double_t trigMult = track->Multiplicity();
 
+
+       Double_t fmd_correc_trig = 1.0;
+      if(fUseFMDcorrection) {
+	fmd_correc_trig = fFMD_correctoion->Eval(trigEta);    
+	if(fmd_correc_trig < 0.001 || fmd_correc_trig > 5) continue;
+      }
+
       for(Int_t iAss(0); iAss < fTracksAss->GetEntriesFast(); iAss++){
         AliPartSimpleForCorr* trackAss = (AliPartSimpleForCorr*)fTracksAss->At(iAss);
         if(!trackAss) continue;
@@ -1319,10 +1334,16 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         Double_t assPhi = trackAss->Phi();
         Double_t assMult = trackAss->Multiplicity();
 
+       Double_t fmd_correc_assoc = 1.0;
+      if(fUseFMDcorrection) {
+	fmd_correc_assoc = fFMD_correctoion->Eval(assEta);    
+	if(fmd_correc_assoc < 0.001 || fmd_correc_assoc > 5) continue;
+      }
+      
         binscont[0] = trigEta - assEta;
         binscont[1] = RangePhiFMD(trigPhi - assPhi);
 
-        fhSE[spec]->Fill(binscont,0,assMult*trigMult);
+        fhSE[spec]->Fill(binscont,0,assMult*trigMult/(fmd_correc_trig*fmd_correc_assoc));
       }
     }
   } // end FMD - FMD
@@ -1442,12 +1463,18 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
             binscont[0] = trigEta - assEta;
             binscont[1] = RangePhi(trigPhi - assPhi);
 
-            fhME[spec]->Fill(binscont,0,assMult/((Double_t)nMix*trigEff));
+      Double_t fmd_correc_factor = 1.0;
+      if(fUseFMDcorrection) {
+	fmd_correc_factor = fFMD_correctoion->Eval(assEta);    
+	if(fmd_correc_factor < 0.001 || fmd_correc_factor > 5) continue;
+      }
+
+        fhME[spec]->Fill(binscont,0,assMult/((Double_t)nMix*trigEff*fmd_correc_factor));
           }
         }
       }
     } // end TPC - FMD
-    else{
+     else{
       Double_t binscont[4];
       binscont[2] = fPVz;
       binscont[3] = fSampleIndex;
@@ -1459,6 +1486,12 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         Double_t trigEta = track->Eta();
         Double_t trigPhi = track->Phi();
         Double_t trigMult = track->Multiplicity();
+
+       Double_t fmd_correc_trig = 1.0;
+        if(fUseFMDcorrection) {
+	fmd_correc_trig = fFMD_correctoion->Eval(trigEta);    
+	if(fmd_correc_trig < 0.001 || fmd_correc_trig > 5) continue;
+      }
 
         for(Int_t eMix(0); eMix < nMix; eMix++){
           TObjArray *mixEvents = pool->GetEvent(eMix);
@@ -1473,11 +1506,19 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
             binscont[0] = trigEta - assEta;
             binscont[1] = RangePhiFMD(trigPhi - assPhi);
 
-            fhME[spec]->Fill(binscont,0,(trigMult*assMult)/(Double_t)nMix);
+
+      Double_t fmd_correc_assoc = 1.0;
+      if(fUseFMDcorrection) {
+	fmd_correc_assoc = fFMD_correctoion->Eval(assEta);    
+	if(fmd_correc_assoc < 0.001 || fmd_correc_assoc > 5) continue;
+      }
+
+      fhME[spec]->Fill(binscont,0,(trigMult*assMult)/((Double_t)nMix*fmd_correc_trig*fmd_correc_assoc));
           }
         }
       }
     } // end FMD - FMD
+
 
   } // event pool done
 
@@ -1915,8 +1956,9 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
     {
       // Bin content is most probable number of particles!
       Float_t phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi);
-      Float_t mostProbableN_temp = d2Ndetadphi.GetBinContent(iEta, iPhi);
-    
+      Float_t mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
+
+	    /*
       Double_t fmd_correc_factor = 1.0;
 	    
       if(fUseFMDcorrection) {
@@ -1925,7 +1967,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
       }
 
       Float_t mostProbableN =  mostProbableN_temp / fmd_correc_factor;
-	    
+	    */
       if(mostProbableN > 0) {
     	   if(eta > 0){
     	     nFMD_fwd_hits+=mostProbableN;
