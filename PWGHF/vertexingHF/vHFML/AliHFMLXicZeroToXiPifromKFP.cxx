@@ -6063,18 +6063,18 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
       fVars_MLmap["pt_Xic0"]   = fVar_Xic0[22]; // pt of Xic0
       fVars_MLmap["mass_Xic0"] = fVar_Xic0[24]; // mass of Xic0
       // PID
-      fVars_MLmap["nSigmaTPC_PiFromXic0"] = fVar_Xic0[0];  // TPC nsigma for pion coming from Xic0
-      fVars_MLmap["nSigmaTOF_PiFromXic0"] = fVar_Xic0[1];  // TOF nsigma for pion coming from Xic0
-      fVars_MLmap["nSigmaTPC_PiFromXi"]   = fVar_Xic0[2];  // TPC nsigma for pion coming from Xi
-      fVars_MLmap["nSigmaTOF_PiFromXi"]   = fVar_Xic0[3];  // TOF nsigma for pion coming from Xi
-      fVars_MLmap["nSigmaTPC_PiFromLam"]  = fVar_Xic0[4];  // TPC nsigma for pion coming from Lambda
-      fVars_MLmap["nSigmaTOF_PiFromLam"]  = fVar_Xic0[45]; // TOF nsigma for pion coming from Lambda
-      fVars_MLmap["nSigmaTPC_PrFromLam"]  = fVar_Xic0[5];  // TPC nsigma for proton coming from Lambda
-      fVars_MLmap["nSigmaTOF_PrFromLam"]  = fVar_Xic0[46]; // TOF nsigma for proton coming from Lambda
+      fVars_MLmap["nSigmaTPC_PiFromXic0"]  = fVar_Xic0[0];  // TPC nsigma for pion coming from Xic0
+      fVars_MLmap["nSigmaTOF_PiFromXic0"]  = fVar_Xic0[1];  // TOF nsigma for pion coming from Xic0
+      fVars_MLmap["nSigmaTPC_PiFromXi"]    = fVar_Xic0[2];  // TPC nsigma for pion coming from Xi
+      fVars_MLmap["nSigmaTOF_PiFromXi"]    = fVar_Xic0[3];  // TOF nsigma for pion coming from Xi
+      fVars_MLmap["nSigmaTPC_PiFromLam"]   = fVar_Xic0[4];  // TPC nsigma for pion coming from Lambda
+      fVars_MLmap["nSigmaTOF_PiFromLam"]   = fVar_Xic0[45]; // TOF nsigma for pion coming from Lambda
+      fVars_MLmap["nSigmaTPC_PrFromLam"]   = fVar_Xic0[5];  // TPC nsigma for proton coming from Lambda
+      fVars_MLmap["nSigmaTOF_PrFromLam"]   = fVar_Xic0[46]; // TOF nsigma for proton coming from Lambda
       fVars_MLmap["nSigmaComb_PiFromXic0"] = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[0], fVar_Xic0[1]); // Combined TPC and TOF nsigma for pion coming from Xic0
-      fVars_MLmap["nSigmaComb_PiFromXi"] = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[2], fVar_Xic0[3]); // Combined TPC and TOF nsigma for pion coming from Xi
-      fVars_MLmap["nSigmaComb_PiFromLam"] = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[4], fVar_Xic0[45]); // Combined TPC and TOF nsigma for pion coming from Lambda
-      fVars_MLmap["nSigmaComb_PrFromLam"] = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[5], fVar_Xic0[46]); // Combined TPC and TOF nsigma for proton coming from Lambda
+      fVars_MLmap["nSigmaComb_PiFromXi"]   = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[2], fVar_Xic0[3]); // Combined TPC and TOF nsigma for pion coming from Xi
+      fVars_MLmap["nSigmaComb_PiFromLam"]  = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[4], fVar_Xic0[45]); // Combined TPC and TOF nsigma for pion coming from Lambda
+      fVars_MLmap["nSigmaComb_PrFromLam"]  = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[5], fVar_Xic0[46]); // Combined TPC and TOF nsigma for proton coming from Lambda
       // Xic0
       fVars_MLmap["DecayLxy_Xic0"]     = fVar_Xic0[33]; // decay length of Xic0 in x-y plane
       fVars_MLmap["chi2geo_Xic0"]      = fVar_Xic0[34]; // chi2_geometry of Xic0
@@ -6084,6 +6084,7 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
       fVars_MLmap["ct_Xic0"]           = fVar_Xic0[43]; // lifetime of Xic0
       fVars_MLmap["OA_XiToPi"]         = fVar_Xic0[48]; // Opening angle of Xi and pion
       // pion (from Xic0)
+      fVars_MLmap["pt_PiFromXic0"]       = fVar_Xic0[21]; // pt of pion from Xic0 decay
       fVars_MLmap["chi2prim_PiFromXic0"] = fVar_Xic0[26]; // chi2_topo of pion to PV
       fVars_MLmap["DCAxy_PiFromXic0_KF"] = fVar_Xic0[27]; // DCA of pion coming from Xic0 in x-y plane
       // Xi
@@ -6113,14 +6114,14 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
       fVars_MLmap["pt_Omegac0"]   = fVar_Xic0[22]; // pt of Omegac0
       fVars_MLmap["mass_Omegac0"] = fVar_Xic0[24]; // mass of Omegac0
       // PID
-      fVars_MLmap["nSigmaTPC_PiFromOmegac0"] = fVar_Xic0[0];  // TPC nsigma for pion coming from Omegac0
-      fVars_MLmap["nSigmaTOF_PiFromOmegac0"] = fVar_Xic0[1];  // TOF nsigma for pion coming from Omegac0
-      fVars_MLmap["nSigmaTPC_KaFromOmega"]   = fVar_Xic0[2];  // TPC nsigma for kaon coming from Omega
-      fVars_MLmap["nSigmaTOF_KaFromOmega"]   = fVar_Xic0[3];  // TOF nsigma for kaon coming from Omega
-      fVars_MLmap["nSigmaTPC_PiFromLam"]     = fVar_Xic0[4];  // TPC nsigma for pion coming from Lambda
-      fVars_MLmap["nSigmaTOF_PiFromLam"]     = fVar_Xic0[45]; // TOF nsigma for pion coming from Lambda
-      fVars_MLmap["nSigmaTPC_PrFromLam"]     = fVar_Xic0[5];  // TPC nsigma for proton coming from Lambda
-      fVars_MLmap["nSigmaTOF_PrFromLam"]     = fVar_Xic0[46]; // TOF nsigma for proton coming from Lambda
+      fVars_MLmap["nSigmaTPC_PiFromOmegac0"]  = fVar_Xic0[0];  // TPC nsigma for pion coming from Omegac0
+      fVars_MLmap["nSigmaTOF_PiFromOmegac0"]  = fVar_Xic0[1];  // TOF nsigma for pion coming from Omegac0
+      fVars_MLmap["nSigmaTPC_KaFromOmega"]    = fVar_Xic0[2];  // TPC nsigma for kaon coming from Omega
+      fVars_MLmap["nSigmaTOF_KaFromOmega"]    = fVar_Xic0[3];  // TOF nsigma for kaon coming from Omega
+      fVars_MLmap["nSigmaTPC_PiFromLam"]      = fVar_Xic0[4];  // TPC nsigma for pion coming from Lambda
+      fVars_MLmap["nSigmaTOF_PiFromLam"]      = fVar_Xic0[45]; // TOF nsigma for pion coming from Lambda
+      fVars_MLmap["nSigmaTPC_PrFromLam"]      = fVar_Xic0[5];  // TPC nsigma for proton coming from Lambda
+      fVars_MLmap["nSigmaTOF_PrFromLam"]      = fVar_Xic0[46]; // TOF nsigma for proton coming from Lambda
       fVars_MLmap["nSigmaComb_PiFromOmegac0"] = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[0], fVar_Xic0[1]); // Combined TPC and TOF nsigma for pion coming from Omegac0
       fVars_MLmap["nSigmaComb_KaFromOmega"]   = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[2], fVar_Xic0[3]); // Combined TPC and TOF nsigma for kaon coming from Omega
       fVars_MLmap["nSigmaComb_PiFromLam"]     = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[4], fVar_Xic0[45]); // Combined TPC and TOF nsigma for pion coming from Lambda
@@ -6134,6 +6135,7 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
       fVars_MLmap["ct_Omegac0"]           = fVar_Xic0[43]; // lifetime of Omegac0
       fVars_MLmap["OA_OmegaToPi"]         = fVar_Xic0[48]; // Opening angle of Omega and pion
       // pion (from Omegac0)
+      fVars_MLmap["pt_PiFromOmegac0"]       = fVar_Xic0[21]; // pt of pion from Omegac0 decay
       fVars_MLmap["chi2prim_PiFromOmegac0"] = fVar_Xic0[26]; // chi2_topo of pion to PV
       fVars_MLmap["DCAxy_PiFromOmegac0_KF"] = fVar_Xic0[27]; // DCA of pion coming from Omegac0 in x-y plane
       // Omega
