@@ -464,7 +464,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
 
     track->GetImpactParameters(dcaXY, dcaZ);
 
-    if ((fDCAxyMax > 0.0) && (fabs(dcaXY) > fDCAxyMax))
+    if ((fDCAxyMax > 0.0) && (fabs(dcaXY) > (0.0208+0.04/TMath::Power(pt,1.01))))
       continue;
     if ((fDCAzMax > 0.0) && (fabs(dcaZ) > fDCAzMax))
       continue;
