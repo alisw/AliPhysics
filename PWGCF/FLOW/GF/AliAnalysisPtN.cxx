@@ -347,53 +347,53 @@ void AliAnalysisPtN::UserExec(Option_t *)
       switch (rd){
         case 0:
           dPtNch_0->Fill(nTrackSelected,pt);
-          dPt2Nch_0->Fill(nTrackSelected,pt);
-          dPt3Nch_0->Fill(nTrackSelected,pt);
+          dPt2Nch_0->Fill(nTrackSelected,pt2);
+          dPt3Nch_0->Fill(nTrackSelected,pt3);
           break;
         case 1:
           dPtNch_1->Fill(nTrackSelected,pt);
-          dPt2Nch_1->Fill(nTrackSelected,pt);
-          dPt3Nch_1->Fill(nTrackSelected,pt);
+          dPt2Nch_1->Fill(nTrackSelected,pt2);
+          dPt3Nch_1->Fill(nTrackSelected,pt3);
           break;
         case 2:
           dPtNch_2->Fill(nTrackSelected,pt);
-          dPt2Nch_2->Fill(nTrackSelected,pt);
-          dPt3Nch_2->Fill(nTrackSelected,pt);
+          dPt2Nch_2->Fill(nTrackSelected,pt2);
+          dPt3Nch_2->Fill(nTrackSelected,pt3);
           break;
         case 3:
           dPtNch_3->Fill(nTrackSelected,pt);
-          dPt2Nch_3->Fill(nTrackSelected,pt);
-          dPt3Nch_3->Fill(nTrackSelected,pt);
+          dPt2Nch_3->Fill(nTrackSelected,pt2);
+          dPt3Nch_3->Fill(nTrackSelected,pt3);
           break;
         case 4:
           dPtNch_4->Fill(nTrackSelected,pt);
-          dPt2Nch_4->Fill(nTrackSelected,pt);
-          dPt3Nch_4->Fill(nTrackSelected,pt);
+          dPt2Nch_4->Fill(nTrackSelected,pt2);
+          dPt3Nch_4->Fill(nTrackSelected,pt3);
           break;
         case 5:
           dPtNch_5->Fill(nTrackSelected,pt);
-          dPt2Nch_5->Fill(nTrackSelected,pt);
-          dPt3Nch_5->Fill(nTrackSelected,pt);
+          dPt2Nch_5->Fill(nTrackSelected,pt2);
+          dPt3Nch_5->Fill(nTrackSelected,pt3);
           break;
         case 6:
           dPtNch_6->Fill(nTrackSelected,pt);
-          dPt2Nch_6->Fill(nTrackSelected,pt);
-          dPt3Nch_6->Fill(nTrackSelected,pt);
+          dPt2Nch_6->Fill(nTrackSelected,pt2);
+          dPt3Nch_6->Fill(nTrackSelected,pt3);
           break;
         case 7:
           dPtNch_7->Fill(nTrackSelected,pt);
-          dPt2Nch_7->Fill(nTrackSelected,pt);
-          dPt3Nch_7->Fill(nTrackSelected,pt);
+          dPt2Nch_7->Fill(nTrackSelected,pt2);
+          dPt3Nch_7->Fill(nTrackSelected,pt3);
           break;
         case 8:
           dPtNch_8->Fill(nTrackSelected,pt);
-          dPt2Nch_8->Fill(nTrackSelected,pt);
-          dPt3Nch_8->Fill(nTrackSelected,pt);
+          dPt2Nch_8->Fill(nTrackSelected,pt2);
+          dPt3Nch_8->Fill(nTrackSelected,pt3);
           break;
         case 9:
           dPtNch_9->Fill(nTrackSelected,pt);
-          dPt2Nch_9->Fill(nTrackSelected,pt);
-          dPt3Nch_9->Fill(nTrackSelected,pt);
+          dPt2Nch_9->Fill(nTrackSelected,pt2);
+          dPt3Nch_9->Fill(nTrackSelected,pt3);
           break;
       }
     }
