@@ -385,7 +385,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   //   pairQA[i] = 11; // phiphi
   //  }
 
-  if (isMC && doMcTruth) // override the values in case the MC True is used we don't need any of that
+  if (isMC) // override the values in case the MC True is used we don't need any of that
   {
     pairQA[0] = 00;  // pi+pi+
     pairQA[1] = 00;  // pi+pi-
