@@ -15,7 +15,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     bool useWeightsNUE = true, bool useWeightsNUA = false,
     bool useWeightsCent = false,
     bool getSC = true, bool getLower = true,
-    bool Aside = false, bool Cside = false, bool saveQCNUA = false, bool frmBadArea18q = false, double eta = 0.8, TString extra ="")
+    bool Aside = false, bool Cside = false, bool saveQCNUA = false, bool frmBadArea18q = false, double eta = 0.8, bool checkCrossedRows = kFALSE, UInt_t crossedRows = 70, TString extra ="")
 {
   // Configuration of the analysis.
   double ESDslope = 3.38; bool saveQA_ESDpileup = false;
@@ -340,6 +340,13 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
 
     if (strcmp(configNames[i].Data(), "hybridBaseDCA") == 0) {
       fJCatalyst[i]->SetDCABaseCuts(true);
+    }
+
+    if (checkCrossedRows) {
+      printf("Checking crossed rows with ncr=%d\n", crossedRows);
+      fJCatalyst[i]->SetCheckCrossedRows(checkCrossedRows);
+      fJCatalyst[i]->SetNCrossedRows(crossedRows);
+      fJCatalyst[i]->SetNumTPCClusters(50);
     }
 
     /// Kinematic cuts and last fine tuning.
