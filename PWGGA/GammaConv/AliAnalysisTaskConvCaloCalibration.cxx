@@ -1330,11 +1330,13 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
         }
         if(!fGeomEMCAL)fGeomEMCAL = AliEMCALGeometry::GetInstance();
         Int_t SupMod = fGeomEMCAL->GetSuperModuleNumber(clus->GetCellAbsId(0));
-        fHistoClusTrackdEtaSM[fiCut][SupMod]->Fill(dEta, fWeightJetJetMC);
-        fHistoClusTrackdPhiSM[fiCut][SupMod]->Fill(dPhi, fWeightJetJetMC);
-        if(inTrack->Pt()>5){
-          fHistoClusHighPtTrackdEtaSM[fiCut][SupMod]->Fill(dEta, fWeightJetJetMC);
-          fHistoClusHighPtTrackdPhiSM[fiCut][SupMod]->Fill(dPhi, fWeightJetJetMC);
+        if(fDoMesonQA > 0){
+          fHistoClusTrackdEtaSM[fiCut][SupMod]->Fill(dEta, fWeightJetJetMC);
+          fHistoClusTrackdPhiSM[fiCut][SupMod]->Fill(dPhi, fWeightJetJetMC);
+          if(inTrack->Pt()>5){
+            fHistoClusHighPtTrackdEtaSM[fiCut][SupMod]->Fill(dEta, fWeightJetJetMC);
+            fHistoClusHighPtTrackdPhiSM[fiCut][SupMod]->Fill(dPhi, fWeightJetJetMC);
+          }
         }
       } // end loop over tracks
     }
