@@ -2852,13 +2852,11 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
         fNegClusterTPCToF_PhotonML = ENegTrack->GetTPCClusterInfo(2,0,fiPhotonCut->GetFirstTPCRow(PhotonCandidate->GetConversionRadius()));
         fPosClusterTPCToF_PhotonML = EPosTrack->GetTPCClusterInfo(2,0,fiPhotonCut->GetFirstTPCRow(PhotonCandidate->GetConversionRadius()));
       }
-      //fPAsymmetry_ENeg_PhotonML = ENegTrack->P()/PhotonCandidate->GetPhotonP();
 
       fDeDx_ITS_ENeg_PhotonML =  pidResonse->NumberOfSigmasITS(ENegTrack,AliPID::kElectron);
-      //fDeDx_TPC_ENeg_PhotonML =  pidResonse->NumberOfSigmasTPC(ENegTrack,AliPID::kElectron); 
-      fDeDx_TPC_ENeg_PhotonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(ENegTrack->Charge(),pidResonse->NumberOfSigmasTPC(ENegTrack,AliPID::kElectron), ENegTrack->P(), ENegTrack->Eta(), ENegTrack->GetTPCNcls(),PhotonCandidate->GetConversionRadius() ); 
-      //electronNSigmaTPCCor = GetCorrectedElectronTPCResponse(Charge,electronNSigmaTPC,P,Eta,fCurrentTrack->GetTPCNcls(),photon->GetConversionRadius()); 
       fTOF_ENeg_PhotonML = pidResonse->NumberOfSigmasTOF(ENegTrack,AliPID::kElectron);
+      if (fIsMC)  {fDeDx_TPC_ENeg_PhotonML =  pidResonse->NumberOfSigmasTPC(ENegTrack,AliPID::kElectron);
+      } else  {fDeDx_TPC_ENeg_PhotonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(ENegTrack->Charge(),pidResonse->NumberOfSigmasTPC(ENegTrack,AliPID::kElectron), ENegTrack->P(), ENegTrack->Eta(), ENegTrack->GetTPCNcls(),PhotonCandidate->GetConversionRadius() ); }
       fDeDx_PiM_ITS_PhotonML =  pidResonse->NumberOfSigmasITS(ENegTrack,AliPID::kPion);
       fDeDx_PiM_TPC_PhotonML =  pidResonse->NumberOfSigmasTPC(ENegTrack,AliPID::kPion);
       fTOF_PiM_PhotonML = pidResonse->NumberOfSigmasTOF(ENegTrack,AliPID::kPion);
@@ -2867,9 +2865,9 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       fEta_ENeg_PhotonML = ENegTrack->Eta();
            
       fDeDx_ITS_EPos_PhotonML = pidResonse->NumberOfSigmasITS(EPosTrack,AliPID::kElectron);
-      //fDeDx_TPC_EPos_PhotonML = pidResonse->NumberOfSigmasTPC(EPosTrack,AliPID::kElectron);
-      fDeDx_TPC_EPos_PhotonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(EPosTrack->Charge(),pidResonse->NumberOfSigmasTPC(ENegTrack,AliPID::kElectron), EPosTrack->P(), EPosTrack->Eta(), EPosTrack->GetTPCNcls(),PhotonCandidate->GetConversionRadius() ); 
       fTOF_EPos_PhotonML = pidResonse->NumberOfSigmasTOF(EPosTrack,AliPID::kElectron);
+      if (fIsMC)  {fDeDx_TPC_EPos_PhotonML = pidResonse->NumberOfSigmasTPC(EPosTrack,AliPID::kElectron);
+      } else  {fDeDx_TPC_EPos_PhotonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(EPosTrack->Charge(),pidResonse->NumberOfSigmasTPC(ENegTrack,AliPID::kElectron), EPosTrack->P(), EPosTrack->Eta(), EPosTrack->GetTPCNcls(),PhotonCandidate->GetConversionRadius() ); }
 
       fDeDx_PiP_ITS_PhotonML =  pidResonse->NumberOfSigmasITS(EPosTrack,AliPID::kPion);
       fDeDx_PiP_TPC_PhotonML =  pidResonse->NumberOfSigmasTPC(EPosTrack,AliPID::kPion);
@@ -3989,8 +3987,8 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
             }
             
             fDeDx_ITS_ENeg_Gamma0_MesonML = pidResonse->NumberOfSigmasITS(ENegTrack_Gamma0,AliPID::kElectron);
-            //fDeDx_TPC_ENeg_Gamma0_MesonML = pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma0,AliPID::kElectron);
-            fDeDx_TPC_ENeg_Gamma0_MesonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(ENegTrack_Gamma0->Charge(),pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma0,AliPID::kElectron), ENegTrack_Gamma0->P(), ENegTrack_Gamma0->Eta(), ENegTrack_Gamma0->GetTPCNcls(),gamma0->GetConversionRadius() ); 
+            if (fIsMC)  {fDeDx_TPC_ENeg_Gamma0_MesonML = pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma0,AliPID::kElectron);
+            } else  {fDeDx_TPC_ENeg_Gamma0_MesonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(ENegTrack_Gamma0->Charge(),pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma0,AliPID::kElectron), ENegTrack_Gamma0->P(), ENegTrack_Gamma0->Eta(), ENegTrack_Gamma0->GetTPCNcls(),gamma0->GetConversionRadius() ); }
             fTOF_ENeg_Gamma0_MesonML = pidResonse->NumberOfSigmasTOF(ENegTrack_Gamma0,AliPID::kElectron);
             fDeDx_PiM_ITS_Gamma0_MesonML =  pidResonse->NumberOfSigmasITS(ENegTrack_Gamma0,AliPID::kPion);
             fDeDx_PiM_TPC_Gamma0_MesonML =  pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma0,AliPID::kPion);
@@ -3999,8 +3997,8 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
             fEta_ENeg_Gamma0_MesonML = ENegTrack_Gamma0->Eta();
 
             fDeDx_ITS_EPos_Gamma0_MesonML = pidResonse->NumberOfSigmasITS(EPosTrack_Gamma0,AliPID::kElectron);
-            //fDeDx_TPC_EPos_Gamma0_MesonML = pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma0,AliPID::kElectron);
-            fDeDx_TPC_ENeg_Gamma0_MesonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(EPosTrack_Gamma0->Charge(),pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma0,AliPID::kElectron), EPosTrack_Gamma0->P(), EPosTrack_Gamma0->Eta(), EPosTrack_Gamma0->GetTPCNcls(),gamma0->GetConversionRadius() ); 
+            if (fIsMC)  {fDeDx_TPC_EPos_Gamma0_MesonML = pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma0,AliPID::kElectron);
+            } else  {fDeDx_TPC_ENeg_Gamma0_MesonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(EPosTrack_Gamma0->Charge(),pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma0,AliPID::kElectron), EPosTrack_Gamma0->P(), EPosTrack_Gamma0->Eta(), EPosTrack_Gamma0->GetTPCNcls(),gamma0->GetConversionRadius() ); }
             fTOF_EPos_Gamma0_MesonML = pidResonse->NumberOfSigmasTOF(EPosTrack_Gamma0,AliPID::kElectron);
             fDeDx_PiP_ITS_Gamma0_MesonML =  pidResonse->NumberOfSigmasITS(EPosTrack_Gamma0,AliPID::kPion);
             fDeDx_PiP_TPC_Gamma0_MesonML =  pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma0,AliPID::kPion);
@@ -4029,8 +4027,8 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
             }
 
             fDeDx_ITS_ENeg_Gamma1_MesonML = pidResonse->NumberOfSigmasITS(ENegTrack_Gamma1,AliPID::kElectron);
-            //fDeDx_TPC_ENeg_Gamma1_MesonML = pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma1,AliPID::kElectron);
-            fDeDx_TPC_ENeg_Gamma1_MesonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(ENegTrack_Gamma1->Charge(),pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma1,AliPID::kElectron), ENegTrack_Gamma1->P(), ENegTrack_Gamma1->Eta(), ENegTrack_Gamma1->GetTPCNcls(),gamma1->GetConversionRadius() ); 
+            if (fIsMC)  {fDeDx_TPC_ENeg_Gamma1_MesonML = pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma1,AliPID::kElectron);
+            } else  {fDeDx_TPC_ENeg_Gamma1_MesonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(ENegTrack_Gamma1->Charge(),pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma1,AliPID::kElectron), ENegTrack_Gamma1->P(), ENegTrack_Gamma1->Eta(), ENegTrack_Gamma1->GetTPCNcls(),gamma1->GetConversionRadius() ); }
             fTOF_ENeg_Gamma1_MesonML = pidResonse->NumberOfSigmasTOF(ENegTrack_Gamma1,AliPID::kElectron);
             fDeDx_PiM_ITS_Gamma1_MesonML =  pidResonse->NumberOfSigmasITS(ENegTrack_Gamma1,AliPID::kPion);
             fDeDx_PiM_TPC_Gamma1_MesonML =  pidResonse->NumberOfSigmasTPC(ENegTrack_Gamma1,AliPID::kPion);
@@ -4039,8 +4037,8 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
             fEta_ENeg_Gamma1_MesonML = ENegTrack_Gamma1->Eta();
 
             fDeDx_ITS_EPos_Gamma1_MesonML = pidResonse->NumberOfSigmasITS(EPosTrack_Gamma1,AliPID::kElectron);
-            //fDeDx_TPC_EPos_Gamma1_MesonML = pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma1,AliPID::kElectron);
-            fDeDx_TPC_EPos_Gamma1_MesonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(EPosTrack_Gamma1->Charge(),pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma1,AliPID::kElectron), EPosTrack_Gamma1->P(), EPosTrack_Gamma1->Eta(), EPosTrack_Gamma1->GetTPCNcls(),gamma1->GetConversionRadius() ); 
+            if (fIsMC)  {fDeDx_TPC_EPos_Gamma1_MesonML = pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma1,AliPID::kElectron);
+            } else  {fDeDx_TPC_EPos_Gamma1_MesonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(EPosTrack_Gamma1->Charge(),pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma1,AliPID::kElectron), EPosTrack_Gamma1->P(), EPosTrack_Gamma1->Eta(), EPosTrack_Gamma1->GetTPCNcls(),gamma1->GetConversionRadius() ); }
             fTOF_EPos_Gamma1_MesonML = pidResonse->NumberOfSigmasTOF(EPosTrack_Gamma1,AliPID::kElectron);
             fDeDx_PiP_ITS_Gamma1_MesonML =  pidResonse->NumberOfSigmasITS(EPosTrack_Gamma1,AliPID::kPion);
             fDeDx_PiP_TPC_Gamma1_MesonML =  pidResonse->NumberOfSigmasTPC(EPosTrack_Gamma1,AliPID::kPion);
@@ -4109,11 +4107,11 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
                 if(gamma0MotherLabel>=0 && gamma0MotherLabel==gamma1MotherLabel){
                   if(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == 111){
                     isTruePi0=kTRUE;
-                    cout << "This is pi0"<<endl;
+                    //cout << "This is pi0"<<endl;
                   }
                   if(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->GetPdgCode() == 221){
                     isTrueEta=kTRUE;
-                    cout << "This is eta"<<endl;
+                    //cout << "This is eta"<<endl;
                   }
                 }
 
