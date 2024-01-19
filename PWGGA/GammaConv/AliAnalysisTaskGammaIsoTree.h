@@ -763,6 +763,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     std::vector<Float_t> fBuffer_TrueClusterMCIsoCharged3; 
     std::vector<Float_t> fBuffer_TrueClusterMCIsoBckPerp; 
     std::vector<Int_t> fBuffer_TrueClusterMCTag; 
+    std::vector<Int_t> fBuffer_TrueClusterMCTagMore; 
     std::vector<Bool_t> fBuffer_TrueClusterIsConv;
     
     std::vector<Float_t> fBuffer_GenPhotonE;
@@ -844,7 +845,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Float_t CalculateIsoCorrectionFactor(Double_t cEta, Double_t maxEta, Double_t r);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 46);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 47);
 
 };
 
