@@ -455,6 +455,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fBuffer_TrueClusterMCIsoCharged3(0), 
   fBuffer_TrueClusterMCIsoBckPerp(0), 
   fBuffer_TrueClusterMCTag(0), 
+  fBuffer_TrueClusterMCTagMore(0),
   fBuffer_TrueClusterIsConv(0),
   fBuffer_GenPhotonE(0),
   fBuffer_GenPhotonPx(0),
@@ -918,6 +919,7 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fBuffer_TrueClusterMCIsoCharged3(0), 
   fBuffer_TrueClusterMCIsoBckPerp(0), 
   fBuffer_TrueClusterMCTag(0), 
+  fBuffer_TrueClusterMCTagMore(0),
   fBuffer_TrueClusterIsConv(0),
   fBuffer_GenPhotonE(0),
   fBuffer_GenPhotonPx(0),
@@ -2611,6 +2613,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
       fAnalysisTree->Branch("TrueCluster_MCIsoCharged3","std::vector<Float_t>",&fBuffer_TrueClusterMCIsoCharged3);
       fAnalysisTree->Branch("TrueCluster_MCIsoBckPerp","std::vector<Float_t>",&fBuffer_TrueClusterMCIsoBckPerp);
       fAnalysisTree->Branch("TrueCluster_MCTag","std::vector<Int_t>",&fBuffer_TrueClusterMCTag);
+      fAnalysisTree->Branch("TrueCluster_MCTagMore","std::vector<Int_t>",&fBuffer_TrueClusterMCTagMore);
       fAnalysisTree->Branch("TrueCluster_IsConv","std::vector<Bool_t>",&fBuffer_TrueClusterIsConv);
     
       fAnalysisTree->Branch("GenPhoton_E","std::vector<Float_t>",&fBuffer_GenPhotonE);
@@ -2973,6 +2976,7 @@ void AliAnalysisTaskGammaIsoTree::ResetBuffer(){
   fBuffer_TrueClusterMCIsoCharged3.clear(); 
   fBuffer_TrueClusterMCIsoBckPerp.clear(); 
   fBuffer_TrueClusterMCTag.clear();
+  fBuffer_TrueClusterMCTagMore.clear();
   fBuffer_TrueClusterIsConv.clear();
     
   fBuffer_GenPhotonE.clear();
@@ -5989,6 +5993,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
   Double_t trueClusterMCIsoCharged3 = 0.;
   Double_t trueClusterMCIsoBckPerp = 0.;
   Int_t trueClusterIsSignal = 0;
+  Int_t detailledTagSignal = 0; // experimental new tag for photons in MC
   Bool_t trueClusterIsConv = kFALSE;
   Float_t fracLeadingLabel = 0;
 
@@ -6033,7 +6038,11 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
       headerName = "";
     }
     Int_t tag = GetMCAnalysisUtils()->CheckOrigin(photonlabel, fMCEvent,headerName,1.);
+    // todo fix new tag info
+    Int_t tag_moreinfo = GetMCAnalysisUtils()->CheckOrigin(clus->GetLabels(),clus->GetClusterMCEdepFraction(),clus->GetNLabels(),fMCEvent,headerName,clus->E());
+    
     trueClusterIsSignal = tag;
+    detailledTagSignal = tag_moreinfo;
     trueClusterIsConv = truePhotonFromConv;
     if(isTruePhoton){
       if((m02<=0.5) && (m02>=0.1)){
@@ -6053,6 +6062,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
     fBuffer_TrueClusterMCIsoCharged3.push_back(trueClusterMCIsoCharged3); 
     fBuffer_TrueClusterMCIsoBckPerp.push_back(trueClusterMCIsoBckPerp); 
     fBuffer_TrueClusterMCTag.push_back(trueClusterIsSignal); 
+    fBuffer_TrueClusterMCTagMore.push_back(detailledTagSignal);
     fBuffer_TrueClusterIsConv.push_back(trueClusterIsConv);
   }
 
