@@ -120,6 +120,7 @@ ClassImp(AliFemtoMJTrackCut)
     fMaxPforTPCpid(10000.0),
     fMinPforITSpid(0.0),
    fMaxPforITSpid(10000.0),
+   fMaxNsigmaERejection(0.0),
    fElectronRejection(0)
 {
   // Default constructor
@@ -1375,6 +1376,11 @@ void AliFemtoMJTrackCut::SetNsigmaRejection(Double_t nsigma)
   fNsigmaRejection = nsigma;
 }
 
+void AliFemtoMJTrackCut::SetMaxNsigmaERejection(Double_t nsigma)
+{
+  fMaxNsigmaERejection = nsigma;
+}
+
 void AliFemtoMJTrackCut::SetNsigmaAccept(Double_t nsigma)
 {
   fNsigmaAccept = nsigma;
@@ -1406,7 +1412,7 @@ Bool_t AliFemtoMJTrackCut::CheckITSClusterRequirement(AliESDtrackCuts::ITSCluste
 
 bool AliFemtoMJTrackCut::IsElectron(float nsigmaTPCE, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
 {
-  if(TMath::Abs(nsigmaTPCE)<3 && TMath::Abs(nsigmaTPCPi)>3 && TMath::Abs(nsigmaTPCK)>3 && TMath::Abs(nsigmaTPCP)>3)
+  if(TMath::Abs(nsigmaTPCE)< fMaxNsigmaERejection)
       return false;
    else
      return true;

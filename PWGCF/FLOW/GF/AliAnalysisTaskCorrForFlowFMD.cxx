@@ -139,6 +139,9 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fMinEventsToMix(5),
     fNzVtxBins(10),
     fNCentBins(15),
+    fUseFMDcorrection(kFALSE),
+    fFMD_correctoion(0),								 
+    fFMD_correctoion_file(""),
     fMergingCut(0.0)
 {}
 //_____________________________________________________________________________
@@ -260,6 +263,9 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fMinEventsToMix(5),
     fNzVtxBins(10),
     fNCentBins(15),
+    fUseFMDcorrection(kFALSE),
+    fFMD_correctoion(0),								 
+    fFMD_correctoion_file(""),
     fMergingCut(0.0)
 {
     DefineInput(0, TChain::Class());
@@ -461,6 +467,25 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
       if(!fhCentCalib) { AliError("Centrality calibration histogram not loaded!"); return; }
     }
 
+
+if(fUseFMDcorrection)
+   {
+   if (TString(fFMD_correctoion_file).BeginsWith("alien:"))
+    TGrid::Connect("alien:");
+    TFile *fileT=TFile::Open(fFMD_correctoion_file);
+    if(!fileT) { AliError("FMD correction file not loaded!"); return; }
+
+   TDirectory * d1 =(TDirectory*) fileT->Get("Forward");
+   if(!d1) { AliError("FMD correction directory not loaded!"); return; }
+
+     fFMD_correctoion = (TF1 *) d1->Get("param");
+     if(!fFMD_correctoion) { AliError("FMD correction TF1 not loaded!"); return; }
+
+      fileT->Close();
+
+   }
+
+	
     if(fAnalType == eFMDAFMDC && fUseEfficiency){ AliWarning("Efficeincies inserted when running FMDA-FMDC. Turning off the flag."); fUseEfficiency = kFALSE; }
 
     PostData(1, fOutputListCharged);
@@ -1268,12 +1293,20 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
 
         binscont[0] = trigEta - assEta;
         binscont[1] = RangePhi(trigPhi - assPhi);
+	      
+      Double_t fmd_correc_factor = 1.0;
+      if(fUseFMDcorrection) {
+	fmd_correc_factor = fFMD_correctoion->Eval(assEta);    
+	if(fmd_correc_factor < 0.001 || fmd_correc_factor > 5) continue;
+      }
 
-        fhSE[spec]->Fill(binscont,0,assMult/(trigEff));
+        fhSE[spec]->Fill(binscont,0,assMult/(trigEff*fmd_correc_factor));
+        
       }
     }
   } // end TPC - FMD
-  else{
+	  
+   else{
     Double_t binscont[4];
     binscont[2] = fPVz;
     binscont[3] = fSampleIndex;
@@ -1286,6 +1319,13 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       Double_t trigPhi = track->Phi();
       Double_t trigMult = track->Multiplicity();
 
+
+       Double_t fmd_correc_trig = 1.0;
+      if(fUseFMDcorrection) {
+	fmd_correc_trig = fFMD_correctoion->Eval(trigEta);    
+	if(fmd_correc_trig < 0.001 || fmd_correc_trig > 5) continue;
+      }
+
       for(Int_t iAss(0); iAss < fTracksAss->GetEntriesFast(); iAss++){
         AliPartSimpleForCorr* trackAss = (AliPartSimpleForCorr*)fTracksAss->At(iAss);
         if(!trackAss) continue;
@@ -1294,10 +1334,16 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         Double_t assPhi = trackAss->Phi();
         Double_t assMult = trackAss->Multiplicity();
 
+       Double_t fmd_correc_assoc = 1.0;
+      if(fUseFMDcorrection) {
+	fmd_correc_assoc = fFMD_correctoion->Eval(assEta);    
+	if(fmd_correc_assoc < 0.001 || fmd_correc_assoc > 5) continue;
+      }
+      
         binscont[0] = trigEta - assEta;
         binscont[1] = RangePhiFMD(trigPhi - assPhi);
 
-        fhSE[spec]->Fill(binscont,0,assMult*trigMult);
+        fhSE[spec]->Fill(binscont,0,assMult*trigMult/(fmd_correc_trig*fmd_correc_assoc));
       }
     }
   } // end FMD - FMD
@@ -1417,12 +1463,18 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
             binscont[0] = trigEta - assEta;
             binscont[1] = RangePhi(trigPhi - assPhi);
 
-            fhME[spec]->Fill(binscont,0,assMult/((Double_t)nMix*trigEff));
+      Double_t fmd_correc_factor = 1.0;
+      if(fUseFMDcorrection) {
+	fmd_correc_factor = fFMD_correctoion->Eval(assEta);    
+	if(fmd_correc_factor < 0.001 || fmd_correc_factor > 5) continue;
+      }
+
+        fhME[spec]->Fill(binscont,0,assMult/((Double_t)nMix*trigEff*fmd_correc_factor));
           }
         }
       }
     } // end TPC - FMD
-    else{
+     else{
       Double_t binscont[4];
       binscont[2] = fPVz;
       binscont[3] = fSampleIndex;
@@ -1434,6 +1486,12 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         Double_t trigEta = track->Eta();
         Double_t trigPhi = track->Phi();
         Double_t trigMult = track->Multiplicity();
+
+       Double_t fmd_correc_trig = 1.0;
+        if(fUseFMDcorrection) {
+	fmd_correc_trig = fFMD_correctoion->Eval(trigEta);    
+	if(fmd_correc_trig < 0.001 || fmd_correc_trig > 5) continue;
+      }
 
         for(Int_t eMix(0); eMix < nMix; eMix++){
           TObjArray *mixEvents = pool->GetEvent(eMix);
@@ -1448,11 +1506,19 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
             binscont[0] = trigEta - assEta;
             binscont[1] = RangePhiFMD(trigPhi - assPhi);
 
-            fhME[spec]->Fill(binscont,0,(trigMult*assMult)/(Double_t)nMix);
+
+      Double_t fmd_correc_assoc = 1.0;
+      if(fUseFMDcorrection) {
+	fmd_correc_assoc = fFMD_correctoion->Eval(assEta);    
+	if(fmd_correc_assoc < 0.001 || fmd_correc_assoc > 5) continue;
+      }
+
+      fhME[spec]->Fill(binscont,0,(trigMult*assMult)/((Double_t)nMix*fmd_correc_trig*fmd_correc_assoc));
           }
         }
       }
     } // end FMD - FMD
+
 
   } // event pool done
 
@@ -1892,6 +1958,16 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
       Float_t phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi);
       Float_t mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
 
+	    /*
+      Double_t fmd_correc_factor = 1.0;
+	    
+      if(fUseFMDcorrection) {
+      fmd_correc_factor = fFMD_correctoion->Eval(eta);    
+       if(fmd_correc_factor < 0.001 || fmd_correc_factor > 5) continue;
+      }
+
+      Float_t mostProbableN =  mostProbableN_temp / fmd_correc_factor;
+	    */
       if(mostProbableN > 0) {
     	   if(eta > 0){
     	     nFMD_fwd_hits+=mostProbableN;

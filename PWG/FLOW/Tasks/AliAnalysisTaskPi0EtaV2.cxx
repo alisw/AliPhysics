@@ -3,6 +3,7 @@
 #include "TBranch.h"
 #include "TFile.h"
 #include "TH1F.h"
+#include "TGrid.h"
 #include "TCanvas.h"
 #include "TNtuple.h"
 #include "AliAnalysisTask.h"
@@ -51,8 +52,10 @@ ClassImp(AliAnalysisTaskPi0EtaV2)
                                                          fInputEvent(NULL),
                                                          fnCuts(0),
                                                          fiCut(0),
-                                                         runMode(0),
+                                                         fTrainConfig(0),
                                                          fPeriod(""),
+                                                         fOutputAODBranchName(""),
+                                                         fOutputBGBranchName(""),
                                                          fEventCutArray(NULL),
                                                          fOutputContainer(NULL),
                                                          fCutFolder(NULL),
@@ -69,6 +72,7 @@ ClassImp(AliAnalysisTaskPi0EtaV2)
                                                          IsVZEROCalibOn(kTRUE),
                                                          IsQAVZERO(kTRUE),
                                                          fListVZEROCalib(NULL),
+                                                         fVZEROCalibFile(NULL),
                                                          fPsi2V0C(-999),
                                                          fPsi2V0A(-999),
                                                          fHist2DPsi2V0CCent(NULL),
@@ -80,7 +84,6 @@ ClassImp(AliAnalysisTaskPi0EtaV2)
                                                          contQxnam(NULL),
                                                          contQynam(NULL),
                                                          fHCorrectV0ChWeghts(NULL),
-                                                         hQnPercentile(NULL),
                                                          fProfileV0CQxCentGE(NULL),
                                                          fProfileV0CQyCentGE(NULL),
                                                          fProfileV0CQxVtxGE(NULL),
@@ -102,7 +105,6 @@ ClassImp(AliAnalysisTaskPi0EtaV2)
                                                          fProfileV0AQyVtxRC(NULL),
                                                          fHist2CalibPsi2V0ACentRC(NULL),
                                                          fHist2V0Res(NULL)
-
 {
     for (int i = 0; i < 2; ++i)
     {
@@ -116,8 +118,10 @@ AliAnalysisTaskPi0EtaV2::AliAnalysisTaskPi0EtaV2(const char *name) : AliAnalysis
                                                                      fInputEvent(NULL),
                                                                      fnCuts(0),
                                                                      fiCut(0),
-                                                                     runMode(0),
+                                                                     fTrainConfig(0),
                                                                      fPeriod(""),
+                                                                     fOutputAODBranchName(""),
+                                                                     fOutputBGBranchName(""),
                                                                      fEventCutArray(NULL),
                                                                      fOutputContainer(NULL),
                                                                      fCutFolder(NULL),
@@ -134,6 +138,7 @@ AliAnalysisTaskPi0EtaV2::AliAnalysisTaskPi0EtaV2(const char *name) : AliAnalysis
                                                                      IsVZEROCalibOn(kTRUE),
                                                                      IsQAVZERO(kTRUE),
                                                                      fListVZEROCalib(NULL),
+                                                                     fVZEROCalibFile(NULL),
                                                                      fPsi2V0C(-999),
                                                                      fPsi2V0A(-999),
                                                                      fHist2DPsi2V0CCent(NULL),
@@ -145,7 +150,6 @@ AliAnalysisTaskPi0EtaV2::AliAnalysisTaskPi0EtaV2(const char *name) : AliAnalysis
                                                                      contQxnam(NULL),
                                                                      contQynam(NULL),
                                                                      fHCorrectV0ChWeghts(NULL),
-                                                                     hQnPercentile(NULL),
                                                                      fProfileV0CQxCentGE(NULL),
                                                                      fProfileV0CQyCentGE(NULL),
                                                                      fProfileV0CQxVtxGE(NULL),
@@ -243,7 +247,7 @@ void AliAnalysisTaskPi0EtaV2::UserCreateOutputObjects()
     Int_t nBinsMinv = 800;
     Double_t arrMinvBin[nBinsMinv + 1];
     Float_t maxMinv = 0.8;
-    Double_t minPhi = 0;
+    Double_t minPhi = 0.;
     Double_t maxPhi = TMath::Pi();
     Int_t nPhiBins = 6;
     Double_t arrPhiBin[nPhiBins + 1];
@@ -357,38 +361,48 @@ void AliAnalysisTaskPi0EtaV2::UserCreateOutputObjects()
     ////////////////////////
     // VZERO
     ////////////////////////
+    if (!gGrid)
+    {
+        TGrid::Connect("alien://");
+    }
+
     if (IsVZEROCalibOn)
     {
-        if (!fListVZEROCalib)
-        {
-            std::cout << ("VZERO calibration list not found") << std::endl;
-            return;
-        }
-
-        // V0C Qx Mean
-        // V0C Qy Mean
-        // V0A Qx Mean
-        // V0A Qy Mean
-        contQxncm = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqxc%im", 2));
-        contQyncm = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqyc%im", 2));
-        contQxnam = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqxa%im", 2));
-        contQynam = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqya%im", 2));
-
-        for (int i = 0; i < 2; i++)
-        {
-            hQx2mV0[i] = new TH1D();
-            hQy2mV0[i] = new TH1D();
-        }
-        // 15 V0 Mult
         if (fPeriod.EqualTo("LHC15o"))
         {
-            contMult = (AliOADBContainer *)fListVZEROCalib->FindObject("hMultV0BefCorPfpx");
-            hMultV0 = new TH1D();
+            fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC15o/VZEROCalibFile15o.root", "READ");
+            fListVZEROCalib = dynamic_cast<TList *>(fVZEROCalibFile->Get("VZEROCalibList"));
+            if (fListVZEROCalib)
+            {
+                // V0C Qx Mean
+                // V0C Qy Mean
+                // V0A Qx Mean
+                // V0A Qy Mean
+                contQxncm = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqxc%im", 2));
+                contQyncm = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqyc%im", 2));
+                contQxnam = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqxa%im", 2));
+                contQynam = (AliOADBContainer *)fListVZEROCalib->FindObject(Form("fqya%im", 2));
+                contMult = (AliOADBContainer *)fListVZEROCalib->FindObject("hMultV0BefCorPfpx");
+            }
+            else
+                std::cout << "!!!!!!!!!!!!!!!VZERO List not Found!!!!!!!!!!!!!!!" << std::endl;
         }
         if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r"))
         {
-            fHCorrectV0ChWeghts = new TH2F();
-            hQnPercentile = (TH2D *)fListVZEROCalib->FindObject("h_qncPercentile");
+            fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/j/jwan/CalibFile/calibq2V0C18qrP3.root", "READ");
+            if (fVZEROCalibFile)
+            {
+                // V0C Qx Mean
+                // V0C Qy Mean
+                // V0A Qx Mean
+                // V0A Qy Mean
+                contQxncm = (AliOADBContainer *)fVZEROCalibFile->GetObjectChecked("fqxc2m", "AliOADBContainer");
+                contQyncm = (AliOADBContainer *)fVZEROCalibFile->GetObjectChecked("fqyc2m", "AliOADBContainer");
+                contQxnam = (AliOADBContainer *)fVZEROCalibFile->GetObjectChecked("fqxa2m", "AliOADBContainer");
+                contQynam = (AliOADBContainer *)fVZEROCalibFile->GetObjectChecked("fqya2m", "AliOADBContainer");
+            }
+            else
+                std::cout << "!!!!!!!!!!!!!!!VZERO File not Found!!!!!!!!!!!!!!!" << std::endl;
         }
     }
 
@@ -425,16 +439,23 @@ void AliAnalysisTaskPi0EtaV2::UserExec(Option_t *)
         }
         if (iCut != centBin)
             continue;
+        fOutputAODBranchName = Form("pi0Array_%i", fTrainConfig);
+        fOutputBGBranchName = Form("pi0BackgroundArray_%i", fTrainConfig);
+        //    cout << "fOutputAODBranchName===" << fOutputAODBranchName.Data() << endl;
         TClonesArray *arrClustersPi0 = NULL;
         TClonesArray *arrClustersBg = NULL;
-        arrClustersPi0 = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("pi0Array"));
-        arrClustersBg = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("pi0BackgroundArray"));
+        arrClustersPi0 = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(fOutputAODBranchName.Data()));
+        arrClustersBg = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(fOutputBGBranchName.Data()));
         if (!arrClustersPi0 || !arrClustersBg)
+        {
+            cout << "No Clusters found in this event" << endl;
             return;
+        }
         int nclusPi0 = arrClustersPi0->GetEntriesFast();
         int nclusBg = arrClustersBg->GetEntriesFast();
-        if (nclusPi0 == 0)
-            return;
+        //    if (nclusPi0 == 0)
+        //        return;
+        //    cout << "nclusPi0==" << nclusPi0 << endl;
         // VZERO Plane
         runNum = fInputEvent->GetRunNumber();
         if (IsVZEROCalibOn)
@@ -443,12 +464,16 @@ void AliAnalysisTaskPi0EtaV2::UserExec(Option_t *)
             {
                 if (!LoadCalibHistForThisRun())
                 {
+                    //            cout << "=====faild to LoadCalibHistForThisRun=====" << endl;
                     return;
                 }
                 oldRunNum = runNum;
             }
             if (!GetVZEROPlane())
+            {
+                //         cout << "==============faild to GetVZEROPlane===========" << endl;
                 return;
+            }
         }
         fHist2V0Res[iCut]->Fill(centBin + 0.5, cos(2 * (fPsi2V0A - fPsi2V0C)));
         fHist2DPsi2V0CCent[iCut]->Fill(centSPD1, fPsi2V0C);
@@ -512,12 +537,12 @@ bool AliAnalysisTaskPi0EtaV2::LoadCalibHistForThisRun()
     {
         if (IsVZEROCalibOn)
         {
-            hMultV0->Reset();
-            for (int i = 0; i < 2; i++)
-            {
-                hQx2mV0[i]->Reset();
-                hQy2mV0[i]->Reset();
-            }
+            //  hMultV0->Reset();
+            //  for (int i = 0; i < 2; i++)
+            //  {
+            //      hQx2mV0[i]->Reset();
+            //      hQy2mV0[i]->Reset();
+            //  }
             if (!contQxncm || !contQyncm || !contQxnam || !contQynam)
                 return false;
             hMultV0 = ((TH1D *)contMult->GetObject(runNum));
@@ -539,39 +564,37 @@ bool AliAnalysisTaskPi0EtaV2::LoadCalibHistForThisRun()
     }
     if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r"))
     {
-        // 18q/r VZERO
-        for (int i = 0; i < 2; i++)
-        {
-            hQx2mV0[i]->Reset();
-            hQy2mV0[i]->Reset();
-        }
+        //   for (int i = 0; i < 2; i++)
+        //   {
+        //       hQx2mV0[i]->Reset();
+        //       hQy2mV0[i]->Reset();
+        //   }
         if (!contQxncm || !contQyncm || !contQxnam || !contQynam)
+        {
+            cout << "contQncm not found" << endl;
             return false;
-        hQx2mV0[0] = ((TH1D *)contQxncm->GetObject(runNum));
-        hQy2mV0[0] = ((TH1D *)contQyncm->GetObject(runNum));
-        hQx2mV0[1] = ((TH1D *)contQxnam->GetObject(runNum));
-        hQy2mV0[1] = ((TH1D *)contQynam->GetObject(runNum));
-        // char num_str = static_cast<char>(runNum);
-        // hQx2mV0[0] = ((TH1D *)contQxncm->GetObject(Form("hV0QxMeanCRun%c", num_str)));
-        // hQy2mV0[0] = ((TH1D *)contQyncm->GetObject(Form("hV0QyMeanCRun%c", num_str)));
-        // hQx2mV0[1] = ((TH1D *)contQxnam->GetObject(Form("hV0QxMeanARun%c", num_str)));
-        // hQy2mV0[1] = ((TH1D *)contQynam->GetObject(Form("hV0QyMeanARun%c", num_str)));
-        //  hQx2mV0[0] = ((TH1D *)contQxncm->GetObject("hV0QxMeanCRun297222"));
-        //  hQy2mV0[0] = ((TH1D *)contQyncm->GetObject("hV0QyMeanCRun297222"));
-        //  hQx2mV0[1] = ((TH1D *)contQxnam->GetObject("hV0QxMeanARun297222"));
-        //  hQy2mV0[1] = ((TH1D *)contQynam->GetObject("hV0QyMeanARun297222"));
+        }
+        //  hQx2mV0[0] = ((TH1D *)contQxncm->GetObject(runNum));
+        //  hQy2mV0[0] = ((TH1D *)contQyncm->GetObject(runNum));
+        //  hQx2mV0[1] = ((TH1D *)contQxnam->GetObject(runNum));
+        //  hQy2mV0[1] = ((TH1D *)contQynam->GetObject(runNum));
+
+        hQx2mV0[0] = ((TH1D *)contQxncm->GetDefaultObject(Form("hV0QxMeanCRun%d", runNum)));
+        hQy2mV0[0] = ((TH1D *)contQyncm->GetDefaultObject(Form("hV0QyMeanCRun%d", runNum)));
+        hQx2mV0[1] = ((TH1D *)contQxnam->GetDefaultObject(Form("hV0QxMeanARun%d", runNum)));
+        hQy2mV0[1] = ((TH1D *)contQynam->GetDefaultObject(Form("hV0QyMeanARun%d", runNum)));
         if (!hQx2mV0[0] || !hQy2mV0[0] || !hQx2mV0[1] || !hQy2mV0[1])
         {
-            hQx2mV0[0] = NULL;
-            hQy2mV0[0] = NULL;
-            hQx2mV0[1] = NULL;
-            hQy2mV0[1] = NULL;
+            //     cout << "=======hQ2mV0 not found======" << endl;
             return false;
         }
-        fHCorrectV0ChWeghts->Reset();
-        fHCorrectV0ChWeghts = (TH2F *)fListVZEROCalib->FindObject(Form("hWgtV0ChannelsvsVzRun%d", runNum));
+        //    fHCorrectV0ChWeghts->Reset();
+        fHCorrectV0ChWeghts = (TH2F *)fVZEROCalibFile->GetObjectChecked(Form("hWgtV0ChannelsvsVzRun%d", runNum), "TH2F");
         if (!fHCorrectV0ChWeghts)
+        {
+            //       cout << "=======fHCorrectV0ChWeghts not found======" << endl;
             return false;
+        }
     }
     return true;
 }
@@ -669,14 +692,18 @@ bool AliAnalysisTaskPi0EtaV2::GetVZEROPlane()
         }
     }
     if (multRingGE[1] < 1.e-6 || multRingGE[2] < 1.e-6)
+    {
         return false;
+    }
 
     // VZERO GE Plane
     for (int i = 1; i < 3; i++)
     {
         psi2GE[i] = GetEventPlane(qxGE[i], qyGE[i], 2.);
         if (TMath::IsNaN(psi2GE[i]))
+        {
             return false;
+        }
     }
     // VZERO Recenter
     for (int i = 1; i < 3; ++i)
@@ -692,7 +719,9 @@ bool AliAnalysisTaskPi0EtaV2::GetVZEROPlane()
         qyRC[i] = qyGE[i] - qyMean;
         psi2RC[i] = GetEventPlane(qxRC[i], qyRC[i], 2.);
         if (TMath::IsNaN(psi2RC[i]))
+        {
             return false;
+        }
     }
     // VZERO QA //0GE 1RC
     if (IsQAVZERO)

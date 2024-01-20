@@ -325,6 +325,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistElectronPositronClusterMatchSub(NULL),
   fHistElectronPositronClusterMatchEoverP(NULL),
   fHistElectronPositronClusterMatchEoverPonVtx(NULL),
+  fHistElectronPositronClusterMatchEoverPVsE(NULL),
+  fHistElectronPositronClusterMatchEoverPonVtxVsE(NULL),
   fHistElectronClusterMatch(NULL),
   fHistPositronClusterMatch(NULL),
   fHistTrueElectronPositronClusterMatch(NULL),
@@ -578,6 +580,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistElectronPositronClusterMatchSub(NULL),
   fHistElectronPositronClusterMatchEoverP(NULL),
   fHistElectronPositronClusterMatchEoverPonVtx(NULL),
+  fHistElectronPositronClusterMatchEoverPVsE(NULL),
+  fHistElectronPositronClusterMatchEoverPonVtxVsE(NULL),
   fHistElectronClusterMatch(NULL),
   fHistPositronClusterMatch(NULL),
   fHistTrueElectronPositronClusterMatch(NULL),
@@ -1964,17 +1968,29 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistElectronPositronClusterMatchSub->GetYaxis()->SetTitle("E_{cl} - P_{track, EMC}");
     fHistograms->Add(fHistElectronPositronClusterMatchSub);
 
-    fHistElectronPositronClusterMatchEoverP = new TH2F(Form("MatchedElectronPositronEOverP %s",GetCutNumber().Data()), "Matched Electron Positron tracks with P on EMC E over P",
+    fHistElectronPositronClusterMatchEoverP = new TH2F(Form("MatchedElectronPositronEOverP %s",GetCutNumber().Data()), "Matched Electron Positron tracks with P on EMC E over track P",
                                                       300,0,1.5,500,0,50.);
     fHistElectronPositronClusterMatchEoverP->GetXaxis()->SetTitle("E_{cl} / P_{track, EMC}");
     fHistElectronPositronClusterMatchEoverP->GetYaxis()->SetTitle("P_{T} (GeV)");
     fHistograms->Add(fHistElectronPositronClusterMatchEoverP);
 
-    fHistElectronPositronClusterMatchEoverPonVtx = new TH2F(Form("MatchedElectronPositronEOverPonVtx %s",GetCutNumber().Data()), "Matched Electron Positron tracks with P on Vtx E over P",
+    fHistElectronPositronClusterMatchEoverPonVtx = new TH2F(Form("MatchedElectronPositronEOverPonVtx %s",GetCutNumber().Data()), "Matched Electron Positron tracks with P on Vtx E over track P",
                                                       300,0,1.5,500,0,50.);
     fHistElectronPositronClusterMatchEoverPonVtx->GetXaxis()->SetTitle("E_{cl} / P_{track, Vtx}");
     fHistElectronPositronClusterMatchEoverPonVtx->GetYaxis()->SetTitle("P_{T} (GeV)");
     fHistograms->Add(fHistElectronPositronClusterMatchEoverPonVtx);
+
+    fHistElectronPositronClusterMatchEoverPVsE = new TH2F(Form("MatchedElectronPositronEOverPVsE %s",GetCutNumber().Data()), "Matched Electron Positron tracks with P on EMC E over track P",
+                                                      300,0,1.5,500,0,50.);
+    fHistElectronPositronClusterMatchEoverPVsE->GetXaxis()->SetTitle("E_{cl} / P_{track, EMC}");
+    fHistElectronPositronClusterMatchEoverPVsE->GetYaxis()->SetTitle("E_{cl} (GeV)");
+    fHistograms->Add(fHistElectronPositronClusterMatchEoverPVsE);
+
+    fHistElectronPositronClusterMatchEoverPonVtxVsE = new TH2F(Form("MatchedElectronPositronEOverPonVtxVsE %s",GetCutNumber().Data()), "Matched Electron Positron tracks with P on Vtx E over track P",
+                                                      300,0,1.5,500,0,50.);
+    fHistElectronPositronClusterMatchEoverPonVtxVsE->GetXaxis()->SetTitle("E_{cl} / P_{track, Vtx}");
+    fHistElectronPositronClusterMatchEoverPonVtxVsE->GetYaxis()->SetTitle("E_{cl} (GeV)");
+    fHistograms->Add(fHistElectronPositronClusterMatchEoverPonVtxVsE);
 
     if(fExtendedMatchAndQA > 1 ){
       fHistElectronClusterMatch = new TH2F(Form("MatchedElectronTrackPClusE %s",GetCutNumber().Data()), "Matched Electron tracks with P on EMC",
@@ -4545,8 +4561,14 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
       }
       fHistElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
       fHistElectronPositronClusterMatchSub->Fill(cluster->E(), cluster->E() - inTrack->GetTrackPOnEMCal(), weight);
-      if(inTrack->GetTrackPOnEMCal() > 0) fHistElectronPositronClusterMatchEoverP->Fill(cluster->E() / inTrack->GetTrackPOnEMCal(), inTrack->Pt(), weight);
-      if(inTrack->P() > 0) fHistElectronPositronClusterMatchEoverPonVtx->Fill(cluster->E() / inTrack->P(), inTrack->Pt(), weight);
+      if(inTrack->GetTrackPOnEMCal() > 0) {
+        fHistElectronPositronClusterMatchEoverP->Fill(cluster->E() / inTrack->GetTrackPOnEMCal(), inTrack->Pt(), weight);
+        fHistElectronPositronClusterMatchEoverPVsE->Fill(cluster->E() / inTrack->GetTrackPOnEMCal(), cluster->E(), weight);
+      }
+      if(inTrack->P() > 0) {
+        fHistElectronPositronClusterMatchEoverPonVtx->Fill(cluster->E() / inTrack->P(), inTrack->Pt(), weight);
+        fHistElectronPositronClusterMatchEoverPonVtxVsE->Fill(cluster->E() / inTrack->P(), cluster->E(), weight);
+      }
 
       if(isMC){
         if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
@@ -6063,6 +6085,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
         fParamMeanTrackPt[2] = -1.93788e-05;
       }
       break;
+
     case 30: // cut char 'u' (no TM but with random energy correction for overlap), only use with cell tm!
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
@@ -6085,6 +6108,7 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
         fParamMeanTrackPt[2] = -1.93788e-05;
       }
       break;
+
     case 31: // cut char 'v' (no TM but with mean energy correction for overlap using mean charge particle per cell), only use with cell tm!
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
       if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
@@ -6106,6 +6130,16 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
         fParamMeanTrackPt[1] = +2.33711e-04;
         fParamMeanTrackPt[2] = -1.93788e-05;
       }
+      break;
+    
+    case 32: // cut char 'w' NonLin like fitted to pp 13 TeV
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
+      fUseDistTrackToCluster = kFALSE;
+      fMaxDistTrackToClusterEta = 0;
+      fMinDistTrackToClusterPhi = 0;
+      fMaxDistTrackToClusterPhi = 0;
+      fDoEnergyCorrectionForOverlap = 4;
       break;
 
     default:
@@ -9629,10 +9663,11 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC19h2b") == 0 ||
             namePeriod.CompareTo("LHC19h2c") == 0 ||
             namePeriod.CompareTo("LHC19h3")  == 0 ||
-            namePeriod.CompareTo("LHC20e3a")  == 0 ||
-            namePeriod.CompareTo("LHC20e3b")  == 0 ||
-            namePeriod.CompareTo("LHC20e3c")  == 0 ||
-            namePeriod.CompareTo("LHC20g10")  == 0)   return kPbPb5T18HIJING;
+            namePeriod.CompareTo("LHC20e3a") == 0 ||
+            namePeriod.CompareTo("LHC20e3b") == 0 ||
+            namePeriod.CompareTo("LHC20e3c") == 0 ||
+            namePeriod.CompareTo("LHC20g10") == 0 ||
+            namePeriod.CompareTo("LHC22b5")  == 0)   return kPbPb5T18HIJING;
 
   // pp 13 TeV 2016 MB prod
   else if ( namePeriod.CompareTo("LHC16P1Pyt8") == 0 ||
@@ -10757,7 +10792,7 @@ Bool_t AliCaloPhotonCuts::SetNMatchedTracksFunc(float meanCent){
 
 // Function to get the energy value to subtract from a cluster to account for
 // neutral overlap in PbPb 5 TeV
-Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent){
+Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent, float E){
   switch (fDoEnergyCorrectionForOverlap){
     case 0:
       return 0.;
@@ -10767,6 +10802,20 @@ Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent){
       return 0.5 * fFuncNMatchedTracks->GetRandom(0.0, 8.0) * GetMeanEForOverlap(meanCent, fParamMeanTrackPt);
     case 3:
       return 0.5 * fFuncNMatchedTracks->Eval(meanCent) * GetMeanEForOverlap(meanCent, fParamMeanTrackPt);
+    case 4:
+      if(meanCent < 10){
+        if(E > 3.5) E = 3.5;
+        return 1.09645e+00 - 3.49489e-01 * E + 1.56646e-01 * E * E - 2.03620e-02 * E * E * E;
+      } else if (meanCent < 30){
+        if(E > 3.8) E = 3.8;
+        return 1.03972e+00 - 1.79650e-01 * E + 8.41570e-02 * E * E - 1.13454e-02 * E * E * E;
+      } else if (meanCent < 50){
+        if(E > 3.3) E = 3.3;
+        return 1.00734e+00 - 6.42114e-02 * E + 3.03931e-02 * E * E - 4.16131e-03 * E * E * E;
+      } else {
+        if(E > 3.5) E = 3.5;
+        return 9.95241e-01 - 1.49339e-02 * E + 8.08355e-03 * E * E - 1.33936e-03 * E * E * E;
+      }
     default:
       return 0;
   }

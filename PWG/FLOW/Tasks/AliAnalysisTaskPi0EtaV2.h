@@ -19,7 +19,6 @@ public:
     bool LoadCalibHistForThisRun();
     bool GetVZEROPlane();
     double GetEventPlane(double qx, double qy, double harmonic);
-    void SetListForVZEROCalib(TList *flist) { this->fListVZEROCalib = (TList *)flist->Clone(); }
     void SetPeriod(TString period) { this->fPeriod = period; }
     void SetnCuts(Int_t nCuts)
     {
@@ -33,13 +32,19 @@ public:
     {
         fEventCutArray = CutArray;
     }
+    void SetTrainconfig(Int_t config)
+    {
+        fTrainConfig = config;
+    }
 
 private:
     AliVEvent *fInputEvent; // current event
     Int_t fnCuts;           // total cuts
     Int_t fiCut;            // current cut
-    Int_t runMode;          // runMode
+    Int_t fTrainConfig;     // fTrainConfig
     TString fPeriod;
+    TString fOutputAODBranchName;            ///<  Name of output clusters AOD branch
+    TString fOutputBGBranchName;             ///<  Name of output of background
     TList *fEventCutArray;                   // List with Event Cuts
     TList *fOutputContainer;                 // Output container
     TList **fCutFolder;                      // Array of lists for containers belonging to cut
@@ -51,12 +56,14 @@ private:
     TH3F **fHistoMotherBackInvMassPtdPhiV0C; //! array of histogram with BG for mixed event photon pairs in deta phi, inv Mass, pt
     TH1D **fEventCount;                      //! array of histogram of event count in centBins
                                              // VZERO
+
     int runNum;
     int oldRunNum;
     double centSPD1;
     bool IsVZEROCalibOn; // switch for VZERO qn calib
     bool IsQAVZERO;
     TList *fListVZEROCalib; // read list for V0 Calib
+    TFile *fVZEROCalibFile;
     double fPsi2V0C;
     double fPsi2V0A;
     TH2D **fHist2DPsi2V0CCent;
@@ -69,7 +76,6 @@ private:
     AliOADBContainer *contQynam;
     // 18q/r
     TH2F *fHCorrectV0ChWeghts;
-    TH2D *hQnPercentile;
     // V0C
     TProfile **fProfileV0CQxCentGE;
     TProfile **fProfileV0CQyCentGE;
@@ -98,7 +104,7 @@ private:
     AliAnalysisTaskPi0EtaV2(const AliAnalysisTaskPi0EtaV2 &);            // not implemented
     AliAnalysisTaskPi0EtaV2 &operator=(const AliAnalysisTaskPi0EtaV2 &); // not implemented
 
-    ClassDef(AliAnalysisTaskPi0EtaV2, 1);
+    ClassDef(AliAnalysisTaskPi0EtaV2, 2);
 };
 
 #endif

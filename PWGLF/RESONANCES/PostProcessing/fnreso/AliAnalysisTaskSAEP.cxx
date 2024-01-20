@@ -463,7 +463,7 @@ void AliAnalysisTaskSAEP::UserExec(Option_t *)
 
   //Printf("\n ::UserExec() ==> Passed V0 Selection: GetGainCorrectedV0Qvector(), fQnxV0C:%f  ...\n",fQnxV0C);
     
-  ApplyV0XqVectRecenter(centrCL1, gPsiNSet, fQnxV0C, fQnyV0C, fQnxV0A, fQnyV0A); // DO the <q> recentering. 
+  //ApplyV0XqVectRecenter(centrCL1, gPsiNSet, fQnxV0C, fQnyV0C, fQnxV0A, fQnyV0A); // DO the <q> recentering. 
 
   
   ////---- fill the <q> vector vs Cent (for recentering)

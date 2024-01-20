@@ -43,7 +43,8 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetHMCut(double HMcut) { fHMCut = HMcut; }      // Set V0M max value
-  void SetUseMC(bool mc = false) { fUseMC = mc; }      // use to analyse MC data
+  void SetRandomNumberCut(double rdcut) { fRandomNumberCut = rdcut; }
+  void SetUseMC(bool mc = false) { fUseMC = mc; }  // use to analyse MC data
   void SetEtaCut(const double& etacut) { fEtaCut = etacut; }
   void SetEtaMinCut(const double& etamin) { fEtaMin = etamin; }
   void SetEtaMaxCut(const double& etamax) { fEtaMax = etamax; }
@@ -74,6 +75,7 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   double fV0Mmin;
   double fV0Mmax;
   double fHMCut;
+  double fRandomNumberCut;
   double fv0mpercentile;
   float fv0mamplitude;
   int fRecNch;
@@ -126,8 +128,7 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   TH1F* hPtInPrim_proton;
   TH1F* hPtInPrim_sigmap;
   TH1F* hPtInPrim_sigmam;
-  TH1F* hPtInPrim_omega;
-  TH1F* hPtInPrim_xi;
+  TH1F* hPtInPrim_lambda;
   TH1F* hPtInPrim_rest;
   TH1F* hPtOutAll_ch;
   TH1F* hPtOutPrim_ch;
@@ -136,8 +137,6 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   TH1F* hPtOutPrim_proton;
   TH1F* hPtOutPrim_sigmap;
   TH1F* hPtOutPrim_sigmam;
-  TH1F* hPtOutPrim_omega;
-  TH1F* hPtOutPrim_xi;
   TH1F* hPtOutPrim_rest;
   TH2D* hPhiEtaSPD;
   TH2D* hVtxZvsTracklets;

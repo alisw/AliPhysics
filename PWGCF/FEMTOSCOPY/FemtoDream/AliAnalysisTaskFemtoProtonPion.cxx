@@ -87,7 +87,9 @@ AliAnalysisTaskFemtoProtonPion::AliAnalysisTaskFemtoProtonPion()
     fInvMassResonancesMCTruth(nullptr),
     fpTKineOrReco(nullptr),
     fEtaKineOrReco(nullptr),
-    fPhiKineOrReco(nullptr){
+    fPhiKineOrReco(nullptr),
+    ProtonID(nullptr),
+    AntiProtonID(nullptr) {
 }
 
 AliAnalysisTaskFemtoProtonPion::AliAnalysisTaskFemtoProtonPion(
@@ -160,7 +162,9 @@ AliAnalysisTaskFemtoProtonPion::AliAnalysisTaskFemtoProtonPion(
     fInvMassResonancesMCTruth(nullptr),
     fpTKineOrReco(nullptr),
     fEtaKineOrReco(nullptr),
-    fPhiKineOrReco(nullptr){
+    fPhiKineOrReco(nullptr),
+    ProtonID(nullptr),
+    AntiProtonID(nullptr){
   DefineOutput(1, TList::Class());  //Output for the Event Cuts
   DefineOutput(2, TList::Class());  //Output for the Proton Cuts
   DefineOutput(3, TList::Class());  //Output for the AntiProton Cuts
@@ -560,6 +564,20 @@ void AliAnalysisTaskFemtoProtonPion::UserCreateOutputObjects() {
     }
   }
 
+
+  if(fIsMC){
+
+    ProtonID = new TH2F("ProtonID", "Proton pT vs ID", 200, 0.,5., 4, -0.5, 3.5 ); 
+    AntiProtonID = new TH2F("AntiProtonID", "AntiProton pT vs ID", 200, 0.,5., 4, -0.5, 3.5 ); 
+
+    fProtonMCList->Add(ProtonID);
+    fAntiProtonMCList->Add(AntiProtonID); 
+
+    //x axis: pT of the track
+    //y axis: 0: reconstructed track, no ID called 1: ID of proton, 2: ID of Kaon, 3: ID of Pion
+
+  }
+
   ////////////////////////////////////////////////////////////////////// 
 
   PostData(1, fEvtList);
@@ -857,9 +875,39 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
 
         if (fTrackCutsProton->isSelected(fTrack)) {
           SelectedProtons.push_back(*fTrack);
+
+          if(fIsMC){
+            double trackpT = fTrack->GetPt(); 
+
+            ProtonID->Fill(trackpT, 0.); //no ID asked
+
+            if(abs(fTrack->GetMCPDGCode()) == 2212){
+                ProtonID->Fill(trackpT, 1.); //correctly identfied protons 
+            } else if (abs(fTrack->GetMCPDGCode()) == 321){
+                ProtonID->Fill(trackpT, 2.); //kaons
+            } else if (abs(fTrack->GetMCPDGCode()) == 211){
+                ProtonID->Fill(trackpT, 3.); //pions             
+            } 
+          }
+
         }
         if (fTrackCutsAntiProton->isSelected(fTrack)) {
           SelectedAntiProtons.push_back(*fTrack);
+
+          if(fIsMC){
+            double trackpT = fTrack->GetPt(); 
+
+            AntiProtonID->Fill(trackpT, 0.); //no ID asked
+
+            if(abs(fTrack->GetMCPDGCode()) == 2212){
+                AntiProtonID->Fill(trackpT, 1.); //correctly identfied anti-protons 
+            } else if (abs(fTrack->GetMCPDGCode()) == 321){
+                AntiProtonID->Fill(trackpT, 2.); //anti-kaons
+            } else if (abs(fTrack->GetMCPDGCode()) == 211){
+                AntiProtonID->Fill(trackpT, 3.); //anti-pions             
+            } 
+          }
+
         }
         if (fTrackCutsPion->isSelected(fTrack)){ 
           SelectedPions.push_back(*fTrack);

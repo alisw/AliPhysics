@@ -596,18 +596,42 @@ void AliPHOSEmbeddingRun2::MakeEmbedding()
 bool AliPHOSEmbeddingRun2::GetNextSignalEvent()
 {
   // Read signal AOD event from the chain
+  //select event with same z-vertex as current embedding
 
   if (fAODChain == nullptr) {
     AliError(Form("No chain to read signal events: "));
     return false;
   }
 
-  if (fSignal) {
-    delete fSignal;
-  }
-  fSignal = new AliAODEvent;
-  fSignal->ReadFromTree(fAODChain);
-  return fAODChain->GetEvent(fNSignal++) > 0; // event read without errors
+  int iSignal=0;
+  while(iSignal<fAODChain->GetEntriesFast()){
+    if(fSignalUsed.TestBitNumber(iSignal)){
+      iSignal++;
+      continue;
+    }
+    //read and check Vertex
+    if (fSignal) {
+      delete fSignal;
+    }
+    fSignal = new AliAODEvent;
+    fSignal->ReadFromTree(fAODChain);
+    bool readOK = fAODChain->GetEvent(iSignal)>0; // event read without errors
+    //check vertex
+    if(readOK){
+      AliAODMCHeader* mcheader = (AliAODMCHeader*)fSignal->FindListObject("mcHeader");
+      double zMC = mcheader->GetVtxZ() ;
+      const double dzCut = 0.5;
+      if(fabs(zMC-fVtx.Z())<dzCut){
+        fSignalUsed.SetBitNumber(iSignal,true);
+        return true;
+      }
+    }
+    else{
+      return false; // nothinkg to read?
+    }
+    iSignal++;    
+  }  
+  return false;
 }
 //______________________________________________________________________________
 void AliPHOSEmbeddingRun2::ConvertEmbeddedClusters()

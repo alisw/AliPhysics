@@ -115,6 +115,7 @@ ClassImp(AliAnalysisTaskDataSpeedOfSoundSim)  // classimp: necessary for root
       fV0Mmin(0.0),
       fV0Mmax(100.0),
       fHMCut(10.0),
+      fRandomNumberCut(0.5),
       fv0mpercentile(0),
       fv0mamplitude(0),
       fRecNch(0),
@@ -164,8 +165,7 @@ ClassImp(AliAnalysisTaskDataSpeedOfSoundSim)  // classimp: necessary for root
       hPtInPrim_proton(0),
       hPtInPrim_sigmap(0),
       hPtInPrim_sigmam(0),
-      hPtInPrim_omega(0),
-      hPtInPrim_xi(0),
+      hPtInPrim_lambda(0),
       hPtInPrim_rest(0),
       hPtOutAll_ch(0),
       hPtOutPrim_ch(0),
@@ -174,8 +174,6 @@ ClassImp(AliAnalysisTaskDataSpeedOfSoundSim)  // classimp: necessary for root
       hPtOutPrim_proton(0),
       hPtOutPrim_sigmap(0),
       hPtOutPrim_sigmam(0),
-      hPtOutPrim_omega(0),
-      hPtOutPrim_xi(0),
       hPtOutPrim_rest(0),
       hPhiEtaSPD(0),
       hVtxZvsTracklets(0),
@@ -209,6 +207,7 @@ AliAnalysisTaskDataSpeedOfSoundSim::AliAnalysisTaskDataSpeedOfSoundSim(
       fV0Mmin(0.0),
       fV0Mmax(100.0),
       fHMCut(10.0),
+      fRandomNumberCut(0.5),
       fv0mpercentile(0),
       fv0mamplitude(0),
       fRecNch(0),
@@ -258,8 +257,7 @@ AliAnalysisTaskDataSpeedOfSoundSim::AliAnalysisTaskDataSpeedOfSoundSim(
       hPtInPrim_proton(0),
       hPtInPrim_sigmap(0),
       hPtInPrim_sigmam(0),
-      hPtInPrim_omega(0),
-      hPtInPrim_xi(0),
+      hPtInPrim_lambda(0),
       hPtInPrim_rest(0),
       hPtOutAll_ch(0),
       hPtOutPrim_ch(0),
@@ -268,8 +266,6 @@ AliAnalysisTaskDataSpeedOfSoundSim::AliAnalysisTaskDataSpeedOfSoundSim(
       hPtOutPrim_proton(0),
       hPtOutPrim_sigmap(0),
       hPtOutPrim_sigmam(0),
-      hPtOutPrim_omega(0),
-      hPtOutPrim_xi(0),
       hPtOutPrim_rest(0),
       hPhiEtaSPD(0),
       hVtxZvsTracklets(0),
@@ -572,73 +568,63 @@ void AliAnalysisTaskDataSpeedOfSoundSim::UserCreateOutputObjects() {
                "(GeV/#it{c}) (0#geq#eta#leq0.8)",
                nch_Nbins, nch_bins, pt_Nbins, pt_bins);
 
-  hPtOutAll_ch = new TH1F("hPtOutAll_ch", ";#it{p}_{T} (GeV/#it{c}); Entries",
+  hPtOutAll_ch = new TH1F("hPtOutAll_Ch", ";#it{p}_{T} (GeV/#it{c}); Entries",
                           pt_Nbins, pt_bins);
 
-  hPtOutPrim_ch = new TH1F("hPtOutPrim_ch", ";#it{p}_{T} (GeV/#it{c}); Entries",
+  hPtOutPrim_ch = new TH1F("hPtOutPrim_Ch", ";#it{p}_{T} (GeV/#it{c}); Entries",
                            pt_Nbins, pt_bins);
 
   hPtOutPrim_pion =
-      new TH1F("hPtOutPrim_pion", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins,
+      new TH1F("hPtOutPrim_Pion", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins,
                pt_bins);
 
   hPtOutPrim_kaon =
-      new TH1F("hPtOutPrim_kaon", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins,
+      new TH1F("hPtOutPrim_Kaon", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins,
                pt_bins);
 
   hPtOutPrim_proton =
-      new TH1F("hPtOutPrim_proton", ";#it{p}_{T} (GeV/#it{c}); Entries",
+      new TH1F("hPtOutPrim_Proton", ";#it{p}_{T} (GeV/#it{c}); Entries",
                pt_Nbins, pt_bins);
 
   hPtOutPrim_sigmap =
-      new TH1F("hPtOutPrim_sigmap", ";#it{p}_{T} (GeV/#it{c}); Entries",
+      new TH1F("hPtOutPrim_Sigmap", ";#it{p}_{T} (GeV/#it{c}); Entries",
                pt_Nbins, pt_bins);
 
   hPtOutPrim_sigmam =
-      new TH1F("hPtOutPrim_sigmam", ";#it{p}_{T} (GeV/#it{c}); Entries",
+      new TH1F("hPtOutPrim_Sigmam", ";#it{p}_{T} (GeV/#it{c}); Entries",
                pt_Nbins, pt_bins);
-
-  hPtOutPrim_omega =
-      new TH1F("hPtOutPrim_omega", ";#it{p}_{T} (GeV/#it{c}); Entries",
-               pt_Nbins, pt_bins);
-
-  hPtOutPrim_xi = new TH1F("hPtOutPrim_xi", ";#it{p}_{T} (GeV/#it{c}); Entries",
-                           pt_Nbins, pt_bins);
 
   hPtOutPrim_rest =
-      new TH1F("hPtOutPrim_rest", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins,
+      new TH1F("hPtOutPrim_Rest", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins,
                pt_bins);
 
-  hPtInPrim_ch = new TH1F("hPtInPrim_ch", ";#it{p}_{T} (GeV/#it{c}); Entries",
+  hPtInPrim_ch = new TH1F("hPtInPrim_Ch", ";#it{p}_{T} (GeV/#it{c}); Entries",
                           pt_Nbins, pt_bins);
 
   hPtInPrim_pion = new TH1F(
-      "hPtInPrim_pion", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins, pt_bins);
+      "hPtInPrim_Pion", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins, pt_bins);
 
   hPtInPrim_kaon = new TH1F(
-      "hPtInPrim_kaon", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins, pt_bins);
+      "hPtInPrim_Kaon", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins, pt_bins);
 
   hPtInPrim_proton =
-      new TH1F("hPtInPrim_proton", ";#it{p}_{T} (GeV/#it{c}); Entries",
+      new TH1F("hPtInPrim_Proton", ";#it{p}_{T} (GeV/#it{c}); Entries",
                pt_Nbins, pt_bins);
 
   hPtInPrim_sigmap =
-      new TH1F("hPtInPrim_sigmap", ";#it{p}_{T} (GeV/#it{c}); Entries",
+      new TH1F("hPtInPrim_Sigmap", ";#it{p}_{T} (GeV/#it{c}); Entries",
                pt_Nbins, pt_bins);
 
   hPtInPrim_sigmam =
-      new TH1F("hPtInPrim_sigmam", ";#it{p}_{T} (GeV/#it{c}); Entries",
+      new TH1F("hPtInPrim_Sigmam", ";#it{p}_{T} (GeV/#it{c}); Entries",
                pt_Nbins, pt_bins);
 
-  hPtInPrim_omega =
-      new TH1F("hPtInPrim_omega", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins,
-               pt_bins);
-
-  hPtInPrim_xi = new TH1F("hPtInPrim_xi", ";#it{p}_{T} (GeV/#it{c}); Entries",
-                          pt_Nbins, pt_bins);
+  hPtInPrim_lambda =
+      new TH1F("hPtInPrim_Lambda", ";#it{p}_{T} (GeV/#it{c}); Entries",
+               pt_Nbins, pt_bins);
 
   hPtInPrim_rest = new TH1F(
-      "hPtInPrim_rest", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins, pt_bins);
+      "hPtInPrim_Rest", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins, pt_bins);
 
   hTruePtvsTrueNch14 =
       new TH2D("hTruePtvsTrueNch14",
@@ -675,8 +661,7 @@ void AliAnalysisTaskDataSpeedOfSoundSim::UserCreateOutputObjects() {
     fOutputList->Add(hPtInPrim_proton);
     fOutputList->Add(hPtInPrim_sigmap);
     fOutputList->Add(hPtInPrim_sigmam);
-    fOutputList->Add(hPtInPrim_omega);
-    fOutputList->Add(hPtInPrim_xi);
+    fOutputList->Add(hPtInPrim_lambda);
     fOutputList->Add(hPtInPrim_rest);
     fOutputList->Add(hPtOutAll_ch);
     fOutputList->Add(hPtOutPrim_ch);
@@ -685,8 +670,6 @@ void AliAnalysisTaskDataSpeedOfSoundSim::UserCreateOutputObjects() {
     fOutputList->Add(hPtOutPrim_proton);
     fOutputList->Add(hPtOutPrim_sigmap);
     fOutputList->Add(hPtOutPrim_sigmam);
-    fOutputList->Add(hPtOutPrim_omega);
-    fOutputList->Add(hPtOutPrim_xi);
     fOutputList->Add(hPtOutPrim_rest);
     // fOutputList->Add(hTrueNchHM);
     // fOutputList->Add(hTrueNchHMWithTrigger);
@@ -743,7 +726,7 @@ void AliAnalysisTaskDataSpeedOfSoundSim::UserExec(Option_t*) {
   random_number = gRandom->Uniform(0.0, 1.0);
   // if random_number < 0.5 --> Multiplicity Distributions
   // if random_number >= 0.5 --> Detector Response & Corrections
-  if (random_number >= 0.5) {
+  if (random_number >= fRandomNumberCut) {
     fill_corrections = true;
   }
 
@@ -1047,9 +1030,6 @@ void AliAnalysisTaskDataSpeedOfSoundSim::TrackingEfficiency() {
     if (TMath::Abs(track->Eta()) > fEtaCut) {
       continue;
     }
-    if (track->Charge() == 0) {
-      continue;
-    }
 
     int label = -1;
     label = TMath::Abs(track->GetLabel());
@@ -1058,30 +1038,28 @@ void AliAnalysisTaskDataSpeedOfSoundSim::TrackingEfficiency() {
     if (!particle) {
       continue;
     }
-
-    hPtOutAll_ch->Fill(particle->Pt());
+    if (track->Charge() == 0) {
+      continue;
+    }
+    hPtOutAll_ch->Fill(track->Pt());
     if (!fMC->IsPhysicalPrimary(label)) {
       continue;
     }
 
-    hPtOutPrim_ch->Fill(particle->Pt());
+    hPtOutPrim_ch->Fill(track->Pt());
     int partPDG = TMath::Abs(particle->GetPdgCode());
     if (partPDG == 211) {
-      hPtOutPrim_pion->Fill(particle->Pt());  // pions
+      hPtOutPrim_pion->Fill(track->Pt());  // pions
     } else if (partPDG == 321) {
-      hPtOutPrim_kaon->Fill(particle->Pt());  // kaons
+      hPtOutPrim_kaon->Fill(track->Pt());  // kaons
     } else if (partPDG == 2212) {
-      hPtOutPrim_proton->Fill(particle->Pt());  // protons
+      hPtOutPrim_proton->Fill(track->Pt());  // protons
     } else if (partPDG == 3222) {
-      hPtOutPrim_sigmap->Fill(particle->Pt());  // sigma plus
+      hPtOutPrim_sigmap->Fill(track->Pt());  // sigma plus
     } else if (partPDG == 3112) {
-      hPtOutPrim_sigmam->Fill(particle->Pt());  // sigma minus
-    } else if (partPDG == 3334) {
-      hPtOutPrim_omega->Fill(particle->Pt());  // Omega
-    } else if (partPDG == 3312) {
-      hPtOutPrim_xi->Fill(particle->Pt());  // Xi
+      hPtOutPrim_sigmam->Fill(track->Pt());  // sigma minus
     } else {
-      hPtOutPrim_rest->Fill(particle->Pt());  // rest of the charged particles
+      hPtOutPrim_rest->Fill(track->Pt());  // rest of the charged particles
     }
   }
 
@@ -1100,16 +1078,20 @@ void AliAnalysisTaskDataSpeedOfSoundSim::TrackingEfficiency() {
     if (particle->Pt() < fPtMin) {
       continue;
     }
-    if (particle->Charge() == 0) {
-      continue;
-    }
     if (!fMC->IsPhysicalPrimary(i)) {
       continue;
     }
 
-    hPtInPrim_ch->Fill(particle->Pt());
-
     int partPDG = TMath::Abs(particle->PdgCode());
+
+    if (partPDG == 3122) {
+      hPtInPrim_lambda->Fill(particle->Pt());  // Lambda
+    }
+    if (particle->Charge() == 0) {
+      continue;
+    }
+
+    hPtInPrim_ch->Fill(particle->Pt());
     if (partPDG == 211) {
       hPtInPrim_pion->Fill(particle->Pt());  // pions
     } else if (partPDG == 321) {
@@ -1120,10 +1102,6 @@ void AliAnalysisTaskDataSpeedOfSoundSim::TrackingEfficiency() {
       hPtInPrim_sigmap->Fill(particle->Pt());  // sigma plus
     } else if (partPDG == 3112) {
       hPtInPrim_sigmam->Fill(particle->Pt());  // sigma minus
-    } else if (partPDG == 3334) {
-      hPtInPrim_omega->Fill(particle->Pt());  // Omega
-    } else if (partPDG == 3312) {
-      hPtInPrim_xi->Fill(particle->Pt());  // Xi
     } else {
       hPtInPrim_rest->Fill(particle->Pt());  // rest of the charged particles
     }

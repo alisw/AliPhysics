@@ -90,6 +90,8 @@ AliJCatalystTask::AliJCatalystTask():
   phiMapIndex(0),
   bUseAlternativeWeights(kFALSE),
   fAliEventCuts(NULL),
+  bCheckCrossedRows(kFALSE),
+  fCrossedRows(70),
 // QA part.
   fMainList(NULL),
   bSaveAllQA(kFALSE),
@@ -158,6 +160,8 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
   phiMapIndex(0),
   bUseAlternativeWeights(kFALSE),
   fAliEventCuts(NULL),
+  bCheckCrossedRows(kFALSE),
+  fCrossedRows(70),
 // QA part.
   fMainList(NULL),
   bSaveAllQA(kFALSE),
@@ -215,6 +219,8 @@ AliJCatalystTask::AliJCatalystTask(const AliJCatalystTask& ap) :
   phiMapIndex(ap.phiMapIndex),
   bUseAlternativeWeights(ap.bUseAlternativeWeights),
   fAliEventCuts(ap.fAliEventCuts),
+  bCheckCrossedRows(ap.bCheckCrossedRows),
+  fCrossedRows(ap.fCrossedRows),
 // QA part.
   fMainList(ap.fMainList),
   bSaveAllQA(ap.bSaveAllQA),
@@ -289,7 +295,7 @@ void AliJCatalystTask::UserCreateOutputObjects()
 
   BookControlHistograms();
   PostData(1, fMainList);
-
+  if (kFALSE) cout << "hello" << endl;
   //OpenFile(1);
   //fOutput = gDirectory;
   //fOutput->cd();
@@ -586,6 +592,9 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
       if (bSaveAllQA) {FillControlHistograms(track, 0, fcent, PV);} // Fill the QA histograms before the track selection.
 
       if(track->GetTPCNcls() < fNumTPCClusters)
+        continue;
+
+      if (bCheckCrossedRows && track->GetTPCCrossedRows()<fCrossedRows)
         continue;
 
       if(fUseITSMinClusters && (track->GetITSNcls()<fITSMinClusters))

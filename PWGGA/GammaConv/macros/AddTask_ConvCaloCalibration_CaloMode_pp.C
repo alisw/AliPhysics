@@ -445,8 +445,14 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
   } else if (trainConfig == 112){
     cuts.AddCutCalo("0008d113","411790109fe30230000","0s631031000000d0");  // EG1 no TM
 
-
-
+  // Cuts to compare with PbPbs
+  } else if (trainConfig == 201){
+    cuts.AddCutCalo("00010113","4117901057e30220000","0s631031000000d0");  // INT7 pT dependent track matching w/o E/p
+  } else if (trainConfig == 202){
+    cuts.AddCutCalo("00010113","4117901056e30220000","0s631031000000d0");  // INT7 pT dependent track matching w/o E/p smaller dPhi and dEta window
+  } else if (trainConfig == 203){
+    cuts.AddCutCalo("00010113","4117901058e30220000","0s631031000000d0");  // INT7 pT dependent track matching w/o E/p larger dPhi and dEta window
+  
   } else {
     Error(Form("HeavyNeutralMesonToGG_%i_%i", mesonRecoMode, trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

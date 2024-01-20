@@ -21,7 +21,7 @@ AliAnalysisTaskJetsEEC* AddTaskJetsEEC(const char * njetsBase,
                              Float_t minpTHTrigger =0.,  Float_t maxpTHTrigger =0., Float_t acut =0.6, AliAnalysisTaskJetsEEC::DerivSubtrOrder derivSubtrOrder = AliAnalysisTaskJetsEEC::kSecondOrder ) {
  
 
-  
+// Get the pointer to the existing analysis manager via the static access method
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr)
     {
@@ -51,6 +51,8 @@ AliAnalysisTaskJetsEEC* AddTaskJetsEEC(const char * njetsBase,
   task->SetJetSelection(jetSelection);
   task->SetDerivativeSubtractionOrder(derivSubtrOrder);
   
+  task->SetGeneratorLevelName(ntracksTrue);//for pair eff in fast sim
+  task->SetDetectorLevelName(ntracks);//for pair eff in fast sim
  
 
   TString thename(njetsBase);

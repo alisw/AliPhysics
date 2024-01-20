@@ -1,7 +1,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskNFactorialMoments.h"
 
-AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(Double_t pt1 = 0.4, Double_t pt2 = 0.6, Double_t pt3 = 0.4, Double_t pt4 = 1.0, Double_t pt5 = 0.6, Double_t pt6 = 0.8, Double_t pt7 = 0.6, Double_t pt8 = 2.0, Int_t Mmax = 82, const char* suffix = "")
+AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(Double_t pt1 = 0.4, Double_t pt2 = 0.6, Double_t pt3 = 0.4, Double_t pt4 = 1.0, Double_t pt5 = 0.6, Double_t pt6 = 0.8, Double_t pt7 = 0.6, Double_t pt8 = 2.0, Int_t Mmax = 82, Bool_t fIsMC = kFALSE, const char* suffix = "")
 {
 
   // year = "2010" or "2015"
@@ -13,7 +13,6 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(Double_t pt1 = 0.4, D
   TString year = "2015";
   Bool_t fSelfAffAnalysis = kFALSE;
   Bool_t f2TrackQA = kFALSE;
-  Bool_t fIsMC = kFALSE;
   Bool_t fPileup = kTRUE;
   Double_t fEtaMin = -0.8;
   Double_t fEtaMax = 0.8;

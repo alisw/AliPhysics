@@ -75,6 +75,7 @@
 #pragma link C++ class AliLWFMDTrack+;
 #pragma link C++ class AliLWEvent+;
 #pragma link C++ class AliAnalysisTaskLWTree+;
+#pragma link C++ class AliAnalysisPtN+;
 #pragma link C++ namespace GFWFlags;
 #pragma link C++ defined_in GFWFlags;
 

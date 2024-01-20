@@ -699,12 +699,12 @@ namespace PWGJE
                     cout<<nMix<<" <- nMix and "<<efficiency<<" <- Efficiency for eta="<<bgTrack->Eta()<<" and pt="<<bgTrack->Pt()<<" Skipping"<<endl;
                     continue;
                   }
-                    double triggerEntries[] = {eventActivity, jetPt, bgTrack->Pt(), deltaEta, deltaPhi, epAngle, zVertex, hasTOFhit};
+		  double triggerEntries[] = {eventActivity, jetPt, bgTrack->Pt(), deltaEta, deltaPhi, epAngle, zVertex, (double)hasTOFhit};
                     FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
                 }
                 else
                 {
-                  double triggerEntries[] = {eventActivity, jetPt, bgTrack->Pt(), deltaEta, deltaPhi, zVertex, hasTOFhit};
+                  double triggerEntries[] = {eventActivity, jetPt, bgTrack->Pt(), deltaEta, deltaPhi, zVertex, (double)hasTOFhit};
                   FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
                 }
               }
@@ -728,7 +728,7 @@ namespace PWGJE
           AliVTrack *particle = (AliVTrack*)(dynamic_cast<const AliVTrack *>(particleIter->second))->Clone();
           if (!particle)
           {
-            AliError(Form("%s: Could not receive track %d in updating track pool", GetName(), particleIter->first));
+            AliError(Form("%s: Could not receive track in updating track pool", GetName()));
             continue;
           }
 
