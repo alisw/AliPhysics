@@ -2051,6 +2051,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistElectronPositronClusterMatch->Sumw2();
       fHistElectronPositronClusterMatchSub->Sumw2();
       fHistElectronPositronClusterMatchEoverP->Sumw2();
+      fHistElectronPositronClusterMatchEoverPVsE->Sumw2();
       fHistTrueElectronPositronClusterMatch->Sumw2();
       fHistTrueNoElectronPositronClusterMatch->Sumw2();
       fHistElectronClusterMatchTruePID->Sumw2();

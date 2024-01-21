@@ -229,16 +229,16 @@ protected:
   TH1F**                  fHistoJetJetNTrials;                                //! array of histos with ntrials for jetjet
 
   // additional variables
-  Double_t*               fUnsmearedPx;                                       //[fNGammaCandidates]
-  Double_t*               fUnsmearedPy;                                       //[fNGammaCandidates]
-  Double_t*               fUnsmearedPz;                                       //[fNGammaCandidates]
-  Double_t*               fUnsmearedE;                                        //[fNGammaCandidates]
+  Double_t*               fUnsmearedPx;                                       // [fNGammaCandidates]
+  Double_t*               fUnsmearedPy;                                       // [fNGammaCandidates]
+  Double_t*               fUnsmearedPz;                                       // [fNGammaCandidates]
+  Double_t*               fUnsmearedE;                                        // [fNGammaCandidates]
   Double_t*               fMesonInvMassWindow;                                // minimum inv mass for histos
 
-  Int_t*                  fMCEventPos;                                        //[fNGammaCandidates]
-  Int_t*                  fMCEventNeg;                                        //[fNGammaCandidates]
-  Int_t*                  fESDArrayPos;                                       //[fNGammaCandidates]
-  Int_t*                  fESDArrayNeg;                                       //[fNGammaCandidates]
+  Int_t*                  fMCEventPos;                                        // [fNGammaCandidates]
+  Int_t*                  fMCEventNeg;                                        // [fNGammaCandidates]
+  Int_t*                  fESDArrayPos;                                       // [fNGammaCandidates]
+  Int_t*                  fESDArrayNeg;                                       // [fNGammaCandidates]
 
   Double_t                fEventPlaneAngle;                                   // EventPlaneAngle
   Double_t                fMesonInvMassMin;                                   // minimum inv mass for histos
