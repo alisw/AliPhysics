@@ -10810,9 +10810,11 @@ Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent, float E){
         double tempE = 0.0;
         if(meanCent < 10){
           if(E > 3.5) tempE = 3.5;
+          else tempE = E;
           temp = 1.09645e+00 - 3.49489e-01 * tempE + 1.56646e-01 * tempE * tempE - 2.03620e-02 * tempE * tempE * tempE;
           // 2nd Iter step
           if(E > 10.) tempE = 10.;
+          else tempE = E;
           if(!fIsMC){
             return temp * (9.92572e-01 + 6.80735e-03 * tempE - 1.19358e-03 * tempE * tempE + 4.56926e-05 * tempE * tempE * tempE);
           } else {
@@ -10820,9 +10822,11 @@ Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent, float E){
           }
         } else if (meanCent < 30){
           if(E > 3.8) tempE = 3.8;
+          else tempE = E;
           temp = 1.03972e+00 - 1.79650e-01 * tempE + 8.41570e-02 * tempE * tempE - 1.13454e-02 * tempE * tempE * tempE;
           // 2nd Iter step
           if(E > 10.) tempE = 10.;
+          else tempE = E;
           if(!fIsMC){
             return temp * (9.92422e-01 + 7.25722e-03 * tempE - 1.35218e-03 * tempE * tempE + 5.60276e-05 * tempE * tempE * tempE);
           } else {
@@ -10830,9 +10834,11 @@ Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent, float E){
           }
         } else if (meanCent < 50){
           if(E > 3.3) tempE = 3.3;
+          else tempE = E;
           temp = 1.00734e+00 - 6.42114e-02 * tempE + 3.03931e-02 * tempE * tempE - 4.16131e-03 * tempE * tempE * tempE;
           // 2nd Iter step
           if(E > 10.) tempE = 10.;
+          else tempE = E;
           if(!fIsMC){
             return temp * (9.96827e-01 + 2.96262e-03 * tempE - 5.29817e-04 * tempE * tempE + 2.23712e-05 * tempE * tempE * tempE);
           } else {
@@ -10840,9 +10846,11 @@ Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent, float E){
           }
         } else {
           if(E > 3.5) tempE = 3.5;
+          else tempE = E;
           temp = 9.95241e-01 - 1.49339e-02 * tempE + 8.08355e-03 * tempE * tempE - 1.33936e-03 * tempE * tempE * tempE;
           // 2nd Iter step
           if(E > 10.) tempE = 10.;
+          else tempE = E;
           if(!fIsMC){
             return temp * (9.93144e-01 + 5.27060e-03 * tempE - 1.26703e-03 * tempE * tempE + 6.77855e-05 * tempE * tempE * tempE);
           } else {
