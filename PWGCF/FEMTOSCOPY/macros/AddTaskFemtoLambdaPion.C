@@ -172,7 +172,7 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
   // settings for k* distribution histos
   for (int i = 0; i < npairs; i++)
   {
-    NBins.push_back(3000);
+    NBins.push_back(1500);
     closeRejection.push_back(false);
     kMin.push_back(0.);
     kMax.push_back(6.);
