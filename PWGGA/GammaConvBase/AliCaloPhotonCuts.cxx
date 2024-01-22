@@ -7561,6 +7561,24 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         else energy *= FunctionNL_kPi0MCv3(energy);
       }
       break;
+    
+    // Same as case 1 for EMCal, but with additional 1% shift (used if TRD structures are cut out)
+    case 7:
+      if( fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
+        // TB parametrization for 100MeV points for data an MC
+        if(isMC){
+          energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+          energy /= FunctionNL_kSDM(energy, 0.979235, -3.17131, -0.464198);
+          energy /= FunctionNL_DExp(energy, 1.0363369, 0.5659247074, -2.7818482972, 1.0437012864, 0.3620283273, -2.8321172480);
+          energy /= 1.1025; // 1% more than in case 1
+          if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
+            energy /= 0.99;
+          }
+        } else {
+          energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
+        }
+      }
+      break;
 
     // kPi0MCv6 for MC and kSDMv6 for data
     case 8:
