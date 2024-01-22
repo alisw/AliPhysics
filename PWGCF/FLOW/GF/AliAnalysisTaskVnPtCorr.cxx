@@ -2162,7 +2162,8 @@ Bool_t AliAnalysisTaskVnPtCorr::LoadWeightsSystematics() {
     // Only if it is the new LHC16,17,18, We need the period NUA
     if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") ||
         fPeriod.EqualTo("LHC16_simp") || fPeriod.EqualTo("LHC17_simp") || fPeriod.EqualTo("LHC18_simp") ||
-        fPeriod.EqualTo("LHC16_Closure") || fPeriod.EqualTo("LHC17_Closure") || fPeriod.EqualTo("LHC18_Closure")
+        fPeriod.EqualTo("LHC16_Closure") || fPeriod.EqualTo("LHC17_Closure") || fPeriod.EqualTo("LHC18_Closure") ||
+        fPeriod.EqualTo("LHC161718_Closure")
        ) {
       std::string ppperiod = ReturnPPperiod(fAOD->GetRunNumber());
       // Old code: change to new one is because DCAxy < 10 is almost no cut
@@ -2464,6 +2465,7 @@ Bool_t AliAnalysisTaskVnPtCorr::AcceptAOD(AliAODEvent *inEv) {
       fPeriod.EqualTo("LHC16_Closure") ||
       fPeriod.EqualTo("LHC17_Closure") ||
       fPeriod.EqualTo("LHC18_Closure") ||
+      fPeriod.EqualTo("LHC161718_Closure") ||
       fPeriod.EqualTo("LHC16_simp") ||
       fPeriod.EqualTo("LHC17_simp") ||
       fPeriod.EqualTo("LHC18_simp") ||
