@@ -151,7 +151,7 @@ protected:
   AliCaloPhotonCuts*                  fCaloPhotonCuts;                        // CaloPhotonCutObject
   AliConversionMesonCuts*             fMesonCuts;                             // MesonCutObject
   AliEMCALGeometry*                   fGeomEMCAL;                             // pointer to EMCAL geometry
-  AliDalitzElectronSelector*          fElecSelector;					      // basic electron Selection
+  AliDalitzElectronSelector*          fElecSelector;					                // basic electron Selection
 
   TList**                             fCutFolder;                             // Array of lists for containers belonging to cut
   TList**                             fESDList;                               // Array of lists with histograms with reconstructed properties
@@ -172,14 +172,8 @@ protected:
   TString                             fV0ReaderName;                          // V0Reader name to be found in input
   TString                             fCorrTaskSetting;                       // Correction Task Special Name
 
-  TObjString*             fFileNameBroken;                                    // string object for broken file name
-
   THnSparseF**            fSparseMotherInvMassPtZM;                           //! array of THnSparseF with signal + BG for same event photon pairs, inv Mass, pt
   THnSparseF**            fSparseMotherBackInvMassPtZM;                       //! array of THnSparseF with BG for same event photon pairs, inv Mass, pt
-
-  TTree*                  fTreeBrokenFiles;                                   // tree for keeping track of broken files
-
-  // TProfile2D**            fProfileTruePrimaryMesonWeightsInvMassPt;           //! array of profiles with weights for validated primary mothers, invMass, pt
 
   TH2F**                  fHistoMotherInvMassPt;                              //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
   TH2F**                  fHistoMotherMatchedInvMassPt;                       //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -199,23 +193,21 @@ protected:
   TProfile**              fProfileEtaShift;                                   //! array of profiles with eta shift
   TProfile**              fProfileJetJetXSection;                             //! array of profiles with xsection for jetjet
 
-  // TH1I**                  fHistoMCHeaders;                                    //! array of histos for header names
-
   TH1F**                  fHistoConvGammaPt;                                  //! array of histogram conversion photon pT
   TH1F**                  fHistoClusGammaPt;                                  //! array of histos with cluster, pt
   TH1F**                  fHistoClusGammaE;                                   //! array of histos with cluster, E
   TH1F***                 fHistoClusGammaPtSM;                                //! array of histos with cluster, pt
   TH1F***                 fHistoClusGammaESM;                                 //! array of histos with cluster, E
-  TH1F**                  fHistoClusGammaERx;                                 //!array of histos with cluster E in 0.1 < M02 < 0.3
-  TH1F***                 fHistoClusGammaERxSM;                               //!array of histos with cluster E in 0.1 < M02 < 0.3 for each SM
-  TH1F**                  fHistoClusGammaERxNCellCrit;                        //!array of histos with cluster E in 0.1 < M02 < 0.3 and NCell > 4
-  TH1F***                 fHistoClusGammaERxNCellCritSM;                      //!array of histos with cluster E in 0.1 < M02 < 0.3 and NCell > 4 for each SM
-  TH1F***                 fHistoClusTrackdEtaSM;                              //!array of histos with dEta between track and cluster
-  TH1F***                 fHistoClusTrackdPhiSM;                              //!array of histos with dPhi between track and cluster
-  TH1F***                 fHistoClusHighPtTrackdEtaSM;                        //!array of histos with dEta between track (above 5GeV) and cluster
-  TH1F***                 fHistoClusHighPtTrackdPhiSM;                        //!array of histos with dPhi between track (above 5GeV) and cluster
-  TH2F**                  fHistoEVsM02;                                       //!array of histos with cluster E vs M02
-  TH2F**                  fHistoEVsM02NCell4;                                 //!array of histos with cluster E vs M02 for NCell > 4
+  TH1F**                  fHistoClusGammaERx;                                 //! array of histos with cluster E in 0.1 < M02 < 0.3
+  TH1F***                 fHistoClusGammaERxSM;                               //! array of histos with cluster E in 0.1 < M02 < 0.3 for each SM
+  TH1F**                  fHistoClusGammaERxNCellCrit;                        //! array of histos with cluster E in 0.1 < M02 < 0.3 and NCell > 4
+  TH1F***                 fHistoClusGammaERxNCellCritSM;                      //! array of histos with cluster E in 0.1 < M02 < 0.3 and NCell > 4 for each SM
+  TH1F***                 fHistoClusTrackdEtaSM;                              //! array of histos with dEta between track and cluster
+  TH1F***                 fHistoClusTrackdPhiSM;                              //! array of histos with dPhi between track and cluster
+  TH1F***                 fHistoClusHighPtTrackdEtaSM;                        //! array of histos with dEta between track (above 5GeV) and cluster
+  TH1F***                 fHistoClusHighPtTrackdPhiSM;                        //! array of histos with dPhi between track (above 5GeV) and cluster
+  TH2F**                  fHistoEVsM02;                                       //! array of histos with cluster E vs M02
+  TH2F**                  fHistoEVsM02NCell4;                                 //! array of histos with cluster E vs M02 for NCell > 4
   TH1F**                  fHistoMotherInvMassRejected;                        //! array of histos with invariant mass pairs which were rejected
   TH1F**                  fHistoNEvents;                                      //! array of histos with event information
   TH1F**                  fHistoNEventsWOWeight;                              //! array of histos with event information without event weights
@@ -229,17 +221,6 @@ protected:
   TH1F**                  fHistoJetJetNTrials;                                //! array of histos with ntrials for jetjet
 
   // additional variables
-  Double_t*               fUnsmearedPx;                                       // [fNGammaCandidates]
-  Double_t*               fUnsmearedPy;                                       // [fNGammaCandidates]
-  Double_t*               fUnsmearedPz;                                       // [fNGammaCandidates]
-  Double_t*               fUnsmearedE;                                        // [fNGammaCandidates]
-  Double_t*               fMesonInvMassWindow;                                // minimum inv mass for histos
-
-  Int_t*                  fMCEventPos;                                        // [fNGammaCandidates]
-  Int_t*                  fMCEventNeg;                                        // [fNGammaCandidates]
-  Int_t*                  fESDArrayPos;                                       // [fNGammaCandidates]
-  Int_t*                  fESDArrayNeg;                                       // [fNGammaCandidates]
-
   Double_t                fEventPlaneAngle;                                   // EventPlaneAngle
   Double_t                fMesonInvMassMin;                                   // minimum inv mass for histos
   Double_t                fMesonInvMassMax;                                   // maximum inv mass for histos
@@ -274,12 +255,18 @@ protected:
   Int_t                   fTrackMatcherRunningMode;                           // CaloTrackMatcher running mode
   Int_t                   fUseEletronMatchingCalibration;                     // switch for calibration using electron tracks (1) or electrons from V0s (2) to cluster matching
 
+  Double_t*               fMesonInvMassWindow;                                // minimum inv mass for histos
+  Int_t*                  fMCEventPos;                                        //[fNGammaCandidates]
+  Int_t*                  fMCEventNeg;                                        //[fNGammaCandidates]
+  Int_t*                  fESDArrayPos;                                       //[fNGammaCandidates]
+  Int_t*                  fESDArrayNeg;                                       //[fNGammaCandidates]
+
   TGenPhaseSpace          fGenPhaseSpace;                                     // TGenPhaseSpace needed for some cases of rotation method
 private:
   AliAnalysisTaskConvCaloCalibration(const AliAnalysisTaskConvCaloCalibration&); // Prevent copy-construction
   AliAnalysisTaskConvCaloCalibration &operator=(const AliAnalysisTaskConvCaloCalibration&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskConvCaloCalibration, 8);
+  ClassDef(AliAnalysisTaskConvCaloCalibration, 9);
 };
 
 #endif // AliAnalysisTaskConvCaloCalibration_H
