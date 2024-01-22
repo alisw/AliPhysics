@@ -36,7 +36,7 @@
 // #include <CGAL/Delaunay_triangulation_adaptation_policies_2.h>
 // #include <CGAL/Polygon_2.h>
 // #include <CGAL/Boolean_set_operations_2.h>
-#include "cgal.h"
+#include "cgal_4_9.h"
 
 #include <fastjet/PseudoJet.hh>
 #pragma GCC diagnostic pop
