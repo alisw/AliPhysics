@@ -3149,7 +3149,8 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC20j6a :
     case kLHC20j6b :
     case kLHC20j6c :
-    case kLHC20j6d :		    
+    case kLHC20j6d :
+    case kLHC24a1 :	    
       return kTRUE;
       break;
     default :
@@ -6901,7 +6902,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
 
   if ( rejection==0 || // No rejection
        rejection==5 || // reject particles from out-of-bunch pileup
-      (fPeriodEnum==kLHC20g10 && (rejection==1 || rejection==3))){
+      ((fPeriodEnum==kLHC20g10 || fPeriodEnum==kLHC24a1) && (rejection==1 || rejection==3))){
     // LHC20g10 contains added particles only. See comment from Stiefelmaier in https://alice.its.cern.ch/jira/browse/ALIROOT-8519
     return;
   }
@@ -6965,7 +6966,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
         for(Int_t j = 0; j<HeaderList->GetEntries();j++){
           TString GeneratorInList   = ((TObjString*)HeaderList->At(j))->GetString();
           if (fDebugLevel > 0 )  cout << GeneratorInList.Data() << endl;
-          if (fPeriodEnum==kLHC20g10){
+          if (fPeriodEnum==kLHC20g10 || fPeriodEnum==kLHC24a1){
             if (GeneratorName.Contains(GeneratorInList)){ ++fnHeaders; }
           }
           else{
@@ -7076,7 +7077,7 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
       if (fDebugLevel > 0 ) cout << i << "\t" << GeneratorName.Data() << endl;
       for(Int_t j = 0; j<HeaderList->GetEntries();j++){
         TString GeneratorInList = ((TObjString*)HeaderList->At(j))->GetString();
-        if (fPeriodEnum==kLHC20g10){
+        if (fPeriodEnum==kLHC20g10 || fPeriodEnum==kLHC24a1){
           if (GeneratorName.Contains(GeneratorInList)){
             fNotRejectedStart[number] = firstindex;
             fNotRejectedEnd  [number] = firstindex + gh->NProduced() - 1;
@@ -7704,7 +7705,7 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
       fPeriodEnum == kLHC13e7   || fPeriodEnum == kLHC13b2_efix   || fPeriodEnum == kLHC14b2    ||  fPeriodEnum == kLHC18j5  ||           // LHC13bc MCs
       fPeriodEnum == kLHC14e2b  ||                                                                                                        // LHC12[a-i] pass 1 MCs
       fPeriodEnum == kLHC12f1a  || fPeriodEnum == kLHC12f1b       || fPeriodEnum == kLHC12i3    ||                                        // LHC11a MCs
-      fPeriodEnum == kLHC16h4   || fPeriodEnum == kLHC19h3        || fPeriodEnum == kLHC20g10 )                                           // LHC15o, LHC18qr pass1, LHC18qr pass3  MCs
+      fPeriodEnum == kLHC16h4   || fPeriodEnum == kLHC19h3        || fPeriodEnum == kLHC20g10   ||  fPeriodEnum == kLHC24a1 )             // LHC15o, LHC18qr pass1, LHC18qr pass3  MCs
     kCaseGen = 1;  // added particles MC
   if( fPeriodEnum == kLHC18e1 || fPeriodEnum == kLHC18e1a || fPeriodEnum == kLHC18e1b || fPeriodEnum == kLHC18e1c || fPeriodEnum == kLHC16i1a || fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c || fPeriodEnum == kLHC16i2a || fPeriodEnum == kLHC16i2b || fPeriodEnum == kLHC16i2c || fPeriodEnum == kLHC16i3a || fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c || // LHC15o MCs
       fPeriodEnum == kLHC12P2JJ || fPeriodEnum == kLHC16h3 || fPeriodEnum == kLHC18b8 || fPeriodEnum == kLHC16rP1JJ || fPeriodEnum == kLHC16sP1JJ  || fPeriodEnum == kLHC16rsGJ || fPeriodEnum == kLHC16rsP2GJ || fPeriodEnum == kLHC16rsP2JJLow || fPeriodEnum == kLHC16rsP2JJHigh || fPeriodEnum == kLHC17g8a ||
@@ -8924,6 +8925,9 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
     fEnergyEnum = kPbPb5TeV;
   } else if ( periodName.CompareTo("LHC20g10") == 0 ){
     fPeriodEnum = kLHC20g10;
+    fEnergyEnum = kPbPb5TeV;
+  } else if ( periodName.BeginsWith("LHC24a1")){
+    fPeriodEnum = kLHC24a1;
     fEnergyEnum = kPbPb5TeV;
  // LHC15o pass2 anchored	  
  } else if ( periodName.CompareTo("LHC20j6a") == 0 ){
