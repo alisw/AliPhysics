@@ -4247,7 +4247,7 @@ void AddTask_GammaConvV1_PbPb(
       TObjString *Header2 = new TObjString("Injector (eta)_2");
       HeaderList->Add(Header2);
     }
-  } else if (generatorName.CompareTo("LHC20g10")==0){
+  } else if (generatorName.CompareTo("LHC20g10")==0 || generatorName.BeginsWith("LHC24a1")){
 
     auto fillSingle = [&HeaderList](Size_t theSwitch){
       if (theSwitch == 1 ) { HeaderList->Add(new TObjString("Injector (pi0)"));   }
