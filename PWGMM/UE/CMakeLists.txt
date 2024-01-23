@@ -65,6 +65,7 @@ set(SRCS
   FlatenicityPiKp/AliAnalysisTaskFlatenicityMCclosure.cxx
   SpeedOfSound/AliAnalysisTaskDataSpeedOfSound.cxx 
   SpeedOfSound/AliAnalysisTaskDataSpeedOfSoundSim.cxx
+  SpeedOfSound/AliAnalysisTaskDataSpeedOfSound276TeV.cxx
   )
 
 # Headers from sources
