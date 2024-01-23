@@ -1253,7 +1253,7 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
 
      //********* PID - kaons ********
      if (isKaonNsigma){
-     if (track->Pt() > 0.3 || track->Pt() < 2.5)
+     if (track->Pt() > 0.5 || track->Pt() < 2.5)
        fReconstructedAfterCuts[PARTTYPES*fcent+2][charge]->Fill(track->Y(), track->Pt());
        if (!MCtrk) continue;
        recoParticleArray[2].Add(MCtrk);
