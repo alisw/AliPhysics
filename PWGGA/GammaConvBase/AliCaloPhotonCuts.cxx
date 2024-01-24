@@ -7570,7 +7570,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
           energy /= FunctionNL_kSDM(energy, 0.979235, -3.17131, -0.464198);
           energy /= FunctionNL_DExp(energy, 1.0363369, 0.5659247074, -2.7818482972, 1.0437012864, 0.3620283273, -2.8321172480);
-          energy /= 1.1025; // 1% more than in case 1
+          energy /= 1.0125; // 1% more than in case 1
           if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
             energy /= 0.99;
           }
