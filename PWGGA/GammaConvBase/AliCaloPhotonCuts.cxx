@@ -4419,7 +4419,7 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
           else fHistClusterdEtadPhiNegTracksP_125_999BeforeQA->Fill(dEta, dPhi, weight);
         }
         fHistClusterdEtadPtBeforeQA->Fill(dEta, inTrack->Pt(), weight);
-        // fHistClusterM02M20BeforeQA->Fill(clusM02, clusM20, weight);
+        fHistClusterM02M20BeforeQA->Fill(clusM02, clusM20, weight);
         if(fCurrentMC != kNoMC && fIsMC > 0){
           Int_t clusterMCLabel = cluster->GetLabel();
           Int_t convPhotonDaughterLabel = -1;
@@ -4772,7 +4772,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
           else fHistClusterdEtadPhiNegTracksP_125_999BeforeQA->Fill(dEta, dPhi, weight);
         }
         fHistClusterdEtadPtBeforeQA->Fill(dEta, inTrack->Pt(), weight);
-        // fHistClusterM02M20BeforeQA->Fill(clusM02, clusM20, weight);
+        fHistClusterM02M20BeforeQA->Fill(clusM02, clusM20, weight);
       }
 
       Bool_t match_dEta = (TMath::Abs(dEta) < fMaxDistTrackToClusterEta) ? kTRUE : kFALSE;
