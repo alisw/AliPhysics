@@ -37,7 +37,7 @@ AliEmcalCorrectionCellEnergy::AliEmcalCorrectionCellEnergy() :
   ,fCustomRecalibFilePath("")
   ,fLoad1DRecalibFactors(0)
 {
-  for(unsigned int i = 0; i < 4; ++i){
+  for(unsigned int i = 0; i < 96; ++i){
     fAdditionalScaleSM.push_back(1); // set default values to 1
   }
 
@@ -544,7 +544,7 @@ Bool_t AliEmcalCorrectionCellEnergy::CheckIfRunChanged()
   if(fUseAdditionalScale)
   {
     fRecoUtils->SetUseTowerAdditionalScaleCorrection(fAdditionalScaleMode);
-    for(int i = 0; i < 4; ++i){
+    for(int i = 0; i < 96; ++i){
       fRecoUtils->SetTowerAdditionalScaleCorrection(i, fAdditionalScaleSM[i]);
     }
   }

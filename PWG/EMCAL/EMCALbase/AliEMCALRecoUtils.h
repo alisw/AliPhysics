@@ -175,8 +175,8 @@ public:
   void     SetUseTowerShaperNonlinarityCorrection(Bool_t doCorr)     { fUseShaperNonlin = doCorr ; }
   void     SetUseDetermineLowGain(Bool_t doCorr)                     { fUseDetermineLowGain = doCorr ; }
   void     SetUseTowerAdditionalScaleCorrection(Int_t doCorr)        { fUseAdditionalScale = doCorr;}
-  void     SetTowerAdditionalScaleCorrection(Int_t i, Float_t val)   { if(i < 4 && i >= 0) fAdditionalScaleSM[i] = val;
-                                                                       else AliInfo(Form("fAdditionalScaleSM index %d larger than 4 or negative, do nothing\n",i));}
+  void     SetTowerAdditionalScaleCorrection(Int_t i, Float_t val)   { if(i < 96 && i >= 0) fAdditionalScaleSM[i] = val;
+                                                                       else AliInfo(Form("fAdditionalScaleSM index %d larger than 96 or negative, do nothing\n",i));}
 
   //-----------------------------------------------------
   // MC clusters energy smearing
@@ -637,8 +637,8 @@ private:
   Bool_t     fUseShaperNonlin;           ///< Shaper non linearity correction for towers
   Bool_t     fUseDetermineLowGain;       ///< If set on true, wether a cell is low gain or high gain is not taken from cell info but calculated directly from cell ADC value
   AliEMCALCalibData* fCalibData;         ///< EMCAL calib data
-  Int_t     fUseAdditionalScale;         ///< Switch for additional scale on cell level: 1 = default (Scales for Full, 2/3 and 1/3 SM), 2 = diff. scales for regions behind TRD support, 3 = Run1 scales behind SM with TRD in front and without, 4 = Same as 3 but additionally values for with and without TRD support structures
-  Float_t    fAdditionalScaleSM[4];      ///< Value for additional scale on cell level. 
+  Int_t      fUseAdditionalScale;        ///< Switch for additional scale on cell level: 1 = default (Scales for Full, 2/3 and 1/3 SM), 2 = diff. scales for regions behind TRD support, 3 = Run1 scales behind SM with TRD in front and without, 4 = Same as 3 but additionally values for with and without TRD support structures, 5 = calibration factors applied column by column (96 in total)
+  Float_t    fAdditionalScaleSM[96];     ///< Value for additional scale on cell level. 
 
   // Energy smearing for MC
   Bool_t     fSmearClusterEnergy;        ///< Smear cluster energy, to be done only for simulated data to match real data
