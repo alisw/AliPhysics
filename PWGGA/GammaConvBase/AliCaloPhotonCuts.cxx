@@ -1785,8 +1785,8 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         }
       }
       //----------------
-    }
-  }
+    } // fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5
+  } // fUseDistTrackToCluster && !fDoLightOutput
   if( fUseDistTrackToCluster && fIsMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5 )){
     // TM efficiency histograms
     const Int_t nEmcalEtaBins             = 96;
@@ -2869,7 +2869,7 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
   }
 
-  if(fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5) {
+  if((fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5) && (fUseDistTrackToCluster && !fDoLightOutput) ) {
     fHistClusterNMatched->Fill(nlabelsMatchedTracks);
   }
 
@@ -4419,7 +4419,7 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
           else fHistClusterdEtadPhiNegTracksP_125_999BeforeQA->Fill(dEta, dPhi, weight);
         }
         fHistClusterdEtadPtBeforeQA->Fill(dEta, inTrack->Pt(), weight);
-        fHistClusterM02M20BeforeQA->Fill(clusM02, clusM20, weight);
+        // fHistClusterM02M20BeforeQA->Fill(clusM02, clusM20, weight);
         if(fCurrentMC != kNoMC && fIsMC > 0){
           Int_t clusterMCLabel = cluster->GetLabel();
           Int_t convPhotonDaughterLabel = -1;
@@ -4772,7 +4772,7 @@ void AliCaloPhotonCuts::MatchTracksToClusters(AliVEvent* event, Double_t weight,
           else fHistClusterdEtadPhiNegTracksP_125_999BeforeQA->Fill(dEta, dPhi, weight);
         }
         fHistClusterdEtadPtBeforeQA->Fill(dEta, inTrack->Pt(), weight);
-        fHistClusterM02M20BeforeQA->Fill(clusM02, clusM20, weight);
+        // fHistClusterM02M20BeforeQA->Fill(clusM02, clusM20, weight);
       }
 
       Bool_t match_dEta = (TMath::Abs(dEta) < fMaxDistTrackToClusterEta) ? kTRUE : kFALSE;
@@ -9687,7 +9687,7 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC20e3c") == 0 ||
             namePeriod.CompareTo("LHC20g10") == 0 ||
             namePeriod.CompareTo("LHC22b5")  == 0 ||
-            namePeriod.BeginsWith("LHC24a1")  == 0)   return kPbPb5T18HIJING;
+            namePeriod.BeginsWith("LHC24a1"))   return kPbPb5T18HIJING;
 
   // pp 13 TeV 2016 MB prod
   else if ( namePeriod.CompareTo("LHC16P1Pyt8") == 0 ||
