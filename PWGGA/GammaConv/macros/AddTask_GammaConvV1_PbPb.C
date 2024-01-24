@@ -3789,7 +3789,12 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("11310023", "0d200009ab770c00amd0404000", "0152101500000000"); // 10-30%
       cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // 30-50%
       cuts.AddCutPCM("15910023", "0d200009ab770c00amd0404000", "0152101500000000"); // 50-90%
-
+      // 993 for AddSigMC copy c)
+  } else if (trainConfig == 997){ //____________________-___
+      cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("11310023", "0d200009ab770c00amd0404000", "0152101500000000"); // 10-30%
+      cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // 30-50%
+      cuts.AddCutPCM("15910023", "0d200009ab770c00amd0404000", "0152101500000000"); // 50-90%
 //****************************************************************************************************
 
   } else if (trainConfig == 1001){
@@ -4242,7 +4247,7 @@ void AddTask_GammaConvV1_PbPb(
       TObjString *Header2 = new TObjString("Injector (eta)_2");
       HeaderList->Add(Header2);
     }
-  } else if (generatorName.CompareTo("LHC20g10")==0){
+  } else if (generatorName.CompareTo("LHC20g10")==0 || generatorName.BeginsWith("LHC24a1")){
 
     auto fillSingle = [&HeaderList](Size_t theSwitch){
       if (theSwitch == 1 ) { HeaderList->Add(new TObjString("Injector (pi0)"));   }
