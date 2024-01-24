@@ -60,12 +60,6 @@ using namespace std;
 // Responsible:
 // Omar Vazquez (U. Houston)
 
-static const Int_t nHists = 9;
-static const Int_t etaLow[nHists] = {-8, -8, -6, -4, -2, 0, 2, 4, 6};
-static const Int_t etaHigh[nHists] = {8, -6, -4, -2, 0, 2, 4, 6, 8};
-
-static const Char_t* Pid[7] = {"Ch",       "Pion", "Kaon", "Proton",
-                               "Electron", "Muon", "Oher"};
 ClassImp(AliAnalysisTaskDataSpeedOfSound276TeV)
     //_____________________________________________________________________________
     AliAnalysisTaskDataSpeedOfSound276TeV::
@@ -77,6 +71,7 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound276TeV)
       fMCStack(0x0),
       fMCArray(0x0),
       fTrackFilter(0x0),
+      fTrackFilterwoDCA(0x0),
       fCentEst("V0M"),
       fAnalysisType("ESD"),
       fAnalysisMC(kFALSE),
@@ -142,15 +137,18 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound276TeV)
       hTrackletsvsV0MAmp10(0x0),
       hTrackletsvsV0MAmp14(0x0),
       hTrackletsEtaGap(0x0),
-      hTrackletsvsV0MAmpEtaGap(0x0)
+      hTrackletsvsV0MAmpEtaGap(0x0),
+      hDaDCAxy(0x0)
 
 {
   // default constructor
-  for (Int_t i = 0; i < 9; ++i) {
-    for (Int_t pid = 0; pid < 7; ++pid) {
-      hMcIn[pid][i] = 0;
-      hMcOut[pid][i] = 0;
-    }
+  for (Int_t pid = 0; pid < 8; ++pid) {
+    hMcIn[pid] = 0;
+    hMcOut[pid] = 0;
+  }
+
+  for (Int_t i = 0; i < 3; ++i) {
+    hDCAxy[i] = 0;
   }
 }
 
@@ -163,6 +161,7 @@ AliAnalysisTaskDataSpeedOfSound276TeV::AliAnalysisTaskDataSpeedOfSound276TeV(
       fMCStack(0x0),
       fMCArray(0x0),
       fTrackFilter(0x0),
+      fTrackFilterwoDCA(0x0),
       fCentEst("V0M"),
       fAnalysisType("ESD"),
       fAnalysisMC(kFALSE),
@@ -225,15 +224,18 @@ AliAnalysisTaskDataSpeedOfSound276TeV::AliAnalysisTaskDataSpeedOfSound276TeV(
       hTrackletsvsV0MAmp10(0x0),
       hTrackletsvsV0MAmp14(0x0),
       hTrackletsEtaGap(0x0),
-      hTrackletsvsV0MAmpEtaGap(0x0)
+      hTrackletsvsV0MAmpEtaGap(0x0),
+      hDaDCAxy(0x0)
 
 {
   // Default constructor (should not be used)
-  for (Int_t i = 0; i < 9; ++i) {
-    for (Int_t pid = 0; pid < 7; ++pid) {
-      hMcIn[pid][i] = 0;
-      hMcOut[pid][i] = 0;
-    }
+  for (Int_t pid = 0; pid < 8; ++pid) {
+    hMcIn[pid] = 0;
+    hMcOut[pid] = 0;
+  }
+
+  for (Int_t i = 0; i < 3; ++i) {
+    hDCAxy[i] = 0;
   }
   DefineOutput(1, TList::Class());  // esto es nuevo
 }
@@ -277,6 +279,29 @@ void AliAnalysisTaskDataSpeedOfSound276TeV::UserCreateOutputObjects() {
     fCuts2_1->SetMaxChi2PerClusterITS(36);                        //
     fCuts2_1->SetEtaRange(-0.8, 0.8);
     fTrackFilter->AddCuts(fCuts2_1);
+  }
+
+  // track cuts to find contamination via DCA distribution
+  if (!fTrackFilterwoDCA) {
+    fTrackFilterwoDCA = new AliAnalysisFilter("trackFilter2015");
+    AliESDtrackCuts* fCuts3 = new AliESDtrackCuts();
+    fCuts3->SetMaxFractionSharedTPCClusters(0.4);                //
+    fCuts3->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);  //
+    fCuts3->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);           //
+    fCuts3->SetMaxChi2PerClusterTPC(4);                          //
+    fCuts3->SetAcceptKinkDaughters(kFALSE);                      //
+    fCuts3->SetRequireTPCRefit(kTRUE);                           //
+    fCuts3->SetRequireITSRefit(kTRUE);                           //
+    fCuts3->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                                     AliESDtrackCuts::kAny);  //
+    // fCuts3->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");//
+    // fCuts3->SetMaxChi2TPCConstrainedGlobal(36);//
+    fCuts3->SetMaxDCAToVertexZ(2);            //
+    fCuts3->SetDCAToVertex2D(kFALSE);         //
+    fCuts3->SetRequireSigmaToVertex(kFALSE);  //
+    fCuts3->SetMaxChi2PerClusterITS(36);      //
+    fCuts3->SetEtaRange(-0.8, 0.8);
+    fTrackFilterwoDCA->AddCuts(fCuts3);
   }
 
   //
@@ -342,8 +367,16 @@ void AliAnalysisTaskDataSpeedOfSound276TeV::UserCreateOutputObjects() {
       0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0,  1.2,  1.4,
       1.6, 1.8, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 7.0, 9.0, 12.0, 15.0, 20.0};
 
-  const Char_t* ending[nHists] = {"",   "86", "64", "42", "20",
-                                  "02", "24", "46", "68"};
+  constexpr int dcaxy_Nbins{100};
+  double dcaxy_bins[dcaxy_Nbins + 1] = {0};
+  for (int i = 0; i <= dcaxy_Nbins; ++i) {
+    dcaxy_bins[i] = -3.0 + (0.06 * i);
+  }
+
+  const char* Pid[8] = {"Ch",     "Pion",   "Kaon",   "Proton",
+                        "Sigmap", "Sigmam", "Lambda", "Rest"};
+
+  const char* ParticleType[3] = {"Pri", "WeDe", "MaIn"};
 
   hVtxZvsTracklets =
       new TH2F("hVtxZvsTracklets", ";#it{Z}_{vtz} (cm); #it{N}_{tracklets}", 50,
@@ -496,19 +529,28 @@ void AliAnalysisTaskDataSpeedOfSound276TeV::UserCreateOutputObjects() {
                    tracklets_Nbins, tracklets_bins);
   fListOfObjects->Add(pPtvsTrackletsEtaGap);
 
-  if (fAnalysisMC) {
-    for (Int_t i = 0; i < nHists; i++) {
-      for (Int_t pid = 0; pid < 7; pid++) {
-        hMcIn[pid][i] =
-            new TH1D(Form("hIn%s%s", Pid[pid], ending[i]),
-                     Form("MC in (pid %s)", Pid[pid]), nPtBinsV0s, ptBinsV0s);
-        fListOfObjects->Add(hMcIn[pid][i]);
+  hDaDCAxy = new TH2D("hDCAxyData_0_5", ";DCAxy (cm); pT", dcaxy_Nbins,
+                      dcaxy_bins, pt_Nbins, pt_bins);
+  fListOfObjects->Add(hDaDCAxy);
 
-        hMcOut[pid][i] =
-            new TH1D(Form("hMcOut%s%s", Pid[pid], ending[i]),
-                     Form("MC out (pid %s)", Pid[pid]), nPtBinsV0s, ptBinsV0s);
-        fListOfObjects->Add(hMcOut[pid][i]);
-      }
+  if (fAnalysisMC) {
+    for (Int_t pid = 0; pid < 8; pid++) {
+      hMcIn[pid] =
+          new TH1D(Form("hPtInPrim_%s", Pid[pid]),
+                   Form("MC in (pid %s)", Pid[pid]), pt_Nbins, pt_bins);
+      fListOfObjects->Add(hMcIn[pid]);
+
+      hMcOut[pid] =
+          new TH1D(Form("hPtOutPrim_%s", Pid[pid]),
+                   Form("MC out (pid %s)", Pid[pid]), pt_Nbins, pt_bins);
+      fListOfObjects->Add(hMcOut[pid]);
+    }
+
+    for (Int_t i = 0; i < 3; ++i) {
+      hDCAxy[i] =
+          new TH2D(Form("hDCAxy%s_0_5", ParticleType[i]), ";DCAxy (cm); pT",
+                   dcaxy_Nbins, dcaxy_bins, pt_Nbins, pt_bins);
+      fListOfObjects->Add(hDCAxy[i]);
     }
 
     fVtxMC = new TH1F("fVtxMC", "mc vtx", 120, -30, 30);
@@ -718,7 +760,7 @@ void AliAnalysisTaskDataSpeedOfSound276TeV::UserExec(Option_t*) {
       fn1->Fill(3);
       if (fAnalysisMC) {
         if (TMath::Abs(fZvtxMC) < fVtxCut) {
-          ProcessMCTruthAOD();
+          // ProcessMCTruthAOD();
           fVtxMC->Fill(fZvtxMC);
         }
       }
@@ -769,6 +811,12 @@ void AliAnalysisTaskDataSpeedOfSound276TeV::AnalyzeESD(AliESDEvent* esdEvent) {
 
     //! pT spectra
     MultiplicityDistributions();
+
+    DCAxyDistributions();
+
+    if (fAnalysisMC) {
+      TrackingEfficiency();
+    }
 
     // ProduceArrayTrksESD(esdEvent);  // produce array with global track
     // parameters
@@ -989,25 +1037,30 @@ Short_t AliAnalysisTaskDataSpeedOfSound276TeV::GetPidCode(Int_t pdgCode) const {
     case 2212:
       pidCode = 3;  // proton
       break;
-    case 11:
-      pidCode = 4;  // electron
+    case 3222:
+      pidCode = 4;  // sigma plus
       break;
-    case 13:
-      pidCode = 5;  // muon
+    case 3112:
+      pidCode = 5;  // sigma minus
+      break;
+    case 3122:
+      pidCode = 6;  // lambda
       break;
     default:
-      pidCode = 6;  // something else?
+      pidCode = 7;  // rest
   };
 
   return pidCode;
 }
-
 //_____________________________________________________________________________
 void AliAnalysisTaskDataSpeedOfSound276TeV::ProcessMCTruthESD() {
   // Fill the special MC histogram with the MC truth info
 
-  const Int_t nTracksMC = fMCStack->GetNtrack();
+  if (fv0mpercentile < 0.0 || fv0mpercentile > 5.0) {
+    return;
+  }
 
+  const Int_t nTracksMC = fMCStack->GetNtrack();
   for (Int_t iTracks = 0; iTracks < nTracksMC; iTracks++) {
     // Cuts
     if (!(fMCStack->IsPhysicalPrimary(iTracks))) continue;
@@ -1017,64 +1070,135 @@ void AliAnalysisTaskDataSpeedOfSound276TeV::ProcessMCTruthESD() {
     TParticlePDG* pdgPart = trackMC->GetPDG();
     Double_t chargeMC = pdgPart->Charge();
 
-    if (chargeMC == 0) continue;
-
     if (TMath::Abs(trackMC->Eta()) > fEtaCut) continue;
 
-    Double_t etaMC = trackMC->Eta();
-    Int_t pdgCode = trackMC->GetPdgCode();
     Short_t pidCodeMC = 0;
-    pidCodeMC = GetPidCode(pdgCode);
+    pidCodeMC = GetPidCode(trackMC->GetPdgCode());
 
-    for (Int_t nh = 0; nh < 9; nh++) {
-      if (etaMC > etaHigh[nh] / 10.0 || etaMC < etaLow[nh] / 10.0) continue;
-
-      hMcIn[0][nh]->Fill(trackMC->Pt());
-      hMcIn[pidCodeMC][nh]->Fill(trackMC->Pt());
+    // lambda
+    if (TMath::Abs(trackMC->GetPdgCode()) == 3122) {
+      hMcIn[6]->Fill(trackMC->Pt());
     }
+
+    if (chargeMC == 0) continue;
+
+    hMcIn[0]->Fill(trackMC->Pt());
+    hMcIn[pidCodeMC]->Fill(trackMC->Pt());
 
   }  // MC track loop
 }
-
 //_____________________________________________________________________________
-void AliAnalysisTaskDataSpeedOfSound276TeV::ProcessMCTruthAOD() {
-  // Fill the special MC histogram with the MC truth info
+void AliAnalysisTaskDataSpeedOfSound276TeV::TrackingEfficiency() {
+  if (fv0mpercentile < 0.0 || fv0mpercentile > 5.0) {
+    return;
+  }
 
-  const Int_t nTracksMC = fMCArray->GetEntriesFast();
-
-  for (Int_t iTracks = 0; iTracks < nTracksMC; iTracks++) {
-    AliAODMCParticle* trackMC =
-        dynamic_cast<AliAODMCParticle*>(fMCArray->At(iTracks));
-
-    if (!trackMC) {
-      AliError("Cannot get MC particle");
+  const int n_tracks{fESD->GetNumberOfTracks()};
+  for (int i = 0; i < n_tracks; ++i) {
+    AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
+    if (!track) {
+      continue;
+    }
+    if (!fTrackFilter->IsSelected(track)) {
+      continue;
+    }
+    if (track->Pt() < fPtMin) {
+      continue;
+    }
+    if (TMath::Abs(track->Eta()) > fEtaCut) {
       continue;
     }
 
-    // Cuts
-    if (!(trackMC->IsPhysicalPrimary())) continue;
+    int label = -1;
+    label = TMath::Abs(track->GetLabel());
 
-    Double_t chargeMC = trackMC->Charge();
-    if (chargeMC == 0) continue;
-
-    if (TMath::Abs(trackMC->Eta()) > fEtaCut) continue;
-
-    Double_t etaMC = trackMC->Eta();
-    Int_t pdgCode = trackMC->GetPdgCode();
-    Short_t pidCodeMC = 0;
-    pidCodeMC = GetPidCode(pdgCode);
-
-    // cout<<"pidcode="<<pidCodeMC<<endl;
-    for (Int_t nh = 0; nh < 9; nh++) {
-      if (etaMC > etaHigh[nh] / 10.0 || etaMC < etaLow[nh] / 10.0) continue;
-
-      hMcIn[0][nh]->Fill(trackMC->Pt());
-      hMcIn[pidCodeMC][nh]->Fill(trackMC->Pt());
+    TParticle* particle = fMCStack->Particle(label);
+    if (!particle) {
+      continue;
+    }
+    if (track->Charge() == 0) {
+      continue;
+    }
+    if (!fMCStack->IsPhysicalPrimary(label)) {
+      continue;
     }
 
-  }  // MC track loop
-}
+    hMcOut[0]->Fill(track->Pt());
+    Int_t pidCode = GetPidCode(particle->GetPdgCode());
 
+    hMcOut[pidCode]->Fill(track->Pt());
+  }
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskDataSpeedOfSound276TeV::DCAxyDistributions() {
+  if (fv0mpercentile < 0.0 || fv0mpercentile > 5.0) {
+    return;
+  }
+
+  const int n_tracks{fESD->GetNumberOfTracks()};
+
+  for (int i = 0; i < n_tracks; ++i) {
+    AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
+    if (!track) {
+      continue;
+    }
+    if (!fTrackFilterwoDCA->IsSelected(track)) {
+      continue;
+    }
+    if (track->Pt() < fPtMin) {
+      continue;
+    }
+    if (TMath::Abs(track->Eta()) > fEtaCut) {
+      continue;
+    }
+    if (track->Charge() == 0) {
+      continue;
+    }
+
+    float dcaxy = -999;
+    float dcaz = -999;
+    track->GetImpactParameters(dcaxy, dcaz);
+
+    hDaDCAxy->Fill(dcaxy, track->Pt());
+  }
+
+  if (fAnalysisMC) {
+    for (int i = 0; i < n_tracks; ++i) {
+      AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
+      if (!track) {
+        continue;
+      }
+      if (!fTrackFilterwoDCA->IsSelected(track)) {
+        continue;
+      }
+      if (track->Pt() < fPtMin) {
+        continue;
+      }
+      if (TMath::Abs(track->Eta()) > fEtaCut) {
+        continue;
+      }
+      if (track->Charge() == 0) {
+        continue;
+      }
+
+      float dcaxy = -999;
+      float dcaz = -999;
+      track->GetImpactParameters(dcaxy, dcaz);
+
+      int label = -1;
+      label = TMath::Abs(track->GetLabel());
+      if (fMC->IsPhysicalPrimary(label)) {
+        hDCAxy[0]->Fill(dcaxy, track->Pt());
+      } else if (fMC->IsSecondaryFromWeakDecay(label)) {
+        hDCAxy[1]->Fill(dcaxy, track->Pt());
+      } else if (fMC->IsSecondaryFromMaterial(label)) {
+        hDCAxy[2]->Fill(dcaxy, track->Pt());
+      } else {
+        continue;
+      }
+    }
+  }
+}
 //_____________________________________________________________________________
 Short_t AliAnalysisTaskDataSpeedOfSound276TeV::GetPythiaEventProcessType(
     Int_t pythiaType) {

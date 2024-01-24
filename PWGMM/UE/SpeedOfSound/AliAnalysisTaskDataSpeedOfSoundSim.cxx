@@ -1011,7 +1011,7 @@ void AliAnalysisTaskDataSpeedOfSoundSim::DCAxyDistributions() {
 //____________________________________________________________
 
 void AliAnalysisTaskDataSpeedOfSoundSim::TrackingEfficiency() {
-  if (fv0mpercentile < 5.0) {
+  if (fv0mpercentile < 0.0 || fv0mpercentile > 5.0) {
     return;
   }
 
