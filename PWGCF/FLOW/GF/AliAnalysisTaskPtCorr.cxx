@@ -49,6 +49,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fDisablePileup(kFALSE),
   fUseOldPileup(kFALSE),
   fUseIP(kFALSE),
+  fUseCentCalibration(kFALSE),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
   fGenerator("AMPT"),
@@ -90,6 +91,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fEfficiencyList(0),
   fEfficiency(0),
   fEfficiencies(0),
+  fCentcal(0),
   fPseudoEfficiency(2.),
   fPtvsCentvsPower(0),
   fDCAxyVsPt_noChi2(0),
@@ -127,6 +129,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fDisablePileup(kFALSE),
   fUseOldPileup(kFALSE),
   fUseIP(kFALSE),
+  fUseCentCalibration(kFALSE),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
   fGenerator("AMPT"),
@@ -167,6 +170,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fEfficiencyList(0),
   fEfficiency(0),
   fEfficiencies(0),
+  fCentcal(0),
   fPseudoEfficiency(2.),
   fPtvsCentvsPower(0),
   fDCAxyVsPt_noChi2(0),
@@ -197,6 +201,9 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   if(!fIsMC) { //Efficiency and NUA only important for data
     DefineInput(1,TList::Class());  //NUE
   };
+  if(fIsMC) {
+    DefineInput(2,TH1::Class()); //Centrality calibration
+  }
   DefineOutput(1,TList::Class());
   DefineOutput(2,TList::Class());
   SetNchCorrelationCut(1,0,kFALSE);
@@ -216,17 +223,19 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   {
     printf("Creating OTF objects\n");
     printf("Generator is %s\n",fGenerator.Data());
-    if(centralitymap.empty() && fGenerator.EqualTo("AMPT")) {
+    if(fUseCentCalibration) {
+      fCentcal = (TH1*)GetInputData(2);
+    }
+    else if(centralitymap.empty() && fGenerator.EqualTo("AMPT")) {
       vector<double> b = {0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,13.50,14.51,100.0};
       vector<double> cent = {0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,100.0};
       for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i];
     }
-    if(centralitymap.empty() && fGenerator.EqualTo("HIJING")) {
+    else if(centralitymap.empty() && fGenerator.EqualTo("HIJING")) {
       vector<double> b = {0.0,1.60,2.27,2.79,3.22,3.60,5.09,7.20,8.83,10.20,11.40,12.49,13.49,14.44,15.46,100.0};
       vector<double> cent = {0.0,1.0,2.0,3.0,4.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0};
       for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i];
     }
-
     fIP = new TH1D("fIP","Impact parameter",1500,0.0,30.0);
     printf("OTF objects created\n");
   }
@@ -510,6 +519,7 @@ void AliAnalysisTaskPtCorr::ProcessOnTheFly() {
 }
 double AliAnalysisTaskPtCorr::getGeneratorCentrality()
 {
+  if(fUseCentCalibration) return fCentcal->GetBinContent(fCentcal->GetXaxis()->FindBin(fImpactParameterMC));
   vector<double> b;
   if(centralitymap.empty()) AliFatal("Centralitymap is empty!");
   for (auto const& element : centralitymap) b.push_back(element.first);
