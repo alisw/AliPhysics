@@ -70,7 +70,8 @@ class AliAnalysisTaskDataSpeedOfSound276TeV : public AliAnalysisTaskSE {
   virtual void AnalyzeAOD(AliAODEvent* aod);
   Short_t GetPidCode(Int_t pdgCode) const;
   void ProcessMCTruthESD();
-  void ProcessMCTruthAOD();
+  void TrackingEfficiency();
+  void DCAxyDistributions();
 
   Short_t GetPythiaEventProcessType(Int_t pythiaType);
   Short_t GetDPMjetEventProcessType(Int_t dpmJetType);
@@ -93,15 +94,16 @@ class AliAnalysisTaskDataSpeedOfSound276TeV : public AliAnalysisTaskSE {
   void GetCalibratedV0Amplitude();
   void MultiplicityDistributions();
 
-  AliESDEvent* fESD;                //! ESD object
-  AliAODEvent* fAOD;                //! AOD object
-  AliMCEvent* fMC;                  //! MC object
-  AliStack* fMCStack;               //! MC ESD stack
-  TClonesArray* fMCArray;           //! MC array for AOD
-  AliAnalysisFilter* fTrackFilter;  // Track filter, same as PbPb 5.02 TeV
-  TString fCentEst;                 // V0A , V0M,
-  TString fAnalysisType;            //  "ESD" or "AOD"
-  Bool_t fAnalysisMC;               //  Real(kFALSE) or MC(kTRUE) flag
+  AliESDEvent* fESD;                     //! ESD object
+  AliAODEvent* fAOD;                     //! AOD object
+  AliMCEvent* fMC;                       //! MC object
+  AliStack* fMCStack;                    //! MC ESD stack
+  TClonesArray* fMCArray;                //! MC array for AOD
+  AliAnalysisFilter* fTrackFilter;       // Track filter, same as PbPb 5.02 TeV
+  AliAnalysisFilter* fTrackFilterwoDCA;  // Track filter, same as PbPb 5.02 TeV
+  TString fCentEst;                      // V0A , V0M,
+  TString fAnalysisType;                 //  "ESD" or "AOD"
+  Bool_t fAnalysisMC;                    //  Real(kFALSE) or MC(kTRUE) flag
   Bool_t fAnalysisPbPb;  //  true you want to analyze PbPb data, false for pp
   UInt_t ftrigBit;
   TRandom* fRandom;   //! random number generator
@@ -180,9 +182,11 @@ class AliAnalysisTaskDataSpeedOfSound276TeV : public AliAnalysisTaskSE {
   TH2F* hTrackletsvsV0MAmp14;
   TH1F* hTrackletsEtaGap;
   TH2F* hTrackletsvsV0MAmpEtaGap;
+  TH2D* hDaDCAxy;
 
-  TH1D* hMcIn[7][9];
-  TH1D* hMcOut[7][9];
+  TH1D* hMcIn[8];
+  TH1D* hMcOut[8];
+  TH2D* hDCAxy[3];
 
   AliAnalysisTaskDataSpeedOfSound276TeV(
       const AliAnalysisTaskDataSpeedOfSound276TeV&);  // not implemented
