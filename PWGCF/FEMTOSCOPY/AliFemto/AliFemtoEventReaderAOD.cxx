@@ -1762,6 +1762,7 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
   if (f1DcorrectionsLambdas) {
     tFemtoV0->SetCorrectionLambdas(f1DcorrectionsLambdas->GetBinContent(f1DcorrectionsLambdas->FindFixBin(tAODv0->Pt())));
   }
+  
   else if (f4DcorrectionsLambdas) {
     Int_t idx[4] = {f4DcorrectionsLambdas->GetAxis(0)->FindFixBin(tAODv0->Eta()),
                     f4DcorrectionsLambdas->GetAxis(1)->FindFixBin(tAODv0->Pt()),
@@ -1795,6 +1796,9 @@ AliFemtoV0 *AliFemtoEventReaderAOD::CopyAODtoFemtoV0(AliAODv0 *tAODv0)
     tFemtoV0->SetCorrectionLambdasMinus(1.0);
   }
 
+  if (f1DcorrectionsK0s) {
+    tFemtoV0->SetCorrectionK0s(f1DcorrectionsK0s->GetBinContent(f1DcorrectionsK0s->FindFixBin(tAODv0->Pt())));
+  }
   tFemtoV0->SetptotV0(::sqrt(tAODv0->Ptot2V0()));
   //tFemtoV0->SetptPos(::sqrt(tAODv0->MomPosX()*tAODv0->MomPosX()+tAODv0->MomPosY()*tAODv0->MomPosY()));
   //tFemtoV0->SetptotPos(::sqrt(tAODv0->Ptot2Pos()));
@@ -2859,6 +2863,11 @@ void AliFemtoEventReaderAOD::Set1DCorrectionsLambdasMinus(TH1D *h1)
 {
   f1DcorrectionsLambdasMinus = h1;
 }
+void AliFemtoEventReaderAOD::Set1DCorrectionsK0s(TH1D *h1)
+{
+  f1DcorrectionsK0s = h1;
+}
+
 void AliFemtoEventReaderAOD::Set1DCorrectionsXiPlus(TH1D *h1)
 {
   f1DcorrectionsXiPlus = h1;

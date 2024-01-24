@@ -414,6 +414,8 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* p
   if(pair->Track1()->V0()){
     if(part1==kLambda) weight = pair->Track1()->V0()->CorrectionLambda();
     if(part1==kLambdaMinus) weight = pair->Track1()->V0()->CorrectionLambdaMinus();
+    if(part1==kK0s) weight = pair->Track1()->V0()->CorrectionK0s();
+
   }
 
   if(pair->Track2()->Track()){
@@ -430,6 +432,8 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddRealPair( AliFemtoPair* p
       weight *= pair->Track2()->V0()->CorrectionLambda();
     if(part2==kLambdaMinus)
       weight *= pair->Track2()->V0()->CorrectionLambdaMinus();
+    if(part2==kK0s) 
+      weight *= pair->Track2()->V0()->CorrectionK0s();
   }
 
   fDPhiDEtaNumerator->Fill(dphi, deta, weight);
@@ -529,6 +533,7 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
   if(pair->Track1()->V0()){
     if(part1==kLambda) weight = pair->Track1()->V0()->CorrectionLambda();
     else if(part1==kLambdaMinus) weight = pair->Track1()->V0()->CorrectionLambdaMinus();
+    else if(part1==kK0s) weight = pair->Track1()->V0()->CorrectionK0s();
   }
 
   if(pair->Track2()->Track()){
@@ -543,6 +548,7 @@ void AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections::AddMixedPair( AliFemtoPair* 
   if(pair->Track2()->V0()){
     if(part2==kLambda) weight *= pair->Track2()->V0()->CorrectionLambda();
     else if(part2==kLambdaMinus) weight *= pair->Track2()->V0()->CorrectionLambdaMinus();
+    else if(part2==kK0s) weight *= pair->Track2()->V0()->CorrectionK0s();
   }
   if(pair->Track2()->Xi()){
     if(part2==kXiMinus) weight *= pair->Track2()->Xi()->CorrectionXiMinus();
