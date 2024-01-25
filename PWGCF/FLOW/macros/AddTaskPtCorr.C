@@ -51,12 +51,10 @@ AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, TString efficiency
       TH1 *fcentcal = (TH1*)tfcentcal->Get("centcal");
       if(!fcentcal) { printf("Could not fetch the centrality calibration histogram!\n"); return 0; };
       AliAnalysisDataContainer *cCentCal = mgr->CreateContainer("CentCalibration",TH1::Class(), AliAnalysisManager::kInputContainer);
-      cEff->SetData(fcentcal);
+      cCentCal->SetData(fcentcal);
       mgr->ConnectInput(task,2,cCentCal);
       printf("Centrality calibration input connected!\n");
     } else { mgr->ConnectInput(task,2,(AliAnalysisDataContainer*)AllContainers->FindObject("CentCalibration")); printf("Inputs already connected\n"); }
-
-    }
   }
   AliAnalysisDataContainer *cPtcorr = mgr->CreateContainer(Form("Correlations%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
   AliAnalysisDataContainer *cQA = mgr->CreateContainer(Form("QA%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
