@@ -14,7 +14,7 @@ class AliAnalysisUtils;
 
 class AliAnalysisTaskParticleEffWRZ :public AliAnalysisTaskSE{
   public:
-  AliAnalysisTaskParticleEffWRZ() : AliAnalysisTaskSE(),centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0), fAODpidUtil(0),  fmincen(10.0), fmaxcen(30.0)
+  AliAnalysisTaskParticleEffWRZ() : AliAnalysisTaskSE(),centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0), fAODpidUtil(0),  fcen(0)
     {
 
       for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
@@ -37,11 +37,12 @@ class AliAnalysisTaskParticleEffWRZ :public AliAnalysisTaskSE{
       }
     }
 
-  AliAnalysisTaskParticleEffWRZ(const Char_t *partName, double micen=10.0, double macen=30.0); // default constructor
+  AliAnalysisTaskParticleEffWRZ(const Char_t *partName, int cen=0); // default constructor
   virtual ~AliAnalysisTaskParticleEffWRZ(); // default destructor
   virtual void UserCreateOutputObjects(); // user create output objects
   virtual void UserExec(Option_t *option); // user exec
-  
+  int fcen; 
+    
   protected:
   AliAnalysisTaskParticleEffWRZ(const AliAnalysisTaskParticleEffWRZ &); // copy constructor
   AliAnalysisTaskParticleEffWRZ &operator=(const AliAnalysisTaskParticleEffWRZ &); // operator=
@@ -97,14 +98,20 @@ class AliAnalysisTaskParticleEffWRZ :public AliAnalysisTaskSE{
   TH2D *fSecMat_DCAz_Pt[MULTBINS*PARTTYPES][2];
   TH2D *fSecWeak_DCAz_Pt[MULTBINS*PARTTYPES][2];
 
+  TH2D *fPrim_DCAxy_PtTrack[MULTBINS*PARTTYPES][2];
+  TH2D *fSecMat_DCAxy_PtTrack[MULTBINS*PARTTYPES][2];
+  TH2D *fSecWeak_DCAxy_PtTrack[MULTBINS*PARTTYPES][2];
+
+  TH2D *fPrim_DCAz_PtTrack[MULTBINS*PARTTYPES][2];
+  TH2D *fSecMat_DCAz_PtTrack[MULTBINS*PARTTYPES][2];
+  TH2D *fSecWeak_DCAz_PtTrack[MULTBINS*PARTTYPES][2];
+
   double fDCAtoPrimVtx;
   double get_mass_squared(AliAODTrack *track);
   AliPIDResponse *fpidResponse;
   AliAODpidUtil  *fAODpidUtil;
   ClassDef(AliAnalysisTaskParticleEffWRZ, 0);
 
-  double fmincen; 
-  double fmaxcen; 
 };
 
 

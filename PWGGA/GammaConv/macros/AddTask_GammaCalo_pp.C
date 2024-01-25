@@ -4223,6 +4223,10 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2565) { // NonLin applied in CF.  S100A50,  min energy = 300MeV
     cuts.AddCutCalo("00010113","411790009feg2230000","0s631031000000d0"); // INT7
 
+  } else if (trainConfig == 2566) { // Non-Lin 7 (used without TRD)
+    cuts.AddCutCalo("00010113","411790709fe302v0000","0s631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411790709fe3n2v0000","0s631031000000d0"); // NCell >= 2 cut
+
   } else if (trainConfig == 2570) { // NonLin applied in CF, min energy = 700MeV
     cuts.AddCutCalo("00052113","411790009fe32230000","0s631031000000d0"); // EMC7
     cuts.AddCutCalo("00052113","411790009fe30230000","0s631031000000d0"); // EMC7, no NCell
@@ -4313,6 +4317,13 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00062113","24466110sa01cc00000","0163103100000010"); // PHI7  NL11
     cuts.AddCutCalo("00062113","24466120sa01cc00000","0163103100000010"); // PHI7  NL12
     // cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); // PHI7  NL19
+  
+  } else if (trainConfig == 2602){ // PHOS INT7, 300MeV, Open cuts
+    cuts.AddCutCalo("00010113","24466190s0010000000","0163103100000010"); // Open cuts
+  } else if (trainConfig == 2603){ // PHOS INT7, 300MeV, timing cut study
+    cuts.AddCutCalo("00010113","2446619030010000000","0163103100000010"); //Int7 200ns timing
+    cuts.AddCutCalo("00010113","2446619040010000000","0163103100000010"); //Int7 100ns timing
+    cuts.AddCutCalo("00010113","2446619050010000000","0163103100000010"); //Int7 50ns timing
     //----------------------------------------------------------------------------------------------------------------------------------------
     // Variations of PHOS Part
     //Standard: "24466190sa01cc00000"

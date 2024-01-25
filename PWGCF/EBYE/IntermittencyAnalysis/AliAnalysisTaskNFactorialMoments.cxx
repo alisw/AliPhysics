@@ -239,7 +239,7 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
     fPtBin[i] = new TH1F(Form("fPtBin%d%s", i + 1, name.Data()), Form("Pt distribution of tracks for PtBin%d;#p_{T};Counts", i + 1), 1000, 0.0, 5.0);
     fEtaBin[i] = new TH1F(Form("fEtaBin%d%s", i + 1, name.Data()), Form("Eta distribution of tracks for PtBin%d;#eta;Counts", i + 1), 1000, -1.0, 1.0);
     fPhiBin[i] = new TH1F(Form("fPhiBin%d%s", i + 1, name.Data()), Form("Phi distribution of tracks for PtBin%d;#phi;Counts", i + 1), 1000, 0.0, 6.5);
-    fMultBin[i] = new TH1F(Form("fMultBin%d%s", i + 1, name.Data()), Form("Multiplicity distribution of tracks for PtBin%d;Multiplicity;Counts", i + 1), 1000, 0.0, 1000.0);
+    fMultBin[i] = new TH1F(Form("fMultBin%d%s", i + 1, name.Data()), Form("Multiplicity distribution of tracks for PtBin%d;Multiplicity;Counts", i + 1), 10000, 0.0, 10000.0);
     fHistList->Add(fPtBin[i]);
     fHistList->Add(fEtaBin[i]);
     fHistList->Add(fPhiBin[i]);
@@ -431,7 +431,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
       continue;
     fTrackCounter->Fill(3);
 
-    if ((fabs(eta) > 0.8) || (fabs(pt) < 0.2) || charge == 0)
+    if ((eta < minEta) || (eta > maxEta) || (fabs(pt) < 0.2) || charge == 0)
       continue;
 
     // calculate if pt is in the pt bin range
@@ -464,7 +464,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
 
     track->GetImpactParameters(dcaXY, dcaZ);
 
-    if ((fDCAxyMax > 0.0) && (fabs(dcaXY) > fDCAxyMax))
+    if ((fDCAxyMax > 0.0) && (fabs(dcaXY) > (0.0208+0.04/TMath::Power(pt,1.01))))
       continue;
     if ((fDCAzMax > 0.0) && (fabs(dcaZ) > fDCAzMax))
       continue;
@@ -663,7 +663,7 @@ void AliAnalysisTaskNFactorialMoments::FillMCTrackInfo()
         continue;
 
     if (!lPart || !lPart->IsPhysicalPrimary() || isoobPileup || lpt < 0.2 ||
-        fabs(leta) > 0.8 || lcharge == 0)
+        (leta < minEta) || (leta > maxEta) || lcharge == 0)
       continue;
     GetPtBin(lpt);
 

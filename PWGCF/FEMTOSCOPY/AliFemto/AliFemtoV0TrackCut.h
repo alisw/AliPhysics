@@ -55,6 +55,7 @@ public:
   void SetMaxCosPointingAngle(double);
   void SetMinCosPointingAngle(double);
   void SetMaxV0DecayLength(double);
+  void SetNcTauMax(double);
   void SetMinTransverseDistancePrimSecVtx(double);
   void SetParticleType(short);
   void SetEta(double);
@@ -67,6 +68,7 @@ public:
   void SetPtPosDaughter(float,float);
   void SetPtNegDaughter(float,float);
   void SetOnFlyStatus(bool);
+  void SetArmPodoCut(bool);
   void SetMinAvgSeparation(double);
 
   void SetRadiusV0Min(double);
@@ -140,6 +142,7 @@ public:
   double fMaxDcaV0;
   double fMinDcaV0;
   double fMaxDecayLength;
+  double fcutNcTauMax;
   double fMinTransverseDistancePrimSecVtx;
 
   double fMaxCosPointingAngle;    //obsolete
@@ -150,6 +153,7 @@ public:
   double fPtMin;
   double fPtMax;
   bool fOnFlyStatus;
+  bool fArmPodoCut;
 	
   float fMaxEtaDaughters;         ///< Eta of positive daughter
   int fTPCNclsDaughters;          ///< No. of cls of pos daughter

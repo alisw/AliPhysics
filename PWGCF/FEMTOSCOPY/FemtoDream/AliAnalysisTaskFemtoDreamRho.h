@@ -77,11 +77,15 @@ private:
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
   void SetPhiAtRadiusMCTruth(AliFemtoDreamBasePart partMC, const float bfield);
-  bool CommonAncestors(const AliFemtoDreamBasePart &part1, const AliFemtoDreamBasePart &part2);
+  bool CommonAncestors(const AliFemtoDreamBasePart &part1, const AliFemtoDreamBasePart &part2, AliAODEvent *Event, bool verbose);
   void FillAncestorHist2D_pTvsMinv(const AliFemtoDreamBasePart &posDaughter,
                                    const AliFemtoDreamBasePart &negDaughter,
                                    TH2F *hist2D);
+  void FillAncestorHist2D_PDGvsMinv(const AliFemtoDreamBasePart &posDaughter,
+                                    const AliFemtoDreamBasePart &negDaughter,
+                                    TH2F *hist2D, int &PDG);
   bool AncestorIsSelected(AliFemtoDreamv0 *v0, AliFemtoDreamv0Cuts *V0Selections);
+  bool CommonResonance(const AliFemtoDreamBasePart &part1, const AliFemtoDreamBasePart &part2, int &pdg_resonance, AliAODEvent *Event, bool verbose = false);
   void CalculateAlphaAndQT(const AliAODMCParticle *mcPart, const AliAODMCParticle *mcDaughterOne, const AliAODMCParticle *mcDaughterTwo, float &alpha, float &qT);
   void CalculateAlphaAndQT(const AliFemtoDreamBasePart *Part, const AliFemtoDreamBasePart *DaughterOne, const AliFemtoDreamBasePart *DaughterTwo, float &alpha, float &qT);
   void CalculateAlphaAndQT(const AliFemtoDreamBasePart Part, const TLorentzVector DaughterOne, const TLorentzVector DaughterTwo, float &alpha, float &qT);
@@ -116,33 +120,41 @@ private:
   // TH1F *fFlagHistogram;        //! The histogram to track the flags
   // TH1F *ptHist_RhoMCTrue;      //!
   // TH1F *fpTerrorHistogram;     //!
-  TH2F *fArmenterosRhoTrue;                            //!
-  TH2F *fArmenterosRhoTrue_Reconstr;                   //!
-  TH2F *fArmenterosNoCommonMother_Pos;                 //!
-  TH2F *fArmenterosNoCommonMother_Neg;                 //!
-  TH2F *fArmenterosNoCommonMother_qtDaughBoth;         //!
-  TH2F *fArmenterosNoCommonMother_alphaDaughBoth;      //!
-  TH2F *fArmenterosNoRhoTrue_Reconstr_Pos;             //!
-  TH2F *fArmenterosNoRhoTrue_Reconstr_Neg;             //!
-  TH2F *fArmenterosNoRhoTrue_Reconstr_qtDaughBoth;     //!
-  TH2F *fArmenterosNoRhoTrue_Reconstr_alphaDaughBoth;  //!
-  TH2F *fArmenterosRhoTrue_Reconstr_qtDaughBoth;       //!
-  TH2F *fArmenterosRhoTrue_Reconstr_alphaDaughBoth;    //!
-  TH2F *fHist2D_massVSpt_RhoTrue;                      //!
-  TH1F *fHist1D_pt_RhoTrue;                            //!
-  TH2F *fHist2D_pt1VSpt2_RhoTrue;                      //!
-  TH2F *fHist2D_massVSpt_RhoCandidateCommon;           //!
-  TH2F *fHist2D_massVSpt_RhoCandidateUncommon;         //!
-  TH2F *fHist2D_massVSpt_RhoCandidateCommonFullInvM;   //!
-  TH2F *fHist2D_massVSpt_RhoCandidateUncommonFullInvM; //!
-  TH2F *fHist2D_pTvsmT_noPions;                        //!
-  TH2F *fHist2D_pTvsmT_noPrims;                        //!
-  TH2F *fHist2D_pTvsmT_noCommonMother;                 //!
-  TH2F *fHist2D_pTvsmT_noRho;                          //!
-  TH2F *fHist2D_pTvsmT_noRho_MC;                       //!
-  TH2F *fHist2D_PDGvsmT_noRho_MC;                      //!
-  TH2F *fHist2D_pTvsmT_isRho;                          //!
-  TH2F *fHist2D_pTvsmT_isRho_MC;                       //!
+  TH2F *fArmenterosRhoTrue;                                           //!
+  TH2F *fArmenterosRhoTrue_Reconstr;                                  //!
+  TH2F *fArmenterosNoCommonMother_Pos;                                //!
+  TH2F *fArmenterosNoCommonMother_Neg;                                //!
+  TH2F *fArmenterosNoCommonMother_qtDaughBoth;                        //!
+  TH2F *fArmenterosNoCommonMother_alphaDaughBoth;                     //!
+  TH2F *fArmenterosNoRhoTrue_Reconstr_Pos;                            //!
+  TH2F *fArmenterosNoRhoTrue_Reconstr_Neg;                            //!
+  TH2F *fArmenterosNoRhoTrue_Reconstr_qtDaughBoth;                    //!
+  TH2F *fArmenterosNoRhoTrue_Reconstr_alphaDaughBoth;                 //!
+  TH2F *fArmenterosRhoTrue_Reconstr_qtDaughBoth;                      //!
+  TH2F *fArmenterosRhoTrue_Reconstr_alphaDaughBoth;                   //!
+  TH2F *fHist2D_massVSpt_RhoTrue;                                     //!
+  TH1F *fHist1D_pt_RhoTrue;                                           //!
+  TH2F *fHist2D_pt1VSpt2_RhoTrue;                                     //!
+  TH2F *fHist2D_massVSpt_RhoCandidateCommon;                          //!
+  TH2F *fHist2D_massVSpt_RhoCandidateUncommon;                        //!
+  TH2F *fHist2D_massVSpt_RhoCandidateCommonFullInvM;                  //!
+  TH2F *fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances;     //!
+  TH2F *fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances; //!
+  TH2F *fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances;    //!
+  TH2F *fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances;  //!
+  TH2F *fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances;  //!
+  TH2F *fHist2D_massVSpt_RhoCandidateCommonFullInvM_ftwoResonances;   //!
+  TH2F *fHist2D_massVSpt_RhoCandidateCommonFullInvM_otherResonances;  //!
+  TH2F *fHist2D_massVSpt_RhoCandidateUncommonFullInvM;                //!
+  TH2F *fHist2D_pTvsmT_noPions;                                       //!
+  TH2F *fHist2D_pTvsmT_noPrims;                                       //!
+  TH2F *fHist2D_pTvsmT_noCommonMother;                                //!
+  TH2F *fHist2D_pTvsmT_noRho;                                         //!
+  TH2F *fHist2D_pTvsmT_noRho_MC;                                      //!
+  TH2F *fHist2D_PDGvsmT_noRho_MC;                                     //!
+  TH2F *fHist2D_pTvsmT_isRho;                                         //!
+  TH2F *fHist2D_pTvsmT_isRho_MC;                                      //!
+  TH2F *fHist2D_PDGvsMInv_CommonAncestorResonances;                   //!
 
   // TH2F *fpTCorrerrorHistogram; //!
 

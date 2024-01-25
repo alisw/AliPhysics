@@ -1690,7 +1690,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeElectron(AliAODTrack *tr
 void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFParticle kfpOmegac0, KFParticle kfpOmegac0_woMassConst, AliAODTrack *trackElectronFromOmegac0, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpOmegaMinus_woLMassConst, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short,  KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, AliAODEvent *aodEvent, Int_t lab_Omegac0, Int_t decaytype)
 {
     
-    for (Int_t i=0; i< 63 ; i++){
+    for (Int_t i=0; i< 64 ; i++){
         fVar_Omegac0[i] = -9999.;
     }
     
@@ -1853,6 +1853,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFPart
           Int_t IndexOmegac0 = mcEleFromOmegac0->GetMother();
           mcOmegac0 = static_cast<AliAODMCParticle*>(mcArray->At(IndexOmegac0));
             fVar_Omegac0[30] = mcOmegac0->Pt();
+            fVar_Omegac0[31] = mcOmegac0->Y();
             
         } // lab_Omegac0>=0
     } // fUseMCInfo
@@ -1865,17 +1866,17 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFPart
     kfpCasc_Rej.Construct(vCasc_Rej_Ds, 2);
     Float_t massCasc_Rej, err_massCasc_Rej;
     kfpCasc_Rej.GetMass(massCasc_Rej, err_massCasc_Rej); // massCasc_Rej
-    fVar_Omegac0[31] = massCasc_Rej;
-    fVar_Omegac0[32] = cosoa;
-    fVar_Omegac0[33] = (Int_t) Convee_ULS + 2 *  (Int_t)Convee_LS;
-    fVar_Omegac0[34] = decaytype;
+    fVar_Omegac0[32] = massCasc_Rej;
+    fVar_Omegac0[33] = cosoa;
+    fVar_Omegac0[34] = (Int_t) Convee_ULS + 2 *  (Int_t)Convee_LS;
+    fVar_Omegac0[35] = decaytype;
    
     Float_t mass_OmegaMinus_m, err_mass_OmegaMinus_m;
     kfpOmegaMinus_m.GetMass(mass_OmegaMinus_m,err_mass_OmegaMinus_m);
-    fVar_Omegac0[35] = mass_OmegaMinus_m;
-    fVar_Omegac0[36] = casc -> MassOmega();
-    fVar_Omegac0[37] = nSigmaTOF_EleFromOmegac0;
-    fVar_Omegac0[38] = nSigmaTPC_EleFromOmegac0;
+    fVar_Omegac0[36] = mass_OmegaMinus_m;
+    fVar_Omegac0[37] = casc -> MassOmega();
+    fVar_Omegac0[38] = nSigmaTOF_EleFromOmegac0;
+    fVar_Omegac0[39] = nSigmaTPC_EleFromOmegac0;
     
     
     
@@ -1918,8 +1919,8 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFPart
                                        Ele_Rotated_Pz +pCasc_Orig_Pz,
                                        energyEle + energyCasc);
        
-            fVar_Omegac0[39] = tlv_rotated.Pt();
-            fVar_Omegac0[40] = tlv_rotated.M();
+            fVar_Omegac0[40] = tlv_rotated.Pt();
+            fVar_Omegac0[41] = tlv_rotated.M();
         }
     }
     
@@ -1934,14 +1935,14 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFPart
                             Ele_Orig_Pz +pCasc_Orig_Pz,
                             energyEle_Orig + energyCasc_Orig);
     
-    fVar_Omegac0[41] = tlv_Orig.Pt();
-    fVar_Omegac0[42] = tlv_Orig.M();
+    fVar_Omegac0[42] = tlv_Orig.Pt();
+    fVar_Omegac0[43] = tlv_Orig.M();
     
-    fVar_Omegac0[43] = nSigmaTPC_KaonFromOmega;
-    fVar_Omegac0[44] = nSigmaTOF_KaonFromOmega;
+    fVar_Omegac0[44] = nSigmaTPC_KaonFromOmega;
+    fVar_Omegac0[45] = nSigmaTOF_KaonFromOmega;
     
     //------- DCA information
-    fVar_Omegac0[45] = kfpLambda_m.GetDistanceFromVertex(PV);
+    fVar_Omegac0[46] = kfpLambda_m.GetDistanceFromVertex(PV);
     
     KFParticle kfpProton       = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkProton,2212);
     KFParticle kfpPionMinus    = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkPion,-211);
@@ -1952,47 +1953,47 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFPart
     if (casc -> ChargeXi() >0) isparticle = kFALSE;
     if(isparticle){
         //--- positive
-        fVar_Omegac0[46] =kfpProton.GetDistanceFromVertexXY(PV);
+        fVar_Omegac0[47] =kfpProton.GetDistanceFromVertexXY(PV);
         //--- Negtive
-        fVar_Omegac0[47] =kfpPionMinus.GetDistanceFromVertexXY(PV);
+        fVar_Omegac0[48] =kfpPionMinus.GetDistanceFromVertexXY(PV);
     }else{
         //--- positive
-        fVar_Omegac0[46] =kfpPionPlus.GetDistanceFromVertexXY(PV);
+        fVar_Omegac0[47] =kfpPionPlus.GetDistanceFromVertexXY(PV);
         //--- negative
-        fVar_Omegac0[47] =kfpAntiProton.GetDistanceFromVertexXY(PV);
+        fVar_Omegac0[48] =kfpAntiProton.GetDistanceFromVertexXY(PV);
     }
     
-    fVar_Omegac0[48] =kfpKaon.GetDistanceFromVertexXY(PV);
+    fVar_Omegac0[49] =kfpKaon.GetDistanceFromVertexXY(PV);
     
     //-------  DecayLength information
     Double_t DecayLength_Lambda = TMath::Sqrt(dx_Lambda*dx_Lambda + dy_Lambda*dy_Lambda);
-    fVar_Omegac0[49] = DecayLength_Lambda;
+    fVar_Omegac0[50] = DecayLength_Lambda;
     
     Double_t DecayLength_Omega  = TMath::Sqrt(dx_Omega*dx_Omega + dy_Omega*dy_Omega);
-    fVar_Omegac0[50] = DecayLength_Omega;
+    fVar_Omegac0[51] = DecayLength_Omega;
     
     //------ Add TPC variables
-    fVar_Omegac0[51] = trackElectronFromOmegac0->GetTPCsignalN(); // TPCPID cluster
-    fVar_Omegac0[52] = trackElectronFromOmegac0->GetTPCNCrossedRows(); // Mim. of TPC Crossed Rows
+    fVar_Omegac0[52] = trackElectronFromOmegac0->GetTPCsignalN(); // TPCPID cluster
+    fVar_Omegac0[53] = trackElectronFromOmegac0->GetTPCNCrossedRows(); // Mim. of TPC Crossed Rows
     if(trackElectronFromOmegac0->GetTPCNclsF() > 0){
-        fVar_Omegac0[53] = (Float_t)trackElectronFromOmegac0->GetTPCNCrossedRows()/(Float_t)trackElectronFromOmegac0->GetTPCNclsF(); // findable ratio
+        fVar_Omegac0[54] = (Float_t)trackElectronFromOmegac0->GetTPCNCrossedRows()/(Float_t)trackElectronFromOmegac0->GetTPCNclsF(); // findable ratio
     }
-    fVar_Omegac0[54] = trkPion->GetTPCsignalN();
-    fVar_Omegac0[55] = trkPion->GetTPCNCrossedRows();
+    fVar_Omegac0[55] = trkPion->GetTPCsignalN();
+    fVar_Omegac0[56] = trkPion->GetTPCNCrossedRows();
     if(trkPion->GetTPCNclsF() > 0){
-        fVar_Omegac0[56] = (Float_t)trkPion->GetTPCNCrossedRows()/(Float_t)trkPion->GetTPCNclsF();
+        fVar_Omegac0[57] = (Float_t)trkPion->GetTPCNCrossedRows()/(Float_t)trkPion->GetTPCNclsF();
     }
     
-    fVar_Omegac0[57] = trkProton->GetTPCsignalN();
-    fVar_Omegac0[58] = trkProton->GetTPCNCrossedRows();
+    fVar_Omegac0[58] = trkProton->GetTPCsignalN();
+    fVar_Omegac0[59] = trkProton->GetTPCNCrossedRows();
     if(trkProton->GetTPCNclsF() > 0){
-        fVar_Omegac0[59] = (Float_t)trkProton->GetTPCNCrossedRows()/(Float_t)trkProton->GetTPCNclsF();
+        fVar_Omegac0[60] = (Float_t)trkProton->GetTPCNCrossedRows()/(Float_t)trkProton->GetTPCNclsF();
     }
     
-    fVar_Omegac0[60] = trackKaonFromOmega->GetTPCsignalN();
-    fVar_Omegac0[61] = trackKaonFromOmega->GetTPCNCrossedRows();
+    fVar_Omegac0[61] = trackKaonFromOmega->GetTPCsignalN();
+    fVar_Omegac0[62] = trackKaonFromOmega->GetTPCNCrossedRows();
     if(trackKaonFromOmega->GetTPCNclsF() > 0){
-        fVar_Omegac0[62] = (Float_t)trackKaonFromOmega->GetTPCNCrossedRows()/(Float_t)trackKaonFromOmega->GetTPCNclsF();
+        fVar_Omegac0[63] = (Float_t)trackKaonFromOmega->GetTPCNCrossedRows()/(Float_t)trackKaonFromOmega->GetTPCNclsF();
     }
     
     if (fWriteOmegac0Tree)
@@ -2154,7 +2155,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     
     const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
     fTree_Omegac0 = new TTree(nameoutput, "Omegac0 variables tree");
-    Int_t nVar = 63;
+    Int_t nVar = 64;
     fVar_Omegac0 = new Float_t[nVar];
     TString *fVarNames = new TString[nVar];
     
@@ -2189,38 +2190,39 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     fVarNames[28] = "DCAxy_OmegaToPV_KF"; // DCA of Omega to PV in x-y plane (with Omega mass constraint)
     fVarNames[29] = "Source_Omegac0"; // flag for Omegac0 MC (“4”:prompt, "5": feed-down, “<0”: background)
     fVarNames[30] = "Omegac0_Pt_MC"; // Omegac0 pt distribution in MC
-    fVarNames[31] = "Mass_Xi"; // mass of Xi, (with Lambda mass const.) - - to reject
-    fVarNames[32] = "CosOA";  // Calcualtion from AOD
-    fVarNames[33] = "ConvType"; // ee pairs - - prefilter method
-    fVarNames[34] = "DecayType";  // flags for WS and RS of EleOmega_pairs
-    fVarNames[35] = "Omega_MassConst"; // Omega with Omega mass const
-    fVarNames[36] = "Mass_Omega_Casc"; //
-    fVarNames[37] = "nSigmaTOF_Ele";
-    fVarNames[38] = "nSigmaTPC_Ele";
-    fVarNames[39] = "Rotation_EleOmegapT";
-    fVarNames[40] = "Rotation_EleOmegaMass";
-    fVarNames[41] = "EleOmegapT";
-    fVarNames[42] = "EleOmegaMass";
-    fVarNames[43] = "nSigmaTPC_KaonFromOmega";
-    fVarNames[44] = "nSigmaTOF_KaonFromOmega";
-    fVarNames[45] = "DCAofV0ToPV_KFP";
-    fVarNames[46] = "DCAofV0PosDauToPV_KFP";
-    fVarNames[47] = "DCAofV0NegDauToPC_KFP";
-    fVarNames[48] = "DCAofBachToPV_KFP";
-    fVarNames[49] = "DecayLengthLambda_KFP";
-    fVarNames[50] = "DecayLengthOmega_KFP";
-    fVarNames[51] = "Ele_TPCPIDCluster";
-    fVarNames[52] = "Ele_CrossedRows";
-    fVarNames[53] = "Ele_RatioCrossedRowsOverFindable";
-    fVarNames[54] = "Pion_TPCPIDCluster";
-    fVarNames[55] = "Pion_CrossedRows";
-    fVarNames[56] = "Pion_RatioCrossedRowsOverFindable";
-    fVarNames[57] = "Proton_TPCPIDCluster";
-    fVarNames[58] = "Proton_CrossedRows";
-    fVarNames[59] = "Proton_RatioCrossedRowsOverFindable";
-    fVarNames[60] = "Kaon_TPCPIDCluster";
-    fVarNames[61] = "Kaon_CrossedRows";
-    fVarNames[62] = "Kaon_RatioCrossedRowsOverFindable";
+    fVarNames[31] = "Omegac0_Y_MC"; // Omegac0 y distribution in MC
+    fVarNames[32] = "Mass_Xi"; // mass of Xi, (with Lambda mass const.) - - to reject
+    fVarNames[33] = "CosOA";  // Calcualtion from AOD
+    fVarNames[34] = "ConvType"; // ee pairs - - prefilter method
+    fVarNames[35] = "DecayType";  // flags for WS and RS of EleOmega_pairs
+    fVarNames[36] = "Omega_MassConst"; // Omega with Omega mass const
+    fVarNames[37] = "Mass_Omega_Casc"; //
+    fVarNames[38] = "nSigmaTOF_Ele";
+    fVarNames[39] = "nSigmaTPC_Ele";
+    fVarNames[40] = "Rotation_EleOmegapT";
+    fVarNames[41] = "Rotation_EleOmegaMass";
+    fVarNames[42] = "EleOmegapT";
+    fVarNames[43] = "EleOmegaMass";
+    fVarNames[44] = "nSigmaTPC_KaonFromOmega";
+    fVarNames[45] = "nSigmaTOF_KaonFromOmega";
+    fVarNames[46] = "DCAofV0ToPV_KFP";
+    fVarNames[47] = "DCAofV0PosDauToPV_KFP";
+    fVarNames[48] = "DCAofV0NegDauToPC_KFP";
+    fVarNames[49] = "DCAofBachToPV_KFP";
+    fVarNames[50] = "DecayLengthLambda_KFP";
+    fVarNames[51] = "DecayLengthOmega_KFP";
+    fVarNames[52] = "Ele_TPCPIDCluster";
+    fVarNames[53] = "Ele_CrossedRows";
+    fVarNames[54] = "Ele_RatioCrossedRowsOverFindable";
+    fVarNames[55] = "Pion_TPCPIDCluster";
+    fVarNames[56] = "Pion_CrossedRows";
+    fVarNames[57] = "Pion_RatioCrossedRowsOverFindable";
+    fVarNames[58] = "Proton_TPCPIDCluster";
+    fVarNames[59] = "Proton_CrossedRows";
+    fVarNames[60] = "Proton_RatioCrossedRowsOverFindable";
+    fVarNames[61] = "Kaon_TPCPIDCluster";
+    fVarNames[62] = "Kaon_CrossedRows";
+    fVarNames[63] = "Kaon_RatioCrossedRowsOverFindable";
     
     for (Int_t ivar = 0; ivar<nVar ; ivar++){
      

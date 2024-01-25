@@ -38,4 +38,5 @@
 #pragma link C++ class AliAnalysisTaskDeutFlucpp + ;
 #pragma link C++ class AliAnalysisTaskDataSpeedOfSound + ;
 #pragma link C++ class AliAnalysisTaskDataSpeedOfSoundSim + ;
+#pragma link C++ class AliAnalysisTaskDataSpeedOfSound276TeV + ;
 #endif

@@ -118,6 +118,8 @@ fHistForwardMult(0),
 fHistNchVsForwardMult(0),
 fHistEventCounter(0),
 fHistChargedEta(0),
+fHistTriggerParticleEta(0),
+fHistK0ShortEta(0),
 
 // 2pc histograms
 fHist3dTrigger(0x0),
@@ -206,6 +208,8 @@ fHistForwardMult(0),
 fHistNchVsForwardMult(0),
 fHistEventCounter(0),
 fHistChargedEta(0),
+fHistTriggerParticleEta(0),
+fHistK0ShortEta(0),
 
 // 2pc histograms
 fHist3dTrigger(0x0),
@@ -365,6 +369,18 @@ void AliAnalysisTaskMCPredictions2pc::UserCreateOutputObjects()
     fHistForwardMult = new TH1D( "fHistForwardMult", ";Forward Mult;Count",lNNchBinsForward,lLowNchBoundForward,lHighNchBoundForward);
     //Keeps track of some basics
     fListHist->Add(fHistForwardMult);
+  }
+  if(! fHistTriggerParticleEta ) {
+    //Histogram Output: Event-by-Event
+    fHistTriggerParticleEta = new TH1D( "fHistTriggerParticleEta", ";TriggerParticle Eta;Count",lNEtaBins,edgesEta.data());
+    //Keeps track of some basics
+    fListHist->Add(fHistTriggerParticleEta);
+  }
+  if(! fHistK0ShortEta ) {
+    //Histogram Output: Event-by-Event
+    fHistK0ShortEta = new TH1D( "fHistK0ShortEta", ";K0Short Eta;Count",lNEtaBins,edgesEta.data());
+    //Keeps track of some basics
+    fListHist->Add(fHistK0ShortEta);
   }
   if(! fHistNchVsForwardMult ) {
     //Histogram Output: Event-by-Event
@@ -554,7 +570,7 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
     
     Double_t gpt = particleOne -> Pt();
     Double_t geta = particleOne -> Eta();
-    
+
     if( TMath::Abs(geta) < 0.5 ) lNchEta5++;
     if( TMath::Abs(geta) < 0.8 ) lNchEta8++;
     if( TMath::Abs(geta) < 1.0 ) lEvSel_INELgtZEROStackPrimaries = kTRUE;
@@ -637,6 +653,7 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
           TMath::Abs(lThisParticle->PdgCode()) ==   13 )
       {
         fHist3dTrigger->Fill(geta, gpt,lNchForward);
+        fHistTriggerParticleEta->Fill(geta);
         triggerIndices.emplace_back(iCurrentLabelStack);
       }
     }
@@ -648,6 +665,7 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
     if ( lThisParticle->PdgCode() ==  310 ){
       k0ShortIndices.emplace_back(iCurrentLabelStack);
       fHist3dAssoK0Short->Fill(geta, gpt,lNchForward);
+      fHistK0ShortEta->Fill(geta);
     }
     if ( lThisParticle->PdgCode() ==  3122 ){
       lambdaIndices.emplace_back(iCurrentLabelStack);
@@ -696,11 +714,15 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
     Double_t geta = lTriggerParticle -> Eta();
     Double_t gphi = lTriggerParticle -> Phi();
     Double_t gpt = lTriggerParticle -> Pt();
-
+    Int_t iTrigMother = lTriggerParticle ->GetMother();
     for (Int_t iassocSpecies = 0;  iassocSpecies < associatedIndices.size(); iassocSpecies++){   // associated loop
       for (Int_t iassoc = 0;  iassoc < associatedIndices[iassocSpecies].size(); iassoc++){   // associated loop
         if( triggerIndices[iTrigger] == associatedIndices[iassocSpecies][iassoc] ) continue; // avoid self
         AliMCParticle* lAssociatedParticle = (AliMCParticle*)lMCevent->GetTrack( associatedIndices[iassocSpecies][iassoc] );
+        Int_t iAssoMother = lAssociatedParticle->GetMother();
+
+        if( iTrigMother == associatedIndices[iassocSpecies][iassoc] ) continue; // avoid self
+        if( triggerIndices[iTrigger] == iAssoMother ) continue; // avoid self
         if(!lAssociatedParticle) {
           Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iassoc );
           continue;

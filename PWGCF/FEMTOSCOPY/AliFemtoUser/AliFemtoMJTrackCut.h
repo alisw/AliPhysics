@@ -68,6 +68,7 @@ class AliFemtoMJTrackCut : public AliFemtoTrackCut
   void SetNsigma(Double_t);
   void SetNsigma2(Double_t);
   void SetNsigmaRejection(Double_t);
+  void SetMaxNsigmaERejection(Double_t);
   void SetNsigmaAccept(Double_t);
   void SetClusterRequirementITS(AliESDtrackCuts::Detector det, AliESDtrackCuts::ITSClusterRequirement req = AliESDtrackCuts::kOff);
 
@@ -98,6 +99,7 @@ class AliFemtoMJTrackCut : public AliFemtoTrackCut
   Double_t          fNsigma2;             // number of sigmas - 3 by default
   Double_t          fNsigmaRejection;     // number of sigmas for rejection - 3 by default
   Double_t          fNsigmaAccept;        // number of sigmas for rejection - 3 by default
+  Double_t          fMaxNsigmaERejection; // number of sigmas for electron rejection - 1 by default
 
   short             fminTPCclsF;         // min number of findable clusters in the TPC
   short             fminTPCncls;         // min number of clusters in the TPC

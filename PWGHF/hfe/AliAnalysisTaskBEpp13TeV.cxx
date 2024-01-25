@@ -64,6 +64,7 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV():
   hVtxZ(0),
   hNrEvents(0),
   hNrEventsMult(0),
+  hNrEventsMult2(0),
   hSPDtracklet(0),
   hNtrklet_vtxZ(0),
   hMultEstimatorAvg(0),
@@ -100,11 +101,16 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV():
   hD0PtMult(0),
   hD0PtMultCorr(0),
   hLcPt(0),
+  hD0PtMultBin(0),
+  hDsPtMultBin(0),
+  hLcPtMultBin(0),
   hGenBePt(0),
   hGenBePtMult(0),
+  hGenBePtMult2(0),
   hRecBePt_track(0),
   hRecBePt_tof(0),
   hRecBePt_tofMult(0),
+  hRecBePt_tofMult2(0),
   hRecBePt_tpc(0),
   hITSnsigma(0),
   hITSnsigmaTOFcut(0),
@@ -122,6 +128,7 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV():
   hV0ElecTOFnsigmaNume(0),
   dcaTrack(0),
   dcaTrackMult(0),
+  dcaTrackMult2(0),
   dcaPion(0),
   dcaBeauty(0),
   dcaBeautyCorr(0),
@@ -129,6 +136,7 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV():
   dcaBeautyCorrVar2(0),
   dcaBeautyMult(0),
   dcaBeautyMultCorr(0),
+  dcaBeautyMultCorr2(0),
   dcaBeautyMultCorrVar1(0),
   dcaBeautyMultCorrVar2(0),
   DelecVsDmother(0),
@@ -143,16 +151,24 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV():
   dcaDmesonMultCorrVar2(0),
   dcaDzero(0),
   dcaDzeroMult(0),
+  dcaDzeroMult2(0),
   dcaDplus(0),
   dcaDplusMult(0),
+  dcaDplusMult2(0),
   dcaDsplus(0),
   dcaDsplusMult(0),
+  dcaDsplusMult2(0),
   dcaLc(0),
   dcaLcMult(0),
+  dcaLcMult2(0),
   dcaDalitz(0),
   dcaDalitzMult(0),
+  dcaDalitzMult2(0),
   dcaConv(0),
   dcaConvMult(0),
+  dcaConvMult2(0),
+  dcaPionSelected(0),
+  dcaDalitzSelected(0),
   fBmesonCorrCentLow(0),
   fBmesonCorrCentHigh(0),
   fBmesonCorrMinLow(0),
@@ -228,6 +244,7 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV(const char *name):
   hVtxZ(0),
   hNrEvents(0),
   hNrEventsMult(0),
+  hNrEventsMult2(0),
   hSPDtracklet(0),
   hNtrklet_vtxZ(0),
   hMultEstimatorAvg(0),
@@ -264,11 +281,16 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV(const char *name):
   hD0PtMult(0),
   hD0PtMultCorr(0),
   hLcPt(0),
+  hD0PtMultBin(0),
+  hDsPtMultBin(0),
+  hLcPtMultBin(0),
   hGenBePt(0),
   hGenBePtMult(0),
+  hGenBePtMult2(0),
   hRecBePt_track(0),
   hRecBePt_tof(0),
   hRecBePt_tofMult(0),
+  hRecBePt_tofMult2(0),
   hRecBePt_tpc(0),
   hITSnsigma(0),
   hITSnsigmaTOFcut(0),
@@ -286,6 +308,7 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV(const char *name):
   hV0ElecTOFnsigmaNume(0),
   dcaTrack(0),
   dcaTrackMult(0),
+  dcaTrackMult2(0),
   dcaPion(0),
   dcaBeauty(0),
   dcaBeautyCorr(0),
@@ -293,6 +316,7 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV(const char *name):
   dcaBeautyCorrVar2(0),
   dcaBeautyMult(0),
   dcaBeautyMultCorr(0),
+  dcaBeautyMultCorr2(0),
   dcaBeautyMultCorrVar1(0),
   dcaBeautyMultCorrVar2(0),
   DelecVsDmother(0),
@@ -307,16 +331,24 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV(const char *name):
   dcaDmesonMultCorrVar2(0),
   dcaDzero(0),
   dcaDzeroMult(0),
+  dcaDzeroMult2(0),
   dcaDplus(0),
   dcaDplusMult(0),
+  dcaDplusMult2(0),
   dcaDsplus(0),
   dcaDsplusMult(0),
+  dcaDsplusMult2(0),
   dcaLc(0),
   dcaLcMult(0),
+  dcaLcMult2(0),
   dcaDalitz(0),
   dcaDalitzMult(0),
+  dcaDalitzMult2(0),
   dcaConv(0),
   dcaConvMult(0),
+  dcaConvMult2(0),
+  dcaPionSelected(0),
+  dcaDalitzSelected(0),
   fBmesonCorrCentLow(0),
   fBmesonCorrCentHigh(0),
   fBmesonCorrMinLow(0),
@@ -411,6 +443,7 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
 
   int nPtBins = 11;
   double ptbinningX[12] = {1., 1.1, 1.3, 1.5, 2., 2.5, 3., 4., 5., 6., 8., 10.};
+  double ptbinningX2[5] = {1.3, 2., 4., 6., 8.};
   // double ptbinningX[22] = { 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1., 1.1, 1.3, 1.5, 2., 2.5, 3., 4., 5., 6., 8., 10., 12. };
   // double ptbinningD0[13] = { 1., 2., 3., 4., 5., 6., 7., 8., 10., 12., 16., 24., 36. };
   double ptbinningD0[11] = {1., 2., 3., 4., 5., 6., 7., 8., 10., 12., 24.};
@@ -418,6 +451,7 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   double ptbinningLc[7] = {1., 2., 4., 6., 8., 12., 24.};
   double ptbinningH[18] = {0.3, 0.5, 0.75, 1., 1.25, 1.5, 2., 2.5, 3., 4., 5., 6., 7., 8., 10., 12., 16., 20.};
   double multbinning[7] = {1., 9., 14., 20., 31., 60., 100.};
+  double multbinning2[8] = {1., 9., 14., 20., 31., 50., 70., 100.};
   double evtbinning[2] = {0., 1.};
 
   int nBinsB = 100;
@@ -453,6 +487,9 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
 
   hNrEventsMult = new TH2F("hNrEventsMult", "number of events", 1, evtbinning, 6, multbinning);
   fOutputList->Add(hNrEventsMult);
+
+  hNrEventsMult2 = new TH2F("hNrEventsMult2", "number of events", 1, evtbinning, 7, multbinning2);
+  fOutputList->Add(hNrEventsMult2);
 
   hSPDtracklet = new TH1F("hSPDtracklet", "SPD tracklet distribution", 180, 0, 180);
   fOutputList->Add(hSPDtracklet);
@@ -553,11 +590,23 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   hLcPt = new TH1F("hLcPt", "", 6, ptbinningLc);
   fOutputList->Add(hLcPt);
 
+  hD0PtMultBin = new TH1D("hD0PtMultBin", "", 6, ptbinningLc);
+  fOutputList->Add(hD0PtMultBin);
+
+  hDsPtMultBin = new TH1D("hDsPtMultBin", "", 6, ptbinningLc);
+  fOutputList->Add(hDsPtMultBin);
+
+  hLcPtMultBin = new TH1D("hLcPtMultBin", "", 6, ptbinningLc);
+  fOutputList->Add(hLcPtMultBin);
+
   hGenBePt = new TH1F("hGenBePt", "", nPtBins, ptbinningX);
   fOutputList->Add(hGenBePt);
 
   hGenBePtMult = new TH2F("hGenBePtMult", "", nPtBins, ptbinningX, 6, multbinning);
   fOutputList->Add(hGenBePtMult);
+
+  hGenBePtMult2 = new TH2F("hGenBePtMult2", "", 4, ptbinningX2, 7, multbinning2);
+  fOutputList->Add(hGenBePtMult2);
 
   hRecBePt_track = new TH1F("hRecBePt_track", "", nPtBins, ptbinningX);
   fOutputList->Add(hRecBePt_track);
@@ -567,6 +616,9 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
 
   hRecBePt_tofMult = new TH2F("hRecBePt_tofMult", "", nPtBins, ptbinningX, 6, multbinning);
   fOutputList->Add(hRecBePt_tofMult);
+
+  hRecBePt_tofMult2 = new TH2F("hRecBePt_tofMult2", "", 4, ptbinningX2, 7, multbinning2);
+  fOutputList->Add(hRecBePt_tofMult2);
 
   hRecBePt_tpc = new TH1F("hRecBePt_tpc", "", nPtBins, ptbinningX);
   fOutputList->Add(hRecBePt_tpc);
@@ -619,6 +671,9 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   dcaTrackMult = new TH3F("dcaTrackMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
   fOutputList->Add(dcaTrackMult);
 
+  dcaTrackMult2 = new TH3F("dcaTrackMult2", "", 4, ptbinningX2, nBinsIP, binLimIP, 7, multbinning2);
+  fOutputList->Add(dcaTrackMult2);
+
   dcaPion = new TH2F("dcaPion", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaPion);
 
@@ -639,6 +694,9 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
 
   dcaBeautyMultCorr = new TH3F("dcaBeautyMultCorr", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
   fOutputList->Add(dcaBeautyMultCorr);
+
+  dcaBeautyMultCorr2 = new TH3F("dcaBeautyMultCorr2", "", 4, ptbinningX2, nBinsIP, binLimIP, 7, multbinning2);
+  fOutputList->Add(dcaBeautyMultCorr2);
 
   dcaBeautyMultCorrVar1 = new TH3F("dcaBeautyMultCorrVar1", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
   fOutputList->Add(dcaBeautyMultCorrVar1);
@@ -682,11 +740,17 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   dcaDzeroMult = new TH3F("dcaDzeroMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
   fOutputList->Add(dcaDzeroMult);
 
+  dcaDzeroMult2 = new TH3F("dcaDzeroMult2", "", 4, ptbinningX2, nBinsIP, binLimIP, 7, multbinning2);
+  fOutputList->Add(dcaDzeroMult2);
+
   dcaDplus = new TH2F("dcaDplus", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaDplus);
 
   dcaDplusMult = new TH3F("dcaDplusMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
   fOutputList->Add(dcaDplusMult);
+
+  dcaDplusMult2 = new TH3F("dcaDplusMult2", "", 4, ptbinningX2, nBinsIP, binLimIP, 7, multbinning2);
+  fOutputList->Add(dcaDplusMult2);
 
   dcaDsplus = new TH2F("dcaDsplus", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaDsplus);
@@ -694,11 +758,17 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   dcaDsplusMult = new TH3F("dcaDsplusMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
   fOutputList->Add(dcaDsplusMult);
 
+  dcaDsplusMult2 = new TH3F("dcaDsplusMult2", "", 4, ptbinningX2, nBinsIP, binLimIP, 7, multbinning2);
+  fOutputList->Add(dcaDsplusMult2);
+
   dcaLc = new TH2F("dcaLc", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaLc);
 
   dcaLcMult = new TH3F("dcaLcMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
   fOutputList->Add(dcaLcMult);
+
+  dcaLcMult2 = new TH3F("dcaLcMult2", "", 4, ptbinningX2, nBinsIP, binLimIP, 7, multbinning2);
+  fOutputList->Add(dcaLcMult2);
 
   dcaDalitz = new TH2F("dcaDalitz", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaDalitz);
@@ -706,11 +776,23 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   dcaDalitzMult = new TH3F("dcaDalitzMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
   fOutputList->Add(dcaDalitzMult);
 
+  dcaDalitzMult2 = new TH3F("dcaDalitzMult2", "", 4, ptbinningX2, nBinsIP, binLimIP, 7, multbinning2);
+  fOutputList->Add(dcaDalitzMult2);
+
   dcaConv = new TH2F("dcaConv", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
   fOutputList->Add(dcaConv);
 
   dcaConvMult = new TH3F("dcaConvMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
   fOutputList->Add(dcaConvMult);
+
+  dcaConvMult2 = new TH3F("dcaConvMult2", "", 4, ptbinningX2, nBinsIP, binLimIP, 7, multbinning2);
+  fOutputList->Add(dcaConvMult2);
+
+  dcaPionSelected = new TH2D("dcaPionSelected", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaPionSelected);
+
+  dcaDalitzSelected = new TH2D("dcaDalitzSelected", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
+  fOutputList->Add(dcaDalitzSelected);
 
   fRnd = new TRandom3(0);
 
@@ -1032,6 +1114,7 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
         if(src==kDirectBeauty || src==kBeautyCharm){
           hGenBePt->Fill(fAODMCParticle->Pt());
           hGenBePtMult->Fill(fAODMCParticle->Pt(), Corrected_Ntr);
+          hGenBePtMult2->Fill(fAODMCParticle->Pt(), Corrected_Ntr);
         }
       }
     }
@@ -1062,6 +1145,7 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
   
   hNrEvents->Fill(0.5);
   hNrEventsMult->Fill(0.5, Corrected_Ntr);
+  hNrEventsMult2->Fill(0.5, Corrected_Ntr);
   for(int iTracks = 0; iTracks < fAOD->GetNumberOfTracks(); iTracks++){
     AliAODTrack *aodTrack = static_cast<AliAODTrack *>(fAOD->GetTrack(iTracks));
     if (!aodTrack) continue;
@@ -1126,6 +1210,7 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
         if(rndmB<wghtB){
 		  dcaBeautyCorr->Fill(pt, IP);
 		  dcaBeautyMultCorr->Fill(pt, IP, Corrected_Ntr);
+		  dcaBeautyMultCorr2->Fill(pt, IP, Corrected_Ntr);
 		}
         if(rndmB<wghtBvar1){
 		  dcaBeautyCorrVar1->Fill(pt, IP);
@@ -1208,9 +1293,20 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
           }
 		  if(rndmD<wghtmultD){
             dcaDmesonMultCorr->Fill(pt, IP, Corrected_Ntr);
-            if(TMath::Abs(mcelectronSourcePDG)==421) dcaDzeroMult->Fill(pt, IP, Corrected_Ntr);
-            if(TMath::Abs(mcelectronSourcePDG)==411) dcaDplusMult->Fill(pt, IP, Corrected_Ntr);
-            if(TMath::Abs(mcelectronSourcePDG)==431) dcaDsplusMult->Fill(pt, IP, Corrected_Ntr);
+            if(TMath::Abs(mcelectronSourcePDG)==421){
+			  dcaDzeroMult->Fill(pt, IP, Corrected_Ntr);
+			  dcaDzeroMult2->Fill(pt, IP, Corrected_Ntr);
+			  hD0PtMultBin->Fill(mcelectronSourcePt);
+			}
+            if(TMath::Abs(mcelectronSourcePDG)==411){
+			  dcaDplusMult->Fill(pt, IP, Corrected_Ntr);
+			  dcaDplusMult2->Fill(pt, IP, Corrected_Ntr);
+			}
+            if(TMath::Abs(mcelectronSourcePDG)==431){
+			  dcaDsplusMult->Fill(pt, IP, Corrected_Ntr);
+			  dcaDsplusMult2->Fill(pt, IP, Corrected_Ntr);
+			  hDsPtMultBin->Fill(mcelectronSourcePt);
+			}
 		  }
           if(rndmD<wghtDvar1) dcaDmesonCorrVar1->Fill(pt, IP);
           if(rndmD<wghtDvar2) dcaDmesonCorrVar2->Fill(pt, IP);
@@ -1220,17 +1316,21 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
         if(TMath::Abs(mcelectronSourcePDG)==4122){
 		  dcaLc->Fill(pt, IP);
 		  dcaLcMult->Fill(pt, IP, Corrected_Ntr);
+		  dcaLcMult2->Fill(pt, IP, Corrected_Ntr);
+		  hLcPtMultBin->Fill(mcelectronSourcePt);
 		}
       }
       // Fill Dalitz dca information
       if(mcelectronSource>=kPi0 && mcelectronSource<=kK2P){
 		dcaDalitz->Fill(pt, IP);
 		dcaDalitzMult->Fill(pt, IP, Corrected_Ntr);
+		dcaDalitzMult2->Fill(pt, IP, Corrected_Ntr);
 	  }
       // Fill conversion dca information
       if(mcelectronSource>=kGammaPi0 && mcelectronSource<=kGammaK2P){
 		dcaConv->Fill(pt, IP);
 		dcaConvMult->Fill(pt, IP, Corrected_Ntr);
+		dcaConvMult2->Fill(pt, IP, Corrected_Ntr);
 	  }
     }
 
@@ -1262,6 +1362,7 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
       if(mcelectronSource==kDirectBeauty || mcelectronSource==kBeautyCharm){
         hRecBePt_tof->Fill(pt);
         hRecBePt_tofMult->Fill(pt, Corrected_Ntr);
+        hRecBePt_tofMult2->Fill(pt, Corrected_Ntr);
 	  }
     }
 
@@ -1279,6 +1380,12 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
       if(mcelectronSource==kDirectBeauty || mcelectronSource==kBeautyCharm){
         hRecBePt_tpc->Fill(pt);
 	  }
+      if(mcelectronSource>=kPi0 && mcelectronSource<=kK2P){
+		dcaDalitzSelected->Fill(pt, IP);
+	  }
+	  if(TMath::Abs(fAODMCParticle->GetPdgCode()==211)){
+		dcaPionSelected->Fill(pt, IP);
+	  }
     }
 
     hITSnsigmaTOFTPCcut->Fill(aodTrack->P(), fITSnSigma);
@@ -1287,6 +1394,7 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
 
     dcaTrack->Fill(pt, IP);
     dcaTrackMult->Fill(pt, IP, Corrected_Ntr);
+    dcaTrackMult2->Fill(pt, IP, Corrected_Ntr);
   }
 
   PostData(1, fOutputList); // stream the results the analysis of this event to

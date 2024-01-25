@@ -738,17 +738,19 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistMatchedTrackPClusEAfterEOverPVeto;   // track P vs cluster E for matched tracks surviving the E/P veto
     TH2F*     fHistMatchedTrackPClusETruePi0Clus;       // track P vs cluster E in case of matching with a true pi0 cluster
 
-    TH2F*     fHistElectronPositronClusterMatch;        // Electron/Positron P vs cluster E in case of matching with a cluster
-    TH2F*     fHistElectronPositronClusterMatchSub;     // Electron/Positron P vs E - P in case of matching with a cluster
-    TH2F*     fHistElectronPositronClusterMatchEoverP;  // Electron/Positron E/P vs PT of cluster in case of matching of Electron with cluster
-    TH2F*     fHistElectronPositronClusterMatchEoverPonVtx;  // Electron/Positron E/P(at Vtx) vs PT of cluster in case of matching of Electron with cluster
-    TH2F*     fHistElectronClusterMatch;                // Electron P vs cluster E in case of matching with a cluster
-    TH2F*     fHistPositronClusterMatch;                // Positron P vs cluster E in case of matching with a cluster
-    TH2F*     fHistTrueElectronPositronClusterMatch;    // True Electron/Positron P vs cluster E in case of matching with a cluster
-    TH2F*     fHistTrueNoElectronPositronClusterMatch;  // True No Electron/Positron P vs cluster E in case of matching with a cluster
-    TH2F*     fHistElectronClusterMatchTruePID;         // MC true histogram for purity studies of selected electrons
-    TH2F*     fHistTrueElectronPositronClusterMatchEoverP;  // True Electron/Positron E/P vs PT of cluster in case of matching of Electron with cluster
-    TH2F*     fHistElectronClusterNCellsVsE;            // Electron/Positron cluster number of cells vs. cluster energy
+    TH2F*     fHistElectronPositronClusterMatch;                // Electron/Positron P vs cluster E in case of matching with a cluster
+    TH2F*     fHistElectronPositronClusterMatchSub;             // Electron/Positron P vs E - P in case of matching with a cluster
+    TH2F*     fHistElectronPositronClusterMatchEoverP;          // Electron/Positron E/P vs PT of track in case of matching of Electron with cluster
+    TH2F*     fHistElectronPositronClusterMatchEoverPonVtx;     // Electron/Positron E/P(at Vtx) vs PT of track in case of matching of Electron with cluster
+    TH2F*     fHistElectronPositronClusterMatchEoverPVsE;       // Electron/Positron E/P vs E of cluster in case of matching of Electron with cluster
+    TH2F*     fHistElectronPositronClusterMatchEoverPonVtxVsE;  // Electron/Positron E/P(at Vtx) vs E of cluster in case of matching of Electron with cluster
+    TH2F*     fHistElectronClusterMatch;                        // Electron P vs cluster E in case of matching with a cluster
+    TH2F*     fHistPositronClusterMatch;                        // Positron P vs cluster E in case of matching with a cluster
+    TH2F*     fHistTrueElectronPositronClusterMatch;            // True Electron/Positron P vs cluster E in case of matching with a cluster
+    TH2F*     fHistTrueNoElectronPositronClusterMatch;          // True No Electron/Positron P vs cluster E in case of matching with a cluster
+    TH2F*     fHistElectronClusterMatchTruePID;                 // MC true histogram for purity studies of selected electrons
+    TH2F*     fHistTrueElectronPositronClusterMatchEoverP;      // True Electron/Positron E/P vs PT of cluster in case of matching of Electron with cluster
+    TH2F*     fHistElectronClusterNCellsVsE;                    // Electron/Positron cluster number of cells vs. cluster energy
 
     // histogram for conv candidate rejection
     TH2F*     fHistInvMassDiCluster;                    // histogram for monitoring di-cluster mass
@@ -760,7 +762,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,132)
+    ClassDef(AliCaloPhotonCuts,133)
 };
 
 #endif

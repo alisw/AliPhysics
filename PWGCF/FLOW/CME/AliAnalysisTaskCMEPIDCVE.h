@@ -62,7 +62,10 @@ class AliAnalysisTaskCMEPIDCVE : public AliAnalysisTaskSE
   ////////////////////////
   void ResetVectors();
   bool LoopTracks();
+  bool LoopV0s();
   bool PairTrkTrk();
+  bool PairV0Trk();
+  bool PairV0V0();
 
   ////////////////////////
   // Functional function
@@ -76,9 +79,16 @@ class AliAnalysisTaskCMEPIDCVE : public AliAnalysisTaskSE
   // Get DCA
   bool GetDCA(double &dcaxy, double &dcaz, AliAODTrack* track);
 
+  bool IsGoodV0(const AliAODv0* aodV0);
+  bool IsGoodDaughterTrack(const AliAODTrack* track);
+  int GetLambdaPID(const AliAODTrack *pTrack, const AliAODTrack *nTrack);
+  double GetTPCPlaneNoAutoCorr(std::vector<int> vec_id);
+  inline double GetEventPlane(double qx, double qy, double harmonic);
+
   ////////////////////////
   // input variables
   ////////////////////////
+  double fMASS_LAMBDA = 1.115683;
   // Switch
   bool isTightPileUp;
 
@@ -129,8 +139,16 @@ class AliAnalysisTaskCMEPIDCVE : public AliAnalysisTaskSE
   float fCentSPD0;   // Centrality SPD0
   float fCentSPD1;   // Centrality SPD1
 
-  // Vector for particles from Tracks [pt,eta,phi,pid,label]
-  std::vector<std::array<double,5>> vecParticle;
+  //For TPC event plane
+  double fSumQ2xTPC;
+  double fSumQ2yTPC;
+  double fWgtMultTPC;
+  std::unordered_map<int, std::vector<double>> mapTPCTrksIDPhiWgt;
+
+  // Vector for particles from Tracks [address,pid]
+  std::vector<std::pair<AliAODTrack*, int>> vecParticle;
+  // Vector for particles from V0s [address,pid]
+  std::vector<std::pair<AliAODv0*, int>> vecLambda;
 
   ///////////////////The following files are read from external sources////////////////////
   ////////////////////////
@@ -179,6 +197,12 @@ class AliAnalysisTaskCMEPIDCVE : public AliAnalysisTaskSE
   TH1D* hPtProton[2];
   TH1D* hEtaProton[2];
   TH1D* hPhiProton[2];
+  //lambda
+  TH1D* hPtLambda[2];
+  TH1D* hEtaLambda[2];
+  TH1D* hPhiLambda[2];
+  TH1D* hRapLambda[2];
+  TH1D* hMassLambda[2];
 
   /////////////
   // Results //
@@ -191,6 +215,28 @@ class AliAnalysisTaskCMEPIDCVE : public AliAnalysisTaskSE
 
   TProfile* pDeltaOS[3][3];
   TProfile* pDeltaSS[3][3];
+
+  TProfile* pGammaOS[3][3];
+  TProfile* pGammaSS[3][3];
+
+  TProfile* pDeltaOS_LambdaProton;
+  TProfile* pDeltaSS_LambdaProton;
+  TProfile* pDeltaOS_LambdaPion;
+  TProfile* pDeltaSS_LambdaPion;
+
+  TProfile* pGammaOS_LambdaProton;
+  TProfile* pGammaSS_LambdaProton;
+  TProfile* pGammaOS_LambdaPion;
+  TProfile* pGammaSS_LambdaPion;
+
+  TProfile* pDeltaOS_LambdaLambda;
+  TProfile* pDeltaSS_LambdaLambda;
+  TProfile* pGammaOS_LambdaLambda;
+  TProfile* pGammaSS_LambdaLambda;
+
+  TProfile3D* p3DeltaCentMassMass[3];
+  TProfile3D* p3GammaCentMassMass[3];
+  TH3D* h3LambdaCentMassMass[3];
 
   AliAnalysisTaskCMEPIDCVE(const AliAnalysisTaskCMEPIDCVE&);
   AliAnalysisTaskCMEPIDCVE& operator=(const AliAnalysisTaskCMEPIDCVE&);

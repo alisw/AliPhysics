@@ -47,6 +47,11 @@
 #include "AliFemtoCutMonitorParticlePtPDG.h"
 #include "AliFemtoKTPairCut.h"
 #include "AliFemtoCutMonitorCollections.h"
+//
+#include "AliFemtoModelCorrFctnKK.h"
+//... double ratio ...
+#include "AliFemtoCorrFctnNonIdDR.h"
+//
 #endif
 
 
@@ -152,6 +157,10 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   AliFemtoShareQualityCorrFctn  *cqinvsqtpc[20*10];
   AliFemtoChi2CorrFctn          *cqinvchi2tpc[20];
   AliFemtoTPCInnerCorrFctn      *cqinvinnertpc[20*10];
+  //... double ratio ...
+  // AliFemtoCorrFctnNonIdDR       *cfdourat[20*10];
+  AliFemtoModelCorrFctnKK   *cqinvkttpcmodel[20*8];
+ // AliFemtoCorrFctnGammaMonitorAlpha  *cgamma[20*10];
 
   //...Begin K+K- analysis
   int aniter = 0;

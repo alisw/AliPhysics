@@ -12,7 +12,7 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
                                   bool cutTPCpileup = false, bool saveQA_TPCpileup = false,
                                   Bool_t ComputeEtaGap = kFALSE, Float_t EtaMin = -0.8, Float_t EtaMax = 0.8,
                                   Bool_t useWeightsNUE = kTRUE, Bool_t useWeightsNUA = kFALSE,
-                                  Int_t doSPC = 0, Bool_t frmBadArea18q = kFALSE, TString extra ="")
+                                  Int_t doSPC = 0, Bool_t frmBadArea18q = kFALSE, Bool_t checkCrossedRows = kFALSE, UInt_t crossedRows = 70, TString extra ="")
 {
   double ESDslope = 3.38; bool saveQA_ESDpileup = false;
   bool removeBadArea = kFALSE; bool useTightCuts = kFALSE;
@@ -239,6 +239,12 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
     if (strcmp(configNames[i].Data(), "hybridBaseDCA") == 0) {
       fJCatalyst[i]->SetDCABaseCuts(true);
     } // Default: Other DCA cuts
+
+    if (checkCrossedRows) {
+      fJCatalyst[i]->SetCheckCrossedRows(checkCrossedRows);
+      fJCatalyst[i]->SetNCrossedRows(crossedRows);
+      fJCatalyst[i]->SetNumTPCClusters(50);
+    }
 
     /// Kinematic cuts and last fine tuning.
     fJCatalyst[i]->SetPtRange(ptMin, ptMax);

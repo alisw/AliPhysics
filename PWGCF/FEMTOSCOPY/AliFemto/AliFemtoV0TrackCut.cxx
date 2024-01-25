@@ -21,6 +21,8 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut():
   fMaxDcaV0(9999.0),
   fMinDcaV0(0.0),
   fMaxDecayLength(9999.0),
+  fcutNcTauMax(1.0),
+  fArmPodoCut(kFALSE),
   fMaxCosPointingAngle(0.0),//obsolete
   fMinCosPointingAngle(0.0),
   fParticleType(99.0),
@@ -112,6 +114,7 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut(const AliFemtoV0TrackCut& aCut) :
   fMaxDcaV0(aCut.fMaxDcaV0),
   fMinDcaV0(aCut.fMinDcaV0),
   fMaxDecayLength(aCut.fMaxDecayLength),
+  fcutNcTauMax(aCut.fcutNcTauMax),
   fMinTransverseDistancePrimSecVtx(aCut.fMinTransverseDistancePrimSecVtx),
 
   fMaxCosPointingAngle(aCut.fMaxCosPointingAngle),
@@ -121,6 +124,7 @@ AliFemtoV0TrackCut::AliFemtoV0TrackCut(const AliFemtoV0TrackCut& aCut) :
   fPtMin(aCut.fPtMin),
   fPtMax(aCut.fPtMax),
   fOnFlyStatus(aCut.fOnFlyStatus),
+  fArmPodoCut(aCut.fArmPodoCut), 
 
   fMaxEtaDaughters(aCut.fMaxEtaDaughters),
   fTPCNclsDaughters(aCut.fTPCNclsDaughters),
@@ -207,6 +211,7 @@ AliFemtoV0TrackCut& AliFemtoV0TrackCut::operator=(const AliFemtoV0TrackCut& aCut
   fMaxDcaV0 = aCut.fMaxDcaV0;
   fMinDcaV0 = aCut.fMinDcaV0;
   fMaxDecayLength = aCut.fMaxDecayLength;
+  fcutNcTauMax = aCut.fcutNcTauMax;
   fMinTransverseDistancePrimSecVtx = aCut.fMinTransverseDistancePrimSecVtx;
 
   fMaxCosPointingAngle = aCut.fMaxCosPointingAngle;
@@ -216,6 +221,7 @@ AliFemtoV0TrackCut& AliFemtoV0TrackCut::operator=(const AliFemtoV0TrackCut& aCut
   fPtMin = aCut.fPtMin;
   fPtMax = aCut.fPtMax;
   fOnFlyStatus = aCut.fOnFlyStatus;
+  fArmPodoCut = aCut.fArmPodoCut;
 
   fMaxEtaDaughters = aCut.fMaxEtaDaughters;
   fTPCNclsDaughters = aCut.fTPCNclsDaughters;
@@ -383,6 +389,18 @@ bool AliFemtoV0TrackCut::Pass(const AliFemtoV0* aV0)
   //decay length
   if (aV0->DecayLengthV0() > fMaxDecayLength)
     return false;
+
+  //life time assuming k0s
+  Double_t cutcTauK0s = fcutNcTauMax*2.68;
+  if (aV0->CTauK0Short() > cutcTauK0s) 
+    return false;
+
+  // armenteros podolanski cut
+  Double_t armpt = aV0->PtArmV0();
+  Double_t alpha = aV0->AlphaV0();
+  if(fArmPodoCut) { 
+  if (armpt < 0.2*fabs(alpha)) 
+    return false; }
 
   //transverse decay vertex
   //TO BE IMPLEMENTED (maybe in future)
@@ -565,6 +583,11 @@ void AliFemtoV0TrackCut::SetMaxV0DecayLength(double max)
   fMaxDecayLength = max;
 }
 
+void AliFemtoV0TrackCut::SetNcTauMax(double max)
+{
+  fcutNcTauMax = max;
+}
+
 void AliFemtoV0TrackCut::SetMinTransverseDistancePrimSecVtx(double max)
 {
   fMinTransverseDistancePrimSecVtx = max;
@@ -637,6 +660,11 @@ void AliFemtoV0TrackCut::SetPtNegDaughter(float min, float max)
 void AliFemtoV0TrackCut::SetOnFlyStatus(bool x)
 {
   fOnFlyStatus = x;
+}
+
+void AliFemtoV0TrackCut::SetArmPodoCut(bool x)
+{
+  fArmPodoCut = x;
 }
 
 void AliFemtoV0TrackCut::SetInvariantMassLambda(double min, double max)

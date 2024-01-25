@@ -152,6 +152,9 @@ public:
 	void SetDCAzCut(double DCAzMax) {fDCAz_max = DCAzMax;
 		cout << "setting DCAz cut = " << fDCAz_max << endl;
 	}
+
+	void SetNCrossedRows(UInt_t nCrossedRows) {fCrossedRows = nCrossedRows;}
+	void SetCheckCrossedRows(Bool_t checkCrossedRows) {bCheckCrossedRows = checkCrossedRows;}
 	void SetITSCuts(bool UseITSMinClusters, double ITSMinClusters){
 		fUseITSMinClusters = UseITSMinClusters;
 		fITSMinClusters = ITSMinClusters;
@@ -205,6 +208,9 @@ private:
 	double fzvtxCut; //
 	Bool_t fremovebadarea; //
 	Bool_t fremovebadarea18q; //
+	Bool_t bCheckCrossedRows; // 
+	UInt_t fCrossedRows;
+
 
 	UInt_t flags; //
 	Int_t fJCatalystEntry; //

@@ -60,7 +60,7 @@ fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.02), fDerivSubtrOrder(0),
-fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(1), fMatchJetTrack(1), fMaxPtTrack(0), fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0)
+fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(1), fMatchJetTrack(1), fMaxPtTrack(0), fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0), R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0),pt_tru1(0), pt_tru2(0)
 {
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
@@ -76,7 +76,7 @@ fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.02), fDerivSubtrOrder(0),
-fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(1), fMatchJetTrack(1), fMaxPtTrack(0), fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0)
+fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(1), fMatchJetTrack(1), fMaxPtTrack(0), fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0),R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0), pt_tru1(0), pt_tru2(0)
 
 {
   SetMakeGeneralHistograms(kTRUE);
@@ -128,71 +128,85 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     
     //EEC (data or det level)
     EEC_hist = new TH1D("EEC_hist","EEC", 100, new_bins);
+    EEC_hist->RebinX(2);
     fOutput->Add(EEC_hist);
     
     EEC_pt_hist = new TH2D("EEC_pt_hist", "EEC and jet_pt 2D", 100, new_bins, 21, 15, 120);
+    EEC_pt_hist->RebinX(2);
     fOutput->Add(EEC_pt_hist);
     
     //EEEC histograms (data or det level)
     E3C_hist = new TH1D("E3C_hist","E3C", 100, new_bins);
+    E3C_hist->RebinX(2);
     fOutput->Add(E3C_hist);
     
     E3C_pt_hist = new TH2D("E3C_pt_hist", "EEEC and jet_pt 2D", 100, new_bins, 21, 15, 120);
+    E3C_pt_hist->RebinX(2);
     fOutput->Add(E3C_pt_hist);
     
     //MC true and det level histograms 3d (det level fills through the data loop)
     EEC_det_pt_hist_3d = new TH3D("EEC_det_pt_hist", "EEC det and jet_pt 3D", 100, new_bins, 21, new_bins_const, 21, new_bins_const);
+    EEC_det_pt_hist_3d->RebinX(2);
     fOutput->Add(EEC_det_pt_hist_3d);
     
     EEC_tru_pt_hist_3d = new TH3D("EEC_tru_pt_hist", "EEC tru and jet_pt 3d", 100, new_bins, 21, new_bins_const, 21, new_bins_const);
+    EEC_tru_pt_hist_3d->RebinX(2);
     fOutput->Add(EEC_tru_pt_hist_3d);
     
     E3C_det_pt_hist_3d = new TH3D("E3C_det_pt_hist", "E3C det and jet_pt 3D", 100, new_bins, 21, new_bins_const, 21, new_bins_const);
+    E3C_det_pt_hist_3d->RebinX(2);
     fOutput->Add(E3C_det_pt_hist_3d);
     
     E3C_tru_pt_hist_3d = new TH3D("E3C_tru_pt_hist", "E3C tru and jet_pt 3d)", 100, new_bins, 21, new_bins_const, 21, new_bins_const);
+    E3C_tru_pt_hist_3d->RebinX(2);
     fOutput->Add(E3C_tru_pt_hist_3d);
     
 //
     //Num of pairs at det and true level with det pt and tru pt
     N2_det_pt_hist_3d = new TH3D("N2_det_pt_hist", "Num pairs det and jet_pt 3d",100, new_bins, 21, new_bins_const, 21, new_bins_const);
+    N2_det_pt_hist_3d->RebinX(2);
     fOutput->Add(N2_det_pt_hist_3d);
     
     N2_tru_pt_hist_3d = new TH3D("N2_tru_pt_hist", "Num pairs tru and jet_pt 3d",100, new_bins, 21, new_bins_const, 21, new_bins_const);
+    N2_tru_pt_hist_3d->RebinX(2);
     fOutput->Add(N2_tru_pt_hist_3d);
     
     N3_det_pt_hist_3d = new TH3D("N3_det_pt_hist", "Num pairs det and jet_pt 3d",100, new_bins, 21, new_bins_const, 21, new_bins_const);
+    N3_det_pt_hist_3d->RebinX(2);
     fOutput->Add(N3_det_pt_hist_3d);
     
     N3_tru_pt_hist_3d = new TH3D("N3_tru_pt_hist", "Num pairs tru and jet_pt 3d",100, new_bins, 21, new_bins_const, 21, new_bins_const);
+    N3_tru_pt_hist_3d->RebinX(2);
     fOutput->Add(N3_tru_pt_hist_3d);
     
     //MC true level histograms (detector level goes through the data loop so don't need det level histograms)
     EEC_tru_match_pt_tru = new TH2D("EEC_pt_tru_match_hist", "EEC and pT for tru matched jets", 100, new_bins, 21, 15, 120);
+    EEC_tru_match_pt_tru->RebinX(2);
     fOutput->Add(EEC_tru_match_pt_tru);
     
     E3C_tru_match_pt_tru = new TH2D("E3C_pt_tru_match_hist", "E3C and pT for tru matched jets", 100, new_bins, 21, 15, 120);
+    E3C_tru_match_pt_tru->RebinX(2);
     fOutput->Add(E3C_tru_match_pt_tru);
 
     pt_tru = new TH1D("jet_pt_tru_hist", "Jet Pt", 21, 15, 120);
     fOutput->Add(pt_tru);
     
-    test_hist = new TH1D("test_hist", "test R EEC", 100, 0, 1);
+    test_hist = new TH1D("test_hist_id", "test constituent id", 3000001, -1, 3000000);
     fOutput->Add(test_hist);
     
-    R_matrix = new TH2D("Response matrix", "Jet pT response matrix", 21, 15, 120, 21, 15, 120);
+    R_matrix = new TH2D("R_matrix_jetpt", "Jet pT response matrix", 21, 15, 120, 21, 15, 120);
     fOutput->Add(R_matrix);
     
-    JES = new TH2D("JES","Jet energy scale",21,15,120,200,-2,8);
+    JES = new TH2D("JES","Jet energy scale", 21, 15, 120, 200, -2, 8);
     fOutput->Add(JES);
     
-    JES_scaled = new TH2D("JES scaled","Jet energy scale for scaled det pT",21,15,120,200,-2,8);
+    JES_scaled = new TH2D("JES scaled","Jet energy scale for scaled det pT", 21, 15, 120, 200, -2, 8);
     fOutput->Add(JES_scaled);
     
-    qpt_det = new TH2D("qpt_det","q/pt vs R det",100,new_bins,20,0,2);
+    qpt_det = new TH2D("qpt_det","q/pt vs R det", 100, new_bins, 100, 0, 2);
     fOutput->Add(qpt_det);
     
-    qpt_tru = new TH2D("qpt_tru","q/pt vs R tru",100,new_bins,20,0,2);
+    qpt_tru = new TH2D("qpt_tru","q/pt vs R tru", 100, new_bins, 100, 0, 2);
     fOutput->Add(qpt_tru);
     
     track_pt_tru = new TH1D("track_pt_tru_hist", "Track Pt", 100, 0, 200);
@@ -207,6 +221,30 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     fDetectorLevel  = GetTrackContainer(fDetectorLevelName);
     fGeneratorLevel = GetMCParticleContainer(fGeneratorLevelName);
     
+    R_match_eec = new TH2D("R_match_eec", "Matched Track R", 100, new_bins, 100, new_bins);
+    fOutput->Add(R_match_eec);
+    
+    wt_match_eec = new TH2D("wt_match_eec", "Matched Track Wt", 200, 0 ,1 , 200, 0, 1);
+    fOutput->Add(wt_match_eec);
+    
+    R_match_e3c = new TH2D("R_match_e3c", "Matched Track R e3c", 100, new_bins, 100, new_bins);
+    fOutput->Add(R_match_e3c);
+    
+    wt_match_e3c = new TH2D("wt_match_e3c", "Matched Track Wt e3c", 200, 0 ,1 , 200, 0, 1);
+    fOutput->Add(wt_match_e3c);
+    
+    qpt_tru1 = new TH1D("qpt_tru1","q/pt tru1",100, 0, 2);
+    fOutput->Add(qpt_tru1);
+    
+    qpt_tru2 = new TH1D("qpt_tru2","q/pt tru2",100, 0, 2);
+    fOutput->Add(qpt_tru2);
+    
+    pt_tru1 = new TH1D("pt_tru1","pt tru1",1000, 0, 200);
+    fOutput->Add(pt_tru1);
+    
+    pt_tru2 = new TH1D("pt_tru2","pt tru2",1000, 0, 200);
+    fOutput->Add(pt_tru2);
+//    N_match =
     PostData(1, fOutput);
 
 
@@ -444,6 +482,7 @@ int AliAnalysisTaskJetsEEC::GetConstituentID(int constituentIndex, const AliVPar
 {
   // NOTE: Usually, we would use the global offset defined for the general subtracter extraction task. But we don't want to
   //       depend on that task, so we just define it here locally.
+  //Get the id of the particle. If the label is not equal to -1, get the label and assign it to id. If it is -1, get the value of of track at id + 20000
   int id = part->GetLabel() != -1 ? part->GetLabel() : (jet->TrackAt(constituentIndex) + 2000000);
   return id;
 }
@@ -515,6 +554,7 @@ void AliAnalysisTaskJetsEEC::ComputeDelqpt()
     Short_t charge_det1;
     Short_t charge_det2;
     double delqpt_det;
+    double dphi_det;
     double dphi_det_sq;
     double deta_det_sq;
     double delR_det;
@@ -557,7 +597,10 @@ void AliAnalysisTaskJetsEEC::ComputeDelqpt()
                         phi_det2 = track2->Phi();
                         eta_det2 = track2->Eta();
                         delqpt_det = TMath::Abs(charge_det2/pt_det2 - charge_det1/pt_det1);
-                        dphi_det_sq = (phi_det2-phi_det1)*(phi_det2-phi_det1);
+                        dphi_det = (phi_det2-phi_det1);
+                        if (dphi_det>TMath::Pi()) {dphi_det = dphi_det - 2.*TMath::Pi();}
+                        if (dphi_det<(-1.*TMath::Pi())) {dphi_det = dphi_det + 2.*TMath::Pi();}
+                        dphi_det_sq = dphi_det*dphi_det;
                         deta_det_sq = (eta_det2-eta_det1)*(phi_det2-phi_det1);
                         delR_det = TMath::Sqrt(dphi_det_sq + deta_det_sq);
                         qpt_det->Fill(delR_det,delqpt_det);
@@ -572,6 +615,7 @@ void AliAnalysisTaskJetsEEC::ComputeDelqpt()
     Short_t charge_part1;
     Short_t charge_part2;
     double delqpt_part;
+    double dphi_part;
     double dphi_part_sq;
     double deta_part_sq;
     double delR_part;
@@ -588,6 +632,7 @@ void AliAnalysisTaskJetsEEC::ComputeDelqpt()
             part1 = partIterator->second;
             Short_t charge_part1 = part1->Charge();
             pt_part1 = part1->Pt();
+//            if(pt_part1 < 0.150) continue;
             phi_part1 = part1->Phi();
             eta_part1 = part1->Eta();
             track_pt_tru->Fill(pt_part1);
@@ -595,12 +640,20 @@ void AliAnalysisTaskJetsEEC::ComputeDelqpt()
                 part2 = partIterator->second;
                 Short_t charge_part2 = part2->Charge();
                 pt_part2 = part2->Pt();
+//                if(pt_part2 < 0.150) continue;
                 phi_part2 = part2->Phi();
                 eta_part2 = part2->Eta();
-                dphi_part_sq = (phi_part2-phi_part1)*(phi_part2-phi_part1);
-                deta_part_sq = (eta_part2-eta_part1)*(phi_part2-phi_part1);
+                dphi_part = (phi_part2-phi_part1);
+                if (dphi_part>TMath::Pi()) {dphi_part =dphi_part - 2.*TMath::Pi();}
+                if (dphi_part<(-1.*TMath::Pi())) {dphi_part =dphi_part + 2.*TMath::Pi();}
+                dphi_part_sq = dphi_part*dphi_part;
+                deta_part_sq = (eta_part2-eta_part1)*(eta_part2-eta_part1);
                 delqpt_part = TMath::Abs(charge_part2/pt_part2 - charge_part1/pt_part1);
                 delR_part = TMath::Sqrt(dphi_part_sq + deta_part_sq);
+//                pt_tru1->Fill(pt_part1);
+//                pt_tru2->Fill(pt_part2);
+//                qpt_tru2->Fill(charge_part2/pt_part2);
+//                qpt_tru1->Fill(charge_part1/pt_part1);
                 qpt_tru->Fill(delR_part,delqpt_part);
             }
         }
@@ -632,7 +685,7 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
     }
 
     //Truth level
-    AliJetContainer *jetCont = GetJetContainer(km);
+    AliJetContainer *jetCont = GetJetContainer(km); //get the container for the matched true level jet
     std::vector<fastjet::PseudoJet> fConstituents_tru; //Is a pseudojet object with constituents of the jet
     fConstituents_tru.clear();
     //This snippet of code is getting particles within a single jet (fjet) and turning them into pseudojet objects so that fastjet capabilities can be used
@@ -643,19 +696,104 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
     {
         PseudoTracks_tru.reset(part_tru.Px(), part_tru.Py(), part_tru.Pz(), part_tru.E()); //part is the constituent at that point in the loop, part keeps getting redefined in each step.
         const AliVParticle* part_tru2 = part_tru.GetParticle(); //"hack", leave this in , to get the index of the jet from AliPhysics
-        PseudoTracks.set_user_index(GetConstituentID(constituentIndex, part_tru2, fJet_tru)); //leave this in for the same reason as above
+        PseudoTracks_tru.set_user_index(GetConstituentID(constituentIndex_tru, part_tru2, fJet_tru)); //leave this in for the same reason as above
+//        test_hist->Fill(PseudoTracks_tru.user_index());
 //        PseudoTracks_tru.set_user_index(GetConstituentCharge(constituentCharge_tru, part_tru2, fJet_tru)); //leave this in for the same reason as above
         if (PseudoTracks_tru.pt() < fMinENCtrackPt) continue; //remove tracks below cut for ENCs
         fConstituents_tru.push_back(PseudoTracks_tru);
         constituentIndex_tru++;
     }
-    
 
     double jet_pt = fJet->Pt();
-    
     double jet_pt_tru = fJet_tru->Pt();
     pt_tru->Fill(jet_pt_tru); //filling histogram with momentum of jets
     
+    
+    std::vector<Double_t> R_dist_tru, R_dist_det;
+    
+    if(fMatchJetTrack==1)
+    {
+        for(int j=0; j<int(fConstituents.size()); j++)
+        {
+            int j_index = fConstituents[j].user_index();
+            
+            for(int i=0; i<int(fConstituents_tru.size()); i++)
+            {
+                int i_index = fConstituents_tru[i].user_index();
+                
+                if(i_index == j_index) //does the det particle have a matching truth particle
+                {
+                    for(int s=0; s<j; s++)
+                    {
+                        int s_index = fConstituents[s].user_index();
+                        
+                        for(int l=0; l<int(fConstituents_tru.size()); l++)
+                        {
+                            int l_index = fConstituents_tru[l].user_index();
+                            if(l_index == s_index && l_index != j_index) //does the det particle have a matching truth particle & is it a unique match
+                            {
+                                double ee_det = 2*fConstituents[j].pt()*fConstituents[s].pt()/(pow(jet_pt,2));
+                                double ee_tru = 2*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()/(pow(jet_pt_tru,2));
+                                double R_det = fConstituents[j].delta_R(fConstituents[s]);
+                                double R_tru = fConstituents_tru[i].delta_R(fConstituents_tru[l]);
+                                
+                                double ee_jss_det = 3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt()/(pow(jet_pt,3));
+                                double ee_jss_tru = 3*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[l].pt()/(pow(jet_pt_tru,3));
+                                double R_jss_det = fConstituents[j].delta_R(fConstituents[s]);
+                                double R_jss_tru = fConstituents_tru[i].delta_R(fConstituents_tru[l]);
+                                
+                                R_match_eec->Fill(R_tru,R_det);
+                                wt_match_eec->Fill(ee_tru,ee_det);
+                                
+                                R_match_e3c->Fill(R_jss_tru,R_jss_det);
+                                wt_match_e3c->Fill(ee_jss_tru,ee_jss_det);
+                                
+                                for(int m=0; m!=j && m!=s; m++)
+                                {
+                                    if(s>j) continue;
+                                    int m_index = fConstituents[m].user_index();
+                                    
+                                    for(int k=0; k!=l && k!=i; k++)
+                                    {
+                                        int k_index = fConstituents_tru[k].user_index();
+                                        if(k_index == m_index && k_index != s_index && k_index != j_index )
+                                        {
+                                            double ee_jsm_det = 6*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt()/(pow(jet_pt,3));
+                                            double ee_jsm_tru = 6*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[k].pt()/(pow(jet_pt_tru,3));
+                                            
+                                            double deltaR_js_det = fConstituents[j].delta_R(fConstituents[s]);
+                                            double deltaR_jm_det = fConstituents[j].delta_R(fConstituents[m]);
+                                            double deltaR_sm_det = fConstituents[s].delta_R(fConstituents[m]);
+                                            R_dist_det.push_back(deltaR_js_det);
+                                            R_dist_det.push_back(deltaR_jm_det);
+                                            R_dist_det.push_back(deltaR_sm_det);
+                                            int max_R_det = distance(R_dist_det.begin(), max_element(R_dist_det.begin(), R_dist_det.end()));
+                                            
+                                            
+                                            double deltaR_js_tru = fConstituents_tru[i].delta_R(fConstituents_tru[l]);
+                                            double deltaR_jm_tru = fConstituents_tru[i].delta_R(fConstituents_tru[k]);
+                                            double deltaR_sm_tru = fConstituents_tru[l].delta_R(fConstituents_tru[k]);
+                                            R_dist_tru.push_back(deltaR_js_tru);
+                                            R_dist_tru.push_back(deltaR_jm_tru);
+                                            R_dist_tru.push_back(deltaR_sm_tru);
+                                            int max_R_tru = distance(R_dist_tru.begin(), max_element(R_dist_tru.begin(), R_dist_tru.end()));
+                                            
+                                            R_match_e3c->Fill(R_dist_tru[max_R_tru],R_dist_det[max_R_det]);
+                                            wt_match_e3c->Fill(ee_jsm_tru,ee_jsm_det);
+                                            
+                                            R_dist_det.clear();
+                                            R_dist_tru.clear();
+                                            
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     
     if(fpTcorr == 1)
     {   jet_pt = jet_pt/(0.85); //applying JES correction to jet pT spectra to study spectra shape dependence of ENC

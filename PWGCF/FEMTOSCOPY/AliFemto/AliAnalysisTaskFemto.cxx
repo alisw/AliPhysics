@@ -70,6 +70,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   f1DcorrectionsAll(NULL),
   f1DcorrectionsLambdas(NULL),
   f1DcorrectionsLambdasMinus(NULL),
+  f1DcorrectionsK0s(NULL),
   f1DcorrectionsXiMinus(NULL),
   f1DcorrectionsXiPlus(NULL),
   f4DcorrectionsPions(NULL),
@@ -126,6 +127,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(TString name,
   f1DcorrectionsAll(NULL),
   f1DcorrectionsLambdas(NULL),
   f1DcorrectionsLambdasMinus(NULL),
+  f1DcorrectionsK0s(NULL),
   f1DcorrectionsXiMinus(NULL),
   f1DcorrectionsXiPlus(NULL),
   f4DcorrectionsPions(NULL),
@@ -177,6 +179,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto(const AliAnalysisTaskFemto &aFemtoTas
   f1DcorrectionsAll(aFemtoTask.f1DcorrectionsAll),
   f1DcorrectionsLambdas(aFemtoTask.f1DcorrectionsLambdas),
   f1DcorrectionsLambdasMinus(aFemtoTask.f1DcorrectionsLambdasMinus),
+  f1DcorrectionsK0s(aFemtoTask.f1DcorrectionsK0s),
   f1DcorrectionsXiMinus(aFemtoTask.f1DcorrectionsXiMinus),
   f1DcorrectionsXiPlus(aFemtoTask.f1DcorrectionsXiPlus),
   f4DcorrectionsPions(aFemtoTask.f4DcorrectionsPions),
@@ -228,6 +231,7 @@ AliAnalysisTaskFemto &AliAnalysisTaskFemto::operator=(const AliAnalysisTaskFemto
   f1DcorrectionsAll = aFemtoTask.f1DcorrectionsAll;
   f1DcorrectionsLambdas = aFemtoTask.f1DcorrectionsLambdas;
   f1DcorrectionsLambdasMinus = aFemtoTask.f1DcorrectionsLambdasMinus;
+  f1DcorrectionsK0s = aFemtoTask.f1DcorrectionsK0s;
   f1DcorrectionsXiMinus = aFemtoTask.f1DcorrectionsXiMinus;
   f1DcorrectionsXiPlus = aFemtoTask.f1DcorrectionsXiPlus;
 
@@ -406,7 +410,10 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
         if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections lambas Minus"<<f1DcorrectionsLambdasMinus;
         femtoReaderAOD->Set1DCorrectionsLambdasMinus(f1DcorrectionsLambdasMinus);
       }
-
+      if(f1DcorrectionsK0s) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections k0s"<<f1DcorrectionsK0s;
+        femtoReaderAOD->Set1DCorrectionsK0s(f1DcorrectionsK0s);
+      }
       if(f1DcorrectionsXiMinus) {
         if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections xi Minus"<< f1DcorrectionsXiMinus;
         femtoReaderAOD->Set1DCorrectionsXiMinus(f1DcorrectionsXiMinus);
@@ -524,14 +531,13 @@ void AliAnalysisTaskFemto::ConnectInputData(Option_t *)
 	if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections lambas Minus"<<f1DcorrectionsLambdasMinus;
 	femtoReaderNanoAOD->Set1DCorrectionsLambdasMinus(f1DcorrectionsLambdasMinus);
       }
-
-  if(f1DcorrectionsXiMinus) {
-     if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections xi Minus"<< f1DcorrectionsXiMinus;
-  femtoReaderNanoAOD->Set1DCorrectionsXiMinus(f1DcorrectionsXiMinus);
+      if(f1DcorrectionsXiMinus) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections xi Minus"<< f1DcorrectionsXiMinus;
+        femtoReaderNanoAOD->Set1DCorrectionsXiMinus(f1DcorrectionsXiMinus);
       }
-  if(f1DcorrectionsXiPlus) {
-     if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections xi plus"<<f1DcorrectionsXiPlus;
-  femtoReaderNanoAOD->Set1DCorrectionsXiPlus(f1DcorrectionsXiPlus);
+      if(f1DcorrectionsXiPlus) {
+        if (fVerbose)	cout<<"AliAnalysisTaskFemto::Setting 1d corrections xi plus"<<f1DcorrectionsXiPlus;
+        femtoReaderNanoAOD->Set1DCorrectionsXiPlus(f1DcorrectionsXiPlus);
       }
 //Applying 4D corrections
       if(f4DcorrectionsPions) {
@@ -1031,6 +1037,11 @@ void AliAnalysisTaskFemto::Set1DCorrectionsLambdas(TH1D *h1)
 void AliAnalysisTaskFemto::Set1DCorrectionsLambdasMinus(TH1D *h1)
 {
   f1DcorrectionsLambdasMinus = h1;
+}
+
+void AliAnalysisTaskFemto::Set1DCorrectionsK0s(TH1D *h1)
+{
+  f1DcorrectionsK0s = h1;
 }
 
 void AliAnalysisTaskFemto::Set1DCorrectionsXiPlus(TH1D *h1)

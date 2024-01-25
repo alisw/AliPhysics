@@ -152,6 +152,7 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	TH2F		*hVtxZ;
 	TH1F		*hNrEvents;
 	TH2F		*hNrEventsMult;
+	TH2F		*hNrEventsMult2;
 
     // multiplicity
     TH1F		*hSPDtracklet;
@@ -194,12 +195,17 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	TH2F		*hD0PtMult;
 	TH2F		*hD0PtMultCorr;
 	TH1F		*hLcPt;
+	TH1D		*hD0PtMultBin;
+	TH1D		*hDsPtMultBin;
+	TH1D		*hLcPtMultBin;
 
 	TH1F		*hGenBePt;
 	TH2F		*hGenBePtMult;
+	TH2F		*hGenBePtMult2;
 	TH1F		*hRecBePt_track;
 	TH1F		*hRecBePt_tof;
 	TH2F		*hRecBePt_tofMult;
+	TH2F		*hRecBePt_tofMult2;
 	TH1F		*hRecBePt_tpc;
 
 	// pid cut
@@ -221,6 +227,7 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	// dca
 	TH2F		*dcaTrack;
 	TH3F		*dcaTrackMult;
+	TH3F		*dcaTrackMult2;
 	TH2F		*dcaPion;
 	TH2F		*dcaBeauty;
 	TH2F		*dcaBeautyCorr;
@@ -228,6 +235,7 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	TH2F		*dcaBeautyCorrVar2;
 	TH3F		*dcaBeautyMult;
 	TH3F		*dcaBeautyMultCorr;
+	TH3F		*dcaBeautyMultCorr2;
 	TH3F		*dcaBeautyMultCorrVar1;
 	TH3F		*dcaBeautyMultCorrVar2;
 	TH2F		*DelecVsDmother;
@@ -242,16 +250,24 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	TH3F		*dcaDmesonMultCorrVar2;
 	TH2F		*dcaDzero;
 	TH3F		*dcaDzeroMult;
+	TH3F		*dcaDzeroMult2;
 	TH2F		*dcaDplus;
 	TH3F		*dcaDplusMult;
+	TH3F		*dcaDplusMult2;
 	TH2F		*dcaDsplus;
 	TH3F		*dcaDsplusMult;
+	TH3F		*dcaDsplusMult2;
 	TH2F		*dcaLc;
 	TH3F		*dcaLcMult;
+	TH3F		*dcaLcMult2;
 	TH2F		*dcaDalitz;
 	TH3F		*dcaDalitzMult;
+	TH3F		*dcaDalitzMult2;
 	TH2F		*dcaConv;
 	TH3F		*dcaConvMult;
+	TH3F		*dcaConvMult2;
+	TH2D		*dcaPionSelected;
+	TH2D		*dcaDalitzSelected;
 	
 	// B corr
     TF1         *fBmesonCorrCentLow;

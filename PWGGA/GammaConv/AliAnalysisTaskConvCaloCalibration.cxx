@@ -94,10 +94,8 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fV0Electrons(),
   fV0ReaderName("V0ReaderV1"),
   fCorrTaskSetting(""),
-  fFileNameBroken(NULL),
   fSparseMotherInvMassPtZM(NULL),
   fSparseMotherBackInvMassPtZM(NULL),
-  fTreeBrokenFiles(NULL),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherMatchedInvMassPt(NULL),
   fHistoMotherBackInvMassPt(NULL),
@@ -113,7 +111,6 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fHistoEVsNCellsInPiMass(NULL),
   fProfileEtaShift(NULL),
   fProfileJetJetXSection(NULL),
-  // fHistoMCHeaders(NULL),
   fHistoConvGammaPt(NULL),
   fHistoClusGammaPt(NULL),
   fHistoClusGammaE(NULL),
@@ -140,10 +137,6 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fHistoNGammaCaloCandidates(NULL),
   fHistoNV0Tracks(NULL),
   fHistoJetJetNTrials(NULL),
-  fUnsmearedPx(NULL),
-  fUnsmearedPy(NULL),
-  fUnsmearedPz(NULL),
-  fUnsmearedE(NULL),
   fMesonInvMassWindow(NULL),
   fMCEventPos(NULL),
   fMCEventNeg(NULL),
@@ -219,10 +212,8 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fV0Electrons(),
   fV0ReaderName("V0ReaderV1"),
   fCorrTaskSetting(""),
-  fFileNameBroken(NULL),
   fSparseMotherInvMassPtZM(NULL),
   fSparseMotherBackInvMassPtZM(NULL),
-  fTreeBrokenFiles(NULL),
   fHistoMotherInvMassPt(NULL),
   fHistoMotherMatchedInvMassPt(NULL),
   fHistoMotherBackInvMassPt(NULL),
@@ -238,7 +229,6 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fHistoEVsNCellsInPiMass(NULL),
   fProfileEtaShift(NULL),
   fProfileJetJetXSection(NULL),
-  // fHistoMCHeaders(NULL),
   fHistoConvGammaPt(NULL),
   fHistoClusGammaPt(NULL),
   fHistoClusGammaE(NULL),
@@ -265,10 +255,6 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fHistoNGammaCaloCandidates(NULL),
   fHistoNV0Tracks(NULL),
   fHistoJetJetNTrials(NULL),
-  fUnsmearedPx(NULL),
-  fUnsmearedPy(NULL),
-  fUnsmearedPz(NULL),
-  fUnsmearedE(NULL),
   fMesonInvMassWindow(NULL),
   fMCEventPos(NULL),
   fMCEventNeg(NULL),
@@ -1330,11 +1316,13 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
         }
         if(!fGeomEMCAL)fGeomEMCAL = AliEMCALGeometry::GetInstance();
         Int_t SupMod = fGeomEMCAL->GetSuperModuleNumber(clus->GetCellAbsId(0));
-        fHistoClusTrackdEtaSM[fiCut][SupMod]->Fill(dEta, fWeightJetJetMC);
-        fHistoClusTrackdPhiSM[fiCut][SupMod]->Fill(dPhi, fWeightJetJetMC);
-        if(inTrack->Pt()>5){
-          fHistoClusHighPtTrackdEtaSM[fiCut][SupMod]->Fill(dEta, fWeightJetJetMC);
-          fHistoClusHighPtTrackdPhiSM[fiCut][SupMod]->Fill(dPhi, fWeightJetJetMC);
+        if(fDoMesonQA > 0){
+          fHistoClusTrackdEtaSM[fiCut][SupMod]->Fill(dEta, fWeightJetJetMC);
+          fHistoClusTrackdPhiSM[fiCut][SupMod]->Fill(dPhi, fWeightJetJetMC);
+          if(inTrack->Pt()>5){
+            fHistoClusHighPtTrackdEtaSM[fiCut][SupMod]->Fill(dEta, fWeightJetJetMC);
+            fHistoClusHighPtTrackdPhiSM[fiCut][SupMod]->Fill(dPhi, fWeightJetJetMC);
+          }
         }
       } // end loop over tracks
     }

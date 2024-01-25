@@ -1232,8 +1232,8 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("85610113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 50-60% with NL 1
     cuts.AddCutPCMCalo("86710113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 60-70% with NL 1
     cuts.AddCutPCMCalo("87810113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 70-80% with NL 1
-    cuts.AddCutPCMCalo("889110113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 80-90% with NL 1
-    cuts.AddCutPCMCalo("89a110113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 90-100% with NL 1
+    cuts.AddCutPCMCalo("88910113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 80-90% with NL 1
+    cuts.AddCutPCMCalo("89a10113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 90-100% with NL 1
 
 
 
@@ -1998,6 +1998,9 @@ void AddTask_GammaConvCalo_pPb(
     }
 
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
+    
+    // extract single filenames from fileNamedEdxPostCalib
+    TObjArray *lArrFnamesdEdxPostCalib = nullptr;
     if (enableElecDeDxPostCalibration == 2){
       if (isMC){
         cout << "ERROR enableElecDeDxPostCalibration set to 2 even if MC file. Automatically reset to 0"<< endl;

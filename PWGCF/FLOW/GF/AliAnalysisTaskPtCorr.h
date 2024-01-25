@@ -89,6 +89,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetOnTheFly(bool newval) {fOnTheFly = newval;}
   double getGeneratorCentrality();
   void SetOTFGenerator(TString gen) { fGenerator = gen; }
+  void SetUseIP(bool newval) { fUseIP = newval;}
+  void SetUseCentCalibration(bool newval) { fUseCentCalibration = newval; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -103,6 +105,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Bool_t fDisablePileup;
   Bool_t fUseOldPileup;
   Bool_t fCentSelectForMptNch;
+  Bool_t fUseIP;
+  Bool_t fUseCentCalibration;
   TString fDCAxyFunctionalForm;
   Bool_t fOnTheFly;
   TString fGenerator;
@@ -151,6 +155,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TList *fEfficiencyList;
   vector<vector<TH2D*>> fEfficiency; //TH2Ds for efficiency calculation
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
+  TH1* fCentcal; //TH1 for OTF centrality calibration
   Double_t fPseudoEfficiency; //Pseudo efficiency to reject tracks. Default value set to 2, only used when the value is <1
   TH3D *fPtvsCentvsPower; //!
   TH3D *fDCAxyVsPt_noChi2;

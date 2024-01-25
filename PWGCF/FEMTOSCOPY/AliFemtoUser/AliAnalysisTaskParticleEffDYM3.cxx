@@ -896,7 +896,7 @@ int fcent2=0;
   if(mult >= 0 && mult <=20)  fcent2 = 10;
   else if(mult >= 20 && mult <=40) fcent2 = 1;
   else if(mult >= 40 && mult <=70) fcent2 = 2;
-  else if(mult >= 70 && mult <=90) fcent2 = 3;
+  else if(mult >= 70 && mult <=95) fcent2 = 3;
   if(fcent2!=3) return; // check this
  // else return;
 
@@ -1389,7 +1389,7 @@ if(collect[2]==true){
 
      //********* PID - kaons ********
      if (isKaonNsigma){
-     if (track->Pt() > 0.3 || track->Pt() < 2.5)
+     if (track->Pt() > 0.5 || track->Pt() < 2.5)
        fReconstructedAfterCuts[PARTTYPES*fcent+2][charge]->Fill(track->Y(), track->Pt());
        if (!MCtrk) continue;
        recoParticleArray[2].Add(MCtrk);
