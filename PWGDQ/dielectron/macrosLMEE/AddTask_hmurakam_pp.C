@@ -39,6 +39,11 @@ AliAnalysisTask *AddTask_hmurakam_pp(Bool_t getFromAlien    = kFALSE,
     printf("Load macro now\n");
     gROOT->LoadMacro(configFilePath.Data());
   }
+  TString configFunction(cFileName(0,cFileName.Length() - 2));
+  std::cout << "Configfunction: " << configFunction << std::endl;
+  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFunction.Data())){
+    gROOT->LoadMacro(configFilePath.Data());
+  }
 
   //=== Create the main dielectron task =============================
   TString appendix="";
