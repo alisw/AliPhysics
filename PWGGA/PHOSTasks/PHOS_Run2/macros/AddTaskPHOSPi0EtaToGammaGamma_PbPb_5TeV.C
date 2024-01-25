@@ -1,4 +1,6 @@
-AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
+#include <AliAnalysisTaskLocalPHOSPi0EtaToGammaGamma.h>
+
+AliAnalysisTaskLocalPHOSPi0EtaToGammaGamma* AddTaskLocalPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     const char* name     = "Pi0EtaToGammaGamma",
     UInt_t trigger = AliVEvent::kINT7,
     const TString CollisionSystem = "PbPb",
@@ -31,7 +33,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     const char *sub_name = "0_10" //options for subwagon names
     )
 {
-  //Add a task AliAnalysisTaskPHOSPi0EtaToGammaGamma to the analysis train
+  //Add a task AliAnalysisTaskLocalPHOSPi0EtaToGammaGamma to the analysis train
   //Author: Daiki Sekihata
   /* $Id$ */
 
@@ -86,16 +88,16 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     }
 
     TString FMname = "";
-    if(FlowMethod == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kEP)      FMname = "EP";
-    else if(FlowMethod == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kSP) FMname = "SP";
+    if(FlowMethod == AliAnalysisTaskLocalPHOSPi0EtaToGammaGamma::kEP)      FMname = "EP";
+    else if(FlowMethod == AliAnalysisTaskLocalPHOSPi0EtaToGammaGamma::kSP) FMname = "SP";
 
     TString detname = "";
-    if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kFullTPC)        detname = "FullTPC";
-    else if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTPCNegEta) detname = "TPCNegEta";
-    else if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kTPCPosEta) detname = "TPCPosEta";
-    else if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kFullV0)    detname = "FullV0";
-    else if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0A)       detname = "V0A";
-    else if(QnDetector == AliAnalysisTaskPHOSPi0EtaToGammaGamma::kV0C)       detname = "V0C";
+    if(QnDetector == AliAnalysisTaskLocalPHOSPi0EtaToGammaGamma::kFullTPC)        detname = "FullTPC";
+    else if(QnDetector == AliAnalysisTaskLocalPHOSPi0EtaToGammaGamma::kTPCNegEta) detname = "TPCNegEta";
+    else if(QnDetector == AliAnalysisTaskLocalPHOSPi0EtaToGammaGamma::kTPCPosEta) detname = "TPCPosEta";
+    else if(QnDetector == AliAnalysisTaskLocalPHOSPi0EtaToGammaGamma::kFullV0)    detname = "FullV0";
+    else if(QnDetector == AliAnalysisTaskLocalPHOSPi0EtaToGammaGamma::kV0A)       detname = "V0A";
+    else if(QnDetector == AliAnalysisTaskLocalPHOSPi0EtaToGammaGamma::kV0C)       detname = "V0C";
     else{
       ::Error("AddTaskPHOSPi0EtaToGammaGamma", "detector to measure Qn vector does not exist.");
       return NULL;
@@ -111,7 +113,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
 
   taskname += Form("_%s",sub_name);
 
-  AliAnalysisTaskPHOSPi0EtaToGammaGamma* task = new AliAnalysisTaskPHOSPi0EtaToGammaGamma(taskname);
+  AliAnalysisTaskLocalPHOSPi0EtaToGammaGamma* task = new AliAnalysisTaskLocalPHOSPi0EtaToGammaGamma(taskname);
 
   Double_t Ethre = 0.0;
   if(L1input == 7)       Ethre = 0.0;
