@@ -72,6 +72,8 @@ AliAnalysisPtN::AliAnalysisPtN() : AliAnalysisTaskSE(),
     dPt3Nch_9(nullptr),
     fPtNchUCC(nullptr),
     TestPtCtr(nullptr),
+    TestPt2Ctr(nullptr),
+    TestPt3Ctr(nullptr),
     TestNchCtr(nullptr),
     TestNchSelectedCtr(nullptr),
     fEventCuts(0),
@@ -126,6 +128,8 @@ AliAnalysisPtN::AliAnalysisPtN(const char* name) : AliAnalysisTaskSE(name),
     dPt3Nch_9(nullptr),
     fPtNchUCC(nullptr),
     TestPtCtr(nullptr),
+    TestPt2Ctr(nullptr),
+    TestPt3Ctr(nullptr),
     TestNchCtr(nullptr),
     TestNchSelectedCtr(nullptr),
     fEventCuts(0),
@@ -176,7 +180,9 @@ void AliAnalysisPtN::UserCreateOutputObjects()
     dPt2Nch = new TProfile("dPt2Nch", "dPt2Nch", 90, 0, 4500);
     dPt3Nch = new TProfile("dPt3Nch", "dPt3Nch", 90, 0, 4500);
     fPtNchUCC = new TH2F("fPtNchUCC", "fPtNchUCC", 600, 1800, 3000, 500, 0.2, 5.0);
-    TestPtCtr = new TProfile("TestPtChr", "TestPtChr", 100, 0, 100);
+    TestPtCtr = new TProfile("TestPtCtr", "TestPtCtr", 100, 0, 100);
+    TestPt2Ctr = new TProfile("TestPt2Ctr", "TestPt2Ctr", 100, 0, 100);
+    TestPt3Ctr = new TProfile("TestPt3Ctr", "TestPt3Ctr", 100, 0, 100);
     TestNchCtr = new TProfile("TestNchCtr", "TestNchCtr", 100, 0, 100);
     TestNchSelectedCtr = new TProfile("TestNchSelectedCtr", "TestNchSelectedCtr", 100, 0, 100);
 
@@ -253,6 +259,8 @@ void AliAnalysisPtN::UserCreateOutputObjects()
     fOutputList->Add(dPt3Nch);
     fOutputList->Add(fPtNchUCC);
     fOutputList->Add(TestPtCtr);
+    fOutputList->Add(TestPt2Ctr);
+    fOutputList->Add(TestPt3Ctr);
     fOutputList->Add(TestNchCtr);
     fOutputList->Add(TestNchSelectedCtr);
          // don't forget to add it to the list! the list will be written to file, so if you want
@@ -341,6 +349,8 @@ void AliAnalysisPtN::UserExec(Option_t *)
 
       if(centrality<1) fPtNchUCC->Fill(nTrackSelected,pt);
       TestPtCtr->Fill(centrality,pt);
+      TestPt2Ctr->Fill(centrality,pt2);
+      TestPt3Ctr->Fill(centrality,pt3);
 
     //here we fill the boostrap profiles
       Int_t rd = int(floor(radm.Rndm()*10));

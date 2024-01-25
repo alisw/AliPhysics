@@ -88,6 +88,8 @@ class AliAnalysisPtN : public AliAnalysisTaskSE
         
         TH2F*                   fPtNchUCC;
         TProfile*               TestPtCtr;
+        TProfile*               TestPt2Ctr;
+        TProfile*               TestPt3Ctr;
         TProfile*               TestNchCtr;
         TProfile*               TestNchSelectedCtr;
         
