@@ -1,5 +1,3 @@
-#include <AliAnalysisTaskLocalPHOSPi0EtaToGammaGamma.h>
-
 AliAnalysisTaskLocalPHOSPi0EtaToGammaGamma* AddTaskLocalPHOSPi0EtaToGammaGamma_PbPb_5TeV(
     const char* name     = "Pi0EtaToGammaGamma",
     UInt_t trigger = AliVEvent::kINT7,
