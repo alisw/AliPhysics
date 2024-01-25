@@ -295,7 +295,7 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_correction::UserExec(Option_t *)
   TH1D *fPt_profile = new TH1D("fPt_profile","fPt_profile", 14, 0.2, 3.0);
   Double_t pT_sum_etaLess0 = 0.0;
   Double_t N_sum_etaLess0 = 0.0;
-  Double_t N_sum_etaLess0_2 = 0.0;
+  //Double_t N_sum_etaLess0_2 = 0.0;
   Double_t pT_sum_etaGreaterEtamin = 0.0;
   Double_t N_sum_etaGreaterEtamin = 0.0;
 
@@ -346,26 +346,26 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_correction::UserExec(Option_t *)
 	    {
 	      if(trkEta < 0.0)
 		{
-		  fPt_profile->Fill(trkPt);
+		  fPt_profile->Fill(trkPt,1.0/eff);
 		  pT_sum_etaLess0 += trkPt/eff;
-		  N_sum_etaLess0 += 1.0;
-		  N_sum_etaLess0_2 += 1.0/eff;
+		  N_sum_etaLess0 += 1.0/eff;
+		  //N_sum_etaLess0_2 += 1.0/eff;
 		  //cout<<"corrected no. of particles: "<<N_sum_etaLess0_2<<endl;
 		  
 		  if(TMath::Abs(trkPdgcode)==211) //pion
 		    {
-		      fPt_profile_pion->Fill(trkPt);
-		      N_sumPion_etaLess0 += 1.0;
+		      fPt_profile_pion->Fill(trkPt,1.0/eff);
+		      N_sumPion_etaLess0 += 1.0/eff;
 		    }
 		  if(TMath::Abs(trkPdgcode)==321)  //kaon
 		    {
-		      fPt_profile_kaon->Fill(trkPt);
-		      N_sumKaon_etaLess0 += 1.0;
+		      fPt_profile_kaon->Fill(trkPt,1.0/eff);
+		      N_sumKaon_etaLess0 += 1.0/eff;
 		    }
 		  if(TMath::Abs(trkPdgcode)==2212)  //proton
 		    {
-		      fPt_profile_proton->Fill(trkPt);
-		      N_sumProton_etaLess0 += 1.0;
+		      fPt_profile_proton->Fill(trkPt,1.0/eff);
+		      N_sumProton_etaLess0 += 1.0/eff;
 		    }
 
 		}
@@ -407,15 +407,15 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_correction::UserExec(Option_t *)
       
   if (N_sum_etaGreaterEtamin>0 && N_sum_etaLess0>0 && N_sumPion_etaLess0>0 && N_sumKaon_etaLess0>0 && N_sumProton_etaLess0>0)
     {
-      fMeanPt_less0=pT_sum_etaLess0/N_sum_etaLess0_2;  //!corrected for efficiency
+      fMeanPt_less0=pT_sum_etaLess0/N_sum_etaLess0;  //!corrected for efficiency
       fMeanPt_greaterEtaMin=pT_sum_etaGreaterEtamin/N_sum_etaGreaterEtamin; //! corrected for efficiency
       for(int i=0; i<14; i++)
 	{
-	  fPt_factor[i]=fPt_profile->GetBinContent(i+1)/N_sum_etaLess0;
+	  fPt_factor[i]=fPt_profile->GetBinContent(i+1)/N_sum_etaLess0; //! corrected for efficiency
 
-	  fPt_factor_pion[i]=fPt_profile_pion->GetBinContent(i+1)/N_sumPion_etaLess0;
-	  fPt_factor_kaon[i]=fPt_profile_kaon->GetBinContent(i+1)/N_sumKaon_etaLess0;
-	  fPt_factor_proton[i]=fPt_profile_proton->GetBinContent(i+1)/N_sumProton_etaLess0;
+	  fPt_factor_pion[i]=fPt_profile_pion->GetBinContent(i+1)/N_sumPion_etaLess0; //! corrected for efficiency
+	  fPt_factor_kaon[i]=fPt_profile_kaon->GetBinContent(i+1)/N_sumKaon_etaLess0; //! corrected for efficiency
+	  fPt_factor_proton[i]=fPt_profile_proton->GetBinContent(i+1)/N_sumProton_etaLess0; //! corrected for efficiency
 	}
       // cout<<"Meanpt for eta < 0: "<<fMeanPt_less0<<endl;
       // cout<<"Meanpt for eta > 0.4: "<<fMeanPt_greaterEtaMin<<endl;
