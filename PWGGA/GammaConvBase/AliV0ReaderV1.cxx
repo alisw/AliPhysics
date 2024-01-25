@@ -1336,6 +1336,7 @@ void AliV0ReaderV1::FindDeltaAODBranchName(){
       return;
     }
   }
+  AliInfo(Form("Did not find DeltaAOD BranchName. Used %s for the search.", fDeltaAODBranchName.Data()));
 }
 
 //________________________________________________________________________
