@@ -1,5 +1,5 @@
 
-AliAnalysisTaskMeanptFluctMC *AddTaskMeanptFluctMC(Int_t fCentralityMin=0, Int_t fCentralityMax=90,/* TString sTrigger="kINT7"*/ Double_t fVzMax=10, Double_t fdcaxy=0.1, Double_t fdcaz=1, Double_t fchi2tpc=2.5, Double_t fchi2its=36, Double_t fnCrossedRows=70, TString OutFileName = "_default", Double_t fEta=0.8, Int_t fMCGenChoice=2)
+AliAnalysisTaskMeanptFluctMC *AddTaskMeanptFluctMC(Int_t fCentralityMin=0, Int_t fCentralityMax=90,/* TString sTrigger="kINT7"*/ Double_t fVzMax=10, Double_t fdcaxy=0.1, Double_t fdcaz=1, Double_t fchi2tpc=2.5, Double_t fchi2its=36, Double_t fnCrossedRows=70, TString OutFileName = "_default", Double_t fEta=0.8, Int_t fMCGenChoice=2, Float_t fPtMin=0.2, Float_t fPtMax=5.0)
 {
   // standard with task
   printf("===================================================================================\n");
@@ -23,6 +23,7 @@ AliAnalysisTaskMeanptFluctMC *AddTaskMeanptFluctMC(Int_t fCentralityMin=0, Int_t
                                                 
   AliAnalysisTaskMeanptFluctMC *task_Mpt = new AliAnalysisTaskMeanptFluctMC(TaskMeanpt);
   task_Mpt->SetMCGeneratorChoice(fMCGenChoice);
+  task_Mpt->SetPtMaxMin(fPtMax,fPtMin);
   
 
   // TString OutTreeName;

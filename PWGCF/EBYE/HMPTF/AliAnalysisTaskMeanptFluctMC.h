@@ -54,6 +54,11 @@ class AliAnalysisTaskMeanptFluctMC: public AliAnalysisTaskSE {
   {
     fMCchoice = MC_choice;
   }
+  void SetPtMaxMin(float pT_max, float pT_min)
+  {
+    fPt_max_val = pT_max;
+    fPt_min_val = pT_min;
+  }
   
  private:
   
@@ -76,7 +81,9 @@ class AliAnalysisTaskMeanptFluctMC: public AliAnalysisTaskSE {
   Float_t fNch_gen[3];
   TH2F *hist2D_pt_gen_centrality;
   TH2F *hist2D_pt_rec_centrality;
-  Int_t fMCchoice;		
+  Int_t fMCchoice;
+  Float_t fPt_max_val;
+  Float_t fPt_min_val;		
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //Float_t fvertex;
   //Float_t fQ1;
