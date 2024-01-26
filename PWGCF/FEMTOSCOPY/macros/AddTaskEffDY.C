@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskParticleEffDY *AddTaskEffDY(TString containerName="femtolist",int method=3, int filterbit=96)
+AliAnalysisTaskParticleEffDY *AddTaskEffDY(TString containerName="femtolist",int method=3, int filterbit=128)
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
