@@ -8,9 +8,7 @@ class AliAnalysisDataContainer;
 #include "AliAnalysisTaskDataSpeedOfSound.h"
 
 AliAnalysisTaskDataSpeedOfSound* AddTaskDataSpeedOfSound(
-    const char* taskname = "SpeedOfSound", bool use_mc = false,
-    double v0m_min = 0.0, double v0m_max = 5.0, bool tpc_trkcuts = false,
-    const char* suffix = "") {
+    const char* taskname = "SpeedOfSound", const char* suffix = "") {
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     return 0x0;
@@ -26,16 +24,15 @@ AliAnalysisTaskDataSpeedOfSound* AddTaskDataSpeedOfSound(
   if (!taskKno) {
     return 0x0;
   }
-  taskKno->SetUseMC(use_mc);
-  taskKno->SetV0Mmin(v0m_min);
-  taskKno->SetV0Mmax(v0m_max);
+  taskKno->SetUseMC(false);
+  taskKno->SetV0Mmin(0.0);
+  taskKno->SetV0Mmax(80.0);
   taskKno->SetEtaCut(0.8);
   taskKno->SetPtMin(0.15);
   taskKno->SetEtaGappT(0.4);
   taskKno->SetEtaGapNch(0.7, 1.4);
-  taskKno->SetTrackCuts(tpc_trkcuts);
   taskKno->SetTrigger(AliVEvent::kCentral);
-  taskKno->SetUseZDC(true);
+  taskKno->SetSystematics(true, 0);
   mgr->AddTask(taskKno);
 
   mgr->ConnectInput(taskKno, 0, mgr->GetCommonInputContainer());

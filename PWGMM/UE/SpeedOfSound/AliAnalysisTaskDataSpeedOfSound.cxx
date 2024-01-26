@@ -103,9 +103,9 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       fEventCuts(0x0),
       fMCStack(0),
       fMC(0),
-      fUseZDC(false),
       fUseMC(kFALSE),
-      fIsTPConly(kTRUE),
+      fIsSystematics(true),
+      fSystematic(1),
       fTrigger(AliVEvent::kCentral),
       fTrackFilter(0x0),
       fTrackFilterwoDCA(0x0),
@@ -118,7 +118,7 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       fEtaGapNchMax(1.4),
       fPtMin(0.15),
       fV0Mmin(0.0),
-      fV0Mmax(100.0),
+      fV0Mmax(80.0),
       fHMCut(10.0),
       ftrackmult08(0),
       fv0mpercentile(0),
@@ -180,9 +180,9 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       fEventCuts(0x0),
       fMCStack(0),
       fMC(0),
-      fUseZDC(false),
       fUseMC(kFALSE),
-      fIsTPConly(kTRUE),
+      fIsSystematics(true),
+      fSystematic(1),
       fTrigger(AliVEvent::kCentral),
       fTrackFilter(0x0),
       fTrackFilterwoDCA(0x0),
@@ -195,7 +195,7 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       fEtaGapNchMax(1.4),
       fPtMin(0.15),
       fV0Mmin(0.0),
-      fV0Mmax(100.0),
+      fV0Mmax(80.0),
       fHMCut(10.0),
       ftrackmult08(0),
       fv0mpercentile(0),
@@ -264,39 +264,33 @@ AliAnalysisTaskDataSpeedOfSound::~AliAnalysisTaskDataSpeedOfSound() {
     fOutputList = 0x0;
   }
 }
+
 //_____________________________________________________________________________
 void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   if (!fTrackFilter) {
-    if (fIsTPConly)  // Default option
-    {
-      fTrackFilter = new AliAnalysisFilter("trackFilterTPConly");
-      AliESDtrackCuts* fCuts2 = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
-      fCuts2->SetRequireTPCRefit(kTRUE);
-      fCuts2->SetRequireITSRefit(kTRUE);
-      fCuts2->SetEtaRange(-0.8, 0.8);
-      fTrackFilter->AddCuts(fCuts2);
-    } else {  // Same as in the Nch vs. mult in pp, p-Pb and Pb-Pb
-      std::cout << "Selecting non-TPConly cuts" << std::endl;
-      fTrackFilter = new AliAnalysisFilter("trackFilter2015");
-      AliESDtrackCuts* fCuts2_1 = new AliESDtrackCuts();
-      fCuts2_1->SetMaxFractionSharedTPCClusters(0.4);                //
-      fCuts2_1->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);  //
-      fCuts2_1->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);           //
-      fCuts2_1->SetMaxChi2PerClusterTPC(4);                          //
-      fCuts2_1->SetAcceptKinkDaughters(kFALSE);                      //
-      fCuts2_1->SetRequireTPCRefit(kTRUE);                           //
-      fCuts2_1->SetRequireITSRefit(kTRUE);                           //
-      fCuts2_1->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-                                         AliESDtrackCuts::kAny);    //
-      fCuts2_1->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");  //
-      fCuts2_1->SetMaxChi2TPCConstrainedGlobal(36);                 //
-      fCuts2_1->SetMaxDCAToVertexZ(2);                              //
-      fCuts2_1->SetDCAToVertex2D(kFALSE);                           //
-      fCuts2_1->SetRequireSigmaToVertex(kFALSE);                    //
-      fCuts2_1->SetMaxChi2PerClusterITS(36);                        //
-      fCuts2_1->SetEtaRange(-0.8, 0.8);
-      fTrackFilter->AddCuts(fCuts2_1);
+    fTrackFilter = new AliAnalysisFilter("trackFilter2015");
+    AliESDtrackCuts* fCuts = new AliESDtrackCuts();
+    fCuts->SetMaxFractionSharedTPCClusters(0.4);
+    fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    fCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
+    fCuts->SetMaxChi2PerClusterTPC(4);
+    fCuts->SetAcceptKinkDaughters(kFALSE);
+    fCuts->SetRequireTPCRefit(kTRUE);
+    fCuts->SetRequireITSRefit(kTRUE);
+    fCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                                    AliESDtrackCuts::kAny);
+    fCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
+    fCuts->SetMaxChi2TPCConstrainedGlobal(36);
+    fCuts->SetMaxDCAToVertexZ(2);
+    fCuts->SetDCAToVertex2D(kFALSE);
+    fCuts->SetRequireSigmaToVertex(kFALSE);
+    fCuts->SetMaxChi2PerClusterITS(36);
+    fCuts->SetEtaRange(-0.8, 0.8);
+
+    if (fIsSystematics) {
+      ChangeCut(fCuts);
     }
+    fTrackFilter->AddCuts(fCuts);
   }
 
   // track cuts to find contamination via DCA distribution
@@ -602,7 +596,7 @@ void AliAnalysisTaskDataSpeedOfSound::UserExec(Option_t*) {
       fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
 
   //! Analyze only the 0--80 % V0M range
-  if (!(fv0mpercentile >= fV0Mmin && fv0mpercentile < 80.0)) {
+  if (!(fv0mpercentile >= fV0Mmin && fv0mpercentile < fV0Mmax)) {
     return;
   }
 
@@ -926,8 +920,8 @@ Bool_t AliAnalysisTaskDataSpeedOfSound::HasRecVertex() {
   double dz = bool(fFlag & AliEventCuts::kVertexSPD) &&
                       bool(fFlag & AliEventCuts::kVertexTracks)
                   ? vtTrc->GetZ() - vtSPD->GetZ()
-                  : 0.;  /// If one of the two vertices is not available this
-                         /// cut is always passed.
+                  : 0.;  /// If one of the two vertices is not available
+                         /// this cut is always passed.
   double errTot = TMath::Sqrt(covTrc[5] + covSPD[5]);
   double errTrc =
       bool(fFlag & AliEventCuts::kVertexTracks) ? TMath::Sqrt(covTrc[5]) : 1.;
@@ -937,8 +931,8 @@ Bool_t AliAnalysisTaskDataSpeedOfSound::HasRecVertex() {
   double vtSPDdispersion = vtSPDESD ? vtSPDESD->GetDispersion() : 0;
   if ((TMath::Abs(dz) <= fMaxDeltaSpdTrackAbsolute &&
        nsigTot <= fMaxDeltaSpdTrackNsigmaSPD &&
-       nsigTrc <=
-           fMaxDeltaSpdTrackNsigmaTrack) &&  // discrepancy track-SPD vertex
+       nsigTrc <= fMaxDeltaSpdTrackNsigmaTrack) &&  // discrepancy
+                                                    // track-SPD vertex
       (!vtSPD->IsFromVertexerZ() ||
        TMath::Sqrt(covSPD[5]) <= fMaxResolutionSPDvertex) &&
       (!vtSPD->IsFromVertexerZ() ||
@@ -951,4 +945,66 @@ Bool_t AliAnalysisTaskDataSpeedOfSound::HasRecVertex() {
                   (TESTBIT(fFlag, AliEventCuts::kVertexQuality));
 
   return hasVtx;
+}
+
+//____________________________________________________________
+
+void AliAnalysisTaskDataSpeedOfSound::ChangeCut(AliESDtrackCuts* fCuts) {
+  cout << "Changing track cut (systematic variation): " << fSystematic << '\n';
+  switch (fSystematic) {
+    case 0:
+      fCuts->SetMaxDCAToVertexZ(1);
+      break;
+    case 1:
+      fCuts->SetMaxDCAToVertexZ(5);
+      break;
+    case 2:
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
+      break;
+    case 3:
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
+      break;
+    case 4:
+      fCuts->SetMaxFractionSharedTPCClusters(0.2);
+      break;
+    case 5:
+      fCuts->SetMaxFractionSharedTPCClusters(1);
+      break;
+    case 6:
+      fCuts->SetMaxChi2PerClusterTPC(3);
+      break;
+    case 7:
+      fCuts->SetMaxChi2PerClusterTPC(5);
+      break;
+    case 8:
+      fCuts->SetMaxChi2PerClusterITS(25);
+      break;
+    case 9:
+      fCuts->SetMaxChi2PerClusterITS(49);
+      break;
+    case 10:
+      fCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+                                      AliESDtrackCuts::kNone);
+      break;
+    case 11:
+      fCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.85, 0.7);
+      break;
+    case 12:
+      fCuts->SetCutGeoNcrNcl(4., 130., 1.5, 0.85, 0.7);
+      break;
+    case 13:
+      fCuts->SetCutGeoNcrNcl(3., 120., 1.5, 0.85, 0.7);
+      break;
+    case 14:
+      fCuts->SetCutGeoNcrNcl(3., 140., 1.5, 0.85, 0.7);
+      break;
+    case 15:
+      fCuts->SetMaxChi2TPCConstrainedGlobal(25);
+      break;
+    case 16:
+      fCuts->SetMaxChi2TPCConstrainedGlobal(49);
+      break;
+    default:
+      cout << "fSystematic not defined!" << '\n';
+  }
 }
