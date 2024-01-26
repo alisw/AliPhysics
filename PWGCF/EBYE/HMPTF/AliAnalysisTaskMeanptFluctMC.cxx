@@ -46,7 +46,7 @@ using std::endl;
 
 ClassImp(AliAnalysisTaskMeanptFluctMC)
 
-AliAnalysisTaskMeanptFluctMC::AliAnalysisTaskMeanptFluctMC(): AliAnalysisTaskSE(), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fvertex(0), Profile_mean_term1(0),Profile_var_term1(0),Profile_var_term2(0),Profile_skewness_term1(0),Profile_skewness_term2(0),Profile_skewness_term3(0),Profile_kurtosis_term1(0),Profile_kurtosis_term2(0),Profile_kurtosis_term3(0),Profile_kurtosis_term4(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0),fMCchoice(0),fNpart_1(0),fNpart_2(0)
+AliAnalysisTaskMeanptFluctMC::AliAnalysisTaskMeanptFluctMC(): AliAnalysisTaskSE(), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fvertex(0), Profile_mean_term1(0),Profile_var_term1(0),Profile_var_term2(0),Profile_skewness_term1(0),Profile_skewness_term2(0),Profile_skewness_term3(0),Profile_kurtosis_term1(0),Profile_kurtosis_term2(0),Profile_kurtosis_term3(0),Profile_kurtosis_term4(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0),fMCchoice(0),fPt_max_val(0),fPt_min_val(0),fNpart_1(0),fNpart_2(0)
 {
   for(int i=0;i<3;i++)
     {
@@ -58,7 +58,7 @@ AliAnalysisTaskMeanptFluctMC::AliAnalysisTaskMeanptFluctMC(): AliAnalysisTaskSE(
     }
 }
 
-AliAnalysisTaskMeanptFluctMC::AliAnalysisTaskMeanptFluctMC(const char *name): AliAnalysisTaskSE(name), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fvertex(0),Profile_mean_term1(0),Profile_var_term1(0),Profile_var_term2(0),Profile_skewness_term1(0),Profile_skewness_term2(0),Profile_skewness_term3(0),Profile_kurtosis_term1(0),Profile_kurtosis_term2(0),Profile_kurtosis_term3(0),Profile_kurtosis_term4(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0),fMCchoice(0),fNpart_1(0),fNpart_2(0)
+AliAnalysisTaskMeanptFluctMC::AliAnalysisTaskMeanptFluctMC(const char *name): AliAnalysisTaskSE(name), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fvertex(0),Profile_mean_term1(0),Profile_var_term1(0),Profile_var_term2(0),Profile_skewness_term1(0),Profile_skewness_term2(0),Profile_skewness_term3(0),Profile_kurtosis_term1(0),Profile_kurtosis_term2(0),Profile_kurtosis_term3(0),Profile_kurtosis_term4(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0),fMCchoice(0),fPt_max_val(0),fPt_min_val(0),fNpart_1(0),fNpart_2(0)
 {
   for(int i=0;i<3;i++)
     {
@@ -302,8 +302,10 @@ void AliAnalysisTaskMeanptFluctMC::UserExec(Option_t *)
 	    {
 	      Nch_eta0pt5+=1.0;
 	    }
-      
-	  if(Track_pt>0.2 && Track_pt<=3.0 && TMath::Abs(Track_PID)==211) //! pion
+
+	  //cout<<"+++++++++++++++++++++++++++++++++++ Min:"<<fPt_min_val<<"\tMax: "<<fPt_max_val<<"++++++++++++++++++++++++++++++++"<<endl;
+	  
+	  if(Track_pt>fPt_min_val && Track_pt<= fPt_max_val && TMath::Abs(Track_PID)==211) //! pion
 	    {
 	      Q1[0]=Q1[0]+TMath::Power(Track_pt, 1.0);
 	      Q2[0]=Q2[0]+TMath::Power(Track_pt, 2.0);
@@ -311,7 +313,7 @@ void AliAnalysisTaskMeanptFluctMC::UserExec(Option_t *)
 	      Q4[0]=Q4[0]+TMath::Power(Track_pt, 4.0);
 	      Nch[0]=Nch[0]+1;
 	    }
-	  if(Track_pt>0.2 && Track_pt<=3.0 && TMath::Abs(Track_PID)==321) //! kaon
+	  if(Track_pt>fPt_min_val && Track_pt<= fPt_max_val && TMath::Abs(Track_PID)==321) //! kaon
 	    {
 	      Q1[1]=Q1[1]+TMath::Power(Track_pt, 1.0);
 	      Q2[1]=Q2[1]+TMath::Power(Track_pt, 2.0);
@@ -319,7 +321,7 @@ void AliAnalysisTaskMeanptFluctMC::UserExec(Option_t *)
 	      Q4[1]=Q4[1]+TMath::Power(Track_pt, 4.0);
 	      Nch[1]=Nch[1]+1;
 	    }
-	  if(Track_pt>0.2 && Track_pt<=3.0 && TMath::Abs(Track_PID)==2212) //! proton
+	  if(Track_pt>fPt_min_val && Track_pt<=fPt_max_val && TMath::Abs(Track_PID)==2212) //! proton
 	    {
 	      Q1[2]=Q1[2]+TMath::Power(Track_pt, 1.0);
 	      Q2[2]=Q2[2]+TMath::Power(Track_pt, 2.0);
