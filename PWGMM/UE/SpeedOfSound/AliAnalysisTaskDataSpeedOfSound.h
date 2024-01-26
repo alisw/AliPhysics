@@ -42,7 +42,6 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetHMCut(double HMcut) { fHMCut = HMcut; }      // Set V0M max value
   void SetUseMC(bool mc = false) { fUseMC = mc; }      // use to analyse MC data
-  void SetUseZDC(bool zdc = false) { fUseZDC = zdc; }  // use ZDC selection
   void SetEtaCut(const double& etacut) { fEtaCut = etacut; }
   void SetEtaMinCut(const double& etamin) { fEtaMin = etamin; }
   void SetEtaMaxCut(const double& etamax) { fEtaMax = etamax; }
@@ -52,9 +51,13 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
     fEtaGapNchMax = etamax;
   }
   void SetPtMin(const double& ptmin) { fPtMin = ptmin; }
-  void SetTrackCuts(bool TPConly = true) { fIsTPConly = TPConly; }
   void SetTrigger(UInt_t trigger = AliVEvent::kINT7) { fTrigger = trigger; }
   bool HasRecVertex();
+  void SetSystematics(bool issystematics = true, int systematic = 1) {
+    fIsSystematics = issystematics;
+    fSystematic = systematic;
+  }
+  void ChangeCut(AliESDtrackCuts* fCuts);
 
  protected:
  private:
@@ -62,9 +65,9 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   AliEventCuts fEventCuts;
   AliStack* fMCStack;
   AliMCEvent* fMC;
-  bool fUseZDC;
   bool fUseMC;
-  bool fIsTPConly;
+  bool fIsSystematics;
+  int fSystematic;
   UInt_t fTrigger;
   AliAnalysisFilter* fTrackFilter;
   AliAnalysisFilter* fTrackFilterwoDCA;

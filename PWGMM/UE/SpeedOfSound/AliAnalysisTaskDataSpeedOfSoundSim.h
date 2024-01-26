@@ -49,12 +49,16 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   void SetEtaMinCut(const double& etamin) { fEtaMin = etamin; }
   void SetEtaMaxCut(const double& etamax) { fEtaMax = etamax; }
   void SetPtMin(const double& ptmin) { fPtMin = ptmin; }
-  void SetTrackCuts(bool TPConly = true) { fIsTPConly = TPConly; }
   void SetTrigger(UInt_t offlineTriggerMask = AliVEvent::kINT7) {
     fTrigger = offlineTriggerMask;
   }
   bool HasRecVertex();
   void GetSPDMultiplicity();
+  void SetSystematics(bool issystematics = true, int systematic = 1) {
+    fIsSystematics = issystematics;
+    fSystematic = systematic;
+  }
+  void ChangeCut(AliESDtrackCuts* fCuts);
 
  protected:
  private:
@@ -63,7 +67,8 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   AliStack* fMCStack;
   AliMCEvent* fMC;
   bool fUseMC;
-  bool fIsTPConly;
+  bool fIsSystematics;
+  int fSystematic;
   UInt_t fTrigger;
   AliAnalysisFilter* fTrackFilter;
   AliAnalysisFilter* fTrackFilterwoDCA;
@@ -82,11 +87,13 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   int fTrueNch;
   int fTrueNch14;
   int fTrueNch10;
+  int fTrueNchEtaGap;
   int fTrueNchEtaPos;
   int fTrueNchEtaNeg;
   int fTrueV0;
   int fTracklets14;
   int fTracklets10;
+  int fTrackletsEtaGap;
   float fdcaxy;
   float fdcaz;
   AliMultSelection* fMultSelection;
@@ -97,8 +104,6 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   TH1D* hV0MAmplitude;
   TH1F* hCounter;
   TH1F* hV0Mmult;
-  TH1F* hSPDmult14;
-  TH1F* hSPDmult10;
   TProfile* pPtvsNch;
   TProfile* pPtEtaNegvsNchEtaPos;
   TProfile* pPtEtaPosvsNchEtaNeg;
@@ -115,10 +120,8 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   TH2D* hTrueNchEtaPosvsTrueNchEtaNeg;
   TH2D* hTruePtEtaNegvsTrueNchEtaPos;
   TH2D* hTruePtEtaPosvsTrueNchEtaNeg;
-  TH1F* hTrueNch14;
-  TH1F* hTrueNch10;
-  TH2D* hTruePtvsTrueNch14;
-  TH2D* hTruePtvsTrueNch10;
+  TH1F* hTrueNchEtaGap;
+  TH2D* hTruePtvsTrueNchEtaGap;
   TH2F* hDCAxyPri[1];
   TH2F* hDCAxyWeDe[1];
   TH2F* hDCAxyMaIn[1];
@@ -140,9 +143,8 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   TH1F* hPtOutPrim_rest;
   TH2D* hPhiEtaSPD;
   TH2D* hVtxZvsTracklets;
-  TH2D* hTrackletsvsV0MAmp;
-  TH2D* hPtvsTracklets14;
-  TH2D* hPtvsTracklets10;
+  TH2D* hTrackletsEtaGapvsV0MAmp;
+  TH2D* hPtvsTrackletsEtaGap;
 
   AliAnalysisTaskDataSpeedOfSoundSim(
       const AliAnalysisTaskDataSpeedOfSoundSim&);  // not implemented
