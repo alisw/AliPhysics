@@ -109,6 +109,8 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   if((trigger & AliVEvent::kPHI7) && ApplyTOFTrigger) taskname += "_TOFTrigger";
   if(ForceActiveTRU) taskname += "_ForceActiveTRU";
 
+  taskname += Form("_%s",sub_name);
+
   AliAnalysisTaskPHOSPi0EtaToGammaGamma* task = new AliAnalysisTaskPHOSPi0EtaToGammaGamma(taskname);
 
   Double_t Ethre = 0.0;
@@ -279,7 +281,7 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma* AddTaskPHOSPi0EtaToGammaGamma_PbPb_5TeV(
   TString outputFile = AliAnalysisManager::GetCommonFileName();
   TString prefix = Form("hist_%s",taskname.Data());
 
-  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("%s",prefix.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s",outputFile.Data(),Form("PWGGA_PHOSTasks_PHOSRun2_%s", sub_name)));
+  AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(Form("%s",prefix.Data()), THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s",outputFile.Data(),"PWGGA_PHOSTasks_PHOSRun2"));
   mgr->ConnectOutput(task, 1, coutput1);
 
   return task;
