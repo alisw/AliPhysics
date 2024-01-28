@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisTaskEffK0s *AddTaskEffK0s(TString containerName="femtolist",int method=3, int filterbit=128)
+AliAnalysisTaskEffK0ss *AddTaskEffK0s(TString containerName="femtolist",int method=3, int filterbit=128)
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -41,7 +41,7 @@ AliAnalysisTaskEffK0s *AddTaskEffK0s(TString containerName="femtolist",int metho
 //   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  AliAnalysisTaskEffK0s *taskEffK0s = new AliAnalysisTaskEffK0s("EffTaskK0s",method,filterbit);
+  AliAnalysisTaskEffK0ss *taskEffK0s = new AliAnalysisTaskEffK0ss("EffTaskK0s",method,filterbit);
   taskEffK0s->SetPidMethod(method);
   taskEffK0s->SetFB(filterbit);
   mgr->AddTask(taskEffK0s);
