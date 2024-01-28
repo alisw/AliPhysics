@@ -8856,6 +8856,12 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
       }
       break;
 
+    // *************** 75 + x **** experimental settings for EMCal studies
+    // Apply MC test beam NonLinto both data and MC
+    case 75:
+      energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+      break;
+
     // *************** 80 + x **** modified tender Settings 1 - PbPb
 
     // NonLinearity LHC15o PbPb ConvCalo  - only shifting MC

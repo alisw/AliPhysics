@@ -4226,6 +4226,11 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2566) { // Non-Lin 7 (used without TRD)
     cuts.AddCutCalo("00010113","411790709fe302v0000","0s631031000000d0"); // No NCell cut
     cuts.AddCutCalo("00010113","411790709fe3n2v0000","0s631031000000d0"); // NCell >= 2 cut
+    
+  } else if (trainConfig == 2567) { // Non-Lin with only MC based TB correction
+    cuts.AddCutCalo("00010113","411797509f030000000","0s631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411797509f032000000","0s631031000000d0"); // NCell >= 2 cut
+    cuts.AddCutCalo("00010113","411797509f03h000000","0s631031000000d0"); // only 1 cell clysers
 
   } else if (trainConfig == 2570) { // NonLin applied in CF, min energy = 700MeV
     cuts.AddCutCalo("00052113","411790009fe32230000","0s631031000000d0"); // EMC7
