@@ -151,6 +151,7 @@ set(SRCS
   HMPTF/AliAnalysisTaskResonanceVsMultiplicityROOT6_new.cxx
   HMPTF/AliAnalysisTaskNetPiKProtFluc_MCnoESD_gen.cxx
   HMPTF/AliAnalysisTaskMeanptFluctMC.cxx
+  HMPTF/AliAnalysisTaskMeanptFluctMC_effcheck.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons.cxx
   DiffPTF/AliAnalysisTaskDiffPtFStrange.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_detect.cxx
