@@ -147,6 +147,7 @@
 #pragma link C++ class AliAnalysisTaskHptcorrId_tree+;
 #pragma link C++ class AliAnalysisTaskNetPiKProtFluc_MCnoESD_gen+;
 #pragma link C++ class AliAnalysisTaskMeanptFluctMC+;
+#pragma link C++ class AliAnalysisTaskMeanptFluctMC_effcheck+;
 
 
 #pragma link C++ class AliAnalysisTaskNFactorialMoments+;
