@@ -6066,11 +6066,11 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       break;
     case 29: // cut char 't' (no TM but with mean energy correction for overlap), only use with cell tm!
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
-      fUseDistTrackToCluster = kFALSE;
-      fMaxDistTrackToClusterEta = 0;
-      fMinDistTrackToClusterPhi = 0;
-      fMaxDistTrackToClusterPhi = 0;
+      fUsePtDepTrackToCluster = 1;
+      fFuncPtDepEta = new TF1("funcEta29", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
+      fFuncPtDepPhi = new TF1("funcPhi29", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
       fFuncPoissonParamCent = new TF1("fFuncPoissonParamCent29", "[0] * TMath::Exp( (x + [1] ) / [2] )", 0., 90.);
       fFuncNMatchedTracks = new TF1("fFuncNMatchedTracks29", "TMath::Poisson(x,[0])", 0., 10.);
       fDoEnergyCorrectionForOverlap = 1;
@@ -6089,11 +6089,11 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
 
     case 30: // cut char 'u' (no TM but with random energy correction for overlap), only use with cell tm!
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
-      fUseDistTrackToCluster = kFALSE;
-      fMaxDistTrackToClusterEta = 0;
-      fMinDistTrackToClusterPhi = 0;
-      fMaxDistTrackToClusterPhi = 0;
+      fUsePtDepTrackToCluster = 1;
+      fFuncPtDepEta = new TF1("funcEta30", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
+      fFuncPtDepPhi = new TF1("funcPhi30", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
       fFuncPoissonParamCent = new TF1("fFuncPoissonParamCent30", "[0] * TMath::Exp( (x + [1] ) / [2] )", 0., 90.);
       fFuncNMatchedTracks = new TF1("fFuncNMatchedTracks30", "TMath::Poisson(x,[0])", 0., 10.);
       fDoEnergyCorrectionForOverlap = 2;
@@ -6112,11 +6112,11 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
 
     case 31: // cut char 'v' (no TM but with mean energy correction for overlap using mean charge particle per cell), only use with cell tm!
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
-      fUseDistTrackToCluster = kFALSE;
-      fMaxDistTrackToClusterEta = 0;
-      fMinDistTrackToClusterPhi = 0;
-      fMaxDistTrackToClusterPhi = 0;
+      fUsePtDepTrackToCluster = 1;
+      fFuncPtDepEta = new TF1("funcEta31", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
+      fFuncPtDepPhi = new TF1("funcPhi31", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
       fFuncNMatchedTracks = new TF1("fFuncNMatchedTracks31", "pol3", 0., 90.);
       fDoEnergyCorrectionForOverlap = 3;
       fFuncNMatchedTracks->SetParameters(6.79381e-02, -2.29978e-03, 2.80462e-05, -1.22743e-07);
@@ -6135,11 +6135,11 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
     
     case 32: // cut char 'w' NonLin like fitted to pp 13 TeV
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
-      fUseDistTrackToCluster = kFALSE;
-      fMaxDistTrackToClusterEta = 0;
-      fMinDistTrackToClusterPhi = 0;
-      fMaxDistTrackToClusterPhi = 0;
+      fUsePtDepTrackToCluster = 1;
+      fFuncPtDepEta = new TF1("funcEta32", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
+      fFuncPtDepPhi = new TF1("funcPhi32", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
       fDoEnergyCorrectionForOverlap = 4;
       break;
 
