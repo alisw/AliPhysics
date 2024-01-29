@@ -224,7 +224,6 @@ void AliPtPtContainer::CreateCumulantList() {
         }
         CalculateCumulantHists(hTs,i);
     }
-    fCumulantList->ls();
     //((AliProfileBS*)fCorrList->At(0))->PresetWeights(0);
     return;
 }
@@ -232,13 +231,10 @@ void AliPtPtContainer::CalculateCumulantHists(vector<TH1*> inh, int ind) {
     auto binomial = [&](const int n, const int m) { return factorial(n)/(factorial(m)*factorial(n-m)); };
     for(int m=1;m<=mpar;++m)
     {
-        if(ind == 0) printf("k%i = \n",m);
         TH1* reth = (TH1*)inh[m-1]->Clone(Form("reth%i_%i",m,ind));
         //TH1* hWeights = (TH1*)inh[m-1]->Clone(Form("hWeights%i_%i",m,ind));
-        if(ind == 0) printf("<%i>\n",m);
         for(int k=1;k<m;++k)
         {
-            if(ind==0) printf("- %i * <%i> * k%i ( k = %i )\n",binomial(m-1,k-1),m-k,k,k);
             TH1* corrh = (TH1*)inh[m-k-1]->Clone(Form("hcorr%i%i_%i",m,k,ind));
             corrh->Multiply((TH1*)fCumulantList->At((ind+1)*mpar+k-1));
             corrh->Scale(binomial(m-1,k-1));

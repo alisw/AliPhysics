@@ -202,7 +202,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
     DefineInput(1,TList::Class());  //NUE
   };
   if(fIsMC) {
-    DefineInput(2,TH1::Class()); //Centrality calibration
+    DefineInput(1,TH1::Class()); //Centrality calibration
   }
   DefineOutput(1,TList::Class());
   DefineOutput(2,TList::Class());
@@ -224,7 +224,7 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
     printf("Creating OTF objects\n");
     printf("Generator is %s\n",fGenerator.Data());
     if(fUseCentCalibration) {
-      fCentcal = (TH1*)GetInputData(2);
+      fCentcal = (TH1*)GetInputData(1);
     }
     else if(centralitymap.empty() && fGenerator.EqualTo("AMPT")) {
       vector<double> b = {0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,13.50,14.51,100.0};
@@ -281,9 +281,7 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   for(int i=0;i<=nMptBins;++i) mptBins[i] = 0.0005*i + 0.6;
   const int nCentBinsMpt = 3;
   double centbinsMpt[] = {0,1,5,90};
-  const int nIPBinsMpt = 3;
-  double IPbinsMpt[] = {0,1.57,3.5,13.97};
-  fMptVsNch = new TH3D("fMptVsNch","[#it{p}_{T}] vs N_{ch}; N_{ch}^{rec}; #LT[#it{p}_{T}]#GT;centrality (%)",fNMultiBins,fMultiBins,nMptBins,mptBins,(fUseIP)?nIPBinsMpt:nCentBinsMpt,(fUseIP)?IPbinsMpt:centbinsMpt);
+  fMptVsNch = new TH3D("fMptVsNch","[#it{p}_{T}] vs N_{ch}; N_{ch}^{rec}; #LT[#it{p}_{T}]#GT;centrality (%)",fNMultiBins,fMultiBins,nMptBins,mptBins,nCentBinsMpt,centbinsMpt);
   fptList->Add(fMptVsNch);
   printf("Multiplicity objects created\n");
   PostData(1,fptList);
@@ -692,7 +690,7 @@ void AliAnalysisTaskPtCorr::FillWPCounter(vector<vector<double>> &inarr, double 
   return;
 }
 void AliAnalysisTaskPtCorr::LoadCorrectionsFromLists(){
-  fEfficiencyList = (TList*)GetInputData(1); //Efficiencies start from input slot 2
+  fEfficiencyList = (TList*)GetInputData(1);
   fEfficiencies = new TH1D*[fNV0MBinsDefault];
   for(Int_t i=0;i<fNV0MBinsDefault;i++) {
       fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
