@@ -401,6 +401,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fMinTimingCluster(0),
   fMaxTimingCluster(0),
   fEnableSortForClusMC(kFALSE),
+  fDoPrimaryTrackMatching(kFALSE),
   fProduceCellIDPlots(kFALSE),
   fProduceTreeEOverP(kFALSE),
   tBrokenFiles(NULL),
@@ -760,6 +761,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fMinTimingCluster(0),
   fMaxTimingCluster(0),
   fEnableSortForClusMC(kFALSE),
+  fDoPrimaryTrackMatching(kFALSE),
   fProduceCellIDPlots(kFALSE),
   fProduceTreeEOverP(kFALSE),
   tBrokenFiles(NULL),
@@ -3599,7 +3601,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent,fIsMC);
 
   // match tracks to clusters
-  ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
+  if(fDoPrimaryTrackMatching) ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
 
   // vertex
   Double_t vertex[3] = {0};
