@@ -529,9 +529,9 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Double_t                fWeightJetJetMC;                                    //! weight for Jet-Jet MC
     Bool_t                  fDoConvGammaShowerShapeTree;                        // flag for tree with conv gamma R vs energy vs shower shape
     Bool_t                  fEnableSortForClusMC;                               // switch on sorting for MC labels in cluster
-    Bool_t                  fDoPrimaryTrackMatching;                            // switch for basic track matching for primaries
+    Bool_t                  fDoPrimaryTrackMatching;                            // switch for basic track matching for primaries, false means only secondaries will be matched, set in AddTask
     Bool_t                  fDoInvMassShowerShapeTree;                          // flag for producing tree tESDInvMassShowerShape
-    Bool_t                  fDoMaterialWeightConv;    // flag to set the usage of material budget weights
+    Bool_t                  fDoMaterialWeightConv;                              // flag to set the usage of material budget weights
     TTree*                  tBrokenFiles;                                       //! tree for keeping track of broken files
     TObjString*             fFileNameBroken;                                    //! string object for broken file name
     Bool_t                  fAllowOverlapHeaders;                               // enable overlapping headers for cluster selection

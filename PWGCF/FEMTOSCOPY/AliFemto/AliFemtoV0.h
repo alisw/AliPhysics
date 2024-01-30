@@ -133,7 +133,8 @@ public:
   void SetCorrectionLambdas(const double& x);
   float CorrectionLambdaMinus() const;
   void SetCorrectionLambdasMinus(const double& x);
-
+  float CorrectionK0s() const;
+  void SetCorrectionK0s(const double& x);
   bool OnFlyStatusV0() const;
 
   const AliFmPhysicalHelixD& HelixPos() const; // Gael 12 Sept 02
@@ -431,7 +432,7 @@ protected:
 
   float fCorrLam;    //corrections for lambda particles
   float fCorrLamMinus;    //corrections for lambda particles
-
+  float fCorrK0s;
   double fRadiusV0;
 
   int fMultiplicity;

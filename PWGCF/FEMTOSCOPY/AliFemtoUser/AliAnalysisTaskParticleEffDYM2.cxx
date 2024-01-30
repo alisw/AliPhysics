@@ -919,15 +919,16 @@ int fcent2=0;
 
 //********* Pile-up removal*******************
   //check this: https://twiki.cern.ch/twiki/bin/view/ALICE/AliDPGtoolsPileup
-  AliAnalysisUtils *anaUtil=new AliAnalysisUtils();
+ AliAnalysisUtils *anaUtil=new AliAnalysisUtils();
     
   Bool_t fpA2013 = kFALSE;
   Bool_t fMVPlp = kFALSE;
   Bool_t fisPileUp = kFALSE;
   Int_t fMinPlpContribMV = 0;
   Int_t fMinPlpContribSPD = 3;
+  Bool_t fRejectTPCPileupWithITSTPCnCluCorr = kFALSE;
 
-  if(fpA2013)
+  /*if(fpA2013)
   if(anaUtil->IsVertexSelected2013pA(aodEvent)==kFALSE) return;
  
   if(fMVPlp) anaUtil->SetUseMVPlpSelection(kTRUE);
@@ -940,6 +941,26 @@ int fcent2=0;
   if(anaUtil->IsPileUpEvent(aodEvent)) return;
 
   delete anaUtil;   
+
+  if(fIfAliEventCuts){
+   if(fRejectTPCPileupWithITSTPCnCluCorr) fEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+   // if (!fEventCuts->fUseITSTPCCluCorrelationCut ==kTRUE) {
+   //   return;
+   // }
+  }
+  */
+   //pileup for LHC20e3a -> Injective Pileup over events 
+  AliAODMCHeader *mcHeader = 0;
+  mcHeader = (AliAODMCHeader*)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  if(!mcHeader) {
+    printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
+    return;
+  }
+  Bool_t isPileupInGeneratedEvent = kFALSE;
+  isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,"Hijing");
+  if(isPileupInGeneratedEvent) return;
+  
+
 
   fHistQA[9]->Fill(3);
   if(fcent2==10)fHistEvCuts[0]->Fill(3);
@@ -1147,7 +1168,11 @@ if(collect[2]==true){
     if(track->Y() < -0.5 || track->Y() > 0.5)
       continue; 
     fHistQA[10]->Fill(4);
-
+   
+   //pileup for LHC20e3a -> Injective Pileup over tracks 
+   Bool_t isParticleFromOutOfBunchPileupCollision = kFALSE;
+   isParticleFromOutOfBunchPileupCollision = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iTracks,mcHeader,arrayMC);
+   if(isParticleFromOutOfBunchPileupCollision) continue;
     
     //DCA
     
@@ -1366,7 +1391,7 @@ if(collect[2]==true){
 
      //********* PID - kaons ********
      if (isKaonNsigma){
-     if (track->Pt() > 0.3 || track->Pt() < 2.5)
+     if (track->Pt() > 0.5 || track->Pt() < 2.5)
        fReconstructedAfterCuts[PARTTYPES*fcent+2][charge]->Fill(track->Y(), track->Pt());
        if (!MCtrk) continue;
        recoParticleArray[2].Add(MCtrk);
@@ -1650,6 +1675,10 @@ if(collect[2]==true){
 
       if(MCtrk->IsPhysicalPrimary()) // Not from weak decay!
 	{
+	
+	Bool_t isParticleFromOutOfBunchPileupCollision = kFALSE;
+        isParticleFromOutOfBunchPileupCollision = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ipart,mcHeader,arrayMC);
+        if(isParticleFromOutOfBunchPileupCollision) continue;
 
 	// Filling histograms for MC truth particles
 	fGeneratedMCPrimaries[fcent*PARTTYPES][charge]->Fill(MCtrk->Y(), MCtrk->Pt());

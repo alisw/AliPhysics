@@ -168,7 +168,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   for (Int_t i = 0; i < 10 ; i++) { fNCellEfficiencyParams[i] = reco.fNCellEfficiencyParams[i] ; }
   for (Int_t j = 0; j < 5  ; j++) { fMCGenerToAccept[j]       = reco.fMCGenerToAccept[j]       ; }
   for (Int_t j = 0; j < 4  ; j++) { fBadStatusSelection[j]    = reco.fBadStatusSelection[j]    ; }
-  for (Int_t j = 0; j < 4  ; j++) { fAdditionalScaleSM[j]     = reco.fAdditionalScaleSM[j]     ; }
+  for (Int_t j = 0; j < 96 ; j++) { fAdditionalScaleSM[j]     = reco.fAdditionalScaleSM[j]     ; }
 
   if(reco.fEMCALBadChannelMap) {
     // Copy constructor - not taking ownership over calibration histograms
@@ -226,8 +226,9 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fUseDetermineLowGain       = reco.fUseDetermineLowGain;
   fCalibData                 = reco.fCalibData;
   fUseAdditionalScale        = reco.fUseAdditionalScale;
-  for (Int_t j = 0; j < 4; j++)
+  for (Int_t j = 0; j < 96; j++){
     fAdditionalScaleSM[j]         = reco.fAdditionalScaleSM[j];
+  }
   fSmearClusterEnergy        = reco.fSmearClusterEnergy;
   fNCellEfficiencyFunction   = reco.fNCellEfficiencyFunction;
 
@@ -506,6 +507,17 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
         } else { // no TRD modules in front
           amp *= fAdditionalScaleSM[3];
         }
+      }
+    //____________________________________
+    } else if (fUseAdditionalScale == 5) { // Experimental values for column by column cell energy absolute calibration
+      // calculate absolute column from relative column (ieta is per SM)
+      int iCol = ieta;
+      if(imod%2){
+        if( imod > 11 && imod < 18) iCol+=64;
+        else iCol+=48;
+      }
+      if(iCol < 96){
+        amp *= fAdditionalScaleSM[iCol];
       }
     }
 
@@ -2411,7 +2423,7 @@ void AliEMCALRecoUtils::InitParameters()
   for (Int_t i = 0; i < 10  ; i++) fNCellEfficiencyParams[i] = 0.;
 
   // additional scale for different SM types (default value is 1)
-  for (Int_t i = 0; i < 3; i++) fAdditionalScaleSM[i] = 1.;
+  for (Int_t i = 0; i < 96; i++) fAdditionalScaleSM[i] = 1.;
 }
 
 ///

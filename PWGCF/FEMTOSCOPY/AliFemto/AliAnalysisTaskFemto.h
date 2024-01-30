@@ -112,6 +112,7 @@ public:
   void Set1DCorrectionsAll(TH1D *h1);
   void Set1DCorrectionsLambdas(TH1D *h1);
   void Set1DCorrectionsLambdasMinus(TH1D *h1);
+  void Set1DCorrectionsK0s(TH1D *h1);
   void Set1DCorrectionsXiMinus(TH1D *h1);
   void Set1DCorrectionsXiPlus(TH1D *h1);
 
@@ -155,6 +156,7 @@ protected:
   TH1D                 *f1DcorrectionsAll; //file with corrections, pT dependant
   TH1D                 *f1DcorrectionsLambdas; //file with corrections, pT dependant
   TH1D                 *f1DcorrectionsLambdasMinus; //file with corrections, pT dependant
+  TH1D		       *f1DcorrectionsK0s;//file with corrections,pT dependant
   TH1D                 *f1DcorrectionsXiMinus; //file with corrections, pT dependant
   TH1D                 *f1DcorrectionsXiPlus; //file with corrections, pT dependant
 
@@ -207,6 +209,7 @@ AliAnalysisTaskFemto::AliAnalysisTaskFemto():
   f1DcorrectionsAll(NULL),
   f1DcorrectionsLambdas(NULL),
   f1DcorrectionsLambdasMinus(NULL),
+  f1DcorrectionsK0s(NULL),
   f1DcorrectionsXiMinus(NULL),
   f1DcorrectionsXiPlus(NULL),
   f4DcorrectionsPions(NULL),

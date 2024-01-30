@@ -49,6 +49,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fDisablePileup(kFALSE),
   fUseOldPileup(kFALSE),
   fUseIP(kFALSE),
+  fUseCentCalibration(kFALSE),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
   fGenerator("AMPT"),
@@ -90,6 +91,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fEfficiencyList(0),
   fEfficiency(0),
   fEfficiencies(0),
+  fCentcal(0),
   fPseudoEfficiency(2.),
   fPtvsCentvsPower(0),
   fDCAxyVsPt_noChi2(0),
@@ -97,6 +99,8 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fDCAxyVsPt_withChi2(0),
   fWithinDCAvsPt_noChi2(0),
   fMptVsNch(0),
+  fMptVsCent(0),
+  fNchVsCent(0),
   fV0MMulti(0),
   fITSvsTPCMulti(0),
   fV2dPtMulti(0),
@@ -127,6 +131,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fDisablePileup(kFALSE),
   fUseOldPileup(kFALSE),
   fUseIP(kFALSE),
+  fUseCentCalibration(kFALSE),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
   fGenerator("AMPT"),
@@ -167,6 +172,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fEfficiencyList(0),
   fEfficiency(0),
   fEfficiencies(0),
+  fCentcal(0),
   fPseudoEfficiency(2.),
   fPtvsCentvsPower(0),
   fDCAxyVsPt_noChi2(0),
@@ -174,6 +180,8 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fDCAxyVsPt_withChi2(0),
   fWithinDCAvsPt_noChi2(0),
   fMptVsNch(0),
+  fMptVsCent(0),
+  fNchVsCent(0),
   fV0MMulti(0),
   fITSvsTPCMulti(0),
   fV2dPtMulti(0),
@@ -197,6 +205,9 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   if(!fIsMC) { //Efficiency and NUA only important for data
     DefineInput(1,TList::Class());  //NUE
   };
+  if(fIsMC) {
+    DefineInput(1,TH1::Class()); //Centrality calibration
+  }
   DefineOutput(1,TList::Class());
   DefineOutput(2,TList::Class());
   SetNchCorrelationCut(1,0,kFALSE);
@@ -216,17 +227,19 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   {
     printf("Creating OTF objects\n");
     printf("Generator is %s\n",fGenerator.Data());
-    if(centralitymap.empty() && fGenerator.EqualTo("AMPT")) {
+    if(fUseCentCalibration) {
+      fCentcal = (TH1*)GetInputData(1);
+    }
+    else if(centralitymap.empty() && fGenerator.EqualTo("AMPT")) {
       vector<double> b = {0.0,3.72,5.23,7.31,8.88,10.20,11.38,12.47,13.50,14.51,100.0};
       vector<double> cent = {0.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,100.0};
       for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i];
     }
-    if(centralitymap.empty() && fGenerator.EqualTo("HIJING")) {
+    else if(centralitymap.empty() && fGenerator.EqualTo("HIJING")) {
       vector<double> b = {0.0,1.60,2.27,2.79,3.22,3.60,5.09,7.20,8.83,10.20,11.40,12.49,13.49,14.44,15.46,100.0};
       vector<double> cent = {0.0,1.0,2.0,3.0,4.0,5.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0};
       for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i];
     }
-
     fIP = new TH1D("fIP","Impact parameter",1500,0.0,30.0);
     printf("OTF objects created\n");
   }
@@ -259,23 +272,25 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
     fNchTrueVsReco = new TH2D("NchTrueVsReco",";Nch (MC-true); Nch (MC-reco)",fNMultiBins,fMultiBins,fNMultiBins,fMultiBins);
     fptList->Add(fNchTrueVsReco);
   }
-  const Int_t nFineCentBins=90;
+  const Int_t nFineCentBins=180;
   Double_t *fineCentBins = new Double_t[nFineCentBins+1];
-  for(Int_t i=0;i<=nFineCentBins; i++) fineCentBins[i] = i;
+  for(Int_t i=0;i<=nFineCentBins; i++) fineCentBins[i] = 0.5*i;
   const Int_t nIPbins = 100;
   Double_t *ipBins = new Double_t[nIPbins];
   for(Int_t i=0;i<=nIPbins; i++) ipBins[i] = 0.2*i;
   fMultiVsCent = new AliProfileBS("MultiVsCent","Multi vs centrality",(fUseIP)?nIPbins:nFineCentBins,(fUseIP)?ipBins:fineCentBins);
   fptList->Add(fMultiVsCent);
-  const int nMptBins = 1000;
+  const int nMptBins = 500;
   double *mptBins = new double[nMptBins+1];
-  for(int i=0;i<=nMptBins;++i) mptBins[i] = 0.0005*i + 0.6;
-  const int nCentBinsMpt = 3;
-  double centbinsMpt[] = {0,1,5,90};
-  const int nIPBinsMpt = 3;
-  double IPbinsMpt[] = {0,1.57,3.5,13.97};
-  fMptVsNch = new TH3D("fMptVsNch","[#it{p}_{T}] vs N_{ch}; N_{ch}^{rec}; #LT[#it{p}_{T}]#GT;centrality (%)",fNMultiBins,fMultiBins,nMptBins,mptBins,(fUseIP)?nIPBinsMpt:nCentBinsMpt,(fUseIP)?IPbinsMpt:centbinsMpt);
+  for(int i=0;i<=nMptBins;++i) mptBins[i] = 0.001*i + 0.6;
+  const int nCentBinsMpt = 4;
+  double centbinsMpt[] = {0,0.5,1,5,10,90};
+  fMptVsNch = new TH3D("fMptVsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}]#GT;centrality (%)",fNMultiBins,fMultiBins,nMptBins,mptBins,nCentBinsMpt,centbinsMpt);
   fptList->Add(fMptVsNch);
+  fMptVsCent = new TH2D("fMptVsCent",";centrality (%); #LT[#it{p}_{T}]#GT",nFineCentBins,fineCentBins,nMptBins,mptBins);
+  fptList->Add(fMptVsCent);
+  fNchVsCent = new TH2D("fNchVsCent",";centrality (%);N_{ch}^{rec}",nFineCentBins,fineCentBins,fNMultiBins,fMultiBins);
+  fptList->Add(fNchVsCent);
   printf("Multiplicity objects created\n");
   PostData(1,fptList);
 
@@ -425,6 +440,8 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   fMultiDist->Fill(l_Multi);
   fMultiVsCent->Fill(l_Cent,l_Multi);
   fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0],l_Cent);
+  fMptVsCent->Fill(l_Cent,wp[1][1]/wp[1][0]);
+  fNchVsCent->Fill(l_Cent,l_Multi);
   PostData(1,fptList);
   PostData(2,fQAList);
   return;
@@ -504,12 +521,15 @@ void AliAnalysisTaskPtCorr::ProcessOnTheFly() {
   fMultiDist->Fill(l_Multi);
   fMultiVsCent->Fill((fUseIP)?fImpactParameterMC:l_Cent,l_Multi);
   fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0],(fUseIP)?fImpactParameterMC:l_Cent);
+  fMptVsCent->Fill((fUseIP)?fImpactParameterMC:l_Cent,wp[1][1]/wp[1][0]);
+  fNchVsCent->Fill((fUseIP)?fImpactParameterMC:l_Cent,l_Multi);
   PostData(1,fptList);
   PostData(2,fQAList);
   return;
 }
 double AliAnalysisTaskPtCorr::getGeneratorCentrality()
 {
+  if(fUseCentCalibration) return fCentcal->GetBinContent(fCentcal->GetXaxis()->FindBin(fImpactParameterMC));
   vector<double> b;
   if(centralitymap.empty()) AliFatal("Centralitymap is empty!");
   for (auto const& element : centralitymap) b.push_back(element.first);
@@ -682,7 +702,7 @@ void AliAnalysisTaskPtCorr::FillWPCounter(vector<vector<double>> &inarr, double 
   return;
 }
 void AliAnalysisTaskPtCorr::LoadCorrectionsFromLists(){
-  fEfficiencyList = (TList*)GetInputData(1); //Efficiencies start from input slot 2
+  fEfficiencyList = (TList*)GetInputData(1);
   fEfficiencies = new TH1D*[fNV0MBinsDefault];
   for(Int_t i=0;i<fNV0MBinsDefault;i++) {
       fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));

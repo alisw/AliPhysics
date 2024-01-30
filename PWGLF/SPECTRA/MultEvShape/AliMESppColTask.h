@@ -59,9 +59,11 @@ protected:
   AliEventPoolManager      * fPoolMgr1;                  //  event pool manager for Event Mixing
   AliEventPoolManager      * fPoolMgr2;
   AliEventPoolManager      * fPoolMgr3;
+  AliEventPoolManager      * fPoolMgr4;
   AliEventPoolManager      * fPoolMgrMC1;
   AliEventPoolManager      * fPoolMgrMC2;
   AliEventPoolManager      * fPoolMgrMC3;
+  AliEventPoolManager      * fPoolMgrMC4;
 
   ClassDef(AliMESppColTask, 1)            // PP collision task for the Multi Event Shape
 };

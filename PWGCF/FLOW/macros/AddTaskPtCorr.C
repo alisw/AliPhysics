@@ -8,7 +8,7 @@ Bool_t ConnectToGrid() {
   if(!gGrid) {printf("Task requires connection to grid, but it could not be established!\n"); return kFALSE; };
   return kTRUE;
 }
-AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, TString efficiencyPath, TString subfix1)
+AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, TString efficiencyPath = "", TString centcalPath = "", TString subfix1 = "")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) return 0x0;
@@ -39,9 +39,23 @@ AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, TString efficiency
       AliAnalysisDataContainer *cEff = mgr->CreateContainer("Efficiency",TList::Class(), AliAnalysisManager::kInputContainer);
       cEff->SetData(fList);
       mgr->ConnectInput(task,1,cEff);
-      printf("Inputs connected!\n");    
+      printf("Inputs connected!\n");
     } else { mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("Efficiency")); printf("Inputs already connected\n"); }
   };
+  if(IsMC){
+    if(!AllContainers->FindObject("CentCalibration")) {
+      if(centcalPath.Contains("alien:")) if(!ConnectToGrid()) return 0;
+      TFile *tfcentcal = TFile::Open(centcalPath.Data());
+      if(!tfcentcal) { printf("Could not open centrality calibration file\n"); return 0; };
+      if(tfcentcal->IsZombie()) { printf("Centrality calibration file is a zombie\n"); return 0; };
+      TH1 *fcentcal = (TH1*)tfcentcal->Get("centcal");
+      if(!fcentcal) { printf("Could not fetch the centrality calibration histogram!\n"); return 0; };
+      AliAnalysisDataContainer *cCentCal = mgr->CreateContainer("CentCalibration",TH1::Class(), AliAnalysisManager::kInputContainer);
+      cCentCal->SetData(fcentcal);
+      mgr->ConnectInput(task,1,cCentCal);
+      printf("Centrality calibration input connected!\n");
+    } else { mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("CentCalibration")); printf("Inputs already connected\n"); }
+  }
   AliAnalysisDataContainer *cPtcorr = mgr->CreateContainer(Form("Correlations%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
   AliAnalysisDataContainer *cQA = mgr->CreateContainer(Form("QA%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
   mgr->ConnectOutput(task,1,cPtcorr);

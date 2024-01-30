@@ -827,7 +827,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-  mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("NMPipPimNm_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig) : Form("NMPipPimNm_%i_%i_%i_%s.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig, corrTaskSetting.Data()), TList::Class(),
+  mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i",selectHeavyNeutralMeson,neutralPionMode, trainConfig) : Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i_%s",selectHeavyNeutralMeson,neutralPionMode, trainConfig, corrTaskSetting.Data()), TList::Class(),
               AliAnalysisManager::kOutputContainer,Form("NMPipPimNm_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig));
 
   mgr->AddTask(task);

@@ -127,5 +127,6 @@
 #pragma link C++ class AliAnalysisTaskBFR2+;
 #pragma link C++ class AliAnalysisTaskBFR2sphero+;
 #pragma link C++ class AliAnalysisTaskR2P2spheroDiffpT+;
+#pragma link C++ class AliAnalysisTaskSpherodistR2P2+;
 #pragma link C++ class AliAnalysisTaskLambdaHadronRatio+;
 #endif
