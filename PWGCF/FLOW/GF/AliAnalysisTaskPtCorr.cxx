@@ -276,11 +276,11 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   for(Int_t i=0;i<=nIPbins; i++) ipBins[i] = 0.2*i;
   fMultiVsCent = new AliProfileBS("MultiVsCent","Multi vs centrality",(fUseIP)?nIPbins:nFineCentBins,(fUseIP)?ipBins:fineCentBins);
   fptList->Add(fMultiVsCent);
-  const int nMptBins = 1000;
+  const int nMptBins = 500;
   double *mptBins = new double[nMptBins+1];
-  for(int i=0;i<=nMptBins;++i) mptBins[i] = 0.0005*i + 0.6;
-  const int nCentBinsMpt = 3;
-  double centbinsMpt[] = {0,1,5,90};
+  for(int i=0;i<=nMptBins;++i) mptBins[i] = 0.001*i + 0.6;
+  const int nCentBinsMpt = 4;
+  double centbinsMpt[] = {0,0.5,1,5,10,90};
   fMptVsNch = new TH3D("fMptVsNch","[#it{p}_{T}] vs N_{ch}; N_{ch}^{rec}; #LT[#it{p}_{T}]#GT;centrality (%)",fNMultiBins,fMultiBins,nMptBins,mptBins,nCentBinsMpt,centbinsMpt);
   fptList->Add(fMptVsNch);
   printf("Multiplicity objects created\n");
