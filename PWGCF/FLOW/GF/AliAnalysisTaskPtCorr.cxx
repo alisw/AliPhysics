@@ -99,6 +99,8 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fDCAxyVsPt_withChi2(0),
   fWithinDCAvsPt_noChi2(0),
   fMptVsNch(0),
+  fMptVsCent(0),
+  fNchVsCent(0),
   fV0MMulti(0),
   fITSvsTPCMulti(0),
   fV2dPtMulti(0),
@@ -178,6 +180,8 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fDCAxyVsPt_withChi2(0),
   fWithinDCAvsPt_noChi2(0),
   fMptVsNch(0),
+  fMptVsCent(0),
+  fNchVsCent(0),
   fV0MMulti(0),
   fITSvsTPCMulti(0),
   fV2dPtMulti(0),
@@ -268,9 +272,9 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
     fNchTrueVsReco = new TH2D("NchTrueVsReco",";Nch (MC-true); Nch (MC-reco)",fNMultiBins,fMultiBins,fNMultiBins,fMultiBins);
     fptList->Add(fNchTrueVsReco);
   }
-  const Int_t nFineCentBins=90;
+  const Int_t nFineCentBins=180;
   Double_t *fineCentBins = new Double_t[nFineCentBins+1];
-  for(Int_t i=0;i<=nFineCentBins; i++) fineCentBins[i] = i;
+  for(Int_t i=0;i<=nFineCentBins; i++) fineCentBins[i] = 0.5*i;
   const Int_t nIPbins = 100;
   Double_t *ipBins = new Double_t[nIPbins];
   for(Int_t i=0;i<=nIPbins; i++) ipBins[i] = 0.2*i;
@@ -281,8 +285,12 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   for(int i=0;i<=nMptBins;++i) mptBins[i] = 0.001*i + 0.6;
   const int nCentBinsMpt = 4;
   double centbinsMpt[] = {0,0.5,1,5,10,90};
-  fMptVsNch = new TH3D("fMptVsNch","[#it{p}_{T}] vs N_{ch}; N_{ch}^{rec}; #LT[#it{p}_{T}]#GT;centrality (%)",fNMultiBins,fMultiBins,nMptBins,mptBins,nCentBinsMpt,centbinsMpt);
+  fMptVsNch = new TH3D("fMptVsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}]#GT;centrality (%)",fNMultiBins,fMultiBins,nMptBins,mptBins,nCentBinsMpt,centbinsMpt);
   fptList->Add(fMptVsNch);
+  fMptVsCent = new TH2D("fMptVsCent",";centrality (%); #LT[#it{p}_{T}]#GT",nFineCentBins,fineCentBins,nMptBins,mptBins);
+  fptList->Add(fMptVsCent);
+  fNchVsCent = new TH2D("fNchVsCent",";centrality (%);N_{ch}^{rec}",nFineCentBins,fineCentBins,fNMultiBins,fMultiBins);
+  fptList->Add(fNchVsCent);
   printf("Multiplicity objects created\n");
   PostData(1,fptList);
 
@@ -432,6 +440,8 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   fMultiDist->Fill(l_Multi);
   fMultiVsCent->Fill(l_Cent,l_Multi);
   fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0],l_Cent);
+  fMptVsCent->Fill(l_Cent,wp[1][1]/wp[1][0]);
+  fNchVsCent->Fill(l_Cent,l_Multi);
   PostData(1,fptList);
   PostData(2,fQAList);
   return;
@@ -511,6 +521,8 @@ void AliAnalysisTaskPtCorr::ProcessOnTheFly() {
   fMultiDist->Fill(l_Multi);
   fMultiVsCent->Fill((fUseIP)?fImpactParameterMC:l_Cent,l_Multi);
   fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0],(fUseIP)?fImpactParameterMC:l_Cent);
+  fMptVsCent->Fill((fUseIP)?fImpactParameterMC:l_Cent,wp[1][1]/wp[1][0]);
+  fNchVsCent->Fill((fUseIP)?fImpactParameterMC:l_Cent,l_Multi);
   PostData(1,fptList);
   PostData(2,fQAList);
   return;
