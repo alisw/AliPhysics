@@ -401,6 +401,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fMinTimingCluster(0),
   fMaxTimingCluster(0),
   fEnableSortForClusMC(kFALSE),
+  fDoPrimaryTrackMatching(kTRUE),
   fProduceCellIDPlots(kFALSE),
   fProduceTreeEOverP(kFALSE),
   tBrokenFiles(NULL),
@@ -760,6 +761,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fMinTimingCluster(0),
   fMaxTimingCluster(0),
   fEnableSortForClusMC(kFALSE),
+  fDoPrimaryTrackMatching(kTRUE),
   fProduceCellIDPlots(kFALSE),
   fProduceTreeEOverP(kFALSE),
   tBrokenFiles(NULL),
@@ -3599,7 +3601,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent,fIsMC);
 
   // match tracks to clusters
-  ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
+  if(fDoPrimaryTrackMatching) ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchTracksToClusters(fInputEvent,fWeightJetJetMC,kTRUE, fMCEvent);
 
   // vertex
   Double_t vertex[3] = {0};
@@ -6634,6 +6636,9 @@ void AliAnalysisTaskGammaCalo::CalculateBackgroundSwapp(){
                 if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate1.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPhoton1, ((AliAODConversionPhoton*) kCurrentClusterCandidates)->GetLeadingCellID())  && ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonLeadTrackSelection(fInputEvent, backgroundCandidate1.get()))
                 {
                   vSwappingInvMassPT.push_back({backgroundCandidate1->M(),backgroundCandidate1->Pt()});
+                  if (fDoMesonQA == 2){
+                    fHistoMotherPtOpenAngleBck[fiCut]->Fill(backgroundCandidate1->Pt(),backgroundCandidate1->GetOpeningAngle(), fWeightJetJetMC);
+                  }
                   if((!fDoLightOutput || fDoPi0Only) && TMath::Abs(backgroundCandidate1->GetAlpha())<0.1){
                     vSwappingInvMassPTAlphaCut.push_back({backgroundCandidate1->M(),backgroundCandidate1->Pt()});
                   }
@@ -6644,6 +6649,9 @@ void AliAnalysisTaskGammaCalo::CalculateBackgroundSwapp(){
                 if(((AliConversionMesonCuts*) fMesonCutArray->At(fiCut))->MesonIsSelected(backgroundCandidate2.get(),kFALSE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), cellIDRotatedPhoton2, ((AliAODConversionPhoton*) kCurrentClusterCandidates)->GetLeadingCellID()) && ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonLeadTrackSelection(fInputEvent, backgroundCandidate2.get()))
                 {
                   vSwappingInvMassPT.push_back({backgroundCandidate2->M(),backgroundCandidate2->Pt()});
+                  if (fDoMesonQA == 2){
+                    fHistoMotherPtOpenAngleBck[fiCut]->Fill(backgroundCandidate2->Pt(),backgroundCandidate2->GetOpeningAngle(), fWeightJetJetMC);
+                  }
                   if((!fDoLightOutput || fDoPi0Only) && TMath::Abs(backgroundCandidate2->GetAlpha())<0.1){
                     vSwappingInvMassPTAlphaCut.push_back({backgroundCandidate2->M(),backgroundCandidate2->Pt()});
                   }

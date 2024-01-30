@@ -75,6 +75,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void SetPlotHistsExtQA(Bool_t flag){fSetPlotHistsExtQA = flag;}
     void SetAllowOverlapHeaders( Bool_t allowOverlapHeader ) {fAllowOverlapHeaders = allowOverlapHeader;}
     void SetDoPi0Only(Bool_t flag){fDoPi0Only = flag;}
+    void SetDoPrimaryTrackMatching( Bool_t flag ){ fDoPrimaryTrackMatching = flag;}
 
     void SetInOutTimingCluster(Double_t min, Double_t max){
       fDoInOutTimingCluster = kTRUE; fMinTimingCluster = min; fMaxTimingCluster = max;
@@ -506,6 +507,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Double_t              fMinTimingCluster;                                    // corresponding ranges, min
     Double_t              fMaxTimingCluster;                                    // corresponding ranges, max
     Bool_t                fEnableSortForClusMC;                                 // switch on sorting for MC labels in cluster
+    Bool_t                fDoPrimaryTrackMatching;                              // switch for basic track matching for primaries
     Bool_t                fProduceCellIDPlots;                                  // switch to produce CellID plots for fDoClusterQA==2
     Bool_t                fProduceTreeEOverP;                                   // flag for producing tree for E/p studies
     TTree*                tBrokenFiles;                                         // tree for keeping track of broken files
@@ -527,7 +529,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 95);
+    ClassDef(AliAnalysisTaskGammaCalo, 96);
 };
 
 #endif
