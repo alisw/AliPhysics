@@ -8860,6 +8860,9 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
     // Apply MC test beam NonLinto both data and MC
     case 75:
       energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+      if(isMC>0){
+        energy /= FunctionNL_DExp(energy, 1.0163161769, 1.0745426880, -2.6533554672, 1.0253717488, 0.8132587660, -2.5997134051);
+      }
       break;
 
     // *************** 80 + x **** modified tender Settings 1 - PbPb
