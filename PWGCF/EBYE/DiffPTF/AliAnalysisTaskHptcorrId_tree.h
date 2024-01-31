@@ -152,6 +152,7 @@ class AliAnalysisTaskHptcorrId_tree : public AliAnalysisTaskSE {
   //ftreeEvent object variables
   TTree *fTreeEvent;
   Float_t fTreeVariableCentrality;
+  //reconstructed
   Float_t fQ1_prot;
   Float_t fQ2_prot;
   Float_t fQ3_prot;
@@ -167,7 +168,32 @@ class AliAnalysisTaskHptcorrId_tree : public AliAnalysisTaskSE {
   Float_t fQ3_K;
   Float_t fQ4_K;
   Float_t fNch_K;
- 
+  //corrected
+  Float_t fP1_prot;
+  Float_t fP2_prot;
+  Float_t fP3_prot;
+  Float_t fP4_prot;
+  Float_t fP1_pi;
+  Float_t fP2_pi;
+  Float_t fP3_pi;
+  Float_t fP4_pi;
+  Float_t fP1_K;
+  Float_t fP2_K;
+  Float_t fP3_K;
+  Float_t fP4_K;
+  Float_t fW1_prot;
+  Float_t fW2_prot;
+  Float_t fW3_prot;
+  Float_t fW4_prot;
+  Float_t fW1_pi;
+  Float_t fW2_pi;
+  Float_t fW3_pi;
+  Float_t fW4_pi;
+  Float_t fW1_K;
+  Float_t fW2_K;
+  Float_t fW3_K;
+  Float_t fW4_K;
+  
   Float_t fPtMax;
   Float_t fPtMin;
   
