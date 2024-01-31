@@ -605,15 +605,15 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
         fHistPtAlphaPi0FromKGGPCMEMCAcc->Sumw2();
         fOutputContainer->Add(fHistPtAlphaPi0FromKGGPCMEMCAcc);
         fHistPtAlphaPi0FromKGGEMCPCMAcc      = new TH2F("Pt_Alpha_Pi0FromKGGEMCPCMAcc","Pt_Alpha_Pi0FromKGGEMCPCMAcc", fMaxpT*5, 0.1, fMaxpT/2, 200, -1., 1.);
-    	SetLogBinningXTH2(fHistPtAlphaPi0FromKGGEMCPCMAcc);
+    	  SetLogBinningXTH2(fHistPtAlphaPi0FromKGGEMCPCMAcc);
         fHistPtAlphaPi0FromKGGEMCPCMAcc->Sumw2();
         fOutputContainer->Add(fHistPtAlphaPi0FromKGGEMCPCMAcc);
         fHistPtAlphaPi0FromKGGEMCAccSamePi0      = new TH2F("Pt_Alpha_Pi0FromKGGEMCAccSamePi0","Pt_Alpha_Pi0FromKGGEMCAccSamePi0", fMaxpT*5, 0.1, fMaxpT/2, 200, -1., 1.);
-    	SetLogBinningXTH2(fHistPtAlphaPi0FromKGGEMCAccSamePi0);
+    	  SetLogBinningXTH2(fHistPtAlphaPi0FromKGGEMCAccSamePi0);
         fHistPtAlphaPi0FromKGGEMCAccSamePi0->Sumw2();
         fOutputContainer->Add(fHistPtAlphaPi0FromKGGEMCAccSamePi0);
         fHistPtAlphaPi0FromKGGEMCAccDiffPi0      = new TH2F("Pt_Alpha_Pi0FromKGGEMCAccDiffPi0","Pt_Alpha_Pi0FromKGGEMCAccDiffPi0", fMaxpT*5, 0.1, fMaxpT/2, 200, -1., 1.);
-    	SetLogBinningXTH2(fHistPtAlphaPi0FromKGGEMCAccDiffPi0);
+    	  SetLogBinningXTH2(fHistPtAlphaPi0FromKGGEMCAccDiffPi0);
         fHistPtAlphaPi0FromKGGEMCAccDiffPi0->Sumw2();
         fOutputContainer->Add(fHistPtAlphaPi0FromKGGEMCAccDiffPi0);
   }
@@ -634,6 +634,41 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
     fHistPtV0MultEtaPrimeGG      = new TH2F("Pt_V0Mult_EtaPrimeFromGG","Pt_V0Mult_EtaPrimeFromGG", fMaxpT*10, 0., fMaxpT/2, 500, -0.5, 500 - 0.5);
     fHistPtV0MultEtaPrimeGG->Sumw2();
     fOutputContainer->Add(fHistPtV0MultEtaPrimeGG);
+
+    // investigate prompt and feed down pi0
+    fHistPtV0MultPi0GGPrompt      = new TH2F("Pt_V0Mult_Pi0FromGG_Prompt","Pt_V0Mult_Pi0FromGG_Prompt", fMaxpT*10, 0., fMaxpT, 500, -0.5, 500 - 0.5);
+    fHistPtV0MultPi0GGPrompt->Sumw2();
+    fOutputContainer->Add(fHistPtV0MultPi0GGPrompt);
+
+    fHistPtV0MultPi0GGFromEta      = new TH2F("Pt_V0Mult_Pi0FromGG_FromEta","Pt_V0Mult_Pi0FromGG_FromEta", fMaxpT*10, 0., fMaxpT, 500, -0.5, 500 - 0.5);
+    fHistPtV0MultPi0GGFromEta->Sumw2();
+    fOutputContainer->Add(fHistPtV0MultPi0GGFromEta);
+
+    fHistPtV0MultPi0GGFromOmega      = new TH2F("Pt_V0Mult_Pi0FromGG_FromOmega","Pt_V0Mult_Pi0FromGG_FromOmega", fMaxpT*10, 0., fMaxpT, 500, -0.5, 500 - 0.5);
+    fHistPtV0MultPi0GGFromOmega->Sumw2();
+    fOutputContainer->Add(fHistPtV0MultPi0GGFromOmega);
+
+    fHistPtV0MultPi0GGFromRest      = new TH2F("Pt_V0Mult_Pi0FromGG_FromRest","Pt_V0Mult_Pi0FromGG_FromRest", fMaxpT*10, 0., fMaxpT, 500, -0.5, 500 - 0.5);
+    fHistPtV0MultPi0GGFromRest->Sumw2();
+    fOutputContainer->Add(fHistPtV0MultPi0GGFromRest);
+
+    fHistPtV0MultPi0GGFromRho      = new TH2F("Pt_V0Mult_Pi0FromGG_FromRho","Pt_V0Mult_Pi0FromGG_FromRho", fMaxpT*10, 0., fMaxpT, 500, -0.5, 500 - 0.5);
+    fHistPtV0MultPi0GGFromRho->Sumw2();
+    fOutputContainer->Add(fHistPtV0MultPi0GGFromRho);
+
+    // investigate prompt and feed down eta
+    fHistPtV0MultEtaGGPrompt      = new TH2F("Pt_V0Mult_EtaFromGG_Prompt","Pt_V0Mult_EtaFromGG_Prompt", fMaxpT*10, 0., fMaxpT, 500, -0.5, 500 - 0.5);
+    fHistPtV0MultEtaGGPrompt->Sumw2();
+    fOutputContainer->Add(fHistPtV0MultEtaGGPrompt);
+
+    fHistPtV0MultEtaGGFromEtaPrim      = new TH2F("Pt_V0Mult_EtaFromGG_FromEtaPrim","Pt_V0Mult_EtaFromGG_FromEtaPrim", fMaxpT*10, 0., fMaxpT, 500, -0.5, 500 - 0.5);
+    fHistPtV0MultEtaGGFromEtaPrim->Sumw2();
+    fOutputContainer->Add(fHistPtV0MultEtaGGFromEtaPrim);
+
+    fHistPtV0MultEtaGGFromRest      = new TH2F("Pt_V0Mult_EtaFromGG_FromRest","Pt_V0Mult_EtaFromGG_FromRest", fMaxpT*10, 0., fMaxpT, 500, -0.5, 500 - 0.5);
+    fHistPtV0MultEtaGGFromRest->Sumw2();
+    fOutputContainer->Add(fHistPtV0MultEtaGGFromRest);
+
   }
 
   if(fDoFeedDownStudies){
@@ -966,12 +1001,20 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
       if(fDoMultStudies){
         if(std::abs(particle->Y()) <= 0.8){
           if(!IsSecondary(motherParticle)){
-            if(fDoMultStudies == 2){ // select only INEL>0 events for multiplicity
-              if(fIsEvtINELgtZERO == true){
-                fHistPtV0MultPi0GG->Fill(particle->Pt(), fNTracksInV0Acc);
-              }
-            } else {
+            if((fDoMultStudies == 2 && fIsEvtINELgtZERO == true) || fDoMultStudies == 1){ // select only INEL>0 events for multiplicity
+              int sourcePi0 = ReturnFeedDownBinFromPDG(absmotherpdg);
               fHistPtV0MultPi0GG->Fill(particle->Pt(), fNTracksInV0Acc);
+              if(sourcePi0 < 9 || (absmotherpdg == 2212 && particle->GetMother() < 2)){ // (absmotherpdg == 2212 && particle->GetMother() < 2) is for EPOS as EPOS does not have quarks
+                fHistPtV0MultPi0GGPrompt->Fill(particle->Pt(), fNTracksInV0Acc);
+              } else if(sourcePi0 == 9){
+                fHistPtV0MultPi0GGFromRho->Fill(particle->Pt(), fNTracksInV0Acc);
+              } else if(sourcePi0 == 10){
+                fHistPtV0MultPi0GGFromEta->Fill(particle->Pt(), fNTracksInV0Acc);
+              } else if(sourcePi0 == 11){
+                fHistPtV0MultPi0GGFromOmega->Fill(particle->Pt(), fNTracksInV0Acc);
+              } else {
+                fHistPtV0MultPi0GGFromRest->Fill(particle->Pt(), fNTracksInV0Acc);
+              }                 
             }
           }
         }
@@ -1003,12 +1046,16 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
       if(fDoMultStudies){
         if(std::abs(particle->Y()) <= 0.8){
           if(!IsSecondary(motherParticle)){
-            if(fDoMultStudies == 2){ // select only INEL>0 events for multiplicity
-              if(fIsEvtINELgtZERO == true){
-                fHistPtV0MultEtaGG->Fill(particle->Pt(), fNTracksInV0Acc);
-              }
-            } else {
+            if((fDoMultStudies == 2 && fIsEvtINELgtZERO == true) || fDoMultStudies == 1){ // select only INEL>0 events for multiplicity
               fHistPtV0MultEtaGG->Fill(particle->Pt(), fNTracksInV0Acc);
+              int sourceEta = ReturnFeedDownBinFromPDG(absmotherpdg);
+              if(sourceEta < 9 || (absmotherpdg == 2212 && particle->GetMother() < 2)){ // (absmotherpdg == 2212 && particle->GetMother() < 2) is for EPOS as EPOS does not have quarks
+                fHistPtV0MultEtaGGPrompt->Fill(particle->Pt(), fNTracksInV0Acc);
+              } else if(sourceEta == 12){
+                fHistPtV0MultEtaGGFromEtaPrim->Fill(particle->Pt(), fNTracksInV0Acc);
+              } else {
+                fHistPtV0MultEtaGGFromRest->Fill(particle->Pt(), fNTracksInV0Acc);
+              }
             }
           }
         }
