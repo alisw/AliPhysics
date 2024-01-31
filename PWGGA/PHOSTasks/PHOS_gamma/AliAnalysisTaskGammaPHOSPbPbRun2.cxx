@@ -133,7 +133,7 @@ AliAnalysisTaskGammaPHOSPbPbRun2::AliAnalysisTaskGammaPHOSPbPbRun2(const char *n
   fIsMC(kFALSE),
   fPidCuts(0),
   fCenBinEdges(0),
-  fTOF(50.e-9),
+  fTOF(30.e-9),
   fNCenBins(0),
   fCurrFileName(0), 
   fCheckMCCrossSection(kFALSE),
@@ -267,7 +267,6 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserCreateOutputObjects()
   AddMCHistograms();
   AddDistBadHistograms();
   AddPhiTitleHistograms();
-
  
   PostData(1, fOutputContainer);
   PostData(2, fOutputContainer2);
@@ -311,8 +310,10 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
     }
     Int_t run = event->GetRunNumber() ;
     Int_t runTemporary = 170593;  //temporary fix
+  
 //    TFile * fflatFine = TFile::Open("EP_final.root") ;
 //    TFile * fflatFineQ = TFile::Open("EPq_final.root") ;
+  
     AliOADBContainer flatContainer("phosFlat");
     flatContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSflat.root","phosFlat");
     TObjArray *arr = (TObjArray*)flatContainer.GetObject(/*run*/ runTemporary,"phosFlat");
@@ -416,7 +417,6 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
     fEventCounter++ ;
   }
 
-  
   // Checks if we have a primary vertex
   // Get primary vertices form ESD
   const AliAODVertex *esdVertex5 = event->GetPrimaryVertex();
@@ -464,16 +464,8 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
     fCenBin++;
   }
 
-  //cout << "centrality = " << fCentrality << ", bin " << fCenBin << endl;
-
   FillHistogram("hCentralityBins", fCenBin + 0.5);
 
-  if(TestPHOSEvent(event)) {
-    //bad event
-    FillHistogram("hBadCentrality",fCentrality) ;   
-    return;
-  }
-  
   Double_t cWeight=CentralityWeight(fCentrality) ;
 
   //Calculate EP resolutions from centrality
@@ -626,7 +618,11 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
   
   //QA PHOS cells
   Int_t nCellModule[4] = {0, 0, 0, 0};
+
+  Int_t a[10]={0} ; //left
+  
   Int_t nCells=cells->GetNumberOfCells();
+
   for (Int_t iCell=0; iCell<nCells; iCell++) {
     Int_t cellAbsId = cells->GetCellNumber(iCell);
     Int_t relId[4] ;
@@ -634,6 +630,12 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
     Int_t mod1  = relId[0];
     Int_t cellX = relId[2];
     Int_t cellZ = relId[3] ;
+    // Test if event is complete 
+    if(cellX<29)
+      a[2*mod1]++ ;
+    else
+      a[2*mod1 + 1]++ ;
+
     Float_t energy = cells->GetAmplitude(iCell);
     FillHistogram("hCellEnergy",energy);
     if(mod1==1) {
@@ -661,6 +663,16 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
       FillHistogram("hCellEXZM4",cellX,cellZ,energy);
     }
   }
+
+  for(Int_t iMod = 2; iMod < 8; iMod ++){
+    if(a[iMod] == 0){
+       FillHistogram("hBadMod",float(iMod)) ;
+       FillHistogram("hBadCentrality",fCentrality) ;
+       AliError("Bad centrality!");
+       return;
+    }
+  }
+
   FillHistogram("hCellMultEventM1",nCellModule[0]);
   FillHistogram("hCellMultEventM2",nCellModule[1]);
   FillHistogram("hCellMultEventM3",nCellModule[2]);
@@ -676,14 +688,18 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
   
   TVector3 localPos ;
   Int_t nAll=0,nCPV=0, nDisp=0, nBoth=0; 
+
   for (Int_t i=0; i < multClust; i++) {
     AliAODCaloCluster *clu = event->GetCaloCluster(i);
     if ( !clu->IsPHOS() || clu->E()<0.3) continue;
     
-   // if (!fMCArray && TMath::Abs(clu->GetTOF()) > fTOF) continue; // TOF cut for real data only!
+    if (!fMCArray && TMath::Abs(clu->GetTOF()) > fTOF) continue; // TOF cut for real data only!
     
     if(fDistCut && (clu->GetDistanceToBadChannel() < 2.5))
-      continue ;
+       continue ;
+
+    if (clu->GetType() != AliVCluster::kPHOSNeutral) 
+       continue ;
  
     Float_t  position[3];
     clu->GetPosition(position);
@@ -1865,33 +1881,6 @@ Double_t AliAnalysisTaskGammaPHOSPbPbRun2::CentralityWeight(Double_t c){
     return 1./weight ;
   else
     return 0. ;
-}
-//_________________________________________________________________________
-Bool_t AliAnalysisTaskGammaPHOSPbPbRun2::TestPHOSEvent(AliAODEvent * event){
-  //Check if event is complete
-  AliAODCaloCells * cells = event->GetPHOSCells() ;
-  Int_t a[10]={0} ; //left
-  Int_t nCells=cells->GetNumberOfCells();
-  for (Int_t iCell=0; iCell<nCells; iCell++) {
-    Int_t cellAbsId = cells->GetCellNumber(iCell);
-    Int_t relId[4] ;
-    fPHOSGeo->AbsToRelNumbering(cellAbsId,relId);
-    Int_t mod  = relId[0];
-    Int_t cellX= relId[2];
-    if(cellX<29)
-      a[2*mod]++ ;
-    else
-      a[2*mod+1]++ ;
-  }
-  Bool_t bad=kFALSE ;
-  for(Int_t mod=2; mod<8; mod++){
-    if(a[mod]==0){
-      bad=kTRUE;
-      FillHistogram("hBadMod",float(mod)) ;
-    }
-  }
-  
-  return bad ;
 }
 
 //_____________________________________________________________________________

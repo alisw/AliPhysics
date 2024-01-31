@@ -47,7 +47,6 @@ private:
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z, Double_t w) const ; //Fill 3D histogram witn name key
 
-  Bool_t TestPHOSEvent(AliAODEvent * event) ; //Checks if PHOS event complete
   Int_t ConvertRunNumber(Int_t run) ; 
 
   void EvalV0ReactionPlane(AliAODEvent * event) ;
