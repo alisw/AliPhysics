@@ -158,7 +158,7 @@ void AliAnalysisTaskMeanptFluctMC_effcheck::UserExec(Option_t *)
 
 
 
-  cout<<"************************************* Event *************************************************"<<endl;
+  //cout<<"************************************* Event *************************************************"<<endl;
   // Main loop                                                                                                                              
   // Called for each event                                                                                                                  
   AliESDEvent *lESDevent = 0x0;
@@ -386,10 +386,10 @@ void AliAnalysisTaskMeanptFluctMC_effcheck::UserExec(Option_t *)
 
   
 
-      cout<<"Value of centrality:"<<fCentImpBin<<endl;
-      cout<<"No of particaipating nucleons: "<<fNpart<<endl;
-      cout<<"No of projectile + target nucleons: "<<fNProjectileParticipants<<" + "<<fNTargetParticipants<<endl;
-      cout<<"No of collisions: "<<fNNColl<<endl;
+      // cout<<"Value of centrality:"<<fCentImpBin<<endl;
+      // cout<<"No of particaipating nucleons: "<<fNpart<<endl;
+      // cout<<"No of projectile + target nucleons: "<<fNProjectileParticipants<<" + "<<fNTargetParticipants<<endl;
+      // cout<<"No of collisions: "<<fNNColl<<endl;
 
       fTreeVariableCentrality=fCentImpBin;
       fNch_eta0pt5=Nch_eta0pt5;
