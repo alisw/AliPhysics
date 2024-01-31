@@ -291,7 +291,7 @@ void AliAnalysisTaskHptcorrId_tree::UserExec(Option_t *)  {
   
     //Get Input Event
     if ( !GetEvent ()) return;
-    cout<<"*********************** Found AOD event !!! ******************************"<<endl;
+    //cout<<"*********************** Found AOD event !!! ******************************"<<endl;
 
     
     //Get multiplicity percentile

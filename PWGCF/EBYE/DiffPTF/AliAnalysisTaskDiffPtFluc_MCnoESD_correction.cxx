@@ -157,7 +157,7 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_correction::UserExec(Option_t *)
 
 
 
-  cout<<"************************************* Event *************************************************"<<endl;
+  //cout<<"************************************* Event *************************************************"<<endl;
   // Main loop                                                                                                                              
   // Called for each event                                                                                                                  
   AliESDEvent *lESDevent = 0x0;
@@ -221,7 +221,7 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_correction::UserExec(Option_t *)
     
   if(fMCchoice==1)
     {
-      cout<<"#### MC is EPOS !! #####"<<endl;
+      //cout<<"#### MC is EPOS !! #####"<<endl;
       
       lHepMCHeader = (AliGenHepMCEventHeader*)genHeader;
       fNHardScatters = lHepMCHeader->Ncoll_hard(); // Number of hard scatterings
@@ -249,7 +249,7 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_correction::UserExec(Option_t *)
   //For HIJING
   if(fMCchoice==2)
     {
-      cout<<"#### MC is HIJING !! #####"<<endl;
+      //cout<<"#### MC is HIJING !! #####"<<endl;
       
       lHIJINGHeader = (AliGenHijingEventHeader*) genHeader;
       fNHardScatters = lHIJINGHeader->HardScatters();
