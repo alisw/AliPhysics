@@ -69,16 +69,6 @@ class AliAnalysisTaskDiffPtFluc_MCnoESD_gen : public AliAnalysisTaskSE {
   Float_t fNch_eta0pt5;
   Float_t fNpart_1;
   Float_t fNpart_2;
-  Float_t fQ1_gen[2];
-  Float_t fQ2_gen[2];
-  Float_t fQ3_gen[2];
-  Float_t fQ4_gen[2];
-  Float_t fNch_gen[2];
-  Float_t fQ1_rec[2];
-  Float_t fQ2_rec[2];
-  Float_t fQ3_rec[2];
-  Float_t fQ4_rec[2];
-  Float_t fNch_rec[2];
   TH2F *hist2D_pt_gen_centrality;
   TH2F *hist2D_pt_rec_centrality;
   Int_t fMCchoice;
@@ -89,22 +79,7 @@ class AliAnalysisTaskDiffPtFluc_MCnoESD_gen : public AliAnalysisTaskSE {
   Float_t fPt_factor_kaon[14];
   Float_t fPt_factor_proton[14];		
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  //Float_t fvertex;
-  //Float_t fQ1;
-  //Float_t fQ2;
-  //Float_t fQ3;
-  //Float_t fQ4;
-  //Float_t fNch;
-  TProfile *Profile_mean_term1;
-  TProfile *Profile_var_term1;
-  TProfile *Profile_var_term2;
-  TProfile *Profile_skewness_term1;
-  TProfile *Profile_skewness_term2;
-  TProfile *Profile_skewness_term3;
-  TProfile *Profile_kurtosis_term1;
-  TProfile *Profile_kurtosis_term2;
-  TProfile *Profile_kurtosis_term3;
-  TProfile *Profile_kurtosis_term4;
+  
   TH1D *hist_centrality_beforecut;
   
   AliAnalysisTaskDiffPtFluc_MCnoESD_gen(const AliAnalysisTaskDiffPtFluc_MCnoESD_gen&);
