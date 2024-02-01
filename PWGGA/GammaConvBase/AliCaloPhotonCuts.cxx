@@ -5964,21 +5964,18 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       break;
     case 18: //i TM cut for PbPb EMC clusters - tight
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      if (!fUseTMMIPsubtraction) fUseTMMIPsubtraction=kTRUE;
       fMaxDistTrackToClusterEta = 0.010;
       fMinDistTrackToClusterPhi = -0.011;
       fMaxDistTrackToClusterPhi = 0.011;
       break;
     case 19: //j TM cut for PbPb EMC clusters - loose
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      if (!fUseTMMIPsubtraction) fUseTMMIPsubtraction=kTRUE;
       fMaxDistTrackToClusterEta = 0.015;
       fMinDistTrackToClusterPhi = -0.02;
       fMaxDistTrackToClusterPhi = 0.02;
       break;
     case 20: //k TM cut for PbPb EMC clusters
       if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
-      if (!fUseTMMIPsubtraction) fUseTMMIPsubtraction=kTRUE;
       fUsePtDepTrackToCluster = 1;
       fFuncPtDepEta = new TF1("funcEta20", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);

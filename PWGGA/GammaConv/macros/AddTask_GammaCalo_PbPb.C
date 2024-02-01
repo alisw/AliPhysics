@@ -1258,25 +1258,25 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("10930013","4117900000032220000","01331031000000d0"); //  0-90% QA (open timing)
 
   } else if (trainConfig == 780){ // EMCAL+DCal standard with 4 cents
-    cuts.AddCutCalo("10130e03","4117901050e30220000","01331031000000d0"); // 00-10%
-    cuts.AddCutCalo("11310e03","4117901050e30220000","01331031000000d0"); // 10-30%
-    cuts.AddCutCalo("13530e03","4117901050e30220000","01331031000000d0"); // 30-50%
-    cuts.AddCutCalo("15910e03","4117901050e30220000","01331031000000d0"); // 50-90%
+    cuts.AddCutCalo("10130e03","411790105ke30220000","01331031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310e03","411790105ke30220000","01331031000000d0"); // 10-30%
+    cuts.AddCutCalo("13530e03","411790105ke30220000","01331031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910e03","411790105ke30220000","01331031000000d0"); // 50-90%
   } else if (trainConfig == 781){ // EMCAL+DCal standard with rotation method
-    cuts.AddCutCalo("10130e03","4117901050e30220000","0s631031000000d0"); // 00-10%
-    cuts.AddCutCalo("11310e03","4117901050e30220000","0s631031000000d0"); // 10-30%
-    cuts.AddCutCalo("13530e03","4117901050e30220000","0s631031000000d0"); // 30-50%
-    cuts.AddCutCalo("15910e03","4117901050e30220000","0s631031000000d0"); // 50-90%
+    cuts.AddCutCalo("10130e03","411790105ke30220000","0s631031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310e03","411790105ke30220000","0s631031000000d0"); // 10-30%
+    cuts.AddCutCalo("13530e03","411790105ke30220000","0s631031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910e03","411790105ke30220000","0s631031000000d0"); // 50-90%
   } else if (trainConfig == 782){ // EMCAL+DCal standard with 4 cents without OOB Pileup correction
-    cuts.AddCutCalo("10130053","4117901050e30220000","01331031000000d0"); // 00-10%
-    cuts.AddCutCalo("11310053","4117901050e30220000","01331031000000d0"); // 10-30%
-    cuts.AddCutCalo("13530053","4117901050e30220000","01331031000000d0"); // 30-50%
-    cuts.AddCutCalo("15910053","4117901050e30220000","01331031000000d0"); // 50-90%
+    cuts.AddCutCalo("10130053","411790105ke30220000","01331031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310053","411790105ke30220000","01331031000000d0"); // 10-30%
+    cuts.AddCutCalo("13530053","411790105ke30220000","01331031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910053","411790105ke30220000","01331031000000d0"); // 50-90%
   } else if (trainConfig == 783){ // EMCAL+DCal standard with rotation method without OOB Pileup correction
-    cuts.AddCutCalo("10130053","4117901050e30220000","0s631031000000d0"); // 00-10%
-    cuts.AddCutCalo("11310053","4117901050e30220000","0s631031000000d0"); // 10-30%
-    cuts.AddCutCalo("13530053","4117901050e30220000","0s631031000000d0"); // 30-50%
-    cuts.AddCutCalo("15910053","4117901050e30220000","0s631031000000d0"); // 50-90%
+    cuts.AddCutCalo("10130053","411790105ke30220000","0s631031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310053","411790105ke30220000","0s631031000000d0"); // 10-30%
+    cuts.AddCutCalo("13530053","411790105ke30220000","0s631031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910053","411790105ke30220000","0s631031000000d0"); // 50-90%
   } else if (trainConfig == 784){ // EMCAL+DCal clusters - Neutral Overlap with mean N matched tracks per cluster
     cuts.AddCutCalo("10130e03","411790105te30220000","01331031000000d0"); // 00-10%
     cuts.AddCutCalo("11310e03","411790105te30220000","01331031000000d0"); // 10-30%
@@ -1330,10 +1330,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("13530e13","411790105ve30220000","0s631031000000d0"); // 30-50%
     cuts.AddCutCalo("15910e13","411790105ve30220000","0s631031000000d0"); // 50-90%
   } else if (trainConfig == 794){ // EMCAL+DCal standard with 4 cents without OOB Pileup correction, Added Signal
-    cuts.AddCutCalo("10130023","4117901050e30220000","01331031000000d0"); // 00-10%
-    cuts.AddCutCalo("11310023","4117901050e30220000","01331031000000d0"); // 10-30%
-    cuts.AddCutCalo("13530023","4117901050e30220000","01331031000000d0"); // 30-50%
-    cuts.AddCutCalo("15910023","4117901050e30220000","01331031000000d0"); // 50-90%
+    cuts.AddCutCalo("10130023","411790105ke30220000","01331031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310023","411790105ke30220000","01331031000000d0"); // 10-30%
+    cuts.AddCutCalo("13530023","411790105ke30220000","01331031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910023","411790105ke30220000","01331031000000d0"); // 50-90%
   } else if (trainConfig == 795){ // EMCAL+DCal clusters -  Neutral Overlap NonLin like without OOB Pileup correction, Added Signal
     cuts.AddCutCalo("10130023","411790105we30220000","01331031000000d0"); // 00-10%
     cuts.AddCutCalo("11310023","411790105we30220000","01331031000000d0"); // 10-30%
@@ -1488,13 +1488,13 @@ void AddTask_GammaCalo_PbPb(
   } else if (trainConfig == 1009){ // EMCAL+DCal clusters -  Neutral Overlap NonLin like without OOB Pileup correction, Added Signal - rotation background method
     cuts.AddCutCalo("10130023","411790105we30220000","0s331031000000d0"); // 00-10%
   } else if (trainConfig == 1080){ // EMCAL+DCal standard
-    cuts.AddCutCalo("10130e03","4117901050e30220000","01331031000000d0"); // 00-10%
+    cuts.AddCutCalo("10130e03","411790105ke30220000","01331031000000d0"); // 00-10%
   } else if (trainConfig == 1081){ // EMCAL+DCal standard with rotation method
-    cuts.AddCutCalo("10130e03","4117901050e30220000","0s631031000000d0"); // 00-10%
+    cuts.AddCutCalo("10130e03","411790105ke30220000","0s631031000000d0"); // 00-10%
   } else if (trainConfig == 1082){ // EMCAL+DCal standard without OOB Pileup correction
-    cuts.AddCutCalo("10130053","4117901050e30220000","01331031000000d0"); // 00-10%
+    cuts.AddCutCalo("10130053","411790105ke30220000","01331031000000d0"); // 00-10%
   } else if (trainConfig == 1083){ // EMCAL+DCal standard with rotation method without OOB Pileup correction
-    cuts.AddCutCalo("10130053","4117901050e30220000","0s631031000000d0"); // 00-10%
+    cuts.AddCutCalo("10130053","411790105ke30220000","0s631031000000d0"); // 00-10%
   } else if (trainConfig == 1084){ // EMCAL+DCal clusters - Neutral Overlap with mean N matched tracks per cluster
     cuts.AddCutCalo("10130e03","411790105te30220000","01331031000000d0"); // 00-10%
   } else if (trainConfig == 1085){ // EMCAL+DCal clusters - Neutral Overlap with mean N matched tracks per cluster without OOB Pileup correction
@@ -1519,7 +1519,7 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("10130e13","411790105ve30220000","0s631031000000d0"); // 00-10%
   // Added Signal
   } else if (trainConfig == 1094){ // EMCAL+DCal standard with 4 cents without OOB Pileup correction, Added Signal
-    cuts.AddCutCalo("10130023","4117901050e30220000","01331031000000d0"); // 00-10%
+    cuts.AddCutCalo("10130023","411790105ke30220000","01331031000000d0"); // 00-10%
   } else if (trainConfig == 1095){ // EMCAL+DCal clusters -  Neutral Overlap NonLin like without OOB Pileup correction, Added Signal
     cuts.AddCutCalo("10130023","411790105we30220000","01331031000000d0"); // 00-10%
   } else if (trainConfig == 1096){ // EMCAL+DCal clusters -  Neutral Overlap with mean charged tracks per cell without OOB Pileup correction, Added Signal
@@ -1545,13 +1545,13 @@ void AddTask_GammaCalo_PbPb(
   } else if (trainConfig == 3009){ // EMCAL+DCal clusters -  Neutral Overlap NonLin like without OOB Pileup correction, Added Signal - rotation background method
     cuts.AddCutCalo("11310023","411790105we30220000","0s331031000000d0"); // 10-30%
   } else if (trainConfig == 3080){ // EMCAL+DCal standard
-    cuts.AddCutCalo("11310e03","4117901050e30220000","01331031000000d0"); // 10-30%
+    cuts.AddCutCalo("11310e03","411790105ke30220000","01331031000000d0"); // 10-30%
   } else if (trainConfig == 3081){ // EMCAL+DCal standard with rotation method
-    cuts.AddCutCalo("11310e03","4117901050e30220000","0s631031000000d0"); // 10-30%
+    cuts.AddCutCalo("11310e03","411790105ke30220000","0s631031000000d0"); // 10-30%
   } else if (trainConfig == 3082){ // EMCAL+DCal standard without OOB Pileup correction
-    cuts.AddCutCalo("11310053","4117901050e30220000","01331031000000d0"); // 10-30%
+    cuts.AddCutCalo("11310053","411790105ke30220000","01331031000000d0"); // 10-30%
   } else if (trainConfig == 3083){ // EMCAL+DCal standard with rotation method without OOB Pileup correction
-    cuts.AddCutCalo("11310053","4117901050e30220000","0s631031000000d0"); // 10-30%
+    cuts.AddCutCalo("11310053","411790105ke30220000","0s631031000000d0"); // 10-30%
   } else if (trainConfig == 3084){ // EMCAL+DCal clusters - Neutral Overlap with mean N matched tracks per cluster
     cuts.AddCutCalo("11310e03","411790105te30220000","01331031000000d0"); // 10-30%
   } else if (trainConfig == 3085){ // EMCAL+DCal clusters - Neutral Overlap with mean N matched tracks per cluster without OOB Pileup correction
@@ -1576,7 +1576,7 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11310e13","411790105ve30220000","0s631031000000d0"); // 10-30%
   // Added Signal
   } else if (trainConfig == 3094){ // EMCAL+DCal standard with 4 cents without OOB Pileup correction, Added Signal
-    cuts.AddCutCalo("11310023","4117901050e30220000","01331031000000d0"); // 10-30%
+    cuts.AddCutCalo("11310023","411790105ke30220000","01331031000000d0"); // 10-30%
   } else if (trainConfig == 3095){ // EMCAL+DCal clusters -  Neutral Overlap NonLin like without OOB Pileup correction, Added Signal
     cuts.AddCutCalo("11310023","411790105we30220000","01331031000000d0"); // 10-30%
   } else if (trainConfig == 3096){ // EMCAL+DCal clusters -  Neutral Overlap with mean charged tracks per cell without OOB Pileup correction, Added Signal
@@ -1602,13 +1602,13 @@ void AddTask_GammaCalo_PbPb(
   } else if (trainConfig == 5009){ // EMCAL+DCal clusters -  Neutral Overlap NonLin like without OOB Pileup correction, Added Signal - rotation background method
     cuts.AddCutCalo("13530023","411790105we30220000","0s331031000000d0"); // 30-50%
   } else if (trainConfig == 5080){ // EMCAL+DCal standard
-    cuts.AddCutCalo("13530e03","4117901050e30220000","01331031000000d0"); // 30-50%
+    cuts.AddCutCalo("13530e03","411790105ke30220000","01331031000000d0"); // 30-50%
   } else if (trainConfig == 5081){ // EMCAL+DCal standard with rotation method
-    cuts.AddCutCalo("13530e03","4117901050e30220000","0s631031000000d0"); // 30-50%
+    cuts.AddCutCalo("13530e03","411790105ke30220000","0s631031000000d0"); // 30-50%
   } else if (trainConfig == 5082){ // EMCAL+DCal standard without OOB Pileup correction
-    cuts.AddCutCalo("13530053","4117901050e30220000","01331031000000d0"); // 30-50%
+    cuts.AddCutCalo("13530053","411790105ke30220000","01331031000000d0"); // 30-50%
   } else if (trainConfig == 5083){ // EMCAL+DCal standard with rotation method without OOB Pileup correction
-    cuts.AddCutCalo("13530053","4117901050e30220000","0s631031000000d0"); // 30-50%
+    cuts.AddCutCalo("13530053","411790105ke30220000","0s631031000000d0"); // 30-50%
   } else if (trainConfig == 5084){ // EMCAL+DCal clusters - Neutral Overlap with mean N matched tracks per cluster
     cuts.AddCutCalo("13530e03","411790105te30220000","01331031000000d0"); // 30-50%
   } else if (trainConfig == 5085){ // EMCAL+DCal clusters - Neutral Overlap with mean N matched tracks per cluster without OOB Pileup correction
@@ -1633,7 +1633,7 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("13530e13","411790105ve30220000","0s631031000000d0"); // 30-50%
   // Added Signal
   } else if (trainConfig == 5094){ // EMCAL+DCal standard with 4 cents without OOB Pileup correction, Added Signal
-    cuts.AddCutCalo("13530023","4117901050e30220000","01331031000000d0"); // 30-50%
+    cuts.AddCutCalo("13530023","411790105ke30220000","01331031000000d0"); // 30-50%
   } else if (trainConfig == 5095){ // EMCAL+DCal clusters -  Neutral Overlap NonLin like without OOB Pileup correction, Added Signal
     cuts.AddCutCalo("13530023","411790105we30220000","01331031000000d0"); // 30-50%
   } else if (trainConfig == 5096){ // EMCAL+DCal clusters -  Neutral Overlap with mean charged tracks per cell without OOB Pileup correction, Added Signal
@@ -1659,13 +1659,13 @@ void AddTask_GammaCalo_PbPb(
   } else if (trainConfig == 9009){ // EMCAL+DCal clusters -  Neutral Overlap NonLin like without OOB Pileup correction, Added Signal - rotation background method
     cuts.AddCutCalo("15910023","411790105we30220000","0s331031000000d0"); // 50-90%
   } else if (trainConfig == 9080){ // EMCAL+DCal standard
-    cuts.AddCutCalo("15910e03","4117901050e30220000","01331031000000d0"); // 50-90%
+    cuts.AddCutCalo("15910e03","411790105ke30220000","01331031000000d0"); // 50-90%
   } else if (trainConfig == 9081){ // EMCAL+DCal standard with rotation method
-    cuts.AddCutCalo("15910e03","4117901050e30220000","0s631031000000d0"); // 50-90%
+    cuts.AddCutCalo("15910e03","411790105ke30220000","0s631031000000d0"); // 50-90%
   } else if (trainConfig == 9082){ // EMCAL+DCal standard without OOB Pileup correction
-    cuts.AddCutCalo("15910053","4117901050e30220000","01331031000000d0"); // 50-90%
+    cuts.AddCutCalo("15910053","411790105ke30220000","01331031000000d0"); // 50-90%
   } else if (trainConfig == 9083){ // EMCAL+DCal standard with rotation method without OOB Pileup correction
-    cuts.AddCutCalo("15910053","4117901050e30220000","0s631031000000d0"); // 50-90%
+    cuts.AddCutCalo("15910053","411790105ke30220000","0s631031000000d0"); // 50-90%
   } else if (trainConfig == 9084){ // EMCAL+DCal clusters - Neutral Overlap with mean N matched tracks per cluster
     cuts.AddCutCalo("15910e03","411790105te30220000","01331031000000d0"); // 50-90%
   } else if (trainConfig == 9085){ // EMCAL+DCal clusters - Neutral Overlap with mean N matched tracks per cluster without OOB Pileup correction
@@ -1690,7 +1690,7 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("15910e13","411790105ve30220000","0s631031000000d0"); // 50-90%
   // Added Signal
   } else if (trainConfig == 9094){ // EMCAL+DCal standard with 4 cents without OOB Pileup correction, Added Signal
-    cuts.AddCutCalo("15910023","4117901050e30220000","01331031000000d0"); // 50-90%
+    cuts.AddCutCalo("15910023","411790105ke30220000","01331031000000d0"); // 50-90%
   } else if (trainConfig == 9095){ // EMCAL+DCal clusters -  Neutral Overlap NonLin like without OOB Pileup correction, Added Signal
     cuts.AddCutCalo("15910023","411790105we30220000","01331031000000d0"); // 50-90%
   } else if (trainConfig == 9096){ // EMCAL+DCal clusters -  Neutral Overlap with mean charged tracks per cell without OOB Pileup correction, Added Signal
