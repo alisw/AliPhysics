@@ -1824,29 +1824,85 @@ void AddTask_GammaCalo_PbPb(
   } else if ( (generatorName.CompareTo("LHC20g10")==0) || generatorName.BeginsWith("LHC24a1") ) {
 
     auto fillSingle = [&HeaderList](Size_t theSwitch){
-      if (theSwitch == 1 ) { HeaderList->Add(new TObjString("Injector (pi0)"));   }
-      if (theSwitch == 2 ) { HeaderList->Add(new TObjString("Injector (pi0a)")); }
-      if (theSwitch == 3 ) { HeaderList->Add(new TObjString("Injector (pi0b)")); }
-      if (theSwitch == 4 ) { HeaderList->Add(new TObjString("Injector (pi0c)")); }
-      if (theSwitch == 5 ) { HeaderList->Add(new TObjString("Injector (pi0d)")); }
-      if (theSwitch == 6 ) { HeaderList->Add(new TObjString("Injector (eta)"));  }
-      if (theSwitch == 7 ) { HeaderList->Add(new TObjString("Injector (etaa)")); }
-      if (theSwitch == 8 ) { HeaderList->Add(new TObjString("Hijing")); }
-      if (theSwitch == 9 ) { HeaderList->Add(new TObjString("Pileup")); }
+      if (theSwitch == 1 ) { HeaderList->Add(new TObjString("Injector (pi0)"));  } // PCM Pi0
+      if (theSwitch == 2 ) { HeaderList->Add(new TObjString("Injector (pi0a)")); } // PHOS Pi0
+      if (theSwitch == 3 ) { HeaderList->Add(new TObjString("Injector (pi0b)")); } // PHOS Pi0
+      if (theSwitch == 4 ) { HeaderList->Add(new TObjString("Injector (pi0c)")); } // PHOS Pi0
+      if (theSwitch == 5 ) { HeaderList->Add(new TObjString("Injector (pi0d)")); } // PHOS Pi0
+      if (theSwitch == 6 ) { HeaderList->Add(new TObjString("Injector (eta)"));  } // PCM Eta
+      if (theSwitch == 7 ) { HeaderList->Add(new TObjString("Injector (etaa)")); } // PHOS Eta
+      if (theSwitch == 8 ) { HeaderList->Add(new TObjString("Hijing")); }          // HIJING
+      if (theSwitch == 9 ) { HeaderList->Add(new TObjString("Pileup")); }          // PileUp
+      if (theSwitch == 10 ) { HeaderList->Add(new TObjString("Injector (pi0e)")); } // EMCAL 1 Pi0
+      if (theSwitch == 11 ) { HeaderList->Add(new TObjString("Injector (pi0f)")); } // EMCAL 2 Pi0
+      if (theSwitch == 12 ) { HeaderList->Add(new TObjString("Injector (pi0g)")); } // EMCAL 3 Pi0
+      if (theSwitch == 13 ) { HeaderList->Add(new TObjString("Injector (pi0h)")); } // DCAL 1 Pi0
+      if (theSwitch == 14 ) { HeaderList->Add(new TObjString("Injector (pi0i)")); } // DCal 2 Pi0
+      if (theSwitch == 15 ) { HeaderList->Add(new TObjString("Injector (etab)")); } // EMCAL 1 Eta
+      if (theSwitch == 16 ) { HeaderList->Add(new TObjString("Injector (etac)")); } // EMCAL 2 Eta
+      if (theSwitch == 17 ) { HeaderList->Add(new TObjString("Injector (etad)")); } // EMCAL 3 Eta
+      if (theSwitch == 18 ) { HeaderList->Add(new TObjString("Injector (etae)")); } // DCAL 1 Eta
+      if (theSwitch == 19 ) { HeaderList->Add(new TObjString("Injector (etaf)")); } // DCal 2 Eta
     };
 
     auto fillFromTo = [&fillSingle](Size_t theStart, Size_t theInclEnd){
       for (Size_t i=theStart; i<=theInclEnd; ++i) { fillSingle(i); }
     };
 
-    if      (headerSelectionInt == 0)  { fillFromTo(1, 9); }            // all
-    else if (headerSelectionInt <= 9)  { fillSingle(headerSelectionInt); } // a single one
-    else if (headerSelectionInt == 10) { fillFromTo(1, 5); }            // pi0) + pi0x)
-    else if (headerSelectionInt == 11) { fillFromTo(2, 5); }            // all pi0x)
-    else if (headerSelectionInt == 12) { fillFromTo(6, 7); }            // eta) + etaa)
-    else if (headerSelectionInt == 13) {                                // pi0) + eta)
+    if      (headerSelectionInt == 0)  { fillFromTo(1, 9); }            // all PCM + PHOS + HIJING + PileUp
+    else if (headerSelectionInt <= 19)  { fillSingle(headerSelectionInt); } // a single one
+    else if (headerSelectionInt == 20) { fillFromTo(1, 5); }            // pi0) + pi0x)
+    else if (headerSelectionInt == 21) { fillFromTo(2, 5); }            // all pi0x)
+    else if (headerSelectionInt == 22) { fillFromTo(6, 7); }            // eta) + etaa)
+    else if (headerSelectionInt == 23) {                                // pi0) + eta)
       fillSingle(1);
       fillSingle(6);
+    } 
+    else if (headerSelectionInt == 24) { fillFromTo(10, 19); }            // all EMCal
+    else if (headerSelectionInt == 25) { fillFromTo(1, 19); }             // all
+    else if (headerSelectionInt == 26) {                                  // PCM + all EMCal Pi0 + Eta
+      fillSingle(1);
+      fillSingle(6);
+      fillFromTo(10, 19);
+    }
+    else if (headerSelectionInt == 27) {                                  // PCM + all EMCal + HIJING Pi0 + Eta
+      fillSingle(1);
+      fillSingle(6);
+      fillSingle(8);
+      fillFromTo(10, 19);
+    }
+    else if (headerSelectionInt == 28) {                                  // PCM + all EMCal + HIJING + PileUp Pi0 + Eta
+      fillSingle(1);
+      fillSingle(6);
+      fillFromTo(8, 19);
+    }
+    else if (headerSelectionInt == 29) {                                  // PCM + all EMCal Pi0
+      fillSingle(1);
+      fillFromTo(10, 14);
+    }
+    else if (headerSelectionInt == 30) {                                  // PCM + all EMCal + HIJING Pi0
+      fillSingle(1);
+      fillSingle(8);
+      fillFromTo(10, 14);
+    }
+    else if (headerSelectionInt == 31) {                                  // PCM + all EMCal + HIJING + PileUp Pi0
+      fillSingle(1);
+      fillFromTo(8, 14);
+    }
+    else if (headerSelectionInt == 32) {                                  // PCM + all EMCal Eta
+      fillSingle(6);
+      fillFromTo(15, 19);
+    }
+    else if (headerSelectionInt == 33) {                                  // PCM + all EMCal + HIJING Eta
+      fillSingle(6);
+      fillSingle(8);
+      fillFromTo(15, 19);
+    }
+    else if (headerSelectionInt == 34) {                                  // PCM + all EMCal + HIJING + PileUp Eta
+      fillSingle(6);
+      fillSingle(8);
+      fillSingle(9);
+      fillFromTo(15, 19);
     }
     else {
       Error(Form("%s_%i", addTaskName.Data(),  trainConfig), "No valid header selection");
