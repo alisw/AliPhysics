@@ -65,6 +65,7 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         void                    SetRejectSecondariesFromMC(Bool_t flag = kTRUE) { fRejectSecondariesFromMC = flag; }
         void                    SetUsePhiStar(Bool_t flag) {fUsePhiStar = flag;}
         void                    SetUseEfficiency(Bool_t flag) {fUseEfficiency = flag;}
+        void                    SetUseCentCali(Bool_t flag) {fUseCentralityCalibration = flag;}
         void                    SetCreateQAPlots(Bool_t flag) {fCreateQAPlots = flag;}
 
         // event selection
