@@ -219,6 +219,7 @@
 #pragma link C++ class AliAnalysisTaskParticleEffDYM1+;
 #pragma link C++ class AliAnalysisTaskEfficiencyPbPb_DR+;
 #pragma link C++ class AliAnalysisTaskEffK0ss+;
+#pragma link C++ class AliAnalysisTaskEffK0ss_pp+;
 
 
 

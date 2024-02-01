@@ -191,6 +191,7 @@ set(SRCS
   AliAnalysisTaskParticleEffDYM0.cxx
   AliAnalysisTaskEfficiencyPbPb_DR.cxx
   AliAnalysisTaskEffK0ss.cxx
+  AliAnalysisTaskEffK0ss_pp.cxx
 
 
 
