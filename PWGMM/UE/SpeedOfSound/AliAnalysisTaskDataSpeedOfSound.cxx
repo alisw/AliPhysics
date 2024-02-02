@@ -152,6 +152,8 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       hPtEtaPosvsNchEtaNeg(0),
       hPhiEtaSPD(0),
       hPhiEtaGapTPC(0),
+      hPhiEtaPosHalfTPC(0),
+      hPhiEtaNegHalfTPC(0),
       hEtaGapSPD(0),
       hVtxZvsTracklets(0),
       hTrackletsvsV0MAmp14(0),
@@ -227,6 +229,8 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       hPtEtaPosvsNchEtaNeg(0),
       hPhiEtaSPD(0),
       hPhiEtaGapTPC(0),
+      hPhiEtaPosHalfTPC(0),
+      hPhiEtaNegHalfTPC(0),
       hEtaGapSPD(0),
       hVtxZvsTracklets(0),
       hTrackletsvsV0MAmp14(0),
@@ -419,6 +423,14 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
       new TH2F("hPhiEtaGapTPC", ";#varphi; #eta (0.5#leq|#eta|#leq0.8)", 30, 0,
                2 * TMath::Pi(), 80, -1.4, 1.4);
 
+  hPhiEtaPosHalfTPC =
+      new TH2F("hPhiEtaPosHalfTPC", ";#varphi; #eta (0#leq|#eta|#leq0.8)", 30,
+               0, 2 * TMath::Pi(), 80, -1.4, 1.4);
+
+  hPhiEtaNegHalfTPC =
+      new TH2F("hPhiEtaNegHalfTPC", ";#varphi; #eta (-0.8#leq|#eta|<0)", 30, 0,
+               2 * TMath::Pi(), 80, -1.4, 1.4);
+
   hEtaGapSPD = new TH1F("hEtaGapSPD", ";#eta (0.7#leq|#eta|#leq1.4) ;Counts",
                         300, -1.5, 1.5);
 
@@ -499,6 +511,8 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   fOutputList->Add(hPtEtaPosvsNchEtaNeg);
   fOutputList->Add(hPhiEtaSPD);
   fOutputList->Add(hPhiEtaGapTPC);
+  fOutputList->Add(hPhiEtaPosHalfTPC);
+  fOutputList->Add(hPhiEtaNegHalfTPC);
   fOutputList->Add(hEtaGapSPD);
   fOutputList->Add(hVtxZvsTracklets);
   fOutputList->Add(hTrackletsvsV0MAmp14);
@@ -719,13 +733,15 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
     if (TMath::Abs(track->Eta()) > fEtaCut) {
       continue;
     }
-    if (fEtaMin <= track->Eta() && track->Eta() < 0.0) {
+    if (track->Eta() >= fEtaMin && track->Eta() < 0.0) {
       rec_nch_neg_eta++;
+      hPhiEtaNegHalfTPC->Fill(track->Phi(), track->Eta());
     }
     if (track->Eta() >= 0.0 && track->Eta() <= fEtaMax) {
       rec_nch_pos_eta++;
+      hPhiEtaPosHalfTPC->Fill(track->Phi(), track->Eta());
     }
-    if (fEtaGapTPCNchMin <= TMath::Abs(track->Eta()) &&
+    if (TMath::Abs(track->Eta()) >= fEtaGapTPCNchMin &&
         TMath::Abs(track->Eta()) <= fEtaGapTPCNchMax) {
       fTracksEtaGapTPC++;
       hPhiEtaGapTPC->Fill(track->Phi(), track->Eta());
@@ -752,7 +768,7 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
     }
     double pt = track->Pt();
     //! pT Spectra with NEGATIVE eta
-    if (fEtaMin <= track->Eta() && track->Eta() < 0.0) {
+    if (track->Eta() >= fEtaMin && track->Eta() < 0.0) {
       hPtEtaNegvsNchEtaPos->Fill(rec_nch_pos_eta, pt);
       pPtEtaNegvsNchEtaPos->Fill(rec_nch_pos_eta, pt);
     }
