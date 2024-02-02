@@ -8,6 +8,11 @@ AliJHFTagging *AddTaskJHFTagging(
     const char *taskname = "AliJHFTagging",
     const char *njetsMC = "Jets",
     const char *nrhoMC = "",
+    bool DoJetProb = false,
+    TString pathToResolFunc = "",
+    TString pathToResolFuncb = "",
+    TString pathToResolFuncc = "",
+    TString pathToResolFunclf = "",
     const char *suffix = "")
 {
 
@@ -34,6 +39,8 @@ AliJHFTagging *AddTaskJHFTagging(
     combinedName.Form("%s%s", name.Data(), suffix);
 
     AliJHFTagging *jetTask = new AliJHFTagging(combinedName);
+
+    jetTask->DoJetProbabilityAnalysis(DoJetProb);
 
     AliTrackContainer *trackCont = jetTask->AddTrackContainer(ntracks);
 
@@ -69,6 +76,29 @@ AliJHFTagging *AddTaskJHFTagging(
     //-------------------------------------------------------
     //  Configure analysis task
     //-------------------------------------------------------
+    if (DoJetProb && !pathToResolFunc.IsNull())
+    {
+        TFile *file = TFile::Open(pathToResolFunc.Data());
+        for (int i = 0; i < 7; i++)
+        {
+            jetTask->SetResFunction((TF1 *)file->Get(Form("QualityClass%i", i)), i);
+        }
+
+        if (isMC)
+        {
+            TFile *fileb = TFile::Open(pathToResolFuncb.Data());
+            TFile *filec = TFile::Open(pathToResolFuncc.Data());
+            TFile *filelf = TFile::Open(pathToResolFunclf.Data());
+
+            for (int i = 0; i < 7; i++)
+            {
+                jetTask->SetResFunctionb((TF1 *)fileb->Get(Form("QualityClass%i", i)), i);
+                jetTask->SetResFunctionc((TF1 *)filec->Get(Form("QualityClass%i", i)), i);
+                jetTask->SetResFunctionlf((TF1 *)filelf->Get(Form("QualityClass%i", i)), i);
+            }
+        }
+    }
+
     jetTask->SetIsPythia(isMC);
 
     //-------------------------------------------------------
