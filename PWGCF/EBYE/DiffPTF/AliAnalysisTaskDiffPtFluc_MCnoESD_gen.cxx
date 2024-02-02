@@ -185,7 +185,7 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_gen::UserExec(Option_t *)
   Float_t fNwNwColl=0.0;
   Float_t fNpart=0.0;
 
-  int fMCchoice=2;
+  //int fMCchoice=2;
     
   //For EPOS
     
