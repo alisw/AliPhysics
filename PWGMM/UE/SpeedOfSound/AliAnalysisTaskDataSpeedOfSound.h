@@ -43,8 +43,10 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void SetHMCut(double HMcut) { fHMCut = HMcut; }      // Set V0M max value
   void SetUseMC(bool mc = false) { fUseMC = mc; }      // use to analyse MC data
   void SetEtaCut(const double& etacut) { fEtaCut = etacut; }
-  void SetEtaMinCut(const double& etamin) { fEtaMin = etamin; }
-  void SetEtaMaxCut(const double& etamax) { fEtaMax = etamax; }
+  void SetEtaCutsHalfTPC(const double& etamin, const double& etamax) {
+    fEtaMin = etamin;
+    fEtaMax = etamax;
+  }
   void SetEtaGappT(const double& eta_spd, const double& eta_tpc) {
     fEtaGappT = eta_spd;
     fEtaGapTPCpT = eta_tpc;
@@ -119,15 +121,10 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2D* hPtEtaNegvsNchEtaPos;
   TH2D* hPtEtaPosvsNchEtaNeg;
   TH2F* hDCAxyData[1];
-  // TH2F* hZAvsNchHM;
-  // TH2F* hZCvsNchHM;
-  // TH2F* hZNvsNchHM;
-  // TH2F* hZNvsV0MAmpHM;
-  // TH2D* hPtvsZAHM;
-  // TH2D* hPtvsZCHM;
-  // TH2D* hPtvsZNHM;
   TH2F* hPhiEtaSPD;
   TH2F* hPhiEtaGapTPC;
+  TH2F* hPhiEtaPosHalfTPC;
+  TH2F* hPhiEtaNegHalfTPC;
   TH1F* hEtaGapSPD;
   TH2F* hVtxZvsTracklets;
   TH2F* hTrackletsvsV0MAmp14;
@@ -142,9 +139,6 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TProfile* pPtvsTracklets10;
   TProfile* pPtvsTrackletsEtaGap;
   TProfile* pPtvsTracksEtaGapTPC;
-  // TProfile* pPtvsZA;
-  // TProfile* pPtvsZC;
-  // TProfile* pPtvsZN;
 
   AliAnalysisTaskDataSpeedOfSound(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented
