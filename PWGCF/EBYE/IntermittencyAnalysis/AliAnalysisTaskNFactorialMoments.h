@@ -11,7 +11,7 @@
 #include "TNtuple.h"
 #include "TH3F.h"
 
-const Int_t mMBins = 40, mPtBins = 4, mDim = 2, mQs = 6;
+const Int_t mMBins = 40, mDim = 2, mQs = 6, mPtmax = 5;
 
 class TH1F;
 class TH1D;
@@ -78,7 +78,11 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
     this->mNBin2 = NB;
     this->Mmax = Mm;
   }
-  void SetPtArray(TArrayD f_ptArray) { this->ptarray = f_ptArray; }
+  void SetPtArray(TArrayD f_ptArray, Int_t nbins)
+  {
+    this->ptarray = f_ptArray;
+    this->mPtBins = nbins;
+  }
   void SetRejectElectrons(Bool_t fRejectElectron)
   {
     this->flagRejEls = fRejectElectron;
@@ -111,7 +115,7 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
                           float bSign);
   float SharedClusterFraction(TBits&, TBits&, TBits&, TBits&);
   void GetPtBin(Double_t);
-  void CalculateNFMs(TH2D* h1[mPtBins][mMBins], Bool_t mcGen);
+  void CalculateNFMs(TH2D* h1[mPtmax][mMBins], Bool_t mcGen);
   void DataPosting();
   void ResetHistograms();
 
@@ -133,21 +137,20 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   Bool_t flagShClPro;
   Int_t fBfield;
   Bool_t flag2TrackQA;
+  Int_t mPtBins;
 
   // Output lists
   TList* fHistList;
-  TList* fQAList;
-  TList* fQAList2;
-  TList* fNtupleList[mPtBins];
-  TList* fNtupleListGen[mPtBins];
+  TList* fNtupleList[mPtmax];
+  TList* fNtupleListGen[mPtmax];
 
   // Objects retrieved from the input handler
   AliPIDResponse* fPIDResponse;
   AliAODMCHeader* mcHeader;
 
   // Tuples for Output
-  TNtuple* fntpMBin[mPtBins][mMBins];    //! Tuples for output
-  TNtuple* fntpMBinGen[mPtBins][mMBins]; //! Tuples for output
+  TNtuple* fntpMBin[mPtmax][mMBins];    //! Tuples for output
+  TNtuple* fntpMBinGen[mPtmax][mMBins]; //! Tuples for output
 
   // Filter Bit
   Int_t filterBit;
@@ -170,8 +173,11 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   AliPIDCombined* fPIDCombined;
 
   // Histograms
-  TH2D* fHistbeforeHBT[mPtBins];
-  TH2D* fHistafterHBT[mPtBins];
+  TH2D* fdEtadPhiBef[mPtmax];
+  TH2D* fdEtadPhiAf[mPtmax];
+  TH2D* fdEtadPhiChSame[mPtmax][2][3];
+  TH2D* fdEtadPhiChDiff[mPtmax][2];
+  TH2D* fdEtadPhiPtOrd[mPtmax][4][3][2];
   TH1D* fHistdEta;
   TH1D* fHistdPhi;
   TH2D* fHistQAPID[13];
@@ -187,21 +193,21 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   TH2F* fHistDCAzpT;
   TH1F* fHistNShCls[2];
   TH2F* fHistNShClsFra[2];
-  TH2F* fHistNShClsFravspt[5];
+  TH2F* fHistNShClsFravspt[mPtmax + 1];
   TH2F* fHistNFoundClsFra[2];
   TH1F* fHistNFcls[2];
   // For Data and also for Generated MC (if flagMC = true)
-  TH1F* fPtBin[mPtBins];             //! Pt spectrum
-  TH1F* fEtaBin[mPtBins];            //! Eta spectrum
-  TH1F* fPhiBin[mPtBins];            //! Phi spectrum
-  TH1F* fMultBin[mPtBins];           //! Histogram to register event multiplicity
-  TH2D* fEtaPhiBin[mPtBins][mMBins]; //! Eta-Phi for 4 different bins  distribution
+  TH1F* fPtBin[mPtmax];             //! Pt spectrum
+  TH1F* fEtaBin[mPtmax];            //! Eta spectrum
+  TH1F* fPhiBin[mPtmax];            //! Phi spectrum
+  TH1F* fMultBin[mPtmax];           //! Histogram to register event multiplicity
+  TH2D* fEtaPhiBin[mPtmax][mMBins]; //! Eta-Phi for 4 different bins  distribution
 
-  TH1F* fPtBinGen[mPtBins];             //! Pt spectrum
-  TH1F* fEtaBinGen[mPtBins];            //! Eta spectrum
-  TH1F* fPhiBinGen[mPtBins];            //! Phi spectrum
-  TH1F* fMultBinGen[mPtBins];           //! Histogram to register event multiplicity
-  TH2D* fEtaPhiBinGen[mPtBins][mMBins]; //! Eta-Phi for 4 different bins  distribution
+  TH1F* fPtBinGen[mPtmax];             //! Pt spectrum
+  TH1F* fEtaBinGen[mPtmax];            //! Eta spectrum
+  TH1F* fPhiBinGen[mPtmax];            //! Phi spectrum
+  TH1F* fMultBinGen[mPtmax];           //! Histogram to register event multiplicity
+  TH2D* fEtaPhiBinGen[mPtmax][mMBins]; //! Eta-Phi for 4 different bins  distribution
 
   // QA hists
   TH1F* fHistQAVx;     //!
