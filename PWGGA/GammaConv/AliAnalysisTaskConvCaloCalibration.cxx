@@ -1274,54 +1274,56 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
 
     if (!clus) continue;
     Bool_t IsClusSelected = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,fWeightJetJetMC,i);
-    if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedBeforeTrackMatch()){
-      // get track matching histos for eta and phi for every SM
-      AliCaloTrackMatcher* trackMatcher = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloTrackMatcherInstance();
-      if(!trackMatcher) AliFatal("AliAnalysisTaskConvCaloCalibration::ProcessClusters()  Track matcher instance could not be retrieved...\n");
-      // loop over all tracks
-      for (Int_t itr=0;itr<fInputEvent->GetNumberOfTracks();itr++){
-        AliVTrack *inTrack = 0x0;
-        if(esdev){
-          inTrack = esdev->GetTrack(itr);
-          if(!inTrack) continue;
-          AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(inTrack);
-          // if(!isEMCalOnly){ //match only primaries for hybrid reconstruction schemes
-          //    if(!EsdTrackCuts->AcceptTrack(esdt)) continue;
-          // }
-          const AliExternalTrackParam *in = esdt->GetInnerParam();
-          if (!in){AliDebug(2, "Could not get InnerParam of Track, continue");continue;}
-        } else if(aodev) {
-          inTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(itr));
-          if(!inTrack) continue;
-          AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(inTrack);
-          // if(!isEMCalOnly){ //match only primaries for hybrid reconstruction schemes
-          if(!aodt->IsHybridGlobalConstrainedGlobal()) continue;
-          if(TMath::Abs(aodt->Eta())>0.8) continue;
-          if(aodt->Pt()<0.15) continue;
-          // }
-          if(trackMatcher->GetRunningMode()==7){
-            // if you considered negative ID hybrid tracks, one needs to make sure
-            // that one only asks fCaloTrackMatcher->GetTrackClusterMatchingResidual()
-            // for hybrid tracks as well. Otherwise you will find multiple matches
-            // since this loop contains dublicates when not requiring Is
+    if(fDoMesonQA > 0){
+      if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedBeforeTrackMatch()){
+        // get track matching histos for eta and phi for every SM
+        AliCaloTrackMatcher* trackMatcher = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetCaloTrackMatcherInstance();
+        if(!trackMatcher) AliFatal("AliAnalysisTaskConvCaloCalibration::ProcessClusters()  Track matcher instance could not be retrieved...\n");
+        // loop over all tracks
+        for (Int_t itr=0;itr<fInputEvent->GetNumberOfTracks();itr++){
+          AliVTrack *inTrack = 0x0;
+          if(esdev){
+            inTrack = esdev->GetTrack(itr);
+            if(!inTrack) continue;
+            AliESDtrack *esdt = dynamic_cast<AliESDtrack*>(inTrack);
+            // if(!isEMCalOnly){ //match only primaries for hybrid reconstruction schemes
+            //    if(!EsdTrackCuts->AcceptTrack(esdt)) continue;
+            // }
+            const AliExternalTrackParam *in = esdt->GetInnerParam();
+            if (!in){AliDebug(2, "Could not get InnerParam of Track, continue");continue;}
+          } else if(aodev) {
+            inTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(itr));
+            if(!inTrack) continue;
+            AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(inTrack);
+            // if(!isEMCalOnly){ //match only primaries for hybrid reconstruction schemes
             if(!aodt->IsHybridGlobalConstrainedGlobal()) continue;
             if(TMath::Abs(aodt->Eta())>0.8) continue;
             if(aodt->Pt()<0.15) continue;
-          }
-        } // end condition AOD/ESD
+            // }
+            if(trackMatcher->GetRunningMode()==7){
+              // if you considered negative ID hybrid tracks, one needs to make sure
+              // that one only asks fCaloTrackMatcher->GetTrackClusterMatchingResidual()
+              // for hybrid tracks as well. Otherwise you will find multiple matches
+              // since this loop contains dublicates when not requiring Is
+              if(!aodt->IsHybridGlobalConstrainedGlobal()) continue;
+              if(TMath::Abs(aodt->Eta())>0.8) continue;
+              if(aodt->Pt()<0.15) continue;
+            }
+          } // end condition AOD/ESD
 
-        Float_t dEta, dPhi;
-        if(!trackMatcher->GetTrackClusterMatchingResidual(inTrack->GetID(),clus->GetID(),dEta,dPhi)){
-          continue;
-        }
-        if(!fGeomEMCAL)fGeomEMCAL = AliEMCALGeometry::GetInstance();
-        Int_t SupMod = fGeomEMCAL->GetSuperModuleNumber(clus->GetCellAbsId(0));
-        if(fDoMesonQA > 0){
-          fHistoClusTrackdEtaSM[fiCut][SupMod]->Fill(dEta, fWeightJetJetMC);
-          fHistoClusTrackdPhiSM[fiCut][SupMod]->Fill(dPhi, fWeightJetJetMC);
-          if(inTrack->Pt()>5){
-            fHistoClusHighPtTrackdEtaSM[fiCut][SupMod]->Fill(dEta, fWeightJetJetMC);
-            fHistoClusHighPtTrackdPhiSM[fiCut][SupMod]->Fill(dPhi, fWeightJetJetMC);
+          Float_t dEta, dPhi;
+          if(!trackMatcher->GetTrackClusterMatchingResidual(inTrack->GetID(),clus->GetID(),dEta,dPhi)){
+            continue;
+          }
+          if(!fGeomEMCAL)fGeomEMCAL = AliEMCALGeometry::GetInstance();
+          Int_t SupMod = fGeomEMCAL->GetSuperModuleNumber(clus->GetCellAbsId(0));
+          if(fDoMesonQA > 0){
+            fHistoClusTrackdEtaSM[fiCut][SupMod]->Fill(dEta, fWeightJetJetMC);
+            fHistoClusTrackdPhiSM[fiCut][SupMod]->Fill(dPhi, fWeightJetJetMC);
+            if(inTrack->Pt()>5){
+              fHistoClusHighPtTrackdEtaSM[fiCut][SupMod]->Fill(dEta, fWeightJetJetMC);
+              fHistoClusHighPtTrackdPhiSM[fiCut][SupMod]->Fill(dPhi, fWeightJetJetMC);
+            }
           }
         }
       } // end loop over tracks
