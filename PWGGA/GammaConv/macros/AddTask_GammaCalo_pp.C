@@ -2368,7 +2368,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411790108fe302v0000","0s631031000000d0"); // INT7 time -20+30
     cuts.AddCutCalo("00010113","41179010afe302v0000","0s631031000000d0"); // INT7 time -12.5+13
   } else if (trainConfig == 1918){  // pp 13 TeV variations: exotics
-    cuts.AddCutCalo("00010113","411790109f0302v0000","0s631031000000d0"); // INT7 no exotics cout
+    cuts.AddCutCalo("00010113","411790109f0302v0000","0s631031000000d0"); // INT7 no exotics cut
     cuts.AddCutCalo("00010113","411790109fb302v0000","0s631031000000d0"); // INT7 F+ < 0.95
   } else if (trainConfig == 1919){  // pp 13 TeV variations: min energy
     cuts.AddCutCalo("00010113","411790109fe202v0000","0s631031000000d0"); // INT7 energy 0.6 GeV
@@ -2407,6 +2407,10 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411790109fe302v0b00","0s631031000000d0"); // INT7 with conversion rejection, min angle 0.02
     cuts.AddCutCalo("00010113","411790109fe302v0c00","0s631031000000d0"); // INT7 with conversion rejection, min angle 0.05
     cuts.AddCutCalo("00010113","411790109fe302v0d00","0s631031000000d0"); // INT7 with conversion rejection, min angle 0.1
+  } else if (trainConfig == 1928){  // pp 13 TeV variations: 
+    cuts.AddCutCalo("00010113","411791109fe302v0000","0s631031000000d0"); // INT7 NL 11
+    cuts.AddCutCalo("00010113","411791109fe3n2v0000","0s631031000000d0"); // INT7 NL 11, NCell efficiency
+    cuts.AddCutCalo("00010113","411791109fe322v0000","0s631031000000d0"); // INT7 NL 11, NCell cut
 
 
   //-----------  EG2 std cut

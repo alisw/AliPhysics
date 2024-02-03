@@ -2818,6 +2818,12 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411797509f032000000","0r63103100000010"); // EG1, with NCell >= 2 cut
 
 
+  } else if (trainConfig == 2185){ // old way of doing the NonLin
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791109f030000000","0r63103100000010"); // INT7, no NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791109f03h000000","0r63103100000010"); // INT7, only 1 cell clusters
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791109f032000000","0r63103100000010"); // INT7, with NCell >= 2 cut
+
+
   } else if (trainConfig == 2190){ // low Bfield
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799609fe32220000","0r63103100000010"); // INT7, no FT
   } else if (trainConfig == 2191){ // low Bfield
