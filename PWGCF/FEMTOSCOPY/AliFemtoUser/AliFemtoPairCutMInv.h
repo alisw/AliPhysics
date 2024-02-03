@@ -12,9 +12,9 @@
 #ifndef ALIFEMTOPAIRCUTMINV_H
 #define ALIFEMTOPAIRCUTMINV_H
 
-#include "AliFemtoPairCut.h"
+#include "AliFemtoPairCutRadialDistance.h"
 
-class AliFemtoPairCutMInv : public AliFemtoPairCut{
+class AliFemtoPairCutMInv : public AliFemtoPairCutRadialDistance{
 public:
   AliFemtoPairCutMInv();
   AliFemtoPairCutMInv(double m1, double m2, double minvmin, double minvmax);
@@ -25,7 +25,7 @@ public:
   virtual bool Pass(const AliFemtoPair* pair);
   virtual AliFemtoString Report();
   virtual TList *ListSettings();
-  AliFemtoPairCut* Clone() const;
+  AliFemtoPairCutMInv* Clone() const;
 
  protected:
   Double_t fNPairsFailed;
@@ -40,7 +40,7 @@ public:
 #endif
 };
 
-inline AliFemtoPairCut* AliFemtoPairCutMInv::Clone() const
+inline AliFemtoPairCutMInv* AliFemtoPairCutMInv::Clone() const
   { AliFemtoPairCutMInv* c = new AliFemtoPairCutMInv(*this); return c;}
 
 #endif
