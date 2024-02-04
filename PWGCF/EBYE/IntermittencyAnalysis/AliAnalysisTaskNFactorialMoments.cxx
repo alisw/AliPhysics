@@ -228,7 +228,7 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
       }
     }
   }
-  // QA Histograms for deta-dphi and PID
+  // QA Histograms for detadphi and PID
   fHistdEta = new TH1D("dEta", "dEta;#Delta#eta;Counts", 100, -1.75, 1.75);
   fHistdPhi = new TH1D("dphi", "dPhi;#Delta#phi;Counts", 100, -TMath::Pi(), TMath::Pi());
   fHistList->Add(fHistdEta);
