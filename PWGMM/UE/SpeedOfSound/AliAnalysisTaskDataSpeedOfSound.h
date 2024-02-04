@@ -37,6 +37,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void GetSPDMultiplicity();
   void MultiplicityDistributions();
   void GetCalibratedV0Amplitude();
+  void VertexPosition();
   void GetZDCCentrality();
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
@@ -65,6 +66,12 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
     fIsSystematics = issystematics;
     fSystematic = systematic;
   }
+  void SetSystematicsVtxZ(bool varyZpos = false, const float& minz = -5.0,
+                          const float& maxz = 5.0) {
+    fVaryVtxZPos = varyZpos;
+    fMinVtxZPos = minz;
+    fMaxVtxZPos = maxz;
+  }
   void ChangeCut(AliESDtrackCuts* fCuts);
 
  protected:
@@ -75,6 +82,9 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   AliMCEvent* fMC;
   bool fUseMC;
   bool fIsSystematics;
+  bool fVaryVtxZPos;
+  float fMinVtxZPos;
+  float fMaxVtxZPos;
   int fSystematic;
   UInt_t fTrigger;
   AliAnalysisFilter* fTrackFilter;
@@ -106,18 +116,20 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   float fdcaxy;
   float fdcaz;
   AliMultSelection* fMultSelection;
-  TH2F* hNchvsV0M;
+  TH1F* hNch;
   TH2F* hNchvsV0MAmp;
   TH2F* hV0MvsV0MAmp;
   TProfile* pV0MAmpChannel;
   TH1F* hV0MAmplitude;
-  TH1F* hV0Mmult;
+  TH1F* hV0Percentile;
+  TH2D* hPtvsNch;
   TProfile* pPtvsNch;
   TProfile* pPtEtaNegvsNchEtaPos;
   TProfile* pPtEtaPosvsNchEtaNeg;
   TProfile* pPtvsV0MAmp;
   TH2D* hPtvsV0MAmp;
-  TH2D* hNchEtaPosvsNchEtaNeg;
+  TH1F* hNchEtaPos;
+  TH1F* hNchEtaNeg;
   TH2D* hPtEtaNegvsNchEtaPos;
   TH2D* hPtEtaPosvsNchEtaNeg;
   TH2F* hDCAxyData[1];
@@ -125,10 +137,10 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2F* hPhiEtaGapTPC;
   TH2F* hPhiEtaPosHalfTPC;
   TH2F* hPhiEtaNegHalfTPC;
-  TH1F* hEtaGapSPD;
-  TH2F* hVtxZvsTracklets;
-  TH2F* hTrackletsvsV0MAmp14;
-  TH2F* hTrackletsvsV0MAmp10;
+  TH2F* hPhiEtaGapSPD;
+  TH1F* hBestVtxZ;
+  TH1F* hTracklets14;
+  TH1F* hTracklets10;
   TH1F* hTrackletsEtaGap;
   TH1F* hTracksEtaGapTPC;
   TH2D* hPtvsTracklets14;

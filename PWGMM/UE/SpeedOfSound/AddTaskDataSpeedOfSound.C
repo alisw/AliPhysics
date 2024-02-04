@@ -32,7 +32,8 @@ AliAnalysisTaskDataSpeedOfSound* AddTaskDataSpeedOfSound(
   taskKno->SetEtaCutsHalfTPC(-0.8, 0.8);
   taskKno->SetEtaGappT(0.4, 0.3);
   taskKno->SetEtaGapNch(0.7, 1.4, 0.5, 0.8);
-  taskKno->SetTrigger(AliVEvent::kCentral);
+  taskKno->SetTrigger(AliVEvent::kINT7);
+  taskKno->SetSystematicsVtxZ(true, -2.5, 2.5);
   taskKno->SetSystematics(false, 0);
   mgr->AddTask(taskKno);
 
