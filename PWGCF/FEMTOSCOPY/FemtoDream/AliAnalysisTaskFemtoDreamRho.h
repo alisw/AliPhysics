@@ -28,7 +28,7 @@ class AliAnalysisTaskFemtoDreamRho : public AliAnalysisTaskSE
 {
 public:
   AliAnalysisTaskFemtoDreamRho();
-  AliAnalysisTaskFemtoDreamRho(const char *name, bool isMC, bool doMcTruth, bool doAncestors, bool doCleaning);
+  AliAnalysisTaskFemtoDreamRho(const char *name, bool isMC, bool doMcTruth, bool doAncestors, bool doCleaning, bool doProjections);
   virtual ~AliAnalysisTaskFemtoDreamRho();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
@@ -41,6 +41,14 @@ public:
   void SetNegPionCuts(AliFemtoDreamTrackCuts *trkCuts)
   {
     fNegPionCuts = trkCuts;
+  }
+  void SetPosPionMinvCuts(AliFemtoDreamTrackCuts *trkCuts)
+  {
+    fPosPionMinvCuts = trkCuts;
+  }
+  void SetNegPionMinvCuts(AliFemtoDreamTrackCuts *trkCuts)
+  {
+    fNegPionMinvCuts = trkCuts;
   }
   void SetProtonCuts(AliFemtoDreamTrackCuts *trkCuts)
   {
@@ -68,6 +76,7 @@ public:
   void SetDoMcTruth(bool doMcTruth) { fDoMcTruth = doMcTruth; };
   void SetDoCleaning(bool doCleaning) { fDoCleaning = doCleaning; };
   void SetDoAncestors(bool doAncestors) { fDoAncestors = doAncestors; };
+  void SetDoProjections(bool doProjector) { fDoProjections = doProjector; };
 
   // std::map<TString, std::pair<TH1F *, TH2F *>> CreateResonanceHistograms(const std::vector<TString> &resonanceList);
 
@@ -93,20 +102,23 @@ private:
   bool fIsMC;                                                                       //
   bool fDoMcTruth;                                                                  //
   bool fDoAncestors;                                                                //
+  bool fDoProjections;                                                              //
   const std::vector<std::string> types{"noPions", "noPrimaries", "noRho", "isRho"}; //!
   std::map<std::string, TH2F *> histogramMap_pTvsmT;                                //!
 
-  TList *fOutput;                         //!
-  UInt_t fTrigger;                        //
-  bool fDoCleaning;                       //
-  AliFemtoDreamEvent *fEvent;             //!
-  AliFemtoDreamTrack *fTrack;             //!
-  AliFemtoDreamv0 *fRhoParticle;          //!
-  AliFemtoDreamEventCuts *fEventCuts;     //
-  AliFemtoDreamTrackCuts *fPosPionCuts;   //
-  AliFemtoDreamTrackCuts *fNegPionCuts;   //
-  AliFemtoDreamTrackCuts *fPosProtonCuts; //
-  AliFemtoDreamTrackCuts *fNegProtonCuts; //
+  TList *fOutput;                           //!
+  UInt_t fTrigger;                          //
+  bool fDoCleaning;                         //
+  AliFemtoDreamEvent *fEvent;               //!
+  AliFemtoDreamTrack *fTrack;               //!
+  AliFemtoDreamv0 *fRhoParticle;            //!
+  AliFemtoDreamEventCuts *fEventCuts;       //
+  AliFemtoDreamTrackCuts *fPosPionCuts;     //
+  AliFemtoDreamTrackCuts *fNegPionCuts;     //
+  AliFemtoDreamTrackCuts *fPosPionMinvCuts; //
+  AliFemtoDreamTrackCuts *fNegPionMinvCuts; //
+  AliFemtoDreamTrackCuts *fPosProtonCuts;   //
+  AliFemtoDreamTrackCuts *fNegProtonCuts;   //
   // AliFemtoDreamTrackCuts *fRhoParticleMCTrueCuts; //
 
   AliFemtoDreamv0Cuts *fRhoCuts; //
@@ -164,7 +176,7 @@ private:
   // std::map<TString, std::pair<TH1F *, TH2F *>>
   //     fResonanceHistograms; //! Map to hold histograms for each resonance
 
-  ClassDef(AliAnalysisTaskFemtoDreamRho, 5) // Update class number
+  ClassDef(AliAnalysisTaskFemtoDreamRho, 6) // Update class number
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_AliAnalysisTaskFemtoDreamRho_H_ */

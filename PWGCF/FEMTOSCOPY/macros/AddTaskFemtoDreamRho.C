@@ -9,6 +9,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
                                         bool rejectKaon = false,
                                         bool doSpherSelect = false,
                                         bool doClosePairRejection = false,
+                                        bool doProjections = false,
                                         const char *cutVariation = "0")
 {
 
@@ -162,6 +163,58 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
     TrackNegPionCuts->SetFillQALater(false); // Be careful about this flag! When the MinimalBooking is set
   }
 
+  // Only used if the doProjection flag is set
+  AliFemtoDreamTrackCuts *TrackPosPionMinvCuts =
+      AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, true, true);
+  TrackPosPionMinvCuts->SetCutCharge(1);
+  // MC Template treatment
+  if (!MCtemplatefit)
+  {
+    TrackPosPionMinvCuts->SetFilterBit(96); // Filterbit 5+6
+    TrackPosPionMinvCuts->SetDCAVtxZ(0.3);
+    TrackPosPionMinvCuts->SetDCAVtxXY(0.3);
+  }
+  else
+  {
+    TrackPosPionMinvCuts->SetFilterBit(128); // Filterbit 7 //Else the DCA is to tight
+    TrackPosPionMinvCuts->SetDCAVtxZ(3.0);
+    TrackPosPionMinvCuts->SetDCAVtxXY(3.0);
+  }
+  if (isMC && MCtemplatefit)
+  {
+    // TrackPosPionCuts->SetPlotContrib(true);
+    TrackPosPionMinvCuts->CheckParticleMothers(true);
+    TrackPosPionMinvCuts->SetPlotDCADist(true);
+    // TrackPosPionCuts->SetOriginMultiplicityHists(true);
+    TrackPosPionMinvCuts->SetFillQALater(false); // Be careful about this flag! When the MinimalBooking is set
+  }
+
+  AliFemtoDreamTrackCuts *TrackNegPionMinvCuts =
+      AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, true, true);
+  TrackNegPionMinvCuts->SetCutCharge(-1);
+  // MC Template treatment
+  if (!MCtemplatefit)
+  {
+    TrackNegPionMinvCuts->SetFilterBit(96); // Filterbit 5+6
+    TrackNegPionMinvCuts->SetDCAVtxZ(0.3);
+    TrackNegPionMinvCuts->SetDCAVtxXY(0.3);
+  }
+  else
+  {
+    TrackNegPionMinvCuts->SetFilterBit(128); // Filterbit 7 //Else the DCA is to tight
+    TrackNegPionMinvCuts->SetDCAVtxZ(3.0);
+    TrackNegPionMinvCuts->SetDCAVtxXY(3.0);
+  }
+  // MC Template treatment
+  if (isMC && MCtemplatefit)
+  {
+    // TrackNegPionCuts->SetPlotContrib(true);
+    TrackNegPionMinvCuts->CheckParticleMothers(true);
+    TrackNegPionMinvCuts->SetPlotDCADist(true);
+    // TrackNegPionCuts->SetOriginMultiplicityHists(true);
+    TrackNegPionMinvCuts->SetFillQALater(false); // Be careful about this flag! When the MinimalBooking is set
+  }
+
   if (suffix != "0")
   {
     TrackPosPionCuts->SetMinimalBooking(false);
@@ -215,7 +268,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
 
   // now we create the task
   AliAnalysisTaskFemtoDreamRho *task =
-      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doMcTruth, doCleaning, doAncestors);
+      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doMcTruth, doCleaning, doAncestors, doProjections);
   // THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
   // kINT7 == Minimum bias
   // kHighMultV0 high multiplicity triggered by the V0 detector
@@ -261,6 +314,11 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   PDGParticles.push_back(113);  // 2 //rho
   PDGParticles.push_back(2212); // 3 //proton+
   PDGParticles.push_back(2212); // 4 //proton-
+  if (doProjections)
+  {
+    PDGParticles.push_back(211); // 5 //pion+
+    PDGParticles.push_back(211); // 6 //pion-
+  }
   // if (doMCtrueRho)
   //{
   //   PDGParticles.push_back(113); // 5 //rhoMCTrue
@@ -336,6 +394,22 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   //
   // Ap                                             ApAp15
 
+  // Here with the DoProjection
+  //           pi+       pi-       rho       p       Ap       pi+Minv           pi-Minv
+  //  pi+      pi+pi+1   pi+pi-2   pi+rho3   pi+p4   pi+Ap5   pi+pi+Minv6       pi+pi-Minv7
+  //
+  //  pi-                pi-pi-8   pi-rho9   pi-p10  pi-Ap11  pi-pi+Minv12      pi-pi-Minv13
+  //
+  //  rho                          rhorho14  rhop15  rhoAp16  rhopi+Minv17      rhopi-Minv18
+  //
+  //  p                                      pp19    pAp20    ppi+Minv21        ppi-Minv22
+  //
+  //  Ap                                             ApAp23   Appi+Minv24       Appi-Minv25
+  //
+  //  pi+Minv                                                 pi+Minvpi+Minv26  pi+Minvpi-Minv27
+  //
+  //  pi-Minv                                                                   pi-Minvpi-Minv28
+
   // The same way the values for binning, minimum and maximum k* range have to be set!
   //  Number of bins
   std::vector<int> NBins;
@@ -352,9 +426,9 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   //  pairQA.push_back(11);
 
   bool doMCtrueRho = false;
-  float numberOfPart = (doMCtrueRho) ? 6. : 5.;
+  float numberOfPart = (doProjections) ? 7. : 5.;
 
-  for (int i = 0; i < (5 * (5 + 1) / 2); i++) // change from 5 to 6 is fIsMCTrue is set
+  for (int i = 0; i < (numberOfPart * (numberOfPart + 1) / 2); i++) // change from 5 to 6 is fIsMCTrue is set
   {
     std::cout << "check int i: " << i << std::endl;
     NBins.push_back(750);
@@ -378,6 +452,45 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   pairQA[12] = 11; /// p-  rho     //pp
   pairQA[13] = 11; /// p-  p       //pAp
   pairQA[14] = 11; /// p-  p-      //ApAp
+
+  if (doProjections)
+  {
+    // override each entry
+    pairQA[0] = 11; /// pi+ pi+     //pi+pi+
+    pairQA[1] = 11; /// pi+ pi-     //pi+pi-
+    pairQA[2] = 12; /// pi- pi-     //pi+rho //this needs the CPR check how the framwork handels these cases
+    pairQA[3] = 11; /// rho pi+     //pi+p
+    pairQA[4] = 11; /// rho pi-     //pi+Ap
+    pairQA[5] = 11; /// rho rho     //pi+pi+Minv
+    pairQA[6] = 11; /// p   pi+     //pi+pi-Minv
+
+    pairQA[7] = 11;  /// rho rho     //pi-pi-
+    pairQA[8] = 12;  /// p   pi+     //pi-rho
+    pairQA[9] = 11;  /// p   pi-     //pi-p
+    pairQA[10] = 11; /// p   rho     //pi-Ap
+    pairQA[11] = 11; /// p-  pi-     //pi-pi+Minv
+    pairQA[12] = 11; /// p-  rho     //pi-pi-Minv
+
+    pairQA[13] = 22; /// p   p       //rhorho
+    pairQA[14] = 21; /// p-  pi+     //rhop  //May not need CPR
+    pairQA[15] = 21; /// p-  pi-     //rhoAp
+    pairQA[16] = 21; /// p-  rho     //rhopi+Minv
+    pairQA[17] = 21; /// p-  p       //rhopi-Minv
+
+    pairQA[18] = 11; /// p-  rho     //pp
+    pairQA[19] = 11; /// p-  p       //pAp
+    pairQA[20] = 11; /// p-  rho     //ppi+Minv
+    pairQA[21] = 11; /// p-  p       //ppi-Minv
+
+    pairQA[22] = 11; /// p-  p-      //ApAp
+    pairQA[23] = 11; /// p-  rho     //Appi+Minv
+    pairQA[24] = 11; /// p-  p       //Appi-Minv
+
+    pairQA[25] = 11; /// p-  rho     //pi+Minvpi+Minv
+    pairQA[26] = 11; /// p-  p       //pi+Minvpi-Minv
+
+    pairQA[27] = 11; /// p-  p       //pi-Minvpi-Minv
+  }
 
   // for (int i = 0; i < (numberOfPart * (numberOfPart + 1) / 2); i++) // change from 5 to 6 is fIsMCTrue is set
   //{
@@ -422,6 +535,23 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   closeRejection.push_back(false); // pp
   closeRejection.push_back(false); // pAp
   closeRejection.push_back(false); // ApAp
+
+  if (doProjections)
+  {
+    closeRejection.push_back(false); // pi+ pi+
+    closeRejection.push_back(false); // pi+ pi-
+    closeRejection.push_back(false); // pi+rho
+    closeRejection.push_back(false); // pi+p
+    closeRejection.push_back(false); // pi+Ap
+    closeRejection.push_back(false); // pi-pi-
+    closeRejection.push_back(false); // pi-rho
+    closeRejection.push_back(false); // pi-p
+    closeRejection.push_back(false); // pi-Ap
+    closeRejection.push_back(false); // rhorho
+    closeRejection.push_back(false); // rhop
+    closeRejection.push_back(false); // rhoAp
+    closeRejection.push_back(false); // pp
+  }
 
   // for (int i = 0; i < (numberOfPart * (numberOfPart + 1) / 2); i++) // change from 5 to 6 is fIsMCTrue is set
   //{
@@ -517,13 +647,17 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   task->SetProtonCuts(TrackPosProtonCuts);
   task->SetAntiProtonCuts(TrackNegProtonCuts);
   task->SetRhoCuts(TrackCutsRho);
-
   // if (TrackCutsRhoMCTrue)
   // {
   //   task->SetRhoMCTrueCuts(TrackCutsRhoMCTrue);
   //  }
   task->SetPosPionCuts(TrackPosPionCuts);
   task->SetNegPionCuts(TrackNegPionCuts);
+  if (doProjections)
+  {
+    task->SetPosPionMinvCuts(TrackPosPionMinvCuts);
+    task->SetNegPionMinvCuts(TrackNegPionMinvCuts);
+  }
   task->SetCollectionConfig(config);
   task->SetDoCleaning(doCleaning);
   task->SetIsMC(isMC);

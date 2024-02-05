@@ -23,6 +23,7 @@ ClassImp(AliAnalysisTaskFemtoDreamRho)
       fDoMcTruth(false),
       fDoCleaning(false),
       fDoAncestors(false),
+      fDoProjections(false),
       fOutput(nullptr),
       fEvent(nullptr),
       fTrack(nullptr),
@@ -30,6 +31,8 @@ ClassImp(AliAnalysisTaskFemtoDreamRho)
       fEventCuts(nullptr),
       fPosPionCuts(nullptr),
       fNegPionCuts(nullptr),
+      fPosPionMinvCuts(nullptr),
+      fNegPionMinvCuts(nullptr),
       fRhoCuts(nullptr),
       fPosProtonCuts(nullptr),
       fNegProtonCuts(nullptr),
@@ -77,13 +80,14 @@ ClassImp(AliAnalysisTaskFemtoDreamRho)
 }
 
 AliAnalysisTaskFemtoDreamRho::AliAnalysisTaskFemtoDreamRho(const char *name,
-                                                           bool isMC, bool doMcTruth, bool doCleaning, bool doAncestors)
+                                                           bool isMC, bool doMcTruth, bool doCleaning, bool doAncestors, bool doProjector)
     : AliAnalysisTaskSE(name),
       fTrigger(AliVEvent::kINT7),
       fIsMC(isMC),
       fDoMcTruth(doMcTruth),
       fDoCleaning(doCleaning),
       fDoAncestors(doAncestors),
+      fDoProjections(doProjector),
       fOutput(nullptr),
       fEvent(nullptr),
       fTrack(nullptr),
@@ -91,6 +95,8 @@ AliAnalysisTaskFemtoDreamRho::AliAnalysisTaskFemtoDreamRho(const char *name,
       fEventCuts(nullptr),
       fPosPionCuts(nullptr),
       fNegPionCuts(nullptr),
+      fPosPionMinvCuts(nullptr),
+      fNegPionMinvCuts(nullptr),
       fRhoCuts(nullptr),
       fPosProtonCuts(nullptr),
       fNegProtonCuts(nullptr),
@@ -221,6 +227,35 @@ void AliAnalysisTaskFemtoDreamRho::UserCreateOutputObjects()
   {
     fNegPionCuts->SetMCName("MCNegPion");
     fOutput->Add(fNegPionCuts->GetMCQAHists());
+  }
+
+  if (fDoProjections)
+  {
+    if (!fPosPionMinvCuts)
+    {
+      AliFatal("Track Cuts for positive pion Minv not set!");
+    }
+    fPosPionMinvCuts->Init();
+    fPosPionMinvCuts->SetName("PosPionMinv");
+    fOutput->Add(fPosPionMinvCuts->GetQAHists());
+    if (fPosPionMinvCuts->GetIsMonteCarlo())
+    {
+      fPosPionMinvCuts->SetMCName("MCPosPionMinv");
+      fOutput->Add(fPosPionMinvCuts->GetMCQAHists());
+    }
+
+    if (!fNegPionMinvCuts)
+    {
+      AliFatal("Track Cuts for negative pion Minv not set!");
+    }
+    fNegPionMinvCuts->Init();
+    fNegPionMinvCuts->SetName("NegPionMinv");
+    fOutput->Add(fNegPionMinvCuts->GetQAHists());
+    if (fNegPionMinvCuts->GetIsMonteCarlo())
+    {
+      fNegPionMinvCuts->SetMCName("MCNegPionMinv");
+      fOutput->Add(fNegPionMinvCuts->GetMCQAHists());
+    }
   }
 
   if (!fRhoCuts)
@@ -540,6 +575,12 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
   static std::vector<int> Ancestor_Combinations; // Same or different Ancestor
   Ancestor_Combinations.clear();
 
+  // for providing the data input of the projection method
+  static std::vector<AliFemtoDreamBasePart> Particles_Minv; // pi+ candidates in Minv selection window of M(pipi)
+  Particles_Minv.clear();
+  static std::vector<AliFemtoDreamBasePart> AntiParticles_Minv; // pi- candidates in Minv selection window of M(pipi)
+  AntiParticles_Minv.clear();
+
   static float massChargedPion =
       TDatabasePDG::Instance()->GetParticle(fPosPionCuts->GetPDGCode())->Mass(); // as usual to minimize uncert.
   fRhoParticle->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
@@ -626,9 +667,14 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
           FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateUncommonFullInvM);
         }
       }
-      if (fRhoCuts->isSelected(fRhoParticle))
-      { // Check for proper Rho candidates, just Minv cut and kaon reject.
+      if (fRhoCuts->isSelected(fRhoParticle)) // Check for proper Rho candidates, just Minv cut and kaon reject.
+      {
         V0Particles.push_back(*fRhoParticle);
+        if (fDoProjections)
+        {
+          Particles_Minv.push_back(posPion);
+          AntiParticles_Minv.push_back(negPion);
+        }
         if (fIsMC)
         { // store the combinations for the MC matching
           // also store kinematic distributions needed later
@@ -1038,6 +1084,11 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
     fPairCleaner->StoreParticle(V0Particles);
     fPairCleaner->StoreParticle(Protons);
     fPairCleaner->StoreParticle(AntiProtons);
+  }
+  if (fDoProjections)
+  {
+    fPairCleaner->StoreParticle(Particles_Minv);
+    fPairCleaner->StoreParticle(AntiParticles_Minv);
   }
 
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
