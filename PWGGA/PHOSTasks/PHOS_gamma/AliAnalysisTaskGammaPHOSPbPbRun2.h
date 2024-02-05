@@ -84,11 +84,6 @@ private:
   THashList * fOutputContainer5;    //final histogram container
   THashList * fOutputContainer6;    //final histogram container
 				    //
-  std::vector<std::pair<TString, TString>> fPidCuts; // names and titles for pid cuts
-  std::vector<Double_t> fCenBinEdges;
-  Int_t fNCenBins;
-  Double_t fTOF; //time of flight
-
   TList * fPHOSEvents[1][10][11] ; // Containers for events with PHOS photons
   TClonesArray * fPHOSEvent ;      // PHOS photons in current event
   AliPIDResponse *     fPIDResponse;    // Pid response
@@ -168,7 +163,22 @@ private:
   AliFlowEvent     * fFlowEvent ; //!
 
   TClonesArray *       fMCArray;  // MC array
+  Bool_t fIsMC; //MC flag
 
+  std::vector<std::pair<TString, TString>> fPidCuts; // names and titles for pid cuts
+  std::vector<Double_t> fCenBinEdges;
+
+  Double_t fTOF; //time of flight
+  Int_t fNCenBins;
+
+  TString              fCurrFileName;      // current file path name
+  Bool_t               fCheckMCCrossSection; // retrieve from the pyxsec.root file only if requested
+
+  Bool_t Notify();
+
+  TH1F *               fh1Xsec ;          //! Xsec pythia
+  TH1F *               fh1Trials ;        //! trials pythia
+  Float_t              fAvgTrials;         // avg trials
 					
   Int_t GetPrimaryLabel(AliVCluster *clu);
   Int_t GetPrimaryLabelAtVertex(AliVCluster *clu);
@@ -180,18 +190,10 @@ private:
 
   void ProcessMC();
 
-  Bool_t fIsMC; //MC flag
   Double_t getR(AliAODMCParticle *particle);
   Int_t Pdg2Index(Int_t pdg);
 
-  Bool_t Notify();
 
-  TH1F *               fh1Xsec ;          //! Xsec pythia
-  TH1F *               fh1Trials ;        //! trials pythia
-  Float_t              fAvgTrials;         // avg trials
-
-  TString              fCurrFileName;      // current file path name
-  Bool_t               fCheckMCCrossSection; // retrieve from the pyxsec.root file only if requested
   
   ClassDef(AliAnalysisTaskGammaPHOSPbPbRun2, 3); // PHOS analysis task
 };

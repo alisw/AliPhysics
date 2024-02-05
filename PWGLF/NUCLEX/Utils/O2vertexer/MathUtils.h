@@ -15,6 +15,8 @@
 #ifndef ALICEO2_COMMON_MATH_UTILS_
 #define ALICEO2_COMMON_MATH_UTILS_
 
+#include <stdint.h>
+
 #include <array>
 #include <cmath>
 

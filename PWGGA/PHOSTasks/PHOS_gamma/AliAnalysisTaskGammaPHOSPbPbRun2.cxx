@@ -610,8 +610,8 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
   TVector3 vertex(fVtx5);
   
   Int_t multClust = event->GetNumberOfCaloClusters();
-  Int_t fInPHOS=0,inMod1=0, inMod2=0, inMod3=0 ;
-  Double_t avrgEm1=0,avrgEm2=0,avrgEm3=0; //average cluster energy
+  Int_t fInPHOS=0;  //inMod1=0, inMod2=0, inMod3=0 ;
+  // Double_t avrgEm1=0,avrgEm2=0,avrgEm3=0; //average cluster energy
 
   AliAODCaloCells * cells = event->GetPHOSCells() ;
   FillHistogram("hCenTrack",fCentrality,event->GetNumberOfTracks()) ;
@@ -2255,9 +2255,9 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::AddPhiTitleHistograms()
     Double_t xPt[151] ;
     for(Int_t i=0; i <= 150; i++) 
        xPt[i]=0.1*i;
-    Int_t nPhi=10 ;
-    Double_t xPhi[11] ;
-    for(Int_t i=0;i<=10;i++)xPhi[i]=i*0.1*TMath::TwoPi()/fHarmonics ;
+     const Int_t nPhi=10 ;
+     Double_t xPhi[nPhi] ;
+     for(Int_t i=0; i <= nPhi; i++) xPhi[i] = i * 0.1*TMath::TwoPi()/fHarmonics ;
       
      for(Int_t iRP=0; iRP<3; iRP++){
        if(iRP==0)
@@ -2382,7 +2382,7 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::TestMatchingTrackPID(AliAODCaloCluster *c
       passed_cuts.emplace_back("Both2core");
     }
 
-    Double_t pBayesMatched[AliPID::kSPECIESC];
+   // Double_t pBayesMatched[AliPID::kSPECIESC];
 
     AliPIDCombined *pidcomb=new AliPIDCombined();
 
