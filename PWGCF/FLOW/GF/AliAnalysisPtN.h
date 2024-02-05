@@ -92,7 +92,62 @@ class AliAnalysisPtN : public AliAnalysisTaskSE
         TProfile*               TestPt3Ctr;
         TProfile*               TestNchCtr;
         TProfile*               TestNchSelectedCtr;
+
+        TProfile*               TestPtCtr_0;
+        TProfile*               TestPtCtr_1;
+        TProfile*               TestPtCtr_2;
+        TProfile*               TestPtCtr_3;
+        TProfile*               TestPtCtr_4;
+        TProfile*               TestPtCtr_5;
+        TProfile*               TestPtCtr_6;
+        TProfile*               TestPtCtr_7;
+        TProfile*               TestPtCtr_8;
+        TProfile*               TestPtCtr_9;
+
+        TProfile*               TestPt2Ctr_0;
+        TProfile*               TestPt2Ctr_1;
+        TProfile*               TestPt2Ctr_2;
+        TProfile*               TestPt2Ctr_3;
+        TProfile*               TestPt2Ctr_4;
+        TProfile*               TestPt2Ctr_5;
+        TProfile*               TestPt2Ctr_6;
+        TProfile*               TestPt2Ctr_7;
+        TProfile*               TestPt2Ctr_8;
+        TProfile*               TestPt2Ctr_9;
+
+        TProfile*               TestPt3Ctr_0;
+        TProfile*               TestPt3Ctr_1;
+        TProfile*               TestPt3Ctr_2;
+        TProfile*               TestPt3Ctr_3;
+        TProfile*               TestPt3Ctr_4;
+        TProfile*               TestPt3Ctr_5;
+        TProfile*               TestPt3Ctr_6;
+        TProfile*               TestPt3Ctr_7;
+        TProfile*               TestPt3Ctr_8;
+        TProfile*               TestPt3Ctr_9;
         
+        TProfile*               TestNchCtr_0;
+        TProfile*               TestNchCtr_1;
+        TProfile*               TestNchCtr_2;
+        TProfile*               TestNchCtr_3;
+        TProfile*               TestNchCtr_4;
+        TProfile*               TestNchCtr_5;
+        TProfile*               TestNchCtr_6;
+        TProfile*               TestNchCtr_7;
+        TProfile*               TestNchCtr_8;
+        TProfile*               TestNchCtr_9;
+
+        TProfile*               TestNchSelectedCtr_0;
+        TProfile*               TestNchSelectedCtr_1;
+        TProfile*               TestNchSelectedCtr_2;
+        TProfile*               TestNchSelectedCtr_3;
+        TProfile*               TestNchSelectedCtr_4;
+        TProfile*               TestNchSelectedCtr_5;
+        TProfile*               TestNchSelectedCtr_6;
+        TProfile*               TestNchSelectedCtr_7;
+        TProfile*               TestNchSelectedCtr_8;
+        TProfile*               TestNchSelectedCtr_9;
+
         AliMultSelection*       multSelection;  //centrality class
 
         AliEventCuts	  fEventCuts;					// Event cuts
