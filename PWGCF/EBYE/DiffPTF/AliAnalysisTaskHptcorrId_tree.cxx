@@ -111,6 +111,30 @@ AliAnalysisTaskHptcorrId_tree::AliAnalysisTaskHptcorrId_tree():
   fQ3_K(0),
   fQ4_K(0),
   fNch_K(0),
+  fP1_prot(0),
+  fP2_prot(0),
+  fP3_prot(0),
+  fP4_prot(0),
+  fP1_pi(0),
+  fP2_pi(0),
+  fP3_pi(0),
+  fP4_pi(0),
+  fP1_K(0),
+  fP2_K(0),
+  fP3_K(0),
+  fP4_K(0),
+  fW1_prot(0),
+  fW2_prot(0),
+  fW3_prot(0),
+  fW4_prot(0),
+  fW1_pi(0),
+  fW2_pi(0),
+  fW3_pi(0),
+  fW4_pi(0),
+  fW1_K(0),
+  fW2_K(0),
+  fW3_K(0),
+  fW4_K(0),
   fPtMax(0),
   fPtMin(0),
   fListTRKCorr(0), 
@@ -177,6 +201,30 @@ AliAnalysisTaskHptcorrId_tree::AliAnalysisTaskHptcorrId_tree(const char *name):
   fQ3_K(0),
   fQ4_K(0),
   fNch_K(0),
+  fP1_prot(0),
+  fP2_prot(0),
+  fP3_prot(0),
+  fP4_prot(0),
+  fP1_pi(0),
+  fP2_pi(0),
+  fP3_pi(0),
+  fP4_pi(0),
+  fP1_K(0),
+  fP2_K(0),
+  fP3_K(0),
+  fP4_K(0),
+  fW1_prot(0),
+  fW2_prot(0),
+  fW3_prot(0),
+  fW4_prot(0),
+  fW1_pi(0),
+  fW2_pi(0),
+  fW3_pi(0),
+  fW4_pi(0),
+  fW1_K(0),
+  fW2_K(0),
+  fW3_K(0),
+  fW4_K(0),
   fPtMax(0),
   fPtMin(0),
   fListTRKCorr(0), 
@@ -265,6 +313,7 @@ void AliAnalysisTaskHptcorrId_tree::UserCreateOutputObjects()  {
     //TTree object to store variables
     fTreeEvent = new TTree(fTreeName,"Event Tree");
     fTreeEvent->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
+    //reconstructed
     fTreeEvent->Branch("fNch_prot", &fNch_prot, "fNch_prot/F");
     fTreeEvent->Branch("fQ1_prot", &fQ1_prot, "fQ1_prot/F");
     fTreeEvent->Branch("fQ2_prot", &fQ2_prot, "fQ2_prot/F");
@@ -280,6 +329,32 @@ void AliAnalysisTaskHptcorrId_tree::UserCreateOutputObjects()  {
     fTreeEvent->Branch("fQ2_K", &fQ2_K, "fQ2_K/F");
     fTreeEvent->Branch("fQ3_K", &fQ3_K, "fQ3_K/F");
     fTreeEvent->Branch("fQ4_K", &fQ4_K, "fQ4_K/F");
+
+    //corrected
+    fTreeEvent->Branch("fP1_prot", &fP1_prot, "fP1_prot/F");
+    fTreeEvent->Branch("fP2_prot", &fP2_prot, "fP2_prot/F");
+    fTreeEvent->Branch("fP3_prot", &fP3_prot, "fP3_prot/F");
+    fTreeEvent->Branch("fP4_prot", &fP4_prot, "fP4_prot/F");
+    fTreeEvent->Branch("fP1_pi", &fP1_pi, "fP1_pi/F");
+    fTreeEvent->Branch("fP2_pi", &fP2_pi, "fP2_pi/F");
+    fTreeEvent->Branch("fP3_pi", &fP3_pi, "fP3_pi/F");
+    fTreeEvent->Branch("fP4_pi", &fP4_pi, "fP4_pi/F");
+    fTreeEvent->Branch("fP1_K", &fP1_K, "fP1_K/F");
+    fTreeEvent->Branch("fP2_K", &fP2_K, "fP2_K/F");
+    fTreeEvent->Branch("fP3_K", &fP3_K, "fP3_K/F");
+    fTreeEvent->Branch("fP4_K", &fP4_K, "fP4_K/F");
+    fTreeEvent->Branch("fW1_prot", &fW1_prot, "fW1_prot/F");
+    fTreeEvent->Branch("fW2_prot", &fW2_prot, "fW2_prot/F");
+    fTreeEvent->Branch("fW3_prot", &fW3_prot, "fW3_prot/F");
+    fTreeEvent->Branch("fW4_prot", &fW4_prot, "fW4_prot/F");
+    fTreeEvent->Branch("fW1_pi", &fW1_pi, "fW1_pi/F");
+    fTreeEvent->Branch("fW2_pi", &fW2_pi, "fW2_pi/F");
+    fTreeEvent->Branch("fW3_pi", &fW3_pi, "fW3_pi/F");
+    fTreeEvent->Branch("fW4_pi", &fW4_pi, "fW4_pi/F");
+    fTreeEvent->Branch("fW1_K", &fW1_K, "fW1_K/F");
+    fTreeEvent->Branch("fW2_K", &fW2_K, "fW2_K/F");
+    fTreeEvent->Branch("fW3_K", &fW3_K, "fW3_K/F");
+    fTreeEvent->Branch("fW4_K", &fW4_K, "fW4_K/F");
     
     
     PostData(1, fOutputList);
@@ -319,12 +394,24 @@ void AliAnalysisTaskHptcorrId_tree::UserExec(Option_t *)  {
     //"fTreeEvent" Tree Variable
     fTreeVariableCentrality = lV0M;
 
+    //Reconstructed
     Float_t Q1[3]={0.0,0.0,0.0};
     Float_t Q2[3]={0.0,0.0,0.0};
     Float_t Q3[3]={0.0,0.0,0.0};
     Float_t Q4[3]={0.0,0.0,0.0};
     Float_t Nch[3]={0.0,0.0,0.0};
 
+    //Corrected
+    //+++++++++ numerator +++++++++++++++++
+    Float_t P1[3]={0.0,0.0,0.0};
+    Float_t P2[3]={0.0,0.0,0.0};
+    Float_t P3[3]={0.0,0.0,0.0};
+    Float_t P4[3]={0.0,0.0,0.0};
+    //+++++++++ denominator +++++++++++++++++
+    Float_t W1[3]={0.0,0.0,0.0};
+    Float_t W2[3]={0.0,0.0,0.0};
+    Float_t W3[3]={0.0,0.0,0.0};
+    Float_t W4[3]={0.0,0.0,0.0};
     
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     
@@ -396,6 +483,7 @@ void AliAnalysisTaskHptcorrId_tree::UserExec(Option_t *)  {
 	if (TMath::Abs(trkEta) > fEtaMax) continue;
 	if (trkPt < 0.2) continue;
 	if (trkPt > 3.0) continue;
+	if(TMath::Abs(trkCharge)!=1)continue;
 
 	//PID selection
 	Bool_t IsKaon = KaonSelector(track, fPIDnSigmaKaonCut);
@@ -418,27 +506,78 @@ void AliAnalysisTaskHptcorrId_tree::UserExec(Option_t *)  {
 
 	if (IsProton && trkPt > fPtMin && trkPt < fPtMax)
 	  {
-	    Q1[0]=Q1[0]+TMath::Power(trkPt, 1.0);
-	    Q2[0]=Q2[0]+TMath::Power(trkPt, 2.0);
-	    Q3[0]=Q3[0]+TMath::Power(trkPt, 3.0);
-	    Q4[0]=Q4[0]+TMath::Power(trkPt, 4.0);
-	    Nch[0]=Nch[0]+1;
+	    if (fEffProtonPlus[centrality_bin])
+	      {
+		ptBinNo = fEffProtonPlus[centrality_bin]->FindBin(trkPt);
+		BinCont = fEffProtonPlus[centrality_bin]->GetBinContent(ptBinNo);
+		if(BinCont!=0) EffWgt = 1.0/BinCont;
+		
+		Q1[0]=Q1[0]+TMath::Power(trkPt, 1.0);
+		Q2[0]=Q2[0]+TMath::Power(trkPt, 2.0);
+		Q3[0]=Q3[0]+TMath::Power(trkPt, 3.0);
+		Q4[0]=Q4[0]+TMath::Power(trkPt, 4.0);
+		Nch[0]=Nch[0]+1;
+
+		P1[0]=P1[0]+TMath::Power(trkPt*EffWgt, 1.0);
+		P2[0]=P2[0]+TMath::Power(trkPt*EffWgt, 2.0);
+		P3[0]=P3[0]+TMath::Power(trkPt*EffWgt, 3.0);
+		P4[0]=P4[0]+TMath::Power(trkPt*EffWgt, 4.0);
+
+		W1[0]=W1[0]+TMath::Power(EffWgt, 1.0);
+		W2[0]=W2[0]+TMath::Power(EffWgt, 2.0);
+		W3[0]=W3[0]+TMath::Power(EffWgt, 3.0);
+		W4[0]=W4[0]+TMath::Power(EffWgt, 4.0);
+	      }
 	  }
 	if (IsPion && trkPt > 0.2 && trkPt < 3.0)
 	  {
-	    Q1[1]=Q1[1]+TMath::Power(trkPt, 1.0);
-	    Q2[1]=Q2[1]+TMath::Power(trkPt, 2.0);
-	    Q3[1]=Q3[1]+TMath::Power(trkPt, 3.0);
-	    Q4[1]=Q4[1]+TMath::Power(trkPt, 4.0);
-	    Nch[1]=Nch[1]+1;
+	    if (fEffPionPlus[centrality_bin])
+	      {
+		ptBinNo = fEffPionPlus[centrality_bin]->FindBin(trkPt);
+		BinCont = fEffPionPlus[centrality_bin]->GetBinContent(ptBinNo);
+		if(BinCont!=0) EffWgt = 1.0/BinCont;
+		
+		Q1[1]=Q1[1]+TMath::Power(trkPt, 1.0);
+		Q2[1]=Q2[1]+TMath::Power(trkPt, 2.0);
+		Q3[1]=Q3[1]+TMath::Power(trkPt, 3.0);
+		Q4[1]=Q4[1]+TMath::Power(trkPt, 4.0);
+		Nch[1]=Nch[1]+1;
+
+		P1[1]=P1[1]+TMath::Power(trkPt*EffWgt, 1.0);
+		P2[1]=P2[1]+TMath::Power(trkPt*EffWgt, 2.0);
+		P3[1]=P3[1]+TMath::Power(trkPt*EffWgt, 3.0);
+		P4[1]=P4[1]+TMath::Power(trkPt*EffWgt, 4.0);
+
+		W1[1]=W1[1]+TMath::Power(EffWgt, 1.0);
+		W2[1]=W2[1]+TMath::Power(EffWgt, 2.0);
+		W3[1]=W3[1]+TMath::Power(EffWgt, 3.0);
+		W4[1]=W4[1]+TMath::Power(EffWgt, 4.0);
+	      }
 	  }
 	if (IsKaon && trkPt > 0.2 && trkPt < 3.0)
 	  {
-	    Q1[2]=Q1[2]+TMath::Power(trkPt, 1.0);
-	    Q2[2]=Q2[2]+TMath::Power(trkPt, 2.0);
-	    Q3[2]=Q3[2]+TMath::Power(trkPt, 3.0);
-	    Q4[2]=Q4[2]+TMath::Power(trkPt, 4.0);
-	    Nch[2]=Nch[2]+1;
+	    if (fEffKaonPlus[centrality_bin])
+	      {
+		ptBinNo = fEffKaonPlus[centrality_bin]->FindBin(trkPt);
+		BinCont = fEffKaonPlus[centrality_bin]->GetBinContent(ptBinNo);
+		if(BinCont!=0) EffWgt = 1.0/BinCont; 
+		    
+		Q1[2]=Q1[2]+TMath::Power(trkPt, 1.0);
+		Q2[2]=Q2[2]+TMath::Power(trkPt, 2.0);
+		Q3[2]=Q3[2]+TMath::Power(trkPt, 3.0);
+		Q4[2]=Q4[2]+TMath::Power(trkPt, 4.0);
+		Nch[2]=Nch[2]+1;
+
+		P1[2]=P1[2]+TMath::Power(trkPt*EffWgt, 1.0);
+		P2[2]=P2[2]+TMath::Power(trkPt*EffWgt, 2.0);
+		P3[2]=P3[2]+TMath::Power(trkPt*EffWgt, 3.0);
+		P4[2]=P4[2]+TMath::Power(trkPt*EffWgt, 4.0);
+
+		W1[2]=W1[2]+TMath::Power(EffWgt, 1.0);
+		W2[2]=W2[2]+TMath::Power(EffWgt, 2.0);
+		W3[2]=W3[2]+TMath::Power(EffWgt, 3.0);
+		W4[2]=W4[2]+TMath::Power(EffWgt, 4.0);
+	      }
 	  }
       }      
     //end reconstructed track loop
@@ -458,6 +597,33 @@ void AliAnalysisTaskHptcorrId_tree::UserExec(Option_t *)  {
     fQ2_K=Q2[2];
     fQ3_K=Q3[2];
     fQ4_K=Q4[2];
+
+    fP1_prot=P1[0];
+    fP2_prot=P2[0];
+    fP3_prot=P3[0];
+    fP4_prot=P4[0];
+    fP1_pi=P1[1];
+    fP2_pi=P2[1];
+    fP3_pi=P3[1];
+    fP4_pi=P4[1];
+    fP1_K=P1[2];
+    fP2_K=P2[2];
+    fP3_K=P3[2];
+    fP4_K=P4[2];
+
+    fW1_prot=W1[0];
+    fW2_prot=W2[0];
+    fW3_prot=W3[0];
+    fW4_prot=W4[0];
+    fW1_pi=W1[1];
+    fW2_pi=W2[1];
+    fW3_pi=W3[1];
+    fW4_pi=W4[1];
+    fW1_K=W1[2];
+    fW2_K=W2[2];
+    fW3_K=W3[2];
+    fW4_K=W4[2];
+    
     
     fTreeEvent->Fill();
 

@@ -79,6 +79,7 @@ set(SRCS
     AliAnalysisTaskBFR2.cxx
     AliAnalysisTaskBFR2sphero.cxx
     AliAnalysisTaskR2P2spheroDiffpT.cxx
+    AliAnalysisTaskR2P2wSphero.cxx
     AliAnalysisTaskSpherodistR2P2.cxx
     AliAnalysisTaskSEpPbCorrelationsYS.cxx
     AliAnalysisTaskSEpPbCorrelationsMCYS.cxx

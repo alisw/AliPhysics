@@ -46,21 +46,8 @@ using std::endl;
 
 ClassImp(AliAnalysisTaskDiffPtFluc_MCnoESD_correction)
 
-AliAnalysisTaskDiffPtFluc_MCnoESD_correction::AliAnalysisTaskDiffPtFluc_MCnoESD_correction(): AliAnalysisTaskSE(), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fvertex(0), Profile_mean_term1(0),Profile_var_term1(0),Profile_var_term2(0),Profile_skewness_term1(0),Profile_skewness_term2(0),Profile_skewness_term3(0),Profile_kurtosis_term1(0),Profile_kurtosis_term2(0),Profile_kurtosis_term3(0),Profile_kurtosis_term4(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0),fMCchoice(0),fMeanPt_less0(0),fMeanPt_greaterEtaMin(0),fNpart_1(0),fNpart_2(0)
+AliAnalysisTaskDiffPtFluc_MCnoESD_correction::AliAnalysisTaskDiffPtFluc_MCnoESD_correction(): AliAnalysisTaskSE(), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fvertex(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0),fMCchoice(0),fMeanPt_less0(0),fMeanPt_greaterEtaMin(0),fMeanPt_less0_uncorrected(0),fMeanPt_greaterEtaMin_uncorrected(0),fNpart_1(0),fNpart_2(0)
 {
-  for(int i=0;i<2;i++)
-    {
-      fQ1_gen[i]=-999;
-      fQ2_gen[i]=-999;
-      fQ3_gen[i]=-999;
-      fQ4_gen[i]=-999;
-      fNch_gen[i]=-999;
-      fQ1_rec[i]=-999;
-      fQ2_rec[i]=-999;
-      fQ3_rec[i]=-999;
-      fQ4_rec[i]=-999;
-      fNch_rec[i]=-999;
-    }
   for(int i=0; i<14; i++)
     {
       fPt_factor[i] = 0;
@@ -70,21 +57,8 @@ AliAnalysisTaskDiffPtFluc_MCnoESD_correction::AliAnalysisTaskDiffPtFluc_MCnoESD_
     }
 }
 
-AliAnalysisTaskDiffPtFluc_MCnoESD_correction::AliAnalysisTaskDiffPtFluc_MCnoESD_correction(const char *name): AliAnalysisTaskSE(name), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fvertex(0),Profile_mean_term1(0),Profile_var_term1(0),Profile_var_term2(0),Profile_skewness_term1(0),Profile_skewness_term2(0),Profile_skewness_term3(0),Profile_kurtosis_term1(0),Profile_kurtosis_term2(0),Profile_kurtosis_term3(0),Profile_kurtosis_term4(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0),fMCchoice(0),fMeanPt_less0(0),fMeanPt_greaterEtaMin(0),fNpart_1(0),fNpart_2(0)
+AliAnalysisTaskDiffPtFluc_MCnoESD_correction::AliAnalysisTaskDiffPtFluc_MCnoESD_correction(const char *name): AliAnalysisTaskSE(name), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fvertex(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0),fMCchoice(0),fMeanPt_less0(0),fMeanPt_greaterEtaMin(0),fMeanPt_less0_uncorrected(0),fMeanPt_greaterEtaMin_uncorrected(0),fNpart_1(0),fNpart_2(0)
 {
-  for(int i=0;i<2;i++)
-    {
-      fQ1_gen[i]=-999;
-      fQ2_gen[i]=-999;
-      fQ3_gen[i]=-999;
-      fQ4_gen[i]=-999;
-      fNch_gen[i]=-999;
-      fQ1_rec[i]=-999;
-      fQ2_rec[i]=-999;
-      fQ3_rec[i]=-999;
-      fQ4_rec[i]=-999;
-      fNch_rec[i]=-999;
-    }
   for(int i=0; i<14; i++)
     {
       fPt_factor[i] = 0;
@@ -126,6 +100,8 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_correction::UserCreateOutputObjects()
   fTreeEvent->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
   fTreeEvent->Branch("fMeanPt_less0",&fMeanPt_less0,"fMeanPt_less0/F");
   fTreeEvent->Branch("fMeanPt_greaterEtaMin",&fMeanPt_greaterEtaMin,"fMeanPt_greaterEtaMin/F");
+  fTreeEvent->Branch("fMeanPt_less0_uncorrected",&fMeanPt_less0_uncorrected,"fMeanPt_less0_uncorrected/F");
+  fTreeEvent->Branch("fMeanPt_greaterEtaMin_uncorrected",&fMeanPt_greaterEtaMin_uncorrected,"fMeanPt_greaterEtaMin_uncorrected/F");
   fTreeEvent->Branch("fPt_factor",&fPt_factor,"fPt_factor[14]/F");
   fTreeEvent->Branch("fPt_factor_pion",&fPt_factor_pion,"fPt_factor_pion[14]/F");
   fTreeEvent->Branch("fPt_factor_kaon",&fPt_factor_kaon,"fPt_factor_kaon[14]/F");
@@ -157,7 +133,7 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_correction::UserExec(Option_t *)
 
 
 
-  cout<<"************************************* Event *************************************************"<<endl;
+  //cout<<"************************************* Event *************************************************"<<endl;
   // Main loop                                                                                                                              
   // Called for each event                                                                                                                  
   AliESDEvent *lESDevent = 0x0;
@@ -221,7 +197,7 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_correction::UserExec(Option_t *)
     
   if(fMCchoice==1)
     {
-      cout<<"#### MC is EPOS !! #####"<<endl;
+      //cout<<"#### MC is EPOS !! #####"<<endl;
       
       lHepMCHeader = (AliGenHepMCEventHeader*)genHeader;
       fNHardScatters = lHepMCHeader->Ncoll_hard(); // Number of hard scatterings
@@ -249,7 +225,7 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_correction::UserExec(Option_t *)
   //For HIJING
   if(fMCchoice==2)
     {
-      cout<<"#### MC is HIJING !! #####"<<endl;
+      //cout<<"#### MC is HIJING !! #####"<<endl;
       
       lHIJINGHeader = (AliGenHijingEventHeader*) genHeader;
       fNHardScatters = lHIJINGHeader->HardScatters();
@@ -285,19 +261,16 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_correction::UserExec(Option_t *)
   float trkPt=0.0;
   float_t trkEta=0.0;
   Int_t trkPdgcode=0;
-  float Q1[2]={0.0,0.0};
-  float Q2[2]={0.0,0.0};
-  float Q3[2]={0.0,0.0};
-  float Q4[2]={0.0,0.0};
-  float Nch[2]={0.0,0.0};
-  float Nch_eta0pt5=0.0;
 
   TH1D *fPt_profile = new TH1D("fPt_profile","fPt_profile", 14, 0.2, 3.0);
   Double_t pT_sum_etaLess0 = 0.0;
   Double_t N_sum_etaLess0 = 0.0;
-  //Double_t N_sum_etaLess0_2 = 0.0;
+  Double_t pT_sum_etaLess0_2 = 0.0;
+  Double_t N_sum_etaLess0_2 = 0.0;
   Double_t pT_sum_etaGreaterEtamin = 0.0;
   Double_t N_sum_etaGreaterEtamin = 0.0;
+  Double_t pT_sum_etaGreaterEtamin_2 = 0.0;
+  Double_t N_sum_etaGreaterEtamin_2 = 0.0;
 
 
   TH1D *fPt_profile_pion = new TH1D("fPt_profile_pion","fPt_profile_pion", 14, 0.2, 3.0);
@@ -334,22 +307,31 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_correction::UserExec(Option_t *)
       trkEta=trackMCgen->Eta();
       trkPdgcode=trackMCgen->PdgCode();
 
-      if(TMath::Abs(trkEta)>0.8)continue;
-      if(TMath::Abs(trkCharge)!=1)continue;
+      if(TMath::Abs(trkEta)>0.8) continue;
+      if(TMath::Abs(trkCharge)!=1) continue;
+      if(trkPt<0.2) continue;
+      if(trkPt>3.0) continue;
+
+      hist2D_pt_gen_centrality->Fill(trkPt,fCentImpBin);
 
       x=ran.Uniform(0,1);
       eff=fEff->Eval(trkPt);
       //cout<<x<<"\t"<<eff<<endl;
       if(x<(eff))
 	{
+	  hist2D_pt_rec_centrality->Fill(trkPt,fCentImpBin);
+	  
 	  if(TMath::Abs(trkCharge) > 0)
 	    {
 	      if(trkEta < 0.0)
 		{
 		  fPt_profile->Fill(trkPt,1.0/eff);
-		  pT_sum_etaLess0 += trkPt/eff;
 		  N_sum_etaLess0 += 1.0/eff;
-		  //N_sum_etaLess0_2 += 1.0/eff;
+		  pT_sum_etaLess0 += trkPt/eff;
+
+		  N_sum_etaLess0_2 += 1.0;
+		  pT_sum_etaLess0_2 += trkPt;
+		  
 		  //cout<<"corrected no. of particles: "<<N_sum_etaLess0_2<<endl;
 		  
 		  if(TMath::Abs(trkPdgcode)==211) //pion
@@ -374,6 +356,8 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_correction::UserExec(Option_t *)
 		{
 		  pT_sum_etaGreaterEtamin += trkPt/eff;
 		  N_sum_etaGreaterEtamin += 1.0/eff;
+		  pT_sum_etaGreaterEtamin_2 += trkPt;
+		  N_sum_etaGreaterEtamin_2 += 1.0;
 		}
 	    }
 	}
@@ -402,20 +386,24 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_correction::UserExec(Option_t *)
   //Tree variables
       
   fTreeVariableCentrality=fCentImpBin;
-      
+  hist_centrality_beforecut->Fill(fCentImpBin);
      
       
-  if (N_sum_etaGreaterEtamin>0 && N_sum_etaLess0>0 && N_sumPion_etaLess0>0 && N_sumKaon_etaLess0>0 && N_sumProton_etaLess0>0)
+  if (N_sum_etaLess0_2>0 && N_sum_etaGreaterEtamin_2>0 && N_sum_etaGreaterEtamin>0 && N_sum_etaLess0>0 && N_sumPion_etaLess0>0 && N_sumKaon_etaLess0>0 && N_sumProton_etaLess0>0)
     {
-      fMeanPt_less0=pT_sum_etaLess0/N_sum_etaLess0;  //!corrected for efficiency
+      fMeanPt_less0=pT_sum_etaLess0/N_sum_etaLess0;  //! corrected for efficiency
       fMeanPt_greaterEtaMin=pT_sum_etaGreaterEtamin/N_sum_etaGreaterEtamin; //! corrected for efficiency
+
+      fMeanPt_less0_uncorrected=pT_sum_etaLess0_2/N_sum_etaLess0_2;  //! uncorrected for efficiency
+      fMeanPt_greaterEtaMin_uncorrected=pT_sum_etaGreaterEtamin_2/N_sum_etaGreaterEtamin_2; //! uncorrected for efficiency
+      
       for(int i=0; i<14; i++)
 	{
-	  fPt_factor[i]=fPt_profile->GetBinContent(i+1)/N_sum_etaLess0; //! corrected for efficiency
+	  fPt_factor[i]=fPt_profile->GetBinContent(i+1)/N_sum_etaLess0;
 
-	  fPt_factor_pion[i]=fPt_profile_pion->GetBinContent(i+1)/N_sumPion_etaLess0; //! corrected for efficiency
-	  fPt_factor_kaon[i]=fPt_profile_kaon->GetBinContent(i+1)/N_sumKaon_etaLess0; //! corrected for efficiency
-	  fPt_factor_proton[i]=fPt_profile_proton->GetBinContent(i+1)/N_sumProton_etaLess0; //! corrected for efficiency
+	  fPt_factor_pion[i]=fPt_profile_pion->GetBinContent(i+1)/N_sumPion_etaLess0;
+	  fPt_factor_kaon[i]=fPt_profile_kaon->GetBinContent(i+1)/N_sumKaon_etaLess0;
+	  fPt_factor_proton[i]=fPt_profile_proton->GetBinContent(i+1)/N_sumProton_etaLess0;
 	}
       // cout<<"Meanpt for eta < 0: "<<fMeanPt_less0<<endl;
       // cout<<"Meanpt for eta > 0.4: "<<fMeanPt_greaterEtaMin<<endl;
@@ -428,7 +416,6 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_correction::UserExec(Option_t *)
   fPt_profile_proton->Delete();
   fEff->Delete();
   
-  fTreeEvent->Fill();
   PostData(1,fTreeEvent);
       
 
