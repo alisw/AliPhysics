@@ -40,6 +40,7 @@ ClassImp(AliAnalysisTaskSEXic0SL);
 #include "AliPPVsMultUtils.h"
 #include "AliRDHFCutsXictoeleXifromAODtracks.h" //For fEvtCuts
 #include "AliVEvent.h"
+#include "AliVertexingHFUtils.h"
 #include "AliVVertex.h"
 #include "THistManager.h" //For fHisto
 
@@ -295,7 +296,8 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 	if (fMultSel)
 	{
 		fEvtMult   = fMultSel->GetMultiplicityPercentile(IsPA?"V0A":"V0M");
-		fEvtNSPDtl = fMultSel->GetEstimator("SPDTracklets")->GetValue(); //Jul 14, 2023
+		fEvtNSPDtl = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange((AliAODEvent*)fEvt, -1., 1.); //Feb 2, 2024
+		//fEvtNSPDtl = fMultSel->GetEstimator("SPDTracklets")->GetValue(); //Jul 14, 2023
 	}
 	else AliFatal("ERROR: MultSelection"); //Return 3
 	fHisto->FillTH1("EvtCut", "Mult", 1); //@
