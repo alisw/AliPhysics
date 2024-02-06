@@ -6169,7 +6169,7 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
         // Xic0 cuts
         fabs(fVar_Xic0[23])<0.8 && // rapidity of Xic0 or Omegac0
 //        fVar_Xic0[44]==1. && // unlike-sign selection
-        fVar_Xic0[33]>-0.5 && fVar_Xic0[33]<0.5 && // DecayLxy_Xic0
+        fVar_Xic0[33]>-1.5 && fVar_Xic0[33]<1.5 && // DecayLxy_Xic0
         fVar_Xic0[34]<10. && fVar_Xic0[34]>0. && // chi2geo_Xic0
         fVar_Xic0[37]<0.5 && fVar_Xic0[37]>0. && // DCA_Xic0Dau_KF
         fVar_Xic0[40]<10. && fVar_Xic0[40]>0. && // chi2topo_Xic0ToPV
@@ -6196,7 +6196,7 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
         // Xi daughter cuts
         fVar_Xic0[7]<10. && fVar_Xic0[7]>0. && // chi2geo_Lam
         fVar_Xic0[8]>3. && // ldl_Lam
-        fVar_Xic0[9]>0.2 && // chi2topo_LamToPV
+//        fVar_Xic0[9]>0.2 && // chi2topo_LamToPV
         fVar_Xic0[13]>0. && // DecayLxy_Lam
         fVar_Xic0[15]<0.1 && fVar_Xic0[15]>0. && // PA_LamToXi
         fVar_Xic0[16]<0.2 && fVar_Xic0[16]>0. && // PA_LamToPV
