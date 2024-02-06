@@ -32,10 +32,10 @@ using namespace std;
 
 ClassImp(AliAnalysisTaskNFactorialMoments)
   AliAnalysisTaskNFactorialMoments::AliAnalysisTaskNFactorialMoments()
-  : AliAnalysisTaskSE(), fAOD(0), fMCEvent(0), fHistList(0), fQAList(0), fQAList2(0), fEventCuts(0), fPIDResponse(0), fPIDCombined(0), mcHeader{ nullptr }, fNtupleList{ nullptr }, fNtupleListGen{ nullptr }, fHistQAEta{ nullptr }, fHistQAPhi{ nullptr }, fHistQAVx(0), fHistdEta{ nullptr }, fHistdPhi{ nullptr }, fHistQAVy(0), counter(0), fHistQAVz(0), fPtBin{ nullptr }, fEtaBin{ nullptr }, fPhiBin{ nullptr }, fMultBin{ nullptr }, fPtBinGen{ nullptr }, fEtaBinGen{ nullptr }, fPhiBinGen{ nullptr }, fMultBinGen{ nullptr }, fHistbeforeHBT{ nullptr }, fHistafterHBT{ nullptr }, fHistQAPID{ nullptr }, fHistPDG{ nullptr }, fHistDCAxy{ nullptr }, fHistDCAz{ nullptr }, fHistnITScls{ nullptr }, fHistnTPCcls{ nullptr }, fHistnTPCcrossedrows{ nullptr }, fHistnchi2ITScls{ nullptr }, fHistnchi2TPCcls{ nullptr }, fHistDCAxypT{ nullptr }, fHistDCAzpT{ nullptr }, fEtaPhiBin{ nullptr }, fntpMBin{ nullptr }, fntpMBinGen{ nullptr }, fEtaPhiBinGen{ nullptr }, fHistNShCls{ nullptr }, fHistNShClsFra{ nullptr }, fHistNShClsFravspt{ nullptr }, fHistNFoundClsFra{ nullptr }, fHistNFcls{ nullptr }, fEventCounter(0), fTrackCounter(0), fHistQACent(0), ptbin1(0), ptbin2(0), ptbin3(0), ptbin4(0), mfield(0) {}
+  : AliAnalysisTaskSE(), fAOD(0), fMCEvent(0), fHistList(0), fEventCuts(0), fPIDResponse(0), fPIDCombined(0), mcHeader{ nullptr }, fNtupleList{ nullptr }, fNtupleListGen{ nullptr }, fHistQAEta{ nullptr }, fHistQAPhi{ nullptr }, fHistQAVx(0), fHistdEta{ nullptr }, fHistdPhi{ nullptr }, fHistQAVy(0), counter(0), fHistQAVz(0), fPtBin{ nullptr }, fEtaBin{ nullptr }, fPhiBin{ nullptr }, fMultBin{ nullptr }, fPtBinGen{ nullptr }, fEtaBinGen{ nullptr }, fPhiBinGen{ nullptr }, fMultBinGen{ nullptr }, fdEtadPhiBef{ nullptr }, fdEtadPhiAf{ nullptr }, fdEtadPhiChSame{ nullptr }, fdEtadPhiChDiff{ nullptr }, fdEtadPhiPtOrd{ nullptr }, fHistQAPID{ nullptr }, fHistPDG{ nullptr }, fHistDCAxy{ nullptr }, fHistDCAz{ nullptr }, fHistnITScls{ nullptr }, fHistnTPCcls{ nullptr }, fHistnTPCcrossedrows{ nullptr }, fHistnchi2ITScls{ nullptr }, fHistnchi2TPCcls{ nullptr }, fHistDCAxypT{ nullptr }, fHistDCAzpT{ nullptr }, fEtaPhiBin{ nullptr }, fntpMBin{ nullptr }, fntpMBinGen{ nullptr }, fEtaPhiBinGen{ nullptr }, fHistNShCls{ nullptr }, fHistNShClsFra{ nullptr }, fHistNShClsFravspt{ nullptr }, fHistNFoundClsFra{ nullptr }, fHistNFcls{ nullptr }, fEventCounter(0), fTrackCounter(0), fHistQACent(0), ptbin1(0), ptbin2(0), ptbin3(0), ptbin4(0), mfield(0) {}
 AliAnalysisTaskNFactorialMoments::AliAnalysisTaskNFactorialMoments(
   const char* name)
-  : AliAnalysisTaskSE(name), fAOD(0), fMCEvent(0), fHistList(0), fQAList(0), fQAList2(0), fEventCuts(0), fPIDResponse(0), fPIDCombined(0), mcHeader{ nullptr }, fNtupleList{ nullptr }, fNtupleListGen{ nullptr }, fHistQAEta{ nullptr }, fHistQAPhi{ nullptr }, fHistQAVx(0), fHistdEta{ nullptr }, fHistdPhi{ nullptr }, fHistQAVy(0), counter(0), fHistQAVz(0), fPtBin{ nullptr }, fEtaBin{ nullptr }, fPhiBin{ nullptr }, fMultBin{ nullptr }, fPtBinGen{ nullptr }, fEtaBinGen{ nullptr }, fPhiBinGen{ nullptr }, fMultBinGen{ nullptr }, fHistbeforeHBT{ nullptr }, fHistafterHBT{ nullptr }, fHistQAPID{ nullptr }, fHistPDG{ nullptr }, fHistDCAxy{ nullptr }, fHistDCAz{ nullptr }, fHistnITScls{ nullptr }, fHistnTPCcls{ nullptr }, fHistnTPCcrossedrows{ nullptr }, fHistnchi2ITScls{ nullptr }, fHistnchi2TPCcls{ nullptr }, fHistDCAxypT{ nullptr }, fHistDCAzpT{ nullptr }, fEtaPhiBin{ nullptr }, fEtaPhiBinGen{ nullptr }, fntpMBin{ nullptr }, fntpMBinGen{ nullptr }, fHistNShCls{ nullptr }, fHistNShClsFra{ nullptr }, fHistNShClsFravspt{ nullptr }, fHistNFoundClsFra{ nullptr }, fHistNFcls{ nullptr }, fEventCounter(0), fTrackCounter(0), fHistQACent(0), ptbin1(0), ptbin2(0), ptbin3(0), ptbin4(0), mfield(0)
+  : AliAnalysisTaskSE(name), fAOD(0), fMCEvent(0), fHistList(0), fEventCuts(0), fPIDResponse(0), fPIDCombined(0), mcHeader{ nullptr }, fNtupleList{ nullptr }, fNtupleListGen{ nullptr }, fHistQAEta{ nullptr }, fHistQAPhi{ nullptr }, fHistQAVx(0), fHistdEta{ nullptr }, fHistdPhi{ nullptr }, fHistQAVy(0), counter(0), fHistQAVz(0), fPtBin{ nullptr }, fEtaBin{ nullptr }, fPhiBin{ nullptr }, fMultBin{ nullptr }, fPtBinGen{ nullptr }, fEtaBinGen{ nullptr }, fPhiBinGen{ nullptr }, fMultBinGen{ nullptr }, fdEtadPhiBef{ nullptr }, fdEtadPhiAf{ nullptr }, fdEtadPhiChSame{ nullptr }, fdEtadPhiChDiff{ nullptr }, fdEtadPhiPtOrd{ nullptr }, fHistQAPID{ nullptr }, fHistPDG{ nullptr }, fHistDCAxy{ nullptr }, fHistDCAz{ nullptr }, fHistnITScls{ nullptr }, fHistnTPCcls{ nullptr }, fHistnTPCcrossedrows{ nullptr }, fHistnchi2ITScls{ nullptr }, fHistnchi2TPCcls{ nullptr }, fHistDCAxypT{ nullptr }, fHistDCAzpT{ nullptr }, fEtaPhiBin{ nullptr }, fEtaPhiBinGen{ nullptr }, fntpMBin{ nullptr }, fntpMBinGen{ nullptr }, fHistNShCls{ nullptr }, fHistNShClsFra{ nullptr }, fHistNShClsFravspt{ nullptr }, fHistNFoundClsFra{ nullptr }, fHistNFcls{ nullptr }, fEventCounter(0), fTrackCounter(0), fHistQACent(0), ptbin1(0), ptbin2(0), ptbin3(0), ptbin4(0), mfield(0)
 {
   // Constructor
   Info("AliAnalysisTaskNFactorialMoments", "Specific Constructor");
@@ -67,9 +67,6 @@ AliAnalysisTaskNFactorialMoments::~AliAnalysisTaskNFactorialMoments()
   if (fHistList) {
     delete fHistList;
   }
-  if (fQAList2) {
-    delete fQAList2;
-  }
   if (fPIDResponse) {
     delete fPIDResponse;
     fPIDResponse = 0x0;
@@ -83,10 +80,7 @@ AliAnalysisTaskNFactorialMoments::~AliAnalysisTaskNFactorialMoments()
 void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
 {
   fHistList = new TList();
-  fQAList2 = new TList();
-
   fHistList->SetOwner(kTRUE);
-  fQAList2->SetOwner(kTRUE);
 
   for (Int_t i = 0; i < mPtBins; ++i) {
     fNtupleList[i] = new TList();
@@ -96,48 +90,6 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
       fNtupleListGen[i]->SetOwner(kTRUE);
     }
   }
-
-  if (!flagMC) {
-    fQAList = new TList();
-    fQAList->SetOwner(kTRUE);
-    fEventCuts.AddQAplotsToList(fQAList, kTRUE);
-  }
-
-  // QA Histograms for deta-dphi and PID
-  fHistdEta = new TH1D("dEta", "dEta;#Delta#eta;Counts", 400, -1.2, 1.2);
-  fHistdPhi = new TH1D("dphi", "dPhil#Delta#phi;Counts", 400, -0.2, 0.2);
-  fQAList2->Add(fHistdEta);
-  fQAList2->Add(fHistdPhi);
-
-  for (Int_t i = 0; i < mPtBins; ++i) {
-    fHistbeforeHBT[i] = new TH2D(Form("fdEtadPhiBefore%d", i), Form("dEta dPhi for ptbin %d;#Delta#eta;#Delta#phi", i), 35, -1.75, 1.75, 67, -1.75, 4.95);
-    fHistafterHBT[i] = new TH2D(Form("fdEtadPhiAfter%d", i), Form("dEta dPhi for ptbin %d;#Delta#eta;#Delta#phi", i), 50, -1.75, 1.75, 50, -1.75, 4.95);
-    fQAList2->Add(fHistbeforeHBT[i]);
-    fQAList2->Add(fHistafterHBT[i]);
-  }
-
-  fHistQAPID[0] = new TH2D("TPCdEdx", "TPCdEdx vs momentum;#it{p};TPCdEdx", 100, 0.0, 5.0, 250, 0.0, 500.0);
-  fHistQAPID[1] = new TH2D("TPCNsigma", "TPCNsigma vs momentum;#it{p};TPCNsigma", 100, 0.0, 5.0, 100, -5.0, 5.0);
-  fHistQAPID[2] = new TH2D("TOFNsigmaProton", "TOFNsigmaProton vs momentum;#it{p};TOFNsigmaProton", 100, 0.0, 5.0, 250, -5.0, 5.0);
-  fHistQAPID[3] = new TH2D("TPCTOFProton", "TPCTOFProton vs momentum;#it{p};TPCTOFProton", 100, 0.0, 5.0, 250, -5.0, 5.0);
-  fHistQAPID[4] = new TH2D("TOF signal", "momentum vs beta;#it{p};#beta", 1000, 0.5, 5.0, 1000, 0.4, 1.2);
-  fHistQAPID[5] = new TH2D("nSigmaTPC  vs nSigmaTOF", "nSigmaTPC  vs nSigmaTOF;nSigmaTPC;nSigmaTOF", 1000, -5.0, 5.0, 1000, -5.0, 5.0);
-  fHistQAPID[6] = new TH2D("TPCdEdxAfter", "TPCdEdx vs momentum;#it{p};TPCdEdx", 100, 0.0, 10.0, 250, 0.0, 250.0);
-  fHistQAPID[7] = new TH2D("TPCNsigmaProtonAfter", "TPCNsigmaProton vs momentum;#it{p};TPCNsigmaProton", 100, 0.0, 2.0, 100, -5.0, 5.0);
-  fHistQAPID[8] = new TH2D("TOFNsigmaProtonAfter", "TOFNsigmaProton vs momentum;#it{p};TOFNsigmaProton", 100, 0.0, 5.0, 250, -5.0, 5.0);
-  fHistQAPID[9] = new TH2D("TPCTOFProtonAfter", "TPCTOFProton vs momentum;#it{p};TPCTOFProton", 100, 0.0, 5.0, 250, -5.0, 5.0);
-  fHistQAPID[10] = new TH2D("TOF signalAfter", "momentum vs beta;#it{p};#beta", 1000, 0.5, 5.0, 1000, 0.4, 1.2);
-  fHistQAPID[11] = new TH2D("nSigmaTPC  vs nSigmaTOFAfter", "nSigmaTPC  vs nSigmaTOF;nSigmaTPC;nSigmaTOF", 1000, -5.0, 5.0, 1000, -5.0, 5.0);
-  fHistQAPID[12] = new TH2D("TPCNsigmaProtonAfter", "TPCNsigmaProton vs momentum;#it{p};TPCNsigmaProton", 100, 0.0, 2.0, 100, -5.0, 5.0);
-  fHistPDG[0] = new TH1D("PDGHist", "PDG code of the generated particles;PDG code;Counts", 1000, -500, 500);
-  fHistPDG[1] = new TH1D("ElPosPDGHist", "PDG code of the generated electrons and positrons;PDG code;Counts", 100, -100, 100);
-  for (Int_t i = 0; i < 13; ++i) {
-    fQAList2->Add(fHistQAPID[i]);
-  }
-  for (Int_t i = 0; i < 2; ++i) {
-    fQAList2->Add(fHistPDG[i]);
-  }
-
   // Eventcounter hist defined
   fEventCounter =
     new TH1D("fEventCounter", "histo to keep track", 10, 0.5, 10.5);
@@ -154,7 +106,7 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
   fTrackCounter =
     new TH1D("fTrackCounter", "histo to keep track of tracks", 19, 0.5, 19.5);
   fTrackCounter->GetXaxis()->SetBinLabel(1, "Total tracks");
-  fTrackCounter->GetXaxis()->SetBinLabel(2, "FilterBit");
+  fTrackCounter->GetXaxis()->SetBinLabel(2, Form("FilterBit%d", filterBit));
   fTrackCounter->GetXaxis()->SetBinLabel(3, "Rej PIDs");
   fTrackCounter->GetXaxis()->SetBinLabel(4, "Loose cuts");
   fTrackCounter->GetXaxis()->SetBinLabel(5, "Systematic cuts");
@@ -163,10 +115,9 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
   fTrackCounter->GetXaxis()->SetBinLabel(8, "nSharedCls/nCrRows");
   fTrackCounter->GetXaxis()->SetBinLabel(9, "nCrRows/nFindableCls");
   fTrackCounter->GetXaxis()->SetBinLabel(10, "TwoTracks");
-  fTrackCounter->GetXaxis()->SetBinLabel(11, "ptBin1");
-  fTrackCounter->GetXaxis()->SetBinLabel(12, "ptBin2");
-  fTrackCounter->GetXaxis()->SetBinLabel(13, "ptBin3");
-  fTrackCounter->GetXaxis()->SetBinLabel(14, "ptBin4");
+  for (Int_t i = 0; i < mPtBins; ++i) {
+    fTrackCounter->GetXaxis()->SetBinLabel(11 + i, Form("p_{T}_%.2f-%.2f", ptarray[2 * i], ptarray[2 * i + 1]));
+  }
   fHistList->Add(fTrackCounter);
 
   fHistQACent = new TH1F("fHistQACent", "Centrality Distribution", 10,
@@ -200,8 +151,8 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
   }
   fHistDCAxy = new TH1F("fHistDCAxy", "DCAxy distribution;DCAxy;Counts", 900, -4.5, 4.5);
   fHistDCAz = new TH1F("fHistDCAz", "DCAz distribution;DCAz;Counts", 900, -4.5, 4.5);
-  fHistDCAxypT = new TH2F("fHistDCAxypT", "DCAxy vs pT;p_{T};dca_{xy}", 50, 0, 5.5, 40, -0.4, 0.4);
-  fHistDCAzpT = new TH2F("fHistDCAzpT", "DCAz vs pT;p_{T};dca_{z}", 50, 0, 5.5, 50, -0.5, 0.5);
+  fHistDCAxypT = new TH2F("fHistDCAxypT", "DCAxy vs pT;p_{T};dca_{xy}", 50, 0, 5.5, 200, -2.0, 2.0);
+  fHistDCAzpT = new TH2F("fHistDCAzpT", "DCAz vs pT;p_{T};dca_{z}", 50, 0, 5.5, 200, -2.0, 2.0);
   fHistnITScls = new TH1F("fHistnITScls", "ITS cluster distribution;ITS cluster;Counts", 10, -0.5, 10.5);
   fHistnTPCcls = new TH1F("fHistnTPCcls", "TPC cluster distribution;TPC cluster;Counts", 200, 0, 200);
   fHistnchi2ITScls = new TH1F("fHistnchi2ITScls", "ITSchi2 cluster distribution;ITSchi2 cluster;Counts", 100, -0.5, 100.5);
@@ -228,27 +179,27 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
     fHistList->Add(fHistNFoundClsFra[i]);
     fHistList->Add(fHistNFcls[i]);
   }
-  fHistNShClsFravspt[4] = new TH2F("fHistNShClsFraVsPtBef", "TPC nshared clusters vs #it{p_{T}} before", 500, 0, 5, 400, 0.02, 1);
+  fHistNShClsFravspt[mPtBins] = new TH2F("fHistNShClsFraVsPtBef", "TPC nshared clusters vs #it{p_{T}} before", 500, 0, 5, 400, 0.02, 1);
   fHistList->Add(fHistNShClsFravspt[4]);
   for (Int_t i = 0; i < mPtBins; ++i) {
-    fHistNShClsFravspt[i] = new TH2F(Form("fHistNShClsFraVsPt%d", i), Form("TPC nshared clusters vs #it{p_{T}} %i", i), 500, 0, 5, 400, 0.02, 1);
+    fHistNShClsFravspt[i] = new TH2F(Form("fHistNShClsFraVsPt_%.2f-%.2f", ptarray[i], ptarray[i + 1]), Form("TPC nshared clusters vs #it{p_{T}} %i", i), 500, 0, 5, 400, 0.02, 1);
     fHistList->Add(fHistNShClsFravspt[i]);
   }
 
   for (Int_t i = 0; i < mPtBins; ++i) {
-    fPtBin[i] = new TH1F(Form("fPtBin%d%s", i + 1, name.Data()), Form("Pt distribution of tracks for PtBin%d;#p_{T};Counts", i + 1), 1000, 0.0, 5.0);
-    fEtaBin[i] = new TH1F(Form("fEtaBin%d%s", i + 1, name.Data()), Form("Eta distribution of tracks for PtBin%d;#eta;Counts", i + 1), 1000, -1.0, 1.0);
-    fPhiBin[i] = new TH1F(Form("fPhiBin%d%s", i + 1, name.Data()), Form("Phi distribution of tracks for PtBin%d;#phi;Counts", i + 1), 1000, 0.0, 6.5);
-    fMultBin[i] = new TH1F(Form("fMultBin%d%s", i + 1, name.Data()), Form("Multiplicity distribution of tracks for PtBin%d;Multiplicity;Counts", i + 1), 10000, 0.0, 10000.0);
+    fPtBin[i] = new TH1F(Form("fPtBin%s_%.2f-%.2f", name.Data(), ptarray[2 * i], ptarray[2 * i + 1]), Form("Pt distribution of tracks for PtBin%d;#p_{T};Counts", i + 1), 1000, 0.0, 5.0);
+    fEtaBin[i] = new TH1F(Form("fEtaBin%s_%.2f-%.2f", name.Data(), ptarray[2 * i], ptarray[2 * i + 1]), Form("Eta distribution of tracks for PtBin%d;#eta;Counts", i + 1), 1000, -1.0, 1.0);
+    fPhiBin[i] = new TH1F(Form("fPhiBin%s_%.2f-%.2f", name.Data(), ptarray[2 * i], ptarray[2 * i + 1]), Form("Phi distribution of tracks for PtBin%d;#phi;Counts", i + 1), 1000, 0.0, 6.5);
+    fMultBin[i] = new TH1F(Form("fMultBin%s_%.2f-%.2f", name.Data(), ptarray[2 * i], ptarray[2 * i + 1]), Form("Multiplicity distribution of tracks for PtBin%d;Multiplicity;Counts", i + 1), 10000, 0.0, 10000.0);
     fHistList->Add(fPtBin[i]);
     fHistList->Add(fEtaBin[i]);
     fHistList->Add(fPhiBin[i]);
     fHistList->Add(fMultBin[i]);
     if (flagMC) {
-      fPtBinGen[i] = new TH1F(Form("fPtBinGen%d", i + 1), Form("Pt distribution of Gen tracks for PtBin%d;#p_{T};Counts", i + 1), 1000, 0.0, 5.0);
-      fEtaBinGen[i] = new TH1F(Form("fEtaBinGen%d", i + 1), Form("Eta distribution of Gen tracks for PtBin%d;#eta;Counts", i + 1), 1000, -1.0, 1.0);
-      fPhiBinGen[i] = new TH1F(Form("fPhiBinGen%d", i + 1), Form("Phi distribution of Gen tracks for PtBin%d;#phi;Counts", i + 1), 1000, 0.0, 6.5);
-      fMultBinGen[i] = new TH1F(Form("fMultBinGen%d", i + 1), Form("Multiplicity distribution of Gen tracks for PtBin%d;Multiplicity;Counts", i + 1), 1000, 0.0, 1000.0);
+      fPtBinGen[i] = new TH1F(Form("fPtBinGen_%.2f-%.2f", ptarray[2 * i], ptarray[2 * i + 1]), Form("Pt distribution of Gen tracks for PtBin%d;#p_{T};Counts", i + 1), 1000, 0.0, 5.0);
+      fEtaBinGen[i] = new TH1F(Form("fEtaBinGen_%.2f-%.2f", ptarray[2 * i], ptarray[2 * i + 1]), Form("Eta distribution of Gen tracks for PtBin%d;#eta;Counts", i + 1), 1000, -1.0, 1.0);
+      fPhiBinGen[i] = new TH1F(Form("fPhiBinGen_%.2f-%.2f", ptarray[2 * i], ptarray[2 * i + 1]), Form("Phi distribution of Gen tracks for PtBin%d;#phi;Counts", i + 1), 1000, 0.0, 6.5);
+      fMultBinGen[i] = new TH1F(Form("fMultBinGen_%.2f-%.2f", ptarray[2 * i], ptarray[2 * i + 1]), Form("Multiplicity distribution of Gen tracks for PtBin%d;Multiplicity;Counts", i + 1), 1000, 0.0, 1000.0);
       fHistList->Add(fPtBinGen[i]);
       fHistList->Add(fEtaBinGen[i]);
       fHistList->Add(fPhiBinGen[i]);
@@ -256,16 +207,16 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
     }
     for (Int_t j = 0; j < mMBins; ++j) {
       // Eta-Phi distributions
-      fEtaPhiBin[i][j] = new TH2D(Form("fEtaPhiBin%d_%d_%s", i + 1, j + 1, name.Data()), Form("Eta-Phi distribution of tracks for PtBin%d and MBin%d;#eta;#phi", i + 1, j + 1), mMBin2[j], minEta, maxEta, mMBin2[j], 0.0, 6.30);
+      fEtaPhiBin[i][j] = new TH2D(Form("fEtaPhiBin%s_%.2f-%.2f_%d", name.Data(), ptarray[2 * i], ptarray[2 * i + 1], j + 1), Form("Eta-Phi distribution of tracks for PtBin%d and MBin%d;#eta;#phi", i + 1, j + 1), mMBin2[j], minEta, maxEta, mMBin2[j], 0.0, 6.30);
       if (flagSelfAff) {
-        fEtaPhiBin[i][j] = new TH2D(Form("fEtaPhiBin%d_%d_%s", i + 1, j + 1, name.Data()), Form("Eta-Phi distribution of tracks for PtBin%d and MBin%d;#eta;#phi", i + 1, j + 1), mMBin2[j], minEta, maxEta, mNBin2[j], 0.0, 6.30);
+        fEtaPhiBin[i][j] = new TH2D(Form("fEtaPhiBin%s_%.2f-%.2f_%d", name.Data(), ptarray[2 * i], ptarray[2 * i + 1], j + 1), Form("Eta-Phi distribution of tracks for PtBin%d and MBin%d;#eta;#phi", i + 1, j + 1), mMBin2[j], minEta, maxEta, mNBin2[j], 0.0, 6.30);
       }
       if (flagMC) {
-        fEtaPhiBinGen[i][j] = new TH2D(Form("fEtaPhiBinGen%d_%d", i + 1, j + 1), Form("Eta-Phi distribution of Gen tracks for PtBin%d and MBin%d;#eta;#phi", i + 1, j + 1), mMBin2[j], minEta, maxEta, mMBin2[j], 0.0, 6.30);
-        fHistList->Add(fEtaPhiBinGen[i][j]);
+        fEtaPhiBinGen[i][j] = new TH2D(Form("fEtaPhiBinGen_%.2f-%.2f_%d", ptarray[2 * i], ptarray[2 * i + 1], j + 1), Form("Eta-Phi distribution of Gen tracks for PtBin%d and MBin%d;#eta;#phi", i + 1, j + 1), mMBin2[j], minEta, maxEta, mMBin2[j], 0.0, 6.30);
         if (flagSelfAff) {
-          fEtaPhiBinGen[i][j] = new TH2D(Form("fEtaPhiBinGen%d_%d", i + 1, j + 1), Form("Eta-Phi distribution of Gen tracks for PtBin%d and MBin%d;#eta;#phi", i + 1, j + 1), mMBin2[j], minEta, maxEta, mNBin2[j], 0.0, 6.30);
+          fEtaPhiBinGen[i][j] = new TH2D(Form("fEtaPhiBinGen_%.2f-%.2f_%d", ptarray[2 * i], ptarray[2 * i + 1], j + 1), Form("Eta-Phi distribution of Gen tracks for PtBin%d and MBin%d;#eta;#phi", i + 1, j + 1), mMBin2[j], minEta, maxEta, mNBin2[j], 0.0, 6.30);
         }
+        fHistList->Add(fEtaPhiBinGen[i][j]);
       }
       fHistList->Add(fEtaPhiBin[i][j]);
       // Tuples for each bin
@@ -276,6 +227,63 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
         fNtupleListGen[i]->Add(fntpMBinGen[i][j]);
       }
     }
+  }
+  // QA Histograms for detadphi and PID
+  fHistdEta = new TH1D("dEta", "dEta;#Delta#eta;Counts", 100, -1.75, 1.75);
+  fHistdPhi = new TH1D("dphi", "dPhi;#Delta#phi;Counts", 100, -TMath::Pi(), TMath::Pi());
+  fHistList->Add(fHistdEta);
+  fHistList->Add(fHistdPhi);
+
+  TString charge[3] = { "Pos", "Neg", "All" };
+  TString detadphiRange[2] = { "", "Close" };
+  TString ptOrd[4] = { "pt2>pt1_dphi<0", "pt2>pt1_dphi>0", "pt2<pt1_dphi<0", "pt2<pt1_dphi>0" };
+
+  for (Int_t i = 0; i < mPtBins; ++i) {
+    fdEtadPhiBef[i] = new TH2D(Form("fdEtadPhiBef%d", i), Form("dEta dPhi for ptbin %d;#Delta#eta;#Delta#phi", i), 35, -1.75, 1.75, 50, -TMath::Pi(), TMath::Pi());
+    fdEtadPhiAf[i] = new TH2D(Form("fdEtadPhiAf%d", i), Form("dEta dPhi for ptbin %d;#Delta#eta;#Delta#phi", i), 50, -1.75, 1.75, 50, -TMath::Pi(), TMath::Pi());
+    fHistList->Add(fdEtadPhiBef[i]);
+    fHistList->Add(fdEtadPhiAf[i]);
+    for (Int_t ch = 0; ch < 3; ++ch) {
+      fdEtadPhiChSame[i][0][ch] = new TH2D(Form("fdEtadPhiCh_%.2f-%.2f_%s%s", ptarray[2 * i], ptarray[2 * i + 1], charge[ch].Data(), detadphiRange[0].Data()), Form("dEta dPhi for ptbin %d %s;#Delta#eta;#Delta#phi", i, charge[ch].Data()), 35, -1.75, 1.75, 50, -TMath::Pi(), TMath::Pi());
+      fdEtadPhiChSame[i][1][ch] = new TH2D(Form("fdEtadPhiCh_%.2f-%.2f_%s%s", ptarray[2 * i], ptarray[2 * i + 1], charge[ch].Data(), detadphiRange[1].Data()), Form("dEta dPhi for ptbin %d %s;#Delta#eta;#Delta#phi", i, charge[ch].Data()), 50, -0.02, 0.02, 50, -0.05, 0.05);
+      fHistList->Add(fdEtadPhiChSame[i][0][ch]);
+      fHistList->Add(fdEtadPhiChSame[i][1][ch]);
+      for (Int_t j = 0; j < 4; ++j) {
+        fdEtadPhiPtOrd[i][j][ch][0] = new TH2D(Form("fdEtadPhiPtOrd_%.2f-%.2f_%s_%s%s", ptarray[2 * i], ptarray[2 * i + 1], ptOrd[j].Data(), charge[ch].Data(), detadphiRange[0].Data()), Form("dEta dPhi for ptbin %d %s %s;#Delta#eta;#Delta#phi", i, ptOrd[j].Data(), charge[ch].Data()), 35, -1.75, 1.75, 50, -TMath::Pi(), TMath::Pi());
+        fdEtadPhiPtOrd[i][j][ch][1] = new TH2D(Form("fdEtadPhiPtOrd_%.2f-%.2f_%s_%s%s", ptarray[2 * i], ptarray[2 * i + 1], ptOrd[j].Data(), charge[ch].Data(), detadphiRange[1].Data()), Form("dEta dPhi for ptbin %d %s %s;#Delta#eta;#Delta#phi", i, ptOrd[j].Data(), charge[ch].Data()), 50, -0.02, 0.02, 50, -0.05, 0.05);
+        fHistList->Add(fdEtadPhiPtOrd[i][j][ch][0]);
+        fHistList->Add(fdEtadPhiPtOrd[i][j][ch][1]);
+      }
+    }
+    fdEtadPhiChDiff[i][0] = new TH2D(Form("fdEtadPhiChDiff_%.2f-%.2f%s", ptarray[2 * i], ptarray[2 * i + 1], detadphiRange[0].Data()), Form("dEta dPhi for ptbin %d different ch;#Delta#eta;#Delta#phi", i), 35, -1.75, 1.75, 50, -TMath::Pi(), TMath::Pi());
+    fdEtadPhiChDiff[i][1] = new TH2D(Form("fdEtadPhiChDiff_%.2f-%.2f%s", ptarray[2 * i], ptarray[2 * i + 1], detadphiRange[1].Data()), Form("dEta dPhi for ptbin %d different ch;#Delta#eta;#Delta#phi", i), 50, -0.02, 0.02, 50, -0.05, 0.05);
+    fHistList->Add(fdEtadPhiChDiff[i][0]);
+    fHistList->Add(fdEtadPhiChDiff[i][1]);
+  }
+
+  fHistQAPID[0] = new TH2D("TPCdEdx", "TPCdEdx vs momentum;#it{p};TPCdEdx", 100, 0.0, 5.0, 250, 0.0, 500.0);
+  fHistQAPID[1] = new TH2D("TPCNsigma", "TPCNsigma vs momentum;#it{p};TPCNsigma", 100, 0.0, 5.0, 100, -5.0, 5.0);
+  fHistQAPID[2] = new TH2D("TOFNsigmaProton", "TOFNsigmaProton vs momentum;#it{p};TOFNsigmaProton", 100, 0.0, 5.0, 250, -5.0, 5.0);
+  fHistQAPID[3] = new TH2D("TPCTOFProton", "TPCTOFProton vs momentum;#it{p};TPCTOFProton", 100, 0.0, 5.0, 250, -5.0, 5.0);
+  fHistQAPID[4] = new TH2D("TOF signal", "momentum vs beta;#it{p};#beta", 1000, 0.5, 5.0, 1000, 0.4, 1.2);
+  fHistQAPID[5] = new TH2D("nSigmaTPC  vs nSigmaTOF", "nSigmaTPC  vs nSigmaTOF;nSigmaTPC;nSigmaTOF", 1000, -5.0, 5.0, 1000, -5.0, 5.0);
+  fHistQAPID[6] = new TH2D("TPCdEdxAfter", "TPCdEdx vs momentum;#it{p};TPCdEdx", 100, 0.0, 10.0, 250, 0.0, 250.0);
+  fHistQAPID[7] = new TH2D("TPCNsigmaProtonAfter", "TPCNsigmaProton vs momentum;#it{p};TPCNsigmaProton", 100, 0.0, 2.0, 100, -5.0, 5.0);
+  fHistQAPID[8] = new TH2D("TOFNsigmaProtonAfter", "TOFNsigmaProton vs momentum;#it{p};TOFNsigmaProton", 100, 0.0, 5.0, 250, -5.0, 5.0);
+  fHistQAPID[9] = new TH2D("TPCTOFProtonAfter", "TPCTOFProton vs momentum;#it{p};TPCTOFProton", 100, 0.0, 5.0, 250, -5.0, 5.0);
+  fHistQAPID[10] = new TH2D("TOF signalAfter", "momentum vs beta;#it{p};#beta", 1000, 0.5, 5.0, 1000, 0.4, 1.2);
+  fHistQAPID[11] = new TH2D("nSigmaTPC  vs nSigmaTOFAfter", "nSigmaTPC  vs nSigmaTOF;nSigmaTPC;nSigmaTOF", 1000, -5.0, 5.0, 1000, -5.0, 5.0);
+  fHistQAPID[12] = new TH2D("TPCNsigmaProtonAfter", "TPCNsigmaProton vs momentum;#it{p};TPCNsigmaProton", 100, 0.0, 2.0, 100, -5.0, 5.0);
+  fHistPDG[0] = new TH1D("PDGHist", "PDG code of the generated particles;PDG code;Counts", 1000, -500, 500);
+  fHistPDG[1] = new TH1D("ElPosPDGHist", "PDG code of the generated electrons and positrons;PDG code;Counts", 100, -100, 100);
+  for (Int_t i = 0; i < 13; ++i) {
+    fHistList->Add(fHistQAPID[i]);
+  }
+  for (Int_t i = 0; i < 2; ++i) {
+    fHistList->Add(fHistPDG[i]);
+  }
+  if (!flagMC) {
+    fEventCuts.AddQAplotsToList(fHistList, kTRUE);
   }
 
   DataPosting();
@@ -407,7 +415,7 @@ ________________________________________________________________________*/
 
 void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
 {
-  Int_t counterBin[mPtBins] = { 0 };
+  Int_t counterBin[mPtmax] = { 0 };
   Int_t nTracks(fAOD->GetNumberOfTracks());
   Float_t dpstar, deta, dphi;
   Float_t dcaXY, dcaZ;
@@ -464,7 +472,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
 
     track->GetImpactParameters(dcaXY, dcaZ);
 
-    if ((fDCAxyMax > 0.0) && (fabs(dcaXY) > (0.0208+0.04/TMath::Power(pt,1.01))))
+    if ((fDCAxyMax > 0.0) && (fabs(dcaXY) > (0.0208 + 0.04 / TMath::Power(pt, 1.01))))
       continue;
     if ((fDCAzMax > 0.0) && (fabs(dcaZ) > fDCAzMax))
       continue;
@@ -517,7 +525,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
       std::copy(profileVal1, profileVal1 + 16, profileVal);
     }
 
-    fHistNShClsFravspt[4]->Fill(pt, nSharedCls / nCrossedRows);
+    fHistNShClsFravspt[mPtBins]->Fill(pt, nSharedCls / nCrossedRows);
 
     for (Int_t k = 0; k < 16; ++k) {
       if (pt > 0.4 + (k * 0.1) && pt < 0.5 + (k * 0.1)) {
@@ -546,42 +554,78 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
         if (GetParticleID(track2, kFALSE))
           continue;
 
-        if (id == id2 || fabs(eta2) > 0.8 || fabs(pt2) < 0.2 || charge2 == 0 ||
-            pt < pt2)
+        if (id == id2 || (eta2 < minEta) || (eta2 > maxEta) || fabs(pt2) < 0.2 || charge2 == 0)
           continue;
-
-        TBits clusmap2 = track2->GetTPCClusterMap();
-        TBits sharedmap2 = track2->GetTPCSharedMap();
-        Float_t sharity =
-          SharedClusterFraction(clusmap, clusmap2, sharedmap, sharedmap2);
-        if (sharity > fSharedFraction) {
-          mSharedTrack = kTRUE;
+        if (flagSharity) {
+          TBits clusmap2 = track2->GetTPCClusterMap();
+          TBits sharedmap2 = track2->GetTPCSharedMap();
+          Float_t sharity =
+            SharedClusterFraction(clusmap, clusmap2, sharedmap, sharedmap2);
+          if (sharity > fSharedFraction) {
+            mSharedTrack = kTRUE;
+          }
         }
-
         if ((flagSharity) && (mSharedTrack)) {
           break;
         }
 
         dpstar = CalculateDPhiStar(phi, eta, pt, charge, phi2, eta2, pt2,
                                    charge2, mfield);
-        if (dpstar == 999)
-          continue;
         deta = eta2 - eta;
         dphi = phi2 - phi;
-        if (fabs(deta) < fdeta && fabs(dpstar) < fdphi && charge == charge2)
-          mSkipTracks = kTRUE;
+        if (dphi > TMath::Pi())
+          dphi -= TMath::TwoPi();
+        else if (dphi < -TMath::Pi())
+          dphi += TMath::TwoPi();
+        fHistdEta->Fill(deta);
+        fHistdPhi->Fill(dphi);
+
+        Int_t ch = -999;
+        if (charge > 0 && charge2 > 0)
+          ch = 0;
+        if (charge < 0 && charge2 < 0)
+          ch = 1;
 
         for (Int_t iPt = 0; iPt < mPtBins; ++iPt) {
-          if (ptbin[iPt]) {
-            fHistbeforeHBT[iPt]->Fill(deta, dphi);
+          if (ptbin[iPt] && pt > ptarray[2 * iPt] && pt < ptarray[2 * iPt + 1]) {
+            fdEtadPhiBef[iPt]->Fill(deta, dphi);
+            for (Int_t j = 0; j < 2; ++j) {
+              if (charge2 != charge) {
+                fdEtadPhiChDiff[iPt][j]->Fill(deta, dphi);
+              }
+              if (ch != -999) {
+                fdEtadPhiChSame[iPt][j][ch]->Fill(deta, dphi);
+                fdEtadPhiChSame[iPt][j][2]->Fill(deta, dphi);
+                if (pt2 > pt && dphi < 0) {
+                  fdEtadPhiPtOrd[iPt][0][ch][j]->Fill(deta, dphi);
+                  fdEtadPhiPtOrd[iPt][0][2][j]->Fill(deta, dphi);
+                }
+                if (pt2 > pt && dphi > 0) {
+                  fdEtadPhiPtOrd[iPt][1][ch][j]->Fill(deta, dphi);
+                  fdEtadPhiPtOrd[iPt][1][2][j]->Fill(deta, dphi);
+                }
+                if (pt2 < pt && dphi < 0) {
+                  fdEtadPhiPtOrd[iPt][2][ch][j]->Fill(deta, dphi);
+                  fdEtadPhiPtOrd[iPt][2][2][j]->Fill(deta, dphi);
+                }
+                if (pt2 < pt && dphi > 0) {
+                  fdEtadPhiPtOrd[iPt][3][ch][j]->Fill(deta, dphi);
+                  fdEtadPhiPtOrd[iPt][3][2][j]->Fill(deta, dphi);
+                }
+              }
+            }
           }
         }
+        if (dpstar == 999)
+          continue;
+        if (fabs(deta) < fdeta && fabs(dpstar) < fdphi && charge == charge2)
+          mSkipTracks = kTRUE;
         if ((flag2Track) && (mSkipTracks)) {
           break;
         } else {
           for (Int_t k = 0; k < mPtBins; ++k) {
             if (ptbin[k]) {
-              fHistafterHBT[k]->Fill(deta, dphi);
+              fdEtadPhiAf[k]->Fill(deta, dphi);
             }
           }
         }
@@ -638,7 +682,7 @@ ________________________________________________________________________*/
 
 void AliAnalysisTaskNFactorialMoments::FillMCTrackInfo()
 {
-  Int_t counterBin[mPtBins] = { 0 };
+  Int_t counterBin[mPtmax] = { 0 };
   for (Int_t i_MCtrk = 0; i_MCtrk < fMCEvent->GetNumberOfTracks(); i_MCtrk++) {
     AliVParticle* lPart = (AliAODMCParticle*)fMCEvent->GetTrack(i_MCtrk);
     TClonesArray* AODMCTrackArray = dynamic_cast<TClonesArray*>(
@@ -696,10 +740,11 @@ void AliAnalysisTaskNFactorialMoments::GetPtBin(Double_t pt)
 {
   ptbin.clear();
   for (Int_t i = 0; i < ptarray.GetSize() - 1; i += 2) {
-    if (pt >= ptarray[i] && pt <= ptarray[i + 1])
+    if (pt >= ptarray[i] && pt <= ptarray[i + 1]) {
       ptbin.push_back(kTRUE);
-    else
+    } else {
       ptbin.push_back(kFALSE);
+    }
   }
 }
 
@@ -779,8 +824,6 @@ Bool_t AliAnalysisTaskNFactorialMoments::GetParticleID(AliAODTrack* trk,
       (AliAODMCParticle*)AODMCTrackArray->At(TMath::Abs(trk->GetLabel()));
     if (!particle)
       return kTRUE;
-    if (!particle->IsPhysicalPrimary())
-      return kTRUE;
     if (flagRejEls) {
       Bool_t isElPos = kFALSE;
       if (particle->GetPdgCode() == 11 || particle->GetPdgCode() == -11)
@@ -808,13 +851,9 @@ Float_t AliAnalysisTaskNFactorialMoments::CalculateDPhiStar(
   Float_t radius = 0;
   Float_t dphistartemp = 0;
   Float_t dphistar = 999;
-  Float_t deta = eta2 - eta1;
   Float_t kLimit = fdeta * 3;
   Double_t kPi = TMath::Pi();
-  Float_t deltaPhi = phi2 - phi1;
   bSign = (bSign > 0) ? 1 : -1;
-  fHistdEta->Fill(deta);
-  fHistdPhi->Fill(deltaPhi);
 
   // variables and cuts have been taken from
   // https://indico.cern.ch/materialDisplay.py?contribId=36&sessionId=6&materialId=slides&confId=142700
@@ -843,10 +882,6 @@ Float_t AliAnalysisTaskNFactorialMoments::CalculateDPhiStar(
         dphistar = -2 * kPi - dphistar;
       if (dphistar > kPi)
         dphistar = kPi * 2 - dphistar;
-      if (deltaPhi < -0.5 * TMath::Pi())
-        deltaPhi += TMath::TwoPi();
-      if (deltaPhi > 1.5 * TMath::Pi())
-        deltaPhi -= TMath::TwoPi();
     }
   }
   return dphistar;
@@ -921,10 +956,10 @@ Float_t AliAnalysisTaskNFactorialMoments::GetDPhiStar(Float_t phi1, Float_t pt1,
 }
 
 /*________________________________________________________________________
-          Calculation of the Normalized Fq Moments
+          Calculation of the Normalized Fq MomentsAODs
 ________________________________________________________________________*/
 
-void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[mPtBins][mMBins], Bool_t mcGen)
+void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[mPtmax][mMBins], Bool_t mcGen)
 {
   for (Int_t iPt = 0; iPt < mPtBins; ++iPt) {
     for (Int_t iM = 0; iM < mMBins; iM++) {
@@ -1014,14 +1049,7 @@ void AliAnalysisTaskNFactorialMoments::DataPosting()
   for (Int_t i = 0; i < mPtBins; i++) {
     PostData(i + 2, fNtupleList[i]);
     if (flagMC)
-      PostData(i + 6, fNtupleListGen[i]);
-  }
-
-  if (flagMC) {
-    PostData(10, fQAList2);
-  } else {
-    PostData(6, fQAList2);
-    PostData(7, fQAList);
+      PostData(i + 2 + mPtBins, fNtupleListGen[i]);
   }
 }
 

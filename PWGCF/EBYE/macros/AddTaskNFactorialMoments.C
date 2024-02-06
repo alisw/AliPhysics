@@ -1,7 +1,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskNFactorialMoments.h"
 
-AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(Double_t pt1 = 0.4, Double_t pt2 = 0.6, Double_t pt3 = 0.4, Double_t pt4 = 1.0, Double_t pt5 = 0.6, Double_t pt6 = 0.8, Double_t pt7 = 0.6, Double_t pt8 = 2.0, Int_t Mmax = 82, Bool_t fIsMC = kFALSE, const char* suffix = "")
+AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMomentsAODs(Int_t nPt = 1, Double_t pt1 = 0.52, Double_t pt2 = 0.92, Double_t pt3 = 0.0, Double_t pt4 = 0.0, Double_t pt5 = 0.0, Double_t pt6 = 0.0, Double_t pt7 = 0.0, Double_t pt8 = 0.0, Double_t pt9 = 0.0, Double_t pt10 = 0.0, Int_t Mmax = 82, Bool_t fIsMC = kFALSE, const char* suffix = "")
 {
 
   // year = "2010" or "2015"
@@ -12,13 +12,13 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(Double_t pt1 = 0.4, D
   // Initialize variables
   TString year = "2015";
   Bool_t fSelfAffAnalysis = kFALSE;
-  Bool_t f2TrackQA = kFALSE;
+  Bool_t f2TrackQA = kTRUE;
   Bool_t fPileup = kTRUE;
   Double_t fEtaMin = -0.8;
   Double_t fEtaMax = 0.8;
   Int_t fCentMin = 0;
   Int_t fCentMax = 5;
-  Int_t fBit = 768;
+  Int_t fBit = 128;
   Double_t fDeta = 0.02;
   Double_t fDphi = 0.02;
   Bool_t fTwoTrack = kFALSE;
@@ -40,9 +40,39 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(Double_t pt1 = 0.4, D
   Int_t bField = 0;
   Double_t nSigmaCutPr = 3.0;
 
-  Double_t ptarr[8] = { pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8 };
-  TArrayD ptarrD(8, ptarr);
-  Int_t fNumberofPtBins = ptarrD.GetSize() / 2;
+  std::vector<Double_t> ptVector;
+  if (pt1 != 0.0)
+    ptVector.push_back(pt1);
+  if (pt2 != 0.0)
+    ptVector.push_back(pt2);
+  if (pt3 != 0.0)
+    ptVector.push_back(pt3);
+  if (pt4 != 0.0)
+    ptVector.push_back(pt4);
+  if (pt5 != 0.0)
+    ptVector.push_back(pt5);
+  if (pt6 != 0.0)
+    ptVector.push_back(pt6);
+  if (pt7 != 0.0)
+    ptVector.push_back(pt7);
+  if (pt8 != 0.0)
+    ptVector.push_back(pt8);
+  if (pt9 != 0.0)
+    ptVector.push_back(pt9);
+  if (pt10 != 0.0)
+    ptVector.push_back(pt10);
+
+  Int_t fNumberofPtBins = ptVector.size() / 2;
+  std::cout << "Number of pt bins: " << fNumberofPtBins << std::endl;
+
+  if (fNumberofPtBins != nPt) {
+    std::cout << "Number of pt bins is not equal to the number of pt values" << std::endl;
+    return 0x0;
+  }
+
+  Double_t ptarr[nPt * 2];
+  std::copy(ptVector.begin(), ptVector.end(), ptarr);
+  TArrayD ptarrD(nPt * 2, ptarr);
 
   Int_t Mbinsarr[40];
   Int_t Nbinsarr[40]; // used in case of selfaffine analysis
@@ -67,42 +97,49 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(Double_t pt1 = 0.4, D
     return 0x0;
   }
 
-  // creating an instance for tasknfms
-  AliAnalysisTaskNFactorialMoments* tasknfms =
+  // creating an instance for taskFactorialMoments
+  AliAnalysisTaskNFactorialMoments* taskFactorialMoments =
     new AliAnalysisTaskNFactorialMoments(suffix);
-  if (!tasknfms)
+  if (!taskFactorialMoments)
     return 0x0;
 
-  tasknfms->SetIsMC(fIsMC, "Hijing");
-  tasknfms->SetYear(year);
-  tasknfms->SetPSbinning(Mbins, Nbins, Mmax);
-  tasknfms->SetRejectPileup(fPileup);
-  tasknfms->SetEta(fEtaMin, fEtaMax);
-  tasknfms->SetCentLim(fCentMin, fCentMax);
-  tasknfms->SetPtArray(ptarrD);
-  tasknfms->Setfbit(fBit);
-  tasknfms->SetBfield(bField);
-  tasknfms->SetTwoTrackCuts(fDeta, fDphi, fTwoTrack, f2TrackQA);
-  tasknfms->SetSharingFraction(fSharedFraction, fSharity);
-  tasknfms->SetVtxCut(fVxMax, fVyMax, fVzMax);
-  tasknfms->SetRejectElectrons(fRejectElectrons);
-  tasknfms->SetDCAXYRangeMax(fDCAXYRangeMax);   // 0.1
-  tasknfms->SetDCAZRangeMax(fDCAZRangeMax);     // 1
-  tasknfms->SetITSClusterCut(fITSClusterCut);   // chi2 per ITS 36
-  tasknfms->SetTPCClusterCut(fTPCClusterCut);   // chi2 per TPC 4
-  tasknfms->SetnTPCrossedrows(fnTPCrossedrows); // 70
-  tasknfms->SetSelfAffine(fSelfAffAnalysis);
-  tasknfms->SetSharedCls(fSharedCls, fSharedRows, fFindableCls, defSharedFrac);
+  TString gen = "Hijing";
 
-  // add your tasknfms to the manager
-  mgr->AddTask(tasknfms);
+  taskFactorialMoments->SetIsMC(fIsMC, gen);
+  taskFactorialMoments->SetYear(year);
+  taskFactorialMoments->SetPSbinning(Mbins, Nbins, Mmax);
+  taskFactorialMoments->SetRejectPileup(fPileup);
+  taskFactorialMoments->SetEta(fEtaMin, fEtaMax);
+  taskFactorialMoments->SetCentLim(fCentMin, fCentMax);
+  taskFactorialMoments->SetPtArray(ptarrD, nPt);
+  taskFactorialMoments->Setfbit(fBit);
+  taskFactorialMoments->SetBfield(bField);
+  taskFactorialMoments->SetTwoTrackCuts(fDeta, fDphi, fTwoTrack, f2TrackQA);
+  taskFactorialMoments->SetSharingFraction(fSharedFraction, fSharity);
+  taskFactorialMoments->SetVtxCut(fVxMax, fVyMax, fVzMax);
+  taskFactorialMoments->SetRejectElectrons(fRejectElectrons);
+  taskFactorialMoments->SetDCAXYRangeMax(fDCAXYRangeMax);   // 0.1
+  taskFactorialMoments->SetDCAZRangeMax(fDCAZRangeMax);     // 1
+  taskFactorialMoments->SetITSClusterCut(fITSClusterCut);   // chi2 per ITS 36
+  taskFactorialMoments->SetTPCClusterCut(fTPCClusterCut);   // chi2 per TPC 4
+  taskFactorialMoments->SetnTPCrossedrows(fnTPCrossedrows); // 70
+  taskFactorialMoments->SetSelfAffine(fSelfAffAnalysis);
+  taskFactorialMoments->SetSharedCls(fSharedCls, fSharedRows, fFindableCls, defSharedFrac);
 
-  // input for tasknfmss and connecting containers to it
-  Int_t nout = (fNumberofPtBins) + 3 + fIsMC * ((fNumberofPtBins)-1);
+  // add your taskFactorialMoments to the manager
+  mgr->AddTask(taskFactorialMoments);
+
+  // input for taskFactorialMoments and connecting containers to it
+  Int_t nout = (fNumberofPtBins) + 1 + fIsMC * (fNumberofPtBins);
   AliAnalysisDataContainer* coutputlist[nout];
 
+  TString str;
+  if (fIsMC)
+    str = Form("list_MC_%dpt_%d-%dcent_FB%d_%s_%s", fNumberofPtBins, fCentMin, fCentMax, fBit, year.Data(), suffix);
+  else
+    str = Form("list_DATA_%dpt_%d-%dcent_FB%d_%s_%s", fNumberofPtBins, fCentMin, fCentMax, fBit, year.Data(), suffix);
   coutputlist[0] = mgr->CreateContainer(
-    Form("outputlist%s", suffix), TList::Class(), AliAnalysisManager::kOutputContainer,
+    str, TList::Class(), AliAnalysisManager::kOutputContainer,
     AliAnalysisManager::GetCommonFileName());
 
   char* name = "ntplist";
@@ -119,17 +156,10 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(Double_t pt1 = 0.4, D
                              AliAnalysisManager::kOutputContainer,
                              AliAnalysisManager::GetCommonFileName());
   }
-  if (!fIsMC)
-    coutputlist[nout - 2] = mgr->CreateContainer(
-      Form("QAlist%s", suffix), TList::Class(), AliAnalysisManager::kOutputContainer,
-      AliAnalysisManager::GetCommonFileName());
-  coutputlist[nout - 1] = mgr->CreateContainer(
-    Form("QAlist2%s", suffix), TList::Class(), AliAnalysisManager::kOutputContainer,
-    AliAnalysisManager::GetCommonFileName());
 
-  mgr->ConnectInput(tasknfms, 0, mgr->GetCommonInputContainer());
+  mgr->ConnectInput(taskFactorialMoments, 0, mgr->GetCommonInputContainer());
   for (Int_t i = 0; i < nout; i++) {
-    mgr->ConnectOutput(tasknfms, i + 1, coutputlist[i]);
+    mgr->ConnectOutput(taskFactorialMoments, i + 1, coutputlist[i]);
   }
-  return tasknfms;
+  return taskFactorialMoments;
 }
