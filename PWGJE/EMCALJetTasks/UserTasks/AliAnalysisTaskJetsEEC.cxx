@@ -60,7 +60,7 @@ fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.02), fDerivSubtrOrder(0),
-fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(1), fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(0), fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0), R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0),pt_tru1(0), pt_tru2(0), eec_Mm(0), eec_mm(0), e3c_MMm(0), e3c_Mmm(0), e3c_mmm(0), eec_Mf(0), eec_ff(0), e3c_MMf(0), e3c_Mff(0), e3c_fff(0), eec_matched_det(0), eec_matched_tru(0), e3c_matched_det(0), e3c_matched_tru(0)
+fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(1), fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(0), fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0), R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0),pt_tru1(0), pt_tru2(0), eec_Mm(0), eec_mm(0), e3c_MMm(0), e3c_Mmm(0), e3c_mmm(0), eec_Mf(0), eec_ff(0), e3c_MMf(0), e3c_Mff(0), e3c_fff(0), eec_matched_det(0), eec_matched_tru(0), e3c_matched_det(0), e3c_matched_tru(0), wt_res_eec(0), wt_res_e3c(0), R_res_eec(0), R_res_e3c(0), wtnojet_match_eec(0), wtnojet_match_e3c(0), wtnojet_res_eec(0), wtnojet_res_e3c(0)
 {
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
@@ -76,7 +76,7 @@ fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.02), fDerivSubtrOrder(0),
-fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(1), fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(0), fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0), R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0),pt_tru1(0), pt_tru2(0), eec_Mm(0), eec_mm(0), e3c_MMm(0), e3c_Mmm(0), e3c_mmm(0), eec_Mf(0), eec_ff(0), e3c_MMf(0), e3c_Mff(0), e3c_fff(0), eec_matched_det(0), eec_matched_tru(0), e3c_matched_det(0), e3c_matched_tru(0)
+fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(1), fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(0), fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0), R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0),pt_tru1(0), pt_tru2(0), eec_Mm(0), eec_mm(0), e3c_MMm(0), e3c_Mmm(0), e3c_mmm(0), eec_Mf(0), eec_ff(0), e3c_MMf(0), e3c_Mff(0), e3c_fff(0), eec_matched_det(0), eec_matched_tru(0), e3c_matched_det(0), e3c_matched_tru(0), wt_res_eec(0), wt_res_e3c(0), R_res_eec(0), R_res_e3c(0), wtnojet_match_eec(0), wtnojet_match_e3c(0), wtnojet_res_eec(0), wtnojet_res_e3c(0)
 
 {
   SetMakeGeneralHistograms(kTRUE);
@@ -304,6 +304,30 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     e3c_matched_tru->RebinX(2);
     fOutput->Add(e3c_matched_tru);
   
+    wt_res_eec = new TH2D("wt_res_eec", "Weight resolution scale EEC", 40, -1, 1, 200, 0, 1);
+    fOutput->Add(wt_res_eec);
+    
+    wt_res_e3c = new TH2D("wt_res_e3c", "Weight resolution scale E3C", 40, -1, 1, 200, 0, 1);
+    fOutput->Add(wt_res_e3c);
+    
+    R_res_eec = new TH2D("R_res_eec", "Weight resolution scale E3C", 40, -1, 1, 200, 0, 1);
+    fOutput->Add(R_res_eec);
+    
+    R_res_e3c = new TH2D("R_res_e3c", "Weight resolution scale E3C", 40, -1, 1, 200, 0, 1);
+    fOutput->Add(R_res_e3c);
+    
+    wtnojet_match_eec = new TH2D("wtnojet_match_eec", "Matched Track Wt excluding jet pT EEC", 200, 0 ,10000 , 200, 0, 10000);
+    fOutput->Add(wtnojet_match_eec);
+    
+    wtnojet_match_e3c = new TH2D("wtnojet_match_e3c", "Matched Track Wt excluding jet pT E3C", 200, 0 ,100000 , 200, 0, 100000);
+    fOutput->Add(wtnojet_match_e3c);
+    
+    wtnojet_res_eec = new TH2D("wtnojet_res_eec", "Weight resolution (excluding jet pT) scale EEC", 40, -1, 1, 200, 0, 10000);
+    fOutput->Add(wtnojet_res_eec);
+    
+    wtnojet_res_e3c = new TH2D("wtnojet_res_e3c", "Weight resolution (excluding jet pT) scale E3C", 40, -1, 1, 200, 0, 10000);
+    fOutput->Add(wtnojet_res_e3c);
+    
     PostData(1, fOutput);
 
 
@@ -806,13 +830,31 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                                 eec_matched_tru->Fill(R_tru,jet_pt_tru,ee_tru);
                                 
                                 R_match_eec->Fill(R_tru,R_det);
+                                R_res_eec->Fill(R_tru,(R_tru-R_det)/(R_tru));
                                 wt_match_eec->Fill(ee_tru,ee_det);
+                                wtnojet_match_eec->Fill(2*fConstituents_tru[i].pt()*fConstituents_tru[l].pt(),2*fConstituents[j].pt()*fConstituents[s].pt());
+                                
+                                double wt_diff_eec = (ee_tru-ee_det)/ee_tru;
+                                wt_res_eec->Fill(ee_tru,wt_diff_eec);
+                                
+                                double wt_diff_eec_nojet = ((2*fConstituents_tru[i].pt()*fConstituents_tru[l].pt())-(2*fConstituents[j].pt()*fConstituents[s].pt()))/(2*fConstituents_tru[i].pt()*fConstituents_tru[l].pt());
+                                wtnojet_res_eec->Fill(wt_diff_eec_nojet,2*fConstituents_tru[i].pt()*fConstituents_tru[l].pt());
+                                
                                 
                                 e3c_matched_det->Fill(R_jss_det,jet_pt,ee_jss_det);
                                 e3c_matched_tru->Fill(R_jss_tru,jet_pt_tru,ee_jss_tru);
                                 
                                 R_match_e3c->Fill(R_jss_tru,R_jss_det);
+                                R_res_e3c->Fill(R_jss_tru,(R_jss_tru-R_jss_det)/(R_jss_tru));
                                 wt_match_e3c->Fill(ee_jss_tru,ee_jss_det);
+                                
+                                wtnojet_match_e3c->Fill(3*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[l].pt(),3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt());
+                                
+                                double wt_diff_e3c_jss = (ee_jss_tru-ee_jss_det)/ee_jss_tru;
+                                wt_res_e3c->Fill(wt_diff_e3c_jss,ee_jss_tru);
+                                
+                                double wt_diff_e3c_nojet_jss = ((3*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[l].pt())-(3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt()))/(3*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[l].pt());//diff/true
+                                wtnojet_res_e3c->Fill(wt_diff_e3c_nojet_jss, 3*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[l].pt());
                                 
                                 for(int m=0; m!=j && m!=s; m++)
                                 {
@@ -848,7 +890,16 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                                             e3c_matched_tru->Fill(R_dist_tru[max_R_tru],jet_pt_tru,ee_jsm_tru);
                                             
                                             R_match_e3c->Fill(R_dist_tru[max_R_tru],R_dist_det[max_R_det]);
+                                            R_res_e3c->Fill(R_dist_tru[max_R_tru],(R_dist_tru[max_R_tru]-R_dist_det[max_R_det])/(R_dist_tru[max_R_tru]));
                                             wt_match_e3c->Fill(ee_jsm_tru,ee_jsm_det);
+                                            
+                                            wtnojet_match_e3c->Fill(6*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[k].pt(),6*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt());
+                                            
+                                            double wt_diff_e3c_jsm = (ee_jsm_tru-ee_jsm_det)/ee_jsm_tru;
+                                            wt_res_e3c->Fill(wt_diff_e3c_jsm,ee_jsm_tru);
+                                            
+                                            double wt_diff_e3c_nojet_jsm = ((6*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[k].pt())-(6*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt()))/(6*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[k].pt());//diff/true
+                                            wtnojet_res_e3c->Fill(wt_diff_e3c_nojet_jsm, 6*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[k].pt());
                                             
                                             R_dist_det.clear();
                                             R_dist_tru.clear();
