@@ -9,9 +9,26 @@
 #include <TComplex.h>
 #include <AliVParticle.h>
 
-class CPart;
 class VPart;
 class TH1;
+
+class CPart {
+ public:
+  CPart() : fPt(0), fEta(0), fPhi(0), fCharge(0) {;}
+  CPart(Double_t pt, Double_t eta, Double_t phi, Short_t ch) : fPt(pt), fEta(eta), fPhi(TVector2::Phi_0_2pi(phi)), fCharge(ch) {;}
+  CPart(const CPart &p) : fPt(p.fPt), fEta(p.fEta), fPhi(p.fPhi), fCharge(p.fCharge) {;}
+  CPart(const AliVParticle &p) : fPt(p.Pt()), fEta(p.Eta()), fPhi(TVector2::Phi_0_2pi(p.Phi())), fCharge(p.Charge()) {;}
+  CPart(const TParticle &p);
+  Double_t Pt()         const {return fPt;}
+  Double_t Eta()        const {return fEta;}
+  Double_t Phi()        const {return fPhi;}
+  Short_t  Charge()     const {return fCharge;}
+ protected:
+  Double_t fPt;     //pt
+  Double_t fEta;    //eta
+  Double_t fPhi;    //phi
+  Short_t  fCharge; //charge
+};
 
 class Cumulants : public TNamed {
  public:
@@ -70,23 +87,7 @@ class Cumulants : public TNamed {
   ClassDef(Cumulants,1) //Cumulant class (CL)
 };
 
-class CPart {
- public:
-  CPart() : fPt(0), fEta(0), fPhi(0), fCharge(0) {;}
-  CPart(Double_t pt, Double_t eta, Double_t phi, Short_t ch) : fPt(pt), fEta(eta), fPhi(TVector2::Phi_0_2pi(phi)), fCharge(ch) {;}
-  CPart(const CPart &p) : fPt(p.fPt), fEta(p.fEta), fPhi(p.fPhi), fCharge(p.fCharge) {;}
-  CPart(const AliVParticle &p) : fPt(p.Pt()), fEta(p.Eta()), fPhi(TVector2::Phi_0_2pi(p.Phi())), fCharge(p.Charge()) {;}
-  CPart(const TParticle &p);
-  Double_t Pt()         const {return fPt;}
-  Double_t Eta()        const {return fEta;}
-  Double_t Phi()        const {return fPhi;}
-  Short_t  Charge()     const {return fCharge;}
- protected:
-  Double_t fPt;     //pt
-  Double_t fEta;    //eta
-  Double_t fPhi;    //phi
-  Short_t  fCharge; //charge
-};
+
 
 class VPart: public AliVParticle {
  public:
