@@ -356,8 +356,6 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
   fTree->Branch("XiTrackPx",&fTXiTrackPx,"fTXiTrackPx[fTnXi][3]/F");
   fTree->Branch("XiTrackPy",&fTXiTrackPy,"fTXiTrackPy[fTnXi][3]/F");
   fTree->Branch("XiTrackPz",&fTXiTrackPz,"fTXiTrackPz[fTnXi][3]/F");
-  fTree->Branch("XiTrackPy",&fTXiTrackPy,"fTXiTrackPy[fTnXi][3]/F");
-  fTree->Branch("XiTrackPz",&fTXiTrackPz,"fTXiTrackPz[fTnXi][3]/F");
   if(fOnlyXi) fTree->Branch("XiTrackTPCmom",&fTXiTrackTPCmom,"fTXiTrackTPCmom[fTnXi][3]/F");
   fTree->Branch("XiTrackDCA",&fTXiTrackDCA,"fTXiTrackDCA[fTnXi][3]/F");
   fTree->Branch("XiTrackTPCsigma",&fTXiTrackTPCsigma,"fTXiTrackTPCsigma[fTnXi][3]/F");
