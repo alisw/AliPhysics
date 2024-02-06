@@ -19,7 +19,7 @@ ClassImp(AliFemtoPairCutMInv)
 
 //__________________
 AliFemtoPairCutMInv::AliFemtoPairCutMInv():
-  AliFemtoPairCut(),
+  AliFemtoPairCutRadialDistance(),
   fNPairsFailed(0),
   fNPairsPassed(0),
   fMInvMin(0),
@@ -31,7 +31,7 @@ AliFemtoPairCutMInv::AliFemtoPairCutMInv():
 }
 //__________________
 AliFemtoPairCutMInv::AliFemtoPairCutMInv(double m1, double m2, double minvmin, double minvmax):
-  AliFemtoPairCut(),
+  AliFemtoPairCutRadialDistance(),
   fNPairsFailed(0),
   fNPairsPassed(0),
   fMInvMin(minvmin),
@@ -42,7 +42,7 @@ AliFemtoPairCutMInv::AliFemtoPairCutMInv(double m1, double m2, double minvmin, d
 }
 //__________________
 AliFemtoPairCutMInv::AliFemtoPairCutMInv(const AliFemtoPairCutMInv& c) : 
-  AliFemtoPairCut(c),
+  AliFemtoPairCutRadialDistance(c),
   fNPairsFailed(0),
   fNPairsPassed(0),
   fMInvMin(0),
