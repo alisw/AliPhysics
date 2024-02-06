@@ -85,10 +85,11 @@ using std::cout;
 using std::endl;
 using std::vector;
 
-static constexpr int v0m_Nbins{1};
-static constexpr double uc_v0m_bins_high[v0m_Nbins] = {5.0};
-static constexpr double uc_v0m_bins_low[v0m_Nbins] = {0.0};
-static const char* uc_v0m_bins_name[v0m_Nbins] = {"0_5"};
+static const int nSpecies{8};
+static const int nParticleSource{3};
+static const char* Species[nSpecies] = {"Ch",     "Pion",   "Kaon",   "Proton",
+                                        "Sigmap", "Sigmam", "Lambda", "Rest"};
+static const char* ParticleSource[nParticleSource] = {"Pri", "WeDe", "MaIn"};
 
 #include "AliAnalysisTaskDataSpeedOfSoundSim.h"
 
@@ -104,6 +105,9 @@ ClassImp(AliAnalysisTaskDataSpeedOfSoundSim)  // classimp: necessary for root
       fMC(0),
       fUseMC(kFALSE),
       fIsSystematics(true),
+      fVaryVtxZPos(false),
+      fMinVtxZPos(-5.0),
+      fMaxVtxZPos(5.0),
       fSystematic(1),
       fTrigger(AliVEvent::kCentral),
       fTrackFilter(0x0),
@@ -112,6 +116,12 @@ ClassImp(AliAnalysisTaskDataSpeedOfSoundSim)  // classimp: necessary for root
       fEtaCut(0.8),
       fEtaMin(-0.8),
       fEtaMax(0.8),
+      fEtaGapSPDpT(0.4),
+      fEtaGapSPDNchMin(0.7),
+      fEtaGapSPDNchMax(1.4),
+      fEtaGapTPCpT(0.3),
+      fEtaGapTPCNchMin(0.5),
+      fEtaGapTPCNchMax(0.8),
       fPtMin(0.15),
       fV0Mmin(0.0),
       fV0Mmax(80.0),
@@ -124,15 +134,21 @@ ClassImp(AliAnalysisTaskDataSpeedOfSoundSim)  // classimp: necessary for root
       fTrueNch14(0),
       fTrueNch10(0),
       fTrueNchEtaGap(0),
+      fTrueNchEtaGapTPC(0),
       fTrueNchEtaPos(0),
       fTrueNchEtaNeg(0),
       fTrueV0(0),
       fTracklets14(0),
       fTracklets10(0),
       fTrackletsEtaGap(0),
+      fTracksEtaGapTPC(0),
+      fTracksEtaNeg(0),
+      fTracksEtaPos(0),
+      fTracksEta08(0),
       fdcaxy(-999),
       fdcaz(-999),
       fMultSelection(0x0),
+      hBestVtxZ(0),
       hNchvsV0M(0),
       hNchvsV0MAmp(0),
       hV0MvsV0MAmp(0),
@@ -140,10 +156,6 @@ ClassImp(AliAnalysisTaskDataSpeedOfSoundSim)  // classimp: necessary for root
       hV0MAmplitude(0),
       hCounter(0),
       hV0Mmult(0),
-      pPtvsNch(0),
-      pPtEtaNegvsNchEtaPos(0),
-      pPtEtaPosvsNchEtaNeg(0),
-      pPtvsV0MAmp(0),
       hPtvsV0MAmp(0),
       hNchEtaPosvsNchEtaNeg(0),
       hPtEtaNegvsNchEtaPos(0),
@@ -151,37 +163,37 @@ ClassImp(AliAnalysisTaskDataSpeedOfSoundSim)  // classimp: necessary for root
       hTrueVtxZ(0),
       hTrueNch(0),
       hTrueV0MAmp(0),
-      hNchResponse(0),
       hTruePtvsTrueNch(0),
       hTrueNchEtaPosvsTrueNchEtaNeg(0),
       hTruePtEtaNegvsTrueNchEtaPos(0),
       hTruePtEtaPosvsTrueNchEtaNeg(0),
       hTrueNchEtaGap(0),
+      hTrueNchEtaGapTPC(0),
       hTruePtvsTrueNchEtaGap(0),
-      hPtInPrim_ch(0),
-      hPtInPrim_pion(0),
-      hPtInPrim_kaon(0),
-      hPtInPrim_proton(0),
-      hPtInPrim_sigmap(0),
-      hPtInPrim_sigmam(0),
-      hPtInPrim_lambda(0),
-      hPtInPrim_rest(0),
+      hTruePtvsTrueNchEtaGapTPC(0),
+      hTrueNchvsMeasNchEtaGapSPD(0),
+      hTrueNchvsMeasNchEtaGapTPC(0),
+      hTrueNchvsMeasNchHalfTPC(0),
       hPtOutAll_ch(0),
-      hPtOutPrim_ch(0),
-      hPtOutPrim_pion(0),
-      hPtOutPrim_kaon(0),
-      hPtOutPrim_proton(0),
-      hPtOutPrim_sigmap(0),
-      hPtOutPrim_sigmam(0),
-      hPtOutPrim_rest(0),
-      hPhiEtaSPD(0),
-      hVtxZvsTracklets(0),
-      hTrackletsEtaGapvsV0MAmp(0),
-      hPtvsTrackletsEtaGap(0) {
-  for (int i = 0; i < v0m_Nbins; ++i) {
-    hDCAxyPri[i] = 0;
-    hDCAxyWeDe[i] = 0;
-    hDCAxyMaIn[i] = 0;
+      hPhiEta(0),
+      hPhiEtaGap_SPD(0),
+      hPhiEtaGap_TPC(0),
+      hTrackletsEtaGap(0),
+      hTracksEtaGapTPC(0),
+      hPtvsTrackletsEtaGap(0),
+      hPtvsTracksEtaGapTPC(0) {
+  for (int i = 0; i < nParticleSource; ++i) {
+    hDCAxy[i] = 0;
+  }
+  for (int i = 0; i < nSpecies; ++i) {
+    hPtInPrim[i] = 0;
+    hPtOutPrim[i] = 0;
+    hPtInPrim_EtaGap_SPD[i] = 0;
+    hPtOutPrim_EtaGap_SPD[i] = 0;
+    hPtInPrim_EtaGap_TPC[i] = 0;
+    hPtOutPrim_EtaGap_TPC[i] = 0;
+    hPtInPrim_HalfEta[i] = 0;
+    hPtOutPrim_HalfEta[i] = 0;
   }
 }
 //_____________________________________________________________________________
@@ -194,6 +206,9 @@ AliAnalysisTaskDataSpeedOfSoundSim::AliAnalysisTaskDataSpeedOfSoundSim(
       fMC(0),
       fUseMC(kFALSE),
       fIsSystematics(true),
+      fVaryVtxZPos(false),
+      fMinVtxZPos(-5.0),
+      fMaxVtxZPos(5.0),
       fSystematic(1),
       fTrigger(AliVEvent::kCentral),
       fTrackFilter(0x0),
@@ -202,6 +217,12 @@ AliAnalysisTaskDataSpeedOfSoundSim::AliAnalysisTaskDataSpeedOfSoundSim(
       fEtaCut(0.8),
       fEtaMin(-0.8),
       fEtaMax(0.8),
+      fEtaGapSPDpT(0.4),
+      fEtaGapSPDNchMin(0.7),
+      fEtaGapSPDNchMax(1.4),
+      fEtaGapTPCpT(0.3),
+      fEtaGapTPCNchMin(0.5),
+      fEtaGapTPCNchMax(0.8),
       fPtMin(0.15),
       fV0Mmin(0.0),
       fV0Mmax(80.0),
@@ -214,15 +235,21 @@ AliAnalysisTaskDataSpeedOfSoundSim::AliAnalysisTaskDataSpeedOfSoundSim(
       fTrueNch14(0),
       fTrueNch10(0),
       fTrueNchEtaGap(0),
+      fTrueNchEtaGapTPC(0),
       fTrueNchEtaPos(0),
       fTrueNchEtaNeg(0),
       fTrueV0(0),
       fTracklets14(0),
       fTracklets10(0),
       fTrackletsEtaGap(0),
+      fTracksEtaGapTPC(0),
+      fTracksEtaNeg(0),
+      fTracksEtaPos(0),
+      fTracksEta08(0),
       fdcaxy(-999),
       fdcaz(-999),
       fMultSelection(0x0),
+      hBestVtxZ(0),
       hNchvsV0M(0),
       hNchvsV0MAmp(0),
       hV0MvsV0MAmp(0),
@@ -230,10 +257,6 @@ AliAnalysisTaskDataSpeedOfSoundSim::AliAnalysisTaskDataSpeedOfSoundSim(
       hV0MAmplitude(0),
       hCounter(0),
       hV0Mmult(0),
-      pPtvsNch(0),
-      pPtEtaNegvsNchEtaPos(0),
-      pPtEtaPosvsNchEtaNeg(0),
-      pPtvsV0MAmp(0),
       hPtvsV0MAmp(0),
       hNchEtaPosvsNchEtaNeg(0),
       hPtEtaNegvsNchEtaPos(0),
@@ -241,37 +264,37 @@ AliAnalysisTaskDataSpeedOfSoundSim::AliAnalysisTaskDataSpeedOfSoundSim(
       hTrueVtxZ(0),
       hTrueNch(0),
       hTrueV0MAmp(0),
-      hNchResponse(0),
       hTruePtvsTrueNch(0),
       hTrueNchEtaPosvsTrueNchEtaNeg(0),
       hTruePtEtaNegvsTrueNchEtaPos(0),
       hTruePtEtaPosvsTrueNchEtaNeg(0),
       hTrueNchEtaGap(0),
+      hTrueNchEtaGapTPC(0),
       hTruePtvsTrueNchEtaGap(0),
-      hPtInPrim_ch(0),
-      hPtInPrim_pion(0),
-      hPtInPrim_kaon(0),
-      hPtInPrim_proton(0),
-      hPtInPrim_sigmap(0),
-      hPtInPrim_sigmam(0),
-      hPtInPrim_lambda(0),
-      hPtInPrim_rest(0),
+      hTruePtvsTrueNchEtaGapTPC(0),
+      hTrueNchvsMeasNchEtaGapSPD(0),
+      hTrueNchvsMeasNchEtaGapTPC(0),
+      hTrueNchvsMeasNchHalfTPC(0),
       hPtOutAll_ch(0),
-      hPtOutPrim_ch(0),
-      hPtOutPrim_pion(0),
-      hPtOutPrim_kaon(0),
-      hPtOutPrim_proton(0),
-      hPtOutPrim_sigmap(0),
-      hPtOutPrim_sigmam(0),
-      hPtOutPrim_rest(0),
-      hPhiEtaSPD(0),
-      hVtxZvsTracklets(0),
-      hTrackletsEtaGapvsV0MAmp(0),
-      hPtvsTrackletsEtaGap(0) {
-  for (int i = 0; i < v0m_Nbins; ++i) {
-    hDCAxyPri[i] = 0;
-    hDCAxyWeDe[i] = 0;
-    hDCAxyMaIn[i] = 0;
+      hPhiEta(0),
+      hPhiEtaGap_SPD(0),
+      hPhiEtaGap_TPC(0),
+      hTrackletsEtaGap(0),
+      hTracksEtaGapTPC(0),
+      hPtvsTrackletsEtaGap(0),
+      hPtvsTracksEtaGapTPC(0) {
+  for (int i = 0; i < nParticleSource; ++i) {
+    hDCAxy[i] = 0;
+  }
+  for (int i = 0; i < nSpecies; ++i) {
+    hPtInPrim[i] = 0;
+    hPtOutPrim[i] = 0;
+    hPtInPrim_EtaGap_SPD[i] = 0;
+    hPtOutPrim_EtaGap_SPD[i] = 0;
+    hPtInPrim_EtaGap_TPC[i] = 0;
+    hPtOutPrim_EtaGap_TPC[i] = 0;
+    hPtInPrim_HalfEta[i] = 0;
+    hPtOutPrim_HalfEta[i] = 0;
   }
   DefineInput(0, TChain::Class());  // define the input of the analysis: in this
                                     // case you take a 'chain' of events
@@ -337,7 +360,17 @@ void AliAnalysisTaskDataSpeedOfSoundSim::UserCreateOutputObjects() {
     fCuts3->SetRequireSigmaToVertex(kFALSE);  //
     fCuts3->SetMaxChi2PerClusterITS(36);      //
     fCuts3->SetEtaRange(-0.8, 0.8);
+
+    if (fIsSystematics) {
+      ChangeCut(fCuts3);
+    }
     fTrackFilterwoDCA->AddCuts(fCuts3);
+  }
+
+  if (fVaryVtxZPos) {
+    fEventCuts.SetManualMode();  //! Enable manual mode
+    fEventCuts.fMinVtz = fMinVtxZPos;
+    fEventCuts.fMaxVtz = fMaxVtxZPos;
   }
 
   // create output objects
@@ -396,6 +429,10 @@ void AliAnalysisTaskDataSpeedOfSoundSim::UserCreateOutputObjects() {
   hCounter->GetXaxis()->SetBinLabel(2, "Corrections");
   fOutputList->Add(hCounter);
 
+  hBestVtxZ =
+      new TH1F("hBestVtxZ", ";Vertex_{#it{z}} (cm); Counts;", 400, -11, 11);
+  fOutputList->Add(hBestVtxZ);
+
   hV0Mmult =
       new TH1F("hV0Mmult", ";V0M (%);Entries", v0m_Nbins080, v0m_bins080);
   fOutputList->Add(hV0Mmult);
@@ -414,23 +451,6 @@ void AliAnalysisTaskDataSpeedOfSoundSim::UserCreateOutputObjects() {
 
   hV0MAmplitude =
       new TH1D("hV0MAmp", ";V0M Amplitude; Entries", v0mAmp_Nbins, v0mAmp_bins);
-
-  pPtvsNch = new TProfile("pPtvsNch",
-                          "; #it{N}_{ch}^{rec}; #LT#it{p}_{T}#GT GeV/#it{c}",
-                          nch_Nbins, nch_bins);
-  pPtEtaNegvsNchEtaPos =
-      new TProfile("pPtEtaNegvsNchEtaPos",
-                   "; #it{N}_{ch} (0#leq#eta#leq0.8); #it{p}_{T} (GeV/#it{c})"
-                   "(-0.8#leq#eta<0)",
-                   nch_Nbins, nch_bins);
-  pPtEtaPosvsNchEtaNeg =
-      new TProfile("pPtEtaPosvsNchEtaNeg",
-                   "; #it{N}_{ch} (-0.8#leq#eta<0); #it{p}_{T} (GeV/#it{c})"
-                   "(0#geq#eta#leq0.8)",
-                   nch_Nbins, nch_bins);
-  pPtvsV0MAmp = new TProfile("pPtvsV0MAmp",
-                             "; V0M Amplitude; #LT#it{p}_{T}#GT GeV/#it{c}",
-                             v0mAmp_Nbins, v0mAmp_bins);
 
   hPtvsV0MAmp = new TH2D("hPtvsV0MAmp", ";V0M Amp; #it{p}_{T} (GeV/#it{c})",
                          v0mAmp_Nbins, v0mAmp_bins, pt_Nbins, pt_bins);
@@ -451,48 +471,53 @@ void AliAnalysisTaskDataSpeedOfSoundSim::UserCreateOutputObjects() {
                "; #it{N}_{ch} (-0.8#leq#eta<0); #it{p}_{T} (GeV/#it{c})"
                "(0#geq#eta#leq0.8)",
                nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+  hPhiEta = new TH2F("hPhiEta", ";#varphi; #eta (|#eta|#leq0.8)", 80, 0,
+                     2 * TMath::Pi(), 80, -1.4, 1.4);
+  hPhiEtaGap_SPD =
+      new TH2F("hPhiEtaGap_SPD", ";#varphi; #eta (0.7#leq|#eta|#leq1.4)", 80, 0,
+               2 * TMath::Pi(), 80, -1.4, 1.4);
+  hPhiEtaGap_TPC =
+      new TH2F("hPhiEtaGap_TPC", ";#varphi; #eta (0.5#leq|#eta|#leq0.8)", 80, 0,
+               2 * TMath::Pi(), 80, -1.4, 1.4);
 
-  hPhiEtaSPD = new TH2D("hPhiEtaSPD", ";#varphi; #eta", 80, 0, 2 * TMath::Pi(),
-                        80, -1.4, 1.4);
+  hTrackletsEtaGap = new TH1F(
+      "hTrackletsEtaGap", ";#it{N}_{tracklet} (0.7#leq|#eta|#leq1.4); Counts",
+      tracklets_Nbins, tracklets_bins);
 
-  hVtxZvsTracklets =
-      new TH2D("hVtxZvsTracklets", ";#it{Z}_{vtz} (cm); #it{N}_{tracklets}", 50,
-               -10, 10, tracklets_Nbins, tracklets_bins);
+  hTracksEtaGapTPC = new TH1F("hTracksEtaGapTPC",
+                              ";#it{N}_{ch} (0.5#leq|#eta|#leq0.8); Counts",
+                              nch_Nbins, nch_bins);
 
-  hTrackletsEtaGapvsV0MAmp =
-      new TH2D("hTrackletsEtaGapvsV0MAmp",
-               "; #it{N}_{tracklet} (0.7#leq|#eta|#leq1.4); V0M Amp",
-               tracklets_Nbins, tracklets_bins, v0mAmp_Nbins, v0mAmp_bins);
+  hPtvsTrackletsEtaGap =
+      new TH2D("hPtvsTrackletsEtaGap",
+               "; #it{N}_{tracklet} (0.7#leq|#eta|#leq1.4); #it{p}_{T} "
+               "(|#eta|<0.4, GeV/#it{c})",
+               tracklets_Nbins, tracklets_bins, pt_Nbins, pt_bins);
 
-  hPtvsTrackletsEtaGap = new TH2D(
-      "hPtvsTrackletsEtaGap",
-      "; #it{N}_{tracklet} (0.7#leq|#eta|#leq1.4); #it{p}_{T} (GeV/#it{c})",
-      tracklets_Nbins, tracklets_bins, pt_Nbins, pt_bins);
+  hPtvsTracksEtaGapTPC = new TH2D("hPtvsTracksEtaGapTPC",
+                                  "; #it{N}_{ch} (0.5#leq|#eta|#leq0.8); "
+                                  "#it{p}_{T} (|#eta|<0.3, GeV/#it{c})",
+                                  nch_Nbins, nch_bins, pt_Nbins, pt_bins);
 
   fOutputList->Add(hNchvsV0M);
   fOutputList->Add(hNchvsV0MAmp);
   fOutputList->Add(hV0MvsV0MAmp);
   fOutputList->Add(pV0MAmpChannel);
   fOutputList->Add(hV0MAmplitude);
-  fOutputList->Add(pPtvsNch);
-  fOutputList->Add(pPtEtaNegvsNchEtaPos);
-  fOutputList->Add(pPtEtaPosvsNchEtaNeg);
-  fOutputList->Add(pPtvsV0MAmp);
   fOutputList->Add(hPtvsV0MAmp);
   fOutputList->Add(hNchEtaPosvsNchEtaNeg);
   fOutputList->Add(hPtEtaNegvsNchEtaPos);
   fOutputList->Add(hPtEtaPosvsNchEtaNeg);
-  fOutputList->Add(hPhiEtaSPD);
-  fOutputList->Add(hVtxZvsTracklets);
-  fOutputList->Add(hTrackletsEtaGapvsV0MAmp);
+  fOutputList->Add(hPhiEta);
+  fOutputList->Add(hPhiEtaGap_SPD);
+  fOutputList->Add(hPhiEtaGap_TPC);
+  fOutputList->Add(hTrackletsEtaGap);
+  fOutputList->Add(hTracksEtaGapTPC);
   fOutputList->Add(hPtvsTrackletsEtaGap);
+  fOutputList->Add(hPtvsTracksEtaGapTPC);
 
   hTrueVtxZ =
       new TH1F("hTrueVtxZ", ";z-vertex position;Entries", 200, -10.0, 10.0);
-
-  hNchResponse =
-      new TH2D("hNchResponse", ";#it{N}_{ch}^{rec}; #it{N}_{ch}^{true};",
-               nch_Nbins, nch_bins, nch_Nbins, nch_bins);
 
   hTrueNch = new TH1F("hTrueNch", "; #it{N}_{ch}^{true} (|#eta|<0.8); Entries",
                       nch_Nbins, nch_bins);
@@ -503,6 +528,10 @@ void AliAnalysisTaskDataSpeedOfSoundSim::UserCreateOutputObjects() {
   hTrueNchEtaGap = new TH1F("hTrueNchEtaGap",
                             "; #it{N}_{ch} (0.7#leq|#eta|#leq1.4); Entries ",
                             tracklets_Nbins, tracklets_bins);
+
+  hTrueNchEtaGapTPC = new TH1F("hTrueNchEtaGapTPC",
+                               "; #it{N}_{ch} (0.5#leq|#eta|#leq0.8); Entries ",
+                               nch_Nbins, nch_bins);
 
   hTruePtvsTrueNch =
       new TH2D("hTruePtvsTrueNch", ";#it{N}_{ch}^{true}; #it{p}_{T} GeV/#it{c}",
@@ -528,109 +557,108 @@ void AliAnalysisTaskDataSpeedOfSoundSim::UserCreateOutputObjects() {
   hPtOutAll_ch = new TH1F("hPtOutAll_Ch", ";#it{p}_{T} (GeV/#it{c}); Entries",
                           pt_Nbins, pt_bins);
 
-  hPtOutPrim_ch = new TH1F("hPtOutPrim_Ch", ";#it{p}_{T} (GeV/#it{c}); Entries",
-                           pt_Nbins, pt_bins);
+  hTruePtvsTrueNchEtaGap =
+      new TH2D("hTruePtvsTrueNchEtaGap",
+               "; #it{N}_{tracklet} (0.7#leq|#eta|#leq1.4); #it{p}_{T} "
+               "(|#eta|<0.4, GeV/#it{c})",
+               tracklets_Nbins, tracklets_bins, pt_Nbins, pt_bins);
 
-  hPtOutPrim_pion =
-      new TH1F("hPtOutPrim_Pion", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins,
-               pt_bins);
+  hTruePtvsTrueNchEtaGapTPC =
+      new TH2D("hTruePtvsTrueNchEtaGapTPC",
+               "; #it{N}_{ch} (0.5#leq|#eta|#leq0.8); #it{p}_{T} (|#eta|<0.3, "
+               "GeV/#it{c})",
+               nch_Nbins, nch_bins, pt_Nbins, pt_bins);
 
-  hPtOutPrim_kaon =
-      new TH1F("hPtOutPrim_Kaon", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins,
-               pt_bins);
+  hTrueNchvsMeasNchEtaGapSPD = new TH2D(
+      "hTrueNchvsMeasNchEtaGapSPD",
+      "; #it{N}_{ch}^{true} (0.7#leq|#eta|#leq1.4); #it{N}_{ch}^{rec} "
+      "(0.7#leq|#eta|#leq1.4)",
+      tracklets_Nbins, tracklets_bins, tracklets_Nbins, tracklets_bins);
 
-  hPtOutPrim_proton =
-      new TH1F("hPtOutPrim_Proton", ";#it{p}_{T} (GeV/#it{c}); Entries",
-               pt_Nbins, pt_bins);
+  hTrueNchvsMeasNchEtaGapTPC =
+      new TH2D("hTrueNchvsMeasNchEtaGapTPC",
+               "; #it{N}_{ch}^{true} (0.5#leq|#eta|#leq0.8); #it{N}_{ch}^{rec} "
+               "(0.5#leq|#eta|#leq0.8)",
+               nch_Nbins, nch_bins, nch_Nbins, nch_bins);
 
-  hPtOutPrim_sigmap =
-      new TH1F("hPtOutPrim_Sigmap", ";#it{p}_{T} (GeV/#it{c}); Entries",
-               pt_Nbins, pt_bins);
-
-  hPtOutPrim_sigmam =
-      new TH1F("hPtOutPrim_Sigmam", ";#it{p}_{T} (GeV/#it{c}); Entries",
-               pt_Nbins, pt_bins);
-
-  hPtOutPrim_rest =
-      new TH1F("hPtOutPrim_Rest", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins,
-               pt_bins);
-
-  hPtInPrim_ch = new TH1F("hPtInPrim_Ch", ";#it{p}_{T} (GeV/#it{c}); Entries",
-                          pt_Nbins, pt_bins);
-
-  hPtInPrim_pion = new TH1F(
-      "hPtInPrim_Pion", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins, pt_bins);
-
-  hPtInPrim_kaon = new TH1F(
-      "hPtInPrim_Kaon", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins, pt_bins);
-
-  hPtInPrim_proton =
-      new TH1F("hPtInPrim_Proton", ";#it{p}_{T} (GeV/#it{c}); Entries",
-               pt_Nbins, pt_bins);
-
-  hPtInPrim_sigmap =
-      new TH1F("hPtInPrim_Sigmap", ";#it{p}_{T} (GeV/#it{c}); Entries",
-               pt_Nbins, pt_bins);
-
-  hPtInPrim_sigmam =
-      new TH1F("hPtInPrim_Sigmam", ";#it{p}_{T} (GeV/#it{c}); Entries",
-               pt_Nbins, pt_bins);
-
-  hPtInPrim_lambda =
-      new TH1F("hPtInPrim_Lambda", ";#it{p}_{T} (GeV/#it{c}); Entries",
-               pt_Nbins, pt_bins);
-
-  hPtInPrim_rest = new TH1F(
-      "hPtInPrim_Rest", ";#it{p}_{T} (GeV/#it{c}); Entries", pt_Nbins, pt_bins);
-
-  hTruePtvsTrueNchEtaGap = new TH2D(
-      "hTruePtvsTrueNchEtaGap",
-      "; #it{N}_{tracklet} (0.7#leq|#eta|#leq1.4); #it{p}_{T} (GeV/#it{c})",
-      tracklets_Nbins, tracklets_bins, pt_Nbins, pt_bins);
-
-  for (int i = 0; i < v0m_Nbins; ++i) {
-    hDCAxyPri[i] = new TH2F(Form("hDCAxyPri_%s", uc_v0m_bins_name[i]),
-                            ";DCA_{xy} (cm);#it{p}_{T} GeV/#it{c}", dcaxy_Nbins,
-                            dcaxy_bins, pt_Nbins, pt_bins);
-    hDCAxyWeDe[i] = new TH2F(Form("hDCAxyWeDe_%s", uc_v0m_bins_name[i]),
-                             ";DCA_{xy} (cm);#it{p}_{T} GeV/#it{c}",
-                             dcaxy_Nbins, dcaxy_bins, pt_Nbins, pt_bins);
-    hDCAxyMaIn[i] = new TH2F(Form("hDCAxyMaIn_%s", uc_v0m_bins_name[i]),
-                             ";DCA_{xy} (cm);#it{p}_{T} GeV/#it{c}",
-                             dcaxy_Nbins, dcaxy_bins, pt_Nbins, pt_bins);
-  }
+  hTrueNchvsMeasNchHalfTPC =
+      new TH2D("hTrueNchvsMeasNchHalfTPC",
+               "; #it{N}_{ch}^{true} (0#leq#eta#leq0.8); #it{N}_{ch}^{rec} "
+               "(0#leq#eta#leq0.8)",
+               nch_Nbins, nch_bins, nch_Nbins, nch_bins);
 
   fOutputList->Add(hTrueVtxZ);
   fOutputList->Add(hTrueNch);
   fOutputList->Add(hTrueV0MAmp);
-  fOutputList->Add(hNchResponse);
-  fOutputList->Add(hPtInPrim_ch);
-  fOutputList->Add(hPtInPrim_pion);
-  fOutputList->Add(hPtInPrim_kaon);
-  fOutputList->Add(hPtInPrim_proton);
-  fOutputList->Add(hPtInPrim_sigmap);
-  fOutputList->Add(hPtInPrim_sigmam);
-  fOutputList->Add(hPtInPrim_lambda);
-  fOutputList->Add(hPtInPrim_rest);
-  fOutputList->Add(hPtOutAll_ch);
-  fOutputList->Add(hPtOutPrim_ch);
-  fOutputList->Add(hPtOutPrim_pion);
-  fOutputList->Add(hPtOutPrim_kaon);
-  fOutputList->Add(hPtOutPrim_proton);
-  fOutputList->Add(hPtOutPrim_sigmap);
-  fOutputList->Add(hPtOutPrim_sigmam);
-  fOutputList->Add(hPtOutPrim_rest);
   fOutputList->Add(hTruePtvsTrueNch);
   fOutputList->Add(hTrueNchEtaPosvsTrueNchEtaNeg);
   fOutputList->Add(hTruePtEtaNegvsTrueNchEtaPos);
   fOutputList->Add(hTruePtEtaPosvsTrueNchEtaNeg);
   fOutputList->Add(hTruePtvsTrueNchEtaGap);
+  fOutputList->Add(hTruePtvsTrueNchEtaGapTPC);
   fOutputList->Add(hTrueNchEtaGap);
+  fOutputList->Add(hTrueNchEtaGapTPC);
+  fOutputList->Add(hTrueNchvsMeasNchEtaGapSPD);
+  fOutputList->Add(hTrueNchvsMeasNchEtaGapTPC);
+  fOutputList->Add(hTrueNchvsMeasNchHalfTPC);
+  fOutputList->Add(hPtOutAll_ch);
 
-  for (int i = 0; i < v0m_Nbins; ++i) {
-    fOutputList->Add(hDCAxyPri[i]);
-    fOutputList->Add(hDCAxyWeDe[i]);
-    fOutputList->Add(hDCAxyMaIn[i]);
+  for (int i = 0; i < nSpecies; ++i) {
+    hPtInPrim[i] = new TH1F(Form("hPtInPrim_%s", Species[i]),
+                            "With 0#leqV0#leq5 cut (official "
+                            "framework);#it{p}_{T} (GeV/#it{c}); Entries",
+                            pt_Nbins, pt_bins);
+    hPtInPrim_EtaGap_SPD[i] =
+        new TH2D(Form("hPtInPrim_EtaGap_SPD_%s", Species[i]),
+                 ";#it{N}_{ch}^{true} (0.7#leq|#eta|#leq1.4);#it{p}_{T} "
+                 "(|#eta|#leq0.4, GeV/#it{c});",
+                 tracklets_Nbins, tracklets_bins, pt_Nbins, pt_bins);
+    hPtInPrim_EtaGap_TPC[i] =
+        new TH2D(Form("hPtInPrim_EtaGap_TPC_%s", Species[i]),
+                 ";#it{N}_{ch}^{true} (0.5#leq|#eta|#leq0.8);#it{p}_{T} "
+                 "(|#eta|#leq0.3, GeV/#it{c});",
+                 nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+    hPtInPrim_HalfEta[i] =
+        new TH2D(Form("hPtInPrim_HalfEta_%s", Species[i]),
+                 ";#it{N}_{ch}^{true} (0#leq#eta#leq0.8);#it{p}_{T} "
+                 "(-0.8#leq#eta<0, GeV/#it{c});",
+                 nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+    hPtOutPrim[i] = new TH1F(Form("hPtOutPrim_%s", Species[i]),
+                             "With 0#leqV0#leq5 cut (official framework);"
+                             "#it{p}_{T} (|#eta|<0.8, GeV/#it{c}); Entries",
+                             pt_Nbins, pt_bins);
+    hPtOutPrim_EtaGap_SPD[i] =
+        new TH2D(Form("hPtOutPrim_EtaGap_SPD_%s", Species[i]),
+                 ";#it{N}_{ch}^{rec} (0.7#leq|#eta|#leq1.4);#it{p}_{T} "
+                 "(|#eta|#leq0.4, GeV/#it{c});",
+                 tracklets_Nbins, tracklets_bins, pt_Nbins, pt_bins);
+    hPtOutPrim_EtaGap_TPC[i] =
+        new TH2D(Form("hPtOutPrim_EtaGap_TPC_%s", Species[i]),
+                 ";#it{N}_{ch}^{rec} (0.5#leq|#eta|#leq0.8);#it{p}_{T} "
+                 "(|#eta|#leq0.3, GeV/#it{c});",
+                 nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+    hPtOutPrim_HalfEta[i] =
+        new TH2D(Form("hPtOutPrim_HalfEta_%s", Species[i]),
+                 ";#it{N}_{ch}^{rec} (0#leq#eta#leq0.8);#it{p}_{T} "
+                 "(-0.8#leq#eta<0, GeV/#it{c});",
+                 nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+
+    fOutputList->Add(hPtInPrim[i]);
+    fOutputList->Add(hPtOutPrim[i]);
+    fOutputList->Add(hPtInPrim_EtaGap_SPD[i]);
+    fOutputList->Add(hPtOutPrim_EtaGap_SPD[i]);
+    fOutputList->Add(hPtInPrim_EtaGap_TPC[i]);
+    fOutputList->Add(hPtOutPrim_EtaGap_TPC[i]);
+    fOutputList->Add(hPtInPrim_HalfEta[i]);
+    fOutputList->Add(hPtOutPrim_HalfEta[i]);
+  }
+
+  for (int i = 0; i < nParticleSource; ++i) {
+    hDCAxy[i] = new TH2F(Form("hDCAxy_%s", ParticleSource[i]),
+                         "With 0#leqV0#leq5 cut (official framework);DCA_{xy} "
+                         "(cm);#it{p}_{T} (|#eta|<0.8, GeV/#it{c})",
+                         dcaxy_Nbins, dcaxy_bins, pt_Nbins, pt_bins);
+    fOutputList->Add(hDCAxy[i]);
   }
 
   fEventCuts.AddQAplotsToList(fOutputList);
@@ -741,16 +769,17 @@ void AliAnalysisTaskDataSpeedOfSoundSim::UserExec(Option_t*) {
     return;
   }
 
+  VertexPosition();
   GetCalibratedV0Amplitude();
   GetSPDMultiplicity();
+  GetTPCMultiplicity();
 
   if (isGoodVtxPosMC) {
     if (!fill_corrections) {
       MultiplicityDistributions();
     } else {
-      DetectorResponse();
       TrackingEfficiency();
-      DCAxyDistributions();
+      DCA();
     }
   }
 
@@ -760,6 +789,14 @@ void AliAnalysisTaskDataSpeedOfSoundSim::UserExec(Option_t*) {
 //______________________________________________________________________________
 
 void AliAnalysisTaskDataSpeedOfSoundSim::Terminate(Option_t*) {}
+
+//______________________________________________________________________________
+
+void AliAnalysisTaskDataSpeedOfSoundSim::VertexPosition() {
+  //! best primary vertex available
+  const AliVVertex* vtx = fEventCuts.GetPrimaryVertex();
+  hBestVtxZ->Fill(vtx->GetZ());
+}
 
 //______________________________________________________________________________
 
@@ -798,34 +835,32 @@ void AliAnalysisTaskDataSpeedOfSoundSim::GetSPDMultiplicity() {
   }
 
   nTracklets = SPDptr->GetNumberOfTracklets();
-
   for (auto it = 0; it < nTracklets; it++) {
     double eta = SPDptr->GetEta(it);
     double phi = SPDptr->GetPhi(it);
 
-    if (TMath::Abs(eta) < 1.0) {
+    if (TMath::Abs(eta) <= 1.0) {
       fTracklets10++;
     }
-    if (TMath::Abs(eta) < 1.4) {
-      hPhiEtaSPD->Fill(phi, eta);
+    if (TMath::Abs(eta) <= 1.4) {
       fTracklets14++;
     }
-    if (0.7 <= TMath::Abs(eta) && TMath::Abs(eta) <= 1.4) {
+    if (TMath::Abs(eta) >= fEtaGapSPDNchMin &&
+        TMath::Abs(eta) <= fEtaGapSPDNchMax) {
+      hPhiEtaGap_SPD->Fill(phi, eta);
       fTrackletsEtaGap++;
     }
   }
-
-  hVtxZvsTracklets->Fill(spdVtxZ, fTracklets14);
 }
 
 //______________________________________________________________________________
 
-void AliAnalysisTaskDataSpeedOfSoundSim::MultiplicityDistributions() {
-  int rec_nch{0};
-  int rec_nch_neg_eta{0};
-  int rec_nch_pos_eta{0};
+void AliAnalysisTaskDataSpeedOfSoundSim::GetTPCMultiplicity() {
+  fTracksEtaGapTPC = 0;
+  fTracksEtaNeg = 0;
+  fTracksEtaPos = 0;
+  fTracksEta08 = 0;
   const int n_tracks{fESD->GetNumberOfTracks()};
-
   for (int i = 0; i < n_tracks; ++i) {
     AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
     if (!track) {
@@ -843,25 +878,26 @@ void AliAnalysisTaskDataSpeedOfSoundSim::MultiplicityDistributions() {
     if (TMath::Abs(track->Eta()) > fEtaCut) {
       continue;
     }
-    if (fEtaMin <= track->Eta() && track->Eta() < 0.0) {
-      rec_nch_neg_eta++;
+    fTracksEta08++;
+    hPhiEta->Fill(track->Phi(), track->Eta());
+    if (track->Eta() >= fEtaMin && track->Eta() < 0.0) {
+      fTracksEtaNeg++;
     }
     if (track->Eta() >= 0.0 && track->Eta() <= fEtaMax) {
-      rec_nch_pos_eta++;
+      fTracksEtaPos++;
     }
-    rec_nch++;
+    if (TMath::Abs(track->Eta()) >= fEtaGapTPCNchMin &&
+        TMath::Abs(track->Eta()) <= fEtaGapTPCNchMax) {
+      hPhiEtaGap_TPC->Fill(track->Phi(), track->Eta());
+      fTracksEtaGapTPC++;
+    }
   }
+}
 
-  hV0Mmult->Fill(fv0mpercentile);
-  hV0MAmplitude->Fill(fv0mamplitude);
-  hNchvsV0M->Fill(rec_nch, fv0mpercentile);
-  hNchvsV0MAmp->Fill(rec_nch, fv0mamplitude);
-  hV0MvsV0MAmp->Fill(fv0mamplitude, fv0mpercentile);
-  hNchEtaPosvsNchEtaNeg->Fill(rec_nch_pos_eta, rec_nch_neg_eta);
-  if (fTrackletsEtaGap > 0) {
-    hTrackletsEtaGapvsV0MAmp->Fill(fTrackletsEtaGap, fv0mamplitude);
-  }
+//______________________________________________________________________________
 
+void AliAnalysisTaskDataSpeedOfSoundSim::MultiplicityDistributions() {
+  const int n_tracks{fESD->GetNumberOfTracks()};
   for (int i = 0; i < n_tracks; ++i) {
     AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
     if (!track) {
@@ -881,42 +917,36 @@ void AliAnalysisTaskDataSpeedOfSoundSim::MultiplicityDistributions() {
     }
     double pt = track->Pt();
     //! pT Spectra with NEGATIVE eta
-    if (fEtaMin <= track->Eta() && track->Eta() < 0.0) {
-      hPtEtaNegvsNchEtaPos->Fill(rec_nch_pos_eta, pt);
-      pPtEtaNegvsNchEtaPos->Fill(rec_nch_pos_eta, pt);
+    if (track->Eta() >= fEtaMin && track->Eta() < 0.0) {
+      hPtEtaNegvsNchEtaPos->Fill(fTracksEtaPos, pt);
     }
     //! pT Spectra with POSITIVE eta
     if (track->Eta() >= 0.0 && track->Eta() <= fEtaMax) {
-      hPtEtaPosvsNchEtaNeg->Fill(rec_nch_neg_eta, pt);
-      pPtEtaPosvsNchEtaNeg->Fill(rec_nch_neg_eta, pt);
+      hPtEtaPosvsNchEtaNeg->Fill(fTracksEtaNeg, pt);
     }
-    pPtvsNch->Fill(rec_nch, pt);
-    pPtvsV0MAmp->Fill(fv0mamplitude, pt);
+    //! pT Spectra with SPD eta gap
+    if (TMath::Abs(track->Eta()) <= fEtaGapSPDpT) {
+      hPtvsTrackletsEtaGap->Fill(fTrackletsEtaGap, pt);
+    }
+    //! pT Spectra with TPC eta gap
+    if (TMath::Abs(track->Eta()) <= fEtaGapTPCpT) {
+      hPtvsTracksEtaGapTPC->Fill(fTracksEtaGapTPC, pt);
+    }
     hPtvsV0MAmp->Fill(fv0mamplitude, pt);
-    if (fTrackletsEtaGap > 0) {
-      if (TMath::Abs(track->Eta()) <= 0.4) {
-        hPtvsTrackletsEtaGap->Fill(fTrackletsEtaGap, pt);
-      }
-    }
   }
+
+  hV0Mmult->Fill(fv0mpercentile);
+  hV0MAmplitude->Fill(fv0mamplitude);
+  hNchvsV0M->Fill(fTracksEta08, fv0mpercentile);
+  hNchvsV0MAmp->Fill(fTracksEta08, fv0mamplitude);
+  hV0MvsV0MAmp->Fill(fv0mamplitude, fv0mpercentile);
+  hNchEtaPosvsNchEtaNeg->Fill(fTracksEtaPos, fTracksEtaNeg);
+  hTrackletsEtaGap->Fill(fTrackletsEtaGap);
+  hTracksEtaGapTPC->Fill(fTracksEtaGapTPC);
 }
 
 //____________________________________________________________
-
-void AliAnalysisTaskDataSpeedOfSoundSim::DCAxyDistributions() {
-  int index{-1};
-  for (int i = 0; i < v0m_Nbins; ++i) {
-    if (fv0mpercentile >= uc_v0m_bins_low[i] &&
-        fv0mpercentile < uc_v0m_bins_high[i]) {
-      index = i;
-      break;
-    }
-  }
-
-  if (index < 0) {
-    return;
-  }
-
+void AliAnalysisTaskDataSpeedOfSoundSim::DCA() {
   const int n_tracks{fESD->GetNumberOfTracks()};
   for (int i = 0; i < n_tracks; ++i) {
     AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
@@ -932,35 +962,40 @@ void AliAnalysisTaskDataSpeedOfSoundSim::DCAxyDistributions() {
     if (TMath::Abs(track->Eta()) > fEtaCut) {
       continue;
     }
+
+    int label = -1;
+    label = TMath::Abs(track->GetLabel());
+
+    TParticle* particle = fMC->GetTrack(label)->Particle();
+    if (!particle) {
+      continue;
+    }
     if (track->Charge() == 0) {
       continue;
     }
 
-    float dcaxy = -999;
-    float dcaz = -999;
+    float dcaxy = -999.0;
+    float dcaz = -999.0;
     track->GetImpactParameters(dcaxy, dcaz);
 
-    int label = -1;
-    label = TMath::Abs(track->GetLabel());
-    if (fMC->IsPhysicalPrimary(label)) {
-      hDCAxyPri[index]->Fill(dcaxy, track->Pt());
-    } else if (fMC->IsSecondaryFromWeakDecay(label)) {
-      hDCAxyWeDe[index]->Fill(dcaxy, track->Pt());
-    } else if (fMC->IsSecondaryFromMaterial(label)) {
-      hDCAxyMaIn[index]->Fill(dcaxy, track->Pt());
-    } else {
-      continue;
+    if (fv0mpercentile >= 0.0 && fv0mpercentile <= 5.0) {
+      if (TMath::Abs(track->Eta()) <= fEtaCut) {
+        if (fMC->IsPhysicalPrimary(label)) {
+          hDCAxy[0]->Fill(dcaxy, track->Pt());
+        } else if (fMC->IsSecondaryFromWeakDecay(label)) {
+          hDCAxy[1]->Fill(dcaxy, track->Pt());
+        } else if (fMC->IsSecondaryFromMaterial(label)) {
+          hDCAxy[2]->Fill(dcaxy, track->Pt());
+        } else {
+          continue;
+        }
+      }
     }
   }
 }
-
 //____________________________________________________________
 
 void AliAnalysisTaskDataSpeedOfSoundSim::TrackingEfficiency() {
-  if (fv0mpercentile < 0.0 || fv0mpercentile > 5.0) {
-    return;
-  }
-
   const int n_tracks{fESD->GetNumberOfTracks()};
   for (int i = 0; i < n_tracks; ++i) {
     AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
@@ -987,25 +1022,38 @@ void AliAnalysisTaskDataSpeedOfSoundSim::TrackingEfficiency() {
     if (track->Charge() == 0) {
       continue;
     }
-    hPtOutAll_ch->Fill(track->Pt());
+
+    if (fv0mpercentile >= 0.0 && fv0mpercentile <= 5.0) {
+      hPtOutAll_ch->Fill(track->Pt());
+    }
+
     if (!fMC->IsPhysicalPrimary(label)) {
       continue;
     }
 
-    hPtOutPrim_ch->Fill(track->Pt());
-    int partPDG = TMath::Abs(particle->GetPdgCode());
-    if (partPDG == 211) {
-      hPtOutPrim_pion->Fill(track->Pt());  // pions
-    } else if (partPDG == 321) {
-      hPtOutPrim_kaon->Fill(track->Pt());  // kaons
-    } else if (partPDG == 2212) {
-      hPtOutPrim_proton->Fill(track->Pt());  // protons
-    } else if (partPDG == 3222) {
-      hPtOutPrim_sigmap->Fill(track->Pt());  // sigma plus
-    } else if (partPDG == 3112) {
-      hPtOutPrim_sigmam->Fill(track->Pt());  // sigma minus
-    } else {
-      hPtOutPrim_rest->Fill(track->Pt());  // rest of the charged particles
+    int partPDG = particle->GetPdgCode();
+    int pidCode = GetPidCode(partPDG);
+
+    if (fv0mpercentile >= 0.0 && fv0mpercentile <= 5.0) {
+      if (TMath::Abs(track->Eta()) <= fEtaCut) {
+        hPtOutPrim[0]->Fill(track->Pt());
+        hPtOutPrim[pidCode]->Fill(track->Pt());
+      }
+    }
+
+    if (TMath::Abs(track->Eta()) <= fEtaGapSPDpT) {
+      hPtOutPrim_EtaGap_SPD[0]->Fill(fTrackletsEtaGap, track->Pt());
+      hPtOutPrim_EtaGap_SPD[pidCode]->Fill(fTrackletsEtaGap, track->Pt());
+    }
+
+    if (TMath::Abs(track->Eta()) <= fEtaGapTPCpT) {
+      hPtOutPrim_EtaGap_TPC[0]->Fill(fTracksEtaGapTPC, track->Pt());
+      hPtOutPrim_EtaGap_TPC[pidCode]->Fill(fTracksEtaGapTPC, track->Pt());
+    }
+
+    if (track->Eta() >= fEtaMin && track->Eta() < 0.0) {
+      hPtOutPrim_HalfEta[0]->Fill(fTracksEtaPos, track->Pt());
+      hPtOutPrim_HalfEta[pidCode]->Fill(fTracksEtaPos, track->Pt());
     }
   }
 
@@ -1028,30 +1076,58 @@ void AliAnalysisTaskDataSpeedOfSoundSim::TrackingEfficiency() {
       continue;
     }
 
-    int partPDG = TMath::Abs(particle->PdgCode());
+    int partPDG = particle->PdgCode();
+    int pidCode = GetPidCode(partPDG);
 
-    if (partPDG == 3122) {
-      hPtInPrim_lambda->Fill(particle->Pt());  // Lambda
-    }
     if (particle->Charge() == 0) {
+      if (pidCode == 6) {
+        if (fv0mpercentile >= 0.0 && fv0mpercentile <= 5.0) {
+          if (TMath::Abs(particle->Eta()) <= fEtaCut) {
+            hPtInPrim[pidCode]->Fill(particle->Pt());
+          }
+        }
+
+        if (TMath::Abs(particle->Eta()) <= fEtaGapSPDpT) {
+          hPtInPrim_EtaGap_SPD[pidCode]->Fill(fTrueNchEtaGap, particle->Pt());
+        }
+
+        if (TMath::Abs(particle->Eta()) <= fEtaGapTPCpT) {
+          hPtInPrim_EtaGap_TPC[pidCode]->Fill(fTrueNchEtaGapTPC,
+                                              particle->Pt());
+        }
+
+        if (particle->Eta() >= fEtaMin && particle->Eta() < 0.0) {
+          hPtInPrim_HalfEta[pidCode]->Fill(fTrueNchEtaPos, particle->Pt());
+        }
+      }
       continue;
     }
 
-    hPtInPrim_ch->Fill(particle->Pt());
-    if (partPDG == 211) {
-      hPtInPrim_pion->Fill(particle->Pt());  // pions
-    } else if (partPDG == 321) {
-      hPtInPrim_kaon->Fill(particle->Pt());  // kaons
-    } else if (partPDG == 2212) {
-      hPtInPrim_proton->Fill(particle->Pt());  // protons
-    } else if (partPDG == 3222) {
-      hPtInPrim_sigmap->Fill(particle->Pt());  // sigma plus
-    } else if (partPDG == 3112) {
-      hPtInPrim_sigmam->Fill(particle->Pt());  // sigma minus
-    } else {
-      hPtInPrim_rest->Fill(particle->Pt());  // rest of the charged particles
+    if (fv0mpercentile >= 0.0 && fv0mpercentile <= 5.0) {
+      if (TMath::Abs(particle->Eta()) <= fEtaCut) {
+        hPtInPrim[0]->Fill(particle->Pt());
+        hPtInPrim[pidCode]->Fill(particle->Pt());
+      }
+    }
+
+    if (TMath::Abs(particle->Eta()) <= fEtaGapSPDpT) {
+      hPtInPrim_EtaGap_SPD[0]->Fill(fTrueNchEtaGap, particle->Pt());
+      hPtInPrim_EtaGap_SPD[pidCode]->Fill(fTrueNchEtaGap, particle->Pt());
+    }
+
+    if (TMath::Abs(particle->Eta()) <= fEtaGapTPCpT) {
+      hPtInPrim_EtaGap_TPC[0]->Fill(fTrueNchEtaGapTPC, particle->Pt());
+      hPtInPrim_EtaGap_TPC[pidCode]->Fill(fTrueNchEtaGapTPC, particle->Pt());
+    }
+
+    if (particle->Eta() >= fEtaMin && particle->Eta() < 0.0) {
+      hPtInPrim_HalfEta[0]->Fill(fTrueNchEtaPos, particle->Pt());
+      hPtInPrim_HalfEta[pidCode]->Fill(fTrueNchEtaPos, particle->Pt());
     }
   }
+  hTrueNchvsMeasNchEtaGapSPD->Fill(fTrueNchEtaGap, fTrackletsEtaGap);
+  hTrueNchvsMeasNchEtaGapTPC->Fill(fTrueNchEtaGapTPC, fTracksEtaGapTPC);
+  hTrueNchvsMeasNchHalfTPC->Fill(fTrueNchEtaPos, fTracksEtaPos);
 }
 
 //____________________________________________________________
@@ -1064,6 +1140,7 @@ void AliAnalysisTaskDataSpeedOfSoundSim::ReadMCEvent() {
   fTrueNchEtaPos = 0;
   fTrueNchEtaNeg = 0;
   fTrueNchEtaGap = 0;
+  fTrueNchEtaGapTPC = 0;
 
   const int n_particles{fMC->GetNumberOfTracks()};
   for (int i = 0; i < n_particles; ++i) {
@@ -1077,27 +1154,22 @@ void AliAnalysisTaskDataSpeedOfSoundSim::ReadMCEvent() {
     if (particle->Charge() == 0.0) {
       continue;
     }
+    if (!fMC->IsPhysicalPrimary(i)) {
+      continue;
+    }
     if ((2.8 < particle->Eta() && particle->Eta() < 5.1) ||
         (-3.7 < particle->Eta() && particle->Eta() < -1.7)) {
-      if (fMC->IsPhysicalPrimary(i)) {
-        fTrueV0++;
-      }
+      fTrueV0++;
     }
     if (TMath::Abs(particle->Eta()) < 1.4) {
-      if (fMC->IsPhysicalPrimary(i)) {
-        fTrueNch14++;
-      }
+      fTrueNch14++;
     }
     if (TMath::Abs(particle->Eta()) < 1.0) {
-      if (fMC->IsPhysicalPrimary(i)) {
-        fTrueNch10++;
-      }
+      fTrueNch10++;
     }
-    if (0.7 <= TMath::Abs(particle->Eta()) &&
-        TMath::Abs(particle->Eta()) <= 1.4) {
-      if (fMC->IsPhysicalPrimary(i)) {
-        fTrueNchEtaGap++;
-      }
+    if (TMath::Abs(particle->Eta()) >= fEtaGapSPDNchMin &&
+        TMath::Abs(particle->Eta()) <= fEtaGapSPDNchMax) {
+      fTrueNchEtaGap++;
     }
     if (particle->Pt() < fPtMin) {
       continue;
@@ -1105,17 +1177,17 @@ void AliAnalysisTaskDataSpeedOfSoundSim::ReadMCEvent() {
     if (TMath::Abs(particle->Eta()) > fEtaCut) {
       continue;
     }
-    if (!fMC->IsPhysicalPrimary(i)) {
-      continue;
-    }
-
-    fTrueNch++;
-    if (fEtaMin <= particle->Eta() && particle->Eta() < 0.0) {
+    if (particle->Eta() >= fEtaMin && particle->Eta() < 0.0) {
       fTrueNchEtaNeg++;
     }
     if (particle->Eta() >= 0.0 && particle->Eta() <= fEtaMax) {
       fTrueNchEtaPos++;
     }
+    if (TMath::Abs(particle->Eta()) >= fEtaGapTPCNchMin &&
+        TMath::Abs(particle->Eta()) <= fEtaGapTPCNchMax) {
+      fTrueNchEtaGapTPC++;
+    }
+    fTrueNch++;
   }
 }
 
@@ -1145,10 +1217,13 @@ void AliAnalysisTaskDataSpeedOfSoundSim::TrueMultiplicityDistributions() {
     }
 
     hTruePtvsTrueNch->Fill(fTrueNch, particle->Pt());
-    if (TMath::Abs(particle->Eta()) <= 0.4) {
+    if (TMath::Abs(particle->Eta()) <= fEtaGapSPDpT) {
       hTruePtvsTrueNchEtaGap->Fill(fTrueNchEtaGap, particle->Pt());
     }
-    if (fEtaMin <= particle->Eta() && particle->Eta() < 0.0) {
+    if (TMath::Abs(particle->Eta()) <= fEtaGapTPCpT) {
+      hTruePtvsTrueNchEtaGapTPC->Fill(fTrueNchEtaGapTPC, particle->Pt());
+    }
+    if (particle->Eta() >= fEtaMin && particle->Eta() < 0.0) {
       hTruePtEtaNegvsTrueNchEtaPos->Fill(fTrueNchEtaPos, particle->Pt());
     }
     if (particle->Eta() >= 0.0 && particle->Eta() <= fEtaMax) {
@@ -1159,34 +1234,8 @@ void AliAnalysisTaskDataSpeedOfSoundSim::TrueMultiplicityDistributions() {
   hTrueNch->Fill(fTrueNch);
   hTrueV0MAmp->Fill(fTrueV0);
   hTrueNchEtaGap->Fill(fTrueNchEtaGap);
+  hTrueNchEtaGapTPC->Fill(fTrueNchEtaGapTPC);
   hTrueNchEtaPosvsTrueNchEtaNeg->Fill(fTrueNchEtaPos, fTrueNchEtaNeg);
-}
-
-//____________________________________________________________
-
-void AliAnalysisTaskDataSpeedOfSoundSim::DetectorResponse() {
-  fRecNch = 0;
-  const int n_tracks{fESD->GetNumberOfTracks()};
-  for (int i = 0; i < n_tracks; ++i) {
-    AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
-    if (!track) {
-      continue;
-    }
-    if (!fTrackFilter->IsSelected(track)) {
-      continue;
-    }
-    if (track->Pt() < fPtMin) {
-      continue;
-    }
-    if (track->Charge() == 0) {
-      continue;
-    }
-    if (TMath::Abs(track->Eta()) > fEtaCut) {
-      continue;
-    }
-    fRecNch++;
-  }
-  hNchResponse->Fill(fRecNch, fTrueNch);
 }
 
 //____________________________________________________________
@@ -1315,4 +1364,34 @@ void AliAnalysisTaskDataSpeedOfSoundSim::ChangeCut(AliESDtrackCuts* fCuts) {
     default:
       cout << "fSystematic not defined!" << '\n';
   }
+}
+//_____________________________________________________________________________
+int AliAnalysisTaskDataSpeedOfSoundSim::GetPidCode(int pdgCode) const {
+  // return our internal code for pions, kaons, and protons
+
+  int pidCode{1};
+  switch (TMath::Abs(pdgCode)) {
+    case 211:
+      pidCode = 1;  // pion
+      break;
+    case 321:
+      pidCode = 2;  // kaon
+      break;
+    case 2212:
+      pidCode = 3;  // proton
+      break;
+    case 3222:
+      pidCode = 4;  // sigma plus
+      break;
+    case 3112:
+      pidCode = 5;  // sigma minus
+      break;
+    case 3122:
+      pidCode = 6;  // lambda
+      break;
+    default:
+      pidCode = 7;  // something else?
+  };
+
+  return pidCode;
 }

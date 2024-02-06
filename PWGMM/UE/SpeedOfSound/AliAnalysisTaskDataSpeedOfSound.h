@@ -37,18 +37,27 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void GetSPDMultiplicity();
   void MultiplicityDistributions();
   void GetCalibratedV0Amplitude();
+  void VertexPosition();
   void GetZDCCentrality();
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetHMCut(double HMcut) { fHMCut = HMcut; }      // Set V0M max value
   void SetUseMC(bool mc = false) { fUseMC = mc; }      // use to analyse MC data
   void SetEtaCut(const double& etacut) { fEtaCut = etacut; }
-  void SetEtaMinCut(const double& etamin) { fEtaMin = etamin; }
-  void SetEtaMaxCut(const double& etamax) { fEtaMax = etamax; }
-  void SetEtaGappT(const double& eta) { fEtaGappT = eta; }
-  void SetEtaGapNch(const double& etamin, const double& etamax) {
-    fEtaGapNchMin = etamin;
-    fEtaGapNchMax = etamax;
+  void SetEtaCutsHalfTPC(const double& etamin, const double& etamax) {
+    fEtaMin = etamin;
+    fEtaMax = etamax;
+  }
+  void SetEtaGappT(const double& eta_spd, const double& eta_tpc) {
+    fEtaGappT = eta_spd;
+    fEtaGapTPCpT = eta_tpc;
+  }
+  void SetEtaGapNch(const double& etamin_spd, const double& etamax_spd,
+                    const double& etamin_tpc, const double& etamax_tpc) {
+    fEtaGapNchMin = etamin_spd;
+    fEtaGapNchMax = etamax_spd;
+    fEtaGapTPCNchMin = etamin_tpc;
+    fEtaGapTPCNchMax = etamax_tpc;
   }
   void SetPtMin(const double& ptmin) { fPtMin = ptmin; }
   void SetTrigger(UInt_t trigger = AliVEvent::kINT7) { fTrigger = trigger; }
@@ -56,6 +65,12 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void SetSystematics(bool issystematics = true, int systematic = 1) {
     fIsSystematics = issystematics;
     fSystematic = systematic;
+  }
+  void SetSystematicsVtxZ(bool varyZpos = false, const float& minz = -5.0,
+                          const float& maxz = 5.0) {
+    fVaryVtxZPos = varyZpos;
+    fMinVtxZPos = minz;
+    fMaxVtxZPos = maxz;
   }
   void ChangeCut(AliESDtrackCuts* fCuts);
 
@@ -67,6 +82,9 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   AliMCEvent* fMC;
   bool fUseMC;
   bool fIsSystematics;
+  bool fVaryVtxZPos;
+  float fMinVtxZPos;
+  float fMaxVtxZPos;
   int fSystematic;
   UInt_t fTrigger;
   AliAnalysisFilter* fTrackFilter;
@@ -78,6 +96,9 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   double fEtaGappT;
   double fEtaGapNchMin;
   double fEtaGapNchMax;
+  double fEtaGapTPCpT;
+  double fEtaGapTPCNchMin;
+  double fEtaGapTPCNchMax;
   double fPtMin;
   double fV0Mmin;
   double fV0Mmax;
@@ -88,49 +109,48 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   int fTracklets14;
   int fTracklets10;
   int fTrackletsEtaGap;
+  int fTracksEtaGapTPC;
   double fza;
   double fzc;
   double fzn;
   float fdcaxy;
   float fdcaz;
   AliMultSelection* fMultSelection;
-  TH2F* hNchvsV0M;
+  TH1F* hNch;
   TH2F* hNchvsV0MAmp;
   TH2F* hV0MvsV0MAmp;
   TProfile* pV0MAmpChannel;
   TH1F* hV0MAmplitude;
-  TH1F* hV0Mmult;
+  TH1F* hV0Percentile;
+  TH2D* hPtvsNch;
   TProfile* pPtvsNch;
   TProfile* pPtEtaNegvsNchEtaPos;
   TProfile* pPtEtaPosvsNchEtaNeg;
   TProfile* pPtvsV0MAmp;
   TH2D* hPtvsV0MAmp;
-  TH2D* hNchEtaPosvsNchEtaNeg;
+  TH1F* hNchEtaPos;
+  TH1F* hNchEtaNeg;
   TH2D* hPtEtaNegvsNchEtaPos;
   TH2D* hPtEtaPosvsNchEtaNeg;
   TH2F* hDCAxyData[1];
-  TH2F* hZAvsNchHM;
-  TH2F* hZCvsNchHM;
-  TH2F* hZNvsNchHM;
-  TH2F* hZNvsV0MAmpHM;
-  TH2D* hPtvsZAHM;
-  TH2D* hPtvsZCHM;
-  TH2D* hPtvsZNHM;
   TH2F* hPhiEtaSPD;
-  TH1F* hEtaGapSPD;
-  TH2F* hVtxZvsTracklets;
-  TH2F* hTrackletsvsV0MAmp14;
-  TH2F* hTrackletsvsV0MAmp10;
+  TH2F* hPhiEtaGapTPC;
+  TH2F* hPhiEtaPosHalfTPC;
+  TH2F* hPhiEtaNegHalfTPC;
+  TH2F* hPhiEtaGapSPD;
+  TH1F* hBestVtxZ;
+  TH1F* hTracklets14;
+  TH1F* hTracklets10;
   TH1F* hTrackletsEtaGap;
+  TH1F* hTracksEtaGapTPC;
   TH2D* hPtvsTracklets14;
   TH2D* hPtvsTracklets10;
   TH2D* hPtvsTrackletsEtaGap;
+  TH2D* hPtvsTracksEtaGapTPC;
   TProfile* pPtvsTracklets14;
   TProfile* pPtvsTracklets10;
   TProfile* pPtvsTrackletsEtaGap;
-  TProfile* pPtvsZA;
-  TProfile* pPtvsZC;
-  TProfile* pPtvsZN;
+  TProfile* pPtvsTracksEtaGapTPC;
 
   AliAnalysisTaskDataSpeedOfSound(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented
