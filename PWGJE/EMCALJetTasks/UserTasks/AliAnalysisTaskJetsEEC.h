@@ -241,7 +241,14 @@ protected:
     TH2D *e3c_matched_det; //!<! initializing 2D histogram of det level E3C and det jet pt
     TH2D *e3c_matched_tru; //!<! initializing 2D histogram of tru level E3C and tru jet pt
     
-    
+    TH2D *wt_res_eec; //!<! initializing 2D histogram for wt resolution EEC
+    TH2D *wt_res_e3c; //!<! initializing 2D histogram for wt resolution E3C
+    TH2D *R_res_eec; //!<! initializing 2D histogram for R resolution EEC
+    TH2D *R_res_e3c; //!<! initializing 2D histogram for R resolution E3C
+    TH2D *wtnojet_match_eec;//!<! initializing 2D histogram for EEC wt without jet pt
+    TH2D *wtnojet_match_e3c;//!<! initializing 2D histogram for E3C wt without jet pt
+    TH2D *wtnojet_res_eec; //!<! initializing 2D histogram for wt resolution with jet pt excluded EEC
+    TH2D *wtnojet_res_e3c; //!<! initializing 2D histogram for wt resolution with jet pt excluded E3C
 
 private:
     AliAnalysisTaskJetsEEC(
@@ -249,7 +256,7 @@ private:
     AliAnalysisTaskJetsEEC &
     operator=(const AliAnalysisTaskJetsEEC &); // not implemented
     
-    ClassDef(AliAnalysisTaskJetsEEC, 49) //change this to 46 if you add something new
+    ClassDef(AliAnalysisTaskJetsEEC, 51) //change this to 52 if you add something new
 };
 #endif
 
