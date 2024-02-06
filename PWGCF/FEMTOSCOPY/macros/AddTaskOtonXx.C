@@ -109,8 +109,8 @@ if(doFD) forML = false;
     TrackCutsKaon->SetCutCharge(1);
     TrackCutsKaon->SetFilterBit(128);
     TrackCutsKaon->SetPIDkd(true, true); // Ramona
-    TrackCutsAntiKaon->SetDCAVtxZ(0.1);
-    TrackCutsAntiKaon->SetNClsTPC(70);
+    TrackCutsKaon->SetDCAVtxZ(0.1);
+    TrackCutsKaon->SetNClsTPC(70);
    } 
   }else{ //use pions
    /*
