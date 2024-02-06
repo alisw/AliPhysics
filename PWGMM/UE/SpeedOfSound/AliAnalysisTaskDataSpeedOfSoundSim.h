@@ -33,22 +33,46 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t* option);
   virtual void Terminate(Option_t* option);
+  void VertexPosition();
   void DCAxyDistributions();
   void TrackingEfficiency();
-  void DetectorResponse();
+  void DCA();
+  int GetPidCode(int pdgCode) const;
   void ReadMCEvent();
   void TrueMultiplicityDistributions();
   void MultiplicityDistributions();
+  void GetTPCMultiplicity();
   void GetCalibratedV0Amplitude();
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetHMCut(double HMcut) { fHMCut = HMcut; }      // Set V0M max value
   void SetRandomNumberCut(double rdcut) { fRandomNumberCut = rdcut; }
   void SetUseMC(bool mc = false) { fUseMC = mc; }  // use to analyse MC data
-  void SetEtaCut(const double& etacut) { fEtaCut = etacut; }
-  void SetEtaMinCut(const double& etamin) { fEtaMin = etamin; }
-  void SetEtaMaxCut(const double& etamax) { fEtaMax = etamax; }
-  void SetPtMin(const double& ptmin) { fPtMin = ptmin; }
+  void SetEtaCut(const double& etacut, const double& etamin,
+                 const double& etamax) {
+    fEtaCut = etacut;
+    fEtaMin = etamin;
+    fEtaMax = etamax;
+  }
+  // void SetEtaMinCut(const double& etamin) { fEtaMin = etamin; }
+  // void SetEtaMaxCut(const double& etamax) { fEtaMax = etamax; }
+  void SetEtaGapCut(const double& min_spd, const double& max_spd,
+                    const double& min_tpc, const double& max_tpc) {
+    fEtaGapSPDNchMin = min_spd;
+    fEtaGapSPDNchMax = max_spd;
+    fEtaGapTPCNchMin = min_tpc;
+    fEtaGapTPCNchMax = max_tpc;
+  }
+  void SetPtCut(const double& ptmin, const double& pt_spd,
+                const double& pt_tpc) {
+    fPtMin = ptmin;
+    fEtaGapSPDpT = pt_spd;
+    fEtaGapTPCpT = pt_tpc;
+  }
+  // void SetPtCutEtaGap(const double& pt_spd, const double& pt_tpc) {
+  //   fEtaGapSPDpT = pt_spd;
+  //   fEtaGapTPCpT = pt_tpc;
+  // }
   void SetTrigger(UInt_t offlineTriggerMask = AliVEvent::kINT7) {
     fTrigger = offlineTriggerMask;
   }
@@ -58,6 +82,13 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
     fIsSystematics = issystematics;
     fSystematic = systematic;
   }
+  void SetSystematicsVtxZ(bool varyZpos = false, const float& minz = -5.0,
+                          const float& maxz = 5.0) {
+    fVaryVtxZPos = varyZpos;
+    fMinVtxZPos = minz;
+    fMaxVtxZPos = maxz;
+  }
+
   void ChangeCut(AliESDtrackCuts* fCuts);
 
  protected:
@@ -68,6 +99,9 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   AliMCEvent* fMC;
   bool fUseMC;
   bool fIsSystematics;
+  bool fVaryVtxZPos;
+  float fMinVtxZPos;
+  float fMaxVtxZPos;
   int fSystematic;
   UInt_t fTrigger;
   AliAnalysisFilter* fTrackFilter;
@@ -76,6 +110,12 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   double fEtaCut;
   double fEtaMin;
   double fEtaMax;
+  double fEtaGapSPDpT;
+  double fEtaGapSPDNchMin;
+  double fEtaGapSPDNchMax;
+  double fEtaGapTPCpT;
+  double fEtaGapTPCNchMin;
+  double fEtaGapTPCNchMax;
   double fPtMin;
   double fV0Mmin;
   double fV0Mmax;
@@ -88,15 +128,21 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   int fTrueNch14;
   int fTrueNch10;
   int fTrueNchEtaGap;
+  int fTrueNchEtaGapTPC;
   int fTrueNchEtaPos;
   int fTrueNchEtaNeg;
   int fTrueV0;
   int fTracklets14;
   int fTracklets10;
   int fTrackletsEtaGap;
+  int fTracksEtaGapTPC;
+  int fTracksEtaNeg;
+  int fTracksEtaPos;
+  int fTracksEta08;
   float fdcaxy;
   float fdcaz;
   AliMultSelection* fMultSelection;
+  TH1F* hBestVtxZ;
   TH2D* hNchvsV0M;
   TH2D* hNchvsV0MAmp;
   TH2D* hV0MvsV0MAmp;
@@ -104,10 +150,6 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   TH1D* hV0MAmplitude;
   TH1F* hCounter;
   TH1F* hV0Mmult;
-  TProfile* pPtvsNch;
-  TProfile* pPtEtaNegvsNchEtaPos;
-  TProfile* pPtEtaPosvsNchEtaNeg;
-  TProfile* pPtvsV0MAmp;
   TH2D* hPtvsV0MAmp;
   TH2D* hNchEtaPosvsNchEtaNeg;
   TH2D* hPtEtaNegvsNchEtaPos;
@@ -115,36 +157,34 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   TH1F* hTrueVtxZ;
   TH1F* hTrueNch;
   TH1F* hTrueV0MAmp;
-  TH2D* hNchResponse;
   TH2D* hTruePtvsTrueNch;
   TH2D* hTrueNchEtaPosvsTrueNchEtaNeg;
   TH2D* hTruePtEtaNegvsTrueNchEtaPos;
   TH2D* hTruePtEtaPosvsTrueNchEtaNeg;
   TH1F* hTrueNchEtaGap;
+  TH1F* hTrueNchEtaGapTPC;
   TH2D* hTruePtvsTrueNchEtaGap;
-  TH2F* hDCAxyPri[1];
-  TH2F* hDCAxyWeDe[1];
-  TH2F* hDCAxyMaIn[1];
-  TH1F* hPtInPrim_ch;
-  TH1F* hPtInPrim_pion;
-  TH1F* hPtInPrim_kaon;
-  TH1F* hPtInPrim_proton;
-  TH1F* hPtInPrim_sigmap;
-  TH1F* hPtInPrim_sigmam;
-  TH1F* hPtInPrim_lambda;
-  TH1F* hPtInPrim_rest;
+  TH2D* hTruePtvsTrueNchEtaGapTPC;
+  TH2D* hTrueNchvsMeasNchEtaGapSPD;
+  TH2D* hTrueNchvsMeasNchEtaGapTPC;
+  TH2D* hTrueNchvsMeasNchHalfTPC;
   TH1F* hPtOutAll_ch;
-  TH1F* hPtOutPrim_ch;
-  TH1F* hPtOutPrim_pion;
-  TH1F* hPtOutPrim_kaon;
-  TH1F* hPtOutPrim_proton;
-  TH1F* hPtOutPrim_sigmap;
-  TH1F* hPtOutPrim_sigmam;
-  TH1F* hPtOutPrim_rest;
-  TH2D* hPhiEtaSPD;
-  TH2D* hVtxZvsTracklets;
-  TH2D* hTrackletsEtaGapvsV0MAmp;
+  TH2F* hPhiEta;
+  TH2F* hPhiEtaGap_SPD;
+  TH2F* hPhiEtaGap_TPC;
+  TH1F* hTrackletsEtaGap;
+  TH1F* hTracksEtaGapTPC;
   TH2D* hPtvsTrackletsEtaGap;
+  TH2D* hPtvsTracksEtaGapTPC;
+  TH1F* hPtInPrim[8];
+  TH2D* hPtInPrim_EtaGap_SPD[8];
+  TH2D* hPtInPrim_EtaGap_TPC[8];
+  TH2D* hPtInPrim_HalfEta[8];
+  TH1F* hPtOutPrim[8];
+  TH2D* hPtOutPrim_EtaGap_SPD[8];
+  TH2D* hPtOutPrim_EtaGap_TPC[8];
+  TH2D* hPtOutPrim_HalfEta[8];
+  TH2F* hDCAxy[3];
 
   AliAnalysisTaskDataSpeedOfSoundSim(
       const AliAnalysisTaskDataSpeedOfSoundSim&);  // not implemented

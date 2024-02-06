@@ -29,10 +29,12 @@ AliAnalysisTaskDataSpeedOfSound* AddTaskDataSpeedOfSound(
   taskKno->SetV0Mmax(80.0);
   taskKno->SetEtaCut(0.8);
   taskKno->SetPtMin(0.15);
-  taskKno->SetEtaGappT(0.4);
-  taskKno->SetEtaGapNch(0.7, 1.4);
-  taskKno->SetTrigger(AliVEvent::kCentral);
-  taskKno->SetSystematics(true, 0);
+  taskKno->SetEtaCutsHalfTPC(-0.8, 0.8);
+  taskKno->SetEtaGappT(0.4, 0.3);
+  taskKno->SetEtaGapNch(0.7, 1.4, 0.5, 0.8);
+  taskKno->SetTrigger(AliVEvent::kINT7);
+  taskKno->SetSystematicsVtxZ(true, -2.5, 2.5);
+  taskKno->SetSystematics(false, 0);
   mgr->AddTask(taskKno);
 
   mgr->ConnectInput(taskKno, 0, mgr->GetCommonInputContainer());
