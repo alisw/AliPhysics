@@ -21,11 +21,13 @@ AliAnalysisTaskSE* AddTaskOtonXx(int isMCint = 0,
 
 //do pions:
   // KaonCut = 0 // Kaons
-  // KaonCut = 1,2 // pions 96,128
+  // KaonCut = 1 // ramona kaons
+  // KaonCut = 2,3 // pions 96,128
   bool isPi = false;
   bool isPi128 = false;
-  if(KaonCut>0) isPi = true;
-  if(KaonCut>1) isPi128 = true;
+  if(KaonCut>1) isPi = true;
+  if(KaonCut>2) isPi128 = true;
+  
 
 //do omegas
   // XiCut = 0 // Xi
@@ -96,11 +98,20 @@ if(doFD) forML = false;
 
   //kaons:
   AliFemtoDreamTrackCuts *TrackCutsKaon;
-  if(KaonCut<1){ // std, use kaons
-   TrackCutsKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
-   TrackCutsKaon->SetPIDkd();
-   TrackCutsKaon->SetCutCharge(1);
-   TrackCutsKaon->SetFilterBit(128);
+  if(KaonCut<2){ // use kaons
+   if(KaonCut==0){ // std Oton kaons
+    TrackCutsKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
+    TrackCutsKaon->SetPIDkd();
+    TrackCutsKaon->SetCutCharge(1);
+    TrackCutsKaon->SetFilterBit(128);
+   }else if(KaonCut==1){ //ramona kaons
+    TrackCutsKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
+    TrackCutsKaon->SetCutCharge(1);
+    TrackCutsKaon->SetFilterBit(128);
+    TrackCutsKaon->SetPIDkd(true, true); // Ramona
+    TrackCutsAntiKaon->SetDCAVtxZ(0.1);
+    TrackCutsAntiKaon->SetNClsTPC(70);
+   } 
   }else{ //use pions
    /*
    //my pions
@@ -132,11 +143,20 @@ if(doFD) forML = false;
 
   //antikaons
   AliFemtoDreamTrackCuts *TrackCutsAntiKaon;
-  if(KaonCut<1){ // std, use kaons
-   TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
-   TrackCutsAntiKaon->SetPIDkd();
-   TrackCutsAntiKaon->SetCutCharge(-1);
-   TrackCutsAntiKaon->SetFilterBit(128);
+  if(KaonCut<2){ // use kaons
+   if(KaonCut==0){ // std Oton kaons
+    TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
+    TrackCutsAntiKaon->SetPIDkd();
+    TrackCutsAntiKaon->SetCutCharge(-1);
+    TrackCutsAntiKaon->SetFilterBit(128);
+   }else if(KaonCut==1){ //ramona kaons
+    TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
+    TrackCutsAntiKaon->SetCutCharge(-1);
+    TrackCutsAntiKaon->SetFilterBit(128);
+    TrackCutsAntiKaon->SetPIDkd(true, true); // Ramona
+    TrackCutsAntiKaon->SetDCAVtxZ(0.1);
+    TrackCutsAntiKaon->SetNClsTPC(70);
+   } 
   }else{ //use pions
    /*
    //my pions
@@ -451,7 +471,7 @@ bool PionCheckPileUp = false; //std
   // Femto Collection
 //TO WHICH ORDER CORRESPONDS THIS???????????
   std::vector<int> PDGParticles;
-  if(KaonCut<1){ //use Kaons
+  if(KaonCut<2){ //use Kaons
    PDGParticles.push_back(321);
    PDGParticles.push_back(321);
   }else { // use pions
