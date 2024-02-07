@@ -410,6 +410,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Bool_t      SetPoissonParamCentFunction(int isMC);
     Bool_t      SetNMatchedTracksFunc(float meanCent);
+    Double_t    Sigmoid(Double_t x, Double_t a, Double_t b, Double_t c);
+    Double_t    NOCFunction(Double_t x, Double_t start_y, Double_t a_drop, Double_t b_drop, Double_t c_drop, Double_t c_rise, Double_t transition_width);        // Function which describes the Neutral Overlap Correction factor
     Double_t    CorrectEnergyForOverlap(float meanCent, float E = 0);
     Int_t       GetDoEnergyCorrectionForOverlap()               {return fDoEnergyCorrectionForOverlap;}
     Double_t    GetMeanEForOverlap(Double_t cent, Double_t* par);
@@ -543,7 +545,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fMinTimeDiff;                             // minimum time difference to triggered collision
     Double_t  fMaxTimeDiffHighPt;                       // maximum time difference to triggered collision at high Pt
     Double_t  fMinTimeDiffHighPt;                       // minimum time difference to triggered collision at high Pt
+    Double_t  fOffsetTimeMC;                            // time offset difference to triggered collision in MC, seen in PbPb 5.02 TeV production
     Bool_t    fUseTimeDiff;                             // flag for switching on time difference cut
+    Bool_t    fUseTimeDiffMC;                           // flag for switching on time difference cut for MC, needed in PbPb 5.02 TeV production
     Double_t  fMaxDistTrackToClusterEta;                // minimum distance between track and cluster in eta
     Double_t  fMinDistTrackToClusterPhi;                // minimum distance between track and cluster in phi
     Double_t  fMaxDistTrackToClusterPhi;                // maximum distance between track and cluster in phi
@@ -762,7 +766,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,133)
+    ClassDef(AliCaloPhotonCuts,134)
 };
 
 #endif

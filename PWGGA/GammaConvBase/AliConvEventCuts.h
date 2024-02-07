@@ -3,6 +3,7 @@
 
 // Class handling all kinds of selection cuts for Gamma Conversion analysis
 // Authors: Friederike Bock, Daniel Muehlheim
+#include <map>
 #include <TObjString.h>
 #include "AliAODTrack.h"
 #include "AliESDtrack.h"
@@ -397,6 +398,32 @@ class AliConvEventCuts : public AliAnalysisCuts {
 
       enum phosTriggerType{kPHOSAny,kPHOSL0,kPHOSL1low,kPHOSL1med,kPHOSL1high} ;
 
+      /**
+       * @enum mcHeader
+       * @brief Possible Headers for Injected MC
+       */
+      enum MCHeaders {
+        kMinBias  = 0,    //!< MB header
+        kPileUp   = 1,    //!< PileUp header
+        kPi0PCM   = 2,    //!< Injected Pi0 in PCM acceptance
+        kPi0PHOSa = 3,    //!< Injected Pi0 in PHOS acceptance
+        kPi0PHOSb = 4,    //!< Injected Pi0 in PHOS acceptance
+        kPi0PHOSc = 5,    //!< Injected Pi0 in PHOS acceptance
+        kPi0PHOSd = 6,    //!< Injected Pi0 in PHOS acceptance
+        kEtaPCM   = 7,    //!< Injected Eta in PCM acceptance
+        kEtaPHOSa = 8,    //!< Injected Eta in PHOS acceptance
+        kPi0EMCe  = 9,    //!< Injected Pi0 in EMC acceptance
+        kPi0EMCf  = 10,   //!< Injected Pi0 in EMC acceptance
+        kPi0EMCg  = 11,   //!< Injected Pi0 in DCal acceptance
+        kPi0EMCh  = 12,   //!< Injected Pi0 in DCal acceptance
+        kPi0EMCi  = 13,   //!< Injected Pi0 in EMC acceptance
+        kEtaEMCb  = 9,    //!< Injected Eta in EMC acceptance
+        kEtaEMCc  = 10,   //!< Injected Eta in EMC acceptance
+        kEtaEMCd  = 11,   //!< Injected Eta in EMC acceptance
+        kEtaEMCe  = 12,   //!< Injected Eta in DCal acceptance
+        kEtaEMCf  = 13    //!< Injected Eta in DCal acceptance
+      };
+
 
       AliConvEventCuts(const char *name="EventCuts", const char * title="Event Cuts");
       AliConvEventCuts(const AliConvEventCuts&);
@@ -579,6 +606,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    GetUseINELgtZERO()                                                  { return fINELgtZEROTrigger                                 ; }
       void      GetCorrectEtaShiftFromPeriod();
       void      GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *event);
+      void      FillHeaderMap(TList *HeaderList, AliVEvent *event);
       Double_t  GetV0Multiplicity(AliVEvent *event) const;
       Int_t     GetNumberOfTPCClusters(AliVEvent *event) const;
       TClonesArray*     GetArrayFromEvent(AliVEvent* event, const char *name, const char *clname=0);
@@ -732,6 +760,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       std::vector<int>            fNotRejectedStart;                      //[fnHeaders]
       std::vector<int>            fNotRejectedEnd;                        //[fnHeaders]
       std::vector<TString>        fGeneratorNames;                        //[fnHeaders]
+      std::map<int, MCHeaders>    fHeaderMap;                             //!< Map from header index to header enum
       PeriodVar                   fPeriodEnum;                            ///< period selector
       EnergyVar                   fEnergyEnum;                            ///< energy selector
       AliTimeRangeCut             fTimeRangeCut;                          //!
@@ -835,7 +864,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,92)
+      ClassDef(AliConvEventCuts,93)
       /// \endcond
 };
 
