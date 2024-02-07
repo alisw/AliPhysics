@@ -67,6 +67,7 @@ public:
     void SetIsMCKaon(Bool_t isMCKaon) {IS_MC_KAON = isMCKaon; };
     void SetIsMCKTrack(Bool_t isMCKTrack) {IS_MC_KTRACK = isMCKTrack; };
     void SetUseAccpt(Bool_t useAccpt) {USE_ACCPT = useAccpt; };
+    void SetMCPileupRemoval(Bool_t doPileupRemoval) {DO_PILEUP_REMOVAL = doPileupRemoval; };
 
     void SetMultLow(Float_t multLow) { MULT_LOW = multLow; };
     void SetMultHigh(Float_t multHigh) { MULT_HIGH = multHigh; };
@@ -86,6 +87,7 @@ private:
     Bool_t IS_MC_KAON;
     Bool_t IS_MC_KTRACK;
     Bool_t USE_ACCPT;
+    Bool_t DO_PILEUP_REMOVAL;
     
     Bool_t DO_SINGLE_TRIGGER;
     Bool_t SELECT_TRIGGER_EVENTS;
