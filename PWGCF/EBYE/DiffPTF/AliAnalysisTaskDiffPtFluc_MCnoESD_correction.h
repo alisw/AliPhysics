@@ -54,6 +54,10 @@ class AliAnalysisTaskDiffPtFluc_MCnoESD_correction : public AliAnalysisTaskSE {
   {
     fMCchoice = MC_choice;
   }
+  void SetEffAmplificationFactor(float k_val)
+  {
+    fKfactor = k_val;
+  }
   
  private:
   
@@ -69,6 +73,9 @@ class AliAnalysisTaskDiffPtFluc_MCnoESD_correction : public AliAnalysisTaskSE {
   Float_t fNch_eta0pt5;
   Float_t fNpart_1;
   Float_t fNpart_2;
+  Float_t fKfactor;
+  Float_t fNsum_less0;
+  Float_t fNsum_less0_uncorrected;
   TH2F *hist2D_pt_gen_centrality;
   TH2F *hist2D_pt_rec_centrality;
   Int_t fMCchoice;

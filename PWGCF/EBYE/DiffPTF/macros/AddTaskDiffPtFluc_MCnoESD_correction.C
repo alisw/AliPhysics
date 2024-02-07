@@ -1,5 +1,5 @@
 
-AliAnalysisTaskDiffPtFluc_MCnoESD_correction *AddTaskDiffPtFluc_MCnoESD_correction(Int_t fCentralityMin=0, Int_t fCentralityMax=90,/* TString sTrigger="kINT7"*/ Double_t fVzMax=10, Double_t fdcaxy=0.1, Double_t fdcaz=1, Double_t fchi2tpc=2.5, Double_t fchi2its=36, Double_t fnCrossedRows=70, TString OutFileName = "_default", Double_t fEta=0.8, Int_t fMCGenChoice=2)
+AliAnalysisTaskDiffPtFluc_MCnoESD_correction *AddTaskDiffPtFluc_MCnoESD_correction(Int_t fCentralityMin=0, Int_t fCentralityMax=90,/* TString sTrigger="kINT7"*/ Double_t fVzMax=10, Double_t fdcaxy=0.1, Double_t fdcaz=1, Double_t fchi2tpc=2.5, Double_t fchi2its=36, Double_t fnCrossedRows=70, TString OutFileName = "_default", Double_t fEta=0.8, Int_t fMCGenChoice=2, Float_t fKfactr=1)
 {
   // standard with task
   printf("===================================================================================\n");
@@ -60,7 +60,7 @@ AliAnalysisTaskDiffPtFluc_MCnoESD_correction *AddTaskDiffPtFluc_MCnoESD_correcti
   // task_Mpt->SetMinNCrossedRowsTPCRange(fnCrossedRows);
   // task_Mpt->SetEtaCut(fEta);
   task_Mpt->SetMCGeneratorChoice(fMCGenChoice);
-  
+  task_Mpt->SetEffAmplificationFactor(fKfactr);
 
   // TString OutTreeName;
   // OutTreeName += "fTreeEvent";
