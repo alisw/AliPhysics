@@ -52,7 +52,7 @@ public:
   virtual void LocalInit() { Init(); }
   //   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *opt = "");
-  virtual Bool_t Run();
+  virtual bool Run();
 
   TClonesArray *GetInputList() const { return fInputList; }     //! This is for both data and MC
   TClonesArray *GetInputListb() const { return fInputListb; }   //! This is for MC
@@ -63,11 +63,35 @@ public:
   double GetDeltaPtPerpEmbedding(double signalEta, double signalPhi);
   void SetEmbeddPerpendicular(bool EmbeddPerpendicular = true) { fEmbeddPerpendicular = EmbeddPerpendicular; }; // EMB_clus
 
+  void DoJetProbabilityAnalysis(bool val = true) { fDoJetProbabilityAnalysis = val; }
   void UsePartonDefinition(bool val = true) { fUsePartonDef = val; }
 
   void FillCandidateJet(int CutIndex, int JetFlavor);
   void FillCandidateHFJet(AliEmcalJet *jet, TClonesArray *inputList);
   void FillCandidateHFJetMC(AliEmcalJet *jet, short jetFlavor);
+
+  bool SetResFunction(TF1 *f, int j)
+  {
+    fResolutionFunction[j] = f;
+    return true;
+  }
+  bool SetResFunctionb(TF1 *f, int j)
+  {
+    fResolutionFunctionb[j] = f;
+    return true;
+  }
+  bool SetResFunctionc(TF1 *f, int j)
+  {
+    fResolutionFunctionc[j] = f;
+    return true;
+  }
+  bool SetResFunctionlf(TF1 *f, int j)
+  {
+    fResolutionFunctionlf[j] = f;
+    return true;
+  }
+
+  void SetMinTrackProbability(double value) { fMinTrackProb = value; }
 
   void SetDoSVAnalysis(bool value) { fDoSVAnalysis = value; }
   void SetDoTCAnalysis(bool value) { fDoTrackCountingAnalysis = value; }
@@ -92,12 +116,17 @@ private:
   bool CalculateJetSignedTrackImpactParameter(AliAODTrack *track, AliEmcalJet *jet, double *impar, double *cov, double &sign, double &dcajetrack, double &lineardecaylength);
   double GetValImpactParameter(TTypeImpPar type, double *impar, double *cov);
 
+  bool IsTrackAcceptedQuality(AliAODTrack *track, AliEmcalJet *Jet, int &QualityClass, double *imp, double *cov, double &sign);
   bool IsTrackAcceptedBJetCuts(AliAODTrack *track, int jetFlavour);
 
   bool MatchJetsGeometricDefault();                                                        // jet matching function 1/4
   void DoJetLoop();                                                                        // jet matching function 2/4
   void SetMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, int matching = 0);           // jet matching function 3/4
   void GetGeometricalMatchingLevel(AliEmcalJet *jet1, AliEmcalJet *jet2, double &d) const; // jet matching function 4/4
+
+  double CalculateTrackProb(double significance, int trclass, int jetFlavor);
+  double CalculateJetProb(AliEmcalJet *jet, int jetFlavor); //!
+  void FillResolutionFunctionHists(AliAODTrack *track, AliEmcalJet *jet, int jetFlavor);
 
   void MakeControlHistograms();
 
@@ -221,6 +250,63 @@ private:
   TH2D *fh2dJetSignedImpParXYSignificancebThird;            //!
   TH2D *fh2dJetSignedImpParXYSignificancecThird;            //!
 
+  // ################################ Histograms for resolution functions
+  TH2D *fh2dJetSignedImpParXYSignificance_Class1;   //!
+  TH2D *fh2dJetSignedImpParXYSignificanceb_Class1;  //!
+  TH2D *fh2dJetSignedImpParXYSignificancec_Class1;  //!
+  TH2D *fh2dJetSignedImpParXYSignificancelf_Class1; //!
+
+  TH2D *fh2dJetSignedImpParXYSignificance_Class2;   //!
+  TH2D *fh2dJetSignedImpParXYSignificanceb_Class2;  //!
+  TH2D *fh2dJetSignedImpParXYSignificancec_Class2;  //!
+  TH2D *fh2dJetSignedImpParXYSignificancelf_Class2; //!
+
+  TH2D *fh2dJetSignedImpParXYSignificance_Class3;   //!
+  TH2D *fh2dJetSignedImpParXYSignificanceb_Class3;  //!
+  TH2D *fh2dJetSignedImpParXYSignificancec_Class3;  //!
+  TH2D *fh2dJetSignedImpParXYSignificancelf_Class3; //!
+
+  TH2D *fh2dJetSignedImpParXYSignificance_Class4;   //!
+  TH2D *fh2dJetSignedImpParXYSignificanceb_Class4;  //!
+  TH2D *fh2dJetSignedImpParXYSignificancec_Class4;  //!
+  TH2D *fh2dJetSignedImpParXYSignificancelf_Class4; //!
+
+  // Jet Probability Histograms
+  TH2D *fhistJetProbability;              //!
+  TH2D *fhistJetProbability_Unidentified; //!
+  TH2D *fhistJetProbability_udsg;         //!
+  TH2D *fhistJetProbability_c;            //!
+  TH2D *fhistJetProbability_b;            //!
+
+  TH2D *fhistJetProbabilityLog;              //!
+  TH2D *fhistJetProbability_UnidentifiedLog; //!
+  TH2D *fhistJetProbability_udsgLog;         //!
+  TH2D *fhistJetProbability_cLog;            //!
+  TH2D *fhistJetProbability_bLog;            //!
+
+  TH2D *fhistJetProbabilityLogFirst;              //!
+  TH2D *fhistJetProbability_UnidentifiedLogFirst; //!
+  TH2D *fhistJetProbability_udsgLogFirst;         //!
+  TH2D *fhistJetProbability_cLogFirst;            //!
+  TH2D *fhistJetProbability_bLogFirst;            //!
+
+  TH2D *fhistJetProbabilityLogSecond;              //!
+  TH2D *fhistJetProbability_UnidentifiedLogSecond; //!
+  TH2D *fhistJetProbability_udsgLogSecond;         //!
+  TH2D *fhistJetProbability_cLogSecond;            //!
+  TH2D *fhistJetProbability_bLogSecond;            //!
+
+  TH2D *fhistJetProbabilityLogThird;              //!
+  TH2D *fhistJetProbability_UnidentifiedLogThird; //!
+  TH2D *fhistJetProbability_udsgLogThird;         //!
+  TH2D *fhistJetProbability_cLogThird;            //!
+  TH2D *fhistJetProbability_bLogThird;            //!
+
+  TF1 *fResolutionFunction[7];   //
+  TF1 *fResolutionFunctionb[7];  //
+  TF1 *fResolutionFunctionc[7];  //
+  TF1 *fResolutionFunctionlf[7]; //
+
   AliJetContainer *fJetContainerMC;   //! Container with reconstructed jets
   AliJetContainer *fJetContainerData; //! Container with reconstructed jets
   AliAODEvent *fAODIn;                //! AOD Input Event
@@ -230,6 +316,9 @@ private:
   bool fDoSVAnalysis;            //
   bool fDoTrackCountingAnalysis; //
   bool fUsePartonDef;
+  bool fDoJetProbabilityAnalysis; //
+
+  double fMinTrackProb;
 
   AliHFJetsTaggingVertex *fVtxTagger3Prong; //!
   AliHFJetsTaggingVertex *fVtxTagger2Prong; //!
