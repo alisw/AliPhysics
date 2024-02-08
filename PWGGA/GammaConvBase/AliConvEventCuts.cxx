@@ -125,6 +125,7 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fNotRejectedStart({}),
   fNotRejectedEnd({}),
   fGeneratorNames({}),
+  fHeaderMap(),
   fPeriodEnum(kNoPeriod),
   fEnergyEnum(kUnset),
   fTimeRangeCut(),
@@ -271,6 +272,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fNotRejectedStart(ref.fNotRejectedStart),
   fNotRejectedEnd(ref.fNotRejectedEnd),
   fGeneratorNames(ref.fGeneratorNames),
+  fHeaderMap(ref.fHeaderMap),
   fPeriodEnum(ref.fPeriodEnum),
   fEnergyEnum(kUnset),
   fTimeRangeCut(),
@@ -6900,6 +6902,9 @@ TString AliConvEventCuts::GetCutNumber(){
 //________________________________________________________________________
 void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderList, AliVEvent *event){
 
+  if(fHeaderMap.empty()){
+    FillHeaderMap(HeaderList, event);
+  }
   if ( rejection==0 || // No rejection
        rejection==5 || // reject particles from out-of-bunch pileup
       ((fPeriodEnum==kLHC20g10 || fPeriodEnum==kLHC24a1) && (rejection==1 || rejection==3))){
@@ -7201,6 +7206,79 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
 
 }
 
+// what it does: fills fHeaderMap
+//________________________________________________________________________
+void AliConvEventCuts::FillHeaderMap(TList *HeaderList, AliVEvent *event){
+  AliGenCocktailEventHeader *cHeader    = 0x0;
+  AliAODMCHeader *cHeaderAOD            = 0x0;
+  Bool_t headerFound                    = kFALSE;
+  AliMCEvent *fMCEvent                  = 0x0;
+  TClonesArray *fMCEventAOD             = 0x0;
+
+  if(event->IsA()==AliMCEvent::Class()){
+    if(dynamic_cast<AliMCEvent*>(event)){
+      cHeader               = dynamic_cast<AliGenCocktailEventHeader*>(dynamic_cast<AliMCEvent*>(event)->GenEventHeader());
+      fMCEvent              = dynamic_cast<AliMCEvent*>(event);
+      if(cHeader) headerFound   = kTRUE;
+    }
+  } else if(event->IsA()==AliAODEvent::Class()){ // event is a AODEvent in case of AOD
+    cHeaderAOD              = dynamic_cast<AliAODMCHeader*>(event->FindListObject(AliAODMCHeader::StdBranchName()));
+    fMCEventAOD             = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+    if(cHeaderAOD) headerFound     = kTRUE;
+  }
+  if(headerFound){
+    TList *genHeaders         = 0x0;
+    if(cHeader) genHeaders    = cHeader->GetHeaders();            // ESD
+    if(cHeaderAOD) genHeaders = cHeaderAOD->GetCocktailHeaders(); // AOD
+    AliGenEventHeader* gh     = 0;
+    fnHeaders                 = 0;
+    int firstindexA         = 0;
+    int lastindexA          = -1;
+     for(int j = 0; j<HeaderList->GetEntries();j++){
+      TString GeneratorInList   = ((TObjString*)HeaderList->At(j))->GetString();
+      if(GeneratorInList.Contains("Hijing")){
+        fHeaderMap.try_emplace(j, kMinBias);
+      } else if(GeneratorInList.Contains("Pileup")){
+        fHeaderMap.try_emplace(j, kPileUp);
+      } else if(GeneratorInList.Contains("Injector (pi0)")){
+        fHeaderMap.try_emplace(j, kPi0PCM);
+      } else if(GeneratorInList.Contains("Injector (pi0a)")){
+        fHeaderMap.try_emplace(j, kPi0PHOSa);
+      } else if(GeneratorInList.Contains("Injector (pi0b)")){
+        fHeaderMap.try_emplace(j, kPi0PHOSb);
+      } else if(GeneratorInList.Contains("Injector (pi0c)")){
+        fHeaderMap.try_emplace(j, kPi0PHOSc);
+      } else if(GeneratorInList.Contains("Injector (pi0d)")){
+        fHeaderMap.try_emplace(j, kPi0PHOSd);
+      } else if(GeneratorInList.Contains("Injector (eta)")){
+        fHeaderMap.try_emplace(j, kEtaPCM);
+      } else if(GeneratorInList.Contains("Injector (etaa)")){
+        fHeaderMap.try_emplace(j, kEtaPHOSa);
+      } else if(GeneratorInList.Contains("Injector (pi0e)")){
+        fHeaderMap.try_emplace(j, kPi0EMCe);
+      } else if(GeneratorInList.Contains("Injector (pi0f)")){
+        fHeaderMap.try_emplace(j, kPi0EMCf);
+      } else if(GeneratorInList.Contains("Injector (pi0g)")){
+        fHeaderMap.try_emplace(j, kPi0EMCg);
+      } else if(GeneratorInList.Contains("Injector (pi0h)")){
+        fHeaderMap.try_emplace(j, kPi0EMCh);
+      } else if(GeneratorInList.Contains("Injector (pi0i)")){
+        fHeaderMap.try_emplace(j, kPi0EMCi);
+      } else if(GeneratorInList.Contains("Injector (etab)")){
+        fHeaderMap.try_emplace(j, kEtaEMCb);
+      } else if(GeneratorInList.Contains("Injector (etac)")){
+        fHeaderMap.try_emplace(j, kEtaEMCc);
+      } else if(GeneratorInList.Contains("Injector (etad)")){
+        fHeaderMap.try_emplace(j, kEtaEMCd);
+      } else if(GeneratorInList.Contains("Injector (etae)")){
+        fHeaderMap.try_emplace(j, kEtaEMCe);
+      } else if(GeneratorInList.Contains("Injector (etaf)")){
+        fHeaderMap.try_emplace(j, kEtaEMCf);
+      } 
+    } // end of loop over header list
+  } // end of if headerFound
+}
+
 /* checks for a photon candidate if its tracks come from an accepted injector.
  * return value kFALSE: photon gets discarded completely
  *              kTRUE:  photon will get added to fGammaCandidates
@@ -7257,7 +7335,7 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, 
       if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
         if (debug > 1 ) cout << "accepted:" << index << "\t header " << fGeneratorNames[i].Data()  << ": "<< fNotRejectedStart[i] << "\t" << fNotRejectedEnd[i] << endl;
         accepted = 1;
-        if(i == 0) accepted = 2; // MB Header
+        if(fHeaderMap.at(i) == kMinBias) accepted = 2; // MB Header
       }
     }
     if (debug > 1 && !accepted) cout << "rejected:" << index << endl;
@@ -7286,7 +7364,7 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, 
       for(Int_t i = 0;i<fnHeaders;i++){
         if(index >= fNotRejectedStart[i] && index <= fNotRejectedEnd[i]){
           accepted = 1;
-          if(i == 0) accepted = 2; // MB Header
+          if(fHeaderMap.at(i) == kMinBias) accepted = 2; // MB Header
         }
       }
     }

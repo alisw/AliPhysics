@@ -261,8 +261,9 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH1F**                  fHistoClusGammaE_BothBM_highestE;   //! array of histos with cluster, E; Only highest cluster in event, which is good on triggered bad map and analysis bad map;  MB and tigger but use only triggered clusters for trigger
     TH1F**                  fHistoClusGammaE_AnaBM_highestE;    //! array of histos with cluster, E; Only highest cluster in event, which is good on analysis bad map; Only MB
     TH1F**                  fHistoClusGammaE_onlyTriggered;     //! array of histos with cluster, E
-    TH1I**                  fHistoGoodMesonClusters;              //! Histograms which stores if Pi0 Clusters Trigger
+    TH1I**                  fHistoGoodMesonClusters;            //! Histograms which stores if Pi0 Clusters Trigger
     TH1F**                  fHistoClusOverlapHeadersGammaPt;    //! array of histos with cluster, pt overlapping with other headers
+    TH1F**                  fHistoClusOverlapMBHeaderGammaPt;   //! array of histos with cluster, pt overlapping with MB header
     TH1F**                  fHistoClusAllHeadersGammaPt;        //! array of histos with cluster, pt all headers
     TH1F**                  fHistoClusRejectedHeadersGammaPt;   //! array of histos with cluster, pt rejected headers
 
@@ -523,6 +524,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Int_t                   fDoClusterQA;                                       // flag for cluster QA
     Bool_t                  fIsFromDesiredHeader;                               //! flag for MC headers
     Bool_t                  fIsOverlappingWithOtherHeader;                      //! flag for particles in MC overlapping between headers
+    Bool_t                  fIsOverlapWithMBHeader;                             //! flag for particles overlapping with MB header when MB header is one of the selected headers
     Int_t                   fIsMC;                                              // flag for MC information
     Bool_t                  fDoTHnSparse;                                       // flag for using THnSparses for background estimation
     Bool_t                  fSetPlotHistsExtQA;                                 // flag for extended QA hists
@@ -542,7 +544,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 75);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 76);
 };
 
 #endif

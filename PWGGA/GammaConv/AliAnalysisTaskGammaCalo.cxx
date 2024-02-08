@@ -126,6 +126,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoClusGammaE_DDL_woL0_TrigEv_TrBM(NULL),
   fHistoGoodMesonClusters(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
+  fHistoClusOverlapMBHeaderGammaPt(NULL),
   fHistoClusAllHeadersGammaPt(NULL),
   fHistoClusRejectedHeadersGammaPt(NULL),
   fHistoClusGammaPtM02(NULL),
@@ -392,6 +393,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fDoClusterQA(0),
   fIsFromDesiredHeader(kTRUE),
   fIsOverlappingWithOtherHeader(kFALSE),
+  fIsOverlapWithMBHeader(kFALSE),
   fIsMC(0),
   fDoTHnSparse(kTRUE),
   fSetPlotHistsExtQA(kFALSE),
@@ -486,6 +488,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoClusGammaE_DDL_woL0_TrigEv_TrBM(NULL),
   fHistoGoodMesonClusters(NULL),
   fHistoClusOverlapHeadersGammaPt(NULL),
+  fHistoClusOverlapMBHeaderGammaPt(NULL),
   fHistoClusAllHeadersGammaPt(NULL),
   fHistoClusRejectedHeadersGammaPt(NULL),
   fHistoClusGammaPtM02(NULL),
@@ -752,6 +755,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fDoClusterQA(0),
   fIsFromDesiredHeader(kTRUE),
   fIsOverlappingWithOtherHeader(kFALSE),
+  fIsOverlapWithMBHeader(kFALSE),
   fIsMC(0),
   fDoTHnSparse(kTRUE),
   fSetPlotHistsExtQA(kFALSE),
@@ -1267,6 +1271,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   }
 
   fHistoClusOverlapHeadersGammaPt   = new TH1F*[fnCuts];
+  fHistoClusOverlapMBHeaderGammaPt  = new TH1F*[fnCuts]; 
   fHistoClusAllHeadersGammaPt       = new TH1F*[fnCuts];
   fHistoClusRejectedHeadersGammaPt  = new TH1F*[fnCuts];
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -1589,6 +1594,9 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     fHistoClusOverlapHeadersGammaPt[iCut]   = new TH1F("ClusGammaOverlapHeaders_Pt", "ClusGammaOverlapHeaders_Pt", nBinsClusterPt, arrClusPtBinning);
     fHistoClusOverlapHeadersGammaPt[iCut]->SetXTitle("p_{T,clus} (GeV/c), selected header w/ overlap");
     fESDList[iCut]->Add(fHistoClusOverlapHeadersGammaPt[iCut]);
+    fHistoClusOverlapMBHeaderGammaPt[iCut]   = new TH1F("ClusGammaOverlapMBHeader_Pt", "ClusGammaOverlapMBHeader_Pt", nBinsClusterPt, arrClusPtBinning);
+    fHistoClusOverlapMBHeaderGammaPt[iCut]->SetXTitle("#it{p}_{T,clus} (GeV/#it{c}), selected header w/ MB overlap");
+    fESDList[iCut]->Add(fHistoClusOverlapMBHeaderGammaPt[iCut]);
     fHistoClusAllHeadersGammaPt[iCut]       = new TH1F("ClusGammaAllHeaders_Pt", "ClusGammaAllHeaders_Pt", nBinsClusterPt, arrClusPtBinning);
     fHistoClusAllHeadersGammaPt[iCut]->SetXTitle("p_{T,clus} (GeV/c), all headers");
     fESDList[iCut]->Add(fHistoClusAllHeadersGammaPt[iCut]);
@@ -1703,6 +1711,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         }
       }
       fHistoClusOverlapHeadersGammaPt[iCut]->Sumw2();
+      fHistoClusOverlapMBHeaderGammaPt[iCut]->Sumw2();
       fHistoClusAllHeadersGammaPt[iCut]->Sumw2();
       fHistoClusRejectedHeadersGammaPt[iCut]->Sumw2();
       if(!fDoLightOutput && fDoClusterQA > 0)fHistoClusGammaPtM02[iCut]->Sumw2();
@@ -3743,11 +3752,13 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
     }
     fIsFromDesiredHeader          = kTRUE;
     fIsOverlappingWithOtherHeader = kFALSE;
+    fIsOverlapWithMBHeader        = kFALSE;
     // test whether largest contribution to cluster orginates in added signals
     if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
       // Set the jetjet weight to 1 in case the photon candidate orignated from the minimum bias header
       if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4) tempPhotonWeight = 1;
       if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 0) fIsFromDesiredHeader = kFALSE;
+      if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2) fIsOverlapWithMBHeader = kTRUE;
       if (clus->GetNLabels()>1){
         Int_t* mclabelsCluster = clus->GetLabels();
         if (fLocalDebugFlag > 1)   cout << "testing if other labels in cluster belong to different header, need to test " << (Int_t)clus->GetNLabels()-1 << " additional labels" << endl;
@@ -3760,6 +3771,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
 
     fHistoClusAllHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), tempPhotonWeight);
     if (!fIsFromDesiredHeader) fHistoClusRejectedHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), tempPhotonWeight);
+    if (fIsFromDesiredHeader && fIsOverlapWithMBHeader) fHistoClusOverlapMBHeaderGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), tempPhotonWeight);
     if (fIsFromDesiredHeader && fIsOverlappingWithOtherHeader) fHistoClusOverlapHeadersGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), tempPhotonWeight);
 
 

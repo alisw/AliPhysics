@@ -146,7 +146,9 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fMinTimeDiff(-10e10),
   fMaxTimeDiffHighPt(10e10),
   fMinTimeDiffHighPt(-10e10),
+  fOffsetTimeMC(0),
   fUseTimeDiff(0),
+  fUseTimeDiffMC(0),
   fMaxDistTrackToClusterEta(0),
   fMinDistTrackToClusterPhi(0),
   fMaxDistTrackToClusterPhi(0),
@@ -402,7 +404,9 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fMinTimeDiff(ref.fMinTimeDiff),
   fMaxTimeDiffHighPt(ref.fMaxTimeDiffHighPt),
   fMinTimeDiffHighPt(ref.fMinTimeDiffHighPt),
+  fOffsetTimeMC(ref.fOffsetTimeMC),
   fUseTimeDiff(ref.fUseTimeDiff),
+  fUseTimeDiffMC(ref.fUseTimeDiffMC),
   fMaxDistTrackToClusterEta(ref.fMaxDistTrackToClusterEta),
   fMinDistTrackToClusterPhi(ref.fMinDistTrackToClusterPhi),
   fMaxDistTrackToClusterPhi(ref.fMaxDistTrackToClusterPhi),
@@ -2517,6 +2521,12 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E(), weight);//1
         return kFALSE;
       }
+    }
+  }
+  if(fUseTimeDiffMC){
+    if( ( (cluster->GetTOF() - fOffsetTimeMC) < fMinTimeDiff || (cluster->GetTOF() - fOffsetTimeMC) > fMaxTimeDiff) && (isMC>0)){
+      if(fHistClusterIdentificationCuts) fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E(), weight);//1
+      return kFALSE;
     }
   }
   cutIndex++;//2, next cut
@@ -5486,6 +5496,22 @@ Bool_t AliCaloPhotonCuts::SetDistanceToBadChannelCut(Int_t distanceToBadChannel)
 //___________________________________________________________________
 Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
 {
+  // special case for LHC18qr HIJING MC where we need correction as well:
+  if(fCurrentMC==kNoMC){
+    AliV0ReaderV1* V0Reader = (AliV0ReaderV1*) AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
+    if( V0Reader == NULL ){
+      AliFatal(Form("No V0Reader called '%s' could be found within AliCaloPhotonCuts::ApplyNonLinearity",fV0ReaderName.Data()));
+      return kFALSE;
+    }
+    fPeriodName = V0Reader->GetPeriodName();
+    fCurrentMC = FindEnumForMCSet(fPeriodName);
+
+    printf("AliCaloPhotonCuts:Period name has been set to %s, period-enum: %o\n",fPeriodName.Data(),fCurrentMC ) ;
+  }
+  if(fCurrentMC == kPbPb5T18HIJING){
+    fOffsetTimeMC = 61.6e-8;
+    if (!fUseTimeDiffMC) fUseTimeDiffMC=1;
+  }
   switch(timing){
   case 0:
     fUseTimeDiff=0;
@@ -10822,6 +10848,38 @@ Bool_t AliCaloPhotonCuts::SetNMatchedTracksFunc(float meanCent){
   return true;
 }
 
+// Sigmoid function to smooth out two different epxonential functions for the neutral overlap correction
+Double_t AliCaloPhotonCuts::Sigmoid(Double_t x, Double_t a, Double_t b, Double_t c) {
+    // Sigmoid function: a + b / (1 + exp(-c * x))
+    return a + b / (1 + TMath::Exp(-c * x));
+}
+
+// Function to describe the neutral overlap correction factor which is build of two exponential decays which transit around a minium by a sigmoid function
+Double_t AliCaloPhotonCuts::NOCFunction(Double_t x, Double_t start_y, Double_t a_drop, Double_t b_drop, Double_t c_drop, Double_t c_rise, Double_t transition_width) {
+    // Parameters:
+    // start_y = starting y value
+    // a_drop = amplitude of the drop
+    // b_drop = x value where the drop occurs
+    // c_drop = decay constant for the drop
+    // c_rise = decay constant for the rise
+    // transition_width = transition width
+
+    // Calculate the transition point
+    Double_t transition_point = b_drop;
+
+    // Calculate the drop and rise components
+    Double_t drop = start_y - a_drop * TMath::Exp(-c_drop * (x - b_drop));
+    Double_t rise = (start_y - drop) * TMath::Exp(-c_rise * (x - transition_point)) + drop;
+
+    // Calculate the sigmoid blending factor
+    Double_t sigmoid_factor = AliCaloPhotonCuts::Sigmoid(x - transition_point, 0.5, 0.5, 1.0 / transition_width);
+
+    // Blend between drop and rise using the sigmoid function
+    Double_t result = drop + sigmoid_factor * (rise - drop);
+
+    return result;
+}
+
 // Function to get the energy value to subtract from a cluster to account for
 // neutral overlap in PbPb 5 TeV
 Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent, float E){
@@ -10835,6 +10893,44 @@ Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent, float E){
     case 3:
       return 0.5 * fFuncNMatchedTracks->Eval(meanCent) * GetMeanEForOverlap(meanCent, fParamMeanTrackPt);
     case 4:
+      {
+        double val = 0;
+        if(meanCent < 10){
+          if(!fIsMC){
+            val = AliCaloPhotonCuts::NOCFunction(E, 9.17025e-01, 1.76666e-01, 2.77792e+00, 1.05948e+00, 3.12356e-01, 1.);
+            return (val > 1.) ? 1. : val;
+          }
+          else{
+            return 1; // MC not yet evaluated
+          }
+        } else if (meanCent < 30){
+          if(!fIsMC){
+            val = AliCaloPhotonCuts::NOCFunction(E, 9.60674e-01, 1.51515e-01, 2.67887e+00, 8.74107e-01, 3.12633e-01, 1.);
+            return (val > 1.) ? 1. : val;
+          }
+          else{
+            return 1; // MC not yet evaluated
+          }
+        } else if (meanCent < 50){
+          if(!fIsMC){
+            val = AliCaloPhotonCuts::NOCFunction(E, 9.82136e-01, 8.30071e-02, 2.25544e+00, 7.94315e-01, 3.58387e-01, 1.);
+            return (val > 1.) ? 1. : val;
+          }
+          else{
+            return 1; // MC not yet evaluated
+          }
+        } else {
+          if(!fIsMC){
+            val = AliCaloPhotonCuts::NOCFunction(E, 9.98134e-01, 5.38729e-02, 2.00466e+00, 6.65691e-01, 3.49447e-01, 1.);
+            return (val > 1.) ? 1. : val;
+          }
+          else{
+            return 1; // MC not yet evaluated
+          }
+        }
+        return 1.;
+      }
+    case 5: // old NonLin like approach
       {
         double temp = 0.0;
         double tempE = 0.0;

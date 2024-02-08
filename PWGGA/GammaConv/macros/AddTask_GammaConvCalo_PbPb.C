@@ -1586,7 +1586,6 @@ void AddTask_GammaConvCalo_PbPb(
     } 
     else if (headerSelectionInt == 24) { fillFromTo(10, 19); }            // all EMCal
     else if (headerSelectionInt == 25) { fillFromTo(1, 19); }             // all
-    else if (headerSelectionInt == 25) { fillFromTo(1, 19); }             // all
     else if (headerSelectionInt == 26) {                                  // PCM + all EMCal Pi0 + Eta
       fillSingle(1);
       fillSingle(6);
@@ -1598,38 +1597,85 @@ void AddTask_GammaConvCalo_PbPb(
       fillSingle(8);
       fillFromTo(10, 19);
     }
-    else if (headerSelectionInt == 28) {                                  // PCM + all EMCal + HIJING + PileUp Pi0 + Eta
+    else if (headerSelectionInt == 28) {                                  // PCM + PileUp Pi0 + Eta
+      fillSingle(1);
+      fillSingle(6);
+      fillSingle(8);
+      fillSingle(9);
+    }
+    else if (headerSelectionInt == 29) {                                  // PCM + all EMCal + HIJING + PileUp Pi0 + Eta
       fillSingle(1);
       fillSingle(6);
       fillFromTo(8, 19);
     }
-    else if (headerSelectionInt == 29) {                                  // PCM + all EMCal Pi0
+    else if (headerSelectionInt == 30) {                                  // all EMCal Pi0
+      fillFromTo(10, 14);
+    }
+    else if (headerSelectionInt == 31) {                                  // all EMCal + HIJING Pi0
+      fillSingle(8);
+      fillFromTo(10, 14);
+    }
+    else if (headerSelectionInt == 32) {                                  // all EMCal + HIJING + PileUp Pi0
+      fillFromTo(8, 14);
+    }
+    else if (headerSelectionInt == 33) {                                  // PCM + all EMCal Pi0
       fillSingle(1);
       fillFromTo(10, 14);
     }
-    else if (headerSelectionInt == 30) {                                  // PCM + all EMCal + HIJING Pi0
+    else if (headerSelectionInt == 34) {                                  // PCM + all EMCal + HIJING Pi0
       fillSingle(1);
       fillSingle(8);
       fillFromTo(10, 14);
     }
-    else if (headerSelectionInt == 31) {                                  // PCM + all EMCal + HIJING + PileUp Pi0
+    else if (headerSelectionInt == 35) {                                  // PCM + all EMCal + HIJING + PileUp Pi0
       fillSingle(1);
       fillFromTo(8, 14);
     }
-    else if (headerSelectionInt == 32) {                                  // PCM + all EMCal Eta
+    else if (headerSelectionInt == 36) {                                  // PCM + HIJING + PileUp Pi0
+      fillSingle(1);
+      fillSingle(8);
+      fillSingle(9);
+    }
+    else if (headerSelectionInt == 37) {                                  // PCM + HIJING Pi0
+      fillSingle(1);
+      fillSingle(8);
+      fillSingle(9);
+    }
+    else if (headerSelectionInt == 38) {                                  // all EMCal Eta
+      fillFromTo(15, 19);
+    }
+    else if (headerSelectionInt == 39) {                                  // all EMCal + HIJING Eta
+      fillSingle(8);
+      fillFromTo(15, 19);
+    }
+    else if (headerSelectionInt == 40) {                                  // all EMCal + HIJING + PileUp Eta
+      fillSingle(8);
+      fillSingle(9);
+      fillFromTo(15, 14);
+    }
+    else if (headerSelectionInt == 41) {                                  // PCM + all EMCal Eta
       fillSingle(6);
       fillFromTo(15, 19);
     }
-    else if (headerSelectionInt == 33) {                                  // PCM + all EMCal + HIJING Eta
+    else if (headerSelectionInt == 42) {                                  // PCM + all EMCal + HIJING Eta
       fillSingle(6);
       fillSingle(8);
       fillFromTo(15, 19);
     }
-    else if (headerSelectionInt == 34) {                                  // PCM + all EMCal + HIJING + PileUp Eta
+    else if (headerSelectionInt == 43) {                                  // PCM + all EMCal + HIJING + PileUp Eta
       fillSingle(6);
       fillSingle(8);
       fillSingle(9);
       fillFromTo(15, 19);
+    }
+    else if (headerSelectionInt == 44) {                                  // PCM + HIJING + PileUp Eta
+      fillSingle(6);
+      fillSingle(8);
+      fillSingle(9);
+    }
+    else if (headerSelectionInt == 45) {                                  // PCM + HIJING Eta
+      fillSingle(6);
+      fillSingle(8);
     }
     else {
       Error(Form("%s_%i", addTaskName.Data(),  trainConfig), "No valid header selection");

@@ -214,6 +214,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F***               fHistoClusGammaE_DDL_woL0_TrigEv_TrBM;                //! array of histos with cluster, E, only clusters on Triggered Bad map
     TH1I**                fHistoGoodMesonClusters;                              //! Histograms which stores if Pi0 Clusters Trigger
     TH1F**                fHistoClusOverlapHeadersGammaPt;                      //! array of histos with cluster, pt overlapping with other headers
+    TH1F**                fHistoClusOverlapMBHeaderGammaPt;                     //! array of histos with cluster, pt overlapping with MB header
     TH1F**                fHistoClusAllHeadersGammaPt;                          //! array of histos with cluster, pt all headers
     TH1F**                fHistoClusRejectedHeadersGammaPt;                     //! array of histos with cluster, pt rejected with other headers
     TH2F**                fHistoClusGammaPtM02;                                 //! array of histos with cluster M02 vs. pt
@@ -498,6 +499,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Int_t                 fDoClusterQA;                                         // flag for cluster QA
     Bool_t                fIsFromDesiredHeader;                                 // flag for MC headers
     Bool_t                fIsOverlappingWithOtherHeader;                        // flag for particles in MC overlapping between headers
+    Bool_t                fIsOverlapWithMBHeader;                               // flag for particles overlapping with MB header when MB header is one of the selected headers
     Int_t                 fIsMC;                                                // flag for MC information
     Bool_t                fDoTHnSparse;                                         // flag for using THnSparses for background estimation
     Bool_t                fSetPlotHistsExtQA;                                   // flag for extended QA hists
@@ -529,7 +531,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 96);
+    ClassDef(AliAnalysisTaskGammaCalo, 97);
 };
 
 #endif
