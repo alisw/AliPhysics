@@ -12,8 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#ifndef AliAnalysisTaskDiffPtFluc_PIDhadrons_H
-#define AliAnalysisTaskDiffPtFluc_PIDhadrons_H
+#ifndef AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect_H
+#define AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect_H
 
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
@@ -39,11 +39,11 @@ class AliPIDResponse;
 class AliMultSelection;
 
 
-class AliAnalysisTaskDiffPtFluc_PIDhadrons : public AliAnalysisTaskSE {
+class AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskDiffPtFluc_PIDhadrons();
-  AliAnalysisTaskDiffPtFluc_PIDhadrons(const char *name);
-  virtual ~AliAnalysisTaskDiffPtFluc_PIDhadrons();
+  AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect();
+  AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect(const char *name);
+  virtual ~AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -102,6 +102,10 @@ class AliAnalysisTaskDiffPtFluc_PIDhadrons : public AliAnalysisTaskSE {
   {
     this->fPileupCutVal = cutval;
   }
+  void SetEffAmplifyingKFactor (Double_t num)
+  {
+    this->fkFactor = num;
+  }
 
   
  private:
@@ -157,6 +161,7 @@ class AliAnalysisTaskDiffPtFluc_PIDhadrons : public AliAnalysisTaskSE {
   Double_t fTPCcrossedrows;
   Int_t fCentralityEstimator_flag;
   Int_t fPileupCutVal;
+  Double_t fkFactor;
   Double_t fEtaMin;
   TString fTreeName;
   
@@ -183,9 +188,9 @@ class AliAnalysisTaskDiffPtFluc_PIDhadrons : public AliAnalysisTaskSE {
   */
  
   
-  AliAnalysisTaskDiffPtFluc_PIDhadrons(const AliAnalysisTaskDiffPtFluc_PIDhadrons&);
-  AliAnalysisTaskDiffPtFluc_PIDhadrons& operator=(const AliAnalysisTaskDiffPtFluc_PIDhadrons&);  
-  ClassDef(AliAnalysisTaskDiffPtFluc_PIDhadrons, 1);
+  AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect(const AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect&);
+  AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect& operator=(const AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect&);  
+  ClassDef(AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect, 1);
 };
 
 #endif
