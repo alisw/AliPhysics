@@ -4677,22 +4677,33 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
       } else { // Only primary pi0 for efficiency calculation
         Float_t weighted= 1;
         iMesonMCInfo = 6;
-        if (static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt()>0.005){
+        Double_t lMotherMCPt = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt();
+        if (lMotherMCPt>0.005){
           weighted= fiEventCut->GetWeightForMeson(gamma1MotherLabel, 0x0, fInputEvent);
         }
-        fHistoTruePrimaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*fWeightJetJetMC*weightMatBudget);
-        fHistoTruePrimaryMotherW0WeightingInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightJetJetMC);
-        pESDTruePrimaryMotherWeightsInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),weighted*weightMatBudget*fWeightJetJetMC);
+        fHistoTruePrimaryMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),
+                                                      Pi0Candidate->Pt(),
+                                                      weighted*fWeightJetJetMC*weightMatBudget);
+        
+        fHistoTruePrimaryMotherW0WeightingInvMassPt[fiCut]->Fill(Pi0Candidate->M(),
+                                                                 Pi0Candidate->Pt(),
+                                                                 fWeightJetJetMC);
+        
+        pESDTruePrimaryMotherWeightsInvMassPt[fiCut]->Fill(Pi0Candidate->M(),
+                                                           Pi0Candidate->Pt(),
+                                                           weighted*weightMatBudget*fWeightJetJetMC);
 
         if (fDoMesonQA > 0 && fIsMC < 2){
           if(isTruePi0){ // Only primary pi0 for resolution
-            fHistoTruePrimaryPi0MCPtResolPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt(),
-                                (Pi0Candidate->Pt()-static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt())/static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt(),weighted*weightMatBudget);
+            fHistoTruePrimaryPi0MCPtResolPt[fiCut]->Fill(lMotherMCPt,
+                                                         (Pi0Candidate->Pt()-lMotherMCPt)/lMotherMCPt,
+                                                         weighted*weightMatBudget);
 
           }
           if (isTrueEta){ // Only primary eta for resolution
-            fHistoTruePrimaryEtaMCPtResolPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt(),
-                                (Pi0Candidate->Pt()-static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt())/static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt(),weighted*weightMatBudget);
+            fHistoTruePrimaryEtaMCPtResolPt[fiCut]->Fill(lMotherMCPt,
+                                                         (Pi0Candidate->Pt()-lMotherMCPt)/lMotherMCPt,
+                                                         weighted*weightMatBudget);
           }
         }
       }
