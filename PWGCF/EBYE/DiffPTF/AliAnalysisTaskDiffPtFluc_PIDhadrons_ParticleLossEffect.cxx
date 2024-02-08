@@ -1,4 +1,4 @@
-
+#include "TRandom3.h"
 #include <vector>
 #include <iostream>
 #include <algorithm>
@@ -33,7 +33,7 @@
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
 #include "AliEventCuts.h"
-#include "AliAnalysisTaskDiffPtFluc_PIDhadrons.h"
+#include "AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect.h"
 
 //For MC event
 #include "AliMCEvent.h"
@@ -74,11 +74,11 @@ using namespace std;
 using std::cout;
 using std::endl;
 
-class AliAnalysisTaskDiffPtFluc_PIDhadrons;
-ClassImp(AliAnalysisTaskDiffPtFluc_PIDhadrons)
+class AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect;
+ClassImp(AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect)
 
 //_____________________________________________________________________________________________________________________________________
-AliAnalysisTaskDiffPtFluc_PIDhadrons::AliAnalysisTaskDiffPtFluc_PIDhadrons():
+AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect::AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect():
   AliAnalysisTaskSE(),
   fAODeventCuts(),
   fESDevent(0),
@@ -116,6 +116,7 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons::AliAnalysisTaskDiffPtFluc_PIDhadrons():
   fTPCcrossedrows(0),
   fCentralityEstimator_flag(0),
   fPileupCutVal(0),
+  fkFactor(0),
   fEtaMin(0),
   fTreeName(0)
 {
@@ -137,7 +138,7 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons::AliAnalysisTaskDiffPtFluc_PIDhadrons():
     }
 }
 //_____________________________________________________________________________________________________________________________________
-AliAnalysisTaskDiffPtFluc_PIDhadrons::AliAnalysisTaskDiffPtFluc_PIDhadrons(const char *name):
+AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect::AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect(const char *name):
   AliAnalysisTaskSE(name),
   fAODeventCuts(),
   fESDevent(0),
@@ -175,6 +176,7 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons::AliAnalysisTaskDiffPtFluc_PIDhadrons(const
   fTPCcrossedrows(0),
   fCentralityEstimator_flag(0),
   fPileupCutVal(0),
+  fkFactor(0),
   fEtaMin(0),
   fTreeName(0)
 {
@@ -202,7 +204,7 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons::AliAnalysisTaskDiffPtFluc_PIDhadrons(const
   DefineOutput(3, TTree::Class());
 }
 //_____________________________________________________________________________________________________________________________________
-AliAnalysisTaskDiffPtFluc_PIDhadrons::~AliAnalysisTaskDiffPtFluc_PIDhadrons()  {
+AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect::~AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect()  {
 
   if (fOutputList){
     delete fOutputList;
@@ -224,7 +226,7 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons::~AliAnalysisTaskDiffPtFluc_PIDhadrons()  {
 
 }
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskDiffPtFluc_PIDhadrons::UserCreateOutputObjects()  {
+void AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect::UserCreateOutputObjects()  {
     
     //Create Output List
     fOutputList = new TList();
@@ -279,7 +281,7 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons::UserCreateOutputObjects()  {
     PostData(3, fTreeEvent);
 }
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskDiffPtFluc_PIDhadrons::UserExec(Option_t *)  {
+void AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect::UserExec(Option_t *)  {
   
     //Get Input Event
     if ( !GetEvent ()) return;
@@ -338,6 +340,18 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons::UserExec(Option_t *)  {
     Double_t N_sumPion_etaLess0 = 0.0;
     Double_t N_sumKaon_etaLess0 = 0.0;
     Double_t N_sumProton_etaLess0 = 0.0;
+
+    //Function for efficiency
+    TF1 *fEff=new TF1("fEff","[0]*TMath::Exp(-pow([1]/x,[2]))",0.2,3.0);
+    fEff->SetParameter(0,0.8);
+    fEff->SetParameter(1,0.15);
+    fEff->SetParameter(2,1.7);
+
+    Double_t eff, x;
+
+    //random no
+    TRandom3 ran;
+
 
     //Loop on reconstructed tracks
     
@@ -402,43 +416,45 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons::UserExec(Option_t *)  {
 	    continue;
 	  }
 	
-
-	if(TMath::Abs(trkCharge) > 0)
+	x=ran.Uniform(0,1);
+	eff=fEff->Eval(trkPt);
+	//cout<<x<<"\t"<<eff<<endl;
+	if(x<(fkFactor*eff))
 	  {
-	    if(trkEta < 0.0)
+	    if(TMath::Abs(trkCharge) > 0)
 	      {
-		fPt_profile->Fill(trkPt);
-		pT_sum_etaLess0 += trkPt;
-		N_sum_etaLess0 += 1.0;
+		if(trkEta < 0.0)
+		  {
+		    fPt_profile->Fill(trkPt);
+		    pT_sum_etaLess0 += trkPt;
+		    N_sum_etaLess0 += 1.0;
 
-		if(IsPion)
-		  {
-		    fPt_profile_pion->Fill(trkPt);
-		    N_sumPion_etaLess0 += 1.0;
-		  }
-		if(IsKaon)
-		  {
-		    fPt_profile_kaon->Fill(trkPt);
-		    N_sumKaon_etaLess0 += 1.0;
-		  }
-		if(IsProton && trkPt > 0.4)
-		  {
-		    fPt_profile_proton->Fill(trkPt);
-		    N_sumProton_etaLess0 += 1.0;
-		  }
+		    if(IsPion)
+		      {
+			fPt_profile_pion->Fill(trkPt);
+			N_sumPion_etaLess0 += 1.0;
+		      }
+		    if(IsKaon)
+		      {
+			fPt_profile_kaon->Fill(trkPt);
+			N_sumKaon_etaLess0 += 1.0;
+		      }
+		    if(IsProton && trkPt > 0.4)
+		      {
+			fPt_profile_proton->Fill(trkPt);
+			N_sumProton_etaLess0 += 1.0;
+		      }
 
-	      }
+		  }
 	    
-	    if(trkEta > fEtaMin)
-	      {
-		pT_sum_etaGreaterEtamin += trkPt;
-		N_sum_etaGreaterEtamin += 1.0;
+		if(trkEta > fEtaMin)
+		  {
+		    pT_sum_etaGreaterEtamin += trkPt;
+		    N_sum_etaGreaterEtamin += 1.0;
+		  }
 	      }
 	  }
-
-	
-	
-      }      
+     }      
     //end reconstructed track loop
     
     
@@ -476,7 +492,7 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons::UserExec(Option_t *)  {
     PostData(3, fTreeEvent);
 }    
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons::GetEvent ()  //event cuts copied from my code written earlier 
+Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect::GetEvent ()  //event cuts copied from my code written earlier 
 
 {
  
@@ -679,7 +695,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons::GetEvent ()  //event cuts copied fr
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons::PassedTrackQualityCuts (AliAODTrack *track)  {
+Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect::PassedTrackQualityCuts (AliAODTrack *track)  {
     
     //Initialization
     Bool_t passedTrkSelection=(kFALSE);
@@ -722,7 +738,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons::PassedTrackQualityCuts (AliAODTrack
     return passedTrkSelection;
 }
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons::KaonSelector(AliVTrack *track, Double_t nSigmaCut)  {
+Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect::KaonSelector(AliVTrack *track, Double_t nSigmaCut)  {
  
   Double_t p[3];
   track->PxPyPz(p);
@@ -806,7 +822,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons::KaonSelector(AliVTrack *track, Doub
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons::PionSelector(AliVTrack *track, Double_t nSigmaCut)  {
+Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect::PionSelector(AliVTrack *track, Double_t nSigmaCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -894,7 +910,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons::PionSelector(AliVTrack *track, Doub
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons::ProtonSelector(AliVTrack *track, Double_t nSigmaCut)  {
+Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect::ProtonSelector(AliVTrack *track, Double_t nSigmaCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -983,7 +999,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons::ProtonSelector(AliVTrack *track, Do
 
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons::PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type)  {
+Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect::PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type)  {
     
     //Initialization
     Bool_t passedPIDSelection=(kFALSE);
@@ -997,7 +1013,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons::PassedPIDSelection (AliAODTrack *tr
     return passedPIDSelection;
 }
  //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons::PassedSingleParticlePileUpCuts(AliAODTrack *track)
+Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect::PassedSingleParticlePileUpCuts(AliAODTrack *track)
 {
   Bool_t passedTrackPileupCut = (kTRUE);
   if (!(track->HasPointOnITSLayer(1)) && !(track->HasPointOnITSLayer(4)) && !(track->HasPointOnITSLayer(5)) && !(track->GetTOFBunchCrossing() == 0))
@@ -1005,7 +1021,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons::PassedSingleParticlePileUpCuts(AliA
   return passedTrackPileupCut;
 }
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskDiffPtFluc_PIDhadrons::GetMCEffCorrectionHist()
+void AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect::GetMCEffCorrectionHist()
 {
   if(fListTRKCorr)
     {
@@ -1032,7 +1048,7 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons::GetMCEffCorrectionHist()
 
 }
  //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskDiffPtFluc_PIDhadrons::Terminate(Option_t *)  {
+void AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect::Terminate(Option_t *)  {
     
     fOutputList = dynamic_cast<TList*> (GetOutputData(1));
     if (!fOutputList) return;

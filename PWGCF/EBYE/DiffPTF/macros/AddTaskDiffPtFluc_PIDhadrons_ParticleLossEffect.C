@@ -1,4 +1,4 @@
-AliAnalysisTaskDiffPtFluc_PIDhadrons *AddTaskDiffPtFluc_PIDhadrons(Int_t fCentralityMin=0, Int_t fCentralityMax=90, Double_t fVzMax=10, Int_t fpileupcut = 1, Int_t fCentEstFlag = 0, Int_t fFilterBit=96, Double_t fchi2tpc=4, Double_t fchi2its=36, Double_t fpidnSigma=2.0, Double_t ftpccrossedrows = 70, TString OutFileName = "_default", TString sMCfilePath ="alien:///alice/cern.ch/user/s/swati/EfficiencyPbPbLHC20j6a/CentralitywiseEff/EfficiencyHijingPbPb.root", Double_t fetacut=0.4)
+AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect *AddTaskDiffPtFluc_PIDhadrons_ParticleLossEffect(Int_t fCentralityMin=0, Int_t fCentralityMax=90, Double_t fVzMax=10, Int_t fpileupcut = 1, Int_t fCentEstFlag = 0, Int_t fFilterBit=96, Double_t fchi2tpc=4, Double_t fchi2its=36, Double_t fpidnSigma=2.0, Double_t ftpccrossedrows = 70, TString OutFileName = "_default", TString sMCfilePath ="alien:///alice/cern.ch/user/s/swati/EfficiencyPbPbLHC20j6a/CentralitywiseEff/EfficiencyHijingPbPb.root", Double_t fetacut=0.4, Double_t fkfactor=1.0)
 {
   // standard with task
   printf("===================================================================================\n");
@@ -22,8 +22,8 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons *AddTaskDiffPtFluc_PIDhadrons(Int_t fCentra
   TString TaskMeanpt;
   TaskMeanpt.Form("gTaskMeanpt%d_%d_%s", gCentMin, gCentMax, " ");
   //gROOT->LoadMacro("AliAnalysisTaskResonanceVsMultiplicity.cxx++g");                                                           
-  //gInterpreter->ProcessLine(".x AliAnalysisTaskDiffPtFluc_PIDhadrons.cxx++g");
-  AliAnalysisTaskDiffPtFluc_PIDhadrons *task_Mpt = new AliAnalysisTaskDiffPtFluc_PIDhadrons(TaskMeanpt);
+  //gInterpreter->ProcessLine(".x AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect.cxx++g");
+  AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect *task_Mpt = new AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect(TaskMeanpt);
   task_Mpt->SelectCollisionCandidates(AliVEvent::kINT7); //trigger for analysis                                                               
 
 
@@ -66,6 +66,7 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons *AddTaskDiffPtFluc_PIDhadrons(Int_t fCentra
   task_Mpt->SetPIDnSigmaCut(fpidnSigma);
   task_Mpt->SetEtaCut(fetacut);
   task_Mpt->SetMinNCrossedRowsTPC(ftpccrossedrows);
+  task_Mpt->SetEffAmplifyingKFactor(fkfactor);
   
   
   TString OutTreeName;
