@@ -178,6 +178,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fHistoTrueMotherInvMassPt(NULL),
   fHistoTruePrimaryMotherInvMassPt(NULL),
   fHistoTruePrimaryMotherW0WeightingInvMassPt(NULL),
+  fHistoTruePrimaryMotherInvMassMCPt(NULL),
+  fHistoTruePrimaryMotherW0WeightingInvMassMCPt(NULL),
   pESDTruePrimaryMotherWeightsInvMassPt(NULL),
   fHistoTruePrimaryPi0MCPtResolPt(NULL),
   fHistoTruePrimaryEtaMCPtResolPt(NULL),
@@ -533,6 +535,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fHistoTrueMotherInvMassPt(NULL),
   fHistoTruePrimaryMotherInvMassPt(NULL),
   fHistoTruePrimaryMotherW0WeightingInvMassPt(NULL),
+  fHistoTruePrimaryMotherInvMassMCPt(NULL),
+  fHistoTruePrimaryMotherW0WeightingInvMassMCPt(NULL),
   pESDTruePrimaryMotherWeightsInvMassPt(NULL),
   fHistoTruePrimaryPi0MCPtResolPt(NULL),
   fHistoTruePrimaryEtaMCPtResolPt(NULL),
@@ -1829,6 +1833,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       fHistoMultipleCountTrueEta                     = new TH1F*[fnCuts];
       fHistoTruePrimaryMotherInvMassPt               = new TH2F*[fnCuts];
       fHistoTruePrimaryMotherW0WeightingInvMassPt    = new TH2F*[fnCuts];
+      fHistoTruePrimaryMotherInvMassMCPt             = new TH2F*[fnCuts];
+      fHistoTruePrimaryMotherW0WeightingInvMassMCPt  = new TH2F*[fnCuts];
       pESDTruePrimaryMotherWeightsInvMassPt          = new TProfile2D*[fnCuts];
       fHistoTrueSecondaryMotherInvMassPt             = new TH2F*[fnCuts];
       fHistoTrueSecondaryMotherFromK0sInvMassPt      = new TH2F*[fnCuts];
@@ -2307,7 +2313,14 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
             fHistoTrueEtaPtOpenAngle[iCut]    = new TH2F("ESD_TrueEta_Pt_OpenAngle", "ESD_TrueEta_Pt_OpenAngle", nBinsQAPt, arrQAPtBinning, 200, 0, 2*TMath::Pi());
             fTrueList[iCut]->Add(fHistoTrueEtaPtOpenAngle[iCut]);
           }
-
+          
+          fHistoTruePrimaryMotherInvMassMCPt[iCut]  = new TH2F("ESD_TruePrimaryMother_InvMass_MCPt", "ESD_TruePrimaryMother_InvMass_MCPt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+          fHistoTruePrimaryMotherInvMassMCPt[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePrimaryMotherInvMassMCPt[iCut]);
+          fHistoTruePrimaryMotherW0WeightingInvMassMCPt[iCut]   = new TH2F("ESD_TruePrimaryMotherW0Weights_InvMass_MCPt", "ESD_TruePrimaryMotherW0Weights_InvMass_MCPt", 800, 0, 0.8, nBinsPt, arrPtBinning);
+          fHistoTruePrimaryMotherW0WeightingInvMassMCPt[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePrimaryMotherW0WeightingInvMassMCPt[iCut]);
+        
           fHistoTruePi0PtAlpha[iCut]          = new TH2F("ESD_TruePi0_Pt_Alpha", "ESD_TruePi0_Pt_Alpha", nBinsQAPt, arrQAPtBinning, 100, 0, 1);
           fTrueList[iCut]->Add(fHistoTruePi0PtAlpha[iCut]);
           fHistoTrueEtaPtAlpha[iCut]          = new TH2F("ESD_TrueEta_Pt_Alpha", "ESD_TrueEta_Pt_Alpha", nBinsQAPt, arrQAPtBinning, 100, 0, 1);
@@ -4694,6 +4707,13 @@ void AliAnalysisTaskGammaConvV1::ProcessTrueMesonCandidatesAOD(AliAODConversionM
                                                            weighted*weightMatBudget*fWeightJetJetMC);
 
         if (fDoMesonQA > 0 && fIsMC < 2){
+          fHistoTruePrimaryMotherInvMassMCPt[fiCut]->Fill(Pi0Candidate->M(),
+                                                          lMotherMCPt,
+                                                          weighted*fWeightJetJetMC*weightMatBudget);
+        
+          fHistoTruePrimaryMotherW0WeightingInvMassMCPt[fiCut]->Fill(Pi0Candidate->M(),
+                                                                     lMotherMCPt,
+                                                                     fWeightJetJetMC);
           if(isTruePi0){ // Only primary pi0 for resolution
             fHistoTruePrimaryPi0MCPtResolPt[fiCut]->Fill(lMotherMCPt,
                                                          (Pi0Candidate->Pt()-lMotherMCPt)/lMotherMCPt,
