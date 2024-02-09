@@ -28,7 +28,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
   bool RunmTPlots = false, //16,
   bool RunPairMultThreeBody = false, //17
   float PionMaxPt = 4.0, //18
-  const char *cutVariation = "0" //19
+  bool RemoveResonances = false, //19
+  const char *cutVariation = "0" //20
   ){
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -1251,6 +1252,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
     taskAOD->SetRunPlotMult(RunPlotMult);
     taskAOD->SetRunPairMultThreeBody(RunPairMultThreeBody);
     taskAOD->SetRunmTPlots(RunmTPlots);
+
+    taskAOD->SetMCAndReso(isMC,RemoveResonances); 
     
     mgr->AddTask(taskAOD);
 
