@@ -76,6 +76,8 @@ AliAnalysisTaskAODThreeBodyProtonPrimary::AliAnalysisTaskAODThreeBodyProtonPrima
       fDoOnlyThreeBody(true),
       fStandardMixing(true),
       fRunmTPlots(false), 
+      fIsMC(false),
+      fRemoveMCResonances(false),
 
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
@@ -202,6 +204,8 @@ AliAnalysisTaskAODThreeBodyProtonPrimary::AliAnalysisTaskAODThreeBodyProtonPrima
       fDoOnlyThreeBody(true),
       fStandardMixing(true),
       fRunmTPlots(false), 
+      fIsMC(false),
+      fRemoveMCResonances(false),
 
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
@@ -481,7 +485,7 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::UserCreateOutputObjects() {
     }
 
     //k* of pair (ij) vs mult bin 
-    fSameEventTripletMultArray12 = new TH2F*[6];
+    fSameEventTripletMultArray12 = new TH2F*[16]; //here we also have the case of 2same1mixed: pair (ij), i,j = 1,2 same event, 3 mixed event
     fSameEventTripletMultArray23 = new TH2F*[6];
     fSameEventTripletMultArray31 = new TH2F*[6];
     
@@ -491,15 +495,23 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::UserCreateOutputObjects() {
     fSameEventTripletmTArray31 = new TH2F*[16];
     
     if(fDoOnlyThreeBody){
-      for (int i = 0; i < 6; ++i) {
-        TString histTitle = "sameEventDistributionMult"+fParticleNames[fTripletCombinations[i][0]]+fParticleNames[fTripletCombinations[i][1]]+fParticleNames[fTripletCombinations[i][2]];
+      for (int i = 0; i < 16; ++i) { 
+       
+        TString histTitle; 
+        if(i<6){
+          histTitle = "sameEventDistributionMult"+fParticleNames[fTripletCombinations[i][0]]+fParticleNames[fTripletCombinations[i][1]]+fParticleNames[fTripletCombinations[i][2]];
 
-        fSameEventTripletMultArray12[i] = new TH2F(histTitle+"12",histTitle+"12", 8000, 0, 8,26,1,27);
-          if(fRunPairMultThreeBody){fSameEventMult->Add(fSameEventTripletMultArray12[i]);}
-        fSameEventTripletMultArray23[i] = new TH2F(histTitle+"23",histTitle+"23", 8000, 0, 8,26,1,27);
+           fSameEventTripletMultArray23[i] = new TH2F(histTitle+"23",histTitle+"23", 8000, 0, 8,26,1,27);
           if(fRunPairMultThreeBody){fSameEventMult->Add(fSameEventTripletMultArray23[i]);}
-        fSameEventTripletMultArray31[i] = new TH2F(histTitle+"31",histTitle+"31", 8000, 0, 8,26,1,27);
+           fSameEventTripletMultArray31[i] = new TH2F(histTitle+"31",histTitle+"31", 8000, 0, 8,26,1,27);
           if(fRunPairMultThreeBody){fSameEventMult->Add(fSameEventTripletMultArray31[i]);}
+
+        } else {
+          histTitle = "sameEventDistributionMult"+fParticleNames[fSameMixedCominations[i-6][0]]+fParticleNames[fSameMixedCominations[i-6][1]]+"Same"+fParticleNames[fSameMixedCominations[i-6][2]]+"Mixed";
+        }
+        
+        fSameEventTripletMultArray12[i] = new TH2F(histTitle+"12",histTitle+"12", 8000, 0, 8,26,1,27);
+          if(fRunPairMultThreeBody){fSameEventMult->Add(fSameEventTripletMultArray12[i]);}  
       }
 
       for (int i = 0; i < 16; ++i) {
@@ -1035,9 +1047,55 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::UserExec(Option_t *option) {
   std::vector<AliFemtoDreamBasePart> AntiPrimaries;
 
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+
+
   for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack) { // TO DO: think about double track selection
     AliAODTrack *track = static_cast<AliAODTrack*>(Event->GetTrack(iTrack));
     fTrack->SetTrack(track);
+
+    if (fIsMC && fRemoveMCResonances) { 
+        TClonesArray *mcarray = dynamic_cast<TClonesArray *>(Event->FindListObject(AliAODMCParticle::StdBranchName()));
+        if (!mcarray) {
+          AliError("SPTrack: MC Array not found");
+        }
+        if (fTrack->GetID() >= 0) {
+          AliAODMCParticle *mcPart = (AliAODMCParticle *)mcarray->At(fTrack->GetID());
+          if (!(mcPart)) {
+            continue;
+          }
+          if(IsResonance(mcPart->GetPdgCode())){
+             continue; 
+          }
+          int motherID = mcPart->GetMother();
+          int lastMother = motherID;
+          AliAODMCParticle *mcMother = nullptr;
+          /*bool RemoveTrack = false;
+          while (motherID != -1) {
+            lastMother = motherID;
+            mcMother = (AliAODMCParticle *)mcarray->At(motherID);
+            motherID = mcMother->GetMother();
+            if(IsResonance(mcMother->GetPdgCode())){
+               fTrack->SetMotherPDG(mcMother->GetPdgCode()); //Change the PDG of the mother so it is set to the resonance. The Mother ID keeps set to the original parton
+               RemoveTrack = true;
+            }
+          }*/ 
+          if ((lastMother != -1)) {
+            mcMother = (AliAODMCParticle *)mcarray->At(lastMother);
+          }
+          if (mcMother) {
+            int motherPDG = mcMother->GetPdgCode(); 
+            if(IsResonance(motherPDG)){
+              fTrack->SetMotherPDG(motherPDG); //Change the PDG of the mother so it is set to the resonance. The Mother ID keeps set to the original parton
+              //RemoveTrack = true;
+            }
+          }
+          //if (RemoveTrack && fRemoveMCResonanceDaughters){
+          //  continue; 
+          //}
+        } else {
+          continue;  // if we don't have MC Information, don't use that track
+        }
+      } //if (fIsMC && fRemoveMCResonances)
 
       if (fProton->isSelected(fTrack)) {
         Protons.push_back(*fTrack);
@@ -1147,7 +1205,7 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::UserExec(Option_t *option) {
         for(int iComb=0; iComb<10; iComb++){
            FillTripletDistributionSE2ME1(ParticleVector, *VectItMult[0], fSameMixedCominations[iComb][0], fSameMixedCominations[iComb][1], fSameMixedCominations[iComb][2], 
                                         fSameEventTripletArray[iComb+6], PDGCodes,
-                                        bins[1], fSameEventTripletMultArray[iComb+6], 
+                                        bins[1], fSameEventTripletMultArray[iComb+6], fSameEventTripletMultArray12[iComb+6],
                                         fSameEventTripletPhiThetaArray_SamePair, fSameEventTripletPhiThetaArray_DifferentPair, iComb+6, 
                                         *fConfig, 
                                         fInvMass12[iComb+6], fInvMass23[iComb+6], fInvMass31[iComb+6], 
@@ -1443,6 +1501,16 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistribution(std::vect
 
 
         if(!Pair12||!Pair23||!Pair31) {continue;}
+
+        if(fIsMC && fRemoveMCResonances){
+          bool CommonMother12 = CommonMotherResonance(&(*iPart1), &(*iPart2));
+          bool CommonMother13 = CommonMotherResonance(&(*iPart1), &(*iPart3)); 
+          bool CommonMother23 = CommonMotherResonance(&(*iPart2), &(*iPart3)); 
+
+          if(CommonMother12 || CommonMother13 || CommonMother23){
+            continue; 
+          }
+        }
 
         hist->Fill(Q3);
         hist2d->Fill(Q3,mult+1);
@@ -1862,10 +1930,6 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistributionME(std::ve
   }
 }
 
-//==================================================================================================================================================
-
-//void AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistributionMEPPL(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* InvMassMixed, TH2F* Q3VskDistribution12Mixed, TH2F* InvMassDET,TH2F* InvMassPDG)
-
 
 //==================================================================================================================================================
 
@@ -1945,7 +2009,7 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::FillPairDistributionME(std::vecto
 
 //==================================================================================================================================================
 
-void AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE1, int speciesSE2, int speciesME, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray_SamePair, TH2F **fEventTripletPhiThetaArray_DifferentPair, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* InvMass12, TH2F* InvMass23, TH2F* InvMass31, TH2F* histmTQ312, TH2F* histmTQ323, TH2F* histmTQ331, TH2F* InvMassVsmT12, TH2F* InvMassVsmT23, TH2F* InvMassVsmT31){
+void AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE1, int speciesSE2, int speciesME, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F* hist2d12, TH2F **fEventTripletPhiThetaArray_SamePair, TH2F **fEventTripletPhiThetaArray_DifferentPair, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* InvMass12, TH2F* InvMass23, TH2F* InvMass31, TH2F* histmTQ312, TH2F* histmTQ323, TH2F* histmTQ331, TH2F* InvMassVsmT12, TH2F* InvMassVsmT23, TH2F* InvMassVsmT31){
   // Description of function given in AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistribution
   // In this function, two particles are used from current event, and one - from other event
   auto ParticleSE1 = ParticleVector.begin()+speciesSE1;
@@ -2076,9 +2140,24 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistributionSE2ME1(std
 
           if(!Pair12||!Pair23||!Pair31) {continue;}
 
+          if(fIsMC && fRemoveMCResonances){
+            bool CommonMother12 = CommonMotherResonance(&(*iPart1), &(*iPart2)); 
+            bool CommonMother13 = CommonMotherResonance(&(*iPart1), &(*iPart3)); //this should always be false by definition
+            bool CommonMother23 = CommonMotherResonance(&(*iPart2), &(*iPart3)); //this should always be false by definition
+
+            if(CommonMother12 || CommonMother13 || CommonMother23){
+              continue; 
+            }
+          }
+
 
           hist->Fill(Q3);
           hist2d->Fill(Q3,mult+1);
+
+        if(fRunPairMultThreeBody && fQ3MinValue <= Q3 && Q3<fQ3cutValue){
+          float RelativeMomentum12 = AliFemtoDreamHigherPairMath::RelativePairMomentum(part1_LorVec,part2_LorVec);
+          hist2d12->Fill(RelativeMomentum12,mult+1);
+        }
 
         if(fRunmTPlots){
             float mT12 = GetmT(part1_LorVec, massParticleSE1, part2_LorVec, massParticleSE2);
@@ -2490,4 +2569,44 @@ float AliAnalysisTaskAODThreeBodyProtonPrimary::GetmT(TLorentzVector &Part1, flo
 
   mT = TMath::Sqrt(pow(kT, 2.) + pow(averageMass, 2.));
   return mT;
+}
+
+bool AliAnalysisTaskAODThreeBodyProtonPrimary::CommonAncestors(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2) {
+    bool IsCommon = false;
+    if(part1.GetMotherID() == part2.GetMotherID()){
+      IsCommon = true;
+    }else if(part1.GetMotherID() != part2.GetMotherID()){
+      IsCommon = false;
+    }
+    return IsCommon;
+}
+
+bool AliAnalysisTaskAODThreeBodyProtonPrimary::CommonMotherResonance(AliFemtoDreamBasePart* part1, AliFemtoDreamBasePart* part2) {
+
+  if(part1->GetMotherID() != part2->GetMotherID()) {
+    return false; //MotherID is different -> no common resonance
+  }
+
+  if(part1->GetMotherPDG() != part2->GetMotherPDG()) { //the ID is the same, but the PDG different -> Two tracks from same hard scattering but different resonances.
+    return false; 
+  }
+
+  bool HasCommonMotherResonance = true;
+  HasCommonMotherResonance = IsResonance(part1->GetMotherPDG()); //the resonance is of the type that should be removed 
+  return HasCommonMotherResonance; 
+}
+
+bool AliAnalysisTaskAODThreeBodyProtonPrimary::IsResonance(int PDG) {
+
+  int ProtonAntiPion[33] = {2114, 12112, 1214, 22112, 32114, 1212, 32112, 2116, 12116, 12114, 42112, 21214, 31214, 11212, 9902114, 1216, 9902112, 9912112, 21212, 22114, 9912114, 2118, 11216, 9902116, 9922112, 9922114, 1218, 9901218, 99021110, 99121110, 99012112, 99021112, 3122};
+  int ProtonPion[12] = {2224, 32224, 2222, 12224, 12222, 2226, 22222, 22224, 2228, 12226, 9902228, 99022212};
+
+  // When the element is not found, std::find returns the end of the range
+  if ( std::find(std::begin(ProtonAntiPion), std::end(ProtonAntiPion), abs(PDG)) != std::end(ProtonAntiPion) ) {
+    return true;
+  } else if ( std::find(std::begin(ProtonPion), std::end(ProtonPion), abs(PDG)) != std::end(ProtonPion) ) {
+    return true;
+  } else {
+    return false;
+  }
 }

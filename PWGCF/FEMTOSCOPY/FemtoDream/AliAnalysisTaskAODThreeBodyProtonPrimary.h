@@ -44,7 +44,7 @@ class AliAnalysisTaskAODThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   void SetMixedEventPAPrim(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>*fPartContainer);
 
   // Create triplets like (pp)prim (prim p)p
-  void FillTripletDistributionSE2ME1(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE1, int speciesSE2, int speciesME, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray_SamePair, TH2F **fEventTripletPhiThetaArray_DifferentPair, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* InvMass12, TH2F* InvMass23, TH2F* InvMass31, TH2F* histmTQ312, TH2F* histmTQ323, TH2F* histmTQ331, TH2F* InvMassVsmT12, TH2F* InvMassVsmT23, TH2F* InvMassVsmT31);
+  void FillTripletDistributionSE2ME1(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE1, int speciesSE2, int speciesME, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F* hist2d12, TH2F **fEventTripletPhiThetaArray_SamePair, TH2F **fEventTripletPhiThetaArray_DifferentPair, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* InvMass12, TH2F* InvMass23, TH2F* InvMass31, TH2F* histmTQ312, TH2F* histmTQ323, TH2F* histmTQ331, TH2F* InvMassVsmT12, TH2F* InvMassVsmT23, TH2F* InvMassVsmT31);
   
   // Add the close pair cut
   bool DeltaEtaDeltaPhi(int species1, int species2, AliFemtoDreamBasePart &part1,AliFemtoDreamBasePart &part2,  int part1PDGcode, int part2PDGcode, bool SEorME,  unsigned int DoThisPair, TH2F* beforeHist,TH2F* afterHist, AliFemtoDreamCollConfig Config, double Q3);
@@ -57,6 +57,9 @@ class AliAnalysisTaskAODThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   void FillPairDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F* histDeltaPhi, TH2F* histLowDeltaPhi, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config);
   void FillPairTransverseMass(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies, int secondSpecies, TH1F* hist1, std::vector<int> PDGCodes, TH2F* hist2); 
 
+  bool CommonAncestors(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2); //Stolen from AliFemtoDreamHigherPairMath
+  bool CommonMotherResonance(AliFemtoDreamBasePart* part1, AliFemtoDreamBasePart* part2); //check if two particles are from a certain resonance 
+  bool IsResonance(int PDG); 
 
   //For mT Calculation 
   float GetmT(TLorentzVector &Part1, float mass1, TLorentzVector &Part2, float mass2);
@@ -152,6 +155,11 @@ class AliAnalysisTaskAODThreeBodyProtonPrimary : public AliAnalysisTaskSE {
     fRunPlotInvMassVSmT = RunPlotInvMassVSmT;
   }
 
+  void SetMCAndReso(bool isMC, bool removeReso){
+    fIsMC = isMC;
+    fRemoveMCResonances = removeReso; 
+  }
+
   static TLorentzVector RelativePairMomentum(TLorentzVector &PartOne, TLorentzVector &PartTwo);
   static float BoostOneParticle(TLorentzVector &PartOne, TLorentzVector &PartTwo, TLorentzVector &PartThree);
 
@@ -221,8 +229,12 @@ class AliAnalysisTaskAODThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   bool fStandardMixing;
   bool fRunmTPlots;
 
+  bool fIsMC;
+  bool fRemoveMCResonances; 
+
   //0: Proton, 1: AntiProton, 2: Primary, 3: AntiPrimary
-  int fTripletCombinations[6][3] = {{0,0,0}, {1,1,1}, {0,0,2}, {1,1,3}, {0,0,3}, {1,1,2}}; //triplet combinations that go into same event (xxx) and mixed event (x)(x)(x)
+ // int fTripletCombinations[6][3] = {{0,0,0}, {1,1,1}, {0,0,2}, {1,1,3}, {0,0,3}, {1,1,2}}; //triplet combinations that go into same event (xxx) and mixed event (x)(x)(x)
+  int fTripletCombinations[6][3] = {{0,0,0}, {1,1,1}, {2,0,0}, {3,1,1}, {3,0,0}, {2,1,1}}; //triplet combinations that go into same event (xxx) and mixed event (x)(x)(x)
   int fSameMixedCominations[10][3] = {{0,0,0}, {1,1,1}, {0,0,2}, {0,2,0}, {1,1,3}, {1,3,1}, {0,0,3}, {0,3,0}, {1,1,2}, {1,2,1}}; //triplet combinations that go into same-mixed event (xx)(x) 
   TString fParticleNames[4] = {"P", "AP", "Prim", "APrim"}; //name of particles
   int fPairCombinations[6][2] = {{0,0}, {1,1}, {0,2}, {1,3}, {0,3}, {1,2}}; //pair combinations that go into same event (xx) and mixed event (x)(x)
