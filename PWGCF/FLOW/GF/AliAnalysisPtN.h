@@ -54,6 +54,7 @@ class AliAnalysisPtN : public AliAnalysisTaskSE
         TProfile*               dPtNch;
         TProfile*               dPt2Nch;
         TProfile*               dPt3Nch;
+        TProfile*               dPt4Nch;
 
         TProfile*               dPtNch_0;
         TProfile*               dPtNch_1;
@@ -65,6 +66,7 @@ class AliAnalysisPtN : public AliAnalysisTaskSE
         TProfile*               dPtNch_7;
         TProfile*               dPtNch_8;
         TProfile*               dPtNch_9;
+
         TProfile*               dPt2Nch_0;
         TProfile*               dPt2Nch_1;
         TProfile*               dPt2Nch_2;
@@ -75,6 +77,7 @@ class AliAnalysisPtN : public AliAnalysisTaskSE
         TProfile*               dPt2Nch_7;
         TProfile*               dPt2Nch_8;
         TProfile*               dPt2Nch_9;
+
         TProfile*               dPt3Nch_0;
         TProfile*               dPt3Nch_1;
         TProfile*               dPt3Nch_2;
@@ -85,11 +88,23 @@ class AliAnalysisPtN : public AliAnalysisTaskSE
         TProfile*               dPt3Nch_7;
         TProfile*               dPt3Nch_8;
         TProfile*               dPt3Nch_9;
+
+        TProfile*               dPt4Nch_0;
+        TProfile*               dPt4Nch_1;
+        TProfile*               dPt4Nch_2;
+        TProfile*               dPt4Nch_3;
+        TProfile*               dPt4Nch_4;
+        TProfile*               dPt4Nch_5;
+        TProfile*               dPt4Nch_6;
+        TProfile*               dPt4Nch_7;
+        TProfile*               dPt4Nch_8;
+        TProfile*               dPt4Nch_9;
         
         TH2F*                   fPtNchUCC;
         TProfile*               TestPtCtr;
         TProfile*               TestPt2Ctr;
         TProfile*               TestPt3Ctr;
+        TProfile*               TestPt4Ctr;
         TProfile*               TestNchCtr;
         TProfile*               TestNchSelectedCtr;
 
@@ -125,6 +140,17 @@ class AliAnalysisPtN : public AliAnalysisTaskSE
         TProfile*               TestPt3Ctr_7;
         TProfile*               TestPt3Ctr_8;
         TProfile*               TestPt3Ctr_9;
+
+        TProfile*               TestPt4Ctr_0;
+        TProfile*               TestPt4Ctr_1;
+        TProfile*               TestPt4Ctr_2;
+        TProfile*               TestPt4Ctr_3;
+        TProfile*               TestPt4Ctr_4;
+        TProfile*               TestPt4Ctr_5;
+        TProfile*               TestPt4Ctr_6;
+        TProfile*               TestPt4Ctr_7;
+        TProfile*               TestPt4Ctr_8;
+        TProfile*               TestPt4Ctr_9;
         
         TProfile*               TestNchCtr_0;
         TProfile*               TestNchCtr_1;
