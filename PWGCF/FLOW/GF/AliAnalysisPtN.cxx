@@ -40,6 +40,7 @@ AliAnalysisPtN::AliAnalysisPtN() : AliAnalysisTaskSE(),
     dPtNch(nullptr),
     dPt2Nch(nullptr),
     dPt3Nch(nullptr),
+    dPt4Nch(nullptr),
     dPtNch_0(nullptr),
     dPtNch_1(nullptr),
     dPtNch_2(nullptr),
@@ -70,10 +71,21 @@ AliAnalysisPtN::AliAnalysisPtN() : AliAnalysisTaskSE(),
     dPt3Nch_7(nullptr),
     dPt3Nch_8(nullptr),
     dPt3Nch_9(nullptr),
+    dPt4Nch_0(nullptr),
+    dPt4Nch_1(nullptr),
+    dPt4Nch_2(nullptr),
+    dPt4Nch_3(nullptr),
+    dPt4Nch_4(nullptr),
+    dPt4Nch_5(nullptr),
+    dPt4Nch_6(nullptr),
+    dPt4Nch_7(nullptr),
+    dPt4Nch_8(nullptr),
+    dPt4Nch_9(nullptr),
     fPtNchUCC(nullptr),
     TestPtCtr(nullptr),
     TestPt2Ctr(nullptr),
     TestPt3Ctr(nullptr),
+    TestPt4Ctr(nullptr),
     TestNchCtr(nullptr),
     TestNchSelectedCtr(nullptr),
     TestPtCtr_0(nullptr),
@@ -106,6 +118,16 @@ AliAnalysisPtN::AliAnalysisPtN() : AliAnalysisTaskSE(),
     TestPt3Ctr_7(nullptr),
     TestPt3Ctr_8(nullptr),
     TestPt3Ctr_9(nullptr),
+    TestPt4Ctr_0(nullptr),
+    TestPt4Ctr_1(nullptr),
+    TestPt4Ctr_2(nullptr),
+    TestPt4Ctr_3(nullptr),
+    TestPt4Ctr_4(nullptr),
+    TestPt4Ctr_5(nullptr),
+    TestPt4Ctr_6(nullptr),
+    TestPt4Ctr_7(nullptr),
+    TestPt4Ctr_8(nullptr),
+    TestPt4Ctr_9(nullptr),
     TestNchCtr_0(nullptr),
     TestNchCtr_1(nullptr),
     TestNchCtr_2(nullptr),
@@ -146,6 +168,7 @@ AliAnalysisPtN::AliAnalysisPtN(const char* name) : AliAnalysisTaskSE(name),
     dPtNch(nullptr),
     dPt2Nch(nullptr),
     dPt3Nch(nullptr),
+    dPt4Nch(nullptr),
     dPtNch_0(nullptr),
     dPtNch_1(nullptr),
     dPtNch_2(nullptr),
@@ -176,10 +199,21 @@ AliAnalysisPtN::AliAnalysisPtN(const char* name) : AliAnalysisTaskSE(name),
     dPt3Nch_7(nullptr),
     dPt3Nch_8(nullptr),
     dPt3Nch_9(nullptr),
+    dPt4Nch_0(nullptr),
+    dPt4Nch_1(nullptr),
+    dPt4Nch_2(nullptr),
+    dPt4Nch_3(nullptr),
+    dPt4Nch_4(nullptr),
+    dPt4Nch_5(nullptr),
+    dPt4Nch_6(nullptr),
+    dPt4Nch_7(nullptr),
+    dPt4Nch_8(nullptr),
+    dPt4Nch_9(nullptr),
     fPtNchUCC(nullptr),
     TestPtCtr(nullptr),
     TestPt2Ctr(nullptr),
     TestPt3Ctr(nullptr),
+    TestPt4Ctr(nullptr),
     TestNchCtr(nullptr),
     TestNchSelectedCtr(nullptr),
     TestPtCtr_0(nullptr),
@@ -212,6 +246,16 @@ AliAnalysisPtN::AliAnalysisPtN(const char* name) : AliAnalysisTaskSE(name),
     TestPt3Ctr_7(nullptr),
     TestPt3Ctr_8(nullptr),
     TestPt3Ctr_9(nullptr),
+    TestPt4Ctr_0(nullptr),
+    TestPt4Ctr_1(nullptr),
+    TestPt4Ctr_2(nullptr),
+    TestPt4Ctr_3(nullptr),
+    TestPt4Ctr_4(nullptr),
+    TestPt4Ctr_5(nullptr),
+    TestPt4Ctr_6(nullptr),
+    TestPt4Ctr_7(nullptr),
+    TestPt4Ctr_8(nullptr),
+    TestPt4Ctr_9(nullptr),
     TestNchCtr_0(nullptr),
     TestNchCtr_1(nullptr),
     TestNchCtr_2(nullptr),
@@ -279,10 +323,12 @@ void AliAnalysisPtN::UserCreateOutputObjects()
     dPtNch = new TProfile("dPtNch", "dPtNch", 90, 0, 4500);
     dPt2Nch = new TProfile("dPt2Nch", "dPt2Nch", 90, 0, 4500);
     dPt3Nch = new TProfile("dPt3Nch", "dPt3Nch", 90, 0, 4500);
-    fPtNchUCC = new TH2F("fPtNchUCC", "fPtNchUCC", 600, 1800, 3000, 500, 0.2, 5.0);
+    dPt4Nch = new TProfile("dPt4Nch", "dPt4Nch", 90, 0, 4500);
+    fPtNchUCC = new TH2F("fPtNchUCC", "fPtNchUCC", 700, 1000, 4500, 500, 0.2, 5.0);
     TestPtCtr = new TProfile("TestPtCtr", "TestPtCtr", 200, 0, 100);
     TestPt2Ctr = new TProfile("TestPt2Ctr", "TestPt2Ctr", 200, 0, 100);
     TestPt3Ctr = new TProfile("TestPt3Ctr", "TestPt3Ctr", 200, 0, 100);
+    TestPt4Ctr = new TProfile("TestPt4Ctr", "TestPt4Ctr", 200, 0, 100);
     TestNchCtr = new TProfile("TestNchCtr", "TestNchCtr", 200, 0, 100);
     TestNchSelectedCtr = new TProfile("TestNchSelectedCtr", "TestNchSelectedCtr", 200, 0, 100);
 
@@ -320,6 +366,17 @@ void AliAnalysisPtN::UserCreateOutputObjects()
     dPt3Nch_8 = new TProfile("dPt3Nch_8", "dPt3Nch_8", 90, 0, 4500);
     dPt3Nch_9 = new TProfile("dPt3Nch_9", "dPt3Nch_9", 90, 0, 4500);
 
+    dPt4Nch_0 = new TProfile("dPt4Nch_0", "dPt4Nch_0", 90, 0, 4500);
+    dPt4Nch_1 = new TProfile("dPt4Nch_1", "dPt4Nch_1", 90, 0, 4500);
+    dPt4Nch_2 = new TProfile("dPt4Nch_2", "dPt4Nch_2", 90, 0, 4500);
+    dPt4Nch_3 = new TProfile("dPt4Nch_3", "dPt4Nch_3", 90, 0, 4500);
+    dPt4Nch_4 = new TProfile("dPt4Nch_4", "dPt4Nch_4", 90, 0, 4500);
+    dPt4Nch_5 = new TProfile("dPt4Nch_5", "dPt4Nch_5", 90, 0, 4500);
+    dPt4Nch_6 = new TProfile("dPt4Nch_6", "dPt4Nch_6", 90, 0, 4500);
+    dPt4Nch_7 = new TProfile("dPt4Nch_7", "dPt4Nch_7", 90, 0, 4500);
+    dPt4Nch_8 = new TProfile("dPt4Nch_8", "dPt4Nch_8", 90, 0, 4500);
+    dPt4Nch_9 = new TProfile("dPt4Nch_9", "dPt4Nch_9", 90, 0, 4500);
+
     TestPtCtr_0 = new TProfile("TestPtCtr_0", "TestPtCtr_0", 200, 0, 100);
     TestPtCtr_1 = new TProfile("TestPtCtr_1", "TestPtCtr_1", 200, 0, 100);
     TestPtCtr_2 = new TProfile("TestPtCtr_2", "TestPtCtr_2", 200, 0, 100);
@@ -352,6 +409,17 @@ void AliAnalysisPtN::UserCreateOutputObjects()
     TestPt3Ctr_7 = new TProfile("TestPt3Ctr_7", "TestPt3Ctr_7", 200, 0, 100);
     TestPt3Ctr_8 = new TProfile("TestPt3Ctr_8", "TestPt3Ctr_8", 200, 0, 100);
     TestPt3Ctr_9 = new TProfile("TestPt3Ctr_9", "TestPt3Ctr_9", 200, 0, 100);
+
+    TestPt4Ctr_0 = new TProfile("TestPt4Ctr_0", "TestPt4Ctr_0", 200, 0, 100);
+    TestPt4Ctr_1 = new TProfile("TestPt4Ctr_1", "TestPt4Ctr_1", 200, 0, 100);
+    TestPt4Ctr_2 = new TProfile("TestPt4Ctr_2", "TestPt4Ctr_2", 200, 0, 100);
+    TestPt4Ctr_3 = new TProfile("TestPt4Ctr_3", "TestPt4Ctr_3", 200, 0, 100);
+    TestPt4Ctr_4 = new TProfile("TestPt4Ctr_4", "TestPt4Ctr_4", 200, 0, 100);
+    TestPt4Ctr_5 = new TProfile("TestPt4Ctr_5", "TestPt4Ctr_5", 200, 0, 100);
+    TestPt4Ctr_6 = new TProfile("TestPt4Ctr_6", "TestPt4Ctr_6", 200, 0, 100);
+    TestPt4Ctr_7 = new TProfile("TestPt4Ctr_7", "TestPt4Ctr_7", 200, 0, 100);
+    TestPt4Ctr_8 = new TProfile("TestPt4Ctr_8", "TestPt4Ctr_8", 200, 0, 100);
+    TestPt4Ctr_9 = new TProfile("TestPt4Ctr_9", "TestPt4Ctr_9", 200, 0, 100);
 
     TestNchCtr_0 = new TProfile("TestNchCtr_0", "TestNchCtr_0", 200, 0, 100);
     TestNchCtr_1 = new TProfile("TestNchCtr_1", "TestNchCtr_1", 200, 0, 100);
@@ -405,6 +473,16 @@ void AliAnalysisPtN::UserCreateOutputObjects()
     fBstList->Add(dPt3Nch_7);
     fBstList->Add(dPt3Nch_8);
     fBstList->Add(dPt3Nch_9);
+    fBstList->Add(dPt4Nch_0);
+    fBstList->Add(dPt4Nch_1);
+    fBstList->Add(dPt4Nch_2);
+    fBstList->Add(dPt4Nch_3);
+    fBstList->Add(dPt4Nch_4);
+    fBstList->Add(dPt4Nch_5);
+    fBstList->Add(dPt4Nch_6);
+    fBstList->Add(dPt4Nch_7);
+    fBstList->Add(dPt4Nch_8);
+    fBstList->Add(dPt4Nch_9);
     fBstList->Add(TestPtCtr_0);
     fBstList->Add(TestPtCtr_1);
     fBstList->Add(TestPtCtr_2);
@@ -435,6 +513,16 @@ void AliAnalysisPtN::UserCreateOutputObjects()
     fBstList->Add(TestPt3Ctr_7);
     fBstList->Add(TestPt3Ctr_8);
     fBstList->Add(TestPt3Ctr_9);
+    fBstList->Add(TestPt4Ctr_0);
+    fBstList->Add(TestPt4Ctr_1);
+    fBstList->Add(TestPt4Ctr_2);
+    fBstList->Add(TestPt4Ctr_3);
+    fBstList->Add(TestPt4Ctr_4);
+    fBstList->Add(TestPt4Ctr_5);
+    fBstList->Add(TestPt4Ctr_6);
+    fBstList->Add(TestPt4Ctr_7);
+    fBstList->Add(TestPt4Ctr_8);
+    fBstList->Add(TestPt4Ctr_9);
     fBstList->Add(TestNchCtr_0);
     fBstList->Add(TestNchCtr_1);
     fBstList->Add(TestNchCtr_2);
@@ -463,10 +551,12 @@ void AliAnalysisPtN::UserCreateOutputObjects()
     fOutputList->Add(dPtNch);
     fOutputList->Add(dPt2Nch);
     fOutputList->Add(dPt3Nch);
+    fOutputList->Add(dPt4Nch);
     fOutputList->Add(fPtNchUCC);
     fOutputList->Add(TestPtCtr);
     fOutputList->Add(TestPt2Ctr);
     fOutputList->Add(TestPt3Ctr);
+    fOutputList->Add(TestPt4Ctr);
     fOutputList->Add(TestNchCtr);
     fOutputList->Add(TestNchSelectedCtr);
          // don't forget to add it to the list! the list will be written to file, so if you want
@@ -516,7 +606,7 @@ void AliAnalysisPtN::UserExec(Option_t *)
     Float_t wtE;
 
     Int_t iTracks(fAOD->GetNumberOfTracks());           // see how many tracks there are in the event
-    Double_t sump = 0, sumw = 0, sump2 = 0, sumw2 = 0, sump3 = 0, sumw3 = 0;
+    Double_t sump = 0, sumw = 0, sump2 = 0, sumw2 = 0, sump3 = 0, sumw3 = 0, sump4 = 0, sumw4 = 0;
     Int_t nTrackSelected = 0;
                                             // how many tracks are selected
     for(Int_t i(0); i < iTracks; i++) {
@@ -533,17 +623,19 @@ void AliAnalysisPtN::UserExec(Option_t *)
           sump += wtE*track->Pt();
           sump2 += wtE*wtE*track->Pt()*track->Pt();
           sump3 += wtE*wtE*wtE*track->Pt()*track->Pt()*track->Pt();
+          sump4 += wtE*wtE*wtE*wtE*track->Pt()*track->Pt()*track->Pt()*track->Pt();
 
           sumw += wtE;
           sumw2 += wtE*wtE;
           sumw3 += wtE*wtE*wtE;
+          sumw3 += wtE*wtE*wtE*wtE;
     
     }
     
     Int_t rd = int(floor(radm.Rndm()*10));
 
     //if(M<100) return; //we need enough tracks in one event
-    if(sumw!=0 && (sumw*sumw-sumw2)!=0 && (sumw*sumw*sumw-3*sumw2*sumw+2*sumw3)!=0) {
+    if(sumw!=0 && (sumw*sumw-sumw2)!=0 && (sumw*sumw*sumw-3*sumw2*sumw+2*sumw3)!=0 && (pow(sumw,4)-6*sumw2*sumw*sumw+3*sumw2*sumw2+8*sumw3*sumw-6*sumw4)!=0) {
       Float_t pt = sump/sumw;
       fPtNch->Fill(nTrackSelected,pt);
       dPtNch->Fill(nTrackSelected,pt);
@@ -554,11 +646,14 @@ void AliAnalysisPtN::UserExec(Option_t *)
       Float_t pt3 = (sump*sump*sump-3*sump2*sump+2*sump3)/(sumw*sumw*sumw-3*sumw2*sumw+2*sumw3);
       dPt3Nch->Fill(nTrackSelected,pt3);
 
+      Float_t pt4 = (pow(sump,4)-6*sump2*sump*sump+3*sump2*sump2+8*sump3*sump-6*sump4)/(pow(sumw,4)-6*sumw2*sumw*sumw+3*sumw2*sumw2+8*sumw3*sumw-6*sumw4);
+      dPt4Nch->Fill(nTrackSelected,pt4);
 
       if(centrality<1) fPtNchUCC->Fill(nTrackSelected,pt);
       TestPtCtr->Fill(centrality,pt);
       TestPt2Ctr->Fill(centrality,pt2);
       TestPt3Ctr->Fill(centrality,pt3);
+      TestPt4Ctr->Fill(centrality,pt4);
 
     //here we fill the boostrap profiles
       
@@ -567,81 +662,101 @@ void AliAnalysisPtN::UserExec(Option_t *)
           dPtNch_0->Fill(nTrackSelected,pt);
           dPt2Nch_0->Fill(nTrackSelected,pt2);
           dPt3Nch_0->Fill(nTrackSelected,pt3);
+          dPt4Nch_0->Fill(nTrackSelected,pt4);
           TestPtCtr_0->Fill(centrality,pt);
           TestPt2Ctr_0->Fill(centrality,pt2);
           TestPt3Ctr_0->Fill(centrality,pt3);
+          TestPt4Ctr_0->Fill(centrality,pt4);
           break;
         case 1:
           dPtNch_1->Fill(nTrackSelected,pt);
           dPt2Nch_1->Fill(nTrackSelected,pt2);
           dPt3Nch_1->Fill(nTrackSelected,pt3);
+          dPt4Nch_1->Fill(nTrackSelected,pt4);
           TestPtCtr_1->Fill(centrality,pt);
           TestPt2Ctr_1->Fill(centrality,pt2);
           TestPt3Ctr_1->Fill(centrality,pt3);
+          TestPt4Ctr_1->Fill(centrality,pt4);
           break;
         case 2:
           dPtNch_2->Fill(nTrackSelected,pt);
           dPt2Nch_2->Fill(nTrackSelected,pt2);
           dPt3Nch_2->Fill(nTrackSelected,pt3);
+          dPt4Nch_2->Fill(nTrackSelected,pt4);
           TestPtCtr_2->Fill(centrality,pt);
           TestPt2Ctr_2->Fill(centrality,pt2);
           TestPt3Ctr_2->Fill(centrality,pt3);
+          TestPt4Ctr_2->Fill(centrality,pt4);
           break;
         case 3:
           dPtNch_3->Fill(nTrackSelected,pt);
           dPt2Nch_3->Fill(nTrackSelected,pt2);
           dPt3Nch_3->Fill(nTrackSelected,pt3);
+          dPt4Nch_3->Fill(nTrackSelected,pt4);
           TestPtCtr_3->Fill(centrality,pt);
           TestPt2Ctr_3->Fill(centrality,pt2);
           TestPt3Ctr_3->Fill(centrality,pt3);
+          TestPt4Ctr_3->Fill(centrality,pt4);
           break;
         case 4:
           dPtNch_4->Fill(nTrackSelected,pt);
           dPt2Nch_4->Fill(nTrackSelected,pt2);
           dPt3Nch_4->Fill(nTrackSelected,pt3);
+          dPt4Nch_4->Fill(nTrackSelected,pt4);
           TestPtCtr_4->Fill(centrality,pt);
           TestPt2Ctr_4->Fill(centrality,pt2);
           TestPt3Ctr_4->Fill(centrality,pt3);
+          TestPt4Ctr_4->Fill(centrality,pt4);
           break;
         case 5:
           dPtNch_5->Fill(nTrackSelected,pt);
           dPt2Nch_5->Fill(nTrackSelected,pt2);
           dPt3Nch_5->Fill(nTrackSelected,pt3);
+          dPt4Nch_5->Fill(nTrackSelected,pt4);
           TestPtCtr_5->Fill(centrality,pt);
           TestPt2Ctr_5->Fill(centrality,pt2);
           TestPt3Ctr_5->Fill(centrality,pt3);
+          TestPt4Ctr_5->Fill(centrality,pt4);
           break;
         case 6:
           dPtNch_6->Fill(nTrackSelected,pt);
           dPt2Nch_6->Fill(nTrackSelected,pt2);
           dPt3Nch_6->Fill(nTrackSelected,pt3);
+          dPt4Nch_6->Fill(nTrackSelected,pt4);
           TestPtCtr_6->Fill(centrality,pt);
           TestPt2Ctr_6->Fill(centrality,pt2);
           TestPt3Ctr_6->Fill(centrality,pt3);
+          TestPt4Ctr_6->Fill(centrality,pt4);
           break;
         case 7:
           dPtNch_7->Fill(nTrackSelected,pt);
           dPt2Nch_7->Fill(nTrackSelected,pt2);
           dPt3Nch_7->Fill(nTrackSelected,pt3);
+          dPt4Nch_7->Fill(nTrackSelected,pt4);
           TestPtCtr_7->Fill(centrality,pt);
           TestPt2Ctr_7->Fill(centrality,pt2);
           TestPt3Ctr_7->Fill(centrality,pt3);
+          TestPt4Ctr_7->Fill(centrality,pt4);
           break;
         case 8:
           dPtNch_8->Fill(nTrackSelected,pt);
           dPt2Nch_8->Fill(nTrackSelected,pt2);
           dPt3Nch_8->Fill(nTrackSelected,pt3);
+          dPt4Nch_8->Fill(nTrackSelected,pt4);
           TestPtCtr_8->Fill(centrality,pt);
           TestPt2Ctr_8->Fill(centrality,pt2);
           TestPt3Ctr_8->Fill(centrality,pt3);
+          TestPt4Ctr_8->Fill(centrality,pt4);
           break;
         case 9:
           dPtNch_9->Fill(nTrackSelected,pt);
           dPt2Nch_9->Fill(nTrackSelected,pt2);
           dPt3Nch_9->Fill(nTrackSelected,pt3);
+          dPt4Nch_9->Fill(nTrackSelected,pt4);
           TestPtCtr_9->Fill(centrality,pt);
           TestPt2Ctr_9->Fill(centrality,pt2);
           TestPt3Ctr_9->Fill(centrality,pt3);
+          TestPt4Ctr_9->Fill(centrality,pt4);
           break;
       }
     }
@@ -650,7 +765,7 @@ void AliAnalysisPtN::UserExec(Option_t *)
     
     TestNchCtr->Fill(centrality,iTracks);
     TestNchSelectedCtr->Fill(centrality,nTrackSelected);
-    
+
       switch (rd){
         case 0:
           TestNchCtr_0->Fill(centrality,iTracks);
