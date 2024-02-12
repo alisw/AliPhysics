@@ -100,6 +100,9 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fWithinDCAvsPt_noChi2(0),
   fMptVsNch(0),
   fMptVsCent(0),
+  fpt2VsCent(0),
+  fpt3VsCent(0),
+  fpt4VsCent(0),
   fNchVsCent(0),
   fV0MMulti(0),
   fITSvsTPCMulti(0),
@@ -181,6 +184,9 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fWithinDCAvsPt_noChi2(0),
   fMptVsNch(0),
   fMptVsCent(0),
+  fpt2VsCent(0),
+  fpt3VsCent(0),
+  fpt4VsCent(0),
   fNchVsCent(0),
   fV0MMulti(0),
   fITSvsTPCMulti(0),
@@ -282,13 +288,27 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   fptList->Add(fMultiVsCent);
   const int nMptBins = 500;
   double *mptBins = new double[nMptBins+1];
-  for(int i=0;i<=nMptBins;++i) mptBins[i] = 0.001*i + 0.6;
+  double *pt2Bins = new double[nMptBins+1];
+  double *pt3Bins = new double[nMptBins+1];
+  double *pt4Bins = new double[nMptBins+1];
+  for(int i=0;i<=nMptBins;++i) {
+    mptBins[i] = 0.001*i + 0.6;
+    pt2Bins[i] = 0.001*i + 0.2;
+    pt3Bins[i] = 0.001*i + 0.05;
+    pt4Bins[i] = 0.001*i;
+  }
   const int nCentBinsMpt = 4;
   double centbinsMpt[] = {0,0.5,1,5,10,90};
   fMptVsNch = new TH3D("fMptVsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}]#GT;centrality (%)",fNMultiBins,fMultiBins,nMptBins,mptBins,nCentBinsMpt,centbinsMpt);
   fptList->Add(fMptVsNch);
   fMptVsCent = new TH2D("fMptVsCent",";centrality (%); #LT[#it{p}_{T}]#GT",nFineCentBins,fineCentBins,nMptBins,mptBins);
   fptList->Add(fMptVsCent);
+  fpt2VsCent = new TH2D("fpt2VsCent",";centrality (%); #LT[#it{p}_{T}^{(2)}]#GT",nFineCentBins,fineCentBins,nMptBins,pt2Bins);
+  fptList->Add(fpt2VsCent);
+  fpt3VsCent = new TH2D("fpt3VsCent",";centrality (%); #LT[#it{p}_{T}^{(3)}]#GT",nFineCentBins,fineCentBins,nMptBins,pt3Bins);
+  fptList->Add(fpt3VsCent);
+  fpt4VsCent = new TH2D("fpt4VsCent",";centrality (%); #LT[#it{p}_{T}^{(4)}]#GT",nFineCentBins,fineCentBins,nMptBins,pt4Bins);
+  fptList->Add(fpt4VsCent);
   fNchVsCent = new TH2D("fNchVsCent",";centrality (%);N_{ch}^{rec}",nFineCentBins,fineCentBins,fNMultiBins,fMultiBins);
   fptList->Add(fNchVsCent);
   printf("Multiplicity objects created\n");
@@ -410,11 +430,11 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
       if(lTrack->TestFilterBit(128)) nTotTracksFB128++;
       if(TMath::Abs(leta) > fEtaAcceptance) continue;
       if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxXYZ)) continue;
-      nTotNoTracks++;
       Double_t lpt = lTrack->Pt();
       Double_t weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lpt));
       if(weff==0.0) continue;
       weff = 1./weff;
+      nTotNoTracks += (fUseNUEOne)?1:weff;
       FillWPCounter(wp,(fUseNUEOne)?1.0:weff,lpt);
     };
   };
@@ -441,6 +461,9 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   fMultiVsCent->Fill(l_Cent,l_Multi);
   fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0],l_Cent);
   fMptVsCent->Fill(l_Cent,wp[1][1]/wp[1][0]);
+  if(fPtCont->getEventCorrelation(2)[1]!=0) fpt2VsCent->Fill(l_Cent,fPtCont->getEventCorrelation(2)[0]/fPtCont->getEventCorrelation(2)[1]);
+  if(fPtCont->getEventCorrelation(3)[1]!=0) fpt3VsCent->Fill(l_Cent,fPtCont->getEventCorrelation(3)[0]/fPtCont->getEventCorrelation(3)[1]);
+  if(fPtCont->getEventCorrelation(4)[1]!=0) fpt4VsCent->Fill(l_Cent,fPtCont->getEventCorrelation(4)[0]/fPtCont->getEventCorrelation(4)[1]);
   fNchVsCent->Fill(l_Cent,l_Multi);
   PostData(1,fptList);
   PostData(2,fQAList);
@@ -522,6 +545,9 @@ void AliAnalysisTaskPtCorr::ProcessOnTheFly() {
   fMultiVsCent->Fill((fUseIP)?fImpactParameterMC:l_Cent,l_Multi);
   fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0],(fUseIP)?fImpactParameterMC:l_Cent);
   fMptVsCent->Fill((fUseIP)?fImpactParameterMC:l_Cent,wp[1][1]/wp[1][0]);
+  if(fPtCont->getEventCorrelation(2)[1]!=0) fpt2VsCent->Fill(l_Cent,fPtCont->getEventCorrelation(2)[0]/fPtCont->getEventCorrelation(2)[1]);
+  if(fPtCont->getEventCorrelation(3)[1]!=0) fpt3VsCent->Fill(l_Cent,fPtCont->getEventCorrelation(3)[0]/fPtCont->getEventCorrelation(3)[1]);
+  if(fPtCont->getEventCorrelation(4)[1]!=0) fpt4VsCent->Fill(l_Cent,fPtCont->getEventCorrelation(4)[0]/fPtCont->getEventCorrelation(4)[1]);
   fNchVsCent->Fill((fUseIP)?fImpactParameterMC:l_Cent,l_Multi);
   PostData(1,fptList);
   PostData(2,fQAList);

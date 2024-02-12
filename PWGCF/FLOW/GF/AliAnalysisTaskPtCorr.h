@@ -164,6 +164,9 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH2D *fWithinDCAvsPt_noChi2;
   TH3D *fMptVsNch;
   TH2D *fMptVsCent;
+  TH2D *fpt2VsCent;
+  TH2D *fpt3VsCent;
+  TH2D *fpt4VsCent;
   TH2D *fNchVsCent;
   TH1D *fV0MMulti;
   TH2D *fITSvsTPCMulti;
