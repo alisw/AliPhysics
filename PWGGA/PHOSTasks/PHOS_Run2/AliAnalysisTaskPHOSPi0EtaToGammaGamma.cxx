@@ -1056,7 +1056,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   }
 
   UInt_t fSelectMask = fInputHandler->IsEventSelected();
-  Bool_t isINT7selected = fSelectMask & AliVEvent::kINT7;
+  Bool_t isINT7selected = fSelectMask & (AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB);
 
   //reject pile up by physics selection
   if(!fIsPHOSTriggerAnalysis && !isINT7selected){
