@@ -1210,7 +1210,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                 }
 
                 //===== Highest Pt track selection =====
-                if (dPhi >= TMath::Pi()-0.5 && dPhi <= TMath::Pi()+0.5) {
+                if (dPhi >= TMath::Pi()-0.3 && dPhi <= TMath::Pi()+0.3) {
                   //AliAODTrack* MaxTrk = static_cast<AliAODTrack*>(fAOD->GetTrack(MaxPtTrackNum_m));
                   AliAODTrack* MaxTrk = dynamic_cast<AliAODTrack*>(fTracks_tender->At(MaxPtTrackNum_m));
                   Double_t dPhiMaxTrk = (MaxTrk->Phi()) - (track->Phi());
@@ -1218,7 +1218,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                   if (dPhiMaxTrk < -1.*TMath::Pi()/3.) dPhiMaxTrk = dPhiMaxTrk + 2.*TMath::Pi();
                   if (dPhiMaxTrk > 5.*TMath::Pi()/3.) dPhiMaxTrk = dPhiMaxTrk - 2.*TMath::Pi();
                   //=== select back-to-back track ===
-                  if (dPhiMaxTrk < TMath::Pi()-0.5 || dPhiMaxTrk > TMath::Pi()+0.5) MaxPtTrackNum_m = j;
+                  if (dPhiMaxTrk < TMath::Pi()-0.3 || dPhiMaxTrk > TMath::Pi()+0.3) MaxPtTrackNum_m = j;
                   //=== higher Pt track ===
                   if (anotrack->Pt() >= MaxTrk->Pt()) MaxPtTrackNum_m = j;
                   //=== Pt sum ===
@@ -1341,7 +1341,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                 if (dPhi > 5.*TMath::Pi()/3.) dPhi = dPhi - 2.*TMath::Pi();
 
                 //===== Highest Pt track selection =====
-                if (dPhi >= TMath::Pi()-1.0 && dPhi <= TMath::Pi()+1.0) {
+                if (dPhi >= TMath::Pi()-0.5 && dPhi <= TMath::Pi()+0.5) {
                   //AliAODTrack* MaxTrk = static_cast<AliAODTrack*>(fAOD->GetTrack(MaxPtTrackNum_w));
                   AliAODTrack* MaxTrk = dynamic_cast<AliAODTrack*>(fTracks_tender->At(MaxPtTrackNum_w));
                   Double_t dPhiMaxTrk = (MaxTrk->Phi()) - (track->Phi());
@@ -1349,7 +1349,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                   if (dPhiMaxTrk < -1.*TMath::Pi()/3.) dPhiMaxTrk = dPhiMaxTrk + 2.*TMath::Pi();
                   if (dPhiMaxTrk > 5.*TMath::Pi()/3.) dPhiMaxTrk = dPhiMaxTrk - 2.*TMath::Pi();
                   //=== select back-to-back track ===
-                  if (dPhiMaxTrk < TMath::Pi()-1.0 || dPhiMaxTrk > TMath::Pi()+1.0) MaxPtTrackNum_w = j;
+                  if (dPhiMaxTrk < TMath::Pi()-0.5 || dPhiMaxTrk > TMath::Pi()+0.5) MaxPtTrackNum_w = j;
                   //=== higher Pt track ===
                   if (anotrack->Pt() >= MaxTrk->Pt()) MaxPtTrackNum_w = j;
                   //=== Pt sum ===
@@ -1549,7 +1549,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                 if (dPhi > 5.*TMath::Pi()/3.) dPhi = dPhi - 2.*TMath::Pi();
       
                 //===== Highest Pt track selection =====
-                if (dPhi >= TMath::Pi()-0.5 && dPhi <= TMath::Pi()+0.5) {
+                if (dPhi >= TMath::Pi()-0.3 && dPhi <= TMath::Pi()+0.3) {
                   //AliAODTrack* MaxTrk = static_cast<AliAODTrack*>(fAOD->GetTrack(MaxPtTrackNum_m));
                   AliAODTrack* MaxTrk = dynamic_cast<AliAODTrack*>(fTracks_tender->At(MaxPtTrackNum_m));
                   Double_t dPhiMaxTrk = (MaxTrk->Phi()) - (track->Phi());
@@ -1557,7 +1557,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                   if (dPhiMaxTrk < -1.*TMath::Pi()/3.) dPhiMaxTrk = dPhiMaxTrk + 2.*TMath::Pi();
                   if (dPhiMaxTrk > 5.*TMath::Pi()/3.) dPhiMaxTrk = dPhiMaxTrk - 2.*TMath::Pi();
                   //=== select back-to-back track ===
-                  if (dPhiMaxTrk < TMath::Pi()-0.5 || dPhiMaxTrk > TMath::Pi()+0.5) MaxPtTrackNum_m = j;
+                  if (dPhiMaxTrk < TMath::Pi()-0.3 || dPhiMaxTrk > TMath::Pi()+0.3) MaxPtTrackNum_m = j;
                   //=== higher Pt track ===
                   if (anotrack->Pt() >= MaxTrk->Pt()) MaxPtTrackNum_m = j;
                   //=== Pt sum ===
@@ -1654,7 +1654,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                 if (dPhi > 5.*TMath::Pi()/3.) dPhi = dPhi - 2.*TMath::Pi();
     
                 //===== Highest Pt track selection =====
-                if (dPhi >= TMath::Pi()-1.0 && dPhi <= TMath::Pi()+1.0) {
+                if (dPhi >= TMath::Pi()-0.5 && dPhi <= TMath::Pi()+0.5) {
                   //AliAODTrack* MaxTrk = static_cast<AliAODTrack*>(fAOD->GetTrack(MaxPtTrackNum_w));
                   AliAODTrack* MaxTrk = dynamic_cast<AliAODTrack*>(fTracks_tender->At(MaxPtTrackNum_w));
                   Double_t dPhiMaxTrk = (MaxTrk->Phi()) - (track->Phi());
@@ -1662,7 +1662,7 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
                   if (dPhiMaxTrk < -1.*TMath::Pi()/3.) dPhiMaxTrk = dPhiMaxTrk + 2.*TMath::Pi();
                   if (dPhiMaxTrk > 5.*TMath::Pi()/3.) dPhiMaxTrk = dPhiMaxTrk - 2.*TMath::Pi();
                   //=== select back-to-back track ===
-                  if (dPhiMaxTrk < TMath::Pi()-1.0 || dPhiMaxTrk > TMath::Pi()+1.0) MaxPtTrackNum_w = j;
+                  if (dPhiMaxTrk < TMath::Pi()-0.5 || dPhiMaxTrk > TMath::Pi()+0.5) MaxPtTrackNum_w = j;
                   //=== higher Pt track ===
                   if (anotrack->Pt() >= MaxTrk->Pt()) MaxPtTrackNum_w = j;
                   //=== Pt sum ===
