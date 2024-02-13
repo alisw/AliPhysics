@@ -212,6 +212,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoTruePrimaryPi0MCPtResolPt(NULL),
   fHistoTruePrimaryEtaMCPtResolPt(NULL),
   fHistoTrueSecondaryPi0InvMassPt(NULL),
+  fHistoTruePrimaryPi0RecPtMCPt(NULL),
   fHistoTrueSecondaryPi0FromK0sInvMassPt(NULL),
   fHistoTrueK0sWithPi0DaughterMCPt(NULL),
   fHistoTrueSecondaryPi0FromK0lInvMassPt(NULL),
@@ -574,6 +575,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoTruePrimaryPi0MCPtResolPt(NULL),
   fHistoTruePrimaryEtaMCPtResolPt(NULL),
   fHistoTrueSecondaryPi0InvMassPt(NULL),
+  fHistoTruePrimaryPi0RecPtMCPt(NULL),
   fHistoTrueSecondaryPi0FromK0sInvMassPt(NULL),
   fHistoTrueK0sWithPi0DaughterMCPt(NULL),
   fHistoTrueSecondaryPi0FromK0lInvMassPt(NULL),
@@ -2113,6 +2115,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoTrueK0sWithPi0DaughterMCPt                  = new TH1F*[fnCuts];
         fHistoTrueK0lWithPi0DaughterMCPt                  = new TH1F*[fnCuts];
         fHistoTrueLambdaWithPi0DaughterMCPt               = new TH1F*[fnCuts];
+        fHistoTruePrimaryPi0RecPtMCPt                     = new TH2F*[fnCuts];
         if( !fDoPi0Only ){
           fHistoTrueEtaCaloPhotonInvMassPt                = new TH2F*[fnCuts];
           fHistoTrueEtaCaloMixedPhotonConvPhotonInvMassPt = new TH2F*[fnCuts];
@@ -2953,6 +2956,11 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           fHistoTrueLambdaWithPi0DaughterMCPt[iCut]->SetXTitle("p_{T, MC} (GeV/c)");
           fTrueList[iCut]->Add(fHistoTrueLambdaWithPi0DaughterMCPt[iCut]);
 
+          fHistoTruePrimaryPi0RecPtMCPt[iCut]       = new TH2F("ESD_TruePrimaryPi0_RecPt_MCPt", "ESD_TruePrimaryPi0_RecPt_MCPt", nBinsPt, arrPtBinning, nBinsPt, arrPtBinning);
+          fHistoTruePrimaryPi0RecPtMCPt[iCut]->SetXTitle("p_{T, rec.} (GeV/c)");
+          fHistoTruePrimaryPi0RecPtMCPt[iCut]->SetYTitle("p_{T, MC} (GeV/c)");
+          fTrueList[iCut]->Add(fHistoTruePrimaryPi0RecPtMCPt[iCut]);
+
           fHistoTruePi0PtY[iCut]          = new TH2F("ESD_TruePi0_Pt_Y", "ESD_TruePi0_Pt_Y", nBinsQAPt, arrQAPtBinning, 150, -1.5, 1.5);
           fHistoTruePi0PtY[iCut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
           fHistoTruePi0PtY[iCut]->SetYTitle("y");
@@ -3117,6 +3125,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
             fHistoTrueK0sWithPi0DaughterMCPt[iCut]->Sumw2();
             fHistoTrueK0lWithPi0DaughterMCPt[iCut]->Sumw2();
             fHistoTrueLambdaWithPi0DaughterMCPt[iCut]->Sumw2();
+            fHistoTruePrimaryPi0RecPtMCPt[iCut]->Sumw2();
 
             if( !fDoPi0Only ){
               fHistoTrueEtaPtOpenAngle[iCut]->Sumw2();
@@ -5847,6 +5856,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
       if (fDoMesonQA > 0 && fDoMesonQA < 3){
         if(isTruePi0){ // Only primary pi0 for resolution
           fHistoTruePrimaryPi0MCPtResolPt[fiCut]->Fill(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt(),(Pi0Candidate->Pt()-((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt())/((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt(),weighted* tempTruePi0CandWeight);
+          fHistoTruePrimaryPi0RecPtMCPt[fiCut]->Fill(Pi0Candidate->Pt(), ((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt(),weighted* tempTruePi0CandWeight);
         }
         if (isTrueEta && !fDoPi0Only){ // Only primary eta for resolution
           fHistoTruePrimaryEtaMCPtResolPt[fiCut]->Fill(((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt(),(Pi0Candidate->Pt()-((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt())/((AliMCParticle*)fMCEvent->GetTrack(gamma1MotherLabel))->Pt(),weighted* tempTruePi0CandWeight);
@@ -6230,6 +6240,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
         if(isTruePi0){ // Only primary pi0 for resolution
           fHistoTruePrimaryPi0MCPtResolPt[fiCut]->Fill(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt(),
                               (Pi0Candidate->Pt()-static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt())/static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt(),weighted* tempTruePi0CandWeight);
+          fHistoTruePrimaryPi0RecPtMCPt[fiCut]->Fill(Pi0Candidate->Pt(), static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma1MotherLabel))->Pt(),weighted* tempTruePi0CandWeight);
 
         }
         if (isTrueEta && !fDoPi0Only){ // Only primary eta for resolution
