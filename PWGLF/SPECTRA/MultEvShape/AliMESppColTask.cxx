@@ -289,28 +289,28 @@ void AliMESppColTask::UserExec(Option_t *opt)
 	}
 	//	  ---------------end of ESD loop for basic info trk sparse --------------------
 
-	//Debuging
-//     if(DebugLevel()>0){
-//       (*AliMESbaseTask::DebugStream()) << "EvShape"
-// 
-//         <<"sfer="<< sfer
-//         <<"mult="<< mult_comb08
-//         <<"sferMC="<< MC_sfer
-//         <<"multMC="<< MC_mult_glob08
-//         <<"pTlead="<< pTlead
-//         <<"idL="<< idLead
-//         <<"phiL="<< phiL
-//         <<"etaL="<< etaL
-//         <<"pTleadMC="<< pTMClead
-//         <<"idLMC="<< idMCLead
-//         <<"phiLMC="<< phiMCL
-//         <<"etaLMC="<< etaMCL
-//         <<"ev.=" << fEvInfo
-//         <<"trks.="<< fTracks
-//         <<"evMC.=" << fMCevInfo
-//         <<"trksMC.="<< fMCtracks
-//         << "\n";
-//      }
+	// //Debuging
+    // if(DebugLevel()>0){
+    //   (*AliMESbaseTask::DebugStream()) << "EvShape"
+    //
+    //     <<"sfer="<< sfer
+    //     <<"mult="<< mult_comb08
+    //     <<"sferMC="<< MC_sfer
+    //     <<"multMC="<< MC_mult_glob08
+    //     <<"pTlead="<< pTlead
+    //     <<"idL="<< idLead
+    //     <<"phiL="<< phiL
+    //     <<"etaL="<< etaL
+    //     <<"pTleadMC="<< pTMClead
+    //     <<"idLMC="<< idMCLead
+    //     <<"phiLMC="<< phiMCL
+    //     <<"etaLMC="<< etaMCL
+    //     <<"ev.=" << fEvInfo
+    //     <<"trks.="<< fTracks
+    //     <<"evMC.=" << fMCevInfo
+    //     <<"trksMC.="<< fMCtracks
+    //     << "\n";
+    //  }
 
 
 //	ESD tracks - two-particle correlations 
@@ -671,9 +671,9 @@ Bool_t AliMESppColTask::DefineMixedEventPool(Int_t MC)
     
 void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selectedArray, Int_t d, Int_t MC, Double_t sfer)
 {
-    Double_t vec_hTrk[4];
+    Double_t vec_hTrk[3];
 	THnSparseD *hTrk = (THnSparseD*)fHistosQA->At(1);
-    Double_t vec_hMCTrk[4];
+    Double_t vec_hMCTrk[3];
     THnSparseD *hMCTrk = (THnSparseD*)fHistosQA->At(2);
     
     
@@ -690,7 +690,10 @@ void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selecte
 			break;
       }
 	}
-	
+    vec_hTrk[2]=-1;
+    vec_hTrk[1]=-9999;
+    vec_hTrk[0]=-9999;
+
 	AliMEStrackInfo* trigger = (AliMEStrackInfo*)selectedArray->At(0);
 	if(!trigger) return;
 	if(jm<0 || trigger->Pt()<pTtrigMin[jm] || trigger->Pt()>pTtrigMax[jm]) return;
@@ -699,6 +702,10 @@ void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selecte
 	Double_t ptL  = trigger->Pt();
 	Double_t phiL = trigger->Phi();
 	Double_t etaL = trigger->Eta();
+    vec_hTrk[2]=1;
+
+
+    Int_t assAux(-99), assAuxMC(-99);
 
 
 	for (Int_t j=1; j<selectedArray->GetEntriesFast(); j++){
@@ -715,22 +722,24 @@ void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selecte
 		if(ptL>ptAs && ptL>=pTtrigMin[jm] && ptL<=pTtrigMax[jm]){                   
 			dPhi = RangePhi(phiL-phiAs);
       dEta=etaL-etaAs;
-            vec_hTrk[0]=MultipOrCent;
-            vec_hTrk[1]=sfer;
-            vec_hTrk[2]=dEta;
-            vec_hTrk[3]=dPhi;
+
 			if(MC==0){
+              if (assAux < 0) assAux = 111;
+              vec_hTrk[0]=jm;
+              vec_hTrk[2]=0;
               if(d!=4){
 				if(d==3){
+                  vec_hTrk[1]=0.5;
                   Int_t bin=(5+jm);
                   ((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi); 
-// 						vec_hTrk[1]=0;
               }
               if(d==6){
+                vec_hTrk[1]=1.5;
                 Int_t bin=(10+jm);
                 ((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi);
               }
               if(d==9){
+                vec_hTrk[1]=2.5;
                 Int_t bin=(15+jm);
                 ((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi);
               }
@@ -738,34 +747,38 @@ void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selecte
               hTrk->Fill(vec_hTrk);
               }
               if(d==4){
+                vec_hTrk[1]=3.5;
                 Int_t bin=(20+jm);
                 ((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi);
               }
+
 			}
 			if(HasMCdata() && MC==1){
-				vec_hMCTrk[0]=MultipOrCent;
-                vec_hMCTrk[1]=sfer;
-            vec_hMCTrk[2]=dEta;
-            vec_hMCTrk[3]=dPhi;
+              if (assAuxMC < 0) assAuxMC = 111;
+				vec_hMCTrk[0]=jm;
+            vec_hMCTrk[2]=0;
             if(d!=4){
               if(d==3){
+                vec_hMCTrk[1]=0.5;
 				Int_t bin=(45+jm);
 				((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi);
-// 				vec_hMCTrk[1]=0;
               }
               if(d==6){
+                vec_hMCTrk[1]=1.5;
                 Int_t bin=(50+jm);
 				((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi);
 // 				vec_hMCTrk[1]=1;
               }
               if(d==9){
+                vec_hMCTrk[1]=2.5;
                 Int_t bin=(55+jm);
 				((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi);
 // 				vec_hMCTrk[1]=2;
-				  }			
+				  }
 				  hMCTrk->Fill(vec_hMCTrk);
             }
             if(d==4){
+              vec_hMCTrk[1]=3.5;
                 Int_t bin=(60+jm);
 				((TH2*)fHistosQA->At(bin))->Fill(dEta, dPhi);
               }
@@ -773,6 +786,17 @@ void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selecte
 			}
         }
       }
+
+    if(MC==0 && d==3 && assAux==111) ((TH2*)fHistosQA->At(85))->Fill(jm+0.5, 0.5);
+    if(MC==0 && d==6 && assAux==111) ((TH2*)fHistosQA->At(85))->Fill(jm+0.5, 1.5);
+    if(MC==0 && d==9 && assAux==111) ((TH2*)fHistosQA->At(85))->Fill(jm+0.5, 2.5);
+    if(MC==0 && d==4 && assAux==111) ((TH2*)fHistosQA->At(85))->Fill(jm+0.5, 3.5);
+
+    if(HasMCdata() && MC==1 && d==3 && assAuxMC==111) ((TH2*)fHistosQA->At(86))->Fill(jm+0.5, 0.5);
+    if(HasMCdata() && MC==1 && d==6 && assAuxMC==111) ((TH2*)fHistosQA->At(86))->Fill(jm+0.5, 1.5);
+    if(HasMCdata() && MC==1 && d==9 && assAuxMC==111) ((TH2*)fHistosQA->At(86))->Fill(jm+0.5, 2.5);
+    if(HasMCdata() && MC==1 && d==4 && assAuxMC==111) ((TH2*)fHistosQA->At(86))->Fill(jm+0.5, 3.5);
+
 }
 
 //---------------------------------------------------------------------------------------
@@ -1219,25 +1243,25 @@ Bool_t AliMESppColTask::BuildQAHistos()
   fHistosQA->AddAt(hNoEvts, 0);
 
     //Spars for associateParticles information
-  const Int_t ndimTrk(4);
-  const Int_t cldNbinsTrk[ndimTrk]   = { 150, 40, 36, 60};
-  const Double_t cldMinTrk[ndimTrk]  = { 0.5, 0., -1.5, -0.5*TMath::Pi()},
-					  cldMaxTrk[ndimTrk]  = {150.5, 1., 1.5, 1.5*TMath::Pi()};
-  THnSparseD *hTrk = new THnSparseD("infoTrk","infoTrk;multComb08;Sphericity;#Delta#eta;#Delta#varphi;",ndimTrk, cldNbinsTrk, cldMinTrk, cldMaxTrk);
+  const Int_t ndimTrk(3);
+  const Int_t cldNbinsTrk[ndimTrk]   = { 5, 4, 3};
+  const Double_t cldMinTrk[ndimTrk]  = { 0., 0., -1.},
+					  cldMaxTrk[ndimTrk]  = {5., 4., 1.};
+  THnSparseD *hTrk = new THnSparseD("infoTrk","infoTrk; MultBin; SferBin;as;",ndimTrk, cldNbinsTrk, cldMinTrk, cldMaxTrk);
   fHistosQA->AddAt(hTrk, 1);
 
-  THnSparseD *hMCTrk = new THnSparseD("infoMCTrk","infoMCTrk;multComb08MC;sferMC;dEtaMC;dPhiMC;",ndimTrk, cldNbinsTrk, cldMinTrk, cldMaxTrk);
+  THnSparseD *hMCTrk = new THnSparseD("infoMCTrk","infoMCTrk; MultBinMC; SferBinMC;asMC;",ndimTrk, cldNbinsTrk, cldMinTrk, cldMaxTrk);
   fHistosQA->AddAt(hMCTrk, 2);
 
   const Int_t ndimbTrk(9);
-  const Int_t cldNbinsbTrk[ndimbTrk]   = { 150, 40, 100, 100, 36, 60, 3, 160, 2};
+  const Int_t cldNbinsbTrk[ndimbTrk]   = { 100, 40, 100, 100, 36, 30, 3, 160, 2};
   const Double_t cldMinbTrk[ndimbTrk]  = { 0.5, 0., 0., 0.,-1.5, -0.5*TMath::Pi(), -1.5, 0., 0.},
-					  cldMaxbTrk[ndimbTrk]  = {150.5, 1., 10., 10., 1.5, 1.5*TMath::Pi(), 1.5, 800., 2.};
+					  cldMaxbTrk[ndimbTrk]  = {100.5, 1., 10., 10., 1.5, 1.5*TMath::Pi(), 1.5, 800., 2.};
 
   const Int_t ndimbTrkMC(7);
-  const Int_t cldNbinsbTrkMC[ndimbTrkMC] = {150, 40, 100, 100, 36, 60, 3};
+  const Int_t cldNbinsbTrkMC[ndimbTrkMC] = {100, 40, 100, 100, 36, 30, 3};
   const Double_t cldMinbTrkMC[ndimbTrkMC] = {0.5, 0., 0., 0., -1.5, -0.5 * TMath::Pi(), -1.5},
-                 cldMaxbTrkMC[ndimbTrkMC] = {150.5, 1., 5., 5., 1.5, 1.5 * TMath::Pi(), 1.5};
+                 cldMaxbTrkMC[ndimbTrkMC] = {100.5, 1., 10., 10., 1.5, 1.5 * TMath::Pi(), 1.5};
 
   THnSparseD *hbTrk = new THnSparseD("basicInfoTrk", "basicInfoTrk;multComb08;Sphericity;p_{T}^{L};p_{T}^{As};#Delta#eta;#Delta#varphi;as;V0Msignal;trigg;", ndimbTrk, cldNbinsbTrk, cldMinbTrk, cldMaxbTrk);
   fHistosQA->AddAt(hbTrk, 3);
@@ -1258,25 +1282,32 @@ Bool_t AliMESppColTask::BuildQAHistos()
   TH2F *hME[20] = {NULL};
   for(Int_t sel(0); sel<4; sel++){
     for(Int_t im(0); im<nMult; im++){
-        hSE[im+5*sel] = new TH2F(Form("hS%02d", im+5*sel), Form("Mult[%2d-%2d]Sfer[%d]", multBin[im], multBin[im+1]-1, selBin[sel]), 72, -1.5, 1.5, 60, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+        hSE[im+5*sel] = new TH2F(Form("hS%02d", im+5*sel), Form("Mult[%2d-%2d]Sfer[%d]", multBin[im], multBin[im+1]-1, selBin[sel]), 12, -1.5, 1.5, 30, -0.5*TMath::Pi(), 1.5*TMath::Pi());
         fHistosQA->AddAt(hSE[im+5*sel], im+5+5*sel);
 
-        hME[im+5*sel] = new TH2F(Form("hE%02d", im+5*sel), Form("MultE[%2d-%2d]Sfer[%d]", multBin[im], multBin[im+1]-1, selBin[sel]), 72, -1.5, 1.5, 60, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+        hME[im+5*sel] = new TH2F(Form("hE%02d", im+5*sel), Form("MultE[%2d-%2d]Sfer[%d]", multBin[im], multBin[im+1]-1, selBin[sel]), 12, -1.5, 1.5, 30, -0.5*TMath::Pi(), 1.5*TMath::Pi());
         fHistosQA->AddAt(hME[im+5*sel], im+25+5*sel);
     }
   }
     
   TH2F *hSEMC[20] = {NULL};
   TH2F *hMEMC[20] = {NULL};
+
+  TH2F *hEvts (NULL); TH2F *hEvtsMC (NULL);
   for(Int_t sel(0); sel<4; sel++){
     for(Int_t im(0); im<nMult; im++){
-        hSEMC[im+5*sel] = new TH2F(Form("hSMC%02d", im+5*sel), Form("MultSMC[%2d-%2d]Sfer[%d]", multBin[im], multBin[im+1]-1, selBin[sel]), 72, -1.5, 1.5, 60, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+        hSEMC[im+5*sel] = new TH2F(Form("hSMC%02d", im+5*sel), Form("MultSMC[%2d-%2d]Sfer[%d]", multBin[im], multBin[im+1]-1, selBin[sel]), 12, -1.5, 1.5, 30, -0.5*TMath::Pi(), 1.5*TMath::Pi());
         fHistosQA->AddAt(hSEMC[im+5*sel], im+5*sel+45);
         
-        hMEMC[im+5*sel] = new TH2F(Form("hEMC%02d", im+5*sel), Form("MultEMC[%2d-%2d]Sfer[%d]", multBin[im], multBin[im+1]-1, selBin[sel]), 72, -1.5, 1.5, 60, -0.5*TMath::Pi(), 1.5*TMath::Pi());
+        hMEMC[im+5*sel] = new TH2F(Form("hEMC%02d", im+5*sel), Form("MultEMC[%2d-%2d]Sfer[%d]", multBin[im], multBin[im+1]-1, selBin[sel]), 12, -1.5, 1.5, 30, -0.5*TMath::Pi(), 1.5*TMath::Pi());
         fHistosQA->AddAt(hMEMC[im+5*sel], im+5*sel+65);
       }
   }
+    hEvts = new TH2F("Evts", "Evts", 5, 0, 5, 4, 0, 4);
+        fHistosQA->AddAt(hEvts, 85);
+
+        hEvtsMC = new TH2F("EvtsMC", "EvtsMC", 5, 0, 5, 4, 0, 4);
+        fHistosQA->AddAt(hEvtsMC, 86);
   
 
   
