@@ -458,7 +458,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
       fInputListEfficiency = (TList*) GetInputData(1);
       if(fAbsEtaMax > 0.8) AliWarning("Efficiency loading -- eta can be out of range!");
       if(fSystematicsFlag.IsNull()) fSystematicsFlag = "Ev0_Tr0";
-      if(fColSystem == sPPb && fAnalType != eFMDAFMDC && !AreEfficienciesLoaded()) { AliError("Efficiencies not loaded!"); return; }
+      if(fColSystem == sPPb && !AreEfficienciesLoaded()) { AliError("Efficiencies not loaded!"); return; }
     }
 
     if(fUseCentralityCalibration){
@@ -486,7 +486,7 @@ if(fUseFMDcorrection)
    }
 
 	
-    if(fAnalType == eFMDAFMDC && fUseEfficiency){ AliWarning("Efficeincies inserted when running FMDA-FMDC. Turning off the flag."); fUseEfficiency = kFALSE; }
+    // if(fAnalType == eFMDAFMDC && fUseEfficiency){ AliWarning("Efficeincies inserted when running FMDA-FMDC. Turning off the flag."); fUseEfficiency = kFALSE; }
 
     PostData(1, fOutputListCharged);
 }
@@ -556,7 +556,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
     }
 
     //for the reconstructed part (data) (TPC involved correlation including PID)
-    if(!fIsTPCgen || fUseNch)  {
+    if(!fIsTPCgen)  {
       if(!PrepareTPCTracks()){
 	
 	if ((fDoPHI || fcheckmassbias_Phi) && fTracksTrig_Kaon_Phi) delete fTracksTrig_Kaon_Phi;
@@ -1818,12 +1818,12 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
       if(fVetoJetEvents && trackPt > fJetParticleLowPt) fTracksJets->Add((AliAODTrack*)track);
 
       if(trackPt > fPtMinAss && trackPt < fPtMaxAss) {//fiil the Assoc TObjArray
-	Double_t trkEff = 1.0;
-	if(fUseEfficiency) {
-	  trkEff = GetEff(track->Pt(), 0, track->Eta());
-	 if(trkEff < 0.001) continue;
-	}
-	fNofTracks += 1.0/trkEff;
+	      Double_t trkEff = 1.0;
+	      if(fUseEfficiency) {
+	        trkEff = GetEff(track->Pt(), 0, track->Eta());
+	       if(trkEff < 0.001) continue;
+	      }
+	      fNofTracks += 1.0/trkEff;
         if(fAnalType == eFMDAFMDC || fIsTPCgen) continue;
         if(fAnalType == eTPCTPC) fTracksAss->Add((AliAODTrack*)track); 
       }
@@ -1831,10 +1831,10 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
       
       if(fAnalType != eFMDAFMDC && !fDoV0){//fiil the Trigger TObjArray in DoPID and DoPHI case as it needs AliAOD TPC tracks (not for AliAODV0 case)
 	
-        Double_t trackEta = track->Eta();
+      Double_t trackEta = track->Eta();
 	
-	if(fDoPHI || fcheckmassbias_Phi)  {if(trackPt < 0.05 || trackPt > 100.0) continue;}//kaon candidates to be used for Phi reconstruction
-	if(fDoPID) { if(trackPt < fPtMinTrig || trackPt > fPtMaxTrig) continue; }//all other candidates
+	    if(fDoPHI || fcheckmassbias_Phi)  {if(trackPt < 0.05 || trackPt > 100.0) continue;}//kaon candidates to be used for Phi reconstruction
+	    if(fDoPID) { if(trackPt < fPtMinTrig || trackPt > fPtMaxTrig) continue; }//all other candidates
 	
           if(fUseOppositeSidesOnly){
             if(fAnalType == eTPCFMDA && trackEta > 0.0) continue;
@@ -2040,6 +2040,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
 
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
   Double_t binscontFMD[2] = {fPVz, fSampleIndex};
+  fNofTracks = 0;
 
   for(Int_t i(0); i < mcEvent->GetNumberOfTracks(); i++) {
     AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(i);
@@ -2067,6 +2068,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
       else if(partPDG == 3122) partIdx = 5;
 
       if(partIdx < 4 && part->Charge()==0.) continue;
+
+      if(partPt > fPtMinAss && partPt < fPtMaxAss) fNofTracks += 1.0;
 
       if(fAnalType == eTPCTPC){
         if(partPt > fPtMinTrig && partPt < fPtMaxTrig){
@@ -2125,6 +2128,12 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
 
   } // end MC track loop
 
+  if(fUseNch){
+    if(fNofTracks < fNchMin || fNofTracks > fNchMax) { return kFALSE; }
+    fhEventCounter->Fill("Nch cut ok ",1);
+  }
+
+  fhEventMultiplicity->Fill(fNofTracks);
 
   return kTRUE;
 }
