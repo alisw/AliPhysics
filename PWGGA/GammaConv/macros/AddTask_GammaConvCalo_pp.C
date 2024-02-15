@@ -2819,9 +2819,13 @@ void AddTask_GammaConvCalo_pp(
 
 
   } else if (trainConfig == 2185){ // old way of doing the NonLin
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791109f030000000","0r63103100000010"); // INT7, no NCell cut
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791109f03h000000","0r63103100000010"); // INT7, only 1 cell clusters
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791109f032000000","0r63103100000010"); // INT7, with NCell >= 2 cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791109f030200000","0r63103100000010"); // INT7, no NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791109f03h200000","0r63103100000010"); // INT7, only 1 cell clusters
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791109f032200000","0r63103100000010"); // INT7, with NCell >= 2 cut
+  } else if (trainConfig == 2186){ // old way of doing the NonLin
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791209f030200000","0r63103100000010"); // INT7, no NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791209f03h200000","0r63103100000010"); // INT7, only 1 cell clusters
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411791209f032200000","0r63103100000010"); // INT7, with NCell >= 2 cut
 
 
   } else if (trainConfig == 2190){ // low Bfield
