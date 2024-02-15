@@ -145,6 +145,9 @@
 #pragma link C++ class AliAnalysisTaskDiffPtFluc_MCnoESD_detect+;
 #pragma link C++ class AliAnalysisTaskDiffPtFluc_MCnoESD_gen+;
 #pragma link C++ class AliAnalysisTaskDiffPtFluc_MCnoESD_correction+;
+#pragma link C++ class AliAnalysisTaskDiffPtFluc_MCnoESD_detect_v2+;
+#pragma link C++ class AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2+;
+#pragma link C++ class AliAnalysisTaskDiffPtFluc_MCnoESD_correct_v2+;
 #pragma link C++ class AliAnalysisTaskHptcorrId_tree+;
 #pragma link C++ class AliAnalysisTaskNetPiKProtFluc_MCnoESD_gen+;
 #pragma link C++ class AliAnalysisTaskMeanptFluctMC+;

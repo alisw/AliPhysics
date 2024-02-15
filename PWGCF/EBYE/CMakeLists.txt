@@ -159,6 +159,9 @@ set(SRCS
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_detect.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_gen.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_correction.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_detect_v2.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_correct_v2.cxx
   DiffPTF/AliAnalysisTaskHptcorrId_tree.cxx
   IntermittencyAnalysis/AliAnalysisTaskNFactorialMoments.cxx
   )
