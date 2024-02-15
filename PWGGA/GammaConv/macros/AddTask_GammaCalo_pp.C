@@ -4259,6 +4259,9 @@ void AddTask_GammaCalo_pp(
 
   } else if (trainConfig == 2568) { // Non-Lin with only MC based TB correction
     cuts.AddCutCalo("00010113","411799909fe302v0000","0s631031000000d0"); // INT7 PCM-EMC FT, additional 0.5% shift
+  
+  } else if (trainConfig == 2569) { // Non-Lin without cell scale but shited to match the cell scale absolute position
+    cuts.AddCutCalo("00010113","411797609fe302v0000","0s631031000000d0"); // INT7 PCM-EMC FT, additional 2.5% shift
 
   } else if (trainConfig == 2570) { // NonLin applied in CF, min energy = 700MeV
     cuts.AddCutCalo("00052113","411790009fe32230000","0s631031000000d0"); // EMC7

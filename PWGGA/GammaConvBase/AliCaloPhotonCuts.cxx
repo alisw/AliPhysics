@@ -8929,6 +8929,21 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         energy /= FunctionNL_DExp(energy, 1.0163161769, 1.0745426880, -2.6533554672, 1.0253717488, 0.8132587660, -2.5997134051);
       }
       break;
+    
+    case 76: // same as 11 but shifted by 2.5% upwards to match the scale of the case 01
+      if(isMC > 0){ // MC
+        energy /= FunctionNL_OfficialTB_100MeV_MC_V2(energy);
+        // fine tuning based on gaussian fits on PCMEMC in pPb5TeV
+        energy /= FunctionNL_kSDM(energy, 0.987912, -2.94105, -0.273207) ;
+        energy *= 1.015; // 1% additional correction + 2.5% shift
+        if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
+          energy /= 0.99;
+        }
+      } else { // data
+        energy /= FunctionNL_OfficialTB_100MeV_Data_V2(energy);
+        energy *= 1.025;
+      }
+      break;
 
     // *************** 80 + x **** modified tender Settings 1 - PbPb
 
