@@ -1170,6 +1170,21 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("16710013","0dm00009ab770c00amd0404000","411790105ke30220000","0r63103100000010"); // 60-70%
     cuts.AddCutPCMCalo("17810013","0dm00009ab770c00amd0404000","411790105ke30220000","0r63103100000010"); // 70-80%
     cuts.AddCutPCMCalo("18910013","0dm00009ab770c00amd0404000","411790105ke30220000","0r63103100000010"); // 80-90%
+  } else if (trainConfig == 787){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered with neutral overlap correction maxwell boltzmann
+    cuts.AddCutPCMCalo("10130e03","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); //  0-10%
+    cuts.AddCutPCMCalo("11310e03","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 10-30%
+    cuts.AddCutPCMCalo("13530e03","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 30-50%
+    cuts.AddCutPCMCalo("15910e03","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 50-90%
+  } else if (trainConfig == 788){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC with added Signal! with neutral overlap correction maxwell boltzmann
+    cuts.AddCutPCMCalo("10130023","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); //  0-10%
+    cuts.AddCutPCMCalo("11310023","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 10-30%
+    cuts.AddCutPCMCalo("13530023","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 30-50%
+    cuts.AddCutPCMCalo("15910023","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 50-90%
+  } else if (trainConfig == 789){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC - with neutral overlap correction maxwell boltzmann
+    cuts.AddCutPCMCalo("10130053","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); //  0-10%
+    cuts.AddCutPCMCalo("11310053","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 10-30%
+    cuts.AddCutPCMCalo("13530053","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 30-50%
+    cuts.AddCutPCMCalo("15910053","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 50-90%
 
   // **********************************************************************************************************
   // ***************************** PCM-PHOS       QA configurations PbPb run 2 2018 ***************************
@@ -1344,6 +1359,12 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("10130023","0dm00009ab770c00amd0404000","411790105ve30220000","0133103100000010"); //  0-10%
   } else if (trainConfig == 1062){ // EMCAL clusters - 00-10 triggered without OOB pile up correction for MC - with neutral overlap correction charged particle density
     cuts.AddCutPCMCalo("10130053","0dm00009ab770c00amd0404000","411790105ve30220000","0133103100000010"); //  0-10%
+  } else if (trainConfig == 1063){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered with neutral overlap correction maxwell boltzmann
+    cuts.AddCutPCMCalo("10130e03","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); //  0-10%
+  } else if (trainConfig == 1064){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC with added Signal! with neutral overlap correction maxwell boltzmann
+    cuts.AddCutPCMCalo("10130023","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); //  0-10%
+  } else if (trainConfig == 1065){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC - with neutral overlap correction maxwell boltzmann
+    cuts.AddCutPCMCalo("10130053","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); //  0-10%
 
   // 10 - 30 %
   } else if (trainConfig == 3051){ // EMCAL clusters - 10-30 with neutral overlap correction via N matched tracks per cluster
@@ -1370,6 +1391,12 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("11310023","0dm00009ab770c00amd0404000","411790105ve30220000","0133103100000010"); // 10-30%
   } else if (trainConfig == 3062){ // EMCAL clusters - 10-30 without OOB pile up correction for MC - with neutral overlap correction charged particle density
     cuts.AddCutPCMCalo("11310053","0dm00009ab770c00amd0404000","411790105ve30220000","0133103100000010"); // 10-30%
+  } else if (trainConfig == 3063){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered with neutral overlap correction maxwell boltzmann
+    cuts.AddCutPCMCalo("11310e03","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 10-30%
+  } else if (trainConfig == 3064){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC with added Signal! with neutral overlap correction maxwell boltzmann
+    cuts.AddCutPCMCalo("11310023","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 10-30%
+  } else if (trainConfig == 3065){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC - with neutral overlap correction maxwell boltzmann
+    cuts.AddCutPCMCalo("11310053","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 10-30%
 
   // 30 - 50%
   } else if (trainConfig == 5051){ // EMCAL clusters - 30-50 triggered with neutral overlap correction via N matched tracks per cluster
@@ -1396,6 +1423,12 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("13530023","0dm00009ab770c00amd0404000","411790105ve30220000","0133103100000010"); // 30-50%
   } else if (trainConfig == 5062){ // EMCAL clusters - 30-50 triggered without OOB pile up correction for MC - with neutral overlap correction charged particle density
     cuts.AddCutPCMCalo("13530053","0dm00009ab770c00amd0404000","411790105ve30220000","0133103100000010"); // 30-50%
+  } else if (trainConfig == 5063){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered with neutral overlap correction maxwell boltzmann
+    cuts.AddCutPCMCalo("13530e03","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 30-50%
+  } else if (trainConfig == 5064){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC with added Signal! with neutral overlap correction maxwell boltzmann
+    cuts.AddCutPCMCalo("13530023","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 30-50%
+  } else if (trainConfig == 5065){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC - with neutral overlap correction maxwell boltzmann
+    cuts.AddCutPCMCalo("13530053","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 30-50%
   
   // 50-90%
   } else if (trainConfig == 9051){ // EMCAL clusters - 50-90 with neutral overlap correction via N matched tracks per cluster
@@ -1422,6 +1455,12 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("15910023","0dm00009ab770c00amd0404000","411790105ve30220000","0133103100000010"); // 50-90%
   } else if (trainConfig == 9062){ // EMCAL clusters - 50-90 without OOB pile up correction for MC - with neutral overlap correction charged particle density
     cuts.AddCutPCMCalo("15910053","0dm00009ab770c00amd0404000","411790105ve30220000","0133103100000010"); // 50-90%
+  } else if (trainConfig == 9063){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered with neutral overlap correction maxwell boltzmann
+    cuts.AddCutPCMCalo("15910e03","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 50-90%
+  } else if (trainConfig == 9064){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC with added Signal! with neutral overlap correction maxwell boltzmann
+    cuts.AddCutPCMCalo("15910023","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 50-90%
+  } else if (trainConfig == 9065){ // EMCAL clusters - cen4 cent classes with 0-10 and 30-50 triggered without OOB pile up correction for MC - with neutral overlap correction maxwell boltzmann
+    cuts.AddCutPCMCalo("15910053","0dm00009ab770c00amd0404000","411790105xe30220000","0133103100000010"); // 50-90%
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

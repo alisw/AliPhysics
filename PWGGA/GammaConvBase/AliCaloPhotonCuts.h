@@ -613,6 +613,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TF1*      fFuncNMatchedTracks;                      // TF1 poisson distribution to describe the number of matched tracks per cluster for a specific centrality
     Double_t  fParamMeanTrackPt[3];                     // TF1 distribution to describe the mean pT of tracks as function of centrality. Half of this value is used as neutral energy overlap correction.
     Float_t   fMeanNMatchedTracks;                      // Mean number of matched primary tracks, stored to reduce CPU time for neutral overlap correction
+    TF1*      fFuncNOCMaxBoltz;                         // TF1 Maxwell Boltzmann to describe the neutral overlap correction for a specific centrality
 
     //vector
     std::vector<Int_t> fVectorMatchedClusterIDs;        // vector with cluster IDs that have been matched to tracks in merged cluster analysis
@@ -767,7 +768,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,134)
+    ClassDef(AliCaloPhotonCuts,135)
 };
 
 #endif

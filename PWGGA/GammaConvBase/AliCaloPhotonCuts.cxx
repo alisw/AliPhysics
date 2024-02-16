@@ -214,6 +214,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fFuncNMatchedTracks(0),
   fParamMeanTrackPt{0., 0., 0.},
   fMeanNMatchedTracks(0),
+  fFuncNOCMaxBoltz(0),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
   fCutStringRead(""),
@@ -472,6 +473,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fFuncNMatchedTracks(ref.fFuncNMatchedTracks),
   fParamMeanTrackPt{ref.fParamMeanTrackPt[0], ref.fParamMeanTrackPt[1], ref.fParamMeanTrackPt[2]},
   fMeanNMatchedTracks(ref.fMeanNMatchedTracks),
+  fFuncNOCMaxBoltz(ref.fFuncNOCMaxBoltz),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
   fCutStringRead(""),
@@ -629,6 +631,7 @@ AliCaloPhotonCuts::~AliCaloPhotonCuts() {
   if(fFuncNCellCutEfficiencyEMCal) delete fFuncNCellCutEfficiencyEMCal;
   if(fFuncPoissonParamCent) delete fFuncPoissonParamCent;
   if(fFuncNMatchedTracks) delete fFuncNMatchedTracks;
+  if(fFuncNOCMaxBoltz) delete fFuncNOCMaxBoltz;
 }
 
 //________________________________________________________________________
@@ -6172,6 +6175,31 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fDoEnergyCorrectionForOverlap = 4;
       break;
 
+    case 33: // cut char 'x' NonLin like fitted to pp 13 TeV
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      fUsePtDepTrackToCluster = 1;
+      fFuncPtDepEta = new TF1("funcEta33", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
+      fFuncPtDepPhi = new TF1("funcPhi33", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
+      if(fIsMC >= 1){
+        fFuncNOCMaxBoltz = new TF1("fFuncNMatchedTracks33", "[0]*x^[3]*(TMath::Exp(-[1]*x)+[2]", 0., 20.);
+      } else{
+        fFuncNOCMaxBoltz = new TF1("fFuncNMatchedTracks33", "[0] -[3]*TMath::Landau(x,[1],[2]*x+[4],0)", 0., 20.);
+      }
+      fDoEnergyCorrectionForOverlap = 5;
+      break;
+
+    case 34: // cut char 'y' NonLin like fitted to pp 13 TeV
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      fUsePtDepTrackToCluster = 1;
+      fFuncPtDepEta = new TF1("funcEta34", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
+      fFuncPtDepPhi = new TF1("funcPhi34", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+      fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
+      fDoEnergyCorrectionForOverlap = 6;
+      break;
+
     default:
       AliError(Form("Track Matching Cut not defined %d",trackMatching));
       return kFALSE;
@@ -10917,7 +10945,7 @@ Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent, float E){
             return (val > 1.) ? 1. : val;
           }
           else{
-            return 1; // MC not yet evaluated
+            return 0.9787; // using the smae fit function as in data returns a constant!
           }
         } else if (meanCent < 30){
           if(!fIsMC){
@@ -10925,7 +10953,7 @@ Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent, float E){
             return (val > 1.) ? 1. : val;
           }
           else{
-            return 1; // MC not yet evaluated
+            return 0.9908; // using the smae fit function as in data returns a constant!
           }
         } else if (meanCent < 50){
           if(!fIsMC){
@@ -10933,7 +10961,7 @@ Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent, float E){
             return (val > 1.) ? 1. : val;
           }
           else{
-            return 1; // MC not yet evaluated
+            return 1.0; // using the smae fit function as in data returns a constant!
           }
         } else {
           if(!fIsMC){
@@ -10941,12 +10969,48 @@ Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent, float E){
             return (val > 1.) ? 1. : val;
           }
           else{
-            return 1; // MC not yet evaluated
+            return 1.; // using the smae fit function as in data returns a constant!
           }
         }
         return 1.;
       }
     case 5: // old NonLin like approach
+      {
+        double val = 0;
+        if(meanCent < 10){
+          if(!fIsMC){
+            fFuncNOCMaxBoltz->SetParameters(7.44468e-04, -4.41288e-01, 1.18640e+03, 2.36017e-02);
+          }
+          else{
+            fFuncNOCMaxBoltz->SetParameters(1.91621e-01, 6.14563e-04, 4.08768e+00, 3.41761e-03);
+          }
+        } else if (meanCent < 30){
+          if(!fIsMC){
+            fFuncNOCMaxBoltz->SetParameters(1.47483e-03, -3.99570e-01, 6.33467e+02, 6.97734e-03);
+          }
+          else{
+            fFuncNOCMaxBoltz->SetParameters(9.00155e-02, 2.91274e-01, 1.02453e+01, 2.96138e-02);
+          }
+        } else if (meanCent < 50){
+          if(!fIsMC){
+            fFuncNOCMaxBoltz->SetParameters(1.90802e-01, -2.03562e-02, 4.10431e+00, -7.04925e-03);
+          }
+          else{
+           fFuncNOCMaxBoltz->SetParameters(1.95146e-01, 3.50318e-02, 4.12786e+00, 2.22893e-02);
+          }
+        } else {
+          if(!fIsMC){
+            fFuncNOCMaxBoltz->SetParameters(1.92974e-01, -1.23228e-02, 4.12540e+00, -3.04062e-03);
+          }
+          else{
+            fFuncNOCMaxBoltz->SetParameters(1.52438e-01, 1.56973e-01, 5.68491e+00, 4.50921e-02);
+          }
+        }
+        val = fFuncNOCMaxBoltz->Eval(E);
+        return ( (val > 1.) && (!fIsMC) ) ? 1. : val;
+      }
+      break;
+      case 6: // old NonLin like approach
       {
         double temp = 0.0;
         double tempE = 0.0;

@@ -1389,6 +1389,21 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11310023","411790105we30220000","0s331031000000d0"); // 10-30%
     cuts.AddCutCalo("13530023","411790105we30220000","0s331031000000d0"); // 30-50%
     cuts.AddCutCalo("15910023","411790105we30220000","0s331031000000d0"); // 50-90%
+  } else if (trainConfig == 806){ // EMCAL+DCal clusters - Neutral Overlap Correction maxwell boltzmann
+    cuts.AddCutCalo("10130e03","411790105xe30220000","01331031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310e03","411790105xe30220000","01331031000000d0"); // 10-30%
+    cuts.AddCutCalo("13530e03","411790105xe30220000","01331031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910e03","411790105xe30220000","01331031000000d0"); // 50-90%
+  } else if (trainConfig == 807){ // EMCAL+DCal clusters -  Neutral Overlap Correction maxwell boltzmann without OOB Pileup correction
+    cuts.AddCutCalo("10130053","411790105xe30220000","01331031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310053","411790105xe30220000","01331031000000d0"); // 10-30%
+    cuts.AddCutCalo("13530053","411790105xe30220000","01331031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910053","411790105xe30220000","01331031000000d0"); // 50-90%
+  } else if (trainConfig == 808){ // EMCAL+DCal clusters -  Neutral Overlap Correction maxwell boltzmann without OOB Pileup correction, Added Signal
+    cuts.AddCutCalo("10130023","411790105xe30220000","01331031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310023","411790105xe30220000","01331031000000d0"); // 10-30%
+    cuts.AddCutCalo("13530023","411790105xe30220000","01331031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910023","411790105xe30220000","01331031000000d0"); // 50-90%
   // **********************************************************************************************************
   // ***************************** PHOS       QA configurations PbPb run 2 2018 *******************************
   // **********************************************************************************************************
@@ -1487,6 +1502,13 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("10130053","411790105we30220000","0s331031000000d0"); // 00-10%
   } else if (trainConfig == 1009){ // EMCAL+DCal clusters -  Neutral Overlap NonLin like without OOB Pileup correction, Added Signal - rotation background method
     cuts.AddCutCalo("10130023","411790105we30220000","0s331031000000d0"); // 00-10%
+  } else if (trainConfig == 1010){ // EMCAL+DCal clusters - Neutral Overlap Correction maxwell boltzmann
+    cuts.AddCutCalo("10130e03","411790105xe30220000","01331031000000d0"); // 00-10%
+  } else if (trainConfig == 1011){ // EMCAL+DCal clusters -  Neutral Overlap Correction maxwell boltzmann without OOB Pileup correction
+    cuts.AddCutCalo("10130053","411790105xe30220000","01331031000000d0"); // 00-10%
+  } else if (trainConfig == 1012){ // EMCAL+DCal clusters -  Neutral Overlap Correction maxwell boltzmann without OOB Pileup correction, Added Signal
+    cuts.AddCutCalo("10130023","411790105xe30220000","01331031000000d0"); // 00-10%
+  //***********************************************************************************************************
   } else if (trainConfig == 1080){ // EMCAL+DCal standard
     cuts.AddCutCalo("10130e03","411790105ke30220000","01331031000000d0"); // 00-10%
   } else if (trainConfig == 1081){ // EMCAL+DCal standard with rotation method
@@ -1544,6 +1566,13 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11310053","411790105we30220000","0s331031000000d0"); // 10-30%
   } else if (trainConfig == 3009){ // EMCAL+DCal clusters -  Neutral Overlap NonLin like without OOB Pileup correction, Added Signal - rotation background method
     cuts.AddCutCalo("11310023","411790105we30220000","0s331031000000d0"); // 10-30%
+  } else if (trainConfig == 3010){ // EMCAL+DCal clusters - Neutral Overlap Correction maxwell boltzmann
+    cuts.AddCutCalo("11310e03","411790105xe30220000","01331031000000d0"); // 10-30%
+  } else if (trainConfig == 3011){ // EMCAL+DCal clusters -  Neutral Overlap Correction maxwell boltzmann without OOB Pileup correction
+    cuts.AddCutCalo("11310053","411790105xe30220000","01331031000000d0"); // 10-30%
+  } else if (trainConfig == 3012){ // EMCAL+DCal clusters -  Neutral Overlap Correction maxwell boltzmann without OOB Pileup correction, Added Signal
+    cuts.AddCutCalo("11310023","411790105xe30220000","01331031000000d0"); // 10-30%
+  //***********************************************************************************************************
   } else if (trainConfig == 3080){ // EMCAL+DCal standard
     cuts.AddCutCalo("11310e03","411790105ke30220000","01331031000000d0"); // 10-30%
   } else if (trainConfig == 3081){ // EMCAL+DCal standard with rotation method
@@ -1601,6 +1630,13 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("13530053","411790105we30220000","0s331031000000d0"); // 30-50%
   } else if (trainConfig == 5009){ // EMCAL+DCal clusters -  Neutral Overlap NonLin like without OOB Pileup correction, Added Signal - rotation background method
     cuts.AddCutCalo("13530023","411790105we30220000","0s331031000000d0"); // 30-50%
+  } else if (trainConfig == 5010){ // EMCAL+DCal clusters - Neutral Overlap Correction maxwell boltzmann
+    cuts.AddCutCalo("13530e03","411790105xe30220000","01331031000000d0"); // 30-50%
+  } else if (trainConfig == 5011){ // EMCAL+DCal clusters -  Neutral Overlap Correction maxwell boltzmann without OOB Pileup correction
+    cuts.AddCutCalo("13530053","411790105xe30220000","01331031000000d0"); // 30-50%
+  } else if (trainConfig == 5012){ // EMCAL+DCal clusters -  Neutral Overlap Correction maxwell boltzmann without OOB Pileup correction, Added Signal
+    cuts.AddCutCalo("13530023","411790105xe30220000","01331031000000d0"); // 30-50%
+  //***********************************************************************************************************
   } else if (trainConfig == 5080){ // EMCAL+DCal standard
     cuts.AddCutCalo("13530e03","411790105ke30220000","01331031000000d0"); // 30-50%
   } else if (trainConfig == 5081){ // EMCAL+DCal standard with rotation method
@@ -1658,6 +1694,13 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("15910053","411790105we30220000","0s331031000000d0"); // 50-90%
   } else if (trainConfig == 9009){ // EMCAL+DCal clusters -  Neutral Overlap NonLin like without OOB Pileup correction, Added Signal - rotation background method
     cuts.AddCutCalo("15910023","411790105we30220000","0s331031000000d0"); // 50-90%
+  } else if (trainConfig == 9010){ // EMCAL+DCal clusters - Neutral Overlap Correction maxwell boltzmann
+    cuts.AddCutCalo("15910e03","411790105xe30220000","01331031000000d0"); // 50-90%
+  } else if (trainConfig == 9011){ // EMCAL+DCal clusters -  Neutral Overlap Correction maxwell boltzmann without OOB Pileup correction
+    cuts.AddCutCalo("15910053","411790105xe30220000","01331031000000d0"); // 50-90%
+  } else if (trainConfig == 9012){ // EMCAL+DCal clusters -  Neutral Overlap Correction maxwell boltzmann without OOB Pileup correction, Added Signal
+    cuts.AddCutCalo("15910023","411790105xe30220000","01331031000000d0"); // 50-90%
+  //***********************************************************************************************************
   } else if (trainConfig == 9080){ // EMCAL+DCal standard
     cuts.AddCutCalo("15910e03","411790105ke30220000","01331031000000d0"); // 50-90%
   } else if (trainConfig == 9081){ // EMCAL+DCal standard with rotation method

@@ -3483,20 +3483,23 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
     fIsFromDesiredHeader            = kTRUE;
     fIsOverlappingWithOtherHeader   = kFALSE;
     fIsOverlapWithMBHeader          = kFALSE;
+    int particleFromBGEvent = 0;
+    int labelFromBGEvent = 0;
     //TString periodName         = fV0Reader->GetPeriodName();
     // test whether largest contribution to cluster orginates in added signals
     if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
-      if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 0){
+      particleFromBGEvent = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent);
+      if ( particleFromBGEvent == 0 || particleFromBGEvent == 2){
         fIsFromDesiredHeader = kFALSE;
-      }
-      if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2){
-        fIsOverlapWithMBHeader = kTRUE;
       }
       if (clus->GetNLabels()>1){
         Int_t* mclabelsCluster = clus->GetLabels();
         for (Int_t l = 1; l < (Int_t)clus->GetNLabels(); l++ ){
-          if (((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(mclabelsCluster[l], fMCEvent, fInputEvent) == 0){
+          labelFromBGEvent = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(mclabelsCluster[l], fMCEvent, fInputEvent);
+          if (labelFromBGEvent == 0){
             fIsOverlappingWithOtherHeader = kTRUE;
+          } else if (labelFromBGEvent == 2){
+            fIsOverlapWithMBHeader = kTRUE;
           }
         }
       }
