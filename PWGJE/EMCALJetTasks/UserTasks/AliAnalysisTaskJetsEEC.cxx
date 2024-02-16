@@ -121,6 +121,50 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     {
     new_bins_const[i] = (from_const + i * width_const);
     }
+    
+    //Y bins for resolution
+    Double_t res_from = -5;
+    Double_t res_to = 5;
+    Int_t res_bins = 200;
+    Double_t res_width = (res_to-res_from)/res_bins;
+    Double_t res_new_bins[201] = {};
+    for (Int_t i = 0; i <= res_bins; i++)
+    {
+        res_new_bins[i] = (res_from + i * res_width);
+    }
+    
+    //Bins for R_res_eec, R_res_e3c, wt_res_eec, wt_res_e3c
+    Double_t xres_from = 0;
+    Double_t xres_to = 1;
+    Int_t xres_bins = 200;
+    Double_t xres_width = (xres_to-xres_from)/xres_bins;
+    Double_t xres_new_bins[201] = {};
+    for (Int_t i = 0; i <= xres_bins; i++)
+    {
+        xres_new_bins[i] = (xres_from + i * xres_width);
+    }
+    
+    //Bins for wtnojet_res_eec
+    Double_t wteec_res_from = 0;
+    Double_t wteec_res_to = 10000;
+    Int_t wteec_res_bins = 200;
+    Double_t wteec_res_width = (wteec_res_to-wteec_res_from)/wteec_res_bins;
+    Double_t wteec_res_new_bins[201] = {};
+    for (Int_t i = 0; i <= wteec_res_bins; i++)
+    {
+        wteec_res_new_bins[i] = (wteec_res_from + i * wteec_res_width);
+    }
+    
+    //Bins for wtnojet_res_e3c
+    Double_t wte3c_res_from = 0;
+    Double_t wte3c_res_to = 100000;
+    Int_t wte3c_res_bins = 2000;
+    Double_t wte3c_res_width = (wte3c_res_to-wte3c_res_from)/wte3c_res_bins;
+    Double_t wte3c_res_new_bins[2001] = {};
+    for (Int_t i = 0; i <= wte3c_res_bins; i++)
+    {
+        wte3c_res_new_bins[i] = (wte3c_res_from + i * wte3c_res_width);
+    }
 
     
     jet_pt_hist = new TH1D("jet_pt_hist", "Jet Pt", 21, 15, 120);
@@ -304,33 +348,40 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     e3c_matched_tru->RebinX(2);
     fOutput->Add(e3c_matched_tru);
   
-    wt_res_eec = new TH2D("wt_res_eec", "Weight resolution scale EEC", 40, -1, 1, 200, 0, 1);
+    wt_res_eec = new TH3D("wt_res_eec", "Weight resolution scale EEC", 200, xres_new_bins, 200, res_new_bins,  21, new_bins_const);
+    wt_res_eec->RebinZ(2);
     fOutput->Add(wt_res_eec);
     
-    wt_res_e3c = new TH2D("wt_res_e3c", "Weight resolution scale E3C", 40, -1, 1, 200, 0, 1);
+    wt_res_e3c = new TH3D("wt_res_e3c", "Weight resolution scale E3C", 200, xres_new_bins, 200, res_new_bins,  21, new_bins_const);
+    wt_res_e3c->RebinZ(2);
     fOutput->Add(wt_res_e3c);
     
-    R_res_eec = new TH2D("R_res_eec", "Weight resolution scale E3C", 40, -1, 1, 200, 0, 1);
+    R_res_eec = new TH3D("R_res_eec", "R resolution scale E3C", 100, new_bins, 200, res_new_bins, 21, new_bins_const);
+    R_res_eec->RebinZ(2);
     fOutput->Add(R_res_eec);
     
-    R_res_e3c = new TH2D("R_res_e3c", "Weight resolution scale E3C", 40, -1, 1, 200, 0, 1);
+    R_res_e3c = new TH3D("R_res_e3c", "R resolution scale E3C", 100, new_bins, 200, res_new_bins, 21, new_bins_const);
+    R_res_e3c->RebinZ(2);
     fOutput->Add(R_res_e3c);
     
-    wtnojet_match_eec = new TH2D("wtnojet_match_eec", "Matched Track Wt excluding jet pT EEC", 200, 0 ,10000 , 200, 0, 10000);
+    wtnojet_match_eec = new TH3D("wtnojet_match_eec", "Matched Track Wt excluding jet pT EEC", 200, wteec_res_new_bins, 200, wteec_res_new_bins, 21, new_bins_const);
+    wtnojet_match_eec->RebinZ(2);
     fOutput->Add(wtnojet_match_eec);
     
-    wtnojet_match_e3c = new TH2D("wtnojet_match_e3c", "Matched Track Wt excluding jet pT E3C", 200, 0 ,100000 , 200, 0, 100000);
+    wtnojet_match_e3c = new TH3D("wtnojet_match_e3c", "Matched Track Wt excluding jet pT E3C", 2000, wte3c_res_new_bins, 2000, wte3c_res_new_bins, 21, new_bins_const);
+    wtnojet_match_e3c->RebinZ(2);
     fOutput->Add(wtnojet_match_e3c);
     
-    wtnojet_res_eec = new TH2D("wtnojet_res_eec", "Weight resolution (excluding jet pT) scale EEC", 40, -1, 1, 200, 0, 10000);
+    wtnojet_res_eec = new TH3D("wtnojet_res_eec", "Weight resolution (excluding jet pT) scale EEC", 200, wteec_res_new_bins, 200, res_new_bins, 21, new_bins_const);
+    wtnojet_res_eec->RebinZ(2);
     fOutput->Add(wtnojet_res_eec);
     
-    wtnojet_res_e3c = new TH2D("wtnojet_res_e3c", "Weight resolution (excluding jet pT) scale E3C", 40, -1, 1, 200, 0, 10000);
+    wtnojet_res_e3c = new TH3D("wtnojet_res_e3c", "Weight resolution (excluding jet pT) scale E3C", 2000, wte3c_res_new_bins, 200, res_new_bins, 21, new_bins_const);
+    wtnojet_res_e3c->RebinZ(2);
     fOutput->Add(wtnojet_res_e3c);
     
     PostData(1, fOutput);
-
-
+    
 }
 
 
@@ -829,32 +880,32 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                                 eec_matched_det->Fill(R_det,jet_pt,ee_det);
                                 eec_matched_tru->Fill(R_tru,jet_pt_tru,ee_tru);
                                 
-                                R_match_eec->Fill(R_tru,R_det);
-                                R_res_eec->Fill(R_tru,(R_tru-R_det)/(R_tru));
-                                wt_match_eec->Fill(ee_tru,ee_det);
-                                wtnojet_match_eec->Fill(2*fConstituents_tru[i].pt()*fConstituents_tru[l].pt(),2*fConstituents[j].pt()*fConstituents[s].pt());
+                                R_match_eec->Fill(R_tru,R_det,jet_pt);
+                                R_res_eec->Fill(R_tru,(R_tru-R_det)/(R_tru),jet_pt);
+                                wt_match_eec->Fill(ee_tru,ee_det,jet_pt);
+                                wtnojet_match_eec->Fill(2*fConstituents_tru[i].pt()*fConstituents_tru[l].pt(),2*fConstituents[j].pt()*fConstituents[s].pt(),jet_pt);
                                 
                                 double wt_diff_eec = (ee_tru-ee_det)/ee_tru;
-                                wt_res_eec->Fill(ee_tru,wt_diff_eec);
+                                wt_res_eec->Fill(ee_tru,wt_diff_eec,jet_pt);
                                 
                                 double wt_diff_eec_nojet = ((2*fConstituents_tru[i].pt()*fConstituents_tru[l].pt())-(2*fConstituents[j].pt()*fConstituents[s].pt()))/(2*fConstituents_tru[i].pt()*fConstituents_tru[l].pt());
-                                wtnojet_res_eec->Fill(wt_diff_eec_nojet,2*fConstituents_tru[i].pt()*fConstituents_tru[l].pt());
+                                wtnojet_res_eec->Fill(2*fConstituents_tru[i].pt()*fConstituents_tru[l].pt(),wt_diff_eec_nojet,jet_pt);
                                 
                                 
                                 e3c_matched_det->Fill(R_jss_det,jet_pt,ee_jss_det);
                                 e3c_matched_tru->Fill(R_jss_tru,jet_pt_tru,ee_jss_tru);
                                 
                                 R_match_e3c->Fill(R_jss_tru,R_jss_det);
-                                R_res_e3c->Fill(R_jss_tru,(R_jss_tru-R_jss_det)/(R_jss_tru));
+                                R_res_e3c->Fill(R_jss_tru,(R_jss_tru-R_jss_det)/(R_jss_tru),jet_pt);
                                 wt_match_e3c->Fill(ee_jss_tru,ee_jss_det);
                                 
-                                wtnojet_match_e3c->Fill(3*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[l].pt(),3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt());
+                                wtnojet_match_e3c->Fill(3*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[l].pt(),3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt(), jet_pt);
                                 
                                 double wt_diff_e3c_jss = (ee_jss_tru-ee_jss_det)/ee_jss_tru;
-                                wt_res_e3c->Fill(wt_diff_e3c_jss,ee_jss_tru);
+                                wt_res_e3c->Fill(ee_jss_tru, wt_diff_e3c_jss, jet_pt);
                                 
                                 double wt_diff_e3c_nojet_jss = ((3*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[l].pt())-(3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt()))/(3*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[l].pt());//diff/true
-                                wtnojet_res_e3c->Fill(wt_diff_e3c_nojet_jss, 3*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[l].pt());
+                                wtnojet_res_e3c->Fill(3*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[l].pt(),wt_diff_e3c_nojet_jss,jet_pt);
                                 
                                 for(int m=0; m!=j && m!=s; m++)
                                 {
@@ -890,16 +941,16 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                                             e3c_matched_tru->Fill(R_dist_tru[max_R_tru],jet_pt_tru,ee_jsm_tru);
                                             
                                             R_match_e3c->Fill(R_dist_tru[max_R_tru],R_dist_det[max_R_det]);
-                                            R_res_e3c->Fill(R_dist_tru[max_R_tru],(R_dist_tru[max_R_tru]-R_dist_det[max_R_det])/(R_dist_tru[max_R_tru]));
+                                            R_res_e3c->Fill(R_dist_tru[max_R_tru],(R_dist_tru[max_R_tru]-R_dist_det[max_R_det])/(R_dist_tru[max_R_tru]),jet_pt);
                                             wt_match_e3c->Fill(ee_jsm_tru,ee_jsm_det);
                                             
-                                            wtnojet_match_e3c->Fill(6*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[k].pt(),6*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt());
+                                            wtnojet_match_e3c->Fill(6*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[k].pt(),6*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt(),jet_pt);
                                             
                                             double wt_diff_e3c_jsm = (ee_jsm_tru-ee_jsm_det)/ee_jsm_tru;
-                                            wt_res_e3c->Fill(wt_diff_e3c_jsm,ee_jsm_tru);
+                                            wt_res_e3c->Fill(ee_jsm_tru,wt_diff_e3c_jsm,jet_pt);
                                             
                                             double wt_diff_e3c_nojet_jsm = ((6*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[k].pt())-(6*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt()))/(6*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[k].pt());//diff/true
-                                            wtnojet_res_e3c->Fill(wt_diff_e3c_nojet_jsm, 6*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[k].pt());
+                                            wtnojet_res_e3c->Fill(6*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[k].pt(), wt_diff_e3c_nojet_jsm,jet_pt);
                                             
                                             R_dist_det.clear();
                                             R_dist_tru.clear();
