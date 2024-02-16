@@ -628,7 +628,7 @@ void AliAnalysisPtN::UserExec(Option_t *)
           sumw += wtE;
           sumw2 += wtE*wtE;
           sumw3 += wtE*wtE*wtE;
-          sumw3 += wtE*wtE*wtE*wtE;
+          sumw4 += wtE*wtE*wtE*wtE;
     
     }
     
