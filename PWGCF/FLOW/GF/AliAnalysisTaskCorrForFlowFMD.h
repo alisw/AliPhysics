@@ -95,7 +95,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         // event selection
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
         void                    SetPVZcut(Double_t cut) { fPVzCut = cut; }
-        void                    SetUseNchRange(Bool_t range, Int_t min, Int_t max) { fUseNch = range; fNchMin = min; fNchMax = max; }
+        void                    SetUseNchRange(Bool_t range1, Bool_t range2, Int_t min, Int_t max) { fUseNch_reco = range1; fUseNch_truth = range2; fNchMin = min; fNchMax = max; }
 	void                    SetUseNchfor_eventmixing(Bool_t range) { fUseNchfor_eventmixing = range; }
         void                    SetCentrality(TString cent, Double_t min = 0.0, Double_t max = 20.0) { fCentEstimator = cent; fCentMin = min; fCentMax = max; }
 	void                    SetAdditionalPileUpforPP(Bool_t pileup) { fApply_additional_pileupcut = pileup; }
@@ -236,7 +236,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 	Bool_t                  fDoPHI; // [kFALSE]
 	Bool_t                  fshiftphi_PHI; // [kFALSE]
         Bool_t                  fshiftrap_PHI; // [kFALSE]
-        Bool_t                  fUseNch; // [kFALSE]
+	Bool_t                  fUseNch_reco; // [kFALSE]
+        Bool_t                  fUseNch_truth; // [kFALSE]
 	Bool_t                  fUseNchfor_eventmixing; // [kFALSE]
         Bool_t                  fUseEfficiency; // [kFALSE]
         Bool_t                  fUseFMDcut; // [kTRUE]
@@ -253,7 +254,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fRunNumber; // previous run
-        Double_t                fNofTracks;
+	Double_t                fNofTracks;
 	Double_t                fNFMD_fwd_hits;
 	Double_t                fNFMD_bwd_hits;	
         Int_t                   fNofMinHighPtTracksForRejection;

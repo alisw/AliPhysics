@@ -48,7 +48,8 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fDoPHI(kFALSE),
     fshiftphi_PHI(kFALSE),
     fshiftrap_PHI(kFALSE),
-    fUseNch(kFALSE),
+    fUseNch_reco(kFALSE),
+    fUseNch_truth(kFALSE),
     fUseNchfor_eventmixing(kFALSE),
     fUseEfficiency(kFALSE),
     fUseFMDcut(kTRUE),
@@ -172,7 +173,8 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fDoPHI(kFALSE),
     fshiftphi_PHI(kFALSE),
     fshiftrap_PHI(kFALSE),
-    fUseNch(kFALSE),
+    fUseNch_reco(kFALSE),
+    fUseNch_truth(kFALSE),										     
     fUseNchfor_eventmixing(kFALSE),
     fUseEfficiency(bUseEff),
     fUseFMDcut(kTRUE),
@@ -1804,7 +1806,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
   if(!fAOD) return kFALSE;
   if(!fTracksAss || !fTracksTrig[0] || !fhTrigTracks[0]) {AliError("Cannot prepare TPC tracks!"); return kFALSE; }
 
-  fNofTracks = 0;
+  Double_t fNofTracks_reco = 0;
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
 
   TObjArray* fTracksJets = nullptr;
@@ -1823,7 +1825,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
 	        trkEff = GetEff(track->Pt(), 0, track->Eta());
 	       if(trkEff < 0.001) continue;
 	      }
-	      fNofTracks += 1.0/trkEff;
+	      fNofTracks_reco += 1.0/trkEff;
         if(fAnalType == eFMDAFMDC || fIsTPCgen) continue;
         if(fAnalType == eTPCTPC) fTracksAss->Add((AliAODTrack*)track); 
       }
@@ -1876,7 +1878,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
       } // POI from TPC
   } // tracks loop end
 
-  if(fUseNch){
+  if(fUseNch_reco){
+    fNofTracks = fNofTracks_reco;
     if(fNofTracks < fNchMin || fNofTracks > fNchMax) { return kFALSE; }
     fhEventCounter->Fill("Nch cut ok ",1);
   }
@@ -2040,7 +2043,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
 
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
   Double_t binscontFMD[2] = {fPVz, fSampleIndex};
-  fNofTracks = 0;
+  Double_t fNofTracks_truth = 0;
 
   for(Int_t i(0); i < mcEvent->GetNumberOfTracks(); i++) {
     AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(i);
@@ -2069,7 +2072,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
 
       if(partIdx < 4 && part->Charge()==0.) continue;
 
-      if(partPt > fPtMinAss && partPt < fPtMaxAss) fNofTracks += 1.0;
+      if(partPt > fPtMinAss && partPt < fPtMaxAss) fNofTracks_truth += 1.0;
 
       if(fAnalType == eTPCTPC){
         if(partPt > fPtMinTrig && partPt < fPtMaxTrig){
@@ -2128,7 +2131,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
 
   } // end MC track loop
 
-  if(fUseNch){
+  if(fUseNch_truth){
+    fNofTracks = fNofTracks_truth;
     if(fNofTracks < fNchMin || fNofTracks > fNchMax) { return kFALSE; }
     fhEventCounter->Fill("Nch cut ok ",1);
   }
@@ -2173,7 +2177,8 @@ void AliAnalysisTaskCorrForFlowFMD::PrintSetup(){
   printf("\t fDoPID: (Bool_t) %s\n", fDoPID ? "kTRUE" : "kFALSE");
   printf("\t fDoV0: (Bool_t) %s\n", fDoV0 ? "kTRUE" : "kFALSE");
   printf("\t fDoPHI: (Bool_t) %s\n", fDoPHI ? "kTRUE" : "kFALSE");
-  printf("\t fUseNch: (Bool_t) %s\n", fUseNch ? "kTRUE" : "kFALSE");
+  printf("\t fUseNch_reco: (Bool_t) %s\n", fUseNch_reco ? "kTRUE" : "kFALSE");
+  printf("\t fUseNch_truth: (Bool_t) %s\n", fUseNch_truth ? "kTRUE" : "kFALSE");
   printf("\t fIsHMpp: (Bool_t) %s\n", fIsHMpp ? "kTRUE" : "kFALSE");
   printf("\t fUseEfficiency: (Bool_t) %s\n",  fUseEfficiency ? "kTRUE" : "kFALSE");
   printf("\t fUseOppositeSidesOnly: (Bool_t) %s\n", fUseOppositeSidesOnly ? "kTRUE" : "kFALSE");
