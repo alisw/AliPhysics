@@ -11,8 +11,8 @@
  *    please aknowledge the author of this code.                          *
  **************************************************************************/
 
-#ifndef ALIANALYSISTASKCORRFORFLOWFMD_H
-#define ALIANALYSISTASKCORRFORFLOWFMD_H
+#ifndef CORRFORFLOWFMD_H
+#define CORRFORFLOWFMD_H
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
@@ -57,13 +57,13 @@
 
 
 
-class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
+class CorrForFlowFMD : public AliAnalysisTaskSE
 {
     public:
 
-                                AliAnalysisTaskCorrForFlowFMD();
-                                AliAnalysisTaskCorrForFlowFMD(const char *name, Bool_t bUseEff, Bool_t bUseCalib);
-        virtual                 ~AliAnalysisTaskCorrForFlowFMD();
+                                CorrForFlowFMD();
+                                CorrForFlowFMD(const char *name, Bool_t bUseEff, Bool_t bUseCalib);
+        virtual                 ~CorrForFlowFMD();
 
         virtual void            UserCreateOutputObjects();
         virtual void            UserExec(Option_t* option);
@@ -95,7 +95,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         // event selection
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
         void                    SetPVZcut(Double_t cut) { fPVzCut = cut; }
-        void                    SetUseNchRange(Bool_t range, Int_t min, Int_t max) { fUseNch = range; fNchMin = min; fNchMax = max; }
+        void                    SetUseNchRange(Bool_t range1, Bool_t range2, Int_t min, Int_t max) { fUseNch_reco = range1; fUseNch_truth = range2; fNchMin = min; fNchMax = max; }
 	void                    SetUseNchfor_eventmixing(Bool_t range) { fUseNchfor_eventmixing = range; }
         void                    SetCentrality(TString cent, Double_t min = 0.0, Double_t max = 20.0) { fCentEstimator = cent; fCentMin = min; fCentMax = max; }
 	void                    SetAdditionalPileUpforPP(Bool_t pileup) { fApply_additional_pileupcut = pileup; }
@@ -180,8 +180,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         TString                 ReturnPPperiod(const Int_t runNumber) const;
         Double_t                TransverseBoost(const AliMCParticle *track);
 
-        AliAnalysisTaskCorrForFlowFMD(const AliAnalysisTaskCorrForFlowFMD&); // not implemented
-        AliAnalysisTaskCorrForFlowFMD& operator=(const AliAnalysisTaskCorrForFlowFMD&); // not implemented
+        CorrForFlowFMD(const CorrForFlowFMD&); // not implemented
+        CorrForFlowFMD& operator=(const CorrForFlowFMD&); // not implemented
 
         AliAODEvent*            fAOD;           //! input event
         TList*                  fOutputListCharged;    //! output list
@@ -236,7 +236,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 	Bool_t                  fDoPHI; // [kFALSE]
 	Bool_t                  fshiftphi_PHI; // [kFALSE]
         Bool_t                  fshiftrap_PHI; // [kFALSE]
-        Bool_t                  fUseNch; // [kFALSE]
+	Bool_t                  fUseNch_reco; // [kFALSE]
+        Bool_t                  fUseNch_truth; // [kFALSE]
 	Bool_t                  fUseNchfor_eventmixing; // [kFALSE]
         Bool_t                  fUseEfficiency; // [kFALSE]
         Bool_t                  fUseFMDcut; // [kTRUE]
@@ -253,7 +254,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fRunNumber; // previous run
-        Double_t                fNofTracks;
+	Double_t                fNofTracks;
 	Double_t                fNFMD_fwd_hits;
 	Double_t                fNFMD_bwd_hits;	
         Int_t                   fNofMinHighPtTracksForRejection;
@@ -340,7 +341,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlowFMD, 18);
+        ClassDef(CorrForFlowFMD, 18);
 };
 
 #endif
