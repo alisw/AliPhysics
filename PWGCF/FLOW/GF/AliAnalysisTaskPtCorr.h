@@ -61,6 +61,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetEtaBins(Int_t nBins, Double_t *etabins);
   void SetMultiBins(Int_t nBins, Double_t *multibins);
   void SetV0MBins(Int_t nBins, Double_t *multibins);
+  void SetCentBinsForPt(Int_t nBins, Double_t *centbins);
   void SetEtaAcceptance(Double_t newval) { fEtaAcceptance = newval; };
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
   void SetUseWeightsOne(Bool_t newvalNUE) { fUseNUEOne = newvalNUE; };
@@ -69,8 +70,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetCentralityEstimator(TString newval) { if(fCentEst) delete fCentEst; fCentEst = new TString(newval); };
   void SetContSubfix(TString newval) {if(fContSubfix) delete fContSubfix; fContSubfix = new TString(newval); };
   void OverrideMCFlag(Bool_t newval) { fIsMC = newval; };
-  Int_t GetNtotTracks(AliAODEvent*, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp);
-  Int_t GetNtotMCTracks(const Double_t &ptmin, const Double_t &ptmax);
+  int GetNtotTracks(AliAODEvent*, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp);
+  int GetNtotMCTracks(const Double_t &ptmin, const Double_t &ptmax);
   void SetUseRecoNchForMC(Bool_t newval) { fUseRecoNchForMC = newval; };
   void SetNBootstrapProfiles(Int_t newval) {if(newval<0) {printf("Number of subprofiles cannot be < 0!\n"); return; }; fNBootstrapProfiles = newval; };
   void SetWeightSubfix(TString newval) { fWeightSubfix=newval; }; //base (runno) + subfix (systflag), delimited by ;. First argument always base, unless is blank. In that case, w{RunNo} is used for base.
@@ -118,6 +119,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TAxis *fPtAxis;
   TAxis *fEtaAxis;
   TAxis *fMultiAxis;      //Multiplicity axis (either for V0M or Nch)
+  TAxis *fCentPtAxis;      //Centrality axis for mpt fluctuations
   TAxis *fV0MMultiAxis;   //Defaults V0M bins
   Double_t *fPtBins; //!
   Int_t fNPtBins; //!
@@ -125,6 +127,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Int_t fNEtaBins; //!
   Double_t *fMultiBins; //!
   Int_t fNMultiBins; //!
+  Double_t *fCentPtBins; //!
+  Int_t fNCentPtBins; //!
   Double_t *fV0MBinsDefault; //!
   Int_t fNV0MBinsDefault; //!
   Bool_t fUseNch;
@@ -163,10 +167,10 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH3D *fDCAxyVsPt_withChi2;
   TH2D *fWithinDCAvsPt_noChi2;
   TH3D *fMptVsNch;
+  TH3D *fpt2VsNch;
+  TH3D *fpt3VsNch;
+  TH3D *fpt4VsNch;
   TH2D *fMptVsCent;
-  TH2D *fpt2VsCent;
-  TH2D *fpt3VsCent;
-  TH2D *fpt4VsCent;
   TH2D *fNchVsCent;
   TH1D *fV0MMulti;
   TH2D *fITSvsTPCMulti;
