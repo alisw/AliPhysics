@@ -347,20 +347,46 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
     pt_bins[i] = 0.15 + (i * 0.05);
   }
 
-  // Nch (|eta|<0.8) up to 2500
-  constexpr double nch_width{2.0};
-  constexpr int nch_Nbins{1250};
+  // Nch (|eta|<0.8)
+  constexpr int nch_Nbins{2500};
   double nch_bins[nch_Nbins + 1] = {0};
   for (int i = 0; i <= nch_Nbins; ++i) {
-    nch_bins[i] = nch_width * i;
+    nch_bins[i] = -0.5 + (float)i;
   }
 
-  // nTracklets (|eta|<1.4) up to 10000
-  constexpr double tracklets_width{5.0};
-  constexpr int tracklets_Nbins{1200};
-  double tracklets_bins[tracklets_Nbins + 1] = {0};
-  for (int i = 0; i <= tracklets_Nbins; ++i) {
-    tracklets_bins[i] = tracklets_width * i;
+  // Nch (0<eta<0.8)
+  constexpr int nchHalfTPC_Nbins{1300};
+  double nchHalfTPC_bins[nchHalfTPC_Nbins + 1] = {0};
+  for (int i = 0; i <= nchHalfTPC_Nbins; ++i) {
+    nchHalfTPC_bins[i] = -0.5 + (float)i;
+  }
+
+  // Nch (0.5<|eta|<0.8)
+  constexpr int nchEtaGapTPC_Nbins{1000};
+  double nchEtaGapTPC_bins[nchEtaGapTPC_Nbins + 1] = {0};
+  for (int i = 0; i <= nchEtaGapTPC_Nbins; ++i) {
+    nchEtaGapTPC_bins[i] = -0.5 + (float)i;
+  }
+
+  // nTracklets (|eta|<1.4)
+  constexpr int tracklets14_Nbins{5400};
+  double tracklets14_bins[tracklets14_Nbins + 1] = {0};
+  for (int i = 0; i <= tracklets14_Nbins; ++i) {
+    tracklets14_bins[i] = -0.5 + (float)i;
+  }
+
+  // nTracklets (|eta|<1)
+  constexpr int tracklets10_Nbins{4000};
+  double tracklets10_bins[tracklets10_Nbins + 1] = {0};
+  for (int i = 0; i <= tracklets10_Nbins; ++i) {
+    tracklets10_bins[i] = -0.5 + (float)i;
+  }
+
+  // nTracklets (0.7<|eta|<1.4) up to 3000
+  constexpr int trackletsEtaGap_Nbins{3000};
+  double trackletsEtaGap_bins[trackletsEtaGap_Nbins + 1] = {0};
+  for (int i = 0; i <= trackletsEtaGap_Nbins; ++i) {
+    trackletsEtaGap_bins[i] = -0.5 + (float)i;
   }
 
   constexpr double v0mAmp_width{25.0};
@@ -408,15 +434,17 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
                           "; #it{N}_{ch} (|#eta|#leq0.8); #LT#it{p}_{T}#GT "
                           "(|#eta|#leq0.8, GeV/#it{c})",
                           nch_Nbins, nch_bins);
+
   pPtEtaNegvsNchEtaPos = new TProfile("pPtEtaNegvsNchEtaPos",
                                       "; #it{N}_{ch} (0#leq#eta#leq0.8); "
                                       "#it{p}_{T} (-0.8#leq#eta<0, GeV/#it{c})",
-                                      nch_Nbins, nch_bins);
+                                      nchHalfTPC_Nbins, nchHalfTPC_bins);
   pPtEtaPosvsNchEtaNeg =
       new TProfile("pPtEtaPosvsNchEtaNeg",
                    "; #it{N}_{ch} (-0.8#leq#eta<0); #it{p}_{T} "
                    "(0#leq#eta#leq0.8, GeV/#it{c})",
-                   nch_Nbins, nch_bins);
+                   nchHalfTPC_Nbins, nchHalfTPC_bins);
+
   pPtvsV0MAmp = new TProfile(
       "pPtvsV0MAmp",
       "; V0M Amplitude; #LT#it{p}_{T}#GT (|#eta|#leq0.8, GeV/#it{c})",
@@ -428,19 +456,22 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
 
   hNchEtaPos =
       new TH1F("hNchEtaPos", ";#it{N}_{ch} (0#leq#eta#leq0.8); Counts;",
-               nch_Nbins, nch_bins);
+               nchHalfTPC_Nbins, nchHalfTPC_bins);
+
   hNchEtaNeg = new TH1F("hNchEtaNeg", ";#it{N}_{ch} (-0.8#leq#eta<0); Counts;",
-                        nch_Nbins, nch_bins);
+                        nchHalfTPC_Nbins, nchHalfTPC_bins);
 
-  hPtEtaNegvsNchEtaPos = new TH2D("hPtEtaNegvsNchEtaPos",
-                                  "; #it{N}_{ch} (0#leq#eta#leq0.8); "
-                                  "#it{p}_{T} (-0.8#leq#eta<0, GeV/#it{c})",
-                                  nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+  hPtEtaNegvsNchEtaPos =
+      new TH2D("hPtEtaNegvsNchEtaPos",
+               "; #it{N}_{ch} (0#leq#eta#leq0.8); "
+               "#it{p}_{T} (-0.8#leq#eta<0, GeV/#it{c})",
+               nchHalfTPC_Nbins, nchHalfTPC_bins, pt_Nbins, pt_bins);
 
-  hPtEtaPosvsNchEtaNeg = new TH2D("hPtEtaPosvsNchEtaNeg",
-                                  "; #it{N}_{ch} (-0.8#leq#eta<0); #it{p}_{T} "
-                                  "(0#geq#eta#leq0.8, GeV/#it{c})",
-                                  nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+  hPtEtaPosvsNchEtaNeg =
+      new TH2D("hPtEtaPosvsNchEtaNeg",
+               "; #it{N}_{ch} (-0.8#leq#eta<0); #it{p}_{T} "
+               "(0#geq#eta#leq0.8, GeV/#it{c})",
+               nchHalfTPC_Nbins, nchHalfTPC_bins, pt_Nbins, pt_bins);
 
   hPhiEtaSPD = new TH2F("hPhiEtaSPD", ";#varphi; #eta (|#eta|#leq1.4)", 80, 0,
                         2 * TMath::Pi(), 80, -1.4, 1.4);
@@ -466,66 +497,66 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
 
   hTracklets14 =
       new TH1F("hTracklets14", "; #it{N}_{tracklet} (|#eta|#leq1.4); Counts;",
-               tracklets_Nbins, tracklets_bins);
+               tracklets14_Nbins, tracklets14_bins);
 
   hTracklets10 =
       new TH1F("hTracklets10", ";#it{N}_{tracklet} (|#eta|#leq1); Counts;",
-               tracklets_Nbins, tracklets_bins);
+               tracklets10_Nbins, tracklets10_bins);
 
   hTrackletsEtaGap = new TH1F(
       "hTrackletsEtaGap", "; #it{N}_{tracklet} (0.7#leq|#eta|#leq1.4); Entries",
-      tracklets_Nbins, tracklets_bins);
+      trackletsEtaGap_Nbins, trackletsEtaGap_bins);
 
   hTracksEtaGapTPC = new TH1F("hTracksEtaGapTPC",
                               "; #it{N}_{ch} (0.5#leq|#eta|#leq0.8); Entries",
-                              nch_Nbins, nch_bins);
+                              nchEtaGapTPC_Nbins, nchEtaGapTPC_bins);
 
   hPtvsTracklets14 =
       new TH2D("hPtvsTracklets14",
                "; #it{N}_{tracklet} (|#eta|#leq1.4); #it{p}_{T} "
                "(|#eta|#leq0.8, GeV/#it{c})",
-               tracklets_Nbins, tracklets_bins, pt_Nbins, pt_bins);
+               tracklets14_Nbins, tracklets14_bins, pt_Nbins, pt_bins);
 
   hPtvsTracklets10 =
       new TH2D("hPtvsTracklets10",
                "; #it{N}_{tracklet} (|#eta|#leq1); #it{p}_{T} (|#eta|#leq0.8, "
                "GeV/#it{c})",
-               tracklets_Nbins, tracklets_bins, pt_Nbins, pt_bins);
+               tracklets10_Nbins, tracklets10_bins, pt_Nbins, pt_bins);
 
   hPtvsTrackletsEtaGap =
       new TH2D("hPtvsTrackletsEtaGap",
                "; #it{N}_{tracklet} (0.7#leq|#eta|#leq1.4); #it{p}_{T} "
                "(|#eta|#leq0.4, GeV/#it{c})",
-               tracklets_Nbins, tracklets_bins, pt_Nbins, pt_bins);
+               trackletsEtaGap_Nbins, trackletsEtaGap_bins, pt_Nbins, pt_bins);
 
   hPtvsTracksEtaGapTPC = new TH2D(
       "hPtvsTracksEtaGapTPC",
       "; #it{N}_{ch} (0.5#leq#eta#leq0.8); #it{p}_{T} (|#eta|<0.3, GeV/#it{c})",
-      nch_Nbins, nch_bins, pt_Nbins, pt_bins);
+      nchEtaGapTPC_Nbins, nchEtaGapTPC_bins, pt_Nbins, pt_bins);
 
   pPtvsTracklets14 =
       new TProfile("pPtvsTracklets14",
                    "; #it{N}_{tracklet} (|#eta|#leq1.4); #LT#it{p}_{T}#GT "
                    "(|#eta|#leq0.8, GeV/#it{c})",
-                   tracklets_Nbins, tracklets_bins);
+                   tracklets14_Nbins, tracklets14_bins);
 
   pPtvsTracklets10 =
       new TProfile("pPtvsTracklets10",
                    "; #it{N}_{tracklet} (|#eta|#leq1); #LT#it{p}_{T}#GT "
                    "(|#eta|#leq0.8, GeV/#it{c})",
-                   tracklets_Nbins, tracklets_bins);
+                   tracklets10_Nbins, tracklets10_bins);
 
   pPtvsTrackletsEtaGap =
       new TProfile("pPtvsTrackletsEtaGap",
                    "; #it{N}_{tracklet} (0.7#leq|#eta|#leq1.4); "
                    "#LT#it{p}_{T}#GT (|#eta|#leq0.4, GeV/#it{c})",
-                   tracklets_Nbins, tracklets_bins);
+                   trackletsEtaGap_Nbins, trackletsEtaGap_bins);
 
   pPtvsTracksEtaGapTPC =
       new TProfile("pPtvsTracksEtaGapTPC",
-                   "; #it{N}_{tracklet} (0.5#leq|#eta|#leq0.8); "
+                   "; #it{N}_{nch} (0.5#leq|#eta|#leq0.8); "
                    "#LT#it{p}_{T}#GT (|#eta|#leq0.3, GeV/#it{c})",
-                   tracklets_Nbins, tracklets_bins);
+                   nchEtaGapTPC_Nbins, nchEtaGapTPC_bins);
 
   fOutputList->Add(hBestVtxZ);
   fOutputList->Add(hV0Percentile);
