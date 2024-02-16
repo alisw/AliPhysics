@@ -712,7 +712,16 @@ Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::GetEvent ()  //event cuts copied
     hNumberOfEvents -> Fill(13.5);
                 
     //Selection of Multiplicity Range
-    Double_t mult_percentile = multiplicitySelection->GetMultiplicityPercentile("V0M");
+    Double_t mult_percentile = -999.0;
+    if (fCentralityEstimator_flag == 0)
+      mult_percentile = multiplicitySelection->GetMultiplicityPercentile("V0M");
+    else if (fCentralityEstimator_flag == 1)
+      mult_percentile = multiplicitySelection->GetMultiplicityPercentile("CL0");
+    else if (fCentralityEstimator_flag == 2)
+      mult_percentile = multiplicitySelection->GetMultiplicityPercentile("CL1");
+    else if (fCentralityEstimator_flag == 3)
+      mult_percentile = multiplicitySelection->GetMultiplicityPercentile("CL2");
+    
     if (mult_percentile < 0.0 || mult_percentile > 90.0)
       {
 	PostData(1, fOutputList);
