@@ -11,8 +11,8 @@
  *    please aknowledge the author of this code.                          *
  **************************************************************************/
 
-#ifndef CORRFORFLOWFMD_H
-#define CORRFORFLOWFMD_H
+#ifndef ALIANALYSISTASKCORRFORFLOWFMD_H
+#define ALIANALYSISTASKCORRFORFLOWFMD_H
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
@@ -57,13 +57,13 @@
 
 
 
-class CorrForFlowFMD : public AliAnalysisTaskSE
+class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 {
     public:
 
-                                CorrForFlowFMD();
-                                CorrForFlowFMD(const char *name, Bool_t bUseEff, Bool_t bUseCalib);
-        virtual                 ~CorrForFlowFMD();
+                                AliAnalysisTaskCorrForFlowFMD();
+                                AliAnalysisTaskCorrForFlowFMD(const char *name, Bool_t bUseEff, Bool_t bUseCalib);
+        virtual                 ~AliAnalysisTaskCorrForFlowFMD();
 
         virtual void            UserCreateOutputObjects();
         virtual void            UserExec(Option_t* option);
@@ -180,8 +180,8 @@ class CorrForFlowFMD : public AliAnalysisTaskSE
         TString                 ReturnPPperiod(const Int_t runNumber) const;
         Double_t                TransverseBoost(const AliMCParticle *track);
 
-        CorrForFlowFMD(const CorrForFlowFMD&); // not implemented
-        CorrForFlowFMD& operator=(const CorrForFlowFMD&); // not implemented
+        AliAnalysisTaskCorrForFlowFMD(const AliAnalysisTaskCorrForFlowFMD&); // not implemented
+        AliAnalysisTaskCorrForFlowFMD& operator=(const AliAnalysisTaskCorrForFlowFMD&); // not implemented
 
         AliAODEvent*            fAOD;           //! input event
         TList*                  fOutputListCharged;    //! output list
@@ -341,7 +341,7 @@ class CorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(CorrForFlowFMD, 18);
+        ClassDef(AliAnalysisTaskCorrForFlowFMD, 18);
 };
 
 #endif
