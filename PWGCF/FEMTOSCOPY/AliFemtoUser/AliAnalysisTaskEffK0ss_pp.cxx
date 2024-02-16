@@ -1026,7 +1026,7 @@ void AliAnalysisTaskEffK0ss_pp::UserExec(Option_t *)
       continue;
     fHistQA[10]->Fill(4);
 
-    if (track->Pt() < 0.10 || track->Pt() > 10)  // Track pT cut
+    if (track->Pt() < 0.4 || track->Pt() > 10)  // Track pT cut
       continue;
     fHistQA[10]->Fill(5);
 
@@ -1224,7 +1224,7 @@ void AliAnalysisTaskEffK0ss_pp::UserExec(Option_t *)
 
     //********* PID - pions ********
     if (isPionNsigma){
-      if (track->Pt() > 0.10 || track->Pt() < 10)
+      if (track->Pt() > 0.4 || track->Pt() < 10)
         fReconstructedAfterCuts[PARTTYPES*fcent+1][charge]->Fill(track->Eta(), track->Pt());
       if (!MCtrk) continue;
         recoParticleArray[1].Add(MCtrk);
@@ -1233,7 +1233,7 @@ void AliAnalysisTaskEffK0ss_pp::UserExec(Option_t *)
 
     //********* PID - kaons ********
     if (isKaonNsigma){
-      if (track->Pt() > 0.10 || track->Pt() < 10)
+      if (track->Pt() > 0.4 || track->Pt() < 10)
         fReconstructedAfterCuts[PARTTYPES*fcent+2][charge]->Fill(track->Eta(), track->Pt());
       if (!MCtrk) continue;
         recoParticleArray[2].Add(MCtrk);
@@ -1391,7 +1391,7 @@ void AliAnalysisTaskEffK0ss_pp::UserExec(Option_t *)
 
     double cospa = aodv0->CosPointingAngle(fV1K0spp);
     //cout << "cos pointing angle is" << cospa << endl;
-    if (aodv0->CosPointingAngle(fV1K0spp) < 0.998) continue;
+    if (aodv0->CosPointingAngle(fV1K0spp) < 0.97) continue;
     
     fCutsK0s->Fill(cutK0s++);
 
@@ -1403,7 +1403,7 @@ void AliAnalysisTaskEffK0ss_pp::UserExec(Option_t *)
 
     fCutsK0s->Fill(cutK0s++);
     
-    if(aodv0->Pt() < 0.10 || aodv0->Pt() > 10) continue;
+    if(aodv0->Pt() < 0.4 || aodv0->Pt() > 10) continue;
     fCutsK0s->Fill(cutK0s++);
 
 
@@ -1435,7 +1435,7 @@ void AliAnalysisTaskEffK0ss_pp::UserExec(Option_t *)
     //cout << "dca from V0 to PV is" << dcav0PV << endl;
 
     Double_t cTau = 0;
-    Double_t cutcTauK0s = 7*2.68;
+    Double_t cutcTauK0s = 20;
     cTau = decayL*(aodv0->MassK0Short())/(aodv0->P()); // proper lifetime
     //cout << "decay time  is" << cTau << endl;
     if( cTau > cutcTauK0s) continue;
@@ -1683,22 +1683,22 @@ void AliAnalysisTaskEffK0ss_pp::UserExec(Option_t *)
     }
 	
     if(MCtrk->GetPdgCode() == 211){              // piplus 
-    	if (MCtrk->Pt() < 0.10 || MCtrk->Pt() > 10){
+    	if (MCtrk->Pt() < 0.4 || MCtrk->Pt() > 10){
 	      continue;
 	}
     }
     if(MCtrk->GetPdgCode() == 321){              // k+ we need to include k-?
-    	if (MCtrk->Pt() < 0.10 || MCtrk->Pt() > 10){ 
+    	if (MCtrk->Pt() < 0.4 || MCtrk->Pt() > 10){ 
 	      continue;
 	    }
     }
       if(MCtrk->GetPdgCode() == 2212){          // proton 
-        if (MCtrk->Pt() < 0.10 || MCtrk->Pt() > 10){
+        if (MCtrk->Pt() < 0.4 || MCtrk->Pt() > 10){
 	        continue;
 	      }	
       }
       if(MCtrk->GetPdgCode() == 310){
-      	if (MCtrk->Pt() < 0.10 || MCtrk->Pt() > 10){
+      	if (MCtrk->Pt() < 0.4 || MCtrk->Pt() > 10){
 	        continue;
 	      }
       }
