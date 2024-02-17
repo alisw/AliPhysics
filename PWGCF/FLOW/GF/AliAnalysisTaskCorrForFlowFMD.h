@@ -96,7 +96,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
         void                    SetPVZcut(Double_t cut) { fPVzCut = cut; }
         void                    SetUseNchRange(Bool_t range1, Bool_t range2, Int_t min, Int_t max) { fUseNch_reco = range1; fUseNch_truth = range2; fNchMin = min; fNchMax = max; }
-	void                    SetUseNchfor_eventmixing(Bool_t range) { fUseNchfor_eventmixing = range; }
+	void                    SetUseNchfor_eventmixing(Bool_t range1, Bool_t range2) { fUseNchfor_eventmixing = range1; fUseFMDtrkfor_eventmixing = range2; }
         void                    SetCentrality(TString cent, Double_t min = 0.0, Double_t max = 20.0) { fCentEstimator = cent; fCentMin = min; fCentMax = max; }
 	void                    SetAdditionalPileUpforPP(Bool_t pileup) { fApply_additional_pileupcut = pileup; }
 
@@ -239,6 +239,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 	Bool_t                  fUseNch_reco; // [kFALSE]
         Bool_t                  fUseNch_truth; // [kFALSE]
 	Bool_t                  fUseNchfor_eventmixing; // [kFALSE]
+	Bool_t                  fUseFMDtrkfor_eventmixing; // [kFALSE]
         Bool_t                  fUseEfficiency; // [kFALSE]
         Bool_t                  fUseFMDcut; // [kTRUE]
         Bool_t                  fUseOppositeSidesOnly; // [kFALSE]
@@ -256,7 +257,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Int_t                   fRunNumber; // previous run
 	Double_t                fNofTracks;
 	Double_t                fNFMD_fwd_hits;
-	Double_t                fNFMD_bwd_hits;	
+	Double_t                fNFMD_bwd_hits;
+	Double_t                fNofTracks_FMD;
         Int_t                   fNofMinHighPtTracksForRejection;
         Int_t                   fNchMin;
         Int_t                   fNchMax;
@@ -345,3 +347,4 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 };
 
 #endif
+

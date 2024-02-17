@@ -51,6 +51,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fUseNch_reco(kFALSE),
     fUseNch_truth(kFALSE),
     fUseNchfor_eventmixing(kFALSE),
+    fUseFMDtrkfor_eventmixing(kFALSE),
     fUseEfficiency(kFALSE),
     fUseFMDcut(kTRUE),
     fUseOppositeSidesOnly(kFALSE),
@@ -68,6 +69,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fbSign(0),
     fRunNumber(-1),
     fNofTracks(0),
+    fNofTracks_FMD(0),
     fNFMD_fwd_hits(0),
     fNFMD_bwd_hits(0),
     fNofMinHighPtTracksForRejection(0),
@@ -176,6 +178,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fUseNch_reco(kFALSE),
     fUseNch_truth(kFALSE),										     
     fUseNchfor_eventmixing(kFALSE),
+    fUseFMDtrkfor_eventmixing(kFALSE),
     fUseEfficiency(bUseEff),
     fUseFMDcut(kTRUE),
     fUseOppositeSidesOnly(kFALSE),
@@ -193,6 +196,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fbSign(0),
     fRunNumber(-1),
     fNofTracks(0),
+    fNofTracks_FMD(0),
     fNFMD_fwd_hits(0),
     fNFMD_bwd_hits(0),	
     fNofMinHighPtTracksForRejection(0),
@@ -1359,6 +1363,8 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
 
   Double_t fpool_centrality_tracks = (Double_t) fCentrality;
   if (fUseNchfor_eventmixing == kTRUE) fpool_centrality_tracks = (Double_t) fNofTracks;
+  if (fUseFMDtrkfor_eventmixing == kTRUE) fpool_centrality_tracks = (Double_t) fNofTracks_FMD;
+
   
   AliEventPool *pool = fPoolMgr->GetEventPool(fpool_centrality_tracks, fPVz);
   if(!pool) { AliError(Form("No pool found for centrality_tracks = %f, zVtx = %f", fpool_centrality_tracks, fPVz)); return; }
@@ -1940,6 +1946,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
   AliAODForwardMult* aodForward=static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
   if(!aodForward) { AliError("Problem with aodForward, terminating!"); return kFALSE; }
 
+  fNofTracks_FMD = 0;
+  
   const TH2D& d2Ndetadphi = aodForward->GetHistogram();
   Int_t nEta = d2Ndetadphi.GetXaxis()->GetNbins();
   Int_t nPhi = d2Ndetadphi.GetYaxis()->GetNbins();
@@ -2025,6 +2033,9 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
       return kFALSE;
     }
     fhEventCounter->Fill("FMD cuts OK",1);
+    
+    fNofTracks_FMD = nFMD_fwd_hits + nFMD_bwd_hits;
+ 
     fh2FMDvsV0[2]->Fill(nFMD_fwd_hits,nV0A_hits);
     fh2FMDvsV0[3]->Fill(nFMD_bwd_hits,nV0C_hits);
 
@@ -2202,3 +2213,4 @@ void AliAnalysisTaskCorrForFlowFMD::PrintSetup(){
   printf("\t fFMDacceptanceCut A - lower, upper: (Double_t) %f, %f\n", fFMDAacceptanceCutLower, fFMDAacceptanceCutUpper);
   printf("\t fFMDacceptanceCut C - lower, upper: (Double_t) %f, %f\n", fFMDCacceptanceCutLower, fFMDCacceptanceCutUpper);
 }
+
