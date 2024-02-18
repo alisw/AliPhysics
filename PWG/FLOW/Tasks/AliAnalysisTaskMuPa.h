@@ -26,6 +26,7 @@
 #include <TProfile.h>
 #include <TExMap.h>
 #include <TComplex.h>
+//#include <stdlib.h> // qsort
 #include <TArrayD.h>
 #include <TArrayI.h>
 #include <TSystem.h>
@@ -38,6 +39,7 @@ using std::cout;
 using std::endl;
 using std::string;
 using std::ifstream;
+//using std::qsort;
 
 // Global variables:
 const Int_t gCentralityEstimators = 4; // set here number of supported centrality estimators
@@ -501,6 +503,12 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetCalculateQvector(Bool_t cqv) {this->fCalculateQvector = cqv;};
   Bool_t GetCalculateQvector() const {return this->fCalculateQvector;};
 
+  void SetUseHashTable(Bool_t uht) {this->fUseHashTable = uht;};
+  Bool_t GetUseHashTable() const {return this->fUseHashTable;};
+ 
+  static Int_t Compare(const void * a, const void * b); // credits: http://www.cplusplus.com/reference/cstdlib/qsort/
+  TString CastArrayIntoStringKey(Int_t n, Int_t* harmonic); 
+
   void SetCalculateCorrelations(Bool_t cc) {this->fCalculateCorrelations = cc;};
   Bool_t GetCalculateCorrelations() const {return this->fCalculateCorrelations;};
 
@@ -636,6 +644,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   }; // void SetProcessOnlySpecifiedEvent(UInt_t run, UShort_t bunchCross, UInt_t orbit, UInt_t period)
   virtual void SetPrintEventInfo(){this->fPrintEventInfo = kTRUE;}; // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod)
 
+  // *.) Local processing:
+  void SaveDirectlyBaseListInExternalFile(const Char_t *fileName = "AnalysisResults.root");
+ 
  private:
   AliAnalysisTaskMuPa(const AliAnalysisTaskMuPa& aatmpf);
   AliAnalysisTaskMuPa& operator=(const AliAnalysisTaskMuPa& aatmpf);
@@ -776,6 +787,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TComplex fQvector[gMaxHarmonic*gMaxCorrelator+1][gMaxCorrelator+1]; //! "integrated" Q-vector [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*12+1][12+1]  
   TComplex fqvector[2][gMaxNoBinsKine][gMaxHarmonic*gMaxCorrelator+1][gMaxCorrelator+1]; //! "differenttial" q-vector [kine var.][binNo][fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1] = [6*12+1][12+1]  
   Int_t fqVectorEntries[2][gMaxNoBinsKine]; // count number of entries in each differential q-vector
+  Bool_t fUseHashTable; // see RecursionUsingHashTable(...)
 
   // 5) Particle weights: 
   TList *fWeightsList;          // list to hold all Q-vector objects       
@@ -860,7 +872,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo() 
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,39);
+  ClassDef(AliAnalysisTaskMuPa,40);
 
 };
 
