@@ -105,6 +105,7 @@ set(SRCS
   PostProcessing/Xi1530/AliAnalysisTaskXi1530.cxx
   PostProcessing/Xi1530/AliAnalysisTaskXi1530PbPb.cxx
   PostProcessing/Xi1530/NanoCheck/AliAnalysisTaskNanoCheck.cxx
+  PostProcessing/K1/AliAnalysisTaskK1.cxx
   PostProcessing/Sigma1385/AliAnalysisTaskSigma1385PM.cxx
   PostProcessing/Sigma1385/AliAnalysisTaskTrackMixer.cxx
   PostProcessing/Xi1820/AliAnalysisTaskXi1820BH.cxx

@@ -84,6 +84,8 @@
 #pragma link C++ class StructXi1530PbPbMC+;
 // NanoCheck
 #pragma link C++ class AliAnalysisTaskNanoCheck+;
+// K1
+#pragma link C++ class AliAnalysisTaskK1+;
 // Sigma1385
 #pragma link C++ class AliAnalysisTaskSigma1385PM+ ;
 #pragma link C++ class AliAnalysisTaskTrackMixer+ ;
