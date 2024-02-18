@@ -103,6 +103,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fCalculateQvector(kTRUE),
  fMaxHarmonic(gMaxHarmonic),
  fMaxCorrelator(gMaxCorrelator),
+ fUseHashTable(kFALSE),
 
  // Particle weights:
  fWeightsList(NULL),
@@ -275,6 +276,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fCalculateQvector(kTRUE),
  fMaxHarmonic(gMaxHarmonic),
  fMaxCorrelator(gMaxCorrelator),
+ fUseHashTable(kFALSE),
 
  // Particle weights:
  fWeightsList(NULL),
@@ -764,6 +766,14 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
   }
 
  } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
+
+
+ // Insanity check on fixed number of randomly selected tracks:
+ if (fUseFixedNumberOfRandomlySelectedParticles && fFixedNumberOfRandomlySelectedParticles < nSelectedTracksCounter) {
+   Red(Form("In this event there are too few particles (nSelectedTracksCounter = %d), and requested number of fixed number randomly selected tracks %d couldn't be reached.\n",nSelectedTracksCounter, fFixedNumberOfRandomlySelectedParticles));
+   exit(1);
+ }
+
 
  // Efficiency corrections are obtained in the loop below.
  // If Monte Carlo information is available, fill control particle histograms by using the look up table, to get all efficiencies.
@@ -2851,7 +2861,7 @@ void AliAnalysisTaskMuPa::BookQvectorHistograms()
  if(fVerbose){Green(__PRETTY_FUNCTION__);} 
 
  // a) Book the profile holding flags:
- fQvectorFlagsPro = new TProfile("fQvectorFlagsPro","flags for Q-vector objects",3,0.,3.);
+ fQvectorFlagsPro = new TProfile("fQvectorFlagsPro","flags for Q-vector objects",4,0.,4.);
  fQvectorFlagsPro->SetStats(kFALSE);
  fQvectorFlagsPro->SetLineColor(COLOR);
  fQvectorFlagsPro->SetFillColor(FILLCOLOR);
@@ -2862,6 +2872,8 @@ void AliAnalysisTaskMuPa::BookQvectorHistograms()
  fQvectorFlagsPro->Fill(1.5,fMaxHarmonic);
  fQvectorFlagsPro->GetXaxis()->SetBinLabel(3,"fMaxCorrelator");  
  fQvectorFlagsPro->Fill(2.5,fMaxCorrelator);
+ fQvectorFlagsPro->GetXaxis()->SetBinLabel(4,"fUseHashTable");  
+ fQvectorFlagsPro->Fill(3.5,fUseHashTable);
  fQvectorList->Add(fQvectorFlagsPro);
 
  // b) ...
@@ -2924,30 +2936,17 @@ void AliAnalysisTaskMuPa::BookWeightsHistograms()
  } // for(Int_t w=0;w<gWeights;w++) // use weights [phi,pt,eta]
 
  // d) Histograms for differential weights:
- Int_t nBinsForDiffWeights[eDiffWeights_N] = { fKineDependenceBins[PTq]->GetSize()-1, fKineDependenceBins[ETAq]->GetSize()-1 }; // TBI 20231026 this is shaky, it works only because PTq = 0 and ETAq = 1, but I will have to reimplement this, when this is generalized further. 
  for(Int_t w=0;w<eDiffWeights_N;w++) // use differential weights [phipt,phieta,...]
  {
   if(!fUseDiffWeights[w]){continue;}
-  for(Int_t b=0;b<nBinsForDiffWeights[w];b++) // TBI 20231026 nBinsForDiffWeights[w] is a landmine, see the comment above for  Int_t nBinsForDiffWeights[eDiffWeights_N]
+  for(Int_t b=0;b<fMaxBinsDiffWeights;b++)
   {
-   if(!fDiffWeightsHist[w][b]) // yes, because these histos are cloned from the external ones, see SetWeightsHist(TH1D* const hist, const char *variable)
+   if(fDiffWeightsHist[w][b]) // yes, because these histos are cloned from the external ones, see SetWeightsHist(TH1D* const hist, const char *variable)
    {
-
-    cout << " TBI 20231026 not implemented yet. Just review, finalize and enable the commented lines below." << endl; cout<<__LINE__<<endl; exit(1);
-/*
-    fDiffWeightsHist[w][b] = new TH1D(Form("fDiffWeightsHist[%d][%d]",w,b),"",(Int_t)fKinematicsBins[w][0],fKinematicsBins[w][1],fKinematicsBins[w][2]);
-    fDiffWeightsHist[w][b]->SetTitle(Form("Particle weights for %s",sWeights[w].Data()));
-    fDiffWeightsHist[w][b]->SetStats(kFALSE);
-    fDiffWeightsHist[w][b]->GetXaxis()->SetTitle(sVariable[w].Data());
-    fDiffWeightsHist[w][b]->SetFillColor(FILLCOLOR);
-    fDiffWeightsHist[w][b]->SetLineColor(COLOR);
-*/
-
+    fWeightsList->Add(fDiffWeightsHist[w][b]);
    }
-   fWeightsList->Add(fDiffWeightsHist[w][b]);
   } //  for(Int_t b=0;b<nBinsForDiffWeights[w];b++)
  } // for(Int_t w=0;w<eDiffWeights_N;w++) // use differential weights [phipt,phieta,...]
-
 
 } // void AliAnalysisTaskMuPa::BookWeightsHistograms()
 
@@ -4977,6 +4976,45 @@ TComplex AliAnalysisTaskMuPa::Recursion(Int_t n, Int_t* harmonic, Int_t mult, In
 
 //=======================================================================================================================
 
+/*
+TComplex AliAnalysisTaskMuPa::RecursionUsingHashTable( ... ) 
+{
+ // Calculate multi-particle correlators by using TBI
+
+ // ...
+
+} // TComplex AliAnalysisTaskMuPa::RecursionUsingHashTable( ... )
+*/
+
+//=======================================================================================================================
+
+Int_t AliAnalysisTaskMuPa::Compare(const void * a, const void * b) // credits: http://www.cplusplus.com/reference/cstdlib/qsort/
+{ 
+  return (- *(int*)a + *(int*)b); 
+}
+
+//=======================================================================================================================
+
+TString AliAnalysisTaskMuPa::CastArrayIntoStringKey(Int_t n, Int_t* harmonic)
+{
+ // Cast integer elements of an array into one TString, to be used later as a key in map.
+ // Example: Int_t [3] = {-1,2,10,4}; => TString = "-1,2,10,4" (yes, I need to use comma, otherwise there is an ambiguity between ...,1,0,... and ...,10,...)
+
+ TString s = "";
+ for(Int_t i=0; i<n-1; i++)
+ {
+  s += harmonic[i]; // TBI 20240123 here I take it for granted that += implicitly casts integer into string, shall I switch to STL to_string(i) instead?
+  s += ",";
+ }
+ // special treatment for the last element (comma doesn't need to be appended):
+ s += harmonic[n-1];
+ 
+ return s;
+
+} // TString AliAnalysisTaskMuPa::CastArrayIntoStringKey(Int_t n, Int_t* harmonic)
+
+//=======================================================================================================================
+
 void AliAnalysisTaskMuPa::CalculateCorrelations() 
 {
  // Calculate analytically multiparticle correlations from Q-vectors. 
@@ -6748,6 +6786,20 @@ void AliAnalysisTaskMuPa::StoreLabelsInPlaceholder(const char *source)
 
  } // else if(TString(source).EqualTo("internal"))
  
+
+ // Insantity check on labels:
+ // Here I am merely checking that harmonic larget than gMaxHarmonic was not requested.
+ for(Int_t b = 1; b <= fTest0LabelsPlaceholder->GetXaxis()->GetNbins(); b++) {
+   TObjArray* temp = TString(fTest0LabelsPlaceholder->GetXaxis()->GetBinLabel(b)).Tokenize(" ");
+   for(Int_t h = 0; h < temp->GetEntries(); h++) {
+     if(TMath::Abs(TString(temp->At(h)->GetName()).Atoi()) > gMaxHarmonic) {
+       cout<<Form("\033[1;31m bin = %d, label = %s, gMaxHarmonic = %d\033[0m", b, fTest0LabelsPlaceholder->GetXaxis()->GetBinLabel(b), (Int_t)gMaxHarmonic)<<endl;;
+       exit(1);
+     } // if(TString(temp->At(h)->GetName()).Atoi() > gMaxHarmonic) {
+   } // for(Int_t h = 0; h < temp->GetEntries(); h++) {
+   delete temp; // yes, otherwise it's a memory leak
+ } // for(Int_t b = 1; b <= fTest0LabelsPlaceholder->GetXaxis()->GetNbins(); b++) {   
+
 } // void AliAnalysisTaskMuPa::StoreLabelsInPlaceholder(const char *source)
 
 //=======================================================================================
@@ -6989,7 +7041,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
   // For this option, vn's and psin's are constant for all simulated events, therefore I can configure fPhiPDF outside of loop over events. 
   // Remark: The last parameter [18] is random reaction plane, keep in sync with fPhiPDF->SetParameter(18,fReactionPlane); below
   //         Keep also in sync with const Int_t gMaxHarmonic = 9; in .h
-  TF1 *fPhiPDF = new TF1("fPhiPDF","1 + 2.*[0]*TMath::Cos(x-[1]-[18]) + 2.*[2]*TMath::Cos(2.*(x-[3]-[18])) + 2.*[4]*TMath::Cos(3.*(x-[5]-[18])) + 2.*[6]*TMath::Cos(4.*(x-[7]-[18])) + 2.*[8]*TMath::Cos(5.*(x-[9]-[18])) + 2.*[10]*TMath::Cos(6.*(x-[11]-[18])) + 2.*[12]*TMath::Cos(7.*(x-[13]-[18])) + 2.*[14]*TMath::Cos(8.*(x-[15]-[18])) + 2.*[16]*TMath::Cos(9.*(x-[17]-[18]))",0.,TMath::TwoPi());  
+  fPhiPDF = new TF1("fPhiPDF","1 + 2.*[0]*TMath::Cos(x-[1]-[18]) + 2.*[2]*TMath::Cos(2.*(x-[3]-[18])) + 2.*[4]*TMath::Cos(3.*(x-[5]-[18])) + 2.*[6]*TMath::Cos(4.*(x-[7]-[18])) + 2.*[8]*TMath::Cos(5.*(x-[9]-[18])) + 2.*[10]*TMath::Cos(6.*(x-[11]-[18])) + 2.*[12]*TMath::Cos(7.*(x-[13]-[18])) + 2.*[14]*TMath::Cos(8.*(x-[15]-[18])) + 2.*[16]*TMath::Cos(9.*(x-[17]-[18]))",0.,TMath::TwoPi());  
   for(Int_t h=0;h<gMaxHarmonic;h++)
   {
    fPhiPDF->SetParName(2*h,Form("v_{%d}",h+1)); // set name v_n
@@ -7061,16 +7113,15 @@ void AliAnalysisTaskMuPa::InternalValidation()
 
   // b1) Determine multiplicity, reaction plane and configure p.d.f. for azimuthal angles if harmonics are not constant e-by-e:
   Int_t nMult = gRandom->Uniform(fMultRangeInternalValidation[0],fMultRangeInternalValidation[1]);
-  //cout<<"nMult = "<<nMult<<endl;
+  // cout<<"nMult = "<<nMult<<endl;  
+
   if(fMultiplicityHist){fMultiplicityHist->Fill(nMult);}
   fSelectedTracks = nMult; // I can do it this way, as long as I do not apply some cuts on tracks in InternalValidation(). Otherwise, introduce a special counter
                            // Remember that I have to calculate fSelectedTracks, due to e.g. if(fSelectedTracks<2){return;} in Calculate* member functions
   if(fSelectedTracksHist){fSelectedTracksHist->Fill(fSelectedTracks);}
-
   Double_t fReactionPlane = gRandom->Uniform(0.,TMath::TwoPi());
   if(fHarmonicsOptionInternalValidation->EqualTo("constant")){fPhiPDF->SetParameter(18,fReactionPlane);}
   else if(fHarmonicsOptionInternalValidation->EqualTo("correlated")){fPhiPDF->SetParameter(3,fReactionPlane);}
-
 
   // configure p.d.f. for azimuthal angles if harmonics are not constant e-by-e:
   if(fHarmonicsOptionInternalValidation->EqualTo("correlated"))
@@ -7222,6 +7273,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
   if(fCalculateTest0){this->CalculateTest0();}
   if(fCalculateTest0 && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]){this->CalculateKineTest0("pt");}  
   if(fCalculateTest0 && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA]){this->CalculateKineTest0("eta");} 
+
 
   // b4) Optionally, cross-check with nested loops:
   if(fCalculateNestedLoops){this->CalculateNestedLoops();}
@@ -7740,6 +7792,9 @@ void AliAnalysisTaskMuPa::DefaultConfiguration()
  // task->SetCalculateQvector(kTRUE);
  fCalculateQvector = kTRUE;
  
+ // task->SetUseHashTable(kTRUE);
+ fUseHashTable = kFALSE;
+
  // task->SetCalculateCorrelations(kTRUE); // only basic same-harmonic correlations, 0=integrated,1=vs. multiplicity,2=vs. centrality]
  fCalculateCorrelations = kTRUE; 
 
@@ -7824,7 +7879,22 @@ void AliAnalysisTaskMuPa::SetUseDefaultFilterBitCuts(Int_t fb)
   break;
 
   case 128:  
-   return; // yes, since default cuts are already set for 128 in DefaultCuts()
+   // Default cuts are already set for FB 128 in DefaultCuts().
+   // Nevertheless, I have to re-implement some of them here, for the following case:
+   // a) default task is configured via task->SetUseDefaultFilterBitCuts(768);
+   // b) the cloned task for sys check is initialized as:
+   //        SysCheckTask = (AliAnalysisTaskMuPa*) task->Clone(...);
+   //        SysCheckTask->SetUseDefaultFilterBitCuts(128); => This setter has no effect, and in the cloned task, FB 768 is alo used.
+   // All cuts which are not selected and set here, change explicitly with a dedicated setter in the task configuration.
+   fFilterBit = 128;
+   fUseDCACuts[0] = kFALSE; // okay, if you need this one, set it directly in the task configuration
+   fUseDCACuts[1] = kFALSE; // okay, if you need this one, set it directly in the task configuration
+   fUsePtDependentDCAxyParameterization = kFALSE;
+   fUseParticleCuts[ITSNcls] = kFALSE;
+   fUseParticleCuts[ITSChi2perNDF] = kFALSE;
+   fUseParticleCuts[TPCNclsF] = kFALSE;
+   fAtLeastOnePointInTheSPD = kFALSE;
+   fIgnoreGlobalConstrained = kFALSE;
   break;
 
   case 256: // I do not use this one, because even with open cuts, there is NUA in phi acceptance + eta distribution seems to be a bit asymmetric round 0 
@@ -8399,4 +8469,27 @@ void AliAnalysisTaskMuPa::UpdateHistogramBookingsWithRunInfo(AliVEvent *ave)
 
 } // void AliAnalysisTaskMuPa::UpdateHistogramBookingsWithRunInfo(AliVEvent *ave)
  
+//=======================================================================================================================
+
+void AliAnalysisTaskMuPa::SaveDirectlyBaseListInExternalFile(const Char_t *fileName)
+{
+ // For local processing, to dump directly fBaseList into output ROOT file at the end of the day, use: 
+ //
+ //  task->SaveDirectlyBaseListInExternalFile("someFile.root");
+ //
+
+ if(fVerbose){Yellow(__PRETTY_FUNCTION__);}
+
+ cout<<Form("\n=> Per explicit request, dumping fBaseList into file %s ...",fileName)<<endl;
+ TFile *f = new TFile(fileName,"recreate");
+ TDirectoryFile *dirFile = new TDirectoryFile("outputMuPaAnalysis","outputMuPaAnalysis");
+ fBaseList->SetName(fTaskName.Data()); // this is to resemble what mgr is doing in Terminate(), output files from two approaches are mergeable
+ dirFile->Add(fBaseList,kTRUE);
+ dirFile->Write(dirFile->GetName(), TObject::kSingleKey + TObject::kOverwrite);
+ delete dirFile; dirFile = NULL;
+ f->Close();
+ cout<<"   Dumped!\n"<<endl;
+
+} // void AliAnalysisTaskMuPa::SaveDirectlyBaseListInExternalFile(const Char_t *fileName = "AnalysisResults.root")
+
 
