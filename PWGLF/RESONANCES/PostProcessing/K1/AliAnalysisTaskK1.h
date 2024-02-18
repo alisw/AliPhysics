@@ -111,13 +111,11 @@ public:
   Bool_t IsTrueK1(UInt_t v0, UInt_t pion, UInt_t BkgCheck = 0);
   double GetTPCnSigma(AliVTrack *track, AliPID::EParticleType type);
   void GetImpactParam(AliVTrack *track, Float_t p[2], Float_t cov[3]);
-  Int_t trackSelection(AliVTrack* track, Float_t& nTPCNSigPion, Float_t& nTPCNSigKaon, Float_t lpT, Float_t lDCAz, Float_t lDCAr, Float_t lEta);
+  Int_t trackSelection(AliVTrack *track, Float_t &nTPCNSigPion, Float_t &nTPCNSigKaon, Float_t lpT, Float_t lDCAz, Float_t lDCAr, Float_t lEta);
   void SetCutOpen();
 
   // helper
-  THnSparse *CreateTHnSparse(TString name, TString title, Int_t ndim, std::vector<TAxis> bins, Option_t *opt = "");
-  THnSparse *CreateTHnSparse(TString name, TString title, TString templ, Option_t *opt = "");
-  Long64_t FillTHnSparse(TString name, std::vector<Double_t> x, Double_t w = 1.);
+  THnSparseD *CreateTHnSparse(TString name, TString title, Int_t ndim, std::vector<TAxis> bins, Option_t *opt = "");
   Long64_t FillTHnSparse(THnSparse *h, std::vector<Double_t> x, Double_t w = 1.);
   TAxis AxisFix(TString name, int nbin, Double_t xmin, Double_t xmax);
   TAxis AxisVar(TString name, std::vector<Double_t> bin);
@@ -133,25 +131,67 @@ private:
   AliESDtrackCuts *fTrackCuts;  //!
   AliPIDResponse *fPIDResponse; //!
 
-  AliVEvent *fEvt;           //!
-  AliMCEvent *fMCEvent;      //!
-  THistManager *fHistos;     //!
-  AliAODVertex *fVertex;     //!
-  TTree *fRTree;             ///<  Output reconstructed ttree
-  TTree *fSTree;             ///<  Output simulated ttree
-  RK1Resonance fRecK1;         ///<  Reconstructed resonance
-  SK1Resonance fSimK1;         ///<  Simulated resonance
-  TClonesArray *fMCArray;    //!
+  AliVEvent *fEvt;        //!
+  AliMCEvent *fMCEvent;   //!
+  TList *fList;           //!
+  AliAODVertex *fVertex;  //!
+  TTree *fRTree;          ///<  Output reconstructed ttree
+  TTree *fSTree;          ///<  Output simulated ttree
+  RK1Resonance fRecK1;    ///<  Reconstructed resonance
+  SK1Resonance fSimK1;    ///<  Simulated resonance
+  TClonesArray *fMCArray; //!
 
-  Bool_t fIsAOD;       //!
-  Bool_t fIsNano;      //!
-  Bool_t fSetMixing;   //
-  Bool_t fFillQAPlot;  //
-  Bool_t fIsMC;        //
-  Bool_t fIsPrimaryMC; //
-  Bool_t fFillTree;    //
-  Bool_t fIsINEL;      //
-  Bool_t fIsHM;        //
+  //// Histograms
+  THnSparseD *fHn5DK1Data;  //!
+  THnSparseD *fHn5DK1MC;    //!
+  THnSparseD *fHn2DEvtNorm; //!
+  //// QA plots
+  TH1F *hMultiplicity; //!
+  // All tracks
+  TH1D *hEtaTrack_before;    //!
+  TH1D *hDCAPVTrack_before;  //!
+  TH1D *hDCArPVTrack_before; //!
+  TH1D *hPtTrack_before;     //!
+  // Primary pions
+  TH1D *hEtaTrack_ppion;            //!
+  TH1D *hDCAPVTrack_ppion;          //!
+  TH1D *hDCArPVTrack_ppion;         //!
+  TH1D *hPtTrack_ppion;             //!
+  TH2D *hTPCPIDTrack_ppion;         //!
+  TH2D *hTPCPIDTrackNsigVspT_ppion; //!
+  // Secondary pions
+  TH1D *hEtaTrack_spion;            //!
+  TH1D *hDCAPVTrack_spion;          //!
+  TH1D *hDCArPVTrack_spion;         //!
+  TH1D *hPtTrack_spion;             //!
+  TH2D *hTPCPIDTrack_spion;         //!
+  TH2D *hTPCPIDTrackNsigVspT_spion; //!
+  // Kaons
+  TH1D *hEtaTrack_kaon;            //!
+  TH1D *hDCAPVTrack_kaon;          //!
+  TH1D *hDCArPVTrack_kaon;         //!
+  TH1D *hPtTrack_kaon;             //!
+  TH2D *hTPCPIDTrack_kaon;         //!
+  TH2D *hTPCPIDTrackNsigVspT_kaon; //!
+  // K1
+  TH1D *hK1OA;                 //!
+  TH1D *hK1PairAsymm;          //!
+  TH2D *hInvMass_piK_pipi;     //!
+  TH2D *hInvMass_piK_pika;     //!
+  TH1D *hK1OA_cut;             //!
+  TH1D *hK1PairAsymm_cut;      //!
+  TH2D *hInvMass_piK_pipi_cut; //!
+  TH2D *hInvMass_piK_pika_cut; //!
+
+  Bool_t fIsAOD;                //!
+  Bool_t fIsNano;               //!
+  Bool_t fSetMixing;            //
+  Bool_t fFillQAPlot;           //
+  Bool_t fIsMC;                 //
+  Bool_t fIsPrimaryMC;          //
+  Bool_t fFillTree;             //
+  Bool_t fIsINEL;               //
+  Bool_t fIsHM;                 //
   Bool_t fSkipFillingHistogram; //
 
   mixingpool fEMpool; //!
@@ -185,16 +225,16 @@ private:
   Double_t fK892MassWindowCut; //
   Double_t fK892RapCut;        //
 
-  Double_t fK1YCutHigh;        //
-  Double_t fK1YCutLow;         //
-  Double_t fMinK1OA;           //
-  Double_t fMaxK1OA;           //
-  Double_t fMinPairAsym;       //
-  Double_t fMaxPairAsym;       //
-  Double_t fMinK1PiPi;       //
-  Double_t fMaxK1PiPi;       //
-  Double_t fMinK1PiKa;       //
-  Double_t fMaxK1PiKa;       //
+  Double_t fK1YCutHigh;  //
+  Double_t fK1YCutLow;   //
+  Double_t fMinK1OA;     //
+  Double_t fMaxK1OA;     //
+  Double_t fMinPairAsym; //
+  Double_t fMaxPairAsym; //
+  Double_t fMinK1PiPi;   //
+  Double_t fMaxK1PiPi;   //
+  Double_t fMinK1PiKa;   //
+  Double_t fMaxK1PiKa;   //
 
   // Good track arrays
   std::vector<UInt_t> fGoodPrimaryPionArray;

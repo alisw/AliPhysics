@@ -126,13 +126,47 @@ ClassImp(AliAnalysisTaskK1) AliAnalysisTaskK1::AliAnalysisTaskK1()
     : AliAnalysisTaskSE(), 
       fTrackCuts{nullptr}, 
       fPIDResponse{nullptr},
-      fHistos{nullptr},
+      fList{nullptr},
       fVertex{nullptr},
       fRTree{nullptr},
       fSTree{nullptr},
       fRecK1{},
       fSimK1{},
       fMCArray{nullptr},
+      fHn5DK1Data{nullptr},
+      fHn5DK1MC{nullptr},
+      fHn2DEvtNorm{nullptr},
+      hMultiplicity{nullptr},
+      hEtaTrack_before{nullptr},
+      hDCAPVTrack_before{nullptr},
+      hDCArPVTrack_before{nullptr},
+      hPtTrack_before{nullptr},
+      hEtaTrack_ppion{nullptr},
+      hDCAPVTrack_ppion{nullptr},
+      hDCArPVTrack_ppion{nullptr},
+      hPtTrack_ppion{nullptr},
+      hTPCPIDTrack_ppion{nullptr},
+      hTPCPIDTrackNsigVspT_ppion{nullptr},
+      hEtaTrack_spion{nullptr},
+      hDCAPVTrack_spion{nullptr},
+      hDCArPVTrack_spion{nullptr},
+      hPtTrack_spion{nullptr},
+      hTPCPIDTrack_spion{nullptr},
+      hTPCPIDTrackNsigVspT_spion{nullptr},
+      hEtaTrack_kaon{nullptr},
+      hDCAPVTrack_kaon{nullptr},
+      hDCArPVTrack_kaon{nullptr},
+      hPtTrack_kaon{nullptr},
+      hTPCPIDTrack_kaon{nullptr},
+      hTPCPIDTrackNsigVspT_kaon{nullptr},
+      hK1OA{nullptr},
+      hK1PairAsymm{nullptr},
+      hInvMass_piK_pipi{nullptr},
+      hInvMass_piK_pika{nullptr},
+      hK1OA_cut{nullptr},
+      hK1PairAsymm_cut{nullptr},
+      hInvMass_piK_pipi_cut{nullptr},
+      hInvMass_piK_pika_cut{nullptr},
       fIsAOD{false},
       fIsNano{false},
       fSetMixing{false},
@@ -185,13 +219,47 @@ AliAnalysisTaskK1::AliAnalysisTaskK1(const char *name, Bool_t MCcase)
     : AliAnalysisTaskSE(name),
       fTrackCuts{nullptr}, 
       fPIDResponse{nullptr},
-      fHistos{nullptr},
+      fList{nullptr},
       fVertex{nullptr},
       fRTree{nullptr},
       fSTree{nullptr},
       fRecK1{},
       fSimK1{},
       fMCArray{nullptr},
+      fHn5DK1Data{nullptr},
+      fHn5DK1MC{nullptr},
+      fHn2DEvtNorm{nullptr},
+      hMultiplicity{nullptr},
+      hEtaTrack_before{nullptr},
+      hDCAPVTrack_before{nullptr},
+      hDCArPVTrack_before{nullptr},
+      hPtTrack_before{nullptr},
+      hEtaTrack_ppion{nullptr},
+      hDCAPVTrack_ppion{nullptr},
+      hDCArPVTrack_ppion{nullptr},
+      hPtTrack_ppion{nullptr},
+      hTPCPIDTrack_ppion{nullptr},
+      hTPCPIDTrackNsigVspT_ppion{nullptr},
+      hEtaTrack_spion{nullptr},
+      hDCAPVTrack_spion{nullptr},
+      hDCArPVTrack_spion{nullptr},
+      hPtTrack_spion{nullptr},
+      hTPCPIDTrack_spion{nullptr},
+      hTPCPIDTrackNsigVspT_spion{nullptr},
+      hEtaTrack_kaon{nullptr},
+      hDCAPVTrack_kaon{nullptr},
+      hDCArPVTrack_kaon{nullptr},
+      hPtTrack_kaon{nullptr},
+      hTPCPIDTrack_kaon{nullptr},
+      hTPCPIDTrackNsigVspT_kaon{nullptr},
+      hK1OA{nullptr},
+      hK1PairAsymm{nullptr},
+      hInvMass_piK_pipi{nullptr},
+      hInvMass_piK_pika{nullptr},
+      hK1OA_cut{nullptr},
+      hK1PairAsymm_cut{nullptr},
+      hInvMass_piK_pipi_cut{nullptr},
+      hInvMass_piK_pika_cut{nullptr},
       fIsAOD{false},
       fIsNano{false},
       fSetMixing{false},
@@ -259,8 +327,10 @@ void AliAnalysisTaskK1::SetCutOpen()
 void AliAnalysisTaskK1::UserCreateOutputObjects()
 {
   fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
+  fList = new TList();
+  fList->SetOwner();
 
-  fHistos = new THistManager("K1hists");
+  // Create THnSparse
   auto binAnti = AxisStr("AType", {"Normal", "Anti"});
   auto binType = (!fIsMC) ? AxisStr("Type", {"K1P", "K1N", "K1P_mix", "K1N_mix"})
                           : AxisStr("Type", {"K1P", "K1N", "K1P_mix", "K1N_mix", "K1P_no", "K1N_no"});
@@ -274,77 +344,112 @@ void AliAnalysisTaskK1::UserCreateOutputObjects()
                                     "K1N_gen_trig",
                                     "K1P_rec",
                                     "K1N_rec"});
-
   std::vector<double> centaxisbin;
   (fIsHM) ? centaxisbin = {0, 0.001, 0.01, 0.05, 0.1}
-          : centaxisbin = {
-                -1, 0, 1, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100}; // can be use from pp to PbPb
+          : centaxisbin = {-1, 0, 1, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100}; // can be use from pp to PbPb
   if (fIsMC)
-    centaxisbin = {
-        -1, 0, 0.001, 0.01, 0.05, 0.1, 1, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100}; // for general MC
+    centaxisbin = {-1, 0, 0.001, 0.01, 0.05, 0.1, 1, 5, 10, 15, 20, 30, 40, 50, 60, 70, 80, 90, 100}; // for general MC
   fBinCent = AxisVar("Cent", centaxisbin);
-
   auto binPt = AxisFix("Pt", 150, 0, 15);
   auto binMass = AxisFix("Mass", 700, 0.6, 2.0);
   auto binMassMC = AxisFix("Mass", 450, 0.6, 1.5);
   // fBinZ = AxisFix("Z", 20, -10, 10); // 1cm diff
   fBinZ = AxisVar("Z", {-10, -5, -3, -1, 1, 3, 5, 10}); // moderate diff
 
-  CreateTHnSparse("K1_data", "K1_data", 5, {binAnti, binType, fBinCent, binPt, binMass}, "s");
+  fHn5DK1Data = CreateTHnSparse("K1_data", "K1_data", 5, {binAnti, binType, fBinCent, binPt, binMass}, "s");
+  fList->Add(fHn5DK1Data);
   if (fIsMC)
   {
     auto binTypeMCNorm = AxisStr("Type", {"kAll", "kINEL10", "kINEL_trig", "kINEL_trig_vtx",
                                           "kINEL_trig_vtx10", "kINELg0", "kINELg010", "kINELg0_trig",
                                           "kINELg0_trig_vtx", "kINELg0_trig_vtx10", "kSelected"});
-    CreateTHnSparse("K1_mc", "K1_mc", 5, {binAnti, binTypeMC, fBinCent, binPt, binMassMC}, "s");
-    CreateTHnSparse("Normalisation", "", 2, {binTypeMCNorm, fBinCent}, "s");
+    fHn5DK1MC = CreateTHnSparse("K1_mc", "K1_mc", 5, {binAnti, binTypeMC, fBinCent, binPt, binMassMC}, "s");
+    fList->Add(fHn5DK1MC);
+    fHn2DEvtNorm = CreateTHnSparse("Normalisation", "", 2, {binTypeMCNorm, fBinCent}, "s");
+    fList->Add(fHn2DEvtNorm);
   }
   if (fFillQAPlot)
   {
-    fHistos->CreateTH2("QA/hTPCPIDTrack", "", 200, 0, 20, 200, 0, 200);
-    fHistos->CreateTH2("QA/hTPCPIDTrackNsigVspT", "", 100, 0, 10, 200, -10, 10);
-    fHistos->CreateTH1("QA/hEtaTrack", "", 20, -1.0, 1.0);
-    fHistos->CreateTH1("QA/hDCAPVTrack", "", 30, 0, 3, "s");
-    fHistos->CreateTH1("QA/hDCArPVTrack", "", 50, 0, 0.5, "s");
-    fHistos->CreateTH1("QA/hPtTrack", "", 150, 0, 15);
-
-    fHistos->CreateTH2("QAcut/hTPCPIDPrimaryPion", "", 200, 0, 20, 200, 0, 200);
-    fHistos->CreateTH2("QAcut/hTPCPIDPrimaryPionNsigVspT", "", 100, 0, 10, 200, -10, 10);
-    fHistos->CreateTH1("QAcut/hEtaPrimaryPion", "", 20, -1.0, 1.0);
-    fHistos->CreateTH1("QAcut/hDCAPVPrimaryPion", "", 30, 0, 3, "s");
-    fHistos->CreateTH1("QAcut/hDCArPVPrimaryPion", "", 50, 0, 0.5, "s");
-    fHistos->CreateTH1("QAcut/hPtPrimaryPion", "", 150, 0, 15);
-
-    fHistos->CreateTH2("QAcut/hTPCPIDSecondaryPion", "", 200, 0, 20, 200, 0, 200);
-    fHistos->CreateTH2("QAcut/hTPCPIDSecondaryPionNsigVspT", "", 100, 0, 10, 200, -10, 10);
-    fHistos->CreateTH1("QAcut/hEtaSecondaryPion", "", 20, -1.0, 1.0);
-    fHistos->CreateTH1("QAcut/hDCAPVSecondaryPion", "", 30, 0, 3, "s");
-    fHistos->CreateTH1("QAcut/hDCArPVSecondaryPion", "", 50, 0, 0.5, "s");
-    fHistos->CreateTH1("QAcut/hPtSecondaryPion", "", 150, 0, 15);
-
-    fHistos->CreateTH2("QAcut/hTPCPIDKaon", "", 200, 0, 20, 200, 0, 200);
-    fHistos->CreateTH2("QAcut/hTPCPIDKaonNsigVspT", "", 100, 0, 10, 200, -10, 10);
-    fHistos->CreateTH1("QAcut/hEtaKaon", "", 20, -1.0, 1.0);
-    fHistos->CreateTH1("QAcut/hDCAPVKaon", "", 30, 0, 3, "s");
-    fHistos->CreateTH1("QAcut/hDCArPVKaon", "", 50, 0, 0.5, "s");
-    fHistos->CreateTH1("QAcut/hPtKaon", "", 150, 0, 15);
-
-    fHistos->CreateTH1("QAReso/hK1OA", "", 100, 0, 3.14);
-    fHistos->CreateTH1("QAReso/K1PairAsymm", "", 100, -1, 1);
-    fHistos->CreateTH2("QAReso/InvMass_piK_pipi", "", 60, 0.6, 1.2, 200, 0, 2.0);
-    fHistos->CreateTH2("QAReso/InvMass_piK_pika", "", 60, 0.6, 1.2, 200, 0, 2.0);
-
-    fHistos->CreateTH1("QAResoCut/hK1OA", "", 100, 0, 3.14);
-    fHistos->CreateTH1("QAResoCut/K1PairAsymm", "", 100, -1, 1);
-    fHistos->CreateTH2("QAResoCut/InvMass_piK_pipi", "", 60, 0.6, 1.2, 200, 0, 2.0);
-    fHistos->CreateTH2("QAResoCut/InvMass_piK_pika", "", 60, 0.6, 1.2, 200, 0, 2.0);
+    // Make a new Folder named "QA" under the fList
+    TList *QAList = new TList();
+    QAList->SetOwner();
+    QAList->SetName("QA");
+    fList->Add(QAList);
+    // All tracks
+    hEtaTrack_before = new TH1D("hEtaTrack_before", "Eta distribution of tracks;#eta;counts", 20, -1.0, 1.0);
+    hDCAPVTrack_before = new TH1D("hDCAPVTrack_before", "DCA to PV distribution of tracks;DCA (cm);counts", 30, 0, 3);
+    hDCArPVTrack_before = new TH1D("hDCArPVTrack_before", "DCAr to PV distribution of tracks;DCAr (cm);counts", 50, 0, 0.5);
+    hPtTrack_before = new TH1D("hPtTrack_before", "#it{p}_{T} distribution of tracks;#it{p}_{T} (GeV/c);counts", 150, 0, 15);
+    QAList->Add(hEtaTrack_before);
+    QAList->Add(hDCAPVTrack_before);
+    QAList->Add(hDCArPVTrack_before);
+    QAList->Add(hPtTrack_before);
+    // Primary pions
+    hEtaTrack_ppion = new TH1D("hEtaTrack_ppion", "Eta distribution of primary pions;#eta;counts", 20, -1.0, 1.0);
+    hDCAPVTrack_ppion = new TH1D("hDCAPVTrack_ppion", "DCA to PV distribution of primary pions;DCA (cm);counts", 30, 0, 3);
+    hDCArPVTrack_ppion = new TH1D("hDCArPVTrack_ppion", "DCAr to PV distribution of primary pions;DCAr (cm);counts", 50, 0, 0.5);
+    hPtTrack_ppion = new TH1D("hPtTrack_ppion", "#it{p}_{T} distribution of primary pions;#it{p}_{T} (GeV/c);counts", 150, 0, 15);
+    hTPCPIDTrack_ppion = new TH2D("hTPCPIDTrack_ppion", "TPC PID of primary pions;P (GeV/c);TPC signal", 200, 0, 20, 200, 0, 200);
+    hTPCPIDTrackNsigVspT_ppion = new TH2D("hTPCPIDTrackNsigVspT_ppion", "TPC PID of primary pions;P (GeV/c);TPC n#sigma", 100, 0, 10, 200, -10, 10);
+    QAList->Add(hEtaTrack_ppion);
+    QAList->Add(hDCAPVTrack_ppion);
+    QAList->Add(hDCArPVTrack_ppion);
+    QAList->Add(hPtTrack_ppion);
+    QAList->Add(hTPCPIDTrack_ppion);
+    QAList->Add(hTPCPIDTrackNsigVspT_ppion);
+    // Secondary pions
+    hEtaTrack_spion = new TH1D("hEtaTrack_spion", "Eta distribution of secondary pions;#eta;counts", 20, -1.0, 1.0);
+    hDCAPVTrack_spion = new TH1D("hDCAPVTrack_spion", "DCA to PV distribution of secondary pions;DCA (cm);counts", 30, 0, 3);
+    hDCArPVTrack_spion = new TH1D("hDCArPVTrack_spion", "DCAr to PV distribution of secondary pions;DCAr (cm);counts", 50, 0, 0.5);
+    hPtTrack_spion = new TH1D("hPtTrack_spion", "#it{p}_{T} distribution of secondary pions;#it{p}_{T} (GeV/c);counts", 150, 0, 15);
+    hTPCPIDTrack_spion = new TH2D("hTPCPIDTrack_spion", "TPC PID of secondary pions;P (GeV/c);TPC signal", 200, 0, 20, 200, 0, 200);
+    hTPCPIDTrackNsigVspT_spion = new TH2D("hTPCPIDTrackNsigVspT_spion", "TPC PID of secondary pions;P (GeV/c);TPC n#sigma", 100, 0, 10, 200, -10, 10);
+    QAList->Add(hEtaTrack_spion);
+    QAList->Add(hDCAPVTrack_spion);
+    QAList->Add(hDCArPVTrack_spion);
+    QAList->Add(hPtTrack_spion);
+    QAList->Add(hTPCPIDTrack_spion);
+    QAList->Add(hTPCPIDTrackNsigVspT_spion);
+    // Kaons
+    hEtaTrack_kaon = new TH1D("hEtaTrack_kaon", "Eta distribution of kaons;#eta;counts", 20, -1.0, 1.0);
+    hDCAPVTrack_kaon = new TH1D("hDCAPVTrack_kaon", "DCA to PV distribution of kaons;DCA (cm);counts", 30, 0, 3);
+    hDCArPVTrack_kaon = new TH1D("hDCArPVTrack_kaon", "DCAr to PV distribution of kaons;DCAr (cm);counts", 50, 0, 0.5);
+    hPtTrack_kaon = new TH1D("hPtTrack_kaon", "#it{p}_{T} distribution of kaons;#it{p}_{T} (GeV/c);counts", 150, 0, 15);
+    hTPCPIDTrack_kaon = new TH2D("hTPCPIDTrack_kaon", "TPC PID of kaons;P (GeV/c);TPC signal", 200, 0, 20, 200, 0, 200);
+    hTPCPIDTrackNsigVspT_kaon = new TH2D("hTPCPIDTrackNsigVspT_kaon", "TPC PID of kaons;P (GeV/c);TPC n#sigma", 100, 0, 10, 200, -10, 10);
+    QAList->Add(hEtaTrack_kaon);
+    QAList->Add(hDCAPVTrack_kaon);
+    QAList->Add(hDCArPVTrack_kaon);
+    QAList->Add(hPtTrack_kaon);
+    QAList->Add(hTPCPIDTrack_kaon);
+    QAList->Add(hTPCPIDTrackNsigVspT_kaon);
+    // K1
+    hK1OA = new TH1D("hK1OA", "Opening angle distribution of K1;Opening angle (rad);counts", 100, 0, 3.14);
+    hK1PairAsymm = new TH1D("hK1PairAsymm", "Pair asymmetry distribution of K1;Asymmetry;counts", 100, -1, 1);
+    hInvMass_piK_pipi = new TH2D("hInvMass_piK_pipi", "Invariant mass distribution of piK pairs;Mass (GeV/c^{2});counts", 100, 0.6, 2.0, 200, 0, 2);
+    hInvMass_piK_pika = new TH2D("hInvMass_piK_pika", "Invariant mass distribution of piK pairs;Mass (GeV/c^{2});counts", 100, 0.6, 2.0, 200, 0, 2);
+    
+    hK1OA_cut = new TH1D("hK1OA_cut", "Opening angle distribution of K1;Opening angle (rad);counts", 100, 0, 3.14);
+    hK1PairAsymm_cut = new TH1D("hK1PairAsymm_cut", "Pair asymmetry distribution of K1;Asymmetry;counts", 100, -1, 1);
+    hInvMass_piK_pipi_cut = new TH2D("hInvMass_piK_pipi_cut", "Invariant mass distribution of piK pairs;Mass (GeV/c^{2});counts", 100, 0.6, 2.0, 200, 0, 2);
+    hInvMass_piK_pika_cut = new TH2D("hInvMass_piK_pika_cut", "Invariant mass distribution of piK pairs;Mass (GeV/c^{2});counts", 100, 0.6, 2.0, 200, 0, 2);
+    QAList->Add(hK1OA);
+    QAList->Add(hK1PairAsymm);
+    QAList->Add(hInvMass_piK_pipi);
+    QAList->Add(hInvMass_piK_pika);
+    QAList->Add(hK1OA_cut);
+    QAList->Add(hK1PairAsymm_cut);
+    QAList->Add(hInvMass_piK_pipi_cut);
+    QAList->Add(hInvMass_piK_pika_cut);
   }
-  fEventCut.AddQAplotsToList(fHistos->GetListOfHistograms()); // QA histograms from AliEventCuts
-  if (fIsHM) fHistos->CreateTH1("hMultiplicity", "", 100, 0, 0.1, "s");
-  else fHistos->CreateTH1("hMultiplicity", "", 101, -1, 100, "s");
+  fEventCut.AddQAplotsToList(fList); // QA histograms from AliEventCuts
+  if (fIsHM) hMultiplicity = new TH1F("hMultiplicity", "", 100, 0, 0.1);
+  else hMultiplicity = new TH1F("hMultiplicity", "", 101, -1, 100);
+  fList->Add(hMultiplicity);
+
   fEMpool.resize(fBinCent.GetNbins() + 1, std::vector<eventpool>(fBinZ.GetNbins() + 1));
 
-  PostData(1, fHistos->GetListOfHistograms());
+  PostData(1, fList);
   if (fFillTree)
   {
     OpenFile(1);
@@ -366,7 +471,7 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
   AliVEvent *event = InputEvent();
   if (!event) // if there is no event, return
   {
-    PostData(1, fHistos->GetListOfHistograms());
+    PostData(1, fList);
     if (fFillTree)
     {
       PostData(2, fRTree);
@@ -387,7 +492,7 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
     fIsAOD = true; // check if it is AOD or ESD
   if (!fEvt)       // if there is no event, return
   {
-    PostData(1, fHistos->GetListOfHistograms());
+    PostData(1, fList);
     if (fFillTree)
     {
       PostData(2, fRTree);
@@ -409,8 +514,7 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
     if (fIsMC)
     {
       if (fIsAOD)
-        fMCArray =
-            (TClonesArray *)fEvt->FindListObject("mcparticles"); // AOD Case
+        fMCArray = (TClonesArray *)fEvt->FindListObject("mcparticles"); // AOD Case
       fMCEvent = MCEvent();
       IsINEL0True = fEventCut.IsTrueINELgtZero(fEvt, true);
     }
@@ -451,40 +555,40 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
       FillMCinput(fMCEvent, 2);
     if (IsSelectedTrig)
       FillMCinput(fMCEvent, 3);
-    FillTHnSparse("Normalisation", {(int)kAll, (double)fCent});
+    FillTHnSparse(fHn2DEvtNorm, {(int)kAll, (double)fCent});
     if (IsINEL0True)
     {
-      FillTHnSparse("Normalisation", {(int)kINELg0, (double)fCent});
+      FillTHnSparse(fHn2DEvtNorm, {(int)kINELg0, (double)fCent});
       if (IsVtxInZCut)
       {
-        FillTHnSparse("Normalisation", {(int)kINELg010, (double)fCent});
+        FillTHnSparse(fHn2DEvtNorm, {(int)kINELg010, (double)fCent});
       }
       if (IsSelectedTrig)
       {
-        FillTHnSparse("Normalisation", {(int)kINELg0_trig, (double)fCent});
+        FillTHnSparse(fHn2DEvtNorm, {(int)kINELg0_trig, (double)fCent});
         if (IsGoodVertex)
         {
-          FillTHnSparse("Normalisation", {(int)kINELg0_trig_vtx, (double)fCent});
+          FillTHnSparse(fHn2DEvtNorm, {(int)kINELg0_trig_vtx, (double)fCent});
           if (IsVtxInZCut)
           {
-            FillTHnSparse("Normalisation", {(int)kINELg0_trig_vtx10, (double)fCent});
+            FillTHnSparse(fHn2DEvtNorm, {(int)kINELg0_trig_vtx10, (double)fCent});
           }
         }
       }
     }
     if (IsVtxInZCut)
     {
-      FillTHnSparse("Normalisation", {(int)kINEL10, (double)fCent});
+      FillTHnSparse(fHn2DEvtNorm, {(int)kINEL10, (double)fCent});
     }
     if (IsSelectedTrig)
     {
-      FillTHnSparse("Normalisation", {(int)kINEL_trig, (double)fCent});
+      FillTHnSparse(fHn2DEvtNorm, {(int)kINEL_trig, (double)fCent});
       if (IsGoodVertex)
       {
-        FillTHnSparse("Normalisation", {(int)kINEL_trig_vtx, (double)fCent});
+        FillTHnSparse(fHn2DEvtNorm, {(int)kINEL_trig_vtx, (double)fCent});
         if (IsVtxInZCut)
         {
-          FillTHnSparse("Normalisation", {(int)kINEL_trig_vtx10, (double)fCent});
+          FillTHnSparse(fHn2DEvtNorm, {(int)kINEL_trig_vtx10, (double)fCent});
         }
       }
     }
@@ -492,7 +596,7 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
 
   if (!IsEvtSelected)
   {
-    PostData(1, fHistos->GetListOfHistograms());
+    PostData(1, fList);
     if (fFillTree)
     {
       PostData(2, fRTree);
@@ -504,12 +608,12 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
     return;
   }
 
-  fHistos->FillTH1("hMultiplicity", (double)fCent); // multiplicity distribution for basic event QA
+  hMultiplicity->Fill(fCent); // multiplicity distribution for basic event QA
 
   if (fIsMC)
   {
     FillMCinput(fMCEvent);
-    FillTHnSparse("Normalisation", {(int)kSelected, (double)fCent});
+    FillTHnSparse(fHn2DEvtNorm, {(int)kSelected, (double)fCent});
   }
   if (fIsAOD)
     fVertex = ((AliAODEvent *)fEvt)->GetPrimaryVertex();
@@ -537,7 +641,7 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
     FillTrackToEventPool(); // use only pion track pool.
   }
 
-  PostData(1, fHistos->GetListOfHistograms());
+  PostData(1, fList);
   if (fFillTree)
   {
     PostData(2, fRTree);
@@ -603,12 +707,10 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
     if (fFillQAPlot) 
     {
       // Fill the QA plot for the whole track. we don't know which track is it yet.
-      fHistos->FillTH1("QA/hDCAPVTrack", lDCAz);
-      fHistos->FillTH1("QA/hDCArPVTrack", lDCAr);
-      fHistos->FillTH1("QA/hEtaTrack", lEta);
-      fHistos->FillTH1("QA/hPtTrack", lpT);
-      fHistos->FillTH2("QA/hTPCPIDTrack", track->GetTPCmomentum(), track->GetTPCsignal());
-      fHistos->FillTH1("QA/hTPCPIDTrackNsigVspT", lpT, nTPCNSigPion);
+      hEtaTrack_before->Fill(lEta);
+      hDCAPVTrack_before->Fill(lDCAz);
+      hDCArPVTrack_before->Fill(lDCAr);
+      hPtTrack_before->Fill(lpT);
     }
 
     if (lpT < 0.15) // minimum pT cut
@@ -648,30 +750,30 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
     {
       if (isPassPrimaryPionSelection)
       {
-        fHistos->FillTH1("QAcut/hDCAPVPrimaryPion", lDCAz);
-        fHistos->FillTH1("QAcut/hDCArPVPrimaryPion", lDCAr);
-        fHistos->FillTH1("QAcut/hEtaPrimaryPion", lEta);
-        fHistos->FillTH1("QAcut/hPtPrimaryPion", lpT);
-        fHistos->FillTH2("QAcut/hTPCPIDPrimaryPion", track->GetTPCmomentum(), track->GetTPCsignal());
-        fHistos->FillTH1("QAcut/hTPCPIDPrimaryPionNsigVspT", lpT, nTPCNSigPion);
+        hEtaTrack_ppion->Fill(lEta);
+        hDCAPVTrack_ppion->Fill(lDCAz);
+        hDCArPVTrack_ppion->Fill(lDCAr);
+        hPtTrack_ppion->Fill(lpT);
+        hTPCPIDTrack_ppion->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+        hTPCPIDTrackNsigVspT_ppion->Fill(lpT, nTPCNSigPion);
       }
       if (isPassSecondaryPionSelection)
       {
-        fHistos->FillTH1("QAcut/hDCAPVSecondaryPion", lDCAz);
-        fHistos->FillTH1("QAcut/hDCArPVSecondaryPion", lDCAr);
-        fHistos->FillTH1("QAcut/hEtaSecondaryPion", lEta);
-        fHistos->FillTH1("QAcut/hPtSecondaryPion", lpT);
-        fHistos->FillTH2("QAcut/hTPCPIDSecondaryPion", track->GetTPCmomentum(), track->GetTPCsignal());
-        fHistos->FillTH1("QAcut/hTPCPIDSecondaryPionNsigVspT", lpT, nTPCNSigPion);
+        hEtaTrack_spion->Fill(lEta);
+        hDCAPVTrack_spion->Fill(lDCAz);
+        hDCArPVTrack_spion->Fill(lDCAr);
+        hPtTrack_spion->Fill(lpT);
+        hTPCPIDTrack_spion->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+        hTPCPIDTrackNsigVspT_spion->Fill(lpT, nTPCNSigPion);
       }
       if (isPassKaonSelection)
       {
-        fHistos->FillTH1("QAcut/hDCAPVKaon", lDCAz);
-        fHistos->FillTH1("QAcut/hDCArPVKaon", lDCAr);
-        fHistos->FillTH1("QAcut/hEtaKaon", lEta);
-        fHistos->FillTH1("QAcut/hPtKaon", lpT);
-        fHistos->FillTH2("QAcut/hTPCPIDKaon", track->GetTPCmomentum(), track->GetTPCsignal());
-        fHistos->FillTH1("QAcut/hTPCPIDKaonNsigVspT", lpT, nTPCNSigKaon);
+        hEtaTrack_kaon->Fill(lEta);
+        hDCAPVTrack_kaon->Fill(lDCAz);
+        hDCArPVTrack_kaon->Fill(lDCAr);
+        hPtTrack_kaon->Fill(lpT);
+        hTPCPIDTrack_kaon->Fill(track->GetTPCmomentum(), track->GetTPCsignal());
+        hTPCPIDTrackNsigVspT_kaon->Fill(lpT, nTPCNSigKaon);
       }
     }
 
@@ -785,10 +887,10 @@ void AliAnalysisTaskK1::FillHistograms()
         lMassPiKa = tempPiKa.M();
         if (fFillQAPlot)
         {
-          fHistos->FillTH1("QAReso/hK1OA", lK1Angle);
-          fHistos->FillTH1("QAReso/K1PairAsymm", lK1PairAsym);
-          fHistos->FillTH2("QAReso/InvMass_piK_pipi", lK892Mass, lMassPiPi);
-          fHistos->FillTH2("QAReso/InvMass_piK_pika", lK892Mass, lMassPiKa);
+          hK1OA->Fill(lK1Angle);
+          hK1PairAsymm->Fill(lK1PairAsym);
+          hInvMass_piK_pipi->Fill(lK892Mass, lMassPiPi);
+          hInvMass_piK_pika->Fill(lK892Mass, lMassPiKa);
         }
         if ((lMassPiPi > fMaxK1PiPi)||(lMassPiPi < fMinK1PiPi)) 
           continue;
@@ -800,12 +902,11 @@ void AliAnalysisTaskK1::FillHistograms()
           continue;
         if (fFillQAPlot)
         {
-          fHistos->FillTH1("QAResoCut/hK1OA", lK1Angle);
-          fHistos->FillTH1("QAResoCut/K1PairAsymm", lK1PairAsym);
-          fHistos->FillTH2("QAResoCut/InvMass_piK_pipi", lK892Mass, lMassPiPi);
-          fHistos->FillTH2("QAResoCut/InvMass_piK_pika", lK892Mass, lMassPiKa);
+          hK1OA_cut->Fill(lK1Angle);
+          hK1PairAsymm_cut->Fill(lK1PairAsym);
+          hInvMass_piK_pipi_cut->Fill(lK892Mass, lMassPiPi);
+          hInvMass_piK_pika_cut->Fill(lK892Mass, lMassPiKa);
         }
-
         if (track_primiary_pion->Charge() > 0)
           isPirmaryPionPlus = true;
         else
@@ -814,20 +915,20 @@ void AliAnalysisTaskK1::FillHistograms()
         (isAnti) ? binAnti = kAnti : binAnti = kNormal;
         (isPirmaryPionPlus) ? sign = kK1P : sign = kK1N;
 
-        FillTHnSparse("K1_data", {(double)binAnti, (double)sign, (double)fCent, vecK1.Pt(), vecK1.M()});
+        FillTHnSparse(fHn5DK1Data, {(double)binAnti, (double)sign, (double)fCent, vecK1.Pt(), vecK1.M()});
 
         if (fIsMC)
         {
           if (IsTrueK1(primiaryID, secondaryID, kaonID))
           {
             (isPirmaryPionPlus) ? sign = kK1P_REC : sign = kK1N_REC;
-            FillTHnSparse("K1_mc", {(double)binAnti, (double)sign, (double)fCent, vecK1.Pt(), vecK1.M()});
+            FillTHnSparse(fHn5DK1MC, {(double)binAnti, (double)sign, (double)fCent, vecK1.Pt(), vecK1.M()});
           }
           else
           {
             // MC not true bkg
             (isPirmaryPionPlus) ? sign = kK1P_NOT : sign = kK1N_NOT;
-            FillTHnSparse("K1_mc", {(double)binAnti, (double)sign, (double)fCent, vecK1.Pt(), vecK1.M()});
+            FillTHnSparse(fHn5DK1MC, {(double)binAnti, (double)sign, (double)fCent, vecK1.Pt(), vecK1.M()});
           }
         }
       } // primary pion loop
@@ -872,7 +973,7 @@ void AliAnalysisTaskK1::FillHistograms()
           (isAnti) ? binAnti = kAnti : binAnti = kNormal;
           (isPirmaryPionPlus) ? sign = kK1P_MIX : sign = kK1N_MIX;
 
-          FillTHnSparse("K1_data", {(double)binAnti, (double)sign, (double)fCent, vecK1.Pt(), vecK1.M()});
+          FillTHnSparse(fHn5DK1Data, {(double)binAnti, (double)sign, (double)fCent, vecK1.Pt(), vecK1.M()});
         } // mixing track loop
       } // mixing
 
@@ -914,7 +1015,7 @@ void AliAnalysisTaskK1::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
       if (TMath::Abs(k1PdgCode) == kK1NCode)
         sign = kK1N_GEN + (int)Fillbin * 2;
 
-      FillTHnSparse("K1_mc", {(double)binAnti, (double)sign, (double)fCent, mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
+      FillTHnSparse(fHn5DK1MC, {(double)binAnti, (double)sign, (double)fCent, mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
     }
   }
   else
@@ -946,7 +1047,7 @@ void AliAnalysisTaskK1::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
       if (TMath::Abs(k1PdgCode) == kK1NCode)
         sign = kK1N_GEN + (int)Fillbin * 2;
 
-      FillTHnSparse("K1_mc", {(double)binAnti, (double)sign, (double)fCent, mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
+      FillTHnSparse(fHn5DK1MC, {(double)binAnti, (double)sign, (double)fCent, mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
     }
   }
 }
@@ -1030,28 +1131,37 @@ Bool_t AliAnalysisTaskK1::IsTrueK1(UInt_t primiaryID, UInt_t secondaryID, UInt_t
     return kTRUE;
   }
 }
+THnSparseD *AliAnalysisTaskK1::CreateTHnSparse(TString name, TString title, Int_t ndim, std::vector<TAxis> bins, Option_t *opt) {
+    TArrayD xmin(ndim), xmax(ndim);
+    TArrayI nbins(ndim);
+    std::vector<TArrayD> binnings;
 
-THnSparse *AliAnalysisTaskK1::CreateTHnSparse(TString name, TString title, Int_t ndim, std::vector<TAxis> bins, Option_t *opt)
-{
-  // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
-  // Original author: Beomkyu Kim
-  const TAxis *axises[bins.size()];
-  for (UInt_t i = 0; i < bins.size(); i++)
-    axises[i] = &bins[i];
-  THnSparse *h = fHistos->CreateTHnSparse(name, title, ndim, axises, opt);
-  return h;
-}
-Long64_t AliAnalysisTaskK1::FillTHnSparse(TString name, std::vector<Double_t> x, Double_t w)
-{
-  // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
-  // Original author: Beomkyu Kim
-  auto hsparse = dynamic_cast<THnSparse *>(fHistos->FindObject(name));
-  if (!hsparse)
-  {
-    std::cout << "ERROR : no " << name << std::endl;
-    exit(1);
-  }
-  return FillTHnSparse(hsparse, x, w);
+    for (int idim = 0; idim < ndim; ++idim) {
+        const TAxis& axis = bins[idim];
+        nbins[idim] = axis.GetNbins();
+        xmin[idim] = axis.GetXmin();
+        xmax[idim] = axis.GetXmax();
+        TArrayD binEdges(nbins[idim] + 1);
+        for (int i = 0; i <= nbins[idim]; ++i) {
+            binEdges[i] = axis.GetBinLowEdge(i + 1);
+        }
+        binnings.push_back(binEdges);
+    }
+    THnSparseD* hsparse = new THnSparseD(name.Data(), title.Data(), ndim, nbins.GetArray(), xmin.GetArray(), xmax.GetArray());
+
+    // Set the bin edges for each axis
+    for (int id = 0; id < ndim; ++id) {
+        hsparse->GetAxis(id)->Set(nbins[id], binnings[id].GetArray());
+        TString axisName = bins[id].GetName();
+        hsparse->GetAxis(id)->SetName(axisName.Data());
+    }
+    TString optionstring(opt);
+    optionstring.ToLower();
+    if (optionstring.Contains("s")) {
+        hsparse->Sumw2();
+    }
+
+    return hsparse;
 }
 Long64_t AliAnalysisTaskK1::FillTHnSparse(THnSparse *h, std::vector<Double_t> x, Double_t w)
 {
