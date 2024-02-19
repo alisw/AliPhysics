@@ -759,12 +759,8 @@ void AliAnalysisPtN::UserExec(Option_t *)
           TestPt4Ctr_9->Fill(centrality,pt4);
           break;
       }
-    }
-    
-    
-    
-    TestNchCtr->Fill(centrality,iTracks);
-    TestNchSelectedCtr->Fill(centrality,nTrackSelected);
+      TestNchCtr->Fill(centrality,iTracks);
+      TestNchSelectedCtr->Fill(centrality,nTrackSelected);
 
       switch (rd){
         case 0:
@@ -808,6 +804,12 @@ void AliAnalysisPtN::UserExec(Option_t *)
           TestNchSelectedCtr_9->Fill(centrality,nTrackSelected);
           break;
       }
+
+    }
+    
+    
+    
+    
     
 
     
