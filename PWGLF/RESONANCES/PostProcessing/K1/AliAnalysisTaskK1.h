@@ -8,48 +8,11 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
-class THistManager;
+#include "AliResoNanoEvent.h"
+#include "AliResoNanoTrack.h"
+class AliAODMCHeader;
 class AliPIDResponse;
 class AliESDtrackCuts;
-
-struct SK1Resonance
-{
-  int pdg_pion1;
-  int pdg_pion2;
-  int pdg_pion3;
-  int flag;
-};
-struct RK1Resonance
-{
-  // first pion
-  float pt_pion1;
-  float eta_pion1;
-  bool hasTOF_pion1;
-  Double32_t dcaxy_pion1;
-  Double32_t dcaz_pion1;
-  float tofNsigma_pion1;
-  float tpcNsigma_pion1;
-  // second pion
-  float pt_pion2;
-  float eta_pion2;
-  bool hasTOF_pion2;
-  Double32_t dcaxy_pion2;
-  Double32_t dcaz_pion2;
-  float tofNsigma_pion2;
-  float tpcNsigma_pion2;
-  // kaon
-  float pt_kaon;
-  float eta_kaon;
-  bool hasTOF_kaon;
-  Double32_t dcaxy_kaon;
-  Double32_t dcaz_kaon;
-  float tofNsigma_kaon;
-  float tpcNsigma_kaon;
-  // event info
-  float centrality;
-  float vertexZ;
-  unsigned char flag;
-};
 
 class AliAnalysisTaskK1 : public AliAnalysisTaskSE
 {
@@ -74,17 +37,20 @@ public:
   // Setter for cut variables
   void SetFilterbitTracks(Double_t lParameter) { fFilterBit = lParameter; }
 
-  void SetMaxNsigPrimaryPion(Double_t lParameter) { fTPCNsigPrimaryPionCut = lParameter; }
+  void SetMaxTPCnSigPrimaryPion(Double_t lParameter) { fTPCNsigPrimaryPionCut = lParameter; }
+  void SetMaxTOFnSigPrimaryPion(Double_t lParameter) { fTOFNsigPrimaryPionCut = lParameter; }
   void SetMaxEtaPrimaryPion(Double_t lParameter) { fPrimaryPionEtaCut = lParameter; }
   void SetMaxVertexZPrimaryPion(Double_t lParameter) { fPrimaryPionZVertexCut = lParameter; }
   void SetMaxVertexXYsigPrimaryPion(Double_t lParameter) { fPrimaryPionXYVertexSigmaCut = lParameter; }
 
-  void SetMaxNsigSecondaryPion(Double_t lParameter) { fTPCNsigSecondaryPionCut = lParameter; }
+  void SetMaxTPCnSigSecondaryPion(Double_t lParameter) { fTPCNsigSecondaryPionCut = lParameter; }
+  void SetMaxTOFnSigTOFSecondaryPion(Double_t lParameter) { fTOFNsigSecondaryPionCut = lParameter; }
   void SetMaxEtaSecondaryPion(Double_t lParameter) { fSecondaryPionEtaCut = lParameter; }
   void SetMaxVertexZSecondaryPion(Double_t lParameter) { fSecondaryPionZVertexCut = lParameter; }
   void SetMaxVertexXYsigSecondaryPion(Double_t lParameter) { fSecondaryPionXYVertexSigmaCut = lParameter; }
 
-  void SetMaxNsigKaon(Double_t lParameter) { fTPCNsigKaonCut = lParameter; }
+  void SetMaxTPCnSigKaon(Double_t lParameter) { fTPCNsigKaonCut = lParameter; }
+  void SetMaxTOFnSigKaon(Double_t lParameter) { fTOFNsigKaonCut = lParameter; }
   void SetMaxEtaKaon(Double_t lParameter) { fKaonEtaCut = lParameter; }
   void SetMaxVertexZKaon(Double_t lParameter) { fKaonZVertexCut = lParameter; }
   void SetMaxVertexXYsigKaon(Double_t lParameter) { fKaonXYVertexSigmaCut = lParameter; }
@@ -105,11 +71,11 @@ public:
 
   Bool_t FillTrackPools();
   void FillHistograms();
-  void FillTree();
   void FillMCinput(AliMCEvent *fMCEvent, int Fillbin = 0);
   void FillTrackToEventPool();
   Bool_t IsTrueK1(UInt_t v0, UInt_t pion, UInt_t BkgCheck = 0);
-  double GetTPCnSigma(AliVTrack *track, AliPID::EParticleType type);
+  Double_t GetTPCnSigma(AliVTrack *track, AliPID::EParticleType type);
+  Double_t GetTOFnSigma(AliVTrack *track, AliPID::EParticleType type);
   void GetImpactParam(AliVTrack *track, Float_t p[2], Float_t cov[3]);
   Int_t trackSelection(AliVTrack *track, Float_t &nTPCNSigPion, Float_t &nTPCNSigKaon, Float_t lpT, Float_t lDCAz, Float_t lDCAr, Float_t lEta);
   void SetCutOpen();
@@ -131,15 +97,15 @@ private:
   AliESDtrackCuts *fTrackCuts;  //!
   AliPIDResponse *fPIDResponse; //!
 
-  AliVEvent *fEvt;        //!
-  AliMCEvent *fMCEvent;   //!
-  TList *fList;           //!
-  AliAODVertex *fVertex;  //!
-  TTree *fRTree;          ///<  Output reconstructed ttree
-  TTree *fSTree;          ///<  Output simulated ttree
-  RK1Resonance fRecK1;    ///<  Reconstructed resonance
-  SK1Resonance fSimK1;    ///<  Simulated resonance
-  TClonesArray *fMCArray; //!
+  AliVEvent *fEvt;              //!
+  AliMCEvent *fMCEvent;         //!
+  AliAODMCHeader *fAODMCHeader; //!<  MC info AOD
+  TList *fList;                 //!
+  TClonesArray *fMCArray;       //!
+  AliAODVertex *fVertex;        //!
+  TTree *fNanoTree;             ///<  Output nanoAOD ttree
+  TClonesArray *fNanoEvents;    ///<  events for nanoAOD
+  TClonesArray *fNanoTracks;    ///<  tracks for nanoAOD
 
   //// Histograms
   THnSparseD *fHn5DK1Data;  //!
@@ -174,14 +140,18 @@ private:
   TH2D *hTPCPIDTrack_kaon;         //!
   TH2D *hTPCPIDTrackNsigVspT_kaon; //!
   // K1
-  TH1D *hK1OA;                 //!
-  TH1D *hK1PairAsymm;          //!
-  TH2D *hInvMass_piK_pipi;     //!
-  TH2D *hInvMass_piK_pika;     //!
-  TH1D *hK1OA_cut;             //!
-  TH1D *hK1PairAsymm_cut;      //!
-  TH2D *hInvMass_piK_pipi_cut; //!
-  TH2D *hInvMass_piK_pika_cut; //!
+  TH1D *hK1OA;                    //!
+  TH1D *hK1PairAsymm;             //!
+  TH2D *hInvMass_piK_pipi;        //!
+  TH2D *hInvMass_piK_pika;        //!
+  TH1D *hK1OA_cut;                //!
+  TH1D *hK1PairAsymm_cut;         //!
+  TH2D *hInvMass_piK_pipi_cut;    //!
+  TH2D *hInvMass_piK_pika_cut;    //!
+  TH1D *hK1OA_MCTrue;             //!
+  TH1D *hK1PairAsymm_MCTrue;      //!
+  TH2D *hInvMass_piK_pipi_MCTrue; //!
+  TH2D *hInvMass_piK_pika_MCTrue; //!
 
   Bool_t fIsAOD;                //!
   Bool_t fIsNano;               //!
@@ -208,16 +178,19 @@ private:
   // Pion cuts
   UInt_t fFilterBit;                     //
   Double_t fTPCNsigPrimaryPionCut;       //
+  Double_t fTOFNsigPrimaryPionCut;       //
   Double_t fPrimaryPionEtaCut;           //
   Double_t fPrimaryPionZVertexCut;       //
   Double_t fPrimaryPionXYVertexSigmaCut; //
 
   Double_t fTPCNsigSecondaryPionCut;       //
+  Double_t fTOFNsigSecondaryPionCut;       //
   Double_t fSecondaryPionEtaCut;           //
   Double_t fSecondaryPionZVertexCut;       //
   Double_t fSecondaryPionXYVertexSigmaCut; //
 
   Double_t fTPCNsigKaonCut;       //
+  Double_t fTOFNsigKaonCut;       //
   Double_t fKaonEtaCut;           //
   Double_t fKaonZVertexCut;       //
   Double_t fKaonXYVertexSigmaCut; //
@@ -240,6 +213,7 @@ private:
   std::vector<UInt_t> fGoodPrimaryPionArray;
   std::vector<UInt_t> fGoodSecondaryPionArray;
   std::vector<UInt_t> fGoodKaonArray;
+  std::vector<UInt_t> fGoodTracksArray;
 
   ClassDef(AliAnalysisTaskK1, 1);
   // 1: first implementation

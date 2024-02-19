@@ -93,6 +93,9 @@
 #pragma link C++ class AliAnalysisTaskInclusivef0f2+;
 // Xi1820
 #pragma link C++ class AliAnalysisTaskXi1820BH+;
+// ResonanceNanoAOD
+#pragma link C++ class AliResoNanoEvent+;
+#pragma link C++ class AliResoNanoTrack+;
 
 #pragma link C++ class AliAnalysisTaskfn+;
 #pragma link C++ class AliAnalysisTaskfnAOD+;

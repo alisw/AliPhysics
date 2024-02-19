@@ -37,12 +37,18 @@ AliAnalysisTaskK1* AddTaskK1(const char* taskname = "K1", const char* option = "
     // Mixing
     if (foption.Contains("Mix")) {
         taskK1->SetnMix(nmix);
+        taskK1->SetMixing(kTRUE);
         std::cout << Form("Event Mix mode: %d", nmix) << std::endl;
     }
     // Skip Filling Histograms
     if (foption.Contains("NoHist")) {
         taskK1->SetSkipFillHistos(true);
         std::cout << "Skip filling histograms (for Tree study)" << std::endl;
+    }
+    // Fill Tree
+    if (foption.Contains("Tree")) {
+        taskK1->SetFillTree(true);
+        std::cout << "Fill Tree" << std::endl;
     }
     if (!taskK1)
         return 0x0;
@@ -51,13 +57,11 @@ AliAnalysisTaskK1* AddTaskK1(const char* taskname = "K1", const char* option = "
 
     TString output = "AnalysisResults.root";
     AliAnalysisDataContainer* coutputK1 = mgr->CreateContainer(Form("%s%s", taskname, suffix), TList::Class(), AliAnalysisManager::kOutputContainer, output.Data());
-    AliAnalysisDataContainer* coutputK1RTree = mgr->CreateContainer(Form("%s%s_RTree",taskname, suffix), TTree::Class(), AliAnalysisManager::kOutputContainer, output.Data());
-    AliAnalysisDataContainer* coutputK1STree = mgr->CreateContainer(Form("%s%s_STree",taskname, suffix), TTree::Class(), AliAnalysisManager::kOutputContainer, output.Data());
+    AliAnalysisDataContainer* coutputK1RTree = mgr->CreateContainer(Form("%s%s_NanoTree",taskname, suffix), TTree::Class(), AliAnalysisManager::kOutputContainer, output.Data());
 
     mgr->ConnectInput(taskK1, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskK1, 1, coutputK1);
     mgr->ConnectOutput(taskK1, 2, coutputK1RTree);
-    mgr->ConnectOutput(taskK1, 3, coutputK1STree);
 
     return taskK1;
 }
