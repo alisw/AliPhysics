@@ -57,23 +57,23 @@ public:
     void SetMCMotherID(const Int_t id) { fMCMotherID = id; }
 
 private:
-    Int_t fID;             // track id
-    Short_t fParticleType; // particle type
-    Char_t fCharge;        // charge
-    Int_t fLabel;          // label
-    ULong64_t fStatus;     // status
-    UInt_t fFlags;         // flags
-    Double_t fDCAxy;       // DCA xy
-    Double_t fDCAz;        // DCA z
-    Double_t fTOFNSigmaPi; // TOF n sigma pion
-    Double_t fTPCNSigmaPi; // TPC n sigma pion
-    Double_t fTOFNSigmaKa; // TOF n sigma kaon
-    Double_t fTPCNSigmaKa; // TPC n sigma kaon
-    Double_t fTOFNSigmaPr; // TOF n sigma proton
-    Double_t fTPCNSigmaPr; // TPC n sigma proton
-    Int_t fMCPDGCode;      // MC PDG code
+    Int_t fID;              // track id
+    Short_t fParticleType;  // particle type
+    Char_t fCharge;         // charge
+    Int_t fLabel;           // label
+    ULong64_t fStatus;      // status
+    UInt_t fFlags;          // flags
+    Double_t fDCAxy;        // DCA xy
+    Double_t fDCAz;         // DCA z
+    Double_t fTOFNSigmaPi;  // TOF n sigma pion
+    Double_t fTPCNSigmaPi;  // TPC n sigma pion
+    Double_t fTOFNSigmaKa;  // TOF n sigma kaon
+    Double_t fTPCNSigmaKa;  // TPC n sigma kaon
+    Double_t fTOFNSigmaPr;  // TOF n sigma proton
+    Double_t fTPCNSigmaPr;  // TPC n sigma proton
+    Int_t fMCPDGCode;       // MC PDG code
     Int_t fMCMotherPDGCode; // MC mother PDG code
-    Int_t fMCMotherID;     // MC mother id
+    Int_t fMCMotherID;      // MC mother id
 
     ClassDef(AliResoNanoTrack, 1);
 };

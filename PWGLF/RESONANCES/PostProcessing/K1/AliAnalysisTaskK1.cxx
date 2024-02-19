@@ -79,10 +79,10 @@ enum
 {                   // PDG Code
   kK1PCode = 10323, // K1(1270)+
   kK1NCode = 10313, // K1(1270)0 // will not be found
-  kPionCode = 211, // Pion+
-  kKaonCode = 321, // Kaon-
-  kK892Code = 313, // K892
-  kRhoCode = 113   // Rho0
+  kPionCode = 211,  // Pion+
+  kKaonCode = 321,  // Kaon-
+  kK892Code = 313,  // K892
+  kRhoCode = 113    // Rho0
 };
 enum
 {
@@ -125,8 +125,8 @@ enum
 class AliAnalysisTaskK1;
 
 ClassImp(AliAnalysisTaskK1) AliAnalysisTaskK1::AliAnalysisTaskK1()
-    : AliAnalysisTaskSE(), 
-      fTrackCuts{nullptr}, 
+    : AliAnalysisTaskSE(),
+      fTrackCuts{nullptr},
       fPIDResponse{nullptr},
       fList{nullptr},
       fMCArray{nullptr},
@@ -226,7 +226,7 @@ ClassImp(AliAnalysisTaskK1) AliAnalysisTaskK1::AliAnalysisTaskK1()
 //_____________________________________________________________________________
 AliAnalysisTaskK1::AliAnalysisTaskK1(const char *name, Bool_t MCcase)
     : AliAnalysisTaskSE(name),
-      fTrackCuts{nullptr}, 
+      fTrackCuts{nullptr},
       fPIDResponse{nullptr},
       fList{nullptr},
       fMCArray{nullptr},
@@ -442,7 +442,7 @@ void AliAnalysisTaskK1::UserCreateOutputObjects()
     hK1PairAsymm = new TH1D("hK1PairAsymm", "Pair asymmetry distribution of K1;Asymmetry;counts", 100, -1, 1);
     hInvMass_piK_pipi = new TH2D("hInvMass_piK_pipi", "Invariant mass distribution of piK pairs;Mass (GeV/c^{2});counts", 100, 0.6, 2.0, 200, 0, 2);
     hInvMass_piK_pika = new TH2D("hInvMass_piK_pika", "Invariant mass distribution of piK pairs;Mass (GeV/c^{2});counts", 100, 0.6, 2.0, 200, 0, 2);
-    
+
     hK1OA_cut = new TH1D("hK1OA_cut", "Opening angle distribution of K1;Opening angle (rad);counts", 100, 0, 3.14);
     hK1PairAsymm_cut = new TH1D("hK1PairAsymm_cut", "Pair asymmetry distribution of K1;Asymmetry;counts", 100, -1, 1);
     hInvMass_piK_pipi_cut = new TH2D("hInvMass_piK_pipi_cut", "Invariant mass distribution of piK pairs;Mass (GeV/c^{2});counts", 100, 0.6, 2.0, 200, 0, 2);
@@ -468,8 +468,10 @@ void AliAnalysisTaskK1::UserCreateOutputObjects()
     }
   }
   fEventCut.AddQAplotsToList(fList); // QA histograms from AliEventCuts
-  if (fIsHM) hMultiplicity = new TH1F("hMultiplicity", "", 100, 0, 0.1);
-  else hMultiplicity = new TH1F("hMultiplicity", "", 101, -1, 100);
+  if (fIsHM)
+    hMultiplicity = new TH1F("hMultiplicity", "", 100, 0, 0.1);
+  else
+    hMultiplicity = new TH1F("hMultiplicity", "", 101, -1, 100);
   fList->Add(hMultiplicity);
 
   fEMpool.resize(fBinCent.GetNbins() + 1, std::vector<eventpool>(fBinZ.GetNbins() + 1));
@@ -479,7 +481,7 @@ void AliAnalysisTaskK1::UserCreateOutputObjects()
   {
     // OpenFile(1);
     fNanoTree = new TTree("ResoNanoTree", "Resonance Nano AOD Tree");
-    fNanoEvents = new TClonesArray("AliResoNanoEvent", 1000);  // Usually 100 events are enough
+    fNanoEvents = new TClonesArray("AliResoNanoEvent", 1000); // Usually 100 events are enough
     fNanoTracks = new TClonesArray("AliResoNanoTrack", 2500); // Up to 2500 in PbPb case
     fNanoEvents->SetOwner(kTRUE);
     fNanoTracks->SetOwner(kTRUE);
@@ -495,7 +497,8 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
   if (!event) // if there is no event, return
   {
     PostData(1, fList);
-    if (fFillTree) PostData(2, fNanoTree);
+    if (fFillTree)
+      PostData(2, fNanoTree);
     AliInfo("Could not retrieve event");
     return;
   }
@@ -514,7 +517,8 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
   if (!fEvt)       // if there is no event, return
   {
     PostData(1, fList);
-    if (fFillTree) PostData(2, fNanoTree);
+    if (fFillTree)
+      PostData(2, fNanoTree);
     return;
   }
   AliInputEventHandler *inputHandler = (AliInputEventHandler *)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
@@ -614,7 +618,8 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
   if (!IsEvtSelected)
   {
     PostData(1, fList);
-    if (fFillTree) PostData(2, fNanoTree);
+    if (fFillTree)
+      PostData(2, fNanoTree);
     return;
   }
 
@@ -640,18 +645,20 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
     fCentBin = 0; // for INEL case
   if (fFillTree)
   {
-    AliResoNanoEvent *lNanoEvent = new ( (*fNanoEvents)[0] ) AliResoNanoEvent;
+    AliResoNanoEvent *lNanoEvent = new ((*fNanoEvents)[0]) AliResoNanoEvent;
     lNanoEvent->SetEventID(fEntry);
     lNanoEvent->SetCentrality(fCent);
     lNanoEvent->SetVertex(fPosPV[0], fPosPV[1], fPosPV[2]);
-    if (fIsMC) lNanoEvent->SetVertexMC(fAODMCHeader->GetVtxX(), fAODMCHeader->GetVtxY(), fAODMCHeader->GetVtxZ()); // I'm not sure if this is different from the data vertex
+    if (fIsMC)
+      lNanoEvent->SetVertexMC(fAODMCHeader->GetVtxX(), fAODMCHeader->GetVtxY(), fAODMCHeader->GetVtxZ()); // I'm not sure if this is different from the data vertex
   }
 
   bool checkTrackPools = FillTrackPools();
 
   if (checkTrackPools)
   {
-    if (!fSkipFillingHistogram) FillHistograms(); // Fill the histogram  
+    if (!fSkipFillingHistogram)
+      FillHistograms(); // Fill the histogram
   }
   if (fSetMixing && fGoodPrimaryPionArray.size())
   {
@@ -659,7 +666,8 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
   }
 
   PostData(1, fList);
-  if (fFillTree) PostData(2, fNanoTree);
+  if (fFillTree)
+    PostData(2, fNanoTree);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskK1::Terminate(Option_t *) {}
@@ -687,21 +695,20 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
     isPassSecondaryPionSelection = true;
     isPassKaonSelection = true;
     track = (AliVTrack *)fEvt->GetTrack(it);
-    if (!track) continue;
+    if (!track)
+      continue;
 
     // ---------- Track selection begin ----------
     isAcceptedTrack = false;
-    if (!fIsAOD) {
-      // ESD Case
-      isAcceptedTrack = fTrackCuts->AcceptTrack(static_cast<AliESDtrack*>(track));
-    } else if (!fIsNano) {
-      // AOD Case, not Nano
-      isAcceptedTrack = static_cast<AliAODTrack*>(track)->TestFilterBit(fFilterBit);
-    } else {
-      // Nano AOD Case
-      isAcceptedTrack = static_cast<AliNanoAODTrack*>(track)->TestFilterBit(fFilterBit);
-    }
-    if (!isAcceptedTrack) continue;
+    if (!fIsAOD) // ESD Case
+      isAcceptedTrack = fTrackCuts->AcceptTrack(static_cast<AliESDtrack *>(track));
+    else if (!fIsNano) // AOD Case, not Nano
+      isAcceptedTrack = static_cast<AliAODTrack *>(track)->TestFilterBit(fFilterBit);
+    else // Nano AOD Case
+      isAcceptedTrack = static_cast<AliNanoAODTrack *>(track)->TestFilterBit(fFilterBit);
+
+    if (!isAcceptedTrack)
+      continue;
     GetImpactParam(track, b, bCov);
 
     lDCAz = b[1];
@@ -710,16 +717,16 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
     nTOFNSigPion = GetTOFnSigma(track, AliPID::kPion);
     nTOFNSigKaon = GetTOFnSigma(track, AliPID::kKaon);
 
-    // boost up the speed
     // if the particle is not pion or kaon in 5 sigma, skip the track
-    if (TMath::Abs(nTPCNSigPion) > 5 && TMath::Abs(nTPCNSigKaon) > 5) continue;
+    if (TMath::Abs(nTPCNSigPion) > 5 && TMath::Abs(nTPCNSigKaon) > 5)
+      continue;
 
     lpT = track->Pt();
     lsigmaDCAr = (0.0026 + 0.0050 / lpT);
     lDCAr = b[0];
     lEta = track->Eta();
 
-    if (fFillQAPlot) 
+    if (fFillQAPlot)
     {
       // Fill the QA plot for the whole track. we don't know which track is it yet.
       hEtaTrack_before->Fill(lEta);
@@ -754,7 +761,7 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
       isPassSecondaryPionSelection = false;
     if (lDCAr > lsigmaDCAr * fSecondaryPionXYVertexSigmaCut)
       isPassSecondaryPionSelection = false;
-    
+
     // Selection for kaon
     if (TMath::Abs(nTPCNSigKaon) > fTPCNsigKaonCut)
       isPassKaonSelection = false;
@@ -804,12 +811,12 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
       fGoodSecondaryPionArray.push_back(it);
     if (isPassKaonSelection)
       fGoodKaonArray.push_back(it);
-    
+
     if (fFillTree)
     {
       if (isPassPrimaryPionSelection || isPassSecondaryPionSelection || isPassKaonSelection)
       {
-        AliResoNanoTrack *lNanoTrack = new ((*fNanoTracks)[ntrack++])AliResoNanoTrack;
+        AliResoNanoTrack *lNanoTrack = new ((*fNanoTracks)[ntrack++]) AliResoNanoTrack;
         lEnergy = (fIsNano) ? 0 : track->E();
         lStatus = (fIsNano) ? 0 : track->GetStatus();
         lNanoTrack->SetPxPyPzE(track->Px(), track->Py(), track->Pz(), lEnergy);
@@ -842,7 +849,7 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
           }
           lNanoTrack->SetMCMotherID(lMotherID);
           lNanoTrack->SetMCMotherPDGCode(lMotherPDG);
-          lNanoTrack->SetMCPDGCode(lPDG);        
+          lNanoTrack->SetMCPDGCode(lPDG);
         }
       }
     }
@@ -912,9 +919,8 @@ void AliAnalysisTaskK1::FillHistograms()
         isAnti = true;
       else
         isAnti = false;
-      
-      // Apply K(892) cut here.
 
+      // Apply K(892) cut here.
       // Y cut
       if (abs(vecK892.Rapidity()) > fK892RapCut)
         continue;
@@ -955,13 +961,13 @@ void AliAnalysisTaskK1::FillHistograms()
           hInvMass_piK_pipi->Fill(lK892Mass, lMassPiPi);
           hInvMass_piK_pika->Fill(lK892Mass, lMassPiKa);
         }
-        if ((lMassPiPi > fMaxK1PiPi)||(lMassPiPi < fMinK1PiPi)) 
+        if ((lMassPiPi > fMaxK1PiPi) || (lMassPiPi < fMinK1PiPi))
           continue;
-        if ((lMassPiKa > fMaxK1PiKa)||(lMassPiKa < fMinK1PiKa)) 
+        if ((lMassPiKa > fMaxK1PiKa) || (lMassPiKa < fMinK1PiKa))
           continue;
-        if ((lK1Angle > fMaxK1OA)||(lK1Angle < fMinK1OA)) 
+        if ((lK1Angle > fMaxK1OA) || (lK1Angle < fMinK1OA))
           continue;
-        if ((lK1PairAsym > fMaxPairAsym)||(lK1PairAsym < fMinPairAsym)) 
+        if ((lK1PairAsym > fMaxPairAsym) || (lK1PairAsym < fMinPairAsym))
           continue;
         if (fFillQAPlot)
         {
@@ -1026,15 +1032,15 @@ void AliAnalysisTaskK1::FillHistograms()
           lMassPiPi = tempPiPi.M();
           lMassPiKa = tempPiKa.M();
           // PiPi, PiKa mass range cut
-          if ((lMassPiPi > fMaxK1PiPi)||(lMassPiPi < fMinK1PiPi)) 
+          if ((lMassPiPi > fMaxK1PiPi) || (lMassPiPi < fMinK1PiPi))
             continue;
-          if ((lMassPiKa > fMaxK1PiKa)||(lMassPiKa < fMinK1PiKa)) 
+          if ((lMassPiKa > fMaxK1PiKa) || (lMassPiKa < fMinK1PiKa))
             continue;
-          if ((lK1Angle > fMaxK1OA)||(lK1Angle < fMinK1OA)) 
+          if ((lK1Angle > fMaxK1OA) || (lK1Angle < fMinK1OA))
             continue;
-          if ((lK1PairAsym > fMaxPairAsym)||(lK1PairAsym < fMinPairAsym)) 
+          if ((lK1PairAsym > fMaxPairAsym) || (lK1PairAsym < fMinPairAsym))
             continue;
-          
+
           if (track_primiary_pion_mix->Charge() > 0)
             isPirmaryPionPlus = true;
           else
@@ -1045,10 +1051,10 @@ void AliAnalysisTaskK1::FillHistograms()
 
           FillTHnSparse(fHn5DK1Data, {(double)binAnti, (double)sign, (double)fCent, vecK1.Pt(), vecK1.M()});
         } // mixing track loop
-      } // mixing
+      }   // mixing
 
     } // kaon loop
-  } // secondary pion loop
+  }   // secondary pion loop
 }
 void AliAnalysisTaskK1::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
 {
@@ -1073,7 +1079,7 @@ void AliAnalysisTaskK1::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
       // Y cut
       if ((mcInputTrack->Y() > fK1YCutHigh) || (mcInputTrack->Y() < fK1YCutLow))
         continue;
-      
+
       (k1PdgCode < 0) ? binAnti = kAnti : binAnti = kNormal;
       if (k1PdgCode > 0)
         sign = kK1P_GEN + (int)Fillbin * 2;
@@ -1104,7 +1110,7 @@ void AliAnalysisTaskK1::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
       // Y cut
       if ((mcInputTrack->Y() > fK1YCutHigh) || (mcInputTrack->Y() < fK1YCutLow))
         continue;
-      
+
       (k1PdgCode < 0) ? binAnti = kAnti : binAnti = kNormal;
       if (k1PdgCode > 0)
         sign = kK1P_GEN + (int)Fillbin * 2;
@@ -1133,7 +1139,7 @@ Bool_t AliAnalysisTaskK1::IsTrueK1(UInt_t primiaryID, UInt_t secondaryID, UInt_t
     // K892 daughter (secondary pion, kaon) check
     if ((TMath::Abs(MCSecondaryPion->GetPdgCode()) == kPionCode && TMath::Abs(MCKaon->GetPdgCode()) != kKaonCode))
       return kFALSE;
-    
+
     // K892 mother check
     if (MCSecondaryPion->GetMother(0) != MCKaon->GetMother(0))
       return kFALSE;
@@ -1146,11 +1152,11 @@ Bool_t AliAnalysisTaskK1::IsTrueK1(UInt_t primiaryID, UInt_t secondaryID, UInt_t
     // Pimary pion check
     if (MCPrimaryPion->GetPdgCode() != kPionCode)
       return kFALSE;
-    
+
     // Same mother check
     if (MCPrimaryPion->GetMother(0) != MCK892->GetMother(0))
       return kFALSE;
-    
+
     // K1 check
     TParticle *MCK1 = (TParticle *)fMCEvent->GetTrack(TMath::Abs(MCPrimaryPion->GetMother(0)))->Particle();
     if (TMath::Abs(MCK1->GetPdgCode()) != kK1PCode)
@@ -1171,7 +1177,7 @@ Bool_t AliAnalysisTaskK1::IsTrueK1(UInt_t primiaryID, UInt_t secondaryID, UInt_t
     // K892 mother check
     if (MCSecondaryPion->GetMother() != MCKaon->GetMother())
       return kFALSE;
-    
+
     // K892 check
     AliAODMCParticle *MCK892 = (AliAODMCParticle *)fMCArray->At(TMath::Abs(MCSecondaryPion->GetMother()));
     if (TMath::Abs(MCK892->GetPdgCode()) != kK892Code)
@@ -1180,11 +1186,11 @@ Bool_t AliAnalysisTaskK1::IsTrueK1(UInt_t primiaryID, UInt_t secondaryID, UInt_t
     // Pimary pion check
     if (MCPrimaryPion->GetPdgCode() != kPionCode)
       return kFALSE;
-    
+
     // Same mother check
     if (MCPrimaryPion->GetMother() != MCK892->GetMother())
       return kFALSE;
-    
+
     // K1 check
     AliAODMCParticle *MCK1 = (AliAODMCParticle *)fMCArray->At(TMath::Abs(MCPrimaryPion->GetMother()));
     if (TMath::Abs(MCK1->GetPdgCode()) != kK1PCode)
@@ -1193,37 +1199,42 @@ Bool_t AliAnalysisTaskK1::IsTrueK1(UInt_t primiaryID, UInt_t secondaryID, UInt_t
     return kTRUE;
   }
 }
-THnSparseD *AliAnalysisTaskK1::CreateTHnSparse(TString name, TString title, Int_t ndim, std::vector<TAxis> bins, Option_t *opt) {
-    TArrayD xmin(ndim), xmax(ndim);
-    TArrayI nbins(ndim);
-    std::vector<TArrayD> binnings;
+THnSparseD *AliAnalysisTaskK1::CreateTHnSparse(TString name, TString title, Int_t ndim, std::vector<TAxis> bins, Option_t *opt)
+{
+  TArrayD xmin(ndim), xmax(ndim);
+  TArrayI nbins(ndim);
+  std::vector<TArrayD> binnings;
 
-    for (int idim = 0; idim < ndim; ++idim) {
-        const TAxis& axis = bins[idim];
-        nbins[idim] = axis.GetNbins();
-        xmin[idim] = axis.GetXmin();
-        xmax[idim] = axis.GetXmax();
-        TArrayD binEdges(nbins[idim] + 1);
-        for (int i = 0; i <= nbins[idim]; ++i) {
-            binEdges[i] = axis.GetBinLowEdge(i + 1);
-        }
-        binnings.push_back(binEdges);
+  for (int idim = 0; idim < ndim; ++idim)
+  {
+    const TAxis &axis = bins[idim];
+    nbins[idim] = axis.GetNbins();
+    xmin[idim] = axis.GetXmin();
+    xmax[idim] = axis.GetXmax();
+    TArrayD binEdges(nbins[idim] + 1);
+    for (int i = 0; i <= nbins[idim]; ++i)
+    {
+      binEdges[i] = axis.GetBinLowEdge(i + 1);
     }
-    THnSparseD* hsparse = new THnSparseD(name.Data(), title.Data(), ndim, nbins.GetArray(), xmin.GetArray(), xmax.GetArray());
+    binnings.push_back(binEdges);
+  }
+  THnSparseD *hsparse = new THnSparseD(name.Data(), title.Data(), ndim, nbins.GetArray(), xmin.GetArray(), xmax.GetArray());
 
-    // Set the bin edges for each axis
-    for (int id = 0; id < ndim; ++id) {
-        hsparse->GetAxis(id)->Set(nbins[id], binnings[id].GetArray());
-        TString axisName = bins[id].GetName();
-        hsparse->GetAxis(id)->SetName(axisName.Data());
-    }
-    TString optionstring(opt);
-    optionstring.ToLower();
-    if (optionstring.Contains("s")) {
-        hsparse->Sumw2();
-    }
+  // Set the bin edges for each axis
+  for (int id = 0; id < ndim; ++id)
+  {
+    hsparse->GetAxis(id)->Set(nbins[id], binnings[id].GetArray());
+    TString axisName = bins[id].GetName();
+    hsparse->GetAxis(id)->SetName(axisName.Data());
+  }
+  TString optionstring(opt);
+  optionstring.ToLower();
+  if (optionstring.Contains("s"))
+  {
+    hsparse->Sumw2();
+  }
 
-    return hsparse;
+  return hsparse;
 }
 Long64_t AliAnalysisTaskK1::FillTHnSparse(THnSparse *h, std::vector<Double_t> x, Double_t w)
 {
@@ -1338,17 +1349,19 @@ void AliAnalysisTaskK1::GetImpactParam(AliVTrack *track, Float_t p[2], Float_t c
   else
     track->GetImpactParameters(p, cov);
 }
-Int_t AliAnalysisTaskK1::trackSelection(AliVTrack* track, Float_t& nTPCNSigPion, Float_t& nTPCNSigKaon, Float_t lpT, Float_t lDCAz, Float_t lDCAr, Float_t lEta) {
+Int_t AliAnalysisTaskK1::trackSelection(AliVTrack *track, Float_t &nTPCNSigPion, Float_t &nTPCNSigKaon, Float_t lpT, Float_t lDCAz, Float_t lDCAr, Float_t lEta)
+{
   // We have 3 cases for track selection: primary pion, secondary pion, kaon
   // the return value will be the BIT combination of the track type
   // BIT(1) : kPrimaryPionPass
   // BIT(2) : kSecondaryPionPass
   // BIT(3) : kKaonPass
-  
+
   // Initialize the output value for all pass at the beggining
   Int_t result = 0;
 
-  if (!track) return result;
+  if (!track)
+    return result;
 
   if (TMath::Abs(nTPCNSigPion) < fTPCNsigPrimaryPionCut)
     result |= kPrimaryPionPass;
@@ -1359,6 +1372,4 @@ Int_t AliAnalysisTaskK1::trackSelection(AliVTrack* track, Float_t& nTPCNSigPion,
   Double_t lsigmaDCAr = (0.0026 + 0.0050 / lpT);
   if (lDCAr > lsigmaDCAr * fPrimaryPionXYVertexSigmaCut)
     result |= kPrimaryPionPass;
-
-
 }
