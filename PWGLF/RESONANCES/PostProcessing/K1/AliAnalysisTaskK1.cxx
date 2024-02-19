@@ -335,7 +335,38 @@ AliAnalysisTaskK1::~AliAnalysisTaskK1()
 //___________________________________________________________________
 void AliAnalysisTaskK1::SetCutOpen()
 {
-  // Set cut open
+  // Set the cut values for the K1 analysis to the loosest values
+  SetMaxTPCnSigPrimaryPion(5);
+  SetMaxTOFnSigPrimaryPion(-999);
+  SetMaxEtaPrimaryPion(0.8);
+  SetMaxVertexZPrimaryPion(999);
+  SetMaxVertexXYsigPrimaryPion(999);
+
+  SetMaxTPCnSigSecondaryPion(5);
+  SetMaxTOFnSigTOFSecondaryPion(-999);
+  SetMaxEtaSecondaryPion(0.8);
+  SetMaxVertexZSecondaryPion(999);
+  SetMaxVertexXYsigSecondaryPion(999);
+
+  SetMaxTPCnSigKaon(5);
+  SetMaxTOFnSigKaon(-999);
+  SetMaxEtaKaon(0.8);
+  SetMaxVertexZKaon(999);
+  SetMaxVertexXYsigKaon(999);
+
+  SetMaxMassWindowK892(999);
+  SetMaxRapidityCutK892(1);
+
+  SetK1RapidityCutHigh(1);
+  SetK1RapidityCutLow(-1);
+  SetK1OAMin(0);
+  SetK1OAMax(999);
+  SetK1PairAssymMin(-1);
+  SetK1PairAssymMax(1);
+  SetK1PiPiMassCutMin(0);
+  SetK1PiPiMassCutMax(999);
+  SetK1PiKaMassCutMin(0);
+  SetK1PiKaMassCutMax(999);
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskK1::UserCreateOutputObjects()

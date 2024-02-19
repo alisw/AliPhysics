@@ -59,6 +59,7 @@ AliAnalysisTaskK1 *AddTaskK1(const char *taskname = "K1", const char *option = "
     // Fill Tree
     if (foption.Contains("Tree"))
     {
+        taskK1->SetCutOpen();
         taskK1->SetFillTree(true);
         std::cout << "Fill Tree" << std::endl;
     }
