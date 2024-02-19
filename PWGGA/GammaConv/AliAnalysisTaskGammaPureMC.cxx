@@ -85,6 +85,8 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fHistPtYLambda(nullptr),
   fHistPtYKPl(nullptr),
   fHistPtYKMi(nullptr),
+  fHistPtYGamma(nullptr),
+  fHistPtYDirGamma(nullptr),
   fHistPtYPi0FromEta(nullptr),
   fHistPtYPi0FromLambda(nullptr),
   fHistPtYPi0FromK(nullptr),
@@ -141,6 +143,16 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fHistPtV0MultPi0GG(nullptr),
   fHistPtV0MultEtaGG(nullptr),
   fHistPtV0MultEtaPrimeGG(nullptr),
+  fHistPtV0MultPi0GGPrompt(nullptr),
+  fHistPtV0MultPi0GGFromEta(nullptr),
+  fHistPtV0MultPi0GGFromOmega(nullptr),
+  fHistPtV0MultPi0GGFromRest(nullptr),
+  fHistPtV0MultPi0GGFromRho(nullptr),
+  fHistPtV0MultEtaGGPrompt(nullptr),
+  fHistPtV0MultEtaGGFromEtaPrim(nullptr),
+  fHistPtV0MultEtaGGFromRest(nullptr),
+  fHistPtV0MultGamma(nullptr),
+  fHistPtV0MultDirGamma(nullptr),
   fHistPi0PtJetPt(nullptr),
   fHistEtaPtJetPt(nullptr),
   fHistPi0ZJetPt(nullptr),
@@ -209,6 +221,8 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   fHistPtYLambda(nullptr),
   fHistPtYKPl(nullptr),
   fHistPtYKMi(nullptr),
+  fHistPtYGamma(nullptr),
+  fHistPtYDirGamma(nullptr),
   fHistPtYPi0FromEta(nullptr),
   fHistPtYPi0FromLambda(nullptr),
   fHistPtYPi0FromK(nullptr),
@@ -265,6 +279,16 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   fHistPtV0MultPi0GG(nullptr),
   fHistPtV0MultEtaGG(nullptr),
   fHistPtV0MultEtaPrimeGG(nullptr),
+  fHistPtV0MultPi0GGPrompt(nullptr),
+  fHistPtV0MultPi0GGFromEta(nullptr),
+  fHistPtV0MultPi0GGFromOmega(nullptr),
+  fHistPtV0MultPi0GGFromRest(nullptr),
+  fHistPtV0MultPi0GGFromRho(nullptr),
+  fHistPtV0MultEtaGGPrompt(nullptr),
+  fHistPtV0MultEtaGGFromEtaPrim(nullptr),
+  fHistPtV0MultEtaGGFromRest(nullptr),
+  fHistPtV0MultGamma(nullptr),
+  fHistPtV0MultDirGamma(nullptr),
   fHistPi0PtJetPt(nullptr),
   fHistEtaPtJetPt(nullptr),
   fHistPi0ZJetPt(nullptr),
@@ -424,6 +448,14 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
   fHistPtYKMi              		= new TH2F("Pt_Y_KMi","Pt_Y_KMi", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYKMi->Sumw2();
   fOutputContainer->Add(fHistPtYKMi);
+
+  fHistPtYGamma              		= new TH2F("Pt_Y_Gamma","Pt_Y_Gamma", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+  fHistPtYGamma->Sumw2();
+  fOutputContainer->Add(fHistPtYGamma);
+
+  fHistPtYDirGamma              		= new TH2F("Pt_Y_GammaDir","Pt_Y_GammaDir", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
+  fHistPtYDirGamma->Sumw2();
+  fOutputContainer->Add(fHistPtYDirGamma);
 
   fHistPtYPi0FromEta       		    = new TH2F("Pt_Y_Pi0FromEta","Pt_Y_Pi0FromEta", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYPi0FromEta->Sumw2();
@@ -668,6 +700,14 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
     fHistPtV0MultEtaGGFromRest      = new TH2F("Pt_V0Mult_EtaFromGG_FromRest","Pt_V0Mult_EtaFromGG_FromRest", fMaxpT*10, 0., fMaxpT, 500, -0.5, 500 - 0.5);
     fHistPtV0MultEtaGGFromRest->Sumw2();
     fOutputContainer->Add(fHistPtV0MultEtaGGFromRest);
+
+    fHistPtV0MultGamma      = new TH2F("Pt_V0Mult_Gamma","Pt_V0Mult_Gamma", fMaxpT*10, 0., fMaxpT, 500, -0.5, 500 - 0.5);
+    fHistPtV0MultGamma->Sumw2();
+    fOutputContainer->Add(fHistPtV0MultGamma);
+
+    fHistPtV0MultDirGamma      = new TH2F("Pt_V0Mult_GammaDir","Pt_V0Mult_GammaDir", fMaxpT*10, 0., fMaxpT, 500, -0.5, 500 - 0.5);
+    fHistPtV0MultDirGamma->Sumw2();
+    fOutputContainer->Add(fHistPtV0MultDirGamma);
 
   }
 
@@ -941,6 +981,24 @@ int AliAnalysisTaskGammaPureMC::ReturnFeedDownBinFromPDG(int pdgcode) {
 }
 
 //________________________________________________________________________
+bool AliAnalysisTaskGammaPureMC::isPhotonFromDecay(int pdgCodeMother){
+  switch (std::abs(pdgCodeMother))
+  {
+    case 111:     // pi0
+    case 221:     // eta
+    case 223:     // omega
+    case 331:     // eta prime
+    case 333:     // phi
+    case 113:     // rho 0
+    case 213:     // rho+-
+      return true;
+    default:
+      return false;
+  }
+
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
 {
   // Loop over all primary MC particle
@@ -965,7 +1023,7 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
     if (hasMother)
       absmotherpdg = TMath::Abs(motherParticle->PdgCode());
 
-    const std::array<int, 19> kAcceptPdgCodes = {kPdgPi0, kPdgEta, kPdgEtaPrime, kPdgOmega, kPdgPiPlus, kPdgRho0, kPdgPhi, kPdgJPsi, kPdgSigma0, kPdgK0Short, kPdgDeltaPlus, kPdgDeltaPlusPlus, kPdgDeltaMinus, kPdgDelta0, kPdgRhoPlus, kPdgKStar, kPdgK0Long, kPdgLambda, kPdgKPlus};
+    const std::array<int, 20> kAcceptPdgCodes = {kPdgPi0, kPdgEta, kPdgEtaPrime, kPdgOmega, kPdgPiPlus, kPdgRho0, kPdgPhi, kPdgJPsi, kPdgSigma0, kPdgK0Short, kPdgDeltaPlus, kPdgDeltaPlusPlus, kPdgDeltaMinus, kPdgDelta0, kPdgRhoPlus, kPdgKStar, kPdgK0Long, kPdgLambda, kPdgKPlus, kGamma};
     if(std::find(kAcceptPdgCodes.begin(), kAcceptPdgCodes.end(), TMath::Abs(particle->PdgCode())) ==  kAcceptPdgCodes.end()) continue;  // species not supported
 
     if (!(TMath::Abs(particle->E()-particle->Pz())>0.)) continue;
@@ -1168,6 +1226,32 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
     case kPdgKMinus:
       fHistPtYKMi->Fill(particle->Pt(), particle->Y());
       break;
+    case kGamma:
+      bool isDecayPhoton = isPhotonFromDecay(absmotherpdg);
+      fHistPtYGamma->Fill(particle->Pt(), particle->Y());
+      if(!isDecayPhoton){ // only direct photons
+        fHistPtYDirGamma->Fill(particle->Pt(), particle->Y());
+      }
+      if(fDoMultStudies){
+        if(std::abs(particle->Y()) <= 0.8){
+          // For gammas, also check grandmother for secondary
+          bool isSecondaryGrandmother = false;
+          if (motherParticle->GetMother()>-1){
+            hasMother                 = kTRUE;
+            AliVParticle* grandMotherParticle = (AliVParticle *)fMCEvent->GetTrack(motherParticle->GetMother());
+            isSecondaryGrandmother = IsSecondary(grandMotherParticle);
+          }
+          if(!IsSecondary(motherParticle) && !isSecondaryGrandmother){
+            if((fDoMultStudies == 2 && fIsEvtINELgtZERO == true) || fDoMultStudies == 1){ // select only INEL>0 events for multiplicity
+              fHistPtV0MultGamma->Fill(particle->Pt(), fNTracksInV0Acc);
+              bool isDecayPhoton = isPhotonFromDecay(absmotherpdg);
+              if(!isDecayPhoton){ // only direct photons
+                fHistPtV0MultDirGamma->Fill(particle->Pt(), fNTracksInV0Acc);
+              }                  
+            }
+          }
+        }
+      }
     }
 
     // from here on, we are only intested in particles considered primaries in ALICE
