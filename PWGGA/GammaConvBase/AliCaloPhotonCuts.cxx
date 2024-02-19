@@ -9208,7 +9208,10 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           } else {
             energy /= FunctionNL_kSDM(energy, 0.979235, -3.17131, -0.464198);
             energy /= FunctionNL_DExp(energy, 1.0363369, 0.5659247074, -2.7818482972, 1.0437012864, 0.3620283273, -2.8321172480);
-            energy /= 1.0075;
+            energy /= 1.0025;
+            // this is a possible update (Feb. 2024). Possibly does not affect anything (shift is below 0.3%)
+            energy /= FunctionNL_DExp(energy, 1.0348082555, 0.6062561930, -2.5044324138, 1.0367244899, 0.7196295425, -2.3774295628);
+            energy /= 1.0025;
             if(cluster->GetNCells() == 1){ // different fine tuning for 1 cell clusters
               energy /= 0.99;
             }
