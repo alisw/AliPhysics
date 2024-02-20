@@ -667,7 +667,7 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
   }
 
   hMultiplicity->Fill(fCent); // multiplicity distribution for basic event QA
-  fCustomEventID = ((unsigned long)(event->GetBunchCrossNumber()) << 32) + event->GetTimeStamp();
+  fCustomEventID = (fIsNano) ? fEntry : ((unsigned long)(event->GetBunchCrossNumber()) << 32) + event->GetTimeStamp();
 
   if (fIsMC)
   {
