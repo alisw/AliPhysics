@@ -108,6 +108,7 @@ set(SRCS
   PostProcessing/K1/AliAnalysisTaskK1.cxx
   PostProcessing/K1/AliResoNanoEvent.cxx
   PostProcessing/K1/AliResoNanoTrack.cxx
+  PostProcessing/K1/AliResoNanoMCParticle.cxx
   PostProcessing/Sigma1385/AliAnalysisTaskSigma1385PM.cxx
   PostProcessing/Sigma1385/AliAnalysisTaskTrackMixer.cxx
   PostProcessing/Xi1820/AliAnalysisTaskXi1820BH.cxx
