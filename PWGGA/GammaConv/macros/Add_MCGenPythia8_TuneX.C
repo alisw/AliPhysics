@@ -5,7 +5,8 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
                                 Int_t kProcess,
                                 Double_t ptHardMin,
                                 Double_t ptHardMax,
-                                Bool_t longlived
+                                Bool_t longlived,
+                                TString specialTune
                             );
 
 AliGenerator* Add_MCGenPythia8_TuneX(   Float_t e_cms       = 2760., 
@@ -15,7 +16,8 @@ AliGenerator* Add_MCGenPythia8_TuneX(   Float_t e_cms       = 2760.,
                                         Int_t kProcess      = 0, 
                                         Double_t ptHardMin  = 0, 
                                         Double_t ptHardMax  = 1.,
-                                        Bool_t longlived = kFALSE
+                                        Bool_t longlived    = kFALSE,
+                                        TString specialTune = ""
 
                                     ) {
     // Add Pythia 8 generator: 
@@ -27,7 +29,7 @@ AliGenerator* Add_MCGenPythia8_TuneX(   Float_t e_cms       = 2760.,
     gSystem->Load("liblhapdf");
     
     AliGenerator *genP  = NULL;
-    genP                = CreatePythia8Gen(e_cms, tune, kCR, kF, kProcess, ptHardMin, ptHardMax,longlived);
+    genP                = CreatePythia8Gen(e_cms, tune, kCR, kF, kProcess, ptHardMin, ptHardMax,longlived, specialTune);
     
     return genP;
 }
@@ -39,7 +41,8 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
                                 Int_t kProcess, 
                                 Double_t ptHardMin, 
                                 Double_t ptHardMax,
-                                Bool_t longlived
+                                Bool_t longlived,
+                                TString specialTune
                             ) {
     
     gSystem->Load("libpythia6");
@@ -57,6 +60,9 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
 
     std::cout << "*****************************************************************" << std::endl;
     std::cout << "Process: "<< kProcess << "\t Color reconnection: "<< kCR << "\t Tune: " << tune << "\t kFactor: "<< kF <<  std::endl;
+    if(!(specialTune.EqualTo("") || specialTune.EqualTo("Monash"))){
+        std::cout << ">>> Running with special settings (not standard Monash tune): " << specialTune << std::endl;
+    }
     if (kProcess == 1){
         std::cout << "pTHardMin: "<< ptHardMin << "\t ptHardMax: "<< ptHardMax <<  std::endl;
     }	
@@ -101,21 +107,105 @@ AliGenerator* CreatePythia8Gen( Float_t e_cms,
     // Event list
     gener->SetEventListRange(-1, -1);
 
-    // setting tune
-    std::cout << "setting tune: " << tune << std::endl;
-    gener->SetTune(tune);
-// 	(AliPythia8::Instance())->ReadString(Form("Tune:pp = %i", tune));//CR
-
     //random seed based on time
     (AliPythia8::Instance())->ReadString("Random:setSeed = on");
     (AliPythia8::Instance())->ReadString("Random:seed = 0");
 
-    if(kCR)             
-        (AliPythia8::Instance())->ReadString("ColourReconnection:reconnect = on");
-    else
-        (AliPythia8::Instance())->ReadString("ColourReconnection:reconnect = off");
-        
-    (AliPythia8::Instance())->ReadString(Form("MultipartonInteractions:kFactor = %i", kF));
+    if(specialTune.EqualTo("Junctions_Mode2")){
+        //Paper reference: https://arxiv.org/pdf/1505.01681.pdf ("mode 0")
+        //===========================================================================
+        cout << "running with junctions\n";
+        (AliPythia8::Instance())->ReadString("StringPT:sigma = 0.335");
+        (AliPythia8::Instance())->ReadString("StringZ:aLund = 0.36");
+        (AliPythia8::Instance())->ReadString("StringZ:bLund = 0.56");
+        (AliPythia8::Instance())->ReadString("StringFlav:probQQtoQ = 0.078");
+        (AliPythia8::Instance())->ReadString("StringFlav:ProbStoUD = 0.2");
+        (AliPythia8::Instance())->ReadString("StringFlav:probQQ1toQQ0join = 0.0275,0.0275,0.0275,0.0275");
+        //===========================================================================
+        (AliPythia8::Instance())->ReadString("MultiPartonInteractions:pT0Ref = 2.15");
+        //===========================================================================
+        (AliPythia8::Instance())->ReadString("BeamRemnants:remnantMode = 1");
+        (AliPythia8::Instance())->ReadString("BeamRemnants:saturation = 5");
+        //===========================================================================
+        (AliPythia8::Instance())->ReadString("ColourReconnection:mode = 1");
+        (AliPythia8::Instance())->ReadString("ColourReconnection:allowDoubleJunRem = off");
+        (AliPythia8::Instance())->ReadString("ColourReconnection:m0 = 0.3");
+        (AliPythia8::Instance())->ReadString("ColourReconnection:allowJunctions = on");
+        (AliPythia8::Instance())->ReadString("ColourReconnection:junctionCorrection = 1.20");
+        (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationMode = 2");
+        (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationPar = 0.18");
+
+    //==============================================================================
+    // Standard Monash tune
+    } else if (specialTune.EqualTo("Ropes")) {
+        //===========================================================================
+        (AliPythia8::Instance())->ReadString("MultiPartonInteractions:pT0Ref = 2.15");
+        //===========================================================================
+        (AliPythia8::Instance())->ReadString("BeamRemnants:remnantMode = 1");
+        (AliPythia8::Instance())->ReadString("BeamRemnants:saturation = 5");
+        //===========================================================================
+        (AliPythia8::Instance())->ReadString("ColourReconnection:mode = 1");
+        (AliPythia8::Instance())->ReadString("ColourReconnection:allowDoubleJunRem = off");
+        (AliPythia8::Instance())->ReadString("ColourReconnection:m0 = 0.3");
+        (AliPythia8::Instance())->ReadString("ColourReconnection:allowJunctions = on");
+        (AliPythia8::Instance())->ReadString("ColourReconnection:junctionCorrection = 1.2");
+        (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationMode = 2");
+        (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationPar = 0.18");
+        //===========================================================================
+        (AliPythia8::Instance())->ReadString("Ropewalk:RopeHadronization = on");
+        (AliPythia8::Instance())->ReadString("Ropewalk:doShoving = on");
+        (AliPythia8::Instance())->ReadString("Ropewalk:tInit = 1.5"); // Propagation time
+        (AliPythia8::Instance())->ReadString("Ropewalk:deltat = 0.05");
+        (AliPythia8::Instance())->ReadString("Ropewalk:tShove 0.1");
+        (AliPythia8::Instance())->ReadString("Ropewalk:gAmplitude = 0."); // Set shoving strength to 0 explicitly
+        (AliPythia8::Instance())->ReadString("Ropewalk:doFlavour = on");
+        (AliPythia8::Instance())->ReadString("Ropewalk:r0 = 0.5");
+        (AliPythia8::Instance())->ReadString("Ropewalk:m0 = 0.2");
+        (AliPythia8::Instance())->ReadString("Ropewalk:beta = 0.1");
+        //===========================================================================
+        // Enabling setting of vertex information.
+        (AliPythia8::Instance())->ReadString("PartonVertex:setVertex = on");
+        (AliPythia8::Instance())->ReadString("PartonVertex:protonRadius = 0.7");
+        (AliPythia8::Instance())->ReadString("PartonVertex:emissionWidth = 0.1");
+    } else if (specialTune.EqualTo("Shoving")){
+        // This is a shoving setting acquired from Bierlich, Christian 1901.07447 and 1710.09725
+        //===========================================================================
+        (AliPythia8::Instance())->ReadString("SoftQCD:nonDiffractive = on");
+        (AliPythia8::Instance())->ReadString("SoftQCD:singleDiffractive = on");
+        (AliPythia8::Instance())->ReadString("SoftQCD:doubleDiffractive = on");
+        (AliPythia8::Instance())->ReadString("Ropewalk:RopeHadronization = on");
+        (AliPythia8::Instance())->ReadString("Ropewalk:doShoving = on");
+        (AliPythia8::Instance())->ReadString("Ropewalk:doFlavour = off");
+        (AliPythia8::Instance())->ReadString("Ropewalk:rCutOff = 10.0");
+        (AliPythia8::Instance())->ReadString("Ropewalk:limitMom = on");
+        (AliPythia8::Instance())->ReadString("Ropewalk:pTcut = 2");
+        (AliPythia8::Instance())->ReadString("Ropewalk:r0 = 0.41");
+        (AliPythia8::Instance())->ReadString("Ropewalk:m0 = 0.2");
+        (AliPythia8::Instance())->ReadString("Ropewalk:gAmplitude = 10");
+        (AliPythia8::Instance())->ReadString("Ropewalk:gExponent = 1.0");
+        (AliPythia8::Instance())->ReadString("Ropewalk:deltat = 0.1");
+        (AliPythia8::Instance())->ReadString("Ropewalk:tShove = 1.");
+        (AliPythia8::Instance())->ReadString("Ropewalk:deltay = 0.1");
+        (AliPythia8::Instance())->ReadString("Ropewalk:tInit = 1.5");
+        // Enabling setting of vertex information.
+        (AliPythia8::Instance())->ReadString("PartonVertex:setVertex = on");
+        (AliPythia8::Instance())->ReadString("PartonVertex:protonRadius = 0.7");
+        (AliPythia8::Instance())->ReadString("PartonVertex:emissionWidth = 0.1");
+    } else if(specialTune.EqualTo("") || specialTune.EqualTo("Monash")){
+        // setting tune
+        std::cout << "setting tune: " << tune << std::endl;
+        gener->SetTune(tune);
+        if(kCR){            
+            (AliPythia8::Instance())->ReadString("ColourReconnection:reconnect = on");
+        } else {
+            (AliPythia8::Instance())->ReadString("ColourReconnection:reconnect = off");
+        }
+            
+        (AliPythia8::Instance())->ReadString(Form("MultipartonInteractions:kFactor = %i", kF));
+    } else {
+        std::cout << Form("specialTune %s not found... returning\n", specialTune.Data());
+        return nullptr;
+    }
     
     (AliPythia8::Instance())->SetDecayLonglived();
 
