@@ -1730,7 +1730,7 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
   } // end TPC - FMD
   else if(fAnalType == eFMDAFMDC){
     // Int_t iTrackBin_fmdAfmdC[] = {48, 72, 10};
-    Int_t iTrackBin_fmdAfmdC[] = {24, 20, sizePvzbins, sizeOfSamples};
+    Int_t iTrackBin_fmdAfmdC[] = {48, 20, sizePvzbins, sizeOfSamples};
     Int_t nTrackBin_fmdAfmdC = sizeof(iTrackBin_fmdAfmdC) / sizeof(Int_t);
 
     // FMD only for unidentified
