@@ -518,7 +518,7 @@ void AliAnalysisTaskK1::UserCreateOutputObjects()
   {
     // OpenFile(1);
     fNanoTree = new TTree("ResoNanoTree", "Resonance Nano AOD Tree");
-    fNanoEvents = new TClonesArray("AliResoNanoEvent", 100); // Usually 100 events are enough
+    fNanoEvents = new TClonesArray("AliResoNanoEvent", 100);  // Usually 100 events are enough
     fNanoTracks = new TClonesArray("AliResoNanoTrack", 2500); // Up to 2500 in PbPb case
     fNanoEvents->SetOwner(kTRUE);
     fNanoTracks->SetOwner(kTRUE);
@@ -1126,9 +1126,9 @@ void AliAnalysisTaskK1::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
         isK892 = true;
       if (fIsPrimaryMC && !mcInputTrack->IsPrimary())
         continue;
-      
+
       if (isK1) // Fill histogram for K1
-      { 
+      {
         // Y cut
         if ((mcInputTrack->Y() > fK1YCutHigh) || (mcInputTrack->Y() < fK1YCutLow))
           continue;
