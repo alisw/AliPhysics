@@ -49,6 +49,7 @@
 #include <AliNanoAODTrack.h>
 #include "AliResoNanoEvent.h"
 #include "AliResoNanoTrack.h"
+#include "AliResoNanoMCParticle.h"
 
 #include "AliAODv0.h"
 #include "AliAnalysisTaskK1.h"
@@ -135,6 +136,7 @@ ClassImp(AliAnalysisTaskK1) AliAnalysisTaskK1::AliAnalysisTaskK1()
       fNanoTree{nullptr},
       fNanoEvents{nullptr},
       fNanoTracks{nullptr},
+      fNanoMCParticles{nullptr},
       fHn5DK1Data{nullptr},
       fHn5DK1MC{nullptr},
       fHn2DEvtNorm{nullptr},
@@ -189,6 +191,7 @@ ClassImp(AliAnalysisTaskK1) AliAnalysisTaskK1::AliAnalysisTaskK1()
       fPosPV{},
       fMagField{0},
       fCent{-1},
+      fCustomEventID{0},
       fnMix{10},
       fCentBin{-1},
       fZbin{-1},
@@ -235,6 +238,7 @@ AliAnalysisTaskK1::AliAnalysisTaskK1(const char *name, Bool_t MCcase)
       fNanoTree{nullptr},
       fNanoEvents{nullptr},
       fNanoTracks{nullptr},
+      fNanoMCParticles{nullptr},
       fHn5DK1Data{nullptr},
       fHn5DK1MC{nullptr},
       fHn2DEvtNorm{nullptr},
@@ -289,6 +293,7 @@ AliAnalysisTaskK1::AliAnalysisTaskK1(const char *name, Bool_t MCcase)
       fPosPV{},
       fMagField{0},
       fCent{-1},
+      fCustomEventID{0},
       fnMix{10},
       fCentBin{-1},
       fZbin{-1},
@@ -331,6 +336,7 @@ AliAnalysisTaskK1::~AliAnalysisTaskK1()
   delete fNanoTree;
   delete fNanoEvents;
   delete fNanoTracks;
+  delete fNanoMCParticles;
 }
 //___________________________________________________________________
 void AliAnalysisTaskK1::SetCutOpen()
@@ -512,12 +518,18 @@ void AliAnalysisTaskK1::UserCreateOutputObjects()
   {
     // OpenFile(1);
     fNanoTree = new TTree("ResoNanoTree", "Resonance Nano AOD Tree");
-    fNanoEvents = new TClonesArray("AliResoNanoEvent", 1000); // Usually 100 events are enough
+    fNanoEvents = new TClonesArray("AliResoNanoEvent", 100);  // Usually 100 events are enough
     fNanoTracks = new TClonesArray("AliResoNanoTrack", 2500); // Up to 2500 in PbPb case
     fNanoEvents->SetOwner(kTRUE);
     fNanoTracks->SetOwner(kTRUE);
     fNanoTree->Branch("ResoNanoEvent", &fNanoEvents);
     fNanoTree->Branch("ResoNanoTrack", &fNanoTracks);
+    if (fIsMC)
+    {
+      fNanoMCParticles = new TClonesArray("AliResoNanoMCParticle", 5000);
+      fNanoMCParticles->SetOwner(kTRUE);
+      fNanoTree->Branch("ResoNanoMCParticles", &fNanoMCParticles);
+    }
     PostData(2, fNanoTree);
   }
 }
@@ -655,6 +667,7 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
   }
 
   hMultiplicity->Fill(fCent); // multiplicity distribution for basic event QA
+  fCustomEventID = ((unsigned long)(event->GetBunchCrossNumber()) << 32) + event->GetTimeStamp();
 
   if (fIsMC)
   {
@@ -677,7 +690,7 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
   if (fFillTree)
   {
     AliResoNanoEvent *lNanoEvent = new ((*fNanoEvents)[0]) AliResoNanoEvent;
-    lNanoEvent->SetEventID(fEntry);
+    lNanoEvent->SetEventID(fCustomEventID);
     lNanoEvent->SetCentrality(fCent);
     lNanoEvent->SetVertex(fPosPV[0], fPosPV[1], fPosPV[2]);
     if (fIsMC)
@@ -718,7 +731,7 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
   Double_t nTPCNSigPion{0}, nTPCNSigKaon{0}, nTOFNSigPion{0}, nTOFNSigKaon{0}, lDCAz{0}, lpT{0}, lsigmaDCAr{0}, lDCAr{0}, lEta{0}, lEnergy{0}, lStatus{0};
   Bool_t isPassPrimaryPionSelection{false}, isPassSecondaryPionSelection{false}, isPassKaonSelection{false};
   Bool_t isAcceptedTrack{false};
-  Int_t lMotherID{0}, lMotherPDG{0}, lPDG{0};
+  Int_t lMotherID{-999}, lMotherPDG{-999}, lPDG{-999};
 
   for (UInt_t it = 0; it < nTracks; it++)
   {
@@ -852,11 +865,11 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
         lStatus = (fIsNano) ? 0 : track->GetStatus();
         lNanoTrack->SetPxPyPzE(track->Px(), track->Py(), track->Pz(), lEnergy);
         lNanoTrack->SetID(track->GetID());
+        lNanoTrack->SetEventID(fCustomEventID);
         lNanoTrack->SetLabel(track->GetLabel());
         lNanoTrack->SetCharge(track->Charge());
         lNanoTrack->SetFlags(track->GetFlag());
         lNanoTrack->SetStatus(lStatus);
-        lNanoTrack->SetLabel(track->GetLabel());
         lNanoTrack->SetDCAxy(b[0]);
         lNanoTrack->SetDCAz(b[1]);
         lNanoTrack->SetTPCNSigmaPi(nTPCNSigPion);
@@ -878,10 +891,10 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
             lMotherPDG = static_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(lMotherID)))->GetPdgCode();
             lPDG = static_cast<AliAODMCParticle *>(fMCArray->At(TMath::Abs(track->GetLabel())))->GetPdgCode();
           }
-          lNanoTrack->SetMCMotherID(lMotherID);
-          lNanoTrack->SetMCMotherPDGCode(lMotherPDG);
-          lNanoTrack->SetMCPDGCode(lPDG);
         }
+        lNanoTrack->SetMCMotherID(lMotherID);
+        lNanoTrack->SetMCMotherPDGCode(lMotherPDG);
+        lNanoTrack->SetMCPDGCode(lPDG);
       }
     }
   }
@@ -1091,7 +1104,8 @@ void AliAnalysisTaskK1::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
 {
   int sign = kAllType;
   int binAnti = 0;
-  TLorentzVector vecPart1, vecPart2;
+  bool isK892{false}, isK1{false};
+
   if (!fIsAOD)
   {
     for (Int_t it = 0; it < fMCEvent->GetNumberOfPrimaries(); it++)
@@ -1102,22 +1116,51 @@ void AliAnalysisTaskK1::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
         Error("UserExec", "Could not receive MC track %d", it);
         continue;
       }
+      isK892 = false;
+      isK1 = false;
+
       Int_t k1PdgCode = mcInputTrack->GetPdgCode();
-      if (TMath::Abs(k1PdgCode) != kK1PCode)
-        continue;
+      if (TMath::Abs(k1PdgCode) == kK1PCode)
+        isK1 = true;
+      if (TMath::Abs(k1PdgCode) == kK892Code)
+        isK892 = true;
       if (fIsPrimaryMC && !mcInputTrack->IsPrimary())
         continue;
-      // Y cut
-      if ((mcInputTrack->Y() > fK1YCutHigh) || (mcInputTrack->Y() < fK1YCutLow))
+
+      if (isK1) // Fill histogram for K1
+      {
+        // Y cut
+        if ((mcInputTrack->Y() > fK1YCutHigh) || (mcInputTrack->Y() < fK1YCutLow))
+          continue;
+
+        (k1PdgCode < 0) ? binAnti = kAnti : binAnti = kNormal;
+        if (k1PdgCode > 0)
+          sign = kK1P_GEN + (int)Fillbin * 2;
+        else
+          sign = kK1N_GEN + (int)Fillbin * 2;
+
+        FillTHnSparse(fHn5DK1MC, {(double)binAnti, (double)sign, (double)fCent, mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
+      }
+      if (Fillbin > 0)
         continue;
-
-      (k1PdgCode < 0) ? binAnti = kAnti : binAnti = kNormal;
-      if (k1PdgCode > 0)
-        sign = kK1P_GEN + (int)Fillbin * 2;
-      else
-        sign = kK1N_GEN + (int)Fillbin * 2;
-
-      FillTHnSparse(fHn5DK1MC, {(double)binAnti, (double)sign, (double)fCent, mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
+      if (!isK892 && !isK1)
+        continue;
+      if (fFillTree) // Fill both K892 and K1
+      {
+        AliResoNanoMCParticle *lNanoMCPart = new ((*fNanoMCParticles)[0]) AliResoNanoMCParticle;
+        lNanoMCPart->SetID(it);
+        lNanoMCPart->SetEventID(fCustomEventID);
+        lNanoMCPart->SetMotherID(mcInputTrack->GetMother(0));
+        lNanoMCPart->SetDaughter(0, mcInputTrack->GetDaughter(0));
+        lNanoMCPart->SetDaughter(1, mcInputTrack->GetDaughter(1));
+        lNanoMCPart->SetPDGCode(mcInputTrack->GetPdgCode());
+        lNanoMCPart->SetPt(mcInputTrack->Pt());
+        lNanoMCPart->SetEta(mcInputTrack->Eta());
+        lNanoMCPart->SetPhi(mcInputTrack->Phi());
+        lNanoMCPart->SetRap(mcInputTrack->Y());
+        lNanoMCPart->SetCharge(mcInputTrack->GetPDG()->Charge());
+        lNanoMCPart->SetStatus(mcInputTrack->GetStatusCode());
+      }
     }
   }
   else
@@ -1130,25 +1173,51 @@ void AliAnalysisTaskK1::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
         Error("UserExec", "Could not receive MC track %d", it);
         continue;
       }
+      isK892 = false;
+      isK1 = false;
 
       Int_t k1PdgCode = mcInputTrack->GetPdgCode();
 
-      if (TMath::Abs(k1PdgCode) != kK1PCode)
-        continue;
+      if (TMath::Abs(k1PdgCode) == kK1PCode)
+        isK1 = true;
+      if (TMath::Abs(k1PdgCode) == kK892Code)
+        isK892 = true;
       if (fIsPrimaryMC && !mcInputTrack->IsPrimary())
         continue;
+      if (isK1)
+      {
+        // Y cut
+        if ((mcInputTrack->Y() > fK1YCutHigh) || (mcInputTrack->Y() < fK1YCutLow))
+          continue;
 
-      // Y cut
-      if ((mcInputTrack->Y() > fK1YCutHigh) || (mcInputTrack->Y() < fK1YCutLow))
+        (k1PdgCode < 0) ? binAnti = kAnti : binAnti = kNormal;
+        if (k1PdgCode > 0)
+          sign = kK1P_GEN + (int)Fillbin * 2;
+        else
+          sign = kK1N_GEN + (int)Fillbin * 2;
+
+        FillTHnSparse(fHn5DK1MC, {(double)binAnti, (double)sign, (double)fCent, mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
+      }
+      if (Fillbin > 0)
         continue;
-
-      (k1PdgCode < 0) ? binAnti = kAnti : binAnti = kNormal;
-      if (k1PdgCode > 0)
-        sign = kK1P_GEN + (int)Fillbin * 2;
-      else
-        sign = kK1N_GEN + (int)Fillbin * 2;
-
-      FillTHnSparse(fHn5DK1MC, {(double)binAnti, (double)sign, (double)fCent, mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
+      if (!isK892 && !isK1)
+        continue;
+      if (fFillTree)
+      {
+        AliResoNanoMCParticle *lNanoMCPart = new ((*fNanoMCParticles)[0]) AliResoNanoMCParticle;
+        lNanoMCPart->SetID(it);
+        lNanoMCPart->SetEventID(fCustomEventID);
+        lNanoMCPart->SetMotherID(mcInputTrack->GetMother());
+        lNanoMCPart->SetDaughter(0, mcInputTrack->GetDaughterLabel(0));
+        lNanoMCPart->SetDaughter(1, mcInputTrack->GetDaughterLabel(1));
+        lNanoMCPart->SetPDGCode(mcInputTrack->GetPdgCode());
+        lNanoMCPart->SetPt(mcInputTrack->Pt());
+        lNanoMCPart->SetEta(mcInputTrack->Eta());
+        lNanoMCPart->SetPhi(mcInputTrack->Phi());
+        lNanoMCPart->SetRap(mcInputTrack->Y());
+        lNanoMCPart->SetCharge(mcInputTrack->GetPdgCode());
+        lNanoMCPart->SetStatus(mcInputTrack->GetStatus());
+      }
     }
   }
 }

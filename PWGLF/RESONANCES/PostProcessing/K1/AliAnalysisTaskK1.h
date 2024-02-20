@@ -10,6 +10,7 @@
 #include "AliEventCuts.h"
 #include "AliResoNanoEvent.h"
 #include "AliResoNanoTrack.h"
+#include "AliResoNanoMCParticle.h"
 class AliAODMCHeader;
 class AliPIDResponse;
 class AliESDtrackCuts;
@@ -97,15 +98,16 @@ private:
   AliESDtrackCuts *fTrackCuts;  //!
   AliPIDResponse *fPIDResponse; //!
 
-  AliVEvent *fEvt;              //!
-  AliMCEvent *fMCEvent;         //!
-  AliAODMCHeader *fAODMCHeader; //!<  MC info AOD
-  TList *fList;                 //!
-  TClonesArray *fMCArray;       //!
-  AliAODVertex *fVertex;        //!
-  TTree *fNanoTree;             ///<  Output nanoAOD ttree
-  TClonesArray *fNanoEvents;    ///<  events for nanoAOD
-  TClonesArray *fNanoTracks;    ///<  tracks for nanoAOD
+  AliVEvent *fEvt;                //!
+  AliMCEvent *fMCEvent;           //!
+  AliAODMCHeader *fAODMCHeader;   //!<  MC info AOD
+  TList *fList;                   //!
+  TClonesArray *fMCArray;         //!
+  AliAODVertex *fVertex;          //!
+  TTree *fNanoTree;               ///<  Output nanoAOD ttree
+  TClonesArray *fNanoEvents;      ///<  events for nanoAOD
+  TClonesArray *fNanoTracks;      ///<  tracks for nanoAOD
+  TClonesArray *fNanoMCParticles; ///<  mothers for nanoAOD
 
   //// Histograms
   THnSparseD *fHn5DK1Data;  //!
@@ -170,10 +172,11 @@ private:
   Double_t fPosPV[3]; //!
   Double_t fMagField; //!
 
-  Double_t fCent; //!
-  Int_t fnMix;    //!
-  Int_t fCentBin; //!
-  Int_t fZbin;    //!
+  Double_t fCent;               //!
+  unsigned long fCustomEventID; //!
+  Int_t fnMix;                  //!
+  Int_t fCentBin;               //!
+  Int_t fZbin;                  //!
 
   // Pion cuts
   UInt_t fFilterBit;                     //

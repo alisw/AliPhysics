@@ -25,6 +25,7 @@ class AliResoNanoTrack;
 
 AliResoNanoTrack::AliResoNanoTrack() : TLorentzVector(),
                                        fID(-1),
+                                       fEventID(-1),
                                        fParticleType(-999),
                                        fCharge(-999),
                                        fLabel(-1),
@@ -44,6 +45,7 @@ AliResoNanoTrack::AliResoNanoTrack() : TLorentzVector(),
 
 AliResoNanoTrack::AliResoNanoTrack(float px, float py, float pz, float e, Int_t id, Short_t ptype, Char_t charge) : TLorentzVector(px, py, pz, e),
                                                                                                                     fID(id),
+                                                                                                                    fEventID(-1),
                                                                                                                     fParticleType(ptype),
                                                                                                                     fCharge(charge),
                                                                                                                     fLabel(-1),
@@ -63,6 +65,7 @@ AliResoNanoTrack::AliResoNanoTrack(float px, float py, float pz, float e, Int_t 
 
 AliResoNanoTrack::AliResoNanoTrack(const AliResoNanoTrack &a) : TLorentzVector(a.Px(), a.Py(), a.Pz(), a.E()),
                                                                 fID(a.GetID()),
+                                                                fEventID(a.GetEventID()),
                                                                 fParticleType(a.GetParticleType()),
                                                                 fCharge(a.GetCharge()),
                                                                 fLabel(a.GetLabel()),
@@ -82,6 +85,7 @@ AliResoNanoTrack::AliResoNanoTrack(const AliResoNanoTrack &a) : TLorentzVector(a
 
 AliResoNanoTrack::AliResoNanoTrack(const TLorentzVector &a) : TLorentzVector(a.Px(), a.Py(), a.Pz(), a.E()),
                                                               fID(-1),
+                                                              fEventID(-1),
                                                               fParticleType(-999),
                                                               fCharge(-999),
                                                               fLabel(-1),

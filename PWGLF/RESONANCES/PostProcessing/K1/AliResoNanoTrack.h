@@ -20,6 +20,7 @@ public:
     TLorentzVector GetLorentzVector() { return TLorentzVector(Px(), Py(), Pz(), E()); }
 
     Int_t GetID() const { return fID; }
+    Int_t GetEventID() const { return fEventID; }
     Int_t GetLabel() const { return fLabel; }
     Short_t GetParticleType() const { return fParticleType; }
     ULong64_t GetStatus() const { return fStatus; }
@@ -38,6 +39,7 @@ public:
     Int_t GetMCMotherID() const { return fMCMotherID; }
 
     void SetID(const int id) { fID = id; }
+    void SetEventID(const Int_t id) { fEventID = id; }
     void SetLabel(const Int_t label) { fLabel = label; }
     void SetParticleType(const Short_t ptype) { fParticleType = ptype; }
     void SetStatus(const ULong64_t status) { fStatus = status; }
@@ -58,6 +60,7 @@ public:
 
 private:
     Int_t fID;              // track id
+    Int_t fEventID;         // event id
     Short_t fParticleType;  // particle type
     Char_t fCharge;         // charge
     Int_t fLabel;           // label
