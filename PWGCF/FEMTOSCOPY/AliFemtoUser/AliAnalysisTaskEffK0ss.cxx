@@ -774,7 +774,7 @@ bool IsElectronASM(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float n
 
 bool IsElectronAM(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
 {
-  if(TMath::Abs(nsigmaTPCe)<3 )
+  if(TMath::Abs(nsigmaTPCe)<2 )
     return true;
   else
     return false;
