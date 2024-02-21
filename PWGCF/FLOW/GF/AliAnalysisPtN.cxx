@@ -36,11 +36,13 @@ AliAnalysisPtN::AliAnalysisPtN() : AliAnalysisTaskSE(),
     fWeightNUE(nullptr),
     //correlator(),
     fTestNonWeight(nullptr),
+    fNchDistri(nullptr),
     fPtNch(nullptr),
     dPtNch(nullptr),
     dPt2Nch(nullptr),
     dPt3Nch(nullptr),
     dPt4Nch(nullptr),
+    dPtNchNB(nullptr),
     dPtNch_0(nullptr),
     dPtNch_1(nullptr),
     dPtNch_2(nullptr),
@@ -164,11 +166,13 @@ AliAnalysisPtN::AliAnalysisPtN(const char* name) : AliAnalysisTaskSE(name),
     fWeightNUE(nullptr),
     //correlator(),
     fTestNonWeight(nullptr),
+    fNchDistri(nullptr),
     fPtNch(nullptr),
     dPtNch(nullptr),
     dPt2Nch(nullptr),
     dPt3Nch(nullptr),
     dPt4Nch(nullptr),
+    dPtNchNB(nullptr),
     dPtNch_0(nullptr),
     dPtNch_1(nullptr),
     dPtNch_2(nullptr),
@@ -319,11 +323,13 @@ void AliAnalysisPtN::UserCreateOutputObjects()
     fEventCuts.AddQAplotsToList(fOutputList);
     
     fTestNonWeight = new TH1F("fHisPhi", "fHisPhi", 100, 0, 6.28);
+    fNchDistri = new TH1F("fNchDistri", "fNchDistri", 90, 0, 4500);
     fPtNch = new TH2F("fPtNch", "fPtNch", 900, 0, 4500, 500, 0, 3);
     dPtNch = new TProfile("dPtNch", "dPtNch", 90, 0, 4500);
     dPt2Nch = new TProfile("dPt2Nch", "dPt2Nch", 90, 0, 4500);
     dPt3Nch = new TProfile("dPt3Nch", "dPt3Nch", 90, 0, 4500);
     dPt4Nch = new TProfile("dPt4Nch", "dPt4Nch", 90, 0, 4500);
+    dPtNchNB = new TProfile("dPtNchNB", "dPtNchNB", 90, 0, 4500);
     fPtNchUCC = new TH2F("fPtNchUCC", "fPtNchUCC", 700, 1000, 4500, 500, 0.2, 5.0);
     TestPtCtr = new TProfile("TestPtCtr", "TestPtCtr", 200, 0, 100);
     TestPt2Ctr = new TProfile("TestPt2Ctr", "TestPt2Ctr", 200, 0, 100);
@@ -547,11 +553,13 @@ void AliAnalysisPtN::UserCreateOutputObjects()
 
     fOutputList->Add(fBstList);
     fOutputList->Add(fTestNonWeight);
+    fOutputList->Add(fNchDistri);
     fOutputList->Add(fPtNch);
     fOutputList->Add(dPtNch);
     fOutputList->Add(dPt2Nch);
     fOutputList->Add(dPt3Nch);
     fOutputList->Add(dPt4Nch);
+    fOutputList->Add(dPtNchNB);
     fOutputList->Add(fPtNchUCC);
     fOutputList->Add(TestPtCtr);
     fOutputList->Add(TestPt2Ctr);
@@ -759,12 +767,8 @@ void AliAnalysisPtN::UserExec(Option_t *)
           TestPt4Ctr_9->Fill(centrality,pt4);
           break;
       }
-    }
-    
-    
-    
-    TestNchCtr->Fill(centrality,iTracks);
-    TestNchSelectedCtr->Fill(centrality,nTrackSelected);
+      TestNchCtr->Fill(centrality,iTracks);
+      TestNchSelectedCtr->Fill(centrality,nTrackSelected);
 
       switch (rd){
         case 0:
@@ -808,6 +812,16 @@ void AliAnalysisPtN::UserExec(Option_t *)
           TestNchSelectedCtr_9->Fill(centrality,nTrackSelected);
           break;
       }
+
+    }
+    
+    if(sumw!=0) {
+       Float_t ptnb = sump/sumw;
+       dPtNchNB->Fill(nTrackSelected,ptnb);
+    }
+
+    fNchDistri->Fill(nTrackSelected);
+    
     
 
     
