@@ -743,6 +743,7 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
   fOutputList->Add(fNtrkl_PtOfTrks_HF95_w);
   fOutputList->Add(fNtrkl_PtOfMaxTrk_H_w);
   fOutputList->Add(fNtrkl_PtOfMaxTrk_H70_w);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_H80_w);
   fOutputList->Add(fNtrkl_PtOfMaxTrk_H85_w);
   fOutputList->Add(fNtrkl_PtOfMaxTrk_H90_w);
   fOutputList->Add(fNtrkl_PtOfMaxTrk_H93_w);
