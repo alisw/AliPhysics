@@ -50,11 +50,13 @@ class AliAnalysisPtN : public AliAnalysisTaskSE
         TList*                  fBstList;
         TH1D*                   fWeightNUE;
         TH1F*                   fTestNonWeight;
+        TH1F*                   fNchDistri;
         TH2F*                   fPtNch;
         TProfile*               dPtNch;
         TProfile*               dPt2Nch;
         TProfile*               dPt3Nch;
         TProfile*               dPt4Nch;
+        TProfile*               dPtNchNB;
 
         TProfile*               dPtNch_0;
         TProfile*               dPtNch_1;
