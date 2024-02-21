@@ -122,7 +122,18 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     new_bins_const[i] = (from_const + i * width_const);
     }
     
-    //Y bins for resolution
+    //match bins for wt with jet pt included
+    Double_t wt_from = 0;
+    Double_t wt_to = 1;
+    Int_t wt_bins = 200;
+    Double_t wt_width = (wt_to-wt_from)/wt_bins;
+    Double_t wt_new_bins[201] = {};
+    for (Int_t i = 0; i <= wt_bins; i++)
+    {
+        wt_new_bins[i] = (wt_from + i * wt_width);
+    }
+    
+    //Y bins for resolution plot should go from -5 to 5
     Double_t res_from = -5;
     Double_t res_to = 5;
     Int_t res_bins = 200;
@@ -133,7 +144,7 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
         res_new_bins[i] = (res_from + i * res_width);
     }
     
-    //Bins for R_res_eec, R_res_e3c, wt_res_eec, wt_res_e3c
+    //Bins for wt_res_eec, wt_res_e3c-- bins for x axis
     Double_t xres_from = 0;
     Double_t xres_to = 1;
     Int_t xres_bins = 200;
@@ -265,18 +276,20 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     fDetectorLevel  = GetTrackContainer(fDetectorLevelName);
     fGeneratorLevel = GetMCParticleContainer(fGeneratorLevelName);
     
-    R_match_eec = new TH2D("R_match_eec", "Matched Track R", 100, new_bins, 100, new_bins);
+    R_match_eec = new TH3D("R_match_eec", "Matched Track R eec", 100, new_bins, 100, new_bins, 21, new_bins_const);
     R_match_eec->RebinX(2);
+    R_match_eec->RebinY(2);
     fOutput->Add(R_match_eec);
     
-    wt_match_eec = new TH2D("wt_match_eec", "Matched Track Wt", 200, 0 ,1 , 200, 0, 1);
+    wt_match_eec = new TH3D("wt_match_eec", "Matched Track Wt eec", 200, wt_new_bins, 200, wt_new_bins, 21, new_bins_const);
     fOutput->Add(wt_match_eec);
     
-    R_match_e3c = new TH2D("R_match_e3c", "Matched Track R e3c", 100, new_bins, 100, new_bins);
+    R_match_e3c = new TH3D("R_match_e3c", "Matched Track R e3c", 100, new_bins, 100, new_bins, 21, new_bins_const);
     R_match_e3c->RebinX(2);
+    R_match_e3c->RebinY(2);
     fOutput->Add(R_match_e3c);
     
-    wt_match_e3c = new TH2D("wt_match_e3c", "Matched Track Wt e3c", 200, 0 ,1 , 200, 0, 1);
+    wt_match_e3c = new TH3D("wt_match_e3c", "Matched Track Wt e3c",200, wt_new_bins, 200, wt_new_bins, 21, new_bins_const);
     fOutput->Add(wt_match_e3c);
     
     qpt_tru1 = new TH1D("qpt_tru1","q/pt tru1",100, 0, 2);
@@ -356,28 +369,24 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     wt_res_e3c->RebinZ(2);
     fOutput->Add(wt_res_e3c);
     
-    R_res_eec = new TH3D("R_res_eec", "R resolution scale E3C", 100, new_bins, 200, res_new_bins, 21, new_bins_const);
-    R_res_eec->RebinZ(2);
+    R_res_eec = new TH3D("R_res_eec", "R resolution scale EEC", 100, new_bins, 200, res_new_bins, 21, new_bins_const);//R_tru bins, diff bins, jet pT bins
+    R_res_eec->RebinX(2);
     fOutput->Add(R_res_eec);
     
     R_res_e3c = new TH3D("R_res_e3c", "R resolution scale E3C", 100, new_bins, 200, res_new_bins, 21, new_bins_const);
-    R_res_e3c->RebinZ(2);
+    R_res_e3c->RebinX(2);
     fOutput->Add(R_res_e3c);
     
     wtnojet_match_eec = new TH3D("wtnojet_match_eec", "Matched Track Wt excluding jet pT EEC", 200, wteec_res_new_bins, 200, wteec_res_new_bins, 21, new_bins_const);
-    wtnojet_match_eec->RebinZ(2);
     fOutput->Add(wtnojet_match_eec);
     
     wtnojet_match_e3c = new TH3D("wtnojet_match_e3c", "Matched Track Wt excluding jet pT E3C", 2000, wte3c_res_new_bins, 2000, wte3c_res_new_bins, 21, new_bins_const);
-    wtnojet_match_e3c->RebinZ(2);
     fOutput->Add(wtnojet_match_e3c);
     
     wtnojet_res_eec = new TH3D("wtnojet_res_eec", "Weight resolution (excluding jet pT) scale EEC", 200, wteec_res_new_bins, 200, res_new_bins, 21, new_bins_const);
-    wtnojet_res_eec->RebinZ(2);
     fOutput->Add(wtnojet_res_eec);
     
     wtnojet_res_e3c = new TH3D("wtnojet_res_e3c", "Weight resolution (excluding jet pT) scale E3C", 2000, wte3c_res_new_bins, 200, res_new_bins, 21, new_bins_const);
-    wtnojet_res_e3c->RebinZ(2);
     fOutput->Add(wtnojet_res_e3c);
     
     PostData(1, fOutput);
@@ -895,9 +904,9 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                                 e3c_matched_det->Fill(R_jss_det,jet_pt,ee_jss_det);
                                 e3c_matched_tru->Fill(R_jss_tru,jet_pt_tru,ee_jss_tru);
                                 
-                                R_match_e3c->Fill(R_jss_tru,R_jss_det);
+                                R_match_e3c->Fill(R_jss_tru,R_jss_det,jet_pt);
                                 R_res_e3c->Fill(R_jss_tru,(R_jss_tru-R_jss_det)/(R_jss_tru),jet_pt);
-                                wt_match_e3c->Fill(ee_jss_tru,ee_jss_det);
+                                wt_match_e3c->Fill(ee_jss_tru,ee_jss_det,jet_pt);
                                 
                                 wtnojet_match_e3c->Fill(3*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[l].pt(),3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt(), jet_pt);
                                 
@@ -940,9 +949,9 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                                             e3c_matched_det->Fill(R_dist_det[max_R_det],jet_pt,ee_jsm_det);
                                             e3c_matched_tru->Fill(R_dist_tru[max_R_tru],jet_pt_tru,ee_jsm_tru);
                                             
-                                            R_match_e3c->Fill(R_dist_tru[max_R_tru],R_dist_det[max_R_det]);
+                                            R_match_e3c->Fill(R_dist_tru[max_R_tru],R_dist_det[max_R_det],jet_pt);
                                             R_res_e3c->Fill(R_dist_tru[max_R_tru],(R_dist_tru[max_R_tru]-R_dist_det[max_R_det])/(R_dist_tru[max_R_tru]),jet_pt);
-                                            wt_match_e3c->Fill(ee_jsm_tru,ee_jsm_det);
+                                            wt_match_e3c->Fill(ee_jsm_tru,ee_jsm_det,jet_pt);
                                             
                                             wtnojet_match_e3c->Fill(6*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[k].pt(),6*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt(),jet_pt);
                                             

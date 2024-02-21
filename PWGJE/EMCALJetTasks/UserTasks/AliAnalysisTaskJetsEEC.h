@@ -213,10 +213,10 @@ protected:
     TH1D *track_pt_det; //!<! all det level tracks
     TH2D *track_pt_matched; //!<! all det level tracks matched with truth level
     
-    TH2D *R_match_eec; //!<! pair distance of all det level tracks in det jet matched with truth level tracks in truth jet eec
-    TH2D *wt_match_eec; //!<! pair wts of all det level tracks in det jet matched with truth level tracks in truth jet eec
-    TH2D *R_match_e3c; //!<! pair distance of all det level tracks in det jet matched with truth level tracks in truth jet e3c
-    TH2D *wt_match_e3c; //!<! pair wts of all det level tracks in det jet matched with truth level tracks in truth jet e3c
+    TH3D *R_match_eec; //!<! pair distance of all det level tracks in det jet matched with truth level tracks in truth jet eec as a function of jet pT
+    TH3D *wt_match_eec; //!<! pair wts of all det level tracks in det jet matched with truth level tracks in truth jet eec as a function of jet pT
+    TH3D *R_match_e3c; //!<! pair distance of all det level tracks in det jet matched with truth level tracks in truth jet e3c as a function of jet pT
+    TH3D *wt_match_e3c; //!<! pair wts of all det level tracks in det jet matched with truth level tracks in truth jet e3c as a function of jet pT
     
     TH1D *qpt_tru1;//!<! q/pt vs R histogram for input to fast sim
     TH1D *qpt_tru2;//!<! q/pt vs R histogram for input to fast sim
@@ -256,7 +256,7 @@ private:
     AliAnalysisTaskJetsEEC &
     operator=(const AliAnalysisTaskJetsEEC &); // not implemented
     
-    ClassDef(AliAnalysisTaskJetsEEC, 51) //change this to 52 if you add something new
+    ClassDef(AliAnalysisTaskJetsEEC, 52) //change this to 53 if you add something new
 };
 #endif
 
