@@ -188,6 +188,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   hSPDClusterTrackletBackgroundBefore(NULL),
   hSPDClusterTrackletBackground(NULL),
   hV0MultVsNumberTPCoutTracks(NULL),
+  hTPCclusters(NULL),
+  hTPCoutTracks(NULL),
   hTPCSDDSSDClusters_before(NULL),
   fV0ReaderName(""),
   CaloTriggerHelperName(""),
@@ -334,6 +336,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   hSPDClusterTrackletBackgroundBefore(NULL),
   hSPDClusterTrackletBackground(NULL),
   hV0MultVsNumberTPCoutTracks(NULL),
+  hTPCclusters(NULL),
+  hTPCoutTracks(NULL),
   hTPCSDDSSDClusters_before(NULL),
   fV0ReaderName(ref.fV0ReaderName),
   CaloTriggerHelperName(ref.CaloTriggerHelperName),
@@ -466,6 +470,12 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
       fHistograms->Add(hSPDClusterTrackletBackgroundBefore);
       hSPDClusterTrackletBackground = new TH2F(Form("SPD tracklets vs SPD clusters %s",GetCutNumber().Data()),"SPD tracklets vs SPD clusters", 200, 0, 6000, 200, 0, 20000);
       fHistograms->Add(hSPDClusterTrackletBackground);
+      
+      hTPCoutTracks = new TH1F("hTPCoutTracks", "hTPCoutTracks", 500, 0, 15000);
+      hTPCclusters = new TH1F("hTPCclusters", "hTPCclusters", 500, 0., 5.e+6);
+      fHistograms->Add(hTPCoutTracks);
+      fHistograms->Add(hTPCclusters);
+
     } else{
       hSPDClusterTrackletBackgroundBefore = new TH2F(Form("SPD tracklets vs SPD clusters %s before Pileup Cut",GetCutNumber().Data()),"SPD tracklets vs SPD clusters",100,0,200,250,0,1000);
       fHistograms->Add(hSPDClusterTrackletBackgroundBefore);
@@ -3807,6 +3817,13 @@ Bool_t AliConvEventCuts::IsPileUpSDDSSDTPC(AliVEvent *event)
     return kTRUE;
   }
   return kFALSE;
+}
+
+//________________________________________________________________________
+void AliConvEventCuts::FillTPCOccupancyHistograms(AliVEvent *event){
+
+  if (hTPCoutTracks){hTPCoutTracks->Fill(GetV0Reader()->GetNumberOfTPCoutTracks());}
+  if (hTPCclusters){hTPCclusters->Fill(GetNumberOfTPCClusters(event));}
 }
 
 //________________________________________________________________________
