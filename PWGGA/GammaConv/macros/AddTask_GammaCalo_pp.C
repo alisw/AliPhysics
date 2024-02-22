@@ -4336,6 +4336,11 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00081103","111130006fe30220000","0s631031000000d0"); // EGA NL in corr framework, Modules with TRD
     cuts.AddCutCalo("00081103","111130006fe3n220000","0s631031000000d0"); // EGA NL in corr framework, Modules with TRD
 
+  } else if (trainConfig == 2598){  // run3 checks (NL shifted to run3 mass position)
+    cuts.AddCutCalo("00010113","411797709fe30220000","0r631031000000d0"); // old rotation background
+    cuts.AddCutCalo("00010113","411797709fe30220000","0s631031000000d0"); // rot background with gaps
+    cuts.AddCutCalo("00010113","411797709fe30220000","01631031000000d0"); // mixed event
+
 
     //*************************************************************************************************
     // 13 TeV PHOS - Systematics
