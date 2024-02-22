@@ -106,6 +106,10 @@ class AliAnalysisTaskDiffPtFluc_PIDhadrons_v2 : public AliAnalysisTaskSE {
   {
     this->fEffFlag = flagg;
   }
+  void SetEfficiencyCorrectionFlag (Int_t flagval)
+  {
+    this->fEffCorrectionFlag = flagval;
+  }
 
   
  private:
@@ -151,6 +155,8 @@ class AliAnalysisTaskDiffPtFluc_PIDhadrons_v2 : public AliAnalysisTaskSE {
   TH1D *fHistMCEffPionMinus;
   TH1D *fHistMCEffProtonPlus;
   TH1D *fHistMCEffProtonMinus;
+  TH1D *fHistMCEffHadronPlus;
+  TH1D *fHistMCEffHadronMinus;
   TH1D *fEffPionPlus[9];
   TH1D *fEffKaonPlus[9];
   TH1D *fEffProtonPlus[9];
@@ -169,6 +175,7 @@ class AliAnalysisTaskDiffPtFluc_PIDhadrons_v2 : public AliAnalysisTaskSE {
   Double_t fEtaMin;
   Int_t fEffFlag;
   TString fTreeName;
+  Int_t fEffCorrectionFlag;
   
 
   /*
