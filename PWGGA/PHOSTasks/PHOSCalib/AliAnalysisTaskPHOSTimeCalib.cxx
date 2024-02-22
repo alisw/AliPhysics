@@ -226,7 +226,7 @@ void AliAnalysisTaskPHOSTimeCalib::CalibrateClusterTime(AliVCaloCells *cells){
   Int_t relId[4]={0};
   Int_t module=0,cellx=0,cellz=0;
   Int_t cellAbsId=0;
-  Double_t position[3];
+  Float_t position[3];
 
   Int_t multClust = fVEvent->GetNumberOfCaloClusters();
   for (Int_t iclu = 0; iclu < multClust; iclu++){
