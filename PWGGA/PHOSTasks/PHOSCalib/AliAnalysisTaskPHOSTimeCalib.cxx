@@ -84,13 +84,20 @@ void AliAnalysisTaskPHOSTimeCalib::UserCreateOutputObjects()
 	Char_t key[55];
 	Char_t key1[55];
 	Char_t key2[55];
-  const Int_t Nmod=5;
 
   for(Int_t iddl=6;iddl<20;iddl++){
     for(Int_t igain=0;igain<2;igain++){
       fOutputContainer->Add(new TH2F(Form("hBC4vsRecTimeDDL%d_G%d",iddl,igain),Form("BC%%4 vs. Time DDL%d G%d",iddl,igain),400,-200,200,4,-0.5,3.5));
     }
   }
+
+  fOutputContainer->Add(new TH2F("hClustTOFvsAbsCellID",
+                                 "TOF_{clust}, all cells;Cell AbsID;TOF_{clust}, ns",
+                                 12544,1793,14336, 600,-300,300));
+
+  fOutputContainer->Add(new TH2F("hClustTOFvsAbsCellID_1500MeV",
+                                 "TOF_{clust}, E_{cell} > 1.5 GeV;Cell AbsID;TOF_{clust}, ns",
+                                 12544,1793,14336, 600,-300,300));
 
   PostData(1, fOutputContainer);
 }
@@ -147,6 +154,7 @@ void AliAnalysisTaskPHOSTimeCalib::UserExec(Option_t *)
 
 
   CalibrateCellTime(cells,BC);
+  CalibrateClusterTime(cells);
 
   PostData(1, fOutputContainer);
 }      
@@ -209,6 +217,54 @@ void AliAnalysisTaskPHOSTimeCalib::CalibrateCellTime(AliVCaloCells *cells, UShor
       FillHistogram(Form("hBC4vsRecTimeDDL%d_G%d",ddl,isHG),celltime*1e+9,BC%4);
     }
 
+  }
+
+}
+//________________________________________________________________________
+void AliAnalysisTaskPHOSTimeCalib::CalibrateClusterTime(AliVCaloCells *cells){
+
+  Int_t relId[4]={0};
+  Int_t module=0,cellx=0,cellz=0;
+  Int_t cellAbsId=0;
+  Double_t position[3];
+
+  Int_t multClust = fVEvent->GetNumberOfCaloClusters();
+  for (Int_t iclu = 0; iclu < multClust; iclu++){
+
+    AliVCluster *clu = fVEvent->GetCaloCluster(iclu);
+    if (clu->GetType() != AliVCluster::kPHOSNeutral) continue;
+
+    clu->GetPosition(position);
+    TVector3 global(position);
+
+    fPHOSGeo->GlobalPos2RelId(global,relId);
+    module = relId[0];
+    cellx  = relId[2];
+    cellz  = relId[3];
+
+    if(clu->GetNCells() < 3 || clu->GetM02() < 0.2){
+     continue;
+    }
+
+    Double_t tof = clu->GetTOF();
+
+    Double_t EcellMax = 0.;
+    Int_t absIdMax = 0;
+
+    Int_t CellMult = clu->GetNCells();
+    for (Int_t icell = 0; icell < CellMult; icell++){
+      Int_t absId = clu->GetCellAbsId(icell);
+      if(cells->GetCellAmplitude(absId) > EcellMax){
+        EcellMax = cells->GetCellAmplitude(absId);
+        absIdMax = absId;
+      }
+    }
+
+    Double_t Ecell = cells->GetCellAmplitude(absIdMax);
+
+    FillHistogram("hClustTOFvsAbsCellID", absIdMax, tof);
+    if (Ecell > 1.5)
+      FillHistogram("hClustTOFvsAbsCellID_1500MeV", absIdMax, tof);
 
   }
 
