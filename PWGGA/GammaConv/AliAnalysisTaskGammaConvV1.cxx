@@ -2609,7 +2609,8 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
       else if(fDoPlotVsCentrality) fHistoCentralityVsPrimaryTracks[iCut]->Fill(fiEventCut->GetCentrality(fInputEvent),fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
 
       if(!fDoLightOutput){
-
+        
+        fiEventCut->FillTPCOccupancyHistograms(fInputEvent);
         fiEventCut->FillTPCPileUpHistogram(fInputEvent);
 
         if( fIsMC < 2 ){
