@@ -161,6 +161,8 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       for (auto const& jet : jetCont->accepted()) {
         if (!jet)
           continue;
+        if (!IsJetAccepted(jet))
+          continue;
         count++;
         fVectorJetPt.push_back(jet->Pt());
         fVectorJetPx.push_back(jet->Px());
@@ -252,10 +254,32 @@ void AliAnalysisTaskConvJet::FindPartonsJet(TClonesArray* arrMCPart)
         fTrueVectorJetPartonPx[indexNearestJet] = particle->Px();
         fTrueVectorJetPartonPy[indexNearestJet] = particle->Py();
         fTrueVectorJetPartonPz[indexNearestJet] = particle->Pz();
-        
       }
     }
   }
+}
+
+/**
+ * This function checks if the jet is inside the desired acceptance
+ * if a distance to the EMCal border is required
+ * For example, a distance of 0.4 to the border ensures, that every 0.4 jet is fully on the EMCal
+ */
+bool AliAnalysisTaskConvJet::IsJetAccepted(const AliEmcalJet* jet)
+{
+  if (fDistToEMCBorder == 0) {
+    return true;
+  }
+  // geometry values from https://arxiv.org/pdf/2209.04216.pdf (page 10)
+  if (jet->Phi() < 1.40 + fDistToEMCBorder ||
+      jet->Phi() > 5.70 - fDistToEMCBorder ||
+      (jet->Phi() > 3.26 - fDistToEMCBorder && jet->Phi() < 4.54 + fDistToEMCBorder)) {
+    return false;
+  }
+  if (std::abs(jet->Eta()) > 0.7 - fDistToEMCBorder ||
+      (std::abs(jet->Eta()) < 0.23 + fDistToEMCBorder && jet->Phi() > 4.54 && jet->Phi() < 5.58)) {
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -295,7 +319,8 @@ AliAnalysisTaskConvJet* AliAnalysisTaskConvJet::AddTask_GammaConvJet(
   const char* ntracks,
   const char* nclusters,
   const char* ncells,
-  const char* suffix)
+  const char* suffix,
+  double distToEMCBorder)
 {
   // Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
@@ -370,6 +395,7 @@ AliAnalysisTaskConvJet* AliAnalysisTaskConvJet::AddTask_GammaConvJet(
   AliAnalysisTaskConvJet* sampleTask = new AliAnalysisTaskConvJet(name);
   sampleTask->SetCaloCellsName(cellName);
   sampleTask->SetVzRange(-10, 10);
+  sampleTask->SetDistToEMCBorder(distToEMCBorder);
 
   if (trackName == "mcparticles") {
     sampleTask->AddMCParticleContainer(trackName);

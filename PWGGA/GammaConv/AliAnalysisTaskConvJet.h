@@ -36,7 +36,9 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
     const char* ntracks = "usedefault",
     const char* nclusters = "usedefault",
     const char* ncells = "usedefault",
-    const char* suffix = "");
+    const char* suffix = "",
+    double distToEMCBorder = 0.
+    );
 
   Double_t GetNJets() { return fNJets; }
   std::vector<Double_t> GetVectorJetPt() { return fVectorJetPt; }
@@ -82,6 +84,9 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
 
   void FindPartonsJet(TClonesArray* arrMCPart);
 
+  void SetDistToEMCBorder(const double tmp) {fDistToEMCBorder = tmp;}
+  double GetDistToEMCBorder() {return fDistToEMCBorder;}
+
  protected:
   void ExecOnce();
   Bool_t FillHistograms();
@@ -119,13 +124,16 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
 
   UInt_t fAccType;
   UInt_t fAccTypeMC;
+  
+  double fDistToEMCBorder;      // distance cut to the border of the EMCal, (if set to 0.4, jet with R=0.4 is fully on the EMCal)
 
  private:
+  bool IsJetAccepted(const AliEmcalJet *jet);
   AliAnalysisTaskConvJet(const AliAnalysisTaskConvJet&);
   AliAnalysisTaskConvJet& operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 16);
+  ClassDef(AliAnalysisTaskConvJet, 17);
   /// \endcond
 };
 #endif
