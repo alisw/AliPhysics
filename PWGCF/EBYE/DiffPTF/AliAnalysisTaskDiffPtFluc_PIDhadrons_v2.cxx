@@ -113,6 +113,8 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::AliAnalysisTaskDiffPtFluc_PIDhadrons_v2
   fHistMCEffPionMinus(0),
   fHistMCEffProtonPlus(0),
   fHistMCEffProtonMinus(0),
+  fHistMCEffHadronPlus(0),
+  fHistMCEffHadronMinus(0),
   fVertexZMax(0),
   fFBNo(0),
   fChi2TPC(0),
@@ -123,7 +125,8 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::AliAnalysisTaskDiffPtFluc_PIDhadrons_v2
   fPileupCutVal(0),
   fEtaMin(0),
   fEffFlag(0),
-  fTreeName(0)
+  fTreeName(0),
+  fEffCorrectionFlag(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -178,6 +181,8 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::AliAnalysisTaskDiffPtFluc_PIDhadrons_v2
   fHistMCEffPionMinus(0),
   fHistMCEffProtonPlus(0),
   fHistMCEffProtonMinus(0),
+  fHistMCEffHadronPlus(0),
+  fHistMCEffHadronMinus(0),
   fVertexZMax(0),
   fFBNo(0),
   fChi2TPC(0),
@@ -188,7 +193,8 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::AliAnalysisTaskDiffPtFluc_PIDhadrons_v2
   fPileupCutVal(0),
   fEtaMin(0),
   fEffFlag(0),
-  fTreeName(0)
+  fTreeName(0),
+  fEffCorrectionFlag(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -363,6 +369,7 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
     fEff->SetParameter(2,1.7);
 
     Double_t eff, x;
+    
 
     //random no
     TRandom3 ran;
@@ -415,6 +422,8 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 	//+++++++++++++++++++++++++++++++++++++++++++++++++
 	int flag=1;
 	//Particle loss imposing
+
+	//using algebraic function
 	if(fEffFlag==1)
 	  {
 	    x=ran.Uniform(0,1);
@@ -423,23 +432,74 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 	    if(x > eff)
 	      flag = 0;
 	  }
+	//using actual efficiencies from files
+	if(fEffFlag==2)
+	  {
+	    if(trkCharge < 0)
+	      {
+		ptBinNo = fHistMCEffHadronMinus->FindBin(trkPt);
+		BinCont = fHistMCEffHadronMinus->GetBinContent(ptBinNo);
+	      }
+	    if(trkCharge > 0)
+	      {
+		ptBinNo = fHistMCEffHadronPlus->FindBin(trkPt);
+		BinCont = fHistMCEffHadronPlus->GetBinContent(ptBinNo);
+	      }
+	    x=ran.Uniform(0,1);
+	    if(x > BinCont)
+	      flag = 0;
+	  }
+	
 	if(flag==0)
 	  continue;
 	//+++++++++++++++++++++++++++++++++++++++++++++++++
 
-	if(TMath::Abs(trkCharge) > 0)
+	if(fEffCorrectionFlag == 0)
 	  {
-	    if(trkEta < 0.0)
+	    if(TMath::Abs(trkCharge) > 0)
 	      {
-		fPt_profile->Fill(trkPt);
-		pT_sum_etaLess0 += trkPt;
-		N_sum_etaLess0 += 1.0;
+		if(trkEta < 0.0)
+		  {
+		    fPt_profile->Fill(trkPt);
+		    pT_sum_etaLess0 += trkPt;
+		    N_sum_etaLess0 += 1.0;
+		  }
+		if(trkEta > fEtaMin)
+		  {
+		    pT_sum_etaGreaterEtamin += trkPt;
+		    N_sum_etaGreaterEtamin += 1.0;
+		  }
 	      }
-	    
-	    if(trkEta > fEtaMin)
+	  }
+
+	if(fEffCorrectionFlag == 1)
+	  {
+	    if(TMath::Abs(trkCharge) > 0)
 	      {
-		pT_sum_etaGreaterEtamin += trkPt;
-		N_sum_etaGreaterEtamin += 1.0;
+		if(trkCharge < 0)
+		  {
+		    ptBinNo = fHistMCEffHadronMinus->FindBin(trkPt);
+		    BinCont = fHistMCEffHadronMinus->GetBinContent(ptBinNo);
+		    cout<<"Eff: "<<BinCont<<endl;
+		  }
+		if(trkCharge > 0)
+		  {
+		    ptBinNo = fHistMCEffHadronPlus->FindBin(trkPt);
+		    BinCont = fHistMCEffHadronPlus->GetBinContent(ptBinNo);
+		  }
+		
+		if(trkEta < 0.0)
+		  {
+		    fPt_profile->Fill(trkPt,1.0/BinCont);
+		    pT_sum_etaLess0 += trkPt/BinCont;
+		    N_sum_etaLess0 += 1.0/BinCont;
+		  }
+	    
+		if(trkEta > fEtaMin)
+		  {
+		    pT_sum_etaGreaterEtamin += trkPt/BinCont;
+		    N_sum_etaGreaterEtamin += 1.0/BinCont;
+		  }
 	      }
 	  }
 	
@@ -463,27 +523,88 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 	  }
 	*/
 
-	if(TMath::Abs(trkCharge) > 0)
+	if(fEffCorrectionFlag == 0)
 	  {
-	    if(trkEta < 0.0)
+	    if(TMath::Abs(trkCharge) > 0)
 	      {
-		if(IsPion)
+		if(trkEta < 0.0)
 		  {
-		    fPt_profile_pion->Fill(trkPt);
-		    N_sumPion_etaLess0 += 1.0;
-		  }
-		if(IsKaon)
-		  {
-		    fPt_profile_kaon->Fill(trkPt);
-		    N_sumKaon_etaLess0 += 1.0;
-		  }
-		if(IsProton && trkPt > 0.4)
-		  {
-		    fPt_profile_proton->Fill(trkPt);
-		    N_sumProton_etaLess0 += 1.0;
+		    if(IsPion)
+		      {
+			fPt_profile_pion->Fill(trkPt);
+			N_sumPion_etaLess0 += 1.0;
+		      }
+		    if(IsKaon)
+		      {
+			fPt_profile_kaon->Fill(trkPt);
+			N_sumKaon_etaLess0 += 1.0;
+		      }
+		    if(IsProton && trkPt > 0.4)
+		      {
+			fPt_profile_proton->Fill(trkPt);
+			N_sumProton_etaLess0 += 1.0;
+		      }
 		  }
 	      }
 	  }
+
+	if(fEffCorrectionFlag == 1)
+	  {
+	    if(TMath::Abs(trkCharge) > 0)
+	      {
+		if(trkEta < 0.0)
+		  {
+		    if(IsPion)
+		      {
+			if(trkCharge < 0)
+			  {
+			    ptBinNo = fHistMCEffPionMinus->FindBin(trkPt);
+			    BinCont = fHistMCEffPionMinus->GetBinContent(ptBinNo);
+			  }
+			if(trkCharge > 0)
+			  {
+			    ptBinNo = fHistMCEffPionPlus->FindBin(trkPt);
+			    BinCont = fHistMCEffPionPlus->GetBinContent(ptBinNo);
+			  }
+			fPt_profile_pion->Fill(trkPt,1.0/BinCont);
+			N_sumPion_etaLess0 += 1.0/BinCont;
+		      }
+		    
+		    if(IsKaon)
+		      {
+			if(trkCharge < 0)
+			  {
+			    ptBinNo = fHistMCEffKaonMinus->FindBin(trkPt);
+			    BinCont = fHistMCEffKaonMinus->GetBinContent(ptBinNo);
+			  }
+			if(trkCharge > 0)
+			  {
+			    ptBinNo = fHistMCEffKaonPlus->FindBin(trkPt);
+			    BinCont = fHistMCEffKaonPlus->GetBinContent(ptBinNo);
+			  }
+			fPt_profile_kaon->Fill(trkPt,1.0/BinCont);
+			N_sumKaon_etaLess0 += 1.0/BinCont;
+		      }
+		    
+		    if(IsProton && trkPt > 0.4)
+		      {
+			if(trkCharge < 0)
+			  {
+			    ptBinNo = fHistMCEffProtonMinus->FindBin(trkPt);
+			    BinCont = fHistMCEffProtonMinus->GetBinContent(ptBinNo);
+			  }
+			if(trkCharge > 0)
+			  {
+			    ptBinNo = fHistMCEffProtonPlus->FindBin(trkPt);
+			    BinCont = fHistMCEffProtonPlus->GetBinContent(ptBinNo);
+			  }
+			fPt_profile_proton->Fill(trkPt,1.0/BinCont);
+			N_sumProton_etaLess0 += 1.0/BinCont;
+		      }
+		  }
+	      }
+	  }
+	
       }      
     //end reconstructed track loop
     
@@ -1078,6 +1199,9 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::GetMCEffCorrectionHist()
 
       fHistMCEffProtonPlus = (TH1D*) fListTRKCorr->FindObject("histProtonPlusEff");
       fHistMCEffProtonMinus = (TH1D*) fListTRKCorr->FindObject("histProtonMinusEff");
+
+      fHistMCEffHadronPlus = (TH1D*) fListTRKCorr->FindObject("histHadronPlusEff");
+      fHistMCEffHadronMinus = (TH1D*) fListTRKCorr->FindObject("histHadronMinusEff");
 
       for(int i=0; i<9; i++)
 	{
