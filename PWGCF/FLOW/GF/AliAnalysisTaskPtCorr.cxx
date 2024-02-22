@@ -60,6 +60,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fEtaAxis(0),
   fMultiAxis(0),
   fCentPtAxis(0),
+  fMptAxis(0),
   fV0MMultiAxis(0),
   fPtBins(0),
   fNPtBins(0),
@@ -67,6 +68,10 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fNEtaBins(0),
   fMultiBins(0),
   fNMultiBins(0),
+  fCentPtBins(0),
+  fNCentPtBins(0),
+  fMptBins(0),
+  fNMptBins(0),
   fV0MBinsDefault(0),
   fNV0MBinsDefault(0),
   fUseNch(kFALSE),
@@ -146,6 +151,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fEtaAxis(0),
   fMultiAxis(0),
   fCentPtAxis(0),
+  fMptAxis(0),
   fV0MMultiAxis(0),
   fPtBins(0),
   fNPtBins(0),
@@ -153,6 +159,10 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fNEtaBins(0),
   fMultiBins(0),
   fNMultiBins(0),
+  fCentPtBins(0),
+  fNCentPtBins(0),
+  fMptBins(0),
+  fNMptBins(0),
   fV0MBinsDefault(0),
   fNV0MBinsDefault(0),
   fUseNch(kFALSE),
@@ -288,29 +298,30 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   for(Int_t i=0;i<=nIPbins; i++) ipBins[i] = 0.2*i;
   fMultiVsCent = new AliProfileBS("MultiVsCent","Multi vs centrality",(fUseIP)?nIPbins:nFineCentBins,(fUseIP)?ipBins:fineCentBins);
   fptList->Add(fMultiVsCent);
-  const int nMptBins = 500;
-  double *mptBins = new double[nMptBins+1];
-  double *pt2Bins = new double[nMptBins+1];
-  double *pt3Bins = new double[nMptBins+1];
-  double *pt4Bins = new double[nMptBins+1];
-  for(int i=0;i<=nMptBins;++i) {
-    mptBins[i] = 0.001*i + 0.6;
+
+
+
+  double *pt2Bins = new double[fNMptBins+1];
+  double *pt3Bins = new double[fNMptBins+1];
+  double *pt4Bins = new double[fNMptBins+1];
+
+  for(int i=0;i<=fNMptBins;++i) {
     pt2Bins[i] = 0.001*i + 0.2;
     pt3Bins[i] = 0.001*i + 0.05;
     pt4Bins[i] = 0.001*i;
   }
 
-  fMptVsNch = new TH3D("fMptVsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}]#GT;centrality (%)",fNMultiBins,fMultiBins,nMptBins,mptBins,fNCentPtBins,fCentPtBins);
+  fMptVsNch = new TH3D("fMptVsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}]#GT;centrality (%)",fNMultiBins,fMultiBins,fNMptBins,fMptBins,fNCentPtBins,fCentPtBins);
   fptList->Add(fMptVsNch);
-  fpt2VsNch = new TH3D("fpt2VsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}^{(2)}]#GT; centrality (%)",fNMultiBins,fMultiBins,nMptBins,pt2Bins,fNCentPtBins,fCentPtBins);
+  fpt2VsNch = new TH3D("fpt2VsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}^{(2)}]#GT; centrality (%)",fNMultiBins,fMultiBins,fNMptBins,pt2Bins,fNCentPtBins,fCentPtBins);
   fptList->Add(fpt2VsNch);
-  fpt3VsNch = new TH3D("fpt3VsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}^{(3)}]#GT; centrality (%)",fNMultiBins,fMultiBins,nMptBins,pt3Bins,fNCentPtBins,fCentPtBins);
+  fpt3VsNch = new TH3D("fpt3VsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}^{(3)}]#GT; centrality (%)",fNMultiBins,fMultiBins,fNMptBins,pt3Bins,fNCentPtBins,fCentPtBins);
   fptList->Add(fpt3VsNch);
-  fpt4VsNch = new TH3D("fpt4VsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}^{(4)}]#GT; centrality (%)",fNMultiBins,fMultiBins,nMptBins,pt4Bins,fNCentPtBins,fCentPtBins);
+  fpt4VsNch = new TH3D("fpt4VsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}^{(4)}]#GT; centrality (%)",fNMultiBins,fMultiBins,fNMptBins,pt4Bins,fNCentPtBins,fCentPtBins);
   fptList->Add(fpt4VsNch);
   fNchVsCent = new TH2D("fNchVsCent","centrality (%);N_{ch}^{rec}",nFineCentBins,fineCentBins,fNMultiBins,fMultiBins);
   fptList->Add(fNchVsCent);
-  fMptVsCent = new TH2D("fMptVsCent",";centrality (%); #LT[#it{p}_{T}]#GT",nFineCentBins,fineCentBins,nMptBins,mptBins);
+  fMptVsCent = new TH2D("fMptVsCent",";centrality (%); #LT[#it{p}_{T}]#GT",nFineCentBins,fineCentBins,fNMptBins,fMptBins);
   fptList->Add(fMptVsCent);
   printf("Multiplicity objects created\n");
   PostData(1,fptList);
@@ -766,6 +777,13 @@ void AliAnalysisTaskPtCorr::SetupAxes() {
   if(!fCentPtAxis) { printf("Setting default cent bins for mpt fluctuations\n"); SetCentBinsForPt(nCentBinsMpt,centbinsMpt);}
   fCentPtBins=GetBinsFromAxis(fCentPtAxis);
   fNCentPtBins=fCentPtAxis->GetNbins();
+
+  const int nMptBins = 500;
+  double mptlow = 0.5;
+  double mpthigh = 1;
+  if(!fMptAxis) { printf("Setting default mpt bins\n"); SetMptBins(nMptBins,mptlow,mpthigh); }
+  fNMptBins = fMptAxis->GetNbins();
+  fMptBins = GetBinsFromAxis(fMptAxis);
   return;
 }
 void AliAnalysisTaskPtCorr::SetPtBins(Int_t nPtBins, Double_t *PtBins) {
@@ -784,9 +802,13 @@ void AliAnalysisTaskPtCorr::SetCentBinsForPt(Int_t nBins, Double_t *centbins) {
   if(fCentPtAxis) delete fCentPtAxis;
   fCentPtAxis = new TAxis(nBins, centbins);
 }
-void AliAnalysisTaskPtCorr::SetV0MBins(Int_t nMultiBins, Double_t *multibins) {
+void AliAnalysisTaskPtCorr::SetV0MBins(Int_t nV0MBins, Double_t *V0Mbins) {
   if(fV0MMultiAxis) delete fV0MMultiAxis;
-  fV0MMultiAxis = new TAxis(nMultiBins, multibins);
+  fV0MMultiAxis = new TAxis(nV0MBins, V0Mbins);
+}
+void AliAnalysisTaskPtCorr::SetMptBins(Int_t nMptBins, Double_t mptlow, Double_t mpthigh) {
+  if(fMptAxis) delete fMptAxis;
+  fMptAxis = new TAxis(nMptBins, mptlow, mpthigh);
 }
 Double_t *AliAnalysisTaskPtCorr::GetBinsFromAxis(TAxis *inax) {
   Int_t lBins = inax->GetNbins();
