@@ -290,9 +290,9 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
     fNchTrueVsReco = new TH2D("NchTrueVsReco",";Nch (MC-true); Nch (MC-reco)",fNMultiBins,fMultiBins,fNMultiBins,fMultiBins);
     fptList->Add(fNchTrueVsReco);
   }
-  const Int_t nFineCentBins=180;
+  const Int_t nFineCentBins=90;
   Double_t *fineCentBins = new Double_t[nFineCentBins+1];
-  for(Int_t i=0;i<=nFineCentBins; i++) fineCentBins[i] = 0.5*i;
+  for(Int_t i=0;i<=nFineCentBins; i++) fineCentBins[i] = i;
   const Int_t nIPbins = 100;
   Double_t *ipBins = new Double_t[nIPbins];
   for(Int_t i=0;i<=nIPbins; i++) ipBins[i] = 0.2*i;
