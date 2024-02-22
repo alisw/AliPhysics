@@ -428,6 +428,16 @@ public:
   TArrayD GetHistoPtSumArr()             const { return fHistoPtSumArr       ; }
   void    SetHistoPtSumArr(TArrayD &arr)       { arr.Copy(fHistoPtSumArr)    ; }
 
+  // UE density in cone
+  void    SetHistoRhoUERangeAndNBins(Float_t min, Float_t max, Int_t n) {
+    fHistoNRhoUEBins = n ;  fHistoRhoUEMax = max ; fHistoRhoUEMin = min ; }
+  
+  Int_t   GetHistoNRhoUEBins()           const { return fHistoNRhoUEBins     ; }
+  Float_t GetHistoRhoUEMin()             const { return fHistoRhoUEMin       ; }
+  Float_t GetHistoRhoUEMax()             const { return fHistoRhoUEMax       ; }
+  TArrayD GetHistoRhoUEArr()             const { return fHistoRhoUEArr       ; }
+  void    SetHistoRhoUEArr(TArrayD &arr)       { arr.Copy(fHistoRhoUEArr)    ; }
+
   // Sum in cone after subtraction
   void    SetHistoPtSumSubRangeAndNBins(Float_t min, Float_t max, Int_t n) {
     fHistoNPtSumSubBins = n ;  fHistoPtSumSubMax = max ; fHistoPtSumSubMin = min ; }
@@ -652,6 +662,10 @@ private:
   Float_t  fHistoPtSumMax  ;                  ///< Isolation PtSum maximum in histogram.
   Float_t  fHistoPtSumMin  ;	                ///< Isolation PtSum minimum in histogram.
   TArrayD  fHistoPtSumArr  ;                  ///< Isolation PtSum histogram lower limit bins.
+  Int_t    fHistoNRhoUEBins;                  ///< Number of bins in Isolation UE density histograms.
+  Float_t  fHistoRhoUEMax  ;                  ///< Isolation UE density maximum in histogram.
+  Float_t  fHistoRhoUEMin  ;                  ///< Isolation UE density minimum in histogram.
+  TArrayD  fHistoRhoUEArr  ;                  ///< Isolation UE density histogram lower limit bins.
   Int_t    fHistoNPtSumSubBins;               ///< Number of bins in Isolation PtSum histograms.
   Float_t  fHistoPtSumSubMax  ;               ///< Isolation UE subtracted PtSum maximum in histogram.
   Float_t  fHistoPtSumSubMin  ;               ///< Isolation UE subtracted PtSum minimum in histogram.
@@ -692,7 +706,7 @@ private:
   AliHistogramRanges & operator = (const AliHistogramRanges & h) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliHistogramRanges,11) ;
+  ClassDef(AliHistogramRanges,12) ;
   /// \endcond
 
 } ;

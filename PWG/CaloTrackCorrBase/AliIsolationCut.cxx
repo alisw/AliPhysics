@@ -1757,10 +1757,10 @@ TList * AliIsolationCut::GetCreateOutputObjects()
   Float_t ptsummaxUESub  = fHistoRanges->GetHistoPtSumSubMax();
   Int_t  nptsumbinsUESub = fHistoRanges->GetHistoNPtSumSubBins();
   
-  Int_t nrhobins = 100;
-  Float_t rhomin = 0;
-  Float_t rhomax = 200;
-
+  Int_t  nrhobins     = fHistoRanges->GetHistoNRhoUEBins();
+  Float_t rhomax      = fHistoRanges->GetHistoRhoUEMax();
+  Float_t rhomin      = fHistoRanges->GetHistoRhoUEMin();
+  
   //
   // For TH3 histograms, more coarse and not constant binning
   //
@@ -1768,6 +1768,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
   TArrayD ptCBinsArray = fHistoRanges->GetHistoPtInConeArr();
   TArrayD cenBinsArray = fHistoRanges->GetHistoCentralityArr();
   TArrayD sumBinsArray = fHistoRanges->GetHistoPtSumArr();
+  TArrayD rhoBinsArray = fHistoRanges->GetHistoRhoUEArr();
   TArrayD sueBinsArray = fHistoRanges->GetHistoPtSumSubArr();
   TArrayD etaBinsArray = fHistoRanges->GetHistoEtaArr();
   TArrayD phiBinsArray = fHistoRanges->GetHistoPhiArr();
@@ -2401,7 +2402,8 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhConeRhoUEBandCluster  = new TH2F
         ("hConeRhoUEBandCluster",
          Form("Clusters #rho in normalized UE estimator, #it{R} =  %2.2f",fConeSize),
-         nptbins,ptmin,ptmax,nrhobins,rhomin,rhomax);
+          ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+         rhoBinsArray.GetSize() - 1,  rhoBinsArray.GetArray());
         fhConeRhoUEBandCluster->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
         fhConeRhoUEBandCluster->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhConeRhoUEBandCluster) ;
@@ -2409,7 +2411,8 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhConeRhoUEBandClusterCutMax  = new TH2F
         ("hConeRhoUEBandClusterCutMax",
          Form("Clusters #rho in normalized UE estimator, #it{R} =  %2.2f",fConeSize),
-         nptbins,ptmin,ptmax,nrhobins,rhomin,rhomax);
+         ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+        rhoBinsArray.GetSize() - 1,  rhoBinsArray.GetArray());
         fhConeRhoUEBandClusterCutMax->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
         fhConeRhoUEBandClusterCutMax->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhConeRhoUEBandClusterCutMax) ;
@@ -2417,7 +2420,8 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhConeRhoUEBandClusterCutLeadFactor  = new TH2F
         ("hConeRhoUEBandClusterCutLeadFactor",
          Form("Clusters #rho in normalized UE estimator, #it{R} =  %2.2f",fConeSize),
-         nptbins,ptmin,ptmax,nrhobins,rhomin,rhomax);
+         ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+        rhoBinsArray.GetSize() - 1,  rhoBinsArray.GetArray());
         fhConeRhoUEBandClusterCutLeadFactor->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
         fhConeRhoUEBandClusterCutLeadFactor->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhConeRhoUEBandClusterCutLeadFactor) ;
@@ -2523,7 +2527,8 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhPerpConeRho  = new TH2F
         ("hPerpConeRho",
          Form("#rho in 2 isolation cones at #pm 45 degree #varphi from trigger particle, norm. to 1 cone, #it{R} =  %2.2f",fConeSize),
-         nptbins,ptmin,ptmax,nrhobins,rhomin,rhomax);
+         ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+        rhoBinsArray.GetSize() - 1,  rhoBinsArray.GetArray());
         fhPerpConeRho->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
         fhPerpConeRho->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPerpConeRho) ;
@@ -2531,7 +2536,8 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhPerpConeRhoCutMax  = new TH2F
         ("hPerpConeRhoCutMax",
          Form("#rho in 2 isolation cones at #pm 45 degree #varphi from trigger particle, norm. to 1 cone, #it{R} =  %2.2f",fConeSize),
-         nptbins,ptmin,ptmax,nrhobins,rhomin,rhomax);
+         ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+        rhoBinsArray.GetSize() - 1,  rhoBinsArray.GetArray());
         fhPerpConeRhoCutMax->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
         fhPerpConeRhoCutMax->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPerpConeRhoCutMax) ;
@@ -2539,7 +2545,8 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhPerpConeRhoCutLeadFactor  = new TH2F
         ("hPerpConeRhoCutLeadFactor",
          Form("#rho in 2 isolation cones at #pm 45 degree #varphi from trigger particle, norm. to 1 cone, #it{R} =  %2.2f",fConeSize),
-         nptbins,ptmin,ptmax,nrhobins,rhomin,rhomax);
+         ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+        rhoBinsArray.GetSize() - 1,  rhoBinsArray.GetArray());
         fhPerpConeRhoCutLeadFactor->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
         fhPerpConeRhoCutLeadFactor->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPerpConeRhoCutLeadFactor) ;
@@ -2611,14 +2618,16 @@ TList * AliIsolationCut::GetCreateOutputObjects()
       fhJetRhoSumPt  = new TH2F
       ("hJetRhoPtSum",
        Form("Jet #rho #it{R}^{2} #pi, #it{R} =  %2.2f",fConeSize),
-       nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+       ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+      rhoBinsArray.GetSize() - 1,  rhoBinsArray.GetArray());
       fhJetRhoSumPt->SetYTitle("#rho #it{R}^{2} #pi (GeV/#it{c})");
       fhJetRhoSumPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhJetRhoSumPt) ;
 
       fhJetRho  = new TH2F
       ("hJetRho",Form("Jet #rho, #it{R} =  %2.2f",fConeSize),
-       nptbins,ptmin,ptmax,nrhobins,rhomin,rhomax);
+       ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+      rhoBinsArray.GetSize() - 1,  rhoBinsArray.GetArray());
       fhJetRho->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
       fhJetRho->SetXTitle("#it{p}_{T} (GeV/#it{c})");
       outputContainer->Add(fhJetRho) ;
@@ -2626,7 +2635,8 @@ TList * AliIsolationCut::GetCreateOutputObjects()
       fhConeSumPtVSJetRho = new TH2F
       ("hConeSumPtVSJetRho",
        Form("Jet #rho #it{R}^{2} #pi versus #Sigma #it{p}_{T}, R=%2.2f",fConeSize),
-       nptsumbins,ptsummin,ptsummax,nptsumbins,ptsummin,ptsummax);
+       sumBinsArray.GetSize() - 1,  sumBinsArray.GetArray(),
+       rhoBinsArray.GetSize() - 1,  rhoBinsArray.GetArray());
       fhConeSumPtVSJetRho->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
       fhConeSumPtVSJetRho->SetYTitle("Jet #rho #it{R}^{2} #pi (GeV/#it{c})");
       outputContainer->Add(fhConeSumPtVSJetRho);
@@ -2634,7 +2644,8 @@ TList * AliIsolationCut::GetCreateOutputObjects()
       fhJetRhoSumPtTrackSubVsNoSub = new TH2F
       ("hJetRhoSumPtTrackSubVsNoSub",
        Form("Track #Sigma #it{p}_{T} in cone before and after UE bkg sub, R=%2.2f",fConeSize),
-       nptsumbins,ptsummin,ptsummax,nptsumbinsUESub,ptsumminUESub,ptsummaxUESub);
+       sumBinsArray.GetSize() - 1,  sumBinsArray.GetArray(),
+       rhoBinsArray.GetSize() - 1,  rhoBinsArray.GetArray());
       fhJetRhoSumPtTrackSubVsNoSub->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
       fhJetRhoSumPtTrackSubVsNoSub->SetYTitle("#Sigma #it{p}_{T, UE sub} (GeV/#it{c})");
       outputContainer->Add(fhJetRhoSumPtTrackSubVsNoSub);
@@ -2646,7 +2657,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
          "Trigger #eta vs #varphi, Jet #rho #it{R}^{2} #pi",
          etaBinsArray.GetSize() - 1,  etaBinsArray.GetArray(),
          phiBinsArray.GetSize() - 1,  phiBinsArray.GetArray(),
-         sumBinsArray.GetSize() - 1,  sumBinsArray.GetArray());
+         rhoBinsArray.GetSize() - 1,  rhoBinsArray.GetArray());
         fhJetRhoSumPtTrigEtaPhi->SetZTitle("Jet #rho #it{R}^{2} #pi (GeV/#it{c})");
         fhJetRhoSumPtTrigEtaPhi->SetXTitle("#eta_{trigger}");
         fhJetRhoSumPtTrigEtaPhi->SetYTitle("#varphi_{trigger} (rad)");
@@ -2938,7 +2949,8 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhConeRhoUEBandTrack  = new TH2F
         ("hConeRhoUEBandTrack",
          Form("Tracks #Sigma #it{p}_{T} in normalized UE estimator, #it{R} =  %2.2f",fConeSize),
-         nptbins,ptmin,ptmax,nrhobins,rhomin,rhomax);
+         ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+        rhoBinsArray.GetSize() - 1,  rhoBinsArray.GetArray());
         fhConeRhoUEBandTrack->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
         fhConeRhoUEBandTrack->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhConeRhoUEBandTrack) ;
@@ -2946,7 +2958,8 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhConeRhoUEBandTrackCutMax  = new TH2F
         ("hConeRhoUEBandTrackCutMax",
          Form("Tracks #Sigma #it{p}_{T} in normalized UE estimator, #it{R} =  %2.2f",fConeSize),
-         nptbins,ptmin,ptmax,nrhobins,rhomin,rhomax);
+         ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+        rhoBinsArray.GetSize() - 1,  rhoBinsArray.GetArray());
         fhConeRhoUEBandTrackCutMax->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
         fhConeRhoUEBandTrackCutMax->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhConeRhoUEBandTrackCutMax) ;
@@ -2954,7 +2967,8 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         fhConeRhoUEBandTrackCutLeadFactor  = new TH2F
         ("hConeRhoUEBandTrackCutLeadFactor",
          Form("Tracks #Sigma #it{p}_{T} in normalized UE estimator, #it{R} =  %2.2f",fConeSize),
-         nptbins,ptmin,ptmax,nrhobins,rhomin,rhomax);
+         ptBinsArray.GetSize() - 1,   ptBinsArray.GetArray(),
+        rhoBinsArray.GetSize() - 1,  rhoBinsArray.GetArray());
         fhConeRhoUEBandTrackCutLeadFactor->SetYTitle("#rho (GeV/#it{c} rad^{-2})");
         fhConeRhoUEBandTrackCutLeadFactor->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhConeRhoUEBandTrackCutLeadFactor) ;
@@ -3394,7 +3408,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         ("hConeSumPtVSPerpConeCent",
          Form("#perp cone #Sigma #it{p}_{T}, R=%2.2f",fConeSize),
         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
-        sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+        rhoBinsArray.GetSize() - 1, rhoBinsArray.GetArray(),
         cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhConeSumPtVSPerpConeCent->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtVSPerpConeCent->SetYTitle("Jet #rho #it{R}^{2} #pi (GeV/#it{c})");
@@ -3437,7 +3451,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         ("hJetRhoPtSumCent",
          Form("Jet #rho #it{R}^{2} #pi, #it{R} =  %2.2f",fConeSize),
           ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
-         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+         rhoBinsArray.GetSize() - 1, rhoBinsArray.GetArray(),
          cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhJetRhoSumPtCent->SetYTitle("Jet #rho #it{R}^{2} #pi(GeV/#it{c})");
         fhJetRhoSumPtCent->SetXTitle("#it{p}_{T} (GeV/#it{c})");
@@ -3456,7 +3470,7 @@ TList * AliIsolationCut::GetCreateOutputObjects()
         ("hConeSumPtVSJetRhoCent",
          Form("Jet #rho #it{R}^{2} #pi versus #Sigma #it{p}_{T}, R=%2.2f",fConeSize),
         sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
-        sumBinsArray.GetSize() - 1, sumBinsArray.GetArray(),
+        rhoBinsArray.GetSize() - 1, rhoBinsArray.GetArray(),
         cenBinsArray.GetSize()  -1, cenBinsArray.GetArray());
         fhConeSumPtVSJetRhoCent->SetXTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
         fhConeSumPtVSJetRhoCent->SetYTitle("Jet #rho #it{R}^{2} #pi (GeV/#it{c})");
