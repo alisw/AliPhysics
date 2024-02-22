@@ -1379,6 +1379,39 @@ void AliAnaCaloTrackCorrBaseClass::InitHistoRangeArrays()
     GetHistogramRanges()->SetHistoPtSumArr(sumBinsArray);
   }
   
+  // Isolation rho UE density in cone
+  if ( GetHistogramRanges()->GetHistoRhoUEArr().GetSize() == 0  )
+  {
+    Float_t max = GetHistogramRanges()->GetHistoRhoUEMax();
+    
+    TCustomBinning rhoBinning;
+    rhoBinning.SetMinimum(0);
+    
+    if ( fHistoPtBinNonConstantInArray )
+    {
+      if ( max >   2 ) rhoBinning.AddStep(  2, 0.10);
+      if ( max >   4 ) rhoBinning.AddStep(  4, 0.20);
+      if ( max >  10 ) rhoBinning.AddStep( 10, 0.50);
+      if ( max >  25 ) rhoBinning.AddStep( max, 1.00);
+      
+      if      ( max <=   2 ) rhoBinning.AddStep(max, 0.10);
+      else if ( max <=   4 ) rhoBinning.AddStep(max, 0.20);
+      else if ( max <=  10 ) rhoBinning.AddStep(max, 0.50);
+      else if ( max <=  25 ) rhoBinning.AddStep(max, 1.00);
+      else                   rhoBinning.AddStep(max,1.00);
+    }
+    else
+    {
+      Float_t min = GetHistogramRanges()->GetHistoRhoUEMin();
+      rhoBinning.AddStep( max, (max-min) / GetHistogramRanges()->GetHistoNRhoUEBins());
+    }
+    
+    TArrayD rhoBinsArray;
+    rhoBinning.CreateBinEdges(rhoBinsArray);
+    GetHistogramRanges()->SetHistoRhoUEArr(rhoBinsArray);
+  }
+  
+  
   // Isolation sum pT in cone after UE subtraction
   if ( GetHistogramRanges()->GetHistoPtSumSubArr().GetSize() == 0 )
   {
