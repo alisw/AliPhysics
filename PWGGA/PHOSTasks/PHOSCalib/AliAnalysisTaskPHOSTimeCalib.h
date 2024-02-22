@@ -25,6 +25,7 @@ public:
 
 protected:
   void CalibrateCellTime(AliVCaloCells *cells, UShort_t BC);
+  void CalibrateClusterTime(AliVCaloCells *cells);
   void FillHistogram(const char * key,Double_t x) const ; //Fill 1D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y) const ; //Fill 2D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
