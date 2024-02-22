@@ -276,22 +276,6 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     fDetectorLevel  = GetTrackContainer(fDetectorLevelName);
     fGeneratorLevel = GetMCParticleContainer(fGeneratorLevelName);
     
-    R_match_eec = new TH3D("R_match_eec", "Matched Track R eec", 100, new_bins, 100, new_bins, 21, new_bins_const);
-    R_match_eec->RebinX(2);
-    R_match_eec->RebinY(2);
-    fOutput->Add(R_match_eec);
-    
-    wt_match_eec = new TH3D("wt_match_eec", "Matched Track Wt eec", 200, wt_new_bins, 200, wt_new_bins, 21, new_bins_const);
-    fOutput->Add(wt_match_eec);
-    
-    R_match_e3c = new TH3D("R_match_e3c", "Matched Track R e3c", 100, new_bins, 100, new_bins, 21, new_bins_const);
-    R_match_e3c->RebinX(2);
-    R_match_e3c->RebinY(2);
-    fOutput->Add(R_match_e3c);
-    
-    wt_match_e3c = new TH3D("wt_match_e3c", "Matched Track Wt e3c",200, wt_new_bins, 200, wt_new_bins, 21, new_bins_const);
-    fOutput->Add(wt_match_e3c);
-    
     qpt_tru1 = new TH1D("qpt_tru1","q/pt tru1",100, 0, 2);
     fOutput->Add(qpt_tru1);
     
@@ -361,12 +345,26 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     e3c_matched_tru->RebinX(2);
     fOutput->Add(e3c_matched_tru);
   
+    R_match_eec = new TH3D("R_match_eec", "Matched Track R eec", 100, new_bins, 100, new_bins, 21, new_bins_const);
+    R_match_eec->RebinX(2);
+    R_match_eec->RebinY(2);
+    fOutput->Add(R_match_eec);
+    
+    wt_match_eec = new TH3D("wt_match_eec", "Matched Track Wt eec", 200, wt_new_bins, 200, wt_new_bins, 21, new_bins_const);
+    fOutput->Add(wt_match_eec);
+    
+    R_match_e3c = new TH3D("R_match_e3c", "Matched Track R e3c", 100, new_bins, 100, new_bins, 21, new_bins_const);
+    R_match_e3c->RebinX(2);
+    R_match_e3c->RebinY(2);
+    fOutput->Add(R_match_e3c);
+    
+    wt_match_e3c = new TH3D("wt_match_e3c", "Matched Track Wt e3c",200, wt_new_bins, 200, wt_new_bins, 21, new_bins_const);
+    fOutput->Add(wt_match_e3c);
+  
     wt_res_eec = new TH3D("wt_res_eec", "Weight resolution scale EEC", 200, xres_new_bins, 200, res_new_bins,  21, new_bins_const);
-    wt_res_eec->RebinZ(2);
     fOutput->Add(wt_res_eec);
     
     wt_res_e3c = new TH3D("wt_res_e3c", "Weight resolution scale E3C", 200, xres_new_bins, 200, res_new_bins,  21, new_bins_const);
-    wt_res_e3c->RebinZ(2);
     fOutput->Add(wt_res_e3c);
     
     R_res_eec = new TH3D("R_res_eec", "R resolution scale EEC", 100, new_bins, 200, res_new_bins, 21, new_bins_const);//R_tru bins, diff bins, jet pT bins
