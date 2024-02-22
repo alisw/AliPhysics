@@ -62,6 +62,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetMultiBins(Int_t nBins, Double_t *multibins);
   void SetV0MBins(Int_t nBins, Double_t *multibins);
   void SetCentBinsForPt(Int_t nBins, Double_t *centbins);
+  void SetMptBins(Int_t nMptBins, Double_t *mptbins);
+  void SetMptBins(Int_t nMptBins, Double_t mptlow, Double_t mpthigh);
   void SetEtaAcceptance(Double_t newval) { fEtaAcceptance = newval; };
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
   void SetUseWeightsOne(Bool_t newvalNUE) { fUseNUEOne = newvalNUE; };
@@ -120,6 +122,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TAxis *fEtaAxis;
   TAxis *fMultiAxis;      //Multiplicity axis (either for V0M or Nch)
   TAxis *fCentPtAxis;      //Centrality axis for mpt fluctuations
+  TAxis *fMptAxis;      //Mpt axis
   TAxis *fV0MMultiAxis;   //Defaults V0M bins
   Double_t *fPtBins; //!
   Int_t fNPtBins; //!
@@ -129,6 +132,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Int_t fNMultiBins; //!
   Double_t *fCentPtBins; //!
   Int_t fNCentPtBins; //!
+  Double_t *fMptBins; //!
+  Int_t fNMptBins; //!
   Double_t *fV0MBinsDefault; //!
   Int_t fNV0MBinsDefault; //!
   Bool_t fUseNch;
