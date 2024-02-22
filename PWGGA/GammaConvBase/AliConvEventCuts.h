@@ -620,6 +620,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void    SetLightOutput( Int_t flag ){fDoLightOutput = flag; return;}
       void    SetUseSphericityTrue( Bool_t flag ){fUseSphericityTrue = flag;}
       void    FillTPCPileUpHistogram(AliVEvent *event);
+      void    FillTPCOccupancyHistograms(AliVEvent *event);
 
       ///Cut functions
       Int_t   IsParticleFromBGEvent(  Int_t index,
@@ -798,6 +799,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TH2F*                       hSPDClusterTrackletBackgroundBefore;    ///< SPD tracklets vs SPD clusters for background-correction before cut
       TH2F*                       hSPDClusterTrackletBackground;          ///< SPD tracklets vs SPD clusters for background-correction
       TH2F*                       hV0MultVsNumberTPCoutTracks;            ///< correlation V=Mult vs number TPC out Tracks
+      TH1F*                       hTPCclusters;                           ///< number of tpc clusters per event
+      TH1F*                       hTPCoutTracks;                          ///< number of tpc out tracks 
       TH2F*                       hTPCSDDSSDClusters_before;              ///< x: TPC clusters, y: SDD+SSD clusters before corresponding cut
       // trigger information
       TString                     fV0ReaderName;                          ///< Name of V0Reader
@@ -835,7 +838,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,92)
+      ClassDef(AliConvEventCuts,93)
       /// \endcond
 };
 
