@@ -1253,14 +1253,15 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       else arrClusPtBinning[i]                = maxClusterPt;
     }
   } else if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kPbPb5TeV  ){
-    nBinsPt                   = 110;
+    nBinsMinv                 = 400;
+    nBinsPt                   = 49;
     minPt                     = 0;
     maxPt                     = 40;
     for(Int_t i=0; i<nBinsPt+1;i++){
-      if (i < 1) arrPtBinning[i]              = 0.3*i;
-      else if(i<58) arrPtBinning[i]           = 0.3+0.1*(i-1);
-      else if(i<82) arrPtBinning[i]           = 6.+0.25*(i-58);
-      else if(i<110) arrPtBinning[i]          = 12.+1.0*(i-82);
+      if(i<=20)           arrPtBinning[i]  = 0.0   + 0.2*i;             // 0.2 GeV bin width until 4 GeV
+      else if(i<=30)      arrPtBinning[i]  = 4.0   + 0.5*(i-20);        // 0.5 GeV                 9 GeV
+      else if(i<=41)      arrPtBinning[i]  = 9.0   + 1.0*(i-30);        // 1.0 GeV                 15 GeV
+      else if(i<=49) arrPtBinning[i]       = 20.   + 2.5*(i-41);        // 2.5 GeV                 40 GeV
       else arrPtBinning[i]                    = maxPt;
     }
     nBinsQAPt                 = 92;
