@@ -218,7 +218,7 @@ void AddTask_GammaConvCalo_PbPb(
   }
   if (enableLightOutput >= 1 && enableLightOutput != 4) task->SetLightOutput(1);
   else if (enableLightOutput == 4) task->SetLightOutput(2);
-  if (enableLightOutput == 5) task->SetECalibOutput(1);
+  if (enableLightOutput == 4 || enableLightOutput == 5) task->SetECalibOutput(1);
   if (enableLightOutput == 6) task->SetECalibOutput(2);
   task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
@@ -2032,6 +2032,7 @@ void AddTask_GammaConvCalo_PbPb(
       AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi(),trackMatcherRunningMode);
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
       fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
+      if (enableLightOutput == 4) fTrackMatcher->SetLightOutput(kTRUE);
       mgr->AddTask(fTrackMatcher);
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
@@ -2129,7 +2130,8 @@ void AddTask_GammaConvCalo_PbPb(
       }
     }
 
-    if (enableLightOutput > 0) analysisEventCuts[i]->SetLightOutput(1);
+    if (enableLightOutput == 1 || enableLightOutput == 2 ) analysisEventCuts[i]->SetLightOutput(1);
+    if (enableLightOutput == 4) analysisEventCuts[i]->SetLightOutput(2);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     if (generatorName.CompareTo("LHC14a1b") ==0 || generatorName.CompareTo("LHC14a1c") ==0 ){
       if (headerSelectionInt == 1 || headerSelectionInt == 4 || headerSelectionInt == 12 ) analysisEventCuts[i]->SetAddedSignalPDGCode(111);
@@ -2215,7 +2217,9 @@ void AddTask_GammaConvCalo_PbPb(
       analysisCuts[i]->SetDoElecDeDxPostCalibration(kTRUE);
       cout << "Enabled TPC dEdx recalibration." << endl;
     }
-    if (enableLightOutput > 0) analysisCuts[i]->SetLightOutput(1);
+    if (enableLightOutput == 1 || enableLightOutput == 2 || enableLightOutput == 5 ) analysisCuts[i]->SetLightOutput(1);
+    if (enableLightOutput == 4) analysisCuts[i]->SetLightOutput(2);
+    if (enableLightOutput == 0) analysisCuts[i]->SetPlotTrackPID(kTRUE);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
     ConvCutList->Add(analysisCuts[i]);
     analysisCuts[i]->SetFillCutHistograms("",kFALSE);
@@ -2225,13 +2229,15 @@ void AddTask_GammaConvCalo_PbPb(
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
-    if (enableLightOutput > 0) analysisClusterCuts[i]->SetLightOutput(1);
+    if (enableLightOutput == 1 || enableLightOutput == 2 || enableLightOutput == 5 ) analysisClusterCuts[i]->SetLightOutput(1);
+    if (enableLightOutput == 4) analysisClusterCuts[i]->SetLightOutput(2);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
-    if (enableLightOutput > 0) analysisMesonCuts[i]->SetLightOutput(1);
+    if (enableLightOutput > 0 && enableLightOutput != 4) analysisMesonCuts[i]->SetLightOutput(1);
+    if (enableLightOutput == 4) analysisMesonCuts[i]->SetLightOutput(2);
     analysisMesonCuts[i]->SetRunningMode(2);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     MesonCutList->Add(analysisMesonCuts[i]);
@@ -2253,7 +2259,7 @@ void AddTask_GammaConvCalo_PbPb(
   task->SetDoMesonAnalysis(kTRUE);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
   task->SetDoPhotonQA(enableQAPhotonTask);  //Attention new switch small for Photon QA
-  task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
+  if (enableLightOutput != 4) task->SetDoClusterQA(1);  //Attention new switch small for Cluster QA
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
   task->SetDoTreeInvMassShowerShape(doTreeClusterShowerShape);
   task->SetUseTHnSparse(enableTHnSparse);

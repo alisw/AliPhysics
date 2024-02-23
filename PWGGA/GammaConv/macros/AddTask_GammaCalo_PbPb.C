@@ -32,7 +32,7 @@ void AddTask_GammaCalo_PbPb(
   Int_t     enableQAMesonTask             = 0,        // enable QA in AliAnalysisTaskGammaConvV1
   Int_t     enableQAClusterTask           = 0,        // enable additional QA task
   Int_t     enableExtMatchAndQA           = 0,        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
-  Bool_t    enableLightOutput             = kFALSE,   // switch to run light output (only essential histograms for afterburner)
+  Int_t     enableLightOutput             = 0,        // switch to run light output (only essential histograms for afterburner)
   Bool_t    enableTHnSparse               = kFALSE,   // switch on THNsparse
   Int_t     enableTriggerMimicking        = 0,        // enable trigger mimicking
   Bool_t    enableHeaderOverlap           = kTRUE,    // enable trigger overlap rejection
@@ -191,6 +191,7 @@ void AddTask_GammaCalo_PbPb(
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
+  if (enableLightOutput >= 4) task->SetECalibOutput(kTRUE);
   task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetLightOutput(enableLightOutput);
   task->SetDoPrimaryTrackMatching(doPrimaryTrackMatching);
@@ -2182,6 +2183,7 @@ void AddTask_GammaCalo_PbPb(
       AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi(),trackMatcherRunningMode);
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
       fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
+      if (enableLightOutput == 4) fTrackMatcher->SetLightOutput(kTRUE);
       mgr->AddTask(fTrackMatcher);
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
@@ -2266,7 +2268,7 @@ void AddTask_GammaCalo_PbPb(
     }
 
     analysisEventCuts[i]->SetDebugLevel(0);
-    analysisEventCuts[i]->SetLightOutput(enableLightOutput);
+    if (enableLightOutput > 0) analysisEventCuts[i]->SetLightOutput(1);
     if(fMinPtHardSet)
       analysisEventCuts[i]->SetMinFacPtHard(minFacPtHard);
     if(fMaxPtHardSet)
@@ -2287,19 +2289,23 @@ void AddTask_GammaCalo_PbPb(
       if (headerSelectionInt == 1 || headerSelectionInt == 4 || headerSelectionInt == 12 ) analysisEventCuts[i]->SetAddedSignalPDGCode(111);
       if (headerSelectionInt == 2 || headerSelectionInt == 5 || headerSelectionInt == 13 ) analysisEventCuts[i]->SetAddedSignalPDGCode(221);
     }
+    if (enableLightOutput == 1 || enableLightOutput == 2 ) analysisEventCuts[i]->SetLightOutput(1);
+    if (enableLightOutput == 4) analysisEventCuts[i]->SetLightOutput(2);
 
     analysisClusterCuts[i]  = new AliCaloPhotonCuts(isMC);
     analysisClusterCuts[i]->SetHistoToModifyAcceptance(histoAcc);
     analysisClusterCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
-    analysisClusterCuts[i]->SetLightOutput(enableLightOutput);
+    if (enableLightOutput == 1 || enableLightOutput == 2 || enableLightOutput ==5 ) analysisClusterCuts[i]->SetLightOutput(1);
+    if (enableLightOutput == 4) analysisClusterCuts[i]->SetLightOutput(2);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
 
     analysisMesonCuts[i]    = new AliConversionMesonCuts();
-    analysisMesonCuts[i]->SetLightOutput(enableLightOutput);
+    if (enableLightOutput > 0 && enableLightOutput != 4) analysisMesonCuts[i]->SetLightOutput(1);
+    if (enableLightOutput == 4) analysisMesonCuts[i]->SetLightOutput(2);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     analysisMesonCuts[i]->SetIsMergedClusterCut(2);
     analysisMesonCuts[i]->SetCaloMesonCutsObject(analysisClusterCuts[i]);
