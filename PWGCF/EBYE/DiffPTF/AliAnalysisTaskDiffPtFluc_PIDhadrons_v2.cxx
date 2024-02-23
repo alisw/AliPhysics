@@ -480,7 +480,7 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 		  {
 		    ptBinNo = fHistMCEffHadronMinus->FindBin(trkPt);
 		    BinCont = fHistMCEffHadronMinus->GetBinContent(ptBinNo);
-		    cout<<"Eff: "<<BinCont<<endl;
+		    //cout<<"Eff: "<<BinCont<<endl;
 		  }
 		if(trkCharge > 0)
 		  {
@@ -488,14 +488,14 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 		    BinCont = fHistMCEffHadronPlus->GetBinContent(ptBinNo);
 		  }
 		
-		if(trkEta < 0.0)
+		if(trkEta < 0.0  && BinCont != 0)
 		  {
 		    fPt_profile->Fill(trkPt,1.0/BinCont);
 		    pT_sum_etaLess0 += trkPt/BinCont;
 		    N_sum_etaLess0 += 1.0/BinCont;
 		  }
 	    
-		if(trkEta > fEtaMin)
+		if(trkEta > fEtaMin && BinCont != 0)
 		  {
 		    pT_sum_etaGreaterEtamin += trkPt/BinCont;
 		    N_sum_etaGreaterEtamin += 1.0/BinCont;
@@ -566,8 +566,11 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 			    ptBinNo = fHistMCEffPionPlus->FindBin(trkPt);
 			    BinCont = fHistMCEffPionPlus->GetBinContent(ptBinNo);
 			  }
-			fPt_profile_pion->Fill(trkPt,1.0/BinCont);
-			N_sumPion_etaLess0 += 1.0/BinCont;
+			if(BinCont != 0)
+			  {
+			    fPt_profile_pion->Fill(trkPt,1.0/BinCont);
+			    N_sumPion_etaLess0 += 1.0/BinCont;
+			  }
 		      }
 		    
 		    if(IsKaon)
@@ -582,8 +585,11 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 			    ptBinNo = fHistMCEffKaonPlus->FindBin(trkPt);
 			    BinCont = fHistMCEffKaonPlus->GetBinContent(ptBinNo);
 			  }
-			fPt_profile_kaon->Fill(trkPt,1.0/BinCont);
-			N_sumKaon_etaLess0 += 1.0/BinCont;
+			if(BinCont != 0)
+			  {
+			    fPt_profile_kaon->Fill(trkPt,1.0/BinCont);
+			    N_sumKaon_etaLess0 += 1.0/BinCont;
+			  }
 		      }
 		    
 		    if(IsProton && trkPt > 0.4)
@@ -598,8 +604,11 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 			    ptBinNo = fHistMCEffProtonPlus->FindBin(trkPt);
 			    BinCont = fHistMCEffProtonPlus->GetBinContent(ptBinNo);
 			  }
-			fPt_profile_proton->Fill(trkPt,1.0/BinCont);
-			N_sumProton_etaLess0 += 1.0/BinCont;
+			if(BinCont != 0)
+			  {
+			    fPt_profile_proton->Fill(trkPt,1.0/BinCont);
+			    N_sumProton_etaLess0 += 1.0/BinCont;
+			  }
 		      }
 		  }
 	      }
