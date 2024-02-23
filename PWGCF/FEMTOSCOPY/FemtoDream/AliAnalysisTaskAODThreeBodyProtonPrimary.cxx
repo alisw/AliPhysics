@@ -78,6 +78,7 @@ AliAnalysisTaskAODThreeBodyProtonPrimary::AliAnalysisTaskAODThreeBodyProtonPrima
       fRunmTPlots(false), 
       fIsMC(false),
       fRemoveMCResonances(false),
+      fRunProjector(false), 
 
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
@@ -134,6 +135,7 @@ AliAnalysisTaskAODThreeBodyProtonPrimary::AliAnalysisTaskAODThreeBodyProtonPrima
       fInvMassVSmT12_MixedEvent(nullptr),
       fInvMassVSmT23_MixedEvent(nullptr),
       fInvMassVSmT31_MixedEvent(nullptr),
+      fProjectorData(nullptr),
 
       fResultsQA(nullptr),
       fSample(nullptr),
@@ -206,6 +208,7 @@ AliAnalysisTaskAODThreeBodyProtonPrimary::AliAnalysisTaskAODThreeBodyProtonPrima
       fRunmTPlots(false), 
       fIsMC(false),
       fRemoveMCResonances(false),
+      fRunProjector(false), 
 
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
@@ -262,6 +265,7 @@ AliAnalysisTaskAODThreeBodyProtonPrimary::AliAnalysisTaskAODThreeBodyProtonPrima
       fInvMassVSmT12_MixedEvent(nullptr),
       fInvMassVSmT23_MixedEvent(nullptr),
       fInvMassVSmT31_MixedEvent(nullptr),
+      fProjectorData(nullptr),
 
       fResultsQA(nullptr),
       fSample(nullptr),
@@ -631,6 +635,21 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::UserCreateOutputObjects() {
         fMixedEventTripletmTArray31[i] = new TH2F(histTitle2+"31",histTitle2+"31", 4000, 0, 8, 100, 0., 5.);
           if(fRunmTPlots && i<6){fMixedEventmT->Add(fMixedEventTripletmTArray31[i]);}
 	     }
+
+       fProjectorData = new TH2F*[6];
+       if(fRunProjector && fDoOnlyThreeBody){
+       for (int i = 0; i < 6; ++i) {
+        if(i == 2){
+          TString histTitle = "Projector"+fParticleNames[fTripletCombinations[i][0]]+fParticleNames[fTripletCombinations[i][1]]+fParticleNames[fTripletCombinations[i][2]];
+	        fProjectorData[i] = new TH2F(histTitle,histTitle, 1000,0.,1., 1000, 0, 1.);
+	        fMixedEventMult->Add(fProjectorData[i]);
+        } else {
+          fProjectorData[i] = nullptr; 
+        }
+
+	     }
+    }
+
     }
 
     //Two-Body ......................................
@@ -876,6 +895,7 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::UserCreateOutputObjects() {
       fResultsThreeBody->Add(fInvMassVSmTList);
     }
 
+
    }//if (fRunThreeBody)
 
 
@@ -1118,29 +1138,6 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::UserExec(Option_t *option) {
   fPairCleaner->StoreParticle(Primaries);
   fPairCleaner->StoreParticle(AntiPrimaries);
 
-  /*int ContainerIdPPP;
-  int ContainerIdPPPrim;
-  int ContainerIdPPAPrim;
-  int ContainerIdPP;
-  int ContainerIdPPrim;
-  int ContainerIdPAPrim;
-
-  if(fStandardMixing){
-    ContainerIdPPP = 0;
-    ContainerIdPPPrim = 0;
-    ContainerIdPPAPrim = 0;
-    ContainerIdPP = 0;
-    ContainerIdPPrim = 0;
-    ContainerIdPAPrim = 0;
-  }else{
-    ContainerIdPPP = 0;
-    ContainerIdPPPrim = 1;
-    ContainerIdPPAPrim = 2;
-    ContainerIdPP = 0;
-    ContainerIdPPrim = 1;
-    ContainerIdPAPrim = 2;
-  }*/ 
-
   //c) Start Three Body Calculus +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   if(fRunThreeBody){
     static std::vector<int> PDGCodes = fConfig->GetPDGCodes();
@@ -1200,10 +1197,18 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::UserExec(Option_t *option) {
       }
 
       //c.1.0) Same 2, Mixed 1~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      int ContainerId = 0; 
+
       if(fDoOnlyThreeBody){
 
         for(int iComb=0; iComb<10; iComb++){
-           FillTripletDistributionSE2ME1(ParticleVector, *VectItMult[0], fSameMixedCominations[iComb][0], fSameMixedCominations[iComb][1], fSameMixedCominations[iComb][2], 
+           if(fStandardMixing){
+             ContainerId = 0;
+           }else{
+             ContainerId = fSameMixedContainerID[iComb];
+           } 
+
+           FillTripletDistributionSE2ME1(ParticleVector, *VectItMult[ContainerId], fSameMixedCominations[iComb][0], fSameMixedCominations[iComb][1], fSameMixedCominations[iComb][2], 
                                         fSameEventTripletArray[iComb+6], PDGCodes,
                                         bins[1], fSameEventTripletMultArray[iComb+6], fSameEventTripletMultArray12[iComb+6],
                                         fSameEventTripletPhiThetaArray_SamePair, fSameEventTripletPhiThetaArray_DifferentPair, iComb+6, 
@@ -1218,18 +1223,30 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::UserExec(Option_t *option) {
       //c.1.1) Normal mixing ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       if(fDoOnlyThreeBody){
         for(int iComb=0; iComb<6; iComb++){
-          FillTripletDistributionME(ParticleVector, *VectItMult[0], fTripletCombinations[iComb][0], fTripletCombinations[iComb][1], fTripletCombinations[iComb][2],
+           if(fStandardMixing){
+             ContainerId = 0;
+           }else{
+             ContainerId = fTripletContainerID[iComb];
+           } 
+
+          FillTripletDistributionME(ParticleVector, *VectItMult[ContainerId], fTripletCombinations[iComb][0], fTripletCombinations[iComb][1], fTripletCombinations[iComb][2],
                                    fMixedEventTripletArray[iComb], PDGCodes, 
                                    bins[1], fMixedEventTripletMultArray[iComb], fMixedEventTripletMultArray12[iComb], fMixedEventTripletMultArray23[iComb], fMixedEventTripletMultArray31[iComb], 
                                    fMixedEventTripletPhiThetaArray_SamePair, fMixedEventTripletPhiThetaArray_DifferentPair, iComb, *fConfig, 
                                    fMixedEventTripletmTArray12[iComb], fMixedEventTripletmTArray23[iComb], fMixedEventTripletmTArray31[iComb], 
-                                   fInvMassVSmT12_MixedEvent[iComb], fInvMassVSmT23_MixedEvent[iComb], fInvMassVSmT31_MixedEvent[iComb]);
+                                   fInvMassVSmT12_MixedEvent[iComb], fInvMassVSmT23_MixedEvent[iComb], fInvMassVSmT31_MixedEvent[iComb], fProjectorData[iComb]);
 
         }  
       } else {
         //Two Body Analyses...........
         for(int iComb=0; iComb<6; iComb++){
-         FillPairDistributionME( ParticleVector, *VectItMult[0], fPairCombinations[iComb][0], fPairCombinations[iComb][1],
+           if(fStandardMixing){
+             ContainerId = 0;
+           }else{
+             ContainerId = fPairContainerID[iComb];
+           } 
+          
+         FillPairDistributionME( ParticleVector, *VectItMult[ContainerId], fPairCombinations[iComb][0], fPairCombinations[iComb][1],
                                 fMixedEventPairArray_TwoBody[iComb],PDGCodes, 
                                 bins[1],fMixedEventPairMultArray_TwoBody[iComb], fMixedEventDphiArray_TwoBody[iComb], 
                                 fMixedEventMultArray_TwoBody[iComb], fMixedEventPairPhiThetaArray_TwoBody,iComb, *fConfig);
@@ -1723,7 +1740,7 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::SetMixedEventPPPrim(
     std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> *fPartContainer) {
   // Feed this function with GetCleanParticles output and fill the mixed events for different particles
   // THIS WORKS ONLY IF 0 and 2 is proton and primary, 1 and 3 is antiproton antiprimary.
-  // Fill the particles only if at least 2 prontons and a primary particle are present in the event
+  // Fill the particles only if at least 2 protons and a primary particle are present in the event
   if ((ParticleVector.begin())->size() > 1 && (ParticleVector.begin()+2)->size() > 0) {
     (fPartContainer->begin())->SetEvent(*(ParticleVector.begin()));
     (fPartContainer->begin()+2)->SetEvent(*(ParticleVector.begin()+2));
@@ -1753,7 +1770,7 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::SetMixedEventPPAPrim(
 
 //==================================================================================================================================================
 
-void AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F* hist2d12, TH2F* hist2d23, TH2F* hist2d31, TH2F **fEventTripletPhiThetaArray_SamePair, TH2F **fEventTripletPhiThetaArray_DifferentPair, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* histmTQ312, TH2F* histmTQ323, TH2F* histmTQ331, TH2F* InvMassVsmT12, TH2F* InvMassVsmT23, TH2F* InvMassVsmT31){//, TH2F* InvMassMixed, TH2F* Q3VskDistribution12Mixed, TH2F*  Q3VskDistribution23Mixed){
+void AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F* hist2d12, TH2F* hist2d23, TH2F* hist2d31, TH2F **fEventTripletPhiThetaArray_SamePair, TH2F **fEventTripletPhiThetaArray_DifferentPair, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* histmTQ312, TH2F* histmTQ323, TH2F* histmTQ331, TH2F* InvMassVsmT12, TH2F* InvMassVsmT23, TH2F* InvMassVsmT31, TH2F* Projector){//, TH2F* InvMassMixed, TH2F* Q3VskDistribution12Mixed, TH2F*  Q3VskDistribution23Mixed){
   // Description of function given in AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistribution
   // In this function, only one particle is used from current event, and the other two - from other two events
 
@@ -1920,9 +1937,11 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistributionME(std::ve
 
         }
 
+        if(fRunProjector && phiEtaHistNo == 2){ //only run it for  (p)-(p)-Prim
+          Projector->Fill(Q3, RelativeMomentum12); 
+        }
 
 
-       
           }
         }
       }
