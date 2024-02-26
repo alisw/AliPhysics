@@ -249,6 +249,20 @@ protected:
     TH3D *wtnojet_match_e3c;//!<! initializing 2D histogram for E3C wt without jet pt
     TH3D *wtnojet_res_eec; //!<! initializing 2D histogram for wt resolution with jet pt excluded EEC
     TH3D *wtnojet_res_e3c; //!<! initializing 2D histogram for wt resolution with jet pt excluded E3C
+    
+    TH3D *R_match_eec_tru; //!<! pair distance of all det level tracks in det jet matched with truth level tracks in truth jet eec as a function of jet pT tru
+    TH3D *wt_match_eec_tru; //!<! pair wts of all det level tracks in det jet matched with truth level tracks in truth jet eec as a function of jet pT tru
+    TH3D *R_match_e3c_tru; //!<! pair distance of all det level tracks in det jet matched with truth level tracks in truth jet e3c as a function of jet pT tru
+    TH3D *wt_match_e3c_tru; //!<! pair wts of all det level tracks in det jet matched with truth level tracks in truth jet e3c as a function of jet pT tru
+
+    TH3D *wt_res_eec_tru; //!<! initializing 2D histogram for wt resolution EEC as a function of jet pT tru
+    TH3D *wt_res_e3c_tru; //!<! initializing 2D histogram for wt resolution E3C as a function of jet pT tru
+    TH3D *R_res_eec_tru; //!<! initializing 2D histogram for R resolution EEC as a function of jet pT tru
+    TH3D *R_res_e3c_tru; //!<! initializing 2D histogram for R resolution E3C as a function of jet pT tru
+    TH3D *wtnojet_match_eec_tru;//!<! initializing 2D histogram for EEC wt without jet pt as a function of jet pT tru
+    TH3D *wtnojet_match_e3c_tru;//!<! initializing 2D histogram for E3C wt without jet pt as a function of jet pT tru
+    TH3D *wtnojet_res_eec_tru; //!<! initializing 2D histogram for wt resolution with jet pt excluded EEC as a function of jet pT tru
+    TH3D *wtnojet_res_e3c_tru; //!<! initializing 2D histogram for wt resolution with jet pt excluded E3C as a function of jet pT tru
 
 private:
     AliAnalysisTaskJetsEEC(
@@ -256,7 +270,7 @@ private:
     AliAnalysisTaskJetsEEC &
     operator=(const AliAnalysisTaskJetsEEC &); // not implemented
     
-    ClassDef(AliAnalysisTaskJetsEEC, 52) //change this to 53 if you add something new
+    ClassDef(AliAnalysisTaskJetsEEC, 56) //change this to 56 if you add something new
 };
 #endif
 
