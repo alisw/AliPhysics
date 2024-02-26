@@ -95,6 +95,7 @@ public:
 
   void SetDoSVAnalysis(bool value) { fDoSVAnalysis = value; }
   void SetDoTCAnalysis(bool value) { fDoTrackCountingAnalysis = value; }
+  void SetDo3DSVHistos(bool value) { fDo3DSVHists = value; }
 
   void SetTaggerWorkingPoint(double value) { fThresholdIP = value; }
   void SetMaxDispersion(double value) { fMaxDespersion = value; }
@@ -313,9 +314,10 @@ private:
   AliAODVertex *fPrimaryVertex;       //! Event Primary Vertex
 
   // Secondary Vertex
-  bool fDoSVAnalysis;            //
-  bool fDoTrackCountingAnalysis; //
-  bool fUsePartonDef;
+  bool fDoSVAnalysis;             //
+  bool fDo3DSVHists;              // Fill the 3d SV histograms instead of the 2D
+  bool fDoTrackCountingAnalysis;  //
+  bool fUsePartonDef;             //
   bool fDoJetProbabilityAnalysis; //
 
   double fMinTrackProb;
@@ -334,6 +336,18 @@ private:
   TH3D *fHistSV2Prongc;            //!
   TH3D *fHistSV2Pronglf;           //!
 
+  TH2D *fHistDecayLengthSV2Prong;             //!
+  TH2D *fHistDecayLengthSV2ProngUnidentified; //!
+  TH2D *fHistDecayLengthSV2Prongb;            //!
+  TH2D *fHistDecayLengthSV2Prongc;            //!
+  TH2D *fHistDecayLengthSV2Pronglf;           //!
+
+  TH2D *fHistMassSV2Prong;             //!
+  TH2D *fHistMassSV2ProngUnidentified; //!
+  TH2D *fHistMassSV2Prongb;            //!
+  TH2D *fHistMassSV2Prongc;            //!
+  TH2D *fHistMassSV2Pronglf;           //!
+
   TH2D *fHistDispersion2Prong;             //!
   TH2D *fHistDispersion2ProngUnidentified; //!
   TH2D *fHistDispersion2Prongb;            //!
@@ -345,6 +359,18 @@ private:
   TH3D *fHistSV3Prongb;            //!
   TH3D *fHistSV3Prongc;            //!
   TH3D *fHistSV3Pronglf;           //!
+
+  TH2D *fHistDecayLengthSV3Prong;             //!
+  TH2D *fHistDecayLengthSV3ProngUnidentified; //!
+  TH2D *fHistDecayLengthSV3Prongb;            //!
+  TH2D *fHistDecayLengthSV3Prongc;            //!
+  TH2D *fHistDecayLengthSV3Pronglf;           //!
+
+  TH2D *fHistMassSV3Prong;             //!
+  TH2D *fHistMassSV3ProngUnidentified; //!
+  TH2D *fHistMassSV3Prongb;            //!
+  TH2D *fHistMassSV3Prongc;            //!
+  TH2D *fHistMassSV3Pronglf;           //!
 
   TH2D *fHistDispersion3Prong;             //!
   TH2D *fHistDispersion3ProngUnidentified; //!

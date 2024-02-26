@@ -199,6 +199,7 @@ AliJHFTagging::AliJHFTagging() : AliAnalysisTaskEmcalJet(),
                                  fPrimaryVertex(0x0),
                                  // Secondary Vertex
                                  fDoSVAnalysis(false),
+                                 fDo3DSVHists(false),
                                  fDoTrackCountingAnalysis(true),
                                  fUsePartonDef(true),
                                  fDoJetProbabilityAnalysis(false),
@@ -211,6 +212,16 @@ AliJHFTagging::AliJHFTagging() : AliAnalysisTaskEmcalJet(),
                                  fHistSV2Prongb(0x0),
                                  fHistSV2Prongc(0x0),
                                  fHistSV2Pronglf(0x0),
+                                 fHistDecayLengthSV2Prong(0x0),
+                                 fHistDecayLengthSV2ProngUnidentified(0x0),
+                                 fHistDecayLengthSV2Prongb(0x0),
+                                 fHistDecayLengthSV2Prongc(0x0),
+                                 fHistDecayLengthSV2Pronglf(0x0),
+                                 fHistMassSV2Prong(0x0),
+                                 fHistMassSV2ProngUnidentified(0x0),
+                                 fHistMassSV2Prongb(0x0),
+                                 fHistMassSV2Prongc(0x0),
+                                 fHistMassSV2Pronglf(0x0),
                                  fHistDispersion2Prong(0x0),
                                  fHistDispersion2ProngUnidentified(0x0),
                                  fHistDispersion2Prongb(0x0),
@@ -221,6 +232,16 @@ AliJHFTagging::AliJHFTagging() : AliAnalysisTaskEmcalJet(),
                                  fHistSV3Prongb(0x0),
                                  fHistSV3Prongc(0x0),
                                  fHistSV3Pronglf(0x0),
+                                 fHistDecayLengthSV3Prong(0x0),
+                                 fHistDecayLengthSV3ProngUnidentified(0x0),
+                                 fHistDecayLengthSV3Prongb(0x0),
+                                 fHistDecayLengthSV3Prongc(0x0),
+                                 fHistDecayLengthSV3Pronglf(0x0),
+                                 fHistMassSV3Prong(0x0),
+                                 fHistMassSV3ProngUnidentified(0x0),
+                                 fHistMassSV3Prongb(0x0),
+                                 fHistMassSV3Prongc(0x0),
+                                 fHistMassSV3Pronglf(0x0),
                                  fHistDispersion3Prong(0x0),
                                  fHistDispersion3ProngUnidentified(0x0),
                                  fHistDispersion3Prongb(0x0),
@@ -387,6 +408,7 @@ AliJHFTagging::AliJHFTagging(const char *name) : AliAnalysisTaskEmcalJet(name, t
                                                  fPrimaryVertex(0x0),
                                                  // Secondary Vertex
                                                  fDoSVAnalysis(false),
+                                                 fDo3DSVHists(false),
                                                  fDoTrackCountingAnalysis(true),
                                                  fUsePartonDef(true),
                                                  fDoJetProbabilityAnalysis(false),
@@ -399,6 +421,16 @@ AliJHFTagging::AliJHFTagging(const char *name) : AliAnalysisTaskEmcalJet(name, t
                                                  fHistSV2Prongb(0x0),
                                                  fHistSV2Prongc(0x0),
                                                  fHistSV2Pronglf(0x0),
+                                                 fHistDecayLengthSV2Prong(0x0),
+                                                 fHistDecayLengthSV2ProngUnidentified(0x0),
+                                                 fHistDecayLengthSV2Prongb(0x0),
+                                                 fHistDecayLengthSV2Prongc(0x0),
+                                                 fHistDecayLengthSV2Pronglf(0x0),
+                                                 fHistMassSV2Prong(0x0),
+                                                 fHistMassSV2ProngUnidentified(0x0),
+                                                 fHistMassSV2Prongb(0x0),
+                                                 fHistMassSV2Prongc(0x0),
+                                                 fHistMassSV2Pronglf(0x0),
                                                  fHistDispersion2Prong(0x0),
                                                  fHistDispersion2ProngUnidentified(0x0),
                                                  fHistDispersion2Prongb(0x0),
@@ -409,6 +441,16 @@ AliJHFTagging::AliJHFTagging(const char *name) : AliAnalysisTaskEmcalJet(name, t
                                                  fHistSV3Prongb(0x0),
                                                  fHistSV3Prongc(0x0),
                                                  fHistSV3Pronglf(0x0),
+                                                 fHistDecayLengthSV3Prong(0x0),
+                                                 fHistDecayLengthSV3ProngUnidentified(0x0),
+                                                 fHistDecayLengthSV3Prongb(0x0),
+                                                 fHistDecayLengthSV3Prongc(0x0),
+                                                 fHistDecayLengthSV3Pronglf(0x0),
+                                                 fHistMassSV3Prong(0x0),
+                                                 fHistMassSV3ProngUnidentified(0x0),
+                                                 fHistMassSV3Prongb(0x0),
+                                                 fHistMassSV3Prongc(0x0),
+                                                 fHistMassSV3Pronglf(0x0),
                                                  fHistDispersion3Prong(0x0),
                                                  fHistDispersion3ProngUnidentified(0x0),
                                                  fHistDispersion3Prongb(0x0),
@@ -460,6 +502,7 @@ AliJHFTagging::AliJHFTagging(const AliJHFTagging &ap) : AliAnalysisTaskEmcalJet(
                                                         fPrimaryVertex(ap.fPrimaryVertex),
                                                         // Secondary Vertex
                                                         fDoSVAnalysis(ap.fDoSVAnalysis),
+                                                        fDo3DSVHists(ap.fDo3DSVHists),
                                                         fDoTrackCountingAnalysis(ap.fDoTrackCountingAnalysis),
                                                         fUsePartonDef(ap.fUsePartonDef),
                                                         fDoJetProbabilityAnalysis(ap.fDoJetProbabilityAnalysis),
@@ -839,26 +882,65 @@ void AliJHFTagging::MakeControlHistograms()
 
   if (fDoSVAnalysis)
   {
-    fHistSV2Prong = new TH3D("fHistSV2Prong", "Secondary vertex 2Prong;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 160, 0, 80, 100, 0, 10);
-    fHistSV3Prong = new TH3D("fHistSV3Prong", "Secondary vertex 3Prong;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 160, 0, 80, 100, 0, 10);
+    if (fDo3DSVHists)
+    {
+      fHistSV2Prong = new TH3D("fHistSV2Prong", "Secondary vertex 2Prong;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 160, 0, 80, 100, 0, 10);
+      fHistSV3Prong = new TH3D("fHistSV3Prong", "Secondary vertex 3Prong;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 160, 0, 80, 100, 0, 10);
+    }
+    else
+    {
+      fHistDecayLengthSV2Prong = new TH2D("fHistDecayLengthSV2Prong", "Secondary vertex 2Prong;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma", 500, 0., 250., 400, 0, 80);
+      fHistDecayLengthSV3Prong = new TH2D("fHistDecayLengthSV3Prong", "Secondary vertex 3Prong;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma", 500, 0., 250., 400, 0, 80);
+
+      fHistMassSV2Prong = new TH2D("fHistMassSV2Prong", "Secondary vertex 2Prong;#it{p}_{T,jet} (GeV/#it{c});M_{Vtx}(GeV/c^2)", 500, 0., 250., 100, 0, 10);
+      fHistMassSV3Prong = new TH2D("fHistMassSV3Prong", "Secondary vertex 3Prong;#it{p}_{T,jet} (GeV/#it{c});M_{Vtx}(GeV/c^2)", 500, 0., 250., 100, 0, 10);
+    }
 
     fHistDispersion2Prong = new TH2D("fHistDispersion2Prong", "Secondary vertex Dispersion 2Prong;#it{p}_{T,jet} (GeV/#it{c});Vtx Dispersion", 80, 0., 250., 100, 0, 0.5);
     fHistDispersion3Prong = new TH2D("fHistDispersion3Prong", "Secondary vertex Dispersion 3Prong;#it{p}_{T,jet} (GeV/#it{c});Vtx Dispersion", 80, 0., 250., 100, 0, 0.5);
 
     if (fIsPythia)
     {
+      if (fDo3DSVHists)
+      {
+        fHistSV2ProngUnidentified = new TH3D("fHistSV2ProngUnidentified", "Secondary vertex 2Prong Unidentified;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 400, 0, 80, 100, 0, 10);
+        fHistSV3ProngUnidentified = new TH3D("fHistSV3ProngUnidentified", "Secondary vertex 3Prong Unidentified;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 400, 0, 80, 100, 0, 10);
 
-      fHistSV2ProngUnidentified = new TH3D("fHistSV2ProngUnidentified", "Secondary vertex 2Prong Unidentified;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 400, 0, 80, 100, 0, 10);
-      fHistSV3ProngUnidentified = new TH3D("fHistSV3ProngUnidentified", "Secondary vertex 3Prong Unidentified;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 400, 0, 80, 100, 0, 10);
+        fHistSV2Prongb = new TH3D("fHistSV2Prongb", "Secondary vertex 2Prong b-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 400, 0, 80, 100, 0, 10);
+        fHistSV3Prongb = new TH3D("fHistSV3Prongb", "Secondary vertex 3Prong b-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 400, 0, 80, 100, 0, 10);
 
-      fHistSV2Prongb = new TH3D("fHistSV2Prongb", "Secondary vertex 2Prong b-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 160, 0, 80, 100, 0, 10);
-      fHistSV3Prongb = new TH3D("fHistSV3Prongb", "Secondary vertex 3Prong b-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 160, 0, 80, 100, 0, 10);
+        fHistSV2Prongc = new TH3D("fHistSV2Prongc", "Secondary vertex 2Prong c-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 400, 0, 80, 100, 0, 10);
+        fHistSV3Prongc = new TH3D("fHistSV3Prongc", "Secondary vertex 3Prong c-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 400, 0, 80, 100, 0, 10);
 
-      fHistSV2Prongc = new TH3D("fHistSV2Prongc", "Secondary vertex 2Prong c-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 160, 0, 80, 100, 0, 10);
-      fHistSV3Prongc = new TH3D("fHistSV3Prongc", "Secondary vertex 3Prong c-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 160, 0, 80, 100, 0, 10);
+        fHistSV2Pronglf = new TH3D("fHistSV2Pronglf", "Secondary vertex 2Prong lf-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 400, 0, 80, 100, 0, 10);
+        fHistSV3Pronglf = new TH3D("fHistSV3Pronglf", "Secondary vertex 3Prong lf-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 400, 0, 80, 100, 0, 10);
+      }
+      else
+      {
+        fHistDecayLengthSV2ProngUnidentified = new TH2D("fHistDecayLengthSV2ProngUnidentified", "Secondary vertex 2Prong Unidentified;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma", 500, 0., 250., 400, 0, 80);
+        fHistDecayLengthSV3ProngUnidentified = new TH2D("fHistDecayLengthSV3ProngUnidentified", "Secondary vertex 3Prong Unidentified;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma", 500, 0., 250., 400, 0, 80);
 
-      fHistSV2Pronglf = new TH3D("fHistSV2Pronglf", "Secondary vertex 2Prong lf-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 160, 0, 80, 100, 0, 10);
-      fHistSV3Pronglf = new TH3D("fHistSV3Pronglf", "Secondary vertex 3Prong lf-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma;M_{Vtx}(GeV/c^2)", 500, 0., 250., 160, 0, 80, 100, 0, 10);
+        fHistMassSV2ProngUnidentified = new TH2D("fHistMassSV2ProngUnidentified", "Secondary vertex 2Prong Unidentified;#it{p}_{T,jet} (GeV/#it{c});M_{Vtx}(GeV/c^2)", 500, 0., 250., 100, 0, 10);
+        fHistMassSV3ProngUnidentified = new TH2D("fHistMassSV3ProngUnidentified", "Secondary vertex 3Prong Unidentified;#it{p}_{T,jet} (GeV/#it{c});M_{Vtx}(GeV/c^2)", 500, 0., 250., 100, 0, 10);
+
+        fHistDecayLengthSV2Prongb = new TH2D("fHistDecayLengthSV2Prongb", "Secondary vertex 2Prong b-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma", 500, 0., 250., 400, 0, 80);
+        fHistDecayLengthSV3Prongb = new TH2D("fHistDecayLengthSV3Prongb", "Secondary vertex 3Prong b-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma", 500, 0., 250., 400, 0, 80);
+
+        fHistMassSV2Prongb = new TH2D("fHistMassSV2Prongb", "Secondary vertex 2Prong b-jet;#it{p}_{T,jet} (GeV/#it{c});M_{Vtx}(GeV/c^2)", 500, 0., 250., 100, 0, 10);
+        fHistMassSV3Prongb = new TH2D("fHistMassSV3Prongb", "Secondary vertex 3Prong b-jet;#it{p}_{T,jet} (GeV/#it{c});M_{Vtx}(GeV/c^2)", 500, 0., 250., 100, 0, 10);
+
+        fHistDecayLengthSV2Prongc = new TH2D("fHistDecayLengthSV2Prongc", "Secondary vertex 2Prong c-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma", 500, 0., 250., 400, 0, 80);
+        fHistDecayLengthSV3Prongc = new TH2D("fHistDecayLengthSV3Prongc", "Secondary vertex 3Prong c-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma", 500, 0., 250., 400, 0, 80);
+
+        fHistMassSV2Prongc = new TH2D("fHistMassSV2Prongc", "Secondary vertex 2Prong c-jet;#it{p}_{T,jet} (GeV/#it{c});M_{Vtx}(GeV/c^2)", 500, 0., 250., 100, 0, 10);
+        fHistMassSV3Prongc = new TH2D("fHistMassSV3Prongc", "Secondary vertex 3Prong c-jet;#it{p}_{T,jet} (GeV/#it{c});M_{Vtx}(GeV/c^2)", 500, 0., 250., 100, 0, 10);
+
+        fHistDecayLengthSV2Pronglf = new TH2D("fHistDecayLengthSV2Pronglf", "Secondary vertex 2Prong lf-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma", 500, 0., 250., 400, 0, 80);
+        fHistDecayLengthSV3Pronglf = new TH2D("fHistDecayLengthSV3Pronglf", "Secondary vertex 3Prong lf-jet;#it{p}_{T,jet} (GeV/#it{c});L_{xy}/#sigma", 500, 0., 250., 400, 0, 80);
+
+        fHistMassSV2Pronglf = new TH2D("fHistMassSV2Pronglf", "Secondary vertex 2Prong lf-jet;#it{p}_{T,jet} (GeV/#it{c});M_{Vtx}(GeV/c^2)", 500, 0., 250., 100, 0, 10);
+        fHistMassSV3Pronglf = new TH2D("fHistMassSV3Pronglf", "Secondary vertex 3Prong lf-jet;#it{p}_{T,jet} (GeV/#it{c});M_{Vtx}(GeV/c^2)", 500, 0., 250., 100, 0, 10);
+      }
 
       fHistDispersion2ProngUnidentified = new TH2D("fHistDispersion2ProngUnidentified", "Secondary vertex Dispersion 2Prong Unidentified;#it{p}_{T,jet} (GeV/#it{c});Vtx Dispersion", 500, 0., 250., 100, 0, 0.5);
       fHistDispersion3ProngUnidentified = new TH2D("fHistDispersion3ProngUnidentified", "Secondary vertex Dispersion 3Prong Unidentified;#it{p}_{T,jet} (GeV/#it{c});Vtx Dispersion", 500, 0., 250., 100, 0, 0.5);
@@ -1055,7 +1137,21 @@ void AliJHFTagging::MakeControlHistograms()
   if (fDoSVAnalysis)
   {
     fOutput->Add(fHistDispersion2Prong);
-    fOutput->Add(fHistSV2Prong);
+    fOutput->Add(fHistDispersion3Prong);
+
+    if (fDo3DSVHists)
+    {
+      fOutput->Add(fHistSV2Prong);
+      fOutput->Add(fHistSV3Prong);
+    }
+    else
+    {
+      fOutput->Add(fHistDecayLengthSV2Prong);
+      fOutput->Add(fHistDecayLengthSV3Prong);
+
+      fOutput->Add(fHistMassSV2Prong);
+      fOutput->Add(fHistMassSV3Prong);
+    }
 
     if (fIsPythia)
     {
@@ -1064,26 +1160,45 @@ void AliJHFTagging::MakeControlHistograms()
       fOutput->Add(fHistDispersion2Prongc);
       fOutput->Add(fHistDispersion2Pronglf);
 
-      fOutput->Add(fHistSV2ProngUnidentified);
-      fOutput->Add(fHistSV2Prongb);
-      fOutput->Add(fHistSV2Prongc);
-      fOutput->Add(fHistSV2Pronglf);
-    }
-
-    fOutput->Add(fHistDispersion3Prong);
-    fOutput->Add(fHistSV3Prong);
-
-    if (fIsPythia)
-    {
       fOutput->Add(fHistDispersion3ProngUnidentified);
       fOutput->Add(fHistDispersion3Prongb);
       fOutput->Add(fHistDispersion3Prongc);
       fOutput->Add(fHistDispersion3Pronglf);
 
-      fOutput->Add(fHistSV3ProngUnidentified);
-      fOutput->Add(fHistSV3Prongb);
-      fOutput->Add(fHistSV3Prongc);
-      fOutput->Add(fHistSV3Pronglf);
+      if (fDo3DSVHists)
+      {
+        fOutput->Add(fHistSV2ProngUnidentified);
+        fOutput->Add(fHistSV2Prongb);
+        fOutput->Add(fHistSV2Prongc);
+        fOutput->Add(fHistSV2Pronglf);
+
+        fOutput->Add(fHistSV3ProngUnidentified);
+        fOutput->Add(fHistSV3Prongb);
+        fOutput->Add(fHistSV3Prongc);
+        fOutput->Add(fHistSV3Pronglf);
+      }
+      else
+      {
+        fOutput->Add(fHistDecayLengthSV2ProngUnidentified);
+        fOutput->Add(fHistDecayLengthSV2Prongb);
+        fOutput->Add(fHistDecayLengthSV2Prongc);
+        fOutput->Add(fHistDecayLengthSV2Pronglf);
+
+        fOutput->Add(fHistMassSV2ProngUnidentified);
+        fOutput->Add(fHistMassSV2Prongb);
+        fOutput->Add(fHistMassSV2Prongc);
+        fOutput->Add(fHistMassSV2Pronglf);
+
+        fOutput->Add(fHistDecayLengthSV3ProngUnidentified);
+        fOutput->Add(fHistDecayLengthSV3Prongb);
+        fOutput->Add(fHistDecayLengthSV3Prongc);
+        fOutput->Add(fHistDecayLengthSV3Pronglf);
+
+        fOutput->Add(fHistMassSV3ProngUnidentified);
+        fOutput->Add(fHistMassSV3Prongb);
+        fOutput->Add(fHistMassSV3Prongc);
+        fOutput->Add(fHistMassSV3Pronglf);
+      }
     }
   }
 
@@ -1803,18 +1918,50 @@ bool AliJHFTagging::Run()
           }
           if (dispersion < fMaxDespersion)
           {
-            fHistSV3Prong->Fill(jetPt, LxySign, invariantMass);
-
-            if (fIsPythia)
+            if (fDo3DSVHists)
             {
-              if (jetFlavor == 0)
-                fHistSV3ProngUnidentified->Fill(jetPt, LxySign, invariantMass);
-              if (jetFlavor == 1)
-                fHistSV3Pronglf->Fill(jetPt, LxySign, invariantMass);
-              if (jetFlavor == 2)
-                fHistSV3Prongc->Fill(jetPt, LxySign, invariantMass);
-              if (jetFlavor == 3)
-                fHistSV3Prongb->Fill(jetPt, LxySign, invariantMass);
+              fHistSV3Prong->Fill(jetPt, LxySign, invariantMass);
+
+              if (fIsPythia)
+              {
+                if (jetFlavor == 0)
+                  fHistSV3ProngUnidentified->Fill(jetPt, LxySign, invariantMass);
+                if (jetFlavor == 1)
+                  fHistSV3Pronglf->Fill(jetPt, LxySign, invariantMass);
+                if (jetFlavor == 2)
+                  fHistSV3Prongc->Fill(jetPt, LxySign, invariantMass);
+                if (jetFlavor == 3)
+                  fHistSV3Prongb->Fill(jetPt, LxySign, invariantMass);
+              }
+            }
+            else
+            {
+              fHistDecayLengthSV3Prong->Fill(jetPt, LxySign);
+              fHistMassSV3Prong->Fill(jetPt, invariantMass);
+
+              if (fIsPythia)
+              {
+                if (jetFlavor == 0)
+                {
+                  fHistDecayLengthSV3ProngUnidentified->Fill(jetPt, LxySign);
+                  fHistMassSV3ProngUnidentified->Fill(jetPt, invariantMass);
+                }
+                if (jetFlavor == 1)
+                {
+                  fHistDecayLengthSV3Pronglf->Fill(jetPt, LxySign);
+                  fHistMassSV3Pronglf->Fill(jetPt, invariantMass);
+                }
+                if (jetFlavor == 2)
+                {
+                  fHistDecayLengthSV3Prongc->Fill(jetPt, LxySign);
+                  fHistMassSV3Prongc->Fill(jetPt, invariantMass);
+                }
+                if (jetFlavor == 3)
+                {
+                  fHistDecayLengthSV3Prongb->Fill(jetPt, LxySign);
+                  fHistMassSV3Prongb->Fill(jetPt, invariantMass);
+                }
+              }
             }
           }
         }
@@ -1917,18 +2064,50 @@ bool AliJHFTagging::Run()
           }
           if (dispersion < fMaxDespersion)
           {
-            fHistSV2Prong->Fill(jetPt, LxySign, invariantMass);
-
-            if (fIsPythia)
+            if (fDo3DSVHists)
             {
-              if (jetFlavor == 0)
-                fHistSV2ProngUnidentified->Fill(jetPt, LxySign, invariantMass);
-              if (jetFlavor == 1)
-                fHistSV2Pronglf->Fill(jetPt, LxySign, invariantMass);
-              if (jetFlavor == 2)
-                fHistSV2Prongc->Fill(jetPt, LxySign, invariantMass);
-              if (jetFlavor == 3)
-                fHistSV2Prongb->Fill(jetPt, LxySign, invariantMass);
+              fHistSV2Prong->Fill(jetPt, LxySign, invariantMass);
+
+              if (fIsPythia)
+              {
+                if (jetFlavor == 0)
+                  fHistSV2ProngUnidentified->Fill(jetPt, LxySign, invariantMass);
+                if (jetFlavor == 1)
+                  fHistSV2Pronglf->Fill(jetPt, LxySign, invariantMass);
+                if (jetFlavor == 2)
+                  fHistSV2Prongc->Fill(jetPt, LxySign, invariantMass);
+                if (jetFlavor == 3)
+                  fHistSV2Prongb->Fill(jetPt, LxySign, invariantMass);
+              }
+            }
+            else
+            {
+              fHistDecayLengthSV2Prong->Fill(jetPt, LxySign);
+              fHistMassSV2Prong->Fill(jetPt, invariantMass);
+
+              if (fIsPythia)
+              {
+                if (jetFlavor == 0)
+                {
+                  fHistDecayLengthSV2ProngUnidentified->Fill(jetPt, LxySign);
+                  fHistMassSV2ProngUnidentified->Fill(jetPt, invariantMass);
+                }
+                if (jetFlavor == 1)
+                {
+                  fHistDecayLengthSV2Pronglf->Fill(jetPt, LxySign);
+                  fHistMassSV2Pronglf->Fill(jetPt, invariantMass);
+                }
+                if (jetFlavor == 2)
+                {
+                  fHistDecayLengthSV2Prongc->Fill(jetPt, LxySign);
+                  fHistMassSV2Prongc->Fill(jetPt, invariantMass);
+                }
+                if (jetFlavor == 3)
+                {
+                  fHistDecayLengthSV2Prongb->Fill(jetPt, LxySign);
+                  fHistMassSV2Prongb->Fill(jetPt, invariantMass);
+                }
+              }
             }
           }
         }
