@@ -93,6 +93,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fESDvsTPConlyLinearCut(15000.),
     fUseOutOfBunchPileupCut(false),
     fUseCorrectedNTracks(false),
+    fUseTruthNTracks(false),
     binning_factor(1),
 	  fCentralityCut(101.1),
     fUseNarrowBin(false),
@@ -179,6 +180,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fESDvsTPConlyLinearCut(15000.),
   fUseOutOfBunchPileupCut(false),
   fUseCorrectedNTracks(false),
+  fUseTruthNTracks(false),
   binning_factor(1),
 	fCentralityCut(101.1),
   fUseNarrowBin(false),
@@ -293,6 +295,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fESDvsTPConlyLinearCut(15000.),
   fUseOutOfBunchPileupCut(false),
   fUseCorrectedNTracks(false),
+  fUseTruthNTracks(false),
   binning_factor(1),
 	fCentralityCut(101.1),
   fUseNarrowBin(false),
@@ -1619,6 +1622,9 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
   }
 
   if (fNtrksName == "Mult") {
+    if (fUseTruthNTracks) {
+      NtrksCounter = NtrksAfter;
+    }
     CalculateProfile(multProfile, NtrksCounter);
     CalculateProfile(multProfile_bin[bootstrap_value], NtrksCounter);
   } else {

@@ -240,6 +240,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetESDvsTPConlyLinearCut(double cut = 15000) {fESDvsTPConlyLinearCut = cut;}
     virtual void   SetUseOutOfBunchPileupCut(double flag = true) {fUseOutOfBunchPileupCut = flag;}
 		virtual void   SetUseCorrectedNTracks(bool flag = true) {fUseCorrectedNTracks = flag;}
+    virtual void   SetUseTruthNTracks(bool flag = true) {fUseTruthNTracks = flag;}
     virtual void   SetBinningFactor(double factor = 1.0) {binning_factor = factor;}
 		virtual void   SetUseNarrowBin(bool flag = true) {fUseNarrowBin = flag;}
 		virtual void   SetExtremeEfficiency(int flag = 0) {fExtremeEfficiency = flag;}
@@ -251,7 +252,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     virtual void   SetV0MRatioCut(double ratio=5) {fV0MRatioCut = ratio;}
     virtual void   SetEtaGap3Sub(Double_t feta1 = 0.4, Double_t feta2 = 0.4) {fEtaGap3Sub1 = feta1; fEtaGap3Sub2 = feta2;}
 		virtual void   SetCentralityCut(Double_t cent = 100) {fCentralityCut = cent;}
-    virtual void   SetOnTheFly(Bool_t flag=false) {fOnTheFly = flag;} 
+    virtual void   SetOnTheFly(Bool_t flag=false) {fOnTheFly = flag;}
 		// unsigned fgFlowHarmonics = 0;        calculate v2, v3, v4, v5
 		// unsigned fgFlowHarmonicsHigher = 0;  calculate v6, v7, v8 ..
 		// unsigned fgFlowHarmonicsMult = 0;    calculate v2{4} // yet v2{6}, v2{8}
@@ -311,18 +312,19 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TString			fPeriod;				// period
 		Int_t                   fCurrSystFlag;                          // Systematics flag
 		Bool_t                  fSpringMode;                            // The mode with spring cuts.
-		Bool_t                  fLowMultiplicityMode;                   // The mode to consider low-multiplicity region 
+		Bool_t                  fLowMultiplicityMode;                   // The mode to consider low-multiplicity region
 		Bool_t                  fAddTPCPileupCuts;                      // Additional TPC pileup cuts
     Double_t                fESDvsTPConlyLinearCut;                 // ESDvsTPConlyLinearCut : default = 15000
     Bool_t                  fUseOutOfBunchPileupCut;                // Out of bunch pileup cut
 		Bool_t                  fUseCorrectedNTracks;                   // Use corrected Ntracks in the filling of xbins;
+    Bool_t                  fUseTruthNTracks;                       // Use truth Ntracks in the filling of xbins;
     Double_t                binning_factor;                         // A factor to account efficiency corrected binning
 		Double_t                fCentralityCut;                         // Apply an extra centrality cut.
     Bool_t                  fUseNarrowBin;                          // Use Narrow bin
 		Int_t                   fExtremeEfficiency;                     // The flag to set extreme efficiency
 		Double_t                fTPCchi2perCluster;                     // Additional cuts for TPC chi2 / cluster
 		Bool_t                  fUseAdditionalDCACut;                   // Additianal cuts for dca: < 1 cm
-		Bool_t                  fUseDefaultWeight;                      // Force to use the default weight 
+		Bool_t                  fUseDefaultWeight;                      // Force to use the default weight
     Bool_t                  bUseLikeSign;                           // Flag to use like sign tracks
     Int_t                   iSign;                                  // Sign of selected tracks
     Bool_t                  fExtendV0MAcceptance;                   // Use V0M centrality cut 0-100%
