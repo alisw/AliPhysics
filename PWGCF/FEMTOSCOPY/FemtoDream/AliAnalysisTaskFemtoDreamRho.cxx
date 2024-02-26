@@ -637,7 +637,13 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
             // Use a switch statement to handle different values of pdg_resonance
             switch (pdg_resonance)
             {
-            case 311: // K0short
+            case 311: // K0
+              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
+              break;
+            case 310: // K0short
+              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
+              break;
+            case 130: // K0long
               FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
               break;
             case 113: // RhoMeson
@@ -669,11 +675,16 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
       }
       if (fRhoCuts->isSelected(fRhoParticle)) // Check for proper Rho candidates, just Minv cut and kaon reject.
       {
+        // Also include a selection on the rho pT (for better control of what goes in the Cf)
         V0Particles.push_back(*fRhoParticle);
         if (fDoProjections)
-        {
-          Particles_Minv.push_back(posPion);
-          AntiParticles_Minv.push_back(negPion);
+        { // Also include a selection on the rho pT
+          const float pT_rho_candidate = fRhoParticle->GetPt();
+          if (pT_rho_candidate > 1.8 - 0.0001) // At a pT > 1.8 GeV we start to see the rho in the M_inv (for now hard-coded can be optimized)
+          {
+            Particles_Minv.push_back(posPion);
+            AntiParticles_Minv.push_back(negPion);
+          }
         }
         if (fIsMC)
         { // store the combinations for the MC matching
