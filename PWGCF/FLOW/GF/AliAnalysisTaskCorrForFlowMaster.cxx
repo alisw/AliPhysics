@@ -1116,7 +1116,7 @@ Double_t AliAnalysisTaskCorrForFlowMaster::TransverseBoost(const AliMCParticle *
 //_____________________________________________________________________________
 void AliAnalysisTaskCorrForFlowMaster::ProcessOnTheFly(){
   fMCEvent = dynamic_cast<AliMCEvent*>(MCEvent());
-  if(!fMCEvent) { AliFatal("MC event not found!"); return kFALSE; }
+  if(!fMCEvent) { AliFatal("MC event not found!"); return; }
   if(!IsMCEventSelected()) { return; }
   fNofTrackGlobal = 0;
   fNofEventGlobal++;
