@@ -111,7 +111,7 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         void                    ProcessOnTheFly();
 
         Bool_t                  IsEventSelected();
-        Bool_t                  IsMCEventSelected()
+        Bool_t                  IsMCEventSelected();
         Bool_t                  IsEventRejectedAddPileUp() const;
         Bool_t                  IsTrackSelected(const AliAODTrack* track) const;
 
