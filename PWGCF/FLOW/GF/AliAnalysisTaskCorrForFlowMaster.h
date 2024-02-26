@@ -67,6 +67,7 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         void                    SetUseEfficiency(Bool_t flag) {fUseEfficiency = flag;}
         void                    SetUseCentCali(Bool_t flag) {fUseCentralityCalibration = flag;}
         void                    SetCreateQAPlots(Bool_t flag) {fCreateQAPlots = flag;}
+        void                    SetUseOnTheFly(Bool_t flag) {fOnTheFly = flag;}  
 
         // event selection
         void                    SetNumEventBias(Int_t num) {fNumEventBias = num;}
@@ -107,8 +108,10 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
 
         void                    PrintSetup();
         void                    CreateTHnCorrelations();
+        void                    ProcessOnTheFly();
 
         Bool_t                  IsEventSelected();
+        Bool_t                  IsMCEventSelected();
         Bool_t                  IsEventRejectedAddPileUp() const;
         Bool_t                  IsTrackSelected(const AliAODTrack* track) const;
 
@@ -126,11 +129,13 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         Int_t                   GetEtaRegion(const Double_t dEta);
         TString                 ReturnPPperiod(const Int_t runNumber) const;
         Double_t                TransverseBoost(const AliMCParticle *track);
+        
 
         AliAnalysisTaskCorrForFlowMaster(const AliAnalysisTaskCorrForFlowMaster&); // not implemented
         AliAnalysisTaskCorrForFlowMaster& operator=(const AliAnalysisTaskCorrForFlowMaster&); // not implemented
 
         AliAODEvent*            fAOD;           //! input event
+        AliMCEvent*             fMCEvent; //! MC event
         TList*                  fOutputListCharged;    //! output list
         TList*                  fInputListEfficiency;    //! input list
         TObjArray*              fTracksTrig; //!
@@ -211,6 +216,7 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         TString                 fCentEstimator; //"V0M"
         TString                 fSystematicsFlag; // ""
         AliEventCuts            fEventCuts;
+        Bool_t                  fOnTheFly; // [kFALSE]
 
         // mixing
         Int_t                   fPoolMaxNEvents;   // maximum number of events in the pool

@@ -21,6 +21,7 @@ ClassImp(AliAnalysisTaskCorrForFlowMaster);
 
 AliAnalysisTaskCorrForFlowMaster::AliAnalysisTaskCorrForFlowMaster() : AliAnalysisTaskSE(),
     fAOD(0),
+    fMCEvent(0),
     fOutputListCharged(0),
     fInputListEfficiency(0),
     fTracksAss(0),
@@ -86,11 +87,13 @@ AliAnalysisTaskCorrForFlowMaster::AliAnalysisTaskCorrForFlowMaster() : AliAnalys
     fNzVtxBins(10),
     fNCentBins(15),
     fMergingCut(0.0),
-    fUsePhiStar(kFALSE)
+    fUsePhiStar(kFALSE),
+    fOnTheFly(kFALSE)
 {}
 //_____________________________________________________________________________
 AliAnalysisTaskCorrForFlowMaster::AliAnalysisTaskCorrForFlowMaster(const char* name, Bool_t bUseEff, Bool_t bUseCalib) : AliAnalysisTaskSE(name),
     fAOD(0),
+    fMCEvent(0),
     fOutputListCharged(0),
     fInputListEfficiency(0),
     fTracksAss(0),
@@ -156,7 +159,8 @@ AliAnalysisTaskCorrForFlowMaster::AliAnalysisTaskCorrForFlowMaster(const char* n
     fNzVtxBins(10),
     fNCentBins(15),
     fMergingCut(0.0),
-    fUsePhiStar(kFALSE)
+    fUsePhiStar(kFALSE),
+    fOnTheFly(kFALSE)
 {
     DefineInput(0, TChain::Class());
     if(bUseEff) { DefineInput(1, TList::Class()); }
@@ -256,7 +260,7 @@ void AliAnalysisTaskCorrForFlowMaster::UserCreateOutputObjects()
 void AliAnalysisTaskCorrForFlowMaster::UserExec(Option_t *)
 {
     fhEventCounter->Fill("Input",1);
-
+    if(fOnTheFly){ProcessOnTheFly(); return;}
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     if(!fAOD) { AliError("Event not loaded."); return; }
     if(!IsEventSelected()) { return; }
@@ -387,6 +391,49 @@ Bool_t AliAnalysisTaskCorrForFlowMaster::IsEventSelected()
   return kTRUE;
 }
 //_____________________________________________________________________________
+Bool_t AliAnalysisTaskCorrForFlowMaster::IsMCEventSelected()
+{
+  fhEventCounter->Fill("EventOK",1);
+  Int_t ntrackv0aprimary=0;
+
+  for(Int_t i(0); i < fMCEvent->GetNumberOfTracks(); i++) {
+    AliMCParticle* part = (AliMCParticle*)fMCEvent->GetTrack(i);
+    if(!part->IsPhysicalPrimary()) continue;
+    Double_t mceta = part->Eta();
+    //if(fBoostAMPT) mceta = TransverseBoost(part);
+
+    if(part->Charge()==0)        continue;
+    if(mceta>2.8 && mceta<5.1) ntrackv0aprimary++;
+  }
+  Int_t nbinmult= fhCentCalib->GetXaxis()->FindBin(ntrackv0aprimary);
+  fCentrality = (Double_t) fhCentCalib->GetBinContent(nbinmult);
+  
+  // AliAODVZERO* fvzero = fAOD->GetVZEROData();
+  // Double_t sum = 0.;
+  // Double_t max = 0.;
+  //   for(Int_t i = 32; i < 64; ++i)
+  //   {
+  //     sum += fvzero->GetMultiplicity(i);
+  //     if (fvzero->GetMultiplicity(i) > max) max = fvzero->GetMultiplicity(i);
+  //   }
+  //   sum -= max;
+
+  // Int_t nbinmult= fhCentCalib->GetXaxis()->FindBin(sum);
+  // fCentrality = (Double_t) fhCentCalib->GetBinContent(nbinmult);
+
+  if(fCentrality < fCentMin || fCentrality > fCentMax) { return kFALSE; }
+  fhEventCounter->Fill("CentOK",1);
+
+  //fPVz = fAOD->GetPrimaryVertex()->GetZ();
+  fPVz = 0;
+  //if(TMath::Abs(fPVz) >= fPVzCut) { return kFALSE; }
+  fhEventCounter->Fill("PVzOK",1);
+
+  fbSign = 0;
+
+  return kTRUE;
+}
+//_____________________________________________________________________________
 Bool_t AliAnalysisTaskCorrForFlowMaster::IsTrackSelected(const AliAODTrack* track) const
 {
   if(!track->TestFilterBit(fFilterBit)) { return kFALSE; }
@@ -485,8 +532,8 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelations()
   for(Int_t iTrig(0); iTrig < fTracksTrig->GetEntriesFast(); iTrig++){
     AliVParticle* track = dynamic_cast<AliVParticle*>(fTracksTrig->At(iTrig));
     if(!track) continue;
-    AliAODTrack* trackAOD = nullptr;
-    if(!fIsMC) trackAOD = (AliAODTrack*)fTracksTrig->At(iTrig);
+    // AliAODTrack* trackAOD = nullptr;
+    // if(!fIsMC) trackAOD = (AliAODTrack*)fTracksTrig->At(iTrig);
 
     Double_t trigPt = track->Pt();
     Double_t trigEta = track->Eta();
@@ -502,8 +549,8 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelations()
     for(Int_t iAss(0); iAss < fTracksAss->GetEntriesFast(); iAss++){
       AliVParticle* trackAss = dynamic_cast<AliVParticle*>(fTracksAss->At(iAss));
       if(!trackAss) continue;
-      AliAODTrack* trackAODAss = nullptr;
-      trackAODAss = (AliAODTrack*)fTracksAss->At(iAss); //if(!fIsMC) 
+      // AliAODTrack* trackAODAss = nullptr;
+      // trackAODAss = (AliAODTrack*)fTracksAss->At(iAss); //if(!fIsMC) 
 
       Double_t assPt = trackAss->Pt();
       Double_t assEta = trackAss->Eta();
@@ -1065,6 +1112,45 @@ Double_t AliAnalysisTaskCorrForFlowMaster::TransverseBoost(const AliMCParticle *
   Double_t eta_boosted = 0.5*TMath::Log(numerator/denumerator);
 
   return eta_boosted;
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskCorrForFlowMaster::ProcessOnTheFly(){
+  fMCEvent = dynamic_cast<AliMCEvent*>(MCEvent());
+  if(!fMCEvent) { AliFatal("MC event not found!"); return; }
+  if(!IsMCEventSelected()) { return; }
+  fNofTrackGlobal = 0;
+  fNofEventGlobal++;
+  fSampleIndex = gRandom->Uniform(0,fNOfSamples);
+  fTracksAss = new TObjArray;
+  fTracksTrig = new TObjArray;
+  
+  if(!PrepareMCTracks()){
+        if(fTracksTrig) delete fTracksTrig;
+        PostData(1, fOutputListCharged);
+        return;
+  }
+
+    
+  if(!fTracksAss->IsEmpty() && !fSkipCorr){
+      FillCorrelations();
+      FillCorrelationsMixed();
+
+      fTracksTrig->Clear();
+      delete fTracksTrig;
+  }
+    
+
+
+  fTracksAss->Clear();
+  delete fTracksAss;
+
+  PostData(1, fOutputListCharged);
+  
+
+
+
+
+
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCorrForFlowMaster::PrintSetup(){
