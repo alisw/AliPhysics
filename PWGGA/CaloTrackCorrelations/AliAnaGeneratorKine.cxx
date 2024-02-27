@@ -857,7 +857,7 @@ void  AliAnaGeneratorKine::IsLeadingAndIsolated(Int_t indexTrig,
   Float_t ptThresIC    = GetIsolationCut()->GetPtThreshold();
   Float_t sumThresIC   = GetIsolationCut()->GetPtThreshold();
   Float_t rThresIC     = GetIsolationCut()->GetConeSize();
-  Float_t isoMethod    = GetIsolationCut()->GetICMethod();
+  Int_t isoMethod      = GetIsolationCut()->GetICMethod();
   
   // Counters
   Int_t   nICTrack     = 0;
