@@ -338,6 +338,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   // Histograms  
   
   TH1F *   fhPt[2][2] ;                                //!<! Number of non/isolated narrow/wide particles vs pT.
+  TH2F *   fhPtTime[2][2] ;                            //!<! Number of non/isolated narrow/wide particles vs pT and cluster time.
   TH2F *   fhPtCentrality[2][2] ;                      //!<! Number of non/isolated narrow/wide particles centrality vs pT.
   TH2F *   fhPtEventPlane[2][2] ;                      //!<! Number of non/isolated narrow/wide particles event plane angle vs pT.
   TH2F *   fhPtNLocMax[2][2] ;                         //!<! Number of non/isolated narrow/wide particles vs NLM in cluster.
@@ -746,7 +747,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,56) ;
+  ClassDef(AliAnaParticleIsolation,57) ;
   /// \endcond
 
 } ;
