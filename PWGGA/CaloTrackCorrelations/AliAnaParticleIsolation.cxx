@@ -6641,7 +6641,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       coneptsumUESub  = coneptsumUESubNe * excessAreaNePhi * excessAreaNeEta + coneptsumUESubCh * excessAreaChEta;
     else if ( partInConeType ==AliIsolationCut::kOnlyCharged        )
       coneptsumUESub  = coneptsumUESubCh * excessAreaChEta;
-    else if ( partInConePhi == AliIsolationCut::kOnlyNeutral        )
+    else if ( partInConeType == AliIsolationCut::kOnlyNeutral        )
       coneptsumUESub  = coneptsumUESubNe * excessAreaNePhi*excessAreaNeEta;
 
     if ( IsEmbedingAnalysisOn()  && fEmbedUEInPrimMC )
@@ -6650,7 +6650,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         coneptsumUESubEmb  = coneptsumUESubNeEmb * excessAreaNePhi * excessAreaNeEta + coneptsumUESubCh * excessAreaChEta;
       else if ( partInConeType ==AliIsolationCut::kOnlyCharged        )
         coneptsumUESubEmb  = coneptsumUESubChEmb * excessAreaChEta;
-      else if ( partInConePhi == AliIsolationCut::kOnlyNeutral        )
+      else if ( partInConeType == AliIsolationCut::kOnlyNeutral        )
         coneptsumUESubEmb  = coneptsumUESubNeEmb * excessAreaNePhi*excessAreaNeEta;
     }
 
