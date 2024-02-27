@@ -93,11 +93,11 @@ void AliAnalysisTaskPHOSTimeCalib::UserCreateOutputObjects()
 
   fOutputContainer->Add(new TH2F("hClustTOFvsAbsCellID",
                                  "TOF_{clust}, all cells;Cell AbsID;TOF_{clust}, ns",
-                                 12544,1793,14336, 600,-300,300));
+                                 14336,1,14336, 600,-300,300));
 
-  fOutputContainer->Add(new TH2F("hClustTOFvsAbsCellID_1500MeV",
-                                 "TOF_{clust}, E_{cell} > 1.5 GeV;Cell AbsID;TOF_{clust}, ns",
-                                 12544,1793,14336, 600,-300,300));
+  fOutputContainer->Add(new TH2F("hClustTOFvsAbsCellID_1200MeV",
+                                 "TOF_{clust}, E_{cell} > 1.2 GeV;Cell AbsID;TOF_{clust}, ns",
+                                 14336,1,14336, 600,-300,300));
 
   PostData(1, fOutputContainer);
 }
@@ -262,9 +262,9 @@ void AliAnalysisTaskPHOSTimeCalib::CalibrateClusterTime(AliVCaloCells *cells){
 
     Double_t Ecell = cells->GetCellAmplitude(absIdMax);
 
-    FillHistogram("hClustTOFvsAbsCellID", absIdMax, tof);
-    if (Ecell > 1.5)
-      FillHistogram("hClustTOFvsAbsCellID_1500MeV", absIdMax, tof);
+    FillHistogram("hClustTOFvsAbsCellID", absIdMax, tof*1e+9);
+    if (Ecell > 1.2)
+      FillHistogram("hClustTOFvsAbsCellID_1200MeV", absIdMax, tof*1e+9);
 
   }
 
