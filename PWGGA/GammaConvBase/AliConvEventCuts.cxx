@@ -4586,7 +4586,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         if (weight == -1) return kFALSE;
         else return eventAccepted;
 
-      } else if (GeneratorName.EqualTo("AliGenHepMCEventHeader")) {
+      } else if (fPeriodEnum == kLHC17HERJJ && GeneratorName.EqualTo("AliGenHepMCEventHeader")) {
         bool eventAccepted = kTRUE;
 
         // int pthardbin = -1;
@@ -4629,7 +4629,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
     bool isHerwig = false;
     if (eventHeaderName.CompareTo("AliGenPythiaEventHeader") == 0 || eventHeaderName.Contains("Pythia8Jets")){
       eventAccepted = kTRUE;
-    } else if(eventHeaderName.EqualTo("AliGenHepMCEventHeader")) {
+    } else if(fPeriodEnum == kLHC17HERJJ && eventHeaderName.EqualTo("AliGenHepMCEventHeader")) {
       eventAccepted = kTRUE;
       isHerwig = true;
     }else { //special case for pythia8jets embedded in EPOSLHC for AODs
@@ -5576,7 +5576,7 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
         NTrials = gPythia->Trials();
         XSection = gPythia->GetXsection();
         return;
-      } else if (GeneratorName.EqualTo("AliGenHepMCEventHeader")){ // somehow this string comparison should go! too slow
+      } else if (fPeriodEnum == kLHC17HERJJ && GeneratorName.EqualTo("AliGenHepMCEventHeader")){ // somehow this string comparison should go! too slow
         AliGenHepMCEventHeader* hepMCHeader = dynamic_cast<AliGenHepMCEventHeader*>(gh);
         XSection = hepMCHeader->sigma_gen();
         NTrials = hepMCHeader->ntrials();
@@ -5592,7 +5592,7 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
         NTrials = gPythia->Trials();
         XSection = gPythia->GetXsection();
         return;
-      } else if (eventHeaderName.EqualTo("AliGenHepMCEventHeader")){ // somehow this string comparison should go! too slow
+      } else if (fPeriodEnum == kLHC17HERJJ && eventHeaderName.EqualTo("AliGenHepMCEventHeader")){ // somehow this string comparison should go! too slow
         AliGenHepMCEventHeader* hepMCHeader = dynamic_cast<AliGenHepMCEventHeader*>(eventHeader);
         XSection = hepMCHeader->sigma_gen();
         NTrials = hepMCHeader->ntrials();
@@ -5618,7 +5618,7 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
                 NTrials = gPythia->Trials();
                 XSection = gPythia->GetXsection();
                 return;
-              } else if (name.EqualTo("AliGenHepMCEventHeader")){ // somehow this string comparison should go! too slow
+              } else if (fPeriodEnum == kLHC17HERJJ && name.EqualTo("AliGenHepMCEventHeader")){ // somehow this string comparison should go! too slow
                 AliGenHepMCEventHeader* hepMCHeader = dynamic_cast<AliGenHepMCEventHeader*>(eventHeaderGen);
                 XSection = hepMCHeader->sigma_gen();
                 NTrials = hepMCHeader->ntrials();
