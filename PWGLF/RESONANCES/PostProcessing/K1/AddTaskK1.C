@@ -71,10 +71,12 @@ AliAnalysisTaskK1 *AddTaskK1(const char *taskname = "K1", const char *option = "
     TString output = "AnalysisResults.root";
     AliAnalysisDataContainer *coutputK1 = mgr->CreateContainer(Form("%s%s", taskname, suffix), TList::Class(), AliAnalysisManager::kOutputContainer, output.Data());
     AliAnalysisDataContainer *coutputK1RTree = mgr->CreateContainer(Form("%s%s_NanoTree", taskname, suffix), TTree::Class(), AliAnalysisManager::kOutputContainer, output.Data());
+    AliAnalysisDataContainer *coutputK1STree = mgr->CreateContainer(Form("%s%s_NanoMCTree", taskname, suffix), TTree::Class(), AliAnalysisManager::kOutputContainer, output.Data());
 
     mgr->ConnectInput(taskK1, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskK1, 1, coutputK1);
     mgr->ConnectOutput(taskK1, 2, coutputK1RTree);
+    mgr->ConnectOutput(taskK1, 3, coutputK1STree);
 
     return taskK1;
 }

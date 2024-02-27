@@ -105,6 +105,7 @@ private:
   TClonesArray *fMCArray;         //!
   AliAODVertex *fVertex;          //!
   TTree *fNanoTree;               ///<  Output nanoAOD ttree
+  TTree *fNanoMCTree;             ///<  Output nanoAOD MC ttree
   TClonesArray *fNanoEvents;      ///<  events for nanoAOD
   TClonesArray *fNanoTracks;      ///<  tracks for nanoAOD
   TClonesArray *fNanoMCParticles; ///<  mothers for nanoAOD
