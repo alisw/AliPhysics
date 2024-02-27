@@ -134,6 +134,7 @@ ClassImp(AliAnalysisTaskK1) AliAnalysisTaskK1::AliAnalysisTaskK1()
       fAODMCHeader{nullptr},
       fVertex{nullptr},
       fNanoTree{nullptr},
+      fNanoMCTree{nullptr},
       fNanoEvents{nullptr},
       fNanoTracks{nullptr},
       fNanoMCParticles{nullptr},
@@ -236,6 +237,7 @@ AliAnalysisTaskK1::AliAnalysisTaskK1(const char *name, Bool_t MCcase)
       fAODMCHeader{nullptr},
       fVertex{nullptr},
       fNanoTree{nullptr},
+      fNanoMCTree{nullptr},
       fNanoEvents{nullptr},
       fNanoTracks{nullptr},
       fNanoMCParticles{nullptr},
@@ -329,11 +331,13 @@ AliAnalysisTaskK1::AliAnalysisTaskK1(const char *name, Bool_t MCcase)
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
+  DefineOutput(3, TTree::Class());
 }
 //_____________________________________________________________________________
 AliAnalysisTaskK1::~AliAnalysisTaskK1()
 {
   delete fNanoTree;
+  delete fNanoMCTree;
   delete fNanoEvents;
   delete fNanoTracks;
   delete fNanoMCParticles;
@@ -526,11 +530,14 @@ void AliAnalysisTaskK1::UserCreateOutputObjects()
     fNanoTree->Branch("ResoNanoTrack", &fNanoTracks);
     if (fIsMC)
     {
+      fNanoMCTree = new TTree("ResoNanoMCTree", "Resonance Nano AOD MC Tree");
       fNanoMCParticles = new TClonesArray("AliResoNanoMCParticle", 5000);
       fNanoMCParticles->SetOwner(kTRUE);
-      fNanoTree->Branch("ResoNanoMCParticles", &fNanoMCParticles);
+      fNanoMCTree->Branch("ResoNanoMCParticles", &fNanoMCParticles);
     }
     PostData(2, fNanoTree);
+    if (fIsMC)
+      PostData(3, fNanoMCTree);
   }
 }
 //_____________________________________________________________________________
@@ -541,7 +548,11 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
   {
     PostData(1, fList);
     if (fFillTree)
+    {
       PostData(2, fNanoTree);
+      if (fIsMC)
+        PostData(3, fNanoMCTree);
+    }
     AliInfo("Could not retrieve event");
     return;
   }
@@ -561,7 +572,11 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
   {
     PostData(1, fList);
     if (fFillTree)
+    {
       PostData(2, fNanoTree);
+      if (fIsMC)
+        PostData(3, fNanoMCTree);
+    }
     return;
   }
   AliInputEventHandler *inputHandler = (AliInputEventHandler *)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
@@ -662,7 +677,11 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
   {
     PostData(1, fList);
     if (fFillTree)
+    {
       PostData(2, fNanoTree);
+      if (fIsMC)
+        PostData(3, fNanoMCTree);
+    }
     return;
   }
 
@@ -711,7 +730,11 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
 
   PostData(1, fList);
   if (fFillTree)
+  {
     PostData(2, fNanoTree);
+    if (fIsMC)
+      PostData(3, fNanoMCTree);
+  }
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskK1::Terminate(Option_t *) {}
@@ -895,6 +918,7 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
         lNanoTrack->SetMCMotherID(lMotherID);
         lNanoTrack->SetMCMotherPDGCode(lMotherPDG);
         lNanoTrack->SetMCPDGCode(lPDG);
+        fNanoTree->Fill();
       }
     }
   }
@@ -1160,6 +1184,7 @@ void AliAnalysisTaskK1::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
         lNanoMCPart->SetRap(mcInputTrack->Y());
         lNanoMCPart->SetCharge(mcInputTrack->GetPDG()->Charge());
         lNanoMCPart->SetStatus(mcInputTrack->GetStatusCode());
+        fNanoMCTree->Fill();
       }
     }
   }
@@ -1217,6 +1242,7 @@ void AliAnalysisTaskK1::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
         lNanoMCPart->SetRap(mcInputTrack->Y());
         lNanoMCPart->SetCharge(mcInputTrack->GetPdgCode());
         lNanoMCPart->SetStatus(mcInputTrack->GetStatus());
+        fNanoMCTree->Fill();
       }
     }
   }
