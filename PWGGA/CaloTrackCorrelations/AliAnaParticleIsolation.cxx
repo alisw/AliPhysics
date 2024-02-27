@@ -269,7 +269,8 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
     fhConeSumPtCentM02Cut[i] = 0;
     for(Int_t ishsh = 0; ishsh < 2 ; ishsh++)
     {
-      fhPt          [i][ishsh] = 0 ; 
+      fhPt          [i][ishsh] = 0 ;
+      fhPtTime      [i][ishsh] = 0 ;
       fhPtEtaPhi    [i][ishsh] = 0 ;
       fhPtEtaPhiG1  [i][ishsh] = 0 ;
       fhPtEtaPhiG2  [i][ishsh] = 0 ;
@@ -1208,6 +1209,21 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPt[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         outputContainer->Add(fhPt[iso][ishsh]) ;
 
+        if(!IsDataMC())
+        {
+          Int_t ntimebins = GetHistogramRanges()->GetHistoTimeBins();
+          Float_t timemax = GetHistogramRanges()->GetHistoTimeMax();
+          Float_t timemin = GetHistogramRanges()->GetHistoTimeMin();
+          fhPtTime[iso][ishsh]  = new TH2F
+          (Form("hPtTime%s%s",isoName[iso].Data(),m02Name[ishsh].Data()),
+           Form("%s%s, %s",
+                isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
+           nptbins,ptmin,ptmax,ntimebins,timemin,timemax);
+          fhPtTime[iso][ishsh]->SetZTitle("#it{counts}");
+          fhPtTime[iso][ishsh]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhPtTime[iso][ishsh]->SetYTitle("#it{t}_{cluster} (ns)");
+          outputContainer->Add(fhPtTime[iso][ishsh]) ;
+        }
         fhPtEtaPhi[iso][ishsh]  = new TH3F
         (Form("hPtEtaPhi%s%s",isoName[iso].Data(), m02Name[ishsh].Data()),
          Form("%s%s, %s", isoTitle[iso].Data(), m02Title[ishsh].Data(), parTitle[iso].Data()),
@@ -5425,6 +5441,11 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
     {
       fhPt      [isolated][narrow]->Fill(pt          , GetEventWeight()*weightTrig);
       fhPtEtaPhi[isolated][narrow]->Fill(pt, eta, phi, GetEventWeight()*weightTrig);
+      if ( !IsDataMC() )
+      {
+        Float_t time  = aod->GetTime();
+        fhPtTime  [isolated][narrow]->Fill(pt, time    , GetEventWeight()*weightTrig);
+      }
     }
 
     if ( GetReader()->AreTriggerMakerDecisionHistoFill() )
