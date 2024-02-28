@@ -292,6 +292,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fHistoTrueClusSubLeadingPt(NULL),
   fHistoTrueClusNMothers(NULL),
   fHistoTrueClusEMNonLeadingPt(NULL),
+  fHistoTrueClusGammaEResE(NULL),
+  fHistoTrueClusPhotonGammaEResE(NULL),
   fHistoTrueNLabelsInClusPt(NULL),
   fHistoTruePrimaryClusGammaPt(NULL),
   fHistoTruePrimaryClusGammaESDPtMCPt(NULL),
@@ -649,6 +651,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fHistoTrueClusSubLeadingPt(NULL),
   fHistoTrueClusNMothers(NULL),
   fHistoTrueClusEMNonLeadingPt(NULL),
+  fHistoTrueClusGammaEResE(NULL),
+  fHistoTrueClusPhotonGammaEResE(NULL),
   fHistoTrueNLabelsInClusPt(NULL),
   fHistoTruePrimaryClusGammaPt(NULL),
   fHistoTruePrimaryClusGammaESDPtMCPt(NULL),
@@ -1118,23 +1122,27 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   }
 
   // set common binning in pT for mesons and photons
-  Int_t nBinsPt               = 200;
-  Float_t binWidthPt          = 0.1;
-  Float_t minPt               = 0;
-  Float_t maxPt               = 20;
-  Int_t nBinsQAPt             = 170;
-  Float_t maxQAPt             = 20;
-  Int_t nBinsClusterPt        = 500;
-  Float_t minClusterPt        = 0;
-  Float_t maxClusterPt        = 50;
-  Int_t nBinsMinv             = 800;
-  Float_t minMinv             = 0;
-  Float_t maxMinv             = 0.8;
+  int nBinsPt               = 200;
+  float binWidthPt          = 0.1;
+  float minPt               = 0;
+  float maxPt               = 20;
+  int nBinsQAPt             = 170;
+  float maxQAPt             = 20;
+  int nBinsClusterPt        = 500;
+  float minClusterPt        = 0;
+  float maxClusterPt        = 50;
+  int nBinsMinv             = 800;
+  float minMinv             = 0;
+  float maxMinv             = 0.8;
+  double epsilon              = 1.e-6;
+  float minRes                = -1.f;
+  float maxRes                = +5.f; 
   Double_t *arrPtBinning      = new Double_t[1200];
   Double_t *arrQAPtBinning    = new Double_t[1200];
   Double_t *arrClusPtBinning  = new Double_t[1200];
   std::vector<double> arrInvMassBinning(301,0.);
   std::vector<double> arrNMatchedTracks(5,0.);
+  std::vector<double> arrResBinning;
 
   for(size_t iBin; iBin < arrInvMassBinning.size(); iBin++){
     arrInvMassBinning.at(iBin) = (double) iBin * 0.001;
@@ -1295,6 +1303,21 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       else if(i<130) arrQAPtBinning[i]        = 3.+0.1*(i-60);
       else if(i<170) arrQAPtBinning[i]        = 10.+0.25*(i-130);
       else arrQAPtBinning[i]                  = maxQAPt;
+    }
+  }
+
+  if (fDoClusterQA > 0 && !fDoLightOutput){
+    double valRes = minRes;
+    for (int i = 0; i < 1000; ++i) {
+      arrResBinning.push_back(valRes);
+      if (valRes < -0.5 - epsilon)
+        valRes += 0.05;
+      else if (valRes < 0.5 - epsilon)
+        valRes += 0.01;
+      else if (valRes < maxRes - epsilon)
+        valRes += 0.05;
+      else
+        break;
     }
   }
 
@@ -1907,6 +1930,10 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fHistoTruePi0InvMassECalib                      = new TH2F*[fnCuts];
       fHistoTruePi0PureGammaInvMassECalib             = new TH2F*[fnCuts];
       fHistoTruePi0InvMassECalibPCM                   = new TH2F*[fnCuts];
+      if(fDoClusterQA > 0){
+        fHistoTrueClusGammaEResE                      = new TH2F*[fnCuts];
+        fHistoTrueClusPhotonGammaEResE                = new TH2F*[fnCuts];
+      }
     }
 
     if (fDoClusterQA > 0 && fDoLightOutput!=2){
@@ -2426,6 +2453,16 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         fHistoTrueClusEMNonLeadingPt[iCut]        = new TH1F("TrueClusEMNonLeading_Pt", "TrueClusEMNonLeading_Pt", nBinsClusterPt, arrClusPtBinning);
         fHistoTrueClusEMNonLeadingPt[iCut]->SetXTitle("p_{T,clus} (GeV/c)");
         fClusterOutputList[iCut]->Add(fHistoTrueClusEMNonLeadingPt[iCut]);
+        if(fDoClusterQA > 0){
+          fHistoTrueClusGammaEResE[iCut]          = new TH2F("TrueClusGammaERes_E", "TrueClusGammaERes_E", nBinsClusterPt, arrClusPtBinning,  arrResBinning.size()-1, arrResBinning.data());
+          fHistoTrueClusGammaEResE[iCut]->SetXTitle("#it{E}_{rec} (GeV)");
+          fHistoTrueClusGammaEResE[iCut]->SetYTitle("(#it{E}_{rec}-#it{E}_{true})/#it{E}_{true}");
+          fClusterOutputList[iCut]->Add(fHistoTrueClusGammaEResE[iCut]);
+          fHistoTrueClusPhotonGammaEResE[iCut]          = new TH2F("TrueClusPhotonGammaERes_E", "TrueClusPhotonGammaERes_E", nBinsClusterPt, arrClusPtBinning, arrResBinning.size()-1, arrResBinning.data());
+          fHistoTrueClusPhotonGammaEResE[iCut]->SetXTitle("#it{E}_{rec} (GeV)");
+          fHistoTrueClusPhotonGammaEResE[iCut]->SetYTitle("(#it{E}_{rec}-#it{E}_{true})/#it{E}_{true}");
+          fClusterOutputList[iCut]->Add(fHistoTrueClusPhotonGammaEResE[iCut]);
+        }
       }
 
       if ( (fDoMaterialWeightConv && fIsMC == 1) || fIsMC > 1 ) {
@@ -2463,6 +2500,10 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
           fHistoTrueSecondaryClusGammaFromK0sPt[iCut]->Sumw2();
           fHistoTrueSecondaryClusGammaFromK0lPt[iCut]->Sumw2();
           fHistoTrueSecondaryClusGammaFromLambdaPt[iCut]->Sumw2();
+          if(fDoClusterQA > 0 ){
+            fHistoTrueClusGammaEResE[iCut]->Sumw2();
+            fHistoTrueClusPhotonGammaEResE[iCut]->Sumw2();
+          }
         }
       }
 
@@ -3438,7 +3479,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
       } else if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() == 3){
         // Neutral Overlap correction via mean number of charged particles per cell
         clus->SetE(clus->E() - 12.f * ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent));
-      } else if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() == 4){
+      } else if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() >= 4){
         // Neutral Overlap correction via NonLin like correction
         clus->SetE(clus->E() * ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent, clus->E()));
       }
@@ -3807,6 +3848,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidatesAOD(AliAODConvers
   if (TruePhotonCandidate->IsLargestComponentPhoton() || (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion()) ){
     if(fHistoTrueClusGammaPt && fHistoTrueClusGammaPt[fiCut]) fHistoTrueClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(),fWeightJetJetMC);
     if(!fDoLightOutput){
+      if(fDoClusterQA > 0){
+        fHistoTrueClusGammaEResE[fiCut]->Fill(TruePhotonCandidate->E(), (TruePhotonCandidate->E()-Photon->E())/Photon->E(), fWeightJetJetMC);
+      }
       if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion()){
         fHistoTrueClusConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       }
@@ -3845,6 +3889,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidatesAOD(AliAODConvers
     if(!fDoLightOutput) fHistoTrueClusElectronPt[fiCut]->Fill(TruePhotonCandidate->Pt(),fWeightJetJetMC);
   }else {
     if(!fDoLightOutput) fHistoTrueClusEMNonLeadingPt[fiCut]->Fill(TruePhotonCandidate->Pt(),fWeightJetJetMC);
+  }
+  if(!fDoLightOutput && (fDoClusterQA > 0) && TruePhotonCandidate->IsLargestComponentPhoton()){
+    fHistoTrueClusPhotonGammaEResE[fiCut]->Fill(TruePhotonCandidate->E(), (TruePhotonCandidate->E()-Photon->E())/Photon->E(), fWeightJetJetMC);
   }
 
   if(!fDoLightOutput) {

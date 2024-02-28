@@ -213,6 +213,11 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fFuncPoissonParamCent(0),
   fFuncNMatchedTracks(0),
   fParamMeanTrackPt{0., 0., 0.},
+  fNOCParam0(0., 0.),
+  fNOCParam1(0., 0., 0.),
+  fNOCParam2(0., 0., 0., 0.),
+  fNOCParam3(0., 0., 0.),
+  fNOCParam4(0., 0., 0.),
   fMeanNMatchedTracks(0),
   fFuncNOCMaxBoltz(0),
   fVectorMatchedClusterIDs(0),
@@ -472,6 +477,11 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fFuncPoissonParamCent(ref.fFuncPoissonParamCent),
   fFuncNMatchedTracks(ref.fFuncNMatchedTracks),
   fParamMeanTrackPt{ref.fParamMeanTrackPt[0], ref.fParamMeanTrackPt[1], ref.fParamMeanTrackPt[2]},
+  fNOCParam0{ref.fNOCParam0[0], ref.fNOCParam0[1]},
+  fNOCParam1{ref.fNOCParam1[0], ref.fNOCParam1[1], ref.fNOCParam1[2]},
+  fNOCParam2{ref.fNOCParam2[0], ref.fNOCParam2[1], ref.fNOCParam2[2], ref.fNOCParam2[3]},
+  fNOCParam3{ref.fNOCParam3[0], ref.fNOCParam3[1], ref.fNOCParam3[2]},
+  fNOCParam4{ref.fNOCParam4[0], ref.fNOCParam4[1], ref.fNOCParam4[2]},
   fMeanNMatchedTracks(ref.fMeanNMatchedTracks),
   fFuncNOCMaxBoltz(ref.fFuncNOCMaxBoltz),
   fVectorMatchedClusterIDs(0),
@@ -6197,6 +6207,11 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5);
       fFuncPtDepPhi = new TF1("funcPhi34", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
       fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.);
+      fNOCParam0[0] = 1.66180e-02; fNOCParam0[1] = -3.44374e-02;  
+      fNOCParam1[0] = 5.36368e-03; fNOCParam1[1] = -1.23878e-01; fNOCParam1[2] = 2.88367e+01;
+      fNOCParam2[0] = 4.06778e-01; fNOCParam2[1] = -1.18476e-02; fNOCParam2[2] = 1.14412e-04; fNOCParam2[3] = -3.53871e-07;
+      fNOCParam3[0] = 1.34824e+00; fNOCParam3[1] = -2.33232e-03; fNOCParam3[2] = -2.20231e-05;
+      fNOCParam4[0] = 3.05351e-01; fNOCParam4[1] = -7.89355e-04; fNOCParam4[2] = -1.95339e-05;
       fDoEnergyCorrectionForOverlap = 6;
       break;
 
@@ -11029,59 +11044,9 @@ Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent, float E){
         return ( (val > 1.) && (!fIsMC) ) ? 1. : val;
       }
       break;
-      case 6: // old NonLin like approach
+      case 6: // new NOC based on <E_clus-E_gamma>/E_gamma from MC
       {
-        double temp = 0.0;
-        double tempE = 0.0;
-        if(meanCent < 10){
-          if(E > 3.5) tempE = 3.5;
-          else tempE = E;
-          temp = 1.09645e+00 - 3.49489e-01 * tempE + 1.56646e-01 * tempE * tempE - 2.03620e-02 * tempE * tempE * tempE;
-          // 2nd Iter step
-          if(E > 10.) tempE = 10.;
-          else tempE = E;
-          if(!fIsMC){
-            return temp * (9.92572e-01 + 6.80735e-03 * tempE - 1.19358e-03 * tempE * tempE + 4.56926e-05 * tempE * tempE * tempE);
-          } else {
-            return temp * (9.92242e-01 + 6.26848e-04 * tempE - 4.41504e-04 * tempE * tempE + 1.95505e-05 * tempE * tempE * tempE);
-          }
-        } else if (meanCent < 30){
-          if(E > 3.8) tempE = 3.8;
-          else tempE = E;
-          temp = 1.03972e+00 - 1.79650e-01 * tempE + 8.41570e-02 * tempE * tempE - 1.13454e-02 * tempE * tempE * tempE;
-          // 2nd Iter step
-          if(E > 10.) tempE = 10.;
-          else tempE = E;
-          if(!fIsMC){
-            return temp * (9.92422e-01 + 7.25722e-03 * tempE - 1.35218e-03 * tempE * tempE + 5.60276e-05 * tempE * tempE * tempE);
-          } else {
-            return temp * (9.70213e-01 + 7.23533e-03 * tempE - 9.56039e-04 * tempE * tempE + 3.41438e-05 * tempE * tempE * tempE);
-          }
-        } else if (meanCent < 50){
-          if(E > 3.3) tempE = 3.3;
-          else tempE = E;
-          temp = 1.00734e+00 - 6.42114e-02 * tempE + 3.03931e-02 * tempE * tempE - 4.16131e-03 * tempE * tempE * tempE;
-          // 2nd Iter step
-          if(E > 10.) tempE = 10.;
-          else tempE = E;
-          if(!fIsMC){
-            return temp * (9.96827e-01 + 2.96262e-03 * tempE - 5.29817e-04 * tempE * tempE + 2.23712e-05 * tempE * tempE * tempE);
-          } else {
-            return temp * (9.80774e-01 + 5.53179e-03 * tempE - 6.76146e-04 * tempE * tempE + 2.37495e-05 * tempE * tempE * tempE);
-          }
-        } else {
-          if(E > 3.5) tempE = 3.5;
-          else tempE = E;
-          temp = 9.95241e-01 - 1.49339e-02 * tempE + 8.08355e-03 * tempE * tempE - 1.33936e-03 * tempE * tempE * tempE;
-          // 2nd Iter step
-          if(E > 10.) tempE = 10.;
-          else tempE = E;
-          if(!fIsMC){
-            return temp * (9.93144e-01 + 5.27060e-03 * tempE - 1.26703e-03 * tempE * tempE + 6.77855e-05 * tempE * tempE * tempE);
-          } else {
-            return temp * (9.81776e-01 + 5.65088e-03 * tempE - 6.70857e-04 * tempE * tempE + 2.28391e-05 * tempE * tempE * tempE);
-          }
-        }
+        return 1. - (GetNOCParameter0(meanCent, fNOCParam0) + E * GetNOCParameter1(meanCent, fNOCParam1) + (GetNOCParameter2(meanCent, fNOCParam2) * TMath::Landau(E, GetNOCParameter3(meanCent, fNOCParam3), GetNOCParameter4(meanCent, fNOCParam4), 0) ) );
       }
       break;
     default:
@@ -11092,6 +11057,36 @@ Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent, float E){
 // Function to get the mean energy of neutral overlap photons
 // part of neutral overlap correction for PbPb 5 TeV
 Double_t AliCaloPhotonCuts::GetMeanEForOverlap(Double_t cent, Double_t* par){
+  return par[0] + cent * par[1] + cent * cent * par[2];
+}
+
+// Function to get the 1st parameter for the cent dependent neutral overlap correction
+// part of neutral overlap correction for PbPb 5 TeV
+Double_t AliCaloPhotonCuts::GetNOCParameter0(Double_t cent, Double_t* par){
+  return par[0] * exp( cent * par[1] + 2.);
+}
+
+// Function to get the 2nd parameter for the cent dependent neutral overlap correction
+// part of neutral overlap correction for PbPb 5 TeV
+Double_t AliCaloPhotonCuts::GetNOCParameter1(Double_t cent, Double_t* par){
+  return par[0] / (1. + exp( par[1] * (cent - par[2] ) ) );
+}
+
+// Function to get the 3rd parameter for the cent dependent neutral overlap correction
+// part of neutral overlap correction for PbPb 5 TeV
+Double_t AliCaloPhotonCuts::GetNOCParameter2(Double_t cent, Double_t* par){
+  return par[0] + cent * par[1] + cent * cent * par[2] + cent * cent * cent * par[3];
+}
+
+// Function to get the 4th parameter for the cent dependent neutral overlap correction
+// part of neutral overlap correction for PbPb 5 TeV
+Double_t AliCaloPhotonCuts::GetNOCParameter3(Double_t cent, Double_t* par){
+  return par[0] + cent * par[1] + cent * cent * par[2];
+}
+
+// Function to get the 5th parameter for the cent dependent neutral overlap correction
+// part of neutral overlap correction for PbPb 5 TeV
+Double_t AliCaloPhotonCuts::GetNOCParameter4(Double_t cent, Double_t* par){
   return par[0] + cent * par[1] + cent * cent * par[2];
 }
 
