@@ -108,7 +108,6 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short fLambda_Daughter_Proton_TPC_nFindableCluster;
     unsigned short fLambda_Daughter_Proton_TPC_nCluster;
     unsigned short fLambda_Daughter_Proton_ITS_nCluster;
-    unsigned int fLambda_Daughter_Proton_ID;
 
     float fLambda_Daughter_AntiPion_px;
     float fLambda_Daughter_AntiPion_py;
@@ -137,7 +136,6 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short fLambda_Daughter_AntiPion_TPC_nFindableCluster;
     unsigned short fLambda_Daughter_AntiPion_TPC_nCluster;
     unsigned short fLambda_Daughter_AntiPion_ITS_nCluster;
-    unsigned int fLambda_Daughter_AntiPion_ID;
 
 
     TTree     *fSaveTree_Deuteron;
@@ -170,7 +168,6 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     int		      fDeuteron_PDG;
     int		      fDeuteron_MotherPDG;
     bool	      fDeuteron_FilterBit;
-    unsigned int      fDeuteron_ID;
     unsigned int      fDeuteron_Event_Multiplicity;
     unsigned long     fDeuteron_Event_Identifier;
     bool	      fDeuteron_ITS_Layer0;
@@ -239,7 +236,6 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short fAntiLambda_Daughter_AntiProton_TPC_nFindableCluster;
     unsigned short fAntiLambda_Daughter_AntiProton_TPC_nCluster;
     unsigned short fAntiLambda_Daughter_AntiProton_ITS_nCluster;
-    unsigned int fAntiLambda_Daughter_AntiProton_ID;
 
     float fAntiLambda_Daughter_Pion_px;
     float fAntiLambda_Daughter_Pion_py;
@@ -268,7 +264,6 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short fAntiLambda_Daughter_Pion_TPC_nFindableCluster;
     unsigned short fAntiLambda_Daughter_Pion_TPC_nCluster;
     unsigned short fAntiLambda_Daughter_Pion_ITS_nCluster;
-    unsigned int fAntiLambda_Daughter_Pion_ID;
 
 
 
@@ -302,7 +297,6 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     int		      fAntiDeuteron_PDG;
     int		      fAntiDeuteron_MotherPDG;
     bool	      fAntiDeuteron_FilterBit;
-    unsigned int      fAntiDeuteron_ID;
     unsigned int      fAntiDeuteron_Event_Multiplicity;
     unsigned long     fAntiDeuteron_Event_Identifier;
     bool	      fAntiDeuteron_ITS_Layer0;
