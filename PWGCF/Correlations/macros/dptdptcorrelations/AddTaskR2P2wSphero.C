@@ -212,7 +212,59 @@ AliAnalysisTaskR2P2wSphero * AddTaskR2P2wSphero
     minSherocity[0] = 0.005;       maxSherocity[0]  =0.985; //0- 100%
   }
 
+//////////////////////////////////////////////////********* spherocity values calculated with Nch>=10 & 10-30% mult class**************//////////////////
 
+ if ( SpherocityGroup ==21) //corresponds to the spherocity for Data/Reco level
+  {
+    nSherocity=2;
+    minSherocity[0] = 0.005;       maxSherocity[0]  =0.545; //0- 20%
+    minSherocity[1] = 0.795;       maxSherocity[1]  =0.985;  //80-100%
+    
+  }
+
+  if ( SpherocityGroup ==22) //corresponds to the spherocity for Gen level
+  {
+    nSherocity=2;
+    minSherocity[0] = 0.005;       maxSherocity[0]  =0.575; //0- 20%
+    minSherocity[1] = 0.815;       maxSherocity[1]  =0.985;  //80-100%
+    
+  }
+
+//////////////////////////////////////////////////********* spherocity values calculated with Nch>=10 & 30-60% mult class**************//////////////////
+
+ if ( SpherocityGroup ==23) //corresponds to the spherocity for Data/Reco level
+  {
+    nSherocity=2;
+    minSherocity[0] = 0.005;       maxSherocity[0]  =0.495; //0- 20%
+    minSherocity[1] = 0.765;       maxSherocity[1]  =0.985;  //80-100%
+    
+  }
+
+  if ( SpherocityGroup ==24) //corresponds to the spherocity for Gen level
+  {
+    nSherocity=2;
+    minSherocity[0] = 0.005;       maxSherocity[0]  =0.515; //0- 20%
+    minSherocity[1] = 0.785;       maxSherocity[1]  =0.985;  //80-100%
+    
+  }
+
+//////////////////////////////////////////////////********* spherocity values calculated with Nch>=10 & 60-100% mult class**************//////////////////
+
+ if ( SpherocityGroup ==25) //corresponds to the spherocity for Data/Reco level
+  {
+    nSherocity=2;
+    minSherocity[0] = 0.005;       maxSherocity[0]  =0.455; //0- 20%
+    minSherocity[1] = 0.745;       maxSherocity[1]  =0.985;  //80-100%
+    
+  }
+
+  if ( SpherocityGroup ==26) //corresponds to the spherocity for Gen level
+  {
+    nSherocity=2;
+    minSherocity[0] = 0.005;       maxSherocity[0]  =0.465; //0- 20%
+    minSherocity[1] = 0.755;       maxSherocity[1]  =0.985;  //80-100%
+    
+  }
 ////////////////////////////////////**************** spherocity values calculated with Nch>=10 & 0-5% mult class **********************//////////////////////////////
 
  if ( SpherocityGroup ==10) //corresponds to the spherocity for Data/Reco level
