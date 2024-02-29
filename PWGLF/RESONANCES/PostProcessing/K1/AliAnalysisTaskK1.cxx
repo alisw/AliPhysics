@@ -655,7 +655,7 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
   if (!fSkipFillingHistogram) hMultiplicity->Fill(fCent); // multiplicity distribution for basic event QA
   fCustomEventID = (fIsNano) ? nanoHeader->GetRunNumberIndex() + fEntry : ((unsigned long)(event->GetBunchCrossNumber()) << 32) + event->GetTimeStamp();
 
-  if (fIsMC && !fSkipFillingHistogram)
+  if (fIsMC)
   {
     FillMCinput(fMCEvent);
     FillTHnSparse(fHn2DEvtNorm, {(int)kSelected, (double)fCent});
