@@ -5,6 +5,7 @@
 #include <TNtupleD.h>
 
 #include <deque>
+#include <tuple>
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
@@ -120,8 +121,14 @@ public:
   Bool_t IsTrueK1(UInt_t v0, UInt_t pion, UInt_t BkgCheck = 0);
   Double_t GetTPCnSigma(AliVTrack *track, AliPID::EParticleType type);
   Double_t GetTOFnSigma(AliVTrack *track, AliPID::EParticleType type);
+  void PostAllData();
   void GetImpactParam(AliVTrack *track, Float_t p[2], Float_t cov[3]);
-  Int_t trackSelection(AliVTrack *track, Float_t &nTPCNSigPion, Float_t &nTPCNSigKaon, Float_t lpT, Float_t lDCAz, Float_t lDCAr, Float_t lEta);
+  std::tuple<Float_t, Float_t, std::array<Float_t, 3>> GetImpactParametersWrapper(AliVTrack *track);
+  bool IsTrackAccepted(AliVTrack* track);
+  Int_t TrackSelection(AliVTrack *track, Float_t nTPCNSigPion, Float_t nTOFNSigPion, Float_t nTPCNSigKaon, Float_t nTOFNSigKaon, Float_t lpT, Float_t lDCAz, Float_t lDCAr, Float_t lEta);
+  bool IsPassPrimaryPionSelection(Float_t nTPCNSigPion, Float_t nTOFNSigPion, Float_t lEta, Float_t lDCAz, Float_t lDCAr, Double_t lsigmaDCAr);
+  bool IsPassSecondaryPionSelection(Float_t nTPCNSigPion, Float_t nTOFNSigPion, Float_t lEta, Float_t lDCAz, Float_t lDCAr, Double_t lsigmaDCAr);
+  bool IsPassKaonSelection(Float_t nTPCNSigKaon, Float_t nTOFNSigKaon, Float_t lEta, Float_t lDCAz, Float_t lDCAr, Double_t lsigmaDCAr);
   void SetCutOpen();
 
   // helper
@@ -263,8 +270,9 @@ private:
 
   unsigned long long int fTracks; //!
 
-  ClassDef(AliAnalysisTaskK1, 1);
+  ClassDef(AliAnalysisTaskK1, 2);
   // 1: first implementation
+  // 2: update Tree method and simplify the code
 };
 
 #endif

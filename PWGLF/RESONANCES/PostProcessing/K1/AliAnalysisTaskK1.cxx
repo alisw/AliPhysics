@@ -25,6 +25,7 @@
 
 #include <TDatabasePDG.h>
 #include <math.h>
+#include <tuple>
 
 #include <iostream>
 
@@ -65,11 +66,8 @@ const Double_t kK892Mass = TDatabasePDG::Instance()->GetParticle(313)->Mass();
 enum
 {
   kPrimaryPionPass = BIT(0),
-  kPrimaryPionFail = BIT(2),
-  kSecondaryPionPass = BIT(3),
-  kSecondaryPionFail = BIT(4),
-  kKaonPass = BIT(5),
-  kKaonFail = BIT(6),
+  kSecondaryPionPass = BIT(1),
+  kKaonPass = BIT(2),
 };
 enum
 {
@@ -409,16 +407,13 @@ void AliAnalysisTaskK1::UserCreateOutputObjects()
   fBinZ = AxisVar("Z", {-10, -5, -3, -1, 1, 3, 5, 10}); // moderate diff
 
   fHn5DK1Data = CreateTHnSparse("K1_data", "K1_data", 5, {binAnti, binType, fBinCent, binPt, binMass}, "s");
-  fList->Add(fHn5DK1Data);
   if (fIsMC)
   {
     auto binTypeMCNorm = AxisStr("Type", {"kAll", "kINEL10", "kINEL_trig", "kINEL_trig_vtx",
                                           "kINEL_trig_vtx10", "kINELg0", "kINELg010", "kINELg0_trig",
                                           "kINELg0_trig_vtx", "kINELg0_trig_vtx10", "kSelected"});
     fHn5DK1MC = CreateTHnSparse("K1_mc", "K1_mc", 5, {binAnti, binTypeMC, fBinCent, binPt, binMassMC}, "s");
-    fList->Add(fHn5DK1MC);
     fHn2DEvtNorm = CreateTHnSparse("Normalisation", "", 2, {binTypeMCNorm, fBinCent}, "s");
-    fList->Add(fHn2DEvtNorm);
   }
   if (fFillQAPlot)
   {
@@ -505,16 +500,21 @@ void AliAnalysisTaskK1::UserCreateOutputObjects()
       QAList->Add(hInvMass_piK_pika_MCTrue);
     }
   }
-  fEventCut.AddQAplotsToList(fList); // QA histograms from AliEventCuts
   if (fIsHM)
     hMultiplicity = new TH1F("hMultiplicity", "", 100, 0, 0.1);
   else
     hMultiplicity = new TH1F("hMultiplicity", "", 101, -1, 100);
-  fList->Add(hMultiplicity);
-
+  
   fEMpool.resize(fBinCent.GetNbins() + 1, std::vector<eventpool>(fBinZ.GetNbins() + 1));
-
-  PostData(1, fList);
+  if (!fSkipFillingHistogram)
+  {
+    fList->Add(fHn5DK1Data);
+    fList->Add(fHn5DK1MC);
+    fList->Add(fHn2DEvtNorm);
+    fList->Add(hMultiplicity);
+    fEventCut.AddQAplotsToList(fList); // QA histograms from AliEventCuts
+    PostData(1, fList);
+  }
   if (fFillTree)
   {
     OpenFile(1);
@@ -536,13 +536,7 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
   AliVEvent *event = InputEvent();
   if (!event) // if there is no event, return
   {
-    PostData(1, fList);
-    if (fFillTree)
-    {
-      PostData(2, fNanoTree);
-      if (fIsMC)
-        PostData(3, fNanoMCTree);
-    }
+    PostAllData();
     AliInfo("Could not retrieve event");
     return;
   }
@@ -555,13 +549,7 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
     fIsAOD = true; // check if it is AOD or ESD
   if (!fEvt)       // if there is no event, return
   {
-    PostData(1, fList);
-    if (fFillTree)
-    {
-      PostData(2, fNanoTree);
-      if (fIsMC)
-        PostData(3, fNanoMCTree);
-    }
+    PostAllData();
     return;
   }
   AliInputEventHandler *inputHandler = (AliInputEventHandler *)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
@@ -610,7 +598,7 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
       fCent = -0.5;
   }
 
-  if (fIsMC)
+  if (fIsMC && !fSkipFillingHistogram)
   {
     // Fill Normalisation histogram
     if (IsVtxInZCut)
@@ -660,20 +648,14 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
 
   if (!IsEvtSelected)
   {
-    PostData(1, fList);
-    if (fFillTree)
-    {
-      PostData(2, fNanoTree);
-      if (fIsMC)
-        PostData(3, fNanoMCTree);
-    }
+    PostAllData();
     return;
   }
 
-  hMultiplicity->Fill(fCent); // multiplicity distribution for basic event QA
+  if (!fSkipFillingHistogram) hMultiplicity->Fill(fCent); // multiplicity distribution for basic event QA
   fCustomEventID = (fIsNano) ? nanoHeader->GetRunNumberIndex() + fEntry : ((unsigned long)(event->GetBunchCrossNumber()) << 32) + event->GetTimeStamp();
 
-  if (fIsMC)
+  if (fIsMC && !fSkipFillingHistogram)
   {
     FillMCinput(fMCEvent);
     FillTHnSparse(fHn2DEvtNorm, {(int)kSelected, (double)fCent});
@@ -704,13 +686,7 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
     FillTrackToEventPool(); // use only pion track pool.
   }
 
-  PostData(1, fList);
-  if (fFillTree)
-  {
-    PostData(2, fNanoTree);
-    if (fIsMC)
-      PostData(3, fNanoMCTree);
-  }
+  PostAllData();
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskK1::Terminate(Option_t *)
@@ -728,12 +704,11 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
   fGoodKaonArray.clear();
   fGoodTracksArray.clear();
   AliVTrack *track = nullptr;
-  Float_t b[2];
   Float_t bCov[3];
-  Double_t nTPCNSigPion{0}, nTPCNSigKaon{0}, nTOFNSigPion{0}, nTOFNSigKaon{0}, lDCAz{0}, lpT{0}, lsigmaDCAr{0}, lDCAr{0}, lEta{0}, lEnergy{0}, lStatus{0}, lChi2tpc(-1), lTPCsignalN(-1);
+  Double_t nTPCNSigPion{0}, nTPCNSigKaon{0}, nTOFNSigPion{0}, nTOFNSigKaon{0}, lDCAz{0}, lpT{0}, lsigmaDCAr{0}, lDCAr{0}, lEta{0}, lEnergy{0}, lStatus{0};
   Bool_t isPassPrimaryPionSelection{false}, isPassSecondaryPionSelection{false}, isPassKaonSelection{false};
   Bool_t isAcceptedTrack{false};
-  Int_t lMotherID{-999}, lPDG{-999};
+  Int_t lMotherID{-999}, lPDG{-999}, trackSelResult{-999};
   fTracks += nTracks;
   for (UInt_t it = 0; it < nTracks; it++)
   {
@@ -744,26 +719,10 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
     if (!track)
       continue;
 
-    // ---------- Track selection begin ----------
-    isAcceptedTrack = false;
-    if (!fIsAOD) // ESD Case
-      isAcceptedTrack = fTrackCuts->AcceptTrack(static_cast<AliESDtrack *>(track));
-    else if (!fIsNano) // AOD Case, not Nano
-    {
-      isAcceptedTrack = static_cast<AliAODTrack *>(track)->TestFilterBit(fFilterBit);
-      lChi2tpc = static_cast<AliAODTrack *>(track)->Chi2perNDF();
-      lTPCsignalN = static_cast<AliAODTrack *>(track)->GetTPCsignalN();
-    }
-    else // Nano AOD Case
-    {
-      isAcceptedTrack = static_cast<AliNanoAODTrack *>(track)->TestFilterBit(fFilterBit);
-    }
-
-    if (!isAcceptedTrack)
+    if (!IsTrackAccepted(track))
       continue;
-    GetImpactParam(track, b, bCov);
+    auto [lDCAr, lDCAz, bCov] = GetImpactParametersWrapper(track);
 
-    lDCAz = b[1];
     nTPCNSigPion = GetTPCnSigma(track, AliPID::kPion);
     nTPCNSigKaon = GetTPCnSigma(track, AliPID::kKaon);
     nTOFNSigPion = GetTOFnSigma(track, AliPID::kPion);
@@ -774,8 +733,9 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
       continue;
 
     lpT = track->Pt();
+    if (lpT < 0.15) // minimum pT cut
+      continue;
     lsigmaDCAr = (0.0026 + 0.0050 / lpT);
-    lDCAr = b[0];
     lEta = track->Eta();
 
     if (fFillQAPlot)
@@ -787,44 +747,13 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
       hPtTrack_before->Fill(lpT);
     }
 
-    if (lpT < 0.15) // minimum pT cut
+    trackSelResult = TrackSelection(track, nTPCNSigPion, nTOFNSigPion, nTPCNSigKaon, nTOFNSigKaon, lDCAz, lDCAr, lsigmaDCAr, lEta);
+    if (trackSelResult == 0)
       continue;
 
-    // Selection for primary pion
-    if (TMath::Abs(nTPCNSigPion) > fTPCNsigPrimaryPionCut)
-      isPassPrimaryPionSelection = false;
-    if (fTOFNsigPrimaryPionCut > 0 && TMath::Abs(nTOFNSigPion) > fTOFNsigPrimaryPionCut)
-      isPassPrimaryPionSelection = false;
-    if (TMath::Abs(lEta) > fPrimaryPionEtaCut)
-      isPassPrimaryPionSelection = false;
-    if (lDCAz > fPrimaryPionZVertexCut)
-      isPassPrimaryPionSelection = false;
-    if (lDCAr > lsigmaDCAr * fPrimaryPionXYVertexSigmaCut)
-      isPassPrimaryPionSelection = false;
-
-    // Selection for secondary pion
-    if (TMath::Abs(nTPCNSigPion) > fTPCNsigSecondaryPionCut)
-      isPassSecondaryPionSelection = false;
-    if (fTOFNsigSecondaryPionCut > 0 && TMath::Abs(nTOFNSigPion) > fTOFNsigSecondaryPionCut)
-      isPassSecondaryPionSelection = false;
-    if (TMath::Abs(lEta) > fSecondaryPionEtaCut)
-      isPassSecondaryPionSelection = false;
-    if (lDCAz > fSecondaryPionZVertexCut)
-      isPassSecondaryPionSelection = false;
-    if (lDCAr > lsigmaDCAr * fSecondaryPionXYVertexSigmaCut)
-      isPassSecondaryPionSelection = false;
-
-    // Selection for kaon
-    if (TMath::Abs(nTPCNSigKaon) > fTPCNsigKaonCut)
-      isPassKaonSelection = false;
-    if (fTOFNsigKaonCut > 0 && TMath::Abs(nTOFNSigKaon) > fTOFNsigKaonCut)
-      isPassKaonSelection = false;
-    if (TMath::Abs(lEta) > fKaonEtaCut)
-      isPassKaonSelection = false;
-    if (lDCAz > fKaonZVertexCut)
-      isPassKaonSelection = false;
-    if (lDCAr > lsigmaDCAr * fKaonXYVertexSigmaCut)
-      isPassKaonSelection = false;
+    isPassPrimaryPionSelection = (trackSelResult & kPrimaryPionPass);
+    isPassSecondaryPionSelection = (trackSelResult & kSecondaryPionPass);
+    isPassKaonSelection = (trackSelResult & kKaonPass);
 
     if (fFillQAPlot)
     {
@@ -875,8 +804,8 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
         fRecK1daughter.py = track->Py();
         fRecK1daughter.pz = track->Pz();
         fRecK1daughter.eta = track->Eta();
-        fRecK1daughter.dcaxy = b[0];
-        fRecK1daughter.dcaz = b[1];
+        fRecK1daughter.dcaxy = lDCAr;
+        fRecK1daughter.dcaz = lDCAz;
         fRecK1daughter.tpcNsigmaPi = nTPCNSigPion;
         fRecK1daughter.tofNsigmaPi = nTOFNSigPion;
         fRecK1daughter.tpcNsigmaKa = nTPCNSigKaon;
@@ -1448,6 +1377,17 @@ void AliAnalysisTaskK1::FillTrackToEventPool()
     ep->pop_front();
   }
 }
+void AliAnalysisTaskK1::PostAllData()
+{
+  if (!fSkipFillingHistogram)
+    PostData(1, fList);
+  if (fFillTree)
+  {
+    PostData(2, fNanoTree);
+    if (fIsMC)
+      PostData(3, fNanoMCTree);
+  }
+}
 void AliAnalysisTaskK1::GetImpactParam(AliVTrack *track, Float_t p[2], Float_t cov[3])
 {
   AliNanoAODTrack *nanoT = dynamic_cast<AliNanoAODTrack *>(track);
@@ -1456,47 +1396,73 @@ void AliAnalysisTaskK1::GetImpactParam(AliVTrack *track, Float_t p[2], Float_t c
   else
     track->GetImpactParameters(p, cov);
 }
-Int_t AliAnalysisTaskK1::trackSelection(AliVTrack *track, Float_t &nTPCNSigPion, Float_t &nTPCNSigKaon, Float_t lpT, Float_t lDCAz, Float_t lDCAr, Float_t lEta)
+std::tuple<Float_t, Float_t, std::array<Float_t, 3>> AliAnalysisTaskK1::GetImpactParametersWrapper(AliVTrack *track)
 {
-  // We have 3 cases for track selection: primary pion, secondary pion, kaon
-  // the return value will be the BIT combination of the track type
-
-  // Initialize the output value for all pass at the beggining
-  Int_t result = 0;
-  result |= kPrimaryPionPass;
-  result |= kSecondaryPionPass;
-  result |= kKaonPass;
-
+  Float_t p[2] = {0, 0};
+  Float_t cov[3] = {0, 0, 0};
+  GetImpactParam(track, p, cov); // Assuming this is accessible within the context
+  return {p[0], p[1], {cov[0], cov[1], cov[2]}};
+}
+Int_t AliAnalysisTaskK1::TrackSelection(AliVTrack *track, Float_t nTPCNSigPion, Float_t nTOFNSigPion, Float_t nTPCNSigKaon, Float_t nTOFNSigKaon, Float_t lpT, Float_t lDCAz, Float_t lDCAr, Float_t lEta)
+{
+  // Check for valid track pointer
   if (!track)
-    return result;
-  Double_t lsigmaDCAr = (0.0026 + 0.0050 / lpT);
-  
-  if (TMath::Abs(nTPCNSigPion) > fTPCNsigPrimaryPionCut)
-    result |= kPrimaryPionFail;
-  if (TMath::Abs(lEta) > fPrimaryPionEtaCut)
-    result |= kPrimaryPionFail;
-  if (lDCAz > fPrimaryPionZVertexCut)
-    result |= kPrimaryPionFail;
-  if (lDCAr > lsigmaDCAr * fPrimaryPionXYVertexSigmaCut)
-    result |= kPrimaryPionFail;
-  
-  if (TMath::Abs(nTPCNSigPion) > fTPCNsigSecondaryPionCut)
-    result |= kSecondaryPionFail;
-  if (TMath::Abs(lEta) > fSecondaryPionEtaCut)
-    result |= kSecondaryPionFail;
-  if (lDCAz > fSecondaryPionZVertexCut)
-    result |= kSecondaryPionFail;
-  if (lDCAr > lsigmaDCAr * fSecondaryPionXYVertexSigmaCut)  
-    result |= kSecondaryPionFail;
+    return 0;
 
-  if (TMath::Abs(nTPCNSigKaon) > fTPCNsigKaonCut) 
-    result |= kKaonFail;
-  if (TMath::Abs(lEta) > fKaonEtaCut)
-    result |= kKaonFail;
-  if (lDCAz > fKaonZVertexCut)
-    result |= kKaonFail;
-  if (lDCAr > lsigmaDCAr * fKaonXYVertexSigmaCut) 
-    result |= kKaonFail;
+  Int_t result = 0;
+  Double_t lsigmaDCAr = (0.0026 + 0.0050 / lpT);
+
+  // Evaluate each track type selection
+  if (IsPassPrimaryPionSelection(nTPCNSigPion, nTOFNSigPion, lEta, lDCAz, lDCAr, lsigmaDCAr))
+    result |= kPrimaryPionPass;
+
+  if (IsPassSecondaryPionSelection(nTPCNSigPion, nTOFNSigPion, lEta, lDCAz, lDCAr, lsigmaDCAr))
+    result |= kSecondaryPionPass;
+
+  if (IsPassKaonSelection(nTPCNSigKaon, nTOFNSigKaon, lEta, lDCAz, lDCAr, lsigmaDCAr))
+    result |= kKaonPass;
 
   return result;
+}
+bool AliAnalysisTaskK1::IsPassPrimaryPionSelection(Float_t nTPCNSigPion, Float_t nTOFNSigPion, Float_t lEta, Float_t lDCAz, Float_t lDCAr, Double_t lsigmaDCAr)
+{
+  return TMath::Abs(nTPCNSigPion) <= fTPCNsigPrimaryPionCut &&
+         (fTOFNsigPrimaryPionCut <= 0 || TMath::Abs(nTOFNSigPion) <= fTOFNsigPrimaryPionCut) &&
+         TMath::Abs(lEta) <= fPrimaryPionEtaCut &&
+         lDCAz <= fPrimaryPionZVertexCut &&
+         lDCAr <= lsigmaDCAr * fPrimaryPionXYVertexSigmaCut;
+}
+
+bool AliAnalysisTaskK1::IsPassSecondaryPionSelection(Float_t nTPCNSigPion, Float_t nTOFNSigPion, Float_t lEta, Float_t lDCAz, Float_t lDCAr, Double_t lsigmaDCAr)
+{
+  return TMath::Abs(nTPCNSigPion) <= fTPCNsigSecondaryPionCut &&
+         (fTOFNsigSecondaryPionCut <= 0 || TMath::Abs(nTOFNSigPion) <= fTOFNsigSecondaryPionCut) &&
+         TMath::Abs(lEta) <= fSecondaryPionEtaCut &&
+         lDCAz <= fSecondaryPionZVertexCut &&
+         lDCAr <= lsigmaDCAr * fSecondaryPionXYVertexSigmaCut;
+}
+
+bool AliAnalysisTaskK1::IsPassKaonSelection(Float_t nTPCNSigKaon, Float_t nTOFNSigKaon, Float_t lEta, Float_t lDCAz, Float_t lDCAr, Double_t lsigmaDCAr)
+{
+  return TMath::Abs(nTPCNSigKaon) <= fTPCNsigKaonCut &&
+         (fTOFNsigKaonCut <= 0 || TMath::Abs(nTOFNSigKaon) <= fTOFNsigKaonCut) &&
+         TMath::Abs(lEta) <= fKaonEtaCut &&
+         lDCAz <= fKaonZVertexCut &&
+         lDCAr <= lsigmaDCAr * fKaonXYVertexSigmaCut;
+}
+bool AliAnalysisTaskK1::IsTrackAccepted(AliVTrack *track)
+{
+  if (!fIsAOD)
+  {
+    return fTrackCuts->AcceptTrack(static_cast<AliESDtrack *>(track));
+  }
+  else if (!fIsNano)
+  {
+    auto aodTrack = static_cast<AliAODTrack *>(track);
+    return aodTrack->TestFilterBit(fFilterBit);
+  }
+  else
+  {
+    return static_cast<AliNanoAODTrack *>(track)->TestFilterBit(fFilterBit);
+  }
 }
