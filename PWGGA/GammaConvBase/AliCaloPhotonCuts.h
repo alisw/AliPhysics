@@ -415,6 +415,11 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t    CorrectEnergyForOverlap(float meanCent, float E = 0);
     Int_t       GetDoEnergyCorrectionForOverlap()               {return fDoEnergyCorrectionForOverlap;}
     Double_t    GetMeanEForOverlap(Double_t cent, Double_t* par);
+    Double_t    GetNOCParameter0(Double_t cent, Double_t* par);
+    Double_t    GetNOCParameter1(Double_t cent, Double_t* par);
+    Double_t    GetNOCParameter2(Double_t cent, Double_t* par);
+    Double_t    GetNOCParameter3(Double_t cent, Double_t* par);
+    Double_t    GetNOCParameter4(Double_t cent, Double_t* par);
 
     // modify acceptance via histogram with cellID
     void        SetHistoToModifyAcceptance(TH1S* histAcc)       {fHistoModifyAcc  = histAcc; return;}
@@ -612,8 +617,14 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TF1*      fFuncPoissonParamCent;                    // TF1 to describe the poisson parameter that you get from fitting a poisson dsitribution to the number of matched tracks per cluster as function of centrality
     TF1*      fFuncNMatchedTracks;                      // TF1 poisson distribution to describe the number of matched tracks per cluster for a specific centrality
     Double_t  fParamMeanTrackPt[3];                     // TF1 distribution to describe the mean pT of tracks as function of centrality. Half of this value is used as neutral energy overlap correction.
+    Double_t  fNOCParam0[2];                            // parameter for function [0]*exp(x*[1]+2) to describe 1st parameter as function of cent of the 5 params for the NOC
+    Double_t  fNOCParam1[3];                            // parameter for function [0]/(1+exp([1]*(x-[2]))) to describe 2nd parameter as function of cent of the 5 params for the NOC
+    Double_t  fNOCParam2[4];                            // parameter for function pol3 to describe 3rd parameter as function of cent of the 5 params for the NOC
+    Double_t  fNOCParam3[3];                            // parameter for function pol2 to describe 4th parameter as function of cent of the 5 params for the NOC
+    Double_t  fNOCParam4[3];                            // parameter for function pol2 to describe 5th parameter as function of cent of the 5 params for the NOC
     Float_t   fMeanNMatchedTracks;                      // Mean number of matched primary tracks, stored to reduce CPU time for neutral overlap correction
     TF1*      fFuncNOCMaxBoltz;                         // TF1 Maxwell Boltzmann to describe the neutral overlap correction for a specific centrality
+
 
     //vector
     std::vector<Int_t> fVectorMatchedClusterIDs;        // vector with cluster IDs that have been matched to tracks in merged cluster analysis
@@ -768,7 +779,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,135)
+    ClassDef(AliCaloPhotonCuts,136)
 };
 
 #endif

@@ -1559,6 +1559,16 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11310023","411790105te30220000","01331031000000d0"); // 10-30%
     cuts.AddCutCalo("13530023","411790105te30220000","01331031000000d0"); // 30-50%
     cuts.AddCutCalo("15910023","411790105te30220000","01331031000000d0"); // 50-90%
+  } else if (trainConfig == 1015){ // 4 cents with mean N matched tracks per cluster data
+    cuts.AddCutCalo("10130e03","411790105ye30220000","01331031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310e03","411790105ye30220000","01331031000000d0"); // 10-30%
+    cuts.AddCutCalo("13530e03","411790105ye30220000","01331031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910e03","411790105ye30220000","01331031000000d0"); // 50-90%
+  } else if (trainConfig == 1016){ // 4 cents, with mean N matched tracks per cluster MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("10130053","411790105ye30220000","01331031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310053","411790105ye30220000","01331031000000d0"); // 10-30%
+    cuts.AddCutCalo("13530053","411790105ye30220000","01331031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910053","411790105ye30220000","01331031000000d0"); // 50-90%
   // with rotation background
   } else if (trainConfig == 1050){ // 4 cents
     cuts.AddCutCalo("10130e03","411790105ke30220000","0s331031000000d0"); // 00-10%
@@ -1635,6 +1645,16 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11310023","411790105te30220000","0s331031000000d0"); // 10-30%
     cuts.AddCutCalo("13530023","411790105te30220000","0s331031000000d0"); // 30-50%
     cuts.AddCutCalo("15910023","411790105te30220000","0s331031000000d0"); // 50-90%
+  } else if (trainConfig == 1065){ // 4 cents with mean N matched tracks per cluster data
+    cuts.AddCutCalo("10130e03","411790105ye30220000","0s331031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310e03","411790105ye30220000","0s331031000000d0"); // 10-30%
+    cuts.AddCutCalo("13530e03","411790105ye30220000","0s331031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910e03","411790105ye30220000","0s331031000000d0"); // 50-90%
+  } else if (trainConfig == 1066){ // 4 cents, with mean N matched tracks per cluster MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("10130053","411790105ye30220000","0s331031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310053","411790105ye30220000","0s331031000000d0"); // 10-30%
+    cuts.AddCutCalo("13530053","411790105ye30220000","0s331031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910053","411790105ye30220000","0s331031000000d0"); // 50-90%
   // **********************************************************************************************************
   // **************************** EMC configurations PbPb run 2 2018 pass 3 cent ******************************
   // **********************************************************************************************************
@@ -1669,6 +1689,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("10130023","411790105te30220000","01331031000000d0"); // 00-10%
   } else if (trainConfig == 1114){ // central, with mean N matched tracks per cluster MC no OOB Pileup correction for MC with added signal (copy for pi0 + eta)
     cuts.AddCutCalo("10130023","411790105te30220000","01331031000000d0"); // 00-10%
+  } else if (trainConfig == 1115){ // central with mean N matched tracks per cluster data
+    cuts.AddCutCalo("10130e03","411790105ye30220000","01331031000000d0"); // 00-10%
+  } else if (trainConfig == 1116){ // central, with mean N matched tracks per cluster MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("10130053","411790105ye30220000","01331031000000d0"); // 00-10%
   // with rotation background
   } else if (trainConfig == 1150){ // central
     cuts.AddCutCalo("10130e03","411790105ke30220000","0s331031000000d0"); // 00-10%
@@ -1700,6 +1724,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("10130023","411790105te30220000","0s331031000000d0"); // 00-10%
   } else if (trainConfig == 1164){ // central, with mean N matched tracks per cluster MC no OOB Pileup correction for MC with added signal (copy for pi0 + eta)
     cuts.AddCutCalo("10130023","411790105te30220000","0s331031000000d0"); // 00-10%
+  } else if (trainConfig == 1165){ // central with mean N matched tracks per cluster data
+    cuts.AddCutCalo("10130e03","411790105ye30220000","0s331031000000d0"); // 00-10%
+  } else if (trainConfig == 1166){ // central, with mean N matched tracks per cluster MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("10130053","411790105ye30220000","0s331031000000d0"); // 00-10%
   // **********************************************************************************************************
   // ************************** EMC configurations PbPb run 2 2018 pass 3 semicent ****************************
   // **********************************************************************************************************
@@ -1734,6 +1762,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11310023","411790105te30220000","01331031000000d0"); // 10-30%
   } else if (trainConfig == 1314){ // semicent, with mean N matched tracks per cluster MC no OOB Pileup correction for MC with added signal (copy for pi0 + eta)
     cuts.AddCutCalo("11310023","411790105te30220000","01331031000000d0"); // 10-30%
+  } else if (trainConfig == 1315){ // semicent with mean N matched tracks per cluster data
+    cuts.AddCutCalo("11310e03","411790105ye30220000","01331031000000d0"); // 10-30%
+  } else if (trainConfig == 1316){ // semicent, with mean N matched tracks per cluster MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("11310053","411790105ye30220000","01331031000000d0"); // 10-30%
   // with rotation background
   } else if (trainConfig == 1350){ // semicent
     cuts.AddCutCalo("11310e03","411790105ke30220000","0s331031000000d0"); // 10-30%
@@ -1765,6 +1797,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11310023","411790105te30220000","0s331031000000d0"); // 10-30%
   } else if (trainConfig == 1364){ // semicent, with mean N matched tracks per cluster MC no OOB Pileup correction for MC with added signal (copy for pi0 + eta)
     cuts.AddCutCalo("11310023","411790105te30220000","0s331031000000d0"); // 10-30%
+  } else if (trainConfig == 1365){ // semicent with mean N matched tracks per cluster data
+    cuts.AddCutCalo("11310e03","411790105ye30220000","0s331031000000d0"); // 10-30%
+  } else if (trainConfig == 1366){ // semicent, with mean N matched tracks per cluster MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("11310053","411790105ye30220000","0s331031000000d0"); // 10-30%
   // **********************************************************************************************************
   // *********************** EMC configurations PbPb run 2 2018 pass 3 semiperipheral *************************
   // **********************************************************************************************************
@@ -1799,6 +1835,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("13530023","411790105te30220000","01331031000000d0"); // 30-50%
   } else if (trainConfig == 1514){ // semiperipheral, with mean N matched tracks per cluster MC no OOB Pileup correction for MC with added signal (copy for pi0 + eta)
     cuts.AddCutCalo("13530023","411790105te30220000","01331031000000d0"); // 30-50%
+  } else if (trainConfig == 1515){ // semiperipheral with mean N matched tracks per cluster data
+    cuts.AddCutCalo("13530e03","411790105ye30220000","01331031000000d0"); // 30-50%
+  } else if (trainConfig == 1516){ // semiperipheral, with mean N matched tracks per cluster MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("13530053","411790105ye30220000","01331031000000d0"); // 30-50%
   // with rotation background
   } else if (trainConfig == 1550){ // semiperipheral
     cuts.AddCutCalo("13530e03","411790105ke30220000","0s331031000000d0"); // 30-50%
@@ -1830,6 +1870,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("13530023","411790105te30220000","0s331031000000d0"); // 30-50%
   } else if (trainConfig == 1564){ // semiperipheral, with mean N matched tracks per cluster MC no OOB Pileup correction for MC with added signal (copy for pi0 + eta)
     cuts.AddCutCalo("13530023","411790105te30220000","0s331031000000d0"); // 30-50%
+  } else if (trainConfig == 1565){ // semiperipheral with mean N matched tracks per cluster data
+    cuts.AddCutCalo("13530e03","411790105ye30220000","0s331031000000d0"); // 30-50%
+  } else if (trainConfig == 1566){ // semiperipheral, with mean N matched tracks per cluster MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("13530053","411790105ye30220000","0s331031000000d0"); // 30-50%
   // **********************************************************************************************************
   // ************************* EMC configurations PbPb run 2 2018 pass 3 peripheral ***************************
   // **********************************************************************************************************
@@ -1864,6 +1908,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("15910023","411790105te30220000","01331031000000d0"); // 50-90%
   } else if (trainConfig == 1914){ // peripheral, with mean N matched tracks per cluster MC no OOB Pileup correction for MC with added signal (copy for pi0 + eta)
     cuts.AddCutCalo("15910023","411790105te30220000","01331031000000d0"); // 50-90%
+  } else if (trainConfig == 1915){ // peripheral with mean N matched tracks per cluster data
+    cuts.AddCutCalo("15910e03","411790105ye30220000","01331031000000d0"); // 50-90%
+  } else if (trainConfig == 1916){ // peripheral, with mean N matched tracks per cluster MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("15910053","411790105ye30220000","01331031000000d0"); // 50-90%
   // with rotation background
   } else if (trainConfig == 1950){ // peripheral
     cuts.AddCutCalo("15910e03","411790105ke30220000","0s331031000000d0"); // 50-90%
@@ -1895,6 +1943,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("15910023","411790105te30220000","0s331031000000d0"); // 50-90%
   } else if (trainConfig == 1964){ // peripheral, with mean N matched tracks per cluster MC no OOB Pileup correction for MC with added signal (copy for pi0 + eta)
     cuts.AddCutCalo("15910023","411790105te30220000","0s331031000000d0"); // 50-90%
+  } else if (trainConfig == 1965){ // peripheral with mean N matched tracks per cluster data
+    cuts.AddCutCalo("15910e03","411790105ye30220000","0s331031000000d0"); // 50-90%
+  } else if (trainConfig == 1966){ // peripheral, with mean N matched tracks per cluster MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("15910053","411790105ye30220000","0s331031000000d0"); // 50-90%
     // **********************************************************************************************************
   // ***************************** EMC configurations PbPb run 2 2015 pass 3 *******************************
   // **********************************************************************************************************
@@ -1974,6 +2026,16 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11310023","411790105te30220000","01331031000000d0"); // 10-30%
     cuts.AddCutCalo("13510023","411790105te30220000","01331031000000d0"); // 30-50%
     cuts.AddCutCalo("15910023","411790105te30220000","01331031000000d0"); // 50-90%
+  } else if (trainConfig == 2015){ // 4 cents with NOC via <E_clus-E>/E
+    cuts.AddCutCalo("10110e03","411790105ye30220000","01331031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310e03","411790105ye30220000","01331031000000d0"); // 10-30%
+    cuts.AddCutCalo("13510e03","411790105ye30220000","01331031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910e03","411790105ye30220000","01331031000000d0"); // 50-90%
+  } else if (trainConfig == 2016){ // 4 cents, with NOC via <E_clus-E>/E no OOB Pileup correction for MC
+    cuts.AddCutCalo("10110053","411790105ye30220000","01331031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310053","411790105ye30220000","01331031000000d0"); // 10-30%
+    cuts.AddCutCalo("13510053","411790105ye30220000","01331031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910053","411790105ye30220000","01331031000000d0"); // 50-90%
   // with rotation background
   } else if (trainConfig == 2050){ // 4 cents
     cuts.AddCutCalo("10110e03","411790105ke30220000","0s331031000000d0"); // 00-10%
@@ -2050,6 +2112,16 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11310023","411790105te30220000","0s331031000000d0"); // 10-30%
     cuts.AddCutCalo("13510023","411790105te30220000","0s331031000000d0"); // 30-50%
     cuts.AddCutCalo("15910023","411790105te30220000","0s331031000000d0"); // 50-90%
+  } else if (trainConfig == 2065){ // 4 cents with NOC via <E_clus-E>/E
+    cuts.AddCutCalo("10110e03","411790105ye30220000","0s331031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310e03","411790105ye30220000","0s331031000000d0"); // 10-30%
+    cuts.AddCutCalo("13510e03","411790105ye30220000","0s331031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910e03","411790105ye30220000","0s331031000000d0"); // 50-90%
+  } else if (trainConfig == 2066){ // 4 cents, with NOC via <E_clus-E>/E no OOB Pileup correction for MC
+    cuts.AddCutCalo("10110053","411790105ye30220000","0s331031000000d0"); // 00-10%
+    cuts.AddCutCalo("11310053","411790105ye30220000","0s331031000000d0"); // 10-30%
+    cuts.AddCutCalo("13510053","411790105ye30220000","0s331031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910053","411790105ye30220000","0s331031000000d0"); // 50-90%
   // **********************************************************************************************************
   // **************************** EMC configurations PbPb run 2 2015 pass 3 cent ******************************
   // **********************************************************************************************************
@@ -2084,6 +2156,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("10110023","411790105te30220000","01331031000000d0"); // 00-10%
   } else if (trainConfig == 2114){ // central, with mean N matched tracks per cluster MC no OOB Pileup correction for MC with added signal (copy for pi0 + eta)
     cuts.AddCutCalo("10110023","411790105te30220000","01331031000000d0"); // 00-10%
+  } else if (trainConfig == 2115){ // central NOC via <E_clus-E>/E data
+    cuts.AddCutCalo("10110e03","411790105ye30220000","01331031000000d0"); // 00-10%
+  } else if (trainConfig == 2116){ // central, NOC via <E_clus-E>/E MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("10110053","411790105ye30220000","01331031000000d0"); // 00-10%
   // with rotation background
   } else if (trainConfig == 2150){ // central
     cuts.AddCutCalo("10110e03","411790105ke30220000","0s331031000000d0"); // 00-10%
@@ -2115,6 +2191,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("10110023","411790105te30220000","0s331031000000d0"); // 00-10%
   } else if (trainConfig == 2164){ // central, with mean N matched tracks per cluster MC no OOB Pileup correction for MC with added signal (copy for pi0 + eta)
     cuts.AddCutCalo("10110023","411790105te30220000","0s331031000000d0"); // 00-10%
+  } else if (trainConfig == 2165){ // central NOC via <E_clus-E>/E data
+    cuts.AddCutCalo("10110e03","411790105ye30220000","0s331031000000d0"); // 00-10%
+  } else if (trainConfig == 2166){ // central, NOC via <E_clus-E>/E MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("10110053","411790105ye30220000","0s331031000000d0"); // 00-10%
   // **********************************************************************************************************
   // ************************** EMC configurations PbPb run 2 2015 pass 3 semicent ****************************
   // **********************************************************************************************************
@@ -2149,6 +2229,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11310023","411790105te30220000","01331031000000d0"); // 10-30%
   } else if (trainConfig == 2314){ // semicent, with mean N matched tracks per cluster MC no OOB Pileup correction for MC with added signal (copy for pi0 + eta)
     cuts.AddCutCalo("11310023","411790105te30220000","01331031000000d0"); // 10-30%
+  } else if (trainConfig == 2315){ // semicent NOC via <E_clus-E>/E data
+    cuts.AddCutCalo("11310e03","411790105ye30220000","01331031000000d0"); // 10-30%
+  } else if (trainConfig == 2316){ // semicent, NOC via <E_clus-E>/E MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("11310053","411790105ye30220000","01331031000000d0"); // 10-30%
   // with rotation background
   } else if (trainConfig == 2350){ // semicent
     cuts.AddCutCalo("11310e03","411790105ke30220000","0s331031000000d0"); // 10-30%
@@ -2180,6 +2264,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("11310023","411790105te30220000","0s331031000000d0"); // 10-30%
   } else if (trainConfig == 2364){ // semicent, with mean N matched tracks per cluster MC no OOB Pileup correction for MC with added signal (copy for pi0 + eta)
     cuts.AddCutCalo("11310023","411790105te30220000","0s331031000000d0"); // 10-30%
+  } else if (trainConfig == 2365){ // semicent NOC via <E_clus-E>/E data
+    cuts.AddCutCalo("11310e03","411790105ye30220000","0s331031000000d0"); // 10-30%
+  } else if (trainConfig == 2366){ // semicent, NOC via <E_clus-E>/E MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("11310053","411790105ye30220000","0s331031000000d0"); // 10-30%
   // **********************************************************************************************************
   // *********************** EMC configurations PbPb run 2 2015 pass 3 semiperipheral *************************
   // **********************************************************************************************************
@@ -2214,6 +2302,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("13510023","411790105te30220000","01331031000000d0"); // 30-50%
   } else if (trainConfig == 2514){ // semiperipheral, with mean N matched tracks per cluster MC no OOB Pileup correction for MC with added signal (copy for pi0 + eta)
     cuts.AddCutCalo("13510023","411790105te30220000","01331031000000d0"); // 30-50%
+  } else if (trainConfig == 2515){ // semiperipheral NOC via <E_clus-E>/E data
+    cuts.AddCutCalo("13510e03","411790105ye30220000","01331031000000d0"); // 30-50%
+  } else if (trainConfig == 2516){ // semiperipheral, NOC via <E_clus-E>/E MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("13510053","411790105ye30220000","01331031000000d0"); // 30-50%
   // with rotation background
   } else if (trainConfig == 2550){ // semiperipheral
     cuts.AddCutCalo("13510e03","411790105ke30220000","0s331031000000d0"); // 30-50%
@@ -2245,7 +2337,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("13510023","411790105te30220000","0s331031000000d0"); // 30-50%
   } else if (trainConfig == 2564){ // semiperipheral, with mean N matched tracks per cluster MC no OOB Pileup correction for MC with added signal (copy for pi0 + eta)
     cuts.AddCutCalo("13510023","411790105te30220000","0s331031000000d0"); // 30-50%
-  
+  } else if (trainConfig == 2565){ // semiperipheral NOC via <E_clus-E>/E data
+    cuts.AddCutCalo("13510e03","411790105ye30220000","0s331031000000d0"); // 30-50%
+  } else if (trainConfig == 2566){ // semiperipheral, NOC via <E_clus-E>/E MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("13510053","411790105ye30220000","0s331031000000d0"); // 30-50%
   // **********************************************************************************************************
   // ************************* EMC configurations PbPb run 2 2015 pass 3 peripheral ***************************
   // **********************************************************************************************************
@@ -2280,6 +2375,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("15910023","411790105te30220000","01331031000000d0"); // 50-90%
   } else if (trainConfig == 2914){ // peripheral, with mean N matched tracks per cluster MC no OOB Pileup correction for MC with added signal (copy for pi0 + eta)
     cuts.AddCutCalo("15910023","411790105te30220000","01331031000000d0"); // 50-90%
+  } else if (trainConfig == 2915){ // peripheral NOC via <E_clus-E>/E data
+    cuts.AddCutCalo("15910e03","411790105ye30220000","01331031000000d0"); // 50-90%
+  } else if (trainConfig == 2916){ // peripheral, NOC via <E_clus-E>/E MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("15910053","411790105ye30220000","01331031000000d0"); // 50-90%
   // with rotation background
   } else if (trainConfig == 2950){ // peripheral
     cuts.AddCutCalo("15910e03","411790105ke30220000","0s331031000000d0"); // 50-90%
@@ -2311,7 +2410,10 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("15910023","411790105te30220000","0s331031000000d0"); // 50-90%
   } else if (trainConfig == 2964){ // peripheral, with mean N matched tracks per cluster MC no OOB Pileup correction for MC with added signal (copy for pi0 + eta)
     cuts.AddCutCalo("15910023","411790105te30220000","0s331031000000d0"); // 50-90%
-
+  } else if (trainConfig == 2965){ // peripheral NOC via <E_clus-E>/E data
+    cuts.AddCutCalo("15910e03","411790105ye30220000","0s331031000000d0"); // 50-90%
+  } else if (trainConfig == 2966){ // peripheral, NOC via <E_clus-E>/E MC no OOB Pileup correction for MC
+    cuts.AddCutCalo("15910053","411790105ye30220000","0s331031000000d0"); // 50-90%
 
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

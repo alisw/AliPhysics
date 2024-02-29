@@ -278,8 +278,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fHistoTrueClusSubLeadingPt(NULL),
   fHistoTrueClusNParticles(NULL),
   fHistoTrueClusEMNonLeadingPt(NULL),
-  fHistoTrueClusGammaEResNTrackPt(NULL),
-  fHistoTrueClusPhotonGammaEResNPrimTrackPt(NULL),
+  fHistoTrueClusGammaEResE(NULL),
+  fHistoTrueClusPhotonGammaEResE(NULL),
   fHistoTrueNLabelsInClus(NULL),
   fHistoTruePrimaryClusGammaPt(NULL),
   fHistoTruePrimaryClusGammaESDPtMCPt(NULL),
@@ -641,8 +641,8 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fHistoTrueClusSubLeadingPt(NULL),
   fHistoTrueClusNParticles(NULL),
   fHistoTrueClusEMNonLeadingPt(NULL),
-  fHistoTrueClusGammaEResNTrackPt(NULL),
-  fHistoTrueClusPhotonGammaEResNPrimTrackPt(NULL),
+  fHistoTrueClusGammaEResE(NULL),
+  fHistoTrueClusPhotonGammaEResE(NULL),
   fHistoTrueNLabelsInClus(NULL),
   fHistoTruePrimaryClusGammaPt(NULL),
   fHistoTruePrimaryClusGammaESDPtMCPt(NULL),
@@ -936,7 +936,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   Double_t *arrQAPtBinning    = new Double_t[1200];
   Double_t *arrClusPtBinning  = new Double_t[1200];
   std::vector<double> arrResBinning;
-  std::vector<double> arrNMatchedTracks;
   if( fDoPi0Only ){
     nBinsMinv                 = 150;
     maxMinv                  = 0.3;
@@ -1138,9 +1137,6 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         valRes += 0.05;
       else
         break;
-    }
-    for (int i = 0; i < 10; ++i) {
-      arrNMatchedTracks.push_back(i-0.5);
     }
   }
 
@@ -2030,9 +2026,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoTrueClusSubLeadingPt                = new TH1F*[fnCuts];
       fHistoTrueClusNParticles                  = new TH1F*[fnCuts];
       fHistoTrueClusEMNonLeadingPt              = new TH1F*[fnCuts];
-      fHistoTrueClusGammaEResNTrackPt                 = new TH3F*[fnCuts];
-      fHistoTrueClusPhotonGammaEResNPrimTrackPt = new TH3F*[fnCuts];
-      fHistoTrueClusPhotonGammaEResNTrackPt     = new TH3F*[fnCuts];
+      fHistoTrueClusGammaEResE                  = new TH2F*[fnCuts];
+      fHistoTrueClusPhotonGammaEResE            = new TH2F*[fnCuts];
     }
 
     if(fDoMesonAnalysis){
@@ -2712,44 +2707,37 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoTrueClusEMNonLeadingPt[iCut]          = new TH1F("TrueClusEMNonLeading_Pt", "TrueClusEMNonLeading_Pt", nBinsClusterPt, arrClusPtBinning);
         fHistoTrueClusEMNonLeadingPt[iCut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fTrueList[iCut]->Add(fHistoTrueClusEMNonLeadingPt[iCut]);
-        fHistoTrueClusGammaEResNTrackPt[iCut]          = new TH3F("TrueClusGammaERes_Pt", "TrueClusGammaERes_Pt", nBinsClusterPt, arrClusPtBinning, arrNMatchedTracks.size()-1, arrNMatchedTracks.data(),  arrResBinning.size()-1, arrResBinning.data());
-        fHistoTrueClusGammaEResNTrackPt[iCut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        fHistoTrueClusGammaEResNTrackPt[iCut]->SetYTitle("#it{N}_{matched track}");
-        fHistoTrueClusGammaEResNTrackPt[iCut]->SetZTitle("(#it{E}_{rec}-#it{E}_{true})/#it{E}_{true}");
-        fTrueList[iCut]->Add(fHistoTrueClusGammaEResNTrackPt[iCut]);
-        fHistoTrueClusPhotonGammaEResNPrimTrackPt[iCut]          = new TH3F("TrueClusPhotonGammaERes_NPrimTrack_Pt", "TrueClusPhotonGammaERes_NPrimTrack_Pt", nBinsClusterPt, arrClusPtBinning, arrNMatchedTracks.size()-1, arrNMatchedTracks.data(), arrResBinning.size()-1, arrResBinning.data());
-        fHistoTrueClusPhotonGammaEResNPrimTrackPt[iCut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        fHistoTrueClusPhotonGammaEResNPrimTrackPt[iCut]->SetYTitle("#it{N}_{matched primary track}");
-        fHistoTrueClusPhotonGammaEResNPrimTrackPt[iCut]->SetZTitle("(#it{E}_{rec}-#it{E}_{true})/#it{E}_{true}");
-        fTrueList[iCut]->Add(fHistoTrueClusPhotonGammaEResNPrimTrackPt[iCut]);
-        fHistoTrueClusPhotonGammaEResNTrackPt[iCut]          = new TH3F("TrueClusPhotonGammaERes_NTrack_Pt", "TrueClusPhotonGammaERes_NPrimTrack_Pt", nBinsClusterPt, arrClusPtBinning, arrNMatchedTracks.size()-1, arrNMatchedTracks.data(), arrResBinning.size()-1, arrResBinning.data());
-        fHistoTrueClusPhotonGammaEResNTrackPt[iCut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
-        fHistoTrueClusPhotonGammaEResNTrackPt[iCut]->SetYTitle("#it{N}_{matched track}");
-        fHistoTrueClusPhotonGammaEResNTrackPt[iCut]->SetZTitle("(#it{E}_{rec}-#it{E}_{true})/#it{E}_{true}");
-        fTrueList[iCut]->Add(fHistoTrueClusPhotonGammaEResNTrackPt[iCut]);
+        fHistoTrueClusGammaEResE[iCut]          = new TH2F("TrueClusGammaERes_E", "TrueClusGammaERes_E", nBinsClusterPt, arrClusPtBinning,  arrResBinning.size()-1, arrResBinning.data());
+        fHistoTrueClusGammaEResE[iCut]->SetXTitle("#it{E}_{rec} (GeV)");
+        fHistoTrueClusGammaEResE[iCut]->SetYTitle("(#it{E}_{rec}-#it{E}_{true})/#it{E}_{true}");
+        fTrueList[iCut]->Add(fHistoTrueClusGammaEResE[iCut]);
+        fHistoTrueClusPhotonGammaEResE[iCut]          = new TH2F("TrueClusPhotonGammaERes_E", "TrueClusPhotonGammaERes_E", nBinsClusterPt, arrClusPtBinning, arrResBinning.size()-1, arrResBinning.data());
+        fHistoTrueClusPhotonGammaEResE[iCut]->SetXTitle("#it{E}_{rec} (GeV)");
+        fHistoTrueClusPhotonGammaEResE[iCut]->SetYTitle("(#it{E}_{rec}-#it{E}_{true})/#it{E}_{true}");
+        fTrueList[iCut]->Add(fHistoTrueClusPhotonGammaEResE[iCut]);
         
 
         if (fIsMC > 1){
-            fHistoTrueClusUnConvGammaPt[iCut]->Sumw2();
-            fHistoTrueClusUnConvGammaMCPt[iCut]->Sumw2();
-            if (!fDoLightOutput)
-              fHistoTrueClusUnConvGammaPtM02[iCut]->Sumw2();
-            fHistoTrueClusElectronPt[iCut]->Sumw2();
-            fHistoTrueClusConvGammaPt[iCut]->Sumw2();
-            fHistoTrueClusConvGammaMCPt[iCut]->Sumw2();
-            fHistoTrueClusConvGammaFullyPt[iCut]->Sumw2();
-            fHistoTrueClusMergedGammaPt[iCut]->Sumw2();
-            fHistoTrueClusMergedPartConvGammaPt[iCut]->Sumw2();
-            fHistoTrueClusDalitzPt[iCut]->Sumw2();
-            fHistoTrueClusDalitzMergedPt[iCut]->Sumw2();
-            fHistoTrueClusPhotonFromElecMotherPt[iCut]->Sumw2();
-            fHistoTrueClusShowerPt[iCut]->Sumw2();
-            fHistoTrueClusSubLeadingPt[iCut]->Sumw2();
-            fHistoTrueClusNParticles[iCut]->Sumw2();
-            fHistoTrueClusEMNonLeadingPt[iCut]->Sumw2();
-            fHistoTrueClusGammaEResNTrackPt[iCut]->Sumw2();
-            fHistoTrueClusPhotonGammaEResNPrimTrackPt[iCut]->Sumw2();
-            fHistoTrueClusPhotonGammaEResNTrackPt[iCut]->Sumw2();
+          fHistoTrueClusUnConvGammaPt[iCut]->Sumw2();
+          fHistoTrueClusUnConvGammaMCPt[iCut]->Sumw2();
+          if (!fDoLightOutput) fHistoTrueClusUnConvGammaPtM02[iCut]->Sumw2();
+          fHistoTrueClusElectronPt[iCut]->Sumw2();
+          fHistoTrueClusConvGammaPt[iCut]->Sumw2();
+          fHistoTrueClusConvGammaMCPt[iCut]->Sumw2();
+          fHistoTrueClusConvGammaFullyPt[iCut]->Sumw2();
+          fHistoTrueClusMergedGammaPt[iCut]->Sumw2();
+          fHistoTrueClusMergedPartConvGammaPt[iCut]->Sumw2();
+          fHistoTrueClusDalitzPt[iCut]->Sumw2();
+          fHistoTrueClusDalitzMergedPt[iCut]->Sumw2();
+          fHistoTrueClusPhotonFromElecMotherPt[iCut]->Sumw2();
+          fHistoTrueClusShowerPt[iCut]->Sumw2();
+          fHistoTrueClusSubLeadingPt[iCut]->Sumw2();
+          fHistoTrueClusNParticles[iCut]->Sumw2();
+          fHistoTrueClusEMNonLeadingPt[iCut]->Sumw2();
+          if(fDoClusterQA > 0 ){
+            fHistoTrueClusGammaEResE[iCut]->Sumw2();
+            fHistoTrueClusPhotonGammaEResE[iCut]->Sumw2();
+          }
         }
       }
       if(fDoMesonAnalysis){
@@ -3687,7 +3675,7 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
         } else if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() == 3){
           // Neutral Overlap correction via mean number of charged particles per cell
           clus->SetE(clus->E() - 12.f * ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent));
-        } else if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() == 4){
+        } else if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() >= 4){
           // Neutral Overlap correction via NonLin like correction
           clus->SetE(clus->E() * ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent, clus->E()));
         }
@@ -4285,7 +4273,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidates(AliAODConversionPhot
     fHistoTrueClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(), tempPhotonWeight);
     if (!fDoLightOutput && fDoClusterQA > 0){
       fHistoTrueClusGammaPtM02[fiCut]->Fill(TruePhotonCandidate->Pt(), clusterM02, tempPhotonWeight);
-      fHistoTrueClusGammaEResNTrackPt[fiCut]->Fill(TruePhotonCandidate->Pt(), NMatchedTracks, (TruePhotonCandidate->E()-Photon->E())/Photon->E(), tempPhotonWeight);
+      fHistoTrueClusGammaEResE[fiCut]->Fill(TruePhotonCandidate->E(), (TruePhotonCandidate->E()-Photon->E())/Photon->E(), tempPhotonWeight);
     }
   } else if (fDoClusterQA > 0) fHistoTrueClusEMNonLeadingPt[fiCut]->Fill(TruePhotonCandidate->Pt());
   if (fDoClusterQA > 0){
@@ -4294,8 +4282,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidates(AliAODConversionPhot
       fHistoTrueClusUnConvGammaMCPt[fiCut]->Fill(Photon->Pt(), tempPhotonWeight);
       if (!fDoLightOutput) {
         fHistoTrueClusUnConvGammaPtM02[fiCut]->Fill(TruePhotonCandidate->Pt(), clusterM02, tempPhotonWeight);
-        fHistoTrueClusPhotonGammaEResNPrimTrackPt[fiCut]->Fill(TruePhotonCandidate->Pt(), NMatchedPrimTracks, (TruePhotonCandidate->E()-Photon->E())/Photon->E(), tempPhotonWeight);
-        fHistoTrueClusPhotonGammaEResNTrackPt[fiCut]->Fill(TruePhotonCandidate->Pt(), NMatchedTracks, (TruePhotonCandidate->E()-Photon->E())/Photon->E(), tempPhotonWeight);
+        fHistoTrueClusPhotonGammaEResE[fiCut]->Fill(TruePhotonCandidate->E(), (TruePhotonCandidate->E()-Photon->E())/Photon->E(), tempPhotonWeight);
       }
     }
     if (TruePhotonCandidate->IsLargestComponentElectron())
@@ -4465,7 +4452,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidatesAOD(AliAODConversionP
     fHistoTrueClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(), tempPhotonWeight);
     if (!fDoLightOutput && fDoClusterQA > 0) {
       fHistoTrueClusGammaPtM02[fiCut]->Fill(TruePhotonCandidate->Pt(), clusterM02, tempPhotonWeight);
-      fHistoTrueClusGammaEResNTrackPt[fiCut]->Fill(TruePhotonCandidate->Pt(), NMatchedTracks, (TruePhotonCandidate->E()-Photon->E())/Photon->E(), tempPhotonWeight);
+      fHistoTrueClusGammaEResE[fiCut]->Fill(TruePhotonCandidate->E(), (TruePhotonCandidate->E()-Photon->E())/Photon->E(), tempPhotonWeight);
     }
   } else if (fDoClusterQA > 0) fHistoTrueClusEMNonLeadingPt[fiCut]->Fill(TruePhotonCandidate->Pt());
   if (fDoClusterQA > 0){
@@ -4474,8 +4461,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueClusterCandidatesAOD(AliAODConversionP
       fHistoTrueClusUnConvGammaMCPt[fiCut]->Fill(Photon->Pt(), tempPhotonWeight);
       if (!fDoLightOutput) {
         fHistoTrueClusUnConvGammaPtM02[fiCut]->Fill(TruePhotonCandidate->Pt(), clusterM02, tempPhotonWeight);
-        fHistoTrueClusPhotonGammaEResNPrimTrackPt[fiCut]->Fill(TruePhotonCandidate->Pt(), NMatchedPrimTracks, (TruePhotonCandidate->E()-Photon->E())/Photon->E(), tempPhotonWeight);
-        fHistoTrueClusPhotonGammaEResNTrackPt[fiCut]->Fill(TruePhotonCandidate->Pt(), NMatchedTracks, (TruePhotonCandidate->E()-Photon->E())/Photon->E(), tempPhotonWeight);
+        fHistoTrueClusPhotonGammaEResE[fiCut]->Fill(TruePhotonCandidate->E(), (TruePhotonCandidate->E()-Photon->E())/Photon->E(), tempPhotonWeight);
       }
     }
     if (TruePhotonCandidate->IsLargestComponentElectron())
