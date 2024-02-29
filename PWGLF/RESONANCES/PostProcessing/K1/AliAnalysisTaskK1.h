@@ -8,12 +8,55 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
-#include "AliResoNanoEvent.h"
-#include "AliResoNanoTrack.h"
-#include "AliResoNanoMCParticle.h"
 class AliAODMCHeader;
 class AliPIDResponse;
 class AliESDtrackCuts;
+
+struct SK1Daughter
+{
+  enum
+  {
+    kPrimary = BIT(0),
+    kSecondary = BIT(1)
+  };
+  int eventID;
+  char centrality;
+  float zVertex;
+  int id;
+  int motherID;
+  int daughter1;
+  int daughter2;
+  float pt;
+  float eta;
+  int pdg;
+  int flag;
+};
+
+struct RK1Daughter
+{
+  enum
+  {
+    kPositive = BIT(0),
+    kHasTOF = BIT(1)
+  };
+  int eventID;
+  char centrality;
+  float zVertex;
+  int id;
+  int pdg;
+  int motherID;
+  float px;
+  float py;
+  float pz;
+  float eta;
+  Double32_t dcaxy;
+  Double32_t dcaz;
+  float tofNsigmaPi;
+  float tpcNsigmaPi;
+  float tofNsigmaKa;
+  float tpcNsigmaKa;
+  unsigned char flag;
+};
 
 class AliAnalysisTaskK1 : public AliAnalysisTaskSE
 {
@@ -33,7 +76,7 @@ public:
   void SetINEL(Bool_t input) { fIsINEL = input; }
   void SetHighMult(Bool_t input) { fIsHM = input; }
   void SetFillTree(Bool_t fillTree) { fFillTree = fillTree; }
-  void SetSkipFillHistos(Bool_t skipHisto) { fSkipFillingHistogram = skipHisto; }
+  void SetSkipFillHistos(Bool_t skipHisto = kTRUE) { fSkipFillingHistogram = skipHisto; }
 
   // Setter for cut variables
   void SetFilterbitTracks(Double_t lParameter) { fFilterBit = lParameter; }
@@ -98,17 +141,16 @@ private:
   AliESDtrackCuts *fTrackCuts;  //!
   AliPIDResponse *fPIDResponse; //!
 
-  AliVEvent *fEvt;                //!
-  AliMCEvent *fMCEvent;           //!
-  AliAODMCHeader *fAODMCHeader;   //!<  MC info AOD
-  TList *fList;                   //!
-  TClonesArray *fMCArray;         //!
-  AliAODVertex *fVertex;          //!
-  TTree *fNanoTree;               ///<  Output nanoAOD ttree
-  TTree *fNanoMCTree;             ///<  Output nanoAOD MC ttree
-  TClonesArray *fNanoEvents;      ///<  events for nanoAOD
-  TClonesArray *fNanoTracks;      ///<  tracks for nanoAOD
-  TClonesArray *fNanoMCParticles; ///<  mothers for nanoAOD
+  AliVEvent *fEvt;              //!
+  AliMCEvent *fMCEvent;         //!
+  AliAODMCHeader *fAODMCHeader; //!<  MC info AOD
+  TList *fList;                 //!
+  TClonesArray *fMCArray;       //!
+  AliAODVertex *fVertex;        //!
+  TTree *fNanoTree;             ///<  Output nanoAOD ttree
+  TTree *fNanoMCTree;           ///<  Output nanoAOD MC ttree
+  RK1Daughter fRecK1daughter;   ///<  Reconstructed nucleus
+  SK1Daughter fSimK1part;       ///<  Simulated nucleus
 
   //// Histograms
   THnSparseD *fHn5DK1Data;  //!
@@ -218,6 +260,8 @@ private:
   std::vector<UInt_t> fGoodSecondaryPionArray;
   std::vector<UInt_t> fGoodKaonArray;
   std::vector<UInt_t> fGoodTracksArray;
+
+  unsigned long long int fTracks; //!
 
   ClassDef(AliAnalysisTaskK1, 1);
   // 1: first implementation
