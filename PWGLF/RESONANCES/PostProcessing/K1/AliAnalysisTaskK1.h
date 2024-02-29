@@ -5,15 +5,59 @@
 #include <TNtupleD.h>
 
 #include <deque>
+#include <tuple>
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
-#include "AliResoNanoEvent.h"
-#include "AliResoNanoTrack.h"
-#include "AliResoNanoMCParticle.h"
 class AliAODMCHeader;
 class AliPIDResponse;
 class AliESDtrackCuts;
+
+struct SK1Daughter
+{
+  enum
+  {
+    kPrimary = BIT(0),
+    kSecondary = BIT(1)
+  };
+  int eventID;
+  char centrality;
+  float zVertex;
+  int id;
+  int motherID;
+  int daughter1;
+  int daughter2;
+  float pt;
+  float eta;
+  int pdg;
+  int flag;
+};
+
+struct RK1Daughter
+{
+  enum
+  {
+    kPositive = BIT(0),
+    kHasTOF = BIT(1)
+  };
+  int eventID;
+  char centrality;
+  float zVertex;
+  int id;
+  int pdg;
+  int motherID;
+  float px;
+  float py;
+  float pz;
+  float eta;
+  Double32_t dcaxy;
+  Double32_t dcaz;
+  float tofNsigmaPi;
+  float tpcNsigmaPi;
+  float tofNsigmaKa;
+  float tpcNsigmaKa;
+  unsigned char flag;
+};
 
 class AliAnalysisTaskK1 : public AliAnalysisTaskSE
 {
@@ -33,7 +77,7 @@ public:
   void SetINEL(Bool_t input) { fIsINEL = input; }
   void SetHighMult(Bool_t input) { fIsHM = input; }
   void SetFillTree(Bool_t fillTree) { fFillTree = fillTree; }
-  void SetSkipFillHistos(Bool_t skipHisto) { fSkipFillingHistogram = skipHisto; }
+  void SetSkipFillHistos(Bool_t skipHisto = kTRUE) { fSkipFillingHistogram = skipHisto; }
 
   // Setter for cut variables
   void SetFilterbitTracks(Double_t lParameter) { fFilterBit = lParameter; }
@@ -77,8 +121,14 @@ public:
   Bool_t IsTrueK1(UInt_t v0, UInt_t pion, UInt_t BkgCheck = 0);
   Double_t GetTPCnSigma(AliVTrack *track, AliPID::EParticleType type);
   Double_t GetTOFnSigma(AliVTrack *track, AliPID::EParticleType type);
+  void PostAllData();
   void GetImpactParam(AliVTrack *track, Float_t p[2], Float_t cov[3]);
-  Int_t trackSelection(AliVTrack *track, Float_t &nTPCNSigPion, Float_t &nTPCNSigKaon, Float_t lpT, Float_t lDCAz, Float_t lDCAr, Float_t lEta);
+  std::tuple<Float_t, Float_t, std::array<Float_t, 3>> GetImpactParametersWrapper(AliVTrack *track);
+  bool IsTrackAccepted(AliVTrack* track);
+  Int_t TrackSelection(AliVTrack *track, Float_t nTPCNSigPion, Float_t nTOFNSigPion, Float_t nTPCNSigKaon, Float_t nTOFNSigKaon, Float_t lpT, Float_t lDCAz, Float_t lDCAr, Float_t lEta);
+  bool IsPassPrimaryPionSelection(Float_t nTPCNSigPion, Float_t nTOFNSigPion, Float_t lEta, Float_t lDCAz, Float_t lDCAr, Double_t lsigmaDCAr);
+  bool IsPassSecondaryPionSelection(Float_t nTPCNSigPion, Float_t nTOFNSigPion, Float_t lEta, Float_t lDCAz, Float_t lDCAr, Double_t lsigmaDCAr);
+  bool IsPassKaonSelection(Float_t nTPCNSigKaon, Float_t nTOFNSigKaon, Float_t lEta, Float_t lDCAz, Float_t lDCAr, Double_t lsigmaDCAr);
   void SetCutOpen();
 
   // helper
@@ -98,17 +148,16 @@ private:
   AliESDtrackCuts *fTrackCuts;  //!
   AliPIDResponse *fPIDResponse; //!
 
-  AliVEvent *fEvt;                //!
-  AliMCEvent *fMCEvent;           //!
-  AliAODMCHeader *fAODMCHeader;   //!<  MC info AOD
-  TList *fList;                   //!
-  TClonesArray *fMCArray;         //!
-  AliAODVertex *fVertex;          //!
-  TTree *fNanoTree;               ///<  Output nanoAOD ttree
-  TTree *fNanoMCTree;             ///<  Output nanoAOD MC ttree
-  TClonesArray *fNanoEvents;      ///<  events for nanoAOD
-  TClonesArray *fNanoTracks;      ///<  tracks for nanoAOD
-  TClonesArray *fNanoMCParticles; ///<  mothers for nanoAOD
+  AliVEvent *fEvt;              //!
+  AliMCEvent *fMCEvent;         //!
+  AliAODMCHeader *fAODMCHeader; //!<  MC info AOD
+  TList *fList;                 //!
+  TClonesArray *fMCArray;       //!
+  AliAODVertex *fVertex;        //!
+  TTree *fNanoTree;             ///<  Output nanoAOD ttree
+  TTree *fNanoMCTree;           ///<  Output nanoAOD MC ttree
+  RK1Daughter fRecK1daughter;   ///<  Reconstructed nucleus
+  SK1Daughter fSimK1part;       ///<  Simulated nucleus
 
   //// Histograms
   THnSparseD *fHn5DK1Data;  //!
@@ -219,8 +268,11 @@ private:
   std::vector<UInt_t> fGoodKaonArray;
   std::vector<UInt_t> fGoodTracksArray;
 
-  ClassDef(AliAnalysisTaskK1, 1);
+  unsigned long long int fTracks; //!
+
+  ClassDef(AliAnalysisTaskK1, 2);
   // 1: first implementation
+  // 2: update Tree method and simplify the code
 };
 
 #endif

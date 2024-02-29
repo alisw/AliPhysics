@@ -56,6 +56,12 @@ AliAnalysisTaskK1 *AddTaskK1(const char *taskname = "K1", const char *option = "
         taskK1->SetSkipFillHistos(true);
         std::cout << "Skip filling histograms (for Tree study)" << std::endl;
     }
+    // Skip Filling QA Histograms
+    if (foption.Contains("NoQA"))
+    {
+        taskK1->SetFillQAPlot(false);
+        std::cout << "Skip filling QA histograms" << std::endl;
+    }
     // Fill Tree
     if (foption.Contains("Tree"))
     {
