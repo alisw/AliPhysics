@@ -390,7 +390,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
         FillCorrelationSE(MC_mult_glob08, selectedTracksMC3, 9, 1, MC_sfer);
         FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC3, 9, 1);
       }
-      if ((pTMClead >= 1.0 && pTMClead <= 2.0) && MC_mult_glob08 > 0 && MC_mult_glob08 <= 80 && TMath::Abs(fMCevInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0)
+      if ((pTMClead >= 1.0 && pTMClead <= 2.0) && MC_mult_glob08 > 0 && MC_mult_glob08 <= 80 && TMath::Abs(fMCevInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && MC_sfer>0.0)
       {TObjArray *selectedTracksMC4 = SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
         if (!selectedTracksMC4)
           return;
