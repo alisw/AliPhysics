@@ -44,7 +44,7 @@ AliAnalysisTaskFemto *AddTaskFemtoWRz(const char *configMacroName="ConfigFemtoAn
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters);
-  taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);
+  taskfemto->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral);
   mgr->AddTask(taskfemto);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
