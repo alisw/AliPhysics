@@ -88,6 +88,7 @@ set(SRCS
     AliAnalysisTaskSEpPbCorrelationsJetV2.cxx
     AliAnalysisTaskSEpPbCorrelationsJetV2Kine.cxx
     AliAnalysisTaskSEPbPbCorrelationsJetV2.cxx
+    AliAnalysisTaskThreePartCorr.cxx
     AliAnaTaskMomScan.cxx
     AliAnalysisTaskTwoPlusOne.cxx
     AliDptDptInMC.cxx
