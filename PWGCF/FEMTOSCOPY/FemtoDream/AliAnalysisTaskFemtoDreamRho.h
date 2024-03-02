@@ -28,7 +28,7 @@ class AliAnalysisTaskFemtoDreamRho : public AliAnalysisTaskSE
 {
 public:
   AliAnalysisTaskFemtoDreamRho();
-  AliAnalysisTaskFemtoDreamRho(const char *name, bool isMC, bool doMcTruth, bool doAncestors, bool doCleaning, bool doProjections);
+  AliAnalysisTaskFemtoDreamRho(const char *name, bool isMC, bool doMcTruth, bool doAncestors, bool doCleaning, bool doProjections, float rhoPtThreshold);
   virtual ~AliAnalysisTaskFemtoDreamRho();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
@@ -77,6 +77,7 @@ public:
   void SetDoCleaning(bool doCleaning) { fDoCleaning = doCleaning; };
   void SetDoAncestors(bool doAncestors) { fDoAncestors = doAncestors; };
   void SetDoProjections(bool doProjector) { fDoProjections = doProjector; };
+  void SetRhoPtThreshold(float rhoPtThreshold) { frhoPtThreshold = rhoPtThreshold; };
 
   // std::map<TString, std::pair<TH1F *, TH2F *>> CreateResonanceHistograms(const std::vector<TString> &resonanceList);
 
@@ -99,10 +100,19 @@ private:
   void CalculateAlphaAndQT(const AliFemtoDreamBasePart *Part, const AliFemtoDreamBasePart *DaughterOne, const AliFemtoDreamBasePart *DaughterTwo, float &alpha, float &qT);
   void CalculateAlphaAndQT(const AliFemtoDreamBasePart Part, const TLorentzVector DaughterOne, const TLorentzVector DaughterTwo, float &alpha, float &qT);
 
-  bool fIsMC;                                                                       //
-  bool fDoMcTruth;                                                                  //
-  bool fDoAncestors;                                                                //
-  bool fDoProjections;                                                              //
+  float RelativePairMomentum_check(const AliFemtoDreamBasePart &PartOne,
+                                   const int pdg1,
+                                   const AliFemtoDreamBasePart &PartTwo,
+                                   const int pdg2);
+  float RelativePairMomentum_check(TLorentzVector &PartOne,
+                                   TLorentzVector &PartTwo);
+
+  bool fIsMC;            //
+  bool fDoMcTruth;       //
+  bool fDoAncestors;     //
+  bool fDoProjections;   //
+  float frhoPtThreshold; //
+
   const std::vector<std::string> types{"noPions", "noPrimaries", "noRho", "isRho"}; //!
   std::map<std::string, TH2F *> histogramMap_pTvsmT;                                //!
 
@@ -111,6 +121,7 @@ private:
   bool fDoCleaning;                         //
   AliFemtoDreamEvent *fEvent;               //!
   AliFemtoDreamTrack *fTrack;               //!
+  AliFemtoDreamTrack *fTrackneg;            //!
   AliFemtoDreamv0 *fRhoParticle;            //!
   AliFemtoDreamEventCuts *fEventCuts;       //
   AliFemtoDreamTrackCuts *fPosPionCuts;     //
@@ -176,7 +187,7 @@ private:
   // std::map<TString, std::pair<TH1F *, TH2F *>>
   //     fResonanceHistograms; //! Map to hold histograms for each resonance
 
-  ClassDef(AliAnalysisTaskFemtoDreamRho, 6) // Update class number
+  ClassDef(AliAnalysisTaskFemtoDreamRho, 7) // Update class number
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_AliAnalysisTaskFemtoDreamRho_H_ */

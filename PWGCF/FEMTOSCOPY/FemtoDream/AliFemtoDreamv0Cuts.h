@@ -191,6 +191,10 @@ public:
     fMinCPA = cpa;
     fCutCPA = true;
   };
+  void SetFineInvMassPtBins(bool doFineInvMassPtBins)
+  {
+    fdoFineInvMassPtBins = doFineInvMassPtBins;
+  };
   void SetCutInvMass(float width)
   {
     fInvMassCutWidth = width;
@@ -322,12 +326,14 @@ private:
   float fAxisMinMass; //
   float fAxisMaxMass; //
   int fNumberXBins;   //
+  // Fine binning for the InvMassPtBins
+  bool fdoFineInvMassPtBins; //
   // PDG Codes of the Mother and the Daughter needed for Inv Mass Calc. and
   // matching in the MC Sample
   int fPDGv0;    //
   int fPDGDaugP; //
   int fPDGDaugN; //
-  ClassDef(AliFemtoDreamv0Cuts, 7)
+  ClassDef(AliFemtoDreamv0Cuts, 8)
 };
 
 #endif /* ALIFEMTODREAMV0CUTS_H_ */

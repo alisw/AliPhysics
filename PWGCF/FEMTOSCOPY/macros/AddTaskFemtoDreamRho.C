@@ -10,6 +10,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
                                         bool doSpherSelect = false,
                                         bool doClosePairRejection = false,
                                         bool doProjections = false,
+                                        float rhoPtThreshold = 0.,
+                                        float rhoPtThresholdupper = 4.,
                                         const char *cutVariation = "0")
 {
 
@@ -234,6 +236,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   TrackCutsRho->SetPDGCodePosDaug(211);
   TrackCutsRho->SetPDGCodeNegDaug(211);
   TrackCutsRho->SetPDGCodev0(113);
+  TrackCutsRho->SetPtRange(rhoPtThreshold, rhoPtThresholdupper);
+  TrackCutsRho->SetFineInvMassPtBins(true);
 
   if (suffix == "1")
   {
@@ -268,7 +272,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
 
   // now we create the task
   AliAnalysisTaskFemtoDreamRho *task =
-      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doMcTruth, doCleaning, doAncestors, doProjections);
+      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doMcTruth, doCleaning, doAncestors, doProjections, rhoPtThreshold);
   // THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
   // kINT7 == Minimum bias
   // kHighMultV0 high multiplicity triggered by the V0 detector

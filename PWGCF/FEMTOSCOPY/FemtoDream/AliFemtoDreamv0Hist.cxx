@@ -10,7 +10,7 @@
 #include <iostream>
 ClassImp(AliFemtoDreamv0Hist)
 
-AliFemtoDreamv0Hist::AliFemtoDreamv0Hist()
+    AliFemtoDreamv0Hist::AliFemtoDreamv0Hist()
     : fMinimalBooking(false),
       fHistList(0),
       fConfig(0),
@@ -19,9 +19,12 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist()
       fInvMassKaon(0),
       fInvMassBefSelection(0),
       fInvMassPt(0),
+      fInvMassPtfine(0),
       fCPAPtBins(0),
-      fInvMassPerRunNumber() {
-  for (int i = 0; i < 2; ++i) {
+      fInvMassPerRunNumber()
+{
+  for (int i = 0; i < 2; ++i)
+  {
     fv0CutQA[i] = nullptr;
     fOnFly[i] = nullptr;
     fpTDist[i] = nullptr;
@@ -42,8 +45,9 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins, float MassMin,
                                          float MassMax, bool CPAPlots,
                                          bool perRunnumber, int iRunMin = 0,
                                          int iRunMax = 0)
-    : fMinimalBooking(false) {
-  TString sName[2] = { "before", "after" };
+    : fMinimalBooking(false)
+{
+  TString sName[2] = {"before", "after"};
 
   fHistList = new TList();
   fHistList->SetName("v0Cuts");
@@ -119,7 +123,14 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins, float MassMin,
   fInvMassPt->GetYaxis()->SetTitle("#it{M}_{Pair} (GeV/#it{c}^{2})");
   fHistList->Add(fInvMassPt);
 
-  for (int i = 0; i < 2; ++i) {
+  fInvMassPtfine = new TH2F("InvMassPtfine", "Invariant Mass in Pt Bins", 3000, 0., 12.,
+                            MassNBins, MassMin, MassMax);
+  fInvMassPtfine->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  fInvMassPtfine->GetYaxis()->SetTitle("#it{M}_{Pair} (GeV/#it{c}^{2})");
+  fHistList->Add(fInvMassPtfine);
+
+  for (int i = 0; i < 2; ++i)
+  {
     fv0CutQA[i] = new TList();
     fv0CutQA[i]->SetName(sName[i].Data());
     fv0CutQA[i]->SetOwner();
@@ -222,27 +233,34 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(int MassNBins, float MassMin,
     fv0CutQA[i]->Add(fInvMass[i]);
   }
 
-  if (CPAPlots) {
+  if (CPAPlots)
+  {
     fCPAPtBins = new TH2F("CPAPtBinsTot", "CPAPtBinsTot", 8, 0.3, 4.3, 1000,
                           0.90, 1.);
     fCPAPtBins->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
     fCPAPtBins->GetYaxis()->SetTitle("cos(#alpha)");
     fHistList->Add(fCPAPtBins);
-  } else {
+  }
+  else
+  {
     fCPAPtBins = nullptr;
   }
-  if (perRunnumber) {
+  if (perRunnumber)
+  {
     int nBins = iRunMax - iRunMin;
-    if (nBins > 2000) {
-        std::cout << "Grouping Run Numbers in the Run Number vs. Invariant Mass Plots\n";
-      nBins/=10;
+    if (nBins > 2000)
+    {
+      std::cout << "Grouping Run Numbers in the Run Number vs. Invariant Mass Plots\n";
+      nBins /= 10;
     }
     TString InvMassRunNumbName = "InvMassPerRunnumber";
     fInvMassPerRunNumber = new TH2F(InvMassRunNumbName.Data(),
                                     InvMassRunNumbName.Data(), nBins, iRunMin,
-                                    iRunMax, 200, 1.08,1.16);
+                                    iRunMax, 200, 1.08, 1.16);
     fHistList->Add(fInvMassPerRunNumber);
-  } else {
+  }
+  else
+  {
     fInvMassPerRunNumber = nullptr;
   }
 }
@@ -256,9 +274,12 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(TString MinimalBooking, int MassNBins,
       fInvMassKaon(0),
       fInvMassBefSelection(0),
       fInvMassPt(0),
+      fInvMassPtfine(0),
       fCPAPtBins(0),
-      fInvMassPerRunNumber() {
-  for (int i = 0; i < 2; ++i) {
+      fInvMassPerRunNumber()
+{
+  for (int i = 0; i < 2; ++i)
+  {
     fv0CutQA[i] = nullptr;
     fOnFly[i] = nullptr;
     fpTDist[i] = nullptr;
@@ -282,9 +303,15 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(TString MinimalBooking, int MassNBins,
   fInvMassPt->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c}^{2})");
   fInvMassPt->GetYaxis()->SetTitle("#it{M}_{Pair} (GeV/#it{c}^{2})");
   fHistList->Add(fInvMassPt);
+
+  fInvMassPtfine = new TH2F("fInvMassPtfine", "Invariant Mass in Pt Bins", 3000, 0., 12.,
+                            MassNBins, MassMin, MassMax);
+  fInvMassPtfine->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  fInvMassPtfine->GetYaxis()->SetTitle("#it{M}_{Pair} (GeV/#it{c}^{2})");
+  fHistList->Add(fInvMassPtfine);
 }
 
-AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(const AliFemtoDreamv0Hist& hists)
+AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(const AliFemtoDreamv0Hist &hists)
     : fMinimalBooking(hists.fMinimalBooking),
       fHistList(hists.fHistList),
       fConfig(hists.fConfig),
@@ -293,9 +320,12 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(const AliFemtoDreamv0Hist& hists)
       fInvMassKaon(hists.fInvMassKaon),
       fInvMassBefSelection(hists.fInvMassBefSelection),
       fInvMassPt(hists.fInvMassPt),
+      fInvMassPtfine(hists.fInvMassPtfine),
       fCPAPtBins(hists.fCPAPtBins),
-      fInvMassPerRunNumber(hists.fInvMassPerRunNumber) {
-  for (int i = 0; i < 2; ++i) {
+      fInvMassPerRunNumber(hists.fInvMassPerRunNumber)
+{
+  for (int i = 0; i < 2; ++i)
+  {
     fv0CutQA[i] = hists.fv0CutQA[i];
     fOnFly[i] = hists.fOnFly[i];
     fpTDist[i] = hists.fpTDist[i];
@@ -312,15 +342,19 @@ AliFemtoDreamv0Hist::AliFemtoDreamv0Hist(const AliFemtoDreamv0Hist& hists)
   }
 }
 
-void AliFemtoDreamv0Hist::FillCPAPtBins(float pT, float cpa) {
-  if (!fMinimalBooking) {
+void AliFemtoDreamv0Hist::FillCPAPtBins(float pT, float cpa)
+{
+  if (!fMinimalBooking)
+  {
     fCPAPtBins->Fill(pT, cpa);
   }
 }
 
-AliFemtoDreamv0Hist& AliFemtoDreamv0Hist::operator=(
-    const AliFemtoDreamv0Hist& hists) {
-  if (this != &hists) {
+AliFemtoDreamv0Hist &AliFemtoDreamv0Hist::operator=(
+    const AliFemtoDreamv0Hist &hists)
+{
+  if (this != &hists)
+  {
     this->fMinimalBooking = hists.fMinimalBooking;
     this->fHistList = hists.fHistList;
     this->fConfig = hists.fConfig;
@@ -329,9 +363,11 @@ AliFemtoDreamv0Hist& AliFemtoDreamv0Hist::operator=(
     this->fInvMassKaon = hists.fInvMassKaon;
     this->fInvMassBefSelection = hists.fInvMassBefSelection;
     this->fInvMassPt = hists.fInvMassPt;
+    this->fInvMassPtfine = hists.fInvMassPtfine;
     this->fCPAPtBins = hists.fCPAPtBins;
     this->fInvMassPerRunNumber = hists.fInvMassPerRunNumber;
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < 2; ++i)
+    {
       this->fv0CutQA[i] = hists.fv0CutQA[i];
       this->fOnFly[i] = hists.fOnFly[i];
       this->fpTDist[i] = hists.fpTDist[i];
@@ -350,7 +386,7 @@ AliFemtoDreamv0Hist& AliFemtoDreamv0Hist::operator=(
   return *this;
 }
 
-AliFemtoDreamv0Hist::~AliFemtoDreamv0Hist() {
+AliFemtoDreamv0Hist::~AliFemtoDreamv0Hist()
+{
   delete fHistList;
 }
-
