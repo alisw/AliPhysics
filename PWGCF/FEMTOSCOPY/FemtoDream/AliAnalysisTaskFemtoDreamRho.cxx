@@ -24,9 +24,11 @@ ClassImp(AliAnalysisTaskFemtoDreamRho)
       fDoCleaning(false),
       fDoAncestors(false),
       fDoProjections(false),
+      frhoPtThreshold(0.),
       fOutput(nullptr),
       fEvent(nullptr),
       fTrack(nullptr),
+      fTrackneg(nullptr),
       fRhoParticle(nullptr),
       fEventCuts(nullptr),
       fPosPionCuts(nullptr),
@@ -80,7 +82,7 @@ ClassImp(AliAnalysisTaskFemtoDreamRho)
 }
 
 AliAnalysisTaskFemtoDreamRho::AliAnalysisTaskFemtoDreamRho(const char *name,
-                                                           bool isMC, bool doMcTruth, bool doCleaning, bool doAncestors, bool doProjector)
+                                                           bool isMC, bool doMcTruth, bool doCleaning, bool doAncestors, bool doProjector, float rhoPtThreshold)
     : AliAnalysisTaskSE(name),
       fTrigger(AliVEvent::kINT7),
       fIsMC(isMC),
@@ -88,9 +90,11 @@ AliAnalysisTaskFemtoDreamRho::AliAnalysisTaskFemtoDreamRho(const char *name,
       fDoCleaning(doCleaning),
       fDoAncestors(doAncestors),
       fDoProjections(doProjector),
+      frhoPtThreshold(rhoPtThreshold),
       fOutput(nullptr),
       fEvent(nullptr),
       fTrack(nullptr),
+      fTrackneg(nullptr),
       fRhoParticle(nullptr),
       fEventCuts(nullptr),
       fPosPionCuts(nullptr),
@@ -157,6 +161,8 @@ void AliAnalysisTaskFemtoDreamRho::UserCreateOutputObjects()
 
   fTrack = new AliFemtoDreamTrack();
   fTrack->SetUseMCInfo(fIsMC);
+  // fTrackneg = new AliFemtoDreamTrack();
+  // fTrackneg->SetUseMCInfo(fIsMC);
 
   fRhoParticle = new AliFemtoDreamv0();
   fRhoParticle->SetPDGCode(fRhoCuts->GetPDGv0());
@@ -544,6 +550,7 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
     StoreGlobalTrackReference(track);
   }
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+  // fTrackneg->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
 
   // First we want to combine all charged pions with each other in the SE in order to find Rhos
   static std::vector<AliFemtoDreamBasePart> Particles; // pi+ candidates
@@ -580,6 +587,11 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
   Particles_Minv.clear();
   static std::vector<AliFemtoDreamBasePart> AntiParticles_Minv; // pi- candidates in Minv selection window of M(pipi)
   AntiParticles_Minv.clear();
+  // for QA plots of tracks with Minv selection
+  static std::vector<int> Tracks_Particles_Minv; // Same or different Ancestor
+  Tracks_Particles_Minv.clear();
+  static std::vector<int> Tracks_AntiParticles_Minv; // Same or different Ancestor
+  Tracks_AntiParticles_Minv.clear();
 
   static float massChargedPion =
       TDatabasePDG::Instance()->GetParticle(fPosPionCuts->GetPDGCode())->Mass(); // as usual to minimize uncert.
@@ -596,11 +608,13 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
     {
       fTrack->SetInvMass(massChargedPion); // Since we combine these later we set the inv. mass to the PDG value
       Particles.push_back(*fTrack);
+      Tracks_Particles_Minv.push_back(iTrack);
     }
     if (fNegPionCuts->isSelected(fTrack))
     {
       fTrack->SetInvMass(massChargedPion); // Since we combine these later we set the inv. mass to the PDG value
       AntiParticles.push_back(*fTrack);
+      Tracks_AntiParticles_Minv.push_back(iTrack);
     }
     if (fPosProtonCuts->isSelected(fTrack))
     {
@@ -614,11 +628,24 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
 
   // Construct the V0 for the Rho decay, just simple combinatorics for now
   int counter = 0;
+  int counter_tracks_Part = -1;
+  int counter_tracks_antiPart = -1;
   for (const auto &posPion : Particles)
   { // Build charged pion pairs!
+    counter_tracks_Part++;
     for (const auto &negPion : AntiParticles)
     {
+      counter_tracks_antiPart++;
       fRhoParticle->Setv0(posPion, negPion, Event, false, false, true);
+      const float pT_rho_candidate = fRhoParticle->GetPt();
+      // At a pT > 1.8 GeV we start to see the rho in the M_inv (for now hard-coded can be optimized)
+      if (pT_rho_candidate < frhoPtThreshold - 0.0001) //
+      {
+        // printf("pT_rho_candidate: %.2f < %.2f - 0.0001\n", pT_rho_candidate, frhoPtThreshold);
+        continue;
+      }
+      // printf("pT_rho_candidate: %.2f > %.2f - 0.0001\n", pT_rho_candidate, frhoPtThreshold);
+
       if (fDoAncestors && fIsMC && AncestorIsSelected(fRhoParticle, fRhoCuts)) // Select everything as the RhoCandidate except the mass
       {
         bool isCommon = CommonAncestors(posPion, negPion, Event, true);
@@ -673,19 +700,46 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
           FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateUncommonFullInvM);
         }
       }
+      if (fDoProjections)
+      { // Also include a selection on the rho candidates pT
+        Particles_Minv.push_back(posPion);
+        AntiParticles_Minv.push_back(negPion); // negPion  TEST ONLY
+        // Get QA of the pion tracks used for the projection, careful here tracks will be counted multiple times
+        AliAODTrack *track = static_cast<AliAODTrack *>(Event->GetTrack(Tracks_Particles_Minv[counter_tracks_Part]));
+        fTrack->SetTrack(track);
+        fPosPionMinvCuts->isSelected(fTrack);
+
+        // AliAODTrack *trackneg = static_cast<AliAODTrack *>(Event->GetTrack(Tracks_AntiParticles_Minv[counter_tracks_antiPart]));
+        // fTrackneg->SetTrack(trackneg);
+        // fNegPionMinvCuts->isSelected(fTrackneg);
+
+        // // Check the kStar
+        // float kStar_check = RelativePairMomentum_check(negPion, 211, posPion, 211);
+
+        // //  Debug
+        // const float invMassRho = fRhoParticle->Getv0Mass();
+        // float posPdeb[3], negPdeb[3];
+        // posPion.GetMomentum().GetXYZ(posPdeb);
+        // negPion.GetMomentum().GetXYZ(negPdeb);
+        // TLorentzVector trackPosDeb, trackNegDeb;
+        // const float invPiPlus = posPion.GetInvMass();
+        // const float invPiMinus = negPion.GetInvMass();
+        // trackPosDeb.SetXYZM(posPdeb[0], posPdeb[1], posPdeb[2], invPiPlus);
+        // trackNegDeb.SetXYZM(negPdeb[0], negPdeb[1], negPdeb[2], invPiMinus);
+        // TLorentzVector trackSumdeb = trackPosDeb + trackNegDeb;
+        // const float invMassPions = trackSumdeb.M();
+        // if (invMassRho - invMassPions > 0.0001)
+        // {
+        //   printf("+++++++++++++++++++++++++++++++++++CAUTION!!+++++++++++++++++++++++++++++++++++++\n");
+        // }
+        // printf("Check initial minv assignment: %.4f(invPiPlus), %.4f(invPiMinus)\n", invPiPlus, invPiMinus);
+        // printf("Check values: %.4f(invMassRho), %.4f(invMassPions)\n", invMassRho, invMassPions);
+        // printf("Check kStar calculation: %.4f\n", kStar_check);
+      }
       if (fRhoCuts->isSelected(fRhoParticle)) // Check for proper Rho candidates, just Minv cut and kaon reject.
       {
         // Also include a selection on the rho pT (for better control of what goes in the Cf)
         V0Particles.push_back(*fRhoParticle);
-        if (fDoProjections)
-        { // Also include a selection on the rho pT
-          const float pT_rho_candidate = fRhoParticle->GetPt();
-          if (pT_rho_candidate > 1.8 - 0.0001) // At a pT > 1.8 GeV we start to see the rho in the M_inv (for now hard-coded can be optimized)
-          {
-            Particles_Minv.push_back(posPion);
-            AntiParticles_Minv.push_back(negPion);
-          }
-        }
         if (fIsMC)
         { // store the combinations for the MC matching
           // also store kinematic distributions needed later
@@ -985,6 +1039,11 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
 
         if (mcpdg == 113) // Select all the MC true rhos
         {
+
+          if (pt < frhoPtThreshold - 0.0001) //
+          {
+            continue;
+          }
           int firstDaughter = mcPart->GetDaughterFirst();
           int lastDaughter = mcPart->GetDaughterLast();
           if (firstDaughter > noPart || lastDaughter > noPart)
@@ -1415,4 +1474,39 @@ bool AliAnalysisTaskFemtoDreamRho::CommonResonance(const AliFemtoDreamBasePart &
   pdg_resonance = posMotherPDG; // keep track of the resonances
 
   return IsResonance;
+}
+
+float AliAnalysisTaskFemtoDreamRho::RelativePairMomentum_check(
+    const AliFemtoDreamBasePart &part1, const int pdg1, const AliFemtoDreamBasePart &part2,
+    const int pdg2)
+{
+  TLorentzVector PartOne, PartTwo;
+  PartOne.SetXYZM(part1.GetMomentum().X(), part1.GetMomentum().Y(),
+                  part1.GetMomentum().Z(),
+                  TDatabasePDG::Instance()->GetParticle(pdg1)->Mass());
+  PartTwo.SetXYZM(part2.GetMomentum().X(), part2.GetMomentum().Y(),
+                  part2.GetMomentum().Z(),
+                  TDatabasePDG::Instance()->GetParticle(pdg2)->Mass());
+  return RelativePairMomentum_check(PartOne, PartTwo);
+}
+
+float AliAnalysisTaskFemtoDreamRho::RelativePairMomentum_check(
+    TLorentzVector &PartOne, TLorentzVector &PartTwo)
+{
+  TLorentzVector trackSum = PartOne + PartTwo;
+
+  float beta = trackSum.Beta();
+  float betax = beta * cos(trackSum.Phi()) * sin(trackSum.Theta());
+  float betay = beta * sin(trackSum.Phi()) * sin(trackSum.Theta());
+  float betaz = beta * cos(trackSum.Theta());
+
+  TLorentzVector PartOneCMS = PartOne;
+  TLorentzVector PartTwoCMS = PartTwo;
+
+  PartOneCMS.Boost(-betax, -betay, -betaz);
+  PartTwoCMS.Boost(-betax, -betay, -betaz);
+
+  TLorentzVector trackRelK = PartOneCMS - PartTwoCMS;
+
+  return 0.5 * trackRelK.P();
 }
