@@ -204,7 +204,30 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fCounter_HMV0_0to100_INEL(0),
   fCounter_HMV0_0to0p1_INEL(0),
   hCentrality(0), //jcho
-  fCentralityOfEvt(0)  //jcho
+  fCentralityOfEvt(0),  //jcho
+  fCTruePV(0),	// jcho
+  fTrueV(0),
+  fMCevt(0),
+  fTruePVtx(0),
+  fTruePV(0),
+  fHisto_refPrimVx_aVtx(0),
+  fHisto_refPrimVy_aVtx(0),
+  fHisto_refPrimVz_aVtx(0),
+  fHisto_TruePrimVx_vVtx(0),
+  fHisto_TruePrimVy_vVtx(0),
+  fHisto_TruePrimVz_vVtx(0),
+  fHisto_TruePrimVx_aVtx(0),
+  fHisto_TruePrimVy_aVtx(0),
+  fHisto_TruePrimVz_aVtx(0),
+  fHisto_TruePrimVx_eVtx(0),
+  fHisto_TruePrimVy_eVtx(0),
+  fHisto_TruePrimVz_eVtx(0),
+  fHisto_NContributor_AOD(0),
+  fHisto_NContributor_MCTrue(0),
+  fHisto_SigmaX_AOD(0),
+  fHisto_SigmaY_AOD(0),
+  fHisto_SigmaX_MCTrue(0),
+  fHisto_SigmaY_MCTrue(0)
 {
   //
   // Default Constructor. 
@@ -322,7 +345,30 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fCounter_HMV0_0to100_INEL(0),
   fCounter_HMV0_0to0p1_INEL(0),
   hCentrality(0),  //jcho
-  fCentralityOfEvt(0)  //jcho
+  fCentralityOfEvt(0),  //jcho
+  fCTruePV(0),
+  fTrueV(0),
+  fTruePVtx(0),	
+  fTruePV(0),
+  fMCevt(0),
+  fHisto_refPrimVx_aVtx(0),
+  fHisto_refPrimVy_aVtx(0),
+  fHisto_refPrimVz_aVtx(0),
+  fHisto_TruePrimVx_vVtx(0),
+  fHisto_TruePrimVy_vVtx(0),
+  fHisto_TruePrimVz_vVtx(0),
+  fHisto_TruePrimVx_aVtx(0),
+  fHisto_TruePrimVy_aVtx(0),
+  fHisto_TruePrimVz_aVtx(0),
+  fHisto_TruePrimVx_eVtx(0),
+  fHisto_TruePrimVy_eVtx(0),
+  fHisto_TruePrimVz_eVtx(0),
+  fHisto_NContributor_AOD(0),
+  fHisto_NContributor_MCTrue(0),
+  fHisto_SigmaX_AOD(0),
+  fHisto_SigmaY_AOD(0),
+  fHisto_SigmaX_MCTrue(0),
+  fHisto_SigmaY_MCTrue(0)
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -476,6 +522,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(fInputEvent);
   
   fCEvents->Fill(1);
+  fCTruePV->Fill(1);
 
   //------------------------------------------------
   // First check if the event has proper vertex and B
@@ -709,6 +756,59 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
       LoopOverGenParticles(mcArray);
 	  //FillGenParticleTree();
 
+	//-------------------------
+	// Retrieve true primary vertex
+	if(fUseMCInfo){
+
+		fCTruePV->Fill(4);
+
+		fMCevt = inputHandler->MCEvent();
+		fTrueV = fMCevt->GetPrimaryVertex();	// from MC event
+
+		// convert to AliAODVertex
+		Double_t posPVtx[3], covPVtx[6], chi2perNDFtrue_PVtx;
+		fTrueV->GetXYZ(posPVtx);
+		fTrueV->GetCovarianceMatrix(covPVtx);
+		chi2perNDFtrue_PVtx = fTrueV->GetChi2perNDF();
+		fTruePVtx = new AliAODVertex(posPVtx,covPVtx,chi2perNDFtrue_PVtx);
+
+		// convert to AliESDVertex
+		Double_t posPV[3], covPV[6];
+		fTruePVtx->GetXYZ(posPV);
+		fTruePVtx->GetCovarianceMatrix(covPV);
+		fTruePV = new AliESDVertex(posPV,covPV,100.,100,fTruePVtx->GetName());
+	
+		// Fill histogram for check
+		fHisto_refPrimVx_aVtx->Fill(fVtx1->GetX());
+		fHisto_refPrimVy_aVtx->Fill(fVtx1->GetY());
+		fHisto_refPrimVz_aVtx->Fill(fVtx1->GetZ());
+
+		fHisto_TruePrimVx_vVtx->Fill(fTrueV->GetX());
+		fHisto_TruePrimVy_vVtx->Fill(fTrueV->GetY());
+		fHisto_TruePrimVz_vVtx->Fill(fTrueV->GetZ());
+
+		fHisto_TruePrimVx_aVtx->Fill(fTruePVtx->GetX());
+		fHisto_TruePrimVy_aVtx->Fill(fTruePVtx->GetY());
+		fHisto_TruePrimVz_aVtx->Fill(fTruePVtx->GetZ());
+
+		fHisto_TruePrimVx_eVtx->Fill(fTruePV->GetX());
+		fHisto_TruePrimVy_eVtx->Fill(fTruePV->GetY());
+		fHisto_TruePrimVz_eVtx->Fill(fTruePV->GetZ());
+
+		fHisto_NContributor_AOD->Fill(fVtx1->GetNContributors());
+		fHisto_NContributor_MCTrue->Fill(fTruePVtx->GetNContributors());
+
+		double sigA[3], sigMT[3];
+		fV1->GetSigmaXYZ(sigA);
+		fTruePV->GetSigmaXYZ(sigMT);
+		fHisto_SigmaX_AOD->Fill(sigA[0]);
+		fHisto_SigmaY_AOD->Fill(sigA[1]);
+		fHisto_SigmaX_MCTrue->Fill(sigMT[0]);
+		fHisto_SigmaY_MCTrue->Fill(sigMT[1]);
+
+	}
+	//-------------------------
+
       fCEvents->Fill(17); // in case of MC events
     }
   }
@@ -865,7 +965,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserCreateOutputObjects()
   fCounter->SetStudyMultiplicity(kTRUE, 1.); 
   fCounter->Init();
   PostData(4,fCounter);
-  fCounter_MB_0to100   = new AliNormalizationCounter("MB_0to100");
+/*  fCounter_MB_0to100   = new AliNormalizationCounter("MB_0to100");
   fCounter_MB_0p1to30  = new AliNormalizationCounter("MB_0p1to30");
   fCounter_MB_30to100  = new AliNormalizationCounter("MB_30to100");
   fCounter_HMV0_0to100 = new AliNormalizationCounter("HMV0_0to100");
@@ -876,6 +976,19 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserCreateOutputObjects()
   fCounter_MB_30to100_INEL = new AliNormalizationCounter("MB_30to100_INEL");
   fCounter_HMV0_0to100_INEL = new AliNormalizationCounter("HMV0_0to100_INEL");
   fCounter_HMV0_0to0p1_INEL = new AliNormalizationCounter("HMV0_0to0p1_INEL");
+*/
+ 
+  fCounter_MB_0to100 = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
+  fCounter_MB_0p1to30 = new AliNormalizationCounter(Form("%s",GetOutputSlot(6)->GetContainer()->GetName()));
+  fCounter_MB_30to100 = new AliNormalizationCounter(Form("%s",GetOutputSlot(7)->GetContainer()->GetName()));
+  fCounter_HMV0_0to100 = new AliNormalizationCounter(Form("%s",GetOutputSlot(8)->GetContainer()->GetName()));
+  fCounter_HMV0_0to0p1 = new AliNormalizationCounter(Form("%s",GetOutputSlot(9)->GetContainer()->GetName()));
+
+  fCounter_MB_0to100_INEL = new AliNormalizationCounter(Form("%s",GetOutputSlot(10)->GetContainer()->GetName()));
+  fCounter_MB_0p1to30_INEL = new AliNormalizationCounter(Form("%s",GetOutputSlot(11)->GetContainer()->GetName()));
+  fCounter_MB_30to100_INEL = new AliNormalizationCounter(Form("%s",GetOutputSlot(12)->GetContainer()->GetName()));
+  fCounter_HMV0_0to100_INEL = new AliNormalizationCounter(Form("%s",GetOutputSlot(13)->GetContainer()->GetName()));
+  fCounter_HMV0_0to0p1_INEL = new AliNormalizationCounter(Form("%s",GetOutputSlot(14)->GetContainer()->GetName()));
 
   fCounter_MB_0to100  ->SetStudyMultiplicity(kTRUE, 1.);
   fCounter_MB_0p1to30 ->SetStudyMultiplicity(kTRUE, 1.);
@@ -1350,9 +1463,15 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
       if(casc->ChargeXi()==-1) fCandidateVariables[12]= TMath::Sqrt(pow( casc->MomPosX(),2)+pow( casc->MomPosY(),2)); ///AGGIUSta
       else fCandidateVariables[12]=TMath::Sqrt(pow( casc->MomNegX(),2)+pow( casc->MomNegY(),2));
       
+	  if(fReconstructPrimVert){	// Reco-PV on
       fCandidateVariables[13] = fVtx1->GetX();
       fCandidateVariables[14] = fVtx1->GetY();
       fCandidateVariables[15] = fVtx1->GetZ();
+	  }else{	// Reco-PV off
+	  fCandidateVariables[13] = fTruePVtx->GetX();
+	  fCandidateVariables[14] = fTruePVtx->GetY();
+	  fCandidateVariables[15] = fTruePVtx->GetZ();
+	  }
       fCandidateVariables[16] = xicobj->GetOwnPrimaryVtx()->GetX();
       fCandidateVariables[17] = xicobj->GetOwnPrimaryVtx()->GetY();
       fCandidateVariables[18] = xicobj->GetOwnPrimaryVtx()->GetZ();
@@ -1685,6 +1804,14 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   //fCEvents->GetXaxis()->SetTitle("");
   fCEvents->GetYaxis()->SetTitle("counts");
 
+  // for primary vertex check
+  fCTruePV = new TH1F("fCTruePV","counter_for_PV_check",20,-0.5,19.5);
+  fCTruePV->SetStats(kTRUE);	// index = filled number+1
+  fCTruePV->GetXaxis()->SetBinLabel(2,"Input AOD num.");
+  fCTruePV->GetXaxis()->SetBinLabel(3,"Reco PV on");
+  fCTruePV->GetXaxis()->SetBinLabel(4,"Reco PV off");
+  fCTruePV->GetXaxis()->SetBinLabel(5,"Start retv.");
+
   fHTrigger = new TH1F("fHTrigger","counter",18,-0.5,17.5);
   fHTrigger->SetStats(kTRUE);
   fHTrigger->GetXaxis()->SetBinLabel(1," ");
@@ -1732,6 +1859,33 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
 
   fQAHistoDCApi1pi2 = new TH1F("fQAHistoDCApi1pi2","DCA #pi - #pi", 100,0.,0.5);
 
+  // for true primary vertex study
+  fHisto_refPrimVx_aVtx = new TH1F("fHisto_refPrimVx_aVtx","fHisto_refPrimVx_aVtx",100,0., 0.1);
+  fHisto_refPrimVy_aVtx = new TH1F("fHisto_refPrimVy_aVtx","fHisto_refPrimVy_aVtx",500,0., 0.5);
+  fHisto_refPrimVz_aVtx = new TH1F("fHisto_refPrimVz_aVtx","fHisto_refPrimVz_aVtx",140,-12., 12.);
+
+  fHisto_TruePrimVx_vVtx = new TH1F("fHisto_TruePrimVx_vVtx","fHisto_TruePrimVx_vVtx",100,0., 0.1);
+  fHisto_TruePrimVy_vVtx = new TH1F("fHisto_TruePrimVy_vVtx","fHisto_TruePrimVy_vVtx",500,0., 0.5);
+  fHisto_TruePrimVz_vVtx = new TH1F("fHisto_TruePrimVz_vVtx","fHisto_TruePrimVz_vVtx",140,-12., 12.);
+
+  fHisto_TruePrimVx_aVtx = new TH1F("fHisto_TruePrimVx_aVtx","fHisto_TruePrimVx_aVtx",100,0., 0.1);
+  fHisto_TruePrimVy_aVtx = new TH1F("fHisto_TruePrimVy_aVtx","fHisto_TruePrimVy_aVtx",500,0., 0.5);
+  fHisto_TruePrimVz_aVtx = new TH1F("fHisto_TruePrimVz_aVtx","fHisto_TruePrimVz_aVtx",140,-12., 12.);
+
+  fHisto_TruePrimVx_eVtx = new TH1F("fHisto_TruePrimVx_eVtx","fHisto_TruePrimVx_eVtx",100,0., 0.1);
+  fHisto_TruePrimVy_eVtx = new TH1F("fHisto_TruePrimVy_eVtx","fHisto_TruePrimVy_eVtx",500,0., 0.5);
+  fHisto_TruePrimVz_eVtx = new TH1F("fHisto_TruePrimVz_eVtx","fHisto_TruePrimVz_eVtx",140,-12., 12.);
+
+  fHisto_NContributor_AOD = new TH1F("fHisto_NContributor_AOD","fHisto_NContributor_AOD",100,-5.,95.);
+  fHisto_NContributor_MCTrue = new TH1F("fHisto_NContributor_MCTrue","fHisto_NContributor_MCTrue",100,-5.,95.);
+
+  fHisto_SigmaX_AOD = new TH1F("fHisto_SigmaX_AOD","fHisto_SigmaX_AOD",400,-0.02,0.02);
+  fHisto_SigmaY_AOD = new TH1F("fHisto_SigmaY_AOD","fHisto_SigmaY_AOD",400,-0.02,0.02);
+  fHisto_SigmaX_MCTrue = new TH1F("fHisto_SigmaX_MCTrue","fHisto_SigmaX_MCTrue",400,-0.02,0.02);
+  fHisto_SigmaY_MCTrue = new TH1F("fHisto_SigmaY_MCTrue","fHisto_SigmaY_MCTrue",400,-0.02,0.02);
+
+  //
+
   fQAHistoAODPrimVertX = new TH1F("fQAHistoAODPrimVertX", "X coord of primary vertex", 100,0., 0.1);
   fQAHistoAODPrimVertY = new TH1F("fQAHistoAODPrimVertY", "Y coord of rimary vertex", 500,0., 0.5);
   fQAHistoAODPrimVertZ = new TH1F("fQAHistoAODPrimVertZ", "Z coord of primary vertex", 140,-12., 12.);
@@ -1746,6 +1900,7 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   fQAHistoSecondaryVertexXY = new TH1F("fQAHistoSecondaryVertexXY", "XY coord of secondary vertex", 1000, -20, 20);
   
   fOutput->Add(fCEvents);
+  fOutput->Add(fCTruePV);	// jcho
   fOutput->Add(fHTrigger);
   fOutput->Add(fHCentrality);
   fOutput->Add(fHCentralSPD); //jcho
@@ -1762,6 +1917,24 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   fOutput->Add(fQAHistoNSelectedTracks);
   fOutput->Add(fQAHistoNSelectedCasc);
   fOutput->Add(fQAHistoDCApi1pi2);
+  fOutput->Add(fHisto_NContributor_AOD);
+  fOutput->Add(fHisto_NContributor_MCTrue);
+  fOutput->Add(fHisto_SigmaX_AOD);
+  fOutput->Add(fHisto_SigmaY_AOD);
+  fOutput->Add(fHisto_SigmaX_MCTrue);
+  fOutput->Add(fHisto_SigmaY_MCTrue);
+  fOutput->Add(fHisto_refPrimVx_aVtx);
+  fOutput->Add(fHisto_refPrimVy_aVtx);
+  fOutput->Add(fHisto_refPrimVz_aVtx);
+  fOutput->Add(fHisto_TruePrimVx_vVtx);	//jcho
+  fOutput->Add(fHisto_TruePrimVy_vVtx);
+  fOutput->Add(fHisto_TruePrimVz_vVtx);
+  fOutput->Add(fHisto_TruePrimVx_aVtx);
+  fOutput->Add(fHisto_TruePrimVy_aVtx);
+  fOutput->Add(fHisto_TruePrimVz_aVtx);
+  fOutput->Add(fHisto_TruePrimVx_eVtx);
+  fOutput->Add(fHisto_TruePrimVy_eVtx);
+  fOutput->Add(fHisto_TruePrimVz_eVtx);
   fOutput->Add(fQAHistoAODPrimVertX);
   fOutput->Add(fQAHistoAODPrimVertY);
   fOutput->Add(fQAHistoAODPrimVertZ);
@@ -1777,7 +1950,7 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
     fHistoMCSpectrumAccXic=new TH3F("fHistoMCSpectrumAccXic","fHistoMCSpectrumAccXic",250,0,50,26,-0.5,12.5,4,3.5,7.5);
     fOutput->Add(fHistoMCSpectrumAccXic);
 
-	fdummy = new TH1F("","",250,0,50);
+	fdummy = new TH1F("fHistocheck","fHistocheck",250,0,50);
 	fOutput->Add(fdummy);
 
   } // fUseMCInfo
@@ -2266,15 +2439,18 @@ AliAODRecoCascadeHF3Prong* AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeCas
   //------------------------------------------------
   AliAODVertex *primVertexAOD;
   Bool_t unsetvtx = kFALSE;
-  if(fReconstructPrimVert){
+  if(fReconstructPrimVert){	// Reco-PV on
     primVertexAOD = CallPrimaryVertex(casc,part1,part2,aod);
+    fCTruePV->Fill(2);
     if(!primVertexAOD){
       primVertexAOD = fVtx1;
     }else{
       unsetvtx = kTRUE;
     }
   }else{
-    primVertexAOD = fVtx1;
+    //primVertexAOD = fVtx1;
+	primVertexAOD = fTruePVtx;	// Change from AOD vertex to MC vertex
+	fCTruePV->Fill(3);	// Reco-PV off
   }
   if(!primVertexAOD) return 0x0;
   Double_t pos[3]; primVertexAOD->GetXYZ(pos);
