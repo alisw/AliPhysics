@@ -411,7 +411,7 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   if(fIsMC) {
     float nTotNoTracksMC=0;
     float nTotNoTracksReco=0;
-    if(fUseRecoNchForMC) nTotNoTracksReco = GetNtotTracks(fAOD,ptMin,ptMax,vtxXYZ);
+    if(fUseRecoNchForMC) nTotNoTracksReco = GetNtotTracks(fAOD,ptMin,ptMax,vtxXYZ,iCent);
     TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
     Int_t nPrim = tca->GetEntries();
     if(nPrim<1) return;
@@ -715,14 +715,20 @@ Bool_t AliAnalysisTaskPtCorr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackX
   if(fGFWNtotSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE)) nTot++;
   return fGFWSelection->AcceptTrack(mtr,(fSystFlag==1&&!fEnableFB768dcaxy)?0:ltrackXYZ,0,kFALSE); //All complementary DCA track cuts for FB768 are disabled
 };
-int AliAnalysisTaskPtCorr::GetNtotTracks(AliAODEvent* lAOD, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp) {
+int AliAnalysisTaskPtCorr::GetNtotTracks(AliAODEvent* lAOD, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp, Int_t iCent) {
   Double_t ltrackXYZ[3];
   AliAODTrack *lTrack;
   int nTotNoTracks=0;
   for(Int_t lTr=0;lTr<lAOD->GetNumberOfTracks();lTr++) {
     lTrack = (AliAODTrack*)lAOD->GetTrack(lTr);
     if(!lTrack) continue;
-    if(!AcceptAODTrack(lTrack,ltrackXYZ,ptmin,ptmax,vtxp,nTotNoTracks)) continue;
+    if(TMath::Abs(lTrack->Eta()) > fEtaAcceptance) continue;
+    if(!AcceptAODTrack(lTrack,ltrackXYZ,ptmin,ptmax,vtxp)) continue;
+    Double_t lpt = lTrack->Pt();
+    Double_t weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lpt));
+    if(weff==0.0) continue;
+    weff = 1./weff;
+    nTotNoTracks += (fUseNUEOne)?1.:weff;
   };
   return nTotNoTracks;
 }
@@ -772,8 +778,8 @@ void AliAnalysisTaskPtCorr::SetupAxes() {
   if(!fEtaAxis) { printf("Setting default eta bins\n"); SetEtaBins(Neta_Default,l_eta_Default);}
   fEtaBins=GetBinsFromAxis(fEtaAxis);
   fNEtaBins=fEtaAxis->GetNbins();
-  const int nCentBinsMpt = 5;
-  double centbinsMpt[] = {0,0.5,1,5,10,90};
+  const int nCentBinsMpt = 4;
+  double centbinsMpt[] = {0,1,5,10,90};
   if(!fCentPtAxis) { printf("Setting default cent bins for mpt fluctuations\n"); SetCentBinsForPt(nCentBinsMpt,centbinsMpt);}
   fCentPtBins=GetBinsFromAxis(fCentPtAxis);
   fNCentPtBins=fCentPtAxis->GetNbins();
