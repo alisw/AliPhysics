@@ -765,23 +765,6 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
 		fMCevt = inputHandler->MCEvent();
 		fTrueV = fMCevt->GetPrimaryVertex();	// from MC event
 
-		// Comparison
-/*		cout << "-----------" << endl;
-		cout << "mcheader x = " << mcHeader->GetVtxX() << endl;
-		cout << "mc event x = " << fTrueV->GetX() << endl;
-		cout << "aod event x(fVtx1) =" << fVtx1->GetX() << endl; 
-		cout << "esd converted x(fV) =" << fV1->GetX() << endl;
-		cout << "--" << endl;
-		cout << "mcheader y = " << mcHeader->GetVtxY() << endl;
-		cout << "mc event y = " << fTrueV->GetY() << endl;
-		cout << "aod event y(fVtx1) =" << fVtx1->GetY() << endl;
-		cout << "esd converted y(fV) =" << fV1->GetY() << endl;
-		cout << "--" << endl;
-		cout << "mcheader z = " << mcHeader->GetVtxZ() << endl;
-		cout << "mc event z = " << fTrueV->GetZ() << endl;
-		cout << "aod event z(fVtx1) =" << fVtx1->GetZ() << endl;
-		cout << "esd converted z(fV) =" << fV1->GetZ() << endl;
-*/
 		// convert to AliAODVertex
 		Double_t posPVtx[3], covPVtx[6], chi2perNDFtrue_PVtx;
 		fTrueV->GetXYZ(posPVtx);
@@ -795,23 +778,6 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
 		fTruePVtx->GetCovarianceMatrix(covPV);
 		fTruePV = new AliESDVertex(posPV,covPV,100.,100,fTruePVtx->GetName());
 	
-		// 
-/*		double testcov[3];
-		fVtx1->GetCovarianceMatrix(testcov);
-		double sigmaAOD[3], sigmaMY[3];
-		fV1->GetSigmaXYZ(sigmaAOD);
-		fTruePV->GetSigmaXYZ(sigmaMY);
-		cout << "aod cov X = " << testcov[0] << endl;
-		cout << "aod cov Y = " << testcov[1] << endl;
-		cout << "my cov X = " << covPVtx[0] << endl;
-		cout << "my cov Y = " << covPVtx[1] << endl;
-		cout << "Sigma X = " << sigmaAOD[0] << endl;
-		cout << "Sigma Y = " << sigmaAOD[1] << endl;
-		cout << "my sigma X = " << sigmaMY[0] << endl;
-		cout << "my  sigma Y = " << sigmaMY[1] << endl;
-		cout << "aod N contributors = " << fVtx1->GetNContributors() << endl;
-		cout << "my N contributors = " << fTrueV->GetNContributors() << endl;
-*/
 		// Fill histogram for check
 		fHisto_refPrimVx_aVtx->Fill(fVtx1->GetX());
 		fHisto_refPrimVy_aVtx->Fill(fVtx1->GetY());
