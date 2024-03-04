@@ -72,7 +72,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetCentralityEstimator(TString newval) { if(fCentEst) delete fCentEst; fCentEst = new TString(newval); };
   void SetContSubfix(TString newval) {if(fContSubfix) delete fContSubfix; fContSubfix = new TString(newval); };
   void OverrideMCFlag(Bool_t newval) { fIsMC = newval; };
-  int GetNtotTracks(AliAODEvent*, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp);
+  int GetNtotTracks(AliAODEvent*, const Double_t &ptmin, const Double_t &ptmax, Double_t *vtxp, Int_t iCent);
   int GetNtotMCTracks(const Double_t &ptmin, const Double_t &ptmax);
   void SetUseRecoNchForMC(Bool_t newval) { fUseRecoNchForMC = newval; };
   void SetNBootstrapProfiles(Int_t newval) {if(newval<0) {printf("Number of subprofiles cannot be < 0!\n"); return; }; fNBootstrapProfiles = newval; };
