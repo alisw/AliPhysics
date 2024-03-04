@@ -235,9 +235,32 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   Bool_t fUsekHMV0 = kFALSE;  
   Bool_t fUsekHMVSPD = kFALSE; 
   TH1F* fCentralityOfEvt; //jcho 
+  AliMCEvent* fMCevt = nullptr;
+  TH1F* fCTruePV;
+  const AliVVertex* fTrueV;
+  AliAODVertex *fTruePVtx;
+  AliESDVertex *fTruePV;
+  TH1F* fHisto_refPrimVx_aVtx;
+  TH1F* fHisto_refPrimVy_aVtx;
+  TH1F* fHisto_refPrimVz_aVtx;
+  TH1F* fHisto_TruePrimVx_vVtx;
+  TH1F* fHisto_TruePrimVy_vVtx;
+  TH1F* fHisto_TruePrimVz_vVtx;
+  TH1F* fHisto_TruePrimVx_aVtx;
+  TH1F* fHisto_TruePrimVy_aVtx;
+  TH1F* fHisto_TruePrimVz_aVtx;
+  TH1F* fHisto_TruePrimVx_eVtx;
+  TH1F* fHisto_TruePrimVy_eVtx;
+  TH1F* fHisto_TruePrimVz_eVtx;
+  TH1F* fHisto_NContributor_AOD;
+  TH1F* fHisto_NContributor_MCTrue;
+  TH1F* fHisto_SigmaX_AOD;
+  TH1F* fHisto_SigmaY_AOD;
+  TH1F* fHisto_SigmaX_MCTrue;
+  TH1F* fHisto_SigmaY_MCTrue;
 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,22); /// class for Xic->Xipipi
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,23); /// class for Xic->Xipipi
   /// \endcond
 };
 #endif
