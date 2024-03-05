@@ -1306,19 +1306,17 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     }
   }
 
-  if (fDoClusterQA > 0 && !fDoLightOutput){
-    double valRes = minRes;
-    for (int i = 0; i < 1000; ++i) {
-      arrResBinning.push_back(valRes);
-      if (valRes < -0.5 - epsilon)
-        valRes += 0.05;
-      else if (valRes < 0.5 - epsilon)
-        valRes += 0.01;
-      else if (valRes < maxRes - epsilon)
-        valRes += 0.05;
-      else
-        break;
-    }
+  double valRes = minRes;
+  for (int i = 0; i < 1000; ++i) {
+    arrResBinning.push_back(valRes);
+    if (valRes < -0.5 - epsilon)
+      valRes += 0.05;
+    else if (valRes < 0.5 - epsilon)
+      valRes += 0.01;
+    else if (valRes < maxRes - epsilon)
+      valRes += 0.05;
+    else
+      break;
   }
 
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
@@ -3840,11 +3838,9 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidatesAOD(AliAODConvers
 
   // True Photon
   if (TruePhotonCandidate->IsLargestComponentPhoton() || (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion()) ){
+    fHistoTrueClusGammaEResE[fiCut]->Fill(TruePhotonCandidate->E(), (TruePhotonCandidate->E()-Photon->E())/Photon->E(), fWeightJetJetMC);
     if(fHistoTrueClusGammaPt && fHistoTrueClusGammaPt[fiCut]) fHistoTrueClusGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(),fWeightJetJetMC);
     if(!fDoLightOutput){
-      if(fDoClusterQA > 0){
-        fHistoTrueClusGammaEResE[fiCut]->Fill(TruePhotonCandidate->E(), (TruePhotonCandidate->E()-Photon->E())/Photon->E(), fWeightJetJetMC);
-      }
       if (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion()){
         fHistoTrueClusConvGammaPt[fiCut]->Fill(TruePhotonCandidate->Pt(), fWeightJetJetMC);
       }
@@ -3884,7 +3880,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueClusterCandidatesAOD(AliAODConvers
   }else {
     if(!fDoLightOutput) fHistoTrueClusEMNonLeadingPt[fiCut]->Fill(TruePhotonCandidate->Pt(),fWeightJetJetMC);
   }
-  if(!fDoLightOutput && (fDoClusterQA > 0) && TruePhotonCandidate->IsLargestComponentPhoton()){
+  if(TruePhotonCandidate->IsLargestComponentPhoton()){
     fHistoTrueClusPhotonGammaEResE[fiCut]->Fill(TruePhotonCandidate->E(), (TruePhotonCandidate->E()-Photon->E())/Photon->E(), fWeightJetJetMC);
   }
 
