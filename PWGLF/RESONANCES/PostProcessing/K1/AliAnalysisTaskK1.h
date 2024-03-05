@@ -100,8 +100,9 @@ public:
   void SetMaxVertexZKaon(Double_t lParameter) { fKaonZVertexCut = lParameter; }
   void SetMaxVertexXYsigKaon(Double_t lParameter) { fKaonXYVertexSigmaCut = lParameter; }
 
-  void SetMaxMassWindowK892(Double_t lParameter) { fK892MassWindowCut = lParameter; }
-  void SetMaxRapidityCutK892(Double_t lParameter) { fK892RapCut = lParameter; }
+  void SetModeK892orRho(Bool_t lParameter) { fSetModeK892orRho = lParameter; }
+  void SetSecondaryMassWindow(Double_t lParameter) { fSecondaryMassWindowCut = lParameter; }
+  void SetSecondaryRapidityCut(Double_t lParameter) { fSecondaryRapCut = lParameter; }
 
   void SetK1RapidityCutHigh(Double_t lParameter) { fK1YCutHigh = lParameter; }
   void SetK1RapidityCutLow(Double_t lParameter) { fK1YCutLow = lParameter; }
@@ -109,10 +110,12 @@ public:
   void SetK1OAMax(Double_t lParameter) { fMaxK1OA = lParameter; }
   void SetK1PairAssymMin(Double_t lParameter) { fMinPairAsym = lParameter; }
   void SetK1PairAssymMax(Double_t lParameter) { fMaxPairAsym = lParameter; }
-  void SetK1PiPiMassCutMin(Double_t lParameter) { fMinK1PiPi = lParameter; }
-  void SetK1PiPiMassCutMax(Double_t lParameter) { fMaxK1PiPi = lParameter; }
+  void SetK1AnotherSecnarioMassCutMin(Double_t lParameter) { fMinK1MassCutAnotherScenario = lParameter; }
+  void SetK1AnotherSecnarioMassCutMax(Double_t lParameter) { fMaxK1MassCutAnotherScenario = lParameter; }
   void SetK1PiKaMassCutMin(Double_t lParameter) { fMinK1PiKa = lParameter; }
   void SetK1PiKaMassCutMax(Double_t lParameter) { fMaxK1PiKa = lParameter; }
+  void SetSecondarypTCutMin(Double_t lParameter) { fMinSecondarypTCut = lParameter; }
+  void SetSecondarypTCutMax(Double_t lParameter) { fMaxSecondarypTCut = lParameter; }
 
   Bool_t FillTrackPools();
   void FillHistograms();
@@ -124,7 +127,7 @@ public:
   void PostAllData();
   void GetImpactParam(AliVTrack *track, Float_t p[2], Float_t cov[3]);
   std::tuple<Float_t, Float_t, std::array<Float_t, 3>> GetImpactParametersWrapper(AliVTrack *track);
-  bool IsTrackAccepted(AliVTrack* track);
+  bool IsTrackAccepted(AliVTrack *track);
   Int_t TrackSelection(AliVTrack *track, Float_t nTPCNSigPion, Float_t nTOFNSigPion, Float_t nTPCNSigKaon, Float_t nTOFNSigKaon, Float_t lpT, Float_t lDCAz, Float_t lDCAr, Float_t lEta);
   bool IsPassPrimaryPionSelection(Float_t nTPCNSigPion, Float_t nTOFNSigPion, Float_t lEta, Float_t lDCAz, Float_t lDCAr, Double_t lsigmaDCAr);
   bool IsPassSecondaryPionSelection(Float_t nTPCNSigPion, Float_t nTOFNSigPion, Float_t lEta, Float_t lDCAz, Float_t lDCAr, Double_t lsigmaDCAr);
@@ -192,18 +195,21 @@ private:
   TH2D *hTPCPIDTrack_kaon;         //!
   TH2D *hTPCPIDTrackNsigVspT_kaon; //!
   // K1
-  TH1D *hK1OA;                    //!
-  TH1D *hK1PairAsymm;             //!
-  TH2D *hInvMass_piK_pipi;        //!
-  TH2D *hInvMass_piK_pika;        //!
-  TH1D *hK1OA_cut;                //!
-  TH1D *hK1PairAsymm_cut;         //!
-  TH2D *hInvMass_piK_pipi_cut;    //!
-  TH2D *hInvMass_piK_pika_cut;    //!
-  TH1D *hK1OA_MCTrue;             //!
-  TH1D *hK1PairAsymm_MCTrue;      //!
-  TH2D *hInvMass_piK_pipi_MCTrue; //!
-  TH2D *hInvMass_piK_pika_MCTrue; //!
+  TH1D *hK1OA;                          //!
+  TH1D *hK1PairAsymm;                   //!
+  TH2D *hInvMass_k892_rho;              //!
+  TH2D *hInvMass_Secondary_PiKa;        //!
+  TH1D *hK1SecondarypT;                 //!
+  TH1D *hK1OA_cut;                      //!
+  TH1D *hK1PairAsymm_cut;               //!
+  TH2D *hInvMass_k892_rho_cut;          //!
+  TH2D *hInvMass_Secondary_PiKa_cut;    //!
+  TH1D *hK1SecondarypT_cut;             //!
+  TH1D *hK1OA_MCTrue;                   //!
+  TH1D *hK1PairAsymm_MCTrue;            //!
+  TH2D *hInvMass_k892_rho_MCTrue;       //!
+  TH2D *hInvMass_Secondary_PiKa_MCTrue; //!
+  TH1D *hK1SecondarypT_MCTrue;          //!
 
   Bool_t fIsAOD;                //!
   Bool_t fIsNano;               //!
@@ -215,6 +221,7 @@ private:
   Bool_t fIsINEL;               //
   Bool_t fIsHM;                 //
   Bool_t fSkipFillingHistogram; //
+  Bool_t fSetModeK892orRho;     // True: K892, False: Rho mode.
 
   mixingpool fEMpool; //!
   TAxis fBinCent;     //!
@@ -248,19 +255,21 @@ private:
   Double_t fKaonZVertexCut;       //
   Double_t fKaonXYVertexSigmaCut; //
 
-  Double_t fK892MassWindowCut; //
-  Double_t fK892RapCut;        //
+  Double_t fSecondaryMassWindowCut; //
+  Double_t fSecondaryRapCut;        //
 
-  Double_t fK1YCutHigh;  //
-  Double_t fK1YCutLow;   //
-  Double_t fMinK1OA;     //
-  Double_t fMaxK1OA;     //
-  Double_t fMinPairAsym; //
-  Double_t fMaxPairAsym; //
-  Double_t fMinK1PiPi;   //
-  Double_t fMaxK1PiPi;   //
-  Double_t fMinK1PiKa;   //
-  Double_t fMaxK1PiKa;   //
+  Double_t fK1YCutHigh;                  //
+  Double_t fK1YCutLow;                   //
+  Double_t fMinK1OA;                     //
+  Double_t fMaxK1OA;                     //
+  Double_t fMinPairAsym;                 //
+  Double_t fMaxPairAsym;                 //
+  Double_t fMinK1MassCutAnotherScenario; //
+  Double_t fMaxK1MassCutAnotherScenario; //
+  Double_t fMinK1PiKa;                   //
+  Double_t fMaxK1PiKa;                   //
+  Double_t fMinSecondarypTCut;           //
+  Double_t fMaxSecondarypTCut;           //
 
   // Good track arrays
   std::vector<UInt_t> fGoodPrimaryPionArray;
@@ -270,9 +279,10 @@ private:
 
   unsigned long long int fTracks; //!
 
-  ClassDef(AliAnalysisTaskK1, 2);
+  ClassDef(AliAnalysisTaskK1, 3);
   // 1: first implementation
   // 2: update Tree method and simplify the code
+  // 3: Apply the robust daugther selection for both scenarios and add the secondary pT cut
 };
 
 #endif

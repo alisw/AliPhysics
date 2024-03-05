@@ -62,6 +62,7 @@ const Double_t pi = TMath::Pi();
 const Double_t kPionMass = AliPID::ParticleMass(AliPID::kPion);
 const Double_t kKaonMass = AliPID::ParticleMass(AliPID::kKaon);
 const Double_t kK892Mass = TDatabasePDG::Instance()->GetParticle(313)->Mass();
+const Double_t kRhoMass = TDatabasePDG::Instance()->GetParticle(113)->Mass();
 
 enum
 {
@@ -163,26 +164,30 @@ ClassImp(AliAnalysisTaskK1) AliAnalysisTaskK1::AliAnalysisTaskK1()
       hTPCPIDTrackNsigVspT_kaon{nullptr},
       hK1OA{nullptr},
       hK1PairAsymm{nullptr},
-      hInvMass_piK_pipi{nullptr},
-      hInvMass_piK_pika{nullptr},
+      hInvMass_k892_rho{nullptr},
+      hInvMass_Secondary_PiKa{nullptr},
+      hK1SecondarypT{nullptr},
       hK1OA_cut{nullptr},
       hK1PairAsymm_cut{nullptr},
-      hInvMass_piK_pipi_cut{nullptr},
-      hInvMass_piK_pika_cut{nullptr},
+      hInvMass_k892_rho_cut{nullptr},
+      hInvMass_Secondary_PiKa_cut{nullptr},
+      hK1SecondarypT_cut{nullptr},
       hK1OA_MCTrue{nullptr},
       hK1PairAsymm_MCTrue{nullptr},
-      hInvMass_piK_pipi_MCTrue{nullptr},
-      hInvMass_piK_pika_MCTrue{nullptr},
+      hInvMass_k892_rho_MCTrue{nullptr},
+      hInvMass_Secondary_PiKa_MCTrue{nullptr},
+      hK1SecondarypT_MCTrue{nullptr},
       fIsAOD{false},
       fIsNano{false},
       fSetMixing{false},
       fFillQAPlot{true},
       fIsMC{false},
-      fIsPrimaryMC{false},
+      fIsPrimaryMC{true},
       fFillTree{false},
       fIsINEL{false},
       fIsHM{false},
       fSkipFillingHistogram{false},
+      fSetModeK892orRho{true},
       fEMpool{},
       fBinCent{},
       fBinZ{},
@@ -209,18 +214,20 @@ ClassImp(AliAnalysisTaskK1) AliAnalysisTaskK1::AliAnalysisTaskK1()
       fKaonEtaCut{0.8},
       fKaonZVertexCut{2.0},
       fKaonXYVertexSigmaCut{3},
-      fK892MassWindowCut{0.1},
-      fK892RapCut{0.5},
+      fSecondaryMassWindowCut{0.1},
+      fSecondaryRapCut{0.5},
       fK1YCutHigh{0.5},
       fK1YCutLow{-0.5},
       fMinK1OA{0},
       fMaxK1OA{0.87},
       fMinPairAsym{-0.1},
       fMaxPairAsym{1},
-      fMinK1PiPi{0},
-      fMaxK1PiPi{1},
+      fMinK1MassCutAnotherScenario{0},
+      fMaxK1MassCutAnotherScenario{999},
       fMinK1PiKa{0},
       fMaxK1PiKa{999},
+      fMinSecondarypTCut{0.0},
+      fMaxSecondarypTCut{999},
       fTracks{0}
 {
   /// Default constructor
@@ -266,26 +273,30 @@ AliAnalysisTaskK1::AliAnalysisTaskK1(const char *name, Bool_t MCcase)
       hTPCPIDTrackNsigVspT_kaon{nullptr},
       hK1OA{nullptr},
       hK1PairAsymm{nullptr},
-      hInvMass_piK_pipi{nullptr},
-      hInvMass_piK_pika{nullptr},
+      hInvMass_k892_rho{nullptr},
+      hInvMass_Secondary_PiKa{nullptr},
+      hK1SecondarypT{nullptr},
       hK1OA_cut{nullptr},
       hK1PairAsymm_cut{nullptr},
-      hInvMass_piK_pipi_cut{nullptr},
-      hInvMass_piK_pika_cut{nullptr},
+      hInvMass_k892_rho_cut{nullptr},
+      hInvMass_Secondary_PiKa_cut{nullptr},
+      hK1SecondarypT_cut{nullptr},
       hK1OA_MCTrue{nullptr},
       hK1PairAsymm_MCTrue{nullptr},
-      hInvMass_piK_pipi_MCTrue{nullptr},
-      hInvMass_piK_pika_MCTrue{nullptr},
+      hInvMass_k892_rho_MCTrue{nullptr},
+      hInvMass_Secondary_PiKa_MCTrue{nullptr},
+      hK1SecondarypT_MCTrue{nullptr},
       fIsAOD{false},
       fIsNano{false},
       fSetMixing{false},
       fFillQAPlot{true},
       fIsMC{MCcase},
-      fIsPrimaryMC{false},
+      fIsPrimaryMC{true},
       fFillTree{false},
       fIsINEL{false},
       fIsHM{false},
       fSkipFillingHistogram{false},
+      fSetModeK892orRho{true},
       fEMpool{},
       fBinCent{},
       fBinZ{},
@@ -312,18 +323,20 @@ AliAnalysisTaskK1::AliAnalysisTaskK1(const char *name, Bool_t MCcase)
       fKaonEtaCut{0.8},
       fKaonZVertexCut{2.0},
       fKaonXYVertexSigmaCut{7.0},
-      fK892MassWindowCut{0.1},
-      fK892RapCut{0.5},
+      fSecondaryMassWindowCut{0.1},
+      fSecondaryRapCut{0.5},
       fK1YCutHigh{0.5},
       fK1YCutLow{-0.5},
       fMinK1OA{0},
-      fMaxK1OA{0.87},
-      fMinPairAsym{-0.1},
+      fMaxK1OA{3.14},
+      fMinPairAsym{-1},
       fMaxPairAsym{1},
-      fMinK1PiPi{0},
-      fMaxK1PiPi{1},
+      fMinK1MassCutAnotherScenario{0.0},
+      fMaxK1MassCutAnotherScenario{999},
       fMinK1PiKa{0},
       fMaxK1PiKa{999},
+      fMinSecondarypTCut{0.0},
+      fMaxSecondarypTCut{999},
       fTracks{0}
 {
   DefineInput(0, TChain::Class());
@@ -359,8 +372,8 @@ void AliAnalysisTaskK1::SetCutOpen()
   SetMaxVertexZKaon(3);
   SetMaxVertexXYsigKaon(10);
 
-  SetMaxMassWindowK892(1);
-  SetMaxRapidityCutK892(1);
+  SetSecondaryMassWindow(1);
+  SetSecondaryRapidityCut(1);
 
   SetK1RapidityCutHigh(1);
   SetK1RapidityCutLow(-1);
@@ -368,8 +381,8 @@ void AliAnalysisTaskK1::SetCutOpen()
   SetK1OAMax(999);
   SetK1PairAssymMin(-1);
   SetK1PairAssymMax(1);
-  SetK1PiPiMassCutMin(0);
-  SetK1PiPiMassCutMax(999);
+  SetK1AnotherSecnarioMassCutMin(0);
+  SetK1AnotherSecnarioMassCutMax(999);
   SetK1PiKaMassCutMin(0);
   SetK1PiKaMassCutMax(999);
 }
@@ -473,38 +486,44 @@ void AliAnalysisTaskK1::UserCreateOutputObjects()
     // K1
     hK1OA = new TH1D("hK1OA", "Opening angle distribution of K1;Opening angle (rad);counts", 100, 0, 3.14);
     hK1PairAsymm = new TH1D("hK1PairAsymm", "Pair asymmetry distribution of K1;Asymmetry;counts", 100, -1, 1);
-    hInvMass_piK_pipi = new TH2D("hInvMass_piK_pipi", "Invariant mass distribution of piK pairs;Mass (GeV/c^{2});counts", 100, 0.6, 2.0, 200, 0, 2);
-    hInvMass_piK_pika = new TH2D("hInvMass_piK_pika", "Invariant mass distribution of piK pairs;Mass (GeV/c^{2});counts", 100, 0.6, 2.0, 200, 0, 2);
+    hInvMass_k892_rho = new TH2D("hInvMass_k892_rho", "Invariant mass distribution k892 invmass vs rho inv mass;Mass_{K*} (GeV/c^{2});Mass_{#rho} (GeV/c^{2})", 100, 0.6, 2.0, 200, 0, 2);
+    hInvMass_Secondary_PiKa = new TH2D("hInvMass_Secondary_PiKa", "Invariant mass distribution secondary invmass vs PiKa inv mass;Mass_{secondary} (GeV/c^{2});Mass_{K#pi} (GeV/c^{2})", 100, 0.6, 2.0, 200, 0, 2);
+    hK1SecondarypT = new TH1D("hK1SecondarypT", "Secondary pT distribution of K1;#it{p}_{T} (GeV/c);counts", 100, 0, 10);
 
     hK1OA_cut = new TH1D("hK1OA_cut", "Opening angle distribution of K1;Opening angle (rad);counts", 100, 0, 3.14);
     hK1PairAsymm_cut = new TH1D("hK1PairAsymm_cut", "Pair asymmetry distribution of K1;Asymmetry;counts", 100, -1, 1);
-    hInvMass_piK_pipi_cut = new TH2D("hInvMass_piK_pipi_cut", "Invariant mass distribution of piK pairs;Mass (GeV/c^{2});counts", 100, 0.6, 2.0, 200, 0, 2);
-    hInvMass_piK_pika_cut = new TH2D("hInvMass_piK_pika_cut", "Invariant mass distribution of piK pairs;Mass (GeV/c^{2});counts", 100, 0.6, 2.0, 200, 0, 2);
+    hInvMass_k892_rho_cut = new TH2D("hInvMass_k892_rho_cut", "Invariant mass distribution k892 invmass vs rho inv mass;Mass_{K*} (GeV/c^{2});Mass_{#rho} (GeV/c^{2})", 100, 0.6, 2.0, 200, 0, 2);
+    hInvMass_Secondary_PiKa_cut = new TH2D("hInvMass_Secondary_PiKa_cut", "Invariant mass distribution k892 invmass vs rho inv mass;Mass_{secondary} (GeV/c^{2});Mass_{K#pi} (GeV/c^{2})", 100, 0.6, 2.0, 200, 0, 2);
+    hK1SecondarypT_cut = new TH1D("hK1SecondarypT_cut", "Secondary pT distribution of K1;#it{p}_{T} (GeV/c);counts", 100, 0, 10);
     QAList->Add(hK1OA);
     QAList->Add(hK1PairAsymm);
-    QAList->Add(hInvMass_piK_pipi);
-    QAList->Add(hInvMass_piK_pika);
+    QAList->Add(hInvMass_k892_rho);
+    QAList->Add(hInvMass_Secondary_PiKa);
+    QAList->Add(hK1SecondarypT);
     QAList->Add(hK1OA_cut);
     QAList->Add(hK1PairAsymm_cut);
-    QAList->Add(hInvMass_piK_pipi_cut);
-    QAList->Add(hInvMass_piK_pika_cut);
+    QAList->Add(hInvMass_k892_rho_cut);
+    QAList->Add(hInvMass_Secondary_PiKa_cut);
+    QAList->Add(hK1SecondarypT_cut);
     if (fIsMC)
     {
       hK1OA_MCTrue = new TH1D("hK1OA_MCTrue", "Opening angle distribution of K1;Opening angle (rad);counts", 100, 0, 3.14);
       hK1PairAsymm_MCTrue = new TH1D("hK1PairAsymm_MCTrue", "Pair asymmetry distribution of K1;Asymmetry;counts", 100, -1, 1);
-      hInvMass_piK_pipi_MCTrue = new TH2D("hInvMass_piK_pipi_MCTrue", "Invariant mass distribution of piK pairs;Mass (GeV/c^{2});counts", 100, 0.6, 2.0, 200, 0, 2);
-      hInvMass_piK_pika_MCTrue = new TH2D("hInvMass_piK_pika_MCTrue", "Invariant mass distribution of piK pairs;Mass (GeV/c^{2});counts", 100, 0.6, 2.0, 200, 0, 2);
+      hInvMass_k892_rho_MCTrue = new TH2D("hInvMass_k892_rho_MCTrue", "Invariant mass distribution k892 invmass vs rho inv mass;Mass_{K*} (GeV/c^{2});Mass_{#rho} (GeV/c^{2})", 100, 0.6, 2.0, 200, 0, 2);
+      hInvMass_Secondary_PiKa_MCTrue = new TH2D("hInvMass_Secondary_PiKa_MCTrue", "Invariant mass distribution k892 invmass vs rho inv mass;Mass_{secondary} (GeV/c^{2});Mass_{K#pi} (GeV/c^{2})", 100, 0.6, 2.0, 200, 0, 2);
+      hK1SecondarypT_MCTrue = new TH1D("hK1SecondarypT_MCTrue", "Secondary pT distribution of K1;#it{p}_{T} (GeV/c);counts", 100, 0, 10);
       QAList->Add(hK1OA_MCTrue);
       QAList->Add(hK1PairAsymm_MCTrue);
-      QAList->Add(hInvMass_piK_pipi_MCTrue);
-      QAList->Add(hInvMass_piK_pika_MCTrue);
+      QAList->Add(hInvMass_k892_rho_MCTrue);
+      QAList->Add(hInvMass_Secondary_PiKa_MCTrue);
+      QAList->Add(hK1SecondarypT_MCTrue);
     }
   }
   if (fIsHM)
     hMultiplicity = new TH1F("hMultiplicity", "", 100, 0, 0.1);
   else
     hMultiplicity = new TH1F("hMultiplicity", "", 101, -1, 100);
-  
+
   fEMpool.resize(fBinCent.GetNbins() + 1, std::vector<eventpool>(fBinZ.GetNbins() + 1));
   if (!fSkipFillingHistogram)
   {
@@ -652,12 +671,13 @@ void AliAnalysisTaskK1::UserExec(Option_t *)
     return;
   }
 
-  if (!fSkipFillingHistogram) hMultiplicity->Fill(fCent); // multiplicity distribution for basic event QA
+  if (!fSkipFillingHistogram)
+    hMultiplicity->Fill(fCent); // multiplicity distribution for basic event QA
   fCustomEventID = (fIsNano) ? nanoHeader->GetRunNumberIndex() + fEntry : ((unsigned long)(event->GetBunchCrossNumber()) << 32) + event->GetTimeStamp();
 
   if (fIsMC)
   {
-    FillMCinput(fMCEvent);
+    FillMCinput(fMCEvent, 0);
     FillTHnSparse(fHn2DEvtNorm, {(int)kSelected, (double)fCent});
   }
   if (fIsAOD)
@@ -703,6 +723,7 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
   fGoodSecondaryPionArray.clear();
   fGoodKaonArray.clear();
   fGoodTracksArray.clear();
+  fMCTrueTrack.clear();
   AliVTrack *track = nullptr;
   Float_t bCov[3];
   Double_t nTPCNSigPion{0}, nTPCNSigKaon{0}, nTOFNSigPion{0}, nTOFNSigKaon{0}, lDCAz{0}, lpT{0}, lsigmaDCAr{0}, lDCAr{0}, lEta{0}, lEnergy{0}, lStatus{0};
@@ -845,10 +866,12 @@ void AliAnalysisTaskK1::FillHistograms()
   Int_t primiaryID{0}, secondaryID{0}, kaonID{0}, primiaryMixID{0};
   int sign = kAllType;
   int binAnti = 0;
-  Double_t lK892Mass{0}, lK1Rapidity{0}, lK1Angle{0}, lK1PairAsym{0}, lMassPiPi{0}, lMassPiKa{0};
+  Double_t lMassK892{0}, lMassRho{0}, lMassPiKa{0}, lpTK892{0}, lpTRho{0}, lSecondaryRap{0}, lSecondaryMass{0}, lSecondarypT{0};
+  Double_t lK1Mass{0}, lK1Rapidity{0}, lK1Pt{0}, lK1Angle{0}, lK1PairAsym{0};
+  Double_t lSecondaryMassRef = (fSetModeK892orRho) ? kK892Mass : kRhoMass;
 
   TLorentzVector vecPrimaryPion, vecSecondaryPion, vecKaon, vecPrimaryPionMix;
-  TLorentzVector vecK892, vecK1, tempPiPi, tempPiKa;
+  TLorentzVector vecK892, vecK1, tempRho, tempPiKa;
   const UInt_t nPrimaryPions = fGoodPrimaryPionArray.size();
   const UInt_t nSecondaryPions = fGoodSecondaryPionArray.size();
   const UInt_t nKaons = fGoodKaonArray.size();
@@ -897,15 +920,6 @@ void AliAnalysisTaskK1::FillHistograms()
       else
         isAnti = false;
 
-      // Apply K(892) cut here.
-      // Y cut
-      if (abs(vecK892.Rapidity()) > fK892RapCut)
-        continue;
-      // mass window
-      lK892Mass = vecK892.M();
-      if (abs(lK892Mass - kK892Mass) > fK892MassWindowCut)
-        continue;
-
       for (UInt_t iPrimaryPion = 0; iPrimaryPion < nPrimaryPions; iPrimaryPion++) // primary pion which is used for K1
       {
         track_primiary_pion = (AliVTrack *)fEvt->GetTrack(fGoodPrimaryPionArray[iPrimaryPion]);
@@ -918,40 +932,69 @@ void AliAnalysisTaskK1::FillHistograms()
         vecPrimaryPion.SetXYZM(track_primiary_pion->Px(), track_primiary_pion->Py(), track_primiary_pion->Pz(), kPionMass);
 
         vecK1 = vecK892 + vecPrimaryPion;
-        // Y cut
+        // Y cut of K1 in any case
         lK1Rapidity = vecK1.Rapidity();
         if ((lK1Rapidity > fK1YCutHigh) || (lK1Rapidity < fK1YCutLow))
           continue;
-        // OA Cut
-        lK1Angle = vecK892.Angle(vecPrimaryPion.Vect());
-        // Pair Assym
-        lK1PairAsym = (vecK892.E() - vecPrimaryPion.E()) / (vecK892.E() + vecPrimaryPion.E());
-        // PiPi, PiKa mass range cut
-        tempPiPi = vecPrimaryPion + vecSecondaryPion;
-        tempPiKa = vecPrimaryPion + vecKaon;
-        lMassPiPi = tempPiPi.M();
+        
+        // Robust selection for both K892 and Rho daughter cases.
+        // A: Pion1 (primary pion), B: Pion2 (secondary pion), C: Kaon (kaon)
+        // If we want to apply K892 scenario, K892 will be B+C, and A will be primary pion
+        // If we want to apply Rho scenario, Rho will be A+B, and C will be primary kaon
+        // In anycase, A+C will be a remain combination. (we called it PiKa here.)
+        tempRho = vecPrimaryPion + vecSecondaryPion; // Rho scenario
+        tempPiKa = vecPrimaryPion + vecKaon;         // Remain combination
+        lMassK892 = vecK892.M();
+        lMassRho = tempRho.M();
         lMassPiKa = tempPiKa.M();
+        lpTK892 = vecK892.Pt();
+        lpTRho = tempRho.Pt();
+        lSecondaryRap = (fSetModeK892orRho) ? vecK892.Rapidity() : tempRho.Rapidity();
+        lSecondaryMass = (fSetModeK892orRho) ? lMassK892 : lMassRho;
+        lSecondarypT = (fSetModeK892orRho) ? lpTK892 : lpTRho;
+
+        // OA Cut between K1 daughters
+        lK1Angle = (fSetModeK892orRho) ? vecK892.Angle(vecPrimaryPion.Vect()) : tempRho.Angle(vecKaon.Vect());
+        // Pair Assym
+        lK1PairAsym = (fSetModeK892orRho) ? (vecK892.E() - vecPrimaryPion.E()) / (vecK892.E() + vecPrimaryPion.E()) : (tempRho.E() - vecKaon.E()) / (tempRho.E() + vecKaon.E());
+
         if (fFillQAPlot)
         {
           hK1OA->Fill(lK1Angle);
           hK1PairAsymm->Fill(lK1PairAsym);
-          hInvMass_piK_pipi->Fill(lK892Mass, lMassPiPi);
-          hInvMass_piK_pika->Fill(lK892Mass, lMassPiKa);
+          hInvMass_k892_rho->Fill(lMassK892, lMassRho);
+          hInvMass_Secondary_PiKa->Fill(lSecondaryMass, lMassPiKa);
+          hK1SecondarypT->Fill(lSecondarypT);
         }
-        if ((lMassPiPi > fMaxK1PiPi) || (lMassPiPi < fMinK1PiPi))
+        // Apply Secondary selection cut here.
+        // Y cut
+        if (abs(lSecondaryRap) > fSecondaryRapCut)
           continue;
+        // mass window
+        if (abs(lSecondaryMass - lSecondaryMassRef) > fSecondaryMassWindowCut)
+          continue;
+        // Selection of unselected track pairs (another scenario)
+        if ((lMassPiKa > fMaxK1MassCutAnotherScenario) || (lMassPiKa < fMinK1MassCutAnotherScenario))
+          continue;
+        // Selection of PiKa pair
         if ((lMassPiKa > fMaxK1PiKa) || (lMassPiKa < fMinK1PiKa))
           continue;
+        // K1 OA cut
         if ((lK1Angle > fMaxK1OA) || (lK1Angle < fMinK1OA))
           continue;
+        // K1 Pair Asymmetry cut
         if ((lK1PairAsym > fMaxPairAsym) || (lK1PairAsym < fMinPairAsym))
+          continue;
+        // Secondary pT cut
+        if ((lSecondarypT < fMinSecondarypTCut)|| (lSecondarypT > fMaxSecondarypTCut))
           continue;
         if (fFillQAPlot)
         {
           hK1OA_cut->Fill(lK1Angle);
           hK1PairAsymm_cut->Fill(lK1PairAsym);
-          hInvMass_piK_pipi_cut->Fill(lK892Mass, lMassPiPi);
-          hInvMass_piK_pika_cut->Fill(lK892Mass, lMassPiKa);
+          hInvMass_k892_rho_cut->Fill(lMassK892, lMassRho);
+          hInvMass_Secondary_PiKa_cut->Fill(lSecondaryMass, lMassPiKa);
+          hK1SecondarypT_cut->Fill(lSecondarypT);
         }
         if (track_primiary_pion->Charge() > 0)
           isPirmaryPionPlus = true;
@@ -960,28 +1003,31 @@ void AliAnalysisTaskK1::FillHistograms()
 
         (isAnti) ? binAnti = kAnti : binAnti = kNormal;
         (isPirmaryPionPlus) ? sign = kK1P : sign = kK1N;
+        lK1Mass = vecK1.M();
+        lK1Pt = vecK1.Pt();
 
-        FillTHnSparse(fHn5DK1Data, {(double)binAnti, (double)sign, (double)fCent, vecK1.Pt(), vecK1.M()});
+        FillTHnSparse(fHn5DK1Data, {(double)binAnti, (double)sign, (double)fCent, lK1Pt, lK1Mass});
 
         if (fIsMC)
         {
           if (IsTrueK1(primiaryID, secondaryID, kaonID))
           {
             (isPirmaryPionPlus) ? sign = kK1P_REC : sign = kK1N_REC;
-            FillTHnSparse(fHn5DK1MC, {(double)binAnti, (double)sign, (double)fCent, vecK1.Pt(), vecK1.M()});
+            FillTHnSparse(fHn5DK1MC, {(double)binAnti, (double)sign, (double)fCent, lK1Pt, lK1Mass});
             if (fFillQAPlot)
             {
               hK1OA_MCTrue->Fill(lK1Angle);
               hK1PairAsymm_MCTrue->Fill(lK1PairAsym);
-              hInvMass_piK_pipi_MCTrue->Fill(lK892Mass, lMassPiPi);
-              hInvMass_piK_pika_MCTrue->Fill(lK892Mass, lMassPiKa);
+              hInvMass_k892_rho_MCTrue->Fill(lMassK892, lMassRho);
+              hInvMass_Secondary_PiKa_MCTrue->Fill(lSecondaryMass, lMassPiKa);
+              hK1SecondarypT_MCTrue->Fill(lSecondarypT);
             }
           }
           else
           {
             // MC not true bkg
             (isPirmaryPionPlus) ? sign = kK1P_NOT : sign = kK1N_NOT;
-            FillTHnSparse(fHn5DK1MC, {(double)binAnti, (double)sign, (double)fCent, vecK1.Pt(), vecK1.M()});
+            FillTHnSparse(fHn5DK1MC, {(double)binAnti, (double)sign, (double)fCent, lK1Pt, lK1Mass});
           }
         }
       } // primary pion loop
@@ -997,25 +1043,47 @@ void AliAnalysisTaskK1::FillHistograms()
           vecPrimaryPionMix.SetXYZM(track_primiary_pion_mix->Px(), track_primiary_pion_mix->Py(), track_primiary_pion_mix->Pz(), kPionMass);
           vecK1 = vecK892 + vecPrimaryPionMix;
           // Y cut
-          if ((vecK1.Rapidity() > fK1YCutHigh) || (vecK1.Rapidity() < fK1YCutLow))
+          lK1Rapidity = vecK1.Rapidity();
+          if ((lK1Rapidity > fK1YCutHigh) || (lK1Rapidity < fK1YCutLow))
             continue;
-          // OA Cut
-          lK1Angle = vecK892.Angle(vecPrimaryPionMix.Vect());
-          // Pair Assym
-          lK1PairAsym = (vecK892.E() - vecPrimaryPionMix.E()) / (vecK892.E() + vecPrimaryPionMix.E());
-          // PiPi, PiKa mass range cut
-          tempPiPi = vecPrimaryPionMix + vecSecondaryPion;
-          tempPiKa = vecPrimaryPionMix + vecKaon;
-          lMassPiPi = tempPiPi.M();
+          // Robust selection for both K892 and Rho daughter cases.
+          tempRho = vecPrimaryPionMix + vecSecondaryPion; // Rho scenario
+          tempPiKa = vecPrimaryPionMix + vecKaon;         // Remain combination
+          lMassK892 = vecK892.M();
+          lMassRho = tempRho.M();
           lMassPiKa = tempPiKa.M();
-          // PiPi, PiKa mass range cut
-          if ((lMassPiPi > fMaxK1PiPi) || (lMassPiPi < fMinK1PiPi))
+          lpTK892 = vecK892.Pt();
+          lpTRho = tempRho.Pt();
+          lSecondaryRap = (fSetModeK892orRho) ? vecK892.Rapidity() : tempRho.Rapidity();
+          lSecondaryMass = (fSetModeK892orRho) ? lMassK892 : lMassRho;
+          lSecondarypT = (fSetModeK892orRho) ? lpTK892 : lpTRho;
+
+          // OA Cut between K1 daughters
+          lK1Angle = (fSetModeK892orRho) ? vecK892.Angle(vecPrimaryPionMix.Vect()) : tempRho.Angle(vecKaon.Vect());
+          // Pair Assym
+          lK1PairAsym = (fSetModeK892orRho) ? (vecK892.E() - vecPrimaryPionMix.E()) / (vecK892.E() + vecPrimaryPionMix.E()) : (tempRho.E() - vecKaon.E()) / (tempRho.E() + vecKaon.E());
+
+          // Apply Secondary selection cut here.
+          // Y cut
+          if (abs(lSecondaryRap) > fSecondaryRapCut)
             continue;
+          // mass window
+          if (abs(lSecondaryMass - lSecondaryMassRef) > fSecondaryMassWindowCut)
+            continue;
+          // Selection of unselected track pairs (another scenario)
+          if ((lMassPiKa > fMaxK1MassCutAnotherScenario) || (lMassPiKa < fMinK1MassCutAnotherScenario))
+            continue;
+          // Selection of PiKa pair
           if ((lMassPiKa > fMaxK1PiKa) || (lMassPiKa < fMinK1PiKa))
             continue;
+          // K1 OA cut
           if ((lK1Angle > fMaxK1OA) || (lK1Angle < fMinK1OA))
             continue;
+          // K1 Pair Asymmetry cut
           if ((lK1PairAsym > fMaxPairAsym) || (lK1PairAsym < fMinPairAsym))
+            continue;
+          // Secondary pT cut
+          if ((lSecondarypT < fMinSecondarypTCut)|| (lSecondarypT > fMaxSecondarypTCut))
             continue;
 
           if (track_primiary_pion_mix->Charge() > 0)
@@ -1037,7 +1105,8 @@ void AliAnalysisTaskK1::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
 {
   int sign = kAllType;
   int binAnti = 0;
-  bool isK892{false}, isK1{false};
+  bool isSecondaryDaughter{false}, isK1{false};
+  int kDaugtherCode = (fSetModeK892orRho) ? kK892Code : kRhoCode;
 
   if (!fIsAOD)
   {
@@ -1049,14 +1118,14 @@ void AliAnalysisTaskK1::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
         Error("UserExec", "Could not receive MC track %d", it);
         continue;
       }
-      isK892 = false;
+      isSecondaryDaughter = false;
       isK1 = false;
 
       Int_t k1PdgCode = mcInputTrack->GetPdgCode();
       if (TMath::Abs(k1PdgCode) == kK1PCode)
         isK1 = true;
-      if (TMath::Abs(k1PdgCode) == kK892Code)
-        isK892 = true;
+      if (TMath::Abs(k1PdgCode) == kDaugtherCode)
+        isSecondaryDaughter = true;
       if (fIsPrimaryMC && !mcInputTrack->IsPrimary())
         continue;
 
@@ -1075,7 +1144,7 @@ void AliAnalysisTaskK1::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
       }
       if (Fillbin > 0)
         continue;
-      if (!isK892 && !isK1)
+      if (!isSecondaryDaughter && !isK1)
         continue;
       if (fFillTree) // Fill both K892 and K1
       {
@@ -1107,15 +1176,15 @@ void AliAnalysisTaskK1::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
         Error("UserExec", "Could not receive MC track %d", it);
         continue;
       }
-      isK892 = false;
+      isSecondaryDaughter = false;
       isK1 = false;
 
       Int_t k1PdgCode = mcInputTrack->GetPdgCode();
 
       if (TMath::Abs(k1PdgCode) == kK1PCode)
         isK1 = true;
-      if (TMath::Abs(k1PdgCode) == kK892Code)
-        isK892 = true;
+      if (TMath::Abs(k1PdgCode) == kDaugtherCode)
+        isSecondaryDaughter = true;
       if (fIsPrimaryMC && !mcInputTrack->IsPrimary())
         continue;
       if (isK1)
@@ -1123,7 +1192,6 @@ void AliAnalysisTaskK1::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
         // Y cut
         if ((mcInputTrack->Y() > fK1YCutHigh) || (mcInputTrack->Y() < fK1YCutLow))
           continue;
-
         (k1PdgCode < 0) ? binAnti = kAnti : binAnti = kNormal;
         if (k1PdgCode > 0)
           sign = kK1P_GEN + (int)Fillbin * 2;
@@ -1133,7 +1201,7 @@ void AliAnalysisTaskK1::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
       }
       if (Fillbin > 0)
         continue;
-      if (!isK892 && !isK1)
+      if (!isSecondaryDaughter && !isK1)
         continue;
       if (fFillTree)
       {
@@ -1170,34 +1238,66 @@ Bool_t AliAnalysisTaskK1::IsTrueK1(UInt_t primiaryID, UInt_t secondaryID, UInt_t
     TParticle *MCPrimaryPion = (TParticle *)fMCEvent->GetTrack(TMath::Abs(track_primiary_pion->GetLabel()))->Particle();
     TParticle *MCSecondaryPion = (TParticle *)fMCEvent->GetTrack(TMath::Abs(track_secondary_pion->GetLabel()))->Particle();
     TParticle *MCKaon = (TParticle *)fMCEvent->GetTrack(TMath::Abs(track_kaon->GetLabel()))->Particle();
+    if (fSetModeK892orRho)
+    {
+      // K892 daughter (secondary pion, kaon) check
+      if ((TMath::Abs(MCSecondaryPion->GetPdgCode()) != kPionCode || TMath::Abs(MCKaon->GetPdgCode()) != kKaonCode))
+        return kFALSE;
 
-    // K892 daughter (secondary pion, kaon) check
-    if ((TMath::Abs(MCSecondaryPion->GetPdgCode()) == kPionCode && TMath::Abs(MCKaon->GetPdgCode()) != kKaonCode))
-      return kFALSE;
+      // K892 mother check
+      if (MCSecondaryPion->GetMother(0) != MCKaon->GetMother(0))
+        return kFALSE;
 
-    // K892 mother check
-    if (MCSecondaryPion->GetMother(0) != MCKaon->GetMother(0))
-      return kFALSE;
+      // K892 check
+      TParticle *MCK892 = (TParticle *)fMCEvent->GetTrack(TMath::Abs(MCSecondaryPion->GetMother(0)))->Particle();
+      if (TMath::Abs(MCK892->GetPdgCode()) != kK892Code)
+        return kFALSE;
 
-    // K892 check
-    TParticle *MCK892 = (TParticle *)fMCEvent->GetTrack(TMath::Abs(MCSecondaryPion->GetMother(0)))->Particle();
-    if (TMath::Abs(MCK892->GetPdgCode()) != kK892Code)
-      return kFALSE;
+      // Pimary pion check
+      if (MCPrimaryPion->GetPdgCode() != kPionCode)
+        return kFALSE;
 
-    // Pimary pion check
-    if (MCPrimaryPion->GetPdgCode() != kPionCode)
-      return kFALSE;
+      // Same mother check
+      if (MCPrimaryPion->GetMother(0) != MCK892->GetMother(0))
+        return kFALSE;
 
-    // Same mother check
-    if (MCPrimaryPion->GetMother(0) != MCK892->GetMother(0))
-      return kFALSE;
+      // K1 check
+      TParticle *MCK1 = (TParticle *)fMCEvent->GetTrack(TMath::Abs(MCPrimaryPion->GetMother(0)))->Particle();
+      if (TMath::Abs(MCK1->GetPdgCode()) != kK1PCode)
+        return kFALSE;
 
-    // K1 check
-    TParticle *MCK1 = (TParticle *)fMCEvent->GetTrack(TMath::Abs(MCPrimaryPion->GetMother(0)))->Particle();
-    if (TMath::Abs(MCK1->GetPdgCode()) != kK1PCode)
-      return kFALSE;
+      return kTRUE;
+    }
+    else
+    {
+      // Rho daughter (primary pion, secondary pion) check
+      if ((TMath::Abs(MCPrimaryPion->GetPdgCode()) != kPionCode || TMath::Abs(MCSecondaryPion->GetPdgCode()) != kPionCode))
+        return kFALSE;
 
-    return kTRUE;
+      // Rho mother check
+      if (MCPrimaryPion->GetMother(0) != MCSecondaryPion->GetMother(0))
+        return kFALSE;
+
+      // Rho check
+      TParticle *MCRho = (TParticle *)fMCEvent->GetTrack(TMath::Abs(MCPrimaryPion->GetMother(0)))->Particle();
+      if (TMath::Abs(MCRho->GetPdgCode()) != kRhoCode)
+        return kFALSE;
+
+      // Kaon check
+      if (MCKaon->GetPdgCode() != kKaonCode)
+        return kFALSE;
+
+      // Same mother check
+      if (MCKaon->GetMother(0) != MCRho->GetMother(0))
+        return kFALSE;
+
+      // K1 check
+      TParticle *MCK1 = (TParticle *)fMCEvent->GetTrack(TMath::Abs(MCRho->GetMother(0)))->Particle();
+      if (TMath::Abs(MCK1->GetPdgCode()) != kK1PCode)
+        return kFALSE;
+
+      return kTRUE;
+    }
   }
   else
   {
@@ -1205,33 +1305,66 @@ Bool_t AliAnalysisTaskK1::IsTrueK1(UInt_t primiaryID, UInt_t secondaryID, UInt_t
     AliAODMCParticle *MCSecondaryPion = (AliAODMCParticle *)fMCArray->At(TMath::Abs(track_secondary_pion->GetLabel()));
     AliAODMCParticle *MCKaon = (AliAODMCParticle *)fMCArray->At(TMath::Abs(track_kaon->GetLabel()));
 
-    // K892 daughter (secondary pion, kaon) check
-    if ((TMath::Abs(MCSecondaryPion->GetPdgCode()) == kPionCode && TMath::Abs(MCKaon->GetPdgCode()) != kKaonCode))
-      return kFALSE;
+    if (fSetModeK892orRho)
+    {
+      // K892 daughter (secondary pion, kaon) check
+      if ((TMath::Abs(MCSecondaryPion->GetPdgCode()) != kPionCode || TMath::Abs(MCKaon->GetPdgCode()) != kKaonCode))
+        return kFALSE;
 
-    // K892 mother check
-    if (MCSecondaryPion->GetMother() != MCKaon->GetMother())
-      return kFALSE;
+      // K892 mother check
+      if (MCSecondaryPion->GetMother() != MCKaon->GetMother())
+        return kFALSE;
 
-    // K892 check
-    AliAODMCParticle *MCK892 = (AliAODMCParticle *)fMCArray->At(TMath::Abs(MCSecondaryPion->GetMother()));
-    if (TMath::Abs(MCK892->GetPdgCode()) != kK892Code)
-      return kFALSE;
+      // K892 check
+      AliAODMCParticle *MCK892 = (AliAODMCParticle *)fMCArray->At(TMath::Abs(MCSecondaryPion->GetMother()));
+      if (TMath::Abs(MCK892->GetPdgCode()) != kK892Code)
+        return kFALSE;
 
-    // Pimary pion check
-    if (MCPrimaryPion->GetPdgCode() != kPionCode)
-      return kFALSE;
+      // Pimary pion check
+      if (MCPrimaryPion->GetPdgCode() != kPionCode)
+        return kFALSE;
 
-    // Same mother check
-    if (MCPrimaryPion->GetMother() != MCK892->GetMother())
-      return kFALSE;
+      // Same mother check
+      if (MCPrimaryPion->GetMother() != MCK892->GetMother())
+        return kFALSE;
 
-    // K1 check
-    AliAODMCParticle *MCK1 = (AliAODMCParticle *)fMCArray->At(TMath::Abs(MCPrimaryPion->GetMother()));
-    if (TMath::Abs(MCK1->GetPdgCode()) != kK1PCode)
-      return kFALSE;
+      // K1 check
+      AliAODMCParticle *MCK1 = (AliAODMCParticle *)fMCArray->At(TMath::Abs(MCPrimaryPion->GetMother()));
+      if (TMath::Abs(MCK1->GetPdgCode()) != kK1PCode)
+        return kFALSE;
 
-    return kTRUE;
+      return kTRUE;
+    }
+    else
+    {
+      // Rho daughter (primary pion, secondary pion) check
+      if ((TMath::Abs(MCPrimaryPion->GetPdgCode()) != kPionCode || TMath::Abs(MCSecondaryPion->GetPdgCode()) != kPionCode))
+        return kFALSE;
+      
+      // Rho mother check
+      if (MCPrimaryPion->GetMother() != MCSecondaryPion->GetMother())
+        return kFALSE;
+
+      // Rho check
+      AliAODMCParticle *MCRho = (AliAODMCParticle *)fMCArray->At(TMath::Abs(MCPrimaryPion->GetMother()));
+      if (TMath::Abs(MCRho->GetPdgCode()) != kRhoCode)
+        return kFALSE;
+
+      // Kaon check
+      if (MCKaon->GetPdgCode() != kKaonCode)
+        return kFALSE;
+
+      // Same mother check
+      if (MCKaon->GetMother() != MCRho->GetMother())
+        return kFALSE;
+
+      // K1 check
+      AliAODMCParticle *MCK1 = (AliAODMCParticle *)fMCArray->At(TMath::Abs(MCRho->GetMother()));
+      if (TMath::Abs(MCK1->GetPdgCode()) != kK1PCode)
+        return kFALSE;
+
+      return kTRUE;
+    }
   }
 }
 THnSparseD *AliAnalysisTaskK1::CreateTHnSparse(TString name, TString title, Int_t ndim, std::vector<TAxis> bins, Option_t *opt)
