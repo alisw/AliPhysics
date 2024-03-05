@@ -66,6 +66,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetMptBins(Int_t nMptBins, Double_t mptlow, Double_t mpthigh);
   void SetEtaAcceptance(Double_t newval) { fEtaAcceptance = newval; };
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
+  void SetUseV0Mmult(Bool_t newval) { fUseV0M = newval; };
   void SetUseWeightsOne(Bool_t newvalNUE) { fUseNUEOne = newvalNUE; };
   void SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
   void SetDCAxyFunctionalForm(TString newval) { fDCAxyFunctionalForm = newval; } //Call after SystFlag
@@ -94,6 +95,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetOTFGenerator(TString gen) { fGenerator = gen; }
   void SetUseIP(bool newval) { fUseIP = newval;}
   void SetUseCentCalibration(bool newval) { fUseCentCalibration = newval; }
+  void SetFillPtkVsNch(bool newval) { fFillptkVsNch = newval; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -110,6 +112,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Bool_t fCentSelectForMptNch;
   Bool_t fUseIP;
   Bool_t fUseCentCalibration;
+  Bool_t fFillptkVsNch;
   TString fDCAxyFunctionalForm;
   Bool_t fOnTheFly;
   TString fGenerator;
@@ -137,6 +140,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Double_t *fV0MBinsDefault; //!
   Int_t fNV0MBinsDefault; //!
   Bool_t fUseNch;
+  Bool_t fUseV0M;
   Bool_t fUseNUEOne;
   Int_t fPtMpar;
   Double_t fEtaLow;
@@ -145,10 +149,10 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TList *fQAList; //
   TH1D* fEventCount; //!
   TH1D *fMultiDist;
-  TH1D* fChPtDist; //!
   TH2D **fMultiVsV0MCorr; //!
   TH2D *fNchTrueVsReco; //!
   TH2D *fESDvsFB128;
+  TH2F *fHistV0MvsNch;
   TList *fptList;
   AliPtPtContainer  *fPtCont;
   AliProfileBS *fMultiVsCent;
