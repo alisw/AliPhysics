@@ -723,7 +723,6 @@ Bool_t AliAnalysisTaskK1::FillTrackPools()
   fGoodSecondaryPionArray.clear();
   fGoodKaonArray.clear();
   fGoodTracksArray.clear();
-  fMCTrueTrack.clear();
   AliVTrack *track = nullptr;
   Float_t bCov[3];
   Double_t nTPCNSigPion{0}, nTPCNSigKaon{0}, nTOFNSigPion{0}, nTOFNSigKaon{0}, lDCAz{0}, lpT{0}, lsigmaDCAr{0}, lDCAr{0}, lEta{0}, lEnergy{0}, lStatus{0};
