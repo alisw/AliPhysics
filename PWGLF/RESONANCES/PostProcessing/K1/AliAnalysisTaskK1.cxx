@@ -936,7 +936,7 @@ void AliAnalysisTaskK1::FillHistograms()
         lK1Rapidity = vecK1.Rapidity();
         if ((lK1Rapidity > fK1YCutHigh) || (lK1Rapidity < fK1YCutLow))
           continue;
-        
+
         // Robust selection for both K892 and Rho daughter cases.
         // A: Pion1 (primary pion), B: Pion2 (secondary pion), C: Kaon (kaon)
         // If we want to apply K892 scenario, K892 will be B+C, and A will be primary pion
@@ -986,7 +986,7 @@ void AliAnalysisTaskK1::FillHistograms()
         if ((lK1PairAsym > fMaxPairAsym) || (lK1PairAsym < fMinPairAsym))
           continue;
         // Secondary pT cut
-        if ((lSecondarypT < fMinSecondarypTCut)|| (lSecondarypT > fMaxSecondarypTCut))
+        if ((lSecondarypT < fMinSecondarypTCut) || (lSecondarypT > fMaxSecondarypTCut))
           continue;
         if (fFillQAPlot)
         {
@@ -1083,7 +1083,7 @@ void AliAnalysisTaskK1::FillHistograms()
           if ((lK1PairAsym > fMaxPairAsym) || (lK1PairAsym < fMinPairAsym))
             continue;
           // Secondary pT cut
-          if ((lSecondarypT < fMinSecondarypTCut)|| (lSecondarypT > fMaxSecondarypTCut))
+          if ((lSecondarypT < fMinSecondarypTCut) || (lSecondarypT > fMaxSecondarypTCut))
             continue;
 
           if (track_primiary_pion_mix->Charge() > 0)
@@ -1340,7 +1340,7 @@ Bool_t AliAnalysisTaskK1::IsTrueK1(UInt_t primiaryID, UInt_t secondaryID, UInt_t
       // Rho daughter (primary pion, secondary pion) check
       if ((TMath::Abs(MCPrimaryPion->GetPdgCode()) != kPionCode || TMath::Abs(MCSecondaryPion->GetPdgCode()) != kPionCode))
         return kFALSE;
-      
+
       // Rho mother check
       if (MCPrimaryPion->GetMother() != MCSecondaryPion->GetMother())
         return kFALSE;
