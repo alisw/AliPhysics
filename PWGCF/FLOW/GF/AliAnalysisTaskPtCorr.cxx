@@ -35,6 +35,7 @@
 #include "AliGenEventHeader.h"
 #include "AliCollisionGeometry.h"
 #include "AliGenHijingEventHeader.h"
+#include "AliVVZERO.h"
 
 ClassImp(AliAnalysisTaskPtCorr);
 
@@ -50,6 +51,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fUseOldPileup(kFALSE),
   fUseIP(kFALSE),
   fUseCentCalibration(kFALSE),
+  fFillptkVsNch(kTRUE),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
   fGenerator("AMPT"),
@@ -75,6 +77,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fV0MBinsDefault(0),
   fNV0MBinsDefault(0),
   fUseNch(kFALSE),
+  fUseV0M(kFALSE),
   fUseNUEOne(kFALSE),
   fPtMpar(8),
   fEtaAcceptance(0.8),
@@ -82,10 +85,10 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fQAList(0),
   fEventCount(0),
   fMultiDist(0),
-  fChPtDist(0),
   fMultiVsV0MCorr(0),
   fNchTrueVsReco(0),
   fESDvsFB128(0),
+  fHistV0MvsNch(0),
   fptList(0),
   fPtCont(0),
   fMultiVsCent(0),
@@ -141,6 +144,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fUseOldPileup(kFALSE),
   fUseIP(kFALSE),
   fUseCentCalibration(kFALSE),
+  fFillptkVsNch(kTRUE),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
   fGenerator("AMPT"),
@@ -166,6 +170,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fV0MBinsDefault(0),
   fNV0MBinsDefault(0),
   fUseNch(kFALSE),
+  fUseV0M(kFALSE),
   fUseNUEOne(kFALSE),
   fPtMpar(8),
   fEtaAcceptance(0.8),
@@ -176,6 +181,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fMultiVsV0MCorr(0),
   fNchTrueVsReco(0),
   fESDvsFB128(0),
+  fHistV0MvsNch(0),
   fptList(0),
   fPtCont(0),
   fMultiVsCent(0),
@@ -263,7 +269,7 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   }
   fRndm = new TRandom(0);
   fRequireReloadOnRunChange = kFALSE;
-  if(!fIsMC) LoadCorrectionsFromLists(); //Efficiencies and NUA are only for the data or if specified for pseudoefficiencies
+  if(!fIsMC || fUseRecoNchForMC) LoadCorrectionsFromLists(); //Efficiencies and NUA are only for the data or if specified for pseudoefficiencies
 
   fptList = new TList();
   fptList->SetOwner(kTRUE);
@@ -299,30 +305,30 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   fMultiVsCent = new AliProfileBS("MultiVsCent","Multi vs centrality",(fUseIP)?nIPbins:nFineCentBins,(fUseIP)?ipBins:fineCentBins);
   fptList->Add(fMultiVsCent);
 
-
-
-  double *pt2Bins = new double[fNMptBins+1];
-  double *pt3Bins = new double[fNMptBins+1];
-  double *pt4Bins = new double[fNMptBins+1];
-
-  for(int i=0;i<=fNMptBins;++i) {
-    pt2Bins[i] = 0.001*i + 0.2;
-    pt3Bins[i] = 0.001*i + 0.05;
-    pt4Bins[i] = 0.001*i;
-  }
-
   fMptVsNch = new TH3D("fMptVsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}]#GT;centrality (%)",fNMultiBins,fMultiBins,fNMptBins,fMptBins,fNCentPtBins,fCentPtBins);
   fptList->Add(fMptVsNch);
-  fpt2VsNch = new TH3D("fpt2VsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}^{(2)}]#GT; centrality (%)",fNMultiBins,fMultiBins,fNMptBins,pt2Bins,fNCentPtBins,fCentPtBins);
-  fptList->Add(fpt2VsNch);
-  fpt3VsNch = new TH3D("fpt3VsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}^{(3)}]#GT; centrality (%)",fNMultiBins,fMultiBins,fNMptBins,pt3Bins,fNCentPtBins,fCentPtBins);
-  fptList->Add(fpt3VsNch);
-  fpt4VsNch = new TH3D("fpt4VsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}^{(4)}]#GT; centrality (%)",fNMultiBins,fMultiBins,fNMptBins,pt4Bins,fNCentPtBins,fCentPtBins);
-  fptList->Add(fpt4VsNch);
   fNchVsCent = new TH2D("fNchVsCent","centrality (%);N_{ch}^{rec}",nFineCentBins,fineCentBins,fNMultiBins,fMultiBins);
   fptList->Add(fNchVsCent);
   fMptVsCent = new TH2D("fMptVsCent",";centrality (%); #LT[#it{p}_{T}]#GT",nFineCentBins,fineCentBins,fNMptBins,fMptBins);
   fptList->Add(fMptVsCent);
+
+  if(fFillptkVsNch){
+    double *pt2Bins = new double[fNMptBins+1];
+    double *pt3Bins = new double[fNMptBins+1];
+    double *pt4Bins = new double[fNMptBins+1];
+
+    for(int i=0;i<=fNMptBins;++i) {
+      pt2Bins[i] = 0.001*i + 0.2;
+      pt3Bins[i] = 0.001*i + 0.05;
+      pt4Bins[i] = 0.001*i;
+    }
+    fpt2VsNch = new TH3D("fpt2VsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}^{(2)}]#GT; centrality (%)",fNMultiBins,fMultiBins,fNMptBins,pt2Bins,fNCentPtBins,fCentPtBins);
+    fptList->Add(fpt2VsNch);
+    fpt3VsNch = new TH3D("fpt3VsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}^{(3)}]#GT; centrality (%)",fNMultiBins,fMultiBins,fNMptBins,pt3Bins,fNCentPtBins,fCentPtBins);
+    fptList->Add(fpt3VsNch);
+    fpt4VsNch = new TH3D("fpt4VsNch",";N_{ch}^{rec}; #LT[#it{p}_{T}^{(4)}]#GT; centrality (%)",fNMultiBins,fMultiBins,fNMptBins,pt4Bins,fNCentPtBins,fCentPtBins);
+    fptList->Add(fpt4VsNch);
+  }
   printf("Multiplicity objects created\n");
   PostData(1,fptList);
 
@@ -344,6 +350,8 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   fQAList->Add(fhQAEventsfMultTPCvsTOF);
   fhQAEventsfMultTPCvsESD = new TH2D("fhQAEventsfMultTPCvsESD", "; TPC FB128 multiplicity; ESD multiplicity", 200, 0, 7000, 300, -1000, 35000);
   fQAList->Add(fhQAEventsfMultTPCvsESD);
+  fHistV0MvsNch = new TH2F("fHistV0MvsNch","V0M amplitude vs N_{ch}; N_{ch}; V0M amplitude;",4500,0,4500,1000,0,40000);
+  fQAList->Add(fHistV0MvsNch);
   printf("QA objects created!\n");
   PostData(2,fQAList);
   fEventCuts.OverrideAutomaticTriggerSelection(fTriggerType,true);
@@ -452,10 +460,18 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   };
   if(wp[1][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
   fEventCount->Fill("Tracks",1);
+
+  Double_t multVZERO = 0.;
+  AliVVZERO *vzero = (AliVVZERO*)fAOD->GetVZEROData();
+  if(vzero) {
+    for(int ich=0; ich < 64; ich++)
+    multVZERO += vzero->GetMultiplicity(ich);
+  }
+  fHistV0MvsNch->Fill(nTotNoTracks,multVZERO);
   fMultiVsV0MCorr[0]->Fill(l_Cent,nTotNoTracks);
   fMultiVsV0MCorr[1]->Fill(l_Cent,nTotNoTracks);
   //Filling pT variance
-  Double_t l_Multi = fUseNch?(1.0*nTotNoTracks):l_Cent;
+  Double_t l_Multi = fUseNch?(1.0*nTotNoTracks):(fUseV0M)?multVZERO:l_Cent;
   //A check in case l_Multi is completely off the charts (in MC, sometimes it ends up being... -Xe-310???)
   if(fUseNch && l_Multi<1) return;
   //Fetching number of ESD tracks -> for QA. Only after all the events are/were rejected
@@ -471,14 +487,20 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   fMultiVsCent->Fill(l_Cent,l_Multi);
   fMptVsNch->Fill(l_Multi,wp[1][1]/wp[1][0],l_Cent);
   fMptVsCent->Fill(l_Cent,wp[1][1]/wp[1][0]);
-  if(fPtCont->getEventCorrelation(2)[1]!=0) fpt2VsNch->Fill(l_Multi,fPtCont->getEventCorrelation(2)[0]/fPtCont->getEventCorrelation(2)[1],l_Cent);
-  if(fPtCont->getEventCorrelation(3)[1]!=0) fpt3VsNch->Fill(l_Multi,fPtCont->getEventCorrelation(3)[0]/fPtCont->getEventCorrelation(3)[1],l_Cent);
-  if(fPtCont->getEventCorrelation(4)[1]!=0) fpt4VsNch->Fill(l_Multi,fPtCont->getEventCorrelation(4)[0]/fPtCont->getEventCorrelation(4)[1],l_Cent);
   fNchVsCent->Fill(l_Cent,l_Multi);
+
+  if(fFillptkVsNch){
+    if(fPtCont->getEventCorrelation(2)[1]!=0) fpt2VsNch->Fill(l_Multi,fPtCont->getEventCorrelation(2)[0]/fPtCont->getEventCorrelation(2)[1],l_Cent);
+    if(fPtCont->getEventCorrelation(3)[1]!=0) fpt3VsNch->Fill(l_Multi,fPtCont->getEventCorrelation(3)[0]/fPtCont->getEventCorrelation(3)[1],l_Cent);
+    if(fPtCont->getEventCorrelation(4)[1]!=0) fpt4VsNch->Fill(l_Multi,fPtCont->getEventCorrelation(4)[0]/fPtCont->getEventCorrelation(4)[1],l_Cent);
+  }
   PostData(1,fptList);
   PostData(2,fQAList);
   return;
 };
+void FillQA(){
+
+}
 void AliAnalysisTaskPtCorr::NotifyRun() {
   if(!fEventCutFlag || fEventCutFlag>100) { //Only relevant if we're using the standard AliEventCuts
     //Reinitialize AliEventCuts (done automatically on check):
@@ -727,7 +749,6 @@ int AliAnalysisTaskPtCorr::GetNtotTracks(AliAODEvent* lAOD, const Double_t &ptmi
     Double_t lpt = lTrack->Pt();
     Double_t weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lpt));
     if(weff==0.0) continue;
-    weff = 1./weff;
     nTotNoTracks += (fUseNUEOne)?1.:weff;
   };
   return nTotNoTracks;
