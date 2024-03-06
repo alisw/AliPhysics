@@ -36,7 +36,8 @@
 //
 //  Contatcs: wyosuke@cns.s.u-tokyo.ac.jp, gluparel@cern.ch
 //
-//  Multiplicity dependent analyzer : JaeYoon Cho(Jcho, jaeyoon15@inha.edu)  
+// Modification for multiplicity dependence analysis
+// : JaeYoon Cho, jaeyoon.cho@cern.ch
 //-------------------------------------------------------------------------
 
 #include <TSystem.h>
@@ -226,8 +227,11 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fHisto_NContributor_MCTrue(0),
   fHisto_SigmaX_AOD(0),
   fHisto_SigmaY_AOD(0),
+  fHisto_SigmaZ_AOD(0),
   fHisto_SigmaX_MCTrue(0),
-  fHisto_SigmaY_MCTrue(0)
+  fHisto_SigmaY_MCTrue(0),
+  fHisto_SigmaZ_MCTrue(0)
+
 {
   //
   // Default Constructor. 
@@ -367,8 +371,11 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fHisto_NContributor_MCTrue(0),
   fHisto_SigmaX_AOD(0),
   fHisto_SigmaY_AOD(0),
+  fHisto_SigmaZ_AOD(0),
   fHisto_SigmaX_MCTrue(0),
-  fHisto_SigmaY_MCTrue(0)
+  fHisto_SigmaY_MCTrue(0),
+  fHisto_SigmaZ_MCTrue(0)
+
 {
   //
   // Constructor. Initialization of Inputs and Outputs
@@ -764,6 +771,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
 
 		fMCevt = inputHandler->MCEvent();
 		fTrueV = fMCevt->GetPrimaryVertex();	// from MC event
+		if(!fTrueV) return;
 
 		// convert to AliAODVertex
 		Double_t posPVtx[3], covPVtx[6], chi2perNDFtrue_PVtx;
@@ -803,8 +811,10 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
 		fTruePV->GetSigmaXYZ(sigMT);
 		fHisto_SigmaX_AOD->Fill(sigA[0]);
 		fHisto_SigmaY_AOD->Fill(sigA[1]);
+		fHisto_SigmaZ_AOD->Fill(sigA[2]);
 		fHisto_SigmaX_MCTrue->Fill(sigMT[0]);
 		fHisto_SigmaY_MCTrue->Fill(sigMT[1]);
+		fHisto_SigmaZ_MCTrue->Fill(sigMT[2]);
 
 	}
 	//-------------------------
@@ -849,6 +859,8 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   fIsEventSelected=kFALSE;
 
   delete fV1;
+  delete fTruePV;
+  delete fTruePVtx;
   return;
 }
 
@@ -965,18 +977,6 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserCreateOutputObjects()
   fCounter->SetStudyMultiplicity(kTRUE, 1.); 
   fCounter->Init();
   PostData(4,fCounter);
-/*  fCounter_MB_0to100   = new AliNormalizationCounter("MB_0to100");
-  fCounter_MB_0p1to30  = new AliNormalizationCounter("MB_0p1to30");
-  fCounter_MB_30to100  = new AliNormalizationCounter("MB_30to100");
-  fCounter_HMV0_0to100 = new AliNormalizationCounter("HMV0_0to100");
-  fCounter_HMV0_0to0p1 = new AliNormalizationCounter("HMV0_0to0p1");
-
-  fCounter_MB_0to100_INEL = new AliNormalizationCounter("MB_0to100_INEL");
-  fCounter_MB_0p1to30_INEL = new AliNormalizationCounter("MB_0p1to30_INEL");
-  fCounter_MB_30to100_INEL = new AliNormalizationCounter("MB_30to100_INEL");
-  fCounter_HMV0_0to100_INEL = new AliNormalizationCounter("HMV0_0to100_INEL");
-  fCounter_HMV0_0to0p1_INEL = new AliNormalizationCounter("HMV0_0to0p1_INEL");
-*/
  
   fCounter_MB_0to100 = new AliNormalizationCounter(Form("%s",GetOutputSlot(5)->GetContainer()->GetName()));
   fCounter_MB_0p1to30 = new AliNormalizationCounter(Form("%s",GetOutputSlot(6)->GetContainer()->GetName()));
@@ -1881,9 +1881,10 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
 
   fHisto_SigmaX_AOD = new TH1F("fHisto_SigmaX_AOD","fHisto_SigmaX_AOD",400,-0.02,0.02);
   fHisto_SigmaY_AOD = new TH1F("fHisto_SigmaY_AOD","fHisto_SigmaY_AOD",400,-0.02,0.02);
+  fHisto_SigmaZ_AOD = new TH1F("fHisto_SigmaZ_AOD","fHisto_SigmaZ_AOD",400,-0.02,0.02);
   fHisto_SigmaX_MCTrue = new TH1F("fHisto_SigmaX_MCTrue","fHisto_SigmaX_MCTrue",400,-0.02,0.02);
   fHisto_SigmaY_MCTrue = new TH1F("fHisto_SigmaY_MCTrue","fHisto_SigmaY_MCTrue",400,-0.02,0.02);
-
+  fHisto_SigmaZ_MCTrue = new TH1F("fHisto_SigmaZ_MCTrue","fHisto_SigmaZ_MCTrue",400,-0.02,0.02);
   //
 
   fQAHistoAODPrimVertX = new TH1F("fQAHistoAODPrimVertX", "X coord of primary vertex", 100,0., 0.1);
@@ -1917,16 +1918,20 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   fOutput->Add(fQAHistoNSelectedTracks);
   fOutput->Add(fQAHistoNSelectedCasc);
   fOutput->Add(fQAHistoDCApi1pi2);
+
   fOutput->Add(fHisto_NContributor_AOD);
   fOutput->Add(fHisto_NContributor_MCTrue);
   fOutput->Add(fHisto_SigmaX_AOD);
   fOutput->Add(fHisto_SigmaY_AOD);
+  fOutput->Add(fHisto_SigmaZ_AOD);
   fOutput->Add(fHisto_SigmaX_MCTrue);
   fOutput->Add(fHisto_SigmaY_MCTrue);
+  fOutput->Add(fHisto_SigmaZ_MCTrue);
+
   fOutput->Add(fHisto_refPrimVx_aVtx);
   fOutput->Add(fHisto_refPrimVy_aVtx);
   fOutput->Add(fHisto_refPrimVz_aVtx);
-  fOutput->Add(fHisto_TruePrimVx_vVtx);	//jcho
+  fOutput->Add(fHisto_TruePrimVx_vVtx);	
   fOutput->Add(fHisto_TruePrimVy_vVtx);
   fOutput->Add(fHisto_TruePrimVz_vVtx);
   fOutput->Add(fHisto_TruePrimVx_aVtx);
@@ -1935,6 +1940,7 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   fOutput->Add(fHisto_TruePrimVx_eVtx);
   fOutput->Add(fHisto_TruePrimVy_eVtx);
   fOutput->Add(fHisto_TruePrimVz_eVtx);
+
   fOutput->Add(fQAHistoAODPrimVertX);
   fOutput->Add(fQAHistoAODPrimVertY);
   fOutput->Add(fQAHistoAODPrimVertZ);
@@ -2447,7 +2453,7 @@ AliAODRecoCascadeHF3Prong* AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeCas
     }else{
       unsetvtx = kTRUE;
     }
-  }else{
+  }else{	// Reco-PV off
     //primVertexAOD = fVtx1;
 	primVertexAOD = fTruePVtx;	// Change from AOD vertex to MC vertex
 	fCTruePV->Fill(3);	// Reco-PV off
