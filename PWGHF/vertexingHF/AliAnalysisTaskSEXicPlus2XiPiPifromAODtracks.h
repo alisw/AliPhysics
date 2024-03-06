@@ -235,7 +235,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   Bool_t fUsekHMV0 = kFALSE;  
   Bool_t fUsekHMVSPD = kFALSE; 
   TH1F* fCentralityOfEvt; //jcho 
-  AliMCEvent* fMCevt = nullptr;
+  AliMCEvent* fMCevt;
   TH1F* fCTruePV;
   const AliVVertex* fTrueV;
   AliAODVertex *fTruePVtx;
@@ -256,8 +256,10 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F* fHisto_NContributor_MCTrue;
   TH1F* fHisto_SigmaX_AOD;
   TH1F* fHisto_SigmaY_AOD;
+  TH1F* fHisto_SigmaZ_AOD;
   TH1F* fHisto_SigmaX_MCTrue;
   TH1F* fHisto_SigmaY_MCTrue;
+  TH1F* fHisto_SigmaZ_MCTrue;
 
   /// \cond CLASSIMP    
   ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,23); /// class for Xic->Xipipi
