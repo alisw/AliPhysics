@@ -43,6 +43,17 @@ AliAnalysisTaskK1 *AddTaskK1(const char *taskname = "K1", const char *option = "
         taskK1->fEventCut.fTriggerMask = AliVEvent::kHighMultV0; // default: kINT7
         std::cout << "AliAnalysisTaskK1:: HighMultV0 mode " << std::endl;
     }
+    // Change Secondary Scenarios
+    if (foption.Contains("Rho"))
+    {
+        taskK1->SetModeK892orRho(kFALSE);
+        std::cout << "AliAnalysisTaskK1:: Secondary Scenario: Rho" << std::endl;
+    }
+    else
+    {
+        taskK1->SetModeK892orRho(kTRUE);
+        std::cout << "AliAnalysisTaskK1:: Secondary Scenario: K892" << std::endl;
+    }
     // Mixing
     if (foption.Contains("Mix"))
     {
