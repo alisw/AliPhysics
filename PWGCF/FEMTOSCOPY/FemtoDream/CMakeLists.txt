@@ -122,6 +122,7 @@ set(SRCS
   AliSigma0PhotonCuts.cxx;
   AliAnalysisTaskNanoTreeLPhi.cxx;
   AliAnalysisTaskNanoLambdaKaon.cxx;
+  AliAnalysisTaskLambdaPion.cxx;
   AliAnalysisTaskNanoLKr.cxx
   AliAnalysisTaskThreeBodyFemtoMixedCharge.cxx;
   AliAnalysisTaskNanoBenchmark.cxx
@@ -131,6 +132,7 @@ set(SRCS
   AliAnalysisTaskOtonXx.cxx
   AliAnalysisTaskNanoFemtoProtonKaonPlus.cxx
   AliAnalysisTaskFemtoProtonKaonPlus.cxx
+  AliAnalysisTaskAODThreeBodyProtonPrimary.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)

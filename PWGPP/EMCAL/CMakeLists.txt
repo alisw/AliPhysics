@@ -40,6 +40,7 @@ set(SRCS
     AliAnalysisTaskEMCALClusterize.cxx
     AliAnalysisTaskEMCALPi0CalibSelection.cxx
     AliAnalysisTaskEMCALPi0CalibSelectionV2.cxx
+    AliAnalysisTaskPHOSCalibSelection.cxx
     AliAnalysisTaskEMCALTriggerQA.cxx
     AliAnalysisTaskEMCALTimeCalib.cxx
     BadChannelAna.cxx
@@ -104,5 +105,12 @@ set_target_properties(${MODULE} PROPERTIES LINK_FLAGS "${MODULE_LINK_FLAGS}")
 install(TARGETS ${MODULE}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib)
+
+
+
+
+
+
+
 
 install(FILES ${HDRS} DESTINATION include)

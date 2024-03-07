@@ -1266,8 +1266,11 @@ void AddTask_GammaCalo_pPb(
   } else if (trainConfig == 577){ // 
     cuts.AddCutCalo("80010113","24466640ua09dc00000","0163103100000010"); // INT7
 
-     } else if (trainConfig == 578) { 
+  } else if (trainConfig == 578) { 
     cuts.AddCutCalo("80010113","24466530ua01cc00000","0163g03100000010"); // rapidity changed
+
+  } else if (trainConfig == 579) { 
+    cuts.AddCutCalo("80010113","24466530ua010000000","0163103100000010"); // no M02 cut and NCellCut
 
     
     
@@ -2171,7 +2174,7 @@ void AddTask_GammaCalo_pPb(
   //connect containers
   AliAnalysisDataContainer *coutput =
     mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaCalo_%i",trainConfig) : Form("GammaCalo_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
-              AliAnalysisManager::kOutputContainer, Form("GammaCalo_%i.root",trainConfig) );
+              AliAnalysisManager::kOutputContainer, Form("GCa_%i.root",trainConfig) );
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
@@ -2180,7 +2183,7 @@ void AddTask_GammaCalo_pPb(
   Int_t nContainer = 2;
   for(Int_t i = 0; i<numberOfCuts; i++){
       if(enableQAMesonTask==5){
-          mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s ClusterTimingEff",(cuts.GetEventCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaCalo_%i.root",trainConfig)) );
+          mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s ClusterTimingEff",(cuts.GetEventCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCa_%i.root",trainConfig)) );
           nContainer++;
       }
   }

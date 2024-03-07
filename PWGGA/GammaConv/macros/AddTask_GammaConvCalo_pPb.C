@@ -47,7 +47,7 @@ void AddTask_GammaConvCalo_pPb(
   TString   generatorName                 = "DPMJET", // generator Name
   Bool_t    enableMultiplicityWeighting   = kFALSE,   //
   Int_t     enableMatBudWeightsPi0        = 0,        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
-  Bool_t    enableElecDeDxPostCalibration = kFALSE,
+  Int_t     enableElecDeDxPostCalibration = 0,        // // 0 = off, 1 = as function of TPC clusters, 2 = as function of convR. Option 2 is available only if FEPC is given.
   TString   periodNameAnchor              = "",       //
   // special settings
   Bool_t    enableSortingMCLabels         = kTRUE,    // enable sorting for MC cluster labels
@@ -1221,6 +1221,21 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466530ua01cc70000","0h63103100000010"); //cc7:   maxM02 == 1.3
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466530ua01cc80000","0h63103100000010"); //cc8:   maxM02 == 2.5
 
+  } else if (trainConfig == 1040) { // centralities changed
+    cuts.AddCutPCMCalo("80110113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 0-10%
+    cuts.AddCutPCMCalo("81210113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 10-20%
+    cuts.AddCutPCMCalo("82310113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 20-30%
+    cuts.AddCutPCMCalo("83410113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 30-40%
+    cuts.AddCutPCMCalo("84510113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 40-50%
+
+  } else if (trainConfig == 1041) { // centralities changed
+    cuts.AddCutPCMCalo("85610113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 50-60% with NL 1
+    cuts.AddCutPCMCalo("86710113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 60-70% with NL 1
+    cuts.AddCutPCMCalo("87810113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 70-80% with NL 1
+    cuts.AddCutPCMCalo("889110113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 80-90% with NL 1
+    cuts.AddCutPCMCalo("89a110113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 90-100% with NL 1
+
+
 
 
 
@@ -1983,19 +1998,51 @@ void AddTask_GammaConvCalo_pPb(
     }
 
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
-    if (enableElecDeDxPostCalibration){
+    if (enableElecDeDxPostCalibration == 2){
+      if (isMC){
+        cout << "ERROR enableElecDeDxPostCalibration set to 2 even if MC file. Automatically reset to 0"<< endl;
+        enableElecDeDxPostCalibration = 0;
+      } else {
+        lArrFnamesdEdxPostCalib = fileNamedEdxPostCalib.Tokenize("+");
+        if (!lArrFnamesdEdxPostCalib){
+          cout << "ERROR fileNamedEdxPostCalib.Tokenize() returned nullptr\n";
+          return;
+        }
+        int lNFnames = lArrFnamesdEdxPostCalib->GetEntriesFast();
+        if (!(lNFnames == 1) && !(lNFnames == numberOfCuts)){
+          cout << "ERROR: FEPC either has to be one filename or several separated by a '+' where the number of filenames has to match the number of cuts in the trainconfig.\nOr no filename at all if the file from the OADB is to be taken\n";
+          return;
+        }
+      }
+    }
+    if (enableElecDeDxPostCalibration == 1){
       if (isMC == 0){
         if(fileNamedEdxPostCalib.CompareTo("") != 0){
           analysisCuts[i]->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
           cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
         }
-        analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(kTRUE);
         cout << "Enabled TPC dEdx recalibration." << endl;
       } else{
         cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
         enableElecDeDxPostCalibration=kFALSE;
         analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
       }
+    } else if(enableElecDeDxPostCalibration == 2){
+      int lNFnames = lArrFnamesdEdxPostCalib->GetEntriesFast();
+      if (lNFnames){
+        if (enableElecDeDxPostCalibration==2){
+          analysisCuts[i]->ForceTPCRecalibrationAsFunctionOfConvR();
+        }
+        const TString &lFname = (static_cast<TObjString*>(lArrFnamesdEdxPostCalib->At(lNFnames > 1 ? i : 0)))->GetString();
+        printf("Cut config %s_%s_%s:\nSetting custom dEdx recalibration file: %s\n", cuts.GetEventCut(i).Data(), cuts.GetPhotonCut(i).Data(), cuts.GetMesonCut(i).Data(), lFname.Data());
+        Bool_t lSuccess = analysisCuts[i]->InitializeElecDeDxPostCalibration(lFname);
+        if (!lSuccess) {
+          return;
+        }
+      }
+      analysisCuts[i]->SetDoElecDeDxPostCalibration(kTRUE);
+      cout << "Enabled TPC dEdx recalibration." << endl;
     }
     if (enableLightOutput > 0) analysisCuts[i]->SetLightOutput(kTRUE);
     analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data());
@@ -2048,7 +2095,7 @@ void AddTask_GammaConvCalo_pPb(
   //connect containers
   AliAnalysisDataContainer *coutput =
     mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaConvCalo_%i",trainConfig) : Form("GammaConvCalo_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("GammaConvCalo_%i.root",trainConfig) );
+              AliAnalysisManager::kOutputContainer,Form("GCoCa_%i.root",trainConfig) );
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
@@ -2056,11 +2103,11 @@ void AddTask_GammaConvCalo_pPb(
   Int_t nContainer = 2;
   for(Int_t i = 0; i<numberOfCuts; i++){
     if(enableQAPhotonTask>1){
-      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvCalo_%i.root",trainConfig)) );
+      mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s_%s Photon DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCoCa_%i.root",trainConfig)) );
       nContainer++;
     }
     if(enableQAMesonTask>1){
-	    mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s_%s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvCalo_%i.root",trainConfig)) );
+	    mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s_%s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCoCa_%i.root",trainConfig)) );
       nContainer++;
     }
   }

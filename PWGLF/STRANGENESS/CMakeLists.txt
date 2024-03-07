@@ -143,6 +143,7 @@ set(SRCS
   StrPDF/AliAnalysisTaskMultspec.cxx
   StrPDF/AliAnalysisTaskMultspec_MCpred.cxx
   StrPDF/AliAnalysisTaskMultspec_evbased.cxx
+  StrPDF/AliAnalysisTaskMultspec_FDcorr.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
@@ -186,6 +187,10 @@ set_target_properties(${MODULE}-object PROPERTIES COMPILE_DEFINITIONS $<TARGET_P
 
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})
+if(ROOT_VERSION_MAJOR EQUAL 6)
+  # For macOS: Add TREELITE_ROOT to RPATH
+  target_link_directories(${MODULE} PUBLIC ${TREELITE_ROOT}/lib)
+endif()
 
 set(MODULE_COMPILE_FLAGS)
 set(MODULE_LINK_FLAGS)

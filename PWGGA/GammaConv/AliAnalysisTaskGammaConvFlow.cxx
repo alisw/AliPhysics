@@ -131,8 +131,8 @@ hESDMotherPi0PtAlpha(NULL),
 hESDMotherEtaPtAlpha(NULL),
 hESDMotherPi0PtOpenAngle(NULL),
 hESDMotherEtaPtOpenAngle(NULL),
-
-hNEvents(NULL),
+fHistoNEvents(NULL),
+fHistoNEventsWOWeight(NULL),
 hNGoodESDTracks(NULL),
 hNGammaCandidates(NULL),
 hNGoodESDTracksVsNGammaCanditates(NULL),
@@ -173,6 +173,8 @@ fFilterVariable(1),
 fMinFilter(0),
 fMaxFilter(0.2),
 fIsMC(0),
+tBrokenFiles(NULL),
+fFileNameBroken(NULL),
 fApplydPhidRCut(0),
 fPerformExtraStudies(0),
 fMCEvent(NULL),
@@ -254,7 +256,8 @@ hESDMotherPi0PtAlpha(NULL),
 hESDMotherEtaPtAlpha(NULL),
 hESDMotherPi0PtOpenAngle(NULL),
 hESDMotherEtaPtOpenAngle(NULL),
-hNEvents(NULL),
+fHistoNEvents(NULL),
+fHistoNEventsWOWeight(NULL),
 hNGoodESDTracks(NULL),
 hNGammaCandidates(NULL),
 hNGoodESDTracksVsNGammaCanditates(NULL),
@@ -295,6 +298,8 @@ fFilterVariable(1),
 fMinFilter(0),
 fMaxFilter(0.2),
 fIsMC(0),
+tBrokenFiles(NULL),
+fFileNameBroken(NULL),
 fApplydPhidRCut(0),
 fPerformExtraStudies(0),
 fMCEvent(NULL),
@@ -384,7 +389,8 @@ hESDMotherPi0PtAlpha(NULL),
 hESDMotherEtaPtAlpha(NULL),
 hESDMotherPi0PtOpenAngle(NULL),
 hESDMotherEtaPtOpenAngle(NULL),
-hNEvents(NULL),
+fHistoNEvents(NULL),
+fHistoNEventsWOWeight(NULL),
 hNGoodESDTracks(NULL),
 hNGammaCandidates(NULL),
 hNGoodESDTracksVsNGammaCanditates(NULL),
@@ -425,6 +431,8 @@ fFilterVariable(1),
 fMinFilter(0),
 fMaxFilter(0.2),
 fIsMC(0),
+tBrokenFiles(NULL),
+fFileNameBroken(NULL),
 fApplydPhidRCut(0),
 fPerformExtraStudies(0),
 fMCEvent(NULL),
@@ -513,7 +521,10 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
   fESDList = new TList*[fnCuts];
   fBackList = new TList*[fnCuts];
   fMotherList = new TList*[fnCuts];
-  hNEvents = new TH1I*[fnCuts];
+  fHistoNEvents = new TH1F*[fnCuts];
+  if (fIsMC > 1){
+    fHistoNEventsWOWeight   = new TH1F*[fnCuts];
+  }
   hNGoodESDTracks = new TH1I*[fnCuts];
   hNGammaCandidates = new TH1I*[fnCuts];
   hNGoodESDTracksVsNGammaCanditates = new TH2F*[fnCuts];
@@ -570,8 +581,10 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
   }
   
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
+
+    AliConvEventCuts* iEventCut = dynamic_cast<AliConvEventCuts*>(fEventCutArray->At(iCut));
     
-    TString cutstringEvent 	= ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutNumber();
+    TString cutstringEvent 	= iEventCut->GetCutNumber();
     TString cutstringPhoton = ((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutNumber();
     TString cutstringMeson = "NoMesonCut";
     if(fDoMesonAnalysis)cutstringMeson = ((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutNumber();
@@ -585,26 +598,51 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
     fESDList[iCut]->SetOwner(kTRUE);
     fCutFolder[iCut]->Add(fESDList[iCut]);
     
-    hNEvents[iCut] = new TH1I("NEvents","NEvents",13,-0.5,12.5);
-    hNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
-    hNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
-    hNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
+    fHistoNEvents[iCut] = new TH1F("NEvents","NEvents",14,-0.5,13.5);
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(3,"Missing MC");
     if (((AliConvEventCuts*)fEventCutArray->At(iCut))->IsSpecialTrigger() > 1 ){
       TString TriggerNames = "Not Trigger: ";
       TriggerNames = TriggerNames+ ( (AliConvEventCuts*)fEventCutArray->At(iCut))->GetSpecialTriggerName();
-      hNEvents[iCut]->GetXaxis()->SetBinLabel(4,TriggerNames.Data());
+      fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(4,TriggerNames.Data());
     } else {
-      hNEvents[iCut]->GetXaxis()->SetBinLabel(4,"Trigger");
+      fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(4,"Trigger");
     }
-    hNEvents[iCut]->GetXaxis()->SetBinLabel(5,"Vertex Z");
-    hNEvents[iCut]->GetXaxis()->SetBinLabel(6,"Cont. Vertex");
-    hNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
-    hNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
-    hNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
-    hNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL/TPC problem");
-    hNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
-    hNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
-    fESDList[iCut]->Add(hNEvents[iCut]);
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(5,"Vertex Z");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(6,"Cont. Vertex");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL/TPC problem");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
+    fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(14,iEventCut->GetLabelNamePileupCutTPC().Data());
+    fESDList[iCut]->Add(fHistoNEvents[iCut]);
+    if (fIsMC > 1){
+      fHistoNEventsWOWeight[iCut]    = new TH1F("NEventsWOWeight", "NEventsWOWeight", 14, -0.5, 13.5);
+      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
+      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(2,"Centrality");
+      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
+      if (iEventCut->IsSpecialTrigger() > 1 ){
+        TString TriggerNames    = "Not Trigger: ";
+        TriggerNames            = TriggerNames+ iEventCut->GetSpecialTriggerName();
+        fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(4,TriggerNames.Data());
+      } else {
+        fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(4,"Trigger");
+      }
+      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(5,"Vertex Z");
+      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(6,"Cont. Vertex");
+      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(7,"Pile-Up");
+      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(8,"no SDD");
+      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(9,"no V0AND");
+      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(10,"EMCAL problem");
+      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
+      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
+      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
+      fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(14,iEventCut->GetLabelNamePileupCutTPC().Data());
+      fESDList[iCut]->Add(fHistoNEventsWOWeight[iCut]);
+    }
     
     if(fIsHeavyIon == 1) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",4000,0,4000);
     else if(fIsHeavyIon == 2) hNGoodESDTracks[iCut] = new TH1I("GoodESDTracks","GoodESDTracks",400,0,400);
@@ -798,6 +836,11 @@ void AliAnalysisTaskGammaConvFlow::UserCreateOutputObjects(){
       }
     }
   }
+  // create tree to store broken files
+  tBrokenFiles = new TTree("BrokenFiles", "BrokenFiles");
+  tBrokenFiles->Branch("fileName",&fFileNameBroken);
+  fOutputContainer->Add(tBrokenFiles);
+
   
   fhistoEPVZ = new TH1D("EPVZ", "EPVZ", 60, -TMath::Pi()/2, TMath::Pi()/2);
     fOutputContainer->Add(fhistoEPVZ);
@@ -851,18 +894,32 @@ void AliAnalysisTaskGammaConvFlow::UserExec(Option_t *)
   //
   // Called for each event
   //
+  fInputEvent = InputEvent();
+
+  if(fIsMC > 0) fMCEvent = MCEvent();
+
   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
-  if(fV0Reader->GetErrorAODRelabeling()) eventQuality = 2;
-  if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
+  if(fInputEvent->IsIncompleteDAQ()==kTRUE) eventQuality = 2;// incomplete event
+  // Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1 or because it is incomplete => abort processing of this event/file
+  if(eventQuality == 2 || eventQuality == 3){
+    // write out name of broken file for first event
+    if (fIsMC > 0){
+      if (fInputEvent->IsA()==AliESDEvent::Class()){
+        if (((AliESDEvent*)fInputEvent)->GetEventNumberInFile() == 0){
+          fFileNameBroken = new TObjString(Form("%s",((TString)fV0Reader->GetCurrentFileName()).Data()));
+          if (tBrokenFiles) tBrokenFiles->Fill();
+          delete fFileNameBroken;
+        }
+      }
+    }
+
     for(Int_t iCut = 0; iCut<fnCuts; iCut++){
-      hNEvents[iCut]->Fill(eventQuality);
+      fHistoNEvents[iCut]->Fill(eventQuality);
+      if (fIsMC > 1) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
     }
     return;
   }
   
-  fInputEvent = InputEvent();
-  if(fIsMC) fMCEvent = MCEvent();
-
   fReaderGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
   
   // ------------------- BeginEvent ----------------------------
@@ -883,17 +940,17 @@ void AliAnalysisTaskGammaConvFlow::UserExec(Option_t *)
     ->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
     if(eventNotAccepted){
       // cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
-      hNEvents[iCut]->Fill(eventNotAccepted); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
+      fHistoNEvents[iCut]->Fill(eventNotAccepted); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
       continue;
     }
     
     if(eventQuality != 0){// Event Not Accepted
       // cout << "event rejected due to: " <<eventQuality << endl;
-      hNEvents[iCut]->Fill(eventQuality);
+      fHistoNEvents[iCut]->Fill(eventQuality);
       continue;
     }
         
-    hNEvents[iCut]->Fill(eventQuality); // Should be 0 here
+    fHistoNEvents[iCut]->Fill(eventQuality); // Should be 0 here
     hNGoodESDTracks[iCut]->Fill(fV0Reader->GetNumberOfPrimaryTracks());
     if(((AliConvEventCuts*)fEventCutArray->At(iCut))->IsHeavyIon() == 2)	hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A());
     else hNV0Tracks[iCut]->Fill(fInputEvent->GetVZEROData()->GetMTotV0A()+fInputEvent->GetVZEROData()->GetMTotV0C());
@@ -1127,7 +1184,7 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforV2()
 {
 
   // Loop over Photon Candidates allocated by ReaderV1	
-//   cout << "number of gamma's: " << fGammaCandidates->GetEntries() << endl;
+  // cout << "number of gamma's: " << fGammaCandidates->GetEntries() << endl;
   for(Int_t i = 0; i < fGammaCandidates->GetEntries(); i++){
     
     AliAODConversionPhoton *gammaForv2=dynamic_cast<AliAODConversionPhoton*>(fGammaCandidates->At(i));
@@ -1175,7 +1232,7 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforV2()
     } //end of for loop on RPs*/
     fFlowEvent[fiCut]->InsertTrack(((AliFlowTrack*) sTrack));
     fFlowEvent[fiCut]->SetNumberOfPOIs(fFlowEvent[fiCut]->GetNumberOfPOIs()+1);
-//     cout << "cutnumber: " << fiCut << " nPoi " << fFlowEvent[fiCut]->GetNumberOfPOIs() << " ntracks " << fFlowEvent[fiCut]->NumberOfTracks() << endl;
+    // cout << "cutnumber: " << fiCut << " nPoi " << fFlowEvent[fiCut]->GetNumberOfPOIs() << " ntracks " << fFlowEvent[fiCut]->NumberOfTracks() << endl;
   }
 }
 //________________________________________________________________________
@@ -1213,7 +1270,7 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforLTM()
         if(dPhi > TMath::Pi()) dPhi = TMath::Abs(dPhi-2.0*TMath::Pi());
         if(TMath::Sqrt(pow((LTMpart_Eta-gamma_Eta),2)+pow(dPhi,2))<0.2) nCloseByTracks+=1;
       }
-//       cout << "nCloseByTracks MCgen= " << nCloseByTracks << " with pt= " << gamma_Pt <<  endl;
+      // cout << "nCloseByTracks MCgen= " << nCloseByTracks << " with pt= " << gamma_Pt <<  endl;
       hLTMPt_MC[fiCut]->Fill(nCloseByTracks,gamma_Pt);
     }
   }
@@ -1233,7 +1290,7 @@ void AliAnalysisTaskGammaConvFlow::ProcessPhotonCandidatesforLTM()
       if(dPhi > TMath::Pi()) dPhi = TMath::Abs(dPhi-2.0*TMath::Pi());
       if(TMath::Sqrt(pow((LTMpart_Eta-gamma_Eta),2)+pow(dPhi,2))<0.2) nCloseByTracks+=1;
     }
-//     cout << "nCloseByTracks= " << nCloseByTracks << " with pt= " << gamma_Pt <<  endl;
+    // cout << "nCloseByTracks= " << nCloseByTracks << " with pt= " << gamma_Pt <<  endl;
     hLTMPt[fiCut]->Fill(nCloseByTracks,gamma_Pt);
   }
 }

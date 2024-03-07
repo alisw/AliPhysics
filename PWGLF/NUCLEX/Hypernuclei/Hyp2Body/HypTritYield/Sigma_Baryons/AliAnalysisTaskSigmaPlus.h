@@ -71,6 +71,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
 
         //Functions for Event Processing
         void FillProtonArray();                           // Select (Anti-)Protons and fill array (fProtonArray)
+        void FillPionArray();                             // Select (Anti-)Pions and fill array (fPionArray)
         void FillProtonTree();                            // Fill Tree of Protons (fProtonTree)
         void ProcessMCParticles() const;                  // Fill MC Histograms
         void FillV0PhotonArray();                         // Select V0 Photons and fill arrays (fConvPhotonArray)
@@ -78,6 +79,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         void ReconstructParticles();                      // Reconstruct Pi0 and Sigma Plus from selected Protons and Photons  
         void ReconstructParticlesPHOS();                  // Reconstruct Pi0 and Sigma Plus from selected Protons and Photons where 1 Photons comes from PHOS  
         void ReconstructParticlesCalc();                  // Reconstruct Pi0 and Sigma Plus from selected Protons and Photons where 1 Photon is calculated  
+        void ReconstructKaonsPHOS();                      // Reconstruct Pi0 and Kaons from selected Pions and Photons where 1 Photons comes from PHOS  
 
         TList*                fOutputList;                //!<! Output list which contains all Histograms
 
@@ -103,7 +105,11 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         TTree*                fSigmaPairTreePHOSME;       //!<! Tree with Sigma Proton Pairs Mixed Event
         TTree*                fSigmaPHOSMEBkgTree;        //!<! Tree with Sigma candidates Mixed Event Background
 
-        //Test
+        //PCM Calo Kaon Trees                                     
+        TTree*                fKaonPHOSCandTree;         //!<! Tree with Kaon candidates from PHOS
+        TTree*                fKaonPHOSMEBkgTree;        //!<! Tree with Kaon candidates Mixed Event Background
+
+        //Calculated Photon Tree
         TTree*                fSigmaCalcCandTree;         //!<! Tree with Sigma candidates calculated
 
         //Proton Tree                                     
@@ -120,6 +126,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
 
         //Particle Arrays
         std::vector<int>      fProtonArray;               //!<! Proton candidates
+        std::vector<int>      fPionArray;                 //!<! Pion candidates
         std::vector<int>      fProtonArray2;              //!<! Stricter Selection for Mixing
         std::vector<int>      fConvPhotonArray;           //!<! V0 Photon candidates
         std::vector<int>      fCaloPhotonArray;           //!<! Calo Photon candidates
@@ -130,6 +137,8 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Double_t              cProtonMass;                //Physical constants
         Double_t              cSigmaMass;                 //Physical constants
         Double_t              cPi0Mass;                   //Physical constants
+        Double_t              cPionMass;                  //Physical constants
+        Double_t              cKaonMass;                  //Physical constants
         Double_t              c;                          //Physical constants
 
         Double_t              Bz;                         //Magnetic Field in the Event
@@ -152,7 +161,8 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Bool_t                fEventhasSigma;             //Event has Sigma Candidate(s)
         Bool_t                fEventhasProton;            //Event has Proton Candidate(s)
 
-        Bool_t                fEventhasSigmaCand;             //Event has Sigma Candidate(s)
+        Bool_t                fEventhasSigmaCand;         //Event has Sigma Candidate(s)
+        Bool_t                fEventhasKaonCand;         //Event has Sigma Candidate(s)
 
         //Remove generated pile-up events (included in pass2/pass3)
         Bool_t                fRemoveGenPileup = kTRUE;   
@@ -163,6 +173,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         //Activate and deactivate parts of the Analysis 
         Bool_t                fProcessMCParticles = kTRUE; 
         Bool_t                fProcessProtons = kTRUE;
+        Bool_t                fProcessPions = kTRUE;
         Bool_t                fSaveProtons = kTRUE;
         Bool_t                fProcessV0s = kTRUE; 
         Bool_t                fProcessReco = kTRUE; 
@@ -173,15 +184,18 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Bool_t                fProcessClusters = kTRUE;
         Bool_t                fMapClusterstoTracks = kTRUE;
         Bool_t                fProcessRecoPHOS = kTRUE;
+        Bool_t                fProcessRecoKaonPHOS = kTRUE;
         Bool_t                fProcessRecoCalc = kTRUE;
         Bool_t                fSavePartCandPHOS = kTRUE;
         Bool_t                fSavePartCandCalc = kTRUE;
         Bool_t                fFillPHOSPairTreeSE = kTRUE;
         Bool_t                fFillPHOSPairTreeME = kTRUE;
         Bool_t                fSavePHOSMixedBackground = kTRUE;
+        Bool_t                fSaveKaonPHOSMixedBackground = kTRUE;
         Bool_t                fSaveAdditionalBranches = kFALSE;
         Bool_t                fSaveMCBranches = kTRUE;
         Bool_t                fSaveAddMCBranches = kTRUE;
+        Bool_t                fMapTrackstoKaon = kTRUE;
 
         //Event Cuts
         Double_t              fMaxVertexZ = 10;    
@@ -212,13 +226,14 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Bool_t                fRequireSigmaCand = kTRUE;
         Bool_t                fUseAbsZ = kTRUE;
         Bool_t                fUseAbsZCorr = kTRUE;
+        Bool_t                fRequireKaonCand = kTRUE;
 
         //FillProtonArray Cuts
         Bool_t                fRejectNegIDs = kTRUE;
         Bool_t                fRejectZeroFilterBit = kFALSE;
         Double_t              fMaxProtEta = 1;                   // 0.9  
         Double_t              fMinTPCClustProt = 40;             // 60
-        Double_t              fMaxNsigProtTPC = 4;               // 3
+        Double_t              fMaxNsigProtTPC = 4;               // 30
         Bool_t                fRequireProtonTPC = kTRUE;  
         Bool_t                fRequireProtonTOF = kFALSE;  
         Bool_t                fRequireProtonTOFforPairs = kTRUE;  
@@ -226,6 +241,13 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Double_t              fMaxpOnlyTPCPID = 0.9;              // - 
         Double_t              fMinProtpt = 0;                     // -
         Double_t              fMaxProtpt = 15;                    // - 
+
+        //FillPionArray Cuts
+        Double_t              fMaxPionEta = 1.2;                   // 0.9  
+        Double_t              fMaxKaonNsigPionTPC = 3;               // 30
+        Double_t              fMaxKaonNsigPionTOF = 5;                // 5
+        Double_t              fMaxpOnlyTPCPIDKaon = 1;              // - 
+        Bool_t                fRequirePionTOF = kFALSE;  
 
         //FillProtonArray2 Cuts
         Double_t              fStrictMaxProtEta = 0.9;               
@@ -288,6 +310,23 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Double_t              fMaxProtonDCAzPHOS = 9999; //Dummy Value
         Bool_t                fRequireDCACutPHOS = kFALSE;
 
+        //Fill Kaon PHOS Tree Cuts     (Coarse Cuts to reduce Tree Size)
+        Double_t              fKaonMinPi0MassPHOS = 0.09;                   // 0.1
+        Double_t              fKaonMaxPi0MassPHOS = 0.16;                   // 0.15
+        Double_t              fKaonMaxPAPHOS = 0.02;                   // 0.02
+        Double_t              fKaonMaxPAPHOSHM = 0.02;                 // 0.012
+        Double_t              fKaonMinAntiPAPHOS = 0.005;               // 0.012
+        Double_t              fKaonMaxPionPhotDCA = 2;                     // 0.05
+        Double_t              fKaonMinDCAtoPVPHOS = 0.5;               // 0.01
+        Double_t              fKaonMaxDCAtoPVPHOS = 60;               // 0.01
+        Double_t              fKaonMaxYPHOS  = 0.9;                    // 0.8
+        Double_t              fKaonMaxMassPHOS = 1.35;    
+        Double_t              fKaonMinPionDCAxyPHOS = 0.005;              // 0.01
+        Double_t              fKaonMinPionDCAzPHOS = -1; //Dummy Value
+        Double_t              fKaonMaxPionDCAxyPHOS = 5;                  // 2
+        Double_t              fKaonMaxPionDCAzPHOS = 9999; //Dummy Value
+        Bool_t                fKaonRequireDCACutPHOS = kFALSE;
+
         //Fill Pair Tree Cuts     (Coarse Cuts to reduce Tree Size)
         Double_t              fMinCorrPi0Mass = 0.1;    
         Double_t              fMaxCorrPi0Mass = 0.16;    
@@ -339,6 +378,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         //Activate and deactivate parts of the Analysis 
         void SetActivateMCParticles(Bool_t processmcpart) {fProcessMCParticles = processmcpart;}
         void SetActivateProton(Bool_t processprotons) {fProcessProtons = processprotons;}
+        void SetActivatePion(Bool_t processpions) {fProcessPions = processpions;}        
         void SetActivateSaveProton(Bool_t saveprotons) {fSaveProtons = saveprotons;}
         void SetActivateV0s(Bool_t processv0s) {fProcessV0s = processv0s;}
         void SetActivateReco(Bool_t processreco) {fProcessReco = processreco;}
@@ -349,15 +389,18 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         void SetActivateClusters(Bool_t processclusters) {fProcessClusters = processclusters;}
         void SetActivateClusterMapping(Bool_t mapclusters) {fMapClusterstoTracks = mapclusters;}
         void SetActivateRecoPhos(Bool_t recophos) {fProcessRecoPHOS = recophos;}
+        void SetActivateRecoKaonPhos(Bool_t recokaonphos) {fProcessRecoKaonPHOS = recokaonphos;}
         void SetActivateRecoCalc(Bool_t recocalc) {fProcessRecoCalc = recocalc;}
         void SetActivatePhosCand(Bool_t savephos) {fSavePartCandPHOS = savephos;}
         void SetActivateCalcCand(Bool_t savecalc) {fSavePartCandCalc = savecalc;}
         void SetActivatePHOSSETree(Bool_t savePhosSE) {fFillPHOSPairTreeSE = savePhosSE;}
         void SetActivatePHOSMETree(Bool_t savePhosME) {fFillPHOSPairTreeME = savePhosME;}
         void SetActivatePHOSMEBkg(Bool_t savephosmebkg) {fSavePHOSMixedBackground = savephosmebkg;}
+        void SetActivateKaonPHOSMEBkg(Bool_t savekaonphosmebkg) {fSaveKaonPHOSMixedBackground = savekaonphosmebkg;}
         void SetActivateExtraBranches(Bool_t savextrabr) {fSaveAdditionalBranches = savextrabr;}
         void SetActivateMCBranches(Bool_t savemcbr) {fSaveMCBranches = savemcbr;}
         void SetActivateAddMCBranches(Bool_t saveaddmcbr) {fSaveAddMCBranches = saveaddmcbr;}
+        void SetActivateMapTrackstoKaon(Bool_t mapkaontracks) {fMapTrackstoKaon = mapkaontracks;}
 
         //Event Cuts
         void SetMaxVertexZ(Double_t maxvertexz) {fMaxVertexZ = maxvertexz;}
@@ -388,6 +431,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         void SetRequireSigmaCand(Bool_t reqsigc) {fRequireSigmaCand = reqsigc;}
         void SetUseAbsZ(Bool_t useabsz) {fUseAbsZ = useabsz;}
         void SetUseAbsZCorr(Bool_t useabszcorr) {fUseAbsZCorr = useabszcorr;}
+        void SetRequireKaonCand(Bool_t reqkc) {fRequireKaonCand = reqkc;}
 
         //FillProtonArray Cuts
         void SetRejectNegIDs(Bool_t rejnegid) {fRejectNegIDs = rejnegid;}
@@ -402,6 +446,13 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         void SetProtonMaxpOnlyTPCPID(Double_t pmaxonlytpc) {fMaxpOnlyTPCPID = pmaxonlytpc;}
         void SetProtonMinpt(Double_t minpt) {fMinProtpt = minpt;}
         void SetProtonMaxpt(Double_t maxpt) {fMaxProtpt = maxpt;}
+
+        //FillPionArray Cuts
+        void SetPionMaxEta(Double_t maxeta) {fMaxPionEta = maxeta;}
+        void SetKaonMaxNSigmaTPCPion(Double_t nsigtpc) {fMaxKaonNsigPionTPC = nsigtpc;}
+        void SetPionRequireTOF(Bool_t requiretof) {fRequirePionTOF = requiretof;}
+        void SetKaonMaxNSigmaTOFPion(Double_t nsigtof) {fMaxKaonNsigPionTOF = nsigtof;}
+        void SetPionMaxpOnlyTPCPID(Double_t pmaxonlytpc) {fMaxpOnlyTPCPIDKaon = pmaxonlytpc;}
 
         //FillProtonArray2 Cuts
         void SetStrictProtonMaxEta(Double_t maxeta) {fStrictMaxProtEta = maxeta;}
@@ -463,6 +514,23 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         void SetProtonMaxDCAxyPHOS(Double_t maxprotondcaxy) {fMaxProtonDCAxyPHOS = maxprotondcaxy;}
         void SetProtonMaxDCAzPHOS(Double_t maxprotondcaz) {fMaxProtonDCAzPHOS = maxprotondcaz;}
         void SetRequireDCAPHOS(Bool_t requiredca) {fRequireDCACutPHOS = requiredca;}
+
+        //Fill Kaon PHOS Tree Cuts     (Coarse Cuts to reduce Tree Size)
+        void SetKaonPi0MinMassPHOS(Double_t kaonminpi0mass) {fKaonMinPi0MassPHOS = kaonminpi0mass;}
+        void SetKaonPi0MaxMassPHOS(Double_t kaonmaxpi0mass) {fKaonMaxPi0MassPHOS = kaonmaxpi0mass;}
+        void SetKaonMaxPAPHOS(Double_t kaonmaxpa) {fKaonMaxPAPHOS = kaonmaxpa;}
+        void SetKaonMaxPAPHOSHM(Double_t kaonmaxhmpa) {fKaonMaxPAPHOSHM = kaonmaxhmpa;}
+        void SetKaonMinAntiPAPHOS(Double_t kaonminantipa) {fKaonMinAntiPAPHOS = kaonminantipa;}
+        void SetKaonMaxProtPhotDCA(Double_t kaonmaxppdca) {fKaonMaxPionPhotDCA = kaonmaxppdca;}
+        void SetKaonMinDCAtoPVPHOS(Double_t kaonmindcatopv) {fKaonMinDCAtoPVPHOS = kaonmindcatopv;}
+        void SetKaonMaxDCAtoPVPHOS(Double_t kaonmaxdcatopv) {fKaonMaxDCAtoPVPHOS = kaonmaxdcatopv;}
+        void SetKaonMaxYPHOS(Double_t kaonmaxy) {fKaonMaxYPHOS = kaonmaxy;}
+        void SetKaonMaxMassPHOS(Double_t kaonmaxsigmass) {fKaonMaxMassPHOS = kaonmaxsigmass;}
+        void SetKaonProtonMinDCAxyPHOS(Double_t kaonminprotondcaxy) {fKaonMinPionDCAxyPHOS = kaonminprotondcaxy;}
+        void SetKaonProtonMinDCAzPHOS(Double_t kaonminprotondcaz) {fKaonMinPionDCAzPHOS = kaonminprotondcaz;}
+        void SetKaonPionMaxDCAxyPHOS(Double_t kaonmaxpiondcaxy) {fKaonMaxPionDCAxyPHOS = kaonmaxpiondcaxy;}
+        void SetKaonPionMaxDCAzPHOS(Double_t kaonmaxpiondcaz) {fKaonMaxPionDCAzPHOS = kaonmaxpiondcaz;}
+        void SetKaonRequireDCAPHOS(Bool_t kaonrequiredca) {fKaonRequireDCACutPHOS = kaonrequiredca;}
 
         //Fill Pair Tree Cuts     (Coarse Cuts to reduce Tree Size)
         void SetCorrPi0MinMass(Double_t minpi0mass) {fMinCorrPi0Mass = minpi0mass;}
@@ -682,7 +750,10 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         //Extra Branches of TTree "fSigmaPairTree"
         Bool_t                fPairProtonIsMC;        
         Int_t                 fPairProtonPDG;        
-        Bool_t                fPairProtonIsPrimary;        
+        Bool_t                fPairProtonIsPrimary;  
+        Int_t                 fPairProtonMotherPDG;
+        Bool_t                fPairProtonIsFromMaterial;
+        Bool_t                fPairProtonIsFromWeakDecay;
         Float_t               fPairProtonPx;        
         Float_t               fPairProtonPy;        
         Float_t               fPairProtonPz;        
@@ -708,6 +779,8 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Int_t                 fPairProtonID;
         ULong64_t             fPairProtonStatus;
         UInt_t                fPairProtonFilterMap;
+        Float_t               fPairProtBeta;
+        Float_t               fPairProtdEdx;
         //End of Extra Branches of "fSigmaPairTree"
 
         //End of Extra Branches of "fSigmaCalcCandTree"        
@@ -715,6 +788,25 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Float_t               fDeltaPhi;
         Float_t               fDeltaTheta;
         //End of Extra Branches of "fSigmaCalcCandTree"
+
+        //End of Extra Branches of "fKaonPHOSCandTree"        
+        Float_t               fClosestTrackAngle;
+        Float_t               fClosestTrackPx;
+        Float_t               fClosestTrackPy;
+        Float_t               fClosestTrackPz;
+        Float_t               fClosestTrackDCAxy;
+        Float_t               fClosestTrackDCAz;
+        Float_t               fClosestTrackNSigTPCProt;        
+        Float_t               fClosestTrackNSigTPCPion;        
+        Float_t               fClosestTrackNSigTPCKaon;
+        Float_t               fClosestTrackNSigTPCElec;
+        Float_t               fClosestTrackNSigTOFProt;        
+        Float_t               fClosestTrackNSigTOFPion;        
+        Float_t               fClosestTrackNSigTOFKaon;
+        Float_t               fClosestTrackNSigTOFElec;
+        Bool_t                fClosestTrackisMC;
+
+        //End of Extra Branches of "fKaonPHOSCandTree"
 
         //Extra Branches of TTree "fSigmaPairTreeSE/ME"
         Float_t               fSigmaProtonkstar;  //Saved in MeV/c

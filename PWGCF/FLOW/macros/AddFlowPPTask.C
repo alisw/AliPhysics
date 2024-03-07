@@ -21,6 +21,8 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 		Bool_t		fNUE 				= true,
 		Bool_t		fNUA				= true,
 		Bool_t		UseCorrectedNTracks = true,
+		Bool_t		setNUA				= false,
+		TString		NUAfile				= "NUA",
 		TString		uniqueID        	= "Default"
     )
 {
@@ -223,14 +225,30 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
                         //inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC18/weights_LHC18_periods.root");
 					//	inNUA = TFile::Open("alien:///alice/cern.ch/user/z/zumoravc/weights/pp_LHC18/weights_LHC18_allHM.root");
 					//}
-            } 
+            }
+
+			if(setNUA){
+				//overwrite NUA
+				inNUA = TFile::Open(NUAfile.Data());
+				Printf(Form("\n\nOverwriting NUA file:\n%s\n",NUAfile.Data()));
+			}
 
 			if(!inNUA){
 				printf("Can't Access NUA File\n");
 				return 0;
 			}
             TList* weight_list = NULL;
-			weight_list = dynamic_cast<TList*>(inNUA->Get("WeightList"));
+			if(!setNUA)weight_list = dynamic_cast<TList*>(inNUA->Get("WeightList"));
+			if(setNUA){
+				if(uniqueID.BeginsWith("Sys")){
+					weight_list = dynamic_cast<TList*>(inNUA->Get(Form("WeightList_%s",uniqueID.Data())));
+					Printf(Form("\n\nGet WeightList_%s\n",uniqueID.Data()));
+				}
+				else{
+					weight_list = dynamic_cast<TList*>(inNUA->Get("WeightList_Default"));
+					Printf(Form("\n\nGet WeightList_Default for %s\n",uniqueID.Data()));
+				}
+			}
 			//if (fSystFlag == 0 && !fPeriod.EqualTo("LHC15o")) {
 			//	weight_list = dynamic_cast<TList*>(inNUA->Get("weights"));
 			//} else {

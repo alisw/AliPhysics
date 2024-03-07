@@ -126,6 +126,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   Float_t foriginFlag;
   Float_t fntracklet;
   Float_t fGenNtracklet;
+  Float_t fGenSPDtracklet;
 
   AliRDHFCutsXicPlustoXiPiPifromAODtracks *fAnalCuts;      /// Cuts - sent to output slot 2
   AliRDHFCutsXicPlustoXiPiPifromAODtracks *fAnalCuts_HM;   //jcho
@@ -236,7 +237,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F* fCentralityOfEvt; //jcho 
 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,21); /// class for Xic->Xipipi
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,22); /// class for Xic->Xipipi
   /// \endcond
 };
 #endif

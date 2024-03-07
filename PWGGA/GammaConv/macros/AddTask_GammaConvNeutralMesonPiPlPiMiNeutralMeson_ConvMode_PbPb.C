@@ -177,7 +177,18 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_PbPb(
     cuts.AddCutHeavyMesonPCM("11310a13","0dm00009f9730000dge0404000","32c51079a","0000003z00000000","0400503000000000"); // 10-30% MB
     cuts.AddCutHeavyMesonPCM("13530a13","0dm00009f9730000dge0404000","32c51079a","0000003z00000000","0400503000000000"); // 30-50% Triggeres
     cuts.AddCutHeavyMesonPCM("15910a13","0dm00009f9730000dge0404000","32c51079a","0000003z00000000","0400503000000000"); // 50-90% MB
- 
+
+    }else if (trainConfig == 102){ // Standard 5 TeV omega INT7 cutstring in pPb -> First look into PbPb
+    cuts.AddCutHeavyMesonPCM("10910a13","0dm00009f9730000dge0404000","32c51079a","0000003z00000000","0400503000000000"); // 0-90% MB
+    }else if (trainConfig == 103){ // Standard 5 TeV omega INT7 cutstring in pPb -> First look into PbPb
+    cuts.AddCutHeavyMesonPCM("10130a13","0dm00009f9730000dge0404000","32c51079a","0000003z00000000","0400503000000000"); // 0-10% Triggered
+    }else if (trainConfig == 104){ // Standard 5 TeV omega INT7 cutstring in pPb -> First look into PbPb
+    cuts.AddCutHeavyMesonPCM("11310a13","0dm00009f9730000dge0404000","32c51079a","0000003z00000000","0400503000000000"); // 10-30% MB
+    }else if (trainConfig == 105){ // Standard 5 TeV omega INT7 cutstring in pPb -> First look into PbPb
+    cuts.AddCutHeavyMesonPCM("13530a13","0dm00009f9730000dge0404000","32c51079a","0000003z00000000","0400503000000000"); // 30-50% Triggeres
+    }else if (trainConfig == 106){ // Standard 5 TeV omega INT7 cutstring in pPb -> First look into PbPb
+    cuts.AddCutHeavyMesonPCM("15910a13","0dm00009f9730000dge0404000","32c51079a","0000003z00000000","0400503000000000"); // 50-90% MB
+  
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //                                          ETA PRIME MESON
@@ -345,8 +356,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_PbPb(
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-  mgr->CreateContainer(Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig));
+  mgr->CreateContainer(Form("NMPipPimNm_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig), TList::Class(),
+              AliAnalysisManager::kOutputContainer,Form("NMPipPimNm_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);

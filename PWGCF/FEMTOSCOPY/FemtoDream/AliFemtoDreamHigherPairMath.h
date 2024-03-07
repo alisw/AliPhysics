@@ -36,6 +36,8 @@ class AliFemtoDreamHigherPairMath {
                            bool SEorME, bool Recalculate);
   bool PassesMDPairSelection(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2);
   bool CommonAncestors(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2);
+  bool CommonMotherResonance(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2);
+  bool IsResonance(int PDG); 
   void RecalculatePhiStar(AliFemtoDreamBasePart &part);
   float FillSameEvent(int iHC, int Mult, float cent, AliFemtoDreamBasePart& part1,
                       int PDGPart1, AliFemtoDreamBasePart& part2, int PDGPart2, float PartSumPtLimit1, float PartSumPtLimit2);

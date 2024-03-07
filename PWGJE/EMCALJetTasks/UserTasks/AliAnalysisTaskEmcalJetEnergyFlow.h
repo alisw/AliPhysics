@@ -63,7 +63,7 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
         void                    SetAnalysisType(AnalysisType a){fAnalysisType = a;}
         AnalysisType            GetAnalysisType(){return fAnalysisType;}
         void                    SetMaxMatchDR(Double_t dr){Max_match_dist = dr;}
-        Double_t                SetMaxMatchDR(){return Max_match_dist;}
+        Double_t                GetMaxMatchDR(){return Max_match_dist;}
 	void			AllocateJetHistograms()			;
 	void			AllocateTrackHistograms()		; ///<Same as Sample task
 	void                    AllocateClusterHistograms()             ; ///<May remove later
@@ -86,7 +86,7 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
  	 AliAnalysisTaskEmcalJetEnergyFlow(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
   	 AliAnalysisTaskEmcalJetEnergyFlow &operator=(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
 
-  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,20);
+  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,21);
 	/// \endcond
 };
 #endif

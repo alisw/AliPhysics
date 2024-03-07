@@ -63,6 +63,8 @@ set(SRCS
   FlatenicityPiKp/AliAnalysisTaskOnlyFlatenicity.cxx
   FlatenicityPiKp/AliAnalysisTaskSystematicsV0M.cxx
   FlatenicityPiKp/AliAnalysisTaskFlatenicityMCclosure.cxx
+  SpeedOfSound/AliAnalysisTaskDataSpeedOfSound.cxx 
+  SpeedOfSound/AliAnalysisTaskDataSpeedOfSoundSim.cxx
   )
 
 # Headers from sources
@@ -135,3 +137,4 @@ install(DIRECTORY macros DESTINATION  PWGMM/UE)
 install(DIRECTORY Flatenicity DESTINATION  PWGMM/UE)
 install(DIRECTORY FlatenicityPiKp DESTINATION  PWGMM/UE)
 install(DIRECTORY FlatenicityLambdaK0s DESTINATION  PWGMM/UE)
+install(DIRECTORY SpeedOfSound DESTINATION  PWGMM/UE)

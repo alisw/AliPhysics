@@ -50,10 +50,13 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
     fDCAz(0),
     fUseDCAxyCut(0),
 	fUseCL1Centrality(0),
+	fUseV0MNewCentrality(0),
     fDCAxy(0),
     fSample(1),
     fCentFlag(0),
     fTrigger(0),
+	fUsekCentralTrigger(true),
+	fUsekSemiCentralTrigger(true),
     fLS(false),
     fNUE(0),
     fNUA(0),
@@ -119,12 +122,15 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
 	fDCAzDefault(0),
 	fUseDCAxyCut(0),
 	fUseCL1Centrality(0),
+	fUseV0MNewCentrality(0),
 	fDCAxy(0),
 	fDCAxyDefault(0),
 	fSample(1),
 	fCentFlag(0),
 	fTrigger(0),
 	fAliTrigger(0),
+	fUsekCentralTrigger(true),
+	fUsekSemiCentralTrigger(true),
 	fLS(false),
 	fNUE(0),
 	fNUA(0),
@@ -414,7 +420,10 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 			// pass3 use kInt7 || kCentral || kSemiCentral
 			// but in this function you should pass them all
 			// and only check trigger in CheckTrigger()
-			fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7+AliVEvent::kCentral+AliVEvent::kSemiCentral, true);
+			unsigned long usedTrigger = AliVEvent::kINT7;
+			if(fUsekCentralTrigger)usedTrigger = usedTrigger + AliVEvent::kCentral;
+			if(fUsekSemiCentralTrigger)usedTrigger = usedTrigger + AliVEvent::kSemiCentral;
+			fEventCuts.OverrideAutomaticTriggerSelection(usedTrigger, true);
 		}
 		else{
 			fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7, true);
@@ -495,6 +504,7 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
 	const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
 	const auto CL1Centrality(pms->GetMultiplicityPercentile("CL1"));
+	const auto V0MNewCentrality(pms->GetMultiplicityPercentile("V0MNew"));
 	//Printf("V0M Cent: %f",dCentrality);
 	//Printf("CL1 Cent: %f",CL1Centrality);
 	float fMultV0Meq = 0;
@@ -505,6 +515,9 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	float cent = dCentrality;
 	if(fUseCL1Centrality){
 		cent = CL1Centrality;
+	}
+	else if(fUseV0MNewCentrality){
+		cent = V0MNewCentrality;
 	}
 	float centSPD = 0;
 	float v0Centr = 0;
@@ -568,9 +581,13 @@ Bool_t AliAnalysisTaskFlowPPTask::CheckTrigger(){
 	const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
 	const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
 	const auto CL1Centrality(pms->GetMultiplicityPercentile("CL1"));
+	const auto V0MNewCentrality(pms->GetMultiplicityPercentile("V0MNew"));
 	float cent = dCentrality;
 	if(fUseCL1Centrality){
 		cent = CL1Centrality;
+	}
+	else if(fUseV0MNewCentrality){
+		cent = V0MNewCentrality;
 	}
 	UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
@@ -581,6 +598,7 @@ Bool_t AliAnalysisTaskFlowPPTask::CheckTrigger(){
 		if(fPeriod.EqualTo("LHC18qr_pass3")){
 			if((fSelectMask&AliVEvent::kCentral) && cent>10){return kFALSE;}
 			if((fSelectMask&AliVEvent::kSemiCentral) && (cent<30 || cent>50)){return kFALSE;}
+			if((!fUsekCentralTrigger)&&(!fUsekSemiCentralTrigger)){return kFALSE;}
 		}
 		else{
 			//for LHC15o pass2,only pass by kint7

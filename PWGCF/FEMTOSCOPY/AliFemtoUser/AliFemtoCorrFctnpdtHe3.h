@@ -94,7 +94,8 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	void Set2DKstarVsmT(int aUse);
 	void Set2DkStarVsmTInit(bool aInit,
 		int nbinsks,float lowks,float upks,
-                int nbinsmT,float lowmT,float upmT);
+                int nbinsmT,float lowmT,float upmT,
+		int nbinsksME,float lowksME,float upksME);
 
 void SetdBumpCheck(int aUse);
 void SetdBumpCheckInit(bool aInit,
@@ -110,6 +111,16 @@ void SetmTCheckInit(bool aInit,
 int nbinspT,float lowpT,float uppT,
 int nbinsmT,float lowmT,float upmT);
 
+
+void SetEscapePairCut(int aUse);
+void  SetWhichCutIndEtadPhi(int aUse);
+
+void Set3DmTvsPIDvspT(int aUse);
+void Set3DmTvsPIDvspTInit(
+int nbinsNs,float lowNs,float upNs,
+int nbinspT,float lowpT,float uppT,
+int nbinsmT,float lowmT,float upmT
+); 
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
         int isHe3Pair;
@@ -187,7 +198,10 @@ int nbinsmT,float lowmT,float upmT);
 	int IsSameParticlePair;
 	TH2F *KStarVspT_P1Hist;
 	TH2F *KStarVspT_P2Hist;
+	TH2F *KStarVspT_P1Hist_Dum;
+	TH2F *KStarVspT_P2Hist_Dum;
 
+	
 	int fUse3DkTvsKStarvsmT;
 	TH3F *fNum3DkTvsKStarvsmT;
 	TH3F *fDum3DkTvsKStarvsmT;
@@ -201,7 +215,18 @@ int nbinsmT,float lowmT,float upmT);
 	TH2F *f2DkSVsMass;
 	
 	int fUsemTCheck;
-	TH3F *f3DmTDepkSVspT;
+	TH3F *f3DmTDepkSVspT1_num;
+	TH3F *f3DmTDepkSVspT1_dum;
+	TH3F *f3DmTDepkSVspT2_num;
+        TH3F *f3DmTDepkSVspT2_dum;
+
+
+	int EscapePairCut;
+	int WhichCutIndEtadPhi;
+
+	int fUse3DmTvsPIDvspT;
+	TH3F *fNum3DmTvsPIDvspT;
+	TH3F *fDum3DmTvsPIDvspT;
 };
 
 #endif

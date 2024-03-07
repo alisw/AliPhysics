@@ -1,32 +1,52 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskNFactorialMoments.h"
 
-AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
-  TString year = "2015", bool fSelfAffAnalysis = kFALSE, double pt1 = 0.4,
-  double pt2 = 0.6, double pt3 = 0.4, double pt4 = 1.0, double pt5 = 0.6,
-  double pt6 = 0.8, double pt7 = 0.6, double pt8 = 2.0, bool fPileup = kFALSE,
-  double fEtaMin = -0.8, double fEtaMax = 0.8, int fCentMin = 0,
-  int fCentMax = 5, int fBit = 768, double fDeta = 0.02, double fDphi = 0.02,
-  bool fTwoTrack = kFALSE, double fSharedFraction = 0.05,
-  bool fSharity = kFALSE, double fVxMax = 0.3, double fVyMax = 0.4,
-  double fVzMax = 10.0, bool fRejectElectrons = kFALSE,
-  double fDCAXYRangeMax = 0.0, double fDCAZRangeMax = 0.0,
-  double fITSClusterCut = 0.0, double fTPCClusterCut = 0.0,
-  double fnTPCrossedrows = 0.0, double fSharedCls = 0.0, double fSharedRows = 0.0, double fFindableCls = 0.0, bool defSharedFrac = kTRUE, int bField = 0, int Mmax = 123, bool fIsMC = kFALSE, const char* suffix = "")
+AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(Double_t pt1 = 0.4, Double_t pt2 = 0.6, Double_t pt3 = 0.4, Double_t pt4 = 1.0, Double_t pt5 = 0.6, Double_t pt6 = 0.8, Double_t pt7 = 0.6, Double_t pt8 = 2.0, Int_t Mmax = 82, const char* suffix = "")
 {
 
   // year = "2010" or "2015"
   // fSelfAffAnalysis for self-affine analysis
   // cuts on detas and dphis work only if fTwoTrack = kTRUE
   // cuts on DCA, ITS/TPC clusters, ncrssed rows work only if they have non-zero
-  // values Particle Indentification uses only TPC for now TODO: add TOF
 
-  double ptarr[8] = { pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8 };
+  // Initialize variables
+  TString year = "2015";
+  Bool_t fSelfAffAnalysis = kFALSE;
+  Bool_t f2TrackQA = kFALSE;
+  Bool_t fIsMC = kFALSE;
+  Bool_t fPileup = kTRUE;
+  Double_t fEtaMin = -0.8;
+  Double_t fEtaMax = 0.8;
+  Int_t fCentMin = 0;
+  Int_t fCentMax = 5;
+  Int_t fBit = 768;
+  Double_t fDeta = 0.02;
+  Double_t fDphi = 0.02;
+  Bool_t fTwoTrack = kFALSE;
+  Double_t fSharedFraction = 0.05;
+  Bool_t fSharity = kFALSE;
+  Double_t fVxMax = 0.3;
+  Double_t fVyMax = 0.4;
+  Double_t fVzMax = 10.0;
+  Bool_t fRejectElectrons = kFALSE;
+  Double_t fDCAXYRangeMax = 0.0;
+  Double_t fDCAZRangeMax = 0.0;
+  Double_t fITSClusterCut = 0.0;
+  Double_t fTPCClusterCut = 0.0;
+  Double_t fnTPCrossedrows = 0.0;
+  Double_t fSharedCls = 0.0;
+  Double_t fSharedRows = 0.0;
+  Double_t fFindableCls = 0.0;
+  Bool_t defSharedFrac = kTRUE;
+  Int_t bField = 0;
+  Double_t nSigmaCutPr = 3.0;
+
+  Double_t ptarr[8] = { pt1, pt2, pt3, pt4, pt5, pt6, pt7, pt8 };
   TArrayD ptarrD(8, ptarr);
-  int fNumberofPtBins = ptarrD.GetSize() / 2;
+  Int_t fNumberofPtBins = ptarrD.GetSize() / 2;
 
-  int Mbinsarr[40];
-  int Nbinsarr[40]; // used in case of selfaffine analysis
+  Int_t Mbinsarr[40];
+  Int_t Nbinsarr[40]; // used in case of selfaffine analysis
   for (size_t nMB = 0; nMB < 40; nMB++) {
     if (Mmax == 123)
       Mbinsarr[nMB] = 3 * (nMB + 2);
@@ -34,7 +54,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
       Mbinsarr[nMB] = 2 * (nMB + 2);
   }
   if (fSelfAffAnalysis) {
-    for (int nMB = 0; nMB < 40; nMB++) {
+    for (Int_t nMB = 0; nMB < 40; nMB++) {
       Mbinsarr[nMB] = nMB + 1;
       Nbinsarr[nMB] = 4 * (nMB + 1);
     }
@@ -57,13 +77,13 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
   tasknfms->SetIsMC(fIsMC, "Hijing");
   tasknfms->SetYear(year);
   tasknfms->SetPSbinning(Mbins, Nbins, Mmax);
-  tasknfms->SetRejectPileup(kTRUE);
+  tasknfms->SetRejectPileup(fPileup);
   tasknfms->SetEta(fEtaMin, fEtaMax);
   tasknfms->SetCentLim(fCentMin, fCentMax);
   tasknfms->SetPtArray(ptarrD);
   tasknfms->Setfbit(fBit);
   tasknfms->SetBfield(bField);
-  tasknfms->SetTwoTrackCuts(fDeta, fDphi, fTwoTrack);
+  tasknfms->SetTwoTrackCuts(fDeta, fDphi, fTwoTrack, f2TrackQA);
   tasknfms->SetSharingFraction(fSharedFraction, fSharity);
   tasknfms->SetVtxCut(fVxMax, fVyMax, fVzMax);
   tasknfms->SetRejectElectrons(fRejectElectrons);
@@ -79,7 +99,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
   mgr->AddTask(tasknfms);
 
   // input for tasknfmss and connecting containers to it
-  int nout = (fNumberofPtBins) + 3 + fIsMC * ((fNumberofPtBins)-1);
+  Int_t nout = (fNumberofPtBins) + 3 + fIsMC * ((fNumberofPtBins)-1);
   AliAnalysisDataContainer* coutputlist[nout];
 
   coutputlist[0] = mgr->CreateContainer(
@@ -89,7 +109,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
   char* name = "ntplist";
   if (fIsMC)
     name = "ntplistRe";
-  for (int nbins = 0; nbins < fNumberofPtBins; nbins++) {
+  for (Int_t nbins = 0; nbins < fNumberofPtBins; nbins++) {
     coutputlist[nbins + 1] =
       mgr->CreateContainer(Form("%s%d%s", name, nbins + 1, suffix), TList::Class(),
                            AliAnalysisManager::kOutputContainer,
@@ -109,7 +129,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
     AliAnalysisManager::GetCommonFileName());
 
   mgr->ConnectInput(tasknfms, 0, mgr->GetCommonInputContainer());
-  for (int i = 0; i < nout; i++) {
+  for (Int_t i = 0; i < nout; i++) {
     mgr->ConnectOutput(tasknfms, i + 1, coutputlist[i]);
   }
   return tasknfms;

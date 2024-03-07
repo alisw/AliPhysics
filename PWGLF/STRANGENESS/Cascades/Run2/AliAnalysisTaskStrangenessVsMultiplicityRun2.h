@@ -283,6 +283,7 @@ private:
   AliEventCuts fEventCutsStrictAntipileup; /// Event cuts class
   
   TRandom3 *fRand; //!
+  TString fkCentralityEstimator;
   
   //Objects Controlling Task Behaviour
   Bool_t fkSaveEventTree;           //if true, save Event TTree

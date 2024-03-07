@@ -437,7 +437,7 @@ void AddTask_GammaCaloMix_pp(
   //connect containers
   AliAnalysisDataContainer *coutput =
     mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("GammaCaloMix_%i",trainConfig) : Form("GammaCaloMix_%i_%s",trainConfig,corrTaskSetting.Data()), TList::Class(),
-              AliAnalysisManager::kOutputContainer,Form("GammaCaloMix_%i.root",trainConfig));
+              AliAnalysisManager::kOutputContainer,Form("GCaMix_%i.root",trainConfig));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
@@ -446,7 +446,7 @@ void AddTask_GammaCaloMix_pp(
   Int_t nContainer = 2;
   for(Int_t i = 0; i<numberOfCuts; i++){
       if(enableQAMesonTask==5){
-          mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s ClusterTimingEff",(cuts.GetEventCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaCaloMix_%i.root",trainConfig)) );
+          mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s ClusterTimingEff",(cuts.GetEventCut(i)).Data(),(cuts.GetClusterCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GCaMix_%i.root",trainConfig)) );
           nContainer++;
       }
   }

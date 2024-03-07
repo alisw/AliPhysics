@@ -53,6 +53,7 @@ class AliJSPCTaskRun2 : public AliAnalysisTaskSE {
 
   // Task specific setters
   void AliSPCRun2SetSaveAllQA(Bool_t SaveQA) {bJSPCRun2SaveAllQA=SaveQA;}
+  void AliSPCRun2SetUseJoinedCov(Bool_t joinedCov) {this->bAliSPCRun2UseJoinedCov = joinedCov;}
   void AliSPCRun2SetUseWeights(Bool_t WeightsNUE, Bool_t WeightsNUA) {
     bAliSPCRun2UseWeightsNUE = WeightsNUE;
     bAliSPCRun2UseWeightsNUA = WeightsNUA;
@@ -101,15 +102,17 @@ class AliJSPCTaskRun2 : public AliAnalysisTaskSE {
 
   Bool_t bAliSPCRun2UseWeightsNUE;    // kTRUE: Use non-unit NUE weights.
   Bool_t bAliSPCRun2UseWeightsNUA;    // kTRUE: Use non-unit NUA weights.
- 
+  Bool_t bAliSPCRun2UseJoinedCov;
+
   Bool_t bJSPCRun2SaveAllQA;
   Int_t fAliSPCRun2HarmosArray[12][8];  // Array of combinations of harmonics for the SPC.
     // Can deal with maximum 10 different SPC.
 
   Bool_t bAliSPCRun2ComputeEtaGap;    // Do eta gap computation if kTRUE. Default kFALSE
   Float_t fAliSPCRun2EtaGap;          // Value of eta gap
+  Int_t fDebug;
 
-  ClassDef(AliJSPCTaskRun2, 1); 
+  ClassDef(AliJSPCTaskRun2, 1);
 };
 
 #endif  // ALIJSPCTASKRUN2_H

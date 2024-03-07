@@ -25,7 +25,6 @@
 #include "AliPhotonIsolation.h"
 #include <vector>
 
-
 class AliESDEvent;
 class AliAODEvent;
 class AliConversionPhotonBase;
@@ -396,6 +395,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Bool_t      GetHighestPtMatchedTrackToCluster(AliVEvent* event, AliVCluster* cluster, Int_t &trackLabel);
     Bool_t      IsClusterPi0(AliVEvent *event, AliMCEvent *mcEvent, AliVCluster *cluster);
     Bool_t      CheckForReconstructedConversionPairs(vector<AliAODConversionPhoton*> &vecPhotons, vector<Int_t> &vecReject);
+    std::pair<double, double>    GetAngleForConvReject(const TLorentzVector &photon1, const TLorentzVector &photon2);
+    std::pair<double, double>    GetAngleForConvReject(const AliAODConversionPhoton *photon1, const AliAODConversionPhoton *photon2);
     Bool_t      CheckVectorForIndexAndAdd(vector<Int_t> &vec, Int_t tobechecked, Bool_t addIndex );
     void        CleanClusterLabels(AliVCluster* clus,AliMCEvent *mcEvent);
     void        CleanClusterLabels(AliVCluster* clus,TClonesArray *aodTrackArray);
@@ -406,6 +407,12 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Bool_t      GetDoFlatEnergySubtraction()                    {return fDoFlatEnergySubtraction;}
     Bool_t      GetDoSecondaryTrackMatching()                   {return fDoSecondaryTrackMatching;}
+
+    Bool_t      SetPoissonParamCentFunction(int isMC);
+    Bool_t      SetNMatchedTracksFunc(float meanCent);
+    Double_t    CorrectEnergyForOverlap(float meanCent, float E = 0);
+    Int_t       GetDoEnergyCorrectionForOverlap()               {return fDoEnergyCorrectionForOverlap;}
+    Double_t    GetMeanEForOverlap(Double_t cent, Double_t* par);
 
     // modify acceptance via histogram with cellID
     void        SetHistoToModifyAcceptance(TH1S* histAcc)       {fHistoModifyAcc  = histAcc; return;}
@@ -582,6 +589,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fMinM20;                                  // minimum M20
     Bool_t    fUseM20;                                  // flag for switching on M20 cut
     Float_t   fMaxMGGRecConv;                           // maximum invariant mass below which the 2 clusters are gonna be combined assuming they are from a photon
+    Float_t   fConvRejMinAngle;                         // minimum angle with respect to z that two clusters need in order to not be rejected as conversions (conversion should only be bend by magnetic field and therefore their position in z should be the same)
+    Float_t   fConvRejMaxOpenAngle;                     // maximum opening angle of a cluster pair to be considerd to be a conversion from the same photon
     Int_t     fUseRecConv;                              // flag to switch on conversion recovery
     Double_t  fMaxDispersion;                           // maximum dispersion
     Bool_t    fUseDispersion;                           // flag for switching on dispersion cut
@@ -595,6 +604,11 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Int_t     fIsPureCalo;                              // flag for MergedCluster analysis
     Int_t     fNactiveEmcalCells;                       // total number of active emcal cells
     Bool_t    fDoSecondaryTrackMatching;                // flag to switch on secondary trackmatching
+    Int_t     fDoEnergyCorrectionForOverlap;            // mask to switch on a special for PbPb developed cluster energy correction, 0 = off, 1 = on with mean, 2 = on with random values
+    TF1*      fFuncPoissonParamCent;                    // TF1 to describe the poisson parameter that you get from fitting a poisson dsitribution to the number of matched tracks per cluster as function of centrality
+    TF1*      fFuncNMatchedTracks;                      // TF1 poisson distribution to describe the number of matched tracks per cluster for a specific centrality
+    Double_t  fParamMeanTrackPt[3];                     // TF1 distribution to describe the mean pT of tracks as function of centrality. Half of this value is used as neutral energy overlap correction.
+    Float_t   fMeanNMatchedTracks;                      // Mean number of matched primary tracks, stored to reduce CPU time for neutral overlap correction
 
     //vector
     std::vector<Int_t> fVectorMatchedClusterIDs;        // vector with cluster IDs that have been matched to tracks in merged cluster analysis
@@ -714,6 +728,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterENMatchesCharged;             //
     TH2F*     fHistClusterEvsTrackEPrimaryButNoElec;    //
     TH2F*     fHistClusterEvsTrackSumEPrimaryButNoElec; //
+    TH1F*     fHistClusterNMatched;                     // Number of matched tracks per cluster
 
     TH1F*     fHistClusETruePi0_BeforeTM;               // for checking the false positives: how much true pi0s are matched away?
     TH1F*     fHistClusETruePi0_Matched;                //
@@ -738,13 +753,14 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     // histogram for conv candidate rejection
     TH2F*     fHistInvMassDiCluster;                    // histogram for monitoring di-cluster mass
     TH2F*     fHistInvMassConvFlagging;                 // histogram for monitoring rejected di-cluster mass
+    TH1F*     fHistDiClusterAngle;                      // histogram for monitoring di-cluster angle with respect to z
     Int_t     fNMaxDCalModules;                         // max number of DCal Modules
     Int_t     fgkDCALCols;                              // Number of columns in DCal
     Bool_t    fIsAcceptedForBasic;                      // basic counting
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,128)
+    ClassDef(AliCaloPhotonCuts,132)
 };
 
 #endif

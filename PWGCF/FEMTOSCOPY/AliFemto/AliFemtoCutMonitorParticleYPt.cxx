@@ -20,6 +20,7 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt():
   fEtaPhiW(0),
   fEtaPtW(0),
   fDCARPt(0),
+  fDCARPt2(0),  
   fDCAZPt(0),
   fMass(0.13957)
 {
@@ -32,6 +33,7 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt():
   // fEtaPhiW = new TH2D("EtaPhiW", "Pseudorapidity vs Phi chi2/N weighted", 140, -1.4, 1.4, 100, -TMath::Pi(), TMath::Pi());
   // fEtaPtW = new TH2D("EtaPtW", "Pseudorapidity vs Pt chi2/N weighted",    140, -1.4, 1.4, 100, 0.0, 5.0);
   fDCARPt = new TH2D("DCARPt", "DCA in XY vs. Pt", 400, -3.0, 3.0, 100,0.0,5.0);
+  fDCARPt2 = new TH2D("DCARPt2", "DCA2 in XY vs. Pt", 800, -3.0, 3.0, 100,0.0,5.0);  
   fDCAZPt = new TH2D("DCAZPt", "DCA in Z vs. Pt", 400, -3.0, 3.0, 100,0.0,5.0);
 
 
@@ -46,6 +48,7 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const char *aName, 
   fEtaPhiW(0),
   fEtaPtW(0),
   fDCARPt(0),
+  fDCARPt2(0),  
   fDCAZPt(0),
   fMass(aMass)
 {
@@ -67,6 +70,8 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const char *aName, 
   // fEtaPtW = new TH2D(name, "Pseudorapidity vs Pt chi2/N weighted",    140, -1.4, 1.4, 100, 0.0, 2.0);
   snprintf(name, 200, "DCARPt%s", aName);
   fDCARPt = new TH2D(name, "DCA in XY vs. Pt", 400, -3.0, 3.0, 100,0.0,5.0);
+  snprintf(name, 200, "DCARPt2%s", aName);
+  fDCARPt2 = new TH2D(name, "DCA in XY vs. Pt", 800, -3.0, 3.0, 100,0.0,5.0);  
   snprintf(name, 200, "DCAZPt%s", aName);
   fDCAZPt = new TH2D(name, "DCA in Z vs. Pt", 400, -3.0, 3.0, 100,0.0,5.0);
 
@@ -82,6 +87,7 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const AliFemtoCutMo
   fEtaPhiW(0),
   fEtaPtW(0),
   fDCARPt(0),
+  fDCARPt2(0),  
   fDCAZPt(0),
   fMass(0.13957)
 {
@@ -94,6 +100,7 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const AliFemtoCutMo
   // fEtaPhiW = new TH2D(*aCut.fEtaPhiW);
   // fEtaPtW = new TH2D(*aCut.fEtaPtW);
   fDCARPt = new TH2D(*aCut.fDCARPt);
+  fDCARPt2 = new TH2D(*aCut.fDCARPt2);  
   fDCAZPt = new TH2D(*aCut.fDCAZPt);
   fMass = aCut.fMass; 
 }
@@ -109,6 +116,7 @@ AliFemtoCutMonitorParticleYPt::~AliFemtoCutMonitorParticleYPt()
   // delete fEtaPhiW;
   // delete fEtaPtW;
   delete fDCARPt;
+  delete fDCARPt2;  
   delete fDCAZPt;
 }
 
@@ -134,6 +142,8 @@ AliFemtoCutMonitorParticleYPt& AliFemtoCutMonitorParticleYPt::operator=(const Al
   // fEtaPtW = new TH2D(*aCut.fEtaPtW);
   if (fDCARPt) delete fDCARPt;
   fDCARPt = new TH2D(*aCut.fDCARPt);
+  if (fDCARPt2) delete fDCARPt2;
+  fDCARPt2 = new TH2D(*aCut.fDCARPt2);  
   if (fDCAZPt) delete fDCAZPt;
   fDCAZPt = new TH2D(*aCut.fDCAZPt);
   
@@ -189,6 +199,7 @@ void AliFemtoCutMonitorParticleYPt::Fill(const AliFemtoTrack* aTrack)
   // fEtaPhiW->Fill(tEta, tPhi, chi2w);
   // fEtaPtW->Fill(tEta, tPt, chi2w);
   fDCARPt->Fill(dcar, tPt);
+  fDCARPt2->Fill(dcar, tPt);  
   fDCAZPt->Fill(dcaz, tPt);
 }
 
@@ -203,6 +214,7 @@ void AliFemtoCutMonitorParticleYPt::Write()
   // fEtaPhiW->Write();
   // fEtaPtW->Write();
   fDCARPt->Write();
+  fDCARPt2->Write();  
   fDCAZPt->Write();
 }
 
@@ -217,6 +229,7 @@ TList *AliFemtoCutMonitorParticleYPt::GetOutputList()
   // tOutputList->Add(fEtaPhiW);
   // tOutputList->Add(fEtaPtW);
   tOutputList->Add(fDCARPt);
+  tOutputList->Add(fDCARPt2);  
   tOutputList->Add(fDCAZPt);
 
   return tOutputList;

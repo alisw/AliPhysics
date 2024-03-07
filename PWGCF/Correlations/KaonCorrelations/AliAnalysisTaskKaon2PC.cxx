@@ -59,6 +59,10 @@ ClassImp(AliAnalysisTaskKaon2PC)    // classimp: necessary for root
 //ClassImp(AliV0XiParticle)
 
 const Double_t Pi = TMath::Pi();
+const Double_t PIT = 6.28318530717958623;
+const Double_t noOfBins = 32;
+Double_t MaxFi = 2*TMath::Pi()+(-(int)(noOfBins/4)+0.5)*2*TMath::Pi()/noOfBins;  
+Double_t MinFi=(-(int)(noOfBins/4)+0.5)*2*TMath::Pi()/noOfBins;
 
 AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC() : AliAnalysisTaskSE(),  
 fAOD(0),
@@ -67,17 +71,23 @@ fOutputList(0),
 fPIDResponse(0),
 fPidpTDependentMethod(kTRUE),
 fRejectEventPileUp(kTRUE),
+skipmom(kFALSE),
+fRemoveResonance(kFALSE),
+fRemoveResonancek0s(kFALSE),
+fRemoveK0Resonance(kTRUE),
+fRemoveKchResonance(kTRUE),
+fRemovePhiResonance(kFALSE),
 fMinBias(kTRUE),
 fCentral(kFALSE),
 fSemiCentral(kFALSE),
 fData(kFALSE),
 fMCTruth(kTRUE),
-fMCReconstructed(kTRUE),
+fMCReconstructed(kFALSE),
 fMCArray(NULL),
 PVx(0), PVy(0), PVz(0),
 //track cuts 
 fLpTCut(0.4), 
-fUpTCut(0.8), 
+fUpTCut(1.0), 
 fEtaCut(0.8), 
 fSigCut(3.0),
 fBit(96),
@@ -87,7 +97,7 @@ fCentMax(10),
 //V0 cuts
 fDecayLv0Cut(8.05), 
 fLpTv0Cut(0.4), 
-fUpTv0Cut(0.8), 
+fUpTv0Cut(1.0), 
 fEtav0Cut(0.8), 
 fDcaPosToPrimVtxv0Cut(0.1), 
 fDcaNegToPrimVtxv0Cut(0.1), 
@@ -187,8 +197,8 @@ fNzVtxBins(20),
 fNCentBins(15),
 fKpKnCorr(kTRUE),
 fK0KchCorr(kTRUE),
-fKpKpCorr(kTRUE),
-fKnKnCorr(kTRUE),
+fK0KpCorr(kTRUE),
+fK0KnCorr(kTRUE),
 /*
 fNOfSamples(1.0),
 fSampleIndex(0.0),
@@ -202,6 +212,7 @@ fHistCF_KnKn_Bg(0),
 fHistCF_Bgz(0),
 fHistCF_KpKn_Bgz(0),
 //MC Truth
+fMCTracksCounter(0),
 fMCSelectedK0s(0),
 fMCSelectedKCh(0),
 fMCSelectedKpos(0),
@@ -216,15 +227,30 @@ fMCK0(0),
 fMCKpos(0),
 fMCKneg(0),
 fMCKch(0),
+fMCK0Cut(0),
+fMCKposCut(0),
+fMCKnegCut(0),
+fHistk0kch(0),
+fHistkpkn(0),
+fHistk0kp(0),
+fHistk0kn(0),
+fHistk0kch_Bg(0),
+fHistkpkn_Bg(0),
+fHistk0kp_Bg(0),
+fHistk0kn_Bg(0),
 fHistK0KchMC(0),
 fHistKpKnMC(0),
-fHistKpKpMC(0),
-fHistKnKnMC(0),
+fHistK0KpMC(0),
+fHistK0KnMC(0),
 fHistK0KchMC_Bg(0),
 fHistKpKnMC_Bg(0),
-fHistKpKpMC_Bg(0),
-fHistKnKnMC_Bg(0),
+fHistK0KpMC_Bg(0),
+fHistK0KnMC_Bg(0),
 fHistGenMultiplicity(0),
+fGetMom(0),
+fpdgCode(0),
+fpdgCodeaftercut(0),
+fpdgkch(0),
 //eventcuts
 fEventCuts(0)
 
@@ -239,18 +265,24 @@ fmcEvent(0),
 fOutputList(0), 
 fPIDResponse(0),
 fPidpTDependentMethod(kTRUE),
+skipmom(kFALSE),
 fRejectEventPileUp(kTRUE),
+fRemoveResonance(kFALSE),
+fRemoveResonancek0s(kFALSE),
+fRemoveK0Resonance(kTRUE),
+fRemoveKchResonance(kTRUE),
+fRemovePhiResonance(kFALSE),
 fMinBias(kTRUE),
 fCentral(kFALSE),
 fSemiCentral(kFALSE),
 fData(kFALSE),
 fMCTruth(kTRUE),
-fMCReconstructed(kTRUE),
+fMCReconstructed(kFALSE),
 fMCArray(NULL),
 PVx(0), PVy(0), PVz(0),
 //track cuts 
 fLpTCut(0.4), 
-fUpTCut(0.8), 
+fUpTCut(1.0), 
 fEtaCut(0.8), 
 fSigCut(3.0),
 fBit(96),
@@ -260,7 +292,7 @@ fCentMax(10),
 //V0 cuts
 fDecayLv0Cut(8.05), 
 fLpTv0Cut(0.4), 
-fUpTv0Cut(0.8), 
+fUpTv0Cut(1.0), 
 fEtav0Cut(0.8), 
 fDcaPosToPrimVtxv0Cut(0.1), 
 fDcaNegToPrimVtxv0Cut(0.1), 
@@ -360,8 +392,8 @@ fNzVtxBins(20),
 fNCentBins(15),
 fKpKnCorr(kTRUE),
 fK0KchCorr(kTRUE),
-fKpKpCorr(kTRUE),
-fKnKnCorr(kTRUE),
+fK0KpCorr(kTRUE),
+fK0KnCorr(kTRUE),
 /*
 fNOfSamples(1.0),
 fSampleIndex(0.0),
@@ -375,6 +407,7 @@ fHistCF_KnKn_Bg(0),
 fHistCF_Bgz(0),
 fHistCF_KpKn_Bgz(0),
 //MC Truth
+fMCTracksCounter(0),
 fMCSelectedK0s(0),
 fMCSelectedKCh(0),
 fMCSelectedKpos(0),
@@ -389,16 +422,31 @@ fMCK0(0),
 fMCKpos(0),
 fMCKneg(0),
 fMCKch(0),
+fMCK0Cut(0),
+fMCKposCut(0),
+fMCKnegCut(0),
+fHistk0kch(0),
+fHistkpkn(0),
+fHistk0kp(0),
+fHistk0kn(0),
+fHistk0kch_Bg(0),
+fHistkpkn_Bg(0),
+fHistk0kp_Bg(0),
+fHistk0kn_Bg(0),
 fHistK0KchMC(0),
 fHistKpKnMC(0),
-fHistKpKpMC(0),
-fHistKnKnMC(0),
+fHistK0KpMC(0),
+fHistK0KnMC(0),
 fHistK0KchMC_Bg(0),
 fHistKpKnMC_Bg(0),
-fHistKpKpMC_Bg(0),
-fHistKnKnMC_Bg(0),
+fHistK0KpMC_Bg(0),
+fHistK0KnMC_Bg(0),
 fHistGenMultiplicity(0),
 //eventcuts
+fGetMom(0),
+fpdgCode(0),
+fpdgCodeaftercut(0),
+fpdgkch(0),
 fEventCuts(0)
 
 
@@ -451,7 +499,12 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
 
     fPoolMgr = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins,fCentBins.data(), fNzVtxBins, fzVtxBins.data());
     if (!fPoolMgr) { AliError("Event Pool manager not created!"); return; }
-    fPoolMgr->SetTargetValues(fPoolMinNTracks, 0.1, 5);      
+    fPoolMgr->SetTargetValues(fPoolMinNTracks, 0.1, 5);
+
+    fGetMom = new TH1F("GetMother Index", "GetMother Index", 700, -200000, 200000);
+    fpdgCode = new TH1F("PDG of Mother Tracks", "PDG of Mother Tracks", 600, -600, 600);
+    fpdgCodeaftercut = new TH1F("PDG of Mother Tracks after cut", "PDG of Mother Tracks after cut", 600, -600, 600);
+    fpdgkch = new TH1F("PDG of kch mother Tracks", "PDG of kch mother tracks", 1000, -6000, 6000);
 
     //PID histograms
     fEnergy = new TH1F("fEnergy", "particle yield vs energy loss",800,0,200);
@@ -511,6 +564,7 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fHistNEvents = new TH1F("fHistNEvents", "fHistNEvents", 6, 0, 6);
     fMCEvents = new TH1F("fMCEvents", "fMCEvents", 6, 0, 6);
     fTracksCounter = new TH1F("fTracksCounter", "fTracksCounter", 4, 0, 4);
+    fMCTracksCounter = new TH1F("fMCTracksCounter", "fMCTracksCounter", 4, 0, 4);
     fMCEvents_pileup = new TH1F("fMCEvents_pileup", "fMCEvents_pileup", 1, 0, 1);
     fHistNV0 = new TH1F("fHistNV0","Number of V0s",100, 0, 5000);
     fHistEta = new TH1F("fHistEta", "fHistEta", 100, -5, 5);
@@ -688,9 +742,9 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
 
     //+++++++++++++++++++++ MC ++++++++++++++++++++++++++
 
-    Int_t bins[4] = {100,100,100,100};
-    Double_t min[4] = {fLpTCut,0,-1.0,0.4};
-    Double_t max[4] = {fUpTCut,2*Pi,1.0,0.6};
+    Int_t bins[3] = {100,100,100};
+    Double_t min[3] = {fLpTCut,0,-1.0};
+    Double_t max[3] = {fUpTCut,2*Pi,1.0};
 
     fMCK0Pt = new TH1F("fMCK0Pt", "", 100, fLpTv0Cut, fUpTv0Cut);
     fMCK0Pt->SetOption("HIST E p");
@@ -707,73 +761,112 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fMCKMinusPtfullRange = new TH1F("fMCKMinusPtfullRange", "", 100, 0, 2);
     fMCKMinusPtfullRange->SetOption("HIST E p");
     
-    fMCK0 = new THnSparseF("fMCK0","fMCK0",4,bins,min,max);
+    fMCK0 = new THnSparseF("fMCK0","fMCK0",3,bins,min,max);
     fMCK0->GetAxis(0)->SetTitle("p_{T} of K^{0}_{S}");
     fMCK0->GetAxis(1)->SetTitle("#phi");
     fMCK0->GetAxis(2)->SetTitle("#eta");
-    fMCK0->GetAxis(3)->SetTitle("mass");
 
-    fMCKpos = new THnSparseF("fMCKpos","fMCKpos",4,bins,min,max);
+    fMCKpos = new THnSparseF("fMCKpos","fMCKpos",3,bins,min,max);
     fMCKpos->GetAxis(0)->SetTitle("p_{T} of K^{+}");
     fMCKpos->GetAxis(1)->SetTitle("#phi of K^{+}");
     fMCKpos->GetAxis(2)->SetTitle("#eta of K^{+}");
-    fMCKpos->GetAxis(3)->SetTitle("mass of K^{+}");
 
-    fMCKneg = new THnSparseF("fMCKneg","fMCKneg",4,bins,min,max);
+    fMCKneg = new THnSparseF("fMCKneg","fMCKneg",3,bins,min,max);
     fMCKneg->GetAxis(0)->SetTitle("p_{T} of K^{-}");
     fMCKneg->GetAxis(1)->SetTitle("#phi of K^{-}");
     fMCKneg->GetAxis(2)->SetTitle("#eta of K^{-}");
-    fMCKneg->GetAxis(3)->SetTitle("mass of K^{-}");
 
-    fMCKch = new THnSparseF("fMCKch","fMCKch",4,bins,min,max);
+    fMCKch = new THnSparseF("fMCKch","fMCKch",3,bins,min,max);
     fMCKch->GetAxis(0)->SetTitle("p_{T} of K^{ch}");
     fMCKch->GetAxis(1)->SetTitle("#phi of K^{ch}");
     fMCKch->GetAxis(2)->SetTitle("#eta of K^{ch}");
-    fMCKch->GetAxis(3)->SetTitle("mass of K^{ch}");
+
+    // QA plots after resonance cut
+
+    fMCK0Cut = new THnSparseF("fMCK0Cut","fMCK0Cut",3,bins,min,max);
+
+    fMCKposCut = new THnSparseF("fMCKposCut","fMCKposCut",3,bins,min,max);
+
+    fMCKnegCut = new THnSparseF("fMCKnegCut","fMCKnegCut",3,bins,min,max);
+    
+
+    fHistk0kch = new TH2F("fHistk0kch","",32,MinFi,MaxFi,32,-1.6, 1.6);
+    fHistk0kch->GetXaxis()->SetTitle("#Delta#varphi ");
+    fHistk0kch->GetYaxis()->SetTitle("#Delta#eta");
+    fHistk0kch->SetOption("SURF1");
+
+    //MC truth correlations
 
     fHistK0KchMC = new TH2F("fHistK0KchMC","K^{0}-K^{ch} Correlation for MC Truth",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
-    fHistK0KchMC->GetXaxis()->SetTitle("#Delta#phi ");
+    fHistK0KchMC->GetXaxis()->SetTitle("#Delta#varphi ");
     fHistK0KchMC->GetYaxis()->SetTitle("#Delta#eta");
     fHistK0KchMC->SetOption("SURF1");
 
+    fHistkpkn = new TH2F("fHistkpkn","",32,MinFi,MaxFi,32,-1.6, 1.6);
+    fHistkpkn->GetXaxis()->SetTitle("#Delta#varphi ");
+    fHistkpkn->GetYaxis()->SetTitle("#Delta#eta");
+    fHistkpkn->SetOption("SURF1");
+
     fHistKpKnMC = new TH2F("fHistKpKnMC","K^{+}-K^{-} Correlation for MC Truth",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
-    fHistKpKnMC->GetXaxis()->SetTitle("#Delta#phi ");
+    fHistKpKnMC->GetXaxis()->SetTitle("#Delta#varphi ");
     fHistKpKnMC->GetYaxis()->SetTitle("#Delta#eta");
     fHistKpKnMC->SetOption("SURF1");
 
-    fHistKpKpMC = new TH2F("fHistKpKpMC","K^{+}-K^{+} Correlation for MC Truth",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
-    fHistKpKpMC->GetXaxis()->SetTitle("#Delta#phi ");
-    fHistKpKpMC->GetYaxis()->SetTitle("#Delta#eta");
-    fHistKpKpMC->SetOption("SURF1");
+    fHistk0kp = new TH2F("fHistk0kp","",32, MinFi,MaxFi,32,-1.6, 1.6);
+    fHistk0kp->GetXaxis()->SetTitle("#Delta#phi ");
+    fHistk0kp->GetYaxis()->SetTitle("#Delta#eta");
+    fHistk0kp->SetOption("SURF1");
 
-    fHistKnKnMC = new TH2F("fHistKnKnMC","K^{+}-K^{-} Correlation for MC Truth",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
-    fHistKnKnMC->GetXaxis()->SetTitle("#Delta#phi ");
-    fHistKnKnMC->GetYaxis()->SetTitle("#Delta#eta");
-    fHistKnKnMC->SetOption("SURF1");
+    fHistK0KpMC = new TH2F("fHistK0KpMC","K^{0}-K^{+} Correlation for MC Truth",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
+    fHistK0KpMC->GetXaxis()->SetTitle("#Delta#phi ");
+    fHistK0KpMC->GetYaxis()->SetTitle("#Delta#eta");
+    fHistK0KpMC->SetOption("SURF1");
+
+    fHistk0kn = new TH2F("fHistk0kn","",32,MinFi,MaxFi,32,-1.6, 1.6);
+    fHistk0kn->GetXaxis()->SetTitle("#Delta#phi ");
+    fHistk0kn->GetYaxis()->SetTitle("#Delta#eta");
+    fHistk0kn->SetOption("SURF1");
+
+    fHistK0KnMC = new TH2F("fHistK0KnMC","K^{0}-K^{-} Correlation for MC Truth",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
+    fHistK0KnMC->GetXaxis()->SetTitle("#Delta#varphi ");
+    fHistK0KnMC->GetYaxis()->SetTitle("#Delta#eta");
+    fHistK0KnMC->SetOption("SURF1");
+
+    fHistk0kch_Bg = new TH2F("fHistk0kch_Bg","K^{0}-K^{ch} Background ",32,MinFi,MaxFi,32,-1.6, 1.6);
+    fHistk0kch_Bg->SetOption("SURF1");
+    fHistkpkn_Bg = new TH2F("fHistkpkn_Bg","K^{+}-K^{-} Background ",32,MinFi,MaxFi,32,-1.6, 1.6);
+    fHistkpkn_Bg->SetOption("SURF1");
+    fHistk0kp_Bg = new TH2F("fHistk0kp_Bg","K^{0}-K^{+} Background ",32,MinFi,MaxFi,32,-1.6, 1.6);
+    fHistk0kp_Bg->SetOption("SURF1");
+    fHistk0kn_Bg = new TH2F("fHistk0kn_Bg","K^{0}-K^{-} Background ",32,MinFi,MaxFi,32,-1.6, 1.6);
+    fHistk0kn_Bg->SetOption("SURF1");
 
     fHistK0KchMC_Bg = new TH2F("fHistK0KchMC_Bg","K^{0}-K^{ch} Background Correlation for MC Truth",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
-    fHistK0KchMC_Bg->GetXaxis()->SetTitle("#Delta#phi ");
+    fHistK0KchMC_Bg->GetXaxis()->SetTitle("#Delta#varphi ");
     fHistK0KchMC_Bg->GetYaxis()->SetTitle("#Delta#eta");
     fHistK0KchMC_Bg->SetOption("SURF1");
 
     fHistKpKnMC_Bg = new TH2F("fHistKpKnMC_Bg","K^{+}-K^{-} Correlation Background for MC Truth",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
-    fHistKpKnMC_Bg->GetXaxis()->SetTitle("#Delta#phi ");
+    fHistKpKnMC_Bg->GetXaxis()->SetTitle("#Delta#varphi ");
     fHistKpKnMC_Bg->GetYaxis()->SetTitle("#Delta#eta");
     fHistKpKnMC_Bg->SetOption("SURF1");
 
-    fHistKpKpMC_Bg = new TH2F("fHistKpKpMC_Bg","K^{+}-K^{+} Correlation Background for MC Truth",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
-    fHistKpKpMC_Bg->GetXaxis()->SetTitle("#Delta#phi ");
-    fHistKpKpMC_Bg->GetYaxis()->SetTitle("#Delta#eta");
-    fHistKpKpMC_Bg->SetOption("SURF1");
+    fHistK0KpMC_Bg = new TH2F("fHistK0KpMC_Bg","K^{0}-K^{+} Correlation Background for MC Truth",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
+    fHistK0KpMC_Bg->GetXaxis()->SetTitle("#Delta#varphi ");
+    fHistK0KpMC_Bg->GetYaxis()->SetTitle("#Delta#eta");
+    fHistK0KpMC_Bg->SetOption("SURF1");
 
-    fHistKnKnMC_Bg = new TH2F("fHistKnKnMC_Bg","K^{-}-K^{-} Correlation Background for MC Truth",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
-    fHistKnKnMC_Bg->GetXaxis()->SetTitle("#Delta#phi ");
-    fHistKnKnMC_Bg->GetYaxis()->SetTitle("#Delta#eta");
-    fHistKnKnMC_Bg->SetOption("SURF1");
+    fHistK0KnMC_Bg = new TH2F("fHistK0KnMC_Bg","K^{0}-K^{-} Correlation Background for MC Truth",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
+    fHistK0KnMC_Bg->GetXaxis()->SetTitle("#Delta#varphi ");
+    fHistK0KnMC_Bg->GetYaxis()->SetTitle("#Delta#eta");
+    fHistK0KnMC_Bg->SetOption("SURF1");
 
     fHistGenMultiplicity = new TH1D ("fHistGenMultiplicity","fHistGenMultiplicity",500,0,500);
 
-
+    fOutputList->Add(fGetMom);
+    fOutputList->Add(fpdgCode);
+    fOutputList->Add(fpdgCodeaftercut);
+    fOutputList->Add(fpdgkch);
     fOutputList->Add(fEnergy);
     fOutputList->Add(fEnergyCuts);
     fOutputList->Add(fPID);
@@ -793,6 +886,7 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fOutputList->Add(fHistNEvents);
     fOutputList->Add(fMCEvents);
     fOutputList->Add(fTracksCounter);
+    fOutputList->Add(fMCTracksCounter);
     fOutputList->Add(fMCEvents_pileup);
     fOutputList->Add(fHistNV0);
     fOutputList->Add(fHistEta);
@@ -863,6 +957,9 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fOutputList->Add(fMCKpos);
     fOutputList->Add(fMCKneg);
     fOutputList->Add(fMCKch);
+    fOutputList->Add(fMCK0Cut);
+    fOutputList->Add(fMCKposCut);
+    fOutputList->Add(fMCKnegCut);
     fOutputList->Add(fMCK0Pt);
     fOutputList->Add(fMCK0PtfullRange);
     fOutputList->Add(fMCKPlusPt);
@@ -871,12 +968,20 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fOutputList->Add(fMCKMinusPtfullRange);
     fOutputList->Add(fHistK0KchMC);
     fOutputList->Add(fHistKpKnMC);
-    fOutputList->Add(fHistKpKpMC);
-    fOutputList->Add(fHistKnKnMC);
+    fOutputList->Add(fHistK0KpMC);
+    fOutputList->Add(fHistK0KnMC);
+    fOutputList->Add(fHistk0kch);
+    fOutputList->Add(fHistkpkn);
+    fOutputList->Add(fHistk0kp);
+    fOutputList->Add(fHistk0kn);
+    fOutputList->Add(fHistk0kch_Bg);
+    fOutputList->Add(fHistkpkn_Bg);
+    fOutputList->Add(fHistk0kp_Bg);
+    fOutputList->Add(fHistk0kn_Bg);
     fOutputList->Add(fHistK0KchMC_Bg);
     fOutputList->Add(fHistKpKnMC_Bg);
-    fOutputList->Add(fHistKpKpMC_Bg);
-    fOutputList->Add(fHistKnKnMC_Bg);
+    fOutputList->Add(fHistK0KpMC_Bg);
+    fOutputList->Add(fHistK0KnMC_Bg);
     fOutputList->Add(fHistGenMultiplicity);
     
     fEventCuts.AddQAplotsToList(fOutputList);
@@ -1091,6 +1196,7 @@ Bool_t AliAnalysisTaskKaon2PC::SelectKchTracksMC(AliMCParticle *mcTrack ) {
 
 void AliAnalysisTaskKaon2PC::RunData() {
 
+
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());    
     if(!fAOD) return;
 
@@ -1178,6 +1284,7 @@ void AliAnalysisTaskKaon2PC::RunData() {
         if (fabs(nSigmaelectron) < 2.0) continue;          // excluding electrons via TPC
         if (fabs(nSigmapion) < 2.0) continue;              // excluding pions via TPC
         if (fabs(nSigmaproton) < 2.0) continue;              // excluding protons via TPC
+        if (fabs(nSigmakaon)<3.0) {fPIDKaon->Fill(track->Pt(),track->GetTPCsignal());}
         if (fabs(nSigmakaon)<2.0) {
             fPIDK->Fill(track->Pt(),track->GetTPCsignal());
             fNsigmaKaon->Fill(track->Pt(), nSigmakaon);
@@ -1242,7 +1349,6 @@ for(Int_t i=0; i < iTracks; i++) {
     if (!(fabs(nSigmakaon)<fSigCut)) continue;
     if (!(fabs(nSigmaTOFkaon)<fSigCut)) continue;
 
-    fPIDKaon->Fill(track->Pt(),track->GetTPCsignal());
     fNsigmaTPCTOFK->Fill(track->Pt(), nSigmaTOFkaon);
     fHistTOFKch->Fill(trackPt, beta);
     fHistKChPtfullRange->Fill(trackPt);
@@ -1314,7 +1420,6 @@ for(Int_t i=0; i < iTracks; i++) {
     Double_t trackEta = track->Eta();
     Double_t trackPt = track->Pt();
 
-    fPIDKaon->Fill(track->Pt(),track->GetTPCsignal());
     fNsigmaTPCTOFK->Fill(track->Pt(), nSigmaTOFkaon);
     fHistTOFKch->Fill(trackPt, beta);
     fHistKChPtfullRange->Fill(trackPt);
@@ -1672,7 +1777,7 @@ Int_t nMix = pool->GetCurrentNEvents();
 
 }
 
-if (fKpKpCorr){
+if (fK0KpCorr){
 
 if(pool->IsReady() || pool->NTracksInPool() > fPoolMinNTracks ||  pool->GetCurrentNEvents() >= fMinEventsToMix) {
 
@@ -1706,7 +1811,7 @@ Int_t nMix = pool->GetCurrentNEvents();
 
 }
 
-if (fKnKnCorr){
+if (fK0KnCorr){
 
 if(pool->IsReady() || pool->NTracksInPool() > fPoolMinNTracks ||  pool->GetCurrentNEvents() >= fMinEventsToMix) {
 
@@ -1778,9 +1883,13 @@ fMCEvents->Fill(2.5);
 
 Double_t CentV0M = fEventCuts.GetCentrality(); //centrality for MC
 if ((CentV0M < fCentMin)||(CentV0M > fCentMax)) return;
-cout << "centrality values for MC gen are" << CentV0M << endl;
+//cout << "centrality values for MC gen are" << CentV0M << endl;
 
 Int_t nAcceptedParticles =0;
+Int_t nTrackswithoutMother =0;
+Int_t nTrackswithMother =0;
+Int_t nTracksResonancecut=0;
+
 AliMCParticle *mcTrack = 0x0;
 
 fmcEvent  = dynamic_cast<AliMCEvent*> (MCEvent());
@@ -1806,7 +1915,7 @@ AliAODMCHeader *mcHeader = 0;
 AliVVertex * mcVertex = (AliVVertex*)fmcEvent->GetPrimaryVertex();
 Double_t vzMC = mcVertex->GetZ();
 if (TMath::Abs(vzMC) >= fPVzCut) return;
-cout << "pvz values from truth are" << vzMC << endl;
+//cout << "pvz values from truth are" << vzMC << endl;
 
 fMCEvents->Fill(3.5);
 
@@ -1820,7 +1929,7 @@ if(!fMCArray){
 //Int_t nMCTracks = fmcEvent->GetNumberOfTracks(); // MC Truth, Total number of tracks per event
 
 Int_t nMCAllTracks =fMCArray->GetEntriesFast();
-cout << "mc tracks without" << nMCAllTracks << endl;
+//cout << "mc tracks without" << nMCAllTracks << endl;
 // new tracks array - without injected signal
 TObjArray * mcTracks = new TObjArray;
 AliVTrack *genTrackMix = 0x0;
@@ -1837,33 +1946,21 @@ for (Int_t i = 0; i < nMCAllTracks; i++){
 
 Int_t nMCTracks = mcTracks->GetEntriesFast();
 
-for (Int_t i = 0; i < nMCTracks; i++){
-    AliMCParticle *mcTrack = (AliMCParticle*)fmcEvent->GetTrack(i);
-    if (!mcTrack) {
-        Error("ReadEventAODMC", "Could not receive particle %d", i);
-        continue;
-    }
-
-    Double_t trackPseudorap = mcTrack->Eta();
-    if( mcTrack->IsPhysicalPrimary()&&mcTrack->Charge()!=0&&((trackPseudorap>-0.8&&trackPseudorap<0.8))) {
-                nAcceptedParticles += 1;
-            }
-}
-
-cout << "number of accepted particles from MC tracks is"<< nAcceptedParticles << endl;
-
 fMCEvents->Fill(4.5);
-fHistGenMultiplicity->Fill(nAcceptedParticles);
 
 fHistCent_mcgen->Fill(CentV0M);
 
 AliMCParticle *mcMotherParticle = 0x0;
 AliMCParticle* daughter0 = 0x0;
 AliMCParticle* daughter1 = 0x0;
+AliMCParticle* momTrack = 0x0;
+AliMCParticle* MotherTrack = 0x0;
+
 Bool_t SelectK0;
 Bool_t SelectKpos;
 Bool_t SelectKneg;
 Bool_t SelectKch;
+Int_t pdgMother = 0;
 
 fMCSelectedK0s = new TObjArray;
 fMCSelectedK0s->SetOwner(kTRUE);
@@ -1881,15 +1978,28 @@ fMCEvents->Fill(5.5);
 
 for (Int_t i = 0; i < nMCTracks; i++){
 	mcTrack = (AliMCParticle*)fmcEvent->GetTrack(i);
-
-    if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fmcEvent)) continue; 
-
     if (!mcTrack) continue;
 
+    fMCTracksCounter->Fill(0.5);
+
+    Bool_t isTPCPileup = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i,fmcEvent);
+    //Bool_t isITSPileup = AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(fmcEvent, "Hijing");
+    //if (isTPCPileup || isITSPileup) continue;
+    if (isTPCPileup) continue;
+
+    //if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fmcEvent)) continue; 
+
+    fMCTracksCounter->Fill(1.5);
+
     if(! (fabs(mcTrack->Eta()) < fEtaCut)) continue; 
-        
+
+    fMCTracksCounter->Fill(2.5);
+
     Int_t mcPartPdg = mcTrack->PdgCode();
     Bool_t isPhysPrim = mcTrack->IsPhysicalPrimary();
+    if(! (mcTrack->IsPhysicalPrimary())) continue;
+
+    fMCTracksCounter->Fill(3.5);
 
     SelectK0 =  mcPartPdg==310&& (isPhysPrim);  // (8010 total. When we include only primary, 7546)-310 for neutral
     SelectKpos = mcPartPdg==321&& (isPhysPrim); // 321 is the code for positive kaons
@@ -1908,12 +2018,15 @@ for (Int_t i = 0; i < nMCTracks; i++){
 
     if (!(TrackPt <= fUpTCut)) continue;
     if (!(TrackPt >= fLpTCut)) continue;
-    
-    Double_t KaonVariables[4]= {TrackPt, TrackPhi, TrackEta, TrackMass};
+
+    nAcceptedParticles += 1;
+
+    Double_t KaonVariables[3]= {TrackPt, TrackPhi, TrackEta};
     if(SelectK0) {
         fMCK0->Fill(KaonVariables);
         fMCK0Pt->Fill(TrackPt);
     }
+    
     if(SelectKpos) {
         fMCKpos->Fill(KaonVariables);
         fMCKPlusPt->Fill(TrackPt);
@@ -1925,19 +2038,57 @@ for (Int_t i = 0; i < nMCTracks; i++){
     }
     if(SelectKch) fMCKch->Fill(KaonVariables);
 
-    if(SelectK0) fMCSelectedK0s->Add(mcTrack);
+    Int_t labMom = mcTrack->GetMother();
+    MotherTrack = (AliMCParticle *)fmcEvent->GetTrack(labMom);
+    fGetMom->Fill(labMom);
+
+    if (skipmom) if (labMom < 0) continue; // not implemented
+
+    if (SelectKch) {
+        if (labMom >0) {
+            Int_t pdgMomKch = MotherTrack->PdgCode();
+            fpdgkch->Fill(pdgMomKch);
+        }
+    }
+
+    if (fRemoveKchResonance) {  
+        if (SelectKch){  
+            if (labMom!= -1) continue;
+        }
+    }
+    
+
+    if (fRemoveK0Resonance) {
+        if (SelectK0){
+            pdgMother = MotherTrack->PdgCode();
+            fpdgCode->Fill(pdgMother);   // pdg code of mother tracks of neutral kaons
+            if (!(pdgMother == 311 || pdgMother == -311)) continue;
+            fpdgCodeaftercut->Fill(pdgMother);
+        }
+    }
+
+    if (SelectKpos) { fMCKposCut->Fill(KaonVariables); }
+    if (SelectKneg) { fMCKnegCut->Fill(KaonVariables); }
+    if (SelectK0) { fMCK0Cut->Fill(KaonVariables); }
+
+    nTracksResonancecut += 1;
+    //cout << "nTracksResonancecut is" << nTracksResonancecut << endl;
+
+    //if (labMom > 0) nTrackswithMother += 1;
+    //if (labMom < 0) nTrackswithoutMother += 1;
+    
+    
     if(SelectKch) fMCSelectedKCh->Add(mcTrack);
     if(SelectKpos) fMCSelectedKpos->Add(mcTrack);
     if(SelectKneg) fMCSelectedKneg->Add(mcTrack);
-
-	Bool_t TrIsPrim = mcTrack->IsPhysicalPrimary();
-	Bool_t TrCharge = (mcTrack->Charge())!=0;
-    Short_t cha;
-    if (mcTrack->Charge()>0) cha=1.;
-    else if (mcTrack->Charge()<0) cha= -1.;
-    else cha =0;
+    if(SelectK0) fMCSelectedK0s->Add(mcTrack);
 
 }
+//cout << "ntracks with mother is" << nTrackswithMother << endl;
+//cout << "ntracks without mother is" << nTrackswithoutMother << endl;
+//cout << "naccepted tracks is" << nAcceptedParticles << endl;
+
+fHistGenMultiplicity->Fill(nAcceptedParticles);
 //Int_t nmck0 =  fMCSelectedK0s->GetEntries();
 //cout << "nmck0 is" << nmck0 << endl;
 
@@ -1945,21 +2096,39 @@ for (Int_t i = 0; i < nMCTracks; i++){
 
 for (Int_t i = 0; i < fMCSelectedK0s->GetEntries(); i++){
     AliVParticle* mcTrack1 = dynamic_cast<AliVParticle*>(fMCSelectedK0s->At(i));
-    //if (!SelectK0TracksMC(mcTrack1)) continue;
     if (!mcTrack1) continue;
-    //if(! (mcTrack1->IsPhysicalPrimary()&&mcTrack1->Charge()!=0&&((trackPseudorap>-0.8&&trackPseudorap<0.8)))) continue;
+    if (! (mcTrack1->Charge()==0)) continue;
     Double_t phi1 = mcTrack1->Phi();
     Double_t eta1 = mcTrack1->Eta();
     
     for (Int_t j = 0; j < fMCSelectedKCh->GetEntries(); j++){
         AliVParticle* mcTrack2 = dynamic_cast<AliVParticle*>(fMCSelectedKCh->At(j));
-        //if (!SelectKchTracksMC(mcTrack2)) continue;
         if (!mcTrack2) continue;
+
+        Int_t labMom1 = mcTrack1->GetMother();
+        Int_t labMom2 = mcTrack2->GetMother();
+        Int_t pdgMom;
+        
+        if (fRemoveResonancek0s) {
+            if (labMom2 >= 0) {
+
+                momTrack = (AliMCParticle *)fmcEvent->GetTrack(labMom2);
+                pdgMom = momTrack->PdgCode();
+
+                if (pdgMom != 0) {
+                    // Ignore pairs with particle ID nonzero
+                    continue;
+                }
+            }
+        }
         Double_t phi2 = mcTrack2->Phi();
         Double_t eta2 = mcTrack2->Eta();
 
-        Double_t DEta = fabs(eta1 - eta2);
-        Double_t DPhi = fabs(phi1 - phi2);
+        Double_t DEta = eta1 - eta2;
+        Double_t DPhi = phi1 - phi2;
+        while (DPhi<MinFi) DPhi+=PIT;
+        while (DPhi>MaxFi) DPhi-=PIT;
+        fHistk0kch->Fill(DPhi,DEta);
         Fill2DHistMCTruth(DPhi,DEta,fHistK0KchMC);
     }
 
@@ -1970,64 +2139,118 @@ for (Int_t i = 0; i < fMCSelectedK0s->GetEntries(); i++){
 for (Int_t i = 0; i < fMCSelectedKpos->GetEntries(); i++){
     AliVParticle* mcTrack1 = dynamic_cast<AliVParticle*>(fMCSelectedKpos->At(i));
     if (!mcTrack1) continue;
-    //if (!SelectKPosTracksMC(mcTrack1)) continue;
     Double_t phi1 = mcTrack1->Phi();
     Double_t eta1 = mcTrack1->Eta();
     
     for (Int_t j = 0; j < fMCSelectedKneg->GetEntries(); j++){
         AliVParticle* mcTrack2 = dynamic_cast<AliVParticle*>(fMCSelectedKneg->At(j));
         if (!mcTrack2) continue;
-        //if (!SelectKNegTracksMC(mcTrack2)) continue;
-        Double_t trackPseudorap = mcTrack2->Eta();
+
+        Int_t labMom1 = mcTrack1->GetMother();
+        Int_t labMom2 = mcTrack2->GetMother();
+        Int_t pdgMom;
+
+        if (fRemovePhiResonance) {
+            if (labMom1 == labMom2 && labMom1 >= 0) {
+
+                momTrack = (AliMCParticle *)fmcEvent->GetTrack(labMom1);
+                pdgMom = momTrack->PdgCode();
+
+                //cout << "labmom1 is " << labMom1 << "labmom2 is " << labMom2 << endl;
+                //cout << "pdgcode is" << pdgMom << endl;
+
+                if (pdgMom == 333) {
+                    // Ignore pairs with particle ID 333 == Phi Meson
+                    continue;
+                }
+            }
+        }
+
+        if (fRemoveResonance) {
+            if (labMom1 == labMom2 && labMom1 >= 0) {
+
+                momTrack = (AliMCParticle *)fmcEvent->GetTrack(labMom1);
+                pdgMom = momTrack->PdgCode();
+
+                if (pdgMom != 0) {
+                    fpdgCodeaftercut->Fill(pdgMom);
+                    // Ignore pairs with particle ID 333 == Phi Meson
+                    continue;
+                }
+            }
+        }
         Double_t phi2 = mcTrack2->Phi();
         Double_t eta2 = mcTrack2->Eta();
-        Double_t DEta = fabs(eta1 - eta2);
-        Double_t DPhi = fabs(phi1 - phi2);
+        Double_t DEta = eta1 - eta2;
+        Double_t DPhi = phi1 - phi2;
+        while (DPhi<MinFi) DPhi+=PIT;
+        while (DPhi>MaxFi) DPhi-=PIT;
+        fHistkpkn->Fill(DPhi,DEta);
         Fill2DHistMCTruth(DPhi,DEta,fHistKpKnMC);
     }
 
 }
 
-//============ MC Generated K+K+ Correlation ============
+//============ MC Generated K0K+ Correlation ============
 
-for (Int_t i = 0; i < fMCSelectedKpos->GetEntries(); i++){
-    AliVParticle* mcTrack1 = dynamic_cast<AliVParticle*>(fMCSelectedKpos->At(i));
-    //if (!SelectKPosTracksMC(mcTrack1)) continue;
+for (Int_t i = 0; i < fMCSelectedK0s->GetEntries(); i++){
+    AliVParticle* mcTrack1 = dynamic_cast<AliVParticle*>(fMCSelectedK0s->At(i));
     if (!mcTrack1) continue;
+    if (! (mcTrack1->Charge()==0)) continue;
     Double_t phi1 = mcTrack1->Phi();
     Double_t eta1 = mcTrack1->Eta();
     
-    for (Int_t j = i+1; j < fMCSelectedKpos->GetEntries(); j++){
+    for (Int_t j = 0; j < fMCSelectedKpos->GetEntries(); j++){
         AliVParticle* mcTrack2 = dynamic_cast<AliVParticle*>(fMCSelectedKpos->At(j));
-        //if (!SelectKPosTracksMC(mcTrack2)) continue;
         if (!mcTrack2) continue;
+
+        Int_t labMom1 = mcTrack1->GetMother();
+        Int_t labMom2 = mcTrack2->GetMother();
+        
+        if (fRemoveResonancek0s) {
+            if (labMom1 >0 || labMom2 > 0) continue;
+        }
         Double_t phi2 = mcTrack2->Phi();
         Double_t eta2 = mcTrack2->Eta();
-        Double_t DEta = fabs(eta1 - eta2);
-        Double_t DPhi = fabs(phi1 - phi2);
-        Fill2DHistMCTruth(DPhi,DEta,fHistKpKpMC);
+
+        Double_t DEta = eta1 - eta2;
+        Double_t DPhi = phi1 - phi2;
+        while (DPhi<MinFi) DPhi+=PIT;
+        while (DPhi>MaxFi) DPhi-=PIT;
+        fHistk0kp->Fill(DPhi,DEta);
+        Fill2DHistMCTruth(DPhi,DEta,fHistK0KpMC);
     }
 
 }
 
-//============ MC Generated K-K- Correlation ============
+//============ MC Generated K0K- Correlation ============
 
-for (Int_t i = 0; i < fMCSelectedKneg->GetEntries(); i++){
-    AliVParticle* mcTrack1 = dynamic_cast<AliVParticle*>(fMCSelectedKneg->At(i));
-    //if (!SelectKNegTracksMC(mcTrack1)) continue;
+for (Int_t i = 0; i < fMCSelectedK0s->GetEntries(); i++){
+    AliVParticle* mcTrack1 = dynamic_cast<AliVParticle*>(fMCSelectedK0s->At(i));
     if (!mcTrack1) continue;
+    if (! (mcTrack1->Charge()==0)) continue;
     Double_t phi1 = mcTrack1->Phi();
     Double_t eta1 = mcTrack1->Eta();
     
-    for (Int_t j = i+1; j < fMCSelectedKneg->GetEntries(); j++){
+    for (Int_t j = 0; j < fMCSelectedKneg->GetEntries(); j++){
         AliVParticle* mcTrack2 = dynamic_cast<AliVParticle*>(fMCSelectedKneg->At(j));
-        //if (!SelectKNegTracksMC(mcTrack2)) continue;
         if (!mcTrack2) continue;
+
+        Int_t labMom1 = mcTrack1->GetMother();
+        Int_t labMom2 = mcTrack2->GetMother();
+        
+        if (fRemoveResonancek0s) {
+            if (labMom1 >0 || labMom2 > 0) continue;
+        }
         Double_t phi2 = mcTrack2->Phi();
         Double_t eta2 = mcTrack2->Eta();
-        Double_t DEta = fabs(eta1 - eta2);
-        Double_t DPhi = fabs(phi1 - phi2);
-        Fill2DHistMCTruth(DPhi,DEta,fHistKnKnMC);
+
+        Double_t DEta = eta1 - eta2;
+        Double_t DPhi = phi1 - phi2;
+        while (DPhi<MinFi) DPhi+=PIT;
+        while (DPhi>MaxFi) DPhi-=PIT;
+        fHistk0kn->Fill(DPhi,DEta);
+        Fill2DHistMCTruth(DPhi,DEta,fHistK0KnMC);
     }
 
 }
@@ -2057,9 +2280,12 @@ Int_t nMix = pool->GetCurrentNEvents();
             //AliAODTrack* KChAssoc = dynamic_cast<AliAODTrack*> (bgTracks->At(iAss));
             if (!KChAssoc) continue;
 
-            Double_t DPhiMix = fabs(K0Trig->Phi() - KChAssoc->Phi());
-            Double_t DEtaMix = fabs(K0Trig->Eta() - KChAssoc->Eta());
+            Double_t DPhiMix = K0Trig->Phi() - KChAssoc->Phi();
+            Double_t DEtaMix = K0Trig->Eta() - KChAssoc->Eta();
+            while (DPhiMix<MinFi) DPhiMix+=PIT;
+            while (DPhiMix>MaxFi) DPhiMix-=PIT;
 
+            fHistk0kch_Bg->Fill(DPhiMix,DEtaMix);
             Fill2DHist(DPhiMix,DEtaMix,fHistK0KchMC_Bg);
             //Fill3DHist(DPhiMix,DEtaMix,PVz,fHistCF_Bgz);
 
@@ -2089,11 +2315,14 @@ Int_t nMix = pool->GetCurrentNEvents();
             for (Int_t iAss(0); iAss < bgTracks2->GetEntries(); iAss++){
             AliVParticle* KaonAssoc = dynamic_cast<AliVParticle*> (bgTracks2->At(iAss));
             if(!KaonAssoc) continue;
-            if( KaonAssoc->Charge() > 0.0 ) continue;
+            if(! (KaonAssoc->Charge() < 0.0) ) continue;
 
-            Double_t DPhiMix = fabs(KaonTrig->Phi() - KaonAssoc->Phi());
-            Double_t DEtaMix = fabs(KaonTrig->Eta() - KaonAssoc->Eta());
+            Double_t DPhiMix = KaonTrig->Phi() - KaonAssoc->Phi();
+            Double_t DEtaMix = KaonTrig->Eta() - KaonAssoc->Eta();
+            while (DPhiMix<MinFi) DPhiMix+=PIT;
+            while (DPhiMix>MaxFi) DPhiMix-=PIT;
 
+            fHistkpkn_Bg->Fill(DPhiMix,DEtaMix);
             Fill2DHist(DPhiMix,DEtaMix,fHistKpKnMC_Bg);
             //Fill3DHist(DPhiMix,DEtaMix,PVz,fHistCF_KpKn_Bgz);
 
@@ -2107,7 +2336,7 @@ Int_t nMix = pool->GetCurrentNEvents();
 
 }
 
-if (fKpKpCorr){
+if (fK0KpCorr){
 
 if(pool->IsReady() || pool->NTracksInPool() > fPoolMinNTracks ||  pool->GetCurrentNEvents() >= fMinEventsToMix) {
 
@@ -2116,20 +2345,22 @@ Int_t nMix = pool->GetCurrentNEvents();
     for (Int_t jMix=0; jMix< nMix; jMix++){
         TObjArray* bgTracks2 = pool->GetEvent(jMix);  //bgTracks are from the mixed events
 
-        for(Int_t iTrig(0); iTrig < fMCSelectedKpos->GetEntries(); iTrig++){
-            AliVParticle* KaonTrig = dynamic_cast<AliVParticle*>(fMCSelectedKpos->At(iTrig));
+        for(Int_t iTrig(0); iTrig < fMCSelectedK0s->GetEntries(); iTrig++){
+            AliVParticle* KaonTrig = dynamic_cast<AliVParticle*>(fMCSelectedK0s->At(iTrig));
             if(!KaonTrig) continue;
-            if( KaonTrig->Charge() < 0.0 ) continue;
 
-            for (Int_t iAss(iTrig+1); iAss < bgTracks2->GetEntries(); iAss++){
+            for (Int_t iAss(0); iAss < bgTracks2->GetEntries(); iAss++){
             AliVParticle* KaonAssoc = dynamic_cast<AliVParticle*> (bgTracks2->At(iAss));
             if(!KaonAssoc) continue;
-            if( KaonAssoc->Charge() < 0.0 ) continue;
+            if(! (KaonAssoc->Charge() > 0.0)) continue;
 
-            Double_t DPhiMix = fabs(KaonTrig->Phi() - KaonAssoc->Phi());
-            Double_t DEtaMix = fabs(KaonTrig->Eta() - KaonAssoc->Eta());
+            Double_t DPhiMix = KaonTrig->Phi() - KaonAssoc->Phi();
+            Double_t DEtaMix = KaonTrig->Eta() - KaonAssoc->Eta();
+            while (DPhiMix<MinFi) DPhiMix+=PIT;
+            while (DPhiMix>MaxFi) DPhiMix-=PIT;
 
-            Fill2DHist(DPhiMix,DEtaMix,fHistKpKpMC_Bg);
+            fHistk0kp_Bg->Fill(DPhiMix,DEtaMix);
+            Fill2DHist(DPhiMix,DEtaMix,fHistK0KpMC_Bg);
             //Fill3DHist(DPhiMix,DEtaMix,PVz,fHistCF_KpKn_Bgz);
 
             } //end of k- loop end
@@ -2142,7 +2373,7 @@ Int_t nMix = pool->GetCurrentNEvents();
 
 }
 
-if (fKnKnCorr){
+if (fK0KnCorr){
 
 if(pool->IsReady() || pool->NTracksInPool() > fPoolMinNTracks ||  pool->GetCurrentNEvents() >= fMinEventsToMix) {
 
@@ -2151,20 +2382,22 @@ Int_t nMix = pool->GetCurrentNEvents();
     for (Int_t jMix=0; jMix< nMix; jMix++){
         TObjArray* bgTracks2 = pool->GetEvent(jMix);  //bgTracks are from the mixed events
 
-        for(Int_t iTrig(0); iTrig < fMCSelectedKneg->GetEntries(); iTrig++){
-            AliVParticle* KaonTrig = dynamic_cast<AliVParticle*>(fMCSelectedKneg->At(iTrig));
+        for(Int_t iTrig(0); iTrig < fMCSelectedK0s->GetEntries(); iTrig++){
+            AliVParticle* KaonTrig = dynamic_cast<AliVParticle*>(fMCSelectedK0s->At(iTrig));
             if(!KaonTrig) continue;
-            if( KaonTrig->Charge() > 0.0 ) continue;
 
-            for (Int_t iAss(iTrig+1); iAss < bgTracks2->GetEntries(); iAss++){
+            for (Int_t iAss(0); iAss < bgTracks2->GetEntries(); iAss++){
             AliVParticle* KaonAssoc = dynamic_cast<AliVParticle*> (bgTracks2->At(iAss));
             if(!KaonAssoc) continue;
-            if( KaonAssoc->Charge() > 0.0 ) continue;
+            if(! (KaonAssoc->Charge() < 0.0) ) continue;
 
-            Double_t DPhiMix = fabs(KaonTrig->Phi() - KaonAssoc->Phi());
-            Double_t DEtaMix = fabs(KaonTrig->Eta() - KaonAssoc->Eta());
+            Double_t DPhiMix = KaonTrig->Phi() - KaonAssoc->Phi();
+            Double_t DEtaMix = KaonTrig->Eta() - KaonAssoc->Eta();
+            while (DPhiMix<MinFi) DPhiMix+=PIT;
+            while (DPhiMix>MaxFi) DPhiMix-=PIT;
 
-            Fill2DHist(DPhiMix,DEtaMix,fHistKnKnMC_Bg);
+            fHistk0kn_Bg->Fill(DPhiMix,DEtaMix);
+            Fill2DHist(DPhiMix,DEtaMix,fHistK0KnMC_Bg);
             //Fill3DHist(DPhiMix,DEtaMix,PVz,fHistCF_KpKn_Bgz);
 
             } //end of k- loop end
@@ -2340,7 +2573,6 @@ for(Int_t i=0; i < iTracks; i++) {
     if (!(fabs(nSigmakaon)<fSigCut)) continue;
     if (!(fabs(nSigmaTOFkaon)<fSigCut)) continue;
 
-    fPIDKaon->Fill(track->Pt(),track->GetTPCsignal());
     fNsigmaTPCTOFK->Fill(track->Pt(), nSigmaTOFkaon);
     fHistTOFKch->Fill(trackPt, beta);
     fHistKChPtfullRange->Fill(trackPt);
@@ -2787,7 +3019,7 @@ Int_t nMix = pool->GetCurrentNEvents();
 
 }
 
-if (fKpKpCorr){
+if (fK0KpCorr){
 
 if(pool->IsReady() || pool->NTracksInPool() > fPoolMinNTracks ||  pool->GetCurrentNEvents() >= fMinEventsToMix) {
 
@@ -2821,7 +3053,7 @@ Int_t nMix = pool->GetCurrentNEvents();
 
 }
 
-if (fKnKnCorr){
+if (fK0KnCorr){
 
 if(pool->IsReady() || pool->NTracksInPool() > fPoolMinNTracks ||  pool->GetCurrentNEvents() >= fMinEventsToMix) {
 
@@ -2883,6 +3115,8 @@ void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
 }
 
 //====================  Filling functions  =========================
+
+
 
 void AliAnalysisTaskKaon2PC::Fill2DHist(Double_t DPhi, Double_t DEta, TH2F* hist){
     DPhi = fabs(DPhi);

@@ -5,7 +5,7 @@ class TClonesArray;
 
 #include <TF1.h>
 #include "AliAnalysisTaskEmcal.h"
-
+#include "AliYAMLConfiguration.h"
 //#include "AliAnalysisTaskSE.h"
 
 //class AliEmcalAodTrackFilterTask : public AliAnalysisTaskSE {
@@ -35,8 +35,14 @@ class AliEmcalAodTrackFilterTask : public AliAnalysisTaskEmcal {
   void               SetUseNegativeLabels(Bool_t f)                       { fUseNegativeLabels = f   ; }
   void               SetTrackEfficiency(Double_t eff = 0.95)              { fTrackEfficiency  = new TF1("eff", "[0]", 0, 500); fTrackEfficiency->FixParameter(0,eff); }
   void               SetKeepInvMassTag(Bool_t f)                          { fKeepInvMassTag = f ; } 
+  void               SetTrackEfficiencyOnlyForEmbedding(Bool_t b)         { fTrackEfficiencyOnlyForEmbedding = b; }
   void               SetTrackEfficiency(TF1* eff)                         { fTrackEfficiency  = eff  ; }
 
+  void                   SetApplyPtDependentTrackingEfficiency(Bool_t b=kFALSE) { fApplyPtDependentTrackingEfficiency = b; }
+  void                   SetArtificialTrackingEfficiencyFromYAML();
+  void                   AddArtificialTrackingEfficiencyConfig();
+
+  Bool_t                 GetTrackEfficiencyOnlyForEmbedding() { return fTrackEfficiencyOnlyForEmbedding; }
  protected:
   void               UserCreateOutputObjects();
 //  void               UserExec(Option_t *option);
@@ -54,16 +60,22 @@ class AliEmcalAodTrackFilterTask : public AliAnalysisTaskEmcal {
   Bool_t             fAttemptProp;          // if true then attempt to propagate if not done yet
   Bool_t             fAttemptPropMatch;     // if true then attempt to propagate if not done yet but IsEMCAL is true
   Bool_t             fKeepInvMassTag;     // if true then pass in track container labels for tagging tracks in jets
+  Bool_t             fTrackEfficiencyOnlyForEmbedding; ///< Apply aritificial tracking inefficiency only for embedded tracks
   Double_t           fDist;                 // distance to surface (440cm default)
   TF1               *fTrackEfficiency;      // track efficiency
   TClonesArray      *fTracksIn;             //!track array in
   TClonesArray      *fTracksOut;            //!track array out
+  TH1D              *fTrackEfficiencyHistogram;///< Histogram that describes the artificial tracking efficiency to be applied on top of the nominal tracking efficiency, as a function of track pT
+  std::vector<TH1D*> fTrackEfficiencyHistogramVector;///< Histogram that describes the artificial tracking efficiency to be applied on top of the nominal tracking efficiency, as a function of track pT
+  Bool_t             fApplyPtDependentTrackingEfficiency; ///< Flag to apply pt-dependent tracking efficiency
+  PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< yaml configuration
+
 
  private:
   AliEmcalAodTrackFilterTask(const AliEmcalAodTrackFilterTask&);            // not implemented
   AliEmcalAodTrackFilterTask &operator=(const AliEmcalAodTrackFilterTask&); // not implemented
 
-  ClassDef(AliEmcalAodTrackFilterTask, 7); // Task to filter Aod tracks
+  ClassDef(AliEmcalAodTrackFilterTask, 9); // Task to filter Aod tracks
 };
 #endif
 

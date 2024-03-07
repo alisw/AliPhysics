@@ -192,6 +192,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fMinM20(0),
   fUseM20(0),
   fMaxMGGRecConv(0),
+  fConvRejMinAngle(0),
+  fConvRejMaxOpenAngle(0.),
   fUseRecConv(0),
   fMaxDispersion(1000),
   fUseDispersion(0),
@@ -205,6 +207,11 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fIsPureCalo(0),
   fNactiveEmcalCells(0),
   fDoSecondaryTrackMatching(kFALSE),
+  fDoEnergyCorrectionForOverlap(0),
+  fFuncPoissonParamCent(0),
+  fFuncNMatchedTracks(0),
+  fParamMeanTrackPt{0., 0., 0.},
+  fMeanNMatchedTracks(0),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
   fCutStringRead(""),
@@ -308,6 +315,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistClusterENMatchesCharged(NULL),
   fHistClusterEvsTrackEPrimaryButNoElec(NULL),
   fHistClusterEvsTrackSumEPrimaryButNoElec(NULL),
+  fHistClusterNMatched(NULL),
   fHistClusETruePi0_BeforeTM(NULL),
   fHistClusETruePi0_Matched(NULL),
   fHistMatchedTrackPClusE(NULL),
@@ -326,6 +334,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistElectronClusterNCellsVsE(NULL),
   fHistInvMassDiCluster(NULL),
   fHistInvMassConvFlagging(NULL),
+  fHistDiClusterAngle(NULL),
   fNMaxDCalModules(8),
   fgkDCALCols(32),
   fIsAcceptedForBasic(kFALSE)
@@ -436,6 +445,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fMinM20(ref.fMinM20),
   fUseM20(ref.fUseM20),
   fMaxMGGRecConv(ref.fMaxMGGRecConv),
+  fConvRejMinAngle(ref.fConvRejMinAngle),
+  fConvRejMaxOpenAngle(ref.fConvRejMaxOpenAngle),
   fUseRecConv(ref.fUseRecConv),
   fMaxDispersion(ref.fMaxDispersion),
   fUseDispersion(ref.fUseDispersion),
@@ -449,6 +460,11 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fIsPureCalo(ref.fIsPureCalo),
   fNactiveEmcalCells(ref.fNactiveEmcalCells),
   fDoSecondaryTrackMatching(ref.fDoSecondaryTrackMatching),
+  fDoEnergyCorrectionForOverlap(ref.fDoEnergyCorrectionForOverlap),
+  fFuncPoissonParamCent(ref.fFuncPoissonParamCent),
+  fFuncNMatchedTracks(ref.fFuncNMatchedTracks),
+  fParamMeanTrackPt{ref.fParamMeanTrackPt[0], ref.fParamMeanTrackPt[1], ref.fParamMeanTrackPt[2]},
+  fMeanNMatchedTracks(ref.fMeanNMatchedTracks),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
   fCutStringRead(""),
@@ -552,6 +568,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistClusterENMatchesCharged(NULL),
   fHistClusterEvsTrackEPrimaryButNoElec(NULL),
   fHistClusterEvsTrackSumEPrimaryButNoElec(NULL),
+  fHistClusterNMatched(NULL),
   fHistClusETruePi0_BeforeTM(NULL),
   fHistClusETruePi0_Matched(NULL),
   fHistMatchedTrackPClusE(NULL),
@@ -570,6 +587,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistElectronClusterNCellsVsE(NULL),
   fHistInvMassDiCluster(NULL),
   fHistInvMassConvFlagging(NULL),
+  fHistDiClusterAngle(NULL),
   fNMaxDCalModules(ref.fNMaxDCalModules),
   fgkDCALCols(ref.fgkDCALCols),
   fIsAcceptedForBasic(ref.fIsAcceptedForBasic)
@@ -599,6 +617,8 @@ AliCaloPhotonCuts::~AliCaloPhotonCuts() {
   if(fFuncTimingEfficiencyMCSimCluster) delete fFuncTimingEfficiencyMCSimCluster;
   if(fFuncTimingEfficiencyMCSimClusterHighPt) delete fFuncTimingEfficiencyMCSimClusterHighPt;
   if(fFuncNCellCutEfficiencyEMCal) delete fFuncNCellCutEfficiencyEMCal;
+  if(fFuncPoissonParamCent) delete fFuncPoissonParamCent;
+  if(fFuncNMatchedTracks) delete fFuncNMatchedTracks;
 }
 
 //________________________________________________________________________
@@ -977,7 +997,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistNLMVsEAfterQA->GetYaxis()->SetTitle("E_{cl} (GeV)");
     fHistograms->Add(fHistNLMVsEAfterQA);
 
-    if (GetIsConversionRecovery() > 0){
+    if (GetIsConversionRecovery() == 1){
       fHistInvMassDiCluster      = new TH2F(Form("InvMass_ClusterPair %s",GetCutNumber().Data()),"InvMass_ClusterPair",100,0,0.1,100,0,20);
       fHistInvMassDiCluster->GetXaxis()->SetTitle("M_{cl,cl} (GeV/c^{2})");
       fHistInvMassDiCluster->GetYaxis()->SetTitle("p_{T} (GeV/c)");
@@ -986,6 +1006,10 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistInvMassConvFlagging->GetXaxis()->SetTitle("M_{cl,cl} (GeV/c^{2})");
       fHistInvMassConvFlagging->GetYaxis()->SetTitle("p_{T} (GeV/c)");
       fHistograms->Add(fHistInvMassConvFlagging);
+    } else if ( GetIsConversionRecovery() == 2){
+      fHistDiClusterAngle = new TH1F(Form("DiClusterAngle %s", GetCutNumber().Data()), Form("DiClusterAngle %s", GetCutNumber().Data()), 100, 0, 3.5);
+      fHistDiClusterAngle->GetXaxis()->SetTitle("tan^{-1}(#Delta #Theta / #Delta #Phi)");
+      fHistograms->Add(fHistDiClusterAngle);
     }
 
     if(fExtendedMatchAndQA > 0 || fIsPureCalo > 0){
@@ -1686,6 +1710,10 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterdPhidPtAfterQA->GetYaxis()->SetTitle("p_{T} (GeV/c)");
       fHistograms->Add(fHistClusterdPhidPtAfterQA);
 
+      fHistClusterNMatched                           = new TH1F(Form("NMatchedTracks %s",GetCutNumber().Data()),"NMatchedTracks",20,-0.5,19.5);
+      fHistClusterNMatched->GetXaxis()->SetTitle("#it{N}_{matched}");
+      fHistograms->Add(fHistClusterNMatched);
+
       if(fIsMC > 0 && fIsPureCalo == 0){ // these histograms are so far only used in conjunction with PCM, namely in MatchConvPhotonToCluster
         fHistClusterdEtadPtTrueMatched                = new TH2F(Form("dEtaVsPt_TrueMatched %s",GetCutNumber().Data()),"dEtaVsPt_TrueMatched",nEtaBins,EtaRange[0],EtaRange[1],
                                                                   nBinsClusterEMod, arrClusEBinning);
@@ -1740,6 +1768,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistClusterdPhidPtPosTracksBeforeQA->Sumw2();
         fHistClusterdPhidPtNegTracksBeforeQA->Sumw2();
         fHistClusterdPhidPtAfterQA->Sumw2();
+        fHistClusterNMatched->Sumw2();
         if(fIsPureCalo == 0){
           fHistClusterdEtadPtTrueMatched->Sumw2();
           fHistClusterdPhidPtPosTracksTrueMatched->Sumw2();
@@ -2814,6 +2843,19 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   else
     leadMCLabel         = ((AliAODCaloCluster*)cluster)->GetLabel();
 
+  Int_t nlabelsMatchedTracks      = 0;
+  if (fUsePtDepTrackToCluster == 0 && fUseDistTrackToCluster){
+    nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta,
+                                                                                      fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
+  }
+  else if (fUsePtDepTrackToCluster == 1 && fUseDistTrackToCluster){
+    nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
+  }
+
+  if(fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5) {
+    fHistClusterNMatched->Fill(nlabelsMatchedTracks);
+  }
+
   // TM efficiency histograms before TM
   if (fIsMC && isMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5) && fUseDistTrackToCluster  && !(fIsPureCalo > 0 && cluster->E() < 10.)
       && fUsePtDepTrackToCluster < 2){
@@ -2894,13 +2936,6 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       }
     }
 
-    Int_t nlabelsMatchedTracks      = 0;
-    if (fUsePtDepTrackToCluster == 0)
-      nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta,
-                                                                                      fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
-    else if (fUsePtDepTrackToCluster == 1)
-      nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
-
     if (classification < 4 && classification > -1) {
       fHistClusterENMatchesNeutral->Fill(cluster->E(), nlabelsMatchedTracks);
     } else if (classification == 4 || classification == 5) {
@@ -2950,10 +2985,10 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
           fHistClusterTMEffiInput->Fill(cluster->E(), 23., weight); // El cl match
 
         vector<Int_t> labelsMatchedTracks;
-        if (fUsePtDepTrackToCluster == 0)
+        if (fUsePtDepTrackToCluster == 0 && fUseDistTrackToCluster)
           labelsMatchedTracks           = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fMaxDistTrackToClusterEta, -fMaxDistTrackToClusterEta,
                                                                                           fMaxDistTrackToClusterPhi, fMinDistTrackToClusterPhi);
-        else if  (fUsePtDepTrackToCluster == 1)
+        else if  (fUsePtDepTrackToCluster == 1 && fUseDistTrackToCluster)
           labelsMatchedTracks           = fCaloTrackMatcher->GetMatchedTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
 
         //Int_t idHighestPt = -1;
@@ -5027,7 +5062,8 @@ void AliCaloPhotonCuts::PrintCutsWithValues(const TString analysisCutSelection) 
   if (fUseM02 == 1) printf("\t %3.2f < M02 < %3.2f\n", fMinM02, fMaxM02 );
   if (fUseM02 == 2) printf("\t energy dependent M02 cut used with cutnumber min: %d  max: %d \n", fMinM02CutNr, fMaxM02CutNr );
   if (fUseM20) printf("\t %3.2f < M20 < %3.2f\n", fMinM20, fMaxM20 );
-  if (fUseRecConv) printf("\t recovering conversions for  Mgg < %3.3f\n", fMaxMGGRecConv );
+  if (fUseRecConv == 1) printf("\t recovering conversions for  Mgg < %3.3f\n", fMaxMGGRecConv );
+  else if (fUseRecConv == 2) printf("\t recovering conversions with angles below < %3.3f, max. opening angle = %3.3f\n", fConvRejMinAngle, fConvRejMaxOpenAngle );
   if (fUseDispersion) printf("\t dispersion < %3.2f\n", fMaxDispersion );
   if (fUseNLM) printf("\t %d < NLM < %d\n", fMinNLM, fMaxNLM );
   printf("Correction Task Setting: %s \n",fCorrTaskSetting.Data());
@@ -6004,6 +6040,84 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fMaxDistTrackToClusterEta = 0.1;
       fMinDistTrackToClusterPhi = -0.1;
       fMaxDistTrackToClusterPhi = 0.1;
+      break;
+    case 29: // cut char 't' (no TM but with mean energy correction for overlap), only use with cell tm!
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
+      fUseDistTrackToCluster = kFALSE;
+      fMaxDistTrackToClusterEta = 0;
+      fMinDistTrackToClusterPhi = 0;
+      fMaxDistTrackToClusterPhi = 0;
+      fFuncPoissonParamCent = new TF1("fFuncPoissonParamCent29", "[0] * TMath::Exp( (x + [1] ) / [2] )", 0., 90.);
+      fFuncNMatchedTracks = new TF1("fFuncNMatchedTracks29", "TMath::Poisson(x,[0])", 0., 10.);
+      fDoEnergyCorrectionForOverlap = 1;
+      if(fIsMC >= 1){
+        // values for HIJING 5.02 TeV Pb--Pb simulations
+        fParamMeanTrackPt[0] = +6.20104e-01;
+        fParamMeanTrackPt[1] = -2.62817e-04;
+        fParamMeanTrackPt[2] = -2.13551e-06;
+      } else{
+        // values for data 5.02 TeV Pb--Pb
+        fParamMeanTrackPt[0] = +6.82971e-01;
+        fParamMeanTrackPt[1] = +2.33711e-04;
+        fParamMeanTrackPt[2] = -1.93788e-05;
+      }
+      break;
+
+    case 30: // cut char 'u' (no TM but with random energy correction for overlap), only use with cell tm!
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
+      fUseDistTrackToCluster = kFALSE;
+      fMaxDistTrackToClusterEta = 0;
+      fMinDistTrackToClusterPhi = 0;
+      fMaxDistTrackToClusterPhi = 0;
+      fFuncPoissonParamCent = new TF1("fFuncPoissonParamCent30", "[0] * TMath::Exp( (x + [1] ) / [2] )", 0., 90.);
+      fFuncNMatchedTracks = new TF1("fFuncNMatchedTracks30", "TMath::Poisson(x,[0])", 0., 10.);
+      fDoEnergyCorrectionForOverlap = 2;
+      if(fIsMC >= 1){
+        // values for HIJING 5.02 TeV Pb--Pb simulations
+        fParamMeanTrackPt[0] = +6.20104e-01;
+        fParamMeanTrackPt[1] = -2.62817e-04;
+        fParamMeanTrackPt[2] = -2.13551e-06;
+      } else{
+        // values for data 5.02 TeV Pb--Pb
+        fParamMeanTrackPt[0] = +6.82971e-01;
+        fParamMeanTrackPt[1] = +2.33711e-04;
+        fParamMeanTrackPt[2] = -1.93788e-05;
+      }
+      break;
+
+    case 31: // cut char 'v' (no TM but with mean energy correction for overlap using mean charge particle per cell), only use with cell tm!
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
+      fUseDistTrackToCluster = kFALSE;
+      fMaxDistTrackToClusterEta = 0;
+      fMinDistTrackToClusterPhi = 0;
+      fMaxDistTrackToClusterPhi = 0;
+      fFuncNMatchedTracks = new TF1("fFuncNMatchedTracks31", "pol3", 0., 90.);
+      fDoEnergyCorrectionForOverlap = 3;
+      fFuncNMatchedTracks->SetParameters(6.79381e-02, -2.29978e-03, 2.80462e-05, -1.22743e-07);
+      if(fIsMC >= 1){
+        // values for HIJING 5.02 TeV Pb--Pb simulations
+        fParamMeanTrackPt[0] = +6.20104e-01;
+        fParamMeanTrackPt[1] = -2.62817e-04;
+        fParamMeanTrackPt[2] = -2.13551e-06;
+      } else{
+        // values for data 5.02 TeV Pb--Pb
+        fParamMeanTrackPt[0] = +6.82971e-01;
+        fParamMeanTrackPt[1] = +2.33711e-04;
+        fParamMeanTrackPt[2] = -1.93788e-05;
+      }
+      break;
+    
+    case 32: // cut char 'w' NonLin like fitted to pp 13 TeV
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      if (!fUseEOverPVetoTM) fUseEOverPVetoTM=kTRUE;
+      fUseDistTrackToCluster = kFALSE;
+      fMaxDistTrackToClusterEta = 0;
+      fMinDistTrackToClusterPhi = 0;
+      fMaxDistTrackToClusterPhi = 0;
+      fDoEnergyCorrectionForOverlap = 4;
       break;
 
     default:
@@ -7166,6 +7280,26 @@ Bool_t AliCaloPhotonCuts::SetRecConv(Int_t recConv)
     case 9:
       if (!fUseRecConv) fUseRecConv=1;
       fMaxMGGRecConv=0.007;
+      break;
+    case 10: // open cut to allow histograms to be enabled for conv. rejection
+      if (!fUseRecConv) fUseRecConv=2;
+      fConvRejMinAngle = 0.;
+      fConvRejMaxOpenAngle = 1.;
+      break;
+    case 11:
+      if (!fUseRecConv) fUseRecConv=2;
+      fConvRejMinAngle = 0.02;
+      fConvRejMaxOpenAngle = 0.2;
+      break;
+    case 12:
+      if (!fUseRecConv) fUseRecConv=2;
+      fConvRejMinAngle = 0.05;
+      fConvRejMaxOpenAngle = 0.2;
+      break;
+    case 13:
+      if (!fUseRecConv) fUseRecConv=2;
+      fConvRejMinAngle = 0.1;
+      fConvRejMaxOpenAngle = 0.2;
       break;
     default:
       AliError(Form("Conversion Recovery Cut not defined %d",recConv));
@@ -10347,40 +10481,71 @@ Bool_t AliCaloPhotonCuts::CheckForReconstructedConversionPairs( vector<AliAODCon
 
   Bool_t rejected   = kFALSE;
   if(vecPhotons.size()>0){
-    for(Int_t firstGammaIndex=0;firstGammaIndex<(Int_t)vecPhotons.size();firstGammaIndex++){
-      AliAODConversionPhoton *gamma1=vecPhotons.at(firstGammaIndex);
-      if (gamma1==NULL){
-        CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kTRUE);
-        continue;
-      }
-      TLorentzVector photon1;
-      photon1.SetPxPyPzE (gamma1->Px(), gamma1->Py(), gamma1->Pz(), gamma1->E() );
 
-      for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<(Int_t)vecPhotons.size();secondGammaIndex++){
-        AliAODConversionPhoton *gamma2=vecPhotons.at(secondGammaIndex);
-        if (gamma2==NULL){
-          CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kTRUE);
+    // method 1: Reject 2 clusters based on their combined invariant mass. If mass is below threshold, likely to be conversions
+    if(fUseRecConv == 1){
+      for(Int_t firstGammaIndex=0;firstGammaIndex<(Int_t)vecPhotons.size();firstGammaIndex++){
+        AliAODConversionPhoton *gamma1=vecPhotons.at(firstGammaIndex);
+        if (gamma1==NULL){
+          CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kTRUE);
           continue;
         }
-        TLorentzVector photon2;
-        photon2.SetPxPyPzE (gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E() );
+        TLorentzVector photon1;
+        photon1.SetPxPyPzE (gamma1->Px(), gamma1->Py(), gamma1->Pz(), gamma1->E() );
 
-        TLorentzVector mesonCand;
-        mesonCand = photon1+photon2;
-        fHistInvMassDiCluster->Fill(mesonCand.M(), mesonCand.Pt());
-        if (mesonCand.M() < fMaxMGGRecConv){
-          fHistInvMassConvFlagging->Fill(mesonCand.M(), mesonCand.Pt());
-          if (CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kFALSE)) AliDebug(2,"1st gamma already rejected");
-          if (CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kFALSE)) AliDebug(2,"2nd gamma already rejected");
-          rejected = kTRUE;
-          if (gamma1->E() < gamma2->E())
-            CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kTRUE);
-          else
+        for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<(Int_t)vecPhotons.size();secondGammaIndex++){
+          AliAODConversionPhoton *gamma2=vecPhotons.at(secondGammaIndex);
+          if (gamma2==NULL){
             CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kTRUE);
+            continue;
+          }
+          TLorentzVector photon2;
+          photon2.SetPxPyPzE (gamma2->Px(), gamma2->Py(), gamma2->Pz(), gamma2->E() );
+
+          TLorentzVector mesonCand;
+          mesonCand = photon1+photon2;
+          fHistInvMassDiCluster->Fill(mesonCand.M(), mesonCand.Pt());
+          if (mesonCand.M() < fMaxMGGRecConv){
+            fHistInvMassConvFlagging->Fill(mesonCand.M(), mesonCand.Pt());
+            if (CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kFALSE)) AliDebug(2,"1st gamma already rejected");
+            if (CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kFALSE)) AliDebug(2,"2nd gamma already rejected");
+            rejected = kTRUE;
+            if (gamma1->E() < gamma2->E())
+              CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kTRUE);
+            else
+              CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kTRUE);
+          }
+        }
+      }
+      // method 2: Angular cut (PsiPair like): Conversion should only bend due to magnetic field. Therefore, a cut on the difference in the z-position is performed
+    } else if (fUseRecConv == 2) {
+
+      for(Int_t firstGammaIndex=0;firstGammaIndex<(Int_t)vecPhotons.size();firstGammaIndex++){
+        AliAODConversionPhoton *gamma1=vecPhotons.at(firstGammaIndex);
+        if (gamma1==NULL){
+          CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kTRUE);
+          continue;
+        }
+        for(Int_t secondGammaIndex=firstGammaIndex+1;secondGammaIndex<(Int_t)vecPhotons.size();secondGammaIndex++){
+          AliAODConversionPhoton *gamma2=vecPhotons.at(secondGammaIndex);
+          if (gamma2==NULL){
+            CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kTRUE);
+            continue;
+          }
+          
+          auto convRejAngles = GetAngleForConvReject(gamma1, gamma2);
+          fHistDiClusterAngle->Fill(convRejAngles.first);
+          if(convRejAngles.first < fConvRejMinAngle && convRejAngles.second < fConvRejMaxOpenAngle){
+            CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kTRUE);
+            CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kTRUE);
+            rejected=true;
+          }
         }
       }
     }
   }
+
+  // 
   if (rejected){
     AliDebug(2,"================================================================================");
     AliDebug(2,"================================================================================");
@@ -10390,6 +10555,36 @@ Bool_t AliCaloPhotonCuts::CheckForReconstructedConversionPairs( vector<AliAODCon
     AliDebug(2,"================================================================================");
   }
   return rejected;
+}
+
+//_________________________________________________________________________________
+// Function to calculate the angle between two clusters relative to the z-direction
+// Similar to Psi-Pair cut: Conversion are supposed to only bend in mag. field and therefore
+// dTheta(and with that also atanAngle) should be close to 0
+//_________________________________________________________________________________
+std::pair<double, double> AliCaloPhotonCuts::GetAngleForConvReject(const TLorentzVector &photon1, const TLorentzVector &photon2)
+{
+  double theta1 = photon1.Theta();
+  double theta2 = photon2.Theta();
+  double dTheta = std::abs(theta1-theta2);
+  double phi1 = photon1.Phi();
+  double phi2 = photon2.Phi();
+  double dPhi = std::abs(phi1 - phi2);
+  double atanAngle = dPhi == 0 ? TMath::Pi() : atan(dTheta/dPhi);
+  std::pair<double, double> arr(atanAngle, photon1.Angle(photon2.Vect()));
+  return arr;
+}
+
+//_________________________________________________________________________________
+// Wrapper function for AliAODConversionPhoton. For explanation see function above
+//_________________________________________________________________________________
+std::pair<double, double> AliCaloPhotonCuts::GetAngleForConvReject(const AliAODConversionPhoton *photon1, const AliAODConversionPhoton *photon2)
+{
+  TLorentzVector LV1;
+  LV1.SetPxPyPzE (photon1->Px(), photon1->Py(), photon1->Pz(), photon1->E() );
+  TLorentzVector LV2;
+  LV2.SetPxPyPzE (photon2->Px(), photon2->Py(), photon2->Pz(), photon2->E() );
+  return GetAngleForConvReject(LV1, LV2);
 }
 
 //_________________________________________________________________________________
@@ -10518,6 +10713,98 @@ void AliCaloPhotonCuts::CleanClusterLabels(AliVCluster* clus,AliMCEvent *mcEvent
      // Set new Efrac
      clus->SetClusterMCEdepFractionFromEdepArray(newEFrac);
 }
+
+// Function to set the parameters of fFuncPoissonParamCent which describes the
+// centrality dependens of the parameter of a poisson function to describe the
+// number of primary matched tracks per cluster in PbPb 5 TeV
+Bool_t AliCaloPhotonCuts::SetPoissonParamCentFunction(int isMC){
+
+  if(fDoEnergyCorrectionForOverlap > 2){
+    return true;
+  }
+
+  switch (isMC){
+    if(!fFuncPoissonParamCent){
+      AliFatal("fFuncPoissonParamCent is still NULL!");
+      return false;
+    }
+    case 0: //data
+      // TODO: Needs to be checked!
+      fFuncPoissonParamCent->SetParameters(5.53930e3, 3.27510e2, -3.81302e1);
+      break;
+    case 1: // MC
+      fFuncPoissonParamCent->SetParameters(4.61262e2, 2.39373e2, -3.79710e1);
+      break;
+    case 2: //JJMC
+      // TODO: Needs to be checked!
+      fFuncPoissonParamCent->SetParameters(4.61262e2, 2.39373e2, -3.79710e1);
+      break;
+    default:
+      fFuncPoissonParamCent->SetParameters(0, 0, 0);
+      AliFatal("isMC value not recognized!");
+      return false;
+  }
+  return true;
+}
+
+// Function to set the parameter of fFuncNMatchedTracks which describes the
+// centrality dependens of the number of primary matched tracks per cluster
+// in PbPb 5 TeV. Needs the mean centrality to get the parameter from
+// fFuncPoissonParamCent
+Bool_t AliCaloPhotonCuts::SetNMatchedTracksFunc(float meanCent){
+
+  if(!fFuncPoissonParamCent || !fFuncNMatchedTracks){
+    AliFatal("fFuncPoissonParamCent or fFuncNMatchedTracks is still NULL!");
+    return false;
+  }
+  if(fDoEnergyCorrectionForOverlap > 2){
+    AliFatal("fFuncPoissonParamCent not needed in this case!");
+    return false;
+  }
+
+  fFuncNMatchedTracks->SetParameter(0, fFuncPoissonParamCent->Eval(meanCent));
+  fMeanNMatchedTracks = fFuncNMatchedTracks->Mean(0.0, 8.0);
+  return true;
+}
+
+// Function to get the energy value to subtract from a cluster to account for
+// neutral overlap in PbPb 5 TeV
+Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent, float E){
+  switch (fDoEnergyCorrectionForOverlap){
+    case 0:
+      return 0.;
+    case 1:
+      return 0.5 * fMeanNMatchedTracks * GetMeanEForOverlap(meanCent, fParamMeanTrackPt);
+    case 2:
+      return 0.5 * fFuncNMatchedTracks->GetRandom(0.0, 8.0) * GetMeanEForOverlap(meanCent, fParamMeanTrackPt);
+    case 3:
+      return 0.5 * fFuncNMatchedTracks->Eval(meanCent) * GetMeanEForOverlap(meanCent, fParamMeanTrackPt);
+    case 4:
+      if(meanCent < 10){
+        if(E > 3.5) E = 3.5;
+        return 1.09645e+00 - 3.49489e-01 * E + 1.56646e-01 * E * E - 2.03620e-02 * E * E * E;
+      } else if (meanCent < 30){
+        if(E > 3.8) E = 3.8;
+        return 1.03972e+00 - 1.79650e-01 * E + 8.41570e-02 * E * E - 1.13454e-02 * E * E * E;
+      } else if (meanCent < 50){
+        if(E > 3.3) E = 3.3;
+        return 1.00734e+00 - 6.42114e-02 * E + 3.03931e-02 * E * E - 4.16131e-03 * E * E * E;
+      } else {
+        if(E > 3.5) E = 3.5;
+        return 9.95241e-01 - 1.49339e-02 * E + 8.08355e-03 * E * E - 1.33936e-03 * E * E * E;
+      }
+    default:
+      return 0;
+  }
+}
+
+// Function to get the mean energy of neutral overlap photons
+// part of neutral overlap correction for PbPb 5 TeV
+Double_t AliCaloPhotonCuts::GetMeanEForOverlap(Double_t cent, Double_t* par){
+  return par[0] + cent * par[1] + cent * cent * par[2];
+}
+
+
 //________________________________________________________________________
 // Function to clean MC labels of given cluster from labels containing garbage
 // from productions INSIDE the calorimeter (e.g. shower particles)

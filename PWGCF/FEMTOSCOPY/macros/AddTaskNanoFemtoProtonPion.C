@@ -18,8 +18,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     int PionFilterbit = 96, //7
     bool DoPairCleaning = false, //8
     bool DoAncestors = false, //9
-    bool RemoveMCResonances = true, //10
-    bool RemoveMCResonanceDaughters = true, //11
+    bool RemoveMCResonances = false, //10
+    bool RemoveMCResonanceDaughters = false, //11
     bool DoInvMass = false, //12
     bool DoResonanceLorentzFactor = false, //13
     bool DoFinemTBinning = false, //14
@@ -28,7 +28,9 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     float pTOnepTTwokStarCutOff = 3., //17
     bool DoKine = false, //18
     bool DoReco = false, //19
-    const char *cutVariation = "0" //20
+    bool SwitchOffCPR = false, //20
+    float PionMinPt = 0.14, //21
+    const char *cutVariation = "0" //22
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -73,6 +75,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   TrackCutsPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
   TrackCutsPion->SetFilterBit(PionFilterbit);
   TrackCutsPion->SetCutCharge(1);
+  TrackCutsPion->SetPtRange(PionMinPt, 4.0);
 
   if(isMC && PionFilterbit == 128){ //for MC template fits
     TrackCutsPion->CheckParticleMothers(true);
@@ -83,6 +86,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   TrackCutsAntiPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
   TrackCutsAntiPion->SetFilterBit(PionFilterbit);
   TrackCutsAntiPion->SetCutCharge(-1);
+  TrackCutsAntiPion->SetPtRange(PionMinPt, 4.0);
   
   if(isMC && PionFilterbit == 128){ //for MC template fits
     TrackCutsAntiPion->CheckParticleMothers(true);
@@ -91,11 +95,12 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   }
 
   //Set-up output ------------------------------------------------------------------------
+  //PDG codes need to stay positive. Weird implementation in FemtoDream
   std::vector<int> PDGParticles;
-  PDGParticles.push_back(2212); 
-  PDGParticles.push_back(-2212); 
-  PDGParticles.push_back(211); 
-  PDGParticles.push_back(-211); 
+  PDGParticles.push_back(2212); //proton
+  PDGParticles.push_back(2212); //antiproton
+  PDGParticles.push_back(211); //pi+
+  PDGParticles.push_back(211); //pi-
 
   std::vector<bool> closeRejection;
   std::vector<float> mTBins;
@@ -172,7 +177,18 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   closeRejection[7] = true;  // pi+pi+
   closeRejection[9] = true;  // pi-pi-
 
-  if(DoKine){
+  if(SwitchOffCPR){
+    closeRejection[0] = false;  // pp
+    closeRejection[2] = false;  // ppi+
+    closeRejection[3] = false;  // ppi-
+    closeRejection[4] = false;  // barp barp
+    closeRejection[5] = false;  // barp pi+
+    closeRejection[6] = false;  // barp pi-
+    closeRejection[7] = false;  // pi+pi+
+    closeRejection[9] = false;  // pi-pi- 
+  }
+
+  /*if(DoKine){
     closeRejection[0] = false;  // pp
     closeRejection[2] = false;  // ppi+
     closeRejection[3] = false;  // ppi-
@@ -181,7 +197,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     closeRejection[6] = false;  // barp pi-
     closeRejection[7] = false;  // pi+pi+
     closeRejection[9] = false;  // pi-pi-
-  }
+  }*/
 
   pairQA[0] = 11;  // pp
   pairQA[2] = 11;  // ppi+
@@ -255,6 +271,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     if(DoAncestors){
       config->SetAncestors(true);
       config->GetDoAncestorsPlots();
+      config->SetRemoveAncestorsResonances(RemoveMCResonances);
     }
   }
   if (fullBlastQA) {
@@ -273,11 +290,11 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     config->SetMinimalBookingSample(true);
   }
 
-  if(DoKine){
+  /*if(DoKine){
     config->SetdPhidEtaPlots(false);
     config->SetdPhidEtaPlotsSmallK(false);
     config->SetPhiEtaBinnign(false);
-  }
+  }*/
 
   if(DoFunWithPhaseSpace){
     config->SetpTOnepTTwokStarPlotsmT(true, pTOnepTTwokStarCutOff);

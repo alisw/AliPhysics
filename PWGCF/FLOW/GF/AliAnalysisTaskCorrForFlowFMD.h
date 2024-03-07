@@ -93,7 +93,9 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
         void                    SetPVZcut(Double_t cut) { fPVzCut = cut; }
         void                    SetUseNchRange(Bool_t range, Int_t min, Int_t max) { fUseNch = range; fNchMin = min; fNchMax = max; }
+	void                    SetUseNchfor_eventmixing(Bool_t range) { fUseNchfor_eventmixing = range; }
         void                    SetCentrality(TString cent, Double_t min = 0.0, Double_t max = 20.0) { fCentEstimator = cent; fCentMin = min; fCentMax = max; }
+	void                    SetAdditionalPileUpforPP(Bool_t pileup) { fApply_additional_pileupcut = pileup; }
 
         //track selection (charged + PID + som global )
         void                    SetFilterBit(UInt_t filter) { fFilterBit = filter; }
@@ -197,6 +199,9 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         TH2D*                   fhEfficiency[6]; //! not eta dependent
         TH2D*                   fhEfficiencyEta[6][8]; //! eta dependent (8 sectors)
         TH2D*                   fHistFMDeta; //! vs PVz
+	TH2D*                   fHistFMDeta_phi; //! vs phi
+        TH2D*                   fHistTPCeta_phi; //! eta vs phi of TPC
+        TH2D*                   fHistTPCeta_phi_trig; //! eta vs phi of TPC after Nch cut
         TH1D*                   fhV0Counter[3]; //!
         TH1D*                   fhK0sphi; //!
 	TH1D*                   fhLambdaphi; //!
@@ -207,6 +212,9 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         TH2D*                   fhPTvsMinv[3]; //!
 	TH2D*                   fhPTvsMinv_Phi_LS; //!
         TH2D*                   fh2FMDvsV0[4]; //!
+	TH2D*                   fh2D_TPCvsFMDA; //!
+	TH2D*                   fh2D_TPCvsFMDC; //!
+	TH2D*                   fh2D_TPCvsFMD_AC; //!
 
         //event and track selection
         AnaType                 fAnalType;
@@ -222,6 +230,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 	Bool_t                  fshiftphi_PHI; // [kFALSE]
         Bool_t                  fshiftrap_PHI; // [kFALSE]
         Bool_t                  fUseNch; // [kFALSE]
+	Bool_t                  fUseNchfor_eventmixing; // [kFALSE]
         Bool_t                  fUseEfficiency; // [kFALSE]
         Bool_t                  fUseFMDcut; // [kTRUE]
         Bool_t                  fUseOppositeSidesOnly; // [kFALSE]
@@ -233,10 +242,13 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 	Bool_t                  fselectjetsinTPC; // [kFALSE]
         Bool_t                  fRejectSecondariesFromMC; // [kFALSE]
         Bool_t                  fBoostAMPT; // [kFALSE] = boost to CMS in pPb collisions for the gen level of AMPT
+	Bool_t                  fApply_additional_pileupcut; //kFALSE only applied for pp collisons in Yuko's analysis
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fRunNumber; // previous run
         Double_t                fNofTracks;
+	Double_t                fNFMD_fwd_hits;
+	Double_t                fNFMD_bwd_hits;	
         Int_t                   fNofMinHighPtTracksForRejection;
         Int_t                   fNchMin;
         Int_t                   fNchMax;

@@ -639,8 +639,7 @@ void AliAnalysisTaskClusterQA::ProcessQATreeCluster(AliVEvent *event, AliVCluste
     }
     fBuffer_Surrounding_NCells = nActiveCellsSurroundingInR;
   }
-
-  // write PDG code of mother of particle that mainly contributed to cluster to tree
+ 
   if(fIsMC> 0){
     if (cluster->GetNLabels()>0){
       if((cluster->GetLabelAt(0)!=-1)){

@@ -26,6 +26,7 @@ fhMinMass(-1),
 fhMaxMass(-1),
 fHisto(0x0),
 fProtonProfile(0x0),
+fCentralityEstimator(1),
 //Acceptance Cuts
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
@@ -140,6 +141,7 @@ fhMinMass(-1),
 fhMaxMass(-1),
 fHisto(0x0),
 fProtonProfile(0x0),
+fCentralityEstimator(1),
 //Acceptance Cuts
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
@@ -253,6 +255,7 @@ fhMinMass(-1),
 fhMaxMass(-1),
 fHisto(0x0),
 fProtonProfile(0x0),
+fCentralityEstimator(1),
 //Acceptance Cuts
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
@@ -366,6 +369,7 @@ fhMinMass(-1),
 fhMaxMass(-1),
 fHisto(0x0),
 fProtonProfile(0x0),
+fCentralityEstimator(1),
 //Acceptance Cuts
 fCutMinRapidity(-0.5),
 fCutMaxRapidity(+0.5),
@@ -476,6 +480,7 @@ fhNPtBounds( lCopyMe.fhNPtBounds),
 fhNMassBins( lCopyMe.fhNMassBins),
 fhMinMass(lCopyMe.fhMinMass),
 fhMaxMass(lCopyMe.fhMaxMass),
+fCentralityEstimator(lCopyMe.fCentralityEstimator),
 //Acceptance Cuts
 fCutMinRapidity(lCopyMe.fCutMinRapidity),
 fCutMaxRapidity(lCopyMe.fCutMaxRapidity),
@@ -605,6 +610,7 @@ fHisto(0), fProtonProfile(0)
     fhNMassBins = lCopyMe->GetNMassBins();
     fhMinMass = lCopyMe->GetMinMass();
     fhMaxMass = lCopyMe->GetMaxMass();
+    fCentralityEstimator = lCopyMe->GetCentralityEstimator();
     //Acceptance Cuts
     fCutMinRapidity     = lCopyMe->GetCutMinRapidity();
     fCutMaxRapidity     = lCopyMe->GetCutMaxRapidity();
@@ -767,6 +773,7 @@ AliCascadeResult& AliCascadeResult::operator=(const AliCascadeResult& lCopyMe)
     fhNMassBins = lCopyMe.GetNMassBins();
     fhMinMass = lCopyMe.GetMinMass();
     fhMaxMass = lCopyMe.GetMaxMass();
+    fCentralityEstimator = lCopyMe.GetCentralityEstimator();
     //Acceptance cuts
     fCutMinRapidity = lCopyMe.GetCutMinRapidity();
     fCutMaxRapidity = lCopyMe.GetCutMaxRapidity();
@@ -958,7 +965,8 @@ Bool_t AliCascadeResult::HasSameCuts(AliVWeakResult *lCompare, Bool_t lCheckdEdx
     AliCascadeResult *lCompareCascade = (AliCascadeResult*) lCompare;
     
     if( fMassHypo != lCompareCascade->GetMassHypothesis() ) lReturnValue = kFALSE;
-    
+    if( fCentralityEstimator != lCompareCascade->GetCentralityEstimator() ) lReturnValue = kFALSE;
+
     //Acceptance
     if( TMath::Abs( fCutMinRapidity - lCompareCascade->GetCutMinRapidity() ) > 1e-6 ) lReturnValue = kFALSE;
     if( TMath::Abs( fCutMaxRapidity - lCompareCascade->GetCutMaxRapidity() ) > 1e-6 ) lReturnValue = kFALSE;

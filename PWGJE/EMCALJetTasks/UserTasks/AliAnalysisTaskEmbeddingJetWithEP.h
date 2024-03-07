@@ -1,11 +1,11 @@
 #ifndef ALIANALYSISTASKEMBEDDINGJETWITHEP_H
 #define ALIANALYSISTASKEMBEDDINGJETWITHEP_H
-// ******************************************************************************************
+// *****************************************************************************
 // \class AliAnalysisTaskEmbeddingJetWithEP
 // \brief task used to load the Qn calibrations and get the calibrated Qn vectors for JE analyses
 // \authors:
 // T. Kumaoka, takuya.kumaoka@cern.ch
-// ******************************************************************************************
+// *****************************************************************************
 
 #include <TH1F.h>
 #include <TList.h>
@@ -102,7 +102,11 @@ public:
   void SetJetHistQA(Bool_t bJetQA){fJetQA = bJetQA;}
   void Set2DRMwithEP2(Bool_t b2DRMwithEP2){f2DRMwithEP2 = b2DRMwithEP2;}
   void Set2DRMwithEP3(Bool_t b2DRMwithEP3){f2DRMwithEP3 = b2DRMwithEP3;}
-  
+  void SetEPAngleShift(Bool_t bQuartPhiRange){fQuartPhiRange = bQuartPhiRange;}
+
+  void SetExLJetFromFit(Bool_t bExLJetFromFit){fExLJetFromFit = bExLJetFromFit;}
+  void SetExSubLJetFromFit(Bool_t bExSubLJetFromFit){fExSubLJetFromFit = bExSubLJetFromFit;}
+
   void SetJetHistWEP(Bool_t bSepEP){fSepEP = bSepEP;}
   void SetModulationFitType(fitModulationType type) {fFitModulationType = type; }
   void SetRhoLocalSubType(Bool_t bRhoLocalSubType){fRhoLocalSubType = bRhoLocalSubType;}
@@ -210,6 +214,7 @@ private:
     Bool_t  f2DRMwithEP3 = kFALSE;    ///<
 
     Bool_t  fSepEP = kFALSE;          ///<
+    Bool_t  fQuartPhiRange = kFALSE;  ///<
     
     fitModulationType  fFitModulationType;  ///< fit modulation type
     TString       fQnVCalibType = "kOrig";  ///< fCalibration Type
@@ -240,7 +245,9 @@ private:
     // == e ==  Embedding Parameters  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Bool_t        fExLJetFromFit = kTRUE;   ///< exclude tracks from bkg fit.
+    Bool_t        fExSubLJetFromFit = kTRUE;   ///< exclude tracks from bkg fit.
     AliEmcalJet*  fLeadingJet;              //! leading jet
+    AliEmcalJet*  fSubLeadingJet;           //! subleading jet
     AliEmcalJet*  fLeadingJetAfterSub;      //! leading jet after background subtraction
     TF1*          fFitModulation;           //-> modulation fit for rho
 
@@ -308,8 +315,23 @@ private:
         return chi2;
     }
 
-    AliEmcalJet* GetLeadingJet(AliLocalRhoParameter* localRho = 0x0);
+    inline Double_t movePhaseShiftTwoEP(Double_t jetAngle){
+        if(jetAngle > TMath::Pi()) jetAngle -=  TMath::Pi();
+        if(jetAngle > TMath::Pi()/2) jetAngle = TMath::Pi() - jetAngle;
 
+        return jetAngle;
+    }
+    inline Double_t movePhaseShiftThreeEP(Double_t jetAngle){
+        if(jetAngle > 2*TMath::Pi()/3) jetAngle -=  2*TMath::Pi()/3;
+        if(jetAngle > 2*TMath::Pi()/3) jetAngle -=  2*TMath::Pi()/3;
+        
+        if(jetAngle > TMath::Pi()/3) jetAngle = 2*TMath::Pi()/3 - jetAngle;
+        
+        return jetAngle;
+    }
+
+    AliEmcalJet* GetLeadingJet(AliLocalRhoParameter* localRho = 0x0);
+    void GetLeadingAndSubJet();
 
     // static Double_t CalcEPChi(Double_t res)
     // {
@@ -485,10 +507,11 @@ private:
   /// ========================================================================================
 
     // not implemented
+    
     AliAnalysisTaskEmbeddingJetWithEP(const AliAnalysisTaskEmbeddingJetWithEP&); // not implemented
     AliAnalysisTaskEmbeddingJetWithEP &operator=(const AliAnalysisTaskEmbeddingJetWithEP&);
 
-    ClassDef(AliAnalysisTaskEmbeddingJetWithEP, 133);
+    ClassDef(AliAnalysisTaskEmbeddingJetWithEP, 136);
 };
 
 #endif

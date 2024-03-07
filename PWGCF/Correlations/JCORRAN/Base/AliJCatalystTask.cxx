@@ -35,10 +35,10 @@
 #include <AliPWG0Helper.h>
 #include <TParticle.h>
 #include <TDatabasePDG.h>
-//#include <AliInputEventHandler.h>
 #include <AliMultSelection.h>
 #include "AliJCatalystTask.h"
 #include "AliJTrack.h"
+#include "AliJBaseEventHeader.h"
 #include "AliJHistManager.h"
 #include "AliJRunTable.h"
 #include "AliJFFlucAnalysis.h" // TEMP for getting bins
@@ -55,6 +55,9 @@ AliJCatalystTask::AliJCatalystTask():
   AliAnalysisTaskSE(),
   fInputList(0),
   fInputListALICE(0),
+  jevents(0),
+  jTree(0),
+  bFillJTree(kFALSE),
   //fOutput(0),
   fCentDetName("V0M"),
   paodEvent(0),
@@ -119,6 +122,9 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
   AliAnalysisTaskSE(name),
   fInputList(0),
   fInputListALICE(0),
+  jevents(0),
+  jTree(0),
+  bFillJTree(kFALSE),
   //fOutput(0),
   fTaskName(name),
   fCentDetName("V0M"),
@@ -185,6 +191,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
 
   //DefineOutput(1, TDirectory::Class()); // Uncommented in the current version on AliPhysics.
   DefineOutput(1, TList::Class());
+  if (bFillJTree) DefineOutput(2, TTree::Class());
 }
 
 //____________________________________________________________________________
@@ -192,6 +199,9 @@ AliJCatalystTask::AliJCatalystTask(const AliJCatalystTask& ap) :
   AliAnalysisTaskSE(ap.GetName()),
   fInputList(ap.fInputList),
   fInputListALICE(ap.fInputListALICE),
+  jevents(ap.jevents),
+  jTree(ap.jTree),
+  bFillJTree(ap.bFillJTree),
   //fOutput(ap.fOutput),
   fcent(ap.fcent),
   fZvert(ap.fZvert),
@@ -240,6 +250,7 @@ AliJCatalystTask& AliJCatalystTask::operator = (const AliJCatalystTask& ap)
 //______________________________________________________________________________
 AliJCatalystTask::~AliJCatalystTask()
 {
+  delete jevents;
   delete fInputList;
   delete fInputListALICE;
   if (fMainList) {delete fMainList;}
@@ -263,6 +274,17 @@ void AliJCatalystTask::UserCreateOutputObjects()
     fCentBinEff->Print();
   }
 
+
+  if (bFillJTree) {
+    jTree = new TTree("jTree", "AnalysisTree");
+
+    jevents = new TClonesArray("AliJBaseEventHeader", 100);
+    jevents->SetOwner(kTRUE);
+    jTree -> Branch("JTrackList", &fInputList);
+    jTree -> Branch("JEventHeaderList", &jevents);
+    PostData(2, jTree);
+  }
+
   gRandom->SetSeed();
 
   BookControlHistograms();
@@ -284,6 +306,7 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
   fJCatalystEntry = fEntry;
   fInputList->Clear();
   fInputListALICE->Clear();
+  if (bFillJTree) jevents->Clear();
 
   float fImpactParameter = .0; // setting 0 for the generator which doesn't have this info. 
   double fvertex[3];
@@ -398,6 +421,7 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 
       //fAliEventCuts->SetMaxVertexZposition(fzvtxCut);   // Zvtx set here to 10cm, recut to 8cm afterwards.
       if (fAddTPCpileupCuts) {fAliEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);}
+
       fAliEventCuts->AcceptEvent(paodEvent);
     }
 
@@ -406,7 +430,12 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
     if(!fIsGoodEvent) {
       return;
     }
-
+    if (bFillJTree) {
+      AliJBaseEventHeader *hdr = new ( (*jevents)[jevents->GetEntriesFast()] ) AliJBaseEventHeader;
+      hdr->SetEventID(fEntry);
+      hdr->SetCentrality(fcent);
+      hdr->SetVertex(fvertex[0], fvertex[1], fvertex[2], fRunNum); 
+    }
     if (bSaveAllQA) { // Save the vertex and centrality if PV passes the selection.
       fVertexXHistogram[centBin][1]->Fill(fvertex[0]);
       fVertexYHistogram[centBin][1]->Fill(fvertex[1]);
@@ -425,11 +454,9 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
         AliJFFlucAnalysis::GetBin(fcent,AliJFFlucAnalysis::BINNING_CENT_PbPb);
       pPhiWeights = fJCorMapTask->GetCorrectionMap(phiMapIndex,fRunNum,fcBin);
     }
-
     ReadAODTracks( paodEvent, fInputList, fcent ) ; // read tracklist
+    if (bFillJTree) jTree->Fill();
   } // AOD
-  fZvert = fvertex[2];
-
 }
 
 //______________________________________________________________________________
@@ -541,9 +568,11 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
         if (bSaveAllQA) {fMultHistogram[GetCentralityBin(fcent)][0]->Fill(nt);}
     }
 
-    Int_t ntrack =0;
+    Int_t ntrack = 0;
     Double_t PV[3] = {0.};
-    ReadVertexInfo(aod, PV);
+    ReadVertexInfo(aod, PV); // Vertex info is read for the second time, first info stored in fvertex
+
+    fZvert = PV[2]; // z_vtx set before corrections
 
     for( int it=0; it<nt ; it++){
       AliAODTrack *track;
@@ -657,7 +686,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
         itrack->SetWeight(phi_module_corr);
 
         // Uncommentable for local test
-        // if(phi_module_corr<0.5){printf("Track info: %.4f \t %.4f \t %.4f \t %.4f \t %d \n", itrack->Phi(), itrack->Eta(), fZvert, phi_module_corr, fRunNum);}
+        // if(fEvtNum<5){printf("Track info: %.4f \t %.4f \t %.4f \t %.4f \t %.4f \t %d \n", itrack->Phi(), itrack->Eta(), fZvert, PV[2], phi_module_corr, fEvtNum);}
 
         // Adding centrality weight for a LHC15o track, and given centrality.
         float cent_weight = 1.0;
@@ -673,7 +702,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 
         if (bSaveAllQA){
           fProfileWeights[GetCentralityBin(fcent)]->Fill(itrack->Phi(), phi_module_corr);
-          fPhiHistogram[GetCentralityBin(fcent)][2]->Fill(track->Phi(), 1./phi_module_corr);
+          fPhiHistogram[GetCentralityBin(fcent)][2]->Fill(itrack->Phi(), 1./phi_module_corr);
           fPTHistogram[GetCentralityBin(fcent)][2]->Fill(itrack->Pt(), 1./effCorr);
         }
 
@@ -1090,6 +1119,8 @@ fControlProfileList->SetName("ControlProfiles");
 fControlProfileList->SetOwner(kTRUE);
 if(bSaveQCNUA){ fMainList->Add(fControlProfileList); }
 
+const int Nbins = 100;
+
 for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bins
 {
 
@@ -1111,81 +1142,82 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 
 
    // a) Book histogram to hold pt spectra:
-   fPTHistogram[icent][0] = new TH1F("fPTHist_BeforeTrackSelection","Pt Distribution",1000,0.,10.);
+   fPTHistogram[icent][0] = new TH1F("fPTHist_BeforeTrackSelection","Pt Distribution",Nbins,0.,10.);
    fPTHistogram[icent][0]->GetXaxis()->SetTitle("P_t");
    fPTHistogram[icent][0]->SetLineColor(4);
    fControlHistogramsList[icent]->Add(fPTHistogram[icent][0]);
 
-   fPTHistogram[icent][1] = new TH1F("fPTHist_AfterTrackSelection","Pt Distribution",1000,0.,10.);
+   fPTHistogram[icent][1] = new TH1F("fPTHist_AfterTrackSelection","Pt Distribution",Nbins,0.,10.);
    fPTHistogram[icent][1]->GetXaxis()->SetTitle("P_t");
    fPTHistogram[icent][1]->SetLineColor(4);
    fControlHistogramsList[icent]->Add(fPTHistogram[icent][1]);
 
-   fPTHistogram[icent][2] = new TH1F("fPTHist_AfterTrackSelection_Weighted","Pt Distribution",1000,0.,10.);
+   fPTHistogram[icent][2] = new TH1F("fPTHist_AfterTrackSelection_Weighted","Pt Distribution",Nbins,0.,10.);
    fPTHistogram[icent][2]->GetXaxis()->SetTitle("P_t");
    fPTHistogram[icent][2]->SetLineColor(4);
    fControlHistogramsList[icent]->Add(fPTHistogram[icent][2]);
    
    // b) Book histogram to hold phi spectra
-   fPhiHistogram[icent][0] = new TH1F("fPhiHist_BeforeTrackSelection","Phi Distribution",1000,0.,TMath::TwoPi()); 
+   fPhiHistogram[icent][0] = new TH1F("fPhiHist_BeforeTrackSelection","Phi Distribution",Nbins,0.,TMath::TwoPi()); 
    fPhiHistogram[icent][0]->GetXaxis()->SetTitle("Phi");
    fPhiHistogram[icent][0]->SetLineColor(4);
    fControlHistogramsList[icent]->Add(fPhiHistogram[icent][0]);
 
-   fPhiHistogram[icent][1] = new TH1F("fPhiHist_AfterTrackSelection","Phi Distribution",1000,0.,TMath::TwoPi()); 
+   fPhiHistogram[icent][1] = new TH1F("fPhiHist_AfterTrackSelection","Phi Distribution",Nbins,0.,TMath::TwoPi()); 
    fPhiHistogram[icent][1]->GetXaxis()->SetTitle("Phi");
    fPhiHistogram[icent][1]->SetLineColor(4);
    fControlHistogramsList[icent]->Add(fPhiHistogram[icent][1]);
 
-   fPhiHistogram[icent][2] = new TH1F("fPhiHist_AfterTrackSelection_Weighted","Phi Distribution",1000,0.,TMath::TwoPi()); 
+   fPhiHistogram[icent][2] = new TH1F("fPhiHist_AfterTrackSelection_Weighted","Phi Distribution",Nbins,-TMath::Pi(),TMath::Pi()); 
+   // fPhiHistogram[icent][2] = new TH1F("fPhiHist_AfterTrackSelection_Weighted","Phi Distribution",Nbins,0,TMath::TwoPi()); 
    fPhiHistogram[icent][2]->GetXaxis()->SetTitle("Phi");
    fPhiHistogram[icent][2]->SetLineColor(4);
    fControlHistogramsList[icent]->Add(fPhiHistogram[icent][2]);
 
    // c) Book histogram to hold eta distribution before track selection:
-   fEtaHistogram[icent][0] = new TH1F("fEtaHist_BeforeTrackSelection","Eta Distribution",1000,-1.,1.); 
+   fEtaHistogram[icent][0] = new TH1F("fEtaHist_BeforeTrackSelection","Eta Distribution",Nbins,-1.,1.); 
    fEtaHistogram[icent][0]->GetXaxis()->SetTitle("Eta");
    fEtaHistogram[icent][0]->SetLineColor(4);
    fControlHistogramsList[icent]->Add(fEtaHistogram[icent][0]);
 
-   fEtaHistogram[icent][1] = new TH1F("fEtaHist_AfterTrackSelection","Eta Distribution",1000,-1.,1.);
+   fEtaHistogram[icent][1] = new TH1F("fEtaHist_AfterTrackSelection","Eta Distribution",Nbins,-1.,1.);
    fEtaHistogram[icent][1]->GetXaxis()->SetTitle("Eta");
    fEtaHistogram[icent][1]->SetLineColor(4);
    fControlHistogramsList[icent]->Add(fEtaHistogram[icent][1]);
 
    // d) Book histogam to hold multiplicty distributions 
-   fMultHistogram[icent][0] = new TH1F("fMultiHisto_BeforeTrackSelection","Multiplicity",30000,0.,30000.); 
+   fMultHistogram[icent][0] = new TH1F("fMultiHisto_BeforeTrackSelection","Multiplicity",3000,0.,30000.); 
    fMultHistogram[icent][0]->GetXaxis()->SetTitle("Multiplicity M");
    fControlHistogramsList[icent]->Add(fMultHistogram[icent][0]);
    
-   fMultHistogram[icent][1] = new TH1F("fMultiHisto_AfterTrackSelection","Multiplicity",30000,0.,30000.); 
+   fMultHistogram[icent][1] = new TH1F("fMultiHisto_AfterTrackSelection","Multiplicity",3000,0.,30000.); 
    fMultHistogram[icent][1]->GetXaxis()->SetTitle("Multiplicity M");
    fControlHistogramsList[icent]->Add(fMultHistogram[icent][1]);
 
    // e) Book histogam for Vertex X 
-   fVertexXHistogram[icent][0] = new TH1F("fVertexX_BeforeEventSelection","VertexXBefore",2000,-10.,10.); 
+   fVertexXHistogram[icent][0] = new TH1F("fVertexX_BeforeEventSelection","VertexXBefore",200,-10.,10.); 
    fVertexXHistogram[icent][0]->GetXaxis()->SetTitle("");
    fControlHistogramsList[icent]->Add(fVertexXHistogram[icent][0]);
 
-   fVertexXHistogram[icent][1] = new TH1F("fVertexX_AfterEventSelection","VertexXAfter",2000,-10.,10.); 
+   fVertexXHistogram[icent][1] = new TH1F("fVertexX_AfterEventSelection","VertexXAfter",200,-10.,10.); 
    fVertexXHistogram[icent][1]->GetXaxis()->SetTitle("");
    fControlHistogramsList[icent]->Add(fVertexXHistogram[icent][1]);
 
    // f) Book histogam for Vertex Y 
-   fVertexYHistogram[icent][0] = new TH1F("fVertexY_BeforeEventSelection","VertexYBefore",2000,-10.,10.); 
+   fVertexYHistogram[icent][0] = new TH1F("fVertexY_BeforeEventSelection","VertexYBefore",200,-10.,10.); 
    fVertexYHistogram[icent][0]->GetXaxis()->SetTitle("");
    fControlHistogramsList[icent]->Add(fVertexYHistogram[icent][0]);
 
-   fVertexYHistogram[icent][1] = new TH1F("fVertexY_AfterEventSelection","VertexYAfter",2000,-10.,10.); 
+   fVertexYHistogram[icent][1] = new TH1F("fVertexY_AfterEventSelection","VertexYAfter",200,-10.,10.); 
    fVertexYHistogram[icent][1]->GetXaxis()->SetTitle("");
    fControlHistogramsList[icent]->Add(fVertexYHistogram[icent][1]);
 
    // g) Book histogam for Vertex Z 
-   fVertexZHistogram[icent][0] = new TH1F("fVertexZ_BeforeEventSelection","VertexZBefore",4000,-20.,20.); 
+   fVertexZHistogram[icent][0] = new TH1F("fVertexZ_BeforeEventSelection","VertexZBefore",400,-20.,20.); 
    fVertexZHistogram[icent][0]->GetXaxis()->SetTitle("");
    fControlHistogramsList[icent]->Add(fVertexZHistogram[icent][0]);
 
-   fVertexZHistogram[icent][1] = new TH1F("fVertexZ_AfterEventSelection","VertexZAfter",4000,-20.,20.); 
+   fVertexZHistogram[icent][1] = new TH1F("fVertexZ_AfterEventSelection","VertexZAfter",400,-20.,20.); 
    fVertexZHistogram[icent][1]->GetXaxis()->SetTitle("");
    fControlHistogramsList[icent]->Add(fVertexZHistogram[icent][1]);
 
@@ -1204,30 +1236,30 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
    fControlHistogramsList[icent]->Add(fITSClustersHistogram[icent][1]);
 
    // k) Book histogram for chi square TPC and ITS
-   fChiSquareTPCHistogram[icent][0] = new TH1F("fChiSquareTPC_BeforeCut","ChiSquareTPCBeforeCut",1000,0.,20.); 
+   fChiSquareTPCHistogram[icent][0] = new TH1F("fChiSquareTPC_BeforeCut","ChiSquareTPCBeforeCut",Nbins,0.,20.); 
    fControlHistogramsList[icent]->Add(fChiSquareTPCHistogram[icent][0]);
 
-   fChiSquareTPCHistogram[icent][1] = new TH1F("fChiSquareTPC_AfterCut","ChiSquareTPCAfterCut",1000,0.,20.); 
+   fChiSquareTPCHistogram[icent][1] = new TH1F("fChiSquareTPC_AfterCut","ChiSquareTPCAfterCut",Nbins,0.,20.); 
    fControlHistogramsList[icent]->Add(fChiSquareTPCHistogram[icent][1]);
 
-   fChiSquareITSHistogram[icent][0] = new TH1F("fChiSquareITS_BeforeCut","ChiSquareITSBeforeCut",1000,0.,50.); 
+   fChiSquareITSHistogram[icent][0] = new TH1F("fChiSquareITS_BeforeCut","ChiSquareITSBeforeCut",Nbins,0.,50.); 
    fControlHistogramsList[icent]->Add(fChiSquareITSHistogram[icent][0]);
 
-   fChiSquareITSHistogram[icent][1] = new TH1F("fChiSquareITS_AfterCut","ChiSquareITSAfterCut",1000,0.,50.); 
+   fChiSquareITSHistogram[icent][1] = new TH1F("fChiSquareITS_AfterCut","ChiSquareITSAfterCut",Nbins,0.,50.); 
    fControlHistogramsList[icent]->Add(fChiSquareITSHistogram[icent][1]);
 
     // l) Book histogram for DCAz
-   fDCAzHistogram[icent][0] = new TH1F("fDCAz_BeforeCut","DCAzBeforeCut",1000,-10.,10.);  
+   fDCAzHistogram[icent][0] = new TH1F("fDCAz_BeforeCut","DCAzBeforeCut",Nbins,-10.,10.);  
    fControlHistogramsList[icent]->Add(fDCAzHistogram[icent][0]);
 
-   fDCAzHistogram[icent][1] = new TH1F("fDCAz_AfterCut","DCAzAfterCut",1000,-10.,10.); 
+   fDCAzHistogram[icent][1] = new TH1F("fDCAz_AfterCut","DCAzAfterCut",Nbins,-10.,10.); 
    fControlHistogramsList[icent]->Add(fDCAzHistogram[icent][1]);
    
    // m) Book histogram for DCAxy
-   fDCAxyHistogram[icent][0] = new TH1F("fDCAxy_BeforeCut","DCAxyBeforeCut",1000,-10.,10.); 
+   fDCAxyHistogram[icent][0] = new TH1F("fDCAxy_BeforeCut","DCAxyBeforeCut",Nbins,-10.,10.); 
    fControlHistogramsList[icent]->Add(fDCAxyHistogram[icent][0]);
 
-   fDCAxyHistogram[icent][1] = new TH1F("fDCAxy_AfterCut","DCAxyAfterCut",1000,-10.,10.); 
+   fDCAxyHistogram[icent][1] = new TH1F("fDCAxy_AfterCut","DCAxyAfterCut",Nbins,-10.,10.); 
    fControlHistogramsList[icent]->Add(fDCAxyHistogram[icent][1]); 
 
    // n) Book histogram for Charge
@@ -1244,18 +1276,18 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
    fControlHistogramsList[icent]->Add(fCentralityHistogram[icent]);
 
    // p) Book the TH2D for the HMOs in LHC10h.
-   fHMOsHistogram[icent][0] = new TH2D("fHMOsHistogram_Before","Correlations before HMO cuts", 1000, 0.,5000., 1000, 0., 5000.);
+   fHMOsHistogram[icent][0] = new TH2D("fHMOsHistogram_Before","Correlations before HMO cuts", Nbins, 0.,5000., Nbins, 0., 5000.);
    fHMOsHistogram[icent][0]->GetXaxis()->SetTitle("M_{global}");
    fHMOsHistogram[icent][0]->GetYaxis()->SetTitle("M_{TPC}");
    if (bSaveHMOhist) {fControlHistogramsList[icent]->Add(fHMOsHistogram[icent][0]);}
 
-   fHMOsHistogram[icent][1] = new TH2D("fHMOsHistogram_After","Correlations after HMO cuts", 1000, 0.,5000., 1000, 0., 5000.);
+   fHMOsHistogram[icent][1] = new TH2D("fHMOsHistogram_After","Correlations after HMO cuts", Nbins, 0.,5000., Nbins, 0., 5000.);
    fHMOsHistogram[icent][1]->GetXaxis()->SetTitle("M_{global}");
    fHMOsHistogram[icent][1]->GetYaxis()->SetTitle("M_{TPC}");
    if (bSaveHMOhist) {fControlHistogramsList[icent]->Add(fHMOsHistogram[icent][1]);}
 
    // q) Book histogram to hold 2D eta-phi spectra
-   f2DEtaPhiHistogram[icent][0] = new TH2F("f2DEtaPhiHist_BeforeCorrection","eta-phi; #phi (rad); #eta",50,0.,TMath::TwoPi(),16,-0.8,0.8); 
+   f2DEtaPhiHistogram[icent][0] = new TH2F("f2DEtaPhiHist_BeforeCorrection","eta-phi; #phi (rad); #eta",50,-TMath::Pi(),TMath::Pi(),16,-0.8,0.8); 
    f2DEtaPhiHistogram[icent][0]->GetXaxis()->SetTitle("#phi");
    f2DEtaPhiHistogram[icent][0]->GetYaxis()->SetTitle("#eta");
    if (bSaveQCNUA) {fControl2DNUAList[icent]->Add(f2DEtaPhiHistogram[icent][0]);}
@@ -1265,9 +1297,8 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
    f2DEtaPhiHistogram[icent][1]->GetYaxis()->SetTitle("#eta");
    if (bSaveQCNUA) {fControl2DNUAList[icent]->Add(f2DEtaPhiHistogram[icent][0]);}
 
-
    // TProfile for the weights to apply.
-   fProfileWeights[icent] = new TProfile("fProfileWeights","Phi Weights",1000,-TMath::Pi(),TMath::Pi()); //centrality dependent output
+   fProfileWeights[icent] = new TProfile("fProfileWeights","Phi Weights",Nbins,-TMath::Pi(),TMath::Pi()); //centrality dependent output
    fProfileWeights[icent]->GetXaxis()->SetTitle("#varphi");
    fProfileWeights[icent]->GetYaxis()->SetTitle("weight");
    fControlHistogramsList[icent]->Add(fProfileWeights[icent]);
@@ -1289,28 +1320,35 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
    fProfileSinVSCent[5] = new TProfile("fProfileSinVSCent_n7","<sin(7phi)> vs Cent",12,0,60); 
    fProfileSinVSCent[6] = new TProfile("fProfileSinVSCent_n8","<sin(8phi)> vs Cent",12,0,60);
    
-   
+    // (NEW) Control histograms for the DCAxy vs pT to check applications of the cuts.
+    fPtDCAxyHisto[icent][0] = new TH2F("fPtDCAxyHisto_Before", "DCAxy vs pT before track cuts", 100, 0., 5., Nbins, -1., 1.);
+    fPtDCAxyHisto[icent][0]->GetXaxis()->SetTitle("p_{T}");
+    fPtDCAxyHisto[icent][0]->GetYaxis()->SetTitle("DCA_{xy}");
+    fControlHistogramsList[icent]->Add(fPtDCAxyHisto[icent][0]);
 
-
+    fPtDCAxyHisto[icent][1] = new TH2F("fPtDCAxyHisto_After", "DCAxy vs pT after track cuts", 100, 0., 5., Nbins, -1., 1.);
+    fPtDCAxyHisto[icent][1]->GetXaxis()->SetTitle("p_{T}");
+    fPtDCAxyHisto[icent][1]->GetYaxis()->SetTitle("DCA_{xy}");
+    fControlHistogramsList[icent]->Add(fPtDCAxyHisto[icent][1]);
 
    // Save the TH2D for the ESD-TPC pileup cut in Run2.
-    fESDpileupHistogram[icent][0] = new TH2D("fESDpileupHistogram_Before","Correlations before ESD-TPC cut", 1200, 0., 6000., 7000, 0., 35000.);
+    fESDpileupHistogram[icent][0] = new TH2D("fESDpileupHistogram_Before","Correlations before ESD-TPC cut", 120, 0., 6000., 700, 0., 35000.);
     fESDpileupHistogram[icent][0]->GetXaxis()->SetTitle("M_{TPC}");
     fESDpileupHistogram[icent][0]->GetYaxis()->SetTitle("M_{ESD}");
     if (fSaveESDpileupQA) {fControlHistogramsList[icent]->Add(fESDpileupHistogram[icent][0]);}
 
-    fESDpileupHistogram[icent][1] = new TH2D("fESDpileupHistogram_After","Correlations after ESD-TPC cuts", 1200, 0., 6000., 7000, 0., 35000.);
+    fESDpileupHistogram[icent][1] = new TH2D("fESDpileupHistogram_After","Correlations after ESD-TPC cuts", 120, 0., 6000., 700, 0., 35000.);
     fESDpileupHistogram[icent][1]->GetXaxis()->SetTitle("M_{TPC}");
     fESDpileupHistogram[icent][1]->GetYaxis()->SetTitle("M_{ESD}");
     if (fSaveESDpileupQA) {fControlHistogramsList[icent]->Add(fESDpileupHistogram[icent][1]);}
 
     // Save the TH2D for the ITS-TPC cluster pileup cut in Run2.
-    fTPCpileupHistogram[icent][0] = new TH2I("fTPCpileupHistogram_Before","Correlations before ITS-TPC clusters cut", 1e3, 1e5, 5e6, 1e3, 1e8, 5e9);
+    fTPCpileupHistogram[icent][0] = new TH2I("fTPCpileupHistogram_Before","Correlations before ITS-TPC clusters cut", 100, 1e5, 5e6, 100, 1e8, 5e9);
     fTPCpileupHistogram[icent][0]->GetXaxis()->SetTitle("N_{clusters} in TPC");
     fTPCpileupHistogram[icent][0]->GetYaxis()->SetTitle("N_{clusters} in SDD-SSD");
     if (fSaveTPCpileupQA) {fControlHistogramsList[icent]->Add(fTPCpileupHistogram[icent][0]);}
 
-    fTPCpileupHistogram[icent][1] = new TH2I("fTPCpileupHistogram_After","Correlations after ITS-TPC clusters cut", 1e3, 1e5, 5e6, 1e3, 1e8, 5e9);
+    fTPCpileupHistogram[icent][1] = new TH2I("fTPCpileupHistogram_After","Correlations after ITS-TPC clusters cut", 100, 1e5, 5e6, 100, 1e8, 5e9);
     fTPCpileupHistogram[icent][1]->GetXaxis()->SetTitle("N_{clusters} in TPC");
     fTPCpileupHistogram[icent][1]->GetYaxis()->SetTitle("N_{clusters} in SDD-SSD");
     if (fSaveTPCpileupQA) {fControlHistogramsList[icent]->Add(fTPCpileupHistogram[icent][1]);}
@@ -1319,7 +1357,7 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
 }
 
 //______________________________________________________________________________
-void AliJCatalystTask::FillControlHistograms(AliAODTrack *thisTrack, Int_t whichHisto, Float_t cent, Double_t *v) {
+void AliJCatalystTask::FillControlHistograms(AliAODTrack *thisTrack, Int_t whichHisto, Float_t cent, Double_t *v) { // Vertex info (*v) not used, might be needed later.
 
 // Get the corresponding centrality bin.
   Int_t CentralityBin = GetCentralityBin(cent);
@@ -1342,6 +1380,8 @@ void AliJCatalystTask::FillControlHistograms(AliAODTrack *thisTrack, Int_t which
   fDCAzHistogram[CentralityBin][whichHisto]->Fill(ValueDCAz);
   fDCAxyHistogram[CentralityBin][whichHisto]->Fill(ValueDCAxy);
   fChargeHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Charge());
+
+  fPtDCAxyHisto[CentralityBin][whichHisto]->Fill(thisTrack->Pt(), ValueDCAxy);
 }
 
 //______________________________________________________________________________

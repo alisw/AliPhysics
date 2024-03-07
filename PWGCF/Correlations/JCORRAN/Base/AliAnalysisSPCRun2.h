@@ -83,6 +83,7 @@ class AliAnalysisSPCRun2 {
 
   // LOKI: Added in HIJING investigations.
  void SetUseWeights(Bool_t WeightsNUE, Bool_t WeightsNUA){this->bUseWeightsNUE = WeightsNUE; this->bUseWeightsNUA = WeightsNUA;}
+ void SetUseJoinedCov(Bool_t joinedCov) {this->bUseJoinedCov = joinedCov;}
 
  private:
   AliAnalysisSPCRun2(const AliAnalysisSPCRun2& aat);
@@ -102,6 +103,7 @@ class AliAnalysisSPCRun2 {
   Bool_t bUseWeightsNUE;            // kTRUE: Use non-unit particle weights for NUE corrections.
   Bool_t bUseWeightsNUA;            // kTRUE: Use non-unit particle weights for NUA corrections.
   Bool_t bComputeEtaGap;            // kTRUE: Calculate 2-particle eta gaps (default: kFALSE).
+  Bool_t bUseJoinedCov;            // kTRUE: Calculate 2-particle eta gaps (default: kFALSE).
   Float_t fEtaGap;                  // Value of the eta gap itself.
 
   Bool_t bSaveAllQA;                // kTRUE: Save the standard QA histograms (default: kTRUE).
@@ -110,27 +112,28 @@ class AliAnalysisSPCRun2 {
 
   TComplex fQvector[113][15];       // All combinations of Q-vectors.
   Int_t fHarmosArray[12][8];        // Array of combinations of harmonics for the SPC.
+  Double_t fCorrelDenoms[14];
   
-  TList *fCentralityList[16];       //! Results per centrality bins. Up to 16 possible bins.
+  TList *fCentralityList[8];       //! Results per centrality bins. Up to 8 possible bins.
     // Size: [fMaxHarmonic*fMaxCorrelator+1][fMaxCorrelator+1]
     // Can deal with maximum 10 different SPC.
-  TList *fControlHistogramsList[16];  //! List to hold all control histograms for a centrality bin.
-  TList *fFinalResultsList[16];     //! List to hold all histograms with final results.
+  TList *fControlHistogramsList[8];  //! List to hold all control histograms for a centrality bin.
+  TList *fFinalResultsList[8];     //! List to hold all histograms with final results.
 
-  TH1F *fCentralityHistogram[16];   //! Centrality of the final tracks.
-  TH1F *fMultHistogram[16];         //! Number of the final tracks per event.
-  TH1F *fPTHistogram[16];           //! Transverse momentum of the final tracks.
-  TH1F *fPhiHistogram[16];          //! Azimuthal angles of the final tracks.
-  TH1F *fEtaHistogram[16];          //! Pseudorapidity of the final tracks.
-  TH1I *fChargeHistogram[16];       //! Electric charge after the track selection.
-  TProfile *fPhiWeightProfile[16];  //! QA for the NUA weights.
+  TH1F *fCentralityHistogram[8];   //! Centrality of the final tracks.
+  TH1F *fMultHistogram[8];         //! Number of the final tracks per event.
+  TH1F *fPTHistogram[8];           //! Transverse momentum of the final tracks.
+  TH1F *fPhiHistogram[8];          //! Azimuthal angles of the final tracks.
+  TH1F *fEtaHistogram[8];          //! Pseudorapidity of the final tracks.
+  TH1I *fChargeHistogram[8];       //! Electric charge after the track selection.
+  TProfile *fPhiWeightProfile[8];  //! QA for the NUA weights.
 
-  TProfile *fResults[16];           //! Final numerators and denominators.
-  TProfile *fResultsAlternativeError[16]; //! 'fResults' with different error options
-  TProfile *fCovResults[16];        //! Storage of the terms needed for the covariance.
-  TProfile *fJoinedCovResults[16];  //! Storage of the joined covariance term calculated as one
+  TProfile *fResults[8];           //! Final numerators and denominators.
+  TProfile *fResultsAlternativeError[8]; //! 'fResults' with different error options
+  TProfile *fCovResults[8];        //! Storage of the terms needed for the covariance.
+  TProfile *fJoinedCovResults[8];  //! Storage of the joined covariance term calculated as one
                                     //  correlator <z> instead of product of two correlators <x*y>.
-  TProfile *fProfileTPCEta[16];     //! Profile for 2-particle eta gap computation.
+  TProfile *fProfileTPCEta[8];     //! Profile for 2-particle eta gap computation.
   Float_t fCentralityArray[17];     //! Edges for the centrality division. (0-80% with 5% width).
 
   ClassDef(AliAnalysisSPCRun2, 1); 

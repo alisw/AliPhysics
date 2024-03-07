@@ -99,7 +99,10 @@ public:
   void SetCascadePileUpRemoval(Bool_t cascadePileUpRemoval);
   void SetV0PileUpRemoval(Bool_t v0PileUpRemoval);
   void SetTrackPileUpRemoval(Bool_t trackPileUpRemoval);
-
+  void SetRejectTPCPileupWithITSTPCnCluCorr(Bool_t RejectTPCPileupWithITSTPCnCluCorr);//pileup suggested for experimentaldata 2018 PbPb 
+  void SetParticleFromOutOfBunchPileupCollision(bool PileUpTrack); //injected pile-up on tracks from out of bunch (use for MC data anchored to 2018 PbPb period)
+  void SetPileupInGeneratedEvent(bool PileUpEvent); //injected pile-up events (use for MC data anchored to 2018 PbPb period)
+  
   void SetMinVtxContr(Int_t contr = 1) {
     fMinVtxContr = contr;
   }
@@ -251,6 +254,9 @@ private:
   Bool_t fCascadePileUpRemoval;//pile-up removal for cascades (its+tof hits for pos, neg and bac tracks)
   Bool_t fV0PileUpRemoval;//pile-up removal for V0s
   Bool_t fTrackPileUpRemoval;//pile-up removal for tracks (its+tof hits of tracks)
+  Bool_t fRejectTPCPileupWithITSTPCnCluCorr;
+  Bool_t fParticleFromOutOfBunchPileupCollision; //injected pileup for LHC20e3a PbPb over tracks 
+  Bool_t fPileupInGeneratedEvent; //injected pileup for LHC20e3a PbPb over events
   Bool_t fMVPlp;           ///< multi-vertex pileup rejection?
   Bool_t fOutOfBunchPlp;   ///out-of-bunch pileup rejection
   Int_t fMinVtxContr;      ///< no of contributors for pA 2013 data

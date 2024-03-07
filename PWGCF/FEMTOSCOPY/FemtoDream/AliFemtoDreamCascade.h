@@ -42,6 +42,10 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
     return fOmegaMass;
   }
   ;
+  float GetRealMotherPDG() {
+    return fRealMotherPDG;
+  }
+  ;
   float GetDCAXiPrimVtx() {
     return fDCAXiPrimVtx;
   }
@@ -88,6 +92,10 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   ;
   float Getv0DCAPrimVtx() {
     return fv0DCAPrimVtx;
+  }
+  ;
+  float GetBachelorBaryonCosPA() {
+    return fBachelorBaryonCosPA;
   }
   ;
   float Getv0TransverseRadius() {
@@ -176,6 +184,7 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   float fMass;
   float fXiMass;
   float fOmegaMass;
+  int fRealMotherPDG;
   float fDCAXiDaug;
   float fTransRadius;
   float fRapXi;
@@ -187,6 +196,7 @@ class AliFemtoDreamCascade : public AliFemtoDreamBasePart {
   float fMassv0;
   float fv0DCADaug;
   float fv0DCAPrimVtx;
+  float fBachelorBaryonCosPA;
   TVector3 fv0Momentum;
   float fv0Pt;
   float fDCABachPrimVtx;

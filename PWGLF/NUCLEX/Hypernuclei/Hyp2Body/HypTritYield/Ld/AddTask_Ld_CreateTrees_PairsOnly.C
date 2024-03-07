@@ -3,7 +3,9 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly* AddTask_Ld_CreateTrees_PairsOnly(
   TString Name = "AnalysisTask_Ld_CreateTrees_PairsOnly",
   int CollisionSystem = 1,
   const char *Variation = "0",
-  bool UseOpenCuts = true) {
+  bool UseOpenCuts = true,
+  bool isMC = false,
+  bool SavePairsOnly = true) {
 
   bool DebugAddTask = true;
 
@@ -43,7 +45,7 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly* AddTask_Ld_CreateTrees_PairsOnly(
 
 
 
-  AliAnalysisTask_Ld_CreateTrees_PairsOnly* task = new AliAnalysisTask_Ld_CreateTrees_PairsOnly(Name.Data(),CollisionSystem,UseOpenCuts);   
+  AliAnalysisTask_Ld_CreateTrees_PairsOnly* task = new AliAnalysisTask_Ld_CreateTrees_PairsOnly(Name.Data(),CollisionSystem,UseOpenCuts,isMC,SavePairsOnly);   
   if(!task)
   {
     std::cout << "AddTask_Ld_CreateTrees_PairsOnly: x-x-x-x-> No AliAnalysisTask found" << std::endl;
@@ -74,10 +76,18 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly* AddTask_Ld_CreateTrees_PairsOnly(
   if(DebugAddTask) std::cout << "AddTask_Ld_CreateTrees_PairsOnly: Input container connected" << std::endl;
  
 
-  if((CollisionSystem == 1) || (CollisionSystem == 2)){
+  if(CollisionSystem == 1){
 
-    task->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
-    std::cout << "AddTask_Ld_CreateTrees_PairsOnly: SelectCollisionCandidates(AliVEvent::kSemiCentral || AliVEvent::kCentral)" << std::endl;
+    task->SelectCollisionCandidates(AliVEvent::kCentral);
+    std::cout << "AddTask_Ld_CreateTrees_PairsOnly: SelectCollisionCandidates(AliVEvent::kCentral)" << std::endl;
+
+  }
+
+
+  if(CollisionSystem == 2){
+
+    task->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+    std::cout << "AddTask_Ld_CreateTrees_PairsOnly: SelectCollisionCandidates(AliVEvent::kSemiCentral)" << std::endl;
 
   }
 

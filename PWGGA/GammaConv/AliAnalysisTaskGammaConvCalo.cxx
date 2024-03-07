@@ -351,6 +351,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fHistoTruePi0InvMassECalib(NULL),
   fHistoTruePi0PureGammaInvMassECalib(NULL),
   fHistoTruePi0InvMassECalibPCM(NULL),
+  fHistoMotherInvMassECalibNMatchedPrim(NULL),
+  fHistoTruePi0InvMassECalibNMatchedPrim(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
@@ -704,6 +706,8 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fHistoTruePi0InvMassECalib(NULL),
   fHistoTruePi0PureGammaInvMassECalib(NULL),
   fHistoTruePi0InvMassECalibPCM(NULL),
+  fHistoMotherInvMassECalibNMatchedPrim(NULL),
+  fHistoTruePi0InvMassECalibNMatchedPrim(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
@@ -1032,6 +1036,10 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     }
     if(fDoMesonQA == 2){
       tESDMesonsInvMassPtDcazMinDcazMaxFlag = new TTree*[fnCuts];
+      fHistoMotherInvMassECalibNMatchedPrim = new TH3F*[fnCuts];
+      if(fIsMC > 0){
+        fHistoTruePi0InvMassECalibNMatchedPrim = new TH3F*[fnCuts];
+      }
     }
   }
   if(fDoHBTHistoOutput){
@@ -1120,6 +1128,15 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   Double_t *arrPtBinning      = new Double_t[1200];
   Double_t *arrQAPtBinning    = new Double_t[1200];
   Double_t *arrClusPtBinning  = new Double_t[1200];
+  std::vector<double> arrInvMassBinning(301,0.);
+  std::vector<double> arrNMatchedTracks(5,0.);
+
+  for(size_t iBin; iBin < arrInvMassBinning.size(); iBin++){
+    arrInvMassBinning.at(iBin) = (double) iBin * 0.001;
+  }
+  for (size_t iBin = 0; iBin < arrNMatchedTracks.size(); ++iBin) {
+      arrNMatchedTracks.at(iBin) = ( (double) iBin-0.5 );
+    }
 
   // Set special pt binning for pp 8TeV
   if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV ||
@@ -1760,6 +1777,23 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
           fHistoMotherEtaConvPhotonEtaPhi[iCut]->Sumw2();
         }
       }
+      if(fDoMesonQA == 2){
+        fHistoMotherInvMassECalibNMatchedPrim[iCut] = new TH3F("ESD_Mother_InvMass_E_Calib_NMatched", "ESD_Mother_InvMass_E_Calib_NMatched", arrInvMassBinning.size()-1, arrInvMassBinning.data(), nBinsPt, arrPtBinning, arrNMatchedTracks.size()-1, arrNMatchedTracks.data());
+        fHistoMotherInvMassECalibNMatchedPrim[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
+        fHistoMotherInvMassECalibNMatchedPrim[iCut]->SetYTitle("E_{cluster}(GeV)");
+        fHistoMotherInvMassECalibNMatchedPrim[iCut]->SetZTitle("N_{matched primary tracks}");
+        fESDList[iCut]->Add(fHistoMotherInvMassECalibNMatchedPrim[iCut]);
+        if (fIsMC > 1 || (fIsMC == 1 && fDoMaterialWeightConv)){
+          fHistoMotherInvMassECalibNMatchedPrim[iCut]->Sumw2();
+        }
+        if(fIsMC > 0 ){
+          fHistoTruePi0InvMassECalibNMatchedPrim[iCut] = new TH3F("ESD_True_InvMass_E_Calib_NMatched", "ESD_True_InvMass_E_Calib_NMatched", arrInvMassBinning.size()-1, arrInvMassBinning.data(), nBinsPt, arrPtBinning, arrNMatchedTracks.size()-1, arrNMatchedTracks.data());
+          fHistoTruePi0InvMassECalibNMatchedPrim[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
+          fHistoTruePi0InvMassECalibNMatchedPrim[iCut]->SetYTitle("E_{cluster}(GeV)");
+          fHistoTruePi0InvMassECalibNMatchedPrim[iCut]->SetZTitle("N_{matched primary tracks}");
+          fTrueList[iCut]->Add(fHistoTruePi0InvMassECalibNMatchedPrim[iCut]);
+        }
+      }
     }
     if(fDoHBTHistoOutput){
       fHistoHBTOpeningAnglePt[iCut]                = new TH2F("ESD_OpeningAngle_Pt", "ESD_OpeningAngle_Pt", 700, 0, 3.5, nBinsPt, arrPtBinning);
@@ -1862,9 +1896,6 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fHistoTrueClusGammaEM02                         = new TH2F*[fnCuts];
       fHistoTrueClusPi0EM02                           = new TH2F*[fnCuts];
       fHistoTrueClusEMNonLeadingPt                    = new TH1F*[fnCuts];
-    }
-
-    if(!fDoLightOutput){
       fHistoTruePi0InvMassECalib                      = new TH2F*[fnCuts];
       fHistoTruePi0PureGammaInvMassECalib             = new TH2F*[fnCuts];
       fHistoTruePi0InvMassECalibPCM                   = new TH2F*[fnCuts];
@@ -3348,6 +3379,13 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
     nclus = arrClustersProcess->GetEntries();
   }
 
+  // energy correction for neutral overlap!
+  float cent = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetCentrality(fInputEvent);
+  if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() > 0 && ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() <= 2) {
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SetPoissonParamCentFunction(fIsMC);
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SetNMatchedTracksFunc(cent);
+  }
+
 //   cout << nclus << endl;
   vector<AliAODConversionPhoton*>         vectorCurrentClusters;
   vector<Int_t>                           vectorRejectCluster;
@@ -3382,6 +3420,19 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
     }
 
     if (!clus) continue;
+    // energy correction for neutral overlap!
+    if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() > 0){
+      // Neutral Overlap correction via mean number of matched primary tracks per cluster
+      if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() <= 2){
+        clus->SetE(clus->E() - ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent));
+      } else if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() == 3){
+        // Neutral Overlap correction via mean number of charged particles per cell
+        clus->SetE(clus->E() - 12.f * ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent));
+      } else if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetDoEnergyCorrectionForOverlap() == 4){
+        // Neutral Overlap correction via NonLin like correction
+        clus->SetE(clus->E() * ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->CorrectEnergyForOverlap(cent, clus->E()));
+      }
+    }
     if(!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,fWeightJetJetMC,i)){
       if(fDoInvMassShowerShapeTree && ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedBeforeTrackMatch() ) tESDmapIsClusterAcceptedWithoutTrackMatch[i] = 1;
       delete clus;
@@ -4945,21 +4996,28 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
                 }
               }
               fHistoGoodMesonClusters[fiCut]->Fill(2); //"Triggered Meson Candidates"
-              Int_t ClusterIDIsInBadDDL;
-              Bool_t FlagMaybeBadDDLs=((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetReduceTriggeredPhiDueBadDDLs();
-              Int_t DDLIsBadIndex;
-              if (FlagMaybeBadDDLs==kFALSE){ //only flag bad DDLs -> ClusterIDIsInBadDDL>=2
-                DDLIsBadIndex=2;
-              } else { //also flag maybe bad DDLs  -> ClusterIDIsInBadDDL>=1
-                DDLIsBadIndex=1;
-              }
-              ClusterIDIsInBadDDL=fCaloTriggerMimicHelper[fiCut]->IsTriggeredClusterIDInBadDDL(gamma1->GetCaloClusterRef());
-              if (ClusterIDIsInBadDDL>=DDLIsBadIndex){ //DDL is bad
-                  fHistoGoodMesonClusters[fiCut]->Fill(7); //"DDL not passed"
-                  continue;
-              } else { //DDL is good
-                  fHistoGoodMesonClusters[fiCut]->Fill(6); //"DDL passed"
-              }
+
+              // Following code is commented out (from 09.10.2023 onwards)
+              // Suspected to cause issues as we count the clusters but then throw away the pi0 candidates. This leads to a different rejection factor for Pi0s and clusters as well as a different rec. efficiency
+              // If it is found that commenting this fixes the issue, this will be deleted permanently
+
+              //*************************************************************************
+              // Int_t ClusterIDIsInBadDDL;
+              // Bool_t FlagMaybeBadDDLs=((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetReduceTriggeredPhiDueBadDDLs();
+              // Int_t DDLIsBadIndex;
+              // if (FlagMaybeBadDDLs==kFALSE){ //only flag bad DDLs -> ClusterIDIsInBadDDL>=2
+              //   DDLIsBadIndex=2;
+              // } else { //also flag maybe bad DDLs  -> ClusterIDIsInBadDDL>=1
+              //   DDLIsBadIndex=1;
+              // }
+              // ClusterIDIsInBadDDL=fCaloTriggerMimicHelper[fiCut]->IsTriggeredClusterIDInBadDDL(gamma1->GetCaloClusterRef());
+              // if (ClusterIDIsInBadDDL>=DDLIsBadIndex){ //DDL is bad
+              //     fHistoGoodMesonClusters[fiCut]->Fill(7); //"DDL not passed"
+              //     continue;
+              // } else { //DDL is good
+                fHistoGoodMesonClusters[fiCut]->Fill(6); //"DDL passed"
+              // }
+              //*************************************************************************
             }
           }
         }
@@ -5177,11 +5235,26 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
             }
           }
 
+          int NPrimaryMatched = 0;
+          if (fDoMesonQA == 2){
+            std::vector<int> VMatchedTracks = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetVectorMatchedTracksToCluster(fInputEvent, fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef()));
+            std::vector<int> VMatchedSecondaryTracks = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetVectorMatchedSecTracksToCluster(fInputEvent, fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef()));
+            NPrimaryMatched = VMatchedTracks.size();
+            for (const int& num1 : VMatchedTracks) {
+              for (const int& num2 : VMatchedSecondaryTracks) {
+                if (num1 == num2) {
+                  NPrimaryMatched--;
+                  break;
+                }
+              }
+            }
+          }
+
           if(fIsMC>0){
             if(fInputEvent->IsA()==AliESDEvent::Class())
-              ProcessTrueMesonCandidates(pi0cand,gamma0,gamma1, matched);
+              ProcessTrueMesonCandidates(pi0cand,gamma0,gamma1, matched, NPrimaryMatched);
             if(fInputEvent->IsA()==AliAODEvent::Class())
-              ProcessTrueMesonCandidatesAOD(pi0cand,gamma0,gamma1, matched);
+              ProcessTrueMesonCandidatesAOD(pi0cand,gamma0,gamma1, matched, NPrimaryMatched);
           }
           if (!matched){
             if (!fDoLightOutput || fDoECalibOutput > 0){
@@ -5194,6 +5267,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
           if (fDoMesonQA == 2){
             fInvMass = pi0cand->M();
             fPt  = pi0cand->Pt();
+            fHistoMotherInvMassECalibNMatchedPrim[fiCut]->Fill(fInvMass, gamma1->E(), NPrimaryMatched, fWeightJetJetMC);
             if (TMath::Abs(gamma0->GetDCAzToPrimVtx()) < TMath::Abs(gamma1->GetDCAzToPrimVtx())){
               fDCAzGammaMin = gamma0->GetDCAzToPrimVtx();
               fDCAzGammaMax = gamma1->GetDCAzToPrimVtx();
@@ -5219,7 +5293,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
   }
 }
 //______________________________________________________________________
-void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched)
+void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched, int NPrimaryMatched)
 {
 
   Double_t magField = fInputEvent->GetMagneticField();
@@ -5316,6 +5390,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
 
     //For MC we fill now the histogram here with weights (true and reconstructed efficiency will be consistent)
     if(!matched) fHistoMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightMeson);
+
+    if (fDoMesonQA == 2){
+      fHistoTruePi0InvMassECalibNMatchedPrim[fiCut]->Fill(fInvMass, TrueGammaCandidate1->E(), NPrimaryMatched, fWeightJetJetMC);
+    }
 
     if(isTruePi0 || isTrueEta){// True Pion or Eta
       if (!matched){
@@ -5560,7 +5638,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
 }
 
 //______________________________________________________________________
-void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched)
+void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched, int NPrimaryMatched)
 {
   Double_t magField = fInputEvent->GetMagneticField();
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
@@ -5663,6 +5741,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
 
   //For MC we fill now the historgram here with weights (true and reconstructed efficiency will be consistent)
   if(!matched) fHistoMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightMeson);
+
+  if (fDoMesonQA == 2){
+    fHistoTruePi0InvMassECalibNMatchedPrim[fiCut]->Fill(fInvMass, TrueGammaCandidate1->E(), NPrimaryMatched, fWeightJetJetMC);
+  }
 
   if(isTruePi0 || isTrueEta){// True Pion or Eta
 

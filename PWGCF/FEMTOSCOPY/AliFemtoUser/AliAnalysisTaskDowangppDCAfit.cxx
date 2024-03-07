@@ -165,11 +165,17 @@ if(ic!=0) continue;
             kStarVsmT2DinMixPID[ichg][ic] = nullptr;
             kStarVsmT2DinMixTrue[ichg][ic] = nullptr;
 
+            kStarVsmT2DinSamePID[ichg][ic] = nullptr;
         }
     }
 
-
-
+	for(int ic=0;ic<5;ic++){
+        	for(int ichg=0;ichg<2;ichg++){
+			for(int im=0;im<2;im++){
+				kStarDis[ichg][ic][im] = nullptr;
+			}
+		}
+	}
     // mix pool
     pool_bin empty_pool;
 
@@ -288,8 +294,19 @@ fListOfObjects(0)
             kStarVskT2DinMixTrue[ichg][ic] = nullptr;
             kStarVsmT2DinMixPID[ichg][ic] = nullptr;
             kStarVsmT2DinMixTrue[ichg][ic] = nullptr;
+
+            kStarVsmT2DinSamePID[ichg][ic] = nullptr;
         }
     }
+
+	  for(int ic=0;ic<5;ic++){
+                for(int ichg=0;ichg<2;ichg++){
+                        for(int im=0;im<2;im++){
+                                kStarDis[ichg][ic][im] = nullptr;
+                        }
+                }
+        }
+
 
     // 默认每个事件都至少有2个p,2anti-p
     pool_bin empty_pool;
@@ -530,9 +547,23 @@ void AliAnalysisTaskDowangppDCAfit::UserCreateOutputObjects()
             fListOfObjects->Add(kStarVsmT2DinMixTrue[ichg][ic]);
 
 
+            filename.Form("kStarVsmT2DinSamePID%d%d",ichg,ic);
+            kStarVsmT2DinSamePID[ichg][ic] = new TH2F(filename," ",1000, 0.0, 1.0,25,1,3.5);
+            fListOfObjects->Add(kStarVsmT2DinSamePID[ichg][ic]);
+    
+
         }
     }
 
+  for(int ic=0;ic<5;ic++){
+                for(int ichg=0;ichg<2;ichg++){
+                        for(int im=0;im<2;im++){
+				filename.Form("kStarDis%d%d%d",ichg,ic,im);
+                                kStarDis[ichg][ic][im] = new TH1F(filename," ",600,0.,3.0);
+				fListOfObjects->Add(kStarDis[ichg][ic][im]);
+                        }
+                }
+        }
 
     
     aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
@@ -919,6 +950,7 @@ void AliAnalysisTaskDowangppDCAfit::Analyze(AliAODEvent* aod,Float_t v0Centr,flo
 
 
     for(int ichg=0;ichg<2;ichg++){
+
         int HowmanyTrack = track_info[ichg].size();
 
         for(int ip1=0;ip1<HowmanyTrack;ip1++){
@@ -931,14 +963,22 @@ void AliAnalysisTaskDowangppDCAfit::Analyze(AliAODEvent* aod,Float_t v0Centr,flo
                 float AvgDPhi = ReAvgDphi(track_info[ichg][ip1],track_info[ichg][ip2]);
 	            double deta = Particle1_Reco.Eta() - Particle2_Reco.Eta();
                 fNumDPhiDEtaAvgQA[ichg][iCent]->Fill(deta,AvgDPhi);
-
+		float kStar_Reco = re_kstar(Particle1_Reco,Particle2_Reco);
+		if(ichg==0) kStarDis[0][iCent][0]->Fill(kStar_Reco);
+		
                 if(Pass(track_info[ichg][ip1],track_info[ichg][ip2],aodH)){
-                    float kStar_Reco = re_kstar(Particle1_Reco,Particle2_Reco);
+		if(ichg==0) kStarDis[1][iCent][0]->Fill(kStar_Reco);
+                    //float kStar_Reco = re_kstar(Particle1_Reco,Particle2_Reco);
                     float kStar_True = re_kstar(Particle1_True,Particle2_True);
                     //cout<<"ddd "<<kStar_Reco<<" "<<kStar_True<<endl;
                     MomSmearing[ichg][iCent]->Fill(kStar_True,kStar_Reco);
                     fNumDPhiDEtaAvgQA_afterPairCut[ichg][iCent]->Fill(deta,AvgDPhi);
-                 
+                    
+                    TLorentzVector tmp_pair = Particle1_Reco + Particle2_Reco;
+
+                    float mT_tmp = 0.5 * tmp_pair.Mt();
+
+                    kStarVsmT2DinSamePID[ichg][iCent]->Fill(kStar_Reco,mT_tmp);
                 }
             }
         }
@@ -988,7 +1028,10 @@ void AliAnalysisTaskDowangppDCAfit::Analyze(AliAODEvent* aod,Float_t v0Centr,flo
                             float AvgDPhi = ReAvgDphi(mix_p1,track_info[ichg][ip2]);
                             double deta = Particle1_Reco.Eta() - Particle2_Reco.Eta();
                             fDumDPhiDEtaAvgQA[ichg][iCent]->Fill(deta,AvgDPhi);
+
+			 if(ichg==0) kStarDis[0][iCent][1]->Fill(kStar_Reco);
                             if(Pass(mix_p1,track_info[ichg][ip2],aodH)){
+			 if(ichg==0) kStarDis[1][iCent][1]->Fill(kStar_Reco);
                                 //cout<<"ddd "<<kStar_Reco<<" "<<kStar_True<<endl;
                                 MomSmearing_mix[ichg][iCent]->Fill(kStar_True,kStar_Reco);
                                 fDumDPhiDEtaAvgQA_afterPairCut[ichg][iCent]->Fill(deta,AvgDPhi);
@@ -1980,6 +2023,7 @@ float AliAnalysisTaskDowangppDCAfit::ReAvgDphi(p_info &first_p_info, p_info &sec
     dphiAvg = dphiAvg/9.;
     return dphiAvg; 
 }
+
 
 
 

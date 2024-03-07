@@ -75,8 +75,8 @@ fHisteventsummary(0),
 fHisteventmult(0),
 kstarUnlike(0),
 kstarLike(0),
-kstarposLike(0),
-kstarnegLike(0),
+//kstarposLike(0),
+//kstarnegLike(0),
 kstarMix(0),
 //fHistpionpt(0),
 //fHistkaonpt(0),
@@ -113,8 +113,8 @@ fHisteventsummary(0),
 fHisteventmult(0),
 kstarUnlike(0),
 kstarLike(0),
-kstarposLike(0),
-kstarnegLike(0),
+//kstarposLike(0),
+//kstarnegLike(0),
 kstarMix(0),
 //fHistpionpt(0),
 //fHistkaonpt(0),
@@ -122,7 +122,7 @@ kstarMix(0),
 fHistnsigtpckaon(0),
 fHistnsigtofpion(0),
 fHistnsigtofkaon(0),*/
-frame(0),
+frame(2),
 fListTRKCorr(NULL),
 fListNUACorr(NULL),
 fListV0MCorr(NULL),
@@ -205,20 +205,20 @@ void AliAnalysisTaskSA::UserCreateOutputObjects()
   fHisteventmult            = new TH1F("fHisteventmult", "Event multiplicity", 10,0.0,10.0);       
   fHistVz            = new TH1F("fHistZVertex", "Z vertex distribution", 100,-10,10);       
   fHistCentrality = new TH1F("fHistCentrality", "Centrality distribution", 100,0,100);
-
-  /*
-  Int_t bins[4]={90, 18, 200, 20};
-  Double_t xmin[4]={0.6, 0.0, 0.0, -1.0};
-  Double_t xmax[4]={1.5, 90.0, 20.0, 1.0};
-  */
-  Int_t bins[3]={90, 100, 200};
+  
+  Int_t bins[4]={90, 10, 200, 5};
+  Double_t xmin[4]={0.6, 0.0, 0.0, 0.0};
+  Double_t xmax[4]={1.5, 100.0, 20.0, 1.0};
+  
+  /*Int_t bins[3]={90, 100, 200};
   Double_t xmin[3]={0.6, 0.0, 0.0};
-  Double_t xmax[3]={1.5, 100.0, 20.0};
-  kstarUnlike = new THnSparseD("kstarUnlike", "Unlike histogram", 3, bins, xmin, xmax);
-  kstarLike = new THnSparseD("kstarLike", "Like histogram", 3, bins, xmin, xmax);
-  kstarposLike = new THnSparseD("kstarposLike", "Pos Like histogram", 3, bins, xmin, xmax);
-  kstarnegLike = new THnSparseD("kstarnegLike", "Neg Like histogram", 3, bins, xmin, xmax);
-  kstarMix = new THnSparseD("kstarMix", "Mix histogram", 3, bins, xmin, xmax);
+  Double_t xmax[3]={1.5, 100.0, 20.0};*/
+  
+  kstarUnlike = new THnSparseD("kstarUnlike", "Unlike histogram", 4, bins, xmin, xmax);
+  kstarLike = new THnSparseD("kstarLike", "Like histogram", 4, bins, xmin, xmax);
+  //kstarposLike = new THnSparseD("kstarposLike", "Pos Like histogram", 3, bins, xmin, xmax);
+  //kstarnegLike = new THnSparseD("kstarnegLike", "Neg Like histogram", 3, bins, xmin, xmax);
+  kstarMix = new THnSparseD("kstarMix", "Mix histogram", 4, bins, xmin, xmax);
 
   //fHistpionpt = new TH1D("pionpt", "pionpt", 200, 0.0, 20.0);
   //fHistkaonpt = new TH1D("kaonpt", "kaonpt", 200, 0.0, 20.0);
@@ -230,8 +230,8 @@ void AliAnalysisTaskSA::UserCreateOutputObjects()
 
   kstarUnlike->Sumw2();
   kstarLike->Sumw2();
-  kstarposLike->Sumw2();
-  kstarnegLike->Sumw2();
+  //kstarposLike->Sumw2();
+  //kstarnegLike->Sumw2();
   kstarMix->Sumw2();
   //fHistpionpt->Sumw2();
   //fHistkaonpt->Sumw2();
@@ -274,8 +274,8 @@ void AliAnalysisTaskSA::UserCreateOutputObjects()
   fOutput->Add(fHistCentrality);
   fOutput->Add(kstarUnlike);
   fOutput->Add(kstarLike);
-  fOutput->Add(kstarposLike);
-  fOutput->Add(kstarnegLike);
+  //fOutput->Add(kstarposLike);
+  //fOutput->Add(kstarnegLike);
   fOutput->Add(kstarMix);
   //fOutput->Add(fHistpionpt);
   //fOutput->Add(fHistkaonpt);
@@ -490,18 +490,18 @@ void AliAnalysisTaskSA::UserExec(Option_t *)
 	    {
 	      fHisteventmult->Fill(6.5);	  
 	      // Fill unlike histo
-	      //kstarUnlike->Fill(motherkstar.M(), lV0M, motherkstar.Pt(), Costhetastar);
-	      kstarUnlike->Fill(motherkstar.M(), lV0M, motherkstar.Pt());
+	      kstarUnlike->Fill(motherkstar.M(), lV0M, motherkstar.Pt(), Costhetastar);
+	      //kstarUnlike->Fill(motherkstar.M(), lV0M, motherkstar.Pt());
 	      
 	    }
 	  else if (pion.charge * kaon.charge > 0)
 	    {
 	      fHisteventmult->Fill(7.5);	  
 	      // Fill like histo
-	      //kstarLike->Fill(motherkstar.M(), lV0M, motherkstar.Pt(), Costhetastar);
-	      kstarLike->Fill(motherkstar.M(), lV0M, motherkstar.Pt());
+	      kstarLike->Fill(motherkstar.M(), lV0M, motherkstar.Pt(), Costhetastar);
+	      //kstarLike->Fill(motherkstar.M(), lV0M, motherkstar.Pt());
 	    }
-
+	  /*
 	   if ((pion.charge > 0) && (kaon.charge > 0))
             {
               kstarposLike->Fill(motherkstar.M(), lV0M, motherkstar.Pt());
@@ -510,7 +510,7 @@ void AliAnalysisTaskSA::UserExec(Option_t *)
             { 
               kstarnegLike->Fill(motherkstar.M(), lV0M, motherkstar.Pt());
             }
-
+	  */
 	}
     }
 
@@ -521,8 +521,8 @@ void AliAnalysisTaskSA::UserExec(Option_t *)
 
   ///////////////////////////////////////////////////////////////////
       
- Costhetastar=0.0;
-
+ Double_t Costhetastarmix=0.0;
+ 
  // Mixed event
  double pionmixenergy = 0.0;
  TLorentzVector pionmixVector(0.0,0.0,0.0,0.0);
@@ -563,12 +563,12 @@ void AliAnalysisTaskSA::UserExec(Option_t *)
 		 continue;
 
 		 if (frame==0)
-		   Costhetastar = CosThetaStar(motherkstarmix, pionmixVector, kaon.particle);
+		   Costhetastarmix = CosThetaStar(motherkstarmix, pionmixVector, kaon.particle);
 		 else if (frame==1)
-		   Costhetastar = CosThetaStarHel(motherkstarmix, pionmixVector, kaon.particle);
+		   Costhetastarmix = CosThetaStarHel(motherkstarmix, pionmixVector, kaon.particle);
 		 // Fill mix histo
-		 //kstarMix->Fill(motherkstarmix.M(), lV0M, motherkstarmix.Pt(), Costhetastar);
-		 kstarMix->Fill(motherkstarmix.M(), lV0M, motherkstarmix.Pt());
+		 kstarMix->Fill(motherkstarmix.M(), lV0M, motherkstarmix.Pt(), Costhetastarmix);
+		 //kstarMix->Fill(motherkstarmix.M(), lV0M, motherkstarmix.Pt());
 	       }
 	   }
        }
@@ -638,7 +638,7 @@ Bool_t AliAnalysisTaskSA::GoodEvent(const AliVVertex *vertex)
     }
     */
 
-    fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE); 
+    //fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE); 
 
 
   return kTRUE;
@@ -763,7 +763,7 @@ Double_t AliAnalysisTaskSA::CosThetaStar(TLorentzVector mother, TLorentzVector d
   TVector3 BeamVect;
   BeamVect.SetXYZ(0,0,1);
   TVector3 momentumM(mother.Vect());
-  TVector3 normal(mother.Y() / momentumM.Mag(), -mother.X() / momentumM.Mag(), 0.0);
+  TVector3 normal(mother.Y() / momentumM.Pt(), -mother.X() / momentumM.Pt(), 0.0);
 
   // Computes components of beta
   Double_t betaX = -mother.X() / mother.E();
@@ -777,7 +777,8 @@ Double_t AliAnalysisTaskSA::CosThetaStar(TLorentzVector mother, TLorentzVector d
 
   Double_t cosThetaStar = normal.Dot(momentumD) / momentumD.Mag();
 
-  return cosThetaStar;
+  //return cosThetaStar;
+  return TMath::Abs(cosThetaStar);
 
 }
 
@@ -798,7 +799,8 @@ Double_t AliAnalysisTaskSA::CosThetaStarHel(TLorentzVector mother, TLorentzVecto
   TVector3 zAxisHE = (mother.Vect()).Unit();
   Double_t thetaHE= zAxisHE.Dot((daughter0.Vect()).Unit());
 
-  return thetaHE;
+  //return thetaHE;
+  return TMath::Abs(thetaHE);
 
 }
 

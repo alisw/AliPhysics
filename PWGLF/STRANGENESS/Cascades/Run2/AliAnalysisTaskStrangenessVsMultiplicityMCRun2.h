@@ -122,8 +122,11 @@ public:
   void SetDistanceLayer2 ( Float_t lOpt ) {
     fkDistanceLayer2 = lOpt;
   }
-  
-  
+  //---------------------------------------------------------------------------------------
+  //used to set centrality 0-1 with better resolution in fHistGeneratedPtVsYVsCentralityParticleName
+  void SetHM (Bool_t isHM) {
+    fisHM = isHM;
+  }
   //---------------------------------------------------------------------------------------
   //Task Configuration: trigger selection
   void SetSelectedTriggerClass(AliVEvent::EOfflineTriggerTypes trigType) { fTrigType = trigType;}
@@ -355,6 +358,7 @@ private:
   AliEventCuts fEventCutsStrictAntipileup; /// Event cuts class
   
   TRandom3 *fRand;
+  TString fkCentralityEstimator;
   
   //Objects Controlling Task Behaviour
   Bool_t fkSaveEventTree;           //if true, save Event TTree
@@ -387,6 +391,9 @@ private:
   Float_t fMinPtToSave; //minimum pt above which we keep candidates in TTree output
   Float_t fMaxPtToSave; //maximum pt below which we keep candidates in TTree output
   
+  //if true, save fHistGenerated with higher resolation
+  Bool_t fisHM;      
+
   //if true, save sandbox mode info (beware large files!)
   Bool_t fkSandboxMode;
   

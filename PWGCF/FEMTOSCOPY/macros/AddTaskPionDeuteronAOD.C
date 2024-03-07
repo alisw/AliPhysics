@@ -48,10 +48,18 @@ AliAnalysisTaskSE* AddTaskPionDeuteronAOD(bool isMC = false,//1
     TrackCutsAntiDeuteronDCA->SetPtRange(0.8, 2.4);
     TrackCutsDeuteronDCA->SetPIDkd(false, false, 3, 3);
     TrackCutsAntiDeuteronDCA->SetPIDkd(false, false, 3, 3);
-  }if(suffix == "2")
+  }
+  if(suffix == "2")
   {
     TrackCutsDeuteronDCA->SetPtRange(0.8,1.4);
     TrackCutsAntiDeuteronDCA->SetPtRange(0.8, 1.4);
+    TrackCutsDeuteronDCA->SetPIDkd(false, false, 3, 3);
+    TrackCutsAntiDeuteronDCA->SetPIDkd(false, false, 3, 3);
+  }
+  if(suffix == "3")
+  {
+    TrackCutsDeuteronDCA->SetPtRange(0.5,2.4);
+    TrackCutsAntiDeuteronDCA->SetPtRange(0.5, 2.4);
     TrackCutsDeuteronDCA->SetPIDkd(false, false, 3, 3);
     TrackCutsAntiDeuteronDCA->SetPIDkd(false, false, 3, 3);
   }

@@ -79,9 +79,9 @@ class AliAnalysisTaskOtonXx : public AliAnalysisTaskSE {
 
   TList *fEvtList;//!
   TList *fKaonList;//!
-  TList* fKaonMCList;//!
+  TList* fKaonListMC;//!
   TList *fAntiKaonList;//!
-  TList* fAntiKaonMCList;//!
+  TList* fAntiKaonListMC;//!
   TList *fXiList;//!
   TList *fAntiXiList;//!
   TList *fResults;                          //!
@@ -145,44 +145,51 @@ class AliAnalysisTaskOtonXx : public AliAnalysisTaskSE {
   Int_t fTKaonMotherWeak[300];
   Short_t fTKaonOrigin[300];
   Int_t fTKaonMotherID[300];
+  Int_t fTKaonMotherPDG[300];
+  Float_t fTKaonPxTRUE[300];
+  Float_t fTKaonPyTRUE[300];
+  Float_t fTKaonPzTRUE[300];
 
-  const Int_t MAXXiS = 10;
+  const Int_t MAXXiS = 100;
   Int_t fTnXi;
-  Short_t fTXiCharge[10];
-  Float_t fTXiDCA[10];
-  Float_t fTXiDaughtersDCA[10];
-  Float_t fTXiMass[10];
-  Float_t fTXiXiMass[10];
-  Float_t fTXiOmegaMass[10];
-  Float_t fTXiVr[10];
-  Float_t fTXiPA[10];
-  Float_t fTXiLambdaDCA[10];
-  Float_t fTXiLambdaDaughtersDCA[10];
-  Float_t fTXiLambdaMass[10];
-  Float_t fTXiLambdaK0Mass[10];
-  Float_t fTXiLambdaVr[10];
-  Float_t fTXiLambdaPA[10];
-  Short_t fTXiTrackCharge[10][3];
-  Float_t fTXiTrackPx[10][3];
-  Float_t fTXiTrackPy[10][3];
-  Float_t fTXiTrackPz[10][3];
-  Int_t fTXiTrackID[10][3];
-  Float_t fTXiTrackTPCmom[10][3];
-  Float_t fTXiTrackDCA[10][3];
-  Float_t fTXiTrackTPCsigma[10][3];
-  Float_t fTXiTrackTOFsigma[10][3];
-  Int_t fTXiTrackNcl[10][3];
-  Float_t fTXiTrackCrR[10][3];
-  Float_t fTXiTrackCrF[10][3];
-  Float_t fTXiTrackTPCchi2[10][3];
-  Bool_t fTXiTrackSPDtime[10][3];
-  Bool_t fTXiTrackITStime[10][3];
-  Bool_t fTXiTrackTOFtime[10][3];
-  Int_t fTXiMotherID[10];
-   Int_t fTXiPDG[10];
-   Int_t fTXiMotherPDG[10];
-   Int_t fTXiMotherWeak[10];
-   Int_t fTXiOrigin[10];
+  Short_t fTXiCharge[100];
+  Float_t fTXiDCA[100];
+  Float_t fTXiDaughtersDCA[100];
+  Float_t fTXiMass[100];
+  Float_t fTXiOmegaMass[100];
+  Float_t fTXiVr[100];
+  Float_t fTXiPA[100];
+  Float_t fTXiLambdaDCA[100];
+  Float_t fTXiLambdaDaughtersDCA[100];
+  Float_t fTXiLambdaMass[100];
+  Float_t fTXiLambdaK0Mass[100];
+  Float_t fTXiLambdaVr[100];
+  Float_t fTXiLambdaPA[100];
+  Short_t fTXiTrackCharge[100][3];
+  Float_t fTXiTrackPx[100][3];
+  Float_t fTXiTrackPy[100][3];
+  Float_t fTXiTrackPz[100][3];
+  Int_t fTXiTrackID[100][3];
+  Float_t fTXiTrackTPCmom[100][3];
+  Float_t fTXiTrackDCA[100][3];
+  Float_t fTXiTrackTPCsigma[100][3];
+  Float_t fTXiTrackTOFsigma[100][3];
+  Int_t fTXiTrackNcl[100][3];
+  Float_t fTXiTrackCrR[100][3];
+  Float_t fTXiTrackCrF[100][3];
+  Float_t fTXiTrackTPCchi2[100][3];
+  Bool_t fTXiTrackSPDtime[100][3];
+  Bool_t fTXiTrackITStime[100][3];
+  Bool_t fTXiTrackTOFtime[100][3];
+  Int_t fTXiMotherID[100];
+   Int_t fTXiPDG[100];
+   Int_t fTXiMotherPDG[100];
+ Float_t fTXiPxTRUE[300];
+ Float_t fTXiPyTRUE[300];
+ Float_t fTXiPzTRUE[300];
+   Int_t fTXiMotherWeak[100];
+   Int_t fTXiOrigin[100];
+  Float_t fTXiBachelorBaryonPA[100];
 
   // ClassDef 6 ????
   ClassDef(AliAnalysisTaskOtonXx, 6)

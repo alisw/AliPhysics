@@ -18,10 +18,12 @@
 #pragma link C++ class AliGFWCumulant+;
 #pragma link C++ class AliGFW+;
 #pragma link C++ class AliGFWWeights+;
+#pragma link C++ class AliGFWWeightsFinerBin+;
 #pragma link C++ class AliPartSimpleForCorr+;
 #pragma link C++ class AliProfileSubset+;
 #pragma link C++ class AliProfileBS+;
 #pragma link C++ class AliPtContainer+;
+#pragma link C++ class AliPtPtContainer+;
 #pragma link C++ class AliCkContainer+;
 #pragma link C++ class AliGFWFlowContainer+;
 #pragma link C++ class AliUniFlowCorrTask+;
@@ -41,6 +43,7 @@
 #ifdef __CLING__
 
 #pragma link C++ class AliAnalysisTaskCreateNUA+;
+#pragma link C++ class AliAnalysisTaskCreateNUAFinerBin+;
 #pragma link C++ class AliAnalysisTaskCreatePeriodNUA+;
 #pragma link C++ class AliAnalysisTaskCreateNUE+;
 #pragma link C++ class AliAnalysisTaskEffFDExample+;
@@ -55,6 +58,7 @@
 #pragma link C++ class AliAnalysisTaskMeanPtV2Corr+;
 #pragma link C++ class AliAnalysisTaskXDeptFlow+;
 #pragma link C++ class AliAnalysisTaskNonlinearFlow+;
+#pragma link C++ class AliAnalysisTaskVnPtCorr+;
 #pragma link C++ class AliAnalysisTaskCorrForNonlinearFlow+;
 #pragma link C++ class AliAnalysisTaskAcceptanceCorr+;
 #pragma link C++ class AliEffFDContainer+;
@@ -64,6 +68,7 @@
 #pragma link C++ class AliGFWXXCuts+;
 #pragma link C++ class AliGFWPbpass23Cuts+;
 #pragma link C++ class PhysicsProfile+;
+#pragma link C++ class PhysicsProfileVnPt+;
 #pragma link C++ class PhysicsProfilePPTask+;
 #pragma link C++ class PhysicsProfileFlowOnTheFly+;
 #pragma link C++ class AliLWTPCTrack+;

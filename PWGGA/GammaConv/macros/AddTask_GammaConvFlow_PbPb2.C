@@ -37,31 +37,37 @@ class CutHandlerConvFlow{
     TString* photonCutArray;
 };
 
+void AddSPmethod(const char *name, const char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, bool debug, TString uniqueID,  AliFlowTrackSimpleCuts* POIfilter,Int_t trainConfig, bool BasicHistoSP = kTRUE, TString CutNumberString = "");
+
 void AddTask_GammaConvFlow_PbPb2(
-                                  TString uniqueID              = "",
-                                  Int_t harmonic                = 2,
-                                  Int_t trainConfig             = 1,                            //change different set of cuts
-                                  Int_t enableQAMesonTask       = 0,                            //enable QA in AddTask_GammaConvFlow_PbPb2
-                                  Int_t enableQAPhotonTask      = 0,                            // enable additional QA task
-                                  //TString fileNameInputForWeighting = "MCSpectraInput.root",  // path to file for weigting input
-                                  Bool_t doWeighting            = kFALSE,                       //enable Weighting
-                                  TString cutnumberAODBranch    = "100000006008400000001500000",
-                                  Bool_t BasicHistoSP           = kFALSE,
-                                  Bool_t debug                  = kFALSE,
-                                  Bool_t UseMassSel             = kFALSE,
-                                  Float_t MinMass               = 0,
-                                  Float_t MaxMass               = 0.2,
-                                  Bool_t UseKappaSel            = kFALSE,
-                                  Float_t MinKappa              = 0,
-                                  Float_t MaxKappa              = 10,
-                                  Int_t FilterVariable          = 1,                              // 1 = Mass, 2 = Kappa, 3 = MCee mass, 4 = MCee kappa, 5 = !MCee mass, 6 = !MCee kappa
-                                  const Int_t NFilterBins       = 1,
-                                  Double_t MinFilter            = 0.0,
-                                  Double_t MaxFilter            = 0.2,
-                                  Bool_t isMC                   = kFALSE,
-                                  Int_t ApplydPhidRCut         = 0,
-                                  Bool_t PerformExtraStudies    = kFALSE,                         // with kTRUE it performs the LTM study and dRdPhi study
-                                  TString additionalTrainConfig = "0"                             // additional counter for trainconfig, always has to be last parameter
+                                  TString uniqueID                        = "",
+                                  Int_t trainConfig                       = 1,                            //change different set of cuts
+                                  Int_t harmonic                          = 2,
+                                  Int_t isMC                              = 0,
+                                  TString   photonCutNumberV0Reader       = "",
+                                  TString   periodNameV0Reader            = "",
+                                  Int_t enableQAMesonTask                 = 0,                            //enable QA in AddTask_GammaConvFlow_PbPb2
+                                  Int_t enableQAPhotonTask                = 0,                            // enable additional QA task
+                                  Bool_t doWeighting                      = kFALSE,                       //enable Weighting
+                                  TString cutnumberAODBranch              = "100000006008400000001500000",
+                                  Bool_t BasicHistoSP                     = kFALSE,
+                                  Bool_t debug                            = kFALSE,
+                                  Bool_t UseMassSel                       = kFALSE,
+                                  Float_t MinMass                         = 0,
+                                  Float_t MaxMass                         = 0.2,
+                                  Bool_t UseKappaSel                      = kFALSE,
+                                  Float_t MinKappa                        = 0,
+                                  Float_t MaxKappa                        = 10,
+                                  Int_t FilterVariable                    = 1,                              // 1 = Mass, 2 = Kappa, 3 = MCee mass, 4 = MCee kappa, 5 = !MCee mass, 6 = !MCee kappa
+                                  const Int_t NFilterBins                 = 1,
+                                  Double_t MinFilter                      = 0.0,
+                                  Double_t MaxFilter                      = 0.2,
+                                  TString fileNameExternalInputs          = "",                             // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, FMAW:fileNameMatBudWeights, FEPC:fileNamedEdxPostCalib, FCEF:fileNameCentFlattening, separate with ; NB on FEPC: can be one filename for all cut configs OR one filename per cut config separated by '+'. If no filename at all is given and enableElecDeDxPostCalibration>0 the maps are taken from the OADB. Also ['FMLR:enable' -> Machine learning Trees]
+                                  Int_t     enableMatBudWeightsPi0        = 0,                              // 1 = three radial bins, 2 = 10 radial bins
+                                  Int_t     enableElecDeDxPostCalibration = 0,                              // 0 = off, 1 = as function of TPC clusters, 2 = as function of convR. Option 2 is available only if FEPC is given.
+                                  Int_t ApplydPhidRCut                    = 0,
+                                  Bool_t PerformExtraStudies              = kFALSE,                         // with kTRUE it performs the LTM study and dRdPhi study
+                                  TString additionalTrainConfig           = "0"                             // additional counter for trainconfig, always has to be last parameter
                                ) {
 
   Int_t isHeavyIon = 1;
@@ -84,7 +90,7 @@ void AddTask_GammaConvFlow_PbPb2(
   AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
 
   //=========  Set Cutnumber for V0Reader ================================
-  TString cutnumberPhoton = "30000008400100001500000000";
+  TString cutnumberPhoton = photonCutNumberV0Reader.Data();
   TString cutnumberEvent = "10000003";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
@@ -392,8 +398,24 @@ void AddTask_GammaConvFlow_PbPb2(
     cuts.AddCut("52400013", "00200009467000008250400000"); // TPCpi 2, 0,5, TPCe -6,7
     cuts.AddCut("50200013", "00200009487000008250400000"); // TPCpi 2,1, TPCe -6,7
     cuts.AddCut("52400013", "00200009487000008250400000"); // TPCpi 2,1, TPCe -6,7
+  // PbPb 2018 @ 5.02 TeV
+  } else if (trainConfig == 100) {
+    cuts.AddCut("10130e03", "0dm00009f9730000dge0404000"); // 0-10%
+    cuts.AddCut("11310e03", "0dm00009f9730000dge0404000"); // 10-30%
+    cuts.AddCut("13530e03", "0dm00009f9730000dge0404000"); // 30-50%
+    cuts.AddCut("15910e03", "0dm00009f9730000dge0404000"); // 50-90%
+ } else if (trainConfig == 101){ // copy of PCM train config 992
+    cuts.AddCut("10130e03", "0d200009ab770c00amd0400000"); // 0-10%
+    cuts.AddCut("11310e03", "0d200009ab770c00amd0400000"); // 10-30%
+    cuts.AddCut("13530e03", "0d200009ab770c00amd0400000"); // 30-50%
+    cuts.AddCut("15910e03", "0d200009ab770c00amd0400000"); // 50-90%
+  } else if (trainConfig == 102){ // copy of PCM train config 993
+    cuts.AddCut("10130e03", "0d200009ab770c00amd0404000"); // 0-10%
+    cuts.AddCut("11310e03", "0d200009ab770c00amd0404000"); // 10-30%
+    cuts.AddCut("13530e03", "0d200009ab770c00amd0404000"); // 30-50%
+    cuts.AddCut("15910e03", "0d200009ab770c00amd0404000"); // 50-90%
   } else {
-      Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
+      Error(Form("GammaConvFlow_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
       return;
   }
 
@@ -410,15 +432,15 @@ void AddTask_GammaConvFlow_PbPb2(
   //========= Add task to the ANALYSIS manager =====
   //================================================
   AliAnalysisTaskGammaConvFlow *task=NULL;
-  task= new AliAnalysisTaskGammaConvFlow(Form("GammaConvV1_%i_v%d",trainConfig,harmonic),numberOfCuts);
+  task= new AliAnalysisTaskGammaConvFlow(Form("GammaConvFlow_%i_v%d",trainConfig,harmonic),numberOfCuts);
   task->SetIsHeavyIon(isHeavyIon);
   task->AliAnalysisTaskGammaConvFlow::SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
 
-  cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID));
+  AliFlowTrackCuts *cutsRP = new AliFlowTrackCuts(Form("RFPcuts%s",uniqueID.Data()));
   if(!cutsRP) {
       if(debug) cout << " Fatal error: no RP cuts found, could be a library problem! " << endl;
-      return 0x0;
+      return;
   }
   cutsRP = cutsRP->GetStandardVZEROOnlyTrackCuts(); // select vzero tracks
   cutsRP->SetVZEROgainEqualizationPerRing(kFALSE);
@@ -508,6 +530,7 @@ void AddTask_GammaConvFlow_PbPb2(
     analysisEventCuts[i] = new AliConvEventCuts();
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
+    if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     EventCutList->Add(analysisEventCuts[i]);
     analysisEventCuts[i]->SetFillCutHistograms("",kFALSE);
 
@@ -530,7 +553,7 @@ void AddTask_GammaConvFlow_PbPb2(
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-  mgr->CreateContainer(Form("GammaConvV1_%i_v%d",trainConfig,harmonic), TList::Class(),
+  mgr->CreateContainer(Form("GammaConvFlow_%i_v%d",trainConfig,harmonic), TList::Class(),
                       AliAnalysisManager::kOutputContainer,Form("GammaConvFlow_%i.root",trainConfig));
 
   mgr->AddTask(task);
@@ -542,7 +565,7 @@ void AddTask_GammaConvFlow_PbPb2(
 }
 
 //_____________________________________________________________________________
-void AddSPmethod(char *name, char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, bool debug, TString uniqueID,  AliFlowTrackSimpleCuts* POIfilter,Int_t trainConfig, bool BasicHistoSP = kTRUE, TString CutNumberString)
+void AddSPmethod(const char *name, const char *Qvector, int harmonic, AliAnalysisDataContainer *flowEvent, bool debug, TString uniqueID,  AliFlowTrackSimpleCuts* POIfilter,Int_t trainConfig, bool BasicHistoSP = kTRUE, TString CutNumberString = "")
 {
   // add sp task and invm filter tasks
   if(debug)  cout << " ******* Switching to SP task ******* " << endl;

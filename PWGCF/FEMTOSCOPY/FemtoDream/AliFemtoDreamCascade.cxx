@@ -21,6 +21,7 @@ AliFemtoDreamCascade::AliFemtoDreamCascade()
       fMass(0),
       fXiMass(0),
       fOmegaMass(0),
+      fRealMotherPDG(0),
       fDCAXiDaug(0),
       fTransRadius(0),
       fRapXi(0),
@@ -32,6 +33,7 @@ AliFemtoDreamCascade::AliFemtoDreamCascade()
       fMassv0(0),
       fv0DCADaug(0),
       fv0DCAPrimVtx(0),
+      fBachelorBaryonCosPA(0),
       fv0Momentum(),
       fv0Pt(0),
       fDCABachPrimVtx(0),
@@ -168,6 +170,7 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt, AliAODcascade *casc) {
   fv0Pt = casc->MomV0X() * casc->MomV0X() + casc->MomV0Y() * casc->MomV0Y();
   fv0DCADaug = casc->DcaV0Daughters();
   fv0DCAPrimVtx = casc->DcaV0ToPrimVertex();
+  fBachelorBaryonCosPA = casc->BachBaryonCosPA();
   double decayPosV0[3] = { casc->DecayVertexV0X(), casc->DecayVertexV0Y(), casc
       ->DecayVertexV0Z() };
   fv0TransRadius = TMath::Sqrt(
@@ -313,6 +316,7 @@ void AliFemtoDreamCascade::SetCascade(AliVEvent *evt, AliAODcascade *casc) {
   fv0Pt = casc->MomV0X() * casc->MomV0X() + casc->MomV0Y() * casc->MomV0Y();
   fv0DCADaug = casc->DcaV0Daughters();
   fv0DCAPrimVtx = casc->DcaV0ToPrimVertex();
+  fBachelorBaryonCosPA = casc->BachBaryonCosPA();
   double decayPosV0[3] = { casc->DecayVertexV0X(), casc->DecayVertexV0Y(), casc
       ->DecayVertexV0Z() };
   fv0TransRadius = TMath::Sqrt(
@@ -480,6 +484,7 @@ void AliFemtoDreamCascade::SetCascade(AliESDEvent *evt, AliMCEvent *mcEvent,
   fv0DCAPrimVtx = currentV0->GetD(evt->GetPrimaryVertex()->GetX(),
                                   evt->GetPrimaryVertex()->GetY(),
                                   evt->GetPrimaryVertex()->GetZ());
+  fBachelorBaryonCosPA = -99.; // not existing (?) for ESD analysis
   double decayPosV0[3] = { 0. };
   currentV0->GetXYZ(decayPosV0[0], decayPosV0[1], decayPosV0[2]);
   fv0TransRadius = TMath::Sqrt(
@@ -536,6 +541,7 @@ void AliFemtoDreamCascade::Reset() {
     fMassv0 = 0;
     fv0DCADaug = 0;
     fv0DCAPrimVtx = 0;
+    fBachelorBaryonCosPA = -99.;
     fv0Momentum.SetXYZ(0, 0, 0);
     fv0Pt = 0;
     fDCABachPrimVtx = 0;
@@ -617,9 +623,9 @@ void AliFemtoDreamCascade::SetMCMotherInfo(TClonesArray *mcarray,
         //This should not happen, just in case somethings very fishy
         this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);
       } else {
-//        std::cout << "Found a Track weakling and his mother is: " << labelBachMother <<'\n';
-//        std::cout << "PDG Bach: "<<((AliAODMCParticle*)mcarray->At(labelBach))->GetPdgCode() << "\n";
-//        std::cout << "PDG Bach-Mother: "<<((AliAODMCParticle*)mcarray->At(labelBachMother))->GetPdgCode() << "\n";
+        //std::cout << "Found a Track weakling and his mother is: " << labelBachMother <<'\n';
+        //std::cout << "PDG Bach: "<<((AliAODMCParticle*)mcarray->At(labelBach))->GetPdgCode() << "\n";
+        //std::cout << "PDG Bach-Mother: "<<((AliAODMCParticle*)mcarray->At(labelBachMother))->GetPdgCode() << "\n";
         //look if a v0 exists, and if this v0 stems from a weak decay, and
         //get the label of the mother particle
         int labelv0Mother = -1;
@@ -633,7 +639,7 @@ void AliFemtoDreamCascade::SetMCMotherInfo(TClonesArray *mcarray,
           //be a fake v0, and therefore a fake candidate overall
           this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);
         } else {
-//          std::cout <<"Potential v0 weakling with ID: " << labelv0 << " found \n";
+          //std::cout <<"Potential v0 weakling with ID: " << labelv0 << " found \n";
           AliAODMCParticle* mcv0 = (AliAODMCParticle*) mcarray->At(labelv0);
           if (!mcv0) {
             this->fIsSet = false;
@@ -642,9 +648,9 @@ void AliFemtoDreamCascade::SetMCMotherInfo(TClonesArray *mcarray,
                 && !(mcv0->IsSecondaryFromMaterial())) {
               //the v0 candidate has to be from a weak decay itself
               labelv0Mother = mcv0->GetMother();
-//              std::cout << "Indeed a v0 weakling his mothers number is " << labelv0Mother << "\n";
-//              std::cout << "PDG v0: "<< mcv0->GetPdgCode() << "\n";
-//              std::cout << "PDG v0-Mother: "<<((AliAODMCParticle*)mcarray->At(labelv0Mother))->GetPdgCode() << "\n";
+              //std::cout << "Indeed a v0 weakling his mothers number is " << labelv0Mother << "\n";
+              //std::cout << "PDG v0: "<< mcv0->GetPdgCode() << "\n";
+              //std::cout << "PDG v0-Mother: "<<((AliAODMCParticle*)mcarray->At(labelv0Mother))->GetPdgCode() << "\n";
               if (labelv0Mother < 0) {
                 //Again, this should not happen, just in case somethings
                 //very fishy
@@ -657,7 +663,7 @@ void AliFemtoDreamCascade::SetMCMotherInfo(TClonesArray *mcarray,
                   //MOMMY?
                   AliAODMCParticle* mcPart = (AliAODMCParticle*) mcarray->At(
                       labelv0Mother);
-//                  std::cout << "MOOOOOM: " << mcPart->GetPdgCode() << "\n";
+                  //std::cout << "MOOOOOM: " << mcPart->GetPdgCode() << "\n";
                   this->SetMCPDGCode(mcPart->GetPdgCode());
                   double mcMom[3] = { 0., 0., 0. };
                   mcPart->PxPyPz(mcMom);
@@ -669,27 +675,35 @@ void AliFemtoDreamCascade::SetMCMotherInfo(TClonesArray *mcarray,
                       && !(mcPart->IsSecondaryFromWeakDecay())) {
                     this->SetParticleOrigin(
                         AliFemtoDreamBasePart::kPhysPrimary);
-//                    std::cout << "A primary \n";
+                    //std::cout << "A primary \n";
                   } else if (mcPart->IsSecondaryFromWeakDecay()
                       && !(mcPart->IsSecondaryFromMaterial())) {
                     this->SetParticleOrigin(AliFemtoDreamBasePart::kWeak);
                     this->SetPDGMotherWeak(
                         ((AliAODMCParticle*) mcarray->At(mcPart->GetMother()))
                             ->PdgCode());
-//                    std::cout << "A secondary from" << ((AliAODMCParticle*)mcarray->At(mcPart->GetMother()))->PdgCode() << std::endl;
+                    //std::cout << "A secondary from" << ((AliAODMCParticle*)mcarray->At(mcPart->GetMother()))->PdgCode() << std::endl;
                   } else if (mcPart->IsSecondaryFromMaterial()) {
                     this->SetParticleOrigin(AliFemtoDreamBasePart::kMaterial);
-//                    std::cout << "A Material \n";
+                    //std::cout << "A Material \n";
                   } else {
                     this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
-//                    std::cout << "An Unknown \n";
+                    //std::cout << "An Unknown \n";
                   }
 
-
                   //set mother ID as for v0 (Oton. 19/5/2023) 
+                  //THIS whole piece of code DOES WORK IN orDER to GET THE ancestor (but not the actual mother!)
                    int motherID = mcPart->GetMother();
                    int lastMother = motherID;
                    AliAODMCParticle *mcMother = nullptr;
+
+                       // Oton. 4/12/2023
+                       // ADD three lines TO GET THE REAL MOTHER PDG BEFORE LOOPING FOR THE ANCESTOR
+                       mcMother = (AliAODMCParticle *) mcarray->At(motherID);
+                       fRealMotherPDG = mcMother->GetPdgCode();
+                       //cout<<"AliFemtoDreamCascade REAL MOTHER "<<motherID<<" pdg= "<<fRealMotherPDG<<endl;
+
+                   //NOW go on and look for the first ancestor 
                    while (motherID != -1) {
                      lastMother = motherID;
                      mcMother = (AliAODMCParticle *) mcarray->At(motherID);
@@ -702,7 +716,7 @@ void AliFemtoDreamCascade::SetMCMotherInfo(TClonesArray *mcarray,
                      this->SetMotherPDG(mcMother->GetPdgCode());
                      this->SetMotherID(lastMother);
                    }
-                 //----
+                  //----
 
                 } else {
                   //combinatorial background
