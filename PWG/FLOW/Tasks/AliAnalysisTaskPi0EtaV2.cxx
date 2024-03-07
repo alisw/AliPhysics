@@ -66,11 +66,20 @@ ClassImp(AliAnalysisTaskPi0EtaV2)
                                                          fHistoMotherBackInvMassPtdPhiV0A(NULL),
                                                          fHistoMotherBackInvMassPtdPhiV0C(NULL),
                                                          fEventCount(NULL),
+                                                         fHistoMotherInvMassPtV0CInPlane(NULL),
+                                                         fHistoMotherInvMassPtV0AInPlane(NULL),
+                                                         fHistoMotherInvMassPtV0COutPlane(NULL),
+                                                         fHistoMotherInvMassPtV0AOutPlane(NULL),
+                                                         fHistoMotherBackInvMassPtV0CInPlane(NULL),
+                                                         fHistoMotherBackInvMassPtV0AInPlane(NULL),
+                                                         fHistoMotherBackInvMassPtV0COutPlane(NULL),
+                                                         fHistoMotherBackInvMassPtV0AOutPlane(NULL),
                                                          runNum(0),
                                                          oldRunNum(0),
                                                          centSPD1(-999),
                                                          IsVZEROCalibOn(kTRUE),
                                                          IsQAVZERO(kTRUE),
+                                                         IsUseInOutPlane(kTRUE),
                                                          fListVZEROCalib(NULL),
                                                          fVZEROCalibFile(NULL),
                                                          fPsi2V0C(-999),
@@ -132,11 +141,20 @@ AliAnalysisTaskPi0EtaV2::AliAnalysisTaskPi0EtaV2(const char *name) : AliAnalysis
                                                                      fHistoMotherBackInvMassPtdPhiV0A(NULL),
                                                                      fHistoMotherBackInvMassPtdPhiV0C(NULL),
                                                                      fEventCount(NULL),
+                                                                     fHistoMotherInvMassPtV0CInPlane(NULL),
+                                                                     fHistoMotherInvMassPtV0AInPlane(NULL),
+                                                                     fHistoMotherInvMassPtV0COutPlane(NULL),
+                                                                     fHistoMotherInvMassPtV0AOutPlane(NULL),
+                                                                     fHistoMotherBackInvMassPtV0CInPlane(NULL),
+                                                                     fHistoMotherBackInvMassPtV0AInPlane(NULL),
+                                                                     fHistoMotherBackInvMassPtV0COutPlane(NULL),
+                                                                     fHistoMotherBackInvMassPtV0AOutPlane(NULL),
                                                                      runNum(0),
                                                                      oldRunNum(0),
                                                                      centSPD1(-999),
                                                                      IsVZEROCalibOn(kTRUE),
                                                                      IsQAVZERO(kTRUE),
+                                                                     IsUseInOutPlane(kTRUE),
                                                                      fListVZEROCalib(NULL),
                                                                      fVZEROCalibFile(NULL),
                                                                      fPsi2V0C(-999),
@@ -215,6 +233,14 @@ void AliAnalysisTaskPi0EtaV2::UserCreateOutputObjects()
     fHistoMotherInvMassPtPhiV0A = new TH3F *[fnCuts];
     fHistoMotherBackInvMassPtdPhiV0C = new TH3F *[fnCuts];
     fHistoMotherBackInvMassPtdPhiV0A = new TH3F *[fnCuts];
+    fHistoMotherInvMassPtV0CInPlane = new TH2F *[fnCuts];
+    fHistoMotherInvMassPtV0AInPlane = new TH2F *[fnCuts];
+    fHistoMotherInvMassPtV0COutPlane = new TH2F *[fnCuts];
+    fHistoMotherInvMassPtV0AOutPlane = new TH2F *[fnCuts];
+    fHistoMotherBackInvMassPtV0CInPlane = new TH2F *[fnCuts];
+    fHistoMotherBackInvMassPtV0AInPlane = new TH2F *[fnCuts];
+    fHistoMotherBackInvMassPtV0COutPlane = new TH2F *[fnCuts];
+    fHistoMotherBackInvMassPtV0AOutPlane = new TH2F *[fnCuts];
     fEventCount = new TH1D *[fnCuts];
     fHist2DPsi2V0CCent = new TH2D *[fnCuts];
     fHist2DPsi2V0ACent = new TH2D *[fnCuts];
@@ -308,6 +334,38 @@ void AliAnalysisTaskPi0EtaV2::UserCreateOutputObjects()
         fHistoMotherBackInvMassPtdPhiV0C[iCut]->SetYTitle("p_{T} (GeV/c)");
         fHistoMotherBackInvMassPtdPhiV0C[iCut]->SetZTitle("phi");
         fESDList[iCut]->Add(fHistoMotherBackInvMassPtdPhiV0C[iCut]);
+        fHistoMotherInvMassPtV0CInPlane[iCut] = new TH2F("ESD_Mother_InvMass_Pt_V0C_InPlane", "ESD_Mother_InvMass_Pt_V0C_InPlane", nBinsMinv, arrMinvBin, nBinsPt, arrPtBinning);
+        fHistoMotherInvMassPtV0CInPlane[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
+        fHistoMotherInvMassPtV0CInPlane[iCut]->SetYTitle("p_{T} (GeV/c)");
+        fESDList[iCut]->Add(fHistoMotherInvMassPtV0CInPlane[iCut]);
+        fHistoMotherInvMassPtV0AInPlane[iCut] = new TH2F("ESD_Mother_InvMass_Pt_V0A_InPlane", "ESD_Mother_InvMass_Pt_V0A_InPlane", nBinsMinv, arrMinvBin, nBinsPt, arrPtBinning);
+        fHistoMotherInvMassPtV0AInPlane[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
+        fHistoMotherInvMassPtV0AInPlane[iCut]->SetYTitle("p_{T} (GeV/c)");
+        fESDList[iCut]->Add(fHistoMotherInvMassPtV0AInPlane[iCut]);
+        fHistoMotherInvMassPtV0COutPlane[iCut] = new TH2F("ESD_Mother_InvMass_Pt_V0C_OutPlane", "ESD_Mother_InvMass_Pt_V0C_OutPlane", nBinsMinv, arrMinvBin, nBinsPt, arrPtBinning);
+        fHistoMotherInvMassPtV0COutPlane[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
+        fHistoMotherInvMassPtV0COutPlane[iCut]->SetYTitle("p_{T} (GeV/c)");
+        fESDList[iCut]->Add(fHistoMotherInvMassPtV0COutPlane[iCut]);
+        fHistoMotherInvMassPtV0AOutPlane[iCut] = new TH2F("ESD_Mother_InvMass_Pt_V0A_OutPlane", "ESD_Mother_InvMass_Pt_V0A_OutPlane", nBinsMinv, arrMinvBin, nBinsPt, arrPtBinning);
+        fHistoMotherInvMassPtV0AOutPlane[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
+        fHistoMotherInvMassPtV0AOutPlane[iCut]->SetYTitle("p_{T} (GeV/c)");
+        fESDList[iCut]->Add(fHistoMotherInvMassPtV0AOutPlane[iCut]);
+        fHistoMotherBackInvMassPtV0CInPlane[iCut] = new TH2F("ESD_Background_InvMass_Pt_V0C_InPlane", "ESD_Background_InvMass_Pt_V0C_InPlane", nBinsMinv, arrMinvBin, nBinsPt, arrPtBinning);
+        fHistoMotherBackInvMassPtV0CInPlane[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
+        fHistoMotherBackInvMassPtV0CInPlane[iCut]->SetYTitle("p_{T} (GeV/c)");
+        fESDList[iCut]->Add(fHistoMotherBackInvMassPtV0CInPlane[iCut]);
+        fHistoMotherBackInvMassPtV0AInPlane[iCut] = new TH2F("ESD_Background_InvMass_Pt_V0A_InPlane", "ESD_Background_InvMass_Pt_V0A_InPlane", nBinsMinv, arrMinvBin, nBinsPt, arrPtBinning);
+        fHistoMotherBackInvMassPtV0AInPlane[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
+        fHistoMotherBackInvMassPtV0AInPlane[iCut]->SetYTitle("p_{T} (GeV/c)");
+        fESDList[iCut]->Add(fHistoMotherBackInvMassPtV0AInPlane[iCut]);
+        fHistoMotherBackInvMassPtV0COutPlane[iCut] = new TH2F("ESD_Background_InvMass_Pt_V0C_OutPlane", "ESD_Background_InvMass_Pt_V0C_OutPlane", nBinsMinv, arrMinvBin, nBinsPt, arrPtBinning);
+        fHistoMotherBackInvMassPtV0COutPlane[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
+        fHistoMotherBackInvMassPtV0COutPlane[iCut]->SetYTitle("p_{T} (GeV/c)");
+        fESDList[iCut]->Add(fHistoMotherBackInvMassPtV0COutPlane[iCut]);
+        fHistoMotherBackInvMassPtV0AOutPlane[iCut] = new TH2F("ESD_Background_InvMass_Pt_V0A_OutPlane", "ESD_Background_InvMass_Pt_V0A_OutPlane", nBinsMinv, arrMinvBin, nBinsPt, arrPtBinning);
+        fHistoMotherBackInvMassPtV0AOutPlane[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
+        fHistoMotherBackInvMassPtV0AOutPlane[iCut]->SetYTitle("p_{T} (GeV/c)");
+        fESDList[iCut]->Add(fHistoMotherBackInvMassPtV0AOutPlane[iCut]);
         fEventCount[iCut] = new TH1D("EventCount", "EventCount", 100, 0, 100);
         fESDList[iCut]->Add(fEventCount[iCut]);
         // VZERO
@@ -494,12 +552,35 @@ void AliAnalysisTaskPi0EtaV2::UserExec(Option_t *)
             {
                 dphiV0C -= TMath::Pi();
             }
-            fHistoMotherInvMassPtPhiV0C[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), dphiV0C, pi0cand->GetWeight());
-            fHistoMotherInvMassPtPhiV0A[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), dphiV0A, pi0cand->GetWeight());
+            if (!IsUseInOutPlane)
+            {
+                fHistoMotherInvMassPtPhiV0C[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), dphiV0C, pi0cand->GetWeight());
+                fHistoMotherInvMassPtPhiV0A[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), dphiV0A, pi0cand->GetWeight());
+            }
+            else
+            {
+                if (dphiV0A < 0.25 * TMath::Pi() || (dphiV0A > 0.75 * TMath::Pi() && dphiV0A < 1.25 * TMath::Pi()) || dphiV0A > 1.75 * TMath::Pi())
+                {
+                    fHistoMotherInvMassPtV0AInPlane[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), pi0cand->GetWeight());
+                }
+                else
+                {
+                    fHistoMotherInvMassPtV0AOutPlane[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), pi0cand->GetWeight());
+                }
+
+                if (dphiV0C < 0.25 * TMath::Pi() || (dphiV0C > 0.75 * TMath::Pi() && dphiV0C < 1.25 * TMath::Pi()) || dphiV0C > 1.75 * TMath::Pi())
+                {
+                    fHistoMotherInvMassPtV0CInPlane[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), pi0cand->GetWeight());
+                }
+                else
+                {
+                    fHistoMotherInvMassPtV0COutPlane[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), pi0cand->GetWeight());
+                }
+            }
             delete pi0cand;
             pi0cand = 0x0;
         }
-        // Mix Event Background
+        // Background
         for (Long_t i = 0; i < nclusBg; i++)
         {
             AliAODConversionMother *Bgcand = NULL;
@@ -514,8 +595,32 @@ void AliAnalysisTaskPi0EtaV2::UserExec(Option_t *)
             {
                 dphiV0C -= TMath::Pi();
             }
-            fHistoMotherBackInvMassPtdPhiV0C[fiCut]->Fill(Bgcand->M(), Bgcand->Pt(), dphiV0C, Bgcand->GetWeight());
-            fHistoMotherBackInvMassPtdPhiV0A[fiCut]->Fill(Bgcand->M(), Bgcand->Pt(), dphiV0A, Bgcand->GetWeight());
+            if (!IsUseInOutPlane)
+            {
+                fHistoMotherBackInvMassPtdPhiV0C[fiCut]->Fill(Bgcand->M(), Bgcand->Pt(), dphiV0C, Bgcand->GetWeight());
+                fHistoMotherBackInvMassPtdPhiV0A[fiCut]->Fill(Bgcand->M(), Bgcand->Pt(), dphiV0A, Bgcand->GetWeight());
+            }
+            else
+            {
+                if (dphiV0A < 0.25 * TMath::Pi() || (dphiV0A > 0.75 * TMath::Pi() && dphiV0A < 1.25 * TMath::Pi()) || dphiV0A > 1.75 * TMath::Pi())
+                {
+                    fHistoMotherBackInvMassPtV0AInPlane[fiCut]->Fill(Bgcand->M(), Bgcand->Pt(), Bgcand->GetWeight());
+                }
+                else
+                {
+                    fHistoMotherBackInvMassPtV0AOutPlane[fiCut]->Fill(Bgcand->M(), Bgcand->Pt(), Bgcand->GetWeight());
+                }
+
+                if (dphiV0C < 0.25 * TMath::Pi() || (dphiV0C > 0.75 * TMath::Pi() && dphiV0C < 1.25 * TMath::Pi()) || dphiV0C > 1.75 * TMath::Pi())
+                {
+                    fHistoMotherBackInvMassPtV0CInPlane[fiCut]->Fill(Bgcand->M(), Bgcand->Pt(), Bgcand->GetWeight());
+                }
+                else
+                {
+                    fHistoMotherBackInvMassPtV0COutPlane[fiCut]->Fill(Bgcand->M(), Bgcand->Pt(), Bgcand->GetWeight());
+                }
+            }
+
             delete Bgcand;
             Bgcand = 0x0;
         }

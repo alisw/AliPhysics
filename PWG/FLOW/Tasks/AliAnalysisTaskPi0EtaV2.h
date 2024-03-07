@@ -43,25 +43,33 @@ private:
     Int_t fiCut;            // current cut
     Int_t fTrainConfig;     // fTrainConfig
     TString fPeriod;
-    TString fOutputAODBranchName;            ///<  Name of output clusters AOD branch
-    TString fOutputBGBranchName;             ///<  Name of output of background
-    TList *fEventCutArray;                   // List with Event Cuts
-    TList *fOutputContainer;                 // Output container
-    TList **fCutFolder;                      // Array of lists for containers belonging to cut
-    TList **fESDList;                        // Array of lists with histograms with reconstructed properties
-    TList **fQAList;                         // Array of lists with histograms with V0 plane QA
-    TH3F **fHistoMotherInvMassPtPhiV0A;      //! array of histogram with signal + BG for same event photon pairs in deta phi, inv Mass, pt
-    TH3F **fHistoMotherInvMassPtPhiV0C;      //! array of histogram with signal + BG for same event photon pairs in deta phi, inv Mass, pt
-    TH3F **fHistoMotherBackInvMassPtdPhiV0A; //! array of histogram with BG for mixed event photon pairs in deta phi, inv Mass, pt
-    TH3F **fHistoMotherBackInvMassPtdPhiV0C; //! array of histogram with BG for mixed event photon pairs in deta phi, inv Mass, pt
-    TH1D **fEventCount;                      //! array of histogram of event count in centBins
-                                             // VZERO
+    TString fOutputAODBranchName;                ///<  Name of output clusters AOD branch
+    TString fOutputBGBranchName;                 ///<  Name of output of background
+    TList *fEventCutArray;                       // List with Event Cuts
+    TList *fOutputContainer;                     // Output container
+    TList **fCutFolder;                          // Array of lists for containers belonging to cut
+    TList **fESDList;                            // Array of lists with histograms with reconstructed properties
+    TList **fQAList;                             // Array of lists with histograms with V0 plane QA
+    TH3F **fHistoMotherInvMassPtPhiV0A;          //! array of histogram with signal + BG for same event photon pairs in deta phi, inv Mass, pt
+    TH3F **fHistoMotherInvMassPtPhiV0C;          //! array of histogram with signal + BG for same event photon pairs in deta phi, inv Mass, pt
+    TH3F **fHistoMotherBackInvMassPtdPhiV0A;     //! array of histogram with BG for mixed event photon pairs in deta phi, inv Mass, pt
+    TH3F **fHistoMotherBackInvMassPtdPhiV0C;     //! array of histogram with BG for mixed event photon pairs in deta phi, inv Mass, pt
+    TH1D **fEventCount;                          //! array of histogram of event count in centBins
+    TH2F **fHistoMotherInvMassPtV0CInPlane;      // ray of histogram with signal + BG for same event photon pairs In Plane, inv Mass, pt
+    TH2F **fHistoMotherInvMassPtV0AInPlane;      // ray of histogram with signal + BG for same event photon pairs In Plane, inv Mass, pt
+    TH2F **fHistoMotherInvMassPtV0COutPlane;     // ray of histogram with signal + BG for same event photon pairs Out Plane, inv Mass, pt
+    TH2F **fHistoMotherInvMassPtV0AOutPlane;     // ray of histogram with signal + BG for same event photon pairs Out Plane, inv Mass, pt
+    TH2F **fHistoMotherBackInvMassPtV0CInPlane;  // ray of histogram with only BG for same event photon pairs In Plane, inv Mass, pt
+    TH2F **fHistoMotherBackInvMassPtV0AInPlane;  // ray of histogram with only BG for same event photon pairs In Plane, inv Mass, pt
+    TH2F **fHistoMotherBackInvMassPtV0COutPlane; // ray of histogram with only BG for same event photon pairs Out Plane, inv Mass, pt
+    TH2F **fHistoMotherBackInvMassPtV0AOutPlane; // ray of histogram with only BG for same event photon pairs Out Plane, inv Mass, pt
 
     int runNum;
     int oldRunNum;
     double centSPD1;
     bool IsVZEROCalibOn; // switch for VZERO qn calib
-    bool IsQAVZERO;
+    bool IsQAVZERO;      // switch for Fill VZERO calib qa
+    bool IsUseInOutPlane;
     TList *fListVZEROCalib; // read list for V0 Calib
     TFile *fVZEROCalibFile;
     double fPsi2V0C;
