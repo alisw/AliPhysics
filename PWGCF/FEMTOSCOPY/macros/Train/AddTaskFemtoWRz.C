@@ -54,6 +54,7 @@ AliAnalysisTaskFemto *AddTaskFemtoWRz(TString configMacroName, TString container
       taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE,kFALSE,userName, configFunName);
     }
   taskfemto->SelectCollisionCandidates(AliVEvent::kCentral);  
+  taskfemto->SetSelectedTriggerClass(AliVEvent::kCentral); 
   mgr->AddTask(taskfemto);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
