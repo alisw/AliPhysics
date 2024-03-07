@@ -131,21 +131,26 @@ void AliPtPtContainer::FillCMProfiles(const vector<vector<double>> &inarr, const
     double weight1 = 1-tau1;
     double weight2 = 1 - 3 * tau1 + 2 * tau2;
     double weight3 = 1 - 6*tau1 + 3*tau1*tau1 + 8*tau2 - 6*tau3;
-    double weight4 = 1 - 10*tau1 + 15*tau1*tau1 + 20*tau2 - 20*tau1*tau2 - 30*tau3 + 24*tau4;
     if(mpar<1) return;
     ((AliProfileBS*)fCMTermList->At(0))->FillProfile(lMult,inarr[1][1]/inarr[1][0],(fEventWeight==PtPtSpace::kUnity)?1.0:inarr[1][0],rn);
     if(mpar<2) return;
-    ((AliProfileBS*)fCMTermList->At(1))->FillProfile(lMult,1/weight1*(inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0]-tau1*inarr[2][2]/inarr[2][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight1,rn);
-    ((AliProfileBS*)fCMTermList->At(2))->FillProfile(lMult,1/weight1*(-2*inarr[1][1]/inarr[1][0]+2*tau1*inarr[2][1]/inarr[2][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight1,rn);
+    if(weight1!=0){
+        ((AliProfileBS*)fCMTermList->At(1))->FillProfile(lMult,1/weight1*(inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0]-tau1*inarr[2][2]/inarr[2][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight1,rn);
+        ((AliProfileBS*)fCMTermList->At(2))->FillProfile(lMult,1/weight1*(-2*inarr[1][1]/inarr[1][0]+2*tau1*inarr[2][1]/inarr[2][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight1,rn);
+    }
     if(mpar<3) return;
-    ((AliProfileBS*)fCMTermList->At(3))->FillProfile(lMult,1/weight2*(inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0] - 3*tau1*inarr[2][2]/inarr[2][0]*inarr[1][1]/inarr[1][0] + 2*tau2*inarr[3][3]/inarr[3][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight2,rn);
-    ((AliProfileBS*)fCMTermList->At(4))->FillProfile(lMult,1/weight2*(-3*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0] + 3*tau1*inarr[2][2]/inarr[2][0] + 6*tau1*inarr[2][1]/inarr[2][0]*inarr[1][1]/inarr[1][0] - 6*tau2*inarr[3][2]/inarr[3][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight2,rn);
-    ((AliProfileBS*)fCMTermList->At(5))->FillProfile(lMult,1/weight2*(3*inarr[1][1]/inarr[1][0] - 6*tau1*inarr[2][1]/inarr[2][0] - 3*tau1*inarr[1][1]/inarr[1][0] + 6*tau2*inarr[3][1]/inarr[3][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight2,rn);
+    if(weight2!=0){
+        ((AliProfileBS*)fCMTermList->At(3))->FillProfile(lMult,1/weight2*(inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0] - 3*tau1*inarr[2][2]/inarr[2][0]*inarr[1][1]/inarr[1][0] + 2*tau2*inarr[3][3]/inarr[3][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight2,rn);
+        ((AliProfileBS*)fCMTermList->At(4))->FillProfile(lMult,1/weight2*(-3*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0] + 3*tau1*inarr[2][2]/inarr[2][0] + 6*tau1*inarr[2][1]/inarr[2][0]*inarr[1][1]/inarr[1][0] - 6*tau2*inarr[3][2]/inarr[3][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight2,rn);
+        ((AliProfileBS*)fCMTermList->At(5))->FillProfile(lMult,1/weight2*(3*inarr[1][1]/inarr[1][0] - 6*tau1*inarr[2][1]/inarr[2][0] - 3*tau1*inarr[1][1]/inarr[1][0] + 6*tau2*inarr[3][1]/inarr[3][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight2,rn);
+    }
     if(mpar<4) return;
-    ((AliProfileBS*)fCMTermList->At(6))->FillProfile(lMult,1/weight3*(inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0] - 6*tau1*inarr[2][2]/inarr[2][0]*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0] + 3*tau1*tau1*inarr[2][2]/inarr[2][0]*inarr[2][2]/inarr[2][0] + 8*tau2*inarr[3][3]/inarr[3][0]*inarr[1][1]/inarr[1][0]  - 6*tau3*inarr[4][4]/inarr[4][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight3,rn);
-    ((AliProfileBS*)fCMTermList->At(7))->FillProfile(lMult,1/weight3*(-4*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0] + 12*tau1*inarr[2][2]/inarr[2][0]*inarr[1][1]/inarr[1][0] + 12*tau1*inarr[2][1]/inarr[2][0]*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0] - 12*tau1*tau1*inarr[2][2]/inarr[2][0]*inarr[2][1]/inarr[2][0] - 8*tau2*inarr[3][3]/inarr[3][0] - 24*tau2*inarr[3][2]/inarr[3][0]*inarr[1][1]/inarr[1][0]+ 24*tau3*inarr[4][3]/inarr[4][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight3,rn);
-    ((AliProfileBS*)fCMTermList->At(8))->FillProfile(lMult,1/weight3*(6*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0] - 6*tau1*inarr[2][2]/inarr[2][0] - 24*tau1*inarr[2][1]/inarr[2][0]*inarr[1][1]/inarr[1][0] - 6*tau1*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0] + 6*tau1*tau1*inarr[2][2]/inarr[2][0] + 12*tau1*tau1*inarr[2][1]/inarr[2][0]*inarr[2][1]/inarr[2][0] + 24*tau2*inarr[3][2]/inarr[3][0] + 24*tau2*inarr[3][1]/inarr[3][0]*inarr[1][1]/inarr[1][0] - 36*tau3*inarr[4][2]/inarr[4][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight3,rn);
-    ((AliProfileBS*)fCMTermList->At(9))->FillProfile(lMult,1/weight3*(-4*inarr[1][1]/inarr[1][0] + 12*tau1*inarr[2][1]/inarr[2][0] + 12*tau1*inarr[1][1]/inarr[1][0] - 12*tau1*tau1*inarr[2][1]/inarr[2][0] -24*tau2*inarr[3][1]/inarr[3][0] - 8*tau2*inarr[1][1]/inarr[1][0] + 24*tau3*inarr[4][1]/inarr[4][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight3,rn);
+    if(weight3!=0){
+        ((AliProfileBS*)fCMTermList->At(6))->FillProfile(lMult,1/weight3*(inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0] - 6*tau1*inarr[2][2]/inarr[2][0]*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0] + 3*tau1*tau1*inarr[2][2]/inarr[2][0]*inarr[2][2]/inarr[2][0] + 8*tau2*inarr[3][3]/inarr[3][0]*inarr[1][1]/inarr[1][0]  - 6*tau3*inarr[4][4]/inarr[4][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight3,rn);
+        ((AliProfileBS*)fCMTermList->At(7))->FillProfile(lMult,1/weight3*(-4*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0] + 12*tau1*inarr[2][2]/inarr[2][0]*inarr[1][1]/inarr[1][0] + 12*tau1*inarr[2][1]/inarr[2][0]*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0] - 12*tau1*tau1*inarr[2][2]/inarr[2][0]*inarr[2][1]/inarr[2][0] - 8*tau2*inarr[3][3]/inarr[3][0] - 24*tau2*inarr[3][2]/inarr[3][0]*inarr[1][1]/inarr[1][0]+ 24*tau3*inarr[4][3]/inarr[4][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight3,rn);
+        ((AliProfileBS*)fCMTermList->At(8))->FillProfile(lMult,1/weight3*(6*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0] - 6*tau1*inarr[2][2]/inarr[2][0] - 24*tau1*inarr[2][1]/inarr[2][0]*inarr[1][1]/inarr[1][0] - 6*tau1*inarr[1][1]/inarr[1][0]*inarr[1][1]/inarr[1][0] + 6*tau1*tau1*inarr[2][2]/inarr[2][0] + 12*tau1*tau1*inarr[2][1]/inarr[2][0]*inarr[2][1]/inarr[2][0] + 24*tau2*inarr[3][2]/inarr[3][0] + 24*tau2*inarr[3][1]/inarr[3][0]*inarr[1][1]/inarr[1][0] - 36*tau3*inarr[4][2]/inarr[4][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight3,rn);
+        ((AliProfileBS*)fCMTermList->At(9))->FillProfile(lMult,1/weight3*(-4*inarr[1][1]/inarr[1][0] + 12*tau1*inarr[2][1]/inarr[2][0] + 12*tau1*inarr[1][1]/inarr[1][0] - 12*tau1*tau1*inarr[2][1]/inarr[2][0] -24*tau2*inarr[3][1]/inarr[3][0] - 8*tau2*inarr[1][1]/inarr[1][0] + 24*tau3*inarr[4][1]/inarr[4][0]),(fEventWeight==PtPtSpace::kUnity)?1.0:weight3,rn);
+    }
     return;
 }
 double AliPtPtContainer::OrderedAddition(vector<double> vec) {

@@ -57,9 +57,11 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void LoadCorrectionsFromLists();
   void ProcessOnTheFly();
   void FillWPCounter(vector<vector<double>> &inarr, double w, double p);
+  void SetFillCM(unsigned int flag) { fCMflag = flag; }
   void SetPtBins(Int_t nBins, Double_t *ptbins);
   void SetEtaBins(Int_t nBins, Double_t *etabins);
   void SetMultiBins(Int_t nBins, Double_t *multibins);
+  void SetMultiBins(Int_t nBins, Double_t low, Double_t high);
   void SetV0MBins(Int_t nBins, Double_t *multibins);
   void SetCentBinsForPt(Int_t nBins, Double_t *centbins);
   void SetMptBins(Int_t nMptBins, Double_t *mptbins);
@@ -95,7 +97,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetOTFGenerator(TString gen) { fGenerator = gen; }
   void SetUseIP(bool newval) { fUseIP = newval;}
   void SetUseCentCalibration(bool newval) { fUseCentCalibration = newval; }
-  void SetFillPtkVsNch(bool newval) { fFillptkVsNch = newval; }
+
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -112,7 +114,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Bool_t fCentSelectForMptNch;
   Bool_t fUseIP;
   Bool_t fUseCentCalibration;
-  Bool_t fFillptkVsNch;
+  unsigned int fCMflag;
+
   TString fDCAxyFunctionalForm;
   Bool_t fOnTheFly;
   TString fGenerator;
@@ -152,10 +155,10 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH2D **fMultiVsV0MCorr; //!
   TH2D *fNchTrueVsReco; //!
   TH2D *fESDvsFB128;
-  TH2F *fHistV0MvsNch;
+  TH2F *fNchVsV0M;
   TList *fptList;
   AliPtPtContainer  *fPtCont;
-  AliProfileBS *fMultiVsCent;
+  AliProfileBS *fMeanMultiVsCent;
   UInt_t fTriggerType;
   TList *fSpectraList; //!
   TH3D **fSpectraGen; //!
@@ -175,12 +178,12 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH2D *fWithinDCAvsPt_withChi2;
   TH3D *fDCAxyVsPt_withChi2;
   TH2D *fWithinDCAvsPt_noChi2;
-  TH3D *fMptVsNch;
+  TH3D *fMultVsMptVsCent;
   TH3D *fpt2VsNch;
   TH3D *fpt3VsNch;
   TH3D *fpt4VsNch;
   TH2D *fMptVsCent;
-  TH2D *fNchVsCent;
+  TH2F *fMultVsCent;
   TH1D *fV0MMulti;
   TH2D *fITSvsTPCMulti;
   TH1D *fV2dPtMulti;
