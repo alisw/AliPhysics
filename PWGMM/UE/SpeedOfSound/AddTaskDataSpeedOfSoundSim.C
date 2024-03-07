@@ -27,9 +27,8 @@ AliAnalysisTaskDataSpeedOfSoundSim* AddTaskDataSpeedOfSoundSim(
   taskKno->SetUseMC(true);
   taskKno->SetV0Mmin(0.0);
   taskKno->SetV0Mmax(80.0);
-  taskKno->SetEtaCut(0.8, -0.8, 0.8);
-  taskKno->SetEtaGapCut(0.7, 1.4, 0.5, 0.8);
-  taskKno->SetPtCut(0.15, 0.4, 0.3);
+  taskKno->SetEtaCut(0.8, -0.8, 0.8, 0.7, 1.4, 0.5, 0.8, 0.4, 0.3);
+  taskKno->SetPtCut(0.15, 0.4, 100.0);
   //! SetRandomNumberCut(0.0) full statistics -> corrections
   taskKno->SetRandomNumberCut(0.0);
   taskKno->SetSystematics(false, 1);
