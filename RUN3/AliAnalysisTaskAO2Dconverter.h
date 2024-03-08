@@ -116,6 +116,7 @@ public:
     kAliGenHijingEventHeader,
     kAliGenPythiaEventHeader,
     kAliGenToyEventHeader,
+    kAliGenBox,
     kGenerators
   };
   enum CollisionFlagsRun2 : uint16_t {
