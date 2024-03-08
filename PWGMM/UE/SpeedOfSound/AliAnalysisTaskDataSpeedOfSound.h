@@ -43,23 +43,27 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetHMCut(double HMcut) { fHMCut = HMcut; }      // Set V0M max value
   void SetUseMC(bool mc = false) { fUseMC = mc; }      // use to analyse MC data
-  void SetEtaCut(const double& etacut) { fEtaCut = etacut; }
-  void SetEtaCutsHalfTPC(const double& etamin, const double& etamax) {
-    fEtaMin = etamin;
-    fEtaMax = etamax;
+  void SetEtaCut(const double& etacut, const double& etamin_halftpc,
+                 const double& etamax_halftpc, const double& etamin_spd,
+                 const double& etamax_spd, const double& etamin_tpc,
+                 const double& etamax_tpc, const double& etacut_4ptwspd,
+                 const double& etacut_4ptwtpc) {
+    fEtaCut = etacut;
+    fEtaCutHalfTPCMin = etamin_halftpc;
+    fEtaCutHalfTPCMax = etamax_halftpc;
+    fEtaCutSPDGapMin = etamin_spd;
+    fEtaCutSPDGapMax = etamax_spd;
+    fEtaCutTPCGapMin = etamin_tpc;
+    fEtaCutTPCGapMax = etamax_tpc;
+    fEtaCutForpTwSPDGap = etacut_4ptwspd;
+    fEtaCutForpTwTPCGap = etacut_4ptwtpc;
   }
-  void SetEtaGappT(const double& eta_spd, const double& eta_tpc) {
-    fEtaGappT = eta_spd;
-    fEtaGapTPCpT = eta_tpc;
+  void SetPtCut(const double& ptmin, const double& ptmin_cent,
+                const double& ptmax_cent) {
+    fPtMin = ptmin;
+    fPtMinCent = ptmin_cent;
+    fPtMaxCent = ptmax_cent;
   }
-  void SetEtaGapNch(const double& etamin_spd, const double& etamax_spd,
-                    const double& etamin_tpc, const double& etamax_tpc) {
-    fEtaGapNchMin = etamin_spd;
-    fEtaGapNchMax = etamax_spd;
-    fEtaGapTPCNchMin = etamin_tpc;
-    fEtaGapTPCNchMax = etamax_tpc;
-  }
-  void SetPtMin(const double& ptmin) { fPtMin = ptmin; }
   void SetTrigger(UInt_t trigger = AliVEvent::kINT7) { fTrigger = trigger; }
   bool HasRecVertex();
   void SetSystematics(bool issystematics = true, int systematic = 1) {
@@ -91,15 +95,17 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   AliAnalysisFilter* fTrackFilterwoDCA;
   TList* fOutputList;
   double fEtaCut;
-  double fEtaMin;
-  double fEtaMax;
-  double fEtaGappT;
-  double fEtaGapNchMin;
-  double fEtaGapNchMax;
-  double fEtaGapTPCpT;
-  double fEtaGapTPCNchMin;
-  double fEtaGapTPCNchMax;
+  double fEtaCutHalfTPCMin;
+  double fEtaCutHalfTPCMax;
+  double fEtaCutForpTwSPDGap;
+  double fEtaCutSPDGapMin;
+  double fEtaCutSPDGapMax;
+  double fEtaCutForpTwTPCGap;
+  double fEtaCutTPCGapMin;
+  double fEtaCutTPCGapMax;
   double fPtMin;
+  double fPtMinCent;
+  double fPtMaxCent;
   double fV0Mmin;
   double fV0Mmax;
   double fHMCut;
@@ -135,6 +141,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2F* hDCAxyData[1];
   TH2F* hPhiEtaSPD;
   TH2F* hPhiEtaGapTPC;
+  TH1F* hPtWithCutForCent;
   TH2F* hPhiEtaPosHalfTPC;
   TH2F* hPhiEtaNegHalfTPC;
   TH2F* hPhiEtaGapSPD;

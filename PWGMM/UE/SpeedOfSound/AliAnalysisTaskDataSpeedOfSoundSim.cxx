@@ -120,6 +120,8 @@ ClassImp(AliAnalysisTaskDataSpeedOfSoundSim)  // classimp: necessary for root
       fEtaGapSPDNchMin(0.7),
       fEtaGapSPDNchMax(1.4),
       fEtaGapTPCpT(0.3),
+      fPtMinCent(0.15),
+      fPtMaxCent(10.0),
       fEtaGapTPCNchMin(0.5),
       fEtaGapTPCNchMax(0.8),
       fPtMin(0.15),
@@ -221,6 +223,8 @@ AliAnalysisTaskDataSpeedOfSoundSim::AliAnalysisTaskDataSpeedOfSoundSim(
       fEtaGapSPDNchMin(0.7),
       fEtaGapSPDNchMax(1.4),
       fEtaGapTPCpT(0.3),
+      fPtMinCent(0.15),
+      fPtMaxCent(10.0),
       fEtaGapTPCNchMin(0.5),
       fEtaGapTPCNchMax(0.8),
       fPtMin(0.15),
@@ -869,7 +873,7 @@ void AliAnalysisTaskDataSpeedOfSoundSim::GetTPCMultiplicity() {
     if (!fTrackFilter->IsSelected(track)) {
       continue;
     }
-    if (track->Pt() < fPtMin) {
+    if (track->Pt() < fPtMinCent || track->Pt() > fPtMaxCent) {
       continue;
     }
     if (track->Charge() == 0) {
@@ -1171,7 +1175,7 @@ void AliAnalysisTaskDataSpeedOfSoundSim::ReadMCEvent() {
         TMath::Abs(particle->Eta()) <= fEtaGapSPDNchMax) {
       fTrueNchEtaGap++;
     }
-    if (particle->Pt() < fPtMin) {
+    if (particle->Pt() < fPtMinCent || particle->Pt() > fPtMaxCent) {
       continue;
     }
     if (TMath::Abs(particle->Eta()) > fEtaCut) {
