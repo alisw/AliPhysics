@@ -145,6 +145,7 @@ fMinTrackPt(0.150),
 fHelperClass(0),
 fInitializedLocal(0),
 fHistEvtSelection(0x0),
+hEA_correlations(nullptr),
 fhVertexZall(0x0),
 fhVertexZ(0x0),
 fhJetPtAreaV0norm_PartLevel(0x0),
@@ -590,6 +591,7 @@ fMinTrackPt(0.150),
 fHelperClass(0),
 fInitializedLocal(0),
 fHistEvtSelection(0x0),
+hEA_correlations(nullptr),
 fhVertexZall(0x0),
 fhVertexZ(0x0),
 fhJetPtAreaV0norm_PartLevel(0x0),
@@ -2282,7 +2284,7 @@ void AliAnalysisTaskEA::AnalyzeParticleLevel(){
 
    fMultV0Mnorm_PartLevel = 0.;
 
-   Bool_t isMBpartlevel = 0; // requires coincidence of V0A and V0C on parton level
+   Bool_t isMBpartlevel = false; // requires coincidence of V0A and V0C on particle level
 
    Int_t njets10_15 = 0;
    Int_t njetsAbove15 = 0;
@@ -2312,7 +2314,6 @@ void AliAnalysisTaskEA::AnalyzeParticleLevel(){
             phiSJmc = jet->Phi();
          }
       }
-
 
       if(fParticleContainerPartLevel){
          //pT spectrum of particle level physical primary mc particles
@@ -2480,6 +2481,52 @@ void AliAnalysisTaskEA::AnalyzeParticleLevel(){
 
             fhJetPtAreaV0norm_PartLevel->Fill(tmparr3);
 
+         }
+      }
+   }
+
+   //EA correlations
+   if(fMode == AliAnalysisTaskEA::kMC){
+      
+      //Detector level
+      double EA_V0A_det = .0, EA_V0C_det = .0, EA_V0M_det = .0, meanV0M_det = .0, EA_V0Mnorm_det = .0;
+
+      AliVVZERO *vzeroAOD = InputEvent()->GetVZEROData();
+      if(vzeroAOD){
+         EA_V0A_det     = vzeroAOD->GetMTotV0A();
+         EA_V0C_det     = vzeroAOD->GetMTotV0C();
+         EA_V0M_det     = EA_V0A_det + EA_V0C_det;
+         meanV0M_det    = fHelperEA->GetV0MDetLevel();
+         EA_V0Mnorm_det = EA_V0M_det/meanV0M_det;
+      }
+
+      //Particle level
+      double EA_V0A_part = .0, EA_V0C_part = .0, EA_V0M_part = .0, meanV0M_part = .0, EA_V0Mnorm_part = .0;
+      if(fParticleContainerPartLevel){
+         for(auto mcPartIterator : fParticleContainerPartLevel->accepted_momentum()){
+            mcParticle = mcPartIterator.second;
+            if(!mcParticle) continue;
+
+            if(mcParticle->Charge()){
+               if((static_cast<AliAODMCParticle*>(mcParticle))->IsPhysicalPrimary()){
+                  //get particle level charged particles multiplicities in V0A and V0C
+                  if(-3.7 < mcParticle->Eta() && mcParticle->Eta() < -1.7) EA_V0C_part++;
+                  if( 2.8 < mcParticle->Eta() && mcParticle->Eta() < 5.1)  EA_V0A_part++;
+               }
+            }
+         }
+      } 
+
+      // Coincidence condition (neglegible impact at high multiplicity)
+      if(EA_V0C_part > .0 && EA_V0A_part > .0){ 
+         if(EA_V0C_det > .0 && EA_V0A_det > .0){
+
+            //combined V0 multiplicities particle level
+            EA_V0M_part     = EA_V0A_part + EA_V0C_part;
+            meanV0M_part    = fHelperEA->GetV0MPartLevel();
+            EA_V0Mnorm_part = EA_V0M_part/meanV0M_part; 
+            
+            hEA_correlations->Fill(EA_V0Mnorm_part, EA_V0Mnorm_det);
          }
       }
    }
@@ -3889,7 +3936,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
          name = Form("hSignal_%s_%s", trig[itg].Data(), signal[ic].Data());
          fhSignal[itg][ic] = new TH1D(name.Data(), name.Data(), signalN[ic], signalL[ic], signalH[ic]);
          fOutput->Add((TH1D*) fhSignal[itg][ic]);
-      }
+      }      
    }
 
    for(Int_t itg=kMB; itg<=kHM; itg++){
@@ -3965,7 +4012,6 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
 //         }
 //      }
    }
-
 
    // V0 assymetery versus V0norm
 //   for(Int_t itg=kMB; itg<=kGA; itg++){
@@ -4600,18 +4646,21 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
 
    if(fMode == AliAnalysisTaskEA::kMC){
 
-         const Int_t knmjdim = 5; //pt, Area, eta, phi, delta phi wrt TT
-         Int_t   nmjbins[knmjdim]  = {  50, 20,   12, 20,               16   };
-         Double_t nmjxmin[knmjdim] = {  0.,  0,  -0.6, 0,               TMath::Pi()-0.8};
-         Double_t nmjxmax[knmjdim] = {100.,  1,   0.6,TMath::TwoPi(),   TMath::Pi()+0.8};
+      const Int_t knmjdim = 5; //pt, Area, eta, phi, delta phi wrt TT
+      Int_t   nmjbins[knmjdim]  = {  50, 20,   12, 20,               16   };
+      Double_t nmjxmin[knmjdim] = {  0.,  0,  -0.6, 0,               TMath::Pi()-0.8};
+      Double_t nmjxmax[knmjdim] = {100.,  1,   0.6,TMath::TwoPi(),   TMath::Pi()+0.8};
 
-         for(Int_t itt=0; itt<fnHadronTTBins; itt++){  //fk
-            name = Form("fhNotMatchedJetPt_%s_TTH%d_%d", trig[kMB].Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
-            fhNotMatchedJetPt[itt] = new THnSparseF(name.Data(),"Not matched Recoil jet  pt area eta phi deltaphi", knmjdim, nmjbins, nmjxmin, nmjxmax);
-
-            fOutput->Add((THnSparse*) fhNotMatchedJetPt[itt]);
-         }
+      for(Int_t itt=0; itt<fnHadronTTBins; itt++){  //fk
+         name = Form("fhNotMatchedJetPt_%s_TTH%d_%d", trig[kMB].Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]);
+         fhNotMatchedJetPt[itt] = new THnSparseF(name.Data(),"Not matched Recoil jet  pt area eta phi deltaphi", knmjdim, nmjbins, nmjxmin, nmjxmax);
+         fOutput->Add((THnSparse*) fhNotMatchedJetPt[itt]);
       }
+
+      // EA correlations   
+      hEA_correlations = new TH2D("EA_correlations_MC", "EA_correlations_MC", 300, 0.0, 15.0, 300, 0.0, 15.0);
+      fOutput->Add((TH2D*) hEA_correlations);
+   }
 
 
    //2D unfolding -------------------------------
