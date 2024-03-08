@@ -11048,7 +11048,7 @@ Double_t AliCaloPhotonCuts::CorrectEnergyForOverlap(float meanCent, float E){
       break;
       case 6: // new NOC based on <E_clus-E_gamma>/E_gamma from MC
       {
-        return 1. - (GetNOCParameter0(meanCent, fNOCParam0) + E * GetNOCParameter1(meanCent, fNOCParam1) + (GetNOCParameter2(meanCent, fNOCParam2) * TMath::Landau(E, GetNOCParameter3(meanCent, fNOCParam3), GetNOCParameter4(meanCent, fNOCParam4), 0) ) );
+        return pow(1. + (GetNOCParameter0(meanCent, fNOCParam0) + E * GetNOCParameter1(meanCent, fNOCParam1) + (GetNOCParameter2(meanCent, fNOCParam2) * TMath::Landau(E, GetNOCParameter3(meanCent, fNOCParam3), GetNOCParameter4(meanCent, fNOCParam4), 0) ) ), -1. );
       }
       break;
     default:
