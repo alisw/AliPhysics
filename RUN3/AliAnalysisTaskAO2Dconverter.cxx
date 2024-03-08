@@ -2124,7 +2124,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     fillEMCtriggers = false;
   }
   if(fGRP) {
-    // In case global run parameters are available write EMCAL trigger 
+    // In case global run parameters are available write EMCAL trigger
     // entries only in case EMCAL was a readout nor a trigger detector
     // in order to reduce the data volume used for header words
     TString detectorstring = AliDAQ::ListOfTriggeredDetectors(fGRP->GetDetectorMask());
@@ -2133,7 +2133,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     } else {
       // Don't fill median header words for small system (STU not in median mode)
       TString beamtype = fGRP->GetBeamType();
-      if((beamtype == "p-p" || beamtype == "p-A" || beamtype == "A-p")) { 
+      if((beamtype == "p-p" || beamtype == "p-A" || beamtype == "A-p")) {
         fillEMCheaderMedian = false;
       }
     }
@@ -2179,7 +2179,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       {
         calotriggers->GetPosition(col, row);
         calotriggers->GetL1TimeSum(l1timesums);
-        if(l1timesums <=0) 
+        if(l1timesums <=0)
           continue;
         geo->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(col, row, fastorID);
         calotrigger.fFastOrAbsID = fastorID;
@@ -2198,7 +2198,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         {
           calotriggers->GetPosition(col, row);
           calotriggers->GetL1TimeSum(l1timesums);
-          if(l1timesums <=0) 
+          if(l1timesums <=0)
             continue;
           l1adcs(col, row) = l1timesums;
         }
@@ -3332,7 +3332,10 @@ AliAnalysisTaskAO2Dconverter::MCGeneratorID AliAnalysisTaskAO2Dconverter::GetMCG
   if (genHeader->InheritsFrom("AliGenToyEventHeader")) {
     return kAliGenToyEventHeader;
   }
-  return kAliGenCocktailEventHeader;
+  if (genHeader->InheritsFrom("AliGenCocktailEventHeader")) {
+    return kAliGenCocktailEventHeader;
+  }
+  return kAliGenBox;
 }
 //_________________________________________________________________________________________________
 void AliAnalysisTaskAO2Dconverter::CrossSections::Print() {
