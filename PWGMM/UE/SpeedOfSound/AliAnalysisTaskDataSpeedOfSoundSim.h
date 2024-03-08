@@ -49,30 +49,26 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   void SetRandomNumberCut(double rdcut) { fRandomNumberCut = rdcut; }
   void SetUseMC(bool mc = false) { fUseMC = mc; }  // use to analyse MC data
   void SetEtaCut(const double& etacut, const double& etamin,
-                 const double& etamax) {
+                 const double& etamax, const double& min_spd,
+                 const double& max_spd, const double& min_tpc,
+                 const double& max_tpc, const double& eta_cut4ptwspd,
+                 const double& eta_cut4ptwtpc) {
     fEtaCut = etacut;
     fEtaMin = etamin;
     fEtaMax = etamax;
-  }
-  // void SetEtaMinCut(const double& etamin) { fEtaMin = etamin; }
-  // void SetEtaMaxCut(const double& etamax) { fEtaMax = etamax; }
-  void SetEtaGapCut(const double& min_spd, const double& max_spd,
-                    const double& min_tpc, const double& max_tpc) {
     fEtaGapSPDNchMin = min_spd;
     fEtaGapSPDNchMax = max_spd;
     fEtaGapTPCNchMin = min_tpc;
     fEtaGapTPCNchMax = max_tpc;
+    fEtaGapSPDpT = eta_cut4ptwspd;
+    fEtaGapTPCpT = eta_cut4ptwtpc;
   }
-  void SetPtCut(const double& ptmin, const double& pt_spd,
-                const double& pt_tpc) {
+  void SetPtCut(const double& ptmin, const double& ptmin_cent,
+                const double& ptmax_cent) {
     fPtMin = ptmin;
-    fEtaGapSPDpT = pt_spd;
-    fEtaGapTPCpT = pt_tpc;
+    fPtMinCent = ptmin_cent;
+    fPtMaxCent = ptmax_cent;
   }
-  // void SetPtCutEtaGap(const double& pt_spd, const double& pt_tpc) {
-  //   fEtaGapSPDpT = pt_spd;
-  //   fEtaGapTPCpT = pt_tpc;
-  // }
   void SetTrigger(UInt_t offlineTriggerMask = AliVEvent::kINT7) {
     fTrigger = offlineTriggerMask;
   }
@@ -114,6 +110,8 @@ class AliAnalysisTaskDataSpeedOfSoundSim : public AliAnalysisTaskSE {
   double fEtaGapSPDNchMin;
   double fEtaGapSPDNchMax;
   double fEtaGapTPCpT;
+  double fPtMinCent;
+  double fPtMaxCent;
   double fEtaGapTPCNchMin;
   double fEtaGapTPCNchMax;
   double fPtMin;
