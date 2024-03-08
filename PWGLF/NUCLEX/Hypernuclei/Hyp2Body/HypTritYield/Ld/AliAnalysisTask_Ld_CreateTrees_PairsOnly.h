@@ -76,7 +76,7 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Bool_t  fLambda_SameV0;
     Float_t fLambda_Event_Centrality;
     Float_t fLambda_Event_PrimaryVertexZ;
-    Float_t fLambda_Event_BField;
+    Bool_t fLambda_Event_BField;
     UInt_t fLambda_Event_Multiplicity;
     ULong64_t fLambda_Event_Identifier;
     Bool_t fLambda_Event_IsFirstParticle;
@@ -159,7 +159,7 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Float_t     fDeuteron_DCAz;
     Float_t     fDeuteron_Event_Centrality;
     Float_t     fDeuteron_Event_PrimaryVertexZ;
-    Float_t     fDeuteron_Event_BField;
+    Bool_t     fDeuteron_Event_BField;
     UShort_t    fDeuteron_TPC_nCrossedRows;
     UShort_t    fDeuteron_TPC_nSharedCluster;
     UShort_t    fDeuteron_TPC_nFindableCluster;
@@ -204,7 +204,7 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Bool_t  fAntiLambda_SameV0;
     Float_t fAntiLambda_Event_Centrality;
     Float_t fAntiLambda_Event_PrimaryVertexZ;
-    Float_t fAntiLambda_Event_BField;
+    Bool_t fAntiLambda_Event_BField;
     UInt_t fAntiLambda_Event_Multiplicity;
     ULong64_t fAntiLambda_Event_Identifier;
     Bool_t fAntiLambda_Event_IsFirstParticle;
@@ -288,7 +288,7 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Float_t     fAntiDeuteron_DCAz;
     Float_t     fAntiDeuteron_Event_Centrality;
     Float_t     fAntiDeuteron_Event_PrimaryVertexZ;
-    Float_t     fAntiDeuteron_Event_BField;
+    Bool_t     fAntiDeuteron_Event_BField;
     UShort_t    fAntiDeuteron_TPC_nCrossedRows;
     UShort_t    fAntiDeuteron_TPC_nSharedCluster;
     UShort_t    fAntiDeuteron_TPC_nFindableCluster;
