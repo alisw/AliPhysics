@@ -7,9 +7,9 @@
 #include "AliAnalysisTaskChargeV1.h"
 
 AliAnalysisTaskChargeV1 *AddTaskChargeV1(
-    bool doNUE = true,
-    bool doNUA = true,
-    TString period = "LHC18r",
+    bool doNUE = false,
+    bool doNUA = false,
+    TString period = "LHC18q",
     bool ZDCcali = true)
 {
   // get the manager via the static access member. since it's static, you don't need
@@ -56,12 +56,12 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
     // fListNUE = dynamic_cast<TList *>(fNUEFile->Get("fMcEffiHij"));
     if (period.EqualTo("LHC18q"))
     {
-      fNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/efficiency18q.root", "READ");
+      //  fNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/efficiency18q.root", "READ");
       fListNUE = dynamic_cast<TList *>(fNUEFile->Get("fListNUE"));
     }
     if (period.EqualTo("LHC18r"))
     {
-      fNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/efficiency18r.root", "READ");
+      // fNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/efficiency18r.root", "READ");
       fListNUE = dynamic_cast<TList *>(fNUEFile->Get("fListNUE"));
     }
     if (fListNUE)

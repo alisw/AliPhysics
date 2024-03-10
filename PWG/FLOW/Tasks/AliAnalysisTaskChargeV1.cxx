@@ -116,7 +116,26 @@ ClassImp(AliAnalysisTaskChargeV1) // classimp: necessary for root
                                                          pD2pRe(nullptr),
                                                          pD2pIm(nullptr),
                                                          v1p_qc(nullptr),
-                                                         v1t_qc(nullptr)
+                                                         v1t_qc(nullptr),
+                                                         TPCcos_t(nullptr),
+                                                         TPCcos_p(nullptr),
+                                                         px_P(nullptr),
+                                                         px_T(nullptr),
+                                                         v1_t(nullptr),
+                                                         v1_p(nullptr),
+                                                         fHist2Psi1ZNCCent(nullptr),
+                                                         fHist2Psi1ZNACent(nullptr),
+                                                         ZDCpx_P(nullptr),
+                                                         ZDCpx_T(nullptr),
+                                                         ZDCv1_t(nullptr),
+                                                         ZDCv1_p(nullptr),
+                                                         ZDCResQ(nullptr),
+                                                         ZDCcos_t(nullptr),
+                                                         ZDCcos_p(nullptr),
+                                                         fTPCrecenterQx(nullptr),
+                                                         fTPCrecenterQy(nullptr),
+                                                         fTPCrecenterQxVz(nullptr),
+                                                         fTPCrecenterQyVz(nullptr)
 {
   runNum = -999;
   oldRunNum = -999;
@@ -157,12 +176,12 @@ ClassImp(AliAnalysisTaskChargeV1) // classimp: necessary for root
   fCenCutHighPU = nullptr;
   fMultCutPU = nullptr;
   // NUE
-  IsDoNUE = true;
+  IsDoNUE = false;
   fListNUE = nullptr;
   hNUEweightPlus = nullptr;
   hNUEweightMinus = nullptr;
   // NUA
-  IsDoNUA = true;
+  IsDoNUA = false;
   fListNUA = nullptr;
   hCorrectNUAPos = nullptr;
   hCorrectNUANeg = nullptr;
@@ -170,8 +189,7 @@ ClassImp(AliAnalysisTaskChargeV1) // classimp: necessary for root
   pos1Plane = nullptr;
   neg1Plane = nullptr;
   Res1Square = nullptr;
-  TPCcos_t = nullptr;
-  TPCcos_p = nullptr;
+
   // qc
   nCentrality = 7;
   hMQ_thisEvt = nullptr;
@@ -198,10 +216,6 @@ ClassImp(AliAnalysisTaskChargeV1) // classimp: necessary for root
   ETABINUP = 0.8;
   NPOIBINS = 8;
   ptEta = nullptr;
-  px_P = nullptr;
-  px_T = nullptr;
-  v1_t = nullptr;
-  v1_p = nullptr;
   ResQ = nullptr;
   Psi_P = nullptr;
   Psi_T = nullptr;
@@ -212,8 +226,7 @@ ClassImp(AliAnalysisTaskChargeV1) // classimp: necessary for root
   fHZDCAparameters = nullptr;
   fProfileZDCPsi1Correlation = nullptr;
   fProfileZDCPsi2Correlation = nullptr;
-  fHist2Psi1ZNCCent = nullptr;
-  fHist2Psi1ZNACent = nullptr;
+
   // ZDC QA
   for (int i = 0; i < 2; i++)
     fProfileZNCTowerMeanEnegry[i] = nullptr;
@@ -257,13 +270,8 @@ ClassImp(AliAnalysisTaskChargeV1) // classimp: necessary for root
   Qty = -999;
   Qpx = -999;
   Qpy = -999;
-  ZDCpx_P = nullptr;
-  ZDCpx_T = nullptr;
-  ZDCv1_t = nullptr;
-  ZDCv1_p = nullptr;
-  ZDCResQ = nullptr;
-  ZDCcos_t = nullptr;
-  ZDCcos_p = nullptr;
+
+  fBeforeRecenterPsi2 = nullptr;
 }
 //_____________________________________________________________________________
 AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1(const char *name) : AliAnalysisTaskSE(name),
@@ -289,7 +297,27 @@ AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1(const char *name) : AliAnalysis
                                                                      pD2pRe(nullptr),
                                                                      pD2pIm(nullptr),
                                                                      v1p_qc(nullptr),
-                                                                     v1t_qc(nullptr)
+                                                                     v1t_qc(nullptr),
+                                                                     TPCcos_t(nullptr),
+                                                                     TPCcos_p(nullptr),
+                                                                     px_P(nullptr),
+                                                                     px_T(nullptr),
+                                                                     v1_t(nullptr),
+                                                                     v1_p(nullptr),
+                                                                     fHist2Psi1ZNCCent(nullptr),
+                                                                     fHist2Psi1ZNACent(nullptr),
+                                                                     ZDCpx_P(nullptr),
+                                                                     ZDCpx_T(nullptr),
+                                                                     ZDCv1_t(nullptr),
+                                                                     ZDCv1_p(nullptr),
+                                                                     ZDCResQ(nullptr),
+                                                                     ZDCcos_t(nullptr),
+                                                                     ZDCcos_p(nullptr),
+                                                                     fTPCrecenterQx(nullptr),
+                                                                     fTPCrecenterQy(nullptr),
+                                                                     fTPCrecenterQxVz(nullptr),
+                                                                     fTPCrecenterQyVz(nullptr)
+
 {
   runNum = -999;
   oldRunNum = -999;
@@ -330,12 +358,12 @@ AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1(const char *name) : AliAnalysis
   fCenCutHighPU = nullptr;
   fMultCutPU = nullptr;
   // NUE
-  IsDoNUE = true;
+  IsDoNUE = false;
   fListNUE = nullptr;
   hNUEweightPlus = nullptr;
   hNUEweightMinus = nullptr;
   // NUA
-  IsDoNUA = true;
+  IsDoNUA = false;
   fListNUA = nullptr;
   hCorrectNUAPos = nullptr;
   hCorrectNUANeg = nullptr;
@@ -343,8 +371,7 @@ AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1(const char *name) : AliAnalysis
   pos1Plane = nullptr;
   neg1Plane = nullptr;
   Res1Square = nullptr;
-  TPCcos_t = nullptr;
-  TPCcos_p = nullptr;
+
   // qc
   nCentrality = 7;
   hMQ_thisEvt = nullptr;
@@ -371,10 +398,6 @@ AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1(const char *name) : AliAnalysis
   ETABINUP = 0.8;
   NPOIBINS = 8;
   ptEta = nullptr;
-  px_P = nullptr;
-  px_T = nullptr;
-  v1_t = nullptr;
-  v1_p = nullptr;
   ResQ = nullptr;
   Psi_P = nullptr;
   Psi_T = nullptr;
@@ -386,8 +409,6 @@ AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1(const char *name) : AliAnalysis
   fHZDCAparameters = nullptr;
   fProfileZDCPsi1Correlation = nullptr;
   fProfileZDCPsi2Correlation = nullptr;
-  fHist2Psi1ZNCCent = nullptr;
-  fHist2Psi1ZNACent = nullptr;
   // ZDC QA
   for (int i = 0; i < 2; i++)
     fProfileZNCTowerMeanEnegry[i] = nullptr;
@@ -431,13 +452,9 @@ AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1(const char *name) : AliAnalysis
   Qty = -999;
   Qpx = -999;
   Qpy = -999;
-  ZDCpx_P = nullptr;
-  ZDCpx_T = nullptr;
-  ZDCv1_t = nullptr;
-  ZDCv1_p = nullptr;
-  ZDCResQ = nullptr;
-  ZDCcos_t = nullptr;
-  ZDCcos_p = nullptr;
+
+  fBeforeRecenterPsi2 = nullptr;
+
   // constructor
   DefineInput(0, TChain::Class()); // define the input of the analysis: in this case we take a 'chain' of events
                                    // this chain is created by the analysis manager, so no need to worry about it,
@@ -469,6 +486,7 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects()
   // the histograms are in this case added to a tlist, this list is in the end saved
   // to an output file
   //
+
   fOutputList = new TList();       // this is a list which will contain all of your histograms
   fOutputList->SetName(GetName()); // at the end of the analysis, the contents of this list are written
                                    // to the output file
@@ -517,8 +535,9 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects()
                              "296932", "296931", "296930", "296903", "296900", "296899", "296894", "296852", "296851", "296850",
                              "296848", "296839", "296838", "296836", "296835", "296799", "296794", "296793", "296790", "296787",
                              "296786", "296785", "296784", "296781", "296752", "296694", "296693", "296691", "296690"};
+
   hRunNumBin = new TH1I("runNumBin", "", 250, 0, 250);
-  for (int i = 0; i < 250; ++i)
+  for (int i = 0; i < 214; ++i)
   {
     hRunNumBin->GetXaxis()->SetBinLabel(i + 1, runNumList[i].Data());
   }
@@ -825,6 +844,25 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects()
   ZDCResQ = new TProfile("ZDCResQ", "", 10, 0, 10);
   fOutputList->Add(ZDCResQ);
 
+  /// TPC Recenter
+  fTPCrecenterQx = new TProfile *[214];
+  fTPCrecenterQy = new TProfile *[214];
+  fTPCrecenterQxVz = new TProfile2D *[214];
+  fTPCrecenterQyVz = new TProfile2D *[214];
+  for (int i = 0; i < 214; ++i)
+  {
+    fTPCrecenterQx[i] = new TProfile(Form("fTPCrecenterQx_%i", i), "", 100, 0, 100);
+    fTPCrecenterQy[i] = new TProfile(Form("fTPCrecenterQy_%i", i), "", 100, 0, 100);
+    fTPCrecenterQxVz[i] = new TProfile2D(Form("fTPCrecenterQxVz_%i", i), "", 200, -50, 50, 100, 0, 100);
+    fTPCrecenterQyVz[i] = new TProfile2D(Form("fTPCrecenterQyVz_%i", i), "", 200, -50, 50, 100, 0, 100);
+    fQAList->Add(fTPCrecenterQx[i]);
+    fQAList->Add(fTPCrecenterQy[i]);
+    fQAList->Add(fTPCrecenterQxVz[i]);
+    fQAList->Add(fTPCrecenterQyVz[i]);
+  }
+  fBeforeRecenterPsi2 = new TH1F("fBeforeRecenterPsi2", "fBeforeRecenterPsi2", 100, 0, TMath::TwoPi());
+  fQAList->Add(fBeforeRecenterPsi2);
+
   PostData(1, fOutputList); // postdata will notify the analysis manager of changes / updates to the
   PostData(2, fQAList);     // fOutputList object. the manager will in the end take care of writing your output to file
                             // so it needs to know what's in the output
@@ -982,7 +1020,8 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
   double sumSinNeg = 0.;
   int etaPos = 0;
   int etaNeg = 0;
-
+  double Psi2Qx = 0;
+  double Psi2Qy = 0;
   int nTrk = fAOD->GetNumberOfTracks();
   for (int iTrk = 0; iTrk < nTrk; ++iTrk)
   {
@@ -1034,7 +1073,7 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
     //------------------
     // NUE & NUA
     //------------------
-    double weight = 1;
+    double weight = 1.;
     if (IsDoNUE)
     {
       double wEffi = GetNUECor(charge, pt);
@@ -1116,6 +1155,8 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
     vecPOI.push_back(fPOIBIN);
 
     // Qn
+    Psi2Qx += weight * cos(2 * phi);
+    Psi2Qy += weight * sin(2 * phi);
     if (eta > 0.)
     {
       sumCosPos += weight * cos(phi);
@@ -1131,6 +1172,14 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
   }
   if (etaNeg == 0 || etaPos == 0)
     return;
+  // TPC Plane Recenter
+  fTPCrecenterQx[runNumBin]->Fill(cent, Psi2Qx);
+  fTPCrecenterQy[runNumBin]->Fill(cent, Psi2Qy);
+  fTPCrecenterQxVz[runNumBin]->Fill(vtx[2], cent, Psi2Qx);
+  fTPCrecenterQyVz[runNumBin]->Fill(vtx[2], cent, Psi2Qy);
+  TVector2 Q2TPC;
+  Q2TPC.Set(Psi2Qx, Psi2Qy);
+  fBeforeRecenterPsi2->Fill(Q2TPC.Phi());
 
   // TPC Plane
   TVector2 Q1TPCPos;
@@ -1438,6 +1487,7 @@ bool AliAnalysisTaskChargeV1::LoadCalibHistForThisRun()
   fHZDCAparameters->Reset();
   fHZDCCparameters = (TH1D *)(fListZDCCalib->FindObject(Form("Run %d", runNum))->FindObject(Form("fZDCCparameters[%d]", runNum)));
   fHZDCAparameters = (TH1D *)(fListZDCCalib->FindObject(Form("Run %d", runNum))->FindObject(Form("fZDCAparameters[%d]", runNum)));
+
   if (fHZDCCparameters && fHZDCAparameters)
     std::cout << "\n ===========> Info:: ZDC Channel Weights Found for Run " << runNum << std::endl;
   if (!fHZDCCparameters)
