@@ -36,6 +36,7 @@
 #include "AliAODConversionMother.h"
 #include "TProfile.h"
 #include "AliMultSelection.h"
+#include "TProfile2D.h"
 #include <vector>
 #include <map>
 #include <fstream>
@@ -74,6 +75,10 @@ ClassImp(AliAnalysisTaskPi0EtaV2)
                                                          fHistoMotherBackInvMassPtV0AInPlane(NULL),
                                                          fHistoMotherBackInvMassPtV0COutPlane(NULL),
                                                          fHistoMotherBackInvMassPtV0AOutPlane(NULL),
+                                                         fHistoMotherInvMassPtV0CCos2phi(NULL),
+                                                         fHistoMotherInvMassPtV0ACos2phi(NULL),
+                                                         fHistoMotherBackInvMassPtV0CCos2phi(NULL),
+                                                         fHistoMotherBackInvMassPtV0ACos2phi(NULL),
                                                          runNum(0),
                                                          oldRunNum(0),
                                                          centSPD1(-999),
@@ -149,6 +154,10 @@ AliAnalysisTaskPi0EtaV2::AliAnalysisTaskPi0EtaV2(const char *name) : AliAnalysis
                                                                      fHistoMotherBackInvMassPtV0AInPlane(NULL),
                                                                      fHistoMotherBackInvMassPtV0COutPlane(NULL),
                                                                      fHistoMotherBackInvMassPtV0AOutPlane(NULL),
+                                                                     fHistoMotherInvMassPtV0CCos2phi(NULL),
+                                                                     fHistoMotherInvMassPtV0ACos2phi(NULL),
+                                                                     fHistoMotherBackInvMassPtV0CCos2phi(NULL),
+                                                                     fHistoMotherBackInvMassPtV0ACos2phi(NULL),
                                                                      runNum(0),
                                                                      oldRunNum(0),
                                                                      centSPD1(-999),
@@ -241,6 +250,10 @@ void AliAnalysisTaskPi0EtaV2::UserCreateOutputObjects()
     fHistoMotherBackInvMassPtV0AInPlane = new TH2F *[fnCuts];
     fHistoMotherBackInvMassPtV0COutPlane = new TH2F *[fnCuts];
     fHistoMotherBackInvMassPtV0AOutPlane = new TH2F *[fnCuts];
+    fHistoMotherInvMassPtV0CCos2phi = new TProfile2D *[fnCuts];
+    fHistoMotherInvMassPtV0ACos2phi = new TProfile2D *[fnCuts];
+    fHistoMotherBackInvMassPtV0CCos2phi = new TProfile2D *[fnCuts];
+    fHistoMotherBackInvMassPtV0ACos2phi = new TProfile2D *[fnCuts];
     fEventCount = new TH1D *[fnCuts];
     fHist2DPsi2V0CCent = new TH2D *[fnCuts];
     fHist2DPsi2V0ACent = new TH2D *[fnCuts];
@@ -366,6 +379,15 @@ void AliAnalysisTaskPi0EtaV2::UserCreateOutputObjects()
         fHistoMotherBackInvMassPtV0AOutPlane[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
         fHistoMotherBackInvMassPtV0AOutPlane[iCut]->SetYTitle("p_{T} (GeV/c)");
         fESDList[iCut]->Add(fHistoMotherBackInvMassPtV0AOutPlane[iCut]);
+        fHistoMotherInvMassPtV0CCos2phi[iCut] = new TProfile2D("InvMassPtV0CCos2phi", "InvMassPtV0CCos2phi", nBinsMinv, arrMinvBin, nBinsPt, arrPtBinning);
+        fHistoMotherInvMassPtV0ACos2phi[iCut] = new TProfile2D("InvMassPtV0ACos2phi", "InvMassPtV0ACos2phi", nBinsMinv, arrMinvBin, nBinsPt, arrPtBinning);
+        fHistoMotherBackInvMassPtV0CCos2phi[iCut] = new TProfile2D("BackInvMassPtV0CCos2phi", "BackInvMassPtV0CCos2phi", nBinsMinv, arrMinvBin, nBinsPt, arrPtBinning);
+        fHistoMotherBackInvMassPtV0ACos2phi[iCut] = new TProfile2D("BackInvMassPtV0ACos2phi", "BackInvMassPtV0ACos2phi", nBinsMinv, arrMinvBin, nBinsPt, arrPtBinning);
+        fESDList[iCut]->Add(fHistoMotherInvMassPtV0CCos2phi[iCut]);
+        fESDList[iCut]->Add(fHistoMotherInvMassPtV0ACos2phi[iCut]);
+        fESDList[iCut]->Add(fHistoMotherBackInvMassPtV0CCos2phi[iCut]);
+        fESDList[iCut]->Add(fHistoMotherBackInvMassPtV0ACos2phi[iCut]);
+
         fEventCount[iCut] = new TH1D("EventCount", "EventCount", 100, 0, 100);
         fESDList[iCut]->Add(fEventCount[iCut]);
         // VZERO
@@ -542,6 +564,8 @@ void AliAnalysisTaskPi0EtaV2::UserExec(Option_t *)
         {
             AliAODConversionMother *pi0cand = NULL;
             pi0cand = new AliAODConversionMother(*(AliAODConversionMother *)arrClustersPi0->At(i));
+            fHistoMotherInvMassPtV0CCos2phi[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), cos(2 * (pi0cand->Phi() - fPsi2V0C)));
+            fHistoMotherInvMassPtV0ACos2phi[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), cos(2 * (pi0cand->Phi() - fPsi2V0A)));
             double dphiV0A = TVector2::Phi_0_2pi(pi0cand->Phi() - fPsi2V0A);
             if (dphiV0A > TMath::Pi())
             {
@@ -585,6 +609,9 @@ void AliAnalysisTaskPi0EtaV2::UserExec(Option_t *)
         {
             AliAODConversionMother *Bgcand = NULL;
             Bgcand = new AliAODConversionMother(*(AliAODConversionMother *)arrClustersBg->At(i));
+            // Use cos(2*(psi-Psi))
+            fHistoMotherBackInvMassPtV0CCos2phi[fiCut]->Fill(Bgcand->M(), Bgcand->Pt(), cos(2 * (Bgcand->Phi() - fPsi2V0C)));
+            fHistoMotherBackInvMassPtV0ACos2phi[fiCut]->Fill(Bgcand->M(), Bgcand->Pt(), cos(2 * (Bgcand->Phi() - fPsi2V0A)));
             double dphiV0A = TVector2::Phi_0_2pi(Bgcand->Phi() - fPsi2V0A);
             if (dphiV0A > TMath::Pi())
             {

@@ -60,6 +60,27 @@ private:
   TProfile3D **pD2pIm;
   TProfile3D **v1p_qc;
   TProfile3D **v1t_qc;
+  // some hist array
+  TProfile2D **TPCcos_t;
+  TProfile2D **TPCcos_p;
+  TProfile2D **px_P;
+  TProfile2D **px_T;
+  TProfile2D **v1_t;
+  TProfile2D **v1_p;
+  TH1D **fHist2Psi1ZNCCent;
+  TH1D **fHist2Psi1ZNACent;
+  TProfile2D **ZDCpx_P;
+  TProfile2D **ZDCpx_T;
+  TProfile2D **ZDCv1_t;
+  TProfile2D **ZDCv1_p;
+  TProfile *ZDCResQ;
+  TProfile2D **ZDCcos_t;
+  TProfile2D **ZDCcos_p;
+  TProfile **fTPCrecenterQx;
+  TProfile **fTPCrecenterQy;
+  TProfile2D **fTPCrecenterQxVz;
+  TProfile2D **fTPCrecenterQyVz;
+
   int runNum;
   int oldRunNum;
   int runNumBin;
@@ -110,8 +131,6 @@ private:
   TH1D *pos1Plane;
   TH1D *neg1Plane;
   TProfile *Res1Square;
-  TProfile2D **TPCcos_t;
-  TProfile2D **TPCcos_p;
 
   // qc
   int nCentrality;
@@ -141,10 +160,6 @@ private:
 
   // v1tp
   TProfile *ptEta;
-  TProfile2D **px_P;
-  TProfile2D **px_T;
-  TProfile2D **v1_t;
-  TProfile2D **v1_p;
   TProfile *ResQ;
   TH1D *Psi_P;
   TH1D *Psi_T;
@@ -159,8 +174,6 @@ private:
   TH1D *fHZDCAparameters;
   TProfile *fProfileZDCPsi1Correlation; // ZNC-ZNA 1st
   TProfile *fProfileZDCPsi2Correlation; // ZNC-ZNA 2nd
-  TH1D **fHist2Psi1ZNCCent;
-  TH1D **fHist2Psi1ZNACent;
 
   //  QA
   //  ZDC
@@ -200,13 +213,9 @@ private:
   double Qty;
   double Qpx;
   double Qpy;
-  TProfile2D **ZDCpx_P;
-  TProfile2D **ZDCpx_T;
-  TProfile2D **ZDCv1_t;
-  TProfile2D **ZDCv1_p;
-  TProfile *ZDCResQ;
-  TProfile2D **ZDCcos_t;
-  TProfile2D **ZDCcos_p;
+
+  // TPC recenter
+  TH1F *fBeforeRecenterPsi2;
 
   AliAnalysisTaskChargeV1(const AliAnalysisTaskChargeV1 &);            // not implemented
   AliAnalysisTaskChargeV1 &operator=(const AliAnalysisTaskChargeV1 &); // not implemented
