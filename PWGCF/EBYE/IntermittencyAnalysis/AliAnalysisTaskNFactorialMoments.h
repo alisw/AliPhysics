@@ -11,7 +11,7 @@
 #include "TNtuple.h"
 #include "TH3F.h"
 
-const Int_t mMBins = 40, mDim = 2, mQs = 6, mPtmax = 5;
+const Int_t mMBins = 52, mDim = 2, mQs = 6, mPtmax = 5;
 
 class TH1F;
 class TH1D;
@@ -89,7 +89,7 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   }
   void SetRejectPileup(Bool_t RejectPileup) { this->flagPileup = RejectPileup; }
   void SetBfield(Int_t bf) { this->fBfield = bf; }
-  void SetDCAXYRangeMax(Double_t dcaxy) { this->fDCAxyMax = dcaxy; }
+  void SetDCAXYRangeMax(Int_t dcaxy) { this->fDCAxyMax = dcaxy; }
   void SetDCAZRangeMax(Double_t dcaz) { this->fDCAzMax = dcaz; }
   void SetITSClusterCut(Double_t itscut) { this->fITSCls = itscut; }
   void SetTPCClusterCut(Double_t tpccut) { this->fTPCCls = tpccut; }
@@ -109,13 +109,13 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   void FillMCTrackInfo();
   float GetDPhiStar(float phi1, float pt1, float charge1, float phi2, float pt2,
                     float charge2, float radius, float bSign);
-  Bool_t GetParticleID(AliAODTrack* track, Bool_t fQA);
   float CalculateDPhiStar(float phi1, float eta1, float pt1, Int_t charge1,
                           float phi2, float eta2, float pt2, Int_t charge2,
                           float bSign);
   float SharedClusterFraction(TBits&, TBits&, TBits&, TBits&);
   void GetPtBin(Double_t);
   void CalculateNFMs(TH2D* h1[mPtmax][mMBins], Bool_t mcGen);
+  Bool_t GetDCA(AliAODTrack* track, Double_t dca[2]);
   void DataPosting();
   void ResetHistograms();
 
@@ -158,7 +158,8 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   // Variables for analysis
   Double_t fVxMax, fVyMax, fVzMax, minCent, maxCent, minEta, maxEta;
   Double_t fSharedClsMax, fSharedRowsMax, fFindableClsMin;
-  float fDCAxyMax, fDCAzMax;
+  Int_t fDCAxyMax;
+  Double_t fDCAzMax;
   Int_t Mmax;
   Int_t ptbin1, ptbin2, ptbin3, ptbin4;
   TArrayD ptarray;
@@ -182,15 +183,15 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   TH1D* fHistdPhi;
   TH2D* fHistQAPID[13];
   TH1D* fHistPDG[2];
-  TH1F* fHistnTPCcls;
-  TH1F* fHistnTPCcrossedrows;
-  TH1F* fHistnITScls;
-  TH1F* fHistnchi2ITScls;
-  TH1F* fHistnchi2TPCcls;
-  TH1F* fHistDCAxy;
-  TH1F* fHistDCAz;
-  TH2F* fHistDCAxypT;
-  TH2F* fHistDCAzpT;
+  TH1F* fHistnTPCcls[2];
+  TH1F* fHistnTPCcrossedrows[2];
+  TH1F* fHistnITScls[2];
+  TH1F* fHistnchi2ITScls[2];
+  TH1F* fHistnchi2TPCcls[2];
+  TH1F* fHistDCAxy[2];
+  TH1F* fHistDCAz[2];
+  TH2F* fHistDCAxypT[2];
+  TH2F* fHistDCAzpT[2];
   TH1F* fHistNShCls[2];
   TH2F* fHistNShClsFra[2];
   TH2F* fHistNShClsFravspt[mPtmax + 1];

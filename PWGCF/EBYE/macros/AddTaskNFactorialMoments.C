@@ -1,13 +1,11 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskNFactorialMoments.h"
 
-AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMomentsAODs(Int_t nPt = 1, Double_t pt1 = 0.52, Double_t pt2 = 0.92, Double_t pt3 = 0.0, Double_t pt4 = 0.0, Double_t pt5 = 0.0, Double_t pt6 = 0.0, Double_t pt7 = 0.0, Double_t pt8 = 0.0, Double_t pt9 = 0.0, Double_t pt10 = 0.0, Int_t Mmax = 82, Bool_t fIsMC = kFALSE, const char* suffix = "")
+AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(Int_t nPt = 1, Double_t pt1 = 0.52, Double_t pt2 = 0.92, Double_t pt3 = 0.0, Double_t pt4 = 0.0, Double_t pt5 = 0.0, Double_t pt6 = 0.0, Double_t pt7 = 0.0, Double_t pt8 = 0.0, Double_t pt9 = 0.0, Double_t pt10 = 0.0, Int_t Mmax = 82, Bool_t fIsMC = kFALSE, const char* suffix = "")
 {
 
-  // year = "2010" or "2015"
-  // fSelfAffAnalysis for self-affine analysis
-  // cuts on detas and dphis work only if fTwoTrack = kTRUE
-  // cuts on DCA, ITS/TPC clusters, ncrssed rows work only if they have non-zero
+  // NOTE: year = "2010" (for RUN1)  or "2015" (RUN2)
+  // cuts on ITS/TPC clusters, crossed rows work only if they have non-zero values
 
   // Initialize variables
   TString year = "2015";
@@ -28,7 +26,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMomentsAODs(Int_t nPt = 1, Do
   Double_t fVyMax = 0.4;
   Double_t fVzMax = 10.0;
   Bool_t fRejectElectrons = kFALSE;
-  Double_t fDCAXYRangeMax = 0.0;
+  Int_t fDCAXYCut = -1; // 0 for loose, 1 for tight, -1 for no cut
   Double_t fDCAZRangeMax = 0.0;
   Double_t fITSClusterCut = 0.0;
   Double_t fTPCClusterCut = 0.0;
@@ -38,7 +36,6 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMomentsAODs(Int_t nPt = 1, Do
   Double_t fFindableCls = 0.0;
   Bool_t defSharedFrac = kTRUE;
   Int_t bField = 0;
-  Double_t nSigmaCutPr = 3.0;
 
   std::vector<Double_t> ptVector;
   if (pt1 != 0.0)
@@ -74,23 +71,23 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMomentsAODs(Int_t nPt = 1, Do
   std::copy(ptVector.begin(), ptVector.end(), ptarr);
   TArrayD ptarrD(nPt * 2, ptarr);
 
-  Int_t Mbinsarr[40];
-  Int_t Nbinsarr[40]; // used in case of selfaffine analysis
-  for (size_t nMB = 0; nMB < 40; nMB++) {
+  Int_t Mbinsarr[52];
+  Int_t Nbinsarr[52]; // used in case of selfaffine analysis
+  for (size_t nMB = 0; nMB < 52; nMB++) {
     if (Mmax == 123)
       Mbinsarr[nMB] = 3 * (nMB + 2);
     if (Mmax == 82)
       Mbinsarr[nMB] = 2 * (nMB + 2);
   }
   if (fSelfAffAnalysis) {
-    for (Int_t nMB = 0; nMB < 40; nMB++) {
+    for (Int_t nMB = 0; nMB < 52; nMB++) {
       Mbinsarr[nMB] = nMB + 1;
       Nbinsarr[nMB] = 4 * (nMB + 1);
     }
   }
 
-  TArrayI Mbins(40, Mbinsarr);
-  TArrayI Nbins(40, Nbinsarr);
+  TArrayI Mbins(52, Mbinsarr);
+  TArrayI Nbins(52, Nbinsarr);
 
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -118,7 +115,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMomentsAODs(Int_t nPt = 1, Do
   taskFactorialMoments->SetSharingFraction(fSharedFraction, fSharity);
   taskFactorialMoments->SetVtxCut(fVxMax, fVyMax, fVzMax);
   taskFactorialMoments->SetRejectElectrons(fRejectElectrons);
-  taskFactorialMoments->SetDCAXYRangeMax(fDCAXYRangeMax);   // 0.1
+  taskFactorialMoments->SetDCAXYRangeMax(fDCAXYCut);        // 0 for loose, 1 for tight, -1 for no cut
   taskFactorialMoments->SetDCAZRangeMax(fDCAZRangeMax);     // 1
   taskFactorialMoments->SetITSClusterCut(fITSClusterCut);   // chi2 per ITS 36
   taskFactorialMoments->SetTPCClusterCut(fTPCClusterCut);   // chi2 per TPC 4

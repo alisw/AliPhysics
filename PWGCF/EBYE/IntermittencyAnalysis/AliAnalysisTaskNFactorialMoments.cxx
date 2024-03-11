@@ -149,31 +149,31 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
     fHistList->Add(fHistQAEta[1]);
     fHistList->Add(fHistQAPhi[1]);
   }
-  fHistDCAxy = new TH1F("fHistDCAxy", "DCAxy distribution;DCAxy;Counts", 900, -4.5, 4.5);
-  fHistDCAz = new TH1F("fHistDCAz", "DCAz distribution;DCAz;Counts", 900, -4.5, 4.5);
-  fHistDCAxypT = new TH2F("fHistDCAxypT", "DCAxy vs pT;p_{T};dca_{xy}", 50, 0, 5.5, 200, -2.0, 2.0);
-  fHistDCAzpT = new TH2F("fHistDCAzpT", "DCAz vs pT;p_{T};dca_{z}", 50, 0, 5.5, 200, -2.0, 2.0);
-  fHistnITScls = new TH1F("fHistnITScls", "ITS cluster distribution;ITS cluster;Counts", 10, -0.5, 10.5);
-  fHistnTPCcls = new TH1F("fHistnTPCcls", "TPC cluster distribution;TPC cluster;Counts", 200, 0, 200);
-  fHistnchi2ITScls = new TH1F("fHistnchi2ITScls", "ITSchi2 cluster distribution;ITSchi2 cluster;Counts", 100, -0.5, 100.5);
-  fHistnchi2TPCcls = new TH1F("fHistnchi2TPCcls", "TPCchi2 cluster distribution;TPCchi2 cluster;Counts", 50, 0, 50);
-  fHistnTPCcrossedrows = new TH1F("fHistnTPCcrossedrows", "TPC crossed rows distribution;TPC crossed rows;Counts", 200, 0, 200);
-  fHistList->Add(fHistDCAxy);
-  fHistList->Add(fHistDCAz);
-  fHistList->Add(fHistDCAxypT);
-  fHistList->Add(fHistDCAzpT);
-  fHistList->Add(fHistnITScls);
-  fHistList->Add(fHistnTPCcls);
-  fHistList->Add(fHistnTPCcrossedrows);
-  fHistList->Add(fHistnchi2ITScls);
-  fHistList->Add(fHistnchi2TPCcls);
 
   for (Int_t i = 0; i < 2; ++i) {
     std::array<TString, 2> j = { "before", "after" };
+    fHistDCAxy[i] = new TH1F(Form("fHistDCAxy%s", j[i].Data()), Form("DCAxy distribution %s;DCAxy;Counts", j[i].Data()), 900, -4.5, 4.5);
+    fHistDCAz[i] = new TH1F(Form("fHistDCAz%s", j[i].Data()), Form("DCAz distribution %s;DCAz;Counts", j[i].Data()), 900, -4.5, 4.5);
+    fHistnITScls[i] = new TH1F(Form("fHistnITScls%s", j[i].Data()), Form("ITS cluster distribution %s;ITS cluster;Counts", j[i].Data()), 10, -0.5, 10.5);
+    fHistnTPCcls[i] = new TH1F(Form("fHistnTPCcls%s", j[i].Data()), Form("TPC cluster distribution %s;TPC cluster;Counts", j[i].Data()), 200, 0, 200);
+    fHistnTPCcrossedrows[i] = new TH1F(Form("fHistnTPCcrossedrows%s", j[i].Data()), Form("TPC crossed rows distribution %s;TPC crossed rows;Counts", j[i].Data()), 200, 0, 200);
+    fHistnchi2ITScls[i] = new TH1F(Form("fHistnchi2ITScls%s", j[i].Data()), Form("ITSchi2 cluster distribution %s;ITSchi2 cluster;Counts", j[i].Data()), 100, -0.5, 100.5);
+    fHistnchi2TPCcls[i] = new TH1F(Form("fHistnchi2TPCcls%s", j[i].Data()), Form("TPCchi2 cluster distribution %s;TPCchi2 cluster;Counts", j[i].Data()), 50, 0, 50);
+    fHistDCAxypT[i] = new TH2F(Form("fHistDCAxypT%s", j[i].Data()), Form("DCAxy vs pT %s;p_{T};dca_{xy}", j[i].Data()), 500, 0, 5.5, 400, -4.0, 4.0);
+    fHistDCAzpT[i] = new TH2F(Form("fHistDCAzpT%s", j[i].Data()), Form("DCAz vs pT %s;p_{T};dca_{z}", j[i].Data()), 500, 0, 5.5, 400, -4.0, 4.0);
     fHistNShCls[i] = new TH1F(Form("fHistNShCls%s", j[i].Data()), Form("TPC shared cluster distribution %s", j[i].Data()), 200, 0, 200);
     fHistNShClsFra[i] = new TH2F(Form("fHistNShClsFra%s", j[i].Data()), Form("TPC shared cluster fraction %s;sharedcls/ncls;sharedcls/ncrrows", j[i].Data()), 100, 0, 1.0, 100, 0, 1.0);
     fHistNFoundClsFra[i] = new TH2F(Form("fHistNFoundClsFra%s", j[i].Data()), Form("TPC found cluster fraction %s;sharedcls/ncls;ncrrows/findablecls", j[i].Data()), 200, 0, 2, 200, 0, 2);
     fHistNFcls[i] = new TH1F(Form("fHistNFcls%s", j[i].Data()), Form("TPC findable cluster distribution %s;ncrrows/findablecls;counts", j[i].Data()), 40, 0, 4);
+    fHistList->Add(fHistDCAxy[i]);
+    fHistList->Add(fHistDCAz[i]);
+    fHistList->Add(fHistnITScls[i]);
+    fHistList->Add(fHistnTPCcls[i]);
+    fHistList->Add(fHistnTPCcrossedrows[i]);
+    fHistList->Add(fHistnchi2ITScls[i]);
+    fHistList->Add(fHistnchi2TPCcls[i]);
+    fHistList->Add(fHistDCAxypT[i]);
+    fHistList->Add(fHistDCAzpT[i]);
     fHistList->Add(fHistNShCls[i]);
     fHistList->Add(fHistNShClsFra[i]);
     fHistList->Add(fHistNFoundClsFra[i]);
@@ -295,31 +295,29 @@ void AliAnalysisTaskNFactorialMoments::UserExec(Option_t*)
   fEventCounter->Fill(1);
   AliAODInputHandler* eventHandler = dynamic_cast<AliAODInputHandler*>(
     AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
-
   fPIDResponse =
     dynamic_cast<AliAODInputHandler*>(
       AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())
       ->GetPIDResponse();
-
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-  if (!fAOD)
-    ::Fatal("AliAnalysisTaskNFactorialMoments::UserExec",
-            "No AOD event found!");
+
+  if (!eventHandler || !fPIDResponse || !fAOD) {
+    std::cout << "UserExec: "
+              << "InputHandler or PIDResponse or AODEvent not found"
+              << std::endl;
+    return;
+  }
 
   if (flagMC) {
     fMCEvent = MCEvent();
-    if (!fMCEvent)
-      ::Fatal("AliAnalysisTaskNFactorialMoments::UserExec",
-              "No MC event found!");
     mcHeader = (AliAODMCHeader*)fAOD->GetList()->FindObject(
       AliAODMCHeader::StdBranchName());
-    if (!mcHeader)
-      ::Fatal("AliAnalysisTaskNFactorialMoments::UserExec",
-              "No MC header found!");
-  } else {
-    if (!fPIDResponse)
-      ::Fatal("AliAnalysisTaskNFactorialMoments::UserExec",
-              "No PIDResponse found!");
+    if (!fMCEvent || !mcHeader) {
+      std::cout << "UserExec: "
+                << "MCEvent or MCHeader not found"
+                << std::endl;
+      return;
+    }
   }
 
   // fEventCuts.SetupLHC15o();
@@ -435,10 +433,81 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
     Int_t charge = track->Charge();
     Int_t id = track->GetID();
 
-    if (GetParticleID(track, kTRUE))
-      continue;
+    if (flagMC) {
+      TClonesArray* AODMCTrackArray = dynamic_cast<TClonesArray*>(
+        fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+      if (AODMCTrackArray == NULL)
+        continue;
+      AliAODMCParticle* particle =
+        (AliAODMCParticle*)AODMCTrackArray->At(TMath::Abs(track->GetLabel()));
+      if (!particle)
+        continue;
+      if (flagRejEls) {
+        Bool_t isElPos = kFALSE;
+        if (particle->GetPdgCode() == 11 || particle->GetPdgCode() == -11) {
+          isElPos = kTRUE;
+        }
+        fHistPDG[0]->Fill(particle->GetPdgCode());
+        if (isElPos) {
+          fHistPDG[1]->Fill(particle->GetPdgCode());
+          continue;
+        }
+      }
+    }
+
+    Double_t length = -999., beta = -999., tofTime = -999., tof = -999.;
+    Double_t c = TMath::C() * 1.E-9; // m/ns
+    Float_t dEdx;
+
+    // TODO: commented out the below statement because 128 seems to not give any values in the PID object
+
+    // NOTE: These are all only PID related QA histograms (mostly for protons). No checks done
+    dEdx = track->GetTPCsignal();
+    for (Int_t isp(0); isp < AliPID::kSPECIES; isp++) {
+      nsigmaTPC[isp] =
+        fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)isp);
+      nsigmaTOF[isp] =
+        fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)isp);
+      fHistQAPID[12]->Fill(pt, nsigmaTPC[isp]);
+    }
+    fHistQAPID[0]->Fill(track->P() * track->Charge(), dEdx);
+    tofTime = track->GetTOFsignal();
+    length = track->GetIntegratedLength();
+    tof = tofTime * 1E-3; // ns
+    if (tof > 0 && length > 0) {
+      length = length * 0.01; // in meters
+      beta = length / (tof * c);
+      fHistQAPID[1]->Fill(track->Pt(), nsigmaTPC[4]);
+      fHistQAPID[2]->Fill(track->Pt(), nsigmaTOF[4]);
+      Double_t combSquare = TMath::Sqrt(nsigmaTPC[4] * nsigmaTPC[4] +
+                                        nsigmaTOF[4] * nsigmaTOF[4]);
+      fHistQAPID[3]->Fill(track->Pt(), combSquare);
+      fHistQAPID[4]->Fill(track->Pt(), beta);
+      fHistQAPID[5]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
+      if ((track->Pt() < 0.6) && (TMath::Abs(nsigmaTPC[4]) < 3)) {
+        fHistQAPID[6]->Fill(track->P() * track->Charge(), dEdx);
+        fHistQAPID[7]->Fill(track->Pt(), nsigmaTPC[4]);
+        fHistQAPID[8]->Fill(track->Pt(), nsigmaTOF[4]);
+        fHistQAPID[9]->Fill(track->Pt(), combSquare);
+        fHistQAPID[10]->Fill(track->Pt(), beta);
+        fHistQAPID[11]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
+      } else if ((track->Pt() > 0.6) && (combSquare < 3)) {
+        fHistQAPID[6]->Fill(track->P() * track->Charge(), dEdx);
+        fHistQAPID[7]->Fill(track->Pt(), nsigmaTPC[4]);
+        fHistQAPID[8]->Fill(track->Pt(), nsigmaTOF[4]);
+        fHistQAPID[9]->Fill(track->Pt(), combSquare);
+        fHistQAPID[10]->Fill(track->Pt(), beta);
+        fHistQAPID[11]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
+      }
+    }
+    if (flagRejEls) {
+      if (TMath::Abs(nsigmaTPC[0]) < 1)
+        continue;
+    }
+
     fTrackCounter->Fill(3);
 
+    // NOTE: Some loose cuts on the tracks
     if ((eta < minEta) || (eta > maxEta) || (fabs(pt) < 0.2) || charge == 0)
       continue;
 
@@ -452,6 +521,12 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
     Float_t nCls = track->GetTPCNcls();
     Float_t nCrossedRows = track->GetTPCCrossedRows();
     Float_t nFindableCls = track->GetTPCNclsF();
+    Double_t dca[2];
+
+    if (!(GetDCA(track, dca)))
+      continue;
+    dcaXY = dca[0];
+    dcaZ = dca[1];
 
     if ((fITSCls > 0.0) && ((track->GetITSchi2() / track->GetITSNcls()) > fITSCls))
       continue;
@@ -464,22 +539,24 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
 
     fTrackCounter->Fill(5);
 
-    fHistnITScls->Fill(track->GetITSNcls());
-    fHistnTPCcls->Fill(track->GetTPCNcls());
-    fHistnchi2ITScls->Fill((track->GetITSchi2() / track->GetITSNcls()));
-    fHistnchi2TPCcls->Fill((track->GetTPCchi2() / track->GetTPCNcls()));
-    fHistnTPCcrossedrows->Fill(track->GetTPCNCrossedRows());
+    fHistnITScls[0]->Fill(track->GetITSNcls());
+    fHistnTPCcls[0]->Fill(track->GetTPCNcls());
+    fHistnchi2ITScls[0]->Fill((track->GetITSchi2() / track->GetITSNcls()));
+    fHistnchi2TPCcls[0]->Fill((track->GetTPCchi2() / track->GetTPCNcls()));
+    fHistnTPCcrossedrows[0]->Fill(track->GetTPCNCrossedRows());
+    fHistDCAxy[0]->Fill(dcaXY);
+    fHistDCAz[0]->Fill(dcaZ);
+    fHistDCAxypT[0]->Fill(pt, dcaXY);
+    fHistDCAzpT[0]->Fill(pt, dcaZ);
 
-    track->GetImpactParameters(dcaXY, dcaZ);
-
-    if ((fDCAxyMax > 0.0) && (fabs(dcaXY) > (0.0208 + 0.04 / TMath::Power(pt, 1.01))))
+    // NOTE: DCAxy cut ==  0 is loose, 1 is tight
+    if ((fDCAxyMax == 0) && (fabs(dcaXY) > (0.0182 + 0.4750 / TMath::Power(pt, 1.95))))
+      continue;
+    if ((fDCAxyMax == 1) && (fabs(dcaXY) > (0.0198 + 0.3963 / TMath::Power(pt, 1.59))))
       continue;
     if ((fDCAzMax > 0.0) && (fabs(dcaZ) > fDCAzMax))
       continue;
-    fHistDCAxy->Fill(dcaXY);
-    fHistDCAz->Fill(dcaZ);
-    fHistDCAxypT->Fill(pt, dcaXY);
-    fHistDCAzpT->Fill(pt, dcaZ);
+
     fTrackCounter->Fill(6);
     fHistNShCls[0]->Fill(nSharedCls);
     fHistNFcls[0]->Fill(nCrossedRows / nFindableCls);
@@ -498,13 +575,22 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
       continue;
     fTrackCounter->Fill(9);
 
+    fHistnITScls[1]->Fill(track->GetITSNcls());
+    fHistnTPCcls[1]->Fill(track->GetTPCNcls());
+    fHistnchi2ITScls[1]->Fill((track->GetITSchi2() / track->GetITSNcls()));
+    fHistnchi2TPCcls[1]->Fill((track->GetTPCchi2() / track->GetTPCNcls()));
+    fHistnTPCcrossedrows[1]->Fill(track->GetTPCNCrossedRows());
+    fHistDCAxy[1]->Fill(dcaXY);
+    fHistDCAz[1]->Fill(dcaZ);
+    fHistDCAxypT[1]->Fill(pt, dcaXY);
+    fHistDCAzpT[1]->Fill(pt, dcaZ);
     fHistNShCls[1]->Fill(nSharedCls);
     fHistNFcls[1]->Fill(nCrossedRows / nFindableCls);
     fHistNShClsFra[1]->Fill(nSharedCls / nCls, nSharedCls / nCrossedRows);
     fHistNFoundClsFra[1]->Fill(nSharedCls / nCls, nCrossedRows / nFindableCls);
 
+    // TODO: These values are calculated for fb768. Have to do these for fb128 as well.
     Double_t profileVal[16] = { 0 };
-
     if (minCent == 0 && maxCent == 5) {
       Double_t profileVal1[16] = { 0.360756, 0.360834, 0.360455, 0.35992, 0.359485, 0.359125, 0.359184, 0.359317, 0.359458, 0.35959, 0.360105, 0.36066, 0.361126, 0.361661, 0.361998, 0.362225 };
       std::copy(profileVal1, profileVal1 + 16, profileVal);
@@ -535,7 +621,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
     }
 
     // Two Track Loop:
-
+    // NOTE: No cuts for d\eta and d\phi are applied here. These are only QA histograms to check.
     if (flag2TrackQA) {
       TBits clusmap = track->GetTPCClusterMap();
       TBits sharedmap = track->GetTPCSharedMap();
@@ -551,8 +637,25 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
         Float_t phi2 = track2->Phi();
         Int_t id2 = track2->GetID();
 
-        if (GetParticleID(track2, kFALSE))
-          continue;
+        if (flagMC) {
+          TClonesArray* AODMCTrackArray = dynamic_cast<TClonesArray*>(
+            fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+          if (AODMCTrackArray == NULL)
+            continue;
+          AliAODMCParticle* particle =
+            (AliAODMCParticle*)AODMCTrackArray->At(TMath::Abs(track2->GetLabel()));
+          if (!particle)
+            continue;
+          if (flagRejEls) {
+            Bool_t isElPos = kFALSE;
+            if (particle->GetPdgCode() == 11 || particle->GetPdgCode() == -11) {
+              isElPos = kTRUE;
+            }
+            if (isElPos) {
+              continue;
+            }
+          }
+        }
 
         if (id == id2 || (eta2 < minEta) || (eta2 > maxEta) || fabs(pt2) < 0.2 || charge2 == 0)
           continue;
@@ -639,6 +742,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
     fHistQAEta[0]->Fill(eta);
     fHistQAPhi[0]->Fill(phi);
 
+    // NOTE: This loop fills all the eta-phi histograms in one go, avoids multiple loops.
     for (Int_t iPt = 0; iPt < mPtBins; ++iPt) {
       if (ptbin[iPt]) {
         fHistNShClsFravspt[iPt]->Fill(pt, nSharedCls / nCrossedRows);
@@ -746,98 +850,6 @@ void AliAnalysisTaskNFactorialMoments::GetPtBin(Double_t pt)
       ptbin.push_back(kFALSE);
     }
   }
-}
-
-/*________________________________________________________________________
-                  PID Information
-________________________________________________________________________*/
-
-Bool_t AliAnalysisTaskNFactorialMoments::GetParticleID(AliAODTrack* trk,
-                                                       Bool_t fQA)
-{
-
-  if (!flagMC) {
-    Double_t length = -999., beta = -999., tofTime = -999., tof = -999.;
-    Double_t c = TMath::C() * 1.E-9; // m/ns
-
-    fPIDCombined = new AliPIDCombined();
-    fPIDCombined->SetDefaultTPCPriors();
-
-    Float_t dEdx;
-    if (filterBit == 128) {
-      dEdx = trk->GetTPCsignal();
-    } else {
-      dEdx = trk->GetDetPid()->GetTPCsignal();
-    }
-    for (Int_t isp(0); isp < AliPID::kSPECIES; isp++) {
-      nsigmaTPC[isp] =
-        fPIDResponse->NumberOfSigmasTPC(trk, (AliPID::EParticleType)isp);
-      nsigmaTOF[isp] =
-        fPIDResponse->NumberOfSigmasTOF(trk, (AliPID::EParticleType)isp);
-      if (fQA) {
-        fHistQAPID[12]->Fill(trk->Pt(), nsigmaTPC[isp]);
-      }
-    }
-    if (fQA) {
-      fHistQAPID[0]->Fill(trk->P() * trk->Charge(), dEdx);
-      tofTime = trk->GetTOFsignal();
-      length = trk->GetIntegratedLength();
-      tof = tofTime * 1E-3; // ns
-      if (tof > 0 && length > 0) {
-        length = length * 0.01; // in meters
-        beta = length / (tof * c);
-        fHistQAPID[1]->Fill(trk->Pt(), nsigmaTPC[4]);
-        fHistQAPID[2]->Fill(trk->Pt(), nsigmaTOF[4]);
-        Double_t combSquare = TMath::Sqrt(nsigmaTPC[4] * nsigmaTPC[4] +
-                                          nsigmaTOF[4] * nsigmaTOF[4]);
-        fHistQAPID[3]->Fill(trk->Pt(), combSquare);
-        fHistQAPID[4]->Fill(trk->Pt(), beta);
-        fHistQAPID[5]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
-        if ((trk->Pt() < 2.0) && (TMath::Abs(nsigmaTPC[4]) < 3)) {
-          fHistQAPID[6]->Fill(trk->P() * trk->Charge(), dEdx);
-          fHistQAPID[7]->Fill(trk->Pt(), nsigmaTPC[4]);
-          fHistQAPID[8]->Fill(trk->Pt(), nsigmaTOF[4]);
-          fHistQAPID[9]->Fill(trk->Pt(), combSquare);
-          fHistQAPID[10]->Fill(trk->Pt(), beta);
-          fHistQAPID[11]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
-        } else if ((trk->Pt() > 2.0) && (combSquare < 3)) {
-          fHistQAPID[6]->Fill(trk->P() * trk->Charge(), dEdx);
-          fHistQAPID[7]->Fill(trk->Pt(), nsigmaTPC[4]);
-          fHistQAPID[8]->Fill(trk->Pt(), nsigmaTOF[4]);
-          fHistQAPID[9]->Fill(trk->Pt(), combSquare);
-          fHistQAPID[10]->Fill(trk->Pt(), beta);
-          fHistQAPID[11]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
-        }
-      }
-    }
-
-    if (flagRejEls) {
-      if (TMath::Abs(nsigmaTPC[0]) < 1)
-        return kTRUE;
-    }
-  } else {
-    TClonesArray* AODMCTrackArray = dynamic_cast<TClonesArray*>(
-      fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (AODMCTrackArray == NULL)
-      return kTRUE;
-    AliAODMCParticle* particle =
-      (AliAODMCParticle*)AODMCTrackArray->At(TMath::Abs(trk->GetLabel()));
-    if (!particle)
-      return kTRUE;
-    if (flagRejEls) {
-      Bool_t isElPos = kFALSE;
-      if (particle->GetPdgCode() == 11 || particle->GetPdgCode() == -11)
-        isElPos = kTRUE;
-      if (fQA) {
-        fHistPDG[0]->Fill(particle->GetPdgCode());
-        if (isElPos)
-          fHistPDG[1]->Fill(particle->GetPdgCode());
-      }
-      if (isElPos)
-        return kTRUE;
-    }
-  }
-  return kFALSE;
 }
 
 /*________________________________________________________________________
@@ -1037,6 +1049,46 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[mPtmax][mMBins], B
       }
     } // end of MBin loop
   }   // end of calculation loop
+}
+
+/*________________________________________________________________________
+          Get the DCA of the track
+________________________________________________________________________*/
+
+Bool_t AliAnalysisTaskNFactorialMoments::GetDCA(AliAODTrack* track, Double_t dca[2])
+{
+  /// Get track dca aod trck
+  if (track->TestBit(AliAODTrack::kIsDCA)) {
+    dca[0] = track->DCA();
+    dca[1] = track->ZAtDCA();
+    return kTRUE;
+  }
+
+  Bool_t ok = kFALSE;
+  if (fAOD) {
+    Double_t covdca[3];
+    // AliAODTrack copy(*track);
+    AliExternalTrackParam etp;
+    etp.CopyFromVTrack(track);
+
+    Float_t xstart = etp.GetX();
+    if (xstart > 3.) {
+      dca[0] = -999.;
+      dca[1] = -999.;
+      // printf("This method can be used only for propagation inside the beam pipe \n");
+      return kFALSE;
+    }
+
+    AliAODVertex* vtx = (AliAODVertex*)(fAOD->GetPrimaryVertex());
+    Double_t fBzkG = fAOD->GetMagneticField(); // z componenent of field in kG
+    ok = etp.PropagateToDCA(vtx, fBzkG, kVeryBig, dca, covdca);
+    // ok = copy.PropagateToDCA(vtx,fBzkG,kVeryBig,dca,covdca);
+  }
+  if (!ok) {
+    dca[0] = -999.;
+    dca[1] = -999.;
+  }
+  return ok;
 }
 
 /*________________________________________________________________________
