@@ -20,6 +20,9 @@
 #include "TProfile.h"
 #include "AliEventCuts.h"
 #include "TTree.h"
+#include "TH3.h"
+#include "TH2.h"
+#include "TH1.h"
 #include "TClonesArray.h"
 #include "AliStack.h"
 #include "TClonesArray.h"
@@ -102,7 +105,6 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fEfficiencies(0),
   fCentcal(0),
   fPseudoEfficiency(2.),
-  fPtvsCentvsPower(0),
   fDCAxyVsPt_noChi2(0),
   fWithinDCAvsPt_withChi2(0),
   fDCAxyVsPt_withChi2(0),
@@ -112,7 +114,6 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fMultVsCent(0),
   fV0MMulti(0),
   fITSvsTPCMulti(0),
-  fV2dPtMulti(0),
   fIP(0),
   fSPDCutPU(0),
   fV0CutPU(0),
@@ -192,7 +193,6 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fEfficiencies(0),
   fCentcal(0),
   fPseudoEfficiency(2.),
-  fPtvsCentvsPower(0),
   fDCAxyVsPt_noChi2(0),
   fWithinDCAvsPt_withChi2(0),
   fDCAxyVsPt_withChi2(0),
@@ -202,7 +202,6 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fMultVsCent(0),
   fV0MMulti(0),
   fITSvsTPCMulti(0),
-  fV2dPtMulti(0),
   fIP(0),
   fSPDCutPU(0),
   fV0CutPU(0),
@@ -272,6 +271,7 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   fptList->Add(fPtCont);
   if(fNBootstrapProfiles) fPtCont->InitializeSubsamples(fNBootstrapProfiles);
 
+  printf("1\n");
   const Int_t nFineCentBins=90;
   Double_t *fineCentBins = new Double_t[nFineCentBins+1];
   for(Int_t i=0;i<=nFineCentBins; i++) fineCentBins[i] = i;
@@ -283,6 +283,7 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",fNV0MBinsDefault,fV0MBinsDefault);
   fptList->Add(fMultiDist);
   fptList->Add(fV0MMulti);
+  printf("2\n");
   fMultiVsV0MCorr = new TH2D*[2];
   fMultiVsV0MCorr[0] = new TH2D("MultVsV0M_BeforeConsistency","MultVsV0M_BeforeConsistency",103,0,103,fNMultiBins,fMultiBins[0],fMultiBins[fNMultiBins]);
   fMultiVsV0MCorr[1] = new TH2D("MultVsV0M_AfterConsistency","MultVsV0M_AfterConsistency",103,0,103,fNMultiBins,fMultiBins[0],fMultiBins[fNMultiBins]);
@@ -291,28 +292,33 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   fptList->Add(fMultiVsV0MCorr[1]);
   fptList->Add(fESDvsFB128);
   //ITS vs TPC tracklets cut for PU
+  printf("3\n");
   fITSvsTPCMulti = new TH2D("TPCvsITSclusters",";TPC clusters; ITS clusters",1000,0,10000,5000,0,50000);
   fptList->Add(fITSvsTPCMulti);
   if(fIsMC) {
     fNchTrueVsReco = new TH2D("NchTrueVsReco",";Nch (MC-true); Nch (MC-reco)",fNMultiBins,fMultiBins,fNMultiBins,fMultiBins);
     fptList->Add(fNchTrueVsReco);
   }
+  printf("4\n");
   const Int_t nIPbins = 100;
   Double_t *ipBins = new Double_t[nIPbins];
   for(Int_t i=0;i<=nIPbins; i++) ipBins[i] = 0.2*i;
   fMeanMultiVsCent = new AliProfileBS("MeanMultiVsCent","Mean Multi vs centrality",(fUseIP)?nIPbins:nFineCentBins,(fUseIP)?ipBins:fineCentBins);
   fptList->Add(fMeanMultiVsCent);
-  fMultVsCent = new TH2F("fMultVsCent",Form(";%s; %s","Centrality (%)",(fUseNch)?"#it{N}_{ch}":(fUseV0M)?"V0M Amplitude":"Centrality (%)"),nFineCentBins,fineCentBins,fNMultiBins,fMultiBins);
+  printf("5\n");
+  fMultVsCent = new TH2D("fMultVsCent",Form(";%s; %s","Centrality (%)",(fUseNch)?"#it{N}_{ch}":(fUseV0M)?"V0M Amplitude":"Centrality (%)"),nFineCentBins,fineCentBins,fNMultiBins,fMultiBins);
   fptList->Add(fMultVsCent);
-  fNchVsV0M = new TH2F("fNchVsV0M","N_{ch} vs V0M amplitude; V0M amplitude; N_{ch}",1000,0,40000,2250,0,4500);
+  printf("6\n");
+  fNchVsV0M = new TH2D("fNchVsV0M","N_{ch} vs V0M amplitude; V0M amplitude; N_{ch}",1000,0,40000,2250,0,4500);
   fptList->Add(fNchVsV0M);
+  printf("7\n");
   printf("Multiplicity objects created\n");
   PostData(1,fptList);
 
   printf("Creating QA objects\n");
   fQAList = new TList();
   fQAList->SetOwner(kTRUE);
-  fQAList->Add(fIP);
+  if(fOnTheFly) fQAList->Add(fIP);
   fEventCuts.AddQAplotsToList(fQAList,kTRUE);
   int nEventCutLabel = 7;
   fEventCount = new TH1D("fEventCount","Event counter",nEventCutLabel,0,nEventCutLabel);
@@ -689,6 +695,99 @@ Bool_t AliAnalysisTaskPtCorr::AcceptAOD(AliAODEvent *inEv, Double_t *lvtxXYZ) {
 
   return kTRUE;
 };
+Bool_t AliAnalysisTaskPtCorr::AcceptCustomEvent(AliAODEvent* fAOD) { //From Alex
+  Float_t v0Centr    = -100.;
+  Float_t cl1Centr   = -100.;
+  Float_t cl0Centr   = -100.;
+  AliMultSelection* MultSelection = 0x0;
+  MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+  if(!MultSelection) {
+    AliWarning("AliMultSelection object not found!");
+    return kFALSE;
+  } else {
+    v0Centr = MultSelection->GetMultiplicityPercentile("V0M");
+    cl1Centr = MultSelection->GetMultiplicityPercentile("CL1");
+    cl0Centr = MultSelection->GetMultiplicityPercentile("CL0");
+  }
+  if(v0Centr>=80.||v0Centr<0) return kFALSE; //This would have to be adjusted for vs. V0M
+  Int_t nITSClsLy0 = fAOD->GetNumberOfITSClusters(0);
+  Int_t nITSClsLy1 = fAOD->GetNumberOfITSClusters(1);
+  Int_t nITSCls = nITSClsLy0 + nITSClsLy1;
+  AliAODTracklets *aodTrkl = (AliAODTracklets*)fAOD->GetTracklets();
+  Int_t nITSTrkls = aodTrkl->GetNumberOfTracklets(); //ESD: esd->GetMultiplicity()->GetNumberOfTracklets()
+  const Int_t nTracks = fAOD->GetNumberOfTracks(); //ESD: est->GetNumberOfTracks()
+  Int_t multTrk = 0;
+  for (Int_t it = 0; it < nTracks; it++) {
+    AliAODTrack* aodTrk = (AliAODTrack*)fAOD->GetTrack(it);
+    if(!aodTrk){
+        delete aodTrk;
+        continue;
+    }
+    if(aodTrk->TestFilterBit(32)) multTrk++; //GetStandardITSTPCTrackCuts2011()
+  }
+  AliAODVZERO* aodV0 = fAOD->GetVZEROData();
+  Float_t multV0a = aodV0->GetMTotV0A();
+  Float_t multV0c = aodV0->GetMTotV0C();
+  Float_t multV0Tot = multV0a + multV0c;
+  UShort_t multV0aOn = aodV0->GetTriggerChargeA();
+  UShort_t multV0cOn = aodV0->GetTriggerChargeC();
+  UShort_t multV0On = multV0aOn + multV0cOn;
+  //pile-up cuts
+  if(cl0Centr<fCenCutLowPU->Eval(v0Centr)) return kFALSE;
+  if (cl0Centr > fCenCutHighPU->Eval(v0Centr)) return kFALSE;
+  if(Float_t(nITSCls)>fSPDCutPU->Eval(nITSTrkls)) return kFALSE;
+  if(multV0On<fV0CutPU->Eval(multV0Tot)) return kFALSE;
+  if(Float_t(multTrk)<fMultCutPU->Eval(v0Centr)) return kFALSE;
+  if(((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08()<0) return kFALSE;
+  if(fAOD->IsIncompleteDAQ()) return kFALSE;
+  return kTRUE;
+}
+Bool_t AliAnalysisTaskPtCorr::AcceptCustomEvent(AliESDEvent* fESD) { //From Alex
+  Float_t v0Centr    = -100.;
+  Float_t cl1Centr   = -100.;
+  Float_t cl0Centr   = -100.;
+  AliMultSelection* MultSelection = 0x0;
+  MultSelection = (AliMultSelection*)fESD->FindListObject("MultSelection");
+  if(!MultSelection) {
+    AliWarning("AliMultSelection object not found!");
+    return kFALSE;
+  } else {
+    v0Centr = MultSelection->GetMultiplicityPercentile("V0M");
+    cl1Centr = MultSelection->GetMultiplicityPercentile("CL1");
+    cl0Centr = MultSelection->GetMultiplicityPercentile("CL0");
+  }
+  if(v0Centr>=80.||v0Centr<0) return kFALSE; //This would have to be adjusted for vs. V0M
+  Int_t nITSClsLy0 = fESD->GetNumberOfITSClusters(0);
+  Int_t nITSClsLy1 = fESD->GetNumberOfITSClusters(1);
+  Int_t nITSCls = nITSClsLy0 + nITSClsLy1;
+  Int_t nITSTrkls = fESD->GetMultiplicity()->GetNumberOfTracklets();
+  const Int_t nTracks = fESD->GetNumberOfTracks();
+  Int_t multTrk = 0;
+  AliESDtrack *esdTrack;
+  for (Int_t it = 0; it < nTracks; it++) {
+    esdTrack = (AliESDtrack*)fESD->GetTrack(it);
+    if(!esdTrack) continue;
+    if(fStdTPCITS2011->AcceptTrack(esdTrack)) multTrk++;
+  }
+  AliESDVZERO* esdV0 = fESD->GetVZEROData();
+  Float_t multV0a = esdV0->GetMTotV0A();
+  Float_t multV0c = esdV0->GetMTotV0C();
+  Float_t multV0Tot = multV0a + multV0c;
+  UShort_t multV0aOn = esdV0->GetTriggerChargeA();
+  UShort_t multV0cOn = esdV0->GetTriggerChargeC();
+  UShort_t multV0On = multV0aOn + multV0cOn;
+  //pile-up cuts
+  if(cl0Centr<fCenCutLowPU->Eval(v0Centr)) return kFALSE;
+  if (cl0Centr > fCenCutHighPU->Eval(v0Centr)) return kFALSE;
+  if(Float_t(nITSCls)>fSPDCutPU->Eval(nITSTrkls)) return kFALSE;
+  if(multV0On<fV0CutPU->Eval(multV0Tot)) return kFALSE; //Problematic for MC for whatever reason? On AODs work perfectly fine
+  if(Float_t(multTrk)<fMultCutPU->Eval(v0Centr)) return kFALSE;
+  AliESDtrackCuts::MultEstTrackType estType = fESD->GetPrimaryVertexTracks()->GetStatus() ? AliESDtrackCuts::kTrackletsITSTPC : AliESDtrackCuts::kTracklets;
+  if(AliESDtrackCuts::GetReferenceMultiplicity(fESD,estType,0.8) < 0) return kFALSE;
+  if(fESD->IsIncompleteDAQ()) return kFALSE;
+  return kTRUE;
+}
+
 Bool_t AliAnalysisTaskPtCorr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp) {
   if(mtr->Pt()<ptMin) return kFALSE;
   if(mtr->Pt()>ptMax) return kFALSE;

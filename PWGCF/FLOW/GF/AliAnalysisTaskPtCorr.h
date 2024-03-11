@@ -19,12 +19,12 @@
 #include "AliESDEvent.h"
 #include "AliVMultiplicity.h"
 #include "AliPtPtContainer.h"
-#include "TH3D.h"
 
 
 class TList;
 class TH1D;
 class TH2D;
+class TH3D;
 class TProfile;
 class TProfile2D;
 class TComplex;
@@ -154,8 +154,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH1D *fMultiDist;
   TH2D **fMultiVsV0MCorr; //!
   TH2D *fNchTrueVsReco; //!
-  TH2D *fESDvsFB128;
-  TH2F *fNchVsV0M;
+  TH2D *fESDvsFB128; //!
+  TH2D *fNchVsV0M; //!
   TList *fptList;
   AliPtPtContainer  *fPtCont;
   AliProfileBS *fMeanMultiVsCent;
@@ -173,20 +173,15 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   TH1* fCentcal; //TH1 for OTF centrality calibration
   Double_t fPseudoEfficiency; //Pseudo efficiency to reject tracks. Default value set to 2, only used when the value is <1
-  TH3D *fPtvsCentvsPower; //!
-  TH3D *fDCAxyVsPt_noChi2;
-  TH2D *fWithinDCAvsPt_withChi2;
-  TH3D *fDCAxyVsPt_withChi2;
-  TH2D *fWithinDCAvsPt_noChi2;
-  TH3D *fMultVsMptVsCent;
-  TH3D *fpt2VsNch;
-  TH3D *fpt3VsNch;
-  TH3D *fpt4VsNch;
-  TH2D *fMptVsCent;
-  TH2F *fMultVsCent;
-  TH1D *fV0MMulti;
-  TH2D *fITSvsTPCMulti;
-  TH1D *fV2dPtMulti;
+  TH3D *fDCAxyVsPt_noChi2; //!
+  TH2D *fWithinDCAvsPt_withChi2; //!
+  TH3D *fDCAxyVsPt_withChi2; //!
+  TH2D *fWithinDCAvsPt_noChi2; //!
+  TH3D *fMultVsMptVsCent; //!
+  TH2D *fMptVsCent; //!
+  TH2D *fMultVsCent; //!
+  TH1D *fV0MMulti; //!
+  TH2D *fITSvsTPCMulti; //!
   TH1D* fIP;
   Double_t fCorrPar[2]; //Yes need to store
   Bool_t fUseCorrCuts; //Yes need to store
@@ -211,11 +206,12 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void FillAdditionalTrackQAPlots(AliAODTrack &track, const Double_t &cent, Double_t weff, Double_t wacc, const Double_t &vz, Double_t* vtxp, Bool_t beforeCuts);
   void SetupAxes();
   Bool_t AcceptCustomEvent(AliAODEvent*);
+  Bool_t AcceptCustomEvent(AliESDEvent*);
   Bool_t fRequireReloadOnRunChange;
   Bool_t fEnableFB768dcaxy;
   Double_t *GetBinsFromAxis(TAxis *inax);
 
-  ClassDef(AliAnalysisTaskPtCorr,1);
+  ClassDef(AliAnalysisTaskPtCorr,2);
 };
 
 #endif
