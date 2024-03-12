@@ -612,7 +612,8 @@ bool AliFemtoDreamv0Cuts::CPAandMassCuts(AliFemtoDreamv0 *v0)
   if (cpaPass)
   {
     fHist->FillInvMassPtBins(v0->GetPt(), v0->Getv0Mass());
-    if (fdoFineInvMassPtBins) fHist->FillInvMassPtBinsFine(v0->GetPt(), v0->Getv0Mass());
+    if (fdoFineInvMassPtBins)
+      fHist->FillInvMassPtBinsFine(v0->GetPt(), v0->Getv0Mass());
     if (!fMinimalBooking)
       fHist->Fillv0MassDist(v0->Getv0Mass());
     if (fRunNumberQA)
