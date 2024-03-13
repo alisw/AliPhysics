@@ -324,6 +324,7 @@
 #pragma link C++ class AliAnalysisTaskEmcalSubjet+;
 #pragma link C++ class AliAnalysisTaskJetCoreEmcal+;
 #pragma link C++ class AliAnalysisTaskSVtaskMCFilter+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskV0Mnorm+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEA+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskRevEA+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisEmcalJetHelperEA+;
