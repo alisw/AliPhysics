@@ -311,6 +311,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskJetExtractor.cxx
         UserTasks/AliAnalysisTaskJetPP.cxx
         UserTasks/AliAnalysisTaskSVtaskMCFilter.cxx
+        UserTasks/AliAnalysisTaskV0Mnorm.cxx
         UserTasks/AliAnalysisTaskEA.cxx
         UserTasks/AliAnalysisTaskRevEA.cxx
         UserTasks/AliAnalysisEmcalJetHelperEA.cxx
