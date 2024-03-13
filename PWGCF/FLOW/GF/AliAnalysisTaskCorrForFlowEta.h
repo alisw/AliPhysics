@@ -107,6 +107,8 @@ class AliAnalysisTaskCorrForFlowEta : public AliAnalysisTaskSE
         void                    SetBinsTPC(Int_t nBins, std::vector<Double_t> bins) { fNBinsTPCeta = nBins; fBinsTPCeta = bins; }
         void                    SetBinsFMD(Int_t nBins, std::vector<Double_t> bins) { fNBinsFMDeta = nBins; fBinsFMDeta = bins; }
         void                    SetNBinsdEta(Int_t NBins) { fNBinsdEta = NBins; }
+        //Added TPCefficiency
+        void                    SetUseTPCEfficiency(Bool_t flag) {fUseEfficiency = flag;}
 
     private:
 
