@@ -141,7 +141,6 @@
 #pragma link C++ namespace JETriggerRejectionAna+;
 #pragma link C++ class JETriggerRejectionAna::AliAnalysisTaskTriggerRejection+;
 #pragma link C++ class AliAnalysisTaskV0sInJetsEmcal+;
-#pragma link C++ class AliAnalysisTaskStrangenessInJets+;
 #pragma link C++ class AliTrackContainerV0+;
 #pragma link C++ class AliTrackContainerToyModel+;
 #pragma link C++ class AliMCParticleContainerToyModel+;
@@ -293,6 +292,7 @@
 #pragma link C++ class AliAnalysisTaskJetCharge+;
 #pragma link C++ class AliAnalysisTaskJetChargeFlavourTemplates+;
 #pragma link C++ class AliAnalysisTaskJetChargeFlavourPb+;
+#pragma link C++ class AliAnalysisTaskStrangenessInJets+;
 #pragma link C++ namespace PWGJE::EMCALJetTasks::SubstructureTree;
 #pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::Subjets+;
 #pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::JetSplittings+;
