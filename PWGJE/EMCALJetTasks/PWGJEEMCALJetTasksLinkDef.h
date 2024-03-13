@@ -141,6 +141,7 @@
 #pragma link C++ namespace JETriggerRejectionAna+;
 #pragma link C++ class JETriggerRejectionAna::AliAnalysisTaskTriggerRejection+;
 #pragma link C++ class AliAnalysisTaskV0sInJetsEmcal+;
+#pragma link C++ class AliAnalysisTaskStrangenessInJets+;
 #pragma link C++ class AliTrackContainerV0+;
 #pragma link C++ class AliTrackContainerToyModel+;
 #pragma link C++ class AliMCParticleContainerToyModel+;
