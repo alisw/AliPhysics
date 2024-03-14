@@ -1778,6 +1778,12 @@ void AliAnalysisTaskIDFragmentationFunction::Terminate(Option_t *)
   // terminated
   if (fUseJetUEPIDtask) {
     for (Int_t i=0;i<fNumJetUEPIDtasks;++i) {
+      if (!fJetUEPIDtask[i]) {
+        AliWarningStream() << "Could not find UE pid task in terminate" << std::endl;
+        continue;
+      }
+        
+      
       fJetUEPIDtask[i]->NormalizeJetArea(TMath::Abs(GetFFRadius()));
     }
   }
