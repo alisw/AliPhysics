@@ -628,8 +628,6 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects()
       std::cout << ("NUA list not found") << std::endl;
       return;
     }
-    hCorrectNUAPos = new TH3F();
-    hCorrectNUANeg = new TH3F();
   }
 
   // TPC Plane
@@ -731,8 +729,6 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects()
   fQAList->SetName("fQAList");
   fQAList->SetOwner(kTRUE);
 
-  fHZDCCparameters = new TH1D();
-  fHZDCAparameters = new TH1D();
   if (!fListZDCCalib)
   {
     std::cout << ("ZDC calibration list not found") << std::endl;
@@ -894,13 +890,12 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
   }
   else
     hEvtCount->Fill(12);
-  fPID = handler->GetPIDResponse();
-  if (!fPID)
-  {
-    AliError(Form("%s: Could not get PIDResponse", GetName()));
-  }
-  else
-    hEvtCount->Fill(13);
+  //  fPID = handler->GetPIDResponse();
+  //  if (!fPID)
+  //  {
+  //    AliError(Form("%s: Could not get PIDResponse", GetName()));
+  //  }
+  // else hEvtCount->Fill(13);
   AliAnalysisUtils *fUtils = new AliAnalysisUtils();
   if (!fUtils)
   {
@@ -1098,54 +1093,54 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
     hPDedx->Fill(track->P() * charge, dedx);
     // PID
     double fPOIBIN = 0;
-    bool isItProttrk = CheckPIDofParticle(track, 3); // 3=proton
-    bool isItkiontrk = CheckPIDofParticle(track, 2); // 2=kion
-    bool isItpiontrk = CheckPIDofParticle(track, 1); // 1=pion
-    if (charge > 0)
-    {
-      if (isItProttrk && !isItkiontrk && !isItpiontrk)
-        fPOIBIN = 0.5;
-      if (!isItProttrk && isItkiontrk && !isItpiontrk)
-        fPOIBIN = 1.5;
-      if (!isItProttrk && !isItkiontrk && isItpiontrk)
-        fPOIBIN = 2.5;
-    }
-    else
-    {
-      if (isItProttrk && !isItkiontrk && !isItpiontrk)
-        fPOIBIN = 3.5;
-      if (!isItProttrk && isItkiontrk && !isItpiontrk)
-        fPOIBIN = 4.5;
-      if (!isItProttrk && !isItkiontrk && isItpiontrk)
-        fPOIBIN = 5.5;
-    }
-    if (fPOIBIN == 0)
-      continue;
+    //   bool isItProttrk = CheckPIDofParticle(track, 3); // 3=proton
+    //   bool isItkiontrk = CheckPIDofParticle(track, 2); // 2=kion
+    //   bool isItpiontrk = CheckPIDofParticle(track, 1); // 1=pion
+    //   if (charge > 0)
+    //   {
+    //     if (isItProttrk && !isItkiontrk && !isItpiontrk)
+    //       fPOIBIN = 0.5;
+    //     if (!isItProttrk && isItkiontrk && !isItpiontrk)
+    //       fPOIBIN = 1.5;
+    //     if (!isItProttrk && !isItkiontrk && isItpiontrk)
+    //       fPOIBIN = 2.5;
+    //   }
+    //   else
+    //   {
+    //     if (isItProttrk && !isItkiontrk && !isItpiontrk)
+    //       fPOIBIN = 3.5;
+    //     if (!isItProttrk && isItkiontrk && !isItpiontrk)
+    //       fPOIBIN = 4.5;
+    //     if (!isItProttrk && !isItkiontrk && isItpiontrk)
+    //       fPOIBIN = 5.5;
+    //   }
+    //   if (fPOIBIN == 0)
+    //     continue;
     // PID QA
-    if (abs(fPOIBIN - 0.5) < 1E-6 || abs(fPOIBIN - 3.5) < 1E-6)
-    {
-      float nSigTPC = fPID->NumberOfSigmasTPC(track, AliPID::kProton);
-      float nSigTOF = fPID->NumberOfSigmasTOF(track, AliPID::kProton);
-      float nSigRMS = TMath::Sqrt(nSigTPC * nSigTPC + nSigTOF * nSigTOF);
-      fHist2ProtonSigTPC->Fill(pt, nSigTPC);
-      fHist2ProtonSigTOF->Fill(pt, nSigRMS);
-    }
-    if (abs(fPOIBIN - 1.5) < 1E-6 || abs(fPOIBIN - 4.5) < 1E-6)
-    {
-      float nSigTPC = fPID->NumberOfSigmasTPC(track, AliPID::kKaon);
-      float nSigTOF = fPID->NumberOfSigmasTOF(track, AliPID::kKaon);
-      float nSigRMS = TMath::Sqrt(nSigTPC * nSigTPC + nSigTOF * nSigTOF);
-      fHist2KionSigTPC->Fill(pt, nSigTPC);
-      fHist2KionSigTOF->Fill(pt, nSigRMS);
-    }
-    if (abs(fPOIBIN - 2.5) < 1E-6 || abs(fPOIBIN - 5.5) < 1E-6)
-    {
-      float nSigTPC = fPID->NumberOfSigmasTPC(track, AliPID::kPion);
-      float nSigTOF = fPID->NumberOfSigmasTOF(track, AliPID::kPion);
-      float nSigRMS = TMath::Sqrt(nSigTPC * nSigTPC + nSigTOF * nSigTOF);
-      fHist2PionSigTPC->Fill(pt, nSigTPC);
-      fHist2PionSigTOF->Fill(pt, nSigRMS);
-    }
+    //   if (abs(fPOIBIN - 0.5) < 1E-6 || abs(fPOIBIN - 3.5) < 1E-6)
+    //   {
+    //     float nSigTPC = fPID->NumberOfSigmasTPC(track, AliPID::kProton);
+    //     float nSigTOF = fPID->NumberOfSigmasTOF(track, AliPID::kProton);
+    //     float nSigRMS = TMath::Sqrt(nSigTPC * nSigTPC + nSigTOF * nSigTOF);
+    //     fHist2ProtonSigTPC->Fill(pt, nSigTPC);
+    //     fHist2ProtonSigTOF->Fill(pt, nSigRMS);
+    //   }
+    //   if (abs(fPOIBIN - 1.5) < 1E-6 || abs(fPOIBIN - 4.5) < 1E-6)
+    //   {
+    //     float nSigTPC = fPID->NumberOfSigmasTPC(track, AliPID::kKaon);
+    //     float nSigTOF = fPID->NumberOfSigmasTOF(track, AliPID::kKaon);
+    //     float nSigRMS = TMath::Sqrt(nSigTPC * nSigTPC + nSigTOF * nSigTOF);
+    //     fHist2KionSigTPC->Fill(pt, nSigTPC);
+    //     fHist2KionSigTOF->Fill(pt, nSigRMS);
+    //   }
+    //   if (abs(fPOIBIN - 2.5) < 1E-6 || abs(fPOIBIN - 5.5) < 1E-6)
+    //   {
+    //     float nSigTPC = fPID->NumberOfSigmasTPC(track, AliPID::kPion);
+    //     float nSigTOF = fPID->NumberOfSigmasTOF(track, AliPID::kPion);
+    //     float nSigRMS = TMath::Sqrt(nSigTPC * nSigTPC + nSigTOF * nSigTOF);
+    //     fHist2PionSigTPC->Fill(pt, nSigTPC);
+    //     fHist2PionSigTOF->Fill(pt, nSigRMS);
+    //   }
     vecPhi.push_back(phi);
     vecCharge.push_back(charge);
     vecEta.push_back(eta);
@@ -1473,8 +1468,6 @@ bool AliAnalysisTaskChargeV1::LoadCalibHistForThisRun()
   // 18q/r NUA
   if (IsDoNUA)
   {
-    hCorrectNUAPos->Reset();
-    hCorrectNUANeg->Reset();
     hCorrectNUAPos = (TH3F *)fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dPos_Run%d", 0, runNum));
     hCorrectNUANeg = (TH3F *)fListNUA->FindObject(Form("fHist_NUA_VzPhiEta_kPID%dNeg_Run%d", 0, runNum));
     if (!hCorrectNUAPos)
@@ -1483,8 +1476,6 @@ bool AliAnalysisTaskChargeV1::LoadCalibHistForThisRun()
       return false;
   }
   // ZDC
-  fHZDCCparameters->Reset();
-  fHZDCAparameters->Reset();
   fHZDCCparameters = (TH1D *)(fListZDCCalib->FindObject(Form("Run %d", runNum))->FindObject(Form("fZDCCparameters[%d]", runNum)));
   fHZDCAparameters = (TH1D *)(fListZDCCalib->FindObject(Form("Run %d", runNum))->FindObject(Form("fZDCAparameters[%d]", runNum)));
 
