@@ -983,7 +983,7 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                                 wtnojet_res_e3c->Fill(3*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[l].pt(),wt_diff_e3c_nojet_jss,jet_pt);
                                 wtnojet_res_e3c_tru->Fill(3*fConstituents_tru[i].pt()*fConstituents_tru[l].pt()*fConstituents_tru[l].pt(),wt_diff_e3c_nojet_jss,jet_pt_tru);
                                 
-                                for(int m=0; m!=j && m!=s; m++)
+                                for(int m=0; m<j && m<s; m++)
                                 {
                                     if(s>j) continue;
                                     int m_index = fConstituents[m].user_index();
@@ -1393,7 +1393,7 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                     E3C_det_pt_hist_3d->Fill(deltaR_jss, jet_pt, jet_pt_tru, eee_jss);
                 }
                 //For 3 point correlator
-                for( int m=0; m!=j && m!=s; m++)
+                for( int m=0; m<j && m<s; m++)
                 {
                     if(s>j) continue;
                     
@@ -1595,7 +1595,7 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                     E3C_tru_pt_hist_3d->Fill(deltaR_jss_tru, jet_pt_tru, jet_pt, eee_jss_tru);
                 }
                 //For 3 point correlator
-                for( int m=0; m!=j && m!=s; m++)
+                for( int m=0; m<j && m<s; m++)
                 {
                     if(s>j) continue;
                     
@@ -1821,7 +1821,7 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                         E3C_pt_hist->Fill(deltaR_jss,jet_pt,eee_jss);
                     }
                     //For 3 point correlator
-                    for( int m=0; m!=j && m!=s; m++)
+                    for( int m=0; m<j && m<s; m++)
                     {
                         if(s>j) continue;
                         
