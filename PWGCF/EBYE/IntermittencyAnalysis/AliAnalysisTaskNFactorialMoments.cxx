@@ -199,7 +199,7 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
       fPtBinGen[i] = new TH1F(Form("fPtBinGen_%.2f-%.2f", ptarray[2 * i], ptarray[2 * i + 1]), Form("Pt distribution of Gen tracks for PtBin%d;#p_{T};Counts", i + 1), 1000, 0.0, 5.0);
       fEtaBinGen[i] = new TH1F(Form("fEtaBinGen_%.2f-%.2f", ptarray[2 * i], ptarray[2 * i + 1]), Form("Eta distribution of Gen tracks for PtBin%d;#eta;Counts", i + 1), 1000, -1.0, 1.0);
       fPhiBinGen[i] = new TH1F(Form("fPhiBinGen_%.2f-%.2f", ptarray[2 * i], ptarray[2 * i + 1]), Form("Phi distribution of Gen tracks for PtBin%d;#phi;Counts", i + 1), 1000, 0.0, 6.5);
-      fMultBinGen[i] = new TH1F(Form("fMultBinGen_%.2f-%.2f", ptarray[2 * i], ptarray[2 * i + 1]), Form("Multiplicity distribution of Gen tracks for PtBin%d;Multiplicity;Counts", i + 1), 1000, 0.0, 1000.0);
+      fMultBinGen[i] = new TH1F(Form("fMultBinGen_%.2f-%.2f", ptarray[2 * i], ptarray[2 * i + 1]), Form("Multiplicity distribution of Gen tracks for PtBin%d;Multiplicity;Counts", i + 1), 10000, 0.0, 10000.0);
       fHistList->Add(fPtBinGen[i]);
       fHistList->Add(fEtaBinGen[i]);
       fHistList->Add(fPhiBinGen[i]);
@@ -207,14 +207,14 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
     }
     for (Int_t j = 0; j < mMBins; ++j) {
       // Eta-Phi distributions
-      fEtaPhiBin[i][j] = new TH2D(Form("fEtaPhiBin%s_%.2f-%.2f_%d", name.Data(), ptarray[2 * i], ptarray[2 * i + 1], j + 1), Form("Eta-Phi distribution of tracks for PtBin%d and MBin%d;#eta;#phi", i + 1, j + 1), mMBin2[j], minEta, maxEta, mMBin2[j], 0.0, 6.30);
+      fEtaPhiBin[i][j] = new TH2D(Form("fEtaPhiBin%s_%.2f-%.2f_%d", name.Data(), ptarray[2 * i], ptarray[2 * i + 1], j + 1), Form("Eta-Phi distribution of tracks for PtBin%d and MBin%d;#eta;#phi", i + 1, j + 1), mMBin2[j], minEta, maxEta, mMBin2[j], 0.0, TMath::TwoPi());
       if (flagSelfAff) {
-        fEtaPhiBin[i][j] = new TH2D(Form("fEtaPhiBin%s_%.2f-%.2f_%d", name.Data(), ptarray[2 * i], ptarray[2 * i + 1], j + 1), Form("Eta-Phi distribution of tracks for PtBin%d and MBin%d;#eta;#phi", i + 1, j + 1), mMBin2[j], minEta, maxEta, mNBin2[j], 0.0, 6.30);
+        fEtaPhiBin[i][j] = new TH2D(Form("fEtaPhiBin%s_%.2f-%.2f_%d", name.Data(), ptarray[2 * i], ptarray[2 * i + 1], j + 1), Form("Eta-Phi distribution of tracks for PtBin%d and MBin%d;#eta;#phi", i + 1, j + 1), mMBin2[j], minEta, maxEta, mNBin2[j], 0.0, TMath::TwoPi());
       }
       if (flagMC) {
-        fEtaPhiBinGen[i][j] = new TH2D(Form("fEtaPhiBinGen_%.2f-%.2f_%d", ptarray[2 * i], ptarray[2 * i + 1], j + 1), Form("Eta-Phi distribution of Gen tracks for PtBin%d and MBin%d;#eta;#phi", i + 1, j + 1), mMBin2[j], minEta, maxEta, mMBin2[j], 0.0, 6.30);
+        fEtaPhiBinGen[i][j] = new TH2D(Form("fEtaPhiBinGen_%.2f-%.2f_%d", ptarray[2 * i], ptarray[2 * i + 1], j + 1), Form("Eta-Phi distribution of Gen tracks for PtBin%d and MBin%d;#eta;#phi", i + 1, j + 1), mMBin2[j], minEta, maxEta, mMBin2[j], 0.0, TMath::TwoPi());
         if (flagSelfAff) {
-          fEtaPhiBinGen[i][j] = new TH2D(Form("fEtaPhiBinGen_%.2f-%.2f_%d", ptarray[2 * i], ptarray[2 * i + 1], j + 1), Form("Eta-Phi distribution of Gen tracks for PtBin%d and MBin%d;#eta;#phi", i + 1, j + 1), mMBin2[j], minEta, maxEta, mNBin2[j], 0.0, 6.30);
+          fEtaPhiBinGen[i][j] = new TH2D(Form("fEtaPhiBinGen_%.2f-%.2f_%d", ptarray[2 * i], ptarray[2 * i + 1], j + 1), Form("Eta-Phi distribution of Gen tracks for PtBin%d and MBin%d;#eta;#phi", i + 1, j + 1), mMBin2[j], minEta, maxEta, mNBin2[j], 0.0, TMath::TwoPi());
         }
         fHistList->Add(fEtaPhiBinGen[i][j]);
       }
