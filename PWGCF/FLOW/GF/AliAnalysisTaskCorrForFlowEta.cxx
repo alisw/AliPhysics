@@ -666,9 +666,9 @@ void AliAnalysisTaskCorrForFlowEta::CreateTHnCorrelations(){
     
     
   Double_t Incriment = (MaxdEta-MindEta)/fNBinsdEta;
-  Double_t binning_deta[fNBinsdEta];
+  Double_t binning_deta[fNBinsdEta+1];
 
-  for (Int_t i(0); i<fNBinsdEta; i++){
+  for (Int_t i(0); i<fNBinsdEta+1; i++){
     binning_deta[i] = MindEta+Incriment*i;
   }
 
