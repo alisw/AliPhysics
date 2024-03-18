@@ -102,6 +102,7 @@ public:
 	Bool_t IsThisAWeakDecayingParticle(AliMCParticle *thisGuy);
 	void SetZVertexCut( double zvtxCut ){ fzvtxCut = zvtxCut;
 		cout << "setting z vertex cut = " << fzvtxCut << endl;}
+	void SetTrackRejectionFactor( double trackRejectionFactor ){fTrackRejectionFactor = trackRejectionFactor;}
   void SetRemoveBadArea( Bool_t shallweremove ){ fremovebadarea = shallweremove;
 		cout << "setting RemoveBadArea = " << fremovebadarea << endl;}
   void SetRemoveBadArea18q( Bool_t shallweremove ){ fremovebadarea18q = shallweremove;
@@ -206,6 +207,7 @@ private:
 	double fPt_min; //
 	double fPt_max; //
 	double fzvtxCut; //
+	double fTrackRejectionFactor; //
 	Bool_t fremovebadarea; //
 	Bool_t fremovebadarea18q; //
 	Bool_t bCheckCrossedRows; // 

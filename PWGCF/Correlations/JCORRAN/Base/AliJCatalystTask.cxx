@@ -77,6 +77,7 @@ AliJCatalystTask::AliJCatalystTask():
   fPt_min(0.2),
   fPt_max(5.0),
   fzvtxCut(10.0),
+  fTrackRejectionFactor(0.0),
   fremovebadarea(kFALSE),
   fremovebadarea18q(kFALSE),
   flags(0),
@@ -147,6 +148,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
   fPt_min(0.2),
   fPt_max(5.0),
   fzvtxCut(10.0),
+  fTrackRejectionFactor(0.0),
   fremovebadarea(kFALSE),
   fremovebadarea18q(kFALSE),
   flags(0),
@@ -548,6 +550,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
         else continue;
         
         if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue; // Need to check this here also
+        if(fTrackRejectionFactor > 1e-6 && gRandom->Uniform(0,1) < fTrackRejectionFactor) continue;
         AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
         itrack->SetLabel(track->GetLabel());
         itrack->SetParticleType( pdg);
@@ -1014,6 +1017,7 @@ void AliJCatalystTask::ReadKineTracks( AliMCEvent *mcEvent, TClonesArray *TrackL
           continue;
       }else continue;
       if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue;
+      if(fTrackRejectionFactor > 1e-6 && gRandom->Uniform(0,1) < fTrackRejectionFactor) continue;
       AliJBaseTrack *itrack = new ((*TrackList)[ntrack++])AliJBaseTrack;
       Int_t label = track->GetLabel();
       itrack->SetLabel( label );
