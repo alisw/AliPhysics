@@ -35,9 +35,9 @@
 #include "AliEventPoolManager.h"
 #include "AliVEvent.h"
 #include "AliTHn.h"
-#include "AliPID.h"
-#include "AliPIDResponse.h"
-#include "AliPIDCombined.h"
+//#include "AliPID.h"
+//#include "AliPIDResponse.h"
+//#include "AliPIDCombined.h"
 #include "AliAODEvent.h"
 #include "AliMCEvent.h"
 #include "AliAODv0.h"
@@ -109,6 +109,9 @@ class AliAnalysisTaskCorrForFlowEta : public AliAnalysisTaskSE
         void                    SetNBinsdEta(Int_t NBins) { fNBinsdEta = NBins; }
         //Added TPCefficiency
         void                    SetUseTPCEfficiency(Bool_t flag) {fUseEfficiency = flag;}
+        //TPC Event bias
+        void                    SetUseEventBias(Bool_t eventbias) {fUseEventBias = eventbias;}
+        void                    SetNumEventBias(Int_t num) {fNumEventBias = num;}
 
     private:
 
@@ -216,6 +219,8 @@ class AliAnalysisTaskCorrForFlowEta : public AliAnalysisTaskSE
         TString                 fCentEstimator; //"V0M"
         TString                 fSystematicsFlag; // ""
         AliEventCuts            fEventCuts;
+        Bool_t                  fUseEventBias; // [kFALSE]
+        Int_t                   fNumEventBias; // [1]
 
         // mixing
         Int_t                   fPoolMaxNEvents;   // maximum number of events in the pool
