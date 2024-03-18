@@ -175,7 +175,10 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       pPtvsTracklets14(0),
       pPtvsTracklets10(0),
       pPtvsTrackletsEtaGap(0),
-      pPtvsTracksEtaGapTPC(0) {
+      pPtvsTracksEtaGapTPC(0),
+      hNchMultEtaNeg(0),
+      hNchMultTPCEtaGap(0),
+      hNchMultITSEtaGap(0) {
   for (int i = 0; i < v0m_Nbins; ++i) {
     hDCAxyData[i] = 0;
   }
@@ -260,7 +263,10 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       pPtvsTracklets14(0),
       pPtvsTracklets10(0),
       pPtvsTrackletsEtaGap(0),
-      pPtvsTracksEtaGapTPC(0) {
+      pPtvsTracksEtaGapTPC(0),
+      hNchMultEtaNeg(0),
+      hNchMultTPCEtaGap(0),
+      hNchMultITSEtaGap(0) {
   for (int i = 0; i < v0m_Nbins; ++i) {
     hDCAxyData[i] = 0;
   }
@@ -467,6 +473,11 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   hNchEtaNeg = new TH1F("hNchEtaNeg", ";#it{N}_{ch} (-0.8#leq#eta<0); Counts;",
                         nchHalfTPC_Nbins, nchHalfTPC_bins);
 
+  hNchMultEtaNeg = new TH2F(
+      "hNchMultEtaNeg",
+      ";#it{N}_{ch} (-0.8#leq#eta<0);;#it{N}_{ch} (0#leq#eta#leq0.8)",
+      nchHalfTPC_Nbins, nchHalfTPC_bins, nchHalfTPC_Nbins, nchHalfTPC_bins);
+
   hPtEtaNegvsNchEtaPos =
       new TH2D("hPtEtaNegvsNchEtaPos",
                "; #it{N}_{ch} (0#leq#eta#leq0.8); "
@@ -521,6 +532,18 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   hTracksEtaGapTPC = new TH1F("hTracksEtaGapTPC",
                               "; #it{N}_{ch} (0.5#leq|#eta|#leq0.8); Entries",
                               nchEtaGapTPC_Nbins, nchEtaGapTPC_bins);
+
+  hNchMultTPCEtaGap = new TH2F(
+      "hNchMultTPCEtaGap",
+      "; #it{N}_{ch} (|#eta|#leq0.3); #it{N}_{ch} (0.5#leq|#eta|#leq0.8);",
+      nchEtaGapTPC_Nbins, nchEtaGapTPC_bins, nchEtaGapTPC_Nbins,
+      nchEtaGapTPC_bins);
+
+  hNchMultITSEtaGap = new TH2F(
+      "hNchMultITSEtaGap",
+      "; #it{N}_{ch} (|#eta|#leq0.4); #it{N}_{tracklet} (0.7#leq|#eta|#leq1.4)",
+      trackletsEtaGap_Nbins, trackletsEtaGap_bins, trackletsEtaGap_Nbins,
+      trackletsEtaGap_bins);
 
   hPtvsTracklets14 =
       new TH2D("hPtvsTracklets14",
@@ -583,6 +606,7 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   fOutputList->Add(pPtvsNch);
 
   fOutputList->Add(hNchEtaPos);
+  fOutputList->Add(hNchMultEtaNeg);
   fOutputList->Add(hPtEtaNegvsNchEtaPos);
   fOutputList->Add(pPtEtaNegvsNchEtaPos);
 
@@ -599,10 +623,12 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   fOutputList->Add(pPtvsTracklets10);
 
   fOutputList->Add(hTrackletsEtaGap);
+  fOutputList->Add(hNchMultITSEtaGap);
   fOutputList->Add(hPtvsTrackletsEtaGap);
   fOutputList->Add(pPtvsTrackletsEtaGap);
 
   fOutputList->Add(hTracksEtaGapTPC);
+  fOutputList->Add(hNchMultTPCEtaGap);
   fOutputList->Add(hPtvsTracksEtaGapTPC);
   fOutputList->Add(pPtvsTracksEtaGapTPC);
 
@@ -807,6 +833,10 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
   int rec_nch{0};
   int rec_nch_neg_eta{0};
   int rec_nch_pos_eta{0};
+
+  int nch_eta_neg{0};
+  int nch_tpc_etagap{0};
+  int nch_its_etagap{0};
   fTracksEtaGapTPC = 0;
   const int n_tracks{fESD->GetNumberOfTracks()};
 
@@ -866,6 +896,7 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
     if (track->Eta() >= fEtaCutHalfTPCMin && track->Eta() < 0.0) {
       hPtEtaNegvsNchEtaPos->Fill(rec_nch_pos_eta, pt);
       pPtEtaNegvsNchEtaPos->Fill(rec_nch_pos_eta, pt);
+      nch_eta_neg++;
     }
     //! pT Spectra with POSITIVE eta
     if (track->Eta() >= 0.0 && track->Eta() <= fEtaCutHalfTPCMax) {
@@ -893,12 +924,14 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
     if (TMath::Abs(track->Eta()) <= fEtaCutForpTwSPDGap) {
       hPtvsTrackletsEtaGap->Fill(fTrackletsEtaGap, pt);
       pPtvsTrackletsEtaGap->Fill(fTrackletsEtaGap, pt);
+      nch_its_etagap++;
     }
 
     //! Nch 0.5<=|eta|<=0.8 and Spectra |eta|<=0.3
     if (TMath::Abs(track->Eta()) <= fEtaCutForpTwTPCGap) {
       hPtvsTracksEtaGapTPC->Fill(fTracksEtaGapTPC, pt);
       pPtvsTracksEtaGapTPC->Fill(fTracksEtaGapTPC, pt);
+      nch_tpc_etagap++;
     }
   }
 
@@ -914,6 +947,10 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
   hTracklets14->Fill(fTracklets14);
   hTrackletsEtaGap->Fill(fTrackletsEtaGap);
   hTracksEtaGapTPC->Fill(fTracksEtaGapTPC);
+
+  hNchMultEtaNeg->Fill(nch_eta_neg, rec_nch_pos_eta);
+  hNchMultTPCEtaGap->Fill(nch_tpc_etagap, fTracksEtaGapTPC);
+  hNchMultITSEtaGap->Fill(nch_its_etagap, fTrackletsEtaGap);
 }
 
 //____________________________________________________________
