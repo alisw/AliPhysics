@@ -25,9 +25,9 @@
 #include "AliEventPoolManager.h"
 #include "AliVEvent.h"
 #include "AliTHn.h"
-#include "AliPID.h"
-#include "AliPIDResponse.h"
-#include "AliPIDCombined.h"
+//#include "AliPID.h"
+//#include "AliPIDResponse.h"
+//#include "AliPIDCombined.h"
 #include "AliAODEvent.h"
 #include "AliMCEvent.h"
 #include "AliAODv0.h"
@@ -123,7 +123,7 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         Bool_t                  PrepareTPCTracks();
         Bool_t                  PrepareMCTracks();
 
-        Int_t                   IdentifyTrack(const AliAODTrack* track) const; // PID
+        //Int_t                   IdentifyTrack(const AliAODTrack* track) const; // PID
         Bool_t                  AreEfficienciesLoaded();
         Double_t                GetEff(const Double_t dPt, const Int_t spec = 0, const Double_t dEta = 0.0);
         Int_t                   GetEtaRegion(const Double_t dEta);

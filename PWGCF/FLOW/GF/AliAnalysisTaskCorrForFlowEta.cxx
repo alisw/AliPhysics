@@ -1,3 +1,4 @@
+
 /**************************************************************************
  *    Author:       Mikkel Petersen                                       *
  *    Framework for calculating di-hadron correlation                     *
@@ -82,7 +83,8 @@ AliAnalysisTaskCorrForFlowEta::AliAnalysisTaskCorrForFlowEta() : AliAnalysisTask
     fNBinsTPCeta(0),
     fNBinsFMDeta(0),
     fNBinsdEta(25),
-    fMergingCut(0.0)
+    fMergingCut(0.0),
+    fUseEventBias(kFALSE)
 {}
 //_____________________________________________________________________________
 AliAnalysisTaskCorrForFlowEta::AliAnalysisTaskCorrForFlowEta(const char* name, Bool_t bUseEff, Bool_t bUseCalib) : AliAnalysisTaskSE(name),
@@ -151,7 +153,8 @@ AliAnalysisTaskCorrForFlowEta::AliAnalysisTaskCorrForFlowEta(const char* name, B
     fNBinsTPCeta(0),
     fNBinsFMDeta(0),
     fNBinsdEta(25),
-    fMergingCut(0.0)
+    fMergingCut(0.0),
+    fUseEventBias(kFALSE)
 {
     DefineInput(0, TChain::Class());
     if(bUseEff) { DefineInput(1, TList::Class()); }
@@ -723,6 +726,31 @@ Bool_t AliAnalysisTaskCorrForFlowEta::PrepareTPCTracks(){
 
   TObjArray* fTracksJets = nullptr;
   if(fVetoJetEvents) fTracksJets = new TObjArray;
+    
+    //Start Prep eventbias:
+    //Initiate array for TPC event bias cut.
+    Int_t N_TPC_entries[fBinsTPCeta.size() -1];
+    for(Int_t j(0); j<fBinsTPCeta.size()-1; j++){
+        N_TPC_entries[j]=0;
+    }
+    for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {
+        AliAODTrack* tmptrack = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
+        //Get track eta
+        Double_t tmptrackEta = tmptrack->Eta();
+        
+        //Check if is TPC track
+        if(fBinsTPCeta.at(0)<tmptrackEta & fBinsTPCeta.at(fBinsTPCeta.size()-1)>tmptrackEta){
+            for(Int_t j(0); j<fBinsTPCeta.size()-1; j++){
+                //Find corresponding eta bin.
+                if(fBinsTPCeta.at(j+1)>tmptrackEta){
+                    N_TPC_entries[j]+=1;
+                    break;
+                    
+                }
+            }
+        }
+    }
+    //End prep eventbias:
 
   for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {
       AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
@@ -741,6 +769,31 @@ Bool_t AliAnalysisTaskCorrForFlowEta::PrepareTPCTracks(){
           if(fAnalType == eTPCFMDA && trackEta > 0.0) continue;
           if(fAnalType == eTPCFMDC && trackEta < 0.0) continue;
         }
+          
+          //Start Event bias cut:
+          if(fUseEventBias &&  fBinsTPCeta.at(0)<trackEta && fBinsTPCeta.at(fBinsTPCeta.size()-1)>trackEta){
+              //Int for holding bin index
+              Int_t TPCbinInd=0;
+              for(Int_t j(0); j<fBinsTPCeta.size()-1; j++){
+                  //Find corresponding eta bin.
+                  if(fBinsTPCeta.at(j+1)>trackEta){
+                      TPCbinInd+=j;
+                      break;
+                  }
+              }
+              if(TPCbinInd>(fBinsTPCeta.size()-1)/2-1){
+                  cout<<TPCbinInd<<"\n";
+                  TPCbinInd=(fBinsTPCeta.size()-2)-TPCbinInd;
+                  cout<<TPCbinInd<<"\n";
+                  
+              }
+              //Check number of tracks in current bin and partner bin.
+              //Track is not added if there are too few tracks in either bin.
+              if(N_TPC_entries[TPCbinInd]<fNumEventBias || N_TPC_entries[(fBinsTPCeta.size()-2)-TPCbinInd] <fNumEventBias ){
+                  continue;
+              }
+          }
+          //End Event bias cut.
 
         binscont[2] = trackPt;
         fhPT->Fill(trackPt);
