@@ -4,7 +4,6 @@
 AliAnalysisTaskSE* AddTaskPionDeuteronAOD(bool isMC = false,//1
    TString trigger = "kINT7", //2
     bool fullBlastQA = true,//3
-    bool SystematicLowpT = false,//4
     const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -65,22 +64,22 @@ AliAnalysisTaskSE* AddTaskPionDeuteronAOD(bool isMC = false,//1
   }
 
   //---------- posPions--------------------
-    AliFemtoDreamTrackCuts *posPions = new AliFemtoDreamTrackCuts();
-   posPions->SetCutCharge(1);
-   posPions->SetIsMonteCarlo(isMC);
-   posPions->SetPtRange(0.14, 4.0);
-   posPions->SetEtaRange(-0.8, 0.8);
-   posPions->SetNClsTPC(80);
-   posPions->SetDCAReCalculation(true);
-   posPions->SetFilterBit(128);//96);
-   posPions->SetDCAVtxZ(0.3);
-   posPions->SetDCAVtxXY(0.3);
-   posPions->SetNClsTPC(80);
-   posPions->SetPID(AliPID::kPion, 0.5);
-   posPions->SetRejLowPtPionsTOF(false);
-   posPions->SetMinimalBooking(false);
-   posPions->SetPlotDCADist(true);
-   posPions->SetCheckPileUpSPDTOF(true);
+  AliFemtoDreamTrackCuts *posPions = new AliFemtoDreamTrackCuts();
+  posPions->SetCutCharge(1);
+  posPions->SetIsMonteCarlo(isMC);
+  posPions->SetPtRange(0.14, 4.0);
+  posPions->SetEtaRange(-0.8, 0.8);
+  posPions->SetNClsTPC(80);
+  posPions->SetDCAReCalculation(true);
+  posPions->SetFilterBit(128);//96);
+  posPions->SetDCAVtxZ(0.3);
+  posPions->SetDCAVtxXY(0.3);
+  posPions->SetNClsTPC(80);
+  posPions->SetPID(AliPID::kPion, 0.5);
+  posPions->SetRejLowPtPionsTOF(false);
+  posPions->SetMinimalBooking(false);
+  posPions->SetPlotDCADist(true);
+  posPions->SetCheckPileUpSPDTOF(true);
 
   //---------- NegPions--------------------
     AliFemtoDreamTrackCuts *NegPions = new AliFemtoDreamTrackCuts();
@@ -370,7 +369,7 @@ AliAnalysisTaskSE* AddTaskPionDeuteronAOD(bool isMC = false,//1
 
   if (isMC) {
     AliAnalysisDataContainer *coutputTrkCutsMC;
-    TString TrkCutsMCName = Form("%sPosPions%s", addon.Data(), suffix.Data());
+    TString TrkCutsMCName = Form("%sPosPionsMC%s", addon.Data(), suffix.Data());
     coutputTrkCutsMC = mgr->CreateContainer(
                          TrkCutsMCName.Data(),
                          TList::Class(),
@@ -379,7 +378,7 @@ AliAnalysisTaskSE* AddTaskPionDeuteronAOD(bool isMC = false,//1
     mgr->ConnectOutput(task, 10, coutputTrkCutsMC);
 
     AliAnalysisDataContainer *coutputAntiTrkCutsMC;
-    TString AntiTrkCutsMCName = Form("%sNegPions%s", addon.Data(),
+    TString AntiTrkCutsMCName = Form("%sNegPionsMC%s", addon.Data(),
                                      suffix.Data());
     coutputAntiTrkCutsMC = mgr->CreateContainer(
                              //@suppress("Invalid arguments") it works ffs
