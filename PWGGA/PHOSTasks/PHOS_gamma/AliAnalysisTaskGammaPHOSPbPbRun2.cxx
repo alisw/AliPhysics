@@ -591,6 +591,9 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
     averageRP/=2.;
   Int_t irp=Int_t(10.*averageRP*fHarmonics/TMath::TwoPi());
   if(irp>9)irp=9 ;
+
+  irp = 0; //don't need it now
+
   
   if(!fPHOSEvents[zvtx][fCenBin][irp]) 
     fPHOSEvents[zvtx][fCenBin][irp]=new TList() ;
@@ -986,7 +989,7 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
       Bool_t cpvBitPi0First  = ph1->IsCPVOK();
       Bool_t dispBitPi0First  = ph1->IsDisp2OK();
 
-      std::vector<TString> passed_cuts_Pi0First = {};
+      std::vector<TString> passed_cuts_Pi0First = {"All", "Allcore"};
       if (cpvBitPi01)  {
          passed_cuts_Pi0First.emplace_back("CPV");
 	 passed_cuts_Pi0First.emplace_back("CPVcore");
@@ -1127,7 +1130,8 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
     prevPHOS->AddFirst(fPHOSEvent) ;
     fPHOSEvent=0;
     //if(prevPHOS->GetSize()>kMixEvents[fCenBin]){//Remove redundant events
-    if(prevPHOS->GetSize()>100){//Remove redundant events
+    Int_t nMixEvents = fCentrality < 40 ? 10 : 30;
+    if(prevPHOS->GetSize()>nMixEvents){//Remove redundant events
       TClonesArray * tmp = static_cast<TClonesArray*>(prevPHOS->Last()) ;
       prevPHOS->RemoveLast() ;
       delete tmp ;
