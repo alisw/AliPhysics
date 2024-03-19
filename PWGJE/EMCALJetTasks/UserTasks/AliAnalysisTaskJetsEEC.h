@@ -88,6 +88,7 @@ protected:
     Float_t GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb); //MIGHT NOT NEED
     
     int GetConstituentID(int constituentIndex, const AliVParticle* part, AliEmcalJet * jet);
+    double delR(const fastjet::PseudoJet& ps1, const fastjet::PseudoJet& ps2);
     int GetCharge(int detCharge, const AliVParticle* part);
     int GetPartCharge(int partCharge, const AliVParticle* part_gen);
     
@@ -255,14 +256,39 @@ protected:
     TH3D *R_match_e3c_tru; //!<! pair distance of all det level tracks in det jet matched with truth level tracks in truth jet e3c as a function of jet pT tru
     TH3D *wt_match_e3c_tru; //!<! pair wts of all det level tracks in det jet matched with truth level tracks in truth jet e3c as a function of jet pT tru
 
-    TH3D *wt_res_eec_tru; //!<! initializing 2D histogram for wt resolution EEC as a function of jet pT tru
-    TH3D *wt_res_e3c_tru; //!<! initializing 2D histogram for wt resolution E3C as a function of jet pT tru
-    TH3D *R_res_eec_tru; //!<! initializing 2D histogram for R resolution EEC as a function of jet pT tru
-    TH3D *R_res_e3c_tru; //!<! initializing 2D histogram for R resolution E3C as a function of jet pT tru
-    TH3D *wtnojet_match_eec_tru;//!<! initializing 2D histogram for EEC wt without jet pt as a function of jet pT tru
-    TH3D *wtnojet_match_e3c_tru;//!<! initializing 2D histogram for E3C wt without jet pt as a function of jet pT tru
-    TH3D *wtnojet_res_eec_tru; //!<! initializing 2D histogram for wt resolution with jet pt excluded EEC as a function of jet pT tru
-    TH3D *wtnojet_res_e3c_tru; //!<! initializing 2D histogram for wt resolution with jet pt excluded E3C as a function of jet pT tru
+    TH3D *wt_res_eec_tru; //!<! initializing 3D histogram for wt resolution EEC as a function of jet pT tru
+    TH3D *wt_res_e3c_tru; //!<! initializing 3D histogram for wt resolution E3C as a function of jet pT tru
+    TH3D *R_res_eec_tru; //!<! initializing 3D histogram for R resolution EEC as a function of jet pT tru
+    TH3D *R_res_e3c_tru; //!<! initializing 3D histogram for R resolution E3C as a function of jet pT tru
+    TH3D *wtnojet_match_eec_tru;//!<! initializing 3D histogram for EEC wt without jet pt as a function of jet pT tru
+    TH3D *wtnojet_match_e3c_tru;//!<! initializing 3D histogram for E3C wt without jet pt as a function of jet pT tru
+    TH3D *wtnojet_res_eec_tru; //!<! initializing 3D histogram for wt resolution with jet pt excluded EEC as a function of jet pT tru
+    TH3D *wtnojet_res_e3c_tru; //!<! initializing 3D histogram for wt resolution with jet pt excluded E3C as a function of jet pT tru
+
+    TH1D *constituentId; //!<! initializing 1D histogram for debugging
+    TH3D *R_res_eec_tru_debug; //!<! initializing 3D histogram for R resolution EEC as a function of jet pT tru debug
+    TH2D *track_pt_res_debug; //!<! initializing 3D histogram for R resolution EEC as a function
+    TH3D *track_eta_debug; //!<! initializing 3D histogram for R resolution EEC as a function
+    TH3D *track_rap_debug; //!<! initializing 3D histogram for R resolution EEC as a function
+    TH2D *track_phi_debug; //!<! initializing 3D histogram for R resolution EEC as a function
+    TH2D *track_R_debug; //!<! initializing 3D histogram for R resolution EEC as a function
+    TH2D *track_R_debug_rap; //!<! initializing 3D histogram for R resolution EEC as a function
+    
+    TH3D *track_eta_res_debug; //!<! initializing 3D histogram for R resolution of single matched track as a function of jet pT tru debug
+    TH3D *track_rap_res_debug; //!<! initializing 3D histogram for R resolution of single matched track as a function of jet pT tru debug
+    TH3D *track_phi_res_debug; //!<! initializing 3D histogram for R resolution of single matched track as a function of jet pT tru debug
+    TH3D *track_R_res_debug; //!<! initializing 3D histogram for R resolution of single matched track as a function of jet pT tru debug
+    TH3D *track_R_rap_res_debug; //!<! initializing 3D histogram for R resolution of single matched track as a function of jet pT tru debug
+
+    TH3D *R_match_eec_tru_rap;
+
+    TH2D *track_pt_response_debug;
+    TH2D *track_pt_wt_res_debug;
+    TH2D *track_pt_wt_response_debug;
+    
+    TH3D* jetpt_res_w_R;
+    TH3D* jetpt_res_w_wt;
+    
 
 private:
     AliAnalysisTaskJetsEEC(
@@ -270,7 +296,7 @@ private:
     AliAnalysisTaskJetsEEC &
     operator=(const AliAnalysisTaskJetsEEC &); // not implemented
     
-    ClassDef(AliAnalysisTaskJetsEEC, 56) //change this to 56 if you add something new
+    ClassDef(AliAnalysisTaskJetsEEC, 66) //change this to 67 if you add something new
 };
 #endif
 
