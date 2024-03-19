@@ -80,6 +80,12 @@ private:
   TProfile **fTPCrecenterQy;
   TProfile2D **fTPCrecenterQxVz;
   TProfile2D **fTPCrecenterQyVz;
+  /// TFile *fTPCRecenterFile;
+  TList *fTPCRecenterList;
+  TProfile **fTPCAverageQx;
+  TProfile **fTPCAverageQy;
+  TProfile2D **fTPCAverageQxVz;
+  TProfile2D **fTPCAverageQyVz;
 
   int runNum;
   int oldRunNum;
@@ -216,6 +222,8 @@ private:
 
   // TPC recenter
   TH1F *fBeforeRecenterPsi2;
+  TH1F *fAfterRecenterPsi2;
+  TH1F *fAfterRecenterPsi2Vz;
 
   AliAnalysisTaskChargeV1(const AliAnalysisTaskChargeV1 &);            // not implemented
   AliAnalysisTaskChargeV1 &operator=(const AliAnalysisTaskChargeV1 &); // not implemented

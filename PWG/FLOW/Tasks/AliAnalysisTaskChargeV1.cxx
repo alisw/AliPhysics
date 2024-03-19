@@ -58,6 +58,7 @@
 #include "AliAODVertex.h"
 #include "AliAODVZERO.h"
 #include "AliAODZDC.h"
+#include "TGrid.h"
 
 #include "AliAODv0.h"
 #include "AliAODTrack.h"
@@ -135,7 +136,13 @@ ClassImp(AliAnalysisTaskChargeV1) // classimp: necessary for root
                                                          fTPCrecenterQx(nullptr),
                                                          fTPCrecenterQy(nullptr),
                                                          fTPCrecenterQxVz(nullptr),
-                                                         fTPCrecenterQyVz(nullptr)
+                                                         fTPCrecenterQyVz(nullptr),
+                                                         fTPCRecenterList(nullptr),
+                                                         fTPCAverageQx(nullptr),
+                                                         fTPCAverageQy(nullptr),
+                                                         fTPCAverageQxVz(nullptr),
+                                                         fTPCAverageQyVz(nullptr)
+
 {
   runNum = -999;
   oldRunNum = -999;
@@ -272,6 +279,8 @@ ClassImp(AliAnalysisTaskChargeV1) // classimp: necessary for root
   Qpy = -999;
 
   fBeforeRecenterPsi2 = nullptr;
+  fAfterRecenterPsi2 = nullptr;
+  fAfterRecenterPsi2Vz = nullptr;
 }
 //_____________________________________________________________________________
 AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1(const char *name) : AliAnalysisTaskSE(name),
@@ -316,7 +325,12 @@ AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1(const char *name) : AliAnalysis
                                                                      fTPCrecenterQx(nullptr),
                                                                      fTPCrecenterQy(nullptr),
                                                                      fTPCrecenterQxVz(nullptr),
-                                                                     fTPCrecenterQyVz(nullptr)
+                                                                     fTPCrecenterQyVz(nullptr),
+                                                                     fTPCRecenterList(nullptr),
+                                                                     fTPCAverageQx(nullptr),
+                                                                     fTPCAverageQy(nullptr),
+                                                                     fTPCAverageQxVz(nullptr),
+                                                                     fTPCAverageQyVz(nullptr)
 
 {
   runNum = -999;
@@ -454,6 +468,8 @@ AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1(const char *name) : AliAnalysis
   Qpy = -999;
 
   fBeforeRecenterPsi2 = nullptr;
+  fAfterRecenterPsi2 = nullptr;
+  fAfterRecenterPsi2Vz = nullptr;
 
   // constructor
   DefineInput(0, TChain::Class()); // define the input of the analysis: in this case we take a 'chain' of events
@@ -845,6 +861,12 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects()
   fTPCrecenterQy = new TProfile *[214];
   fTPCrecenterQxVz = new TProfile2D *[214];
   fTPCrecenterQyVz = new TProfile2D *[214];
+
+  fTPCAverageQx = new TProfile *[214];
+  fTPCAverageQy = new TProfile *[214];
+  fTPCAverageQxVz = new TProfile2D *[214];
+  fTPCAverageQyVz = new TProfile2D *[214];
+
   for (int i = 0; i < 214; ++i)
   {
     fTPCrecenterQx[i] = new TProfile(Form("fTPCrecenterQx_%i", i), "", 100, 0, 100);
@@ -857,7 +879,18 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects()
     fQAList->Add(fTPCrecenterQyVz[i]);
   }
   fBeforeRecenterPsi2 = new TH1F("fBeforeRecenterPsi2", "fBeforeRecenterPsi2", 100, 0, TMath::TwoPi());
+  fAfterRecenterPsi2 = new TH1F("fAfterRecenterPsi2", "fAfterRecenterPsi2", 100, 0, TMath::TwoPi());
+  fAfterRecenterPsi2Vz = new TH1F("fAfterRecenterPsi2Vz", "fAfterRecenterPsi2Vz", 100, 0, TMath::TwoPi());
   fQAList->Add(fBeforeRecenterPsi2);
+  fQAList->Add(fAfterRecenterPsi2);
+  fQAList->Add(fAfterRecenterPsi2Vz);
+  if (!gGrid)
+  {
+    TGrid::Connect("alien://");
+  }
+  TFile *fTPCRecenterFile = TFile::Open("alien:///alice/cern.ch/user/j/jwan/CalibFile/18TPCRecenter.root", "READ");
+  TDirectoryFile *fDirectory = (TDirectoryFile *)fTPCRecenterFile->Get("MyTask");
+  fTPCRecenterList = dynamic_cast<TList *>(fDirectory->Get("ListQA"));
 
   PostData(1, fOutputList); // postdata will notify the analysis manager of changes / updates to the
   PostData(2, fQAList);     // fOutputList object. the manager will in the end take care of writing your output to file
@@ -1172,9 +1205,26 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
   fTPCrecenterQy[runNumBin]->Fill(cent, Psi2Qy);
   fTPCrecenterQxVz[runNumBin]->Fill(vtx[2], cent, Psi2Qx);
   fTPCrecenterQyVz[runNumBin]->Fill(vtx[2], cent, Psi2Qy);
+  fTPCAverageQx[runNumBin] = (TProfile *)fTPCRecenterList->FindObject(Form("fTPCrecenterQx_%i", runNumBin));
+  fTPCAverageQy[runNumBin] = (TProfile *)fTPCRecenterList->FindObject(Form("fTPCrecenterQy_%i", runNumBin));
+  fTPCAverageQxVz[runNumBin] = (TProfile2D *)fTPCRecenterList->FindObject(Form("fTPCrecenterQxVz_%i", runNumBin));
+  fTPCAverageQyVz[runNumBin] = (TProfile2D *)fTPCRecenterList->FindObject(Form("fTPCrecenterQyVz_%i", runNumBin));
+  int icent = fTPCrecenterQx[runNumBin]->GetXaxis()->FindBin(cent);
+  int iVz = fTPCrecenterQxVz[runNumBin]->GetXaxis()->FindBin(vtx[2]);
+  double Qxbar = fTPCAverageQx[runNumBin]->GetBinContent(icent);
+  double Qybar = fTPCAverageQy[runNumBin]->GetBinContent(icent);
+  double QxbarVz = fTPCAverageQxVz[runNumBin]->GetBinContent(iVz, icent);
+  double QybarVz = fTPCAverageQyVz[runNumBin]->GetBinContent(iVz, icent);
+
   TVector2 Q2TPC;
   Q2TPC.Set(Psi2Qx, Psi2Qy);
   fBeforeRecenterPsi2->Fill(Q2TPC.Phi());
+  TVector2 Q2TPCAfterRE;
+  Q2TPCAfterRE.Set(Psi2Qx - Qxbar, Psi2Qy - Qybar);
+  fAfterRecenterPsi2->Fill(Q2TPCAfterRE.Phi());
+  TVector2 Q2TPCAfterREVz;
+  Q2TPCAfterREVz.Set(Psi2Qx - QxbarVz, Psi2Qy - QybarVz);
+  fAfterRecenterPsi2Vz->Fill(Q2TPCAfterREVz.Phi());
 
   // TPC Plane
   TVector2 Q1TPCPos;
