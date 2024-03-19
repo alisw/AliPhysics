@@ -271,7 +271,6 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   fptList->Add(fPtCont);
   if(fNBootstrapProfiles) fPtCont->InitializeSubsamples(fNBootstrapProfiles);
 
-  printf("1\n");
   const Int_t nFineCentBins=90;
   Double_t *fineCentBins = new Double_t[nFineCentBins+1];
   for(Int_t i=0;i<=nFineCentBins; i++) fineCentBins[i] = i;
@@ -283,7 +282,6 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",fNV0MBinsDefault,fV0MBinsDefault);
   fptList->Add(fMultiDist);
   fptList->Add(fV0MMulti);
-  printf("2\n");
   fMultiVsV0MCorr = new TH2D*[2];
   fMultiVsV0MCorr[0] = new TH2D("MultVsV0M_BeforeConsistency","MultVsV0M_BeforeConsistency",103,0,103,fNMultiBins,fMultiBins[0],fMultiBins[fNMultiBins]);
   fMultiVsV0MCorr[1] = new TH2D("MultVsV0M_AfterConsistency","MultVsV0M_AfterConsistency",103,0,103,fNMultiBins,fMultiBins[0],fMultiBins[fNMultiBins]);
@@ -292,26 +290,21 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   fptList->Add(fMultiVsV0MCorr[1]);
   fptList->Add(fESDvsFB128);
   //ITS vs TPC tracklets cut for PU
-  printf("3\n");
   fITSvsTPCMulti = new TH2D("TPCvsITSclusters",";TPC clusters; ITS clusters",1000,0,10000,5000,0,50000);
   fptList->Add(fITSvsTPCMulti);
   if(fIsMC) {
     fNchTrueVsReco = new TH2D("NchTrueVsReco",";Nch (MC-true); Nch (MC-reco)",fNMultiBins,fMultiBins,fNMultiBins,fMultiBins);
     fptList->Add(fNchTrueVsReco);
   }
-  printf("4\n");
   const Int_t nIPbins = 100;
   Double_t *ipBins = new Double_t[nIPbins];
   for(Int_t i=0;i<=nIPbins; i++) ipBins[i] = 0.2*i;
   fMeanMultiVsCent = new AliProfileBS("MeanMultiVsCent","Mean Multi vs centrality",(fUseIP)?nIPbins:nFineCentBins,(fUseIP)?ipBins:fineCentBins);
   fptList->Add(fMeanMultiVsCent);
-  printf("5\n");
   fMultVsCent = new TH2D("fMultVsCent",Form(";%s; %s","Centrality (%)",(fUseNch)?"#it{N}_{ch}":(fUseV0M)?"V0M Amplitude":"Centrality (%)"),nFineCentBins,fineCentBins,fNMultiBins,fMultiBins);
   fptList->Add(fMultVsCent);
-  printf("6\n");
   fNchVsV0M = new TH2D("fNchVsV0M","N_{ch} vs V0M amplitude; V0M amplitude; N_{ch}",1000,0,40000,2250,0,4500);
   fptList->Add(fNchVsV0M);
-  printf("7\n");
   printf("Multiplicity objects created\n");
   PostData(1,fptList);
 
@@ -468,7 +461,7 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   fMptVsCent->Fill(l_Cent,wp[1][1]/wp[1][0]);
 
   //Some multiplicity plots
-  fNchVsV0M->Fill(multVZERO,nTotNoTracks);
+  if(fUseV0M) fNchVsV0M->Fill(multVZERO,nTotNoTracks);
   fMultiVsV0MCorr[0]->Fill(l_Cent,nTotNoTracks);
   fMultiVsV0MCorr[1]->Fill(l_Cent,nTotNoTracks);
   fV0MMulti->Fill(l_Cent);
