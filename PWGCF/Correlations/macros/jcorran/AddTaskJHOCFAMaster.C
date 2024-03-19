@@ -363,7 +363,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     fJCatalyst[i]->SetPhiCorrectionIndex(i);
 
     //NEW: Added setter for the track rejection factor.
-    printf("Value of the rejection factor: %.2f\n", valueRejectionFactor)
+    printf("Value of the rejection factor: %.2f\n", valueRejectionFactor);
     fJCatalyst[i]->SetTrackRejectionFactor(valueRejectionFactor);
 
     fJCatalyst[i]->SetRemoveBadArea(removeBadArea);
