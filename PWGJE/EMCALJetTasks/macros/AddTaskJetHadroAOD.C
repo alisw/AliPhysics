@@ -1,5 +1,5 @@
 // R__ADD_INCLUDE_PATH($PWD)
-#include "AliAnalysisJetHadro.h"
+#include "AliAnalysisTaskJetHadroAOD.h"
 #include "AliAnalysisManager.h"
 #include "AliLog.h"
 #include "TSystem.h"
@@ -7,7 +7,7 @@
 #include "TRandom.h"
 #include "AliJetContainer.h"
 
-AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString configFileName = "Config_siweyhmi_JetHadro.C",Int_t settingType = 0,Int_t year = 2018, TString periodName="18q", Int_t passIndex = 3, const char* suffix = "", Int_t containerNameMode=0)
+AliAnalysisTask *AddTaskJetHadroAOD(Bool_t getFromAlien=kTRUE, TString configFileName = "Config_siweyhmi_JetHadro_AOD.C",Int_t settingType = 0,Int_t year = 2018, TString periodName="18q", Int_t passIndex = 3, const char* suffix = "", Int_t containerNameMode=0)
 {
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
@@ -32,10 +32,10 @@ AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString co
   Parameter 6: containerNameMode--> decide either dump output files in a TDirectoryFile or not. 0 without 1 and 2 with TDirectoryFile,
   =================================================================================================
   */
-  std::cout << " Info::siweyhmi: ===== In the AddTask_siweyhmi_JetHadro ===== " << std::endl;
+  std::cout << " Info::siweyhmi: ===== In the AddTaskJetHadroAOD ===== " << std::endl;
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTask_siweyhmi_JetHadro", "No analysis manager found.");
+    Error("AddTaskJetHadroAOD", "No analysis manager found.");
     return 0;
   }
   // Switch off all AliInfo (too much output!!!)
@@ -75,7 +75,7 @@ AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString co
   TString configFilePath(configBasePath+configFileName);
   std::cout << " Info::siweyhmi: Configpath:  " << configFilePath << " year = " << year << " --- period name = " << periodName << " --- pass = " << passIndex << " --- settingType = " << settingType << std::endl;
 
-  AliAnalysisJetHadro* task(0x0);
+  AliAnalysisTaskJetHadroAOD* task(0x0);
   #ifdef __CLING__
       std::stringstream triggermakeradd;
       triggermakeradd << ".x " << configFilePath.Data() << "(";
@@ -88,10 +88,10 @@ AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString co
       triggermakeradd << ")";
       std::string triggermakeraddstring = triggermakeradd.str();
       std::cout << triggermakeraddstring << std::endl;
-      task = (AliAnalysisJetHadro*)gROOT->ProcessLine(triggermakeraddstring.c_str());
+      task = (AliAnalysisTaskJetHadroAOD*)gROOT->ProcessLine(triggermakeraddstring.c_str());
   #else
       gROOT->LoadMacro(configFilePath.Data());
-      task = Config_siweyhmi_JetHadro(getFromAlien,settingType,year,periodName,passIndex,combinedName);
+      task = Config_siweyhmi_JetHadro_AOD(getFromAlien,settingType,year,periodName,passIndex,combinedName);
   #endif
 
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
