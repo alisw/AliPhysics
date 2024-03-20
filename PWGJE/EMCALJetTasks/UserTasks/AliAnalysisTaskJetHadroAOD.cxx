@@ -557,6 +557,7 @@ AliAnalysisTaskJetHadroAOD::~AliAnalysisTaskJetHadroAOD()
   if (fHistIncTracks_moms_pTPC_p)          delete fHistIncTracks_moms_pTPC_p;
   if (fHistIncTracks_kin)          delete fHistIncTracks_kin;
   if (fHistIncTracks_beta)          delete fHistIncTracks_beta;
+  if (fHistJetTracks_beta)          delete fHistJetTracks_beta;
   if (fHistIncTracks_TOFpi_nsigma)          delete fHistIncTracks_TOFpi_nsigma;
   if (fHistIncTracks_TOFka_nsigma)          delete fHistIncTracks_TOFka_nsigma;
   if (fHistIncTracks_TOFpr_nsigma)          delete fHistIncTracks_TOFpr_nsigma;

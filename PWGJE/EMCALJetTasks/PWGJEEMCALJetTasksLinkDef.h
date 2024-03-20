@@ -257,6 +257,7 @@
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalEG1Correlation+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalTriggerBackground+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalRawSTU+;
+#pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskForwardJets+;
 #pragma link C++ namespace PWGJE::EMCALJetTasks::Test;
 #pragma link C++ class PWGJE::EMCALJetTasks::Test::AliAnalysisTaskEmcalTriggerSelectionTest+;
 
@@ -337,7 +338,7 @@
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalSoftDropData+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskPtEfficiencyJets+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskTracksInJet+;
-#pragma link C++ class AliAnalysisTaskEmcalJetCDF+;
+#pragma link C++ class AliAnalysisTaskEmcalJetCDF+; 
 #pragma link C++ class AliAnalysisTaskEmcalJetValidation+;
 #pragma link C++ namespace PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetCDF_NS;
 #ifdef WITH_ROOUNFOLD
