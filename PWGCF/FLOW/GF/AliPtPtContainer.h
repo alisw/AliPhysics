@@ -41,8 +41,10 @@ class AliPtPtContainer: public TNamed {
         Long64_t Merge(TCollection *collist);
         TList* fCMTermList;
         TList* fCorrList;
-        TList* fCumulantList; //!
-        TList* fCentralMomentList; //!
+        //TList* fCumulantList; //!
+        //TList* fCentralMomentList; //!
+        vector<TH1*> fCumulantVec;
+        vector<TH1*> fCentralMomentVec;
         const int mpar;
         unsigned int fEventWeight;
         vector<Double_t> fCorr;
