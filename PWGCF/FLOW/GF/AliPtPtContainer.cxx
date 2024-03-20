@@ -13,8 +13,10 @@ using namespace PtPtSpace;
 AliPtPtContainer::AliPtPtContainer():
     fCMTermList(0),
     fCorrList(0),
-    fCentralMomentList(0),
-    fCumulantList(0),
+    //fCentralMomentList(0),
+    //fCumulantList(0),
+    fCumulantVec(0),
+    fCentralMomentVec(0),
     mpar(0),
     fEventWeight(kEventWeight::kUnity),
     fCorr(),
@@ -29,8 +31,10 @@ AliPtPtContainer::AliPtPtContainer(const char* name, const char* title, int nbin
     TNamed(name,title),
     fCMTermList(0),
     fCorrList(0),
-    fCentralMomentList(0),
-    fCumulantList(0),
+    //fCentralMomentList(0),
+    //fCumulantList(0),
+    fCumulantVec(0),
+    fCentralMomentVec(0),
     mpar(m),
     fEventWeight(kEventWeight::kUnity),
     fCorr(),
@@ -42,8 +46,10 @@ AliPtPtContainer::AliPtPtContainer(const char* name, const char* title, int nbin
     TNamed(name,title),
     fCMTermList(0),
     fCorrList(0),
-    fCentralMomentList(0),
-    fCumulantList(0),
+    //fCentralMomentList(0),
+    //fCumulantList(0),
+    fCumulantVec(0),
+    fCentralMomentVec(0),
     mpar(m),
     fEventWeight(kEventWeight::kUnity),
     fCorr(),
@@ -127,7 +133,6 @@ void AliPtPtContainer::FillCMProfiles(const vector<vector<double>> &inarr, const
     double tau1 = inarr[2][0]/pow(inarr[1][0],2);
     double tau2 = inarr[3][0]/pow(inarr[1][0],3);
     double tau3 = inarr[4][0]/pow(inarr[1][0],4);
-    double tau4 = inarr[5][0]/pow(inarr[1][0],5);
     double weight1 = 1-tau1;
     double weight2 = 1 - 3 * tau1 + 2 * tau2;
     double weight3 = 1 - 6*tau1 + 3*tau1*tau1 + 8*tau2 - 6*tau3;
@@ -177,15 +182,18 @@ TH1* AliPtPtContainer::getCorrHist(int ind, int m) {
     return ((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar",m)))->getHist(ind);
 }
 TH1* AliPtPtContainer::getCentralMomentHist(int ind, int m) {
-  if(!fCentralMomentList) CreateCentralMomentList();
-  if(!fCentralMomentList) return 0;
-  if(ind+1<fCentralMomentList->GetEntries()) return (TH1*)fCentralMomentList->FindObject(Form("cm%i_%i",m+1,ind));
+  //if(!fCentralMomentList) CreateCentralMomentList();
+  //if(!fCentralMomentList) return 0;
+  //if(ind+1<fCentralMomentList->GetEntries()) return (TH1*)fCentralMomentList->FindObject(Form("cm%i_%i",m+1,ind));
+  if(fCentralMomentVec.empty()) CreateCentralMomentList();
+  if(fCentralMomentVec.empty()) return 0;
+  if(ind+1<fCentralMomentVec.size()) return fCentralMomentVec[(ind+1)*mpar+m-1];
   return 0;
 }
 void AliPtPtContainer::CreateCentralMomentList() {
-    if(fCentralMomentList) delete fCentralMomentList;
-    fCentralMomentList = new TList();
-    fCentralMomentList->SetOwner();
+    //if(fCentralMomentList) delete fCentralMomentList;
+    //fCentralMomentList = new TList();
+    //fCentralMomentList->SetOwner();
     for(auto m(1); m<=4;++m){
         for(int i=-1;i<((AliProfileBS*)fCMTermList->At(0))->getNSubs();++i) {
             TH1* hMpt = ((AliProfileBS*)fCMTermList->At(0))->getHist(i);
@@ -208,18 +216,22 @@ void AliPtPtContainer::CalculateCentralMomentHists(vector<TH1*> inh, int ind, in
     }
     TH1* mptLast = raiseHistToPower(hMpt,m);
     reth->Add(mptLast,(m%2)?(-1):1);
-    fCentralMomentList->Add(reth);
+    //fCentralMomentList->Add(reth);
+    fCentralMomentVec.push_back(reth);
     return;
 }
 TH1* AliPtPtContainer::getCumulantHist(int ind, int m) {
-    if(!fCumulantList) CreateCumulantList();
-    if(!fCumulantList) return 0;
-    if(ind+1<fCumulantList->GetEntries()) return (TH1*)fCumulantList->At((ind+1)*mpar+m-1);
+    //if(!fCumulantList) CreateCumulantList();
+    //if(!fCumulantList) return 0;
+    //if(ind+1<fCumulantList->GetEntries()) return (TH1*)fCumulantList->At((ind+1)*mpar+m-1);
+    if(fCumulantVec.empty()) CreateCumulantList();
+    if(fCumulantVec.empty()) return 0;
+    if(ind+1<fCumulantVec.size()) return fCumulantVec[(ind+1)*mpar+m-1];
 }
 void AliPtPtContainer::CreateCumulantList() {
-    if(fCumulantList) delete fCumulantList;
-    fCumulantList = new TList();
-    fCumulantList->SetOwner();
+    //if(fCumulantList) delete fCumulantList;
+    //fCumulantList = new TList();
+    //fCumulantList->SetOwner();
     //((AliProfileBS*)fCorrList->At(0))->PresetWeights((AliProfileBS*)fCorrList->At(mpar-1));
     for(int i=-1;i<((AliProfileBS*)fCorrList->At(0))->getNSubs();++i) {
         vector<TH1*> hTs;
@@ -241,14 +253,16 @@ void AliPtPtContainer::CalculateCumulantHists(vector<TH1*> inh, int ind) {
         for(int k=1;k<m;++k)
         {
             TH1* corrh = (TH1*)inh[m-k-1]->Clone(Form("hcorr%i%i_%i",m,k,ind));
-            corrh->Multiply((TH1*)fCumulantList->At((ind+1)*mpar+k-1));
+            //corrh->Multiply((TH1*)fCumulantList->At((ind+1)*mpar+k-1));
+            corrh->Multiply(fCumulantVec[(ind+1)*mpar+k-1]);
             corrh->Scale(binomial(m-1,k-1));
             reth->Add(corrh,-1);
             delete corrh;
         }
         //for(int i=1;i<=hWeights->GetNbinsX();++i) reth->SetBinError(i,hWeights->GetBinError(i));
         //delete hWeights;
-        fCumulantList->Add(reth->Clone(Form("kappa%i_%i",m,ind)));
+        //fCumulantList->Add(reth->Clone(Form("kappa%i_%i",m,ind)));
+        fCumulantVec.push_back(reth);
     }
     return;
 }
@@ -259,8 +273,6 @@ Long64_t AliPtPtContainer::Merge(TCollection *collist) {
   while ((l_PTC = ((AliPtPtContainer*) all_PTC()))) {
       TList *t_CMTerm = l_PTC->fCMTermList;
       TList* t_Corr = l_PTC->fCorrList;
-      TList* t_Cum = l_PTC->fCumulantList;
-      TList* t_CM = l_PTC->fCentralMomentList;
       if(t_CMTerm) {
         if(!fCMTermList) fCMTermList = (TList*)t_CMTerm->Clone();
         else MergeBSLists(fCMTermList,t_CMTerm);
@@ -270,14 +282,6 @@ Long64_t AliPtPtContainer::Merge(TCollection *collist) {
           if(!fCorrList) fCorrList = (TList*)t_Corr->Clone();
           else MergeBSLists(fCorrList,t_Corr);
       };
-      if(t_Cum) {
-          if(!fCumulantList) fCumulantList = (TList*)t_Cum->Clone();
-          else MergeBSLists(fCumulantList,t_Cum);
-      };
-      if(t_CM) {
-          if(!fCentralMomentList) fCentralMomentList = (TList*)t_CM->Clone();
-          else MergeBSLists(fCentralMomentList,t_CM);
-      }
   }
   return nmerged;
 }

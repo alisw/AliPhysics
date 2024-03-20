@@ -299,7 +299,7 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   const Int_t nIPbins = 100;
   Double_t *ipBins = new Double_t[nIPbins];
   for(Int_t i=0;i<=nIPbins; i++) ipBins[i] = 0.2*i;
-  fMeanMultiVsCent = new AliProfileBS("MeanMultiVsCent","Mean Multi vs centrality",(fUseIP)?nIPbins:nFineCentBins,(fUseIP)?ipBins:fineCentBins);
+  fMeanMultiVsCent = new TProfile("MeanMultiVsCent","Mean Multi vs centrality",(fUseIP)?nIPbins:nFineCentBins,(fUseIP)?ipBins:fineCentBins);
   fptList->Add(fMeanMultiVsCent);
   fMultVsCent = new TH2D("fMultVsCent",Form(";%s; %s","Centrality (%)",(fUseNch)?"#it{N}_{ch}":(fUseV0M)?"V0M Amplitude":"Centrality (%)"),nFineCentBins,fineCentBins,fNMultiBins,fMultiBins);
   fptList->Add(fMultVsCent);
