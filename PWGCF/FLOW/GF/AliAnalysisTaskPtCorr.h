@@ -211,7 +211,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Bool_t fEnableFB768dcaxy;
   Double_t *GetBinsFromAxis(TAxis *inax);
 
-  ClassDef(AliAnalysisTaskPtCorr,2);
+  ClassDef(AliAnalysisTaskPtCorr,3);
 };
 
 #endif

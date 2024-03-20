@@ -62,6 +62,6 @@ class AliPtPtContainer: public TNamed {
         static Double_t           fCoeff[5][5][5][5];
         void MergeBSLists(TList *source, TList *target);
         TH1* raiseHistToPower(TH1* inh, double p);
-    ClassDef(AliPtPtContainer,1);
+    ClassDef(AliPtPtContainer,2);
 };
 #endif
