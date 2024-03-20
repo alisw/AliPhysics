@@ -151,7 +151,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Double_t fImpactParameterMC;
   TList *fQAList; //
   TH1D* fEventCount; //!
-  TH1D *fMultiDist;
+  TH1D *fMultiDist; //!
   TH2D **fMultiVsV0MCorr; //!
   TH2D *fNchTrueVsReco; //!
   TH2D *fESDvsFB128; //!
@@ -182,7 +182,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH2D *fMultVsCent; //!
   TH1D *fV0MMulti; //!
   TH2D *fITSvsTPCMulti; //!
-  TH1D* fIP;
+  TH1D* fIP; //!
   Double_t fCorrPar[2]; //Yes need to store
   Bool_t fUseCorrCuts; //Yes need to store
   TF1 *fSPDCutPU; //Store these
