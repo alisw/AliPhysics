@@ -201,12 +201,12 @@ Bool_t AliEmcalPatchFromCellMaker::Run()
 
   RunSimpleOfflineTrigger();
 
-  Double_t sum = 0.;
-  for (Int_t i = 0; i < kPatchCols; i++) {
-    for (Int_t j = 0; j < kPatchRows; j++) {
-      sum+=fPatchESimple[i][j];
-    }
-  }
+  // Double_t sum = 0.;
+  // for (Int_t i = 0; i < kPatchCols; i++) {
+  //   for (Int_t j = 0; j < kPatchRows; j++) {
+  //     sum+=fPatchESimple[i][j];
+  //   }
+  // }
 
   return kTRUE;
 }

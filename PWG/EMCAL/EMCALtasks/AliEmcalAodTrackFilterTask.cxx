@@ -32,14 +32,14 @@ AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask() :
   fAttemptProp(kFALSE),
   fAttemptPropMatch(kFALSE),
   fKeepInvMassTag(kFALSE),
+  fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fDist(440),
   fTrackEfficiency(0),
+  fTracksIn(0),
+  fTracksOut(0),
   fTrackEfficiencyHistogram(nullptr),
   fApplyPtDependentTrackingEfficiency(kFALSE),
-  fTrackEfficiencyOnlyForEmbedding(kFALSE),
-  fYAMLConfig(),
-  fTracksIn(0),
-  fTracksOut(0)
+  fYAMLConfig()
 {
   // Constructor.
 
@@ -61,14 +61,14 @@ AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask(const char *name) :
   fAttemptProp(kFALSE),
   fAttemptPropMatch(kFALSE),
   fKeepInvMassTag(kFALSE),
+  fTrackEfficiencyOnlyForEmbedding(kFALSE),
   fDist(440),
   fTrackEfficiency(0),
+  fTracksIn(0),
+  fTracksOut(0),
   fTrackEfficiencyHistogram(nullptr),
   fApplyPtDependentTrackingEfficiency(kFALSE),
-  fTrackEfficiencyOnlyForEmbedding(kFALSE),
-  fYAMLConfig(),
-  fTracksIn(0),
-  fTracksOut(0)
+  fYAMLConfig()
 {
   // Constructor.
 
@@ -201,7 +201,7 @@ AliEmcalAodTrackFilterTask* AliEmcalAodTrackFilterTask::AddTaskEmcalAodTrackFilt
       delete arr;
     } else {
   
-    if (!runPeriod.IsNull())::Warning("AddTaskEmcalAodTrackFilter", Form("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.",runPeriod.Data()));
+    if (!runPeriod.IsNull())::Warning("AddTaskEmcalAodTrackFilter", "%s", Form("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.",runPeriod.Data()));
         }
 
     aodTask->SetIncludeNoITS(includeNoITS);

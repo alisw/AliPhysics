@@ -290,7 +290,7 @@ void AliAnalysisTaskEmcalTriggerPatchClusterMatch::ExtractMainPatch() {
   Int_t nPatch = fTriggerPatchInfo->GetEntriesFast();
 
   //loop over patches to define trigger type of event
-  Int_t nG1 = 0, nG2 = 0, nJ1 = 0, nJ2 = 0, nL0 = 0;
+  // Int_t nG1 = 0, nG2 = 0, nJ1 = 0, nJ2 = 0, nL0 = 0;
 
   // see if event was selected
   UInt_t trig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
@@ -306,11 +306,11 @@ void AliAnalysisTaskEmcalTriggerPatchClusterMatch::ExtractMainPatch() {
     if (!patch) continue;
 
     // count trigger types
-    if (patch->IsGammaHigh()) nG1++;
-    if (patch->IsGammaLow())  nG2++;
-    if (patch->IsJetHigh()) nJ1++;
-    if (patch->IsJetLow())  nJ2++;
-    if (patch->IsLevel0())  nL0++;
+    // if (patch->IsGammaHigh()) nG1++;
+    // if (patch->IsGammaLow())  nG2++;
+    // if (patch->IsJetHigh()) nJ1++;
+    // if (patch->IsJetLow())  nJ2++;
+    // if (patch->IsLevel0())  nL0++;
 
     // fill Energy spectra of recalculated Jet and GA patches
     if(patch->IsRecalcGamma()) { fhRecalcGammaPatchEnergy->Fill(patch->GetPatchE()); }

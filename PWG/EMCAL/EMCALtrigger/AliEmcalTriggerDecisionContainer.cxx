@@ -101,7 +101,7 @@ bool AliEmcalTriggerDecisionContainer::IsEventSelected(EMCAL_STRINGVIEW name)  c
     }
     auto selectclasses = parseSelectionString(name, separator);
     bool selectionStatus = (mode == SeparatorMode::kSetIntersect) ? true : false;
-    for(const auto trgclass : selectclasses) {
+    for(const auto& trgclass : selectclasses) {
       auto triggerClassResult = IsEventSelected(trgclass.data());
       if((mode == SeparatorMode::kSetIntersect) && !triggerClassResult) {
         // All classes required - event rejection if one class is not present

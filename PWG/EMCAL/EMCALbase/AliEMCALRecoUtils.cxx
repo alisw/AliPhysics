@@ -490,7 +490,6 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
     //____________________________________
     } else if (fUseAdditionalScale == 4) { // Run1 special values: SM with TRD in front (+ with/without Support structure) and SM without TRD in front (+ with/without Support structure)
       Int_t iCol = ieta;
-      bool behindSupport = false;
       // select columns with TRD support in front
       if( (imod > 11 && imod < 18) && imod%2) iCol+= 65;
       else if (imod%2) iCol+=49;
