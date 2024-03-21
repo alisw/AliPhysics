@@ -1057,7 +1057,7 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
 
 
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  // +++ proton selection loop +++++++++++++++++++++++++++++++
+  // +++ Lambda selection loop +++++++++++++++++++++++++++++++
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   Float_t Lambda_px = -999.0;
@@ -1247,18 +1247,18 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
 
     AliExternalTrackParam *ProtonTrackParam = new AliExternalTrackParam();
     ProtonTrackParam->CopyFromVTrack(ProtonTrack);
-    Double_t Proton_DCA_new[2];
-    Double_t Proton_CovarianceMatrix_new[3];
+    Double_t Proton_DCA_new[2] = {-999.0,-999.0};
+    Double_t Proton_CovarianceMatrix_new[3] = {-999.0,-999.0,-999.0};
     ProtonTrackParam->PropagateToDCA(DecayVertex,BField,10.0,Proton_DCA_new,Proton_CovarianceMatrix_new);
-    Double_t ProtonMomentumPropagated[3];
+    Double_t ProtonMomentumPropagated[3] = {-999.0,-999.0,-999.0};
     ProtonTrackParam->GetPxPyPz(ProtonMomentumPropagated);
 
     AliExternalTrackParam *AntiPionTrackParam = new AliExternalTrackParam();
     AntiPionTrackParam->CopyFromVTrack(AntiPionTrack);
-    Double_t AntiPion_DCA_new[2];
-    Double_t AntiPion_CovarianceMatrix_new[3];
+    Double_t AntiPion_DCA_new[2] = {-999.0,-999.0};
+    Double_t AntiPion_CovarianceMatrix_new[3] = {-999.0,-999.0};
     AntiPionTrackParam->PropagateToDCA(DecayVertex,BField,10.0,AntiPion_DCA_new,AntiPion_CovarianceMatrix_new);
-    Double_t AntiPionMomentumPropagated[3];
+    Double_t AntiPionMomentumPropagated[3] = {-999.0,-999.0,-999.0};
     AntiPionTrackParam->GetPxPyPz(AntiPionMomentumPropagated);
 
 
@@ -1433,6 +1433,9 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
   
     Double_t Alpha = (p_Longitudinal_Positive - p_Longitudinal_Negative) / (p_Longitudinal_Positive + p_Longitudinal_Negative);
     Double_t qT = MomentumDaughterNegative->Perp(*MomentumV0);
+    if(TMath::IsNaN(Alpha)) continue;
+    if(TMath::IsNaN(qT)) continue;
+
 
     MomentumDaughterPositive->Delete();
     MomentumDaughterNegative->Delete();
@@ -1476,9 +1479,10 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     if(ProtonITSisOK == true){
 
       Proton_ITS_dEdx	      = ProtonTrack->GetITSsignal();
+      if(TMath::IsNaN(Proton_ITS_dEdx)) continue;
       Proton_ITS_dEdx_Sigma  = CalculateSigmadEdxITS(*ProtonTrack,1,RunNumber);
       Proton_ITS_nCluster     = ProtonTrack->GetITSNcls();
-      if(Proton_ITS_nCluster < 0) Proton_ITS_nCluster = 0;
+      if((Proton_ITS_nCluster < 0) || (Proton_ITS_nCluster > 7)) Proton_ITS_nCluster = 0;
 
     }
 
@@ -1519,9 +1523,10 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     if(AntiPionITSisOK == true){
 
       AntiPion_ITS_dEdx	      = AntiPionTrack->GetITSsignal();
+      if(TMath::IsNaN(AntiPion_ITS_dEdx)) continue;
       AntiPion_ITS_dEdx_Sigma  = CalculateSigmadEdxITS(*AntiPionTrack,6,RunNumber);
       AntiPion_ITS_nCluster     = AntiPionTrack->GetITSNcls();
-      if(AntiPion_ITS_nCluster < 0) AntiPion_ITS_nCluster = 0;
+      if((AntiPion_ITS_nCluster < 0) || (AntiPion_ITS_nCluster > 7)) AntiPion_ITS_nCluster = 0;
 
     }
 
@@ -1613,7 +1618,7 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
 
 
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  // +++ deuteron selection loop +++++++++++++++++++++++++++++++
+  // +++ Deuteron selection loop +++++++++++++++++++++++++++++
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   Float_t   Deuteron_px = -999.0;
@@ -1767,9 +1772,10 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     if(ITSisOK){
 
       ITS_dEdx	      = Track->GetITSsignal();
+      if(TMath::IsNaN(ITS_dEdx)) continue;
       ITS_dEdx_Sigma = CalculateSigmadEdxITS(*Track,2,RunNumber);
       ITS_nCluster    = Track->GetITSNcls();
-      if(ITS_nCluster < 0) ITS_nCluster = 0;
+      if((ITS_nCluster < 0) || (ITS_nCluster > 7)) ITS_nCluster = 0;
 
     }
 
@@ -2190,7 +2196,7 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
 
 
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  // +++ ++ AntiLambda selection loop ++++++++++++++++++++++++
+  // +++ AntiLambda selection loop +++++++++++++++++++++++++++
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   Float_t AntiLambda_px = -999.0;
@@ -2382,18 +2388,18 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
 
     AliExternalTrackParam *AntiProtonTrackParam = new AliExternalTrackParam();
     AntiProtonTrackParam->CopyFromVTrack(AntiProtonTrack);
-    Double_t AntiProton_DCA_new[2];
-    Double_t AntiProton_CovarianceMatrix_new[3];
+    Double_t AntiProton_DCA_new[2] = {-999.0,-999.0};
+    Double_t AntiProton_CovarianceMatrix_new[3] = {-999.0,-999.0,-999.0};
     AntiProtonTrackParam->PropagateToDCA(DecayVertex,BField,10.0,AntiProton_DCA_new,AntiProton_CovarianceMatrix_new);
-    Double_t AntiProtonMomentumPropagated[3];
+    Double_t AntiProtonMomentumPropagated[3] = {-999.0,-999.0,-999.0};
     AntiProtonTrackParam->GetPxPyPz(AntiProtonMomentumPropagated);
 
     AliExternalTrackParam *PionTrackParam = new AliExternalTrackParam();
     PionTrackParam->CopyFromVTrack(PionTrack);
-    Double_t Pion_DCA_new[2];
-    Double_t Pion_CovarianceMatrix_new[3];
+    Double_t Pion_DCA_new[2] = {-999.0,-999.0};
+    Double_t Pion_CovarianceMatrix_new[3] = {-999.0,-999.0,-999.0};
     PionTrackParam->PropagateToDCA(DecayVertex,BField,10.0,Pion_DCA_new,Pion_CovarianceMatrix_new);
-    Double_t PionMomentumPropagated[3];
+    Double_t PionMomentumPropagated[3]= {-999.0,-999.0,-999.0};
     PionTrackParam->GetPxPyPz(PionMomentumPropagated);
 
 
@@ -2570,6 +2576,8 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
   
     Double_t Alpha = (p_Longitudinal_Positive - p_Longitudinal_Negative) / (p_Longitudinal_Positive + p_Longitudinal_Negative);
     Double_t qT = MomentumDaughterNegative->Perp(*MomentumV0);
+    if(TMath::IsNaN(Alpha)) continue;
+    if(TMath::IsNaN(qT)) continue;
 
     MomentumDaughterPositive->Delete();
     MomentumDaughterNegative->Delete();
@@ -2610,9 +2618,10 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     if(AntiProtonITSisOK == true){
 
       AntiProton_ITS_dEdx	      = AntiProtonTrack->GetITSsignal();
+      if(TMath::IsNaN(AntiProton_ITS_dEdx)) continue;
       AntiProton_ITS_dEdx_Sigma  = CalculateSigmadEdxITS(*AntiProtonTrack,3,RunNumber);
       AntiProton_ITS_nCluster     = AntiProtonTrack->GetITSNcls();
-      if(AntiProton_ITS_nCluster < 0) AntiProton_ITS_nCluster = 0;
+      if((AntiProton_ITS_nCluster < 0) || (AntiProton_ITS_nCluster > 7)) AntiProton_ITS_nCluster = 0;
 
     }
 
@@ -2653,9 +2662,10 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     if(PionITSisOK == true){
 
       Pion_ITS_dEdx	      = PionTrack->GetITSsignal();
+      if(TMath::IsNaN(Pion_ITS_dEdx)) continue;
       Pion_ITS_dEdx_Sigma  = CalculateSigmadEdxITS(*PionTrack,5,RunNumber);
       Pion_ITS_nCluster     = PionTrack->GetITSNcls();
-      if(Pion_ITS_nCluster < 0) Pion_ITS_nCluster = 0;
+      if((Pion_ITS_nCluster < 0) || (Pion_ITS_nCluster > 7)) Pion_ITS_nCluster = 0;
 
     }
 
@@ -2750,7 +2760,7 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
 
 
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  // +++ antideuteron selection loop +++++++++++++++++++++++++
+  // +++ Antideuteron selection loop +++++++++++++++++++++++++
   // +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   Float_t   AntiDeuteron_px = -999.0;
@@ -2912,9 +2922,10 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     if(ITSisOK){
 
       ITS_dEdx	      = Track->GetITSsignal();
+      if(TMath::IsNaN(ITS_dEdx)) continue;
       ITS_dEdx_Sigma = CalculateSigmadEdxITS(*Track,4,RunNumber);
       ITS_nCluster    = Track->GetITSNcls();
-      if(ITS_nCluster < 0) ITS_nCluster = 0;
+      if((ITS_nCluster < 0) || (ITS_nCluster > 7)) ITS_nCluster = 0;
 
     }
 
@@ -3445,6 +3456,7 @@ Double_t AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(D
 {
 
   Double_t SigmaParticle = -999.0;
+  if(TMath::IsNaN(massSq)) return SigmaParticle;
   if(massSq < -990.0) return SigmaParticle;
 
 
@@ -3979,6 +3991,9 @@ Double_t AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(D
 
 
   SigmaParticle = (massSq - mean)/(sigma);
+
+  if(TMath::IsNaN(SigmaParticle)) return -999.0;
+
   return SigmaParticle;
 
 } // end of CalculateSigmaMassSquareTOF
@@ -4506,7 +4521,7 @@ Bool_t AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckLambdaCuts(AliAODv0 &v0, D
   // #######################################
 
   Float_t Lambda_pT_min = 0.0; // GeV/c
-  Float_t Lambda_pT_max = 999.0; // GeV/c
+  Float_t Lambda_pT_max = 3.0; // GeV/c
   Float_t Lambda_eta_min = -0.8;
   Float_t Lambda_eta_max = +0.8;
   Float_t Lambda_DecayRadius_min = 3.0; // cm
@@ -4651,7 +4666,7 @@ Bool_t AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &
   Float_t Deuteron_pT_max = 3.0;
   Float_t Deuteron_eta_min = -0.8;
   Float_t Deuteron_eta_max = +0.8;
-  Float_t Deuteron_DCAxy_max = 3.0; // cm
+  Float_t Deuteron_DCAxy_max = 2.0; // cm
   Float_t Deuteron_DCAz_max = 0.1; // cm
   Float_t Deuteron_p_max = 30.0;
   Float_t Deuteron_TPC_RatioRowsFindableCluster_min = 0.8;
@@ -5240,6 +5255,7 @@ Double_t AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODT
   if(TMath::Abs(sigma) < 0.0001) return -999.0;
 
   SigmaParticle = (mean - SignalITS) / (sigma);
+  if(TMath::IsNaN(SigmaParticle)) return -999.0;
 
   return SigmaParticle;
 
