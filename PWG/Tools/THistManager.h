@@ -112,10 +112,13 @@ public:
    * THashList. The iterator is implemented as bidirectional
    * iterator, providing forward and backward iteration.
    */
-  class iterator :  public std::iterator<std::bidirectional_iterator_tag,
-                                                 TObject, std::ptrdiff_t,
-                                                 TObject **, TObject *&>{
+  class iterator{
   public:
+		using iterator_category = std::bidirectional_iterator_tag;
+    using value_type = TObject;
+    using difference_type = std::ptrdiff_t;
+    using pointer = TObject**;
+    using reference = TObject*&;
     /**
      * @enum THMIDirection_t
      * @brief Direction for the iteration
