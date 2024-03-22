@@ -4524,17 +4524,17 @@ void AliAnalysisTaskMTFPID::NormalizeJetArea(Double_t jetParameter) {
   Double_t givenJetArea = jetParameter * jetParameter * TMath::Pi();
   for (Int_t i=0;i<=fh1JetArea->GetNbinsX();++i) {
     Double_t binContent = fh1JetArea->GetBinContent(i);
-    if (TMath::Abs(binContent)) < 1e-6)
+    if (TMath::Abs(binContent) < 1e-6)
       continue;
 
     Double_t nOfRecJetsInSlice = fh2FFJetPtRec->Integral(i,i,0,fh2FFJetPtRec->GetNbinsY());
 
-    if (TMath::Abs(nOfRecJetsInSlice)) < 1e-6) {
+    if (TMath::Abs(nOfRecJetsInSlice) < 1e-6) {
       AliWarningStream() << "No Jets recognised in slice " << i << " when normalizing jet are, unexpected." << std::endl;
       continue;
     }
     
-    fh1JetArea->SetBinContent(i,binContent/(givenJetArea * ));
+    fh1JetArea->SetBinContent(i,binContent/(givenJetArea * nOfRecJetsInSlice));
   }
 }
 

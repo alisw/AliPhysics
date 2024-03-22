@@ -45,7 +45,7 @@ public:
   void InitialiseFastSimulationFunctions();
   
   Bool_t         FillHistograms();
-  virtual void   Terminate(Option_t* );
+  void   Terminate(Option_t* );
   virtual Bool_t Notify();
   
   enum FragmentationFunctionChange { kNoChange = 0, kLowPtEnhancement = 1, kLowPtDepletion = 2};
@@ -174,7 +174,7 @@ public:
   void SetNamesOfJetPIDtasks(Int_t numNames, const TString* names);
   
   const TString* GetNamesOfJetUEPIDtasks() const { return fNameJetUEPIDtask; };
-  void SetNamesOfJetUEPIDtasks(Int_t numNames, const TString* names, const TString* methods = 0x0);
+  void SetNamesOfJetUEPIDtasks(Int_t numNames, const TString* names);
 	
   Bool_t GetIsPP() const { return fIsPP; };
   void SetIsPP(Bool_t flag) { fIsPP = flag; };

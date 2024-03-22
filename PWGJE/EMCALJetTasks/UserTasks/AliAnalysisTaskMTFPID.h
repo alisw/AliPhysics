@@ -362,11 +362,11 @@ class AliAnalysisTaskMTFPID : public AliAnalysisTaskPIDV0base {
   TOFpidInfo GetTOFType(const AliVTrack* track, Int_t tofMode) const;
   
   //Underlying event
-  Bool_t GetIsUEPID() const { return fIsUEPID; }
-  void SetIsUEPID(Bool_t flag) { fIsUEPID = flag; }
+  Bool_t GetIsUEPID() const { return fIsUEPID; };
+  void SetIsUEPID(Bool_t flag = kTRUE) { fIsUEPID = flag; };
 
-  TString GetUEMethod() const { return fUEMethod; }
-  void SetUEMethod(TString method) { fUEMethod = method; SetIsUEPID()}
+  TString GetUEMethod() const { return fUEMethod; };
+  void SetUEMethod(TString method) { fUEMethod = method; SetIsUEPID();};
 
   void FillUEDensity(Double_t cent, Double_t UEpt);
   void FillJetArea(Double_t cent, Double_t area);
