@@ -161,6 +161,8 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2F* hNchMultEtaNeg;
   TH2F* hNchMultTPCEtaGap;
   TH2F* hNchMultITSEtaGap;
+  TProfile* pMeanpTProduct;
+  TProfile* pMeanpTCent;
 
   AliAnalysisTaskDataSpeedOfSound(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented

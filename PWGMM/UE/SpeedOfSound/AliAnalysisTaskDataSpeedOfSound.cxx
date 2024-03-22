@@ -35,6 +35,7 @@ class AliESDtrackCuts;
 #include <TTree.h>
 
 #include <iostream>
+#include <numeric>  // std::accumulate
 #include <vector>
 
 #include "AliAnalysisManager.h"
@@ -178,7 +179,9 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       pPtvsTracksEtaGapTPC(0),
       hNchMultEtaNeg(0),
       hNchMultTPCEtaGap(0),
-      hNchMultITSEtaGap(0) {
+      hNchMultITSEtaGap(0),
+      pMeanpTProduct(0),
+      pMeanpTCent(0) {
   for (int i = 0; i < v0m_Nbins; ++i) {
     hDCAxyData[i] = 0;
   }
@@ -266,7 +269,9 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       pPtvsTracksEtaGapTPC(0),
       hNchMultEtaNeg(0),
       hNchMultTPCEtaGap(0),
-      hNchMultITSEtaGap(0) {
+      hNchMultITSEtaGap(0),
+      pMeanpTProduct(0),
+      pMeanpTCent(0) {
   for (int i = 0; i < v0m_Nbins; ++i) {
     hDCAxyData[i] = 0;
   }
@@ -568,6 +573,17 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
       "; #it{N}_{ch} (0.5#leq#eta#leq0.8); #it{p}_{T} (|#eta|<0.3, GeV/#it{c})",
       nchEtaGapTPC_Nbins, nchEtaGapTPC_bins, pt_Nbins, pt_bins);
 
+  pMeanpTProduct = new TProfile("pMeanpTProduct",
+                                "; #it{N}_{ch} (0.5#leq#eta#leq0.8); "
+                                "#LT#it{p}_{T}#GT (GeV/#it{c})",
+                                nchEtaGapTPC_Nbins, nchEtaGapTPC_bins);
+
+  pMeanpTCent =
+      new TProfile("pMeanpTCent",
+                   "; #it{N}_{ch} (0.5#leq#eta#leq0.8); "
+                   "#LT#it{p}_{T}#GT (0.5#leq|#eta|#leq0.8, GeV/#it{c})",
+                   nchEtaGapTPC_Nbins, nchEtaGapTPC_bins);
+
   pPtvsTracklets14 =
       new TProfile("pPtvsTracklets14",
                    "; #it{N}_{tracklet} (|#eta|#leq1.4); #LT#it{p}_{T}#GT "
@@ -631,6 +647,8 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   fOutputList->Add(hNchMultTPCEtaGap);
   fOutputList->Add(hPtvsTracksEtaGapTPC);
   fOutputList->Add(pPtvsTracksEtaGapTPC);
+  fOutputList->Add(pMeanpTProduct);
+  fOutputList->Add(pMeanpTCent);
 
   fOutputList->Add(hPhiEtaSPD);
   fOutputList->Add(hPhiEtaGapSPD);
@@ -840,6 +858,9 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
   fTracksEtaGapTPC = 0;
   const int n_tracks{fESD->GetNumberOfTracks()};
 
+  std::vector<double> vec_pt_cen{};
+  std::vector<double> vec_pt_obs{};
+
   for (int i = 0; i < n_tracks; ++i) {
     AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
     if (!track) {
@@ -869,6 +890,7 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
         TMath::Abs(track->Eta()) <= fEtaCutTPCGapMax) {
       fTracksEtaGapTPC++;
       hPhiEtaGapTPC->Fill(track->Phi(), track->Eta());
+      vec_pt_cen.push_back(track->Pt());
     }
     hPtWithCutForCent->Fill(track->Pt());
     rec_nch++;
@@ -931,6 +953,7 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
     if (TMath::Abs(track->Eta()) <= fEtaCutForpTwTPCGap) {
       hPtvsTracksEtaGapTPC->Fill(fTracksEtaGapTPC, pt);
       pPtvsTracksEtaGapTPC->Fill(fTracksEtaGapTPC, pt);
+      vec_pt_obs.push_back(pt);
       nch_tpc_etagap++;
     }
   }
@@ -951,6 +974,15 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
   hNchMultEtaNeg->Fill(nch_eta_neg, rec_nch_pos_eta);
   hNchMultTPCEtaGap->Fill(nch_tpc_etagap, fTracksEtaGapTPC);
   hNchMultITSEtaGap->Fill(nch_its_etagap, fTrackletsEtaGap);
+
+  double meanpt_cen{std::accumulate(vec_pt_cen.begin(), vec_pt_cen.end(), 0.0) /
+                    vec_pt_cen.size()};
+
+  double meanpt_obs{std::accumulate(vec_pt_obs.begin(), vec_pt_obs.end(), 0.0) /
+                    vec_pt_obs.size()};
+
+  pMeanpTCent->Fill(fTracksEtaGapTPC, meanpt_cen);
+  pMeanpTProduct->Fill(fTracksEtaGapTPC, meanpt_cen * meanpt_obs);
 }
 
 //____________________________________________________________
