@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISJETHADRO_H
-#define ALIANALYSISJETHADRO_H
+#ifndef ALIANALYSISTASKJETHADROAOD_H
+#define ALIANALYSISTASKJETHADROAOD_H
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                        //
@@ -9,7 +9,7 @@
 //                      for the inclusive event and in jets.                              //
 //   It is based on particles identification via the dE/dx signal of the TPC              //
 //                   and the time of flight nsigma from the TOF.                          //
-//                              This is the ESD version.                                  //
+//                              This is the AOD version.                                  //
 //                                                                                        //
 // Author: Sierra Cantway (Weyhmiller) <sierra.lisa.weyhmiller@cern.ch>, Yale University  //
 //      Author: Mesut Arslandok <mesut.arslandok@cern.ch>, Yale University                //
@@ -25,9 +25,8 @@ class TH3F;
 class TList;
 class TTree;
 class TObjArray;
-class AliESDEvent;
-class AliESDtrack;
-class AliESDtrackCuts;
+class AliAODEvent;
+class AliAODTrack;
 class AliPIDResponse;
 class AliPIDCombined;
 class AliJetContainer;
@@ -46,7 +45,7 @@ class AliAnalysisTaskRho;
 #include "AliEventCuts.h"
 #include "TRandom3.h"
 
-class AliAnalysisJetHadro : public AliAnalysisTaskEmcalJet {
+class AliAnalysisTaskJetHadroAOD : public AliAnalysisTaskEmcalJet {
 public:
 
   AliEventCuts fEventCuts;     /// Event cuts
@@ -55,9 +54,9 @@ public:
   //                           Constructor and Destructor
   // ---------------------------------------------------------------------------------
 
-  AliAnalysisJetHadro(const char *name);
-  AliAnalysisJetHadro();
-  virtual ~AliAnalysisJetHadro();
+  AliAnalysisTaskJetHadroAOD(const char *name);
+  AliAnalysisTaskJetHadroAOD();
+  virtual ~AliAnalysisTaskJetHadroAOD();
 
   enum kPDGpart{
     kPDGel=11,
@@ -82,7 +81,7 @@ public:
   // ---------------------------------------------------------------------------------
 
   void   Initialize();
-  void   SetESDtrackCuts(AliESDtrackCuts * trackCuts)                 {fESDtrackCuts        = trackCuts;};
+  void   SetFilterBits(UInt_t bits)                                   {fAOD_FilterBits      = bits;}
   void   SetIsMCtrue(Bool_t isMCdata = kTRUE)                         {fMCtrue              = isMCdata;};
   void   SetYear(const Int_t ifYear = 0)                              {fYear                = ifYear;}
   void   SetPeriodName(const TString ifPeriodName = "")               {fPeriodName          = ifPeriodName;}
@@ -165,8 +164,8 @@ public:
 
 private:
 
-  AliAnalysisJetHadro(const AliAnalysisJetHadro&);
-  AliAnalysisJetHadro& operator=(const AliAnalysisJetHadro&);
+  AliAnalysisTaskJetHadroAOD(const AliAnalysisTaskJetHadroAOD&);
+  AliAnalysisTaskJetHadroAOD& operator=(const AliAnalysisTaskJetHadroAOD&);
 
   // ---------------------------------------------------------------------------------
   //                                   Functions
@@ -176,27 +175,23 @@ private:
   void FindJetsFJ();                          // Find and Fill Jets with FJ framework
   void FillIncTracksReal();                   // Fill all inclusive track information
   void FillTreeMC();
-  void GetExpecteds(AliESDtrack *track);
+  void GetExpecteds(AliAODTrack* track);
   void FillEventTree();
 
   //
   Bool_t CountEmptyEvents();  // Just count if there is empty events
-  void SetCutBitsAndSomeTrackVariables(AliESDtrack *track);
+  void SetCutBitsAndSomeTrackVariables(AliAODTrack* track);
   // ---------------------------------------------------------------------------------
   //                                   Members
   // ---------------------------------------------------------------------------------
 
   AliPIDResponse   * fPIDResponse;            //! PID response object
-  AliESDEvent      * fESD;                    //! ESD object
+  AliAODEvent      * fAOD;                    //! AOD object
   TList            * fListHist;               //! list for histograms
-  AliESDtrackCuts  * fESDtrackCuts;           //! basic cut variables
-  AliESDtrackCuts  * fESDtrackCuts_2015;      //! basic cut variables
-  AliESDtrackCuts  * fESDtrackCuts_Bit128;    //! basic cut variables
-  AliESDtrackCuts  * fESDtrackCuts_Bit768;    //! basic cut variables
-  AliESDtrackCuts  * fESDtrackCuts_Bit768_v;    //! basic cut variables
+  UInt_t            fAOD_FilterBits;
   AliPIDCombined   * fPIDCombined;            //! combined PID object
   AliStack         * fMCStack;                //! stack object to get Mc info
-  const AliESDVertex * fVertex;               // primary vertex
+  const AliAODVertex * fVertex_AOD;               // primary vertex
 
   TTreeSRedirector * fTreeSRedirector;        /// temp tree to dump output
   TTree            * fTreeMC;                 // tree for mc samples
@@ -366,9 +361,6 @@ private:
   TH3F             * fHistIncTracks_TOFpi_nsigma;        // histogram for inclusive tracks TOF nsigma under pion hypothesis vs pT
   TH3F             * fHistIncTracks_TOFka_nsigma;        // histogram for inclusive tracks TOF nsigma under kaon hypothesis vs pT
   TH3F             * fHistIncTracks_TOFpr_nsigma;        // histogram for inclusive tracks TOF nsigma under proton hypothesis vs pT
-  TH3F             * fHistIncTracks_TOFpi_nsigma_1cls;        // histogram for inclusive tracks TOF nsigma under pion hypothesis vs pT  w/ only one matchable TOF cluster
-  TH3F             * fHistIncTracks_TOFka_nsigma_1cls;        // histogram for inclusive tracks TOF nsigma under kaon hypothesis vs pT  w/ only one matchable TOF cluster
-  TH3F             * fHistIncTracks_TOFpr_nsigma_1cls;        // histogram for inclusive tracks TOF nsigma under proton hypothesis vs pT  w/ only one matchable TOF cluster
 
   TH3F             * fHistJetTracks_dEdx;        // histogram for jet tracks dEdx all eta v some momentum form
   TH2F             * fHistJetTracks_moms;        // histogram for jet tracks ptpc to pT
@@ -379,9 +371,6 @@ private:
   TH3F             * fHistJetTracks_TOFpi_nsigma;        // histogram for jet tracks TOF nsigma under pion hypothesis vs pT
   TH3F             * fHistJetTracks_TOFka_nsigma;        // histogram for jet tracks TOF nsigma under kaon hypothesis vs pT
   TH3F             * fHistJetTracks_TOFpr_nsigma;        // histogram for jet tracks TOF nsigma under proton hypothesis vs pT
-  TH3F             * fHistJetTracks_TOFpi_nsigma_1cls;        // histogram for jet tracks TOF nsigma under pion hypothesis vs pT  w/ only one matchable TOF cluster
-  TH3F             * fHistJetTracks_TOFka_nsigma_1cls;        // histogram for jet tracks TOF nsigma under kaon hypothesis vs pT  w/ only one matchable TOF cluster
-  TH3F             * fHistJetTracks_TOFpr_nsigma_1cls;        // histogram for jet tracks TOF nsigma under proton hypothesis vs pT  w/ only one matchable TOF cluster
 
   TH2F             * fHistBetaExpec_pi; // histogram for inc expected pion beta v pT
   TH2F             * fHistBetaExpec_ka; // histogram for inc expected kaon beta v pT
@@ -440,7 +429,7 @@ private:
   TH3F             * fHistJet_kin;     // histogram for jet ptsub, eta, phi after area cut
   TH2F             * fHistJet_moms;     // histogram for jet pt v jet ptsub after area cut
 
-  ClassDef(AliAnalysisJetHadro, 13);
+  ClassDef(AliAnalysisTaskJetHadroAOD, 1);
 
 };
 
