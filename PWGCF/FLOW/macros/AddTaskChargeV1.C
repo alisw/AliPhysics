@@ -9,7 +9,7 @@
 AliAnalysisTaskChargeV1 *AddTaskChargeV1(
     bool doNUE = false,
     bool doNUA = false,
-    TString period = "LHC18q",
+    TString period = "LHC18r",
     bool ZDCcali = true)
 {
   // get the manager via the static access member. since it's static, you don't need
