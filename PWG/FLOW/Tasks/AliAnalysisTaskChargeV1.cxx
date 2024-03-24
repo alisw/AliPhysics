@@ -84,17 +84,17 @@
 #include "AliOADBContainer.h"
 #include "AliPID.h"
 #include "AliPIDCombined.h"
-//#include "AliPIDResponse.h"
+#include "AliPIDResponse.h"
 #include "AliMultSelection.h"
-#include "AliAnalysisTaskChargeV1test.h"
+#include "AliAnalysisTaskChargeV1.h"
 
-class AliAnalysisTaskChargeV1test; // your analysis class
+class AliAnalysisTaskChargeV1; // your analysis class
 
 using namespace std; // std namespace: so you can do things like 'cout'
 
-ClassImp(AliAnalysisTaskChargeV1test) // classimp: necessary for root
+ClassImp(AliAnalysisTaskChargeV1) // classimp: necessary for root
 
-    AliAnalysisTaskChargeV1test::AliAnalysisTaskChargeV1test() : AliAnalysisTaskSE(),
+    AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1() : AliAnalysisTaskSE(),
                                                          fAOD(nullptr),
                                                          fOutputList(nullptr),
                                                          fQAList(nullptr),
@@ -130,8 +130,19 @@ ClassImp(AliAnalysisTaskChargeV1test) // classimp: necessary for root
                                                          ZDCpx_T(nullptr),
                                                          ZDCv1_t(nullptr),
                                                          ZDCv1_p(nullptr),
+                                                         ZDCResQ(nullptr),
                                                          ZDCcos_t(nullptr),
-                                                         ZDCcos_p(nullptr)
+                                                         ZDCcos_p(nullptr),
+                                                         fTPCrecenterQx(nullptr),
+                                                         fTPCrecenterQy(nullptr),
+                                                         fTPCrecenterQxVz(nullptr),
+                                                         fTPCrecenterQyVz(nullptr),
+                                                         fTPCRecenterList(nullptr),
+                                                         fTPCAverageQx(nullptr),
+                                                         fTPCAverageQy(nullptr),
+                                                         fTPCAverageQxVz(nullptr),
+                                                         fTPCAverageQyVz(nullptr)
+
 {
   runNum = -999;
   oldRunNum = -999;
@@ -266,17 +277,13 @@ ClassImp(AliAnalysisTaskChargeV1test) // classimp: necessary for root
   Qty = -999;
   Qpx = -999;
   Qpy = -999;
-<<<<<<< HEAD
 
   fBeforeRecenterPsi2 = nullptr;
   fAfterRecenterPsi2 = nullptr;
   fAfterRecenterPsi2Vz = nullptr;
-=======
-  ZDCResQ = nullptr;
->>>>>>> 7f2775135a (remove PIDResponse)
 }
 //_____________________________________________________________________________
-AliAnalysisTaskChargeV1test::AliAnalysisTaskChargeV1test(const char *name) : AliAnalysisTaskSE(name),
+AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1(const char *name) : AliAnalysisTaskSE(name),
                                                                      fAOD(nullptr),
                                                                      fOutputList(nullptr),
                                                                      fQAList(nullptr),
@@ -299,11 +306,7 @@ AliAnalysisTaskChargeV1test::AliAnalysisTaskChargeV1test(const char *name) : Ali
                                                                      pD2pRe(nullptr),
                                                                      pD2pIm(nullptr),
                                                                      v1p_qc(nullptr),
-<<<<<<< HEAD
                                                                      v1t_qc(nullptr),
-=======
-                                                                     v1t_qc(nullptr),   
->>>>>>> 7f2775135a (remove PIDResponse)
                                                                      TPCcos_t(nullptr),
                                                                      TPCcos_p(nullptr),
                                                                      px_P(nullptr),
@@ -316,7 +319,6 @@ AliAnalysisTaskChargeV1test::AliAnalysisTaskChargeV1test(const char *name) : Ali
                                                                      ZDCpx_T(nullptr),
                                                                      ZDCv1_t(nullptr),
                                                                      ZDCv1_p(nullptr),
-<<<<<<< HEAD
                                                                      ZDCResQ(nullptr),
                                                                      ZDCcos_t(nullptr),
                                                                      ZDCcos_p(nullptr),
@@ -330,10 +332,6 @@ AliAnalysisTaskChargeV1test::AliAnalysisTaskChargeV1test(const char *name) : Ali
                                                                      fTPCAverageQxVz(nullptr),
                                                                      fTPCAverageQyVz(nullptr)
 
-=======
-                                                                     ZDCcos_t(nullptr),
-                                                                     ZDCcos_p(nullptr)
->>>>>>> 7f2775135a (remove PIDResponse)
 {
   runNum = -999;
   oldRunNum = -999;
@@ -425,10 +423,6 @@ AliAnalysisTaskChargeV1test::AliAnalysisTaskChargeV1test(const char *name) : Ali
   fHZDCAparameters = nullptr;
   fProfileZDCPsi1Correlation = nullptr;
   fProfileZDCPsi2Correlation = nullptr;
-<<<<<<< HEAD
-=======
-
->>>>>>> 7f2775135a (remove PIDResponse)
   // ZDC QA
   for (int i = 0; i < 2; i++)
     fProfileZNCTowerMeanEnegry[i] = nullptr;
@@ -472,15 +466,11 @@ AliAnalysisTaskChargeV1test::AliAnalysisTaskChargeV1test(const char *name) : Ali
   Qty = -999;
   Qpx = -999;
   Qpy = -999;
-<<<<<<< HEAD
 
   fBeforeRecenterPsi2 = nullptr;
   fAfterRecenterPsi2 = nullptr;
   fAfterRecenterPsi2Vz = nullptr;
 
-=======
-  ZDCResQ = nullptr;
->>>>>>> 7f2775135a (remove PIDResponse)
   // constructor
   DefineInput(0, TChain::Class()); // define the input of the analysis: in this case we take a 'chain' of events
                                    // this chain is created by the analysis manager, so no need to worry about it,
@@ -491,7 +481,7 @@ AliAnalysisTaskChargeV1test::AliAnalysisTaskChargeV1test(const char *name) : Ali
                                    // make changes to your AddTask macro!
 }
 //_____________________________________________________________________________
-AliAnalysisTaskChargeV1test::~AliAnalysisTaskChargeV1test()
+AliAnalysisTaskChargeV1::~AliAnalysisTaskChargeV1()
 {
   // destructor
   if (fQAList)
@@ -502,7 +492,7 @@ AliAnalysisTaskChargeV1test::~AliAnalysisTaskChargeV1test()
   }
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskChargeV1test::UserCreateOutputObjects()
+void AliAnalysisTaskChargeV1::UserCreateOutputObjects()
 {
   // create output objects
   //
@@ -907,12 +897,10 @@ void AliAnalysisTaskChargeV1test::UserCreateOutputObjects()
                             // so it needs to know what's in the output
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskChargeV1test::UserExec(Option_t *)
+void AliAnalysisTaskChargeV1::UserExec(Option_t *)
 {
-
   ResetHists();
   hEvtCount->Fill(1);
-
   AliAnalysisManager *manager = AliAnalysisManager::GetAnalysisManager();
   if (!manager)
   {
@@ -964,7 +952,6 @@ void AliAnalysisTaskChargeV1test::UserExec(Option_t *)
   //------------------
 
   // runNumber
-
   runNum = fAOD->GetRunNumber();
   if (runNum != oldRunNum)
   {
@@ -977,7 +964,6 @@ void AliAnalysisTaskChargeV1test::UserExec(Option_t *)
     return;
   hRunNumBin->Fill(runNumBin);
   hEvtCount->Fill(3);
-
 
   // vertex
   const AliVVertex *vtTrc = fAOD->GetPrimaryVertex();
@@ -1140,7 +1126,6 @@ void AliAnalysisTaskChargeV1test::UserExec(Option_t *)
     hPDedx->Fill(track->P() * charge, dedx);
     // PID
     double fPOIBIN = 0;
-<<<<<<< HEAD
     //   bool isItProttrk = CheckPIDofParticle(track, 3); // 3=proton
     //   bool isItkiontrk = CheckPIDofParticle(track, 2); // 2=kion
     //   bool isItpiontrk = CheckPIDofParticle(track, 1); // 1=pion
@@ -1164,33 +1149,6 @@ void AliAnalysisTaskChargeV1test::UserExec(Option_t *)
     //   }
     //   if (fPOIBIN == 0)
     //     continue;
-=======
-    /*
-    bool isItProttrk = CheckPIDofParticle(track, 3); // 3=proton
-    bool isItkiontrk = CheckPIDofParticle(track, 2); // 2=kion
-    bool isItpiontrk = CheckPIDofParticle(track, 1); // 1=pion
-    if (charge > 0)
-    {
-      if (isItProttrk && !isItkiontrk && !isItpiontrk)
-        fPOIBIN = 0.5;
-      if (!isItProttrk && isItkiontrk && !isItpiontrk)
-        fPOIBIN = 1.5;
-      if (!isItProttrk && !isItkiontrk && isItpiontrk)
-        fPOIBIN = 2.5;
-    }
-    else
-    {
-      if (isItProttrk && !isItkiontrk && !isItpiontrk)
-        fPOIBIN = 3.5;
-      if (!isItProttrk && isItkiontrk && !isItpiontrk)
-        fPOIBIN = 4.5;
-      if (!isItProttrk && !isItkiontrk && isItpiontrk)
-        fPOIBIN = 5.5;
-    }
-    if (fPOIBIN == 0)
-      continue;
-    */
->>>>>>> 7f2775135a (remove PIDResponse)
     // PID QA
     //   if (abs(fPOIBIN - 0.5) < 1E-6 || abs(fPOIBIN - 3.5) < 1E-6)
     //   {
@@ -1437,7 +1395,7 @@ void AliAnalysisTaskChargeV1test::UserExec(Option_t *)
 }
 
 //---------------------------------------------------
-int AliAnalysisTaskChargeV1test::GetRunNumBin(int runNum)
+int AliAnalysisTaskChargeV1::GetRunNumBin(int runNum)
 {
   int runNumBin = -1;
   // 18q
@@ -1477,7 +1435,7 @@ int AliAnalysisTaskChargeV1test::GetRunNumBin(int runNum)
 
 //---------------------------------------------------
 
-bool AliAnalysisTaskChargeV1test::RejectEvtTFFit()
+bool AliAnalysisTaskChargeV1::RejectEvtTFFit()
 {
   Float_t centV0M = -999;
   Float_t centCL1 = -999;
@@ -1547,14 +1505,14 @@ bool AliAnalysisTaskChargeV1test::RejectEvtTFFit()
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskChargeV1test::Terminate(Option_t *)
+void AliAnalysisTaskChargeV1::Terminate(Option_t *)
 {
   // terminate
   // called at the END of the analysis (when all events are processed)
 }
 //_____________________________________________________________________________
 
-bool AliAnalysisTaskChargeV1test::LoadCalibHistForThisRun()
+bool AliAnalysisTaskChargeV1::LoadCalibHistForThisRun()
 {
 
   // 18q/r NUA
@@ -1583,7 +1541,7 @@ bool AliAnalysisTaskChargeV1test::LoadCalibHistForThisRun()
 
 //---------------------------------------------------
 
-double AliAnalysisTaskChargeV1test::GetNUACor(int charge, double phi, double eta, double vz)
+double AliAnalysisTaskChargeV1::GetNUACor(int charge, double phi, double eta, double vz)
 {
   double weightNUA = 1;
 
@@ -1616,7 +1574,7 @@ double AliAnalysisTaskChargeV1test::GetNUACor(int charge, double phi, double eta
 
 //---------------------------------------------------
 
-double AliAnalysisTaskChargeV1test::GetNUECor(int charge, double pt)
+double AliAnalysisTaskChargeV1::GetNUECor(int charge, double pt)
 {
   double weightNUE = 1;
 
@@ -1651,7 +1609,7 @@ double AliAnalysisTaskChargeV1test::GetNUECor(int charge, double pt)
 }
 
 //---------------------------------------------------
-bool AliAnalysisTaskChargeV1test::QC2SE()
+bool AliAnalysisTaskChargeV1::QC2SE()
 {
   double allM = hMQ_thisEvt->Integral(1, NPTBINS, 1, NETABINS);
   if (allM < 2)
@@ -1721,7 +1679,7 @@ bool AliAnalysisTaskChargeV1test::QC2SE()
   return true;
 }
 //-----------------------------------------------------
-void AliAnalysisTaskChargeV1test::ResetHists()
+void AliAnalysisTaskChargeV1::ResetHists()
 {
   hMQ_thisEvt->Reset();
   hReQ_thisEvt->Reset();
@@ -1741,7 +1699,7 @@ void AliAnalysisTaskChargeV1test::ResetHists()
 
 //----------------------------------------------
 
-bool AliAnalysisTaskChargeV1test::GetZDCPlaneLsFit()
+bool AliAnalysisTaskChargeV1::GetZDCPlaneLsFit()
 {
   // if(!(fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r"))) return true;
   AliAODZDC *fZDC = fAOD->GetZDCData();
@@ -1873,7 +1831,7 @@ bool AliAnalysisTaskChargeV1test::GetZDCPlaneLsFit()
 }
 
 //--------------------------------------------
-inline double AliAnalysisTaskChargeV1test::GetEventPlane(double qx, double qy, double harmonic)
+inline double AliAnalysisTaskChargeV1::GetEventPlane(double qx, double qy, double harmonic)
 {
   double psi = (1. / harmonic) * TMath::ATan2(qy, qx);
   if (psi < 0)
@@ -1884,7 +1842,7 @@ inline double AliAnalysisTaskChargeV1test::GetEventPlane(double qx, double qy, d
 
 //---------------------------------------------
 
-bool AliAnalysisTaskChargeV1test::CheckPIDofParticle(AliAODTrack *ftrack, int pidToCheck)
+bool AliAnalysisTaskChargeV1::CheckPIDofParticle(AliAODTrack *ftrack, int pidToCheck)
 {
   if (pidToCheck == 0)
     return kTRUE; //// Charge Particles do not need PID check
