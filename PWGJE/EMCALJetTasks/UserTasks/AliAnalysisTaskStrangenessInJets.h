@@ -178,8 +178,8 @@ protected:
   void ExecOnce();
   Bool_t FillHistograms();
   Bool_t Run();
-  void AddEventTracks(TClonesArray* coll, TClonesArray* tracks);  
-  void AddEventTracksMC(TClonesArray* coll, TClonesArray* tracks);  
+  void AddEventTracks(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPart);  
+  void AddEventTracksMC(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPartMC);  
   Bool_t GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const;
 
   TList* fOutputListStd; //! Output list for standard analysis results
@@ -196,7 +196,7 @@ protected:
   //AliFJWrapper           fFastJetWrapperBG;       //!<!fastjet wrapper for the bg jets
   AliFJWrapper           fFastJetWrapperMCGen;    //!<!fastjet wrapper for the bg jets
 
-  std::vector<fastjet::PseudoJet> InputBgParticles;
+  //std::vector<fastjet::PseudoJet> InputBgParticles;
   fastjet::Selector selectorBG;
 
 private:
