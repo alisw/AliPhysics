@@ -58,6 +58,9 @@ public:
   {
     fUseEvtNoLambda = usenolambdaevt;
   }
+  void SetExcludeDausOf(std::vector<UInt_t> motherList) {
+    fExcludedMothers = motherList;
+  }
   void SetCollectionConfig(AliFemtoDreamCollConfig *config)
   {
     fConfig = config;
@@ -72,6 +75,7 @@ private:
   bool fIsMC;                             //
   bool fUseOMixing;                       //
   bool fUseEvtNoLambda;                   //
+  std::vector<UInt_t> fExcludedMothers;   // Only valid if run on MC
   PCSettings fPCSettings;                 //
   UInt_t fTrigger;                        //
   TList *fResults;                        //!
@@ -101,7 +105,7 @@ private:
   AliFemtoDreamControlSample *fSample;    //!
   AliAODTrack **fGTI;                     //!
   int fTrackBufferSize;                   //
-  ClassDef(AliAnalysisTaskLambdaPion, 1)
+  ClassDef(AliAnalysisTaskLambdaPion, 2)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKLAMBDAPION_H_ */
