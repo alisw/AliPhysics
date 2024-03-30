@@ -41,10 +41,8 @@ class AliPtPtContainer: public TNamed {
         Long64_t Merge(TCollection *collist);
         TList* fCMTermList;
         TList* fCorrList;
-        //TList* fCumulantList; //!
-        //TList* fCentralMomentList; //!
-        vector<TH1*> fCumulantVec;
-        vector<TH1*> fCentralMomentVec;
+        TList* fCumulantList;
+        TList* fCentralMomentList;
         const int mpar;
         unsigned int fEventWeight;
         vector<Double_t> fCorr;
@@ -62,6 +60,6 @@ class AliPtPtContainer: public TNamed {
         static Double_t           fCoeff[5][5][5][5];
         void MergeBSLists(TList *source, TList *target);
         TH1* raiseHistToPower(TH1* inh, double p);
-    ClassDef(AliPtPtContainer,2);
+    ClassDef(AliPtPtContainer,4);
 };
 #endif
