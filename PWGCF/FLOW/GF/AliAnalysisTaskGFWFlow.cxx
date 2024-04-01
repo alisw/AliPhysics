@@ -489,7 +489,7 @@ Bool_t AliAnalysisTaskGFWFlow::CheckTriggerVsCentrality(Double_t l_cent) {
 Bool_t AliAnalysisTaskGFWFlow::LoadWeights(Int_t runno) { //Cannot be used when running on the trains
   TString wName=Form("w%i%s",runno,GetSystPF(BitIndex(fEvNomFlag), BitIndex(fTrNomFlag)).Data());
   if(fWeightList) {
-    fWeights = (AliGFWWeights*)fWeightList->FindObject(wName.Data());
+    fWeights = (AliGFWWeights*)fWeightList->FindObject("WeightList")->FindObject(wName.Data());
     if(!fWeights) {
       fWeightList->ls();
       AliFatal("Weights could not be found in the list!\n");
