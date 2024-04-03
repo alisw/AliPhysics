@@ -161,10 +161,10 @@ void AliFemtoCutMonitorParticleYPt::Fill(const AliFemtoTrack* aTrack)
 {
   // Fill in the monitor histograms with the values from the current track
   float tEnergy = ::sqrt(aTrack->P().Mag2()+fMass*fMass);
-  if(tEnergy==abs(aTrack->P().z())) tEnergy+=0.001;
+  //if(tEnergy==abs(aTrack->P().z())) tEnergy+=0.001;
 
   float tRapidity = -1000;
-  if((tEnergy+aTrack->P().z())/(tEnergy-aTrack->P().z())>0)
+  if(tEnergy>=0 && tEnergy!=aTrack->P().z())
     tRapidity = 0.5*::log((tEnergy+aTrack->P().z())/(tEnergy-aTrack->P().z()));
   else
     tRapidity = -999;

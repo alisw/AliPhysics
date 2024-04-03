@@ -32,29 +32,29 @@
 #include "AliAODpidUtil.h"
 #include "AliAODHeader.h"
 
-#include "AliAnalysisTaskEfficiencyPbPb_DR.h"
+#include "AliAnalysisEffTaskPbPbDRMultDY.h"
 
-ClassImp(AliAnalysisTaskEfficiencyPbPb_DR)
-//PbPb_DR -> 9 multiplicity in PbPb in DR task 
-double fV1PbPb_DR[3];
+ClassImp(AliAnalysisEffTaskPbPbDRMultDY)
+//MDR -> 9 multiplicity in PbPb in DR task 
+double fV1MDR[3];
 
 
-void AliAnalysisTaskEfficiencyPbPb_DR::SetFB(int fb)
+void AliAnalysisEffTaskPbPbDRMultDY::SetFB(int fb)
 {
   fFB = fb;
 }
 
-void AliAnalysisTaskEfficiencyPbPb_DR::SetPidMethod(PidMethod method)
+void AliAnalysisEffTaskPbPbDRMultDY::SetPidMethod(PidMethod method)
 {
   fPidMethod = method;
 }
 
-int AliAnalysisTaskEfficiencyPbPb_DR::GetPidMethod()
+int AliAnalysisEffTaskPbPbDRMultDY::GetPidMethod()
 {
   return (int)fPidMethod;
 }
 
-void AliAnalysisTaskEfficiencyPbPb_DR::SetPidMethod(int method)
+void AliAnalysisEffTaskPbPbDRMultDY::SetPidMethod(int method)
 {
   switch(method){
   case 0: fPidMethod=kNSigma;
@@ -70,7 +70,7 @@ void AliAnalysisTaskEfficiencyPbPb_DR::SetPidMethod(int method)
 
 //_______________________________________________________
 
-AliAnalysisTaskEfficiencyPbPb_DR::AliAnalysisTaskEfficiencyPbPb_DR(TString name, int pidMethod, int filterbit) :
+AliAnalysisEffTaskPbPbDRMultDY::AliAnalysisEffTaskPbPbDRMultDY(TString name, int pidMethod, int filterbit) :
   AliAnalysisTaskSE(name), centrality(0), fHistoList(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
 
 {
@@ -105,7 +105,7 @@ AliAnalysisTaskEfficiencyPbPb_DR::AliAnalysisTaskEfficiencyPbPb_DR(TString name,
 
 //_______________________________________________________
 
-AliAnalysisTaskEfficiencyPbPb_DR::~AliAnalysisTaskEfficiencyPbPb_DR()
+AliAnalysisEffTaskPbPbDRMultDY::~AliAnalysisEffTaskPbPbDRMultDY()
 {
   // Destructor
   if(AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis)
@@ -114,7 +114,7 @@ AliAnalysisTaskEfficiencyPbPb_DR::~AliAnalysisTaskEfficiencyPbPb_DR()
 
 //_______________________________________________________
 
-void AliAnalysisTaskEfficiencyPbPb_DR::UserCreateOutputObjects()
+void AliAnalysisEffTaskPbPbDRMultDY::UserCreateOutputObjects()
 {
 
   /* create output */
@@ -253,7 +253,7 @@ void AliAnalysisTaskEfficiencyPbPb_DR::UserCreateOutputObjects()
    fHistoList->Add(fHistEv[i]);
 
 
-  for(Int_t i = 0; i < 1; i++)  {
+  for(Int_t i = 0; i < 5; i++)  {
     hname = "fHistEventCutsM";
     hname+= i;
     
@@ -349,7 +349,7 @@ void AliAnalysisTaskEfficiencyPbPb_DR::UserCreateOutputObjects()
 
 //_____________________________________________________________________
 
-bool IsPionNSigmaPbPb_DR(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
+bool IsPionNSigmaMDR(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
 {
    if (mom > 0.5) {
      if (TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < 2) return true;
@@ -360,7 +360,7 @@ bool IsPionNSigmaPbPb_DR(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float 
    return false;
 }
 
-bool IsPionNSigma3PbPb_DR(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
+bool IsPionNSigma3MDR(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
 {
     if(mom > 0.5) {
      if(TMath::Hypot( nsigmaTOFPi, nsigmaTPCPi ) < 3) return true;
@@ -371,7 +371,7 @@ bool IsPionNSigma3PbPb_DR(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float
     return false;
 }
 
-bool IsKaonNSigmaPbPb_DR(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
+bool IsKaonNSigmaMDR(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
 {
   if (mom > 0.5) {
      //rejection of unwanted contamination
@@ -384,7 +384,7 @@ bool IsKaonNSigmaPbPb_DR(float mom, float nsigmaTPCK, float nsigmaTOFK, float TO
   return false;
 }
 
-bool IsKaonNSigma3PbPb_DR(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
+bool IsKaonNSigma3MDR(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
 {
   if (mom > 0.5) {
     if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < 3) return true;
@@ -395,7 +395,7 @@ bool IsKaonNSigma3PbPb_DR(float mom, float nsigmaTPCK, float nsigmaTOFK, float T
   return false;
 }
 
-bool IsProtonNSigmaPbPb_DR(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
+bool IsProtonNSigmaMDR(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
 {
     if (mom > 0.5) {
    //  if(mom>1.8 && TOFtime<-300) return false;
@@ -408,7 +408,7 @@ bool IsProtonNSigmaPbPb_DR(float mom, float nsigmaTPCP, float nsigmaTOFP, float 
 }
 
 
-bool IsProtonNSigma3PbPb_DR(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
+bool IsProtonNSigma3MDR(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
 {
   if (mom > 0.5) {
     if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < 3) return true;
@@ -420,7 +420,7 @@ bool IsProtonNSigma3PbPb_DR(float mom, float nsigmaTPCP, float nsigmaTOFP, float
 }
 
 
-bool IsElectronPbPb_DR(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
+bool IsElectronMDR(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
 {
   if(TMath::Abs(nsigmaTPCe)<1)
     return true;
@@ -429,7 +429,7 @@ bool IsElectronPbPb_DR(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, flo
 }
 
 //_______________________________________________________
-void AliAnalysisTaskEfficiencyPbPb_DR::UserExec(Option_t *)
+void AliAnalysisEffTaskPbPbDRMultDY::UserExec(Option_t *)
 {
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   AliAODEvent *fAOD = aodH->GetEvent();
@@ -473,15 +473,14 @@ void AliAnalysisTaskEfficiencyPbPb_DR::UserExec(Option_t *)
   fHistQA[9]->Fill(1);
 
   //****** Multiplicity selection *********
-  int fcent;
-  fcent = 0;
-  /*if(mult >= 0 && mult <5)  fcent = 0;
+  Int_t fcent = -999;
+  if(mult >= 0 && mult <5)  fcent = 0;
   else if(mult >= 5 && mult <10) fcent = 1;
   else if(mult >= 10 && mult <20) fcent = 2;
   else if(mult >= 20 && mult <30) fcent = 3;
   else if(mult >= 30 && mult <40) fcent = 4;
   else return;
-  */
+
   if(fcent==0)fHistEvCuts[0]->Fill(1);
   else if(fcent==1)fHistEvCuts[1]->Fill(1);
   else if(fcent==2)fHistEvCuts[2]->Fill(1);
@@ -489,7 +488,7 @@ void AliAnalysisTaskEfficiencyPbPb_DR::UserExec(Option_t *)
   else if(fcent==4)fHistEvCuts[4]->Fill(1);
 
   const AliAODVertex* vertex =(AliAODVertex*) aodEvent->GetPrimaryVertex();
-  vertex->GetPosition(fV1PbPb_DR);
+  vertex->GetPosition(fV1MDR);
   if (!vertex || vertex->GetNContributors()<1) return;
 
   fHistQA[9]->Fill(2);
@@ -682,7 +681,7 @@ void AliAnalysisTaskEfficiencyPbPb_DR::UserExec(Option_t *)
     float nSigmaTPCK = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kKaon);
     float nSigmaTPCP = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kProton);
     float nSigmaTPCe = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kElectron);
-    if(IsElectronPbPb_DR(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
+    if(IsElectronMDR(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
       continue;
    
     fHistQA[10]->Fill(7);
@@ -737,9 +736,9 @@ void AliAnalysisTaskEfficiencyPbPb_DR::UserExec(Option_t *)
 
     if(fPidMethod==kNSigma){
     //******** With double counting *******************
-      isPionNsigma = (IsPionNSigmaPbPb_DR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
-      isKaonNsigma = (IsKaonNSigmaPbPb_DR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
-      isProtonNsigma = (IsProtonNSigmaPbPb_DR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isPionNsigma = (IsPionNSigmaMDR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
+      isKaonNsigma = (IsKaonNSigmaMDR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
+      isProtonNsigma = (IsProtonNSigmaMDR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
     }
     else if(fPidMethod==kNSigmaNoDoubleCounting){
       //******** Without double counting *******************
@@ -757,26 +756,26 @@ void AliAnalysisTaskEfficiencyPbPb_DR::UserExec(Option_t *)
       }
 
       if(nSigmaPIDPi<nSigmaPIDK && nSigmaPIDPi<nSigmaPIDP){
-       isPionNsigma = (IsPionNSigmaPbPb_DR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
+       isPionNsigma = (IsPionNSigmaMDR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
       }
       else if(nSigmaPIDK<nSigmaPIDPi && nSigmaPIDK<nSigmaPIDP){
-       isKaonNsigma = (IsKaonNSigmaPbPb_DR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
+       isKaonNsigma = (IsKaonNSigmaMDR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
       }
       else if(nSigmaPIDP<nSigmaPIDPi && nSigmaPIDP<nSigmaPIDK){
-       isProtonNsigma = (IsProtonNSigmaPbPb_DR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+       isProtonNsigma = (IsProtonNSigmaMDR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
       }
     }
     else if(fPidMethod==kExclusivePID){
       //******** Exclusive PID ********************
-      isPionNsigma = (IsPionNSigmaPbPb_DR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigmaPbPb_DR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaPbPb_DR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isKaonNsigma = (!IsPionNSigmaPbPb_DR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaPbPb_DR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaPbPb_DR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isProtonNsigma = (!IsPionNSigmaPbPb_DR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigmaPbPb_DR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaPbPb_DR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isPionNsigma = (IsPionNSigmaMDR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigmaMDR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaMDR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isKaonNsigma = (!IsPionNSigmaMDR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaMDR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaMDR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isProtonNsigma = (!IsPionNSigmaMDR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigmaMDR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaMDR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
     }
     else if(fPidMethod==kExclusivePIDDiffRejection){
       //******** Exclusive PID, different rejection  ********************
-      isPionNsigma = (IsPionNSigmaPbPb_DR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma3PbPb_DR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3PbPb_DR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isKaonNsigma = (!IsPionNSigma3PbPb_DR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaPbPb_DR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3PbPb_DR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isProtonNsigma = (!IsPionNSigma3PbPb_DR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3PbPb_DR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaPbPb_DR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isPionNsigma = (IsPionNSigmaMDR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma3MDR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3MDR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isKaonNsigma = (!IsPionNSigma3MDR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaMDR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3MDR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isProtonNsigma = (!IsPionNSigma3MDR(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3MDR(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaMDR(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
     }
     if (isPionNsigma){
       fHistQAPID[0][1][charge]->Fill(tPt,tdEdx);
