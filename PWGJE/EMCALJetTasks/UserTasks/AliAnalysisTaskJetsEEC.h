@@ -267,36 +267,37 @@ protected:
 
     TH1D *constituentId; //!<! initializing 1D histogram for debugging
     TH3D *R_res_eec_tru_debug; //!<! initializing 3D histogram for R resolution EEC as a function of jet pT tru debug
-    TH2D *track_pt_res_debug; //!<! initializing 3D histogram for R resolution EEC as a function
-    TH3D *track_eta_debug; //!<! initializing 3D histogram for R resolution EEC as a function
-    TH3D *track_rap_debug; //!<! initializing 3D histogram for R resolution EEC as a function
-    TH2D *track_phi_debug; //!<! initializing 3D histogram for R resolution EEC as a function
-    TH2D *track_R_debug; //!<! initializing 3D histogram for R resolution EEC as a function
-    TH2D *track_R_debug_rap; //!<! initializing 3D histogram for R resolution EEC as a function
+    TH2D *track_pt_res_debug; //!<! initializing 3D histogram for pt resolution debug
+    TH3D *track_eta_debug; //!<! initializing 3D histogram for eta match debug
+    TH3D *track_rap_debug; //!<! initializing 3D histogram for rap match debug
+    TH2D *track_phi_debug; //!<! initializing 3D histogram phi match debug
+    TH2D *track_R_debug; //!<! initializing 3D histogram for R match debug
+    TH2D *track_R_debug_rap; //!<! initializing 3D histogram for R-rap debug
     
-    TH3D *track_eta_res_debug; //!<! initializing 3D histogram for R resolution of single matched track as a function of jet pT tru debug
-    TH3D *track_rap_res_debug; //!<! initializing 3D histogram for R resolution of single matched track as a function of jet pT tru debug
-    TH3D *track_phi_res_debug; //!<! initializing 3D histogram for R resolution of single matched track as a function of jet pT tru debug
+    TH3D *track_eta_res_debug; //!<! initializing 3D histogram for eta resolution of single matched track as a function of jet pT tru debug
+    TH3D *track_rap_res_debug; //!<! initializing 3D histogram for rap resolution of single matched track as a function of jet pT tru debug
+    TH3D *track_phi_res_debug; //!<! initializing 3D histogram for phi resolution of single matched track as a function of jet pT tru debug
     TH3D *track_R_res_debug; //!<! initializing 3D histogram for R resolution of single matched track as a function of jet pT tru debug
-    TH3D *track_R_rap_res_debug; //!<! initializing 3D histogram for R resolution of single matched track as a function of jet pT tru debug
+    TH3D *track_R_rap_res_debug; //!<! initializing 3D histogram for R-rap resolution of single matched track as a function of jet pT tru debug
 
-    TH3D *R_match_eec_tru_rap;
+    TH3D *R_match_eec_tru_rap; //!<! initializing 3D histogram for R resolution of single matched track as a function of jet pT tru debug
 
-    TH2D *track_pt_response_debug;
-    TH2D *track_pt_wt_res_debug;
-    TH2D *track_pt_wt_response_debug;
+    TH2D *track_pt_response_debug; //!<! initializing 2D histogram for debug pt
+    TH2D *track_pt_wt_res_debug; //!<! initializing 2D histogram for debug wt
+    TH2D *track_pt_wt_response_debug; //!<! initializing 2D histogram for debug wt_response
     
-    TH3D* jetpt_res_w_R;
-    TH3D* jetpt_res_w_wt;
+    TH3D* jetpt_res_w_R; //!<! initializing 3D histogram for R resolution of single matched track as a function of jet pT tru debug
+    TH3D* jetpt_res_w_wt; //!<! initializing 3D histogram for weight resolution of single matched track as a function of jet pT tru debug
     
-
+    TH3D* OptUn_eec; //!<! initializing 3D histogram for optimizing binning eec
+    TH3D* OptUn_e3c; //!<! initializing 3D histogram for optimizing binning e3c
 private:
     AliAnalysisTaskJetsEEC(
                            const AliAnalysisTaskJetsEEC &); // not implemented
     AliAnalysisTaskJetsEEC &
     operator=(const AliAnalysisTaskJetsEEC &); // not implemented
     
-    ClassDef(AliAnalysisTaskJetsEEC, 66) //change this to 67 if you add something new
+    ClassDef(AliAnalysisTaskJetsEEC, 67) //change this to 68 if you add something new
 };
 #endif
 
