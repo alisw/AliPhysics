@@ -1665,6 +1665,11 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if (aodmcpt && aodmcpt->IsFromSubsidiaryEvent()) // AOD: PH Not sure if corresponds to BKG event
         mcparticle.fFlags |= MCParticleFlags::FromBackgroundEvent;
 
+      if (MCEvt && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, MCEvt)) // ESD
+        mcparticle.fFlags |= MCParticleFlags::FromOutOfBunchPileUpCollision;
+      if (aodmcpt && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, MCHeader, MCArray)) // AOD
+        mcparticle.fFlags |= MCParticleFlags::FromOutOfBunchPileUpCollision;
+
       mcparticle.fIndexArray_Mothers_size = 1;
       mcparticle.fIndexArray_Mothers[0] = particle ? particle->GetMother(0) : aodmcpt->GetMother();
       if (mcparticle.fIndexArray_Mothers[0] > -1)
