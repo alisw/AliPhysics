@@ -750,17 +750,23 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 		    BinCont = fHistMCEffHadronPlus->GetBinContent(ptBinNo);
 		  }
 		
-		if(trkEta < fEtaLeftCut && BinCont != 0)
+		if(trkEta < fEtaLeftCut)
 		  {
-		    fPt_profile->Fill(trkPt,1.0/BinCont);
-		    pT_sum_etaLess0 += trkPt/BinCont;
-		    N_sum_etaLess0 += 1.0/BinCont;
+		    if(BinCont != 0)
+		      {
+			fPt_profile->Fill(trkPt,1.0/BinCont);
+			pT_sum_etaLess0 += trkPt/BinCont;
+			N_sum_etaLess0 += 1.0/BinCont;
+		      }
 		  }
 	    
-		if(trkEta > fEtaMin && BinCont != 0)
+		if(trkEta > fEtaMin)
 		  {
-		    pT_sum_etaGreaterEtamin += trkPt/BinCont;
-		    N_sum_etaGreaterEtamin += 1.0/BinCont;
+		    if(BinCont != 0)
+		      {
+			pT_sum_etaGreaterEtamin += trkPt/BinCont;
+			N_sum_etaGreaterEtamin += 1.0/BinCont;
+		      }
 		  }
 	      }
 	  }
