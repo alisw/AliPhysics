@@ -21,7 +21,8 @@ AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2 *AddTaskDiffPtFluc_MCnoESD_gen_v2( TStr
   AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2 *task_Mpt = new AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2(TaskMeanpt);
 
   task_Mpt->SetMCGeneratorChoice(fMCGenChoice);
-  
+  task_Mpt->SetEtaLeftCut(fEta_leftCut);
+  task_Mpt->SetEtaRightCut(fEta_rightCut);
 
   
   mgr->AddTask(task_Mpt);                        // connect the task to the analysis manager
