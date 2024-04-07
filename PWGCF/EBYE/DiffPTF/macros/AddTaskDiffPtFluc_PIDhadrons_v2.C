@@ -1,4 +1,4 @@
-AliAnalysisTaskDiffPtFluc_PIDhadrons_v2 *AddTaskDiffPtFluc_PIDhadrons_v2(Int_t fCentralityMin=0, Int_t fCentralityMax=90, Double_t fVzMax=10, Int_t fpileupcut = 1, Int_t fCentEstFlag = 0, Int_t fFilterBit=96, Double_t fchi2tpc=4, Double_t fchi2its=36, Double_t fpidnSigma=2.0, Double_t ftpccrossedrows = 70, TString OutFileName = "_default", TString sMCfilePath = "file:///media/swati/data/Ollitraut_V0/implentation_in_process/latest_data/EfficiencyHijingPbPb.root", Double_t fetacut=0.4, Int_t feffflag=0, Int_t feffCorrFlag=1)
+AliAnalysisTaskDiffPtFluc_PIDhadrons_v2 *AddTaskDiffPtFluc_PIDhadrons_v2(Int_t fCentralityMin=0, Int_t fCentralityMax=90, Double_t fVzMax=10, Int_t fpileupcut = 1, Int_t fCentEstFlag = 0, Int_t fFilterBit=96, Double_t fchi2tpc=4, Double_t fchi2its=36, Double_t fpidnSigma=2.0, Double_t ftpccrossedrows = 70, TString OutFileName = "_default", TString sMCfilePath = "file:///media/swati/data/Ollitraut_V0/implentation_in_process/latest_data/EfficiencyHijingPbPb.root", Double_t fetaleftcut = 0.0, Double_t fetacut=0.4, Int_t feffflag=0, Int_t feffCorrFlag=0, Int_t fElRejectFlag=0, Int_t fPIDExclusiveFlag=0, Int_t fFillHistTrkQAFlag=1, Int_t fFillHistTrkPIDQAFlag=1)
 {
   // standard with task
   printf("===================================================================================\n");
@@ -64,11 +64,15 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons_v2 *AddTaskDiffPtFluc_PIDhadrons_v2(Int_t f
   task_Mpt->SetMaxChi2PerTPCClusterRange(fchi2tpc);
   task_Mpt->SetMaxChi2PerITSClusterRange(fchi2its);
   task_Mpt->SetPIDnSigmaCut(fpidnSigma);
+  task_Mpt->SetEtaLeftCut(fetaleftcut);
   task_Mpt->SetEtaCut(fetacut);
   task_Mpt->SetMinNCrossedRowsTPC(ftpccrossedrows);
   task_Mpt->SetEfficiencyEffectImposeFlag(feffflag);
   task_Mpt->SetEfficiencyCorrectionFlag(feffCorrFlag);
-  
+  task_Mpt->SetRejectElectronFlag(fElRejectFlag);
+  task_Mpt->SetExclusivePIDCutFlag(fPIDExclusiveFlag);
+  task_Mpt->SetFillTrackQAHistogramsFlag(fFillHistTrkQAFlag);
+  task_Mpt->SetFillTrackPIDQAHistogramsFlag(fFillHistTrkPIDQAFlag);
   
   TString OutTreeName;
   OutTreeName = "fTreeEvent";
