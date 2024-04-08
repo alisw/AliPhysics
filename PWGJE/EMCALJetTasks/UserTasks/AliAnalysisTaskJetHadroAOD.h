@@ -429,7 +429,7 @@ private:
   TH3F             * fHistJet_kin;     //!<! histogram for jet ptsub, eta, phi after area cut
   TH2F             * fHistJet_moms;     //!<! histogram for jet pt v jet ptsub after area cut*/
 
-  ClassDef(AliAnalysisTaskJetHadroAOD, 2); //CHANGE EVERY TIME YOU PUSH
+  ClassDef(AliAnalysisTaskJetHadroAOD, 2);
 
 };
 

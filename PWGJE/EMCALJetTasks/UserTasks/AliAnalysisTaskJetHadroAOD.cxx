@@ -804,36 +804,36 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
     fHist_jet_kaExpec_prhyp    = new TH3F("fHist_jet_kaExpec_prhyp",   "Expected Nsigma histogram for kaons under the proton hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
     fHist_jet_deExpec_prhyp    = new TH3F("fHist_jet_deExpec_prhyp",   "Expected Nsigma histogram for deuterons under the proton hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
 
-    Float_t pi_expec_bins[21];
-    for (int i=0; i < (20+1); i++){
-      pi_expec_bins[i] = 60.0 + i*2.0;
+    Float_t pi_expec_bins[401];
+    for (int i=0; i < (400+1); i++){
+      pi_expec_bins[i] = 60.0 + i*0.1;
     }
-    Float_t ka_expec_bins[271];
-    for (int i=0; i < (270+1); i++){
-      ka_expec_bins[i] = 60.0 + i*2.0;
+    Float_t ka_expec_bins[5401];
+    for (int i=0; i < (5400+1); i++){
+      ka_expec_bins[i] = 60.0 + i*0.1;
     }
-    Float_t pr_expec_bins[271];
-    for (int i=0; i < (270+1); i++){
-      pr_expec_bins[i] = 60.0 + i*2.0;
+    Float_t pr_expec_bins[5401];
+    for (int i=0; i < (5400+1); i++){
+      pr_expec_bins[i] = 60.0 + i*0.1;
     }
 
-    fHistTOFSigmaExpec_pi    = new TH3F("fHistTOFSigmaExpec_pi",   "Expected TOF Sigma histogram for pions", n_TOF_mom_bins,TOF_mom_bins,   20,pi_expec_bins, n_eta_bins,eta_bins);
-    fHistTOFSigmaExpec_ka    = new TH3F("fHistTOFSigmaExpec_ka",   "Expected TOF Sigma histogram for kaons", n_TOF_mom_bins,TOF_mom_bins,   270,ka_expec_bins, n_eta_bins,eta_bins);
-    fHistTOFSigmaExpec_pr    = new TH3F("fHistTOFSigmaExpec_pr",   "Expected TOF Sigma histogram for protons", n_TOF_mom_bins,TOF_mom_bins,   270,pr_expec_bins, n_eta_bins,eta_bins);
+    fHistTOFSigmaExpec_pi    = new TH3F("fHistTOFSigmaExpec_pi",   "Expected TOF Sigma histogram for pions", n_TOF_mom_bins,TOF_mom_bins,   400,pi_expec_bins, n_eta_bins,eta_bins);
+    fHistTOFSigmaExpec_ka    = new TH3F("fHistTOFSigmaExpec_ka",   "Expected TOF Sigma histogram for kaons", n_TOF_mom_bins,TOF_mom_bins,   5400,ka_expec_bins, n_eta_bins,eta_bins);
+    fHistTOFSigmaExpec_pr    = new TH3F("fHistTOFSigmaExpec_pr",   "Expected TOF Sigma histogram for protons", n_TOF_mom_bins,TOF_mom_bins,   5400,pr_expec_bins, n_eta_bins,eta_bins);
 
-    fHistjet_TOFSigmaExpec_pi    = new TH3F("fHistjet_TOFSigmaExpec_pi",   "Expected TOF Sigma histogram for pions", n_TOF_mom_bins,TOF_mom_bins,  20,pi_expec_bins, n_eta_bins,eta_bins);
-    fHistjet_TOFSigmaExpec_ka    = new TH3F("fHistjet_TOFSigmaExpec_ka",   "Expected TOF Sigma histogram for kaons", n_TOF_mom_bins,TOF_mom_bins,   270,ka_expec_bins, n_eta_bins,eta_bins);
-    fHistjet_TOFSigmaExpec_pr    = new TH3F("fHistjet_TOFSigmaExpec_pr",   "Expected TOF Sigma histogram for protons", n_TOF_mom_bins,TOF_mom_bins,   270,pr_expec_bins, n_eta_bins,eta_bins);
+    fHistjet_TOFSigmaExpec_pi    = new TH3F("fHistjet_TOFSigmaExpec_pi",   "Expected TOF Sigma histogram for pions", n_TOF_mom_bins,TOF_mom_bins,  400,pi_expec_bins, n_eta_bins,eta_bins);
+    fHistjet_TOFSigmaExpec_ka    = new TH3F("fHistjet_TOFSigmaExpec_ka",   "Expected TOF Sigma histogram for kaons", n_TOF_mom_bins,TOF_mom_bins,   5400,ka_expec_bins, n_eta_bins,eta_bins);
+    fHistjet_TOFSigmaExpec_pr    = new TH3F("fHistjet_TOFSigmaExpec_pr",   "Expected TOF Sigma histogram for protons", n_TOF_mom_bins,TOF_mom_bins,   5400,pr_expec_bins, n_eta_bins,eta_bins);
   }
 
   if (fFill_TPC_expecs){
-    Float_t mean_expec_bins[3601];
-    for (int i=0; i < (3600+1); i++){
-      mean_expec_bins[i] = 40.0 + i*0.1;
+    Float_t mean_expec_bins[361];
+    for (int i=0; i < (360+1); i++){
+      mean_expec_bins[i] = 40.0 + i*1.0;
     }
-    Float_t sigma_expec_bins[251];
-    for (int i=0; i < (250+1); i++){
-      sigma_expec_bins[i] = 0.0 + i*0.1;
+    Float_t sigma_expec_bins[26];
+    for (int i=0; i < (25+1); i++){
+      sigma_expec_bins[i] = 0.0 + i*1.0;
     }
 
     fHistIncTracks_mpi  = new TH3F("fHistIncTracks_mpi",     "Expected mean pion histogram for inclusive tracks"  , n_tpc_mom_bins,tpc_mom_bins, 360, mean_expec_bins, n_eta_bins,eta_bins);
