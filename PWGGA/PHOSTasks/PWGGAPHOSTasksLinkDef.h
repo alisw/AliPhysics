@@ -22,6 +22,7 @@
 #pragma link C++ class AliAnalysisTaskPHOSEmbedding+;
 #pragma link C++ class AliAnalysisTaskPHOSEmbeddingEfficiency+;
 #pragma link C++ class AliAnalysisTaskPHOSSingleSim+;
+#pragma link C++ class AliAnalysisPHOSNeutralMesonsAndPhotons+;
 
 
 // PHOS_pp_8TeV_2012 
