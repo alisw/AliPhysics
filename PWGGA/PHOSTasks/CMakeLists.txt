@@ -131,6 +131,7 @@ set(SRCS
     PHOS_gamma/AliAnalysisTaskGammaPHOSPP.cxx
     PHOS_gamma/AliAnalysisTaskPHOSPbPbQARun2.cxx
     PHOS_gamma/AliAnalysisTaskGammaPHOSPbPbRun2.cxx
+    PHOS_Run2/AliAnalysisPHOSNeutralMesonsAndPhotons.cxx
    )
 
 # Headers from sources
