@@ -43,85 +43,85 @@
 ClassImp(AliAnalysisPHOSNeutralMesonsAndPhotons);
 
 //_____________________________________________________________________________
-AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(const char* name) : 
-  AliAnalysisTaskSE(name),
-  fOutputContainer(nullptr),
-  fEvent(nullptr),
-  fMCEvent(nullptr),
-  fRunNumber(0),
-  fMCStack(nullptr),
-  fCaloPhotonsPHOS(nullptr),
-  fCaloPhotonsMix(nullptr),
-  fCaloPhotonsPHOSList(nullptr),
-  fUtils(nullptr),
-  fPHOSGeo(nullptr),
-  fAODCells(nullptr),
-  fCaloTriggerMimicHelper(nullptr),
-  fPHOSTrigType(AliCaloTriggerMimicHelper::kPHOSAny),
-  fIsMC(kFALSE),
-  fIsPHOSTriggerAnalysis(kFALSE),
-  fIsMBTriggerAnalysis(kTRUE),
-  fUseCoreEnergy(kTRUE),
-  fDoNonlinCorr(kTRUE),
-  fUserNonlinFunc(nullptr),
-  fDoClustQA(kFALSE),
-  fDoCellQA(kFALSE),
-  fNMixEvents(10),
-  fCentralityEstimator("V0M"),
-  fMultSelection(nullptr),
-  fCentrality(-1),
-  fCentralityMin(0.),
-  fCentralityMax(10.),
-  fNCenBin(5),
-  fEminCut(0.2),
-  fDispSigma(2.5),
-  fCPVSigma(2.5),
-  fTOFCut(30.),
-  fHistInfo(nullptr),
-  fHistSelectEvent(nullptr),
-  fHistVertexZ(nullptr),
-  fHistCentMain(nullptr),
-  fHistCentV0MvsCL0(nullptr),
-  fHistCentV0MvsCL1(nullptr),
-  fHistCentV0MvsV0C(nullptr),
-  fHistCentCL0vsCL1(nullptr),
-  fHistCentZNAvsZNC(nullptr),
-  fHistTOFClust(nullptr),
-  fHistCaloPhotonTOFvsE(nullptr),
-  fHistClustTOFvsDDL(nullptr),
-  fHistClustTOFvsDDLEnCut(nullptr),
-  fHistClustMultVsCentrality(nullptr),
-  fHistM02vsPt(nullptr),
-  fHistM20vsPt(nullptr),
-  fHistClustFullE(nullptr),
-  fHistClustCoreE(nullptr),
-  fHistNonlinTest(nullptr),
-  fHistMggTOFCutEffBase(nullptr),
-  fHistMixMggTOFCutEffBase(nullptr),
-  fHistMggTOFCutEffProbe(nullptr),
-  fHistMixMggTOFCutEffProbe(nullptr),
-  fHistTruePi0MggVsRecPt(nullptr),
-  fHistTruePi0MggVsTruePt(nullptr),
-  fHistTrueEtaMggVsRecPt(nullptr),
-  fHistTrueEtaMggVsTruePt(nullptr),
-  fHistMCPartIDvsPt(nullptr),
-  fHistPrimPi0InAccPt(nullptr),
-  fHistPrimPi0BothPhInAccPt(nullptr),
-  fHistPrimPi0OnePhInAccPt(nullptr),
-  fHistPrimPi0PtvsPhInAccPt(nullptr),
-  fHistPrimEtaInAccPt(nullptr),
-  fHistPrimEtaBothPhInAccPt(nullptr),
-  fHistPrimEtaOnePhInAccPt(nullptr),
-  fHistPrimEtaPtvsPhInAccPt(nullptr),
-  fHistPrimGammaPt(nullptr),
-  fHistPrimGammaInAccPt(nullptr)
+AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(const char* name) : AliAnalysisTaskSE(name),
+                                                                                                   fOutputContainer(nullptr),
+                                                                                                   fEvent(nullptr),
+                                                                                                   fMCEvent(nullptr),
+                                                                                                   fRunNumber(0),
+                                                                                                   fMCStack(nullptr),
+                                                                                                   fCaloPhotonsPHOS(nullptr),
+                                                                                                   fCaloPhotonsMix(nullptr),
+                                                                                                   fCaloPhotonsPHOSList(nullptr),
+                                                                                                   fUtils(nullptr),
+                                                                                                   fPHOSGeo(nullptr),
+                                                                                                   fAODCells(nullptr),
+                                                                                                   fCaloTriggerMimicHelper(nullptr),
+                                                                                                   fPHOSTrigType(AliCaloTriggerMimicHelper::kPHOSAny),
+                                                                                                   fIsMC(kFALSE),
+                                                                                                   fIsPHOSTriggerAnalysis(kFALSE),
+                                                                                                   fIsMBTriggerAnalysis(kTRUE),
+                                                                                                   fUseCoreEnergy(kTRUE),
+                                                                                                   fDoNonlinCorr(kTRUE),
+                                                                                                   fUserNonlinFunc(nullptr),
+                                                                                                   fDoClustQA(kFALSE),
+                                                                                                   fDoCellQA(kFALSE),
+                                                                                                   fNMixEvents(10),
+                                                                                                   fCentralityEstimator("V0M"),
+                                                                                                   fMultSelection(nullptr),
+                                                                                                   fCentrality(-1),
+                                                                                                   fCentralityMin(0.),
+                                                                                                   fCentralityMax(10.),
+                                                                                                   fNCenBin(5),
+                                                                                                   fEminCut(0.2),
+                                                                                                   fDispSigma(2.5),
+                                                                                                   fCPVSigma(2.5),
+                                                                                                   fTOFCut(30.),
+                                                                                                   fHistInfo(nullptr),
+                                                                                                   fHistSelectEvent(nullptr),
+                                                                                                   fHistVertexZ(nullptr),
+                                                                                                   fHistCentMain(nullptr),
+                                                                                                   fHistCentV0MvsCL0(nullptr),
+                                                                                                   fHistCentV0MvsCL1(nullptr),
+                                                                                                   fHistCentV0MvsV0C(nullptr),
+                                                                                                   fHistCentCL0vsCL1(nullptr),
+                                                                                                   fHistCentZNAvsZNC(nullptr),
+                                                                                                   fHistTOFClust(nullptr),
+                                                                                                   fHistCaloPhotonTOFvsE(nullptr),
+                                                                                                   fHistClustTOFvsDDL(nullptr),
+                                                                                                   fHistClustTOFvsDDLEnCut(nullptr),
+                                                                                                   fHistClustMultVsCentrality(nullptr),
+                                                                                                   fHistM02vsPt(nullptr),
+                                                                                                   fHistM20vsPt(nullptr),
+                                                                                                   fHistClustFullE(nullptr),
+                                                                                                   fHistClustCoreE(nullptr),
+                                                                                                   fHistNonlinTest(nullptr),
+                                                                                                   fHistMggTOFCutEffBase(nullptr),
+                                                                                                   fHistMixMggTOFCutEffBase(nullptr),
+                                                                                                   fHistMggTOFCutEffProbe(nullptr),
+                                                                                                   fHistMixMggTOFCutEffProbe(nullptr),
+                                                                                                   fHistTruePi0MggVsRecPt(nullptr),
+                                                                                                   fHistTruePi0MggVsTruePt(nullptr),
+                                                                                                   fHistTrueEtaMggVsRecPt(nullptr),
+                                                                                                   fHistTrueEtaMggVsTruePt(nullptr),
+                                                                                                   fHistMCPartIDvsPt(nullptr),
+                                                                                                   fHistPrimPi0InAccPt(nullptr),
+                                                                                                   fHistPrimPi0BothPhInAccPt(nullptr),
+                                                                                                   fHistPrimPi0OnePhInAccPt(nullptr),
+                                                                                                   fHistPrimPi0PtvsPhInAccPt(nullptr),
+                                                                                                   fHistPrimEtaInAccPt(nullptr),
+                                                                                                   fHistPrimEtaBothPhInAccPt(nullptr),
+                                                                                                   fHistPrimEtaOnePhInAccPt(nullptr),
+                                                                                                   fHistPrimEtaPtvsPhInAccPt(nullptr),
+                                                                                                   fHistPrimGammaPt(nullptr),
+                                                                                                   fHistPrimGammaInAccPt(nullptr)
 {
 
-  for (Int_t i = 0; i < 10; i++)
-    for (Int_t j = 0; j < 10; j++)
-      fPHOSEvents[i][j] = nullptr; // Container for PHOS photons
+  for (Int_t i = 0; i < kVtxBins; i++)
+    for (Int_t j = 0; j < kCentBins; j++)
+      for (Int_t k = 0; k < kPRBins; k++)
+        fPHOSEvents[i][j][k] = nullptr;
 
-  for (Int_t imod = 0; imod < 4; imod++) {
+  for (Int_t imod = 0; imod < kMods; imod++) {
     fHistTOFClustMod[imod] = nullptr;
     fHistClustMultVsCentralityMod[imod] = nullptr;
     fHistCaloPhotonTOFvsEMod[imod] = nullptr;
@@ -135,7 +135,7 @@ AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(c
     fHistMixMggPhIDCutMod[imod] = nullptr;
   }
 
-  for (Int_t icut = 0; icut < 4; icut++) {
+  for (Int_t icut = 0; icut < kPIDCuts; icut++) {
     fHistCaloPhotonPt[icut] = nullptr;
     fHistMCCaloPartIDvsPt[icut] = nullptr;
 
@@ -148,10 +148,6 @@ AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(c
 
   for (Int_t imap = 0; imap < 6; imap++)
     fPHOSBadMap[imap] = nullptr;
-
-  fCenBinEdges.Set(fNCenBin);
-  for (Int_t icen = 1; icen <= fNCenBin; icen++)
-    fCenBinEdges.AddAt(int(100. * icen / fNCenBin), icen - 1);
 
   fUserNonlinFunc = new TF1("fUserNonlinFunc", "1.", 0, 200);
 
@@ -163,90 +159,90 @@ AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(c
   DefineOutput(1, THashList::Class());
 }
 //_____________________________________________________________________________
-AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(const AliAnalysisPHOSNeutralMesonsAndPhotons& rh) : 
-  AliAnalysisTaskSE(rh.GetName()),
-  fOutputContainer(nullptr),
-  fEvent(nullptr),
-  fMCEvent(nullptr),
-  fRunNumber(0),
-  fMCStack(nullptr),
-  fCaloPhotonsPHOS(nullptr),
-  fCaloPhotonsMix(nullptr),
-  fCaloPhotonsPHOSList(nullptr),
-  fUtils(nullptr),
-  fPHOSGeo(nullptr),
-  fAODCells(nullptr),
-  fCaloTriggerMimicHelper(nullptr),
-  fPHOSTrigType(AliCaloTriggerMimicHelper::kPHOSAny),
-  fIsMC(kFALSE),
-  fIsPHOSTriggerAnalysis(kFALSE),
-  fIsMBTriggerAnalysis(kTRUE),
-  fUseCoreEnergy(kTRUE),
-  fDoNonlinCorr(kFALSE),
-  fDoTOFEffCorr(kFALSE),
-  fUserNonlinFunc(nullptr),
-  fDoClustQA(kFALSE),
-  fDoCellQA(kFALSE),
-  fNMixEvents(10),
-  fCentralityEstimator("V0M"),
-  fMultSelection(nullptr),
-  fCentrality(-1),
-  fCentralityMin(0.),
-  fCentralityMax(10.),
-  fNCenBin(5),
-  fEminCut(0.2),
-  fDispSigma(2.5),
-  fCPVSigma(2.5),
-  fTOFCut(30.),
-  fHistInfo(nullptr),
-  fHistSelectEvent(nullptr),
-  fHistVertexZ(nullptr),
-  fHistCentMain(nullptr),
-  fHistCentV0MvsCL0(nullptr),
-  fHistCentV0MvsCL1(nullptr),
-  fHistCentV0MvsV0C(nullptr),
-  fHistCentCL0vsCL1(nullptr),
-  fHistCentZNAvsZNC(nullptr),
-  fHistTOFClust(nullptr),
-  fHistCaloPhotonTOFvsE(nullptr),
-  fHistClustTOFvsDDL(nullptr),
-  fHistClustTOFvsDDLEnCut(nullptr),
-  fHistClustMultVsCentrality(nullptr),
-  fHistM02vsPt(nullptr),
-  fHistM20vsPt(nullptr),
-  fHistClustFullE(nullptr),
-  fHistClustCoreE(nullptr),
-  fHistNonlinTest(nullptr),
-  fHistMggTOFCutEffBase(nullptr),
-  fHistMixMggTOFCutEffBase(nullptr),
-  fHistMggTOFCutEffProbe(nullptr),
-  fHistMixMggTOFCutEffProbe(nullptr),
-  fHistTruePi0MggVsRecPt(nullptr),
-  fHistTruePi0MggVsTruePt(nullptr),
-  fHistTrueEtaMggVsRecPt(nullptr),
-  fHistTrueEtaMggVsTruePt(nullptr),
-  fHistMCPartIDvsPt(nullptr),
-  fHistPrimPi0InAccPt(nullptr),
-  fHistPrimPi0BothPhInAccPt(nullptr),
-  fHistPrimPi0OnePhInAccPt(nullptr),
-  fHistPrimPi0PtvsPhInAccPt(nullptr),
-  fHistPrimEtaInAccPt(nullptr),
-  fHistPrimEtaBothPhInAccPt(nullptr),
-  fHistPrimEtaOnePhInAccPt(nullptr),
-  fHistPrimEtaPtvsPhInAccPt(nullptr),
-  fHistPrimGammaPt(nullptr),
-  fHistPrimGammaInAccPt(nullptr)
+AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(const AliAnalysisPHOSNeutralMesonsAndPhotons& rh) : AliAnalysisTaskSE(rh.GetName()),
+                                                                                                                                   fOutputContainer(nullptr),
+                                                                                                                                   fEvent(nullptr),
+                                                                                                                                   fMCEvent(nullptr),
+                                                                                                                                   fRunNumber(0),
+                                                                                                                                   fMCStack(nullptr),
+                                                                                                                                   fCaloPhotonsPHOS(nullptr),
+                                                                                                                                   fCaloPhotonsMix(nullptr),
+                                                                                                                                   fCaloPhotonsPHOSList(nullptr),
+                                                                                                                                   fUtils(nullptr),
+                                                                                                                                   fPHOSGeo(nullptr),
+                                                                                                                                   fAODCells(nullptr),
+                                                                                                                                   fCaloTriggerMimicHelper(nullptr),
+                                                                                                                                   fPHOSTrigType(AliCaloTriggerMimicHelper::kPHOSAny),
+                                                                                                                                   fIsMC(kFALSE),
+                                                                                                                                   fIsPHOSTriggerAnalysis(kFALSE),
+                                                                                                                                   fIsMBTriggerAnalysis(kTRUE),
+                                                                                                                                   fUseCoreEnergy(kTRUE),
+                                                                                                                                   fDoNonlinCorr(kFALSE),
+                                                                                                                                   fDoTOFEffCorr(kFALSE),
+                                                                                                                                   fUserNonlinFunc(nullptr),
+                                                                                                                                   fDoClustQA(kFALSE),
+                                                                                                                                   fDoCellQA(kFALSE),
+                                                                                                                                   fNMixEvents(10),
+                                                                                                                                   fCentralityEstimator("V0M"),
+                                                                                                                                   fMultSelection(nullptr),
+                                                                                                                                   fCentrality(-1),
+                                                                                                                                   fCentralityMin(0.),
+                                                                                                                                   fCentralityMax(10.),
+                                                                                                                                   fNCenBin(5),
+                                                                                                                                   fEminCut(0.2),
+                                                                                                                                   fDispSigma(2.5),
+                                                                                                                                   fCPVSigma(2.5),
+                                                                                                                                   fTOFCut(30.),
+                                                                                                                                   fHistInfo(nullptr),
+                                                                                                                                   fHistSelectEvent(nullptr),
+                                                                                                                                   fHistVertexZ(nullptr),
+                                                                                                                                   fHistCentMain(nullptr),
+                                                                                                                                   fHistCentV0MvsCL0(nullptr),
+                                                                                                                                   fHistCentV0MvsCL1(nullptr),
+                                                                                                                                   fHistCentV0MvsV0C(nullptr),
+                                                                                                                                   fHistCentCL0vsCL1(nullptr),
+                                                                                                                                   fHistCentZNAvsZNC(nullptr),
+                                                                                                                                   fHistTOFClust(nullptr),
+                                                                                                                                   fHistCaloPhotonTOFvsE(nullptr),
+                                                                                                                                   fHistClustTOFvsDDL(nullptr),
+                                                                                                                                   fHistClustTOFvsDDLEnCut(nullptr),
+                                                                                                                                   fHistClustMultVsCentrality(nullptr),
+                                                                                                                                   fHistM02vsPt(nullptr),
+                                                                                                                                   fHistM20vsPt(nullptr),
+                                                                                                                                   fHistClustFullE(nullptr),
+                                                                                                                                   fHistClustCoreE(nullptr),
+                                                                                                                                   fHistNonlinTest(nullptr),
+                                                                                                                                   fHistMggTOFCutEffBase(nullptr),
+                                                                                                                                   fHistMixMggTOFCutEffBase(nullptr),
+                                                                                                                                   fHistMggTOFCutEffProbe(nullptr),
+                                                                                                                                   fHistMixMggTOFCutEffProbe(nullptr),
+                                                                                                                                   fHistTruePi0MggVsRecPt(nullptr),
+                                                                                                                                   fHistTruePi0MggVsTruePt(nullptr),
+                                                                                                                                   fHistTrueEtaMggVsRecPt(nullptr),
+                                                                                                                                   fHistTrueEtaMggVsTruePt(nullptr),
+                                                                                                                                   fHistMCPartIDvsPt(nullptr),
+                                                                                                                                   fHistPrimPi0InAccPt(nullptr),
+                                                                                                                                   fHistPrimPi0BothPhInAccPt(nullptr),
+                                                                                                                                   fHistPrimPi0OnePhInAccPt(nullptr),
+                                                                                                                                   fHistPrimPi0PtvsPhInAccPt(nullptr),
+                                                                                                                                   fHistPrimEtaInAccPt(nullptr),
+                                                                                                                                   fHistPrimEtaBothPhInAccPt(nullptr),
+                                                                                                                                   fHistPrimEtaOnePhInAccPt(nullptr),
+                                                                                                                                   fHistPrimEtaPtvsPhInAccPt(nullptr),
+                                                                                                                                   fHistPrimGammaPt(nullptr),
+                                                                                                                                   fHistPrimGammaInAccPt(nullptr)
 {
 
   if (fOutputContainer)
     delete fOutputContainer;
   fOutputContainer = new THashList();
 
-  for (Int_t i = 0; i < 10; i++)
-    for (Int_t j = 0; j < 10; j++)
-      fPHOSEvents[i][j] = nullptr; // Container for PHOS photons
+  for (Int_t i = 0; i < kVtxBins; i++)
+    for (Int_t j = 0; j < kCentBins; j++)
+      for (Int_t k = 0; k < kPRBins; k++)
+        fPHOSEvents[i][j][k] = nullptr; // Container for PHOS photons
 
-  for (Int_t imod = 0; imod < 4; imod++) {
+  for (Int_t imod = 0; imod < kMods; imod++) {
     fHistTOFClustMod[imod] = nullptr;
     fHistClustMultVsCentralityMod[imod] = nullptr;
     fHistCaloPhotonTOFvsEMod[imod] = nullptr;
@@ -260,7 +256,7 @@ AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(c
     fHistMixMggPhIDCutMod[imod] = nullptr;
   }
 
-  for (Int_t icut = 0; icut < 4; icut++) {
+  for (Int_t icut = 0; icut < kPIDCuts; icut++) {
     fHistCaloPhotonPt[icut] = nullptr;
     fHistMCCaloPartIDvsPt[icut] = nullptr;
 
@@ -273,10 +269,6 @@ AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(c
 
   for (Int_t imap = 0; imap < 6; imap++)
     fPHOSBadMap[imap] = nullptr;
-
-  fCenBinEdges.Set(fNCenBin);
-  for (Int_t icen = 1; icen <= fNCenBin; icen++)
-    fCenBinEdges.AddAt(int(100. * icen / fNCenBin), icen - 1);
 }
 //_____________________________________________________________________________
 AliAnalysisPHOSNeutralMesonsAndPhotons::~AliAnalysisPHOSNeutralMesonsAndPhotons()
@@ -288,12 +280,13 @@ AliAnalysisPHOSNeutralMesonsAndPhotons::~AliAnalysisPHOSNeutralMesonsAndPhotons(
     fOutputContainer = nullptr;
   }
 
-  for (Int_t i = 0; i < 10; i++)
-    for (Int_t j = 0; j < 2; j++)
-      if (fPHOSEvents[i][j]) {
-        delete fPHOSEvents[i][j];
-        fPHOSEvents[i][j] = nullptr;
-      }
+  for (Int_t i = 0; i < kVtxBins; i++)
+    for (Int_t j = 0; j < kCentBins; j++)
+      for (Int_t k = 0; k < kPRBins; k++)
+        if (fPHOSEvents[i][j][k]) {
+          delete fPHOSEvents[i][j][k];
+          fPHOSEvents[i][j][k] = nullptr;
+        }
 
   if (fUserNonlinFunc)
     delete fUserNonlinFunc;
@@ -335,9 +328,8 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserCreateOutputObjects()
   const Int_t nMgg = 180;
   const Double_t MggMax = 0.72;
 
-  const Int_t nCuts = 4;
-  const Char_t* CutNames[nCuts] = { "All", "DispCut", "CPVCut", "PhIDCut" };
-  const Char_t* CutEffNames[nCuts] = { "Probe", "DispCut", "CPVCut", "PhIDCut" };
+  const Char_t* CutNames[kPIDCuts] = { "All", "DispCut", "CPVCut", "PhIDCut" };
+  const Char_t* CutEffNames[kPIDCuts] = { "Probe", "DispCut", "CPVCut", "PhIDCut" };
 
   fCaloTriggerMimicHelper = new AliCaloTriggerMimicHelper("PHOSTrigAnalysis", 2, fIsMC);
   fCaloTriggerMimicHelper->SetPHOSTrigger(fPHOSTrigType);
@@ -407,7 +399,7 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserCreateOutputObjects()
                                         ";Centrality %;PHOS clusters multiplicity", 100, 0., 100., 200, 0., 200.);
   fOutputContainer->Add(fHistClustMultVsCentrality);
 
-  for (Int_t imod = 1; imod < 5; imod++) {
+  for (Int_t imod = 1; imod < kMods + 1; imod++) {
     fHistClustMultVsCentralityMod[imod - 1] = new TH2F(Form("hPHOSClustMultVs%sCentrality_Mod%d", fCentralityEstimator.Data(), imod),
                                                        ";Centrality %;PHOS clusters multiplicity", 100, 0., 100., 200, 0., 200.);
     fOutputContainer->Add(fHistClustMultVsCentralityMod[imod - 1]);
@@ -416,7 +408,7 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserCreateOutputObjects()
   fHistTOFClust = new TH2F("hClustTOFvsE", "Clust TOF vs E;E, GeV;TOF, ns", nPt - 1, Pt, 1000, -500, 500);
   fOutputContainer->Add(fHistTOFClust);
 
-  for (Int_t imod = 1; imod < 5; imod++) {
+  for (Int_t imod = 1; imod < kMods + 1; imod++) {
     fHistTOFClustMod[imod - 1] = new TH2F(Form("hClustTOFvsEnMod%d", imod),
                                           Form("Clust TOF vs E mod. %d;E, GeV;TOF, ns", imod),
                                           nPt - 1, Pt, 1000, -500, 500);
@@ -426,7 +418,7 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserCreateOutputObjects()
   if (fDoClustQA) {
     fHistCaloPhotonTOFvsE = new TH2F("hCaloPhotonTOFvsEn", "CaloPhoton TOF vs E;E, GeV;TOF, ns", nPt - 1, Pt, 1000, -500, 500);
     fOutputContainer->Add(fHistCaloPhotonTOFvsE);
-    for (Int_t imod = 1; imod < 5; imod++) {
+    for (Int_t imod = 1; imod < kMods + 1; imod++) {
       fHistCaloPhotonTOFvsEMod[imod - 1] = new TH2F(Form("hCaloPhotonTOFvsEnMod%d", imod),
                                                     "CaloPhoton TOF vs E;E, GeV;TOF, ns", nPt - 1, Pt, 1000, -500, 500);
       fOutputContainer->Add(fHistCaloPhotonTOFvsEMod[imod - 1]);
@@ -439,7 +431,7 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserCreateOutputObjects()
     fOutputContainer->Add(fHistClustTOFvsDDLEnCut);
   }
 
-  for (Int_t icut = 0; icut < nCuts; icut++) {
+  for (Int_t icut = 0; icut < kPIDCuts; icut++) {
     fHistCaloPhotonPt[icut] = new TH1F(Form("hCaloPhotonPt%s", CutNames[icut]), ";#it{p}_{T}, GeV/c;Counts", nPt - 1, Pt);
     fOutputContainer->Add(fHistCaloPhotonPt[icut]);
   }
@@ -478,7 +470,7 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserCreateOutputObjects()
     fOutputContainer->Add(fHistMggTOFCutEffProbe);
     fOutputContainer->Add(fHistMixMggTOFCutEffProbe);
 
-    for (Int_t imod = 1; imod < 5; imod++) {
+    for (Int_t imod = 1; imod < kMods + 1; imod++) {
       fHistClustFullEMod[imod - 1] = new TH1F(Form("hClustFullEnMod%d", imod),
                                               "Full energy;E, GeV;Counts", nPt - 1, Pt);
       fHistClustCoreEMod[imod - 1] = new TH1F(Form("hClustCoreEnMod%d", imod),
@@ -494,7 +486,7 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserCreateOutputObjects()
       fHistMixMggPhIDCutMod[imod - 1] = new TH2F(Form("hMixMggPhIDCutMod%d%d", imod, imod),
                                                  ";M_{#gamma#gamma}, GeV/c^{2}; #it{p}_{T}, GeV/#it{c}", nMgg, 0., MggMax, nPt - 1, Pt);
 
-      for (Int_t icut = 0; icut < nCuts; icut++) {
+      for (Int_t icut = 0; icut < kPIDCuts; icut++) {
         fHistMggCutEffMod[imod - 1][icut] = new TH2F(Form("hMgg%sEffMod%d%d", CutEffNames[icut], imod, imod),
                                                      ";M_{#gamma#gamma}, GeV/c^{2}; #it{p}_{T}, GeV/#it{c}^{#gamma}", nMgg, 0., MggMax, nPt - 1, Pt);
         fHistMixMggCutEffMod[imod - 1][icut] = new TH2F(Form("hMixMgg%sEffMod%d%d", CutEffNames[icut], imod, imod),
@@ -502,32 +494,32 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserCreateOutputObjects()
       }
     }
 
-    for (Int_t imod = 1; imod < 5; imod++)
+    for (Int_t imod = 1; imod < kMods + 1; imod++)
       fOutputContainer->Add(fHistClustFullEMod[imod - 1]);
-    for (Int_t imod = 1; imod < 5; imod++)
+    for (Int_t imod = 1; imod < kMods + 1; imod++)
       fOutputContainer->Add(fHistClustCoreEMod[imod - 1]);
-    for (Int_t imod = 1; imod < 5; imod++)
+    for (Int_t imod = 1; imod < kMods + 1; imod++)
       fOutputContainer->Add(fHistCaloPhotonPtMod[imod - 1]);
 
-    for (Int_t imod = 1; imod < 5; imod++)
+    for (Int_t imod = 1; imod < kMods + 1; imod++)
       fOutputContainer->Add(fHistMggMod[imod - 1]);
-    for (Int_t imod = 1; imod < 5; imod++)
+    for (Int_t imod = 1; imod < kMods + 1; imod++)
       fOutputContainer->Add(fHistMixMggMod[imod - 1]);
-    for (Int_t imod = 1; imod < 5; imod++)
+    for (Int_t imod = 1; imod < kMods + 1; imod++)
       fOutputContainer->Add(fHistMggPhIDCutMod[imod - 1]);
-    for (Int_t imod = 1; imod < 5; imod++)
+    for (Int_t imod = 1; imod < kMods + 1; imod++)
       fOutputContainer->Add(fHistMixMggPhIDCutMod[imod - 1]);
 
-    for (Int_t imod = 1; imod < 5; imod++)
-      for (Int_t icut = 0; icut < nCuts; icut++)
+    for (Int_t imod = 1; imod < kMods + 1; imod++)
+      for (Int_t icut = 0; icut < kPIDCuts; icut++)
         fOutputContainer->Add(fHistMggCutEffMod[imod - 1][icut]);
 
-    for (Int_t imod = 1; imod < 5; imod++)
-      for (Int_t icut = 0; icut < nCuts; icut++)
+    for (Int_t imod = 1; imod < kMods + 1; imod++)
+      for (Int_t icut = 0; icut < kPIDCuts; icut++)
         fOutputContainer->Add(fHistMixMggCutEffMod[imod - 1][icut]);
   }
 
-  for (Int_t icut = 0; icut < nCuts; icut++) {
+  for (Int_t icut = 0; icut < kPIDCuts; icut++) {
     fHistMgg[icut] = new TH2F(Form("hMgg%s", CutNames[icut]),
                               ";M_{#gamma#gamma}, GeV/c^{2}; #it{p}_{T}, GeV/#it{c}", nMgg, 0., MggMax, nPt - 1, Pt);
     fHistMixMgg[icut] = new TH2F(Form("hMixMgg%s", CutNames[icut]),
@@ -539,13 +531,13 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserCreateOutputObjects()
                                        ";M_{#gamma#gamma}, GeV/c^{2}; #it{p}_{T}^{#gamma}, GeV/#it{c}", nMgg, 0., MggMax, nPt - 1, Pt);
   }
 
-  for (Int_t icut = 0; icut < nCuts; icut++)
+  for (Int_t icut = 0; icut < kPIDCuts; icut++)
     fOutputContainer->Add(fHistMgg[icut]);
-  for (Int_t icut = 0; icut < nCuts; icut++)
+  for (Int_t icut = 0; icut < kPIDCuts; icut++)
     fOutputContainer->Add(fHistMixMgg[icut]);
-  for (Int_t icut = 0; icut < nCuts; icut++)
+  for (Int_t icut = 0; icut < kPIDCuts; icut++)
     fOutputContainer->Add(fHistMggCutEff[icut]);
-  for (Int_t icut = 0; icut < nCuts; icut++)
+  for (Int_t icut = 0; icut < kPIDCuts; icut++)
     fOutputContainer->Add(fHistMixMggCutEff[icut]);
 
   if (fIsMC) {
@@ -565,10 +557,7 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserCreateOutputObjects()
     fOutputContainer->Add(fHistTrueEtaMggVsRecPt);
     fOutputContainer->Add(fHistTrueEtaMggVsTruePt);
 
-    std::map<Int_t, TString> pdgMap = { { 1, "K_{0}^{S}" }, { 2, "#Lambda" }, { 3, "K_{0}^{L}" }, 
-                                        { 4, "p^{#pm}" }, { 5, "n(#bar{n})" }, { 6, "#pi^{#pm}" }, 
-                                        { 7, "K^{#pm}" }, { 8, "#rho^{0,#pm}" }, { 9, "#Sigma" }, 
-                                        { 10, "#Delta" }, { 11, "K^{*}" }, { 15, "Rest" } };
+    std::map<Int_t, TString> pdgMap = { { 1, "K_{0}^{S}" }, { 2, "#Lambda" }, { 3, "K_{0}^{L}" }, { 4, "p^{#pm}" }, { 5, "n(#bar{n})" }, { 6, "#pi^{#pm}" }, { 7, "K^{#pm}" }, { 8, "#rho^{0,#pm}" }, { 9, "#Sigma" }, { 10, "#Delta" }, { 11, "K^{*}" }, { 15, "Rest" } };
 
     fHistMCPartIDvsPt = new TH2F("hMCPartIDvsPt", ";#it{p}_{T}, GeV/#it{c};Index", nPt - 1, Pt, 20, 1, 20);
     for (auto& ibin : pdgMap) {
@@ -578,11 +567,9 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserCreateOutputObjects()
     }
     fOutputContainer->Add(fHistMCPartIDvsPt);
 
-    std::map<Int_t, TString> pdgCaloMap = { { 1, "#gamma" }, { 2, "e^{#pm}" }, { 3, "#pi^{#pm}" }, 
-                                            { 4, "K^{#pm}" }, { 5, "K_{0}^{L}" }, { 6, "p^{+}" }, 
-                                            { 7, "p^{-}" }, { 8, "n" }, { 9, "#bar{n}" }, { 10, "Rest" } };
+    std::map<Int_t, TString> pdgCaloMap = { { 1, "#gamma" }, { 2, "e^{#pm}" }, { 3, "#pi^{#pm}" }, { 4, "K^{#pm}" }, { 5, "K_{0}^{L}" }, { 6, "p^{+}" }, { 7, "p^{-}" }, { 8, "n" }, { 9, "#bar{n}" }, { 10, "Rest" } };
 
-    for (Int_t icut = 0; icut < nCuts; icut++) {
+    for (Int_t icut = 0; icut < kPIDCuts; icut++) {
       fHistMCCaloPartIDvsPt[icut] = new TH2F(Form("hMCCaloPartIDvsPt%s", CutNames[icut]),
                                              ";#it{p}_{T}, GeV/#it{c};Index", nPt - 1, Pt, 10, 1, 11);
       for (auto& ibin : pdgCaloMap) {
@@ -691,11 +678,11 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserExec(Option_t*)
   fVertex[0] = vVertex->GetX();
   fVertex[1] = vVertex->GetY();
   fVertex[2] = vVertex->GetZ();
-  fZvtx = (Int_t)((fVertex[2] + 10.) / 2.); // it should be 0-9.
+  fZvtx = (Int_t)((fVertex[2] + 10.) / 1.); // it should be 0-kVtxBins-1.
   if (fZvtx < 0)
     fZvtx = 0; // protection to avoid fZvtx = -1.
-  if (fZvtx > 9)
-    fZvtx = 9; // protection to avoid fZvtx = 10.
+  if (fZvtx > kVtxBins)
+    fZvtx = kVtxBins - 1; // protection to avoid fZvtx = kVtxBins
 
   fHistVertexZ->Fill(fVertex[2]);
 
@@ -736,9 +723,48 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserExec(Option_t*)
     InitPHOSGeometry();
   }
 
-  if (!fPHOSEvents[fZvtx][fCentBin])
-    fPHOSEvents[fZvtx][fCentBin] = new TList();
-  fCaloPhotonsPHOSList = fPHOSEvents[fZvtx][fCentBin];
+  // reaction plane
+  AliEventplane* eventPlane = fEvent->GetEventplane();
+  if (!eventPlane) { // Event has no event plane
+    AliInfo("Reaction plane has not been found!");
+    return;
+  }
+  // V0A
+  const Int_t harmonics = 2;
+  double qx = 0., qy = 0.;
+  double rpV0A =
+    eventPlane->CalculateVZEROEventPlane(fEvent, 8, harmonics, qx, qy);
+  // V0C
+  double rpV0C =
+    eventPlane->CalculateVZEROEventPlane(fEvent, 9, harmonics, qx, qy);
+
+  // Whole V0
+  fRP = eventPlane->CalculateVZEROEventPlane(fEvent, 10, harmonics, qx, qy);
+
+  while (rpV0A < 0)
+    rpV0A += TMath::TwoPi() / harmonics;
+  while (rpV0A > TMath::TwoPi() / harmonics)
+    rpV0A -= TMath::TwoPi() / harmonics;
+
+  while (rpV0C < 0)
+    rpV0C += TMath::TwoPi() / harmonics;
+  while (rpV0C > TMath::TwoPi() / harmonics)
+    rpV0C -= TMath::TwoPi() / harmonics;
+
+  while (fRP < 0)
+    fRP += TMath::TwoPi() / harmonics;
+  while (fRP > TMath::TwoPi() / harmonics)
+    fRP -= TMath::TwoPi() / harmonics;
+
+  Int_t irp = Int_t(kPRBins * (fRP) / TMath::Pi());
+  if (irp < 0)
+    irp = 0;
+  if (irp >= kPRBins)
+    irp = kPRBins - 1;
+
+  if (!fPHOSEvents[fZvtx][fCentBin][irp])
+    fPHOSEvents[fZvtx][fCentBin][irp] = new TList();
+  fCaloPhotonsPHOSList = fPHOSEvents[fZvtx][fCentBin][irp];
 
   ProcessCaloPhotons();
   FillMgg();
@@ -903,7 +929,8 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::ProcessCaloPhotons()
 
     // to do IsTrig()
 
-    if (!CaloPhoton->IsTOFOK()) continue;
+    if (!CaloPhoton->IsTOFOK())
+      continue;
 
     inPHOS++;
     PHOSMultMod[mod - 1]++;
@@ -921,11 +948,13 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::ProcessCaloPhotons()
     }
 
     for (Int_t icut = 0; icut < 4; icut++) {
-      if (!PhotonCutFlag[icut]) continue;
+      if (!PhotonCutFlag[icut])
+        continue;
 
       fHistCaloPhotonPt[icut]->Fill(CaloPhoton->Pt());
 
-      if (!fIsMC) continue;
+      if (!fIsMC)
+        continue;
 
       Int_t leadlb = clu->GetLabelAt(0);
       Int_t pdg = -1;
@@ -936,11 +965,10 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::ProcessCaloPhotons()
         particle = (AliAODMCParticle*)fMCStack->At(leadlb);
         pdg = particle->GetPdgCode();
       }
-      if (!particle) continue;
+      if (!particle)
+        continue;
 
-      std::map<Int_t, Int_t> pdgCaloMap = { { 22, 1 }, { 11, 2 }, { -11, 2 }, { 211, 3 }, { -211, 3 },
-                                            { 321, 4 }, { -321, 4 }, { 130, 5 }, { 2212, 6 }, { -2212, 7 }, 
-                                            { 2112, 8 }, { -2112, 9 } };
+      std::map<Int_t, Int_t> pdgCaloMap = { { 22, 1 }, { 11, 2 }, { -11, 2 }, { 211, 3 }, { -211, 3 }, { 321, 4 }, { -321, 4 }, { 130, 5 }, { 2212, 6 }, { -2212, 7 }, { 2112, 8 }, { -2112, 9 } };
 
       if (pdgCaloMap.find(pdg) != pdgCaloMap.end()) {
         fHistMCCaloPartIDvsPt[icut]->Fill(CaloPhoton->Pt(), pdgCaloMap[pdg]);
@@ -976,11 +1004,13 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::FillMgg()
 
   for (Int_t i1 = 0; i1 < nCaloPhotons - 1; i1++) {
     AliCaloPhoton* ph1 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1);
-    if (!ph1->IsTOFOK()) continue;
+    if (!ph1->IsTOFOK())
+      continue;
 
     for (Int_t i2 = i1 + 1; i2 < nCaloPhotons; i2++) {
       AliCaloPhoton* ph2 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i2);
-      if (!ph2->IsTOFOK()) continue;
+      if (!ph2->IsTOFOK())
+        continue;
 
       if (ph1->Angle(ph2->Vect()) < minAngle)
         continue;
@@ -996,14 +1026,14 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::FillMgg()
 
       TLorentzVector p12 = *ph1 + *ph2;
 
-      const Int_t nCuts = 4;
-      const Bool_t PhotonCutFlag[nCuts] = { kTRUE,                                                                    // All
-                                            ph1->IsCPVOK() && ph2->IsCPVOK(),                                         // CPVCut
-                                            ph1->IsDispOK() && ph2->IsDispOK(),                                       // DispCut
-                                            ph1->IsCPVOK() && ph2->IsCPVOK() && ph1->IsDispOK() && ph2->IsDispOK() }; // PhIDCut
+      const Bool_t PhotonCutFlag[kPIDCuts] = { kTRUE,                                                                    // All
+                                               ph1->IsCPVOK() && ph2->IsCPVOK(),                                         // CPVCut
+                                               ph1->IsDispOK() && ph2->IsDispOK(),                                       // DispCut
+                                               ph1->IsCPVOK() && ph2->IsCPVOK() && ph1->IsDispOK() && ph2->IsDispOK() }; // PhIDCut
 
-      for (Int_t icut = 0; icut < nCuts; icut++) {
-        if (!PhotonCutFlag[icut]) continue;
+      for (Int_t icut = 0; icut < kPIDCuts; icut++) {
+        if (!PhotonCutFlag[icut])
+          continue;
         fHistMgg[icut]->Fill(p12.M(), p12.Pt());
         if (fDoClustQA) {
           if (icut == 0 && ph1->Module() == ph2->Module())
@@ -1031,13 +1061,15 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::FillMgg()
 
   for (Int_t i1 = 0; i1 < nCaloPhotons - 1; i1++) {
     AliCaloPhoton* ph1 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1);
-    if (!ph1->IsTOFOK()) continue;
+    if (!ph1->IsTOFOK())
+      continue;
 
     for (Int_t ev = 0; ev < fCaloPhotonsPHOSList->GetSize(); ev++) {
       TClonesArray* mixPHOS = static_cast<TClonesArray*>(fCaloPhotonsPHOSList->At(ev));
       for (Int_t i2 = 0; i2 < mixPHOS->GetEntriesFast(); i2++) {
         AliCaloPhoton* ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
-        if (!ph2->IsTOFOK()) continue;
+        if (!ph2->IsTOFOK())
+          continue;
 
         if (ph1->Angle(ph2->Vect()) < minAngle)
           continue;
@@ -1053,13 +1085,12 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::FillMgg()
 
         TLorentzVector p12 = *ph1 + *ph2;
 
-        const Int_t nCuts = 4;
-        const Bool_t PhotonCutFlag[nCuts] = { kTRUE,                                                                    // All
-                                              ph1->IsCPVOK() && ph2->IsCPVOK(),                                         // CPVCut
-                                              ph1->IsDispOK() && ph2->IsDispOK(),                                       // DispCut
-                                              ph1->IsCPVOK() && ph2->IsCPVOK() && ph1->IsDispOK() && ph2->IsDispOK() }; // PhIDCut
+        const Bool_t PhotonCutFlag[kPIDCuts] = { kTRUE,                                                                    // All
+                                                 ph1->IsCPVOK() && ph2->IsCPVOK(),                                         // CPVCut
+                                                 ph1->IsDispOK() && ph2->IsDispOK(),                                       // DispCut
+                                                 ph1->IsCPVOK() && ph2->IsCPVOK() && ph1->IsDispOK() && ph2->IsDispOK() }; // PhIDCut
 
-        for (Int_t icut = 0; icut < nCuts; icut++) {
+        for (Int_t icut = 0; icut < kPIDCuts; icut++) {
           if (!PhotonCutFlag[icut])
             continue;
           fHistMixMgg[icut]->Fill(p12.M(), p12.Pt());
@@ -1088,15 +1119,18 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::EstimatePIDCutEfficiency()
   const Int_t nCaloPhotons = fCaloPhotonsPHOS->GetEntriesFast();
   for (Int_t i1 = 0; i1 < nCaloPhotons; i1++) {
     AliCaloPhoton* ph1 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1);
-    if (!ph1->IsTOFOK()) continue;
+    if (!ph1->IsTOFOK())
+      continue;
     // apply tight cut to photon1
     if (ph1->Energy() < 0.5 || ph1->GetNsigmaCPV() < 4 || ph1->GetNsigmaCoreDisp() > 2.5)
       continue;
     for (Int_t i2 = 0; i2 < nCaloPhotons; i2++) {
-      if (i2 == i1) continue;
+      if (i2 == i1)
+        continue;
 
       AliCaloPhoton* ph2 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i2);
-      if (!ph2->IsTOFOK()) continue;
+      if (!ph2->IsTOFOK())
+        continue;
 
       if (ph1->Angle(ph2->Vect()) < minAngle)
         continue;
@@ -1105,14 +1139,14 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::EstimatePIDCutEfficiency()
       m12 = p12.M();
       pT = ph2->Pt();
 
-      const Int_t nCuts = 4;
-      const Bool_t PhotonCutFlag[nCuts] = { kTRUE,                                                                    // All
-                                            ph1->IsCPVOK() && ph2->IsCPVOK(),                                         // CPVCut
-                                            ph1->IsDispOK() && ph2->IsDispOK(),                                       // DispCut
-                                            ph1->IsCPVOK() && ph2->IsCPVOK() && ph1->IsDispOK() && ph2->IsDispOK() }; // PhIDCut
+      const Bool_t PhotonCutFlag[kPIDCuts] = { kTRUE,                                                                    // All
+                                               ph1->IsCPVOK() && ph2->IsCPVOK(),                                         // CPVCut
+                                               ph1->IsDispOK() && ph2->IsDispOK(),                                       // DispCut
+                                               ph1->IsCPVOK() && ph2->IsCPVOK() && ph1->IsDispOK() && ph2->IsDispOK() }; // PhIDCut
 
-      for (Int_t icut = 0; icut < nCuts; icut++) {
-        if (!PhotonCutFlag[icut]) continue;
+      for (Int_t icut = 0; icut < kPIDCuts; icut++) {
+        if (!PhotonCutFlag[icut])
+          continue;
         fHistMggCutEff[icut]->Fill(m12, pT);
         if (fDoClustQA && ph1->Module() == ph2->Module())
           fHistMggCutEffMod[icut][ph1->Module() - 1]->Fill(m12, pT);
@@ -1123,13 +1157,15 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::EstimatePIDCutEfficiency()
 
   for (Int_t i1 = 0; i1 < nCaloPhotons - 1; i1++) {
     AliCaloPhoton* ph1 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1);
-    if (!ph1->IsTOFOK()) continue;
+    if (!ph1->IsTOFOK())
+      continue;
 
     for (Int_t ev = 0; ev < fCaloPhotonsPHOSList->GetSize(); ev++) {
       TClonesArray* mixPHOS = static_cast<TClonesArray*>(fCaloPhotonsPHOSList->At(ev));
       for (Int_t i2 = 0; i2 < mixPHOS->GetEntriesFast(); i2++) {
         AliCaloPhoton* ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
-        if (!ph2->IsTOFOK()) continue;
+        if (!ph2->IsTOFOK())
+          continue;
 
         if (ph1->Angle(ph2->Vect()) < minAngle)
           continue;
@@ -1138,14 +1174,14 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::EstimatePIDCutEfficiency()
         m12 = p12.M();
         pT = ph2->Pt();
 
-        const Int_t nCuts = 4;
-        const Bool_t PhotonCutFlag[nCuts] = { kTRUE,                                                                    // All
-                                              ph1->IsCPVOK() && ph2->IsCPVOK(),                                         // CPVCut
-                                              ph1->IsDispOK() && ph2->IsDispOK(),                                       // DispCut
-                                              ph1->IsCPVOK() && ph2->IsCPVOK() && ph1->IsDispOK() && ph2->IsDispOK() }; // PhIDCut
+        const Bool_t PhotonCutFlag[kPIDCuts] = { kTRUE,                                                                    // All
+                                                 ph1->IsCPVOK() && ph2->IsCPVOK(),                                         // CPVCut
+                                                 ph1->IsDispOK() && ph2->IsDispOK(),                                       // DispCut
+                                                 ph1->IsCPVOK() && ph2->IsCPVOK() && ph1->IsDispOK() && ph2->IsDispOK() }; // PhIDCut
 
-        for (Int_t icut = 0; icut < nCuts; icut++) {
-          if (!PhotonCutFlag[icut]) continue;
+        for (Int_t icut = 0; icut < kPIDCuts; icut++) {
+          if (!PhotonCutFlag[icut])
+            continue;
           fHistMixMggCutEff[icut]->Fill(m12, pT);
           if (fDoClustQA && ph1->Module() == ph2->Module())
             fHistMixMggCutEffMod[icut][ph1->Module() - 1]->Fill(m12, pT);
@@ -1167,10 +1203,12 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::EstimateTOFCutEfficiency()
   const Int_t nCaloPhotons = fCaloPhotonsPHOS->GetEntriesFast();
   for (Int_t i1 = 0; i1 < nCaloPhotons; i1++) {
     AliCaloPhoton* ph1 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1);
-    if (!ph1->IsTOFOK()) continue;
+    if (!ph1->IsTOFOK())
+      continue;
 
     for (Int_t i2 = 0; i2 < nCaloPhotons; i2++) {
-      if (i2 == i1) continue;
+      if (i2 == i1)
+        continue;
       AliCaloPhoton* ph2 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i2);
 
       p12 = *ph1 + *ph2;
@@ -1189,7 +1227,8 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::EstimateTOFCutEfficiency()
 
   for (Int_t i1 = 0; i1 < nCaloPhotons - 1; i1++) {
     AliCaloPhoton* ph1 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1);
-    if (!ph1->IsTOFOK()) continue;
+    if (!ph1->IsTOFOK())
+      continue;
 
     for (Int_t ev = 0; ev < fCaloPhotonsPHOSList->GetSize(); ev++) {
       TClonesArray* mixPHOS = static_cast<TClonesArray*>(fCaloPhotonsPHOSList->At(ev));
@@ -1484,6 +1523,11 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::SelectCentrality()
       fCentralityZNC = fMultSelection->GetMultiplicityPercentile("ZNC");
       fCentrality = fMultSelection->GetMultiplicityPercentile(fCentralityEstimator);
 
+      if (fCentrality < 0) {
+        AliInfo("Negative centrality!");
+        return;
+      }
+
       fHistCentMain->Fill(fCentrality);
       fHistCentV0MvsCL0->Fill(fCentralityV0M, fCentralityCL0);
       fHistCentV0MvsCL1->Fill(fCentralityV0M, fCentralityCL1);
@@ -1491,11 +1535,22 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::SelectCentrality()
       fHistCentCL0vsCL1->Fill(fCentralityCL0, fCentralityCL1);
       fHistCentZNAvsZNC->Fill(fCentralityZNA, fCentralityZNC);
 
+      // centrality bins for mixed events container
       fCentBin = 0;
-      while (fCentBin < fNCenBin && fCentrality > fCenBinEdges.At(fCentBin))
-        fCentBin++;
-      if (fCentBin >= fNCenBin)
-        fCentBin = fNCenBin - 1;
+      if (fCentrality < 5.)
+        fCentBin = 0;
+      else if (fCentrality < 10.)
+        fCentBin = 1;
+      else if (fCentrality < 20.)
+        fCentBin = 2;
+      else if (fCentrality < 30.)
+        fCentBin = 3;
+      else if (fCentrality < 40.)
+        fCentBin = 4;
+      else if (fCentrality < 50.)
+        fCentBin = 5;
+      else if (fCentrality < 80.)
+        fCentBin = 6;
     }
 
   } else {

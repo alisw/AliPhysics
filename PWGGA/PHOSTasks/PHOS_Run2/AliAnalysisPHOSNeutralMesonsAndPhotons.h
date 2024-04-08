@@ -91,6 +91,12 @@ class AliAnalysisPHOSNeutralMesonsAndPhotons : public AliAnalysisTaskSE
   TF1* GetNonlinFunction() { return fUserNonlinFunc; };
 
  private:
+  static const Int_t kMods = 4;     // number of PHOS modules
+  static const Int_t kPIDCuts = 4;  // PHOS PID cuts
+  static const Int_t kCentBins = 7; // centrality
+  static const Int_t kVtxBins = 20; // z-vertex
+  static const Int_t kPRBins = 6;   // Reaction plane
+
   THashList* fOutputContainer; //! final histogram container
 
   AliMCEvent* fMCEvent;
@@ -104,12 +110,12 @@ class AliAnalysisPHOSNeutralMesonsAndPhotons : public AliAnalysisTaskSE
   TClonesArray* fCaloPhotonsMix;  //! List of selected photons in mixed events
 
   TList* fCaloPhotonsPHOSList;
-  TList* fPHOSEvents[10][10]; //! Previous events for mixing
+  TList* fPHOSEvents[kVtxBins][kCentBins][kPRBins]; //! Previous events for mixing
 
-  AliAnalysisUtils*                          fUtils;
-  AliPHOSGeometry*                           fPHOSGeo;
-  AliAODCaloCells*                           fAODCells;
-  AliCaloTriggerMimicHelper*                 fCaloTriggerMimicHelper;
+  AliAnalysisUtils* fUtils;
+  AliPHOSGeometry* fPHOSGeo;
+  AliAODCaloCells* fAODCells;
+  AliCaloTriggerMimicHelper* fCaloTriggerMimicHelper;
   AliCaloTriggerMimicHelper::phosTriggerType fPHOSTrigType;
 
   Bool_t fIsMC;
@@ -123,22 +129,24 @@ class AliAnalysisPHOSNeutralMesonsAndPhotons : public AliAnalysisTaskSE
   Double_t fVertex[3];
   Int_t fZvtx;
 
-  Bool_t  fDoCentralityStudy;
+  Double_t fRP; // readction plane
+
+  Bool_t fDoCentralityStudy;
   TString fCentralityEstimator;
   AliMultSelection* fMultSelection;
-  Float_t  fCentrality;
-  Int_t    fNCenBin;
-  Int_t    fCentBin;
-  TArrayI  fCenBinEdges;
+  Float_t fCentrality;
+  Int_t fNCenBin;
+  Int_t fCentBin;
+  TArrayI fCenBinEdges;
   Double_t fCentralityMin;
   Double_t fCentralityMax;
 
   Bool_t fDoNonlinCorr;
-  TF1*   fUserNonlinFunc;
+  TF1* fUserNonlinFunc;
   Bool_t fDoTOFEffCorr;
-  TF1*   fUserTOFEff;
+  TF1* fUserTOFEff;
 
-  Bool_t   fUseCoreEnergy;
+  Bool_t fUseCoreEnergy;
   Double_t fEminCut;
   Double_t fDispSigma;
   Double_t fCPVSigma;
@@ -158,47 +166,47 @@ class AliAnalysisPHOSNeutralMesonsAndPhotons : public AliAnalysisTaskSE
   TH2I* fPHOSBadMap[6];
 
   TH2F* fHistTOFClust;
-  TH2F* fHistTOFClustMod[4];
+  TH2F* fHistTOFClustMod[kMods];
   TH2F* fHistCaloPhotonTOFvsE;
-  TH2F* fHistCaloPhotonTOFvsEMod[4];
+  TH2F* fHistCaloPhotonTOFvsEMod[kMods];
 
   TH2F* fHistClustTOFvsDDL;
   TH2F* fHistClustTOFvsDDLEnCut;
 
   TH2F* fHistClustMultVsCentrality;
-  TH2F* fHistClustMultVsCentralityMod[4];
+  TH2F* fHistClustMultVsCentralityMod[kMods];
 
-  TH1F* fHistCaloPhotonPt[4];
+  TH1F* fHistCaloPhotonPt[kPIDCuts];
   TH2F* fHistM02vsPt;
   TH2F* fHistM20vsPt;
 
   TH1F* fHistClustFullE;
   TH1F* fHistClustCoreE;
-  TH1F* fHistCaloPhotonPtMod[4];
+  TH1F* fHistCaloPhotonPtMod[kMods];
 
   TH2F* fHistNonlinTest;
 
-  TH1F* fHistClustFullEMod[4];
-  TH1F* fHistClustCoreEMod[4];
+  TH1F* fHistClustFullEMod[kMods];
+  TH1F* fHistClustCoreEMod[kMods];
 
-  TH2F* fHistMgg[4];
-  TH2F* fHistMixMgg[4];
+  TH2F* fHistMgg[kPIDCuts];
+  TH2F* fHistMixMgg[kPIDCuts];
 
   TH2F* fHistMggTOFCutEffBase;
   TH2F* fHistMixMggTOFCutEffBase;
   TH2F* fHistMggTOFCutEffProbe;
   TH2F* fHistMixMggTOFCutEffProbe;
 
-  TH2F* fHistMggCutEff[4];
-  TH2F* fHistMixMggCutEff[4];
+  TH2F* fHistMggCutEff[kPIDCuts];
+  TH2F* fHistMixMggCutEff[kPIDCuts];
 
-  TH2F* fHistMggCutEffMod[4][4];
-  TH2F* fHistMixMggCutEffMod[4][4];
+  TH2F* fHistMggCutEffMod[kMods][kPIDCuts];
+  TH2F* fHistMixMggCutEffMod[kMods][kPIDCuts];
 
-  TH2F* fHistMggMod[4];
-  TH2F* fHistMixMggMod[4];
-  TH2F* fHistMggPhIDCutMod[4];
-  TH2F* fHistMixMggPhIDCutMod[4];
+  TH2F* fHistMggMod[kMods];
+  TH2F* fHistMixMggMod[kMods];
+  TH2F* fHistMggPhIDCutMod[kMods];
+  TH2F* fHistMixMggPhIDCutMod[kMods];
 
   TH2F* fHistTruePi0MggVsRecPt;
   TH2F* fHistTruePi0MggVsTruePt;
@@ -206,7 +214,7 @@ class AliAnalysisPHOSNeutralMesonsAndPhotons : public AliAnalysisTaskSE
   TH2F* fHistTrueEtaMggVsTruePt;
 
   TH2F* fHistMCPartIDvsPt;
-  TH2F* fHistMCCaloPartIDvsPt[4];
+  TH2F* fHistMCCaloPartIDvsPt[kPIDCuts];
 
   TH1F* fHistPrimPi0Pt;
   TH1F* fHistPrimPi0InAccPt;
