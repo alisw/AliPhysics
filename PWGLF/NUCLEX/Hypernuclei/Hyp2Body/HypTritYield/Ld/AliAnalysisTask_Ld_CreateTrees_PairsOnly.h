@@ -30,10 +30,10 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Double_t CalculateBetaTOF(AliAODTrack &track); 
     Double_t CalculateMassSquareTOF(AliAODTrack &track);
     Double_t CalculateSigmaMassSquareTOF(Double_t pT, Double_t massSq, Int_t ParticleSpecies, Int_t RunNumber);
-    Bool_t CheckProtonCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, Bool_t isMatter, Int_t RunNumber);
-    Bool_t CheckPionCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, Bool_t isMatter, Int_t RunNumber, Float_t Pion_DCAxy_min, Float_t Pion_DCAz_min);
+    Bool_t CheckProtonCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, Int_t ParticleSpecies, Int_t RunNumber);
+    Bool_t CheckPionCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, Int_t ParticleSpecies, Int_t RunNumber, Float_t Pion_DCAxy_min, Float_t Pion_DCAz_min);
     Bool_t CheckLambdaCuts(AliAODv0 &v0,Double_t PrimaryVertexPos[3], AliPIDResponse &fPIDResponse, Bool_t isMatter, Int_t RunNumber, Float_t MassInvLambda, Float_t MassInvWrongLambda, Float_t MassInvKaonShort, Float_t MassInvPhoton);
-    Bool_t CheckDeuteronCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, Bool_t isMatter, Int_t RunNumber);
+    Bool_t CheckDeuteronCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, Int_t ParticleSpecies, Int_t RunNumber);
     Double_t CalculateSigmadEdxITS(AliAODTrack &Track, Int_t ParticleSpecies, Int_t RunNumber);
     Float_t CalculateInvariantMassLambda(Double_t Momentum1[3], Double_t Momentum2[3], Int_t WhichMassHypothesis);
 

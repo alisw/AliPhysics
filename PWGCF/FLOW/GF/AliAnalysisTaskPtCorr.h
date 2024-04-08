@@ -1,44 +1,26 @@
 #ifndef PTCORR__H
 #define PTCORR__H
+
 #include "AliAnalysisTaskSE.h"
-#include "TComplex.h"
-#include "AliEventCuts.h"
-#include "AliVEvent.h"
-#include "AliGFW.h"
-#include "AliPID.h"
 #include "AliMCEvent.h"
-#include "AliGFWCuts.h"
+#include "AliEventCuts.h"
 #include "TString.h"
-#include "AliProfileBS.h"
-#include "AliCkContainer.h"
 #include "TRandom.h"
-#include "AliAODTracklets.h"
-#include "AliAODVZERO.h"
-#include "AliESDtrack.h"
-#include "AliESDtrackCuts.h"
-#include "AliESDEvent.h"
-#include "AliVMultiplicity.h"
+#include "TAxis.h"
+#include "TList.h"
+#include "TH1D.h"
+#include "TH2D.h"
 #include "AliPtPtContainer.h"
+#include "AliProfileBS.h"
+#include "TH3D.h"
+#include "AliGFWCuts.h"
+#include "TF1.h"
+#include "AliESDtrackCuts.h"
 
-
-class TList;
-class TH1D;
-class TH2D;
-class TH3D;
-class TProfile;
-class TProfile2D;
-class TComplex;
 class AliAODEvent;
-class AliVTrack;
-class AliVVertex;
-class AliInputEventHandler;
 class AliAODTrack;
-class TClonesArray;
-class AliAODVertex;
-class AliAnalysisUtils;
-class TProfile;
-class AliVParticle;
-class AliGFWCuts;
+class AliESDEvent;
+
 
 class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
  public:
@@ -97,7 +79,6 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetOTFGenerator(TString gen) { fGenerator = gen; }
   void SetUseIP(bool newval) { fUseIP = newval;}
   void SetUseCentCalibration(bool newval) { fUseCentCalibration = newval; }
-
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -115,7 +96,6 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Bool_t fUseIP;
   Bool_t fUseCentCalibration;
   unsigned int fCMflag;
-
   TString fDCAxyFunctionalForm;
   Bool_t fOnTheFly;
   TString fGenerator;
@@ -151,14 +131,12 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Double_t fImpactParameterMC;
   TList *fQAList; //
   TH1D* fEventCount; //!
-  TH1D *fMultiDist; //!
+  TH1D *fMultiDist;
   TH2D **fMultiVsV0MCorr; //!
   TH2D *fNchTrueVsReco; //!
-  TH2D *fESDvsFB128; //!
-  TH2D *fNchVsV0M; //!
+  TH2D *fESDvsFB128;
   TList *fptList;
   AliPtPtContainer  *fPtCont;
-  TProfile *fMeanMultiVsCent;
   UInt_t fTriggerType;
   TList *fSpectraList; //!
   TH3D **fSpectraGen; //!
@@ -173,16 +151,17 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   TH1* fCentcal; //TH1 for OTF centrality calibration
   Double_t fPseudoEfficiency; //Pseudo efficiency to reject tracks. Default value set to 2, only used when the value is <1
-  TH3D *fDCAxyVsPt_noChi2; //!
-  TH2D *fWithinDCAvsPt_withChi2; //!
-  TH3D *fDCAxyVsPt_withChi2; //!
-  TH2D *fWithinDCAvsPt_noChi2; //!
-  TH3D *fMultVsMptVsCent; //!
-  TH2D *fMptVsCent; //!
-  TH2D *fMultVsCent; //!
-  TH1D *fV0MMulti; //!
-  TH2D *fITSvsTPCMulti; //!
-  TH1D* fIP; //!
+  TH3D *fDCAxyVsPt_noChi2;
+  TH2D *fWithinDCAvsPt_withChi2;
+  TH3D *fDCAxyVsPt_withChi2;
+  TH2D *fWithinDCAvsPt_noChi2;
+  TH2D *fPtVsV0M;
+  TH2D *fMptVsNch;
+  TH2F *fMultVsCent;
+  TH2F *fNchVsV0M;
+  TH1D *fV0MMulti;
+  TH2D *fITSvsTPCMulti;
+  TH1D* fIP;
   Double_t fCorrPar[2]; //Yes need to store
   Bool_t fUseCorrCuts; //Yes need to store
   TF1 *fSPDCutPU; //Store these
@@ -211,7 +190,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Bool_t fEnableFB768dcaxy;
   Double_t *GetBinsFromAxis(TAxis *inax);
 
-  ClassDef(AliAnalysisTaskPtCorr,3);
+  ClassDef(AliAnalysisTaskPtCorr,4);
 };
 
 #endif

@@ -105,7 +105,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
   fFastJetWrapper("AliEmcalJetTask","AliEmcalJetTask"),
   //fFastJetWrapperBG("AliEmcalJetTask","AliEmcalJetTask"),  
   fFastJetWrapperMCGen("AliEmcalJetTask","AliEmcalJetTask"), 
-  
+
   fAODIn(0),
   fAODOut(0),
   fRandom(0),
@@ -1051,7 +1051,6 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   //open AOD 
   if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Start");
 
-
   //clear the TClonesArray from the previous event
   fV0CandidateArray->Clear();
   fGenMCV0->Clear();
@@ -1060,7 +1059,8 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   //fFastJetWrapperBG.Clear();
   fFastJetWrapperMCGen.Clear();  
   
-  InputBgParticles.clear();  //clear the particle vector for the bg estimator
+  std::vector<fastjet::PseudoJet> InputBgParticles;
+  //InputBgParticles.clear();  //clear the particle vector for the bg estimator
   
   fh1EventCounterCut->Fill(0); // all available selected events (collision candidates)
 
@@ -1589,7 +1589,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "End of V0 loop");
 
   if(fV0CandidateArray->GetEntriesFast() > 0) {
-    AddEventTracks(fV0CandidateArray, fTracks);
+    AddEventTracks(fV0CandidateArray, fTracks, InputBgParticles);
   }
 
   fh1V0CandPerEvent->Fill(iNV0CandTot);
@@ -2126,7 +2126,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::IsFromGoodGenerator(Int_t index)
   return kTRUE;
 }
 
-void AliAnalysisTaskStrangenessInJets::AddEventTracks(TClonesArray* coll, TClonesArray* tracks)
+void AliAnalysisTaskStrangenessInJets::AddEventTracks(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPart)
 { 
   // Add event tracks to a collection that already contains the V0 candidates, excluding the daughters of the V0 candidates
 
@@ -2159,7 +2159,8 @@ void AliAnalysisTaskStrangenessInJets::AddEventTracks(TClonesArray* coll, TClone
     if (allDaughters.Remove(track) == 0) {
        //adding track to the fastjet
         fFastJetWrapper.AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), n);
-        InputBgParticles.push_back(fastjet::PseudoJet(track->Px(), track->Py(), track->Pz(), track->E()));
+        VectorBgPart.push_back(fastjet::PseudoJet(track->Px(), track->Py(), track->Pz(), track->E()));
+        //InputBgParticles.push_back(fastjet::PseudoJet(track->Px(), track->Py(), track->Pz(), track->E()));
       	n++;
       	nadded++;
       	AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", numbtrack, track->Pt(), track->Eta(), track->Phi()));
@@ -2208,7 +2209,7 @@ Double_t AliAnalysisTaskStrangenessInJets::AddDaughters(AliAODRecoDecay* cand, T
 
   return pt;
 }
-void AliAnalysisTaskStrangenessInJets::AddEventTracksMC(TClonesArray* coll, TClonesArray* tracks)
+void AliAnalysisTaskStrangenessInJets::AddEventTracksMC(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPartMC)
 { 
   if (!tracks) {
 	printf("Track container was not found. Function AddEventTracks will not run! \n");
@@ -2247,7 +2248,7 @@ void AliAnalysisTaskStrangenessInJets::AddEventTracksMC(TClonesArray* coll, TClo
     }
     //did not find track in the daughters, adding track to the fastjet
     fFastJetWrapperMCGen.AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), iN);
-    InputBgParticles.push_back(fastjet::PseudoJet(track->Px(), track->Py(), track->Pz(), track->E()));
+    VectorBgPartMC.push_back(fastjet::PseudoJet(track->Px(), track->Py(), track->Pz(), track->E()));
     iN++;
     nadded++;
 
@@ -2458,7 +2459,8 @@ Bool_t AliAnalysisTaskStrangenessInJets::AssociateRecV0withMC( AliAODv0* vpart, 
 Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* track, Int_t iCent)
 {
   	
-  InputBgParticles.clear(); //clear before using again fot the bg estim for the generated mc particles 
+  std::vector<fastjet::PseudoJet> InputBgParticlesMC; 
+  //InputBgParticles.clear(); //clear before using again fot the bg estim for the generated mc particles 
   
   TClonesArray* MCPartArray = 0; // array particles in the MC event
   AliAODMCHeader* MCHeader = 0; // MC header
@@ -2571,7 +2573,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
     new ((*fGenMCV0)[iNMCCand]) AliAODMCParticle(*particleMC); //  
     //add the MC v0 vector to the fastjetwrapper with modified id
     fFastJetWrapperMCGen.AddInputVector(particleMC->Px(), particleMC->Py(), particleMC->Pz(), particleMC->E(), ind);
-    InputBgParticles.push_back(fastjet::PseudoJet(particleMC->Px(), particleMC->Py(), particleMC->Pz(), particleMC->E()));
+    InputBgParticlesMC.push_back(fastjet::PseudoJet(particleMC->Px(), particleMC->Py(), particleMC->Pz(), particleMC->E()));
     
     iNMCCand++;
   }
@@ -2579,7 +2581,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
   
   
   if(fGenMCV0->GetEntriesFast() > 0) {
-    AddEventTracksMC(fGenMCV0, track);
+    AddEventTracksMC(fGenMCV0, track, InputBgParticlesMC);
   }
 
 
@@ -2590,7 +2592,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
   bgeMC.set_selector(selectorBG); 
   fastjet::JetDefinition jetDefBG(fastjet::kt_algorithm, fdBgRadius, fastjet::pt_scheme); //define the kT jet finding which will do the average background estimation
   fastjet::AreaDefinition areaDefBG(fastjet::active_area_explicit_ghosts);
-  fastjet::ClusterSequenceArea cluster_seq_BG(InputBgParticles, jetDefBG, areaDefBG);
+  fastjet::ClusterSequenceArea cluster_seq_BG(InputBgParticlesMC, jetDefBG, areaDefBG);
   std::vector<fastjet::PseudoJet> jetsBGMC = sorted_by_pt(selectorBG(cluster_seq_BG.inclusive_jets())); //find the kT jets
   if (jetsBGMC.size() > 0) {
     bgeMC.set_jets(jetsBGMC);  // give the kT jets to the background estimator

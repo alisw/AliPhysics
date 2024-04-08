@@ -143,7 +143,8 @@ public:
   enum MCParticleFlags : uint8_t {
     ProducedInTransport = 0x1, // Bit 0: 0 = from generator; 1 = from transport
     FromBackgroundEvent = 0x2, // Particle from background event (may have been used several times)
-    PhysicalPrimary = 0x4      // Particle is a physical primary according to ALICE definition
+    PhysicalPrimary = 0x4,     // Particle is a physical primary according to ALICE definition
+    FromOutOfBunchPileUpCollision = 0x8
   };
   //Aliases for multiplicity selection criteria
   enum EventSelectionCut {
