@@ -121,37 +121,37 @@ public:
   // Setters for the eta, momentum, dEdx, etc
   void   SetDeDxBins(const Int_t ndEdxBins, Float_t dEdxBins[]) {
       fNdEdxBins = ndEdxBins;
-      fdEdxBins.resize(fNdEdxBins);
+      fdEdxBins.resize(fNdEdxBins+1);
       for (Int_t i=0; i<(fNdEdxBins+1); i++) fdEdxBins[i] = dEdxBins[i];
   }
 
   void   SetBetaBins(const Int_t nbetaBins, Float_t betaBins[]) {
       fNBetaBins = nbetaBins;
-      fBetaBins.resize(fNBetaBins);
+      fBetaBins.resize(fNBetaBins+1);
       for (Int_t i=0; i<(fNBetaBins+1); i++) fBetaBins[i] = betaBins[i];
   }
 
   void   SetTOFNSigmaBins(const Int_t nTOFNSigmaBins, Float_t TOFNSigmaBins[]) {
       fNTOFNSigmaBins = nTOFNSigmaBins;
-      fTOFNSigmaBins.resize(fNTOFNSigmaBins);
+      fTOFNSigmaBins.resize(fNTOFNSigmaBins+1);
       for (Int_t i=0; i<(fNTOFNSigmaBins+1); i++) fTOFNSigmaBins[i] = TOFNSigmaBins[i];
   }
 
   void   SetTPCMmom_Bins(const Int_t nTPCMombins, Float_t TPCMombins[]) {
       fNTPCMom_Bins = nTPCMombins;
-      fTPCMom_Bins.resize(fNTPCMom_Bins);
+      fTPCMom_Bins.resize(fNTPCMom_Bins+1);
       for (Int_t i=0; i<(fNTPCMom_Bins+1); i++) fTPCMom_Bins[i] = TPCMombins[i];
   }
 
   void   SetTOFMom_Bins(const Int_t nTOFMombins, Float_t TOFMombins[]) {
       fTOFMom_NBins = nTOFMombins;
-      fTOFMom_Bins.resize(fTOFMom_NBins);
+      fTOFMom_Bins.resize(fTOFMom_NBins+1);
       for (Int_t i=0; i<(fTOFMom_NBins+1); i++) fTOFMom_Bins[i] = TOFMombins[i];
   }
 
   void   SetEta_Bins(const Int_t nEtabins, Float_t Etabins[]) {
       fNEta_Bins = nEtabins;
-      fEta_Bins.resize(fNEta_Bins);
+      fEta_Bins.resize(fNEta_Bins+1);
       for (Int_t i=0; i<(fNEta_Bins+1); i++) fEta_Bins[i] = Etabins[i];
   }
 
@@ -186,30 +186,30 @@ private:
   //                                   Members
   // ---------------------------------------------------------------------------------
 
-  AliPIDResponse   * fPIDResponse;            //! PID response object
-  AliESDEvent      * fESD;                    //! ESD object
-  TList            * fListHist;               //! list for histograms
-  AliESDtrackCuts  * fESDtrackCuts;           //! basic cut variables
-  AliESDtrackCuts  * fESDtrackCuts_2015;      //! basic cut variables
-  AliESDtrackCuts  * fESDtrackCuts_Bit128;    //! basic cut variables
-  AliESDtrackCuts  * fESDtrackCuts_Bit768;    //! basic cut variables
-  AliESDtrackCuts  * fESDtrackCuts_Bit768_v;    //! basic cut variables
-  AliPIDCombined   * fPIDCombined;            //! combined PID object
-  AliStack         * fMCStack;                //! stack object to get Mc info
-  const AliESDVertex * fVertex;               // primary vertex
+  AliPIDResponse   * fPIDResponse;            //!<! PID response object
+  AliESDEvent      * fESD;                    //!<! ESD object
+  TList            * fListHist;               //!<! list for histograms
+  AliESDtrackCuts  * fESDtrackCuts;           //!<! basic cut variables
+  AliESDtrackCuts  * fESDtrackCuts_2015;      //!<! basic cut variables
+  AliESDtrackCuts  * fESDtrackCuts_Bit128;    //!<! basic cut variables
+  AliESDtrackCuts  * fESDtrackCuts_Bit768;    //!<! basic cut variables
+  AliESDtrackCuts  * fESDtrackCuts_Bit768_v;    //!<! basic cut variables
+  AliPIDCombined   * fPIDCombined;            //!<! combined PID object
+  AliStack         * fMCStack;                //!<! stack object to get Mc info
+  const AliESDVertex * fVertex;               //!<! primary vertex
 
-  TTreeSRedirector * fTreeSRedirector;        /// temp tree to dump output
-  TTree            * fTreeMC;                 // tree for mc samples
-  TTree            * fTreeCuts;               // tree to save all variables for control plots
-  TTree            * fTreejetsEMCconst;       // tree for EMCal signal jet constituents
-  TTree            * fTreejetsEMCBGconst;       // tree for EMCal background jet constituents
-  TTree            * fTreejetsFJ;             // tree for fastjet signal jets
-  TTree            * fTreejetsFJBG;           // tree for fastjet background jets
-  TTree            * fTreejetsFJconst;          // tree for fastjet signal jet constituents
-  TTree            * fTreejetsFJBGconst;          // tree for fastjet signal jet constituents
-  TTree            * fTreejetEvents;
-  TTree            * fTreejetsEMC;            // tree for EMCal signal jets
-  TTree            * fTreejetsEMCBG;            // tree for EMCal background jets
+  TTreeSRedirector * fTreeSRedirector;        //!<! temp tree to dump output
+  TTree            * fTreeMC;                 //!<! tree for mc samples
+  TTree            * fTreeCuts;               //!<! tree to save all variables for control plots
+  TTree            * fTreejetsEMCconst;       //!<! tree for EMCal signal jet constituents
+  TTree            * fTreejetsEMCBGconst;       //!<! tree for EMCal background jet constituents
+  TTree            * fTreejetsFJ;             //!<! tree for fastjet signal jets
+  TTree            * fTreejetsFJBG;           //!<! tree for fastjet background jets
+  TTree            * fTreejetsFJconst;          //!<! tree for fastjet signal jet constituents
+  TTree            * fTreejetsFJBGconst;          //!<! tree for fastjet signal jet constituents
+  TTree            * fTreejetEvents;          //!<! tree for event level data
+  TTree            * fTreejetsEMC;            //!<! tree for EMCal signal jets
+  TTree            * fTreejetsEMCBG;            //!<! tree for EMCal background jets
   TRandom3         fRandom;
 
 
@@ -255,19 +255,19 @@ private:
   Int_t             fSetBetamom;            // set which momentum to use for beta plots
   Int_t             fSetEta;                // set which eta or y to use for histos
 
-  Int_t             fNdEdxBins;           //number of bins for dEdx histograms
-  Int_t             fNBetaBins;           //number of bins for the beta histogram
-  Int_t             fNTOFNSigmaBins;      //number of bins for the TOF nsigma histograms
-  Int_t             fNTPCMom_Bins;        // number of TPC momentum bins
-  Int_t             fTOFMom_NBins;        // number of TOF momentum bins
-  Int_t             fNEta_Bins;           // number of absolute eta bins
+  Int_t             fNdEdxBins;           //!<! number of bins for dEdx histograms
+  Int_t             fNBetaBins;           //!<! number of bins for the beta histogram
+  Int_t             fNTOFNSigmaBins;      //!<! number of bins for the TOF nsigma histograms
+  Int_t             fNTPCMom_Bins;        //!<! number of TPC momentum bins
+  Int_t             fTOFMom_NBins;        //!<! number of TOF momentum bins
+  Int_t             fNEta_Bins;           //!<! number of absolute eta bins
 
-  std::vector<float>  fdEdxBins;          //variable bins for dEdx histograms
-  std::vector<float>  fBetaBins;          //variable bins for beta histograms
-  std::vector<float>  fTOFNSigmaBins;     //variable bins for TOFnsigma histograms
-  std::vector<float>  fTPCMom_Bins;       //variable bins for TPC momentum histograms
-  std::vector<float>  fTOFMom_Bins;       //variable bins for TOF momentum histograms
-  std::vector<float>  fEta_Bins;          //variable bins for eta histograms
+  std::vector<float>  fdEdxBins;          //!<! variable bins for dEdx histograms
+  std::vector<float>  fBetaBins;          //!<! variable bins for beta histograms
+  std::vector<float>  fTOFNSigmaBins;     //!<! variable bins for TOFnsigma histograms
+  std::vector<float>  fTPCMom_Bins;       //!<! variable bins for TPC momentum histograms
+  std::vector<float>  fTOFMom_Bins;       //!<! variable bins for TOF momentum histograms
+  std::vector<float>  fEta_Bins;          //!<! variable bins for eta histograms
 
   Float_t           fNSigmasElTOF;           // TOF N sigma for Electron
   Float_t           fNSigmasMuTOF;           // TOF N sigma for Muon
@@ -325,8 +325,8 @@ private:
   Float_t            fPhi;                    // azimuthal angle
   Int_t              fSign;                   // sign of the particle
 
-  AliJetContainer*   fJetContainer;
-  AliJetContainer*   fbgJetContainer;
+  AliJetContainer*   fJetContainer;   //!<! signal jet container
+  AliJetContainer*   fbgJetContainer;   //!<! background jet container
   Double_t           fJetPt;
   Double_t           fJetEta;
   Double_t           fJetPhi;
@@ -353,94 +353,94 @@ private:
   Bool_t   fTrackProbDeTOF;
 
   //histograms
-  TH1F             * fHistCentrality;            // control histogram for centrality
-  TH1F             * fHistImpParam;              // control histogram for impact parameter
-  TH1F             * fHistVertex;                // control histogram for vertexZ
-  TH3F             * fHistIncTracks_dEdx;        // histogram for inclusive tracks dEdx all eta v some momentum form
-  TH2F             * fHistIncTracks_moms;        // histogram for inclusive tracks ptpc to pT
-  TH2F             * fHistIncTracks_moms_p;        // histogram for inclusive tracks p to pT
-  TH2F             * fHistIncTracks_moms_pTPC_p;        // histogram for inclusive tracks pTPC to p
-  TH3F             * fHistIncTracks_kin;        // histogram for inclusive tracks dEdx all eta
-  TH2F             * fHistIncTracks_beta;        // histogram for inclusive tracks beta all eta v p
-  TH2F             * fHistIncTracks_t0;        // histogram for inclusive tracks t0 all eta v p
-  TH3F             * fHistIncTracks_TOFpi_nsigma;        // histogram for inclusive tracks TOF nsigma under pion hypothesis vs pT
-  TH3F             * fHistIncTracks_TOFka_nsigma;        // histogram for inclusive tracks TOF nsigma under kaon hypothesis vs pT
-  TH3F             * fHistIncTracks_TOFpr_nsigma;        // histogram for inclusive tracks TOF nsigma under proton hypothesis vs pT
-  TH3F             * fHistIncTracks_TOFpi_nsigma_1cls;        // histogram for inclusive tracks TOF nsigma under pion hypothesis vs pT  w/ only one matchable TOF cluster
-  TH3F             * fHistIncTracks_TOFka_nsigma_1cls;        // histogram for inclusive tracks TOF nsigma under kaon hypothesis vs pT  w/ only one matchable TOF cluster
-  TH3F             * fHistIncTracks_TOFpr_nsigma_1cls;        // histogram for inclusive tracks TOF nsigma under proton hypothesis vs pT  w/ only one matchable TOF cluster
+  TH1F             * fHistCentrality;            //!<! control histogram for centrality
+  TH1F             * fHistImpParam;              //!<! control histogram for impact parameter
+  TH1F             * fHistVertex;                //!<! control histogram for vertexZ
+  TH3F             * fHistIncTracks_dEdx;        //!<! histogram for inclusive tracks dEdx all eta v some momentum form
+  TH2F             * fHistIncTracks_moms;        //!<! histogram for inclusive tracks ptpc to pT
+  TH2F             * fHistIncTracks_moms_p;        //!<! histogram for inclusive tracks p to pT
+  TH2F             * fHistIncTracks_moms_pTPC_p;        //!<! histogram for inclusive tracks pTPC to p
+  TH3F             * fHistIncTracks_kin;        //!<! histogram for inclusive tracks dEdx all eta
+  TH2F             * fHistIncTracks_beta;        //!<! histogram for inclusive tracks beta all eta v p
+  TH2F             * fHistIncTracks_t0;        //!<! histogram for inclusive tracks t0 all eta v p
+  TH3F             * fHistIncTracks_TOFpi_nsigma;        //!<! histogram for inclusive tracks TOF nsigma under pion hypothesis vs pT
+  TH3F             * fHistIncTracks_TOFka_nsigma;        //!<! histogram for inclusive tracks TOF nsigma under kaon hypothesis vs pT
+  TH3F             * fHistIncTracks_TOFpr_nsigma;        //!<! histogram for inclusive tracks TOF nsigma under proton hypothesis vs pT
+  TH3F             * fHistIncTracks_TOFpi_nsigma_1cls;        //!<! histogram for inclusive tracks TOF nsigma under pion hypothesis vs pT  w/ only one matchable TOF cluster
+  TH3F             * fHistIncTracks_TOFka_nsigma_1cls;        //!<! histogram for inclusive tracks TOF nsigma under kaon hypothesis vs pT  w/ only one matchable TOF cluster
+  TH3F             * fHistIncTracks_TOFpr_nsigma_1cls;        //!<! histogram for inclusive tracks TOF nsigma under proton hypothesis vs pT  w/ only one matchable TOF cluster
 
-  TH3F             * fHistJetTracks_dEdx;        // histogram for jet tracks dEdx all eta v some momentum form
-  TH2F             * fHistJetTracks_moms;        // histogram for jet tracks ptpc to pT
-  TH2F             * fHistJetTracks_moms_p;        // histogram for jet tracks p to Pt
-  TH2F             * fHistJetTracks_moms_pTPC_p;        // histogram for jet tracks pTPC to p
-  TH3F             * fHistJetTracks_kin;         // histogram for jet tracks dEdx all eta
-  TH2F             * fHistJetTracks_beta;        // histogram for jet tracks beta all eta v p
-  TH3F             * fHistJetTracks_TOFpi_nsigma;        // histogram for jet tracks TOF nsigma under pion hypothesis vs pT
-  TH3F             * fHistJetTracks_TOFka_nsigma;        // histogram for jet tracks TOF nsigma under kaon hypothesis vs pT
-  TH3F             * fHistJetTracks_TOFpr_nsigma;        // histogram for jet tracks TOF nsigma under proton hypothesis vs pT
-  TH3F             * fHistJetTracks_TOFpi_nsigma_1cls;        // histogram for jet tracks TOF nsigma under pion hypothesis vs pT  w/ only one matchable TOF cluster
-  TH3F             * fHistJetTracks_TOFka_nsigma_1cls;        // histogram for jet tracks TOF nsigma under kaon hypothesis vs pT  w/ only one matchable TOF cluster
-  TH3F             * fHistJetTracks_TOFpr_nsigma_1cls;        // histogram for jet tracks TOF nsigma under proton hypothesis vs pT  w/ only one matchable TOF cluster
+  TH3F             * fHistJetTracks_dEdx;        //!<! histogram for jet tracks dEdx all eta v some momentum form
+  TH2F             * fHistJetTracks_moms;        //!<! histogram for jet tracks ptpc to pT
+  TH2F             * fHistJetTracks_moms_p;        //!<! histogram for jet tracks p to Pt
+  TH2F             * fHistJetTracks_moms_pTPC_p;        //!<! histogram for jet tracks pTPC to p
+  TH3F             * fHistJetTracks_kin;         //!<! histogram for jet tracks dEdx all eta
+  TH2F             * fHistJetTracks_beta;        //!<! histogram for jet tracks beta all eta v p
+  TH3F             * fHistJetTracks_TOFpi_nsigma;        //!<! histogram for jet tracks TOF nsigma under pion hypothesis vs pT
+  TH3F             * fHistJetTracks_TOFka_nsigma;        //!<! histogram for jet tracks TOF nsigma under kaon hypothesis vs pT
+  TH3F             * fHistJetTracks_TOFpr_nsigma;        //!<! histogram for jet tracks TOF nsigma under proton hypothesis vs pT
+  TH3F             * fHistJetTracks_TOFpi_nsigma_1cls;        //!<! histogram for jet tracks TOF nsigma under pion hypothesis vs pT  w/ only one matchable TOF cluster
+  TH3F             * fHistJetTracks_TOFka_nsigma_1cls;        //!<! histogram for jet tracks TOF nsigma under kaon hypothesis vs pT  w/ only one matchable TOF cluster
+  TH3F             * fHistJetTracks_TOFpr_nsigma_1cls;        //!<! histogram for jet tracks TOF nsigma under proton hypothesis vs pT  w/ only one matchable TOF cluster
 
-  TH2F             * fHistBetaExpec_pi; // histogram for inc expected pion beta v pT
-  TH2F             * fHistBetaExpec_ka; // histogram for inc expected kaon beta v pT
-  TH2F             * fHistBetaExpec_pr; // histogram for inc expected proton beta v pT
+  TH2F             * fHistBetaExpec_pi; //!<! histogram for inc expected pion beta v pT
+  TH2F             * fHistBetaExpec_ka; //!<! histogram for inc expected kaon beta v pT
+  TH2F             * fHistBetaExpec_pr; //!<! histogram for inc expected proton beta v pT
 
-  TH2F             * fHistjet_BetaExpec_pi; // histogram for jet expected pion beta v pT
-  TH2F             * fHistjet_BetaExpec_ka; // histogram for jet expected kaon beta v pT
-  TH2F             * fHistjet_BetaExpec_pr; // histogram for jet expected proton beta v pT
+  TH2F             * fHistjet_BetaExpec_pi; //!<! histogram for jet expected pion beta v pT
+  TH2F             * fHistjet_BetaExpec_ka; //!<! histogram for jet expected kaon beta v pT
+  TH2F             * fHistjet_BetaExpec_pr; //!<! histogram for jet expected proton beta v pT
 
-  TH3F             * fHist_pi_mismatch; // histogram for inc pion mismatch v pT
-  TH3F             * fHist_ka_mismatch; // histogram for inc kaon mismatch v pT
-  TH3F             * fHist_pr_mismatch; // histogram for inc proton mismatch v pT
+  TH3F             * fHist_pi_mismatch; //!<! histogram for inc pion mismatch v pT
+  TH3F             * fHist_ka_mismatch; //!<! histogram for inc kaon mismatch v pT
+  TH3F             * fHist_pr_mismatch; //!<! histogram for inc proton mismatch v pT
 
-  TH3F             * fHist_jet_pi_mismatch; // histogram for jet pion mismatch v pT
-  TH3F             * fHist_jet_ka_mismatch; // histogram for jet kaon mismatch v pT
-  TH3F             * fHist_jet_pr_mismatch; // histogram for jet proton mismatch v pT
+  TH3F             * fHist_jet_pi_mismatch; //!<! histogram for jet pion mismatch v pT
+  TH3F             * fHist_jet_ka_mismatch; //!<! histogram for jet kaon mismatch v pT
+  TH3F             * fHist_jet_pr_mismatch; //!<! histogram for jet proton mismatch v pT
 
-  TH3F             * fHist_elExpec_pihyp; // histogram for expected inc electron nsigma under the pion hypothesis v pT
-  TH3F             * fHist_muExpec_pihyp; // histogram for expected inc muon nsigma under the pion hypothesis v pT
-  TH3F             * fHist_kaExpec_pihyp; // histogram for expected inc kaon nsigma under the pion hypothesis v pT
-  TH3F             * fHist_prExpec_pihyp; // histogram for expected inc proton nsigma under the pion hypothesis v pT
-  TH3F             * fHist_piExpec_kahyp; // histogram for expected inc pion nsigma under the kaon hypothesis v pT
-  TH3F             * fHist_prExpec_kahyp; // histogram for expected inc proton nsigma under the kaon hypothesis v pT
-  TH3F             * fHist_piExpec_prhyp; // histogram for expected inc pion nsigma under the proton hypothesis v pT
-  TH3F             * fHist_kaExpec_prhyp; // histogram for expected inc kaon nsigma under the proton hypothesis v pT
-  TH3F             * fHist_deExpec_prhyp; // histogram for expected inc deuteron nsigma under the proton hypothesis v pT
+  TH3F             * fHist_elExpec_pihyp; //!<! histogram for expected inc electron nsigma under the pion hypothesis v pT
+  TH3F             * fHist_muExpec_pihyp; //!<! histogram for expected inc muon nsigma under the pion hypothesis v pT
+  TH3F             * fHist_kaExpec_pihyp; //!<! histogram for expected inc kaon nsigma under the pion hypothesis v pT
+  TH3F             * fHist_prExpec_pihyp; //!<! histogram for expected inc proton nsigma under the pion hypothesis v pT
+  TH3F             * fHist_piExpec_kahyp; //!<! histogram for expected inc pion nsigma under the kaon hypothesis v pT
+  TH3F             * fHist_prExpec_kahyp; //!<! histogram for expected inc proton nsigma under the kaon hypothesis v pT
+  TH3F             * fHist_piExpec_prhyp; //!<! histogram for expected inc pion nsigma under the proton hypothesis v pT
+  TH3F             * fHist_kaExpec_prhyp; //!<! histogram for expected inc kaon nsigma under the proton hypothesis v pT
+  TH3F             * fHist_deExpec_prhyp; //!<! histogram for expected inc deuteron nsigma under the proton hypothesis v pT
 
-  TH3F             * fHist_jet_elExpec_pihyp; // histogram for expected jet electron nsigma under the pion hypothesis v pT
-  TH3F             * fHist_jet_muExpec_pihyp; // histogram for expected jet muon nsigma under the pion hypothesis v pT
-  TH3F             * fHist_jet_kaExpec_pihyp; // histogram for expected jet kaon nsigma under the pion hypothesis v pT
-  TH3F             * fHist_jet_prExpec_pihyp; // histogram for expected jet proton nsigma under the pion hypothesis v pT
-  TH3F             * fHist_jet_piExpec_kahyp; // histogram for expected jet pion nsigma under the kaon hypothesis v pT
-  TH3F             * fHist_jet_prExpec_kahyp; // histogram for expected jet proton nsigma under the kaon hypothesis v pT
-  TH3F             * fHist_jet_piExpec_prhyp; // histogram for expected jet pion nsigma under the proton hypothesis v pT
-  TH3F             * fHist_jet_kaExpec_prhyp; // histogram for expected jet kaon nsigma under the proton hypothesis v pT
-  TH3F             * fHist_jet_deExpec_prhyp; // histogram for expected jet deuteron nsigma under the proton hypothesis v pT
+  TH3F             * fHist_jet_elExpec_pihyp; //!<! histogram for expected jet electron nsigma under the pion hypothesis v pT
+  TH3F             * fHist_jet_muExpec_pihyp; //!<! histogram for expected jet muon nsigma under the pion hypothesis v pT
+  TH3F             * fHist_jet_kaExpec_pihyp; //!<! histogram for expected jet kaon nsigma under the pion hypothesis v pT
+  TH3F             * fHist_jet_prExpec_pihyp; //!<! histogram for expected jet proton nsigma under the pion hypothesis v pT
+  TH3F             * fHist_jet_piExpec_kahyp; //!<! histogram for expected jet pion nsigma under the kaon hypothesis v pT
+  TH3F             * fHist_jet_prExpec_kahyp; //!<! histogram for expected jet proton nsigma under the kaon hypothesis v pT
+  TH3F             * fHist_jet_piExpec_prhyp; //!<! histogram for expected jet pion nsigma under the proton hypothesis v pT
+  TH3F             * fHist_jet_kaExpec_prhyp; //!<! histogram for expected jet kaon nsigma under the proton hypothesis v pT
+  TH3F             * fHist_jet_deExpec_prhyp; //!<! histogram for expected jet deuteron nsigma under the proton hypothesis v pT
 
-  TH3F             * fHistTOFSigmaExpec_pi; // histogram for expected inc pion TOF Sigma v pT
-  TH3F             * fHistTOFSigmaExpec_ka; // histogram for expected inc kaon TOF Sigma v pT
-  TH3F             * fHistTOFSigmaExpec_pr; // histogram for expected inc proton TOF Sigma v pT
+  TH3F             * fHistTOFSigmaExpec_pi; //!<! histogram for expected inc pion TOF Sigma v pT
+  TH3F             * fHistTOFSigmaExpec_ka; //!<! histogram for expected inc kaon TOF Sigma v pT
+  TH3F             * fHistTOFSigmaExpec_pr; //!<! histogram for expected inc proton TOF Sigma v pT
 
-  TH3F             * fHistjet_TOFSigmaExpec_pi; // histogram for expected jet pion TOF Sigma v pT
-  TH3F             * fHistjet_TOFSigmaExpec_ka; // histogram for expected jet kaon TOF Sigma v pT
-  TH3F             * fHistjet_TOFSigmaExpec_pr; // histogram for expected jet proton TOF Sigma v pT
+  TH3F             * fHistjet_TOFSigmaExpec_pi; //!<! histogram for expected jet pion TOF Sigma v pT
+  TH3F             * fHistjet_TOFSigmaExpec_ka; //!<! histogram for expected jet kaon TOF Sigma v pT
+  TH3F             * fHistjet_TOFSigmaExpec_pr; //!<! histogram for expected jet proton TOF Sigma v pT
 
-  TH3F             * fHistIncTracks_mpi;        // intermediate histogram for inclusive tracks dEdx expected pion mean
-  TH3F             * fHistIncTracks_spi;        // intermediate histogram for inclusive tracks dEdx expected pion sigma
-  TH3F             * fHistIncTracks_mel;        // intermediate histogram for inclusive tracks dEdx expected electron mean
-  TH3F             * fHistIncTracks_sel;        // intermediate histogram for inclusive tracks dEdx expected electron sigma
-  TH3F             * fHistIncTracks_mka;        // intermediate histogram for inclusive tracks dEdx expected kaon mean
-  TH3F             * fHistIncTracks_ska;        // intermediate histogram for inclusive tracks dEdx expected kaon sigma
-  TH3F             * fHistIncTracks_mpr;        // intermediate histogram for inclusive tracks dEdx expected proton mean
-  TH3F             * fHistIncTracks_spr;        // intermediate histogram for inclusive tracks dEdx expected proton sigma
+  TH3F             * fHistIncTracks_mpi;        //!<! intermediate histogram for inclusive tracks dEdx expected pion mean
+  TH3F             * fHistIncTracks_spi;        //!<! intermediate histogram for inclusive tracks dEdx expected pion sigma
+  TH3F             * fHistIncTracks_mel;        //!<! intermediate histogram for inclusive tracks dEdx expected electron mean
+  TH3F             * fHistIncTracks_sel;        //!<! intermediate histogram for inclusive tracks dEdx expected electron sigma
+  TH3F             * fHistIncTracks_mka;        //!<! intermediate histogram for inclusive tracks dEdx expected kaon mean
+  TH3F             * fHistIncTracks_ska;        //!<! intermediate histogram for inclusive tracks dEdx expected kaon sigma
+  TH3F             * fHistIncTracks_mpr;        //!<! intermediate histogram for inclusive tracks dEdx expected proton mean
+  TH3F             * fHistIncTracks_spr;        //!<! intermediate histogram for inclusive tracks dEdx expected proton sigma
 
-  TH2F             * fHistJet_ptsub_v_area;     // histogram for before any cuts, jet pt after bg subtraction vs jet area
-  TH3F             * fHistJet_kin;     // histogram for jet ptsub, eta, phi after area cut
-  TH2F             * fHistJet_moms;     // histogram for jet pt v jet ptsub after area cut
+  TH2F             * fHistJet_ptsub_v_area;     //!<! histogram for before any cuts, jet pt after bg subtraction vs jet area
+  TH3F             * fHistJet_kin;     //!<! histogram for jet ptsub, eta, phi after area cut
+  TH2F             * fHistJet_moms;     //!<! histogram for jet pt v jet ptsub after area cut*/
 
-  ClassDef(AliAnalysisJetHadro, 13);
+  ClassDef(AliAnalysisJetHadro, 14);
 
 };
 
