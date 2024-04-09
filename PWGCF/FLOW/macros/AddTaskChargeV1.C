@@ -7,8 +7,8 @@
 #include "AliAnalysisTaskChargeV1.h"
 
 AliAnalysisTaskChargeV1 *AddTaskChargeV1(
-    bool doNUE = false,
-    bool doNUA = false,
+    bool doNUE = true,
+    bool doNUA = true,
     TString period = "LHC18r",
     bool ZDCcali = true)
 {
@@ -56,12 +56,12 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
     // fListNUE = dynamic_cast<TList *>(fNUEFile->Get("fMcEffiHij"));
     if (period.EqualTo("LHC18q"))
     {
-      //  fNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/efficiency18q.root", "READ");
+      fNUEFile = TFile::Open("/afs/cern.ch/user/r/ratu/refData/NUE_18.root", "READ");
       fListNUE = dynamic_cast<TList *>(fNUEFile->Get("fListNUE"));
     }
     if (period.EqualTo("LHC18r"))
     {
-      // fNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/efficiency18r.root", "READ");
+      fNUEFile = TFile::Open("/afs/cern.ch/user/r/ratu/refData/NUE_18.root", "READ");
       fListNUE = dynamic_cast<TList *>(fNUEFile->Get("fListNUE"));
     }
     if (fListNUE)
@@ -80,12 +80,12 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
     //  fListNUA = dynamic_cast<TList *>(fNUAFile->Get("fNUA_ChPosChNeg"));
     if (period.EqualTo("LHC18q"))
     {
-      fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
+      fNUAFile = TFile::Open("/afs/cern.ch/user/r/ratu/refData/reflhc18q/WgtsNUAChargeAndPion_LHC18qPass3.root", "READ");
       fListNUA = dynamic_cast<TList *>(fNUAFile->Get("fNUA_ChPosChNeg"));
     }
     if (period.EqualTo("LHC18r"))
     {
-      fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/WgtsNUAChargeAndPion_LHC18rPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
+      fNUAFile = TFile::Open("/afs/cern.ch/user/r/ratu/refData/reflhc18r/WgtsNUAChargeAndPion_LHC18rPass3.root", "READ");
       fListNUA = dynamic_cast<TList *>(fNUAFile->Get("fNUA_ChPosChNeg"));
     }
 
