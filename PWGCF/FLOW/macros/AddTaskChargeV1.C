@@ -7,8 +7,8 @@
 #include "AliAnalysisTaskChargeV1.h"
 
 AliAnalysisTaskChargeV1 *AddTaskChargeV1(
-    bool doNUE = ture,
-    bool doNUA = ture,
+    bool doNUE = true,
+    bool doNUA = true,
     TString period = "LHC18r",
     bool ZDCcali = true)
 {
@@ -96,9 +96,7 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
       fZDCCalibFile = TFile::Open("/afs/cern.ch/user/r/ratu/refData/ZDCCali/RecenteringResultFinal_2018r.root","READ");
       fZDCCalibList = dynamic_cast<TList *>(fZDCCalibFile->Get("fOutputRecenter"));
     }
-    //  fZDCCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/RecenteringResultFinal_2018q.root", "READ");
-    //  // fZDCCalibFile = TFile::Open("./RecenteringResultFinal_2018q.root");
-    //  fZDCCalibList = dynamic_cast<TList *>(fZDCCalibFile->Get("fOutputRecenter"));
+
     if (fZDCCalibList)
     {
       task->SetListForZDCCalib(fZDCCalibList);
