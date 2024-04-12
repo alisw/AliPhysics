@@ -13,6 +13,7 @@ class TH2F;
 class TH3F;
 class TH3D;
 class TProfile;
+class TProfile2D;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
@@ -38,7 +39,8 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void MultiplicityDistributions();
   void GetCalibratedV0Amplitude();
   void VertexPosition();
-  void GetZDCCentrality();
+  void GetZDC();
+  void FillZDCHistos();
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetHMCut(double HMcut) { fHMCut = HMcut; }      // Set V0M max value
@@ -116,9 +118,11 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   int fTracklets10;
   int fTrackletsEtaGap;
   int fTracksEtaGapTPC;
-  double fza;
-  double fzc;
-  double fzn;
+  double fETEtaGapTPC;
+  double fZP;
+  double fZN;
+  double fZDC;
+  double fZEM;
   float fdcaxy;
   float fdcaz;
   AliMultSelection* fMultSelection;
@@ -134,6 +138,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TProfile* pPtEtaPosvsNchEtaNeg;
   TProfile* pPtvsV0MAmp;
   TH2D* hPtvsV0MAmp;
+  TH2D* hEbEmeanPtvsV0MAmp;
   TH1F* hNchEtaPos;
   TH1F* hNchEtaNeg;
   TH2D* hPtEtaNegvsNchEtaPos;
@@ -146,21 +151,32 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2F* hPhiEtaNegHalfTPC;
   TH2F* hPhiEtaGapSPD;
   TH1F* hBestVtxZ;
-  TH1F* hTracklets14;
-  TH1F* hTracklets10;
+  // TH1F* hTracklets14;
+  // TH1F* hTracklets10;
   TH1F* hTrackletsEtaGap;
   TH1F* hTracksEtaGapTPC;
-  TH2D* hPtvsTracklets14;
-  TH2D* hPtvsTracklets10;
+  // TH2D* hPtvsTracklets14;
+  // TH2D* hPtvsTracklets10;
   TH2D* hPtvsTrackletsEtaGap;
   TH2D* hPtvsTracksEtaGapTPC;
-  TProfile* pPtvsTracklets14;
-  TProfile* pPtvsTracklets10;
+  // TProfile* pPtvsTracklets14;
+  // TProfile* pPtvsTracklets10;
   TProfile* pPtvsTrackletsEtaGap;
   TProfile* pPtvsTracksEtaGapTPC;
+  TH2D* hEbEmeanPtvsTPC;
   TH2F* hNchMultEtaNeg;
   TH2F* hNchMultTPCEtaGap;
   TH2F* hNchMultITSEtaGap;
+
+  TH2F* hZDCvsV0MAmp;
+  TProfile* pZDCvsV0MAmp;
+  TH2F* hZDCvsTracksEtaGapTPC;
+  TProfile* pZDCvsTracksEtaGapTPC;
+  TH2F* hZDCvsTrackletsEtaGap;
+  TProfile* pZDCvsTrackletsEtaGap;
+  TH3D* hEbEmeanPtvsZDC;
+  TH2D* hZDCvsZEM;
+  TH3D* hZDCvsZEMvspT;
 
   AliAnalysisTaskDataSpeedOfSound(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented
