@@ -129,7 +129,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH1F* hNch;
   TH2F* hNchvsV0MAmp;
   TH2F* hV0MvsV0MAmp;
-  TProfile* pV0MAmpChannel;
+  // TProfile* pV0MAmpChannel;
   TH1F* hV0MAmplitude;
   TH1F* hV0Percentile;
   TH2D* hPtvsNch;
@@ -138,19 +138,19 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TProfile* pPtEtaPosvsNchEtaNeg;
   TProfile* pPtvsV0MAmp;
   TH2D* hPtvsV0MAmp;
-  TH2D* hEbEmeanPtvsV0MAmp;
+  TH2F* hEbEmeanPtvsV0MAmp;
   TH1F* hNchEtaPos;
   TH1F* hNchEtaNeg;
   TH2D* hPtEtaNegvsNchEtaPos;
   TH2D* hPtEtaPosvsNchEtaNeg;
   TH2F* hDCAxyData[1];
-  TH2F* hPhiEtaSPD;
+  // TH2F* hPhiEtaSPD;
   TH2F* hPhiEtaGapTPC;
-  TH1F* hPtWithCutForCent;
+  // TH1F* hPtWithCutForCent;
   TH2F* hPhiEtaPosHalfTPC;
-  TH2F* hPhiEtaNegHalfTPC;
+  // TH2F* hPhiEtaNegHalfTPC;
   TH2F* hPhiEtaGapSPD;
-  TH1F* hBestVtxZ;
+  TH1F* hVtxZ;
   // TH1F* hTracklets14;
   // TH1F* hTracklets10;
   TH1F* hTrackletsEtaGap;
@@ -163,7 +163,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   // TProfile* pPtvsTracklets10;
   TProfile* pPtvsTrackletsEtaGap;
   TProfile* pPtvsTracksEtaGapTPC;
-  TH2D* hEbEmeanPtvsTPC;
+  TH2F* hEbEmeanPtvsTPC;
   TH2F* hNchMultEtaNeg;
   TH2F* hNchMultTPCEtaGap;
   TH2F* hNchMultITSEtaGap;
@@ -174,9 +174,12 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TProfile* pZDCvsTracksEtaGapTPC;
   TH2F* hZDCvsTrackletsEtaGap;
   TProfile* pZDCvsTrackletsEtaGap;
-  TH3D* hEbEmeanPtvsZDC;
-  TH2D* hZDCvsZEM;
-  TH3D* hZDCvsZEMvspT;
+  TH2F* hEbEmeanPtvsZDC;
+  TProfile* pZDCvsZEM;
+  TH1F* hZDC;
+  TH1F* hZEM;
+  TH2D* hPtvsZDC;
+  TH2D* hPtvsZEM;
 
   AliAnalysisTaskDataSpeedOfSound(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented
