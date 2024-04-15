@@ -38,10 +38,6 @@
 #include "AliAnalysisManager.h"
 #include "AliMultSelection.h"
 #include "AliAODInputHandler.h"
-#include "AliGenEventHeader.h"
-#include "AliGenPythiaEventHeader.h"
-#include "AliGenCocktailEventHeader.h"
-#include "AliGenPythiaPlus.h"
 #include "AliEventPoolManager.h"
 #include "AliVEvent.h"
 #include "AliTHn.h"
@@ -58,11 +54,7 @@
 #include "AliVTrack.h"
 #include "AliPicoTrack.h"
 #include "TLorentzVector.h"
-#include "AliESDEvent.h"
-#include "AliESDInputHandler.h"
-#include "AliMCEventHandler.h"
-#include "AliMCParticle.h"
-#include "AliInputEventHandler.h"
+
 
 
 class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
@@ -89,7 +81,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 	void                    SetDoPHI(Bool_t Phi = kTRUE) { fDoPHI = Phi; }
 	void                    SetPHIkinematics(Bool_t phishift = kFALSE, Bool_t rapshift = kFALSE) { fshiftphi_PHI = phishift; fshiftrap_PHI = rapshift; }
 
-        void                    SetIsMC(Bool_t mc = kTRUE, Bool_t mcOnTheFly = kTRUE, Bool_t tpc = kTRUE, Bool_t fmd = kTRUE) { fIsMC = mc; fOnTheFly = mcOnTheFly; fIsTPCgen = tpc; fIsFMDgen = fmd; }
+        void                    SetIsMC(Bool_t mc = kTRUE, Bool_t tpc = kTRUE, Bool_t fmd = kTRUE) { fIsMC = mc; fIsTPCgen = tpc; fIsFMDgen = fmd; }
         void                    SetIsHMpp(Bool_t hm = kTRUE) { fIsHMpp = hm; }
         void                    SetUseOppositeSidesOnly(Bool_t sides = kTRUE) { fUseOppositeSidesOnly = sides; }
         void                    SetSystematicsFlag(TString flag) { fSystematicsFlag = flag; }
@@ -187,7 +179,6 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Int_t                   GetEtaRegion(const Double_t dEta);
         TString                 ReturnPPperiod(const Int_t runNumber) const;
         Double_t                TransverseBoost(const AliMCParticle *track);
-        AliMCEvent*             getMCEvent();
 
         AliAnalysisTaskCorrForFlowFMD(const AliAnalysisTaskCorrForFlowFMD&); // not implemented
         AliAnalysisTaskCorrForFlowFMD& operator=(const AliAnalysisTaskCorrForFlowFMD&); // not implemented
@@ -237,7 +228,6 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         ColSystem               fColSystem;
         AliVEvent::EOfflineTriggerTypes    fTrigger;
         Bool_t                  fIsMC; // [kFALSE]
-        Bool_t                  fOnTheFly; //[kFALSE]
         Bool_t                  fIsTPCgen; // [kFALSE]
         Bool_t                  fIsFMDgen; // [kFALSE]
         Bool_t                  fIsHMpp; // [kFALSE]
