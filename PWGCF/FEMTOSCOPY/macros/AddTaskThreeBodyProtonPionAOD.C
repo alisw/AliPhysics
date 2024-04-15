@@ -30,7 +30,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
   float PionMaxPt = 4.0, //18
   bool RemoveResonances = false, //19
   bool GetProjector = false, //20
-  const char *cutVariation = "0" //21
+  bool GetMomentumResolution = false, //21
+  const char *cutVariation = "0" //22
   ){
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -1256,6 +1257,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
 
     taskAOD->SetMCAndReso(isMC,RemoveResonances); 
     taskAOD->SetRunProjector(GetProjector);
+    taskAOD->SetGetMomentumResolution(GetMomentumResolution);
     
     mgr->AddTask(taskAOD);
 

@@ -79,6 +79,7 @@ AliAnalysisTaskAODThreeBodyProtonPrimary::AliAnalysisTaskAODThreeBodyProtonPrima
       fIsMC(false),
       fRemoveMCResonances(false),
       fRunProjector(false), 
+      fGetMomentumResolution(false),
 
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
@@ -136,6 +137,12 @@ AliAnalysisTaskAODThreeBodyProtonPrimary::AliAnalysisTaskAODThreeBodyProtonPrima
       fInvMassVSmT23_MixedEvent(nullptr),
       fInvMassVSmT31_MixedEvent(nullptr),
       fProjectorData(nullptr),
+      fSameEventTripletResolutionList(nullptr), 
+      fSameEventTripletResolution(nullptr), 
+      fSameEventTripletResolutionAll(nullptr), 
+      fMixedEventTripletResolutionList(nullptr),  
+      fMixedEventTripletResolution(nullptr), 
+      fMixedEventTripletResolutionAll(nullptr), 
 
       fResultsQA(nullptr),
       fSample(nullptr),
@@ -209,6 +216,7 @@ AliAnalysisTaskAODThreeBodyProtonPrimary::AliAnalysisTaskAODThreeBodyProtonPrima
       fIsMC(false),
       fRemoveMCResonances(false),
       fRunProjector(false), 
+      fGetMomentumResolution(false),
 
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
@@ -266,6 +274,12 @@ AliAnalysisTaskAODThreeBodyProtonPrimary::AliAnalysisTaskAODThreeBodyProtonPrima
       fInvMassVSmT23_MixedEvent(nullptr),
       fInvMassVSmT31_MixedEvent(nullptr),
       fProjectorData(nullptr),
+      fSameEventTripletResolutionList(nullptr), 
+      fSameEventTripletResolution(nullptr), 
+      fSameEventTripletResolutionAll(nullptr), 
+      fMixedEventTripletResolutionList(nullptr),  
+      fMixedEventTripletResolution(nullptr), 
+      fMixedEventTripletResolutionAll(nullptr), 
 
       fResultsQA(nullptr),
       fSample(nullptr),
@@ -535,6 +549,30 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::UserCreateOutputObjects() {
        }
     }
 
+
+    //Momentum Resolution Triplet SE
+    fSameEventTripletResolutionList = new TList();
+    fSameEventTripletResolutionList->SetOwner();
+    fSameEventTripletResolutionList->SetName("SameEventTripletResolution");
+
+    fSameEventTripletResolution = new TH2F*[6];
+    fSameEventTripletResolutionAll = new TH2F*[6];
+    TString histTitleSameResolution; 
+
+    if(fDoOnlyThreeBody && fIsMC && fGetMomentumResolution){
+      for (int i = 0; i < 6; ++i) {
+        histTitleSameResolution =  "sameEventResolution"+fParticleNames[fTripletCombinations[i][0]]+fParticleNames[fTripletCombinations[i][1]]+fParticleNames[fTripletCombinations[i][2]];
+        fSameEventTripletResolution[i] = new TH2F(histTitleSameResolution,histTitleSameResolution, 1500, 0, 1.5, 1500, 0, 1.5);
+
+        histTitleSameResolution =  "sameEventResolutionAll"+fParticleNames[fTripletCombinations[i][0]]+fParticleNames[fTripletCombinations[i][1]]+fParticleNames[fTripletCombinations[i][2]];
+        fSameEventTripletResolutionAll[i] = new TH2F(histTitleSameResolution,histTitleSameResolution, 1500, 0, 1.5, 1500, 0, 1.5);
+      
+        fSameEventTripletResolutionList->Add(fSameEventTripletResolution[i]);
+        fSameEventTripletResolutionList->Add(fSameEventTripletResolutionAll[i]);
+       }
+       fResultsThreeBody->Add(fSameEventTripletResolutionList);
+    }
+
     //Two-Body .................................................
     fSameEventPairMultArray_TwoBody = new TH2F*[6];
     fSameEventMultArray_TwoBody = new TH2F*[6];
@@ -650,6 +688,29 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::UserCreateOutputObjects() {
 	     }
     }
 
+    }
+
+    //Momentum Resolution Triplet ME
+    fMixedEventTripletResolutionList = new TList();
+    fMixedEventTripletResolutionList->SetOwner();
+    fMixedEventTripletResolutionList->SetName("MixedEventTripletResolution");
+
+    fMixedEventTripletResolution = new TH2F*[6];
+    fMixedEventTripletResolutionAll = new TH2F*[6];
+    TString histTitleMixedResolution; 
+
+    if(fDoOnlyThreeBody && fIsMC && fGetMomentumResolution){
+      for (int i = 0; i < 6; ++i) {
+        histTitleMixedResolution =  "mixedEventResolution"+fParticleNames[fTripletCombinations[i][0]]+fParticleNames[fTripletCombinations[i][1]]+fParticleNames[fTripletCombinations[i][2]];
+        fMixedEventTripletResolution[i] = new TH2F(histTitleMixedResolution,histTitleMixedResolution, 1500, 0, 1.5, 1500, 0, 1.5);
+
+        histTitleMixedResolution =  "mixedEventResolutionAll"+fParticleNames[fTripletCombinations[i][0]]+fParticleNames[fTripletCombinations[i][1]]+fParticleNames[fTripletCombinations[i][2]];
+        fMixedEventTripletResolutionAll[i] = new TH2F(histTitleMixedResolution,histTitleMixedResolution, 1500, 0, 1.5, 1500, 0, 1.5);
+      
+        fMixedEventTripletResolutionList->Add(fMixedEventTripletResolution[i]);
+        fMixedEventTripletResolutionList->Add(fMixedEventTripletResolutionAll[i]);
+       }
+       fResultsThreeBody->Add(fMixedEventTripletResolutionList);
     }
 
     //Two-Body ......................................
@@ -1158,7 +1219,8 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::UserExec(Option_t *option) {
                                  *fConfig,
                                  fInvMass12[iComb], fInvMass23[iComb], fInvMass31[iComb], 
                                  fSameEventTripletmTArray12[iComb], fSameEventTripletmTArray23[iComb], fSameEventTripletmTArray31[iComb], 
-                                 fInvMassVSmT12[iComb], fInvMassVSmT23[iComb], fInvMassVSmT31[iComb]);
+                                 fInvMassVSmT12[iComb], fInvMassVSmT23[iComb], fInvMassVSmT31[iComb], 
+                                 fSameEventTripletResolution[iComb], fSameEventTripletResolutionAll[iComb]);
        }      
     }//if(fDoOnlyThreeBody)
     
@@ -1234,7 +1296,8 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::UserExec(Option_t *option) {
                                    bins[1], fMixedEventTripletMultArray[iComb], fMixedEventTripletMultArray12[iComb], fMixedEventTripletMultArray23[iComb], fMixedEventTripletMultArray31[iComb], 
                                    fMixedEventTripletPhiThetaArray_SamePair, fMixedEventTripletPhiThetaArray_DifferentPair, iComb, *fConfig, 
                                    fMixedEventTripletmTArray12[iComb], fMixedEventTripletmTArray23[iComb], fMixedEventTripletmTArray31[iComb], 
-                                   fInvMassVSmT12_MixedEvent[iComb], fInvMassVSmT23_MixedEvent[iComb], fInvMassVSmT31_MixedEvent[iComb], fProjectorData[iComb]);
+                                   fInvMassVSmT12_MixedEvent[iComb], fInvMassVSmT23_MixedEvent[iComb], fInvMassVSmT31_MixedEvent[iComb], fProjectorData[iComb], 
+                                   fMixedEventTripletResolution[iComb], fMixedEventTripletResolutionAll[iComb]);
 
         }  
       } else {
@@ -1395,7 +1458,7 @@ float AliAnalysisTaskAODThreeBodyProtonPrimary::BoostOneParticle(
 
 //==================================================================================================================================================
 
-void AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F* hist2d12, TH2F* hist2d23, TH2F* hist2d31, TH2F **fEventTripletPhiThetaArray_SamePair, TH2F **fEventTripletPhiThetaArray_DifferentPair, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* InvMass12, TH2F* InvMass23, TH2F* InvMass31, TH2F* histmTQ312, TH2F* histmTQ323, TH2F* histmTQ331, TH2F* InvMassVsmT12, TH2F* InvMassVsmT23, TH2F* InvMassVsmT31){
+void AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F* hist2d12, TH2F* hist2d23, TH2F* hist2d31, TH2F **fEventTripletPhiThetaArray_SamePair, TH2F **fEventTripletPhiThetaArray_DifferentPair, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* InvMass12, TH2F* InvMass23, TH2F* InvMass31, TH2F* histmTQ312, TH2F* histmTQ323, TH2F* histmTQ331, TH2F* InvMassVsmT12, TH2F* InvMassVsmT23, TH2F* InvMassVsmT31, TH2F* Res, TH2F* ResAll){
   // This function creates a triplet distribution in Q3 bins (defined lower).
   // It requires the particle vector from PairCleaner() and the three indices of particles of interest. So
   // if you want to get distribution for particles that are saved in particle vector as 1 2 3 element, just
@@ -1573,6 +1636,9 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistribution(std::vect
 
         }
 
+         if(fIsMC && fGetMomentumResolution){
+           MomentumResolution(ResAll, Res, *iPart1, *itPDGPar1, massparticle1,*iPart2, *itPDGPar2, massparticle2, *iPart3,*itPDGPar3, massparticle3, Q3) ;
+         }
       }
     }
   }
@@ -1770,7 +1836,7 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::SetMixedEventPPAPrim(
 
 //==================================================================================================================================================
 
-void AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F* hist2d12, TH2F* hist2d23, TH2F* hist2d31, TH2F **fEventTripletPhiThetaArray_SamePair, TH2F **fEventTripletPhiThetaArray_DifferentPair, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* histmTQ312, TH2F* histmTQ323, TH2F* histmTQ331, TH2F* InvMassVsmT12, TH2F* InvMassVsmT23, TH2F* InvMassVsmT31, TH2F* Projector){//, TH2F* InvMassMixed, TH2F* Q3VskDistribution12Mixed, TH2F*  Q3VskDistribution23Mixed){
+void AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F* hist2d12, TH2F* hist2d23, TH2F* hist2d31, TH2F **fEventTripletPhiThetaArray_SamePair, TH2F **fEventTripletPhiThetaArray_DifferentPair, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* histmTQ312, TH2F* histmTQ323, TH2F* histmTQ331, TH2F* InvMassVsmT12, TH2F* InvMassVsmT23, TH2F* InvMassVsmT31, TH2F* Projector, TH2F* Res, TH2F* ResAll){//, TH2F* InvMassMixed, TH2F* Q3VskDistribution12Mixed, TH2F*  Q3VskDistribution23Mixed){
   // Description of function given in AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistribution
   // In this function, only one particle is used from current event, and the other two - from other two events
 
@@ -1941,6 +2007,9 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::FillTripletDistributionME(std::ve
           Projector->Fill(Q3, RelativeMomentum12); 
         }
 
+        if(fIsMC && fGetMomentumResolution){
+          MomentumResolution(ResAll, Res, *iPart1, *itPDGParSE, massParticleSE,*iPart2, *itPDGParME1, massParticleME1, *iPart3,*itPDGParME2, massParticleME2, Q3) ;
+        }
 
           }
         }
@@ -2629,3 +2698,41 @@ bool AliAnalysisTaskAODThreeBodyProtonPrimary::IsResonance(int PDG) {
     return false;
   }
 }
+
+//Taken from https://github.com/alisw/AliPhysics/blob/master/PWGCF/FEMTOSCOPY/FemtoDream/AliAnalysisTaskThreeBodyFemto.cxx
+void AliAnalysisTaskAODThreeBodyProtonPrimary::MomentumResolution( TH2F* histAll, TH2F* hist,
+    AliFemtoDreamBasePart& part1, int PDGPart1, float mass1,
+    AliFemtoDreamBasePart& part2, int PDGPart2, float mass2,
+    AliFemtoDreamBasePart& part3, int PDGPart3, float mass3,
+    float Q3Reconstructed) {
+
+  TLorentzVector part1_LorVec, part2_LorVec, part3_LorVec;
+
+  float mom1 = sqrt(part1.GetMCMomentum().X()*part1.GetMCMomentum().X()+part1.GetMCMomentum().Y()*part1.GetMCMomentum().Y()+part1.GetMCMomentum().Z()*part1.GetMCMomentum().Z());
+  float mom2 = sqrt(part2.GetMCMomentum().X()*part2.GetMCMomentum().X()+part2.GetMCMomentum().Y()*part2.GetMCMomentum().Y()+part2.GetMCMomentum().Z()*part2.GetMCMomentum().Z());
+  float mom3 = sqrt(part3.GetMCMomentum().X()*part3.GetMCMomentum().X()+part3.GetMCMomentum().Y()*part3.GetMCMomentum().Y()+part3.GetMCMomentum().Z()*part3.GetMCMomentum().Z());
+  
+  part1_LorVec.SetPxPyPzE(part1.GetMCMomentum().X(), part1.GetMCMomentum().Y(), 
+  part1.GetMCMomentum().Z(), sqrt(pow(mom1,2)+pow(mass1,2)));
+  part2_LorVec.SetPxPyPzE(part2.GetMCMomentum().X(), part2.GetMCMomentum().Y(), 
+  part2.GetMCMomentum().Z(), sqrt(pow(mom2,2)+pow(mass2,2)));
+  part3_LorVec.SetPxPyPzE(part3.GetMCMomentum().X(), part3.GetMCMomentum().Y(), 
+  part3.GetMCMomentum().Z(), sqrt(pow(mom3,2)+pow(mass3,2)));
+
+  TLorentzVector q12 = AliAnalysisTaskAODThreeBodyProtonPrimary::RelativePairMomentum(part1_LorVec,part2_LorVec);
+  TLorentzVector q23 = AliAnalysisTaskAODThreeBodyProtonPrimary::RelativePairMomentum(part2_LorVec,part3_LorVec);
+  TLorentzVector q31 = AliAnalysisTaskAODThreeBodyProtonPrimary::RelativePairMomentum(part3_LorVec,part1_LorVec);
+  float Q32 = q12*q12+q23*q23+q31*q31;
+  float Q3Real = sqrt(-Q32); 
+          
+
+  // check if particles are identified correctly
+
+  histAll->Fill(Q3Real, Q3Reconstructed);
+  if ((TMath::Abs(PDGPart1) == TMath::Abs(part1.GetMCPDGCode()))
+      && ((TMath::Abs(PDGPart2) == TMath::Abs(part2.GetMCPDGCode())))
+      && ((TMath::Abs(PDGPart3) == TMath::Abs(part3.GetMCPDGCode())))) {
+      hist->Fill(Q3Real, Q3Reconstructed);
+  }
+}
+
