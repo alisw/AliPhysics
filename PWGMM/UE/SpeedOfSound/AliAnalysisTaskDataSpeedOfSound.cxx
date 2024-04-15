@@ -860,9 +860,11 @@ void AliAnalysisTaskDataSpeedOfSound::VertexPosition() {
 }
 //______________________________________________________________________________
 void AliAnalysisTaskDataSpeedOfSound::FillZDCHistos() {
-  if (fv0mpercentile < 5.0) {
-    hZDCvsZEM->Fill(fZEM, fZDC);
+  if (fv0mpercentile > 5.0) {
+    return;
   }
+
+  hZDCvsZEM->Fill(fZEM, fZDC);
 
   hZDCvsV0MAmp->Fill(fv0mamplitude, fZDC);
   pZDCvsV0MAmp->Fill(fv0mamplitude, fZDC);
