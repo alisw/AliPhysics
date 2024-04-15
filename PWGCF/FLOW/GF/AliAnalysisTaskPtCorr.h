@@ -48,7 +48,12 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetCentBinsForPt(Int_t nBins, Double_t *centbins);
   void SetMptBins(Int_t nMptBins, Double_t *mptbins);
   void SetMptBins(Int_t nMptBins, Double_t mptlow, Double_t mpthigh);
-  void SetEtaAcceptance(Double_t newval) { fEtaAcceptance = newval; };
+  void SetDCABins(Int_t nBins, Double_t *dcabins);
+  void SetDCABins(Int_t nBins, Double_t low, Double_t high);
+  void SetEtaAcceptance(Double_t eta) { fEtaMptAcceptance[0] = -TMath::Abs(eta); fEtaMptAcceptance[1] = TMath::Abs(eta); fEtaMultAcceptance[0] = -TMath::Abs(eta); fEtaMultAcceptance[1] = TMath::Abs(eta);}
+  void SetEtaMptAcceptance(Double_t low, Double_t up) { fEtaMptAcceptance[0] = low; fEtaMptAcceptance[1] = up; };
+  void SetEtaMultAcceptance(Double_t low, Double_t up) { fEtaMultAcceptance[0] = low; fEtaMultAcceptance[1] = up; };
+  void SetEtaAbsolute(Bool_t newval) { fEtaAbsolute = newval; }
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
   void SetUseV0Mmult(Bool_t newval) { fUseV0M = newval; };
   void SetUseWeightsOne(Bool_t newvalNUE) { fUseNUEOne = newvalNUE; };
@@ -69,7 +74,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetV0PUCut(TString newval) { if(fV0CutPU) delete fV0CutPU; fV0CutPU = new TF1("fV0CutPU", newval.Data(), 0, 100000); };
   void SetEventWeight(unsigned int weight) { fEventWeight = weight; };
   void SetDisablePileup(bool disable) { fDisablePileup = disable; };
-  void SetFillAdditionalTrackQAPlots(Bool_t newval) { fFillAdditionalQA = newval; }
+  void SetFillQA(Bool_t newval) { fFillQA = newval; }
   void SetPtMPar(int newval) { fPtMpar = newval; }
   void SetEnableFB768DCAxy(bool newval) { fEnableFB768dcaxy = newval;}
   void SetUseOldPileup(bool newval) { fUseOldPileup = newval; }
@@ -103,8 +108,9 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
   TRandom *fRndm;
   Int_t fNBootstrapProfiles; //Number of profiles for bootstrapping
-  Bool_t fFillAdditionalQA;
+  Bool_t fFillQA;
   TAxis *fPtAxis;
+  TAxis *fDCAAxis;
   TAxis *fEtaAxis;
   TAxis *fMultiAxis;      //Multiplicity axis (either for V0M or Nch)
   TAxis *fCentPtAxis;      //Centrality axis for mpt fluctuations
@@ -112,6 +118,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TAxis *fV0MMultiAxis;   //Defaults V0M bins
   Double_t *fPtBins; //!
   Int_t fNPtBins; //!
+  Double_t *fDCABins; //!
+  Int_t fNDCABins; //!
   Double_t *fEtaBins; //!
   Int_t fNEtaBins; //!
   Double_t *fMultiBins; //!
@@ -127,12 +135,14 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Bool_t fUseNUEOne;
   Int_t fPtMpar;
   Double_t fEtaLow;
-  Double_t fEtaAcceptance;
+  vector<Double_t> fEtaMptAcceptance;
+  vector<Double_t> fEtaMultAcceptance;
+  Bool_t fEtaAbsolute;
   Double_t fImpactParameterMC;
   TList *fQAList; //
   TH1D* fEventCount; //!
   TH1D *fMultiDist;
-  TH2D **fMultiVsV0MCorr; //!
+  TH2D *fMultiVsV0MCorr; //!
   TH2D *fNchTrueVsReco; //!
   TH2D *fESDvsFB128;
   TList *fptList;
@@ -151,16 +161,13 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   TH1* fCentcal; //TH1 for OTF centrality calibration
   Double_t fPseudoEfficiency; //Pseudo efficiency to reject tracks. Default value set to 2, only used when the value is <1
-  TH3D *fDCAxyVsPt_noChi2;
-  TH2D *fWithinDCAvsPt_withChi2;
-  TH3D *fDCAxyVsPt_withChi2;
-  TH2D *fWithinDCAvsPt_noChi2;
   TH2D *fPtVsV0M;
   TH2D *fMptVsNch;
   TH2F *fMultVsCent;
   TH2F *fNchVsV0M;
   TH1D *fV0MMulti;
-  TH2D *fITSvsTPCMulti;
+  TH3D *fptDCAxyDCAz;
+  TH3D *fPhiEtaVtxZ;
   TH1D* fIP;
   Double_t fCorrPar[2]; //Yes need to store
   Bool_t fUseCorrCuts; //Yes need to store
@@ -174,6 +181,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH2D* fhQAEventsMult128vsCentr; //!
   TH2D* fhQAEventsfMultTPCvsTOF; //!
   TH2D* fhQAEventsfMultTPCvsESD; //!
+  TH1D* fEtaMpt; //!
+  TH1D* fEtaMult; //!
   int EventNo;
   unsigned int fEventWeight;
   vector<vector<double>>  wp;
@@ -182,6 +191,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
+  void DCAxyz(const AliAODTrack *track, const AliVEvent *evt,Double_t (&dcaxyz)[2]);
   void FillAdditionalTrackQAPlots(AliAODTrack &track, const Double_t &cent, Double_t weff, Double_t wacc, const Double_t &vz, Double_t* vtxp, Bool_t beforeCuts);
   void SetupAxes();
   Bool_t AcceptCustomEvent(AliAODEvent*);

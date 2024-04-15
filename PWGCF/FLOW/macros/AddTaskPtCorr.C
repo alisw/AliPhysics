@@ -1,8 +1,8 @@
 #include "TString.h"
 #include "TGrid.h"
 #include "AliAnalysisTaskPtCorr.h"
-class AliAnalysisDataContainer;
-class TNamed;
+#include "AliAnalysisDataContainer.h"
+
 Bool_t ConnectToGrid() {
   if(!gGrid) TGrid::Connect("alien:");
   if(!gGrid) {printf("Task requires connection to grid, but it could not be established!\n"); return kFALSE; };
