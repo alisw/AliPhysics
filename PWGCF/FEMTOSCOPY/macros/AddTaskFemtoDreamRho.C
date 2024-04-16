@@ -12,6 +12,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
                                         bool doProjections = false,
                                         float rhoPtThreshold = 0.,
                                         float rhoPtThresholdupper = 4.,
+                                        float rhoCandInvMassLow = 0.075,
+                                        float rhoCandInvMassHigh = 0.075,
                                         const char *cutVariation = "0")
 {
 
@@ -258,6 +260,9 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   if (suffix == "999")
   {
     TrackCutsRho->SetCutWindow(0., 5.0);
+  }
+  if (suffix > 4) {
+    TrackCutsRho->SetCutWindow(rhoCandInvMassLow, rhoCandInvMassHigh);
   }
 
   // This needs further implementation
