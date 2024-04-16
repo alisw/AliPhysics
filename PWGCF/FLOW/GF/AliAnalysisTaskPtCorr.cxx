@@ -393,11 +393,11 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
       //Hardcoded cuts to inhereted from AcceptAODTrack
       if(lPart->Pt()<ptMin || lPart->Pt()>ptMax) continue;
       if((((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) < fEtaMptAcceptance[0] || fEtaMptAcceptance[1] < ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta())) && (((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) < fEtaMultAcceptance[0] || fEtaMultAcceptance[1] < ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()))) continue;
-      if(fEtaMptAcceptance[0] < (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() && (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() < fEtaMptAcceptance[1]){
+      if(fEtaMptAcceptance[0] < ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) && ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) < fEtaMptAcceptance[1]){
         FillWPCounter(wp,1,lPart->Pt());
         if(fFillQA) fEtaMpt->Fill(lPart->Eta());
       }
-      else if(fEtaMultAcceptance[0] < (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() && (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() < fEtaMultAcceptance[1]) {
+      else if(fEtaMultAcceptance[0] < ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) && ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) < fEtaMultAcceptance[1]) {
         nTotNoTracksMC++;
         if(fFillQA) fEtaMult->Fill(lPart->Eta());
       }
@@ -514,11 +514,11 @@ void AliAnalysisTaskPtCorr::ProcessOnTheFly() {
     //Hardcoded cuts to inhereted from AcceptAODTrack
     if(lPart->Pt()<ptMin || lPart->Pt()>ptMax) continue;
     if((((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) < fEtaMptAcceptance[0] || fEtaMptAcceptance[1] < ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta())) && (((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) < fEtaMultAcceptance[0] || fEtaMultAcceptance[1] < ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()))) continue;
-    if(fEtaMptAcceptance[0] < (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() && (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() < fEtaMptAcceptance[1]){
+    if(fEtaMptAcceptance[0] < ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) && ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) < fEtaMptAcceptance[1]){
       FillWPCounter(wp,1,lPart->Pt());
       if(fFillQA) fEtaMpt->Fill(lPart->Eta());
     }
-    if(fEtaMultAcceptance[0] < (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() && (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() < fEtaMultAcceptance[1]) {
+    if(fEtaMultAcceptance[0] < ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) && ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) < fEtaMultAcceptance[1]) {
       nTotNoTracks++;
       if(fFillQA) fEtaMult->Fill(lPart->Eta());
     }
