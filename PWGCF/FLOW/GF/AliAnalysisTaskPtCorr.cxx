@@ -45,6 +45,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fNBootstrapProfiles(10),
   fFillQA(0),
   fPtAxis(0),
+  fDCAAxis(0),
   fEtaAxis(0),
   fMultiAxis(0),
   fCentPtAxis(0),
@@ -132,6 +133,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fNBootstrapProfiles(10),
   fFillQA(0),
   fPtAxis(0),
+  fDCAAxis(0),
   fEtaAxis(0),
   fMultiAxis(0),
   fCentPtAxis(0),
@@ -213,6 +215,9 @@ AliAnalysisTaskPtCorr::~AliAnalysisTaskPtCorr() {
 };
 void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   if(!fGFWSelection) SetSystFlag(0);
+  fGFWSelection->SetEta(fEtaMptAcceptance[0],fEtaMptAcceptance[1],fEtaAbsolute);
+  printf("**********\n");
+  printf("Mult eta: %f < %seta%s < %f\n",fEtaMultAcceptance[0],(fEtaAbsolute)?"|":"",fEtaMultAcceptance[1],(fEtaAbsolute)?"|":"");
   fGFWSelection->PrintSetup();
   fSystFlag = fGFWSelection->GetSystFlagIndex();
   if(fGFWSelection->GetSystFlagIndex() == 20) SetCentralityEstimator("CL0");
@@ -387,15 +392,16 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
       if (lPart->Charge()==0.) continue;
       //Hardcoded cuts to inhereted from AcceptAODTrack
       if(lPart->Pt()<ptMin || lPart->Pt()>ptMax) continue;
-      if(((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() < fEtaMptAcceptance[0] || fEtaMptAcceptance[1] < (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) && ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() < fEtaMultAcceptance[0] || fEtaMultAcceptance[1] < (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta())) continue;
+      if((((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) < fEtaMptAcceptance[0] || fEtaMptAcceptance[1] < ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta())) && (((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) < fEtaMultAcceptance[0] || fEtaMultAcceptance[1] < ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()))) continue;
       if(fEtaMptAcceptance[0] < (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() && (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() < fEtaMptAcceptance[1]){
         FillWPCounter(wp,1,lPart->Pt());
         if(fFillQA) fEtaMpt->Fill(lPart->Eta());
       }
-      if(fEtaMultAcceptance[0] < (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() && (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() < fEtaMultAcceptance[1]) {
+      else if(fEtaMultAcceptance[0] < (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() && (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() < fEtaMultAcceptance[1]) {
         nTotNoTracksMC++;
         if(fFillQA) fEtaMult->Fill(lPart->Eta());
       }
+      else continue;
       if(fFillQA) fPhiEtaVtxZ->Fill(lPart->Phi(),lPart->Eta(),vz);
     };
     nTotNoTracks = fUseRecoNchForMC?nTotNoTracksReco:nTotNoTracksMC;
@@ -415,26 +421,19 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
       if(!lTrack) continue;
       //Counting FB128 for QA:
       if(lTrack->TestFilterBit(128)) nTotTracksFB128++;
-      if(((fEtaAbsolute)?TMath::Abs(lTrack->Eta()):lTrack->Eta() < fEtaMptAcceptance[0] || fEtaMptAcceptance[1] < (fEtaAbsolute)?TMath::Abs(lTrack->Eta()):lTrack->Eta()) && ((fEtaAbsolute)?TMath::Abs(lTrack->Eta()):lTrack->Eta() < fEtaMultAcceptance[0] || fEtaMultAcceptance[1] < (fEtaAbsolute)?TMath::Abs(lTrack->Eta()):lTrack->Eta())) continue;
       Double_t trackXYZ[] = {0.,0.,0.};
-      if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxXYZ)) continue;
+      if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxXYZ,iCent,nTotNoTracks)) continue;
       Double_t weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lTrack->Pt()));
       if(weff==0.0) continue;
       weff = 1./weff;
-      if(fEtaMptAcceptance[0] < (fEtaAbsolute)?TMath::Abs(lTrack->Eta()):lTrack->Eta() && (fEtaAbsolute)?TMath::Abs(lTrack->Eta()):lTrack->Eta() < fEtaMptAcceptance[1]){
-        FillWPCounter(wp,(fUseNUEOne)?1.0:weff,lTrack->Pt());
-        if(fUseV0M) fPtVsV0M->Fill(multVZERO,lTrack->Pt(),weff);
-        if(fFillQA){
-          double dcaxyz[2];
-          DCAxyz(lTrack,fAOD,dcaxyz);
-          fptDCAxyDCAz->Fill(lTrack->Pt(),dcaxyz[0],dcaxyz[1]);
-        }
+      FillWPCounter(wp,(fUseNUEOne)?1.0:weff,lTrack->Pt());
+      if(fUseV0M) fPtVsV0M->Fill(multVZERO,lTrack->Pt(),weff);
+      if(fFillQA){
+        double dcaxyz[2];
+        DCAxyz(lTrack,fAOD,dcaxyz);
+        fptDCAxyDCAz->Fill(lTrack->Pt(),dcaxyz[0],dcaxyz[1]);
+        fEtaMpt->Fill(lTrack->Eta());
       }
-      if(fEtaMultAcceptance[0] < (fEtaAbsolute)?TMath::Abs(lTrack->Eta()):lTrack->Eta() && (fEtaAbsolute)?TMath::Abs(lTrack->Eta()):lTrack->Eta() < fEtaMultAcceptance[1]) {
-        nTotNoTracks += (fUseNUEOne)?1.:weff;
-        if(fFillQA) fEtaMult->Fill(lTrack->Eta());
-      }
-      if(fFillQA) fPhiEtaVtxZ->Fill(lTrack->Phi(),lTrack->Eta(),vz);
     };
     if(fUseV0M && multVZERO > 0 && nTotNoTracks > 0) fNchVsV0M->Fill(multVZERO,1.0*nTotNoTracks);
   };
@@ -455,7 +454,7 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   fV0MMulti->Fill(l_Cent);
   fMultiDist->Fill(l_Multi);
   fMultVsCent->Fill(l_Cent,l_Multi);
-  fMptVsNch->Fill(1.*nTotNoTracks,wp[1][1]/wp[0][0]);
+  fMptVsNch->Fill(1.*nTotNoTracks,wp[1][1]/wp[1][0]);
   fMultiVsV0MCorr->Fill(l_Cent,nTotNoTracks);
   PostData(1,fptList);
   PostData(2,fQAList);
@@ -514,7 +513,7 @@ void AliAnalysisTaskPtCorr::ProcessOnTheFly() {
     if (lPart->Charge()==0.) continue;
     //Hardcoded cuts to inhereted from AcceptAODTrack
     if(lPart->Pt()<ptMin || lPart->Pt()>ptMax) continue;
-    if(((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() < fEtaMptAcceptance[0] || fEtaMptAcceptance[1] < (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) && ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() < fEtaMultAcceptance[0] || fEtaMultAcceptance[1] < (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta())) continue;
+    if((((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) < fEtaMptAcceptance[0] || fEtaMptAcceptance[1] < ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta())) && (((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()) < fEtaMultAcceptance[0] || fEtaMultAcceptance[1] < ((fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta()))) continue;
     if(fEtaMptAcceptance[0] < (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() && (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta() < fEtaMptAcceptance[1]){
       FillWPCounter(wp,1,lPart->Pt());
       if(fFillQA) fEtaMpt->Fill(lPart->Eta());
@@ -777,7 +776,7 @@ Bool_t AliAnalysisTaskPtCorr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackX
   } else return kFALSE; //DCA cut is a must for now
   return fGFWSelection->AcceptTrack(mtr,(fSystFlag==1&&!fEnableFB768dcaxy)?0:ltrackXYZ,0,kFALSE); //All complementary DCA track cuts for FB768 are disabled
 };
-Bool_t AliAnalysisTaskPtCorr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot) {
+Bool_t AliAnalysisTaskPtCorr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t iCent, Float_t &nTot) {
   if(mtr->Pt()<ptMin) return kFALSE;
   if(mtr->Pt()>ptMax) return kFALSE;
   if(ltrackXYZ && vtxp) {
@@ -786,7 +785,17 @@ Bool_t AliAnalysisTaskPtCorr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackX
     ltrackXYZ[1] = ltrackXYZ[1]-vtxp[1];
     ltrackXYZ[2] = ltrackXYZ[2]-vtxp[2];
   } else return kFALSE; //DCA cut is a must for now
-  if(fGFWNtotSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE)) nTot++;
+  if((fGFWNtotSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE) || fGFWSelection->AcceptTrack(mtr,(fSystFlag==1&&!fEnableFB768dcaxy)?0:ltrackXYZ,0,kFALSE)) && fFillQA){
+    fPhiEtaVtxZ->Fill(mtr->Phi(),mtr->Eta(),vtxp[2]);
+  }
+  if(fGFWNtotSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE)) {
+    Double_t weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(mtr->Pt()));
+    if(weff!=0.0){
+      weff = 1./weff;
+      nTot += (fUseNUEOne)?1.:weff;
+      if(fFillQA) fEtaMult->Fill(mtr->Eta());
+    }
+  }
   return fGFWSelection->AcceptTrack(mtr,(fSystFlag==1&&!fEnableFB768dcaxy)?0:ltrackXYZ,0,kFALSE); //All complementary DCA track cuts for FB768 are disabled
 };
 void AliAnalysisTaskPtCorr::DCAxyz(const AliAODTrack *track, const AliVEvent *evt, Double_t (&dcaxyz)[2])
@@ -879,7 +888,6 @@ void AliAnalysisTaskPtCorr::SetupAxes() {
   if(!fCentPtAxis) { printf("Setting default cent bins for mpt fluctuations\n"); SetCentBinsForPt(nCentBinsMpt,centbinsMpt);}
   fCentPtBins=GetBinsFromAxis(fCentPtAxis);
   fNCentPtBins=fCentPtAxis->GetNbins();
-
   const int nMptBins = 500;
   double mptlow = 0.5;
   double mpthigh = 1;
@@ -911,6 +919,14 @@ void AliAnalysisTaskPtCorr::SetCentBinsForPt(Int_t nBins, Double_t *centbins) {
 void AliAnalysisTaskPtCorr::SetV0MBins(Int_t nV0MBins, Double_t *V0Mbins) {
   if(fV0MMultiAxis) delete fV0MMultiAxis;
   fV0MMultiAxis = new TAxis(nV0MBins, V0Mbins);
+}
+void AliAnalysisTaskPtCorr::SetMptBins(Int_t nMptBins, Double_t *Mptbins) {
+  if(fMptAxis) delete fMptAxis;
+  fMptAxis = new TAxis(nMptBins, Mptbins);
+}
+void AliAnalysisTaskPtCorr::SetMptBins(Int_t nMptBins, Double_t low, Double_t high) {
+  if(fMptAxis) delete fMptAxis;
+  fMptAxis = new TAxis(nMptBins, low, high);
 }
 void AliAnalysisTaskPtCorr::SetDCABins(Int_t nDCABins, Double_t *DCAbins) {
   if(fDCAAxis) delete fDCAAxis;
