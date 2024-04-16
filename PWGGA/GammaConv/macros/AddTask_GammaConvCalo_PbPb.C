@@ -2190,7 +2190,7 @@ void AddTask_GammaConvCalo_PbPb(
     cuts.AddCutPCMCalo("13510023","0dm00009ab770c00amd0404000","411790105te30220000","0s33103100000010"); // 30-50%
   } else if (trainConfig == 2565){ // semiperipheral with mean N matched tracks per cluster data
     cuts.AddCutPCMCalo("13510e03","0dm00009ab770c00amd0404000","411790105ye30220000","0s33103100000010"); // 30-50%
-  } else if (trainConfig == 2565){ // semiperipheral, with mean N matched tracks per cluster MC no OOB Pileup correction for MC
+  } else if (trainConfig == 2566){ // semiperipheral, with mean N matched tracks per cluster MC no OOB Pileup correction for MC
     cuts.AddCutPCMCalo("13510053","0dm00009ab770c00amd0404000","411790105ye30220000","0s33103100000010"); // 30-50%
   // **********************************************************************************************************
   // ************************* PCM-EMC configurations PbPb run 2 2015 pass 3 peripheral ***************************
