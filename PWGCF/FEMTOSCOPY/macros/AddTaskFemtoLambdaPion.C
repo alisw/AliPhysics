@@ -18,6 +18,7 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
                                               bool IsSystematics = false,   // true to evaluate systematic uncertainties
                                               AliAnalysisTaskLambdaPion::PCSettings pcsettings = AliAnalysisTaskLambdaPion::PCSettings::NoPC,  // choose pair cleaner
                                               bool usenolambdaevt = true,            // true to discard events with neither Lambda or AntiLambda
+                                              double dauPIDCut = 2,
                                               const char *cutVariation = "0")
 //                                              int binwidth = 1)             // relative bin width for k* histos with respect to 4 MeV/c
 {
@@ -51,8 +52,8 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
   // Lambda --> p + pi- cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);  // enable PCA plots and Split Contrib, this method sets
                                                                                     // all cuts parameters for pT, charge, DCA, invmass
-  AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false); // (bool isMC, bool PileUpRej, bool ContribSplitting)
-  AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);
+  AliFemtoDreamTrackCuts *Posv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false, dauPIDCut); // (bool isMC, bool PileUpRej, bool ContribSplitting)
+  AliFemtoDreamTrackCuts *Negv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false, dauPIDCut);
 
   v0Cuts->SetPosDaugterTrackCuts(Posv0Daug);  // saves selected track cuts criteria for charged daughter of neutral particle
   v0Cuts->SetNegDaugterTrackCuts(Negv0Daug);
@@ -62,9 +63,9 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
 
   // AntiLambda --> Antip + pi+ cuts
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
-  AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false);  // Select Pi+ as positive daughter, this means we are considering AntiLambda 
+  AliFemtoDreamTrackCuts *PosAntiv0Daug = AliFemtoDreamTrackCuts::DecayPionCuts(isMC, true, false, dauPIDCut);  // Select Pi+ as positive daughter, this means we are considering AntiLambda 
   PosAntiv0Daug->SetCutCharge(1);
-  AliFemtoDreamTrackCuts *NegAntiv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false);
+  AliFemtoDreamTrackCuts *NegAntiv0Daug = AliFemtoDreamTrackCuts::DecayProtonCuts(isMC, true, false, dauPIDCut);
   NegAntiv0Daug->SetCutCharge(-1);
 
   Antiv0Cuts->SetPosDaugterTrackCuts(PosAntiv0Daug);
