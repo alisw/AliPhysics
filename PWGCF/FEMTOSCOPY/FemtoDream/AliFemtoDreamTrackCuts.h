@@ -29,9 +29,9 @@ class AliFemtoDreamTrackCuts {
                                                 bool CombSigma,
                                                 bool ContribSplitting);
   static AliFemtoDreamTrackCuts *DecayProtonCuts(bool isMC, bool PileUpRej,
-                                                 bool ContribSplitting);
+                                                 bool ContribSplitting, double pidCut = 5);
   static AliFemtoDreamTrackCuts *DecayPionCuts(bool isMC, bool PileUpRej,
-                                               bool ContribSplitting);
+                                               bool ContribSplitting, double pidCut = 5);
   static AliFemtoDreamTrackCuts *Xiv0PionCuts(bool isMC, bool PileUpRej,
                                               bool ContribSplitting);
   static AliFemtoDreamTrackCuts *Xiv0ProtonCuts(bool isMC, bool PileUpRej,
