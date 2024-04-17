@@ -209,7 +209,7 @@
 #pragma link C++ class AliFemtoPairCutRadialDistanceDR;
 #pragma link C++ class AliFemtoCorrFctnDYDPhiSimple+;
 #pragma link C++ class AliFemtoCorrFctnDYDPhiSimpleWithCorrections;
-#pragma link C++ class AliAnalysisTaskEfficiencyPbPb_DR+;
+#pragma link C++ class AliAnalysisTaskEffDRPbPb+;
 #pragma link C++ class AliAnalysisEffTaskPbPbDRMultDY+;
 #pragma link C++ class AliAnalysisEffTaskPbPbDRMultDY4090+;
 #pragma link C++ class AliAnalysisTaskEffK0ss+;
