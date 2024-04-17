@@ -38,7 +38,7 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0():
 
   fLambdaMass = new TH1F("LambdaMass", "Mass Assuming Lambda Hypothesis", 10000, 0, 5);
   fAntiLambdaMass = new TH1F("AntiLambdaMass", "Mass Assuming AntiLambda Hypothesis", 10000, 0, 5);
-  fK0ShortMass= new TH1F("K0ShortMass", "Mass Assuming K0 short Hypothesis", 500, 0, 5);
+  fK0ShortMass= new TH1F("K0ShortMass", "Mass Assuming K0 short Hypothesis", 200, 0.4, 0.6);
   fDcaDaughters = new TH1F("DcaDaughters", "DCA Daughters", 500, 0, 2);
   fDcaV0ToPrimVertex = new TH1F("DcaV0ToPrimVertex", "DCA V0 to primary vertex", 500, 0, 3);
   fDcaPosToPrimVertex = new TH1F("DcaPosToPrimVertex", "DCA V0 to primary vertex", 500, 0, 3);
@@ -122,7 +122,7 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const char *aName):
   snprintf(name, 200, "AntiLambdaMass%s", aName);
   fAntiLambdaMass = new TH1F(name, "Mass Assuming AntiLambda Hypothesis", 10000, 0, 5);
   snprintf(name, 200, "K0ShortMass%s", aName);
-  fK0ShortMass = new TH1F(name, "Mass Assuming K0 short Hypothesis", 500, 0, 5);
+  fK0ShortMass = new TH1F(name, "Mass Assuming K0 short Hypothesis", 200, 0.4, 0.6);
   snprintf(name, 200, "DcaDaughters%s", aName);
   fDcaDaughters = new TH1F(name, "DCA Daughters", 500, 0, 2);
   snprintf(name, 200, "DcaV0ToPrimVertex%s", aName);
