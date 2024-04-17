@@ -32,29 +32,29 @@
 #include "AliAODpidUtil.h"
 #include "AliAODHeader.h"
 
-#include "AliAnalysisTaskEfficiencyPbPb_DR.h"
+#include "AliAnalysisTaskEffDRPbPb.h"
 
-ClassImp(AliAnalysisTaskEfficiencyPbPb_DR)
+ClassImp(AliAnalysisTaskEffDRPbPb)
 //PbPb_DR -> 9 multiplicity in PbPb in DR task 
 double fV1PbPb_DR[3];
 
 
-void AliAnalysisTaskEfficiencyPbPb_DR::SetFB(int fb)
+void AliAnalysisTaskEffDRPbPb::SetFB(int fb)
 {
   fFB = fb;
 }
 
-void AliAnalysisTaskEfficiencyPbPb_DR::SetPidMethod(PidMethod method)
+void AliAnalysisTaskEffDRPbPb::SetPidMethod(PidMethod method)
 {
   fPidMethod = method;
 }
 
-int AliAnalysisTaskEfficiencyPbPb_DR::GetPidMethod()
+int AliAnalysisTaskEffDRPbPb::GetPidMethod()
 {
   return (int)fPidMethod;
 }
 
-void AliAnalysisTaskEfficiencyPbPb_DR::SetPidMethod(int method)
+void AliAnalysisTaskEffDRPbPb::SetPidMethod(int method)
 {
   switch(method){
   case 0: fPidMethod=kNSigma;
@@ -70,7 +70,7 @@ void AliAnalysisTaskEfficiencyPbPb_DR::SetPidMethod(int method)
 
 //_______________________________________________________
 
-AliAnalysisTaskEfficiencyPbPb_DR::AliAnalysisTaskEfficiencyPbPb_DR(TString name, int pidMethod, int filterbit) :
+AliAnalysisTaskEffDRPbPb::AliAnalysisTaskEffDRPbPb(TString name, int pidMethod, int filterbit) :
   AliAnalysisTaskSE(name), centrality(0), fHistoList(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
 
 {
@@ -105,7 +105,7 @@ AliAnalysisTaskEfficiencyPbPb_DR::AliAnalysisTaskEfficiencyPbPb_DR(TString name,
 
 //_______________________________________________________
 
-AliAnalysisTaskEfficiencyPbPb_DR::~AliAnalysisTaskEfficiencyPbPb_DR()
+AliAnalysisTaskEffDRPbPb::~AliAnalysisTaskEffDRPbPb()
 {
   // Destructor
   if(AliAnalysisManager::GetAnalysisManager()->GetAnalysisType() != AliAnalysisManager::kProofAnalysis)
@@ -114,7 +114,7 @@ AliAnalysisTaskEfficiencyPbPb_DR::~AliAnalysisTaskEfficiencyPbPb_DR()
 
 //_______________________________________________________
 
-void AliAnalysisTaskEfficiencyPbPb_DR::UserCreateOutputObjects()
+void AliAnalysisTaskEffDRPbPb::UserCreateOutputObjects()
 {
 
   /* create output */
@@ -429,7 +429,7 @@ bool IsElectronPbPb_DR(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, flo
 }
 
 //_______________________________________________________
-void AliAnalysisTaskEfficiencyPbPb_DR::UserExec(Option_t *)
+void AliAnalysisTaskEffDRPbPb::UserExec(Option_t *)
 {
     AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   AliAODEvent *fAOD = aodH->GetEvent();

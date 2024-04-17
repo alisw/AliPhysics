@@ -1,7 +1,5 @@
-#ifndef ALIANALYSISTASKEFFICIENCYPBPB_DR
-#define ALIANALYSISTASKEFFICIENCYPBPB_DR
-
-
+#ifndef ALIANALYSISTASKEFFDRPBPB 
+#define ALIANALYSISTASKEFFDRPBPB
 
 #define MULTBINS 1
 #define PARTTYPES 6
@@ -14,7 +12,7 @@
 #include "AliAODpidUtil.h"
 class AliAnalysisUtils;
 
-class AliAnalysisTaskEfficiencyPbPb_DR :public AliAnalysisTaskSE{
+class AliAnalysisTaskEffDRPbPb :public AliAnalysisTaskSE{
  public:
 
   enum EventMult {kRefMult=0, kV0M=1, kV0A=2};
@@ -23,10 +21,11 @@ class AliAnalysisTaskEfficiencyPbPb_DR :public AliAnalysisTaskSE{
   enum PidMethod {kNSigma=0, kNSigmaNoDoubleCounting=1, kExclusivePID=2, kExclusivePIDDiffRejection=3};
   typedef enum PidMethod PidMethod;
 
-AliAnalysisTaskEfficiencyPbPb_DR();
 
-  AliAnalysisTaskEfficiencyPbPb_DR(TString name, int pidMethod=3, int filterbit=128); // default constructor
-  virtual ~AliAnalysisTaskEfficiencyPbPb_DR(); // default destructor
+ AliAnalysisTaskEffDRPbPb();
+
+  AliAnalysisTaskEffDRPbPb(TString name, int pidMethod=3, int filterbit=128); // default constructor
+  virtual ~AliAnalysisTaskEffDRPbPb(); // default destructor
   virtual void UserCreateOutputObjects(); // user create output objects
   virtual void UserExec(Option_t *option); // user exec
   //void Terminate(Option_t *option);
@@ -43,8 +42,8 @@ AliAnalysisTaskEfficiencyPbPb_DR();
   void AnalyseCascades(int fcent, AliAODEvent* aodEvent, TClonesArray  *arrayMC);
 
  private:
-  AliAnalysisTaskEfficiencyPbPb_DR(const AliAnalysisTaskEfficiencyPbPb_DR &); // copy constructor
-  AliAnalysisTaskEfficiencyPbPb_DR &operator=(const AliAnalysisTaskEfficiencyPbPb_DR &); // operator=
+  AliAnalysisTaskEffDRPbPb(const AliAnalysisTaskEffDRPbPb &); // copy constructor
+  AliAnalysisTaskEffDRPbPb &operator=(const AliAnalysisTaskEffDRPbPb &); // operator=
   //AliAODEvent *aodEvent;
   AliCentrality *centrality;
   //AliAODTrack *fTpcTracks;
@@ -156,7 +155,7 @@ AliAnalysisTaskEfficiencyPbPb_DR();
   AliPIDResponse *fpidResponse;
   AliAODpidUtil  *fAODpidUtil;
   AliEventCuts   *fEventCuts;
-  ClassDef(AliAnalysisTaskEfficiencyPbPb_DR, 0);
+  ClassDef(AliAnalysisTaskEffDRPbPb, 0);
   Bool_t fTrackPileUpRemoval;
   Bool_t fV0PileUpRemoval;
   

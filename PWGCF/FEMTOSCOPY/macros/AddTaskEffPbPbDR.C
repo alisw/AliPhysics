@@ -6,13 +6,13 @@
 //
 //=============================================================================
 
-AliAnalysisTaskEfficiencyPbPb_DR *AddTaskEffPbPb_DR(TString containerName="femtolist",int method=3, int filterbit=128)
+AliAnalysisTaskEffDRPbPb *AddTaskEffPbPbDR(TString containerName="femtolist",int method=3, int filterbit=128)
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
-    Error("AddTaskEffPbPb_DR", "No analysis manager to connect to.");
+    Error("AddTaskEffPbPbDR", "No analysis manager to connect to.");
     return NULL;
   }
 
@@ -20,7 +20,7 @@ AliAnalysisTaskEfficiencyPbPb_DR *AddTaskEffPbPb_DR(TString containerName="femto
   //    manager. The availability of MC handler can also be checked here.
   //==============================================================================
   if (!mgr->GetInputEventHandler()) {
-    ::Error("AddTaskEffPbPb_DR", "This task requires an input event handler");
+    ::Error("AddTaskEffPbPbDR", "This task requires an input event handler");
     return NULL;
   }
   TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
@@ -41,10 +41,10 @@ AliAnalysisTaskEfficiencyPbPb_DR *AddTaskEffPbPb_DR(TString containerName="femto
 //   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  AliAnalysisTaskEfficiencyPbPb_DR *taskEffPbPb_DR = new AliAnalysisTaskEfficiencyPbPb_DR("EffTaskPbPb_DR",method,filterbit);
-  taskEffPbPb_DR->SetPidMethod(method);
-  taskEffPbPb_DR->SetFB(filterbit);
-  mgr->AddTask(taskEffPbPb_DR);
+  AliAnalysisTaskEffDRPbPb *taskEffPbPbDR = new AliAnalysisTaskEffDRPbPb("EffTaskPbPbDR",method,filterbit);
+  taskEffPbPbDR->SetPidMethod(method);
+  taskEffPbPbDR->SetFB(filterbit);
+  mgr->AddTask(taskEffPbPbDR);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
   // arguments of the AddTaskXXX() function.
@@ -59,8 +59,8 @@ AliAnalysisTaskEfficiencyPbPb_DR *AddTaskEffPbPb_DR(TString containerName="femto
   							       AliAnalysisManager::kOutputContainer,outputfile);
 
 
-   mgr->ConnectInput(taskEffPbPb_DR, 0, mgr->GetCommonInputContainer());
-   mgr->ConnectOutput(taskEffPbPb_DR, 1, cout_femto);
+   mgr->ConnectInput(taskEffPbPbDR, 0, mgr->GetCommonInputContainer());
+   mgr->ConnectOutput(taskEffPbPbDR, 1, cout_femto);
 
    // std::ofstream ofile;
    // ofile.open("test.txt", std::ofstream::app);
@@ -68,5 +68,5 @@ AliAnalysisTaskEfficiencyPbPb_DR *AddTaskEffPbPb_DR(TString containerName="femto
    // ofile.close();
    
    // Return task pointer at the end
-   return taskEffPbPb_DR;
+   return taskEffPbPbDR;
 }

@@ -183,7 +183,7 @@ set(SRCS
   AliFemtoPairCutRadialDistanceDR.cxx
   AliFemtoCorrFctnDYDPhiSimpleWithCorrections.cxx
   AliFemtoCorrFctnDYDPhiSimple.cxx
-  AliAnalysisTaskEfficiencyPbPb_DR.cxx
+  AliAnalysisTaskEffDRPbPb.cxx
   AliAnalysisEffTaskPbPbDRMultDY.cxx
   AliAnalysisEffTaskPbPbDRMultDY4090.cxx
   AliAnalysisTaskEffK0ss.cxx
