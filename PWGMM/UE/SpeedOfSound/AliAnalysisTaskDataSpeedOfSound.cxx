@@ -876,15 +876,6 @@ void AliAnalysisTaskDataSpeedOfSound::FillZDCHistos() {
   hZDC->Fill(fZDC);
   hZEM->Fill(fZEM);
   pZDCvsZEM->Fill(fZEM, fZDC);
-
-  hZDCvsV0MAmp->Fill(fv0mamplitude, fZDC);
-  pZDCvsV0MAmp->Fill(fv0mamplitude, fZDC);
-
-  hZDCvsTracksEtaGapTPC->Fill(fTracksEtaGapTPC, fZDC);
-  pZDCvsTracksEtaGapTPC->Fill(fTracksEtaGapTPC, fZDC);
-
-  hZDCvsTrackletsEtaGap->Fill(fTrackletsEtaGap, fZDC);
-  pZDCvsTrackletsEtaGap->Fill(fTrackletsEtaGap, fZDC);
 }
 //______________________________________________________________________________
 void AliAnalysisTaskDataSpeedOfSound::GetZDC() {
@@ -1091,6 +1082,13 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
   hNchMultEtaNeg->Fill(nch_eta_neg, rec_nch_pos_eta);
   hNchMultTPCEtaGap->Fill(nch_tpc_etagap, fTracksEtaGapTPC);
   hNchMultITSEtaGap->Fill(nch_its_etagap, fTrackletsEtaGap);
+
+  hZDCvsV0MAmp->Fill(fv0mamplitude, fZDC);
+  pZDCvsV0MAmp->Fill(fv0mamplitude, fZDC);
+  hZDCvsTracksEtaGapTPC->Fill(fTracksEtaGapTPC, fZDC);
+  pZDCvsTracksEtaGapTPC->Fill(fTracksEtaGapTPC, fZDC);
+  hZDCvsTrackletsEtaGap->Fill(fTrackletsEtaGap, fZDC);
+  pZDCvsTrackletsEtaGap->Fill(fTrackletsEtaGap, fZDC);
 
   if (EbENchV0 > 0) {
     hEbEmeanPtvsV0MAmp->Fill(fv0mamplitude, EbEmeanpTV0 / EbENchV0);
