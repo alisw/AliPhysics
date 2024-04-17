@@ -58,6 +58,10 @@ ClassImp(AliFemtoDreamv0Cuts)
       fCutInvMassSidebands(false),
       fInvMassCutSBdown(0),
       fInvMassCutSBup(0),
+      fCutInvMassSidebandsRight(false),
+      fCutInvMassSidebandsLeft(false),
+      fInvMassCutSBOffset(0),
+      fInvMassCutSBWidth(0),
       fAxisMinMass(0),
       fAxisMaxMass(1),
       fNumberXBins(1),
@@ -116,6 +120,10 @@ AliFemtoDreamv0Cuts::AliFemtoDreamv0Cuts(const AliFemtoDreamv0Cuts &cuts)
       fCutInvMassSidebands(cuts.fCutInvMassSidebands),
       fInvMassCutSBdown(cuts.fInvMassCutSBdown),
       fInvMassCutSBup(cuts.fInvMassCutSBup),
+      fCutInvMassSidebandsRight(cuts.fCutInvMassSidebandsRight),
+      fCutInvMassSidebandsLeft(cuts.fCutInvMassSidebandsLeft),
+      fInvMassCutSBOffset(cuts.fInvMassCutSBOffset),
+      fInvMassCutSBWidth(cuts.fInvMassCutSBWidth),
       fAxisMinMass(cuts.fAxisMinMass),
       fAxisMaxMass(cuts.fAxisMaxMass),
       fNumberXBins(cuts.fNumberXBins),
@@ -178,6 +186,10 @@ AliFemtoDreamv0Cuts &AliFemtoDreamv0Cuts::operator=(
     this->fCutInvMassSidebands = cuts.fCutInvMassSidebands;
     this->fInvMassCutSBdown = cuts.fInvMassCutSBdown;
     this->fInvMassCutSBup = cuts.fInvMassCutSBup;
+    this->fCutInvMassSidebandsRight = cuts.fCutInvMassSidebandsRight;
+    this->fCutInvMassSidebandsLeft = cuts.fCutInvMassSidebandsLeft;
+    this->fInvMassCutSBOffset = cuts.fInvMassCutSBOffset;
+    this->fInvMassCutSBWidth = cuts.fInvMassCutSBWidth;
     this->fAxisMinMass = cuts.fAxisMinMass;
     this->fAxisMaxMass = cuts.fAxisMaxMass;
     this->fNumberXBins = cuts.fNumberXBins;
@@ -271,6 +283,12 @@ bool AliFemtoDreamv0Cuts::isSelected(AliFemtoDreamv0 *v0)
       {
         pass = false;
       }
+    }
+  }
+  if (pass) {
+    if ( (fCutInvMassSidebandsRight || fCutInvMassSidebandsLeft)
+         && !SidebandsSelection(v0)) {
+      pass = false;
     }
   }
   if (pass)
@@ -557,6 +575,24 @@ bool AliFemtoDreamv0Cuts::RejectAsKaon(AliFemtoDreamv0 *v0)
   return pass;
 }
 
+bool AliFemtoDreamv0Cuts::SidebandsSelection(AliFemtoDreamv0 *v0) {
+  bool massPass = true;
+  if (fCutInvMassSidebandsRight) {
+    float massv0 = TDatabasePDG::Instance()->GetParticle(fPDGv0)->Mass();
+    if ((v0->GetInvMass() < massv0+fInvMassCutSBOffset)
+        || (v0->GetInvMass() > massv0+fInvMassCutSBOffset+fInvMassCutSBWidth)) {
+      massPass = false;
+    }
+  } else {
+    float massv0 = TDatabasePDG::Instance()->GetParticle(fPDGv0)->Mass();
+    if ((v0->GetInvMass() > massv0-fInvMassCutSBOffset)
+        || (v0->GetInvMass() < massv0-fInvMassCutSBOffset-fInvMassCutSBWidth)) {
+      massPass = false;
+    }
+  }
+  return massPass;
+}
+
 bool AliFemtoDreamv0Cuts::ArmenterosSelection(AliFemtoDreamv0 *v0)
 {
   bool pass = true;
@@ -605,6 +641,20 @@ bool AliFemtoDreamv0Cuts::CPAandMassCuts(AliFemtoDreamv0 *v0)
   {
     if ((v0->Getv0Mass() < fInvMassCutSBdown) || (fInvMassCutSBup < v0->Getv0Mass()))
     {
+      massPass = false;
+    }
+      } 
+  else if (fCutInvMassSidebandsRight) {
+    float massv0 = TDatabasePDG::Instance()->GetParticle(fPDGv0)->Mass();
+    if ((v0->Getv0Mass() < massv0+fInvMassCutSBOffset)
+        || (v0->Getv0Mass() > massv0+fInvMassCutSBOffset+fInvMassCutSBWidth)) {
+      massPass = false;
+    }
+  } 
+  else if (fCutInvMassSidebandsLeft) {
+    float massv0 = TDatabasePDG::Instance()->GetParticle(fPDGv0)->Mass();
+    if ((v0->Getv0Mass() > massv0-fInvMassCutSBOffset)
+        || (v0->Getv0Mass() < massv0-fInvMassCutSBOffset-fInvMassCutSBWidth)) {
       massPass = false;
     }
   }
@@ -914,6 +964,9 @@ void AliFemtoDreamv0Cuts::BookTrackCuts()
     {
       fHist->FillConfig(10, fInvMassCutSBdown);
       fHist->FillConfig(11, fInvMassCutSBup);
+    } else if (fCutInvMassSidebandsLeft || fCutInvMassSidebandsRight) {
+      fHist->FillConfig(10, fInvMassCutSBOffset);
+      fHist->FillConfig(11, fInvMassCutSBWidth);
     }
     if (fCutCPA)
     {
