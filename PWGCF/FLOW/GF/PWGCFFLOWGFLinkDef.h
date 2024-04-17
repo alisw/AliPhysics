@@ -38,6 +38,7 @@
 #pragma link C++ class AliAnalysisTaskMomentumFlowCorrelation++;
 #pragma link C++ class AliPtSubEventContainer++;
 #pragma link C++ class AliAnalysisTaskDensity++;
+#pragma link C++ class AliAnalysisTaskCorrForFlowFMDOnthefly+;
 #endif
 
 #ifdef __CLING__
