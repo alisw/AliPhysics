@@ -375,12 +375,20 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   Double_t ptMin = fPtBins[0];
   Double_t ptMax = fPtBins[fNPtBins];
   Double_t nTotNoTracks=0.;
-  float multVZERO = 0.;
+  int multVZERO = 0.;
+  if(fUseV0M){
+    AliVVZERO *vzero = (AliVVZERO*)fAOD->GetVZEROData();
+    if(vzero) {
+      for(int ich=0; ich < 64; ich++)
+      multVZERO += vzero->GetMultiplicity(ich);
+    }
+  }
   int nTotTracksFB128=0;
   AliAODTrack *lTrack;
   if(fIsMC) {
     Double_t nTotNoTracksMC=0;
     Double_t nTotNoTracksReco=0;
+    Int_t multVZEROMC=0;
     if(fUseRecoNchForMC) nTotNoTracksReco = GetNtotTracks(fAOD,ptMin,ptMax,vtxXYZ,iCent);
     TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
     Int_t nPrim = tca->GetEntries();
@@ -391,8 +399,8 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
       if (lPart->Charge()==0.) continue;
       if (!lPart->IsPhysicalPrimary()) continue;
       //Hardcoded cuts to inhereted from AcceptAODTrack
-      if(2.8 < lPart->Eta() && lPart->Eta() < 5.1) ++multVZERO;
-      if(-3.7 < lPart->Eta() && lPart->Eta() < -1.7) ++ multVZERO;
+      if(2.8 < lPart->Eta() && lPart->Eta() < 5.1) ++multVZEROMC;
+      if(-3.7 < lPart->Eta() && lPart->Eta() < -1.7) ++ multVZEROMC;
       if(lPart->Pt()<ptMin || lPart->Pt()>ptMax) continue;
       double letaabs = (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta();
       if(fEtaMptAcceptance[0] < letaabs && letaabs < fEtaMptAcceptance[1]){
@@ -405,17 +413,12 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
       }
       else continue;
       if(fFillQA) fPhiEtaVtxZ->Fill(lPart->Phi(),lPart->Eta(),vz);
+      if(fUseV0M && fUseRecoNchForMC) fPtVsV0M->Fill(multVZERO,lPart->Pt());
     };
     nTotNoTracks = fUseRecoNchForMC?nTotNoTracksReco:nTotNoTracksMC;
+    multVZERO = fUseRecoNchForMC?multVZERO:multVZEROMC;
     if(fUseRecoNchForMC) fNchTrueVsReco->Fill(nTotNoTracksMC,nTotNoTracksReco);
   } else {
-    if(fUseV0M){
-      AliVVZERO *vzero = (AliVVZERO*)fAOD->GetVZEROData();
-      if(vzero) {
-        for(int ich=0; ich < 64; ich++)
-        multVZERO += vzero->GetMultiplicity(ich);
-      }
-    }
     Bool_t usingPseudoEff = (fPseudoEfficiency<1);
     for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
       if(usingPseudoEff) if(fRndm->Uniform()>fPseudoEfficiency) continue;
@@ -827,8 +830,6 @@ int AliAnalysisTaskPtCorr::GetNtotTracks(AliAODEvent* lAOD, const Double_t &ptmi
   for(Int_t lTr=0;lTr<lAOD->GetNumberOfTracks();lTr++) {
     lTrack = (AliAODTrack*)lAOD->GetTrack(lTr);
     if(!lTrack) continue;
-    double abseta = (fEtaAbsolute)?TMath::Abs(lTrack->Eta()):lTrack->Eta();
-    if((abseta < fEtaMultAcceptance[0]) && (fEtaMultAcceptance[1] < abseta)) continue;
     if(!AcceptAODTrack(lTrack,ltrackXYZ,ptmin,ptmax,vtxp,iCent,nTotNoTracks)) continue;
   };
   return nTotNoTracks;
