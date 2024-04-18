@@ -63,10 +63,10 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
   v0Cuts->SetPDGCodeNegDaug(211);  // Pion
   v0Cuts->SetPDGCodev0(3122);      // Lambda
   if (sidebands == "1") {
-    v0Cuts->SetCutWindowOffset(0, 0.002, 0.005);
+    v0Cuts->SetCutWindowOffset(0, 0.10500000000000001, 0.10500000000000001);
   }
   if (sidebands == "2") {
-    v0Cuts->SetCutWindowOffset(1, 0.002, 0.005);
+    v0Cuts->SetCutWindowOffset(1, 0.10500000000000001, 0.10500000000000001);
   }
 
   // AntiLambda --> Antip + pi+ cuts
@@ -82,10 +82,10 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
   Antiv0Cuts->SetPDGCodeNegDaug(2212); // Proton
   Antiv0Cuts->SetPDGCodev0(-3122);     // Lambda
   if (sidebands == "1") {
-    Antiv0Cuts->SetCutWindowOffset(0, 0.002, 0.005);
+    Antiv0Cuts->SetCutWindowOffset(0, 0.10500000000000001, 0.10500000000000001);
   }
   if (sidebands == "2") {
-    Antiv0Cuts->SetCutWindowOffset(1, 0.002, 0.005);
+    Antiv0Cuts->SetCutWindowOffset(1, 0.10500000000000001, 0.10500000000000001);
   }
 
   // Cuts on correlation pions (Marcel)
