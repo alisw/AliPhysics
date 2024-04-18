@@ -207,6 +207,19 @@ public:
     fInvMassCutSBdown = down;
     fInvMassCutSBup = up;
   }
+  void SetCutWindowOffset(bool rightside, float offset, float width)
+  {
+    fCutInvMass = false;
+    if(rightside) {
+      fCutInvMassSidebandsRight = true;
+      fCutInvMassSidebandsLeft = false;
+    } else {
+      fCutInvMassSidebandsRight = false;
+      fCutInvMassSidebandsLeft = true;
+    }
+    fInvMassCutSBOffset = offset;
+    fInvMassCutSBWidth = width;
+  }
   void Init();
   void SetName(TString OutputName)
   {
@@ -266,6 +279,7 @@ private:
   bool DaughtersPassCuts(AliFemtoDreamv0 *v0);
   bool MotherPassCuts(AliFemtoDreamv0 *v0);
   bool CPAandMassCuts(AliFemtoDreamv0 *v0);
+  bool SidebandsSelection(AliFemtoDreamv0 *v0);
   void BookQA(AliFemtoDreamv0 *v0);
   void BookMC(AliFemtoDreamv0 *v0);
   void BookTrackCuts();
@@ -319,6 +333,10 @@ private:
   bool fCutInvMass;                    //
   float fInvMassCutWidth;              //
   bool fCutInvMassSidebands;           //
+  bool fCutInvMassSidebandsRight;      //
+  bool fCutInvMassSidebandsLeft;       //
+  float fInvMassCutSBOffset;           //
+  float fInvMassCutSBWidth;            //
   float fInvMassCutSBdown;             //
   float fInvMassCutSBup;               //
 
