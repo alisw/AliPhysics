@@ -13,7 +13,6 @@ class TH2F;
 class TH3F;
 class TH3D;
 class TProfile;
-class TProfile2D;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
@@ -40,19 +39,15 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void GetCalibratedV0Amplitude();
   void VertexPosition();
   void GetZDC();
-  void FillZDCHistos();
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetHMCut(double HMcut) { fHMCut = HMcut; }      // Set V0M max value
   void SetUseMC(bool mc = false) { fUseMC = mc; }      // use to analyse MC data
-  void SetEtaCut(const double& etacut, const double& etamin_halftpc,
-                 const double& etamax_halftpc, const double& etamin_spd,
+  void SetEtaCut(const double& etacut, const double& etamin_spd,
                  const double& etamax_spd, const double& etamin_tpc,
                  const double& etamax_tpc, const double& etacut_4ptwspd,
                  const double& etacut_4ptwtpc) {
     fEtaCut = etacut;
-    fEtaCutHalfTPCMin = etamin_halftpc;
-    fEtaCutHalfTPCMax = etamax_halftpc;
     fEtaCutSPDGapMin = etamin_spd;
     fEtaCutSPDGapMax = etamax_spd;
     fEtaCutTPCGapMin = etamin_tpc;
@@ -97,8 +92,6 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   AliAnalysisFilter* fTrackFilterwoDCA;
   TList* fOutputList;
   double fEtaCut;
-  double fEtaCutHalfTPCMin;
-  double fEtaCutHalfTPCMax;
   double fEtaCutForpTwSPDGap;
   double fEtaCutSPDGapMin;
   double fEtaCutSPDGapMax;
@@ -114,72 +107,46 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   double ftrackmult08;
   double fv0mpercentile;
   float fv0mamplitude;
-  int fTracklets14;
-  int fTracklets10;
   int fTrackletsEtaGap;
   int fTracksEtaGapTPC;
-  double fETEtaGapTPC;
   double fZP;
   double fZN;
   double fZDC;
   double fZEM;
-  float fdcaxy;
-  float fdcaz;
   AliMultSelection* fMultSelection;
   TH1F* hNch;
   TH2F* hNchvsV0MAmp;
   TH2F* hV0MvsV0MAmp;
-  // TProfile* pV0MAmpChannel;
+  TProfile* pV0MAmpChannel;
   TH1F* hV0MAmplitude;
   TH1F* hV0Percentile;
   TH2D* hPtvsNch;
   TProfile* pPtvsNch;
-  TProfile* pPtEtaNegvsNchEtaPos;
-  TProfile* pPtEtaPosvsNchEtaNeg;
   TProfile* pPtvsV0MAmp;
   TH2D* hPtvsV0MAmp;
-  TH2F* hEbEmeanPtvsV0MAmp;
-  TH1F* hNchEtaPos;
-  TH1F* hNchEtaNeg;
-  TH2D* hPtEtaNegvsNchEtaPos;
-  TH2D* hPtEtaPosvsNchEtaNeg;
   TH2F* hDCAxyData[1];
-  // TH2F* hPhiEtaSPD;
   TH2F* hPhiEtaGapTPC;
-  // TH1F* hPtWithCutForCent;
-  TH2F* hPhiEtaPosHalfTPC;
-  // TH2F* hPhiEtaNegHalfTPC;
+  TH1F* hPtWithCutForCent;
   TH2F* hPhiEtaGapSPD;
-  TH1F* hVtxZ;
-  // TH1F* hTracklets14;
-  // TH1F* hTracklets10;
+  TH1F* hBestVtxZ;
   TH1F* hTrackletsEtaGap;
   TH1F* hTracksEtaGapTPC;
-  // TH2D* hPtvsTracklets14;
-  // TH2D* hPtvsTracklets10;
   TH2D* hPtvsTrackletsEtaGap;
   TH2D* hPtvsTracksEtaGapTPC;
-  // TProfile* pPtvsTracklets14;
-  // TProfile* pPtvsTracklets10;
   TProfile* pPtvsTrackletsEtaGap;
   TProfile* pPtvsTracksEtaGapTPC;
-  TH2F* hEbEmeanPtvsTPC;
-  TH2F* hNchMultEtaNeg;
-  TH2F* hNchMultTPCEtaGap;
-  TH2F* hNchMultITSEtaGap;
-
-  TH2F* hZDCvsV0MAmp;
-  TProfile* pZDCvsV0MAmp;
-  TH2F* hZDCvsTracksEtaGapTPC;
-  TProfile* pZDCvsTracksEtaGapTPC;
-  TH2F* hZDCvsTrackletsEtaGap;
-  TProfile* pZDCvsTrackletsEtaGap;
-  TH2F* hEbEmeanPtvsZDC;
-  TProfile* pZDCvsZEM;
+  TH1F* hZN;
   TH1F* hZDC;
   TH1F* hZEM;
+  TH2D* hPtvsZN;
   TH2D* hPtvsZDC;
   TH2D* hPtvsZEM;
+  TProfile* pZDCvsV0MAmp;
+  TProfile* pZDCvsNch;
+  TProfile* pZDCvsZEM;
+  TProfile* pZNvsV0MAmp;
+  TProfile* pZNvsNch;
+  TProfile* pZNvsZEM;
 
   AliAnalysisTaskDataSpeedOfSound(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented
