@@ -1137,8 +1137,8 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   float minMinv             = 0;
   float maxMinv             = 0.8;
   double epsilon              = 1.e-6;
-  float minRes                = -1.f;
-  float maxRes                = +5.f; 
+  float minRes                = -5.f;
+  float maxRes                = +1.f; 
   Double_t *arrPtBinning      = new Double_t[1200];
   Double_t *arrQAPtBinning    = new Double_t[1200];
   Double_t *arrClusPtBinning  = new Double_t[1200];
