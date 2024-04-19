@@ -360,21 +360,21 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   }
 
   // nTracklets (|eta|<1.4)
-  constexpr int tracklets14_Nbins{5400};
-  double tracklets14_bins[tracklets14_Nbins + 1] = {0};
-  for (int i = 0; i <= tracklets14_Nbins; ++i) {
-    tracklets14_bins[i] = -0.5 + (float)i;
-  }
+  // constexpr int tracklets14_Nbins{5400};
+  // double tracklets14_bins[tracklets14_Nbins + 1] = {0};
+  // for (int i = 0; i <= tracklets14_Nbins; ++i) {
+  //   tracklets14_bins[i] = -0.5 + (float)i;
+  // }
 
   // nTracklets (|eta|<1)
-  constexpr int tracklets10_Nbins{4000};
-  double tracklets10_bins[tracklets10_Nbins + 1] = {0};
-  for (int i = 0; i <= tracklets10_Nbins; ++i) {
-    tracklets10_bins[i] = -0.5 + (float)i;
-  }
+  // constexpr int tracklets10_Nbins{4000};
+  // double tracklets10_bins[tracklets10_Nbins + 1] = {0};
+  // for (int i = 0; i <= tracklets10_Nbins; ++i) {
+  //   tracklets10_bins[i] = -0.5 + (float)i;
+  // }
 
-  // nTracklets (0.7<|eta|<1.4) up to 3000
-  constexpr int trackletsEtaGap_Nbins{3000};
+  // nTracklets (0.5<|eta|<0.8)
+  constexpr int trackletsEtaGap_Nbins{1301};
   double trackletsEtaGap_bins[trackletsEtaGap_Nbins + 1] = {0};
   for (int i = 0; i <= trackletsEtaGap_Nbins; ++i) {
     trackletsEtaGap_bins[i] = -0.5 + (float)i;
@@ -393,16 +393,16 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
     dcaxy_bins[i] = -3.0 + (0.06 * i);
   }
 
-  const int zdcN_sumNbins{400};
+  const int zdcN_sumNbins{1000};
   double zdcN_sumbins[zdcN_sumNbins + 1] = {0.0};
   for (int i = 0; i <= zdcN_sumNbins; ++i) {
-    zdcN_sumbins[i] = 1.0 * i;
+    zdcN_sumbins[i] = 0.3 * i;
   }
 
-  const int zdcEM_Nbins{300};
+  const int zdcEM_Nbins{1040};
   double zdcEM[zdcEM_Nbins + 1] = {0.0};
   for (int i = 0; i <= zdcEM_Nbins; ++i) {
-    zdcEM[i] = 600.0 + (i * 4.0);
+    zdcEM[i] = 660.0 + (double)i;
   }
 
   constexpr int v0m_Nbins080{6};
