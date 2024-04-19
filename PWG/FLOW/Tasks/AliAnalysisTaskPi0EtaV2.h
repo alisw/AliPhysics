@@ -68,6 +68,10 @@ private:
     TProfile2D **fHistoMotherInvMassPtV0ACos2phi;     // ray of histogram with signal + BG for same event photon pairs cos(2(phi-Psi)) inv Mass, pt
     TProfile2D **fHistoMotherBackInvMassPtV0CCos2phi; // ray of histogram with only BG for same event photon pairs cos(2(phi-Psi)), inv Mass, pt
     TProfile2D **fHistoMotherBackInvMassPtV0ACos2phi; // ray of histogram with only BG for same event photon pairs cos(2(phi-Psi)), inv Mass, pt
+    std::map<int, int> *runNumList;
+    TH1F **fhistPhi; // ray of  hist of candidate in a ray invmass range
+    TH1F **fhistPhiBG;
+    TH1I *fHistRunNumBin;
 
     int runNum;
     int oldRunNum;
