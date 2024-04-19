@@ -69,6 +69,29 @@ void AliAnalysisTaskEfficiencyFB128::SetPidMethod(int method)
 }
 
 //_______________________________________________________
+AliAnalysisTaskEfficiencyFB128::AliAnalysisTaskEfficiencyFB128() :
+  AliAnalysisTaskSE(), centrality(0), fHistoList(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
+
+{
+
+  for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
+    for(Int_t chg=0;chg<2;chg++){
+      fGeneratedMCPrimaries[i][chg] = NULL;
+      fMCPrimariesThatAreReconstructed[i][chg] = NULL;
+      fMCPrimariesThatAreReconstructedNoNsigma[i][chg] = NULL;
+      fReconstructedAfterCuts[i][chg] = NULL;
+      fReconstructedNotPrimaries[i][chg] = NULL;
+      fReconstructedPrimaries[i][chg] = NULL;
+      fContamination[i][chg] = NULL;
+    }
+  }
+ for ( Int_t i = 0; i < 11; i++) {
+    if(i<4) fHistEv[i] = NULL;
+    fHistQA[i] = NULL;
+    if(i<3) fHistQA2D[i] = NULL;
+  }
+}
+
 
 AliAnalysisTaskEfficiencyFB128::AliAnalysisTaskEfficiencyFB128(TString name, int pidMethod, int filterbit) :
   AliAnalysisTaskSE(name), centrality(0), fHistoList(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
@@ -91,12 +114,6 @@ AliAnalysisTaskEfficiencyFB128::AliAnalysisTaskEfficiencyFB128(TString name, int
     fHistQA[i] = NULL;
     if(i<3) fHistQA2D[i] = NULL;
   }
-
-  /* init track cuts */
-  if(pidMethod!=-1) SetPidMethod(pidMethod);
-  SetFB(filterbit);
-
-
 
   //DefineInput(0, TChain::Class());
   //DefineOutput(0, TTree::Class());
