@@ -2,7 +2,10 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisPtN.h"
 
-AliAnalysisPtN* AddTaskPtN(TString uniqueID = "")
+AliAnalysisPtN* AddTaskPtN(
+	TString     fNUE = "LHC20j6a",
+	TString     uniqueID        = " "
+	)
 {
     // Creates a pid task and adds it to the analysis manager
 	// Get the pointer to the existing analysis manager via the static
@@ -28,7 +31,7 @@ AliAnalysisPtN* AddTaskPtN(TString uniqueID = "")
 	TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
 	AliAnalysisPtN* task = new AliAnalysisPtN("PtN");
-    if(!task) return 0x0;
+ 
     mgr->AddTask(task);
 
     // Create ONLY the output containers for the data produced by the
@@ -41,20 +44,32 @@ AliAnalysisPtN* AddTaskPtN(TString uniqueID = "")
 
 	TGrid::Connect("alien:");
     
+	TFile* fileNUE=nullptr;
     AliAnalysisDataContainer *NUE = mgr->CreateContainer(Form("NUE"), TList::Class(), AliAnalysisManager::kInputContainer);
-    TFile* fileNUE = TFile::Open("alien:///alice/cern.ch/user/z/zyifan/weight/NUE/Efficiency_LHC20e3a_wSyst.root");
-    TList* lstNUE = dynamic_cast<TList*>(fileNUE->Get("EffAndFD"));
+    if (fNUE.EqualTo("LHC20e3a")){
+	    fileNUE = TFile::Open("alien:///alice/cern.ch/user/z/zyifan/weight/NUE/Efficiency_LHC20e3a_wSyst.root");
+    } else if (fNUE.EqualTo("LHC20j6a")){
+		fileNUE = TFile::Open("alien:///alice/cern.ch/user/z/zyifan/weight/NUE/Efficiency_LHC20j6a_wSyst.root");
+	}
+	if(!fileNUE) return task;
+	TList* lstNUE = dynamic_cast<TList*>(fileNUE->Get("EffAndFD"));
     NUE->SetData(lstNUE);
 
 	// AliAnalysisDataContainer *NUE = mgr->CreateContainer(Form("NUE"), TList::Class(), AliAnalysisManager::kInputContainer);
-    // TFile* fileNUE = TFile::Open("/Users/macnbi/alice/Efficiency_LHC20e3a_wSyst.root");
+    // TFile* fileNUE=nullptr;
+	// if (fNUE.EqualTo("LHC20e3a")){
+	// 	fileNUE = TFile::Open("/Users/macnbi/alice/Efficiency_LHC20e3a_wSyst.root");
+	// } else if (fNUE.EqualTo("LHC20j6a")){
+	// 	fileNUE = TFile::Open("/Users/macnbi/alice/Efficiency_LHC20j6a_wSyst.root");
+	// }
+	// if(!fileNUE) return task;
     // TList* lstNUE = dynamic_cast<TList*>(fileNUE->Get("EffAndFD"));
     // NUE->SetData(lstNUE); 
 
 	AliAnalysisDataContainer* cout = mgr->CreateContainer(Form("QA_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:%s", uniqueID.Data()));
 	mgr->ConnectInput (task, 0, cinput);
 	mgr->ConnectInput(task,1,NUE);
-	mgr->ConnectOutput(task, 1, cout);
+	mgr->ConnectOutput(task,1, cout);
 
     return task;
 }
