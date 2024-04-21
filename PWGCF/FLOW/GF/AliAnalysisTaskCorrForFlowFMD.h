@@ -146,6 +146,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetFMDacceptanceCuts(Double_t cutAlower, Double_t cutAupper, Double_t cutClower, Double_t cutCupper) { fFMDAacceptanceCutLower = cutAlower; fFMDAacceptanceCutUpper = cutAupper; fFMDCacceptanceCutLower = cutClower; fFMDCacceptanceCutUpper = cutCupper; }
         void                    SetBoostAMPT(Bool_t flag = kTRUE){ fBoostAMPT = flag; }
 	void                    setUseFMDcorrection(Bool_t Use_FMDcorrection, TString fmdcorrfilename){ fUseFMDcorrection = Use_FMDcorrection; fFMD_correctoion_file = fmdcorrfilename;}
+	void                    setFMDcorr_deta_binning(Double_t FMD_detabins, Double_t FMD_deta_min, Double_t FMD_deta_max){ fFMD_detabins = FMD_detabins;  fFMD_deta_min = FMD_deta_min;  fFMD_deta_max = FMD_deta_max;}
 
     private:
 
@@ -259,6 +260,12 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 	Double_t                fNFMD_fwd_hits;
 	Double_t                fNFMD_bwd_hits;
 	Double_t                fNofTracks_FMD;
+
+	Double_t                fFMD_detabins;
+	Double_t                fFMD_deta_min;
+	Double_t                fFMD_deta_max;
+
+
         Int_t                   fNofMinHighPtTracksForRejection;
         Int_t                   fNchMin;
         Int_t                   fNchMax;
