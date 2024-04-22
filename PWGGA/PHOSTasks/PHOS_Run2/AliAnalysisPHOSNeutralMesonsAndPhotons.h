@@ -38,13 +38,14 @@ class AliAnalysisPHOSNeutralMesonsAndPhotons : public AliAnalysisTaskSE
   };
   void SetMC(Bool_t isMC) { fIsMC = isMC; };
   void SetCoreEnergyFlag(Bool_t useCoreE) { fUseCoreEnergy = useCoreE; };
-  void SetClusterCuts(Bool_t useCoreE, Double_t Emin, Double_t DispCut, Double_t CPVCut, Double_t TOFCut)
+  void SetClusterCuts(Bool_t useCoreE, Double_t Emin, Double_t DispCut, Double_t CPVCut, Double_t TOFCut, Bool_t MinBiasLowECut)
   {
     fUseCoreEnergy = useCoreE;
     fEminCut = Emin;
     fDispSigma = DispCut;
     fCPVSigma = CPVCut;
     fTOFCut = TOFCut;
+    fMinBiasLowEClustCut = MinBiasLowECut;
   };
   void SetQAStudy(Bool_t DoClustQA, Bool_t DoCellQA)
   {
@@ -61,6 +62,10 @@ class AliAnalysisPHOSNeutralMesonsAndPhotons : public AliAnalysisTaskSE
 
   void SetTOFEfficiency(TF1* tofeff) { fUserTOFEff = tofeff; };
   void SetUserNonlinearityFunction(TF1* nonlin) { fUserNonlinFunc = nonlin; };
+  void SetPHOSModEnergyCorr(Double_t PHOSWeights[4]){
+    for (Int_t imod = 0; imod < 4; imod++)
+      fPHOSModEnCorr[imod] = PHOSWeights[imod];
+  };
 
   void SetNEventsForMixing(Int_t NMix) { fNMixEvents = NMix; };
 
@@ -145,12 +150,14 @@ class AliAnalysisPHOSNeutralMesonsAndPhotons : public AliAnalysisTaskSE
   TF1* fUserNonlinFunc;
   Bool_t fDoTOFEffCorr;
   TF1* fUserTOFEff;
+  Double_t fPHOSModEnCorr[kMods];
 
   Bool_t fUseCoreEnergy;
   Double_t fEminCut;
   Double_t fDispSigma;
   Double_t fCPVSigma;
   Double_t fTOFCut;
+  Bool_t fMinBiasLowEClustCut;
 
   TH1F* fHistInfo;
   TH1F* fHistSelectEvent;
@@ -169,6 +176,7 @@ class AliAnalysisPHOSNeutralMesonsAndPhotons : public AliAnalysisTaskSE
   TH2F* fHistTOFClustMod[kMods];
   TH2F* fHistCaloPhotonTOFvsE;
   TH2F* fHistCaloPhotonTOFvsEMod[kMods];
+  TH1F* fHistCaloPhotonTOFCut;
 
   TH2F* fHistClustTOFvsDDL;
   TH2F* fHistClustTOFvsDDLEnCut;
@@ -177,8 +185,10 @@ class AliAnalysisPHOSNeutralMesonsAndPhotons : public AliAnalysisTaskSE
   TH2F* fHistClustMultVsCentralityMod[kMods];
 
   TH1F* fHistCaloPhotonPt[kPIDCuts];
+
   TH2F* fHistM02vsPt;
   TH2F* fHistM20vsPt;
+  TH2F* fHistClustEvsXZMod[kMods];
 
   TH1F* fHistClustFullE;
   TH1F* fHistClustCoreE;

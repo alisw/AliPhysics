@@ -76,6 +76,7 @@ AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(c
                                                                                                    fDispSigma(2.5),
                                                                                                    fCPVSigma(2.5),
                                                                                                    fTOFCut(30.),
+                                                                                                   fMinBiasLowEClustCut(kTRUE),
                                                                                                    fHistInfo(nullptr),
                                                                                                    fHistSelectEvent(nullptr),
                                                                                                    fHistVertexZ(nullptr),
@@ -87,6 +88,7 @@ AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(c
                                                                                                    fHistCentZNAvsZNC(nullptr),
                                                                                                    fHistTOFClust(nullptr),
                                                                                                    fHistCaloPhotonTOFvsE(nullptr),
+                                                                                                   fHistCaloPhotonTOFCut(nullptr),
                                                                                                    fHistClustTOFvsDDL(nullptr),
                                                                                                    fHistClustTOFvsDDLEnCut(nullptr),
                                                                                                    fHistClustMultVsCentrality(nullptr),
@@ -122,6 +124,9 @@ AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(c
         fPHOSEvents[i][j][k] = nullptr;
 
   for (Int_t imod = 0; imod < kMods; imod++) {
+
+    fPHOSModEnCorr[imod] = 1.;
+
     fHistTOFClustMod[imod] = nullptr;
     fHistClustMultVsCentralityMod[imod] = nullptr;
     fHistCaloPhotonTOFvsEMod[imod] = nullptr;
@@ -133,6 +138,8 @@ AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(c
     fHistMixMggMod[imod] = nullptr;
     fHistMggPhIDCutMod[imod] = nullptr;
     fHistMixMggPhIDCutMod[imod] = nullptr;
+
+    fHistClustEvsXZMod[imod] = nullptr;
   }
 
   for (Int_t icut = 0; icut < kPIDCuts; icut++) {
@@ -193,6 +200,7 @@ AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(c
                                                                                                                                    fDispSigma(2.5),
                                                                                                                                    fCPVSigma(2.5),
                                                                                                                                    fTOFCut(30.),
+                                                                                                                                   fMinBiasLowEClustCut(kTRUE),
                                                                                                                                    fHistInfo(nullptr),
                                                                                                                                    fHistSelectEvent(nullptr),
                                                                                                                                    fHistVertexZ(nullptr),
@@ -204,6 +212,7 @@ AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(c
                                                                                                                                    fHistCentZNAvsZNC(nullptr),
                                                                                                                                    fHistTOFClust(nullptr),
                                                                                                                                    fHistCaloPhotonTOFvsE(nullptr),
+                                                                                                                                   fHistCaloPhotonTOFCut(nullptr),
                                                                                                                                    fHistClustTOFvsDDL(nullptr),
                                                                                                                                    fHistClustTOFvsDDLEnCut(nullptr),
                                                                                                                                    fHistClustMultVsCentrality(nullptr),
@@ -243,6 +252,9 @@ AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(c
         fPHOSEvents[i][j][k] = nullptr; // Container for PHOS photons
 
   for (Int_t imod = 0; imod < kMods; imod++) {
+
+    fPHOSModEnCorr[imod] = 1.;
+
     fHistTOFClustMod[imod] = nullptr;
     fHistClustMultVsCentralityMod[imod] = nullptr;
     fHistCaloPhotonTOFvsEMod[imod] = nullptr;
@@ -254,6 +266,8 @@ AliAnalysisPHOSNeutralMesonsAndPhotons::AliAnalysisPHOSNeutralMesonsAndPhotons(c
     fHistMixMggMod[imod] = nullptr;
     fHistMggPhIDCutMod[imod] = nullptr;
     fHistMixMggPhIDCutMod[imod] = nullptr;
+
+    fHistClustEvsXZMod[imod] = nullptr;
   }
 
   for (Int_t icut = 0; icut < kPIDCuts; icut++) {
@@ -280,10 +294,17 @@ AliAnalysisPHOSNeutralMesonsAndPhotons::~AliAnalysisPHOSNeutralMesonsAndPhotons(
     fOutputContainer = nullptr;
   }
 
+  if (fCaloPhotonsPHOS){
+    fCaloPhotonsPHOS->Clear();
+    delete fCaloPhotonsPHOS;
+    fCaloPhotonsPHOS = nullptr;
+  }
+
   for (Int_t i = 0; i < kVtxBins; i++)
     for (Int_t j = 0; j < kCentBins; j++)
       for (Int_t k = 0; k < kPRBins; k++)
         if (fPHOSEvents[i][j][k]) {
+          fPHOSEvents[i][j][k]->Clear();
           delete fPHOSEvents[i][j][k];
           fPHOSEvents[i][j][k] = nullptr;
         }
@@ -424,9 +445,11 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserCreateOutputObjects()
       fOutputContainer->Add(fHistCaloPhotonTOFvsEMod[imod - 1]);
     }
 
+    fHistCaloPhotonTOFCut = new TH1F("hCaloPhotonTOFCut", "CaloPhoton TOF vs E;E, GeV;TOF, ns", 120, -300, 300);
     fHistClustTOFvsDDL = new TH2F("hClustTOFvsDDL", "TOF_{clust}, all clust;DDL;TOF_{clust}, ns", 20, 1, 21, 600, -300, 300);
     fHistClustTOFvsDDLEnCut = new TH2F("hClustTOFvsDDLEnCut", "TOF_{clust}, E > 1.5 GeV;DDL;TOF_{clust}, ns", 20, 1, 21, 600, -300, 300);
 
+    fOutputContainer->Add(fHistCaloPhotonTOFCut);
     fOutputContainer->Add(fHistClustTOFvsDDL);
     fOutputContainer->Add(fHistClustTOFvsDDLEnCut);
   }
@@ -438,6 +461,11 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserCreateOutputObjects()
 
   fHistM02vsPt = new TH2F("hClustM02vsPt", ";#it{p}_{T}, GeV/c;Counts", nPt - 1, Pt, 100, 0., 10.);
   fHistM20vsPt = new TH2F("hClustM20vsPt", ";#it{p}_{T}, GeV/c;Counts", nPt - 1, Pt, 100, 0., 10.);
+  for (Int_t imod = 0; imod < kMods; imod++){
+    fHistClustEvsXZMod[imod] = new TH2F(Form("hClustEvsXZMod%d",imod+1), Form("Cluster E(X,Z) M%d;X cells;Z cells", imod+1), 
+                                        64,0.5,64.5, 56,0.5,56.5);
+    fOutputContainer->Add(fHistClustEvsXZMod[imod]);                      
+  }
 
   fOutputContainer->Add(fHistM02vsPt);
   fOutputContainer->Add(fHistM20vsPt);
@@ -448,7 +476,7 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserCreateOutputObjects()
   fOutputContainer->Add(fHistClustFullE);
   fOutputContainer->Add(fHistClustCoreE);
 
-  fHistNonlinTest = new TH2F("hNonlinTest", "Clust E nonlineatity test;E, GeV;Nonlin. modificator", nPt - 1, Pt, 200, 0.995, 1.015);
+  fHistNonlinTest = new TH2F("hNonlinTest", "Clust E nonlineatity test;E, GeV;Nonlin. modificator", nPt - 1, Pt, 100, 0.95, 1.05);
   fOutputContainer->Add(fHistNonlinTest);
 
   if (fDoClustQA) {
@@ -614,6 +642,7 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserCreateOutputObjects()
 
     fOutputContainer->Add(fHistPrimGammaPt);
     fOutputContainer->Add(fHistPrimGammaInAccPt);
+
   }
 
   PostData(1, fOutputContainer);
@@ -701,7 +730,7 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserExec(Option_t*)
   if (!fUtils)
     fUtils = new AliAnalysisUtils();
 
-  if (fUtils->IsPileUpMV(fEvent)) {
+  if (fEvent->IsPileupFromSPD()) {
     AliInfo("Event rejected due to pileup");
     return;
   }
@@ -798,6 +827,7 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::UserExec(Option_t*)
     ProcessMCParticles();
 
   if (fCaloPhotonsPHOS->GetEntriesFast() > 0) {
+    fCaloPhotonsPHOS->Expand(fCaloPhotonsPHOS->GetEntriesFast());
     fCaloPhotonsPHOSList->AddFirst(fCaloPhotonsPHOS);
     fCaloPhotonsPHOS = 0;
     if (fCaloPhotonsPHOSList->GetSize() > fNMixEvents) {
@@ -816,7 +846,7 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::ProcessCaloPhotons()
 {
 
   if (!fCaloPhotonsPHOS)
-    fCaloPhotonsPHOS = new TClonesArray("AliCaloPhoton", 100);
+    fCaloPhotonsPHOS = new TClonesArray("AliCaloPhoton");
   else
     fCaloPhotonsPHOS->Clear();
 
@@ -853,10 +883,10 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::ProcessCaloPhotons()
     Int_t cellX = relId[2];
     Int_t cellZ = relId[3];
 
-    if (mod < 1 || mod > 4) {
-      AliInfo(Form("Wrong module number %d", mod));
-      continue;
-    }
+    // if (mod < 1 || mod > 4) {
+    //   AliInfo(Form("Wrong module number %d", mod));
+    //   continue;
+    // }
 
     coreE = clu->GetCoreEnergy();
     energy = clu->E();
@@ -873,9 +903,15 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::ProcessCaloPhotons()
     clu->GetMomentum(p1core, fVertex);
     p1core *= coreE / energy;
 
-    if (fIsMC && fDoNonlinCorr) {
-      p1 *= fUserNonlinFunc->Eval(energy);
-      p1core *= fUserNonlinFunc->Eval(coreE);
+    if (fDoNonlinCorr) {
+      if (fIsMC){
+        p1 *= fUserNonlinFunc->Eval(energy);
+        p1core *= fUserNonlinFunc->Eval(coreE);
+      }
+      else{
+        p1 *= fPHOSModEnCorr[mod-1];
+        p1core *= fPHOSModEnCorr[mod-1];
+      }
     }
     fHistNonlinTest->Fill(p1.E(), p1.E() / energy);
 
@@ -884,11 +920,19 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::ProcessCaloPhotons()
     if (p0.E() < fEminCut)
       continue;
 
-    if (p0.E() > 2. && clu->GetNCells() < 3)
-      continue;
+    if (fMinBiasLowEClustCut){
+      if (p0.E() > 2. && clu->GetNCells() < 3)
+        continue;
 
-    if (p0.E() > 2. && clu->GetM02() < 0.1)
-      continue;
+      if (p0.E() > 2. && clu->GetM02() < 0.2)
+        continue;
+    }
+    else{
+      if (clu->GetNCells() < 2)
+        continue;
+      if (clu->GetM02() < 0.2)
+        continue;
+    }
 
     CPVBit = clu->GetEmcCpvDistance() > fCPVSigma;
     DispBit = (fUseCoreEnergy) ? (clu->Chi2() < fDispSigma * fDispSigma) : (clu->GetDispersion() < fDispSigma * fDispSigma);
@@ -908,9 +952,6 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::ProcessCaloPhotons()
       }
     }
 
-    if (inPHOS >= fCaloPhotonsPHOS->GetSize())
-      fCaloPhotonsPHOS->Expand(inPHOS + 1);
-
     AliCaloPhoton* CaloPhoton = new ((*fCaloPhotonsPHOS)[inPHOS]) AliCaloPhoton(p0.Px(), p0.Py(), p0.Pz(), p0.E());
 
     CaloPhoton->SetModule(mod);
@@ -929,6 +970,7 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::ProcessCaloPhotons()
     CaloPhoton->SetNsigmaCPV(clu->GetEmcCpvDistance());
     CaloPhoton->SetTOFBit(TOFBit);
     CaloPhoton->SetTime(tof); // in ns
+    CaloPhoton->SetWeight(1.);
 
     if (fIsMC) {
       Int_t primlb = clu->GetLabelAt(0);
@@ -949,12 +991,14 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::ProcessCaloPhotons()
       CaloPhoton->SetWeight(1.);
     }
 
+    inPHOS++;
     // to do IsTrig()
 
     if (!CaloPhoton->IsTOFOK())
       continue;
 
-    inPHOS++;
+    fHistClustEvsXZMod[mod - 1]->Fill(cellX, cellZ, p0.E());
+
     PHOSMultMod[mod - 1]++;
 
     const Bool_t PhotonCutFlag[4] = { kTRUE,                                               // All
@@ -965,8 +1009,10 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::ProcessCaloPhotons()
     if (fDoClustQA) {
       fHistClustFullEMod[mod - 1]->Fill(p1.E());
       fHistClustCoreEMod[mod - 1]->Fill(p1core.E());
-      if (PhotonCutFlag[3])
+      if (PhotonCutFlag[3]){
         fHistCaloPhotonPtMod[mod - 1]->Fill(CaloPhoton->Pt());
+        fHistCaloPhotonTOFCut->Fill(tof * 1e+9);
+      }
     }
 
     for (Int_t icut = 0; icut < 4; icut++) {
@@ -1080,7 +1126,7 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::FillMgg()
     } // ph2 loop for real event
   }   // ph1 loop for real event
 
-  for (Int_t i1 = 0; i1 < nCaloPhotons - 1; i1++) {
+  for (Int_t i1 = 0; i1 < nCaloPhotons; i1++) {
     AliCaloPhoton* ph1 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1);
     if (!ph1->IsTOFOK())
       continue;
@@ -1153,10 +1199,10 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::EstimatePIDCutEfficiency()
       m12 = p12.M();
       pT = ph2->Pt();
 
-      const Bool_t PhotonCutFlag[kPIDCuts] = { kTRUE,                                                                    // All
-                                               ph1->IsCPVOK() && ph2->IsCPVOK(),                                         // CPVCut
-                                               ph1->IsDispOK() && ph2->IsDispOK(),                                       // DispCut
-                                               ph1->IsCPVOK() && ph2->IsCPVOK() && ph1->IsDispOK() && ph2->IsDispOK() }; // PhIDCut
+      const Bool_t PhotonCutFlag[kPIDCuts] = { kTRUE,  // All
+                                               ph2->IsCPVOK(),  // CPVCut
+                                               ph2->IsDispOK(), // DispCut
+                                               ph2->IsCPVOK() && ph2->IsDispOK() }; // PhIDCut
 
       for (Int_t icut = 0; icut < kPIDCuts; icut++) {
         if (!PhotonCutFlag[icut])
@@ -1169,10 +1215,13 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::EstimatePIDCutEfficiency()
     } // loop over ph1 in real event
   }   // loop over ph2 in real event
 
-  for (Int_t i1 = 0; i1 < nCaloPhotons - 1; i1++) {
+  for (Int_t i1 = 0; i1 < nCaloPhotons; i1++) {
     AliCaloPhoton* ph1 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1);
     if (!ph1->IsTOFOK())
       continue;
+      
+    // apply tight cut to photon1
+    if(ph1->Energy() < 0.5 || ph1->GetNsigmaCPV() < 4 || ph1->GetNsigmaCoreDisp() > 2.5) continue;
 
     for (Int_t ev = 0; ev < fCaloPhotonsPHOSList->GetSize(); ev++) {
       TClonesArray* mixPHOS = static_cast<TClonesArray*>(fCaloPhotonsPHOSList->At(ev));
@@ -1185,10 +1234,10 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::EstimatePIDCutEfficiency()
         m12 = p12.M();
         pT = ph2->Pt();
 
-        const Bool_t PhotonCutFlag[kPIDCuts] = { kTRUE,                                                                    // All
-                                                 ph1->IsCPVOK() && ph2->IsCPVOK(),                                         // CPVCut
-                                                 ph1->IsDispOK() && ph2->IsDispOK(),                                       // DispCut
-                                                 ph1->IsCPVOK() && ph2->IsCPVOK() && ph1->IsDispOK() && ph2->IsDispOK() }; // PhIDCut
+        const Bool_t PhotonCutFlag[kPIDCuts] = { kTRUE, // All
+                                                 ph2->IsCPVOK(),  // CPVCut
+                                                 ph2->IsDispOK(),  // DispCut
+                                                 ph2->IsCPVOK() && ph2->IsDispOK() }; // PhIDCut
 
         for (Int_t icut = 0; icut < kPIDCuts; icut++) {
           if (!PhotonCutFlag[icut])
@@ -1236,7 +1285,8 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::EstimateTOFCutEfficiency()
     } // loop over ph1 in real event
   }   // loop over ph2 in real event
 
-  for (Int_t i1 = 0; i1 < nCaloPhotons - 1; i1++) {
+  //Mixed events loop
+  for (Int_t i1 = 0; i1 < nCaloPhotons; i1++) {
     AliCaloPhoton* ph1 = (AliCaloPhoton*)fCaloPhotonsPHOS->At(i1);
     if (!ph1->IsTOFOK())
       continue;
@@ -1254,8 +1304,9 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::EstimateTOFCutEfficiency()
           continue; // PhIDCut
 
         fHistMixMggTOFCutEffBase->Fill(m12, energy);
-        if (ph2->IsTOFOK())
+        if (ph2->IsTOFOK()){
           fHistMixMggTOFCutEffProbe->Fill(m12, energy);
+        }
 
       } // ph2 loop for mixed events
     }   // loop over fNMixEvents
@@ -1565,10 +1616,10 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::InitPHOSGeometry()
 
   if (!fPHOSGeo) {             // Geometry not yet constructed with Tender
     if (fRunNumber < 209122) { // Run1
-      AliError("TaggedPhotons: Can not get geometry from TENDER, creating PHOS geometry for Run1\n");
+      AliError("Can not get geometry from TENDER, creating PHOS geometry for Run1\n");
       fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP", "");
     } else {
-      AliError("TaggedPhotons: Can not get geometry from TENDER, creating PHOS geometry for Run2\n");
+      AliError("Can not get geometry from TENDER, creating PHOS geometry for Run2\n");
       fPHOSGeo = AliPHOSGeometry::GetInstance("Run2", "");
     }
     AliOADBContainer geomContainer("phosGeo");
@@ -1586,9 +1637,9 @@ void AliAnalysisPHOSNeutralMesonsAndPhotons::InitPHOSGeometry()
   badmapContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSBadMaps.root", "phosBadMap");
   TObjArray* maps = (TObjArray*)badmapContainer.GetObject(fRunNumber, "phosBadMap");
   if (!maps) {
-    AliError("TaggedPhotons: Can not read Bad map\n");
+    AliError("Can not read Bad map\n");
   } else {
-    AliInfo(Form("TaggedPhotons: Setting PHOS bad map with name %s \n", maps->GetName()));
+    AliInfo(Form("Setting PHOS bad map with name %s \n", maps->GetName()));
     for (Int_t mod = 0; mod < 5; mod++) {
       if (fPHOSBadMap[mod])
         delete fPHOSBadMap[mod];

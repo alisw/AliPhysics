@@ -9,6 +9,7 @@ AliAnalysisPHOSNeutralMesonsAndPhotons* AddTaskPHOSNeutralMesonsAndPhotons(
   const Double_t TOFCut = 30.,
   const Double_t Emin = 0.2,
   const Bool_t useCorrE = kTRUE,
+  const Bool_t useMinBiasLowEClustCut = kTRUE,
   const Bool_t doNonlinCorr = kTRUE,
   const TString period = "LHC18q",
   const Int_t NMix = 10,
@@ -112,19 +113,34 @@ AliAnalysisPHOSNeutralMesonsAndPhotons* AddTaskPHOSNeutralMesonsAndPhotons(
   task->SetMBTrigger(MBTrigFlag);
   task->SetPHOSTrigger(PHOSTrigFlag, PHOSTrigType);
   task->SetMC(isMC);
-  task->SetClusterCuts(useCorrE, Emin, DispCut, CPVCut, TOFCut);
+  task->SetClusterCuts(useCorrE, Emin, DispCut, CPVCut, TOFCut, useMinBiasLowEClustCut);
   task->SetQAStudy(doClusterQA, doCellQA);
   task->SetCentralityStudy(doCentralityStudy, CentralityEstimator, CentralityMin, CentralityMax);
   task->SetNEventsForMixing(NMix);
 
-  if (isMC && doNonlinCorr) {
-    TF1* f1NonlinFunc = new TF1("f1NonlinFunc", "[2]*(1.+[0]/(1.+TMath::Power(x/[1],2)))", 0, 200);
+  if (doNonlinCorr) {
+    if (isMC){
+      TF1* f1NonlinFunc = new TF1("f1NonlinFunc", "[2]*(1.+[0]/(1.+TMath::Power(x/[1],2)))", 0, 200);
 
-    f1NonlinFunc->FixParameter(0, -0.06); // for core E at ZS 20 MeV with only MIP cut
-    f1NonlinFunc->FixParameter(1, 0.7);   // for core E at ZS 20 MeV with only MIP cut
-    f1NonlinFunc->FixParameter(2, 1.013); // for core E at ZS 20 MeV with only MIP cut
+      if (period.Contains("LHC18q") || period.Contains("LHC18r")){
+        f1NonlinFunc->FixParameter(0, -0.06); // for core E at ZS 20 MeV with only MIP cut
+        f1NonlinFunc->FixParameter(1, 0.7);   // for core E at ZS 20 MeV with only MIP cut
+        f1NonlinFunc->FixParameter(2, 1.013); // for core E at ZS 20 MeV with only MIP cut
+      }
+      else{
+        f1NonlinFunc->FixParameter(0, 0.);
+        f1NonlinFunc->FixParameter(1, 1.);
+        f1NonlinFunc->FixParameter(2, 1.);
+      }
 
-    task->SetUserNonlinearityFunction(f1NonlinFunc);
+      task->SetUserNonlinearityFunction(f1NonlinFunc);
+    }
+    else{
+      if (period.Contains("LHC18q") || period.Contains("LHC18r")){
+        Double_t PHOSModWeights[4] = {1.025, 1., 1., 1.}; //Pi0 rec. mass in M1 is low
+        task->SetPHOSModEnergyCorr(PHOSModWeights);
+      }
+    }
   }
 
   mgr->AddTask(task);
