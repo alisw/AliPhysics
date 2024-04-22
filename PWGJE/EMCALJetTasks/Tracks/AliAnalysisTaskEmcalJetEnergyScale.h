@@ -157,6 +157,7 @@ public:
   void SetRequireSameAcceptance(Bool_t doRequire) { fRequireSameAcceptance = doRequire; }
   void SetDoBkgSubtraction(bool doBkg = true)             { fDoBkgSub = doBkg; }
   void SetAngularitySpitting(bool doSplit = true);
+  void SetFillResponseNEF(bool doFill = true) { fFillResponseVsNEF = doFill; }
 
   void ConfigurePtHard(MCProductionType_t mcprodtype, const TArrayI &pthardbinning, Bool_t doMCFilter, Double_t jetptcut);
   void ConfigureMinBias(MCProductionType_t mcprodtype);
@@ -271,6 +272,7 @@ private:
   TString                     fNameTriggerDecisionContainer;  ///< Global trigger decision container
   Double_t                    fFractionResponseClosure;       ///< Fraction of jets used for response in closure test
   Bool_t                      fFillHSparse;                   ///< Fill THnSparses
+  Bool_t                      fFillResponseVsNEF;             ///< Fill response matrix vs. NEF
   Double_t                    fScaleShift;                    ///< Shift of the jet energy scale (fixed)
   Bool_t                      fRequireSameAcceptance;         ///< Require same acceptance type for det. level and part. level jet in response matrix
   Bool_t                      fUseStandardOutlierRejection;   ///< Use standard outlier rejection
