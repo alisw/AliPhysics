@@ -896,27 +896,27 @@ void AliAnalysisEffTaskPbPbDRMultDY::UserExec(Option_t *)
 
  
     int PDGcode = MCtrk->GetPdgCode();
-
+ 
    //And secondaries for different particle species:
     if (!MCtrk->IsPhysicalPrimary() && (isPionNsigma && abs(PDGcode)==211)) { //secondaries in pions
-      fReconstructedNotPrimaries[PARTTYPES*fcent+1][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedNotPrimaries[PARTTYPES*fcent+1][charge]->Fill(track->Y(PionMass), track->Pt());
     }
     else if(MCtrk->IsPhysicalPrimary() && (isPionNsigma && abs(PDGcode)==211)) {
-      fReconstructedPrimaries[PARTTYPES*fcent+1][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedPrimaries[PARTTYPES*fcent+1][charge]->Fill(track->Y(PionMass), track->Pt());
     }
 
     if (!MCtrk->IsPhysicalPrimary() && (isKaonNsigma && abs(PDGcode)==321)) { //secondaries in kaons
-      fReconstructedNotPrimaries[PARTTYPES*fcent+2][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedNotPrimaries[PARTTYPES*fcent+2][charge]->Fill(track->Y(KaonMass), track->Pt());
     }
     else if(MCtrk->IsPhysicalPrimary() && (isKaonNsigma && abs(PDGcode)==321)) {
-      fReconstructedPrimaries[PARTTYPES*fcent+2][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedPrimaries[PARTTYPES*fcent+2][charge]->Fill(track->Y(KaonMass), track->Pt());
     }
 
     if (!MCtrk->IsPhysicalPrimary() && (isProtonNsigma && abs(PDGcode)==2212)) { //secondaries in protons
-      fReconstructedNotPrimaries[PARTTYPES*fcent+3][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedNotPrimaries[PARTTYPES*fcent+3][charge]->Fill(track->Y(ProtonMass), track->Pt());
     } 
     else if(MCtrk->IsPhysicalPrimary() && (isProtonNsigma && abs(PDGcode)==2212)) {
-      fReconstructedPrimaries[PARTTYPES*fcent+3][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedPrimaries[PARTTYPES*fcent+3][charge]->Fill(track->Y(ProtonMass), track->Pt());
     } 
 
 
@@ -995,7 +995,6 @@ void AliAnalysisEffTaskPbPbDRMultDY::UserExec(Option_t *)
   Int_t charge=0;
   if(MCtrk->Charge() < 0) charge=1;
   else if(MCtrk->Charge() > 0) charge=0;
-
 
   if(MCtrk->Y() < -0.5 || MCtrk->Y() > 0.5) continue; 
  
