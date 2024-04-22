@@ -282,7 +282,7 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   fptList->Add(fMptVsNch);
   fMultVsCent = new TH2F("fMultVsCent",Form(";%s; %s","Centrality (%)",(fUseNch)?"#it{N}_{ch}":(fUseV0M)?"V0M Amplitude":"Centrality (%)"),nDefaultCentBins,defaultCentBins,fNMultiBins,fMultiBins);
   fptList->Add(fMultVsCent);
-  fNchVsV0M = new TH2F("fNchVsV0M","N_{ch} vs V0M amplitude; V0M amplitude; N_{ch}",1000,0,40000,2250,0,4500);
+  fNchVsV0M = new TH2F("fNchVsV0M","N_{ch} vs V0M amplitude; V0M amplitude; N_{ch}",1000,0,50000,2250,0,4500);
   fptList->Add(fNchVsV0M);
   printf("Multiplicity objects created\n");
   PostData(1,fptList);
