@@ -139,7 +139,6 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       fMultSelection(0x0),
       hNch(0),
       hNchvsV0MAmp(0),
-      hV0MvsV0MAmp(0),
       pV0MAmpChannel(0),
       hV0MAmplitude(0),
       hV0Percentile(0),
@@ -162,13 +161,16 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       hZEM(0),
       hPtvsZN(0),
       hPtvsZDC(0),
+      pPtvsZDC(0),
       hPtvsZEM(0),
+      pPtvsZEM(0),
       pZDCvsV0MAmp(0),
       pZDCvsNch(0),
       pZDCvsZEM(0),
-      pZNvsV0MAmp(0),
-      pZNvsNch(0),
-      pZNvsZEM(0) {
+      pZDCvsTracksEtaGapTPC(0),
+      pZDCvsTrackletsEtaGap(0),
+      pV0MAmpvsTracksEtaGapTPC(0),
+      pV0MAmpvsTrackletsEtaGap(0) {
   for (int i = 0; i < v0m_Nbins; ++i) {
     hDCAxyData[i] = 0;
   }
@@ -216,7 +218,6 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       fMultSelection(0x0),
       hNch(0),
       hNchvsV0MAmp(0),
-      hV0MvsV0MAmp(0),
       pV0MAmpChannel(0),
       hV0MAmplitude(0),
       hV0Percentile(0),
@@ -239,13 +240,16 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       hZEM(0),
       hPtvsZN(0),
       hPtvsZDC(0),
+      pPtvsZDC(0),
       hPtvsZEM(0),
+      pPtvsZEM(0),
       pZDCvsV0MAmp(0),
       pZDCvsNch(0),
       pZDCvsZEM(0),
-      pZNvsV0MAmp(0),
-      pZNvsNch(0),
-      pZNvsZEM(0) {
+      pZDCvsTracksEtaGapTPC(0),
+      pZDCvsTrackletsEtaGap(0),
+      pV0MAmpvsTracksEtaGapTPC(0),
+      pV0MAmpvsTrackletsEtaGap(0) {
   for (int i = 0; i < v0m_Nbins; ++i) {
     hDCAxyData[i] = 0;
   }
@@ -419,9 +423,6 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
       new TH2F("hNchvsV0MAmp", ";#it{N}_{ch} (|#eta|#leq0.8); V0M amplitude",
                nch_Nbins, nch_bins, v0mAmp_Nbins, v0mAmp_bins);
 
-  hV0MvsV0MAmp = new TH2F("hV0MvsV0MAmp", ";V0M amplitude; V0M percentile",
-                          v0mAmp_Nbins, v0mAmp_bins, v0m_Nbins080, v0m_bins080);
-
   pV0MAmpChannel =
       new TProfile("pV0MAmpChannel", ";V0 Channel; Amplitude;", 64, -0.5, 63.5);
 
@@ -494,51 +495,62 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
                    "#LT#it{p}_{T}#GT (|#eta|#leq0.3, GeV/#it{c})",
                    nchEtaGapTPC_Nbins, nchEtaGapTPC_bins);
 
-  hZN = new TH1F("hZN", ";ZN signal (TeV); Entries;", zdcN_sumNbins,
-                 zdcN_sumbins);
+  hZN = new TH1F("hZN", ";ZN (TeV); Entries;", zdcN_sumNbins, zdcN_sumbins);
 
-  hZDC = new TH1F("hZDC", ";ZDC signal (TeV); Entries;", zdcN_sumNbins,
-                  zdcN_sumbins);
+  hZDC = new TH1F("hZDC", ";ZDC (TeV); Entries;", zdcN_sumNbins, zdcN_sumbins);
 
-  hZEM = new TH1F("hZEM", ";ZEM signal; Entries;", zdcEM_Nbins, zdcEM);
+  hZEM = new TH1F("hZEM", ";ZEM ; Entries;", zdcEM_Nbins, zdcEM);
 
-  hPtvsZN =
-      new TH2D("hPtvsZN", ";ZN signal (TeV); #it{p}_{T} (|#eta|<0.8 GeV/c);",
-               zdcN_sumNbins, zdcN_sumbins, pt_Nbins, pt_bins);
+  hPtvsZN = new TH2D("hPtvsZN", ";ZN (TeV); #it{p}_{T} (|#eta|<0.8 GeV/c);",
+                     zdcN_sumNbins, zdcN_sumbins, pt_Nbins, pt_bins);
 
-  hPtvsZDC =
-      new TH2D("hPtvsZDC", ";ZDC signal (TeV); #it{p}_{T} (|#eta|<0.8 GeV/c);",
-               zdcN_sumNbins, zdcN_sumbins, pt_Nbins, pt_bins);
+  hPtvsZDC = new TH2D("hPtvsZDC", ";ZDC (TeV); #it{p}_{T} (|#eta|<0.8 GeV/c);",
+                      zdcN_sumNbins, zdcN_sumbins, pt_Nbins, pt_bins);
 
-  hPtvsZEM = new TH2D("hPtvsZEM", ";ZEM signal; #it{p}_{T} (|#eta|<0.8 GeV/c);",
+  pPtvsZDC = new TProfile("pPtvsZDC",
+                          ";ZDC (TeV); #LT#it{p}_{T}#GT (|#eta|<0.8 GeV/c);",
+                          zdcN_sumNbins, zdcN_sumbins);
+
+  hPtvsZEM = new TH2D("hPtvsZEM", ";ZEM; #it{p}_{T} (|#eta|<0.8 GeV/c);",
                       zdcEM_Nbins, zdcEM, pt_Nbins, pt_bins);
 
-  pZDCvsV0MAmp =
-      new TProfile("pZDCvsV0MAmp", ";V0M Amplitude; <ZDC> signal (TeV);",
-                   v0mAmp_Nbins, v0mAmp_bins);
+  pPtvsZEM =
+      new TProfile("pPtvsZEM", ";ZEM; #LT#it{p}_{T}#GT (|#eta|<0.8 GeV/c);",
+                   zdcEM_Nbins, zdcEM);
 
-  pZDCvsNch = new TProfile("pZDCvsNch",
-                           ";#it{N}_{nch} (|#eta|#leq0.8); <ZDC> signal (TeV);",
-                           nch_Nbins, nch_bins);
+  pZDCvsV0MAmp = new TProfile("pZDCvsV0MAmp", ";V0M Amplitude; <ZDC> (TeV);",
+                              v0mAmp_Nbins, v0mAmp_bins);
 
-  pZDCvsZEM = new TProfile("pZDCvsZEM", ";ZEM signal; <ZDC> signal (TeV);",
-                           zdcEM_Nbins, zdcEM);
+  pZDCvsNch =
+      new TProfile("pZDCvsNch", ";#it{N}_{nch} (|#eta|#leq0.8); <ZDC> (TeV);",
+                   nch_Nbins, nch_bins);
 
-  pZNvsV0MAmp =
-      new TProfile("pZNvsV0MAmp", ";V0M Amplitude; <ZN> signal (TeV);",
-                   v0mAmp_Nbins, v0mAmp_bins);
+  pZDCvsZEM =
+      new TProfile("pZDCvsZEM", ";ZEM; <ZDC> (TeV);", zdcEM_Nbins, zdcEM);
 
-  pZNvsNch = new TProfile("pZNvsNch",
-                          ";#it{N}_{nch} (|#eta|#leq0.8); <ZN> signal (TeV);",
-                          nch_Nbins, nch_bins);
+  pZDCvsTracksEtaGapTPC =
+      new TProfile("pZDCvsTracksEtaGapTPC",
+                   ";#it{N}_{nch} (0.5#leq|#eta|#leq0.8); <ZDC> (TeV);",
+                   nchEtaGapTPC_Nbins, nchEtaGapTPC_bins);
 
-  pZNvsZEM = new TProfile("pZNvsZEM", ";ZEM signal; <ZN> signal (TeV);",
-                          zdcEM_Nbins, zdcEM);
+  pZDCvsTrackletsEtaGap =
+      new TProfile("pZDCvsTrackletsEtaGap",
+                   ";#it{N}_{tracklet} (0.5#leq|#eta|#leq0.8); <ZDC> (TeV);",
+                   trackletsEtaGap_Nbins, trackletsEtaGap_bins);
+
+  pV0MAmpvsTracksEtaGapTPC =
+      new TProfile("pV0MAmpvsTracksEtaGapTPC",
+                   ";#it{N}_{nch} (0.5#leq|#eta|#leq0.8); <V0M Amp>;",
+                   nchEtaGapTPC_Nbins, nchEtaGapTPC_bins);
+
+  pV0MAmpvsTrackletsEtaGap =
+      new TProfile("pV0MAmpvsTrackletsEtaGap",
+                   ";#it{N}_{tracklet} (0.5#leq|#eta|#leq0.8); <V0M Amp>;",
+                   trackletsEtaGap_Nbins, trackletsEtaGap_bins);
 
   fOutputList->Add(hBestVtxZ);
   fOutputList->Add(hV0Percentile);
   fOutputList->Add(hNchvsV0MAmp);
-  fOutputList->Add(hV0MvsV0MAmp);
 
   fOutputList->Add(hV0MAmplitude);
   fOutputList->Add(hPtvsV0MAmp);
@@ -565,14 +577,17 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   fOutputList->Add(hPtvsZN);
   fOutputList->Add(hZDC);
   fOutputList->Add(hPtvsZDC);
+  fOutputList->Add(pPtvsZDC);
   fOutputList->Add(hZEM);
   fOutputList->Add(hPtvsZEM);
+  fOutputList->Add(pPtvsZEM);
   fOutputList->Add(pZDCvsV0MAmp);
   fOutputList->Add(pZDCvsNch);
   fOutputList->Add(pZDCvsZEM);
-  fOutputList->Add(pZNvsV0MAmp);
-  fOutputList->Add(pZNvsNch);
-  fOutputList->Add(pZNvsZEM);
+  fOutputList->Add(pZDCvsTracksEtaGapTPC);
+  fOutputList->Add(pZDCvsTrackletsEtaGap);
+  fOutputList->Add(pV0MAmpvsTracksEtaGapTPC);
+  fOutputList->Add(pV0MAmpvsTrackletsEtaGap);
 
   for (int i = 0; i < v0m_Nbins; ++i) {
     hDCAxyData[i] = new TH2F(Form("hDCAxyData_%s", uc_v0m_bins_name[i]),
@@ -802,11 +817,13 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
     hPtvsV0MAmp->Fill(fv0mamplitude, pt);
     pPtvsV0MAmp->Fill(fv0mamplitude, pt);
 
-    //! pT vs ZDC
+    //! pT vs ZN, ZEM, and ZDC
+    hPtvsZEM->Fill(fZEM, pt);
+    pPtvsZEM->Fill(fZEM, pt);
     if (fv0mpercentile <= fHMCut) {
       hPtvsZN->Fill(fZN, pt);
       hPtvsZDC->Fill(fZDC, pt);
-      hPtvsZEM->Fill(fZEM, pt);
+      pPtvsZDC->Fill(fZDC, pt);
     }
 
     //! Ntracklets 0.7<=|eta|<=1.4 and Spectra |eta|<=0.4
@@ -825,22 +842,25 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
   hV0Percentile->Fill(fv0mpercentile);
   hV0MAmplitude->Fill(fv0mamplitude);
   hNchvsV0MAmp->Fill(rec_nch, fv0mamplitude);
-  hV0MvsV0MAmp->Fill(fv0mamplitude, fv0mpercentile);
   hNch->Fill(rec_nch);
 
   hTrackletsEtaGap->Fill(fTrackletsEtaGap);
   hTracksEtaGapTPC->Fill(fTracksEtaGapTPC);
 
   pZDCvsNch->Fill(rec_nch, fZDC);
-  pZNvsNch->Fill(rec_nch, fZN);
   pZDCvsV0MAmp->Fill(fv0mamplitude, fZDC);
-  pZNvsV0MAmp->Fill(fv0mamplitude, fZN);
+  pZDCvsTracksEtaGapTPC->Fill(fTracksEtaGapTPC, fZDC);
+  pZDCvsTrackletsEtaGap->Fill(fTrackletsEtaGap, fZDC);
+
+  pV0MAmpvsTracksEtaGapTPC->Fill(fTracksEtaGapTPC, fv0mamplitude);
+  pV0MAmpvsTrackletsEtaGap->Fill(fTrackletsEtaGap, fv0mamplitude);
+
+  hZEM->Fill(fZEM);
+  pZDCvsZEM->Fill(fZEM, fZDC);
+
   if (fv0mpercentile <= fHMCut) {
     hZN->Fill(fZN);
     hZDC->Fill(fZDC);
-    hZEM->Fill(fZEM);
-    pZDCvsZEM->Fill(fZEM, fZDC);
-    pZNvsZEM->Fill(fZEM, fZN);
   }
 }
 
