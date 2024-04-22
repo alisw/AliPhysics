@@ -116,7 +116,6 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   AliMultSelection* fMultSelection;
   TH1F* hNch;
   TH2F* hNchvsV0MAmp;
-  TH2F* hV0MvsV0MAmp;
   TProfile* pV0MAmpChannel;
   TH1F* hV0MAmplitude;
   TH1F* hV0Percentile;
@@ -140,13 +139,16 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH1F* hZEM;
   TH2D* hPtvsZN;
   TH2D* hPtvsZDC;
+  TProfile* pPtvsZDC;
   TH2D* hPtvsZEM;
+  TProfile* pPtvsZEM;
   TProfile* pZDCvsV0MAmp;
   TProfile* pZDCvsNch;
   TProfile* pZDCvsZEM;
-  TProfile* pZNvsV0MAmp;
-  TProfile* pZNvsNch;
-  TProfile* pZNvsZEM;
+  TProfile* pZDCvsTracksEtaGapTPC;
+  TProfile* pZDCvsTrackletsEtaGap;
+  TProfile* pV0MAmpvsTracksEtaGapTPC;
+  TProfile* pV0MAmpvsTrackletsEtaGap;
 
   AliAnalysisTaskDataSpeedOfSound(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented
