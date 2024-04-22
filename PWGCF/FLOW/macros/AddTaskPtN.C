@@ -41,9 +41,15 @@ AliAnalysisPtN* AddTaskPtN(
 	//TString fileName = AliAnalysisManager::GetCommonFileName();
 	//fileName+=suffixName;
 	AliAnalysisDataContainer* cinput = mgr->GetCommonInputContainer();
+	mgr->ConnectInput (task, 0, cinput);
+
 
 	TGrid::Connect("alien:");
+
+	TObjArray *AllContainers = mgr->GetContainers();
     
+	if(!AllContainers->FindObject("NUE")) {
+
 	TFile* fileNUE=nullptr;
     AliAnalysisDataContainer *NUE = mgr->CreateContainer(Form("NUE"), TList::Class(), AliAnalysisManager::kInputContainer);
     if (fNUE.EqualTo("LHC20e3a")){
@@ -54,21 +60,12 @@ AliAnalysisPtN* AddTaskPtN(
 	if(!fileNUE) return task;
 	TList* lstNUE = dynamic_cast<TList*>(fileNUE->Get("EffAndFD"));
     NUE->SetData(lstNUE);
-
-	// AliAnalysisDataContainer *NUE = mgr->CreateContainer(Form("NUE"), TList::Class(), AliAnalysisManager::kInputContainer);
-    // TFile* fileNUE=nullptr;
-	// if (fNUE.EqualTo("LHC20e3a")){
-	// 	fileNUE = TFile::Open("/Users/macnbi/alice/Efficiency_LHC20e3a_wSyst.root");
-	// } else if (fNUE.EqualTo("LHC20j6a")){
-	// 	fileNUE = TFile::Open("/Users/macnbi/alice/Efficiency_LHC20j6a_wSyst.root");
-	// }
-	// if(!fileNUE) return task;
-    // TList* lstNUE = dynamic_cast<TList*>(fileNUE->Get("EffAndFD"));
-    // NUE->SetData(lstNUE); 
+	mgr->ConnectInput(task,1,NUE);
+	}else{
+		mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("NUE"))
+	}
 
 	AliAnalysisDataContainer* cout = mgr->CreateContainer(Form("QA_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:%s", uniqueID.Data()));
-	mgr->ConnectInput (task, 0, cinput);
-	mgr->ConnectInput(task,1,NUE);
 	mgr->ConnectOutput(task,1, cout);
 
     return task;
