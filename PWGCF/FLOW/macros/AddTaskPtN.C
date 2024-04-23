@@ -62,7 +62,7 @@ AliAnalysisPtN* AddTaskPtN(
     NUE->SetData(lstNUE);
 	mgr->ConnectInput(task,1,NUE);
 	}else{
-		mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("NUE"))
+		mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("NUE"));
 	}
 
 	AliAnalysisDataContainer* cout = mgr->CreateContainer(Form("QA_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, Form("AnalysisResults.root:%s", uniqueID.Data()));
