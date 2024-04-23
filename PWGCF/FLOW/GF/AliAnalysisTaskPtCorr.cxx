@@ -36,6 +36,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fUseOldPileup(kFALSE),
   fUseIP(kFALSE),
   fUseCentCalibration(kFALSE),
+  fRejectMBtriggerEventsMarkedSpecial(kFALSE),
   fCMflag(0),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
@@ -64,7 +65,6 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fV0MBinsDefault(0),
   fNV0MBinsDefault(0),
   fUseNch(kFALSE),
-  fUseV0M(kFALSE),
   fUseNUEOne(kFALSE),
   fPtMpar(8),
   fEtaMptAcceptance{-0.8,0.8},
@@ -74,6 +74,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fQAList(0),
   fEventCount(0),
   fMultiDist(0),
+  fV0MDist(0),
   fMultiVsV0MCorr(0),
   fNchTrueVsReco(0),
   fESDvsFB128(0),
@@ -124,6 +125,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fUseOldPileup(kFALSE),
   fUseIP(kFALSE),
   fUseCentCalibration(kFALSE),
+  fRejectMBtriggerEventsMarkedSpecial(kFALSE),
   fCMflag(0),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
@@ -152,7 +154,6 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fV0MBinsDefault(0),
   fNV0MBinsDefault(0),
   fUseNch(kFALSE),
-  fUseV0M(kFALSE),
   fUseNUEOne(kFALSE),
   fPtMpar(8),
   fEtaMptAcceptance{-0.8,0.8},
@@ -162,6 +163,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fQAList(0),
   fEventCount(0),
   fMultiDist(0),
+  fV0MDist(0),
   fMultiVsV0MCorr(0),
   fNchTrueVsReco(0),
   fESDvsFB128(0),
@@ -217,7 +219,7 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   if(!fGFWSelection) SetSystFlag(0);
   fGFWSelection->SetEta(fEtaMptAcceptance[0],fEtaMptAcceptance[1],fEtaAbsolute);
   printf("**********\n");
-  printf("Mult eta: %f < %seta%s < %f\n",fEtaMultAcceptance[0],(fEtaAbsolute)?"|":"",fEtaMultAcceptance[1],(fEtaAbsolute)?"|":"");
+  printf("Mult eta: %f < %seta%s < %f\n",fEtaMultAcceptance[0],(fEtaAbsolute)?"|":"",(fEtaAbsolute)?"|":"",fEtaMultAcceptance[1]);
   fGFWSelection->PrintSetup();
   fSystFlag = fGFWSelection->GetSystFlagIndex();
   if(fGFWSelection->GetSystFlagIndex() == 20) SetCentralityEstimator("CL0");
@@ -256,11 +258,13 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   fptList->Add(fPtCont);
   if(fNBootstrapProfiles) fPtCont->InitializeSubsamples(fNBootstrapProfiles);
 
-  fMultiDist = new TH1D("MultiDistribution",Form("Multiplicity distribution; %s; N(events)",(fUseNch)?"N_{ch}":(fUseV0M)?"V0M Amplitude":"Centrality (%)"),fNMultiBins,fMultiBins);
+  fMultiDist = new TH1D("MultiDistribution",Form("Multiplicity distribution; %s; N(events)",(fUseNch)?"N_{ch}":"Centrality (%)"),fNMultiBins,fMultiBins);
+  fV0MDist = new TH1D("MultiDistribution",Form("V0M distribution; %s; N(events)","V0M Amplitude"),1000,0,45000);
   fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",fNV0MBinsDefault,fV0MBinsDefault);
   fptList->Add(fMultiDist);
+  fptList->Add(fV0MDist);
   fptList->Add(fV0MMulti);
-  fMultiVsV0MCorr = new TH2D("MultVsV0M","MultVsV0M",103,0,103,fNMultiBins,fMultiBins[0],fMultiBins[fNMultiBins]);
+  fMultiVsV0MCorr = new TH2D("MultVsV0M","MultVsV0M",fNV0MBinsDefault,fV0MBinsDefault,fNMultiBins,fMultiBins);
   fptList->Add(fMultiVsV0MCorr);
   fESDvsFB128 = new TH2D("ESDvsFB128","; N(FB128); N(ESD)",500,-0.5,4999.5,1500,-0.5,14999.5);
   fptList->Add(fESDvsFB128);
@@ -274,16 +278,19 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   const Int_t nDefaultNchBins=4500;
   Double_t *defaultNchBins = new Double_t[nDefaultNchBins+1];
   for(Int_t i=0;i<=nDefaultNchBins; i++) defaultNchBins[i] = i+0.5;
-  if(fUseV0M){
-    fPtVsV0M = new TH2D("fPtVsV0M",";centrality (%); #it{p}_{T}",fNMultiBins,fMultiBins,fNPtBins,fPtBins);
-    fptList->Add(fPtVsV0M);
-  }
-  fMptVsNch = new TH2D("fMptVsNch",";N_{ch}; #LT[#it{p}_{T}]#GT",(fUseV0M)?nDefaultNchBins:fNMultiBins,(fUseV0M)?defaultNchBins:fMultiBins,fNMptBins,fMptBins);
+  const Int_t nDefaultV0MBins=1000;
+  Double_t *defaultV0MBins = new Double_t[nDefaultV0MBins+1];
+  for(Int_t i=0;i<=nDefaultV0MBins; i++) defaultV0MBins[i] = 45*i+0.5;
+  fPtVsV0M = new TH2D("fPtVsV0M",";centrality (%); #it{p}_{T}",nDefaultV0MBins,defaultV0MBins,fNPtBins,fPtBins);
+  fptList->Add(fPtVsV0M);
+  fMptVsNch = new TH2D("fMptVsNch",";N_{ch}; #LT[#it{p}_{T}]#GT",fNMultiBins,fMultiBins,fNMptBins,fMptBins);
   fptList->Add(fMptVsNch);
-  fMultVsCent = new TH2F("fMultVsCent",Form(";%s; %s","Centrality (%)",(fUseNch)?"#it{N}_{ch}":(fUseV0M)?"V0M Amplitude":"Centrality (%)"),nDefaultCentBins,defaultCentBins,fNMultiBins,fMultiBins);
+  fMultVsCent = new TH2F("fMultVsCent",Form(";%s; %s","Centrality (%)","#it{N}_{ch}"),nDefaultCentBins,defaultCentBins,fNMultiBins,fMultiBins);
   fptList->Add(fMultVsCent);
-  fNchVsV0M = new TH2F("fNchVsV0M","N_{ch} vs V0M amplitude; V0M amplitude; N_{ch}",1000,0,50000,2250,0,4500);
+  fNchVsV0M = new TH2F("fNchVsV0M","N_{ch} vs V0M amplitude; V0M amplitude; N_{ch}",nDefaultV0MBins,defaultV0MBins,fNMultiBins,fMultiBins);
   fptList->Add(fNchVsV0M);
+
+
   printf("Multiplicity objects created\n");
   PostData(1,fptList);
 
@@ -376,12 +383,10 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   Double_t ptMax = fPtBins[fNPtBins];
   Double_t nTotNoTracks=0.;
   int multVZERO = 0.;
-  if(fUseV0M){
-    AliVVZERO *vzero = (AliVVZERO*)fAOD->GetVZEROData();
-    if(vzero) {
-      for(int ich=0; ich < 64; ich++)
-      multVZERO += vzero->GetMultiplicity(ich);
-    }
+  AliVVZERO *vzero = (AliVVZERO*)fAOD->GetVZEROData();
+  if(vzero) {
+    for(int ich=0; ich < 64; ich++)
+    multVZERO += vzero->GetMultiplicity(ich);
   }
   int nTotTracksFB128=0;
   AliAODTrack *lTrack;
@@ -413,7 +418,7 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
       }
       else continue;
       if(fFillQA) fPhiEtaVtxZ->Fill(lPart->Phi(),lPart->Eta(),vz);
-      if(fUseV0M && fUseRecoNchForMC) fPtVsV0M->Fill(multVZERO,lPart->Pt());
+      if(fUseRecoNchForMC) fPtVsV0M->Fill(multVZERO,lPart->Pt());
     };
     nTotNoTracks = fUseRecoNchForMC?nTotNoTracksReco:nTotNoTracksMC;
     multVZERO = fUseRecoNchForMC?multVZERO:multVZEROMC;
@@ -432,7 +437,7 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
       if(weff==0.0) continue;
       weff = 1./weff;
       FillWPCounter(wp,(fUseNUEOne)?1.0:weff,lTrack->Pt());
-      if(fUseV0M) fPtVsV0M->Fill(multVZERO,lTrack->Pt(),weff);
+      fPtVsV0M->Fill(multVZERO,lTrack->Pt(),weff);
       if(fFillQA){
         double dcaxyz[2];
         DCAxyz(lTrack,fAOD,dcaxyz);
@@ -441,10 +446,10 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
     };
   };
   Double_t l_Nch = 1.0*nTotNoTracks;
-  if(fUseV0M) fNchVsV0M->Fill(multVZERO,l_Nch);
+  fNchVsV0M->Fill(multVZERO,l_Nch);
   if(wp[1][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
   fEventCount->Fill("Tracks",1);
-  Double_t l_Multi = fUseNch?(1.0*nTotNoTracks):(fUseV0M)?multVZERO:l_Cent;
+  Double_t l_Multi = fUseNch?l_Nch:l_Cent;
   if(fUseNch && l_Multi<1) return;
   //Fetching number of ESD tracks -> for QA. Only after all the events are/were rejected
   AliAODHeader *head = (AliAODHeader*)fAOD->GetHeader();
@@ -560,6 +565,17 @@ Bool_t AliAnalysisTaskPtCorr::CheckTrigger(Double_t lCent) {
   //Apparently, MB trigger can also mark special triggers, leaving depleted regions in multi. To avoid this, pass true, if MB has been triggered.
   //This would fail if spec. triggers would also flag MB trigger, which seems to NOT be the case.
   if(!(fTriggerType&fSelMask)) { return kFALSE; }; //printf("Returning from the generic check\n");
+  //Reject events where MB triggered event is also marked with central or semicentral trigger
+  if(fRejectMBtriggerEventsMarkedSpecial){
+    if(fSelMask&(fTriggerType&(AliVEvent::kINT7+AliVEvent::kMB))){
+      if((fSelMask&AliVEvent::kCentral) && lCent>10) return kFALSE;
+      if((fSelMask&AliVEvent::kSemiCentral) && (lCent<30 || lCent>50)) return kFALSE;
+      return kTRUE;
+    }
+    if((fSelMask&fTriggerType&AliVEvent::kCentral) && lCent>10) {return kFALSE; };
+    if((fSelMask&fTriggerType&AliVEvent::kSemiCentral) && (lCent<30 || lCent>50)) {return kFALSE; };
+    return kTRUE;
+  }
   if(fSelMask&(fTriggerType&(AliVEvent::kINT7+AliVEvent::kMB))) {return kTRUE; }; //printf("Passed by MB trigger!\n");
   if((fSelMask&fTriggerType&AliVEvent::kCentral) && lCent>10) {return kFALSE; }; //printf("Returnning from kCent case\n");
   if((fSelMask&fTriggerType&AliVEvent::kSemiCentral) && (lCent<30 || lCent>50)) {return kFALSE; }; //printf("Returning from kSC case\n");
@@ -888,9 +904,9 @@ void AliAnalysisTaskPtCorr::SetupAxes() {
   if(!fCentPtAxis) { printf("Setting default cent bins for mpt fluctuations\n"); SetCentBinsForPt(nCentBinsMpt,centbinsMpt);}
   fCentPtBins=GetBinsFromAxis(fCentPtAxis);
   fNCentPtBins=fCentPtAxis->GetNbins();
-  const int nMptBins = 500;
-  double mptlow = 0.5;
-  double mpthigh = 1;
+  const int nMptBins = 1000;
+  double mptlow = 0.2;
+  double mpthigh = 1.2;
   if(!fMptAxis) { printf("Setting default mpt bins\n"); SetMptBins(nMptBins,mptlow,mpthigh); }
   fNMptBins = fMptAxis->GetNbins();
   fMptBins = GetBinsFromAxis(fMptAxis);
