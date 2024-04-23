@@ -46,6 +46,7 @@ protected:
   TH1F *fLambdaMass;          ///< Mass assuming lambda hypothesis
   TH1F *fAntiLambdaMass;      ///< Mass assuming antilambda hypothesis
   TH1F *fK0ShortMass;         ///< Mass assuming k-short hypothesis
+  TH1F *fInvMassK0s;
   TH1F *fDcaDaughters;        ///< DCA of v0 daughters at Decay vertex
   TH1F *fDcaV0ToPrimVertex;   ///< DCA of v0 to primary vertex
   TH1F *fDcaPosToPrimVertex;
@@ -62,6 +63,7 @@ protected:
   TH2D *fTOFtimePosDaughter;
   TH2D *fTOFtimeNegDaughter;
   TH2D *fMINVvsPt;
+  TH2D *fInvMassK0sPt;
 
   TH1D *fnsigmaPosL;
   TH1D *fnsigmaNegL;
