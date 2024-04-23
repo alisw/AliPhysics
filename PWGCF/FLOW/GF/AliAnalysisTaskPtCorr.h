@@ -55,6 +55,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetEtaMultAcceptance(Double_t low, Double_t up) { fEtaMultAcceptance[0] = low; fEtaMultAcceptance[1] = up; };
   void SetEtaAbsolute(Bool_t newval) { fEtaAbsolute = newval; }
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
+  void SetUseV0Mmult(Bool_t newval) { fUseV0M = newval; };
   void SetUseWeightsOne(Bool_t newvalNUE) { fUseNUEOne = newvalNUE; };
   void SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
   void SetDCAxyFunctionalForm(TString newval) { fDCAxyFunctionalForm = newval; } //Call after SystFlag
@@ -132,6 +133,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Double_t *fV0MBinsDefault; //!
   Int_t fNV0MBinsDefault; //!
   Bool_t fUseNch;
+  Bool_t fUseV0M;
   Bool_t fUseNUEOne;
   Int_t fPtMpar;
   Double_t fEtaLow;
@@ -142,7 +144,6 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TList *fQAList; //
   TH1D* fEventCount; //!
   TH1D *fMultiDist;
-  TH1D *fV0MDist;
   TH2D *fMultiVsV0MCorr; //!
   TH2D *fNchTrueVsReco; //!
   TH2D *fESDvsFB128;
