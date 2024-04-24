@@ -1263,6 +1263,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   {
     if (fESD) {
       AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()); //Get the MC handler
+      eventHandler->SetReadTR(fReadTR);
 
       if (!eventHandler) //Check on the MC handler
 	AliFatal("Could not retrieve MC event handler");
