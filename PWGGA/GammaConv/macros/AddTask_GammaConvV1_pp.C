@@ -908,53 +908,54 @@ void AddTask_GammaConvV1_pp(
 
   // ---------------------------------- cut selection for pp 5 TeV 2015+2017 ------------------------------------
   } else if (trainConfig == 400){
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0152103500000000"); // new standard dEdx, pt dep Qt, chi2-psipair exp
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // new standard dEdx, pt dep Qt, chi2-psipair exp
+    cuts.AddCutPCM("00015113", "0dm00009f9730000dge0404000", "0152103500000000"); // new standard dEdx, pt dep Qt, chi2-psipair exp, INEL
   } else if (trainConfig == 401) {
-    cuts.AddCutPCM("00010013", "00200009f9730000dge0400000", "0152103500000000"); // no SPD pileup cut
+    cuts.AddCutPCM("00010013", "0dm00009f9730000dge0404000", "0152103500000000"); // no SPD pileup cut
   // systematic variations for 5 TeV 2015+2017
   } else if (trainConfig == 402) {
     cuts.AddCutPCM("00010113", "0d200009f9730000dge0400000", "0152103500000000"); // eta 0.8
-    cuts.AddCutPCM("00010113", "0c200009f9730000dge0400000", "0152103500000000"); // eta 0.85
-    cuts.AddCutPCM("00010113", "00100009f9730000dge0400000", "0152103500000000"); // R cut 2.8 -180 cm
-    cuts.AddCutPCM("00010113", "00500009f9730000dge0400000", "0152103500000000"); // R cut 10. -180 cm
+    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0152103500000000"); // eta 0.9
+    cuts.AddCutPCM("00010113", "0d100009f9730000dge0400000", "0152103500000000"); // R cut 2.8 -180 cm
+    cuts.AddCutPCM("00010113", "0d500009f9730000dge0400000", "0152103500000000"); // R cut 10. -180 cm
   } else if (trainConfig == 403) {
-    cuts.AddCutPCM("00010113", "00200069f9730000dge0400000", "0152103500000000"); // min pT 40 MeV
-    cuts.AddCutPCM("00010113", "00200049f9730000dge0400000", "0152103500000000"); // min pT 75 MeV
-    cuts.AddCutPCM("00010113", "00200019f9730000dge0400000", "0152103500000000"); // min pT 100MeV
+    cuts.AddCutPCM("00010113", "0dm00069f9730000dge0400000", "0152103500000000"); // min pT 40 MeV
+    cuts.AddCutPCM("00010113", "0dm00049f9730000dge0400000", "0152103500000000"); // min pT 75 MeV
+    cuts.AddCutPCM("00010113", "0dm00019f9730000dge0400000", "0152103500000000"); // min pT 100MeV
   } else if (trainConfig == 404) {
-    cuts.AddCutPCM("00010113", "00200068f9730000dge0400000", "0152103500000000"); // TPC cluster 35%
-    cuts.AddCutPCM("00010113", "00200066f9730000dge0400000", "0152103500000000"); // TPC cluster 70%
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0600000", "0152103500000000"); // cosPA 0.9
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0300000", "0152103500000000"); // cosPA 0.75
+    cuts.AddCutPCM("00010113", "0dm00068f9730000dge0400000", "0152103500000000"); // TPC cluster 35%
+    cuts.AddCutPCM("00010113", "0dm00066f9730000dge0400000", "0152103500000000"); // TPC cluster 70%
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0600000", "0152103500000000"); // cosPA 0.9
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0300000", "0152103500000000"); // cosPA 0.75
   } else if (trainConfig == 405) {
-    cuts.AddCutPCM("00010113", "0020000939730000dge0400000", "0152103500000000"); // nsig electron   -4,5
-    cuts.AddCutPCM("00010113", "0020000969730000dge0400000", "0152103500000000"); // nsig electron -2.5,4
-    cuts.AddCutPCM("00010113", "00200009f5730000dge0400000", "0152103500000000"); // nsig pion 2,-10
-    cuts.AddCutPCM("00010113", "00200009f1730000dge0400000", "0152103500000000"); // nsig pion 0,-10
+    cuts.AddCutPCM("00010113", "0dm0000939730000dge0400000", "0152103500000000"); // nsig electron   -4,5
+    cuts.AddCutPCM("00010113", "0dm0000969730000dge0400000", "0152103500000000"); // nsig electron -2.5,4
+    cuts.AddCutPCM("00010113", "0dm00009f5730000dge0400000", "0152103500000000"); // nsig pion 2,-10
+    cuts.AddCutPCM("00010113", "0dm00009f1730000dge0400000", "0152103500000000"); // nsig pion 0,-10
   } else if (trainConfig == 406) {
-    cuts.AddCutPCM("00010113", "00200009f9030000dge0400000", "0152103500000000"); // pion nsig min mom 0.50 GeV/c
-    cuts.AddCutPCM("00010113", "00200009f9630000dge0400000", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
-    cuts.AddCutPCM("00010113", "00200009f9760000dge0400000", "0152103500000000"); // pion nsig max mom 2.00 GeV/c
-    cuts.AddCutPCM("00010113", "00200009f9710000dge0400000", "0152103500000000"); // pion nsig max mom 5.00 GeV/c
+    cuts.AddCutPCM("00010113", "0dm00009f9030000dge0400000", "0152103500000000"); // pion nsig min mom 0.50 GeV/c
+    cuts.AddCutPCM("00010113", "0dm00009f9630000dge0400000", "0152103500000000"); // pion nsig min mom 0.25 GeV/c
+    cuts.AddCutPCM("00010113", "0dm00009f9760000dge0400000", "0152103500000000"); // pion nsig max mom 2.00 GeV/c
+    cuts.AddCutPCM("00010113", "0dm00009f9710000dge0400000", "0152103500000000"); // pion nsig max mom 5.00 GeV/c
   } else if (trainConfig == 407) {
-    cuts.AddCutPCM("00010113", "00200009f9730000age0400000", "0152103500000000"); // qT max 0.040, qtptmax 0.11
-    cuts.AddCutPCM("00010113", "00200009f9730000ege0400000", "0152103500000000"); // qT max 0.060, qtptmax 0.14
-    cuts.AddCutPCM("00010113", "00200009f9730000fge0400000", "0152103500000000"); // qT max 0.070, qtptmax 0.16
+    cuts.AddCutPCM("00010113", "0dm00009f9730000age0400000", "0152103500000000"); // qT max 0.040, qtptmax 0.11
+    cuts.AddCutPCM("00010113", "0dm00009f9730000ege0400000", "0152103500000000"); // qT max 0.060, qtptmax 0.14
+    cuts.AddCutPCM("00010113", "0dm00009f9730000fge0400000", "0152103500000000"); // qT max 0.070, qtptmax 0.16
   } else if (trainConfig == 408) {
-    cuts.AddCutPCM("00010113", "00200009f9730000d1e0400000", "0152103500000000"); // chi2 50
-    cuts.AddCutPCM("00010113", "00200009f9730000dfe0400000", "0152103500000000"); // chi2 50 chi2 dep -0.065
-    cuts.AddCutPCM("00010113", "00200009f9730000dhe0400000", "0152103500000000"); // chi2 50 chi2 dep -0.050
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0404000", "0152103500000000"); // reject close v0
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0406000", "0152103500000000"); // double count with open angle 0.04
+    cuts.AddCutPCM("00010113", "0dm00009f9730000d1e0400000", "0152103500000000"); // chi2 50
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dfe0400000", "0152103500000000"); // chi2 50 chi2 dep -0.065
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dhe0400000", "0152103500000000"); // chi2 50 chi2 dep -0.050
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // reject close v0
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0406000", "0152103500000000"); // double count with open angle 0.04
   } else if (trainConfig == 409) {
-    cuts.AddCutPCM("00010113", "00200009f9730000dgd0400000", "0152103500000000"); // Psi pair 0.15 dep
-    cuts.AddCutPCM("00010113", "00200009f9730000dgf0400000", "0152103500000000"); // Psi pair 0.20 dep
-    cuts.AddCutPCM("00010113", "00200009f9730000dgg0400000", "0152103500000000"); // Psi pair 0.30 dep
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dgd0400000", "0152103500000000"); // Psi pair 0.15 dep
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dgf0400000", "0152103500000000"); // Psi pair 0.20 dep
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dgg0400000", "0152103500000000"); // Psi pair 0.30 dep
   } else if (trainConfig == 410) {
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0252103500000000"); // variation BG scheme track mult
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0152107500000000"); // alpha meson 0.85
-    cuts.AddCutPCM("00010113", "00200009f9730000dge0400000", "0152105500000000"); // alpha meson 0.75
-    cuts.AddCutPCM("00010113", "00200009227300008250404000", "0152103500000000"); // old cuts (run1)
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0400000", "0252103500000000"); // variation BG scheme track mult
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0400000", "0152107500000000"); // alpha meson 0.85
+    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0400000", "0152105500000000"); // alpha meson 0.75
+    cuts.AddCutPCM("00010113", "0dm00009227300008250404000", "0152103500000000"); // old cuts (run1)
   } else if (trainConfig == 411){
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // excluding 55-72 cm, eta 0.8
   } else if (trainConfig == 412){
