@@ -1299,9 +1299,6 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
   else if (CentEst == "kHM") {
     addon += "HM";
   }
-  if (stoi(suffix) >= 50 && stoi(suffix) <= 59) {
-    addon += "_SB";
-  }
   // Output file structure definition
   TString QAName = Form("%sQA%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputQA = mgr->CreateContainer(
