@@ -131,7 +131,7 @@ AliFemtoCutMonitorV0::AliFemtoCutMonitorV0(const char *aName):
   fAntiLambdaMass = new TH1F(name, "Mass Assuming AntiLambda Hypothesis", 10000, 0, 5);
   snprintf(name, 200, "K0ShortMass%s", aName);
   fK0ShortMass = new TH1F(name, "Mass Assuming K0 short Hypothesis", 500, 0, 5);
-  nprintf(name, 200, "InvmassK0s%s", aName);
+  snprintf(name, 200, "InvmassK0s%s", aName);
   fInvMassK0s = new TH1F(name, "K0s Invariant Mass Distribution", 200, 0.4, 0.6);
   snprintf(name, 200, "DcaDaughters%s", aName);
   fDcaDaughters = new TH1F(name, "DCA Daughters", 500, 0, 2);
@@ -451,7 +451,7 @@ void AliFemtoCutMonitorV0::Fill(const AliFemtoV0* aV0)
   fLambdaMass->Fill(aV0->MassLambda());
   fAntiLambdaMass->Fill(aV0->MassAntiLambda());
   fK0ShortMass->Fill(aV0->MassK0Short());
-  fInvMassK0s->->Fill(aV0->MassK0Short());
+  fInvMassK0s->Fill(aV0->MassK0Short());
   fDcaDaughters->Fill(aV0->DcaV0Daughters());
   fDcaV0ToPrimVertex->Fill(aV0->DcaV0ToPrimVertex());
   fDcaPosToPrimVertex->Fill(aV0->DcaPosToPrimVertex());
