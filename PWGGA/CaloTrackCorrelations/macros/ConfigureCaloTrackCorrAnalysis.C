@@ -1792,7 +1792,7 @@ AliAnaParticleHadronCorrelation* ConfigureHadronCorrelationAnalysis(TString part
   ana->SwitchOffLeadHadronSelection(); // Open cuts, just fill histograms
   ana->SwitchOffFillLeadHadronHistograms();
   
-  if ( kAnaCutsString.Contains("Bkg") && !bIsolated )
+  if ( kAnaCutsString.Contains("Bkg") && kAnaCutsString.Contains("LeadSumInCone") && !bIsolated )
   {
     printf("ConfigureHadronCorrelationAnalysis() *** Activate analysis on PtTrig and Bkg bins,\n"
            " \t make sure isolation runs first even if not used to select trigger >> \n");
