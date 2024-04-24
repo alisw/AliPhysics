@@ -61,6 +61,7 @@ public:
   void SetEMCALFractionL1MonitoringEvents(Double_t fraction) { fFractionL1MonitorEventsEMCAL = fraction; }
   void SetEMCALTriggerReducedPayload(Bool_t reduced) { fEMCALReducedTriggerPayload = reduced; }
   void SetUsePHOSTriggerMap(Bool_t toUse=kTRUE) { fUsePHOSBadMap = toUse; }
+  void SetReadTR(Bool_t readTR = true) {fReadTR = readTR;};
 
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
   enum TreeIndex { // Index of the output trees
@@ -190,6 +191,7 @@ public:
 private:
   Bool_t fUseEventCuts = kFALSE;         // Use or not event cuts
   Bool_t fUseTriggerAnalysis = kTRUE;    // Use or not trigger analysis
+  Bool_t fReadTR = false;
   AliEventCuts fEventCuts;      // Standard event cuts
   AliTriggerAnalysis fTriggerAnalysis; // Trigger analysis object for event selection
   AliGRPObject *fGRP = nullptr; //! Global run parameters
