@@ -19,13 +19,11 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
                                               AliAnalysisTaskLambdaPion::PCSettings pcsettings = AliAnalysisTaskLambdaPion::PCSettings::NoPC,  // choose pair cleaner
                                               bool usenolambdaevt = true,            // true to discard events with neither Lambda or AntiLambda
                                               double dauPIDCut = 2,
-                                              const char * DoSidebands = "0",    // "0" for no sidebands, "1" for left sideband, "2" for right sideband
                                               const char *cutVariation = "0")
 //                                              int binwidth = 1)             // relative bin width for k* histos with respect to 4 MeV/c
 {
   TString suffix = TString::Format("%s", cutVariation);
   TString sTsuffix = TString::Format("%s", sTcut);
-  TString sidebands = TString::Format("%s", DoSidebands);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -62,12 +60,6 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
   v0Cuts->SetPDGCodePosDaug(2212); // Proton
   v0Cuts->SetPDGCodeNegDaug(211);  // Pion
   v0Cuts->SetPDGCodev0(3122);      // Lambda
-  if (sidebands == "1") {
-    v0Cuts->SetCutWindowOffset(0, 0.10500000000000001, 0.10500000000000001);
-  }
-  if (sidebands == "2") {
-    v0Cuts->SetCutWindowOffset(1, 0.10500000000000001, 0.10500000000000001);
-  }
 
   // AntiLambda --> Antip + pi+ cuts
   AliFemtoDreamv0Cuts *Antiv0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);
@@ -81,12 +73,6 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
   Antiv0Cuts->SetPDGCodePosDaug(211);  // Pion
   Antiv0Cuts->SetPDGCodeNegDaug(2212); // Proton
   Antiv0Cuts->SetPDGCodev0(-3122);     // Lambda
-  if (sidebands == "1") {
-    Antiv0Cuts->SetCutWindowOffset(0, 0.10500000000000001, 0.10500000000000001);
-  }
-  if (sidebands == "2") {
-    Antiv0Cuts->SetCutWindowOffset(1, 0.10500000000000001, 0.10500000000000001);
-  }
 
   // Cuts on correlation pions (Marcel)
   AliFemtoDreamTrackCuts *TrackPosPionCuts = NULL;
@@ -1200,6 +1186,58 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
     }
   }
 
+  // Apply sidebands cuts
+  if (suffix == "50") {
+    // Left sideband 1
+    v0Cuts->SetCutWindow(1.080, 1.100);
+    Antiv0Cuts->SetCutWindow(1.080, 1.100);
+  }
+  if (suffix == "51") {
+    // Right sideband 1
+    v0Cuts->SetCutWindow(1.135, 1.155);
+    Antiv0Cuts->SetCutWindow(1.135, 1.155);
+  }
+  if (suffix == "52") {
+    // Right sideband 2
+    v0Cuts->SetCutWindow(1.170, 1.200);
+    Antiv0Cuts->SetCutWindow(1.170, 1.200);
+  }
+  if (suffix == "53") {
+    // ProtonLambda - Left sideband 1
+    v0Cuts->SetCutWindow(1.085, 1.103);
+    Antiv0Cuts->SetCutWindow(1.085, 1.103);
+  }
+  if (suffix == "54") {
+    // ProtonLambda - Left sideband 2
+    v0Cuts->SetCutWindow(1.090, 1.103);
+    Antiv0Cuts->SetCutWindow(1.090, 1.103);
+  }
+  if (suffix == "55") {
+    // ProtonLambda - Left sideband 3
+    v0Cuts->SetCutWindow(1.095, 1.108);
+    Antiv0Cuts->SetCutWindow(1.095, 1.108);
+  }
+  if (suffix == "56") {
+    // ProtonLambda - Right sideband 1
+    v0Cuts->SetCutWindow(1.129, 1.155);
+    Antiv0Cuts->SetCutWindow(1.129, 1.155);
+  }
+  if (suffix == "57") {
+    // ProtonLambda - Right sideband 2
+    v0Cuts->SetCutWindow(1.129, 1.145);
+    Antiv0Cuts->SetCutWindow(1.129, 1.145);
+  }
+  if (suffix == "58") {
+    // ProtonLambda - Right sideband 3
+    v0Cuts->SetCutWindow(1.124, 1.140);
+    Antiv0Cuts->SetCutWindow(1.124, 1.140);
+  }
+  if (suffix == "59") {
+    // ProtonLambda - Right sideband 4
+    v0Cuts->SetCutWindow(1.124, 1.135);
+    Antiv0Cuts->SetCutWindow(1.124, 1.135);
+  }
+
   // now we create the task
   AliAnalysisTaskLambdaPion *task =
       new AliAnalysisTaskLambdaPion(
@@ -1260,12 +1298,6 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
   }
   else if (CentEst == "kHM") {
     addon += "HM";
-  }
-  if (sidebands == "1") {
-    addon += "LeftSB_";
-  }
-  if (sidebands == "2") {
-    addon += "RightSB_";
   }
   // Output file structure definition
   TString QAName = Form("%sQA%s", addon.Data(), suffix.Data());
