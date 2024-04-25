@@ -176,9 +176,9 @@ void AliAnalysisTaskEfficiencyFB128::UserCreateOutputObjects()
 
       hname2  = "hHistoReconstructedAfterCutsM"; hname2+=i; hname2+=parttypename;
       htitle2 = "Total Reconstructed tracks M "; htitle2+=i; htitle2+=parttypename;
-      fReconstructedAfterCuts[i*PARTTYPES+j][0] = new TH2F(hname2.Data(),htitle2.Data(),50, -1.5, 1.5,100,0.,5.0);
+      fReconstructedAfterCuts[i*PARTTYPES+j][0] = new TH2F(hname2.Data(),htitle2.Data(),50, -1.5, 1.5,1000,0.,10.0);
       hname2+="Minus";htitle2+="Minus";
-      fReconstructedAfterCuts[i*PARTTYPES+j][1] = new TH2F(hname2.Data(),htitle2.Data(),50, -1.5, 1.5,100,0.,5.0);
+      fReconstructedAfterCuts[i*PARTTYPES+j][1] = new TH2F(hname2.Data(),htitle2.Data(),50, -1.5, 1.5,1000,0.,10.0);
 
       hname4  = "hHistoReconstructedNotPrimariesM"; hname4+=i; hname4+=parttypename;
       htitle4 = "Reconstructed level Y_pT (not primaries) M"; htitle4+=i; htitle4+=parttypename;
@@ -699,8 +699,8 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
     float nSigmaTPCK = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kKaon);
     float nSigmaTPCP = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kProton);
     float nSigmaTPCe = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kElectron);
-    if(IsElectronFB128(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
-      continue;
+  //  if(IsElectronFB128(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
+    //  continue;
    
     fHistQA[10]->Fill(7);
     
