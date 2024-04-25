@@ -50,7 +50,7 @@
 
 class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
 {
-  
+
  public:
   AliAnalysisTaskMesonJetCorrelation();
   AliAnalysisTaskMesonJetCorrelation(const char* name);
@@ -132,9 +132,9 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   void SetDoRadiusDependence(bool tmp) { fDoRadiusDep = tmp; }
   void SetMesonZPt(int tmp)
   {
-    if(tmp == 1){
+    if (tmp == 1) {
       fDoAnalysisZ = false;
-    } else if(tmp == 2){
+    } else if (tmp == 2) {
       fDoAnalysisPt = false;
     }
   }
@@ -260,7 +260,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   //-------------------------------
   // Materil Budged Weights
   //-------------------------------
-  std::vector<double> vecWeightsMatWeightsGammas;    //! vector with weights for photons. Indexing is the same as for fGammaCandidates
+  std::vector<double> vecWeightsMatWeightsGammas; //! vector with weights for photons. Indexing is the same as for fGammaCandidates
 
   //-------------------------------
   // binning settings
@@ -273,6 +273,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<double> fVecBinsJetPt;          //! jet pt binning
   std::vector<double> fVecBinsFragment;       //! z (fragmentation function) binning
   std::vector<double> fVecBinsMesonJetRadius; //! radius binning
+  std::vector<double> fVecBinsMult;           //! multiplicity binning
   std::vector<double> vecEquidistFromMinus05; //! aequdistant binning starting from -0.5
 
   //-------------------------------
@@ -326,7 +327,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<MatrixHandlerNDim*> fRespMatrixHandlerMesonPtTrueRadius;        //! Response matrix for true vs. rec pt for each jet pt true vs. rec. bin for different radii
   std::vector<MatrixHandlerNDim*> fRespMatrixHandlerMesonPtInvMassRadius;     //! Reconstructed jet pt, inv. mass, meson pt and radius of jet and meson
   std::vector<MatrixHandlerNDim*> fRespMatrixHandlerMesonBackPtInvMassRadius; //! Reconstructed jet pt, inv. mass, meson pt and radius of jet and meson
-  
+
   //-------------------------------
   // basic histograms
   //-------------------------------
@@ -350,9 +351,9 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH1F*> fHistoClusterPt; //! vector of histos with number of clusters as function of pt
   std::vector<TH1F*> fHistoClusterE;  //! vector of histos with number of clusters as function of E
 
-  std::vector<TH1F*> fHistoClusterPtInJet; //! vector of histos with number of clusters as function of pt inside of jets
-  std::vector<TH1F*> fHistoClusterEInJet;  //! vector of histos with number of clusters as function of E inside of jets
-  std::vector<TH3F*> fHistoClusterPtResolutionInJet;  //! vector of histos with number of clusters as function of E inside of jets
+  std::vector<TH1F*> fHistoClusterPtInJet;           //! vector of histos with number of clusters as function of pt inside of jets
+  std::vector<TH1F*> fHistoClusterEInJet;            //! vector of histos with number of clusters as function of E inside of jets
+  std::vector<TH3F*> fHistoClusterPtResolutionInJet; //! vector of histos with number of clusters as function of E inside of jets
 
   std::vector<TH2F*> fHistoClusterPtVsJetPtInJet; //! vector of histos with number of clusters as function of pt vs. jet pt inside of jets
 
@@ -365,7 +366,6 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH1F*> fHistoConvGammaPt;             //! vector of histos conversion photons vs. pt
   std::vector<TH1F*> fHistoConvGammaPtInJet;        //! vector of histos conversion photons vs. pt inside of jet
   std::vector<TH2F*> fHistoConvGammaPtVsJetPtInJet; //! vector of histos conversion photons vs. pt  vs Jet Pt inside of jet
-  
 
   // perpendicular cone
   std::vector<TH1F*> fHistoConvGammaPtPerpCone; //! vector of histos conversion photons vs. pt in perpendicular cone
@@ -382,8 +382,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
 
   std::vector<TH2F*> fHistoInvMassVsPtBack; //! vector of histos  with inv. mass vs pt for background distribution
 
-  std::vector<TH2F*> fHistoInvMassVsPtPerpCone;    //! same as fHistoInvMassVsPt but in perpendicular cone
-  std::vector<TH2F*> fHistoJetPtVsFragPerpCone;    //! same as fHistoJetPtVsFrag but in perp cone
+  std::vector<TH2F*> fHistoInvMassVsPtPerpCone; //! same as fHistoInvMassVsPt but in perpendicular cone
+  std::vector<TH2F*> fHistoJetPtVsFragPerpCone; //! same as fHistoJetPtVsFrag but in perp cone
 
   //-------------------------------
   // Jet related histograms
@@ -410,7 +410,10 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoNchVsPtJet;                //! vector of histos with pt of jets vs number of charged tracks in jet
   std::vector<TH2F*> fHistoNclusVsPtJet;              //! vector of histos with pt of jets vs neutral clusters in jet
   std::vector<TH2F*> fHistoNPartInTrueJetVsJetPt;     //! vector of histos with pt jet vs number of true jet particles
-  
+  std::vector<TH2F*> fHistoNJetsVsTrackMult;          //! vector of histos with Number of jets vs. track multiplicity
+  std::vector<TH2F*> fHistoNJetsVsMult;               //! vector of histos with Number of jets vs. V0M multiplicity
+  std::vector<TH2F*> fHistoMaxJetPtVsMult;            //! vector of histos with maxiumum pt jet vs number of tracks
+
   //-------------------------------
   // True meson histograms
   //-------------------------------
@@ -437,11 +440,11 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoMesonResponse;                                        //! vector of histos with meson response matrix
   std::vector<TH3F*> fHistoMesonResolutionJetPt;                                 //! vector of histos with meson resolution as function of jet momentum
 
-  std::vector<TH2F*> fHistoTrueMesonBothDaughtersInJet;                          //! vector of histos with meson pt vs. jet pt for number of mesons with both decay daughters inside jet cone
-  std::vector<TH2F*> fHistoTrueMesonOneDaughtersInJet;                           //! vector of histos with meson pt vs. jet pt for number of mesons with only one decay daughters inside jet cone
-  std::vector<TH2F*> fHistoTrueMesonNoDaughtersInJet;                            //! vector of histos with meson pt vs. jet pt for number of mesons with no decay daughters inside jet cone
-  std::vector<TH2F*> fHistoTrueMesonDaughtersInOtherJet;                         //! vector of histos with meson pt vs. jet pt for number of mesons with decay photons in jet but not in same as pi0
-  
+  std::vector<TH2F*> fHistoTrueMesonBothDaughtersInJet;  //! vector of histos with meson pt vs. jet pt for number of mesons with both decay daughters inside jet cone
+  std::vector<TH2F*> fHistoTrueMesonOneDaughtersInJet;   //! vector of histos with meson pt vs. jet pt for number of mesons with only one decay daughters inside jet cone
+  std::vector<TH2F*> fHistoTrueMesonNoDaughtersInJet;    //! vector of histos with meson pt vs. jet pt for number of mesons with no decay daughters inside jet cone
+  std::vector<TH2F*> fHistoTrueMesonDaughtersInOtherJet; //! vector of histos with meson pt vs. jet pt for number of mesons with decay photons in jet but not in same as pi0
+
   //-------------------------------
   // Meson double counting
   //-------------------------------
@@ -488,7 +491,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoMCSecMesonPtvsSource;       //! vector of histos secondary mesons from different sources vs. pt
   std::vector<TH1F*> fHistoMCSecMesonSource;           //! vector of histos secondary mesons from different sources
   std::vector<TH2F*> fHistoMCSecMesonInAccPtvsSource;  //! vector of histos accepted secondary mesons from different sources vs. pt
-  
+
   //-------------------------------
   // mc generated histograms jet-meson corr
   //-------------------------------
@@ -509,15 +512,15 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   //-------------------------------
   // DCA tree for PCM pile-up estimation
   //-------------------------------
-  std::vector<TTree*> fDCATree;                       //! vector of trees with the following info: DCA for both photons, pt of meson, mass of meson, corresponding jet pT
-  unsigned short fDCATree_InvMass;                    //! inv mass of meson for DCA tree
-  unsigned short fDCATree_Pt;                         //! pt of meson for DCA tree
-  short fDCATree_DCAzGammaMin;                        //! DCA of photon with smaller DCA for DCA tree
-  short fDCATree_DCAzGammaMax;                        //! DCA of photon with larger DCA for DCA tree
-  short fDCATree_QualityFlag;                         //! Quality flag (categorie 1 - 6) of meson for DCA tree
-  unsigned short fDCATree_JetPt;                      //! jet pt meson belongs to for DCA tree
-  bool fDCATree_isTrueMeson;                          //! flag if meson is true meson or not
-  float fDCATree_EvtWeight;                           //! event weight for the tree in case of MC
+  std::vector<TTree*> fDCATree;    //! vector of trees with the following info: DCA for both photons, pt of meson, mass of meson, corresponding jet pT
+  unsigned short fDCATree_InvMass; //! inv mass of meson for DCA tree
+  unsigned short fDCATree_Pt;      //! pt of meson for DCA tree
+  short fDCATree_DCAzGammaMin;     //! DCA of photon with smaller DCA for DCA tree
+  short fDCATree_DCAzGammaMax;     //! DCA of photon with larger DCA for DCA tree
+  short fDCATree_QualityFlag;      //! Quality flag (categorie 1 - 6) of meson for DCA tree
+  unsigned short fDCATree_JetPt;   //! jet pt meson belongs to for DCA tree
+  bool fDCATree_isTrueMeson;       //! flag if meson is true meson or not
+  float fDCATree_EvtWeight;        //! event weight for the tree in case of MC
 
  private:
   static constexpr bool fLocalDebugFlag = false;
