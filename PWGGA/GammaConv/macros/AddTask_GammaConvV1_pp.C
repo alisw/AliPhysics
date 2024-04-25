@@ -945,7 +945,6 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010113", "0dm00009f9730000d1e0400000", "0152103500000000"); // chi2 50
     cuts.AddCutPCM("00010113", "0dm00009f9730000dfe0400000", "0152103500000000"); // chi2 50 chi2 dep -0.065
     cuts.AddCutPCM("00010113", "0dm00009f9730000dhe0400000", "0152103500000000"); // chi2 50 chi2 dep -0.050
-    cuts.AddCutPCM("00010113", "0dm00009f9730000dge0404000", "0152103500000000"); // reject close v0
     cuts.AddCutPCM("00010113", "0dm00009f9730000dge0406000", "0152103500000000"); // double count with open angle 0.04
   } else if (trainConfig == 409) {
     cuts.AddCutPCM("00010113", "0dm00009f9730000dgd0400000", "0152103500000000"); // Psi pair 0.15 dep
