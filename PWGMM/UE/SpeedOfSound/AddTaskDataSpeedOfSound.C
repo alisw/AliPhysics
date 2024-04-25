@@ -25,11 +25,12 @@ AliAnalysisTaskDataSpeedOfSound* AddTaskDataSpeedOfSound(
     return 0x0;
   }
   taskKno->SetUseMC(false);
+  taskKno->SetVertexCut(5.0);
   taskKno->SetV0Mmin(0.0);
   taskKno->SetV0Mmax(80.0);
   taskKno->SetEtaCut(0.8, 0.5, 0.8, 0.5, 0.8, 0.3, 0.3);
   taskKno->SetPtCut(0.15, 0.15, 50.0);
-  taskKno->SetHMCut(5.0);
+  taskKno->SetHMCut(20.0);
   taskKno->SetTrigger(AliVEvent::kCentral);
   taskKno->SetSystematicsVtxZ(false, -5.0, 5.0);
   taskKno->SetSystematics(false, 0);
