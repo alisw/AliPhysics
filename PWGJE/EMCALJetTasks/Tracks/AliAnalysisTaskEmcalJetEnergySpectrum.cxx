@@ -60,6 +60,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fHistos(nullptr),
   fIsMC(false),
   fFillHSparse(false),
+  fFillSpectrumPtNEF(false),
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
   fRequireSubsetMB(false),
@@ -97,6 +98,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fHistos(nullptr),
   fIsMC(false),
   fFillHSparse(false),
+  fFillSpectrumPtNEF(false),
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
   fRequireSubsetMB(false),
@@ -167,6 +169,12 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH2("hJetSpectrumAbs", "Jet pt spectrum (absolute counts)", kTrgClusterN, -0.5, kTrgClusterN - 0.5, 350., 0., 350., "s");
   fHistos->CreateTH2("hJetSpectrumMax", "Max jet pt spectrum", kTrgClusterN, -0.5, kTrgClusterN - 0.5, 350., 0., 350., "s");
   fHistos->CreateTH2("hJetSpectrumMaxAbs", "Max jet pt spectrum (absolute counts)", kTrgClusterN, -0.5, kTrgClusterN - 0.5, 350., 0., 350., "s");
+  if(fFillSpectrumPtNEF) {
+    fHistos->CreateTH3("hJetSpectrumPtNEF", "Jet pt spectrum (vs. NEF)", 350, 0., 350., 105, 0., 1.05, kTrgClusterN, -0.5, kTrgClusterN - 0.5, "s");
+    fHistos->CreateTH3("hJetSpectrumPtNEFAbs", "Jet pt spectrum (vs. NEF, absolute counts)", 350, 0., 350., 105, 0., 1.05, kTrgClusterN, -0.5, kTrgClusterN - 0.5, "s");
+    fHistos->CreateTH3("hJetSpectrumPtNEFMax", "Max jet pt spectrum (vs. NEF)", 350, 0., 350., 105, 0., 1.05, kTrgClusterN, -0.5, kTrgClusterN - 0.5, "s");
+    fHistos->CreateTH3("hJetSpectrumPtNEFMaxAbs", "Max jet pt spectrum (vs. NEF, absolute counts)", 350, 0., 350., 105, 0., 1.05, kTrgClusterN, -0.5, kTrgClusterN - 0.5, "s");
+  }
 
   if(fDoBkgSub){
     fHistos->CreateTH2("hRhoVsDeltaPtRC", "Rho Vs Delta Pt RC;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)", 170, -20, 150, 30, 0, 30, "s");
@@ -357,6 +365,10 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     for(auto t : trgclusters){
       fHistos->FillTH2("hJetSpectrum", static_cast<double>(t), ptjet, weight);
       fHistos->FillTH2("hJetSpectrumAbs", static_cast<double>(t), ptjet);
+      if(fFillSpectrumPtNEF) {
+        fHistos->FillTH3("hJetSpectrumPtNEF", ptjet, j->NEF(), static_cast<double>(t), weight);
+        fHistos->FillTH3("hJetSpectrumPtNEFAbs", ptjet, j->NEF(), static_cast<double>(t));
+      }
       if(fFillHSparse) {
         datapoint[5] = static_cast<double>(t);
         fHistos->FillTHnSparse("hJetTHnSparse", datapoint, weight);
@@ -498,6 +510,10 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   for(auto t : trgclusters){
     fHistos->FillTH2("hJetSpectrumMax", t, maxdata[1], weight);
     fHistos->FillTH2("hJetSpectrumMaxAbs", t, maxdata[1]);
+    if(fFillSpectrumPtNEF) {
+      fHistos->FillTH3("hJetSpectrumPtNEFMax",  maxdata[1], maxdata[4], t, weight);
+      fHistos->FillTH3("hJetSpectrumPtNEFMaxAbs", maxdata[1], maxdata[4], t);
+    }
     if(fFillHSparse){
       maxdata[5] = static_cast<double>(t);
       fHistos->FillTHnSparse("hMaxJetTHnSparse", maxdata, weight);
