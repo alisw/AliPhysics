@@ -91,7 +91,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fCentcal(0),
   fPseudoEfficiency(2.),
   fPtVsV0M(0),
-  fMptVsNch(0),
+  fMptVsMulti(0),
   fMultVsCent(0),
   fNchVsV0M(0),
   fV0MMulti(0),
@@ -180,7 +180,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fCentcal(0),
   fPseudoEfficiency(2.),
   fPtVsV0M(0),
-  fMptVsNch(0),
+  fMptVsMulti(0),
   fMultVsCent(0),
   fNchVsV0M(0),
   fV0MMulti(0),
@@ -280,8 +280,8 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
     fPtVsV0M = new TH2D("fPtVsV0M",";centrality (%); #it{p}_{T}",fNMultiBins,fMultiBins,fNPtBins,fPtBins);
     fptList->Add(fPtVsV0M);
   }
-  fMptVsNch = new TH2D("fMptVsNch",";N_{ch}; #LT[#it{p}_{T}]#GT",(fUseV0M)?nDefaultNchBins:fNMultiBins,(fUseV0M)?defaultNchBins:fMultiBins,fNMptBins,fMptBins);
-  fptList->Add(fMptVsNch);
+  fMptVsMulti = new TH2D("fMptVsMulti",";N_{ch}; #LT[#it{p}_{T}]#GT",fNMultiBins,fMultiBins,fNMptBins,fMptBins);
+  fptList->Add(fMptVsMulti);
   fMultVsCent = new TH2F("fMultVsCent",Form(";%s; %s","Centrality (%)",(fUseNch)?"#it{N}_{ch}":(fUseV0M)?"V0M Amplitude":"Centrality (%)"),nDefaultCentBins,defaultCentBins,fNMultiBins,fMultiBins);
   fptList->Add(fMultVsCent);
   fNchVsV0M = new TH2F("fNchVsV0M","N_{ch} vs V0M amplitude; V0M amplitude; N_{ch}",1000,0,45000,2250,0,4500);
@@ -457,7 +457,7 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   fV0MMulti->Fill(l_Cent);
   fMultiDist->Fill(l_Multi);
   fMultVsCent->Fill(l_Cent,l_Multi);
-  fMptVsNch->Fill(l_Nch,wp[1][1]/wp[1][0]);
+  fMptVsMulti->Fill(l_Multi,wp[1][1]/wp[1][0]);
   fMultiVsV0MCorr->Fill(l_Cent,l_Nch);
   PostData(1,fptList);
   PostData(2,fQAList);
