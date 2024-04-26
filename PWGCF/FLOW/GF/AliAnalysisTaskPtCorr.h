@@ -164,7 +164,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH1* fCentcal; //TH1 for OTF centrality calibration
   Double_t fPseudoEfficiency; //Pseudo efficiency to reject tracks. Default value set to 2, only used when the value is <1
   TH2D *fPtVsV0M;
-  TH2D *fMptVsNch;
+  TH2D *fMptVsMulti;
   TH2F *fMultVsCent;
   TH2F *fNchVsV0M;
   TH1D *fV0MMulti;
