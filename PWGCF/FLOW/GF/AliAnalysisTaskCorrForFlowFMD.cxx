@@ -568,7 +568,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
     }
 
     //for the reconstructed part (data) (TPC involved correlation including PID)
-    if(!fIsTPCgen)  {
+    if(!fIsTPCgen || fUseNch_reco)  {
       if(!PrepareTPCTracks()){
 	
 	if ((fDoPHI || fcheckmassbias_Phi) && fTracksTrig_Kaon_Phi) delete fTracksTrig_Kaon_Phi;
