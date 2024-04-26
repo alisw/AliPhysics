@@ -3,8 +3,8 @@ AliAnalysisTaskEmcalPIDinJet* AddTaskEmcalPIDinJet(
   const char *ntracks            = "usedefault",
   const char *nclusters          = "usedefault",
   const char* ncells             = "usedefault",
-  const char *suffix             = "",
-  Bool_t iBeamType_PbPb          = kTRUE          
+  Bool_t iBeamType_PbPb          = kTRUE,          
+  const char *suffix             = ""
 )
 {
 
@@ -67,8 +67,8 @@ AliAnalysisTaskEmcalPIDinJet* AddTaskEmcalPIDinJet(
     SubcontainerName += name;
     AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
     AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(SubcontainerName, TList::Class(),AliAnalysisManager::kOutputContainer, containerName.Data());
-    mgr->ConnectInput(task, 0, cinput);
-    mgr->ConnectOutput(task, 1, coutput1); 
+    mgr->ConnectInput(jetTask, 0, cinput);
+    mgr->ConnectOutput(jetTask, 1, coutput1); 
   
 
   return jetTask;
