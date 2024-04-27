@@ -450,7 +450,7 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
     Et_bins[i] = 0.0 + 2.0 * i;
   }
 
-  constexpr int EtEtaGap_Nbins{350};
+  constexpr int EtEtaGap_Nbins{450};
   double EtEtaGap_bins[EtEtaGap_Nbins + 1] = {0};
   for (int i = 0; i <= EtEtaGap_Nbins; ++i) {
     EtEtaGap_bins[i] = 0.0 + 2.0 * i;
