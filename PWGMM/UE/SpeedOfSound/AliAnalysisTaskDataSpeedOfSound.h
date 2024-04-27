@@ -39,6 +39,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void GetCalibratedV0Amplitude();
   void VertexPosition();
   void GetZDC();
+  void UseZDC(bool zdc) { fUseZDC = zdc; }
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetHMCut(double HMcut) { fHMCut = HMcut; }      // Set V0M max value
@@ -85,6 +86,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   bool fUseMC;
   bool fIsSystematics;
   bool fVaryVtxZPos;
+  bool fUseZDC;
   float fMinVtxZPos;
   float fMaxVtxZPos;
   int fSystematic;

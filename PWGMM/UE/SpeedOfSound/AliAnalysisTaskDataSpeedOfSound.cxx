@@ -107,6 +107,7 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       fUseMC(kFALSE),
       fIsSystematics(true),
       fVaryVtxZPos(false),
+      fUseZDC(false),
       fMinVtxZPos(-5.0),
       fMaxVtxZPos(5.0),
       fSystematic(1),
@@ -209,6 +210,7 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       fUseMC(kFALSE),
       fIsSystematics(true),
       fVaryVtxZPos(false),
+      fUseZDC(false),
       fMinVtxZPos(-5.0),
       fMaxVtxZPos(5.0),
       fSystematic(1),
@@ -755,10 +757,12 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   fOutputList->Add(hPhiEtaGapTPC);
   fOutputList->Add(hPtWithCutForCent);
 
-  fOutputList->Add(pZDCvsV0MAmp);
-  fOutputList->Add(pZDCvsNch);
-  fOutputList->Add(pZDCvsTPCEtaGap);
-  fOutputList->Add(pZDCvsSPDEtaGap);
+  if (fUseZDC) {
+    fOutputList->Add(pZDCvsV0MAmp);
+    fOutputList->Add(pZDCvsNch);
+    fOutputList->Add(pZDCvsTPCEtaGap);
+    fOutputList->Add(pZDCvsSPDEtaGap);
+  }
   fOutputList->Add(pV0MAmpvsTracksEtaGapTPC);
   fOutputList->Add(pV0MAmpvsTrackletsEtaGap);
 
@@ -846,7 +850,9 @@ void AliAnalysisTaskDataSpeedOfSound::UserExec(Option_t*) {
   GetSPDMultiplicity();
 
   //! Get ZDC Centrality
-  GetZDC();
+  if (fUseZDC) {
+    GetZDC();
+  }
 
   //! DCAxy templates MC and Data
   DCAxyDistributions();
