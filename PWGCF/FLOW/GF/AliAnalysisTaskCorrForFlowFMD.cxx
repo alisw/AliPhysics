@@ -1842,7 +1842,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
         if(fAnalType == eTPCTPC) fTracksAss->Add((AliAODTrack*)track); 
       }
 
-      
+      if(fIsTPCgen) continue;//do not proceed beyond this point for TPC generated/Truth case
+	      
       if(fAnalType != eFMDAFMDC && !fDoV0){//fiil the Trigger TObjArray in DoPID and DoPHI case as it needs AliAOD TPC tracks (not for AliAODV0 case)
 	
       Double_t trackEta = track->Eta();
