@@ -187,6 +187,9 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       hPtvsSPDEtaGapWW(0),
       pPtvsSPDEtaGapWW(0),
       pZVtxvsSPDClus(0),
+      pSPDClusvsEta(0),
+      pCL0ClusvsEta(0),
+      pCL1ClusvsEta(0),
       hPtvsTPCFullWidepT(0),
       hPtvsTPCEtaGapWidepT(0),
       hPtvsEtFullWidepT(0),
@@ -286,6 +289,9 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       hPtvsSPDEtaGapWW(0),
       pPtvsSPDEtaGapWW(0),
       pZVtxvsSPDClus(0),
+      pSPDClusvsEta(0),
+      pCL0ClusvsEta(0),
+      pCL1ClusvsEta(0),
       hPtvsTPCFullWidepT(0),
       hPtvsTPCEtaGapWidepT(0),
       hPtvsEtFullWidepT(0),
@@ -387,45 +393,45 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   }
 
   // Nch (|eta|<0.8)
-  constexpr int nch_Nbins{2500};
+  constexpr int nch_Nbins{1250};
   double nch_bins[nch_Nbins + 1] = {0};
   for (int i = 0; i <= nch_Nbins; ++i) {
-    nch_bins[i] = -0.5 + (float)i;
+    nch_bins[i] = 0.5 + 2.0 * i;
   }
 
   // Nch (0<eta<0.8)
-  constexpr int nchHalfTPC_Nbins{1300};
+  constexpr int nchHalfTPC_Nbins{650};
   double nchHalfTPC_bins[nchHalfTPC_Nbins + 1] = {0};
   for (int i = 0; i <= nchHalfTPC_Nbins; ++i) {
-    nchHalfTPC_bins[i] = -0.5 + (float)i;
+    nchHalfTPC_bins[i] = 0.5 + 2.0 * i;
   }
 
   // Nch (0.5<|eta|<0.8)
-  constexpr int nchEtaGapTPC_Nbins{1000};
+  constexpr int nchEtaGapTPC_Nbins{500};
   double nchEtaGapTPC_bins[nchEtaGapTPC_Nbins + 1] = {0};
   for (int i = 0; i <= nchEtaGapTPC_Nbins; ++i) {
-    nchEtaGapTPC_bins[i] = -0.5 + (float)i;
+    nchEtaGapTPC_bins[i] = 0.5 + 2.0 * i;
   }
 
   // SPD Tracklets (|eta|<0.8)
-  constexpr int SPD0p8_Nbins{3100};
+  constexpr int SPD0p8_Nbins{1550};
   double SPD0p8_bins[SPD0p8_Nbins + 1] = {0};
   for (int i = 0; i <= SPD0p8_Nbins; ++i) {
-    SPD0p8_bins[i] = -0.5 + (float)i;
+    SPD0p8_bins[i] = 0.5 + 2.0 * i;
   }
 
   // SPD Tracklets (|eta|<0.4)
-  constexpr int SPD0p4_Nbins{1700};
+  constexpr int SPD0p4_Nbins{850};
   double SPD0p4_bins[SPD0p4_Nbins + 1] = {0};
   for (int i = 0; i <= SPD0p4_Nbins; ++i) {
-    SPD0p4_bins[i] = -0.5 + (float)i;
+    SPD0p4_bins[i] = 0.5 + 2.0 * i;
   }
 
   // nTracklets (0.5<|eta|<0.8)
-  constexpr int trackletsEtaGap_Nbins{1301};
-  double trackletsEtaGap_bins[trackletsEtaGap_Nbins + 1] = {0};
-  for (int i = 0; i <= trackletsEtaGap_Nbins; ++i) {
-    trackletsEtaGap_bins[i] = -0.5 + (float)i;
+  constexpr int SPDEtaGap_Nbins{700};
+  double SPDEtaGap_bins[SPDEtaGap_Nbins + 1] = {0};
+  for (int i = 0; i <= SPDEtaGap_Nbins; ++i) {
+    SPDEtaGap_bins[i] = 0.5 + 2.0 * i;
   }
 
   constexpr double v0mAmp_width{25.0};
@@ -436,16 +442,16 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   }
 
   // Et binning
-  constexpr int Et_Nbins{1700};
+  constexpr int Et_Nbins{920};
   double Et_bins[Et_Nbins + 1] = {0};
   for (int i = 0; i <= Et_Nbins; ++i) {
-    Et_bins[i] = 0.0 + (float)i;
+    Et_bins[i] = 0.0 + 2.0 * i;
   }
 
-  constexpr int EtEtaGap_Nbins{700};
+  constexpr int EtEtaGap_Nbins{350};
   double EtEtaGap_bins[EtEtaGap_Nbins + 1] = {0};
   for (int i = 0; i <= EtEtaGap_Nbins; ++i) {
-    EtEtaGap_bins[i] = 0.0 + (float)i;
+    EtEtaGap_bins[i] = 0.0 + 2.0 * i;
   }
 
   constexpr int dcaxy_Nbins{100};
@@ -484,6 +490,13 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   pZVtxvsSPDClus =
       new TProfile("pZVtxvsSPDClus", ";Z_{SPD} Vertex (cm); <SPD clusters>;",
                    40, -10.0, 10.0);
+
+  pSPDClusvsEta =
+      new TProfile("pSPDClusvsEta", ";#eta; <SPD clusters>;", 30, -1.5, 1.5);
+  pCL0ClusvsEta =
+      new TProfile("pCL0ClusvsEta", ";#eta; <CL0 clusters>;", 30, -1.5, 1.5);
+  pCL1ClusvsEta =
+      new TProfile("pCL1ClusvsEta", ";#eta; <CL1 clusters>;", 30, -1.5, 1.5);
 
   //------------------------------------
   //----------- V0M
@@ -572,49 +585,49 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
 
   hSPDEtaGap = new TH1F("hSPDEtaGap",
                         "; #it{N}_{tracklet} (0.5#leq|#eta|#leq0.8); Entries",
-                        trackletsEtaGap_Nbins, trackletsEtaGap_bins);
+                        SPDEtaGap_Nbins, SPDEtaGap_bins);
 
   hPtvsSPDEtaGap =
       new TH2F("hPtvsSPDEtaGap",
                "; #it{N}_{tracklet} (0.5#leq|#eta|#leq0.8); #it{p}_{T} "
                "(|#eta|#leq0.3, GeV/#it{c})",
-               trackletsEtaGap_Nbins, trackletsEtaGap_bins, pt_Nbins, pt_bins);
+               SPDEtaGap_Nbins, SPDEtaGap_bins, pt_Nbins, pt_bins);
 
   pPtvsSPDEtaGap = new TProfile("pPtvsSPDEtaGap",
                                 "; #it{N}_{tracklet} (0.5#leq|#eta|#leq0.8); "
                                 "#LT#it{p}_{T}#GT (|#eta|#leq0.3, GeV/#it{c})",
-                                trackletsEtaGap_Nbins, trackletsEtaGap_bins);
+                                SPDEtaGap_Nbins, SPDEtaGap_bins);
 
   hSPDEtaGapW = new TH1F("hSPDEtaGapW",
                          "; #it{N}_{tracklet} (0.7#leq|#eta|#leq1); Entries",
-                         trackletsEtaGap_Nbins, trackletsEtaGap_bins);
+                         SPDEtaGap_Nbins, SPDEtaGap_bins);
 
   hPtvsSPDEtaGapW =
       new TH2F("hPtvsSPDEtaGapW",
                "; #it{N}_{tracklet} (0.7#leq|#eta|#leq1); #it{p}_{T} "
                "(|#eta|#leq0.3, GeV/#it{c})",
-               trackletsEtaGap_Nbins, trackletsEtaGap_bins, pt_Nbins, pt_bins);
+               SPDEtaGap_Nbins, SPDEtaGap_bins, pt_Nbins, pt_bins);
 
   pPtvsSPDEtaGapW = new TProfile("pPtvsSPDEtaGapW",
                                  "; #it{N}_{tracklet} (0.7#leq|#eta|#leq1); "
                                  "#LT#it{p}_{T}#GT (|#eta|#leq0.3, GeV/#it{c})",
-                                 trackletsEtaGap_Nbins, trackletsEtaGap_bins);
+                                 SPDEtaGap_Nbins, SPDEtaGap_bins);
 
   hSPDEtaGapWW = new TH1F("hSPDEtaGapWW",
                           "; #it{N}_{tracklet} (1#leq|#eta|#leq1.3); Entries",
-                          trackletsEtaGap_Nbins, trackletsEtaGap_bins);
+                          SPDEtaGap_Nbins, SPDEtaGap_bins);
 
   hPtvsSPDEtaGapWW =
       new TH2F("hPtvsSPDEtaGapWW",
                "; #it{N}_{tracklet} (1#leq|#eta|#leq1.3); #it{p}_{T} "
                "(|#eta|#leq0.3, GeV/#it{c})",
-               trackletsEtaGap_Nbins, trackletsEtaGap_bins, pt_Nbins, pt_bins);
+               SPDEtaGap_Nbins, SPDEtaGap_bins, pt_Nbins, pt_bins);
 
   pPtvsSPDEtaGapWW =
       new TProfile("pPtvsSPDEtaGapWW",
                    "; #it{N}_{tracklet} (1#leq|#eta|#leq1.3); "
                    "#LT#it{p}_{T}#GT (|#eta|#leq0.3, GeV/#it{c})",
-                   trackletsEtaGap_Nbins, trackletsEtaGap_bins);
+                   SPDEtaGap_Nbins, SPDEtaGap_bins);
 
   //------------------------------------
   //----------- Et
@@ -675,7 +688,7 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   pZDCvsSPDEtaGap =
       new TProfile("pZDCvsSPDEtaGap",
                    ";#it{N}_{tracklet} (0.5#leq|#eta|#leq0.8); <ZDC> (TeV);",
-                   trackletsEtaGap_Nbins, trackletsEtaGap_bins);
+                   SPDEtaGap_Nbins, SPDEtaGap_bins);
 
   pV0MAmpvsTracksEtaGapTPC =
       new TProfile("pV0MAmpvsTracksEtaGapTPC",
@@ -685,10 +698,13 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   pV0MAmpvsTrackletsEtaGap =
       new TProfile("pV0MAmpvsTrackletsEtaGap",
                    ";#it{N}_{tracklet} (0.5#leq|#eta|#leq0.8); <V0M Amp>;",
-                   trackletsEtaGap_Nbins, trackletsEtaGap_bins);
+                   SPDEtaGap_Nbins, SPDEtaGap_bins);
 
   fOutputList->Add(hBestVtxZ);
   fOutputList->Add(pZVtxvsSPDClus);
+  fOutputList->Add(pSPDClusvsEta);
+  fOutputList->Add(pCL0ClusvsEta);
+  fOutputList->Add(pCL1ClusvsEta);
   fOutputList->Add(hV0Percentile);
   fOutputList->Add(hNchvsV0MAmp);
 
@@ -910,6 +926,9 @@ void AliAnalysisTaskDataSpeedOfSound::GetSPDMultiplicity() {
     double eta = SPDptr->GetEta(it);
     double phi = SPDptr->GetPhi(it);
 
+    pSPDClusvsEta->Fill(eta, SPDptr->GetNumberOfSPDClusters());
+    pCL0ClusvsEta->Fill(eta, SPDptr->GetNumberOfITSClusters(0));
+    pCL1ClusvsEta->Fill(eta, SPDptr->GetNumberOfITSClusters(1));
     if (TMath::Abs(eta) <= fEtaCut) {
       fSPDFull++;
     }
