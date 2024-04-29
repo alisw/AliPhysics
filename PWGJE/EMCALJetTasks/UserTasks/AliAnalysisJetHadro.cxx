@@ -872,7 +872,7 @@ void AliAnalysisJetHadro::UserCreateOutputObjects()
     fHistJetTracks_TOFpi_nsigma    = new TH3F("fHistJetTracks_TOFpi_nsigma",   "TOF Nsigma histogram for jet tracks under the pion hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
     fHistJetTracks_TOFka_nsigma    = new TH3F("fHistJetTracks_TOFka_nsigma",   "TOF Nsigma histogram for jet tracks under the kaon hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
     fHistJetTracks_TOFpr_nsigma    = new TH3F("fHistJetTracks_TOFpr_nsigma",   "TOF Nsigma histogram for jet tracks under the proton hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
-    
+
     fHistJetTracks_TOFpi_nsigma_1cls    = new TH3F("fHistJetTracks_TOFpi_nsigma_1cls",   "TOF Nsigma histogram for jet tracks under the pion hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
     fHistJetTracks_TOFka_nsigma_1cls    = new TH3F("fHistJetTracks_TOFka_nsigma_1cls",   "TOF Nsigma histogram for jet tracks under the kaon hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
     fHistJetTracks_TOFpr_nsigma_1cls    = new TH3F("fHistJetTracks_TOFpr_nsigma_1cls",   "TOF Nsigma histogram for jet tracks under the proton hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
@@ -1162,7 +1162,7 @@ Bool_t AliAnalysisJetHadro::Run()
       if ( (fPassIndex==3 || fPassIndex==2) && fYear>2013){
         //
         fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1); // standard
-        if (!fEventCuts.AcceptEvent(fESD)) {cout<< "pileup event " << endl; return kFALSE;}
+        if (!fEventCuts.AcceptEvent(fESD)) {return kFALSE;}
       }
     //
     //
@@ -1776,7 +1776,6 @@ void AliAnalysisJetHadro::FindJetsFJ()
       fFastJetWrapperBG->SetMaxRap(1.0);
 
       //std::vector<fastjet::PseudoJet> particlesEmbeddedSubtracted; //will be filled with your subtracted event
-      std::vector<fastjet::PseudoJet> particlesEmbedded; //fill this with your event
       float particleEtaCut = 0.9;
       //
       // loop over esd tracks and add their four vector to wrapper --> identical to track container in EMC jet
@@ -1786,18 +1785,12 @@ void AliAnalysisJetHadro::FindJetsFJ()
         if (track->Pt() < fTrackPt || TMath::Abs(track->Eta()) >= particleEtaCut) continue;
         fFastJetWrapper->AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), iTrack);//TMath::Sqrt(track->P()*track->P()+0.13957*0.13957),iTrack);
         fFastJetWrapperBG->AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), iTrack);//TMath::Sqrt(track->P()*track->P()+0.13957*0.13957),iTrack);
-        particlesEmbedded.push_back(fastjet::PseudoJet(track->Px(), track->Py(), track->Pz(), track->E()));// TMath::Sqrt(track->P()*track->P()+0.13957*0.13957) ) );
       }
       //
       // background jet definitions
       fastjet::JetMedianBackgroundEstimator bgE;
       fastjet::Selector selectorBG = !fastjet::SelectorNHardest(2); //set the max eta cut on the estimator, then get rid of 2 highest pt jets
       bgE.set_selector(selectorBG);
-
-      fastjet::JetDefinition jetDefBG(fastjet::kt_algorithm, bgJetRadius, fastjet::pt_scheme, fastjet::Best); //define the kT jet finding which will do the average background estimation
-      fastjet::GhostedAreaSpec ghostSpecBG(particleEtaCut, 1, fGhostArea); //this ghost area might be too small and increase processing time too much
-      fastjet::AreaDefinition areaDefBG(fastjet::active_area_explicit_ghosts, ghostSpecBG);
-      fastjet::ClusterSequenceArea cluster_seq_BG(particlesEmbedded, jetDefBG, areaDefBG);
 
       fastjet::Selector selectorBGjets = !fastjet::SelectorIsPureGhost() * fastjet::SelectorAbsEtaMax(bgJetAbsEtaCut) * fastjet::SelectorPtRange(fTrackPt, 1000.0);
       fFastJetWrapperBG->Run();
@@ -2124,6 +2117,8 @@ void AliAnalysisJetHadro::FindJetsFJ()
         }
       } // end of jet loop
 
+      delete fFastJetWrapper;
+      delete fFastJetWrapperBG;
     }
 }
 //________________________________________________________________________
