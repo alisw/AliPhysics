@@ -120,9 +120,8 @@ void AliEmcalTriggerLuminosity::LoadHistograms(const TList &histlist) {
 void AliEmcalTriggerLuminosity::InitFromFile(const char *filename, const char *dirname) {
   std::unique_ptr<TFile> reader(TFile::Open(filename, "READ"));
   if(!reader || reader->IsZombie()) throw InputDataException(filename, dirname);
-  auto dirkey = reader->GetListOfKeys()->FindObject(dirname);
+  TDirectory *dirkey = static_cast<TDirectory*>(reader->GetListOfKeys()->FindObject(dirname));
   if(!dirkey) throw InputDataException(filename, dirname);
-  if(dirkey->IsA() != TDirectoryFile::Class()) throw InputDataException(filename, dirname);
   reader->cd(dirname);
   auto histlist = static_cast<TList *>(static_cast<TKey *>(gDirectory->GetListOfKeys()->At(0))->ReadObj());
   if(!histlist) throw InputDataException(filename, dirname);
