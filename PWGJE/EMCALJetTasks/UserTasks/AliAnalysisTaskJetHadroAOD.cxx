@@ -1035,7 +1035,7 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
       if ( (fPassIndex==3 || fPassIndex==2) && fYear>2013){
         //
         fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1); // standard
-        if (!fEventCuts.AcceptEvent(fAOD)) {cout<< "pileup event " << endl; return kFALSE;}
+        if (!fEventCuts.AcceptEvent(fAOD)) {return kFALSE;}
       }
     //
     //
@@ -1641,7 +1641,6 @@ void AliAnalysisTaskJetHadroAOD::FindJetsFJ()
       fFastJetWrapperBG->SetMaxRap(1.0);
 
       //std::vector<fastjet::PseudoJet> particlesEmbeddedSubtracted; //will be filled with your subtracted event
-      std::vector<fastjet::PseudoJet> particlesEmbedded; //fill this with your event
       float particleEtaCut = 0.9;
       //
       // loop over AOD tracks and add their four vector to wrapper --> identical to track container in EMC jet
@@ -1651,7 +1650,6 @@ void AliAnalysisTaskJetHadroAOD::FindJetsFJ()
         if (track->Pt() < fTrackPt || TMath::Abs(track->Eta()) >= particleEtaCut) continue;
         fFastJetWrapper->AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), iTrack);//TMath::Sqrt(track->P()*track->P()+0.13957*0.13957),iTrack);
         fFastJetWrapperBG->AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), iTrack);//TMath::Sqrt(track->P()*track->P()+0.13957*0.13957),iTrack);
-        particlesEmbedded.push_back(fastjet::PseudoJet(track->Px(), track->Py(), track->Pz(), track->E()));// TMath::Sqrt(track->P()*track->P()+0.13957*0.13957) ) );
       }
       //
       // background jet definitions
@@ -1659,10 +1657,6 @@ void AliAnalysisTaskJetHadroAOD::FindJetsFJ()
       fastjet::Selector selectorBG = !fastjet::SelectorNHardest(2); //set the max eta cut on the estimator, then get rid of 2 highest pt jets
       bgE.set_selector(selectorBG);
 
-      fastjet::JetDefinition jetDefBG(fastjet::kt_algorithm, bgJetRadius, fastjet::pt_scheme, fastjet::Best); //define the kT jet finding which will do the average background estimation
-      fastjet::GhostedAreaSpec ghostSpecBG(particleEtaCut, 1, fGhostArea); //this ghost area might be too small and increase processing time too much
-      fastjet::AreaDefinition areaDefBG(fastjet::active_area_explicit_ghosts, ghostSpecBG);
-      fastjet::ClusterSequenceArea cluster_seq_BG(particlesEmbedded, jetDefBG, areaDefBG);
 
       fastjet::Selector selectorBGjets = !fastjet::SelectorIsPureGhost() * fastjet::SelectorAbsEtaMax(bgJetAbsEtaCut) * fastjet::SelectorPtRange(fTrackPt, 1000.0);
       fFastJetWrapperBG->Run();
@@ -1986,6 +1980,8 @@ void AliAnalysisTaskJetHadroAOD::FindJetsFJ()
         }
       } // end of jet loop
 
+    delete fFastJetWrapper;
+    delete fFastJetWrapperBG;
     }
 }
 //________________________________________________________________________
