@@ -38,13 +38,11 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void MultiplicityDistributions();
   void GetCalibratedV0Amplitude();
   void VertexPosition();
-  void GetZDC();
-  void UseZDC(bool zdc) { fUseZDC = zdc; }
+  void GetZDCCentrality();
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetHMCut(double HMcut) { fHMCut = HMcut; }      // Set V0M max value
   void SetUseMC(bool mc = false) { fUseMC = mc; }      // use to analyse MC data
-  void SetVertexCut(double spdvtx) { fSPDVtxZ = spdvtx; }
   void SetEtaCut(const double& etacut, const double& etamin_spd,
                  const double& etamax_spd, const double& etamin_tpc,
                  const double& etamax_tpc, const double& etacut_4ptwspd,
@@ -76,6 +74,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
     fMaxVtxZPos = maxz;
   }
   void ChangeCut(AliESDtrackCuts* fCuts);
+  void SetSPDVtxZ(double cut) { fSPDVtxCut = cut; }
 
  protected:
  private:
@@ -86,7 +85,6 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   bool fUseMC;
   bool fIsSystematics;
   bool fVaryVtxZPos;
-  bool fUseZDC;
   float fMinVtxZPos;
   float fMaxVtxZPos;
   int fSystematic;
@@ -94,7 +92,6 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   AliAnalysisFilter* fTrackFilter;
   AliAnalysisFilter* fTrackFilterwoDCA;
   TList* fOutputList;
-  double fSPDVtxZ;
   double fEtaCut;
   double fEtaCutForpTwSPDGap;
   double fEtaCutSPDGapMin;
@@ -111,76 +108,62 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   double ftrackmult08;
   double fv0mpercentile;
   float fv0mamplitude;
-  int fSPDEtaGap;
-  int fSPDFull;
-  int fSPDAdjEta;
-  int fSPDEtaGapW;
-  int fSPDEtaGapWW;
-  int fTPCEtaGap;
-  double fEtfull;
-  double fEtEtaGap;
-  double fZP;
-  double fZN;
-  double fZDC;
-  double fZEM;
+  int fTrackletsEtaGap;
+  int fTracksEtaGapTPC;
+  double fza;
+  double fzc;
+  double fzn;
+  float fdcaxy;
+  float fdcaz;
   AliMultSelection* fMultSelection;
-  TH1F* hTPCFull;
+  TH1F* hNch;
   TH2F* hNchvsV0MAmp;
+  TH2F* hV0MvsV0MAmp;
+  TProfile* pV0MAmpChannel;
   TH1F* hV0MAmplitude;
   TH1F* hV0Percentile;
-  TH2F* hPtvsTPCFull;
-  TProfile* pPtvsTPCFull;
+  TH2D* hPtvsNch;
+  TProfile* pPtvsNch;
   TProfile* pPtvsV0MAmp;
-  TH2F* hPtvsV0MAmp;
+  TH2D* hPtvsV0MAmp;
   TH2F* hDCAxyData[1];
   TH2F* hPhiEtaGapTPC;
   TH1F* hPtWithCutForCent;
   TH2F* hPhiEtaGapSPD;
   TH1F* hBestVtxZ;
-  TH1F* hSPDEtaGap;
-  TH1F* hTPCEtaGap;
-  TH2F* hPtvsSPDEtaGap;
-  TH2F* hPtvsTPCEtaGap;
-  TProfile* pPtvsSPDEtaGap;
-  TProfile* pPtvsTPCEtaGap;
-  TProfile* pZDCvsV0MAmp;
-  TProfile* pZDCvsNch;
-  TProfile* pZDCvsTPCEtaGap;
-  TProfile* pZDCvsSPDEtaGap;
-  TProfile* pV0MAmpvsTracksEtaGapTPC;
-  TProfile* pV0MAmpvsTrackletsEtaGap;
-  TH1F* hEtFull;
-  TH2F* hPtvsEtFull;
-  TProfile* pPtvsEtFull;
-  TH1F* hEtEtaGap;
-  TH2F* hPtvsEtEtaGap;
-  TProfile* pPtvsEtEtaGap;
+  TH1F* hTrackletsEtaGap;
+  TH1F* hTracksEtaGapTPC;
+  TH2D* hPtvsTrackletsEtaGap;
+  TH2D* hPtvsTracksEtaGapTPC;
+  TProfile* pPtvsTrackletsEtaGap;
+  TProfile* pPtvsTracksEtaGapTPC;
   TH1F* hSPDFull;
-  TH2F* hPtvsSPDFull;
-  TProfile* pPtvsSPDFull;
   TH1F* hSPDEtaAdj;
-  TH2F* hPtvsSPDEtaAdj;
-  TProfile* pPtvsSPDEtaAdj;
   TH1F* hSPDEtaGapW;
-  TH2F* hPtvsSPDEtaGapW;
-  TProfile* pPtvsSPDEtaGapW;
   TH1F* hSPDEtaGapWW;
-  TH2F* hPtvsSPDEtaGapWW;
-  TProfile* pPtvsSPDEtaGapWW;
+  TH1F* hEtFull;
+  TH1F* hEtEtaGap;
+  TH2D* hPtvsSPDFull;
+  TH2D* hPtvsSPDEtaAdj;
+  TH2D* hPtvsSPDEtaGapW;
+  TH2D* hPtvsSPDEtaGapWW;
+  TH2D* hPtvsEtFull;
+  TH2D* hPtvsEtEtaGap;
+  TH2F* hPtvsTPCEtaGapWidepT;
+  TH2F* hPtvsEtEtaGapWidepT;
   TProfile* pZVtxvsSPDClus;
   TProfile* pSPDClusvsEta;
-  TProfile* pCL0ClusvsEta;
-  TProfile* pCL1ClusvsEta;
-  TH2F* hPtvsTPCFullWidepT;
-  TH2F* hPtvsTPCEtaGapWidepT;
-  TH2F* hPtvsEtFullWidepT;
-  TH2F* hPtvsEtEtaGapWidepT;
+  double fSPDVtxCut;
+  int fSPDFull;
+  int fSPDEtaAdj;
+  int fSPDEtaGapW;
+  int fSPDEtaGapWW;
 
   AliAnalysisTaskDataSpeedOfSound(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented
   AliAnalysisTaskDataSpeedOfSound& operator=(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented
 
-  ClassDef(AliAnalysisTaskDataSpeedOfSound, 3);
+  ClassDef(AliAnalysisTaskDataSpeedOfSound, 4);
 };
 #endif
