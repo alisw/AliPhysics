@@ -783,6 +783,53 @@ void AliAnalysisJetHadro::UserCreateOutputObjects()
   fListHist->SetOwner(kTRUE);
   //
   fEventCuts.AddQAplotsToList(fListHist);
+
+  Float_t tpc_mom_bins[58] = {};
+  for (int i=0; i < (57+1); i++){
+    if (i < 20) tpc_mom_bins[i] = 0.0 + i*0.05;
+    else if (i < 30) tpc_mom_bins[i] = 1.0 + (i-20)*0.1;
+    else if (i < 40) tpc_mom_bins[i] = 2.0 + (i-30)*0.2;
+    else if (i < 46) tpc_mom_bins[i] = 4.0 + (i-40)*0.5;
+    else if (i < 55) tpc_mom_bins[i] = 7.0 + (i-46)*1.0;
+    else tpc_mom_bins[i] = 16.0 + (i-55)*2.0;
+  }
+  Int_t n_tpc_mom_bins = sizeof(tpc_mom_bins)/sizeof(Float_t) - 1;
+
+  Float_t TOF_mom_bins[48] = {};
+  for (int i=0; i < (47+1); i++){
+    if (i < 20) TOF_mom_bins[i] = 0.0 + i*0.05;
+    else if (i < 30) TOF_mom_bins[i] = 1.0 + (i-20)*0.1;
+    else if (i < 40) TOF_mom_bins[i] = 2.0 + (i-30)*0.2;
+    else if (i < 46) TOF_mom_bins[i] = 4.0 + (i-40)*0.5;
+    else TOF_mom_bins[i] = 7.0 + (i-46)*1.0;
+  }
+  Int_t n_TOF_mom_bins = sizeof(TOF_mom_bins)/sizeof(Float_t) - 1;
+
+  Float_t dedx_bins[2001] = {};
+  for (int i=0; i < (2000+1); i++){
+    dedx_bins[i] = 0.0 + i*1.0;
+  }
+  Int_t n_dedx_bins = sizeof(dedx_bins)/sizeof(Float_t) - 1;
+
+  Float_t beta_bins[1001] = {};
+  for (int i=0; i < (1000+1); i++){
+    beta_bins[i] = 0.0 + i*0.002;
+  }
+  Int_t n_beta_bins = sizeof(beta_bins)/sizeof(Float_t) - 1;
+
+  Float_t tof_n_sigma_bins[2001] = {};
+  for (int i=0; i < (2000+1); i++){
+    tof_n_sigma_bins[i] = -100.0 + i*0.1;
+  }
+  Int_t n_tof_n_sigma_bins = sizeof(tof_n_sigma_bins)/sizeof(Float_t) - 1;
+
+  Float_t eta_bins[5] = {};
+  for (int i=0; i < (4+1); i++){
+    if (i < 3) eta_bins[i] = 0.0 + i*0.2;
+    else eta_bins[i] = 0.6 + (i-3)*0.3;
+  }
+  Int_t n_eta_bins = sizeof(eta_bins)/sizeof(Float_t) - 1;
+
   //
   // ************************************************************************
   //   Event histograms
@@ -792,94 +839,89 @@ void AliAnalysisJetHadro::UserCreateOutputObjects()
   fHistVertex            = new TH1F("hVertex",               "control histogram for vertex Z position"    , 200, -20., 20.);
 
   if (fFill_TPC) {
-    fHistIncTracks_dEdx    = new TH3F("fHistIncTracks_dEdx",   "dEdx histogram for inclusive tracks"        , fNTPCMom_Bins,fTPCMom_Bins.data(),fNdEdxBins,fdEdxBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHistJetTracks_dEdx    = new TH3F("fHistJetTracks_dEdx",   "dEdx histogram for Jet tracks"            , fNTPCMom_Bins,fTPCMom_Bins.data(),fNdEdxBins,fdEdxBins.data(), fNEta_Bins,fEta_Bins.data());
+    fHistIncTracks_dEdx    = new TH3F("fHistIncTracks_dEdx",   "dEdx histogram for inclusive tracks"        , n_tpc_mom_bins,tpc_mom_bins,n_dedx_bins,dedx_bins, n_eta_bins,eta_bins);
+    fHistJetTracks_dEdx    = new TH3F("fHistJetTracks_dEdx",   "dEdx histogram for Jet tracks"            , n_tpc_mom_bins,tpc_mom_bins,n_dedx_bins,dedx_bins, n_eta_bins,eta_bins);
   }
 
   if (fFillpTPC_pT){
-    fHistIncTracks_moms    = new TH2F("fHistIncTracks_moms",   "All mom types for inclusive tracks"         , fNTPCMom_Bins,fTPCMom_Bins.data(), fNTPCMom_Bins,fTPCMom_Bins.data());
-    fHistJetTracks_moms    = new TH2F("fHistJetTracks_moms",   "All mom types for Jet tracks"         , fNTPCMom_Bins,fTPCMom_Bins.data(), fNTPCMom_Bins,fTPCMom_Bins.data());
+    fHistIncTracks_moms    = new TH2F("fHistIncTracks_moms",   "All mom types for inclusive tracks"         , n_tpc_mom_bins,tpc_mom_bins, n_tpc_mom_bins,tpc_mom_bins);
+    fHistJetTracks_moms    = new TH2F("fHistJetTracks_moms",   "All mom types for Jet tracks"         , n_tpc_mom_bins,tpc_mom_bins, n_tpc_mom_bins,tpc_mom_bins);
   }
   if (fFillp_pT) {
-    fHistIncTracks_moms_p    = new TH2F("fHistIncTracks_moms_p",   "All mom types for inclusive tracks"         , fNTPCMom_Bins,fTPCMom_Bins.data(), fNTPCMom_Bins,fTPCMom_Bins.data());
-    fHistJetTracks_moms_p    = new TH2F("fHistJetTracks_moms_p",   "All mom types for Jet tracks"         , fNTPCMom_Bins,fTPCMom_Bins.data(), fNTPCMom_Bins,fTPCMom_Bins.data());
+    fHistIncTracks_moms_p    = new TH2F("fHistIncTracks_moms_p",   "All mom types for inclusive tracks"         , n_tpc_mom_bins,tpc_mom_bins, n_tpc_mom_bins,tpc_mom_bins);
+    fHistJetTracks_moms_p    = new TH2F("fHistJetTracks_moms_p",   "All mom types for Jet tracks"         , n_tpc_mom_bins,tpc_mom_bins, n_tpc_mom_bins,tpc_mom_bins);
   }
   if (fFillpTPC_p) {
-    fHistIncTracks_moms_pTPC_p    = new TH2F("fHistIncTracks_moms_pTPC_p",   "All mom types for inclusive tracks"         , fNTPCMom_Bins,fTPCMom_Bins.data(), fNTPCMom_Bins,fTPCMom_Bins.data());
-    fHistJetTracks_moms_pTPC_p    = new TH2F("fHistJetTracks_moms_pTPC_p",   "All mom types for Jet tracks"         , fNTPCMom_Bins,fTPCMom_Bins.data(), fNTPCMom_Bins,fTPCMom_Bins.data());
+    fHistIncTracks_moms_pTPC_p    = new TH2F("fHistIncTracks_moms_pTPC_p",   "All mom types for inclusive tracks"         , n_tpc_mom_bins,tpc_mom_bins, n_tpc_mom_bins,tpc_mom_bins);
+    fHistJetTracks_moms_pTPC_p    = new TH2F("fHistJetTracks_moms_pTPC_p",   "All mom types for Jet tracks"         , n_tpc_mom_bins,tpc_mom_bins, n_tpc_mom_bins,tpc_mom_bins);
   }
 
   fHistIncTracks_kin    = new TH3F("fHistIncTracks_kin",     "Kinematics histogram for inclusive tracks"  , 200, 0., 20., 9, 0.0, 0.9, 64, -3.2, 3.2);
 
   if (fFill_TOF){
-    fHistIncTracks_beta    = new TH2F("fHistIncTracks_beta",   "Beta histogram for inclusive tracks"        , fTOFMom_NBins,fTOFMom_Bins.data(),   fNBetaBins,fBetaBins.data());
-    fHistIncTracks_TOFpi_nsigma    = new TH3F("fHistIncTracks_TOFpi_nsigma",   "TOF Nsigma histogram for inclusive tracks under the pion hypothesis"        , fTOFMom_NBins,fTOFMom_Bins.data(),   fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHistIncTracks_TOFka_nsigma    = new TH3F("fHistIncTracks_TOFka_nsigma",   "TOF Nsigma histogram for inclusive tracks under the kaon hypothesis"        , fTOFMom_NBins,fTOFMom_Bins.data(),   fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHistIncTracks_TOFpr_nsigma    = new TH3F("fHistIncTracks_TOFpr_nsigma",   "TOF Nsigma histogram for inclusive tracks under the proton hypothesis"        , fTOFMom_NBins,fTOFMom_Bins.data(),   fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
+    fHistIncTracks_beta    = new TH2F("fHistIncTracks_beta",   "Beta histogram for inclusive tracks"        , n_TOF_mom_bins,TOF_mom_bins,   n_beta_bins,beta_bins);
+    fHistIncTracks_TOFpi_nsigma    = new TH3F("fHistIncTracks_TOFpi_nsigma",   "TOF Nsigma histogram for inclusive tracks under the pion hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHistIncTracks_TOFka_nsigma    = new TH3F("fHistIncTracks_TOFka_nsigma",   "TOF Nsigma histogram for inclusive tracks under the kaon hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHistIncTracks_TOFpr_nsigma    = new TH3F("fHistIncTracks_TOFpr_nsigma",   "TOF Nsigma histogram for inclusive tracks under the proton hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
 
-    fHistIncTracks_TOFpi_nsigma_1cls    = new TH3F("fHistIncTracks_TOFpi_nsigma_1cls",   "TOF Nsigma histogram for inclusive tracks under the pion hypothesis"        , fTOFMom_NBins,fTOFMom_Bins.data(),   fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHistIncTracks_TOFka_nsigma_1cls    = new TH3F("fHistIncTracks_TOFka_nsigma_1cls",   "TOF Nsigma histogram for inclusive tracks under the kaon hypothesis"        , fTOFMom_NBins,fTOFMom_Bins.data(),  fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHistIncTracks_TOFpr_nsigma_1cls    = new TH3F("fHistIncTracks_TOFpr_nsigma_1cls",   "TOF Nsigma histogram for inclusive tracks under the proton hypothesis"        , fTOFMom_NBins,fTOFMom_Bins.data(),   fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
+    fHistIncTracks_TOFpi_nsigma_1cls    = new TH3F("fHistIncTracks_TOFpi_nsigma_1cls",   "TOF Nsigma histogram for inclusive tracks under the pion hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHistIncTracks_TOFka_nsigma_1cls    = new TH3F("fHistIncTracks_TOFka_nsigma_1cls",   "TOF Nsigma histogram for inclusive tracks under the kaon hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHistIncTracks_TOFpr_nsigma_1cls    = new TH3F("fHistIncTracks_TOFpr_nsigma_1cls",   "TOF Nsigma histogram for inclusive tracks under the proton hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
 
-    fHistJetTracks_beta    = new TH2F("fHistJetTracks_beta",   "Beta histogram for jet tracks"        , fTOFMom_NBins,fTOFMom_Bins.data(),   fNBetaBins,fBetaBins.data());
-    fHistJetTracks_TOFpi_nsigma    = new TH3F("fHistJetTracks_TOFpi_nsigma",   "TOF Nsigma histogram for jet tracks under the pion hypothesis"        , fTOFMom_NBins,fTOFMom_Bins.data(),   fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHistJetTracks_TOFka_nsigma    = new TH3F("fHistJetTracks_TOFka_nsigma",   "TOF Nsigma histogram for jet tracks under the kaon hypothesis"        , fTOFMom_NBins,fTOFMom_Bins.data(),   fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHistJetTracks_TOFpr_nsigma    = new TH3F("fHistJetTracks_TOFpr_nsigma",   "TOF Nsigma histogram for jet tracks under the proton hypothesis"        , fTOFMom_NBins,fTOFMom_Bins.data(),   fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
+    fHistJetTracks_beta    = new TH2F("fHistJetTracks_beta",   "Beta histogram for jet tracks"        , n_TOF_mom_bins,TOF_mom_bins,   n_beta_bins,beta_bins);
+    fHistJetTracks_TOFpi_nsigma    = new TH3F("fHistJetTracks_TOFpi_nsigma",   "TOF Nsigma histogram for jet tracks under the pion hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHistJetTracks_TOFka_nsigma    = new TH3F("fHistJetTracks_TOFka_nsigma",   "TOF Nsigma histogram for jet tracks under the kaon hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHistJetTracks_TOFpr_nsigma    = new TH3F("fHistJetTracks_TOFpr_nsigma",   "TOF Nsigma histogram for jet tracks under the proton hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
 
-    fHistJetTracks_TOFpi_nsigma_1cls    = new TH3F("fHistJetTracks_TOFpi_nsigma_1cls",   "TOF Nsigma histogram for jet tracks under the pion hypothesis"        , fTOFMom_NBins,fTOFMom_Bins.data(),   fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHistJetTracks_TOFka_nsigma_1cls    = new TH3F("fHistJetTracks_TOFka_nsigma_1cls",   "TOF Nsigma histogram for jet tracks under the kaon hypothesis"        , fTOFMom_NBins,fTOFMom_Bins.data(),  fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHistJetTracks_TOFpr_nsigma_1cls    = new TH3F("fHistJetTracks_TOFpr_nsigma_1cls",   "TOF Nsigma histogram for jet tracks under the proton hypothesis"        , fTOFMom_NBins,fTOFMom_Bins.data(),  fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
+    fHistJetTracks_TOFpi_nsigma_1cls    = new TH3F("fHistJetTracks_TOFpi_nsigma_1cls",   "TOF Nsigma histogram for jet tracks under the pion hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHistJetTracks_TOFka_nsigma_1cls    = new TH3F("fHistJetTracks_TOFka_nsigma_1cls",   "TOF Nsigma histogram for jet tracks under the kaon hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHistJetTracks_TOFpr_nsigma_1cls    = new TH3F("fHistJetTracks_TOFpr_nsigma_1cls",   "TOF Nsigma histogram for jet tracks under the proton hypothesis"        , n_TOF_mom_bins,TOF_mom_bins,   n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
 
-    Float_t t0_bins[1401];
-    for (int i=0; i < (1400+1); i++){
-      t0_bins[i] = -700.0 + i*1.0;
+    Float_t t0_bins[141];
+    for (int i=0; i < (140+1); i++){
+      t0_bins[i] = -700.0 + i*10.0;
     }
-    fHistIncTracks_t0   = new TH2F("fHistIncTracks_t0",   "TO histogram for inc tracks", fTOFMom_NBins,fTOFMom_Bins.data(),   1400,t0_bins);
+    fHistIncTracks_t0   = new TH2F("fHistIncTracks_t0",   "TO histogram for inc tracks", n_TOF_mom_bins,TOF_mom_bins,   140,t0_bins);
   }
 
   fHistJetTracks_kin    = new TH3F("fHistJetTracks_kin",     "Kinematics histogram for Jet tracks"  , 200, 0., 20., 9, 0., 0.9, 64, -3.2, 3.2);
 
   if (fFill_TOF_expecs){
-    fHistBetaExpec_pi    = new TH2F("fHistBetaExpec_pi",   "Expected Beta histogram for pions", fTOFMom_NBins,fTOFMom_Bins.data(), fNBetaBins,fBetaBins.data());
-    fHistBetaExpec_ka    = new TH2F("fHistBetaExpec_ka",   "Expected Beta histogram for kaons", fTOFMom_NBins,fTOFMom_Bins.data(),  fNBetaBins,fBetaBins.data());
-    fHistBetaExpec_pr    = new TH2F("fHistBetaExpec_pr",   "Expected Beta histogram for protons", fTOFMom_NBins,fTOFMom_Bins.data(),  fNBetaBins,fBetaBins.data());
+    fHistBetaExpec_pi    = new TH2F("fHistBetaExpec_pi",   "Expected Beta histogram for pions", n_TOF_mom_bins,TOF_mom_bins, n_beta_bins,beta_bins);
+    fHistBetaExpec_ka    = new TH2F("fHistBetaExpec_ka",   "Expected Beta histogram for kaons", n_TOF_mom_bins,TOF_mom_bins,  n_beta_bins,beta_bins);
+    fHistBetaExpec_pr    = new TH2F("fHistBetaExpec_pr",   "Expected Beta histogram for protons", n_TOF_mom_bins,TOF_mom_bins,  n_beta_bins,beta_bins);
 
-    fHistjet_BetaExpec_pi    = new TH2F("fHistjet_BetaExpec_pi",   "Expected Beta histogram for pions", fTOFMom_NBins,fTOFMom_Bins.data(), fNBetaBins,fBetaBins.data());
-    fHistjet_BetaExpec_ka    = new TH2F("fHistjet_BetaExpec_ka",   "Expected Beta histogram for kaons", fTOFMom_NBins,fTOFMom_Bins.data(),  fNBetaBins,fBetaBins.data());
-    fHistjet_BetaExpec_pr    = new TH2F("fHistjet_BetaExpec_pr",   "Expected Beta histogram for protons", fTOFMom_NBins,fTOFMom_Bins.data(), fNBetaBins,fBetaBins.data());
+    fHistjet_BetaExpec_pi    = new TH2F("fHistjet_BetaExpec_pi",   "Expected Beta histogram for pions", n_TOF_mom_bins,TOF_mom_bins, n_beta_bins,beta_bins);
+    fHistjet_BetaExpec_ka    = new TH2F("fHistjet_BetaExpec_ka",   "Expected Beta histogram for kaons", n_TOF_mom_bins,TOF_mom_bins,  n_beta_bins,beta_bins);
+    fHistjet_BetaExpec_pr    = new TH2F("fHistjet_BetaExpec_pr",   "Expected Beta histogram for protons", n_TOF_mom_bins,TOF_mom_bins, n_beta_bins,beta_bins);
 
-    fHist_pi_mismatch    = new TH3F("fHist_pi_mismatch",   "Pion mismatch", fTOFMom_NBins,fTOFMom_Bins.data(),  fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_ka_mismatch    = new TH3F("fHist_ka_mismatch",   "Kaon mismatch", fTOFMom_NBins,fTOFMom_Bins.data(),  fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_pr_mismatch    = new TH3F("fHist_pr_mismatch",   "Proton mismatch", fTOFMom_NBins,fTOFMom_Bins.data(),  fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
+    fHist_pi_mismatch    = new TH3F("fHist_pi_mismatch",   "Pion mismatch", n_TOF_mom_bins,TOF_mom_bins,  n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_ka_mismatch    = new TH3F("fHist_ka_mismatch",   "Kaon mismatch", n_TOF_mom_bins,TOF_mom_bins,  n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_pr_mismatch    = new TH3F("fHist_pr_mismatch",   "Proton mismatch", n_TOF_mom_bins,TOF_mom_bins,  n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
 
-    fHist_jet_pi_mismatch    = new TH3F("fHist_jet_pi_mismatch",   "Jet Pion mismatch", fTOFMom_NBins,fTOFMom_Bins.data(),  fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_jet_ka_mismatch    = new TH3F("fHist_jet_ka_mismatch",   "Jet Kaon mismatch", fTOFMom_NBins,fTOFMom_Bins.data(),  fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_jet_pr_mismatch    = new TH3F("fHist_jet_pr_mismatch",   "Jet Proton mismatch", fTOFMom_NBins,fTOFMom_Bins.data(),  fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
+    fHist_jet_pi_mismatch    = new TH3F("fHist_jet_pi_mismatch",   "Jet Pion mismatch", n_TOF_mom_bins,TOF_mom_bins,  n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_jet_ka_mismatch    = new TH3F("fHist_jet_ka_mismatch",   "Jet Kaon mismatch", n_TOF_mom_bins,TOF_mom_bins,  n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_jet_pr_mismatch    = new TH3F("fHist_jet_pr_mismatch",   "Jet Proton mismatch", n_TOF_mom_bins,TOF_mom_bins,  n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
 
-    Float_t sigma_bin[20001];
-    for (int i=0; i < (2000+1); i++){
-      sigma_bin[i] = 0.0 + i*0.2;
-    }
+    fHist_elExpec_pihyp    = new TH3F("fHist_elExpec_pihyp",   "Expected Nsigma histogram for electrons under the pion hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_muExpec_pihyp    = new TH3F("fHist_muExpec_pihyp",   "Expected Nsigma histogram for muons under the pion hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_kaExpec_pihyp    = new TH3F("fHist_kaExpec_pihyp",   "Expected Nsigma histogram for kaons under the pion hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_prExpec_pihyp    = new TH3F("fHist_prExpec_pihyp",   "Expected Nsigma histogram for protons under the pion hypothesis", n_TOF_mom_bins,TOF_mom_bins,  n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_piExpec_kahyp    = new TH3F("fHist_piExpec_kahyp",   "Expected Nsigma histogram for pions under the kaon hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_prExpec_kahyp    = new TH3F("fHist_prExpec_kahyp",   "Expected Nsigma histogram for protons under the kaon hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins,n_eta_bins,eta_bins);
+    fHist_piExpec_prhyp    = new TH3F("fHist_piExpec_prhyp",   "Expected Nsigma histogram for pions under the proton hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_kaExpec_prhyp    = new TH3F("fHist_kaExpec_prhyp",   "Expected Nsigma histogram for kaons under the proton hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_deExpec_prhyp    = new TH3F("fHist_deExpec_prhyp",   "Expected Nsigma histogram for deuterons under the proton hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
 
-    fHist_elExpec_pihyp    = new TH3F("fHist_elExpec_pihyp",   "Expected Nsigma histogram for electrons under the pion hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(), fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_muExpec_pihyp    = new TH3F("fHist_muExpec_pihyp",   "Expected Nsigma histogram for muons under the pion hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(), fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_kaExpec_pihyp    = new TH3F("fHist_kaExpec_pihyp",   "Expected Nsigma histogram for kaons under the pion hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(), fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_prExpec_pihyp    = new TH3F("fHist_prExpec_pihyp",   "Expected Nsigma histogram for protons under the pion hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(),  fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_piExpec_kahyp    = new TH3F("fHist_piExpec_kahyp",   "Expected Nsigma histogram for pions under the kaon hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(), fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_prExpec_kahyp    = new TH3F("fHist_prExpec_kahyp",   "Expected Nsigma histogram for protons under the kaon hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(), fNTOFNSigmaBins,fTOFNSigmaBins.data(),fNEta_Bins,fEta_Bins.data());
-    fHist_piExpec_prhyp    = new TH3F("fHist_piExpec_prhyp",   "Expected Nsigma histogram for pions under the proton hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(), fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_kaExpec_prhyp    = new TH3F("fHist_kaExpec_prhyp",   "Expected Nsigma histogram for kaons under the proton hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(), fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_deExpec_prhyp    = new TH3F("fHist_deExpec_prhyp",   "Expected Nsigma histogram for deuterons under the proton hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(), fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-
-    fHist_jet_elExpec_pihyp    = new TH3F("fHist_jet_elExpec_pihyp",   "Expected Nsigma histogram for electrons under the pion hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(), fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_jet_muExpec_pihyp    = new TH3F("fHist_jet_muExpec_pihyp",   "Expected Nsigma histogram for muons under the pion hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(), fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_jet_kaExpec_pihyp    = new TH3F("fHist_jet_kaExpec_pihyp",   "Expected Nsigma histogram for kaons under the pion hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(), fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_jet_prExpec_pihyp    = new TH3F("fHist_jet_prExpec_pihyp",   "Expected Nsigma histogram for protons under the pion hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(), fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_jet_piExpec_kahyp    = new TH3F("fHist_jet_piExpec_kahyp",   "Expected Nsigma histogram for pions under the kaon hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(), fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_jet_prExpec_kahyp    = new TH3F("fHist_jet_prExpec_kahyp",   "Expected Nsigma histogram for protons under the kaon hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(), fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_jet_piExpec_prhyp    = new TH3F("fHist_jet_piExpec_prhyp",   "Expected Nsigma histogram for pions under the proton hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(), fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_jet_kaExpec_prhyp    = new TH3F("fHist_jet_kaExpec_prhyp",   "Expected Nsigma histogram for kaons under the proton hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(), fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
-    fHist_jet_deExpec_prhyp    = new TH3F("fHist_jet_deExpec_prhyp",   "Expected Nsigma histogram for deuterons under the proton hypothesis", fTOFMom_NBins,fTOFMom_Bins.data(), fNTOFNSigmaBins,fTOFNSigmaBins.data(), fNEta_Bins,fEta_Bins.data());
+    fHist_jet_elExpec_pihyp    = new TH3F("fHist_jet_elExpec_pihyp",   "Expected Nsigma histogram for electrons under the pion hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_jet_muExpec_pihyp    = new TH3F("fHist_jet_muExpec_pihyp",   "Expected Nsigma histogram for muons under the pion hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_jet_kaExpec_pihyp    = new TH3F("fHist_jet_kaExpec_pihyp",   "Expected Nsigma histogram for kaons under the pion hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_jet_prExpec_pihyp    = new TH3F("fHist_jet_prExpec_pihyp",   "Expected Nsigma histogram for protons under the pion hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_jet_piExpec_kahyp    = new TH3F("fHist_jet_piExpec_kahyp",   "Expected Nsigma histogram for pions under the kaon hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_jet_prExpec_kahyp    = new TH3F("fHist_jet_prExpec_kahyp",   "Expected Nsigma histogram for protons under the kaon hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_jet_piExpec_prhyp    = new TH3F("fHist_jet_piExpec_prhyp",   "Expected Nsigma histogram for pions under the proton hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_jet_kaExpec_prhyp    = new TH3F("fHist_jet_kaExpec_prhyp",   "Expected Nsigma histogram for kaons under the proton hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
+    fHist_jet_deExpec_prhyp    = new TH3F("fHist_jet_deExpec_prhyp",   "Expected Nsigma histogram for deuterons under the proton hypothesis", n_TOF_mom_bins,TOF_mom_bins, n_tof_n_sigma_bins,tof_n_sigma_bins, n_eta_bins,eta_bins);
 
     Float_t pi_expec_bins[401];
     for (int i=0; i < (400+1); i++){
@@ -889,41 +931,41 @@ void AliAnalysisJetHadro::UserCreateOutputObjects()
     for (int i=0; i < (5400+1); i++){
       ka_expec_bins[i] = 60.0 + i*0.1;
     }
-    Float_t pr_expec_bins[14401];
-    for (int i=0; i < (14400+1); i++){
+    Float_t pr_expec_bins[5401];
+    for (int i=0; i < (5400+1); i++){
       pr_expec_bins[i] = 60.0 + i*0.1;
     }
 
-    fHistTOFSigmaExpec_pi    = new TH3F("fHistTOFSigmaExpec_pi",   "Expected TOF Sigma histogram for pions", fTOFMom_NBins,fTOFMom_Bins.data(),   400,pi_expec_bins, fNEta_Bins,fEta_Bins.data());
-    fHistTOFSigmaExpec_ka    = new TH3F("fHistTOFSigmaExpec_ka",   "Expected TOF Sigma histogram for kaons", fTOFMom_NBins,fTOFMom_Bins.data(),   5400,ka_expec_bins, fNEta_Bins,fEta_Bins.data());
-    fHistTOFSigmaExpec_pr    = new TH3F("fHistTOFSigmaExpec_pr",   "Expected TOF Sigma histogram for protons", fTOFMom_NBins,fTOFMom_Bins.data(),   14400,pr_expec_bins, fNEta_Bins,fEta_Bins.data());
+    fHistTOFSigmaExpec_pi    = new TH3F("fHistTOFSigmaExpec_pi",   "Expected TOF Sigma histogram for pions", n_TOF_mom_bins,TOF_mom_bins,   400,pi_expec_bins, n_eta_bins,eta_bins);
+    fHistTOFSigmaExpec_ka    = new TH3F("fHistTOFSigmaExpec_ka",   "Expected TOF Sigma histogram for kaons", n_TOF_mom_bins,TOF_mom_bins,   5400,ka_expec_bins, n_eta_bins,eta_bins);
+    fHistTOFSigmaExpec_pr    = new TH3F("fHistTOFSigmaExpec_pr",   "Expected TOF Sigma histogram for protons", n_TOF_mom_bins,TOF_mom_bins,   5400,pr_expec_bins, n_eta_bins,eta_bins);
 
-    fHistjet_TOFSigmaExpec_pi    = new TH3F("fHistjet_TOFSigmaExpec_pi",   "Expected TOF Sigma histogram for pions", fTOFMom_NBins,fTOFMom_Bins.data(),  400,pi_expec_bins, fNEta_Bins,fEta_Bins.data());
-    fHistjet_TOFSigmaExpec_ka    = new TH3F("fHistjet_TOFSigmaExpec_ka",   "Expected TOF Sigma histogram for kaons", fTOFMom_NBins,fTOFMom_Bins.data(),   5400,ka_expec_bins, fNEta_Bins,fEta_Bins.data());
-    fHistjet_TOFSigmaExpec_pr    = new TH3F("fHistjet_TOFSigmaExpec_pr",   "Expected TOF Sigma histogram for protons", fTOFMom_NBins,fTOFMom_Bins.data(),   14400,pr_expec_bins, fNEta_Bins,fEta_Bins.data());
+    fHistjet_TOFSigmaExpec_pi    = new TH3F("fHistjet_TOFSigmaExpec_pi",   "Expected TOF Sigma histogram for pions", n_TOF_mom_bins,TOF_mom_bins,  400,pi_expec_bins, n_eta_bins,eta_bins);
+    fHistjet_TOFSigmaExpec_ka    = new TH3F("fHistjet_TOFSigmaExpec_ka",   "Expected TOF Sigma histogram for kaons", n_TOF_mom_bins,TOF_mom_bins,   5400,ka_expec_bins, n_eta_bins,eta_bins);
+    fHistjet_TOFSigmaExpec_pr    = new TH3F("fHistjet_TOFSigmaExpec_pr",   "Expected TOF Sigma histogram for protons", n_TOF_mom_bins,TOF_mom_bins,   5400,pr_expec_bins, n_eta_bins,eta_bins);
   }
 
   if (fFill_TPC_expecs){
-    Float_t mean_expec_bins[1001];
-    for (int i=0; i < (1000+1); i++){
-      mean_expec_bins[i] = 0.0 + i*1.0;
+    Float_t mean_expec_bins[361];
+    for (int i=0; i < (360+1); i++){
+      mean_expec_bins[i] = 40.0 + i*1.0;
     }
-    Float_t sigma_expec_bins[501];
-    for (int i=0; i < (500+1); i++){
-      sigma_expec_bins[i] = 0.0 + i*0.1;
+    Float_t sigma_expec_bins[26];
+    for (int i=0; i < (25+1); i++){
+      sigma_expec_bins[i] = 0.0 + i*1.0;
     }
 
-    fHistIncTracks_mpi  = new TH3F("fHistIncTracks_mpi",     "Expected mean pion histogram for inclusive tracks"  , fNTPCMom_Bins,fTPCMom_Bins.data(), 1000, mean_expec_bins, fNEta_Bins,fEta_Bins.data());
-    fHistIncTracks_spi  = new TH3F("fHistIncTracks_spi",     "Expected sigma pion histogram for inclusive tracks"  , fNTPCMom_Bins,fTPCMom_Bins.data(), 500, sigma_expec_bins, fNEta_Bins,fEta_Bins.data());
+    fHistIncTracks_mpi  = new TH3F("fHistIncTracks_mpi",     "Expected mean pion histogram for inclusive tracks"  , n_tpc_mom_bins,tpc_mom_bins, 360, mean_expec_bins, n_eta_bins,eta_bins);
+    fHistIncTracks_spi  = new TH3F("fHistIncTracks_spi",     "Expected sigma pion histogram for inclusive tracks"  , n_tpc_mom_bins,tpc_mom_bins, 25, sigma_expec_bins, n_eta_bins,eta_bins);
 
-    fHistIncTracks_mel  = new TH3F("fHistIncTracks_mel",     "Expected mean electron histogram for inclusive tracks"  , fNTPCMom_Bins,fTPCMom_Bins.data(), 1000, mean_expec_bins, fNEta_Bins,fEta_Bins.data());
-    fHistIncTracks_sel  = new TH3F("fHistIncTracks_sel",     "Expected sigma electron histogram for inclusive tracks"  , fNTPCMom_Bins,fTPCMom_Bins.data(), 500, sigma_expec_bins, fNEta_Bins,fEta_Bins.data());
+    fHistIncTracks_mel  = new TH3F("fHistIncTracks_mel",     "Expected mean electron histogram for inclusive tracks"  , n_tpc_mom_bins,tpc_mom_bins, 360, mean_expec_bins, n_eta_bins,eta_bins);
+    fHistIncTracks_sel  = new TH3F("fHistIncTracks_sel",     "Expected sigma electron histogram for inclusive tracks"  , n_tpc_mom_bins,tpc_mom_bins, 25, sigma_expec_bins, n_eta_bins,eta_bins);
 
-    fHistIncTracks_mka  = new TH3F("fHistIncTracks_mka",     "Expected mean kaon histogram for inclusive tracks"  , fNTPCMom_Bins,fTPCMom_Bins.data(), 1000, mean_expec_bins, fNEta_Bins,fEta_Bins.data());
-    fHistIncTracks_ska  = new TH3F("fHistIncTracks_ska",     "Expected sigma kaon histogram for inclusive tracks"  , fNTPCMom_Bins,fTPCMom_Bins.data(), 500, sigma_expec_bins, fNEta_Bins,fEta_Bins.data());
+    fHistIncTracks_mka  = new TH3F("fHistIncTracks_mka",     "Expected mean kaon histogram for inclusive tracks"  , n_tpc_mom_bins,tpc_mom_bins, 360, mean_expec_bins, n_eta_bins,eta_bins);
+    fHistIncTracks_ska  = new TH3F("fHistIncTracks_ska",     "Expected sigma kaon histogram for inclusive tracks"  , n_tpc_mom_bins,tpc_mom_bins, 25, sigma_expec_bins, n_eta_bins,eta_bins);
 
-    fHistIncTracks_mpr  = new TH3F("fHistIncTracks_mpr",     "Expected mean proton histogram for inclusive tracks"  , fNTPCMom_Bins,fTPCMom_Bins.data(), 1000, mean_expec_bins, fNEta_Bins,fEta_Bins.data());
-    fHistIncTracks_spr  = new TH3F("fHistIncTracks_spr",     "Expected sigma proton histogram for inclusive tracks"  , fNTPCMom_Bins,fTPCMom_Bins.data(), 500, sigma_expec_bins, fNEta_Bins,fEta_Bins.data());
+    fHistIncTracks_mpr  = new TH3F("fHistIncTracks_mpr",     "Expected mean proton histogram for inclusive tracks"  , n_tpc_mom_bins,tpc_mom_bins, 360, mean_expec_bins, n_eta_bins,eta_bins);
+    fHistIncTracks_spr  = new TH3F("fHistIncTracks_spr",     "Expected sigma proton histogram for inclusive tracks"  , n_tpc_mom_bins,tpc_mom_bins, 25, sigma_expec_bins, n_eta_bins,eta_bins);
   }
 
   fHistJet_ptsub_v_area  = new TH2F("fHistJet_ptsub_v_area", "Before cuts, Jet pt after subtraction vs jet area"  , 100, 0., 1., 300, 0., 300.);
@@ -1120,7 +1162,7 @@ Bool_t AliAnalysisJetHadro::Run()
       if ( (fPassIndex==3 || fPassIndex==2) && fYear>2013){
         //
         fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1); // standard
-        if (!fEventCuts.AcceptEvent(fESD)) {cout<< "pileup event " << endl; return kFALSE;}
+        if (!fEventCuts.AcceptEvent(fESD)) {return kFALSE;}
       }
     //
     //
@@ -1734,7 +1776,6 @@ void AliAnalysisJetHadro::FindJetsFJ()
       fFastJetWrapperBG->SetMaxRap(1.0);
 
       //std::vector<fastjet::PseudoJet> particlesEmbeddedSubtracted; //will be filled with your subtracted event
-      std::vector<fastjet::PseudoJet> particlesEmbedded; //fill this with your event
       float particleEtaCut = 0.9;
       //
       // loop over esd tracks and add their four vector to wrapper --> identical to track container in EMC jet
@@ -1744,18 +1785,12 @@ void AliAnalysisJetHadro::FindJetsFJ()
         if (track->Pt() < fTrackPt || TMath::Abs(track->Eta()) >= particleEtaCut) continue;
         fFastJetWrapper->AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), iTrack);//TMath::Sqrt(track->P()*track->P()+0.13957*0.13957),iTrack);
         fFastJetWrapperBG->AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), iTrack);//TMath::Sqrt(track->P()*track->P()+0.13957*0.13957),iTrack);
-        particlesEmbedded.push_back(fastjet::PseudoJet(track->Px(), track->Py(), track->Pz(), track->E()));// TMath::Sqrt(track->P()*track->P()+0.13957*0.13957) ) );
       }
       //
       // background jet definitions
       fastjet::JetMedianBackgroundEstimator bgE;
       fastjet::Selector selectorBG = !fastjet::SelectorNHardest(2); //set the max eta cut on the estimator, then get rid of 2 highest pt jets
       bgE.set_selector(selectorBG);
-
-      fastjet::JetDefinition jetDefBG(fastjet::kt_algorithm, bgJetRadius, fastjet::pt_scheme, fastjet::Best); //define the kT jet finding which will do the average background estimation
-      fastjet::GhostedAreaSpec ghostSpecBG(particleEtaCut, 1, fGhostArea); //this ghost area might be too small and increase processing time too much
-      fastjet::AreaDefinition areaDefBG(fastjet::active_area_explicit_ghosts, ghostSpecBG);
-      fastjet::ClusterSequenceArea cluster_seq_BG(particlesEmbedded, jetDefBG, areaDefBG);
 
       fastjet::Selector selectorBGjets = !fastjet::SelectorIsPureGhost() * fastjet::SelectorAbsEtaMax(bgJetAbsEtaCut) * fastjet::SelectorPtRange(fTrackPt, 1000.0);
       fFastJetWrapperBG->Run();
@@ -2082,6 +2117,8 @@ void AliAnalysisJetHadro::FindJetsFJ()
         }
       } // end of jet loop
 
+      delete fFastJetWrapper;
+      delete fFastJetWrapperBG;
     }
 }
 //________________________________________________________________________
