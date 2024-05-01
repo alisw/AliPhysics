@@ -428,10 +428,10 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
       if(lTrack->TestFilterBit(128)) nTotTracksFB128++;
       Double_t trackXYZ[] = {0.,0.,0.};
       if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxXYZ,iCent,nTotNoTracks)) continue;
-      Double_t weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lTrack->Pt()));
+      Double_t weff = (fUseNUEOne)?1.0:fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lTrack->Pt()));
       if(weff==0.0) continue;
       weff = 1./weff;
-      FillWPCounter(wp,(fUseNUEOne)?1.0:weff,lTrack->Pt());
+      FillWPCounter(wp,weff,lTrack->Pt());
       if(fUseV0M) fPtVsV0M->Fill(multVZERO,lTrack->Pt(),weff);
       if(fFillQA){
         double dcaxyz[2];
@@ -801,11 +801,11 @@ Bool_t AliAnalysisTaskPtCorr::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackX
   if((fGFWNtotSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE) || fGFWSelection->AcceptTrack(mtr,(fSystFlag==1&&!fEnableFB768dcaxy)?0:ltrackXYZ,0,kFALSE)) && fFillQA){
     fPhiEtaVtxZ->Fill(mtr->Phi(),mtr->Eta(),vtxp[2]);
   }
-  Double_t weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(mtr->Pt()));
+  Double_t weff = (fUseNUEOne)?1.:fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(mtr->Pt()));
   if(weff==0.0) return 0;
   weff = 1./weff;
   if(fGFWNtotSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE)) {
-      nTot += (fUseNUEOne)?1.:weff;
+      nTot += weff;
       if(fFillQA) fEtaMult->Fill(mtr->Eta(),weff);
   }
   if(fGFWSelection->AcceptTrack(mtr,(fSystFlag==1&&!fEnableFB768dcaxy)?0:ltrackXYZ,0,kFALSE)){
