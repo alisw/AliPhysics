@@ -508,12 +508,28 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
          fTreeMatchTracks->Branch("fTrack_eta_tru", &fTrack_eta_tru, "fTrack_eta_tru/D");
          fTreeMatchTracks->Branch("fTrack_phi_det", &fTrack_phi_det, "fTrack_phi_det/D");
          fTreeMatchTracks->Branch("fTrack_phi_tru", &fTrack_phi_tru, "fTrack_phi_tru/D");
+
+        //  fTreeMissTracks = new TTree("MissTracksTree", "MissTracksTree");
+         
+        //  fTreeMissTracks->Branch("fJet_pt_tru", &fJet_pt_tru, "fJet_pt_tru/D");
+         fTreeMatchTracks->Branch("fTrack_pt_miss", &fTrack_pt_miss, "fTrack_pt_miss/D");
+         fTreeMatchTracks->Branch("fTrack_eta_miss", &fTrack_eta_miss, "fTrack_eta_miss/D");
+         fTreeMatchTracks->Branch("fTrack_phi_miss", &fTrack_phi_miss, "fTrack_phi_miss/D");
+
+        //  fTreeFakeTracks = new TTree("FakeTracksTree", "FakeTracksTree");
+         
+        //  fTreeFakeTracks->Branch("fJet_pt_det", &fJet_pt_det, "fJet_pt_det/D");
+         fTreeMatchTracks->Branch("fTrack_pt_fake", &fTrack_pt_fake, "fTrack_pt_fake/D");
+         fTreeMatchTracks->Branch("fTrack_eta_fake", &fTrack_eta_fake, "fTrack_eta_fake/D");
+         fTreeMatchTracks->Branch("fTrack_phi_fake", &fTrack_phi_fake, "fTrack_phi_fake/D");
          
      }
 
     PostData(1, fOutput);
-    if (fUnfolding==1) PostData(2, fTreeMatchTracks);
-    
+    if (fUnfolding==1) 
+    { 
+        PostData(2, fTreeMatchTracks);
+    }
 }
 
 
@@ -983,6 +999,7 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
     double jet_pt = fJet->Pt();
     double jet_pt_tru = fJet_tru->Pt();
     pt_tru->Fill(jet_pt_tru); //filling histogram with momentum of jets
+
     
     
     std::vector<Double_t> R_dist_tru, R_dist_det;
@@ -1006,7 +1023,27 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
             int valueToCheck = fConstituents[j].user_index();
             auto it = std::find(tru_index.begin(), tru_index.end(), valueToCheck);
             if (it != tru_index.end()){matchtracks_det.push_back(fConstituents[j]);}
-            else {faketracks.push_back(fConstituents[j]);}
+            else {faketracks.push_back(fConstituents[j]);
+                if(fUnfolding==1)
+                {
+                    fJet_pt_det = jet_pt;
+                    fJet_pt_tru = 0;
+                    fTrack_pt_tru = 0;
+                    fTrack_eta_tru = 0;
+                    fTrack_phi_tru = 0;
+                    fTrack_pt_det = 0;
+                    fTrack_eta_det = 0;
+                    fTrack_phi_det = 0;
+                    fTrack_eta_miss = 0;
+                    fTrack_phi_miss = 0;
+                    fTrack_pt_miss = 0;
+                    fTrack_eta_fake = fConstituents[j].eta();
+                    fTrack_phi_fake = fConstituents[j].phi();
+                    fTrack_pt_fake = fConstituents[j].pt();
+                    fTreeMatchTracks->Fill();
+                }
+
+            }
         }
     }
     
@@ -1017,7 +1054,27 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
             int valueToCheck = fConstituents_tru[i].user_index();
             auto it = std::find(det_index.begin(), det_index.end(), valueToCheck);
             if (it != det_index.end()){matchtracks_tru.push_back(fConstituents_tru[i]);matchtracks_tru_cop.push_back(fConstituents_tru[i]);}
-            else {misstracks.push_back(fConstituents_tru[i]);}
+            else {misstracks.push_back(fConstituents_tru[i]);
+            if(fUnfolding==1)
+                {
+                    fJet_pt_tru = jet_pt_tru;
+                    fJet_pt_det = 0;
+                    fTrack_pt_det = 0;
+                    fTrack_eta_det = 0;
+                    fTrack_phi_det = 0;
+                    fTrack_eta_fake = 0;
+                    fTrack_phi_fake = 0;
+                    fTrack_pt_fake = 0;
+                    fTrack_pt_tru = 0;
+                    fTrack_eta_tru = 0;
+                    fTrack_phi_tru = 0;
+                    fTrack_eta_miss = fConstituents_tru[i].eta();
+                    fTrack_phi_miss = fConstituents_tru[i].phi();
+                    fTrack_pt_miss = fConstituents_tru[i].pt();
+                    fTreeMatchTracks->Fill();
+                }
+            
+            }
         }
     }
     
@@ -1081,6 +1138,12 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
              {
                  fJet_pt_det = jet_pt;
                  fJet_pt_tru = jet_pt_tru;
+                 fTrack_eta_miss = 0;
+                 fTrack_phi_miss = 0;
+                 fTrack_pt_miss = 0;
+                 fTrack_eta_fake = 0;
+                 fTrack_phi_fake = 0;
+                 fTrack_pt_fake = 0;
                  fTrack_eta_tru = matchtracks_tru[j].eta();
                  fTrack_phi_tru = matchtracks_tru[j].phi();
                  fTrack_eta_det = matchtracks_det[j].eta();
