@@ -4557,6 +4557,22 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 3215){  // EMCAL+DCAL NLM = 1-100, V0M high mult, NL , std TM, swapping back.
     cuts.AddCutCalo("r0a78113","411790109fe3n2v0000","0s631031000000d0"); // V0M high mult, INEL > 0
 
+  // cut studies (M02 and TM tighter cuts)
+  } else if (trainConfig == 3220){  // M02 cut variations, no E/p
+    cuts.AddCutCalo("00010113","4117901097e3n230000","0s631031000000d0"); // M02 < 0.5
+    cuts.AddCutCalo("00010113","4117901097e3n240000","0s631031000000d0"); // M02 < 0.4
+    cuts.AddCutCalo("00010113","4117901097e3n290000","0s631031000000d0"); // M02 < 0.35
+    cuts.AddCutCalo("00010113","4117901097e3n250000","0s631031000000d0"); // M02 < 0.3
+  } else if (trainConfig == 3221){  // same as above, but without strict TM
+    cuts.AddCutCalo("00010113","411790109fe3n230000","0s631031000000d0"); // M02 < 0.5, no E/p
+    cuts.AddCutCalo("00010113","411790109fe3n240000","0s631031000000d0"); // M02 < 0.4, no E/p
+    cuts.AddCutCalo("00010113","411790109fe3n290000","0s631031000000d0"); // M02 < 0.35, no E/p
+    cuts.AddCutCalo("00010113","411790109fe3n250000","0s631031000000d0"); // M02 < 0.3, no E/p
+  } else if (trainConfig == 3222){  // strict M02 and TM + conversion rejection
+    cuts.AddCutCalo("00010113","411790109fe3n230c00","0s631031000000d0"); // M02 < 0.5, no E/p
+    cuts.AddCutCalo("00010113","411790109fe3n240c00","0s631031000000d0"); // M02 < 0.4, no E/p
+    cuts.AddCutCalo("00010113","411790109fe3n290c00","0s631031000000d0"); // M02 < 0.35, no E/p
+    cuts.AddCutCalo("00010113","411790109fe3n250c00","0s631031000000d0"); // M02 < 0.3, no E/p
 
   //////////////////////    Mult slices  PHOS pp 13 TeV   //////////////////////////////////
 // INT7 trigger	V0M high mult	EG2	EG1	SPD high mult
