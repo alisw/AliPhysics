@@ -67,6 +67,34 @@ public:
   }
   void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
 
+  void SetMinimalBooking() {
+    fEventCuts->SetMinimalBooking(true); // minimal booking defines which histograms to save since with systematics many repeat each other
+    fPosPionCuts->SetMinimalBooking(true);
+    fNegPionCuts->SetMinimalBooking(true);
+    fLambdaCuts->SetMinimalBooking(true);
+    fAntiLambdaCuts->SetMinimalBooking(true);
+
+    fConfig->SetMinimalBookingME(true);
+
+    fConfig->SetPtQA(false);
+    fConfig->SetMassQA(false);
+    fConfig->SetkTBinning(false);
+
+    std::vector<int> pairQA = {
+      0,  // 0 -> Pi+Pi+         
+      0,  // 1 -> Pi+Pi-         
+      12, // 2 -> Pi+ La         
+      12, // 3 -> Pi+ bar La     
+      0,  // 4 -> Pi-Pi-         
+      12, // 5 -> Pi- La         
+      12, // 6 -> Pi- bar La     
+      0,  // 7 -> La La          
+      0,  // 8 -> La La bar      
+      0,  // 9 -> La bar La bar  
+    };
+    fConfig->SetExtendedQAPairs(pairQA);
+  }
+
 private:
   AliAnalysisTaskLambdaPion(const AliAnalysisTaskLambdaPion &);
   AliAnalysisTaskLambdaPion &operator=(const AliAnalysisTaskLambdaPion &);

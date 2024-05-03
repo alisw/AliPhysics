@@ -12,10 +12,7 @@
 AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // MC run or not
                                               TString CentEst = "kInt7",    // trigger selection, "kInt7" = Minimum bias, "kHighMultV0" high multiplicity triggered by the V0 detector
                                               int filterBit = 128,          // Track selection feature
-                                              int WhichPionCut = 0,         // Irrelevant for now
-                                              const char *sTcut = "0",      // "0" to avoid spericity cuts, "1" to have them
                                               bool DoAncestors = false,     // only important when running MC
-                                              bool IsSystematics = false,   // true to evaluate systematic uncertainties
                                               AliAnalysisTaskLambdaPion::PCSettings pcsettings = AliAnalysisTaskLambdaPion::PCSettings::NoPC,  // choose pair cleaner
                                               bool usenolambdaevt = true,            // true to discard events with neither Lambda or AntiLambda
                                               double dauPIDCut = 2,
@@ -23,7 +20,6 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
 //                                              int binwidth = 1)             // relative bin width for k* histos with respect to 4 MeV/c
 {
   TString suffix = TString::Format("%s", cutVariation);
-  TString sTsuffix = TString::Format("%s", sTcut);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -43,11 +39,6 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2(); // uses cuts for events selected by ALICE collaboration
   evtCuts->CleanUpMult(false, false, false, true); // the arguments allow to choose which detectors' multiplicity one wants to consider,
                                                    // first we have SPD, then V0A, then V0C and then Ref08Mult
-
-  if (sTsuffix == "1")
-  {
-    evtCuts->SetSphericityCuts(0.7,1);
-  }
 
   // Lambda --> p + pi- cuts
   AliFemtoDreamv0Cuts *v0Cuts = AliFemtoDreamv0Cuts::LambdaCuts(isMC, true, true);  // enable PCA plots and Split Contrib, this method sets
@@ -78,24 +69,18 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
   AliFemtoDreamTrackCuts *TrackPosPionCuts = NULL;
   AliFemtoDreamTrackCuts *TrackCutsAntiPion = NULL;
 
+  const float PionPtMax = 2.; // um = GeV
+  const float PionPtMin = 2.; // um = GeV
+
   TrackPosPionCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false); // (bool isMC, bool DCAPlots, bool CombSigma, bool ContribSplitting), sets options for plot
                                                                                      // of DCA distribution, CombSigma, ContribSplitting
   TrackPosPionCuts->SetFilterBit(filterBit);
-  TrackPosPionCuts->SetPtRange(0.14, 2.);
+  TrackPosPionCuts->SetPtRange(PionPtMin, PionPtMax);
   TrackPosPionCuts->SetCutCharge(1);
   TrackCutsAntiPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
   TrackCutsAntiPion->SetFilterBit(filterBit);
-  TrackCutsAntiPion->SetPtRange(0.14, 2.);
+  TrackCutsAntiPion->SetPtRange(PionPtMin, PionPtMax);
   TrackCutsAntiPion->SetCutCharge(-1);
-
-  if (IsSystematics)
-  {
-    evtCuts->SetMinimalBooking(true); // minimal booking defines which histograms to save since with systematics many repeat each other
-    TrackPosPionCuts->SetMinimalBooking(true);
-    TrackCutsAntiPion->SetMinimalBooking(true);
-    v0Cuts->SetMinimalBooking(true);
-    Antiv0Cuts->SetMinimalBooking(true);
-  }
 
   // Correlated particles definition by PDG code
   std::vector<int> PDGParticles;
@@ -180,29 +165,20 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
     pairQA.push_back(0);
   }
 
-  if (IsSystematics)
-  {
-    pairQA[2] = 12;
-    pairQA[3] = 12;
-    pairQA[5] = 12;
-    pairQA[6] = 12;
-  }
-  else
-  {
-    pairQA[0] = 11;
-    pairQA[1] = 11;
-    pairQA[2] = 12;
-    pairQA[3] = 12;
-    pairQA[4] = 11;
-    pairQA[5] = 12;
-    pairQA[6] = 12;
-    pairQA[7] = 22;
-    pairQA[8] = 22;
-    pairQA[9] = 22;
-    closeRejection[0] = true;
-    closeRejection[1] = true;
-    closeRejection[4] = true;
-  }
+  pairQA[0] = 11;
+  pairQA[1] = 11;
+  pairQA[2] = 12;
+  pairQA[3] = 12;
+  pairQA[4] = 11;
+  pairQA[5] = 12;
+  pairQA[6] = 12;
+  pairQA[7] = 22;
+  pairQA[8] = 22;
+  pairQA[9] = 22;
+
+  closeRejection[0] = true;
+  closeRejection[1] = true;
+  closeRejection[4] = true;
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto");
 
@@ -226,16 +202,9 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
   config->SetDomTMultBinning(true);
   config->SetmTBinning(true);
 
-  if (IsSystematics)
-  {
-    config->SetMinimalBookingME(true);
-  }
-  else if (!IsSystematics)
-  {
-    config->SetPtQA(true);
-    config->SetMassQA(true);
-    config->SetkTBinning(true);
-  }
+  config->SetPtQA(true);
+  config->SetMassQA(true);
+  config->SetkTBinning(true);
 
   if (isMC)
   {
@@ -258,932 +227,912 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
   const float PionEtaUp = 0.85;
   const float PionNClsLow = 70;
   const float PionNClsUp = 90;
-  const float PionPtMax = 999;
+  const float PionNSigmaLow = 2.7;
+  const float PionNSigmaUp = 3.3;
 
-  AliPID::EParticleType aliPIDParticle;
-  aliPIDParticle = AliPID::kPion;
-  std::map<std::string, float> PionPIDTight; // tight pion selection criteria
-  std::map<std::string, float> PionPIDLoose; // loose pion selection criteria
-
-  PionPIDTight = {
-      {"COMB", 2.7},
-      {"TPC", 2.7},
-      {"EXCLUSION", 3.3},
-  }; // for SetPIDkd() when using oton's K selection
-  PionPIDLoose = {
-      {"COMB", 3.3},
-      {"TPC", 3.3},
-      {"EXCLUSION", 2.7},
-  };
-
-  // Systematic variations (taken from pφ and ΛΚ)
-  if (IsSystematics)
+  // From LambdaK and DPi
+  if (suffix == "1")
   {
-    if (suffix == "1")
-    {
-      TrackPosPionCuts->SetNClsTPC(PionNClsUp);   // Number of TPC clusters
-      TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
-
-      v0Cuts->SetCutCPA(0.995);     // CPA stands for cosine of pointing angle
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetNClsTPC(80);     
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      v0Cuts->SetCutDCADaugToPrimVtx(0.06);  // DCA cut with respect to the primary vertex
-      Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    }
-    else if (suffix == "2")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
-
-      TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
-
-      Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);  // (AliPID::EParticleType pid, float pTPCThresh, float sigVal = 3)
-      Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-    }
-    else if (suffix == "3")
-    {
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetEtaRange(-0.77, 0.77);
-      Negv0Daug->SetEtaRange(-0.77, 0.77);
-      PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    }
-    else if (suffix == "4")
-    {
-      TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsLow);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-      v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-      Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    }
-    else if (suffix == "5")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
-
-      TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
-
-      // CHANGE!!!
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]); 
-      // (bool iskaon = true, bool isramona = false, float COMBcut = 3., float TPCcut = 3., float EXCLUSIONcut = 3.)
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetEtaRange(-0.83, 0.83);
-      Negv0Daug->SetEtaRange(-0.83, 0.83);
-      PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
-      NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    }
-    else if (suffix == "6")
-    {
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDLoose["TPC"], PionPIDTight["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDLoose["TPC"], PionPIDTight["EXCLUSION"]);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsUp);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-      Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-
-      Posv0Daug->SetEtaRange(-0.83, 0.83);
-      Negv0Daug->SetEtaRange(-0.83, 0.83);
-      PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
-      NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-    }
-    else if (suffix == "7")
-    {
-      TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDLoose["TPC"], PionPIDLoose["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDLoose["TPC"], PionPIDLoose["EXCLUSION"]);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetEtaRange(-0.83, 0.83);
-      Negv0Daug->SetEtaRange(-0.83, 0.83);
-      PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
-      NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-
-      v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-      Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    }
-    else if (suffix == "8")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
-
-      TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsUp);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
-
-      Posv0Daug->SetEtaRange(-0.83, 0.83);
-      Negv0Daug->SetEtaRange(-0.83, 0.83);
-      PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
-      NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-    }
-    else if (suffix == "9")
-    {
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      Posv0Daug->SetEtaRange(-0.77, 0.77);
-      Negv0Daug->SetEtaRange(-0.77, 0.77);
-      PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    }
-    else if (suffix == "10")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
-
-      TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
-
-      Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-      Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-
-      Posv0Daug->SetEtaRange(-0.77, 0.77);
-      Negv0Daug->SetEtaRange(-0.77, 0.77);
-      PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-
-      v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-      Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    }
-    else if (suffix == "11")
-    {
-      TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      Posv0Daug->SetEtaRange(-0.77, 0.77);
-      Negv0Daug->SetEtaRange(-0.77, 0.77);
-      PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    }
-    else if (suffix == "12")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
-
-      TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
-
-      Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-      Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-
-      Posv0Daug->SetEtaRange(-0.77, 0.77);
-      Negv0Daug->SetEtaRange(-0.77, 0.77);
-      PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-    }
-    else if (suffix == "13")
-    {
-      TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDLoose["TPC"], PionPIDTight["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDLoose["TPC"], PionPIDTight["EXCLUSION"]);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsUp);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
-
-      Posv0Daug->SetEtaRange(-0.83, 0.83);
-      Negv0Daug->SetEtaRange(-0.83, 0.83);
-      PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
-      NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-
-      v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-      Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    }
-    else if (suffix == "14")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDLoose["TPC"], PionPIDLoose["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDLoose["TPC"], PionPIDLoose["EXCLUSION"]);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      Posv0Daug->SetEtaRange(-0.83, 0.83);
-      Negv0Daug->SetEtaRange(-0.83, 0.83);
-      PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
-      NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-    }
-    else if (suffix == "15")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
-
-      TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDTight["TPC"], PionPIDLoose["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDTight["TPC"], PionPIDLoose["EXCLUSION"]);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsUp);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-
-      v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-      Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    }
-    else if (suffix == "16")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDLoose["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDLoose["EXCLUSION"]);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsLow);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      Posv0Daug->SetEtaRange(-0.77, 0.77);
-      Negv0Daug->SetEtaRange(-0.77, 0.77);
-      PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-
-      v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-      Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    }
-    else if (suffix == "17")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
-
-      TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetEtaRange(-0.77, 0.77);
-      Negv0Daug->SetEtaRange(-0.77, 0.77);
-      PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-
-      v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-      Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    }
-    else if (suffix == "18")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
-
-      TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDTight["TPC"], PionPIDLoose["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDTight["TPC"], PionPIDLoose["EXCLUSION"]);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsUp);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      Posv0Daug->SetEtaRange(-0.77, 0.77);
-      Negv0Daug->SetEtaRange(-0.77, 0.77);
-      PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-    }
-    else if (suffix == "19")
-    {
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsLow);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    }
-    else if (suffix == "20")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsUp);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      Posv0Daug->SetEtaRange(-0.83, 0.83);
-      Negv0Daug->SetEtaRange(-0.83, 0.83);
-      PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
-      NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-    }
-    else if (suffix == "21")
-    {
-
-      TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsLow);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      Posv0Daug->SetEtaRange(-0.77, 0.77);
-      Negv0Daug->SetEtaRange(-0.77, 0.77);
-      PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-    }
-    else if (suffix == "22")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
-
-      TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsLow);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-      Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-    }
-    else if (suffix == "23")
-    {
-      TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDLoose["TPC"], PionPIDTight["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDLoose["TPC"], PionPIDTight["EXCLUSION"]);
-
-      Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-      Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-
-      Posv0Daug->SetEtaRange(-0.83, 0.83);
-      Negv0Daug->SetEtaRange(-0.83, 0.83);
-      PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
-      NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    }
-    else if (suffix == "24")
-    {
-      TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDLoose["TPC"], PionPIDLoose["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDLoose["TPC"], PionPIDLoose["EXCLUSION"]);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsUp);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-      Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-
-      Posv0Daug->SetEtaRange(-0.83, 0.83);
-      Negv0Daug->SetEtaRange(-0.83, 0.83);
-      PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
-      NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-
-      // XI
-    }
-    else if (suffix == "25")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
-
-      TrackPosPionCuts->SetEtaRange(-0.83, 0.83);
-      TrackCutsAntiPion->SetEtaRange(-0.83, 0.83);
-
-      Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-      Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-
-      Posv0Daug->SetEtaRange(-0.77, 0.77);
-      Negv0Daug->SetEtaRange(-0.77, 0.77);
-      PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-
-      v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-      Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    }
-    else if (suffix == "26")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDLoose["TPC"], PionPIDLoose["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDLoose["TPC"], PionPIDLoose["EXCLUSION"]);
-
-      Posv0Daug->SetEtaRange(-0.77, 0.77);
-      Negv0Daug->SetEtaRange(-0.77, 0.77);
-      PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-    }
-    else if (suffix == "27")
-    {
-      TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDTight["TPC"], PionPIDLoose["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDTight["TPC"], PionPIDLoose["EXCLUSION"]);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsUp);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
-
-      Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-      Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-
-      Posv0Daug->SetEtaRange(-0.77, 0.77);
-      Negv0Daug->SetEtaRange(-0.77, 0.77);
-      PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    }
-    else if (suffix == "28")
-    {
-      TrackPosPionCuts->SetNClsTPC(PionNClsUp);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-      Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    }
-    else if (suffix == "29")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
-
-      TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDLoose["TPC"], PionPIDTight["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDLoose["TPC"], PionPIDTight["EXCLUSION"]);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-      Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    }
-    else if (suffix == "30")
-    {
-      TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-      Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      Posv0Daug->SetEtaRange(-0.83, 0.83);
-      Negv0Daug->SetEtaRange(-0.83, 0.83);
-      PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
-      NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    }
-    else if (suffix == "31")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDTight["TPC"], PionPIDLoose["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDTight["TPC"], PionPIDLoose["EXCLUSION"]);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsLow);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetEtaRange(-0.83, 0.83);
-      Negv0Daug->SetEtaRange(-0.83, 0.83);
-      PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
-      NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    }
-    else if (suffix == "32")
-    {
-
-      TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDLoose["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDLoose["EXCLUSION"]);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsUp);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-      Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    }
-    else if (suffix == "33")
-    {
-      TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      Posv0Daug->SetEtaRange(-0.77, 0.77);
-      Negv0Daug->SetEtaRange(-0.77, 0.77);
-      PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-    }
-    else if (suffix == "34")
-    {
-      TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsLow);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      Posv0Daug->SetEtaRange(-0.77, 0.77);
-      Negv0Daug->SetEtaRange(-0.77, 0.77);
-      PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-    }
-    else if (suffix == "35")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsLow);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    }
-    else if (suffix == "36")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
-
-      TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsLow);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
-
-      Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-      Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      Posv0Daug->SetEtaRange(-0.83, 0.83);
-      Negv0Daug->SetEtaRange(-0.83, 0.83);
-      PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
-      NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    }
-    else if (suffix == "37")
-    {
-      TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsUp);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetEtaRange(-0.83, 0.83);
-      Negv0Daug->SetEtaRange(-0.83, 0.83);
-      PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
-      NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    }
-    else if (suffix == "38")
-    {
-      TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsUp);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      Posv0Daug->SetEtaRange(-0.77, 0.77);
-      Negv0Daug->SetEtaRange(-0.77, 0.77);
-      PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-    }
-    else if (suffix == "39")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDLoose["TPC"], PionPIDTight["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDTight["COMB"], PionPIDLoose["TPC"], PionPIDTight["EXCLUSION"]);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsUp);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
-
-      Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-      Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      Posv0Daug->SetEtaRange(-0.77, 0.77);
-      Negv0Daug->SetEtaRange(-0.77, 0.77);
-      PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    }
-    else if (suffix == "40")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
-
-      TrackPosPionCuts->SetNClsTPC(PionNClsLow);
-      TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
-
-      Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-      Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    }
-    else if (suffix == "41")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
-
-      TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDTight["EXCLUSION"]);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetEtaRange(-0.77, 0.77);
-      Negv0Daug->SetEtaRange(-0.77, 0.77);
-      PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
-      NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    }
-    else if (suffix == "42")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDLoose["TPC"], PionPIDTight["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDLoose["TPC"], PionPIDTight["EXCLUSION"]);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-      Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      v0Cuts->SetCutDCADaugTov0Vtx(1.2);
-      Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
-    }
-    else if (suffix == "43")
-    {
-      TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
-      TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
-
-      TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDLoose["TPC"], PionPIDLoose["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDLoose["TPC"], PionPIDLoose["EXCLUSION"]);
-
-      Posv0Daug->SetEtaRange(-0.83, 0.83);
-      Negv0Daug->SetEtaRange(-0.83, 0.83);
-      PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
-      NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-    }
-    else if (suffix == "44")
-    {
-      TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
-      TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
-
-      TrackPosPionCuts->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDLoose["EXCLUSION"]);
-      TrackCutsAntiPion->SetPIDkd(true, false, PionPIDLoose["COMB"], PionPIDTight["TPC"], PionPIDLoose["EXCLUSION"]);
-
-      v0Cuts->SetCutCPA(0.995);
-      Antiv0Cuts->SetCutCPA(0.995);
-
-      Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-      Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
-      NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
-
-      Posv0Daug->SetNClsTPC(80);
-      Negv0Daug->SetNClsTPC(80);
-      PosAntiv0Daug->SetNClsTPC(80);
-      NegAntiv0Daug->SetNClsTPC(80);
-
-      Posv0Daug->SetEtaRange(-0.83, 0.83);
-      Negv0Daug->SetEtaRange(-0.83, 0.83);
-      PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
-      NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
-
-      v0Cuts->SetCutDCADaugToPrimVtx(0.06);
-      Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
-    }
+    TrackPosPionCuts->SetNClsTPC(PionNClsUp);   // Number of TPC clusters
+    TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
+
+    v0Cuts->SetCutCPA(0.995);     // CPA stands for cosine of pointing angle
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetNClsTPC(80);     
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);  // DCA cut with respect to the primary vertex
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+  }
+  else if (suffix == "2")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+
+    TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);  // (AliPID::EParticleType pid, float pTPCThresh, float sigVal = 3)
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+  }
+  else if (suffix == "3")
+  {
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+  }
+  else if (suffix == "4")
+  {
+    TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsLow);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+  }
+  else if (suffix == "5")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+
+    TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+  }
+  else if (suffix == "6")
+  {
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsUp);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+  }
+  else if (suffix == "7")
+  {
+    TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+  }
+  else if (suffix == "8")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+
+    TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsUp);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+  }
+  else if (suffix == "9")
+  {
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+  }
+  else if (suffix == "10")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+
+    TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+  }
+  else if (suffix == "11")
+  {
+    TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+  }
+  else if (suffix == "12")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+
+    TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+  }
+  else if (suffix == "13")
+  {
+    TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsUp);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+  }
+  else if (suffix == "14")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+  }
+  else if (suffix == "15")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
+
+    TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsUp);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+  }
+  else if (suffix == "16")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsLow);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+  }
+  else if (suffix == "17")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+
+    TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+  }
+  else if (suffix == "18")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+
+    TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsUp);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+  }
+  else if (suffix == "19")
+  {
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsLow);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+  }
+  else if (suffix == "20")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsUp);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+  }
+  else if (suffix == "21")
+  {
+
+    TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsLow);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+  }
+  else if (suffix == "22")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+
+    TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsLow);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+  }
+  else if (suffix == "23")
+  {
+    TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+  }
+  else if (suffix == "24")
+  {
+    TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsUp);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    // XI
+  }
+  else if (suffix == "25")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+
+    TrackPosPionCuts->SetEtaRange(-0.83, 0.83);
+    TrackCutsAntiPion->SetEtaRange(-0.83, 0.83);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+  }
+  else if (suffix == "26")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+  }
+  else if (suffix == "27")
+  {
+    TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsUp);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+  }
+  else if (suffix == "28")
+  {
+    TrackPosPionCuts->SetNClsTPC(PionNClsUp);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+  }
+  else if (suffix == "29")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+
+    TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+  }
+  else if (suffix == "30")
+  {
+    TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+  }
+  else if (suffix == "31")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsLow);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+  }
+  else if (suffix == "32")
+  {
+
+    TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsUp);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
+  }
+  else if (suffix == "33")
+  {
+    TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+  }
+  else if (suffix == "34")
+  {
+    TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsLow);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+  }
+  else if (suffix == "35")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsLow);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+  }
+  else if (suffix == "36")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
+
+    TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsLow);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+  }
+  else if (suffix == "37")
+  {
+    TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsUp);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+  }
+  else if (suffix == "38")
+  {
+    TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsUp);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+  }
+  else if (suffix == "39")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsUp);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsUp);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+  }
+  else if (suffix == "40")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
+
+    TrackPosPionCuts->SetNClsTPC(PionNClsLow);
+    TrackCutsAntiPion->SetNClsTPC(PionNClsLow);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+  }
+  else if (suffix == "41")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+
+    TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetEtaRange(-0.77, 0.77);
+    Negv0Daug->SetEtaRange(-0.77, 0.77);
+    PosAntiv0Daug->SetEtaRange(-0.77, 0.77);
+    NegAntiv0Daug->SetEtaRange(-0.77, 0.77);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+  }
+  else if (suffix == "42")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    v0Cuts->SetCutDCADaugTov0Vtx(1.2);
+    Antiv0Cuts->SetCutDCADaugTov0Vtx(1.2);
+  }
+  else if (suffix == "43")
+  {
+    TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
+
+    TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaLow);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+  }
+  else if (suffix == "44")
+  {
+    TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
+    TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
+
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+    TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
+
+    v0Cuts->SetCutCPA(0.995);
+    Antiv0Cuts->SetCutCPA(0.995);
+
+    Posv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+    Negv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    PosAntiv0Daug->SetPID(AliPID::kPion, 999.9, 4);
+    NegAntiv0Daug->SetPID(AliPID::kProton, 999.9, 4);
+
+    Posv0Daug->SetNClsTPC(80);
+    Negv0Daug->SetNClsTPC(80);
+    PosAntiv0Daug->SetNClsTPC(80);
+    NegAntiv0Daug->SetNClsTPC(80);
+
+    Posv0Daug->SetEtaRange(-0.83, 0.83);
+    Negv0Daug->SetEtaRange(-0.83, 0.83);
+    PosAntiv0Daug->SetEtaRange(-0.83, 0.83);
+    NegAntiv0Daug->SetEtaRange(-0.83, 0.83);
+
+    v0Cuts->SetCutDCADaugToPrimVtx(0.06);
+    Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
   }
 
   // Apply sidebands cuts
