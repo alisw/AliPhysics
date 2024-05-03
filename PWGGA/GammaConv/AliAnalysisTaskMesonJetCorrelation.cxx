@@ -205,6 +205,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoNEFVsPtJet({}),
                                                                              fHistoNchVsPtJet({}),
                                                                              fHistoNclusVsPtJet({}),
+                                                                             fHistoNPartVsPtJet({}),
                                                                              fHistoNPartInTrueJetVsJetPt({}),
                                                                              fHistoNJetsVsTrackMult({}),
                                                                              fHistoNJetsVsMult({}),
@@ -478,6 +479,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoNEFVsPtJet({}),
                                                                                            fHistoNchVsPtJet({}),
                                                                                            fHistoNclusVsPtJet({}),
+                                                                                           fHistoNPartVsPtJet({}),
                                                                                            fHistoNPartInTrueJetVsJetPt({}),
                                                                                            fHistoNJetsVsTrackMult({}),
                                                                                            fHistoNJetsVsMult({}),
@@ -760,9 +762,12 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fHistoNEFVsPtJet.resize(fnCuts);
     fHistoNchVsPtJet.resize(fnCuts);
     fHistoNclusVsPtJet.resize(fnCuts);
+    fHistoNPartVsPtJet.resize(fnCuts);
+  }
+  if(fDoJetQA){
+    fHistoMaxJetPtVsMult.resize(fnCuts);
     fHistoNJetsVsTrackMult.resize(fnCuts);
     fHistoNJetsVsMult.resize(fnCuts);
-    fHistoMaxJetPtVsMult.resize(fnCuts);
   }
   if (fIsMC) {
     fHistoTruevsRecJetPt.resize(fnCuts);
@@ -1348,6 +1353,11 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fHistoNclusVsPtJet[iCut] = new TH2F("JetPt_Nneutral", "JetPt_Nneutral", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 25, vecEquidistFromMinus05.data());
       fJetList[iCut]->Add(fHistoNclusVsPtJet[iCut]);
 
+      fHistoNPartVsPtJet[iCut] = new TH2F("JetPt_Nparticles", "JetPt_Nparticles", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 25, vecEquidistFromMinus05.data());
+      fJetList[iCut]->Add(fHistoNPartVsPtJet[iCut]);
+
+    }
+    if(fDoJetQA){
       fHistoNJetsVsTrackMult[iCut] = new TH2F("NJets_TrackMult", "NJets_TrackMult", 15, -0.5, 14.5, fVecBinsMult.size() - 1, fVecBinsMult.data());
       fJetList[iCut]->Add(fHistoNJetsVsTrackMult[iCut]);
 
@@ -2043,15 +2053,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
     }
   }
 
-  // number of jets vs. track multiplicity
-  if (!fDoLightOutput) {
-    fHistoNJetsVsTrackMult[fiCut]->Fill(fConvJetReader->GetNJets(), fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
-    float cent = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetCentrality(fInputEvent);
-    if (cent > 0) {
-      fHistoNJetsVsMult[fiCut]->Fill(cent, fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
-    }
-  }
-
+  int nJetsAbove5 = 0; // counter for number of jets above 5 GeV. One could make this more differential
   if (fConvJetReader->GetNJets() > 0) {
 
     fHistoEventwJets[fiCut]->Fill(0., fWeightJetJetMC); // event has jet
@@ -2067,6 +2069,11 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
         fHistoNEFVsPtJet[fiCut]->Fill(fVectorJetPt.at(i), fVectorJetNEF.at(i), fWeightJetJetMC);
         fHistoNchVsPtJet[fiCut]->Fill(fVectorJetPt.at(i), fVectorJetNch.at(i), fWeightJetJetMC);
         fHistoNclusVsPtJet[fiCut]->Fill(fVectorJetPt.at(i), fVectorJetNclus.at(i), fWeightJetJetMC);
+        fHistoNPartVsPtJet[fiCut]->Fill(fVectorJetPt.at(i), fVectorJetNch.at(i), fWeightJetJetMC);
+      }
+
+      if(fVectorJetPt.at(i) > 5 ) {
+        nJetsAbove5++;
       }
 
       if (fIsMC > 0 && fConvJetReader->GetNJets() > 0 && fConvJetReader->GetTrueNJets() > 0) {
@@ -2105,8 +2112,15 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
     }
 
     // number of jets vs. track multiplicity
-    if (!fDoLightOutput) {
+    if (fDoJetQA) {
       fHistoMaxJetPtVsMult[fiCut]->Fill(fMaxPtJet, fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
+
+      fHistoNJetsVsTrackMult[fiCut]->Fill(nJetsAbove5, fV0Reader->GetNumberOfPrimaryTracks(), fWeightJetJetMC);
+      float cent = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetCentrality(fInputEvent);
+      if (cent > 0) {
+        fHistoNJetsVsMult[fiCut]->Fill(nJetsAbove5, cent, fWeightJetJetMC);
+      }
+      
     }
   }
 

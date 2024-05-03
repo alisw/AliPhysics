@@ -111,6 +111,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   void SetDoMesonQA(int flag) { fDoMesonQA = flag; }
   void SetDoPhotonQA(int flag) { fDoPhotonQA = flag; }
   void SetDoClusterQA(int flag) { fDoClusterQA = flag; }
+  void SetDoJetQA(int flag) { fDoJetQA = flag; }
   // Function to set correction task setting
   void SetCorrectionTaskSetting(TString setting) { fCorrTaskSetting = setting; }
   void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag) { fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag; }
@@ -409,6 +410,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoNEFVsPtJet;                //! vector of histos with pt of jets vs neutral energy fraction
   std::vector<TH2F*> fHistoNchVsPtJet;                //! vector of histos with pt of jets vs number of charged tracks in jet
   std::vector<TH2F*> fHistoNclusVsPtJet;              //! vector of histos with pt of jets vs neutral clusters in jet
+  std::vector<TH2F*> fHistoNPartVsPtJet;              //! vector of histos with pt of jets vs number of charged tracks + clusters in jet
   std::vector<TH2F*> fHistoNPartInTrueJetVsJetPt;     //! vector of histos with pt jet vs number of true jet particles
   std::vector<TH2F*> fHistoNJetsVsTrackMult;          //! vector of histos with Number of jets vs. track multiplicity
   std::vector<TH2F*> fHistoNJetsVsMult;               //! vector of histos with Number of jets vs. V0M multiplicity
