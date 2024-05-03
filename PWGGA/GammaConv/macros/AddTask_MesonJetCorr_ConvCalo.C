@@ -32,7 +32,7 @@ void AddTask_MesonJetCorr_ConvCalo(
   TString periodNameV0Reader = "",
   // general setting for task
   Int_t enableQAMesonTask = 0,             // enable QA in AliAnalysisTaskGammaConvV1
-  Int_t enableQAPhotonTask = 0,            // enable additional QA task
+  Int_t enableQAJets = 0,                  // enable additional QA for jets
   Int_t enableExtMatchAndQA = 0,           // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
   Int_t enableLightOutput = 0,             // switch to run light output (only essential histograms for afterburner)
   Bool_t enableTHnSparse = kFALSE,         // switch on THNsparse
@@ -284,7 +284,22 @@ void AddTask_MesonJetCorr_ConvCalo(
   } else if (trainConfig == 42) {
     cuts.AddCutPCMCalo("000fb103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2s630034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, rotation back
 
+  // V0M high multiplicity triggered data
+  } else if (trainConfig == 50) { // eta < 0.8
+    cuts.AddCutPCMCalo("00076103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2s63103400000010");
+  } else if (trainConfig == 51) { // eta < 0.5
+    cuts.AddCutPCMCalo("00076103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2s63403400000010");
+  } else if (trainConfig == 52) { // eta < 1.35
+    cuts.AddCutPCMCalo("00076103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2s63003400000010");
 
+  // SPD high multiplicity triggered data
+  } else if (trainConfig == 60) { // eta < 0.8
+    cuts.AddCutPCMCalo("00075103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2s63103400000010");
+  } else if (trainConfig == 61) { // eta < 0.5
+    cuts.AddCutPCMCalo("00075103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2s63403400000010");
+  } else if (trainConfig == 62) { // eta < 1.35
+    cuts.AddCutPCMCalo("00075103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2s63003400000010");
+  
 
   // ------ cut variations
   } else if (trainConfig == 100) { // 
@@ -694,7 +709,7 @@ void AddTask_MesonJetCorr_ConvCalo(
   if(enableMatBudWeightsPi0) task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(true);
   task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
-                                         //   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
+  task->SetDoJetQA(enableQAJets);
   task->SetUseTHnSparseForResponse(enableTHnSparse);
   task->SetDoUseCentralEvtSelection(useCentralEvtSelection);
   task->SetForcePi0Unstable(setPi0Unstable);
