@@ -38,7 +38,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void MultiplicityDistributions();
   void GetCalibratedV0Amplitude();
   void VertexPosition();
-  void GetZDCCentrality();
+  void GetZDC();
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetHMCut(double HMcut) { fHMCut = HMcut; }      // Set V0M max value
@@ -110,11 +110,6 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   float fv0mamplitude;
   int fTrackletsEtaGap;
   int fTracksEtaGapTPC;
-  double fza;
-  double fzc;
-  double fzn;
-  float fdcaxy;
-  float fdcaz;
   AliMultSelection* fMultSelection;
   TH1F* hNch;
   TH2F* hNchvsV0MAmp;
@@ -158,12 +153,22 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   int fSPDEtaAdj;
   int fSPDEtaGapW;
   int fSPDEtaGapWW;
+  double fZDC;
+  TProfile* pZDCvsV0MAmp;
+  TProfile* pZDCvsTPCFull;
+  TProfile* pZDCvsTPCEtaGap;
+  TProfile* pZDCvsSPDFull;
+  TProfile* pZDCvsSPDEtaGap;
+  TProfile* pZDCvsSPDEtaAdj;
+  TProfile* pZDCvsSPDEtaGapW;
+  TProfile* pZDCvsEtFull;
+  TProfile* pZDCvsEtEtaGap;
 
   AliAnalysisTaskDataSpeedOfSound(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented
   AliAnalysisTaskDataSpeedOfSound& operator=(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented
 
-  ClassDef(AliAnalysisTaskDataSpeedOfSound, 4);
+  ClassDef(AliAnalysisTaskDataSpeedOfSound, 5);
 };
 #endif
