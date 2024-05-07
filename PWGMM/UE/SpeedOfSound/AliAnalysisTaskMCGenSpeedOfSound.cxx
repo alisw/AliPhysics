@@ -50,6 +50,7 @@
 #include "AliMCEventHandler.h"
 #include "AliStack.h"
 #include "AliVParticle.h"
+#include "AliVVertex.h"
 
 //_____ Additional includes
 #include "AliGenEventHeader.h"
@@ -74,18 +75,28 @@ ClassImp(AliAnalysisTaskMCGenSpeedOfSound)
       fMcEvent(0x0),
       fMcHandler(0x0),
       fStack(0),
-      hNch08(0),
+      hNchFull(0),
       hNchV0M(0),
-      hNchEtaNeg(0),
-      hNchEtaPos(0),
-      hNchTPCEtaGap(0),
-      hNchSPDEtaGap(0),
-      hPtvsNch08(0),
+      hTPCEtaGap(0),
+      hSPDEtaGap(0),
+      hNchEtaGap(0),
+      hSPDFull(0),
+      hSPDEtaAdj(0),
+      hSPDEtaGapW(0),
+      hTPCFull(0),
+      hEtFull(0),
+      hEtEtaGap(0),
+      hPtvsNchFull(0),
       hPtvsV0M(0),
-      hPtvsNchEtaPos(0),
-      hPtvsNchEtaNeg(0),
-      hPtvsNchTPCEtaGap(0),
-      hPtvsNchSPDEtaGap(0),
+      hPtvsTPCEtaGap(0),
+      hPtvsSPDEtaGap(0),
+      hPtvsNchEtaGap(0),
+      hPtvsSPDFull(0),
+      hPtvsSPDEtaAdj(0),
+      hPtvsSPDEtaGapW(0),
+      hPtvsTPCFull(0),
+      hPtvsEtFull(0),
+      hPtvsEtEtaGap(0),
       fListOfObjects(0) {}
 
 //______________________________________________________________________________
@@ -96,18 +107,28 @@ AliAnalysisTaskMCGenSpeedOfSound::AliAnalysisTaskMCGenSpeedOfSound(
       fMcEvent(0x0),
       fMcHandler(0x0),
       fStack(0),
-      hNch08(0),
+      hNchFull(0),
       hNchV0M(0),
-      hNchEtaNeg(0),
-      hNchEtaPos(0),
-      hNchTPCEtaGap(0),
-      hNchSPDEtaGap(0),
-      hPtvsNch08(0),
+      hTPCEtaGap(0),
+      hSPDEtaGap(0),
+      hNchEtaGap(0),
+      hSPDFull(0),
+      hSPDEtaAdj(0),
+      hSPDEtaGapW(0),
+      hTPCFull(0),
+      hEtFull(0),
+      hEtEtaGap(0),
+      hPtvsNchFull(0),
       hPtvsV0M(0),
-      hPtvsNchEtaPos(0),
-      hPtvsNchEtaNeg(0),
-      hPtvsNchTPCEtaGap(0),
-      hPtvsNchSPDEtaGap(0),
+      hPtvsTPCEtaGap(0),
+      hPtvsSPDEtaGap(0),
+      hPtvsNchEtaGap(0),
+      hPtvsSPDFull(0),
+      hPtvsSPDEtaAdj(0),
+      hPtvsSPDEtaGapW(0),
+      hPtvsTPCFull(0),
+      hPtvsEtFull(0),
+      hPtvsEtEtaGap(0),
       fListOfObjects(0) {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());  // Basic output slot
@@ -138,90 +159,141 @@ void AliAnalysisTaskMCGenSpeedOfSound::UserCreateOutputObjects() {
     pt_bins[i] = i * 0.05;
   }
 
-  constexpr int nch_Nbins{6000};
-  double nch_bins[nch_Nbins + 1] = {0};
-  for (int i = 0; i <= nch_Nbins; ++i) {
-    nch_bins[i] = -0.5 + (double)i;
+  constexpr int nchFull_Nbins{4500};
+  double nchFull_bins[nchFull_Nbins + 1] = {0};
+  for (int i = 0; i <= nchFull_Nbins; ++i) {
+    nchFull_bins[i] = 0.0 + (2.0 * i);
   }
 
-  constexpr double v0mAmp_width{15.0};
-  constexpr int v0mAmp_Nbins{1400};
+  constexpr int nchEtaGap_Nbins{4000};
+  double nchEtaGap_bins[nchEtaGap_Nbins + 1] = {0};
+  for (int i = 0; i <= nchEtaGap_Nbins; ++i) {
+    nchEtaGap_bins[i] = 0.0 + (2.0 * i);
+  }
+
+  constexpr double v0mAmp_width{25.0};
+  constexpr int v0mAmp_Nbins{2000};
   double v0mAmp_bins[v0mAmp_Nbins + 1] = {0};
   for (int i = 0; i <= v0mAmp_Nbins; ++i) {
     v0mAmp_bins[i] = 0.0 + i * v0mAmp_width;
   }
 
-  constexpr int spd_Nbins{6000};
-  double spd_bins[spd_Nbins + 1] = {0};
-  for (int i = 0; i <= spd_Nbins; ++i) {
-    spd_bins[i] = -0.5 + (double)i;
-  }
-
-  hNch08 = new TH1D("hNch08", "; #it{N}_{ch} (|#eta|<0.8); Entries", nch_Nbins,
-                    nch_bins);
-  fListOfObjects->Add(hNch08);
+  hNchFull = new TH1D("hNchFull", "; #it{N}_{ch} (|#eta|<0.8); Entries",
+                      nchFull_Nbins, nchFull_bins);
 
   hNchV0M = new TH1D("hNchV0M", ";#it{N}_{ch} in the V0M; Entries",
                      v0mAmp_Nbins, v0mAmp_bins);
-  fListOfObjects->Add(hNchV0M);
 
-  hNchEtaNeg =
-      new TH1D("hNchEtaNeg", "; #it{N}_{ch} (-0.8#leq#eta#leq0); Entries ",
-               nch_Nbins, nch_bins);
-  fListOfObjects->Add(hNchEtaNeg);
+  hNchEtaGap = new TH1D("hNchEtaGap", ";#it{N};Entries", nchEtaGap_Nbins,
+                        nchEtaGap_bins);
 
-  hNchEtaPos =
-      new TH1D("hNchEtaPos", "; #it{N}_{ch} (0#leq#eta#leq0.8); Entries ",
-               nch_Nbins, nch_bins);
-  fListOfObjects->Add(hNchEtaPos);
+  hTPCFull = new TH1D("hTPCFull", ";#it{N}_{ch} (|#eta|<0.8);Entries",
+                      nchFull_Nbins, nchFull_bins);
 
-  hNchTPCEtaGap = new TH1D("hNchTPCEtaGap",
-                           "; #it{N}_{ch} (0.5#leq|#eta|#leq0.8); Entries ",
-                           nch_Nbins, nch_bins);
-  fListOfObjects->Add(hNchTPCEtaGap);
+  hTPCEtaGap =
+      new TH1D("hTPCEtaGap", ";#it{N}_{ch} (0.5#leq|#eta|#leq0.8);Entries",
+               nchEtaGap_Nbins, nchEtaGap_bins);
 
-  hNchSPDEtaGap = new TH1D("hNchSPDEtaGap",
-                           "; #it{N}_{ch} (0.7#leq|#eta|#leq1.4); Entries ",
-                           spd_Nbins, spd_bins);
-  fListOfObjects->Add(hNchSPDEtaGap);
+  hSPDFull = new TH1D("hSPDFull", ";#it{N}_{ch} (|#eta|<0.8);Entries",
+                      nchFull_Nbins, nchFull_bins);
 
-  hPtvsNch08 = new TH2D(
-      "hPtvsNch08",
-      "; #it{N}_{ch} (|#eta|<0.8); #it{p}_{T} (|#eta|#leq0.8, GeV/#it{c})",
-      nch_Nbins, nch_bins, pt_Nbins, pt_bins);
-  fListOfObjects->Add(hPtvsNch08);
+  hSPDEtaGap =
+      new TH1D("hSPDEtaGap", ";#it{N}_{ch} (0.5#leq|#eta|#leq0.8);Entries",
+               nchEtaGap_Nbins, nchEtaGap_bins);
+
+  hSPDEtaAdj =
+      new TH1D("hSPDEtaAdj", ";#it{N}_{ch} (0.3<|#eta|#leq0.6);Entries",
+               nchEtaGap_Nbins, nchEtaGap_bins);
+
+  hSPDEtaGapW =
+      new TH1D("hSPDEtaGapW", ";#it{N}_{ch} (0.7#leq|#eta|#leq1);Entries",
+               nchEtaGap_Nbins, nchEtaGap_bins);
+
+  hEtFull = new TH1D("hEtFull", ";#it{E}_{T} (|#eta|<0.8);Entries",
+                     nchFull_Nbins, nchFull_bins);
+
+  hEtEtaGap =
+      new TH1D("hEtEtaGap", ";#it{N}_{ch} (0.5#leq|#eta|#leq0.8);Entries",
+               nchEtaGap_Nbins, nchEtaGap_bins);
 
   hPtvsV0M = new TH2D(
       "hPtvsV0M",
       "; #it{N}_{ch} in the V0M; #it{p}_{T} (|#eta|#leq0.8, GeV/#it{c})",
       v0mAmp_Nbins, v0mAmp_bins, pt_Nbins, pt_bins);
-  fListOfObjects->Add(hPtvsV0M);
 
-  hPtvsNchEtaPos = new TH2D("hPtvsNchEtaPos",
-                            "; #it{N}_{ch} (0#leq#eta#leq0.8); #it{p}_{T} "
-                            "(-0.8#leq#eta#leq0, GeV/#it{c})",
-                            nch_Nbins, nch_bins, pt_Nbins, pt_bins);
-  fListOfObjects->Add(hPtvsNchEtaPos);
+  hPtvsNchFull = new TH2D(
+      "hPtvsNchFull",
+      ";#it{N}_{ch} (|#eta|<0.8);#it{p}_{T} (|#eta|#leq0.8, GeV/#it{c})",
+      nchFull_Nbins, nchFull_bins, pt_Nbins, pt_bins);
 
-  hPtvsNchEtaNeg = new TH2D("hPtvsNchEtaNeg",
-                            "; #it{N}_{ch} (-0.8#leq#eta#leq0); #it{p}_{T} "
-                            "(0#leq#eta#leq0.8, GeV/#it{c})",
-                            nch_Nbins, nch_bins, pt_Nbins, pt_bins);
-  fListOfObjects->Add(hPtvsNchEtaNeg);
+  hPtvsNchEtaGap = new TH2D("hPtvsNchEtaGap",
+                            ";#it{N}_{ch} (0.5#leq|#eta|#leq0.8);#it{p}_{T} "
+                            "(|#eta|#leq0.3, GeV/#it{c})",
+                            nchEtaGap_Nbins, nchEtaGap_bins, pt_Nbins, pt_bins);
 
-  hPtvsNchTPCEtaGap =
-      new TH2D("hPtvsNchTPCEtaGap",
-               "; #it{N}_{ch} (0.5#leq|#eta|#leq0.8); #it{p}_{T} "
-               "(|#eta|#leq0.3, GeV/#it{c})",
-               nch_Nbins, nch_bins, pt_Nbins, pt_bins);
-  fListOfObjects->Add(hPtvsNchTPCEtaGap);
+  hPtvsTPCFull = new TH2D(
+      "hPtvsTPCFull",
+      ";#it{N}_{ch} (|#eta|<0.8);#it{p}_{T} (|#eta|#leq0.8, GeV/#it{c})",
+      nchFull_Nbins, nchFull_bins, pt_Nbins, pt_bins);
 
-  hPtvsNchSPDEtaGap =
-      new TH2D("hPtvsNchSPDEtaGap",
-               "; #it{N}_{ch} (0.7#leq|#eta|#leq1.4); #it{p}_{T} "
+  hPtvsTPCEtaGap = new TH2D("hPtvsTPCEtaGap",
+                            ";#it{N}_{ch} (0.5#leq|#eta|#leq0.8); #it{p}_{T} "
+                            "(|#eta|#leq0.3, GeV/#it{c})",
+                            nchEtaGap_Nbins, nchEtaGap_bins, pt_Nbins, pt_bins);
+
+  hPtvsSPDFull = new TH2D(
+      "hPtvsSPDFull",
+      ";#it{N}_{ch} (|#eta|<0.8);#it{p}_{T} (|#eta|#leq0.8, GeV/#it{c})",
+      nchFull_Nbins, nchFull_bins, pt_Nbins, pt_bins);
+
+  hPtvsSPDEtaGap = new TH2D("hPtvsSPDEtaGap",
+                            "; #it{N}_{ch} (0.5#leq|#eta|#leq0.8); #it{p}_{T} "
+                            "(|#eta#|leq0.3, GeV/#it{c})",
+                            nchEtaGap_Nbins, nchEtaGap_bins, pt_Nbins, pt_bins);
+
+  hPtvsSPDEtaAdj = new TH2D("hPtvsSPDEtaAdj",
+                            "; #it{N}_{ch} (0.3<|#eta|#leq0.6); #it{p}_{T} "
+                            "(|#eta#|leq0.3, GeV/#it{c})",
+                            nchEtaGap_Nbins, nchEtaGap_bins, pt_Nbins, pt_bins);
+
+  hPtvsSPDEtaGapW =
+      new TH2D("hPtvsSPDEtaGapW",
+               "; #it{N}_{ch} (0.7#leq|#eta|#leq1); #it{p}_{T} "
                "(|#eta#|leq0.4, GeV/#it{c})",
-               spd_Nbins, spd_bins, pt_Nbins, pt_bins);
-  fListOfObjects->Add(hPtvsNchSPDEtaGap);
+               nchEtaGap_Nbins, nchEtaGap_bins, pt_Nbins, pt_bins);
+
+  hPtvsEtFull = new TH2D(
+      "hPtvsEtFull",
+      ";#it{E}_{T} (|#eta|<0.8);#it{p}_{T} (|#eta|#leq0.8, GeV/#it{c})",
+      nchFull_Nbins, nchFull_bins, pt_Nbins, pt_bins);
+
+  hPtvsEtEtaGap = new TH2D("hPtvsEtEtaGap",
+                           ";#it{E}_{T} (0.5#leq|#eta|#leq0.8);#it{p}_{T} "
+                           "(|#eta|#leq0.3, GeV/#it{c})",
+                           nchEtaGap_Nbins, nchEtaGap_bins, pt_Nbins, pt_bins);
+
+  fListOfObjects->Add(hNchV0M);
+  fListOfObjects->Add(hPtvsV0M);
+  fListOfObjects->Add(hNchFull);
+  fListOfObjects->Add(hPtvsNchFull);
+  fListOfObjects->Add(hNchEtaGap);
+  fListOfObjects->Add(hPtvsNchEtaGap);
+  fListOfObjects->Add(hTPCFull);
+  fListOfObjects->Add(hPtvsTPCFull);
+  fListOfObjects->Add(hTPCEtaGap);
+  fListOfObjects->Add(hPtvsTPCEtaGap);
+  fListOfObjects->Add(hSPDFull);
+  fListOfObjects->Add(hPtvsSPDFull);
+  fListOfObjects->Add(hSPDEtaGap);
+  fListOfObjects->Add(hPtvsSPDEtaGap);
+  fListOfObjects->Add(hSPDEtaAdj);
+  fListOfObjects->Add(hPtvsSPDEtaAdj);
+  fListOfObjects->Add(hSPDEtaGapW);
+  fListOfObjects->Add(hPtvsSPDEtaGapW);
+  fListOfObjects->Add(hEtFull);
+  fListOfObjects->Add(hPtvsEtFull);
+  fListOfObjects->Add(hEtEtaGap);
+  fListOfObjects->Add(hPtvsEtEtaGap);
 
   // ### List of outputs
   PostData(1, fListOfObjects);
@@ -265,11 +337,30 @@ void AliAnalysisTaskMCGenSpeedOfSound::UserExec(Option_t *) {
   Bool_t isEventMCSelected = IsMCEventSelected(fMcEvent);
   if (!isEventMCSelected) return;
 
+  bool isgoodvtx{IsGoodVertex()};
+  if (!isgoodvtx) {
+    return;
+  }
+
   GetMultipliciy();
 
   PostData(1, fListOfObjects);
 
   return;
+}
+//______________________________________________________________________________
+bool AliAnalysisTaskMCGenSpeedOfSound::IsGoodVertex() const {
+  bool goodvetex{false};
+  const AliVVertex *vtx = (AliVVertex *)fMcEvent->GetPrimaryVertex();
+  if (!vtx) {
+    return goodvetex;
+  }
+
+  double zvtx{vtx->GetZ()};
+  if (zvtx <= 10.0) {
+    goodvetex = true;
+  }
+  return goodvetex;
 }
 //______________________________________________________________________________
 Bool_t AliAnalysisTaskMCGenSpeedOfSound::IsMCEventSelected(TObject *obj) {
@@ -284,17 +375,17 @@ Bool_t AliAnalysisTaskMCGenSpeedOfSound::IsMCEventSelected(TObject *obj) {
 
 //______________________________________________________________________
 void AliAnalysisTaskMCGenSpeedOfSound::GetMultipliciy() {
-  bool isPhysPrim{false};
-  double qPart{0.0};
-  double etaPart{999.0};
-  double ptPart{999.0};
-
-  int eta08{0};
-  int v0m{0};
-  int etapos{0};
-  int etaneg{0};
-  int tpcetagap{0};
-  int spdetagap{0};
+  double fSPDFull{0.0};
+  double fSPDEtaAdj{0.0};
+  double fSPDEtaGap{0.0};
+  double fSPDEtaGapW{0.0};
+  double fTPCFull{0.0};
+  double fTPCEtaGap{0.0};
+  double fEtFull{0.0};
+  double fEtEtaGap{0.0};
+  double fV0{0.0};
+  double fNchFull{0.0};
+  double fNchEtaGap{0.0};
 
   // ### particle loop
   for (Int_t ipart = 0; ipart < fMcEvent->GetNumberOfTracks(); ++ipart) {
@@ -303,30 +394,52 @@ void AliAnalysisTaskMCGenSpeedOfSound::GetMultipliciy() {
     if (!mcPart) continue;
     // selection of primary charged particles
     if (!(mcPart->GetPDG())) continue;
-    qPart = mcPart->GetPDG()->Charge() / 3.;
+    double qPart{mcPart->GetPDG()->Charge() / 3.};
     if (TMath::Abs(qPart) < 0.001) continue;
-    isPhysPrim = fMcEvent->IsPhysicalPrimary(ipart);
+    bool isPhysPrim{fMcEvent->IsPhysicalPrimary(ipart)};
     if (!isPhysPrim) continue;
 
-    etaPart = mcPart->Eta();
+    double etaPart{mcPart->Eta()};
+    double ptPart{mcPart->Pt()};
+    double mass{mcPart->GetMass()};
+
     if (TMath::Abs(etaPart) <= 0.8) {
-      eta08++;
+      if (ptPart >= 0.0) {
+        fNchFull++;
+      }
+      if (ptPart >= 0.03) {
+        fSPDFull++;
+      }
+      if (ptPart >= 0.15) {
+        fTPCFull++;
+        fEtFull += TMath::Sqrt(ptPart * ptPart + mass * mass);
+      }
+    }
+    if (TMath::Abs(etaPart) > 0.3 && TMath::Abs(etaPart) <= 0.6) {
+      if (ptPart >= 0.03) {
+        fSPDEtaAdj++;
+      }
+    }
+    if (TMath::Abs(etaPart) >= 0.7 && TMath::Abs(etaPart) <= 1.0) {
+      if (ptPart >= 0.03) {
+        fSPDEtaGapW++;
+      }
+    }
+    if (TMath::Abs(etaPart) >= 0.5 && TMath::Abs(etaPart) <= 0.8) {
+      if (ptPart >= 0.0) {
+        fNchEtaGap++;
+      }
+      if (ptPart >= 0.03) {
+        fSPDEtaGap++;
+      }
+      if (ptPart >= 0.15) {
+        fTPCEtaGap++;
+        fEtEtaGap += TMath::Sqrt(ptPart * ptPart + mass * mass);
+      }
     }
     if ((2.8 < etaPart && etaPart < 5.1) ||
         (-3.7 < etaPart && etaPart < -1.7)) {
-      v0m++;
-    }
-    if (etaPart >= -0.8 && etaPart < 0.0) {
-      etaneg++;
-    }
-    if (etaPart >= 0.0 && etaPart <= 0.8) {
-      etapos++;
-    }
-    if (TMath::Abs(etaPart) >= 0.5 && TMath::Abs(etaPart) <= 0.8) {
-      tpcetagap++;
-    }
-    if (TMath::Abs(etaPart) >= 0.7 && TMath::Abs(etaPart) <= 1.4) {
-      spdetagap++;
+      fV0++;
     }
   }  // particle loop
 
@@ -337,37 +450,42 @@ void AliAnalysisTaskMCGenSpeedOfSound::GetMultipliciy() {
     if (!mcPart) continue;
     // selection of primary charged particles
     if (!(mcPart->GetPDG())) continue;
-    qPart = mcPart->GetPDG()->Charge() / 3.;
+    double qPart{mcPart->GetPDG()->Charge() / 3.};
     if (TMath::Abs(qPart) < 0.001) continue;
-    isPhysPrim = fMcEvent->IsPhysicalPrimary(ipart);
+    bool isPhysPrim{fMcEvent->IsPhysicalPrimary(ipart)};
     if (!isPhysPrim) continue;
 
-    etaPart = mcPart->Eta();
-    ptPart = mcPart->Pt();
+    double etaPart{mcPart->Eta()};
+    double ptPart{mcPart->Pt()};
+
     if (TMath::Abs(etaPart) <= 0.8) {
-      hPtvsNch08->Fill(eta08, ptPart);
-      hPtvsV0M->Fill(v0m, ptPart);
-    }
-    if (etaPart >= -0.8 && etaPart < 0.0) {
-      hPtvsNchEtaPos->Fill(etapos, ptPart);
-    }
-    if (etaPart >= 0.0 && etaPart <= 0.8) {
-      hPtvsNchEtaNeg->Fill(etaneg, ptPart);
+      hPtvsV0M->Fill(fV0, ptPart);
+      hPtvsNchFull->Fill(fNchFull, ptPart);
+      hPtvsTPCFull->Fill(fTPCFull, ptPart);
+      hPtvsSPDFull->Fill(fSPDFull, ptPart);
+      hPtvsEtFull->Fill(fEtFull, ptPart);
     }
     if (TMath::Abs(etaPart) <= 0.3) {
-      hPtvsNchTPCEtaGap->Fill(tpcetagap, ptPart);
-    }
-    if (TMath::Abs(etaPart) <= 0.4) {
-      hPtvsNchSPDEtaGap->Fill(spdetagap, ptPart);
+      hPtvsNchEtaGap->Fill(fNchEtaGap, ptPart);
+      hPtvsTPCEtaGap->Fill(fTPCEtaGap, ptPart);
+      hPtvsSPDEtaAdj->Fill(fSPDEtaAdj, ptPart);
+      hPtvsSPDEtaGap->Fill(fSPDEtaGap, ptPart);
+      hPtvsSPDEtaGapW->Fill(fSPDEtaGapW, ptPart);
+      hPtvsEtEtaGap->Fill(fEtEtaGap, ptPart);
     }
   }  // particle loop
 
-  hNch08->Fill(eta08);
-  hNchV0M->Fill(v0m);
-  hNchEtaNeg->Fill(etaneg);
-  hNchEtaPos->Fill(etapos);
-  hNchTPCEtaGap->Fill(tpcetagap);
-  hNchSPDEtaGap->Fill(spdetagap);
+  hNchV0M->Fill(fV0);
+  hNchFull->Fill(fNchFull);
+  hNchEtaGap->Fill(fNchEtaGap);
+  hTPCFull->Fill(fTPCFull);
+  hTPCEtaGap->Fill(fTPCEtaGap);
+  hSPDFull->Fill(fSPDFull);
+  hSPDEtaAdj->Fill(fSPDEtaAdj);
+  hSPDEtaGap->Fill(fSPDEtaGap);
+  hSPDEtaGapW->Fill(fSPDEtaGapW);
+  hEtFull->Fill(fEtFull);
+  hEtEtaGap->Fill(fEtEtaGap);
 }
 
 //______________________________________________________________________________
