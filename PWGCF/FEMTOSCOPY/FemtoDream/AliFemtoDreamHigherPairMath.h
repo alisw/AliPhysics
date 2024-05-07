@@ -14,73 +14,80 @@
 #include "AliFemtoDreamCollConfig.h"
 #include "AliFemtoDreamCorrHists.h"
 #include <vector>
-class AliFemtoDreamHigherPairMath {
- public:
+class AliFemtoDreamHigherPairMath
+{
+public:
   AliFemtoDreamHigherPairMath(AliFemtoDreamCollConfig *conf, bool minBooking =
-                                  true);
+                                                                 true);
   virtual ~AliFemtoDreamHigherPairMath();
-  AliFemtoDreamHigherPairMath(const AliFemtoDreamHigherPairMath& samp);
-  AliFemtoDreamHigherPairMath& operator=(
-      const AliFemtoDreamHigherPairMath& math);
-  void SetBField(float bielefield) {
+  AliFemtoDreamHigherPairMath(const AliFemtoDreamHigherPairMath &samp);
+  AliFemtoDreamHigherPairMath &operator=(
+      const AliFemtoDreamHigherPairMath &math);
+  void SetBField(float bielefield)
+  {
     fBField = bielefield;
   }
-  int RandomNumber() {
+  int RandomNumber()
+  {
     AliFatal("Why would you use this? \n");
-    //decided by a fair xkcd dice roll.
+    // decided by a fair xkcd dice roll.
     return 4;
-  }
-  ;
-  bool PassesPairSelection(int iHC, AliFemtoDreamBasePart& part1,
-                           AliFemtoDreamBasePart& part2, float RelativeK,
+  };
+  bool PassesPairSelection(int iHC, AliFemtoDreamBasePart &part1,
+                           AliFemtoDreamBasePart &part2, float RelativeK,
                            bool SEorME, bool Recalculate);
-  bool PassesMDPairSelection(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2);
-  bool CommonAncestors(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2);
-  bool CommonMotherResonance(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2);
-  bool IsResonance(int PDG); 
+  bool PassesMDPairSelection(AliFemtoDreamBasePart &part1, AliFemtoDreamBasePart &part2);
+  bool CommonAncestors(AliFemtoDreamBasePart &part1, AliFemtoDreamBasePart &part2);
+  bool CommonMotherResonance(AliFemtoDreamBasePart &part1, AliFemtoDreamBasePart &part2);
+  bool IsResonance(int PDG);
   void RecalculatePhiStar(AliFemtoDreamBasePart &part);
-  float FillSameEvent(int iHC, int Mult, float cent, AliFemtoDreamBasePart& part1,
-                      int PDGPart1, AliFemtoDreamBasePart& part2, int PDGPart2, float PartSumPtLimit1, float PartSumPtLimit2);
+  float FillSameEvent(int iHC, int Mult, float cent, AliFemtoDreamBasePart &part1,
+                      int PDGPart1, AliFemtoDreamBasePart &part2, int PDGPart2, float PartSumPtLimit1, float PartSumPtLimit2);
   void MassQA(int iHC, float RelK, AliFemtoDreamBasePart &part1, int PDGPart1,
               AliFemtoDreamBasePart &part2, int PDGPart2);
   void MEMassQA(int iHC, float RelK, AliFemtoDreamBasePart &part1, int PDGPart1,
-              AliFemtoDreamBasePart &part2, int PDGPart2);
-  void SEMomentumResolution(int iHC, AliFemtoDreamBasePart* part1, int PDGPart1,
-                            AliFemtoDreamBasePart* part2, int PDGPart2,
+                AliFemtoDreamBasePart &part2, int PDGPart2);
+  void SEMomentumResolution(int iHC, AliFemtoDreamBasePart *part1, int PDGPart1,
+                            AliFemtoDreamBasePart *part2, int PDGPart2,
                             float RelativeK);
-  void SEDetaDPhiPlots(int iHC, AliFemtoDreamBasePart& part1, int PDGPart1,
-                       AliFemtoDreamBasePart& part2, int PDGPart2,
+  void SEDetaDPhiPlots(int iHC, AliFemtoDreamBasePart &part1, int PDGPart1,
+                       AliFemtoDreamBasePart &part2, int PDGPart2,
                        float RelativeK, bool recalculate);
   void FillPairCounterSE(int iHC, unsigned int sizePartOne,
-                         unsigned int sizePartTwo) {
+                         unsigned int sizePartTwo)
+  {
     fHists->FillPartnersSE(iHC, sizePartOne, sizePartTwo);
   }
-  float FillMixedEvent(int iHC, int Mult, float cent, AliFemtoDreamBasePart& part1,
-                       int PDGPart1, AliFemtoDreamBasePart& part2, int PDGPart2,
+  float FillMixedEvent(int iHC, int Mult, float cent, AliFemtoDreamBasePart &part1,
+                       int PDGPart1, AliFemtoDreamBasePart &part2, int PDGPart2,
                        AliFemtoDreamCollConfig::UncorrelatedMode mode);
-  void MEMomentumResolution(int iHC, AliFemtoDreamBasePart* part1, int PDGPart1,
-                            AliFemtoDreamBasePart* part2, int PDGPart2,
+  void MEMomentumResolution(int iHC, AliFemtoDreamBasePart *part1, int PDGPart1,
+                            AliFemtoDreamBasePart *part2, int PDGPart2,
                             float RelativeK);
-  void MEDetaDPhiPlots(int iHC, AliFemtoDreamBasePart& part1, int PDGPart1,
-                       AliFemtoDreamBasePart& part2, int PDGPart2,
+  void MEDetaDPhiPlots(int iHC, AliFemtoDreamBasePart &part1, int PDGPart1,
+                       AliFemtoDreamBasePart &part2, int PDGPart2,
                        float RelativeK, bool recalculate);
-  void FillEffectiveMixingDepth(int iHC, int iDepth) {
+  void FillEffectiveMixingDepth(int iHC, int iDepth)
+  {
     fHists->FillEffectiveMixingDepth(iHC, iDepth);
   }
   void FillPairCounterME(int iHC, unsigned int sizePartOne,
-                         unsigned int sizePartTwo) {
+                         unsigned int sizePartTwo)
+  {
     fHists->FillPartnersME(iHC, sizePartOne, sizePartTwo);
   }
-  TList* GetHistList() {
+  TList *GetHistList()
+  {
     return fHists->GetHistList();
   }
-  TList* GetQAHists() {
+  TList *GetQAHists()
+  {
     return fHists->GetQAHists();
   }
-  TString ClassName() {
+  TString ClassName()
+  {
     return "HighMaths";
-  }
-  ;
+  };
 
   static float RelativePairMomentum(AliFemtoDreamBasePart *PartOne,
                                     const int pdg1,
@@ -94,8 +101,14 @@ class AliFemtoDreamHigherPairMath {
   static float RelativePairmT(AliFemtoDreamBasePart *PartOne, const int pdg1,
                               AliFemtoDreamBasePart *PartTwo, const int pdg2);
   static float RelativePairmT(TLorentzVector &PartOne, TLorentzVector &PartTwo);
+  static float RelativePairMomentumV0(AliFemtoDreamBasePart *part1,
+                                      AliFemtoDreamBasePart *part2,
+                                      const int pdg2);
+  static float RelativePairmTV0(AliFemtoDreamBasePart *part1,
+                                AliFemtoDreamBasePart *part2,
+                                const int pdg2);
 
- private:
+private:
   bool DeltaEtaDeltaPhi(int Hist, AliFemtoDreamBasePart &part1,
                         AliFemtoDreamBasePart &part2, bool SEorME, float relk);
   AliFemtoDreamCorrHists *fHists;
@@ -109,7 +122,6 @@ class AliFemtoDreamHigherPairMath {
   float fDeltaPhiEtaMax;
   TRandom3 fRandom;
   double fPi;
-
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIFEMTODREAMHIGHERPAIRMATH_H_ */

@@ -25,6 +25,8 @@ ClassImp(AliAnalysisTaskFemtoDreamRho)
       fDoAncestors(false),
       fDoProjections(false),
       frhoPtThreshold(0.),
+      fIsSameCharge(false),
+      fIsMCTrueRhoCombBkrg(false),
       fOutput(nullptr),
       fEvent(nullptr),
       fTrack(nullptr),
@@ -82,7 +84,7 @@ ClassImp(AliAnalysisTaskFemtoDreamRho)
 }
 
 AliAnalysisTaskFemtoDreamRho::AliAnalysisTaskFemtoDreamRho(const char *name,
-                                                           bool isMC, bool doMcTruth, bool doCleaning, bool doAncestors, bool doProjector, float rhoPtThreshold)
+                                                           bool isMC, bool doMcTruth, bool doCleaning, bool doAncestors, bool doProjector, float rhoPtThreshold, bool isSameCharge, bool isMCTrueRhoCombBkrg)
     : AliAnalysisTaskSE(name),
       fTrigger(AliVEvent::kINT7),
       fIsMC(isMC),
@@ -91,6 +93,8 @@ AliAnalysisTaskFemtoDreamRho::AliAnalysisTaskFemtoDreamRho(const char *name,
       fDoAncestors(doAncestors),
       fDoProjections(doProjector),
       frhoPtThreshold(rhoPtThreshold),
+      fIsSameCharge(isSameCharge),
+      fIsMCTrueRhoCombBkrg(isMCTrueRhoCombBkrg),
       fOutput(nullptr),
       fEvent(nullptr),
       fTrack(nullptr),
@@ -610,11 +614,23 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
       Particles.push_back(*fTrack);
       Tracks_Particles_Minv.push_back(iTrack);
     }
-    if (fNegPionCuts->isSelected(fTrack))
+    if (!fIsSameCharge)
     {
-      fTrack->SetInvMass(massChargedPion); // Since we combine these later we set the inv. mass to the PDG value
-      AntiParticles.push_back(*fTrack);
-      Tracks_AntiParticles_Minv.push_back(iTrack);
+      if (fNegPionCuts->isSelected(fTrack))
+      {
+        fTrack->SetInvMass(massChargedPion); // Since we combine these later we set the inv. mass to the PDG value
+        AntiParticles.push_back(*fTrack);
+        Tracks_AntiParticles_Minv.push_back(iTrack);
+      }
+    }
+    else
+    { // In this case we want the minv plots for the same charge pions also kStar differential
+      if (fPosPionCuts->isSelected(fTrack))
+      {
+        fTrack->SetInvMass(massChargedPion); // Since we combine these later we set the inv. mass to the PDG value
+        AntiParticles.push_back(*fTrack);
+        Tracks_AntiParticles_Minv.push_back(iTrack);
+      }
     }
     if (fPosProtonCuts->isSelected(fTrack))
     {
@@ -636,7 +652,14 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
     for (const auto &negPion : AntiParticles)
     {
       counter_tracks_antiPart++;
-      fRhoParticle->Setv0(posPion, negPion, Event, false, false, true);
+      if (!fIsSameCharge)
+      {
+        fRhoParticle->Setv0(posPion, negPion, Event, false, false, true);
+      }
+      else
+      { // We need to avoid auto-correaltions hence we want to skip the first pairing entirely
+        fRhoParticle->Setv0(posPion, negPion, Event, true, true, true);
+      }
       const float pT_rho_candidate = fRhoParticle->GetPt();
       // At a pT > 1.8 GeV we start to see the rho in the M_inv (for now hard-coded can be optimized)
       if (pT_rho_candidate < frhoPtThreshold - 0.0001) //
@@ -1039,6 +1062,12 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
 
         if (mcpdg == 113) // Select all the MC true rhos
         {
+
+          if (fIsMCTrueRhoCombBkrg)
+          { // If we only want the comb. background made out of (pipi)_{combinatorial}p triplets then we simply skip all ture rhos,
+            // but as we have purity of the pi and p we will still require them to be true pi and p
+            continue;
+          }
 
           if (pt < frhoPtThreshold - 0.0001) //
           {
