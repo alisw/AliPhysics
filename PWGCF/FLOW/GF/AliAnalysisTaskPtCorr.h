@@ -84,6 +84,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetOTFGenerator(TString gen) { fGenerator = gen; }
   void SetUseIP(bool newval) { fUseIP = newval;}
   void SetUseCentCalibration(bool newval) { fUseCentCalibration = newval; }
+  void SetFillPtContCent(bool newval) { fFillPtContCent = newval; }
   void SetRejectMBTriggeredEventsMarkedSpecialTrigger(bool newval) { fRejectMBtriggerEventsMarkedSpecial = newval; }
  protected:
   AliEventCuts fEventCuts;
@@ -135,6 +136,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Bool_t fUseNch;
   Bool_t fUseV0M;
   Bool_t fUseNUEOne;
+  Bool_t fFillPtContCent;
   Int_t fPtMpar;
   Double_t fEtaLow;
   vector<Double_t> fEtaMptAcceptance;
@@ -149,6 +151,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH2D *fESDvsFB128;
   TList *fptList;
   AliPtPtContainer  *fPtCont;
+  AliPtPtContainer  *fPtContCent;
   UInt_t fTriggerType;
   TList *fSpectraList; //!
   TH3D **fSpectraGen; //!

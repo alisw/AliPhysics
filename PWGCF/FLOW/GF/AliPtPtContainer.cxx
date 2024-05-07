@@ -178,7 +178,7 @@ TH1* AliPtPtContainer::getCorrHist(int ind, int m) {
 TH1* AliPtPtContainer::getCentralMomentHist(int ind, int m) {
   if(!fCentralMomentList) CreateCentralMomentList();
   if(!fCentralMomentList) return 0;
-  if(ind+1<fCentralMomentList->GetEntries()) return (TH1*)fCentralMomentList->FindObject(Form("cm%i_%i",m+1,ind));
+  if(ind+1<fCentralMomentList->GetEntries()) return (TH1*)fCentralMomentList->FindObject(Form("cm%i_%i",m,ind));
   return 0;
 }
 void AliPtPtContainer::CreateCentralMomentList() {
