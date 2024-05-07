@@ -163,6 +163,11 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TProfile* pZDCvsSPDEtaGapW;
   TProfile* pZDCvsEtFull;
   TProfile* pZDCvsEtEtaGap;
+  TH2F* hPtvsEtFullWidepT;
+  TH2F* hPtvsSPDFullWidepT;
+  TH2F* hPtvsTPCFullWidepT;
+  TH2F* hPtvsSPDEtaGapWidepT;
+  TH2F* hPtvsSPDEtaGapWWidepT;
 
   AliAnalysisTaskDataSpeedOfSound(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented

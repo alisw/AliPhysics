@@ -2,8 +2,8 @@
  *
  *  \class AliAnalysisTaskMCGenSpeedOfSound
  *
- *  Antonio Ortiz (ICN-UNAM), antonio.ortiz@nucleares.unam.mx
- *  First version: 	April 23, 2020
+ *  Omar Vazqquez (UH),
+ *  *  First version: 	May 7, 2024
  *
  */
 #ifndef ALIANALYSISTASKMCGENSPEEDOFSOUND_H
@@ -61,24 +61,33 @@ class AliAnalysisTaskMCGenSpeedOfSound : public AliAnalysisTaskSE {  //
 
  protected:
   bool IsMCEventSelected(TObject* obj);
+  bool IsGoodVertex() const;
 
   AliMCEvent* fMcEvent;              //!<! MC event
   AliInputEventHandler* fMcHandler;  //!<! MCEventHandler
-
   AliStack* fStack;
-  TH1D* hNch08;
+  TH1D* hNchFull;
   TH1D* hNchV0M;
-  TH1D* hNchEtaNeg;
-  TH1D* hNchEtaPos;
-  TH1D* hNchTPCEtaGap;
-  TH1D* hNchSPDEtaGap;
-  TH2D* hPtvsNch08;
+  TH1D* hTPCEtaGap;
+  TH1D* hSPDEtaGap;
+  TH1D* hNchEtaGap;
+  TH1D* hSPDFull;
+  TH1D* hSPDEtaAdj;
+  TH1D* hSPDEtaGapW;
+  TH1D* hTPCFull;
+  TH1D* hEtFull;
+  TH1D* hEtEtaGap;
+  TH2D* hPtvsNchFull;
   TH2D* hPtvsV0M;
-  TH2D* hPtvsNchEtaPos;
-  TH2D* hPtvsNchEtaNeg;
-  TH2D* hPtvsNchTPCEtaGap;
-  TH2D* hPtvsNchSPDEtaGap;
-
+  TH2D* hPtvsTPCEtaGap;
+  TH2D* hPtvsSPDEtaGap;
+  TH2D* hPtvsNchEtaGap;
+  TH2D* hPtvsSPDFull;
+  TH2D* hPtvsSPDEtaAdj;
+  TH2D* hPtvsSPDEtaGapW;
+  TH2D* hPtvsTPCFull;
+  TH2D* hPtvsEtFull;
+  TH2D* hPtvsEtEtaGap;
   TList* fListOfObjects;  //!<! Output list of objects
 
   AliAnalysisTaskMCGenSpeedOfSound(
@@ -87,7 +96,7 @@ class AliAnalysisTaskMCGenSpeedOfSound : public AliAnalysisTaskSE {  //
       const AliAnalysisTaskMCGenSpeedOfSound&);  // not implemented
 
   ClassDef(AliAnalysisTaskMCGenSpeedOfSound,
-           1);  // Analysis task for LF spectra analysis
+           2);  // Analysis task for LF spectra analysis
 };
 
 #endif
