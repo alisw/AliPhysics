@@ -67,6 +67,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fUseNch(kFALSE),
   fUseV0M(kFALSE),
   fUseNUEOne(kFALSE),
+  fFillPtContCent(kFALSE),
   fPtMpar(8),
   fEtaMptAcceptance{-0.8,0.8},
   fEtaMultAcceptance{-0.8,0.8},
@@ -80,6 +81,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fESDvsFB128(0),
   fptList(0),
   fPtCont(0),
+  fPtContCent(0),
   fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
   fDetectorResponse(0),
   fRunNo(0),
@@ -156,6 +158,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fUseNch(kFALSE),
   fUseV0M(kFALSE),
   fUseNUEOne(kFALSE),
+  fFillPtContCent(kFALSE),
   fPtMpar(8),
   fEtaMptAcceptance{-0.8,0.8},
   fEtaMultAcceptance{-0.8,0.8},
@@ -169,6 +172,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fESDvsFB128(0),
   fptList(0),
   fPtCont(0),
+  fPtContCent(0),
   fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
   fDetectorResponse(0),
   fRunNo(0),
@@ -273,6 +277,13 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   const Int_t nDefaultCentBins=90;
   Double_t *defaultCentBins = new Double_t[nDefaultCentBins+1];
   for(Int_t i=0;i<=nDefaultCentBins; i++) defaultCentBins[i] = i;
+  if(fFillPtContCent){
+      fPtContCent = new AliPtPtContainer("ptcont_cent_ch","ptcont_cent_ch",nDefaultCentBins,defaultCentBins,fPtMpar);
+    fPtContCent->SetEventWeight(fEventWeight);
+    fptList->Add(fPtContCent);
+    if(fNBootstrapProfiles) fPtContCent->InitializeSubsamples(fNBootstrapProfiles);
+  }
+
   const Int_t nDefaultNchBins=4500;
   Double_t *defaultNchBins = new Double_t[nDefaultNchBins+1];
   for(Int_t i=0;i<=nDefaultNchBins; i++) defaultNchBins[i] = i+0.5;
@@ -454,6 +465,11 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   fPtCont->CalculateCorrelations(wp);
   fPtCont->FillProfiles(l_Multi,l_Random);
   if(fCMflag&1) fPtCont->FillCMProfiles(wp,l_Multi,l_Random);
+  if(fFillPtContCent){
+    fPtContCent->CalculateCorrelations(wp);
+    fPtContCent->FillProfiles(l_Cent,l_Random);
+    if(fCMflag&1) fPtContCent->FillCMProfiles(wp,l_Cent,l_Random);
+  }
   fV0MMulti->Fill(l_Cent);
   fMultiDist->Fill(l_Multi);
   fMultVsCent->Fill(l_Cent,l_Multi);
