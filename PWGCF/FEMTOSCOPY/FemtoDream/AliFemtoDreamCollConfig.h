@@ -13,103 +13,115 @@
 #include "TNtuple.h"
 #include "AliFemtoDreamEvent.h"
 
-class AliFemtoDreamCollConfig : public TNamed {
- public:
-  enum UncorrelatedMode {
+class AliFemtoDreamCollConfig : public TNamed
+{
+public:
+  enum UncorrelatedMode
+  {
     kNone = 0,
     kPhiSpin = 1,
     kStravinsky = 2,
     kCorrelatedPhi = 3
   };
   AliFemtoDreamCollConfig();
-  AliFemtoDreamCollConfig(const AliFemtoDreamCollConfig& config);
-  AliFemtoDreamCollConfig(const char *name, const char *title, bool QACouts =
-                              false);
-  AliFemtoDreamCollConfig &operator=(const AliFemtoDreamCollConfig& config);
+  AliFemtoDreamCollConfig(const AliFemtoDreamCollConfig &config);
+  AliFemtoDreamCollConfig(const char *name, const char *title, bool QACouts = false);
+  AliFemtoDreamCollConfig &operator=(const AliFemtoDreamCollConfig &config);
   virtual ~AliFemtoDreamCollConfig();
-  void SetMultBinning(bool doIt) {
+  void SetMultBinning(bool doIt)
+  {
     fMultBinning = doIt;
-  }
-  ;
-  void SetCentBinning(bool doIt) {
+  };
+  void SetCentBinning(bool doIt)
+  {
     fCentBinning = doIt;
-  }
-  ;
-  void SetkTBinning(bool doIt) {
+  };
+  void SetkTBinning(bool doIt)
+  {
     fkTBinning = doIt;
-  }
-  ;
-  void SetmTBinning(bool doIt) {
+  };
+  void SetmTBinning(bool doIt)
+  {
     fmTBinning = doIt;
-  }
-  ;
-  void SetkTandMultBinning(bool doIt) {
+  };
+  void SetkTandMultBinning(bool doIt)
+  {
     fkTandMultBinning = doIt;
-  }
-  ;
-  void SetkTandMultPtBinning(bool doIt) {
+  };
+  void SetkTandMultPtBinning(bool doIt)
+  {
     fkTandMultPtBinning = doIt;
-  }
-  ;
-  void SetkTandMultMCTrueBinning(bool doIt) {
+  };
+  void SetkTandMultMCTrueBinning(bool doIt)
+  {
     fkTandMultMCTrueBinning = doIt;
-  }
-  ;
-  void SetPtQA(bool doIt) {
+  };
+  void SetMinvKtandRelativeKBinning(bool doIt)
+  {
+    fMinvKtandRelativeKBinning = doIt;
+  };
+  void SetPtQA(bool doIt)
+  {
     fPtQA = doIt;
   }
-  void SetMassQA(bool doIt) {
+  void SetMassQA(bool doIt)
+  {
     fMassQA = doIt;
   }
-  void SetMomentumResolution(bool doIt) {
+  void SetMomentumResolution(bool doIt)
+  {
     fMomentumResolution = doIt;
-  }
-  ;
-  void SetkTCentralityBinning(bool doIt) {
+  };
+  void SetkTCentralityBinning(bool doIt)
+  {
     fkTCentrality = doIt;
-  }
-  ;
-  void SetPhiEtaBinnign(bool doIt) {
+  };
+  void SetPhiEtaBinnign(bool doIt)
+  {
     fPhiEtaBinning = doIt;
     fNumberRadii = 9;
-  }
-  ;
-  void SetdPhidEtaPlots(bool doIt) {
+  };
+  void SetdPhidEtaPlots(bool doIt)
+  {
     fdPhidEtaPlots = doIt;
   }
-  void SetdPhidEtaPlotsSmallK(bool doIt) {
+  void SetdPhidEtaPlotsSmallK(bool doIt)
+  {
     fdPhidEtaPlotsSmallK = doIt;
-  }
-  ;
-  void SetUseEventMixing(bool use) {
+  };
+  void SetUseEventMixing(bool use)
+  {
     fMixedEventStatistics = use;
-  }
-  ;
-  void SetUsePhiSpinning(bool use) {
+  };
+  void SetUsePhiSpinning(bool use)
+  {
     fGetTheControlSampel = use;
-  }
-  ;
-  void SetControlMethod(AliFemtoDreamCollConfig::UncorrelatedMode mode) {
+  };
+  void SetControlMethod(AliFemtoDreamCollConfig::UncorrelatedMode mode)
+  {
     fMode = mode;
-  }
-  ;
-  void SetAncestors(bool doIt) {
+  };
+  void SetAncestors(bool doIt)
+  {
     fAncestors = doIt;
   }
-  void SetRemoveAncestorsResonances(bool doIt) {
+  void SetRemoveAncestorsResonances(bool doIt)
+  {
     fRemoveAncestorsResonances = doIt;
   }
-  void SetpTOnepTTwokStarPlotsmT(bool doIt, float kStarCutOff) {
+  void SetpTOnepTTwokStarPlotsmT(bool doIt, float kStarCutOff)
+  {
     fpTOnepTTwokStarPlotsmT = doIt;
-    fpTOnepTTwokStarCut = kStarCutOff; 
+    fpTOnepTTwokStarCut = kStarCutOff;
   }
-  void SetDomTMultBinning(bool doIt) {
-    fmTMultBinning = doIt; 
+  void SetDomTMultBinning(bool doIt)
+  {
+    fmTMultBinning = doIt;
   };
-  void SetDomTdEtadPhiBinning(bool doIt) {
-    fmTdEtadPhi = doIt; 
-  }
-    ;
+  void SetDomTdEtadPhiBinning(bool doIt)
+  {
+    fmTdEtadPhi = doIt;
+  };
   void SetZBins(std::vector<float> ZBins);
   void SetMultBins(std::vector<int> MultBins);
   void SetPDGCodes(std::vector<int> PDGCodes);
@@ -118,150 +130,163 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetMaxKRel(std::vector<float> maxKRel);
   void SetCentBins(std::vector<int> CentBins);
   void SetmTBins(std::vector<float> mTBins);
-  //TODO: should be renamed since besides the QA it also specifies the
-  // number of tracks to compare when doing the CPR cut
+  // TODO: should be renamed since besides the QA it also specifies the
+  //  number of tracks to compare when doing the CPR cut
   void SetExtendedQAPairs(std::vector<int> whichPairs);
   void SetClosePairRejection(std::vector<bool> whichPairs);
-  void SetMixingDepth(int MixingDepth) {
+  void SetMixingDepth(int MixingDepth)
+  {
     fMixingDepth = MixingDepth;
-  }
-  ;
-  void SetSpinningDepth(int SpinningDepth) {
+  };
+  void SetSpinningDepth(int SpinningDepth)
+  {
     fSpinningDepth = SpinningDepth;
-  }
-  ;
-  void SetCorrelationRange(float CorrRange) {
+  };
+  void SetCorrelationRange(float CorrRange)
+  {
     fCorrelationRange = CorrRange;
   }
-  void SetMinimalBookingME(bool doIt) {
+  void SetMinimalBookingME(bool doIt)
+  {
     fMinimalBookingME = doIt;
-  }
-  ;
-  void SetMinimalBookingSample(bool doIt) {
+  };
+  void SetMinimalBookingSample(bool doIt)
+  {
     fMinimalBookingSample = doIt;
-  }
-  ;
-  void SetMultiplicityEstimator(AliFemtoDreamEvent::MultEstimator est) {
+  };
+  void SetMultiplicityEstimator(AliFemtoDreamEvent::MultEstimator est)
+  {
     fEst = est;
   }
 
-  bool GetDoMultBinning() {
+  bool GetDoMultBinning()
+  {
     return fMultBinning;
-  }
-  ;
-  bool GetDoCentBinning() {
+  };
+  bool GetDoCentBinning()
+  {
     return fCentBinning;
-  }
-  ;
-  bool GetDokTBinning() {
+  };
+  bool GetDokTBinning()
+  {
     return fkTBinning;
-  }
-  ;
-  bool GetDomTBinning() {
+  };
+  bool GetDomTBinning()
+  {
     return fmTBinning;
-  }
-  ;
-  bool GetDokTandMultBinning() {
+  };
+  bool GetDokTandMultBinning()
+  {
     return fkTandMultBinning;
-  }
-  ;
-  bool GetDokTandMultPtBinning() {
+  };
+  bool GetDokTandMultPtBinning()
+  {
     return fkTandMultPtBinning;
-  }
-  ;
-  bool GetDokTandMultMCTrueBinning() {
+  };
+  bool GetDokTandMultMCTrueBinning()
+  {
     return fkTandMultMCTrueBinning;
+  };
+  bool GetMinvKtandRelativeKBinning()
+  {
+    return fMinvKtandRelativeKBinning;
   }
-  ;
-  bool GetDoPtQA() {
+  bool GetDoPtQA()
+  {
     return fPtQA;
   }
-  bool GetDoMassQA() {
+  bool GetDoMassQA()
+  {
     return fMassQA;
   }
-  bool GetDoMomResolution() {
+  bool GetDoMomResolution()
+  {
     return fMomentumResolution;
-  }
-  ;
-  bool GetDoPhiEtaBinning() {
+  };
+  bool GetDoPhiEtaBinning()
+  {
     return fPhiEtaBinning;
-  }
-  ;
-  bool GetDokTCentralityBinning() {
+  };
+  bool GetDokTCentralityBinning()
+  {
     return fkTCentrality;
-  }
-  ;
-  bool GetUseEventMixing() {
+  };
+  bool GetUseEventMixing()
+  {
     return fMixedEventStatistics;
-  }
-  ;
-  bool GetUsePhiSpinning() {
+  };
+  bool GetUsePhiSpinning()
+  {
     return fGetTheControlSampel;
-  }
-  ;
-  bool GetDoAncestorsPlots() {
+  };
+  bool GetDoAncestorsPlots()
+  {
     return fAncestors;
   }
-  bool GetRemoveAncestorResonances() {
+  bool GetRemoveAncestorResonances()
+  {
     return fRemoveAncestorsResonances;
   }
-  bool GetDopTOnepTTwokStarPlotsmT() {
+  bool GetDopTOnepTTwokStarPlotsmT()
+  {
     return fpTOnepTTwokStarPlotsmT;
-  }
-  ;
-  float GetDopTOnepTTwokStarCutOff() {
+  };
+  float GetDopTOnepTTwokStarCutOff()
+  {
     return fpTOnepTTwokStarCut;
-  }
-  ;
-  AliFemtoDreamCollConfig::UncorrelatedMode GetControlMode() {
+  };
+  AliFemtoDreamCollConfig::UncorrelatedMode GetControlMode()
+  {
     return fMode;
-  }
-  ;
-  bool GetdPhidEtaPlots() {
+  };
+  bool GetdPhidEtaPlots()
+  {
     return fdPhidEtaPlots;
   }
-  bool GetdPhidEtaPlotsSmallK() {
+  bool GetdPhidEtaPlotsSmallK()
+  {
     return fdPhidEtaPlotsSmallK;
-  }
-  ;
-  bool GetdPhidEtamTPlots() {
+  };
+  bool GetdPhidEtamTPlots()
+  {
     return (fdPhidEtaPlots && fmTdEtadPhi);
   }
-  bool GetmTMultBinning() {
+  bool GetmTMultBinning()
+  {
     return fmTMultBinning;
-  }
-  ;  
-  bool GetMinimalBookingME() {
+  };
+  bool GetMinimalBookingME()
+  {
     return fMinimalBookingME;
-  }
-  ;
-  bool GetMinimalBookingSample() {
+  };
+  bool GetMinimalBookingSample()
+  {
     return fMinimalBookingSample;
-  }
-  ;
-  AliFemtoDreamEvent::MultEstimator GetMultiplicityEstimator() {
+  };
+  AliFemtoDreamEvent::MultEstimator GetMultiplicityEstimator()
+  {
     return fEst;
   }
-  int GetNRadii() {
+  int GetNRadii()
+  {
     return fNumberRadii;
-  }
-  ;
+  };
   std::vector<float> GetZVtxBins();
-  int GetNZVtxBins() {
-    return ((int) fZVtxBins.size() - 1);
-  }
-  ;
+  int GetNZVtxBins()
+  {
+    return ((int)fZVtxBins.size() - 1);
+  };
   std::vector<int> GetMultBins();
-  int GetNMultBins() {
-    return (int) fMultBins.size();
-  }
-  ;
+  int GetNMultBins()
+  {
+    return (int)fMultBins.size();
+  };
   std::vector<int> GetPDGCodes();
-  int GetNParticles() {
-//    return fPDGParticleSpecies->GetEntries();
-    return (int) fPDGParticleSpecies.size();
-  }
-  ;
+  int GetNParticles()
+  {
+    //    return fPDGParticleSpecies->GetEntries();
+    return (int)fPDGParticleSpecies.size();
+  };
   int GetNParticleCombinations();
   std::vector<int> GetNBinsHist();
   std::vector<float> GetMinKRel();
@@ -274,113 +299,124 @@ class AliFemtoDreamCollConfig : public TNamed {
   std::vector<int> GetStandardPairs();
   std::vector<bool> GetStandardPairRejection();
   std::vector<bool> GetAllPairRejection();
-  int GetMixingDepth() {
+  int GetMixingDepth()
+  {
     return fMixingDepth;
-  }
-  ;
-  int GetSpinningDepth() {
+  };
+  int GetSpinningDepth()
+  {
     return fSpinningDepth;
-  }
-  ;
-  float GetCorrelationRange() {
+  };
+  float GetCorrelationRange()
+  {
     return fCorrelationRange;
-  }
-  ;
-  void SetDeltaEtaMax(float delta) {
+  };
+  void SetDeltaEtaMax(float delta)
+  {
     fDoDeltaEtaDeltaPhiCut = true;
     fDeltaEtaMax = delta;
   }
-  float GetDeltaEtaMax() const {
+  float GetDeltaEtaMax() const
+  {
     return fDeltaEtaMax;
   }
 
-  void SetDeltaPhiMax(float delta) {
+  void SetDeltaPhiMax(float delta)
+  {
     fDoDeltaEtaDeltaPhiCut = true;
     fDeltaPhiMax = delta;
   }
-  float GetDeltaPhiMax() const {
+  float GetDeltaPhiMax() const
+  {
     return fDeltaPhiMax;
   }
-  float GetSqDeltaPhiEtaMax() const {
+  float GetSqDeltaPhiEtaMax() const
+  {
     return fDeltaEtaMax * fDeltaEtaMax + fDeltaPhiMax * fDeltaPhiMax;
-  }
-  ;
-  void DoDeltaEtaDeltaPhiCut(bool doIt) {
+  };
+  void DoDeltaEtaDeltaPhiCut(bool doIt)
+  {
     fDoDeltaEtaDeltaPhiCut = doIt;
   }
-  bool GetDoDeltaEtaDeltaPhiCut() const {
+  bool GetDoDeltaEtaDeltaPhiCut() const
+  {
     return fDoDeltaEtaDeltaPhiCut;
   }
-  void RejectMotherDaughter(bool doIt){
+  void RejectMotherDaughter(bool doIt)
+  {
     fRejectMotherDaughter = doIt;
   }
-  bool GetRejectMotherDaughter() const {
+  bool GetRejectMotherDaughter() const
+  {
     return fRejectMotherDaughter;
   }
-  void SetSummedPtCut(float limit1, float limit2){
+  void SetSummedPtCut(float limit1, float limit2)
+  {
     fSummedPtLimit1 = limit1;
     fSummedPtLimit2 = limit2;
   }
-  float GetSummedPtLimit1(){
+  float GetSummedPtLimit1()
+  {
     return fSummedPtLimit1;
   }
-  float GetSummedPtLimit2(){
+  float GetSummedPtLimit2()
+  {
     return fSummedPtLimit2;
   }
   static std::vector<float> GetDefaultZbins();
   static std::vector<int> GetHMMultBins();
   static std::vector<int> GetMBMultBins();
 
-
- private:
-  bool fMultBinning;            //
-  bool fCentBinning;            //
-  bool fkTBinning;              //
-  bool fmTBinning;              //
-  bool fkTandMultBinning;	//
-  bool fkTandMultPtBinning;	//
-  bool fkTandMultMCTrueBinning;	//
-  bool fPtQA;                   //
-  bool fMassQA;                 //
-  bool fMomentumResolution;     //
-  bool fPhiEtaBinning;          //
-  bool fdPhidEtaPlots;          //
-  bool fdPhidEtaPlotsSmallK;    //
-  bool fMixedEventStatistics;   //
-  bool fGetTheControlSampel;    //
-  AliFemtoDreamCollConfig::UncorrelatedMode fMode;  //
-  bool fMinimalBookingME;       //
-  bool fMinimalBookingSample;   //
-  int fNumberRadii;             //
-  std::vector<float> fZVtxBins;           //
-  std::vector<int> fMultBins;           //
-  std::vector<int> fPDGParticleSpecies;  //
-  std::vector<int> fNBinsHists;         //
-  std::vector<float> fMinK_rel;           //
-  std::vector<float> fMaxK_rel;           //
-  std::vector<int> fCentBins;           //
-  std::vector<float> fmTBins;             //
-  std::vector<unsigned int> fWhichQAPairs;       //
-  std::vector<bool> fClosePairRej;       //
-  int fMixingDepth;             //
-  int fSpinningDepth;			      //
-  float fCorrelationRange;	      //
-  bool fkTCentrality;           //
-  bool fmTdEtadPhi;             //
-  bool fmTMultBinning; //
-  AliFemtoDreamEvent::MultEstimator fEst;  //
-  bool fAncestors;              //
-  bool fRemoveAncestorsResonances; //
-  bool fpTOnepTTwokStarPlotsmT; //
-  float fpTOnepTTwokStarCut; //
-  float fDeltaEtaMax;           //
-  float fDeltaPhiMax;           //
-  bool fDoDeltaEtaDeltaPhiCut;  //
-  bool fRejectMotherDaughter;   //
+private:
+  bool fMultBinning;                               //
+  bool fCentBinning;                               //
+  bool fkTBinning;                                 //
+  bool fmTBinning;                                 //
+  bool fkTandMultBinning;                          //
+  bool fkTandMultPtBinning;                        //
+  bool fkTandMultMCTrueBinning;                    //
+  bool fMinvKtandRelativeKBinning;                 //
+  bool fPtQA;                                      //
+  bool fMassQA;                                    //
+  bool fMomentumResolution;                        //
+  bool fPhiEtaBinning;                             //
+  bool fdPhidEtaPlots;                             //
+  bool fdPhidEtaPlotsSmallK;                       //
+  bool fMixedEventStatistics;                      //
+  bool fGetTheControlSampel;                       //
+  AliFemtoDreamCollConfig::UncorrelatedMode fMode; //
+  bool fMinimalBookingME;                          //
+  bool fMinimalBookingSample;                      //
+  int fNumberRadii;                                //
+  std::vector<float> fZVtxBins;                    //
+  std::vector<int> fMultBins;                      //
+  std::vector<int> fPDGParticleSpecies;            //
+  std::vector<int> fNBinsHists;                    //
+  std::vector<float> fMinK_rel;                    //
+  std::vector<float> fMaxK_rel;                    //
+  std::vector<int> fCentBins;                      //
+  std::vector<float> fmTBins;                      //
+  std::vector<unsigned int> fWhichQAPairs;         //
+  std::vector<bool> fClosePairRej;                 //
+  int fMixingDepth;                                //
+  int fSpinningDepth;                              //
+  float fCorrelationRange;                         //
+  bool fkTCentrality;                              //
+  bool fmTdEtadPhi;                                //
+  bool fmTMultBinning;                             //
+  AliFemtoDreamEvent::MultEstimator fEst;          //
+  bool fAncestors;                                 //
+  bool fRemoveAncestorsResonances;                 //
+  bool fpTOnepTTwokStarPlotsmT;                    //
+  float fpTOnepTTwokStarCut;                       //
+  float fDeltaEtaMax;                              //
+  float fDeltaPhiMax;                              //
+  bool fDoDeltaEtaDeltaPhiCut;                     //
+  bool fRejectMotherDaughter;                      //
   bool fCoutVariables;
   float fSummedPtLimit1;
   float fSummedPtLimit2;
-  ClassDef(AliFemtoDreamCollConfig,21);
+  ClassDef(AliFemtoDreamCollConfig, 22);
 };
 
 #endif /* ALIFEMTODREAMCOLLCONFIG_H_ */
