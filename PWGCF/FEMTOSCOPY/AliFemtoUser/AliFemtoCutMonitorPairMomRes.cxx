@@ -13,6 +13,8 @@ AliFemtoCutMonitorPairMomRes::AliFemtoCutMonitorPairMomRes():
   fMomRes_KPpairOnly(0),
   fMomResTrueMass_KPpairOnly(0),
   fMomRes_pdpairOnly(0),
+  fMomRes_KdpairOnly(0),
+  fMomRes_pidpairOnly(0),    
   fMomResTrueMass_pppairOnly(0),
   fMomResTrueMass_pdpairOnly(0),
   fMassPart1(0),
@@ -24,6 +26,8 @@ AliFemtoCutMonitorPairMomRes::AliFemtoCutMonitorPairMomRes():
   fMomRes_KPpairOnly = new TH2D("PairMomRes_KPpairOnly","PairMomRes_KPpairOnly",100,0,2,100,0,2);
   fMomResTrueMass_KPpairOnly = new TH2D("PairMomResTrueMass_KPpairOnly","PairMomResTrueMass_KPpairOnly",100,0,2,100,0,2);
   fMomRes_pdpairOnly = new TH2D("PairMomRes_pdpairOnly","PairMomRes_pdpairOnly",200,0,2,200,0,2);
+  fMomRes_KdpairOnly = new TH2D("PairMomRes_KdpairOnly","PairMomRes_KdpairOnly",200,0,2,200,0,2);  
+  fMomRes_pidpairOnly = new TH2D("PairMomRes_pidpairOnly","PairMomRes_pidpairOnly",200,0,2,200,0,2);    
   fMomResTrueMass_pppairOnly = new TH2D("PairMomResTrueMass_pppairOnly","PairMomResTrueMass_pppairOnly",200,0,2,200,0,2);
   fMomResTrueMass_kdpairOnly = new TH2D("PairMomResTrueMass_kdpairOnly","PairMomResTrueMass_kdpairOnly",200,0,2,200,0,2);
   fMomResTrueMass_pdpairOnly = new TH2D("PairMomResTrueMass_pdpairOnly","PairMomResTrueMass_pdpairOnly",200,0,2,200,0,2);
@@ -48,8 +52,14 @@ AliFemtoCutMonitorPairMomRes::AliFemtoCutMonitorPairMomRes(const char *aName, do
   snprintf(name, 200, "PairMomResTrueMass_KPpairOnly%s", aName);
   fMomResTrueMass_KPpairOnly = new TH2D(name, "PairMomResTrueMass_KPpairOnly", nbins, qmin, qmax, nbins, qmin, qmax);
 
-  snprintf(name, 200, "PairMomResModifMass_pdpairOnly%s", aName);
+  snprintf(name, 200, "PairMomRes_pdpairOnly%s", aName);
   fMomRes_pdpairOnly = new TH2D(name, "PairMomRes_pdpairOnly", nbins, qmin, qmax, nbins, qmin, qmax);
+
+  snprintf(name, 200, "PairMomRes_KdpairOnly%s", aName);
+  fMomRes_KdpairOnly = new TH2D(name, "PairMomRes_KdpairOnly", nbins, qmin, qmax, nbins, qmin, qmax);
+
+  snprintf(name, 200, "PairMomRes_pidpairOnly%s", aName);
+  fMomRes_pidpairOnly = new TH2D(name, "PairMomRes_pidpairOnly", nbins, qmin, qmax, nbins, qmin, qmax);
 
   snprintf(name, 200, "PairMomResTrueMass_pppairOnly%s", aName);
   fMomResTrueMass_pppairOnly = new TH2D(name, "PairMomResTrueMass_pppairOnly", nbins, qmin, qmax, nbins, qmin, qmax);
@@ -69,6 +79,8 @@ AliFemtoCutMonitorPairMomRes::AliFemtoCutMonitorPairMomRes(const AliFemtoCutMoni
   fMomRes_KPpairOnly(0),
   fMomResTrueMass_KPpairOnly(0),
   fMomRes_pdpairOnly(0),
+  fMomRes_KdpairOnly(0),
+  fMomRes_pidpairOnly(0),    
   fMomResTrueMass_pppairOnly(0),
   fMomResTrueMass_pdpairOnly(0),
   fMomResTrueMass_kdpairOnly(0),
@@ -81,6 +93,8 @@ AliFemtoCutMonitorPairMomRes::AliFemtoCutMonitorPairMomRes(const AliFemtoCutMoni
   fMomRes_KPpairOnly = new TH2D(*aCut.fMomRes_KPpairOnly);
   fMomResTrueMass_KPpairOnly = new TH2D(*aCut.fMomResTrueMass_KPpairOnly);
   fMomRes_pdpairOnly = new TH2D(*aCut.fMomRes_pdpairOnly);
+  fMomRes_KdpairOnly = new TH2D(*aCut.fMomRes_KdpairOnly);
+  fMomRes_pidpairOnly = new TH2D(*aCut.fMomRes_pidpairOnly);    
   fMomResTrueMass_pppairOnly = new TH2D(*aCut.fMomResTrueMass_pppairOnly);
   fMomResTrueMass_kdpairOnly = new TH2D(*aCut.fMomResTrueMass_kdpairOnly);
   fMomResTrueMass_pdpairOnly = new TH2D(*aCut.fMomResTrueMass_pdpairOnly);
@@ -94,6 +108,8 @@ AliFemtoCutMonitorPairMomRes::~AliFemtoCutMonitorPairMomRes()
   delete fMomRes_KPpairOnly;
   delete fMomResTrueMass_KPpairOnly;
   delete fMomRes_pdpairOnly;
+  delete fMomRes_KdpairOnly;
+  delete fMomRes_pidpairOnly;  
   delete fMomResTrueMass_pppairOnly;
   delete fMomResTrueMass_kdpairOnly;
   delete fMomResTrueMass_pdpairOnly;  
@@ -121,6 +137,12 @@ AliFemtoCutMonitorPairMomRes& AliFemtoCutMonitorPairMomRes::operator=(const AliF
 
   if (fMomRes_pdpairOnly) delete fMomRes_pdpairOnly;
   fMomRes_pdpairOnly = new TH2D(*aCut.fMomRes_pdpairOnly);
+
+  if (fMomRes_KdpairOnly) delete fMomRes_KdpairOnly;
+  fMomRes_KdpairOnly = new TH2D(*aCut.fMomRes_KdpairOnly);
+
+  if (fMomRes_pidpairOnly) delete fMomRes_pidpairOnly;
+  fMomRes_pidpairOnly = new TH2D(*aCut.fMomRes_pidpairOnly);
 
   if (fMomResTrueMass_pppairOnly) delete fMomResTrueMass_pppairOnly;
   fMomResTrueMass_pppairOnly = new TH2D(*aCut.fMomResTrueMass_pppairOnly);
@@ -218,6 +240,14 @@ void AliFemtoCutMonitorPairMomRes::Fill(const AliFemtoPair* aPair)
 		      {
 			fMomRes_pdpairOnly->Fill(KStar_rec,KStar_true);
 		      }	     	
+	            if((abs(tInfo1->GetPDGPid()) == 321) && (abs(tInfo2->GetPDGPid()) == 1000010020))
+		      {
+			fMomRes_KdpairOnly->Fill(KStar_rec,KStar_true);
+		      }	
+	            if((abs(tInfo1->GetPDGPid()) == 211) && (abs(tInfo2->GetPDGPid()) == 1000010020))
+		      {
+			fMomRes_pidpairOnly->Fill(KStar_rec,KStar_true);
+		      }	
 	    }
 	}
 
@@ -299,6 +329,8 @@ void AliFemtoCutMonitorPairMomRes::Write()
   fMomRes_KPpairOnly->Write();
   fMomResTrueMass_KPpairOnly->Write();
   fMomRes_pdpairOnly->Write();
+  fMomRes_KdpairOnly->Write();
+  fMomRes_pidpairOnly->Write();    
   fMomResTrueMass_pppairOnly->Write();
   fMomResTrueMass_kdpairOnly->Write();
   fMomResTrueMass_pdpairOnly->Write();
@@ -312,6 +344,8 @@ TList *AliFemtoCutMonitorPairMomRes::GetOutputList()
   tOutputList->Add(fMomRes_KPpairOnly);
   tOutputList->Add(fMomResTrueMass_KPpairOnly);
   tOutputList->Add(fMomRes_pdpairOnly);
+  tOutputList->Add(fMomRes_KdpairOnly);
+  tOutputList->Add(fMomRes_pidpairOnly);    
   tOutputList->Add(fMomResTrueMass_pppairOnly);
   tOutputList->Add(fMomResTrueMass_kdpairOnly);
   tOutputList->Add(fMomResTrueMass_pdpairOnly);
