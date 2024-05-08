@@ -3,6 +3,8 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliMCEvent.h"
+#include "AliInputEventHandler.h"
+#include "AliStack.h"
 #include "AliEventCuts.h"
 #include "TString.h"
 #include "TRandom.h"
@@ -38,6 +40,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetTriggerType(UInt_t newval) {fTriggerType = newval; };
   void LoadCorrectionsFromLists();
   void ProcessOnTheFly();
+  void ProcessGen();
+  Bool_t IsMCEventSelected(TObject *obj);
   void FillWPCounter(vector<vector<double>> &inarr, double w, double p);
   void SetFillCM(unsigned int flag) { fCMflag = flag; }
   void SetPtBins(Int_t nBins, Double_t *ptbins);
@@ -68,8 +72,6 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetNBootstrapProfiles(Int_t newval) {if(newval<0) {printf("Number of subprofiles cannot be < 0!\n"); return; }; fNBootstrapProfiles = newval; };
   void SetWeightSubfix(TString newval) { fWeightSubfix=newval; }; //base (runno) + subfix (systflag), delimited by ;. First argument always base, unless is blank. In that case, w{RunNo} is used for base.
   void SetPseudoEfficiency(Double_t newval) {fPseudoEfficiency = newval; };
-  void SetNchCorrelationCut(Double_t l_slope=1, Double_t l_offset=0, Bool_t l_enable=kTRUE) { fCorrPar[0] = l_slope; fCorrPar[1] = l_offset; fUseCorrCuts = l_enable; };
-  Bool_t CheckNchCorrelation(const Int_t &lNchGen, const Int_t &lNchRec) { return (fCorrPar[0]*lNchGen + fCorrPar[1] < lNchRec); };
   void SetBypassTriggerAndEventCuts(Bool_t newval) { fBypassTriggerAndEventCuts = newval; };
   void SetV0PUCut(TString newval) { if(fV0CutPU) delete fV0CutPU; fV0CutPU = new TF1("fV0CutPU", newval.Data(), 0, 100000); };
   void SetEventWeight(unsigned int weight) { fEventWeight = weight; };
@@ -80,6 +82,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetUseOldPileup(bool newval) { fUseOldPileup = newval; }
   void SetCentralPileup(double newval) {fCentralPU = newval;}
   void SetOnTheFly(bool newval) {fOnTheFly = newval;}
+  void SetOnTheFlyGen(bool newval) {fOnTheFlyGen = newval;}
   double getGeneratorCentrality();
   void SetOTFGenerator(TString gen) { fGenerator = gen; }
   void SetUseIP(bool newval) { fUseIP = newval;}
@@ -106,8 +109,11 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   unsigned int fCMflag;
   TString fDCAxyFunctionalForm;
   Bool_t fOnTheFly;
+  Bool_t fOnTheFlyGen;
   TString fGenerator;
-  AliMCEvent *fMCEvent; //! MC event
+  AliMCEvent *fMCEvent; //!<! MC event
+  AliInputEventHandler* fMCHandler;  //!<! MCEventHandler
+  AliStack* fStack;
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
   TRandom *fRndm;
   Int_t fNBootstrapProfiles; //Number of profiles for bootstrapping
