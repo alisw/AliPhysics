@@ -43,6 +43,8 @@ private:
   TH2D *fMomRes_KPpairOnly;
   TH2D *fMomResTrueMass_KPpairOnly;
   TH2D *fMomRes_pdpairOnly;
+  TH2D *fMomRes_KdpairOnly;
+  TH2D *fMomRes_pidpairOnly;    
   TH2D *fMomResTrueMass_pppairOnly;
   TH2D *fMomResTrueMass_kdpairOnly;
   TH2D *fMomResTrueMass_pdpairOnly;
