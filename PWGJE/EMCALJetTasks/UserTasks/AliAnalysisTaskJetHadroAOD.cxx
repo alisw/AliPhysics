@@ -1347,62 +1347,64 @@ void AliAnalysisTaskJetHadroAOD::FindJetsEMC()
       fTime = kTRUE;
       }
 
-      Double_t inttime[5]; //6 is needed to account for earlier species - 0 = electron, 1 = muon, 2 = pion, 3 = kaon, 4 = proton, ESD only: 5 = deuteron
-      AODtrack->GetIntegratedTimes(inttime, 5); // Returns the array with integrated times for each particle hypothesis
-      Float_t fTOFMismatchTime = -20000000.;
-      fTOFMismatchTime = AliTOFPIDResponse::GetMismatchRandomValue(AODtrack->Eta());
-      if (fTOFMismatchTime <= 0){
-        fTOFMismatchTime = -20000000.;
-      }
+      if (TMath::Abs(fEta) < 0.9 && fTOFout && fTime && fFill_TOF_expecs){
+        Double_t inttime[5]; //6 is needed to account for earlier species - 0 = electron, 1 = muon, 2 = pion, 3 = kaon, 4 = proton, ESD only: 5 = deuteron
+        AODtrack->GetIntegratedTimes(inttime, 5); // Returns the array with integrated times for each particle hypothesis
+        Float_t fTOFMismatchTime = -20000000.;
+        fTOFMismatchTime = AliTOFPIDResponse::GetMismatchRandomValue(AODtrack->Eta());
+        if (fTOFMismatchTime <= 0){
+          fTOFMismatchTime = -20000000.;
+        }
 
-      for (Int_t i = 0; i < 3; i++) {
-        const Float_t beta_expec = length / (2.99792458e-2 * (inttime[i+2] - t0));
-        if (i==0){
-          fHistjet_BetaExpec_pi->Fill(fTPCmom_choice, beta_expec);
-          fHist_jet_pi_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
-          if (TMath::Abs(fNSigmasPiTOF) < 2.0){
-            fHistjet_TOFSigmaExpec_pi->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+        for (Int_t i = 0; i < 3; i++) {
+          const Float_t beta_expec = length / (2.99792458e-2 * (inttime[i+2] - t0));
+          if (i==0){
+            fHistjet_BetaExpec_pi->Fill(fTPCmom_choice, beta_expec);
+            fHist_jet_pi_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+            if (TMath::Abs(fNSigmasPiTOF) < 2.0){
+              fHistjet_TOFSigmaExpec_pi->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasElTOF) < 2.0){
+              fHist_jet_elExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasMuTOF) < 2.0){
+              fHist_jet_muExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasKaTOF) < 2.0){
+              fHist_jet_kaExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasPrTOF) < 2.0){
+              fHist_jet_prExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+            }
           }
-          if (TMath::Abs(fNSigmasElTOF) < 2.0){
-            fHist_jet_elExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+          if (i==1){
+            fHistjet_BetaExpec_ka->Fill(fTPCmom_choice, beta_expec);
+            fHist_jet_ka_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
+            if (TMath::Abs(fNSigmasKaTOF) < 2.0){
+              fHistjet_TOFSigmaExpec_ka->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::ParticleMass(i+2)),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasPiTOF) < 2.0){
+              fHist_jet_piExpec_kahyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasPrTOF) < 2.0){
+              fHist_jet_prExpec_kahyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
+            }
           }
-          if (TMath::Abs(fNSigmasMuTOF) < 2.0){
-            fHist_jet_muExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
-          }
-          if (TMath::Abs(fNSigmasKaTOF) < 2.0){
-            fHist_jet_kaExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
-          }
-          if (TMath::Abs(fNSigmasPrTOF) < 2.0){
-            fHist_jet_prExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
-          }
-        }
-        if (i==1){
-          fHistjet_BetaExpec_ka->Fill(fTPCmom_choice, beta_expec);
-          fHist_jet_ka_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
-          if (TMath::Abs(fNSigmasKaTOF) < 2.0){
-            fHistjet_TOFSigmaExpec_ka->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::ParticleMass(i+2)),TMath::Abs(fEta_choice));
-          }
-          if (TMath::Abs(fNSigmasPiTOF) < 2.0){
-            fHist_jet_piExpec_kahyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
-          }
-          if (TMath::Abs(fNSigmasPrTOF) < 2.0){
-            fHist_jet_prExpec_kahyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
-          }
-        }
-        if (i==2){
-          fHistjet_BetaExpec_pr->Fill(fTPCmom_choice, beta_expec);
-          fHist_jet_pr_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
-          if (TMath::Abs(fNSigmasPrTOF) < 2.0){
-            fHistjet_TOFSigmaExpec_pr->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::ParticleMass(i+2)),TMath::Abs(fEta_choice));
-          }
-          if (TMath::Abs(fNSigmasPiTOF) < 2.0){
-            fHist_jet_piExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
-          }
-          if (TMath::Abs(fNSigmasKaTOF) < 2.0){
-            fHist_jet_kaExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
-          }
-          if (TMath::Abs(fNSigmasDeTOF) < 2.0){
-            fHist_jet_deExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+          if (i==2){
+            fHistjet_BetaExpec_pr->Fill(fTPCmom_choice, beta_expec);
+            fHist_jet_pr_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+            if (TMath::Abs(fNSigmasPrTOF) < 2.0){
+              fHistjet_TOFSigmaExpec_pr->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::ParticleMass(i+2)),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasPiTOF) < 2.0){
+              fHist_jet_piExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasKaTOF) < 2.0){
+              fHist_jet_kaExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasDeTOF) < 2.0){
+              fHist_jet_deExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+            }
           }
         }
       }
@@ -1843,64 +1845,66 @@ void AliAnalysisTaskJetHadroAOD::FindJetsFJ()
           if ((trackConst->GetStatus() & AliAODTrack::kTIME) != 0) { //Track has the kTIME flag
           fTime = kTRUE;
           }
+          
+          if (ifDefaultCuts == 1 && TMath::Abs(fEta) < 0.9 && fTOFout && fTime && fFill_TOF_expecs){
+            Double_t inttime[5]; //6 is needed to account for earlier species - 0 = electron, 1 = muon, 2 = pion, 3 = kaon, 4 = proton, ESD only: 5 = deuteron
+            trackConst->GetIntegratedTimes(inttime, 5); // Returns the array with integrated times for each particle hypothesis
 
-          Double_t inttime[5]; //6 is needed to account for earlier species - 0 = electron, 1 = muon, 2 = pion, 3 = kaon, 4 = proton, ESD only: 5 = deuteron
-          trackConst->GetIntegratedTimes(inttime, 5); // Returns the array with integrated times for each particle hypothesis
-
-          Float_t fTOFMismatchTime = -20000000.;
-          fTOFMismatchTime = AliTOFPIDResponse::GetMismatchRandomValue(trackConst->Eta());
-          if (fTOFMismatchTime <= 0){
-            fTOFMismatchTime = -20000000.;
-          }
-
-          for (Int_t i = 0; i < 3; i++) {
-            const Float_t beta_expec = length / (2.99792458e-2 * (inttime[i+2] - t0));
-            if (i==0){
-              fHistjet_BetaExpec_pi->Fill(fTPCmom_choice, beta_expec);
-              fHist_jet_pi_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
-              if (TMath::Abs(fNSigmasPiTOF) < 2.0){
-                fHistjet_TOFSigmaExpec_pi->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
-              }
-              if (TMath::Abs(fNSigmasElTOF) < 2.0){
-                fHist_jet_elExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
-              }
-              if (TMath::Abs(fNSigmasMuTOF) < 2.0){
-                fHist_jet_muExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
-              }
-              if (TMath::Abs(fNSigmasKaTOF) < 2.0){
-                fHist_jet_kaExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
-              }
-              if (TMath::Abs(fNSigmasPrTOF) < 2.0){
-                fHist_jet_prExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
-              }
+            Float_t fTOFMismatchTime = -20000000.;
+            fTOFMismatchTime = AliTOFPIDResponse::GetMismatchRandomValue(trackConst->Eta());
+            if (fTOFMismatchTime <= 0){
+              fTOFMismatchTime = -20000000.;
             }
-            if (i==1){
-              fHistjet_BetaExpec_ka->Fill(fTPCmom_choice, beta_expec);
-              fHist_jet_ka_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
-              if (TMath::Abs(fNSigmasKaTOF) < 2.0){
-                fHistjet_TOFSigmaExpec_ka->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::ParticleMass(i+2)),TMath::Abs(fEta_choice));
+
+            for (Int_t i = 0; i < 3; i++) {
+              const Float_t beta_expec = length / (2.99792458e-2 * (inttime[i+2] - t0));
+              if (i==0){
+                fHistjet_BetaExpec_pi->Fill(fTPCmom_choice, beta_expec);
+                fHist_jet_pi_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+                if (TMath::Abs(fNSigmasPiTOF) < 2.0){
+                  fHistjet_TOFSigmaExpec_pi->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+                }
+                if (TMath::Abs(fNSigmasElTOF) < 2.0){
+                  fHist_jet_elExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+                }
+                if (TMath::Abs(fNSigmasMuTOF) < 2.0){
+                  fHist_jet_muExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+                }
+                if (TMath::Abs(fNSigmasKaTOF) < 2.0){
+                  fHist_jet_kaExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+                }
+                if (TMath::Abs(fNSigmasPrTOF) < 2.0){
+                  fHist_jet_prExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+                }
               }
-              if (TMath::Abs(fNSigmasPiTOF) < 2.0){
-                fHist_jet_piExpec_kahyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
+              if (i==1){
+                fHistjet_BetaExpec_ka->Fill(fTPCmom_choice, beta_expec);
+                fHist_jet_ka_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
+                if (TMath::Abs(fNSigmasKaTOF) < 2.0){
+                  fHistjet_TOFSigmaExpec_ka->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::ParticleMass(i+2)),TMath::Abs(fEta_choice));
+                }
+                if (TMath::Abs(fNSigmasPiTOF) < 2.0){
+                  fHist_jet_piExpec_kahyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
+                }
+                if (TMath::Abs(fNSigmasPrTOF) < 2.0){
+                  fHist_jet_prExpec_kahyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
+                }
               }
-              if (TMath::Abs(fNSigmasPrTOF) < 2.0){
-                fHist_jet_prExpec_kahyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
-              }
-            }
-            if (i==2){
-              fHistjet_BetaExpec_pr->Fill(fTPCmom_choice, beta_expec);
-              fHist_jet_pr_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
-              if (TMath::Abs(fNSigmasPrTOF) < 2.0){
-                fHistjet_TOFSigmaExpec_pr->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::ParticleMass(i+2)),TMath::Abs(fEta_choice));
-              }
-              if (TMath::Abs(fNSigmasPiTOF) < 2.0){
-                fHist_jet_piExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
-              }
-              if (TMath::Abs(fNSigmasKaTOF) < 2.0){
-                fHist_jet_kaExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
-              }
-              if (TMath::Abs(fNSigmasDeTOF) < 2.0){
-                fHist_jet_deExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+              if (i==2){
+                fHistjet_BetaExpec_pr->Fill(fTPCmom_choice, beta_expec);
+                fHist_jet_pr_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+                if (TMath::Abs(fNSigmasPrTOF) < 2.0){
+                  fHistjet_TOFSigmaExpec_pr->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::ParticleMass(i+2)),TMath::Abs(fEta_choice));
+                }
+                if (TMath::Abs(fNSigmasPiTOF) < 2.0){
+                  fHist_jet_piExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+                }
+                if (TMath::Abs(fNSigmasKaTOF) < 2.0){
+                  fHist_jet_kaExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+                }
+                if (TMath::Abs(fNSigmasDeTOF) < 2.0){
+                  fHist_jet_deExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+                }
               }
             }
           }

@@ -21,6 +21,7 @@
 #include "AliESDVZERO.h"
 #include "AliESDtrackCuts.h"
 #include "AliExternalTrackParam.h"
+#include "TFile.h"
 
 ClassImp(AliAnalysisTaskPtCorr);
 
@@ -40,7 +41,11 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fCMflag(0),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
+  fOnTheFlyGen(false),
   fGenerator("AMPT"),
+  fMCEvent(0x0),
+  fMCHandler(0x0),
+  fStack(0),
   fUseRecoNchForMC(kFALSE),
   fRndm(0),
   fNBootstrapProfiles(10),
@@ -131,7 +136,11 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fCMflag(0),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
+  fOnTheFlyGen(false),
   fGenerator("AMPT"),
+  fMCEvent(0x0),
+  fMCHandler(0x0),
+  fStack(0),
   fUseRecoNchForMC(kFALSE),
   fRndm(0),
   fNBootstrapProfiles(10),
@@ -215,7 +224,6 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   }
   DefineOutput(1,TList::Class());
   DefineOutput(2,TList::Class());
-  SetNchCorrelationCut(1,0,kFALSE);
 };
 AliAnalysisTaskPtCorr::~AliAnalysisTaskPtCorr() {
 };
@@ -357,6 +365,7 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
 void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   EventNo++;
   if(fOnTheFly) { ProcessOnTheFly(); return; }
+  if(fOnTheFlyGen) { ProcessGen(); return; }
   AliAODEvent *fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if(!fAOD) return;
   if(fIsMC) {
@@ -410,21 +419,17 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
       if (lPart->Charge()==0.) continue;
       if (!lPart->IsPhysicalPrimary()) continue;
       //Hardcoded cuts to inhereted from AcceptAODTrack
-      if(2.8 < lPart->Eta() && lPart->Eta() < 5.1) ++multVZEROMC;
-      if(-3.7 < lPart->Eta() && lPart->Eta() < -1.7) ++ multVZEROMC;
+      if((2.8 < lPart->Eta() && lPart->Eta() < 5.1) || (-3.7 < lPart->Eta() && lPart->Eta() < -1.7)) ++multVZEROMC;
       if(lPart->Pt()<ptMin || lPart->Pt()>ptMax) continue;
       double letaabs = (fEtaAbsolute)?TMath::Abs(lPart->Eta()):lPart->Eta();
       if(fEtaMptAcceptance[0] < letaabs && letaabs < fEtaMptAcceptance[1]){
         FillWPCounter(wp,1,lPart->Pt());
         if(fFillQA) fEtaMpt->Fill(lPart->Eta());
       }
-      else if(fEtaMultAcceptance[0] < letaabs && letaabs < fEtaMultAcceptance[1]) {
+      if(fEtaMultAcceptance[0] < letaabs && letaabs < fEtaMultAcceptance[1]) {
         nTotNoTracksMC++;
         if(fFillQA && !fUseRecoNchForMC) fEtaMult->Fill(lPart->Eta());
       }
-      else continue;
-      if(fFillQA) fPhiEtaVtxZ->Fill(lPart->Phi(),lPart->Eta(),vz);
-      if(fUseV0M && fUseRecoNchForMC) fPtVsV0M->Fill(multVZERO,lPart->Pt());
     };
     nTotNoTracks = fUseRecoNchForMC?nTotNoTracksReco:nTotNoTracksMC;
     multVZERO = fUseRecoNchForMC?multVZERO:multVZEROMC;
@@ -560,6 +565,80 @@ void AliAnalysisTaskPtCorr::ProcessOnTheFly() {
   PostData(1,fptList);
   PostData(2,fQAList);
   return;
+}
+void AliAnalysisTaskPtCorr::ProcessGen(){
+  fMCHandler = dynamic_cast<AliInputEventHandler*>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  if(fMCHandler) {
+    fMCEvent = fMCHandler->MCEvent();
+  }
+  else {
+    printf("No mcHandler found\n");
+    return;
+  }
+  if(!fMCEvent){
+    printf("No MC Event found\n");
+    return;
+  }
+  fStack = ((AliMCEvent *)fMCEvent)->Stack();
+  if (!fStack) {
+    Printf("ERROR: Could not retrieve MC stack \n");
+    cout << "Name of the file with pb :"
+        << fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+    return;
+  }
+  // ### MC event selection
+  Bool_t isEventMCSelected = IsMCEventSelected(fMCEvent);
+  if (!isEventMCSelected) return;
+
+  wp.clear(); wp.resize(fPtMpar+1,vector<double>(fPtMpar+1));
+  Double_t ptMin = fPtBins[0];
+  Double_t ptMax = fPtBins[fNPtBins];
+  Int_t nTot = 0;
+  Int_t multV0M = 0;
+  for (Int_t ipart = 0; ipart < fMCEvent->GetNumberOfTracks(); ++ipart){
+    TParticle *mcPart = 0x0;
+    mcPart = (TParticle *)fMCEvent->Particle(ipart);
+    if (!mcPart) continue;
+    // selection of primary charged particles
+    if (!(mcPart->GetPDG())) continue;
+    double qPart = mcPart->GetPDG()->Charge() / 3.;
+    if (TMath::Abs(qPart) < 0.001) continue;
+    if (!fMCEvent->IsPhysicalPrimary(ipart)) continue;
+    double leta = mcPart->Eta();
+    double lpt = mcPart->Pt();
+    if((2.8 < leta && leta < 5.1) || (-3.7 < leta && leta < -1.7)) ++multV0M;
+    if(lpt<ptMin || lpt>ptMax) continue;
+    double letaabs = (fEtaAbsolute)?TMath::Abs(leta):leta;
+    if(fEtaMptAcceptance[0] < letaabs && letaabs < fEtaMptAcceptance[1]){
+        FillWPCounter(wp,1,lpt);
+        if(fFillQA) fEtaMpt->Fill(leta);
+    }
+    if(fEtaMultAcceptance[0] < letaabs && letaabs < fEtaMultAcceptance[1]) {
+      nTot++;
+      if(fFillQA) fEtaMult->Fill(leta);
+    }
+  }
+  Double_t l_Nch = 1.0*nTot;
+  fNchVsV0M->Fill(multV0M,l_Nch);
+  if(wp[1][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
+  Double_t l_Multi = (fUseV0M)?multV0M:l_Nch;
+  if(l_Multi<1) return;
+  Double_t l_Random = fRndm->Rndm();
+  fPtCont->CalculateCorrelations(wp);
+  fPtCont->FillProfiles(l_Multi,l_Random);
+  if(fCMflag&1) fPtCont->FillCMProfiles(wp,l_Multi,l_Random);
+  fMultiDist->Fill(l_Multi);
+  fMptVsMulti->Fill(l_Multi,wp[1][1]/wp[1][0]);
+  fNchVsV0M->Fill(multV0M,l_Nch);
+  PostData(1,fptList);
+  PostData(2,fQAList);
+}
+Bool_t AliAnalysisTaskPtCorr::IsMCEventSelected(TObject *obj) {
+  Bool_t isSelected = kTRUE;
+  AliMCEvent *event = 0x0;
+  event = dynamic_cast<AliMCEvent *>(obj);
+  if (!event) isSelected = kFALSE;
+  return isSelected;
 }
 double AliAnalysisTaskPtCorr::getGeneratorCentrality()
 {
