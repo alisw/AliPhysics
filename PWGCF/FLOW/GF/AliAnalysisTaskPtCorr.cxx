@@ -259,6 +259,12 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
     fIP = new TH1D("fIP","Impact parameter",1500,0.0,30.0);
     printf("OTF objects created\n");
   }
+  if(fOnTheFlyGen){
+    fPtContCent = new AliPtPtContainer("ptcont_V0M_ch","ptcont_V0M_ch",1000,0,45000,fPtMpar);
+    fPtContCent->SetEventWeight(fEventWeight);
+    fptList->Add(fPtContCent);
+    if(fNBootstrapProfiles) fPtContCent->InitializeSubsamples(fNBootstrapProfiles);
+  }
   fRndm = new TRandom(0);
   fRequireReloadOnRunChange = kFALSE;
   if(!fIsMC || (fIsMC && fUseRecoNchForMC)) LoadCorrectionsFromLists(); //Efficiencies and NUA are only for the data or if specified for pseudoefficiencies
@@ -285,7 +291,7 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   const Int_t nDefaultCentBins=90;
   Double_t *defaultCentBins = new Double_t[nDefaultCentBins+1];
   for(Int_t i=0;i<=nDefaultCentBins; i++) defaultCentBins[i] = i;
-  if(fFillPtContCent){
+  if(fFillPtContCent && !fOnTheFlyGen){
       fPtContCent = new AliPtPtContainer("ptcont_cent_ch","ptcont_cent_ch",nDefaultCentBins,defaultCentBins,fPtMpar);
     fPtContCent->SetEventWeight(fEventWeight);
     fptList->Add(fPtContCent);
@@ -621,14 +627,15 @@ void AliAnalysisTaskPtCorr::ProcessGen(){
   Double_t l_Nch = 1.0*nTot;
   fNchVsV0M->Fill(multV0M,l_Nch);
   if(wp[1][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
-  Double_t l_Multi = (fUseV0M)?multV0M:l_Nch;
-  if(l_Multi<1) return;
+  if(l_Nch<1 || multV0M) return;
   Double_t l_Random = fRndm->Rndm();
   fPtCont->CalculateCorrelations(wp);
-  fPtCont->FillProfiles(l_Multi,l_Random);
-  if(fCMflag&1) fPtCont->FillCMProfiles(wp,l_Multi,l_Random);
-  fMultiDist->Fill(l_Multi);
-  fMptVsMulti->Fill(l_Multi,wp[1][1]/wp[1][0]);
+  fPtCont->FillProfiles(l_Nch,l_Random);
+  if(fCMflag&1) fPtCont->FillCMProfiles(wp,l_Nch,l_Random);
+  fPtContCent->CalculateCorrelations(wp);
+  fPtContCent->FillProfiles(multV0M,l_Random);
+  if(fCMflag&1) fPtContCent->FillCMProfiles(wp,multV0M,l_Random);
+  fMptVsMulti->Fill(l_Nch,wp[1][1]/wp[1][0]);
   fNchVsV0M->Fill(multV0M,l_Nch);
   PostData(1,fptList);
   PostData(2,fQAList);
