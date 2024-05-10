@@ -39,7 +39,7 @@ set(SRCS
   BalanceFunctions/AliAnalysisTaskBF.cxx
   BalanceFunctions/AliAnalysisTaskBFPsi.cxx
   BalanceFunctions/AliAnalysisTaskSignedBF.cxx
-  BalanceFunctions/AliAnalysisTaskSignedBFMC.cxx	
+  BalanceFunctions/AliAnalysisTaskSignedBFMC.cxx
   BalanceFunctions/AliAnalysisTaskEventMixingBF.cxx
   BalanceFunctions/AliAnalysisTaskTriggeredBF.cxx
   BalanceFunctions/AliAnalysisTaskEfficiencyBF.cxx
@@ -55,8 +55,8 @@ set(SRCS
   BalanceFunctions/AliAnalysisTaskAODFilterBitQA.cxx
   BalanceFunctions/AliAnalysisTaskParticleStudies.cxx
   BalanceFunctions/AliAnalysisTaskPIDBF.cxx
-  BalanceFunctions/AliPidBFBase.cxx   
-  BalanceFunctions/Corrections/AliAnalysisTaskAccCont.cxx   
+  BalanceFunctions/AliPidBFBase.cxx
+  BalanceFunctions/Corrections/AliAnalysisTaskAccCont.cxx
   BalanceFunctions/Corrections/AliAnalysisTaskPIDMCEffCont.cxx
   BalanceFunctions/Corrections/AliAnalysisTaskPIDPerformCombIDPtDep.cxx
   BalanceFunctions/HFtest/AliAnalysisTaskLcToD0MC.cxx
@@ -92,9 +92,9 @@ set(SRCS
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucpp.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucPbPbQA.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucLHC10h.cxx
-  NetLambda/AliAnalysisTaskNetLambdaIdent.cxx 
-  NetLambda/AliAnalysisTaskNetLambdaMCTrad.cxx 
-  NetLambda/AliAnalysisTaskNetLambdaTrad.cxx 
+  NetLambda/AliAnalysisTaskNetLambdaIdent.cxx
+  NetLambda/AliAnalysisTaskNetLambdaMCTrad.cxx
+  NetLambda/AliAnalysisTaskNetLambdaTrad.cxx
   PIDFluctuation/task/AliAnalysisTaskPIDFluctuation.cxx
   PIDFluctuation/task/AliEbyENetChargeFluctuationTask.cxx
   PIDFluctuation/task/AliEbyEParticleRatioFluctuationTask.cxx
@@ -164,12 +164,14 @@ set(SRCS
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_correct_v2.cxx
   DiffPTF/AliAnalysisTaskHptcorrId_tree.cxx
   IntermittencyAnalysis/AliAnalysisTaskNFactorialMoments.cxx
+  IntermittencyAnalysis/AliAnalysisTaskNFactorialMomentsPID.cxx
   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Generate the dictionary
+
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
@@ -197,7 +199,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
