@@ -110,6 +110,7 @@ set(SRCS
   Nuclei/DeltaMasses/AliAnalysisNuclMult.cxx
   Nuclei/He4/AliAnalysisTaskAntiHe4.cxx
   Nuclei/He4pp/AliAnalysisHe4.cxx
+  Nuclei/Nuclei_Jets/AliAnalysisTaskJetAngCorrelations.cxx
   Nuclei/Nuclei_UE/AliAnalysisTaskDeuteronsRT.cxx
   Nuclei/Nuclei_UE/AliAnalysisTaskDeuteronCoalescence.cxx
   Nuclei/Nuclei_UE/AliAnalysisTaskPythiaCoalescence.cxx
