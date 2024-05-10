@@ -9,7 +9,7 @@
 AliAnalysisTaskChargeV1 *AddTaskChargeV1(
     bool doNUE = true,
     bool doNUA = true,
-    TString period = "LHC18r",
+    TString period = "LHC18q",
     bool ZDCcali = true)
 {
   // get the manager via the static access member. since it's static, you don't need
@@ -56,13 +56,13 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
     // fListNUE = dynamic_cast<TList *>(fNUEFile->Get("fMcEffiHij"));
     if (period.EqualTo("LHC18q"))
     {
-      fNUEFile = TFile::Open("alien:///alice/cern.ch/user/m/mhaque/calib2021/efficiencyBothpol18qnew.root", "READ");
-      fListNUE = dynamic_cast<TList *>(fNUEFile->Get("fListNUE"));
+      fNUEFile = TFile::Open("alien:///alice/cern.ch/user/r/ratu/refData/NUE_18.root", "READ");
+      fListNUE = dynamic_cast<TList *>(fNUEFile->Get("fMcEffiHij"));
     }
     if (period.EqualTo("LHC18r"))
     {
-      fNUEFile = TFile::Open("alien:///alice/cern.ch/user/m/mhaque/calib2021/efficiencyBothpol18qnew.root", "READ");
-      fListNUE = dynamic_cast<TList *>(fNUEFile->Get("fListNUE"));
+      fNUEFile = TFile::Open("alien:///alice/cern.ch/user/r/ratu/refData/NUE_18.root", "READ");
+      fListNUE = dynamic_cast<TList *>(fNUEFile->Get("fMcEffiHij"));
     }
     if (fListNUE)
     {
@@ -75,17 +75,14 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
   if (doNUA)
   {
 
-    //  fNUAFile = TFile::Open("alien:///alice/cern.ch/user/j/jwan/CalibFile/18q/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
-    //  // fNUAFile = TFile::Open("./WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
-    //  fListNUA = dynamic_cast<TList *>(fNUAFile->Get("fNUA_ChPosChNeg"));
     if (period.EqualTo("LHC18q"))
     {
-      fNUAFile = TFile::Open("alien:///alice/cern.ch/user/m/mhaque/calib2021/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
+      fNUAFile = TFile::Open("alien:///alice/cern.ch/user/r/ratu/refData/reflhc18q/WgtsNUAChargeAndPion_LHC18qPass3.root", "READ");
       fListNUA = dynamic_cast<TList *>(fNUAFile->Get("fNUA_ChPosChNeg"));
     }
     if (period.EqualTo("LHC18r"))
     {
-      fNUAFile = TFile::Open("alien:///alice/cern.ch/user/m/mhaque/calib2021/WgtsNUAChargeAndPion_LHC18rPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
+      fNUAFile = TFile::Open("alien:///alice/cern.ch/user/r/ratu/refData/reflhc18r/WgtsNUAChargeAndPion_LHC18rPass3.root", "READ");
       fListNUA = dynamic_cast<TList *>(fNUAFile->Get("fNUA_ChPosChNeg"));
     }
 
@@ -102,17 +99,15 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
   {
     if (period.EqualTo("LHC18q"))
     {
-      fZDCCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/RecenteringResultFinal_2018q.root", "READ");
+      fZDCCalibFile = TFile::Open("alien:///alice/cern.ch/user/r/ratu/refData/ZDCCali/RecenteringResultFinal_2018q.root", "READ");
       fZDCCalibList = dynamic_cast<TList *>(fZDCCalibFile->Get("fOutputRecenter"));
     }
     if (period.EqualTo("LHC18r"))
     {
-      fZDCCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/RecenteringResultFinal_2018r.root", "READ");
+      fZDCCalibFile = TFile::Open("alien:///alice/cern.ch/user/r/ratu/refData/ZDCCali/RecenteringResultFinal_2018r.root", "READ");
       fZDCCalibList = dynamic_cast<TList *>(fZDCCalibFile->Get("fOutputRecenter"));
     }
-    //  fZDCCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/RecenteringResultFinal_2018q.root", "READ");
-    //  // fZDCCalibFile = TFile::Open("./RecenteringResultFinal_2018q.root");
-    //  fZDCCalibList = dynamic_cast<TList *>(fZDCCalibFile->Get("fOutputRecenter"));
+
     if (fZDCCalibList)
     {
       task->SetListForZDCCalib(fZDCCalibList);
