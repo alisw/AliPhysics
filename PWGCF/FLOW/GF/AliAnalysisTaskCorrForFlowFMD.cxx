@@ -51,6 +51,8 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fUseNch_reco(kFALSE),
     fUseNch_posrap_tracks(kFALSE),
     fUseNch_negrap_tracks(kFALSE),
+    fUse_posrap_TPC_correlation(kFALSE),
+    fUse_negrap_TPC_correlation(kFALSE),
     fUseNch_truth(kFALSE),
     fUseNchfor_eventmixing(kFALSE),
     fUseFMDtrkfor_eventmixing(kFALSE),
@@ -183,6 +185,8 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fUseNch_reco(kFALSE),
     fUseNch_posrap_tracks(kFALSE),
     fUseNch_negrap_tracks(kFALSE),
+    fUse_posrap_TPC_correlation(kFALSE),
+    fUse_negrap_TPC_correlation(kFALSE),
     fUseNch_truth(kFALSE),										     
     fUseNchfor_eventmixing(kFALSE),
     fUseFMDtrkfor_eventmixing(kFALSE),
@@ -1287,6 +1291,9 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       Double_t trigEta = track->Eta();
       Double_t trigPhi = track->Phi();
 
+    if(fUse_posrap_TPC_correlation) {if (trigEta < 0.0) continue; }
+    if(fUse_negrap_TPC_correlation) {if (trigEta > 0.0) continue; }
+
       fhPT_trig[spec]->Fill(trigPt);
       
       Double_t trigEff = 1.0;
@@ -1307,6 +1314,9 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         Double_t assPhi = trackAss->Phi();
         Double_t assMult = trackAss->Multiplicity();
 
+    if(fUse_posrap_TPC_correlation) {if (assEta < 0.0) continue; }
+    if(fUse_negrap_TPC_correlation) {if (assEta > 0.0) continue; }
+	      
         binscont[0] = trigEta - assEta;
         binscont[1] = RangePhi(trigPhi - assPhi);
 	      
