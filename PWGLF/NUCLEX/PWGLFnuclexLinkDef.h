@@ -61,6 +61,8 @@
 #pragma link C++ class AliAnalysisTaskAntiHe4+;
 /// * He4pp
 #pragma link C++ class AliAnalysisHe4+;
+/// * Jets
+#pragma link C++ class AliAnalysisTaskJetAngCorrelations+;
 /// * NucleiPbPb
 #pragma link C++ class AliAnalysisTaskNucleiYield+;
 #pragma link C++ class AliAnalysisTaskNucleiPIDqa+;
