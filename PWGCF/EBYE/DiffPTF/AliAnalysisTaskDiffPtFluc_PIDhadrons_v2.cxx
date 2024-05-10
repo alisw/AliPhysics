@@ -177,7 +177,8 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::AliAnalysisTaskDiffPtFluc_PIDhadrons_v2
   fExclusivePIDCut_flag(0),
   fRejectElectron_cut(0),
   fFillTrackQAhists_flag(0),
-  fFillPIDhists_flag(0)
+  fFillPIDhists_flag(0),
+  fGlobalTracksAOD(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -296,7 +297,8 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::AliAnalysisTaskDiffPtFluc_PIDhadrons_v2
   fExclusivePIDCut_flag(0),
   fRejectElectron_cut(0),
   fFillTrackQAhists_flag(0),
-  fFillPIDhists_flag(0)
+  fFillPIDhists_flag(0),
+  fGlobalTracksAOD(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -340,8 +342,13 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::~AliAnalysisTaskDiffPtFluc_PIDhadrons_v
     delete fESDtrackCuts;
     fESDtrackCuts=0x0;
   }
-
-
+  if(fFBNo==128)
+    {
+      if(fGlobalTracksAOD) {
+	delete fGlobalTracksAOD;
+	fGlobalTracksAOD=0x0;
+      }
+    }
 }
 //_____________________________________________________________________________________________________________________________________
 void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserCreateOutputObjects()  {
@@ -503,7 +510,13 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserCreateOutputObjects()  {
     fTreeEvent->Branch("fPt_no_kaon",&fPt_no_kaon,"fPt_no_kaon[14]/F");
     fTreeEvent->Branch("fPt_no_proton",&fPt_no_proton,"fPt_no_proton[14]/F");
 
-    
+    //----------------------------------------------
+    // Look up table for PID information when using TPC-only tracks
+    if(fFBNo==128)
+      {
+	fGlobalTracksAOD = new TExMap();
+      }
+ 
     PostData(1, fOutputList);
     PostData(2, fQAList);
     PostData(3, fTreeEvent);
@@ -582,6 +595,14 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 
     //random no
     TRandom3 ran;
+
+    //Filtering out global tracks for dealing with TPC only tracks
+    if(fFBNo==128)
+      {
+	this->GlobalTracksAOD(fAODevent); 
+	if(0 == fGlobalTracksAOD->GetSize())
+	  return;
+      }
 
 
     //Loop on reconstructed tracks
@@ -770,6 +791,18 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 		  }
 	      }
 	  }
+
+	if(fFBNo==128)
+	  {
+	    Int_t id=track->GetID();
+	    Int_t retrievekey=-id-1;
+	    Int_t iGlobalTrackIndex=fGlobalTracksAOD->GetValue(retrievekey);
+	    track = (AliVTrack*)fAODevent->GetTrack(iGlobalTrackIndex);
+	    if(!track)      continue;
+	    aodtrack  = dynamic_cast<AliAODTrack*>(track);
+	    if(!aodtrack)      continue;
+	  }
+
 	
 	//PID selection
 	Bool_t IsKaon = KaonSelector(track, fPIDnSigmaCut);
@@ -1690,6 +1723,53 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::FillPIDQAplots_afterCut(AliVTrack 
       f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_proton->Fill(fTPCnSigma_Proton, fTOFnSigma_Proton);
     }
 	
+}
+//______________________________________________________________________________________________________________________________________ **From Ante**
+void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::GlobalTracksAOD(AliAODEvent *aAOD)
+{
+ // Filter out unique global tracks in AOD and store them in fGlobalTracksAOD.
+
+ // Remark 0: All global tracks have positive ID, the duplicated TPC-only tracks have -(ID+1);
+ // Remark 1: The issue here is that there are apparently two sets of global tracks: a) "normal" and b) constrained to primary vertex.
+ //           However, only the "normal" global tracks come with positive ID, additionally they can be discriminated simply via: aodTrack->IsGlobalConstrained()
+ //           Global constrained tracks have the same negative ID as the TPC-only tracks, both associated with the same "normal global" tracks. E.g. we can have
+ //            iTrack: atrack->GetID(): atrack->Pt() atrack->Eta() atrack->Phi()
+ //                 1:               0:     2.073798     -0.503640      2.935432
+ //                19:              -1:     2.075537     -0.495988      2.935377 => this is TPC-only
+ //                35:              -1:     2.073740     -0.493576      2.935515 => this is IsGlobalConstrained()
+ //           In fact, this is important, otherwise there is double or even triple counting in some cases.
+ // Remark 2: There are tracks for which: 0 == aodTrack->GetFilterMap()
+ //           a) Basically all of them pass: atrack->GetType() == AliAODTrack::kFromDecayVtx , but few exceptions also pass atrack->GetType() == AliAODTrack::kPrimary
+ //           b) All of them apparently have positive ID, i.e. these are global tracks
+ //           c) Clearly, we cannot use TestFilterBit() on them
+ //           d) None of them apparently satisfies: atrack->IsGlobalConstrained()
+ // Remark 3: There is a performance penalty when fGlobalTracksAOD[1] and fGlobalTracksAOD[2] needed for mixed events are calculated.
+ //           Yes, I can get them directly from fGlobalTracksAOD[0], without calling this method for them again. TBI today
+
+ // a) Insanity checks;
+ // b) Determine the map.
+
+ // a) Insanity checks:
+ if(0 != fGlobalTracksAOD->GetSize()){fGlobalTracksAOD->Delete();} // yes, this method determines mapping from scratch each time
+
+ // b) Determine the map:
+
+ //if(fUseFisherYates){cout<<__LINE__<<endl;exit(1);} // TBI 20210810 check and validate if also here Fisher-Yates needs to be applied
+
+ for(Int_t iTrack=0;iTrack<aAOD->GetNumberOfTracks();iTrack++)
+ {
+  AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack));
+  if(aodTrack)
+  {
+   Int_t id = aodTrack->GetID();
+   //if(id>=0 && aodTrack->GetFilterMap()>0 && !aodTrack->IsGlobalConstrained()) // TBI rethink this
+   if(id>=0 && !aodTrack->IsGlobalConstrained()) // TBI rethink this, it seems that id>=0 is just enough, the second constraint is most likely just an overkill
+   {
+    fGlobalTracksAOD->Add(id,iTrack); // "key" = id, "value" = iTrack
+   } // if(id>=0 && !aodTrack->IsGlobalConstrained())
+  } // if(aodTrack)
+ } // for(Int_t iTrack=0;iTrack<aAOD->GetNumberOfTracks();iTrack++)
+
 }
  //_____________________________________________________________________________________________________________________________________
 void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::Terminate(Option_t *)  {
