@@ -1471,6 +1471,10 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         Double_t trigEta = track->Eta();
         Double_t trigPhi = track->Phi();
         binscont[5] = trigPt;
+
+    if(fUse_posrap_TPC_correlation) {if (trigEta < 0.0) continue; }
+    if(fUse_negrap_TPC_correlation) {if (trigEta > 0.0) continue; }
+	      
         if(spec > 3) binscont[4] = track->M();
         Double_t trigEff = 1.0;
         if(fUseEfficiency) {
@@ -1487,6 +1491,9 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
             Double_t assEta = trackAss->Eta();
             Double_t assPhi = trackAss->Phi();
             Double_t assMult = trackAss->Multiplicity();
+ 
+    if(fUse_posrap_TPC_correlation) {if (assEta < 0.0) continue; }
+    if(fUse_negrap_TPC_correlation) {if (assEta > 0.0) continue; }
 
             binscont[0] = trigEta - assEta;
             binscont[1] = RangePhi(trigPhi - assPhi);
