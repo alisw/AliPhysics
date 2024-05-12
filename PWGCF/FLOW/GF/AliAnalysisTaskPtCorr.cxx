@@ -259,23 +259,21 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
     fIP = new TH1D("fIP","Impact parameter",1500,0.0,30.0);
     printf("OTF objects created\n");
   }
-  if(fOnTheFlyGen){
-    fPtContCent = new AliPtPtContainer("ptcont_V0M_ch","ptcont_V0M_ch",1000,0,45000,fPtMpar);
-    fPtContCent->SetEventWeight(fEventWeight);
-    fptList->Add(fPtContCent);
-    if(fNBootstrapProfiles) fPtContCent->InitializeSubsamples(fNBootstrapProfiles);
-  }
   fRndm = new TRandom(0);
   fRequireReloadOnRunChange = kFALSE;
   if(!fIsMC || (fIsMC && fUseRecoNchForMC)) LoadCorrectionsFromLists(); //Efficiencies and NUA are only for the data or if specified for pseudoefficiencies
-
   fptList = new TList();
   fptList->SetOwner(kTRUE);
   fPtCont = new AliPtPtContainer("ptcont_ch","ptcont_ch",fNMultiBins,fMultiBins,fPtMpar);
   fPtCont->SetEventWeight(fEventWeight);
   fptList->Add(fPtCont);
   if(fNBootstrapProfiles) fPtCont->InitializeSubsamples(fNBootstrapProfiles);
-
+  if(fOnTheFlyGen){
+    fPtContCent = new AliPtPtContainer("ptcont_V0M_ch","ptcont_V0M_ch",1000,0,45000,fPtMpar);
+    fPtContCent->SetEventWeight(fEventWeight);
+    fptList->Add(fPtContCent);
+    if(fNBootstrapProfiles) fPtContCent->InitializeSubsamples(fNBootstrapProfiles);
+  }
   fMultiDist = new TH1D("MultiDistribution",Form("Multiplicity distribution; %s; N(events)",(fUseNch)?"N_{ch}":(fUseV0M)?"V0M Amplitude":"Centrality (%)"),fNMultiBins,fMultiBins);
   fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",fNV0MBinsDefault,fV0MBinsDefault);
   fptList->Add(fMultiDist);
@@ -292,7 +290,7 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   Double_t *defaultCentBins = new Double_t[nDefaultCentBins+1];
   for(Int_t i=0;i<=nDefaultCentBins; i++) defaultCentBins[i] = i;
   if(fFillPtContCent && !fOnTheFlyGen){
-      fPtContCent = new AliPtPtContainer("ptcont_cent_ch","ptcont_cent_ch",nDefaultCentBins,defaultCentBins,fPtMpar);
+    fPtContCent = new AliPtPtContainer("ptcont_cent_ch","ptcont_cent_ch",nDefaultCentBins,defaultCentBins,fPtMpar);
     fPtContCent->SetEventWeight(fEventWeight);
     fptList->Add(fPtContCent);
     if(fNBootstrapProfiles) fPtContCent->InitializeSubsamples(fNBootstrapProfiles);
@@ -491,6 +489,7 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   return;
 };
 void AliAnalysisTaskPtCorr::NotifyRun() {
+  if(fOnTheFly || fOnTheFlyGen) return;
   if(!fEventCutFlag || fEventCutFlag>100) { //Only relevant if we're using the standard AliEventCuts
     //Reinitialize AliEventCuts (done automatically on check):
     Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
@@ -627,7 +626,7 @@ void AliAnalysisTaskPtCorr::ProcessGen(){
   Double_t l_Nch = 1.0*nTot;
   fNchVsV0M->Fill(multV0M,l_Nch);
   if(wp[1][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
-  if(l_Nch<1 || multV0M) return;
+  if(l_Nch < 1 || multV0M < 1) return;
   Double_t l_Random = fRndm->Rndm();
   fPtCont->CalculateCorrelations(wp);
   fPtCont->FillProfiles(l_Nch,l_Random);
