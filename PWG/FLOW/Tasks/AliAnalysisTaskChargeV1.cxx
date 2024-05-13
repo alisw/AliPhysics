@@ -526,8 +526,8 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects(){
                              "296932", "296931", "296930", "296903", "296900", "296899", "296894", "296852", "296851", "296850",
                              "296848", "296839", "296838", "296836", "296835", "296799", "296794", "296793", "296790", "296787",
                              "296786", "296785", "296784", "296781", "296752", "296694", "296693", "296691", "296690"};
-  hRunNumBin = new TH1I("runNumBin", "", 250, 0, 250);
-  for (int i = 0; i < 250; ++i)
+  hRunNumBin = new TH1I("runNumBin", "", 214, 0, 214);
+  for (int i = 0; i < 214; ++i)
   {
     hRunNumBin->GetXaxis()->SetBinLabel(i + 1, runNumList[i].Data());
   }
