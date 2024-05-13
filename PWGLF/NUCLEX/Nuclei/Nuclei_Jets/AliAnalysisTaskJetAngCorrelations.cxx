@@ -8,6 +8,7 @@
 #include "AliAnalysisUtils.h"
 #include "AliAnalysisTask.h"
 #include "AliPIDResponse.h"
+#include "FJ_includes.h"
 #include "AliAODTrackSelection.h"
 #include "AliESDtrackCuts.h"
 #include "TLorentzVector.h"
@@ -29,13 +30,6 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
-#include "fastjet/tools/JetMedianBackgroundEstimator.hh"
-#include "fastjet/PseudoJet.hh"
-#include "fastjet/ClusterSequenceArea.hh"
-#include "fastjet/GhostedAreaSpec.hh"
-#include "fastjet/AreaDefinition.hh"
-#include "fastjet/Selector.hh"
-#include "fastjet/tools/Subtractor.hh"
 
 using namespace std;
 ClassImp(AliAnalysisTaskJetAngCorrelations)
