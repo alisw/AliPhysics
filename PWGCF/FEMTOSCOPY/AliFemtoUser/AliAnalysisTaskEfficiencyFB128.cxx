@@ -393,10 +393,10 @@ bool IsKaonNSigmaFB128(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFt
   if (mom > 0.5) {
      //rejection of unwanted contamination
     //  if(mom>1 && TOFtime<-400) return false;
-      if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < 2) return true;
+      if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < 1) return true;
   }
   else {
-    if (TMath::Abs(nsigmaTPCK) < 2) return true;
+    if (TMath::Abs(nsigmaTPCK) < 1) return true;
   }
   return false;
 }
@@ -416,10 +416,10 @@ bool IsProtonNSigmaFB128(float mom, float nsigmaTPCP, float nsigmaTOFP, float TO
 {
     if (mom > 0.5) {
    //  if(mom>1.8 && TOFtime<-300) return false;
-     if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < 2) return true;
+     if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < 1) return true;
     }
     else {
-      if (TMath::Abs(nsigmaTPCP) < 2) return true;
+      if (TMath::Abs(nsigmaTPCP) < 1) return true;
     }
     return false;
 }

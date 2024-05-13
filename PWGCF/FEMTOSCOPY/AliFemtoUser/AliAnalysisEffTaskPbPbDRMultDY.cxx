@@ -69,12 +69,10 @@ void AliAnalysisEffTaskPbPbDRMultDY::SetPidMethod(int method)
 }
 
 //_______________________________________________________
-
 AliAnalysisEffTaskPbPbDRMultDY::AliAnalysisEffTaskPbPbDRMultDY() :
   AliAnalysisTaskSE(), centrality(0), fHistoList(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
 
 {
-
   for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
     for(Int_t chg=0;chg<2;chg++){
       fGeneratedMCPrimaries[i][chg] = NULL;
@@ -92,6 +90,9 @@ AliAnalysisEffTaskPbPbDRMultDY::AliAnalysisEffTaskPbPbDRMultDY() :
     if(i<3) fHistQA2D[i] = NULL;
   }
 }
+
+
+
 AliAnalysisEffTaskPbPbDRMultDY::AliAnalysisEffTaskPbPbDRMultDY(TString name, int pidMethod, int filterbit) :
   AliAnalysisTaskSE(name), centrality(0), fHistoList(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
 
@@ -273,7 +274,6 @@ void AliAnalysisEffTaskPbPbDRMultDY::UserCreateOutputObjects()
     hname = "fHistEventCutsM";
     hname+= i;
     
-
     fHistEvCuts[i] = new TH1F(hname,Form("Event Cuts M%d",i) , 5, 0, 5);
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(1,"All");
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(2,"MultCut");
@@ -281,7 +281,6 @@ void AliAnalysisEffTaskPbPbDRMultDY::UserCreateOutputObjects()
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(4,"PileUp");
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(5,"z-vertex>10");
     fHistoList->Add(fHistEvCuts[i]);
-
 
     for(Int_t chg=0;chg<2;chg++){
       hname  = "hMisidentificationM"; hname+=i; if(chg==0) hname+="Plus"; else hname+="Minus"; 
@@ -490,11 +489,11 @@ void AliAnalysisEffTaskPbPbDRMultDY::UserExec(Option_t *)
 
   //****** Multiplicity selection *********
   Int_t fcent = -999;
-  if(mult >= 0 && mult <5)  fcent = 0;
-  else if(mult >= 5 && mult <10) fcent = 1;
-  else if(mult >= 10 && mult <20) fcent = 2;
-  else if(mult >= 20 && mult <30) fcent = 3;
-  else if(mult >= 30 && mult <40) fcent = 4;
+  if(mult >= 5 && mult <10)  fcent = 0;
+  else if(mult >= 10 && mult <20) fcent = 1;
+  else if(mult >= 20 && mult <30) fcent = 2;
+  else if(mult >= 30 && mult <35) fcent = 3;
+  else if(mult >= 35 && mult <40) fcent = 4;
   else return;
 
   if(fcent==0)fHistEvCuts[0]->Fill(1);
@@ -996,6 +995,7 @@ void AliAnalysisEffTaskPbPbDRMultDY::UserExec(Option_t *)
   if(MCtrk->Charge() < 0) charge=1;
   else if(MCtrk->Charge() > 0) charge=0;
 
+
   if(MCtrk->Y() < -0.5 || MCtrk->Y() > 0.5) continue; 
  
   if(MCtrk->GetPdgCode() == 211){
@@ -1005,6 +1005,15 @@ void AliAnalysisEffTaskPbPbDRMultDY::UserExec(Option_t *)
     if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
   }
   if(MCtrk->GetPdgCode() == 2212){
+    if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
+  }
+  if(MCtrk->GetPdgCode() == -211 ){
+    if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 2.5) continue;
+  }
+  if(MCtrk->GetPdgCode() == -321){
+    if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
+  }
+  if(MCtrk->GetPdgCode() == -2212){
     if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
   }
   // check physical primary 
