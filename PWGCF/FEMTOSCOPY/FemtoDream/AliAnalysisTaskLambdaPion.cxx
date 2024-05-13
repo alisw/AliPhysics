@@ -330,10 +330,14 @@ void AliAnalysisTaskLambdaPion::UserExec(Option_t *)
     fLambda->Setv0(fInputEvent, casc);
     if (fLambdaCuts->isSelected(fLambda))
     {
-      if (fIsMC && fExcludedMothers.size() > 0) {
+      if (fMC && fExcludedMothers.size() > 0) {
         // Reject the decay products of some specific particles
         AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(fLambda->GetID());
+        if (!mcPart) continue;
+
         AliAODMCParticle *mom = (AliAODMCParticle *)fMC->GetTrack(mcPart->GetMother());
+        if (!mom) continue;
+
         int momAbsPdg = std::abs(mom->GetPdgCode());
         if (std::find(fExcludedMothers.begin(), fExcludedMothers.end(), momAbsPdg) != fExcludedMothers.end()) {
           continue;
@@ -344,10 +348,14 @@ void AliAnalysisTaskLambdaPion::UserExec(Option_t *)
     }
     if (fAntiLambdaCuts->isSelected(fLambda))
     {
-      if (fIsMC && fExcludedMothers.size() > 0) {
+      if (fMC && fExcludedMothers.size() > 0) {
         // Reject the decay products of some specific particles
         AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(fLambda->GetID());
+        if (!mcPart) continue;
+
         AliAODMCParticle *mom = (AliAODMCParticle *)fMC->GetTrack(mcPart->GetMother());
+        if (!mom) continue;
+
         int momAbsPdg = std::abs(mom->GetPdgCode());
         if (std::find(fExcludedMothers.begin(), fExcludedMothers.end(), momAbsPdg) != fExcludedMothers.end()) {
           continue;
@@ -372,10 +380,14 @@ void AliAnalysisTaskLambdaPion::UserExec(Option_t *)
     fTrack->SetTrack(track);
     if (fPosPionCuts->isSelected(fTrack))
     {
-      if (fIsMC && fExcludedMothers.size() > 0) {
+      if (fMC && fExcludedMothers.size() > 0) {
         // Reject the decay products of some specific particles
         AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(fTrack->GetID());
+        if (!mcPart) continue;
+
         AliAODMCParticle *mom = (AliAODMCParticle *)fMC->GetTrack(mcPart->GetMother());
+        if (!mom) continue;
+
         int momAbsPdg = std::abs(mom->GetPdgCode());
         if (std::find(fExcludedMothers.begin(), fExcludedMothers.end(), momAbsPdg) != fExcludedMothers.end()) {
           continue;
@@ -386,10 +398,14 @@ void AliAnalysisTaskLambdaPion::UserExec(Option_t *)
     }
     if (fNegPionCuts->isSelected(fTrack))
     {
-      if (fIsMC && fExcludedMothers.size() > 0) {
+      if (fMC && fExcludedMothers.size() > 0) {
         // Reject the decay products of some specific particles
         AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(fTrack->GetID());
+        if (!mcPart) continue;
+
         AliAODMCParticle *mom = (AliAODMCParticle *)fMC->GetTrack(mcPart->GetMother());
+        if (!mom) continue;
+
         int momAbsPdg = std::abs(mom->GetPdgCode());
         if (std::find(fExcludedMothers.begin(), fExcludedMothers.end(), momAbsPdg) != fExcludedMothers.end()) {
           continue;
