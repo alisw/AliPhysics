@@ -49,6 +49,10 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fshiftphi_PHI(kFALSE),
     fshiftrap_PHI(kFALSE),
     fUseNch_reco(kFALSE),
+    fUseNch_posrap_tracks(kFALSE),
+    fUseNch_negrap_tracks(kFALSE),
+    fUse_posrap_TPC_correlation(kFALSE),
+    fUse_negrap_TPC_correlation(kFALSE),
     fUseNch_truth(kFALSE),
     fUseNchfor_eventmixing(kFALSE),
     fUseFMDtrkfor_eventmixing(kFALSE),
@@ -179,6 +183,10 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fshiftphi_PHI(kFALSE),
     fshiftrap_PHI(kFALSE),
     fUseNch_reco(kFALSE),
+    fUseNch_posrap_tracks(kFALSE),
+    fUseNch_negrap_tracks(kFALSE),
+    fUse_posrap_TPC_correlation(kFALSE),
+    fUse_negrap_TPC_correlation(kFALSE),
     fUseNch_truth(kFALSE),										     
     fUseNchfor_eventmixing(kFALSE),
     fUseFMDtrkfor_eventmixing(kFALSE),
@@ -1283,6 +1291,9 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       Double_t trigEta = track->Eta();
       Double_t trigPhi = track->Phi();
 
+    if(fUse_posrap_TPC_correlation) {if (trigEta < 0.0) continue; }
+    if(fUse_negrap_TPC_correlation) {if (trigEta > 0.0) continue; }
+
       fhPT_trig[spec]->Fill(trigPt);
       
       Double_t trigEff = 1.0;
@@ -1302,7 +1313,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         Double_t assEta = trackAss->Eta();
         Double_t assPhi = trackAss->Phi();
         Double_t assMult = trackAss->Multiplicity();
-
+	      
         binscont[0] = trigEta - assEta;
         binscont[1] = RangePhi(trigPhi - assPhi);
 	      
@@ -1457,6 +1468,10 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         Double_t trigEta = track->Eta();
         Double_t trigPhi = track->Phi();
         binscont[5] = trigPt;
+
+    if(fUse_posrap_TPC_correlation) {if (trigEta < 0.0) continue; }
+    if(fUse_negrap_TPC_correlation) {if (trigEta > 0.0) continue; }
+	      
         if(spec > 3) binscont[4] = track->M();
         Double_t trigEff = 1.0;
         if(fUseEfficiency) {
@@ -1819,6 +1834,9 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
   if(!fTracksAss || !fTracksTrig[0] || !fhTrigTracks[0]) {AliError("Cannot prepare TPC tracks!"); return kFALSE; }
 
   Double_t fNofTracks_reco = 0;
+  Double_t fNofTracks_reco_posrap = 0;
+  Double_t fNofTracks_reco_negrap = 0;
+	
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
 
   TObjArray* fTracksJets = nullptr;
@@ -1838,6 +1856,10 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
 	       if(trkEff < 0.001) continue;
 	      }
 	      fNofTracks_reco += 1.0/trkEff;
+      if(track->Eta() > 0.01)  fNofTracks_reco_posrap += 1.0/trkEff;
+      if(track->Eta() < -0.01) fNofTracks_reco_negrap += 1.0/trkEff;
+
+	      
         if(fAnalType == eFMDAFMDC || fIsTPCgen) continue;
         if(fAnalType == eTPCTPC) fTracksAss->Add((AliAODTrack*)track); 
       }
@@ -1893,6 +1915,9 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
 
   if(fUseNch_reco){
     fNofTracks = fNofTracks_reco;
+  if(fUseNch_posrap_tracks)     fNofTracks = fNofTracks_reco_posrap;
+  if(fUseNch_negrap_tracks)     fNofTracks = fNofTracks_reco_negrap;
+	  
     if(fNofTracks < fNchMin || fNofTracks > fNchMax) { return kFALSE; }
     fhEventCounter->Fill("Nch cut ok ",1);
   }
