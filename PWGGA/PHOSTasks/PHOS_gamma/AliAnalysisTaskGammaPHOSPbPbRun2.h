@@ -21,6 +21,7 @@ class AliFlowTrackCuts ;
 class AliFlowEvent ;
 class AliFlowVector ;
 class AliAODMCParticle ;
+class AliCaloPhoton;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -50,9 +51,6 @@ private:
   Int_t ConvertRunNumber(Int_t run) ; 
 
   void EvalV0ReactionPlane(AliAODEvent * event) ;
-//  Double_t ApplyFlattening(Double_t phi, Double_t c) ; //Apply centrality-dependent flattening
-//  Double_t ApplyFlatteningV0A(Double_t phi, Double_t c) ; //Apply centrality-dependent flattening
-//  Double_t ApplyFlatteningV0C(Double_t phi, Double_t c) ; //Apply centrality-dependent flattening
   void ApplyFinalFlattening() ;//apply final fine flattening
   void ApplyFinalQFlattening() ;//apply final fine flattening
   Bool_t GetTPCEventPlane(Double_t &epAngle, Double_t &qsubRes) ;
@@ -72,9 +70,10 @@ private:
   void AddDistBadHistograms();
   void AddPhiTitleHistograms();
 
-  void TestMatchingTrackPID(AliAODCaloCluster *clu1, Double_t pt);
+  void TestMatchingTrackPID(AliCaloPhoton *ph, Bool_t mix);
   
   static  Bool_t PythiaInfoFromFile(TString currFile, Float_t & xsec, Float_t & trials) ;
+
 
 private:
   THashList * fOutputContainer;    //final histogram container
@@ -83,6 +82,8 @@ private:
   THashList * fOutputContainer4;    //final histogram container
   THashList * fOutputContainer5;    //final histogram container
   THashList * fOutputContainer6;    //final histogram container
+
+  AliAODEvent      *fEvent; //! input event 
 				    //
   TList * fPHOSEvents[1][10][11] ; // Containers for events with PHOS photons
   TClonesArray * fPHOSEvent ;      // PHOS photons in current event
@@ -182,11 +183,11 @@ private:
 					
   Int_t GetPrimaryLabel(AliVCluster *clu);
   Int_t GetPrimaryLabelAtVertex(AliVCluster *clu);
+  Int_t FindTrackMatching(Int_t mod,TVector3 *locpos, Double_t &dx, Double_t &dz, Double_t &pt,Int_t &charge);
+  Double_t TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge);
 
   Double_t fVtx0[3] = {0., 0., 0}, 
 	   fVtx5[3] = {0., 0., 0.};
-
-   
 
   void ProcessMC();
 
