@@ -2,21 +2,16 @@
 #define AliAnalysisTaskJetAngCorrelations_cxx
 
 #include "AliAODTrackSelection.h"
-#include "fastjet/PseudoJet.hh"
 #include "AliAnalysisTaskSE.h"
 #include "AliMultSelection.h"
 #include "AliAnalysisTask.h"
 #include "AliESDtrackCuts.h"
 #include "AliPIDResponse.h"
-#include "AliEventCuts.h"
 #include "AliAODEvent.h"
 #include "AliAODTrack.h"
-#include "TObjString.h"
 #include "TList.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TH3F.h"
-#include <vector>
 
 //___________________________________________________________________________________________________________________________________________
 class AliAnalysisTaskJetAngCorrelations : public AliAnalysisTaskSE {
