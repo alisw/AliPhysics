@@ -30,6 +30,7 @@
 #include <iostream>
 #include <algorithm>
 #include "fastjet/tools/JetMedianBackgroundEstimator.hh"
+#include "fastjet/PseudoJet.hh"
 #include "fastjet/ClusterSequenceArea.hh"
 #include "fastjet/GhostedAreaSpec.hh"
 #include "fastjet/AreaDefinition.hh"
