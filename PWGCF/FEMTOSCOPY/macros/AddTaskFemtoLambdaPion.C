@@ -20,6 +20,7 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
 //                                              int binwidth = 1)             // relative bin width for k* histos with respect to 4 MeV/c
 {
   TString suffix = TString::Format("%s", cutVariation);
+  bool IsSystematics = suffix == "0";
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
@@ -69,8 +70,8 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
   AliFemtoDreamTrackCuts *TrackPosPionCuts = NULL;
   AliFemtoDreamTrackCuts *TrackCutsAntiPion = NULL;
 
-  const float PionPtMax = 2.; // um = GeV
-  const float PionPtMin = 2.; // um = GeV
+  const float PionPtMin = 0.14; // um = GeV
+  const float PionPtMax = 2; // um = GeV
 
   TrackPosPionCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false); // (bool isMC, bool DCAPlots, bool CombSigma, bool ContribSplitting), sets options for plot
                                                                                      // of DCA distribution, CombSigma, ContribSplitting
@@ -81,6 +82,15 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
   TrackCutsAntiPion->SetFilterBit(filterBit);
   TrackCutsAntiPion->SetPtRange(PionPtMin, PionPtMax);
   TrackCutsAntiPion->SetCutCharge(-1);
+
+  if (IsSystematics)
+  {
+    evtCuts->SetMinimalBooking(true); // minimal booking defines which histograms to save since with systematics many repeat each other
+    TrackPosPionCuts->SetMinimalBooking(true);
+    TrackCutsAntiPion->SetMinimalBooking(true);
+    v0Cuts->SetMinimalBooking(true);
+    Antiv0Cuts->SetMinimalBooking(true);
+  }
 
   // Correlated particles definition by PDG code
   std::vector<int> PDGParticles;
@@ -165,20 +175,29 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
     pairQA.push_back(0);
   }
 
-  pairQA[0] = 11;
-  pairQA[1] = 11;
-  pairQA[2] = 12;
-  pairQA[3] = 12;
-  pairQA[4] = 11;
-  pairQA[5] = 12;
-  pairQA[6] = 12;
-  pairQA[7] = 22;
-  pairQA[8] = 22;
-  pairQA[9] = 22;
-
-  closeRejection[0] = true;
-  closeRejection[1] = true;
-  closeRejection[4] = true;
+  if (IsSystematics)
+  {
+    pairQA[2] = 12;
+    pairQA[3] = 12;
+    pairQA[5] = 12;
+    pairQA[6] = 12;
+  }
+  else
+  {
+    pairQA[0] = 11;
+    pairQA[1] = 11;
+    pairQA[2] = 12;
+    pairQA[3] = 12;
+    pairQA[4] = 11;
+    pairQA[5] = 12;
+    pairQA[6] = 12;
+    pairQA[7] = 22;
+    pairQA[8] = 22;
+    pairQA[9] = 22;
+    closeRejection[0] = true;
+    closeRejection[1] = true;
+    closeRejection[4] = true;
+  }
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto");
 
@@ -202,9 +221,16 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
   config->SetDomTMultBinning(true);
   config->SetmTBinning(true);
 
-  config->SetPtQA(true);
-  config->SetMassQA(true);
-  config->SetkTBinning(true);
+  if (IsSystematics)
+  {
+    config->SetMinimalBookingME(true);
+  }
+  else if (!IsSystematics)
+  {
+    config->SetPtQA(true);
+    config->SetMassQA(true);
+    config->SetkTBinning(true);
+  }
 
   if (isMC)
   {
