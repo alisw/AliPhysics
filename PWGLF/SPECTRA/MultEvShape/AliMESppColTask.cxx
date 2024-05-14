@@ -318,7 +318,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
   
     do{
       // NOTE: the intervals are considered half-closed: (a,b]
-      if ((pTlead > 1. && pTlead < 2.) && mult_comb08 > 0 && mult_comb08 <= 80 && TMath::Abs(fEvInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && sfer>0.0 && sfer<=0.3)
+      if ((pTlead >= 1. && pTlead <= 2.) && mult_comb08 > 0 && mult_comb08 <= 80 && TMath::Abs(fEvInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && sfer>0.0 && sfer<=0.3)
 
       {
         //         TObjArray *selectedTracks1=FindLeadingObjects(fTracks, 0);
@@ -328,7 +328,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
         FillCorrelationSE(mult_comb08, selectedTracks1, 3, 0, sfer);
         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks1, 3, 0);
       }
-      if ((pTlead > 1. && pTlead < 2.) && mult_comb08 > 0 && mult_comb08 <= 80 && TMath::Abs(fEvInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && sfer > 0.3 && sfer <= 0.6)
+      if ((pTlead >= 1. && pTlead <= 2.) && mult_comb08 > 0 && mult_comb08 <= 80 && TMath::Abs(fEvInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && sfer > 0.3 && sfer <= 0.6)
       {
         //         TObjArray *selectedTracks2=FindLeadingObjects(fTracks, 0);
         TObjArray *selectedTracks2 = SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
@@ -337,7 +337,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
         FillCorrelationSE(mult_comb08, selectedTracks2, 6, 0, sfer);
         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks2, 6, 0);
       }
-      if ((pTlead > 1. && pTlead < 2.) && mult_comb08 > 0 && mult_comb08 <= 80 && TMath::Abs(fEvInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && sfer > 0.6 && sfer <= 1.0)
+      if ((pTlead >= 1. && pTlead <= 2.) && mult_comb08 > 0 && mult_comb08 <= 80 && TMath::Abs(fEvInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && sfer > 0.6 && sfer <= 1.0)
       {
         //         TObjArray *selectedTracks3=FindLeadingObjects(fTracks, 0);
         TObjArray *selectedTracks3 = SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
@@ -346,7 +346,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
         FillCorrelationSE(mult_comb08, selectedTracks3, 9, 0, sfer);
         FillCorrelationMixing(mult_comb08, fEvInfo->GetVertexZ(), 80., 0., selectedTracks3, 9, 0);
       }
-      if ((pTlead > 1. && pTlead < 2.) && mult_comb08 > 0 && mult_comb08 <= 80 && TMath::Abs(fEvInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && sfer>0.0)
+      if ((pTlead >= 1. && pTlead <= 2.) && mult_comb08 > 0 && mult_comb08 <= 80 && TMath::Abs(fEvInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && sfer>0.0)
       {
         TObjArray *selectedTracks4 = SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
         if(!selectedTracks4) break;
@@ -360,7 +360,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
   
 	if( HasMCdata()){// run only on MC  
       // NOTE: the intervals are considered half-closed: (a,b]
-      if ((pTMClead > 1.0 && pTMClead < 2.0) && MC_mult_glob08 > 0 && MC_mult_glob08 <= 80 && TMath::Abs(fMCevInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && MC_sfer>0.0 && MC_sfer<=0.3)
+      if ((pTMClead >= 1.0 && pTMClead <= 2.0) && MC_mult_glob08 > 0 && MC_mult_glob08 <= 80 && TMath::Abs(fMCevInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && MC_sfer>0.0 && MC_sfer<=0.3)
       {
         // 		TObjArray *selectedTracksMC1=FindLeadingObjects(fMCtracks, 1);
         TObjArray *selectedTracksMC1 = SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
@@ -370,7 +370,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
         FillCorrelationSE(MC_mult_glob08, selectedTracksMC1, 3, 1, MC_sfer);
         FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC1, 3, 1);
       }
-      if ((pTMClead > 1.0 && pTMClead < 2.0) && MC_mult_glob08 >= 0 && MC_mult_glob08 <= 80 && TMath::Abs(fMCevInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && MC_sfer > 0.3 && MC_sfer <= 0.6)
+      if ((pTMClead >= 1.0 && pTMClead <= 2.0) && MC_mult_glob08 >= 0 && MC_mult_glob08 <= 80 && TMath::Abs(fMCevInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && MC_sfer > 0.3 && MC_sfer <= 0.6)
       {
         // // 		TObjArray *selectedTracksMC2=FindLeadingObjects(fMCtracks, 1);
         TObjArray *selectedTracksMC2 = SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
@@ -380,7 +380,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
         FillCorrelationSE(MC_mult_glob08, selectedTracksMC2, 6, 1, MC_sfer);
         FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC2, 6, 1);
       }
-      if ((pTMClead > 1.0 && pTMClead < 2.0) && MC_mult_glob08 >= 0 && MC_mult_glob08 <= 80 && TMath::Abs(fMCevInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && MC_sfer > 0.6 && MC_sfer <= 1.0)
+      if ((pTMClead >= 1.0 && pTMClead <= 2.0) && MC_mult_glob08 >= 0 && MC_mult_glob08 <= 80 && TMath::Abs(fMCevInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && MC_sfer > 0.6 && MC_sfer <= 1.0)
       {
         // // 		TObjArray *selectedTracksMC3=FindLeadingObjects(fMCtracks, 1);
         TObjArray *selectedTracksMC3 = SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
@@ -390,7 +390,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
         FillCorrelationSE(MC_mult_glob08, selectedTracksMC3, 9, 1, MC_sfer);
         FillCorrelationMixing(MC_mult_glob08, fMCevInfo->GetVertexZ(), 80., 0., selectedTracksMC3, 9, 1);
       }
-      if ((pTMClead > 1.0 && pTMClead < 2.0) && MC_mult_glob08 > 0 && MC_mult_glob08 <= 80 && TMath::Abs(fMCevInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && MC_sfer>0.0)
+      if ((pTMClead >= 1.0 && pTMClead <= 2.0) && MC_mult_glob08 > 0 && MC_mult_glob08 <= 80 && TMath::Abs(fMCevInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && MC_sfer>0.0)
       {TObjArray *selectedTracksMC4 = SelectedTracks(fMCtracks, 1, -1, idMCLead, MC_mult_glob08);
         if (!selectedTracksMC4)
           return;
@@ -461,7 +461,7 @@ TObjArray*  AliMESppColTask::SelectedTracks(TObjArray *obj, Int_t MC, Int_t idL,
     AliMEStrackInfo* partMC(NULL);
     AliMEStrackInfo* part(NULL);
 
-        if(MC==0 && idL!=-1 && ((AliMEStrackInfo*)obj->At(idL))->Pt() > pTtrigMin[jm] && ((AliMEStrackInfo*)obj->At(idL))->Pt() < pTtrigMax[jm]){
+        if(MC==0 && idL!=-1 && ((AliMEStrackInfo*)obj->At(idL))->Pt() >= pTtrigMin[jm] && ((AliMEStrackInfo*)obj->At(idL))->Pt() <= pTtrigMax[jm]){
 	// Loop over tracks
       for (Int_t ipart=0; ipart<nTracks; ++ipart) {
         if(!(part = (AliMEStrackInfo*)obj->At(ipart))) continue;
@@ -471,7 +471,7 @@ TObjArray*  AliMESppColTask::SelectedTracks(TObjArray *obj, Int_t MC, Int_t idL,
           if( !(part->HasOrigin(AliMEStrackInfo::kPrimary)) ) continue;
       // Accept tracks in a limited pT & rapidity range
 			 if( TMath::Abs(part->Eta())>= 0.9 ) continue;
-			 if(ipart != idL && part->Pt()>1.0 && part->Pt()<2.0) tracks->AddLast(part);
+			 if(ipart != idL && part->Pt()>=1.0 && part->Pt()<=2.0) tracks->AddLast(part);
 			 if(ipart == idL) tracks->AddLast(part);
     }
 
@@ -485,7 +485,7 @@ TObjArray*  AliMESppColTask::SelectedTracks(TObjArray *obj, Int_t MC, Int_t idL,
     return ClonedTracks;
     }
     
-    if(HasMCdata() && MC==1 && idLMC!=-1 && ((AliMEStrackInfo*)obj->At(idLMC))->Pt() > pTtrigMin[jm] && ((AliMEStrackInfo*)obj->At(idLMC))->Pt() < pTtrigMax[jm]){
+    if(HasMCdata() && MC==1 && idLMC!=-1 && ((AliMEStrackInfo*)obj->At(idLMC))->Pt() >= pTtrigMin[jm] && ((AliMEStrackInfo*)obj->At(idLMC))->Pt() <= pTtrigMax[jm]){
         for (Int_t ipart=0; ipart<nTracks; ++ipart) {
           if(!(partMC = (AliMEStrackInfo*)obj ->At(ipart))) continue;
           if(!(partMC->HasOrigin(AliMEStrackInfo::kPrimary))) continue;
@@ -696,7 +696,7 @@ void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selecte
 
 	AliMEStrackInfo* trigger = (AliMEStrackInfo*)selectedArray->At(0);
 	if(!trigger) return;
-	if(jm<0 || trigger->Pt()<=pTtrigMin[jm] || trigger->Pt()>=pTtrigMax[jm]) return;
+	if(jm<0 || trigger->Pt()<pTtrigMin[jm] || trigger->Pt()>pTtrigMax[jm]) return;
 	if( TMath::Abs(trigger->Eta())>= 0.9 ) return;
                       
 	Double_t ptL  = trigger->Pt();
@@ -711,7 +711,7 @@ void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selecte
 	for (Int_t j=1; j<selectedArray->GetEntriesFast(); j++){
 		AliMEStrackInfo* associate = (AliMEStrackInfo*)selectedArray->At(j);
 		if(!associate) continue;
-		if(associate->Pt()<=1.0 || associate->Pt()>=2.0) continue;
+		if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
 		if( TMath::Abs(associate->Eta())>= 0.9 ) continue;
 
 		Double_t ptAs = associate->Pt();
@@ -719,7 +719,7 @@ void AliMESppColTask::FillCorrelationSE(Double_t MultipOrCent, TObjArray*selecte
 		Double_t etaAs = associate->Eta();
 
 		Double_t dPhi(-999.), dEta(-999.);
-		if(ptL>ptAs && ptL>pTtrigMin[jm] && ptL<pTtrigMax[jm]){
+		if(ptL>ptAs && ptL>=pTtrigMin[jm] && ptL<=pTtrigMax[jm]){
 			dPhi = RangePhi(phiL-phiAs);
       dEta=etaL-etaAs;
 
@@ -832,7 +832,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
   //       pool1->PrintInfo();
   // 		pool1->SetTargetEvents(5);
 
-        if (pool1->IsReady() || pool1->GetCurrentNEvents() >= 5){
+        if (pool1->IsReady() || pool1->GetCurrentNEvents() > 5){
           //	AliInfo("Pool este Ready!!!!!!!!");
           Int_t nMix = pool1->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
@@ -842,20 +842,20 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
             Double_t ptL  = trigger->Pt();
             Double_t phiL = trigger->Phi();
             Double_t etaL = trigger->Eta();
-            if(trigger->Pt() <= pTtrigMin[jm] || trigger->Pt() >= pTtrigMax[jm]) continue;
+            if(trigger->Pt() < pTtrigMin[jm] || trigger->Pt() > pTtrigMax[jm]) continue;
             if( TMath::Abs(trigger->Eta())>= 0.9 ) continue;
         
             for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
           //		 AliInfo("In a doua bucla!!!!!!");
               AliBasicParticle* associate = (AliBasicParticle*) mixEvents->At(j);
               if(!associate)continue;
-              if(associate->Pt()<=1.0 || associate->Pt()>=2.0) continue;
+              if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
               if( TMath::Abs(associate->Eta())>= 0.9 ) continue;
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
               Double_t dPhi(-999.), dEta(-999.);
-              if(ptL>ptAs && ptL > pTtrigMin[jm] && ptL < pTtrigMax[jm]){
+              if(ptL>ptAs && ptL >= pTtrigMin[jm] && ptL <= pTtrigMax[jm]){
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
                 Int_t bin=(25+jm);
@@ -883,7 +883,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
   //       pool2->PrintInfo();
   // 		pool2->SetTargetEvents(5);
 
-        if (pool2->IsReady() || pool2->GetCurrentNEvents() >= 5){
+        if (pool2->IsReady() || pool2->GetCurrentNEvents() > 5){
           //	AliInfo("Pool este Ready!!!!!!!!");
           Int_t nMix = pool2->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
@@ -893,20 +893,20 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
             Double_t ptL  = trigger->Pt();
             Double_t phiL = trigger->Phi();
             Double_t etaL = trigger->Eta();
-            if(trigger->Pt()<= pTtrigMin[jm] || trigger->Pt()>= pTtrigMax[jm]) continue;
+            if(trigger->Pt()< pTtrigMin[jm] || trigger->Pt()> pTtrigMax[jm]) continue;
             if( TMath::Abs(trigger->Eta())>= 0.9 ) continue;
         
             for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
           //		 AliInfo("In a doua bucla!!!!!!");
               AliBasicParticle* associate = (AliBasicParticle*) mixEvents->At(j);
               if(!associate)continue;
-              if(associate->Pt()<=1.0 || associate->Pt()>=2.0) continue;
+              if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
               if( TMath::Abs(associate->Eta())>= 0.9 ) continue;
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
               Double_t dPhi(-999.), dEta(-999.);
-              if(ptL>ptAs && ptL>pTtrigMin[jm] && ptL<pTtrigMax[jm]){
+              if(ptL>ptAs && ptL>=pTtrigMin[jm] && ptL<=pTtrigMax[jm]){
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
                 Int_t bin=(30+jm);
@@ -935,7 +935,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
   //       pool3->PrintInfo();
   // 		pool3->SetTargetEvents(5);
 
-        if (pool3->IsReady() || pool3->GetCurrentNEvents() >= 5){
+        if (pool3->IsReady() || pool3->GetCurrentNEvents() > 5){
           //	AliInfo("Pool este Ready!!!!!!!!");
           Int_t nMix = pool3->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
@@ -945,20 +945,20 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
             Double_t ptL  = trigger->Pt();
             Double_t phiL = trigger->Phi();
             Double_t etaL = trigger->Eta();
-            if(trigger->Pt()<=pTtrigMin[jm] || trigger->Pt()>=pTtrigMax[jm]) continue;
+            if(trigger->Pt()<pTtrigMin[jm] || trigger->Pt()>pTtrigMax[jm]) continue;
             if( TMath::Abs(trigger->Eta())>= 0.9 ) continue;
         
             for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
           //		 AliInfo("In a doua bucla!!!!!!");
               AliBasicParticle* associate = (AliBasicParticle*) mixEvents->At(j);
               if(!associate)continue;
-              if(associate->Pt()<=1.0 || associate->Pt()>=2.0) continue;
+              if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
               if( TMath::Abs(associate->Eta())>= 0.9 ) continue;
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
               Double_t dPhi(-999.), dEta(-999.);
-              if(ptL>ptAs  && ptL>pTtrigMin[jm] && ptL<pTtrigMax[jm]){
+              if(ptL>ptAs  && ptL>=pTtrigMin[jm] && ptL<=pTtrigMax[jm]){
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
                 Int_t bin=(35+jm);
@@ -985,7 +985,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
           return;
         }
 
-        if (pool4->IsReady() || pool4->GetCurrentNEvents() >= 5){
+        if (pool4->IsReady() || pool4->GetCurrentNEvents() > 5){
           //	AliInfo("Pool este Ready!!!!!!!!");
           Int_t nMix = pool4->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
@@ -995,20 +995,20 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
             Double_t ptL  = trigger->Pt();
             Double_t phiL = trigger->Phi();
             Double_t etaL = trigger->Eta();
-            if(trigger->Pt() <= pTtrigMin[jm] || trigger->Pt() >= pTtrigMax[jm]) continue;
+            if(trigger->Pt() < pTtrigMin[jm] || trigger->Pt() > pTtrigMax[jm]) continue;
             if( TMath::Abs(trigger->Eta())>= 0.9 ) continue;
 
             for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
           //		 AliInfo("In a doua bucla!!!!!!");
               AliBasicParticle* associate = (AliBasicParticle*) mixEvents->At(j);
               if(!associate)continue;
-              if(associate->Pt()<=1.0 || associate->Pt()>=2.0) continue;
+              if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
               if( TMath::Abs(associate->Eta())>= 0.9 ) continue;
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
               Double_t dPhi(-999.), dEta(-999.);
-              if(ptL>ptAs && ptL > pTtrigMin[jm] && ptL < pTtrigMax[jm]){
+              if(ptL>ptAs && ptL >= pTtrigMin[jm] && ptL <= pTtrigMax[jm]){
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
                 Int_t bin=(40+jm);
@@ -1038,7 +1038,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
 //         poolMC1->PrintInfo();
   // 		poolMC1->SetTargetEvents(5);
 
-        if (poolMC1->IsReady() || poolMC1->GetCurrentNEvents() >= 5){
+        if (poolMC1->IsReady() || poolMC1->GetCurrentNEvents() > 5){
           Int_t nMix = poolMC1->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
             TObjArray* mixEvents = poolMC1->GetEvent(jMix);
@@ -1047,19 +1047,19 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
             Double_t ptL  = trigger->Pt();
             Double_t phiL = trigger->Phi();
             Double_t etaL = trigger->Eta();
-            if(trigger->Pt()<=pTtrigMin[jm] || trigger->Pt()>=pTtrigMax[jm]) continue;
+            if(trigger->Pt()<pTtrigMin[jm] || trigger->Pt()>pTtrigMax[jm]) continue;
             if( TMath::Abs(trigger->Eta())>= 0.9 ) continue;
         
             for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
               AliBasicParticle* associate = (AliBasicParticle*) mixEvents->At(j);
               if(!associate)continue;
-              if(associate->Pt()<=1.0 || associate->Pt()>=2.0) continue;
+              if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
               if( TMath::Abs(associate->Eta())>= 0.9 ) continue;
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
               Double_t dPhi(-999.), dEta(-999.);
-              if(ptL>ptAs && ptL>pTtrigMin[jm] && ptL<pTtrigMax[jm]){
+              if(ptL>ptAs && ptL>=pTtrigMin[jm] && ptL<=pTtrigMax[jm]){
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
                 Int_t bin=(65+jm);
@@ -1086,7 +1086,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
 //         poolMC2->PrintInfo();
   // 		poolMC2->SetTargetEvents(5);
 
-        if (poolMC2->IsReady() || poolMC2->GetCurrentNEvents() >= 5){
+        if (poolMC2->IsReady() || poolMC2->GetCurrentNEvents() > 5){
           Int_t nMix = poolMC2->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
             TObjArray* mixEvents = poolMC2->GetEvent(jMix);
@@ -1095,19 +1095,19 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
             Double_t ptL  = trigger->Pt();
             Double_t phiL = trigger->Phi();
             Double_t etaL = trigger->Eta();
-            if(trigger->Pt()<=pTtrigMin[jm] || trigger->Pt()>=pTtrigMax[jm]) continue;
+            if(trigger->Pt()<pTtrigMin[jm] || trigger->Pt()>pTtrigMax[jm]) continue;
             if( TMath::Abs(trigger->Eta())>= 0.9 ) continue;
         
             for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
               AliBasicParticle* associate = (AliBasicParticle*) mixEvents->At(j);
               if(!associate)continue;
-              if(associate->Pt()<=1.0 || associate->Pt()>=2.0) continue;
+              if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
               if( TMath::Abs(associate->Eta())> 0.8 ) continue;
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
               Double_t dPhi(-999.), dEta(-999.);
-              if(ptL>ptAs  && ptL>pTtrigMin[jm] && ptL<pTtrigMax[jm]){
+              if(ptL>ptAs  && ptL>=pTtrigMin[jm] && ptL<=pTtrigMax[jm]){
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
                 Int_t bin=(70+jm);
@@ -1135,7 +1135,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
 //         poolMC3->PrintInfo();
   // 		poolMC3->SetTargetEvents(5);
 
-        if (poolMC3->IsReady() || poolMC3->GetCurrentNEvents() >= 5){
+        if (poolMC3->IsReady() || poolMC3->GetCurrentNEvents() > 5){
           Int_t nMix = poolMC3->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
             TObjArray* mixEvents = poolMC3->GetEvent(jMix);
@@ -1144,19 +1144,19 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
             Double_t ptL  = trigger->Pt();
             Double_t phiL = trigger->Phi();
             Double_t etaL = trigger->Eta();
-            if(trigger->Pt()<=pTtrigMin[jm] || trigger->Pt()>=pTtrigMax[jm]) continue;
+            if(trigger->Pt()<pTtrigMin[jm] || trigger->Pt()>pTtrigMax[jm]) continue;
             if( TMath::Abs(trigger->Eta())>= 0.9 ) continue;
         
             for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
               AliBasicParticle* associate = (AliBasicParticle*) mixEvents->At(j);
               if(!associate)continue;
-              if(associate->Pt()<=1.0 || associate->Pt()>=2.0) continue;
+              if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
               if( TMath::Abs(associate->Eta())>= 0.9 ) continue;
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
               Double_t dPhi(-999.), dEta(-999.);
-              if(ptL>ptAs  && ptL>pTtrigMin[jm] && ptL<pTtrigMax[jm]){
+              if(ptL>ptAs  && ptL>=pTtrigMin[jm] && ptL<=pTtrigMax[jm]){
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
                 Int_t bin=(75+jm);
@@ -1182,7 +1182,7 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
           return;
         }
 
-        if (poolMC4->IsReady() || poolMC4->GetCurrentNEvents() >= 5){
+        if (poolMC4->IsReady() || poolMC4->GetCurrentNEvents() > 5){
           Int_t nMix = poolMC4->GetCurrentNEvents();
           for (Int_t jMix=0; jMix<nMix; jMix++){
             TObjArray* mixEvents = poolMC4->GetEvent(jMix);
@@ -1191,19 +1191,19 @@ void AliMESppColTask::FillCorrelationMixing(Double_t MultipOrCentMix, Double_t Z
             Double_t ptL  = trigger->Pt();
             Double_t phiL = trigger->Phi();
             Double_t etaL = trigger->Eta();
-            if(trigger->Pt()<=pTtrigMin[jm] || trigger->Pt()>=pTtrigMax[jm]) continue;
+            if(trigger->Pt()<pTtrigMin[jm] || trigger->Pt()>pTtrigMax[jm]) continue;
             if( TMath::Abs(trigger->Eta())>= 0.9 ) continue;
 
             for (Int_t j=0; j<mixEvents->GetEntriesFast(); j++){
               AliBasicParticle* associate = (AliBasicParticle*) mixEvents->At(j);
               if(!associate)continue;
-              if(associate->Pt()<=1.0 || associate->Pt()>=2.0) continue;
+              if(associate->Pt()<1.0 || associate->Pt()>2.0) continue;
               if( TMath::Abs(associate->Eta())>= 0.9 ) continue;
               Double_t ptAs= associate->Pt();
               Double_t phiAs= associate->Phi();
               Double_t etaAs= associate->Eta();
               Double_t dPhi(-999.), dEta(-999.);
-              if(ptL>ptAs && ptL>pTtrigMin[jm] && ptL<pTtrigMax[jm]){
+              if(ptL>ptAs && ptL>=pTtrigMin[jm] && ptL<=pTtrigMax[jm]){
                 dPhi = RangePhi(phiL-phiAs);
                 dEta=etaL-etaAs;
                 Int_t bin=(80+jm);
