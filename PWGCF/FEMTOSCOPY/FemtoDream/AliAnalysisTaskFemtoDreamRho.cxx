@@ -614,7 +614,7 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
       Particles.push_back(*fTrack);
       Tracks_Particles_Minv.push_back(iTrack);
     }
-    if (!fIsSameCharge)
+    if (!fIsSameCharge) //!fIsSameCharge
     {
       if (fNegPionCuts->isSelected(fTrack))
       {
@@ -627,6 +627,7 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
     { // In this case we want the minv plots for the same charge pions also kStar differential
       if (fPosPionCuts->isSelected(fTrack))
       {
+        fTrack->SetCharge(1);
         fTrack->SetInvMass(massChargedPion); // Since we combine these later we set the inv. mass to the PDG value
         AntiParticles.push_back(*fTrack);
         Tracks_AntiParticles_Minv.push_back(iTrack);
@@ -658,7 +659,7 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
       }
       else
       { // We need to avoid auto-correaltions hence we want to skip the first pairing entirely
-        fRhoParticle->Setv0(posPion, negPion, Event, true, true, true);
+        fRhoParticle->Setv0(posPion, negPion, Event, true, true, true); //just use here pos pions
       }
       const float pT_rho_candidate = fRhoParticle->GetPt();
       // At a pT > 1.8 GeV we start to see the rho in the M_inv (for now hard-coded can be optimized)
@@ -865,6 +866,11 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
     - log also all the of the other possibilies to see if there is some discrimination power (pTvsMassInv, Armenteros, etc. pp.)
     - Record also for these cases the un/common ancestors*/
 
+ // std::cout << "////////////////////////////////////////Till here is fine0////////////////////////////////////////" << std::endl;
+  //std::cout << "////////////////////////////////////////Till here is fine0////////////////////////////////////////" << std::endl;
+ // std::cout << "////////////////////////////////////////Till here is fine0////////////////////////////////////////" << std::endl;
+  //std::cout << "////////////////////////////////////////Till here is fine0////////////////////////////////////////" << std::endl;
+
   if (fIsMC) // fIsMC
   {
     // counter for the labels
@@ -1020,6 +1026,11 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
       //  track Armenteros plot (mcTruth)
     }
 
+    //std::cout << "////////////////////////////////////////Till here is fine1////////////////////////////////////////" << std::endl;
+   // std::cout << "////////////////////////////////////////Till here is fine1////////////////////////////////////////" << std::endl;
+    //std::cout << "////////////////////////////////////////Till here is fine1////////////////////////////////////////" << std::endl;
+    //std::cout << "////////////////////////////////////////Till here is fine1////////////////////////////////////////" << std::endl;
+
     // Use the following to study the MC true distributions (inlcudes only acceptancy no momentum resolution)
     // Very simple construction without checking motherIDs etc. or properties of the daughers as the MC vector breaks the particle collection later on.
     ///________________________________________________________________________________________________________
@@ -1060,14 +1071,81 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
         double pt = mcPart->Pt();
         double eta = mcPart->Eta();
 
-        if (mcpdg == 113) // Select all the MC true rhos
-        {
+        if (fIsMCTrueRhoCombBkrg)
+            { // If we only want the comb. background made out of (pipi)_{combinatorial}p triplets then we simply skip all true rhos,
+              // but as we have purity of the pi and p we will still require them to be true pi and p
+             
+              if (mcpdg != 113)  {
+              
+              if (pt < frhoPtThreshold - 0.0001) //
+              {
+                continue;
+              }
+              int firstDaughter = mcPart->GetDaughterFirst();
+              int lastDaughter = mcPart->GetDaughterLast();
+              if (firstDaughter > noPart || lastDaughter > noPart)
+              {
+                continue; // sanity check
+              }
+              AliAODMCParticle *mcDaughterOne =
+                (AliAODMCParticle *)fArrayMCAOD->At(firstDaughter); // also get the second one as we want to see both momenta, maybe even correalted or in amenteros plot?
+              AliAODMCParticle *mcDaughterTwo =
+                (AliAODMCParticle *)fArrayMCAOD->At(lastDaughter); // also get the second one as we want to see both momenta, maybe even correalted or in amenteros plot?
 
-          if (fIsMCTrueRhoCombBkrg)
-          { // If we only want the comb. background made out of (pipi)_{combinatorial}p triplets then we simply skip all ture rhos,
-            // but as we have purity of the pi and p we will still require them to be true pi and p
-            continue;
-          }
+              if (!mcDaughterOne || !mcDaughterTwo) // MC info of the daughters cannot be accessed
+              {
+                continue;
+              }
+              int dpdgOne = mcDaughterOne->GetPdgCode();
+              int dpdgTwo = mcDaughterTwo->GetPdgCode();
+              const float pdgIdealDaughters = 211.;                                                     // Hardcoded since B.R. into pions is nearly 100%, rejects decays with gammas
+              if ((std::abs(dpdgOne) != pdgIdealDaughters) || (std::abs(dpdgTwo) != pdgIdealDaughters)) // MC info of the daughters cannot be accessed
+              {
+                continue;
+              }
+              double dptOne = mcDaughterOne->Pt();
+              double detaOne = mcDaughterOne->Eta();
+              if ((dptOne > 4.0 || dptOne < 0.14) || (detaOne < -0.8 || detaOne > 0.8)) // within acceptance (refine to have the acceptance cuts on the daughters)
+              {
+                continue;
+              }
+              double dptTwo = mcDaughterTwo->Pt();
+              double detaTwo = mcDaughterTwo->Eta();
+              if ((dptTwo > 4.0 || dptTwo < 0.14) || (detaTwo < -0.8 || detaTwo > 0.8)) // within acceptance (refine to have the acceptance cuts on the daughters)
+              {
+                continue;
+              }
+
+              part.SetMCParticleRePart(mcPart);
+              part.SetID(mcPart->GetLabel());
+              part.SetMCParticle(mcPart, fMC);
+              part.SetIDTracks(mcPart->GetLabel());
+              // Needed as else the QA flags throw an error
+              SetPhiAtRadiusMCTruth(part, bfield);
+              RhoMcTruePart.push_back(part);
+              SetPhiAtRadiusMCTruth(part, bfield);
+              RhoMcTruePart.push_back(part);
+
+              // QA the distributions of the daughters!
+              // Armenteros Podolanski plot for the MC True particles.
+              float alpha = 0;
+              float qT = 0;
+              CalculateAlphaAndQT(mcPart, mcDaughterOne, mcDaughterTwo, alpha, qT);
+              // Make a histogram of the pT of the rho vs the m_inv
+              // Record the kinematic distribution of the rhos
+
+              // fpTCorrerrorHistogram->Fill(dpt, dpt2); // record correlation betweent the daughter momenta
+              // Fill all the hists
+              fHist1D_pt_RhoTrue->Fill(part.GetPt());                              // this is with acceptance cuts
+              fHist2D_massVSpt_RhoTrue->Fill(part.GetPt(), mcPart->GetCalcMass()); // this is with acceptance cuts
+              fArmenterosRhoTrue->Fill(alpha, qT);                                 // this is with acceptance cuts
+              fHist2D_pt1VSpt2_RhoTrue->Fill(dptOne, dptTwo);                      // this is with acceptance cuts
+              // track momentum difference (this is tracked in the Armenteros-Plot)
+            } 
+        }
+        else  // Select all the MC true rhos
+        {
+          if (mcpdg == 113) {
 
           if (pt < frhoPtThreshold - 0.0001) //
           {
@@ -1131,7 +1209,8 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
           fArmenterosRhoTrue->Fill(alpha, qT);                                 // this is with acceptance cuts
           fHist2D_pt1VSpt2_RhoTrue->Fill(dptOne, dptTwo);                      // this is with acceptance cuts
           // track momentum difference (this is tracked in the Armenteros-Plot)
-        }
+          }      
+        }  
         if (mcpdg == 2212) // Select all the MC true protons within acceptance
         {
           if ((pt > 4.05 || pt < 0.5) || (eta < -0.8 || eta > 0.8)) // within acceptance (refine to have the acceptance cuts on the daughters)
@@ -1174,23 +1253,43 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
   fPairCleaner->StoreParticle(AntiParticles);
   if (fIsMC && fDoMcTruth) // These will never require cleaning!
   {
+    //std::cout << "////////////////////////////////////////Till here is fine9////////////////////////////////////////" << std::endl;
+    //std::cout << "////////////////////////////////////////Till here is fine9////////////////////////////////////////" << std::endl;
+    //std::cout << "////////////////////////////////////////Till here is fine9////////////////////////////////////////" << std::endl;
+    //std::cout << "////////////////////////////////////////Till here is fine9////////////////////////////////////////" << std::endl;
     fPairCleaner->StoreParticle(RhoMcTruePart);
     fPairCleaner->StoreParticle(ProtonMcTruePart);
     fPairCleaner->StoreParticle(AntiProtonMcTruePart);
   }
   else
   {
+    //std::cout << "////////////////////////////////////////Till here is fine99////////////////////////////////////////" << std::endl;
+    //std::cout << "////////////////////////////////////////Till here is fine99////////////////////////////////////////" << std::endl;
+    //std::cout << "////////////////////////////////////////Till here is fine99////////////////////////////////////////" << std::endl;
+    //std::cout << "////////////////////////////////////////Till here is fine99////////////////////////////////////////" << std::endl;
     fPairCleaner->StoreParticle(V0Particles);
     fPairCleaner->StoreParticle(Protons);
     fPairCleaner->StoreParticle(AntiProtons);
+    //std::cout << "////////////////////////////////////////Till here is fine99AFTER////////////////////////////////////////" << std::endl;
+    //s//td::cout << "////////////////////////////////////////Till here is fine99AFTER////////////////////////////////////////" << std::endl;
+    //std::cout << "////////////////////////////////////////Till here is fine99AFTER////////////////////////////////////////" << std::endl;
+   //std::cout << "////////////////////////////////////////Till here is fine99AFTER////////////////////////////////////////" << std::endl;
   }
   if (fDoProjections)
   {
+  //  std::cout << "////////////////////////////////////////Till here is fine99999////////////////////////////////////////" << std::endl;
+  //  std::cout << "////////////////////////////////////////Till here is fine99999////////////////////////////////////////" << std::endl;
+    //std::cout << "////////////////////////////////////////Till here is fine99999////////////////////////////////////////" << std::endl;
+    //std::cout << "////////////////////////////////////////Till here is fine99999////////////////////////////////////////" << std::endl;
     fPairCleaner->StoreParticle(Particles_Minv);
     fPairCleaner->StoreParticle(AntiParticles_Minv);
   }
 
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
+ // std::cout << "////////////////////////////////////////Till here is SetEvent////////////////////////////////////////" << std::endl;
+ // std::cout << "////////////////////////////////////////Till here is SetEvent////////////////////////////////////////" << std::endl;
+ // std::cout << "////////////////////////////////////////Till here is SetEvent////////////////////////////////////////" << std::endl;
+ // std::cout << "////////////////////////////////////////Till here is SetEvent////////////////////////////////////////" << std::endl;
 
   PostData(1, fOutput);
 }
