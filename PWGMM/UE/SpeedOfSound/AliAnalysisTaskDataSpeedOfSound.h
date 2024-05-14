@@ -153,6 +153,8 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   int fSPDEtaAdj;
   int fSPDEtaGapW;
   int fSPDEtaGapWW;
+  double fZN;
+  double fZP;
   double fZDC;
   TProfile* pZDCvsV0MAmp;
   TProfile* pZDCvsTPCFull;
@@ -168,6 +170,24 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2F* hPtvsTPCFullWidepT;
   TH2F* hPtvsSPDEtaGapWidepT;
   TH2F* hPtvsSPDEtaGapWWidepT;
+  TProfile* pZNvsV0MAmp;
+  TProfile* pZNvsTPCFull;
+  TProfile* pZNvsTPCEtaGap;
+  TProfile* pZNvsSPDFull;
+  TProfile* pZNvsSPDEtaGap;
+  TProfile* pZNvsSPDEtaAdj;
+  TProfile* pZNvsSPDEtaGapW;
+  TProfile* pZNvsEtFull;
+  TProfile* pZNvsEtEtaGap;
+  TProfile* pZPvsV0MAmp;
+  TProfile* pZPvsTPCFull;
+  TProfile* pZPvsTPCEtaGap;
+  TProfile* pZPvsSPDFull;
+  TProfile* pZPvsSPDEtaGap;
+  TProfile* pZPvsSPDEtaAdj;
+  TProfile* pZPvsSPDEtaGapW;
+  TProfile* pZPvsEtFull;
+  TProfile* pZPvsEtEtaGap;
 
   AliAnalysisTaskDataSpeedOfSound(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented
