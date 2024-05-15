@@ -156,6 +156,7 @@
 
 
 #pragma link C++ class AliAnalysisTaskNFactorialMoments+;
+#pragma link C++ class AliAnalysisTaskNFactorialMomentsPID+;
 
 #pragma link C++ class AliAnalysisHMMeanPt+;
 #pragma link C++ class AliAnalysisMeanPt+;
