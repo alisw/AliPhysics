@@ -29,6 +29,7 @@
 #include "AliCaloTrackMatcher.h"
 #include "AliMCAnalysisUtils.h"
 #include "AliAnalysisTaskConvJet.h"
+#include "TDatabasePDG.h"
 
 #ifndef AliAnalysisTaskGammaIsoTree_cxx
 #define AliAnalysisTaskGammaIsoTree_cxx
@@ -262,6 +263,12 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     void SetGenPtCut(Double_t pt){
       fGenPtCut = pt;
     }
+    void SetRecJetPtCut(Double_t pt){
+      fRecJetPtCut = pt;
+    }
+    void SetGenJetPtCut(Double_t pt){
+      fGenJetPtCut = pt;
+    }
     void SetDebugFlag(Int_t debug = 1){
       fDebug = debug;
     }
@@ -270,6 +277,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
         fSaveJets = b;
     }
     void SetJetContainerAddName(TString name) { fAddNameConvJet = name; }
+    void SetDoUseCentralEvtSelection(bool tmp) { fUseCentralEventSelection = tmp; }
   protected:
     AliVEvent*                  fInputEvent;                //!<!
     AliMCEvent*                 fMCEvent;                   //!<!
@@ -302,6 +310,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     // cuts and setting
     TString                     fCorrTaskSetting;           //
     AliConvEventCuts*           fEventCuts;                 // event cuts
+    AliEventCuts                fAliEventCuts;     ///<  Event cuts (run2 defaults) used to reject outlier events
     AliCaloPhotonCuts*          fClusterCutsEMC;            // emc cluster cuts used for signal clusters (clusters that are stored to tree)
     AliCaloPhotonCuts*          fClusterCutsEMCTrackMatching; // used to handle track matching (workaround)
     AliCaloPhotonCuts*          fClusterCutsIsolationEMC;  // emc cluster cuts used for background clusters (used for tagging and isolation, not stored)
@@ -351,8 +360,12 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Bool_t                      fUseHistograms; // if activated, histograms will be used instead of a tree
     Int_t                       fUseTree; // 0 no tree, 1, light tree, 2 full tree (OBSOLETE)
 
+    bool fUseCentralEventSelection;                       // flag if central event selection (AliEventSelection.cxx) should be used
+
     Double_t                    fRecPtCut; //
     Double_t                    fGenPtCut; //
+    Double_t                    fRecJetPtCut; //
+    Double_t                    fGenJetPtCut; //
     // histos
     TH1F*                       fHistoNEvents;   //! 
     TH1F*                       fHistoNEventsWOWeight;   //! 
@@ -740,6 +753,8 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     std::vector<Float_t> fBuffer_ClusterM20; 
     std::vector<UShort_t> fBuffer_ClusterNCells; 
     std::vector<Float_t> fBuffer_ClusterV1SplitMass; 
+    std::vector<Float_t> fBuffer_ClusterMinMassDiffToPi0; // Difference between the pair mass including the cluster closest to the pi0 mass to the pi0 pdg mass
+    std::vector<Float_t> fBuffer_ClusterMinMassDiffToEta; // Difference between the pair mass including the cluster closest to the eta mass to the eta pdg mass
     std::vector<UShort_t> fBuffer_ClusterNLM; 
     std::vector<UShort_t> fBuffer_ClusterSM; // super module 
     std::vector<Float_t> fBuffer_ClusterEFrac; 
@@ -817,12 +832,12 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     vector<Double32_t> ProcessNeutralIsolation(AliAODCaloCluster* cluster);
     isoValues ProcessMCIsolation(Int_t mclabel);
     Int_t ProcessTagging(AliAODConversionPhoton* photon);
-    Int_t ProcessTagging(AliAODCaloCluster* cluster);
+    Int_t ProcessTagging(AliAODCaloCluster* cluster, Float_t& minMassDiffToPi0, Float_t& minMassDiffToEta);
     void ReduceTrackInfo();
     void RelabelAODPhotonCandidates(Bool_t mode);
     void FillConversionHistos(AliAODConversionPhoton* photon,vector<Double32_t> isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag);
     void FillCaloHistosPurity(AliAODCaloCluster* clus, AliAODConversionPhoton* photon,vector<Double32_t> isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag, Double_t weight);
-    void FillCaloTree(AliAODCaloCluster* clus, AliAODConversionPhoton* photon,isoValues isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag, Double_t weight);
+    void FillCaloTree(AliAODCaloCluster* clus, AliAODConversionPhoton* photon,isoValues isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag, Float_t minMassDiffToPi0, Float_t minMassDiffToEta, Double_t weight);
     void FillCaloHistos(AliAODCaloCluster* clus, AliAODConversionPhoton* photon,isoValues isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag, Double_t weight);
     Float_t GetExoticEnergyFraction(AliVCluster *cluster, AliVEvent *event);
     Bool_t IsMatchedWithConv(AliAODCaloCluster* clus, AliCaloPhotonCuts* cuts);
@@ -845,7 +860,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Float_t CalculateIsoCorrectionFactor(Double_t cEta, Double_t maxEta, Double_t r);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 47);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 48);
 
 };
 
