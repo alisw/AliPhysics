@@ -3442,7 +3442,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
     ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->SetNMatchedTracksFunc(cent);
   }
 
-//   cout << nclus << endl;
+  // cout << nclus << endl;
   vector<AliAODConversionPhoton*>         vectorCurrentClusters;
   vector<Int_t>                           vectorRejectCluster;
   vector<Double_t>                        vectorPhotonWeight;
@@ -3515,14 +3515,14 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
     if(fIsMC>0){
       Int_t* mclabelsCluster = clus->GetLabels();
       PhotonCandidate->SetNCaloPhotonMCLabels(clus->GetNLabels());
-//       cout << clus->GetNLabels() << endl;
+      // cout << clus->GetNLabels() << endl;
       if (clus->GetNLabels()>0){
         for (Int_t k =0; k<(Int_t)clus->GetNLabels(); k++){
           PhotonCandidate->SetCaloPhotonMCLabel(k,mclabelsCluster[k]);
-//           Int_t pdgCode = fMCEvent->GetTrack(mclabelsCluster[k])->PdgCode();
-//           cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
-        }
-      }
+          // Int_t pdgCode = fMCEvent->GetTrack(mclabelsCluster[k])->PdgCode();
+          // cout << "label " << k << "\t" << mclabelsCluster[k] << " pdg code: " << pdgCode << endl;
+        } // end of label loop
+      } 
     }
 
     fIsFromDesiredHeader            = kTRUE;

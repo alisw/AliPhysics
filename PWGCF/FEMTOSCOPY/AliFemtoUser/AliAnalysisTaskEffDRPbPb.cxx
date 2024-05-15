@@ -70,6 +70,30 @@ void AliAnalysisTaskEffDRPbPb::SetPidMethod(int method)
 
 //_______________________________________________________
 
+AliAnalysisTaskEffDRPbPb::AliAnalysisTaskEffDRPbPb() :
+  AliAnalysisTaskSE(), centrality(0), fHistoList(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
+
+{
+
+  for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
+    for(Int_t chg=0;chg<2;chg++){
+      fGeneratedMCPrimaries[i][chg] = NULL;
+      fMCPrimariesThatAreReconstructed[i][chg] = NULL;
+      fMCPrimariesThatAreReconstructedNoNsigma[i][chg] = NULL;
+      fReconstructedAfterCuts[i][chg] = NULL;
+      fReconstructedNotPrimaries[i][chg] = NULL;
+      fReconstructedPrimaries[i][chg] = NULL;
+      fContamination[i][chg] = NULL;
+    }
+  }
+ for ( Int_t i = 0; i < 11; i++) {
+    if(i<4) fHistEv[i] = NULL;
+    fHistQA[i] = NULL;
+    if(i<3) fHistQA2D[i] = NULL;
+  }
+}
+
+
 AliAnalysisTaskEffDRPbPb::AliAnalysisTaskEffDRPbPb(TString name, int pidMethod, int filterbit) :
   AliAnalysisTaskSE(name), centrality(0), fHistoList(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
 
@@ -91,12 +115,6 @@ AliAnalysisTaskEffDRPbPb::AliAnalysisTaskEffDRPbPb(TString name, int pidMethod, 
     fHistQA[i] = NULL;
     if(i<3) fHistQA2D[i] = NULL;
   }
-
-  /* init track cuts */
-  if(pidMethod!=-1) SetPidMethod(pidMethod);
-  SetFB(filterbit);
-
-
 
   //DefineInput(0, TChain::Class());
   //DefineOutput(0, TTree::Class());
@@ -536,13 +554,17 @@ void AliAnalysisTaskEffDRPbPb::UserExec(Option_t *)
   delete anaUtil;
 
   //pileup for LHC20e3a -> Injective Pileup over events 
-  /*AliAODMCHeader *mcHeader = 0;
+  AliAODMCHeader *mcHeader = 0;
   mcHeader = (AliAODMCHeader*)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
   if(!mcHeader) {
     printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
     return;
   }
-  */
+ 
+  Bool_t isPileupInGeneratedEvent = kFALSE;
+  isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,"Hijing");
+  if(isPileupInGeneratedEvent) return;
+ 
   fHistQA[9]->Fill(3);
   if(fcent==0)fHistEvCuts[0]->Fill(3);
   else if(fcent==1)fHistEvCuts[1]->Fill(3);
@@ -615,6 +637,12 @@ void AliAnalysisTaskEffDRPbPb::UserExec(Option_t *)
       continue;
     fHistQA[10]->Fill(2);
     
+    //pileup for LHC20e3a -> Injective Pileup over tracks 
+    Bool_t isParticleFromOutOfBunchPileupCollision = kFALSE;
+    isParticleFromOutOfBunchPileupCollision = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iTracks,mcHeader,arrayMC);
+    if(isParticleFromOutOfBunchPileupCollision) continue;
+
+
     //UInt_t filterBit = (1 << (7));
     UInt_t filterBit = fFB;
     if(filterBit && !track->TestFilterBit(filterBit))
@@ -682,8 +710,8 @@ void AliAnalysisTaskEffDRPbPb::UserExec(Option_t *)
     float nSigmaTPCK = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kKaon);
     float nSigmaTPCP = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kProton);
     float nSigmaTPCe = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kElectron);
-    if(IsElectronPbPb_DR(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
-      continue;
+    //if(IsElectronPbPb_DR(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
+      //continue;
    
     fHistQA[10]->Fill(7);
     
@@ -884,24 +912,24 @@ void AliAnalysisTaskEffDRPbPb::UserExec(Option_t *)
 
    //And secondaries for different particle species:
     if (!MCtrk->IsPhysicalPrimary() && (isPionNsigma && abs(PDGcode)==211)) { //secondaries in pions
-      fReconstructedNotPrimaries[PARTTYPES*fcent+1][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedNotPrimaries[PARTTYPES*fcent+1][charge]->Fill(track->Y(PionMass), track->Pt());
     }
     else if(MCtrk->IsPhysicalPrimary() && (isPionNsigma && abs(PDGcode)==211)) {
-      fReconstructedPrimaries[PARTTYPES*fcent+1][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedPrimaries[PARTTYPES*fcent+1][charge]->Fill(track->Y(PionMass), track->Pt());
     }
 
     if (!MCtrk->IsPhysicalPrimary() && (isKaonNsigma && abs(PDGcode)==321)) { //secondaries in kaons
-      fReconstructedNotPrimaries[PARTTYPES*fcent+2][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedNotPrimaries[PARTTYPES*fcent+2][charge]->Fill(track->Y(KaonMass), track->Pt());
     }
     else if(MCtrk->IsPhysicalPrimary() && (isKaonNsigma && abs(PDGcode)==321)) {
-      fReconstructedPrimaries[PARTTYPES*fcent+2][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedPrimaries[PARTTYPES*fcent+2][charge]->Fill(track->Y(KaonMass), track->Pt());
     }
 
     if (!MCtrk->IsPhysicalPrimary() && (isProtonNsigma && abs(PDGcode)==2212)) { //secondaries in protons
-      fReconstructedNotPrimaries[PARTTYPES*fcent+3][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedNotPrimaries[PARTTYPES*fcent+3][charge]->Fill(track->Y(ProtonMass), track->Pt());
     } 
     else if(MCtrk->IsPhysicalPrimary() && (isProtonNsigma && abs(PDGcode)==2212)) {
-      fReconstructedPrimaries[PARTTYPES*fcent+3][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedPrimaries[PARTTYPES*fcent+3][charge]->Fill(track->Y(ProtonMass), track->Pt());
     } 
 
 
@@ -976,11 +1004,16 @@ void AliAnalysisTaskEffDRPbPb::UserExec(Option_t *)
   if (!MCtrk) continue;
   //std::cout<<"particle obtained"<<std::endl;
     
+  //pileup for LHC20e3a -> Injective Pileup over tracks 
+   Bool_t isParticleFromOutOfBunchPileupCollision = kFALSE;
+   isParticleFromOutOfBunchPileupCollision = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(ipart,mcHeader,arrayMC);
+   if(isParticleFromOutOfBunchPileupCollision) continue;
+ 
+    
   Int_t PDGcode = TMath::Abs(MCtrk->GetPdgCode()); 
   Int_t charge=0;
   if(MCtrk->Charge() < 0) charge=1;
   else if(MCtrk->Charge() > 0) charge=0;
-
 
   if(MCtrk->Y() < -0.5 || MCtrk->Y() > 0.5) continue; 
  
@@ -991,6 +1024,15 @@ void AliAnalysisTaskEffDRPbPb::UserExec(Option_t *)
     if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
   }
   if(MCtrk->GetPdgCode() == 2212){
+    if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
+  }
+  if(MCtrk->GetPdgCode() == -211){
+    if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 2.5) continue;
+  }
+  if(MCtrk->GetPdgCode() == -321){
+    if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
+  }
+  if(MCtrk->GetPdgCode() == -2212){
     if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
   }
   // check physical primary 
