@@ -65,6 +65,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fGeomEMCAL(NULL),
   fCorrTaskSetting(""),
   fEventCuts(NULL),
+  fAliEventCuts(NULL),
+  fUseCentralEventSelection(NULL),
   fClusterCutsEMC(NULL),
   fClusterCutsEMCTrackMatching(NULL),
   fClusterCutsIsolationEMC(NULL),
@@ -105,6 +107,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fUseTree(0),
   fRecPtCut(0),
   fGenPtCut(0),
+  fRecJetPtCut(0),
+  fGenJetPtCut(0),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoMCPileup(NULL),
@@ -432,6 +436,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree() : AliAnalysisTaskSE()
   fBuffer_ClusterM20(0), 
   fBuffer_ClusterNCells(0), 
   fBuffer_ClusterV1SplitMass(0), 
+  fBuffer_ClusterMinMassDiffToPi0(0), 
+  fBuffer_ClusterMinMassDiffToEta(0), 
   fBuffer_ClusterNLM(0), 
   fBuffer_ClusterSM(0), 
   fBuffer_ClusterEFrac(0), 
@@ -527,6 +533,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fGeomEMCAL(NULL),
   fCorrTaskSetting(""),
   fEventCuts(NULL),
+  fAliEventCuts(NULL),
+  fUseCentralEventSelection(NULL),
   fClusterCutsEMC(NULL),
   fClusterCutsEMCTrackMatching(NULL),
   fClusterCutsIsolationEMC(NULL),
@@ -567,6 +575,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fUseTree(0),
   fRecPtCut(0),
   fGenPtCut(0),
+  fRecJetPtCut(0),
+  fGenJetPtCut(0),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoMCPileup(NULL),
@@ -896,6 +906,8 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fBuffer_ClusterM20(0), 
   fBuffer_ClusterNCells(0), 
   fBuffer_ClusterV1SplitMass(0), 
+  fBuffer_ClusterMinMassDiffToPi0(0), 
+  fBuffer_ClusterMinMassDiffToEta(0), 
   fBuffer_ClusterNLM(0), 
   fBuffer_ClusterSM(0), 
   fBuffer_ClusterEFrac(0), 
@@ -944,6 +956,9 @@ AliAnalysisTaskGammaIsoTree::AliAnalysisTaskGammaIsoTree(const char *name) : Ali
   fBuffer_TrueJetNPart(0),
   fMCFlag(AliAODMCParticle::kPhysicalPrim)
 {
+  // Do not perform trigger selection in the AliEvent cuts but let the task do this before
+  fAliEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kAny, true);
+
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
@@ -1102,6 +1117,10 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
   fHistoTaggingPCMEMC->Sumw2();
   fHistoTaggingEMCPCM->Sumw2();
   fHistoTaggingEMCEMC->Sumw2();
+
+  if(fUseCentralEventSelection){
+    fAliEventCuts.AddQAplotsToList(fGeneralFolder);
+  }
 
   if(fIsMC > 1){
     fHistoNEventsWOWeight           = new TH1F("NEventsWOWeight","NEventsWOWeight",14,-0.5,13.5);
@@ -2578,6 +2597,8 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
     fAnalysisTree->Branch("Cluster_M20","std::vector<Float_t>",&fBuffer_ClusterM20);
     fAnalysisTree->Branch("Cluster_NCells","std::vector<UShort_t>",&fBuffer_ClusterNCells);
     fAnalysisTree->Branch("Cluster_V1SplitMass","std::vector<Float_t>",&fBuffer_ClusterV1SplitMass);
+    fAnalysisTree->Branch("Cluster_MinMassDiffToPi0","std::vector<Float_t>",&fBuffer_ClusterMinMassDiffToPi0);
+    fAnalysisTree->Branch("Cluster_MinMassDiffToEta","std::vector<Float_t>",&fBuffer_ClusterMinMassDiffToEta);
     fAnalysisTree->Branch("Cluster_NLM","std::vector<UShort_t>",&fBuffer_ClusterNLM);
     fAnalysisTree->Branch("Cluster_SM","std::vector<UShort_t>",&fBuffer_ClusterSM);
     fAnalysisTree->Branch("Cluster_EFrac","std::vector<Float_t>",&fBuffer_ClusterEFrac);
@@ -2667,6 +2688,11 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
     fHistoNEvents->Fill(eventQuality);
     if (fIsMC>1) fHistoNEventsWOWeight->Fill(eventQuality);
     return;
+  }
+  if(fUseCentralEventSelection){
+    if(!fAliEventCuts.AcceptEvent(fInputEvent)){
+      return;
+    }
   }
 
   // check if event is any of the MC headers contains generated pileup event
@@ -2953,6 +2979,8 @@ void AliAnalysisTaskGammaIsoTree::ResetBuffer(){
   fBuffer_ClusterM20.clear(); 
   fBuffer_ClusterNCells.clear(); 
   fBuffer_ClusterV1SplitMass.clear(); 
+  fBuffer_ClusterMinMassDiffToPi0.clear(); 
+  fBuffer_ClusterMinMassDiffToEta.clear(); 
   fBuffer_ClusterNLM.clear(); 
   fBuffer_ClusterSM.clear(); 
   fBuffer_ClusterEFrac.clear(); 
@@ -3830,6 +3858,8 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
      Double32_t tmp_isoNeutral[2] = {0,0};
      Double32_t tmp_isoCell[2] = {0,0};
      Int_t      tmp_tag= 0;
+     Float_t minMassDiffToPi0 = 10;
+     Float_t minMassDiffToEta = 10;
      isoValues isoCharged;
      vector<Double32_t> isoNeutral;
      vector<Double32_t> isoCell;
@@ -3850,7 +3880,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
              isoCell.push_back(0.);
           }
      }
-     if(fDoTagging) tmp_tag = ProcessTagging(clus);
+     if(fDoTagging) tmp_tag = ProcessTagging(clus, minMassDiffToPi0, minMassDiffToEta);
 
      // Subtract correction of charged isolation
      // others not implemented yes
@@ -3916,7 +3946,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessCaloPhotons(){
      
      if(!fUseHistograms) {
        // only fill tree for clusters fulfilling cut
-       if(PhotonCandidate->Pt()>=fRecPtCut) FillCaloTree(clus,PhotonCandidate,isoCharged,isoNeutral,isoCell,tmp_tag,clusWeights.at(c));
+       if(PhotonCandidate->Pt()>=fRecPtCut) FillCaloTree(clus,PhotonCandidate,isoCharged,isoNeutral,isoCell,tmp_tag,minMassDiffToPi0,minMassDiffToEta,clusWeights.at(c));
      }
      if((clus->GetM02() < fMinM02) || (clus->GetM02() > fMaxM02)){
       if(tmpvec)  delete tmpvec;
@@ -4011,12 +4041,14 @@ void AliAnalysisTaskGammaIsoTree::ProcessTracks(){
 void AliAnalysisTaskGammaIsoTree::ProcessJets()
 {
   for (UInt_t iJet = 0; iJet < fConvJetReader->GetNJets(); iJet++) {
-    fBuffer_JetPx.push_back((Float_t)fConvJetReader->GetVectorJetPx().at(iJet));
-    fBuffer_JetPy.push_back((Float_t)fConvJetReader->GetVectorJetPy().at(iJet));
-    fBuffer_JetPz.push_back((Float_t)fConvJetReader->GetVectorJetPz().at(iJet));
-    fBuffer_JetArea.push_back((Float_t)fConvJetReader->GetVectorJetArea().at(iJet));
-    fBuffer_JetNch.push_back((UShort_t)fConvJetReader->GetVectorJetNtracks().at(iJet));
-    fBuffer_JetNclus.push_back((UShort_t)fConvJetReader->GetVectorJetNclus().at(iJet));
+    if(fConvJetReader->GetVectorJetPt().at(iJet)>fRecJetPtCut){
+      fBuffer_JetPx.push_back((Float_t)fConvJetReader->GetVectorJetPx().at(iJet));
+      fBuffer_JetPy.push_back((Float_t)fConvJetReader->GetVectorJetPy().at(iJet));
+      fBuffer_JetPz.push_back((Float_t)fConvJetReader->GetVectorJetPz().at(iJet));
+      fBuffer_JetArea.push_back((Float_t)fConvJetReader->GetVectorJetArea().at(iJet));
+      fBuffer_JetNch.push_back((UShort_t)fConvJetReader->GetVectorJetNtracks().at(iJet));
+      fBuffer_JetNclus.push_back((UShort_t)fConvJetReader->GetVectorJetNclus().at(iJet));
+    }
   }
 }
 
@@ -4027,7 +4059,7 @@ void AliAnalysisTaskGammaIsoTree::ProcessTrueJets()
     fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
   fConvJetReader->FindPartonsJet(fAODMCTrackArray);
   for (UInt_t iJet = 0; iJet < fConvJetReader->GetTrueNJets(); iJet++) {
-    if((fConvJetReader->GetTrueVectorJetPt().at(iJet)>fGenPtCut)){
+    if((fConvJetReader->GetTrueVectorJetPt().at(iJet)>fGenJetPtCut)){
       fBuffer_TrueJetPx.push_back((Float_t)fConvJetReader->GetTrueVectorJetPx().at(iJet));
       fBuffer_TrueJetPy.push_back((Float_t)fConvJetReader->GetTrueVectorJetPy().at(iJet));
       fBuffer_TrueJetPz.push_back((Float_t)fConvJetReader->GetTrueVectorJetPz().at(iJet));
@@ -4937,12 +4969,8 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODConversionPhoton* photon
     fHistoTaggingPCMPCM->Fill(mass,photon->Pt(),fWeightJetJetMC);
     if((mass > fPi0TaggingWindow[0]) && (mass < fPi0TaggingWindow[1])){ // pi0
         taggedConv = 1;
-        delete pi0cand;
-        break;
     } else if((mass > fEtaTaggingWindow[0]) && (mass < fEtaTaggingWindow[1])){ // eta
         taggedConv = 1;
-        delete pi0cand;
-        break;
     }
     delete pi0cand;
   }
@@ -4950,7 +4978,7 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODConversionPhoton* photon
   Double_t vertex[3] = {0,0,0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
 
-  for (Int_t c = 0; c < fClusterEMCalCandidatesTagging->GetEntries(); c++)
+  for (Int_t c = 0; c < fClusterEMCalCandidates->GetEntries(); c++)
   {
     // AliExtraClusterInfoHelper* clusInfo = (AliExtraClusterInfoHelper*) fExtraClusterInfoBackground->At(c);
     // if(fDoBackgroundTrackMatching){
@@ -4958,7 +4986,7 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODConversionPhoton* photon
     // }
     // TLorentzvector with cluster
     TLorentzVector clusterVector;
-    ((AliAODCaloCluster*)fClusterEMCalCandidatesTagging->At(c))->GetMomentum(clusterVector,vertex);
+    ((AliAODCaloCluster*)fClusterEMCalCandidates->At(c))->GetMomentum(clusterVector,vertex);
 
     TLorentzVector* tmpvec = new TLorentzVector();
     tmpvec->SetPxPyPzE(clusterVector.Px(),clusterVector.Py(),clusterVector.Pz(),clusterVector.E());
@@ -4975,16 +5003,8 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODConversionPhoton* photon
    // cout << "checking if mass " << mass <<" is between " <<  fPi0TaggingWindow[0] << " and " << fPi0TaggingWindow[1] << endl;
     if((mass > fPi0TaggingWindow[0]) && (mass < fPi0TaggingWindow[1])){ // pi0
         taggedClus = 2;
-        delete pi0cand;
-        delete PhotonCluster;
-        delete tmpvec;
-        break;
-    } else  if((mass > fEtaTaggingWindow[0]) && (mass < fEtaTaggingWindow[1])){ // eta
-        delete pi0cand;
-        delete PhotonCluster;
-        delete tmpvec;
+    } else if((mass > fEtaTaggingWindow[0]) && (mass < fEtaTaggingWindow[1])){ // eta
         taggedClus = 2;
-        break;
     }
     delete pi0cand;
     delete PhotonCluster;
@@ -4995,9 +5015,11 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODConversionPhoton* photon
 }
 
 // tagging of calo clusters
-Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODCaloCluster* cluster){
+Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODCaloCluster* cluster, Float_t& minMassDiffToPi0, Float_t& minMassDiffToEta){
   Int_t taggedConv = 0;
   Int_t taggedClus = 0;
+  Float_t pdgMassPi0 = TDatabasePDG::Instance()->GetParticle(111)->Mass();
+  Float_t pdgMassEta = TDatabasePDG::Instance()->GetParticle(221)->Mass();
 
   Double_t vertex[3] = {0,0,0};
   InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
@@ -5014,7 +5036,6 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODCaloCluster* cluster){
 
   AliAODConversionMother *pi0cand = NULL;
   fReaderGammas    = fV0Reader->GetReconstructedGammas();
-
   for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
     AliAODConversionPhoton* otherPhoton = (AliAODConversionPhoton*) fReaderGammas->At(i);
     if(!otherPhoton) continue;
@@ -5025,27 +5046,28 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODCaloCluster* cluster){
     // check mass window
     Double_t mass = pi0cand->M();
     fHistoTaggingEMCPCM->Fill(mass,ThisPhotonCluster->Pt(),fWeightJetJetMC);
+    if(fabs(mass-pdgMassPi0) < minMassDiffToPi0)
+      minMassDiffToPi0 = fabs(mass-pdgMassPi0);
+    if(fabs(mass-pdgMassEta) < minMassDiffToEta)
+      minMassDiffToEta = fabs(mass-pdgMassPi0);
+    cout << "mass = " << mass << endl;
     if((mass > fPi0TaggingWindow[0]) && (mass < fPi0TaggingWindow[1])){ // pi0
         taggedConv = 1;
-        delete pi0cand;
-        break;
     } else if((mass > fEtaTaggingWindow[0]) && (mass < fEtaTaggingWindow[1])){ // eta
         taggedConv = 1;
-        delete pi0cand;
-        break;
     }
     delete pi0cand;
   }
 
-
-  for (Int_t c = 0; c < fClusterEMCalCandidatesTagging->GetEntries(); c++)
+  
+  for (Int_t c = 0; c < fClusterEMCalCandidates->GetEntries(); c++)
   {
     // TLorentzvector with cluster
     TLorentzVector clusterVector;
 
-    if(((AliAODCaloCluster*)fClusterEMCalCandidatesTagging->At(c))->GetID() == cluster->GetID()) continue;
+    if(((AliAODCaloCluster*)fClusterEMCalCandidates->At(c))->GetID() == cluster->GetID()) continue;
 
-    ((AliAODCaloCluster*)fClusterEMCalCandidatesTagging->At(c))->GetMomentum(clusterVector,vertex);
+    ((AliAODCaloCluster*)fClusterEMCalCandidates->At(c))->GetMomentum(clusterVector,vertex);
 
     TLorentzVector* tmpvec = new TLorentzVector();
     tmpvec->SetPxPyPzE(clusterVector.Px(),clusterVector.Py(),clusterVector.Pz(),clusterVector.E());
@@ -5059,18 +5081,14 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODCaloCluster* cluster){
     // check mass window
     Double_t mass = pi0cand->M();
     fHistoTaggingEMCEMC->Fill(mass,ThisPhotonCluster->Pt(),fWeightJetJetMC);
+    if(fabs(mass-pdgMassPi0) < minMassDiffToPi0)
+      minMassDiffToPi0 = fabs(mass-pdgMassPi0);
+    if(fabs(mass-pdgMassEta) < minMassDiffToEta)
+      minMassDiffToEta = fabs(mass-pdgMassPi0);
     if((mass > fPi0TaggingWindow[0]) && (mass < fPi0TaggingWindow[1])){ // pi0
         taggedClus = 2;
-        delete pi0cand;
-        delete PhotonCluster;
-        delete tmpvec;
-        break;
     } else  if((mass > fEtaTaggingWindow[0]) && (mass < fEtaTaggingWindow[1])){ // eta
-        delete pi0cand;
-        delete PhotonCluster;
-        delete tmpvec;
         taggedClus = 2;
-        break;
     }
     delete pi0cand;
     delete PhotonCluster;
@@ -5498,7 +5516,7 @@ void AliAnalysisTaskGammaIsoTree::FillCaloHistosPurity(AliAODCaloCluster* clus,A
   }
 }
 
-void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODConversionPhoton* photon,isoValues isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag, Double_t weight){
+void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODConversionPhoton* photon,isoValues isoCharged,vector<Double32_t> isoNeutral,vector<Double32_t> isoCell,Int_t tmptag, Float_t minMassDiffToPi0, Float_t minMassDiffToEta, Double_t weight){
   if(!clus) return;
 
   //if (!IsInEMCalAcceptance(photon)) return;
@@ -6006,6 +6024,8 @@ void AliAnalysisTaskGammaIsoTree::FillCaloTree(AliAODCaloCluster* clus,AliAODCon
   fBuffer_ClusterM20.push_back(clusM20);
   fBuffer_ClusterNCells.push_back(ncells);
   fBuffer_ClusterV1SplitMass.push_back(clusV1SplitMass);
+  fBuffer_ClusterMinMassDiffToPi0.push_back(minMassDiffToPi0);
+  fBuffer_ClusterMinMassDiffToEta.push_back(minMassDiffToEta);
   fBuffer_ClusterNLM.push_back(nlm);
   fBuffer_ClusterSM.push_back(SMNumber);
   fBuffer_ClusterEFrac.push_back(eFrac);
