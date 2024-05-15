@@ -163,6 +163,17 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
 	  )
 endif()
 
+if(FASTJET_FOUND)
+  set(SRCS
+    ${SRCS}
+      Nuclei/Nuclei_Jets/AliAnalysisTaskJetAngCorrelations.cxx
+    )
+
+  include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+  link_directories(${FASTJET_LIBS_DIR})
+  add_definitions(${FASTJET_DEFINITIONS})
+endif(FASTJET_FOUND)
+
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
@@ -175,10 +186,14 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
 	  )
 endif()
 
+if(FASTJET_FOUND)
+  list(APPEND HDRS ../../PWGJE/EMCALJetsTasks/FJ_Includes.h)
+endif(FASTJET_FOUND)
+
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
-generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
+generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${FASTJET_ROOTDICT_OPTS}")
 
 set(ROOT_DEPENDENCIES)
 set(ALIROOT_DEPENDENCIES ANALYSISalice OADB PWGPPevcharQn PWGflowTasks EVGEN PWGLFcommonutils PWGDevNanoAOD)
@@ -205,7 +220,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} ${LIBDEPS})
+target_link_libraries(${MODULE} ${LIBDEPS} ${FASTJET_LIBS})
 if(ROOT_VERSION_MAJOR EQUAL 6)
   # For macOS: Add TREELITE_ROOT to RPATH
   target_link_directories(${MODULE} PUBLIC ${TREELITE_ROOT}/lib)
