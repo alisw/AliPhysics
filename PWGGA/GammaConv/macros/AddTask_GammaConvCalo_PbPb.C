@@ -1033,7 +1033,7 @@ void AddTask_GammaConvCalo_PbPb(
   // ***************************** PCM-EMC configurations PbPb run 2 2018 *************************************
   // **********************************************************************************************************
   } else if (trainConfig == 750){ // EMCAL clusters - 0-100%
-    cuts.AddCutPCMCalo("10930013","0dm00009ab770c00amd0404000","411790105te30220000","0133103100000010"); //  0-100%
+    cuts.AddCutPCMCalo("10930013","0dm00009ab770c00amd0404000","411790105ke30220000","0133103100000010"); //  0-100%
   } else if (trainConfig == 751){ // EMCAL clusters - 4 cent classes with 0-10 and 30-50 triggered with neutral overlap correction via N matched tracks per cluster
     cuts.AddCutPCMCalo("10130e03","0dm00009ab770c00amd0404000","411790105te30220000","0133103100000010"); //  0-10%
     cuts.AddCutPCMCalo("11310e03","0dm00009ab770c00amd0404000","411790105te30220000","0133103100000010"); // 10-30%
