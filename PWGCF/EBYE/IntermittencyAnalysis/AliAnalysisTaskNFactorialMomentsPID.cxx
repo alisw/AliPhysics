@@ -235,7 +235,7 @@ void AliAnalysisTaskNFactorialMomentsPID::UserCreateOutputObjects()
       fHistList->Add(fPhiBinGen[i]);
       fHistList->Add(fMultBinGen[i]);
     }
-    for (Int_t j = 0; j < mMBins; ++j) {
+    for (Int_t j = 0; j < maxBins; ++j) {
       // Eta-Phi distributions
       fEtaPhiBin[i][j] = new TH2D(Form("fEtaPhiBin%s_%.2f-%.2f_%d", name.Data(), ptarray[2 * i], ptarray[2 * i + 1], j + 1), Form("Eta-Phi distribution of tracks for PtBin%d and MBin%d;#eta;#phi", i + 1, j + 1), mMBin2[j], minEta, maxEta, mMBin2[j], 0.0, 6.30);
       if (flagSelfAff) {
@@ -459,7 +459,7 @@ void AliAnalysisTaskNFactorialMomentsPID::FillTrackInfo()
 
   Int_t weight = 0;
 
-  Int_t counterBin[mPtmax] = { 0 };
+  Int_t counterBin[maxPtBins] = { 0 };
   Int_t nTracks(fAOD->GetNumberOfTracks());
   Float_t dpstar, deta, dphi;
   Float_t dcaXY, dcaZ;
@@ -672,7 +672,7 @@ void AliAnalysisTaskNFactorialMomentsPID::FillTrackInfo()
         fPtBin[iPt]->Fill(pt);
         fEtaBin[iPt]->Fill(eta);
         fPhiBin[iPt]->Fill(phi);
-        for (Int_t k = 0; k < mMBins; ++k) {
+        for (Int_t k = 0; k < maxBins; ++k) {
           fEtaPhiBin[iPt][k]->Fill(eta, phi);
         }
       }
@@ -692,7 +692,7 @@ ________________________________________________________________________*/
 void AliAnalysisTaskNFactorialMomentsPID::ResetHistograms()
 {
   for (Int_t i = 0; i < mPtBins; ++i) {
-    for (Int_t j = 0; j < mMBins; ++j) {
+    for (Int_t j = 0; j < maxBins; ++j) {
       if (fEtaPhiBin[i][j])
         fEtaPhiBin[i][j]->Reset();
       if (flagMC) {
@@ -709,7 +709,7 @@ ________________________________________________________________________*/
 
 void AliAnalysisTaskNFactorialMomentsPID::FillMCTrackInfo()
 {
-  Int_t counterBin[mPtmax] = { 0 };
+  Int_t counterBin[maxPtBins] = { 0 };
   for (Int_t i_MCtrk = 0; i_MCtrk < fMCEvent->GetNumberOfTracks(); i_MCtrk++) {
     AliVParticle* lPart = (AliAODMCParticle*)fMCEvent->GetTrack(i_MCtrk);
     TClonesArray* AODMCTrackArray = dynamic_cast<TClonesArray*>(
@@ -744,7 +744,7 @@ void AliAnalysisTaskNFactorialMomentsPID::FillMCTrackInfo()
         fPhiBinGen[iPt]->Fill(lphi);
         fEtaBinGen[iPt]->Fill(leta);
         fPtBinGen[iPt]->Fill(lpt);
-        for (Int_t k = 0; k < mMBins; ++k) {
+        for (Int_t k = 0; k < maxBins; ++k) {
           fEtaPhiBinGen[iPt][k]->Fill(leta, lphi);
         }
       }
@@ -776,10 +776,10 @@ void AliAnalysisTaskNFactorialMomentsPID::GetPtBin(Double_t pt)
           Calculation of the Normalized Fq MomentsPID
 ________________________________________________________________________*/
 
-void AliAnalysisTaskNFactorialMomentsPID::CalculateNFMs(TH2D* h1[mPtmax][mMBins], Bool_t mcGen)
+void AliAnalysisTaskNFactorialMomentsPID::CalculateNFMs(TH2D* h1[maxPtBins][maxBins], Bool_t mcGen)
 {
   for (Int_t iPt = 0; iPt < mPtBins; ++iPt) {
-    for (Int_t iM = 0; iM < mMBins; iM++) {
+    for (Int_t iM = 0; iM < maxBins; iM++) {
 
       Double_t NoOfBins = 0;
       Double_t MSquare = 0;
@@ -789,21 +789,21 @@ void AliAnalysisTaskNFactorialMomentsPID::CalculateNFMs(TH2D* h1[mPtmax][mMBins]
         NoOfBins = 2 * (iM + 2);
       if (flagSelfAff)
         NoOfBins = mMBin2[iM] * mNBin2[iM];
-      MSquare = TMath::Power(NoOfBins, mDim);
+      MSquare = TMath::Power(NoOfBins, maxDim);
       if (flagSelfAff)
         MSquare = mMBin2[iM] * mNBin2[iM];
       Double_t SumOfbincontent = 0;
-      Double_t FqEvent[mQs];
-      Double_t sumoff[mQs];
-      Double_t WCsumoff[mQs];
-      Double_t WCFqEvent[mQs];
+      Double_t FqEvent[maxqs];
+      Double_t sumoff[maxqs];
+      Double_t WCsumoff[maxqs];
+      Double_t WCFqEvent[maxqs];
       Double_t bincontent = 0.0;
       Double_t WCSumOfbincontent = 0;
       Double_t Mbin = NoOfBins;
       Int_t NofXetabins = 0;
       Int_t NofXphibins = 0;
 
-      for (Int_t index = 0; index < mQs; index++) {
+      for (Int_t index = 0; index < maxqs; index++) {
         FqEvent[index] = 0.0;
         sumoff[index] = 0.0;
         WCFqEvent[index] = 0.0;
@@ -840,7 +840,7 @@ void AliAnalysisTaskNFactorialMomentsPID::CalculateNFMs(TH2D* h1[mPtmax][mMBins]
             WCSumOfbincontent += (bincontent / CorFactor);
           }
 
-          for (Int_t q = 0; q < mQs; q++) {
+          for (Int_t q = 0; q < maxqs; q++) {
             if (bincontent >= (q + 2)) {
 
               Double_t Fqeofbin = 0.0;
@@ -873,7 +873,7 @@ void AliAnalysisTaskNFactorialMomentsPID::CalculateNFMs(TH2D* h1[mPtmax][mMBins]
       Av_bincontent = SumOfbincontent / MSquare;
       WCAv_bincontent = WCSumOfbincontent / MSquare;
 
-      for (Int_t q = 0; q < mQs; q++) {
+      for (Int_t q = 0; q < maxqs; q++) {
         if (sumoff[q] > 0) {
           FqEvent[q] = sumoff[q] / (MSquare);
         }

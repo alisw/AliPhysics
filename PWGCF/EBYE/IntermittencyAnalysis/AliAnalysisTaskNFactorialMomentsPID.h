@@ -11,7 +11,7 @@
 #include "TNtuple.h"
 #include "TH3F.h"
 
-const Int_t mMBins = 40, mDim = 2, mQs = 6, mPtmax = 5;
+const Int_t maxBins = 40, maxDim = 2, maxqs = 6, maxPtBins = 5;
 
 class TH1F;
 class TH1D;
@@ -91,7 +91,7 @@ class AliAnalysisTaskNFactorialMomentsPID : public AliAnalysisTaskSE
   void FillTrackInfo();
   void FillMCTrackInfo();
   void GetPtBin(Double_t);
-  void CalculateNFMs(TH2D* h1[mPtmax][mMBins], Bool_t mcGen);
+  void CalculateNFMs(TH2D* h1[maxPtBins][maxBins], Bool_t mcGen);
   void DataPosting();
   void ResetHistograms();
 
@@ -111,9 +111,9 @@ class AliAnalysisTaskNFactorialMomentsPID : public AliAnalysisTaskSE
 
   // Output lists
   TList* fHistList;
-  TList* fNtupleList[mPtmax];
-  TList* fNtupleListCorr[mPtmax];
-  TList* fNtupleListGen[mPtmax];
+  TList* fNtupleList[maxPtBins];
+  TList* fNtupleListCorr[maxPtBins];
+  TList* fNtupleListGen[maxPtBins];
   TList* fNtupleListBin1; // Ntuple to store Fqes
   TList* fNtupleListBin2; // Ntuple to store Fqes
   TList* fNtupleListBin3; // Ntuple to store Fqes
@@ -129,15 +129,15 @@ class AliAnalysisTaskNFactorialMomentsPID : public AliAnalysisTaskSE
   AliAODMCHeader* mcHeader;
 
   // Tuples for Output
-  TNtuple* fntpMBin[mPtmax][mMBins];     //! Tuples for output
-  TNtuple* fntpMBinCorr[mPtmax][mMBins]; //! Tuples for output
+  TNtuple* fntpMBin[maxPtBins][maxBins];     //! Tuples for output
+  TNtuple* fntpMBinCorr[maxPtBins][maxBins]; //! Tuples for output
 
-  TNtuple* fntpMBinGen[mPtmax][mMBins]; //! Tuples for output
+  TNtuple* fntpMBinGen[maxPtBins][maxBins]; //! Tuples for output
 
-  TNtuple* fWCntpMBin1[mMBins]; //!
-  TNtuple* fWCntpMBin2[mMBins]; //!
-  TNtuple* fWCntpMBin3[mMBins]; //!
-  TNtuple* fWCntpMBin4[mMBins]; //!
+  TNtuple* fWCntpMBin1[maxBins]; //!
+  TNtuple* fWCntpMBin2[maxBins]; //!
+  TNtuple* fWCntpMBin3[maxBins]; //!
+  TNtuple* fWCntpMBin4[maxBins]; //!
 
   // Filter Bit
   Int_t filterBit;
@@ -175,22 +175,22 @@ class AliAnalysisTaskNFactorialMomentsPID : public AliAnalysisTaskSE
   TH2F* fHistNFoundClsFra[2];
   TH1F* fHistNFcls[2];
   // For Data and also for Generated MC (if flagMC = true)
-  TH1F* fPtBin[mPtmax];             //! Pt spectrum
-  TH1F* fEtaBin[mPtmax];            //! Eta spectrum
-  TH1F* fPhiBin[mPtmax];            //! Phi spectrum
-  TH1F* fMultBin[mPtmax];           //! Histogram to register event multiplicity
-  TH2D* fEtaPhiBin[mPtmax][mMBins]; //! Eta-Phi for 4 different bins  distribution
+  TH1F* fPtBin[maxPtBins];              //! Pt spectrum
+  TH1F* fEtaBin[maxPtBins];             //! Eta spectrum
+  TH1F* fPhiBin[maxPtBins];             //! Phi spectrum
+  TH1F* fMultBin[maxPtBins];            //! Histogram to register event multiplicity
+  TH2D* fEtaPhiBin[maxPtBins][maxBins]; //! Eta-Phi for 4 different bins  distribution
 
-  TH1F* fPtBinGen[mPtmax];             //! Pt spectrum
-  TH1F* fEtaBinGen[mPtmax];            //! Eta spectrum
-  TH1F* fPhiBinGen[mPtmax];            //! Phi spectrum
-  TH1F* fMultBinGen[mPtmax];           //! Histogram to register event multiplicity
-  TH2D* fEtaPhiBinGen[mPtmax][mMBins]; //! Eta-Phi for 4 different bins  distribution
+  TH1F* fPtBinGen[maxPtBins];              //! Pt spectrum
+  TH1F* fEtaBinGen[maxPtBins];             //! Eta spectrum
+  TH1F* fPhiBinGen[maxPtBins];             //! Phi spectrum
+  TH1F* fMultBinGen[maxPtBins];            //! Histogram to register event multiplicity
+  TH2D* fEtaPhiBinGen[maxPtBins][maxBins]; //! Eta-Phi for 4 different bins  distribution
 
-  TH2D* fhMapEtaPhiBin1M[mMBins]; //!
-  TH2D* fhMapEtaPhiBin2M[mMBins]; //!
-  TH2D* fhMapEtaPhiBin3M[mMBins]; //!
-  TH2D* fhMapEtaPhiBin4M[mMBins]; //!
+  TH2D* fhMapEtaPhiBin1M[maxBins]; //!
+  TH2D* fhMapEtaPhiBin2M[maxBins]; //!
+  TH2D* fhMapEtaPhiBin3M[maxBins]; //!
+  TH2D* fhMapEtaPhiBin4M[maxBins]; //!
 
   // QA hists
   TH1F* fHistQAVx;     //!
