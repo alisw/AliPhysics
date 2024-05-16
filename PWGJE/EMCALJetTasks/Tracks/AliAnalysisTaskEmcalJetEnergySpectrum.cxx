@@ -302,6 +302,38 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     }
   }
 
+  // 1D Cluster Histogram
+  Double_t energy(-1);
+  if(fMakeClusterHistos1D){
+    for(auto clust : clusters->accepted()) {
+      // Distinguish energy definition
+      switch(fEnergyDefinition){
+        case kDefaultEnergy:
+    	    AliDebugStream(2) << GetName() << ": Using cluster energy definition: default" << std::endl;
+    	    energy = clust->E();
+    	    break;
+        case kNonLinCorrEnergy:
+    	    AliDebugStream(2) << GetName() << ": Using cluster energy definition: corrected for non-linearity" << std::endl;
+    	    energy = clust->GetNonLinCorrEnergy();
+    	    break;
+        case kHadCorrEnergy:
+    	    AliDebugStream(2) << GetName() << ": Using cluster energy definition: corrected for hadronic contribution" << std::endl;
+    	    energy = clust->GetHadCorrEnergy();
+    	    break;
+        default:
+          energy = -1;
+          break;
+      };
+
+      AliDebugStream(2) << GetName() << ": Using energy " << energy << " (def: " << clust->E()
+    		<< " | NL: " << clust->GetNonLinCorrEnergy()
+			  << " | HD: " << clust->GetHadCorrEnergy()
+			  << ")" << std::endl;
+
+      fHistos->FillTH1("hClusterEnergy1D", energy);
+    }
+  }
+
   double eventCentrality = 99;   // without centrality put everything in the peripheral bin
   if(fRequestCentrality){
     AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
@@ -419,45 +451,6 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
         fHistos->FillTH2("hQAClusterFracLeadingVsE", ptvec.E(), maxamplitude/cluster->E());
         fHistos->FillTH2("hQAClusterFracLeadingVsNcell", cluster->GetNCells(), maxamplitude/cluster->E());
       }
-
-      // 1D Cluster Histogram
-      Double_t energy(-1);
-      if(fMakeClusterHistos1D){
-        for(auto clust : clusters->all()) {
-          if(!clust->IsEMCAL()) continue;
-          if(clust->GetIsExotic()) continue;
-          if(!fIsMC) {
-            if(clust->GetTOF() < fMinTimeClusterBias || clust->GetTOF() > fMaxTimeClusterBias) continue;
-          }
-
-          // Distinguish energy definition
-          switch(fEnergyDefinition){
-          case kDefaultEnergy:
-    	      AliDebugStream(2) << GetName() << ": Using cluster energy definition: default" << std::endl;
-    	      energy = clust->E();
-    	      break;
-          case kNonLinCorrEnergy:
-    	      AliDebugStream(2) << GetName() << ": Using cluster energy definition: corrected for non-linearity" << std::endl;
-    	      energy = clust->GetNonLinCorrEnergy();
-    	      break;
-          case kHadCorrEnergy:
-    	      AliDebugStream(2) << GetName() << ": Using cluster energy definition: corrected for hadronic contribution" << std::endl;
-    	      energy = clust->GetHadCorrEnergy();
-    	      break;
-          default:
-            energy = -1;
-            break;
-          };
-
-          AliDebugStream(2) << GetName() << ": Using energy " << energy << " (def: " << clust->E()
-    		    << " | NL: " << clust->GetNonLinCorrEnergy()
-			      << " | HD: " << clust->GetHadCorrEnergy()
-			      << ")" << std::endl;
-
-          fHistos->FillTH1("hClusterEnergy1D", energy);
-        }
-      }
-
     }
     if(tracks){
       auto leadingtrack = j->GetLeadingTrack(tracks->GetArray());
