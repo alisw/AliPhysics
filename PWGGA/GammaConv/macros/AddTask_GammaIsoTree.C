@@ -1040,20 +1040,20 @@ void AddTask_GammaIsoTree(
   }
 
   if(corrTaskSetting.CompareTo("")){
-    coutput =mgr->CreateContainer( Form("GammaIsoTree_%d_%s",trainConfig,corrTaskSetting.Data()),
+    coutput =mgr->CreateContainer( Form("GammaIsoTree_%d_%s%s",trainConfig,corrTaskSetting.Data(),additionalFileEnding.Data()),
                                                               TTree::Class(),
                                                               AliAnalysisManager::kOutputContainer,
                                                               Form("GammaIsoTree_%d%s.root",trainConfig,additionalFileEnding.Data()));
-    histos = mgr->CreateContainer( Form("GammaIsoTree_histos_%d_%s",trainConfig,corrTaskSetting.Data()),
+    histos = mgr->CreateContainer( Form("GammaIsoTree_histos_%d_%s%s",trainConfig,corrTaskSetting.Data(),additionalFileEnding.Data()),
                                                               TList::Class(),
                                                               AliAnalysisManager::kOutputContainer,
                                                               Form("GammaIsoTree_histos_%d%s.root",trainConfig,additionalFileEnding.Data()));
   } else{
-    coutput =mgr->CreateContainer( Form("GammaIsoTree_%d",trainConfig),
+    coutput =mgr->CreateContainer( Form("GammaIsoTree_%d%s",trainConfig,additionalFileEnding.Data()),
                                                               TTree::Class(),
                                                               AliAnalysisManager::kOutputContainer,
                                                               Form("GammaIsoTree_%d%s.root",trainConfig,additionalFileEnding.Data()));
-    histos = mgr->CreateContainer( Form("GammaIsoTree_histos_%d",trainConfig),
+    histos = mgr->CreateContainer( Form("GammaIsoTree_histos_%d%s",trainConfig,additionalFileEnding.Data()),
                                                               TList::Class(),
                                                               AliAnalysisManager::kOutputContainer,
                                                               Form("GammaIsoTree_histos_%d%s.root",trainConfig,additionalFileEnding.Data()));
