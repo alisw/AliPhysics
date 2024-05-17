@@ -395,10 +395,10 @@ bool IsKaonNSigmaMDR4090(float mom, float nsigmaTPCK, float nsigmaTOFK, float TO
   if (mom > 0.5) {
      //rejection of unwanted contamination
     //  if(mom>1 && TOFtime<-400) return false;
-      if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < 2) return true;
+      if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < 1) return true;
   }
   else {
-    if (TMath::Abs(nsigmaTPCK) < 2) return true;
+    if (TMath::Abs(nsigmaTPCK) < 1) return true;
   }
   return false;
 }
@@ -418,10 +418,10 @@ bool IsProtonNSigmaMDR4090(float mom, float nsigmaTPCP, float nsigmaTOFP, float 
 {
     if (mom > 0.5) {
    //  if(mom>1.8 && TOFtime<-300) return false;
-     if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < 2) return true;
+     if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < 1) return true;
     }
     else {
-      if (TMath::Abs(nsigmaTPCP) < 2) return true;
+      if (TMath::Abs(nsigmaTPCP) < 1) return true;
     }
     return false;
 }
@@ -493,11 +493,11 @@ void AliAnalysisEffTaskPbPbDRMultDY4090::UserExec(Option_t *)
 
   //****** Multiplicity selection *********
   Int_t fcent = -999;
-  if(mult >= 40 && mult <45)  fcent = 0;
-  else if(mult >= 45 && mult <50) fcent = 1;
-  else if(mult >= 50 && mult <60) fcent = 2;
-  else if(mult >= 60 && mult <70) fcent = 3;
-  else if(mult >= 70 && mult <80) fcent = 4;
+  if(mult >= 40 && mult <50)  fcent = 0;
+  else if(mult >= 50 && mult <60) fcent = 1;
+  else if(mult >= 60 && mult <70) fcent = 2;
+  else if(mult >= 70 && mult <80) fcent = 3;
+  else if(mult >= 80 && mult <90) fcent = 4;
   else return;
 
   if(fcent==0)fHistEvCuts[0]->Fill(1);

@@ -285,7 +285,7 @@ void AliAnalysisTaskEfficiencyFB128::UserCreateOutputObjects()
 
 
     for(Int_t chg=0;chg<2;chg++){
-      hname  = "hMisidentificationM"; hname+=i; if(chg==0) hname+="Plus"; else hname+="Minus"; 
+      hname  = "hMisidentificationM"; hname+=i; if(chg==0) hname+="Plus"; else hname+="Minus";
       htitle = "Misidentification Fraction M"; htitle+=i; if(chg==0) htitle+="Plus"; else htitle+="Minus";
       fMisidentification[i][chg] = new TH2F(hname.Data(),htitle.Data(), 3, 0.5, 3.5, 4 , 0, 4);
       fMisidentification[i][chg]->GetXaxis()->SetBinLabel(1,"Pions, MC");
@@ -393,10 +393,10 @@ bool IsKaonNSigmaFB128(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFt
   if (mom > 0.5) {
      //rejection of unwanted contamination
     //  if(mom>1 && TOFtime<-400) return false;
-      if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < 1) return true;
+      if (TMath::Hypot( nsigmaTOFK, nsigmaTPCK ) < 2) return true;
   }
   else {
-    if (TMath::Abs(nsigmaTPCK) < 1) return true;
+    if (TMath::Abs(nsigmaTPCK) < 2) return true;
   }
   return false;
 }
@@ -416,10 +416,10 @@ bool IsProtonNSigmaFB128(float mom, float nsigmaTPCP, float nsigmaTOFP, float TO
 {
     if (mom > 0.5) {
    //  if(mom>1.8 && TOFtime<-300) return false;
-     if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < 1) return true;
+     if (TMath::Hypot( nsigmaTOFP, nsigmaTPCP ) < 2) return true;
     }
     else {
-      if (TMath::Abs(nsigmaTPCP) < 1) return true;
+      if (TMath::Abs(nsigmaTPCP) < 2) return true;
     }
     return false;
 }
@@ -552,14 +552,6 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
 
   delete anaUtil;
 
-  //pileup for LHC20e3a -> Injective Pileup over events 
-  /*AliAODMCHeader *mcHeader = 0;
-  mcHeader = (AliAODMCHeader*)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-  if(!mcHeader) {
-    printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
-    return;
-  }
-  */
   fHistQA[9]->Fill(3);
   if(fcent==0)fHistEvCuts[0]->Fill(3);
   else if(fcent==1)fHistEvCuts[1]->Fill(3);
@@ -997,7 +989,7 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
   Int_t charge=0;
   if(MCtrk->Charge() < 0) charge=1;
   else if(MCtrk->Charge() > 0) charge=0;
-  
+
   if(MCtrk->Y() < -0.5 || MCtrk->Y() > 0.5) continue; 
  
   if(MCtrk->GetPdgCode() == 211){
@@ -1007,6 +999,15 @@ void AliAnalysisTaskEfficiencyFB128::UserExec(Option_t *)
     if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
   }
   if(MCtrk->GetPdgCode() == 2212){
+    if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
+  }
+  if(MCtrk->GetPdgCode() == -211){
+    if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 2.5) continue;
+  }
+  if(MCtrk->GetPdgCode() == -321){
+    if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
+  }
+  if(MCtrk->GetPdgCode() == -2212){
     if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
   }
   // check physical primary 

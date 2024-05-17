@@ -69,7 +69,6 @@ void AliAnalysisTaskEffDRPbPb::SetPidMethod(int method)
 }
 
 //_______________________________________________________
-
 AliAnalysisTaskEffDRPbPb::AliAnalysisTaskEffDRPbPb() :
   AliAnalysisTaskSE(), centrality(0), fHistoList(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
 
@@ -177,9 +176,9 @@ void AliAnalysisTaskEffDRPbPb::UserCreateOutputObjects()
 
       hname2  = "hHistoReconstructedAfterCutsM"; hname2+=i; hname2+=parttypename;
       htitle2 = "Total Reconstructed tracks M "; htitle2+=i; htitle2+=parttypename;
-      fReconstructedAfterCuts[i*PARTTYPES+j][0] = new TH2F(hname2.Data(),htitle2.Data(),50, -1.5, 1.5,100,0.,5.0);
+      fReconstructedAfterCuts[i*PARTTYPES+j][0] = new TH2F(hname2.Data(),htitle2.Data(),50, -1.5, 1.5,1000,0.,10.0);
       hname2+="Minus";htitle2+="Minus";
-      fReconstructedAfterCuts[i*PARTTYPES+j][1] = new TH2F(hname2.Data(),htitle2.Data(),50, -1.5, 1.5,100,0.,5.0);
+      fReconstructedAfterCuts[i*PARTTYPES+j][1] = new TH2F(hname2.Data(),htitle2.Data(),50, -1.5, 1.5,1000,0.,10.0);
 
       hname4  = "hHistoReconstructedNotPrimariesM"; hname4+=i; hname4+=parttypename;
       htitle4 = "Reconstructed level Y_pT (not primaries) M"; htitle4+=i; htitle4+=parttypename;
@@ -286,7 +285,7 @@ void AliAnalysisTaskEffDRPbPb::UserCreateOutputObjects()
 
 
     for(Int_t chg=0;chg<2;chg++){
-      hname  = "hMisidentificationM"; hname+=i; if(chg==0) hname+="Plus"; else hname+="Minus"; 
+      hname  = "hMisidentificationM"; hname+=i; if(chg==0) hname+="Plus"; else hname+="Minus";
       htitle = "Misidentification Fraction M"; htitle+=i; if(chg==0) htitle+="Plus"; else htitle+="Minus";
       fMisidentification[i][chg] = new TH2F(hname.Data(),htitle.Data(), 3, 0.5, 3.5, 4 , 0, 4);
       fMisidentification[i][chg]->GetXaxis()->SetBinLabel(1,"Pions, MC");
@@ -710,8 +709,8 @@ void AliAnalysisTaskEffDRPbPb::UserExec(Option_t *)
     float nSigmaTPCK = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kKaon);
     float nSigmaTPCP = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kProton);
     float nSigmaTPCe = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kElectron);
-    //if(IsElectronPbPb_DR(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
-      //continue;
+  //  if(IsElectronPbPb_DR(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
+    //  continue;
    
     fHistQA[10]->Fill(7);
     

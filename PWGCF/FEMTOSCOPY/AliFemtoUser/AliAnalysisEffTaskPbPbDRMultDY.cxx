@@ -489,11 +489,11 @@ void AliAnalysisEffTaskPbPbDRMultDY::UserExec(Option_t *)
 
   //****** Multiplicity selection *********
   Int_t fcent = -999;
-  if(mult >= 5 && mult <10)  fcent = 0;
-  else if(mult >= 10 && mult <20) fcent = 1;
-  else if(mult >= 20 && mult <30) fcent = 2;
-  else if(mult >= 30 && mult <35) fcent = 3;
-  else if(mult >= 35 && mult <40) fcent = 4;
+  if(mult >= 0 && mult <5)  fcent = 0;
+  else if(mult >= 5 && mult <10) fcent = 1;
+  else if(mult >= 10 && mult <20) fcent = 2;
+  else if(mult >= 20 && mult <30) fcent = 3;
+  else if(mult >= 30 && mult <40) fcent = 4;
   else return;
 
   if(fcent==0)fHistEvCuts[0]->Fill(1);
