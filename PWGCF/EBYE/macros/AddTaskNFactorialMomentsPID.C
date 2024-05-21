@@ -53,6 +53,8 @@ AliAnalysisTaskNFactorialMomentsPID* AddTaskNFactorialMomentsPID(Int_t nPt = 4, 
   Int_t fNumberofPtBins = ptVector.size() / 2;
   std::cout << "Number of pt bins: " << fNumberofPtBins << std::endl;
 
+  TGrid::Connect("alien://");
+
   if (fNumberofPtBins != nPt) {
     std::cout << "Number of pt bins is not equal to the number of pt values" << std::endl;
     return 0x0;
