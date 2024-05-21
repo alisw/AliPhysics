@@ -48,6 +48,7 @@ class AliAnalysisPtN : public AliAnalysisTaskSE
         virtual void   SetCtrType(TString ctrtype){ ctrType = ctrtype; }
         virtual void   SetPeriod(TString period) { fPeriod = period; }
         virtual void   SetNUE(TString NUE) { fNUE = NUE; }
+        virtual void   SetSysflg(Int_t sysflg) { fSysflg = sysflg; }
 
         virtual void            UserCreateOutputObjects();
         virtual void            UserExec(Option_t* option);
@@ -77,6 +78,8 @@ class AliAnalysisPtN : public AliAnalysisTaskSE
         TString         ctrType;
         TString			fPeriod;				// period
         TString         fNUE;
+
+        Int_t           fSysflg;
         
         TH1F*                   fTestNonWeight;
         TH1F*                   fNchDistri;
