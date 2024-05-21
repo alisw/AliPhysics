@@ -3055,6 +3055,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC19i3c1 :
     case kLHC19i3c2 :
     case kLHC17HERJJ :
+    case kLHC23a4b :
     // pPb 5 TeV
     case kLHC13bc :
     case kLHC13de :
@@ -3922,7 +3923,8 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         fPeriodEnum != kLHC17g6a1 && fPeriodEnum != kLHC17g6a2 && fPeriodEnum != kLHC17g6a3 &&      // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC12P2JJ && fPeriodEnum != kLHC17g5b && fPeriodEnum != kLHC17g5c &&        // LHC12 JetJet MC
         fPeriodEnum != kLHC17g5a1 && fPeriodEnum != kLHC17g5a2 &&                                    // LHC12 GammaJet MC
-        fPeriodEnum != kLHC14k1a  &&  fPeriodEnum != kLHC14k1b                                      // LHC11 JetJet MC
+        fPeriodEnum != kLHC14k1a  &&  fPeriodEnum != kLHC14k1b &&                                   // LHC11 JetJet MC
+        fPeriodEnum != kLHC23a4b
      ){
 
     weight = 1;
@@ -4020,7 +4022,24 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
             weight = weightsBins[pthardbin-1];
             if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
           }
+        } else  if ( fPeriodEnum == kLHC23a4b ){
+          Double_t ptHardBinRanges[21]  = { 5,  7,  9, 12, 16,
+                                            21, 28, 36, 45, 57,
+                                            70, 85, 99, 115, 132,
+                                            150, 169, 190, 212, 235,
+                                            1000000};
+          Double_t weightsBins[20]      = { 1.0,  1.0, 1.0, 1.0, 1.0,
+                                            1.0,  1.0, 1.0, 1.0, 1.0,
+                                            1.0,  1.0, 1.0, 1.0, 1.0,
+                                            1.0,  1.0, 1.0, 1.0, 1.0};
 
+          Int_t bin = 0;
+          while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
+          if (bin < 20) weight = weightsBins[bin];
+          if(fUseFilePathForPthard && (pthardbin > -1)){
+            weight = weightsBins[pthardbin-1];
+            if(fUseAdditionalOutlierRejection && ((ptHard < ptHardBinRanges[pthardbin-1]) || (ptHard > ptHardBinRanges[pthardbin]))) eventAccepted= kFALSE;
+          }
         } else  if ( fPeriodEnum == kLHC16h3 ){
           Double_t ptHardBinRanges[21]  = { 5,  7,  9, 12, 16,
                                             21, 28, 36, 45, 57,
@@ -5547,7 +5566,8 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
         fPeriodEnum != kLHC19i3c1  &&                                                               // LHC18 JetJet MC anchored to LHC18 (with decay photon in EMC acc.)
         fPeriodEnum != kLHC19i3b2  &&                                                               // LHC18 JetJet MC anchored to LHC18 (with decay photon in DCal/PHOS acc.)
         fPeriodEnum != kLHC19i3c2  &&                                                               // LHC18 JetJet MC anchored to LHC18 (with decay photon in DCal/PHOS acc.)
-        fPeriodEnum != kLHC14k1a  &&  fPeriodEnum != kLHC14k1b                                      // LHC11 JetJet MC
+        fPeriodEnum != kLHC14k1a  &&  fPeriodEnum != kLHC14k1b  &&                                  // LHC11 JetJet MC
+        fPeriodEnum != kLHC23a4b                                                                    // LHC161718 eta prime biased JJ MC
      ){
     NTrials = -1;
     XSection = -1;
@@ -5557,7 +5577,7 @@ void AliConvEventCuts::GetXSectionAndNTrials(AliMCEvent *mcEvent, Float_t &XSect
   if(mcEvent){
     cHeader                   = dynamic_cast<AliGenCocktailEventHeader*>(mcEvent->GenEventHeader());
     if(cHeader) headerFound   = kTRUE;
-  }else{
+  } else{
     //no mcEvent available -> not running on MC
     NTrials = -1;
     XSection = -1;
@@ -5675,7 +5695,8 @@ Float_t AliConvEventCuts::GetPtHard(AliMCEvent *mcEvent, AliVEvent* event){
         fPeriodEnum != kLHC17g6a1 && fPeriodEnum != kLHC17g6a2 && fPeriodEnum != kLHC17g6a3 &&      // LHC13 pPb Jet Jet MC's
         fPeriodEnum != kLHC12P2JJ  && fPeriodEnum != kLHC17g5b  && fPeriodEnum != kLHC17g5c  &&     // LHC12 JetJet MC
         fPeriodEnum != kLHC17g5a1  && fPeriodEnum != kLHC17g5a2  &&     // LHC12 GammaJet MC
-        fPeriodEnum != kLHC14k1a  &&  fPeriodEnum != kLHC14k1b                                      // LHC11 JetJet MC
+        fPeriodEnum != kLHC14k1a  &&  fPeriodEnum != kLHC14k1b    &&                                // LHC11 JetJet MC
+        fPeriodEnum != kLHC23a4b                                                                    // LHC161718 eta prime biased JJ MC
     ) return -1;
 
   if(mcEvent){
@@ -9078,12 +9099,14 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
               periodName.CompareTo("LHC17f8i") == 0 || periodName.CompareTo("LHC17f8j") == 0 || periodName.CompareTo("LHC17f8k") == 0){
     fPeriodEnum = kLHC16P1JJ;
     fEnergyEnum = k13TeV;
+  // 13 TeV eta prime biased JJ Pythia 8, LHC161718
+  } else if( periodName.CompareTo("LHC23a4b") == 0){
+    fPeriodEnum = kLHC23a4b;
+    fEnergyEnum = k13TeV;
   // 13TeV LHC16* anchors low field JJ Pythia 8 MB
   } else if ( periodName.CompareTo("LHC16P1JJLowB") == 0 || periodName.CompareTo("LHC17f8b") == 0  ){
     fPeriodEnum = kLHC16P1JJLowB;
     fEnergyEnum = k13TeVLowB;
-
-
   // 13TeV HF-MC anchors LHC16i,j,o,p
   } else if ( periodName.CompareTo("LHC17h8c") == 0){
     fPeriodEnum = kLHC17h8c;

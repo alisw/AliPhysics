@@ -371,6 +371,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC18P1Pyt8NomB,     //!LHC18x Pythia8 MB productions nom B anchored to LHC18x
         kLHC18P1Pyt8LowB,     //!LHC18x Pythia8 MB productions low B anchored to LHC18c
 
+        // pp 13TeV eta prime biased JJ MC
+        kLHC23a4b,
+
         kUnknownPeriod//!< kUnknownPeriod
       };
 
