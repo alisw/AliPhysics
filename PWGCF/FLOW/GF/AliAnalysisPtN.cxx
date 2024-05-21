@@ -43,10 +43,11 @@ AliAnalysisPtN::AliAnalysisPtN() : AliAnalysisTaskSE(),
     fDCAxy(7.0),
     fTPCcls(70),
     filterBit(96),
-    fTrigger(0),
+    fTrigger(1),
     ctrType("V0M"),
     fPeriod("LHC15o"),
     fNUE("LHC20e3a"),
+    fSysflg(0),
     //correlator(),
     fTestNonWeight(nullptr),
     fNchDistri(nullptr),
@@ -184,10 +185,11 @@ AliAnalysisPtN::AliAnalysisPtN(const char* name) : AliAnalysisTaskSE(name),
     fDCAxy(7.0),
     fTPCcls(70),
     filterBit(96),
-    fTrigger(0),
+    fTrigger(1),
     ctrType("V0M"),
     fPeriod("LHC15o"),
     fNUE("LHC20e3a"),
+    fSysflg(0),
     //correlator(),
     fTestNonWeight(nullptr),
     fNchDistri(nullptr),
@@ -637,7 +639,12 @@ void AliAnalysisPtN::UserExec(Option_t *)
 
     //initilize the weight list
     fWeightsListNUE = (TList*)GetInputData(1);
-    fWeightNUE = (TH1D*)fWeightsListNUE->FindObject(Form("EffRescaled_Cent0"));
+    if (fSysflg==0) {
+      fWeightNUE = (TH1D*)fWeightsListNUE->FindObject(Form("EffRescaled_Cent0"));
+    } else {
+      fWeightNUE = (TH1D*)fWeightsListNUE->FindObject(Form("EffRescaled_Cent0_SystFlag%i_", fSysflg));
+    }
+    
 
     Float_t wtE;
 
