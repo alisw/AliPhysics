@@ -667,9 +667,30 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30230000","32c51070m","0103603l00000000","0453503000000000"); // EG2
   } else if(trainConfig == 215)  { //EDC 13TeV MB, NCell >=1
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30230000","32c51070m","0103603l00000000","0453503000000000"); // EG1
-
   } else if(trainConfig == 220)  { //EDC 13TeV MB, NCell >=2 + NCell efficiency, wider cuts for 5TeV (selection window + mass cut)
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n230000","32c51070n","0103603m00000000","0453503000000000"); // INT7
+ 
+    // possible new default pp 13 TeV, 2 sigmas mass cut
+  } else if(trainConfig == 225)  { //EDC 13TeV MB, NCell >=1
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe302v0000","32c51079m","f000643600000000","0453503000000000"); // INT7
+  } else if(trainConfig == 226)  { //EDC 13TeV MB, NCell >=1
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe302v0000","32c51079m","f000653600000000","0453503000000000"); // EG2
+  } else if(trainConfig == 227)  { //EDC 13TeV MB, NCell >=1
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe302v0000","32c51079m","f000663600000000","0453503000000000"); // EG1
+    // possible new defualt pp 13 TeV, 3 sigmas mass cut
+  } else if(trainConfig == 228)  { //EDC 13TeV MB, NCell >=1
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe302v0000","32c51079m","f000643700000000","0453503000000000"); // INT7
+  } else if(trainConfig == 229)  { //EDC 13TeV MB, NCell >=1
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe302v0000","32c51079m","f000653700000000","0453503000000000"); // EG2
+  } else if(trainConfig == 230)  { //EDC 13TeV MB, NCell >=1
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe302v0000","32c51079m","f000663700000000","0453503000000000"); // EG1
+    // possible new defualt pp 13 TeV, 4 sigmas mass cut
+  } else if(trainConfig == 231)  { //EDC 13TeV MB, NCell >=1
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe302v0000","32c51079m","f000643800000000","0453503000000000"); // INT7
+  } else if(trainConfig == 232)  { //EDC 13TeV MB, NCell >=1
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe302v0000","32c51079m","f000653800000000","0453503000000000"); // EG2
+  } else if(trainConfig == 233)  { //EDC 13TeV MB, NCell >=1
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe302v0000","32c51079m","f000663800000000","0453503000000000"); // EG1
 
   // PCM-PHOS
   } else if ( trainConfig == 250 ) { // INT7 + PHI7
@@ -2511,7 +2532,8 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     }
 
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
-    analysisNeutralPionCuts[i]->SetUsePtDepSelectionWindow(usePtDepSelectionWindowCut);
+    if( usePtDepSelectionWindowCut )
+      analysisNeutralPionCuts[i]->SetUsePtDepSelectionWindow(selectHeavyNeutralMeson);    // implemented only for omega and eta prime
     if(runLightOutput>=4) {
         analysisNeutralPionCuts[i]->SetLightOutput(2);
     } else if(runLightOutput>=1) {

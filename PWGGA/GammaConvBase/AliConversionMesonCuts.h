@@ -153,10 +153,12 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
 
     // Set Individual Cuts
     Bool_t SetMinPtCut(Int_t PtCut);
+    Bool_t SetMinPtCutExtended(Int_t PtCut);
     Bool_t SetMesonKind(Int_t mesonKind);
     Bool_t SetSelectionWindowCut(Int_t selectionCut);
     Bool_t SetSelectionWindowMergedCut(Int_t selectionCut);
     Bool_t SetSelectionWindowCutPtDep(Int_t selectionCut);
+    Bool_t SetSelectionWindowCutPtDepEtaPrime(Int_t selectionCut);
     Bool_t SetAlphaMesonCut(Int_t alphaMesonCut);
     Bool_t SetAlphaMesonMergedCut(Int_t alphaMesonCut);
     Bool_t SetRapidityMesonCut(Int_t RapidityMesonCut);
@@ -174,8 +176,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t SetMaxOpanMesonCut(Int_t maxOpanMesonCut);
     void   SetEnableOpeningAngleCut (Bool_t isOn) {fEnableMinOpeningAngleCut = isOn;}
     void   SetIsMergedClusterCut(Int_t merged)                { fIsMergedClusterCut = merged; return;}
-    void   SetUsePtDepSelectionWindow(Bool_t ptdep)                { fUsePtDepSelectionWindow = ptdep; return;}
-    Bool_t GetUsePtDepSelectionWindow(Bool_t ptdep)                { return fUsePtDepSelectionWindow;}
+    void   SetUsePtDepSelectionWindow(Int_t ptdep)                { fUsePtDepSelectionWindow = ptdep; return;}
+    Bool_t GetUsePtDepSelectionWindow(Int_t ptdep)                { return fUsePtDepSelectionWindow;}
     Int_t  GetIsMergedClusterCut()                            { return fIsMergedClusterCut;}
     Double_t GetRapidityCutValueMin()                            { return fRapidityCutMesonMin; }
     Double_t GetRapidityCutValueMax()                            { return fRapidityCutMesonMax; }
@@ -308,7 +310,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t       fMode;                          ///< running mode of ConversionMesonCuts to select different sets of cut parameters for different running modes
     Int_t       fMesonKind;                     ///<
     Int_t       fIsMergedClusterCut;            ///< flag for merged cluster and di cluster analysis
-    Int_t       fUsePtDepSelectionWindow;       ///< flag for usage of pT dependent selection window cut
+    Int_t       fUsePtDepSelectionWindow;       ///< flag for usage of pT dependent selection window cut, 1 for omega, 2 to eta prime
     Int_t       fUseGammaSelection;             ///< flag for usage of gamma candidate selection e.g. gamma pairs which are in Pi0 mass region are not used as direct gammas for omega reco
     Int_t       fSelectionWindowCut;            ///< selection window for merged ana in mass
     Int_t       fNDegreeRotationPMForBG;        ///<

@@ -893,7 +893,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
 
     }
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
-    analysisNeutralPionCuts[i]->SetUsePtDepSelectionWindow(usePtDepSelectionWindowCut);
+    if( usePtDepSelectionWindowCut )
+      analysisNeutralPionCuts[i]->SetUsePtDepSelectionWindow(selectHeavyNeutralMeson);    // implemented only for omega and eta prime
     if(runLightOutput>=4) {
         analysisNeutralPionCuts[i]->SetLightOutput(2);
     } else if(runLightOutput>=1) {

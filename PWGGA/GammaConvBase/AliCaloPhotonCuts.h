@@ -235,6 +235,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       kLHC21d2a, // GJ EMC+DCAL
       kLHC21d2b, // JJLow EMC+DCAL
       kLHC21d2c, // JJHigh EMC+DCAL
+      // pp 13TeV eta prime biased JJ MC
+      kLHC23a4b,
       // Data starts here
       k10pp7TeV,
       k10pp900GeV,
