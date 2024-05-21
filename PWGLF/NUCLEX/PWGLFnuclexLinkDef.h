@@ -7,6 +7,8 @@
 /// Exotica
 /// * Dibaryons
 #pragma link C++ class AliAnalysisTaskDibaryons+;
+// * pOmegaDibaryon
+#pragma link C++ class AliAnalysisTaskpOmegaDibaryon+;
 /// * MSDibaryons
 #pragma link C++ class AliAnalysisTaskMSDibaryons+;
 /// * Hdibaryon
