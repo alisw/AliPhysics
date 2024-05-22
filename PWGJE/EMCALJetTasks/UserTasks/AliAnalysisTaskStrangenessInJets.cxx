@@ -14,7 +14,7 @@
  **************************************************************************/
  
 //-------------------------------------------------------------------------
-// Task for V0 and Cascade analysis in charged jets with 
+// Task for V0 analysis in charged jets with 
 // the strange particles (instead of daughters) added to the  jet finder
 // Author: Ekaterina Grecka (ermeeka@fjfi.cvut.cz)
 // Modification of the AlianalysisTaskV0sInJetsEmcal task (author Vit Kucera) 
@@ -1329,8 +1329,6 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
     iCutIndex++;
 
-    //Here add the pT cut (pT>1GeV)
-
     // 4
     // Tracks TPC OK
     if(bPrintCuts) printf("Rec: Applying cut: Correct charge of daughters\n");
@@ -1637,8 +1635,6 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
         //add the v0 vector to the fastjetwrapper
         fFastJetWrapper.AddInputVector(vecV0Momentum[0], vecV0Momentum[1], vecV0Momentum[2], dEnergy, uid);
         InputBgParticles.push_back(fastjet::PseudoJet(vecV0Momentum[0], vecV0Momentum[1], vecV0Momentum[2], dEnergy));
-
-        printf("uid %i \n inpeak K0: %i, inpeakL: %i AL: %i \n", uid, bIsInPeakK0s, bIsInPeakLambda, bIsInPeakALambda);
       
         fNCand++;
         if(fbMCAnalysis) {

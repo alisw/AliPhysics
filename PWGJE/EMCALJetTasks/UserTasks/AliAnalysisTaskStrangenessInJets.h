@@ -2,7 +2,7 @@
 #define AliAnalysisTaskStrangenessInJets_cxx
 
 //-------------------------------------------------------------------------
-// Task for V0 and Cascade analysis in charged jets with 
+// Task for V0 analysis in charged jets with 
 // the strange particles (instead of daughters) added to the  jet finder
 // Author: Ekaterina Grecka (ermeeka@fjfi.cvut.cz)
 // Modification of the AlianalysisTaskV0sInJetsEmcal task (author Vit Kucera) 
@@ -84,9 +84,6 @@ public:
   void SetCutNTauLMax(Double_t val = 5.0) {fdCutNTauLMax = val;}
   void SetCutArmPod(Bool_t val = kTRUE) {fbCutArmPod = val;}
   void SetCutCross(Bool_t val = kTRUE) {fbCutCross = val;}
-
-  void SetCascadeOn(Bool_t val = kTRUE) {fbCascadeOn = val;}
-
 
   //jet analysis selection: 
   void SetGhostArea(Double_t gharea) { fdGhostArea = gharea; }
