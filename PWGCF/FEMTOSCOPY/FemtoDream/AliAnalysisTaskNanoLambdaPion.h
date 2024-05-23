@@ -15,40 +15,19 @@
 #include "AliFemtoDreamControlSample.h"
 
 class AliVParticle;
-class AliAODTrack;
+class AliVTrack;
 
 class AliAnalysisTaskNanoLambdaPion : public AliAnalysisTaskSE
 {
 public:
-  enum PCSettings {NoPC, OldPC, NewPC};
   AliAnalysisTaskNanoLambdaPion();
-  AliAnalysisTaskNanoLambdaPion(const char *name, bool isMC, PCSettings pcsettings, bool usenolambdaevt);
+  AliAnalysisTaskNanoLambdaPion(const char *name, bool isMC, bool isNewPC);
   virtual ~AliAnalysisTaskNanoLambdaPion();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
   virtual void Terminate(Option_t *){};
   void SetEventCuts(AliFemtoDreamEventCuts *evtCuts) { fEventCuts = evtCuts; };
 
-  void SetSphericity(double min, double max)
-  {
-    fEventCuts->SetSphericityCuts(min, max);
-  }
-  void SetPairCleaner(AliAnalysisTaskNanoLambdaPion::PCSettings pairCleaner)
-  {
-    fPCSettings = pairCleaner;
-  }
-  void SetMinvLambdaKStar(bool doIt)
-  {
-    cout << "Invariant mass as a function of kstar will be computed" << endl;
-    fMinvLambdaKStar = doIt;
-  }
-  void SetPionsForMinvLambdaKStar(std::vector<AliFemtoDreamBasePart> pionsPlus,
-                                  std::vector<AliFemtoDreamBasePart> pionsMinus)
-  {
-    cout << "Setting pions for kstar of Lambda candidates" << endl; 
-    fPionsPlusForMinvV0KStar = pionsPlus;
-    fPionsMinusForMinvV0KStar = pionsMinus;
-  }
   void SetLambdaCuts(AliFemtoDreamv0Cuts *cuts)
   {
     fLambdaCuts = cuts;
@@ -65,13 +44,6 @@ public:
   {
     fNegPionCuts = trkCuts;
   }
-  void SetMixingEvt(bool usenolambdaevt)
-  {
-    fUseEvtNoLambda = usenolambdaevt;
-  }
-  void SetExcludeDausOf(std::vector<UInt_t> motherList) {
-    fExcludedMothers = motherList;
-  }
   void SetCollectionConfig(AliFemtoDreamCollConfig *config)
   {
     fConfig = config;
@@ -82,15 +54,10 @@ private:
   AliAnalysisTaskNanoLambdaPion(const AliAnalysisTaskNanoLambdaPion &);
   AliAnalysisTaskNanoLambdaPion &operator=(const AliAnalysisTaskNanoLambdaPion &);
   void ResetGlobalTrackReference();
-  void StoreGlobalTrackReference(AliAODTrack *track);
-  std::vector<AliFemtoDreamBasePart> fPionsPlusForMinvV0KStar;
-  std::vector<AliFemtoDreamBasePart> fPionsMinusForMinvV0KStar;
+  void StoreGlobalTrackReference(AliVTrack *track);
   bool fIsMC;                             //
   bool fUseOMixing;                       //
-  bool fUseEvtNoLambda;                   //
-  bool fMinvLambdaKStar;                  //
-  std::vector<UInt_t> fExcludedMothers;   // Only valid if run on MC
-  PCSettings fPCSettings;                 //
+  bool fIsNewPC;                         //
   UInt_t fTrigger;                        //
   TList *fResults;                        //!
   TList *fResultsQA;                      //!
@@ -119,7 +86,7 @@ private:
   AliFemtoDreamControlSample *fSample;    //!
   AliVTrack **fGTI;                       //!
   int fTrackBufferSize;                   //
-  ClassDef(AliAnalysisTaskNanoLambdaPion, 2)
+  ClassDef(AliAnalysisTaskNanoLambdaPion, 1)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOLAMBDAPION_H_ */

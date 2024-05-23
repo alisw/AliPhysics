@@ -14,9 +14,7 @@ ClassImp(AliAnalysisTaskNanoLambdaPion)
     : AliAnalysisTaskSE(),
       fIsMC(false),
       fUseOMixing(false),
-      fPCSettings(NewPC),
-      fUseEvtNoLambda(false),
-      fExcludedMothers({}),
+      fIsNewPC(false),
       fTrigger(AliVEvent::kINT7),
       fQA(nullptr),
       fEvtList(nullptr),
@@ -41,9 +39,6 @@ ClassImp(AliAnalysisTaskNanoLambdaPion)
       fAntiLambdaCuts(nullptr),
       fConfig(nullptr),
       fPairCleaner(nullptr),
-      fMinvLambdaKStar(false),
-      fPionsPlusForMinvV0KStar({}),
-      fPionsMinusForMinvV0KStar({}),
       fPartColl(nullptr),
       fSample(nullptr),
       fGTI(nullptr),
@@ -52,13 +47,11 @@ ClassImp(AliAnalysisTaskNanoLambdaPion)
 }
 
 AliAnalysisTaskNanoLambdaPion::AliAnalysisTaskNanoLambdaPion(
-    const char *name, bool isMC, PCSettings pcsettings, bool usenolambdaevt)
+    const char *name, bool isMC, bool isNewPC)
     : AliAnalysisTaskSE(name),
       fIsMC(isMC),
       fUseOMixing(false),
-      fPCSettings(pcsettings),
-      fUseEvtNoLambda(usenolambdaevt),
-      fExcludedMothers({}),
+      fIsNewPC(isNewPC),
       fTrigger(AliVEvent::kINT7),
       fQA(nullptr),
       fEvtList(nullptr),
@@ -83,9 +76,6 @@ AliAnalysisTaskNanoLambdaPion::AliAnalysisTaskNanoLambdaPion(
       fAntiLambdaCuts(nullptr),
       fConfig(nullptr),
       fPairCleaner(nullptr),
-      fMinvLambdaKStar(false),
-      fPionsPlusForMinvV0KStar({}),
-      fPionsMinusForMinvV0KStar({}),
       fPartColl(nullptr),
       fSample(nullptr),
       fGTI(nullptr),
@@ -287,9 +277,8 @@ void AliAnalysisTaskNanoLambdaPion::UserCreateOutputObjects()
 
 void AliAnalysisTaskNanoLambdaPion::UserExec(Option_t *)
 {
+  AliVEvent *fInputEvent = InputEvent();
 
-  AliVEvent *Event= fInputEvent;
-  
   // PREAMBLE - CHECK EVERYTHING IS THERE
   if (!fInputEvent)
   {
@@ -314,19 +303,10 @@ void AliAnalysisTaskNanoLambdaPion::UserExec(Option_t *)
     StoreGlobalTrackReference(track);
   }
 
-  // Load MC information
-  AliMCEvent *fMC = nullptr;
-  if (fIsMC) {
-    fMC = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->MCEvent();
-  }
-
   std::vector<AliFemtoDreamBasePart> PionPlus;
   std::vector<AliFemtoDreamBasePart> PionMinus;
   std::vector<AliFemtoDreamBasePart> Lambdas;
   std::vector<AliFemtoDreamBasePart> AntiLambdas;
-  std::vector<AliFemtoDreamv0> BeforeCutLambdas;
-  std::vector<AliFemtoDreamv0> BeforeCutAntiLambdas;
-
   AliAODEvent *aodEvt = dynamic_cast<AliAODEvent *>(fInputEvent);
   fLambda->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (int iv0 = 0;
@@ -335,63 +315,14 @@ void AliAnalysisTaskNanoLambdaPion::UserExec(Option_t *)
   {
     AliAODv0 *casc = aodEvt->GetV0(iv0);
     fLambda->Setv0(fInputEvent, casc);
-    if(fMinvLambdaKStar) {
-      cout << "Filling Lambda" << endl;
-      // if(fLambda->GetPDGCode()>0) {
-        BeforeCutLambdas.push_back(*fLambda);
-      // } 
-      // if(fLambda->GetPDGCode()<0) {
-        cout << "Filling AntiLambda" << endl;
-        BeforeCutAntiLambdas.push_back(*fLambda);
-      // } 
-    }
-    cout << "CIAO" << endl;
-    cout << fLambdaCuts->isSelected(fLambda) << endl; 
-    cout << "CIAO10" << endl;
     if (fLambdaCuts->isSelected(fLambda))
     {
-      cout << "CIAO11" << endl;
-      if (fMC && fExcludedMothers.size() > 0) {
-        // Reject the decay products of some specific particles
-        cout << "CIAO12" << endl;
-        AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(fLambda->GetID());
-        if (!mcPart) continue;
-
-        cout << "CIAO13" << endl;
-        AliAODMCParticle *mom = (AliAODMCParticle *)fMC->GetTrack(mcPart->GetMother());
-        if (!mom) continue;
-
-        cout << "CIAO14" << endl;
-        int momAbsPdg = std::abs(mom->GetPdgCode());
-        if (std::find(fExcludedMothers.begin(), fExcludedMothers.end(), momAbsPdg) != fExcludedMothers.end()) {
-          continue;
-        cout << "CIAO15" << endl;
-        }
-      }
-
-      cout << "CIAO16" << endl;
       Lambdas.push_back(*fLambda);
     }
-    cout << "CIAO1" << endl;
     if (fAntiLambdaCuts->isSelected(fLambda))
     {
-      if (fMC && fExcludedMothers.size() > 0) {
-        // Reject the decay products of some specific particles
-        AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(fLambda->GetID());
-        if (!mcPart) continue;
-
-        AliAODMCParticle *mom = (AliAODMCParticle *)fMC->GetTrack(mcPart->GetMother());
-        if (!mom) continue;
-
-        int momAbsPdg = std::abs(mom->GetPdgCode());
-        if (std::find(fExcludedMothers.begin(), fExcludedMothers.end(), momAbsPdg) != fExcludedMothers.end()) {
-          continue;
-        }
-      }
-
       AntiLambdas.push_back(*fLambda);
     }
-    cout << "CIAO2" << endl;
   }
 
   static float massPion =
@@ -408,45 +339,21 @@ void AliAnalysisTaskNanoLambdaPion::UserExec(Option_t *)
     fTrack->SetTrack(track, fInputEvent);
     if (fPosPionCuts->isSelected(fTrack))
     {
-      if (fMC && fExcludedMothers.size() > 0) {
-        // Reject the decay products of some specific particles
-        AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(fTrack->GetID());
-        if (!mcPart) continue;
-
-        AliAODMCParticle *mom = (AliAODMCParticle *)fMC->GetTrack(mcPart->GetMother());
-        if (!mom) continue;
-
-        int momAbsPdg = std::abs(mom->GetPdgCode());
-        if (std::find(fExcludedMothers.begin(), fExcludedMothers.end(), momAbsPdg) != fExcludedMothers.end()) {
-          continue;
-        }
-      }
-
       PionPlus.push_back(*fTrack);
     }
     if (fNegPionCuts->isSelected(fTrack))
     {
-      if (fMC && fExcludedMothers.size() > 0) {
-        // Reject the decay products of some specific particles
-        AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(fTrack->GetID());
-        if (!mcPart) continue;
-
-        AliAODMCParticle *mom = (AliAODMCParticle *)fMC->GetTrack(mcPart->GetMother());
-        if (!mom) continue;
-
-        int momAbsPdg = std::abs(mom->GetPdgCode());
-        if (std::find(fExcludedMothers.begin(), fExcludedMothers.end(), momAbsPdg) != fExcludedMothers.end()) {
-          continue;
-        }
-      }
-
       PionMinus.push_back(*fTrack);
     }
   }
 
-  cout << "CIAO3" << endl;
   if (fIsMC)
   {
+    AliAODInputHandler *eventHandler =
+        dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()
+                                               ->GetInputEventHandler());
+    AliMCEvent *fMC = eventHandler->MCEvent();
+
     for (int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++)
     {
       AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(iPart);
@@ -473,55 +380,15 @@ void AliAnalysisTaskNanoLambdaPion::UserExec(Option_t *)
   }
 
   fPairCleaner->ResetArray();
-  switch(fPCSettings)
-  {
-      case NoPC : break;
-      case OldPC :    fPairCleaner->CleanTrackAndDecay(&PionPlus, &Lambdas, 0, 0);
-                      fPairCleaner->CleanTrackAndDecay(&PionMinus, &AntiLambdas, 1, 0);
-                      fPairCleaner->CleanTrackAndDecay(&PionPlus, &AntiLambdas, 2, 0);
-                      fPairCleaner->CleanTrackAndDecay(&PionMinus, &Lambdas, 3, 0);
-                      fPairCleaner->CleanDecay(&Lambdas, 0);
-                      fPairCleaner->CleanDecay(&AntiLambdas, 1);
-                      fPairCleaner->CleanDecayAndDecay(&Lambdas, &AntiLambdas, 2); 
-                      break;
-      case NewPC :    fPairCleaner->CleanTrackAndDecay(&PionPlus, &Lambdas, 0, 1);
-                      fPairCleaner->CleanTrackAndDecay(&PionMinus, &AntiLambdas, 1, 1);
-                      fPairCleaner->CleanTrackAndDecay(&PionPlus, &AntiLambdas, 2, 1);
-                      fPairCleaner->CleanTrackAndDecay(&PionMinus, &Lambdas, 3, 1);
-                    
-                      fPairCleaner->CleanDecay(&Lambdas, 0);
-                      fPairCleaner->CleanDecay(&AntiLambdas, 1);
-                      fPairCleaner->CleanDecayAndDecay(&Lambdas, &AntiLambdas, 2); 
-                      break;
-  }
+  fPairCleaner->CleanTrackAndDecay(&PionPlus, &Lambdas, 0, fIsNewPC);
+  fPairCleaner->CleanTrackAndDecay(&PionMinus, &AntiLambdas, 1, fIsNewPC);
+  fPairCleaner->CleanTrackAndDecay(&PionPlus, &AntiLambdas, 2, fIsNewPC);
+  fPairCleaner->CleanTrackAndDecay(&PionMinus, &Lambdas, 3, fIsNewPC);
 
-  if(fPCSettings == NewPC && fMinvLambdaKStar) {
-    cout << "PairCleaner and InvMass check passed" << endl;
-    if(!fPionsPlusForMinvV0KStar.empty()) {
-      cout << "Fill histo Lambdas" << endl;
-      fLambdaCuts->Fillv0MinvKstarHisto(BeforeCutLambdas, fPionsPlusForMinvV0KStar);
-      fAntiLambdaCuts->Fillv0MinvKstarHisto(BeforeCutAntiLambdas, fPionsPlusForMinvV0KStar);
-    }
-    if(!fPionsMinusForMinvV0KStar.empty()) {
-      cout << "Fill histo AntiLambdas" << endl;
-      fLambdaCuts->Fillv0MinvKstarHisto(BeforeCutLambdas, fPionsMinusForMinvV0KStar);
-      fAntiLambdaCuts->Fillv0MinvKstarHisto(BeforeCutAntiLambdas, fPionsMinusForMinvV0KStar);
-    }
-    cout << "Updating pions" << endl;
-    fPionsPlusForMinvV0KStar = PionPlus;
-    fPionsMinusForMinvV0KStar = PionMinus;
-  } else if (fPCSettings != NewPC && fMinvLambdaKStar) {
-    std::cout << "Invariant mass as a function of kstar not implemented for the selected pair cleaner!" << std::endl;
-  } 
+  fPairCleaner->CleanDecay(&Lambdas, 0);
+  fPairCleaner->CleanDecay(&AntiLambdas, 1);
+  fPairCleaner->CleanDecayAndDecay(&Lambdas, &AntiLambdas, 2);
 
-  if(fUseEvtNoLambda){
-    if(Lambdas.size() == 0 && AntiLambdas.size() == 0){
-      return;
-    }
-  }
-
-  // Create a vector of vector of particles with the pi+, pi-, lambda 
-  // and antilambda of the event 
   fPairCleaner->StoreParticle(PionPlus);
   fPairCleaner->StoreParticle(PionMinus);
   fPairCleaner->StoreParticle(Lambdas);
@@ -569,32 +436,37 @@ void AliAnalysisTaskNanoLambdaPion::ResetGlobalTrackReference()
   }
 }
 
-void AliAnalysisTaskNanoLambdaPion::StoreGlobalTrackReference(AliVTrack *track) {
-  AliNanoAODTrack *nanoTrack = dynamic_cast<AliNanoAODTrack*>(track);
+void AliAnalysisTaskNanoLambdaPion::StoreGlobalTrackReference(
+    AliVTrack *track)
+{
+  // see AliFemtoDreamAnalysis for details
+  AliNanoAODTrack *nanoTrack = dynamic_cast<AliNanoAODTrack *>(track);
   const int trackID = track->GetID();
-  if (trackID < 0) 
+  if (trackID < 0)
   {
     return;
   }
-  if (trackID >= fTrackBufferSize) 
+  if (trackID >= fTrackBufferSize)
   {
     printf("Warning: track ID too big for buffer: ID: %d, buffer %d\n", trackID,
            fTrackBufferSize);
     return;
   }
-  if (fGTI[trackID]) 
+
+  if (fGTI[trackID])
   {
-    if ((!nanoTrack->GetFilterMap()) && (!track->GetTPCNcls())) 
+    if ((!nanoTrack->GetFilterMap()) && (!track->GetTPCNcls()))
     {
       return;
     }
-    if (dynamic_cast<AliNanoAODTrack*>(fGTI[trackID])->GetFilterMap()
-        || fGTI[trackID]->GetTPCNcls()) {
+    if (dynamic_cast<AliNanoAODTrack *>(fGTI[trackID])->GetFilterMap() ||
+        fGTI[trackID]->GetTPCNcls())
+    {
       printf("Warning! global track info already there!");
       printf("         TPCNcls track1 %u track2 %u",
              (fGTI[trackID])->GetTPCNcls(), track->GetTPCNcls());
       printf("         FilterMap track1 %u track2 %u\n",
-             dynamic_cast<AliNanoAODTrack*>(fGTI[trackID])->GetFilterMap(),
+             dynamic_cast<AliNanoAODTrack *>(fGTI[trackID])->GetFilterMap(),
              nanoTrack->GetFilterMap());
     }
   }
