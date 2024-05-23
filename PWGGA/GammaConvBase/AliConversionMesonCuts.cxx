@@ -5147,7 +5147,6 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           //Parameter 2: -0.000139936
           //Parameter 3: 1.66086e-06
           mass = (0.527787)+(0.00398144)*pt+(-0.000139936)*pt*pt+(1.66086e-06)*pt*pt*pt;
-          cout << "mass " << endl;
           //----------
           //Width
           //----------
@@ -5157,10 +5156,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           //Parameter 2: 5.04147e-05
           //Parameter 3: -4.11043e-07
           sigma = (0.0426831)+(-0.00166479)*pt+(5.04147e-05)*pt*pt+(-4.11043e-07)*pt*pt*pt;
-          cout << "sigma " << endl;
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
-          cout << "Selection window from " << fSelectionLow << " " << fSelectionHigh << endl;
           break;
         case 11:  // PCM-EMC 13 TeV
           cout << "Selection window pT dependent PCM-EMC" << endl;
@@ -5179,7 +5176,6 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           //Parameter 2: 0.000670217
           //Parameter 3: -7.72413e-06
           mass = (0.552572) * TMath::Exp( (-0.0366797)/pt + (0.000670217)*pt + (-7.72413e-06)*pt*pt);
-          cout << "mass " << endl;
           //----------
           //Width
           //----------
@@ -5189,10 +5185,8 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           //Parameter 2: -0.0162319
           //Parameter 3: 0.000614509
           sigma = (0.0207645) * TMath::Exp( (0.883405)/pt + (-0.0162319)*pt + (0.000614509)*pt*pt);
-          cout << "sigma " << sigma << endl;
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
-          cout << "Selection window from " << fSelectionLow << " " << fSelectionHigh << endl;
           break;
         case 12: // PCM-PCM 13 TeV
           //Mass

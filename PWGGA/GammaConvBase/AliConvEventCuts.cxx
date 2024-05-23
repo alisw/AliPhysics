@@ -4028,10 +4028,10 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
                                             70, 85, 99, 115, 132,
                                             150, 169, 190, 212, 235,
                                             1000000};
-          Double_t weightsBins[20]      = { 1.0,  1.0, 1.0, 1.0, 1.0,
-                                            1.0,  1.0, 1.0, 1.0, 1.0,
-                                            1.0,  1.0, 1.0, 1.0, 1.0,
-                                            1.0,  1.0, 1.0, 1.0, 1.0};
+          Double_t weightsBins[20]      = { 4.99154,  2.07583, 1.20076, 0.521698, 0.20330,
+                                            0.0857282,  0.0293897, 0.0112793, 0.00521993, 0.00198315,
+                                            0.000877779,  0.000350588, 0.000189878, 9.7873e-05, 5.28512e-05,
+                                            2.95979e-05,  1.76871e-05, 1.02526e-05, 6.08976e-06, 1.04334e-05};
 
           Int_t bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
