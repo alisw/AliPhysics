@@ -167,8 +167,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name, const char *title) : AliAna
                                                                           hTriggerClassSelected(NULL),
                                                                           hTriggerClassesCorrelated(NULL),
                                                                           hReweightMCHistPi0_inv(NULL),
-                                                                          hReweightMCHistEta(NULL),
-                                                                          hReweightMCHistK0s(NULL),
+                                                                          hReweightMCHistEta_inv(NULL),
+                                                                          hReweightMCHistK0s_inv(NULL),
                                                                           fFitDataPi0(NULL),
                                                                           fFitDataEta(NULL),
                                                                           fFitDataK0s(NULL),
@@ -316,8 +316,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) : AliAnalysisCut
                                                                   hTriggerClassSelected(NULL),
                                                                   hTriggerClassesCorrelated(NULL),
                                                                   hReweightMCHistPi0_inv(ref.hReweightMCHistPi0_inv),
-                                                                  hReweightMCHistEta(ref.hReweightMCHistEta),
-                                                                  hReweightMCHistK0s(ref.hReweightMCHistK0s),
+                                                                  hReweightMCHistEta_inv(ref.hReweightMCHistEta_inv),
+                                                                  hReweightMCHistK0s_inv(ref.hReweightMCHistK0s_inv),
                                                                   fFitDataPi0(ref.fFitDataPi0),
                                                                   fFitDataEta(ref.fFitDataEta),
                                                                   fFitDataK0s(ref.fFitDataK0s),
@@ -447,15 +447,15 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut)
     hReweightMCHistPi0_inv->SetName("MCInputForWeightingPi0");
     fHistograms->Add(hReweightMCHistPi0_inv);
   }
-  if (hReweightMCHistEta)
+  if (hReweightMCHistEta_inv)
   {
-    hReweightMCHistEta->SetName("MCInputForWeightingEta");
-    fHistograms->Add(hReweightMCHistEta);
+    hReweightMCHistEta_inv->SetName("MCInputForWeightingEta");
+    fHistograms->Add(hReweightMCHistEta_inv);
   }
-  if (hReweightMCHistK0s)
+  if (hReweightMCHistK0s_inv)
   {
-    hReweightMCHistK0s->SetName("MCInputForWeightingK0s");
-    fHistograms->Add(hReweightMCHistK0s);
+    hReweightMCHistK0s_inv->SetName("MCInputForWeightingK0s");
+    fHistograms->Add(hReweightMCHistK0s_inv);
   }
 
   if (hReweightMCHistGamma)
@@ -1093,8 +1093,8 @@ void AliConvEventCuts::LoadReweightingHistosMCFromFile()
     TH1D *hReweightMCHistEtatemp = (TH1D *)f->Get(fNameHistoReweightingEta.Data());
     if (hReweightMCHistEtatemp)
     {
-      hReweightMCHistEta = new TH1D(*hReweightMCHistEtatemp);
-      hReweightMCHistEta->SetDirectory(0);
+      hReweightMCHistEta_inv = new TH1D(*hReweightMCHistEtatemp);
+      hReweightMCHistEta_inv->SetDirectory(0);
       AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingEta.Data(), fPathTrFReweighting.Data()));
     }
     else
@@ -1119,8 +1119,8 @@ void AliConvEventCuts::LoadReweightingHistosMCFromFile()
     TH1D *hReweightMCHistK0stemp = (TH1D *)f->Get(fNameHistoReweightingK0s.Data());
     if (hReweightMCHistK0stemp)
     {
-      hReweightMCHistK0s = new TH1D(*hReweightMCHistK0stemp);
-      hReweightMCHistK0s->SetDirectory(0);
+      hReweightMCHistK0s_inv = new TH1D(*hReweightMCHistK0stemp);
+      hReweightMCHistK0s_inv->SetDirectory(0);
       AliInfo(Form("%s has been loaded from %s", fNameHistoReweightingK0s.Data(), fPathTrFReweighting.Data()));
     }
     else
@@ -10284,13 +10284,13 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
   {
     functionResultMC = hReweightMCHistPi0_inv->Interpolate(mesonPt);
   }
-  if (PDGCode == 221 && fDoReweightHistoMCEta && hReweightMCHistEta != 0x0)
+  if (PDGCode == 221 && fDoReweightHistoMCEta && hReweightMCHistEta_inv != 0x0)
   {
-    functionResultMC = hReweightMCHistEta->Interpolate(mesonPt);
+    functionResultMC = hReweightMCHistEta_inv->Interpolate(mesonPt);
   }
-  if (PDGCode == 310 && fDoReweightHistoMCK0s && hReweightMCHistK0s != 0x0)
+  if (PDGCode == 310 && fDoReweightHistoMCK0s && hReweightMCHistK0s_inv != 0x0)
   {
-    functionResultMC = hReweightMCHistK0s->Interpolate(mesonPt);
+    functionResultMC = hReweightMCHistK0s_inv->Interpolate(mesonPt);
   }
 
   // get data value
@@ -10326,7 +10326,7 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
         }
         if (PDGCode == 221)
         {
-          if (!(fDoReweightHistoMCEta && hReweightMCHistEta != 0x0 && PDGCode == 221))
+          if (!(fDoReweightHistoMCEta && hReweightMCHistEta_inv != 0x0 && PDGCode == 221))
           {
             weight = 1.;
           }
