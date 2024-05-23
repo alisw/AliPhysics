@@ -14,7 +14,7 @@
  **************************************************************************/
  
 //-------------------------------------------------------------------------
-// Task for V0 and Cascade analysis in charged jets with 
+// Task for V0 analysis in charged jets with 
 // the strange particles (instead of daughters) added to the  jet finder
 // Author: Ekaterina Grecka (ermeeka@fjfi.cvut.cz)
 // Modification of the AlianalysisTaskV0sInJetsEmcal task (author Vit Kucera) 
@@ -79,6 +79,7 @@ const Double_t AliAnalysisTaskStrangenessInJets::fgkdMassK0sMax = 0.65; // [GeV/
 const Int_t AliAnalysisTaskStrangenessInJets::fgkiNBinsMassLambda = 200;
 const Double_t AliAnalysisTaskStrangenessInJets::fgkdMassLambdaMin = 1.05; // [GeV/c^2]
 const Double_t AliAnalysisTaskStrangenessInJets::fgkdMassLambdaMax = 1.25; // [GeV/c^2]
+
 // PDG codes of used particles
 const Int_t AliAnalysisTaskStrangenessInJets::iPdgCodePion = 211;
 const Int_t AliAnalysisTaskStrangenessInJets::iPdgCodeProton = 2212;
@@ -135,6 +136,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
   fdCutNSigmadEdxMax(0),
   fdPtProtonPIDMax(0),
   fbOnFly(0),
+  fdCutV0PtMin(1.),
   fdCutCPAKMin(0),
   fdCutCPALMin(0),
   fdCutRadiusDecayMin(0),
@@ -189,7 +191,10 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
     fhnV0InclusiveK0s[i] = 0;
     fhnV0InclusiveLambda[i] = 0;
     fhnV0InclusiveALambda[i] = 0;   
-    fh1VtxZ[i] = 0;
+    fhnV0InvMassCutK0s[i] = 0;
+    fhnV0InvMassCutLambda[i] = 0;
+    fhnV0InvMassCutALambda[i] = 0;   
+    fh1VtxZ[i] = 0; 
     fh2VtxXY[i] = 0;   
     
     fh1PtJet[i] = 0;
@@ -319,6 +324,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
   fdCutNSigmadEdxMax(0),
   fdPtProtonPIDMax(0),
   fbOnFly(0),
+  fdCutV0PtMin(1.),
   fdCutCPAKMin(0),
   fdCutCPALMin(0),
   fdCutRadiusDecayMin(0),
@@ -373,6 +379,9 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
     fhnV0InclusiveK0s[i] = 0;
     fhnV0InclusiveLambda[i] = 0;
     fhnV0InclusiveALambda[i] = 0;   
+    fhnV0InvMassCutK0s[i] = 0;
+    fhnV0InvMassCutLambda[i] = 0;
+    fhnV0InvMassCutALambda[i] = 0;   
     fh1VtxZ[i] = 0;
     fh2VtxXY[i] = 0;  
     
@@ -517,7 +526,7 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
   fJets->SetOwner(); 	
   
   // event categories
-  const Int_t iNCategEvent = 13;
+  const Int_t iNCategEvent = 12;
   TString categEvent[iNCategEvent] = {
     "coll. candid.",      //0
     "AOD OK",             //1
@@ -531,28 +540,28 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
     "with V^{0}",         //9
     "with jets",          //10 
     "jet selection",      //11
-    "with Cascade"        //12
   };
 
 // labels for stages of V0 selection
   TString categV0[fgkiNCategV0] = {
     "all",                  //0
-    "mass range",           //1
-    "rec. method",          //2
-    "tracks TPC",           //3
-    "track pt",             //4
-    "DCA prim v",           //5
-    "DCA daughters",        //6
-    "CPA",                  //7  
-    "volume",               //8    
-    "track #it{#eta}",      //9
-    "V0 #it{y} & #it{#eta}",//10
-    "lifetime",             //11 
-    "PID",                  //12
-    "Arm.-Pod.",            //13
-    "cross-cont.",          //14
-    "inclusive"             //15
-    "in jet",               //16
+    "min V0 Pt",            //1
+    "mass range",           //2
+    "rec. method",          //3
+    "tracks TPC",           //4
+    "track pt",             //5
+    "DCA prim v",           //6
+    "DCA daughters",        //7
+    "CPA",                  //8  
+    "volume",               //9    
+    "track #it{#eta}",      //10
+    "V0 #it{y} & #it{#eta}",//11
+    "lifetime",             //12 
+    "PID",                  //13
+    "Arm.-Pod.",            //14
+    "cross-cont.",          //15
+    "inclusive",            //16
+    "in jet"                //17
   };  
   
   //labels for the in jet statistics
@@ -714,6 +723,13 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
     fOutputListStd->Add(fhnV0InclusiveK0s[i]);
     fOutputListStd->Add(fhnV0InclusiveLambda[i]);
     fOutputListStd->Add(fhnV0InclusiveALambda[i]);
+    // After 3sigma invariant mass window cut
+    fhnV0InvMassCutK0s[i] = new THnSparseD(Form("fhnV0InvMassCutK0s_C%d", i), "K0s after inv mass window cut: V0 invariant mass vs pt;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};counts", iNDimIncl, binsKIncl, xminKIncl, xmaxKIncl);
+    fhnV0InvMassCutLambda[i] = new THnSparseD(Form("fhnV0InvMassCutLambda_C%d", i), "Lambda after inv mass window cut: V0 invariant mass vs pt;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};counts", iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
+    fhnV0InvMassCutALambda[i] = new THnSparseD(Form("fhnV0InvMassCutALambda_C%d", i), "ALambda after inv mass window cut: V0 invariant mass vs pt;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};counts", iNDimIncl, binsLIncl, xminLIncl, xmaxLIncl);
+    fOutputListStd->Add(fhnV0InvMassCutK0s[i]);
+    fOutputListStd->Add(fhnV0InvMassCutLambda[i]);
+    fOutputListStd->Add(fhnV0InvMassCutALambda[i]);
     // event histograms
     fh1VtxZ[i] = new TH1D(Form("fh1VtxZ_%d", i), Form("#it{z} coordinate of the primary vertex, cent: %s;#it{z} (cm)", GetCentBinLabel(i).Data()), 300, -15, 15);
     fOutputListStd->Add(fh1VtxZ[i]);
@@ -988,6 +1004,7 @@ void AliAnalysisTaskStrangenessInJets::ExecOnce()
     printf("centrality range: %g-%g %%\n", fdCutCentLow, fdCutCentHigh);
     printf("centrality estimator: %s\n", fbUseMultiplicity ? "AliMultSelection" : "AliCentrality");
   }
+  if(fdCutV0PtMin > 0.) printf("min V0 pT [Gev/c]: %g\n", fdCutV0PtMin);
   if(fdCutVertexZ > 0.) printf("max |z| of the prim vtx [cm]: %g\n", fdCutVertexZ);
   if(fdCutVertexR2 > 0.) printf("max r^2 of the prim vtx [cm^2]: %g\n", fdCutVertexR2);
   if(fiNContribMin > 0) printf("min number of prim vtx contributors: %d\n", fiNContribMin);
@@ -1037,9 +1054,9 @@ void AliAnalysisTaskStrangenessInJets::ExecOnce()
 
 Bool_t AliAnalysisTaskStrangenessInJets::Run()
 {
-// Run analysis code here, if needed. It will be executed before FillHistograms().
+  // Run analysis code here, if needed. It will be executed before FillHistograms().
 
-//Move the analysis part from FillHistograms here? 
+  //Move the analysis part from FillHistograms here? 
 
   return kTRUE; // If return kFALSE FillHistogram() will NOT be executed.
 }
@@ -1211,21 +1228,31 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
 
     Double_t dPtV0 = TMath::Sqrt(v0->Pt2V0()); // transverse momentum of V0
     vecV0Momentum = TVector3(v0->Px(), v0->Py(), v0->Pz()); // set the vector of V0 momentum
-       
+    
+    //1
+    //V0 min pt 
+    if(dPtV0 < fdCutV0PtMin)
+      continue;
+    FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
+    iCutIndex++;
+
     // Sigma of the mass peak window
-    Double_t dMassPeakWindowK0s = dNSigmaMassMax * MassPeakSigmaOld(dPtV0, 0);
-    Double_t dMassPeakWindowLambda = dNSigmaMassMax * MassPeakSigmaOld(dPtV0, 1);
+    Double_t dMassPeakWindowK0s = dNSigmaMassMax * MassPeakSigma(dPtV0, 0);
+    Double_t dMassPeakWindowLambda = dNSigmaMassMax * MassPeakSigma(dPtV0, 1);
+    //Mean of the mass peak window
+    Double_t dMassPeakWindowMeanK0s = MassPeakMean(dPtV0, 0);
+    Double_t dMassPeakWindowMeanLambda = MassPeakMean(dPtV0, 1);
     if(!fbIsPbPb) { // p-p
       dMassPeakWindowK0s = 0.010; // LF p-p
       dMassPeakWindowLambda = 0.005; // LF p-p
     }
 
     // Invariant mass peak selection
-    if(TMath::Abs(dMassV0K0s - dMassPDGK0s) < dMassPeakWindowK0s)
+    if(TMath::Abs(dMassV0K0s - dMassPeakWindowMeanK0s ) < dMassPeakWindowK0s)
       bIsInPeakK0s = kTRUE;
-    if(TMath::Abs(dMassV0Lambda - dMassPDGLambda) < dMassPeakWindowLambda)
+    if(TMath::Abs(dMassV0Lambda - dMassPeakWindowMeanLambda) < dMassPeakWindowLambda)
       bIsInPeakLambda = kTRUE;
-    if(TMath::Abs(dMassV0ALambda - dMassPDGLambda) < dMassPeakWindowLambda)
+    if(TMath::Abs(dMassV0ALambda - dMassPeakWindowMeanLambda) < dMassPeakWindowLambda)
       bIsInPeakALambda = kTRUE;
 
     // Skip candidates outside the histogram range
@@ -1288,13 +1315,13 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     Double_t dEnergy = 0;
    //===== Start of reconstruction cutting =====
 
-    // 1
-    // All V0 candidates
+    // 2
+    // All V0 candidates in mass range
     FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
     iCutIndex++;
 
     // Start of global cuts
-    // 2
+    // 3
     // Reconstruction method
     if(bPrintCuts) printf("Rec: Applying cut: Reconstruction method: %s\n", (fbOnFly ? "on-the-fly" : "offline"));
     if(bOnFlyStatus != fbOnFly)
@@ -1302,7 +1329,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
     iCutIndex++;
 
-    // 3
+    // 4
     // Tracks TPC OK
     if(bPrintCuts) printf("Rec: Applying cut: Correct charge of daughters\n");
     if(!trackNeg || !trackPos)
@@ -1365,7 +1392,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
     iCutIndex++;
 
-    // 4
+    // 5
     // Daughters: transverse momentum cut
     if(fdCutPtDaughterMin > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: Daughter pt >= %g\n", fdCutPtDaughterMin);
@@ -1375,7 +1402,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     }
     iCutIndex++;
 
-    // 5
+    // 6
     // Daughters: Impact parameter of daughters to prim vtx
     if(fdCutDCAToPrimVtxMin > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: Daughter DCA to prim vtx >= %g\n", fdCutDCAToPrimVtxMin);
@@ -1385,7 +1412,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     }
     iCutIndex++;
 
-    // 6
+    // 7
     // Daughters: DCA
     if(fdCutDCADaughtersMax > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: DCA between daughters <= %g\n", fdCutDCADaughtersMax);
@@ -1395,7 +1422,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     }
     iCutIndex++;
 
-    // 7
+    // 8
     // V0: Cosine of the pointing angle
     if(fdCutCPAKMin > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: CPA >= %g (K)\n", fdCutCPAKMin);
@@ -1414,7 +1441,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
       FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
     iCutIndex++;
 
-    // 8
+    // 9
     // V0: Fiducial volume
     if(fdCutRadiusDecayMin > 0. && fdCutRadiusDecayMax > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: Decay radius >= %g, <= %g\n", fdCutRadiusDecayMin, fdCutRadiusDecayMax);
@@ -1424,7 +1451,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     }
     iCutIndex++;
 
-    // 9
+    // 10
     // Daughters: pseudorapidity cut
     if(fdCutEtaDaughterMax > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: Daughter |eta| < %g\n", fdCutEtaDaughterMax);
@@ -1436,7 +1463,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     // End of global cuts
 
     // Start of particle-dependent cuts
-    // 10
+    // 11
     // V0: pseudorapidity cut & rapidity cut
     if(fdCutEtaV0Max > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: V0 |eta| < %g\n", fdCutEtaV0Max);
@@ -1459,7 +1486,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
       FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
     iCutIndex++;
 
-    // 11
+    // 12
     // Lifetime cut
     if(fdCutNTauKMax > 0.) {
       if(bPrintCuts) printf("Rec: Applying cut: Proper lifetime < %g (K)\n", fdCutNTauKMax);
@@ -1477,7 +1504,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
       FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
     iCutIndex++;
 
-    // 12
+    // 13
     // Daughter PID
     if(fdCutNSigmadEdxMax > 0.) {
       if(fbIsPbPb && fdPtProtonPIDMax > 0.) { // Pb-Pb
@@ -1500,7 +1527,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     }
     iCutIndex++;
 
-    // 13
+    // 14
     // Armenteros-Podolanski cut
     if(fbCutArmPod) {
       if(bPrintCuts) printf("Rec: Applying cut: Armenteros-Podolanski (K0S) pT > %g * |alpha|\n", 0.2);
@@ -1530,59 +1557,93 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     if(!bIsCandidateK0s && !bIsCandidateLambda && !bIsCandidateALambda)
       continue;
 
-    Int_t uid = 0;//?
+    Int_t uid = 0; //?
     //===== Start of filling V0 spectra =====
-    // iCutIndex = 15
+    // iCutIndex = 16
     if(bIsCandidateK0s) {
-      // 15 K0s candidates after cuts
+      // 16 K0s candidates after cuts
       FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, kFALSE, kFALSE, iCutIndex, iCentIndex);
       Double_t valueKIncl[3] = {dMassV0K0s, dPtV0, dEtaV0};
       fhnV0InclusiveK0s[iCentIndex]->Fill(valueKIncl);
       fh1V0InvMassK0sCent[iCentIndex]->Fill(dMassV0K0s);
+      if(bIsInPeakK0s){
+        fhnV0InvMassCutK0s[iCentIndex]->Fill(valueKIncl);
+      }  
       uid = iK0Id + fNCand;
       dEnergy = v0->EK0Short();
       iNV0CandK0s++;
-    }
+    }   
+
     if(bIsCandidateLambda) {
-      // 15 Lambda candidates after cuts
+      // 16 Lambda candidates after cuts
       FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, kFALSE, bIsCandidateLambda, kFALSE, iCutIndex, iCentIndex);
       Double_t valueLIncl[3] = {dMassV0Lambda, dPtV0, dEtaV0};
       fhnV0InclusiveLambda[iCentIndex]->Fill(valueLIncl);
       fh1V0InvMassLambdaCent[iCentIndex]->Fill(dMassV0Lambda);
-      uid = iLambdaId + fNCand; 
-      dEnergy = v0->ELambda();
+      if(bIsInPeakLambda){
+        fhnV0InvMassCutLambda[iCentIndex]->Fill(valueLIncl);
+        uid = iLambdaId + fNCand; 
+        dEnergy = v0->ELambda();
+      }  
       iNV0CandLambda++;
     }
+
     if(bIsCandidateALambda) {
-      // 15 ALambda candidates after cuts
+      // 16 ALambda candidates after cuts
       FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, kFALSE, kFALSE, bIsCandidateALambda, iCutIndex, iCentIndex);
       Double_t valueALIncl[3] = {dMassV0ALambda, dPtV0, dEtaV0};
       fhnV0InclusiveALambda[iCentIndex]->Fill(valueALIncl);
       fh1V0InvMassALambdaCent[iCentIndex]->Fill(dMassV0ALambda);  
-      uid = iALambdaId + fNCand;
-      dEnergy = v0->ELambda();
+      if(bIsInPeakALambda){
+        fhnV0InvMassCutALambda[iCentIndex]->Fill(valueALIncl);
+        uid = iALambdaId + fNCand;
+        dEnergy = v0->ELambda();
+      } 
       iNV0CandALambda++;    
     }
-    if(bIsCandidateK0s && bIsCandidateLambda) {
-	  uid = iK0LId + fNCand;
-    }	
-    if(bIsCandidateK0s && bIsCandidateALambda) {
-	  uid = iK0ALId + fNCand;
-    }   
-    new ((*fV0CandidateArray)[fNCand]) AliAODv0(*v0); //  
-    ivecV0CandIndex.push_back(uid);
-    //add the v0 vector to the fastjetwrapper
-    fFastJetWrapper.AddInputVector(vecV0Momentum[0], vecV0Momentum[1], vecV0Momentum[2], dEnergy, uid);
-    InputBgParticles.push_back(fastjet::PseudoJet(vecV0Momentum[0], vecV0Momentum[1], vecV0Momentum[2], dEnergy));
-   
-    fNCand++;
-    //===== End of filling V0 spectra =====          
 
-    if(fbMCAnalysis) {
-      AliEmcalJet *ZeroJet = 0;
-      AssociateRecV0withMC(v0, ZeroJet, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCentIndex);
+    if(bIsCandidateK0s && bIsCandidateLambda) {
+      if(bIsInPeakK0s){
+        uid = iK0Id + fNCand;
+        dEnergy = v0->EK0Short();
+      }
+      if(bIsInPeakLambda){
+        uid = iLambdaId + fNCand; 
+        dEnergy = v0->ELambda();
+      }
+      if(bIsInPeakK0s && bIsInPeakLambda)
+        uid = iK0LId + fNCand;
+    }	
+
+    if(bIsCandidateK0s && bIsCandidateALambda) {
+      if(bIsInPeakK0s){
+        uid = iK0Id + fNCand;
+        dEnergy = v0->EK0Short();
+      }
+      if(bIsInPeakALambda){
+        uid = iALambdaId + fNCand; 
+        dEnergy = v0->ELambda();
+      }
+      if(bIsInPeakK0s && bIsInPeakALambda)
+        uid = iK0ALId + fNCand;
+    }	
+
+    if(bIsInPeakK0s || bIsInPeakLambda || bIsInPeakALambda){
+      if (uid > 0) { // to get rid of the situations when isinpeakcandidate is different from the iscandidate
+        new ((*fV0CandidateArray)[fNCand]) AliAODv0(*v0); //  
+        ivecV0CandIndex.push_back(uid);
+        //add the v0 vector to the fastjetwrapper
+        fFastJetWrapper.AddInputVector(vecV0Momentum[0], vecV0Momentum[1], vecV0Momentum[2], dEnergy, uid);
+        InputBgParticles.push_back(fastjet::PseudoJet(vecV0Momentum[0], vecV0Momentum[1], vecV0Momentum[2], dEnergy));
+      
+        fNCand++;
+        if(fbMCAnalysis) {
+          AliEmcalJet *ZeroJet = 0;
+          AssociateRecV0withMC(v0, ZeroJet, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCentIndex);
+        }
+      }  
     }
-    
+    //===== End of filling V0 spectra =====            
   }	 
   //===== End of V0 loop =====
   
@@ -1735,20 +1796,20 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
 		  if(uid > iK0LId && uid < iK0ALId) { //K L correlation 	
 		    index = uid-iK0LId; 
         jetv0 = (AliAODv0*)fV0CandidateArray->At(index); 
-		    Double_t valueKInJet[4] = {jetv0->MassK0Short(), TMath::Sqrt(jetv0->Pt2V0()), jetv0->Eta(), jet->Pt()};
-        fhnV0InJetK0s[iCentIndex]->Fill(valueKInJet);  		  
-		    Double_t valueLInJet[4] = {jetv0->MassLambda(), TMath::Sqrt(jetv0->Pt2V0()), jetv0->Eta(), jet->Pt()};
-        fhnV0InJetLambda[iCentIndex]->Fill(valueLInJet);
+		    //Double_t valueKInJet[4] = {jetv0->MassK0Short(), TMath::Sqrt(jetv0->Pt2V0()), jetv0->Eta(), jet->Pt()};
+        //fhnV0InJetK0s[iCentIndex]->Fill(valueKInJet);  		  
+		    //Double_t valueLInJet[4] = {jetv0->MassLambda(), TMath::Sqrt(jetv0->Pt2V0()), jetv0->Eta(), jet->Pt()};
+        //fhnV0InJetLambda[iCentIndex]->Fill(valueLInJet);
         fh1NV0sInJetStats->Fill(5);
         ikl++;
 		  }
 		  if(uid > iK0ALId) { //K AL correlation 	
 		    index = uid-iK0ALId;  
 		    jetv0 = (AliAODv0*)fV0CandidateArray->At(index); 
-        Double_t valueKInJet[4] = {jetv0->MassK0Short(), TMath::Sqrt(jetv0->Pt2V0()), jetv0->Eta(), jet->Pt()};
-        fhnV0InJetK0s[iCentIndex]->Fill(valueKInJet);
-        Double_t valueLInJet[4] = {jetv0->MassAntiLambda(), TMath::Sqrt(jetv0->Pt2V0()), jetv0->Eta(), jet->Pt()};
-        fhnV0InJetALambda[iCentIndex]->Fill(valueLInJet);
+        //Double_t valueKInJet[4] = {jetv0->MassK0Short(), TMath::Sqrt(jetv0->Pt2V0()), jetv0->Eta(), jet->Pt()};
+        //fhnV0InJetK0s[iCentIndex]->Fill(valueKInJet);
+        //Double_t valueLInJet[4] = {jetv0->MassAntiLambda(), TMath::Sqrt(jetv0->Pt2V0()), jetv0->Eta(), jet->Pt()};
+        //fhnV0InJetALambda[iCentIndex]->Fill(valueLInJet);
         fh1NV0sInJetStats->Fill(6);
 		    ikal++;
 		  }		 
@@ -2095,22 +2156,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::GetSortedArray(Int_t indexes[], std::ve
   return kTRUE;
 }
 
-Double_t AliAnalysisTaskStrangenessInJets::MassPeakSigmaOld(Double_t pt, Int_t particle)
-{
-// estimation of the sigma of the invariant-mass peak as a function of pT and particle type
-  switch(particle)
-  {
-    case 0: // K0S
-      return 0.0044 + 0.0004 * (pt - 1.);
-      break;
-    case 1: // Lambda
-      return 0.0023 + 0.00034 * (pt - 1.);
-      break; 
-    default:
-      return 0;
-      break;
-  }
-}
+
 Bool_t AliAnalysisTaskStrangenessInJets::IsFromGoodGenerator(Int_t index)
 {
   if(!fEventMC) {
@@ -2681,4 +2727,41 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
 
 return kTRUE;
 
+}
+Double_t AliAnalysisTaskStrangenessInJets::MassPeakSigma(Double_t pt, Int_t particle)
+{
+// estimation of the sigma of the invariant-mass peak as a function of pT and particle type
+  switch(particle) {
+    case 0: // K0S
+      return 0.0047 + 0.0002 * pt + 0.000063 * pt * pt;//0.0044 + 0.0004 * (pt - 1.);
+      break;
+    case 1: // Lambda
+      return 0.0014 + 0.00024 * pt; //0.0023 + 0.00034 * (pt - 1.);
+      break; 
+    case 2: //Xi
+      return 0.00125 + 0.00035 * pt; 
+      break;   
+    default:
+      return 0;
+      break;
+  }
+}
+
+Double_t AliAnalysisTaskStrangenessInJets::MassPeakMean(Double_t pt, Int_t particle)
+{
+// estimation of the sigma of the invariant-mass peak as a function of pT and particle type
+  switch(particle) {
+    case 0: // K0S
+      return 0.499 - 0.0001 * pt + 0.000026 * pt * pt;  //old: 0.0044 + 0.0004 * (pt - 1.);
+      break;
+    case 1: // Lambda
+      return 1.1162; //old: 0.0023 + 0.00034 * (pt - 1.);
+      break; 
+    case 2: //Xi
+      return 1.322 + 0.000046 * pt; 
+      break; 
+    default:
+      return 0;
+      break;
+  }
 }
