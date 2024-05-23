@@ -5050,7 +5050,6 @@ Int_t AliAnalysisTaskGammaIsoTree::ProcessTagging(AliAODCaloCluster* cluster, Fl
       minMassDiffToPi0 = fabs(mass-pdgMassPi0);
     if(fabs(mass-pdgMassEta) < minMassDiffToEta)
       minMassDiffToEta = fabs(mass-pdgMassPi0);
-    cout << "mass = " << mass << endl;
     if((mass > fPi0TaggingWindow[0]) && (mass < fPi0TaggingWindow[1])){ // pi0
         taggedConv = 1;
     } else if((mass > fEtaTaggingWindow[0]) && (mass < fEtaTaggingWindow[1])){ // eta
