@@ -2,7 +2,7 @@
 #include <vector>
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTaskLambdaPion.h"
+#include "AliAnalysisTaskNanoFromAODLambdaPion.h"
 #include "AliFemtoDreamEventCuts.h"
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliFemtoDreamv0Cuts.h"
@@ -13,7 +13,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
                                                      TString CentEst = "kInt7",    // trigger selection, "kInt7" = Minimum bias, "kHighMultV0" high multiplicity triggered by the V0 detector
                                                      int filterBit = 128,          // Track selection feature
                                                      bool DoAncestors = false,     // only important when running MC
-                                                     AliAnalysisTaskLambdaPion::PCSettings pcsettings = AliAnalysisTaskLambdaPion::PCSettings::NoPC,  // choose pair cleaner
+                                                     AliAnalysisTaskNanoFromAODLambdaPion::PCSettings pcsettings = AliAnalysisTaskNanoFromAODLambdaPion::PCSettings::NoPC,  // choose pair cleaner
                                                      bool usenolambdaevt = true,            // true to discard events with neither Lambda or AntiLambda
                                                      double dauPIDCut = 2,
                                                      const char *cutVariation = "0")
@@ -1213,9 +1213,9 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
   }
 
   // now we create the task
-  AliAnalysisTaskLambdaPion *task =
-      new AliAnalysisTaskLambdaPion(
-          "AliAnalysisTaskLambdaPion", isMC, pcsettings, usenolambdaevt);
+  AliAnalysisTaskNanoFromAODLambdaPion *task =
+      new AliAnalysisTaskNanoFromAODLambdaPion(
+          "AliAnalysisTaskNanoFromAODLambdaPion", isMC, pcsettings, usenolambdaevt);
 
   // trigger selection according to macro arguments
   if (CentEst == "kInt7")
