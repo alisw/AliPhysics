@@ -813,12 +813,12 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TH1F*                       hTriggerClass;                          ///< fired offline trigger class
       TH1F*                       hTriggerClassSelected;                  ///< selected fired offline trigger class
       TH1F*                       hTriggerClassesCorrelated;              ///< selected trigger class correlation with others
-      TH1D*                       hReweightMCHistPi0;                     ///< histogram input for reweighting Pi0
-      TH1D*                       hReweightMCHistEta;                     ///< histogram input for reweighting Eta
-      TH1D*                       hReweightMCHistK0s;                     ///< histogram input for reweighting K0s
-      TF1*                        fFitDataPi0;                            ///< fit to pi0 spectrum in Data
-      TF1*                        fFitDataEta;                            ///< fit to eta spectrum in Data
-      TF1*                        fFitDataK0s;                            ///< fit to K0s spectrum in Data
+      TH1D*                       hReweightMCHistPi0_inv;                 ///< histogram input for reweighting Pi0 in pt invariant form
+      TH1D*                       hReweightMCHistEta_inv;                 ///< histogram input for reweighting Eta in pt invariant form
+      TH1D*                       hReweightMCHistK0s_inv;                 ///< histogram input for reweighting K0s in pt invariant form
+      TF1*                        fFitDataPi0_inv;                        ///< fit to pi0 spectrum in Data
+      TF1*                        fFitDataEta_inv;                        ///< fit to eta spectrum in Data
+      TF1*                        fFitDataK0s_inv;                        ///< fit to K0s spectrum in Data
       TH1D*                       hReweightMCHistGamma;                   ///< histogram MC   input for reweighting Gamma
       TH1D*                       hReweightDataHistGamma;                 ///< histogram data input for reweighting Gamma
       Int_t                       fAddedSignalPDGCode;
