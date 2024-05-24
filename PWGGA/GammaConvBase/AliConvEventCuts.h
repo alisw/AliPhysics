@@ -427,6 +427,30 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kEtaEMCf  = 13    //!< Injected Eta in DCal acceptance
       };
 
+      // ============ BEGIN section for pt weights in variant calculation form =====
+      /**
+       * @enum EnumPtWeights
+       * @brief two options for calculating pt weights. Invariant (historic) and variant
+       */
+      enum EnumPtWeights
+      {
+        kOff,
+        kInvariant,
+        kVariant
+      };
+
+      /**
+       * @struct PtWeightsBundle
+       * @brief for a meson: define invariant OR variant pt weights along with data and mc objects to compute them
+       */
+      struct PtWeightsBundle
+      {
+        EnumPtWeights eWhich;
+        TF1 const *fData;
+        TH1 const *hMC;
+      };
+      std::map<int, PtWeightsBundle> fMapPtWeightsAccessObjects; //!<! map of meson pdg code to PtWeightsBundle
+      // ============ END section for pt weights in variant calculation form =====
 
       AliConvEventCuts(const char *name="EventCuts", const char * title="Event Cuts");
       AliConvEventCuts(const AliConvEventCuts&);
@@ -511,9 +535,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                 TString fitNameK0s ="" )
                                                                                     {
                                                                                       AliInfo(Form("enabled reweighting for: pi0 : %i, eta: %i, K0s: %i",pi0reweight, etareweight, k0sreweight));
-                                                                                      fDoReweightHistoMCPi0 = pi0reweight                       ;
-                                                                                      fDoReweightHistoMCEta = etareweight                       ;
-                                                                                      fDoReweightHistoMCK0s = k0sreweight                       ;
+                                                                                      fDoReweightHistoMCPi0 = static_cast<EnumPtWeights>(pi0reweight);
+                                                                                      fDoReweightHistoMCEta = static_cast<EnumPtWeights>(etareweight);
+                                                                                      fDoReweightHistoMCK0s = static_cast<EnumPtWeights>(k0sreweight);
                                                                                       fPathTrFReweighting=path                                  ;
                                                                                       fNameHistoReweightingPi0 =histoNamePi0                    ;
                                                                                       fNameHistoReweightingEta =histoNameEta                    ;
@@ -602,6 +626,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t   GetWeightForCentralityFlattening(AliVEvent *event = 0x0);
       Float_t   GetWeightForMultiplicity(Int_t mult);
       Float_t   GetWeightForMeson( Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
+      Float_t   GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetWeightForGamma( Int_t index, Double_t gammaPTrec, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetCentrality(AliVEvent *event);
       Int_t     GetEMCalClusterMultiplicity(AliVEvent* event);
@@ -669,7 +694,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                  AliVEvent              *theInputEvent,
                                                  AliAODConversionPhoton &thePhoton,
                                                  Bool_t                 &theIsFromSelectedHeader); // future todo: make this const
-
+      
+      int     InitializeMapPtWeightsAccessObjects();
       void    LoadWeightingFlatCentralityFromFile ();
       void    LoadWeightingMultiplicityFromFile ();
       void    LoadReweightingHistosMCFromFile ();
@@ -781,9 +807,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fDoCentralityFlat;                      ///<
       TString                     fPathWeightsFlatCent;                   ///<
       TString                     fNameHistoNotFlatCentrality;            ///<
-      Bool_t                      fDoReweightHistoMCPi0;                  ///< Flag for reweighting Pi0 input with histogram
-      Bool_t                      fDoReweightHistoMCEta;                  ///< Flag for reweighting Eta input with histogram
-      Bool_t                      fDoReweightHistoMCK0s;                  ///< Flag for reweighting K0s input with histogram
+      EnumPtWeights               fDoReweightHistoMCPi0;                  ///< Flag for reweighting Pi0 input with histogram
+      EnumPtWeights               fDoReweightHistoMCEta;                  ///< Flag for reweighting Eta input with histogram
+      EnumPtWeights               fDoReweightHistoMCK0s;                  ///< Flag for reweighting K0s input with histogram
       TString                     fPathTrFReweighting;                    ///< Path for file used in reweighting
       TString                     fNameHistoReweightingPi0;               ///< Histogram name for reweighting Pi0
       TString                     fNameHistoReweightingEta;               ///< Histogram name for reweighting Eta
