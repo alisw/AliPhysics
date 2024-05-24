@@ -123,6 +123,7 @@ set(SRCS
   AliAnalysisTaskNanoTreeLPhi.cxx;
   AliAnalysisTaskNanoLambdaKaon.cxx;
   AliAnalysisTaskNanoLambdaPion.cxx;
+  AliAnalysisTaskNanoFromAODLambdaPion.cxx;
   AliAnalysisTaskLambdaPion.cxx;
   AliAnalysisTaskNanoLKr.cxx
   AliAnalysisTaskThreeBodyFemtoMixedCharge.cxx;
