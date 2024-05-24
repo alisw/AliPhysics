@@ -2,7 +2,7 @@
 #include "AliFemtoDreamBasePart.h"
 #include "AliLog.h"
 #include "AliNanoAODTrack.h"
-#include "AliAODTrack.h"
+#include "AliVTrack.h"
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
@@ -127,7 +127,7 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserCreateOutputObjects()
   fLambda->GetNegDaughter()->SetUseMCInfo(
       fLambdaCuts->GetIsMonteCarlo() || fAntiLambdaCuts->GetIsMonteCarlo());
 
-  fGTI = new AliAODTrack *[fTrackBufferSize];
+  fGTI = new AliVTrack *[fTrackBufferSize];
 
   if (!fEventCuts)
   {
@@ -284,7 +284,7 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserCreateOutputObjects()
 void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
 {
 
-  AliAODEvent *fInputEvent = static_cast<AliAODEvent*>(InputEvent());
+  AliVEvent *Event= fInputEvent;
 
   // PREAMBLE - CHECK EVERYTHING IS THERE
   if (!fInputEvent)
@@ -301,7 +301,7 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
   ResetGlobalTrackReference();
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack)
   {
-    AliAODTrack *track = static_cast<AliAODTrack *>(fInputEvent->GetTrack(iTrack));
+    AliVTrack *track = static_cast<AliVTrack*>(Event->GetTrack(iTrack));
     if (!track)
     {
       AliFatal("No Standard AOD");
@@ -373,11 +373,11 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
 
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack)
   {
-    AliAODTrack *track = static_cast<AliAODTrack *>(fInputEvent->GetTrack(iTrack));
+    AliVTrack *track = static_cast<AliVTrack*>(Event->GetTrack(iTrack));
 
     if (!track)
       continue;
-    fTrack->SetTrack(track);
+    fTrack->SetTrack(track, fInputEvent);
     if (fPosPionCuts->isSelected(fTrack))
     {
       if (fMC && fExcludedMothers.size() > 0) {
@@ -519,28 +519,33 @@ void AliAnalysisTaskNanoFromAODLambdaPion::ResetGlobalTrackReference()
   }
 }
 
-void AliAnalysisTaskNanoFromAODLambdaPion::StoreGlobalTrackReference(AliAODTrack *track){
-  // see AliFemtoDreamAnalysis for details
+void AliAnalysisTaskNanoFromAODLambdaPion::StoreGlobalTrackReference(AliVTrack *track) {
+  AliNanoAODTrack *nanoTrack = dynamic_cast<AliNanoAODTrack*>(track);
   const int trackID = track->GetID();
-  if (trackID < 0) {
+  if (trackID < 0) 
+  {
     return;
   }
-  if (trackID >= fTrackBufferSize) {
+  if (trackID >= fTrackBufferSize) 
+  {
     printf("Warning: track ID too big for buffer: ID: %d, buffer %d\n", trackID,
            fTrackBufferSize);
     return;
   }
-
-  if (fGTI[trackID]) {
-    if ((!track->GetFilterMap()) && (!track->GetTPCNcls())) {
+  if (fGTI[trackID]) 
+  {
+    if ((!nanoTrack->GetFilterMap()) && (!track->GetTPCNcls())) 
+    {
       return;
     }
-    if ((fGTI[trackID])->GetFilterMap() || fGTI[trackID]->GetTPCNcls()) {
+    if (dynamic_cast<AliNanoAODTrack*>(fGTI[trackID])->GetFilterMap()
+        || fGTI[trackID]->GetTPCNcls()) {
       printf("Warning! global track info already there!");
       printf("         TPCNcls track1 %u track2 %u",
              (fGTI[trackID])->GetTPCNcls(), track->GetTPCNcls());
       printf("         FilterMap track1 %u track2 %u\n",
-             (fGTI[trackID])->GetFilterMap(), track->GetFilterMap());
+             dynamic_cast<AliNanoAODTrack*>(fGTI[trackID])->GetFilterMap(),
+             nanoTrack->GetFilterMap());
     }
   }
   (fGTI[trackID]) = track;

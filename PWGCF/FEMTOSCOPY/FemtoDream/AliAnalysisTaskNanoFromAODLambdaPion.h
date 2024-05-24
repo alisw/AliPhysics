@@ -1,7 +1,7 @@
 #ifndef PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOFROMAODLAMBDAPION_H_
 #define PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOFROMAODLAMBDAPION_H_
 #include "Rtypes.h"
-#include "AliAODTrack.h"
+#include "AliVTrack.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliFemtoDreamCollConfig.h"
 #include "AliFemtoDreamEvent.h"
@@ -15,7 +15,7 @@
 #include "AliFemtoDreamControlSample.h"
 
 class AliVParticle;
-class AliAODTrack;
+class AliVTrack;
 
 class AliAnalysisTaskNanoFromAODLambdaPion : public AliAnalysisTaskSE
 {
@@ -71,7 +71,7 @@ private:
   AliAnalysisTaskNanoFromAODLambdaPion(const AliAnalysisTaskNanoFromAODLambdaPion &);
   AliAnalysisTaskNanoFromAODLambdaPion &operator=(const AliAnalysisTaskNanoFromAODLambdaPion &);
   void ResetGlobalTrackReference();
-  void StoreGlobalTrackReference(AliAODTrack *track);
+  void StoreGlobalTrackReference(AliVTrack *track);
   bool fIsMC;                             //
   bool fUseOMixing;                       //
   bool fUseEvtNoLambda;                   //
@@ -103,7 +103,7 @@ private:
   AliFemtoDreamPairCleaner *fPairCleaner; //!
   AliFemtoDreamPartCollection *fPartColl; //!
   AliFemtoDreamControlSample *fSample;    //!
-  AliAODTrack **fGTI;                     //!
+  AliVTrack **fGTI;                     //!
   int fTrackBufferSize;                   //
   ClassDef(AliAnalysisTaskNanoFromAODLambdaPion, 2)
 };
