@@ -83,7 +83,6 @@
 #pragma link C++ class AliAnalysisTaskNanoBenchmark + ;
 #pragma link C++ class AliAnalysisTaskNanoFemtoProtonPion+;
 #pragma link C++ class AliAnalysisTaskFemtoProtonPion+;
-
 #pragma link C++ class AliSigma0AODPhotonMotherCuts+;
 #pragma link C++ class AliSigma0PhotonCuts+;
 #pragma link C++ class AliAnalysisTaskNanoXiPi+;
