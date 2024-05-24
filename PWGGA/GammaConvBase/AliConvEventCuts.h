@@ -440,6 +440,29 @@ public:
     kEtaEMCf = 13  //!< Injected Eta in DCal acceptance
   };
 
+  /**
+   * @enum EnumPtWeights
+   * @brief two options for calculating pt weights. Invariant (historic) and variant
+   */
+  enum EnumPtWeights
+  {
+    kOff,
+    kInvariant,
+    kVariant
+  };
+
+  /**
+   * @struct PtWeightsBundle
+   * @brief for a meson: define invariant OR variant pt weights along with data and mc objects to compute them
+   */
+  struct PtWeightsBundle
+  {
+    EnumPtWeights eWhich;
+    TF1 *fData;
+    TH1D *hMC;
+  };
+  std::map<int, PtWeightsBundle> fMapPtWeightsAccessObjects; //!<! map of meson pdg code to PtWeightsBundle
+
   AliConvEventCuts(const char *name = "EventCuts", const char *title = "Event Cuts");
   AliConvEventCuts(const AliConvEventCuts &);
   AliConvEventCuts &operator=(const AliConvEventCuts &);
@@ -644,6 +667,7 @@ public:
   Int_t GetTriggerMimicking() { return fMimicTrigger; }
   Float_t GetWeightForCentralityFlattening(AliVEvent *event = 0x0);
   Float_t GetWeightForMultiplicity(Int_t mult);
+  Float_t GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
   Float_t GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
   Float_t GetWeightForGamma(Int_t index, Double_t gammaPTrec, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
   Float_t GetCentrality(AliVEvent *event);
@@ -857,12 +881,18 @@ protected:
   TH1F *hTriggerClass;                      ///< fired offline trigger class
   TH1F *hTriggerClassSelected;              ///< selected fired offline trigger class
   TH1F *hTriggerClassesCorrelated;          ///< selected trigger class correlation with others
-  TH1D *hReweightMCHistPi0_inv;             ///< histogram input for reweighting Pi0
-  TH1D *hReweightMCHistEta_inv;             ///< histogram input for reweighting Eta
-  TH1D *hReweightMCHistK0s_inv;                 ///< histogram input for reweighting K0s
-  TF1 *fFitDataPi0;                         ///< fit to pi0 spectrum in Data
-  TF1 *fFitDataEta;                         ///< fit to eta spectrum in Data
-  TF1 *fFitDataK0s;                         ///< fit to K0s spectrum in Data
+  TH1D *hReweightMCHistPi0_inv;             ///< histogram input for reweighting Pi0; use invariant spectra
+  TH1D *hReweightMCHistPi0_var;             ///< histogram input for reweighting Pi0; use variant spectra
+  TH1D *hReweightMCHistEta_inv;             ///< histogram input for reweighting Eta; use invariant spectra
+  TH1D *hReweightMCHistEta_var;             ///< histogram input for reweighting Eta; use variant spectra
+  TH1D *hReweightMCHistK0s_inv;             ///< histogram input for reweighting K0s; use invariant spectra
+  TH1D *hReweightMCHistK0s_var;             ///< histogram input for reweighting K0s; use variant spectra
+  TF1 *fFitDataPi0_inv;                     ///< fit to pi0 spectrum in Data; invariant
+  TF1 *fFitDataPi0_var;                     ///< fit to pi0 spectrum in Data; variant
+  TF1 *fFitDataEta_inv;                     ///< fit to eta spectrum in Data; invariant
+  TF1 *fFitDataEta_var;                     ///< fit to eta spectrum in Data; variant
+  TF1 *fFitDataK0s_inv;                     ///< fit to K0s spectrum in Data; invariant
+  TF1 *fFitDataK0s_var;                     ///< fit to K0s spectrum in Data; variant
   TH1D *hReweightMCHistGamma;               ///< histogram MC   input for reweighting Gamma
   TH1D *hReweightDataHistGamma;             ///< histogram data input for reweighting Gamma
   Int_t fAddedSignalPDGCode;

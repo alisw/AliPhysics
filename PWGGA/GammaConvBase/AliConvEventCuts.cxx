@@ -167,11 +167,17 @@ AliConvEventCuts::AliConvEventCuts(const char *name, const char *title) : AliAna
                                                                           hTriggerClassSelected(NULL),
                                                                           hTriggerClassesCorrelated(NULL),
                                                                           hReweightMCHistPi0_inv(NULL),
+                                                                          hReweightMCHistPi0_var(NULL),
                                                                           hReweightMCHistEta_inv(NULL),
+                                                                          hReweightMCHistEta_var(NULL),
                                                                           hReweightMCHistK0s_inv(NULL),
-                                                                          fFitDataPi0(NULL),
-                                                                          fFitDataEta(NULL),
-                                                                          fFitDataK0s(NULL),
+                                                                          hReweightMCHistK0s_var(NULL),
+                                                                          fFitDataPi0_inv(NULL),
+                                                                          fFitDataPi0_var(NULL),
+                                                                          fFitDataEta_inv(NULL),
+                                                                          fFitDataEta_var(NULL),
+                                                                          fFitDataK0s_inv(NULL),
+                                                                          fFitDataK0s_var(NULL),
                                                                           hReweightMCHistGamma(NULL),
                                                                           hReweightDataHistGamma(NULL),
                                                                           fAddedSignalPDGCode(0),
@@ -216,7 +222,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name, const char *title) : AliAna
                                                                           hReweightMultData(NULL),
                                                                           hReweightMultMC(NULL),
                                                                           fPHOSTrigger(kPHOSAny),
-                                                                          fDebugLevel(0)
+                                                                          fDebugLevel(0),
+                                                                          fMapPtWeightsAccessObjects()
 {
   for (Int_t jj = 0; jj < kNCuts; jj++)
   {
@@ -289,12 +296,6 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) : AliAnalysisCut
                                                                   fDoReweightHistoMCEta(ref.fDoReweightHistoMCEta),
                                                                   fDoReweightHistoMCK0s(ref.fDoReweightHistoMCK0s),
                                                                   fPathTrFReweighting(ref.fPathTrFReweighting),
-                                                                  fNameHistoReweightingPi0(ref.fNameHistoReweightingPi0),
-                                                                  fNameHistoReweightingEta(ref.fNameHistoReweightingEta),
-                                                                  fNameHistoReweightingK0s(ref.fNameHistoReweightingK0s),
-                                                                  fNameFitDataPi0(ref.fNameFitDataPi0),
-                                                                  fNameFitDataEta(ref.fNameFitDataEta),
-                                                                  fNameFitDataK0s(ref.fNameFitDataK0s),
                                                                   fDoReweightHistoMCGamma(ref.fDoReweightHistoMCGamma),
                                                                   fPathTrFGammaReweighting(ref.fPathTrFGammaReweighting),
                                                                   fNameHistoReweightingGamma(ref.fNameHistoReweightingGamma),
@@ -316,11 +317,17 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) : AliAnalysisCut
                                                                   hTriggerClassSelected(NULL),
                                                                   hTriggerClassesCorrelated(NULL),
                                                                   hReweightMCHistPi0_inv(ref.hReweightMCHistPi0_inv),
+                                                                  hReweightMCHistPi0_var(ref.hReweightMCHistPi0_var),
                                                                   hReweightMCHistEta_inv(ref.hReweightMCHistEta_inv),
+                                                                  hReweightMCHistEta_var(ref.hReweightMCHistEta_var),
                                                                   hReweightMCHistK0s_inv(ref.hReweightMCHistK0s_inv),
-                                                                  fFitDataPi0(ref.fFitDataPi0),
-                                                                  fFitDataEta(ref.fFitDataEta),
-                                                                  fFitDataK0s(ref.fFitDataK0s),
+                                                                  hReweightMCHistK0s_var(ref.hReweightMCHistK0s_var),
+                                                                  fFitDataPi0_inv(ref.fFitDataPi0_inv),
+                                                                  fFitDataPi0_var(ref.fFitDataPi0_var),
+                                                                  fFitDataEta_inv(ref.fFitDataEta_inv),
+                                                                  fFitDataEta_var(ref.fFitDataEta_var),
+                                                                  fFitDataK0s_inv(ref.fFitDataK0s_inv),
+                                                                  fFitDataK0s_var(ref.fFitDataK0s_var),
                                                                   hReweightMCHistGamma(ref.hReweightMCHistGamma),
                                                                   hReweightDataHistGamma(ref.hReweightDataHistGamma),
                                                                   fAddedSignalPDGCode(ref.fAddedSignalPDGCode),
@@ -365,7 +372,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) : AliAnalysisCut
                                                                   hReweightMultData(ref.hReweightMultData),
                                                                   hReweightMultMC(ref.hReweightMultMC),
                                                                   fPHOSTrigger(kPHOSAny),
-                                                                  fDebugLevel(ref.fDebugLevel)
+                                                                  fDebugLevel(ref.fDebugLevel),
+                                                                  fMapPtWeightsAccessObjects(ref.fMapPtWeightsAccessObjects)
 {
   // Copy Constructor
   for (Int_t jj = 0; jj < kNCuts; jj++)
@@ -1080,7 +1088,7 @@ void AliConvEventCuts::LoadReweightingHistosMCFromFile()
     TF1 *fFitDataPi0temp = (TF1 *)f->Get(fNameFitDataPi0.Data());
     if (fFitDataPi0temp)
     {
-      fFitDataPi0 = new TF1(*fFitDataPi0temp);
+      fFitDataPi0_inv = new TF1(*fFitDataPi0temp);
       AliInfo(Form("%s has been loaded from %s", fNameFitDataPi0.Data(), fPathTrFReweighting.Data()));
     }
     else
@@ -1107,7 +1115,7 @@ void AliConvEventCuts::LoadReweightingHistosMCFromFile()
     TF1 *fFitDataEtatemp = (TF1 *)f->Get(fNameFitDataEta.Data());
     if (fFitDataEtatemp)
     {
-      fFitDataEta = new TF1(*fFitDataEtatemp);
+      fFitDataEta_inv = new TF1(*fFitDataEtatemp);
       AliInfo(Form("%s has been loaded from %s", fNameFitDataEta.Data(), fPathTrFReweighting.Data()));
     }
     else
@@ -1133,7 +1141,7 @@ void AliConvEventCuts::LoadReweightingHistosMCFromFile()
     TF1 *fFitDataK0stemp = (TF1 *)f->Get(fNameFitDataK0s.Data());
     if (fFitDataK0stemp)
     {
-      fFitDataK0s = new TF1(*fFitDataK0stemp);
+      fFitDataK0s_inv = new TF1(*fFitDataK0stemp);
       AliInfo(Form("%s has been loaded from %s", fNameFitDataK0s.Data(), fPathTrFReweighting.Data()));
     }
     else
@@ -10221,6 +10229,104 @@ Float_t AliConvEventCuts::GetWeightForMultiplicity(Int_t mult)
 }
 
 //_________________________________________________________________________
+Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent, AliVEvent *event)
+{
+  if (index < 0)
+    return 0; // No Particle
+
+  // check if MC production should be weighted. If it is with added particles check that particle is not rejected
+  Int_t kCaseGen = 0;
+  if (fPeriodEnum == kLHC13d2 || fPeriodEnum == kLHC13d2b ||                                                                                                                                                                                                                                                                                                                     // LHC10h MCs
+      fPeriodEnum == kLHC14a1a || fPeriodEnum == kLHC14a1b || fPeriodEnum == kLHC14a1c ||                                                                                                                                                                                                                                                                                        // LHC11h MCs
+      fPeriodEnum == kLHC13e7 || fPeriodEnum == kLHC13b2_efix || fPeriodEnum == kLHC14b2 || fPeriodEnum == kLHC18j5 ||                                                                                                                                                                                                                                                           // LHC13bc MCs
+      fPeriodEnum == kLHC14e2b ||                                                                                                                                                                                                                                                                                                                                                // LHC12[a-i] pass 1 MCs
+      fPeriodEnum == kLHC12f1a || fPeriodEnum == kLHC12f1b || fPeriodEnum == kLHC12i3 ||                                                                                                                                                                                                                                                                                         // LHC11a MCs
+      fPeriodEnum == kLHC16h4 || fPeriodEnum == kLHC19h3 || fPeriodEnum == kLHC20g10 || fPeriodEnum == kLHC24a1)                                                                                                                                                                                                                                                                 // LHC15o, LHC18qr pass1, LHC18qr pass3  MCs
+    kCaseGen = 1;                                                                                                                                                                                                                                                                                                                                                                // added particles MC
+  if (fPeriodEnum == kLHC18e1 || fPeriodEnum == kLHC18e1a || fPeriodEnum == kLHC18e1b || fPeriodEnum == kLHC18e1c || fPeriodEnum == kLHC16i1a || fPeriodEnum == kLHC16i1b || fPeriodEnum == kLHC16i1c || fPeriodEnum == kLHC16i2a || fPeriodEnum == kLHC16i2b || fPeriodEnum == kLHC16i2c || fPeriodEnum == kLHC16i3a || fPeriodEnum == kLHC16i3b || fPeriodEnum == kLHC16i3c || // LHC15o MCs
+      fPeriodEnum == kLHC12P2JJ || fPeriodEnum == kLHC16h3 || fPeriodEnum == kLHC18b8 || fPeriodEnum == kLHC16rP1JJ || fPeriodEnum == kLHC16sP1JJ || fPeriodEnum == kLHC16rsGJ || fPeriodEnum == kLHC16rsP2GJ || fPeriodEnum == kLHC16rsP2JJLow || fPeriodEnum == kLHC16rsP2JJHigh || fPeriodEnum == kLHC17g8a ||
+      fPeriodEnum == kLHC18f3 ||                                                                                          // LHC16qt MCs
+      fPeriodEnum == kLHC17l3b || fPeriodEnum == kLHC18j2 ||                                                              // LHC17pq MCs
+      fPeriodEnum == kLHC18l8a || fPeriodEnum == kLHC18l8b || fPeriodEnum == kLHC18l8c ||                                 // LHC18qr MC
+      fPeriodEnum == kLHC19h2a || fPeriodEnum == kLHC19h2b || fPeriodEnum == kLHC19h2c ||                                 // LHC18qr MC
+      fPeriodEnum == kLHC20e3a || fPeriodEnum == kLHC20e3b || fPeriodEnum == kLHC20e3c || fPeriodEnum == kLHC22b5 ||      // LHC18qr MC pass3 GenPurpose MCs
+      fPeriodEnum == kLHC20g2a_2 || fPeriodEnum == kLHC20g2b_2 || fPeriodEnum == kLHC20k6c || fPeriodEnum == kLHC23d8b || // LHC18qr MC pass3	other PWGs injected Particles MCs
+      fPeriodEnum == kLHC20j6a || fPeriodEnum == kLHC20j6b || fPeriodEnum == kLHC20j6c || fPeriodEnum == kLHC20j6d)       // LHC15o pass2 MCs
+    kCaseGen = 2;                                                                                                         // regular MC
+
+  if (kCaseGen == 0)
+    return 1.;
+  if (kCaseGen == 1 && !IsParticleFromBGEvent(index, mcEvent, event))
+    return 1.;
+
+  // get pT and pdg code
+  Double_t mesonPt = 0;
+  // Double_t mesonMass = 0;
+  Int_t PDGCode = 0;
+  if (!event || event->IsA() == AliESDEvent::Class())
+  {
+    mesonPt = ((AliMCParticle *)mcEvent->GetTrack(index))->Pt();
+    // mesonMass = ((AliMCParticle*)mcEvent->GetTrack(index))->GetCalcMass();
+    PDGCode = ((AliMCParticle *)mcEvent->GetTrack(index))->PdgCode();
+  }
+  else if (event->IsA() == AliAODEvent::Class())
+  {
+    if (!fAODMCTrackArray)
+      fAODMCTrackArray = dynamic_cast<TClonesArray *>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (fAODMCTrackArray)
+    {
+      AliAODMCParticle *aodMCParticle = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(index));
+      mesonPt = aodMCParticle->Pt();
+      // mesonMass = aodMCParticle->GetCalcMass();
+      PDGCode = aodMCParticle->GetPdgCode();
+    }
+    else
+    {
+      return 1;
+    }
+  }
+
+  // catch cases with invalid PDGCode
+  auto const &lConstIt = fMapPtWeightsAccessObjects.find(PDGCode);
+  if (lConstIt == fMapPtWeightsAccessObjects.cend())
+  {
+    AliWarning(Form("GetWeightForMesonNew(): WARNING: PDGCode %d not found in fMapPtWeightsAccessObjects. Returning 1.\n", PDGCode));
+    return 1.;
+  }
+
+  Double_t functionResultData = lConstIt->second.fData->Eval(mesonPt);
+  Double_t functionResultMC = lConstIt->second.hMC->Interpolate(mesonPt);
+
+  auto checkAndSanitizeWeight = [&](Double_t theWeight)
+  {
+    if ((theWeight < 0) || !isfinite(theWeight))
+    {
+      theWeight = 1.;
+      AliWarning(Form("checkAndSanitizeWeight(): WARNING: Weight for meson %d is negative or not finite: %f. It was set back to 1.\n"
+                      "This points to a severe problem - investigate!\n",
+                      PDGCode, theWeight));
+    }
+    return theWeight;
+  };
+
+  auto calcWeight = [&checkAndSanitizeWeight, &functionResultData, &functionResultMC]()
+  {
+    Double_t lWeight = functionResultMC
+                           ? (functionResultData > 0.)
+                                 ? functionResultData / functionResultMC
+                                 : functionResultData // to signal problem
+                           : -1.;                     // to signal problem
+    // will reset to 1 and throw a warning if weight is not >=0 and finite
+    return checkAndSanitizeWeight(lWeight);
+  };
+
+  bool lCaseEtaPi0 = (PDGCode == 111) || (PDGCode == 221);
+  return lCaseEtaPi0
+             ? calcWeight()
+             : checkAndSanitizeWeight(functionResultMC);
+}
+
+//_________________________________________________________________________
 Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, AliVEvent *event)
 {
   if (index < 0)
@@ -10280,32 +10386,38 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
 
   // get MC value
   Float_t functionResultMC = 1.;
-  if (PDGCode == 111 && fDoReweightHistoMCPi0 && hReweightMCHistPi0_inv != 0x0)
+  if (PDGCode == 111 && fDoReweightHistoMCPi0)
   {
-    functionResultMC = hReweightMCHistPi0_inv->Interpolate(mesonPt);
+    functionResultMC = hReweightMCHistPi0_inv ? hReweightMCHistPi0_inv->Interpolate(mesonPt)
+                                              : hReweightMCHistPi0_var->Interpolate(mesonPt);
   }
-  if (PDGCode == 221 && fDoReweightHistoMCEta && hReweightMCHistEta_inv != 0x0)
+  if (PDGCode == 221 && fDoReweightHistoMCEta)
   {
-    functionResultMC = hReweightMCHistEta_inv->Interpolate(mesonPt);
+    functionResultMC = hReweightMCHistEta_inv ? hReweightMCHistEta_inv->Interpolate(mesonPt)
+                                              : hReweightMCHistEta_var->Interpolate(mesonPt);
   }
-  if (PDGCode == 310 && fDoReweightHistoMCK0s && hReweightMCHistK0s_inv != 0x0)
+  if (PDGCode == 310 && fDoReweightHistoMCK0s)
   {
-    functionResultMC = hReweightMCHistK0s_inv->Interpolate(mesonPt);
+    functionResultMC = hReweightMCHistK0s_inv ? hReweightMCHistK0s_inv->Interpolate(mesonPt)
+                                              : hReweightMCHistK0s_var->Interpolate(mesonPt);
   }
 
   // get data value
   Float_t functionResultData = 1;
-  if (PDGCode == 111 && fDoReweightHistoMCPi0 && fFitDataPi0 != 0x0)
+  if (PDGCode == 111 && fDoReweightHistoMCPi0)
   {
-    functionResultData = fFitDataPi0->Eval(mesonPt);
+    functionResultData = fFitDataPi0_inv ? fFitDataPi0_inv->Eval(mesonPt)
+                                         : fFitDataPi0_var->Eval(mesonPt);
   }
-  if (PDGCode == 221 && fDoReweightHistoMCEta && fFitDataEta != 0x0)
+  if (PDGCode == 221 && fDoReweightHistoMCEta)
   {
-    functionResultData = fFitDataEta->Eval(mesonPt);
+    functionResultData = fFitDataEta_inv ? fFitDataEta_inv->Eval(mesonPt)
+                                         : fFitDataEta_var->Eval(mesonPt);
   }
-  if (PDGCode == 310 && fDoReweightHistoMCK0s && fFitDataK0s != 0x0)
+  if (PDGCode == 310 && fDoReweightHistoMCK0s)
   {
-    functionResultData = fFitDataK0s->Eval(mesonPt);
+    functionResultData = fFitDataK0s_inv ? fFitDataK0s_inv->Eval(mesonPt)
+                                         : fFitDataK0s_var->Eval(mesonPt);
   }
 
   // calculate weight from data and MC
