@@ -2,8 +2,6 @@
 #include "AliFemtoDreamBasePart.h"
 #include "AliLog.h"
 #include "AliNanoAODTrack.h"
-#include "AliVTrack.h"
-#include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliVEvent.h"
@@ -283,8 +281,7 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserCreateOutputObjects()
 
 void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
 {
-
-  AliVEvent *Event= fInputEvent;
+  AliVEvent *fInputEvent= InputEvent();
 
   // PREAMBLE - CHECK EVERYTHING IS THERE
   if (!fInputEvent)
@@ -301,7 +298,7 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
   ResetGlobalTrackReference();
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack)
   {
-    AliVTrack *track = static_cast<AliVTrack*>(Event->GetTrack(iTrack));
+    AliVTrack *track = static_cast<AliVTrack*>(fInputEvent->GetTrack(iTrack));
     if (!track)
     {
       AliFatal("No Standard AOD");
@@ -373,7 +370,7 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
 
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack)
   {
-    AliVTrack *track = static_cast<AliVTrack*>(Event->GetTrack(iTrack));
+    AliVTrack *track = static_cast<AliVTrack*>(fInputEvent->GetTrack(iTrack));
 
     if (!track)
       continue;

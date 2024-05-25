@@ -1,7 +1,7 @@
 #ifndef PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOFROMAODLAMBDAPION_H_
 #define PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOFROMAODLAMBDAPION_H_
 #include "Rtypes.h"
-#include "AliVTrack.h"
+#include "AliAODTrack.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliFemtoDreamCollConfig.h"
 #include "AliFemtoDreamEvent.h"
@@ -33,7 +33,6 @@ public:
   {
     fEventCuts->SetSphericityCuts(min, max);
   }
-
   void SetPairCleaner(AliAnalysisTaskNanoFromAODLambdaPion::PCSettings pairCleaner)
   {
     fPCSettings = pairCleaner;
