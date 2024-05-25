@@ -278,6 +278,8 @@ class AliAnalysisTaskAODThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   TH2F **fSameEventPairPhiThetaArray_TwoBody;
   TH1F **fPairTranverseMass_TwoBody; 
   TH2F **fPairTranverseMassVSkstar_TwoBody; 
+
+  TH1F *fMixingConfig; 
   
   // Three particles mixed events
   std::vector<std::vector<std::vector<AliFemtoDreamPartContainer>>> fPartContainer;
@@ -338,7 +340,7 @@ class AliAnalysisTaskAODThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   TList *fResultsSampleQA;//!
   int fTrackBufferSize;//
   AliAODTrack **fGTI;  //!
-  ClassDef(AliAnalysisTaskAODThreeBodyProtonPrimary,2)
+  ClassDef(AliAnalysisTaskAODThreeBodyProtonPrimary,3)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKAODTHREEBODYPROTONPRIMARY_H_ */
