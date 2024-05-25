@@ -20,7 +20,7 @@ AliAnalysisTaskSE *AddTaskFemtoLambdaPion(bool isMC = true,                 // M
 //                                              int binwidth = 1)             // relative bin width for k* histos with respect to 4 MeV/c
 {
   TString suffix = TString::Format("%s", cutVariation);
-  bool IsSystematics = suffix == "0";
+  bool IsSystematics = suffix != "0";
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
