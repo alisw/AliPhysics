@@ -100,6 +100,7 @@ AliAnalysisTaskAODThreeBodyProtonPrimary::AliAnalysisTaskAODThreeBodyProtonPrima
 
       fPairTranverseMass_TwoBody(nullptr), 
       fPairTranverseMassVSkstar_TwoBody(nullptr),
+      fMixingConfig(nullptr),
 
       fPartContainer(0),
       fPartContainerPPP(0),
@@ -237,6 +238,7 @@ AliAnalysisTaskAODThreeBodyProtonPrimary::AliAnalysisTaskAODThreeBodyProtonPrima
 
       fPairTranverseMass_TwoBody(nullptr),
       fPairTranverseMassVSkstar_TwoBody(nullptr),
+      fMixingConfig(nullptr),
 
       fPartContainer(0),
       fPartContainerPPP(0),
@@ -433,7 +435,19 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::UserCreateOutputObjects() {
     fResultsThreeBody = new TList();
     fResultsThreeBody->SetOwner();
     fResultsThreeBody->SetName("ResultsThreeBody");
-    
+
+    fMixingConfig = new TH1F("fMixingConfig", "fMixingConfig", 3, 0.,3.); 
+    fMixingConfig->GetXaxis()->SetBinLabel(1,"Standard Mixing"); 
+    fMixingConfig->GetXaxis()->SetBinLabel(2,"Triplet Mixing");
+    fMixingConfig->GetXaxis()->SetBinLabel(3,"Mixing Depth");
+
+    if(fStandardMixing){
+      fMixingConfig->SetBinContent(1,1);
+    } else {
+      fMixingConfig->SetBinContent(2,1);
+    }
+    fMixingConfig->SetBinContent(3,fConfig->GetMixingDepth());
+    fResultsThreeBody->Add(fMixingConfig); 
     //...............................................................................................
     // Same event distributions 1D
     fSameEvent = new TList();
@@ -1040,22 +1054,45 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::UserCreateOutputObjects() {
 
     for(int iZVtx = 0; iZVtx<ZVtxBinsSize; iZVtx++){
       std::vector<std::vector<AliFemtoDreamPartContainer>> MultContainer;
+
+      std::vector<std::vector<AliFemtoDreamPartContainer>> MultContainerPPP;
+      std::vector<std::vector<AliFemtoDreamPartContainer>> MultContainerPPPrim;
+      std::vector<std::vector<AliFemtoDreamPartContainer>> MultContainerPPAPrim;
+
       for(int iMult = 0; iMult<MultBinsSize; iMult++){
         std::vector<AliFemtoDreamPartContainer> AllUsedParticles;
+
+        std::vector<AliFemtoDreamPartContainer> AllUsedParticlesPPP;
+        std::vector<AliFemtoDreamPartContainer> AllUsedParticlesPPPrim;
+        std::vector<AliFemtoDreamPartContainer> AllUsedParticlesPPAPrim;
+
         for(unsigned int iSpecies = 0; iSpecies<PDGCodes.size(); iSpecies++){
           auto tempPartContainer = new AliFemtoDreamPartContainer(fConfig->GetMixingDepth());
           AllUsedParticles.push_back(*tempPartContainer);
+
+          auto tempPartContainerPPP = new AliFemtoDreamPartContainer(fConfig->GetMixingDepth());
+          auto tempPartContainerPPPrim = new AliFemtoDreamPartContainer(fConfig->GetMixingDepth());
+          auto tempPartContainerPPAPrim = new AliFemtoDreamPartContainer(fConfig->GetMixingDepth());
+
+          AllUsedParticlesPPP.push_back(*tempPartContainerPPP);
+          AllUsedParticlesPPPrim.push_back(*tempPartContainerPPPrim);
+          AllUsedParticlesPPAPrim.push_back(*tempPartContainerPPAPrim);
         }
+
         MultContainer.push_back(AllUsedParticles);
+
+        MultContainerPPP.push_back(AllUsedParticlesPPP);
+        MultContainerPPPrim.push_back(AllUsedParticlesPPPrim);
+        MultContainerPPAPrim.push_back(AllUsedParticlesPPAPrim);
       }
 
       if(fStandardMixing){
          fPartContainer.push_back(MultContainer);
       } else {
         if(fDoOnlyThreeBody){
-          fPartContainerPPP.push_back(MultContainer);
-          fPartContainerPPPrim.push_back(MultContainer);
-          fPartContainerPPAPrim.push_back(MultContainer);
+          fPartContainerPPP.push_back(MultContainerPPP);
+          fPartContainerPPPrim.push_back(MultContainerPPPrim);
+          fPartContainerPPAPrim.push_back(MultContainerPPAPrim);
         } else {
           fPartContainerPP.push_back(MultContainer);
           fPartContainerPPrim.push_back(MultContainer);
@@ -1790,7 +1827,7 @@ void AliAnalysisTaskAODThreeBodyProtonPrimary::SetMixedEventPAPrim(
 void AliAnalysisTaskAODThreeBodyProtonPrimary::SetMixedEventPPP(
     std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> *fPartContainer) {
   // Feed this function with GetCleanParticles output and fill the mixed events for different particles
-  // THIS WORKS ONLY IF 0 and 2 is proton and lambda, 1 and 3 is antiproton antilambda.
+  // THIS WORKS ONLY IF 0 and 2 is proton and primary, 1 and 3 is antiproton antiprimary.
   // Fill the particles only if both lambda and proton are present in the event, so later on for mixing
   // one would be able to know what the lambda and proton are not from the same event
   if ((ParticleVector.begin())->size() > 2) {
