@@ -449,7 +449,10 @@ class AliConvEventCuts : public AliAnalysisCuts {
         TF1 const *fData;
         TH1 const *hMC;
       };
-      std::map<int, PtWeightsBundle> fMapPtWeightsAccessObjects; //!<! map of meson pdg code to PtWeightsBundle
+      std::map<int, PtWeightsBundle> fMapPtWeightsAccessObjects; //!<  map of meson pdg code to PtWeightsBundle
+      bool fMapPtWeightsIsFilledAndSane;                         //!<  flag to indicate if fMapPtWeightsAccessObjects is filled and sane
+      // this flag will removed as soon the functionality has been checked against the old method
+      bool fUseGetWeightForMesonNew;                             //!<  flag to indicate if new method for getting pt weights is used
       // ============ END section for pt weights in variant calculation form =====
 
       AliConvEventCuts(const char *name="EventCuts", const char * title="Event Cuts");
@@ -547,6 +550,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                                                       fNameFitDataEta =fitNameEta                               ;
                                                                                       fNameFitDataK0s =fitNameK0s                               ;
                                                                                     }
+      void    SetUseGetWeightForMesonNew(Bool_t useNewMethod)                       { fUseGetWeightForMesonNew = useNewMethod                    ; }                                                                                       
       void    SetUseWeightMultiplicityFromFile( Int_t doWeighting = 0,
                                                 TString pathC="$ALICE_PHYSICS/PWGGA/GammaConv/MultiplicityInput.root",
                                                 TString nameHistoMultData="",
@@ -628,6 +632,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t   GetWeightForMultiplicity(Int_t mult);
       Float_t   GetWeightForMeson( Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
+      Float_t   GetWeightForMesonOld(Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetWeightForGamma( Int_t index, Double_t gammaPTrec, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetCentrality(AliVEvent *event);
       Int_t     GetEMCalClusterMultiplicity(AliVEvent* event);
