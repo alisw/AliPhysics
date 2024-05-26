@@ -44,6 +44,10 @@ public:
   {
     fNegPionCuts = trkCuts;
   }
+  void SetMixingDepth(int mixingDepth)
+  {
+    fConfig->SetMixingDepth(mixingDepth);
+  }
   void SetCollectionConfig(AliFemtoDreamCollConfig *config)
   {
     fConfig = config;
