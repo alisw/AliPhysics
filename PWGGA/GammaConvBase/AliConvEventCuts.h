@@ -523,10 +523,11 @@ class AliConvEventCuts : public AliAnalysisCuts {
                                                                                       AliInfo(Form("setting custom trigger mimic OADB from file: %s",pathOADB.Data()));
                                                                                       fPathTriggerMimicSpecialInput=pathOADB                                ;
                                                                                     }
-      void    SetUseReweightingWithHistogramFromFile( Bool_t pi0reweight=kTRUE,
-                                Bool_t etareweight=kFALSE,
-                                Bool_t k0sreweight=kFALSE,
-                                                              TString path="$ALICE_PHYSICS/PWGGA/GammaConv/MCSpectraInput.root",
+      void    SetUseReweightingWithHistogramFromFile( 
+                                int pi0reweight = 0,
+                                int etareweight = 0,
+                                int k0sreweight = 0,
+                                TString path="$ALICE_PHYSICS/PWGGA/GammaConv/MCSpectraInput.root",
                                 TString histoNamePi0 = "",
                                 TString histoNameEta = "",
                                 TString histoNameK0s = "",

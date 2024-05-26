@@ -42,8 +42,8 @@ void AddTask_GammaConvV1_PbPb(
   // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights, FMAW:fileNameMatBudWeights, FEPC:fileNamedEdxPostCalib, FCEF:fileNameCentFlattening, separate with ; NB on FEPC: can be one filename for all cut configs OR one filename per cut config separated by '+'. If no filename at all is given and enableElecDeDxPostCalibration>0 the maps are taken from the OADB. Also ['FMLR:enable' -> Machine learning Trees] 
  
   TString   fileNameExternalInputs        = "",
-  Int_t     doWeightingPart               = 0,        // enable Weighting
-  Bool_t    enablePtWeighting             = kFALSE,   // enable Weighting
+  Int_t     acceptedAddedParticles        = 0,        // select which injected particles are to be accepted (defined in terms of MC headers). Specifics depend on the actual MC
+  Int_t     intPtWeightsCalculationMethod = 0,        // enable pT weighting. 0 = off, 1 = on with inv weights (historic), 2 = on with var weights (new)
   TString   generatorName                 = "DPMJET", // generator Name
   Bool_t    enableMultiplicityWeighting   = kFALSE,   //
   TString   periodNameAnchor              = "",       //
@@ -4247,7 +4247,9 @@ void AddTask_GammaConvV1_PbPb(
       TObjString *Header2 = new TObjString("Injector (eta)_2");
       HeaderList->Add(Header2);
     }
-  } else if (generatorName.CompareTo("LHC20g10")==0 || generatorName.BeginsWith("LHC24a1")){
+  } else if (generatorName.BeginsWith("LHC20g10") || 
+             generatorName.BeginsWith("LHC24a1")  || 
+             generatorName.BeginsWith("LHC24a2")) {
 
     auto fillSingle = [&HeaderList](Size_t theSwitch){
       if (theSwitch == 1 ) { HeaderList->Add(new TObjString("Injector (pi0)"));   }
@@ -4337,22 +4339,34 @@ void AddTask_GammaConvV1_PbPb(
       analysisEventCuts[i]->SetUseWeightMultiplicityFromFile(kTRUE, fileNameMultWeights, dataInputMultHisto, mcInputMultHisto );
     }
 
-    TString histoNameMCPi0PT = "";  TString histoNameMCEtaPT = "";  TString histoNameMCK0sPT = "";    // pT spectra to be weighted
-    TString fitNamePi0PT = "";      TString fitNameEtaPT = "";      TString fitNameK0sPT = "";        // fit to correct shape of pT spectra
-    Bool_t weightPi0 = kFALSE;      Bool_t weightEta = kFALSE;      Bool_t weightK0s = kFALSE;
-    if(enablePtWeighting){
-      cout << "INFO enabeling pT weighting" << endl;
-      if(periodNameAnchor.CompareTo("LHC15o")==0 || periodNameAnchor.CompareTo("LHC18q")==0){
-        TString eventCutString  = cuts.GetEventCut(i);
-        TString eventCutShort   = eventCutString(0,6);   // first six digits
-        weightPi0         = kTRUE;
-        histoNameMCPi0PT  = Form("Pi0_%s_5TeV_%s",   periodNameV0Reader.Data(), eventCutString.Data());  // MC
-        fitNamePi0PT      = Form("Pi0_Data_5TeV_%s", eventCutShort.Data());                              // fit to data
-        weightEta         = kTRUE;
-        histoNameMCEtaPT  = Form("Eta_%s_5TeV_%s",   periodNameV0Reader.Data(), eventCutString.Data());
-        fitNameEtaPT      = Form("Eta_Data_5TeV_%s", eventCutShort.Data());
+    TString histoNameMCPi0PT = "";
+    TString histoNameMCEtaPT = "";
+    TString histoNameMCK0sPT = ""; // pT spectra to be weighted
+    TString fitNamePi0PT = "";
+    TString fitNameEtaPT = "";
+    TString fitNameK0sPT = ""; // fit to correct shape of pT spectra
+    Bool_t weightPi0 = kFALSE;
+    Bool_t weightEta = kFALSE;
+    Bool_t weightK0s = kFALSE;
+    if (intPtWeightsCalculationMethod)
+    {
+      printf("AddTask_GammaConvV1_PbPb.C: INFO: intPtWeightsCalculationMethod = %d\n", intPtWeightsCalculationMethod);
+      if (periodNameAnchor.CompareTo("LHC15o") == 0 || periodNameAnchor.CompareTo("LHC18q") == 0)
+      {
+        TString eventCutString = cuts.GetEventCut(i);
+        TString eventCutShort = eventCutString(0, 6);                                                // first six digits
+        histoNameMCPi0PT = Form("Pi0_%s_5TeV_%s", periodNameV0Reader.Data(), eventCutString.Data()); // MC
+        fitNamePi0PT = Form("Pi0_Data_5TeV_%s", eventCutShort.Data());                               // fit to data
+        histoNameMCEtaPT = Form("Eta_%s_5TeV_%s", periodNameV0Reader.Data(), eventCutString.Data());
+        fitNameEtaPT = Form("Eta_Data_5TeV_%s", eventCutShort.Data());
       }
-      analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(weightPi0, weightEta, weightK0s, fileNamePtWeights, histoNameMCPi0PT, histoNameMCEtaPT, histoNameMCK0sPT, fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);
+      analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(
+          intPtWeightsCalculationMethod /*pi0reweight*/,
+          intPtWeightsCalculationMethod /*etareweight*/,
+          intPtWeightsCalculationMethod /*k0sreweight*/,
+          fileNamePtWeights,
+          histoNameMCPi0PT, histoNameMCEtaPT, histoNameMCK0sPT,
+          fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);
     }
 
     if (  trainConfig == 1   || trainConfig == 5   || trainConfig == 9   || trainConfig == 13   || trainConfig == 17   ||
