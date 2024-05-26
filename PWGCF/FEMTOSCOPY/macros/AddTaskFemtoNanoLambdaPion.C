@@ -204,7 +204,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLambdaPion(bool isMC = false,
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetUseEventMixing(true);
-  config->SetMixingDepth(30);
+  config->SetMixingDepth(10);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
 
   config->SetMultBinning(true);
