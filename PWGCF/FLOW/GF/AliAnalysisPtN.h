@@ -83,6 +83,13 @@ class AliAnalysisPtN : public AliAnalysisTaskSE
         
         TH1F*                   fTestNonWeight;
         TH1F*                   fNchDistri;
+        TH1F*                   fPtQA;
+        TH1F*                   fDCAxyQA;
+        TH1F*                   fDCAzQA;
+        TH1F*                   fetaQA;
+        TH1F*                   fTPCclsQA;
+        TH2F*                   fDCAxyPt;
+        TH2F*                   fDCAzPt;
         TH2F*                   fPtNch;
         TProfile*               dPtNch;
         TProfile*               dPt2Nch;
