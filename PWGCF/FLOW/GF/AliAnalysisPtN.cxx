@@ -51,6 +51,13 @@ AliAnalysisPtN::AliAnalysisPtN() : AliAnalysisTaskSE(),
     //correlator(),
     fTestNonWeight(nullptr),
     fNchDistri(nullptr),
+    fPtQA(nullptr),
+    fDCAxyQA(nullptr),
+    fDCAzQA(nullptr),
+    fetaQA(nullptr),
+    fTPCclsQA(nullptr),
+    fDCAxyPt(nullptr),
+    fDCAzPt(nullptr),
     fPtNch(nullptr),
     dPtNch(nullptr),
     dPt2Nch(nullptr),
@@ -193,6 +200,13 @@ AliAnalysisPtN::AliAnalysisPtN(const char* name) : AliAnalysisTaskSE(name),
     //correlator(),
     fTestNonWeight(nullptr),
     fNchDistri(nullptr),
+    fPtQA(nullptr),
+    fDCAxyQA(nullptr),
+    fDCAzQA(nullptr),
+    fetaQA(nullptr),
+    fTPCclsQA(nullptr),
+    fDCAxyPt(nullptr),
+    fDCAzPt(nullptr),
     fPtNch(nullptr),
     dPtNch(nullptr),
     dPt2Nch(nullptr),
@@ -350,6 +364,13 @@ void AliAnalysisPtN::UserCreateOutputObjects()
     
     fTestNonWeight = new TH1F("fHisPhi", "fHisPhi", 100, 0, 6.28);
     fNchDistri = new TH1F("fNchDistri", "fNchDistri", 90, 0, 4500);
+    fPtQA = new TH1F("fPtQA", "fPtQA", 100, 0, 5);
+    fDCAxyQA = new TH1F("fDCAxyQA", "fDCAxyQA", 100, 0, 0.5);
+    fDCAzQA = new TH1F("fDCAzQA", "fDCAzQA", 200, -2.5, 2.5);
+    fetaQA = new TH1F("fetaQA", "fetaQA", 100, -1, 1);
+    fTPCclsQA = new TH1F("fTPCclsQA", "fTPCclsQA", 200, 0, 200);
+    fDCAxyPt = new TH2F("fDCAxyPt", "fDCAxyPt", 500, 0, 0.5, 500, 0.2, 3);
+    fDCAzPt = new TH2F("fDCAzPt", "fDCAzPt", 1000, -2, 2, 500, 0.2, 3);
     fPtNch = new TH2F("fPtNch", "fPtNch", 900, 0, 4500, 500, 0, 3);
     dPtNch = new TProfile("dPtNch", "dPtNch", 90, 0, 4500);
     dPt2Nch = new TProfile("dPt2Nch", "dPt2Nch", 90, 0, 4500);
@@ -580,6 +601,13 @@ void AliAnalysisPtN::UserCreateOutputObjects()
     fOutputList->Add(fBstList);
     fOutputList->Add(fTestNonWeight);
     fOutputList->Add(fNchDistri);
+    fOutputList->Add(fPtQA);
+    fOutputList->Add(fDCAxyQA);
+    fOutputList->Add(fDCAzQA);
+    fOutputList->Add(fetaQA);
+    fOutputList->Add(fTPCclsQA);
+    fOutputList->Add(fDCAxyPt);
+    fOutputList->Add(fDCAzPt);
     fOutputList->Add(fPtNch);
     fOutputList->Add(dPtNch);
     fOutputList->Add(dPt2Nch);
@@ -667,13 +695,20 @@ void AliAnalysisPtN::UserExec(Option_t *)
         trXYZ[0] -= vtxXYZ[0];
         trXYZ[1] -= vtxXYZ[1];
         Double_t trDcaxy = TMath::Sqrt(trXYZ[0]*trXYZ[0]+trXYZ[1]*trXYZ[1]);
-        Double_t cutDcaxy = 0.0105+0.0350/TMath::Power(track->Pt(),1.1);
+        Double_t cutDcaxy = 0.0026+0.005/TMath::Power(track->Pt(),1.01);
         if(trDcaxy > fDCAxy*cutDcaxy) continue;
 
         //all the selection are before here
         ++nTrackSelected;
         wtE = GetWeightNUE(track->Pt());
         fTestNonWeight->Fill(track->Phi());
+        fPtQA->Fill(track->Pt());
+        fDCAxyQA->Fill(trDcaxy);
+        fDCAzQA->Fill(trXYZ[2]);
+        fetaQA->Fill(track->Eta());
+        fTPCclsQA->Fill(track->GetTPCNcls());
+        fDCAxyPt->Fill(trDcaxy, track->Pt());
+        fDCAzPt->Fill(trXYZ[2], track->Pt());
 
 
           sump += wtE*track->Pt();
