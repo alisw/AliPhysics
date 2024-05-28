@@ -4192,6 +4192,16 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411790109f030000000","0s631031000000d0"); // no exotics, no M02
     cuts.AddCutCalo("00010113","4117901090030000000","0s631031000000d0"); // no exotics, no M02, no TM
 
+  } else if (trainConfig == 2545) { // No NL, minE = 700MeV
+    cuts.AddCutCalo("00010113","411790009fe32220000","0s631031000000d0"); // INT7
+    cuts.AddCutCalo("00010113","411790009fe30220000","0s631031000000d0"); // INT7, no NCell
+  } else if (trainConfig == 2546) { // No NL, minE = 500MeV
+    cuts.AddCutCalo("00010113","411790009fe22220000","0s631031000000d0"); // INT7
+    cuts.AddCutCalo("00010113","411790009fe20220000","0s631031000000d0"); // INT7, no NCell
+  } else if (trainConfig == 2547) { // No NL, minE = 400MeV
+    cuts.AddCutCalo("00010113","411790009fe82220000","0s631031000000d0"); // INT7
+    cuts.AddCutCalo("00010113","411790009fe80220000","0s631031000000d0"); // INT7, no NCell
+
     // Non Lin variations
   } else if (trainConfig == 2550) { // NCell effi: PCMEMC tagged pi0 clusters
     cuts.AddCutCalo("00010113","411793709fe3l230000","0s631031000000d0"); // TBNL,
