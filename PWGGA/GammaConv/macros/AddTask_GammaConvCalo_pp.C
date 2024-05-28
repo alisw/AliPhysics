@@ -2723,6 +2723,10 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe3j220000","0163103100000010"); // NCell from CF
   } else if (trainConfig == 2156){ // NCell from correction framework
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe3j220000","0163103100000010"); // NCell from CF
+  } else if (trainConfig == 2157){ // no NCell cut  
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe20220000","0163103100000010"); // no NCell cut and no NL, E> 500MeV
+  } else if (trainConfig == 2158){ // no NCell cut  
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe80220000","0163103100000010"); // no NCell cut and no NL, E> 400MeV
 
     // Non Lin variations
   } else if (trainConfig == 2160){ // No NCell cut
