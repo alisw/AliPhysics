@@ -411,7 +411,7 @@ void AliAnalysisTaskNFactorialMomentsPID::FillTrackInfo()
 
   TFile* f;
   if (test == 0) {
-    f = TFile::Open("alien:///alice/cern.ch/user/f/fhaider/TwoDimEtaPhiEffMap_HIJ276_FB128NPCent0to5.root");
+    f = TFile::Open("./TwoDimEtaPhiEffMap_HIJ276_FB128NPCent0to5.root");
     if (!f) {
       AliFatal("Track efficiency histogram file is not open");
       return;
