@@ -122,7 +122,7 @@ void AddTask_GammaConvV1_PbPb(
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
-    if(strTempSetting.BeginsWith("MINPTHFAC:")){
+    if(strTempSetting.("MINPTHFAC:")){
       strTempSetting.Replace(0,10,"");
       minFacPtHard               = strTempSetting.Atof();
       cout << "running with min pT hard jet fraction of: " << minFacPtHard << endl;
@@ -4314,7 +4314,7 @@ void AddTask_GammaConvV1_PbPb(
     TString mcInputMultHisto    = "";
     if (enableMultiplicityWeighting){
       cout << "INFO enableling mult weighting" << endl;
-      if(periodNameAnchor.BeginsWith("LHC15o")==0 || periodNameAnchor.CompareTo("LHC18q")==0){
+      if(periodNameAnchor.BeginsWith("LHC15o") || periodNameAnchor.BeginsWith("LHC18q")){
         TString cutNumber = cuts.GetEventCut(i);
         TString centCut = cutNumber(0,3);  // first three digits of event cut
         dataInputMultHisto = Form("%s_%s", periodNameAnchor.Data(), centCut.Data());
@@ -4353,8 +4353,8 @@ void AddTask_GammaConvV1_PbPb(
     if (intPtWeightsCalculationMethod)
     {
       printf("AddTask_GammaConvV1_PbPb.C: INFO: intPtWeightsCalculationMethod = %d\n", intPtWeightsCalculationMethod);
-      if (periodNameAnchor.BeginsWith("LHC15o") || 
-          periodNameAnchor.BeginsWith("LHC18q"))
+      if (periodNameAnchor.("LHC15o") || 
+          periodNameAnchor.("LHC18q"))
       {
         TString eventCutString = cuts.GetEventCut(i);
         TString eventCutShort = eventCutString(0, 6);                                                // first six digits
