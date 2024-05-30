@@ -32,7 +32,7 @@ void AddTask_MesonJetCorr_Calo(
   TString periodNameV0Reader = "",
   // general setting for task
   Int_t enableQAMesonTask = 0,             // enable QA in AliAnalysisTaskGammaConvV1
-  Int_t enableQAClusterTask = 0,           // enable additional QA task
+  Int_t enableQAJets = 0,                  // enable additional QA for jets
   Int_t enableExtMatchAndQA = 0,           // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
   Int_t enableLightOutput = kFALSE,        // switch to run light output (only essential histograms for afterburner) (pi0 only mode: lighOutput + 10)
   Bool_t enableTHnSparse = kFALSE,         // switch on THNsparse
@@ -272,6 +272,22 @@ void AddTask_MesonJetCorr_Calo(
     cuts.AddCutCalo("000fc103", "411790009fe30230000", "2s630034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, rotation back
   } else if (trainConfig == 42) {
     cuts.AddCutCalo("000fb103", "411790009fe30230000", "2s630034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+
+  // High multiplicity triggered data (V0M)
+  } else if (trainConfig == 50) { // eta < 0.8
+    cuts.AddCutCalo("00076103", "411790009fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 51) { // eta < 0.5
+    cuts.AddCutCalo("00076103", "411790009fe30230000", "2s634034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 52) { // eta < 1.35
+    cuts.AddCutCalo("00076103", "411790009fe30230000", "2s630034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+
+    // High multiplicity triggered data (SPD)
+  } else if (trainConfig == 60) { // eta < 0.8
+    cuts.AddCutCalo("00075103", "411790009fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 61) { // eta < 0.5
+    cuts.AddCutCalo("00075103", "411790009fe30230000", "2s634034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 62) { // eta < 1.35
+    cuts.AddCutCalo("00075103", "411790009fe30230000", "2s630034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
 
   //---------------------------------------
   // Cut variations for standard cut (2)
@@ -528,7 +544,7 @@ void AddTask_MesonJetCorr_Calo(
   //   task->SetDoMesonAnalysis(kTRUE); // I think we dont need that!
   task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
-                                         //   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
+  task->SetDoJetQA(enableQAJets);
   task->SetUseTHnSparseForResponse(enableTHnSparse);
   task->SetDoUseCentralEvtSelection(useCentralEvtSelection);
   task->SetForcePi0Unstable(setPi0Unstable);

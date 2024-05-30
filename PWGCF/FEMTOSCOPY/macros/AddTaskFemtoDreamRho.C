@@ -12,6 +12,10 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
                                         bool doProjections = false,
                                         float rhoPtThreshold = 0.,
                                         float rhoPtThresholdupper = 4.,
+                                        float rhoCandInvMassLow = 0.075,
+                                        float rhoCandInvMassHigh = 0.075,
+                                        bool isSameCharge = false,
+                                        bool isMCTrueRhoCombBkrg = false,
                                         const char *cutVariation = "0")
 {
 
@@ -239,25 +243,33 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   TrackCutsRho->SetPtRange(rhoPtThreshold, rhoPtThresholdupper);
   TrackCutsRho->SetFineInvMassPtBins(true);
 
-  if (suffix == "1")
+  if (suffix == "0")
+  {
+    TrackCutsRho->SetCutInvMass(0.150 / 2);
+  }
+  else if (suffix == "1")
   {
     TrackCutsRho->SetCutWindow(0.850, 0.900);
   }
-  if (suffix == "2")
+  else if (suffix == "2")
   {
     TrackCutsRho->SetCutWindow(0.820, 0.900);
   }
-  if (suffix == "3")
+  else if (suffix == "3")
   {
     TrackCutsRho->SetCutWindow(0.650, 0.730);
   }
-  if (suffix == "4")
+  else if (suffix == "4")
   {
     TrackCutsRho->SetCutWindow(0.650, 0.700);
   }
-  if (suffix == "999")
+  else if (suffix == "999")
   {
     TrackCutsRho->SetCutWindow(0., 5.0);
+  }
+  else
+  {
+    TrackCutsRho->SetCutWindow(rhoCandInvMassLow, rhoCandInvMassHigh);
   }
 
   // This needs further implementation
@@ -272,7 +284,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
 
   // now we create the task
   AliAnalysisTaskFemtoDreamRho *task =
-      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doMcTruth, doCleaning, doAncestors, doProjections, rhoPtThreshold);
+      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doMcTruth, doCleaning, doAncestors, doProjections, rhoPtThreshold, isSameCharge, isMCTrueRhoCombBkrg);
   // THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
   // kINT7 == Minimum bias
   // kHighMultV0 high multiplicity triggered by the V0 detector
@@ -618,6 +630,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   config->SetMinimalBookingME(false);
   config->SetdPhidEtaPlots(true);
   config->SetdPhidEtaPlotsSmallK(true);
+  config->SetMinvKtandRelativeKBinning(true);
 
   std::cout << "Check the addTask config" << std::endl;
   std::cout << "  ZVtxBins.size() " << ZVtxBins.size() << std::endl;

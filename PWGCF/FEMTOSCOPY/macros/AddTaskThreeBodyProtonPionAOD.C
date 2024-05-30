@@ -30,7 +30,9 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
   float PionMaxPt = 4.0, //18
   bool RemoveResonances = false, //19
   bool GetProjector = false, //20
-  const char *cutVariation = "0" //21
+  bool GetMomentumResolution = false, //21
+  int FilterBitProton = 128, //22
+  const char *cutVariation = "0" //23
   ){
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -58,12 +60,12 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
 // Track Cuts for Protons and Antiprotons ================================================================================================
   AliFemtoDreamTrackCuts *TrackCutsProton = AliFemtoDreamTrackCuts::PrimProtonCuts(
       isMC, true, false, false);
-  TrackCutsProton->SetFilterBit(128);
+  TrackCutsProton->SetFilterBit(FilterBitProton);
   TrackCutsProton->SetCutCharge(1);
 
   AliFemtoDreamTrackCuts *TrackCutsAntiProton =
       AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
-  TrackCutsAntiProton->SetFilterBit(128);
+  TrackCutsAntiProton->SetFilterBit(FilterBitProton);
   TrackCutsAntiProton->SetCutCharge(-1);
 
   // Track Cuts for Pions  =================================================================================================================
@@ -212,12 +214,17 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
 
  Float_t Pion_pT_VarLow = 0.12;
  Float_t Pion_pT_VarHigh = 0.15;
- Float_t Pion_Eta_VarLow = 0.7;
- Float_t Pion_Eta_VarHigh = 0.9;
+ Float_t Pion_Eta_VarLow = 0.77;
+ Float_t Pion_Eta_VarHigh = 0.85;
+ //Float_t Pion_Eta_VarLow = 0.7; //old 
+ //Float_t Pion_Eta_VarHigh = 0.9; //old
  Float_t Pion_Clusters_VarLow = 70;
  Float_t Pion_Clusters_VarHigh = 90;
- Float_t Pion_Sigma_VarLow = 2.7;
- Float_t Pion_Sigma_VarHigh = 3.3;
+ Float_t Pion_Sigma_VarLow = 2.5;
+ Float_t Pion_Sigma_VarHigh = 3.5;
+
+ //Float_t Pion_Sigma_VarLow = 2.7; //old
+ //Float_t Pion_Sigma_VarHigh = 3.3; //old
 
  Float_t DPhi_VarLow = 0.035;
  Float_t DPhi_VarHigh = 0.045;
@@ -1256,6 +1263,7 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPionAOD(
 
     taskAOD->SetMCAndReso(isMC,RemoveResonances); 
     taskAOD->SetRunProjector(GetProjector);
+    taskAOD->SetGetMomentumResolution(GetMomentumResolution);
     
     mgr->AddTask(taskAOD);
 

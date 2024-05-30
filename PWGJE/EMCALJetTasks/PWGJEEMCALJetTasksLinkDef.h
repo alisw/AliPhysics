@@ -339,7 +339,9 @@
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskPtEfficiencyJets+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskTracksInJet+;
 #pragma link C++ class AliAnalysisTaskEmcalJetCDF+; 
+#pragma link C++ class AliAnalysisTaskEmcalPIDinJet+;
 #pragma link C++ class AliAnalysisTaskEmcalJetValidation+;
+#pragma link C++ class AliAnalysisTaskJetAngCorrelations+;
 #pragma link C++ namespace PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetCDF_NS;
 #ifdef WITH_ROOUNFOLD
 // Classes which need direct access to both Fastjet and RooUnfold objects

@@ -40,7 +40,6 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fColSystem(sPPb),
     fTrigger(AliVEvent::kINT7),
     fIsMC(kFALSE),
-    fOnTheFly(kFALSE),
     fIsTPCgen(kFALSE),
     fIsFMDgen(kFALSE),
     fIsHMpp(kFALSE),
@@ -50,6 +49,10 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fshiftphi_PHI(kFALSE),
     fshiftrap_PHI(kFALSE),
     fUseNch_reco(kFALSE),
+    fUseNch_posrap_tracks(kFALSE),
+    fUseNch_negrap_tracks(kFALSE),
+    fUse_posrap_TPC_correlation(kFALSE),
+    fUse_negrap_TPC_correlation(kFALSE),
     fUseNch_truth(kFALSE),
     fUseNchfor_eventmixing(kFALSE),
     fUseFMDtrkfor_eventmixing(kFALSE),
@@ -71,6 +74,9 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fRunNumber(-1),
     fNofTracks(0),
     fNofTracks_FMD(0),
+    fFMD_detabins(24),
+    fFMD_deta_min(3.4),
+    fFMD_deta_max(8.2),
     fNFMD_fwd_hits(0),
     fNFMD_bwd_hits(0),
     fNofMinHighPtTracksForRejection(0),
@@ -168,7 +174,6 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fColSystem(sPPb),
     fTrigger(AliVEvent::kINT7),
     fIsMC(kFALSE),
-    fOnTheFly(kFALSE),
     fIsTPCgen(kFALSE),
     fIsFMDgen(kFALSE),
     fIsHMpp(kFALSE),
@@ -178,6 +183,10 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fshiftphi_PHI(kFALSE),
     fshiftrap_PHI(kFALSE),
     fUseNch_reco(kFALSE),
+    fUseNch_posrap_tracks(kFALSE),
+    fUseNch_negrap_tracks(kFALSE),
+    fUse_posrap_TPC_correlation(kFALSE),
+    fUse_negrap_TPC_correlation(kFALSE),
     fUseNch_truth(kFALSE),										     
     fUseNchfor_eventmixing(kFALSE),
     fUseFMDtrkfor_eventmixing(kFALSE),
@@ -199,6 +208,9 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fRunNumber(-1),
     fNofTracks(0),
     fNofTracks_FMD(0),
+    fFMD_detabins(24),
+    fFMD_deta_min(3.4),
+    fFMD_deta_max(8.2),
     fNFMD_fwd_hits(0),
     fNFMD_bwd_hits(0),	
     fNofMinHighPtTracksForRejection(0),
@@ -410,7 +422,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
       AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler* inputHandler = (AliInputEventHandler*)mgr->GetInputEventHandler();
       fPIDResponse = inputHandler->GetPIDResponse();
-      if(!fPIDResponse && !fOnTheFly) { AliError("AliPIDResponse not found!"); return; }
+      if(!fPIDResponse) { AliError("AliPIDResponse not found!"); return; }
 
       fPIDCombined = new AliPIDCombined();
       fPIDCombined->SetDefaultTPCPriors();
@@ -507,17 +519,14 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
 
     fhEventCounter->Fill("Input",1);
 
+    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    if(!fAOD) { AliError("Event not loaded."); return; }
+    if(!IsEventSelected()) { return; }
 
-    if (!fOnTheFly){    
-      fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-      if(!fAOD) { AliError("Event not loaded."); return; }
-      if(!IsEventSelected()) { return; }
-  
-      Int_t iTracks(fAOD->GetNumberOfTracks());
-      if(iTracks < 1 ) {
-        AliWarning("No tracks in the event.");
-        return;
-      }
+    Int_t iTracks(fAOD->GetNumberOfTracks());
+    if(iTracks < 1 ) {
+      AliWarning("No tracks in the event.");
+      return;
     }
 
     fSampleIndex = gRandom->Uniform(0,fNOfSamples);
@@ -557,7 +566,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
     // FMD - V0 correlation event cut
 
     //for any configuration (data or MC) involving FMD tracklets
-    if(fAnalType != eTPCTPC && !fOnTheFly) {
+    if(fAnalType != eTPCTPC) {
       if(!PrepareFMDTracks()){
         delete fTracksAss;
         delete fTracksTrig[0];
@@ -567,7 +576,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
     }
 
     //for the reconstructed part (data) (TPC involved correlation including PID)
-    if(!fIsTPCgen || !fOnTheFly)  {
+    if(!fIsTPCgen || fUseNch_reco)  {
       if(!PrepareTPCTracks()){
 	
 	if ((fDoPHI || fcheckmassbias_Phi) && fTracksTrig_Kaon_Phi) delete fTracksTrig_Kaon_Phi;
@@ -585,7 +594,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
     }//end reco part
 
     //for the MC part (TPC involved correlation including PID)
-    if(fIsMC || fOnTheFly){
+    if(fIsMC){
       if(!PrepareMCTracks()){
         for(Int_t i(0); i < 7; i++){
           if(!fDoPID && i > 0 && i < 4) continue;
@@ -650,8 +659,8 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
 //_____________________________________________________________________________
 void AliAnalysisTaskCorrForFlowFMD::Terminate(Option_t *)
 {
-   // if(fPoolMgr) delete fPoolMgr;
-   // if(fOutputListCharged) delete fOutputListCharged;
+   if(fPoolMgr) delete fPoolMgr;
+   if(fOutputListCharged) delete fOutputListCharged;
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskCorrForFlowFMD::IsEventSelected()
@@ -1207,7 +1216,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       AliVParticle* track = dynamic_cast<AliVParticle*>(fTracksTrig[spec]->At(iTrig));
       if(!track) continue;
       AliAODTrack* trackAOD = nullptr;
-      if((!fIsMC && !fOnTheFly) && spec < 4) trackAOD = (AliAODTrack*)fTracksTrig[spec]->At(iTrig);
+      if(!fIsMC && spec < 4) trackAOD = (AliAODTrack*)fTracksTrig[spec]->At(iTrig);
 
       Double_t trigPt = track->Pt();
       Double_t trigEta = track->Eta();
@@ -1228,7 +1237,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         AliVParticle* trackAss = dynamic_cast<AliVParticle*>(fTracksAss->At(iAss));
         if(!trackAss) continue;
         AliAODTrack* trackAODAss = nullptr;
-        if((!fIsMC && !fOnTheFly) && spec < 4) trackAODAss = (AliAODTrack*)fTracksAss->At(iAss);
+        if(!fIsMC && spec < 4) trackAODAss = (AliAODTrack*)fTracksAss->At(iAss);
 
         Double_t assPt = trackAss->Pt();
         Double_t assEta = trackAss->Eta();
@@ -1240,7 +1249,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
           if(assEff < 0.001) continue;
         }
 
-        if((!fIsMC && !fOnTheFly) && spec < 4 && trackAOD->GetID() == trackAODAss->GetID()) continue;
+        if(!fIsMC && spec < 4 && trackAOD->GetID() == trackAODAss->GetID()) continue;
 
         binscont[0] = trigEta - assEta;
         binscont[1] = RangePhi(trigPhi - assPhi);
@@ -1282,6 +1291,9 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       Double_t trigEta = track->Eta();
       Double_t trigPhi = track->Phi();
 
+    if(fUse_posrap_TPC_correlation) {if (trigEta < 0.0) continue; }
+    if(fUse_negrap_TPC_correlation) {if (trigEta > 0.0) continue; }
+
       fhPT_trig[spec]->Fill(trigPt);
       
       Double_t trigEff = 1.0;
@@ -1301,7 +1313,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         Double_t assEta = trackAss->Eta();
         Double_t assPhi = trackAss->Phi();
         Double_t assMult = trackAss->Multiplicity();
-
+	      
         binscont[0] = trigEta - assEta;
         binscont[1] = RangePhi(trigPhi - assPhi);
 	      
@@ -1456,6 +1468,10 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         Double_t trigEta = track->Eta();
         Double_t trigPhi = track->Phi();
         binscont[5] = trigPt;
+
+    if(fUse_posrap_TPC_correlation) {if (trigEta < 0.0) continue; }
+    if(fUse_negrap_TPC_correlation) {if (trigEta > 0.0) continue; }
+	      
         if(spec > 3) binscont[4] = track->M();
         Double_t trigEff = 1.0;
         if(fUseEfficiency) {
@@ -1735,17 +1751,17 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
   } // end TPC - FMD
   else if(fAnalType == eFMDAFMDC){
     // Int_t iTrackBin_fmdAfmdC[] = {48, 72, 10};
-    Int_t iTrackBin_fmdAfmdC[] = {32, 20, sizePvzbins, sizeOfSamples};//24, 20
+    Int_t iTrackBin_fmdAfmdC[] = {fFMD_detabins, 20, sizePvzbins, sizeOfSamples};//24, 32
     Int_t nTrackBin_fmdAfmdC = sizeof(iTrackBin_fmdAfmdC) / sizeof(Int_t);
 
     // FMD only for unidentified
     for(Int_t i(0); i < 1; i++){
       fhSE[i] = new AliTHn(nameS[i], nameS[i], nSteps, nTrackBin_fmdAfmdC, iTrackBin_fmdAfmdC);
-      fhSE[i]->SetBinLimits(0,4.6,6.2);//SetBinLimits(0,3.4,8.2)
+      fhSE[i]->SetBinLimits(0,fFMD_deta_min,fFMD_deta_max);//SetBinLimits(0,3.4,8.2);SetBinLimits(0,4.6,6.2);
       fhSE[i]->SetBinLimits(1,-0.55*TMath::Pi(), 1.45*TMath::Pi());
 
       fhME[i] = new AliTHn(nameM[i], nameM[i], nSteps, nTrackBin_fmdAfmdC, iTrackBin_fmdAfmdC);
-      fhME[i]->SetBinLimits(0,4.6,6.2);//SetBinLimits(0,3.4,8.2)
+      fhME[i]->SetBinLimits(0,fFMD_deta_min,fFMD_deta_max);//SetBinLimits(0,3.4,8.2);SetBinLimits(0,4.6,6.2);
       fhME[i]->SetBinLimits(1,-0.55*TMath::Pi(), 1.45*TMath::Pi());
     }
   } // end FMD - FMD
@@ -1818,6 +1834,9 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
   if(!fTracksAss || !fTracksTrig[0] || !fhTrigTracks[0]) {AliError("Cannot prepare TPC tracks!"); return kFALSE; }
 
   Double_t fNofTracks_reco = 0;
+  Double_t fNofTracks_reco_posrap = 0;
+  Double_t fNofTracks_reco_negrap = 0;
+	
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
 
   TObjArray* fTracksJets = nullptr;
@@ -1837,11 +1856,16 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
 	       if(trkEff < 0.001) continue;
 	      }
 	      fNofTracks_reco += 1.0/trkEff;
+      if(track->Eta() > 0.01)  fNofTracks_reco_posrap += 1.0/trkEff;
+      if(track->Eta() < -0.01) fNofTracks_reco_negrap += 1.0/trkEff;
+
+	      
         if(fAnalType == eFMDAFMDC || fIsTPCgen) continue;
         if(fAnalType == eTPCTPC) fTracksAss->Add((AliAODTrack*)track); 
       }
 
-      
+      if(fIsTPCgen) continue;//do not proceed beyond this point for TPC generated/Truth case
+	      
       if(fAnalType != eFMDAFMDC && !fDoV0){//fiil the Trigger TObjArray in DoPID and DoPHI case as it needs AliAOD TPC tracks (not for AliAODV0 case)
 	
       Double_t trackEta = track->Eta();
@@ -1891,6 +1915,9 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
 
   if(fUseNch_reco){
     fNofTracks = fNofTracks_reco;
+  if(fUseNch_posrap_tracks)     fNofTracks = fNofTracks_reco_posrap;
+  if(fUseNch_negrap_tracks)     fNofTracks = fNofTracks_reco_negrap;
+	  
     if(fNofTracks < fNchMin || fNofTracks > fNchMax) { return kFALSE; }
     fhEventCounter->Fill("Nch cut ok ",1);
   }
@@ -2055,7 +2082,6 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
   if(!fTracksAss || !fTracksTrig[0] || !fhTrigTracks[0]) {AliError("Cannot prepare MCC tracks!"); return kFALSE; }
 
   AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
-  if(fOnTheFly) mcEvent = getMCEvent();
   if(!mcEvent) return kFALSE;
 
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
@@ -2184,46 +2210,11 @@ Double_t AliAnalysisTaskCorrForFlowFMD::TransverseBoost(const AliMCParticle *tra
   return eta_boosted;
 }
 //_____________________________________________________________________________
-AliMCEvent *AliAnalysisTaskCorrForFlowFMD::getMCEvent() {
-  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(MCEvent());
-  if(!ev) { AliFatal("MC event not found!"); return 0; }
-  AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(ev->GenEventHeader());
-  if(!header) { AliFatal("MC event not generated!"); return 0; }
-  
-  fPVz=0.; //For PYTHIA 
-
-  // From here, copy from AliPhysics/PWGGA/GammaConv/AliAnalysisTaskGammaPureMC.cxx
-  AliGenPythiaEventHeader *pyH  = dynamic_cast<AliGenPythiaEventHeader*>(header);
-
-  // fetch the trials on a event by event basis, not from pyxsec.root otherwise
-  // we will get a problem when running on proof since Notify may be called
-  // more than once per file
-  // consider storing this information in the AOD output via AliAODHandler
-  Float_t ntrials = 0;
-  if (!pyH) {
-    AliGenCocktailEventHeader *ccEH = dynamic_cast<AliGenCocktailEventHeader *>(header);
-    if (ccEH) {
-      TList *genHeaders = ccEH->GetHeaders();
-      for (int imch=0; imch<genHeaders->GetEntries(); imch++) {
-        if(!pyH)pyH = dynamic_cast<AliGenPythiaEventHeader*>(genHeaders->At(imch));
-      }
-    }
-  }
-  if(!pyH) { AliFatal("PYTHIA MC event not generated!"); return 0; }
-
-  // take the trials from the p+p event
-  ntrials = pyH->Trials();
-  if(ntrials)fhEventCounter->Fill("OntheflyEvts",ntrials);
-
-  return ev;
-}
-//_____________________________________________________________________________
 void AliAnalysisTaskCorrForFlowFMD::PrintSetup(){
   printf("\n\n\n ************** Parameters ************** \n");
   printf("\t fAnalType: (Int_t) %d\n", fAnalType);
   printf("\t fColSystem: (Int_t) %d\n", fColSystem);
   printf("\t fIsMC: (Bool_t) %s\n", fIsMC ? "kTRUE" : "kFALSE");
-  printf("\t fOnTheFly: (Bool_t) %s\n", fOnTheFly ? "kTRUE" : "kFALSE");
   printf("\t fIsTPCgen: (Bool_t) %s\n", fIsTPCgen ? "kTRUE" : "kFALSE");
   printf("\t fIsFMDgen: (Bool_t) %s\n", fIsFMDgen ? "kTRUE" : "kFALSE");
   printf("\t fDoPID: (Bool_t) %s\n", fDoPID ? "kTRUE" : "kFALSE");

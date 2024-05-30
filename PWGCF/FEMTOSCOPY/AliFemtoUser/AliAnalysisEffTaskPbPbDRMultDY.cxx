@@ -69,6 +69,29 @@ void AliAnalysisEffTaskPbPbDRMultDY::SetPidMethod(int method)
 }
 
 //_______________________________________________________
+AliAnalysisEffTaskPbPbDRMultDY::AliAnalysisEffTaskPbPbDRMultDY() :
+  AliAnalysisTaskSE(), centrality(0), fHistoList(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
+
+{
+  for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
+    for(Int_t chg=0;chg<2;chg++){
+      fGeneratedMCPrimaries[i][chg] = NULL;
+      fMCPrimariesThatAreReconstructed[i][chg] = NULL;
+      fMCPrimariesThatAreReconstructedNoNsigma[i][chg] = NULL;
+      fReconstructedAfterCuts[i][chg] = NULL;
+      fReconstructedNotPrimaries[i][chg] = NULL;
+      fReconstructedPrimaries[i][chg] = NULL;
+      fContamination[i][chg] = NULL;
+    }
+  }
+ for ( Int_t i = 0; i < 11; i++) {
+    if(i<4) fHistEv[i] = NULL;
+    fHistQA[i] = NULL;
+    if(i<3) fHistQA2D[i] = NULL;
+  }
+}
+
+
 
 AliAnalysisEffTaskPbPbDRMultDY::AliAnalysisEffTaskPbPbDRMultDY(TString name, int pidMethod, int filterbit) :
   AliAnalysisTaskSE(name), centrality(0), fHistoList(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(128), fPidMethod(kExclusivePIDDiffRejection), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
@@ -92,15 +115,9 @@ AliAnalysisEffTaskPbPbDRMultDY::AliAnalysisEffTaskPbPbDRMultDY(TString name, int
     if(i<3) fHistQA2D[i] = NULL;
   }
 
-  /* init track cuts */
-  if(pidMethod!=-1) SetPidMethod(pidMethod);
-  SetFB(filterbit);
-
-
-
-  //DefineInput(0, TChain::Class());
-  //DefineOutput(0, TTree::Class());
-  DefineOutput(1, TList::Class());
+ //DefineInput(0, TChain::Class());
+ //DefineOutput(0, TTree::Class());
+ DefineOutput(1, TList::Class());
 }
 
 //_______________________________________________________
@@ -159,9 +176,9 @@ void AliAnalysisEffTaskPbPbDRMultDY::UserCreateOutputObjects()
 
       hname2  = "hHistoReconstructedAfterCutsM"; hname2+=i; hname2+=parttypename;
       htitle2 = "Total Reconstructed tracks M "; htitle2+=i; htitle2+=parttypename;
-      fReconstructedAfterCuts[i*PARTTYPES+j][0] = new TH2F(hname2.Data(),htitle2.Data(),50, -1.5, 1.5,100,0.,5.0);
+      fReconstructedAfterCuts[i*PARTTYPES+j][0] = new TH2F(hname2.Data(),htitle2.Data(),50, -1.5, 1.5,1000,0.,10.0);
       hname2+="Minus";htitle2+="Minus";
-      fReconstructedAfterCuts[i*PARTTYPES+j][1] = new TH2F(hname2.Data(),htitle2.Data(),50, -1.5, 1.5,100,0.,5.0);
+      fReconstructedAfterCuts[i*PARTTYPES+j][1] = new TH2F(hname2.Data(),htitle2.Data(),50, -1.5, 1.5,1000,0.,10.0);
 
       hname4  = "hHistoReconstructedNotPrimariesM"; hname4+=i; hname4+=parttypename;
       htitle4 = "Reconstructed level Y_pT (not primaries) M"; htitle4+=i; htitle4+=parttypename;
@@ -257,7 +274,6 @@ void AliAnalysisEffTaskPbPbDRMultDY::UserCreateOutputObjects()
     hname = "fHistEventCutsM";
     hname+= i;
     
-
     fHistEvCuts[i] = new TH1F(hname,Form("Event Cuts M%d",i) , 5, 0, 5);
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(1,"All");
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(2,"MultCut");
@@ -265,7 +281,6 @@ void AliAnalysisEffTaskPbPbDRMultDY::UserCreateOutputObjects()
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(4,"PileUp");
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(5,"z-vertex>10");
     fHistoList->Add(fHistEvCuts[i]);
-
 
     for(Int_t chg=0;chg<2;chg++){
       hname  = "hMisidentificationM"; hname+=i; if(chg==0) hname+="Plus"; else hname+="Minus"; 
@@ -681,8 +696,8 @@ void AliAnalysisEffTaskPbPbDRMultDY::UserExec(Option_t *)
     float nSigmaTPCK = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kKaon);
     float nSigmaTPCP = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kProton);
     float nSigmaTPCe = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kElectron);
-    if(IsElectronMDR(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
-      continue;
+    //if(IsElectronMDR(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
+      //continue;
    
     fHistQA[10]->Fill(7);
     
@@ -880,27 +895,27 @@ void AliAnalysisEffTaskPbPbDRMultDY::UserExec(Option_t *)
 
  
     int PDGcode = MCtrk->GetPdgCode();
-
+ 
    //And secondaries for different particle species:
     if (!MCtrk->IsPhysicalPrimary() && (isPionNsigma && abs(PDGcode)==211)) { //secondaries in pions
-      fReconstructedNotPrimaries[PARTTYPES*fcent+1][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedNotPrimaries[PARTTYPES*fcent+1][charge]->Fill(track->Y(PionMass), track->Pt());
     }
     else if(MCtrk->IsPhysicalPrimary() && (isPionNsigma && abs(PDGcode)==211)) {
-      fReconstructedPrimaries[PARTTYPES*fcent+1][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedPrimaries[PARTTYPES*fcent+1][charge]->Fill(track->Y(PionMass), track->Pt());
     }
 
     if (!MCtrk->IsPhysicalPrimary() && (isKaonNsigma && abs(PDGcode)==321)) { //secondaries in kaons
-      fReconstructedNotPrimaries[PARTTYPES*fcent+2][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedNotPrimaries[PARTTYPES*fcent+2][charge]->Fill(track->Y(KaonMass), track->Pt());
     }
     else if(MCtrk->IsPhysicalPrimary() && (isKaonNsigma && abs(PDGcode)==321)) {
-      fReconstructedPrimaries[PARTTYPES*fcent+2][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedPrimaries[PARTTYPES*fcent+2][charge]->Fill(track->Y(KaonMass), track->Pt());
     }
 
     if (!MCtrk->IsPhysicalPrimary() && (isProtonNsigma && abs(PDGcode)==2212)) { //secondaries in protons
-      fReconstructedNotPrimaries[PARTTYPES*fcent+3][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedNotPrimaries[PARTTYPES*fcent+3][charge]->Fill(track->Y(ProtonMass), track->Pt());
     } 
     else if(MCtrk->IsPhysicalPrimary() && (isProtonNsigma && abs(PDGcode)==2212)) {
-      fReconstructedPrimaries[PARTTYPES*fcent+3][charge]->Fill(track->Y(), track->Pt());
+      fReconstructedPrimaries[PARTTYPES*fcent+3][charge]->Fill(track->Y(ProtonMass), track->Pt());
     } 
 
 
@@ -990,6 +1005,15 @@ void AliAnalysisEffTaskPbPbDRMultDY::UserExec(Option_t *)
     if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
   }
   if(MCtrk->GetPdgCode() == 2212){
+    if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
+  }
+  if(MCtrk->GetPdgCode() == -211 ){
+    if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 2.5) continue;
+  }
+  if(MCtrk->GetPdgCode() == -321){
+    if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
+  }
+  if(MCtrk->GetPdgCode() == -2212){
     if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5) continue;
   }
   // check physical primary 

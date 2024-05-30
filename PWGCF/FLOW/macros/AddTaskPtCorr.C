@@ -1,13 +1,10 @@
+#include "AliAnalysisManager.h"
 #include "TString.h"
 #include "TGrid.h"
 #include "AliAnalysisTaskPtCorr.h"
-class AliAnalysisDataContainer;
-class TNamed;
-Bool_t ConnectToGrid() {
-  if(!gGrid) TGrid::Connect("alien:");
-  if(!gGrid) {printf("Task requires connection to grid, but it could not be established!\n"); return kFALSE; };
-  return kTRUE;
-}
+#include "AliAnalysisDataContainer.h"
+
+Bool_t ConnectToGrid();
 AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, TString efficiencyPath = "", TString centcalPath = "", TString subfix1 = "")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -62,4 +59,8 @@ AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, TString efficiency
   mgr->ConnectOutput(task,2,cQA);
   return task;
 }
-
+Bool_t ConnectToGrid() {
+  if(!gGrid) TGrid::Connect("alien:");
+  if(!gGrid) {printf("Task requires connection to grid, but it could not be established!\n"); return kFALSE; };
+  return kTRUE;
+}

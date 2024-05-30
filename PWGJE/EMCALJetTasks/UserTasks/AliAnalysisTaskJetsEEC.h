@@ -74,6 +74,7 @@ public:
     
     //Adding for tracks at the particle level (not jet level)
     void SetFastSimPairEff(Int_t c) {fpairfastsim = c;}
+    void SetUnfolding(Int_t c){fUnfolding = c;} //For unfolding 
     void SetMaxTrackPtCut(Float_t c) {fMaxPtTrack = c;} //set max value of track pT
     void SetGeneratorLevelName(const char* name) { fGeneratorLevelName = name; }
     void SetDetectorLevelName(const char* name) { fDetectorLevelName  = name; }
@@ -148,11 +149,27 @@ protected:
     Int_t fpTcorr; ///<flag for pT migration checks
     Int_t fpaircut; ///<flag for pT pair cut
     Int_t fpairfastsim; ///<flag for pair eff for fast sim
+    Int_t fUnfolding; ///<flag for unfolding 
     Int_t fMatchJetTrack; ///<flag for pair eff for fast sim
     Int_t fMissJetTrack; ///<flag for looking at missed tracks in matched jets
     Int_t fFakeJetTrack; ///<flag for looking at missed tracks in matched jets
     Float_t fMaxPtTrack; ///< max track pt cutoff
-    
+
+    Double_t fJet_pt_det; ///< jet pt det 
+    Double_t fJet_pt_tru; ///< jet pt tru
+    Double_t fTrack_pt_det; ///< track pt det 
+    Double_t fTrack_pt_tru; ///< track pt tru
+    Double_t fTrack_eta_det; ///< track eta det 
+    Double_t fTrack_eta_tru; ///< track eta tru 
+    Double_t fTrack_phi_det; ///< track phi det 
+    Double_t fTrack_phi_tru; ///< track phi tru
+    Double_t fTrack_pt_miss; ///< miss track pt 
+    Double_t fTrack_pt_fake; ///< fake track pt 
+    Double_t fTrack_eta_miss; ///< miss track eta 
+    Double_t fTrack_eta_fake; ///< fake track eta  
+    Double_t fTrack_phi_miss; ///< miss track phi  
+    Double_t fTrack_phi_fake; ///< fake track phi
+
     //Adding for tracks at the particle level (not jet level)
     TString fGeneratorLevelName;
     TString fDetectorLevelName;
@@ -291,13 +308,16 @@ protected:
     
     TH3D* OptUn_eec; //!<! initializing 3D histogram for optimizing binning eec
     TH3D* OptUn_e3c; //!<! initializing 3D histogram for optimizing binning e3c
+
+    TTree *fTreeMatchTracks; ///< Tree with matched tracks from MC
+
 private:
     AliAnalysisTaskJetsEEC(
                            const AliAnalysisTaskJetsEEC &); // not implemented
     AliAnalysisTaskJetsEEC &
     operator=(const AliAnalysisTaskJetsEEC &); // not implemented
     
-    ClassDef(AliAnalysisTaskJetsEEC, 67) //change this to 68 if you add something new
+    ClassDef(AliAnalysisTaskJetsEEC, 73) //change this to 73 if you add something new
 };
 #endif
 

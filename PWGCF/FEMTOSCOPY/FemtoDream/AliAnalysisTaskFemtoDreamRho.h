@@ -28,7 +28,7 @@ class AliAnalysisTaskFemtoDreamRho : public AliAnalysisTaskSE
 {
 public:
   AliAnalysisTaskFemtoDreamRho();
-  AliAnalysisTaskFemtoDreamRho(const char *name, bool isMC, bool doMcTruth, bool doAncestors, bool doCleaning, bool doProjections, float rhoPtThreshold);
+  AliAnalysisTaskFemtoDreamRho(const char *name, bool isMC, bool doMcTruth, bool doAncestors, bool doCleaning, bool doProjections, float rhoPtThreshold, bool isSameCharge, bool isMCTrueRhoCombBkrg);
   virtual ~AliAnalysisTaskFemtoDreamRho();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
@@ -78,6 +78,8 @@ public:
   void SetDoAncestors(bool doAncestors) { fDoAncestors = doAncestors; };
   void SetDoProjections(bool doProjector) { fDoProjections = doProjector; };
   void SetRhoPtThreshold(float rhoPtThreshold) { frhoPtThreshold = rhoPtThreshold; };
+  void SetMinvSameCharge(bool isSameCharge) { fIsSameCharge = isSameCharge; };
+  void SetMCTureRhoCombBkgr(bool isMCTrueRhoCombBkrg) { fIsMCTrueRhoCombBkrg = isMCTrueRhoCombBkrg; };
 
   // std::map<TString, std::pair<TH1F *, TH2F *>> CreateResonanceHistograms(const std::vector<TString> &resonanceList);
 
@@ -107,11 +109,13 @@ private:
   float RelativePairMomentum_check(TLorentzVector &PartOne,
                                    TLorentzVector &PartTwo);
 
-  bool fIsMC;            //
-  bool fDoMcTruth;       //
-  bool fDoAncestors;     //
-  bool fDoProjections;   //
-  float frhoPtThreshold; //
+  bool fIsMC;                //
+  bool fDoMcTruth;           //
+  bool fDoAncestors;         //
+  bool fDoProjections;       //
+  float frhoPtThreshold;     //
+  bool fIsSameCharge;        //
+  bool fIsMCTrueRhoCombBkrg; //
 
   const std::vector<std::string> types{"noPions", "noPrimaries", "noRho", "isRho"}; //!
   std::map<std::string, TH2F *> histogramMap_pTvsmT;                                //!
@@ -187,7 +191,7 @@ private:
   // std::map<TString, std::pair<TH1F *, TH2F *>>
   //     fResonanceHistograms; //! Map to hold histograms for each resonance
 
-  ClassDef(AliAnalysisTaskFemtoDreamRho, 7) // Update class number
+  ClassDef(AliAnalysisTaskFemtoDreamRho, 8) // Update class number
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_AliAnalysisTaskFemtoDreamRho_H_ */

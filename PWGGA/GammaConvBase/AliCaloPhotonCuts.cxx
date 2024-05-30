@@ -6948,122 +6948,159 @@ Bool_t AliCaloPhotonCuts::SetMaxM02(Int_t maxM02)
     // E dependent M02 variations
     case 13:  // d
       //(0.27 + 0.0072 * TMath::Power(clusEnergy,2));
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.4;
       break;
     case 14:  // e
       //(0.31 + 0.0072 * TMath::Power(clusEnergy,2));
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.5;
       break;
     case 15:  // f
       //(0.36 + 0.0072 * TMath::Power(clusEnergy,2));
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.7;
       break;
     case 16:  // g
       //(0.37 + 0.0072 * TMath::Power(clusEnergy,2))
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.7;
       break;
     case 17:  // h
       //(0.30 + 0.0072 * TMath::Power(clusEnergy,2));
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.5;
       break;
     case 18:  // i
       // (0.35 + 0.0072 * TMath::Power(clusEnergy,2));
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.7;
       break;
     case 19:  // j
       // (0.25 + 0.0072 * TMath::Power(clusEnergy,2));
       fUseM02=2;
-      fMinM02CutNr=9;
       fMaxM02=0.39;
       break;
     case 20:  //k
       //(0.27 + 0.0092 * TMath::Power(clusEnergy,2));
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.5;
       break;
     case 21:  // l
       //(0.32 + 0.0072 * TMath::Power(clusEnergy,2));
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.5;
       break;
     case 22:  // m
       // (0.32 + 0.0152 * TMath::Power(clusEnergy,2));
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.5;
       break;
     case 23:  // n
       // (0.32 + 0.0238 * TMath::Power(clusEnergy,2));
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.7;
       break;
     case 24:  // o
       // (0.27 + 0.0092 * TMath::Power(clusEnergy,2));
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.7;
       break;
     case 25:  // p
       // (0.32 + 0.0072 * TMath::Power(clusEnergy,2));
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.7;
       break;
     case 26:  // q
       // (0.34 + 0.0072 * TMath::Power(clusEnergy,2));
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.7;
       break;
     case 27:  // r
       // (0.25 + 0.0072 * TMath::Power(clusEnergy,2));
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.5;
       break;
     case 28:  // s
       // (0.32 + 0.0238 * TMath::Power(clusEnergy,2));
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.5;
       break;
     case 29:  // t
       // linear interpolation between 0.7 (low pT) and 0.5 (high pT)
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.7;
       break;
     case 30:  // u
       // linear interpolation between 0.7 (low pT) and 0.5 (high pT)
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.7;
       break;
     case 31:  // v
       // linear interpolation between 0.7 (low pT) and 0.4 (high pT)
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.7;
       break;
     case 32:  // w
       // linear interpolation between 0.7 (low pT) and 0.4 (high pT)
-      fUseM02=2;
-      fMinM02CutNr=9;
+      if(fUseM02 != 2) {
+        AliError(Form("Energy dependent M02 cut requested, but minM02 cut does not match!"));
+        fUseM02 = 2;
+      }
       fMaxM02=0.7;
       break;
     default:
@@ -7275,6 +7312,13 @@ Bool_t AliCaloPhotonCuts::SetMinM02(Int_t minM02)
     if (!fUseM02) fUseM02=1;
     fMinM02=0.2;
     break;
+  case 6: // energy dependent M02 cut. values are then set in CalculateMinM02
+  case 7:
+  case 8:
+  case 9:
+    if(fUseM02 != 2) fUseM02 = 2;
+    break;
+    
 
   // special PHOS cases: apply cut only if the cluster energy is bigger than 1 GeV
   case 11: // b
@@ -9968,7 +10012,9 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC20f14a") == 0 ) return kPP13T18P1Pyt8;
   // PbPb 5 TeV 2015 Gamma-Jet MC
   else if ( namePeriod.CompareTo("LHC18b11c") == 0 ) return  kLHC18b11c;
-
+  // pp 13 TeV eta prime biased JJ MC
+  else if ( namePeriod.CompareTo("LHC23a4b") == 0 ) return kLHC23a4b;
+  
   // data starts here
   else if ( namePeriod.CompareTo("LHC10b") == 0 ||
             namePeriod.CompareTo("LHC10c") == 0 ||

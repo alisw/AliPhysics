@@ -79,6 +79,10 @@ ClassImp(AliAnalysisTaskPi0EtaV2)
                                                          fHistoMotherInvMassPtV0ACos2phi(NULL),
                                                          fHistoMotherBackInvMassPtV0CCos2phi(NULL),
                                                          fHistoMotherBackInvMassPtV0ACos2phi(NULL),
+                                                         runNumList(NULL),
+                                                         fhistPhi(NULL),
+                                                         fhistPhiBG(NULL),
+                                                         fHistRunNumBin(NULL),
                                                          runNum(0),
                                                          oldRunNum(0),
                                                          centSPD1(-999),
@@ -158,6 +162,10 @@ AliAnalysisTaskPi0EtaV2::AliAnalysisTaskPi0EtaV2(const char *name) : AliAnalysis
                                                                      fHistoMotherInvMassPtV0ACos2phi(NULL),
                                                                      fHistoMotherBackInvMassPtV0CCos2phi(NULL),
                                                                      fHistoMotherBackInvMassPtV0ACos2phi(NULL),
+                                                                     runNumList(NULL),
+                                                                     fhistPhi(NULL),
+                                                                     fhistPhiBG(NULL),
+                                                                     fHistRunNumBin(NULL),
                                                                      runNum(0),
                                                                      oldRunNum(0),
                                                                      centSPD1(-999),
@@ -231,10 +239,6 @@ void AliAnalysisTaskPi0EtaV2::UserCreateOutputObjects()
         fOutputContainer = new TList();
         fOutputContainer->SetOwner(kTRUE);
     }
-
-    // create our histo and add it to the list
-    //  fHistPt = new TH1F("fHistPt", "fHistPt", 1000, 0, 1000);
-    //  fOutputList->Add(fHistPt);
     fCutFolder = new TList *[fnCuts];
     fESDList = new TList *[fnCuts];
     fQAList = new TList *[fnCuts];
@@ -326,7 +330,6 @@ void AliAnalysisTaskPi0EtaV2::UserCreateOutputObjects()
         fQAList[iCut]->SetOwner(kTRUE);
         fCutFolder[iCut]->Add(fESDList[iCut]);
         fCutFolder[iCut]->Add(fQAList[iCut]);
-
         fHistoMotherInvMassPtPhiV0A[iCut] = new TH3F("ESD_Mother_InvMass_Pt_PhiV0A", "ESD_Mother_InvMass_Pt_PhiV0A", nBinsMinv, arrMinvBin, nBinsPt, arrPtBinning, nPhiBins, arrPhiBin);
         fHistoMotherInvMassPtPhiV0A[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
         fHistoMotherInvMassPtPhiV0A[iCut]->SetYTitle("p_{T} (GeV/c)");
@@ -437,6 +440,48 @@ void AliAnalysisTaskPi0EtaV2::UserCreateOutputObjects()
         fQAList[iCut]->Add(fProfileV0AQyVtxRC[iCut]);
         fQAList[iCut]->Add(fHist2CalibPsi2V0ACentRC[iCut]);
         fESDList[iCut]->Add(fHist2V0Res[iCut]);
+    }
+    ////runNumber hist
+    ////runNumber for 18qr
+    TString runNumListString[214] = {"296623", "296622", "296621", "296619", "296618", "296616", "296615", "296594", "296553", "296552",
+                                     "296551", "296550", "296548", "296547", "296516", "296512", "296511", "296510", "296509", "296472",
+                                     "296433", "296424", "296423", "296420", "296419", "296415", "296414", "296383", "296381", "296380",
+                                     "296379", "296378", "296377", "296376", "296375", "296312", "296309", "296304", "296303", "296280",
+                                     "296279", "296273", "296270", "296269", "296247", "296246", "296244", "296243", "296242", "296241",
+                                     "296240", "296198", "296197", "296196", "296195", "296194", "296192", "296191", "296143", "296142",
+                                     "296135", "296134", "296133", "296132", "296123", "296074", "296066", "296065", "296063", "296062",
+                                     "296060", "296016", "295942", "295941", "295937", "295936", "295913", "295910", "295909", "295861",
+                                     "295860", "295859", "295856", "295855", "295854", "295853", "295831", "295829", "295826", "295825",
+                                     "295822", "295819", "295818", "295816", "295791", "295788", "295786", "295763", "295762", "295759",
+                                     "295758", "295755", "295754", "295725", "295723", "295721", "295719", "295718", "295717", "295714",
+                                     "295712", "295676", "295675", "295673", "295668", "295667", "295666", "295615", "295612", "295611",
+                                     "295610", "295589", "295588", "295586", "295585", "297595", "297590", "297588", "297558", "297544", "297542", "297541", "297540", "297537", "297512",
+                                     "297483", "297479", "297452", "297451", "297450", "297446", "297442", "297441", "297415", "297414",
+                                     "297413", "297406", "297405", "297380", "297379", "297372", "297367", "297366", "297363", "297336",
+                                     "297335", "297333", "297332", "297317", "297311", "297310", "297278", "297222", "297221", "297218",
+                                     "297196", "297195", "297193", "297133", "297132", "297129", "297128", "297124", "297123", "297119",
+                                     "297118", "297117", "297085", "297035", "297031", "296966", "296941", "296938", "296935", "296934",
+                                     "296932", "296931", "296930", "296903", "296900", "296899", "296894", "296852", "296851", "296850",
+                                     "296848", "296839", "296838", "296836", "296835", "296799", "296794", "296793", "296790", "296787",
+                                     "296786", "296785", "296784", "296781", "296752", "296694", "296693", "296691", "296690"};
+
+    runNumList = new std::map<int, int>;
+    for (int i = 0; i < 214; i++)
+        runNumList->insert(std::pair<int, int>(runNumListString[i].Atoi(), i + 1));
+    fHistRunNumBin = new TH1I("runNumBin", "", (int)runNumList->size(), 1, (int)runNumList->size() + 1);
+    std::map<int, int>::iterator iter;
+    for (auto runNum1 : *runNumList)
+        fHistRunNumBin->GetXaxis()->SetBinLabel(runNum1.second, Form("%i", runNum1.first));
+    fQAList[0]->Add(fHistRunNumBin);
+
+    fhistPhi = new TH1F *[214];
+    fhistPhiBG = new TH1F *[214];
+    for (std::map<int, int>::reverse_iterator r_it = runNumList->rbegin(); r_it != runNumList->rend(); ++r_it)
+    {
+        fhistPhi[r_it->second - 1] = new TH1F(Form("fhistPhi%i", r_it->first), Form("fhistPhi%i", r_it->first), 200, -TMath::TwoPi(), TMath::TwoPi());
+        fhistPhiBG[r_it->second - 1] = new TH1F(Form("fhistPhi_BG%i", r_it->first), Form("fhistPhi_BG%i", r_it->first), 200, -TMath::TwoPi(), TMath::TwoPi());
+        fQAList[0]->Add(fhistPhi[r_it->second - 1]);
+        fQAList[0]->Add(fhistPhiBG[r_it->second - 1]);
     }
     ////////////////////////
     // VZERO
@@ -559,6 +604,10 @@ void AliAnalysisTaskPi0EtaV2::UserExec(Option_t *)
         fHist2DPsi2V0CCent[iCut]->Fill(centSPD1, fPsi2V0C);
         fHist2DPsi2V0ACent[iCut]->Fill(centSPD1, fPsi2V0A);
         fEventCount[iCut]->Fill(centSPD1);
+        if (runNumList->find(runNum) == runNumList->end())
+            return;
+        int rumNumbin = runNumList->at(runNum) - 1;
+        fHistRunNumBin->Fill(rumNumbin + 1);
         // Same Event
         for (Long_t i = 0; i < nclusPi0; i++)
         {
@@ -566,6 +615,14 @@ void AliAnalysisTaskPi0EtaV2::UserExec(Option_t *)
             pi0cand = new AliAODConversionMother(*(AliAODConversionMother *)arrClustersPi0->At(i));
             fHistoMotherInvMassPtV0CCos2phi[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), cos(2 * (pi0cand->Phi() - fPsi2V0C)));
             fHistoMotherInvMassPtV0ACos2phi[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), cos(2 * (pi0cand->Phi() - fPsi2V0A)));
+            if (pi0cand->M() > 0.1 && pi0cand->M() < 0.15)
+            {
+                fhistPhi[rumNumbin]->Fill(pi0cand->Phi());
+            }
+            else
+            {
+                fhistPhiBG[rumNumbin]->Fill(pi0cand->Phi());
+            }
             double dphiV0A = TVector2::Phi_0_2pi(pi0cand->Phi() - fPsi2V0A);
             if (dphiV0A > TMath::Pi())
             {
@@ -612,6 +669,7 @@ void AliAnalysisTaskPi0EtaV2::UserExec(Option_t *)
             // Use cos(2*(psi-Psi))
             fHistoMotherBackInvMassPtV0CCos2phi[fiCut]->Fill(Bgcand->M(), Bgcand->Pt(), cos(2 * (Bgcand->Phi() - fPsi2V0C)));
             fHistoMotherBackInvMassPtV0ACos2phi[fiCut]->Fill(Bgcand->M(), Bgcand->Pt(), cos(2 * (Bgcand->Phi() - fPsi2V0A)));
+            //  fhistPhiBG[fiCut]->Fill(Bgcand->Phi());
             double dphiV0A = TVector2::Phi_0_2pi(Bgcand->Phi() - fPsi2V0A);
             if (dphiV0A > TMath::Pi())
             {

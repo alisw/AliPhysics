@@ -67,6 +67,7 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale():
   fNameTriggerDecisionContainer("EmcalTriggerDecision"),
   fFractionResponseClosure(0.8),
   fFillHSparse(false),
+  fFillResponseVsNEF(false),
   fScaleShift(0.),
   fRequireSameAcceptance(kFALSE),
   fUseStandardOutlierRejection(kFALSE),
@@ -89,6 +90,7 @@ AliAnalysisTaskEmcalJetEnergyScale::AliAnalysisTaskEmcalJetEnergyScale(const cha
   fNameTriggerDecisionContainer("EmcalTriggerDecision"),
   fFractionResponseClosure(0.8),
   fFillHSparse(false),
+  fFillResponseVsNEF(false),
   fScaleShift(0.),
   fRequireSameAcceptance(kTRUE),
   fUseStandardOutlierRejection(kFALSE),
@@ -176,6 +178,19 @@ void AliAnalysisTaskEmcalJetEnergyScale::UserCreateOutputObjects(){
   if(fAngularityHandler) {
     fHistos->CreateTH2("hAngularityPartLow", "Angularity at partilce level", kNPtBinsPart, 0., kPtPartMax, 100, 0., 1.);
     fHistos->CreateTH2("hAngularityPartHigh", "Angularity at partilce level", kNPtBinsPart, 0., kPtPartMax, 100, 0., 1.);
+  }
+  if(fFillResponseVsNEF) {
+    TLinearBinning jetPtBinningDet(kNPtBinsDet, 0., kPtDetMax), jetPtBinningPart(kNPtBinsPart, 0., kNPtBinsPart), nefbinning(105, 0., 1.05);
+    const TBinning *responsebinning[4] = {&jetPtBinningDet, &nefbinning, &jetPtBinningPart, &nefbinning};
+    fHistos->CreateTHnSparse("hJetResponseFinePtNEF", "Response matrix for pt vs. NEF", 4, responsebinning);
+    fHistos->CreateTHnSparse("hJetResponseFinePtNEFClosure", "Response matrix for pt vs. NEF, for closure test", 4, responsebinning);
+    fHistos->CreateTHnSparse("hJetResponseFinePtNEFNoClosure", "Response matrix for pt vs. NEF, for closure test", 4, responsebinning);
+    fHistos->CreateTH3("hPurityPtNEFDet", "Det. level purity with NEF", kNPtBinsDet, 0., kPtDetMax, 105, 0., 0.15, 3, -0.5, 2.5);
+    fHistos->CreateTH3("hPurityPtNEFDetClosure", "Det. level purity  with NEF for closure test", kNPtBinsDet, 0., kPtDetMax, 105, 0., 1.05, 3, -0.5, 2.5);
+    fHistos->CreateTH3("hPurityPtNEFDetNoClosure", "Det. level purity with NEF (no-closure sample)", kNPtBinsDet, 0., kPtDetMax, 105, 0., 1.05, 3, -0.5, 2.5);
+    fHistos->CreateTH3("hJetfindingEfficiencyPtNEFCore", "Part. level efficiency with NEF", kNPtBinsPart, 0., kPtPartMax, 105, 0., 1.05, 3, -0.5, 2.5);
+    fHistos->CreateTH3("hJetfindingEfficiencyPtNEFCoreClosure", "Part. level efficiency with NEF for closure test", kNPtBinsPart, 0., kPtPartMax, 105, 0., 1.05, 3, -0.5, 2.5);
+    fHistos->CreateTH3("hJetfindingEfficiencyPtNEFCoreNoClosure", "Part. level efficiency with NEF (no-closure sample)", kNPtBinsPart, 0., kPtPartMax, 105, 0., 1.05, 3, -0.5, 2.5);
   }
   if(fFillHSparse){
     TLinearBinning jetPtBinningDet(kNPtBinsDet, 0., kPtDetMax), jetPtBinningPart(600, 0., 600), nefbinning(105, 0., 1.05), ptdiffbinning(200, -1., 1.), jetEtaBinning(100, -0.9, 0.9), jetPhiBinning(100, 0., TMath::TwoPi()),
@@ -388,28 +403,55 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
     if(!partjet) {
       AliDebugStream(4) << "No tagged jet" << std::endl;
       fHistos->FillTH2("hPurityDet", detjet->Pt(), 0);
+      if(fFillResponseVsNEF) {
+        fHistos->FillTH3("hPurityPtNEFDet", detjet->Pt(), detjet->NEF(), 0);
+      }
       if(isClosure) {
         fHistos->FillTH2("hPurityDetClosure", detjet->Pt(), 0);
+        if(fFillResponseVsNEF) {
+          fHistos->FillTH3("hPurityPtNEFDetClosure", detjet->Pt(), detjet->NEF(), 0);
+        }
       } else {
         fHistos->FillTH2("hPurityDetNoClosure", detjet->Pt(), 0);
+        if(fFillResponseVsNEF) {
+          fHistos->FillTH3("hPurityPtNEFDetNoClosure", detjet->Pt(), detjet->NEF(), 0);
+        }
       }
       continue;
     } else {
       if(!(partjet->GetJetAcceptanceType() & detjets->GetAcceptanceType())){
         // Acceptance not matching
         fHistos->FillTH2("hPurityDet", detjet->Pt(), 1);
+        if(fFillResponseVsNEF) {
+          fHistos->FillTH3("hPurityPtNEFDet", detjet->Pt(), detjet->NEF(), 1);
+        }
         if(isClosure){
           fHistos->FillTH2("hPurityDetClosure", detjet->Pt(), 1);
+          if(fFillResponseVsNEF) {
+            fHistos->FillTH3("hPurityPtNEFDetClosure", detjet->Pt(), detjet->NEF(), 1);
+          }
         } else {
           fHistos->FillTH2("hPurityDetNoClosure", detjet->Pt(), 1);
+          if(fFillResponseVsNEF) {
+            fHistos->FillTH3("hPurityPtNEFDetNoClosure", detjet->Pt(), detjet->NEF(), 1);
+          }
         }
         if(fRequireSameAcceptance) continue;
       } else {
         fHistos->FillTH2("hPurityDet", detjet->Pt(), 2);
+        if(fFillResponseVsNEF) {
+          fHistos->FillTH3("hPurityPtNEFDet", detjet->Pt(), detjet->NEF(), 2);
+        }
         if(isClosure) {
           fHistos->FillTH2("hPurityDetClosure", detjet->Pt(), 2);
+          if(fFillResponseVsNEF) {
+            fHistos->FillTH3("hPurityPtNEFDetClosure", detjet->Pt(), detjet->NEF(), 2);
+          }
         } else {
           fHistos->FillTH2("hPurityDetNoClosure", detjet->Pt(), 2);
+          if(fFillResponseVsNEF) {
+            fHistos->FillTH3("hPurityPtNEFDetNoClosure", detjet->Pt(), detjet->NEF(), 2);
+          }
         }
       }
     }
@@ -475,6 +517,15 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
       fHistos->FillTH2("hJetResponseFineClosure", detjetpt, partjetpt);
     } else {
       fHistos->FillTH2("hJetResponseFineNoClosure", detjetpt, partjetpt);
+    }
+    if(fFillResponseVsNEF) {
+      double point[4] = {detjetpt, detjet->NEF(), partjetpt, partjet->NEF()};
+      fHistos->FillTHnSparse("hJetResponseFinePtNEF", point);
+      if(isClosure) {
+        fHistos->FillTHnSparse("hJetResponseFinePtNEFClosure", point);
+      } else {
+        fHistos->FillTHnSparse("hJetResponseFinePtNEFNoClosure", point);
+      }
     }
     // splitting response in low / high angularity
     if(fAngularityHandler && angularityPart > -1.) {
@@ -641,7 +692,7 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
 
   // efficiency x acceptance: Add histos for all accepted and reconstucted accepted jets
   for(auto partjet : partjets->accepted()){
-    Double_t partjetpt = partjet->Pt();
+    Double_t partjetpt = partjet->Pt(), partjetnef = partjet->NEF();
     if (fDoBkgSub && partjets->GetRhoParameter()){
       partjetpt = partjetpt - partjets->GetRhoVal() * partjet->Area();
     }
@@ -669,10 +720,19 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
       else tagstatus = 1;
     }
     fHistos->FillTH2("hJetfindingEfficiencyCore", partjetpt, tagstatus);
+    if(fFillResponseVsNEF) {
+      fHistos->FillTH3("hJetfindingEfficiencyPtNEFCore", partjetpt, partjetnef, tagstatus);
+    }
     if(isClosure) {
       fHistos->FillTH2("hJetfindingEfficiencyCoreClosure", partjetpt, tagstatus);
+      if(fFillResponseVsNEF) {
+        fHistos->FillTH3("hJetfindingEfficiencyPtNEFCoreClosure", partjetpt, partjetnef, tagstatus);
+      }
     } else {
       fHistos->FillTH2("hJetfindingEfficiencyCoreNoClosure", partjetpt, tagstatus);
+      if(fFillResponseVsNEF) {
+        fHistos->FillTH3("hJetfindingEfficiencyPtNEFCoreNoClosure", partjetpt, partjetnef, tagstatus);
+      }
     }
     if(fFillHSparse){
       double effvec[3] = {partjetpt, 0.,static_cast<double>(tagstatus)};

@@ -1781,6 +1781,12 @@ Bool_t AliConversionMesonCuts::SetCut(cutIds cutID, const Int_t value) {
         UpdateCutString();
         return kTRUE;
       } else return kFALSE;
+    } else if(fUsePtDepSelectionWindow && fMesonKind == 2){
+      if( SetSelectionWindowCutPtDepEtaPrime(value)) {
+        fCuts[kSelectionCut] = value;
+        UpdateCutString();
+        return kTRUE;
+      } else return kFALSE;
     } else if(fUsePtDepSelectionWindow){
       if( SetSelectionWindowCutPtDep(value)) {
         fCuts[kSelectionCut] = value;
@@ -1809,12 +1815,19 @@ Bool_t AliConversionMesonCuts::SetCut(cutIds cutID, const Int_t value) {
       } else return kFALSE;
     }
   case kPtCut:
-    if( SetMinPtCut(value)) {
-      fCuts[kPtCut] = value;
-      UpdateCutString();
-      return kTRUE;
-    } else return kFALSE;
-
+    if( fMesonKind == 2){
+      if( SetMinPtCutExtended(value) ){
+        fCuts[kPtCut] = value;
+        UpdateCutString();
+        return kTRUE;
+      } else return kFALSE;
+    } else {
+      if( SetMinPtCut(value)) {
+        fCuts[kPtCut] = value;
+        UpdateCutString();
+        return kTRUE;
+      } else return kFALSE;
+    }
   case kRapidityMesonCut:
     if( SetRapidityMesonCut(value)) {
       fCuts[kRapidityMesonCut] = value;
@@ -2040,6 +2053,9 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
     fDoJetAnalysis = kTRUE;
     fDoOutOfJet = 5;
     break;
+  case 15: // f eta meson for eta prime analysis
+    fMesonKind = 2;
+    break;
   default:
     cout<<"Warning: Meson kind not defined"<<mesonKind<<endl;
     return kFALSE;
@@ -2237,6 +2253,56 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
   }
   return kTRUE;
 }
+
+//________________________________________________________________________
+Bool_t AliConversionMesonCuts::SetMinPtCutExtended(Int_t PtCut){
+  // Set Cut on min pT of meson, switch for fMesonKind = 2
+  switch(PtCut){
+  case 0: // no cut on pT
+    fMinPt = 0.;
+    fDoMinPtCut = kFALSE;
+    break;
+  case 1: // EMC-EMC, INT7
+    fMinPt = 2.5;
+    fDoMinPtCut = kTRUE;
+    // fMaxPt = 15;
+    // fDoMaxPtCut = kTRUE;
+    break;
+  case 2: // EMC-EMC, EG2
+    fMinPt = 8.0;
+    fDoMinPtCut = kTRUE;
+    // fMaxPt = 15; 
+    // fDoMaxPtCut = kTRUE;
+    break;
+  case 3: // EMC-EMC, EG1
+    fMinPt = 16.0;
+    fDoMinPtCut = kTRUE;
+    // fMaxPt = 80;
+    // fDoMaxPtCut = kTRUE;
+    break;
+  case 4: // PCM-EMC, INT7
+    fMinPt = 1.6;
+    fDoMinPtCut = kTRUE;
+    break;
+  case 5: // PCM-EMC, EG2
+    fMinPt = 8.0;
+    fDoMinPtCut = kTRUE;
+    break;
+  case 6: // PCM-EMC, EG1
+    fMinPt = 12.0;
+    fDoMinPtCut = kTRUE;
+    break;
+  case 7: // PCM-EMC
+    fMinPt = 1.0;
+    fDoMinPtCut = kTRUE;
+    break;
+  default:
+    cout<<"Warning: pT cut not defined for eta prime analysis"<<PtCut<<endl;
+    return kFALSE;
+  }
+  return kTRUE;
+}
+
 
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetSelectionWindowCut(Int_t selectionCut){
@@ -2724,6 +2790,124 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDep(Int_t selectionCut){
       break;
     default:
       cout<<"Warning: SelectionCut merged not defined "<<selectionCut<<endl;
+      return kFALSE;
+  }
+
+  return kTRUE;
+
+}
+
+Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDepEtaPrime(Int_t selectionCut){
+  // Set Cut
+  fSelectionWindowCut = selectionCut;
+  switch(fSelectionWindowCut){
+    case 0: // EMC-EMC - 1 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 1.;
+      fSelectionNSigmaHigh = 1.;
+      fMassParamFunction   = 10;
+      break;
+    case 1: // EMC-EMC - 2 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 2.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
+      fMassParamFunction   = 10;
+      break;
+    case 2: // EMC-EMC - 3 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 3.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
+      fMassParamFunction   = 10;
+      break;
+    case 3: // EMC-EMC - 4 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 4.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
+      fMassParamFunction   = 10;
+      break;
+    case 4: // EMC-EMC - 5 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 5.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
+      fMassParamFunction   = 10;
+      break;
+    case 5: // PCM-EMC - 1 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 1.;
+      fSelectionNSigmaHigh = 1.;
+      fMassParamFunction   = 11;
+      break;
+    case 6: // PCM-EMC - 2 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 2.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
+      fMassParamFunction   = 11;
+      break;
+    case 7: // PCM-EMC - 3 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 3.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
+      fMassParamFunction   = 11;
+      break;
+    case 8: // PCM-EMC - 4 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 4.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
+      fMassParamFunction   = 11;
+      break;
+    case 9: // PCM-EMC - 5 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 5.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
+      fMassParamFunction   = 11;
+      break;
+    case 10: //a PCM-PCM - 1 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 1.;
+      fSelectionNSigmaHigh = 1.;
+      fMassParamFunction   = 12;
+      break;
+    case 11: //b PCM-PCM - 2 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 2.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
+      fMassParamFunction   = 12;
+      break;
+    case 12: //c PCM-PCM - 3 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 3.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
+      fMassParamFunction   = 12;
+      break;
+    case 13: //d PCM-PCM - 4 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 4.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
+      fMassParamFunction   = 12;
+      break;
+    case 14: //e PCM-PCM - 5 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 5.;
+      fSelectionNSigmaHigh = fSelectionNSigmaLow;
+      fMassParamFunction   = 12;
+      break;
+    default:
+      cout<<"Warning: pT dependent mass cut for eta prime not defined "<<selectionCut<<endl;
       return kFALSE;
   }
 
@@ -4674,13 +4858,16 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
         else
           return kFALSE;
       }
-  } else if (fUsePtDepSelectionWindow){
+  } else if (fUsePtDepSelectionWindow > 0){
       // Determine correct mass parametrisation depending on what method is used
       Float_t pt   = meson->Pt();
       Float_t mass = 0;
       Float_t sigma = 999;
       switch(fMassParamFunction){
         case 0: // EMC-EMC
+          //--------------------------------------------------
+          //          Omega meson 
+          //--------------------------------------------------
           //--------------------------------------------------
           //          EMC 13TeV
           //--------------------------------------------------
@@ -4940,12 +5127,95 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
-        default:
-          mass = 0.125306 + 0.001210 * pt;
-          sigma =   0.0136138 + ( (-0.00104914) * pt ) + (7.61163e-05 * pt * pt);
+          //--------------------------------------------------
+          //          Eta prime meson 
+          //--------------------------------------------------
+        case 10:  // EMC-EMC 13 TeV
+          cout << "Selection window pT dependent EMC" << endl;
+          //Mass
+          //----------
+          if ((meson->Pt())<2.5){
+              pt=2.5;
+          } else if ((meson->Pt())>56){
+              pt=56;
+          } else {
+              pt=(meson->Pt());
+          }
+          // pol3
+          //Parameter 0: 0.527787
+          //Parameter 1: 0.00398144
+          //Parameter 2: -0.000139936
+          //Parameter 3: 1.66086e-06
+          mass = (0.527787)+(0.00398144)*pt+(-0.000139936)*pt*pt+(1.66086e-06)*pt*pt*pt;
+          //----------
+          //Width
+          //----------
+          // pol3
+          //Parameter 0: 0.0426831
+          //Parameter 1: -0.00166479
+          //Parameter 2: 5.04147e-05
+          //Parameter 3: -4.11043e-07
+          sigma = (0.0426831)+(-0.00166479)*pt+(5.04147e-05)*pt*pt+(-4.11043e-07)*pt*pt*pt;
           fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
+        case 11:  // PCM-EMC 13 TeV
+          cout << "Selection window pT dependent PCM-EMC" << endl;
+          //Mass
+          //----------
+          if ((meson->Pt())<1.6){
+              pt=1.6;
+          } else if ((meson->Pt())>45){
+              pt=45;
+          } else {
+              pt=(meson->Pt());
+          }
+          // [0]*exp([1]/x+[2]*x+[3]*x*x)
+          //Parameter 0: 0.552572
+          //Parameter 1: -0.0366797
+          //Parameter 2: 0.000670217
+          //Parameter 3: -7.72413e-06
+          mass = (0.552572) * TMath::Exp( (-0.0366797)/pt + (0.000670217)*pt + (-7.72413e-06)*pt*pt);
+          //----------
+          //Width
+          //----------
+          // [0]*exp([1]/x+[2]*x+[3]*x*x) 
+          //Parameter 0: 0.0207645
+          //Parameter 1: 0.883405
+          //Parameter 2: -0.0162319
+          //Parameter 3: 0.000614509
+          sigma = (0.0207645) * TMath::Exp( (0.883405)/pt + (-0.0162319)*pt + (0.000614509)*pt*pt);
+          fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
+          fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
+          break;
+        case 12: // PCM-PCM 13 TeV
+          //Mass
+          //----------
+          if ((meson->Pt())<1.0){
+              pt=1.0;
+          } else if ((meson->Pt())>16){
+              pt=16;
+          } else {
+              pt=(meson->Pt());
+          }
+          // constant
+          //Parameter 0: 0.549677
+          mass = 0.549677;
+          //----------
+          //Width
+          //----------
+          // pol3 
+          //Parameter 0: 0.0108334
+          //Parameter 1: -0.00233694
+          //Parameter 2: 0.000403628
+          //Parameter 3: -1.84404e-05
+          sigma = (0.0108334)+(-0.00233694)*pt+(0.000403628)*pt*pt+(-1.84404e-05)*pt*pt*pt;
+          fSelectionLow = mass - (fSelectionNSigmaLow * sigma);
+          fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
+          break;
+        default:
+            cout<<"Warning: method" << fMassParamFunction << " for pT dependent cut not defined" << endl;
+            return kFALSE;
       }
 
       if (nominalRange == 0){

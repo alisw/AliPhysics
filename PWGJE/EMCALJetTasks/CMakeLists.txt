@@ -330,7 +330,9 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskEmcalSubjet.cxx
 	    UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
         UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
+        UserTasks/AliAnalysisTaskEmcalPIDinJet.cxx
         UserTasks/AliAnalysisTaskEmcalJetValidation.cxx
+	UserTasks/AliAnalysisTaskJetAngCorrelations.cxx
         Tracks/AliAnalysisTaskEmcalJetSpectrumSDPart.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx

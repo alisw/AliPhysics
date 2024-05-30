@@ -55,6 +55,7 @@ set(SRCS
   Exotica/Hdibaryon/AliAnalysisTaskHdibaryonLPpi.cxx
   Exotica/Dibaryons/AliAnalysisTaskDibaryons.cxx
   Exotica/Dibaryons/AliAnalysisTaskMSDibaryons.cxx
+  Exotica/Dibaryons/AliAnalysisTaskpOmegaDibaryon.cxx
   Exotica/LambdaN/AliAnalysisTaskLambdaNAOD.cxx
   Exotica/LambdaN/AliAnalysisTaskLambdaNRun2.cxx
   Exotica/LambdaNN/AliAnalysisTaskLNNntuple.cxx

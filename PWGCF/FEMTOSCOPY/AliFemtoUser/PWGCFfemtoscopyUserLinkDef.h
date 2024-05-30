@@ -97,8 +97,6 @@
 #pragma link C++ class AliFemtoPicoEventRP;
 #pragma link C++ class AliFemtoCorrFctnPairFractions;
 #pragma link C++ class AliAnalysisTaskParticleEfficiency+;
-#pragma link C++ class AliAnalysisEfficiencyPbPbExclusivePID+;
-#pragma link C++ class AliAnalysisEfficiencyPbPbNodoublecount+;
 #pragma link C++ class AliAnalysisTaskParticleFractions+;
 #pragma link C++ class AliFemtoPairOriginMonitor+;
 #pragma link C++ class AliFemtoPairCutAntiGammaAlpha+;
@@ -203,8 +201,6 @@
 #pragma link C++ class AliFemtoWRzTrackCut;
 //Daniela
 #pragma link C++ class AliAnalysisTaskParticleEffDY+;
-#pragma link C++ class AliAnalysisTaskParticleEffDY04+;
-#pragma link C++ class AliAnalysisTaskParticleEffDY06+;
 #pragma link C++ class AliAnalysisEffTaskFilterBit768+;
 #pragma link C++ class AliAnalysisEffTaskFilterBit16+;
 #pragma link C++ class AliAnalysisTaskEfficiencyFB128+;
@@ -213,11 +209,7 @@
 #pragma link C++ class AliFemtoPairCutRadialDistanceDR;
 #pragma link C++ class AliFemtoCorrFctnDYDPhiSimple+;
 #pragma link C++ class AliFemtoCorrFctnDYDPhiSimpleWithCorrections;
-#pragma link C++ class AliAnalysisTaskParticleEffDYM3+;
-#pragma link C++ class AliAnalysisTaskParticleEffDYM2+;
-#pragma link C++ class AliAnalysisTaskParticleEffDYM0+;
-#pragma link C++ class AliAnalysisTaskParticleEffDYM1+;
-#pragma link C++ class AliAnalysisTaskEfficiencyPbPb_DR+;
+#pragma link C++ class AliAnalysisTaskEffDRPbPb+;
 #pragma link C++ class AliAnalysisEffTaskPbPbDRMultDY+;
 #pragma link C++ class AliAnalysisEffTaskPbPbDRMultDY4090+;
 #pragma link C++ class AliAnalysisTaskEffK0ss+;

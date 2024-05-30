@@ -23,6 +23,7 @@ public:
   void SetNUEOn(bool doNUE) { this->IsDoNUE = doNUE; }
   void SetNUAOn(bool doNUA) { this->IsDoNUA = doNUA; }
   void SetListForZDCCalib(TList *flist) { this->fListZDCCalib = (TList *)flist->Clone(); }
+  void SetTrigger(TString trigger) { this->fTrigger = trigger; }
 
 private:
   bool GetVZEROPlane();
@@ -33,7 +34,7 @@ private:
   int GetRunNumBin(int runNum);
   bool LoadCalibHistForThisRun();
   bool RejectEvtTFFit();
-  void ResetHists();
+//  void ResetHists();
   bool QC2SE();
   bool CheckPIDofParticle(AliAODTrack *ftrack, int pidToCheck);
 
@@ -51,6 +52,8 @@ private:
   double fDeDxMin;
   double fNSigmaTPCCut;
   double fNSigmaTOFCut;
+  TString fTrigger; 
+  double fVzCut;    // vz cut
   TH3D **hYield;
   TProfile **pC2;
   TProfile **pC2QRe;
@@ -76,16 +79,16 @@ private:
   TProfile *ZDCResQ;
   TProfile2D **ZDCcos_t;
   TProfile2D **ZDCcos_p;
-  TProfile **fTPCrecenterQx;
-  TProfile **fTPCrecenterQy;
-  TProfile2D **fTPCrecenterQxVz;
-  TProfile2D **fTPCrecenterQyVz;
-  /// TFile *fTPCRecenterFile;
-  TList *fTPCRecenterList;
-  TProfile **fTPCAverageQx;
-  TProfile **fTPCAverageQy;
-  TProfile2D **fTPCAverageQxVz;
-  TProfile2D **fTPCAverageQyVz;
+//  TProfile **fTPCrecenterQx;
+//  TProfile **fTPCrecenterQy;
+//  TProfile2D **fTPCrecenterQxVz;
+//  TProfile2D **fTPCrecenterQyVz;
+//  /// TFile *fTPCRecenterFile;
+//  TList *fTPCRecenterList;
+//  TProfile **fTPCAverageQx;
+//  TProfile **fTPCAverageQy;
+//  TProfile2D **fTPCAverageQxVz;
+//  TProfile2D **fTPCAverageQyVz;
 
   int runNum;
   int oldRunNum;
@@ -220,10 +223,10 @@ private:
   double Qpx;
   double Qpy;
 
-  // TPC recenter
-  TH1F *fBeforeRecenterPsi2;
-  TH1F *fAfterRecenterPsi2;
-  TH1F *fAfterRecenterPsi2Vz;
+//  // TPC recenter
+//  TH1F *fBeforeRecenterPsi2;
+//  TH1F *fAfterRecenterPsi2;
+//  TH1F *fAfterRecenterPsi2Vz;
 
   AliAnalysisTaskChargeV1(const AliAnalysisTaskChargeV1 &);            // not implemented
   AliAnalysisTaskChargeV1 &operator=(const AliAnalysisTaskChargeV1 &); // not implemented

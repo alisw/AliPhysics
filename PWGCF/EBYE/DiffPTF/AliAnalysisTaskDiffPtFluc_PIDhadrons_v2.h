@@ -19,6 +19,7 @@
 #include "TString.h"
 #include "TTree.h"
 #include "AliEventCuts.h"
+#include "TExMap.h"
 
 class TList;
 class TTree;
@@ -61,6 +62,7 @@ class AliAnalysisTaskDiffPtFluc_PIDhadrons_v2 : public AliAnalysisTaskSE {
   void FilltrackQAplots_afterCut(Double_t fDcaXY, Double_t fDcaZ, Double_t fEta, Double_t fITSchi2perNcls, Double_t fTPCchi2perNcls, Double_t fTPCcrossedrows);
   void FillPIDQAplots_beforeCut(AliVTrack *track);
   void FillPIDQAplots_afterCut(AliVTrack *track, Bool_t Pionflag, Bool_t Kaon_flag, Bool_t Proton_flag);
+  void GlobalTracksAOD(AliAODEvent *aAOD);
 
   void SetListForTrkCorr (TList *fList)
   {
@@ -262,6 +264,9 @@ class AliAnalysisTaskDiffPtFluc_PIDhadrons_v2 : public AliAnalysisTaskSE {
   Int_t fRejectElectron_cut;
   Int_t fFillTrackQAhists_flag;
   Int_t fFillPIDhists_flag;
+  
+  TExMap *fGlobalTracksAOD; //! global tracks in AOD for FB128 **Ante**
+
 
   /*
   //Custom Functions:

@@ -84,6 +84,7 @@ public:
   void SetCentralityEstimator(EMCAL_STRINGVIEW centest) { fCentralityEstimator = centest; }
   void SetFillHistosWeighted(EWeightType_t weighttype) { fFillHistosWeighted = weighttype; }
   void SetFillHSparse(Bool_t doFill)               { fFillHSparse = doFill; }
+  void SetFillSpectrumPtNEF(Bool_t doFill)         { fFillSpectrumPtNEF = doFill; }
   void SetUseMuonCalo(Bool_t doUse)                { fUseMuonCalo = doUse; }
   void SetEnergyScaleShfit(Double_t scaleshift)    { fScaleShift = scaleshift; }
   void SetUseStandardOutlierRejection(bool doUse)  { fUseStandardOutlierRejection = doUse; }
@@ -203,6 +204,7 @@ private:
   THistManager                  *fHistos;                       ///< Histogram manager
   Bool_t                        fIsMC;                          ///< Running on simulated events
   Bool_t                        fFillHSparse;                   ///< Fill THnSparses with more information
+  Bool_t                        fFillSpectrumPtNEF;             ///< Fill spectrum as pt vs. NEF (2D unfolding)
 	UInt_t                        fTriggerSelectionBits;          ///< Trigger selection bits
   TString                       fTriggerSelectionString;        ///< Trigger selection string
   Bool_t                        fRequireSubsetMB;               ///< Require for triggers to be a subset of Min. Bias (for efficiency studies)
