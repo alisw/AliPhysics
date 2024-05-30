@@ -5131,7 +5131,6 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           //          Eta prime meson 
           //--------------------------------------------------
         case 10:  // EMC-EMC 13 TeV
-          cout << "Selection window pT dependent EMC" << endl;
           //Mass
           //----------
           if ((meson->Pt())<2.5){
@@ -5160,7 +5159,6 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           fSelectionHigh = mass + (fSelectionNSigmaHigh * sigma);
           break;
         case 11:  // PCM-EMC 13 TeV
-          cout << "Selection window pT dependent PCM-EMC" << endl;
           //Mass
           //----------
           if ((meson->Pt())<1.6){
