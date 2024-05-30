@@ -453,6 +453,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
       bool fMapPtWeightsIsFilledAndSane;                         //!<  flag to indicate if fMapPtWeightsAccessObjects is filled and sane
       // this flag will removed as soon the functionality has been checked against the old method
       bool fUseGetWeightForMesonNew;                             //!<  flag to indicate if new method for getting pt weights is used
+      TH1 *fHistoRelDiffNewOldMesonWeights;                   //!<  histo to store differences between new and old method for pt weights
+      TH1 *fHistoRelDiffNewOldMesonWeights_fine;              //!<  histo to store differences between new and old method for pt weights
       // ============ END section for pt weights in variant calculation form =====
 
       AliConvEventCuts(const char *name="EventCuts", const char * title="Event Cuts");

@@ -224,6 +224,8 @@ AliConvEventCuts::AliConvEventCuts(const char *name,const char *title) :
   fDebugLevel(0),
   fMapPtWeightsAccessObjects(),
   fUseGetWeightForMesonNew(kFALSE),
+  fHistoRelDiffNewOldMesonWeights(nullptr),
+  fHistoRelDiffNewOldMesonWeights_fine(nullptr),
   fMapPtWeightsIsFilledAndSane(kFALSE)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
@@ -376,6 +378,8 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fDebugLevel(ref.fDebugLevel),
   fMapPtWeightsAccessObjects(ref.fMapPtWeightsAccessObjects),
   fUseGetWeightForMesonNew(ref.fUseGetWeightForMesonNew),
+  fHistoRelDiffNewOldMesonWeights(ref.fHistoRelDiffNewOldMesonWeights),
+  fHistoRelDiffNewOldMesonWeights_fine(ref.fHistoRelDiffNewOldMesonWeights_fine),
   fMapPtWeightsIsFilledAndSane(ref.fMapPtWeightsIsFilledAndSane)
 {
   // Copy Constructor
@@ -460,6 +464,19 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
   if (hReweightMCHistGamma){
     hReweightMCHistGamma->SetName("MCInputForWeightingGamma");
     fHistograms->Add(hReweightMCHistGamma);
+  }
+
+  if (fUseGetWeightForMesonNew){
+    fHistoRelDiffNewOldMesonWeights = new TH1D("fHistoRelDiffNewOldMesonWeights", 
+                                               "fHistoRelDiffNewOldMesonWeights;ptG (GeV/c);(new-old)/old", 
+                                               200, -1., 1.);
+    fHistograms->Add(fHistoRelDiffNewOldMesonWeights);
+
+    // same for _fine
+    fHistoRelDiffNewOldMesonWeights_fine = new TH1D("fHistoRelDiffNewOldMesonWeights_fine", 
+                                                    "fHistoRelDiffNewOldMesonWeights_fine;ptG (GeV/c);(new-old)/old", 
+                                                    200, -.02, .02);
+    fHistograms->Add(fHistoRelDiffNewOldMesonWeights_fine);
   }
 
 
@@ -7883,9 +7900,23 @@ Float_t AliConvEventCuts::GetWeightForMultiplicity(Int_t mult){
 //_________________________________________________________________________
 Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, AliVEvent *event)
 {
+  double lWeightOld = GetWeightForMesonOld(index, mcEvent, event);
+  double lWeightNew = fUseGetWeightForMesonNew && fMapPtWeightsIsFilledAndSane 
+    ? GetWeightForMesonNew(index, mcEvent, event)
+    : -1.;
+  
+  double diff = lWeightNew > -1. 
+    ? lWeightOld - lWeightNew
+    : lWeightNew;
+
+  double lRelDiff = lWeightOld 
+    ? diff / lWeightOld  
+    : diff;
+  fHistoRelDiffNewOldMesonWeights->Fill(lRelDiff);
+  fHistoRelDiffNewOldMesonWeights_fine->Fill(lRelDiff);
   return (fUseGetWeightForMesonNew && fMapPtWeightsIsFilledAndSane) 
-     ? GetWeightForMesonNew(index, mcEvent, event)
-     : GetWeightForMesonOld(index, mcEvent, event);
+     ? lWeightNew
+     : lWeightOld;
 }
 
 // todo: thinkg of using the return value of this function for more signaling purposes.
