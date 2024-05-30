@@ -7990,7 +7990,7 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
                            ? (lNomData > 0.)
                                  ? lNomData / lDenomMC
                                  : lNomData // to signal problem
-                           : -1.;           // to signal problem
+                           : 0.;          
     // will reset to 1 and throw a warning if weight is not >=0 and finite
     return checkSanitizeAndReturnWeight(lWeight);
   };
