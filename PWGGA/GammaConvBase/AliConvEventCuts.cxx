@@ -7926,7 +7926,9 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
   AliInfo("AliConvEventCuts::GetWeightForMesonNew(): INFO: Starting function\n");
   if (!indexIsValidAndParticleIsToBeWeighted())
   {
-    return 1.;
+    AliWarning(Form("checkSanitizeAndReturnWeight(): WARNING: 1 for particle %d returning 0.\n",
+                      index));
+    return 0.;
   }
 
   Double_t mesonPt = 0;
@@ -7959,15 +7961,19 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
 
   if (!getPDGCodeAndMesonPt())
   {
-    return 1.;
+    AliWarning(Form("checkSanitizeAndReturnWeight(): WARNING: 2 for meson %d. returning 0.\n",
+                      PDGCode));
+
+    return 0.;
   }
 
   auto checkSanitizeAndReturnWeight = [&](Double_t theWeight)
   {
     if ((theWeight < 0) || !isfinite(theWeight))
     {
-      theWeight = 1.;
-      AliWarning(Form("checkSanitizeAndReturnWeight(): WARNING: Weight for meson %d is negative or not finite: %f. It was set back to 1.\n"
+      theWeight = 0.;
+      AliWarning(Form("checkSanitizeAndReturnWeight(): WARNING: Weight for meson %d is negative or not finite: %f.\n"
+      " It was set to 0 - effectively rejecting the particle.\n"
                       "This points to a severe problem - investigate!\n",
                       PDGCode, theWeight));
     }
@@ -7978,7 +7984,7 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
   auto const &lConstIt = fMapPtWeightsAccessObjects.find(PDGCode);
   if (lConstIt == fMapPtWeightsAccessObjects.cend())
   {
-    AliWarning(Form("GetWeightForMesonNew(): WARNING: PDGCode %d not found in fMapPtWeightsAccessObjects. Returning 1.\n", PDGCode));
+    AliWarning(Form("GetWeightForMesonNew(): WARNING: 3: PDGCode %d not found in fMapPtWeightsAccessObjects. Returning 1.\n", PDGCode));
     return 1.;
   }
 
@@ -7989,17 +7995,20 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
     Double_t lWeight = lDenomMC
                            ? (lNomData > 0.)
                                  ? lNomData / lDenomMC
-                                 : lNomData // to signal problem
-                           : 0.;          
+                                 : 0 // to signal problem
+                           : -1.;    // to signal problem      
     // will reset to 1 and throw a warning if weight is not >=0 and finite
     return checkSanitizeAndReturnWeight(lWeight);
   };
 
   bool lCaseEtaPi0 = (PDGCode == 111) || (PDGCode == 221);
-  AliInfo("AliConvEventCuts::GetWeightForMesonNew(): INFO: end of function\n");
-  return lCaseEtaPi0
+  double lResult = lCaseEtaPi0
              ? calcWeight()
              : checkSanitizeAndReturnWeight(lDenomMC);
+
+  AliInfo(Form("INFO: end of function. Return value = %f\n", 
+          lResult));
+  return lResult;
 }
 
 //_________________________________________________________________________
