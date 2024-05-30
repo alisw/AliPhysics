@@ -122,7 +122,7 @@ void AddTask_GammaConvV1_PbPb(
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
-    if(strTempSetting.("MINPTHFAC:")){
+    if(strTempSetting.BeginsWith("MINPTHFAC:")){
       strTempSetting.Replace(0,10,"");
       minFacPtHard               = strTempSetting.Atof();
       cout << "running with min pT hard jet fraction of: " << minFacPtHard << endl;
@@ -4353,8 +4353,8 @@ void AddTask_GammaConvV1_PbPb(
     if (intPtWeightsCalculationMethod)
     {
       printf("AddTask_GammaConvV1_PbPb.C: INFO: intPtWeightsCalculationMethod = %d\n", intPtWeightsCalculationMethod);
-      if (periodNameAnchor.("LHC15o") || 
-          periodNameAnchor.("LHC18q"))
+      if (periodNameAnchor.BeginsWith("LHC15o") || 
+          periodNameAnchor.BeginsWith("LHC18q"))
       {
         TString eventCutString = cuts.GetEventCut(i);
         TString eventCutShort = eventCutString(0, 6);                                                // first six digits
