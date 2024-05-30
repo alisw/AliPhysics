@@ -91,7 +91,6 @@ void postConfig(AliAnalysisTaskIDFragmentationFunction* task, TString namesOfInc
   printf("Jet Underlying Event PID tasks: ");
   for (Int_t i = 0; i < numJetUEPIDtasks; i++) {
     printf("%s ", task->GetNamesOfJetUEPIDtasks()[i].Data());
-    cout << ";  Underlying event subtraction method: " << task->GetUEMethods()[i] << endl; 
   }
   printf("\n");  
   printf("Inclusive PID task: ");
