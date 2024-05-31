@@ -1085,22 +1085,61 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
 
   auto calculateVariantSpectraAndInsert = [&](int thePDGCode,
                                               EnumPtWeights theWhich,
-                                              TF1 const &theDataTF1_inv,
-                                              TH1D const &theMCTH1_inv)
-  {
+                                              TF1 const *theDataTF1_inv,
+                                              TH1D const *theMCTH1_inv)
+  { 
+    AliInfo(Form("calculateVariantSpectraAndInsert(): called with:\n"
+                 "\tthePDGCode: %d\n"
+                 "\ttheWhich: %d\n"
+                 "\ttheDataTF1_inv: %s\n"
+                 "\ttheMCTH1_inv: %s\n",
+                 thePDGCode, 
+                 static_cast<int>(theWhich), 
+                 theDataTF1_inv 
+                  ? theDataTF1_inv->GetName()
+                  : "nullptr" ,
+                  theMCTH1_inv 
+                    ? theMCTH1_inv->GetName()
+                    : "nullptr"));
+
+    if (!theWhich)
+    {
+      AliInfo(Form("calculateVariantSpectraAndInsert(): called with thePDGCode = %d and theWhich = kOff.\n"
+        "\tNothing to be done, returning true.\n", thePDGCode));
+        return true;
+    }
+
+    if (!(theDataTF1_inv && theMCTH1_inv))
+    {
+      AliError(Form("calculateVariantSpectraAndInsert() called with at least one nullptr:\n"
+                    "\tthePDGCode: %d\n"
+                    "\ttheWhich: %d\n"
+                    "\ttheDataTF1_inv: %s\n"
+                    "\ttheMCTH1_inv: %s\n"
+                    "\t returning false.\n",
+                    thePDGCode, 
+                    static_cast<int>(theWhich), 
+                    theDataTF1_inv ? theDataTF1_inv->GetName() : "nullptr",
+                    theMCTH1_inv ? theMCTH1_inv->GetName() : "nullptr"));
+      return false;
+    }
+    
+    // done with checks on arguments. Prepare data for insertion into the map
     TF1 const *lDataTF1 = (theWhich == kOff)
                               ? nullptr
                           : (theWhich == kInvariant)
-                              ? &theDataTF1_inv
-                              : new TF1(Form("%s_multByX", theDataTF1_inv.GetName()),
-                                        Form("x*(%s)", theDataTF1_inv.GetTitle()),
-                                        theDataTF1_inv.GetXmin(), theDataTF1_inv.GetXmax());
+                              ? theDataTF1_inv
+                              : new TF1(Form("%s_multByX", theDataTF1_inv->GetName()),
+                                        Form("x*(%s)", theDataTF1_inv->GetTitle()),
+                                        theDataTF1_inv->GetXmin(), theDataTF1_inv->GetXmax());
 
     TH1 const *lMCTH1 = (theWhich == kOff)
                             ? nullptr
                         : (theWhich == kInvariant)
-                            ? &theMCTH1_inv
-                            : &multiplyTH1ByBinCenters(theMCTH1_inv);
+                            ? theMCTH1_inv
+                            : &multiplyTH1ByBinCenters(*theMCTH1_inv);
+    
+    // preparation done, insert into the map
     if (!fMapPtWeightsAccessObjects.insert({thePDGCode, PtWeightsBundle{theWhich, lDataTF1, lMCTH1}}).second)
     {
       AliError(Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): failed to insert:\n"
@@ -1108,7 +1147,7 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
                     "\ttheWhich: %d\n"
                     "\ttheDataTF1_inv: %s\n"
                     "\ttheMCTH1_inv: %s\n",
-                    thePDGCode, static_cast<int>(theWhich), theDataTF1_inv.GetName(), theMCTH1_inv.GetName()));
+                    thePDGCode, static_cast<int>(theWhich), theDataTF1_inv->GetName(), theMCTH1_inv->GetName()));
       return false;
     }
     return true;
@@ -1117,9 +1156,9 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
   // execution starts here
   AliInfo("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): start.\n");
   bool lSuccess = true;
-  lSuccess &= calculateVariantSpectraAndInsert(111, fDoReweightHistoMCPi0, *fFitDataPi0_inv, *hReweightMCHistPi0_inv);
-  lSuccess &= calculateVariantSpectraAndInsert(211, fDoReweightHistoMCEta, *fFitDataEta_inv, *hReweightMCHistEta_inv);
-  lSuccess &= calculateVariantSpectraAndInsert(310, fDoReweightHistoMCEta, *fFitDataEta_inv, *hReweightMCHistEta_inv);
+  lSuccess &= calculateVariantSpectraAndInsert(111, fDoReweightHistoMCPi0, fFitDataPi0_inv, hReweightMCHistPi0_inv);
+  lSuccess &= calculateVariantSpectraAndInsert(221, fDoReweightHistoMCEta, fFitDataEta_inv, hReweightMCHistEta_inv);
+  lSuccess &= calculateVariantSpectraAndInsert(310, fDoReweightHistoMCK0s, fFitDataK0s_inv, hReweightMCHistK0s_inv);
 
   if (!lSuccess)
   {
@@ -7953,7 +7992,7 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
     return (index > 0) && kCaseGen && IsParticleFromBGEvent(index, mcEvent, event);
   };
 
-  AliInfo("AliConvEventCuts::GetWeightForMesonNew(): INFO: Starting function\n");
+  // AliInfo("AliConvEventCuts::GetWeightForMesonNew(): INFO: Starting function\n");
   if (!indexIsValidAndParticleIsToBeWeighted())
   {
     AliWarning(Form("checkSanitizeAndReturnWeight(): WARNING: 1 for particle %d returning 0.\n",
@@ -8014,7 +8053,8 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
   auto const &lConstIt = fMapPtWeightsAccessObjects.find(PDGCode);
   if (lConstIt == fMapPtWeightsAccessObjects.cend())
   {
-    AliWarning(Form("GetWeightForMesonNew(): WARNING: 3: PDGCode %d not found in fMapPtWeightsAccessObjects. Returning 1.\n", PDGCode));
+    // commenting since this will be true when selecting etas only (this function will be called for their daughter pi0s)
+    // AliWarning(Form("GetWeightForMesonNew(): WARNING: 3: PDGCode %d not found in fMapPtWeightsAccessObjects. Returning 1.\n", PDGCode));
     return 1.;
   }
 
@@ -8036,14 +8076,14 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
              ? calcWeight()
              : checkSanitizeAndReturnWeight(lDenomMC);
 
-  AliInfo(Form("INFO: end of function. Return value = %f\n", 
-          lResult));
+  // AliInfo(Form("INFO: end of function. Return value = %f\n", 
+  //        lResult));
   return lResult;
 }
 
 //_________________________________________________________________________
 Float_t AliConvEventCuts::GetWeightForMesonOld(Int_t index, AliMCEvent *mcEvent, AliVEvent *event){
-  AliInfo("AliConvEventCuts::GetWeightForMesonOld(): INFO: Starting function\n");
+  // AliInfo("AliConvEventCuts::GetWeightForMesonOld(): INFO: Starting function\n");
   if(index < 0) return 0; // No Particle
 
   // check if MC production should be weighted. If it is with added particles check that particle is not rejected
@@ -8138,7 +8178,7 @@ Float_t AliConvEventCuts::GetWeightForMesonOld(Int_t index, AliMCEvent *mcEvent,
   } else if (PDGCode ==  310 && functionResultMC != 0 && isfinite(functionResultMC)){
     weight = functionResultMC;
   }
-  AliInfo("AliConvEventCuts::GetWeightForMesonOld(): INFO: end of function\n");
+  //AliInfo("AliConvEventCuts::GetWeightForMesonOld(): INFO: end of function\n");
   return weight;
 }
 

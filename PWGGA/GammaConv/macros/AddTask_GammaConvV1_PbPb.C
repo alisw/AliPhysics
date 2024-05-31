@@ -3797,6 +3797,8 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("15910023", "0d200009ab770c00amd0404000", "0152101500000000"); // 50-90%
   } else if (trainConfig == 998){ //____________________-___
       cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+  } else if (trainConfig == 999){ //____________________-___
+      cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
 //****************************************************************************************************
 
   } else if (trainConfig == 1001){
@@ -4364,9 +4366,15 @@ void AddTask_GammaConvV1_PbPb(
         fitNameEtaPT = Form("Eta_Data_5TeV_%s", eventCutShort.Data());
       }
       analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(
-          intPtWeightsCalculationMethod /*pi0reweight*/,
-          intPtWeightsCalculationMethod /*etareweight*/,
-          0 /*need to switch off manually of here for now todo: <-*/ /*k0sreweight*/,
+          HeaderList->FindObject("Injector (pi0)") 
+            ? intPtWeightsCalculationMethod /*pi0reweight*/
+            : 0,
+          HeaderList->FindObject("Injector (eta)") 
+            ? intPtWeightsCalculationMethod /*etareweight*/
+            : 0,
+          HeaderList->FindObject("Injector (K0s)") 
+            ? intPtWeightsCalculationMethod /*k0sreweight*/
+            : 0,
           fileNamePtWeights,
           histoNameMCPi0PT, histoNameMCEtaPT, histoNameMCK0sPT,
           fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);
