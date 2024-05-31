@@ -651,8 +651,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00074113","411790109fe302v0000","32c51079m","f000613200000000","0453503000000000"); // VOHM
     cuts.AddCutHeavyMesonCalo("00076113","411790109fe302v0000","32c51079m","f000613200000000","0453503000000000"); // VOHM with SPD
   } else if(trainConfig == 242){ // 4 sigma for mass cut
-    cuts.AddCutHeavyMesonCalo("00074113","411790109fe302v0000","32c51079m","f000623300000000","0453503000000000"); // VOHM
-    cuts.AddCutHeavyMesonCalo("00076113","411790109fe302v0000","32c51079m","f000623300000000","0453503000000000"); // VOHM with SPD
+    cuts.AddCutHeavyMesonCalo("00074113","411790109fe302v0000","32c51079m","f000613300000000","0453503000000000"); // VOHM
+    cuts.AddCutHeavyMesonCalo("00076113","411790109fe302v0000","32c51079m","f000613300000000","0453503000000000"); // VOHM with SPD
   
     // PCM-PHOS
   } else if ( trainConfig == 250 ) { // INT7 + PHI7
