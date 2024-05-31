@@ -100,7 +100,8 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fFFMaxTrackPt(-1)
    ,fFFMinnTracks(0)   
    ,fAvgTrials(0)
-   ,fStudyTransversalJetStructure(kFALSE)
+   ,fStudyRadialDistanceInAnyTask(kFALSE)
+   ,fStudyTransversalMomentumInAnyTask(kFALSE)
    ,fCommonHistList(0)
    ,fh1EvtSelection(0)
    ,fh1VtxSelection(0)
@@ -156,7 +157,6 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fFastSimResFactor(1.0)
    ,fFFChange(AliAnalysisTaskIDFragmentationFunction::kNoChange)
    ,fRCTrials(1)
-   ,fUEMethods(0x0)
    ,fUseRealJetArea(kTRUE)
 {
    // default constructor
@@ -197,7 +197,8 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fFFMaxTrackPt(-1)
   ,fFFMinnTracks(0)  
   ,fAvgTrials(0)
-  ,fStudyTransversalJetStructure(kFALSE)
+  ,fStudyRadialDistanceInAnyTask(kFALSE)
+  ,fStudyTransversalMomentumInAnyTask(kFALSE)
   ,fCommonHistList(0)
   ,fh1EvtSelection(0)
   ,fh1VtxSelection(0)
@@ -253,7 +254,6 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fFastSimResFactor(1.0)  
   ,fFFChange(AliAnalysisTaskIDFragmentationFunction::kNoChange)
   ,fRCTrials(1)
-  ,fUEMethods(0x0)
   ,fUseRealJetArea(kTRUE)
 {
   // constructor
@@ -633,6 +633,20 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
   // TODO should be moved to more appropriate interface
   ResetEffFunctions();
   InitialiseFastSimulationFunctions();
+
+  if (fUseJetPIDtask) {
+    for (Int_t i = 0; i < fNumJetPIDtasks; i++) {
+      fStudyRadialDistanceInAnyTask = fStudyRadialDistanceInAnyTask || fJetPIDtask[i]->GetStoreRadialDistance();
+      fStudyTransversalMomentumInAnyTask = fStudyTransversalMomentumInAnyTask || fJetPIDtask[i]->GetStorejT();
+    }
+  }
+  
+  if (fUseJetUEPIDtask) {
+    for (Int_t i = 0; i < fNumJetUEPIDtasks; i++) {
+      fStudyRadialDistanceInAnyTask = fStudyRadialDistanceInAnyTask || fJetUEPIDtask[i]->GetStoreRadialDistance();
+      fStudyTransversalMomentumInAnyTask = fStudyTransversalMomentumInAnyTask || fJetUEPIDtask[i]->GetStorejT();
+    }
+  }
   
   AliDebugStream(1) << "Done" << std::endl;
 }
@@ -1633,79 +1647,75 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   if (fUseJetUEPIDtask && jetContainer && !isPileUpForAllJetUEPIDTasks && !fUseFastSimulations) {
     for (Int_t i=0;i<fNumJetUEPIDtasks;++i) {
       if (!isPileUpJetUEPIDtask[i]) {
-        TString method = fUEMethods[i];
         AliAnalysisTaskMTFPID* task = fJetUEPIDtask[i];
-        
+        TString method = task->GetUEMethod();
+
         TList *jetUElist = 0x0;
         TList* mcJetUElist = 0x0;
 
-        if (mcJetContainer) {
-          if (fOnlyLeadingJets)
-            mcJetContainer->SortArray();
-          
-          if (method.Contains("RC",TString::kIgnoreCase) || method.Contains("Random",TString::kIgnoreCase)) {
-            mcJetUElist = GetUEJetsWithRandomConeMethod(mcJetContainer, TMath::Abs(GetFFRadius()), task->GetEtaAbsCutUp()); 
-          }
-          else if (method.Contains("PC",TString::kIgnoreCase) || method.Contains("Perpendicular",TString::kIgnoreCase)) {
-            mcJetUElist = GetUEJetsWithPerpendicularConeMethod(mcJetContainer);
-          }
-        } 
-            
-        if (jetContainer) {
-        //Get Underlying event jets
-          if (fOnlyLeadingJets)
-            jetContainer->SortArray();
-          //Random Cones______________________________________________
-          if (method.Contains("RC",TString::kIgnoreCase) || method.Contains("Random",TString::kIgnoreCase)) {
-            jetUElist = GetUEJetsWithRandomConeMethod(jetContainer, TMath::Abs(GetFFRadius()), task->GetEtaAbsCutUp());  
-          }
-          //Perpendicular Cones______________________________________________
-          else if (method.Contains("PC",TString::kIgnoreCase) || method.Contains("Perpendicular",TString::kIgnoreCase)) {
-            jetUElist = GetUEJetsWithPerpendicularConeMethod(jetContainer);
-          }
-        }
-        //Process Tracks
-        if (jetUElist) {
-          for (Int_t i=0;i<jetUElist->GetEntries();++i) { 
-            AliEmcalJet* jet = (AliEmcalJet*)(jetUElist->At(i));
-            Double_t UEPtDensity = 0.0;
-            Float_t jetPt = jet->Pt();
-            if (jetContainer->GetRhoParameter())
-              jetPt = jetPt - jetContainer->GetRhoVal() * jet->Area();
-            task->FillRecJets(centPercent, jetPt);
-            task->FillJetArea(centPercent, jet->Area());
-              
-            TList *jetUEtracklist = GetTracksInCone(jet, trackContainer);
-            if (!jetUEtracklist) {
-              cout << "No track list for an underlying event jet. Check Code!" << endl;
-              continue;
-            }
-            
-            jetUEtracklist->SetOwner(kFALSE);
+        if (mcJetContainer && fOnlyLeadingJets)
+          mcJetContainer->SortArray();
 
-            for (Int_t j=0;j<jetUEtracklist->GetEntries();++j) {
-              AliVTrack* UEtrack = (AliVTrack*)(jetUEtracklist->At(j));
-              
-              if (UEtrack) {        
-                Bool_t survivedTPCCutMIGeo = AliAnalysisTaskMTFPID::TPCCutMIGeo(UEtrack, InputEvent());
-                Bool_t survivedTPCnclCut = AliAnalysisTaskMTFPID::TPCnclCut(UEtrack);   //Included above
-                Double_t dEdxTPC = tuneOnDataTPC ? pidResponse->GetTPCsignalTunedOnData(UEtrack) : UEtrack->GetTPCsignal();
-                
-                if ((!task->GetUseTPCCutMIGeo() || survivedTPCCutMIGeo) && (!task->GetUseTPCnclCut() || survivedTPCnclCut) && task->IsInAcceptedEtaRange(TMath::Abs(UEtrack->Eta())) && (dEdxTPC > 0.0)) {
-                  AnalyseJetTrack(UEtrack, jet, task, 0x0, centPercent, mcParticleContainer);
-//                   task->FillDCA(UEtrack, dEdxTPC, primVtx, fMCEvent, jetPt);
-                }
-                UEPtDensity += UEtrack->Pt();
-              }
-            }
-            delete jetUEtracklist;
-            jetUEtracklist = 0x0;
-            UEPtDensity = UEPtDensity/(TMath::Abs(GetFFRadius()) * TMath::Abs(GetFFRadius()) * TMath::Pi());
-            task->FillUEDensity(centPercent, UEPtDensity);
-          }
-          delete jetUElist;
-          jetUElist = 0x0;
+        if (fOnlyLeadingJets)
+          jetContainer->SortArray();       
+
+        // Construct jets in underlying event
+        if (method.Contains("RC",TString::kIgnoreCase) || method.Contains("Random",TString::kIgnoreCase)) {
+          if (mcJetContainer)
+            mcJetUElist = GetUEJetsWithRandomConeMethod(mcJetContainer, TMath::Abs(GetFFRadius()), task->GetEtaAbsCutUp());
+
+          jetUElist = GetUEJetsWithRandomConeMethod(jetContainer, TMath::Abs(GetFFRadius()), task->GetEtaAbsCutUp()); 
         }
+        else if (method.Contains("PC",TString::kIgnoreCase) || method.Contains("Perpendicular",TString::kIgnoreCase)) {
+          if (mcJetContainer)
+            mcJetUElist = GetUEJetsWithPerpendicularConeMethod(mcJetContainer);
+
+          jetUElist = GetUEJetsWithPerpendicularConeMethod(jetContainer); 
+        } else {
+          AliErrorStream() << "UE method " << method << " not recognised" << std::endl;
+        }
+
+        //Process Tracks
+        for (Int_t i=0;i<jetUElist->GetEntries();++i) { 
+          AliEmcalJet* jet = (AliEmcalJet*)(jetUElist->At(i));
+          Double_t UEPtDensity = 0.0;
+          Float_t jetPt = jet->Pt();
+          if (jetContainer->GetRhoParameter())
+            jetPt = jetPt - jetContainer->GetRhoVal() * jet->Area();
+          task->FillRecJets(centPercent, jetPt);
+          task->FillJetArea(centPercent, jet->Area());
+            
+          TList *jetUEtracklist = GetTracksInCone(jet, trackContainer);
+          if (!jetUEtracklist) {
+            AliErrorStream() << "No track list for an underlying event jet. Check Code!" << std::endl;
+            continue;
+          }
+          
+          jetUEtracklist->SetOwner(kFALSE);
+
+          for (Int_t j=0;j<jetUEtracklist->GetEntries();++j) {
+            AliVTrack* UEtrack = (AliVTrack*)(jetUEtracklist->At(j));
+            
+            if (UEtrack) {        
+              Bool_t survivedTPCCutMIGeo = AliAnalysisTaskMTFPID::TPCCutMIGeo(UEtrack, InputEvent());
+              Bool_t survivedTPCnclCut = AliAnalysisTaskMTFPID::TPCnclCut(UEtrack);   //Included above
+              Double_t dEdxTPC = tuneOnDataTPC ? pidResponse->GetTPCsignalTunedOnData(UEtrack) : UEtrack->GetTPCsignal();
+              
+              if ((!task->GetUseTPCCutMIGeo() || survivedTPCCutMIGeo) && (!task->GetUseTPCnclCut() || survivedTPCnclCut) && task->IsInAcceptedEtaRange(TMath::Abs(UEtrack->Eta())) && (dEdxTPC > 0.0)) {
+                AnalyseJetTrack(UEtrack, jet, task, 0x0, centPercent, mcParticleContainer);
+//                   task->FillDCA(UEtrack, dEdxTPC, primVtx, fMCEvent, jetPt);
+              }
+              UEPtDensity += UEtrack->Pt();
+            }
+          }
+          delete jetUEtracklist;
+          jetUEtracklist = 0x0;
+          UEPtDensity = UEPtDensity/(TMath::Abs(GetFFRadius()) * TMath::Abs(GetFFRadius()) * TMath::Pi());
+          task->FillUEDensity(centPercent, UEPtDensity);
+        }
+        delete jetUElist;
+        jetUElist = 0x0;
+
         if (mcJetUElist) {
           for (Int_t i=0;i<mcJetUElist->GetEntries();++i) {
             AliEmcalJet* jet = (AliEmcalJet*)(mcJetUElist->At(i));
@@ -1768,6 +1778,12 @@ void AliAnalysisTaskIDFragmentationFunction::Terminate(Option_t *)
   // terminated
   if (fUseJetUEPIDtask) {
     for (Int_t i=0;i<fNumJetUEPIDtasks;++i) {
+      if (!fJetUEPIDtask[i]) {
+        AliWarningStream() << "Could not find UE pid task in terminate" << std::endl;
+        continue;
+      }
+        
+      
       fJetUEPIDtask[i]->NormalizeJetArea(TMath::Abs(GetFFRadius()));
     }
   }
@@ -1890,7 +1906,7 @@ Double_t AliAnalysisTaskIDFragmentationFunction::GetDistanceJetTrack(const AliEm
 {
   // Calculate the distance between jet and track in the eta-phi-plane.
 
-  if (!fStudyTransversalJetStructure)
+  if (!fStudyRadialDistanceInAnyTask)
     return -1;  
   
   if (!jet || !track)
@@ -1907,7 +1923,7 @@ Double_t AliAnalysisTaskIDFragmentationFunction::GetPerpendicularMomentumTrackJe
 {
   // Calculate the momentum of the track perpendicular to the jet axis.
   
-  if (!fStudyTransversalJetStructure)
+  if (!fStudyTransversalMomentumInAnyTask)
     return -1;
   
   if (!jet || !track)

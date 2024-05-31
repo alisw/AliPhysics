@@ -45,7 +45,7 @@ public:
   void InitialiseFastSimulationFunctions();
   
   Bool_t         FillHistograms();
-  virtual void   Terminate(Option_t* );
+  void   Terminate(Option_t* );
   virtual Bool_t Notify();
   
   enum FragmentationFunctionChange { kNoChange = 0, kLowPtEnhancement = 1, kLowPtDepletion = 2};
@@ -82,9 +82,6 @@ public:
 
   virtual void   SetFFRadius(Float_t r = 0.4) { fFFRadius = r; }
   virtual void   SetMCPtHardCut(Float_t ptHardCut)      { fMCPtHardCut = ptHardCut; }
-  
-  virtual Bool_t GetStudyTransversalJetStructure() const { return fStudyTransversalJetStructure; }
-  virtual void SetStudyTransversalJetStructure(Bool_t flag) { fStudyTransversalJetStructure = flag; }
   
   virtual Bool_t GetFillDCA() const { return fFillDCA; }
   virtual void SetFillDCA(Bool_t flag) { fFillDCA = flag; }  
@@ -177,7 +174,7 @@ public:
   void SetNamesOfJetPIDtasks(Int_t numNames, const TString* names);
   
   const TString* GetNamesOfJetUEPIDtasks() const { return fNameJetUEPIDtask; };
-  void SetNamesOfJetUEPIDtasks(Int_t numNames, const TString* names, const TString* methods = 0x0);
+  void SetNamesOfJetUEPIDtasks(Int_t numNames, const TString* names);
 	
   Bool_t GetIsPP() const { return fIsPP; };
   void SetIsPP(Bool_t flag) { fIsPP = flag; };
@@ -187,9 +184,6 @@ public:
   
   Bool_t GetUseRealJetArea() const { return fUseRealJetArea; }
   void SetUseRealJetArea(Bool_t flag) {fUseRealJetArea = flag; }  
-
-  const TString* GetUEMethods() const { return fUEMethods; }
-  void SetUEMethods(const TString* names);
   
   Bool_t GetOnlyLeadingJets() const { return fOnlyLeadingJets; }
   void SetOnlyLeadingJets(Bool_t onlyLeadingJets) { fOnlyLeadingJets = onlyLeadingJets; }
@@ -232,7 +226,8 @@ public:
   
   // histogram bins  
 
-  Bool_t fStudyTransversalJetStructure; // Store observables related to transversal jet structure
+  Bool_t fStudyRadialDistanceInAnyTask; // Store observables related to transversal jet structure
+  Bool_t fStudyTransversalMomentumInAnyTask;
   
   // Histograms
   TList	*fCommonHistList;         // List of common histos
@@ -302,10 +297,13 @@ public:
   Bool_t fIsPP;                             // Is pp collision system? -> If yes, centrality will be set to -1
   
   Bool_t fFillDCA;                          //Shall the DCA histograms be filled?
+
+  // Changed jets analysis
   Bool_t fDoGroomedJets;                    //! Use groomed jets
   Double_t fBetaSoftDrop;
   Double_t fZSoftDrop;
   
+  // Fast simulation parameters
   Bool_t fUseFastSimulations;
   TString fastSimulationParameters;          // Parameter string to store FastSimulation parameters
   TF1** fEffFunctions;                       //! For fast simulations
@@ -316,7 +314,6 @@ public:
   
   //Underlying event members
   UInt_t fRCTrials;
-  TString* fUEMethods;                      //[fNumJetUEPIDtasks] Names for the underlying event methods
   Bool_t fUseRealJetArea;
   
 private:
@@ -371,7 +368,7 @@ inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfJetPIDtasks(Int_t 
   }  
 }
 
-inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfJetUEPIDtasks(Int_t numNames, const TString* names, const TString* methods)
+inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfJetUEPIDtasks(Int_t numNames, const TString* names)
 {
   delete [] fNameJetUEPIDtask;
   fNameJetUEPIDtask = 0x0;
@@ -390,50 +387,6 @@ inline void AliAnalysisTaskIDFragmentationFunction::SetNamesOfJetUEPIDtasks(Int_
     for (Int_t i = 0; i < numNames; i++) {
       fNameJetUEPIDtask[i] = names[i];
     }
-
-    if(methods) {
-      SetUEMethods(methods);
-    }
-    else {
-      TString* defaultMethods = 0x0;
-      switch(numNames) {
-        case 1:
-          defaultMethods = new TString[1];
-          defaultMethods[1] = "RC";
-          SetUEMethods(defaultMethods);
-          break;
-        case 2:
-          defaultMethods = new TString[2];
-          defaultMethods[1] = "RC";
-          defaultMethods[2] = "PC";
-          SetUEMethods(defaultMethods);
-          break;
-        default:
-          AliWarningStream() << "Too many Underlying event PID tasks to specify default methods. Please specify them yourselves for each task by giving TString array as third argument in SetNamesOfJetUEPIDtasks!" << std::endl;
-          break;
-      }
-      delete defaultMethods;
-      defaultMethods = 0x0;
-    }
-  }
-}
-
-inline void AliAnalysisTaskIDFragmentationFunction::SetUEMethods(const TString* names) {
-  if (fNumJetUEPIDtasks <= 0) {
-    AliWarningStream() << "At least one UE task required to set UE Methods" << std::endl;
-    
-    return;
-  }
-  delete [] fUEMethods;
-  fUEMethods = 0x0;
-  if (!names) {
-    return;
-  }
-  
-  fUEMethods = new TString[fNumJetUEPIDtasks];
-  
-  for (Int_t i = 0; i < fNumJetUEPIDtasks; ++i) {
-    fUEMethods[i] = names[i];
   }
 }
 #endif
