@@ -26,6 +26,7 @@
 #include "TMath.h"
 #include "TNtuple.h"
 #include "TObjArray.h"
+#include "TGrid.h"
 
 class AliAnalysisTaskNFactorialMomentsPID;
 using namespace std;
@@ -409,9 +410,13 @@ void AliAnalysisTaskNFactorialMomentsPID::FillTrackInfo()
   // lines added for efficiency maps
   Int_t test = 0;
 
+  if (!gGrid) {
+        TGrid::Connect("alien://");
+    }
+
   TFile* f;
   if (test == 0) {
-    f = TFile::Open("./TwoDimEtaPhiEffMap_HIJ276_FB128NPCent0to5.root");
+   f =TFile::Open("alien:///alice/cern.ch/user/f/fhaider/TwoDimEtaPhiEffMap_HIJ276_FB128NPCent0to5.root");
     if (!f) {
       AliFatal("Track efficiency histogram file is not open");
       return;
