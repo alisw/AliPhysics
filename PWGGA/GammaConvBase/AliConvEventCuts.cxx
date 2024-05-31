@@ -7920,7 +7920,6 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
 }
 
 // todo: thinkg of using the return value of this function for more signaling purposes.
-// At the moment it returns 1 for any error case.
 //_________________________________________________________________________
 Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent, AliVEvent *event)
 {
