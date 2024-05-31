@@ -8071,13 +8071,8 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
     return checkSanitizeAndReturnWeight(lWeight);
   };
 
-  bool lCaseEtaPi0 = (PDGCode == 111) || (PDGCode == 221);
-  double lResult = lCaseEtaPi0
-             ? calcWeight()
-             : checkSanitizeAndReturnWeight(lDenomMC);
-
-  // AliInfo(Form("INFO: end of function. Return value = %f\n", 
-  //        lResult));
+  double lResult = calcWeight();
+  // AliInfo(Form("INFO: end of function. Return value = %f\n", lResult));
   return lResult;
 }
 
