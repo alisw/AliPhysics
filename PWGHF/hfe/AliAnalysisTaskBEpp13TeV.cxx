@@ -605,7 +605,7 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   hGenBePtMult = new TH2F("hGenBePtMult", "", nPtBins, ptbinningX, 6, multbinning);
   fOutputList->Add(hGenBePtMult);
 
-  hGenBePtMult2 = new TH2F("hGenBePtMult2", "", 4, ptbinningX2, 7, multbinning2);
+  hGenBePtMult2 = new TH2F("hGenBePtMult2", "", nPtBins, ptbinningX, 7, multbinning2);
   fOutputList->Add(hGenBePtMult2);
 
   hRecBePt_track = new TH1F("hRecBePt_track", "", nPtBins, ptbinningX);
@@ -617,7 +617,7 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   hRecBePt_tofMult = new TH2F("hRecBePt_tofMult", "", nPtBins, ptbinningX, 6, multbinning);
   fOutputList->Add(hRecBePt_tofMult);
 
-  hRecBePt_tofMult2 = new TH2F("hRecBePt_tofMult2", "", 4, ptbinningX2, 7, multbinning2);
+  hRecBePt_tofMult2 = new TH2F("hRecBePt_tofMult2", "", nPtBins, ptbinningX, 7, multbinning2);
   fOutputList->Add(hRecBePt_tofMult2);
 
   hRecBePt_tpc = new TH1F("hRecBePt_tpc", "", nPtBins, ptbinningX);
@@ -671,7 +671,7 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   dcaTrackMult = new TH3F("dcaTrackMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
   fOutputList->Add(dcaTrackMult);
 
-  dcaTrackMult2 = new TH3F("dcaTrackMult2", "", 4, ptbinningX2, nBinsIP, binLimIP, 7, multbinning2);
+  dcaTrackMult2 = new TH3F("dcaTrackMult2", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 7, multbinning2);
   fOutputList->Add(dcaTrackMult2);
 
   dcaPion = new TH2F("dcaPion", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
@@ -695,7 +695,7 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   dcaBeautyMultCorr = new TH3F("dcaBeautyMultCorr", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
   fOutputList->Add(dcaBeautyMultCorr);
 
-  dcaBeautyMultCorr2 = new TH3F("dcaBeautyMultCorr2", "", 4, ptbinningX2, nBinsIP, binLimIP, 7, multbinning2);
+  dcaBeautyMultCorr2 = new TH3F("dcaBeautyMultCorr2", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 7, multbinning2);
   fOutputList->Add(dcaBeautyMultCorr2);
 
   dcaBeautyMultCorrVar1 = new TH3F("dcaBeautyMultCorrVar1", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
@@ -740,7 +740,7 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   dcaDzeroMult = new TH3F("dcaDzeroMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
   fOutputList->Add(dcaDzeroMult);
 
-  dcaDzeroMult2 = new TH3F("dcaDzeroMult2", "", 4, ptbinningX2, nBinsIP, binLimIP, 7, multbinning2);
+  dcaDzeroMult2 = new TH3F("dcaDzeroMult2", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 7, multbinning2);
   fOutputList->Add(dcaDzeroMult2);
 
   dcaDplus = new TH2F("dcaDplus", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
@@ -749,7 +749,7 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   dcaDplusMult = new TH3F("dcaDplusMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
   fOutputList->Add(dcaDplusMult);
 
-  dcaDplusMult2 = new TH3F("dcaDplusMult2", "", 4, ptbinningX2, nBinsIP, binLimIP, 7, multbinning2);
+  dcaDplusMult2 = new TH3F("dcaDplusMult2", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 7, multbinning2);
   fOutputList->Add(dcaDplusMult2);
 
   dcaDsplus = new TH2F("dcaDsplus", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
@@ -758,7 +758,7 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   dcaDsplusMult = new TH3F("dcaDsplusMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
   fOutputList->Add(dcaDsplusMult);
 
-  dcaDsplusMult2 = new TH3F("dcaDsplusMult2", "", 4, ptbinningX2, nBinsIP, binLimIP, 7, multbinning2);
+  dcaDsplusMult2 = new TH3F("dcaDsplusMult2", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 7, multbinning2);
   fOutputList->Add(dcaDsplusMult2);
 
   dcaLc = new TH2F("dcaLc", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
@@ -767,7 +767,7 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   dcaLcMult = new TH3F("dcaLcMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
   fOutputList->Add(dcaLcMult);
 
-  dcaLcMult2 = new TH3F("dcaLcMult2", "", 4, ptbinningX2, nBinsIP, binLimIP, 7, multbinning2);
+  dcaLcMult2 = new TH3F("dcaLcMult2", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 7, multbinning2);
   fOutputList->Add(dcaLcMult2);
 
   dcaDalitz = new TH2F("dcaDalitz", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
@@ -776,7 +776,7 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   dcaDalitzMult = new TH3F("dcaDalitzMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
   fOutputList->Add(dcaDalitzMult);
 
-  dcaDalitzMult2 = new TH3F("dcaDalitzMult2", "", 4, ptbinningX2, nBinsIP, binLimIP, 7, multbinning2);
+  dcaDalitzMult2 = new TH3F("dcaDalitzMult2", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 7, multbinning2);
   fOutputList->Add(dcaDalitzMult2);
 
   dcaConv = new TH2F("dcaConv", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
@@ -785,7 +785,7 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects(){
   dcaConvMult = new TH3F("dcaConvMult", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 6, multbinning);
   fOutputList->Add(dcaConvMult);
 
-  dcaConvMult2 = new TH3F("dcaConvMult2", "", 4, ptbinningX2, nBinsIP, binLimIP, 7, multbinning2);
+  dcaConvMult2 = new TH3F("dcaConvMult2", "", nPtBins, ptbinningX, nBinsIP, binLimIP, 7, multbinning2);
   fOutputList->Add(dcaConvMult2);
 
   dcaPionSelected = new TH2D("dcaPionSelected", "", nPtBins, ptbinningX, nBinsIP, binLimIP);
