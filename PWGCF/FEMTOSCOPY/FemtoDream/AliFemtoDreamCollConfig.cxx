@@ -331,8 +331,7 @@ void AliFemtoDreamCollConfig::SetMinKRel(std::vector<float> minKRel)
 }
 std::vector<float> AliFemtoDreamCollConfig::GetMinKRel()
 {
-  if (fCoutVariables)
-  {
+  if (fCoutVariables) {
     for (auto it : fMinK_rel)
     {
       std::cout << "Stored kMin for your Analysis " << it << std::endl;

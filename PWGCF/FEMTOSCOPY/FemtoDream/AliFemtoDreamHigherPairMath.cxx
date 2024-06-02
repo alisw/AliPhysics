@@ -324,7 +324,7 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
 
       if (isAlabama)
       {
-
+        // std::cout << "MC pair detected" << std::endl;
         if (fHists->GetDoRemoveAncestorsResonances() && CommonMotherResonance(part1, part2))
         {
           // do nothing
@@ -344,6 +344,10 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
           {
             fHists->FillSameEventmTMultDistCommon(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, RelativeK);
           }
+          if (fHists->GetDoTrackMothers())
+          {
+            fHists->FillTrackPDGMothersCommon(iHC, RelativeK, part1.GetMotherPDG(), part2.GetMotherPDG());
+          }
         }
       }
       else
@@ -360,6 +364,10 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
         if (fHists->GetDomTMultPlots())
         {
           fHists->FillSameEventmTMultDistNonCommon(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, RelativeK);
+        }
+        if (fHists->GetDoTrackMothers())
+        {
+          fHists->FillTrackPDGMothersNonCommon(iHC, RelativeK, part1.GetMotherPDG(), part2.GetMotherPDG());
         }
       }
     }
@@ -499,6 +507,10 @@ float AliFemtoDreamHigherPairMath::FillMixedEvent(
 
     fHists->FillKstarPtMEOneQADist(iHC, RelativeK, Part1Momentum.Pt());
     fHists->FillKstarPtMETwoQADist(iHC, RelativeK, Part2Momentum.Pt());
+  }
+  if (fHists->GetDoTrackMothers())
+  {
+    fHists->FillTrackPDGMothersMixed(iHC, RelativeK, part1.GetMotherPDG(), part2.GetMotherPDG());
   }
   return RelativeK;
 }

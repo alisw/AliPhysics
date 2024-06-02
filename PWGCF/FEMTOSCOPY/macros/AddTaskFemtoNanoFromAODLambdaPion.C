@@ -16,11 +16,11 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
                                                      AliAnalysisTaskNanoFromAODLambdaPion::PCSettings pcsettings = AliAnalysisTaskNanoFromAODLambdaPion::PCSettings::NoPC,  // choose pair cleaner
                                                      bool usenolambdaevt = true,            // true to discard events with neither Lambda or AntiLambda
                                                      double dauPIDCut = 2,
+                                                     bool doTrackMothers = false,  // works only with MC Ancestors, studies the mother PDG of each LPi
                                                      const char *cutVariation = "0")
 {
   TString suffix = TString::Format("%s", cutVariation);
   bool IsSystematics = suffix != "0";
-
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr)
@@ -236,7 +236,18 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
     config->SetMomentumResolution(true);
     if (DoAncestors)
     {
+      std::cout << "Set doing ancestors" << std::endl;
+      config->SetMinimalBookingME(false);
       config->SetAncestors(true);
+      if (doTrackMothers) {
+        config->SetDoTrackMothers(true);
+        config->SetPtQA(false);
+        config->SetMassQA(false);
+        config->SetkTBinning(false);
+        config->SetMultBinning(false);
+        config->SetDomTMultBinning(false);
+        config->SetmTBinning(false);
+      }
       config->GetDoAncestorsPlots();
     }
   }
@@ -1342,6 +1353,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
   // other histograms specific for MC
   if (isMC)
   {
+    std::cout << "Adding MC histos!" << std::endl;
     AliAnalysisDataContainer *coutputv0CutsMC;
     TString v0CutsMCName = Form("%sv0CutsMC%s", addon.Data(), suffix.Data());
     coutputv0CutsMC = mgr->CreateContainer(
