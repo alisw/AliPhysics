@@ -849,6 +849,14 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
     if(!Track)::Warning("AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec","No AliAODTrack found");
     if(!Track) continue;
 
+    // check label confusion
+    bool CheckLabelConfusion = false;
+    if(CheckLabelConfusion == true){
+      int Label = Track->GetLabel();
+      int ID = Track->GetID();
+      std::cout << "track: " << track << "\t label: " << Label << "\t ID: " << ID << std::endl;
+    }
+
     // apply proton cuts
     bool PassedProtonCuts = CheckProtonCuts(*Track,*fPIDResponse,true,RunNumber);
     if(!PassedProtonCuts) continue;
@@ -924,6 +932,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
     float TPC_dEdx_nSigma = 0.0;
     if(fIsMC == false)	TPC_dEdx_nSigma = (float)fPIDResponse->NumberOfSigmasTPC(Track,AliPID::kProton);
     if(fIsMC == true)	TPC_dEdx_nSigma = CalculateSigmadEdxTPC(*Track,1,RunNumber);
+
 
     Proton_px			    = Track->Px();
     Proton_py			    = Track->Py();
