@@ -156,7 +156,8 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fFastSimRes(0.002)
    ,fFastSimResFactor(1.0)
    ,fFFChange(AliAnalysisTaskIDFragmentationFunction::kNoChange)
-   ,fRCTrials(1)
+   ,fRCTrials(10)
+   ,fRCMinJetPtForAvoiding(0.0)
    ,fUseRealJetArea(kTRUE)
 {
    // default constructor
@@ -253,7 +254,8 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fFastSimRes(0.002)
   ,fFastSimResFactor(1.0)  
   ,fFFChange(AliAnalysisTaskIDFragmentationFunction::kNoChange)
-  ,fRCTrials(1)
+  ,fRCTrials(10)
+  ,fRCMinJetPtForAvoiding(0.0)
   ,fUseRealJetArea(kTRUE)
 {
   // constructor
@@ -1680,8 +1682,10 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
           AliEmcalJet* jet = (AliEmcalJet*)(jetUElist->At(i));
           Double_t UEPtDensity = 0.0;
           Float_t jetPt = jet->Pt();
+
           if (jetContainer->GetRhoParameter())
             jetPt = jetPt - jetContainer->GetRhoVal() * jet->Area();
+            
           task->FillRecJets(centPercent, jetPt);
           task->FillJetArea(centPercent, jet->Area());
             
@@ -1778,7 +1782,7 @@ void AliAnalysisTaskIDFragmentationFunction::Terminate(Option_t *)
   // terminated
   if (fUseJetUEPIDtask) {
     for (Int_t i=0;i<fNumJetUEPIDtasks;++i) {
-      if (!fJetUEPIDtask[i]) {
+      if (!fJetUEPIDtask || !fJetUEPIDtask[i]) {
         AliWarningStream() << "Could not find UE pid task in terminate" << std::endl;
         continue;
       }
@@ -2062,12 +2066,13 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::OverlapsWithAnyRecJet(const AliVP
   if (!jetContainer)
     return kFALSE;
   
-  for(auto jet : jetContainer->accepted()){   //loop over all reconstructed jets in events      
-    if(!jet){
+  for(auto jet : jetContainer->accepted()){   // loop over all reconstructed jets in events      
+    if(!jet) {
       AliWarningStream() << "AliAnalysisTaskIDFragmentationFunction::OverlapsWithAnyRecJet jet pointer invalid!" << std::endl;
       continue;
     }
-    if(IsParticleInCone(jet, part, dDistance) == kTRUE) return kTRUE;//RC and JC are overlapping
+    if (jet->Pt() > fRCMinJetPtForAvoiding && IsParticleInCone(jet, part, dDistance) == kTRUE) 
+      return kTRUE;                           // Random Cone and Jet Cone are overlapping
     
   }//end loop testing RC-JC overlap
   return kFALSE;//RC and JC are not overlapping -> good!

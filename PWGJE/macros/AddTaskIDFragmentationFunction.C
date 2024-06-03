@@ -93,6 +93,8 @@ void postConfig(AliAnalysisTaskIDFragmentationFunction* task, TString namesOfInc
     printf("%s ", task->GetNamesOfJetUEPIDtasks()[i].Data());
   }
   printf("\n");  
+  printf("Number of Random cone trials: %d", task->GetRCTrials());
+  printf("\n");  
   printf("Inclusive PID task: ");
   for (Int_t i = 0; i < numInclusivePIDtasks; i++) {
     printf("%s ", task->GetNamesOfInclusivePIDtasks()[i].Data());
