@@ -53,6 +53,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   void SetupFlagsByIndex(Int_t ind); //Local envelope for the function below
   static void SetupFlagsByIndex(const Int_t &ind, UInt_t &l_EvFlag, UInt_t &l_TrFlag); //Function to setup flags. Static, so one is able to call from the outside
   void SetCustomNoFlags(Int_t nEvFlags, Int_t nTrFlags) {fTotTrackFlags=nTrFlags; fTotEvFlags=nEvFlags; };
+  void SetPeriod(TString period) { fPeriod = period; }
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc.Data(),head.Data(),ptdif);};
   void CreateCorrConfigs();
@@ -72,6 +73,8 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   AliGFW *fGFW; //! no need to store this
   TTree *fOutputTree; //! Not stored and not needed
   AliMCEvent *fMCEvent; //! Not stored
+  TString fPeriod; //!
+  std::vector<int> RunNumber; //!
   Bool_t fIsMC;
   Bool_t fIsTrain;
   UInt_t fEvNomFlag; //Nominal event selection flag
