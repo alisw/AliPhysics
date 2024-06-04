@@ -50,6 +50,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     Int_t     enableMatBudWeightsPi0        = 0,                        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
     Bool_t    enableMLBckRedStudy           = kFALSE,                   // enable saving the output as tree for ML reduction study
     Int_t     MLBckRedStudyCutOff           = 10,                       // every which case that is not true meson should be saved
+    Bool_t    setSkimmedOutput            = kFALSE,                   // allow to skip event if no pi0/eta reconstructed
     TString   additionalTrainConfig         = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
@@ -173,6 +174,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
   if(enableMLBckRedStudy){
     task->SetBckgReductionTree(MLBckRedStudyCutOff);
   }
+  task->SetSkimmedOutput(setSkimmedOutput);
 
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
