@@ -181,6 +181,9 @@ public:
   
   UInt_t GetRCTrials() const { return fRCTrials; }
   void SetRCTrials(UInt_t trials) {fRCTrials = trials; }
+
+  Double_t GetRCMinJetPtForAvoiding() const { return fRCMinJetPtForAvoiding; }
+  void SetRCMinJetPtForAvoiding(Double_t jetPt) {fRCMinJetPtForAvoiding = jetPt; }
   
   Bool_t GetUseRealJetArea() const { return fUseRealJetArea; }
   void SetUseRealJetArea(Bool_t flag) {fUseRealJetArea = flag; }  
@@ -314,6 +317,7 @@ public:
   
   //Underlying event members
   UInt_t fRCTrials;
+  Double_t fRCMinJetPtForAvoiding;
   Bool_t fUseRealJetArea;
   
 private:
