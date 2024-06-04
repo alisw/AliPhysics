@@ -38,9 +38,12 @@ class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
   TH2                   *fHistDeltaScalevsCent;        //!output histogram
   TH2                   *fHistScaleEmcalvsCent;        //!output histogram
   TH2                   *fHistScale2EmcalvsCent;       //!output histogram
+  TH2                   *fHistScale3EmcalvsCent;       //!output histogram
   TH2                   *fHistDeltaScale2EmcalvsCent;  //!output histogram
+  TH2                   *fHistDeltaScale3EmcalvsCent;  //!output histogram
   TH2                   *fHistChScalevsCent;           //!output histogram
   TH2                   *fHistChScale2EmcalvsCent;     //!output histogram
+  TH2                   *fHistChScale3EmcalvsCent;     //!output histogram
   TH2                   *fHistPtTPCvsNtrack;           //!output histogram
   TH2                   *fHistPtEMCALvsNtrack;         //!output histogram
   TH2                   *fHistEtvsNtrack;              //!output histogram
@@ -48,15 +51,19 @@ class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
   TH2                   *fHistDeltaScalevsNtrack;      //!output histogram
   TH2                   *fHistScaleEmcalvsNtrack;      //!output histogram
   TH2                   *fHistScale2EmcalvsNtrack;     //!output histogram
+  TH2                   *fHistScale3EmcalvsNtrack;     //!output histogram
   TH2                   *fHistChScalevsNtrack;         //!output histogram
   TH2                   *fHistChScale2EmcalvsNtrack;   //!output histogram
+  TH2                   *fHistChScale3EmcalvsNtrack;   //!output histogram
   TH2                   *fHistTrackPtvsCent;           //!output histogram
   TH2                   *fHistClusterPtvsCent;         //!output histogram
   TH2                   *fHistTrackEtaPhi;             //!output histogram
   TH2                   *fHistClusterEtaPhi;           //!output histogram
   TH2                   *fHistScalevsScale2Emcal;      //!output histogram
+  TH2                   *fHistScalevsScale3Emcal;      //!output histogram
   TH2                   *fHistScalevsScaleEmcal;       //!output histogram
   TH2                   *fHistScaleEmcalvsScale2Emcal; //!output histogram
+  TH2                   *fHistScaleEmcalvsScale3Emcal; //!output histogram
 
   AliParticleContainer  *fTracksCont;                  //!Tracks
   AliClusterContainer   *fCaloClustersCont;            //!Clusters 

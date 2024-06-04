@@ -95,6 +95,7 @@ public:
   void SetMakeClusterHistos1D(bool doMake)         { fMakeClusterHistos1D = doMake; }
   void SetEnergyDefinition(EnergyDefinition_t edef){ fEnergyDefinition = edef; }
   void SetDoDifferentialDpT(bool doDiffDpT)        { fDoDifferentialDpT = doDiffDpT; }
+  void SetRhoScaleValue(Double_t rhoScale)              { fRhoScaleFactor = rhoScale; }
 
   void SetDoBkgSubtraction(bool doBkg = true)             { fDoBkgSub = doBkg; }
   double GetDeltaPtRandomCone();
@@ -234,6 +235,7 @@ private:
   Bool_t                        fMakeClusterHistos1D;           ///< Make 1D emcal cluster energy histogram
   EnergyDefinition_t            fEnergyDefinition;              ///< Energy definition used for a given cluster
   Bool_t                        fDoDifferentialDpT;             ///< Make pT differential rho vs. delta pT plot
+  Bool_t                        fRhoScaleFactor;                 ///< Used to scale charged rho for use with full (emcal) jets
 
 
 
