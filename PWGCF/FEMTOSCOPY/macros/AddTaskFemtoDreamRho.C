@@ -16,9 +16,9 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
                                         float rhoCandInvMassHigh = 0.075,
                                         bool isSameCharge = false,
                                         bool isMCTrueRhoCombBkrg = false,
+                                        bool isMCcheckedCombs = false,
                                         const char *cutVariation = "0")
 {
-
   TString suffix = TString::Format("%s", cutVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -284,7 +284,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
 
   // now we create the task
   AliAnalysisTaskFemtoDreamRho *task =
-      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doMcTruth, doCleaning, doAncestors, doProjections, rhoPtThreshold, isSameCharge, isMCTrueRhoCombBkrg);
+      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doMcTruth, doCleaning, doAncestors, doProjections, rhoPtThreshold, isSameCharge, isMCTrueRhoCombBkrg, isMCcheckedCombs);
   // THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
   // kINT7 == Minimum bias
   // kHighMultV0 high multiplicity triggered by the V0 detector
@@ -514,7 +514,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   //   pairQA[i] = 11; // phiphi
   //  }
 
-  if (isMC) // override the values in case the MC True is used we don't need any of that
+  /*if (isMC) // override the values in case the MC True is used we don't need any of that (we may need this in order to perform the corss-check) //check if this breaks
   {
     pairQA[0] = 00;  // pi+pi+
     pairQA[1] = 00;  // pi+pi-
@@ -531,7 +531,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
     pairQA[12] = 00; // pp
     pairQA[13] = 00; // pAp
     pairQA[14] = 00; // ApAp
-  }
+  }*/
 
   std::vector<bool> closeRejection; // for now we don't use it, verify with MC if that is needed
 
@@ -630,7 +630,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   config->SetMinimalBookingME(false);
   config->SetdPhidEtaPlots(true);
   config->SetdPhidEtaPlotsSmallK(true);
-  config->SetMinvKtandRelativeKBinning(true);
+  config->SetMinvKtandRelativeKBinning(true); // Check this in case of MC
 
   std::cout << "Check the addTask config" << std::endl;
   std::cout << "  ZVtxBins.size() " << ZVtxBins.size() << std::endl;
@@ -650,13 +650,21 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
     config->SetPhiEtaBinnign(true);
     if (doAncestors)
     {
-      config->SetAncestors(true);
+      config->SetAncestors(doAncestors);
     }
   }
   else
   {
     std::cout << "You are trying to request the Momentum Resolution without MC "
                  "Info; fix it wont work! \n";
+  }
+
+  if (doMcTruth) // turn the troublesome histos i.e. detadphi* off for now, can be fixed by setting the proper values at each TPC rad manually.
+  {
+    config->SetPhiEtaBinnign(false);
+    config->SetdPhidEtaPlots(false);
+    config->SetdPhidEtaPlotsSmallK(false);
+    // config->SetMinimalBookingME(true);
   }
 
   // Throw all our settings to the task

@@ -242,13 +242,12 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
 
   if ((PartSumPt > PartSumPtLimit1) && (PartSumPt < PartSumPtLimit2))
   {
-
     fHists->FillSameEventDist(iHC, RelativeK);
     if (fillHists && fHists->GetDoMinvKtandRelativeKBinning())
     {
-      float RelativeK_V0 = RelativePairMomentumV0(&part1, &part2, PDGPart2);
+      // float RelativeK_V0 = RelativePairMomentumV0(&part1, &part2, PDGPart2);
       // float RelativePairMt_V0 = RelativePairmTV0(&part1, &part2, PDGPart2);
-      fHists->FillSameEventMinvKtandRelativeKDist(iHC, RelativeK_V0, part1.GetInvMass());
+      fHists->FillSameEventMinvKtandRelativeKDist(iHC, RelativeK, part1.GetInvMass());
     }
     if (fHists->GetDoMultBinning())
     {
@@ -425,6 +424,7 @@ float AliFemtoDreamHigherPairMath::FillMixedEvent(
   // only looking at the mother mass
   PartOne.SetXYZM(Part1Momentum.X(), Part1Momentum.Y(), Part1Momentum.Z(),
                   TDatabasePDG::Instance()->GetParticle(PDGPart1)->Mass());
+
   PartTwo.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(), Part2Momentum.Z(),
                   TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
   // Do the randomization here
@@ -448,7 +448,7 @@ float AliFemtoDreamHigherPairMath::FillMixedEvent(
   fHists->FillMixedEventDist(iHC, RelativeK);
   if (fillHists && fHists->GetDoMinvKtandRelativeKBinning())
   {
-    float RelativeK_V0 = RelativePairMomentumV0(&part1, &part2, PDGPart2);
+    // float RelativeK_V0 = RelativePairMomentumV0(&part1, &part2, PDGPart2);
     // float RelativePairMt_V0 = RelativePairmTV0(&part1, &part2, PDGPart2);
     fHists->FillMixedEventMinvKtandRelativeKDist(iHC, RelativeK, part1.GetInvMass());
   }

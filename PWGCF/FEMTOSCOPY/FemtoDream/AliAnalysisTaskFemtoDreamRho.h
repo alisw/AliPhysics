@@ -28,11 +28,11 @@ class AliAnalysisTaskFemtoDreamRho : public AliAnalysisTaskSE
 {
 public:
   AliAnalysisTaskFemtoDreamRho();
-  AliAnalysisTaskFemtoDreamRho(const char *name, bool isMC, bool doMcTruth, bool doAncestors, bool doCleaning, bool doProjections, float rhoPtThreshold, bool isSameCharge, bool isMCTrueRhoCombBkrg);
+  AliAnalysisTaskFemtoDreamRho(const char *name, bool isMC, bool doMcTruth, bool doAncestors, bool doCleaning, bool doProjections, float rhoPtThreshold, bool isSameCharge, bool isMCTrueRhoCombBkrg, bool isMCcheckedCombs);
   virtual ~AliAnalysisTaskFemtoDreamRho();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
-  virtual void Terminate(Option_t *){};
+  virtual void Terminate(Option_t *) {};
   void SetEventCuts(AliFemtoDreamEventCuts *evtCuts) { fEventCuts = evtCuts; };
   void SetPosPionCuts(AliFemtoDreamTrackCuts *trkCuts)
   {
@@ -79,7 +79,8 @@ public:
   void SetDoProjections(bool doProjector) { fDoProjections = doProjector; };
   void SetRhoPtThreshold(float rhoPtThreshold) { frhoPtThreshold = rhoPtThreshold; };
   void SetMinvSameCharge(bool isSameCharge) { fIsSameCharge = isSameCharge; };
-  void SetMCTureRhoCombBkgr(bool isMCTrueRhoCombBkrg) { fIsMCTrueRhoCombBkrg = isMCTrueRhoCombBkrg; };
+  void SetMCTrueRhoCombBkgr(bool isMCTrueRhoCombBkrg) { fIsMCTrueRhoCombBkrg = isMCTrueRhoCombBkrg; };
+  void SetMCcheckedCombs(bool isMCcheckedCombs) { fIsMCcheckedCombs = isMCcheckedCombs; };
 
   // std::map<TString, std::pair<TH1F *, TH2F *>> CreateResonanceHistograms(const std::vector<TString> &resonanceList);
 
@@ -116,6 +117,7 @@ private:
   float frhoPtThreshold;     //
   bool fIsSameCharge;        //
   bool fIsMCTrueRhoCombBkrg; //
+  bool fIsMCcheckedCombs;    //
 
   const std::vector<std::string> types{"noPions", "noPrimaries", "noRho", "isRho"}; //!
   std::map<std::string, TH2F *> histogramMap_pTvsmT;                                //!
@@ -191,7 +193,7 @@ private:
   // std::map<TString, std::pair<TH1F *, TH2F *>>
   //     fResonanceHistograms; //! Map to hold histograms for each resonance
 
-  ClassDef(AliAnalysisTaskFemtoDreamRho, 8) // Update class number
+  ClassDef(AliAnalysisTaskFemtoDreamRho, 9) // Update class number
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_AliAnalysisTaskFemtoDreamRho_H_ */
