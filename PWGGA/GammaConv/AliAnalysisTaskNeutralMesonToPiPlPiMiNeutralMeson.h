@@ -86,6 +86,9 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     void SetBckgReductionTree(Int_t cutoff){ 
       fEnableBckgReductionStudy = kTRUE;
       fMLtreeCutOff = cutoff; }
+    void SetOptimizedRuntime(Bool_t flag){
+      fEnableOptimizedRuntime = flag;
+    }
 
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
@@ -245,6 +248,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Bool_t                            enableDalitzLowPt;                                  ///< Turn On or Off if Histograms are created and used
     Bool_t                            enableDalitzMidPt;                                  ///< Turn On or Off if Histograms are created and used
     Bool_t                            enableDalitzHighPt;                                 ///< Turn On or Off if Histograms are created and used
+    Bool_t                            fEnableOptimizedRuntime;                            ///< Skips charged pions & 3 particle combinations if no neutral meson (pi0 or eta) within cuts reconstructed
     Double_t                          HistoDalitzPtRangeMin_LowPt;                        ///< Min Range of Dalitz Plots for LowPt
     Double_t                          HistoDalitzPtRangeMax_LowPt;                        ///< Max Range of Dalitz Plots for LowPt
     Double_t                          HistoDalitzPtRangeMin_MidPt;                        ///< Min Range of Dalitz Plots for MidPt
@@ -349,6 +353,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH1F**                            fHistoMCPosPionsFromNeutralMesonPt;                 //!<! array of histos of all produced positive pions from omega or eta via pi+pi-pi0 in the specified y range/
     TH1F**                            fHistoMCNegPionsFromNeutralMesonPt;                 //!<! array of histos of all produced negative pions from omega or eta via pi+pi-pi0 in the specified y range/
     TH1F**                            fHistoMCHNMPiPlPiMiNDMPt;                           //!<! array of histos of produced NNM via pi+pi-pi0 in the specified y range
+    TH1F**                            fHistoMCHNMPiPlPiMiNDMPt_WOEventWeights;            //!<! array of histos of produced NNM via pi+pi-neutral meson in the specified y range, no weights, for JJ MC
     TH1F**                            fHistoMCHNMPiPlPiMiNDMEta;                          //!<! array of histos of produced HNM via pi+pi-pi0 in the specified y range
     TH1F**                            fHistoMCHNMPiPlPiMiNDMPhi;                          //!<! array of histos of produced HNM via pi+pi-pi0 in the specified y range
     TH1F**                            fHistoMCAllPosPionsPt;                              //!<! array of histos with all produced primary positive pions in the specified y range
@@ -686,7 +691,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 35);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 36);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H
