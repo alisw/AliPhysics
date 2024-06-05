@@ -15,7 +15,7 @@ TList *constructList(TFile *infile, TString subfx) {
   for(Int_t i=0; i<LoK->GetEntries(); i++) {
     TString nm = LoK->At(i)->GetName();
     TString cmpsyspf=syspf+";1";
-    if(!nm.Contains(syspf.Data())) continue;
+    //if(!nm.Contains(syspf.Data())) continue;
     AliGFWWeights *w = (AliGFWWeights*)infile->Get(LoK->At(i)->GetName());
     retList->Add(w);
   };
@@ -31,6 +31,7 @@ AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeig
   if(!task)
     return 0x0;
   //My settings:
+  task->SetupFlagsByIndex(subfx.Atoi());
   mgr->AddTask(task); // add your task to the manager
   //Connect weights to a container
   if(!ProduceWeights) {
