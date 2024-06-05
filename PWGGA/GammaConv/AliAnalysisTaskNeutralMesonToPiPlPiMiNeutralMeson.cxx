@@ -3664,7 +3664,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserExec(Option_t *){
     }
 
     // check if any neutral meson reconstructed; if not, skipped further combinations
-    if(fEnableSkimmedOutput){
+    if(fEnableOptimizedRuntime){
       if( fNeutralDecayParticleCandidates->IsEmpty() ){
           fGoodConvGammas->Clear();
           fClusterCandidates->Clear();

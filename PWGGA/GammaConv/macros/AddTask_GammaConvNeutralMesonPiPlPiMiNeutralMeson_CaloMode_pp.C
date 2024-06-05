@@ -46,7 +46,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     Bool_t    enableSortingMCLabels       = kTRUE,                    // enable sorting for MC cluster labels
     Bool_t    enableMLBckRedStudy         = kFALSE,                   // enable saving the output as tree for ML reduction study
     Int_t     MLBckRedStudyCutOff         = 10,                       // every which case that is not true meson should be saved
-    Bool_t    setSkimmedOutput            = kFALSE,                   // allow to skip event if no pi0/eta reconstructed
+    Bool_t    setOptimizedRuntime         = kFALSE,                   // allow to skip event if no pi0/eta reconstructed
     TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
@@ -238,7 +238,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
   if(enableMLBckRedStudy){
     task->SetBckgReductionTree(MLBckRedStudyCutOff);
   }
-  task->SetSkimmedOutput(setSkimmedOutput);
+  task->SetOptimizedRuntime(setOptimizedRuntime);
 
 
 

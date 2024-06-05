@@ -86,8 +86,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     void SetBckgReductionTree(Int_t cutoff){ 
       fEnableBckgReductionStudy = kTRUE;
       fMLtreeCutOff = cutoff; }
-    void SetSkimmedOutput(Bool_t flag){
-      fEnableSkimmedOutput = flag;
+    void SetOptimizedRuntime(Bool_t flag){
+      fEnableOptimizedRuntime = flag;
     }
 
     // Function to set correction task setting
@@ -248,7 +248,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Bool_t                            enableDalitzLowPt;                                  ///< Turn On or Off if Histograms are created and used
     Bool_t                            enableDalitzMidPt;                                  ///< Turn On or Off if Histograms are created and used
     Bool_t                            enableDalitzHighPt;                                 ///< Turn On or Off if Histograms are created and used
-    Bool_t                            fEnableSkimmedOutput;                               ///< Skips charged pions & 3 particle combinations if no neutral meson (pi0 or eta) within cuts reconstructed
+    Bool_t                            fEnableOptimizedRuntime;                            ///< Skips charged pions & 3 particle combinations if no neutral meson (pi0 or eta) within cuts reconstructed
     Double_t                          HistoDalitzPtRangeMin_LowPt;                        ///< Min Range of Dalitz Plots for LowPt
     Double_t                          HistoDalitzPtRangeMax_LowPt;                        ///< Max Range of Dalitz Plots for LowPt
     Double_t                          HistoDalitzPtRangeMin_MidPt;                        ///< Min Range of Dalitz Plots for MidPt
