@@ -3228,7 +3228,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
           tTrueInvMassROpenABPtFlag[iCut]->Branch("OpenAngleRPrimVtx",&fOpenRPrim,"fOpenRPrim/F");
           tTrueInvMassROpenABPtFlag[iCut]->Branch("InvMassRTOF",&fInvMassRTOF,"fInvMassRTOF/F");
           tTrueInvMassROpenABPtFlag[iCut]->Branch("Pt",&fPt,"fPt/F");
-//           tTrueInvMassROpenABPtFlag[iCut]->Branch("Weight",&fWeightJetJetMC,"fWeightJetJetMC/F");
+          // tTrueInvMassROpenABPtFlag[iCut]->Branch("Weight",&fWeightJetJetMC,"fWeightJetJetMC/F");
           tTrueInvMassROpenABPtFlag[iCut]->Branch("cat",&iFlag,"iFlag/b");
           fTreeList[iCut]->Add(tTrueInvMassROpenABPtFlag[iCut]);
         }
@@ -5553,15 +5553,15 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
     Double_t vertex[3] = {0};
     InputEvent()->GetPrimaryVertex()->GetXYZ(vertex);
 
-//     cout << vertex[0] << "\t" << vertex[1] << "\t" << vertex[2] << "\t" << Pi0Candidate->Px() << "\t" << Pi0Candidate->Py()  << "\t" << Pi0Candidate->Pz() << "\t"
-//     << Pi0Candidate->Phi() << endl;
+    // cout << vertex[0] << "\t" << vertex[1] << "\t" << vertex[2] << "\t" << Pi0Candidate->Px() << "\t" << Pi0Candidate->Py()  << "\t" << Pi0Candidate->Pz() << "\t"
+    // << Pi0Candidate->Phi() << endl;
 
     Double_t scaling = (375 - TMath::Sqrt(vertex[0]*vertex[0]+vertex[1]*vertex[1]))/(TMath::Sqrt(Pi0Candidate->Px()*Pi0Candidate->Px()+Pi0Candidate->Py()*Pi0Candidate->Py()));
     vertex[0] = vertex[0] + scaling*Pi0Candidate->Px();
     vertex[1] = vertex[1] + scaling*Pi0Candidate->Py();
     vertex[2] = vertex[2] + scaling*Pi0Candidate->Pz();
 
-//     cout << vertex[0] << "\t" << vertex[1] << "\t" << vertex[2] << endl;
+    // cout << vertex[0] << "\t" << vertex[1] << "\t" << vertex[2] << endl;
 
     TClonesArray * arrClustersMesonCand = NULL;
     if(fCorrTaskSetting.CompareTo(""))
@@ -5623,7 +5623,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
     delete PhotonCandidate2;
     delete pi0cand2;
 
-//     cout << fOpenRPrim << "\t" << fInvMassRTOF << endl;
+    // cout << fOpenRPrim << "\t" << fInvMassRTOF << endl;
 
   }
 
@@ -6031,7 +6031,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMot
     if (convertedPhotonLabel0==convertedPhotonLabel1){
       isSameConvertedGamma = kTRUE;
       if (fDoMesonQA == 3 ){
-//         fHistoGammaOpenAngleInvMassPt[fiCut]->Fill(Pi0Candidate->GetOpeningAngle(),Pi0Candidate->M(),Pi0Candidate->Pt(),1);
+        // fHistoGammaOpenAngleInvMassPt[fiCut]->Fill(Pi0Candidate->GetOpeningAngle(),Pi0Candidate->M(),Pi0Candidate->Pt(),1);
       }
     }
   } 

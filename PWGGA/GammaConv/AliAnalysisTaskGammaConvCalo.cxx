@@ -4713,7 +4713,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessMCParticles(Int_t isCurrentEventSelect
   Double_t mcProdVtxX   = primVtxMC->GetX();
   Double_t mcProdVtxY   = primVtxMC->GetY();
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
-//   cout << mcProdVtxX <<"\t" << mcProdVtxY << "\t" << mcProdVtxZ << endl;
+  // cout << mcProdVtxX <<"\t" << mcProdVtxY << "\t" << mcProdVtxZ << endl;
 
   // Check if MC generated particles should be filled for this event using the selected trigger
   if( !((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsMCTriggerSelected(fInputEvent, fMCEvent)){
@@ -6627,7 +6627,6 @@ void AliAnalysisTaskGammaConvCalo::SetLogBinningXTH2(TH2* histoRebin){
 //________________________________________________________________________
 void AliAnalysisTaskGammaConvCalo::Terminate(const Option_t *)
 {
-
   //fOutputContainer->Print(); // Will crash on GRID
 }
 
@@ -6948,7 +6947,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateHBTBackgroundMC(){
   for(Int_t nEventsInBG=0;nEventsInBG <fBGHBTTrueGammaHandler[fiCut]->GetNBGEvents();nEventsInBG++){
     AliAODMCParticleVector *previousEventV0s = fBGHBTTrueGammaHandler[fiCut]->GetBGGoodV0sMC(zbin,mbin,nEventsInBG);
     if(previousEventV0s){
-//       cout << "previousEventV0s->size() = " << previousEventV0s->size() << endl;
+      // cout << "previousEventV0s->size() = " << previousEventV0s->size() << endl;
       for(Int_t iCurrent=0;iCurrent<fTrueGammaCandidatesCalo->GetEntries();iCurrent++){
         AliAODMCParticle currentEventGoodV0 = *(AliAODMCParticle*)(fTrueGammaCandidatesCalo->At(iCurrent));
         p1.SetPxPyPzE(currentEventGoodV0.Px(),currentEventGoodV0.Py(),currentEventGoodV0.Pz(),currentEventGoodV0.E());
@@ -6981,7 +6980,7 @@ void AliAnalysisTaskGammaConvCalo::CalculateHBTBackgroundMC(){
   for(Int_t nEventsInBG=0;nEventsInBG <fBGHBTGenGammaHandler[fiCut]->GetNBGEvents();nEventsInBG++){
     AliAODMCParticleVector *previousEventV0sGen = fBGHBTGenGammaHandler[fiCut]->GetBGGoodV0sMC(zbin,mbin,nEventsInBG);
     if(previousEventV0sGen){
-//       cout << "previousEventV0sGen->size() = " << previousEventV0sGen->size() << endl;
+      // cout << "previousEventV0sGen->size() = " << previousEventV0sGen->size() << endl;
       for(Int_t iCurrent=0;iCurrent<fMCGammaCandidates->GetEntries();iCurrent++){
         AliAODMCParticle currentEventGoodV0 = *(AliAODMCParticle*)(fMCGammaCandidates->At(iCurrent));
         p1.SetPxPyPzE(currentEventGoodV0.Px(),currentEventGoodV0.Py(),currentEventGoodV0.Pz(),currentEventGoodV0.E());
