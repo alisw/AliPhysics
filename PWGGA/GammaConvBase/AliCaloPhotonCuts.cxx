@@ -5525,7 +5525,7 @@ Bool_t AliCaloPhotonCuts::SetTimingCut(Int_t timing)
 
     printf("AliCaloPhotonCuts:Period name has been set to %s, period-enum: %o\n",fPeriodName.Data(),fCurrentMC ) ;
   }
-  if(fCurrentMC == kPbPb5T18HIJING){
+  if(fCurrentMC == kPbPb5T18HIJING || fCurrentMC == kPbPb5T15HIJING){
     fOffsetTimeMC = 61.6e-8;
     if (!fUseTimeDiffMC) fUseTimeDiffMC=1;
   }
