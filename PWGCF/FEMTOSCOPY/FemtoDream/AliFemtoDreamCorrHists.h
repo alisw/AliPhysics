@@ -640,7 +640,7 @@ private:
   std::vector<float> fmTBins;
   std::vector<unsigned int> fWhichPairs;
   std::vector<int> fCentBins;
-  ClassDef(AliFemtoDreamCorrHists, 14);
+  ClassDef(AliFemtoDreamCorrHists, 15);
 };
 
 #endif /* ALIFEMTODREAMCORRHISTS_H_ */
