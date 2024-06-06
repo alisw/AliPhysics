@@ -425,7 +425,7 @@ private:
   bool fCoutVariables;
   float fSummedPtLimit1;
   float fSummedPtLimit2;
-  ClassDef(AliFemtoDreamCollConfig, 22);
+  ClassDef(AliFemtoDreamCollConfig, 23);
 };
 
 #endif /* ALIFEMTODREAMCOLLCONFIG_H_ */
