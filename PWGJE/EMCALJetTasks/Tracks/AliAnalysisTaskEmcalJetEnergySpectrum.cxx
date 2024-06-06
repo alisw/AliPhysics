@@ -89,7 +89,8 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fUserPtBinning(),
   fMakeClusterHistos1D(false),
   fEnergyDefinition(kDefaultEnergy),
-  fDoDifferentialDpT(false)
+  fDoDifferentialDpT(false),
+  fRhoScaleFactor(0.)
 {
 }
 
@@ -127,7 +128,8 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fUserPtBinning(),
   fMakeClusterHistos1D(false),
   fEnergyDefinition(kDefaultEnergy),
-  fDoDifferentialDpT(false)
+  fDoDifferentialDpT(false),
+  fRhoScaleFactor(0.)
 {
   SetMakeGeneralHistograms(true);
 }
@@ -376,6 +378,17 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   fHistos->FillProfile("hDownscaleFactorsRunwise", fRunNumber, 1./weight);
   fHistos->FillTH1("hEventCentralityAbs", eventCentrality);
   fHistos->FillTH1("hEventCentrality", eventCentrality, weight);
+
+  // Calculate rho value
+  Double_t rhoVal = 0.;
+  if(fDoBkgSub && datajets->GetRhoParameter()){
+    if(fRhoScaleFactor > 0.) {
+      rhoVal = datajets->GetRhoVal() * fRhoScaleFactor;
+    }else{
+      rhoVal = datajets->GetRhoVal();
+    }
+  }
+
   AliEmcalJet *maxjet(nullptr);
   for(auto t : trgclusters) {
     fHistos->FillTH1("hClusterCounterAbs", t);
@@ -386,7 +399,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     Double_t ptjet = j->Pt();
 
     if (fDoBkgSub && datajets->GetRhoParameter()){
-      ptjet = ptjet - datajets->GetRhoVal() * j->Area();
+      ptjet = ptjet - rhoVal * j->Area();
     }
 
     if(TMath::Abs(fScaleShift) > DBL_EPSILON){
@@ -409,7 +422,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
 
     if(fDoBkgSub && datajets->GetRhoParameter() && fDoDifferentialDpT){
         Double_t randomConePt = GetDeltaPtRandomCone();
-        fHistos->FillTH3("hPtJetVsRhoVsDeltaPtRC", ptjet, randomConePt, datajets->GetRhoVal());
+        fHistos->FillTH3("hPtJetVsRhoVsDeltaPtRC", ptjet, randomConePt, rhoVal);
     }
 
     // Fill QA plots - trigger cluster independent
@@ -516,8 +529,8 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   if(fDoBkgSub){
     Double_t randomConePt = GetDeltaPtRandomCone();
     Double_t EmbeddingPt = GetDeltaPtEmbedding();
-    fHistos->FillTH2("hRhoVsDeltaPtRC", randomConePt, datajets->GetRhoVal());
-    fHistos->FillTH2("hRhoVsDeltaPtEmbed", EmbeddingPt, datajets->GetRhoVal());
+    fHistos->FillTH2("hRhoVsDeltaPtRC", randomConePt, rhoVal);
+    fHistos->FillTH2("hRhoVsDeltaPtEmbed", EmbeddingPt, rhoVal);
   }
 
 
@@ -703,7 +716,16 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtRandomCone()
 
     if (tmpConePt > 0)
     {
-        deltaPt = tmpConePt - jetradius * jetradius * TMath::Pi() * jetcont->GetRhoVal();
+        // Calculate rho value
+        Double_t rhoVal = 0.;
+        if(fDoBkgSub && jetcont->GetRhoParameter()){
+          if(fRhoScaleFactor > 0.) {
+            rhoVal = jetcont->GetRhoVal() * fRhoScaleFactor;
+          }else{
+            rhoVal = jetcont->GetRhoVal();
+          }
+        }
+        deltaPt = tmpConePt - jetradius * jetradius * TMath::Pi() * rhoVal;
         return deltaPt;
     }
     return deltaPt;
@@ -762,8 +784,18 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtEmbedding()
         }
 
         if (sumTrkEmbeddedPt > 0)
-        {                                                                                                                         //the jet with embedded track was found
-            deltaPtEmb = jets_incl.at(ijet).pt() - jets_incl.at(ijet).area() * jetcont->GetRhoVal() - sumTrkEmbeddedPt; //calculate delta pT and subtract pT of embedded track
+        {   
+            // Calculate rho value
+            Double_t rhoVal = 0.;
+            if(fDoBkgSub && jetcont->GetRhoParameter()){
+              if(fRhoScaleFactor > 0.) {
+                rhoVal = jetcont->GetRhoVal() * fRhoScaleFactor;
+              }else{
+                rhoVal = jetcont->GetRhoVal();
+              }
+            }             
+            //the jet with embedded track was found
+            deltaPtEmb = jets_incl.at(ijet).pt() - jets_incl.at(ijet).area() * rhoVal - sumTrkEmbeddedPt; //calculate delta pT and subtract pT of embedded track
             break;
         }
     }
