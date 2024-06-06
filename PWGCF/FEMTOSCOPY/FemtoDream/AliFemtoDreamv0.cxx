@@ -256,14 +256,12 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
     if (i == 0 && ignoreFirstNeg)
       continue;
     this->SetCharge(Chargeneg[i]);
-    std::cout << "Charge check [" << i << "]: " << Chargeneg[i] << std::endl;
   }
   for (size_t i = 0; i < Chargepos.size(); ++i)
   {
     if (i == 0 && ignoreFirstPos)
       continue;
     this->SetCharge(Chargepos[i]);
-    std::cout << "Charge check [" << i << "]: " << Chargepos[i] << std::endl;
   }
 
   // Phi At Radii
