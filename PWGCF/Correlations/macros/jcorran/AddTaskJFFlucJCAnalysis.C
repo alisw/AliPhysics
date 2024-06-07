@@ -33,6 +33,10 @@ AliAnalysisTask *AddTaskJFFlucJCAnalysis(TString taskName = "JFFlucJCAnalysis", 
     cMapTask->EnableEffCorrection(Form(
       "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC18l8-0-Lists.root",
       speriod[period].Data() ));
+  }  else if (period == lhc15o) {   // 2015 PbPb datasets.
+    cMapTask->EnableEffCorrection(Form(
+      "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC16g-0-Lists.root",
+      speriod[period].Data() ));
   }
 
 
