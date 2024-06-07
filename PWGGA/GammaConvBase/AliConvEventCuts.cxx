@@ -395,7 +395,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
 //________________________________________________________________________
 AliConvEventCuts::~AliConvEventCuts() {
   // Destructor
-  //Deleting fHistograms leads to seg fault it it's added to output collection of a task
+  // Deleting fHistograms leads to seg fault it it's added to output collection of a task
   // if(fHistograms)
   //    delete fHistograms;
   // fHistograms = NULL;
@@ -7243,9 +7243,19 @@ void AliConvEventCuts::GetNotRejectedParticles(Int_t rejection, TList *HeaderLis
 
     if(rejection == 1 || rejection == 3){
       // note: if we're here, we know we have fPeriodEnum!=kLHC20g10
-      fNotRejectedStart[0]    = 0;
-      fNotRejectedEnd[0]      = ((AliGenEventHeader*)genHeaders->At(0))->NProduced()-1;
-      fGeneratorNames[0]      = ((AliGenEventHeader*)genHeaders->At(0))->GetName();
+      fNotRejectedStart[0] = 0;
+      fNotRejectedEnd[0] = ((AliGenEventHeader*)genHeaders->At(0))->NProduced()-1;
+      fGeneratorNames[0] = ((AliGenEventHeader*)genHeaders->At(0))->GetName();
+      for(int iHeader = 0; iHeader < genHeaders->GetEntries(); iHeader++){
+        TString CurrentHeaderName = TString(((AliGenEventHeader*)genHeaders->At(iHeader))->GetName());
+        CurrentHeaderName.ToLower();
+        if( (CurrentHeaderName.BeginsWith("hijing")) || (CurrentHeaderName.BeginsWith("pythia")) || (CurrentHeaderName.BeginsWith("mb")) || (CurrentHeaderName.BeginsWith("minimumbias")) ){
+          fNotRejectedEnd[0] = ((AliGenEventHeader*)genHeaders->At(iHeader))->NProduced()-1;
+          fGeneratorNames[0] = ((AliGenEventHeader*)genHeaders->At(iHeader))->GetName();
+          // When we find a matching header that can be considerd the minimum bias header, we skip the remaining headers
+          iHeader = genHeaders->GetEntries();
+        }
+      }
 
       if (fDebugLevel > 0 ){
         cout << 0 << "\t" <<fGeneratorNames[0] << "\t" << fNotRejectedStart[0] << "\t" <<fNotRejectedEnd[0] << endl;
@@ -7509,7 +7519,9 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, 
 
   Int_t accepted = 0;
   if(!InputEvent || InputEvent->IsA()==AliESDEvent::Class()){
-    if(!mcEvent) return 0; // no mcEvent available, return 0
+    if(!mcEvent){
+      return 0; // no mcEvent available, return 0
+    }
     if(index >= mcEvent->GetNumberOfPrimaries()){ // initial particle is secondary particle
       if( ((AliMCParticle*) mcEvent->GetTrack(index))->GetMother() < 0) return 0; // material particle, return 0
       return IsParticleFromBGEvent(((AliMCParticle*) mcEvent->GetTrack(index))->GetMother(),mcEvent,InputEvent, debug);
@@ -7540,7 +7552,9 @@ Int_t AliConvEventCuts::IsParticleFromBGEvent(Int_t index, AliMCEvent *mcEvent, 
       if(!aodMCParticle) return 0; // no particle
 
       if(!aodMCParticle->IsPrimary()){
-        if( aodMCParticle->GetMother() < 0) return 0;// material particle, return 0
+        if( aodMCParticle->GetMother() < 0){
+          return 0;// material particle, return 0
+        }
         return IsParticleFromBGEvent(aodMCParticle->GetMother(),mcEvent,InputEvent, debug);
       }
       index = TMath::Abs(static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(index))->GetLabel());
@@ -7969,8 +7983,10 @@ Float_t AliConvEventCuts::GetWeightForMeson(Int_t index, AliMCEvent *mcEvent, Al
   double lRelDiff = lWeightOld 
     ? diff / lWeightOld  
     : diff;
-  fHistoRelDiffNewOldMesonWeights->Fill(lRelDiff);
-  fHistoRelDiffNewOldMesonWeights_fine->Fill(lRelDiff);
+  if (fUseGetWeightForMesonNew){
+    fHistoRelDiffNewOldMesonWeights->Fill(lRelDiff);
+    fHistoRelDiffNewOldMesonWeights_fine->Fill(lRelDiff);
+  }
   return (fUseGetWeightForMesonNew && fMapPtWeightsIsFilledAndSane) 
      ? lWeightNew
      : lWeightOld;
