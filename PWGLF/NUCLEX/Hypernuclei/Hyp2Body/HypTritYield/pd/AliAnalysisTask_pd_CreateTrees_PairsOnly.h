@@ -86,6 +86,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Bool_t    fProton_ITS_Layer4;
     Bool_t    fProton_ITS_Layer5;
     Bool_t    fProton_Event_IsFirstParticle;
+    Int_t     fProton_ID;
 
 
     TTree *fSaveTree_Deuteron;
@@ -127,6 +128,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Bool_t    fDeuteron_ITS_Layer4;
     Bool_t    fDeuteron_ITS_Layer5;
     Bool_t    fDeuteron_Event_IsFirstParticle;
+    Int_t     fDeuteron_ID;
 
 
     TTree *fSaveTree_AntiProton;
@@ -168,6 +170,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Bool_t    fAntiProton_ITS_Layer4;
     Bool_t    fAntiProton_ITS_Layer5;
     Bool_t    fAntiProton_Event_IsFirstParticle;
+    Int_t     fAntiProton_ID;
 
 
     TTree *fSaveTree_AntiDeuteron;
@@ -209,6 +212,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Bool_t    fAntiDeuteron_ITS_Layer4;
     Bool_t    fAntiDeuteron_ITS_Layer5;
     Bool_t    fAntiDeuteron_Event_IsFirstParticle;
+    Int_t     fAntiDeuteron_ID;
 
 
 
