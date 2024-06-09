@@ -154,10 +154,6 @@ public:
   {
     fMinimalBookingSample = doIt;
   };
-  void SetDoTrackMothers(bool doIt)
-  {
-    fDoTrackMothers = doIt;
-  };
   void SetMultiplicityEstimator(AliFemtoDreamEvent::MultEstimator est)
   {
     fEst = est;
@@ -231,10 +227,6 @@ public:
   {
     return fRemoveAncestorsResonances;
   }
-  bool GetDoTrackMothers()
-  {
-    return fDoTrackMothers;
-  };
   bool GetDopTOnepTTwokStarPlotsmT()
   {
     return fpTOnepTTwokStarPlotsmT;
@@ -415,7 +407,6 @@ private:
   AliFemtoDreamEvent::MultEstimator fEst;          //
   bool fAncestors;                                 //
   bool fRemoveAncestorsResonances;                 //
-  bool fDoTrackMothers;                            //
   bool fpTOnepTTwokStarPlotsmT;                    //
   float fpTOnepTTwokStarCut;                       //
   float fDeltaEtaMax;                              //

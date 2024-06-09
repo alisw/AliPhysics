@@ -93,10 +93,6 @@ public:
   {
     return fAncestors;
   }
-  bool GetDoTrackMothers()
-  {
-    return fDoTrackMothers;
-  }
   bool GetDoRemoveAncestorsResonances()
   {
     return fRemoveAncestorsResonances;
@@ -467,10 +463,6 @@ public:
       fEffMixingDepth[iHist]->Fill(iDepth);
   }
 
-  void FillTrackPDGMothersCommon(int i, float RelK, int PDG1, int PDG2);
-  void FillTrackPDGMothersNonCommon(int i, float RelK, int PDG1, int PDG2);
-  void FillTrackPDGMothersMixed(int i, float RelK, int PDG1, int PDG2);
-
   void FillSameEventDistCommon(int i, float RelK)
   {
     if (!fMinimalBooking)
@@ -612,10 +604,6 @@ private:
   TH2F ***fSameEventpTOnepTTwokStar; // to-do: change back to THnSparseF for more dimensions
   TH2F ***fMixedEventpTOnepTTwokStar;
 
-  TH3F **fTrackPDGMothersCommon;
-  TH3F **fTrackPDGMothersNonCommon;
-  TH3F **fTrackPDGMothersMixed;
-  
   bool fDoMinvKtandRelativeKBinning;
   bool fDoMultBinning;
   bool fDoCentBinning;
@@ -633,7 +621,6 @@ private:
   bool fmTDetaDPhi;
   bool fAncestors;
   bool fRemoveAncestorsResonances;
-  bool fDoTrackMothers;
   bool fpTOnepTTwokStarPlotsmT;
   double fpTOnepTTwokStarCutOff;
   std::vector<int> fPDGCode;

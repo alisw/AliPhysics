@@ -57,11 +57,6 @@ public:
   {
     fUseEvtNoLambda = usenolambdaevt;
   }
-  void SetDoTrackMothers(bool doIt)
-  {
-    // std::cout << "Set track mothers to " << doIt << std::endl;
-    fDoTrackMothers = doIt;
-  }
   void SetExcludeDausOf(std::vector<UInt_t> motherList) {
     fExcludedMothers = motherList;
   }
@@ -71,9 +66,6 @@ public:
   }
   void SetTrigger(UInt_t trigger) { fTrigger = trigger; }
 
-  bool IsHadronPdg(int pdg);
-  bool IsDiquarkPdg(int pdg);
-
 private:
   AliAnalysisTaskNanoFromAODLambdaPion(const AliAnalysisTaskNanoFromAODLambdaPion &);
   AliAnalysisTaskNanoFromAODLambdaPion &operator=(const AliAnalysisTaskNanoFromAODLambdaPion &);
@@ -82,7 +74,6 @@ private:
   bool fIsMC;                             //
   bool fUseOMixing;                       //
   bool fUseEvtNoLambda;                   //
-  bool fDoTrackMothers;                   //
   std::vector<UInt_t> fExcludedMothers;   // Only valid if run on MC
   PCSettings fPCSettings;                 //
   UInt_t fTrigger;                        //
