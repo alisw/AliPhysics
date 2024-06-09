@@ -104,7 +104,7 @@ private:
   AliFemtoDreamControlSample *fSample;    //!
   AliVTrack **fGTI;                     //!
   int fTrackBufferSize;                   //
-  ClassDef(AliAnalysisTaskNanoFromAODLambdaPion, 3)
+  ClassDef(AliAnalysisTaskNanoFromAODLambdaPion, 2)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOFROMAODLAMBDAPION_H_ */

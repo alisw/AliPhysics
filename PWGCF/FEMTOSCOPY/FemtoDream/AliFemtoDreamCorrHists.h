@@ -627,7 +627,7 @@ private:
   std::vector<float> fmTBins;
   std::vector<unsigned int> fWhichPairs;
   std::vector<int> fCentBins;
-  ClassDef(AliFemtoDreamCorrHists, 15);
+  ClassDef(AliFemtoDreamCorrHists, 14);
 };
 
 #endif /* ALIFEMTODREAMCORRHISTS_H_ */
