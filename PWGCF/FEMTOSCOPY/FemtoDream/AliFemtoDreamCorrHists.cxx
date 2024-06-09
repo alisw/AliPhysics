@@ -83,9 +83,6 @@ ClassImp(AliFemtoDreamCorrHists)
       fEffMixingDepth(nullptr),
       fSameEventDistCommon(nullptr),
       fSameEventDistNonCommon(nullptr),
-      fTrackPDGMothersCommon(nullptr),
-      fTrackPDGMothersNonCommon(nullptr),
-      fTrackPDGMothersMixed(nullptr),
       fdEtadPhiSECommon(nullptr),
       fdEtadPhiSENonCommon(nullptr),
       fSameEventMultDistCommon(nullptr),
@@ -111,7 +108,6 @@ ClassImp(AliFemtoDreamCorrHists)
       fPhiEtaPlotsSmallK(false),
       fmTDetaDPhi(false),
       fAncestors(false),
-      fDoTrackMothers(false),
       fRemoveAncestorsResonances(false),
       fpTOnepTTwokStarPlotsmT(false),
       fpTOnepTTwokStarCutOff(3.),
@@ -193,10 +189,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fdEtadPhiMEmT(hists.fdEtadPhiMEmT),
       fEffMixingDepth(hists.fEffMixingDepth),
       fSameEventDistCommon(hists.fSameEventDistCommon),
-      fSameEventDistNonCommon(hists.fSameEventDistNonCommon),
-      fTrackPDGMothersCommon(hists.fTrackPDGMothersCommon),
-      fTrackPDGMothersNonCommon(hists.fTrackPDGMothersNonCommon),
-      fTrackPDGMothersMixed(hists.fTrackPDGMothersMixed),
+      fSameEventDistNonCommon(hists.fSameEventDistCommon),
       fdEtadPhiSECommon(hists.fdEtadPhiSECommon),
       fdEtadPhiSENonCommon(hists.fdEtadPhiSENonCommon),
       fSameEventMultDistCommon(hists.fSameEventMultDistCommon),
@@ -222,7 +215,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fPhiEtaPlotsSmallK(hists.fPhiEtaPlotsSmallK),
       fmTDetaDPhi(hists.fmTDetaDPhi),
       fAncestors(hists.fAncestors),
-      fDoTrackMothers(hists.fDoTrackMothers),
       fRemoveAncestorsResonances(hists.fRemoveAncestorsResonances),
       fpTOnepTTwokStarPlotsmT(hists.fpTOnepTTwokStarPlotsmT),
       fpTOnepTTwokStarCutOff(hists.fpTOnepTTwokStarCutOff),
@@ -305,9 +297,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fEffMixingDepth(nullptr),
       fSameEventDistCommon(nullptr),
       fSameEventDistNonCommon(nullptr),
-      fTrackPDGMothersCommon(nullptr),
-      fTrackPDGMothersNonCommon(nullptr),
-      fTrackPDGMothersMixed(nullptr),
       fdEtadPhiSECommon(nullptr),
       fdEtadPhiSENonCommon(nullptr),
       fSameEventMultDistCommon(nullptr),
@@ -333,7 +322,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fPhiEtaPlotsSmallK(false),
       fmTDetaDPhi(false),
       fAncestors(false),
-      fDoTrackMothers(false),
       fRemoveAncestorsResonances(false),
       fpTOnepTTwokStarPlotsmT(false),
       fpTOnepTTwokStarCutOff(3.),
@@ -362,7 +350,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   fPhiEtaPlotsSmallK = conf->GetdPhidEtaPlotsSmallK();
   fmTDetaDPhi = conf->GetdPhidEtamTPlots();
   fAncestors = conf->GetDoAncestorsPlots();
-  fDoTrackMothers = conf->GetDoTrackMothers();
   fRemoveAncestorsResonances = conf->GetRemoveAncestorResonances();
   fpTOnepTTwokStarPlotsmT = conf->GetDopTOnepTTwokStarPlotsmT();
   fpTOnepTTwokStarCutOff = conf->GetDopTOnepTTwokStarCutOff();
@@ -707,13 +694,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fSameEventmTMultDistCommon = new TH2F **[nHists];
       fSameEventmTMultDistNonCommon = new TH2F **[nHists];
     }
-    if (fDoTrackMothers) 
-    {
-      fTrackPDGMothersCommon = new TH3F *[nHists];
-      fTrackPDGMothersNonCommon = new TH3F *[nHists];
-      fTrackPDGMothersMixed = new TH3F *[nHists];
-    }
-
   }
   else
   {
@@ -727,10 +707,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
     fSameEventmTDistNonCommon = nullptr;
     fSameEventmTMultDistCommon = nullptr;
     fSameEventmTMultDistNonCommon = nullptr;
-    fTrackPDGMothersCommon = nullptr;
-    fTrackPDGMothersNonCommon = nullptr;
-    fTrackPDGMothersMixed = nullptr;
-
   }
 
   if (fpTOnepTTwokStarPlotsmT)
@@ -1096,60 +1072,6 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
                                                     SameEventNameNonCommon.Data(), *itNBins,
                                                     *itKMin, *itKMax);
         fPairs[Counter]->Add(fSameEventDistNonCommon[Counter]);
-
-        if (fDoTrackMothers)
-        {
-          TString TrackMothersCommonName =
-            TString::Format("TrackMothersCommon_Particle%d_Particle%d", iPar1, iPar2);
-          fTrackPDGMothersCommon[Counter] = new TH3F(TrackMothersCommonName.Data(), 
-                                                     TrackMothersCommonName.Data(), 
-                                                     250, 0, 1., 100, 0, 100, 100, 0, 100);
-          fPairs[Counter]->Add(fTrackPDGMothersCommon[Counter]);
-          
-          TString TrackMothersNonCommonName =
-            TString::Format("TrackMothersNonCommon_Particle%d_Particle%d", iPar1, iPar2);
-          fTrackPDGMothersNonCommon[Counter] = new TH3F(TrackMothersNonCommonName.Data(),         
-                                                        TrackMothersNonCommonName.Data(), 
-                                                        250, 0, 1., 100, 0, 100, 100, 0, 100);
-          fPairs[Counter]->Add(fTrackPDGMothersNonCommon[Counter]);
-
-          TString TrackMothersMixedName =
-            TString::Format("TrackMothersMixed_Particle%d_Particle%d", iPar1, iPar2);
-          fTrackPDGMothersMixed[Counter] = new TH3F(TrackMothersMixedName.Data(),         
-                                                    TrackMothersMixedName.Data(), 
-                                                    250, 0, 1., 120, 0, 120, 120, 0, 120);
-          fPairs[Counter]->Add(fTrackPDGMothersMixed[Counter]);
-
-          // Set axis labels
-          TString part0Label = TString::Format("PDG mothers Particle%d", iPar1);
-          TString part1Label = TString::Format("PDG mothers Particle%d", iPar2);
-          fTrackPDGMothersCommon[Counter]->GetYaxis()->SetTitle(part0Label.Data());
-          fTrackPDGMothersCommon[Counter]->GetZaxis()->SetTitle(part1Label.Data());
-          fTrackPDGMothersNonCommon[Counter]->GetYaxis()->SetTitle(part0Label.Data());
-          fTrackPDGMothersNonCommon[Counter]->GetZaxis()->SetTitle(part1Label.Data());
-          fTrackPDGMothersMixed[Counter]->GetYaxis()->SetTitle(part0Label.Data());
-          fTrackPDGMothersMixed[Counter]->GetZaxis()->SetTitle(part1Label.Data());
-                    
-          // Set bin labels to "0", these will be progressively changed with the PDG codes of the mothers
-          fTrackPDGMothersCommon[Counter]->GetYaxis()->SetAlphanumeric();
-          fTrackPDGMothersCommon[Counter]->GetZaxis()->SetAlphanumeric();
-          fTrackPDGMothersNonCommon[Counter]->GetYaxis()->SetAlphanumeric();
-          fTrackPDGMothersNonCommon[Counter]->GetZaxis()->SetAlphanumeric();
-          fTrackPDGMothersMixed[Counter]->GetYaxis()->SetAlphanumeric();
-          fTrackPDGMothersMixed[Counter]->GetZaxis()->SetAlphanumeric();
-          for(int iBin1=0; iBin1<fTrackPDGMothersCommon[Counter]->GetYaxis()->GetNbins(); iBin1++) {
-            fTrackPDGMothersCommon[Counter]->GetYaxis()->SetBinLabel(iBin1+1, "0");
-            fTrackPDGMothersCommon[Counter]->GetZaxis()->SetBinLabel(iBin1+1, "0");
-          }
-          for(int iBin2=0; iBin2<fTrackPDGMothersNonCommon[Counter]->GetYaxis()->GetNbins(); iBin2++) {
-            fTrackPDGMothersNonCommon[Counter]->GetYaxis()->SetBinLabel(iBin2+1, "0");
-            fTrackPDGMothersNonCommon[Counter]->GetZaxis()->SetBinLabel(iBin2+1, "0");
-          } 
-          for(int iBin3=0; iBin3<fTrackPDGMothersMixed[Counter]->GetYaxis()->GetNbins(); iBin3++) {
-            fTrackPDGMothersMixed[Counter]->GetYaxis()->SetBinLabel(iBin3+1, "0");
-            fTrackPDGMothersMixed[Counter]->GetZaxis()->SetBinLabel(iBin3+1, "0");
-          } 
-        }
 
         if (fDoMultBinning)
         {
@@ -1782,9 +1704,6 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fEffMixingDepth = hists.fEffMixingDepth;
     this->fSameEventDistCommon = hists.fSameEventDistCommon;
     this->fSameEventDistNonCommon = hists.fSameEventDistNonCommon;
-    this->fTrackPDGMothersCommon = hists.fTrackPDGMothersCommon;
-    this->fTrackPDGMothersNonCommon = hists.fTrackPDGMothersNonCommon;
-    this->fTrackPDGMothersMixed = hists.fTrackPDGMothersMixed;
     this->fdEtadPhiSECommon = hists.fdEtadPhiSECommon;
     this->fdEtadPhiSENonCommon = hists.fdEtadPhiSENonCommon;
     this->fSameEventMultDistCommon = hists.fSameEventMultDistCommon;
@@ -1955,21 +1874,6 @@ AliFemtoDreamCorrHists::~AliFemtoDreamCorrHists()
   {
     delete[] fSameEventDistNonCommon;
     delete fSameEventDistNonCommon;
-  }
-  if (fTrackPDGMothersCommon)
-  {
-    delete[] fTrackPDGMothersCommon;
-    delete fTrackPDGMothersCommon;
-  }
-  if (fTrackPDGMothersNonCommon)
-  {
-    delete[] fTrackPDGMothersNonCommon;
-    delete fTrackPDGMothersNonCommon;
-  }
-  if (fTrackPDGMothersMixed)
-  {
-    delete[] fTrackPDGMothersMixed;
-    delete fTrackPDGMothersMixed;
   }
   if (fdEtadPhiSECommon)
   {
@@ -2302,77 +2206,3 @@ void AliFemtoDreamCorrHists::FillSameEventmTMultDistNonCommon(int iHist, float m
     }
   }
 }
-
-void AliFemtoDreamCorrHists::FillTrackPDGMothersNonCommon(int i, float RelK, int PDG1, int PDG2)
-{
-  if (!fMinimalBooking)
-  {
-    if (fDoTrackMothers) {
-      int bin1(0);
-      int bin2(0);
-
-      // The function FindFixBin of the class TAxis returns -1 if the argument does not match any of the 
-      // current axis labels, the default for all axis labels is "0"
-      int label1Idx = fTrackPDGMothersNonCommon[i]->GetYaxis()->FindFixBin(std::to_string(PDG1).c_str());
-      int label2Idx = fTrackPDGMothersNonCommon[i]->GetZaxis()->FindFixBin(std::to_string(PDG2).c_str());
-      
-      // This means that we still haven't encountered this mother, thus we set the first bin that is keeping 
-      // the default setting to the new PDG code found
-      if(label1Idx == -1) {
-        fTrackPDGMothersNonCommon[i]->GetYaxis()->SetBinLabel(fTrackPDGMothersNonCommon[i]->GetYaxis()->FindFixBin("0"),
-                                                           std::to_string(PDG1).c_str());
-      }
-      if(label2Idx == -1) {
-        fTrackPDGMothersNonCommon[i]->GetZaxis()->SetBinLabel(fTrackPDGMothersNonCommon[i]->GetZaxis()->FindFixBin("0"),
-                                                           std::to_string(PDG2).c_str());
-      }
-
-      // Fill the histogram specifying the y and z bins with their label, i.e. the PDG of the mother
-      fTrackPDGMothersNonCommon[i]->Fill(static_cast<Double_t>(RelK), std::to_string(PDG1).c_str(), std::to_string(PDG2).c_str(), 1);
-    }
-  }
-};
-
-void AliFemtoDreamCorrHists::FillTrackPDGMothersCommon(int i, float RelK, int PDG1, int PDG2)
-{
-  if (!fMinimalBooking)
-  {
-    if (fDoTrackMothers) {
-      int bin1(0);
-      int bin2(0);
-      int label1Idx = fTrackPDGMothersCommon[i]->GetYaxis()->FindFixBin(std::to_string(PDG1).c_str());
-      int label2Idx = fTrackPDGMothersCommon[i]->GetZaxis()->FindFixBin(std::to_string(PDG2).c_str());
-      if(label1Idx == -1) {
-        fTrackPDGMothersCommon[i]->GetYaxis()->SetBinLabel(fTrackPDGMothersCommon[i]->GetYaxis()->FindFixBin("0"),
-                                                           std::to_string(PDG1).c_str());
-      }
-      if(label2Idx == -1) {
-        fTrackPDGMothersCommon[i]->GetZaxis()->SetBinLabel(fTrackPDGMothersCommon[i]->GetZaxis()->FindFixBin("0"),
-                                                           std::to_string(PDG2).c_str());
-      }
-      fTrackPDGMothersCommon[i]->Fill(static_cast<Double_t>(RelK), std::to_string(PDG1).c_str(), std::to_string(PDG2).c_str(), 1);
-    }
-  }
-};
-
-void AliFemtoDreamCorrHists::FillTrackPDGMothersMixed(int i, float RelK, int PDG1, int PDG2)
-{
-  if (!fMinimalBooking)
-  {
-    if (fDoTrackMothers) {
-      int bin1(0);
-      int bin2(0);
-      int label1Idx = fTrackPDGMothersMixed[i]->GetYaxis()->FindFixBin(std::to_string(PDG1).c_str());
-      int label2Idx = fTrackPDGMothersMixed[i]->GetZaxis()->FindFixBin(std::to_string(PDG2).c_str());
-      if(label1Idx == -1) {
-        fTrackPDGMothersMixed[i]->GetYaxis()->SetBinLabel(fTrackPDGMothersMixed[i]->GetYaxis()->FindFixBin("0"),
-                                                           std::to_string(PDG1).c_str());
-      }
-      if(label2Idx == -1) {
-        fTrackPDGMothersMixed[i]->GetZaxis()->SetBinLabel(fTrackPDGMothersMixed[i]->GetZaxis()->FindFixBin("0"),
-                                                           std::to_string(PDG2).c_str());
-      }
-      fTrackPDGMothersMixed[i]->Fill(static_cast<Double_t>(RelK), std::to_string(PDG1).c_str(), std::to_string(PDG2).c_str(), 1);
-    }
-  }
-};

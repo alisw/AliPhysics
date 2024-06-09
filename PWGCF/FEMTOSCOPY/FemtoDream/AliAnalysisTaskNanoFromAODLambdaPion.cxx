@@ -340,37 +340,6 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
           continue;
         }
       }
-      
-      if (fMC && fDoTrackMothers) {
-        AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(fLambda->GetID());
-        if (!mcPart) continue;
-
-        // Set mother PDG to the PDG of the particle (if it does not change, the particle 
-        // is primary)
-        int momAbsPdg = std::abs(mcPart->GetPdgCode());
-        AliAODMCParticle *firstMom = (AliAODMCParticle *)fMC->GetTrack(mcPart->GetMother());
-        if (!firstMom) continue;
-
-        // The PDG of the mother is updated only if its direct mother is an hadron
-        int nextMomPdg = std::abs(firstMom->GetPdgCode());
-        while(IsHadronPdg(nextMomPdg)) {
-          momAbsPdg = std::abs(firstMom->GetPdgCode());
-          AliAODMCParticle *secondMom = (AliAODMCParticle *)fMC->GetTrack(firstMom->GetMother());
-          if (!secondMom) break;
-          nextMomPdg = std::abs(secondMom->GetPdgCode());
-          
-          // Skip diquarks, there can be processes where hadron --> diquarks --> hadrons
-          while(IsDiquarkPdg(nextMomPdg)) {
-            AliAODMCParticle *diquarkMom = (AliAODMCParticle *)fMC->GetTrack(secondMom->GetMother());
-            nextMomPdg = std::abs(diquarkMom->GetPdgCode());
-            secondMom = diquarkMom;
-          }
-
-          // Update the particle from which the PDG will be taken
-          firstMom = secondMom;
-        }
-        fLambda->SetMotherPDG(momAbsPdg); 
-      }
 
       Lambdas.push_back(*fLambda);
     }
@@ -388,30 +357,6 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
         if (std::find(fExcludedMothers.begin(), fExcludedMothers.end(), momAbsPdg) != fExcludedMothers.end()) {
           continue;
         }
-      }
-
-      if (fMC && fDoTrackMothers) {
-        // std::cout << "------------------------" << std::endl; 
-        // std::cout << "Taking mother ID lambda" << std::endl;
-        AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(fLambda->GetID());
-        if (!mcPart) continue;
-        int momAbsPdg = std::abs(mcPart->GetPdgCode());
-        AliAODMCParticle *firstMom = (AliAODMCParticle *)fMC->GetTrack(mcPart->GetMother());
-        if (!firstMom) continue;
-        int nextMomPdg = std::abs(firstMom->GetPdgCode());
-        while(IsHadronPdg(nextMomPdg)) {
-          momAbsPdg = std::abs(firstMom->GetPdgCode());
-          AliAODMCParticle *secondMom = (AliAODMCParticle *)fMC->GetTrack(firstMom->GetMother());
-          if (!secondMom) break;
-          nextMomPdg = std::abs(secondMom->GetPdgCode());
-          while(IsDiquarkPdg(nextMomPdg)) {
-            AliAODMCParticle *diquarkMom = (AliAODMCParticle *)fMC->GetTrack(secondMom->GetMother());
-            nextMomPdg = std::abs(diquarkMom->GetPdgCode());
-            secondMom = diquarkMom;
-          }
-          firstMom = secondMom;
-        }
-        fLambda->SetMotherPDG(momAbsPdg); 
       }
 
       AntiLambdas.push_back(*fLambda);
@@ -446,28 +391,6 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
         }
       }
 
-      if (fMC && fDoTrackMothers) {
-        AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(fTrack->GetID());
-        if (!mcPart) continue;
-        int momAbsPdg = std::abs(mcPart->GetPdgCode());
-        AliAODMCParticle *firstMom = (AliAODMCParticle *)fMC->GetTrack(mcPart->GetMother());
-        if (!firstMom) continue;
-        int nextMomPdg = std::abs(firstMom->GetPdgCode());
-        while(IsHadronPdg(nextMomPdg)) {
-          momAbsPdg = std::abs(firstMom->GetPdgCode());
-          AliAODMCParticle *secondMom = (AliAODMCParticle *)fMC->GetTrack(firstMom->GetMother());
-          if (!secondMom) break;
-          nextMomPdg = std::abs(secondMom->GetPdgCode());
-          while(IsDiquarkPdg(nextMomPdg)) {
-            AliAODMCParticle *diquarkMom = (AliAODMCParticle *)fMC->GetTrack(secondMom->GetMother());
-            nextMomPdg = std::abs(diquarkMom->GetPdgCode());
-            secondMom = diquarkMom;
-          }
-          firstMom = secondMom;
-        }
-        fTrack->SetMotherPDG(momAbsPdg); 
-      }
-
       PionPlus.push_back(*fTrack);
     }
     if (fNegPionCuts->isSelected(fTrack))
@@ -484,28 +407,6 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
         if (std::find(fExcludedMothers.begin(), fExcludedMothers.end(), momAbsPdg) != fExcludedMothers.end()) {
           continue;
         }
-      }
-
-      if (fMC && fDoTrackMothers) {
-        AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(fTrack->GetID());
-        if (!mcPart) continue;
-        int momAbsPdg = std::abs(mcPart->GetPdgCode());
-        AliAODMCParticle *firstMom = (AliAODMCParticle *)fMC->GetTrack(mcPart->GetMother());
-        if (!firstMom) continue;
-        int nextMomPdg = std::abs(firstMom->GetPdgCode());
-        while(IsHadronPdg(nextMomPdg)) {
-          momAbsPdg = std::abs(firstMom->GetPdgCode());
-          AliAODMCParticle *secondMom = (AliAODMCParticle *)fMC->GetTrack(firstMom->GetMother());
-          if (!secondMom) break;
-          nextMomPdg = std::abs(secondMom->GetPdgCode());
-          while(IsDiquarkPdg(nextMomPdg)) {
-            AliAODMCParticle *diquarkMom = (AliAODMCParticle *)fMC->GetTrack(secondMom->GetMother());
-            nextMomPdg = std::abs(diquarkMom->GetPdgCode());
-            secondMom = diquarkMom;
-          }
-          firstMom = secondMom;
-        }
-        fTrack->SetMotherPDG(momAbsPdg); 
       }
 
       PionMinus.push_back(*fTrack);
@@ -646,21 +547,3 @@ void AliAnalysisTaskNanoFromAODLambdaPion::StoreGlobalTrackReference(AliVTrack *
   }
   (fGTI[trackID]) = track;
 }
-
-bool AliAnalysisTaskNanoFromAODLambdaPion::IsDiquarkPdg(int pdg) {
-  std::vector<int> diquarkPdgs = {1103, 2101, 2103, 2203, 3101, 3103, 3201,
-                                  3203, 3303, 4101, 4103, 4201, 4203, 4301,
-                                  4303, 4403, 5101, 5103, 5201, 5203, 5301,
-                                  5401, 5403, 5503};                       
-  if (std::find(diquarkPdgs.begin(), diquarkPdgs.end(), pdg) != diquarkPdgs.end()) {
-    return true;
-  }
-  return false;
-} 
-
-bool AliAnalysisTaskNanoFromAODLambdaPion::IsHadronPdg(int pdg) {
-  if(pdg < 100 || IsDiquarkPdg(pdg)) {
-    return false;
-  }
-  return true;
-} 
