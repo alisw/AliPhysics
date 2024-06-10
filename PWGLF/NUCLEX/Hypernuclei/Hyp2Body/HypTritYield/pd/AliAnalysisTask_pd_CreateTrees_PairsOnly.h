@@ -86,6 +86,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Bool_t    fProton_ITS_Layer4;
     Bool_t    fProton_ITS_Layer5;
     Bool_t    fProton_Event_IsFirstParticle;
+    UInt_t    fProton_Event_TimeStamp;
+    UShort_t  fProton_Event_RandomCrossCheckNumber;
     Int_t     fProton_ID;
 
 
@@ -128,6 +130,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Bool_t    fDeuteron_ITS_Layer4;
     Bool_t    fDeuteron_ITS_Layer5;
     Bool_t    fDeuteron_Event_IsFirstParticle;
+    UInt_t    fDeuteron_Event_TimeStamp;
+    UShort_t  fDeuteron_Event_RandomCrossCheckNumber;
     Int_t     fDeuteron_ID;
 
 
@@ -170,6 +174,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Bool_t    fAntiProton_ITS_Layer4;
     Bool_t    fAntiProton_ITS_Layer5;
     Bool_t    fAntiProton_Event_IsFirstParticle;
+    UInt_t    fAntiProton_Event_TimeStamp;
+    UShort_t  fAntiProton_Event_RandomCrossCheckNumber;
     Int_t     fAntiProton_ID;
 
 
@@ -212,9 +218,9 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Bool_t    fAntiDeuteron_ITS_Layer4;
     Bool_t    fAntiDeuteron_ITS_Layer5;
     Bool_t    fAntiDeuteron_Event_IsFirstParticle;
+    UInt_t    fAntiDeuteron_Event_TimeStamp;
+    UShort_t  fAntiDeuteron_Event_RandomCrossCheckNumber;
     Int_t     fAntiDeuteron_ID;
-
-
 
 
     ClassDef(AliAnalysisTask_pd_CreateTrees_PairsOnly,1);
