@@ -39,6 +39,7 @@ AliAnalysisTaskFemtoProtonPion::AliAnalysisTaskFemtoProtonPion()
     fDoResonanceLorentzFactor(true),
     fKineDist(false),
     fRecoDist(false),
+    fUseWeakDecays(false),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -114,6 +115,7 @@ AliAnalysisTaskFemtoProtonPion::AliAnalysisTaskFemtoProtonPion(
     fDoResonanceLorentzFactor(true),
     fKineDist(false),
     fRecoDist(false),
+    fUseWeakDecays(false),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -696,8 +698,14 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
         continue;
       }
 
-      if(!(mcPart->IsPhysicalPrimary())){
-        continue;
+      if(!fUseWeakDecays){
+        if(!(mcPart->IsPhysicalPrimary())){
+          continue;
+        }
+      } else {
+        if(!(mcPart->IsPhysicalPrimary()) && !(mcPart->IsSecondaryFromWeakDecay())){
+          continue;
+        }
       }
 
       if(PassedMCKineCuts(mcPart)){
@@ -852,9 +860,16 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
             continue;
           }
 
-          if(!(mcPart->IsPhysicalPrimary())){
-            continue;
+          if(!fUseWeakDecays){
+            if(!(mcPart->IsPhysicalPrimary())){
+              continue;
+            }
+          } else {
+            if(!(mcPart->IsPhysicalPrimary()) && !(mcPart->IsSecondaryFromWeakDecay())){
+              continue;
+            }
           }
+
 
           //only use the particle where we are sure about their PID -> Kine dist without impurities
           if (mcPart->GetPdgCode() == fTrackCutsProton->GetPDGCode()) {
@@ -1559,9 +1574,15 @@ bool AliAnalysisTaskFemtoProtonPion::PassedMCKineCuts(AliAODMCParticle *mcPart){
 
   bool passed = true; 
 
-  if(!(mcPart->IsPhysicalPrimary())){
-    passed = false;
-  }
+  if(!fUseWeakDecays){
+    if(!(mcPart->IsPhysicalPrimary())){
+      passed = false;
+    }
+   } else {
+      if(!(mcPart->IsPhysicalPrimary()) && !(mcPart->IsSecondaryFromWeakDecay())){
+        passed = false;
+      }
+   }
 
   if (mcPart->GetPdgCode() == fTrackCutsProton->GetPDGCode() || mcPart->GetPdgCode() == fTrackCutsAntiProton->GetPDGCode()) { //Protons
 

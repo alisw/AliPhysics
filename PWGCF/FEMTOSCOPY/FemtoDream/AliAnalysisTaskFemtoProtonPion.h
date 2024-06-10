@@ -70,6 +70,7 @@ class AliAnalysisTaskFemtoProtonPion : public AliAnalysisTaskSE {
   void SetDoResonanceLorentzFactor(bool DoResonanceLorentzFactor){fDoResonanceLorentzFactor = DoResonanceLorentzFactor;};
   void SetDoReco(bool DoReco){fRecoDist = DoReco;}; 
   void SetDoKine(bool DoKine){fKineDist = DoKine;}; 
+  void SetUseMCWeakDecays(bool DoIt){fUseWeakDecays = DoIt;}
 
   private:
   AliAnalysisTaskFemtoProtonPion(const AliAnalysisTaskFemtoProtonPion &task);
@@ -102,6 +103,7 @@ class AliAnalysisTaskFemtoProtonPion : public AliAnalysisTaskSE {
   //For k* dependent efficiency 
   bool fKineDist; //
   bool fRecoDist; //
+  bool fUseWeakDecays; //
 
   AliFemtoDreamEvent *fEvent;               //!
   AliFemtoDreamTrack *fTrack;               //!
@@ -165,6 +167,6 @@ class AliAnalysisTaskFemtoProtonPion : public AliAnalysisTaskSE {
   TH2F *ProtonID; 
   TH2F *AntiProtonID; 
 
-  ClassDef(AliAnalysisTaskFemtoProtonPion, 5) 
+  ClassDef(AliAnalysisTaskFemtoProtonPion, 6) 
 };
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKFEMTOPROTONPION_H_ */
