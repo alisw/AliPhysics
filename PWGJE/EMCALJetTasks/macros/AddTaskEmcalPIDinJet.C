@@ -22,13 +22,6 @@ AliAnalysisTaskEmcalPIDinJet* AddTaskEmcalPIDinJet(
   }
 
   AliAnalysisTaskEmcalPIDinJet *jetTask = new AliAnalysisTaskEmcalPIDinJet(name.Data());
-  //jetTask = AddTaskEmcalJetPIDinJet("usedefault", "usedefault", "usedefault", "");
-  jetTask->GetClusterContainer(0)->SetClusECut(0.);
-  jetTask->GetClusterContainer(0)->SetClusPtCut(0.);
-  jetTask->GetClusterContainer(0)->SetClusNonLinCorrEnergyCut(0.);
-  jetTask->GetClusterContainer(0)->SetClusHadCorrEnergyCut(0.30);
-  jetTask->GetClusterContainer(0)->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
-  jetTask->GetParticleContainer(0)->SetParticlePtCut(0.15);;
   jetTask->SetHistoBins(300, 0, 300);
   jetTask->SelectCollisionCandidates(AliVEvent::kCentral);
 
