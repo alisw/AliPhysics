@@ -61,6 +61,9 @@ AliAnalysisTaskScale::AliAnalysisTaskScale() :
   fHistScalevsScaleEmcal(0),       
   fHistScaleEmcalvsScale2Emcal(0),
   fHistScaleEmcalvsScale3Emcal(0),
+  fHistScaleShift1EmcalvsCent(0),
+  fHistScaleShift2EmcalvsCent(0),
+  fHistScaleShiftMeanEmcalvsCent(0),
   fTracksCont(0),
   fCaloClustersCont(0)
 {
@@ -108,6 +111,9 @@ AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) :
   fHistScalevsScaleEmcal(0),       
   fHistScaleEmcalvsScale2Emcal(0),
   fHistScaleEmcalvsScale3Emcal(0),
+  fHistScaleShift1EmcalvsCent(0),
+  fHistScaleShift2EmcalvsCent(0),
+  fHistScaleShiftMeanEmcalvsCent(0),
   fTracksCont(0),
   fCaloClustersCont(0)
 {
@@ -183,6 +189,24 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
   fHistScale3EmcalvsCent->GetYaxis()->SetTitle("s_{3 #times EMC}");
   fHistScale3EmcalvsCent->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistScale3EmcalvsCent);
+
+  fHistScaleShift1EmcalvsCent = new TH2F("fHistScaleShift1EmcalvsCent", "fHistScaleShift1EmcalvsCent", 101, -1, 100, 500, 0, 5);
+  fHistScaleShift1EmcalvsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistScaleShift1EmcalvsCent->GetYaxis()->SetTitle("s_{EMC}^{1xShift}");
+  fHistScaleShift1EmcalvsCent->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistScaleShift1EmcalvsCent);
+
+  fHistScaleShift2EmcalvsCent = new TH2F("fHistScaleShift2EmcalvsCent", "fHistScaleShift2EmcalvsCent", 101, -1, 100, 500, 0, 5);
+  fHistScaleShift2EmcalvsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistScaleShift2EmcalvsCent->GetYaxis()->SetTitle("s_{EMC}^{2xShift}");
+  fHistScaleShift2EmcalvsCent->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistScaleShift2EmcalvsCent);
+
+  fHistScaleShiftMeanEmcalvsCent = new TH2F("fHistScaleShiftMeanEmcalvsCent", "fHistScaleShiftMeanEmcalvsCent", 101, -1, 100, 500, 0, 5);
+  fHistScaleShiftMeanEmcalvsCent->GetXaxis()->SetTitle("Centrality (%)");
+  fHistScaleShiftMeanEmcalvsCent->GetYaxis()->SetTitle("s_{EMC}^{<Shift>}");
+  fHistScaleShiftMeanEmcalvsCent->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistScaleShiftMeanEmcalvsCent);
 
   fHistDeltaScale3EmcalvsCent = new TH2F("fHistDeltaScale3EmcalvsCent", "fHistDeltaScale3EmcalvsCent", 101, -1, 100, 500, -2.5, 2.5);
   fHistDeltaScale3EmcalvsCent->GetXaxis()->SetTitle("Centrality (%)");
@@ -347,6 +371,9 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
 {
   // Execute on each event.
 
+  const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
+  const Double_t EmcalMaxEta = fGeom->GetArm1EtaMax();
+
   Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
   Double_t EmcalMaxPhi = fGeom->GetEMCALPhiMax() * TMath::DegToRad();
   if(InputEvent()->GetRunNumber()>=177295 && InputEvent()->GetRunNumber()<=197470) { //small SM masked in 2012 and 2013
@@ -360,14 +387,31 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
   Double_t ptEMCAL2 = 0;
   Double_t ptEMCAL3 = 0;
 
+  Double_t ptEMCALshift1 = 0;
+  Double_t ptEMCALshift2 = 0;
+  Double_t ptEMCALshiftMean = 0;
+
   const Int_t Ntracks = fTracksCont->GetNAcceptedParticles();
   if (fTracksCont) {
     fTracksCont->ResetCurrentID();
     AliVTrack *track = NULL;
     while((track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()))) {
+      if(track->Eta() < EmcalMinEta || track->Eta() > EmcalMaxEta) continue;
       fHistTrackPtvsCent->Fill(fCent,track->Pt());
       fHistTrackEtaPhi->Fill(track->Eta(),track->Phi());
       ptTPC += track->Pt();
+
+      // Shift track acceptance by pi/4 and take mean
+      for(int a = 0; a < 7; a++){
+        if((track->Phi() < (EmcalMaxPhi+(a*TMath::PiOver4())) && track->Phi() > (EmcalMinPhi+(a*TMath::PiOver4())))) ptEMCALshiftMean += track->Pt();
+      }
+      ptEMCALshiftMean /= 7;
+
+      // Shift track acceptance by EMCal width
+      if ((track->Phi() < (EmcalMaxPhi+(2*EmcalWidth))) && (track->Phi() > (EmcalMinPhi+(2*EmcalWidth)))) ptEMCALshift1 += track->Pt(); // shift by width of emcal
+      if ((track->Phi() < (EmcalMaxPhi+(4*EmcalWidth))) && (track->Phi() > (EmcalMinPhi+(4*EmcalWidth)))) ptEMCALshift2 += track->Pt(); // shift by 2x width of emcal
+
+
       if ((track->Phi() > (EmcalMaxPhi+(2.0*EmcalWidth))) || (track->Phi() < (EmcalMinPhi-(2.0*EmcalWidth)))) continue;
       ptEMCAL3 += track->Pt();
       if ((track->Phi() > (EmcalMaxPhi+EmcalWidth)) || (track->Phi() < (EmcalMinPhi-EmcalWidth))) continue;
@@ -394,6 +438,9 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
       Et += nPart.Pt();
     }
   }
+
+  if (Et == 0) 
+    return kFALSE;
  
   Double_t scalecalc         = -1;
   if (ptEMCAL > 0 && Et > 0 && ptTPC > 0)
@@ -414,9 +461,23 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
     scalecalcemcal3                = 3*(Et+ptEMCAL)/ptEMCAL3;
     Chscalecalcemcal3              = 3*ptEMCAL/ptEMCAL3;}
 
+  // Calculations for shifted EMCal acceptance
+  Double_t scalecalcemcalshift1    = -1;
+  if (ptEMCALshift1 > 0)
+    scalecalcemcalshift1           = (Et+ptEMCALshift1)/ptEMCALshift1;
+  Double_t scalecalcemcalshift2    = -1;
+  if (ptEMCALshift2 > 0)
+    scalecalcemcalshift2           = (Et+ptEMCALshift2)/ptEMCALshift2;
+  Double_t scalecalcemcalshiftmean    = -1;
+  if (ptEMCALshiftMean > 0)
+    scalecalcemcalshiftmean           = (Et+ptEMCALshiftMean)/ptEMCALshiftMean;
+
   fHistScaleEmcalvsCent->Fill(fCent,scalecalcemcal);      
   fHistScale2EmcalvsCent->Fill(fCent,scalecalcemcal2);    
-  fHistScale3EmcalvsCent->Fill(fCent,scalecalcemcal3);      
+  fHistScale3EmcalvsCent->Fill(fCent,scalecalcemcal3);
+  fHistScaleShift1EmcalvsCent->Fill(fCent,scalecalcemcalshift1);
+  fHistScaleShift2EmcalvsCent->Fill(fCent,scalecalcemcalshift2);  
+  fHistScaleShiftMeanEmcalvsCent->Fill(fCent,scalecalcemcalshiftmean);    
   fHistChScalevsCent->Fill(fCent,Chscalecalcemcal);    
   fHistChScale2EmcalvsCent->Fill(fCent,Chscalecalcemcal2);   
   fHistChScale3EmcalvsCent->Fill(fCent,Chscalecalcemcal3);   
