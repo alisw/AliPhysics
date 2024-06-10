@@ -31,6 +31,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     bool SwitchOffCPR = false, //20
     float PionMinPt = 0.14, //21
     int FilterBitProton = 128, //22
+    bool UseMCWeakDecays = false, 
     const char *cutVariation = "0" //23
     ) {
 
@@ -1298,6 +1299,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
 
     taskAOD->SetDoKine(DoKine); 
     taskAOD->SetDoReco(DoReco);
+    taskAOD->SetUseMCWeakDecays(UseMCWeakDecays);
 
     //Set-up for own looping & calculus -> needed for 3D studies
     //IMPORTANT: 0, 1, 2, 3 and the names has to correspond to the order given to the offical femto framework!!!!
