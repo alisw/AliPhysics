@@ -802,6 +802,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       PeriodVar                   fPeriodEnum;                            ///< period selector
       EnergyVar                   fEnergyEnum;                            ///< energy selector
       AliTimeRangeCut             fTimeRangeCut;                          //!
+      Bool_t                      fHasMBNotFirst;                         //< bool to tell if the header of the MC has the minimum bias header not at first place
 
       TObjString*                 fCutString;                             ///< cut number used for analysis
       TString                     fCutStringRead;                         ///<
@@ -904,7 +905,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,94)
+      ClassDef(AliConvEventCuts,95)
       /// \endcond
 };
 

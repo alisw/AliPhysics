@@ -2525,11 +2525,6 @@ void AddTask_GammaConvCalo_PbPb(
       Error(Form("%s_%i", addTaskName.Data(),  trainConfig), "No valid header selection");
       return;
     }
-  } else if ( generatorName.BeginsWith("LHC20j6") || generatorName.BeginsWith("LHC22b") || generatorName.BeginsWith("LHC20e3") ){
-    HeaderList->Add(new TObjString("Hijing"));
-    HeaderList->Add(new TObjString("Pileup"));
-  } else if ( generatorName.BeginsWith("LHC18e1") || generatorName.BeginsWith("LHC19h2") || generatorName.BeginsWith("LHC18l8") ){
-    HeaderList->Add(new TObjString("Hijing"));
   }
 
   EventCutList->SetOwner(kTRUE);
