@@ -126,7 +126,6 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fEnableBackgroundQA(kFALSE),
   fEnable3DHistoQA(kFALSE),
   fEnableCorrelationTreeQA(kFALSE),
-  fEnableBackgroundCalculation(kFALSE),
   fEnableTreeTrueNDMFromHNM(kFALSE),
   fEnableTrueMotherPiPlPiMiNDMAdditionalInvMassPt(kFALSE),
   fEnableTrueMotherPiPlPiMiNDMInvMassPtBackground(kFALSE),
@@ -561,7 +560,6 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fEnableBackgroundQA(kFALSE),
   fEnable3DHistoQA(kFALSE),
   fEnableCorrelationTreeQA(kFALSE),
-  fEnableBackgroundCalculation(kFALSE),
   fEnableTreeTrueNDMFromHNM(kFALSE),
   fEnableTrueMotherPiPlPiMiNDMAdditionalInvMassPt(kFALSE),
   fEnableTrueMotherPiPlPiMiNDMInvMassPtBackground(kFALSE),
@@ -1132,7 +1130,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fEnableBackgroundQA           = kFALSE;
       fEnable3DHistoQA              = kFALSE;
       fEnableCorrelationTreeQA      = kFALSE;
-      fEnableBackgroundCalculation  = kFALSE;
       break;
     case 1:
       fEnableBasicMesonQA   = kTRUE;
@@ -1216,9 +1213,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           enableDalitzMidPt=kTRUE;
           enableDalitzHighPt=kTRUE;
       }
-      break;
-    case 23: 
-      fEnableBackgroundCalculation  = kTRUE;
       break;
     default:
       AliFatal("Error: Wrong QA flag chosen"); return;
@@ -3665,6 +3659,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserExec(Option_t *){
 
     // check if any neutral meson reconstructed; if not, skipped further combinations
     if(fEnableOptimizedRuntime){
+      if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoBGCalculation()) {
+        AliError("Cannot run background calculations with optimized runtime option on");
+        return;
+      }
       if( fNeutralDecayParticleCandidates->IsEmpty() ){
           fGoodConvGammas->Clear();
           fClusterCandidates->Clear();
@@ -3679,10 +3677,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserExec(Option_t *){
     if(fInputEvent->IsA()==AliESDEvent::Class()) ProcessPionCandidates(); // Process this cuts gammas
     if(fInputEvent->IsA()==AliAODEvent::Class()) ProcessPionCandidatesAOD();
     
-
     //CalculateMesonCandidates();
-
-    if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoBGCalculation() && fEnableBackgroundCalculation){
+    if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->DoBGCalculation()){
       if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->UseLikeSignMixing()){
         CalculateBackground(5);
       } else{
@@ -7737,11 +7733,9 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
     } else if(mode==4){
       // Begin loop over BG events for Pi+
       for (Int_t nEventsInBGPl = 0; nEventsInBGPl < fBGHandlerPiPl[fiCut]->GetNBGEvents(); nEventsInBGPl++) {
-
         // Store all Pi+ of current event in right binning in vector
         AliGammaConversionMotherAODVector *EventPiPlMeson = fBGHandlerPiPl[fiCut]->GetBGGoodMesons(zbin, mbin, nEventsInBGPl);
         if(!EventPiPlMeson) continue;
-
         // Begin loop over BG events for Pi-
         for (Int_t nEventsInBGMi = 0; nEventsInBGMi < fBGHandlerPiMi[fiCut]->GetNBGEvents(); nEventsInBGMi++) {
           AliGammaConversionMotherAODVector *EventPiMiMeson = fBGHandlerPiMi[fiCut]->GetBGGoodMesons(zbin, mbin, nEventsInBGMi);
@@ -7765,7 +7759,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateBackground(Int_
             if (fMoveParticleAccordingToVertex == kTRUE) {
               MoveParticleAccordingToVertex(&EventPiPlGoodMeson, bgEventVertexPl);
             }
-
 
             for (UInt_t iCurrentPiMi = 0; iCurrentPiMi < EventPiMiMeson->size(); iCurrentPiMi++) {
               AliAODConversionMother EventPiMiGoodMeson = (AliAODConversionMother)(*(EventPiMiMeson->at(iCurrentPiMi)));

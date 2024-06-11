@@ -238,7 +238,6 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Bool_t                            fEnableBackgroundQA;                                ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnable3DHistoQA;                                   ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableCorrelationTreeQA;                           ///< Turn On or Off if Histograms are created and used
-    Bool_t                            fEnableBackgroundCalculation;                       ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableTreeTrueNDMFromHNM;                          ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableTrueMotherPiPlPiMiNDMAdditionalInvMassPt;    ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableTrueMotherPiPlPiMiNDMInvMassPtBackground;    ///< Turn On or Off if Histograms are created and used
