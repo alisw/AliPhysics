@@ -3,6 +3,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "TObject.h"
+#include "AliEventCuts.h"
 
 class AliAODEvent;
 class AliAODInputHandler;
@@ -32,6 +33,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Double_t CalculateSigmaMassSquareTOF(Double_t pT, Double_t massSq, Int_t ParticleSpecies, Int_t RunNumber);
     Bool_t CheckProtonCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, Int_t ParticleSpecies, Int_t RunNumber);
     Bool_t CheckDeuteronCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, Int_t ParticleSpecies, Int_t RunNumber);
+    Double_t CalculateSigmadEdxTPC(AliAODTrack &Track, Int_t ParticleSpecies);
     Double_t CalculateSigmadEdxITS(AliAODTrack &Track, Int_t ParticleSpecies, Int_t RunNumber);
 
 
@@ -46,6 +48,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Bool_t  fUseOpenCuts;
     Bool_t  fIsMC;
     Bool_t  fSavePairsOnly;
+    AliTimeRangeCut fTimeRangeCut;
 
     TTree *fSaveTree_Proton;
     Float_t   fProton_px;
@@ -87,7 +90,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Bool_t    fProton_ITS_Layer5;
     Bool_t    fProton_Event_IsFirstParticle;
     UInt_t    fProton_Event_TimeStamp;
-    UShort_t  fProton_Event_RandomCrossCheckNumber;
+    UInt_t  fProton_Event_RandomCrossCheckNumber;
+    Bool_t    fProton_Event_BadTimeRange;
     Int_t     fProton_ID;
 
 
@@ -131,7 +135,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Bool_t    fDeuteron_ITS_Layer5;
     Bool_t    fDeuteron_Event_IsFirstParticle;
     UInt_t    fDeuteron_Event_TimeStamp;
-    UShort_t  fDeuteron_Event_RandomCrossCheckNumber;
+    UInt_t  fDeuteron_Event_RandomCrossCheckNumber;
+    Bool_t    fDeuteron_Event_BadTimeRange;
     Int_t     fDeuteron_ID;
 
 
@@ -175,7 +180,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Bool_t    fAntiProton_ITS_Layer5;
     Bool_t    fAntiProton_Event_IsFirstParticle;
     UInt_t    fAntiProton_Event_TimeStamp;
-    UShort_t  fAntiProton_Event_RandomCrossCheckNumber;
+    UInt_t  fAntiProton_Event_RandomCrossCheckNumber;
+    Bool_t    fAntiProton_Event_BadTimeRange;
     Int_t     fAntiProton_ID;
 
 
@@ -219,7 +225,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     Bool_t    fAntiDeuteron_ITS_Layer5;
     Bool_t    fAntiDeuteron_Event_IsFirstParticle;
     UInt_t    fAntiDeuteron_Event_TimeStamp;
-    UShort_t  fAntiDeuteron_Event_RandomCrossCheckNumber;
+    UInt_t  fAntiDeuteron_Event_RandomCrossCheckNumber;
+    Bool_t    fAntiDeuteron_Event_BadTimeRange;
     Int_t     fAntiDeuteron_ID;
 
 
