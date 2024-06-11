@@ -8019,7 +8019,7 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
       kCaseGen = 2; // regular MC
     }
 
-    bool lResult = !kCaseGen ||
+    bool lResult = (kCaseGen == 0) ||
       ((kCaseGen == 1) && !IsParticleFromBGEvent(index, mcEvent, event));
     
     if (lResult)
