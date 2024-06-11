@@ -103,6 +103,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   void                   SetMinJetPt(Double_t j)                    { if (IsLocked()) return; fMinJetPt         = j     ; }
   void                   SetRecombScheme(ERecoScheme_t scheme)      { if (IsLocked()) return; fRecombScheme     = scheme; }
   void                   SetTrackEfficiency(Double_t t)             { if (IsLocked()) return; fTrackEfficiency  = t     ; }
+  void                   SetEMCALClusterEfficiency(Double_t eff)    { if (IsLocked()) return; fClusterEfficiency = eff  ; }
   void                   SetQoverPtShift(Double_t shift)            { if (IsLocked()) return; fQoverPtShift     = shift; fApplyQoverPtShift = true; }
   void                   SetTrackEfficiencyOnlyForEmbedding(Bool_t b) { if (IsLocked()) return; fTrackEfficiencyOnlyForEmbedding = b     ; }
   void                   SetEnableAliBasicParticleCompatibility(Bool_t b) { if (IsLocked()) return; fEnableAliBasicParticleCompatibility = b; }
@@ -214,6 +215,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   Double_t               fJetEtaMax;              ///< maximum eta to keep jet in output
   Double_t               fGhostArea;              ///< ghost area
   Double_t               fTrackEfficiency;        ///< artificial tracking inefficiency (0...1)
+  Double_t               fClusterEfficiency;      ///< artificial EMCAL cluster finding inefficiency (0...1)
   Double_t               fQoverPtShift;           ///< artificial q/pt shift
   TObjArray             *fUtilities;              ///< jet utilities (gen subtractor, constituent subtractor etc.)
   Bool_t                 fTrackEfficiencyOnlyForEmbedding; ///< Apply aritificial tracking inefficiency only for embedded tracks
