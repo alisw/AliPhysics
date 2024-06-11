@@ -391,7 +391,7 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
 
   // Meson Cuts
   if (fIsMergedClusterCut == 1){
-    fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",9,-0.5,8.5, 500, 0, 100);
+    fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",10,-0.5,9.5, 500, 0, 100);
     fHistoMesonCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
@@ -400,10 +400,11 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonCuts->GetXaxis()->SetBinLabel(6,"alpha max");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(7,"alpha min");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(8,"pT min");
-    fHistoMesonCuts->GetXaxis()->SetBinLabel(9,"out");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(9,"quality");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(10,"out");
     fHistograms->Add(fHistoMesonCuts);
   } else if (fIsMergedClusterCut == 2){
-    fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",9,-0.5,8.5, 250, 0, 50);
+    fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",10,-0.5,9.5, 250, 0, 50);
     fHistoMesonCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
@@ -412,10 +413,11 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonCuts->GetXaxis()->SetBinLabel(6,"alpha max");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(7,"alpha min");
     fHistoMesonCuts->GetXaxis()->SetBinLabel(8,"pT min");
-    fHistoMesonCuts->GetXaxis()->SetBinLabel(9,"out");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(9,"quality");
+    fHistoMesonCuts->GetXaxis()->SetBinLabel(10,"out");
     fHistograms->Add(fHistoMesonCuts);
 
-    fHistoMesonBGCuts=new TH2F(Form("MesonBGCuts %s",GetCutNumber().Data()),"MesonBGCuts vs Pt",9,-0.5,8.5, 250, 0, 50);
+    fHistoMesonBGCuts=new TH2F(Form("MesonBGCuts %s",GetCutNumber().Data()),"MesonBGCuts vs Pt",10,-0.5,9.5, 250, 0, 50);
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(1,"in");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(2,"undef rapidity");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(3,"rapidity cut");
@@ -424,7 +426,8 @@ void AliConversionMesonCuts::InitCutHistograms(TString name, Bool_t additionalHi
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(6,"alpha max");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(7,"alpha min");
     fHistoMesonBGCuts->GetXaxis()->SetBinLabel(8,"pT min");
-    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(9,"out");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(9,"quality");
+    fHistoMesonBGCuts->GetXaxis()->SetBinLabel(10,"out");
     fHistograms->Add(fHistoMesonBGCuts);
   } else {
     fHistoMesonCuts=new TH2F(Form("MesonCuts %s",GetCutNumber().Data()),"MesonCuts vs Pt",12,-0.5,11.5, 250, 0, 50);

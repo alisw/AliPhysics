@@ -387,6 +387,22 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799609f030000000","0r63103100000010"); // INT7 without M02/exotic cut, no FT
 
 
+  } else if (trainConfig == 120){ // minE = 700 MeV, noNL
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe30220000","0163103100000010"); // no NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe32220000","0163103100000010"); // NCell >= 2 cut
+  } else if (trainConfig == 121){ // minE = 500 MeV, noNL
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe20220000","0163103100000010"); // no NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe22220000","0163103100000010"); // NCell >= 2 cut
+  } else if (trainConfig == 122){ // minE = 400 MeV, noNL
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe80220000","0163103100000010"); // no NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe82220000","0163103100000010"); // NCell >= 2 cut
+  } else if (trainConfig == 123){ // minE = 100 MeV, noNL
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe00220000","0163103100000010"); // no NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fe02220000","0163103100000010"); // NCell >= 2 cut
+  } else if (trainConfig == 124){ // minE = 200 MeV, noNL
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fei0220000","0163103100000010"); // no NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fei2220000","0163103100000010"); // NCell >= 2 cut
+
   } else {
     Error(Form("AddTask_GammaConvCaloCalibration_MixedMode_pp%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
