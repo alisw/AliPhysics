@@ -575,16 +575,15 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
     Double_t *arrQAPtBinning    = new Double_t[1200];
     Double_t *arrClusPtBinning  = new Double_t[1200];
     if(fMesonRecoMode < 2 && fDoMesonQA == 0){
-      nBinsPt                   = 235;
+      nBinsPt                   = 240;
       minPt                     = 0;
       maxPt                     = 50;
       binWidthPt                = 0.05;
       for(Int_t i=0; i<nBinsPt+1;i++){
-        if (i < 1) arrPtBinning[i]              = 0.3*i;
-        else if(i<55) arrPtBinning[i]           = 0.3+0.05*(i-1);
-        else if(i<125) arrPtBinning[i]          = 3.+0.1*(i-55);
-        else if(i<185) arrPtBinning[i]          = 10.+0.25*(i-125);
-        else if(i<235) arrPtBinning[i]          = 25.+0.5*(i-185);
+        if(i<60) arrPtBinning[i]                = 0.05*i;
+        else if(i<130) arrPtBinning[i]          = 3.+0.1*(i-60);
+        else if(i<190) arrPtBinning[i]          = 10.+0.25*(i-130);
+        else if(i<240) arrPtBinning[i]          = 25.+0.5*(i-190);
         else  arrPtBinning[i]                   = maxPt;
       }
       nBinsQAPt                 = 221;
@@ -597,61 +596,57 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
         else if(i<221) arrQAPtBinning[i]        = 40.+1.0*(i-210);
         else arrQAPtBinning[i]                  = maxQAPt;
       }
-      nBinsClusterPt            = 351;
+      nBinsClusterPt            = 256;
       maxClusterPt              = 50;
       for(Int_t i=0; i<nBinsClusterPt+1;i++){
-        if (i < 1) arrClusPtBinning[i]          = 0.3*i;
-        else if(i<55) arrClusPtBinning[i]       = 0.3+0.05*(i-1);
-        else if(i<125) arrClusPtBinning[i]      = 3.+0.1*(i-55);
-        else if(i<155) arrClusPtBinning[i]      = 10.+0.2*(i-125);
-        else if(i<211) arrClusPtBinning[i]      = 16.+0.25*(i-155);
-        else if(i<251) arrClusPtBinning[i]      = 30.+0.5*(i-211);
+        if(i<60) arrClusPtBinning[i]            = 0.05*i;
+        else if(i<130) arrClusPtBinning[i]      = 3.+0.1*(i-60);
+        else if(i<160) arrClusPtBinning[i]      = 10.+0.2*(i-130);
+        else if(i<216) arrClusPtBinning[i]      = 16.+0.25*(i-160);
+        else if(i<256) arrClusPtBinning[i]      = 30.+0.5*(i-216);
         else arrClusPtBinning[i]                = maxClusterPt;
     }
 
   } else if(fMesonRecoMode == 2 && fDoMesonQA == 0){
-        nBinsPt                   = 165;
-        minPt                     = 0;
-        maxPt                     = 20;
-        binWidthPt                = 0.05;
-        for(Int_t i=0; i<nBinsPt+1;i++){
-          if (i < 1) arrPtBinning[i]              = 0.3*i;
-          else if(i<55) arrPtBinning[i]           = 0.3+0.05*(i-1);
-          else if(i<125) arrPtBinning[i]          = 3.+0.1*(i-55);
-          else if(i<165) arrPtBinning[i]          = 10.+0.25*(i-125);
-          else  arrPtBinning[i]                   = maxPt;
-        }
-        nBinsQAPt                 = 210;
-        maxQAPt                   = 20;
-        for(Int_t i=0; i<nBinsQAPt+1;i++){
-          if(i<60) arrQAPtBinning[i]              = 0.05*i;
-          else if(i<130) arrQAPtBinning[i]        = 3.+0.1*(i-60);
-          else if(i<170) arrQAPtBinning[i]        = 10.+0.25*(i-130);
-          else arrQAPtBinning[i]                  = maxQAPt;
-        }
-        nBinsClusterPt            = 171;
-        maxClusterPt              = 20;
-        for(Int_t i=0; i<nBinsClusterPt+1;i++){
-          if (i < 1) arrClusPtBinning[i]          = 0.3*i;
-          else if(i<55) arrClusPtBinning[i]       = 0.3+0.05*(i-1);
-          else if(i<125) arrClusPtBinning[i]      = 3.+0.1*(i-55);
-          else if(i<155) arrClusPtBinning[i]      = 10.+0.2*(i-125);
-          else if(i<171) arrClusPtBinning[i]      = 16.+0.25*(i-155);
-          else arrClusPtBinning[i]                = maxClusterPt;
-        }
+      nBinsPt                   = 170;
+      minPt                     = 0;
+      maxPt                     = 20;
+      binWidthPt                = 0.05;
+      for(Int_t i=0; i<nBinsPt+1;i++){
+        if(i<60) arrPtBinning[i]                = 0.05*i;
+        else if(i<130) arrPtBinning[i]          = 3.+0.1*(i-60);
+        else if(i<170) arrPtBinning[i]          = 10.+0.25*(i-130);
+        else  arrPtBinning[i]                   = maxPt;
+      }
+      nBinsQAPt                 = 170;
+      maxQAPt                   = 20;
+      for(Int_t i=0; i<nBinsQAPt+1;i++){
+        if(i<60) arrQAPtBinning[i]              = 0.05*i;
+        else if(i<130) arrQAPtBinning[i]        = 3.+0.1*(i-60);
+        else if(i<170) arrQAPtBinning[i]        = 10.+0.25*(i-130);
+        else arrQAPtBinning[i]                  = maxQAPt;
+      }
+      nBinsClusterPt            = 176;
+      maxClusterPt              = 20;
+      for(Int_t i=0; i<nBinsClusterPt+1;i++){
+        if(i<60) arrClusPtBinning[i]            = 0.05*i;
+        else if(i<130) arrClusPtBinning[i]      = 3.+0.1*(i-60);
+        else if(i<160) arrClusPtBinning[i]      = 10.+0.2*(i-130);
+        else if(i<176) arrClusPtBinning[i]      = 16.+0.25*(i-160);
+        else arrClusPtBinning[i]                = maxClusterPt;
+      }
               // default binning
     } else {
-      nBinsPt                   = 310;
+      nBinsPt                   = 312;
       minPt                     = 0;
       maxPt                     = 100;
       binWidthPt                = 0.1;
       for(Int_t i=0; i<nBinsPt+1;i++){
-        if (i < 1) arrPtBinning[i]              = 0.3*i;
-        else if(i<198) arrPtBinning[i]          = 0.3+0.1*(i-1);
-        else if(i<238) arrPtBinning[i]          = 20.+0.25*(i-198);
-        else if(i<278) arrPtBinning[i]          = 30.+0.5*(i-238);
-        else if(i<298) arrPtBinning[i]          = 50.+1.0*(i-278);
-        else if(i<310) arrPtBinning[i]          = 70.+2.5*(i-298);
+        if(i<200) arrPtBinning[i]               = 0.1*i;
+        else if(i<240) arrPtBinning[i]          = 20.+0.25*(i-200);
+        else if(i<280) arrPtBinning[i]          = 30.+0.5*(i-240);
+        else if(i<300) arrPtBinning[i]          = 50.+1.0*(i-280);
+        else if(i<312) arrPtBinning[i]          = 70.+2.5*(i-300);
         else  arrPtBinning[i]                   = maxPt;
       }
       nBinsQAPt                 = 240;
@@ -663,15 +658,14 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
         else if(i<240) arrQAPtBinning[i]        = 40.+1.0*(i-180);
         else arrQAPtBinning[i]                  = maxQAPt;
       }
-      nBinsClusterPt            = 310;
+      nBinsClusterPt            = 312;
       maxClusterPt              = 100;
       for(Int_t i=0; i<nBinsClusterPt+1;i++){
-        if (i < 1) arrClusPtBinning[i]          = 0.3*i;
-        else if(i<198) arrClusPtBinning[i]      = 0.3+0.1*(i-1);
-        else if(i<238) arrClusPtBinning[i]      = 20.+0.25*(i-198);
-        else if(i<278) arrClusPtBinning[i]      = 30.+0.5*(i-238);
-        else if(i<298) arrClusPtBinning[i]      = 50.+1.0*(i-278);
-        else if(i<310) arrClusPtBinning[i]      = 70.+2.5*(i-298);
+        if(i<200) arrClusPtBinning[i]           = 0.1*i;
+        else if(i<240) arrClusPtBinning[i]      = 20.+0.25*(i-200);
+        else if(i<280) arrClusPtBinning[i]      = 30.+0.5*(i-240);
+        else if(i<300) arrClusPtBinning[i]      = 50.+1.0*(i-280);
+        else if(i<312) arrClusPtBinning[i]      = 70.+2.5*(i-300);
         else  arrClusPtBinning[i]               = maxClusterPt;
       }
     }
