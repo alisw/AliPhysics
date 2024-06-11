@@ -7993,7 +7993,7 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
 {
   // todo: check why I need to capture everything in order for it work
   // returns 1 if function evaluation is to be continued
-  auto indexIsValidAndParticleIsToBeWeighted = [&]()
+  auto return_1_early = [&]()
   {
     Int_t kCaseGen = 0;
     if (fPeriodEnum == kLHC13d2 || fPeriodEnum == kLHC13d2b ||                                                           // LHC10h MCs
@@ -8018,14 +8018,26 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
     {
       kCaseGen = 2; // regular MC
     }
-    bool lResult = (index > 0) && kCaseGen && IsParticleFromBGEvent(index, mcEvent, event);
-    AliInfo(Form("indexIsValidAndParticleIsToBeWeighted(): INFO: returning 'false' for particle %d\n",
-            index));
+
+    bool lResult = !kCaseGen ||
+      ((kCaseGen == 1) && !IsParticleFromBGEvent(index, mcEvent, event));
+    
+    if (lResult)
+    {
+      AliInfo(Form("return_1_early(): INFO: returning 'true' for particle %d.\n"
+                   "This will cause GetWeightForMesonNew() to return 1. immediately.\n",
+              index));
+    }
     return lResult;
   };
 
   // AliInfo("AliConvEventCuts::GetWeightForMesonNew(): INFO: Starting function\n");
-  if (!indexIsValidAndParticleIsToBeWeighted())
+  if(index < 0) 
+  { 
+    return 0; // No Particle
+  }
+  
+  if (return_1_early())
   {
     return 1.;
   }
