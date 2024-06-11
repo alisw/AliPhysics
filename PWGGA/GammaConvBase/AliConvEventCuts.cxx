@@ -1145,7 +1145,7 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
   };
 
   // execution starts here
-  AliInfo("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): start.\n");
+  AliInfo("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): start\n");
   bool lSuccess = true;
   lSuccess &= calculateVariantSpectraAndInsert(111, fDoReweightHistoMCPi0, fFitDataPi0_inv, hReweightMCHistPi0_inv);
   lSuccess &= calculateVariantSpectraAndInsert(221, fDoReweightHistoMCEta, fFitDataEta_inv, hReweightMCHistEta_inv);
@@ -8018,15 +8018,16 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
     {
       kCaseGen = 2; // regular MC
     }
-    return (index > 0) && kCaseGen && IsParticleFromBGEvent(index, mcEvent, event);
+    bool lResult = (index > 0) && kCaseGen && IsParticleFromBGEvent(index, mcEvent, event)
+    AliInfo(Form("indexIsValidAndParticleIsToBeWeighted(): INFO: returning 'false' for particle %d\n",
+                      index));
+    return lResult;
   };
 
   // AliInfo("AliConvEventCuts::GetWeightForMesonNew(): INFO: Starting function\n");
   if (!indexIsValidAndParticleIsToBeWeighted())
   {
-    AliWarning(Form("checkSanitizeAndReturnWeight(): WARNING: 1 for particle %d returning 0.\n",
-                      index));
-    return 0.;
+    return 1.;
   }
 
   Double_t mesonPt = 0;
