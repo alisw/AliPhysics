@@ -8018,9 +8018,9 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
     {
       kCaseGen = 2; // regular MC
     }
-    bool lResult = (index > 0) && kCaseGen && IsParticleFromBGEvent(index, mcEvent, event)
+    bool lResult = (index > 0) && kCaseGen && IsParticleFromBGEvent(index, mcEvent, event);
     AliInfo(Form("indexIsValidAndParticleIsToBeWeighted(): INFO: returning 'false' for particle %d\n",
-                      index));
+            index));
     return lResult;
   };
 
