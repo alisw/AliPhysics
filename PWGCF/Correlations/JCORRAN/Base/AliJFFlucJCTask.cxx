@@ -31,6 +31,8 @@ AliJFFlucJCTask::AliJFFlucJCTask(const char *name):
 	fJCatalystTaskName("JCatalystTask"),
 	pfa(NULL),
 	subeventMask(SUBEVENT_A|SUBEVENT_B),
+	fEtaMin(0.0),
+	fEtaMax(0.0),
 	flags(0){
 	//DefineOutput(1,TList::Class());
 	DefineOutput(1,TDirectory::Class());
@@ -43,6 +45,8 @@ AliJFFlucJCTask::AliJFFlucJCTask(const AliJFFlucJCTask &a):
 	fTaskName(a.fTaskName),
 	fJCatalystTaskName(a.fJCatalystTaskName),
 	pfa(a.pfa),
+	fEtaMin(a.fEtaMin),
+	fEtaMax(a.fEtaMax),
 	subeventMask(SUBEVENT_A|SUBEVENT_B),
 	flags(0){ 
 	//
@@ -93,7 +97,7 @@ void AliJFFlucJCTask::UserExec(Option_t *pOpt){
 	pfa->SetInputList(fJCatalystTask->GetInputList());
 	pfa->SetEventCentrality(fJCatalystTask->GetCentrality());
 	pfa->SetEventVertex(fVertex);
-	pfa->SetEtaRange(fJCatalystTask->GetEtaMin(),fJCatalystTask->GetEtaMax()); //technically doesn't matter since catalyst has readily done the cutting
+	pfa->SetEtaRange(fEtaMin, fEtaMax);
 
 	pfa->UserExec("");
 }
