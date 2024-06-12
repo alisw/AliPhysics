@@ -221,7 +221,7 @@ void AliAnalysisTaskEfficiencyFB128::UserCreateOutputObjects()
     fHistQAPID[1][j][1] = new TH2F(hname, htitle, 100, 0.1, 5.0, 400, -4000.0, 4000.0);
     hname  = "pidTOFNSigma";  hname+=parttypename;
     htitle = parttypename + " TOF NSigma vs. momentum";
-   fHistQAPID[2][j][0]= new TH2F(hname,htitle, 100, 0.0, 5.0, 100, -5.0, 5.0);
+    fHistQAPID[2][j][0]= new TH2F(hname,htitle, 100, 0.0, 5.0, 100, -5.0, 5.0);
     htitle+="Minus"; hname+="Minus";
     fHistQAPID[2][j][1]= new TH2F(hname,htitle, 100, 0.0, 5.0, 100, -5.0, 5.0);
     hname  = "pidTPCNSigma";  hname+=parttypename;

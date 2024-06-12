@@ -6,7 +6,7 @@
 //
 //=============================================================================
 
-AliAnalysisEffTaskDoubleCountPID *AddTaskEffDoubleCountPID(TString containerName="femtolist",int method=1, int filterbit=96)
+AliAnalysisEffTaskDoubleCountPID *AddTaskEffDoubleCountPID(TString containerName="femtolist",int method=1, int filterbit=128)
 {
   // A. Get the pointer to the existing analysis manager via the static access method.
   //==============================================================================
