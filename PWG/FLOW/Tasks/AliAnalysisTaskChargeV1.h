@@ -79,16 +79,11 @@ private:
   TProfile *ZDCResQ;
   TProfile2D **ZDCcos_t;
   TProfile2D **ZDCcos_p;
-//  TProfile **fTPCrecenterQx;
-//  TProfile **fTPCrecenterQy;
-//  TProfile2D **fTPCrecenterQxVz;
-//  TProfile2D **fTPCrecenterQyVz;
-//  /// TFile *fTPCRecenterFile;
-//  TList *fTPCRecenterList;
-//  TProfile **fTPCAverageQx;
-//  TProfile **fTPCAverageQy;
-//  TProfile2D **fTPCAverageQxVz;
-//  TProfile2D **fTPCAverageQyVz;
+  TProfile2D **Proton_EtaPhi;
+  TProfile2D **Kion_EtaPhi;
+  TProfile2D **Pion_EtaPhi;
+  TProfile2D **PosHadron_EtaPhi;
+  TProfile2D **NegHadron_EtaPhi;
 
   int runNum;
   int oldRunNum;
@@ -141,31 +136,7 @@ private:
   TH1D *neg1Plane;
   TProfile *Res1Square;
 
-  // qc
   int nCentrality;
-  TH2D *hMQ_thisEvt;
-  TH2D *hReQ_thisEvt;
-  TH2D *hImQ_thisEvt;
-  TProfile *pC2_thisEvt;
-  TProfile *pC2QRe_thisEvt;
-  TProfile *pC2QIm_thisEvt;
-  TProfile3D *pD2pQStar_thisEvt;
-  TProfile3D *pD2pRe_thisEvt;
-  TProfile3D *pD2pIm_thisEvt;
-  TProfile3D *v1p_thisEvt;
-  TProfile3D *v1t_thisEvt;
-  TH3D *hMp_thisEvt;
-  TH3D *hRep_thisEvt;
-  TH3D *hImp_thisEvt;
-  double PTGAP;
-  double ETAGAP;
-  int NPTBINS;
-  double PTBINLOW;
-  double PTBINUP;
-  int NETABINS;
-  double ETABINLOW;
-  double ETABINUP;
-  int NPOIBINS;
 
   // v1tp
   TProfile *ptEta;
