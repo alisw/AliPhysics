@@ -134,7 +134,12 @@ ClassImp(AliAnalysisTaskChargeV1) // classimp: necessary for root
                                                          ZDCv1_p(nullptr),
                                                          ZDCResQ(nullptr),
                                                          ZDCcos_t(nullptr),
-                                                         ZDCcos_p(nullptr)
+                                                         ZDCcos_p(nullptr),
+                                                         Proton_EtaPhi(nullptr),
+                                                         Kion_EtaPhi(nullptr),
+                                                         Pion_EtaPhi(nullptr),
+                                                         PosHadron_EtaPhi(nullptr),
+                                                         NegHadron_EtaPhi(nullptr)
 {
   runNum = -999;
   oldRunNum = -999;
@@ -189,31 +194,6 @@ ClassImp(AliAnalysisTaskChargeV1) // classimp: necessary for root
   neg1Plane = nullptr;
   Res1Square = nullptr;
 
-  // qc
-  nCentrality = 7;
-  hMQ_thisEvt = nullptr;
-  hReQ_thisEvt = nullptr;
-  hImQ_thisEvt = nullptr;
-  pC2_thisEvt = nullptr;
-  pC2QRe_thisEvt = nullptr;
-  pC2QIm_thisEvt = nullptr;
-  pD2pQStar_thisEvt = nullptr;
-  pD2pRe_thisEvt = nullptr;
-  pD2pIm_thisEvt = nullptr;
-  v1p_thisEvt = nullptr;
-  v1t_thisEvt = nullptr;
-  hMp_thisEvt = nullptr;
-  hRep_thisEvt = nullptr;
-  hImp_thisEvt = nullptr;
-  PTGAP = 0.3;
-  ETAGAP = 0.3;
-  NPTBINS = 100;
-  PTBINLOW = 0.2;
-  PTBINUP = 5;
-  NETABINS = 40;
-  ETABINLOW = -0.8;
-  ETABINUP = 0.8;
-  NPOIBINS = 8;
   ptEta = nullptr;
   ResQ = nullptr;
   Psi_P = nullptr;
@@ -263,6 +243,8 @@ ClassImp(AliAnalysisTaskChargeV1) // classimp: necessary for root
   fHist2PionSigTOF = nullptr;
   fHist2KionSigTPC = nullptr;
   fHist2KionSigTOF = nullptr;
+  
+  nCentrality = 7; 
 
   // ZDC v1
   Qtx = -999;
@@ -311,7 +293,12 @@ AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1(const char *name) : AliAnalysis
                                                                      ZDCv1_p(nullptr),
                                                                      ZDCResQ(nullptr),
                                                                      ZDCcos_t(nullptr),
-                                                                     ZDCcos_p(nullptr)
+                                                                     ZDCcos_p(nullptr),
+                                                                     Proton_EtaPhi(nullptr),
+                                                                     Kion_EtaPhi(nullptr),
+                                                                     Pion_EtaPhi(nullptr),
+                                                                     PosHadron_EtaPhi(nullptr),
+                                                                     NegHadron_EtaPhi(nullptr)
 {
   runNum = -999;
   oldRunNum = -999;
@@ -366,31 +353,6 @@ AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1(const char *name) : AliAnalysis
   neg1Plane = nullptr;
   Res1Square = nullptr;
 
-  // qc
-  nCentrality = 7;
-  hMQ_thisEvt = nullptr;
-  hReQ_thisEvt = nullptr;
-  hImQ_thisEvt = nullptr;
-  pC2_thisEvt = nullptr;
-  pC2QRe_thisEvt = nullptr;
-  pC2QIm_thisEvt = nullptr;
-  pD2pQStar_thisEvt = nullptr;
-  pD2pRe_thisEvt = nullptr;
-  pD2pIm_thisEvt = nullptr;
-  v1p_thisEvt = nullptr;
-  v1t_thisEvt = nullptr;
-  hMp_thisEvt = nullptr;
-  hRep_thisEvt = nullptr;
-  hImp_thisEvt = nullptr;
-  PTGAP = 0.3;
-  ETAGAP = 0.3;
-  NPTBINS = 100;
-  PTBINLOW = 0.2;
-  PTBINUP = 5;
-  NETABINS = 40;
-  ETABINLOW = -0.8;
-  ETABINUP = 0.8;
-  NPOIBINS = 8;
   ptEta = nullptr;
   ResQ = nullptr;
   Psi_P = nullptr;
@@ -441,6 +403,8 @@ AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1(const char *name) : AliAnalysis
   fHist2KionSigTPC = nullptr;
   fHist2KionSigTOF = nullptr;
 
+  nCentrality = 7;
+  
   // ZDC v1
   Qtx = -999;
   Qty = -999;
@@ -633,58 +597,12 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects(){
   TPCcos_p = new TProfile2D *[nCentrality];
   for (int i = 0; i < nCentrality; ++i)
   {
-    TPCcos_t[i] = new TProfile2D(Form("TPCcos_t%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
-    TPCcos_p[i] = new TProfile2D(Form("TPCcos_p%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
+    TPCcos_t[i] = new TProfile2D(Form("TPCcos_t%i", i), "", 8, 0, 8, 17, -0.8, 0.8);
+    TPCcos_p[i] = new TProfile2D(Form("TPCcos_p%i", i), "", 8, 0, 8, 17, -0.8, 0.8);
     fOutputList->Add(TPCcos_t[i]);
     fOutputList->Add(TPCcos_p[i]);
   }
 
-  hYield = new TH3D *[nCentrality];
-  pC2 = new TProfile *[nCentrality];
-  pC2QRe = new TProfile *[nCentrality];
-  pC2QIm = new TProfile *[nCentrality];
-  pD2pQStar = new TProfile3D *[nCentrality];
-  pD2pRe = new TProfile3D *[nCentrality];
-  pD2pIm = new TProfile3D *[nCentrality];
-  v1p_qc = new TProfile3D *[nCentrality];
-  v1t_qc = new TProfile3D *[nCentrality];
-
-  hMQ_thisEvt = new TH2D("mQ_thisEvt", "", NPTBINS, PTBINLOW, PTBINUP, NETABINS, ETABINLOW, ETABINUP);
-  hReQ_thisEvt = new TH2D("ReQ_thisEvt", "", NPTBINS, PTBINLOW, PTBINUP, NETABINS, ETABINLOW, ETABINUP);
-  hImQ_thisEvt = new TH2D("ImQ_thisEvt", "", NPTBINS, PTBINLOW, PTBINUP, NETABINS, ETABINLOW, ETABINUP);
-  pC2_thisEvt = new TProfile("pC2_thisEvt", "", 20, 0, 20, "s");
-  pC2QRe_thisEvt = new TProfile("pC2QRe_thisEvt", "", 20, 0, 20, "s");
-  pC2QIm_thisEvt = new TProfile("pC2QIm_thisEvt", "", 20, 0, 20, "s");
-  pD2pQStar_thisEvt = new TProfile3D("pD2pQStar_thisEvt", "", NPOIBINS, 0, NPOIBINS, NPTBINS, PTBINLOW, PTBINUP, NETABINS, ETABINLOW, ETABINUP, "s");
-  pD2pRe_thisEvt = new TProfile3D("pD2pRe_thisEvt", "", NPOIBINS, 0, NPOIBINS, NPTBINS, PTBINLOW, PTBINUP, NETABINS, ETABINLOW, ETABINUP, "s");
-  pD2pIm_thisEvt = new TProfile3D("pD2pIm_thisEvt", "", NPOIBINS, 0, NPOIBINS, NPTBINS, PTBINLOW, PTBINUP, NETABINS, ETABINLOW, ETABINUP, "s");
-  v1p_thisEvt = new TProfile3D("v1p_thisEvt", "", NPOIBINS, 0, NPOIBINS, NPTBINS, PTBINLOW, PTBINUP, NETABINS, ETABINLOW, ETABINUP, "s");
-  v1t_thisEvt = new TProfile3D("v1t_thisEvt", "", NPOIBINS, 0, NPOIBINS, NPTBINS, PTBINLOW, PTBINUP, NETABINS, ETABINLOW, ETABINUP, "s");
-  hRep_thisEvt = new TH3D("Rep_thisEvt", "", NPOIBINS, 0, NPOIBINS, NPTBINS, PTBINLOW, PTBINUP, NETABINS, ETABINLOW, ETABINUP);
-  hImp_thisEvt = new TH3D("Imp_thisEvt", "", NPOIBINS, 0, NPOIBINS, NPTBINS, PTBINLOW, PTBINUP, NETABINS, ETABINLOW, ETABINUP);
-  hMp_thisEvt = new TH3D("mp_thisEvt", "", NPOIBINS, 0, NPOIBINS, NPTBINS, PTBINLOW, PTBINUP, NETABINS, ETABINLOW, ETABINUP);
-
-  for (int i = 0; i < nCentrality; ++i)
-  {
-    pC2[i] = new TProfile(Form("pC2_cent%i", i), "", 20, 0, 20, "s");
-    pC2QRe[i] = new TProfile(Form("pC2QRe_cent%i", i), "", 20, 0, 20, "s");
-    pC2QIm[i] = new TProfile(Form("pC2QIm_cent%i", i), "", 20, 0, 20, "s");
-    hYield[i] = new TH3D(Form("hYield_cent%i", i), "", NPOIBINS, 0, NPOIBINS, NPTBINS, PTBINLOW, PTBINUP, NETABINS, ETABINLOW, ETABINUP);
-    pD2pQStar[i] = new TProfile3D(Form("pD2pQStar_cent%i", i), "", NPOIBINS, 0, NPOIBINS, NPTBINS, PTBINLOW, PTBINUP, NETABINS, ETABINLOW, ETABINUP, "s");
-    pD2pRe[i] = new TProfile3D(Form("pD2pRe_cent%i", i), "", NPOIBINS, 0, NPOIBINS, NPTBINS, PTBINLOW, PTBINUP, NETABINS, ETABINLOW, ETABINUP, "s");
-    pD2pIm[i] = new TProfile3D(Form("pD2pIm_cent%i", i), "", NPOIBINS, 0, NPOIBINS, NPTBINS, PTBINLOW, PTBINUP, NETABINS, ETABINLOW, ETABINUP, "s");
-    v1p_qc[i] = new TProfile3D(Form("v1p_cent%i", i), "", NPOIBINS, 0, NPOIBINS, NPTBINS, PTBINLOW, PTBINUP, NETABINS, ETABINLOW, ETABINUP, "s");
-    v1t_qc[i] = new TProfile3D(Form("v1t_cent%i", i), "", NPOIBINS, 0, NPOIBINS, NPTBINS, PTBINLOW, PTBINUP, NETABINS, ETABINLOW, ETABINUP, "s");
-    fOutputList->Add(pC2[i]);
-    fOutputList->Add(pC2QRe[i]);
-    fOutputList->Add(pC2QIm[i]);
-    fOutputList->Add(hYield[i]);
-    fOutputList->Add(pD2pQStar[i]);
-    fOutputList->Add(pD2pRe[i]);
-    fOutputList->Add(pD2pIm[i]);
-    fOutputList->Add(v1p_qc[i]);
-    fOutputList->Add(v1t_qc[i]);
-  }
 
   // scalar product method TPC
   px_P = new TProfile2D *[nCentrality];
@@ -693,17 +611,17 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects(){
   v1_p = new TProfile2D *[nCentrality];
   for (int i = 0; i < nCentrality; ++i)
   {
-    px_P[i] = new TProfile2D(Form("px_P%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
-    px_T[i] = new TProfile2D(Form("px_T%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
-    v1_t[i] = new TProfile2D(Form("v1_t%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
-    v1_p[i] = new TProfile2D(Form("v1_p%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
+    px_P[i] = new TProfile2D(Form("px_P%i", i), "", 8, 0, 8, 17, -0.8, 0.8);
+    px_T[i] = new TProfile2D(Form("px_T%i", i), "", 8, 0, 8, 17, -0.8, 0.8);
+    v1_t[i] = new TProfile2D(Form("v1_t%i", i), "", 8, 0, 8, 17, -0.8, 0.8);
+    v1_p[i] = new TProfile2D(Form("v1_p%i", i), "", 8, 0, 8, 17, -0.8, 0.8);
     fOutputList->Add(px_P[i]);
     fOutputList->Add(px_T[i]);
     fOutputList->Add(v1_t[i]);
     fOutputList->Add(v1_p[i]);
   }
   ResQ = new TProfile("ResQ", "", 10, 0, 10);
-  ptEta = new TProfile("ptEta", "", 5, -0.8, 0.8);
+  ptEta = new TProfile("ptEta", "", 17, -0.8, 0.8);
   fOutputList->Add(ResQ);
   fOutputList->Add(ptEta);
 
@@ -816,20 +734,37 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects(){
   ZDCv1_p = new TProfile2D *[nCentrality];
   ZDCcos_t = new TProfile2D *[nCentrality];
   ZDCcos_p = new TProfile2D *[nCentrality];
+  Proton_EtaPhi = new TProfile2D *[nCentrality];
+  Kion_EtaPhi = new TProfile2D *[nCentrality];
+  Pion_EtaPhi = new TProfile2D *[nCentrality];
+  PosHadron_EtaPhi = new TProfile2D *[nCentrality];
+  NegHadron_EtaPhi = new TProfile2D *[nCentrality];
+
   for (int i = 0; i < nCentrality; ++i)
   {
-    ZDCpx_P[i] = new TProfile2D(Form("ZDCpx_P%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
-    ZDCpx_T[i] = new TProfile2D(Form("ZDCpx_T%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
-    ZDCv1_t[i] = new TProfile2D(Form("ZDCv1_t%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
-    ZDCv1_p[i] = new TProfile2D(Form("ZDCv1_p%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
-    ZDCcos_t[i] = new TProfile2D(Form("ZDCcos_t%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
-    ZDCcos_p[i] = new TProfile2D(Form("ZDCcos_p%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
+    ZDCpx_P[i] = new TProfile2D(Form("ZDCpx_P%i", i), "", 8, 0, 8, 17, -0.8, 0.8);
+    ZDCpx_T[i] = new TProfile2D(Form("ZDCpx_T%i", i), "", 8, 0, 8, 17, -0.8, 0.8);
+    ZDCv1_t[i] = new TProfile2D(Form("ZDCv1_t%i", i), "", 8, 0, 8, 17, -0.8, 0.8);
+    ZDCv1_p[i] = new TProfile2D(Form("ZDCv1_p%i", i), "", 8, 0, 8, 17, -0.8, 0.8);
+    ZDCcos_t[i] = new TProfile2D(Form("ZDCcos_t%i", i), "", 8, 0, 8, 17, -0.8, 0.8);
+    ZDCcos_p[i] = new TProfile2D(Form("ZDCcos_p%i", i), "", 8, 0, 8, 17, -0.8, 0.8);
+    Proton_EtaPhi[i] = new TProfile2D(Form("Proton_EtaPhi%i", i),"", 17, -0.8, 0.8, 100, 0, 2*TMath::Pi());
+    Kion_EtaPhi[i] = new TProfile2D(Form("Kion_EtaPhi%i", i),"", 17, -0.8, 0.8, 100, 0, 2*TMath::Pi());
+    Pion_EtaPhi[i] = new TProfile2D(Form("Pion_EtaPhi%i", i),"", 17, -0.8, 0.8, 100, 0, 2*TMath::Pi());
+    PosHadron_EtaPhi[i] = new TProfile2D(Form("PosHadron_EtaPhi%i", i),"", 17, -0.8, 0.8, 100, 0, 2*TMath::Pi());
+    NegHadron_EtaPhi[i] = new TProfile2D(Form("NegHadron_EtaPhi%i", i),"", 17, -0.8, 0.8, 100, 0, 2*TMath::Pi());
+
     fOutputList->Add(ZDCpx_P[i]);
     fOutputList->Add(ZDCpx_T[i]);
     fOutputList->Add(ZDCv1_t[i]);
     fOutputList->Add(ZDCv1_p[i]);
     fOutputList->Add(ZDCcos_t[i]);
     fOutputList->Add(ZDCcos_p[i]);
+    fOutputList->Add(Proton_EtaPhi[i]);
+    fOutputList->Add(Kion_EtaPhi[i]);
+    fOutputList->Add(Pion_EtaPhi[i]);
+    fOutputList->Add(PosHadron_EtaPhi[i]);
+    fOutputList->Add(NegHadron_EtaPhi[i]);
   }
   ZDCResQ = new TProfile("ZDCResQ", "", 10, 0, 10);
   fOutputList->Add(ZDCResQ);
@@ -1268,6 +1203,16 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
     ZDCv1_t[centBin]->Fill(iTrkpoi, eta, (u * TComplex::Conjugate(ZDCQt)).Re(), weight);
     ZDCcos_t[centBin]->Fill(iTrkpoi, eta, cos(phi - fPsi1ZNC), weight);
     ZDCcos_p[centBin]->Fill(iTrkpoi, eta, cos(phi - fPsi1ZNA), weight);
+    
+    if (abs(iTrkpoi - 0.5) < 1E-6 || abs(iTrkpoi - 3.5) < 1E-6)   Proton_EtaPhi[centBin]->Fill(eta, phi, weight);
+
+    if (abs(iTrkpoi - 1.5) < 1E-6 || abs(iTrkpoi - 4.5) < 1E-6)   Kion_EtaPhi[centBin]->Fill(eta, phi, weight);
+
+    if (abs(iTrkpoi - 2.5) < 1E-6 || abs(iTrkpoi - 5.5) < 1E-6)   Pion_EtaPhi[centBin]->Fill(eta, phi, weight);
+
+    if (charge > 0.)    PosHadron_EtaPhi[centBin]->Fill(eta, phi, weight);
+    if (charge < 0.)    NegHadron_EtaPhi[centBin]->Fill(eta, phi, weight);
+
 
     if (charge > 0.)
     {
@@ -1287,42 +1232,8 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
       ZDCcos_t[centBin]->Fill(7.5, eta, cos(phi - fPsi1ZNC), weight);
       ZDCcos_p[centBin]->Fill(7.5, eta, cos(phi - fPsi1ZNA), weight);
     }
-
-    // qc
-    hMQ_thisEvt->Fill(pt, eta, weight);
-    hReQ_thisEvt->Fill(pt, eta, weight * cos(phi));
-    hImQ_thisEvt->Fill(pt, eta, weight * sin(phi));
-    hMp_thisEvt->Fill(iTrkpoi, pt, eta, weight);
-    hRep_thisEvt->Fill(iTrkpoi, pt, eta, weight * cos(phi));
-    hImp_thisEvt->Fill(iTrkpoi, pt, eta, weight * sin(phi));
-    if (charge > 0.)
-    {
-      hMp_thisEvt->Fill(6.5, pt, eta, weight);
-      hRep_thisEvt->Fill(6.5, pt, eta, weight * cos(phi));
-      hImp_thisEvt->Fill(6.5, pt, eta, weight * sin(phi));
-    }
-    else if (charge < 0.)
-    {
-      hMp_thisEvt->Fill(7.5, pt, eta, weight);
-      hRep_thisEvt->Fill(7.5, pt, eta, weight * cos(phi));
-      hImp_thisEvt->Fill(7.5, pt, eta, weight * sin(phi));
-    }
-  }
-  // for d2
-  if (QC2SE())
-  {
-    pC2[centBin]->Add(pC2_thisEvt);
-    pC2QRe[centBin]->Add(pC2QRe_thisEvt);
-    pC2QIm[centBin]->Add(pC2QIm_thisEvt);
-    hYield[centBin]->Add(hMp_thisEvt);
-    pD2pQStar[centBin]->Add(pD2pQStar_thisEvt);
-    pD2pRe[centBin]->Add(pD2pRe_thisEvt);
-    pD2pIm[centBin]->Add(pD2pIm_thisEvt);
-    v1p_qc[centBin]->Add(v1p_thisEvt);
-    v1t_qc[centBin]->Add(v1t_thisEvt);
   }
 
-  hEvtCount->Fill(20);
   PostData(1, fOutputList); // stream the results the analysis of this event to
   PostData(2, fQAList);     // the output manager which will take care of writing
                             // it to a file
@@ -1544,94 +1455,6 @@ double AliAnalysisTaskChargeV1::GetNUECor(int charge, double pt)
   return weightNUE;
 }
 
-//---------------------------------------------------
-bool AliAnalysisTaskChargeV1::QC2SE()
-{
-  double allM = hMQ_thisEvt->Integral(1, NPTBINS, 1, NETABINS);
-  if (allM < 2)
-    return false;
-
-  //------------------
-  // Q
-  //------------------
-  double negEtaRe = hReQ_thisEvt->Integral(1, NPTBINS, 1, hReQ_thisEvt->GetYaxis()->FindBin(-ETAGAP - 1e-6));
-  double negEtaIm = hImQ_thisEvt->Integral(1, NPTBINS, 1, hImQ_thisEvt->GetYaxis()->FindBin(-ETAGAP - 1e-6));
-  double negEtaMQ = hMQ_thisEvt->Integral(1, NPTBINS, 1, hMQ_thisEvt->GetYaxis()->FindBin(-ETAGAP - 1e-6));
-  if (negEtaMQ < 2)
-    return false;
-  TComplex negEtaQ(negEtaRe, negEtaIm);
-  TComplex negEtaQStar = TComplex::Conjugate(negEtaQ);
-  double posEtaRe = hReQ_thisEvt->Integral(1, NPTBINS, hReQ_thisEvt->GetYaxis()->FindBin(ETAGAP + 1e-6), NETABINS);
-  double posEtaIm = hImQ_thisEvt->Integral(1, NPTBINS, hImQ_thisEvt->GetYaxis()->FindBin(ETAGAP + 1e-6), NETABINS);
-  double posEtaMQ = hMQ_thisEvt->Integral(1, NPTBINS, hMQ_thisEvt->GetYaxis()->FindBin(ETAGAP + 1e-6), NETABINS);
-  if (posEtaMQ < 2)
-    return false;
-  TComplex posEtaQ(posEtaRe, posEtaIm);
-  TComplex posEtaQStar = TComplex::Conjugate(posEtaQ);
-
-  //------------------
-  // c{2}
-  //------------------
-  pC2_thisEvt->Fill(0., (negEtaQ * posEtaQStar).Re() / (negEtaMQ * posEtaMQ), (negEtaMQ * posEtaMQ));
-
-  pC2QRe_thisEvt->Fill(0., negEtaQ.Re() / negEtaMQ, negEtaMQ);
-
-  pC2QIm_thisEvt->Fill(0., negEtaQ.Im() / negEtaMQ, negEtaMQ);
-
-  //------------------
-  // d{2}
-  //------------------
-
-  for (Int_t iPtBin = 1; iPtBin <= NPTBINS; ++iPtBin)
-  {
-    double pt_thisBin = hRep_thisEvt->GetYaxis()->GetBinCenter(iPtBin);
-    for (Int_t iEtaBin = 1; iEtaBin <= NETABINS; ++iEtaBin)
-    {
-      double eta_thisBin = hRep_thisEvt->GetZaxis()->GetBinCenter(iEtaBin);
-      for (Int_t iPOIBin = 1; iPOIBin <= NPOIBINS; ++iPOIBin)
-      {
-        double poi_thisBin = hRep_thisEvt->GetXaxis()->GetBinCenter(iPOIBin);
-        TComplex p(hRep_thisEvt->GetBinContent(iPOIBin, iPtBin, iEtaBin),
-                   hImp_thisEvt->GetBinContent(iPOIBin, iPtBin, iEtaBin));
-        double mp = hMp_thisEvt->GetBinContent(iPOIBin, iPtBin, iEtaBin);
-        if (mp < 1)
-          continue;
-        v1p_thisEvt->Fill(poi_thisBin, pt_thisBin, eta_thisBin, (p * posEtaQStar).Re() / (mp * posEtaMQ), (mp * posEtaMQ));
-        v1t_thisEvt->Fill(poi_thisBin, pt_thisBin, eta_thisBin, (p * negEtaQStar).Re() / (mp * negEtaMQ), (mp * negEtaMQ));
-        if (eta_thisBin > 0.)
-        {
-          pD2pQStar_thisEvt->Fill(poi_thisBin, pt_thisBin, eta_thisBin, (p * negEtaQStar).Re() / (mp * negEtaMQ), (mp * negEtaMQ));
-        }
-        else
-        {
-          pD2pQStar_thisEvt->Fill(poi_thisBin, pt_thisBin, eta_thisBin, (p * posEtaQStar).Re() / (mp * posEtaMQ), (mp * posEtaMQ));
-        }
-        pD2pRe_thisEvt->Fill(poi_thisBin, pt_thisBin, eta_thisBin, p.Re() / mp, mp);
-        pD2pIm_thisEvt->Fill(poi_thisBin, pt_thisBin, eta_thisBin, p.Im() / mp, mp);
-      }
-    }
-  }
-
-  return true;
-}
-//-----------------------------------------------------
-//void AliAnalysisTaskChargeV1::ResetHists()
-//{
-//  hMQ_thisEvt->Reset();
-//  hReQ_thisEvt->Reset();
-//  hImQ_thisEvt->Reset();
-//  hMp_thisEvt->Reset();
-//  hRep_thisEvt->Reset();
-//  hImp_thisEvt->Reset();
-//  pC2_thisEvt->Reset();
-//  pC2QRe_thisEvt->Reset();
-//  pC2QIm_thisEvt->Reset();
-//  pD2pQStar_thisEvt->Reset();
-//  pD2pRe_thisEvt->Reset();
-//  pD2pIm_thisEvt->Reset();
-//  v1p_thisEvt->Reset();
-//  v1t_thisEvt->Reset();
-//}
 //----------------------------------------------
 
 bool AliAnalysisTaskChargeV1::GetZDCPlaneLsFit(){
