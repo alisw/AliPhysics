@@ -7,7 +7,7 @@
 #include <vector>
 
 AliAnalysisTask *AddTaskJFFlucJCAnalysis(TString taskName = "JFFlucJCAnalysis", UInt_t period = 0,
-  double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 2 4 5 8 11 13",
+  double ptMin = 0.2, double ptMax = 5.0, double etaMin = -0.8, double etaMax = 0.8, double etaGapMin = 0.4, double etaGapMax = 0.8, std::string configArray = "0 1 2 4 5 8 11 13",
   bool saveQA = kFALSE, bool ESDpileup = false, double intercept = 15000,
   bool TPCpileup = false, bool saveQA_TPCpileup = false,
   bool Aside = false, bool Cside = false, bool saveQCNUA = false)
@@ -276,7 +276,7 @@ AliAnalysisTask *AddTaskJFFlucJCAnalysis(TString taskName = "JFFlucJCAnalysis", 
     } else if (Cside){
       fJCatalyst[i]->SetEtaRange(-0.8,0.0);
     } else {
-      fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
+      fJCatalyst[i]->SetEtaRange(etaMin, etaMax);
     }
     fJCatalyst[i]->SetPhiCorrectionIndex(i);
     fJCatalyst[i]->SetRemoveBadArea(removeBadArea);
@@ -290,6 +290,7 @@ AliAnalysisTask *AddTaskJFFlucJCAnalysis(TString taskName = "JFFlucJCAnalysis", 
     myTask[i] = new AliJFFlucJCTask(Form("%s_%s", 
       taskName.Data(), configNames[i].Data()));
     myTask[i]->SetJCatalystTaskName(fJCatalyst[i]->GetJCatalystTaskName());
+    myTask[i]->SetEtaRange(etaGapMin, etaGapMax); // Used for the etagap.
    
     mgr->AddTask((AliAnalysisTask *)myTask[i]);
   }
