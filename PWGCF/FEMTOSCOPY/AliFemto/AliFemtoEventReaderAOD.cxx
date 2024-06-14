@@ -3089,24 +3089,44 @@ bool AliFemtoEventReaderAOD::Reject15oPass2Event(AliAODEvent *fAOD,Int_t yearLab
 
   if (multV0On < fV0CutPU->Eval(multV0Tot)) return false;
 
-  // 4.4 Mult(FB32) Vs Cent(V0M)
   const Int_t nTracks = fAOD->GetNumberOfTracks();
+    
+  // 4.4 TPC pileup
+  Int_t multEsd = ((AliAODHeader*)fAOD->GetHeader())->GetNumberOfESDTracks();
+  Int_t multTPC=0;
+  for (Int_t it1 = 0; it1 < nTracks; it1++) {
+    AliAODTrack* aodTrk1 = (AliAODTrack*)fAOD->GetTrack(it1);
+    if (!aodTrk1) continue;
+    if (aodTrk1->TestFilterBit(128)) multTPC++;
+  }
+  if(!(multEsd -3.38*multTPC<15000))
+    return false;
+   
+  
+  // 4.5 TOF PILEUP
+
   Int_t multTrk = 0;
+  Int_t multTrkTOF=0;
   for (Int_t it = 0; it < nTracks; it++) {
       AliAODTrack* aodTrk = (AliAODTrack*)fAOD->GetTrack(it);
       if (!aodTrk){
           delete aodTrk;
           continue;
       }
-      if (aodTrk->TestFilterBit(32)){
+      if (aodTrk->TestFilterBit(32)) {
         //if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2))
         multTrk++;
+        if ( TMath::Abs(aodTrk->GetTOFsignalDz()) <= 10 && aodTrk->GetTOFsignal() >= 12000 && aodTrk->GetTOFsignal() <= 25000) 
+          multTrkTOF++;
       }
   }
   if (Float_t(multTrk) < fMultCutPU->Eval(centV0M)) return false;
 
   return true;
 }
+	
+	
+	
 	if(yearLabel==3){
 
   //----------------------------
@@ -3154,7 +3174,7 @@ double fVertex[3] = {0.};
 
   const Int_t nTracks = fAOD->GetNumberOfTracks();
   Int_t multTrk = 0;
-  Int_t multTrkTOF=0;
+
   for (Int_t it = 0; it < nTracks; it++) {
       AliAODTrack* aodTrk = (AliAODTrack*)fAOD->GetTrack(it);
       if (!aodTrk) {
@@ -3164,8 +3184,7 @@ double fVertex[3] = {0.};
       if (aodTrk->TestFilterBit(32)) {
         //if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2))
         multTrk++;
-        if ( TMath::Abs(aodTrk->GetTOFsignalDz()) <= 10 && aodTrk->GetTOFsignal() >= 12000 && aodTrk->GetTOFsignal() <= 25000) 
-          multTrkTOF++;
+       
       }
    }
 
