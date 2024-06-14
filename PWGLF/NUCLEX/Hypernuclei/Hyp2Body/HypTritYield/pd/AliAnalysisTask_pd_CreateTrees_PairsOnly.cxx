@@ -2217,7 +2217,7 @@ Bool_t AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Tr
 
 
   // apply TPC Sigma cut
-  if(fIsMC == false)  TPC_dEdx_Sigma = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kDeuteron);
+  if(fIsMC == false)  TPC_dEdx_Sigma = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kProton);
   if(fIsMC == true)   TPC_dEdx_Sigma = CalculateSigmadEdxTPC(Track,ParticleSpecies);
   if(TMath::IsNaN(TPC_dEdx_Sigma)) return PassedParticleCuts;
 
