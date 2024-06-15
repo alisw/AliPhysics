@@ -289,6 +289,7 @@ AliAnalysisTask *AddTaskJFFlucJCAnalysis(TString taskName = "JFFlucJCAnalysis", 
   for (int i = 0; i < Nsets; i++) {
     myTask[i] = new AliJFFlucJCTask(Form("%s_%s", 
       taskName.Data(), configNames[i].Data()));
+    myTask[i]->SelectCollisionCandidates(selEvt);
     myTask[i]->SetJCatalystTaskName(fJCatalyst[i]->GetJCatalystTaskName());
     myTask[i]->SetEtaRange(etaGapMin, etaGapMax); // Used for the etagap.
    
