@@ -86,13 +86,17 @@ void AliJFFlucJCTask::UserCreateOutputObjects(){
 	TDirectory *fOutput = gDirectory;
 	fOutput->cd();
 	pfa->UserCreateOutputObjects();
+	
 
 	PostData(1,fOutput);
 }
 
-void AliJFFlucJCTask::UserExec(Option_t *pOpt){
+void AliJFFlucJCTask::UserExec(Option_t*){
 	const double fVertex[] = {0.0,0.0,fJCatalystTask->GetZVertex()};
 
+	if( fJCatalystTask->GetJCatalystEntry() != fEntry ) return;
+
+	if(fJCatalystTask->GetCentrality()>80. || fJCatalystTask->GetCentrality()<0.) return;
 	pfa->Init();
 	pfa->SetInputList(fJCatalystTask->GetInputList());
 	pfa->SetEventCentrality(fJCatalystTask->GetCentrality());
