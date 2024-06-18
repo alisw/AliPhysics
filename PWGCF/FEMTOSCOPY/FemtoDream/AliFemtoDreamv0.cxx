@@ -345,6 +345,82 @@ void AliFemtoDreamv0::Setv0(const AliFemtoDreamBasePart &posDaughter,
   }
 }
 
+void AliFemtoDreamv0::Setv0SameChargeOld(const AliFemtoDreamBasePart &posDaughter,
+                                         const AliFemtoDreamBasePart &negDaughter,
+                                         AliAODEvent *evt, const bool ignoreFirstPos,
+                                         const bool ignoreFirstNeg, const bool setDaughter, const bool isSameCharge)
+{
+  Setv0(posDaughter, negDaughter, ignoreFirstPos, ignoreFirstNeg);
+
+  if (setDaughter)
+  {
+    if (isSameCharge)
+    {
+      SetDaughterSameChargeOld(posDaughter, negDaughter);
+    }
+    else
+    {
+      SetDaughter(posDaughter, negDaughter);
+    }
+  }
+
+  if (fIsMC)
+  {
+    const int posID = posDaughter.GetMotherID();
+    const int negID = negDaughter.GetMotherID();
+    if (!evt)
+      return;
+    TClonesArray *mcarray = dynamic_cast<TClonesArray *>(evt->FindListObject(
+        AliAODMCParticle::StdBranchName()));
+    if (!mcarray)
+    {
+      AliFatal("No MC Array found");
+    }
+    if (posID != negID)
+    {
+      this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);
+    }
+    else
+    {
+      AliAODMCParticle *mcPart = (AliAODMCParticle *)mcarray->At(posID);
+      if (!mcPart)
+      {
+        // this should be fIsSet!
+        this->SetUse(false);
+      }
+      else
+      {
+        this->SetMCPDGCode(mcPart->GetPdgCode());
+        double mcMom[3] = {0., 0., 0.};
+        mcPart->PxPyPz(mcMom);
+        this->SetMCMomentum(mcMom[0], mcMom[1], mcMom[2]);
+        this->SetMCPt(mcPart->Pt());
+        this->SetMCPhi(mcPart->Phi());
+        this->SetMCTheta(mcPart->Theta());
+        //      std::cout<<"thetaMC "<<this->GetMCTheta()[0]<<endl;
+        if (mcPart->IsPhysicalPrimary() && !(mcPart->IsSecondaryFromWeakDecay()))
+        {
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kPhysPrimary);
+        }
+        else if (mcPart->IsSecondaryFromWeakDecay() && !(mcPart->IsSecondaryFromMaterial()))
+        {
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kWeak);
+          this->SetPDGMotherWeak(
+              ((AliAODMCParticle *)mcarray->At(mcPart->GetMother()))->PdgCode());
+        }
+        else if (mcPart->IsSecondaryFromMaterial())
+        {
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kMaterial);
+        }
+        else
+        {
+          this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
+        }
+      }
+    }
+  }
+}
+
 void AliFemtoDreamv0::Setv0SameCharge(const AliFemtoDreamBasePart &posDaughter,
                                       const AliFemtoDreamBasePart &negDaughter,
                                       AliAODEvent *evt, const bool ignoreFirstPos,
@@ -533,7 +609,8 @@ void AliFemtoDreamv0::SetDaughter(const AliFemtoDreamBasePart &posDaughter, cons
   }
 }
 
-void AliFemtoDreamv0::SetDaughterSameCharge(const AliFemtoDreamBasePart &posDaughter, const AliFemtoDreamBasePart &negDaughter)
+// cross-check
+void AliFemtoDreamv0::SetDaughterSameChargeOld(const AliFemtoDreamBasePart &posDaughter, const AliFemtoDreamBasePart &negDaughter)
 {
   const int negID = negDaughter.GetIDTracks().at(0);
   const int posID = posDaughter.GetIDTracks().at(0);
@@ -561,6 +638,44 @@ void AliFemtoDreamv0::SetDaughterSameCharge(const AliFemtoDreamBasePart &posDaug
       {
         fnDaug->SetTrack(fGTI[posID]);
         fpDaug->SetTrack(fGTI[negID]);
+        this->fHasDaughter = true;
+      }
+      else
+      {
+        this->fHasDaughter = false;
+        printf("The daughers are not set!!!! WRONG CHARGE");
+      }
+    }
+    else
+    {
+      this->fHasDaughter = false;
+      printf("The daughers are not set!!!! GTI ERROR");
+    }
+  }
+}
+
+void AliFemtoDreamv0::SetDaughterSameCharge(const AliFemtoDreamBasePart &posDaughter, const AliFemtoDreamBasePart &negDaughter)
+{
+  const int negID = negDaughter.GetIDTracks().at(0);
+  const int posID = posDaughter.GetIDTracks().at(0);
+  if (negID >= fTrackBufferSize || posID >= fTrackBufferSize)
+  {
+    std::cout << "fGTI too small, no Global Tracks to work with, PosID:  "
+              << posID << " and NegID: " << negID
+              << std::endl;
+    this->fHasDaughter = false;
+  }
+  else
+  {
+    fpDaug->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+    fnDaug->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+
+    if (fGTI[posID] && fGTI[negID])
+    {
+      if (fGTI[posID]->Charge() == fGTI[negID]->Charge())
+      {
+        fnDaug->SetTrack(fGTI[negID]);
+        fpDaug->SetTrack(fGTI[posID]);
         this->fHasDaughter = true;
       }
       else

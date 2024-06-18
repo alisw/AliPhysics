@@ -17,6 +17,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
                                         bool isSameCharge = false,
                                         bool isMCTrueRhoCombBkrg = false,
                                         bool isMCcheckedCombs = false,
+                                        bool useNegativePairs = false,
                                         const char *cutVariation = "0")
 {
   TString suffix = TString::Format("%s", cutVariation);
@@ -121,7 +122,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   AliFemtoDreamTrackCuts *TrackPosPionCuts =
       AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, true, true);
   TrackPosPionCuts->SetCutCharge(1);
-  // MC Template treatment
+  // TrackPosPionCuts->SetPtRange(0.14, 10);
+  //  MC Template treatment
   if (!MCtemplatefit)
   {
     TrackPosPionCuts->SetFilterBit(96); // Filterbit 5+6
@@ -146,7 +148,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   AliFemtoDreamTrackCuts *TrackNegPionCuts =
       AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, true, true);
   TrackNegPionCuts->SetCutCharge(-1);
-  // MC Template treatment
+  // TrackNegPionCuts->SetPtRange(0.14, 10);
+  //  MC Template treatment
   if (!MCtemplatefit)
   {
     TrackNegPionCuts->SetFilterBit(96); // Filterbit 5+6
@@ -284,7 +287,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
 
   // now we create the task
   AliAnalysisTaskFemtoDreamRho *task =
-      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doMcTruth, doCleaning, doAncestors, doProjections, rhoPtThreshold, isSameCharge, isMCTrueRhoCombBkrg, isMCcheckedCombs);
+      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doMcTruth, doCleaning, doAncestors, doProjections, rhoPtThreshold, isSameCharge, useNegativePairs, isMCTrueRhoCombBkrg, isMCcheckedCombs);
   // THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
   // kINT7 == Minimum bias
   // kHighMultV0 high multiplicity triggered by the V0 detector
@@ -620,7 +623,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
-  config->SetDeltaEtaMax(fdEta); // https://alice-notes.web.cern.ch/system/files/notes/analysis/616/2018-08-10-NotepPb.pdf
+  config->SetDeltaEtaMax(fdEta);
   config->SetDeltaPhiMax(fdPhi);
   config->SetMixingDepth(10); // AN
   config->SetkTBinning(true);
@@ -632,17 +635,17 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   config->SetdPhidEtaPlotsSmallK(true);
   config->SetMinvKtandRelativeKBinning(true); // Check this in case of MC
 
-  std::cout << "Check the addTask config" << std::endl;
-  std::cout << "  ZVtxBins.size() " << ZVtxBins.size() << std::endl;
-  std::cout << "  MultBins.size() " << MultBins.size() << std::endl;
-  std::cout << "  PDGParticles.size() " << PDGParticles.size() << std::endl;
-  std::cout << "  NBins.size() " << NBins.size() << std::endl;
-  std::cout << "  kMin.size() " << kMin.size() << std::endl;
-  std::cout << "  kMax.size() " << kMax.size() << std::endl;
-  std::cout << "  closeRejection.size() " << closeRejection.size() << std::endl;
-  std::cout << "  pairQA.size() " << pairQA.size() << std::endl;
-  std::cout << "  config->SetDeltaEtaMax(fdEta); " << fdEta << std::endl;
-  std::cout << "  config->SetDeltaPhiMax(fdPhi); " << fdPhi << std::endl;
+  std::cout << " Check the addTask config" << std::endl;
+  std::cout << " ZVtxBins.size() " << ZVtxBins.size() << std::endl;
+  std::cout << " MultBins.size() " << MultBins.size() << std::endl;
+  std::cout << " PDGParticles.size() " << PDGParticles.size() << std::endl;
+  std::cout << " NBins.size() " << NBins.size() << std::endl;
+  std::cout << " kMin.size() " << kMin.size() << std::endl;
+  std::cout << " kMax.size() " << kMax.size() << std::endl;
+  std::cout << " closeRejection.size() " << closeRejection.size() << std::endl;
+  std::cout << " pairQA.size() " << pairQA.size() << std::endl;
+  std::cout << " config->SetDeltaEtaMax(fdEta); " << fdEta << std::endl;
+  std::cout << " config->SetDeltaPhiMax(fdPhi); " << fdPhi << std::endl;
 
   if (isMC)
   {

@@ -28,7 +28,7 @@ class AliAnalysisTaskFemtoDreamRho : public AliAnalysisTaskSE
 {
 public:
   AliAnalysisTaskFemtoDreamRho();
-  AliAnalysisTaskFemtoDreamRho(const char *name, bool isMC, bool doMcTruth, bool doAncestors, bool doCleaning, bool doProjections, float rhoPtThreshold, bool isSameCharge, bool isMCTrueRhoCombBkrg, bool isMCcheckedCombs);
+  AliAnalysisTaskFemtoDreamRho(const char *name, bool isMC, bool doMcTruth, bool doAncestors, bool doCleaning, bool doProjections, float rhoPtThreshold, bool isSameCharge, bool useNegativePairs, bool isMCTrueRhoCombBkrg, bool isMCcheckedCombs);
   virtual ~AliAnalysisTaskFemtoDreamRho();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
@@ -79,6 +79,7 @@ public:
   void SetDoProjections(bool doProjector) { fDoProjections = doProjector; };
   void SetRhoPtThreshold(float rhoPtThreshold) { frhoPtThreshold = rhoPtThreshold; };
   void SetMinvSameCharge(bool isSameCharge) { fIsSameCharge = isSameCharge; };
+  void SetUseNegativePairs(bool useNegativePairs) { fUseNegativePairs = useNegativePairs; };
   void SetMCTrueRhoCombBkgr(bool isMCTrueRhoCombBkrg) { fIsMCTrueRhoCombBkrg = isMCTrueRhoCombBkrg; };
   void SetMCcheckedCombs(bool isMCcheckedCombs) { fIsMCcheckedCombs = isMCcheckedCombs; };
 
@@ -116,6 +117,7 @@ private:
   bool fDoProjections;       //
   float frhoPtThreshold;     //
   bool fIsSameCharge;        //
+  bool fUseNegativePairs;    //
   bool fIsMCTrueRhoCombBkrg; //
   bool fIsMCcheckedCombs;    //
 
@@ -193,7 +195,7 @@ private:
   // std::map<TString, std::pair<TH1F *, TH2F *>>
   //     fResonanceHistograms; //! Map to hold histograms for each resonance
 
-  ClassDef(AliAnalysisTaskFemtoDreamRho, 9) // Update class number
+  ClassDef(AliAnalysisTaskFemtoDreamRho, 10) // Update class number
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_AliAnalysisTaskFemtoDreamRho_H_ */

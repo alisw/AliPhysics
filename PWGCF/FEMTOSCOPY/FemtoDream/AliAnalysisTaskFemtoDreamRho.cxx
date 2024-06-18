@@ -26,6 +26,7 @@ ClassImp(AliAnalysisTaskFemtoDreamRho)
       fDoProjections(false),
       frhoPtThreshold(0.),
       fIsSameCharge(false),
+      fUseNegativePairs(false),
       fIsMCTrueRhoCombBkrg(false),
       fIsMCcheckedCombs(false),
       fOutput(nullptr),
@@ -85,7 +86,7 @@ ClassImp(AliAnalysisTaskFemtoDreamRho)
 }
 
 AliAnalysisTaskFemtoDreamRho::AliAnalysisTaskFemtoDreamRho(const char *name,
-                                                           bool isMC, bool doMcTruth, bool doCleaning, bool doAncestors, bool doProjector, float rhoPtThreshold, bool isSameCharge, bool isMCTrueRhoCombBkrg, bool isMCcheckedCombs)
+                                                           bool isMC, bool doMcTruth, bool doCleaning, bool doAncestors, bool doProjector, float rhoPtThreshold, bool isSameCharge, bool useNegativePairs, bool isMCTrueRhoCombBkrg, bool isMCcheckedCombs)
     : AliAnalysisTaskSE(name),
       fTrigger(AliVEvent::kINT7),
       fIsMC(isMC),
@@ -95,6 +96,7 @@ AliAnalysisTaskFemtoDreamRho::AliAnalysisTaskFemtoDreamRho(const char *name,
       fDoProjections(doProjector),
       frhoPtThreshold(rhoPtThreshold),
       fIsSameCharge(isSameCharge),
+      fUseNegativePairs(useNegativePairs),
       fIsMCTrueRhoCombBkrg(isMCTrueRhoCombBkrg),
       fIsMCcheckedCombs(isMCcheckedCombs),
       fOutput(nullptr),
@@ -640,32 +642,68 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
 
   if (fIsSameCharge)
   {
-    // Don't pair the same particles.
-    for (size_t i = 0; i < Particles.size(); ++i)
+    if (fUseNegativePairs)
     {
-      const auto &posPion1 = Particles[i]; // First particle
-
-      for (size_t j = 0; j < Particles.size(); ++j)
+      // Don't pair the same particles.
+      for (int i = 0; i < AntiParticles.size(); ++i)
       {
-        if (i == j)
+        const auto &posPion1 = AntiParticles[i]; // First particle
+
+        for (int j = 0; j < AntiParticles.size(); ++j)
         {
-          continue; // Skip pairing the same particle
+          if (i == j)
+          {
+            continue; // Skip pairing the same particle
+          }
+          const auto &posPion2 = AntiParticles[j]; // Second particle
+
+          // introduce a selection on the y_pair
+          fRhoParticle->Setv0SameCharge(posPion1, posPion2, Event, false, false, true, fIsSameCharge);
         }
-        const auto &posPion2 = Particles[j]; // Second particle
 
-        fRhoParticle->Setv0SameCharge(posPion1, posPion2, Event, false, false, true, fIsSameCharge);
+        const float pT_rho_candidate = fRhoParticle->GetPt();
+        // At a pT > 1.8 GeV we start to see the rho in the M_inv (for now hard-coded can be optimized)
+        if (pT_rho_candidate < frhoPtThreshold - 0.0001) //
+        {
+          continue;
+        }
+
+        if (fRhoCuts->isSelected(fRhoParticle)) // Check for proper Rho candidates, just Minv cut and kaon reject.
+        {
+          V0Particles_SameCharge.push_back(*fRhoParticle);
+        }
       }
-
-      const float pT_rho_candidate = fRhoParticle->GetPt();
-      // At a pT > 1.8 GeV we start to see the rho in the M_inv (for now hard-coded can be optimized)
-      if (pT_rho_candidate < frhoPtThreshold - 0.0001) //
+    }
+    else
+    {
+      // Don't pair the same particles.
+      for (int i = 0; i < Particles.size(); ++i)
       {
-        continue;
-      }
+        const auto &posPion1 = Particles[i]; // First particle
 
-      if (fRhoCuts->isSelected(fRhoParticle)) // Check for proper Rho candidates, just Minv cut and kaon reject.
-      {
-        V0Particles_SameCharge.push_back(*fRhoParticle);
+        for (int j = 0; j < Particles.size(); ++j)
+        {
+          if (i == j)
+          {
+            continue; // Skip pairing the same particle
+          }
+          const auto &posPion2 = Particles[j]; // Second particle
+
+          // introduce a selection on the y_pair
+          fRhoParticle->Setv0SameCharge(posPion1, posPion2, Event, false, false, true, fIsSameCharge);
+        }
+
+        const float pT_rho_candidate = fRhoParticle->GetPt();
+        // At a pT > 1.8 GeV we start to see the rho in the M_inv (for now hard-coded can be optimized)
+        if (pT_rho_candidate < frhoPtThreshold - 0.0001) //
+        {
+          continue;
+        }
+
+        if (fRhoCuts->isSelected(fRhoParticle)) // Check for proper Rho candidates, just Minv cut and kaon reject.
+        {
+          V0Particles_SameCharge.push_back(*fRhoParticle);
+        }
       }
     }
   }
@@ -892,14 +930,14 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
   if (fIsMC) // fIsMC
   {
     // counter for the labels
-    int counterLabels = 0;
+    int counterLabels = -1;
     // PDG codes
     const float pdgIdealDaughters = 211.; // charged pions 211
     const float pdgIdealMother = 113.;    // rho 113
 
     for (const auto &V0Candidates : V0Particles)
     {
-
+      counterLabels++; // Increase the counter by one to iterate properly over the v0 combinations
       TLorentzVector trackPos = Particles_Combinations_LV[counterLabels];
       TLorentzVector trackNeg = AntiParticles_Combinations_LV[counterLabels];
       TLorentzVector trackSum = trackPos + trackNeg;
@@ -925,8 +963,6 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
       {
         // only check those which have the same ancestor
         bool sameAncestor = Ancestor_Combinations[counterLabels];
-        counterLabels++; // increase the counter for the combination
-
         if (!sameAncestor)
         {
           // in this case we have background
@@ -1077,6 +1113,7 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
       fArmenterosRhoTrue_Reconstr_qtDaughBoth->Fill(qTpos, qTneg);
       fArmenterosRhoTrue_Reconstr_alphaDaughBoth->Fill(alphapos, alphaneg);
 
+      // in this case we have true rho0
       if (!fIsMCTrueRhoCombBkrg)
       {
         V0Particles_MC_verified.push_back(V0Candidates);
@@ -1316,16 +1353,25 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
   fPairCleaner->StoreParticle(AntiParticles);
   if (fIsMC && fDoMcTruth) // These will never require cleaning!
   {
-    if (fIsMCcheckedCombs)
+    if (!fIsSameCharge)
     {
-      // Since we don't care about efficiency effects we take there the true proton sample in order to enchange the statistics by a factor of 5. The purity is high in either case due to the optimized selection criteria.
-      fPairCleaner->StoreParticle(V0Particles);          // V0Particles_MC_verified
-      fPairCleaner->StoreParticle(ProtonMcTruePart);     // ProtonMcTruePart Could check what happens with the reconstructed protons instead of MC True sample
-      fPairCleaner->StoreParticle(AntiProtonMcTruePart); // AntiProtonMcTruePart
+      if (fIsMCcheckedCombs)
+      {
+        // Since we don't care about efficiency effects we take there the true proton sample in order to enchange the statistics by a factor of 5. The purity is high in either case due to the optimized selection criteria.
+        fPairCleaner->StoreParticle(V0Particles_MC_verified); // V0Particles_MC_verified
+        fPairCleaner->StoreParticle(ProtonMcTruePart);        // ProtonMcTruePart Could check what happens with the reconstructed protons instead of MC True sample
+        fPairCleaner->StoreParticle(AntiProtonMcTruePart);    // AntiProtonMcTruePart
+      }
+      else
+      {
+        fPairCleaner->StoreParticle(RhoMcTruePart);
+        fPairCleaner->StoreParticle(ProtonMcTruePart);
+        fPairCleaner->StoreParticle(AntiProtonMcTruePart);
+      }
     }
     else
     {
-      fPairCleaner->StoreParticle(RhoMcTruePart);
+      fPairCleaner->StoreParticle(V0Particles_SameCharge);
       fPairCleaner->StoreParticle(ProtonMcTruePart);
       fPairCleaner->StoreParticle(AntiProtonMcTruePart);
     }
