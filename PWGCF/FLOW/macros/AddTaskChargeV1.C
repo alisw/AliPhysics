@@ -9,8 +9,11 @@
 AliAnalysisTaskChargeV1 *AddTaskChargeV1(
     bool doNUE = true,
     bool doNUA = true,
-    TString period = "LHC18q",
-    bool ZDCcali = true)
+    TString period = "LHC15o",
+    bool ZDCcali = true,
+    bool bCorrectForBadChannel = true,
+    bool bCorrSpecZDC = true,
+    bool bTrigger = false)
 {
   // get the manager via the static access member. since it's static, you don't need
   // to create an instance of the class here to call the function
@@ -33,9 +36,10 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
   AliAnalysisTaskChargeV1 *task = new AliAnalysisTaskChargeV1("MyTask"); //
   if (!task)
     return 0x0;
-  task->SelectCollisionCandidates(AliVEvent::kINT7);
+  if(bTrigger) task->SelectCollisionCandidates(AliVEvent::kINT7);
   task->SetNUEOn(doNUE);
   task->SetNUAOn(doNUA);
+  task->SetTriggerOn(bTrigger);
 
   //=========================================================================
   // Read in Files
@@ -48,12 +52,12 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
 
   if (!gGrid)
     TGrid::Connect("alien://");
+  
+  task->SetPeriod(period);
+  std::cout << "================ fPeriod Set =================" << std::endl;
+
   if (doNUE)
   {
-
-    // fNUEFile = TFile::Open("alien:///alice/cern.ch/user/j/jwan/CalibFile/18q/efficiencyBothpol18qnew.root", "READ");
-    // // fNUEFile = TFile::Open("./efficiencyBothpol18qnew.root", "READ");
-    // fListNUE = dynamic_cast<TList *>(fNUEFile->Get("fMcEffiHij"));
     if (period.EqualTo("LHC18q"))
     {
       fNUEFile = TFile::Open("alien:///alice/cern.ch/user/r/ratu/refData/NUE_18.root", "READ");
@@ -62,6 +66,11 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
     if (period.EqualTo("LHC18r"))
     {
       fNUEFile = TFile::Open("alien:///alice/cern.ch/user/r/ratu/refData/NUE_18.root", "READ");
+      fListNUE = dynamic_cast<TList *>(fNUEFile->Get("fMcEffiHij"));
+    }
+    if (period.EqualTo("LHC15o"))
+    {
+      fNUEFile = TFile::Open("alien:///alice/cern.ch/user/r/ratu/RefData/reflhc15o/efficiencyBothpol.root", "READ");
       fListNUE = dynamic_cast<TList *>(fNUEFile->Get("fMcEffiHij"));
     }
     if (fListNUE)
@@ -84,8 +93,12 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
     {
       fNUAFile = TFile::Open("alien:///alice/cern.ch/user/r/ratu/refData/reflhc18r/WgtsNUAChargeAndPion_LHC18rPass3.root", "READ");
       fListNUA = dynamic_cast<TList *>(fNUAFile->Get("fNUA_ChPosChNeg"));
+    }    
+    if (period.EqualTo("LHC15o"))
+    {
+      fNUAFile = TFile::Open("alien:///alice/cern.ch/user/r/ratu/RefData/reflhc15o/wgtPion_NUAFB768DeftwPUcut_LHC15op2_24Aug2021.root", "READ");
+      fListNUA = dynamic_cast<TList *>(fNUAFile->Get("15oListNUA"));
     }
-
     if (fListNUA)
     {
       task->SetListForNUA(fListNUA);
@@ -107,7 +120,50 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
       fZDCCalibFile = TFile::Open("alien:///alice/cern.ch/user/r/ratu/refData/ZDCCali/RecenteringResultFinal_2018r.root", "READ");
       fZDCCalibList = dynamic_cast<TList *>(fZDCCalibFile->Get("fOutputRecenter"));
     }
-
+    if (period.EqualTo("LHC15o"))
+    {
+      fZDCCalibFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/15oHI_EZDCcalib.root","READ");
+      fZDCCalibList = (TList*)(fZDCCalibFile->FindObjectAny("EZNcalib"));
+      if(bCorrectForBadChannel) 
+      {
+        TFile* ZDCBadTowerFile = TFile::Open("alien:///alice/cern.ch/user/j/jmargutt/ZDCCalibBadChannel.root","READ");
+        TList* ZDCBadTowerList = (TList*)(ZDCBadTowerFile->FindObjectAny("resp"));
+        if(ZDCBadTowerList) 
+        {
+          task->SetBadTowerCalibList(ZDCBadTowerList);
+          cout << "================BadTowerCalibList Set================" << endl;
+        } 
+        else 
+        {
+          cout << "ERROR: BadTowerCalibList not found!" << endl;
+          exit(1);
+        }
+        delete ZDCBadTowerFile;
+      }
+      if(bCorrSpecZDC) 
+      {
+        TString ZDCRecFileName = "alien:///alice/cern.ch/user/j/jmargutt/";
+        if(bCorrectForBadChannel) ZDCRecFileName += "15o_ZDCSpectraCorr_BadCh_3.root";
+        TFile* ZDCRecFile = TFile::Open(ZDCRecFileName,"READ");
+        if(!ZDCRecFile) 
+        {
+          cout << "ERROR: ZDC Spectra Calibration not found!" << endl;
+          exit(1);
+        }
+        TList* ZDCRecList = (TList*)(ZDCRecFile->FindObjectAny("ZDCSpectraCorr"));
+        if(ZDCRecList) 
+        {
+          task->SetZDCSpectraCorrList(ZDCRecList);
+          cout << "================ZDC Spectra Calibration Set ================"<< endl;
+        }
+        else 
+        {
+        cout << "ERROR: ZDCSpectraCorrList not found!" << endl;
+        exit(1);
+        }
+        delete ZDCRecFile;
+      }
+    }
     if (fZDCCalibList)
     {
       task->SetListForZDCCalib(fZDCCalibList);
