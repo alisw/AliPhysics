@@ -330,6 +330,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistMatchedTrackPClusEAfterEOverPVeto(NULL),
   fHistMatchedTrackPClusETruePi0Clus(NULL),
   fHistElectronPositronOnEMC(NULL),
+  fHistElectronPositronOnEMCCell(NULL),
   fHistElectronPositronClusterMatch(NULL),
   fHistElectronPositronClusterMatchSub(NULL),
   fHistElectronPositronClusterMatchEoverP(NULL),
@@ -594,6 +595,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistMatchedTrackPClusEAfterEOverPVeto(NULL),
   fHistMatchedTrackPClusETruePi0Clus(NULL),
   fHistElectronPositronOnEMC(NULL),
+  fHistElectronPositronOnEMCCell(NULL),
   fHistElectronPositronClusterMatch(NULL),
   fHistElectronPositronClusterMatchSub(NULL),
   fHistElectronPositronClusterMatchEoverP(NULL),
@@ -1979,6 +1981,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistElectronPositronOnEMC->GetYaxis()->SetTitle("number of e^{#pm}");
     fHistograms->Add(fHistElectronPositronOnEMC);
 
+    // same as above but its guaranteed that the track hits a good cell, so a cluster could be formed
+    fHistElectronPositronOnEMCCell = new TH1F(Form("VerifiedMatchedElectronPositronTrackP %s",GetCutNumber().Data()), "Verified Matched Electron Positron tracks with P on EMC (incl. no matches)", nBinsClusterE, arrClusEBinning);
+    fHistElectronPositronOnEMCCell->GetXaxis()->SetTitle("P_{track, EMC}  (GeV/c)");
+    fHistElectronPositronOnEMCCell->GetYaxis()->SetTitle("number of e^{#pm}");
+    fHistograms->Add(fHistElectronPositronOnEMCCell);
+
     fHistElectronPositronClusterMatch = new TH2F(Form("MatchedElectronPositronTrackPClusE %s",GetCutNumber().Data()), "Matched Electron Positron tracks with P on EMC",
                                                       nBinsClusterE, arrClusEBinning, nBinsClusterE, arrClusEBinning);
     fHistElectronPositronClusterMatch->GetXaxis()->SetTitle("E_{cl} (GeV)");
@@ -2072,6 +2080,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
 
     if(fIsMC > 1){
       fHistElectronPositronOnEMC->Sumw2();
+      fHistElectronPositronOnEMCCell->Sumw2();
       fHistElectronPositronClusterMatch->Sumw2();
       fHistElectronPositronClusterMatchSub->Sumw2();
       fHistElectronPositronClusterMatchEoverP->Sumw2();
@@ -4554,6 +4563,13 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
     }
     if(inTrack->GetTrackPOnEMCal() > 0){
       fHistElectronPositronOnEMC->Fill(inTrack->GetTrackPOnEMCal());
+      // Check if the track actually hit a good cell
+      double trackPhiEMC = inTrack->GetTrackPhiOnEMCal();
+      if(trackPhiEMC < 0) trackPhiEMC += TMath::Pi()*2;
+      double trackEtaEMC = inTrack->GetTrackEtaOnEMCal();
+      if( GetCaloCellIdFromEtaPhi(trackEtaEMC, trackPhiEMC) >= 0 ) {
+        fHistElectronPositronOnEMCCell->Fill(inTrack->GetTrackPOnEMCal());
+      }
     }
 
     Float_t dEta, dPhi;
