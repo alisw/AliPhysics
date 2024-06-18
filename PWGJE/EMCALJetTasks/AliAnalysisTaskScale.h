@@ -67,6 +67,7 @@ class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
   TH2                   *fHistScaleShift1EmcalvsCent;    //!output histogram
   TH2                   *fHistScaleShift2EmcalvsCent;    //!output histogram
   TH2                   *fHistScaleShiftMeanEmcalvsCent; //!output histogram
+  TH2                   *fHistScaleEmcalvsPhi;           //!output histogram
 
   AliParticleContainer  *fTracksCont;                    //!Tracks
   AliClusterContainer   *fCaloClustersCont;              //!Clusters 
