@@ -190,6 +190,7 @@ ClassImp(AliAnalysisTaskChargeV1) // classimp: necessary for root
   neg1Plane = nullptr;
   Res1Square = nullptr;
 
+  nCentrality = 7;
   ptEta = nullptr;
   ResQ = nullptr;
   Psi_P = nullptr;
