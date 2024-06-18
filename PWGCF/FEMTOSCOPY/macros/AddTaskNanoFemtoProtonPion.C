@@ -79,7 +79,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   TrackCutsPion->SetCutCharge(1);
   TrackCutsPion->SetPtRange(PionMinPt, 4.0);
 
-  if(isMC && PionFilterbit == 128){ //for MC template fits
+  if(isMC && (PionFilterbit == 128 || PionFilterbit == 768 || PionFilterbit == 16)){ //for MC template fits
     TrackCutsPion->CheckParticleMothers(true);
     TrackCutsPion->SetPlotDCADist(true);
     TrackCutsPion->SetFillQALater(false);
@@ -90,7 +90,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   TrackCutsAntiPion->SetCutCharge(-1);
   TrackCutsAntiPion->SetPtRange(PionMinPt, 4.0);
   
-  if(isMC && PionFilterbit == 128){ //for MC template fits
+  if(isMC && (PionFilterbit == 128 || PionFilterbit == 768 || PionFilterbit == 16)){ //for MC template fits
     TrackCutsAntiPion->CheckParticleMothers(true);
     TrackCutsAntiPion->SetPlotDCADist(true);
     TrackCutsAntiPion->SetFillQALater(false);
