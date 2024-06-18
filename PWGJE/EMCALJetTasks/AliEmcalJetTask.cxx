@@ -83,6 +83,7 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fTrackEfficiency(1.),
+  fClusterEfficiency(1.),
   fQoverPtShift(0.),
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
@@ -128,6 +129,7 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fJetEtaMax(+1),
   fGhostArea(0.005),
   fTrackEfficiency(1.),
+  fClusterEfficiency(1.),
   fQoverPtShift(0.),
   fUtilities(0),
   fTrackEfficiencyOnlyForEmbedding(kFALSE),
@@ -340,6 +342,13 @@ Int_t AliEmcalJetTask::FindJets()
     AliClusterIterableMomentumContainer itcont = clusters->accepted_momentum();
     for (AliClusterIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
       AliDebug(2,Form("Cluster %d accepted (label = %d, energy = %.3f)", it.current_index(), it->second->GetLabel(), it->first.E()));
+      if(fClusterEfficiency < 1.) {
+          Double_t rnd = fRandom.Rndm();
+          if (fClusterEfficiency < rnd) {
+            AliDebug(2,Form("Cluster %d rejected due to artificial tracking inefficiency", it.current_index()));
+            continue;
+          } 
+      }
       Int_t uid = -it.current_index() - fgkConstIndexShift * iColl;
       fFastJetWrapper.AddInputVector(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E(), uid);
     }
@@ -462,7 +471,7 @@ void AliEmcalJetTask::ExecOnce()
   }
   
   // If artificial tracking efficiency is enabled (either constant or pT-depdendent), set up random number generator
-  if (fApplyArtificialTrackingEfficiency) {
+  if (fApplyArtificialTrackingEfficiency || fClusterEfficiency < 1.) {
     fRandom.SetSeed(0);
   }
 

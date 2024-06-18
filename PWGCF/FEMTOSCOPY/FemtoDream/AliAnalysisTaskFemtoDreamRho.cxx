@@ -669,209 +669,211 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
       }
     }
   }
-
-  // Construct the V0 for the Rho decay, just simple combinatorics for now
-  int counter = 0;
-  int counter_tracks_Part = -1;
-  int counter_tracks_antiPart = -1;
-  for (const auto &posPion : Particles)
-  { // Build charged pion pairs!
-    counter_tracks_Part++;
-    for (const auto &negPion : AntiParticles)
-    {
-      counter_tracks_antiPart++;
-      fRhoParticle->Setv0(posPion, negPion, Event, false, false, true);
-
-      const float pT_rho_candidate = fRhoParticle->GetPt();
-      // At a pT > 1.8 GeV we start to see the rho in the M_inv (for now hard-coded can be optimized)
-      if (pT_rho_candidate < frhoPtThreshold - 0.0001) //
+  else
+  {
+    // Construct the V0 for the Rho decay, just simple combinatorics for now
+    int counter = 0;
+    int counter_tracks_Part = -1;
+    int counter_tracks_antiPart = -1;
+    for (const auto &posPion : Particles)
+    { // Build charged pion pairs!
+      counter_tracks_Part++;
+      for (const auto &negPion : AntiParticles)
       {
-        continue;
-      }
+        counter_tracks_antiPart++;
 
-      if (fDoAncestors && fIsMC && AncestorIsSelected(fRhoParticle, fRhoCuts)) // Select everything as the RhoCandidate except the mass
-      {
-        bool isCommon = CommonAncestors(posPion, negPion, Event, true);
-        Ancestor_Combinations.push_back(isCommon);
+        fRhoParticle->Setv0(posPion, negPion, Event, false, false, true);
 
-        // prepare plots for the pT vs minv
-        if (isCommon) // isCommon
+        const float pT_rho_candidate = fRhoParticle->GetPt();
+        // At a pT > 1.8 GeV we start to see the rho in the M_inv (for now hard-coded can be optimized)
+        if (pT_rho_candidate < frhoPtThreshold - 0.0001) //
         {
-          int pdg_resonance = -99999;
-          bool isResonance = CommonResonance(posPion, negPion, pdg_resonance, Event, true);
-          FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM);
-          if (isResonance)
-          {
-            FillAncestorHist2D_PDGvsMinv(posPion, negPion, fHist2D_PDGvsMInv_CommonAncestorResonances, pdg_resonance);
-
-            // Use a switch statement to handle different values of pdg_resonance
-            switch (pdg_resonance)
-            {
-            case 311: // K0
-              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
-              break;
-            case 310: // K0short
-              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
-              break;
-            case 130: // K0long
-              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
-              break;
-            case 113: // RhoMeson
-              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances);
-              break;
-            case 223: // OmegaMeson
-              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances);
-              break;
-            case 9000221: // F0Meson
-              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances);
-              break;
-            case 9000223: // F2Meson
-              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_ftwoResonances);
-              break;
-            default:
-              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_otherResonances);
-              break;
-            }
-          }
-          else
-          {
-            FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances);
-          }
+          continue;
         }
-        else
+
+        if (fDoAncestors && fIsMC && AncestorIsSelected(fRhoParticle, fRhoCuts)) // Select everything as the RhoCandidate except the mass
         {
-          FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateUncommonFullInvM);
-        }
-      }
+          bool isCommon = CommonAncestors(posPion, negPion, Event, true);
+          Ancestor_Combinations.push_back(isCommon);
 
-      if (fDoProjections)
-      { // Also include a selection on the rho candidates pT
-        Particles_Minv.push_back(posPion);
-        AntiParticles_Minv.push_back(negPion); // negPion  TEST ONLY
-        // Get QA of the pion tracks used for the projection, careful here tracks will be counted multiple times
-        AliAODTrack *track = static_cast<AliAODTrack *>(Event->GetTrack(Tracks_Particles_Minv[counter_tracks_Part]));
-        fTrack->SetTrack(track);
-        fPosPionMinvCuts->isSelected(fTrack);
-
-        // AliAODTrack *trackneg = static_cast<AliAODTrack *>(Event->GetTrack(Tracks_AntiParticles_Minv[counter_tracks_antiPart]));
-        // fTrackneg->SetTrack(trackneg);
-        // fNegPionMinvCuts->isSelected(fTrackneg);
-
-        // // Check the kStar
-        // float kStar_check = RelativePairMomentum_check(negPion, 211, posPion, 211);
-
-        // //  Debug
-        // const float invMassRho = fRhoParticle->Getv0Mass();
-        // float posPdeb[3], negPdeb[3];
-        // posPion.GetMomentum().GetXYZ(posPdeb);
-        // negPion.GetMomentum().GetXYZ(negPdeb);
-        // TLorentzVector trackPosDeb, trackNegDeb;
-        // const float invPiPlus = posPion.GetInvMass();
-        // const float invPiMinus = negPion.GetInvMass();
-        // trackPosDeb.SetXYZM(posPdeb[0], posPdeb[1], posPdeb[2], invPiPlus);
-        // trackNegDeb.SetXYZM(negPdeb[0], negPdeb[1], negPdeb[2], invPiMinus);
-        // TLorentzVector trackSumdeb = trackPosDeb + trackNegDeb;
-        // const float invMassPions = trackSumdeb.M();
-        // if (invMassRho - invMassPions > 0.0001)
-        // {
-        //   printf("+++++++++++++++++++++++++++++++++++CAUTION!!+++++++++++++++++++++++++++++++++++++\n");
-        // }
-        // printf("Check initial minv assignment: %.4f(invPiPlus), %.4f(invPiMinus)\n", invPiPlus, invPiMinus);
-        // printf("Check values: %.4f(invMassRho), %.4f(invMassPions)\n", invMassRho, invMassPions);
-        // printf("Check kStar calculation: %.4f\n", kStar_check);
-      }
-
-      if (fRhoCuts->isSelected(fRhoParticle)) // Check for proper Rho candidates, just Minv cut and kaon reject.
-      {
-        // Also include a selection on the rho pT (for better control of what goes in the Cf)
-        V0Particles.push_back(*fRhoParticle);
-        if (fIsMC)
-        { // store the combinations for the MC matching
-          // also store kinematic distributions needed later
-          Particles_Combinations.push_back(posPion.GetID());
-          AntiParticles_Combinations.push_back(negPion.GetID());
-          float posP[3], negP[3];
-          posPion.GetMomentum().GetXYZ(posP);
-          negPion.GetMomentum().GetXYZ(negP);
-          TLorentzVector trackPos, trackNeg;
-          trackPos.SetXYZM(posP[0], posP[1], posP[2], posPion.GetInvMass());
-          trackNeg.SetXYZM(negP[0], negP[1], negP[2], negPion.GetInvMass());
-          Particles_Combinations_LV.push_back(trackPos);
-          AntiParticles_Combinations_LV.push_back(trackNeg);
-          // temp move this here in order to check the resonances
-          /*if (fDoAncestors && fIsMC && AncestorIsSelected(fRhoParticle, fRhoCuts)) // Select everything as the RhoCandidate except the mass
+          // prepare plots for the pT vs minv
+          if (isCommon) // isCommon
           {
-            bool isCommon = CommonAncestors(posPion, negPion, Event, true);
-            Ancestor_Combinations.push_back(isCommon);
-            // prepare plots for the pT vs minv
-            if (isCommon) // isCommon
+            int pdg_resonance = -99999;
+            bool isResonance = CommonResonance(posPion, negPion, pdg_resonance, Event, true);
+            FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM);
+            if (isResonance)
             {
-              int pdg_resonance = -99999;
-              bool isResonance = CommonResonance(posPion, negPion, pdg_resonance, Event, true);
-              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM);
-              if (isResonance)
-              {
-                FillAncestorHist2D_PDGvsMinv(posPion, negPion, fHist2D_PDGvsMInv_CommonAncestorResonances, pdg_resonance);
+              FillAncestorHist2D_PDGvsMinv(posPion, negPion, fHist2D_PDGvsMInv_CommonAncestorResonances, pdg_resonance);
 
-                // std::cout << "pdg_resonance: " << pdg_resonance << std::endl;
-
-                // Use a switch statement to handle different values of pdg_resonance
-                switch (pdg_resonance)
-                {
-                case 310: // K0short
-                  FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
-                  break;
-                case 130: // K0Long
-                  FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
-                  break;
-                case 311: // K0
-                  FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
-                  break;
-                case 113: // RhoMeson
-                  FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances);
-                  break;
-                case 223: // OmegaMeson
-                  FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances);
-                  break;
-                case 9000221: // F0Meson
-                  FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances);
-                  break;
-                case 9000223: // F2Meson
-                  FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_ftwoResonances);
-                  break;
-                default:
-                  FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_otherResonances);
-                  break;
-                }
-              }
-              else
+              // Use a switch statement to handle different values of pdg_resonance
+              switch (pdg_resonance)
               {
-                FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances);
+              case 311: // K0
+                FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
+                break;
+              case 310: // K0short
+                FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
+                break;
+              case 130: // K0long
+                FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
+                break;
+              case 113: // RhoMeson
+                FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances);
+                break;
+              case 223: // OmegaMeson
+                FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances);
+                break;
+              case 9000221: // F0Meson
+                FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances);
+                break;
+              case 9000223: // F2Meson
+                FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_ftwoResonances);
+                break;
+              default:
+                FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_otherResonances);
+                break;
               }
             }
             else
             {
-              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateUncommonFullInvM);
+              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances);
             }
-          }*/
-        }
-        if (fDoAncestors && fIsMC)
-        {
-          bool isCommon = CommonAncestors(posPion, negPion, Event, true);
-          //  prepare plots for the pT vs minv
-          if (isCommon)
-          {
-            FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommon);
           }
           else
           {
-            FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateUncommon);
+            FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateUncommonFullInvM);
+          }
+        }
+
+        if (fDoProjections)
+        { // Also include a selection on the rho candidates pT
+          Particles_Minv.push_back(posPion);
+          AntiParticles_Minv.push_back(negPion); // negPion  TEST ONLY
+          // Get QA of the pion tracks used for the projection, careful here tracks will be counted multiple times
+          AliAODTrack *track = static_cast<AliAODTrack *>(Event->GetTrack(Tracks_Particles_Minv[counter_tracks_Part]));
+          fTrack->SetTrack(track);
+          fPosPionMinvCuts->isSelected(fTrack);
+
+          // AliAODTrack *trackneg = static_cast<AliAODTrack *>(Event->GetTrack(Tracks_AntiParticles_Minv[counter_tracks_antiPart]));
+          // fTrackneg->SetTrack(trackneg);
+          // fNegPionMinvCuts->isSelected(fTrackneg);
+
+          // // Check the kStar
+          // float kStar_check = RelativePairMomentum_check(negPion, 211, posPion, 211);
+
+          // //  Debug
+          // const float invMassRho = fRhoParticle->Getv0Mass();
+          // float posPdeb[3], negPdeb[3];
+          // posPion.GetMomentum().GetXYZ(posPdeb);
+          // negPion.GetMomentum().GetXYZ(negPdeb);
+          // TLorentzVector trackPosDeb, trackNegDeb;
+          // const float invPiPlus = posPion.GetInvMass();
+          // const float invPiMinus = negPion.GetInvMass();
+          // trackPosDeb.SetXYZM(posPdeb[0], posPdeb[1], posPdeb[2], invPiPlus);
+          // trackNegDeb.SetXYZM(negPdeb[0], negPdeb[1], negPdeb[2], invPiMinus);
+          // TLorentzVector trackSumdeb = trackPosDeb + trackNegDeb;
+          // const float invMassPions = trackSumdeb.M();
+          // if (invMassRho - invMassPions > 0.0001)
+          // {
+          //   printf("+++++++++++++++++++++++++++++++++++CAUTION!!+++++++++++++++++++++++++++++++++++++\n");
+          // }
+          // printf("Check initial minv assignment: %.4f(invPiPlus), %.4f(invPiMinus)\n", invPiPlus, invPiMinus);
+          // printf("Check values: %.4f(invMassRho), %.4f(invMassPions)\n", invMassRho, invMassPions);
+          // printf("Check kStar calculation: %.4f\n", kStar_check);
+        }
+
+        if (fRhoCuts->isSelected(fRhoParticle)) // Check for proper Rho candidates, just Minv cut and kaon reject.
+        {
+          // Also include a selection on the rho pT (for better control of what goes in the Cf)
+          V0Particles.push_back(*fRhoParticle);
+          if (fIsMC)
+          { // store the combinations for the MC matching
+            // also store kinematic distributions needed later
+            Particles_Combinations.push_back(posPion.GetID());
+            AntiParticles_Combinations.push_back(negPion.GetID());
+            float posP[3], negP[3];
+            posPion.GetMomentum().GetXYZ(posP);
+            negPion.GetMomentum().GetXYZ(negP);
+            TLorentzVector trackPos, trackNeg;
+            trackPos.SetXYZM(posP[0], posP[1], posP[2], posPion.GetInvMass());
+            trackNeg.SetXYZM(negP[0], negP[1], negP[2], negPion.GetInvMass());
+            Particles_Combinations_LV.push_back(trackPos);
+            AntiParticles_Combinations_LV.push_back(trackNeg);
+            // temp move this here in order to check the resonances
+            /*if (fDoAncestors && fIsMC && AncestorIsSelected(fRhoParticle, fRhoCuts)) // Select everything as the RhoCandidate except the mass
+            {
+              bool isCommon = CommonAncestors(posPion, negPion, Event, true);
+              Ancestor_Combinations.push_back(isCommon);
+              // prepare plots for the pT vs minv
+              if (isCommon) // isCommon
+              {
+                int pdg_resonance = -99999;
+                bool isResonance = CommonResonance(posPion, negPion, pdg_resonance, Event, true);
+                FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM);
+                if (isResonance)
+                {
+                  FillAncestorHist2D_PDGvsMinv(posPion, negPion, fHist2D_PDGvsMInv_CommonAncestorResonances, pdg_resonance);
+
+                  // std::cout << "pdg_resonance: " << pdg_resonance << std::endl;
+
+                  // Use a switch statement to handle different values of pdg_resonance
+                  switch (pdg_resonance)
+                  {
+                  case 310: // K0short
+                    FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
+                    break;
+                  case 130: // K0Long
+                    FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
+                    break;
+                  case 311: // K0
+                    FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
+                    break;
+                  case 113: // RhoMeson
+                    FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances);
+                    break;
+                  case 223: // OmegaMeson
+                    FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances);
+                    break;
+                  case 9000221: // F0Meson
+                    FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances);
+                    break;
+                  case 9000223: // F2Meson
+                    FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_ftwoResonances);
+                    break;
+                  default:
+                    FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_otherResonances);
+                    break;
+                  }
+                }
+                else
+                {
+                  FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances);
+                }
+              }
+              else
+              {
+                FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateUncommonFullInvM);
+              }
+            }*/
+          }
+          if (fDoAncestors && fIsMC)
+          {
+            bool isCommon = CommonAncestors(posPion, negPion, Event, true);
+            //  prepare plots for the pT vs minv
+            if (isCommon)
+            {
+              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommon);
+            }
+            else
+            {
+              FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateUncommon);
+            }
           }
         }
       }
     }
   }
-
   // Implement here the matching of the self-reconstructed rhos to the MC truth
   // Logic:
   /*- Check if the MC is available

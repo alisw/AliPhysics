@@ -432,7 +432,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
       fRecNucleus.trackingPID = track->GetPIDForTracking();
       fRecNucleus.flag |= (beta > EPS) ? RLightNucleus::kHasTOF : 0;
       fRecNucleus.flag |= (IsSelectedTPCGeoCut(track)) ? RLightNucleus::kActiveLengthStatus : 0;
-      fRecNucleus.flag |= (fTriggerMask & AliVEvent::kCentral) ? RLightNucleus::kCentral : 0;
+      fRecNucleus.flag |= ((fTriggerMask & AliVEvent::kCentral) || (fTriggerMask & AliVEvent::kHighMultV0)) ? RLightNucleus::kCentral : 0;
       fRecNucleus.flag |= (fTriggerMask & AliVEvent::kSemiCentral) ? RLightNucleus::kSemiCentral : 0;
       if (std::abs(fRecNucleus.tpcNsigma) < 6.4 && (track->Pt() < fTOFminPtTrees || std::abs(fRecNucleus.tofNsigma) < 6.4))
         fRTree->Fill();

@@ -2733,14 +2733,11 @@ Double_t AliAnalysisTaskStrangenessInJets::MassPeakSigma(Double_t pt, Int_t part
 // estimation of the sigma of the invariant-mass peak as a function of pT and particle type
   switch(particle) {
     case 0: // K0S
-      return 0.0047 + 0.0002 * pt + 0.000063 * pt * pt;//0.0044 + 0.0004 * (pt - 1.);
+      return 0.00398 + 0.000103 * pt + 0.000042 * pt * pt;//0.0044 + 0.0004 * (pt - 1.);
       break;
     case 1: // Lambda
-      return 0.0014 + 0.00024 * pt; //0.0023 + 0.00034 * (pt - 1.);
+      return 0.00156 - 0.000021 * pt + 0.000016 * pt * pt;; //0.0023 + 0.00034 * (pt - 1.);
       break; 
-    case 2: //Xi
-      return 0.00125 + 0.00035 * pt; 
-      break;   
     default:
       return 0;
       break;
@@ -2752,13 +2749,10 @@ Double_t AliAnalysisTaskStrangenessInJets::MassPeakMean(Double_t pt, Int_t parti
 // estimation of the sigma of the invariant-mass peak as a function of pT and particle type
   switch(particle) {
     case 0: // K0S
-      return 0.499 - 0.0001 * pt + 0.000026 * pt * pt;  //old: 0.0044 + 0.0004 * (pt - 1.);
+      return 0.49874;  //old: 0.0044 + 0.0004 * (pt - 1.);
       break;
     case 1: // Lambda
-      return 1.1162; //old: 0.0023 + 0.00034 * (pt - 1.);
-      break; 
-    case 2: //Xi
-      return 1.322 + 0.000046 * pt; 
+      return 1.11615; //old: 0.0023 + 0.00034 * (pt - 1.);
       break; 
     default:
       return 0;

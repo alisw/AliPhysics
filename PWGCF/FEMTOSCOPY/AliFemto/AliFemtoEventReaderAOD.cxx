@@ -72,6 +72,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fAnaUtils(nullptr),
   fEventCuts(nullptr),
   fUseAliEventCuts(0),
+  fExtendV0MAcceptance(kFALSE),
   fReadFullMCData(false),
   fInputFile(""),
   fTree(nullptr),
@@ -88,6 +89,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fPileupInGeneratedEvent(kFALSE),
   fMVPlp(kFALSE),
   fOutOfBunchPlp(kFALSE),
+  fOOBV0TPC(kFALSE),
   fMinVtxContr(0),
   fMinPlpContribMV(0),
   fMinPlpContribSPD(0),
@@ -130,6 +132,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fjets(0), //ML
   fPtmax(0),  //ML
   fEventReject(0), // begin dowang
+  frejeEv15o(0),
   fPbPb15Pass2MC(0),
   fCenCutLowPU(NULL),
   fCenCutHighPU(NULL),
@@ -206,6 +209,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fAODpidUtil(aReader.fAODpidUtil),
   fAODheader(aReader.fAODheader),
   fAnaUtils(aReader.fAnaUtils),
+  fExtendV0MAcceptance(aReader.fExtendV0MAcceptance),
   fEventCuts(aReader.fEventCuts),
   fUseAliEventCuts(aReader.fUseAliEventCuts),
   fReadFullMCData(aReader.fReadFullMCData),
@@ -224,6 +228,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fPileupInGeneratedEvent(aReader.fPileupInGeneratedEvent),
   fMVPlp(aReader.fMVPlp),
   fOutOfBunchPlp(aReader.fOutOfBunchPlp),
+  fOOBV0TPC(aReader.fOOBV0TPC),
   fMinVtxContr(aReader.fMinVtxContr),
   fMinPlpContribMV(aReader.fMinPlpContribMV),
   fMinPlpContribSPD(aReader.fMinPlpContribSPD),
@@ -270,6 +275,7 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fjets(aReader.fjets), //ML
   fPtmax(aReader.fPtmax),  //ML
   fEventReject(aReader.fEventReject), // begin dowang
+  frejeEv15o(aReader.frejeEv15o),
   fPbPb15Pass2MC(aReader.fPbPb15Pass2MC),
   fCenCutLowPU(aReader.fCenCutLowPU),
   fCenCutHighPU(aReader.fCenCutHighPU),
@@ -332,6 +338,7 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fAODpidUtil = aReader.fAODpidUtil;
   fAODheader = aReader.fAODheader;
   fAnaUtils = aReader.fAnaUtils;
+  fExtendV0MAcceptance = aReader.fExtendV0MAcceptance;
   fEventCuts = aReader.fEventCuts;
   fUseAliEventCuts = aReader.fUseAliEventCuts;
   fCentRange[0] = aReader.fCentRange[0];
@@ -349,6 +356,7 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fPileupInGeneratedEvent = aReader.fPileupInGeneratedEvent;
   fMVPlp = aReader.fMVPlp;
   fOutOfBunchPlp = aReader.fOutOfBunchPlp;
+  fOOBV0TPC = aReader.fOOBV0TPC;
   fMinVtxContr = aReader.fMinVtxContr;
   fMinPlpContribMV = aReader.fMinPlpContribMV;
   fMinPlpContribSPD = aReader.fMinPlpContribSPD;
@@ -391,6 +399,7 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fjets = aReader.fjets;  //ML
   fPtmax = aReader.fPtmax; //ML
   fEventReject    = aReader.fEventReject; // begin dowang
+  frejeEv15o = aReader.frejeEv15o;
   fPbPb15Pass2MC = aReader.fPbPb15Pass2MC;
   fCenCutLowPU    = aReader.fCenCutLowPU;
   fCenCutHighPU   = aReader.fCenCutHighPU;
@@ -536,6 +545,20 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     }
   }
   
+  //centrality estimator for Pb-Pb
+   if(fExtendV0MAcceptance) {
+        fEventCuts->OverrideCentralityFramework(1);
+        fEventCuts->SetCentralityEstimators("V0M","CL0");
+        fEventCuts->SetCentralityRange(0.f,101.f);
+   }
+   
+   //LHC150pass2 event cut Daniela
+   
+   if(frejeEv15o > 0) {
+    if(!Reject15oPass2Event(fEvent, frejeEv15o))
+      return nullptr;
+   }
+  
     // LHC15o pass2 event cut dowang
     if(fEventReject > 0){
         if(!Reject15oPass2Event(fEvent,fEventReject)){
@@ -552,10 +575,22 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     }
   //**************************************
   //AliEventCuts
+  
     if (fRejectTPCPileupWithITSTPCnCluCorr){
        fEventCuts = new AliEventCuts();
        if(fRejectTPCPileupWithITSTPCnCluCorr) {
          fEventCuts->SetRejectTPCPileupWithITSTPCnCluCorr(fRejectTPCPileupWithITSTPCnCluCorr);
+       }
+       if (!fEventCuts->AcceptEvent(fEvent)){
+         delete fEventCuts;
+         return nullptr;
+       }
+    }
+    //Switch on/off the strong OOB pileup cut (for Pb-Pb) based on TPC tracks vs V0 mult
+    if(fOOBV0TPC){
+      fEventCuts = new AliEventCuts();
+       if(fOOBV0TPC) {
+         fEventCuts->SetRejectTPCPileupWithV0CentTPCnTracksCorr(fOOBV0TPC);
        }
        if (!fEventCuts->AcceptEvent(fEvent)){
          delete fEventCuts;
@@ -578,7 +613,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
     fAnaUtils->SetUseMVPlpSelection(fMVPlp);
     fAnaUtils->SetUseOutOfBunchPileUp(fOutOfBunchPlp);
-
+    
     if (fMinPlpContribMV) {
       fAnaUtils->SetMinPlpContribMV(fMinPlpContribMV);
     }
@@ -2726,6 +2761,11 @@ void AliFemtoEventReaderAOD::SetRejectTPCPileupWithITSTPCnCluCorr(Bool_t RejectT
 {
   fRejectTPCPileupWithITSTPCnCluCorr = RejectTPCPileupWithITSTPCnCluCorr;
 }
+void AliFemtoEventReaderAOD::SetRejectTPCPileupWithV0CentTPCnTracksCorr(Bool_t OOBV0TPC)
+{
+  fOOBV0TPC = OOBV0TPC;
+}
+
 
 void AliFemtoEventReaderAOD::SetParticleFromOutOfBunchPileupCollision(bool PileUpTrack)
 {
@@ -2974,8 +3014,17 @@ void AliFemtoEventReaderAOD::Set15oPass2EventReject(Int_t EventReject)
   fEventReject = EventReject;   
 }
 void AliFemtoEventReaderAOD::SetPbPb15Pass2MC(Int_t PbPb15Pass2MC){
+
   fPbPb15Pass2MC = PbPb15Pass2MC;
+  
 }
+
+void AliFemtoEventReaderAOD::SetRejection15opass2(Int_t rejeEv15o){
+
+  frejeEv15o = rejeEv15o;
+  
+}
+
 bool AliFemtoEventReaderAOD::Reject15oPass2Event(AliAODEvent *fAOD,Int_t yearLabel)
 {
 	// 2 means 2015 AOD pass2
@@ -3040,24 +3089,44 @@ bool AliFemtoEventReaderAOD::Reject15oPass2Event(AliAODEvent *fAOD,Int_t yearLab
 
   if (multV0On < fV0CutPU->Eval(multV0Tot)) return false;
 
-  // 4.4 Mult(FB32) Vs Cent(V0M)
   const Int_t nTracks = fAOD->GetNumberOfTracks();
+    
+  // 4.4 TPC pileup
+  Int_t multEsd = ((AliAODHeader*)fAOD->GetHeader())->GetNumberOfESDTracks();
+  Int_t multTPC=0;
+  for (Int_t it1 = 0; it1 < nTracks; it1++) {
+    AliAODTrack* aodTrk1 = (AliAODTrack*)fAOD->GetTrack(it1);
+    if (!aodTrk1) continue;
+    if (aodTrk1->TestFilterBit(128)) multTPC++;
+  }
+  if(!(multEsd -3.38*multTPC<15000))
+    return false;
+   
+  
+  // 4.5 TOF PILEUP
+
   Int_t multTrk = 0;
+  Int_t multTrkTOF=0;
   for (Int_t it = 0; it < nTracks; it++) {
       AliAODTrack* aodTrk = (AliAODTrack*)fAOD->GetTrack(it);
       if (!aodTrk){
           delete aodTrk;
           continue;
       }
-      if (aodTrk->TestFilterBit(32)){
+      if (aodTrk->TestFilterBit(32)) {
         //if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2))
         multTrk++;
+        if ( TMath::Abs(aodTrk->GetTOFsignalDz()) <= 10 && aodTrk->GetTOFsignal() >= 12000 && aodTrk->GetTOFsignal() <= 25000) 
+          multTrkTOF++;
       }
   }
   if (Float_t(multTrk) < fMultCutPU->Eval(centV0M)) return false;
 
   return true;
 }
+	
+	
+	
 	if(yearLabel==3){
 
   //----------------------------
@@ -3105,6 +3174,7 @@ double fVertex[3] = {0.};
 
   const Int_t nTracks = fAOD->GetNumberOfTracks();
   Int_t multTrk = 0;
+
   for (Int_t it = 0; it < nTracks; it++) {
       AliAODTrack* aodTrk = (AliAODTrack*)fAOD->GetTrack(it);
       if (!aodTrk) {
@@ -3114,8 +3184,9 @@ double fVertex[3] = {0.};
       if (aodTrk->TestFilterBit(32)) {
         //if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2))
         multTrk++;
+       
       }
-  }
+   }
 
   AliAODVZERO* aodV0 = fAOD->GetVZEROData();
   Float_t  multV0a = aodV0->GetMTotV0A();

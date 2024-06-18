@@ -425,6 +425,7 @@ void AliJFFlucAnalysis::UserExec(Option_t *) {
 
 	if(fCBin == -1)
 		return;
+	if (trk_number<1) return;
 	
 	fh_ntracks[fCBin]->Fill( trk_number ) ;
 	fh_cent->Fill(fCent) ;

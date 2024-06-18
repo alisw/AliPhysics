@@ -757,6 +757,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistMatchedTrackPClusETruePi0Clus;       // track P vs cluster E in case of matching with a true pi0 cluster
 
     TH1F*     fHistElectronPositronOnEMC;                       // Electron/Positron P for all tracks in EMCal acceptance
+    TH1F*     fHistElectronPositronOnEMCCell;                   // Electron/Positron P for all tracks in EMCal acceptance and that hit a good cell
     TH2F*     fHistElectronPositronClusterMatch;                // Electron/Positron P vs cluster E in case of matching with a cluster
     TH2F*     fHistElectronPositronClusterMatchSub;             // Electron/Positron P vs E - P in case of matching with a cluster
     TH2F*     fHistElectronPositronClusterMatchEoverP;          // Electron/Positron E/P vs PT of track in case of matching of Electron with cluster
@@ -781,7 +782,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,136)
+    ClassDef(AliCaloPhotonCuts,137)
 };
 
 #endif
