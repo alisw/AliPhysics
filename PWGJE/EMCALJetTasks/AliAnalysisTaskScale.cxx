@@ -64,6 +64,7 @@ AliAnalysisTaskScale::AliAnalysisTaskScale() :
   fHistScaleShift1EmcalvsCent(0),
   fHistScaleShift2EmcalvsCent(0),
   fHistScaleShiftMeanEmcalvsCent(0),
+  fHistScaleEmcalvsPhi(0),
   fTracksCont(0),
   fCaloClustersCont(0)
 {
@@ -114,6 +115,7 @@ AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) :
   fHistScaleShift1EmcalvsCent(0),
   fHistScaleShift2EmcalvsCent(0),
   fHistScaleShiftMeanEmcalvsCent(0),
+  fHistScaleEmcalvsPhi(0),
   fTracksCont(0),
   fCaloClustersCont(0)
 {
@@ -352,6 +354,12 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
   fHistScaleEmcalvsScale2Emcal->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistScaleEmcalvsScale2Emcal);
 
+  fHistScaleEmcalvsPhi = new TH2F("fHistScaleEmcalvsPhi", "fHistScaleEmcalvsPhi", 100, 0, 2*TMath::Pi(), 500, 0, 5);
+  fHistScaleEmcalvsPhi->GetXaxis()->SetTitle("#phi");
+  fHistScaleEmcalvsPhi->GetYaxis()->SetTitle("s_{EMC}");  
+  fHistScaleEmcalvsPhi->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistScaleEmcalvsPhi);
+
   PostData(1, fOutput);
 }
 
@@ -390,6 +398,7 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
   Double_t ptEMCALshift1 = 0;
   Double_t ptEMCALshift2 = 0;
   Double_t ptEMCALshiftMean = 0;
+  Double_t ptEMCALsections[8] = {0,0,0,0,0,0,0,0};
 
   const Int_t Ntracks = fTracksCont->GetNAcceptedParticles();
   if (fTracksCont) {
@@ -405,7 +414,11 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
       for(int a = 0; a < 7; a++){
         if((track->Phi() < (EmcalMaxPhi+(a*TMath::PiOver4())) && track->Phi() > (EmcalMinPhi+(a*TMath::PiOver4())))) ptEMCALshiftMean += track->Pt();
       }
-      ptEMCALshiftMean /= 7;
+      ptEMCALshiftMean /= 8;
+
+      for(int a = 0; a < 7; a++){
+        if((track->Phi() < ((a+1)*TMath::PiOver4())) && track->Phi() > ((a)*TMath::PiOver4())) ptEMCALsections[a] += track->Pt();
+      }
 
       // Shift track acceptance by EMCal width
       if ((track->Phi() < (EmcalMaxPhi+(2*EmcalWidth))) && (track->Phi() > (EmcalMinPhi+(2*EmcalWidth)))) ptEMCALshift1 += track->Pt(); // shift by width of emcal
@@ -472,6 +485,15 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
   if (ptEMCALshiftMean > 0)
     scalecalcemcalshiftmean           = (Et+ptEMCALshiftMean)/ptEMCALshiftMean;
 
+  // Calculations for EMCal phi sections
+  Double_t scalecalcemcalsections[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
+  for(int a = 0; a < 8; a++){
+    if (ptEMCALsections[a] > 0)
+      scalecalcemcalsections[a] = (Et+ptEMCALsections[a])/ptEMCALsections[a];
+      fHistScaleEmcalvsPhi->Fill(a*TMath::PiOver4(),scalecalcemcalsections[a]);
+  }
+
+  
   fHistScaleEmcalvsCent->Fill(fCent,scalecalcemcal);      
   fHistScale2EmcalvsCent->Fill(fCent,scalecalcemcal2);    
   fHistScale3EmcalvsCent->Fill(fCent,scalecalcemcal3);
