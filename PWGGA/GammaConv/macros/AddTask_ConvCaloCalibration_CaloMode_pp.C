@@ -463,6 +463,27 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     cuts.AddCutCalo("00010113","411790009fei2220000","0s631031000000d0"); // INT7
     cuts.AddCutCalo("00010113","411790009fei0220000","0s631031000000d0"); // INT7, no NCell
 
+  // cluster efficiency studies
+  } else if (trainConfig == 150){
+    cuts.AddCutCalo("00010113","4117901097e30220000","0r631031000000d0");  // std cuts
+  } else if (trainConfig == 151){
+    cuts.AddCutCalo("00010113","4117901097e32220000","0r631031000000d0");  // with NCell cut
+  } else if (trainConfig == 152){
+    cuts.AddCutCalo("00010113","4117901097e3n220000","0r631031000000d0");  // with NCell efficiency
+  } else if (trainConfig == 153){
+    cuts.AddCutCalo("00010113","4117996097e30220000","0r631031000000d0");  // NonLin studies
+    cuts.AddCutCalo("00010113","4117997097e30220000","0r631031000000d0");  // NonLin studies
+    cuts.AddCutCalo("00010113","4117998097e30220000","0r631031000000d0");  // NonLin studies
+
+
+  // configs without cell scale
+  } else if (trainConfig == 160){
+    cuts.AddCutCalo("00010113","4117911097e30220000","0r631031000000d0");  // std cuts
+  } else if (trainConfig == 161){
+    cuts.AddCutCalo("00010113","4117911097e32220000","0r631031000000d0");  // with NCell cut
+  } else if (trainConfig == 162){
+    cuts.AddCutCalo("00010113","4117911097e3n220000","0r631031000000d0");  // with NCell efficiency
+
   // Cuts to compare with PbPbs
   } else if (trainConfig == 201){
     cuts.AddCutCalo("00010113","4117901057e30220000","0s631031000000d0");  // INT7 pT dependent track matching w/o E/p
