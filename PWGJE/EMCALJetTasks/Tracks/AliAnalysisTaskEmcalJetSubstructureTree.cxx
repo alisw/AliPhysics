@@ -800,7 +800,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::SelectJet(const AliEmcalJet &jet, 
   return nallowed > 0;
 }
 
-AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree::AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, Bool_t useDCAL, const char *trigger){
+AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree::AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, Bool_t useDCAL, const char *partcont, const char *trigger){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   Bool_t isAOD(kFALSE);
@@ -824,7 +824,7 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
 
   // Adding containers
   if(isMC) {
-    AliParticleContainer *particles = treemaker->AddMCParticleContainer("mcparticles");
+    AliParticleContainer *particles = treemaker->AddMCParticleContainer(partcont);
     particles->SetMinPt(0.);
 
     AliJetContainer *mcjets = treemaker->AddJetContainer(
@@ -865,9 +865,6 @@ AliAnalysisTaskEmcalJetSubstructureTree *AliAnalysisTaskEmcalJetSubstructureTree
                               tracks, clusters);
     datajets->SetName("datajets");
     datajets->SetJetPtCut(20.);
-
-    treemaker->SetUseAliAnaUtils(true, true);
-    treemaker->SetVzRange(-10., 10);
 
     // configure trigger selection
     std::string triggerstring(trigger);

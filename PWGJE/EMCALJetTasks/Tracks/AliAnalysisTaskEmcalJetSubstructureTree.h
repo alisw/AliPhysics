@@ -222,7 +222,7 @@ public:
   void SetHasRecEvent(Bool_t hasrec) { fHasRecEvent = hasrec; }
   void SetHasTrueEvent(Bool_t hastrue) { fHasTrueEvent = hastrue; }
 
-	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, Bool_t useDCAL, const char *name);
+	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, Bool_t useDCAL, const char *partcont, const char *name);
 
 protected:
 	virtual void UserCreateOutputObjects();
