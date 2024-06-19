@@ -220,6 +220,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fNOCParam4{0., 0., 0.},
   fMeanNMatchedTracks(0),
   fFuncNOCMaxBoltz(0),
+  fApplyClusterEffOnData(false),
+  fClusterEfficiencyFunc(NULL),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
   fCutStringRead(""),
@@ -489,6 +491,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fNOCParam4{ref.fNOCParam4[0], ref.fNOCParam4[1], ref.fNOCParam4[2]},
   fMeanNMatchedTracks(ref.fMeanNMatchedTracks),
   fFuncNOCMaxBoltz(ref.fFuncNOCMaxBoltz),
+  fApplyClusterEffOnData(ref.fApplyClusterEffOnData),
+  fClusterEfficiencyFunc(ref.fClusterEfficiencyFunc),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
   fCutStringRead(""),
@@ -2719,9 +2723,18 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
         if (fUseM20 && !passedNCellSpecial)
           if( cluster->GetM20()< fMinM20 || cluster->GetM20() > fMaxM20 )
             failed = kTRUE;
-        if (fUseDispersion && !passedNCellSpecial)
-          if( cluster->GetDispersion()> fMaxDispersion)
-            failed = kTRUE;
+        if (fUseDispersion && !passedNCellSpecial){
+          if(fUseDispersion == 1){
+            if( cluster->GetDispersion()> fMaxDispersion)
+              failed = kTRUE;
+          } else if (fUseDispersion == 2){ // cluster efficiency
+            if((fApplyClusterEffOnData == true && fIsMC == 0) || (fApplyClusterEffOnData == false && fIsMC) ) {
+              if(fRandom.Uniform(0,1) > fClusterEfficiencyFunc->Eval(cluster->E())){
+                failed = kTRUE;
+              }
+            }
+          }
+        }
       }
       if (fVectorMatchedClusterIDs.size()>0 && fUseDistTrackToCluster){
         if( CheckClusterForTrackMatch(cluster) )
@@ -2899,9 +2912,18 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
 
   // dispersion cut
   if (fUseDispersion && !passedSpecialNCell){
-    if( cluster->GetDispersion()> fMaxDispersion) {
-      if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E(), weight);//8
-      return kFALSE;
+    if(fUseDispersion == 1){
+      if( cluster->GetDispersion()> fMaxDispersion) {
+        if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E(), weight);//8
+        return kFALSE;
+      }
+    } else if (fUseDispersion == 2){ // cluster efficiency
+      if((fApplyClusterEffOnData == true && fIsMC == 0) || (fApplyClusterEffOnData == false && fIsMC) ) {
+        if(fRandom.Uniform(0,1) > fClusterEfficiencyFunc->Eval(cluster->E())){
+          if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E(), weight);//8
+          return kFALSE;
+        }
+      }
     }
   }
   cutIndex++;//8, next cut
@@ -3418,7 +3440,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
       if (fUseM02 == 1 && (cluster->GetM02() < fMinM02 || cluster->GetM02() > fMaxM02)){continue;}
       if (fUseM02 == 2 && (cluster->GetM02() < CalculateMinM02(fMinM02CutNr, cluster->E()) || cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, cluster->E()))){continue;}
       if (fUseM20 && (cluster->GetM20() < fMinM20 || cluster->GetM20() > fMaxM20)){continue;}
-      if (fUseDispersion && (cluster->GetDispersion() > fMaxDispersion)){continue;}
+      if (fUseDispersion == 1 && (cluster->GetDispersion() > fMaxDispersion)){continue;}
     }
     //cluster within timing cut
     if( fUseTimingEfficiencyMCSimCluster==2 ){
@@ -3511,7 +3533,7 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
         if (fUseM02 == 1 && (clusterMatched->GetM02() < fMinM02 || clusterMatched->GetM02() > fMaxM02)){continue;}
         if (fUseM02 == 2 && (clusterMatched->GetM02() < CalculateMinM02(fMinM02CutNr, clusterMatched->E()) || cluster->GetM02() > CalculateMaxM02(fMaxM02CutNr, clusterMatched->E()))){continue;}
         if (fUseM20 && (clusterMatched->GetM20() < fMinM20 || clusterMatched->GetM20() > fMaxM20)){continue;}
-        if (fUseDispersion && (clusterMatched->GetDispersion() > fMaxDispersion)){continue;}
+        if (fUseDispersion == 1 && (clusterMatched->GetDispersion() > fMaxDispersion)){continue;}
       }
       // Get rowdiff and coldiff
 
@@ -7539,6 +7561,13 @@ Bool_t AliCaloPhotonCuts::SetDispersion(Int_t dispersion)
   case 4:
     if (!fUseDispersion) fUseDispersion=1;
     fMaxDispersion=3*3;
+    break;
+  // overloaded cut: Cluster efficiency from case 10 (a) onwards
+  case 10:
+    if (!fUseDispersion) fUseDispersion = 2;
+    fApplyClusterEffOnData = false;
+    fClusterEfficiencyFunc = new TF1("fClusterEfficiencyFunc", "[0]*(1/(1+exp([2]*x - [1])))", 0, 200);
+    fClusterEfficiencyFunc->SetParameters(1., -1.31311e-01, -2.47609);
     break;
   default:
     AliError(Form("Maximum Dispersion Cut not defined %d",dispersion));

@@ -604,7 +604,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t   fConvRejMaxOpenAngle;                     // maximum opening angle of a cluster pair to be considerd to be a conversion from the same photon
     Int_t     fUseRecConv;                              // flag to switch on conversion recovery
     Double_t  fMaxDispersion;                           // maximum dispersion
-    Bool_t    fUseDispersion;                           // flag for switching on dispersion cut
+    int       fUseDispersion;                           // flag for switching on dispersion cut. If set to two, this acts as the cluster efficiency (cut is overloaded from cutID=10 onwards)
     Int_t     fMinNLM;                                  // minimum number of local maxima in cluster
     Int_t     fMaxNLM;                                  // maximum number of local maxima in cluster
     Bool_t    fUseNLM;                                  // flag for switching on NLM cut
@@ -626,6 +626,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fNOCParam4[3];                            // parameter for function pol2 to describe 5th parameter as function of cent of the 5 params for the NOC
     Float_t   fMeanNMatchedTracks;                      // Mean number of matched primary tracks, stored to reduce CPU time for neutral overlap correction
     TF1*      fFuncNOCMaxBoltz;                         // TF1 Maxwell Boltzmann to describe the neutral overlap correction for a specific centrality
+    // for cluster efficiency application in data
+    bool      fApplyClusterEffOnData;                   // switch weather cluster efficiency should be applied on data or MC
+    TF1*      fClusterEfficiencyFunc;                   // function giveing the probability a cluster should survive the cuts as function of energy
 
 
     //vector
@@ -786,7 +789,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,138)
+    ClassDef(AliCaloPhotonCuts,139)
 };
 
 #endif
