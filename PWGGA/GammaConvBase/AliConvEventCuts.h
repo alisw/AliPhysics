@@ -602,7 +602,6 @@ class AliConvEventCuts : public AliAnalysisCuts {
       void      GetCentralityRange(Double_t range[2])                               { range[0]=10*fCentralityMin                                ;
                                                                                       range[1]=10*fCentralityMax                                ; }
       TList*    GetCutHistograms()                                                  { return fHistograms                                        ; }
-      TList*    GetPtWeightsObjectsUsedForCalculation();
       Int_t     GetMultiplicityMethod()                                             { return fMultiplicityMethod                                ; }
       Int_t     GetSignalRejection()                                                { return fRejectExtraSignals                                ; }
       Int_t     GetNAcceptedHeaders()                                               { return fnHeaders                                          ; }

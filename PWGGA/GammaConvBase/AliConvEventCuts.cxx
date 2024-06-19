@@ -1128,7 +1128,6 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
                           : (theWhich == kInvariant)
                               ? theDataTF1_inv
                               : multiplyTF1ByX(*theDataTF1_inv);
-    printf("SFS line 1126 lDataTF1 = %s\n", lDataTF1->GetName());
 
     TH1 const *lMCTH1 = (theWhich == kOff)
                             ? nullptr
@@ -1136,14 +1135,11 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
                             ? theMCTH1_inv
                             : &multiplyTH1ByBinCenters(*theMCTH1_inv);
 
-    printf("SFS line 1134 lMCTH1 = %s\n", lMCTH1->GetName());
-
     // preparation done, insert into the map
     PtWeightsBundle const &lBundle = *new PtWeightsBundle({theWhich, lDataTF1, lMCTH1});
     const auto [it, success] =  fMapPtWeightsAccessObjects.insert(std::pair{thePDGCode, lBundle});
     if (!success)
     {
-      cout << "SFS 1139 error in insertion\n";
       AliError(Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): failed to insert:\n"
                     "\tthePDGCode: %d\n"
                     "\ttheWhich: %d\n"
@@ -1154,7 +1150,6 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
     } 
     else
     {
-      cout << "SFS 1150 inserted\n";
       std::string lMessage(
         Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): inserted:\n"
              "\tthePDGCode: %d\n"
@@ -1165,8 +1160,7 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
              static_cast<int>(it->second.eWhich), 
              it->second.fData->GetName(), 
              it->second.hMC->GetName()));
-      printf("SFS line 1161 lMessage = %s\n", lMessage.data());
-      //AliInfo(lMessage.data());
+      AliInfo(lMessage.data());
     }
     return true;
   };
@@ -1187,23 +1181,6 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
   }
   AliInfo("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): end.\n");
   return 1.;
-}
-
-///________________________________________________________________________
-TList* AliConvEventCuts::GetPtWeightsObjectsUsedForCalculation()
-{
-  TList &lResult = *new TList();
-  if (fUseGetWeightForMesonNew && fMapPtWeightsIsFilledAndSane)
-  {
-    for (auto const& iPair :  fMapPtWeightsAccessObjects)
-    {
-      lResult.Add(iPair.second.hMC->Clone(Form("%s_nonconstclone", 
-                                               iPair.second.hMC->GetName())));
-      lResult.Add(iPair.second.fData->Clone(Form("%s_nonconstclone", 
-                                                 iPair.second.fData->GetName())));
-    }
-  }
-  return &lResult;
 }
 
 ///________________________________________________________________________
@@ -8039,7 +8016,6 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
 {
   // todo: check why I need to capture everything in order for it work
   // returns 1 if function evaluation is to be continued
-    cout << "SFS line 7996\n";
   auto return_1_early = [&]()
   {
     Int_t kCaseGen = 0;
@@ -8078,16 +8054,13 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
     return lResult;
   };
 
-  // AliInfo("AliConvEventCuts::GetWeightForMesonNew(): INFO: Starting function\n");
   if(index < 0) 
   { 
-    cout << "SFS line 8038\n";
     return 0; // No Particle
   }
   
   if (return_1_early())
   {
-    cout << "SFS line 8044\n";
     return 1.;
   }
 
@@ -8149,37 +8122,29 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
 
   // catch cases with invalid PDGCode
   auto const &lConstIt = fMapPtWeightsAccessObjects.find(PDGCode);
-      cout << "SFS line 8099\n";
   if (lConstIt == fMapPtWeightsAccessObjects.cend())
   {
     // commenting since this will be true when selecting etas only (this function will be called for their daughter pi0s)
     // AliWarning(Form("GetWeightForMesonNew(): WARNING: 3: PDGCode %d not found in fMapPtWeightsAccessObjects. Returning 1.\n", PDGCode));
     return 1.;
   }
-    cout << "SFS line 8106\n";
+
   Double_t lNomData = lConstIt->second.fData->Eval(mesonPt);
   Double_t lDenomMC = lConstIt->second.hMC->Interpolate(mesonPt);
-  printf("line 8116: lNomData, lDenomMC: %f, %f\n", lNomData, lDenomMC);
   auto calcWeight = [&checkSanitizeAndReturnWeight, &lNomData, &lDenomMC]()
   {
     Double_t lWeight = lDenomMC
                            ? (lNomData > 0.)                //     lDenomMC != 0   # normal
                                  ? lNomData / lDenomMC      // n1) lNomData > 0 && lDenomMC !=0    # normal
                                  : 0 // to signal problem   // e1) lNomData <= 0   # error. no reason why lNomData should be <=0. (it is a positive TF1 function)
-                           : -1.;    // to signal problem   // e2) lDenomMC = 0    # also strange since TH1 eval is called, that means both adjacent bins would have to be 0 
-    
-    // n1) can be negative, e2) always is negative
-    
+                           : -1.;    // to signal problem   // e2) lDenomMC = 0    # also strange since TH1 eval is called, that means both adjacent bins would have to be 0   
+                                                            // => n1) can be negative, e2) always is negative
+  
     // will reset to 1 and throw a warning if weight is not >=0 and finite
-    cout << "SFS line 8127: lWeight = " << lWeight << endl;
     Double_t lWeightSanitized = checkSanitizeAndReturnWeight(lWeight);
-    cout << "SFS line 8129: lWeightSanitized = " << lWeightSanitized << endl;
     return lWeightSanitized;
-    // return checkSanitizeAndReturnWeight(lWeight);
   };
-  cout << "SFS line 8119\n";
   double lResult = calcWeight();
-  AliInfo(Form("INFO: end of function. Return value = %f\n", lResult));
   return lResult;
 }
 
