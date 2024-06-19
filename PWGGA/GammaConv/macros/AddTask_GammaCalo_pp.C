@@ -2127,6 +2127,13 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("r0a78113","411790109fe309v0000","bs631031000000d0"); // transverse
     cuts.AddCutCalo("r0a78113","411790109fe309v0000","cs631031000000d0"); // away
 
+
+  // EMCAL experimental settings with cluster efficiency
+  } else if (trainConfig == 1750){  // 
+    cuts.AddCutCalo("00010113","411790109fe309v00a0","0s631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411790109fe3n9v00a0","0s631031000000d0"); // With NCell efficiency
+
+
     //---------------------------------------
     // pp 13 TeV systematic cut var multiplicity dependent
     //---------------------------------------

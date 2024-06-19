@@ -484,6 +484,10 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
   } else if (trainConfig == 162){
     cuts.AddCutCalo("00010113","4117911097e3n220000","0r631031000000d0");  // with NCell efficiency
 
+  // cluster efficiency application
+  } else if (trainConfig == 170){
+    cuts.AddCutCalo("00010113","4117901097e302200a0","0r631031000000d0");  // std cuts
+
   // Cuts to compare with PbPbs
   } else if (trainConfig == 201){
     cuts.AddCutCalo("00010113","4117901057e30220000","0s631031000000d0");  // INT7 pT dependent track matching w/o E/p
