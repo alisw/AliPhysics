@@ -2356,10 +2356,20 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   if(fV0Reader && fV0Reader->GetProduceImpactParamHistograms())fOutputContainer->Add(fV0Reader->GetImpactParamHistograms());
 
   for(Int_t iCut = 0; iCut<fnCuts;iCut++){
-    if(!((AliConvEventCuts*)fEventCutArray->At(iCut))) continue;
-    if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutHistograms()){
-      fCutFolder[iCut]->Add(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutHistograms());
+    AliConvEventCuts *iEventCutPtr = dynamic_cast<AliConvEventCuts*>(fEventCutArray->At(iCut));
+
+    if(!iEventCutPtr) 
+    {
+      continue;
     }
+    AliConvEventCuts &iEventCut = *iEventCutPtr;
+    if(iEventCut.GetCutHistograms()){
+      fCutFolder[iCut]->Add(iEventCut.GetCutHistograms());
+    }
+    if (fIsMC && iEventCut.GetPtWeightsObjectsUsedForCalculation()){
+      fCutFolder[iCut]->Add(iEventCut.GetPtWeightsObjectsUsedForCalculation());
+    }
+    
     if(!((AliConversionPhotonCuts*)fCutArray->At(iCut))) continue;
     if(((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutHistograms()){
       fCutFolder[iCut]->Add(((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutHistograms());
@@ -2376,7 +2386,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fCutFolder[iCut]->Add(((AliCaloPhotonCuts*)fClusterCutArray->At(iCut))->GetCutHistograms());
       }
     }
-
   }
   // create tree to store broken files
   tBrokenFiles = new TTree("BrokenFiles", "BrokenFiles");
@@ -2415,6 +2424,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   }
   
 }
+
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskGammaConvV1::Notify()
 {

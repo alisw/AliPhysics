@@ -1059,6 +1059,13 @@ void AliConvEventCuts::LoadGammaPtReweightingHistosMCFromFile() {
 ///________________________________________________________________________
 int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
 {
+  auto multiplyTF1ByX = [](TF1 const &theF){
+    TF1 *lResult = new TF1(Form("%s_multByX", theF.GetName()),
+                            Form("x*(%s)", theF.GetTitle()),
+                            theF.GetXmin(), theF.GetXmax());
+    lResult->SetParameters(theF.GetParameters());
+    return lResult;
+  };
   auto multiplyTH1ByBinCenters = [](TH1 const &theH) -> TH1 &
   {
     TH1 &lResult = dynamic_cast<TH1 &>(*theH.Clone(Form("%s_multByBinCenters", theH.GetName())));
@@ -1120,19 +1127,23 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
                               ? nullptr
                           : (theWhich == kInvariant)
                               ? theDataTF1_inv
-                              : new TF1(Form("%s_multByX", theDataTF1_inv->GetName()),
-                                        Form("x*(%s)", theDataTF1_inv->GetTitle()),
-                                        theDataTF1_inv->GetXmin(), theDataTF1_inv->GetXmax());
+                              : multiplyTF1ByX(*theDataTF1_inv);
+    printf("SFS line 1126 lDataTF1 = %s\n", lDataTF1->GetName());
 
     TH1 const *lMCTH1 = (theWhich == kOff)
                             ? nullptr
                         : (theWhich == kInvariant)
                             ? theMCTH1_inv
                             : &multiplyTH1ByBinCenters(*theMCTH1_inv);
-    
+
+    printf("SFS line 1134 lMCTH1 = %s\n", lMCTH1->GetName());
+
     // preparation done, insert into the map
-    if (!fMapPtWeightsAccessObjects.insert({thePDGCode, PtWeightsBundle{theWhich, lDataTF1, lMCTH1}}).second)
+    PtWeightsBundle const &lBundle = *new PtWeightsBundle({theWhich, lDataTF1, lMCTH1});
+    const auto [it, success] =  fMapPtWeightsAccessObjects.insert(std::pair{thePDGCode, lBundle});
+    if (!success)
     {
+      cout << "SFS 1139 error in insertion\n";
       AliError(Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): failed to insert:\n"
                     "\tthePDGCode: %d\n"
                     "\ttheWhich: %d\n"
@@ -1140,12 +1151,30 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
                     "\ttheMCTH1_inv: %s\n",
                     thePDGCode, static_cast<int>(theWhich), theDataTF1_inv->GetName(), theMCTH1_inv->GetName()));
       return false;
+    } 
+    else
+    {
+      cout << "SFS 1150 inserted\n";
+      std::string lMessage(
+        Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): inserted:\n"
+             "\tthePDGCode: %d\n"
+             "\teWhich: %d\n"
+             "\tfData: %s\n"
+             "\thMC: %s\n",
+             it->first, 
+             static_cast<int>(it->second.eWhich), 
+             it->second.fData->GetName(), 
+             it->second.hMC->GetName()));
+      printf("SFS line 1161 lMessage = %s\n", lMessage.data());
+      //AliInfo(lMessage.data());
     }
     return true;
   };
 
   // execution starts here
-  AliInfo("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): start\n");
+  AliInfo(Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects() cutNumber %s: start\n", 
+               GetCutNumber().Data()));
+  
   bool lSuccess = true;
   lSuccess &= calculateVariantSpectraAndInsert(111, fDoReweightHistoMCPi0, fFitDataPi0_inv, hReweightMCHistPi0_inv);
   lSuccess &= calculateVariantSpectraAndInsert(221, fDoReweightHistoMCEta, fFitDataEta_inv, hReweightMCHistEta_inv);
@@ -1158,6 +1187,23 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
   }
   AliInfo("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): end.\n");
   return 1.;
+}
+
+///________________________________________________________________________
+TList* AliConvEventCuts::GetPtWeightsObjectsUsedForCalculation()
+{
+  TList &lResult = *new TList();
+  if (fUseGetWeightForMesonNew && fMapPtWeightsIsFilledAndSane)
+  {
+    for (auto const& iPair :  fMapPtWeightsAccessObjects)
+    {
+      lResult.Add(iPair.second.hMC->Clone(Form("%s_nonconstclone", 
+                                               iPair.second.hMC->GetName())));
+      lResult.Add(iPair.second.fData->Clone(Form("%s_nonconstclone", 
+                                                 iPair.second.fData->GetName())));
+    }
+  }
+  return &lResult;
 }
 
 ///________________________________________________________________________
@@ -7993,6 +8039,7 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
 {
   // todo: check why I need to capture everything in order for it work
   // returns 1 if function evaluation is to be continued
+    cout << "SFS line 7996\n";
   auto return_1_early = [&]()
   {
     Int_t kCaseGen = 0;
@@ -8034,11 +8081,13 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
   // AliInfo("AliConvEventCuts::GetWeightForMesonNew(): INFO: Starting function\n");
   if(index < 0) 
   { 
+    cout << "SFS line 8038\n";
     return 0; // No Particle
   }
   
   if (return_1_early())
   {
+    cout << "SFS line 8044\n";
     return 1.;
   }
 
@@ -8082,39 +8131,55 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
   {
     if ((theWeight < 0) || !isfinite(theWeight))
     {
-      theWeight = 0.;
+      std::string lWarningMessage(
+        Form("checkSanitizeAndReturnWeight(): WARNING: Weight for meson %d is negative or not finite: %f.\n"
+             "It will be set to 0 - effectively rejecting the particle.\n"
+             "This points to a severe problem - investigate!\n",
+             PDGCode, 
+             theWeight));
       AliWarning(Form("checkSanitizeAndReturnWeight(): WARNING: Weight for meson %d is negative or not finite: %f.\n"
-      " It was set to 0 - effectively rejecting the particle.\n"
+                      "It will be set to 0 - effectively rejecting the particle.\n"
                       "This points to a severe problem - investigate!\n",
-                      PDGCode, theWeight));
+                      PDGCode, 
+                      theWeight));
+      theWeight = 0.;
     }
     return theWeight;
   };
 
   // catch cases with invalid PDGCode
   auto const &lConstIt = fMapPtWeightsAccessObjects.find(PDGCode);
+      cout << "SFS line 8099\n";
   if (lConstIt == fMapPtWeightsAccessObjects.cend())
   {
     // commenting since this will be true when selecting etas only (this function will be called for their daughter pi0s)
     // AliWarning(Form("GetWeightForMesonNew(): WARNING: 3: PDGCode %d not found in fMapPtWeightsAccessObjects. Returning 1.\n", PDGCode));
     return 1.;
   }
-
+    cout << "SFS line 8106\n";
   Double_t lNomData = lConstIt->second.fData->Eval(mesonPt);
   Double_t lDenomMC = lConstIt->second.hMC->Interpolate(mesonPt);
+  printf("line 8116: lNomData, lDenomMC: %f, %f\n", lNomData, lDenomMC);
   auto calcWeight = [&checkSanitizeAndReturnWeight, &lNomData, &lDenomMC]()
   {
     Double_t lWeight = lDenomMC
-                           ? (lNomData > 0.)
-                                 ? lNomData / lDenomMC
-                                 : 0 // to signal problem
-                           : -1.;    // to signal problem      
+                           ? (lNomData > 0.)                //     lDenomMC != 0   # normal
+                                 ? lNomData / lDenomMC      // n1) lNomData > 0 && lDenomMC !=0    # normal
+                                 : 0 // to signal problem   // e1) lNomData <= 0   # error. no reason why lNomData should be <=0. (it is a positive TF1 function)
+                           : -1.;    // to signal problem   // e2) lDenomMC = 0    # also strange since TH1 eval is called, that means both adjacent bins would have to be 0 
+    
+    // n1) can be negative, e2) always is negative
+    
     // will reset to 1 and throw a warning if weight is not >=0 and finite
-    return checkSanitizeAndReturnWeight(lWeight);
+    cout << "SFS line 8127: lWeight = " << lWeight << endl;
+    Double_t lWeightSanitized = checkSanitizeAndReturnWeight(lWeight);
+    cout << "SFS line 8129: lWeightSanitized = " << lWeightSanitized << endl;
+    return lWeightSanitized;
+    // return checkSanitizeAndReturnWeight(lWeight);
   };
-
+  cout << "SFS line 8119\n";
   double lResult = calcWeight();
-  // AliInfo(Form("INFO: end of function. Return value = %f\n", lResult));
+  AliInfo(Form("INFO: end of function. Return value = %f\n", lResult));
   return lResult;
 }
 
