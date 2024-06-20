@@ -1061,7 +1061,7 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
 {
   auto multiplyTF1ByX = [](TF1 const &theF){
     TF1 *lResult = new TF1(Form("%s_multByX", theF.GetName()),
-                            Form("x*(%s)", theF.GetTitle()),
+                            Form("x*(%s)", theF.GetExpFormula().Data()),
                             theF.GetXmin(), theF.GetXmax());
     lResult->SetParameters(theF.GetParameters());
     return lResult;
