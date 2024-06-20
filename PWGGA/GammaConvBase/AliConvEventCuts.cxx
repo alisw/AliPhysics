@@ -1059,6 +1059,13 @@ void AliConvEventCuts::LoadGammaPtReweightingHistosMCFromFile() {
 ///________________________________________________________________________
 int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
 {
+  auto multiplyTF1ByX = [](TF1 const &theF){
+    TF1 *lResult = new TF1(Form("%s_multByX", theF.GetName()),
+                            Form("x*(%s)", theF.GetExpFormula().Data()),
+                            theF.GetXmin(), theF.GetXmax());
+    lResult->SetParameters(theF.GetParameters());
+    return lResult;
+  };
   auto multiplyTH1ByBinCenters = [](TH1 const &theH) -> TH1 &
   {
     TH1 &lResult = dynamic_cast<TH1 &>(*theH.Clone(Form("%s_multByBinCenters", theH.GetName())));
@@ -1120,18 +1127,18 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
                               ? nullptr
                           : (theWhich == kInvariant)
                               ? theDataTF1_inv
-                              : new TF1(Form("%s_multByX", theDataTF1_inv->GetName()),
-                                        Form("x*(%s)", theDataTF1_inv->GetTitle()),
-                                        theDataTF1_inv->GetXmin(), theDataTF1_inv->GetXmax());
+                              : multiplyTF1ByX(*theDataTF1_inv);
 
     TH1 const *lMCTH1 = (theWhich == kOff)
                             ? nullptr
                         : (theWhich == kInvariant)
                             ? theMCTH1_inv
                             : &multiplyTH1ByBinCenters(*theMCTH1_inv);
-    
+
     // preparation done, insert into the map
-    if (!fMapPtWeightsAccessObjects.insert({thePDGCode, PtWeightsBundle{theWhich, lDataTF1, lMCTH1}}).second)
+    PtWeightsBundle const &lBundle = *new PtWeightsBundle({theWhich, lDataTF1, lMCTH1});
+    const auto [it, success] =  fMapPtWeightsAccessObjects.insert(std::pair{thePDGCode, lBundle});
+    if (!success)
     {
       AliError(Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): failed to insert:\n"
                     "\tthePDGCode: %d\n"
@@ -1140,12 +1147,28 @@ int AliConvEventCuts::InitializeMapPtWeightsAccessObjects()
                     "\ttheMCTH1_inv: %s\n",
                     thePDGCode, static_cast<int>(theWhich), theDataTF1_inv->GetName(), theMCTH1_inv->GetName()));
       return false;
+    } 
+    else
+    {
+      std::string lMessage(
+        Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): inserted:\n"
+             "\tthePDGCode: %d\n"
+             "\teWhich: %d\n"
+             "\tfData: %s\n"
+             "\thMC: %s\n",
+             it->first, 
+             static_cast<int>(it->second.eWhich), 
+             it->second.fData->GetName(), 
+             it->second.hMC->GetName()));
+      AliInfo(lMessage.data());
     }
     return true;
   };
 
   // execution starts here
-  AliInfo("AliConvEventCuts::InitializeMapPtWeightsAccessObjects(): start.\n");
+  AliInfo(Form("AliConvEventCuts::InitializeMapPtWeightsAccessObjects() cutNumber %s: start\n", 
+               GetCutNumber().Data()));
+  
   bool lSuccess = true;
   lSuccess &= calculateVariantSpectraAndInsert(111, fDoReweightHistoMCPi0, fFitDataPi0_inv, hReweightMCHistPi0_inv);
   lSuccess &= calculateVariantSpectraAndInsert(221, fDoReweightHistoMCEta, fFitDataEta_inv, hReweightMCHistEta_inv);
@@ -7993,7 +8016,7 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
 {
   // todo: check why I need to capture everything in order for it work
   // returns 1 if function evaluation is to be continued
-  auto indexIsValidAndParticleIsToBeWeighted = [&]()
+  auto return_1_early = [&]()
   {
     Int_t kCaseGen = 0;
     if (fPeriodEnum == kLHC13d2 || fPeriodEnum == kLHC13d2b ||                                                           // LHC10h MCs
@@ -8018,15 +8041,27 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
     {
       kCaseGen = 2; // regular MC
     }
-    return (index > 0) && kCaseGen && IsParticleFromBGEvent(index, mcEvent, event);
+
+    bool lResult = (kCaseGen == 0) ||
+      ((kCaseGen == 1) && !IsParticleFromBGEvent(index, mcEvent, event));
+    
+    if (lResult)
+    {
+      AliInfo(Form("return_1_early(): INFO: returning 'true' for particle %d.\n"
+                   "This will cause GetWeightForMesonNew() to return 1. immediately.\n",
+              index));
+    }
+    return lResult;
   };
 
-  // AliInfo("AliConvEventCuts::GetWeightForMesonNew(): INFO: Starting function\n");
-  if (!indexIsValidAndParticleIsToBeWeighted())
+  if(index < 0) 
+  { 
+    return 0; // No Particle
+  }
+  
+  if (return_1_early())
   {
-    AliWarning(Form("checkSanitizeAndReturnWeight(): WARNING: 1 for particle %d returning 0.\n",
-                      index));
-    return 0.;
+    return 1.;
   }
 
   Double_t mesonPt = 0;
@@ -8069,11 +8104,18 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
   {
     if ((theWeight < 0) || !isfinite(theWeight))
     {
-      theWeight = 0.;
+      std::string lWarningMessage(
+        Form("checkSanitizeAndReturnWeight(): WARNING: Weight for meson %d is negative or not finite: %f.\n"
+             "It will be set to 0 - effectively rejecting the particle.\n"
+             "This points to a severe problem - investigate!\n",
+             PDGCode, 
+             theWeight));
       AliWarning(Form("checkSanitizeAndReturnWeight(): WARNING: Weight for meson %d is negative or not finite: %f.\n"
-      " It was set to 0 - effectively rejecting the particle.\n"
+                      "It will be set to 0 - effectively rejecting the particle.\n"
                       "This points to a severe problem - investigate!\n",
-                      PDGCode, theWeight));
+                      PDGCode, 
+                      theWeight));
+      theWeight = 0.;
     }
     return theWeight;
   };
@@ -8092,16 +8134,17 @@ Float_t AliConvEventCuts::GetWeightForMesonNew(Int_t index, AliMCEvent *mcEvent,
   auto calcWeight = [&checkSanitizeAndReturnWeight, &lNomData, &lDenomMC]()
   {
     Double_t lWeight = lDenomMC
-                           ? (lNomData > 0.)
-                                 ? lNomData / lDenomMC
-                                 : 0 // to signal problem
-                           : -1.;    // to signal problem      
+                           ? (lNomData > 0.)                //     lDenomMC != 0   # normal
+                                 ? lNomData / lDenomMC      // n1) lNomData > 0 && lDenomMC !=0    # normal
+                                 : 0 // to signal problem   // e1) lNomData <= 0   # error. no reason why lNomData should be <=0. (it is a positive TF1 function)
+                           : -1.;    // to signal problem   // e2) lDenomMC = 0    # also strange since TH1 eval is called, that means both adjacent bins would have to be 0   
+                                                            // => n1) can be negative, e2) always is negative
+  
     // will reset to 1 and throw a warning if weight is not >=0 and finite
-    return checkSanitizeAndReturnWeight(lWeight);
+    Double_t lWeightSanitized = checkSanitizeAndReturnWeight(lWeight);
+    return lWeightSanitized;
   };
-
   double lResult = calcWeight();
-  // AliInfo(Form("INFO: end of function. Return value = %f\n", lResult));
   return lResult;
 }
 
