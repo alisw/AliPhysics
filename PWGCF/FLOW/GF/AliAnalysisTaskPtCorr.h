@@ -49,7 +49,6 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetMultiBins(Int_t nBins, Double_t *multibins);
   void SetMultiBins(Int_t nBins, Double_t low, Double_t high);
   void SetV0MBins(Int_t nBins, Double_t *multibins);
-  void SetCentBinsForPt(Int_t nBins, Double_t *centbins);
   void SetMptBins(Int_t nMptBins, Double_t *mptbins);
   void SetMptBins(Int_t nMptBins, Double_t mptlow, Double_t mpthigh);
   void SetDCABins(Int_t nBins, Double_t *dcabins);
@@ -59,7 +58,6 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetEtaMultAcceptance(Double_t low, Double_t up) { fEtaMultAcceptance[0] = low; fEtaMultAcceptance[1] = up; };
   void SetEtaAbsolute(Bool_t newval) { fEtaAbsolute = newval; }
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
-  void SetUseV0Mmult(Bool_t newval) { fUseV0M = newval; };
   void SetUseWeightsOne(Bool_t newvalNUE) { fUseNUEOne = newvalNUE; };
   void SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
   void SetDCAxyFunctionalForm(TString newval) { fDCAxyFunctionalForm = newval; } //Call after SystFlag
@@ -87,7 +85,6 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetOTFGenerator(TString gen) { fGenerator = gen; }
   void SetUseIP(bool newval) { fUseIP = newval;}
   void SetUseCentCalibration(bool newval) { fUseCentCalibration = newval; }
-  void SetFillPtContCent(bool newval) { fFillPtContCent = newval; }
   void SetRejectMBTriggeredEventsMarkedSpecialTrigger(bool newval) { fRejectMBtriggerEventsMarkedSpecial = newval; }
  protected:
   AliEventCuts fEventCuts;
@@ -140,9 +137,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Double_t *fV0MBinsDefault; //!
   Int_t fNV0MBinsDefault; //!
   Bool_t fUseNch;
-  Bool_t fUseV0M;
   Bool_t fUseNUEOne;
-  Bool_t fFillPtContCent;
   Int_t fPtMpar;
   Double_t fEtaLow;
   vector<Double_t> fEtaMptAcceptance;
@@ -151,12 +146,13 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Double_t fImpactParameterMC;
   TList *fQAList; //
   TH1D* fEventCount; //!
-  TH1D *fMultiDist;
+  TH1D* fV0MMulti; //!
   TH2D *fMultiVsV0MCorr; //!
   TH2D *fNchTrueVsReco; //!
   TH2D *fESDvsFB128;
   TList *fptList;
   AliPtPtContainer  *fPtCont;
+  AliPtPtContainer * fPtContV0Mmult;
   AliPtPtContainer  *fPtContCent;
   UInt_t fTriggerType;
   TList *fSpectraList; //!
@@ -172,11 +168,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   TH1* fCentcal; //TH1 for OTF centrality calibration
   Double_t fPseudoEfficiency; //Pseudo efficiency to reject tracks. Default value set to 2, only used when the value is <1
-  TH2D *fPtVsV0M;
   TH2D *fMptVsMulti;
-  TH2F *fMultVsCent;
-  TH2F *fNchVsV0M;
-  TH1D *fV0MMulti;
+  TH3F *fNchVsV0MVsCent;
   TH3D *fptDCAxyDCAz;
   TH3D *fPhiEtaVtxZ;
   TH1D* fIP;
