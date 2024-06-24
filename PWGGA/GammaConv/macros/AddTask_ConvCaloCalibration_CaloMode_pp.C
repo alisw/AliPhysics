@@ -474,7 +474,13 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     cuts.AddCutCalo("00010113","4117996097e30220000","0r631031000000d0");  // NonLin studies
     cuts.AddCutCalo("00010113","4117997097e30220000","0r631031000000d0");  // NonLin studies
     cuts.AddCutCalo("00010113","4117998097e30220000","0r631031000000d0");  // NonLin studies
-
+  } else if (trainConfig == 154){
+    cuts.AddCutCalo("00010113","4117901057e30220000","0r631031000000d0");  // timing cuts, 50ns
+    cuts.AddCutCalo("00010113","4117901067e30220000","0r631031000000d0");  // timing cuts, 30ns
+    cuts.AddCutCalo("00010113","41179010a7e30220000","0r631031000000d0");  // timing cuts, 12ns
+  } else if (trainConfig == 155){
+    cuts.AddCutCalo("00010113","411790109fe30220000","0r631031000000d0");  // TM cuts, with E/p
+    cuts.AddCutCalo("00010113","4117901092e30220000","0r631031000000d0");  // TM cuts, no energy dependence
 
   // configs without cell scale
   } else if (trainConfig == 160){
@@ -487,6 +493,29 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
   // cluster efficiency application
   } else if (trainConfig == 170){
     cuts.AddCutCalo("00010113","4117901097e302200a0","0r631031000000d0");  // std cuts
+
+
+  // Std cuts, for variation of the electron part
+  } else if (trainConfig == 180){
+    cuts.AddCutCalo("00010113","4117901097e30220000","0r631031000000d0");  // std cuts
+  } else if (trainConfig == 181){
+    cuts.AddCutCalo("00010113","4117901097e30220000","0r631031000000d0");  // std cuts
+  } else if (trainConfig == 182){
+    cuts.AddCutCalo("00010113","4117901097e30220000","0r631031000000d0");  // std cuts
+  } else if (trainConfig == 183){
+    cuts.AddCutCalo("00010113","4117901097e30220000","0r631031000000d0");  // std cuts
+  } else if (trainConfig == 184){
+    cuts.AddCutCalo("00010113","4117901097e30220000","0r631031000000d0");  // std cuts
+  } else if (trainConfig == 185){
+    cuts.AddCutCalo("00010113","4117901097e30220000","0r631031000000d0");  // std cuts
+  } else if (trainConfig == 186){
+    cuts.AddCutCalo("00010113","4117901097e30220000","0r631031000000d0");  // std cuts
+  } else if (trainConfig == 187){
+    cuts.AddCutCalo("00010113","4117901097e30220000","0r631031000000d0");  // std cuts
+  } else if (trainConfig == 188){
+    cuts.AddCutCalo("00010113","4117901097e30220000","0r631031000000d0");  // std cuts
+  } else if (trainConfig == 189){
+    cuts.AddCutCalo("00010113","4117901097e30220000","0r631031000000d0");  // std cuts
 
   // Cuts to compare with PbPbs
   } else if (trainConfig == 201){
