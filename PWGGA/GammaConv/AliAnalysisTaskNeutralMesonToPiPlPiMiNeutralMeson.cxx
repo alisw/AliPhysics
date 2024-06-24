@@ -135,6 +135,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   enableDalitzLowPt(kFALSE),
   enableDalitzMidPt(kFALSE),
   enableDalitzHighPt(kFALSE),
+  fEnableOptimizedRuntime(kFALSE),
   HistoDalitzPtRangeMin_LowPt(0.),
   HistoDalitzPtRangeMax_LowPt(0.),
   HistoDalitzPtRangeMin_MidPt(0.),
@@ -154,6 +155,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoSwappingGammaGammaInvMassPt(nullptr),
   fHistoMotherInvMassPt(nullptr),
   fHistoMotherInvMassPtRejectedKinematic(nullptr),
+  fHistoHNMInAccVsNDMPt(nullptr),
   fHistoNumberClusterGamma(nullptr),
   fHistoNegPionPhi(nullptr),
   fHistoPosPionPhi(nullptr),
@@ -569,6 +571,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   enableDalitzLowPt(kFALSE),
   enableDalitzMidPt(kFALSE),
   enableDalitzHighPt(kFALSE),
+  fEnableOptimizedRuntime(kFALSE),
   HistoDalitzPtRangeMin_LowPt(0.),
   HistoDalitzPtRangeMax_LowPt(0.),
   HistoDalitzPtRangeMin_MidPt(0.),
@@ -588,6 +591,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoSwappingGammaGammaInvMassPt(nullptr),
   fHistoMotherInvMassPt(nullptr),
   fHistoMotherInvMassPtRejectedKinematic(nullptr),
+  fHistoHNMInAccVsNDMPt(nullptr),
   fHistoNumberClusterGamma(nullptr),
   fHistoNegPionPhi(nullptr),
   fHistoPosPionPhi(nullptr),
@@ -1475,7 +1479,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fHistoBackInvMassPt                              = new TH2F*[fnCuts];
     fHistoMotherLikeSignBackInvMassPt                = new TH2F*[fnCuts];
   }
-  if(!fDoLightOutput){fHistoMotherInvMassPtRejectedKinematic  = new TH2F*[fnCuts];}
+  if(!fDoLightOutput){
+    fHistoMotherInvMassPtRejectedKinematic  = new TH2F*[fnCuts];
+    fHistoHNMInAccVsNDMPt = new TH2F*[fnCuts];
+  }
 
   if(fEnableSubNDMOutput){
     fHistoMotherInvMassSubNDM                        = new TH2F*[fnCuts];
@@ -2056,6 +2063,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoAngleSum[iCut]->GetYaxis()->SetTitle("#sum #angle");
       fHistoAngleSum[iCut]->Sumw2();
       fESDList[iCut]->Add(fHistoAngleSum[iCut]);
+
+      fHistoHNMInAccVsNDMPt[iCut]         = new TH2F("ESD_HNMInAccVsNDMPt","ESD_HNMInAccVsNDMPt",200,HistoPtRange[0],HistoPtRange[1],200,HistoPtRange[0],HistoPtRange[1]);
+      fHistoHNMInAccVsNDMPt[iCut]->GetXaxis()->SetTitle("p_{T} of HNM (GeV/c)");
+      fHistoHNMInAccVsNDMPt[iCut]->GetYaxis()->SetTitle("p_{T} of NDM (GeV/c)");
+      fHistoHNMInAccVsNDMPt[iCut]->Sumw2();
+      fESDList[iCut]->Add(fHistoHNMInAccVsNDMPt[iCut]);
     }
     if ( fEnableBasicMesonQA ) {
       TAxis *AxisAfter        = fHistoPionTPCdEdxNSigma[iCut]->GetXaxis();
@@ -7442,6 +7455,10 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
                   fHistoAnglePiPlNDM[fiCut]->Fill(mesoncand->Pt(),PosPiontmp.Angle(neutralDecayMeson->Vect()), fWeightJetJetMC);
                   fHistoAngleHNMesonPiPlPiMi[fiCut]->Fill(mesoncand->Pt(),vParticle->Angle(mesoncand->Vect()), fWeightJetJetMC);
                   fHistoAngleSum[fiCut]->Fill(mesoncand->Pt(),((PosPiontmp.Angle(mesoncand->Vect()))+(NegPiontmp.Angle(PosPiontmp.Vect()))+(PosPiontmp.Angle(neutralDecayMeson->Vect()))), fWeightJetJetMC);
+
+                  Double_t lowerDefaultMassWindow = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDefaultMassWindowLow();
+                  Double_t higherDefaultMassWindow = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDefaultMassWindowHigh();
+                  if( mesoncand->M() >= lowerDefaultMassWindow && mesoncand->M() <= higherDefaultMassWindow)      fHistoHNMInAccVsNDMPt[fiCut]->Fill(mesoncand->Pt(),neutralDecayMeson->Pt(),fWeightJetJetMC);
                 }
 
 

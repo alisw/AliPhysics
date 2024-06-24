@@ -127,6 +127,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fSidebandMixingLeftHigh(0.100),
   fSidebandMixingRightLow(0.180),
   fSidebandMixingRightHigh(0.300),
+  fDefaultMassWindowLow(0.0),
+  fDefaultMassWindowHigh(999.),
   fOpeningAngle(0.005),
   fMode(0),
   fMesonKind(0),
@@ -257,6 +259,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fSidebandMixingLeftHigh(ref.fSidebandMixingLeftHigh),
   fSidebandMixingRightLow(ref.fSidebandMixingRightLow),
   fSidebandMixingRightHigh(ref.fSidebandMixingRightHigh),
+  fDefaultMassWindowLow(ref.fDefaultMassWindowLow),
+  fDefaultMassWindowHigh(ref.fDefaultMassWindowHigh),
   fOpeningAngle(ref.fOpeningAngle),
   fMode(ref.fMode),
   fMesonKind(ref.fMesonKind),
@@ -1784,7 +1788,7 @@ Bool_t AliConversionMesonCuts::SetCut(cutIds cutID, const Int_t value) {
         UpdateCutString();
         return kTRUE;
       } else return kFALSE;
-    } else if(fUsePtDepSelectionWindow && fMesonKind == 2){
+    } else if(fUsePtDepSelectionWindow || fMesonKind == 2){
       if( SetSelectionWindowCutPtDepEtaPrime(value)) {
         fCuts[kSelectionCut] = value;
         UpdateCutString();
@@ -2058,6 +2062,21 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
     break;
   case 15: // f eta meson for eta prime analysis
     fMesonKind = 2;
+    break;
+  case 16: // g eta prime
+    fMesonKind = 0;
+    fDefaultMassWindowLow = 0.92;
+    fDefaultMassWindowHigh = 1.0;
+    break;
+  case 17: // h omega meson
+    fMesonKind = 0;
+    fDefaultMassWindowLow = 0.7;
+    fDefaultMassWindowHigh = 0.9;
+    break;
+  case 19: // j eta
+    fMesonKind = 0;
+    fDefaultMassWindowLow = 0.4;
+    fDefaultMassWindowHigh = 0.6;
     break;
   default:
     cout<<"Warning: Meson kind not defined"<<mesonKind<<endl;

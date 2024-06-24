@@ -269,6 +269,9 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                            fHistoSwappingGammaGammaInvMassPt;                  //!<! array of histos of gamma-gamma, invMass, pT_{gamma gamma}
     TH2F**                            fHistoMotherInvMassPt;                              //!<! array of histos of pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
     TH2F**                            fHistoMotherInvMassPtRejectedKinematic;             //!<! array of histos of rejected pi+pi-pi0 same event, invMass, pT_{pi+pi-pi0}
+
+    /** array of histos of produced etas via pi+pi-pi0 in the specified y range, with decay products in respective y, eta ranges */
+    TH2F**                            fHistoHNMInAccVsNDMPt;                            //!<!
    
     // general QA histograms 
     TH1I**                            fHistoNumberClusterGamma;                           //!<! array of histos of number of Cluster photons per event
@@ -690,7 +693,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 36);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 37);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H
