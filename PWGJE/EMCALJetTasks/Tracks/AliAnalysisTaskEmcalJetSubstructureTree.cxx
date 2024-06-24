@@ -255,7 +255,6 @@ void AliAnalysisTaskEmcalJetSubstructureTree::RunChanged(Int_t newrun) {
 bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   AliClusterContainer *clusters = GetClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
   AliTrackContainer *tracks = GetTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(fInputEvent->IsA() == AliAODEvent::Class()));
-  AliParticleContainer *particles = GetParticleContainer("mcparticles");
 
   AliJetContainer *mcjets = GetJetContainer("mcjets");
   AliJetContainer *datajets = GetJetContainer("datajets");
@@ -365,7 +364,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
           AliDebugStream(2) << "Not found associated jet" << std::endl;
           continue;
         }
-        if(!(SelectJet(*jet, tracks) && SelectJet(*associatedJet, particles))) continue;
+        if(!(SelectJet(*jet) && SelectJet(*associatedJet))) continue;
         try {
           DoConstituentQA(jet, energydef);
           AliJetSubstructureData structureData =  MakeJetSubstructure(*jet, datajets->GetJetRadius() * 2., false, energydef, {softdropSettings, nsubjettinessSettings}),
@@ -385,7 +384,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
           AliErrorStream() << "Error in substructure observable - skipping jet" << std::endl;
         }
       } else {
-        if(!SelectJet(*jet, tracks)) continue;
+        if(!SelectJet(*jet)) continue;
         try {
           DoConstituentQA(jet, energydef);
           AliJetSubstructureData structure = MakeJetSubstructure(*jet, 0.4, false, energydef, {softdropSettings, nsubjettinessSettings});
@@ -783,15 +782,18 @@ void AliAnalysisTaskEmcalJetSubstructureTree::DoConstituentQA(const AliEmcalJet 
 #endif
 }
 
-bool AliAnalysisTaskEmcalJetSubstructureTree::SelectJet(const AliEmcalJet &jet, const AliParticleContainer *particles) const {
+bool AliAnalysisTaskEmcalJetSubstructureTree::SelectJet(const AliEmcalJet &jet) const {
   int ncharged = 0, nneutral = jet.GetNumberOfClusters();
-  if(particles) {
-    for(decltype(jet.GetNumberOfTracks()) ipart = 0; ipart < jet.GetNumberOfTracks(); ipart++){
-      auto part = jet.TrackAt(ipart, particles->GetArray());
-      if(!part) continue;
-      if(part->Charge()) ncharged++;
-      else nneutral++;
-   }
+  for(decltype(jet.GetNumberOfTracks()) ipart = 0; ipart < jet.GetNumberOfTracks(); ipart++){
+    auto part = jet.Track(ipart);
+    if(!part) continue;
+    if(part->Charge()) ncharged++;
+    else nneutral++;
+  }
+  for(decltype(jet.GetNumberOfClusters()) ipart = 0; ipart < jet.GetNumberOfClusters(); ipart++){
+    auto part = jet.Cluster(ipart);
+    if(!part) continue;
+    nneutral++;
   }
   // check if the jet has at least one consituent for jet substructure
   int nallowed = 0;

@@ -247,7 +247,7 @@ protected:
   
 	void DoConstituentQA(const AliEmcalJet *jet, AliVCluster::VCluUserDefEnergy_t energydef);
 
-  bool SelectJet(const AliEmcalJet &jet, const AliParticleContainer *particles) const;
+  bool SelectJet(const AliEmcalJet &jet) const;
 
 private:
 	TTree                       *fJetSubstructureTree;        //!<! Tree with jet substructure information
