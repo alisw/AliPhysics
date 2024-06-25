@@ -183,6 +183,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t GetRapidityCutValueMax()                            { return fRapidityCutMesonMax; }
     void   SetEnableOmegaAPlikeCut(Bool_t DoOmegaAPlikeCut) {fEnableOmegaAPlikeCut = DoOmegaAPlikeCut;}
     void   SetLeadTrackPt(Double_t flag) {fLeadTrackMinPt = flag;}
+    void   SetDefaultMassWindowLow(Double_t massRange)  { fDefaultMassWindowLow = massRange; return; }
+    void   SetDefaultMassWindowHigh(Double_t massRange) { fDefaultMassWindowHigh = massRange; return; }
 
     Float_t FunctionMinMassCut(Float_t e);
     Float_t FunctionMaxMassCut(Float_t e);
@@ -238,6 +240,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Int_t    GetSingleDaughterMinE() const {return fSingleDaughterMinE;}
     Bool_t   UseGammaSelection() const{return fUseGammaSelection;}
     Int_t    GetAlphaInTaskMode() const {return fAlphaInTaskMode;}
+    Double_t GetDefaultMassWindowLow()  { return fDefaultMassWindowLow;}
+    Double_t GetDefaultMassWindowHigh() { return fDefaultMassWindowHigh;}
     // template <class T, class U>  Bool_t MesonLeadTrackSelection(T curEvent, U curmesonmeson);
     Bool_t   MesonLeadTrackSelectionMC(AliVEvent* curEvent, AliMCParticle* curmeson);
     Bool_t   MesonLeadTrackSelectionAODMC(AliVEvent* curEvent, AliAODMCParticle* curmeson);
@@ -304,6 +308,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t    fSidebandMixingLeftHigh;        ///<
     Double_t    fSidebandMixingRightLow;        ///<
     Double_t    fSidebandMixingRightHigh;       ///<
+    Double_t    fDefaultMassWindowLow;          ///< lower HNM invariant mass window for NDM pT vs HDM pT plots
+    Double_t    fDefaultMassWindowHigh;         ///< higher HNM invariant mass window 
 
     Float_t     fOpeningAngle;                  ///< min opening angle for meson
 
@@ -376,7 +382,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,54)
+    ClassDef(AliConversionMesonCuts,56)
     /// \endcond
 };
 
