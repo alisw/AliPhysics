@@ -41,6 +41,10 @@ public:
                        const AliFemtoDreamBasePart &negDaughter, AliAODEvent *evt,
                        const bool ignoreFirstPos = false, const bool ignoreFirstNeg = false,
                        const bool setDaughter = true, const bool isSameCharge = false);
+  void Setv0SameChargeOld(const AliFemtoDreamBasePart &posDaughter,
+                          const AliFemtoDreamBasePart &negDaughter,
+                          AliAODEvent *evt, const bool ignoreFirstPos,
+                          const bool ignoreFirstNeg, const bool setDaughter, const bool isSameCharge);
   bool GetOnlinev0() const
   {
     return fOnlinev0;
@@ -126,6 +130,7 @@ private:
   void SetDaughter(AliAODv0 *v0, AliVEvent *evt);
   void SetDaughter(const AliFemtoDreamBasePart &posDaughter, const AliFemtoDreamBasePart &negDaughter);
   void SetDaughterSameCharge(const AliFemtoDreamBasePart &oneDaughter, const AliFemtoDreamBasePart &twoDaughter);
+  void SetDaughterSameChargeOld(const AliFemtoDreamBasePart &oneDaughter, const AliFemtoDreamBasePart &twoDaughter);
   void SetDaughter(const AliFemtoDreamBasePart &posDaughter,
                    const AliFemtoDreamBasePart &negDaughter,
                    AliVEvent *evt);
