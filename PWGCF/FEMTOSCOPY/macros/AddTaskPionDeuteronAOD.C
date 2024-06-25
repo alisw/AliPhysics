@@ -71,14 +71,14 @@ AliAnalysisTaskSE *AddTaskPionDeuteronAOD(bool isMC = false,         // 1
 
   //---------- posPions--------------------
   AliFemtoDreamTrackCuts *posPions =
-      new AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+      AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
   posPions->SetCutCharge(1);
   posPions->SetFilterBit(128);
   posPions->SetPtRange(0.14, 4.0);
 
   //---------- NegPions--------------------
   AliFemtoDreamTrackCuts *NegPions =
-      new AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+      AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
   NegPions->SetCutCharge(-1);
   NegPions->SetFilterBit(128);
   NegPions->SetPtRange(0.14, 4.0);
@@ -1187,8 +1187,8 @@ AliAnalysisTaskSE *AddTaskPionDeuteronAOD(bool isMC = false,         // 1
     task->SetRunTaskLightWeight(true);
   }
   task->SetEventCuts(evtCuts);
-  task->SetTrackCutsDeuteronDCADCA(posPions);
-  task->SetTrackCutsAntiDeuteronDCADCA(NegPions);
+  task->SetTrackCutsProtonDCA(posPions);
+  task->SetTrackCutsAntiProtonDCA(NegPions);
   task->SetTrackCutsDeuteronDCA(TrackCutsDeuteronDCA);
   task->SetTrackCutsAntiDeuteronDCA(TrackCutsAntiDeuteronDCA);
   task->SetTrackCutsDeuteronMass(TrackCutsDeuteronMass);
