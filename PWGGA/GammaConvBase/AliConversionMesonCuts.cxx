@@ -1788,7 +1788,7 @@ Bool_t AliConversionMesonCuts::SetCut(cutIds cutID, const Int_t value) {
         UpdateCutString();
         return kTRUE;
       } else return kFALSE;
-    } else if(fUsePtDepSelectionWindow || fMesonKind == 3){
+    } else if(fMesonKind == 3){
       if( SetSelectionWindowCutPtDepEtaPrime(value)) {
         fCuts[kSelectionCut] = value;
         UpdateCutString();
