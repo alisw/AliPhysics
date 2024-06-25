@@ -1788,7 +1788,7 @@ Bool_t AliConversionMesonCuts::SetCut(cutIds cutID, const Int_t value) {
         UpdateCutString();
         return kTRUE;
       } else return kFALSE;
-    } else if(fUsePtDepSelectionWindow || fMesonKind == 2){
+    } else if(fUsePtDepSelectionWindow || fMesonKind == 3){
       if( SetSelectionWindowCutPtDepEtaPrime(value)) {
         fCuts[kSelectionCut] = value;
         UpdateCutString();
@@ -1822,7 +1822,7 @@ Bool_t AliConversionMesonCuts::SetCut(cutIds cutID, const Int_t value) {
       } else return kFALSE;
     }
   case kPtCut:
-    if( fMesonKind == 2){
+    if( fMesonKind == 3){
       if( SetMinPtCutExtended(value) ){
         fCuts[kPtCut] = value;
         UpdateCutString();
@@ -2001,7 +2001,8 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
     fMesonKind = 0;
     break;
   case 1:
-    fMesonKind = 1;
+    fMesonKind = 1;         // pi0
+    break;
   case 2:
     fMesonKind = 0;
     fDoJetAnalysis = kTRUE;
@@ -2060,23 +2061,23 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
     fDoJetAnalysis = kTRUE;
     fDoOutOfJet = 5;
     break;
-  case 15: // f eta meson for eta prime analysis
+  case 15: // f eta meson
     fMesonKind = 2;
+    fDefaultMassWindowLow = 0.4;
+    fDefaultMassWindowHigh = 0.6;
     break;
-  case 16: // g eta prime
-    fMesonKind = 0;
-    fDefaultMassWindowLow = 0.92;
-    fDefaultMassWindowHigh = 1.0;
+  case 16: // g eta meson for heavy meson analysis (eta prime)
+    fMesonKind = 3;
     break;
   case 17: // h omega meson
-    fMesonKind = 0;
+    fMesonKind = 4;
     fDefaultMassWindowLow = 0.7;
     fDefaultMassWindowHigh = 0.9;
     break;
-  case 19: // j eta
-    fMesonKind = 0;
-    fDefaultMassWindowLow = 0.4;
-    fDefaultMassWindowHigh = 0.6;
+  case 18: // i eta prime
+    fMesonKind = 5;
+    fDefaultMassWindowLow = 0.92;
+    fDefaultMassWindowHigh = 1.0;
     break;
   default:
     cout<<"Warning: Meson kind not defined"<<mesonKind<<endl;
@@ -2278,7 +2279,7 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
 
 //________________________________________________________________________
 Bool_t AliConversionMesonCuts::SetMinPtCutExtended(Int_t PtCut){
-  // Set Cut on min pT of meson, switch for fMesonKind = 2
+  // Set Cut on min pT of meson, switch for fMesonKind = 3 (eta for heavy meson analysis)
   switch(PtCut){
   case 0: // no cut on pT
     fMinPt = 0.;
