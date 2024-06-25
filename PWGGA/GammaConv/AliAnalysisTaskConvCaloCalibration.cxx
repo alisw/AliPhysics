@@ -1014,7 +1014,7 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
     if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutHistograms()){
       fCutFolder[iCut]->Add(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutHistograms());
     }
-    if (fMesonRecoMode < 2){
+    if (fMesonRecoMode < 2 || fUseEletronMatchingCalibration == 2){
       if(!((AliConversionPhotonCuts*)fCutArray->At(iCut))) continue;
       if(((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutHistograms()){
         fCutFolder[iCut]->Add(((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutHistograms());
