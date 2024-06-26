@@ -7569,6 +7569,12 @@ Bool_t AliCaloPhotonCuts::SetDispersion(Int_t dispersion)
     fClusterEfficiencyFunc = new TF1("fClusterEfficiencyFunc", "[0]*(1/(1+exp([2]*x - [1])))", 0, 200);
     fClusterEfficiencyFunc->SetParameters(1., -1.31311e-01, -2.47609);
     break;
+  case 11: // iteration 2
+    if (!fUseDispersion) fUseDispersion = 2;
+    fApplyClusterEffOnData = false;
+    fClusterEfficiencyFunc = new TF1("fClusterEfficiencyFunc", "[0]*(1/(1+exp([2]*x - [1])))", 0, 200);
+    fClusterEfficiencyFunc->SetParameters(1., 1.12946e-01, -2.56465);
+    break;
   default:
     AliError(Form("Maximum Dispersion Cut not defined %d",dispersion));
     return kFALSE;

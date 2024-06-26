@@ -2132,6 +2132,9 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 1750){  // 
     cuts.AddCutCalo("00010113","411790109fe309v00a0","0s631031000000d0"); // No NCell cut
     cuts.AddCutCalo("00010113","411790109fe3n9v00a0","0s631031000000d0"); // With NCell efficiency
+  } else if (trainConfig == 1751){  // 
+    cuts.AddCutCalo("00010113","411790109fe309v00b0","0s631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411790109fe3n9v00b0","0s631031000000d0"); // With NCell efficiency
 
 
     //---------------------------------------

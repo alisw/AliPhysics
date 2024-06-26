@@ -4111,6 +4111,14 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109feg0230000","0r63103100000010"); // 0.3 GeV
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109feh0230000","0r63103100000010"); // 0.4 GeV
 
+  // Cluster efficiency
+  } else if ( trainConfig == 3550){ // cluster efficiency a
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe302200a0","0r63103100000010"); // No NCell
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n2200a0","0r63103100000010"); // NCell >= 2
+  } else if ( trainConfig == 3551){ // cluster efficiency b
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe302200b0","0r63103100000010"); // No NCell
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n2200b0","0r63103100000010"); // NCell >= 2
+
   //////////////////////    Mult slices  pp 13 TeV   //////////////////////////////////
 // INT7 trigger	V0M high mult	EG2	EG1	SPD high mult PHI7
 // bit: 10	bit: 76	bit 8e	bit: 8d	bit: 75 bit: 62
