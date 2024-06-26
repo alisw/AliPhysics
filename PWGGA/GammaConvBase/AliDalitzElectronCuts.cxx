@@ -985,8 +985,9 @@ Bool_t AliDalitzElectronCuts::dEdxCuts(AliVTrack *fCurrentTrack){
   }
   cutIndex++;
 
-
-  if( ( fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid ) && ( !( fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch) ) ){
+  // if( ( fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid ) && ( !( fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch) ) ){
+  // check for TOF signal: AliVTrack::kTOFout means that a tof signal is matched, AliVTrack::kTIME means that the track length (and then the expected times) was extrapolated properly
+  if((fCurrentTrack->GetStatus() & AliVTrack::kTOFout ) && (fCurrentTrack->GetStatus() & AliVTrack::kTIME)){
     if(hTOFbefore) hTOFbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron));
     if(fUseTOFpid){
       if(fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kElectron)>fTofPIDnSigmaAboveElectronLine ||
@@ -1000,6 +1001,7 @@ Bool_t AliDalitzElectronCuts::dEdxCuts(AliVTrack *fCurrentTrack){
     if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
     return kFALSE;
   }
+
   cutIndex++;
   if(hdEdxCuts)hdEdxCuts->Fill(cutIndex);
     if(fDoElecDeDxPostCalibrationPrimaryPair){
