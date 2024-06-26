@@ -61,7 +61,7 @@ AliFemtoManager *ConfigFemtoAnalysis() {
 
   Reader->SetReadMC(kTRUE);
   Reader->SetDCAglobalTrack(kTRUE);
-  Reader->SetKaonAnalysis(kTRUE);
+  //Reader->SetKaonAnalysis(kTRUE);
 
   AliFemtoManager *Manager = new AliFemtoManager();
   Manager->SetEventReader(Reader);
