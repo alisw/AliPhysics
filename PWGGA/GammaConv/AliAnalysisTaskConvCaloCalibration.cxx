@@ -1239,6 +1239,7 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
   vector<Int_t>                           vectorRejectCluster;
   vector<Int_t>                           vectorClusterSM;
   vector<Double_t>                        vectorPhotonWeight;
+  std::vector<AliVCluster*>               vectorClusters;
 
   if(nclus == 0)  return;
 
@@ -1328,13 +1329,6 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
       continue;
     }
 
-    if(fUseEletronMatchingCalibration == 1){
-      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchElectronTracksToClusters(fInputEvent, fMCEvent, clus, fIsMC, fSelectorElectronIndex, fWeightJetJetMC);
-      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchElectronTracksToClusters(fInputEvent, fMCEvent, clus, fIsMC, fSelectorPositronIndex, fWeightJetJetMC);
-    } else if(fUseEletronMatchingCalibration == 2){
-      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchElectronTracksToClusters(fInputEvent, fMCEvent, clus, fIsMC, fV0Electrons, fWeightJetJetMC);
-    }
-
 
     // TLorentzvector with cluster
     TLorentzVector clusterVector;
@@ -1391,8 +1385,8 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
     }else{
       delete PhotonCandidate;
     }
-
-    delete clus;
+    vectorClusters.push_back(clus);
+    // delete clus;
     delete tmpvec;
   }
   //Bool_t rejected = kFALSE;
@@ -1416,9 +1410,21 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
       fClusterCandidates->Add(vectorCurrentClusters.at(iter));
     }
   }
+
+  if(fUseEletronMatchingCalibration == 1){
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchElectronTracksToClusters(fInputEvent, fMCEvent, vectorClusters, fIsMC, fSelectorElectronIndex, fWeightJetJetMC);
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchElectronTracksToClusters(fInputEvent, fMCEvent, vectorClusters, fIsMC, fSelectorPositronIndex, fWeightJetJetMC);
+  } else if(fUseEletronMatchingCalibration == 2){
+    ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchElectronTracksToClusters(fInputEvent, fMCEvent, vectorClusters, fIsMC, fV0Electrons, fWeightJetJetMC);
+  }
+
   vectorRejectCluster.clear();
   vectorClusterSM.clear();
   vectorPhotonWeight.clear();
+  for(auto & i : vectorClusters){
+    delete i;
+  }
+  vectorClusters.clear();
 }
 
 //________________________________________________________________________

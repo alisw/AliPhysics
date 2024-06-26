@@ -508,10 +508,6 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
 
 
   // Std cuts, for variation of the electron part
-  } else if (trainConfig == 180){
-    cuts.AddCutCalo("00010113","4117901097e30220000","0r631031000000d0");  // std cuts
-  } else if (trainConfig == 181){
-    cuts.AddCutCalo("00010113","4117901097e30220000","0r631031000000d0");  // std cuts
   } else if (trainConfig == 182){
     cuts.AddCutCalo("00010113","4117901097e30220000","0r631031000000d0");  // std cuts
   } else if (trainConfig == 183){

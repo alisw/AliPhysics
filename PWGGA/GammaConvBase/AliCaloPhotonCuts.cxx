@@ -4571,12 +4571,9 @@ Bool_t AliCaloPhotonCuts::MatchConvPhotonToCluster(AliAODConversionPhoton* convP
 }
 
 //________________________________________________________________________
-void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEvent* MCevent, AliVCluster* cluster, Int_t isMC, vector<Int_t> vElectronTracks, Double_t weight)
+void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEvent* MCevent, vector<AliVCluster*> vCluster, Int_t isMC, vector<Int_t> vElectronTracks, Double_t weight)
 {
 
-  if (!cluster){
-    return;
-  }
   if( (fClusterType == 1 || fClusterType == 3 || fClusterType == 4) && !fEMCALInitialized ) InitializeEMCAL(event);
   if( fClusterType == 2 && ( !fPHOSInitialized || (fPHOSCurrentRun != event->GetRunNumber()) ) ) InitializePHOS(event);
 
@@ -4638,82 +4635,88 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
       }
     }
 
-    Float_t dEta, dPhi;
-    if(!fCaloTrackMatcher->GetTrackClusterMatchingResidual(inTrack->GetID(),cluster->GetID(),dEta,dPhi)){
-      if(!fCaloTrackMatcher->PropagateV0TrackToClusterAndGetMatchingResidual(inTrack, cluster, event, dEta, dPhi)){
+    // for(int icl = 0; icl < vCluster->GetEntries(); icl++){
+    for(unsigned int icl = 0; icl < vCluster.size(); icl++){
+      AliVCluster* cluster = vCluster[icl];
+      if(!cluster){
         continue;
       }
-    }
-
-
-    Bool_t match_dEta = (TMath::Abs(dEta) < fMaxDistTrackToClusterEta) ? kTRUE : kFALSE;
-    Bool_t match_dPhi = kFALSE;
-    // Bool_t vetoEOverP = kFALSE;
-
-    if( (inTrack->Charge() > 0) && (dPhi > fMinDistTrackToClusterPhi) && (dPhi < fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
-    else if( (inTrack->Charge() < 0) && (dPhi < -fMinDistTrackToClusterPhi) && (dPhi > -fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
-
-    if(fUsePtDepTrackToCluster == 1){
-      if( TMath::Abs(dEta) < fFuncPtDepEta->Eval(inTrack->Pt())) match_dEta = kTRUE;
-      else match_dEta = kFALSE;
-
-      if( TMath::Abs(dPhi) < fFuncPtDepPhi->Eval(inTrack->Pt())) match_dPhi = kTRUE;
-      else match_dPhi = kFALSE;
-    }
-
-    if(match_dEta && match_dPhi){
-      if(fExtendedMatchAndQA > 1){
-        if(inTrack->Charge() < 0){
-          fHistElectronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
-        } else {
-          fHistPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
+      Float_t dEta, dPhi;
+      if(!fCaloTrackMatcher->GetTrackClusterMatchingResidual(inTrack->GetID(),cluster->GetID(),dEta,dPhi)){
+        if(!fCaloTrackMatcher->PropagateV0TrackToClusterAndGetMatchingResidual(inTrack, cluster, event, dEta, dPhi)){
+          continue;
         }
-        fHistElectronClusterNCellsVsE->Fill(cluster->E(), cluster->GetNCells());
-        // fill vs. supermodule
-        int iSM = -1;
-        fGeomEMCAL->SuperModuleNumberFromEtaPhi(inTrack->GetTrackEtaOnEMCal(), inTrack->GetTrackPhiOnEMCal(), iSM);
-        fHistElectronPositronClusterMatchVsSM->Fill(inTrack->GetTrackPOnEMCal(), iSM, weight);
-        //fill vs eta position
-        fHistElectronPositronClusterMatchVsEta->Fill(inTrack->GetTrackPOnEMCal(), inTrack->GetTrackEtaOnEMCal(), weight);
-      }
-      fHistElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
-      fHistElectronPositronClusterMatchSub->Fill(cluster->E(), cluster->E() - inTrack->GetTrackPOnEMCal(), weight);
-      if(inTrack->GetTrackPOnEMCal() > 0) {
-        fHistElectronPositronClusterMatchEoverP->Fill(cluster->E() / inTrack->GetTrackPOnEMCal(), inTrack->Pt(), weight);
-        fHistElectronPositronClusterMatchEoverPVsE->Fill(cluster->E() / inTrack->GetTrackPOnEMCal(), cluster->E(), weight);
-      }
-      if(inTrack->P() > 0) {
-        fHistElectronPositronClusterMatchEoverPonVtx->Fill(cluster->E() / inTrack->P(), inTrack->Pt(), weight);
-        fHistElectronPositronClusterMatchEoverPonVtxVsE->Fill(cluster->E() / inTrack->P(), cluster->E(), weight);
       }
 
-      if(isMC){
-        if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-        if (fAODMCTrackArray == NULL){
-          AliError("No MC particle list available in AOD");
-          return;
-        }
-        Int_t tmpLabel = (Int_t) ((AliAODTrack*)inTrack)->GetLabel();
-        if(tmpLabel > 0){
-          AliAODMCParticle* trackPart    = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
-          if(!trackPart) continue;
+      Bool_t match_dEta = (TMath::Abs(dEta) < fMaxDistTrackToClusterEta) ? kTRUE : kFALSE;
+      Bool_t match_dPhi = kFALSE;
+      // Bool_t vetoEOverP = kFALSE;
 
-          if(TMath::Abs(trackPart->GetPdgCode()) == 11){
-            fHistElectronClusterMatchTruePID->Fill(0.5, trackPart->P(), weight);
-            fHistTrueElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
-            if(inTrack->GetTrackPOnEMCal() > 0) fHistTrueElectronPositronClusterMatchEoverP->Fill(cluster->E() / inTrack->GetTrackPOnEMCal(), inTrack->Pt(), weight);
-          } else if(TMath::Abs(trackPart->GetPdgCode()) == 211){
-            fHistElectronClusterMatchTruePID->Fill(1.5, trackPart->P(), weight);
-            fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
-          } else if(TMath::Abs(trackPart->GetPdgCode()) == 2212){
-            fHistElectronClusterMatchTruePID->Fill(2.5, trackPart->P(), weight);
-            fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
-          } else if(TMath::Abs(trackPart->GetPdgCode()) == 321){
-            fHistElectronClusterMatchTruePID->Fill(3.5, trackPart->P(), weight);
-            fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
+      if( (inTrack->Charge() > 0) && (dPhi > fMinDistTrackToClusterPhi) && (dPhi < fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
+      else if( (inTrack->Charge() < 0) && (dPhi < -fMinDistTrackToClusterPhi) && (dPhi > -fMaxDistTrackToClusterPhi) ) match_dPhi = kTRUE;
+
+      if(fUsePtDepTrackToCluster == 1){
+        if( TMath::Abs(dEta) < fFuncPtDepEta->Eval(inTrack->Pt())) match_dEta = kTRUE;
+        else match_dEta = kFALSE;
+
+        if( TMath::Abs(dPhi) < fFuncPtDepPhi->Eval(inTrack->Pt())) match_dPhi = kTRUE;
+        else match_dPhi = kFALSE;
+      }
+
+      if(match_dEta && match_dPhi){
+        if(fExtendedMatchAndQA > 1){
+          if(inTrack->Charge() < 0){
+            fHistElectronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
           } else {
-            fHistElectronClusterMatchTruePID->Fill(4.5, trackPart->P(), weight);
-            fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
+            fHistPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
+          }
+          fHistElectronClusterNCellsVsE->Fill(cluster->E(), cluster->GetNCells());
+          // fill vs. supermodule
+          int iSM = -1;
+          fGeomEMCAL->SuperModuleNumberFromEtaPhi(inTrack->GetTrackEtaOnEMCal(), inTrack->GetTrackPhiOnEMCal(), iSM);
+          fHistElectronPositronClusterMatchVsSM->Fill(inTrack->GetTrackPOnEMCal(), iSM, weight);
+          //fill vs eta position
+          fHistElectronPositronClusterMatchVsEta->Fill(inTrack->GetTrackPOnEMCal(), inTrack->GetTrackEtaOnEMCal(), weight);
+        }
+        fHistElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
+        fHistElectronPositronClusterMatchSub->Fill(cluster->E(), cluster->E() - inTrack->GetTrackPOnEMCal(), weight);
+        if(inTrack->GetTrackPOnEMCal() > 0) {
+          fHistElectronPositronClusterMatchEoverP->Fill(cluster->E() / inTrack->GetTrackPOnEMCal(), inTrack->Pt(), weight);
+          fHistElectronPositronClusterMatchEoverPVsE->Fill(cluster->E() / inTrack->GetTrackPOnEMCal(), cluster->E(), weight);
+        }
+        if(inTrack->P() > 0) {
+          fHistElectronPositronClusterMatchEoverPonVtx->Fill(cluster->E() / inTrack->P(), inTrack->Pt(), weight);
+          fHistElectronPositronClusterMatchEoverPonVtxVsE->Fill(cluster->E() / inTrack->P(), cluster->E(), weight);
+        }
+
+        if(isMC){
+          if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+          if (fAODMCTrackArray == NULL){
+            AliError("No MC particle list available in AOD");
+            return;
+          }
+          Int_t tmpLabel = (Int_t) ((AliAODTrack*)inTrack)->GetLabel();
+          if(tmpLabel > 0){
+            AliAODMCParticle* trackPart    = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+            if(!trackPart) continue;
+
+            if(TMath::Abs(trackPart->GetPdgCode()) == 11){
+              fHistElectronClusterMatchTruePID->Fill(0.5, trackPart->P(), weight);
+              fHistTrueElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
+              if(inTrack->GetTrackPOnEMCal() > 0) fHistTrueElectronPositronClusterMatchEoverP->Fill(cluster->E() / inTrack->GetTrackPOnEMCal(), inTrack->Pt(), weight);
+            } else if(TMath::Abs(trackPart->GetPdgCode()) == 211){
+              fHistElectronClusterMatchTruePID->Fill(1.5, trackPart->P(), weight);
+              fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
+            } else if(TMath::Abs(trackPart->GetPdgCode()) == 2212){
+              fHistElectronClusterMatchTruePID->Fill(2.5, trackPart->P(), weight);
+              fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
+            } else if(TMath::Abs(trackPart->GetPdgCode()) == 321){
+              fHistElectronClusterMatchTruePID->Fill(3.5, trackPart->P(), weight);
+              fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
+            } else {
+              fHistElectronClusterMatchTruePID->Fill(4.5, trackPart->P(), weight);
+              fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
+            }
           }
         }
       }
