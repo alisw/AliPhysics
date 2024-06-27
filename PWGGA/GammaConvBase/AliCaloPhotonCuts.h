@@ -377,7 +377,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Bool_t      MatchConvPhotonToCluster(AliAODConversionPhoton* convPhoton, AliVCluster* cluster, AliVEvent* event, Double_t weight=1.);
     void        MatchTracksToClusters(AliVEvent* event, Double_t weight=1., Bool_t isEMCalOnly = kTRUE, AliMCEvent *mcEvent = 0x0);
-    void        MatchElectronTracksToClusters(AliVEvent* event, AliMCEvent* MCevent, AliVCluster* cluster, Int_t isMC, vector<Int_t> vElectronTracks = {}, Double_t weight = 1.);
+    void        MatchElectronTracksToClusters(AliVEvent* event, AliMCEvent* MCevent, vector<AliVCluster*> vCluster, Int_t isMC, vector<Int_t> vElectronTracks = {}, Double_t weight = 1.);
     Bool_t      CheckClusterForTrackMatch(AliVCluster* cluster);
     Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event);
     Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event,  Int_t *absCellIdList, Float_t* maxEList);
@@ -789,7 +789,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,139)
+    ClassDef(AliCaloPhotonCuts,140)
 };
 
 #endif
