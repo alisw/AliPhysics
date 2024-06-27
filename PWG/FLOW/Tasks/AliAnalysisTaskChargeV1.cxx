@@ -124,6 +124,8 @@ ClassImp(AliAnalysisTaskChargeV1) // classimp: necessary for root
                                                          ZDCpx_T(nullptr),
                                                          ZDCv1_t(nullptr),
                                                          ZDCv1_p(nullptr),
+                                                         ZDCv1_t_15o(nullptr),
+                                                         ZDCv1_p_15o(nullptr),
                                                          ZDCResQ(nullptr),
                                                          ZDCcos_t(nullptr),
                                                          ZDCcos_p(nullptr),
@@ -303,6 +305,8 @@ AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1(const char *name) : AliAnalysis
                                                                      ZDCpx_T(nullptr),
                                                                      ZDCv1_t(nullptr),
                                                                      ZDCv1_p(nullptr),
+                                                                     ZDCv1_t_15o(nullptr),
+                                                                     ZDCv1_p_15o(nullptr),
                                                                      ZDCResQ(nullptr),
                                                                      ZDCcos_t(nullptr),
                                                                      ZDCcos_p(nullptr),
@@ -796,6 +800,8 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects(){
   ZDCpx_T = new TProfile2D *[nCentrality];
   ZDCv1_t = new TProfile2D *[nCentrality];
   ZDCv1_p = new TProfile2D *[nCentrality];
+  ZDCv1_t_15o = new TProfile2D *[nCentrality];
+  ZDCv1_p_15o = new TProfile2D *[nCentrality];
   ZDCcos_t = new TProfile2D *[nCentrality];
   ZDCcos_p = new TProfile2D *[nCentrality];
   Proton_EtaPhi = new TH2D *[nCentrality];
@@ -813,6 +819,8 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects(){
     ZDCpx_T[i] = new TProfile2D(Form("ZDCpx_T%i", i), "", 8, 0, 8, 16, -0.8, 0.8);
     ZDCv1_t[i] = new TProfile2D(Form("ZDCv1_t%i", i), "", 8, 0, 8, 16, -0.8, 0.8);
     ZDCv1_p[i] = new TProfile2D(Form("ZDCv1_p%i", i), "", 8, 0, 8, 16, -0.8, 0.8);
+    ZDCv1_t_15o[i] = new TProfile2D(Form("ZDCv1_t_15o%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
+    ZDCv1_p_15o[i] = new TProfile2D(Form("ZDCv1_p_15o%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
     ZDCcos_t[i] = new TProfile2D(Form("ZDCcos_t%i", i), "", 8, 0, 8, 16, -0.8, 0.8);
     ZDCcos_p[i] = new TProfile2D(Form("ZDCcos_p%i", i), "", 8, 0, 8, 16, -0.8, 0.8);
     Proton_EtaPhi[i] = new TH2D(Form("Proton_EtaPhi%i", i),"", 16, -0.8, 0.8, 100, 0, 2*TMath::Pi());
@@ -830,7 +838,9 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects(){
     fOutputList->Add(ZDCpx_P[i]);
     fOutputList->Add(ZDCpx_T[i]);
     fOutputList->Add(ZDCv1_t[i]);
-    fOutputList->Add(ZDCv1_p[i]);
+    fOutputList->Add(ZDCv1_p[i]);    
+    fOutputList->Add(ZDCv1_t_15o[i]);
+    fOutputList->Add(ZDCv1_p_15o[i]);
     fOutputList->Add(ZDCcos_t[i]);
     fOutputList->Add(ZDCcos_p[i]);
     fOutputList->Add(Proton_EtaPhi[i]);
@@ -1340,6 +1350,8 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
       ZDCpx_T[centBin]->Fill(6.5, eta, pt * ((u * TComplex::Conjugate(ZDCQt)).Re()), weight);
       ZDCv1_p[centBin]->Fill(6.5, eta, (u * TComplex::Conjugate(ZDCQp)).Re(), weight);
       ZDCv1_t[centBin]->Fill(6.5, eta, (u * TComplex::Conjugate(ZDCQt)).Re(), weight);
+      ZDCv1_p_15o[centBin]->Fill(6.5, eta, (u * TComplex::Conjugate(ZDCQp)).Re(), weight);
+      ZDCv1_t_15o[centBin]->Fill(6.5, eta, (u * TComplex::Conjugate(ZDCQt)).Re(), weight);
       ZDCcos_t[centBin]->Fill(6.5, eta, cos(phi - fPsi1ZNC), weight);
       ZDCcos_p[centBin]->Fill(6.5, eta, cos(phi - fPsi1ZNA), weight);
     }
@@ -1349,6 +1361,8 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
       ZDCpx_T[centBin]->Fill(7.5, eta, pt * ((u * TComplex::Conjugate(ZDCQt)).Re()), weight);
       ZDCv1_p[centBin]->Fill(7.5, eta, (u * TComplex::Conjugate(ZDCQp)).Re(), weight);
       ZDCv1_t[centBin]->Fill(7.5, eta, (u * TComplex::Conjugate(ZDCQt)).Re(), weight);
+      ZDCv1_p_15o[centBin]->Fill(7.5, eta, (u * TComplex::Conjugate(ZDCQp)).Re(), weight);
+      ZDCv1_t_15o[centBin]->Fill(7.5, eta, (u * TComplex::Conjugate(ZDCQt)).Re(), weight);
       ZDCcos_t[centBin]->Fill(7.5, eta, cos(phi - fPsi1ZNC), weight);
       ZDCcos_p[centBin]->Fill(7.5, eta, cos(phi - fPsi1ZNA), weight);
     }
