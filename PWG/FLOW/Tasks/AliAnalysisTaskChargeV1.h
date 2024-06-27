@@ -74,6 +74,8 @@ private:
   TProfile2D **ZDCpx_T;
   TProfile2D **ZDCv1_t;
   TProfile2D **ZDCv1_p;
+  TProfile2D **ZDCv1_t_15o;
+  TProfile2D **ZDCv1_p_15o;
   TProfile *ZDCResQ;
   TProfile2D **ZDCcos_t;
   TProfile2D **ZDCcos_p;
