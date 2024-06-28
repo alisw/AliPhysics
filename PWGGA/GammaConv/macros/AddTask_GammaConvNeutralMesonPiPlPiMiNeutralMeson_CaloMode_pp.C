@@ -627,7 +627,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00010113","411790109fe3n230000","32c51070m","0103603m00000000","i453503000000000"); // INT7
 
   } else if(trainConfig == 222)  { // similar to new defaults, EDC 13 TeV, 2 sigma for mass cut, no pT cut on eta meson
-    cuts.AddCutHeavyMesonCalo("00010113","411790109fe309v0000","32c51079m","f000603100000000","i453503000000000"); // INT7
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe309v0000","32c51079m","g000603100000000","i453503000000000"); // INT7
   } else if(trainConfig == 223)  { 
     cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c51079m","g000603100000000","i453503000000000"); // EG2
   } else if(trainConfig == 224)  { 
