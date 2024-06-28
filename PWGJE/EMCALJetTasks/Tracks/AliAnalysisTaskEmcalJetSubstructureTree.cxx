@@ -294,6 +294,10 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   if(datajets && !mcjets){
     // decode trigger string in order to determine the trigger clusters
     std::vector<std::string> clusternames;
+    if(!fInputEvent->GetFiredTriggerClasses().Data()) {
+      AliErrorStream() << "Corrupted trigger information - skip event" << std::endl;
+      return false;
+    }
     auto triggerinfos = PWG::EMCAL::Triggerinfo::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data());
     for(auto t : triggerinfos) {
       if(std::find(clusternames.begin(), clusternames.end(), t.Triggercluster()) == clusternames.end()) clusternames.emplace_back(t.Triggercluster());
