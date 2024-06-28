@@ -154,18 +154,23 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
   fdMinJetPt(5.0),
   fdJetPhiMin(-10),
   fdJetPhiMax(+10),
-  fdJetEtaMin(-1),
-  fdJetEtaMax(+1),
+  fdJetEtaMin(-0.9),
+  fdJetEtaMax(+0.9),
   fdJetTrackPtMin(0.15),
+  fdJetTrackEtaMax(0.9),
   fdMaxEtaJetBG(0.7),
   fdBgRadius(0.4),
   fdCutPtJetMin(0),
+  fdCutPtTrackJetMin(0),
+  fdCutAreaPercJetMin(0.6),
   fdDistanceV0JetMax(0.4),
   fdDistPrimaryMax(0.01),
   
   fh1EventCounterCut(0),
   fh1EventCent(0),
   fh1EventCent2(0),
+  fh1EventCent2Jets(0),
+  fh1EventCent2NoJets(0),
   fh2EventCentTracks(0),
   fh2EventCentMult(0),
   fh1NV0sInJetStats(0),
@@ -342,18 +347,23 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
   fdMinJetPt(5.0),
   fdJetPhiMin(-10),
   fdJetPhiMax(+10),
-  fdJetEtaMin(-1),
-  fdJetEtaMax(+1),
+  fdJetEtaMin(-0.9),
+  fdJetEtaMax(+0.9),
   fdJetTrackPtMin(0.15),
+  fdJetTrackEtaMax(0.9),
   fdMaxEtaJetBG(0.7),
   fdBgRadius(0.4),
   fdCutPtJetMin(0),
+  fdCutPtTrackJetMin(0),
+  fdCutAreaPercJetMin(0.6),
   fdDistanceV0JetMax(0.4),
   fdDistPrimaryMax(0.01),
   
   fh1EventCounterCut(0),
   fh1EventCent(0),
   fh1EventCent2(0),
+  fh1EventCent2Jets(0),
+  fh1EventCent2NoJets(0),
   fh2EventCentTracks(0),
   fh2EventCentMult(0),
   fh1NV0sInJetStats(0),
@@ -526,7 +536,7 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
   fJets->SetOwner(); 	
   
   // event categories
-  const Int_t iNCategEvent = 12;
+  const Int_t iNCategEvent = 14;
   TString categEvent[iNCategEvent] = {
     "coll. candid.",      //0
     "AOD OK",             //1
@@ -538,11 +548,13 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
     "r PV",               //7
     "centrality",         //8
     "with V^{0}",         //9
-    "with jets",          //10 
-    "jet selection",      //11
+    "with selected  V^{0}", //10
+    "all jets",           //11 
+    "jet selection",      //12
+    "jet with V0"         //13
   };
 
-// labels for stages of V0 selection
+  // labels for stages of V0 selection
   TString categV0[fgkiNCategV0] = {
     "all",                  //0
     "min V0 Pt",            //1
@@ -565,24 +577,30 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
   };  
   
   //labels for the in jet statistics
-  const Int_t iNCategInJetStat = 8;
+  const Int_t iNCategInJetStat = 12;
   TString categInJetStats[iNCategInJetStat] = {
-    "N Jets",              //0
-    "V0s in jets",         //1
-    "K0s in jets",         //2
-    "Lambdas in jets",     //3
-    "ALambdas in jets",    //4
-    "K0s/Lambda in jets",  //5
-    "K0s/ALambda in jets", //6
-    "More than 1 V0 in jet"//7 
+    "N Jets",                       //0
+    "V0s in jets",                  //1
+    "K0s in jets",                  //2
+    "Lambdas in jets",              //3
+    "ALambdas in jets",             //4
+    "K0s/Lambda in jets",           //5
+    "K0s/ALambda in jets",          //6
+    "More than 1 V0 in jet",        //7 
+    "N jets before cuts(after bg sub)", //8
+    "N jet after pt sel",           //9
+    "N jet after area sel",         //10
+    "N jet after lead track pt sel" //11
    }; 
  
 
-//histograms 
+  //histograms 
   fh1EventCounterCut = new TH1D("fh1EventCounterCut", "Number of events after filtering;selection filter;counts", iNCategEvent, 0, iNCategEvent);
   for(Int_t i = 0; i < iNCategEvent; i++)
     fh1EventCounterCut->GetXaxis()->SetBinLabel(i + 1, categEvent[i].Data());
   fh1EventCent2 = new TH1D("fh1EventCent2", "Number of events vs centrality;centrality;counts", 100, 0, 100);
+  fh1EventCent2Jets = new TH1D("fh1EventCent2Jets", "Number of sel.-jet events vs centrality;centrality;counts", 100, 0, 100);
+  fh1EventCent2NoJets = new TH1D("fh1EventCent2NoJets", "Number of no-jet events vs centrality;centrality;counts", 100, 0, 100);
   fh2EventCentTracks = new TH2D("fh2EventCentTracks", "Number of tracks vs centrality;centrality;tracks;counts", 100, 0, 100, 150, 0, 15e3);
   fh2EventCentMult = new TH2D("fh2EventCentMult", "Ref. multiplicity vs centrality;centrality;multiplicity;counts", 100, 0, 100, 150, 0, 15e3);
   fh1EventCent = new TH1D("fh1EventCent", "Number of events in centrality bins;centrality;counts", fgkiNBinsCent, 0, fgkiNBinsCent);
@@ -595,7 +613,9 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
   
   fOutputListStd->Add(fh1EventCounterCut);
   fOutputListStd->Add(fh1EventCent);
-  fOutputListStd->Add(fh1EventCent2);;
+  fOutputListStd->Add(fh1EventCent2);
+  fOutputListStd->Add(fh1EventCent2Jets);
+  fOutputListStd->Add(fh1EventCent2NoJets);
   fOutputListStd->Add(fh2EventCentTracks);
   fOutputListStd->Add(fh2EventCentMult);
   fOutputListStd->Add(fh1V0CandPerEvent);
@@ -955,7 +975,7 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
 
   PostData(1, fOutputListStd);
   PostData(2, fOutputListStdJets);
-  PostData(2, fOutputListMC);
+  PostData(3, fOutputListMC);
 }
 
 void AliAnalysisTaskStrangenessInJets::ExecOnce()
@@ -1077,8 +1097,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   fFastJetWrapperMCGen.Clear();  
   
   std::vector<fastjet::PseudoJet> InputBgParticles;
-  //InputBgParticles.clear();  //clear the particle vector for the bg estimator
-  
+
   fh1EventCounterCut->Fill(0); // all available selected events (collision candidates)
 
   fAODIn = dynamic_cast<AliAODEvent*>(InputEvent()); // input AOD
@@ -1141,7 +1160,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
 
   //Get V0 information from AOD 
   Int_t iNV0s = fAODIn->GetNumberOfV0s(); // get the number of V0 candidates
-  printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("There are %d V0 candidates in the event", iNV0s));
+  //printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("There are %d V0 candidates in the event", iNV0s));
   if(!iNV0s) {
     if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "No V0s found in event");
   } else {
@@ -1169,8 +1188,9 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   
   Double_t dMassV0K0s = 0; // invariant mass of the K0s candidate
   Double_t dMassV0Lambda = 0; // invariant mass of the Lambda candidate
-  Double_t dMassV0ALambda = 0; // invariant mass of the Lambda candidate
+  Double_t dMassV0ALambda = 0; // invariant mass of the Lambda candidate 
   Int_t iNV0CandTot = 0; // counter of all V0 candidates at the beginning
+  Int_t iNSelV0 = 0;  //Counter of all selected V0 candidates
   Int_t iNV0CandK0s = 0; // counter of K0s candidates at the end
   Int_t iNV0CandLambda = 0; // counter of Lambda candidates at the end
   Int_t iNV0CandALambda = 0; // counter of Lambda candidates at the end
@@ -1199,6 +1219,8 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   fh1VtxZ[iCentIndex]->Fill(dPrimVtxPos[2]);
   fh2VtxXY[iCentIndex]->Fill(dPrimVtxPos[0], dPrimVtxPos[1]);
   
+  Double_t dAreaPercJetMin =  fdCutAreaPercJetMin*TMath::Pi()*fdRadius*fdRadius;
+
   //===== Start of loop over V0 candidates =====
   if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Start of V0 loop");
   for(Int_t iV0 = 0; iV0 < iNV0s; iV0++) {
@@ -1641,18 +1663,22 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
           AliEmcalJet *ZeroJet = 0;
           AssociateRecV0withMC(v0, ZeroJet, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCentIndex);
         }
+        iNSelV0++;  
       }  
     }
+
     //===== End of filling V0 spectra =====            
   }	 
   //===== End of V0 loop =====
-  
+  //printf("fjw inputs before add track: %i \n", fFastJetWrapper.GetInputVectors().size());
   if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "End of V0 loop");
-
+  //printf("There are %i selected V0s in the event. \n", iNSelV0);   
   if(fV0CandidateArray->GetEntriesFast() > 0) {
     AddEventTracks(fV0CandidateArray, fTracks, InputBgParticles);
   }
-
+  if(iNSelV0)
+    fh1EventCounterCut->Fill(10);
+  //printf("fjw inputs after add track: %i \n", fFastJetWrapper.GetInputVectors().size());
   fh1V0CandPerEvent->Fill(iNV0CandTot);
   fh1V0CandPerEventCentK0s[iCentIndex]->Fill(iNV0CandK0s);
   fh1V0CandPerEventCentLambda[iCentIndex]->Fill(iNV0CandLambda);
@@ -1681,13 +1707,16 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     bge.rho();
   }
 
+  //if (fFastJetWrapper.GetInputVectors().size() == 0) 
 
   //Run fj wrapper and loop over fj jets
   fFastJetWrapper.Run(); 
 
+  //printf("All found jets: %i \n", fFastJetWrapper.GetInclusiveJets().size());
+
   std::vector<fastjet::PseudoJet> vJetsIncl = fFastJetWrapper.GetInclusiveJets(); 
-  if(vJetsIncl.size() > 0) 
-	  fh1EventCounterCut->Fill(10);
+  if(vJetsIncl.size()) 
+	  fh1EventCounterCut->Fill(11);
   
   // sort jets according to jet pt
   static Int_t indexes[9999] = {-1};
@@ -1707,13 +1736,31 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
         (vJetsIncl[ij].phi() < fdJetPhiMin) || (vJetsIncl[ij].phi() > fdJetPhiMax))
       continue;
 
-    jetSub = subtr(vJetsIncl[ij]);
+    jetSub = subtr(vJetsIncl[ij]); //background subtraction
     if(jetSub == 0) 
-      continue;  
-    
-    if(fdCutPtJetMin > 0. && jetSub.perp() < fdCutPtJetMin) // selection of high-pt jets, needs to be applied on the pt after bg subtraction
       continue;
-      
+    fh1NV0sInJetStats->Fill(8);  //N of jets before cuts (after bg sub)
+    
+    if(jetSub.perp() < fdCutPtJetMin) // selection of high-pt jets, needs to be applied on the pt after bg subtraction
+      continue;
+    fh1NV0sInJetStats->Fill(9);
+    
+    if(jetSub.area() < dAreaPercJetMin) //selection of the jets with area bigger than the cut (cut*pi*R2)
+      continue;
+    fh1NV0sInJetStats->Fill(10);
+    
+    std::vector<fastjet::PseudoJet> constituents(jetSub.constituents());  //(fFastJetWrapper.GetJetConstituents(ij));
+    Int_t iNConstit = constituents.size();
+    Double_t dMaxTrPt = 0;
+    for(Int_t ic = 0; ic < iNConstit; ic++) {
+		  Double_t dtrpt = constituents[ic].perp();
+      if(dtrpt > dMaxTrPt) dMaxTrPt = dtrpt;  
+    }  
+    if(dMaxTrPt < fdCutPtTrackJetMin)             // selection of jets with high leading track pt
+      continue;                                           
+    fh1NV0sInJetStats->Fill(11);
+
+    fh2PtJetPtTrackLeading[iCentIndex]->Fill(jetSub.perp(), dMaxTrPt); // pt_jet vs pt of leading jet track
 
     AliEmcalJet *jet = new ((*fJets)[iJetCount])
     		          AliEmcalJet(jetSub.perp(), jetSub.eta(), jetSub.phi(), jetSub.m());
@@ -1750,13 +1797,10 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     Int_t ikal = 0;
     Int_t index = 0;
     AliAODv0* jetv0 = 0;
-    
-    std::vector<fastjet::PseudoJet> constituents(jetSub.constituents());  //(fFastJetWrapper.GetJetConstituents(ij));
-    Int_t iNConstit = constituents.size();
-
+  
     for(Int_t ic = 0; ic < iNConstit; ic++){
 		  uid = constituents[ic].user_index();
-		  
+		  //if(constituents[ic].user_index() > 0) cout << ic << " Pt:"  << constituents[ic].perp() << " uid: " << constituents[ic].user_index() << "         "  ;
       if(uid > iK0Id && uid < iLambdaId) { //K0
 			  index = uid-iK0Id; //will give the id of the V0 particle 
 		    jetv0 = (AliAODv0*)fV0CandidateArray->At(index); 
@@ -1766,7 +1810,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
 
         if(fbMCAnalysis) {
           AssociateRecV0withMC(jetv0, jet, true, false, false, iCentIndex);
-	    }  
+	      }  
 		   ik++;
 		  }	
 		  
@@ -1778,8 +1822,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
         fh1NV0sInJetStats->Fill(3);
         if(fbMCAnalysis) {
          AssociateRecV0withMC(jetv0, jet, false, true, false, iCentIndex);
-	    }
-	    
+	      }   
         il++;
 		  }
 		  if(uid > iALambdaId && uid < iK0LId) { //ALambda
@@ -1790,7 +1833,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
         fh1NV0sInJetStats->Fill(4);
         if(fbMCAnalysis) {
          AssociateRecV0withMC(jetv0, jet, false, false, true, iCentIndex);  
-	    }
+	      }
         ial++;
 		  }  
 		  if(uid > iK0LId && uid < iK0ALId) { //K L correlation 	
@@ -1815,13 +1858,23 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
 		  }		 
      }
     Int_t isum = ik + il + ial + ikl + ikal;
-    if(isum > 0 ) {
+    if(isum) {
 	    iV0Jets++;
 	    fh1NV0sInJetStats->Fill(1);
 	  }
 	  if(isum > 1)
 	    fh1NV0sInJetStats->Fill(7);	  		  
   }
+  //printf("All selected jets: %i \n",  iJetCount);
+  if(iJetCount) {
+    fh1EventCent2Jets->Fill(fdCentrality);
+    fh1EventCounterCut->Fill(12);
+  }  
+  else 
+    fh1EventCent2NoJets->Fill(fdCentrality);
+  //printf("All selected jets with V0: %i \n",  iV0Jets);
+  if(iV0Jets) 
+    fh1EventCounterCut->Fill(13); // events with jets with V0s
   fh1NJetPerEvent[iCentIndex]->Fill(iJetCount);
   fh1NV0JetPerEvent[iCentIndex]->Fill(iV0Jets);  
 
@@ -2199,9 +2252,11 @@ void AliAnalysisTaskStrangenessInJets::AddEventTracks(TClonesArray* coll, TClone
   Int_t nadded = 0;
   Int_t nexcluded = 0;
   while ((track = static_cast<AliVTrack*>(nexttr()))) { 
-	numbtrack++;   
-	if (track->Pt() < fdJetTrackPtMin)  //condition for the minimum track pt 
-	  continue;  
+	  numbtrack++;   
+	  if (track->Pt() < fdJetTrackPtMin || TMath::Abs(track->Eta()) > fdJetTrackEtaMax) { //condition for the minimum track pt  and tracj eta
+	    nexcluded++;
+      continue;   
+    }
     if (allDaughters.Remove(track) == 0) {
        //adding track to the fastjet
         fFastJetWrapper.AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), n);
@@ -2212,8 +2267,8 @@ void AliAnalysisTaskStrangenessInJets::AddEventTracks(TClonesArray* coll, TClone
       	AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", numbtrack, track->Pt(), track->Eta(), track->Phi()));
     }
     else {
-		nexcluded++;
-		AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is excluded", numbtrack, track->Pt(), track->Eta(), track->Phi()));
+		  nexcluded++;
+		  AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is excluded", numbtrack, track->Pt(), track->Eta(), track->Phi()));
     }
   } 
   //printf("There were %d tracks, %d were added to the fj and %d excluded. \n", numbtrack, nadded, nexcluded);
@@ -2284,13 +2339,13 @@ void AliAnalysisTaskStrangenessInJets::AddEventTracksMC(TClonesArray* coll, TClo
   Int_t nadded = 0;
   Int_t nexcl = 0;
   while ((track = static_cast<AliAODTrack*>(nexttr()))) { //here add condition for the track pt fdJetTrackPtMin!!!
-	numbtrack++;    
-	if (track->Pt() < fdJetTrackPtMin)
-	  continue; 
+	  numbtrack++;    
+	  if (track->Pt() < fdJetTrackPtMin || TMath::Abs(track->Eta()) > fdJetTrackEtaMax) //condition for the minimum track pt  and tracj eta
+      continue;   
     Int_t iTrackLabel = track->GetLabel();
     if (std::find(vecDaughterLabels.begin(), vecDaughterLabels.end(), iTrackLabel) != vecDaughterLabels.end()) {
-	 nexcl++;
-	 continue;	 
+	    nexcl++;
+	    continue;	 
     }
     //did not find track in the daughters, adding track to the fastjet
     fFastJetWrapperMCGen.AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), iN);
@@ -2419,8 +2474,12 @@ Bool_t AliAnalysisTaskStrangenessInJets::AssociateRecV0withMC( AliAODv0* vpart, 
   Double_t dz = dPrimVtxMCZ - particleMCMother->Zv();
   Double_t dDistPrimary = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
   Bool_t bV0MCIsPrimaryDist = (dDistPrimary < fdDistPrimaryMax); // Is close enough to be considered primary-like?
-  fh1MCStats->Fill(0); //Reconstructed V0s
-  if(xjet) fh1MCStats->Fill(2); // Reconstrucetd V0s in jets
+
+  if(bV0MCIsPrimaryDist && (bV0MCIsK0s || bV0MCIsLambda || bV0MCIsALambda)) {
+    fh1MCStats->Fill(0); //Reconstructed V0s
+    if(xjet) fh1MCStats->Fill(2); // Reconstrucetd V0s in jets
+  }  
+  
   // K0s
   if(bIsK) { // selected candidates with any mass
     if(bV0MCIsK0s && bV0MCIsPrimaryDist) {// well reconstructed candidates
@@ -2504,7 +2563,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::AssociateRecV0withMC( AliAODv0* vpart, 
 
 Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* track, Int_t iCent)
 {
-  	
+  
   std::vector<fastjet::PseudoJet> InputBgParticlesMC; 
   //InputBgParticles.clear(); //clear before using again fot the bg estim for the generated mc particles 
   
@@ -2629,7 +2688,8 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
   if(fGenMCV0->GetEntriesFast() > 0) {
     AddEventTracksMC(fGenMCV0, track, InputBgParticlesMC);
   }
-
+  
+  Double_t dAreaPercJetMin =  fdCutAreaPercJetMin*TMath::Pi()*fdRadius*fdRadius;
 
   //Background estimation 
 
@@ -2671,7 +2731,23 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
     jetSubMC = subtr(vJetsMC[ij]);
 
     if(jetSubMC == 0) 
-      continue; 
+      continue;   
+    if(jetSubMC.perp() < fdCutPtJetMin) // selection of high-pt jets, needs to be applied on the pt after bg subtraction
+      continue;
+    if(jetSubMC.area() < dAreaPercJetMin) //selection of the jets with area bigger than the cut (cut*pi*R2)
+      continue;
+
+    std::vector<fastjet::PseudoJet> constits(jetSubMC.constituents());
+    Int_t iNConst = constits.size();
+    Double_t dMaxTrPt = 0;
+    for(Int_t ic = 0; ic < iNConst; ic++) {
+		  Double_t dtrpt = constits[ic].perp();
+      if(dtrpt > dMaxTrPt) dMaxTrPt = dtrpt;  
+    }  
+    cout << endl;
+    if(dMaxTrPt < fdCutPtTrackJetMin)             // selection of jets with high leading track pt
+      continue;                                           
+
 
     //printf(" JetPt: %f, sub jetPt: %f \n", vJetsMC[ij].perp(), jetSubMC.perp());
   
@@ -2684,9 +2760,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
     Int_t index = 0;
     AliAODMCParticle* jetv0 = 0;
     
-    std::vector<fastjet::PseudoJet> constits(jetSubMC.constituents());
-    //(fFastJetWrapperMCGen.GetJetConstituents(ij));
-    Int_t iNConst = constits.size();
+
 
     for(Int_t ic = 0; ic < iNConst; ic++){
 	  uid = constits[ic].user_index();

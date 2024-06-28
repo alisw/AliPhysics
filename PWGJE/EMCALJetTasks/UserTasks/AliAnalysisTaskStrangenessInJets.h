@@ -93,10 +93,13 @@ public:
   void SetJetEtaRange(Double_t emi, Double_t ema) { fdJetEtaMin        = emi   ; fdJetEtaMax = ema; }
   void SetJetPhiRange(Double_t pmi, Double_t pma) { fdJetPhiMin        = pmi   ; fdJetPhiMax = pma; }
   void SetMinJetTrackPt(Double_t j)               { fdJetTrackPtMin        = j     ; }
+  void SetMaxJetTrackEta(Double_t j)               { fdJetTrackEtaMax      = j     ; }
   void SetMCDistPrimaryMax(Double_t val = 0.01) {fdDistPrimaryMax = val;}
-  void SetPtJetMin(Double_t ptMin = 0) {fdCutPtJetMin = ptMin;}
   void SetDistanceV0JetMax(Double_t val = 0.4) {fdDistanceV0JetMax = val;}
-
+  void SetPtJetMin(Double_t ptMin = 0) {fdCutPtJetMin = ptMin;}
+  void SetPtTrackJetMin(Double_t ptMin = 0) {fdCutPtTrackJetMin = ptMin;}
+  void SetAreaPercJetMin(Double_t area = 0) {fdCutAreaPercJetMin = area;}
+  
   //getters
   Bool_t GetIsPbPb() const         { return fbIsPbPb; }
   Bool_t GetMCAnalysis() const     { return fbMCAnalysis; }
@@ -264,10 +267,13 @@ private:
   Double_t fdJetEtaMin;              ///< minimum eta to keep jet in output
   Double_t fdJetEtaMax;              ///< maximum eta to keep jet in output
   Double_t fdJetTrackPtMin;          ///< minimum jet constituent track pt
+  Double_t fdJetTrackEtaMax;          ///< max jet constituent track eta
   Double_t fdMaxEtaJetBG;            ///< Maximum jet eta cut for the bacground estimation
   Double_t fdBgRadius;               ///< Background jet radius
 
   Double_t fdCutPtJetMin; // [GeV/c] minimum jet pt
+  Double_t fdCutPtTrackJetMin; // [GeV/c] minimum pt of leading jet-track
+  Double_t fdCutAreaPercJetMin; // [pi*R^2] minimum jet area with respect to the expected value
   Double_t fdDistanceV0JetMax; // (R) D - maximum distance between V0 and jet axis used for finding V0s in the perp, rnd and median jet cone
   
   //MC var
@@ -278,6 +284,8 @@ private:
   TH1D* fh1EventCounterCutCent[fgkiNBinsCent]; //! number of events for different selection steps and different centralities
   TH1D* fh1EventCent; //! number of events for different centralities
   TH1D* fh1EventCent2; //! number of events for different centralities
+  TH1D* fh1EventCent2Jets; //! number of events for different centralities
+  TH1D* fh1EventCent2NoJets; //! number of events for different centralities
   TH2D* fh2EventCentTracks; //! number of tracks vs centrality
   TH2D* fh2EventCentMult; //! reference multiplicity vs centrality
   TH1D* fh1VtxZ[fgkiNBinsCent]; //! z coordinate of the primary vertex
