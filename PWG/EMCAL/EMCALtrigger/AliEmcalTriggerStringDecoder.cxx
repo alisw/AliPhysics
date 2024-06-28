@@ -25,6 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.                     *
  ************************************************************************************/
 #include <sstream>
+#include <AliLog.h>
 #include "AliEmcalTriggerStringDecoder.h"
 
 ClassImp(PWG::EMCAL::Triggerinfo);
@@ -50,6 +51,10 @@ std::vector<Triggerinfo> Triggerinfo::DecodeTriggerString(EMCAL_STRINGVIEW trigg
     std::stringstream triggerdecoder(currenttrigger);
     std::string token;
     while(std::getline(triggerdecoder, token, '-')) tokens.emplace_back(token);
+    if(tokens.size() < 4) {
+      AliErrorGeneralStream("DecodeTriggerString") << "Trigger string " << currenttrigger << " does not match the expected strucutre, cannot be decoded" << std::endl;
+      continue;
+    }
     result.emplace_back(Triggerinfo{tokens[0], tokens[1], tokens[2], tokens[3]});
   }
   return result;
