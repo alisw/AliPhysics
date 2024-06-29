@@ -154,7 +154,7 @@
 #pragma link C++ class AliAnalysisTaskMeanptFluctMC+;
 #pragma link C++ class AliAnalysisTaskMeanptFluctMC_effcheck+;
 #pragma link C++ class AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect+;
-
+#pragma link C++ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5+;
 
 #pragma link C++ class AliAnalysisTaskNFactorialMoments+;
 #pragma link C++ class AliAnalysisTaskNFactorialMomentsPID+;

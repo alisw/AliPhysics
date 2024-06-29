@@ -164,6 +164,7 @@ set(SRCS
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_correct_v2.cxx
   DiffPTF/AliAnalysisTaskHptcorrId_tree.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFluc_V0particles_pTmax5.cxx
   IntermittencyAnalysis/AliAnalysisTaskNFactorialMoments.cxx
   IntermittencyAnalysis/AliAnalysisTaskNFactorialMomentsPID.cxx
   )
