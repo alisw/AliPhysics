@@ -15,6 +15,7 @@
 #include "AliAnalysisTask.h"
 #include "AliESDtrackCuts.h"
 #include "AliPIDResponse.h"
+#include "AliPIDCombined.h"
 #include "TLorentzVector.h"
 #include "AliEventCuts.h"
 #include "TDatabasePDG.h"
@@ -85,6 +86,7 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::AliAnalysisTaskDiffPtFluc_V0partic
   fAODevent(0),
   fInputEvent(0),
   fPIDResponse(0),
+  fPIDCombined(0),
   fUtils(0),
   fOutputList(0),
   fQAList(0),
@@ -184,6 +186,33 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::AliAnalysisTaskDiffPtFluc_V0partic
   fRejectElectron_cut(0),
   fFillTrackQAhists_flag(0),
   fFillPIDhists_flag(0),
+  fBayesianPID_flag(0),
+  fMinV0TracksTpcClustersNo(0),
+  fMinV0TracksTpcCrossedRowsNo(0),
+  fMaxV0TracksTpcSharedClustersNo(0),
+  fMaxV0TracksChi2TPCperClstr(0),
+  fMaxV0TracksChi2ITSperClstr(0),
+  fRatioTPCcrossedrowsByFindableclusters(0),
+  fDcaV0DaughterTracksToPV(0),
+  fLambdaPropLifetime(0),
+  fMinLambdaTransDecayRadius(0),
+  fMaxLambdaTransDecayRadius(0),
+  fLambdaDcaV0daughters(0),
+  fLambdaDcaV0toPV(0),
+  fLambdaCosPAval(0),
+  fK0sPropLifetime(0),
+  fMinK0sTransDecayRadius(0),
+  fMaxK0sTransDecayRadius(0),
+  fK0sDcaV0daughters(0),
+  fK0sCosPAval(0),
+  fArmentousCutVal(0),
+  fLambdaDaughtersPIDcut(0),
+  fK0sDaughtersPIDcut(0),
+  fLambdaMassCut(0),
+  fK0sMassCut(0),
+  fPIDbayesPion(0),
+  fPIDbayesKaon(0),
+  fPIDbayesProton(0),
   fGlobalTracksAOD(0)
 {
   for(int i=0; i<9; i++)
@@ -213,6 +242,7 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::AliAnalysisTaskDiffPtFluc_V0partic
   fAODevent(0),
   fInputEvent(0),
   fPIDResponse(0),
+  fPIDCombined(0),
   fUtils(0),
   fOutputList(0),
   fQAList(0),
@@ -312,6 +342,33 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::AliAnalysisTaskDiffPtFluc_V0partic
   fRejectElectron_cut(0),
   fFillTrackQAhists_flag(0),
   fFillPIDhists_flag(0),
+  fBayesianPID_flag(0),
+  fMinV0TracksTpcClustersNo(0),
+  fMinV0TracksTpcCrossedRowsNo(0),
+  fMaxV0TracksTpcSharedClustersNo(0),
+  fMaxV0TracksChi2TPCperClstr(0),
+  fMaxV0TracksChi2ITSperClstr(0),
+  fRatioTPCcrossedrowsByFindableclusters(0),
+  fDcaV0DaughterTracksToPV(0),
+  fLambdaPropLifetime(0),
+  fMinLambdaTransDecayRadius(0),
+  fMaxLambdaTransDecayRadius(0),
+  fLambdaDcaV0daughters(0),
+  fLambdaDcaV0toPV(0),
+  fLambdaCosPAval(0),
+  fK0sPropLifetime(0),
+  fMinK0sTransDecayRadius(0),
+  fMaxK0sTransDecayRadius(0),
+  fK0sDcaV0daughters(0),
+  fK0sCosPAval(0),
+  fArmentousCutVal(0),
+  fLambdaDaughtersPIDcut(0),
+  fK0sDaughtersPIDcut(0),
+  fLambdaMassCut(0),
+  fK0sMassCut(0),
+  fPIDbayesPion(0),
+  fPIDbayesKaon(0),
+  fPIDbayesProton(0),
   fGlobalTracksAOD(0)
 {
   for(int i=0; i<9; i++)
@@ -529,15 +586,8 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserCreateOutputObjects()  {
     fTreeEvent->Branch("fPtsum_hadrons_greaterEtaMin",&fPtsum_hadrons_greaterEtaMin,"fPtsum_hadrons_greaterEtaMin/F");
     fTreeEvent->Branch("fNsum_hadrons_less0",&fNsum_hadrons_less0,"fNsum_hadrons_less0/F");
     fTreeEvent->Branch("fNsum_hadrons_greaterEtaMin",&fNsum_hadrons_greaterEtaMin,"fNsum_hadrons_greaterEtaMin/F");
-    fTreeEvent->Branch("fNsum_pions_less0",&fNsum_pions_less0,"fNsum_pions_less0/F");
-    fTreeEvent->Branch("fNsum_kaons_less0",&fNsum_kaons_less0,"fNsum_kaons_less0/F");
-    fTreeEvent->Branch("fNsum_protons_less0",&fNsum_protons_less0,"fNsum_protons_less0/F");
     fTreeEvent->Branch("fNsum_lambdas_less0",&fNsum_lambdas_less0,"fNsum_lambdas_less0/F");
     fTreeEvent->Branch("fNsum_K0s_less0",&fNsum_K0s_less0,"fNsum_K0s_less0/F");
-    fTreeEvent->Branch("fPt_no_hadron",&fPt_no_hadron,"fPt_no_hadron[18]/F");
-    fTreeEvent->Branch("fPt_no_pion",&fPt_no_pion,"fPt_no_pion[18]/F");
-    fTreeEvent->Branch("fPt_no_kaon",&fPt_no_kaon,"fPt_no_kaon[18]/F");
-    fTreeEvent->Branch("fPt_no_proton",&fPt_no_proton,"fPt_no_proton[18]/F");
     fTreeEvent->Branch("fPt_no_lambda",&fPt_no_lambda,"fPt_no_lambda[18]/F");
     fTreeEvent->Branch("fPt_no_K0s",&fPt_no_K0s,"fPt_no_K0s[18]/F");
 
@@ -604,20 +654,13 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserExec(Option_t *)  {
 
 
     double binsarray[19]={0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0,3.5,4.0,4.5,5.0};
-    TH1D *fPt_profile = new TH1D("fPt_profile","fPt_profile", 18, binsarray);
     Double_t pT_sum_etaLess0 = 0.0;
     Double_t N_sum_etaLess0 = 0.0;
     Double_t pT_sum_etaGreaterEtamin = 0.0;
     Double_t N_sum_etaGreaterEtamin = 0.0;
 
 
-    TH1D *fPt_profile_pion = new TH1D("fPt_profile_pion","fPt_profile_pion", 18, binsarray);
-    TH1D *fPt_profile_kaon = new TH1D("fPt_profile_kaon","fPt_profile_kaon", 18, binsarray);
-    TH1D *fPt_profile_proton = new TH1D("fPt_profile_proton","fPt_profile_proton", 18, binsarray);
-    Double_t N_sumPion_etaLess0 = 0.0;
-    Double_t N_sumKaon_etaLess0 = 0.0;
-    Double_t N_sumProton_etaLess0 = 0.0;
-
+    
     //Function for efficiency
     TF1 *fEff=new TF1("fEff","[0]*TMath::Exp(-pow([1]/x,[2]))",0.2,5.0);
     fEff->SetParameter(0,0.8);
@@ -690,11 +733,6 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserExec(Option_t *)  {
 	trkDCAz = TMath::Abs(DCAZ);
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	
-	//Filling track QA before trackselection cuts
-	if(fFillTrackQAhists_flag==1)
-	  {
-	    FilltrackQAplots_beforeCut(trkDCAxy, trkDCAz, trkEta, trkITSchi2perNcls, trkTPCchi2perNcls, trkTPCcrossedrows);
-	  }
 	
 	
 	//TRACK SELECTION CUTS
@@ -710,28 +748,11 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserExec(Option_t *)  {
 	  continue;
 	if (trkITSchi2perNcls > fChi2ITS)
 	  continue;
-	
-	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	//Filling PID QA plots before applying PID cuts
-	
-	if(fFillPIDhists_flag==1)
-	  {
-	    FillPIDQAplots_beforeCut(track);
-	  }
-	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	//Kinematic cuts on pT and Eta
 	if (TMath::Abs(trkEta) > 0.8) continue;
 	if (trkPt < 0.2) continue;
-	if (trkPt > 5.0) continue;
-
-
-	//Filling track QA before trackselection cuts
-	if(fFillTrackQAhists_flag==1)
-	  {
-	    FilltrackQAplots_afterCut(trkDCAxy, trkDCAz, trkEta, trkITSchi2perNcls, trkTPCchi2perNcls, trkTPCcrossedrows);
-	  }
-	
+	if (trkPt > 5.0) continue;	
 	
 	//+++++++++++++++++++++++++++++++++++++++++++++++++
 	//+++++++++++++++++++++++++++++++++++++++++++++++++
@@ -777,7 +798,6 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserExec(Option_t *)  {
 	      {
 		if(trkEta < fEtaLeftCut)
 		  {
-		    fPt_profile->Fill(trkPt);
 		    pT_sum_etaLess0 += trkPt;
 		    N_sum_etaLess0 += 1.0;
 		  }
@@ -809,7 +829,6 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserExec(Option_t *)  {
 		  {
 		    if(BinCont != 0)
 		      {
-			fPt_profile->Fill(trkPt,1.0/BinCont);
 			pT_sum_etaLess0 += trkPt/BinCont;
 			N_sum_etaLess0 += 1.0/BinCont;
 		      }
@@ -825,146 +844,6 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserExec(Option_t *)  {
 		  }
 	      }
 	  }
-
-	if(fFBNo==128)
-	  {
-	    Int_t id=track->GetID();
-	    Int_t retrievekey=-id-1;
-	    Int_t iGlobalTrackIndex=fGlobalTracksAOD->GetValue(retrievekey);
-	    track = (AliVTrack*)fAODevent->GetTrack(iGlobalTrackIndex);
-	    if(!track)      continue;
-	    aodtrack  = dynamic_cast<AliAODTrack*>(track);
-	    if(!aodtrack)      continue;
-	  }
-
-	
-	//PID selection
-	Bool_t IsKaon = KaonSelector(track, fPIDnSigmaCut);
-	Bool_t IsPion = PionSelector(track, fPIDnSigmaCut);
-	Bool_t IsProton = ProtonSelector(track, fPIDnSigmaCut);
-
-	if (!IsKaon && !IsPion && !IsProton) continue;
-
-	if(fExclusivePIDCut_flag==1)
-	  {
-	    //Check if a particle is selected as more than one type
-	    Int_t flag = 0;
-	    if(IsPion) flag+=1;
-	    if(IsKaon) flag+=1;
-	    if(IsProton) flag+=1;
-	    if(flag>1)
-	      {
-		cout<<"Particle identified as more than on PID: flag= "<<flag<<endl;
-		continue;
-	      }
-	  }
-
-	if(fRejectElectron_cut > 0)
-	  {
-	    Bool_t IsElectron = ElectronRejectionCut(track, fRejectElectron_cut);
-	    if(IsElectron) continue;
-	  }
-
-	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	//Filling PID QA plots after applying PID cuts
-	
-	if(fFillPIDhists_flag==1)
-	  {
-	    FillPIDQAplots_afterCut(track, IsPion, IsKaon, IsProton);
-	  }
-	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-	if(fEffCorrectionFlag == 0)
-	  {
-	    if(TMath::Abs(trkCharge) > 0)
-	      {
-		if(trkEta < fEtaLeftCut)
-		  {
-		    if(IsPion)
-		      {
-			fPt_profile_pion->Fill(trkPt);
-			N_sumPion_etaLess0 += 1.0;
-		      }
-		    if(IsKaon)
-		      {
-			fPt_profile_kaon->Fill(trkPt);
-			N_sumKaon_etaLess0 += 1.0;
-		      }
-		    if(IsProton && trkPt > 0.4)
-		      {
-			fPt_profile_proton->Fill(trkPt);
-			N_sumProton_etaLess0 += 1.0;
-		      }
-		  }
-	      }
-	  }
-
-	if(fEffCorrectionFlag == 1)
-	  {
-	    if(TMath::Abs(trkCharge) > 0)
-	      {
-		if(trkEta < fEtaLeftCut)
-		  {
-		    if(IsPion)
-		      {
-			if(trkCharge < 0)
-			  {
-			    ptBinNo = fHistMCEffPionMinus->FindBin(trkPt);
-			    BinCont = fHistMCEffPionMinus->GetBinContent(ptBinNo);
-			  }
-			if(trkCharge > 0)
-			  {
-			    ptBinNo = fHistMCEffPionPlus->FindBin(trkPt);
-			    BinCont = fHistMCEffPionPlus->GetBinContent(ptBinNo);
-			  }
-			if(BinCont != 0)
-			  {
-			    fPt_profile_pion->Fill(trkPt,1.0/BinCont);
-			    N_sumPion_etaLess0 += 1.0/BinCont;
-			  }
-		      }
-		    
-		    if(IsKaon)
-		      {
-			if(trkCharge < 0)
-			  {
-			    ptBinNo = fHistMCEffKaonMinus->FindBin(trkPt);
-			    BinCont = fHistMCEffKaonMinus->GetBinContent(ptBinNo);
-			  }
-			if(trkCharge > 0)
-			  {
-			    ptBinNo = fHistMCEffKaonPlus->FindBin(trkPt);
-			    BinCont = fHistMCEffKaonPlus->GetBinContent(ptBinNo);
-			  }
-			if(BinCont != 0)
-			  {
-			    fPt_profile_kaon->Fill(trkPt,1.0/BinCont);
-			    N_sumKaon_etaLess0 += 1.0/BinCont;
-			  }
-		      }
-		    
-		    if(IsProton && trkPt > 0.4)
-		      {
-			if(trkCharge < 0)
-			  {
-			    ptBinNo = fHistMCEffProtonMinus->FindBin(trkPt);
-			    BinCont = fHistMCEffProtonMinus->GetBinContent(ptBinNo);
-			  }
-			if(trkCharge > 0)
-			  {
-			    ptBinNo = fHistMCEffProtonPlus->FindBin(trkPt);
-			    BinCont = fHistMCEffProtonPlus->GetBinContent(ptBinNo);
-			  }
-			if(BinCont != 0)
-			  {
-			    fPt_profile_proton->Fill(trkPt,1.0/BinCont);
-			    N_sumProton_etaLess0 += 1.0/BinCont;
-			  }
-		      }
-		  }
-	      }
-	  }
-	
       }      
     //end reconstructed track loop
 
@@ -1015,9 +894,9 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserExec(Option_t *)  {
 	Bool_t flag_TopoK0s = PassedV0SelectionTopologicalCutsForK0s(v0);
 	if(!flag_TopoLambda && !flag_TopoK0s) continue;
 
-	Bool_t IsLambda = IsLambdaCandidate (v0, pTrack, nTrack, 5.0, lV0M);
-	Bool_t IsAntiLambda = IsAntiLambdaCandidate (v0, pTrack, nTrack, 5.0, lV0M);
-	Bool_t IsK0s = IsK0sCandidate (v0, pTrack, nTrack, 5.0, lV0M);
+	Bool_t IsLambda = IsLambdaCandidate (v0, pTrack, nTrack, fLambdaDaughtersPIDcut, lV0M, fLambdaMassCut);
+	Bool_t IsAntiLambda = IsAntiLambdaCandidate (v0, pTrack, nTrack, fLambdaDaughtersPIDcut, lV0M, fLambdaMassCut);
+	Bool_t IsK0s = IsK0sCandidate (v0, pTrack, nTrack, fK0sDaughtersPIDcut, lV0M, fK0sMassCut);
 
 
 	//Pt and Eta of V0 particles
@@ -1046,12 +925,7 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserExec(Option_t *)  {
 
     //++++++++++++++++++++++++++++++++++++++++++++
     
-    //Kaon
-    hNumberOfKaonEtaLess0->Fill(N_sumKaon_etaLess0);
-    //Pion
-    hNumberOfPionEtaLess0->Fill(N_sumPion_etaLess0);
-    //Proton
-    hNumberOfProtonEtaLess0->Fill(N_sumProton_etaLess0);
+    
     //Lambda
     hNumberOfLambdaEtaLess0->Fill(N_sumLambda_etaLess0);
     //K0s
@@ -1064,29 +938,18 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserExec(Option_t *)  {
     fPtsum_hadrons_greaterEtaMin=pT_sum_etaGreaterEtamin;
     fNsum_hadrons_less0=N_sum_etaLess0;
     fNsum_hadrons_greaterEtaMin=N_sum_etaGreaterEtamin;
-    fNsum_pions_less0=N_sumPion_etaLess0;
-    fNsum_kaons_less0=N_sumKaon_etaLess0;
-    fNsum_protons_less0=N_sumProton_etaLess0;
     fNsum_lambdas_less0=N_sumLambda_etaLess0;
     fNsum_K0s_less0=N_sumK0s_etaLess0;
     
     for(int i=0; i<18; i++)
       {
-	fPt_no_hadron[i]=fPt_profile->GetBinContent(i+1);
-
-	fPt_no_pion[i]=fPt_profile_pion->GetBinContent(i+1);
-	fPt_no_kaon[i]=fPt_profile_kaon->GetBinContent(i+1);
-	fPt_no_proton[i]=fPt_profile_proton->GetBinContent(i+1);
 	fPt_no_lambda[i]=fPt_profile_Lambda->GetBinContent(i+1);
 	fPt_no_K0s[i]=fPt_profile_K0s->GetBinContent(i+1);
       }
     
     fTreeEvent->Fill();
 
-    fPt_profile->Delete();
-    fPt_profile_pion->Delete();
-    fPt_profile_kaon->Delete();
-    fPt_profile_proton->Delete();
+    
     fPt_profile_Lambda->Delete();
     fPt_profile_K0s->Delete();
   
@@ -1302,6 +1165,11 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::GetEvent ()  //event cuts c
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     AliInputEventHandler *inputHandler = (AliInputEventHandler*) (mgr->GetInputEventHandler());
     fPIDResponse = inputHandler->GetPIDResponse();
+
+    fPIDCombined = new AliPIDCombined();
+    fPIDCombined->SetDefaultTPCPriors();
+    fPIDCombined->SetSelectedSpecies(AliPID::kSPECIES);
+    fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF); // setting TPC + TOF mask
     
     return kTRUE;
 }
@@ -1315,29 +1183,29 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedTrackQualityCuts (Ali
     //Track Selection Cuts
 
     Int_t nTPCclusters = track->GetTPCNcls();  //TPC clusters
-    if (nTPCclusters < 80)
+    if (nTPCclusters < fMinV0TracksTpcClustersNo)
       return passedTrkSelection;
 
     Int_t nTPCcrossedrows = track->GetTPCNCrossedRows();  //TPC crossed rows 
-    if (nTPCcrossedrows < 80)
+    if (nTPCcrossedrows < fMinV0TracksTpcCrossedRowsNo)
       return passedTrkSelection;
 
     Double_t nTPCcrossedrows_by_findableclusters = ((double) (track->GetTPCNCrossedRows()))/((double) (track->GetTPCNclsF()));
-    if (nTPCcrossedrows_by_findableclusters <= 0.8)  //TPC crossed-rows over findable-clusters 
+    if (nTPCcrossedrows_by_findableclusters <= fRatioTPCcrossedrowsByFindableclusters)  //TPC crossed-rows over findable-clusters 
       return passedTrkSelection;
 
     Double_t nTPCsharedclusters = track->GetTPCnclsS(); //TPC shared clusters
-    if (nTPCsharedclusters > 5)
+    if (nTPCsharedclusters > fMaxV0TracksTpcSharedClustersNo)
       return passedTrkSelection;
 
     Double_t chi2TPCperClstr = track->GetTPCchi2perCluster();
-    if(chi2TPCperClstr > 2.5)
+    if(chi2TPCperClstr > fMaxV0TracksChi2TPCperClstr)
       return passedTrkSelection;
 
     Double_t ITSchi2 = track->GetITSchi2();
     Int_t ITSNcls = track->GetITSNcls();
     Double_t chi2ITSperClstr = ITSchi2/ITSNcls;
-    if(chi2ITSperClstr > 36)
+    if(chi2ITSperClstr > fMaxV0TracksChi2ITSperClstr)
       return passedTrkSelection;
     
     if(!(AliAODTrack::kTPCrefit)) //TPC refit
@@ -1933,8 +1801,8 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedDaughterTrackDCAtoVer
   lDcaNegToPrimVertexV0 = v0->DcaNegToPrimVertex();
 
   //cut on DCA of daughter tracks
-  if(lDcaPosToPrimVertexV0 < 0.1)  return passedDauTrackDCAtoVertexSelection;
-  if(lDcaNegToPrimVertexV0 < 0.1)  return passedDauTrackDCAtoVertexSelection;
+  if(lDcaPosToPrimVertexV0 < fDcaV0DaughterTracksToPV)  return passedDauTrackDCAtoVertexSelection;
+  if(lDcaNegToPrimVertexV0 < fDcaV0DaughterTracksToPV)  return passedDauTrackDCAtoVertexSelection;
 
   passedDauTrackDCAtoVertexSelection = kTRUE;
   return passedDauTrackDCAtoVertexSelection;
@@ -1971,25 +1839,25 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedV0SelectionTopologica
     // check candidate's proper lifetime (particle hypothesis' dependent). Remember: c*tau = L*m/p
     // for K0s:        0.497*fV0_DistOverTotP < 4*2.68 cm (or 10 cm)
     // for Lambda:     1.115682*fV0_DistOverTotP < 3*7.89 cm (or 24 cm)
-    if (1.115682*fV0_DistOverTotP >= 40) return passedV0Selection;
+    if (1.115682*fV0_DistOverTotP >= fLambdaPropLifetime) return passedV0Selection;
 
     //transverse radius of the decay vertex
     Double_t lV0TransRadius = TMath::Sqrt(tDecayVertexV0x*tDecayVertexV0x+tDecayVertexV0y*tDecayVertexV0y);
-    if(lV0TransRadius <= 5 || lV0TransRadius >= 100) return passedV0Selection;
+    if(lV0TransRadius <= fMinLambdaTransDecayRadius || lV0TransRadius >= fMaxLambdaTransDecayRadius) return passedV0Selection;
     //2D radius of v0: v0->RadiusV0();
 
    
     //DCA of daughter tracks at the decay vertex
     Double_t lDcaV0Daughters = v0->DcaV0Daughters();
-    if(lDcaV0Daughters >= 0.2) return passedV0Selection;
+    if(lDcaV0Daughters >= fLambdaDcaV0daughters) return passedV0Selection;
 
     //DCA of V0 to primary vertex
     Double_t lDcaV0ToPrimVertex = v0->DcaV0ToPrimVertex();
-    if(lDcaV0ToPrimVertex >= 0.5) return passedV0Selection;
+    if(lDcaV0ToPrimVertex >= fLambdaDcaV0toPV) return passedV0Selection;
 	
     //V0 cos-pointing angle
     Double_t lV0CosineOfPointingAngle = v0->CosPointingAngle(primaryVertex);
-    if(lV0CosineOfPointingAngle <= 0.997) return passedV0Selection;
+    if(lV0CosineOfPointingAngle <= fLambdaCosPAval) return passedV0Selection;
 
     passedV0Selection = kTRUE;
     return passedV0Selection;
@@ -2025,15 +1893,15 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedV0SelectionTopologica
     fV0_DistOverTotP /= (tot_pV0+1e-10); //avoid division by zero
     // check candidate's proper lifetime (particle hypothesis' dependent). Remember: c*tau = L*m/p
     // for K0s:        0.497*fV0_DistOverTotP < 4*2.68 cm (or 10 cm)
-    if (0.497611*fV0_DistOverTotP >= 10) return passedV0Selection;
+    if (0.497611*fV0_DistOverTotP >= fK0sPropLifetime) return passedV0Selection;
     
     //transverse radius of the decay vertex
     Double_t lV0TransRadius = TMath::Sqrt(tDecayVertexV0x*tDecayVertexV0x+tDecayVertexV0y*tDecayVertexV0y);
-    if(lV0TransRadius <= 5 || lV0TransRadius >= 100) return passedV0Selection;
+    if(lV0TransRadius <= fMinK0sTransDecayRadius || lV0TransRadius >= fMaxK0sTransDecayRadius) return passedV0Selection;
 
     //DCA of daughter tracks at the decay vertex
     Double_t lDcaV0Daughters = v0->DcaV0Daughters();
-    if(lDcaV0Daughters >= 0.4) return passedV0Selection;
+    if(lDcaV0Daughters >= fK0sDcaV0daughters) return passedV0Selection;
 
     //DCA of V0 to primary vertex
     Double_t lDcaV0ToPrimVertex = v0->DcaV0ToPrimVertex();
@@ -2041,12 +1909,12 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedV0SelectionTopologica
 
     //V0 cos-pointing angle
     Double_t lV0CosineOfPointingAngle = v0->CosPointingAngle(primaryVertex);
-    if(lV0CosineOfPointingAngle <= 0.999) return passedV0Selection;
+    if(lV0CosineOfPointingAngle <= fK0sCosPAval) return passedV0Selection;
 
     //Armenteros variables
     Double_t fV0_AlphaArm = v0->AlphaV0();
     Double_t fV0_pTArm = v0->PtArmV0();
-    if (fV0_pTArm/fV0_AlphaArm >= 0.2) return passedV0Selection;
+    if (fV0_pTArm/TMath::Abs(fV0_AlphaArm) <= fArmentousCutVal) return passedV0Selection;
     
     passedV0Selection = kTRUE;
     return passedV0Selection;
@@ -2061,7 +1929,7 @@ Int_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::CheckFlagITSHitOrTOFhit(AliA
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsLambdaCandidate (AliAODv0 *V0, AliAODTrack *pos, AliAODTrack *neg, Double_t PIDcut, Double_t centrality)  {
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsLambdaCandidate (AliAODv0 *V0, AliAODTrack *pos, AliAODTrack *neg, Double_t PIDcut, Double_t centrality, Double_t LambdaMassCut)  {
     
     //PID Daughters
     Bool_t passedPID=(kFALSE);
@@ -2086,8 +1954,8 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsLambdaCandidate (AliAODv0
     Double_t massV0Lambda = V0->MassLambda();
     Double_t massLambda_PDG=TDatabasePDG::Instance()->GetParticle(3122)->Mass();
     
-    if (massV0Lambda <= massLambda_PDG-0.003) return kFALSE;
-    if (massV0Lambda >= massLambda_PDG+0.003) return kFALSE;
+    if (massV0Lambda <= massLambda_PDG-LambdaMassCut) return kFALSE;
+    if (massV0Lambda >= massLambda_PDG+LambdaMassCut) return kFALSE;
 
     //hNumberOfV0->Fill(12.5);
     
@@ -2096,7 +1964,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsLambdaCandidate (AliAODv0
 
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsAntiLambdaCandidate (AliAODv0 *V0, AliAODTrack *pos, AliAODTrack *neg, Double_t PIDcut, Double_t centrality)  {
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsAntiLambdaCandidate (AliAODv0 *V0, AliAODTrack *pos, AliAODTrack *neg, Double_t PIDcut, Double_t centrality, Double_t LambdaMassCut)  {
     
     //PID Daughters
     Bool_t passedPID=(kFALSE);
@@ -2117,14 +1985,14 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsAntiLambdaCandidate (AliA
     Double_t massV0AntiLambda = V0->MassAntiLambda();
     Double_t massLambda_PDG=TDatabasePDG::Instance()->GetParticle(3122)->Mass();
     
-    if (massV0AntiLambda <= massLambda_PDG-0.003) return kFALSE;
-    if (massV0AntiLambda >= massLambda_PDG+0.003) return kFALSE;
+    if (massV0AntiLambda <= massLambda_PDG-LambdaMassCut) return kFALSE;
+    if (massV0AntiLambda >= massLambda_PDG+LambdaMassCut) return kFALSE;
   
     return kTRUE;
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsK0sCandidate (AliAODv0 *V0, AliAODTrack *pos, AliAODTrack *neg, Double_t PIDcut,Double_t centrality)  {
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsK0sCandidate (AliAODv0 *V0, AliAODTrack *pos, AliAODTrack *neg, Double_t PIDcut,Double_t centrality,Double_t K0sMassCut)  {
     
     //PID Daughters
     Bool_t passedPID=(kFALSE);
@@ -2137,10 +2005,52 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsK0sCandidate (AliAODv0 *V
     
     f3DhistMassK0s_vs_Pt_beforeMasscut_Cent->Fill(V0->Pt(),V0->MassK0Short(),centrality);
 
-    if (massK0s <= massK0s_PDG-0.015) return kFALSE;
-    if (massK0s >= massK0s_PDG+0.015) return kFALSE;
+    if (massK0s <= massK0s_PDG-K0sMassCut) return kFALSE;
+    if (massK0s >= massK0s_PDG+K0sMassCut) return kFALSE;
 
     return kTRUE;
+}
+
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::HasTrackPIDTPC(AliVTrack *track)
+{
+  if(!track || !fPIDResponse) return kFALSE;
+  AliPIDResponse::EDetPidStatus pidStatusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track);
+  return (pidStatusTPC == AliPIDResponse::kDetPidOk);
+}
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::HasTrackPIDTOF(AliVTrack *track) 
+{
+  if(!track || !fPIDResponse) return kFALSE;
+  AliPIDResponse::EDetPidStatus pidStatusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track);
+  return ((pidStatusTOF == AliPIDResponse::kDetPidOk) && (track->GetStatus()& AliVTrack::kTOFout) && (track->GetStatus()& AliVTrack::kTIME));
+}
+//_____________________________________________________________________________
+Int_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IdentifyTrackBayesian(AliVTrack *track) // identify Pi, Ka, Pr based on BayesianPID
+{
+  // checking detector statuses
+  Bool_t bIsTPCok = HasTrackPIDTPC(track);
+  Bool_t bIsTOFok = HasTrackPIDTOF(track);
+
+  if(!bIsTPCok) { return -1; }
+  
+
+  Double_t l_Probs[AliPID::kSPECIES];
+  Double_t l_MaxProb[] = {fPIDbayesPion,fPIDbayesKaon,fPIDbayesProton};
+  
+  UInt_t flag=fPIDCombined->ComputeProbabilities(track, fPIDResponse, l_Probs);
+  Bool_t l_TOFUsed = fPIDCombined->ComputeProbabilities(track, fPIDResponse, l_Probs) & AliPIDResponse::kDetTOF;
+  Int_t pidInd = 0;
+  for(Int_t i(0); i < AliPID::kSPECIES; i++)
+    pidInd=(l_Probs[i]>l_Probs[pidInd])?i:pidInd;
+  Int_t retInd = pidInd-AliPID::kPion+1; //realigning
+  if(retInd<1 || retInd>3) return -1;
+  if(l_Probs[pidInd] < l_MaxProb[retInd-1]) return -1;
+	
+  //check nsigma cuts
+  if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)pidInd))>3.0) return -1;
+  if(bIsTOFok && l_TOFUsed) if(TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)pidInd))>3.0) return -1;
+
+  return retInd; //retInd = 1 --> pion, retInd = 2 --> kaon, retInd = 3 --> proton 
 }
 
  //_____________________________________________________________________________________________________________________________________

@@ -141,8 +141,7 @@
 
 #pragma link C++ class AliAnalysisTaskDiffPtFluc_PIDhadrons+;
 #pragma link C++ class AliAnalysisTaskDiffPtFluc_PIDhadrons_v2+;
-#pragma link C++ class AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5+;
-#pragma link C++ class AliAnalysisTaskDiffPtFStrange+;
+#pragma link C++ class AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5+;
 #pragma link C++ class AliAnalysisTaskDiffPtFluc_MCnoESD_detect+;
 #pragma link C++ class AliAnalysisTaskDiffPtFluc_MCnoESD_gen+;
 #pragma link C++ class AliAnalysisTaskDiffPtFluc_MCnoESD_correction+;
