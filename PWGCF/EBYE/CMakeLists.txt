@@ -154,9 +154,8 @@ set(SRCS
   HMPTF/AliAnalysisTaskMeanptFluctMC_effcheck.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons_v2.cxx
-  DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect.cxx
-  DiffPTF/AliAnalysisTaskDiffPtFStrange.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_detect.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_gen.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_correction.cxx
