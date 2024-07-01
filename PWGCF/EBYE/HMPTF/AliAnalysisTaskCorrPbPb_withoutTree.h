@@ -12,8 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#ifndef AliAnalysisTaskCorrPbPb_v2_H
-#define AliAnalysisTaskCorrPbPb_v2_H
+#ifndef AliAnalysisTaskCorrPbPb_withoutTree_H
+#define AliAnalysisTaskCorrPbPb_withoutTree_H
 
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
@@ -39,11 +39,11 @@ class AliPIDResponse;
 class AliMultSelection;
 
 
-class AliAnalysisTaskCorrPbPb_v2 : public AliAnalysisTaskSE {
+class AliAnalysisTaskCorrPbPb_withoutTree : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskCorrPbPb_v2();
-  AliAnalysisTaskCorrPbPb_v2(const char *name);
-  virtual ~AliAnalysisTaskCorrPbPb_v2();
+  AliAnalysisTaskCorrPbPb_withoutTree();
+  AliAnalysisTaskCorrPbPb_withoutTree(const char *name);
+  virtual ~AliAnalysisTaskCorrPbPb_withoutTree();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -194,30 +194,41 @@ class AliAnalysisTaskCorrPbPb_v2 : public AliAnalysisTaskSE {
   Float_t fEffSqrFactrKaonPlus_ptmax3;
   */
   TProfile *Profile_ptmax2_RecNetKaon;
+  TProfile *Profile_ptmax2_RecNetPion;
   TProfile *Profile_ptmax2_RecNetProton;
   TProfile *Profile_ptmax2_RecNetCharge;
   TProfile *Profile_ptmax2_RecNetChargeNetKaon;
   TProfile *Profile_ptmax2_RecNetChargeNetProton;
   TProfile *Profile_ptmax2_RecNetKaonNetProton;
+  TProfile *Profile_ptmax2_RecNetKaonNetPion;
+  TProfile *Profile_ptmax2_RecNetPionNetProton;
   TProfile *Profile_ptmax2_Term1C2RecNetKaon;
   TProfile *Profile_ptmax2_Term2C2RecNetKaon;
+  TProfile *Profile_ptmax2_Term1C2RecNetPion;
+  TProfile *Profile_ptmax2_Term2C2RecNetPion;
   TProfile *Profile_ptmax2_Term1C2RecNetCharge;
   TProfile *Profile_ptmax2_Term2C2RecNetCharge;
   TProfile *Profile_ptmax2_Term1C2RecNetProton;
   TProfile *Profile_ptmax2_Term2C2RecNetProton;
   TProfile *Profile_ptSTAR_RecNetKaon;
+  TProfile *Profile_ptSTAR_RecNetPion;
   TProfile *Profile_ptSTAR_RecNetProton;
   TProfile *Profile_ptSTAR_RecNetCharge;
   TProfile *Profile_ptSTAR_RecNetChargeNetKaon;
   TProfile *Profile_ptSTAR_RecNetChargeNetProton;
   TProfile *Profile_ptSTAR_RecNetKaonNetProton;
+  TProfile *Profile_ptSTAR_RecNetKaonNetPion;
+  TProfile *Profile_ptSTAR_RecNetPionNetProton;
   TProfile *Profile_ptSTAR_Term1C2RecNetKaon;
   TProfile *Profile_ptSTAR_Term2C2RecNetKaon;
+  TProfile *Profile_ptSTAR_Term1C2RecNetPion;
+  TProfile *Profile_ptSTAR_Term2C2RecNetPion;
   TProfile *Profile_ptSTAR_Term1C2RecNetCharge;
   TProfile *Profile_ptSTAR_Term2C2RecNetCharge;
   TProfile *Profile_ptSTAR_Term1C2RecNetProton;
   TProfile *Profile_ptSTAR_Term2C2RecNetProton;
   TProfile *Profile_ptmax2_CorrectedNetKaon;
+  TProfile *Profile_ptmax2_CorrectedNetPion;
   TProfile *Profile_ptmax2_CorrectedNetProton;
   TProfile *Profile_ptmax2_CorrectedNetCharge;
   TProfile *Profile_ptmax2_CorrectedNetChargeNetKaon_term1;
@@ -227,10 +238,16 @@ class AliAnalysisTaskCorrPbPb_v2 : public AliAnalysisTaskSE {
   TProfile *Profile_ptmax2_CorrectedNetChargeNetProton_term2;
   TProfile *Profile_ptmax2_CorrectedNetChargeNetProton_term3;
   TProfile *Profile_ptmax2_CorrectedNetKaonNetProton;
+  TProfile *Profile_ptmax2_CorrectedNetKaonNetPion;
+  TProfile *Profile_ptmax2_CorrectedNetPionNetProton;
   TProfile *Profile_ptmax2_Term1C2CorrectedNetKaon;
   TProfile *Profile_ptmax2_Term2C2CorrectedNetKaon;
   TProfile *Profile_ptmax2_Term3C2CorrectedNetKaon;
   TProfile *Profile_ptmax2_Term4C2CorrectedNetKaon;
+  TProfile *Profile_ptmax2_Term1C2CorrectedNetPion;
+  TProfile *Profile_ptmax2_Term2C2CorrectedNetPion;
+  TProfile *Profile_ptmax2_Term3C2CorrectedNetPion;
+  TProfile *Profile_ptmax2_Term4C2CorrectedNetPion;
   TProfile *Profile_ptmax2_Term1C2CorrectedNetCharge;
   TProfile *Profile_ptmax2_Term2C2CorrectedNetCharge;
   TProfile *Profile_ptmax2_Term3C2CorrectedNetCharge;
@@ -240,6 +257,7 @@ class AliAnalysisTaskCorrPbPb_v2 : public AliAnalysisTaskSE {
   TProfile *Profile_ptmax2_Term3C2CorrectedNetProton;
   TProfile *Profile_ptmax2_Term4C2CorrectedNetProton;
   TProfile *Profile_ptSTAR_CorrectedNetKaon;
+  TProfile *Profile_ptSTAR_CorrectedNetPion;
   TProfile *Profile_ptSTAR_CorrectedNetProton;
   TProfile *Profile_ptSTAR_CorrectedNetCharge;
   TProfile *Profile_ptSTAR_CorrectedNetChargeNetKaon_term1;
@@ -249,10 +267,16 @@ class AliAnalysisTaskCorrPbPb_v2 : public AliAnalysisTaskSE {
   TProfile *Profile_ptSTAR_CorrectedNetChargeNetProton_term2;
   TProfile *Profile_ptSTAR_CorrectedNetChargeNetProton_term3;
   TProfile *Profile_ptSTAR_CorrectedNetKaonNetProton;
+  TProfile *Profile_ptSTAR_CorrectedNetKaonNetPion;
+  TProfile *Profile_ptSTAR_CorrectedNetPionNetProton;
   TProfile *Profile_ptSTAR_Term1C2CorrectedNetKaon;
   TProfile *Profile_ptSTAR_Term2C2CorrectedNetKaon;
   TProfile *Profile_ptSTAR_Term3C2CorrectedNetKaon;
   TProfile *Profile_ptSTAR_Term4C2CorrectedNetKaon;
+  TProfile *Profile_ptSTAR_Term1C2CorrectedNetPion;
+  TProfile *Profile_ptSTAR_Term2C2CorrectedNetPion;
+  TProfile *Profile_ptSTAR_Term3C2CorrectedNetPion;
+  TProfile *Profile_ptSTAR_Term4C2CorrectedNetPion;
   TProfile *Profile_ptSTAR_Term1C2CorrectedNetCharge;
   TProfile *Profile_ptSTAR_Term2C2CorrectedNetCharge;
   TProfile *Profile_ptSTAR_Term3C2CorrectedNetCharge;
@@ -325,9 +349,9 @@ class AliAnalysisTaskCorrPbPb_v2 : public AliAnalysisTaskSE {
 
 
   
-  AliAnalysisTaskCorrPbPb_v2(const AliAnalysisTaskCorrPbPb_v2&);
-  AliAnalysisTaskCorrPbPb_v2& operator=(const AliAnalysisTaskCorrPbPb_v2&);  
-  ClassDef(AliAnalysisTaskCorrPbPb_v2, 1);
+  AliAnalysisTaskCorrPbPb_withoutTree(const AliAnalysisTaskCorrPbPb_withoutTree&);
+  AliAnalysisTaskCorrPbPb_withoutTree& operator=(const AliAnalysisTaskCorrPbPb_withoutTree&);  
+  ClassDef(AliAnalysisTaskCorrPbPb_withoutTree, 1);
 };
 
 #endif
