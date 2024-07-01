@@ -132,7 +132,7 @@
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_trackinfo+;
 #pragma link C++ class AliAnalysisTaskCorrPP+;
 #pragma link C++ class AliAnalysisTaskCorrPbPb+;
-#pragma link C++ class AliAnalysisTaskCorrPbPb_v2+;
+#pragma link C++ class AliAnalysisTaskCorrPbPb_withoutTree+;
 #pragma link C++ class AliAnalysisTaskCorrPbPb_treemerge+;
 #pragma link C++ class AliAnalysisTaskCorrPPHM+;
 #pragma link C++ class AliAnalysisTaskCorrPbPbMC+;

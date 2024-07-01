@@ -1,5 +1,5 @@
 
-AliAnalysisTaskCorrPbPb_v2 *AddTaskCorrPbPb_v2(Int_t fCentralityMin=0, Int_t fCentralityMax=90, Double_t fVzMax=10, Int_t fpileupcut = 1, Int_t fCentEstFlag = 0, Int_t fFilterBit=96, Double_t fchi2tpc=2.5, Double_t fchi2its=36,  Double_t fnotpccrossedrows=70, Double_t fpidnSigma_Pion=2.0, Double_t fpidnSigma_Kaon=2.0, Double_t fpidnSigma_Proton=2.0, TString OutFileName = "_default", TString sMCfilePath ="alien:///alice/cern.ch/user/s/swati/EfficiencyPbPbLHC20j6a/CentralitywiseEff/EfficiencyHijingPbPb.root", Double_t fetacut = 0.8)
+AliAnalysisTaskCorrPbPb_withoutTree *AddTaskCorrPbPb_withoutTree(Int_t fCentralityMin=0, Int_t fCentralityMax=90, Double_t fVzMax=10, Int_t fpileupcut = 1, Int_t fCentEstFlag = 0, Int_t fFilterBit=96, Double_t fchi2tpc=2.5, Double_t fchi2its=36,  Double_t fnotpccrossedrows=70, Double_t fpidnSigma_Pion=2.0, Double_t fpidnSigma_Kaon=2.0, Double_t fpidnSigma_Proton=2.0, TString OutFileName = "_default", TString sMCfilePath ="alien:///alice/cern.ch/user/s/swati/EfficiencyPbPbLHC20j6a/CentralitywiseEff/EfficiencyHijingPbPb.root", Double_t fetacut = 0.8)
 {
   // standard with task
   printf("===================================================================================\n");
@@ -23,8 +23,8 @@ AliAnalysisTaskCorrPbPb_v2 *AddTaskCorrPbPb_v2(Int_t fCentralityMin=0, Int_t fCe
   TString TaskMeanpt;
   TaskMeanpt.Form("gTaskMeanpt%d_%d_%s", gCentMin, gCentMax, " ");
   //gROOT->LoadMacro("AliAnalysisTaskResonanceVsMultiplicity.cxx++g");                                                           
-  //gInterpreter->ProcessLine(".x AliAnalysisTaskCorrPbPb_v2.cxx++g");
-  AliAnalysisTaskCorrPbPb_v2 *task_Mpt = new AliAnalysisTaskCorrPbPb_v2(TaskMeanpt);
+  //gInterpreter->ProcessLine(".x AliAnalysisTaskCorrPbPb_withoutTree.cxx++g");
+  AliAnalysisTaskCorrPbPb_withoutTree *task_Mpt = new AliAnalysisTaskCorrPbPb_withoutTree(TaskMeanpt);
   task_Mpt->SelectCollisionCandidates(AliVEvent::kINT7); //trigger for analysis                                                               
 
 
