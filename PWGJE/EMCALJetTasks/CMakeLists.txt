@@ -168,6 +168,7 @@ set(SRCS
     Tracks/AliEmcalTRDTrackingTask.cxx
     UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
+    UserTasks/AliAnalysisTaskCascadesInJets.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskChargedJetsHadronCF.cxx
     UserTasks/AliAnalysisTaskChargedJetsHadronToy.cxx
