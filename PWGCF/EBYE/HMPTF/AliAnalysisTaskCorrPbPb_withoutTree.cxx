@@ -33,7 +33,7 @@
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
 #include "AliEventCuts.h"
-#include "AliAnalysisTaskCorrPbPb_v2.h"
+#include "AliAnalysisTaskCorrPbPb_withoutTree.h"
 
 //For MC event
 #include "AliMCEvent.h"
@@ -74,11 +74,11 @@ using namespace std;
 using std::cout;
 using std::endl;
 
-class AliAnalysisTaskCorrPbPb_v2;
-ClassImp(AliAnalysisTaskCorrPbPb_v2)
+class AliAnalysisTaskCorrPbPb_withoutTree;
+ClassImp(AliAnalysisTaskCorrPbPb_withoutTree)
 
 //_____________________________________________________________________________________________________________________________________
-AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2():
+AliAnalysisTaskCorrPbPb_withoutTree::AliAnalysisTaskCorrPbPb_withoutTree():
   AliAnalysisTaskSE(),
   fAODeventCuts(),
   fESDevent(0),
@@ -140,30 +140,41 @@ AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2():
   // fEffSqrFactrKaonMinus_ptmax3(0),
   // fEffSqrFactrKaonPlus_ptmax3(0),
   Profile_ptmax2_RecNetKaon(0),
+  Profile_ptmax2_RecNetPion(0),
   Profile_ptmax2_RecNetProton(0),
   Profile_ptmax2_RecNetCharge(0),
   Profile_ptmax2_RecNetChargeNetKaon(0),
   Profile_ptmax2_RecNetChargeNetProton(0),
   Profile_ptmax2_RecNetKaonNetProton(0),
+  Profile_ptmax2_RecNetKaonNetPion(0),
+  Profile_ptmax2_RecNetPionNetProton(0),
   Profile_ptmax2_Term1C2RecNetKaon(0),
   Profile_ptmax2_Term2C2RecNetKaon(0),
+  Profile_ptmax2_Term1C2RecNetPion(0),
+  Profile_ptmax2_Term2C2RecNetPion(0),
   Profile_ptmax2_Term1C2RecNetCharge(0),
   Profile_ptmax2_Term2C2RecNetCharge(0),
   Profile_ptmax2_Term1C2RecNetProton(0),
   Profile_ptmax2_Term2C2RecNetProton(0),
   Profile_ptSTAR_RecNetKaon(0),
+  Profile_ptSTAR_RecNetPion(0),
   Profile_ptSTAR_RecNetProton(0),
   Profile_ptSTAR_RecNetCharge(0),
   Profile_ptSTAR_RecNetChargeNetKaon(0),
   Profile_ptSTAR_RecNetChargeNetProton(0),
   Profile_ptSTAR_RecNetKaonNetProton(0),
+  Profile_ptSTAR_RecNetKaonNetPion(0),
+  Profile_ptSTAR_RecNetPionNetProton(0),
   Profile_ptSTAR_Term1C2RecNetKaon(0),
   Profile_ptSTAR_Term2C2RecNetKaon(0),
+  Profile_ptSTAR_Term1C2RecNetPion(0),
+  Profile_ptSTAR_Term2C2RecNetPion(0),
   Profile_ptSTAR_Term1C2RecNetCharge(0),
   Profile_ptSTAR_Term2C2RecNetCharge(0),
   Profile_ptSTAR_Term1C2RecNetProton(0),
   Profile_ptSTAR_Term2C2RecNetProton(0),
   Profile_ptmax2_CorrectedNetKaon(0),
+  Profile_ptmax2_CorrectedNetPion(0),
   Profile_ptmax2_CorrectedNetProton(0),
   Profile_ptmax2_CorrectedNetCharge(0),
   Profile_ptmax2_CorrectedNetChargeNetKaon_term1(0),
@@ -173,10 +184,16 @@ AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2():
   Profile_ptmax2_CorrectedNetChargeNetProton_term2(0),
   Profile_ptmax2_CorrectedNetChargeNetProton_term3(0),
   Profile_ptmax2_CorrectedNetKaonNetProton(0),
+  Profile_ptmax2_CorrectedNetKaonNetPion(0),
+  Profile_ptmax2_CorrectedNetPionNetProton(0),
   Profile_ptmax2_Term1C2CorrectedNetKaon(0),
   Profile_ptmax2_Term2C2CorrectedNetKaon(0),
   Profile_ptmax2_Term3C2CorrectedNetKaon(0),
   Profile_ptmax2_Term4C2CorrectedNetKaon(0),
+  Profile_ptmax2_Term1C2CorrectedNetPion(0),
+  Profile_ptmax2_Term2C2CorrectedNetPion(0),
+  Profile_ptmax2_Term3C2CorrectedNetPion(0),
+  Profile_ptmax2_Term4C2CorrectedNetPion(0),
   Profile_ptmax2_Term1C2CorrectedNetCharge(0),
   Profile_ptmax2_Term2C2CorrectedNetCharge(0),
   Profile_ptmax2_Term3C2CorrectedNetCharge(0),
@@ -186,6 +203,7 @@ AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2():
   Profile_ptmax2_Term3C2CorrectedNetProton(0),
   Profile_ptmax2_Term4C2CorrectedNetProton(0),
   Profile_ptSTAR_CorrectedNetKaon(0),
+  Profile_ptSTAR_CorrectedNetPion(0),
   Profile_ptSTAR_CorrectedNetProton(0),
   Profile_ptSTAR_CorrectedNetCharge(0),
   Profile_ptSTAR_CorrectedNetChargeNetKaon_term1(0),
@@ -195,10 +213,16 @@ AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2():
   Profile_ptSTAR_CorrectedNetChargeNetProton_term2(0),
   Profile_ptSTAR_CorrectedNetChargeNetProton_term3(0),
   Profile_ptSTAR_CorrectedNetKaonNetProton(0),
+  Profile_ptSTAR_CorrectedNetKaonNetPion(0),
+  Profile_ptSTAR_CorrectedNetPionNetProton(0),
   Profile_ptSTAR_Term1C2CorrectedNetKaon(0),
   Profile_ptSTAR_Term2C2CorrectedNetKaon(0),
   Profile_ptSTAR_Term3C2CorrectedNetKaon(0),
   Profile_ptSTAR_Term4C2CorrectedNetKaon(0),
+  Profile_ptSTAR_Term1C2CorrectedNetPion(0),
+  Profile_ptSTAR_Term2C2CorrectedNetPion(0),
+  Profile_ptSTAR_Term3C2CorrectedNetPion(0),
+  Profile_ptSTAR_Term4C2CorrectedNetPion(0),
   Profile_ptSTAR_Term1C2CorrectedNetCharge(0),
   Profile_ptSTAR_Term2C2CorrectedNetCharge(0),
   Profile_ptSTAR_Term3C2CorrectedNetCharge(0),
@@ -258,7 +282,7 @@ AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2():
     }
 }
 //_____________________________________________________________________________________________________________________________________
-AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2(const char *name):
+AliAnalysisTaskCorrPbPb_withoutTree::AliAnalysisTaskCorrPbPb_withoutTree(const char *name):
   AliAnalysisTaskSE(name),
   fAODeventCuts(),
   fESDevent(0),
@@ -320,30 +344,41 @@ AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2(const char *name):
   // fEffSqrFactrKaonMinus_ptmax3(0),
   // fEffSqrFactrKaonPlus_ptmax3(0),
   Profile_ptmax2_RecNetKaon(0),
+  Profile_ptmax2_RecNetPion(0),
   Profile_ptmax2_RecNetProton(0),
   Profile_ptmax2_RecNetCharge(0),
   Profile_ptmax2_RecNetChargeNetKaon(0),
   Profile_ptmax2_RecNetChargeNetProton(0),
   Profile_ptmax2_RecNetKaonNetProton(0),
+  Profile_ptmax2_RecNetKaonNetPion(0),
+  Profile_ptmax2_RecNetPionNetProton(0),
   Profile_ptmax2_Term1C2RecNetKaon(0),
   Profile_ptmax2_Term2C2RecNetKaon(0),
+  Profile_ptmax2_Term1C2RecNetPion(0),
+  Profile_ptmax2_Term2C2RecNetPion(0),
   Profile_ptmax2_Term1C2RecNetCharge(0),
   Profile_ptmax2_Term2C2RecNetCharge(0),
   Profile_ptmax2_Term1C2RecNetProton(0),
   Profile_ptmax2_Term2C2RecNetProton(0),
   Profile_ptSTAR_RecNetKaon(0),
+  Profile_ptSTAR_RecNetPion(0),
   Profile_ptSTAR_RecNetProton(0),
   Profile_ptSTAR_RecNetCharge(0),
   Profile_ptSTAR_RecNetChargeNetKaon(0),
   Profile_ptSTAR_RecNetChargeNetProton(0),
   Profile_ptSTAR_RecNetKaonNetProton(0),
+  Profile_ptSTAR_RecNetKaonNetPion(0),
+  Profile_ptSTAR_RecNetPionNetProton(0),
   Profile_ptSTAR_Term1C2RecNetKaon(0),
   Profile_ptSTAR_Term2C2RecNetKaon(0),
+  Profile_ptSTAR_Term1C2RecNetPion(0),
+  Profile_ptSTAR_Term2C2RecNetPion(0),
   Profile_ptSTAR_Term1C2RecNetCharge(0),
   Profile_ptSTAR_Term2C2RecNetCharge(0),
   Profile_ptSTAR_Term1C2RecNetProton(0),
   Profile_ptSTAR_Term2C2RecNetProton(0),
   Profile_ptmax2_CorrectedNetKaon(0),
+  Profile_ptmax2_CorrectedNetPion(0),
   Profile_ptmax2_CorrectedNetProton(0),
   Profile_ptmax2_CorrectedNetCharge(0),
   Profile_ptmax2_CorrectedNetChargeNetKaon_term1(0),
@@ -353,10 +388,16 @@ AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2(const char *name):
   Profile_ptmax2_CorrectedNetChargeNetProton_term2(0),
   Profile_ptmax2_CorrectedNetChargeNetProton_term3(0),
   Profile_ptmax2_CorrectedNetKaonNetProton(0),
+  Profile_ptmax2_CorrectedNetKaonNetPion(0),
+  Profile_ptmax2_CorrectedNetPionNetProton(0),
   Profile_ptmax2_Term1C2CorrectedNetKaon(0),
   Profile_ptmax2_Term2C2CorrectedNetKaon(0),
   Profile_ptmax2_Term3C2CorrectedNetKaon(0),
   Profile_ptmax2_Term4C2CorrectedNetKaon(0),
+  Profile_ptmax2_Term1C2CorrectedNetPion(0),
+  Profile_ptmax2_Term2C2CorrectedNetPion(0),
+  Profile_ptmax2_Term3C2CorrectedNetPion(0),
+  Profile_ptmax2_Term4C2CorrectedNetPion(0),
   Profile_ptmax2_Term1C2CorrectedNetCharge(0),
   Profile_ptmax2_Term2C2CorrectedNetCharge(0),
   Profile_ptmax2_Term3C2CorrectedNetCharge(0),
@@ -366,6 +407,7 @@ AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2(const char *name):
   Profile_ptmax2_Term3C2CorrectedNetProton(0),
   Profile_ptmax2_Term4C2CorrectedNetProton(0),
   Profile_ptSTAR_CorrectedNetKaon(0),
+  Profile_ptSTAR_CorrectedNetPion(0),
   Profile_ptSTAR_CorrectedNetProton(0),
   Profile_ptSTAR_CorrectedNetCharge(0),
   Profile_ptSTAR_CorrectedNetChargeNetKaon_term1(0),
@@ -375,10 +417,16 @@ AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2(const char *name):
   Profile_ptSTAR_CorrectedNetChargeNetProton_term2(0),
   Profile_ptSTAR_CorrectedNetChargeNetProton_term3(0),
   Profile_ptSTAR_CorrectedNetKaonNetProton(0),
+  Profile_ptSTAR_CorrectedNetKaonNetPion(0),
+  Profile_ptSTAR_CorrectedNetPionNetProton(0),
   Profile_ptSTAR_Term1C2CorrectedNetKaon(0),
   Profile_ptSTAR_Term2C2CorrectedNetKaon(0),
   Profile_ptSTAR_Term3C2CorrectedNetKaon(0),
   Profile_ptSTAR_Term4C2CorrectedNetKaon(0),
+  Profile_ptSTAR_Term1C2CorrectedNetPion(0),
+  Profile_ptSTAR_Term2C2CorrectedNetPion(0),
+  Profile_ptSTAR_Term3C2CorrectedNetPion(0),
+  Profile_ptSTAR_Term4C2CorrectedNetPion(0),
   Profile_ptSTAR_Term1C2CorrectedNetCharge(0),
   Profile_ptSTAR_Term2C2CorrectedNetCharge(0),
   Profile_ptSTAR_Term3C2CorrectedNetCharge(0),
@@ -444,7 +492,7 @@ AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2(const char *name):
   DefineOutput(3, TList::Class());
 }
 //_____________________________________________________________________________________________________________________________________
-AliAnalysisTaskCorrPbPb_v2::~AliAnalysisTaskCorrPbPb_v2()  {
+AliAnalysisTaskCorrPbPb_withoutTree::~AliAnalysisTaskCorrPbPb_withoutTree()  {
 
   if (fOutputList){
     delete fOutputList;
@@ -472,7 +520,7 @@ AliAnalysisTaskCorrPbPb_v2::~AliAnalysisTaskCorrPbPb_v2()  {
 
 }
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskCorrPbPb_v2::UserCreateOutputObjects()  {
+void AliAnalysisTaskCorrPbPb_withoutTree::UserCreateOutputObjects()  {
     
     //Create Output List
     fOutputList = new TList();
@@ -586,52 +634,72 @@ void AliAnalysisTaskCorrPbPb_v2::UserCreateOutputObjects()  {
     //Reconstructed
     
     Profile_ptmax2_RecNetKaon = new TProfile ("Profile_ptmax2_RecNetKaon", "Profile_ptmax2_RecNetKaon", 20, 0, 100);
+    Profile_ptmax2_RecNetPion = new TProfile ("Profile_ptmax2_RecNetPion", "Profile_ptmax2_RecNetPion", 20, 0, 100);
     Profile_ptmax2_RecNetProton = new TProfile ("Profile_ptmax2_RecNetProton", "Profile_ptmax2_RecNetProton", 20, 0, 100);
     Profile_ptmax2_RecNetCharge = new TProfile ("Profile_ptmax2_RecNetCharge", "Profile_ptmax2_RecNetCharge", 20, 0, 100);
     Profile_ptmax2_RecNetChargeNetKaon = new TProfile ("Profile_ptmax2_RecNetChargeNetKaon", "Profile_ptmax2_RecNetChargeNetKaon", 20, 0, 100);
     Profile_ptmax2_RecNetChargeNetProton = new TProfile ("Profile_ptmax2_RecNetChargeNetProton", "Profile_ptmax2_RecNetChargeNetProton", 20, 0, 100);
     Profile_ptmax2_RecNetKaonNetProton = new TProfile ("Profile_ptmax2_RecNetKaonNetProton", "Profile_ptmax2_RecNetKaonNetProton", 20, 0, 100);
+    Profile_ptmax2_RecNetKaonNetPion = new TProfile ("Profile_ptmax2_RecNetKaonNetPion", "Profile_ptmax2_RecNetKaonNetPion", 20, 0, 100);
+    Profile_ptmax2_RecNetPionNetProton = new TProfile ("Profile_ptmax2_RecNetPionNetProton", "Profile_ptmax2_RecNetPionNetProton", 20, 0, 100);
     Profile_ptmax2_Term1C2RecNetKaon = new TProfile ("Profile_ptmax2_Term1C2RecNetKaon", "Profile_ptmax2_Term1C2RecNetKaon", 20, 0, 100);
+    Profile_ptmax2_Term1C2RecNetPion = new TProfile ("Profile_ptmax2_Term1C2RecNetPion", "Profile_ptmax2_Term1C2RecNetPion", 20, 0, 100);
     Profile_ptmax2_Term1C2RecNetCharge = new TProfile ("Profile_ptmax2_Term1C2RecNetCharge", "Profile_ptmax2_Term1C2RecNetCharge", 20, 0, 100);
     Profile_ptmax2_Term1C2RecNetProton = new TProfile ("Profile_ptmax2_Term1C2RecNetProton", "Profile_ptmax2_Term1C2RecNetProton", 20, 0, 100);
     Profile_ptmax2_Term2C2RecNetKaon = new TProfile ("Profile_ptmax2_Term2C2RecNetKaon", "Profile_ptmax2_Term2C2RecNetKaon", 20, 0, 100);
+    Profile_ptmax2_Term2C2RecNetPion = new TProfile ("Profile_ptmax2_Term2C2RecNetPion", "Profile_ptmax2_Term2C2RecNetPion", 20, 0, 100);
     Profile_ptmax2_Term2C2RecNetCharge = new TProfile ("Profile_ptmax2_Term2C2RecNetCharge", "Profile_ptmax2_Term2C2RecNetCharge", 20, 0, 100);
     Profile_ptmax2_Term2C2RecNetProton = new TProfile ("Profile_ptmax2_Term2C2RecNetProton", "Profile_ptmax2_Term2C2RecNetProton", 20, 0, 100);
 
+    Profile_ptSTAR_RecNetPion = new TProfile ("Profile_ptSTAR_RecNetPion", "Profile_ptSTAR_RecNetPion", 20, 0, 100);
     Profile_ptSTAR_RecNetKaon = new TProfile ("Profile_ptSTAR_RecNetKaon", "Profile_ptSTAR_RecNetKaon", 20, 0, 100);
     Profile_ptSTAR_RecNetProton = new TProfile ("Profile_ptSTAR_RecNetProton", "Profile_ptSTAR_RecNetProton", 20, 0, 100);
     Profile_ptSTAR_RecNetCharge = new TProfile ("Profile_ptSTAR_RecNetCharge", "Profile_ptSTAR_RecNetCharge", 20, 0, 100);
     Profile_ptSTAR_RecNetChargeNetKaon = new TProfile ("Profile_ptSTAR_RecNetChargeNetKaon", "Profile_ptSTAR_RecNetChargeNetKaon", 20, 0, 100);
     Profile_ptSTAR_RecNetChargeNetProton = new TProfile ("Profile_ptSTAR_RecNetChargeNetProton", "Profile_ptSTAR_RecNetChargeNetProton", 20, 0, 100);
     Profile_ptSTAR_RecNetKaonNetProton = new TProfile ("Profile_ptSTAR_RecNetKaonNetProton", "Profile_ptSTAR_RecNetKaonNetProton", 20, 0, 100);
+    Profile_ptSTAR_RecNetKaonNetPion = new TProfile ("Profile_ptSTAR_RecNetKaonNetPion", "Profile_ptSTAR_RecNetKaonNetPion", 20, 0, 100);
+    Profile_ptSTAR_RecNetPionNetProton = new TProfile ("Profile_ptSTAR_RecNetPionNetProton", "Profile_ptSTAR_RecNetPionNetProton", 20, 0, 100);
+    Profile_ptSTAR_Term1C2RecNetPion = new TProfile ("Profile_ptSTAR_Term1C2RecNetPion", "Profile_ptSTAR_Term1C2RecNetPion", 20, 0, 100);
     Profile_ptSTAR_Term1C2RecNetKaon = new TProfile ("Profile_ptSTAR_Term1C2RecNetKaon", "Profile_ptSTAR_Term1C2RecNetKaon", 20, 0, 100);
     Profile_ptSTAR_Term1C2RecNetCharge = new TProfile ("Profile_ptSTAR_Term1C2RecNetCharge", "Profile_ptSTAR_Term1C2RecNetCharge", 20, 0, 100);
     Profile_ptSTAR_Term1C2RecNetProton = new TProfile ("Profile_ptSTAR_Term1C2RecNetProton", "Profile_ptSTAR_Term1C2RecNetProton", 20, 0, 100);
+    Profile_ptSTAR_Term2C2RecNetPion = new TProfile ("Profile_ptSTAR_Term2C2RecNetPion", "Profile_ptSTAR_Term2C2RecNetPion", 20, 0, 100);
     Profile_ptSTAR_Term2C2RecNetKaon = new TProfile ("Profile_ptSTAR_Term2C2RecNetKaon", "Profile_ptSTAR_Term2C2RecNetKaon", 20, 0, 100);
     Profile_ptSTAR_Term2C2RecNetCharge = new TProfile ("Profile_ptSTAR_Term2C2RecNetCharge", "Profile_ptSTAR_Term2C2RecNetCharge", 20, 0, 100);
     Profile_ptSTAR_Term2C2RecNetProton = new TProfile ("Profile_ptSTAR_Term2C2RecNetProton", "Profile_ptSTAR_Term2C2RecNetProton", 20, 0, 100);
 
     fTreeList->Add(Profile_ptmax2_RecNetKaon);
+    fTreeList->Add(Profile_ptmax2_RecNetPion);
     fTreeList->Add(Profile_ptmax2_RecNetProton);
     fTreeList->Add(Profile_ptmax2_RecNetCharge);
     fTreeList->Add(Profile_ptmax2_RecNetChargeNetKaon);
     fTreeList->Add(Profile_ptmax2_RecNetChargeNetProton);
     fTreeList->Add(Profile_ptmax2_RecNetKaonNetProton);
+    fTreeList->Add(Profile_ptmax2_RecNetKaonNetPion);
+    fTreeList->Add(Profile_ptmax2_RecNetPionNetProton);
     fTreeList->Add(Profile_ptmax2_Term1C2RecNetKaon);
     fTreeList->Add(Profile_ptmax2_Term2C2RecNetKaon);
+    fTreeList->Add(Profile_ptmax2_Term1C2RecNetPion);
+    fTreeList->Add(Profile_ptmax2_Term2C2RecNetPion);
     fTreeList->Add(Profile_ptmax2_Term1C2RecNetCharge);
     fTreeList->Add(Profile_ptmax2_Term2C2RecNetCharge);
     fTreeList->Add(Profile_ptmax2_Term1C2RecNetProton);
     fTreeList->Add(Profile_ptmax2_Term2C2RecNetProton);
 
+    fTreeList->Add(Profile_ptSTAR_RecNetPion);
     fTreeList->Add(Profile_ptSTAR_RecNetKaon);
     fTreeList->Add(Profile_ptSTAR_RecNetProton);
     fTreeList->Add(Profile_ptSTAR_RecNetCharge);
     fTreeList->Add(Profile_ptSTAR_RecNetChargeNetKaon);
     fTreeList->Add(Profile_ptSTAR_RecNetChargeNetProton);
     fTreeList->Add(Profile_ptSTAR_RecNetKaonNetProton);
+    fTreeList->Add(Profile_ptSTAR_RecNetKaonNetPion);
+    fTreeList->Add(Profile_ptSTAR_RecNetPionNetProton);
     fTreeList->Add(Profile_ptSTAR_Term1C2RecNetKaon);
     fTreeList->Add(Profile_ptSTAR_Term2C2RecNetKaon);
+    fTreeList->Add(Profile_ptSTAR_Term1C2RecNetPion);
+    fTreeList->Add(Profile_ptSTAR_Term2C2RecNetPion);
     fTreeList->Add(Profile_ptSTAR_Term1C2RecNetCharge);
     fTreeList->Add(Profile_ptSTAR_Term2C2RecNetCharge);
     fTreeList->Add(Profile_ptSTAR_Term1C2RecNetProton);
@@ -642,6 +710,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserCreateOutputObjects()  {
 
     //0.2 < pT < 2.0
     
+    Profile_ptmax2_CorrectedNetPion = new TProfile ("Profile_ptmax2_CorrectedNetPion", "Profile_ptmax2_CorrectedNetPion", 20, 0, 100);
     Profile_ptmax2_CorrectedNetKaon = new TProfile ("Profile_ptmax2_CorrectedNetKaon", "Profile_ptmax2_CorrectedNetKaon", 20, 0, 100);
     Profile_ptmax2_CorrectedNetProton = new TProfile ("Profile_ptmax2_CorrectedNetProton", "Profile_ptmax2_CorrectedNetProton", 20, 0, 100);
     Profile_ptmax2_CorrectedNetCharge = new TProfile ("Profile_ptmax2_CorrectedNetCharge", "Profile_ptmax2_CorrectedNetCharge", 20, 0, 100);
@@ -655,6 +724,8 @@ void AliAnalysisTaskCorrPbPb_v2::UserCreateOutputObjects()  {
     Profile_ptmax2_CorrectedNetChargeNetProton_term3 = new TProfile ("Profile_ptmax2_CorrectedNetChargeNetProton_term3", "Profile_ptmax2_CorrectedNetChargeNetProton_term3", 20, 0, 100);
 
     Profile_ptmax2_CorrectedNetKaonNetProton = new TProfile ("Profile_ptmax2_CorrectedNetKaonNetProton", "Profile_ptmax2_CorrectedNetKaonNetProton", 20, 0, 100);
+    Profile_ptmax2_CorrectedNetKaonNetPion = new TProfile ("Profile_ptmax2_CorrectedNetKaonNetPion", "Profile_ptmax2_CorrectedNetKaonNetPion", 20, 0, 100);
+    Profile_ptmax2_CorrectedNetPionNetProton = new TProfile ("Profile_ptmax2_CorrectedNetPionNetProton", "Profile_ptmax2_CorrectedNetPionNetProton", 20, 0, 100);
 
     Profile_ptmax2_Term1C2CorrectedNetCharge = new TProfile ("Profile_ptmax2_Term1C2CorrectedNetCharge", "Profile_ptmax2_Term1C2CorrectedNetCharge", 20, 0, 100);
     Profile_ptmax2_Term2C2CorrectedNetCharge = new TProfile ("Profile_ptmax2_Term2C2CorrectedNetCharge", "Profile_ptmax2_Term2C2CorrectedNetCharge", 20, 0, 100);
@@ -666,11 +737,17 @@ void AliAnalysisTaskCorrPbPb_v2::UserCreateOutputObjects()  {
     Profile_ptmax2_Term3C2CorrectedNetKaon = new TProfile ("Profile_ptmax2_Term3C2CorrectedNetKaon", "Profile_ptmax2_Term3C2CorrectedNetKaon", 20, 0, 100);
     Profile_ptmax2_Term4C2CorrectedNetKaon = new TProfile ("Profile_ptmax2_Term4C2CorrectedNetKaon", "Profile_ptmax2_Term4C2CorrectedNetKaon", 20, 0, 100);
 
+    Profile_ptmax2_Term1C2CorrectedNetPion = new TProfile ("Profile_ptmax2_Term1C2CorrectedNetPion", "Profile_ptmax2_Term1C2CorrectedNetPion", 20, 0, 100);
+    Profile_ptmax2_Term2C2CorrectedNetPion = new TProfile ("Profile_ptmax2_Term2C2CorrectedNetPion", "Profile_ptmax2_Term2C2CorrectedNetPion", 20, 0, 100);
+    Profile_ptmax2_Term3C2CorrectedNetPion = new TProfile ("Profile_ptmax2_Term3C2CorrectedNetPion", "Profile_ptmax2_Term3C2CorrectedNetPion", 20, 0, 100);
+    Profile_ptmax2_Term4C2CorrectedNetPion = new TProfile ("Profile_ptmax2_Term4C2CorrectedNetPion", "Profile_ptmax2_Term4C2CorrectedNetPion", 20, 0, 100);
+
     Profile_ptmax2_Term1C2CorrectedNetProton = new TProfile ("Profile_ptmax2_Term1C2CorrectedNetProton", "Profile_ptmax2_Term1C2CorrectedNetProton", 20, 0, 100);
     Profile_ptmax2_Term2C2CorrectedNetProton = new TProfile ("Profile_ptmax2_Term2C2CorrectedNetProton", "Profile_ptmax2_Term2C2CorrectedNetProton", 20, 0, 100);
     Profile_ptmax2_Term3C2CorrectedNetProton = new TProfile ("Profile_ptmax2_Term3C2CorrectedNetProton", "Profile_ptmax2_Term3C2CorrectedNetProton", 20, 0, 100);
     Profile_ptmax2_Term4C2CorrectedNetProton = new TProfile ("Profile_ptmax2_Term4C2CorrectedNetProton", "Profile_ptmax2_Term4C2CorrectedNetProton", 20, 0, 100);
 
+    fTreeList->Add(Profile_ptmax2_CorrectedNetPion);
     fTreeList->Add(Profile_ptmax2_CorrectedNetKaon);
     fTreeList->Add(Profile_ptmax2_CorrectedNetProton);
     fTreeList->Add(Profile_ptmax2_CorrectedNetCharge);
@@ -681,10 +758,16 @@ void AliAnalysisTaskCorrPbPb_v2::UserCreateOutputObjects()  {
     fTreeList->Add(Profile_ptmax2_CorrectedNetChargeNetProton_term2);
     fTreeList->Add(Profile_ptmax2_CorrectedNetChargeNetProton_term3);
     fTreeList->Add(Profile_ptmax2_CorrectedNetKaonNetProton);
+    fTreeList->Add(Profile_ptmax2_CorrectedNetKaonNetPion);
+    fTreeList->Add(Profile_ptmax2_CorrectedNetPionNetProton);
     fTreeList->Add(Profile_ptmax2_Term1C2CorrectedNetKaon);
     fTreeList->Add(Profile_ptmax2_Term2C2CorrectedNetKaon);
     fTreeList->Add(Profile_ptmax2_Term3C2CorrectedNetKaon);
     fTreeList->Add(Profile_ptmax2_Term4C2CorrectedNetKaon);
+    fTreeList->Add(Profile_ptmax2_Term1C2CorrectedNetPion);
+    fTreeList->Add(Profile_ptmax2_Term2C2CorrectedNetPion);
+    fTreeList->Add(Profile_ptmax2_Term3C2CorrectedNetPion);
+    fTreeList->Add(Profile_ptmax2_Term4C2CorrectedNetPion);
     fTreeList->Add(Profile_ptmax2_Term1C2CorrectedNetCharge);
     fTreeList->Add(Profile_ptmax2_Term2C2CorrectedNetCharge);
     fTreeList->Add(Profile_ptmax2_Term3C2CorrectedNetCharge);
@@ -698,6 +781,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserCreateOutputObjects()  {
     //pt STAR cut
     
     Profile_ptSTAR_CorrectedNetKaon = new TProfile ("Profile_ptSTAR_CorrectedNetKaon", "Profile_ptSTAR_CorrectedNetKaon", 20, 0, 100);
+    Profile_ptSTAR_CorrectedNetPion = new TProfile ("Profile_ptSTAR_CorrectedNetPion", "Profile_ptSTAR_CorrectedNetPion", 20, 0, 100);
     Profile_ptSTAR_CorrectedNetProton = new TProfile ("Profile_ptSTAR_CorrectedNetProton", "Profile_ptSTAR_CorrectedNetProton", 20, 0, 100);
     Profile_ptSTAR_CorrectedNetCharge = new TProfile ("Profile_ptSTAR_CorrectedNetCharge", "Profile_ptSTAR_CorrectedNetCharge", 20, 0, 100);
 
@@ -710,6 +794,8 @@ void AliAnalysisTaskCorrPbPb_v2::UserCreateOutputObjects()  {
     Profile_ptSTAR_CorrectedNetChargeNetProton_term3 = new TProfile ("Profile_ptSTAR_CorrectedNetChargeNetProton_term3", "Profile_ptSTAR_CorrectedNetChargeNetProton_term3", 20, 0, 100);
 
     Profile_ptSTAR_CorrectedNetKaonNetProton = new TProfile ("Profile_ptSTAR_CorrectedNetKaonNetProton", "Profile_ptSTAR_CorrectedNetKaonNetProton", 20, 0, 100);
+    Profile_ptSTAR_CorrectedNetKaonNetPion = new TProfile ("Profile_ptSTAR_CorrectedNetKaonNetPion", "Profile_ptSTAR_CorrectedNetKaonNetPion", 20, 0, 100);
+    Profile_ptSTAR_CorrectedNetPionNetProton = new TProfile ("Profile_ptSTAR_CorrectedNetPionNetProton", "Profile_ptSTAR_CorrectedNetPionNetProton", 20, 0, 100);
 
     Profile_ptSTAR_Term1C2CorrectedNetCharge = new TProfile ("Profile_ptSTAR_Term1C2CorrectedNetCharge", "Profile_ptSTAR_Term1C2CorrectedNetCharge", 20, 0, 100);
     Profile_ptSTAR_Term2C2CorrectedNetCharge = new TProfile ("Profile_ptSTAR_Term2C2CorrectedNetCharge", "Profile_ptSTAR_Term2C2CorrectedNetCharge", 20, 0, 100);
@@ -721,12 +807,18 @@ void AliAnalysisTaskCorrPbPb_v2::UserCreateOutputObjects()  {
     Profile_ptSTAR_Term3C2CorrectedNetKaon = new TProfile ("Profile_ptSTAR_Term3C2CorrectedNetKaon", "Profile_ptSTAR_Term3C2CorrectedNetKaon", 20, 0, 100);
     Profile_ptSTAR_Term4C2CorrectedNetKaon = new TProfile ("Profile_ptSTAR_Term4C2CorrectedNetKaon", "Profile_ptSTAR_Term4C2CorrectedNetKaon", 20, 0, 100);
 
+    Profile_ptSTAR_Term1C2CorrectedNetPion = new TProfile ("Profile_ptSTAR_Term1C2CorrectedNetPion", "Profile_ptSTAR_Term1C2CorrectedNetPion", 20, 0, 100);
+    Profile_ptSTAR_Term2C2CorrectedNetPion = new TProfile ("Profile_ptSTAR_Term2C2CorrectedNetPion", "Profile_ptSTAR_Term2C2CorrectedNetPion", 20, 0, 100);
+    Profile_ptSTAR_Term3C2CorrectedNetPion = new TProfile ("Profile_ptSTAR_Term3C2CorrectedNetPion", "Profile_ptSTAR_Term3C2CorrectedNetPion", 20, 0, 100);
+    Profile_ptSTAR_Term4C2CorrectedNetPion = new TProfile ("Profile_ptSTAR_Term4C2CorrectedNetPion", "Profile_ptSTAR_Term4C2CorrectedNetPion", 20, 0, 100);
+
     Profile_ptSTAR_Term1C2CorrectedNetProton = new TProfile ("Profile_ptSTAR_Term1C2CorrectedNetProton", "Profile_ptSTAR_Term1C2CorrectedNetProton", 20, 0, 100);
     Profile_ptSTAR_Term2C2CorrectedNetProton = new TProfile ("Profile_ptSTAR_Term2C2CorrectedNetProton", "Profile_ptSTAR_Term2C2CorrectedNetProton", 20, 0, 100);
     Profile_ptSTAR_Term3C2CorrectedNetProton = new TProfile ("Profile_ptSTAR_Term3C2CorrectedNetProton", "Profile_ptSTAR_Term3C2CorrectedNetProton", 20, 0, 100);
     Profile_ptSTAR_Term4C2CorrectedNetProton = new TProfile ("Profile_ptSTAR_Term4C2CorrectedNetProton", "Profile_ptSTAR_Term4C2CorrectedNetProton", 20, 0, 100);
 
     fTreeList->Add(Profile_ptSTAR_CorrectedNetKaon);
+    fTreeList->Add(Profile_ptSTAR_CorrectedNetPion);
     fTreeList->Add(Profile_ptSTAR_CorrectedNetProton);
     fTreeList->Add(Profile_ptSTAR_CorrectedNetCharge);
     fTreeList->Add(Profile_ptSTAR_CorrectedNetChargeNetKaon_term1);
@@ -736,10 +828,16 @@ void AliAnalysisTaskCorrPbPb_v2::UserCreateOutputObjects()  {
     fTreeList->Add(Profile_ptSTAR_CorrectedNetChargeNetProton_term2);
     fTreeList->Add(Profile_ptSTAR_CorrectedNetChargeNetProton_term3);
     fTreeList->Add(Profile_ptSTAR_CorrectedNetKaonNetProton);
+    fTreeList->Add(Profile_ptSTAR_CorrectedNetKaonNetPion);
+    fTreeList->Add(Profile_ptSTAR_CorrectedNetPionNetProton);
     fTreeList->Add(Profile_ptSTAR_Term1C2CorrectedNetKaon);
     fTreeList->Add(Profile_ptSTAR_Term2C2CorrectedNetKaon);
     fTreeList->Add(Profile_ptSTAR_Term3C2CorrectedNetKaon);
     fTreeList->Add(Profile_ptSTAR_Term4C2CorrectedNetKaon);
+    fTreeList->Add(Profile_ptSTAR_Term1C2CorrectedNetPion);
+    fTreeList->Add(Profile_ptSTAR_Term2C2CorrectedNetPion);
+    fTreeList->Add(Profile_ptSTAR_Term3C2CorrectedNetPion);
+    fTreeList->Add(Profile_ptSTAR_Term4C2CorrectedNetPion);
     fTreeList->Add(Profile_ptSTAR_Term1C2CorrectedNetCharge);
     fTreeList->Add(Profile_ptSTAR_Term2C2CorrectedNetCharge);
     fTreeList->Add(Profile_ptSTAR_Term3C2CorrectedNetCharge);
@@ -830,7 +928,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserCreateOutputObjects()  {
     PostData(3, fTreeList);
 }
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
+void AliAnalysisTaskCorrPbPb_withoutTree::UserExec(Option_t *)  {
   
     //Get Input Event
     if ( !GetEvent ()) return;
@@ -1278,51 +1376,66 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
     Double_t netKaon_rec_ptmax2 = no_KaonPlus_perevent_ptmax2 - no_KaonMinus_perevent_ptmax2;
     Double_t netCharge_rec_ptmax2 = no_PionPlus_perevent_ptmax2 - no_PionMinus_perevent_ptmax2 + no_KaonPlus_perevent_ptmax2 - no_KaonMinus_perevent_ptmax2 + no_ProtonPlus_perevent_ptmax2 - no_ProtonMinus_perevent_ptmax2;
     Double_t netProton_rec_ptmax2 = no_ProtonPlus_perevent_ptmax2 - no_ProtonMinus_perevent_ptmax2;
+    Double_t netPion_rec_ptmax2 = no_PionPlus_perevent_ptmax2 - no_PionMinus_perevent_ptmax2;
 
     Double_t netKaon_rec_ptSTAR = no_KaonPlus_perevent - no_KaonMinus_perevent;
     Double_t netCharge_rec_ptSTAR = no_PionPlus_perevent - no_PionMinus_perevent + no_KaonPlus_perevent - no_KaonMinus_perevent + no_ProtonPlus_perevent - no_ProtonMinus_perevent;
     Double_t netProton_rec_ptSTAR = no_ProtonPlus_perevent - no_ProtonMinus_perevent;
+    Double_t netPion_rec_ptSTAR = no_PionPlus_perevent - no_PionMinus_perevent;
 
     Double_t term1_netKaon_rec_ptmax2 = TMath::Power(netKaon_rec_ptmax2, 2.0);
     Double_t term1_netCharge_rec_ptmax2 = TMath::Power(netCharge_rec_ptmax2, 2.0);
     Double_t term1_netProton_rec_ptmax2 = TMath::Power(netProton_rec_ptmax2, 2.0);
+    Double_t term1_netPion_rec_ptmax2 = TMath::Power(netPion_rec_ptmax2, 2.0);
     Double_t term2_netKaon_rec_ptmax2 = TMath::Power(netKaon_rec_ptmax2, 1.0);
     Double_t term2_netCharge_rec_ptmax2 = TMath::Power(netCharge_rec_ptmax2, 1.0);
     Double_t term2_netProton_rec_ptmax2 = TMath::Power(netProton_rec_ptmax2, 1.0);
-
+    Double_t term2_netPion_rec_ptmax2 = TMath::Power(netPion_rec_ptmax2, 1.0);
+    
     Double_t term1_netKaon_rec_ptSTAR = TMath::Power(netKaon_rec_ptSTAR, 2.0);
     Double_t term1_netCharge_rec_ptSTAR = TMath::Power(netCharge_rec_ptSTAR, 2.0);
     Double_t term1_netProton_rec_ptSTAR = TMath::Power(netProton_rec_ptSTAR, 2.0);
+    Double_t term1_netPion_rec_ptSTAR = TMath::Power(netPion_rec_ptSTAR, 2.0);
     Double_t term2_netKaon_rec_ptSTAR = TMath::Power(netKaon_rec_ptSTAR, 1.0);
     Double_t term2_netCharge_rec_ptSTAR = TMath::Power(netCharge_rec_ptSTAR, 1.0);
     Double_t term2_netProton_rec_ptSTAR = TMath::Power(netProton_rec_ptSTAR, 1.0);
+    Double_t term2_netPion_rec_ptSTAR = TMath::Power(netPion_rec_ptSTAR, 1.0);
 
     
-    
+    Profile_ptmax2_RecNetPion->Fill(lV0M,netPion_rec_ptmax2);
     Profile_ptmax2_RecNetKaon->Fill(lV0M,netKaon_rec_ptmax2);
     Profile_ptmax2_RecNetCharge->Fill(lV0M,netCharge_rec_ptmax2);
     Profile_ptmax2_RecNetProton->Fill(lV0M,netProton_rec_ptmax2);
     Profile_ptmax2_RecNetChargeNetKaon->Fill(lV0M,netCharge_rec_ptmax2*netKaon_rec_ptmax2);
     Profile_ptmax2_RecNetChargeNetProton->Fill(lV0M,netCharge_rec_ptmax2*netProton_rec_ptmax2);
     Profile_ptmax2_RecNetKaonNetProton->Fill(lV0M,netKaon_rec_ptmax2*netProton_rec_ptmax2);
+    Profile_ptmax2_RecNetKaonNetPion->Fill(lV0M,netKaon_rec_ptmax2*netPion_rec_ptmax2);
+    Profile_ptmax2_RecNetPionNetProton->Fill(lV0M,netPion_rec_ptmax2*netProton_rec_ptmax2);
 
+    Profile_ptSTAR_RecNetPion->Fill(lV0M,netPion_rec_ptSTAR);
     Profile_ptSTAR_RecNetKaon->Fill(lV0M,netKaon_rec_ptSTAR);
     Profile_ptSTAR_RecNetCharge->Fill(lV0M,netCharge_rec_ptSTAR);
     Profile_ptSTAR_RecNetProton->Fill(lV0M,netProton_rec_ptSTAR);
     Profile_ptSTAR_RecNetChargeNetKaon->Fill(lV0M,netCharge_rec_ptSTAR*netKaon_rec_ptSTAR);
     Profile_ptSTAR_RecNetChargeNetProton->Fill(lV0M,netCharge_rec_ptSTAR*netProton_rec_ptSTAR);
     Profile_ptSTAR_RecNetKaonNetProton->Fill(lV0M,netKaon_rec_ptSTAR*netProton_rec_ptSTAR);
+    Profile_ptSTAR_RecNetKaonNetPion->Fill(lV0M,netKaon_rec_ptSTAR*netPion_rec_ptSTAR);
+    Profile_ptSTAR_RecNetPionNetProton->Fill(lV0M,netPion_rec_ptSTAR*netProton_rec_ptSTAR);
 
+    Profile_ptmax2_Term1C2RecNetPion->Fill(lV0M, term1_netPion_rec_ptmax2);
     Profile_ptmax2_Term1C2RecNetKaon->Fill(lV0M, term1_netKaon_rec_ptmax2);
     Profile_ptmax2_Term1C2RecNetCharge->Fill(lV0M, term1_netCharge_rec_ptmax2);
     Profile_ptmax2_Term1C2RecNetProton->Fill(lV0M, term1_netProton_rec_ptmax2);
+    Profile_ptmax2_Term2C2RecNetPion->Fill(lV0M, term2_netPion_rec_ptmax2);
     Profile_ptmax2_Term2C2RecNetKaon->Fill(lV0M, term2_netKaon_rec_ptmax2);
     Profile_ptmax2_Term2C2RecNetCharge->Fill(lV0M, term2_netCharge_rec_ptmax2);
     Profile_ptmax2_Term2C2RecNetProton->Fill(lV0M, term2_netProton_rec_ptmax2);
 
+    Profile_ptSTAR_Term1C2RecNetPion->Fill(lV0M, term1_netPion_rec_ptSTAR);
     Profile_ptSTAR_Term1C2RecNetKaon->Fill(lV0M, term1_netKaon_rec_ptSTAR);
     Profile_ptSTAR_Term1C2RecNetCharge->Fill(lV0M, term1_netCharge_rec_ptSTAR);
     Profile_ptSTAR_Term1C2RecNetProton->Fill(lV0M, term1_netProton_rec_ptSTAR);
+    Profile_ptSTAR_Term2C2RecNetPion->Fill(lV0M, term2_netPion_rec_ptSTAR);
     Profile_ptSTAR_Term2C2RecNetKaon->Fill(lV0M, term2_netKaon_rec_ptSTAR);
     Profile_ptSTAR_Term2C2RecNetCharge->Fill(lV0M, term2_netCharge_rec_ptSTAR);
     Profile_ptSTAR_Term2C2RecNetProton->Fill(lV0M, term2_netProton_rec_ptSTAR);
@@ -1370,16 +1483,20 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
     */
 
     Double_t netKaon_corr_ptmax2 = no_KaonPlus_perevent_ptmax2_corrected - no_KaonMinus_perevent_ptmax2_corrected;
+    Double_t netPion_corr_ptmax2 = no_PionPlus_perevent_ptmax2_corrected - no_PionMinus_perevent_ptmax2_corrected;
     Double_t netCharge_corr_ptmax2 = no_PionPlus_perevent_ptmax2_corrected - no_PionMinus_perevent_ptmax2_corrected + no_KaonPlus_perevent_ptmax2_corrected - no_KaonMinus_perevent_ptmax2_corrected + no_ProtonPlus_perevent_ptmax2_corrected - no_ProtonMinus_perevent_ptmax2_corrected;
     Double_t netProton_corr_ptmax2 = no_ProtonPlus_perevent_ptmax2_corrected - no_ProtonMinus_perevent_ptmax2_corrected;
 
     Double_t netKaon_corr_ptSTAR = no_KaonPlus_perevent_corrected - no_KaonMinus_perevent_corrected;
+    Double_t netPion_corr_ptSTAR = no_PionPlus_perevent_corrected - no_PionMinus_perevent_corrected;
     Double_t netCharge_corr_ptSTAR = no_PionPlus_perevent_corrected - no_PionMinus_perevent_corrected + no_KaonPlus_perevent_corrected - no_KaonMinus_perevent_corrected + no_ProtonPlus_perevent_corrected - no_ProtonMinus_perevent_corrected;
     Double_t netProton_corr_ptSTAR = no_ProtonPlus_perevent_corrected - no_ProtonMinus_perevent_corrected;
 
+    Profile_ptmax2_CorrectedNetPion->Fill(lV0M,netPion_corr_ptmax2);
     Profile_ptmax2_CorrectedNetKaon->Fill(lV0M,netKaon_corr_ptmax2);
     Profile_ptmax2_CorrectedNetCharge->Fill(lV0M,netCharge_corr_ptmax2);
     Profile_ptmax2_CorrectedNetProton->Fill(lV0M,netProton_corr_ptmax2);
+    Profile_ptSTAR_CorrectedNetPion->Fill(lV0M,netPion_corr_ptSTAR);
     Profile_ptSTAR_CorrectedNetKaon->Fill(lV0M,netKaon_corr_ptSTAR);
     Profile_ptSTAR_CorrectedNetCharge->Fill(lV0M,netCharge_corr_ptSTAR);
     Profile_ptSTAR_CorrectedNetProton->Fill(lV0M,netProton_corr_ptSTAR);
@@ -1394,7 +1511,23 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
     term1 = netProton_corr_ptSTAR*netKaon_corr_ptSTAR;
     Profile_ptSTAR_CorrectedNetKaonNetProton->Fill(lV0M, term1);
 
-    //net-proton - net-pion correlation (BQ correlation --> <BQ>)
+    //net-proton - net-pion correlation (BQ correlation --> <BS>)
+    //----------------------------------------------------------------------------------
+    term1 = netProton_corr_ptmax2*netPion_corr_ptmax2;
+    Profile_ptmax2_CorrectedNetPionNetProton->Fill(lV0M, term1);
+
+    term1 = netProton_corr_ptSTAR*netPion_corr_ptSTAR;
+    Profile_ptSTAR_CorrectedNetPionNetProton->Fill(lV0M, term1);
+
+    //net-pion - net-kaon correlation (QS correlation --> <BS>)
+    //----------------------------------------------------------------------------------
+    term1 = netPion_corr_ptmax2*netKaon_corr_ptmax2;
+    Profile_ptmax2_CorrectedNetKaonNetPion->Fill(lV0M, term1);
+
+    term1 = netPion_corr_ptSTAR*netKaon_corr_ptSTAR;
+    Profile_ptSTAR_CorrectedNetKaonNetPion->Fill(lV0M, term1);
+
+    //net-proton - net-charge correlation (BQ correlation --> <BQ>)
     //----------------------------------------------------------------------------------
     term1 = netProton_corr_ptmax2*netCharge_corr_ptmax2;
     term2 = no_ProtonPlus_perevent_ptmax2_corrected + no_ProtonMinus_perevent_ptmax2_corrected;
@@ -1487,6 +1620,26 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
     Profile_ptSTAR_Term3C2CorrectedNetKaon->Fill(lV0M, term3);
     Profile_ptSTAR_Term4C2CorrectedNetKaon->Fill(lV0M, term4);
 
+    //C2 pion
+    //----------------------------------------------------------------------------------
+    term1 = TMath::Power(netPion_corr_ptmax2, 2.0);
+    term2 = netPion_corr_ptmax2;
+    term3 = no_PionPlus_perevent_ptmax2_corrected + no_PionMinus_perevent_ptmax2_corrected;
+    term4 = noByEffSquare_PionPlus_perevent_ptmax2_corrected + noByEffSquare_PionMinus_perevent_ptmax2_corrected;
+    Profile_ptmax2_Term1C2CorrectedNetPion->Fill(lV0M, term1);
+    Profile_ptmax2_Term2C2CorrectedNetPion->Fill(lV0M, term2);
+    Profile_ptmax2_Term3C2CorrectedNetPion->Fill(lV0M, term3);
+    Profile_ptmax2_Term4C2CorrectedNetPion->Fill(lV0M, term4);
+
+    term1 = TMath::Power(netPion_corr_ptSTAR, 2.0);
+    term2 = netPion_corr_ptSTAR;
+    term3 = no_PionPlus_perevent_corrected + no_PionMinus_perevent_corrected;
+    term4 = noByEffSquare_PionPlus_perevent_corrected + noByEffSquare_PionMinus_perevent_corrected;
+    Profile_ptSTAR_Term1C2CorrectedNetPion->Fill(lV0M, term1);
+    Profile_ptSTAR_Term2C2CorrectedNetPion->Fill(lV0M, term2);
+    Profile_ptSTAR_Term3C2CorrectedNetPion->Fill(lV0M, term3);
+    Profile_ptSTAR_Term4C2CorrectedNetPion->Fill(lV0M, term4);
+
 
     //fTreeEvent->Fill();
 
@@ -1496,7 +1649,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
     PostData(3, fTreeList);
 }    
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPb_v2::GetEvent ()  //event cuts copied from my code written earlier 
+Bool_t AliAnalysisTaskCorrPbPb_withoutTree::GetEvent ()  //event cuts copied from my code written earlier 
 
 {
  
@@ -1699,7 +1852,7 @@ Bool_t AliAnalysisTaskCorrPbPb_v2::GetEvent ()  //event cuts copied from my code
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPb_v2::PassedTrackQualityCuts (AliAODTrack *track)  {
+Bool_t AliAnalysisTaskCorrPbPb_withoutTree::PassedTrackQualityCuts (AliAODTrack *track)  {
     
     //Initialization
     Bool_t passedTrkSelection=(kFALSE);
@@ -1742,7 +1895,7 @@ Bool_t AliAnalysisTaskCorrPbPb_v2::PassedTrackQualityCuts (AliAODTrack *track)  
     return passedTrkSelection;
 }
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPb_v2::KaonSelector(AliVTrack *track, Double_t nSigmaCut)  {
+Bool_t AliAnalysisTaskCorrPbPb_withoutTree::KaonSelector(AliVTrack *track, Double_t nSigmaCut)  {
  
   Double_t p[3];
   track->PxPyPz(p);
@@ -1826,7 +1979,7 @@ Bool_t AliAnalysisTaskCorrPbPb_v2::KaonSelector(AliVTrack *track, Double_t nSigm
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPb_v2::PionSelector(AliVTrack *track, Double_t nSigmaCut)  {
+Bool_t AliAnalysisTaskCorrPbPb_withoutTree::PionSelector(AliVTrack *track, Double_t nSigmaCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -1914,7 +2067,7 @@ Bool_t AliAnalysisTaskCorrPbPb_v2::PionSelector(AliVTrack *track, Double_t nSigm
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPb_v2::ProtonSelector(AliVTrack *track, Double_t nSigmaCut)  {
+Bool_t AliAnalysisTaskCorrPbPb_withoutTree::ProtonSelector(AliVTrack *track, Double_t nSigmaCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -2003,7 +2156,7 @@ Bool_t AliAnalysisTaskCorrPbPb_v2::ProtonSelector(AliVTrack *track, Double_t nSi
 
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPb_v2::PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type)  {
+Bool_t AliAnalysisTaskCorrPbPb_withoutTree::PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type)  {
     
     //Initialization
     Bool_t passedPIDSelection=(kFALSE);
@@ -2017,7 +2170,7 @@ Bool_t AliAnalysisTaskCorrPbPb_v2::PassedPIDSelection (AliAODTrack *track, AliPI
     return passedPIDSelection;
 }
  //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPb_v2::PassedSingleParticlePileUpCuts(AliAODTrack *track)
+Bool_t AliAnalysisTaskCorrPbPb_withoutTree::PassedSingleParticlePileUpCuts(AliAODTrack *track)
 {
   Bool_t passedTrackPileupCut = (kTRUE);
   if (!(track->HasPointOnITSLayer(1)) && !(track->HasPointOnITSLayer(4)) && !(track->HasPointOnITSLayer(5)) && !(track->GetTOFBunchCrossing() == 0))
@@ -2025,7 +2178,7 @@ Bool_t AliAnalysisTaskCorrPbPb_v2::PassedSingleParticlePileUpCuts(AliAODTrack *t
   return passedTrackPileupCut;
 }
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskCorrPbPb_v2::GetMCEffCorrectionHist()
+void AliAnalysisTaskCorrPbPb_withoutTree::GetMCEffCorrectionHist()
 {
   if(fListTRKCorr)
     {
@@ -2052,7 +2205,7 @@ void AliAnalysisTaskCorrPbPb_v2::GetMCEffCorrectionHist()
 
 }
  //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskCorrPbPb_v2::Terminate(Option_t *)  {
+void AliAnalysisTaskCorrPbPb_withoutTree::Terminate(Option_t *)  {
     
     fOutputList = dynamic_cast<TList*> (GetOutputData(1));
     if (!fOutputList) return;
