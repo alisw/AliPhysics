@@ -29,6 +29,7 @@ ClassImp(AliAnalysisTaskFemtoDreamRho)
       fUseNegativePairs(false),
       fIsMCTrueRhoCombBkrg(false),
       fIsMCcheckedCombs(false),
+      fpairRapiditiySelection(false),
       fOutput(nullptr),
       fEvent(nullptr),
       fTrack(nullptr),
@@ -86,7 +87,7 @@ ClassImp(AliAnalysisTaskFemtoDreamRho)
 }
 
 AliAnalysisTaskFemtoDreamRho::AliAnalysisTaskFemtoDreamRho(const char *name,
-                                                           bool isMC, bool doMcTruth, bool doCleaning, bool doAncestors, bool doProjector, float rhoPtThreshold, bool isSameCharge, bool useNegativePairs, bool isMCTrueRhoCombBkrg, bool isMCcheckedCombs)
+                                                           bool isMC, bool doMcTruth, bool doCleaning, bool doAncestors, bool doProjector, float rhoPtThreshold, float pairRapiditiySelection, bool isSameCharge, bool useNegativePairs, bool isMCTrueRhoCombBkrg, bool isMCcheckedCombs)
     : AliAnalysisTaskSE(name),
       fTrigger(AliVEvent::kINT7),
       fIsMC(isMC),
@@ -99,6 +100,7 @@ AliAnalysisTaskFemtoDreamRho::AliAnalysisTaskFemtoDreamRho(const char *name,
       fUseNegativePairs(useNegativePairs),
       fIsMCTrueRhoCombBkrg(isMCTrueRhoCombBkrg),
       fIsMCcheckedCombs(isMCcheckedCombs),
+      fpairRapiditiySelection(pairRapiditiySelection),
       fOutput(nullptr),
       fEvent(nullptr),
       fTrack(nullptr),
@@ -640,6 +642,77 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
     }
   }
 
+  if (false)
+  {
+    printf("Here we count the combinatorics\n");
+
+    printf("First report on the size of the vectors:\n");
+    printf("Particles.size(): %i\n", Particles.size());
+    printf("AntiParticles.size(): %i\n", AntiParticles.size());
+
+    int counter_mixed = 0;
+    for (const auto &posPion : Particles)
+    { // Build charged pion pairs!
+      for (const auto &negPion : AntiParticles)
+      {
+        counter_mixed++;
+      }
+    }
+    int counter_neg = 0;
+    for (int i = 0; i < AntiParticles.size(); ++i)
+    { // Build charged pion pairs!
+      for (int j = i + 1; j < AntiParticles.size(); ++j)
+      {
+        counter_neg++;
+      }
+    }
+    int counter_pos = 0;
+    for (int i = 0; i < Particles.size(); ++i)
+    { // Build charged pion pairs!
+      for (int j = i + 1; j < Particles.size(); ++j)
+      {
+        counter_pos++;
+      }
+    }
+    printf("Mixed pairs (N{mixed}^2): %i\n", counter_mixed);
+    printf("neg pairs: %i\n", counter_neg);
+    printf("pos pairs: %i\n", counter_pos);
+    float approx = counter_mixed - counter_neg - counter_pos;
+    printf("Approx scaling: N{mixed}^2 - (N{pos}+N{neg}): %i\n", approx);
+    float Expected_1 = 0;
+    float Expected_2 = 0;
+    Expected_1 = 0.5 * (counter_neg + counter_pos);
+    Expected_2 = 0.5 * (counter_mixed - std::sqrt(counter_mixed));
+    printf("Expected scaling: (N{pos}+N{neg})/2 = (N{mixed}^2 - sqrt(N{mixed}^2))/2: %.3f = %.3f\n", Expected_1, Expected_2);
+
+    int counter_neg_auto = 0;
+    for (auto i = 0; i < AntiParticles.size(); ++i)
+    { // Build charged pion pairs!
+      for (auto j = i + 1; j < AntiParticles.size(); ++j)
+      {
+        counter_neg_auto++;
+      }
+    }
+    int counter_pos_auto = 0;
+    for (auto i = 0; i < Particles.size(); ++i)
+    { // Build charged pion pairs!
+      for (auto j = i + 1; j < Particles.size(); ++j)
+      {
+        counter_pos_auto++;
+      }
+    }
+    printf("Mixed pairs (N{mixed}^2): %i\n", counter_mixed);
+    printf("(auto)neg pairs: %i\n", counter_neg_auto);
+    printf("(auto)pos pairs: %i\n", counter_pos_auto);
+    float approx_auto = counter_mixed - counter_neg_auto + counter_pos_auto;
+    printf("(auto)Approx scaling: N{mixed}^2 - (N{pos}+N{neg}): %i\n", approx_auto);
+    float Expected_1_auto = 0;
+    float Expected_2_auto = 0;
+    Expected_1_auto = 0.5 * (counter_neg_auto + counter_pos_auto);
+    Expected_2_auto = 0.5 * (counter_mixed - std::sqrt(counter_mixed));
+    printf("(auto)Expected scaling: (N{pos}+N{neg})/2 = (N{mixed}^2 - sqrt(N{mixed}^2))/2: %.3f = %.3f\n", Expected_1_auto, Expected_2_auto);
+  }
+
   if (fIsSameCharge)
   {
     if (fUseNegativePairs)
@@ -647,30 +720,30 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
       // Don't pair the same particles.
       for (int i = 0; i < AntiParticles.size(); ++i)
       {
-        const auto &posPion1 = AntiParticles[i]; // First particle
+        const auto &negPion1 = AntiParticles[i]; // First particle
 
-        for (int j = 0; j < AntiParticles.size(); ++j)
+        for (int j = i + 1; j < AntiParticles.size(); ++j)
         {
-          if (i == j)
+          const auto &negPion2 = AntiParticles[j]; // Second particle
+
+          fRhoParticle->Setv0SameCharge(negPion1, negPion2, Event, false, false, true, fIsSameCharge);
+
+          const float pT_rho_candidate = fRhoParticle->GetPt();
+          // At a pT > 1.8 GeV we start to see the rho in the M_inv (for now hard-coded can be optimized)
+          if (pT_rho_candidate < frhoPtThreshold - 0.0001) //
           {
-            continue; // Skip pairing the same particle
+            continue;
           }
-          const auto &posPion2 = AntiParticles[j]; // Second particle
-
           // introduce a selection on the y_pair
-          fRhoParticle->Setv0SameCharge(posPion1, posPion2, Event, false, false, true, fIsSameCharge);
-        }
+          if (!WithinPairRapidityWindow(negPion1, 211, negPion2, 211, fpairRapiditiySelection))
+          {
+            continue;
+          }
 
-        const float pT_rho_candidate = fRhoParticle->GetPt();
-        // At a pT > 1.8 GeV we start to see the rho in the M_inv (for now hard-coded can be optimized)
-        if (pT_rho_candidate < frhoPtThreshold - 0.0001) //
-        {
-          continue;
-        }
-
-        if (fRhoCuts->isSelected(fRhoParticle)) // Check for proper Rho candidates, just Minv cut and kaon reject.
-        {
-          V0Particles_SameCharge.push_back(*fRhoParticle);
+          if (fRhoCuts->isSelected(fRhoParticle)) // Check for proper Rho candidates, just Minv cut and kaon reject.
+          {
+            V0Particles_SameCharge.push_back(*fRhoParticle);
+          }
         }
       }
     }
@@ -681,28 +754,28 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
       {
         const auto &posPion1 = Particles[i]; // First particle
 
-        for (int j = 0; j < Particles.size(); ++j)
+        for (int j = i + 1; j < Particles.size(); ++j)
         {
-          if (i == j)
-          {
-            continue; // Skip pairing the same particle
-          }
           const auto &posPion2 = Particles[j]; // Second particle
 
-          // introduce a selection on the y_pair
           fRhoParticle->Setv0SameCharge(posPion1, posPion2, Event, false, false, true, fIsSameCharge);
-        }
 
-        const float pT_rho_candidate = fRhoParticle->GetPt();
-        // At a pT > 1.8 GeV we start to see the rho in the M_inv (for now hard-coded can be optimized)
-        if (pT_rho_candidate < frhoPtThreshold - 0.0001) //
-        {
-          continue;
-        }
+          const float pT_rho_candidate = fRhoParticle->GetPt();
+          // At a pT > 1.8 GeV we start to see the rho in the M_inv (for now hard-coded can be optimized)
+          if (pT_rho_candidate < frhoPtThreshold - 0.0001) //
+          {
+            continue;
+          }
+          // introduce a selection on the y_pair
+          if (!WithinPairRapidityWindow(posPion1, 211, posPion2, 211, fpairRapiditiySelection))
+          {
+            continue;
+          }
 
-        if (fRhoCuts->isSelected(fRhoParticle)) // Check for proper Rho candidates, just Minv cut and kaon reject.
-        {
-          V0Particles_SameCharge.push_back(*fRhoParticle);
+          if (fRhoCuts->isSelected(fRhoParticle)) // Check for proper Rho candidates, just Minv cut and kaon reject.
+          {
+            V0Particles_SameCharge.push_back(*fRhoParticle);
+          }
         }
       }
     }
@@ -725,6 +798,11 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
         const float pT_rho_candidate = fRhoParticle->GetPt();
         // At a pT > 1.8 GeV we start to see the rho in the M_inv (for now hard-coded can be optimized)
         if (pT_rho_candidate < frhoPtThreshold - 0.0001) //
+        {
+          continue;
+        }
+        // introduce a selection on the y_pair
+        if (!WithinPairRapidityWindow(posPion, 211, negPion, 211, fpairRapiditiySelection))
         {
           continue;
         }
@@ -1652,6 +1730,73 @@ void AliAnalysisTaskFemtoDreamRho::CalculateAlphaAndQT(const AliFemtoDreamBasePa
   // Calculate qT
   qT = posP.Perp(v0P);
 }
+
+bool AliAnalysisTaskFemtoDreamRho::WithinPairRapidityWindow(
+    const AliFemtoDreamBasePart &part1, const int pdg1, const AliFemtoDreamBasePart &part2,
+    const int pdg2, float pairRapiditiySelection, bool verbose)
+{
+  bool passes = false;
+
+  TLorentzVector PartOne, PartTwo;
+  PartOne.SetXYZM(part1.GetMomentum().X(), part1.GetMomentum().Y(),
+                  part1.GetMomentum().Z(),
+                  TDatabasePDG::Instance()->GetParticle(pdg1)->Mass());
+  PartTwo.SetXYZM(part2.GetMomentum().X(), part2.GetMomentum().Y(),
+                  part2.GetMomentum().Z(),
+                  TDatabasePDG::Instance()->GetParticle(pdg2)->Mass());
+  TLorentzVector trackSum = PartOne + PartTwo;
+
+  TLorentzVector rhoCandidate;
+  rhoCandidate.SetXYZM(trackSum.Px(), trackSum.Py(),
+                       trackSum.Pz(),
+                       TDatabasePDG::Instance()->GetParticle(113)->Mass());
+
+  float rapidity = CalcRapidity(trackSum);
+
+  float rapidity_abs = std::abs(rapidity);
+
+  if (rapidity_abs < pairRapiditiySelection)
+  {
+    passes = true;
+  }
+
+  if (verbose)
+  {
+    printf("GetRapidity(part): %.3f\n", rapidity);
+    printf("rhoCandidate.Rapidity(): %.3f\n", rhoCandidate.Rapidity());
+    printf("pairRap_abs < pairRapiditiySelection: %.3f < %.3f\n", rapidity_abs, pairRapiditiySelection);
+
+    float pseudorapidity = rhoCandidate.Eta();
+
+    float pseudorapidity_abs = std::abs(pseudorapidity);
+
+    printf("rhoCandidate.GetEta(): %.3f\n", pseudorapidity);
+    printf("pseudorapidity_abs < pairRapiditiySelection: %.3f < %.3f\n", pseudorapidity_abs, pairRapiditiySelection);
+  }
+
+  return passes;
+}
+
+float AliAnalysisTaskFemtoDreamRho::CalcRapidity(const TLorentzVector &part, bool verbose, const float fMassForRapidity)
+{
+  // compute the rapidity y
+  float p = part.P();
+  float pz = part.Pz();
+
+  float e = sqrt(fMassForRapidity * fMassForRapidity + p * p);
+  float rapidity = 0.5 * TMath::Log((e + pz) / (e - pz));
+
+  if (verbose)
+  {
+    printf("float p = part->GetP(): %.3f\n", p);
+    printf("float pz = part->GetPz(): %.3f\n", pz);
+    printf("fMassForRapidity: %.3f\n", fMassForRapidity);
+    printf("float e: %.3f\n", e);
+    printf("rapidity: %.3f\n", rapidity);
+  }
+
+  return rapidity;
+};
 
 bool AliAnalysisTaskFemtoDreamRho::CommonResonance(const AliFemtoDreamBasePart &part1, const AliFemtoDreamBasePart &part2, int &pdg_resonance, AliAODEvent *Event, bool verbose)
 {

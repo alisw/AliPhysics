@@ -18,6 +18,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
                                         bool isMCTrueRhoCombBkrg = false,
                                         bool isMCcheckedCombs = false,
                                         bool useNegativePairs = false,
+                                        bool doPionSelCrossCheck = false,
+                                        float pairRapiditiySelection = 2,
                                         const char *cutVariation = "0")
 {
   TString suffix = TString::Format("%s", cutVariation);
@@ -172,6 +174,32 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
     TrackNegPionCuts->SetFillQALater(false); // Be careful about this flag! When the MinimalBooking is set
   }
 
+  // define crosscheck objects
+  if (doPionSelCrossCheck)
+  {
+    TrackPosPionCuts->SetFilterBit(96);
+    TrackPosPionCuts->SetCutCharge(1);
+    TrackPosPionCuts->SetPtRange(0.15, 10.0);
+    TrackPosPionCuts->SetEtaRange(-0.8, 0.8);
+    TrackPosPionCuts->SetNClsTPC(80);
+    TrackPosPionCuts->SetDCAReCalculation(true); // Get the dca from the PropagateToVetex
+    TrackPosPionCuts->SetDCAVtxZ(0.2);
+    TrackPosPionCuts->SetDCAVtxXY(0.15);
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, 2);
+    TrackPosPionCuts->SetRejLowPtPionsTOF(false);
+
+    TrackNegPionCuts->SetFilterBit(96);
+    TrackNegPionCuts->SetCutCharge(-1);
+    TrackNegPionCuts->SetPtRange(0.15, 10.0);
+    TrackNegPionCuts->SetEtaRange(-0.8, 0.8);
+    TrackNegPionCuts->SetNClsTPC(80);
+    TrackNegPionCuts->SetDCAReCalculation(true); // Get the dca from the PropagateToVetex
+    TrackNegPionCuts->SetDCAVtxZ(0.2);
+    TrackNegPionCuts->SetDCAVtxXY(0.15);
+    TrackNegPionCuts->SetPID(AliPID::kPion, 0.5, 2);
+    TrackNegPionCuts->SetRejLowPtPionsTOF(false);
+  }
+
   // Only used if the doProjection flag is set
   AliFemtoDreamTrackCuts *TrackPosPionMinvCuts =
       AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, true, true);
@@ -242,7 +270,11 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   TrackCutsRho->SetNegDaugterTrackCuts(dummyCutsNeg);
   TrackCutsRho->SetPDGCodePosDaug(211);
   TrackCutsRho->SetPDGCodeNegDaug(211);
-  TrackCutsRho->SetPDGCodev0(113);
+  // TrackCutsRho->SetEtaRange(-0.8, 0.8);
+  if (doPionSelCrossCheck)
+  {
+    TrackCutsRho->SetPDGCodev0(113);
+  }
   TrackCutsRho->SetPtRange(rhoPtThreshold, rhoPtThresholdupper);
   TrackCutsRho->SetFineInvMassPtBins(true);
 
@@ -287,7 +319,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
 
   // now we create the task
   AliAnalysisTaskFemtoDreamRho *task =
-      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doMcTruth, doCleaning, doAncestors, doProjections, rhoPtThreshold, isSameCharge, useNegativePairs, isMCTrueRhoCombBkrg, isMCcheckedCombs);
+      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doMcTruth, doCleaning, doAncestors, doProjections, rhoPtThreshold, pairRapiditiySelection, isSameCharge, useNegativePairs, isMCTrueRhoCombBkrg, isMCcheckedCombs);
   // THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
   // kINT7 == Minimum bias
   // kHighMultV0 high multiplicity triggered by the V0 detector
