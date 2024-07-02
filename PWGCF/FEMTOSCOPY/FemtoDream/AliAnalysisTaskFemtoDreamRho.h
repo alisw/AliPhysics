@@ -28,7 +28,7 @@ class AliAnalysisTaskFemtoDreamRho : public AliAnalysisTaskSE
 {
 public:
   AliAnalysisTaskFemtoDreamRho();
-  AliAnalysisTaskFemtoDreamRho(const char *name, bool isMC, bool doMcTruth, bool doAncestors, bool doCleaning, bool doProjections, float rhoPtThreshold, bool isSameCharge, bool useNegativePairs, bool isMCTrueRhoCombBkrg, bool isMCcheckedCombs);
+  AliAnalysisTaskFemtoDreamRho(const char *name, bool isMC, bool doMcTruth, bool doAncestors, bool doCleaning, bool doProjections, float rhoPtThreshold, float pairRapiditiySelection, bool isSameCharge, bool useNegativePairs, bool isMCTrueRhoCombBkrg, bool isMCcheckedCombs);
   virtual ~AliAnalysisTaskFemtoDreamRho();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
@@ -82,6 +82,7 @@ public:
   void SetUseNegativePairs(bool useNegativePairs) { fUseNegativePairs = useNegativePairs; };
   void SetMCTrueRhoCombBkgr(bool isMCTrueRhoCombBkrg) { fIsMCTrueRhoCombBkrg = isMCTrueRhoCombBkrg; };
   void SetMCcheckedCombs(bool isMCcheckedCombs) { fIsMCcheckedCombs = isMCcheckedCombs; };
+  void SetPairRapiditySel(float pairRapiditiySelection) { fpairRapiditiySelection = pairRapiditiySelection; };
 
   // std::map<TString, std::pair<TH1F *, TH2F *>> CreateResonanceHistograms(const std::vector<TString> &resonanceList);
 
@@ -111,15 +112,20 @@ private:
   float RelativePairMomentum_check(TLorentzVector &PartOne,
                                    TLorentzVector &PartTwo);
 
-  bool fIsMC;                //
-  bool fDoMcTruth;           //
-  bool fDoAncestors;         //
-  bool fDoProjections;       //
-  float frhoPtThreshold;     //
-  bool fIsSameCharge;        //
-  bool fUseNegativePairs;    //
-  bool fIsMCTrueRhoCombBkrg; //
-  bool fIsMCcheckedCombs;    //
+  float CalcRapidity(const TLorentzVector &part, bool verbose = false, const float fMassForRapidity = 0.7665); // Here use the charged pion mass
+  bool WithinPairRapidityWindow(const AliFemtoDreamBasePart &part1, const int pdg1, const AliFemtoDreamBasePart &part2,
+                                const int pdg2, float pairRapiditiySelection, bool verbose = false);
+
+  bool fIsMC;                    //
+  bool fDoMcTruth;               //
+  bool fDoAncestors;             //
+  bool fDoProjections;           //
+  float frhoPtThreshold;         //
+  bool fIsSameCharge;            //
+  bool fUseNegativePairs;        //
+  bool fIsMCTrueRhoCombBkrg;     //
+  bool fIsMCcheckedCombs;        //
+  float fpairRapiditiySelection; //
 
   const std::vector<std::string> types{"noPions", "noPrimaries", "noRho", "isRho"}; //!
   std::map<std::string, TH2F *> histogramMap_pTvsmT;                                //!
@@ -195,7 +201,7 @@ private:
   // std::map<TString, std::pair<TH1F *, TH2F *>>
   //     fResonanceHistograms; //! Map to hold histograms for each resonance
 
-  ClassDef(AliAnalysisTaskFemtoDreamRho, 10) // Update class number
+  ClassDef(AliAnalysisTaskFemtoDreamRho, 11) // Update class number
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_AliAnalysisTaskFemtoDreamRho_H_ */
