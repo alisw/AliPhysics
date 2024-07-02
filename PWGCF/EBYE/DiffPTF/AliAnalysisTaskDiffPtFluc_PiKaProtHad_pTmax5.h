@@ -189,10 +189,10 @@ class AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5 : public AliAnalysisTaskSE {
   Float_t fNsum_pions_less0;
   Float_t fNsum_kaons_less0;
   Float_t fNsum_protons_less0;
-  Float_t fPt_no_hadron[18];
-  Float_t fPt_no_pion[18];
-  Float_t fPt_no_kaon[18];
-  Float_t fPt_no_proton[18];
+  Float_t fPt_no_hadron[20];
+  Float_t fPt_no_pion[20];
+  Float_t fPt_no_kaon[20];
+  Float_t fPt_no_proton[20];
   
   //Efficiency list of histograms
   TList *fListTRKCorr; 

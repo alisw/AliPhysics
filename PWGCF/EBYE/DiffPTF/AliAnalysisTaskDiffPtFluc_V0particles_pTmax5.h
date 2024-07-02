@@ -292,12 +292,12 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5 : public AliAnalysisTaskSE {
   Float_t fNsum_protons_less0;
   Float_t fNsum_lambdas_less0;
   Float_t fNsum_K0s_less0;
-  Float_t fPt_no_hadron[18];
-  Float_t fPt_no_pion[18];
-  Float_t fPt_no_kaon[18];
-  Float_t fPt_no_proton[18];
-  Float_t fPt_no_lambda[18];
-  Float_t fPt_no_K0s[18];
+  Float_t fPt_no_hadron[20];
+  Float_t fPt_no_pion[20];
+  Float_t fPt_no_kaon[20];
+  Float_t fPt_no_proton[20];
+  Float_t fPt_no_lambda[20];
+  Float_t fPt_no_K0s[20];
   
   //Efficiency list of histograms
   TList *fListTRKCorr; 
