@@ -224,7 +224,7 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::AliAnalysisTaskDiffPtFluc_V0partic
       fEffKaonPlus[i] = NULL;
       fEffKaonMinus[i] = NULL;
     }
-   for(int i=0; i<18; i++)
+   for(int i=0; i<20; i++)
     {
       fPt_no_hadron[i] = 0;
       fPt_no_pion[i] = 0;
@@ -380,7 +380,7 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::AliAnalysisTaskDiffPtFluc_V0partic
       fEffKaonPlus[i] = NULL;
       fEffKaonMinus[i] = NULL;
     }
-   for(int i=0; i<18; i++)
+   for(int i=0; i<20; i++)
     {
       fPt_no_hadron[i] = 0;
       fPt_no_pion[i] = 0;
@@ -588,8 +588,8 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserCreateOutputObjects()  {
     fTreeEvent->Branch("fNsum_hadrons_greaterEtaMin",&fNsum_hadrons_greaterEtaMin,"fNsum_hadrons_greaterEtaMin/F");
     fTreeEvent->Branch("fNsum_lambdas_less0",&fNsum_lambdas_less0,"fNsum_lambdas_less0/F");
     fTreeEvent->Branch("fNsum_K0s_less0",&fNsum_K0s_less0,"fNsum_K0s_less0/F");
-    fTreeEvent->Branch("fPt_no_lambda",&fPt_no_lambda,"fPt_no_lambda[18]/F");
-    fTreeEvent->Branch("fPt_no_K0s",&fPt_no_K0s,"fPt_no_K0s[18]/F");
+    fTreeEvent->Branch("fPt_no_lambda",&fPt_no_lambda,"fPt_no_lambda[20]/F");
+    fTreeEvent->Branch("fPt_no_K0s",&fPt_no_K0s,"fPt_no_K0s[20]/F");
 
     //----------------------------------------------
     // Look up table for PID information when using TPC-only tracks
@@ -653,7 +653,7 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserExec(Option_t *)  {
       cout<<"################ No histograms found ############### "<<endl;
 
 
-    double binsarray[19]={0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0,3.5,4.0,4.5,5.0};
+    double binsarray[21]={0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0,3.5,4.0,4.5,5.0,5.5,6.0};
     Double_t pT_sum_etaLess0 = 0.0;
     Double_t N_sum_etaLess0 = 0.0;
     Double_t pT_sum_etaGreaterEtamin = 0.0;
@@ -662,7 +662,7 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserExec(Option_t *)  {
 
     
     //Function for efficiency
-    TF1 *fEff=new TF1("fEff","[0]*TMath::Exp(-pow([1]/x,[2]))",0.2,5.0);
+    TF1 *fEff=new TF1("fEff","[0]*TMath::Exp(-pow([1]/x,[2]))",0.2,6.0);
     fEff->SetParameter(0,0.8);
     fEff->SetParameter(1,0.15);
     fEff->SetParameter(2,1.7);
@@ -752,7 +752,7 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserExec(Option_t *)  {
 	//Kinematic cuts on pT and Eta
 	if (TMath::Abs(trkEta) > 0.8) continue;
 	if (trkPt < 0.2) continue;
-	if (trkPt > 5.0) continue;	
+	if (trkPt > 6.0) continue;	
 	
 	//+++++++++++++++++++++++++++++++++++++++++++++++++
 	//+++++++++++++++++++++++++++++++++++++++++++++++++
@@ -848,8 +848,8 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserExec(Option_t *)  {
     //end reconstructed track loop
 
 
-    TH1D *fPt_profile_Lambda = new TH1D("fPt_profile_Lambda","fPt_profile_Lambda", 18, binsarray);
-    TH1D *fPt_profile_K0s = new TH1D("fPt_profile_K0s","fPt_profile_K0s", 18, binsarray);
+    TH1D *fPt_profile_Lambda = new TH1D("fPt_profile_Lambda","fPt_profile_Lambda", 20, binsarray);
+    TH1D *fPt_profile_K0s = new TH1D("fPt_profile_K0s","fPt_profile_K0s", 20, binsarray);
     Double_t N_sumLambda_etaLess0 = 0.0;
     Double_t N_sumK0s_etaLess0 = 0.0;
     
@@ -941,7 +941,7 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserExec(Option_t *)  {
     fNsum_lambdas_less0=N_sumLambda_etaLess0;
     fNsum_K0s_less0=N_sumK0s_etaLess0;
     
-    for(int i=0; i<18; i++)
+    for(int i=0; i<20; i++)
       {
 	fPt_no_lambda[i]=fPt_profile_Lambda->GetBinContent(i+1);
 	fPt_no_K0s[i]=fPt_profile_K0s->GetBinContent(i+1);
