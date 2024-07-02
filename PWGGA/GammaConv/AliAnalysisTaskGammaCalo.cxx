@@ -3779,7 +3779,6 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
       particleFromBGEvent = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent);
       if ( particleFromBGEvent == 2 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4) tempPhotonWeight = 1;
       if ( particleFromBGEvent == 0) fIsFromDesiredHeader = kFALSE;
-      if ( particleFromBGEvent == 2) fIsFromDesiredHeader = kFALSE;
       if (clus->GetNLabels()>1){
         Int_t* mclabelsCluster = clus->GetLabels();
         if (fLocalDebugFlag > 1)   cout << "testing if other labels in cluster belong to different header, need to test " << (Int_t)clus->GetNLabels()-1 << " additional labels" << endl;
