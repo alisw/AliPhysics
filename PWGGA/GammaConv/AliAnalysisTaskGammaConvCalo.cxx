@@ -3535,7 +3535,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessClusters(){
     // test whether largest contribution to cluster orginates in added signals
     if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() > 0){
       particleFromBGEvent = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(PhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent);
-      if ( particleFromBGEvent == 0 || particleFromBGEvent == 2){
+      if ( particleFromBGEvent == 0){
         fIsFromDesiredHeader = kFALSE;
       }
       if (clus->GetNLabels()>1){
