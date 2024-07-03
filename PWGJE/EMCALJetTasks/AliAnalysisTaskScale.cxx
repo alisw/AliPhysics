@@ -354,7 +354,7 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
   fHistScaleEmcalvsScale2Emcal->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistScaleEmcalvsScale2Emcal);
 
-  fHistScaleEmcalvsPhi = new TH2F("fHistScaleEmcalvsPhi", "fHistScaleEmcalvsPhi", 100, 0, 2*TMath::Pi(), 500, 0, 5);
+  fHistScaleEmcalvsPhi = new TH2F("fHistScaleEmcalvsPhi", "fHistScaleEmcalvsPhi", 8, 0, 2*TMath::Pi(), 500, 0, 5);
   fHistScaleEmcalvsPhi->GetXaxis()->SetTitle("#phi");
   fHistScaleEmcalvsPhi->GetYaxis()->SetTitle("s_{EMC}");  
   fHistScaleEmcalvsPhi->GetZaxis()->SetTitle("counts");
@@ -397,6 +397,7 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
 
   Double_t ptEMCALshift1 = 0;
   Double_t ptEMCALshift2 = 0;
+  Double_t ptEMCALshift[8] = {0,0,0,0,0,0,0,0};
   Double_t ptEMCALshiftMean = 0;
   Double_t ptEMCALsections[8] = {0,0,0,0,0,0,0,0};
 
@@ -411,12 +412,12 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
       ptTPC += track->Pt();
 
       // Shift track acceptance by pi/4 and take mean
-      for(int a = 0; a < 7; a++){
-        if((track->Phi() < (EmcalMaxPhi+(a*TMath::PiOver4())) && track->Phi() > (EmcalMinPhi+(a*TMath::PiOver4())))) ptEMCALshiftMean += track->Pt();
+      Double_t tempShiftMean = 0;
+      for(int a = 0; a < 8; a++){
+        if((track->Phi() < (EmcalMaxPhi+(a*TMath::PiOver4())) && track->Phi() > (EmcalMinPhi+(a*TMath::PiOver4())))) ptEMCALshift[a] += track->Pt();
       }
-      ptEMCALshiftMean /= 8;
 
-      for(int a = 0; a < 7; a++){
+      for(int a = 0; a < 8; a++){
         if((track->Phi() < ((a+1)*TMath::PiOver4())) && track->Phi() > ((a)*TMath::PiOver4())) ptEMCALsections[a] += track->Pt();
       }
 
@@ -433,6 +434,12 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
       ptEMCAL += track->Pt();
     }
   }
+
+  // Get mean of ptEMCALshift
+  for(int a = 0; a < 8; a++){
+    ptEMCALshiftMean += ptEMCALshift[a];
+  }
+  ptEMCALshiftMean = ptEMCALshiftMean/8;
 
   if (ptTPC == 0) 
     return kFALSE;
@@ -460,36 +467,39 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
     scalecalc         =  ((Et + ptEMCAL) / fEmcalArea) * (fTpcArea / ptTPC);
   const Double_t scale             = GetScaleFactor(fCent);
   Double_t scalecalcemcal          = -1;
-  if (ptEMCAL > 0)
+  if (Et > 0 && ptEMCAL > 0)
     scalecalcemcal                 = (Et+ptEMCAL)/ptEMCAL;
   Double_t scalecalcemcal2         = -1;
   Double_t Chscalecalcemcal2       = -1;
-  if (ptEMCAL2 > 0){
+  if (Et > 0 && ptEMCAL2 > 0 && ptEMCAL > 0){
     scalecalcemcal2                = 2*(Et+ptEMCAL)/ptEMCAL2;
-    Chscalecalcemcal2              = 2*ptEMCAL/ptEMCAL2;}
+    Chscalecalcemcal2              = 2*ptEMCAL/ptEMCAL2;
+  }
   const Double_t Chscalecalcemcal  = ((ptEMCAL) / fEmcalArea) * (fTpcArea / ptTPC);
   Double_t scalecalcemcal3         = -1;
   Double_t Chscalecalcemcal3       = -1;
-  if (ptEMCAL3 > 0){
+  if (Et > 0 && ptEMCAL3 > 0 && ptEMCAL > 0){
     scalecalcemcal3                = 3*(Et+ptEMCAL)/ptEMCAL3;
-    Chscalecalcemcal3              = 3*ptEMCAL/ptEMCAL3;}
+    Chscalecalcemcal3              = 3*ptEMCAL/ptEMCAL3;
+  }
 
   // Calculations for shifted EMCal acceptance
   Double_t scalecalcemcalshift1    = -1;
-  if (ptEMCALshift1 > 0)
-    scalecalcemcalshift1           = (Et+ptEMCALshift1)/ptEMCALshift1;
+  if (ptEMCALshift1 > 0 && Et > 0 && ptEMCAL > 0)
+    scalecalcemcalshift1           = (Et+ptEMCAL)/ptEMCALshift1;
   Double_t scalecalcemcalshift2    = -1;
-  if (ptEMCALshift2 > 0)
-    scalecalcemcalshift2           = (Et+ptEMCALshift2)/ptEMCALshift2;
+  if (ptEMCALshift2 > 0 && Et > 0 && ptEMCAL > 0)
+    scalecalcemcalshift2           = (Et+ptEMCAL)/ptEMCALshift2;
   Double_t scalecalcemcalshiftmean    = -1;
-  if (ptEMCALshiftMean > 0)
-    scalecalcemcalshiftmean           = (Et+ptEMCALshiftMean)/ptEMCALshiftMean;
+  if (ptEMCALshiftMean > 0 && Et > 0 && ptEMCAL > 0){
+    scalecalcemcalshiftmean           = (Et+ptEMCAL)/ptEMCALshiftMean;
+  }
 
   // Calculations for EMCal phi sections
   Double_t scalecalcemcalsections[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
   for(int a = 0; a < 8; a++){
-    if (ptEMCALsections[a] > 0)
-      scalecalcemcalsections[a] = (Et+ptEMCALsections[a])/ptEMCALsections[a];
+    if (ptEMCALsections[a] > 0 && Et > 0 && ptEMCAL > 0)
+      scalecalcemcalsections[a] = ((Et+ptEMCAL)/ptEMCALsections[a])*(TMath::PiOver4()/(EmcalMaxPhi-EmcalMinPhi));
       fHistScaleEmcalvsPhi->Fill(a*TMath::PiOver4(),scalecalcemcalsections[a]);
   }
 
