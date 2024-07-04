@@ -571,9 +571,9 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserCreateOutputObjects()  {
     fOutputList->Add(f2Dhist_afterCut_TOFtime_proton);
 
     //Mass histogram of Lambda
-    f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent = new TH3D("f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent", "X:MassLambda and AntiLambda, Y:Pt, Z:Centrality",80,1.095,1.135,50,0,5,10,0,100);
+    f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent = new TH3D("f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent", "X:MassLambda and AntiLambda, Y:Pt, Z:Centrality",50,0,5,80,1.095,1.135,10,0,100);
     fOutputList->Add(f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent);
-    f3DhistMassK0s_vs_Pt_beforeMasscut_Cent = new TH3D("f3DhistMassK0s_vs_Pt_beforeMasscut_Cent", "X:MassK0s, Y:Pt, Z:Centrality",100,0.4,0.6,50,0,5,10,0,100);
+    f3DhistMassK0s_vs_Pt_beforeMasscut_Cent = new TH3D("f3DhistMassK0s_vs_Pt_beforeMasscut_Cent", "X:MassK0s, Y:Pt, Z:Centrality",50,0,5,100,0.4,0.6,10,0,100);
     fOutputList->Add(f3DhistMassK0s_vs_Pt_beforeMasscut_Cent);
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
