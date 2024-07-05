@@ -1,3 +1,14 @@
+// Copyright 2019-2020 CERN and copyright holders of ALICE O2.
+// See https://alice-o2.web.cern.ch/copyright for details of the copyright holders.
+// All rights not expressly granted are reserved.
+//
+// This software is distributed under the terms of the GNU General Public
+// License v3 (GPL Version 3), copied verbatim in the file "COPYING".
+//
+// In applying this license CERN does not waive the privileges and immunities
+// granted to it by virtue of its status as an Intergovernmental Organization
+// or submit itself to any jurisdiction.
+
 /*
 Author: Vytautas Vislavicius
 Extention of Generic Flow (https://arxiv.org/abs/1312.3572 by A. Bilandzic et al.)
@@ -5,42 +16,48 @@ A part of <AliGFW.cxx/h>
 A container to store Q vectors for one subevent with an extra layer to recursively calculate particle correlations.
 If used, modified, or distributed, please aknowledge the author of this code.
 */
-#ifndef ALIGFWCUMULANT__H
-#define ALIGFWCUMULANT__H
-#include "RtypesCore.h" //needed for root types only. Irrelevant, if running c++-SA code
+#ifndef PWGCF_FLOW_GF_AliGFWCUMULANT_H_
+#define PWGCF_FLOW_GF_AliGFWCUMULANT_H_
+
 #include <cmath>
 #include <complex>
 #include <vector>
-using std::vector;
-using std::complex;
-class AliGFWCumulant {
+
+class AliGFWCumulant
+{
  public:
   AliGFWCumulant();
   ~AliGFWCumulant();
   void ResetQs();
-  void FillArray(Int_t ptin, Double_t phi, Double_t weight=1, Double_t SecondWeight=-1);
-  enum UsedFlags_t {kBlank = 0, kFull=1, kPt=2};
-  void SetType(UInt_t infl) { DestroyComplexVectorArray(); fUsed = infl; };
-  void Inc() { fNEntries++; };
-  Int_t GetN() { return fNEntries; };
-  Bool_t IsPtBinFilled(Int_t ptb);
-  void CreateComplexVectorArray(Int_t N=1, Int_t P=1, Int_t Pt=1);
-  void CreateComplexVectorArrayVarPower(Int_t N=1, vector<Int_t> Pvec={1}, Int_t Pt=1);
-  Int_t PW(Int_t ind) { return fPowVec.at(ind); }; //No checks to speed up, be carefull!!!
+  void FillArray(int ptin, double phi, double weight = 1, double SecondWeight = -1);
+  enum UsedFlags_t { kBlank = 0,
+                     kFull = 1,
+                     kPt = 2 };
+  void SetType(uint infl)
+  {
+    DestroyComplexVectorArray();
+    fUsed = infl;
+  };
+  void Inc() { fNEntries++; }
+  int GetN() { return fNEntries; }
+  bool IsPtBinFilled(int ptb);
+  void CreateComplexVectorArray(int N = 1, int P = 1, int Pt = 1);
+  void CreateComplexVectorArrayVarPower(int N = 1, std::vector<int> Pvec = {1}, int Pt = 1);
+  int PW(int ind) { return fPowVec.at(ind); }; // No checks to speed up, be carefull!!!
   void DestroyComplexVectorArray();
-  complex<Double_t> Vec(Int_t, Int_t, Int_t ptbin=0); //envelope class to summarize pt-dif. Q-vec getter
+  std::complex<double> Vec(int, int, int ptbin = 0); // envelope class to summarize pt-dif. Q-vec getter
  protected:
-  complex<Double_t> ***fQvector;
-  UInt_t fUsed;
-  Int_t fNEntries;
-  //Q-vectors. Could be done recursively, but maybe defining each one of them explicitly is easier to read
-  Int_t fN; //! Harmonics
-  Int_t fPow; //! Power
-  vector<Int_t> fPowVec; //! Powers array
-  Int_t fPt; //!fPt bins
-  Bool_t *fFilledPts;
-  Bool_t fInitialized; //Arrays are initialized
-  complex<Double_t> fNullQ = complex<Double_t>(0.,0.);
+  std::complex<double>*** fQvector;
+  uint fUsed;
+  int fNEntries;
+  // Q-vectors. Could be done recursively, but maybe defining each one of them explicitly is easier to read
+  int fN;                   //! Harmonics
+  int fPow;                 //! Power
+  std::vector<int> fPowVec; //! Powers array
+  int fPt;                  //! fPt bins
+  bool* fFilledPts;
+  bool fInitialized; // Arrays are initialized
+  std::complex<double> fNullQ = 0;
 };
 
-#endif
+#endif // PWGCF_FLOW_GF_AliGFWCUMULANT_H_
