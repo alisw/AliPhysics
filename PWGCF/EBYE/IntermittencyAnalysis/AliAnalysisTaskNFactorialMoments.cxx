@@ -301,7 +301,7 @@ void AliAnalysisTaskNFactorialMoments::UserExec(Option_t*)
       ->GetPIDResponse();
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
 
-  if (!eventHandler || !fPIDResponse || !fAOD) {
+  if (!eventHandler || !fAOD) {
     std::cout << "UserExec: "
               << "InputHandler or PIDResponse or AODEvent not found"
               << std::endl;
@@ -417,6 +417,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
   Int_t nTracks(fAOD->GetNumberOfTracks());
   Float_t dpstar, deta, dphi;
   Float_t dcaXY, dcaZ;
+  Bool_t flagPID = kFALSE;
 
   // Track Loop:
   for (Int_t i = 0; i < nTracks; i++) {
@@ -462,47 +463,49 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
     // TODO: commented out the below statement because 128 seems to not give any values in the PID object
 
     // NOTE: These are all only PID related QA histograms (mostly for protons). No checks done
-    dEdx = track->GetTPCsignal();
-    for (Int_t isp(0); isp < AliPID::kSPECIES; isp++) {
-      nsigmaTPC[isp] =
-        fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)isp);
-      nsigmaTOF[isp] =
-        fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)isp);
-      fHistQAPID[12]->Fill(pt, nsigmaTPC[isp]);
-    }
-    fHistQAPID[0]->Fill(track->P() * track->Charge(), dEdx);
-    tofTime = track->GetTOFsignal();
-    length = track->GetIntegratedLength();
-    tof = tofTime * 1E-3; // ns
-    if (tof > 0 && length > 0) {
-      length = length * 0.01; // in meters
-      beta = length / (tof * c);
-      fHistQAPID[1]->Fill(track->Pt(), nsigmaTPC[4]);
-      fHistQAPID[2]->Fill(track->Pt(), nsigmaTOF[4]);
-      Double_t combSquare = TMath::Sqrt(nsigmaTPC[4] * nsigmaTPC[4] +
-                                        nsigmaTOF[4] * nsigmaTOF[4]);
-      fHistQAPID[3]->Fill(track->Pt(), combSquare);
-      fHistQAPID[4]->Fill(track->Pt(), beta);
-      fHistQAPID[5]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
-      if ((track->Pt() < 0.6) && (TMath::Abs(nsigmaTPC[4]) < 3)) {
-        fHistQAPID[6]->Fill(track->P() * track->Charge(), dEdx);
-        fHistQAPID[7]->Fill(track->Pt(), nsigmaTPC[4]);
-        fHistQAPID[8]->Fill(track->Pt(), nsigmaTOF[4]);
-        fHistQAPID[9]->Fill(track->Pt(), combSquare);
-        fHistQAPID[10]->Fill(track->Pt(), beta);
-        fHistQAPID[11]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
-      } else if ((track->Pt() > 0.6) && (combSquare < 3)) {
-        fHistQAPID[6]->Fill(track->P() * track->Charge(), dEdx);
-        fHistQAPID[7]->Fill(track->Pt(), nsigmaTPC[4]);
-        fHistQAPID[8]->Fill(track->Pt(), nsigmaTOF[4]);
-        fHistQAPID[9]->Fill(track->Pt(), combSquare);
-        fHistQAPID[10]->Fill(track->Pt(), beta);
-        fHistQAPID[11]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
+    if (flagPID) {
+      dEdx = track->GetTPCsignal();
+      for (Int_t isp(0); isp < AliPID::kSPECIES; isp++) {
+        nsigmaTPC[isp] =
+          fPIDResponse->NumberOfSigmasTPC(track, (AliPID::EParticleType)isp);
+        nsigmaTOF[isp] =
+          fPIDResponse->NumberOfSigmasTOF(track, (AliPID::EParticleType)isp);
+        fHistQAPID[12]->Fill(pt, nsigmaTPC[isp]);
       }
-    }
-    if (flagRejEls) {
-      if (TMath::Abs(nsigmaTPC[0]) < 1)
-        continue;
+      fHistQAPID[0]->Fill(track->P() * track->Charge(), dEdx);
+      tofTime = track->GetTOFsignal();
+      length = track->GetIntegratedLength();
+      tof = tofTime * 1E-3; // ns
+      if (tof > 0 && length > 0) {
+        length = length * 0.01; // in meters
+        beta = length / (tof * c);
+        fHistQAPID[1]->Fill(track->Pt(), nsigmaTPC[4]);
+        fHistQAPID[2]->Fill(track->Pt(), nsigmaTOF[4]);
+        Double_t combSquare = TMath::Sqrt(nsigmaTPC[4] * nsigmaTPC[4] +
+                                          nsigmaTOF[4] * nsigmaTOF[4]);
+        fHistQAPID[3]->Fill(track->Pt(), combSquare);
+        fHistQAPID[4]->Fill(track->Pt(), beta);
+        fHistQAPID[5]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
+        if ((track->Pt() < 0.6) && (TMath::Abs(nsigmaTPC[4]) < 3)) {
+          fHistQAPID[6]->Fill(track->P() * track->Charge(), dEdx);
+          fHistQAPID[7]->Fill(track->Pt(), nsigmaTPC[4]);
+          fHistQAPID[8]->Fill(track->Pt(), nsigmaTOF[4]);
+          fHistQAPID[9]->Fill(track->Pt(), combSquare);
+          fHistQAPID[10]->Fill(track->Pt(), beta);
+          fHistQAPID[11]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
+        } else if ((track->Pt() > 0.6) && (combSquare < 3)) {
+          fHistQAPID[6]->Fill(track->P() * track->Charge(), dEdx);
+          fHistQAPID[7]->Fill(track->Pt(), nsigmaTPC[4]);
+          fHistQAPID[8]->Fill(track->Pt(), nsigmaTOF[4]);
+          fHistQAPID[9]->Fill(track->Pt(), combSquare);
+          fHistQAPID[10]->Fill(track->Pt(), beta);
+          fHistQAPID[11]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
+        }
+      }
+      if (flagRejEls) {
+        if (TMath::Abs(nsigmaTPC[0]) < 1)
+          continue;
+      }
     }
 
     fTrackCounter->Fill(3);

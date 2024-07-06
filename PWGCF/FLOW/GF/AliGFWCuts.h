@@ -30,7 +30,8 @@ class AliGFWCuts {
   void ResetCuts();
   void PrintSetup();
   void SetupCuts(Int_t);
-  void SetEta(Double_t newval) { fEta = newval; };
+  void SetEta(Double_t newval) { fEtaLow = -TMath::Abs(newval); fEtaUp = TMath::Abs(newval); fAbs = kTRUE; };
+  void SetEta(Double_t low, Double_t up, bool abs) { fEtaLow = low; fEtaUp = up; fAbs = abs; };
   TString *GetFlagDescription(Int_t flag);
   const char *GetSystPF() { return Form("%s",fSystFlag?Form("_SystFlag%i_",fSystFlag):""); };
   Int_t GetSystFlagIndex() { return fSystFlag; };
@@ -42,7 +43,9 @@ class AliGFWCuts {
   Int_t fTPCNcls;//=70;
   Double_t fTPCChi2PerCluster;//= 4 or 2.5?
   Double_t fVtxZ;// = 10
-  Double_t fEta;
+  Double_t fEtaLow;//=-0.8
+  Double_t fEtaUp;//=0.8
+  Bool_t fAbs;//=false
   static const Int_t fNTrackFlags;
   static const Int_t fNEventFlags;
   static AliESDtrackCuts *fTCFB32;

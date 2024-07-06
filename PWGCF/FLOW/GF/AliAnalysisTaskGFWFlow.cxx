@@ -42,6 +42,7 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow():
   fTriggerType(AliVEvent::kINT7),
   fProduceWeights(kTRUE),
   fWeightList(0),
+  fPeriod("LHC18q_pass3"),
   fCentMap(0),
   fWeights(0),
   fFC(0),
@@ -69,6 +70,7 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceW
   fTriggerType(AliVEvent::kINT7),
   fProduceWeights(ProduceWeights),
   fWeightList(0),
+  fPeriod("LHC18q_pass3"),
   fCentMap(0),
   fWeights(0),
   fFC(0),
@@ -108,17 +110,43 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
     fWeightList = new TList();
     fWeightList->SetName("WeightList");
     fWeightList->SetOwner(kTRUE);
-    for(Int_t i=0;i<fTotFlags;i++) { //One less needed, because otherwise "Nominal" would be recorded twice
-      //fEvNomFlag and fTrNomFlag are already in mask-format, so for those, need to fetch corresponding indeces
-      Int_t defEvInd = i<fTotEvFlags?i:BitIndex(fEvNomFlag);
-      Int_t defTrInd = (i-fTotEvFlags);
-      if(defTrInd<0) defTrInd=BitIndex(fTrNomFlag); //if index < 0, then we're still in the event flags. Thus, select the nominal here
-      else if(defTrInd==BitIndex(fTrNomFlag)) continue; //Otherwise, check if we are doing the nominal flag. If so, the skip this, b/c it's already done with nominal event selection
-      fWeightList->Add(new AliGFWWeights());
-      fWeights = (AliGFWWeights*)fWeightList->Last();
-      fWeights->SetName(Form("weights%s",GetSystPF(defEvInd,defTrInd).Data()));
-      fWeights->Init(!fIsMC,fIsMC); // AddData = !fIsMC; AddMC = fIsMC
-    };
+
+    //RunNumbers for different periods
+    vector<int> temp = {};
+    if (fPeriod.EqualTo("LHC15o")) {
+      vector<int> temp = {244917, 244918, 244975, 244980, 244982, 244983, 245061, 245064, 245066, 245068, 245145, 245146, 245148, 245151, 245152, 245231, 245232, 245233, 245259, 245343, 245345, 245346, 245347, 245349, 245353, 245396, 245397, 245401, 245407, 245409, 245410, 245411, 245439, 245441, 245446, 245450, 245452, 245453, 245454, 245496, 245497, 245501, 245504, 245505, 245507, 245535, 245540, 245542, 245543, 245544, 245545, 245554, 245683, 245692, 245700, 245702, 245705, 245729, 245731, 245738, 245752, 245759, 245766, 245775, 245785, 245793, 245829, 245831, 245833, 245923, 245949, 245952, 245954, 245963, 246001, 246003, 246012, 246036, 246037, 246042, 246048, 246049, 246052, 246053, 246087, 246089, 246113, 246115, 246148, 246151, 246152, 246153, 246178, 246180, 246181, 246182, 246185, 246217, 246222, 246225, 246271, 246272, 246275, 246276, 246390, 246391, 246392, 246424, 246428, 246431, 246434, 246487, 246488, 246493, 246495, 246540, 246543, 246553, 246567, 246568, 246575, 246583, 246648, 246671, 246675, 246676, 246750, 246751, 246757, 246758, 246759, 246760, 246763, 246765, 246766, 246804, 246805, 246807, 246808, 246809, 246810, 246844, 246845, 246846, 246847, 246851, 246855, 246858, 246859, 246864, 246865, 246867, 246870, 246871, 246928, 246930, 246937, 246942, 246945, 246948, 246949, 246980, 246982, 246984, 246989, 246991, 246994};
+      RunNumber = temp;
+    } 
+    else if (fPeriod.EqualTo("LHC15o_pass2")) {
+      vector<int> temp = {246994, 246991, 246989, 246984, 246982, 246948, 246945, 246928, 246871, 246870, 246867, 246865, 246864, 246859, 246858, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246434, 246431, 246424, 246392, 246391, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246148, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245963, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245793, 245785, 245775, 245766, 245759, 245752, 245731, 245729, 245705, 245702, 245692, 245683, 245554, 245545, 245544, 245543, 245542, 245540, 245535, 245507, 245505, 245504, 245501, 245497, 245496, 245454, 245453, 245450, 245446, 245441, 245411, 245410, 245409, 245407, 245401, 245397, 245396, 245353, 245349, 245347, 245346, 245345, 245343, 245259, 245233, 245232, 245231, 245152, 245151, 245146, 245145, 245068, 245066, 245064, 244983, 244982, 244980, 244975, 244918, 244917};
+      RunNumber = temp;
+    }
+    else if (fPeriod.EqualTo("LHC18r_pass3")) {
+      vector<int> temp = {297595, 297590, 297588, 297558, 297544, 297542, 297541, 297540, 297537, 297512, 297483, 297479, 297452, 297451, 297450, 297446, 297442, 297441, 297415, 297414, 297413, 297406, 297405, 297380, 297379, 297372, 297367, 297366, 297363, 297336, 297335, 297333, 297332, 297317, 297311, 297310, 297278, 297222, 297221, 297218, 297196, 297195, 297193, 297133, 297132, 297129, 297128, 297124, 297123, 297119, 297118, 297117, 297085, 297035, 297031, 296966, 296941, 296938, 296935, 296934, 296932, 296931, 296930, 296903, 296900, 296899, 296894, 296852, 296851, 296850, 296848, 296839, 296838, 296836, 296835, 296799, 296794, 296793, 296790, 296787, 296786, 296785, 296784, 296781, 296752, 296694, 296693, 296691, 296690};
+      RunNumber = temp;
+    }
+    else if (fPeriod.EqualTo("LHC18q_pass3")) {
+      vector<int> temp = {296623, 296622, 296621, 296619, 296618, 296616, 296615, 296594, 296553, 296552, 296551, 296550, 296548, 296547, 296516, 296512, 296511, 296510, 296509, 296472, 296433, 296424, 296423, 296420, 296419, 296415, 296414, 296383, 296381, 296380, 296379, 296378, 296377, 296376, 296375, 296312, 296309, 296304, 296303, 296280, 296279, 296273, 296270, 296269, 296247, 296246, 296244, 296243, 296242, 296241, 296240, 296198, 296197, 296196, 296195, 296194, 296192, 296191, 296143, 296142, 296135, 296134, 296133, 296132, 296123, 296074, 296066, 296065, 296063, 296062, 296060, 296016, 295942, 295941, 295937, 295936, 295913, 295910, 295909, 295861, 295860, 295859, 295856, 295855, 295854, 295853, 295831, 295829, 295826, 295825, 295822, 295819, 295818, 295816, 295791, 295788, 295786, 295763, 295762, 295759, 295758, 295755, 295754, 295725, 295723, 295721, 295719, 295718, 295717, 295714, 295712, 295676, 295675, 295673, 295668, 295667, 295666, 295615, 295612, 295611, 295610, 295589, 295588, 295586, 295585};
+      RunNumber = temp;
+    }
+    else if (fPeriod.EqualTo("LHC17n")) {
+      vector<int> temp = {280234, 280235};
+      RunNumber = temp;
+    }
+    for (auto RunIter = RunNumber.begin(); RunIter != RunNumber.end(); RunIter++)
+    {
+      for(Int_t i=0;i<fTotFlags;i++) { //One less needed, because otherwise "Nominal" would be recorded twice
+        //fEvNomFlag and fTrNomFlag are already in mask-format, so for those, need to fetch corresponding indeces
+        Int_t defEvInd = i<fTotEvFlags?i:BitIndex(fEvNomFlag);
+        Int_t defTrInd = (i-fTotEvFlags);
+        if(defTrInd<0) defTrInd=BitIndex(fTrNomFlag); //if index < 0, then we're still in the event flags. Thus, select the nominal here
+        else if(defTrInd==BitIndex(fTrNomFlag)) continue; //Otherwise, check if we are doing the nominal flag. If so, the skip this, b/c it's already done with nominal event selection
+        fWeightList->Add(new AliGFWWeights());
+        fWeights = (AliGFWWeights*)fWeightList->Last();
+        fWeights->SetName(Form("w%s%s",to_string(*RunIter).c_str(),GetSystPF(defEvInd,defTrInd).Data()));
+        fWeights->Init(!fIsMC,fIsMC); // AddData = !fIsMC; AddMC = fIsMC
+      }
+    }
   } else {
     //Setup the structure of FC:
     TObjArray *OAforPt=new TObjArray();
@@ -415,19 +443,28 @@ void AliAnalysisTaskGFWFlow::UserExec(Option_t*) {
     AliAODTrack *lTrack;
     Double_t pt;
     UInt_t gTrackFlags=0;
-    for(Int_t lTr=0;lTr<lFlags->GetNFiltered();lTr++) {
-      gTrackFlags = lFlags->GetTrackFlag(lTr);
-      Int_t trInd = lFlags->GetTrackIndex(lTr);
-      lTrack = (AliAODTrack*)fAOD->GetTrack(trInd);
-      pt=lTrack->Pt();
-      if(pt<fRFpTMin || pt>fRFpTMax) continue; //NUAs just for RF
-      //For event cuts, keep track cuts nominal:
-      if(gTrackFlags&fTrNomFlag) for(Int_t jEv=0;jEv<fTotEvFlags;jEv++) if(gEventFlag&(1<<jEv))
-        ((AliGFWWeights*)fWeightList->At(jEv))->Fill(lTrack->Phi(),lTrack->Eta(),vz,pt,cent,0);
-      //For track cuts, keep event cuts nominal:
-      if(gEventFlag&fEvNomFlag) for(Int_t jTr=1;jTr<fTotTrackFlags;jTr++) if(gTrackFlags&(1<<jTr)) //also, start track flag from 1, b/c 0 flag is nominal and already recorded with nominal ev cuts
-        ((AliGFWWeights*)fWeightList->At(fTotEvFlags+jTr-1))->Fill(lTrack->Phi(),lTrack->Eta(),vz,pt,cent,0);
-    };
+
+    auto it = find(RunNumber.begin(), RunNumber.end(), fAOD->GetRunNumber());
+    Int_t Runindex = -1;
+    if (it == RunNumber.end()) { Runindex = -1;}
+    else { Runindex = it - RunNumber.begin();}
+
+    if (Runindex > -1)
+    {
+      for(Int_t lTr=0;lTr<lFlags->GetNFiltered();lTr++) {
+        gTrackFlags = lFlags->GetTrackFlag(lTr);
+        Int_t trInd = lFlags->GetTrackIndex(lTr);
+        lTrack = (AliAODTrack*)fAOD->GetTrack(trInd);
+        pt=lTrack->Pt();
+        if(pt<fRFpTMin || pt>fRFpTMax) continue; //NUAs just for RF
+        //For event cuts, keep track cuts nominal:
+        if(gTrackFlags&fTrNomFlag) for(Int_t jEv=0;jEv<fTotEvFlags;jEv++) if(gEventFlag&(1<<jEv))
+           ((AliGFWWeights*)fWeightList->At(Runindex*(fTotFlags-1)+jEv))->Fill(lTrack->Phi(),lTrack->Eta(),vz,pt,cent,0); //Nominal one is calculated twice
+        //For track cuts, keep event cuts nominal:
+        if(gEventFlag&fEvNomFlag) for(Int_t jTr=1;jTr<fTotTrackFlags;jTr++) if(gTrackFlags&(1<<jTr)) //also, start track flag from 1, b/c 0 flag is nominal and already recorded with nominal ev cuts
+          ((AliGFWWeights*)fWeightList->At(Runindex*(fTotFlags-1)+fTotEvFlags+jTr-1))->Fill(lTrack->Phi(),lTrack->Eta(),vz,pt,cent,0);
+      };
+    }
     PostData(1,fWeightList);
     PostData(2,fMultiDist);
     return;
@@ -489,7 +526,7 @@ Bool_t AliAnalysisTaskGFWFlow::CheckTriggerVsCentrality(Double_t l_cent) {
 Bool_t AliAnalysisTaskGFWFlow::LoadWeights(Int_t runno) { //Cannot be used when running on the trains
   TString wName=Form("w%i%s",runno,GetSystPF(BitIndex(fEvNomFlag), BitIndex(fTrNomFlag)).Data());
   if(fWeightList) {
-    fWeights = (AliGFWWeights*)fWeightList->FindObject(wName.Data());
+    fWeights = (AliGFWWeights*)fWeightList->FindObject("WeightList")->FindObject(wName.Data());
     if(!fWeights) {
       fWeightList->ls();
       AliFatal("Weights could not be found in the list!\n");
@@ -519,11 +556,10 @@ Bool_t AliAnalysisTaskGFWFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t cent
       fFC->FillProfile(corconf.Head.c_str(),cent,val,dnx,rndmn);
     return kTRUE;
   };
-  Bool_t NeedToDisable=kFALSE;
   for(Int_t i=1;i<=fPtAxis->GetNbins();i++) {
-    dnx = fGFW->Calculate(corconf,i-1,kTRUE,NeedToDisable).real();
+    dnx = fGFW->Calculate(corconf,i-1,kTRUE).real();
     if(dnx==0) continue;
-    val = fGFW->Calculate(corconf,i-1,kFALSE,NeedToDisable).real()/dnx;
+    val = fGFW->Calculate(corconf,i-1,kFALSE).real()/dnx;
     if(TMath::Abs(val)<1)
       fFC->FillProfile(Form("%s_pt_%i",corconf.Head.c_str(),i),cent,val,dnx,rndmn);
   };

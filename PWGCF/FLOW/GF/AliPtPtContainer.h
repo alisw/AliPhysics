@@ -45,13 +45,13 @@ class AliPtPtContainer: public TNamed {
         TList* fCentralMomentList;
         const int mpar;
         unsigned int fEventWeight;
-        vector<Double_t> fCorr; 
-        vector<Double_t> fSumw; 
+        vector<Double_t> fCorr;
+        vector<Double_t> fSumw;
         Double_t OrderedAddition(vector<Double_t> vec);
         void CreateCentralMomentList();
         void CalculateCentralMomentHists(vector<TH1*> inh, int ind, int m, TH1* hMpt);
         void CreateCumulantList();
-        void CalculateCumulantHists(vector<TH1*> inh, Int_t ind); 
+        void CalculateCumulantHists(vector<TH1*> inh, Int_t ind);
         Int_t factorial(const Int_t n) { return (n<2)?1:factorial(n - 1)*n; }
 
       private:
@@ -60,6 +60,6 @@ class AliPtPtContainer: public TNamed {
         static Double_t           fCoeff[5][5][5][5];
         void MergeBSLists(TList *source, TList *target);
         TH1* raiseHistToPower(TH1* inh, double p);
-    ClassDef(AliPtPtContainer,1);
+    ClassDef(AliPtPtContainer,4);
 };
 #endif

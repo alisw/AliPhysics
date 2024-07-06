@@ -23,6 +23,12 @@ public:
   void SetNUEOn(bool doNUE) { this->IsDoNUE = doNUE; }
   void SetNUAOn(bool doNUA) { this->IsDoNUA = doNUA; }
   void SetListForZDCCalib(TList *flist) { this->fListZDCCalib = (TList *)flist->Clone(); }
+  void SetTrigger(TString trigger) { this->fTrigger = trigger; }
+  void SetPeriod(TString period) { this->fPeriod = period; }
+  void SetBadTowerCalibList(TList* const kList) {this->fBadTowerCalibList = (TList*)kList->Clone(); fUseBadTowerCalib=kTRUE;};
+  void SetZDCSpectraCorrList(TList* const kList) {this->fZDCSpectraCorrList = (TList*)kList->Clone(); fUseZDCSpectraCorr=kTRUE;};
+  Double_t GetBadTowerResp(Double_t Et, TH2D* BadTowerCalibHist);
+  void SetTriggerOn(bool fTriggerIsOn) { this->TriggerIsOn = fTriggerIsOn; }
 
 private:
   bool GetVZEROPlane();
@@ -33,7 +39,7 @@ private:
   int GetRunNumBin(int runNum);
   bool LoadCalibHistForThisRun();
   bool RejectEvtTFFit();
-  void ResetHists();
+//  void ResetHists();
   bool QC2SE();
   bool CheckPIDofParticle(AliAODTrack *ftrack, int pidToCheck);
 
@@ -51,15 +57,10 @@ private:
   double fDeDxMin;
   double fNSigmaTPCCut;
   double fNSigmaTOFCut;
-  TH3D **hYield;
-  TProfile **pC2;
-  TProfile **pC2QRe;
-  TProfile **pC2QIm;
-  TProfile3D **pD2pQStar;
-  TProfile3D **pD2pRe;
-  TProfile3D **pD2pIm;
-  TProfile3D **v1p_qc;
-  TProfile3D **v1t_qc;
+  TString fTrigger; 
+  bool TriggerIsOn;
+  double fVzCut;    // vz cut
+
   // some hist array
   TProfile2D **TPCcos_t;
   TProfile2D **TPCcos_p;
@@ -76,10 +77,16 @@ private:
   TProfile *ZDCResQ;
   TProfile2D **ZDCcos_t;
   TProfile2D **ZDCcos_p;
-  TProfile **fTPCrecenterQx;
-  TProfile **fTPCrecenterQy;
-  TProfile2D **fTPCrecenterQxVz;
-  TProfile2D **fTPCrecenterQyVz;
+  TH2D **Proton_EtaPhi;
+  TH2D **Kion_EtaPhi;
+  TH2D **Pion_EtaPhi;
+  TH2D **PosHadron_EtaPhi;
+  TH2D **PosHadron_PhiPsi_p;
+  TH2D **PosHadron_PhiPsi_t;
+  TH2D **NegHadron_EtaPhi;
+  TH2D **NegHadron_PhiPsi_p;
+  TH2D **NegHadron_PhiPsi_t;
+
 
   int runNum;
   int oldRunNum;
@@ -134,29 +141,6 @@ private:
 
   // qc
   int nCentrality;
-  TH2D *hMQ_thisEvt;
-  TH2D *hReQ_thisEvt;
-  TH2D *hImQ_thisEvt;
-  TProfile *pC2_thisEvt;
-  TProfile *pC2QRe_thisEvt;
-  TProfile *pC2QIm_thisEvt;
-  TProfile3D *pD2pQStar_thisEvt;
-  TProfile3D *pD2pRe_thisEvt;
-  TProfile3D *pD2pIm_thisEvt;
-  TProfile3D *v1p_thisEvt;
-  TProfile3D *v1t_thisEvt;
-  TH3D *hMp_thisEvt;
-  TH3D *hRep_thisEvt;
-  TH3D *hImp_thisEvt;
-  double PTGAP;
-  double ETAGAP;
-  int NPTBINS;
-  double PTBINLOW;
-  double PTBINUP;
-  int NETABINS;
-  double ETABINLOW;
-  double ETABINUP;
-  int NPOIBINS;
 
   // v1tp
   TProfile *ptEta;
@@ -214,8 +198,23 @@ private:
   double Qpx;
   double Qpy;
 
-  // TPC recenter
-  TH1F *fBeforeRecenterPsi2;
+  //15o
+  TString fPeriod;  // period
+  float fZDCGainAlpha;
+  TH1D *fTowerGainEq[2][5]; //!
+  bool fUseBadTowerCalib; //
+  TList *fBadTowerCalibList; // list with original calib files
+  TH1D *SpecCorMu1[8];
+  TH1D *SpecCorMu2[8];
+  TH1D *SpecCorAv[8]; 
+  TH1D *SpecCorSi[8]; 
+  TH2D *fBadTowerCalibHist[100]; //!
+  bool fUseZDCSpectraCorr; //
+  TList *fZDCSpectraCorrList; //
+  TH3D *fhZNSpectra;   	//! ZNA vs. centrality
+  TH3D *fhZNSpectraCor;   	//! ZNA vs. centrality
+  TH3D *fhZNSpectraPow;   	//! ZNA vs. centrality
+  TH3D *fhZNBCCorr; 
 
   AliAnalysisTaskChargeV1(const AliAnalysisTaskChargeV1 &);            // not implemented
   AliAnalysisTaskChargeV1 &operator=(const AliAnalysisTaskChargeV1 &); // not implemented

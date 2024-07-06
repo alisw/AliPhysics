@@ -235,6 +235,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       kLHC21d2a, // GJ EMC+DCAL
       kLHC21d2b, // JJLow EMC+DCAL
       kLHC21d2c, // JJHigh EMC+DCAL
+      // pp 13TeV eta prime biased JJ MC
+      kLHC23a4b,
       // Data starts here
       k10pp7TeV,
       k10pp900GeV,
@@ -375,7 +377,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     Bool_t      MatchConvPhotonToCluster(AliAODConversionPhoton* convPhoton, AliVCluster* cluster, AliVEvent* event, Double_t weight=1.);
     void        MatchTracksToClusters(AliVEvent* event, Double_t weight=1., Bool_t isEMCalOnly = kTRUE, AliMCEvent *mcEvent = 0x0);
-    void        MatchElectronTracksToClusters(AliVEvent* event, AliMCEvent* MCevent, AliVCluster* cluster, Int_t isMC, vector<Int_t> vElectronTracks = {}, Double_t weight = 1.);
+    void        MatchElectronTracksToClusters(AliVEvent* event, AliMCEvent* MCevent, vector<AliVCluster*> vCluster, Int_t isMC, vector<Int_t> vElectronTracks = {}, Double_t weight = 1.);
     Bool_t      CheckClusterForTrackMatch(AliVCluster* cluster);
     Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event);
     Int_t       GetNumberOfLocalMaxima(AliVCluster* cluster, AliVEvent * event,  Int_t *absCellIdList, Float_t* maxEList);
@@ -602,7 +604,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Float_t   fConvRejMaxOpenAngle;                     // maximum opening angle of a cluster pair to be considerd to be a conversion from the same photon
     Int_t     fUseRecConv;                              // flag to switch on conversion recovery
     Double_t  fMaxDispersion;                           // maximum dispersion
-    Bool_t    fUseDispersion;                           // flag for switching on dispersion cut
+    int       fUseDispersion;                           // flag for switching on dispersion cut. If set to two, this acts as the cluster efficiency (cut is overloaded from cutID=10 onwards)
     Int_t     fMinNLM;                                  // minimum number of local maxima in cluster
     Int_t     fMaxNLM;                                  // maximum number of local maxima in cluster
     Bool_t    fUseNLM;                                  // flag for switching on NLM cut
@@ -624,6 +626,9 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     Double_t  fNOCParam4[3];                            // parameter for function pol2 to describe 5th parameter as function of cent of the 5 params for the NOC
     Float_t   fMeanNMatchedTracks;                      // Mean number of matched primary tracks, stored to reduce CPU time for neutral overlap correction
     TF1*      fFuncNOCMaxBoltz;                         // TF1 Maxwell Boltzmann to describe the neutral overlap correction for a specific centrality
+    // for cluster efficiency application in data
+    bool      fApplyClusterEffOnData;                   // switch weather cluster efficiency should be applied on data or MC
+    TF1*      fClusterEfficiencyFunc;                   // function giveing the probability a cluster should survive the cuts as function of energy
 
 
     //vector
@@ -755,6 +760,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistMatchedTrackPClusETruePi0Clus;       // track P vs cluster E in case of matching with a true pi0 cluster
 
     TH1F*     fHistElectronPositronOnEMC;                       // Electron/Positron P for all tracks in EMCal acceptance
+    TH1F*     fHistElectronPositronOnEMCCell;                   // Electron/Positron P for all tracks in EMCal acceptance and that hit a good cell
     TH2F*     fHistElectronPositronClusterMatch;                // Electron/Positron P vs cluster E in case of matching with a cluster
     TH2F*     fHistElectronPositronClusterMatchSub;             // Electron/Positron P vs E - P in case of matching with a cluster
     TH2F*     fHistElectronPositronClusterMatchEoverP;          // Electron/Positron E/P vs PT of track in case of matching of Electron with cluster
@@ -768,6 +774,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistElectronClusterMatchTruePID;                 // MC true histogram for purity studies of selected electrons
     TH2F*     fHistTrueElectronPositronClusterMatchEoverP;      // True Electron/Positron E/P vs PT of cluster in case of matching of Electron with cluster
     TH2F*     fHistElectronClusterNCellsVsE;                    // Electron/Positron cluster number of cells vs. cluster energy
+    TH2F*     fHistElectronPositronVsSM;                        // track momentum for electron and positron tracks for each SM seperatly
+    TH2F*     fHistElectronPositronVsEta;                       // track momentum for electron and positron tracks vs. eta of cluster
+    TH2F*     fHistElectronPositronClusterMatchVsSM;            // track momentum for matched electron and positron tracks for each SM seperatly
+    TH2F*     fHistElectronPositronClusterMatchVsEta;           // track momentum for matched electron and positron tracks vs. eta of cluster
 
     // histogram for conv candidate rejection
     TH2F*     fHistInvMassDiCluster;                    // histogram for monitoring di-cluster mass
@@ -779,7 +789,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,136)
+    ClassDef(AliCaloPhotonCuts,140)
 };
 
 #endif

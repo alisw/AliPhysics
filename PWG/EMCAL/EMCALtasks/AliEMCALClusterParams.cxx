@@ -754,7 +754,7 @@ Double_t AliEMCALClusterParams::GetWeightedDispersionX() const
   UShort_t *celllist;
   celllist=fCluster->GetCellsAbsId();
 
-  Int_t ncell=0;//cell counter
+  // Int_t ncell=0;//cell counter
   
   for (Int_t i=0;i<nclusfCells;i++) {
     Int_t iSupMod = -1;
@@ -768,7 +768,7 @@ Double_t AliEMCALClusterParams::GetWeightedDispersionX() const
     fGeom->GetCellIndex(celllist[i],iSupMod,iTower,iIphi,iIeta);
     fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
 
-    ncell++;
+    // ncell++;
     
     etai=(Double_t)ieta+1.;
     w = TMath::Max(0.,logWeight+TMath::Log(amp/totalFClusterEnergy )); //Calc weight
@@ -783,7 +783,7 @@ Double_t AliEMCALClusterParams::GetWeightedDispersionX() const
 
   // Calculate dispersion
   // Loop over fCells in the newly created fCluster
-  Int_t ncell1=0;//cell counter
+  // Int_t ncell1=0;//cell counter
   nstat=0;
 
   for (Int_t i=0;i<nclusfCells;i++) {
@@ -798,7 +798,7 @@ Double_t AliEMCALClusterParams::GetWeightedDispersionX() const
     fGeom->GetCellIndex(celllist[i],iSupMod,iTower,iIphi,iIeta);
     fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
 
-    ncell1++;
+    // ncell1++;
     etai=(Double_t)ieta+1.;
     w = TMath::Max(0.,logWeight+TMath::Log(amp/totalFClusterEnergy));
     
@@ -833,7 +833,7 @@ Double_t AliEMCALClusterParams::GetWeightedDispersionY() const
   UShort_t *celllist;
   celllist=fCluster->GetCellsAbsId();
 
-  Int_t ncell=0;//cell counter
+  // Int_t ncell=0;//cell counter
   
   for (Int_t i=0;i<nclusfCells;i++) {
     Int_t iSupMod = -1;
@@ -847,7 +847,7 @@ Double_t AliEMCALClusterParams::GetWeightedDispersionY() const
     fGeom->GetCellIndex(celllist[i],iSupMod,iTower,iIphi,iIeta);
     fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
 
-    ncell++;
+    // ncell++;
     
     phii=(Double_t)iphi+1.;
     w = TMath::Max(0.,logWeight+TMath::Log(amp/totalFClusterEnergy )); //Calc weight
@@ -862,7 +862,7 @@ Double_t AliEMCALClusterParams::GetWeightedDispersionY() const
 
   // Calculate dispersion
   // Loop over fCells in the newly created fCluster
-  Int_t ncell1=0;//cell counter
+  // Int_t ncell1=0;//cell counter
   nstat=0;
   for (Int_t i=0;i<nclusfCells;i++) {
     Int_t iSupMod = -1;
@@ -876,7 +876,7 @@ Double_t AliEMCALClusterParams::GetWeightedDispersionY() const
     fGeom->GetCellIndex(celllist[i],iSupMod,iTower,iIphi,iIeta);
     fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
 
-    ncell1++;
+    // ncell1++;
 
     phii=(Double_t)iphi+1.;
     w = TMath::Max(0.,logWeight+TMath::Log(amp/totalFClusterEnergy));
@@ -920,7 +920,7 @@ void AliEMCALClusterParams::GetWeightedEllipseParameters(Double_t &param1, Doubl
 	
   Double_t etai =0, phii=0, w=0; 
 
-  Int_t ncell=0;//cell counter
+  // Int_t ncell=0;//cell counter
 
   Double_t totalFClusterEnergy=fCluster->E();
   Int_t nclusfCells=fCluster->GetNCells();
@@ -936,7 +936,7 @@ void AliEMCALClusterParams::GetWeightedEllipseParameters(Double_t &param1, Doubl
     Int_t ieta    = -1;
     Double_t amp=fCells->GetCellAmplitude(celllist[i]);
 
-    ncell++;
+    // ncell++;
     etai = phii = 0.; 
     fGeom->GetCellIndex(celllist[i],iSupMod,iTower,iIphi,iIeta);
     fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
@@ -986,7 +986,7 @@ Double_t AliEMCALClusterParams::GetWeightedDispersion(Double_t &dispersionback) 
   Double_t etai, phii, etaMean=0.0, phiMean=0.0; 
 
   // Calculate mean values
-  Int_t ncell=0;//cell counter
+  // Int_t ncell=0;//cell counter
 
   Double_t totalFClusterEnergy=fCluster->E();
   Int_t nclusfCells=fCluster->GetNCells();
@@ -1002,7 +1002,7 @@ Double_t AliEMCALClusterParams::GetWeightedDispersion(Double_t &dispersionback) 
     Int_t ieta    = -1;
     Double_t amp=fCells->GetCellAmplitude(celllist[i]);
 
-    ncell++;
+    // ncell++;
     etai = phii = 0.; 
     fGeom->GetCellIndex(celllist[i],iSupMod,iTower,iIphi,iIeta);
     fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);
@@ -1024,7 +1024,7 @@ Double_t AliEMCALClusterParams::GetWeightedDispersion(Double_t &dispersionback) 
   }
 
   // Calculate dispersion
-  Int_t ncell1=0;//cell counter
+  // Int_t ncell1=0;//cell counter
   nstat=0;
 
   for (Int_t i=0;i<nclusfCells;i++) {
@@ -1036,7 +1036,7 @@ Double_t AliEMCALClusterParams::GetWeightedDispersion(Double_t &dispersionback) 
     Int_t ieta    = -1;
     Double_t amp=fCells->GetCellAmplitude(celllist[i]);
 
-    ncell1++;
+    // ncell1++;
     etai = phii = 0.; 
     fGeom->GetCellIndex(celllist[i],iSupMod,iTower,iIphi,iIeta);
     fGeom->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi,iIeta, iphi,ieta);

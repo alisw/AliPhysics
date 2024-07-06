@@ -19,7 +19,9 @@ AliGFWCuts::AliGFWCuts():
   fTPCNcls(70),
   fTPCChi2PerCluster(2.5),
   fVtxZ(10),
-  fEta(0.8),
+  fEtaLow(-0.8),
+  fEtaUp(0.8),
+  fAbs(kFALSE),
   fPtDepXYCut(0x0),
   fRequiresExtraWeight(kTRUE)
 {
@@ -27,7 +29,8 @@ AliGFWCuts::AliGFWCuts():
 AliGFWCuts::~AliGFWCuts() {
 };
 Int_t AliGFWCuts::AcceptTrack(AliAODTrack *&l_Tr, Double_t *l_DCA, const Int_t &BitShift, const Bool_t &lDisableDCAxyCheck) {
-  if(TMath::Abs(l_Tr->Eta())>fEta) return 0;
+  Double_t leta = (fAbs)?TMath::Abs(l_Tr->Eta()):l_Tr->Eta();
+  if((leta < fEtaLow) || (fEtaUp < leta)) return 0;
   if(!l_Tr->TestFilterBit(fFilterBit)) return 0;
   if(fFilterBit!=2) {//Check is not valid for ITSsa tracks
     if(l_Tr->GetTPCNclsF()<fTPCNcls) return 0;
@@ -88,7 +91,8 @@ Int_t AliGFWCuts::AcceptTrack(AliESDtrack *&l_Tr, Double_t *l_DCA, const Int_t &
   Double_t l_Pt = l_Tr->Pt();
   if(l_Pt<0.01) return 0; //If below 10 MeV, throw away the track immediatelly -> Otherwise, problems calculating DCAxy value
   PrimFlags=0; //Initial value for primary selection -- initially, not a primary
-  if(TMath::Abs(l_Tr->Eta())>fEta) return 0;
+  Double_t leta = (fAbs)?TMath::Abs(l_Tr->Eta()):l_Tr->Eta();
+  if((leta < fEtaLow) || (fEtaUp < leta)) return 0;
   if(fFilterBit==96) {
     if(!fTCFB32->AcceptTrack(l_Tr) && !fTCFB64->AcceptTrack(l_Tr)) return 0;
     if(l_DCA) if(TMath::Abs(l_DCA[0]) < fPtDepXYCut->Eval(l_Pt)) PrimFlags+=1;
@@ -120,7 +124,8 @@ Int_t AliGFWCuts::AcceptTrack(AliESDtrack *&l_Tr, Double_t *l_DCA, const Int_t &
 
 
 Int_t AliGFWCuts::AcceptParticle(AliVParticle *l_Pa, Int_t BitShift, Double_t ptLow, Double_t ptHigh) {
-  if(TMath::Abs(l_Pa->Eta())>fEta) return 0;
+  Double_t leta = (fAbs)?TMath::Abs(l_Pa->Eta()):l_Pa->Eta();
+  if((leta < fEtaLow) || (fEtaUp < leta)) return 0;
   if(ptLow>0) if(l_Pa->Pt()<ptLow) return 0;
   if(ptHigh>0) if(l_Pa->Pt()>ptHigh) return 0;
   return 1<<BitShift;
@@ -143,7 +148,9 @@ void AliGFWCuts::ResetCuts() {
   fDCAzCut=2;
   fTPCNcls=70;
   fVtxZ=10;
-  fEta=0.8;
+  fEtaLow=-0.8;
+  fEtaUp=0.8;
+  fAbs=kFALSE;
   fTPCChi2PerCluster=2.5;
   fRequiresExtraWeight=kTRUE;
   SetPtDepDCAXY("[0]*(0.0026+0.005/(x^1.01))");//[0]*(0.0015 + 0.005/(x^1.1))");//"0.0105+0.0350/(x^1.1)");
@@ -151,7 +158,7 @@ void AliGFWCuts::ResetCuts() {
 void AliGFWCuts::PrintSetup() {
   printf("**********\n");
   printf("Syst. flag: %i\n",fSystFlag);
-  printf("Eta: %f\n",fEta);
+  printf("Eta: %f < %seta%s < %f\n",fEtaLow,(fAbs)?"|":"",fEtaUp,(fAbs)?"|":"");
   printf("(Flag 1, 10-16) Filter bit: %i\n",fFilterBit);
   printf("(Flag 2,3,12,16) DCAxy cut: %2.0f sigma \n",fDCAxyCut);
   printf("(Flag 4,5) DCAz cut: %.1f\n",fDCAzCut);

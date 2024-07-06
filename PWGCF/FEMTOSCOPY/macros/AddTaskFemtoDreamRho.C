@@ -12,9 +12,16 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
                                         bool doProjections = false,
                                         float rhoPtThreshold = 0.,
                                         float rhoPtThresholdupper = 4.,
+                                        float rhoCandInvMassLow = 0.075,
+                                        float rhoCandInvMassHigh = 0.075,
+                                        bool isSameCharge = false,
+                                        bool isMCTrueRhoCombBkrg = false,
+                                        bool isMCcheckedCombs = false,
+                                        bool useNegativePairs = false,
+                                        bool doPionSelCrossCheck = false,
+                                        float pairRapiditiySelection = 2,
                                         const char *cutVariation = "0")
 {
-
   TString suffix = TString::Format("%s", cutVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -117,7 +124,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   AliFemtoDreamTrackCuts *TrackPosPionCuts =
       AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, true, true);
   TrackPosPionCuts->SetCutCharge(1);
-  // MC Template treatment
+  // TrackPosPionCuts->SetPtRange(0.14, 10);
+  //  MC Template treatment
   if (!MCtemplatefit)
   {
     TrackPosPionCuts->SetFilterBit(96); // Filterbit 5+6
@@ -142,7 +150,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   AliFemtoDreamTrackCuts *TrackNegPionCuts =
       AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, true, true);
   TrackNegPionCuts->SetCutCharge(-1);
-  // MC Template treatment
+  // TrackNegPionCuts->SetPtRange(0.14, 10);
+  //  MC Template treatment
   if (!MCtemplatefit)
   {
     TrackNegPionCuts->SetFilterBit(96); // Filterbit 5+6
@@ -163,6 +172,32 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
     TrackNegPionCuts->SetPlotDCADist(true);
     // TrackNegPionCuts->SetOriginMultiplicityHists(true);
     TrackNegPionCuts->SetFillQALater(false); // Be careful about this flag! When the MinimalBooking is set
+  }
+
+  // define crosscheck objects
+  if (doPionSelCrossCheck)
+  {
+    TrackPosPionCuts->SetFilterBit(96);
+    TrackPosPionCuts->SetCutCharge(1);
+    TrackPosPionCuts->SetPtRange(0.15, 10.0);
+    TrackPosPionCuts->SetEtaRange(-0.8, 0.8);
+    TrackPosPionCuts->SetNClsTPC(80);
+    TrackPosPionCuts->SetDCAReCalculation(true); // Get the dca from the PropagateToVetex
+    TrackPosPionCuts->SetDCAVtxZ(0.2);
+    TrackPosPionCuts->SetDCAVtxXY(0.15);
+    TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, 2);
+    TrackPosPionCuts->SetRejLowPtPionsTOF(false);
+
+    TrackNegPionCuts->SetFilterBit(96);
+    TrackNegPionCuts->SetCutCharge(-1);
+    TrackNegPionCuts->SetPtRange(0.15, 10.0);
+    TrackNegPionCuts->SetEtaRange(-0.8, 0.8);
+    TrackNegPionCuts->SetNClsTPC(80);
+    TrackNegPionCuts->SetDCAReCalculation(true); // Get the dca from the PropagateToVetex
+    TrackNegPionCuts->SetDCAVtxZ(0.2);
+    TrackNegPionCuts->SetDCAVtxXY(0.15);
+    TrackNegPionCuts->SetPID(AliPID::kPion, 0.5, 2);
+    TrackNegPionCuts->SetRejLowPtPionsTOF(false);
   }
 
   // Only used if the doProjection flag is set
@@ -235,29 +270,41 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   TrackCutsRho->SetNegDaugterTrackCuts(dummyCutsNeg);
   TrackCutsRho->SetPDGCodePosDaug(211);
   TrackCutsRho->SetPDGCodeNegDaug(211);
-  TrackCutsRho->SetPDGCodev0(113);
+  // TrackCutsRho->SetEtaRange(-0.8, 0.8);
+  if (doPionSelCrossCheck)
+  {
+    TrackCutsRho->SetPDGCodev0(113);
+  }
   TrackCutsRho->SetPtRange(rhoPtThreshold, rhoPtThresholdupper);
   TrackCutsRho->SetFineInvMassPtBins(true);
 
-  if (suffix == "1")
+  if (suffix == "0")
+  {
+    TrackCutsRho->SetCutInvMass(0.150 / 2);
+  }
+  else if (suffix == "1")
   {
     TrackCutsRho->SetCutWindow(0.850, 0.900);
   }
-  if (suffix == "2")
+  else if (suffix == "2")
   {
     TrackCutsRho->SetCutWindow(0.820, 0.900);
   }
-  if (suffix == "3")
+  else if (suffix == "3")
   {
     TrackCutsRho->SetCutWindow(0.650, 0.730);
   }
-  if (suffix == "4")
+  else if (suffix == "4")
   {
     TrackCutsRho->SetCutWindow(0.650, 0.700);
   }
-  if (suffix == "999")
+  else if (suffix == "999")
   {
     TrackCutsRho->SetCutWindow(0., 5.0);
+  }
+  else
+  {
+    TrackCutsRho->SetCutWindow(rhoCandInvMassLow, rhoCandInvMassHigh);
   }
 
   // This needs further implementation
@@ -272,7 +319,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
 
   // now we create the task
   AliAnalysisTaskFemtoDreamRho *task =
-      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doMcTruth, doCleaning, doAncestors, doProjections, rhoPtThreshold);
+      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doMcTruth, doCleaning, doAncestors, doProjections, rhoPtThreshold, pairRapiditiySelection, isSameCharge, useNegativePairs, isMCTrueRhoCombBkrg, isMCcheckedCombs);
   // THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
   // kINT7 == Minimum bias
   // kHighMultV0 high multiplicity triggered by the V0 detector
@@ -502,7 +549,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   //   pairQA[i] = 11; // phiphi
   //  }
 
-  if (isMC) // override the values in case the MC True is used we don't need any of that
+  /*if (isMC) // override the values in case the MC True is used we don't need any of that (we may need this in order to perform the corss-check) //check if this breaks
   {
     pairQA[0] = 00;  // pi+pi+
     pairQA[1] = 00;  // pi+pi-
@@ -519,7 +566,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
     pairQA[12] = 00; // pp
     pairQA[13] = 00; // pAp
     pairQA[14] = 00; // ApAp
-  }
+  }*/
 
   std::vector<bool> closeRejection; // for now we don't use it, verify with MC if that is needed
 
@@ -608,7 +655,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
-  config->SetDeltaEtaMax(fdEta); // https://alice-notes.web.cern.ch/system/files/notes/analysis/616/2018-08-10-NotepPb.pdf
+  config->SetDeltaEtaMax(fdEta);
   config->SetDeltaPhiMax(fdPhi);
   config->SetMixingDepth(10); // AN
   config->SetkTBinning(true);
@@ -618,18 +665,19 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   config->SetMinimalBookingME(false);
   config->SetdPhidEtaPlots(true);
   config->SetdPhidEtaPlotsSmallK(true);
+  config->SetMinvKtandRelativeKBinning(true); // Check this in case of MC
 
-  std::cout << "Check the addTask config" << std::endl;
-  std::cout << "  ZVtxBins.size() " << ZVtxBins.size() << std::endl;
-  std::cout << "  MultBins.size() " << MultBins.size() << std::endl;
-  std::cout << "  PDGParticles.size() " << PDGParticles.size() << std::endl;
-  std::cout << "  NBins.size() " << NBins.size() << std::endl;
-  std::cout << "  kMin.size() " << kMin.size() << std::endl;
-  std::cout << "  kMax.size() " << kMax.size() << std::endl;
-  std::cout << "  closeRejection.size() " << closeRejection.size() << std::endl;
-  std::cout << "  pairQA.size() " << pairQA.size() << std::endl;
-  std::cout << "  config->SetDeltaEtaMax(fdEta); " << fdEta << std::endl;
-  std::cout << "  config->SetDeltaPhiMax(fdPhi); " << fdPhi << std::endl;
+  std::cout << " Check the addTask config" << std::endl;
+  std::cout << " ZVtxBins.size() " << ZVtxBins.size() << std::endl;
+  std::cout << " MultBins.size() " << MultBins.size() << std::endl;
+  std::cout << " PDGParticles.size() " << PDGParticles.size() << std::endl;
+  std::cout << " NBins.size() " << NBins.size() << std::endl;
+  std::cout << " kMin.size() " << kMin.size() << std::endl;
+  std::cout << " kMax.size() " << kMax.size() << std::endl;
+  std::cout << " closeRejection.size() " << closeRejection.size() << std::endl;
+  std::cout << " pairQA.size() " << pairQA.size() << std::endl;
+  std::cout << " config->SetDeltaEtaMax(fdEta); " << fdEta << std::endl;
+  std::cout << " config->SetDeltaPhiMax(fdPhi); " << fdPhi << std::endl;
 
   if (isMC)
   {
@@ -637,13 +685,21 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
     config->SetPhiEtaBinnign(true);
     if (doAncestors)
     {
-      config->SetAncestors(true);
+      config->SetAncestors(doAncestors);
     }
   }
   else
   {
     std::cout << "You are trying to request the Momentum Resolution without MC "
                  "Info; fix it wont work! \n";
+  }
+
+  if (doMcTruth) // turn the troublesome histos i.e. detadphi* off for now, can be fixed by setting the proper values at each TPC rad manually.
+  {
+    config->SetPhiEtaBinnign(false);
+    config->SetdPhidEtaPlots(false);
+    config->SetdPhidEtaPlotsSmallK(false);
+    // config->SetMinimalBookingME(true);
   }
 
   // Throw all our settings to the task

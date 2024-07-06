@@ -74,6 +74,7 @@ public:
     
     //Adding for tracks at the particle level (not jet level)
     void SetFastSimPairEff(Int_t c) {fpairfastsim = c;}
+    void SetUnfolding(Int_t c){fUnfolding = c;} //For unfolding 
     void SetMaxTrackPtCut(Float_t c) {fMaxPtTrack = c;} //set max value of track pT
     void SetGeneratorLevelName(const char* name) { fGeneratorLevelName = name; }
     void SetDetectorLevelName(const char* name) { fDetectorLevelName  = name; }
@@ -88,6 +89,7 @@ protected:
     Float_t GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb); //MIGHT NOT NEED
     
     int GetConstituentID(int constituentIndex, const AliVParticle* part, AliEmcalJet * jet);
+    double delR(const fastjet::PseudoJet& ps1, const fastjet::PseudoJet& ps2);
     int GetCharge(int detCharge, const AliVParticle* part);
     int GetPartCharge(int partCharge, const AliVParticle* part_gen);
     
@@ -147,11 +149,27 @@ protected:
     Int_t fpTcorr; ///<flag for pT migration checks
     Int_t fpaircut; ///<flag for pT pair cut
     Int_t fpairfastsim; ///<flag for pair eff for fast sim
+    Int_t fUnfolding; ///<flag for unfolding 
     Int_t fMatchJetTrack; ///<flag for pair eff for fast sim
     Int_t fMissJetTrack; ///<flag for looking at missed tracks in matched jets
     Int_t fFakeJetTrack; ///<flag for looking at missed tracks in matched jets
     Float_t fMaxPtTrack; ///< max track pt cutoff
-    
+
+    Double_t fJet_pt_det; ///< jet pt det 
+    Double_t fJet_pt_tru; ///< jet pt tru
+    Double_t fTrack_pt_det; ///< track pt det 
+    Double_t fTrack_pt_tru; ///< track pt tru
+    Double_t fTrack_eta_det; ///< track eta det 
+    Double_t fTrack_eta_tru; ///< track eta tru 
+    Double_t fTrack_phi_det; ///< track phi det 
+    Double_t fTrack_phi_tru; ///< track phi tru
+    Double_t fTrack_pt_miss; ///< miss track pt 
+    Double_t fTrack_pt_fake; ///< fake track pt 
+    Double_t fTrack_eta_miss; ///< miss track eta 
+    Double_t fTrack_eta_fake; ///< fake track eta  
+    Double_t fTrack_phi_miss; ///< miss track phi  
+    Double_t fTrack_phi_fake; ///< fake track phi
+
     //Adding for tracks at the particle level (not jet level)
     TString fGeneratorLevelName;
     TString fDetectorLevelName;
@@ -255,14 +273,43 @@ protected:
     TH3D *R_match_e3c_tru; //!<! pair distance of all det level tracks in det jet matched with truth level tracks in truth jet e3c as a function of jet pT tru
     TH3D *wt_match_e3c_tru; //!<! pair wts of all det level tracks in det jet matched with truth level tracks in truth jet e3c as a function of jet pT tru
 
-    TH3D *wt_res_eec_tru; //!<! initializing 2D histogram for wt resolution EEC as a function of jet pT tru
-    TH3D *wt_res_e3c_tru; //!<! initializing 2D histogram for wt resolution E3C as a function of jet pT tru
-    TH3D *R_res_eec_tru; //!<! initializing 2D histogram for R resolution EEC as a function of jet pT tru
-    TH3D *R_res_e3c_tru; //!<! initializing 2D histogram for R resolution E3C as a function of jet pT tru
-    TH3D *wtnojet_match_eec_tru;//!<! initializing 2D histogram for EEC wt without jet pt as a function of jet pT tru
-    TH3D *wtnojet_match_e3c_tru;//!<! initializing 2D histogram for E3C wt without jet pt as a function of jet pT tru
-    TH3D *wtnojet_res_eec_tru; //!<! initializing 2D histogram for wt resolution with jet pt excluded EEC as a function of jet pT tru
-    TH3D *wtnojet_res_e3c_tru; //!<! initializing 2D histogram for wt resolution with jet pt excluded E3C as a function of jet pT tru
+    TH3D *wt_res_eec_tru; //!<! initializing 3D histogram for wt resolution EEC as a function of jet pT tru
+    TH3D *wt_res_e3c_tru; //!<! initializing 3D histogram for wt resolution E3C as a function of jet pT tru
+    TH3D *R_res_eec_tru; //!<! initializing 3D histogram for R resolution EEC as a function of jet pT tru
+    TH3D *R_res_e3c_tru; //!<! initializing 3D histogram for R resolution E3C as a function of jet pT tru
+    TH3D *wtnojet_match_eec_tru;//!<! initializing 3D histogram for EEC wt without jet pt as a function of jet pT tru
+    TH3D *wtnojet_match_e3c_tru;//!<! initializing 3D histogram for E3C wt without jet pt as a function of jet pT tru
+    TH3D *wtnojet_res_eec_tru; //!<! initializing 3D histogram for wt resolution with jet pt excluded EEC as a function of jet pT tru
+    TH3D *wtnojet_res_e3c_tru; //!<! initializing 3D histogram for wt resolution with jet pt excluded E3C as a function of jet pT tru
+
+    TH1D *constituentId; //!<! initializing 1D histogram for debugging
+    TH3D *R_res_eec_tru_debug; //!<! initializing 3D histogram for R resolution EEC as a function of jet pT tru debug
+    TH2D *track_pt_res_debug; //!<! initializing 3D histogram for pt resolution debug
+    TH3D *track_eta_debug; //!<! initializing 3D histogram for eta match debug
+    TH3D *track_rap_debug; //!<! initializing 3D histogram for rap match debug
+    TH2D *track_phi_debug; //!<! initializing 3D histogram phi match debug
+    TH2D *track_R_debug; //!<! initializing 3D histogram for R match debug
+    TH2D *track_R_debug_rap; //!<! initializing 3D histogram for R-rap debug
+    
+    TH3D *track_eta_res_debug; //!<! initializing 3D histogram for eta resolution of single matched track as a function of jet pT tru debug
+    TH3D *track_rap_res_debug; //!<! initializing 3D histogram for rap resolution of single matched track as a function of jet pT tru debug
+    TH3D *track_phi_res_debug; //!<! initializing 3D histogram for phi resolution of single matched track as a function of jet pT tru debug
+    TH3D *track_R_res_debug; //!<! initializing 3D histogram for R resolution of single matched track as a function of jet pT tru debug
+    TH3D *track_R_rap_res_debug; //!<! initializing 3D histogram for R-rap resolution of single matched track as a function of jet pT tru debug
+
+    TH3D *R_match_eec_tru_rap; //!<! initializing 3D histogram for R resolution of single matched track as a function of jet pT tru debug
+
+    TH2D *track_pt_response_debug; //!<! initializing 2D histogram for debug pt
+    TH2D *track_pt_wt_res_debug; //!<! initializing 2D histogram for debug wt
+    TH2D *track_pt_wt_response_debug; //!<! initializing 2D histogram for debug wt_response
+    
+    TH3D* jetpt_res_w_R; //!<! initializing 3D histogram for R resolution of single matched track as a function of jet pT tru debug
+    TH3D* jetpt_res_w_wt; //!<! initializing 3D histogram for weight resolution of single matched track as a function of jet pT tru debug
+    
+    TH3D* OptUn_eec; //!<! initializing 3D histogram for optimizing binning eec
+    TH3D* OptUn_e3c; //!<! initializing 3D histogram for optimizing binning e3c
+
+    TTree *fTreeMatchTracks; ///< Tree with matched tracks from MC
 
 private:
     AliAnalysisTaskJetsEEC(
@@ -270,7 +317,7 @@ private:
     AliAnalysisTaskJetsEEC &
     operator=(const AliAnalysisTaskJetsEEC &); // not implemented
     
-    ClassDef(AliAnalysisTaskJetsEEC, 56) //change this to 56 if you add something new
+    ClassDef(AliAnalysisTaskJetsEEC, 73) //change this to 73 if you add something new
 };
 #endif
 

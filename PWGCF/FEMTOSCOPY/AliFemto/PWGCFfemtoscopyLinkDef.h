@@ -115,6 +115,7 @@
 #pragma link C++ class AliFemtoEventReaderNanoAOD+;
 #pragma link C++ class AliFemtoEventReaderNanoAODChain+;
 #pragma link C++ class AliFemtoEventReaderAODKinematicsMultSelection+;
+#pragma link C++ class AliFemtoInvMassMonitor+;
 // Dong-Fang: 2021.9.14
 #pragma link C++ class AliFemtoSimpleAnalysisOnlyMixP1+;
 #pragma link C++ class AliFemtoVertexMultAnalysisOnlyMixP1+;

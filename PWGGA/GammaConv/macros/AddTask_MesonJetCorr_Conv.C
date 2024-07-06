@@ -32,7 +32,7 @@ void AddTask_MesonJetCorr_Conv(
   TString periodNameV0Reader = "",
   // general setting for task
   Int_t enableQAMesonTask = 0,             // enable QA in AliAnalysisTaskGammaConvV1
-  Int_t enableQAPhotonTask = 0,            // enable additional QA task
+  Int_t enableQAJets = 0,                  // enable additional QA for jets
   int enableLightOutput = kFALSE,          // switch to run light output (only essential histograms for afterburner)
   Bool_t enableTHnSparse = kFALSE,         // switch on THNsparse
   Int_t enableTriggerMimicking = 0,        // enable trigger mimicking
@@ -225,6 +225,22 @@ void AddTask_MesonJetCorr_Conv(
   } else if (trainConfig == 40) {
     cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2s52003500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
   
+  // V0M high multiplicity triggered data
+  } else if (trainConfig == 50) { // eta < 0.8
+    cuts.AddCutPCM("00076103", "0dm00009f9730000dge0404000", "2s52103500000000");
+  } else if (trainConfig == 51) { // eta < 0.5
+    cuts.AddCutPCM("00076103", "0dm00009f9730000dge0404000", "2s52403500000000");
+  } else if (trainConfig == 52) { // eta < 1.35
+    cuts.AddCutPCM("00076103", "0dm00009f9730000dge0404000", "2s52003500000000");
+
+  // SPD high mult. triggered data
+  } else if (trainConfig == 60) { // eta < 0.8
+    cuts.AddCutPCM("00075103", "0dm00009f9730000dge0404000", "2s52103500000000");
+  } else if (trainConfig == 61) { // eta < 0.5
+    cuts.AddCutPCM("00075103", "0dm00009f9730000dge0404000", "2s52403500000000");
+  } else if (trainConfig == 62) { // eta < 1.35
+    cuts.AddCutPCM("00075103", "0dm00009f9730000dge0404000", "2s52003500000000");
+
 
   //--- Systamtic variations for INT7 trigger
   } else if (trainConfig == 100) { // standard cut
@@ -405,6 +421,7 @@ void AddTask_MesonJetCorr_Conv(
   task->SetMesonCutList(numberOfCuts, MesonCutList);
   task->SetConversionCutList(numberOfCuts, ConvCutList);
   task->SetDoMesonQA(enableQAMesonTask); 
+  task->SetDoJetQA(enableQAJets);
   task->SetUseTHnSparseForResponse(enableTHnSparse);
   if(enableMatBudWeightsPi0) task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(true);
   if(doFillMesonDCATree) task->SetFillMesonDCATree(true);

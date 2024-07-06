@@ -30,7 +30,9 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     bool DoReco = false, //19
     bool SwitchOffCPR = false, //20
     float PionMinPt = 0.14, //21
-    const char *cutVariation = "0" //22
+    int FilterBitProton = 128, //22
+    bool UseMCWeakDecays = false, 
+    const char *cutVariation = "0" //23
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -60,12 +62,12 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   //Proton & AntiProton cuts --------------------------------------------------------
   AliFemtoDreamTrackCuts *TrackCutsProton = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, false, false);
-  TrackCutsProton->SetFilterBit(128);
+  TrackCutsProton->SetFilterBit(FilterBitProton);
   TrackCutsProton->SetCutCharge(1);
 
   AliFemtoDreamTrackCuts *TrackCutsAntiProton = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, false, false);
-  TrackCutsAntiProton->SetFilterBit(128);
+  TrackCutsAntiProton->SetFilterBit(FilterBitProton);
   TrackCutsAntiProton->SetCutCharge(-1);
 
   //Pion & AntiPion Track cuts -------------------------------------------------------
@@ -77,7 +79,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   TrackCutsPion->SetCutCharge(1);
   TrackCutsPion->SetPtRange(PionMinPt, 4.0);
 
-  if(isMC && PionFilterbit == 128){ //for MC template fits
+  if(isMC && (PionFilterbit == 128 || PionFilterbit == 768 || PionFilterbit == 16)){ //for MC template fits
     TrackCutsPion->CheckParticleMothers(true);
     TrackCutsPion->SetPlotDCADist(true);
     TrackCutsPion->SetFillQALater(false);
@@ -88,7 +90,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   TrackCutsAntiPion->SetCutCharge(-1);
   TrackCutsAntiPion->SetPtRange(PionMinPt, 4.0);
   
-  if(isMC && PionFilterbit == 128){ //for MC template fits
+  if(isMC && (PionFilterbit == 128 || PionFilterbit == 768 || PionFilterbit == 16)){ //for MC template fits
     TrackCutsAntiPion->CheckParticleMothers(true);
     TrackCutsAntiPion->SetPlotDCADist(true);
     TrackCutsAntiPion->SetFillQALater(false);
@@ -314,12 +316,12 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
 
    Float_t Pion_pT_VarLow = 0.12;
    Float_t Pion_pT_VarHigh = 0.15;
-   Float_t Pion_Eta_VarLow = 0.7;
-   Float_t Pion_Eta_VarHigh = 0.9;
+   Float_t Pion_Eta_VarLow = 0.77; //old 0.7
+   Float_t Pion_Eta_VarHigh = 0.85; //old 0.9
    Float_t Pion_Clusters_VarLow = 70;
    Float_t Pion_Clusters_VarHigh = 90;
-   Float_t Pion_Sigma_VarLow = 2.7;
-   Float_t Pion_Sigma_VarHigh = 3.3;
+   Float_t Pion_Sigma_VarLow = 2.5; //old 2.7;
+   Float_t Pion_Sigma_VarHigh = 3.5; //old 3.5
 
    Float_t DPhi_VarLow = 0.035;
    Float_t DPhi_VarHigh = 0.045;
@@ -1297,6 +1299,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
 
     taskAOD->SetDoKine(DoKine); 
     taskAOD->SetDoReco(DoReco);
+    taskAOD->SetUseMCWeakDecays(UseMCWeakDecays);
 
     //Set-up for own looping & calculus -> needed for 3D studies
     //IMPORTANT: 0, 1, 2, 3 and the names has to correspond to the order given to the offical femto framework!!!!

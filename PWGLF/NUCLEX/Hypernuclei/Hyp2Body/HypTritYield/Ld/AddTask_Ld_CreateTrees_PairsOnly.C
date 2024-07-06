@@ -1,13 +1,13 @@
 
 AliAnalysisTask_Ld_CreateTrees_PairsOnly* AddTask_Ld_CreateTrees_PairsOnly(
   TString Name = "AnalysisTask_Ld_CreateTrees_PairsOnly",
-  int CollisionSystem = 1,
+  Int_t CollisionSystem = 1,
   const char *Variation = "0",
-  bool UseOpenCuts = true,
-  bool isMC = false,
-  bool SavePairsOnly = true) {
+  Bool_t UseOpenCuts = true,
+  Bool_t isMC = false,
+  Bool_t SavePairsOnly = true) {
 
-  bool DebugAddTask = true;
+  Bool_t DebugAddTask = true;
 
   // CollisionSystem:
   //
@@ -107,14 +107,14 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly* AddTask_Ld_CreateTrees_PairsOnly(
   TString TaskName = TString::Format("%s:%sAnalysisTask_Ld_CreateTrees_PairsOnly%s",AliAnalysisManager::GetCommonFileName(),prefix.Data(),suffix.Data());
 
 
-  TString ProtonTreeName = Form("%sProtonTree%s",prefix.Data(),suffix.Data());
-  AliAnalysisDataContainer *ProtonTreeContainer = manager->CreateContainer(
-    ProtonTreeName.Data(),
+  TString LambdaTreeName = Form("%sLambdaTree%s",prefix.Data(),suffix.Data());
+  AliAnalysisDataContainer *LambdaTreeContainer = manager->CreateContainer(
+    LambdaTreeName.Data(),
     TTree::Class(),
     AliAnalysisManager::kOutputContainer,
     TaskName.Data()
   );
-  if(DebugAddTask) std::cout << "AddTask_Ld_CreateTrees_PairsOnly: ProtonContainer created" << std::endl;
+  if(DebugAddTask) std::cout << "AddTask_Ld_CreateTrees_PairsOnly: LambdaContainer created" << std::endl;
 
 
   TString DeuteronTreeName = Form("%sDeuteronTree%s",prefix.Data(),suffix.Data());
@@ -127,14 +127,14 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly* AddTask_Ld_CreateTrees_PairsOnly(
   if(DebugAddTask) std::cout << "AddTask_Ld_CreateTrees_PairsOnly: DeuteronContainer created" << std::endl;
 
 
-  TString AntiProtonTreeName = Form("%sAntiProtonTree%s",prefix.Data(),suffix.Data());
-  AliAnalysisDataContainer *AntiProtonTreeContainer = manager->CreateContainer(
-    AntiProtonTreeName.Data(),
+  TString AntiLambdaTreeName = Form("%sAntiLambdaTree%s",prefix.Data(),suffix.Data());
+  AliAnalysisDataContainer *AntiLambdaTreeContainer = manager->CreateContainer(
+    AntiLambdaTreeName.Data(),
     TTree::Class(),
     AliAnalysisManager::kOutputContainer,
     TaskName.Data()
   );
-  if(DebugAddTask) std::cout << "AddTask_Ld_CreateTrees_PairsOnly: AntiProtonContainer created" << std::endl;
+  if(DebugAddTask) std::cout << "AddTask_Ld_CreateTrees_PairsOnly: AntiLambdaContainer created" << std::endl;
 
 
   TString AntiDeuteronTreeName = Form("%sAntiDeuteronTree%s",prefix.Data(),suffix.Data());
@@ -147,31 +147,20 @@ AliAnalysisTask_Ld_CreateTrees_PairsOnly* AddTask_Ld_CreateTrees_PairsOnly(
   if(DebugAddTask) std::cout << "AddTask_Ld_CreateTrees_PairsOnly: AntiDeuteronContainer created" << std::endl;
 
 
-  TString HistogramName = Form("%sHistograms%s",prefix.Data(),suffix.Data());
-  AliAnalysisDataContainer *HistogramContainer = manager->CreateContainer(
-    HistogramName.Data(),
-    TList::Class(),
-    AliAnalysisManager::kOutputContainer,
-    TaskName.Data()
-  );
-  if(DebugAddTask) std::cout << "AddTask_Ld_CreateTrees_PairsOnly: HistogramContainer created" << std::endl;
 
 
-
-  manager->ConnectOutput(task,1,ProtonTreeContainer);
+  manager->ConnectOutput(task,1,LambdaTreeContainer);
   if(DebugAddTask) std::cout << "AddTask_Ld_CreateTrees_PairsOnly: Output container 1 connected" << std::endl;
 
   manager->ConnectOutput(task,2,DeuteronTreeContainer);
   if(DebugAddTask) std::cout << "AddTask_Ld_CreateTrees_PairsOnly: Output container 2 connected" << std::endl;
 
-  manager->ConnectOutput(task,3,AntiProtonTreeContainer);
+  manager->ConnectOutput(task,3,AntiLambdaTreeContainer);
   if(DebugAddTask) std::cout << "AddTask_Ld_CreateTrees_PairsOnly: Output container 3 connected" << std::endl;
 
   manager->ConnectOutput(task,4,AntiDeuteronTreeContainer);
   if(DebugAddTask) std::cout << "AddTask_Ld_CreateTrees_PairsOnly: Output container 4 connected" << std::endl;
 
-  manager->ConnectOutput(task,5,HistogramContainer);
-  if(DebugAddTask) std::cout << "AddTask_Ld_CreateTrees_PairsOnly: Output container 5 connected" << std::endl;
 
 
   // return a pointer to the task

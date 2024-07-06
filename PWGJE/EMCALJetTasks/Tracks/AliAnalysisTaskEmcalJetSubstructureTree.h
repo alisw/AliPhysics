@@ -222,7 +222,7 @@ public:
   void SetHasRecEvent(Bool_t hasrec) { fHasRecEvent = hasrec; }
   void SetHasTrueEvent(Bool_t hastrue) { fHasTrueEvent = hastrue; }
 
-	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, Bool_t useDCAL, const char *name);
+	static AliAnalysisTaskEmcalJetSubstructureTree *AddEmcalJetSubstructureTreeMaker(Bool_t isMC, Bool_t isData, Double_t jetradius, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recombinationScheme, Bool_t useDCAL, const char *partcont, const char *name);
 
 protected:
 	virtual void UserCreateOutputObjects();
@@ -231,23 +231,23 @@ protected:
   virtual void UserExecOnce();
   virtual Bool_t IsTriggerSelected();
 
-	AliJetSubstructureData MakeJetSubstructure(const AliEmcalJet &jet, double jetradius, const AliParticleContainer *tracks, const AliClusterContainer *clusters, const AliJetSubstructureSettings &settings) const;
+	AliJetSubstructureData MakeJetSubstructure(const AliEmcalJet &jet, double jetradius, bool isMC, AliVCluster::VCluUserDefEnergy_t energydef, const AliJetSubstructureSettings &settings) const;
 
 	AliSoftDropParameters MakeSoftDropParameters(const fastjet::PseudoJet &jet, const AliSoftdropDefinition &cut) const;
 
 	AliNSubjettinessParameters MakeNsubjettinessParameters(const fastjet::PseudoJet &jet, const AliNSubjettinessDefinition &cut) const;
   
-  AliJetKineParameters MakeJetKineParameters(const AliEmcalJet &jet, JetRecType_t rectype, const AliParticleContainer *const particles, const AliClusterContainer *const clusters) const;
+  AliJetKineParameters MakeJetKineParameters(const AliEmcalJet &jet, JetRecType_t rectype, AliVCluster::VCluUserDefEnergy_t energydef) const;
 
-	Double_t MakeAngularity(const AliEmcalJet &jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters) const;
+	Double_t MakeAngularity(const AliEmcalJet &jet, bool isMC, AliVCluster::VCluUserDefEnergy_t energydef) const;
 
-	Double_t MakePtD(const AliEmcalJet &jet, const AliParticleContainer *const particles, const AliClusterContainer *const clusters) const;
+	Double_t MakePtD(const AliEmcalJet &jet, bool isMC, AliVCluster::VCluUserDefEnergy_t energydef) const;
 
   void FillLuminosity();
   
-	void DoConstituentQA(const AliEmcalJet *jet, const AliParticleContainer *tracks, const AliClusterContainer *clusters);
+	void DoConstituentQA(const AliEmcalJet *jet, AliVCluster::VCluUserDefEnergy_t energydef);
 
-  bool SelectJet(const AliEmcalJet &jet, const AliParticleContainer *particles) const;
+  bool SelectJet(const AliEmcalJet &jet) const;
 
 private:
 	TTree                       *fJetSubstructureTree;        //!<! Tree with jet substructure information

@@ -127,7 +127,6 @@ void AliPtPtContainer::FillCMProfiles(const vector<vector<double>> &inarr, const
     double tau1 = inarr[2][0]/pow(inarr[1][0],2);
     double tau2 = inarr[3][0]/pow(inarr[1][0],3);
     double tau3 = inarr[4][0]/pow(inarr[1][0],4);
-    double tau4 = inarr[5][0]/pow(inarr[1][0],5);
     double weight1 = 1-tau1;
     double weight2 = 1 - 3 * tau1 + 2 * tau2;
     double weight3 = 1 - 6*tau1 + 3*tau1*tau1 + 8*tau2 - 6*tau3;
@@ -179,7 +178,7 @@ TH1* AliPtPtContainer::getCorrHist(int ind, int m) {
 TH1* AliPtPtContainer::getCentralMomentHist(int ind, int m) {
   if(!fCentralMomentList) CreateCentralMomentList();
   if(!fCentralMomentList) return 0;
-  if(ind+1<fCentralMomentList->GetEntries()) return (TH1*)fCentralMomentList->FindObject(Form("cm%i_%i",m+1,ind));
+  if(ind+1<fCentralMomentList->GetEntries()) return (TH1*)fCentralMomentList->FindObject(Form("cm%i_%i",m,ind));
   return 0;
 }
 void AliPtPtContainer::CreateCentralMomentList() {

@@ -1261,13 +1261,13 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::PrimDeuteronCuts(
   trackCuts->SetCutTPCCrossedRows(true, 70, 0.83);
   trackCuts->SetPID(AliPID::kDeuteron, 1.4);
   trackCuts->SetCutITSPID(1.4, -2., 1e30); 
-  trackCuts->SetRejLowPtPionsTOF(false);
+  trackCuts->SetRejLowPtPionsTOF(true);
   trackCuts->SetCutSmallestSig(true);
   return trackCuts;
 }
 
 AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::DecayProtonCuts(
-    bool isMC, bool PileUpRej, bool ContribSplitting) {
+    bool isMC, bool PileUpRej, bool ContribSplitting, double pidCut) {
   AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
   trackCuts->SetPlotDCADist(false);
   trackCuts->SetPlotCombSigma(false);
@@ -1281,12 +1281,12 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::DecayProtonCuts(
   trackCuts->SetNClsTPC(70);
   trackCuts->SetDCAReCalculation(true);
   trackCuts->SetCutCharge(1);
-  trackCuts->SetPID(AliPID::kProton, 999., 5);
+  trackCuts->SetPID(AliPID::kProton, 999., pidCut);
   return trackCuts;
 }
 
 AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::DecayPionCuts(
-    bool isMC, bool PileUpRej, bool ContribSplitting) {
+    bool isMC, bool PileUpRej, bool ContribSplitting, double pidCut) {
   AliFemtoDreamTrackCuts *trackCuts = new AliFemtoDreamTrackCuts();
   trackCuts->SetPlotDCADist(false);
   trackCuts->SetPlotCombSigma(false);
@@ -1300,7 +1300,7 @@ AliFemtoDreamTrackCuts* AliFemtoDreamTrackCuts::DecayPionCuts(
   trackCuts->SetNClsTPC(70);
   trackCuts->SetDCAReCalculation(kTRUE);
   trackCuts->SetCutCharge(-1);
-  trackCuts->SetPID(AliPID::kPion, 999., 5);
+  trackCuts->SetPID(AliPID::kPion, 999., pidCut);
   return trackCuts;
 }
 

@@ -50,9 +50,17 @@ class AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2 : public AliAnalysisTaskSE {
   Double_t      GetTOFBeta(AliVTrack *esdtrack);
   Bool_t        MatchTOF(AliVTrack *vtrack);
   
-  void SetMCGeneratorChoice(int MC_choice)
+  void SetMCGeneratorChoice(Int_t MC_choice)
   {
     fMCchoice = MC_choice;
+  }
+  void SetEtaLeftCut(Double_t eta_leftval)
+  {
+    fEtaLeftCut = eta_leftval;
+  }
+  void SetEtaRightCut(Double_t eta_rightval)
+  {
+    fEtaRightCut = eta_rightval;
   }
   
  private:
@@ -68,6 +76,8 @@ class AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2 : public AliAnalysisTaskSE {
   Float_t fNch_eta0pt5;
   Float_t fNpart_1;
   Float_t fNpart_2;
+  Double_t fEtaLeftCut;
+  Double_t fEtaRightCut;
   TH2F *hist2D_pt_gen_centrality;
   TH2F *hist2D_pt_rec_centrality;
   Int_t fMCchoice;
@@ -83,6 +93,8 @@ class AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2 : public AliAnalysisTaskSE {
   Float_t fPt_no_kaon[14];
   Float_t fPt_no_proton[14];
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  
+  
   
   TH1D *hist_centrality_beforecut;
   

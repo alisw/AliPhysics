@@ -203,35 +203,37 @@ void AddTask_GammaCalo_pPb(
   // ===============================================================================================
   if (trainConfig == 1){ // external NL
     cuts.AddCutCalo("80010113","411790009fe30220000","0s631031000000d0"); // 0-100 MB latest 13TeV cuts E/DMC
-    cuts.AddCutCalo("80010113","411790009fe302v0000","0s631031000000d0"); // 0-100 MB latest 13TeV cuts E/DMC, closed M02(0.7->0.5) cut at high PT
+    cuts.AddCutCalo("80010113","411790009fe309v0000","0s631031000000d0"); // 0-100 MB latest 13TeV cuts E/DMC, closed M02(0.7->0.5) cut at high PT
     cuts.AddCutCalo("80010113","411790009fe30220000","01631031000000d0"); // 0-100 MB latest 13TeV with mixing
     cuts.AddCutCalo("80010113","111110009fe30220000","0s631031000000d0"); // 0-100 MB latest 13TeV cuts EMC
-    cuts.AddCutCalo("80010113","111110009fe302v0000","0s631031000000d0"); // 0-100 MB latest 13TeV cuts EMC, closed M02(0.7->0.5) cut at high PT
+    cuts.AddCutCalo("80010113","111110009fe309v0000","0s631031000000d0"); // 0-100 MB latest 13TeV cuts EMC, closed M02(0.7->0.5) cut at high PT
     cuts.AddCutCalo("80010113","111110009fe30220000","01631031000000d0"); // 0-100 MB latest 13TeV cuts mixing
   } else if (trainConfig == 2){ // diff MC treatment, external NL
     cuts.AddCutCalo("80010123","411790009fe30220000","0s631031000000d0"); // 0-100 MB latest 13TeV cuts E/DMC
-    cuts.AddCutCalo("80010123","411790009fe302v0000","0s631031000000d0"); // 0-100 MB latest 13TeV cuts E/DMC, closed M02(0.7->0.5) cut at high PT
+    cuts.AddCutCalo("80010123","411790009fe309v0000","0s631031000000d0"); // 0-100 MB latest 13TeV cuts E/DMC, closed M02(0.7->0.5) cut at high PT
     cuts.AddCutCalo("80010123","411790009fe30220000","01631031000000d0"); // 0-100 MB latest 13TeV cuts mixing
     cuts.AddCutCalo("80010123","111110009fe30220000","0s631031000000d0"); // 0-100 MB latest 13TeV cuts EMC
-    cuts.AddCutCalo("80010123","111110009fe302v0000","0s631031000000d0"); // 0-100 MB latest 13TeV cuts EMC, closed M02(0.7->0.5) cut at high PT
+    cuts.AddCutCalo("80010123","111110009fe309v0000","0s631031000000d0"); // 0-100 MB latest 13TeV cuts EMC, closed M02(0.7->0.5) cut at high PT
     cuts.AddCutCalo("80010123","111110009fe30220000","01631031000000d0"); // 0-100 MB latest 13TeV cuts mixing
   } else if (trainConfig == 3){ // external NL
     cuts.AddCutCalo("80052113","111110009fe30220000","0s631031000000d0"); // 0-100 EMC7 latest 13TeV cuts EMC
-    cuts.AddCutCalo("80052113","111110009fe302v0000","0s631031000000d0"); // 0-100 EMC7 latest 13TeV cuts EMC, closed M02(0.7->0.5) cut at high PT
-    cuts.AddCutCalo("80052123","111110009fe30220000","0s631031000000d0"); // 0-100 EMC7 latest 13TeV cuts EMC
-    cuts.AddCutCalo("80052123","111110009fe302v0000","0s631031000000d0"); // 0-100 EMC7 latest 13TeV cuts EMC, closed M02(0.7->0.5) cut at high PT
+    cuts.AddCutCalo("80052113","111110009fe309v0000","0s631031000000d0"); // 0-100 EMC7 latest 13TeV cuts EMC, closed M02(0.7->0.5) cut at high PT
   } else if (trainConfig == 4){ // diff MC treatment, external NL
     cuts.AddCutCalo("80085113","111110009fe30220000","0s631031000000d0"); // 0-100 EG2 latest 13TeV cuts EMC
-    cuts.AddCutCalo("80085113","111110009fe302v0000","0s631031000000d0"); // 0-100 EG2 latest 13TeV cuts EMC, closed M02(0.7->0.5) cut at high PT
-    cuts.AddCutCalo("80085123","111110009fe30220000","0s631031000000d0"); // 0-100 EG2 latest 13TeV cuts EMC
-    cuts.AddCutCalo("80085123","111110009fe302v0000","0s631031000000d0"); // 0-100 EG2 latest 13TeV cuts EMC, closed M02(0.7->0.5) cut at high PT
+    cuts.AddCutCalo("80085113","111110009fe309v0000","0s631031000000d0"); // 0-100 EG2 latest 13TeV cuts EMC, closed M02(0.7->0.5) cut at high PT
   } else if (trainConfig == 5){ // external NL
     cuts.AddCutCalo("80083113","111110009fe30220000","0s631031000000d0"); // 0-100 EG1 latest 13TeV cuts EMC
-    cuts.AddCutCalo("80083113","111110009fe302v0000","0s631031000000d0"); // 0-100 EG1 latest 13TeV cuts EMC, closed M02(0.7->0.5) cut at high PT
+    cuts.AddCutCalo("80083113","111110009fe309v0000","0s631031000000d0"); // 0-100 EG1 latest 13TeV cuts EMC, closed M02(0.7->0.5) cut at high PT
+  } else if (trainConfig == 6){ // diff MC treatment, external NL
+    cuts.AddCutCalo("80052123","111110009fe30220000","0s631031000000d0"); // 0-100 EMC7 latest 13TeV cuts EMC
+    cuts.AddCutCalo("80052123","111110009fe309v0000","0s631031000000d0"); // 0-100 EMC7 latest 13TeV cuts EMC, closed M02(0.7->0.5) cut at high PT
+  } else if (trainConfig == 7){ // diff MC treatment, external NL
+    cuts.AddCutCalo("80085123","111110009fe30220000","0s631031000000d0"); // 0-100 EG2 latest 13TeV cuts EMC
+    cuts.AddCutCalo("80085123","111110009fe309v0000","0s631031000000d0"); // 0-100 EG2 latest 13TeV cuts EMC, closed M02(0.7->0.5) cut at high PT
+  } else if (trainConfig == 8){ // diff MC treatment, external NL
     cuts.AddCutCalo("80083123","111110009fe30220000","0s631031000000d0"); // 0-100 EG1 latest 13TeV cuts EMC
-    cuts.AddCutCalo("80083123","111110009fe302v0000","0s631031000000d0"); // 0-100 EG1 latest 13TeV cuts EMC, closed M02(0.7->0.5) cut at high PT
-//   } else if (trainConfig == 6){ // diff MC treatment, external NL
-    
+    cuts.AddCutCalo("80083123","111110009fe309v0000","0s631031000000d0"); // 0-100 EG1 latest 13TeV cuts EMC, closed M02(0.7->0.5) cut at high PT
+  
 
   // CONFIGS for sys MB MCs & JJs
   } else if (trainConfig == 10) { // CALO variations
@@ -1900,7 +1902,7 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("8008e103","4117932050033230000","01631031000000d0"); // n cells >= 3
     cuts.AddCutCalo("8008e103","4117932050032200000","01631031000000d0"); // no max M02 cut
     cuts.AddCutCalo("8008e103","4117932050032250000","01631031000000d0"); // M02 < 0.3
-    cuts.AddCutCalo("8008e103","41179320500322k0000","01631031000000d0"); // M02, pT-dep
+    cuts.AddCutCalo("8008e103","41179320500329k0000","01631031000000d0"); // M02, pT-dep
   } else if (trainConfig == 2312) {
     cuts.AddCutCalo("8008e103","4117933050032230000","01631031000000d0"); // NL 33
     cuts.AddCutCalo("8008e103","4117934050032230000","01631031000000d0"); // NL 34
@@ -1943,7 +1945,7 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("8008d103","4117932050033230000","01631031000000d0"); // n cells >= 3
     cuts.AddCutCalo("8008d103","4117932050032200000","01631031000000d0"); // no max M02 cut
     cuts.AddCutCalo("8008d103","4117932050032250000","01631031000000d0"); // M02 < 0.3
-    cuts.AddCutCalo("8008d103","41179320500322k0000","01631031000000d0"); // M02, pT-dep
+    cuts.AddCutCalo("8008d103","41179320500329k0000","01631031000000d0"); // M02, pT-dep
   } else if (trainConfig == 2322) {
     cuts.AddCutCalo("8008d103","4117933050032230000","01631031000000d0"); // NL 33
     cuts.AddCutCalo("8008d103","4117934050032230000","01631031000000d0"); // NL 34

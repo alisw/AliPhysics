@@ -37,6 +37,19 @@ class AliAnalysisPtN : public AliAnalysisTaskSE
                                 AliAnalysisPtN(const char *name);
         virtual                 ~AliAnalysisPtN();
 
+        virtual void   SetMinPt(Double_t minPt){ fMinPt = minPt; }
+		virtual void   SetMaxPt(Double_t maxPt){ fMaxPt = maxPt; }
+        virtual void   SetVz(Double_t Vz){ fVz = Vz; }
+        virtual void   SetDCAz(Double_t dcaz){ fDCAz = dcaz; }
+        virtual void   SetDCAxy(Double_t dcaxy){ fDCAxy = dcaxy; }
+        virtual void   SetTPCcls(Int_t tpc){ fTPCcls = tpc;}
+        virtual void   SetFilterBit(Int_t filterbit){ filterBit = filterbit; }
+        virtual void   SetTrigger(Int_t trig){ fTrigger = trig; }
+        virtual void   SetCtrType(TString ctrtype){ ctrType = ctrtype; }
+        virtual void   SetPeriod(TString period) { fPeriod = period; }
+        virtual void   SetNUE(TString NUE) { fNUE = NUE; }
+        virtual void   SetSysflg(Int_t sysflg) { fSysflg = sysflg; }
+
         virtual void            UserCreateOutputObjects();
         virtual void            UserExec(Option_t* option);
         virtual void            Terminate(Option_t* option);
@@ -44,13 +57,39 @@ class AliAnalysisPtN : public AliAnalysisTaskSE
     private:
         Double_t GetWeightNUE(double pt);
 
+       
+
         AliAODEvent*            fAOD;           //! input event
+
         TList*                  fOutputList;    //! output list
-        TList*                  fWeightsListNUE;
         TList*                  fBstList;
+        TList*                  fWeightsListNUE;
         TH1D*                   fWeightNUE;
+                
+        Double_t		fMinPt;					// Min pt - for histogram limits
+		Double_t		fMaxPt;					// Max pt - for histogram limits
+        Double_t        fVz;
+        Double_t        fDCAz;
+        Double_t        fDCAxy;
+        Int_t           fTPCcls;
+        Int_t           filterBit;
+
+		Int_t			fTrigger;				// flag for trigger
+        TString         ctrType;
+        TString			fPeriod;				// period
+        TString         fNUE;
+
+        Int_t           fSysflg;
+        
         TH1F*                   fTestNonWeight;
         TH1F*                   fNchDistri;
+        TH1F*                   fPtQA;
+        TH1F*                   fDCAxyQA;
+        TH1F*                   fDCAzQA;
+        TH1F*                   fetaQA;
+        TH1F*                   fTPCclsQA;
+        TH2F*                   fDCAxyPt;
+        TH2F*                   fDCAzPt;
         TH2F*                   fPtNch;
         TProfile*               dPtNch;
         TProfile*               dPt2Nch;

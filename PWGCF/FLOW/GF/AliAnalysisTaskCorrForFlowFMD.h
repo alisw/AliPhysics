@@ -96,7 +96,11 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
         void                    SetPVZcut(Double_t cut) { fPVzCut = cut; }
         void                    SetUseNchRange(Bool_t range1, Bool_t range2, Int_t min, Int_t max) { fUseNch_reco = range1; fUseNch_truth = range2; fNchMin = min; fNchMax = max; }
-	void                    SetUseNchfor_eventmixing(Bool_t range1, Bool_t range2) { fUseNchfor_eventmixing = range1; fUseFMDtrkfor_eventmixing = range2; }
+
+        void                    SetUseNch_posnegrap(Bool_t range1, Bool_t range2) { fUseNch_posrap_tracks = range1; fUseNch_negrap_tracks = range2;}
+        void                    SetUseTPC_posnegrap_corr(Bool_t range1, Bool_t range2) { fUse_posrap_TPC_correlation = range1; fUse_negrap_TPC_correlation = range2;}
+
+        void                    SetUseNchfor_eventmixing(Bool_t range1, Bool_t range2) { fUseNchfor_eventmixing = range1; fUseFMDtrkfor_eventmixing = range2; }
         void                    SetCentrality(TString cent, Double_t min = 0.0, Double_t max = 20.0) { fCentEstimator = cent; fCentMin = min; fCentMax = max; }
 	void                    SetAdditionalPileUpforPP(Bool_t pileup) { fApply_additional_pileupcut = pileup; }
 
@@ -146,6 +150,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetFMDacceptanceCuts(Double_t cutAlower, Double_t cutAupper, Double_t cutClower, Double_t cutCupper) { fFMDAacceptanceCutLower = cutAlower; fFMDAacceptanceCutUpper = cutAupper; fFMDCacceptanceCutLower = cutClower; fFMDCacceptanceCutUpper = cutCupper; }
         void                    SetBoostAMPT(Bool_t flag = kTRUE){ fBoostAMPT = flag; }
 	void                    setUseFMDcorrection(Bool_t Use_FMDcorrection, TString fmdcorrfilename){ fUseFMDcorrection = Use_FMDcorrection; fFMD_correctoion_file = fmdcorrfilename;}
+	void                    setFMDcorr_deta_binning(Int_t FMD_detabins, Double_t FMD_deta_min, Double_t FMD_deta_max){ fFMD_detabins = FMD_detabins;  fFMD_deta_min = FMD_deta_min;  fFMD_deta_max = FMD_deta_max;}
 
     private:
 
@@ -237,6 +242,10 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 	Bool_t                  fshiftphi_PHI; // [kFALSE]
         Bool_t                  fshiftrap_PHI; // [kFALSE]
 	Bool_t                  fUseNch_reco; // [kFALSE]
+	Bool_t                  fUseNch_posrap_tracks; // [kFALSE]
+	Bool_t                  fUseNch_negrap_tracks; // [kFALSE]
+        Bool_t                  fUse_posrap_TPC_correlation;// [kFALSE]
+        Bool_t                  fUse_negrap_TPC_correlation;// [kFALSE]
         Bool_t                  fUseNch_truth; // [kFALSE]
 	Bool_t                  fUseNchfor_eventmixing; // [kFALSE]
 	Bool_t                  fUseFMDtrkfor_eventmixing; // [kFALSE]
@@ -259,6 +268,12 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 	Double_t                fNFMD_fwd_hits;
 	Double_t                fNFMD_bwd_hits;
 	Double_t                fNofTracks_FMD;
+
+	Int_t                   fFMD_detabins;
+	Double_t                fFMD_deta_min;
+	Double_t                fFMD_deta_max;
+
+
         Int_t                   fNofMinHighPtTracksForRejection;
         Int_t                   fNchMin;
         Int_t                   fNchMax;

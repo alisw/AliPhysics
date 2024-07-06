@@ -45,6 +45,7 @@ set(SRCS
   AliAnalysisTaskCorrForFlowEta.cxx
   AliAnalysisTaskDeform.cxx
   AliAnalysisTaskFlowExample.cxx
+  AliAnalysisTaskGammaSoft.cxx
   AliAnalysisTaskGFWPIDFlow.cxx
   AliAnalysisTaskPtCorr.cxx
   AliAnalysisTaskUniFlow.cxx
@@ -55,6 +56,7 @@ set(SRCS
   AliGFWCumulant.cxx
   AliGFWCuts.cxx
   AliGFWFlowContainer.cxx
+  AliGFWPowerArray.cxx
   AliGFWWeights.cxx
   AliGFWWeightsFinerBin.cxx
   AliLWUtils.cxx
@@ -73,6 +75,7 @@ set(SRCS
   AliAnalysisTaskMomentumFlowCorrelation.cxx
   AliPtSubEventContainer.cxx
   AliAnalysisTaskDensity.cxx
+  AliAnalysisTaskCorrForFlowFMDOnthefly.cxx
   )
 
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)

@@ -266,6 +266,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                fHistoTruePi0InvMassPtAdditional;                     //! array of histos with validated mothers, invMass, pt
     TH2F**                fHistoTrueEtaInvMassPt;                               //! array of histos with validated mothers, invMass, pt
     TH2F**                fHistoTrueEtaInvMassPtAdditional;                     //! array of histos with validated mothers, invMass, pt
+    TH2F**                fHistoTruePi0InvMassECalib;                           //! array of histos with validated mothers, invMass, E
+    TH2F**                fHistoTrueEtaInvMassECalib;                           //! array of histos with validated mothers, invMass, E
     TH2F**                fHistoTruePi0CaloPhotonInvMassPt;                     //! array of histos with validated mothers, photon leading, invMass, pt
     TH2F**                fHistoTrueEtaCaloPhotonInvMassPt;                     //! array of histos with validated mothers, photon leading, invMass, pt
     TH2F**                fHistoTruePi0CaloConvertedPhotonInvMassPt;            //! array of histos with validated pi0, converted photon leading, invMass, pt

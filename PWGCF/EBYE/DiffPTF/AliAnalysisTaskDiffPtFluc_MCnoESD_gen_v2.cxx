@@ -46,7 +46,7 @@ using std::endl;
 
 ClassImp(AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2)
 
-AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2(): AliAnalysisTaskSE(), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fPtsum_hadrons_less0(0), fPtsum_hadrons_greaterEtaMin(0), fNsum_hadrons_less0(0), fNsum_hadrons_greaterEtaMin(0), fNsum_pions_less0(0), fNsum_kaons_less0(0), fNsum_protons_less0(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0), fMCchoice(0), fNpart_1(0), fNpart_2(0)
+AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2(): AliAnalysisTaskSE(), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fPtsum_hadrons_less0(0), fPtsum_hadrons_greaterEtaMin(0), fNsum_hadrons_less0(0), fNsum_hadrons_greaterEtaMin(0), fNsum_pions_less0(0), fNsum_kaons_less0(0), fNsum_protons_less0(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0), fMCchoice(0), fNpart_1(0), fNpart_2(0), fEtaLeftCut(0), fEtaRightCut(0)
 {
   for(int i=0; i<14; i++)
     {
@@ -57,7 +57,7 @@ AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::AliAnalysisTaskDiffPtFluc_MCnoESD_gen_
     }
 }
 
-AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2(const char *name): AliAnalysisTaskSE(name), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fPtsum_hadrons_less0(0), fPtsum_hadrons_greaterEtaMin(0), fNsum_hadrons_less0(0), fNsum_hadrons_greaterEtaMin(0), fNsum_pions_less0(0), fNsum_kaons_less0(0), fNsum_protons_less0(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0), fMCchoice(0), fNpart_1(0), fNpart_2(0)
+AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2(const char *name): AliAnalysisTaskSE(name), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fPtsum_hadrons_less0(0), fPtsum_hadrons_greaterEtaMin(0), fNsum_hadrons_less0(0), fNsum_hadrons_greaterEtaMin(0), fNsum_pions_less0(0), fNsum_kaons_less0(0), fNsum_protons_less0(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0), fMCchoice(0), fNpart_1(0), fNpart_2(0), fEtaLeftCut(0), fEtaRightCut(0)
 {
   for(int i=0; i<14; i++)
     {
@@ -298,7 +298,7 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::UserExec(Option_t *)
 
       if(TMath::Abs(trkCharge) > 0)
 	{
-	  if(trkEta < 0.0)
+	  if(trkEta < fEtaLeftCut)
 	    {
 	      fPt_profile->Fill(trkPt);
 	      pT_sum_etaLess0 += trkPt;
@@ -322,7 +322,7 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::UserExec(Option_t *)
 
 	    }
 	    
-	  if(trkEta > 0.4)
+	  if(trkEta > fEtaRightCut)
 	    {
 	      pT_sum_etaGreaterEtamin += trkPt;
 	      N_sum_etaGreaterEtamin += 1.0;

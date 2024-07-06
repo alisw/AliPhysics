@@ -122,6 +122,8 @@ set(SRCS
   AliSigma0PhotonCuts.cxx;
   AliAnalysisTaskNanoTreeLPhi.cxx;
   AliAnalysisTaskNanoLambdaKaon.cxx;
+  AliAnalysisTaskNanoLambdaPion.cxx;
+  AliAnalysisTaskNanoFromAODLambdaPion.cxx;
   AliAnalysisTaskLambdaPion.cxx;
   AliAnalysisTaskNanoLKr.cxx
   AliAnalysisTaskThreeBodyFemtoMixedCharge.cxx;

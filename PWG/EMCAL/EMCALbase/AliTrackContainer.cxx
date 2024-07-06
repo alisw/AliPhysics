@@ -516,12 +516,13 @@ Bool_t AliTrackContainer::CheckArrayConsistency() const {
 
   // Now check whehter tracks are stored in the same indices:
   if(teststatus){
-    int nmatch(0), nfail(0);
+    // int nmatch(0);
+    int nfail(0);
     for(int i = 0; i < fClArray->GetEntries(); i++) {
       AliVTrack *trackAll = dynamic_cast<AliVTrack *>(fClArray->At(i));
       AliVTrack *trackSel = dynamic_cast<AliVTrack *>(selected->At(i));
       if(trackSel == trackAll) {
-        nmatch++;    
+        // nmatch++;    
       } else {
         std::cout << "Mismatch in array position: " << i << std::endl;
         nfail++;

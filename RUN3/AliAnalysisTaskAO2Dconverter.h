@@ -61,6 +61,7 @@ public:
   void SetEMCALFractionL1MonitoringEvents(Double_t fraction) { fFractionL1MonitorEventsEMCAL = fraction; }
   void SetEMCALTriggerReducedPayload(Bool_t reduced) { fEMCALReducedTriggerPayload = reduced; }
   void SetUsePHOSTriggerMap(Bool_t toUse=kTRUE) { fUsePHOSBadMap = toUse; }
+  void SetReadTR(Bool_t readTR = true) {fReadTR = readTR;};
 
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
   enum TreeIndex { // Index of the output trees
@@ -143,7 +144,8 @@ public:
   enum MCParticleFlags : uint8_t {
     ProducedInTransport = 0x1, // Bit 0: 0 = from generator; 1 = from transport
     FromBackgroundEvent = 0x2, // Particle from background event (may have been used several times)
-    PhysicalPrimary = 0x4      // Particle is a physical primary according to ALICE definition
+    PhysicalPrimary = 0x4,     // Particle is a physical primary according to ALICE definition
+    FromOutOfBunchPileUpCollision = 0x8
   };
   //Aliases for multiplicity selection criteria
   enum EventSelectionCut {
@@ -189,6 +191,7 @@ public:
 private:
   Bool_t fUseEventCuts = kFALSE;         // Use or not event cuts
   Bool_t fUseTriggerAnalysis = kTRUE;    // Use or not trigger analysis
+  Bool_t fReadTR = false;
   AliEventCuts fEventCuts;      // Standard event cuts
   AliTriggerAnalysis fTriggerAnalysis; // Trigger analysis object for event selection
   AliGRPObject *fGRP = nullptr; //! Global run parameters

@@ -11,6 +11,7 @@ public:
 	//
 	void UserCreateOutputObjects(); 
 	void UserExec(Option_t *);
+	void SetEtaRange(double etaMin,double etaMax) {fEtaMin=etaMin; fEtaMax=etaMax;}
 
   void SetJCatalystTaskName(TString name) {fJCatalystTaskName = name;}	/// New
 
@@ -36,6 +37,8 @@ private:
 	AliJFFlucAnalysis *pfa;
 	UInt_t subeventMask;
 	UInt_t flags;
+	double fEtaMin;
+	double fEtaMax;
 
 	ClassDef(AliJFFlucJCTask,2);
 };

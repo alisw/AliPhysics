@@ -5097,7 +5097,8 @@ void  AliAnaParticleHadronCorrelation::MakeAnalysisFillHistograms()
         }
         
         // Check if decay and if pair is lost
-        if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) )
+        if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCDecayPairLost) &&
+            fMCGenTypeMin <= kmcPi0DecayLostPair && fMCGenTypeMax > kmcEtaDecayLostPair )
         {
           if     ( mcIndex == kmcPi0Decay )
           {

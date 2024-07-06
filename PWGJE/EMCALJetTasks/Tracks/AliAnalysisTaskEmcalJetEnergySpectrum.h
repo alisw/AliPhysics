@@ -84,6 +84,7 @@ public:
   void SetCentralityEstimator(EMCAL_STRINGVIEW centest) { fCentralityEstimator = centest; }
   void SetFillHistosWeighted(EWeightType_t weighttype) { fFillHistosWeighted = weighttype; }
   void SetFillHSparse(Bool_t doFill)               { fFillHSparse = doFill; }
+  void SetFillSpectrumPtNEF(Bool_t doFill)         { fFillSpectrumPtNEF = doFill; }
   void SetUseMuonCalo(Bool_t doUse)                { fUseMuonCalo = doUse; }
   void SetEnergyScaleShfit(Double_t scaleshift)    { fScaleShift = scaleshift; }
   void SetUseStandardOutlierRejection(bool doUse)  { fUseStandardOutlierRejection = doUse; }
@@ -94,6 +95,7 @@ public:
   void SetMakeClusterHistos1D(bool doMake)         { fMakeClusterHistos1D = doMake; }
   void SetEnergyDefinition(EnergyDefinition_t edef){ fEnergyDefinition = edef; }
   void SetDoDifferentialDpT(bool doDiffDpT)        { fDoDifferentialDpT = doDiffDpT; }
+  void SetRhoScaleValue(Double_t rhoScale)              { fRhoScaleFactor = rhoScale; }
 
   void SetDoBkgSubtraction(bool doBkg = true)             { fDoBkgSub = doBkg; }
   double GetDeltaPtRandomCone();
@@ -203,6 +205,7 @@ private:
   THistManager                  *fHistos;                       ///< Histogram manager
   Bool_t                        fIsMC;                          ///< Running on simulated events
   Bool_t                        fFillHSparse;                   ///< Fill THnSparses with more information
+  Bool_t                        fFillSpectrumPtNEF;             ///< Fill spectrum as pt vs. NEF (2D unfolding)
 	UInt_t                        fTriggerSelectionBits;          ///< Trigger selection bits
   TString                       fTriggerSelectionString;        ///< Trigger selection string
   Bool_t                        fRequireSubsetMB;               ///< Require for triggers to be a subset of Min. Bias (for efficiency studies)
@@ -232,6 +235,7 @@ private:
   Bool_t                        fMakeClusterHistos1D;           ///< Make 1D emcal cluster energy histogram
   EnergyDefinition_t            fEnergyDefinition;              ///< Energy definition used for a given cluster
   Bool_t                        fDoDifferentialDpT;             ///< Make pT differential rho vs. delta pT plot
+  Bool_t                        fRhoScaleFactor;                 ///< Used to scale charged rho for use with full (emcal) jets
 
 
 

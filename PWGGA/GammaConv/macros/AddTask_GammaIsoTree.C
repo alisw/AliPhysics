@@ -16,11 +16,14 @@ void AddTask_GammaIsoTree(
   Bool_t    storeConversions              = kTRUE,
   Bool_t    doIsolation                   = kTRUE,
   Bool_t    doOwnTrackMatching            = kFALSE,
+  Bool_t    doTagging                     = kFALSE,
   Bool_t    doJetCorrelation              = kFALSE,
   // subwagon config
   TString   fileNameExternalInputs        = "",
   Double_t  genPtCut                      = 0, // only save particles from stack with gen pt > genPtCut
   Double_t  recPtCut                      = 0, // only save clusters with rec pt > recPtCut
+  Double_t  genJetPtCut                   = 0, // only save jets with gen pt > genJetPtCut
+  Double_t  recJetPtCut                   = 0, // only save jets with rec pt > recJetPtCut
   TString   additionalFileEnding          = "",
   TString   additionalTrainConfig         = "0"       // additional counter for trainconfig
   ){
@@ -55,7 +58,6 @@ void AddTask_GammaIsoTree(
   Bool_t doNeutralIso            = kTRUE;
   Bool_t doChargedIso            = kTRUE;
   Bool_t doCellIso               = kTRUE;
-  Bool_t doTagging               = kTRUE;
 
   TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
   if (sAdditionalTrainConfig.Atoi() > 0){
@@ -71,6 +73,7 @@ void AddTask_GammaIsoTree(
 
   TString nameJetFinder = (additionalTrainConfig.Contains("JET") == true) ? cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "JET", "", addTaskName) : "";
   printf("nameJetFinder: %s\n", nameJetFinder.Data());
+  bool useCentralEvtSelection = (additionalTrainConfig.Contains("JET") == true);
 
   if(corrTaskSetting.CompareTo(""))
     cout << "corrTaskSetting: " << corrTaskSetting.Data() << endl;
@@ -102,7 +105,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 2){  // trigger
       TaskEventCutnumber                = "00052113";
@@ -120,7 +122,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 3){  // trigger
       TaskEventCutnumber                = "00081113";
@@ -138,7 +139,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
 
   // DEFAULT
@@ -158,7 +158,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 7){  // trigger
       TaskEventCutnumber                = "00052103";
@@ -177,7 +176,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 8){  // trigger
       TaskEventCutnumber                = "00081103";
@@ -196,7 +194,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
 
   // END OF DEFAULT
@@ -217,7 +214,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
 
    // Anti isolation variation
@@ -238,7 +234,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
 
       fAntiIsolation[0] = 4;
@@ -259,7 +254,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
 
       fAntiIsolation[0] = 4;
@@ -280,7 +274,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
 
       fAntiIsolation[0] = 4;
@@ -302,7 +295,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
 
       fAntiIsolation[0] = 5;
@@ -323,7 +315,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
 
       fAntiIsolation[0] = 5;
@@ -344,7 +335,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
 
       fAntiIsolation[0] = 5;
@@ -367,7 +357,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 21){  // trigger
       TaskEventCutnumber                = "00052003";
@@ -386,7 +375,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 22){  // trigger
       TaskEventCutnumber                = "00081003";
@@ -405,7 +393,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
 
 
@@ -427,7 +414,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 51){  // EG2
       TaskEventCutnumber                = "80085103";
@@ -445,7 +431,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 52){  // EG1
       TaskEventCutnumber                = "80083103";
@@ -464,7 +449,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
      
      
@@ -486,7 +470,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 54){  // EG2
       TaskEventCutnumber                = "80085103";
@@ -505,7 +488,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 55){  // EG1
       TaskEventCutnumber                = "80083103";
@@ -524,7 +506,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
 
    //
@@ -547,7 +528,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 61){  // DG2
       TaskEventCutnumber                = "80089103";
@@ -565,7 +545,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 62){  // DG1
       TaskEventCutnumber                = "8008b103";
@@ -583,7 +562,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
 
     // stricter eta cuts
@@ -604,7 +582,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 64){  // DG2
       TaskEventCutnumber                = "80089103";
@@ -623,7 +600,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 65){  // DG1
       TaskEventCutnumber                = "8008b103";
@@ -642,7 +618,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
 
   // EMCAL + DCAL
@@ -664,7 +639,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 71){  // EG2 DG2
       TaskEventCutnumber                = "8008e103";
@@ -683,7 +657,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 72){  // EG1 DG1
       TaskEventCutnumber                = "8008d103";
@@ -702,7 +675,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   
   // No SPD pileup
@@ -723,7 +695,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 81){  // EG2 DG2
       TaskEventCutnumber                = "8008e003";
@@ -742,7 +713,6 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
       doCellIso = kFALSE;
   } else if(trainConfig == 82){  // EG1 DG1
       TaskEventCutnumber                = "8008d003";
@@ -761,7 +731,60 @@ void AddTask_GammaIsoTree(
       backgroundTrackMatching = kFALSE; // obsolete
       doNeutralIso = kFALSE;
       doChargedIso = kTRUE;
-      doTagging = kFALSE;
+      doCellIso = kFALSE;
+  } else if(trainConfig == 100){  // 13TeV pp INT7
+      TaskEventCutnumber                = "00010103";
+      TaskClusterCutnumberEMC           = "4117900060e32000000";
+      TaskTMCut = TaskClusterCutnumberEMC.Data();
+      TaskTMCut.Replace(9,1,"s");
+      TaskClusterCutnumberIsolationEMC  = "411790006fe22000000";
+      TaskClusterCutnumberTaggingEMC    = "411790006fe00000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+      fEtaCut = 0.8;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kFALSE;
+      doChargedIso = kTRUE;
+      doCellIso = kFALSE;
+  } else if(trainConfig == 101){  // 13TeV pp EG2
+      TaskEventCutnumber                = "0008e103";
+      TaskClusterCutnumberEMC           = "4117900060e32000000";
+      TaskTMCut = TaskClusterCutnumberEMC.Data();
+      TaskTMCut.Replace(9,1,"s");
+      TaskClusterCutnumberIsolationEMC  = "411790006fe22000000";
+      TaskClusterCutnumberTaggingEMC    = "411790006fe00000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+      fEtaCut = 0.8;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kFALSE;
+      doChargedIso = kTRUE;
+      doCellIso = kFALSE;
+  } else if(trainConfig == 102){  // 13TeV pp EG1
+      TaskEventCutnumber                = "0008d103";
+      TaskClusterCutnumberEMC           = "4117900060e32000000";
+      TaskTMCut = TaskClusterCutnumberEMC.Data();
+      TaskTMCut.Replace(9,1,"s");
+      TaskClusterCutnumberIsolationEMC  = "411790006fe22000000";
+      TaskClusterCutnumberTaggingEMC    = "411790006fe00000000";
+      TaskClusterCutnumberPHOS          = "2444411044013300000";
+      TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
+
+      minSignalM02 = 0.1;
+      maxSignalM02 = 0.5;
+      fEtaCut = 0.8;
+
+      backgroundTrackMatching = kFALSE; // obsolete
+      doNeutralIso = kFALSE;
+      doChargedIso = kTRUE;
       doCellIso = kFALSE;
   }
   
@@ -803,6 +826,8 @@ void AddTask_GammaIsoTree(
   fGammaIsoTreeTask->SetAntiIsolationE(fAntiIsolation[0],fAntiIsolation[1]);
   fGammaIsoTreeTask->SetRecPtCut(recPtCut);
   fGammaIsoTreeTask->SetGenPtCut(genPtCut);
+  fGammaIsoTreeTask->SetRecJetPtCut(recJetPtCut);
+  fGammaIsoTreeTask->SetGenJetPtCut(genJetPtCut);
   
   // fGammaIsoTreeTask->SetSaveClusterCells(doSaveClusterCells);
   // fGammaIsoTreeTask->SetSaveEventProperties(doSaveEventProp);
@@ -985,6 +1010,7 @@ void AddTask_GammaIsoTree(
   fGammaIsoTreeTask->SetSavePHOSClusters(storePHOSCluster);
   fGammaIsoTreeTask->SetSaveTracks(storeTracks);
   fGammaIsoTreeTask->SetSaveJets(doJetCorrelation);
+  fGammaIsoTreeTask->SetDoUseCentralEvtSelection(useCentralEvtSelection);
   if(additionalTrainConfig.Contains("JET")){fGammaIsoTreeTask->SetJetContainerAddName(nameJetFinder);}
   fGammaIsoTreeTask->SetBuffSize(60*1024*1024);
   fGammaIsoTreeTask->SetTrackMatcherRunningMode(trackMatcherRunningMode);
@@ -1014,20 +1040,20 @@ void AddTask_GammaIsoTree(
   }
 
   if(corrTaskSetting.CompareTo("")){
-    coutput =mgr->CreateContainer( Form("GammaIsoTree_%d_%s",trainConfig,corrTaskSetting.Data()),
+    coutput =mgr->CreateContainer( Form("GammaIsoTree_%d_%s%s",trainConfig,corrTaskSetting.Data(),additionalFileEnding.Data()),
                                                               TTree::Class(),
                                                               AliAnalysisManager::kOutputContainer,
                                                               Form("GammaIsoTree_%d%s.root",trainConfig,additionalFileEnding.Data()));
-    histos = mgr->CreateContainer( Form("GammaIsoTree_histos_%d_%s",trainConfig,corrTaskSetting.Data()),
+    histos = mgr->CreateContainer( Form("GammaIsoTree_histos_%d_%s%s",trainConfig,corrTaskSetting.Data(),additionalFileEnding.Data()),
                                                               TList::Class(),
                                                               AliAnalysisManager::kOutputContainer,
                                                               Form("GammaIsoTree_histos_%d%s.root",trainConfig,additionalFileEnding.Data()));
   } else{
-    coutput =mgr->CreateContainer( Form("GammaIsoTree_%d",trainConfig),
+    coutput =mgr->CreateContainer( Form("GammaIsoTree_%d%s",trainConfig,additionalFileEnding.Data()),
                                                               TTree::Class(),
                                                               AliAnalysisManager::kOutputContainer,
                                                               Form("GammaIsoTree_%d%s.root",trainConfig,additionalFileEnding.Data()));
-    histos = mgr->CreateContainer( Form("GammaIsoTree_histos_%d",trainConfig),
+    histos = mgr->CreateContainer( Form("GammaIsoTree_histos_%d%s",trainConfig,additionalFileEnding.Data()),
                                                               TList::Class(),
                                                               AliAnalysisManager::kOutputContainer,
                                                               Form("GammaIsoTree_histos_%d%s.root",trainConfig,additionalFileEnding.Data()));

@@ -79,7 +79,7 @@ public:
   std::pair<double, double> GetCentralityPreSelection() const {
     return std::make_pair(fCentRange[0], fCentRange[1]);
   }
-
+  void SetExtentV0MAcceptance(Bool_t newVal) { fExtendV0MAcceptance=newVal; };
   void SetNoCentrality(bool anocent);
   void SetAODpidUtil(AliAODpidUtil *aAODpidUtil);
   void SetAODheader(AliAODHeader *aAODheader);
@@ -93,8 +93,10 @@ public:
   }
 
   void SetpA2013(Bool_t pa2013); ///< set vertex configuration for pA (2013): IsVertexSelected2013pA
+  void SetAA15o(Bool_t AA15o);
   void SetUseMVPlpSelection(Bool_t mvplp);
   void SetUseOutOfBunchPlpSelection(Bool_t outOfBunchPlp);
+  void SetRejectTPCPileupWithV0CentTPCnTracksCorr(Bool_t OOBV0TPC);
   void SetIsPileUpEvent(Bool_t ispileup);
   void SetCascadePileUpRemoval(Bool_t cascadePileUpRemoval);
   void SetV0PileUpRemoval(Bool_t v0PileUpRemoval);
@@ -148,6 +150,7 @@ public:
     bool Reject15oPass2Event(AliAODEvent *fAOD,Int_t yearLabel);
     void SetPbPb15Pass2MC(Int_t PbPb15Pass2MC);
   //---
+  void SetRejection15opass2(Int_t rejeEv15o);
   void Set1DCorrectionsPions(TH1D *h1);
   void Set1DCorrectionsKaons(TH1D *h1);
   void Set1DCorrectionsProtons(TH1D *h1);
@@ -219,7 +222,7 @@ protected:
   AliAnalysisUtils *fAnaUtils;
   AliEventCuts     *fEventCuts;
   Bool_t           fUseAliEventCuts;
-
+  
   /// Read generated particle info of "low quality" MC tracks
   /// (i.e. tracks with negative labels)
   Bool_t           fReadFullMCData;
@@ -227,6 +230,7 @@ protected:
 //ML -- calculate ptmax,phimax,etamax of event
   Int_t           fjets; //0-no calc., 1-same, 2-diff
   Double_t         fPtmax; //max pT in event
+ 
     // dowang femto
     Int_t fEventReject;
     Int_t fPbPb15Pass2MC;
@@ -260,6 +264,7 @@ private:
   Bool_t fPileupInGeneratedEvent; //injected pileup for LHC20e3a PbPb over events
   Bool_t fMVPlp;           ///< multi-vertex pileup rejection?
   Bool_t fOutOfBunchPlp;   ///out-of-bunch pileup rejection
+  Bool_t fOOBV0TPC;        /// Switch on/off the strong OOB pileup cut (for Pb-Pb) based on TPC tracks vs V0 mult
   Int_t fMinVtxContr;      ///< no of contributors for pA 2013 data
   Int_t fMinPlpContribMV;  ///< no of contributors for multivertex pile-up rejection
   Int_t fMinPlpContribSPD; ///< no of contributors for SPD pile-up rejection
@@ -306,13 +311,14 @@ private:
   Bool_t fIsPionAnalysis; // switch for Pion analysis
   Bool_t fIsElectronAnalysis; // e+e- are taken (for gamma cut tuning)
   //Special MC analysis for pi,K,p,e slected by PDG code <--
-
+  Bool_t fExtendV0MAcceptance; //switch centrality estimation
   //
   Bool_t fIsDeuteronAnalysis;
   Bool_t fIsTritonAnalysis;
   Bool_t fIsHe3Analysis;
   Bool_t fIsAlphaAnalysis;
   //
+  Int_t frejeEv15o;
 
 
 #ifdef __ROOT__

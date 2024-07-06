@@ -1263,6 +1263,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   {
     if (fESD) {
       AliMCEventHandler *eventHandler = dynamic_cast<AliMCEventHandler *>(AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()); //Get the MC handler
+      eventHandler->SetReadTR(fReadTR);
 
       if (!eventHandler) //Check on the MC handler
 	AliFatal("Could not retrieve MC event handler");
@@ -1664,6 +1665,11 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         mcparticle.fFlags |= MCParticleFlags::FromBackgroundEvent;
       if (aodmcpt && aodmcpt->IsFromSubsidiaryEvent()) // AOD: PH Not sure if corresponds to BKG event
         mcparticle.fFlags |= MCParticleFlags::FromBackgroundEvent;
+
+      if (MCEvt && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, MCEvt)) // ESD
+        mcparticle.fFlags |= MCParticleFlags::FromOutOfBunchPileUpCollision;
+      if (aodmcpt && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, MCHeader, MCArray)) // AOD
+        mcparticle.fFlags |= MCParticleFlags::FromOutOfBunchPileUpCollision;
 
       mcparticle.fIndexArray_Mothers_size = 1;
       mcparticle.fIndexArray_Mothers[0] = particle ? particle->GetMother(0) : aodmcpt->GetMother();

@@ -10,6 +10,7 @@
 #pragma link C++ class AliAnalysisTaskCorrForFlowMaster+;
 #pragma link C++ class AliAnalysisTaskCorrForFlowEta+;
 #pragma link C++ class AliAnalysisTaskDeform+;
+#pragma link C++ class AliAnalysisTaskGammaSoft+;
 #pragma link C++ class AliAnalysisTaskGFWPIDFlow+;
 #pragma link C++ class AliAnalysisTaskFlowExample+;
 #pragma link C++ class AliAnalysisTaskPtCorr+;
@@ -17,6 +18,7 @@
 #pragma link C++ class AliGFWCuts+;
 #pragma link C++ class AliGFWCumulant+;
 #pragma link C++ class AliGFW+;
+#pragma link C++ class AliGFWPowerArray+;
 #pragma link C++ class AliGFWWeights+;
 #pragma link C++ class AliGFWWeightsFinerBin+;
 #pragma link C++ class AliPartSimpleForCorr+;
@@ -38,6 +40,7 @@
 #pragma link C++ class AliAnalysisTaskMomentumFlowCorrelation++;
 #pragma link C++ class AliPtSubEventContainer++;
 #pragma link C++ class AliAnalysisTaskDensity++;
+#pragma link C++ class AliAnalysisTaskCorrForFlowFMDOnthefly+;
 #endif
 
 #ifdef __CLING__

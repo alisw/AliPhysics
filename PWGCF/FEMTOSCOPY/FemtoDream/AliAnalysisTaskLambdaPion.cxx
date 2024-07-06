@@ -18,6 +18,7 @@ ClassImp(AliAnalysisTaskLambdaPion)
       fUseOMixing(false),
       fPCSettings(NewPC),
       fUseEvtNoLambda(false),
+      fExcludedMothers({}),
       fTrigger(AliVEvent::kINT7),
       fQA(nullptr),
       fEvtList(nullptr),
@@ -56,6 +57,7 @@ AliAnalysisTaskLambdaPion::AliAnalysisTaskLambdaPion(
       fUseOMixing(false),
       fPCSettings(pcsettings),
       fUseEvtNoLambda(usenolambdaevt),
+      fExcludedMothers({}),
       fTrigger(AliVEvent::kINT7),
       fQA(nullptr),
       fEvtList(nullptr),
@@ -308,6 +310,12 @@ void AliAnalysisTaskLambdaPion::UserExec(Option_t *)
     StoreGlobalTrackReference(track);
   }
 
+  // Load MC information
+  AliMCEvent *fMC = nullptr;
+  if (fIsMC) {
+    fMC = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())->MCEvent();
+  }
+
   std::vector<AliFemtoDreamBasePart> PionPlus;
   std::vector<AliFemtoDreamBasePart> PionMinus;
   std::vector<AliFemtoDreamBasePart> Lambdas;
@@ -322,10 +330,38 @@ void AliAnalysisTaskLambdaPion::UserExec(Option_t *)
     fLambda->Setv0(fInputEvent, casc);
     if (fLambdaCuts->isSelected(fLambda))
     {
+      if (fMC && fExcludedMothers.size() > 0) {
+        // Reject the decay products of some specific particles
+        AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(fLambda->GetID());
+        if (!mcPart) continue;
+
+        AliAODMCParticle *mom = (AliAODMCParticle *)fMC->GetTrack(mcPart->GetMother());
+        if (!mom) continue;
+
+        int momAbsPdg = std::abs(mom->GetPdgCode());
+        if (std::find(fExcludedMothers.begin(), fExcludedMothers.end(), momAbsPdg) != fExcludedMothers.end()) {
+          continue;
+        }
+      }
+
       Lambdas.push_back(*fLambda);
     }
     if (fAntiLambdaCuts->isSelected(fLambda))
     {
+      if (fMC && fExcludedMothers.size() > 0) {
+        // Reject the decay products of some specific particles
+        AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(fLambda->GetID());
+        if (!mcPart) continue;
+
+        AliAODMCParticle *mom = (AliAODMCParticle *)fMC->GetTrack(mcPart->GetMother());
+        if (!mom) continue;
+
+        int momAbsPdg = std::abs(mom->GetPdgCode());
+        if (std::find(fExcludedMothers.begin(), fExcludedMothers.end(), momAbsPdg) != fExcludedMothers.end()) {
+          continue;
+        }
+      }
+
       AntiLambdas.push_back(*fLambda);
     }
   }
@@ -344,21 +380,44 @@ void AliAnalysisTaskLambdaPion::UserExec(Option_t *)
     fTrack->SetTrack(track);
     if (fPosPionCuts->isSelected(fTrack))
     {
+      if (fMC && fExcludedMothers.size() > 0) {
+        // Reject the decay products of some specific particles
+        AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(fTrack->GetID());
+        if (!mcPart) continue;
+
+        AliAODMCParticle *mom = (AliAODMCParticle *)fMC->GetTrack(mcPart->GetMother());
+        if (!mom) continue;
+
+        int momAbsPdg = std::abs(mom->GetPdgCode());
+        if (std::find(fExcludedMothers.begin(), fExcludedMothers.end(), momAbsPdg) != fExcludedMothers.end()) {
+          continue;
+        }
+      }
+
       PionPlus.push_back(*fTrack);
     }
     if (fNegPionCuts->isSelected(fTrack))
     {
+      if (fMC && fExcludedMothers.size() > 0) {
+        // Reject the decay products of some specific particles
+        AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(fTrack->GetID());
+        if (!mcPart) continue;
+
+        AliAODMCParticle *mom = (AliAODMCParticle *)fMC->GetTrack(mcPart->GetMother());
+        if (!mom) continue;
+
+        int momAbsPdg = std::abs(mom->GetPdgCode());
+        if (std::find(fExcludedMothers.begin(), fExcludedMothers.end(), momAbsPdg) != fExcludedMothers.end()) {
+          continue;
+        }
+      }
+
       PionMinus.push_back(*fTrack);
     }
   }
 
   if (fIsMC)
   {
-    AliAODInputHandler *eventHandler =
-        dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()
-                                               ->GetInputEventHandler());
-    AliMCEvent *fMC = eventHandler->MCEvent();
-
     for (int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++)
     {
       AliAODMCParticle *mcPart = (AliAODMCParticle *)fMC->GetTrack(iPart);

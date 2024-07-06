@@ -54,7 +54,7 @@ void SetEfficiencyFunctionsFastSimulation(AliAnalysisTaskIDFragmentationFunction
 }
 
 void postConfig(AliAnalysisTaskIDFragmentationFunction* task, TString namesOfInclusivePIDtasks, TString namesOfJetPIDtasks,
-                TString namesOfJetUEPIDtasks, TString namesOfJetUEMethods) {
+                TString namesOfJetUEPIDtasks) {
 	
 	TObjArray* nameArrayInclusive = namesOfInclusivePIDtasks.Tokenize(";");
 	Int_t numInclusivePIDtasks = nameArrayInclusive->GetEntriesFast();
@@ -76,15 +76,11 @@ void postConfig(AliAnalysisTaskIDFragmentationFunction* task, TString namesOfInc
 	
 	TObjArray* nameArrayJetsUE = namesOfJetUEPIDtasks.Tokenize(";");
 	Int_t numJetUEPIDtasks = nameArrayJetsUE->GetEntriesFast();
-    TObjArray* nameArrayJetsUEMethods = namesOfJetUEMethods.Tokenize(";");
-    //TODO: Check if length is same for both, if not exit (or take shorter one with warning?)
 	TString* namesOfJetUETasks = new TString[numJetUEPIDtasks];
-    TString* namesOfJetUEMethodsArray = new TString[numJetUEPIDtasks];
 	for (Int_t i=0;i<numJetUEPIDtasks;i++) {
 		namesOfJetUETasks[i] = (((TObjString*)(nameArrayJetsUE->At(i)))->GetString());
-        namesOfJetUEMethodsArray[i] = (((TObjString*)(nameArrayJetsUEMethods->At(i)))->GetString());
 	}
-	task->SetNamesOfJetUEPIDtasks(numJetUEPIDtasks, namesOfJetUETasks, namesOfJetUEMethodsArray);  
+	task->SetNamesOfJetUEPIDtasks(numJetUEPIDtasks, namesOfJetUETasks);  
   
 	
   printf("PID framework:\n");
@@ -95,8 +91,9 @@ void postConfig(AliAnalysisTaskIDFragmentationFunction* task, TString namesOfInc
   printf("Jet Underlying Event PID tasks: ");
   for (Int_t i = 0; i < numJetUEPIDtasks; i++) {
     printf("%s ", task->GetNamesOfJetUEPIDtasks()[i].Data());
-    cout << ";  Underlying event subtraction method: " << task->GetUEMethods()[i] << endl; 
   }
+  printf("\n");  
+  printf("Number of Random cone trials: %d", task->GetRCTrials());
   printf("\n");  
   printf("Inclusive PID task: ");
   for (Int_t i = 0; i < numInclusivePIDtasks; i++) {
@@ -123,7 +120,6 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
   TString namesOfInclusivePIDtasks = "",
   TString namesOfJetPIDtasks = "",
   TString namesOfJetUEPIDtasks = "",
-  TString namesOfJetUEMethods = "",
   AliAnalysisTaskEmcal::BeamType iBeamType = AliAnalysisTaskEmcal::kpp,
   Int_t nJetContainer = 1,
   AliEmcalJet::JetAcceptanceType* jetAcceptanceRegion = 0x0,
@@ -462,7 +458,7 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
   }
    mgr->ConnectOutput (task, 1, coutput_FragFunc);   
    
-   postConfig(task, namesOfInclusivePIDtasks, namesOfJetPIDtasks, namesOfJetUEPIDtasks, namesOfJetUEMethods);
+   postConfig(task, namesOfInclusivePIDtasks, namesOfJetPIDtasks, namesOfJetUEPIDtasks);
    
    return task;
 }

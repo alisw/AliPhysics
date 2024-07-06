@@ -9,11 +9,13 @@
 #include "TH2F.h"
 #include "TH3F.h"
 #include "TList.h"
+#include "TMath.h"
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliMultSelection.h"
 #include "AliAODEvent.h"
 #include "AliEventCuts.h"
+#include "AliVEvent.h"
 #include "AliAODInputHandler.h"
 #include "AliAnalysisPtN.h"
 #include <cmath>
@@ -34,9 +36,28 @@ AliAnalysisPtN::AliAnalysisPtN() : AliAnalysisTaskSE(),
     fBstList(nullptr),
     fWeightsListNUE(nullptr),
     fWeightNUE(nullptr),
+    fMinPt(0.2),
+    fMaxPt(3.0),
+    fVz(10.0),
+    fDCAz(2.0),
+    fDCAxy(7.0),
+    fTPCcls(70),
+    filterBit(96),
+    fTrigger(1),
+    ctrType("V0M"),
+    fPeriod("LHC15o"),
+    fNUE("LHC20e3a"),
+    fSysflg(0),
     //correlator(),
     fTestNonWeight(nullptr),
     fNchDistri(nullptr),
+    fPtQA(nullptr),
+    fDCAxyQA(nullptr),
+    fDCAzQA(nullptr),
+    fetaQA(nullptr),
+    fTPCclsQA(nullptr),
+    fDCAxyPt(nullptr),
+    fDCAzPt(nullptr),
     fPtNch(nullptr),
     dPtNch(nullptr),
     dPt2Nch(nullptr),
@@ -164,9 +185,28 @@ AliAnalysisPtN::AliAnalysisPtN(const char* name) : AliAnalysisTaskSE(name),
     fBstList(nullptr),
     fWeightsListNUE(nullptr),
     fWeightNUE(nullptr),
+    fMinPt(0.2),
+    fMaxPt(3.0),
+    fVz(10.0),
+    fDCAz(2.0),
+    fDCAxy(7.0),
+    fTPCcls(70),
+    filterBit(96),
+    fTrigger(1),
+    ctrType("V0M"),
+    fPeriod("LHC15o"),
+    fNUE("LHC20e3a"),
+    fSysflg(0),
     //correlator(),
     fTestNonWeight(nullptr),
     fNchDistri(nullptr),
+    fPtQA(nullptr),
+    fDCAxyQA(nullptr),
+    fDCAzQA(nullptr),
+    fetaQA(nullptr),
+    fTPCclsQA(nullptr),
+    fDCAxyPt(nullptr),
+    fDCAzPt(nullptr),
     fPtNch(nullptr),
     dPtNch(nullptr),
     dPt2Nch(nullptr),
@@ -324,6 +364,13 @@ void AliAnalysisPtN::UserCreateOutputObjects()
     
     fTestNonWeight = new TH1F("fHisPhi", "fHisPhi", 100, 0, 6.28);
     fNchDistri = new TH1F("fNchDistri", "fNchDistri", 90, 0, 4500);
+    fPtQA = new TH1F("fPtQA", "fPtQA", 100, 0, 5);
+    fDCAxyQA = new TH1F("fDCAxyQA", "fDCAxyQA", 100, 0, 0.5);
+    fDCAzQA = new TH1F("fDCAzQA", "fDCAzQA", 200, -2.5, 2.5);
+    fetaQA = new TH1F("fetaQA", "fetaQA", 100, -1, 1);
+    fTPCclsQA = new TH1F("fTPCclsQA", "fTPCclsQA", 200, 0, 200);
+    fDCAxyPt = new TH2F("fDCAxyPt", "fDCAxyPt", 500, 0, 0.5, 500, 0.2, 3);
+    fDCAzPt = new TH2F("fDCAzPt", "fDCAzPt", 1000, -2, 2, 500, 0.2, 3);
     fPtNch = new TH2F("fPtNch", "fPtNch", 900, 0, 4500, 500, 0, 3);
     dPtNch = new TProfile("dPtNch", "dPtNch", 90, 0, 4500);
     dPt2Nch = new TProfile("dPt2Nch", "dPt2Nch", 90, 0, 4500);
@@ -554,6 +601,13 @@ void AliAnalysisPtN::UserCreateOutputObjects()
     fOutputList->Add(fBstList);
     fOutputList->Add(fTestNonWeight);
     fOutputList->Add(fNchDistri);
+    fOutputList->Add(fPtQA);
+    fOutputList->Add(fDCAxyQA);
+    fOutputList->Add(fDCAzQA);
+    fOutputList->Add(fetaQA);
+    fOutputList->Add(fTPCclsQA);
+    fOutputList->Add(fDCAxyPt);
+    fOutputList->Add(fDCAzPt);
     fOutputList->Add(fPtNch);
     fOutputList->Add(dPtNch);
     fOutputList->Add(dPt2Nch);
@@ -592,7 +646,11 @@ void AliAnalysisPtN::UserExec(Option_t *)
 
     UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     Bool_t isTrigselected = false;
-    isTrigselected = fSelectMask&(AliVEvent::kINT7+AliVEvent::kMB);
+    if(fTrigger==0){
+      isTrigselected = fSelectMask&(AliVEvent::kINT7+AliVEvent::kMB);
+    } else if(fTrigger==1){
+      isTrigselected = fSelectMask&(AliVEvent::kINT7+AliVEvent::kMB+AliVEvent::kCentral);
+    }
     if(isTrigselected == false) return;
     
     if(!fEventCuts.AcceptEvent(fAOD)) return;                                  // if the pointer to the event is empty (getting it failed) skip this event
@@ -600,16 +658,21 @@ void AliAnalysisPtN::UserExec(Option_t *)
         // and extract some information from them which we'll store in a histogram
     // cout<< "event selected"<<endl;
     Float_t vertexZ = fAOD->GetPrimaryVertex()->GetZ();
-    if(vertexZ<=(-10) || vertexZ>=10) return;             //filter Vz range
+    if(vertexZ<=(-fVz) || vertexZ>=fVz) return;             //filter Vz range
 
     Float_t centrality(0);
     AliMultSelection* multSelection =static_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
-    if(multSelection) centrality = multSelection->GetMultiplicityPercentile("V0M");
+    if(multSelection) centrality = multSelection->GetMultiplicityPercentile(ctrType);
     //if(centrality>90) return;
 
     //initilize the weight list
     fWeightsListNUE = (TList*)GetInputData(1);
-    fWeightNUE = (TH1D*)fWeightsListNUE->FindObject(Form("EffRescaled_Cent0"));
+    if (fSysflg==0) {
+      fWeightNUE = (TH1D*)fWeightsListNUE->FindObject(Form("EffRescaled_Cent0"));
+    } else {
+      fWeightNUE = (TH1D*)fWeightsListNUE->FindObject(Form("EffRescaled_Cent0_SystFlag%i_", fSysflg));
+    }
+    
 
     Float_t wtE;
 
@@ -620,12 +683,32 @@ void AliAnalysisPtN::UserExec(Option_t *)
     for(Int_t i(0); i < iTracks; i++) {
                                                             // loop ove rall these tracks
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));         // get a track (type AliAODTrack) from the event
-        if(!track || !track->TestFilterBit(96)) continue; // filterbit if we failed, skip this track
-        if(track->Pt()<=0.2 || track->Pt()>=3.0) continue; //filter Pt range                           
-        if(track->Eta()<=(-0.8) || track->Eta()>=0.8) continue;//filter Eta range
+        if(!track || !track->TestFilterBit(filterBit)) continue; // filterbit if we failed, skip this track
+        if(track->Pt()<=fMinPt || track->Pt()>=fMaxPt) continue; //filter Pt range                           
+        if(track->Eta()<=(-0.8) || track->Eta()>=0.8) continue; //filter Eta range
+        if(track->GetTPCNcls()<=fTPCcls) continue; //filter TPC cluster numbers
+        Double_t vtxXYZ[3], trXYZ[3];
+        track->GetXYZ(trXYZ);
+        fAOD->GetPrimaryVertex()->GetXYZ(vtxXYZ);
+        trXYZ[2] -= vtxXYZ[2];
+        if(TMath::Abs(trXYZ[2]) > fDCAz) continue;
+        trXYZ[0] -= vtxXYZ[0];
+        trXYZ[1] -= vtxXYZ[1];
+        Double_t trDcaxy = TMath::Sqrt(trXYZ[0]*trXYZ[0]+trXYZ[1]*trXYZ[1]);
+        Double_t cutDcaxy = 0.0026+0.005/TMath::Power(track->Pt(),1.01);
+        if(trDcaxy > fDCAxy*cutDcaxy) continue;
+
+        //all the selection are before here
         ++nTrackSelected;
         wtE = GetWeightNUE(track->Pt());
         fTestNonWeight->Fill(track->Phi());
+        fPtQA->Fill(track->Pt());
+        fDCAxyQA->Fill(trDcaxy);
+        fDCAzQA->Fill(trXYZ[2]);
+        fetaQA->Fill(track->Eta());
+        fTPCclsQA->Fill(track->GetTPCNcls());
+        fDCAxyPt->Fill(trDcaxy, track->Pt());
+        fDCAzPt->Fill(trXYZ[2], track->Pt());
 
 
           sump += wtE*track->Pt();

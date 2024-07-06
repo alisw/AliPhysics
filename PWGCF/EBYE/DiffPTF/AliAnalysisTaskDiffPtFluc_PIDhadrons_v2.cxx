@@ -115,6 +115,52 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::AliAnalysisTaskDiffPtFluc_PIDhadrons_v2
   fHistMCEffProtonMinus(0),
   fHistMCEffHadronPlus(0),
   fHistMCEffHadronMinus(0),
+  hist_beforeCut_DCAxy(0),
+  hist_beforeCut_DCAz(0),
+  hist_beforeCut_eta(0),
+  hist_beforeCut_chi2perTPCclstr(0),
+  hist_beforeCut_chi2perITSclstr(0),
+  hist_beforeCut_TPCncrossedrows(0),
+  hist_afterCut_DCAxy(0),
+  hist_afterCut_DCAz(0),
+  hist_afterCut_eta(0),
+  hist_afterCut_chi2perTPCclstr(0),
+  hist_afterCut_chi2perITSclstr(0),
+  hist_afterCut_TPCncrossedrows(0),
+  f2Dhist_beforeCut_nSigmaTPC_pion(0),
+  f2Dhist_beforeCut_nSigmaTPC_kaon(0),
+  f2Dhist_beforeCut_nSigmaTPC_proton(0),
+  f2Dhist_beforeCut_nSigmaTOF_pion(0),
+  f2Dhist_beforeCut_nSigmaTOF_kaon(0),
+  f2Dhist_beforeCut_nSigmaTOF_proton(0),
+  f2Dhist_beforeCut_nSigmaTPCplusTOF_pion(0),
+  f2Dhist_beforeCut_nSigmaTPCplusTOF_kaon(0),
+  f2Dhist_beforeCut_nSigmaTPCplusTOF_proton(0),
+  f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_pion(0),
+  f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_kaon(0),
+  f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_proton(0),
+  f2Dhist_afterCut_nSigmaTPC_pion(0),
+  f2Dhist_afterCut_nSigmaTPC_kaon(0),
+  f2Dhist_afterCut_nSigmaTPC_proton(0),
+  f2Dhist_afterCut_nSigmaTOF_pion(0),
+  f2Dhist_afterCut_nSigmaTOF_kaon(0),
+  f2Dhist_afterCut_nSigmaTOF_proton(0),
+  f2Dhist_afterCut_nSigmaTPCplusTOF_pion(0),
+  f2Dhist_afterCut_nSigmaTPCplusTOF_kaon(0),
+  f2Dhist_afterCut_nSigmaTPCplusTOF_proton(0),
+  f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_pion(0),
+  f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_kaon(0),
+  f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_proton(0),
+  f2Dhist_beforeCut_TPCdEdx_all(0),
+  f2Dhist_beforeCut_TOFtime_all(0),
+  f2Dhist_afterCut_TPCdEdx_all(0),
+  f2Dhist_afterCut_TOFtime_all(0),
+  f2Dhist_afterCut_TPCdEdx_pion(0),
+  f2Dhist_afterCut_TOFtime_pion(0),
+  f2Dhist_afterCut_TPCdEdx_kaon(0),
+  f2Dhist_afterCut_TOFtime_kaon(0),
+  f2Dhist_afterCut_TPCdEdx_proton(0),
+  f2Dhist_afterCut_TOFtime_proton(0),
   fVertexZMax(0),
   fFBNo(0),
   fChi2TPC(0),
@@ -123,10 +169,16 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::AliAnalysisTaskDiffPtFluc_PIDhadrons_v2
   fTPCcrossedrows(0),
   fCentralityEstimator_flag(0),
   fPileupCutVal(0),
+  fEtaLeftCut(0),
   fEtaMin(0),
   fEffFlag(0),
   fTreeName(0),
-  fEffCorrectionFlag(0)
+  fEffCorrectionFlag(0),
+  fExclusivePIDCut_flag(0),
+  fRejectElectron_cut(0),
+  fFillTrackQAhists_flag(0),
+  fFillPIDhists_flag(0),
+  fGlobalTracksAOD(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -183,6 +235,52 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::AliAnalysisTaskDiffPtFluc_PIDhadrons_v2
   fHistMCEffProtonMinus(0),
   fHistMCEffHadronPlus(0),
   fHistMCEffHadronMinus(0),
+  hist_beforeCut_DCAxy(0),
+  hist_beforeCut_DCAz(0),
+  hist_beforeCut_eta(0),
+  hist_beforeCut_chi2perTPCclstr(0),
+  hist_beforeCut_chi2perITSclstr(0),
+  hist_beforeCut_TPCncrossedrows(0),
+  hist_afterCut_DCAxy(0),
+  hist_afterCut_DCAz(0),
+  hist_afterCut_eta(0),
+  hist_afterCut_chi2perTPCclstr(0),
+  hist_afterCut_chi2perITSclstr(0),
+  hist_afterCut_TPCncrossedrows(0),
+  f2Dhist_beforeCut_nSigmaTPC_pion(0),
+  f2Dhist_beforeCut_nSigmaTPC_kaon(0),
+  f2Dhist_beforeCut_nSigmaTPC_proton(0),
+  f2Dhist_beforeCut_nSigmaTOF_pion(0),
+  f2Dhist_beforeCut_nSigmaTOF_kaon(0),
+  f2Dhist_beforeCut_nSigmaTOF_proton(0),
+  f2Dhist_beforeCut_nSigmaTPCplusTOF_pion(0),
+  f2Dhist_beforeCut_nSigmaTPCplusTOF_kaon(0),
+  f2Dhist_beforeCut_nSigmaTPCplusTOF_proton(0),
+  f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_pion(0),
+  f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_kaon(0),
+  f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_proton(0),
+  f2Dhist_afterCut_nSigmaTPC_pion(0),
+  f2Dhist_afterCut_nSigmaTPC_kaon(0),
+  f2Dhist_afterCut_nSigmaTPC_proton(0),
+  f2Dhist_afterCut_nSigmaTOF_pion(0),
+  f2Dhist_afterCut_nSigmaTOF_kaon(0),
+  f2Dhist_afterCut_nSigmaTOF_proton(0),
+  f2Dhist_afterCut_nSigmaTPCplusTOF_pion(0),
+  f2Dhist_afterCut_nSigmaTPCplusTOF_kaon(0),
+  f2Dhist_afterCut_nSigmaTPCplusTOF_proton(0),
+  f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_pion(0),
+  f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_kaon(0),
+  f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_proton(0),
+  f2Dhist_beforeCut_TPCdEdx_all(0),
+  f2Dhist_beforeCut_TOFtime_all(0),
+  f2Dhist_afterCut_TPCdEdx_all(0),
+  f2Dhist_afterCut_TOFtime_all(0),
+  f2Dhist_afterCut_TPCdEdx_pion(0),
+  f2Dhist_afterCut_TOFtime_pion(0),
+  f2Dhist_afterCut_TPCdEdx_kaon(0),
+  f2Dhist_afterCut_TOFtime_kaon(0),
+  f2Dhist_afterCut_TPCdEdx_proton(0),
+  f2Dhist_afterCut_TOFtime_proton(0),
   fVertexZMax(0),
   fFBNo(0),
   fChi2TPC(0),
@@ -191,10 +289,16 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::AliAnalysisTaskDiffPtFluc_PIDhadrons_v2
   fTPCcrossedrows(0),
   fCentralityEstimator_flag(0),
   fPileupCutVal(0),
+  fEtaLeftCut(0),
   fEtaMin(0),
   fEffFlag(0),
   fTreeName(0),
-  fEffCorrectionFlag(0)
+  fEffCorrectionFlag(0),
+  fExclusivePIDCut_flag(0),
+  fRejectElectron_cut(0),
+  fFillTrackQAhists_flag(0),
+  fFillPIDhists_flag(0),
+  fGlobalTracksAOD(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -238,8 +342,13 @@ AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::~AliAnalysisTaskDiffPtFluc_PIDhadrons_v
     delete fESDtrackCuts;
     fESDtrackCuts=0x0;
   }
-
-
+  if(fFBNo==128)
+    {
+      if(fGlobalTracksAOD) {
+	delete fGlobalTracksAOD;
+	fGlobalTracksAOD=0x0;
+      }
+    }
 }
 //_____________________________________________________________________________________________________________________________________
 void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserCreateOutputObjects()  {
@@ -256,30 +365,135 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserCreateOutputObjects()  {
 
     
     //QA Plots of Event Selection
-    //fAODeventCuts.AddQAplotsToList(fQAList,kTRUE);
+    fAODeventCuts.AddQAplotsToList(fQAList,kTRUE);
     fAODeventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE, fPileupCutVal);
-    
-    
+   
     //Event Counter
     hNumberOfEvents = new TH1D ("hNumberOfEvents","",20,0,20);
     // hNumberOfEvents -> Sumw2();
     fOutputList -> Add(hNumberOfEvents);
-    
-
     //Number of Kaon finally getting selected with specified cuts event wise
     hNumberOfKaonEtaLess0     = new TH1D ("hNumberOfKaonEtaLess0","",3000,0,3000);
     fOutputList -> Add(hNumberOfKaonEtaLess0);
-    
-
     //Number of Pion finally getting selected with specified cuts event wise
     hNumberOfPionEtaLess0     = new TH1D ("hNumberOfPionEtaLess0","",3000,0,3000);
     fOutputList -> Add(hNumberOfPionEtaLess0);
-    
     //Number of Proton finally getting selected with specified cuts event wise
     hNumberOfProtonEtaLess0     = new TH1D ("hNumberOfProtonEtaLess0","",3000,0,3000);
     fOutputList -> Add(hNumberOfProtonEtaLess0);
-    
 
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    //Histograms for track variables
+
+    //before track cut
+    hist_beforeCut_DCAxy = new TH1D("hist_beforeCut_DCAxy","hist_beforeCut_DCAxy", 500, 0, +5);
+    hist_beforeCut_DCAz = new TH1D("hist_beforeCut_DCAz","hist_beforeCut_DCAz", 500, 0, +5);
+    hist_beforeCut_eta = new TH1D ("hist_beforeCut_eta","hist_beforeCut_eta", 20, -1, +1);
+    hist_beforeCut_chi2perTPCclstr = new TH1D ("hist_beforeCut_chi2perTPCclstr", "hist_beforeCut_chi2perTPCclstr",100, 0, 5);
+    hist_beforeCut_chi2perITSclstr = new TH1D ("hist_beforeCut_chi2perITSclstr", "hist_beforeCut_chi2perITSclstr",100, 0, 50);
+    hist_beforeCut_TPCncrossedrows = new TH1D ("hist_beforeCut_TPCncrossedrows", "hist_beforeCut_TPCncrossedrows",200, 0, 200);
+    fOutputList->Add(hist_beforeCut_DCAxy);
+    fOutputList->Add(hist_beforeCut_DCAz);
+    fOutputList->Add(hist_beforeCut_eta);
+    fOutputList->Add(hist_beforeCut_chi2perTPCclstr);
+    fOutputList->Add(hist_beforeCut_chi2perITSclstr);
+    fOutputList->Add(hist_beforeCut_TPCncrossedrows);
+
+    //after track cut
+    hist_afterCut_DCAxy = new TH1D("hist_afterCut_DCAxy","hist_afterCut_DCAxy", 500, 0, +5);
+    hist_afterCut_DCAz = new TH1D("hist_afterCut_DCAz","hist_afterCut_DCAz", 500, 0, +5);
+    hist_afterCut_eta = new TH1D ("hist_afterCut_eta","hist_afterCut_eta", 20, -1, +1);
+    hist_afterCut_chi2perTPCclstr = new TH1D ("hist_afterCut_chi2perTPCclstr", "hist_afterCut_chi2perTPCclstr",100, 0, 5);
+    hist_afterCut_chi2perITSclstr = new TH1D ("hist_afterCut_chi2perITSclstr", "hist_afterCut_chi2perITSclstr",100, 0, 50);
+    hist_afterCut_TPCncrossedrows = new TH1D ("hist_afterCut_TPCncrossedrows", "hist_afterCut_TPCncrossedrows",200, 0, 200);
+    fOutputList->Add(hist_afterCut_DCAxy);
+    fOutputList->Add(hist_afterCut_DCAz);
+    fOutputList->Add(hist_afterCut_eta);
+    fOutputList->Add(hist_afterCut_chi2perTPCclstr);
+    fOutputList->Add(hist_afterCut_chi2perITSclstr);
+    fOutputList->Add(hist_afterCut_TPCncrossedrows);
+
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    //PID nSigma Histograms 2d
+
+    f2Dhist_beforeCut_nSigmaTPC_pion = new TH2D("f2Dhist_beforeCut_nSigmaTPC_pion", "f2Dhist_beforeCut_nSigmaTPC_pion", 500, 0, 5, 2000, -5, +5);
+    f2Dhist_beforeCut_nSigmaTPC_kaon = new TH2D("f2Dhist_beforeCut_nSigmaTPC_kaon", "f2Dhist_beforeCut_nSigmaTPC_kaon", 500, 0, 5, 2000, -5, +5);
+    f2Dhist_beforeCut_nSigmaTPC_proton = new TH2D("f2Dhist_beforeCut_nSigmaTPC_proton", "f2Dhist_beforeCut_nSigmaTPC_proton", 500, 0, 5, 2000, -5, +5);
+    f2Dhist_beforeCut_nSigmaTOF_pion = new TH2D("f2Dhist_beforeCut_nSigmaTOF_pion", "f2Dhist_beforeCut_nSigmaTOF_pion", 500, 0, 5, 2000, -5, +5);
+    f2Dhist_beforeCut_nSigmaTOF_kaon = new TH2D("f2Dhist_beforeCut_nSigmaTOF_kaon", "f2Dhist_beforeCut_nSigmaTOF_kaon", 500, 0, 5, 2000, -5, +5);
+    f2Dhist_beforeCut_nSigmaTOF_proton = new TH2D("f2Dhist_beforeCut_nSigmaTOF_proton", "f2Dhist_beforeCut_nSigmaTOF_proton", 500, 0, 5, 2000, -5, +5);
+    f2Dhist_beforeCut_nSigmaTPCplusTOF_pion = new TH2D("f2Dhist_beforeCut_nSigmaTPCplusTOF_pion", "f2Dhist_beforeCut_nSigmaTPCplusTOF_pion", 500, 0, 5, 2000, -5, +5);
+    f2Dhist_beforeCut_nSigmaTPCplusTOF_kaon = new TH2D("f2Dhist_beforeCut_nSigmaTPCplusTOF_kaon", "f2Dhist_beforeCut_nSigmaTPCplusTOF_kaon", 500, 0, 5, 2000, -5, +5);
+    f2Dhist_beforeCut_nSigmaTPCplusTOF_proton = new TH2D("f2Dhist_beforeCut_nSigmaTPCplusTOF_proton", "f2Dhist_beforeCut_nSigmaTPCplusTOF_proton", 500, 0, 5, 2000, -5, +5);
+    fOutputList->Add(f2Dhist_beforeCut_nSigmaTPC_pion);
+    fOutputList->Add(f2Dhist_beforeCut_nSigmaTPC_kaon);
+    fOutputList->Add(f2Dhist_beforeCut_nSigmaTPC_proton);
+    fOutputList->Add(f2Dhist_beforeCut_nSigmaTOF_pion);
+    fOutputList->Add(f2Dhist_beforeCut_nSigmaTOF_kaon);
+    fOutputList->Add(f2Dhist_beforeCut_nSigmaTOF_proton);
+    fOutputList->Add(f2Dhist_beforeCut_nSigmaTPCplusTOF_pion);
+    fOutputList->Add(f2Dhist_beforeCut_nSigmaTPCplusTOF_kaon);
+    fOutputList->Add(f2Dhist_beforeCut_nSigmaTPCplusTOF_proton);
+
+    f2Dhist_afterCut_nSigmaTPC_pion = new TH2D("f2Dhist_afterCut_nSigmaTPC_pion", "f2Dhist_afterCut_nSigmaTPC_pion", 500, 0, 5, 2000, -5, +5);
+    f2Dhist_afterCut_nSigmaTPC_kaon = new TH2D("f2Dhist_afterCut_nSigmaTPC_kaon", "f2Dhist_afterCut_nSigmaTPC_kaon", 500, 0, 5, 2000, -5, +5);
+    f2Dhist_afterCut_nSigmaTPC_proton = new TH2D("f2Dhist_afterCut_nSigmaTPC_proton", "f2Dhist_afterCut_nSigmaTPC_proton", 500, 0, 5, 2000, -5, +5);
+    f2Dhist_afterCut_nSigmaTOF_pion = new TH2D("f2Dhist_afterCut_nSigmaTOF_pion", "f2Dhist_afterCut_nSigmaTOF_pion", 500, 0, 5, 2000, -5, +5);
+    f2Dhist_afterCut_nSigmaTOF_kaon = new TH2D("f2Dhist_afterCut_nSigmaTOF_kaon", "f2Dhist_afterCut_nSigmaTOF_kaon", 500, 0, 5, 2000, -5, +5);
+    f2Dhist_afterCut_nSigmaTOF_proton = new TH2D("f2Dhist_afterCut_nSigmaTOF_proton", "f2Dhist_afterCut_nSigmaTOF_proton", 500, 0, 5, 2000, -5, +5);
+    f2Dhist_afterCut_nSigmaTPCplusTOF_pion = new TH2D("f2Dhist_afterCut_nSigmaTPCplusTOF_pion", "f2Dhist_afterCut_nSigmaTPCplusTOF_pion", 500, 0, 5, 2000, -5, +5);
+    f2Dhist_afterCut_nSigmaTPCplusTOF_kaon = new TH2D("f2Dhist_afterCut_nSigmaTPCplusTOF_kaon", "f2Dhist_afterCut_nSigmaTPCplusTOF_kaon", 500, 0, 5, 2000, -5, +5);
+    f2Dhist_afterCut_nSigmaTPCplusTOF_proton = new TH2D("f2Dhist_afterCut_nSigmaTPCplusTOF_proton", "f2Dhist_afterCut_nSigmaTPCplusTOF_proton", 500, 0, 5, 2000, -5, +5);
+    fOutputList->Add(f2Dhist_afterCut_nSigmaTPC_pion);
+    fOutputList->Add(f2Dhist_afterCut_nSigmaTPC_kaon);
+    fOutputList->Add(f2Dhist_afterCut_nSigmaTPC_proton);
+    fOutputList->Add(f2Dhist_afterCut_nSigmaTOF_pion);
+    fOutputList->Add(f2Dhist_afterCut_nSigmaTOF_kaon);
+    fOutputList->Add(f2Dhist_afterCut_nSigmaTOF_proton);
+    fOutputList->Add(f2Dhist_afterCut_nSigmaTPCplusTOF_pion);
+    fOutputList->Add(f2Dhist_afterCut_nSigmaTPCplusTOF_kaon);
+    fOutputList->Add(f2Dhist_afterCut_nSigmaTPCplusTOF_proton);
+
+    f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_pion = new TH2D("f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_pion", "f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_pion", 2000, -5, +5, 2000, -5, +5);
+    f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_kaon = new TH2D("f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_kaon", "f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_kaon", 2000, -5, +5, 2000, -5, +5);
+    f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_proton = new TH2D("f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_proton", "f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_proton", 2000, -5, +5, 2000, -5, +5);
+    fOutputList->Add(f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_pion);
+    fOutputList->Add(f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_kaon);
+    fOutputList->Add(f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_proton);
+
+    f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_pion = new TH2D("f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_pion", "f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_pion", 2000, -5, +5, 2000, -5, +5);
+    f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_kaon = new TH2D("f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_kaon", "f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_kaon", 2000, -5, +5, 2000, -5, +5);
+    f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_proton = new TH2D("f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_proton", "f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_proton", 2000, -5, +5, 2000, -5, +5);
+    fOutputList->Add(f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_pion);
+    fOutputList->Add(f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_kaon);
+    fOutputList->Add(f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_proton);
+
+    f2Dhist_beforeCut_TPCdEdx_all = new TH2D("f2Dhist_beforeCut_TPCdEdx_all", "f2Dhist_beforeCut_TPCdEdx_all", 500, 0, 5, 10000, 0, 1000);
+    f2Dhist_beforeCut_TOFtime_all = new TH2D("f2Dhist_beforeCut_TOFtime_all", "f2Dhist_beforeCut_TOFtime_all", 500, 0, 5, 12000, -6000, 6000);
+    
+    f2Dhist_afterCut_TPCdEdx_all = new TH2D("f2Dhist_afterCut_TPCdEdx_all", "f2Dhist_afterCut_TPCdEdx_all", 500, 0, 5, 10000, 0, 1000);
+    f2Dhist_afterCut_TOFtime_all = new TH2D("f2Dhist_afterCut_TOFtime_all", "f2Dhist_afterCut_TOFtime_all", 500, 0, 5, 12000, -6000, 6000);
+    f2Dhist_afterCut_TPCdEdx_pion = new TH2D("f2Dhist_afterCut_TPCdEdx_pion", "f2Dhist_afterCut_TPCdEdx_pion", 500, 0, 5, 10000, 0, 1000);
+    f2Dhist_afterCut_TOFtime_pion = new TH2D("f2Dhist_afterCut_TOFtime_pion", "f2Dhist_afterCut_TOFtime_pion", 500, 0, 5, 12000, -6000, 6000);
+    f2Dhist_afterCut_TPCdEdx_kaon = new TH2D("f2Dhist_afterCut_TPCdEdx_kaon", "f2Dhist_afterCut_TPCdEdx_kaon", 500, 0, 5, 10000, 0, 1000);
+    f2Dhist_afterCut_TOFtime_kaon = new TH2D("f2Dhist_afterCut_TOFtime_kaon", "f2Dhist_afterCut_TOFtime_kaon", 500, 0, 5, 12000, -6000, 6000);
+    f2Dhist_afterCut_TPCdEdx_proton = new TH2D("f2Dhist_afterCut_TPCdEdx_proton", "f2Dhist_afterCut_TPCdEdx_proton", 500, 0, 5, 10000, 0, 1000);
+    f2Dhist_afterCut_TOFtime_proton = new TH2D("f2Dhist_afterCut_TOFtime_proton", "f2Dhist_afterCut_TOFtime_proton", 500, 0, 5, 12000, -6000, 6000);
+    fOutputList->Add(f2Dhist_beforeCut_TPCdEdx_all);
+    fOutputList->Add(f2Dhist_beforeCut_TOFtime_all);
+    fOutputList->Add(f2Dhist_afterCut_TPCdEdx_all);
+    fOutputList->Add(f2Dhist_afterCut_TOFtime_all);
+    fOutputList->Add(f2Dhist_afterCut_TPCdEdx_pion);
+    fOutputList->Add(f2Dhist_afterCut_TOFtime_pion);
+    fOutputList->Add(f2Dhist_afterCut_TPCdEdx_kaon);
+    fOutputList->Add(f2Dhist_afterCut_TOFtime_kaon);
+    fOutputList->Add(f2Dhist_afterCut_TPCdEdx_proton);
+    fOutputList->Add(f2Dhist_afterCut_TOFtime_proton);
+    
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    //fTreeEvent: Analysis tree
     
     //TTree object to store variables
     fTreeEvent = new TTree(fTreeName,"Event Tree");
@@ -296,7 +510,13 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserCreateOutputObjects()  {
     fTreeEvent->Branch("fPt_no_kaon",&fPt_no_kaon,"fPt_no_kaon[14]/F");
     fTreeEvent->Branch("fPt_no_proton",&fPt_no_proton,"fPt_no_proton[14]/F");
 
-    
+    //----------------------------------------------
+    // Look up table for PID information when using TPC-only tracks
+    if(fFBNo==128)
+      {
+	fGlobalTracksAOD = new TExMap();
+      }
+ 
     PostData(1, fOutputList);
     PostData(2, fQAList);
     PostData(3, fTreeEvent);
@@ -327,6 +547,8 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 	else if (fCentralityEstimator_flag == 3)
 	  lV0M = MultSelection->GetMultiplicityPercentile("CL2");
       }
+
+    AliAODVertex *vertex = (AliAODVertex*) fAODevent->GetPrimaryVertex();
 
    
     //Initialize number 0f K+, K-, pi+, pi-, p and p-bar per event
@@ -374,6 +596,14 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
     //random no
     TRandom3 ran;
 
+    //Filtering out global tracks for dealing with TPC only tracks
+    if(fFBNo==128)
+      {
+	this->GlobalTracksAOD(fAODevent); 
+	if(0 == fGlobalTracksAOD->GetSize())
+	  return;
+      }
+
 
     //Loop on reconstructed tracks
     
@@ -385,18 +615,10 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 	AliAODTrack *aodtrack  = dynamic_cast<AliAODTrack*>(track);
 	if(!aodtrack)      continue;
 
-
-	//Track selectionL FilterBit 96
-	//if(!aodtrack->TestFilterBit(96))  continue;
-	if(!aodtrack->TestFilterBit(fFBNo))  continue;
-
-
 	Double_t trkPt = aodtrack->Pt();
 	Double_t trkPhi = aodtrack->Phi();
 	Double_t trkEta = aodtrack->Eta();
 	Double_t trkCharge = aodtrack->Charge();
-	Double_t trkDCAxy = aodtrack->DCA();
-	Double_t trkDCAz = aodtrack->ZAtDCA();
 	Double_t trkTPCNCls = aodtrack->GetTPCNcls();
 	Double_t trkChi2PerNDF = aodtrack->Chi2perNDF();
 	Double_t trkITSchi2 = aodtrack->GetITSchi2();
@@ -405,6 +627,47 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 	Double_t trkTPCchi2perNcls = aodtrack->GetTPCchi2perCluster();
 	Double_t trkTPCcrossedrows = aodtrack->GetTPCCrossedRows();
 
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	// Double_t trkDCAxy = aodtrack->DCA();
+	// Double_t trkDCAz = aodtrack->ZAtDCA();
+	
+	float vertexX = -999.;
+	float vertexY = -999.;
+	float vertexZ = -999.;
+
+	if(vertex) {
+	  Double32_t fCov[6];
+	  vertex->GetCovarianceMatrix(fCov);
+	  if(vertex->GetNContributors() > 0) {
+	    if(fCov[5] != 0) {
+	      vertexX = vertex->GetX();
+	      vertexY = vertex->GetY();
+	      vertexZ = vertex->GetZ();
+	    }
+	  }
+	}
+	Double_t pos[3];
+	aodtrack->GetXYZ(pos);
+	Double_t DCAX, DCAY, DCAZ, trkDCAxy, trkDCAz;
+	DCAX = pos[0] - vertexX;
+	DCAY = pos[1] - vertexY;
+	DCAZ = pos[2] - vertexZ;
+	trkDCAxy = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
+	trkDCAz = TMath::Abs(DCAZ);
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	
+	//Filling track QA before trackselection cuts
+	if(fFillTrackQAhists_flag==1)
+	  {
+	    FilltrackQAplots_beforeCut(trkDCAxy, trkDCAz, trkEta, trkITSchi2perNcls, trkTPCchi2perNcls, trkTPCcrossedrows);
+	  }
+	
+	
+	//TRACK SELECTION CUTS
+
+	//Track selectionL FilterBit :   default-96, systematics-768
+	if(!aodtrack->TestFilterBit(fFBNo))  continue;
+	//if(!aodtrack->TestFilterBit(768))  continue;
 	
 	//cuts on TPCchi2perClstr and ITSchi2perClstr and TPC nCrossedRows
 	if (trkTPCcrossedrows < fTPCcrossedrows)
@@ -413,12 +676,30 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 	  continue;
 	if (trkITSchi2perNcls > fChi2ITS)
 	  continue;
+	
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//Filling PID QA plots before applying PID cuts
+	
+	if(fFillPIDhists_flag==1)
+	  {
+	    FillPIDQAplots_beforeCut(track);
+	  }
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	//Kinematic cuts on pT and Eta
 	if (TMath::Abs(trkEta) > 0.8) continue;
 	if (trkPt < 0.2) continue;
 	if (trkPt > 3.0) continue;
 
+
+	//Filling track QA before trackselection cuts
+	if(fFillTrackQAhists_flag==1)
+	  {
+	    FilltrackQAplots_afterCut(trkDCAxy, trkDCAz, trkEta, trkITSchi2perNcls, trkTPCchi2perNcls, trkTPCcrossedrows);
+	  }
+	
+	
+	//+++++++++++++++++++++++++++++++++++++++++++++++++
 	//+++++++++++++++++++++++++++++++++++++++++++++++++
 	int flag=1;
 	//Particle loss imposing
@@ -453,18 +734,20 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 	if(flag==0)
 	  continue;
 	//+++++++++++++++++++++++++++++++++++++++++++++++++
+	//+++++++++++++++++++++++++++++++++++++++++++++++++
 
+	
 	if(fEffCorrectionFlag == 0)
 	  {
 	    if(TMath::Abs(trkCharge) > 0)
 	      {
-		if(trkEta < 0.0)
+		if(trkEta < fEtaLeftCut)
 		  {
 		    fPt_profile->Fill(trkPt);
 		    pT_sum_etaLess0 += trkPt;
 		    N_sum_etaLess0 += 1.0;
 		  }
-		if(trkEta > fEtaMin)
+		if(trkEta > fEtaMin) //fEtaMin is right boundary of EtaGap
 		  {
 		    pT_sum_etaGreaterEtamin += trkPt;
 		    N_sum_etaGreaterEtamin += 1.0;
@@ -488,20 +771,38 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 		    BinCont = fHistMCEffHadronPlus->GetBinContent(ptBinNo);
 		  }
 		
-		if(trkEta < 0.0  && BinCont != 0)
+		if(trkEta < fEtaLeftCut)
 		  {
-		    fPt_profile->Fill(trkPt,1.0/BinCont);
-		    pT_sum_etaLess0 += trkPt/BinCont;
-		    N_sum_etaLess0 += 1.0/BinCont;
+		    if(BinCont != 0)
+		      {
+			fPt_profile->Fill(trkPt,1.0/BinCont);
+			pT_sum_etaLess0 += trkPt/BinCont;
+			N_sum_etaLess0 += 1.0/BinCont;
+		      }
 		  }
 	    
-		if(trkEta > fEtaMin && BinCont != 0)
+		if(trkEta > fEtaMin)
 		  {
-		    pT_sum_etaGreaterEtamin += trkPt/BinCont;
-		    N_sum_etaGreaterEtamin += 1.0/BinCont;
+		    if(BinCont != 0)
+		      {
+			pT_sum_etaGreaterEtamin += trkPt/BinCont;
+			N_sum_etaGreaterEtamin += 1.0/BinCont;
+		      }
 		  }
 	      }
 	  }
+
+	if(fFBNo==128)
+	  {
+	    Int_t id=track->GetID();
+	    Int_t retrievekey=-id-1;
+	    Int_t iGlobalTrackIndex=fGlobalTracksAOD->GetValue(retrievekey);
+	    track = (AliVTrack*)fAODevent->GetTrack(iGlobalTrackIndex);
+	    if(!track)      continue;
+	    aodtrack  = dynamic_cast<AliAODTrack*>(track);
+	    if(!aodtrack)      continue;
+	  }
+
 	
 	//PID selection
 	Bool_t IsKaon = KaonSelector(track, fPIDnSigmaCut);
@@ -510,24 +811,40 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 
 	if (!IsKaon && !IsPion && !IsProton) continue;
 
-	/*
-	//Check if a particle is selected as more than one type
-	Int_t flag = 0;
-	if(IsKaon) flag+=1;
-	if(IsPion) flag+=1;
-	if(IsProton) flag+=1;
-	if(flag>1)
+	if(fExclusivePIDCut_flag==1)
 	  {
-	    cout<<"Particle identified as more than on PID: flag= "<<flag<<endl;
-	    continue;
+	    //Check if a particle is selected as more than one type
+	    Int_t flag = 0;
+	    if(IsPion) flag+=1;
+	    if(IsKaon) flag+=1;
+	    if(IsProton) flag+=1;
+	    if(flag>1)
+	      {
+		cout<<"Particle identified as more than on PID: flag= "<<flag<<endl;
+		continue;
+	      }
 	  }
-	*/
+
+	if(fRejectElectron_cut > 0)
+	  {
+	    Bool_t IsElectron = ElectronRejectionCut(track, fRejectElectron_cut);
+	    if(IsElectron) continue;
+	  }
+
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//Filling PID QA plots after applying PID cuts
+	
+	if(fFillPIDhists_flag==1)
+	  {
+	    FillPIDQAplots_afterCut(track, IsPion, IsKaon, IsProton);
+	  }
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	if(fEffCorrectionFlag == 0)
 	  {
 	    if(TMath::Abs(trkCharge) > 0)
 	      {
-		if(trkEta < 0.0)
+		if(trkEta < fEtaLeftCut)
 		  {
 		    if(IsPion)
 		      {
@@ -552,7 +869,7 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::UserExec(Option_t *)  {
 	  {
 	    if(TMath::Abs(trkCharge) > 0)
 	      {
-		if(trkEta < 0.0)
+		if(trkEta < fEtaLeftCut)
 		  {
 		    if(IsPion)
 		      {
@@ -1172,6 +1489,45 @@ Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::ProtonSelector(AliVTrack *track,
   
 }
 
+//_____________________________________________________________________________________________________________________________________
+Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::ElectronRejectionCut(AliVTrack *track, Int_t fCut)
+{
+  //TPC nsigma
+  Double_t fTPCnSigma_Pion = 0.0;
+  Double_t fTPCnSigma_Proton = 0.0;
+  Double_t fTPCnSigma_Kaon = 0.0;
+  Double_t fTPCnSigma_Electron = 0.0;
+  fTPCnSigma_Pion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+  fTPCnSigma_Proton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+  fTPCnSigma_Kaon = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
+  fTPCnSigma_Electron = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+
+  /*
+  //TOF nsigma
+  Double_t fTOFnSigma_Pion = 0.0;
+  Double_t fTOFnSigma_Proton = 0.0;
+  Double_t fTOFnSigma_Kaon = 0.0;
+  Double_t fTOFnSigma_Electron = 0.0;	
+  fTOFnSigma_Pion = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
+  fTOFnSigma_Proton = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+  fTOFnSigma_Kaon = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
+  fTOFnSigma_Electron = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kElectron);
+  */
+
+  if(fCut==1) //Cut 1
+    {
+      if(TMath::Abs(fTPCnSigma_Electron) < 3.0 && TMath::Abs(fTPCnSigma_Pion) > 3.0 && TMath::Abs(fTPCnSigma_Kaon) > 3.0 && TMath::Abs(fTPCnSigma_Proton) > 3.0)
+	return kTRUE;
+    }
+  else if(fCut==2) //Cut 2
+    {
+      if(TMath::Abs(fTPCnSigma_Electron) < 1.0)
+	return kTRUE;
+    }
+  else
+    return kFALSE;
+
+}
 
 //_____________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type)  {
@@ -1223,6 +1579,196 @@ void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::GetMCEffCorrectionHist()
 
 	}
     }
+
+}
+//_____________________________________________________________________________________________________________________________________
+void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::FilltrackQAplots_beforeCut(Double_t fDcaXY, Double_t fDcaZ, Double_t fEta, Double_t fITSchi2perNcls, Double_t fTPCchi2perNcls, Double_t fTPCcrossedrows)
+{
+  hist_beforeCut_DCAxy->Fill(fDcaXY);
+  hist_beforeCut_DCAz->Fill(fDcaZ);
+  hist_beforeCut_eta->Fill(fEta);
+  hist_beforeCut_chi2perTPCclstr->Fill(fTPCchi2perNcls);
+  hist_beforeCut_chi2perITSclstr->Fill(fITSchi2perNcls);
+  hist_beforeCut_TPCncrossedrows->Fill(fTPCcrossedrows);
+}
+
+//_____________________________________________________________________________________________________________________________________
+void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::FilltrackQAplots_afterCut(Double_t fDcaXY, Double_t fDcaZ, Double_t fEta, Double_t fITSchi2perNcls, Double_t fTPCchi2perNcls, Double_t fTPCcrossedrows)
+{
+  hist_afterCut_DCAxy->Fill(fDcaXY);
+  hist_afterCut_DCAz->Fill(fDcaZ);
+  hist_afterCut_eta->Fill(fEta);
+  hist_afterCut_chi2perTPCclstr->Fill(fTPCchi2perNcls);
+  hist_afterCut_chi2perITSclstr->Fill(fITSchi2perNcls);
+  hist_afterCut_TPCncrossedrows->Fill(fTPCcrossedrows);
+}
+//_____________________________________________________________________________________________________________________________________
+void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::FillPIDQAplots_beforeCut(AliVTrack *track)
+{
+  Double_t p[3];
+  track->PxPyPz(p);
+  Double_t Track_pt;
+  Track_pt=TMath::Sqrt((p[0]*p[0])+(p[1]*p[1]));
+  
+  Double_t fdEdx = track->GetTPCsignal();
+  Double_t fTofSig = track->GetTOFsignal();
+  Double_t fPidTime[5];
+  track->GetIntegratedTimes(fPidTime);
+
+  Double_t fTPCnSigma_Pion = 0.0;
+  Double_t fTPCnSigma_Proton = 0.0;
+  Double_t fTPCnSigma_Kaon = 0.0;
+  Double_t fTOFnSigma_Pion = 0.0;
+  Double_t fTOFnSigma_Proton = 0.0;
+  Double_t fTOFnSigma_Kaon = 0.0;
+	
+  //TPC nsigma
+  fTPCnSigma_Pion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+  fTPCnSigma_Proton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+  fTPCnSigma_Kaon = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
+  //TOF nsigma
+  fTOFnSigma_Pion = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
+  fTOFnSigma_Proton = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+  fTOFnSigma_Kaon = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
+ 
+  Double_t fTPCplusTOFnSigma_Pion = sqrt(TMath::Power(fTPCnSigma_Pion, 2.0) + TMath::Power(fTOFnSigma_Pion, 2.0));
+  Double_t fTPCplusTOFnSigma_Kaon = sqrt(TMath::Power(fTPCnSigma_Kaon, 2.0) + TMath::Power(fTOFnSigma_Kaon, 2.0));
+  Double_t fTPCplusTOFnSigma_Proton = sqrt(TMath::Power(fTPCnSigma_Proton, 2.0) + TMath::Power(fTOFnSigma_Proton, 2.0));
+
+  f2Dhist_beforeCut_TPCdEdx_all->Fill(Track_pt, fdEdx);
+  f2Dhist_beforeCut_TOFtime_all->Fill(Track_pt, fTofSig-fPidTime[2]);
+
+  //TPC
+  f2Dhist_beforeCut_nSigmaTPC_pion->Fill(Track_pt, fTPCnSigma_Pion);
+  f2Dhist_beforeCut_nSigmaTPC_kaon->Fill(Track_pt, fTPCnSigma_Kaon);
+  f2Dhist_beforeCut_nSigmaTPC_proton->Fill(Track_pt, fTPCnSigma_Proton);
+  //TOF
+  f2Dhist_beforeCut_nSigmaTOF_pion->Fill(Track_pt, fTOFnSigma_Pion);
+  f2Dhist_beforeCut_nSigmaTOF_kaon->Fill(Track_pt, fTOFnSigma_Kaon);
+  f2Dhist_beforeCut_nSigmaTOF_proton->Fill(Track_pt, fTOFnSigma_Proton);
+  //TPC+TOF
+  f2Dhist_beforeCut_nSigmaTPCplusTOF_pion->Fill(Track_pt, fTPCplusTOFnSigma_Pion);
+  f2Dhist_beforeCut_nSigmaTPCplusTOF_kaon->Fill(Track_pt, fTPCplusTOFnSigma_Kaon);
+  f2Dhist_beforeCut_nSigmaTPCplusTOF_proton->Fill(Track_pt, fTPCplusTOFnSigma_Proton);
+  //TPC vs. TOF
+  f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_pion->Fill(fTPCnSigma_Pion, fTOFnSigma_Pion);
+  f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_kaon->Fill(fTPCnSigma_Kaon, fTOFnSigma_Kaon);
+  f2Dhist_beforeCut_nSigmaTPC_vs_nSigmaTOF_proton->Fill(fTPCnSigma_Proton, fTOFnSigma_Proton);
+
+}
+
+//_____________________________________________________________________________________________________________________________________
+void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::FillPIDQAplots_afterCut(AliVTrack *track, Bool_t Pion_flag, Bool_t Kaon_flag, Bool_t Proton_flag)
+{
+  Double_t p[3];
+  track->PxPyPz(p);
+  Double_t Track_pt;
+  Track_pt=TMath::Sqrt((p[0]*p[0])+(p[1]*p[1]));
+  
+  Double_t fdEdx = track->GetTPCsignal();
+  Double_t fTofSig = track->GetTOFsignal();
+  Double_t fPidTime[5];
+  track->GetIntegratedTimes(fPidTime);
+
+  Double_t fTPCnSigma_Pion = 0.0;
+  Double_t fTPCnSigma_Proton = 0.0;
+  Double_t fTPCnSigma_Kaon = 0.0;
+  Double_t fTOFnSigma_Pion = 0.0;
+  Double_t fTOFnSigma_Proton = 0.0;
+  Double_t fTOFnSigma_Kaon = 0.0;
+	
+  //TPC nsigma
+  fTPCnSigma_Pion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+  fTPCnSigma_Proton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+  fTPCnSigma_Kaon = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
+  //TOF nsigma
+  fTOFnSigma_Pion = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
+  fTOFnSigma_Proton = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+  fTOFnSigma_Kaon = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
+ 
+  Double_t fTPCplusTOFnSigma_Pion = sqrt(TMath::Power(fTPCnSigma_Pion, 2.0) + TMath::Power(fTOFnSigma_Pion, 2.0));
+  Double_t fTPCplusTOFnSigma_Kaon = sqrt(TMath::Power(fTPCnSigma_Kaon, 2.0) + TMath::Power(fTOFnSigma_Kaon, 2.0));
+  Double_t fTPCplusTOFnSigma_Proton = sqrt(TMath::Power(fTPCnSigma_Proton, 2.0) + TMath::Power(fTOFnSigma_Proton, 2.0));
+
+  f2Dhist_afterCut_TPCdEdx_all->Fill(Track_pt, fdEdx);
+  f2Dhist_afterCut_TOFtime_all->Fill(Track_pt, fTofSig-fPidTime[2]);
+	
+  if(Pion_flag)
+    {
+      f2Dhist_afterCut_TPCdEdx_pion->Fill(Track_pt, fdEdx);
+      f2Dhist_afterCut_TOFtime_pion->Fill(Track_pt, fTofSig-fPidTime[2]);
+      f2Dhist_afterCut_nSigmaTPC_pion->Fill(Track_pt, fTPCnSigma_Pion);
+      f2Dhist_afterCut_nSigmaTOF_pion->Fill(Track_pt, fTOFnSigma_Pion);
+      f2Dhist_afterCut_nSigmaTPCplusTOF_pion->Fill(Track_pt, fTPCplusTOFnSigma_Pion);
+      f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_pion->Fill(fTPCnSigma_Pion, fTOFnSigma_Pion);
+    }
+
+  if(Kaon_flag)
+    {
+      f2Dhist_afterCut_TPCdEdx_kaon->Fill(Track_pt, fdEdx);
+      f2Dhist_afterCut_TOFtime_kaon->Fill(Track_pt, fTofSig-fPidTime[3]);
+      f2Dhist_afterCut_nSigmaTPC_kaon->Fill(Track_pt, fTPCnSigma_Kaon);
+      f2Dhist_afterCut_nSigmaTOF_kaon->Fill(Track_pt, fTOFnSigma_Kaon);
+      f2Dhist_afterCut_nSigmaTPCplusTOF_kaon->Fill(Track_pt, fTPCplusTOFnSigma_Kaon);
+      f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_kaon->Fill(fTPCnSigma_Kaon, fTOFnSigma_Kaon);
+    }
+
+  if(Proton_flag)
+    {
+      f2Dhist_afterCut_TPCdEdx_proton->Fill(Track_pt, fdEdx);
+      f2Dhist_afterCut_TOFtime_proton->Fill(Track_pt, fTofSig-fPidTime[4]);
+      f2Dhist_afterCut_nSigmaTPC_proton->Fill(Track_pt, fTPCnSigma_Proton);
+      f2Dhist_afterCut_nSigmaTOF_proton->Fill(Track_pt, fTOFnSigma_Proton);
+      f2Dhist_afterCut_nSigmaTPCplusTOF_proton->Fill(Track_pt, fTPCplusTOFnSigma_Proton);
+      f2Dhist_afterCut_nSigmaTPC_vs_nSigmaTOF_proton->Fill(fTPCnSigma_Proton, fTOFnSigma_Proton);
+    }
+	
+}
+//______________________________________________________________________________________________________________________________________ **From Ante**
+void AliAnalysisTaskDiffPtFluc_PIDhadrons_v2::GlobalTracksAOD(AliAODEvent *aAOD)
+{
+ // Filter out unique global tracks in AOD and store them in fGlobalTracksAOD.
+
+ // Remark 0: All global tracks have positive ID, the duplicated TPC-only tracks have -(ID+1);
+ // Remark 1: The issue here is that there are apparently two sets of global tracks: a) "normal" and b) constrained to primary vertex.
+ //           However, only the "normal" global tracks come with positive ID, additionally they can be discriminated simply via: aodTrack->IsGlobalConstrained()
+ //           Global constrained tracks have the same negative ID as the TPC-only tracks, both associated with the same "normal global" tracks. E.g. we can have
+ //            iTrack: atrack->GetID(): atrack->Pt() atrack->Eta() atrack->Phi()
+ //                 1:               0:     2.073798     -0.503640      2.935432
+ //                19:              -1:     2.075537     -0.495988      2.935377 => this is TPC-only
+ //                35:              -1:     2.073740     -0.493576      2.935515 => this is IsGlobalConstrained()
+ //           In fact, this is important, otherwise there is double or even triple counting in some cases.
+ // Remark 2: There are tracks for which: 0 == aodTrack->GetFilterMap()
+ //           a) Basically all of them pass: atrack->GetType() == AliAODTrack::kFromDecayVtx , but few exceptions also pass atrack->GetType() == AliAODTrack::kPrimary
+ //           b) All of them apparently have positive ID, i.e. these are global tracks
+ //           c) Clearly, we cannot use TestFilterBit() on them
+ //           d) None of them apparently satisfies: atrack->IsGlobalConstrained()
+ // Remark 3: There is a performance penalty when fGlobalTracksAOD[1] and fGlobalTracksAOD[2] needed for mixed events are calculated.
+ //           Yes, I can get them directly from fGlobalTracksAOD[0], without calling this method for them again. TBI today
+
+ // a) Insanity checks;
+ // b) Determine the map.
+
+ // a) Insanity checks:
+ if(0 != fGlobalTracksAOD->GetSize()){fGlobalTracksAOD->Delete();} // yes, this method determines mapping from scratch each time
+
+ // b) Determine the map:
+
+ //if(fUseFisherYates){cout<<__LINE__<<endl;exit(1);} // TBI 20210810 check and validate if also here Fisher-Yates needs to be applied
+
+ for(Int_t iTrack=0;iTrack<aAOD->GetNumberOfTracks();iTrack++)
+ {
+  AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aAOD->GetTrack(iTrack));
+  if(aodTrack)
+  {
+   Int_t id = aodTrack->GetID();
+   //if(id>=0 && aodTrack->GetFilterMap()>0 && !aodTrack->IsGlobalConstrained()) // TBI rethink this
+   if(id>=0 && !aodTrack->IsGlobalConstrained()) // TBI rethink this, it seems that id>=0 is just enough, the second constraint is most likely just an overkill
+   {
+    fGlobalTracksAOD->Add(id,iTrack); // "key" = id, "value" = iTrack
+   } // if(id>=0 && !aodTrack->IsGlobalConstrained())
+  } // if(aodTrack)
+ } // for(Int_t iTrack=0;iTrack<aAOD->GetNumberOfTracks();iTrack++)
 
 }
  //_____________________________________________________________________________________________________________________________________

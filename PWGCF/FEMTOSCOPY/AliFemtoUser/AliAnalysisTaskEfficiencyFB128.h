@@ -1,9 +1,7 @@
 #ifndef ALIANALYSISEFFTASKFILTERBIT128
 #define ALIANALYSISEFFTASKFILTERBIT128
 
-
-#include <list>
-#define MULTBINS 4
+#define MULTBINS 1
 #define PARTTYPES 6
 
 #include "AliAnalysisTaskSE.h"
@@ -12,7 +10,6 @@
 #include "THnSparse.h"
 #include "AliPIDResponse.h"
 #include "AliAODpidUtil.h"
-
 class AliAnalysisUtils;
 
 class AliAnalysisTaskEfficiencyFB128 :public AliAnalysisTaskSE{
@@ -24,31 +21,9 @@ class AliAnalysisTaskEfficiencyFB128 :public AliAnalysisTaskSE{
   enum PidMethod {kNSigma=0, kNSigmaNoDoubleCounting=1, kExclusivePID=2, kExclusivePIDDiffRejection=3};
   typedef enum PidMethod PidMethod;
 
-AliAnalysisTaskEfficiencyFB128();
-/*AliAnalysisEffTaskFilterBit768() :  AliAnalysisTaskSE(), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0),fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(768), fPidMethod(kNSigma), fEstEventMult(kRefMult), fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0), fTrackPileUpRemoval(kFALSE), fV0PileUpRemoval(kFALSE)
 
-    {
+ AliAnalysisTaskEfficiencyFB128();
 
-      for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
-	for(Int_t chg=0;chg<2;chg++){
-	  fGeneratedMCPrimaries[i][chg] = NULL;
-	  fMCPrimariesThatAreReconstructed[i][chg] = NULL;
-	  fGeneratedMCPrimaries4D[i][chg] = NULL;
-	  fMCPrimariesThatAreReconstructed4D[i][chg] = NULL;
-	  fMCPrimariesThatAreReconstructedNoNsigma[i][chg] = NULL;
-	  fReconstructedAfterCuts[i][chg] = NULL;
-	  fReconstructedNotPrimaries[i][chg] = NULL;
-	  fReconstructedPrimaries[i][chg] = NULL;
-	  fContamination[i][chg] = NULL;
-	}
-      }
-
-      for ( Int_t i = 0; i < 11; i++) {
-	fHistQA[i] = NULL;
-	if(i<3) fHistQA2D[i] = NULL;
-      }
-    }
-*/
   AliAnalysisTaskEfficiencyFB128(TString name, int pidMethod=3, int filterbit=128); // default constructor
   virtual ~AliAnalysisTaskEfficiencyFB128(); // default destructor
   virtual void UserCreateOutputObjects(); // user create output objects
@@ -174,6 +149,7 @@ AliAnalysisTaskEfficiencyFB128();
   PidMethod    fPidMethod; //PID method
   EstEventMult   fEstEventMult;  // Type of the event multiplicity estimator
   Bool_t fIfXiAnalysis;
+
   //******************************************
 
   AliPIDResponse *fpidResponse;
@@ -182,10 +158,8 @@ AliAnalysisTaskEfficiencyFB128();
   ClassDef(AliAnalysisTaskEfficiencyFB128, 0);
   Bool_t fTrackPileUpRemoval;
   Bool_t fV0PileUpRemoval;
-
   
   
 
 };
-
 #endif /* ALIANALYSISTASKPARTICLEEFFICIENCYDY */

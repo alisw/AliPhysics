@@ -39,7 +39,7 @@ set(SRCS
   BalanceFunctions/AliAnalysisTaskBF.cxx
   BalanceFunctions/AliAnalysisTaskBFPsi.cxx
   BalanceFunctions/AliAnalysisTaskSignedBF.cxx
-  BalanceFunctions/AliAnalysisTaskSignedBFMC.cxx	
+  BalanceFunctions/AliAnalysisTaskSignedBFMC.cxx
   BalanceFunctions/AliAnalysisTaskEventMixingBF.cxx
   BalanceFunctions/AliAnalysisTaskTriggeredBF.cxx
   BalanceFunctions/AliAnalysisTaskEfficiencyBF.cxx
@@ -55,8 +55,8 @@ set(SRCS
   BalanceFunctions/AliAnalysisTaskAODFilterBitQA.cxx
   BalanceFunctions/AliAnalysisTaskParticleStudies.cxx
   BalanceFunctions/AliAnalysisTaskPIDBF.cxx
-  BalanceFunctions/AliPidBFBase.cxx   
-  BalanceFunctions/Corrections/AliAnalysisTaskAccCont.cxx   
+  BalanceFunctions/AliPidBFBase.cxx
+  BalanceFunctions/Corrections/AliAnalysisTaskAccCont.cxx
   BalanceFunctions/Corrections/AliAnalysisTaskPIDMCEffCont.cxx
   BalanceFunctions/Corrections/AliAnalysisTaskPIDPerformCombIDPtDep.cxx
   BalanceFunctions/HFtest/AliAnalysisTaskLcToD0MC.cxx
@@ -92,9 +92,9 @@ set(SRCS
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucpp.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucPbPbQA.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeChargeFlucLHC10h.cxx
-  NetLambda/AliAnalysisTaskNetLambdaIdent.cxx 
-  NetLambda/AliAnalysisTaskNetLambdaMCTrad.cxx 
-  NetLambda/AliAnalysisTaskNetLambdaTrad.cxx 
+  NetLambda/AliAnalysisTaskNetLambdaIdent.cxx
+  NetLambda/AliAnalysisTaskNetLambdaMCTrad.cxx
+  NetLambda/AliAnalysisTaskNetLambdaTrad.cxx
   PIDFluctuation/task/AliAnalysisTaskPIDFluctuation.cxx
   PIDFluctuation/task/AliEbyENetChargeFluctuationTask.cxx
   PIDFluctuation/task/AliEbyEParticleRatioFluctuationTask.cxx
@@ -143,7 +143,7 @@ set(SRCS
   HMPTF/AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_trackinfo.cxx
   HMPTF/AliAnalysisTaskCorrPP.cxx
   HMPTF/AliAnalysisTaskCorrPbPb.cxx
-  HMPTF/AliAnalysisTaskCorrPbPb_v2.cxx
+  HMPTF/AliAnalysisTaskCorrPbPb_withoutTree.cxx
   HMPTF/AliAnalysisTaskCorrPbPb_treemerge.cxx
   HMPTF/AliAnalysisTaskCorrPPHM.cxx
   HMPTF/AliAnalysisTaskCorrPbPbMC.cxx
@@ -154,8 +154,8 @@ set(SRCS
   HMPTF/AliAnalysisTaskMeanptFluctMC_effcheck.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons_v2.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect.cxx
-  DiffPTF/AliAnalysisTaskDiffPtFStrange.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_detect.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_gen.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_correction.cxx
@@ -163,13 +163,16 @@ set(SRCS
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_correct_v2.cxx
   DiffPTF/AliAnalysisTaskHptcorrId_tree.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFluc_V0particles_pTmax5.cxx
   IntermittencyAnalysis/AliAnalysisTaskNFactorialMoments.cxx
+  IntermittencyAnalysis/AliAnalysisTaskNFactorialMomentsPID.cxx
   )
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
 
 # Generate the dictionary
+
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument
 get_directory_property(incdirs INCLUDE_DIRECTORIES)
 generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}")
@@ -197,7 +200,7 @@ if(${CMAKE_SYSTEM} MATCHES Darwin)
 endif(${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Installation
-install(TARGETS ${MODULE} 
+install(TARGETS ${MODULE}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)

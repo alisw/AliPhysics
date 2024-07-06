@@ -49,6 +49,10 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fshiftphi_PHI(kFALSE),
     fshiftrap_PHI(kFALSE),
     fUseNch_reco(kFALSE),
+    fUseNch_posrap_tracks(kFALSE),
+    fUseNch_negrap_tracks(kFALSE),
+    fUse_posrap_TPC_correlation(kFALSE),
+    fUse_negrap_TPC_correlation(kFALSE),
     fUseNch_truth(kFALSE),
     fUseNchfor_eventmixing(kFALSE),
     fUseFMDtrkfor_eventmixing(kFALSE),
@@ -70,6 +74,9 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fRunNumber(-1),
     fNofTracks(0),
     fNofTracks_FMD(0),
+    fFMD_detabins(24),
+    fFMD_deta_min(3.4),
+    fFMD_deta_max(8.2),
     fNFMD_fwd_hits(0),
     fNFMD_bwd_hits(0),
     fNofMinHighPtTracksForRejection(0),
@@ -176,6 +183,10 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fshiftphi_PHI(kFALSE),
     fshiftrap_PHI(kFALSE),
     fUseNch_reco(kFALSE),
+    fUseNch_posrap_tracks(kFALSE),
+    fUseNch_negrap_tracks(kFALSE),
+    fUse_posrap_TPC_correlation(kFALSE),
+    fUse_negrap_TPC_correlation(kFALSE),
     fUseNch_truth(kFALSE),										     
     fUseNchfor_eventmixing(kFALSE),
     fUseFMDtrkfor_eventmixing(kFALSE),
@@ -197,6 +208,9 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fRunNumber(-1),
     fNofTracks(0),
     fNofTracks_FMD(0),
+    fFMD_detabins(24),
+    fFMD_deta_min(3.4),
+    fFMD_deta_max(8.2),
     fNFMD_fwd_hits(0),
     fNFMD_bwd_hits(0),	
     fNofMinHighPtTracksForRejection(0),
@@ -562,7 +576,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
     }
 
     //for the reconstructed part (data) (TPC involved correlation including PID)
-    if(!fIsTPCgen)  {
+    if(!fIsTPCgen || fUseNch_reco)  {
       if(!PrepareTPCTracks()){
 	
 	if ((fDoPHI || fcheckmassbias_Phi) && fTracksTrig_Kaon_Phi) delete fTracksTrig_Kaon_Phi;
@@ -1277,6 +1291,9 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
       Double_t trigEta = track->Eta();
       Double_t trigPhi = track->Phi();
 
+    if(fUse_posrap_TPC_correlation) {if (trigEta < 0.0) continue; }
+    if(fUse_negrap_TPC_correlation) {if (trigEta > 0.0) continue; }
+
       fhPT_trig[spec]->Fill(trigPt);
       
       Double_t trigEff = 1.0;
@@ -1296,7 +1313,7 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
         Double_t assEta = trackAss->Eta();
         Double_t assPhi = trackAss->Phi();
         Double_t assMult = trackAss->Multiplicity();
-
+	      
         binscont[0] = trigEta - assEta;
         binscont[1] = RangePhi(trigPhi - assPhi);
 	      
@@ -1451,6 +1468,10 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
         Double_t trigEta = track->Eta();
         Double_t trigPhi = track->Phi();
         binscont[5] = trigPt;
+
+    if(fUse_posrap_TPC_correlation) {if (trigEta < 0.0) continue; }
+    if(fUse_negrap_TPC_correlation) {if (trigEta > 0.0) continue; }
+	      
         if(spec > 3) binscont[4] = track->M();
         Double_t trigEff = 1.0;
         if(fUseEfficiency) {
@@ -1730,17 +1751,17 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
   } // end TPC - FMD
   else if(fAnalType == eFMDAFMDC){
     // Int_t iTrackBin_fmdAfmdC[] = {48, 72, 10};
-    Int_t iTrackBin_fmdAfmdC[] = {32, 20, sizePvzbins, sizeOfSamples};//24, 20
+    Int_t iTrackBin_fmdAfmdC[] = {fFMD_detabins, 20, sizePvzbins, sizeOfSamples};//24, 32
     Int_t nTrackBin_fmdAfmdC = sizeof(iTrackBin_fmdAfmdC) / sizeof(Int_t);
 
     // FMD only for unidentified
     for(Int_t i(0); i < 1; i++){
       fhSE[i] = new AliTHn(nameS[i], nameS[i], nSteps, nTrackBin_fmdAfmdC, iTrackBin_fmdAfmdC);
-      fhSE[i]->SetBinLimits(0,4.6,6.2);//SetBinLimits(0,3.4,8.2)
+      fhSE[i]->SetBinLimits(0,fFMD_deta_min,fFMD_deta_max);//SetBinLimits(0,3.4,8.2);SetBinLimits(0,4.6,6.2);
       fhSE[i]->SetBinLimits(1,-0.55*TMath::Pi(), 1.45*TMath::Pi());
 
       fhME[i] = new AliTHn(nameM[i], nameM[i], nSteps, nTrackBin_fmdAfmdC, iTrackBin_fmdAfmdC);
-      fhME[i]->SetBinLimits(0,4.6,6.2);//SetBinLimits(0,3.4,8.2)
+      fhME[i]->SetBinLimits(0,fFMD_deta_min,fFMD_deta_max);//SetBinLimits(0,3.4,8.2);SetBinLimits(0,4.6,6.2);
       fhME[i]->SetBinLimits(1,-0.55*TMath::Pi(), 1.45*TMath::Pi());
     }
   } // end FMD - FMD
@@ -1813,6 +1834,9 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
   if(!fTracksAss || !fTracksTrig[0] || !fhTrigTracks[0]) {AliError("Cannot prepare TPC tracks!"); return kFALSE; }
 
   Double_t fNofTracks_reco = 0;
+  Double_t fNofTracks_reco_posrap = 0;
+  Double_t fNofTracks_reco_negrap = 0;
+	
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
 
   TObjArray* fTracksJets = nullptr;
@@ -1832,11 +1856,16 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
 	       if(trkEff < 0.001) continue;
 	      }
 	      fNofTracks_reco += 1.0/trkEff;
+      if(track->Eta() > 0.01)  fNofTracks_reco_posrap += 1.0/trkEff;
+      if(track->Eta() < -0.01) fNofTracks_reco_negrap += 1.0/trkEff;
+
+	      
         if(fAnalType == eFMDAFMDC || fIsTPCgen) continue;
         if(fAnalType == eTPCTPC) fTracksAss->Add((AliAODTrack*)track); 
       }
 
-      
+      if(fIsTPCgen) continue;//do not proceed beyond this point for TPC generated/Truth case
+	      
       if(fAnalType != eFMDAFMDC && !fDoV0){//fiil the Trigger TObjArray in DoPID and DoPHI case as it needs AliAOD TPC tracks (not for AliAODV0 case)
 	
       Double_t trackEta = track->Eta();
@@ -1886,6 +1915,9 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
 
   if(fUseNch_reco){
     fNofTracks = fNofTracks_reco;
+  if(fUseNch_posrap_tracks)     fNofTracks = fNofTracks_reco_posrap;
+  if(fUseNch_negrap_tracks)     fNofTracks = fNofTracks_reco_negrap;
+	  
     if(fNofTracks < fNchMin || fNofTracks > fNchMax) { return kFALSE; }
     fhEventCounter->Fill("Nch cut ok ",1);
   }

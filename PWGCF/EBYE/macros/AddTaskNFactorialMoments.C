@@ -1,7 +1,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskNFactorialMoments.h"
 
-AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(Int_t nPt = 1, Double_t pt1 = 0.52, Double_t pt2 = 0.92, Double_t pt3 = 0.0, Double_t pt4 = 0.0, Double_t pt5 = 0.0, Double_t pt6 = 0.0, Double_t pt7 = 0.0, Double_t pt8 = 0.0, Double_t pt9 = 0.0, Double_t pt10 = 0.0, Int_t Mmax = 82, Bool_t fIsMC = kFALSE, const char* suffix = "")
+AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(Int_t nPt = 1, Double_t pt1 = 0.2, Double_t pt2 = 2.0, Double_t pt3 = 0.0, Double_t pt4 = 0.0, Double_t pt5 = 0.0, Double_t pt6 = 0.0, Double_t pt7 = 0.0, Double_t pt8 = 0.0, Double_t pt9 = 0.0, Double_t pt10 = 0.0, Int_t Mmax = 82, Bool_t fIsMC = kFALSE, const char* suffix = "")
 {
 
   // NOTE: year = "2010" (for RUN1)  or "2015" (RUN2)
@@ -34,7 +34,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(Int_t nPt = 1, Double
   Double_t fSharedCls = 0.0;
   Double_t fSharedRows = 0.0;
   Double_t fFindableCls = 0.0;
-  Bool_t defSharedFrac = kTRUE;
+  Bool_t defSharedFrac = kFALSE;
   Int_t bField = 0;
 
   std::vector<Double_t> ptVector;

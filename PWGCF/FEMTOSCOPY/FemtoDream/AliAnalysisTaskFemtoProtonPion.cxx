@@ -39,6 +39,7 @@ AliAnalysisTaskFemtoProtonPion::AliAnalysisTaskFemtoProtonPion()
     fDoResonanceLorentzFactor(true),
     fKineDist(false),
     fRecoDist(false),
+    fUseWeakDecays(false),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -114,6 +115,7 @@ AliAnalysisTaskFemtoProtonPion::AliAnalysisTaskFemtoProtonPion(
     fDoResonanceLorentzFactor(true),
     fKineDist(false),
     fRecoDist(false),
+    fUseWeakDecays(false),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -696,8 +698,14 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
         continue;
       }
 
-      if(!(mcPart->IsPhysicalPrimary())){
-        continue;
+      if(!fUseWeakDecays){
+        if(!(mcPart->IsPhysicalPrimary())){
+          continue;
+        }
+      } else {
+        if(!(mcPart->IsPhysicalPrimary()) && !(mcPart->IsSecondaryFromWeakDecay())){
+          continue;
+        }
       }
 
       if(PassedMCKineCuts(mcPart)){
@@ -720,7 +728,33 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
           }//safety check for asin
          }
         partMC.SetPhiAtRadius(phiatRadius);
-  
+
+
+      if (fIsMC && fRemoveMCResonances) {
+        if (mcPart->GetLabel() >= 0) { //GANESHA check
+
+          if(IsResonance(mcPart->GetPdgCode())){
+             continue; 
+          }
+          int motherID = mcPart->GetMother();
+          int lastMother = motherID;
+          AliAODMCParticle *mcMother = nullptr;
+
+          if ((lastMother != -1)) {
+            mcMother = (AliAODMCParticle *)fMC->GetTrack(lastMother);
+          }
+          if (mcMother) {
+            int motherPDG = mcMother->GetPdgCode(); 
+            if(IsResonance(motherPDG)){
+              partMC.SetMotherPDG(motherPDG); //Change the PDG of the mother so it is set to the resonance. The Mother ID keeps set to the original parton
+            }
+          }
+        } else {
+          continue;  // if we don't have MC Information, don't use that track
+        }
+      } //if (fIsMC && fRemoveMCResonances)
+
+
         if (mcPart->GetPdgCode() == fTrackCutsProton->GetPDGCode()) {
           SelectedProtons.push_back(partMC);
             fpTKineOrReco[0]->Fill(partMC.GetPt()); 
@@ -826,9 +860,16 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
             continue;
           }
 
-          if(!(mcPart->IsPhysicalPrimary())){
-            continue;
+          if(!fUseWeakDecays){
+            if(!(mcPart->IsPhysicalPrimary())){
+              continue;
+            }
+          } else {
+            if(!(mcPart->IsPhysicalPrimary()) && !(mcPart->IsSecondaryFromWeakDecay())){
+              continue;
+            }
           }
+
 
           //only use the particle where we are sure about their PID -> Kine dist without impurities
           if (mcPart->GetPdgCode() == fTrackCutsProton->GetPDGCode()) {
@@ -1533,9 +1574,15 @@ bool AliAnalysisTaskFemtoProtonPion::PassedMCKineCuts(AliAODMCParticle *mcPart){
 
   bool passed = true; 
 
-  if(!(mcPart->IsPhysicalPrimary())){
-    passed = false;
-  }
+  if(!fUseWeakDecays){
+    if(!(mcPart->IsPhysicalPrimary())){
+      passed = false;
+    }
+   } else {
+      if(!(mcPart->IsPhysicalPrimary()) && !(mcPart->IsSecondaryFromWeakDecay())){
+        passed = false;
+      }
+   }
 
   if (mcPart->GetPdgCode() == fTrackCutsProton->GetPDGCode() || mcPart->GetPdgCode() == fTrackCutsAntiProton->GetPDGCode()) { //Protons
 

@@ -60,6 +60,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fHistos(nullptr),
   fIsMC(false),
   fFillHSparse(false),
+  fFillSpectrumPtNEF(false),
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
   fRequireSubsetMB(false),
@@ -88,7 +89,8 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fUserPtBinning(),
   fMakeClusterHistos1D(false),
   fEnergyDefinition(kDefaultEnergy),
-  fDoDifferentialDpT(false)
+  fDoDifferentialDpT(false),
+  fRhoScaleFactor(0.)
 {
 }
 
@@ -97,6 +99,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fHistos(nullptr),
   fIsMC(false),
   fFillHSparse(false),
+  fFillSpectrumPtNEF(false),
 	fTriggerSelectionBits(AliVEvent::kAny),
   fTriggerSelectionString(""),
   fRequireSubsetMB(false),
@@ -125,7 +128,8 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fUserPtBinning(),
   fMakeClusterHistos1D(false),
   fEnergyDefinition(kDefaultEnergy),
-  fDoDifferentialDpT(false)
+  fDoDifferentialDpT(false),
+  fRhoScaleFactor(0.)
 {
   SetMakeGeneralHistograms(true);
 }
@@ -167,6 +171,12 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH2("hJetSpectrumAbs", "Jet pt spectrum (absolute counts)", kTrgClusterN, -0.5, kTrgClusterN - 0.5, 350., 0., 350., "s");
   fHistos->CreateTH2("hJetSpectrumMax", "Max jet pt spectrum", kTrgClusterN, -0.5, kTrgClusterN - 0.5, 350., 0., 350., "s");
   fHistos->CreateTH2("hJetSpectrumMaxAbs", "Max jet pt spectrum (absolute counts)", kTrgClusterN, -0.5, kTrgClusterN - 0.5, 350., 0., 350., "s");
+  if(fFillSpectrumPtNEF) {
+    fHistos->CreateTH3("hJetSpectrumPtNEF", "Jet pt spectrum (vs. NEF)", 350, 0., 350., 105, 0., 1.05, kTrgClusterN, -0.5, kTrgClusterN - 0.5, "s");
+    fHistos->CreateTH3("hJetSpectrumPtNEFAbs", "Jet pt spectrum (vs. NEF, absolute counts)", 350, 0., 350., 105, 0., 1.05, kTrgClusterN, -0.5, kTrgClusterN - 0.5, "s");
+    fHistos->CreateTH3("hJetSpectrumPtNEFMax", "Max jet pt spectrum (vs. NEF)", 350, 0., 350., 105, 0., 1.05, kTrgClusterN, -0.5, kTrgClusterN - 0.5, "s");
+    fHistos->CreateTH3("hJetSpectrumPtNEFMaxAbs", "Max jet pt spectrum (vs. NEF, absolute counts)", 350, 0., 350., 105, 0., 1.05, kTrgClusterN, -0.5, kTrgClusterN - 0.5, "s");
+  }
 
   if(fDoBkgSub){
     fHistos->CreateTH2("hRhoVsDeltaPtRC", "Rho Vs Delta Pt RC;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)", 170, -20, 150, 30, 0, 30, "s");
@@ -294,6 +304,38 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     }
   }
 
+  // 1D Cluster Histogram
+  Double_t energy(-1);
+  if(fMakeClusterHistos1D){
+    for(auto clust : clusters->accepted()) {
+      // Distinguish energy definition
+      switch(fEnergyDefinition){
+        case kDefaultEnergy:
+    	    AliDebugStream(2) << GetName() << ": Using cluster energy definition: default" << std::endl;
+    	    energy = clust->E();
+    	    break;
+        case kNonLinCorrEnergy:
+    	    AliDebugStream(2) << GetName() << ": Using cluster energy definition: corrected for non-linearity" << std::endl;
+    	    energy = clust->GetNonLinCorrEnergy();
+    	    break;
+        case kHadCorrEnergy:
+    	    AliDebugStream(2) << GetName() << ": Using cluster energy definition: corrected for hadronic contribution" << std::endl;
+    	    energy = clust->GetHadCorrEnergy();
+    	    break;
+        default:
+          energy = -1;
+          break;
+      };
+
+      AliDebugStream(2) << GetName() << ": Using energy " << energy << " (def: " << clust->E()
+    		<< " | NL: " << clust->GetNonLinCorrEnergy()
+			  << " | HD: " << clust->GetHadCorrEnergy()
+			  << ")" << std::endl;
+
+      fHistos->FillTH1("hClusterEnergy1D", energy);
+    }
+  }
+
   double eventCentrality = 99;   // without centrality put everything in the peripheral bin
   if(fRequestCentrality){
     AliMultSelection *mult = dynamic_cast<AliMultSelection *>(InputEvent()->FindListObject("MultSelection"));
@@ -336,6 +378,17 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   fHistos->FillProfile("hDownscaleFactorsRunwise", fRunNumber, 1./weight);
   fHistos->FillTH1("hEventCentralityAbs", eventCentrality);
   fHistos->FillTH1("hEventCentrality", eventCentrality, weight);
+
+  // Calculate rho value
+  Double_t rhoVal = 0.;
+  if(fDoBkgSub && datajets->GetRhoParameter()){
+    if(fRhoScaleFactor > 0.) {
+      rhoVal = datajets->GetRhoVal() * fRhoScaleFactor;
+    }else{
+      rhoVal = datajets->GetRhoVal();
+    }
+  }
+
   AliEmcalJet *maxjet(nullptr);
   for(auto t : trgclusters) {
     fHistos->FillTH1("hClusterCounterAbs", t);
@@ -346,7 +399,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     Double_t ptjet = j->Pt();
 
     if (fDoBkgSub && datajets->GetRhoParameter()){
-      ptjet = ptjet - datajets->GetRhoVal() * j->Area();
+      ptjet = ptjet - rhoVal * j->Area();
     }
 
     if(TMath::Abs(fScaleShift) > DBL_EPSILON){
@@ -357,6 +410,10 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
     for(auto t : trgclusters){
       fHistos->FillTH2("hJetSpectrum", static_cast<double>(t), ptjet, weight);
       fHistos->FillTH2("hJetSpectrumAbs", static_cast<double>(t), ptjet);
+      if(fFillSpectrumPtNEF) {
+        fHistos->FillTH3("hJetSpectrumPtNEF", ptjet, j->NEF(), static_cast<double>(t), weight);
+        fHistos->FillTH3("hJetSpectrumPtNEFAbs", ptjet, j->NEF(), static_cast<double>(t));
+      }
       if(fFillHSparse) {
         datapoint[5] = static_cast<double>(t);
         fHistos->FillTHnSparse("hJetTHnSparse", datapoint, weight);
@@ -365,7 +422,7 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
 
     if(fDoBkgSub && datajets->GetRhoParameter() && fDoDifferentialDpT){
         Double_t randomConePt = GetDeltaPtRandomCone();
-        fHistos->FillTH3("hPtJetVsRhoVsDeltaPtRC", ptjet, randomConePt, datajets->GetRhoVal());
+        fHistos->FillTH3("hPtJetVsRhoVsDeltaPtRC", ptjet, randomConePt, rhoVal);
     }
 
     // Fill QA plots - trigger cluster independent
@@ -407,45 +464,6 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
         fHistos->FillTH2("hQAClusterFracLeadingVsE", ptvec.E(), maxamplitude/cluster->E());
         fHistos->FillTH2("hQAClusterFracLeadingVsNcell", cluster->GetNCells(), maxamplitude/cluster->E());
       }
-
-      // 1D Cluster Histogram
-      Double_t energy(-1);
-      if(fMakeClusterHistos1D){
-        for(auto clust : clusters->all()) {
-          if(!clust->IsEMCAL()) continue;
-          if(clust->GetIsExotic()) continue;
-          if(!fIsMC) {
-            if(clust->GetTOF() < fMinTimeClusterBias || clust->GetTOF() > fMaxTimeClusterBias) continue;
-          }
-
-          // Distinguish energy definition
-          switch(fEnergyDefinition){
-          case kDefaultEnergy:
-    	      AliDebugStream(2) << GetName() << ": Using cluster energy definition: default" << std::endl;
-    	      energy = clust->E();
-    	      break;
-          case kNonLinCorrEnergy:
-    	      AliDebugStream(2) << GetName() << ": Using cluster energy definition: corrected for non-linearity" << std::endl;
-    	      energy = clust->GetNonLinCorrEnergy();
-    	      break;
-          case kHadCorrEnergy:
-    	      AliDebugStream(2) << GetName() << ": Using cluster energy definition: corrected for hadronic contribution" << std::endl;
-    	      energy = clust->GetHadCorrEnergy();
-    	      break;
-          default:
-            energy = -1;
-            break;
-          };
-
-          AliDebugStream(2) << GetName() << ": Using energy " << energy << " (def: " << clust->E()
-    		    << " | NL: " << clust->GetNonLinCorrEnergy()
-			      << " | HD: " << clust->GetHadCorrEnergy()
-			      << ")" << std::endl;
-
-          fHistos->FillTH1("hClusterEnergy1D", energy);
-        }
-      }
-
     }
     if(tracks){
       auto leadingtrack = j->GetLeadingTrack(tracks->GetArray());
@@ -498,6 +516,10 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   for(auto t : trgclusters){
     fHistos->FillTH2("hJetSpectrumMax", t, maxdata[1], weight);
     fHistos->FillTH2("hJetSpectrumMaxAbs", t, maxdata[1]);
+    if(fFillSpectrumPtNEF) {
+      fHistos->FillTH3("hJetSpectrumPtNEFMax",  maxdata[1], maxdata[4], t, weight);
+      fHistos->FillTH3("hJetSpectrumPtNEFMaxAbs", maxdata[1], maxdata[4], t);
+    }
     if(fFillHSparse){
       maxdata[5] = static_cast<double>(t);
       fHistos->FillTHnSparse("hMaxJetTHnSparse", maxdata, weight);
@@ -507,8 +529,8 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
   if(fDoBkgSub){
     Double_t randomConePt = GetDeltaPtRandomCone();
     Double_t EmbeddingPt = GetDeltaPtEmbedding();
-    fHistos->FillTH2("hRhoVsDeltaPtRC", randomConePt, datajets->GetRhoVal());
-    fHistos->FillTH2("hRhoVsDeltaPtEmbed", EmbeddingPt, datajets->GetRhoVal());
+    fHistos->FillTH2("hRhoVsDeltaPtRC", randomConePt, rhoVal);
+    fHistos->FillTH2("hRhoVsDeltaPtEmbed", EmbeddingPt, rhoVal);
   }
 
 
@@ -694,7 +716,16 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtRandomCone()
 
     if (tmpConePt > 0)
     {
-        deltaPt = tmpConePt - jetradius * jetradius * TMath::Pi() * jetcont->GetRhoVal();
+        // Calculate rho value
+        Double_t rhoVal = 0.;
+        if(fDoBkgSub && jetcont->GetRhoParameter()){
+          if(fRhoScaleFactor > 0.) {
+            rhoVal = jetcont->GetRhoVal() * fRhoScaleFactor;
+          }else{
+            rhoVal = jetcont->GetRhoVal();
+          }
+        }
+        deltaPt = tmpConePt - jetradius * jetradius * TMath::Pi() * rhoVal;
         return deltaPt;
     }
     return deltaPt;
@@ -753,8 +784,18 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtEmbedding()
         }
 
         if (sumTrkEmbeddedPt > 0)
-        {                                                                                                                         //the jet with embedded track was found
-            deltaPtEmb = jets_incl.at(ijet).pt() - jets_incl.at(ijet).area() * jetcont->GetRhoVal() - sumTrkEmbeddedPt; //calculate delta pT and subtract pT of embedded track
+        {   
+            // Calculate rho value
+            Double_t rhoVal = 0.;
+            if(fDoBkgSub && jetcont->GetRhoParameter()){
+              if(fRhoScaleFactor > 0.) {
+                rhoVal = jetcont->GetRhoVal() * fRhoScaleFactor;
+              }else{
+                rhoVal = jetcont->GetRhoVal();
+              }
+            }             
+            //the jet with embedded track was found
+            deltaPtEmb = jets_incl.at(ijet).pt() - jets_incl.at(ijet).area() * rhoVal - sumTrkEmbeddedPt; //calculate delta pT and subtract pT of embedded track
             break;
         }
     }

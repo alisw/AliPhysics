@@ -2,7 +2,7 @@
 #define AliAnalysisTaskStrangenessInJets_cxx
 
 //-------------------------------------------------------------------------
-// Task for V0 and Cascade analysis in charged jets with 
+// Task for V0 analysis in charged jets with 
 // the strange particles (instead of daughters) added to the  jet finder
 // Author: Ekaterina Grecka (ermeeka@fjfi.cvut.cz)
 // Modification of the AlianalysisTaskV0sInJetsEmcal task (author Vit Kucera) 
@@ -63,6 +63,7 @@ public:
   void SetCutTPCRefit(Bool_t val = kTRUE) {fbTPCRefit = val;}
   void SetCutRejectKinks(Bool_t val = kTRUE) {fbRejectKinks = val;}
   void SetCutFindableClusters(Bool_t val = kTRUE) {fbFindableClusters = val;}
+  void SetCutV0PtMin(Double_t val = 1.) {fdCutV0PtMin = val;}
   void SetCutNCrossedRowsTPCMin(Double_t val = 70.) {fdCutNCrossedRowsTPCMin = val;}
   void SetCutCrossedRowsOverFindMin(Double_t val = 0.8) {fdCutCrossedRowsOverFindMin = val;}
   void SetCutCrossedRowsOverFindMax(Double_t val = 1e3) {fdCutCrossedRowsOverFindMax = val;}
@@ -92,10 +93,13 @@ public:
   void SetJetEtaRange(Double_t emi, Double_t ema) { fdJetEtaMin        = emi   ; fdJetEtaMax = ema; }
   void SetJetPhiRange(Double_t pmi, Double_t pma) { fdJetPhiMin        = pmi   ; fdJetPhiMax = pma; }
   void SetMinJetTrackPt(Double_t j)               { fdJetTrackPtMin        = j     ; }
+  void SetMaxJetTrackEta(Double_t j)               { fdJetTrackEtaMax      = j     ; }
   void SetMCDistPrimaryMax(Double_t val = 0.01) {fdDistPrimaryMax = val;}
-  void SetPtJetMin(Double_t ptMin = 0) {fdCutPtJetMin = ptMin;}
   void SetDistanceV0JetMax(Double_t val = 0.4) {fdDistanceV0JetMax = val;}
-
+  void SetPtJetMin(Double_t ptMin = 0) {fdCutPtJetMin = ptMin;}
+  void SetPtTrackJetMin(Double_t ptMin = 0) {fdCutPtTrackJetMin = ptMin;}
+  void SetAreaPercJetMin(Double_t area = 0) {fdCutAreaPercJetMin = area;}
+  
   //getters
   Bool_t GetIsPbPb() const         { return fbIsPbPb; }
   Bool_t GetMCAnalysis() const     { return fbMCAnalysis; }
@@ -143,7 +147,6 @@ public:
   static const Int_t fgkiNBinsMassLambda; // number of bins (uniform binning)
   static const Double_t fgkdMassLambdaMin; // minimum Lambda mass
   static const Double_t fgkdMassLambdaMax; // maximum Lambda mass
-
   // axis: pT of jets
   static const Double_t fgkdBinsPtJet[2]; // [GeV/c] minimum and maximum or desired binning of the axis (intended for the rebinned axis)
   static const Int_t fgkiNBinsPtJet; // number of bins (intended for the rebinned axis)
@@ -169,17 +172,18 @@ public:
   Int_t GetCentralityBinIndex(Double_t centrality);
   Int_t GetCentralityBinEdge(Int_t index);
   TString GetCentBinLabel(Int_t index);
-  Double_t MassPeakSigmaOld(Double_t pt, Int_t particle);
   static Double_t AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters);
   Bool_t AssociateRecV0withMC( AliAODv0* v, AliEmcalJet *xjet, Bool_t bIsK, Bool_t bIsL, Bool_t bIsAL, Int_t iCent);
   Bool_t GeneratedMCParticles( TClonesArray* track, Int_t iCent );
-
+  Double_t MassPeakSigma(Double_t pt, Int_t particle);
+  Double_t MassPeakMean(Double_t pt, Int_t particle);
+  
 protected:
   void ExecOnce();
   Bool_t FillHistograms();
   Bool_t Run();
-  void AddEventTracks(TClonesArray* coll, TClonesArray* tracks);  
-  void AddEventTracksMC(TClonesArray* coll, TClonesArray* tracks);  
+  void AddEventTracks(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPart);  
+  void AddEventTracksMC(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPartMC);  
   Bool_t GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const;
 
   TList* fOutputListStd; //! Output list for standard analysis results
@@ -196,7 +200,7 @@ protected:
   //AliFJWrapper           fFastJetWrapperBG;       //!<!fastjet wrapper for the bg jets
   AliFJWrapper           fFastJetWrapperMCGen;    //!<!fastjet wrapper for the bg jets
 
-  std::vector<fastjet::PseudoJet> InputBgParticles;
+  //std::vector<fastjet::PseudoJet> InputBgParticles;
   fastjet::Selector selectorBG;
 
 private:
@@ -206,7 +210,7 @@ private:
   TRandom* fRandom; //! random-number generator
   AliEventCuts fEventCutsStrictAntipileup; //! Event cuts class
   
-  static const Int_t fgkiNCategV0 = 17; // number of V0 selection steps
+  static const Int_t fgkiNCategV0 = 18; // number of V0 selection steps
  
  // Data selection
   Bool_t fbIsPbPb; // switch: Pb+Pb / p+p collisions
@@ -236,8 +240,12 @@ private:
   Double_t fdCutEtaDaughterMax; // (0.8) max |pseudorapidity| of daughter tracks, historical reasons: tracking in MC for 2010 was restricted to 0.7
   Double_t fdCutNSigmadEdxMax; // (3.) [sigma dE/dx] max difference between measured and expected signal of dE/dx in the TPC
   Double_t fdPtProtonPIDMax; // (1.) [GeV/c] maxium pT of proton for applying PID cut in Pb-Pb
+
+  Bool_t fbCascadeOn; // switch: cascade on/off
+
   // V0 candidate
   Bool_t fbOnFly; // (0) on-the-fly (yes) or offline (no) reconstructed
+  Double_t fdCutV0PtMin; // (1 GeV) min pT of the selected v0 particles
   Double_t fdCutCPAKMin; // (0.998) min cosine of the pointing angle, K0S
   Double_t fdCutCPALMin; // (0.998) min cosine of the pointing angle, Lambda
   Double_t fdCutRadiusDecayMin; // (5.) [cm] min radial distance of the decay vertex
@@ -259,10 +267,13 @@ private:
   Double_t fdJetEtaMin;              ///< minimum eta to keep jet in output
   Double_t fdJetEtaMax;              ///< maximum eta to keep jet in output
   Double_t fdJetTrackPtMin;          ///< minimum jet constituent track pt
+  Double_t fdJetTrackEtaMax;          ///< max jet constituent track eta
   Double_t fdMaxEtaJetBG;            ///< Maximum jet eta cut for the bacground estimation
   Double_t fdBgRadius;               ///< Background jet radius
 
   Double_t fdCutPtJetMin; // [GeV/c] minimum jet pt
+  Double_t fdCutPtTrackJetMin; // [GeV/c] minimum pt of leading jet-track
+  Double_t fdCutAreaPercJetMin; // [pi*R^2] minimum jet area with respect to the expected value
   Double_t fdDistanceV0JetMax; // (R) D - maximum distance between V0 and jet axis used for finding V0s in the perp, rnd and median jet cone
   
   //MC var
@@ -273,6 +284,8 @@ private:
   TH1D* fh1EventCounterCutCent[fgkiNBinsCent]; //! number of events for different selection steps and different centralities
   TH1D* fh1EventCent; //! number of events for different centralities
   TH1D* fh1EventCent2; //! number of events for different centralities
+  TH1D* fh1EventCent2Jets; //! number of events for different centralities
+  TH1D* fh1EventCent2NoJets; //! number of events for different centralities
   TH2D* fh2EventCentTracks; //! number of tracks vs centrality
   TH2D* fh2EventCentMult; //! reference multiplicity vs centrality
   TH1D* fh1VtxZ[fgkiNBinsCent]; //! z coordinate of the primary vertex
@@ -300,6 +313,7 @@ private:
   TH1D* fh1V0CandPerEventCentK0s[fgkiNBinsCent]; //! number of K0s candidates per event, in centrality bins
   TH1D* fh1V0InvMassK0sCent[fgkiNBinsCent]; //! V0 invariant mass, in centrality bins
   THnSparse* fhnV0InclusiveK0s[fgkiNBinsCent]; //! V0 inclusive, in a centrality bin, m_V0; pt_V0; eta_V0
+  THnSparse* fhnV0InvMassCutK0s[fgkiNBinsCent]; //! V0 after invariant mass signal window cut, in a centrality bin, m_V0; pt_V0; eta_V0
   THnSparse* fhnV0InJetK0s[fgkiNBinsCent]; //! V0 in jet cones, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet
   //TH2D* fh2ArmPodK0s[fgkiNQAIndeces]; //! Armenteros-Podolanski
   
@@ -315,6 +329,7 @@ private:
   TH1D* fh1V0CandPerEventCentLambda[fgkiNBinsCent]; //!
   TH1D* fh1V0InvMassLambdaCent[fgkiNBinsCent]; //!
   THnSparse* fhnV0InclusiveLambda[fgkiNBinsCent]; //!
+  THnSparse* fhnV0InvMassCutLambda[fgkiNBinsCent]; //! V0 after invariant mass signal window cut, in a centrality bin, m_V0; pt_V0; eta_V0
   THnSparse* fhnV0InJetLambda[fgkiNBinsCent]; //!
   //TH2D* fh2ArmPodLambda[fgkiNQAIndeces]; //!
 
@@ -330,6 +345,7 @@ private:
   TH1D* fh1V0CandPerEventCentALambda[fgkiNBinsCent]; //!
   TH1D* fh1V0InvMassALambdaCent[fgkiNBinsCent]; //!
   THnSparse* fhnV0InclusiveALambda[fgkiNBinsCent]; //!
+  THnSparse* fhnV0InvMassCutALambda[fgkiNBinsCent]; //! V0 after invariant mass signal window cut, in a centrality bin, m_V0; pt_V0; eta_V0
   THnSparse* fhnV0InJetALambda[fgkiNBinsCent]; //!
   //TH2D* fh2ArmPodALambda[fgkiNQAIndeces]; //!
 

@@ -168,6 +168,7 @@ set(SRCS
     Tracks/AliEmcalTRDTrackingTask.cxx
     UserTasks/AliAnalysisTaskJetUEStudies.cxx
     UserTasks/AliAnalysisTaskBackFlucRandomCone.cxx
+    UserTasks/AliAnalysisTaskCascadesInJets.cxx
     UserTasks/AliAnalysisTaskChargedJetsPA.cxx
     UserTasks/AliAnalysisTaskChargedJetsHadronCF.cxx
     UserTasks/AliAnalysisTaskChargedJetsHadronToy.cxx
@@ -289,6 +290,7 @@ if(FASTJET_FOUND)
       AliAnalysisTaskJetChargeFlavourTemplates.cxx
       AliAnalysisTaskJetChargeFlavourPb.cxx
       UserTasks/AliAnalysisJetHadro.cxx
+      UserTasks/AliAnalysisTaskJetHadroAOD.cxx
 	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
 	    UserTasks/AliAnalysisTaskNewJetSubstructure.cxx
             UserTasks/AliAnalysisTaskJetPull.cxx
@@ -329,7 +331,9 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskEmcalSubjet.cxx
 	    UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
         UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
+        UserTasks/AliAnalysisTaskEmcalPIDinJet.cxx
         UserTasks/AliAnalysisTaskEmcalJetValidation.cxx
+	UserTasks/AliAnalysisTaskJetAngCorrelations.cxx
         Tracks/AliAnalysisTaskEmcalJetSpectrumSDPart.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx
