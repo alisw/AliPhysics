@@ -580,7 +580,7 @@ void AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5::UserExec(Option_t *)  {
       cout<<"################ No histograms found ############### "<<endl;
 
 
-    double binsarray[21]={0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0,3.5,4.0,4.5,5.0,5.5,6.0};
+    double binsarray[21]={0.2,0.4,0.6,0.8,1.0,1.2,1.4,1.6,1.8,2.0,2.2,2.4,2.6,2.8,3.0,3.5,4.0,5.0,6.0,8.0,10.0};
     TH1D *fPt_profile = new TH1D("fPt_profile","fPt_profile", 20, binsarray);
     Double_t pT_sum_etaLess0 = 0.0;
     Double_t N_sum_etaLess0 = 0.0;
@@ -596,7 +596,7 @@ void AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5::UserExec(Option_t *)  {
     Double_t N_sumProton_etaLess0 = 0.0;
 
     //Function for efficiency
-    TF1 *fEff=new TF1("fEff","[0]*TMath::Exp(-pow([1]/x,[2]))",0.2,6.0);
+    TF1 *fEff=new TF1("fEff","[0]*TMath::Exp(-pow([1]/x,[2]))",0.2,10.0);
     fEff->SetParameter(0,0.8);
     fEff->SetParameter(1,0.15);
     fEff->SetParameter(2,1.7);
@@ -700,7 +700,7 @@ void AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5::UserExec(Option_t *)  {
 	//Kinematic cuts on pT and Eta
 	if (TMath::Abs(trkEta) > 0.8) continue;
 	if (trkPt < 0.2) continue;
-	if (trkPt > 6.0) continue;
+	if (trkPt > 10.0) continue;
 
 
 	//Filling track QA before trackselection cuts
