@@ -99,7 +99,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fProton_Event_IsFirstParticle(0),
   fProton_Event_TimeStamp(0),
   fProton_Event_RandomCrossCheckNumber(0),
-  fProton_Event_BadTimeRange(0),
   fProton_ID(0),
   fSaveTree_Deuteron(0),
   fDeuteron_px(-999.0),
@@ -142,7 +141,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fDeuteron_Event_IsFirstParticle(0),
   fDeuteron_Event_TimeStamp(0),
   fDeuteron_Event_RandomCrossCheckNumber(0),
-  fDeuteron_Event_BadTimeRange(0),
   fDeuteron_ID(0),
   fSaveTree_AntiProton(0),
   fAntiProton_px(-999.0),
@@ -185,7 +183,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiProton_Event_IsFirstParticle(0),
   fAntiProton_Event_TimeStamp(0),
   fAntiProton_Event_RandomCrossCheckNumber(0),
-  fAntiProton_Event_BadTimeRange(0),
   fAntiProton_ID(0),
   fSaveTree_AntiDeuteron(0),
   fAntiDeuteron_px(-999.0),
@@ -228,7 +225,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiDeuteron_Event_IsFirstParticle(0),
   fAntiDeuteron_Event_TimeStamp(0),
   fAntiDeuteron_Event_RandomCrossCheckNumber(0),
-  fAntiDeuteron_Event_BadTimeRange(0),
   fAntiDeuteron_ID(0)
 {
 
@@ -288,7 +284,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fProton_Event_IsFirstParticle(0),
   fProton_Event_TimeStamp(0),
   fProton_Event_RandomCrossCheckNumber(0),
-  fProton_Event_BadTimeRange(0),
   fProton_ID(0),
   fSaveTree_Deuteron(0),
   fDeuteron_px(-999.0),
@@ -331,7 +326,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fDeuteron_Event_IsFirstParticle(0),
   fDeuteron_Event_TimeStamp(0),
   fDeuteron_Event_RandomCrossCheckNumber(0),
-  fDeuteron_Event_BadTimeRange(0),
   fDeuteron_ID(0),
   fSaveTree_AntiProton(0),
   fAntiProton_px(-999.0),
@@ -374,7 +368,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiProton_Event_IsFirstParticle(0),
   fAntiProton_Event_TimeStamp(0),
   fAntiProton_Event_RandomCrossCheckNumber(0),
-  fAntiProton_Event_BadTimeRange(0),
   fAntiProton_ID(0),
   fSaveTree_AntiDeuteron(0),
   fAntiDeuteron_px(-999.0),
@@ -417,7 +410,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiDeuteron_Event_IsFirstParticle(0),
   fAntiDeuteron_Event_TimeStamp(0),
   fAntiDeuteron_Event_RandomCrossCheckNumber(0),
-  fAntiDeuteron_Event_BadTimeRange(0),
   fAntiDeuteron_ID(0)
 {
 
@@ -510,7 +502,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_Proton->Branch("Proton_Event_IsFirstParticle",&fProton_Event_IsFirstParticle,"Proton_Event_IsFirstParticle/O");
   fSaveTree_Proton->Branch("Proton_Event_TimeStamp",&fProton_Event_TimeStamp,"Proton_Event_TimeStamp/i");
   fSaveTree_Proton->Branch("Proton_Event_RandomCrossCheckNumber",&fProton_Event_RandomCrossCheckNumber,"Proton_Event_RandomCrossCheckNumber/i");
-  fSaveTree_Proton->Branch("Proton_Event_BadTimeRange",&fProton_Event_BadTimeRange,"Proton_Event_BadTimeRange/O");
   fSaveTree_Proton->Branch("Proton_ID",&fProton_ID,"Proton_ID/I");
 
 
@@ -561,7 +552,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_Deuteron->Branch("Deuteron_Event_IsFirstParticle",&fDeuteron_Event_IsFirstParticle,"Deuteron_Event_IsFirstParticle/O");
   fSaveTree_Deuteron->Branch("Deuteron_Event_TimeStamp",&fDeuteron_Event_TimeStamp,"Deuteron_Event_TimeStamp/i");
   fSaveTree_Deuteron->Branch("Deuteron_Event_RandomCrossCheckNumber",&fDeuteron_Event_RandomCrossCheckNumber,"Deuteron_Event_RandomCrossCheckNumber/i");
-  fSaveTree_Deuteron->Branch("Deuteron_Event_BadTimeRange",&fDeuteron_Event_BadTimeRange,"Deuteron_Event_BadTimeRange/O");
   fSaveTree_Deuteron->Branch("Deuteron_ID",&fDeuteron_ID,"Deuteron_ID/I");
 
 
@@ -611,7 +601,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_AntiProton->Branch("AntiProton_Event_IsFirstParticle",&fAntiProton_Event_IsFirstParticle,"AntiProton_Event_IsFirstParticle/O");
   fSaveTree_AntiProton->Branch("AntiProton_Event_TimeStamp",&fAntiProton_Event_TimeStamp,"AntiProton_Event_TimeStamp/i");
   fSaveTree_AntiProton->Branch("AntiProton_Event_RandomCrossCheckNumber",&fAntiProton_Event_RandomCrossCheckNumber,"AntiProton_Event_RandomCrossCheckNumber/i");
-  fSaveTree_AntiProton->Branch("AntiProton_Event_BadTimeRange",&fAntiProton_Event_BadTimeRange,"AntiProton_Event_BadTimeRange/O");
   fSaveTree_AntiProton->Branch("AntiProton_ID",&fAntiProton_ID,"AntiProton_ID/I");
 
 
@@ -661,7 +650,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_Event_IsFirstParticle",&fAntiDeuteron_Event_IsFirstParticle,"AntiDeuteron_Event_IsFirstParticle/O");
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_Event_TimeStamp",&fAntiDeuteron_Event_TimeStamp,"AntiDeuteron_Event_TimeStamp/i");
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_Event_RandomCrossCheckNumber",&fAntiDeuteron_Event_RandomCrossCheckNumber,"AntiDeuteron_Event_RandomCrossCheckNumber/i");
-  fSaveTree_AntiDeuteron->Branch("AntiDeuteron_Event_BadTimeRange",&fAntiDeuteron_Event_BadTimeRange,"AntiDeuteron_Event_BadTimeRange/O");
   fSaveTree_AntiDeuteron->Branch("AntiDeuteron_ID",&fAntiDeuteron_ID,"AntiDeuteron_ID/I");
 
 
@@ -807,8 +795,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
   } // end of fIsMC == true
 
 
-  fTimeRangeCut.InitFromEvent(fAODEvent);
-  Bool_t IsBadTimeRangeEvent = fTimeRangeCut.CutEvent(fAODEvent);
 
 
 
@@ -836,7 +822,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
     cout << "Seed of RandomGenerator:\t" << Seed << endl;
     cout << "RandomNumber:\t\t\t" << RandomNumber << endl;
     cout << "z-position of primary vertex:\t" << PrimaryVertexZ << " cm" << endl;
-    cout << "IsBadTimeRangeEvent:\t\t" << IsBadTimeRangeEvent << std::endl;
 
   } // end of DebugEventSelection
 
@@ -1120,7 +1105,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	fDeuteron_Event_IsFirstParticle = IsFirstDeuteron;
 	fDeuteron_Event_TimeStamp = TimeStamp;
 	fDeuteron_Event_RandomCrossCheckNumber = RandomCrossCheckNumber;
-	fDeuteron_Event_BadTimeRange = IsBadTimeRangeEvent;
 	fDeuteron_ID = track;
 
 	fSaveTree_Deuteron->Fill();
@@ -1174,7 +1158,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	fAntiDeuteron_Event_IsFirstParticle = IsFirstAntideuteron;
 	fAntiDeuteron_Event_TimeStamp = TimeStamp;
 	fAntiDeuteron_Event_RandomCrossCheckNumber = RandomCrossCheckNumber;
-	fAntiDeuteron_Event_BadTimeRange = IsBadTimeRangeEvent;
 	fAntiDeuteron_ID = track;
 
 	fSaveTree_AntiDeuteron->Fill();
@@ -1333,7 +1316,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	fProton_Event_IsFirstParticle = IsFirstProton;
 	fProton_Event_TimeStamp = TimeStamp;
 	fProton_Event_RandomCrossCheckNumber = RandomCrossCheckNumber;
-	fProton_Event_BadTimeRange = IsBadTimeRangeEvent;
 	fProton_ID = track;
 
 	fSaveTree_Proton->Fill();
@@ -1387,7 +1369,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	fAntiProton_Event_IsFirstParticle = IsFirstAntiProton;
 	fAntiProton_Event_TimeStamp = TimeStamp;
 	fAntiProton_Event_RandomCrossCheckNumber = RandomCrossCheckNumber;
-	fAntiProton_Event_BadTimeRange = IsBadTimeRangeEvent;
 	fAntiProton_ID = track;
 
 	fSaveTree_AntiProton->Fill();
@@ -1406,36 +1387,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 
 
 
-
-
-
-  Bool_t PrintFileName = false;
-
-
-  ULong64_t DoubleEvents_LHC18r_SemiCentral_Matter[18] = {160879521501,161544301762,58638162432,287285319685,47937658821,52394593616,270273172555,254617068705,255996052124,259838777584,299317669122,302869853963,53026204874,168499861272,169334700341,90918254606,93418150387,275846430716};
-
-  ULong64_t DoubleEvents_LHC18r_SemiCentral_AntiMatter[9] = {270085976193,271913995214,267399616623,255914462276,260014705665,260249759523,49919677444,172817849568,90918254606};
-
-  
-  for(int i = 0; i < 18; i++){
-
-    if(DoubleEvents_LHC18r_SemiCentral_Matter[i] == EventID) PrintFileName = true;
-
-  }
-  
-  for(int i = 0; i < 9; i++){
-
-    if(DoubleEvents_LHC18r_SemiCentral_AntiMatter[i] == EventID) PrintFileName = true;
-
-  }
-
-
-
-  if(PrintFileName == true){
-
-    std::cout << "\nEventID: " << EventID << "\tRandomCrossCheckNumber: " << RandomCrossCheckNumber << "\tFileName: " << CurrentFileName << "\n" << std::endl;
-
-  }
 
 
 
