@@ -1,4 +1,4 @@
-AliAnalysisTaskCorrForFlowMaster_Anders* AddCorrForFlowTaskMaster_Anders(TString name = "name", TString efficiencyFile = "",TString calibrationFile = "",const char* suffix = "")
+AliAnalysisTaskCorrForFlowMasterWithOnTheFly* AddCorrForFlowTaskMasterWithOnTheFly(TString name = "name", TString efficiencyFile = "",TString calibrationFile = "",const char* suffix = "")
 {
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
     if (!mgr) {
@@ -17,7 +17,7 @@ AliAnalysisTaskCorrForFlowMaster_Anders* AddCorrForFlowTaskMaster_Anders(TString
     Bool_t useCalibration = kFALSE;
     if(!calibrationFile.IsNull()) useCalibration = kTRUE;
     
-    AliAnalysisTaskCorrForFlowMaster_Anders* task = new AliAnalysisTaskCorrForFlowMaster_Anders(taskName.Data(), useEfficiency, useCalibration);
+    AliAnalysisTaskCorrForFlowMasterWithOnTheFly* task = new AliAnalysisTaskCorrForFlowMasterWithOnTheFly(taskName.Data(), useEfficiency, useCalibration);
     if(!task) return 0x0;
     mgr->AddTask(task);
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
