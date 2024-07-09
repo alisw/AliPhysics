@@ -143,7 +143,7 @@ set(SRCS
   HMPTF/AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_trackinfo.cxx
   HMPTF/AliAnalysisTaskCorrPP.cxx
   HMPTF/AliAnalysisTaskCorrPbPb.cxx
-  HMPTF/AliAnalysisTaskCorrPbPb_v2.cxx
+  HMPTF/AliAnalysisTaskCorrPbPb_withoutTree.cxx
   HMPTF/AliAnalysisTaskCorrPbPb_treemerge.cxx
   HMPTF/AliAnalysisTaskCorrPPHM.cxx
   HMPTF/AliAnalysisTaskCorrPbPbMC.cxx
@@ -154,9 +154,8 @@ set(SRCS
   HMPTF/AliAnalysisTaskMeanptFluctMC_effcheck.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons_v2.cxx
-  DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect.cxx
-  DiffPTF/AliAnalysisTaskDiffPtFStrange.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_detect.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_gen.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_correction.cxx
@@ -164,6 +163,7 @@ set(SRCS
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_correct_v2.cxx
   DiffPTF/AliAnalysisTaskHptcorrId_tree.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFluc_V0particles_pTmax5.cxx
   IntermittencyAnalysis/AliAnalysisTaskNFactorialMoments.cxx
   IntermittencyAnalysis/AliAnalysisTaskNFactorialMomentsPID.cxx
   )

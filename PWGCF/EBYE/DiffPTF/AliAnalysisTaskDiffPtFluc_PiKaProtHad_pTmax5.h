@@ -12,8 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#ifndef AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5_H
-#define AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5_H
+#ifndef AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5_H
+#define AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5_H
 
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
@@ -37,14 +37,15 @@ class TH2D;
 class TH3D;
 class TProfile;
 class AliPIDResponse;
+class AliPIDCombined;
 class AliMultSelection;
 
 
-class AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5 : public AliAnalysisTaskSE {
+class AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5 : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5();
-  AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5(const char *name);
-  virtual ~AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5();
+  AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5();
+  AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5(const char *name);
+  virtual ~AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -55,14 +56,15 @@ class AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5 : public AliAnalysisTaskSE {
   Bool_t ProtonSelector (AliVTrack *track, Double_t nSigmaCut); 
   Bool_t PionSelector (AliVTrack *track, Double_t nSigmaCut); 
   Bool_t ElectronRejectionCut(AliVTrack *track, Int_t fCut);
-  Bool_t PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type);
-  Bool_t PassedSingleParticlePileUpCuts(AliAODTrack *track);
   void GetMCEffCorrectionHist();
   void FilltrackQAplots_beforeCut(Double_t fDcaXY, Double_t fDcaZ, Double_t fEta, Double_t fITSchi2perNcls, Double_t fTPCchi2perNcls, Double_t fTPCcrossedrows);
   void FilltrackQAplots_afterCut(Double_t fDcaXY, Double_t fDcaZ, Double_t fEta, Double_t fITSchi2perNcls, Double_t fTPCchi2perNcls, Double_t fTPCcrossedrows);
   void FillPIDQAplots_beforeCut(AliVTrack *track);
   void FillPIDQAplots_afterCut(AliVTrack *track, Bool_t Pionflag, Bool_t Kaon_flag, Bool_t Proton_flag);
   void GlobalTracksAOD(AliAODEvent *aAOD);
+  Bool_t HasTrackPIDTPC(AliVTrack *track);
+  Bool_t HasTrackPIDTOF(AliVTrack *track);
+  Int_t IdentifyTrackBayesian(AliVTrack *track);
 
   void SetListForTrkCorr (TList *fList)
   {
@@ -137,6 +139,22 @@ class AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5 : public AliAnalysisTaskSE {
   {
     this->fFillPIDhists_flag = flag3;
   }
+  void SetSelectPiKaPrByBayesianPIDFlag (Int_t flagg)
+  {
+    this->fBayesianPID_flag = flagg;
+  }
+   void SetBayesPIDPionVal (Double_t bayesPidPi)
+  {
+    this->fPIDbayesPion = bayesPidPi;
+  }
+  void SetBayesPIDKaonVal (Double_t bayesPidKa)
+  {
+    this->fPIDbayesKaon = bayesPidKa;
+  }
+  void SetBayesPIDProtonVal (Double_t bayesPidPr)
+  {
+    this->fPIDbayesProton = bayesPidPr;
+  }
   
 
   
@@ -147,6 +165,7 @@ class AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5 : public AliAnalysisTaskSE {
   AliAODEvent *fAODevent;
   AliVEvent *fInputEvent;
   AliPIDResponse   *fPIDResponse;
+  AliPIDCombined   *fPIDCombined;
   AliESDtrackCuts  *fESDtrackCuts;
   AliESDtrackCuts  *fESDtrackCuts_primary;
   AliAnalysisUtils *fUtils;
@@ -170,10 +189,10 @@ class AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5 : public AliAnalysisTaskSE {
   Float_t fNsum_pions_less0;
   Float_t fNsum_kaons_less0;
   Float_t fNsum_protons_less0;
-  Float_t fPt_no_hadron[18];
-  Float_t fPt_no_pion[18];
-  Float_t fPt_no_kaon[18];
-  Float_t fPt_no_proton[18];
+  Float_t fPt_no_hadron[20];
+  Float_t fPt_no_pion[20];
+  Float_t fPt_no_kaon[20];
+  Float_t fPt_no_proton[20];
   
   //Efficiency list of histograms
   TList *fListTRKCorr; 
@@ -264,35 +283,17 @@ class AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5 : public AliAnalysisTaskSE {
   Int_t fRejectElectron_cut;
   Int_t fFillTrackQAhists_flag;
   Int_t fFillPIDhists_flag;
+  Int_t fBayesianPID_flag;
+  Double_t fPIDbayesPion;
+  Double_t fPIDbayesKaon;
+  Double_t fPIDbayesProton;
   
   TExMap *fGlobalTracksAOD; //! global tracks in AOD for FB128 **Ante**
 
-
-  /*
-  //Custom Functions:
-  TF1 *fCenCutLowPU;
-  TF1 *fCenCutHighPU;
-  TF1 *fSPDCutPU;
-  TF1 *fV0CutPU;
-  TF1 *fMultCutPU;
-
-  //Argument variables
-  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  TString fTreeName;
-  Double_t fEtaMax;
-  Double_t fVertexZMax;
-  Double_t fDCAxyMax;
-  Double_t fDCAzMax;
-  Double_t fChi2TPC;
-  Double_t fChi2ITS;
-  Double_t fNCrossedRowsTPC;
-  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  */
- 
   
-  AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5(const AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5&);
-  AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5& operator=(const AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5&);  
-  ClassDef(AliAnalysisTaskDiffPtFluc_PIDhadrons_pTmax5, 1);
+  AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5(const AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5&);
+  AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5& operator=(const AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5&);  
+  ClassDef(AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5, 1);
 };
 
 #endif

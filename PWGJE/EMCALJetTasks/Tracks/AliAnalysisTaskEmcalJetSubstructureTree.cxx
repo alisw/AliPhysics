@@ -294,6 +294,10 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   if(datajets && !mcjets){
     // decode trigger string in order to determine the trigger clusters
     std::vector<std::string> clusternames;
+    if(!fInputEvent->GetFiredTriggerClasses().Data()) {
+      AliErrorStream() << "Corrupted trigger information - skip event" << std::endl;
+      return false;
+    }
     auto triggerinfos = PWG::EMCAL::Triggerinfo::DecodeTriggerString(fInputEvent->GetFiredTriggerClasses().Data());
     for(auto t : triggerinfos) {
       if(std::find(clusternames.begin(), clusternames.end(), t.Triggercluster()) == clusternames.end()) clusternames.emplace_back(t.Triggercluster());
@@ -320,7 +324,7 @@ bool AliAnalysisTaskEmcalJetSubstructureTree::Run(){
   if(fUseDownscaleWeight){
     AliDebugStream(2) << "Trigger selection string: " << fTriggerSelectionString << std::endl;
     TString selectionString = (fTriggerSelectionBits & AliVEvent::kINT7) ? "INT7" : fTriggerSelectionString;
-    auto triggerstring = MatchTrigger(selectionString.Data(), fTriggerSelectionString.Data());
+    auto triggerstring = MatchTrigger(fInputEvent->GetFiredTriggerClasses().Data(), selectionString.Data());
     AliDebugStream(2) << "Getting downscale correction factor for trigger string " << triggerstring << std::endl;
     weight = 1./PWG::EMCAL::AliEmcalDownscaleFactorsOCDB::Instance()->GetDownscaleFactorForTriggerClass(triggerstring);
   }

@@ -1924,7 +1924,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		if(ptAsso <CutptAsso) continue;
 		//if(ptAsso <0.2) continue;
 		//if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;  //applied the cut (vAN in 07/27 - 08/10)
-		//if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue; 
+		if(aAssotrack->Eta()<-0.7 || aAssotrack->Eta()>0.7) continue;  // for systematic check
 		if(nsigma < -3 || nsigma > 3) continue;
 		if(AssoTPCchi2perNDF >= 4) continue;
 		if(!(aAssotrack->GetStatus()&AliAODTrack::kITSrefit) || !(aAssotrack->GetStatus()&AliAODTrack::kTPCrefit)) continue;
