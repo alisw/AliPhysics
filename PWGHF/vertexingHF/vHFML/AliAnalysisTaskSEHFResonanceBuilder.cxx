@@ -921,6 +921,12 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
         // loop over V0s
         for (std::size_t iV0{0}; iV0 < selectedV0Indices.size(); ++iV0) {
             AliAODv0* v0 = dynamic_cast<AliAODv0 *>(fAOD->GetV0(selectedV0Indices[iV0]));
+            AliAODTrack *pTrack=dynamic_cast<AliAODTrack *>(v0->GetDaughter(0)); //0->Positive Daughter
+            AliAODTrack *nTrack=dynamic_cast<AliAODTrack *>(v0->GetDaughter(1)); //1->Negative Daughter
+            if (IsDaughterTrack(pTrack, dMeson, arrayCandDDau, &vHF) || IsDaughterTrack(nTrack, dMeson, arrayCandDDau, &vHF)) {
+                continue;
+            }
+
             for (int iHypo{0}; iHypo<kNumV0IDs; ++iHypo) {
                 if(!fEnableV0[iHypo])
                     continue;
