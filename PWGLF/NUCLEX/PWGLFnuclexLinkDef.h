@@ -115,6 +115,7 @@
 #pragma link C++ class AliReducedHypTritEvent+;
 #pragma link C++ class AliAnalysisTaskS3ParticleYields+;
 #pragma link C++ class AliAnalysisTaskHe3EffTree+;
+#pragma link C++ class AliAnalysisTaskHypTritTestAOD+;
 #pragma link C++ class AliAnalysisTaskHypTritKf+;
 #pragma link C++ class AliAnalysisCODEXS3task+;
 #pragma link C++ class AliAnalysisTaskTRDtriggerTracks+;
