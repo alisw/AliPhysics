@@ -22,7 +22,10 @@ public:
   void SetListForNUA(TList *flist) { this->fListNUA = (TList *)flist->Clone(); }
   void SetNUEOn(bool doNUE) { this->IsDoNUE = doNUE; }
   void SetNUAOn(bool doNUA) { this->IsDoNUA = doNUA; }
+  void SetZDCOn(bool doZDC) { this->IsDoZDC = doZDC; }
   void SetListForZDCCalib(TList *flist) { this->fListZDCCalib = (TList *)flist->Clone(); }
+  void SetVZEROPlaneOn(bool bUseVZEROPlane) { this->IsDoVZEROPlane = bUseVZEROPlane; }
+  void SetListForVZEROCalib(TList* flist) { this->fListVZEROCalib = (TList*)flist->Clone(); }
   void SetTrigger(TString trigger) { this->fTrigger = trigger; }
   void SetPeriod(TString period) { this->fPeriod = period; }
   void SetBadTowerCalibList(TList* const kList) {this->fBadTowerCalibList = (TList*)kList->Clone(); fUseBadTowerCalib=kTRUE;};
@@ -31,7 +34,6 @@ public:
   void SetTriggerOn(bool fTriggerIsOn) { this->TriggerIsOn = fTriggerIsOn; }
 
 private:
-  bool GetVZEROPlane();
   double GetNUACor(int charge, double phi, double eta, double vz);
   double GetNUECor(int charge, double pt);
   bool GetZDCPlaneLsFit();
@@ -40,8 +42,9 @@ private:
   bool LoadCalibHistForThisRun();
   bool RejectEvtTFFit();
 //  void ResetHists();
-  bool QC2SE();
   bool CheckPIDofParticle(AliAODTrack *ftrack, int pidToCheck);
+  bool GetVZEROPlane();
+
 
   AliAODEvent *fAOD;  // input event
   TList *fOutputList; // output list
@@ -154,12 +157,14 @@ private:
   ////////////////////////
   // ZDC
   ////////////////////////
+  bool IsDoZDC;
   TList *fListZDCCalib;
   // 18q 18r 15o
   TH1D *fHZDCCparameters;
   TH1D *fHZDCAparameters;
   TProfile *fProfileZDCPsi1Correlation; // ZNC-ZNA 1st
   TProfile *fProfileZDCPsi2Correlation; // ZNC-ZNA 2nd
+  TH2D *TH2DZDCPsi1Correlation; // ZNC-ZNA 2nd
 
   //  QA
   //  ZDC
@@ -182,19 +187,7 @@ private:
 
   double fPsi1ZNC;
   double fPsi1ZNA;
-
-  // PID QA
-  TH2D *fHistPIDPt;
-  TH2D *fHistPIDEta;
-  TH2D *fHistPIDPhi;
-  TH2D *fHist2ProtonSigTPC;
-  TH2D *fHist2ProtonSigTOF;
-  TH2D *fHist2PionSigTPC;
-  TH2D *fHist2PionSigTOF;
-  TH2D *fHist2KionSigTPC;
-  TH2D *fHist2KionSigTOF;
-
-  // ZDC v1
+    // ZDC v1
   double Qtx;
   double Qty;
   double Qpx;
@@ -217,6 +210,46 @@ private:
   TH3D *fhZNSpectraCor;   	//! ZNA vs. centrality
   TH3D *fhZNSpectraPow;   	//! ZNA vs. centrality
   TH3D *fhZNBCCorr; 
+
+  // PID QA
+  TH2D *fHistPIDPt;
+  TH2D *fHistPIDEta;
+  TH2D *fHistPIDPhi;
+  TH2D *fHist2ProtonSigTPC;
+  TH2D *fHist2ProtonSigTOF;
+  TH2D *fHist2PionSigTPC;
+  TH2D *fHist2PionSigTOF;
+  TH2D *fHist2KionSigTPC;
+  TH2D *fHist2KionSigTOF;
+
+  //VZERO
+  bool IsDoVZEROPlane;
+  TList* fListVZEROCalib; // read list for V0 Calib
+  // 15o
+  TH1D* hMultV0; 
+  AliOADBContainer* contMult;
+  AliOADBContainer* contQxncm;
+  AliOADBContainer* contQyncm;
+  AliOADBContainer* contQxnam;
+  AliOADBContainer* contQynam;
+  // 18q/r
+  TH2F* fHCorrectV0ChWeghts;  
+  // Psi QA
+  // V0C [0]GE [1]RC
+  double fPsi1V0C;
+  double fPsi1V0A;
+  TH2D* fHist2Psi1V0CCent;
+  TH2D* fHist2Psi1V0ACent;
+  TProfile* fProfileV0MPsi1Correlation;       // VOC-VOA
+  TH2D* fProfileV0Psi1Correlation;       // VOC-VOA
+  TH1D* hQx2mV0[2];
+  TH1D* hQy2mV0[2];
+  TProfile* fProfileV0CQxCent[2];
+  TProfile* fProfileV0CQyCent[2];
+  TH2D* fHist2CalibPsi1V0CCent[2];
+  TProfile* fProfileV0AQxCent[2];
+  TProfile* fProfileV0AQyCent[2];
+  TH2D* fHist2CalibPsi1V0ACent[2];
 
   AliAnalysisTaskChargeV1(const AliAnalysisTaskChargeV1 &);            // not implemented
   AliAnalysisTaskChargeV1 &operator=(const AliAnalysisTaskChargeV1 &); // not implemented
