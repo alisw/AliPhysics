@@ -7,12 +7,13 @@
 #include "AliAnalysisTaskChargeV1.h"
 
 AliAnalysisTaskChargeV1 *AddTaskChargeV1(
-    bool doNUE = true,
-    bool doNUA = true,
-    TString period = "LHC15o",
-    bool ZDCcali = true,
-    bool bCorrectForBadChannel = true,
-    bool bCorrSpecZDC = true,
+    bool doNUE = false,
+    bool doNUA = false,
+    TString period = "LHC18q",
+    bool ZDCcali = false,
+    bool doVZERO = true,
+    bool bCorrectForBadChannel = false,
+    bool bCorrSpecZDC = false,
     bool bTrigger = false)
 {
   // get the manager via the static access member. since it's static, you don't need
@@ -39,7 +40,11 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
   if(bTrigger) task->SelectCollisionCandidates(AliVEvent::kINT7);
   task->SetNUEOn(doNUE);
   task->SetNUAOn(doNUA);
+  task->SetZDCOn(ZDCcali);
+  task->SetVZEROPlaneOn(doVZERO);
+
   task->SetTriggerOn(bTrigger);
+
 
   //=========================================================================
   // Read in Files
@@ -49,6 +54,8 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
   TList *fListNUA = nullptr;
   TFile *fZDCCalibFile = nullptr;
   TList *fZDCCalibList = nullptr;
+  TFile *fVZEROCalibFile = nullptr;
+  TList* fVZEROCalibList = nullptr;
 
   if (!gGrid)
     TGrid::Connect("alien://");
@@ -172,6 +179,27 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
     else
       std::cout << "!!!!!!!!!!!!!!!ZDC List not Found!!!!!!!!!!!!!!!" << std::endl;
   }
+  
+  if (doVZERO)
+  {
+    if (period.EqualTo("LHC15o")) {
+      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/r/ratu/CalibFiles/LHC15o/VZEROCalibFile15o.root", "READ");
+      fVZEROCalibList = dynamic_cast<TList*>(fVZEROCalibFile->Get("VZEROCalibList"));
+    }
+    if (period.EqualTo("LHC18q")) {
+      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/r/ratu/CalibFiles/LHC18q/calibq2V0C18qP3.root", "READ");
+      fVZEROCalibList = dynamic_cast<TList*>(fVZEROCalibFile->Get("18qlistspPerc"));
+    }
+    if (period.EqualTo("LHC18r")) {
+      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/r/ratu/CalibFiles/LHC18r/calibq2V0C18rP3.root", "READ");
+      fVZEROCalibList = dynamic_cast<TList*>(fVZEROCalibFile->Get("18rlistspPerc"));
+    }
+    if (fVZEROCalibList) {
+      task->SetListForVZEROCalib(fVZEROCalibList);
+      std::cout << "================  VZERO List Set =================" << std::endl;
+    } else
+      std::cout << "!!!!!!!!!!!!!!!VZERO List not Found!!!!!!!!!!!!!!!" << std::endl;
+  }
   // add your task to the managercd
   mgr->AddTask(task);
   // your task needs input: here we connect the manager to your task
@@ -193,3 +221,4 @@ AliAnalysisTaskChargeV1 *AddTaskChargeV1(
   // when you will run your analysis in an analysis train on grid
   return task;
 }
+
