@@ -1986,7 +1986,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsAntiLambdaCandidate (AliA
     Double_t massK0s = V0->MassK0Short();
     if (massK0s >= 0.4876 && massK0s <= 0.5076)
       return kFALSE;
-
+      
     //Fill histogram before masscut
     f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent->Fill(V0->Pt(),V0->MassAntiLambda(),centrality);
     
@@ -2011,6 +2011,16 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsK0sCandidate (AliAODv0 *V
 
     Double_t massK0s = V0->MassK0Short();
     Double_t massK0s_PDG=TDatabasePDG::Instance()->GetParticle(310)->Mass();
+    
+    //competing V0 rejection based on Inv. Mass
+    Double_t massLambda = V0->MassLambda();
+    Double_t massAntiLambda = V0->MassAntiLambda();
+    Double_t massLambda_PDG=TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+    
+    if(TMath::Abs(massLambda - massLambda_PDG) <= 0.005)
+    	return kFALSE;
+    if(TMath::Abs(massAntiLambda - massLambda_PDG) <= 0.005)
+    	return kFALSE;
 
     
     f3DhistMassK0s_vs_Pt_beforeMasscut_Cent->Fill(V0->Pt(),V0->MassK0Short(),centrality);
