@@ -1918,7 +1918,9 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedV0SelectionTopologica
     //Armenteros variables
     Double_t fV0_AlphaArm = v0->AlphaV0();
     Double_t fV0_pTArm = v0->PtArmV0();
-    if (fV0_pTArm/TMath::Abs(fV0_AlphaArm) <= fArmentousCutVal) return passedV0Selection;
+    
+    if (fV0_AlphaArm > 0 && fV0_pTArm/TMath::Abs(fV0_AlphaArm) <= fArmentousCutVal) return passedV0Selection;
+    if (fV0_AlphaArm < 0 && fV0_pTArm/TMath::Abs(fV0_AlphaArm) >= -1.0*fArmentousCutVal) return passedV0Selection;
     
     //V0_eta
     Double_t fV0_eta = v0->PseudoRapV0();
