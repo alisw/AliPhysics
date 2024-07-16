@@ -590,7 +590,7 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
   else
     averageRP/=2.;
   Int_t irp=Int_t(10.*averageRP*fHarmonics/TMath::TwoPi());
-  if(irp>9)irp=9 ;
+  if (irp > 9) irp=9 ;
   
   if(!fPHOSEvents[zvtx][fCenBin][irp]) 
     fPHOSEvents[zvtx][fCenBin][irp]=new TList() ;
@@ -691,9 +691,9 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
 
   for (Int_t i=0; i < multClust; i++) {
     AliAODCaloCluster *clu = event->GetCaloCluster(i);
-    if ( !clu->IsPHOS() || clu->E()<0.3) continue;
+    if ( !clu->IsPHOS() || clu->E() < 0.3) continue;
     
-    if (!fMCArray && TMath::Abs(clu->GetTOF()) > fTOF) continue; // TOF cut for real data only!
+//    if (!fMCArray && TMath::Abs(clu->GetTOF()) > fTOF) continue; // TOF cut for real data only!
     
     if(fDistCut && (clu->GetDistanceToBadChannel() < 2.5))
        continue ;
@@ -755,8 +755,8 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
     Bool_t dispBit2 = clu->Chi2() < 2.5 * 2.5;
     ph->SetDispBit(dispBit1) ;
     ph->SetDisp2Bit(dispBit2) ;
-    ph->SetTOFBit(fMCArray ? kTRUE : clu->GetTOF() < fTOF);
-    ph->SetTime(clu->GetTOF());
+    ph->SetTime(TMath::Abs(clu->GetTOF()));
+    ph->SetTOFBit(fMCArray ? kTRUE : TMath::Abs(clu->GetTOF()) <= fTOF);
 
     //Track matching
     Bool_t cpvBit=(clu->GetEmcCpvDistance()>2.5) ;
@@ -838,6 +838,7 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
    
   for (Int_t i1=0; i1 < fInPHOS; i1++) {
     AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
+    if (!ph1->IsTOFOK()) continue;
     
     Double_t dphiA=ph1->Phi()-fRPV0A ;
     Double_t cosA=wA*TMath::Cos(fHarmonics*dphiA) ;
@@ -981,12 +982,11 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
 	 FillHistogram(Form("hPi0%sSingle_cen%d", cut.Data(), fCenBin), mInv, pT2);
       }
       
-      if (!ph1->IsTOFOK() || !ph2->IsTOFOK()) continue;
 
       Bool_t cpvBitPi0First  = ph1->IsCPVOK();
       Bool_t dispBitPi0First  = ph1->IsDisp2OK();
 
-      std::vector<TString> passed_cuts_Pi0First = {};
+      std::vector<TString> passed_cuts_Pi0First = {"All", "Allcore"};
       if (cpvBitPi01)  {
          passed_cuts_Pi0First.emplace_back("CPV");
 	 passed_cuts_Pi0First.emplace_back("CPVcore");
@@ -1011,6 +1011,15 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
 	 passed_cuts_Pi0First.emplace_back("AntiBoth2core");
       }
 
+      if (ph1->IsTOFOK()) {
+          Double_t energy2 = ph2->Energy();
+	  FillHistogram(Form("hMassTOFcut_base_cen%d", fCenBin), p12.M(), energy2);
+	  if (ph2->IsTOFOK()) {
+             FillHistogram(Form("hMassTOFcut_probe_cen%d", fCenBin), p12.M(), energy2);
+	  }
+      }
+
+      if (!ph1->IsTOFOK() || !ph2->IsTOFOK()) continue;
       for (auto cut : passed_cuts_Pi0First) {
 	 Double_t pT1  = cut.Contains("core") ?  ptV1 : pt1;
          Double_t mInv = cut.Contains("core") ?  p12V.M()  : p12.M();
@@ -1080,12 +1089,11 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
            FillHistogram(Form("hMiPi0%sSingle_cen%d", cut.Data(), fCenBin), mInv, pT2);
         }
         
-    	if (!ph1->IsTOFOK() || !ph2->IsTOFOK()) continue;
 
         Bool_t cpvBitPi0First  = ph1->IsCPVOK();
         Bool_t dispBitPi0First  = ph1->IsDisp2OK();
 
-        std::vector<TString> passed_cuts_Pi0First = {};
+        std::vector<TString> passed_cuts_Pi0First = {"All", "Allcore"};
         if (cpvBitPi01)  {
            passed_cuts_Pi0First.emplace_back("CPV");
            passed_cuts_Pi0First.emplace_back("CPVcore");
@@ -1110,6 +1118,15 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
            passed_cuts_Pi0First.emplace_back("AntiBoth2core");
         }
 
+        if (ph1->IsTOFOK()) {
+          Double_t energy2 = ph2->Energy();
+  	  FillHistogram(Form("hMiMassTOFcut_base_cen%d", fCenBin), p12.M(), energy2);
+  	  if (ph2->IsTOFOK()) {
+               FillHistogram(Form("hMiMassTOFcut_probe_cen%d", fCenBin), p12.M(), energy2);
+  	  }
+        }
+
+    	if (!ph1->IsTOFOK() || !ph2->IsTOFOK()) continue;
         for (auto cut : passed_cuts_Pi0First) {
            Double_t pT1 = cut.Contains("core") ?  ptV1 : pt1;
            Double_t mInv = cut.Contains("core") ?  p12V.M()  : p12.M();
@@ -1127,7 +1144,8 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
     prevPHOS->AddFirst(fPHOSEvent) ;
     fPHOSEvent=0;
     //if(prevPHOS->GetSize()>kMixEvents[fCenBin]){//Remove redundant events
-    if(prevPHOS->GetSize()>100){//Remove redundant events
+    Int_t nMixEvents = fCentrality < 40 ? 10 : 30;
+    if(prevPHOS->GetSize()>nMixEvents){//Remove redundant events
       TClonesArray * tmp = static_cast<TClonesArray*>(prevPHOS->Last()) ;
       prevPHOS->RemoveLast() ;
       delete tmp ;
@@ -2069,6 +2087,12 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::AddQAHistograms()
   TString histTitle;
 
   for (Int_t i = 0; i < fNCenBins; i ++) {
+
+    fOutputContainer6->Add(new TH2F(Form("hMassTOFcut_base_cen%d",    i), "TOF cut base",         nM, mMin, mMax, nPtPhot, 0., ptPhotMax));
+    fOutputContainer6->Add(new TH2F(Form("hMiMassTOFcut_base_cen%d",  i), "TOF cut base, mixed",  nM, mMin, mMax, nPtPhot, 0., ptPhotMax));
+    fOutputContainer6->Add(new TH2F(Form("hMassTOFcut_probe_cen%d",   i), "TOF cut probe",        nM, mMin, mMax, nPtPhot, 0., ptPhotMax));
+    fOutputContainer6->Add(new TH2F(Form("hMiMassTOFcut_probe_cen%d", i), "TOF cut probe, mixed", nM, mMin, mMax, nPtPhot, 0., ptPhotMax));
+
     for  (auto cut : fPidCuts) {
        TString cutName  = cut.first;
        TString cutTitle = cut.second;
@@ -2362,6 +2386,8 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::TestMatchingTrackPID(AliAODCaloCluster *c
     Int_t charge = trackMatched->Charge();
 
     const Double_t dist = clu1->GetEmcCpvDistance();
+
+    if (dist > 10.) return;
 
     FillHistogram(Form("hPhotEmcDistance_cen%d", fCenBin), dist);
 
