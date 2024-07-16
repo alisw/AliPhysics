@@ -67,12 +67,12 @@ ComputeLFefficiencies(std::string filename = "AnalysisResults") {
   for (int iSpecies = 2; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
     for (int iCharge = 0; iCharge < 2; ++iCharge) {
       cv.cd();
-      cv.DrawFrame(0.,0.,6.,1.1,Form("%s %s;#it{p}_{T} (GeV/#it{c}); Efficiency",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
+      cv.DrawFrame(0.,0.,10.,1.1,Form("%s %s;#it{p}_{T} (GeV/#it{c}); Efficiency",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
       TH3D* gen3D = static_cast<TH3D*>(input_list->FindObject(Form("Gen_%s_%s",AliPID::ParticleShortName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data())));
       TH1D* gen = gen3D->ProjectionZ(Form("Gen_%s_%s_pz",AliPID::ParticleShortName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()),3,7);
 
       cv_eta.cd();
-      cv_eta.DrawFrame(0.,0.,6.,1.1,Form("%s %s |#eta|<0.8;#it{p}_{T} (GeV/#it{c}); Efficiency",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
+      cv_eta.DrawFrame(0.,0.,10.,1.1,Form("%s %s |#eta|<0.8;#it{p}_{T} (GeV/#it{c}); Efficiency",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
       TH3D* gen3Deta = static_cast<TH3D*>(input_list->FindObject(Form("GenEta_%s_%s",AliPID::ParticleShortName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data())));
       TH1D* genEta = gen3Deta->ProjectionZ(Form("GenEta_%s_%s_pz",AliPID::ParticleShortName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()),2,9);
 
@@ -117,10 +117,10 @@ ComputeLFefficiencies(std::string filename = "AnalysisResults") {
       // TOF matching efficiency
 
       cv_tof.cd();
-      cv_tof.DrawFrame(0.,0.,6.,1.1,Form("%s %s;#it{p}_{T} (GeV/#it{c}); Ratios",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
+      cv_tof.DrawFrame(0.,0.,10.,1.1,Form("%s %s;#it{p}_{T} (GeV/#it{c}); Ratios",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
 
       cv_tof_eta.cd();
-      cv_tof_eta.DrawFrame(0.,0.,6.,1.1,Form("%s %s |#eta|<0.8;#it{p}_{T} (GeV/#it{c}); Rtios",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
+      cv_tof_eta.DrawFrame(0.,0.,10.,1.1,Form("%s %s |#eta|<0.8;#it{p}_{T} (GeV/#it{c}); Rtios",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
 
       for(int iCut = 1; iCut < AliAnalysisTaskLFefficiencies::fNcuts; ++iCut) {
         cv_tof.cd();
@@ -173,9 +173,9 @@ void ComputeLFefficiencies(std::string filename0, std::string filename1) {
   for (int iSpecies = 2; iSpecies < AliPID::kSPECIESC; ++iSpecies) {
     for (int iCharge = 0; iCharge < 2; ++iCharge) {
       cv_y.cd();
-      cv_y.DrawFrame(0.,0.,6.,2.1,Form("%s %s;#it{p}_{T} (GeV/#it{c}); Ratio",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
+      cv_y.DrawFrame(0.,0.,10.,2.1,Form("%s %s;#it{p}_{T} (GeV/#it{c}); Ratio",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
       cv_eta.cd();
-      cv_eta.DrawFrame(0.,0.,6.,2.1,Form("%s %s |#eta|<0.8;#it{p}_{T} (GeV/#it{c}); Ratio",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
+      cv_eta.DrawFrame(0.,0.,10.,2.1,Form("%s %s |#eta|<0.8;#it{p}_{T} (GeV/#it{c}); Ratio",AliPID::ParticleLatexName(iSpecies),AliAnalysisTaskLFefficiencies::fPosNeg[iCharge].data()));
 
       for (size_t iHist = 0; iHist < efficiencies[0].first[(iSpecies-2)*2+iCharge].size(); ++iHist) {
         cv_y.cd();
