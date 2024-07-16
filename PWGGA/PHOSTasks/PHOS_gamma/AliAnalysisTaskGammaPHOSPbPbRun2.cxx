@@ -590,10 +590,7 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
   else
     averageRP/=2.;
   Int_t irp=Int_t(10.*averageRP*fHarmonics/TMath::TwoPi());
-  if(irp>9)irp=9 ;
-
-  irp = 0; //don't need it now
-
+  if (irp > 9) irp=9 ;
   
   if(!fPHOSEvents[zvtx][fCenBin][irp]) 
     fPHOSEvents[zvtx][fCenBin][irp]=new TList() ;
@@ -758,8 +755,8 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
     Bool_t dispBit2 = clu->Chi2() < 2.5 * 2.5;
     ph->SetDispBit(dispBit1) ;
     ph->SetDisp2Bit(dispBit2) ;
-    ph->SetTime(clu->GetTOF());
-    ph->SetTOFBit(fMCArray ? kTRUE : clu->GetTOF() <= fTOF);
+    ph->SetTime(TMath::Abs(clu->GetTOF()));
+    ph->SetTOFBit(fMCArray ? kTRUE : TMath::Abs(clu->GetTOF()) <= fTOF);
 
     //Track matching
     Bool_t cpvBit=(clu->GetEmcCpvDistance()>2.5) ;
