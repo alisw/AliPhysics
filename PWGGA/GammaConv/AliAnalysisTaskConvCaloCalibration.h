@@ -220,6 +220,8 @@ protected:
   TH1F**                  fHistoNV0Tracks;                                    //! array of histos with V0 counts
   TH1F**                  fHistoJetJetNTrials;                                //! array of histos with ntrials for jetjet
 
+  TH2F**                  fHistoV0ElectronDCA;                                //! array of histos with DCA to prim vertex for electron tracks from V0 electrons
+
   // additional variables
   Double_t                fEventPlaneAngle;                                   // EventPlaneAngle
   Double_t                fMesonInvMassMin;                                   // minimum inv mass for histos
@@ -266,7 +268,7 @@ private:
   AliAnalysisTaskConvCaloCalibration(const AliAnalysisTaskConvCaloCalibration&); // Prevent copy-construction
   AliAnalysisTaskConvCaloCalibration &operator=(const AliAnalysisTaskConvCaloCalibration&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskConvCaloCalibration, 9);
+  ClassDef(AliAnalysisTaskConvCaloCalibration, 10);
 };
 
 #endif // AliAnalysisTaskConvCaloCalibration_H
