@@ -54,7 +54,7 @@ AliAnalysisTaskLFefficiencies::AliAnalysisTaskLFefficiencies(TString taskname) :
   fCheckMultiplicity{false},
   fEstimator{0},
   fLowMultEdge{0.},
-  fHighMultEdge{1.}  
+  fHighMultEdge{1.}
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -80,33 +80,33 @@ void AliAnalysisTaskLFefficiencies::UserCreateOutputObjects() {
   for (int iSpecies = 0; iSpecies < AliPID::kSPECIESC; iSpecies++) {
     for (int iCharge = 0; iCharge < 2; ++iCharge) {
       fGeneratedYPhiPt[iSpecies][iCharge] = new TH3D(Form("Gen_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),
-        ";y;#varphi;#it{p}_{T} (GeV/#it{c})",9,-0.9,0.9,16,0.,TwoPi(),60,0.,6.);
+        ";y;#varphi;#it{p}_{T} (GeV/#it{c})",9,-0.9,0.9,16,0.,TwoPi(),100,0.,10.);
       fOutputList->Add(fGeneratedYPhiPt[iSpecies][iCharge]);
       fGeneratedYPhiPtMaterial[iSpecies][iCharge] = new TH3D(Form("GenMaterial_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),
-        ";y;#varphi;#it{p}_{T} (GeV/#it{c})",9,-0.9,0.9,16,0.,TwoPi(),60,0.,6.);
+        ";y;#varphi;#it{p}_{T} (GeV/#it{c})",9,-0.9,0.9,16,0.,TwoPi(),100,0.,10.);
       fOutputList->Add(fGeneratedYPhiPtMaterial[iSpecies][iCharge]);
       fGeneratedYPhiPtWD[iSpecies][iCharge] = new TH3D(Form("GenWD_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),
-        ";y;#varphi;#it{p}_{T} (GeV/#it{c})",9,-0.9,0.9,16,0.,TwoPi(),60,0.,6.);
+        ";y;#varphi;#it{p}_{T} (GeV/#it{c})",9,-0.9,0.9,16,0.,TwoPi(),100,0.,10.);
       fOutputList->Add(fGeneratedYPhiPtWD[iSpecies][iCharge]);
       fGeneratedEtaPhiPt[iSpecies][iCharge] = new TH3D(Form("GenEta_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),
-        ";#eta;#varphi;#it{p}_{T} (GeV/#it{c})",10,-1.,1.,16,0.,TwoPi(),60,0.,6.);
+        ";#eta;#varphi;#it{p}_{T} (GeV/#it{c})",10,-1.,1.,16,0.,TwoPi(),100,0.,10.);
       fOutputList->Add(fGeneratedEtaPhiPt[iSpecies][iCharge]);
       for (int iCut = 0; iCut < fNcuts; ++iCut) {
         fReconstructedYPhiPt[iSpecies][iCharge][iCut] = new TH3D(Form("Rec_%s_%s_%i",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data(),iCut),
-          Form("%s;y;#varphi;#it{p}_{T} (GeV/#it{c})",fCutNames[iCut].data()),9,-0.9,0.9,16,0.,TwoPi(),60,0.,6.);
+          Form("%s;y;#varphi;#it{p}_{T} (GeV/#it{c})",fCutNames[iCut].data()),9,-0.9,0.9,16,0.,TwoPi(),100,0.,10.);
         fOutputList->Add(fReconstructedYPhiPt[iSpecies][iCharge][iCut]);
         fReconstructedEtaPhiPt[iSpecies][iCharge][iCut] = new TH3D(Form("RecEta_%s_%s_%i",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data(),iCut),
-          Form("%s;#eta;#varphi;#it{p}_{T} (GeV/#it{c})",fCutNames[iCut].data()),10,-1.,1.,16,0.,TwoPi(),60,0.,6.);
+          Form("%s;#eta;#varphi;#it{p}_{T} (GeV/#it{c})",fCutNames[iCut].data()),10,-1.,1.,16,0.,TwoPi(),100,0.,10.);
         fOutputList->Add(fReconstructedEtaPhiPt[iSpecies][iCharge][iCut]);
         // Out-of-banch pile-up
         fReconstructedYPhiPtOOBpileup[iSpecies][iCharge][iCut] = new TH3D(Form("Rec_%s_%s_%i_OOB",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data(),iCut),
-          Form("%s;y;#varphi;#it{p}_{T} (GeV/#it{c})",fCutNames[iCut].data()),9,-0.9,0.9,16,0.,TwoPi(),60,0.,6.);
+          Form("%s;y;#varphi;#it{p}_{T} (GeV/#it{c})",fCutNames[iCut].data()),9,-0.9,0.9,16,0.,TwoPi(),100,0.,10.);
         fOutputList->Add(fReconstructedYPhiPtOOBpileup[iSpecies][iCharge][iCut]);
         fReconstructedEtaPhiPtOOBpileup[iSpecies][iCharge][iCut] = new TH3D(Form("RecEta_%s_%s_%i_OOB",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data(),iCut),
-          Form("%s;#eta;#varphi;#it{p}_{T} (GeV/#it{c})",fCutNames[iCut].data()),10,-1.,1.,16,0.,TwoPi(),60,0.,6.);
+          Form("%s;#eta;#varphi;#it{p}_{T} (GeV/#it{c})",fCutNames[iCut].data()),10,-1.,1.,16,0.,TwoPi(),100,0.,10.);
         fOutputList->Add(fReconstructedEtaPhiPtOOBpileup[iSpecies][iCharge][iCut]);
       }
-      fNsigmaTOFvsPt[iSpecies][iCharge] = new TH2D(Form("nSigmaTOF_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),";#it{p}_{T} (GeV/#it{c}); n#sigma_{TOF}",60,0.,6.,1001,-100.1,100.1);
+      fNsigmaTOFvsPt[iSpecies][iCharge] = new TH2D(Form("nSigmaTOF_%s_%s",AliPID::ParticleShortName(iSpecies),fPosNeg[iCharge].data()),";#it{p}_{T} (GeV/#it{c}); n#sigma_{TOF}",100,0.,10.,1001,-100.1,100.1);
       fOutputList->Add(fNsigmaTOFvsPt[iSpecies][iCharge]);
     }
   }
@@ -154,7 +154,7 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
   /// required.
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* handl = (AliInputEventHandler*)mgr->GetInputEventHandler();
-  
+
   AliPIDResponse* pid = handl->GetPIDResponse();
   if (!pid) {
     ::Fatal("AliAnalysisTaskLFefficiencies::UserExec","Missing PID response. Did you attach the AliPIDresponseTask to your analysis?");
@@ -169,7 +169,7 @@ void AliAnalysisTaskLFefficiencies::UserExec(Option_t *){
   if (!arrayMC){
     ::Fatal("AliAnalysisTaskLFefficiencies::UserExec"," dMC particles branch not found.");
   }
-  
+
   int nRejectedParticles = 0;
 
   for (int iMC = 0; iMC < arrayMC->GetEntriesFast(); ++iMC) {
