@@ -411,7 +411,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fEta_EPos_Gamma1_MesonML(0),
   fKind_Gamma0(0),
   fKind_Gamma1(0),
-  ApplyPhotonML(0),
   fMapPhotonHeaders()
 {
 
@@ -769,7 +768,6 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fEta_EPos_Gamma1_MesonML(0),
   fKind_Gamma0(0),
   fKind_Gamma1(0),
-  ApplyPhotonML(0),
   fMapPhotonHeaders()
 {
   // Define output slots here
@@ -1602,9 +1600,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
         fESDList[iCut]->Add(sPtRDeltaROpenAngle[iCut]);
       }
     }
-
-    if (fDoTreeForPhotonML){
-
+    if (fDoTreeForPhotonML)
+    {
       TreeForPhotonML[iCut] = new TTree(Form("TreeForPhotonML_%s_%s_%s", cutstringEvent.Data(), cutstringPhoton.Data(), cutstringMeson.Data()), "TreeForPhotonML_Cuts");
       TreeForPhotonML[iCut]->Branch("InvMass", &fInvMass_PhotonML, "fInvMass_PhotonML/F");
       TreeForPhotonML[iCut]->Branch("Pt", &fPt_PhotonML, "fPt_PhotonML/F");
@@ -1646,10 +1643,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
       
       //fOutputContainer->Add(TreeForPhotonML[iCut]);
       //fMLFolder[iCut]->Add(TreeForPhotonML[iCut]);
-    }	   
+}	   
     
-    if (fDoTreeForMesonML){
-
+    if (fDoTreeForMesonML)
+    {
       TreeForMesonML[iCut] = new TTree(Form("TreeForMesonML_%s_%s_%s", cutstringEvent.Data(), cutstringPhoton.Data(), cutstringMeson.Data()), "TreeForMesonML_Cuts");
       TreeForMesonML[iCut]->SetMaxTreeSize(10000LL); // After ~1 GB, new file is created
       TreeForMesonML[iCut]->SetAutoFlush(-5000); // -50000000 = 5 MB and then write to file
@@ -1736,12 +1733,6 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
       //fMLFolder[iCut]->Add(TreeForMesonML[iCut]);
 
-    }
-    
-    //Loading of ML models
-    if(ApplyPhotonML) {
-      fMLResponse = new AliGammaMLResponseGammatoEPlusEMinus("AliGammaMLResponseGammatoEPlusEMinus", "AliGammaMLResponseGammatoEPlusEMinus", fConfigPath.Data());
-      fMLResponse->MLResponseInit();
     }	     
   }
   
@@ -2832,24 +2823,12 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 
     // if no further cuts, add to fGammaCandidates and we are done. If header criterion is fullfilled, also fill histos and tree
     if (!(lUseElecShareCut || lUseTooCloseCut)){
-      if (ApplyPhotonML) {
-          Double_t modelPred = -1.;
-          isMLsel = fMLResponse->IsSelected(modelPred, iCandidate, fInputEvent, fiPhotonCut, fV0Reader);
-          if (isMLsel){
-            fGammaCandidates->Add(iCandidate);
-            if (lIsFromSelectedHeader){
-              fillHistosAndTree(iCandidate);
-            }
-          }
-        }
-      else{
-        fGammaCandidates->Add(iCandidate);
-        if (lIsFromSelectedHeader){
-          fillHistosAndTree(iCandidate);
-        }
+
+      fGammaCandidates->Add(iCandidate);
+      if (lIsFromSelectedHeader){
+        fillHistosAndTree(iCandidate);
       }
     }
-
     else{
       // we have one of lUseElecShareCut and lUseTooCloseCut -> we cant fill the histos before having looked at all photons
       fMapPhotonHeaders.insert({iCandidate, lIsFromSelectedHeader});
@@ -2933,22 +2912,10 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
   // add remaining candidates to fGammaCandidates. If header criterion is fullfilled, also fill histos and tree
   // note: fMapPhotonHeaders will be empty unless lUseElecShareCut || lUseTooCloseCut
   for (auto &iPhotonHeader : fMapPhotonHeaders){
-    AliAODConversionPhoton *iCandidate = dynamic_cast<AliAODConversionPhoton*>( iPhotonHeader.first);
-    if (ApplyPhotonML) {
-      Double_t modelPred = -1.;
-      isMLsel = fMLResponse->IsSelected(modelPred, iCandidate, fInputEvent, fiPhotonCut, fV0Reader);
-      if (isMLsel){
-        fGammaCandidates->Add(iPhotonHeader.first);
-          if (iPhotonHeader.second){
-            fillHistosAndTree(iPhotonHeader.first);
-          }
-        }
-    }
-    else {
-      fGammaCandidates->Add(iPhotonHeader.first);
-        if (iPhotonHeader.second){
-          fillHistosAndTree(iPhotonHeader.first);
-        }
+
+    fGammaCandidates->Add(iPhotonHeader.first);
+    if (iPhotonHeader.second){
+      fillHistosAndTree(iPhotonHeader.first);
     }
   }
 }
@@ -4068,9 +4035,9 @@ void AliAnalysisTaskGammaConvV1::CalculatePi0Candidates(){
             fChi2PerNDF_Gamma1_MesonML = gamma1->GetChi2perNDF();
             fPhotonQuality_Gamma1_MesonML = gamma1->GetPhotonQuality();
             fDCAr_Gamma1_MesonML = gamma1->GetDCArToPrimVtx();
-            if (fiPhotonCut->CorrectedTPCClusterCut(gamma1, fInputEvent)){ // This condition is used to maintain uniformity with manual cut
-              fNegClusterTPCToF_Gamma1_MesonML = ENegTrack_Gamma1->GetTPCClusterInfo(2,0,fiPhotonCut->GetFirstTPCRow(gamma1->GetConversionRadius()));
-              fPosClusterTPCToF_Gamma1_MesonML = EPosTrack_Gamma1->GetTPCClusterInfo(2,0,fiPhotonCut->GetFirstTPCRow(gamma1->GetConversionRadius()));
+            if (fiPhotonCut->CorrectedTPCClusterCut(gamma0, fInputEvent)){ // This condition is used to maintain uniformity with manual cut
+              fNegClusterTPCToF_Gamma1_MesonML = ENegTrack_Gamma0->GetTPCClusterInfo(2,0,fiPhotonCut->GetFirstTPCRow(gamma0->GetConversionRadius()));
+              fPosClusterTPCToF_Gamma1_MesonML = EPosTrack_Gamma0->GetTPCClusterInfo(2,0,fiPhotonCut->GetFirstTPCRow(gamma0->GetConversionRadius()));
             }
 
             fDeDx_ITS_ENeg_Gamma1_MesonML = pidResonse->NumberOfSigmasITS(ENegTrack_Gamma1,AliPID::kElectron);

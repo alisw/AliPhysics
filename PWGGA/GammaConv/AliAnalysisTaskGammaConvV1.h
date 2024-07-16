@@ -19,7 +19,6 @@
 #include "TMVA/Reader.h"
 #include <vector>
 #include <map>
-#include "PCM_ML/AliGammaMLResponseGammatoEPlusEMinus.h"
 
 class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
@@ -97,18 +96,17 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     UInt_t IsTruePhotonAOD          ( AliAODConversionPhoton *TruePhotonCandidate );
 
     //ML functions
-    void SetDoTreeForPhotonML(Int_t flag){ fDoTreeForPhotonML   = flag;}
+    void SetDoTreeForPhotonML(Int_t flag)         { fDoTreeForPhotonML                  = flag    ;}
+//    void SetDoTreeForMesonML(Int_t flag)          { fDoTreeForMesonML                   = flag    ;}         
 
     void SetDoTreeForMesonML(Int_t flag, Float_t m1_left, Float_t m1_right, Float_t m2_left, Float_t m2_right)          
     {
-      fDoTreeForMesonML                                         = flag    ;
-      pion_mass_left                                            = m1_left;
-      pion_mass_right                                           = m1_right;
-      eta_mass_left                                             = m2_left; 
-      eta_mass_right                                            = m2_right;
+      fDoTreeForMesonML                  = flag    ;
+      pion_mass_left                     = m1_left;
+      pion_mass_right                    = m1_right;
+      eta_mass_left                      = m2_left; 
+      eta_mass_right                     = m2_right;
     }
-
-    void SetApplyPhotonML(Int_t flag){ ApplyPhotonML            = flag;}         
 
 
   protected:
@@ -378,8 +376,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Float_t                           pion_mass_right;
     Float_t                           eta_mass_left;
     Float_t                           eta_mass_right;
-    Int_t                             ApplyPhotonML;
-
+    
     Int_t                             fKind;                    
     Int_t                             fKind_Gamma0;                    
     Int_t                             fKind_Gamma1;                    
@@ -501,12 +498,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Float_t                           fEta_EPos_Gamma1_MesonML;  
     Float_t                           fPAsymmetry_EPos_Gamma1_MesonML;  
 
-    TList**                           fMLFolder;                                 
-    
-    AliGammaMLResponseGammatoEPlusEMinus* fMLResponse = nullptr;  //!<! object to handle ML response
-    TString fConfigPath   = "";                     /// path to ML config file   
-    bool    isMLsel       = false;
-  //End ML Variables
+    TList**                           fMLFolder;                                  //End ML Variables
 
 
   private:
