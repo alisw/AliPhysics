@@ -1943,6 +1943,9 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsLambdaCandidate (AliAODv0
     
     //PID Daughters
     Bool_t passedPID=(kFALSE);
+
+    if (!HasTrackPIDTPC(pos) || !HasTrackPIDTPC(neg)) return kFALSE;
+    
     if (PassedPIDSelection(neg,AliPID::kPion, PIDcut) && PassedPIDSelection(pos,AliPID::kProton, PIDcut)) passedPID=kTRUE;
     if (!passedPID) return kFALSE;
 
@@ -1978,6 +1981,9 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsAntiLambdaCandidate (AliA
     
     //PID Daughters
     Bool_t passedPID=(kFALSE);
+
+    if (!HasTrackPIDTPC(pos) || !HasTrackPIDTPC(neg)) return kFALSE;
+    
     if (PassedPIDSelection(pos,AliPID::kPion, PIDcut) && PassedPIDSelection(neg,AliPID::kProton, PIDcut)) passedPID=kTRUE;
     if (!passedPID) return kFALSE;
 
@@ -2006,6 +2012,9 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsK0sCandidate (AliAODv0 *V
     
     //PID Daughters
     Bool_t passedPID=(kFALSE);
+
+    if (!HasTrackPIDTPC(pos) || !HasTrackPIDTPC(neg)) return kFALSE;
+    
     if (PassedPIDSelection(pos,AliPID::kPion, PIDcut) && PassedPIDSelection(neg,AliPID::kPion, PIDcut)) passedPID=kTRUE;
     if (!passedPID) return kFALSE;
 
