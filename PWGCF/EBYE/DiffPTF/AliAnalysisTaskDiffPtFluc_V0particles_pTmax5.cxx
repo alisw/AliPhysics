@@ -1918,7 +1918,9 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedV0SelectionTopologica
     //Armenteros variables
     Double_t fV0_AlphaArm = v0->AlphaV0();
     Double_t fV0_pTArm = v0->PtArmV0();
-    if (fV0_pTArm/TMath::Abs(fV0_AlphaArm) <= fArmentousCutVal) return passedV0Selection;
+    
+    if (fV0_AlphaArm > 0 && fV0_pTArm <= fArmentousCutVal*fV0_AlphaArm) return passedV0Selection;
+    if (fV0_AlphaArm < 0 && fV0_pTArm <= -1.0*fArmentousCutVal*fV0_AlphaArm) return passedV0Selection;
     
     //V0_eta
     Double_t fV0_eta = v0->PseudoRapV0();
@@ -1941,6 +1943,9 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsLambdaCandidate (AliAODv0
     
     //PID Daughters
     Bool_t passedPID=(kFALSE);
+
+    if (!HasTrackPIDTPC(pos) || !HasTrackPIDTPC(neg)) return kFALSE;
+    
     if (PassedPIDSelection(neg,AliPID::kPion, PIDcut) && PassedPIDSelection(pos,AliPID::kProton, PIDcut)) passedPID=kTRUE;
     if (!passedPID) return kFALSE;
 
@@ -1976,6 +1981,9 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsAntiLambdaCandidate (AliA
     
     //PID Daughters
     Bool_t passedPID=(kFALSE);
+
+    if (!HasTrackPIDTPC(pos) || !HasTrackPIDTPC(neg)) return kFALSE;
+    
     if (PassedPIDSelection(pos,AliPID::kPion, PIDcut) && PassedPIDSelection(neg,AliPID::kProton, PIDcut)) passedPID=kTRUE;
     if (!passedPID) return kFALSE;
 
@@ -1984,7 +1992,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsAntiLambdaCandidate (AliA
     Double_t massK0s = V0->MassK0Short();
     if (massK0s >= 0.4876 && massK0s <= 0.5076)
       return kFALSE;
-
+      
     //Fill histogram before masscut
     f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent->Fill(V0->Pt(),V0->MassAntiLambda(),centrality);
     
@@ -2004,11 +2012,24 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsK0sCandidate (AliAODv0 *V
     
     //PID Daughters
     Bool_t passedPID=(kFALSE);
+
+    if (!HasTrackPIDTPC(pos) || !HasTrackPIDTPC(neg)) return kFALSE;
+    
     if (PassedPIDSelection(pos,AliPID::kPion, PIDcut) && PassedPIDSelection(neg,AliPID::kPion, PIDcut)) passedPID=kTRUE;
     if (!passedPID) return kFALSE;
 
     Double_t massK0s = V0->MassK0Short();
     Double_t massK0s_PDG=TDatabasePDG::Instance()->GetParticle(310)->Mass();
+    
+    //competing V0 rejection based on Inv. Mass
+    Double_t massLambda = V0->MassLambda();
+    Double_t massAntiLambda = V0->MassAntiLambda();
+    Double_t massLambda_PDG=TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+    
+    if(TMath::Abs(massLambda - massLambda_PDG) <= 0.005)
+    	return kFALSE;
+    if(TMath::Abs(massAntiLambda - massLambda_PDG) <= 0.005)
+    	return kFALSE;
 
     
     f3DhistMassK0s_vs_Pt_beforeMasscut_Cent->Fill(V0->Pt(),V0->MassK0Short(),centrality);
