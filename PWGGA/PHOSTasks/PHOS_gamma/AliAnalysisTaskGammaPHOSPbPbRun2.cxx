@@ -18,6 +18,8 @@
 #include "TProfile.h"
 #include "TProfile2D.h"
 #include "THashList.h"
+#include "AliMagF.h"
+#include "TGeoGlobalMagField.h"
 
 #include "AliAnalysisManager.h"
 #include "AliMCEventHandler.h"
@@ -63,6 +65,7 @@ AliAnalysisTaskGammaPHOSPbPbRun2::AliAnalysisTaskGammaPHOSPbPbRun2(const char *n
   fOutputContainer4(0x0),
   fOutputContainer5(0x0),
   fOutputContainer6(0x0),
+  fEvent(0x0),
   fPHOSEvent(0x0),
   fPIDResponse(0x0), 
   fQV0A(0.),
@@ -283,13 +286,13 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
   // Main loop, called for each event
   // Analyze ESD/AOD
   
-  AliAODEvent *event = dynamic_cast<AliAODEvent*>(InputEvent());
-  if (!event) {
+  fEvent = dynamic_cast<AliAODEvent*>(InputEvent());
+  if (!fEvent) {
     Printf("ERROR: Could not retrieve event");
     return;
   }
 
-  fRunNumber=ConvertRunNumber(event->GetRunNumber()) ;
+  fRunNumber=ConvertRunNumber(fEvent->GetRunNumber()) ;
   FillHistogram("hSelEvents",0.5,fRunNumber-0.5) ;
   FillHistogram("hTotSelEvents",0.5) ;
 
@@ -302,13 +305,13 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
   
   // Get PHOS rotation matrices from ESD and set them to the PHOS geometry
   if(fEventCounter == 0) {
-//   OpenInfoCalbration(event->GetRunNumber()) ;
+//   OpenInfoCalbration(fEvent->GetRunNumber()) ;
    for(Int_t mod=0; mod<5; mod++) {
-      if(!event->GetPHOSMatrix(mod)) continue;
-      fPHOSGeo->SetMisalMatrix(event->GetPHOSMatrix(mod),mod) ;
-      Printf("PHOS geo matrix %p for module # %d is set\n", event->GetPHOSMatrix(mod), mod);
+      if(!fEvent->GetPHOSMatrix(mod)) continue;
+      fPHOSGeo->SetMisalMatrix(fEvent->GetPHOSMatrix(mod),mod) ;
+      Printf("PHOS geo matrix %p for module # %d is set\n", fEvent->GetPHOSMatrix(mod), mod);
     }
-    Int_t run = event->GetRunNumber() ;
+    Int_t run = fEvent->GetRunNumber() ;
     Int_t runTemporary = 170593;  //temporary fix
   
 //    TFile * fflatFine = TFile::Open("EP_final.root") ;
@@ -371,7 +374,7 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
       fV0CFlat = h ;
       
       h = (AliEPFlattener*)arrQ->At(3) ;  
-      if(fTPCQFlat) delete fTPCQFlat ;
+     // if(fTPCQFlat) delete fTPCQFlat ;
       fTPCQFlat = new AliEPFlattener() ;
       fTPCQFlat = h ;
       h = (AliEPFlattener*)arrQ->At(4) ;  
@@ -419,7 +422,7 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
 
   // Checks if we have a primary vertex
   // Get primary vertices form ESD
-  const AliAODVertex *esdVertex5 = event->GetPrimaryVertex();
+  const AliAODVertex *esdVertex5 = fEvent->GetPrimaryVertex();
 
   fVtx5[0] = esdVertex5->GetX();
   fVtx5[1] = esdVertex5->GetY();
@@ -446,7 +449,7 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
   //No dependence on zVtx observed, save memory
   Int_t zvtx=0 ;
 
-  AliMultSelection *multSelection =static_cast<AliMultSelection*>(event->FindListObject("MultSelection"));
+  AliMultSelection *multSelection =static_cast<AliMultSelection*>(fEvent->FindListObject("MultSelection"));
   if(multSelection) fCentrality = multSelection->GetMultiplicityPercentile("V0M");
 
   if( fCentrality < 0. || fCentrality > 100. ){
@@ -472,7 +475,7 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
   EvalResolution() ;
   EvalQResolution() ;
   
-  EvalV0ReactionPlane(event) ;
+  EvalV0ReactionPlane(fEvent) ;
 
   //TPC evals second order RP need sign of V0 RP to find direction
   //reaction plane
@@ -496,11 +499,11 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
 
   ApplyFinalQFlattening() ;
   
-  fCutsV0->SetEvent(event,0x0);
+  fCutsV0->SetEvent(fEvent,0x0);
   fFlowEvent->ClearFast();
   fFlowEvent->Fill(fCutsV0, fCutsTPC);
   fFlowEvent->TagSubeventsInEta(-10.,-1.,1.,10.) ;
-  fFlowEvent->SetReferenceMultiplicity(event->GetNumberOfTracks());
+  fFlowEvent->SetReferenceMultiplicity(fEvent->GetNumberOfTracks());
   fFlowEvent->DefineDeadZone(0., 0, 0, 0);
   AliFlowVector qArray[2] ;
   fFlowEvent->Get2Qsub(qArray,fHarmonics) ;
@@ -577,10 +580,10 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
     }
   }     
  
-  FillHistogram("hSelEvents",4.5,fRunNumber-0.5) ;
+  FillHistogram("hSelEvents",4.5, fRunNumber-0.5) ;
   FillHistogram("hTotSelEvents",4.5) ;
   //All event selections done
-  FillHistogram("hCentrality",fCentrality,fRunNumber-0.5) ;
+  FillHistogram("hCentrality",fCentrality, fRunNumber-0.5) ;
   FillHistogram("hCentralityCorr",fCentrality,cWeight) ;
   //Reaction plane is defined in the range (0;pi)
   //We have 10 bins
@@ -596,7 +599,7 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
     fPHOSEvents[zvtx][fCenBin][irp]=new TList() ;
   TList * prevPHOS = fPHOSEvents[zvtx][fCenBin][irp] ;
 
-  fMCArray = (TClonesArray*)event->FindListObject(AliAODMCParticle::StdBranchName());
+  fMCArray = (TClonesArray*)fEvent->FindListObject(AliAODMCParticle::StdBranchName());
 
   if (fMCArray) fIsMC = kTRUE;
   
@@ -609,12 +612,12 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
 
   TVector3 vertex(fVtx5);
   
-  Int_t multClust = event->GetNumberOfCaloClusters();
+  Int_t multClust = fEvent->GetNumberOfCaloClusters();
   Int_t fInPHOS=0;  //inMod1=0, inMod2=0, inMod3=0 ;
   // Double_t avrgEm1=0,avrgEm2=0,avrgEm3=0; //average cluster energy
 
-  AliAODCaloCells * cells = event->GetPHOSCells() ;
-  FillHistogram("hCenTrack",fCentrality,event->GetNumberOfTracks()) ;
+  AliAODCaloCells * cells = fEvent->GetPHOSCells() ;
+  FillHistogram("hCenTrack", fCentrality, fEvent->GetNumberOfTracks()) ;
   
   //QA PHOS cells
   Int_t nCellModule[4] = {0, 0, 0, 0};
@@ -690,7 +693,7 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
   Int_t nAll=0,nCPV=0, nDisp=0, nBoth=0; 
 
   for (Int_t i=0; i < multClust; i++) {
-    AliAODCaloCluster *clu = event->GetCaloCluster(i);
+    AliAODCaloCluster *clu = fEvent->GetCaloCluster(i);
     if ( !clu->IsPHOS() || clu->E() < 0.3) continue;
     
 //    if (!fMCArray && TMath::Abs(clu->GetTOF()) > fTOF) continue; // TOF cut for real data only!
@@ -727,8 +730,6 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
       
     TLorentzVector pv1 ;
     clu->GetMomentum(pv1 ,fVtx5);
-
-    TestMatchingTrackPID(clu, pv1.Pt());
 
     Double_t ecore=clu->GetCoreEnergy() ; 
     
@@ -801,6 +802,7 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
     ph->SetEMCz(float(cellZ)) ;
     ph->SetLambdas(clu->GetM20(), clu->GetM02()) ;
     ph->SetUnfolded(clu->GetNExMax()<2); // Remember, if it is unfolded          
+
     nAll++ ;
     if(cpvBit)nCPV++ ;
     if(ph->IsDisp2OK())nDisp++ ;
@@ -838,7 +840,6 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
    
   for (Int_t i1=0; i1 < fInPHOS; i1++) {
     AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
-    if (!ph1->IsTOFOK()) continue;
     
     Double_t dphiA=ph1->Phi()-fRPV0A ;
     Double_t cosA=wA*TMath::Cos(fHarmonics*dphiA) ;
@@ -1037,6 +1038,8 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
     Double_t pt1  = ph1->Pt();
     Double_t ptV1 = ph1->GetMomV2()->Pt();
 
+    TestMatchingTrackPID(ph1, kFALSE);
+
     for(Int_t ev = 0; ev < prevPHOS->GetSize(); ev++){
       TClonesArray * mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev)) ;
 
@@ -1045,6 +1048,8 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::UserExec(Option_t *)
         AliCaloPhoton * ph2=(AliCaloPhoton*)mixPHOS->At(i2) ;
         Double_t pt2  = ph2->Pt();
         Double_t ptV2 = ph2->GetMomV2()->Pt();
+
+        TestMatchingTrackPID(ph2, kTRUE);
 
         TLorentzVector p12   = *ph1  + *ph2;
         TLorentzVector p12V  = *ph1->GetMomV2()  + *ph2->GetMomV2();
@@ -2277,12 +2282,17 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::AddPhiTitleHistograms()
     char phiTitle[15] ;
     Int_t nPt  = 150;
     Double_t xPt[151] ;
-    for(Int_t i=0; i <= 150; i++) 
+    for(Int_t i=0; i <= 150; i++) {
        xPt[i]=0.1*i;
-     const Int_t nPhi=10 ;
+    }
+
+     const Int_t nPhi = 10 ;
      Double_t xPhi[nPhi] ;
-     for(Int_t i=0; i <= nPhi; i++) xPhi[i] = i * 0.1*TMath::TwoPi()/fHarmonics ;
-      
+
+     for(Int_t i=0; i <= nPhi; i++) {
+	xPhi[i] = i * 0.1*TMath::TwoPi()/fHarmonics ;
+     }
+
      for(Int_t iRP=0; iRP<3; iRP++){
        if(iRP==0)
          snprintf(phiTitle, 15,"TPC") ;
@@ -2324,8 +2334,12 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::AddSinglePhotonHistograms()
   //Single photon and pi0 spectrum
   Int_t nPtPhot = 400 ;
   Double_t ptPhotMax = 40.;
+
+  std::vector<TString> trackNames = {"PiPlus", "PiMinus", "PPlus", "PMinus", "KaPlus", "KaMinus", "BetaPlus", "BetaMinus", "Undef"};
     
   for(Int_t cent=0; cent < fNCenBins; cent++){
+
+    fOutputContainer3->Add(new TH1F(Form("hPhotEmcDistance_cen%d", cent), "Photon emc distance", 100, 0., 10.));
 
     for  (auto cut : fPidCuts) {
       
@@ -2358,57 +2372,39 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::AddSinglePhotonHistograms()
       //fOutputContainer->Add(new TH1F(Form("hPhot%s_cen%d", cutName.Data(),cent), cutTitle.Data(),nPtPhot,0.,ptPhotMax));  
       //((TH1F*)fOutputContainer->Last())->Sumw2() ;
 
-      fOutputContainer3->Add(new TH2F(Form("hTracksBetaPlus%s_cen%d",  cutName.Data(),cent), cutTitle.Data(),nPtPhot,0.,ptPhotMax, 100, 0,10.));
-      fOutputContainer3->Add(new TH2F(Form("hTracksBetaMinus%s_cen%d",  cutName.Data(),cent), cutTitle.Data(),nPtPhot,0.,ptPhotMax, 100,0.,10.));
-      fOutputContainer3->Add(new TH2F(Form("hTracksPiPlus%s_cen%d",  cutName.Data(),cent), cutTitle.Data(),nPtPhot,0.,ptPhotMax, 100, 0, 10.));
-      fOutputContainer3->Add(new TH2F(Form("hTracksPiMinus%s_cen%d",  cutName.Data(),cent), cutTitle.Data(),nPtPhot,0.,ptPhotMax, 100, 0, 10.));
-      fOutputContainer3->Add(new TH2F(Form("hTracksKaPlus%s_cen%d",  cutName.Data(),cent), cutTitle.Data(),nPtPhot,0.,ptPhotMax, 100, 0, 10.));
-      fOutputContainer3->Add(new TH2F(Form("hTracksKaMinus%s_cen%d",  cutName.Data(),cent), cutTitle.Data(),nPtPhot,0.,ptPhotMax, 100, 0, 10.));
-      fOutputContainer3->Add(new TH2F(Form("hTracksPPlus%s_cen%d",  cutName.Data(),cent), cutTitle.Data(),nPtPhot,0.,ptPhotMax, 100, 0, 10.));
-      fOutputContainer3->Add(new TH2F(Form("hTracksPMinus%s_cen%d",  cutName.Data(),cent), cutTitle.Data(),nPtPhot,0.,ptPhotMax, 100, 0, 10.));
+      if (cutName.Contains("CPV") || cutName.Contains("Both")) continue;
 
-      fOutputContainer3->Add(new TH2F(Form("hTracksUndef%s_cen%d",  cutName.Data(),cent), cutTitle.Data(),nPtPhot,0.,ptPhotMax, 100, 0, 10.));
-
-      fOutputContainer3->Add(new TH1F(Form("hPhotEmcDistance_cen%d", cent), "Emc distance", 200, 0, 20.));
+      for (auto tName : trackNames) {
+         fOutputContainer3->Add(new TH2F(Form("hTracks%s%s_cen%d",  tName.Data(), cutName.Data(),cent), cutTitle.Data(),nPtPhot, 0., ptPhotMax, 100, 0,10.));
+         ((TH2F*)fOutputContainer3->Last())->Sumw2();
+         fOutputContainer3->Add(new TH2F(Form("hMiTracks%s%s_cen%d",  tName.Data(), cutName.Data(),cent), cutTitle.Data(),nPtPhot, 0., ptPhotMax, 100, 0,10.));
+         ((TH2F*)fOutputContainer3->Last())->Sumw2();
+      }
     }        
-    
   }
 }
 
 //-----------------------------------------------------------------------------
-void AliAnalysisTaskGammaPHOSPbPbRun2::TestMatchingTrackPID(AliAODCaloCluster *clu1, Double_t pt)
+void AliAnalysisTaskGammaPHOSPbPbRun2::TestMatchingTrackPID(AliCaloPhoton *ph, Bool_t mix)
 {
+    if (!ph) return;
+    Int_t mod = ph->Module();
+    TVector3 locpos(ph->EMCx(), 0.,  ph->EMCz());
+    TVector3 global(locpos);
 
-    const Int_t NTracksMatched = clu1->GetNTracksMatched();
-    if (NTracksMatched == 0) return;
-
-    AliAODTrack* trackMatched= dynamic_cast<AliAODTrack*>(clu1->GetTrackMatched(0));
-    Int_t charge = trackMatched->Charge();
-
-    const Double_t dist = clu1->GetEmcCpvDistance();
-
+    Double_t dx = 999.,dz = 999., pttrack = 0.;
+    Int_t charge = 0;
+    Int_t itr = FindTrackMatching(mod, &locpos, dx,  dz, pttrack, charge);
+    if (itr < 0) 
+       return;
+        
+    Double_t dist = TestCPV(dx, dz, pttrack, charge);
     if (dist > 10.) return;
 
-    FillHistogram(Form("hPhotEmcDistance_cen%d", fCenBin), dist);
+    if (!mix) 
+       FillHistogram(Form("hPhotEmcDistance_cen%d", fCenBin), dist);
 
-    const Bool_t CPVBit = dist > 2.5;
-    const Bool_t Disp2Bit = clu1->Chi2() < 2.5*2.5;
-
-    std::vector<TString> passed_cuts = {"All", "Allcore"};
-    if (CPVBit) {
-      passed_cuts.emplace_back("CPV");
-      passed_cuts.emplace_back("CPVcore");
-    }
-    if (Disp2Bit) {
-      passed_cuts.emplace_back("Disp2");
-      passed_cuts.emplace_back("Disp2core");
-    }
-    if (CPVBit && Disp2Bit) {
-      passed_cuts.emplace_back("Both2");
-      passed_cuts.emplace_back("Both2core");
-    }
-
-   // Double_t pBayesMatched[AliPID::kSPECIESC];
+    auto trackMatched = (AliAODTrack*)fEvent->GetTrack(itr);
 
     AliPIDCombined *pidcomb=new AliPIDCombined();
 
@@ -2417,41 +2413,55 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::TestMatchingTrackPID(AliAODCaloCluster *c
     pidcomb->SetSelectedSpecies(AliPID::kSPECIESC);
     pidcomb->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF|AliPIDResponse::kDetITS|AliPIDResponse::kDetTRD);
       
- 
-    if (trackMatched->TestFilterBit(32) &&  trackMatched->GetTPCsignal() > 0.) {
+    if (!trackMatched->TestFilterBit(32) ||  !(trackMatched->GetTPCsignal() > 0.) ) 
+	return;
+
+    Bool_t pidPion = kFALSE , pidKaon = kFALSE , pidProton = kFALSE , pidElectron = kFALSE, pidUndef = kTRUE;
+    const Float_t nsigmaMax = 3.;
+      
+    Float_t  nsigmaElectron =   TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kElectron ));
+    Float_t  nsigmaPion =       TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kPion ));
+    Float_t  nsigmaKaon =       TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kKaon ) );
+    Float_t  nsigmaProton =     TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kProton ));
    
-      Bool_t pidPion = kFALSE , pidKaon = kFALSE , pidProton = kFALSE , pidElectron = kFALSE, pidUndef = kFALSE ;
-        
-      Float_t  nsigmaElectron =   TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kElectron )) ;
-      Float_t  nsigmaPion =       TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kPion )) ;
-      Float_t  nsigmaKaon =       TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kKaon ) ) ;
-      Float_t  nsigmaProton =     TMath::Abs( fPIDResponse->NumberOfSigmasTPC( trackMatched, AliPID::kProton ) );
-     
-      // smallest sigma
-      if ((nsigmaPion < 3.) && ( nsigmaPion < nsigmaKaon) && (nsigmaPion < nsigmaProton) && (nsigmaPion < nsigmaElectron)) 
-         pidPion= kTRUE;
-      if ((nsigmaProton < 3.) && ( nsigmaProton < nsigmaKaon) && (nsigmaProton < nsigmaPion) && (nsigmaProton < nsigmaElectron)) 
-         pidProton= kTRUE;
-      if ((nsigmaProton < 3.) && ( nsigmaKaon < nsigmaPion) && (nsigmaKaon < nsigmaProton) && (nsigmaKaon < nsigmaElectron))
-         pidKaon= kTRUE;
-      if ((nsigmaProton < 3.) && ( nsigmaElectron < nsigmaKaon) && (nsigmaElectron < nsigmaPion) && (nsigmaElectron < nsigmaProton))
-         pidElectron= kTRUE;
-      if (!pidPion && !pidProton && !pidKaon && !pidElectron)
-         pidUndef=kTRUE;
+    //find min. sigma
+    if ((nsigmaPion < nsigmaMax) && ( nsigmaPion < nsigmaKaon) && (nsigmaPion < nsigmaProton) && (nsigmaPion < nsigmaElectron)) {
+	pidUndef = kFALSE;    
+	pidPion  = kTRUE;
+    }
+    if ((nsigmaProton < nsigmaMax) && ( nsigmaProton < nsigmaKaon) && (nsigmaProton < nsigmaPion) && (nsigmaProton < nsigmaElectron)) {
+       pidUndef  = kFALSE;  
+       pidProton = kTRUE;
+    }
+    if ((nsigmaKaon < nsigmaMax) && ( nsigmaKaon < nsigmaPion) && (nsigmaKaon < nsigmaProton) && (nsigmaKaon < nsigmaElectron)) {
+       pidUndef  = kFALSE;  
+       pidKaon= kTRUE;
+    }
+    if ((nsigmaElectron < nsigmaMax) && ( nsigmaElectron < nsigmaKaon) && (nsigmaElectron < nsigmaPion) && (nsigmaElectron < nsigmaProton)) {
+       pidUndef  = kFALSE;  
+       pidElectron= kTRUE;
+    }
 
-      TString trackName;
-      TString chStr = charge > 0 ? "Plus" : "Minus";
-     
-      if (pidPion) trackName = "Pi"+ chStr;
-      if (pidElectron) trackName = "Beta"+ chStr;
-      if (pidProton) trackName = "P"+ chStr;
-      if (pidKaon) trackName = "Ka"+ chStr;
-      if (pidUndef) trackName = "Undef";
+    TString trackName;
+    TString chStr = charge > 0 ? "Plus" : "Minus";
+   
+    if (pidPion)     trackName = "Pi"   + chStr;
+    else if (pidElectron) trackName = "Beta" + chStr;
+    else if (pidProton)   trackName = "P"    + chStr;
+    else if (pidKaon)     trackName = "Ka"   + chStr;
+    else if (pidUndef)    trackName = "Undef";
 
-      for (auto cut : passed_cuts) {
-         FillHistogram(Form("hTracks%s%s_cen%d", trackName.Data(), cut.Data(), fCenBin), pt, dist);
-      }
-   }
+    const Bool_t Disp2Bit = ph->IsDisp2OK();
+
+    std::vector<TString> passed_cuts = {"All", "Allcore"};
+    if (Disp2Bit) {
+      passed_cuts.emplace_back("Disp2");
+      passed_cuts.emplace_back("Disp2core");
+    }
+
+    for (auto cut : passed_cuts) { 
+      FillHistogram(Form("h%sTracks%s%s_cen%d", mix ? "Mi" : "", trackName.Data(), cut.Data(), fCenBin), cut.Contains("core") ? ph->GetMomV2()->Pt() : ph->Pt(), dist);
+    }
 }
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskGammaPHOSPbPbRun2::Notify()
@@ -2596,4 +2606,193 @@ void AliAnalysisTaskGammaPHOSPbPbRun2::SetCentralityIntervals(TString mode) {
        printf("Centrality bin nr %d: %.f < cent < %.f\n", i, fCenBinEdges[i], fCenBinEdges[i+1]);
    }
    return;
+}
+//_______________________________________________
+Int_t AliAnalysisTaskGammaPHOSPbPbRun2::FindTrackMatching(Int_t mod,TVector3 *locpos, Double_t &dx, Double_t &dz, Double_t &pt,Int_t &charge)
+{
+  //Find track with closest extrapolation to cluster
+  AliESDEvent *esd = 0x0;
+  AliAODEvent *aod = fEvent;
+  
+  if(!esd && !aod){
+    AliError("Neither AOD nor ESD was found");
+    return -1;
+  }
+  Double_t  magF =0.;
+   if(esd)
+     magF = esd->GetMagneticField();
+   if(aod)
+     magF = aod->GetMagneticField();
+ 
+  Double_t magSign = 1.0;
+  if(magF<0)magSign = -1.0;
+  
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+    AliError("Margnetic filed was not initialized, use default");
+    AliMagF* field = new AliMagF("Maps","Maps", magSign, magSign, AliMagF::k5kG);
+    TGeoGlobalMagField::Instance()->SetField(field);
+  }
+
+  // *** Start the matching
+  Int_t nt = 0;
+  if(esd)
+    nt = esd->GetNumberOfTracks();
+  else
+    nt = aod->GetNumberOfTracks();
+      
+  //Calculate actual distance to PHOS module
+  TVector3 globaPos;
+  fPHOSGeo->Local2Global(mod, 0.,0., globaPos);
+  const Double_t rPHOS = globaPos.Pt(); //Distance to center of  PHOS module
+  const Double_t kYmax = 72.+10.; //Size of the module (with some reserve) in phi direction
+  const Double_t kZmax = 64.+10.; //Size of the module (with some reserve) in z direction
+  const Double_t kAlpha0=330./180.*TMath::Pi(); //First PHOS module angular direction
+  const Double_t kAlpha= 20./180.*TMath::Pi(); //PHOS module angular size
+  Double_t minDistance = 1.e6;
+
+
+  Double_t gposTrack[3]; 
+
+  Double_t bz = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->SolenoidField();
+  bz = TMath::Sign(0.5*kAlmost0Field,bz) + bz;
+
+  Double_t b[3]; 
+  Int_t itr=-1;
+  AliESDtrack *esdTrack=0x0;
+  AliAODTrack *aodTrack=0x0;
+  Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
+  for (Int_t i=0; i<nt; i++) {
+      if(esd)
+        esdTrack=esd->GetTrack(i);
+      else
+        aodTrack=(AliAODTrack*)aod->GetTrack(i);
+
+      // Skip the tracks having "wrong" status (has to be checked/tuned)
+      if(esd){
+        ULong_t status = esdTrack->GetStatus();
+        if((status & AliESDtrack::kTPCout) == 0) continue;
+      }
+      else{
+          
+          
+      }
+      
+      
+      //Continue extrapolation from TPC outer surface
+      AliExternalTrackParam outerParam;
+      if(esdTrack){
+          outerParam = *(esdTrack->GetOuterParam());
+      }
+      if(aodTrack){            
+        aodTrack->GetPxPyPz(pxpypz);
+        aodTrack->GetXYZ(xyz);
+        aodTrack->GetCovarianceXYZPxPyPz(cv);
+        outerParam.Set(xyz,pxpypz,cv,aodTrack->Charge());
+      }
+      
+      Double_t z; 
+      if(!outerParam.GetZAt(rPHOS,bz,z))
+        continue;
+
+      if (TMath::Abs(z) > kZmax) 
+        continue; // Some tracks miss the PHOS in Z
+
+     
+      //Direction to the current PHOS module
+      Double_t phiMod=kAlpha0-kAlpha*mod;
+      if(!outerParam.RotateParamOnly(phiMod)) continue; //RS use faster rotation if errors are not needed 
+    
+      Double_t y;                       // Some tracks do not reach the PHOS
+      if (!outerParam.GetYAt(rPHOS,bz,y)) continue; //    because of the bending
+      
+      if(TMath::Abs(y) < kYmax){
+        outerParam.GetBxByBz(b);
+        outerParam.PropagateToBxByBz(rPHOS,b);        // Propagate to the matching module
+        //outerParam.CorrectForMaterial(...); // Correct for the TOF material, if needed
+        outerParam.GetXYZ(gposTrack);
+        TVector3 globalPositionTr(gposTrack);
+        TVector3 localPositionTr;
+        fPHOSGeo->Global2Local(localPositionTr,globalPositionTr,mod);
+        Double_t ddx = locpos->X()-localPositionTr.X();
+        Double_t ddz = locpos->Z()-localPositionTr.Z();
+        Double_t d2 = ddx*ddx + ddz*ddz;
+        if(d2 < minDistance) {
+	  dx = ddx;
+  	  dz = ddz;
+	  minDistance=d2;
+	  itr=i;
+          if(esdTrack){
+            pt=esdTrack->Pt();
+	    charge=esdTrack->Charge();
+          }
+          else{            
+           pt=aodTrack->Pt();
+           charge=aodTrack->Charge();
+          }
+        }
+      }
+    }//Scanned all tracks
+ 
+   return itr;
+}
+
+//____________________________________________________________________________
+Double_t AliAnalysisTaskGammaPHOSPbPbRun2::TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge){
+  //Parameterization of LHC10h period
+  //_true if neutral_
+  
+ // AliAODEvent *aod= dynamic_cast<AliAODEvent*>(InputEvent());
+  
+  Double_t mf = fEvent->GetMagneticField();
+  
+  Double_t meanX=0;
+  Double_t meanZ=0.;
+  Double_t sx=0.; 
+  Double_t sz=0.; 
+
+  if(fRunNumber<209122){ //Run1
+    sx=TMath::Min(5.4,2.59719e+02*TMath::Exp(-pt/1.02053e-01)+
+              6.58365e-01*5.91917e-01*5.91917e-01/((pt-9.61306e-01)*(pt-9.61306e-01)+5.91917e-01*5.91917e-01)+1.59219);
+    sz=TMath::Min(2.75,4.90341e+02*1.91456e-02*1.91456e-02/(pt*pt+1.91456e-02*1.91456e-02)+1.60);
+  
+    if(mf<0.){ //field --
+      meanZ = -0.468318;
+      if(charge>0)
+        meanX=TMath::Min(7.3, 3.89994*1.20679*1.20679/(pt*pt+1.20679*1.20679)+0.249029+2.49088e+07*TMath::Exp(-pt*3.33650e+01));
+      else
+        meanX=-TMath::Min(7.7,3.86040*0.912499*0.912499/(pt*pt+0.912499*0.912499)+1.23114+4.48277e+05*TMath::Exp(-pt*2.57070e+01));
+    }
+    else{ //Field ++
+      meanZ= -0.468318;
+      if(charge>0)
+        meanX=-TMath::Min(8.0,3.86040*1.31357*1.31357/(pt*pt+1.31357*1.31357)+0.880579+7.56199e+06*TMath::Exp(-pt*3.08451e+01));
+      else
+        meanX= TMath::Min(6.85, 3.89994*1.16240*1.16240/(pt*pt+1.16240*1.16240)-0.120787+2.20275e+05*TMath::Exp(-pt*2.40913e+01));     
+    }
+
+  }
+  else{//Run2
+  
+    sx = TMath::Min(5.2, 1.111 + 0.56 * TMath::Exp(-0.031 * pt*pt) + 4.8 /TMath::Power(pt+0.61,3));
+    sz = TMath::Min(3.3, 1.12  + 0.35 * TMath::Exp(-0.032 * pt*pt) + 0.75/TMath::Power(pt+0.24,3));
+
+    if(mf<0.){ //field --
+      meanZ = 0.102;
+      if(charge>0)
+        meanX =  TMath::Min(5.8, 0.42 + 0.70 * TMath::Exp(-0.015 * pt*pt) + 35.8/TMath::Power(pt+1.41,3));
+      else
+        meanX = -TMath::Min(5.8, 0.17 + 0.64 * TMath::Exp(-0.019 * pt*pt) + 26.1/TMath::Power(pt+1.21,3));
+    }
+    else{ //Field ++
+      meanZ= 0.102;
+      if(charge>0)
+        meanX = -TMath::Min(5.8, 0.58 + 0.68 * TMath::Exp(-0.027 * pt*pt) + 28.0/TMath::Power(pt+1.28,3));
+      else
+        meanX =  TMath::Min(5.8, 0.11 + 0.67 * TMath::Exp(-0.015 * pt*pt) + 29.9/TMath::Power(pt+1.29,3));
+    }
+
+  }
+  Double_t rz=(dz-meanZ)/sz;
+  Double_t rx=(dx-meanX)/sx;
+  return TMath::Sqrt(rx*rx+rz*rz);
 }

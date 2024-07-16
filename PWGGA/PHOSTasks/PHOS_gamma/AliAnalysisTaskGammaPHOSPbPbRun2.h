@@ -21,6 +21,7 @@ class AliFlowTrackCuts ;
 class AliFlowEvent ;
 class AliFlowVector ;
 class AliAODMCParticle ;
+class AliCaloPhoton;
 
 #include "AliAnalysisTaskSE.h"
 
@@ -72,7 +73,9 @@ private:
   void AddDistBadHistograms();
   void AddPhiTitleHistograms();
 
-  void TestMatchingTrackPID(AliAODCaloCluster *clu1, Double_t pt);
+  void TestMatchingTrackPID(AliCaloPhoton *ph, Bool_t mix);
+  Int_t    FindTrackMatching(Int_t mod,TVector3 *locpos, Double_t &dx, Double_t &dz, Double_t &pt,Int_t &charge);
+  Double_t TestCPV(Double_t dx, Double_t dz, Double_t pt, Int_t charge);
   
   static  Bool_t PythiaInfoFromFile(TString currFile, Float_t & xsec, Float_t & trials) ;
 
@@ -83,6 +86,8 @@ private:
   THashList * fOutputContainer4;    //final histogram container
   THashList * fOutputContainer5;    //final histogram container
   THashList * fOutputContainer6;    //final histogram container
+
+  AliAODEvent      *fEvent; //! input event 
 				    //
   TList * fPHOSEvents[1][10][11] ; // Containers for events with PHOS photons
   TClonesArray * fPHOSEvent ;      // PHOS photons in current event
