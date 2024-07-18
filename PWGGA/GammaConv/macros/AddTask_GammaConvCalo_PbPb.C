@@ -2266,6 +2266,14 @@ void AddTask_GammaConvCalo_PbPb(
   } else if (trainConfig == 2966){ // peripheral, with mean N matched tracks per cluster MC no OOB Pileup correction for MC
     cuts.AddCutPCMCalo("15910053","0dm00009ab770c00amd0404000","411790105ye30220000","0s33103100000010"); // 50-90%
   
+  // QA cent and semi cent
+  } else if (trainConfig == 5000){ // EMCAL+DCal clusters triggered
+    cuts.AddCutPCMCalo("11330e13","0dm00009ab770c00amd0404000","411790105ke30220000","0133103100000010"); //  00-10%
+    cuts.AddCutPCMCalo("13530e13","0dm00009ab770c00amd0404000","411790105ke30220000","0133103100000010"); //  30-50%
+  } else if (trainConfig == 5000){ // EMCAL+DCal clusters
+    cuts.AddCutPCMCalo("11310e13","0dm00009ab770c00amd0404000","411790105ke30220000","0133103100000010"); //  00-10%
+    cuts.AddCutPCMCalo("13510e13","0dm00009ab770c00amd0404000","411790105ke30220000","0133103100000010"); //  30-50%
+
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

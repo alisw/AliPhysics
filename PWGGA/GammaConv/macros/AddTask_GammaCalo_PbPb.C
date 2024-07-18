@@ -2415,6 +2415,15 @@ void AddTask_GammaCalo_PbPb(
   } else if (trainConfig == 2966){ // peripheral, NOC via <E_clus-E>/E MC no OOB Pileup correction for MC
     cuts.AddCutCalo("15910053","411790105ye30220000","0s331031000000d0"); // 50-90%
 
+
+  // QA cent and semi cent
+  } else if (trainConfig == 5000){ // EMCAL+DCal clusters triggerd cents
+    cuts.AddCutCalo("11330e13","411790105ke30220000","01331031000000d0"); //  00-10%
+    cuts.AddCutCalo("13530e13","411790105ke30220000","01331031000000d0"); //  30-50%
+  } else if (trainConfig == 5001){ // EMCAL+DCal clusters
+    cuts.AddCutCalo("11310e13","411790105ke30220000","01331031000000d0"); //  00-10%
+    cuts.AddCutCalo("13510e13","411790105ke30220000","01331031000000d0"); //  30-50%
+
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
