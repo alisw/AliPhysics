@@ -55,6 +55,10 @@
 #pragma link C++ class AliAnalysisTaskGammaConvCaloIso+;
 #pragma link C++ class AliAnalysisTaskGammaCaloIso+;
 
+//ML
+#pragma link C++ class AliGammaMLResponse+;
+#pragma link C++ class AliGammaMLResponseGammatoEPlusEMinus+;
+
 // heavier resonances
 #pragma link C++ class AliAnalysisTaskOmegaToPiZeroGamma+;
 #pragma link C++ class AliAnalysisTaskHeavyNeutralMesonToGG+;

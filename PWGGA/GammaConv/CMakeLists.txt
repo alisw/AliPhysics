@@ -22,7 +22,8 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv)
 
 # Additional include folders in alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
-                    ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/ML
+       		    ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWGCF/FLOW/Tasks # what target here
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALtasks
@@ -101,6 +102,9 @@ set(SRCS
 #     AliAnaConvCorrPhoton.cxx
 #     AliAnaConvCorrPion.cxx
 #     AliAnaConvIsolation.cxx
+    #ML class
+    AliGammaMLResponse.cxx
+    AliGammaMLResponseGammatoEPlusEMinus.cxx
     AliPrimaryPionCuts.cxx
     AliPrimaryPionSelector.cxx
 #     AliConversionCutHandler.cxx
@@ -134,7 +138,7 @@ generate_dictionary("${MODULE}" "${MODULE}LinkDef.h" "${HDRS}" "${incdirs}" "${F
 
 set(ROOT_DEPENDENCIES Core EG GenVector Geom Gpad Hist MathCore Matrix Net Physics RIO Tree TMVA)
 set(ALIROOT_DEPENDENCIES ANALYSIS ANALYSISalice AOD EMCALbase EMCALUtils ESD STEERBase PWGTRD PWGflowTasks Tender TenderSupplies PWGEMCALbase PWGEMCALtasks PWGEMCALtrigger PWGCaloTrackCorrBase PWGGAUtils PWGJETFW )
-set(ALIPHYSICS_DEPENDENCIES PWGCocktail PWGGAGammaConvBase PWGEMCALtasks PWGEMCALbase PWGEMCALtrigger)
+set(ALIPHYSICS_DEPENDENCIES ML PWGCocktail PWGGAGammaConvBase PWGEMCALtasks PWGEMCALbase PWGEMCALtrigger)
 
 # Generate the ROOT map
 # Dependecies
