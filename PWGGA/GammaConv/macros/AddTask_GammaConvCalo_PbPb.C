@@ -2268,11 +2268,23 @@ void AddTask_GammaConvCalo_PbPb(
   
   // QA cent and semi cent
   } else if (trainConfig == 5000){ // EMCAL+DCal clusters triggered
-    cuts.AddCutPCMCalo("11330e13","0dm00009ab770c00amd0404000","411790105ke30220000","0133103100000010"); //  00-10%
+    cuts.AddCutPCMCalo("10130e13","0dm00009ab770c00amd0404000","411790105ke30220000","0133103100000010"); //  00-10%
     cuts.AddCutPCMCalo("13530e13","0dm00009ab770c00amd0404000","411790105ke30220000","0133103100000010"); //  30-50%
-  } else if (trainConfig == 5000){ // EMCAL+DCal clusters
-    cuts.AddCutPCMCalo("11310e13","0dm00009ab770c00amd0404000","411790105ke30220000","0133103100000010"); //  00-10%
+  } else if (trainConfig == 5001){ // EMCAL+DCal clusters
+    cuts.AddCutPCMCalo("10110e13","0dm00009ab770c00amd0404000","411790105ke30220000","0133103100000010"); //  00-10%
     cuts.AddCutPCMCalo("13510e13","0dm00009ab770c00amd0404000","411790105ke30220000","0133103100000010"); //  30-50%
+  } else if (trainConfig == 5002){ // EMCAL+DCal clusters for MC testing!
+    cuts.AddCutPCMCalo("30310e13","0dm00009ab770c00amd0404000","411790105ke30220000","0133103100000010"); //  00-15%
+
+  // primary track mult for MC
+  } else if (trainConfig == 6000){ // EMCAL+DCal clusters triggered
+    cuts.AddCutPCMCalo("50130e13","0dm00009ab770c00amd0404000","411790105ke30220000","0133103100000010"); //  00-10%
+    cuts.AddCutPCMCalo("53530e13","0dm00009ab770c00amd0404000","411790105ke30220000","0133103100000010"); //  30-50%
+  } else if (trainConfig == 6001){ // EMCAL+DCal clusters
+    cuts.AddCutPCMCalo("50110e13","0dm00009ab770c00amd0404000","411790105ke30220000","0133103100000010"); //  00-10%
+    cuts.AddCutPCMCalo("53510e13","0dm00009ab770c00amd0404000","411790105ke30220000","0133103100000010"); //  30-50%
+  } else if (trainConfig == 6002){ // EMCAL+DCal clusters for MC testing!
+    cuts.AddCutPCMCalo("60310e13","0dm00009ab770c00amd0404000","411790105ke30220000","0133103100000010"); //  00-15%
 
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");

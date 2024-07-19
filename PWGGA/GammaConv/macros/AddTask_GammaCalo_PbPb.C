@@ -2418,11 +2418,25 @@ void AddTask_GammaCalo_PbPb(
 
   // QA cent and semi cent
   } else if (trainConfig == 5000){ // EMCAL+DCal clusters triggerd cents
-    cuts.AddCutCalo("11330e13","411790105ke30220000","01331031000000d0"); //  00-10%
+    cuts.AddCutCalo("10130e13","411790105ke30220000","01331031000000d0"); //  00-10%
     cuts.AddCutCalo("13530e13","411790105ke30220000","01331031000000d0"); //  30-50%
   } else if (trainConfig == 5001){ // EMCAL+DCal clusters
-    cuts.AddCutCalo("11310e13","411790105ke30220000","01331031000000d0"); //  00-10%
+    cuts.AddCutCalo("10110e13","411790105ke30220000","01331031000000d0"); //  00-10%
     cuts.AddCutCalo("13510e13","411790105ke30220000","01331031000000d0"); //  30-50%
+  } else if (trainConfig == 5002){ // EMCAL+DCal clusters for MC testing
+    cuts.AddCutCalo("30310e13","411790105ke30220000","01331031000000d0"); //  00-15%
+
+  // primary track mult for MC
+  } else if (trainConfig == 6000){ // EMCAL+DCal clusters triggerd cents
+    cuts.AddCutCalo("50130e13","411790105ke30220000","01331031000000d0"); //  00-10%
+    cuts.AddCutCalo("53530e13","411790105ke30220000","01331031000000d0"); //  30-50%
+  } else if (trainConfig == 6001){ // EMCAL+DCal clusters
+    cuts.AddCutCalo("50110e13","411790105ke30220000","01331031000000d0"); //  00-10%
+    cuts.AddCutCalo("53510e13","411790105ke30220000","01331031000000d0"); //  30-50%
+  } else if (trainConfig == 6002){ // EMCAL+DCal clusters for MC testing
+    cuts.AddCutCalo("60310e13","411790105ke30220000","01331031000000d0"); //  00-15%
+
+
 
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
@@ -2435,7 +2449,6 @@ void AddTask_GammaCalo_PbPb(
     cout << "****************************************************\n\n" << endl;
     return;
   }
-
   Int_t numberOfCuts = cuts.GetNCuts();
 
   TList *HeaderList = new TList();
