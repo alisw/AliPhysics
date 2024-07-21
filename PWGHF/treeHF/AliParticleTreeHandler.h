@@ -77,6 +77,7 @@ class AliParticleTreeHandler : public TObject
     float                        fParticleEta;             //!<! Eta of particle
     float                        fParticlePhi;             //!<! Phi of particle (0 < phi < 2pi)
     float                        fParticleCharge;          //!<! Charge of particle
+    int                          fParticleMCid;          //!<! MCid of particle
   
     // Event quantities
     int                          fRunNumber;               //!<! run number
