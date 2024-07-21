@@ -120,7 +120,7 @@ AliAnalysisTaskHypTritEventTree::AliAnalysisTaskHypTritEventTree(const char *nam
   fPIDCheckOnly(kFALSE),
   fMCtrue(0),
   fEventCuts(),
-  fPeriod(00),
+  fPeriod(0),
   fTriggerMask(),
   fBetheSplines(kFALSE),
   fUseExternalSplines(kFALSE),
@@ -273,13 +273,13 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
   fHistNumEvents->Fill(0);
   Double_t centrality = -1;
   const AliESDVertex *vertex = fESDevent->GetPrimaryVertexTracks();
-  fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7 | AliVEvent::kTRD | AliVEvent::kHighMultV0 | AliVEvent::kHighMultSPD);
+  fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kAny);
 
   fReducedEvent->fEvCutsPassed = fEventCuts.AcceptEvent(fESDevent);
   Int_t runNumber = fESDevent->GetRunNumber();
   
   if (!fUseExternalSplines) SetBetheBlochParams(runNumber);
-
+/*
 	AliCDBManager *cdbMgr = AliCDBManager::Instance();
 	if (fMCtrue) {
 		cdbMgr->SetDefaultStorage("MC","Full");
@@ -289,7 +289,7 @@ void AliAnalysisTaskHypTritEventTree::UserExec(Option_t *) {
 	}
 	cdbMgr->SetRun(runNumber);
 	AliGeomManager::LoadGeometry();
-	
+	*/
   TriggerSelection(mcEvent);
   fReducedEvent->fEventID =   (((ULong64_t)fESDevent->GetPeriodNumber() << 36) | ((ULong64_t)fESDevent->GetOrbitNumber() << 12) | (ULong64_t)fESDevent->GetBunchCrossNumber()); 
       
@@ -547,7 +547,7 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
     reducedPi->fDca = TMath::Abs(trackP.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
     reducedHe->fDcaSigned = trackN.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField);
     reducedPi->fDcaSigned = trackP.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField);
-    TRDtrack(const_cast<AliESDtrack*> (&trackN), reducedHe);
+   // TRDtrack(const_cast<AliESDtrack*> (&trackN), reducedHe);
     reducedPi->fEta = trackP.Eta();
     reducedHe->fEta = trackN.Eta();
     reducedPi->fPhi = trackP.Phi();
@@ -588,7 +588,7 @@ void AliAnalysisTaskHypTritEventTree::CalculateV0(const AliESDtrack& trackN, con
     reducedHe->fDca = TMath::Abs(trackP.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField));
     reducedPi->fDcaSigned = trackN.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField);
     reducedHe->fDcaSigned = trackP.GetD(fPrimaryVertex.X(), fPrimaryVertex.Y(), fMagneticField);
-    TRDtrack(const_cast<AliESDtrack*> (&trackP), reducedHe);
+    //TRDtrack(const_cast<AliESDtrack*> (&trackP), reducedHe);
     reducedPi->fEta = trackN.Eta();
     reducedHe->fEta = trackP.Eta();
     reducedPi->fPhi = trackN.Phi();
@@ -921,6 +921,23 @@ void AliAnalysisTaskHypTritEventTree::SetBetheBlochParams(Int_t runNumber) {
     fBetheParamsT[4] = -3.03895;
     fBetheParamsT[5] = 0.07;
 	}
+		// __ 2018 PbPb pass 3__ //
+	if (runNumber >= 295581 && runNumber <= 297624) {
+	  fBetheParamsT[0] = 0.648689;
+	  fBetheParamsT[1] = 56.6706;
+	  fBetheParamsT[2] = -1.63243e-10;
+	  fBetheParamsT[3] = 2.46921;
+	  fBetheParamsT[4] = 16.8531;
+	  fBetheParamsT[5] = 0.06;
+
+	  fBetheParamsHe[0] = 1.70184;
+	  fBetheParamsHe[1] = 28.4426;
+	  fBetheParamsHe[2] = 3.21871e-12;
+	  fBetheParamsHe[3] = 2.06952;
+	  fBetheParamsHe[4] = 2.77971;
+	  fBetheParamsHe[5] = 0.06;
+	}
+	
 }
 //_____________________________________________________________________________
 
