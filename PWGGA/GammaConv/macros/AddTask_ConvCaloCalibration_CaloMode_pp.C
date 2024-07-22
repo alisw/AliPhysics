@@ -537,6 +537,13 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     cuts.AddCutCalo("00010113","4117901097e10220000","0r631031000000d0");  // 500 MeV cluster threshold
   } else if (trainConfig == 195){
     cuts.AddCutCalo("00010113","4117901097e10220000","0r631031000000d0");  // 500 MeV cluster threshold
+
+  } else if (trainConfig == 196){ // open cuts
+    cuts.AddCutCalo("00010113","4117901097e10200000","0r631031000000d0");  // 500 MeV cluster threshold
+  } else if (trainConfig == 197){ // open cuts
+    cuts.AddCutCalo("00010113","4117901097e10200000","0r631031000000d0");  // 500 MeV cluster threshold
+  } else if (trainConfig == 198){ // open cuts
+    cuts.AddCutCalo("00010113","4117901097e10200000","0r631031000000d0");  // 500 MeV cluster threshold
   
 
   // Cuts to compare with PbPbs
