@@ -937,7 +937,24 @@ void AliAnalysisTaskHypTritEventTree::SetBetheBlochParams(Int_t runNumber) {
 	  fBetheParamsHe[4] = 2.77971;
 	  fBetheParamsHe[5] = 0.06;
 	}
-	
+	//LHC 15o 
+	if(runNumber > 244824 && runNumber < 252235){ 
+        
+        fBetheParamsT[0]   = 3.43419;
+        fBetheParamsT[1]   = 11.7654;
+        fBetheParamsT[2]   = -0.0179698;
+        fBetheParamsT[3]   = 2.23013;
+        fBetheParamsT[4]   = 1.69306;
+        fBetheParamsT[5]   = 0.06;
+        
+        fBetheParamsHe[0]  = 2.43644;
+        fBetheParamsHe[1]  = 19.6453;
+        fBetheParamsHe[2]  = 0.0140561;
+        fBetheParamsHe[3]  = 2.2299;
+        fBetheParamsHe[4]  = 3.23329;
+        fBetheParamsHe[5]  = 0.06;
+        
+  }
 }
 //_____________________________________________________________________________
 

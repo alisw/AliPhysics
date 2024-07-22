@@ -494,8 +494,6 @@ void AliAnalysisTaskHypTritTestAOD::UserExec(Option_t *) {
   tPVz = vertex->GetZ();
 
   if (fMCtrue) {
-    const AliMCVertex* mcVertex = (const AliMCVertex*) mcEvent->GetPrimaryVertex();
-    fPrimaryVertex.SetXYZ(mcVertex->GetX(), mcVertex->GetY(), mcVertex->GetZ());
     MCStackLoop(mcEvent);
   }
 		
@@ -756,7 +754,7 @@ void AliAnalysisTaskHypTritTestAOD::MCStackLoop(AliMCEvent* mcEvent) {
     if (TMath::Abs(pdgCodeMother) != 1010010030) continue;
     
     
-    AliAODMCParticle *he3 = new AliAODMCParticle(); AliAODMCParticle *pi = new AliAODMCParticle();
+    AliAODMCParticle *he3 = 0; AliAODMCParticle *pi = 0;
     for (int daughteriD = tparticleMother->GetDaughterFirst(); daughteriD <= tparticleMother->GetDaughterLast(); daughteriD++) {
       AliAODMCParticle *tparticleDaughter = (AliAODMCParticle*) mcEvent->GetTrack(TMath::Abs(daughteriD));
       //if (!(tparticleDaughter && tparticleDaughter->IsSecondaryFromWeakDecay())) continue;//mcEvent->IsSecondaryFromWeakDecay(daughteriD)
@@ -771,9 +769,9 @@ void AliAnalysisTaskHypTritTestAOD::MCStackLoop(AliMCEvent* mcEvent) {
     Double_t posx = he3->Xv();
     Double_t posy = he3->Yv();
     Double_t posz = he3->Zv();
-    Double_t disx = posx - fPrimaryVertex.X();
-    Double_t disy = posy - fPrimaryVertex.Y();
-    Double_t disz = posz - fPrimaryVertex.Z();
+    Double_t disx = posx - tparticleMother->Xv();
+    Double_t disy = posy - tparticleMother->Yv();
+    Double_t disz = posz - tparticleMother->Zv();
     Double_t distance = TMath::Sqrt(disx*disx + disy*disy + disz*disz );
     tM = tparticleMother->M();
     tP = tparticleMother->P();
@@ -906,7 +904,7 @@ void AliAnalysisTaskHypTritTestAOD::SetBetheBlochParams(Int_t runNumber) {
 		fBetheParamsT[5] = 0.06;
 	}
 
-	// __ 2018 PbPb pass 3__ //
+	/* __ 2018 PbPb pass 3__
 	if (runNumber >= 295581 && runNumber <= 297624) {
 	  fBetheParamsT[0] = 0.648689;
 	  fBetheParamsT[1] = 56.6706;
@@ -921,34 +919,24 @@ void AliAnalysisTaskHypTritTestAOD::SetBetheBlochParams(Int_t runNumber) {
 	  fBetheParamsHe[3] = 2.06952;
 	  fBetheParamsHe[4] = 2.77971;
 	  fBetheParamsHe[5] = 0.06;
-	}
-
-	/*
-
-__R_ADDTASK__->SetMaxTPCsigmas(5,5);
-__R_ADDTASK__->SetMinPtHe3(0.);
-__R_ADDTASK__->fFillGenericV0s=false;
-__R_ADDTASK__->fFillTracklet=true;
-__R_ADDTASK__->fV0Vertexer. SetV0VertexerDCAFirstToPV(0.);
-__R_ADDTASK__->fV0Vertexer. SetV0VertexerDCASecondToPV(0.);
-__R_ADDTASK__->fV0Vertexer. SetV0VertexerDCAV0Daughters(2.);
-__R_ADDTASK__->fV0Vertexer.SetV0VertexerCosinePA(0.99);
-__R_ADDTASK__->fV0Vertexer.SetV0VertexerMinRadius(0.);//4);
-__R_ADDTASK__->fV0Vertexer.SetV0VertexerMaxRadius(200);
-__R_ADDTASK__->fV0Vertexer.SetV0VertexerMaxChisquare(1000);
-__R_ADDTASK__->fV0Vertexer.SetMinPtV0(0.);
-float resolution = 0.05871;
-const float bethe[5]={-166.11733,-0.11020473,0.10851357,2.7018593,-0.087597824};
-__R_ADDTASK__->SetCustomBetheBloch(resolution,bethe);
-__R_ADDTASK__->SetCVMFSPath("/cvmfs/alice.cern.ch/data/analysis/2020/vAN-20200217/PWGLF/NUCLEX/HypertritonAnalysis/Cuts/splines.root");
-__R_ADDTASK__->fSaveFileNames = false;
-__R_ADDTASK__->fStoreAllEvents = false;
-__R_ADDTASK__->fMaxInfo = false;
-__R_ADDTASK__->fEventCuts.UseTimeRangeCut();
-__R_ADDTASK__->fV0CalibrationFile = "/cvmfs/alice.cern.ch/data/analysis/2022/vAN-20220217/PWGLF/NUCLEX/vn/calibV0Run2Vtx10P118";
+	}*/
+ //  2018 PbPb pass 1 //
+  if(runNumber >= 295581 && runNumber <= 297624){
+     fBetheParamsT[0] = 0.669634;
+     fBetheParamsT[1] = 53.1497;
+     fBetheParamsT[2] =-1.32853e-08;
+     fBetheParamsT[3] = 2.5775;
+     fBetheParamsT[4] = 17.7607;
+     fBetheParamsT[5] = 0.06;
+     fBetheParamsHe[0] = 1.50582;
+     fBetheParamsHe[1] = 33.7232;
+     fBetheParamsHe[2] = -0.0923749;
+     fBetheParamsHe[3] = 2.00901;
+     fBetheParamsHe[4] = 2.28772;
+     fBetheParamsHe[5] = 0.06;
+     }
 
 
-	 */
 }
 //_____________________________________________________________________________
 
