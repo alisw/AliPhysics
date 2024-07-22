@@ -56,6 +56,7 @@ AliParticleTreeHandler::AliParticleTreeHandler():
   fParticleEta(-999.),
   fParticlePhi(-999.),
   fParticleCharge(-999.),
+  fParticleMCid(-999),
   fRunNumber(0),
   fEventID(0), 
   fEventIDExt(0), 
@@ -91,6 +92,7 @@ TTree* AliParticleTreeHandler::BuildTree(TString name, TString title)
   fTreeParticle->Branch("ParticleEta",&fParticleEta);
   fTreeParticle->Branch("ParticlePhi",&fParticlePhi);
   fTreeParticle->Branch("ParticleCharge",&fParticleCharge);
+  fTreeParticle->Branch("ParticleMCid",&fParticleMCid);
     
   if(!name.CompareTo("tree_Particle_gen")) {
     fIsMCGen = true;
@@ -113,6 +115,7 @@ void AliParticleTreeHandler::FillTree(int runNumber, int eventID, int eventID_Ex
   
   AliTLorentzVector partVec;
   AliVParticle* vp;
+  AliAODMCParticle* mcp;
 
   for (const auto particleIterator : fParticleContainer->accepted_momentum()) {
     
@@ -128,6 +131,7 @@ void AliParticleTreeHandler::FillTree(int runNumber, int eventID, int eventID_Ex
       if(isParticleFromOutOfBunchPileUpEvent) {
         continue;
       }
+      fParticleMCid = mcPart->GetLabel();
     }
       
     // Get particle four-vector
@@ -140,6 +144,10 @@ void AliParticleTreeHandler::FillTree(int runNumber, int eventID, int eventID_Ex
     fParticlePhi = partVec.Phi_0_2pi();
     fParticlePt = partVec.Pt();
     fParticleCharge = vp->Charge();
+    
+    if(!fIsMCGen) {
+      fParticleMCid = vp->GetLabel();
+    }
     
     // Fill jet tree
     fTreeParticle->Fill();
