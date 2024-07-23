@@ -108,6 +108,7 @@ set(SRCS
   AliHFEdebugTreeTask.cxx
   AliHFEVZEROEventPlane.cxx
   AliAnalysisTaskFlowTPCTOFEPSP.cxx
+  AliAnalysisTaskHadronElectronAnalysis.cxx
   AliSelectNonHFE.cxx
   AliHFENonPhotonicElectron.cxx
   AliHFEdebugTreeTaskAOD.cxx
