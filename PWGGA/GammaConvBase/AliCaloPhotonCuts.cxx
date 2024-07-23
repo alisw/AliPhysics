@@ -7675,6 +7675,13 @@ Bool_t AliCaloPhotonCuts::SetDispersion(Int_t dispersion)
     fClusterEfficiencyFunc = new TF1("fClusterEfficiencyFunc", "[0]*(1/(1+exp([2]*x - [1])))", 0, 200);
     fClusterEfficiencyFunc->SetParameters(1., -5.06867e-01, -2.36169);
     break;
+  case 14: // e: empirical setting from deviation in pion yield. Do not use for any physics analysis!
+    if (!fUseDispersion) fUseDispersion = 2;
+    fApplyClusterEffOnData = false;
+    fApplyClusterEffToEMProbesOnly = false;
+    fClusterEfficiencyFunc = new TF1("fClusterEfficiencyFunc", "[0]*(1/(1+exp([2]*x - [1])))", 0, 200);
+    fClusterEfficiencyFunc->SetParameters(1., 1., -2.);
+    break;
   default:
     AliError(Form("Maximum Dispersion Cut not defined %d",dispersion));
     return kFALSE;

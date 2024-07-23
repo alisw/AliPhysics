@@ -2141,6 +2141,9 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 1753){  // cluster efficiency applied to gamma and elec. clusters
     cuts.AddCutCalo("00010113","411790109fe309v00d0","0s631031000000d0"); // No NCell cut
     cuts.AddCutCalo("00010113","411790109fe3n9v00d0","0s631031000000d0"); // With NCell efficiency
+  } else if (trainConfig == 1754){  // cluster efficiency from emperical estimation of pion spectra (do not use for any physics result)
+    cuts.AddCutCalo("00010113","411790109fe309v00e0","0s631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411790109fe3n9v00e0","0s631031000000d0"); // With NCell efficiency
 
 
     //---------------------------------------
