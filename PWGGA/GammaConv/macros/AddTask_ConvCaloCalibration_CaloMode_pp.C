@@ -544,14 +544,20 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     cuts.AddCutCalo("00010113","4117901097e10200000","0r631031000000d0");  // 500 MeV cluster threshold
   } else if (trainConfig == 198){ // open cuts
     cuts.AddCutCalo("00010113","4117901097e10200000","0r631031000000d0");  // 500 MeV cluster threshold
+
+  } else if (trainConfig == 200){ // cluster efficiency applied
+    cuts.AddCutCalo("00010113","4117901097e102200a0","0r631031000000d0");  // 500 MeV cluster threshold
+    cuts.AddCutCalo("00010113","4117901097e102200b0","0r631031000000d0");  // 500 MeV cluster threshold
+    cuts.AddCutCalo("00010113","4117901097e102200c0","0r631031000000d0");  // 500 MeV cluster threshold
+    cuts.AddCutCalo("00010113","4117901097e102200d0","0r631031000000d0");  // 500 MeV cluster threshold
   
 
   // Cuts to compare with PbPbs
-  } else if (trainConfig == 201){
+  } else if (trainConfig == 501){
     cuts.AddCutCalo("00010113","4117901057e30220000","0s631031000000d0");  // INT7 pT dependent track matching w/o E/p
-  } else if (trainConfig == 202){
+  } else if (trainConfig == 502){
     cuts.AddCutCalo("00010113","4117901056e30220000","0s631031000000d0");  // INT7 pT dependent track matching w/o E/p smaller dPhi and dEta window
-  } else if (trainConfig == 203){
+  } else if (trainConfig == 503){
     cuts.AddCutCalo("00010113","4117901058e30220000","0s631031000000d0");  // INT7 pT dependent track matching w/o E/p larger dPhi and dEta window
   
   } else {
