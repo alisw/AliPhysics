@@ -258,6 +258,7 @@ bool AliMultDepSpecOnTheFlyAnalysisTask::InitTask(string dataSet, TString option
 bool AliMultDepSpecOnTheFlyAnalysisTask::SetupTask(string dataSet, TString options)
 {
   vector<string> dataSets = {
+    "pp_XTeV",
     "pp_2TeV",
     "pp_5TeV",
     "pp_7TeV",
@@ -275,6 +276,9 @@ bool AliMultDepSpecOnTheFlyAnalysisTask::SetupTask(string dataSet, TString optio
     return false;
   }
 
+  if (dataSet.find("pp_XTeV") != string::npos) {
+    fMaxMultTrue = 150;
+  }
   if (dataSet.find("pPb") != string::npos) {
     fMaxMultTrue = 200;
   } else if (dataSet.find("PbPb") != string::npos || dataSet.find("XeXe") != string::npos) {
