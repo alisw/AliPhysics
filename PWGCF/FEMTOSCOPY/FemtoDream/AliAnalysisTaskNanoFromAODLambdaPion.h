@@ -57,6 +57,10 @@ public:
   {
     fUseEvtNoLambda = usenolambdaevt;
   }
+  void SetRequiredPDG(int pdg, int identifiedAsPDG)
+  {
+    fRequiredPDG[pdg] = identifiedAsPDG;
+  }
   void SetExcludeDausOf(std::vector<UInt_t> motherList) {
     fExcludedMothers = motherList;
   }
@@ -74,6 +78,7 @@ private:
   bool fIsMC;                             //
   bool fUseOMixing;                       //
   bool fUseEvtNoLambda;                   //
+  std::map<int, int> fRequiredPDG;        // first pdg is the expected one, second is the target. Target=0 (default) accepts any pdg 
   std::vector<UInt_t> fExcludedMothers;   // Only valid if run on MC
   PCSettings fPCSettings;                 //
   UInt_t fTrigger;                        //
@@ -104,7 +109,7 @@ private:
   AliFemtoDreamControlSample *fSample;    //!
   AliVTrack **fGTI;                     //!
   int fTrackBufferSize;                   //
-  ClassDef(AliAnalysisTaskNanoFromAODLambdaPion, 2)
+  ClassDef(AliAnalysisTaskNanoFromAODLambdaPion, 3)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKNANOFROMAODLAMBDAPION_H_ */
