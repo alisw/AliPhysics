@@ -628,6 +628,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TF1*      fFuncNOCMaxBoltz;                         // TF1 Maxwell Boltzmann to describe the neutral overlap correction for a specific centrality
     // for cluster efficiency application in data
     bool      fApplyClusterEffOnData;                   // switch weather cluster efficiency should be applied on data or MC
+    bool      fApplyClusterEffToEMProbesOnly;           // if true and we are in the MC case, only clusters with a leading photon or electron contribution are considered
     TF1*      fClusterEfficiencyFunc;                   // function giveing the probability a cluster should survive the cuts as function of energy
 
 
@@ -761,6 +762,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
     TH1F*     fHistElectronPositronOnEMC;                       // Electron/Positron P for all tracks in EMCal acceptance
     TH1F*     fHistElectronPositronOnEMCCell;                   // Electron/Positron P for all tracks in EMCal acceptance and that hit a good cell
+    TH1F*     fHistVerifiedElectronPositronOnEMCCell;           // Electron/Positron P for all tracks in EMCal acceptance and that hit a good cell and are really an electron
     TH2F*     fHistElectronPositronClusterMatch;                // Electron/Positron P vs cluster E in case of matching with a cluster
     TH2F*     fHistElectronPositronClusterMatchSub;             // Electron/Positron P vs E - P in case of matching with a cluster
     TH2F*     fHistElectronPositronClusterMatchEoverP;          // Electron/Positron E/P vs PT of track in case of matching of Electron with cluster
@@ -772,12 +774,14 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistTrueElectronPositronClusterMatch;            // True Electron/Positron P vs cluster E in case of matching with a cluster
     TH2F*     fHistTrueNoElectronPositronClusterMatch;          // True No Electron/Positron P vs cluster E in case of matching with a cluster
     TH2F*     fHistElectronClusterMatchTruePID;                 // MC true histogram for purity studies of selected electrons
+    TH2F*     fHistElectronClusterMatchTruePIDRecP;             // MC true histogram for purity studies of selected electrons with rec mom on EMC surface
     TH2F*     fHistTrueElectronPositronClusterMatchEoverP;      // True Electron/Positron E/P vs PT of cluster in case of matching of Electron with cluster
     TH2F*     fHistElectronClusterNCellsVsE;                    // Electron/Positron cluster number of cells vs. cluster energy
     TH2F*     fHistElectronPositronVsSM;                        // track momentum for electron and positron tracks for each SM seperatly
     TH2F*     fHistElectronPositronVsEta;                       // track momentum for electron and positron tracks vs. eta of cluster
     TH2F*     fHistElectronPositronClusterMatchVsSM;            // track momentum for matched electron and positron tracks for each SM seperatly
     TH2F*     fHistElectronPositronClusterMatchVsEta;           // track momentum for matched electron and positron tracks vs. eta of cluster
+    TH1F*     fHistElectronPositronClusterMatchDoubleCount;     // track momentum for matched electron and positron tracks if matched to multiple clusters
 
     // histogram for conv candidate rejection
     TH2F*     fHistInvMassDiCluster;                    // histogram for monitoring di-cluster mass
@@ -789,7 +793,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,140)
+    ClassDef(AliCaloPhotonCuts,142)
 };
 
 #endif

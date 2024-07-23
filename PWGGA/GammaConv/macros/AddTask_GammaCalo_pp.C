@@ -2135,6 +2135,12 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 1751){  // 
     cuts.AddCutCalo("00010113","411790109fe309v00b0","0s631031000000d0"); // No NCell cut
     cuts.AddCutCalo("00010113","411790109fe3n9v00b0","0s631031000000d0"); // With NCell efficiency
+  } else if (trainConfig == 1752){  // cluster efficiency applied to all clusters
+    cuts.AddCutCalo("00010113","411790109fe309v00c0","0s631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411790109fe3n9v00c0","0s631031000000d0"); // With NCell efficiency
+  } else if (trainConfig == 1753){  // cluster efficiency applied to gamma and elec. clusters
+    cuts.AddCutCalo("00010113","411790109fe309v00d0","0s631031000000d0"); // No NCell cut
+    cuts.AddCutCalo("00010113","411790109fe3n9v00d0","0s631031000000d0"); // With NCell efficiency
 
 
     //---------------------------------------

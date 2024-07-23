@@ -221,6 +221,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fMeanNMatchedTracks(0),
   fFuncNOCMaxBoltz(0),
   fApplyClusterEffOnData(false),
+  fApplyClusterEffToEMProbesOnly(false),
   fClusterEfficiencyFunc(NULL),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
@@ -333,6 +334,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistMatchedTrackPClusETruePi0Clus(NULL),
   fHistElectronPositronOnEMC(NULL),
   fHistElectronPositronOnEMCCell(NULL),
+  fHistVerifiedElectronPositronOnEMCCell(NULL),
   fHistElectronPositronClusterMatch(NULL),
   fHistElectronPositronClusterMatchSub(NULL),
   fHistElectronPositronClusterMatchEoverP(NULL),
@@ -344,12 +346,14 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistTrueElectronPositronClusterMatch(NULL),
   fHistTrueNoElectronPositronClusterMatch(NULL),
   fHistElectronClusterMatchTruePID(NULL),
+  fHistElectronClusterMatchTruePIDRecP(NULL),
   fHistTrueElectronPositronClusterMatchEoverP(NULL),
   fHistElectronClusterNCellsVsE(NULL),
   fHistElectronPositronVsSM(NULL),
   fHistElectronPositronVsEta(NULL),
   fHistElectronPositronClusterMatchVsSM(NULL),
   fHistElectronPositronClusterMatchVsEta(NULL),
+  fHistElectronPositronClusterMatchDoubleCount(NULL),
   fHistInvMassDiCluster(NULL),
   fHistInvMassConvFlagging(NULL),
   fHistDiClusterAngle(NULL),
@@ -492,6 +496,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fMeanNMatchedTracks(ref.fMeanNMatchedTracks),
   fFuncNOCMaxBoltz(ref.fFuncNOCMaxBoltz),
   fApplyClusterEffOnData(ref.fApplyClusterEffOnData),
+  fApplyClusterEffToEMProbesOnly(ref.fApplyClusterEffToEMProbesOnly),
   fClusterEfficiencyFunc(ref.fClusterEfficiencyFunc),
   fVectorMatchedClusterIDs(0),
   fCutString(NULL),
@@ -604,6 +609,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistMatchedTrackPClusETruePi0Clus(NULL),
   fHistElectronPositronOnEMC(NULL),
   fHistElectronPositronOnEMCCell(NULL),
+  fHistVerifiedElectronPositronOnEMCCell(NULL),
   fHistElectronPositronClusterMatch(NULL),
   fHistElectronPositronClusterMatchSub(NULL),
   fHistElectronPositronClusterMatchEoverP(NULL),
@@ -615,12 +621,14 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistTrueElectronPositronClusterMatch(NULL),
   fHistTrueNoElectronPositronClusterMatch(NULL),
   fHistElectronClusterMatchTruePID(NULL),
+  fHistElectronClusterMatchTruePIDRecP(NULL),
   fHistTrueElectronPositronClusterMatchEoverP(NULL),
   fHistElectronClusterNCellsVsE(NULL),
   fHistElectronPositronVsSM(NULL),
   fHistElectronPositronVsEta(NULL),
   fHistElectronPositronClusterMatchVsSM(NULL),
   fHistElectronPositronClusterMatchVsEta(NULL),
+  fHistElectronPositronClusterMatchDoubleCount(NULL),
   fHistInvMassDiCluster(NULL),
   fHistInvMassConvFlagging(NULL),
   fHistDiClusterAngle(NULL),
@@ -1999,6 +2007,11 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistElectronPositronOnEMCCell->GetYaxis()->SetTitle("number of e^{#pm}");
     fHistograms->Add(fHistElectronPositronOnEMCCell);
 
+    fHistVerifiedElectronPositronOnEMCCell = new TH1F(Form("VerifiedTrueMatchedElectronPositronTrackP %s",GetCutNumber().Data()), "Verified true Matched Electron Positron tracks with P on EMC (incl. no matches)", nBinsClusterE, arrClusEBinning);
+    fHistVerifiedElectronPositronOnEMCCell->GetXaxis()->SetTitle("P_{track, EMC}  (GeV/c)");
+    fHistVerifiedElectronPositronOnEMCCell->GetYaxis()->SetTitle("number of e^{#pm}");
+    fHistograms->Add(fHistVerifiedElectronPositronOnEMCCell);
+
     fHistElectronPositronClusterMatch = new TH2F(Form("MatchedElectronPositronTrackPClusE %s",GetCutNumber().Data()), "Matched Electron Positron tracks with P on EMC",
                                                       nBinsClusterE, arrClusEBinning, nBinsClusterE, arrClusEBinning);
     fHistElectronPositronClusterMatch->GetXaxis()->SetTitle("E_{cl} (GeV)");
@@ -2078,6 +2091,11 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistElectronPositronClusterMatchVsEta->GetXaxis()->SetTitle("P_{track, EMC} (GeV/c)");
       fHistElectronPositronClusterMatchVsEta->GetYaxis()->SetTitle("SM Id");
       fHistograms->Add(fHistElectronPositronClusterMatchVsEta);
+
+      fHistElectronPositronClusterMatchDoubleCount = new TH1F(Form("ElectronPositronMatchedDoubleCounted %s",GetCutNumber().Data()), "Electron clusters track mom. for double matched tracks",
+                                                nBinsClusterE, arrClusEBinning);
+      fHistElectronPositronClusterMatchDoubleCount->GetXaxis()->SetTitle("P_{track, EMC} (GeV/c)");
+      fHistograms->Add(fHistElectronPositronClusterMatchDoubleCount);
     }
 
 
@@ -2106,18 +2124,30 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistElectronClusterMatchTruePID = new TH2F(Form("MatchedElectronPositronTrackPID %s",GetCutNumber().Data()),"Matched Electron Positron tracks true PID",
                                                   5,0,5, nBinsClusterE, arrClusEBinning);
       fHistElectronClusterMatchTruePID->GetXaxis()->SetTitle("true PID");
-      fHistElectronClusterMatchTruePID->GetYaxis()->SetTitle("P_{track} (GeV/c)");
+      fHistElectronClusterMatchTruePID->GetYaxis()->SetTitle("P_{true part} (GeV/c)");
       fHistElectronClusterMatchTruePID->GetXaxis()->SetBinLabel(1, "e^{#pm}");
       fHistElectronClusterMatchTruePID->GetXaxis()->SetBinLabel(2, "#pi^{#pm}");
       fHistElectronClusterMatchTruePID->GetXaxis()->SetBinLabel(3, "proton");
       fHistElectronClusterMatchTruePID->GetXaxis()->SetBinLabel(4, "K^{#pm}");
       fHistElectronClusterMatchTruePID->GetXaxis()->SetBinLabel(5, "rest");
       fHistograms->Add(fHistElectronClusterMatchTruePID);
+
+      fHistElectronClusterMatchTruePIDRecP = new TH2F(Form("MatchedElectronPositronTrackPIDRecP %s",GetCutNumber().Data()),"Matched Electron Positron tracks true PID with P on EMC",
+                                                  5,0,5, nBinsClusterE, arrClusEBinning);
+      fHistElectronClusterMatchTruePIDRecP->GetXaxis()->SetTitle("true PID");
+      fHistElectronClusterMatchTruePIDRecP->GetYaxis()->SetTitle("P_{track, EMC} (GeV/c)");
+      fHistElectronClusterMatchTruePIDRecP->GetXaxis()->SetBinLabel(1, "e^{#pm}");
+      fHistElectronClusterMatchTruePIDRecP->GetXaxis()->SetBinLabel(2, "#pi^{#pm}");
+      fHistElectronClusterMatchTruePIDRecP->GetXaxis()->SetBinLabel(3, "proton");
+      fHistElectronClusterMatchTruePIDRecP->GetXaxis()->SetBinLabel(4, "K^{#pm}");
+      fHistElectronClusterMatchTruePIDRecP->GetXaxis()->SetBinLabel(5, "rest");
+      fHistograms->Add(fHistElectronClusterMatchTruePIDRecP);
     }
 
     if(fIsMC > 1){
       fHistElectronPositronOnEMC->Sumw2();
       fHistElectronPositronOnEMCCell->Sumw2();
+      fHistVerifiedElectronPositronOnEMCCell->Sumw2();
       fHistElectronPositronClusterMatch->Sumw2();
       fHistElectronPositronClusterMatchSub->Sumw2();
       fHistElectronPositronClusterMatchEoverP->Sumw2();
@@ -2126,6 +2156,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistTrueElectronPositronClusterMatch->Sumw2();
       fHistTrueNoElectronPositronClusterMatch->Sumw2();
       fHistElectronClusterMatchTruePID->Sumw2();
+      fHistElectronClusterMatchTruePIDRecP->Sumw2();
       fHistTrueElectronPositronClusterMatchEoverP->Sumw2();
       if(fExtendedMatchAndQA > 1 ){
         fHistElectronClusterMatch->Sumw2();
@@ -2135,6 +2166,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistElectronPositronVsEta->Sumw2();
         fHistElectronPositronClusterMatchVsSM->Sumw2();
         fHistElectronPositronClusterMatchVsEta->Sumw2();
+        fHistElectronPositronClusterMatchDoubleCount->Sumw2();
       }
     }
 
@@ -2732,6 +2764,18 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
               if(fRandom.Uniform(0,1) > fClusterEfficiencyFunc->Eval(cluster->E())){
                 failed = kTRUE;
               }
+              if(fIsMC && fApplyClusterEffToEMProbesOnly){
+                // check if leading contribution to cluster is not from electron or photon
+                // in case it is not, reset the status as we dont want to throw away anything besides electrons and photons
+                int tmpLabel = cluster->GetLabelAt(0);
+                if(tmpLabel >= 0){
+                  if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+                  AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+                  if(!(particle->GetPdgCode() == 22 || std::abs(particle->GetPdgCode()) == 11)){ // only evalute for non gamma and non electron cluster
+                    failed = kFALSE;
+                  }
+                }
+              }
             }
           }
         }
@@ -2919,7 +2963,20 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
       }
     } else if (fUseDispersion == 2){ // cluster efficiency
       if((fApplyClusterEffOnData == true && fIsMC == 0) || (fApplyClusterEffOnData == false && fIsMC) ) {
-        if(fRandom.Uniform(0,1) > fClusterEfficiencyFunc->Eval(cluster->E())){
+        bool isSuitableCluster = true;
+        if(fIsMC && fApplyClusterEffToEMProbesOnly){
+          // check if leading contribution to cluster is not from electron or photon
+          // in case it is not, reset the status as we dont want to throw away anything besides electrons and photons
+          int tmpLabel = cluster->GetLabelAt(0);
+          if(tmpLabel >= 0){
+            if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+            AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+            if(!(particle->GetPdgCode() == 22 || std::abs(particle->GetPdgCode()) == 11)){ // only evalute for non gamma and non electron cluster
+              isSuitableCluster = false;
+            }
+          }
+        }
+        if(isSuitableCluster && fRandom.Uniform(0,1) > fClusterEfficiencyFunc->Eval(cluster->E())){
           if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E(), weight);//8
           return kFALSE;
         }
@@ -4598,6 +4655,14 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
     //nModules = fGeomPHOS->GetNModules();
   }
 
+  if(fIsMC){
+    if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (fAODMCTrackArray == NULL){
+      AliError("No MC particle list available in AOD");
+      return;
+    }
+  }
+
   AliESDEvent *esdev = dynamic_cast<AliESDEvent*>(event);
   AliAODEvent *aodev = 0;
   if (!esdev) {
@@ -4626,6 +4691,17 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
       double trackEtaEMC = inTrack->GetTrackEtaOnEMCal();
       if( GetCaloCellIdFromEtaPhi(trackEtaEMC, trackPhiEMC) >= 0 ) {
         fHistElectronPositronOnEMCCell->Fill(inTrack->GetTrackPOnEMCal());
+        if(fIsMC){
+          int tmpLabel = (int) ((AliAODTrack*)inTrack)->GetLabel();
+          if(tmpLabel > 0){
+            AliAODMCParticle* trackPart    = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+            if(!trackPart) continue;
+
+            if(TMath::Abs(trackPart->GetPdgCode()) == 11){
+              fHistVerifiedElectronPositronOnEMCCell->Fill(inTrack->GetTrackPOnEMCal());
+            }
+          }
+        }
         // fill vs. supermodule
         int iSM = -1;
         fGeomEMCAL->SuperModuleNumberFromEtaPhi(inTrack->GetTrackEtaOnEMCal(), inTrack->GetTrackPhiOnEMCal(), iSM);
@@ -4636,6 +4712,7 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
     }
 
     // for(int icl = 0; icl < vCluster->GetEntries(); icl++){
+    short matchCounter = 0;
     for(unsigned int icl = 0; icl < vCluster.size(); icl++){
       AliVCluster* cluster = vCluster[icl];
       if(!cluster){
@@ -4664,6 +4741,7 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
       }
 
       if(match_dEta && match_dPhi){
+        matchCounter++;
         if(fExtendedMatchAndQA > 1){
           if(inTrack->Charge() < 0){
             fHistElectronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
@@ -4677,6 +4755,10 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
           fHistElectronPositronClusterMatchVsSM->Fill(inTrack->GetTrackPOnEMCal(), iSM, weight);
           //fill vs eta position
           fHistElectronPositronClusterMatchVsEta->Fill(inTrack->GetTrackPOnEMCal(), inTrack->GetTrackEtaOnEMCal(), weight);
+          // double counting histogram
+          if(matchCounter > 1) {
+            fHistElectronPositronClusterMatchDoubleCount->Fill(inTrack->GetTrackPOnEMCal(), weight);
+          }
         }
         fHistElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
         fHistElectronPositronClusterMatchSub->Fill(cluster->E(), cluster->E() - inTrack->GetTrackPOnEMCal(), weight);
@@ -4690,11 +4772,6 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
         }
 
         if(isMC){
-          if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(event->FindListObject(AliAODMCParticle::StdBranchName()));
-          if (fAODMCTrackArray == NULL){
-            AliError("No MC particle list available in AOD");
-            return;
-          }
           Int_t tmpLabel = (Int_t) ((AliAODTrack*)inTrack)->GetLabel();
           if(tmpLabel > 0){
             AliAODMCParticle* trackPart    = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
@@ -4702,19 +4779,24 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
 
             if(TMath::Abs(trackPart->GetPdgCode()) == 11){
               fHistElectronClusterMatchTruePID->Fill(0.5, trackPart->P(), weight);
+              fHistElectronClusterMatchTruePIDRecP->Fill(0.5, inTrack->GetTrackEtaOnEMCal(), weight);
               fHistTrueElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
               if(inTrack->GetTrackPOnEMCal() > 0) fHistTrueElectronPositronClusterMatchEoverP->Fill(cluster->E() / inTrack->GetTrackPOnEMCal(), inTrack->Pt(), weight);
             } else if(TMath::Abs(trackPart->GetPdgCode()) == 211){
               fHistElectronClusterMatchTruePID->Fill(1.5, trackPart->P(), weight);
+              fHistElectronClusterMatchTruePIDRecP->Fill(1.5, inTrack->GetTrackEtaOnEMCal(), weight);
               fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
             } else if(TMath::Abs(trackPart->GetPdgCode()) == 2212){
               fHistElectronClusterMatchTruePID->Fill(2.5, trackPart->P(), weight);
+              fHistElectronClusterMatchTruePIDRecP->Fill(2.5, inTrack->GetTrackEtaOnEMCal(), weight);
               fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
             } else if(TMath::Abs(trackPart->GetPdgCode()) == 321){
               fHistElectronClusterMatchTruePID->Fill(3.5, trackPart->P(), weight);
+              fHistElectronClusterMatchTruePIDRecP->Fill(3.5, inTrack->GetTrackEtaOnEMCal(), weight);
               fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
             } else {
               fHistElectronClusterMatchTruePID->Fill(4.5, trackPart->P(), weight);
+              fHistElectronClusterMatchTruePIDRecP->Fill(4.5, inTrack->GetTrackEtaOnEMCal(), weight);
               fHistTrueNoElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
             }
           }
@@ -7569,14 +7651,29 @@ Bool_t AliCaloPhotonCuts::SetDispersion(Int_t dispersion)
   case 10:
     if (!fUseDispersion) fUseDispersion = 2;
     fApplyClusterEffOnData = false;
+    fApplyClusterEffToEMProbesOnly = false;
     fClusterEfficiencyFunc = new TF1("fClusterEfficiencyFunc", "[0]*(1/(1+exp([2]*x - [1])))", 0, 200);
     fClusterEfficiencyFunc->SetParameters(1., -1.31311e-01, -2.47609);
     break;
   case 11: // iteration 2
     if (!fUseDispersion) fUseDispersion = 2;
     fApplyClusterEffOnData = false;
+    fApplyClusterEffToEMProbesOnly = false;
     fClusterEfficiencyFunc = new TF1("fClusterEfficiencyFunc", "[0]*(1/(1+exp([2]*x - [1])))", 0, 200);
     fClusterEfficiencyFunc->SetParameters(1., 1.12946e-01, -2.56465);
+    break;
+  case 12: // c: Evaluated with B=0.2T data, with cat.3 V0Photons and R cut of 5-33cm
+    if (!fUseDispersion) fUseDispersion = 2;
+    fApplyClusterEffOnData = false;
+    fApplyClusterEffToEMProbesOnly = false;
+    fClusterEfficiencyFunc = new TF1("fClusterEfficiencyFunc", "[0]*(1/(1+exp([2]*x - [1])))", 0, 200);
+    fClusterEfficiencyFunc->SetParameters(1., -5.06867e-01, -2.36169);
+  case 13: // d: (same as c, but only applied on photon and electron clusters)
+    if (!fUseDispersion) fUseDispersion = 2;
+    fApplyClusterEffOnData = false;
+    fApplyClusterEffToEMProbesOnly = true;
+    fClusterEfficiencyFunc = new TF1("fClusterEfficiencyFunc", "[0]*(1/(1+exp([2]*x - [1])))", 0, 200);
+    fClusterEfficiencyFunc->SetParameters(1., -5.06867e-01, -2.36169);
     break;
   default:
     AliError(Form("Maximum Dispersion Cut not defined %d",dispersion));
