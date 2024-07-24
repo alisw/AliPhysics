@@ -79,15 +79,25 @@ void AddTask_GammaConvV1_PbPb(
   
   Bool_t    enablePhotonTree      =  kFALSE;
   Bool_t    enableMesonTree       =  kFALSE;
+  Bool_t    fApplyML 		  =  kFALSE;
+
   Float_t   meson_m1_range_left = 0.04; 
   Float_t   meson_m1_range_right = 0.2; 
   Float_t   meson_m2_range_left = 0.4; 
   Float_t   meson_m2_range_right = 0.7;  
 
-  if (fileNameMLR.CompareTo("enable") == 0){
+  if (fileNameMLR.CompareTo("") != 0){
+  if (fileNameMLR.Contains("enable")){
     enablePhotonTree      =  kTRUE;
     enableMesonTree       =  kTRUE;
-}
+    }
+  else if(fileNameMLR.Contains(".yml")) {
+    fApplyML = kTRUE;
+    cout << " ML classification model set to -> " << fApplyML << endl;
+    cout << " Using .yml file from : " << fileNameMLR.Data() << endl;
+    }
+  }
+
 
   TString addTaskName                 = "AddTask_GammaConvV1_PbPb";
   TString sAdditionalTrainConfig      = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "", "", addTaskName);
@@ -4091,7 +4101,7 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("15910053", "0d200009ab770c00amd0400000", "0152101500000000"); // 50-90%
 
                               
-                              
+                                                          
                        ///----  Machine Learning PCM OPEN CUTS   ---//       
   } else if (trainConfig == 3000){ 
     cuts.AddCutPCM("10130e03", "00200008100000001100400000", "0452103500000000"); // 0-10%
@@ -4100,11 +4110,17 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("15910e03", "00200008100000001100400000", "0452103500000000"); // 50-90%
 //  cuts.AddCutPCM("15910e03", "0d200009ab770c00amd0400000", "0152101500000000"); // 990
 //  cuts.AddCutPCM("15910e03", "00200008d00000001100000000", "0452103500000000"); // 3000
-                                                            //0452103500000000
+    
+  } else if (trainConfig == 3001){
+    cuts.AddCutPCM("10130e03", "00200008100000001100400000", "0452103500000000"); // 0-10%
+    cuts.AddCutPCM("11310e03", "00200008100000001100400000", "0452103500000000"); // 10-30%
+    cuts.AddCutPCM("13530e03", "00200008100000001100400000", "0452103500000000"); // 30-50%
+    cuts.AddCutPCM("15910e03", "00200008100000001100400000", "0452103500000000"); // 50-90%
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
   }
+
 
   if(!cuts.AreValid()){
     cout << "\n\n****************************************************" << endl;
@@ -4707,6 +4723,10 @@ void AddTask_GammaConvV1_PbPb(
   task->SetDoCentFlattening(enableFlattening);
   if (enablePhotonTree) task->SetDoTreeForPhotonML(kTRUE);
   if (enableMesonTree) task->SetDoTreeForMesonML(kTRUE,meson_m1_range_left,meson_m1_range_right,meson_m2_range_left,meson_m2_range_right);
+  if (fApplyML){
+	  task->SetApplyPhotonML(kTRUE);
+	  task->SetMLConfigFile(fileNameMLR.Data());
+  }
   if (initializedMatBudWeigths_existing) {
       task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);
   }

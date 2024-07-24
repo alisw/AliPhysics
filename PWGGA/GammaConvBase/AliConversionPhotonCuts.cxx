@@ -921,7 +921,7 @@ Double_t AliConversionPhotonCuts::GetCorrectedElectronTPCResponse(Short_t charge
 
   if(Charge<0){
     if (fHistoEleMapRecalib[BinCorr] == NULL ){
-      cout<< " histograms are null..., going out"<< endl;
+      // cout<< " histograms are null..., going out"<< endl;
       return CornSig;// do nothing if correction map is not avaible
     }
 
@@ -938,7 +938,7 @@ Double_t AliConversionPhotonCuts::GetCorrectedElectronTPCResponse(Short_t charge
 
   }else{
     if (fHistoPosMapRecalib[BinCorr] == NULL ){
-      cout<< " histograms are null..., going out"<< endl;
+      // cout<< " histograms are null..., going out"<< endl;
       return CornSig;// do nothing if correction map is not avaible
     }
 
