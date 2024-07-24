@@ -951,6 +951,7 @@ void AliAnalysisTaskEmcalPIDinJet::ExecOnce()
  */
 Bool_t AliAnalysisTaskEmcalPIDinJet::Run()
 {
+ return kTRUE;
 }
 
 /**
