@@ -466,9 +466,6 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
     }
   }
 
-  static float massPion =
-      TDatabasePDG::Instance()->GetParticle(fPosPionCuts->GetPDGCode())->Mass();
-
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
 
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack)
