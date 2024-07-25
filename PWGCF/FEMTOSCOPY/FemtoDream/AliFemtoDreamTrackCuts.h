@@ -138,6 +138,12 @@ class AliFemtoDreamTrackCuts {
   float GetEtaMax() {
     return fetamax;
   }
+  float GetPtMin() {
+    return fpTmin;
+  }
+  float GetPtMax() {
+    return fpTmax;
+  }
   void SetCutCharge(int charge) {
     fcutCharge = kTRUE;
     fCharge = charge;

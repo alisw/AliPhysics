@@ -31,6 +31,7 @@ ClassImp(AliAnalysisTaskNanoFromAODLambdaPion)
       fPionMinusMCList(nullptr),
       fResults(nullptr),
       fResultsQA(nullptr),
+      fResultsMCGen(nullptr),
       fInputEvent(nullptr),
       fEvent(nullptr),
       fTrack(nullptr),
@@ -71,6 +72,7 @@ AliAnalysisTaskNanoFromAODLambdaPion::AliAnalysisTaskNanoFromAODLambdaPion(
       fPionMinusMCList(nullptr),
       fResults(nullptr),
       fResultsQA(nullptr),
+      fResultsMCGen(nullptr),
       fInputEvent(nullptr),
       fEvent(nullptr),
       fTrack(nullptr),
@@ -102,6 +104,9 @@ AliAnalysisTaskNanoFromAODLambdaPion::AliAnalysisTaskNanoFromAODLambdaPion(
     DefineOutput(10, TList::Class()); // Output for the AntiLambda MC
     DefineOutput(11, TList::Class()); // Output for the PionPlus MC
     DefineOutput(12, TList::Class()); // Output for the PionMinus MC
+    
+    DefineOutput(13, TList::Class()); // results at generator level
+
   }
 }
 
@@ -192,6 +197,14 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserCreateOutputObjects()
   fPartColl =
       new AliFemtoDreamPartCollection(fConfig, fConfig->GetMinimalBookingME());
 
+  if (fIsMC){
+    AliFemtoDreamCollConfig *fConfigMCGen = (AliFemtoDreamCollConfig *)fConfig->Clone();
+    std::vector<bool> cprMCGen = {false, false, false, false, false, false, false, false, false, false};
+    fConfigMCGen->SetClosePairRejection(cprMCGen);
+    fPartCollMCGen = new AliFemtoDreamPartCollection(fConfigMCGen, fConfigMCGen->GetMinimalBookingME());
+    fPairCleanerMCGen = new AliFemtoDreamPairCleaner(4, 3, fConfigMCGen->GetMinimalBookingME());
+  }
+
   fResultsQA = new TList();
   fResultsQA->SetOwner();
   fResultsQA->SetName("ResultsQA");
@@ -199,6 +212,8 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserCreateOutputObjects()
   if (fConfig->GetUseEventMixing())
   {
     fResults = fPartColl->GetHistList();
+    if (fIsMC) fResultsMCGen = fPartCollMCGen->GetHistList();
+
     if (!fConfig->GetMinimalBookingME())
     {
       fResultsQA->Add(fPartColl->GetQAList());
@@ -279,6 +294,8 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserCreateOutputObjects()
     }
     PostData(12, fPionMinusMCList);
   }
+
+  if (fIsMC) PostData(13, fResultsMCGen);
 }
 
 void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
@@ -370,6 +387,49 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
       }
 
       AntiLambdas.push_back(*fLambda);
+    }
+  }
+
+  std::vector<AliFemtoDreamBasePart> PionPlusMCGen;
+  std::vector<AliFemtoDreamBasePart> PionMinusMCGen;
+  std::vector<AliFemtoDreamBasePart> LambdasMCGen;
+  std::vector<AliFemtoDreamBasePart> AntiLambdasMCGen;
+
+  for (Int_t iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) {
+    auto part = (AliAODMCParticle *)fMC->GetTrack(iPart);
+    if (!part) continue;
+
+    if (part->GetPdgCode() == 211) {
+      AliFemtoDreamBasePart pion;
+      pion.SetMCParticleRePart(part);
+
+      if (std::abs(pion.GetEta()[0]) > 0.8) continue;
+      if (!(fPosPionCuts->GetPtMin() < pion.GetPt() && pion.GetPt() < fPosPionCuts->GetPtMax())) continue;
+
+      PionPlusMCGen.push_back(pion);
+    }
+    else if (part->GetPdgCode() == -211)
+    {
+      AliFemtoDreamBasePart pion;
+      pion.SetMCParticleRePart(part);
+      if (std::abs(pion.GetEta()[0]) > 0.8) continue;
+      if (!(fNegPionCuts->GetPtMin() < pion.GetPt() && pion.GetPt() < fNegPionCuts->GetPtMax())) continue;
+
+      PionMinusMCGen.push_back(pion);
+    }
+    else if (part->GetPdgCode() == 3122)
+    {
+      AliFemtoDreamBasePart lambda;
+      lambda.SetMCParticleRePart(part);
+
+      LambdasMCGen.push_back(lambda);
+    }
+    else if (part->GetPdgCode() == -3122)
+    {
+      AliFemtoDreamBasePart lambda;
+      lambda.SetMCParticleRePart(part);
+
+      AntiLambdasMCGen.push_back(lambda);
     }
   }
 
@@ -497,6 +557,17 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
     fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),
                         fEvent->GetZVertex(), fEvent->GetRefMult08(),
                         fEvent->GetV0MCentrality());
+    if (fIsMC) {
+      fPairCleanerMCGen->ResetArray();
+      fPairCleanerMCGen->StoreParticle(PionPlusMCGen);
+      fPairCleanerMCGen->StoreParticle(PionMinusMCGen);
+      fPairCleanerMCGen->StoreParticle(LambdasMCGen);
+      fPairCleanerMCGen->StoreParticle(AntiLambdasMCGen);
+
+      fPartCollMCGen->SetEvent(fPairCleanerMCGen->GetCleanParticles(),
+                          fEvent->GetZVertex(), fEvent->GetRefMult08(),
+                          fEvent->GetV0MCentrality());
+    }
   }
 
   PostData(1, fQA);
@@ -524,6 +595,8 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
   {
     PostData(12, fPionMinusMCList);
   }
+
+  if (fIsMC) PostData(13, fResultsMCGen);
 }
 
 void AliAnalysisTaskNanoFromAODLambdaPion::ResetGlobalTrackReference()
