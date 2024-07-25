@@ -395,54 +395,74 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
   std::vector<AliFemtoDreamBasePart> LambdasMCGen;
   std::vector<AliFemtoDreamBasePart> AntiLambdasMCGen;
 
-  for (Int_t iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) {
-    auto part = (AliAODMCParticle *)fMC->GetTrack(iPart);
-    if (!part) continue;
+  // Find Lambdas and keep track of their daughters
+  std::vector<int> dauList = {};
+  if (fMC) {
+    for (Int_t iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) {
+      auto part = (AliAODMCParticle *)fMC->GetTrack(iPart);
+      if (!part) continue;
 
-    if (part->GetPdgCode() == 211) {
-      AliFemtoDreamBasePart pion;
-      pion.SetMCParticleRePart(part);
+      if (part->GetPdgCode() == 3122) {
+        if (!(fLambdaCuts->GetMinPt() < part->Pt() && part->Pt() < fLambdaCuts->GetMaxPt())) continue;
 
-      if (std::abs(pion.GetEta()[0]) > 0.8) continue;
-      if (!(fPosPionCuts->GetPtMin() < pion.GetPt() && pion.GetPt() < fPosPionCuts->GetPtMax())) continue;
+        // Check that the daughters are in the acceptance
+        int dau1Idx = part->GetDaughterFirst();
+        int dau2Idx = part->GetDaughterLast();
+        auto dau1 = (AliAODMCParticle *)fMC->GetTrack(dau1Idx);
+        auto dau2 = (AliAODMCParticle *)fMC->GetTrack(dau2Idx);
+        if (dau1->GetPdgCode() * dau2->GetPdgCode() != -211 * 2212) continue;
+        if (std::abs(dau1->Eta()) > 0.8) continue;
+        if (std::abs(dau2->Eta()) > 0.8) continue;
 
-      PionPlusMCGen.push_back(pion);
-    } else if (part->GetPdgCode() == -211) {
-      AliFemtoDreamBasePart pion;
-      pion.SetMCParticleRePart(part);
-      if (std::abs(pion.GetEta()[0]) > 0.8) continue;
-      if (!(fNegPionCuts->GetPtMin() < pion.GetPt() && pion.GetPt() < fNegPionCuts->GetPtMax())) continue;
+        AliFemtoDreamBasePart lambda;
+        lambda.SetMCParticleRePart(part);
+        LambdasMCGen.push_back(lambda);
+        dauList.push_back(dau1Idx);
+        dauList.push_back(dau2Idx);
+      } else if (part->GetPdgCode() == -3122) {
+        if (!(fAntiLambdaCuts->GetMinPt() < part->Pt() && part->Pt() < fAntiLambdaCuts->GetMaxPt())) continue;
 
-      PionMinusMCGen.push_back(pion);
-    } else if (part->GetPdgCode() == 3122) {
-      if (!(fLambdaCuts->GetMinPt() < part->Pt() && part->Pt() < fLambdaCuts->GetMaxPt())) continue;
+        // Check that the daughters are in the acceptance
+        int dau1Idx = part->GetDaughterFirst();
+        int dau2Idx = part->GetDaughterLast();
+        auto dau1 = (AliAODMCParticle *)fMC->GetTrack(dau1Idx);
+        auto dau2 = (AliAODMCParticle *)fMC->GetTrack(dau2Idx);
+        if (dau1->GetPdgCode() * dau2->GetPdgCode() != -211 * 2212) continue;
+        if (std::abs(dau1->Eta()) > 0.8) continue;
+        if (std::abs(dau2->Eta()) > 0.8) continue;
 
-      int dau1Idx = part->GetDaughterFirst();
-      int dau2Idx = part->GetDaughterLast();
-      auto dau1 = (AliAODMCParticle *)fMC->GetTrack(dau1Idx);
-      auto dau2 = (AliAODMCParticle *)fMC->GetTrack(dau2Idx);
+        AliFemtoDreamBasePart lambda;
+        lambda.SetMCParticleRePart(part);
+        AntiLambdasMCGen.push_back(lambda);
+        dauList.push_back(dau1Idx);
+        dauList.push_back(dau2Idx);
+      }
+    }
 
-      if (dau1->GetPdgCode() * dau2->GetPdgCode() != -211 * 2212) continue;
-      if (std::abs(dau1->Eta()) > 0.8) continue;
-      if (std::abs(dau2->Eta()) > 0.8) continue;
+    // Find pions
+    for (Int_t iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) {
+      // Remove the daughters of Lambdas
+      if (std::find(dauList.begin(), dauList.end(), iPart) != dauList.end()) continue;
 
-      AliFemtoDreamBasePart lambda;
-      lambda.SetMCParticleRePart(part);
-      LambdasMCGen.push_back(lambda);
-    } else if (part->GetPdgCode() == -3122) {
-      if (!(fAntiLambdaCuts->GetMinPt() < part->Pt() && part->Pt() < fAntiLambdaCuts->GetMaxPt())) continue;
+      auto part = (AliAODMCParticle *)fMC->GetTrack(iPart);
+      if (!part) continue;
 
-      int dau1Idx = part->GetDaughterFirst();
-      int dau2Idx = part->GetDaughterLast();
-      auto dau1 = (AliAODMCParticle *)fMC->GetTrack(dau1Idx);
-      auto dau2 = (AliAODMCParticle *)fMC->GetTrack(dau2Idx);
+      if (part->GetPdgCode() == 211) {
+        AliFemtoDreamBasePart pion;
+        pion.SetMCParticleRePart(part);
 
-      if (dau1->GetPdgCode() * dau2->GetPdgCode() != -211 * 2212) continue;
-      if (std::abs(dau1->Eta()) > 0.8) continue;
-      if (std::abs(dau2->Eta()) > 0.8) continue;
-      AliFemtoDreamBasePart lambda;
-      lambda.SetMCParticleRePart(part);
-      AntiLambdasMCGen.push_back(lambda);
+        if (std::abs(pion.GetEta()[0]) > 0.8) continue;
+        if (!(fPosPionCuts->GetPtMin() < pion.GetPt() && pion.GetPt() < fPosPionCuts->GetPtMax())) continue;
+
+        PionPlusMCGen.push_back(pion);
+      } else if (part->GetPdgCode() == -211) {
+        AliFemtoDreamBasePart pion;
+        pion.SetMCParticleRePart(part);
+        if (std::abs(pion.GetEta()[0]) > 0.8) continue;
+        if (!(fNegPionCuts->GetPtMin() < pion.GetPt() && pion.GetPt() < fNegPionCuts->GetPtMax())) continue;
+
+        PionMinusMCGen.push_back(pion);
+      }
     }
   }
 
