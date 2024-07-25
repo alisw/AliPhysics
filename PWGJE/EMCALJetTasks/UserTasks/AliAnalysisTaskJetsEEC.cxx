@@ -61,8 +61,8 @@ fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.02), fDerivSubtrOrder(0),
-fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(0), fUnfolding(1), fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(0), fJet_pt_det(0), fJet_pt_tru(0), fTrack_pt_det(0), fTrack_pt_tru(0), fTrack_eta_det(0), fTrack_eta_tru(0), fTrack_phi_det(0), fTrack_phi_tru(0),  fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0), R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0),pt_tru1(0), pt_tru2(0), eec_Mm(0), eec_mm(0), e3c_MMm(0), e3c_Mmm(0), e3c_mmm(0), eec_Mf(0), eec_ff(0), e3c_MMf(0), e3c_Mff(0), e3c_fff(0), eec_matched_det(0), eec_matched_tru(0), e3c_matched_det(0), e3c_matched_tru(0), wt_res_eec(0), wt_res_e3c(0), R_res_eec(0), R_res_e3c(0), wtnojet_match_eec(0), wtnojet_match_e3c(0), wtnojet_res_eec(0), wtnojet_res_e3c(0), R_match_eec_tru(0), wt_match_eec_tru(0), R_match_e3c_tru(0), wt_match_e3c_tru(0), wt_res_eec_tru(0), wt_res_e3c_tru(0), R_res_eec_tru(0), R_res_e3c_tru(0), wtnojet_match_eec_tru(0), wtnojet_match_e3c_tru(0), wtnojet_res_eec_tru(0), wtnojet_res_e3c_tru(0), constituentId(0),R_res_eec_tru_debug(0),track_pt_res_debug(0),track_eta_debug(0), track_rap_debug(0), track_phi_debug(0), track_R_debug(0), track_R_debug_rap(0), track_eta_res_debug(0), track_rap_res_debug(0), track_phi_res_debug(0), track_R_res_debug(0), track_R_rap_res_debug(0), R_match_eec_tru_rap(0), track_pt_response_debug(0), track_pt_wt_res_debug(0), track_pt_wt_response_debug(0), jetpt_res_w_R(0), jetpt_res_w_wt(0), OptUn_eec(0),
-    OptUn_e3c(0), fTreeMatchTracks(0)
+fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(0), fUnfolding(1), fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(0), fJet_pt_det(0), fJet_pt_tru(0), fTrack_pt_det(0), fTrack_pt_tru(0), fTrack_eta_det(0), fTrack_eta_tru(0), fTrack_phi_det(0), fTrack_phi_tru(0), fJet_pt_dat(0), fTrack_pt_dat(0),fTrack_eta_dat(0),fTrack_phi_dat(0),  fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0), R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0),pt_tru1(0), pt_tru2(0), eec_Mm(0), eec_mm(0), e3c_MMm(0), e3c_Mmm(0), e3c_mmm(0), eec_Mf(0), eec_ff(0), e3c_MMf(0), e3c_Mff(0), e3c_fff(0), eec_matched_det(0), eec_matched_tru(0), e3c_matched_det(0), e3c_matched_tru(0), wt_res_eec(0), wt_res_e3c(0), R_res_eec(0), R_res_e3c(0), wtnojet_match_eec(0), wtnojet_match_e3c(0), wtnojet_res_eec(0), wtnojet_res_e3c(0), R_match_eec_tru(0), wt_match_eec_tru(0), R_match_e3c_tru(0), wt_match_e3c_tru(0), wt_res_eec_tru(0), wt_res_e3c_tru(0), R_res_eec_tru(0), R_res_e3c_tru(0), wtnojet_match_eec_tru(0), wtnojet_match_e3c_tru(0), wtnojet_res_eec_tru(0), wtnojet_res_e3c_tru(0), constituentId(0),R_res_eec_tru_debug(0),track_pt_res_debug(0),track_eta_debug(0), track_rap_debug(0), track_phi_debug(0), track_R_debug(0), track_R_debug_rap(0), track_eta_res_debug(0), track_rap_res_debug(0), track_phi_res_debug(0), track_R_res_debug(0), track_R_rap_res_debug(0), R_match_eec_tru_rap(0), track_pt_response_debug(0), track_pt_wt_res_debug(0), track_pt_wt_response_debug(0), jetpt_res_w_R(0), jetpt_res_w_wt(0), OptUn_eec(0),
+    OptUn_e3c(0), fTreeMatchTracks(0), fTreeData(0)
 {
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
@@ -77,8 +77,8 @@ fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.02), fDerivSubtrOrder(0),
-fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(0), fUnfolding(1), fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(0), fJet_pt_det(0), fJet_pt_tru(0), fTrack_pt_det(0), fTrack_pt_tru(0), fTrack_eta_det(0), fTrack_eta_tru(0), fTrack_phi_det(0), fTrack_phi_tru(0),  fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0), R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0),pt_tru1(0), pt_tru2(0), eec_Mm(0), eec_mm(0), e3c_MMm(0), e3c_Mmm(0), e3c_mmm(0), eec_Mf(0), eec_ff(0), e3c_MMf(0), e3c_Mff(0), e3c_fff(0), eec_matched_det(0), eec_matched_tru(0), e3c_matched_det(0), e3c_matched_tru(0), wt_res_eec(0), wt_res_e3c(0), R_res_eec(0), R_res_e3c(0), wtnojet_match_eec(0), wtnojet_match_e3c(0), wtnojet_res_eec(0), wtnojet_res_e3c(0), R_match_eec_tru(0), wt_match_eec_tru(0), R_match_e3c_tru(0), wt_match_e3c_tru(0), wt_res_eec_tru(0), wt_res_e3c_tru(0), R_res_eec_tru(0), R_res_e3c_tru(0), wtnojet_match_eec_tru(0), wtnojet_match_e3c_tru(0), wtnojet_res_eec_tru(0), wtnojet_res_e3c_tru(0), constituentId(0),R_res_eec_tru_debug(0),track_pt_res_debug(0),track_eta_debug(0),track_rap_debug(0), track_phi_debug(0), track_R_debug(0), track_R_debug_rap(0), track_eta_res_debug(0), track_rap_res_debug(0), track_phi_res_debug(0), track_R_res_debug(0), track_R_rap_res_debug(0), R_match_eec_tru_rap(0), track_pt_response_debug(0), track_pt_wt_res_debug(0), track_pt_wt_response_debug(0), jetpt_res_w_R(0), jetpt_res_w_wt(0), OptUn_eec(0),
-    OptUn_e3c(0), fTreeMatchTracks(0)
+fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(0), fUnfolding(1), fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(0), fJet_pt_det(0), fJet_pt_tru(0), fTrack_pt_det(0), fTrack_pt_tru(0), fTrack_eta_det(0), fTrack_eta_tru(0), fTrack_phi_det(0), fTrack_phi_tru(0), fJet_pt_dat(0), fTrack_pt_dat(0),fTrack_eta_dat(0),fTrack_phi_dat(0),  fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0), R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0),pt_tru1(0), pt_tru2(0), eec_Mm(0), eec_mm(0), e3c_MMm(0), e3c_Mmm(0), e3c_mmm(0), eec_Mf(0), eec_ff(0), e3c_MMf(0), e3c_Mff(0), e3c_fff(0), eec_matched_det(0), eec_matched_tru(0), e3c_matched_det(0), e3c_matched_tru(0), wt_res_eec(0), wt_res_e3c(0), R_res_eec(0), R_res_e3c(0), wtnojet_match_eec(0), wtnojet_match_e3c(0), wtnojet_res_eec(0), wtnojet_res_e3c(0), R_match_eec_tru(0), wt_match_eec_tru(0), R_match_e3c_tru(0), wt_match_e3c_tru(0), wt_res_eec_tru(0), wt_res_e3c_tru(0), R_res_eec_tru(0), R_res_e3c_tru(0), wtnojet_match_eec_tru(0), wtnojet_match_e3c_tru(0), wtnojet_res_eec_tru(0), wtnojet_res_e3c_tru(0), constituentId(0),R_res_eec_tru_debug(0),track_pt_res_debug(0),track_eta_debug(0),track_rap_debug(0), track_phi_debug(0), track_R_debug(0), track_R_debug_rap(0), track_eta_res_debug(0), track_rap_res_debug(0), track_phi_res_debug(0), track_R_res_debug(0), track_R_rap_res_debug(0), R_match_eec_tru_rap(0), track_pt_response_debug(0), track_pt_wt_res_debug(0), track_pt_wt_response_debug(0), jetpt_res_w_R(0), jetpt_res_w_wt(0), OptUn_eec(0),
+    OptUn_e3c(0), fTreeMatchTracks(0), fTreeData(0)
 {
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
@@ -111,11 +111,21 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
         new_bins[i] = TMath::Power(10.0, from + i * width);
     }
 
-    Double_t from_const = 15;
+//    Double_t from_const = 15;
+//    Double_t to_const = 120;
+//    Int_t bins_const = 21;
+//    Double_t width_const = (to_const-from_const)/bins_const;
+//    Double_t new_bins_const[22] = {};
+//    for (Int_t i = 0; i <= bins_const; i++)
+//    {
+//    new_bins_const[i] = (from_const + i * width_const);
+//    }
+    
+    Double_t from_const = 10;
     Double_t to_const = 120;
-    Int_t bins_const = 21;
+    Int_t bins_const = 22;
     Double_t width_const = (to_const-from_const)/bins_const;
-    Double_t new_bins_const[22] = {};
+    Double_t new_bins_const[23] = {};
     for (Int_t i = 0; i <= bins_const; i++)
     {
     new_bins_const[i] = (from_const + i * width_const);
@@ -189,7 +199,7 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     }
     
     
-    jet_pt_hist = new TH1D("jet_pt_hist", "Jet Pt", 21, 15, 120);
+    jet_pt_hist = new TH1D("jet_pt_hist", "Jet Pt", 22, 10, 120);
     fOutput->Add(jet_pt_hist);
     
     //EEC (data or det level)
@@ -197,7 +207,7 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     EEC_hist->RebinX(2);
     fOutput->Add(EEC_hist);
     
-    EEC_pt_hist = new TH2D("EEC_pt_hist", "EEC and jet_pt 2D", 100, new_bins, 21, 15, 120);
+    EEC_pt_hist = new TH2D("EEC_pt_hist", "EEC and jet_pt 2D", 100, new_bins, 22, 10, 120);
     EEC_pt_hist->RebinX(2);
     fOutput->Add(EEC_pt_hist);
     
@@ -206,63 +216,63 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     E3C_hist->RebinX(2);
     fOutput->Add(E3C_hist);
     
-    E3C_pt_hist = new TH2D("E3C_pt_hist", "EEEC and jet_pt 2D", 100, new_bins, 21, 15, 120);
+    E3C_pt_hist = new TH2D("E3C_pt_hist", "EEEC and jet_pt 2D", 100, new_bins, 22, 10, 120);
     E3C_pt_hist->RebinX(2);
     fOutput->Add(E3C_pt_hist);
     
     //MC true and det level histograms 3d (det level fills through the data loop)
-    EEC_det_pt_hist_3d = new TH3D("EEC_det_pt_hist", "EEC det and jet_pt 3D", 100, new_bins, 21, new_bins_const, 21, new_bins_const);
+    EEC_det_pt_hist_3d = new TH3D("EEC_det_pt_hist", "EEC det and jet_pt 3D", 100, new_bins, 22, new_bins_const, 22, new_bins_const);
     EEC_det_pt_hist_3d->RebinX(2);
     fOutput->Add(EEC_det_pt_hist_3d);
     
-    EEC_tru_pt_hist_3d = new TH3D("EEC_tru_pt_hist", "EEC tru and jet_pt 3d", 100, new_bins, 21, new_bins_const, 21, new_bins_const);
+    EEC_tru_pt_hist_3d = new TH3D("EEC_tru_pt_hist", "EEC tru and jet_pt 3d", 100, new_bins, 22, new_bins_const, 22, new_bins_const);
     EEC_tru_pt_hist_3d->RebinX(2);
     fOutput->Add(EEC_tru_pt_hist_3d);
     
-    E3C_det_pt_hist_3d = new TH3D("E3C_det_pt_hist", "E3C det and jet_pt 3D", 100, new_bins, 21, new_bins_const, 21, new_bins_const);
+    E3C_det_pt_hist_3d = new TH3D("E3C_det_pt_hist", "E3C det and jet_pt 3D", 100, new_bins, 22, new_bins_const, 22, new_bins_const);
     E3C_det_pt_hist_3d->RebinX(2);
     fOutput->Add(E3C_det_pt_hist_3d);
     
-    E3C_tru_pt_hist_3d = new TH3D("E3C_tru_pt_hist", "E3C tru and jet_pt 3d)", 100, new_bins, 21, new_bins_const, 21, new_bins_const);
+    E3C_tru_pt_hist_3d = new TH3D("E3C_tru_pt_hist", "E3C tru and jet_pt 3d)", 100, new_bins, 22, new_bins_const, 22, new_bins_const);
     E3C_tru_pt_hist_3d->RebinX(2);
     fOutput->Add(E3C_tru_pt_hist_3d);
     
     //Num of pairs at det and true level with det pt and tru pt
-    N2_det_pt_hist_3d = new TH3D("N2_det_pt_hist", "Num pairs det and jet_pt 3d",100, new_bins, 21, new_bins_const, 21, new_bins_const);
+    N2_det_pt_hist_3d = new TH3D("N2_det_pt_hist", "Num pairs det and jet_pt 3d",100, new_bins, 22, new_bins_const, 22, new_bins_const);
     N2_det_pt_hist_3d->RebinX(2);
     fOutput->Add(N2_det_pt_hist_3d);
     
-    N2_tru_pt_hist_3d = new TH3D("N2_tru_pt_hist", "Num pairs tru and jet_pt 3d",100, new_bins, 21, new_bins_const, 21, new_bins_const);
+    N2_tru_pt_hist_3d = new TH3D("N2_tru_pt_hist", "Num pairs tru and jet_pt 3d",100, new_bins, 22, new_bins_const, 22, new_bins_const);
     N2_tru_pt_hist_3d->RebinX(2);
     fOutput->Add(N2_tru_pt_hist_3d);
     
-    N3_det_pt_hist_3d = new TH3D("N3_det_pt_hist", "Num pairs det and jet_pt 3d",100, new_bins, 21, new_bins_const, 21, new_bins_const);
+    N3_det_pt_hist_3d = new TH3D("N3_det_pt_hist", "Num pairs det and jet_pt 3d",100, new_bins, 22, new_bins_const, 22, new_bins_const);
     N3_det_pt_hist_3d->RebinX(2);
     fOutput->Add(N3_det_pt_hist_3d);
     
-    N3_tru_pt_hist_3d = new TH3D("N3_tru_pt_hist", "Num pairs tru and jet_pt 3d",100, new_bins, 21, new_bins_const, 21, new_bins_const);
+    N3_tru_pt_hist_3d = new TH3D("N3_tru_pt_hist", "Num pairs tru and jet_pt 3d",100, new_bins, 22, new_bins_const, 22, new_bins_const);
     N3_tru_pt_hist_3d->RebinX(2);
     fOutput->Add(N3_tru_pt_hist_3d);
     
     //MC true level histograms (detector level goes through the data loop so don't need det level histograms)
-    EEC_tru_match_pt_tru = new TH2D("EEC_pt_tru_match_hist", "EEC and pT for tru matched jets", 100, new_bins, 21, 15, 120);
+    EEC_tru_match_pt_tru = new TH2D("EEC_pt_tru_match_hist", "EEC and pT for tru matched jets", 100, new_bins, 22, 10, 120);
     EEC_tru_match_pt_tru->RebinX(2);
     fOutput->Add(EEC_tru_match_pt_tru);
     
-    E3C_tru_match_pt_tru = new TH2D("E3C_pt_tru_match_hist", "E3C and pT for tru matched jets", 100, new_bins, 21, 15, 120);
+    E3C_tru_match_pt_tru = new TH2D("E3C_pt_tru_match_hist", "E3C and pT for tru matched jets", 100, new_bins, 22, 10, 120);
     E3C_tru_match_pt_tru->RebinX(2);
     fOutput->Add(E3C_tru_match_pt_tru);
 
-    pt_tru = new TH1D("jet_pt_tru_hist", "Jet Pt", 21, 15, 120);
+    pt_tru = new TH1D("jet_pt_tru_hist", "Jet Pt", 22, 10, 120);
     fOutput->Add(pt_tru);
     
-    R_matrix = new TH2D("R_matrix_jetpt", "Jet pT response matrix", 21, 15, 120, 21, 15, 120);
+    R_matrix = new TH2D("R_matrix_jetpt", "Jet pT response matrix", 22, 10, 120, 22, 10, 120);
     fOutput->Add(R_matrix);
     
-    JES = new TH2D("JES","Jet energy scale", 21, 15, 120, 200, -2, 8);
+    JES = new TH2D("JES","Jet energy scale", 22, 10, 120, 200, -2, 8);
     fOutput->Add(JES);
     
-    JES_scaled = new TH2D("JES scaled","Jet energy scale for scaled det pT", 21, 15, 120, 200, -2, 8);
+    JES_scaled = new TH2D("JES scaled","Jet energy scale for scaled det pT", 22, 10, 120, 200, -2, 8);
     fOutput->Add(JES_scaled);
     
     qpt_det = new TH2D("qpt_det","q/pt vs R det", 100, new_bins, 100, 0, 2);
@@ -293,117 +303,117 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     //Track matching ENC histograms for missed and fake tracks
     if(fMissJetTrack==1)
     {
-        eec_Mm = new TH2D("EEC_Mm", "EEC match miss tracks", 100, new_bins, 21, 15, 120);
+        eec_Mm = new TH2D("EEC_Mm", "EEC match miss tracks", 100, new_bins, 22, 10, 120);
         eec_Mm->RebinX(2);
         fOutput->Add(eec_Mm);
         
-        eec_mm = new TH2D("EEC_mm", "EEC miss miss tracks", 100, new_bins, 21, 15, 120);
+        eec_mm = new TH2D("EEC_mm", "EEC miss miss tracks", 100, new_bins, 22, 10, 120);
         eec_mm->RebinX(2);
         fOutput->Add(eec_mm);
         
-        e3c_MMm = new TH2D("E3C_MMm", "E3C match match miss tracks", 100, new_bins, 21, 15, 120);
+        e3c_MMm = new TH2D("E3C_MMm", "E3C match match miss tracks", 100, new_bins, 22, 10, 120);
         e3c_MMm->RebinX(2);
         fOutput->Add(e3c_MMm);
         
-        e3c_Mmm = new TH2D("E3C_Mmm", "E3C match miss miss tracks", 100, new_bins, 21, 15, 120);
+        e3c_Mmm = new TH2D("E3C_Mmm", "E3C match miss miss tracks", 100, new_bins, 22, 10, 120);
         e3c_Mmm->RebinX(2);
         fOutput->Add(e3c_Mmm);
         
-        e3c_mmm = new TH2D("E3C_mmm", "E3C miss miss miss tracks", 100, new_bins, 21, 15, 120);
+        e3c_mmm = new TH2D("E3C_mmm", "E3C miss miss miss tracks", 100, new_bins, 22, 10, 120);
         e3c_mmm->RebinX(2);
         fOutput->Add(e3c_mmm);
     }
 
     if(fFakeJetTrack==1)
     {
-        eec_Mf = new TH2D("EEC_Mf", "EEC match fake tracks", 100, new_bins, 21, 15, 120);
+        eec_Mf = new TH2D("EEC_Mf", "EEC match fake tracks", 100, new_bins, 22, 10, 120);
         eec_Mf->RebinX(2);
         fOutput->Add(eec_Mf);
         
-        eec_ff = new TH2D("EEC_ff", "EEC fake fake tracks", 100, new_bins, 21, 15, 120);
+        eec_ff = new TH2D("EEC_ff", "EEC fake fake tracks", 100, new_bins, 22, 10, 120);
         eec_ff->RebinX(2);
         fOutput->Add(eec_ff);
         
-        e3c_MMf = new TH2D("E3C_MMf", "E3C match match fake tracks", 100, new_bins, 21, 15, 120);
+        e3c_MMf = new TH2D("E3C_MMf", "E3C match match fake tracks", 100, new_bins, 22, 10, 120);
         e3c_MMf->RebinX(2);
         fOutput->Add(e3c_MMf);
         
-        e3c_Mff = new TH2D("E3C_Mff", "E3C match fake fake tracks", 100, new_bins, 21, 15, 120);
+        e3c_Mff = new TH2D("E3C_Mff", "E3C match fake fake tracks", 100, new_bins, 22, 10, 120);
         e3c_Mff->RebinX(2);
         fOutput->Add(e3c_Mff);
         
-        e3c_fff = new TH2D("E3C_fff", "E3C fake fake fake tracks", 100, new_bins, 21, 15, 120);
+        e3c_fff = new TH2D("E3C_fff", "E3C fake fake fake tracks", 100, new_bins, 22, 10, 120);
         e3c_fff->RebinX(2);
         fOutput->Add(e3c_fff);
     }
     
     if(fMatchJetTrack==1)
     {
-        eec_matched_det = new TH2D("EEC_MM_det", "EEC match match det tracks", 100, new_bins, 21, 15, 120);
+        eec_matched_det = new TH2D("EEC_MM_det", "EEC match match det tracks", 100, new_bins, 22, 10, 120);
         eec_matched_det->RebinX(2);
         fOutput->Add(eec_matched_det);
 
-        eec_matched_tru = new TH2D("EEC_MM_tru", "EEC match match tru tracks", 100, new_bins, 21, 15, 120);
+        eec_matched_tru = new TH2D("EEC_MM_tru", "EEC match match tru tracks", 100, new_bins, 22, 10, 120);
         eec_matched_tru->RebinX(2);
         fOutput->Add(eec_matched_tru);
 
-        e3c_matched_det = new TH2D("E3C_MMM_det", "E3C match match match det tracks", 100, new_bins, 21, 15, 120);
+        e3c_matched_det = new TH2D("E3C_MMM_det", "E3C match match match det tracks", 100, new_bins, 22, 10, 120);
         e3c_matched_det->RebinX(2);
         fOutput->Add(e3c_matched_det);
 
-        e3c_matched_tru = new TH2D("E3C_MMM_tru", "E3C match match match tru tracks", 100, new_bins, 21, 15, 120);
+        e3c_matched_tru = new TH2D("E3C_MMM_tru", "E3C match match match tru tracks", 100, new_bins, 22, 10, 120);
         e3c_matched_tru->RebinX(2);
         fOutput->Add(e3c_matched_tru);
         
-        R_match_eec_tru = new TH3D("R_match_eec_tru", "Matched Track R eec", 100, new_bins, 100, new_bins, 21, new_bins_const);
+        R_match_eec_tru = new TH3D("R_match_eec_tru", "Matched Track R eec", 100, new_bins, 100, new_bins, 22, new_bins_const);
         R_match_eec_tru->RebinX(2);
         R_match_eec_tru->RebinY(2);
         fOutput->Add(R_match_eec_tru);
 
-        R_match_e3c_tru = new TH3D("R_match_e3c_tru", "Matched Track R e3c", 100, new_bins, 100, new_bins, 21, new_bins_const);
+        R_match_e3c_tru = new TH3D("R_match_e3c_tru", "Matched Track R e3c", 100, new_bins, 100, new_bins, 22, new_bins_const);
         R_match_e3c_tru->RebinX(2);
         R_match_e3c_tru->RebinY(2);
         fOutput->Add(R_match_e3c_tru);
         
-        R_res_eec_tru = new TH3D("R_res_eec_tru", "R resolution scale EEC", 100, new_bins, 2000, R_res_new_bins, 21, new_bins_const);//R_tru bins, diff bins, jet pT bins
+        R_res_eec_tru = new TH3D("R_res_eec_tru", "R resolution scale EEC", 100, new_bins, 2000, R_res_new_bins, 22, new_bins_const);//R_tru bins, diff bins, jet pT bins
         R_res_eec_tru->RebinX(2);
         fOutput->Add(R_res_eec_tru);
 
-        R_res_e3c_tru = new TH3D("R_res_e3c_tru", "R resolution scale E3C", 100, new_bins, 2000, R_res_new_bins, 21, new_bins_const);
+        R_res_e3c_tru = new TH3D("R_res_e3c_tru", "R resolution scale E3C", 100, new_bins, 2000, R_res_new_bins, 22, new_bins_const);
         R_res_e3c_tru->RebinX(2);
         fOutput->Add(R_res_e3c_tru);
 
-        wt_match_eec_tru = new TH3D("wt_match_eec_tru", "Matched Track wt eec", 200, wt_new_bins, 200, wt_new_bins, 21, new_bins_const);
+        wt_match_eec_tru = new TH3D("wt_match_eec_tru", "Matched Track wt eec", 200, wt_new_bins, 200, wt_new_bins, 22, new_bins_const);
         fOutput->Add(wt_match_eec_tru);
 
-        wt_match_e3c_tru = new TH3D("wt_match_e3c_tru", "Matched Track Wt e3c",400, wt_new_bins_e3c, 400, wt_new_bins_e3c, 21, new_bins_const);
+        wt_match_e3c_tru = new TH3D("wt_match_e3c_tru", "Matched Track Wt e3c",400, wt_new_bins_e3c, 400, wt_new_bins_e3c, 22, new_bins_const);
         fOutput->Add(wt_match_e3c_tru);
 
-        wt_res_eec_tru = new TH3D("wt_res_eec_tru", "Weight resolution scale EEC", 200, wt_new_bins, 200, res_new_bins,  21, new_bins_const);
+        wt_res_eec_tru = new TH3D("wt_res_eec_tru", "Weight resolution scale EEC", 200, wt_new_bins, 200, res_new_bins,  22, new_bins_const);
         fOutput->Add(wt_res_eec_tru);
 
-        wt_res_e3c_tru = new TH3D("wt_res_e3c_tru", "Weight resolution scale E3C", 400, wt_new_bins_e3c, 200, res_new_bins,  21, new_bins_const);
+        wt_res_e3c_tru = new TH3D("wt_res_e3c_tru", "Weight resolution scale E3C", 400, wt_new_bins_e3c, 200, res_new_bins,  22, new_bins_const);
         fOutput->Add(wt_res_e3c_tru);
         //-------
-        wtnojet_match_eec_tru = new TH3D("wtnojet_match_eec_tru", "Matched Track Wt excluding jet pT EEC", 200, nj_eec_new_bins, 200, nj_eec_new_bins, 21, new_bins_const);
+        wtnojet_match_eec_tru = new TH3D("wtnojet_match_eec_tru", "Matched Track Wt excluding jet pT EEC", 200, nj_eec_new_bins, 200, nj_eec_new_bins, 22, new_bins_const);
         fOutput->Add(wtnojet_match_eec_tru);
 
-        wtnojet_match_e3c_tru = new TH3D("wtnojet_match_e3c_tru", "Matched Track Wt excluding jet pT E3C", 400, nj_e3c_new_bins, 400, nj_e3c_new_bins, 21, new_bins_const);
+        wtnojet_match_e3c_tru = new TH3D("wtnojet_match_e3c_tru", "Matched Track Wt excluding jet pT E3C", 400, nj_e3c_new_bins, 400, nj_e3c_new_bins, 22, new_bins_const);
 //        wtnojet_match_e3c_tru->RebinX(2);
 //        wtnojet_match_e3c_tru->RebinY(2);
         fOutput->Add(wtnojet_match_e3c_tru);
 
-        wtnojet_res_eec_tru = new TH3D("wtnojet_res_eec_tru", "Weight resolution (excluding jet pT) scale EEC", 200, nj_eec_new_bins, 2000, R_res_new_bins, 21, new_bins_const);
+        wtnojet_res_eec_tru = new TH3D("wtnojet_res_eec_tru", "Weight resolution (excluding jet pT) scale EEC", 200, nj_eec_new_bins, 2000, R_res_new_bins, 22, new_bins_const);
         fOutput->Add(wtnojet_res_eec_tru);
 
-        wtnojet_res_e3c_tru = new TH3D("wtnojet_res_e3c_tru", "Weight resolution (excluding jet pT) scale E3C", 400, nj_e3c_new_bins, 2000, R_res_new_bins, 21, new_bins_const);
-        wtnojet_res_e3c_tru = new TH3D("wtnojet_res_e3c_tru", "Weight resolution (excluding jet pT) scale E3C", 400, nj_e3c_new_bins, 2000, R_res_new_bins, 21, new_bins_const);
+        wtnojet_res_e3c_tru = new TH3D("wtnojet_res_e3c_tru", "Weight resolution (excluding jet pT) scale E3C", 400, nj_e3c_new_bins, 2000, R_res_new_bins, 22, new_bins_const);
+        wtnojet_res_e3c_tru = new TH3D("wtnojet_res_e3c_tru", "Weight resolution (excluding jet pT) scale E3C", 400, nj_e3c_new_bins, 2000, R_res_new_bins, 22, new_bins_const);
         fOutput->Add(wtnojet_res_e3c_tru);
         //-------
-        jetpt_res_w_R = new TH3D("jetpt_res_w_R", "Jet pT resolution with R", 100, new_bins, 200, res_new_bins, 21, new_bins_const);
+        jetpt_res_w_R = new TH3D("jetpt_res_w_R", "Jet pT resolution with R", 100, new_bins, 200, res_new_bins, 22, new_bins_const);
         fOutput->Add(jetpt_res_w_R);
         
-        jetpt_res_w_wt = new TH3D("jetpt_res_w_wt", "Jet pT resolution with wt", 200,  nj_eec_new_bins, 200, res_new_bins, 21, new_bins_const);
+        jetpt_res_w_wt = new TH3D("jetpt_res_w_wt", "Jet pT resolution with wt", 200,  nj_eec_new_bins, 200, res_new_bins, 22, new_bins_const);
         fOutput->Add(jetpt_res_w_wt);
 //
         
@@ -483,15 +493,15 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
         track_R_rap_res_debug = new TH3D("track_R_rap_res_debug", "track_R_res_debug", 100, new_bins, 2000, res_new_bins_debug, 100, pt_bins);
         fOutput->Add(track_R_rap_res_debug);
 //
-        R_match_eec_tru_rap = new TH3D("R_match_eec_tru_rap", "track_R_debug eec", 100, new_bins, 100, new_bins, 21, new_bins_const);
+        R_match_eec_tru_rap = new TH3D("R_match_eec_tru_rap", "track_R_debug eec", 100, new_bins, 100, new_bins, 22, new_bins_const);
         R_match_eec_tru_rap->RebinX(2);
         R_match_eec_tru_rap->RebinY(2);
         fOutput->Add(R_match_eec_tru_rap);
 
 //Unfolding optimization histograms from data
-    OptUn_eec = new TH3D("Opt_Un_eec","Optimize unfolding bins",100, new_bins, 21, new_bins_const,200, wt_new_bins);
+    OptUn_eec = new TH3D("Opt_Un_eec","Optimize unfolding bins",100, new_bins, 22, new_bins_const,200, wt_new_bins);
     fOutput->Add(OptUn_eec);
-    OptUn_e3c = new TH3D("Opt_Un_e3c","Optimize unfolding bins e3c",100, new_bins, 21, new_bins_const,400, wt_new_bins_e3c);
+    OptUn_e3c = new TH3D("Opt_Un_e3c","Optimize unfolding bins e3c",100, new_bins, 22, new_bins_const,400, wt_new_bins_e3c);
     fOutput->Add(OptUn_e3c);
     }
     
@@ -522,7 +532,12 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
          fTreeMatchTracks->Branch("fTrack_pt_fake", &fTrack_pt_fake, "fTrack_pt_fake/D");
          fTreeMatchTracks->Branch("fTrack_eta_fake", &fTrack_eta_fake, "fTrack_eta_fake/D");
          fTreeMatchTracks->Branch("fTrack_phi_fake", &fTrack_phi_fake, "fTrack_phi_fake/D");
-         
+        
+        fTreeData = new TTree("DataTree", "DataTree");
+        fTreeData->Branch("fJet_pt_dat", &fJet_pt_dat, "fJet_pt_dat/D");
+        fTreeData->Branch("fTrack_pt_dat", &fTrack_pt_dat, "fTrack_pt_dat/D");
+        fTreeData->Branch("fTrack_eta_dat", &fTrack_eta_dat, "fTrack_eta_dat/D");
+        fTreeData->Branch("fTrack_phi_dat", &fTrack_phi_dat, "fTrack_phi_dat/D");
      }
 
     PostData(1, fOutput);
@@ -1938,6 +1953,19 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
        
         //Looping over the jet
         double jet_pt = fJet->Pt();
+        
+        //Fill data tree for unfolding
+        if(fUnfolding==1)
+        {
+            for(int j=0; j<int(fConstituents.size()); j++)  //looping over constituents of the fConstituents object
+            {
+                fJet_pt_dat = jet_pt;
+                fTrack_eta_dat = fConstituents[j].eta();
+                fTrack_phi_dat = fConstituents[j].phi();
+                fTrack_pt_dat = fConstituents[j].pt();
+                fTreeData->Fill();
+            }
+        }
         
         if(fpTcorr == 1)
          {   jet_pt = jet_pt/(0.85); //applying JES correction to jet pT spectra to study spectra shape dependence of ENC

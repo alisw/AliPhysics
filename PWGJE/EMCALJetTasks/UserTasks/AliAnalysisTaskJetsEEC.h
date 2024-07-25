@@ -170,6 +170,11 @@ protected:
     Double_t fTrack_phi_miss; ///< miss track phi  
     Double_t fTrack_phi_fake; ///< fake track phi
 
+    Double_t fJet_pt_dat; ///< jet pt dat
+    Double_t fTrack_pt_dat; ///< track pt dat
+    Double_t fTrack_eta_dat; ///< track eta dat
+    Double_t fTrack_phi_dat; ///< track phi dat
+    
     //Adding for tracks at the particle level (not jet level)
     TString fGeneratorLevelName;
     TString fDetectorLevelName;
@@ -310,6 +315,7 @@ protected:
     TH3D* OptUn_e3c; //!<! initializing 3D histogram for optimizing binning e3c
 
     TTree *fTreeMatchTracks; ///< Tree with matched tracks from MC
+    TTree *fTreeData; ///< Tree with tracks from Data
 
 private:
     AliAnalysisTaskJetsEEC(
@@ -317,7 +323,7 @@ private:
     AliAnalysisTaskJetsEEC &
     operator=(const AliAnalysisTaskJetsEEC &); // not implemented
     
-    ClassDef(AliAnalysisTaskJetsEEC, 73) //change this to 73 if you add something new
+    ClassDef(AliAnalysisTaskJetsEEC, 74) //change this to 75 if you add something new
 };
 #endif
 
