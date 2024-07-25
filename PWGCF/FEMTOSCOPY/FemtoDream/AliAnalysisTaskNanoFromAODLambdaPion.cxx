@@ -407,28 +407,41 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
       if (!(fPosPionCuts->GetPtMin() < pion.GetPt() && pion.GetPt() < fPosPionCuts->GetPtMax())) continue;
 
       PionPlusMCGen.push_back(pion);
-    }
-    else if (part->GetPdgCode() == -211)
-    {
+    } else if (part->GetPdgCode() == -211) {
       AliFemtoDreamBasePart pion;
       pion.SetMCParticleRePart(part);
       if (std::abs(pion.GetEta()[0]) > 0.8) continue;
       if (!(fNegPionCuts->GetPtMin() < pion.GetPt() && pion.GetPt() < fNegPionCuts->GetPtMax())) continue;
 
       PionMinusMCGen.push_back(pion);
-    }
-    else if (part->GetPdgCode() == 3122)
-    {
+    } else if (part->GetPdgCode() == 3122) {
+      if (!(fLambdaCuts->GetMinPt() < part->Pt() && part->Pt() < fLambdaCuts->GetMaxPt())) continue;
+
+      int dau1Idx = part->GetDaughterFirst();
+      int dau2Idx = part->GetDaughterLast();
+      auto dau1 = (AliAODMCParticle *)fMC->GetTrack(dau1Idx);
+      auto dau2 = (AliAODMCParticle *)fMC->GetTrack(dau2Idx);
+
+      if (dau1->GetPdgCode() * dau2->GetPdgCode() != -211 * 2212) continue;
+      if (std::abs(dau1->Eta()) > 0.8) continue;
+      if (std::abs(dau2->Eta()) > 0.8) continue;
+
       AliFemtoDreamBasePart lambda;
       lambda.SetMCParticleRePart(part);
-
       LambdasMCGen.push_back(lambda);
-    }
-    else if (part->GetPdgCode() == -3122)
-    {
+    } else if (part->GetPdgCode() == -3122) {
+      if (!(fAntiLambdaCuts->GetMinPt() < part->Pt() && part->Pt() < fAntiLambdaCuts->GetMaxPt())) continue;
+
+      int dau1Idx = part->GetDaughterFirst();
+      int dau2Idx = part->GetDaughterLast();
+      auto dau1 = (AliAODMCParticle *)fMC->GetTrack(dau1Idx);
+      auto dau2 = (AliAODMCParticle *)fMC->GetTrack(dau2Idx);
+
+      if (dau1->GetPdgCode() * dau2->GetPdgCode() != -211 * 2212) continue;
+      if (std::abs(dau1->Eta()) > 0.8) continue;
+      if (std::abs(dau2->Eta()) > 0.8) continue;
       AliFemtoDreamBasePart lambda;
       lambda.SetMCParticleRePart(part);
-
       AntiLambdasMCGen.push_back(lambda);
     }
   }
