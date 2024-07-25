@@ -84,6 +84,7 @@ private:
   UInt_t fTrigger;                        //
   TList *fResults;                        //!
   TList *fResultsQA;                      //!
+  TList *fResultsMCGen;                   //!
   TList *fQA;                             //!
   TList *fEvtList;                        //!
   TList *fLambdaList;                     //!
@@ -105,7 +106,9 @@ private:
   AliFemtoDreamv0Cuts *fAntiLambdaCuts;   //
   AliFemtoDreamCollConfig *fConfig;       //
   AliFemtoDreamPairCleaner *fPairCleaner; //!
+  AliFemtoDreamPairCleaner *fPairCleanerMCGen; //!
   AliFemtoDreamPartCollection *fPartColl; //!
+  AliFemtoDreamPartCollection *fPartCollMCGen; //!
   AliFemtoDreamControlSample *fSample;    //!
   AliVTrack **fGTI;                     //!
   int fTrackBufferSize;                   //

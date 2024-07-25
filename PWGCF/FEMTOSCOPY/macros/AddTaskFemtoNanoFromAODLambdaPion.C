@@ -1381,6 +1381,17 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
     mgr->ConnectOutput(task, 12, coutputAntiTrkCutsMC);
+
+    AliAnalysisDataContainer *coutputResultsMCGen;
+    TString ResultsMCGenName = Form("%sResultsMCGen%s", addon.Data(), suffix.Data());
+    coutputResultsMCGen = mgr->CreateContainer(
+        //@suppress("Invalid arguments") it works ffs
+        ResultsMCGenName.Data(),
+        TList::Class(),
+        AliAnalysisManager::kOutputContainer,
+        Form("%s:%s", file.Data(), ResultsMCGenName.Data()));
+    mgr->ConnectOutput(task, 13, coutputResultsMCGen);
+
   }
 
   return task;
