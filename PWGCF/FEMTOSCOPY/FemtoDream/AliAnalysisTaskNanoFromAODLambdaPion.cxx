@@ -401,6 +401,7 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
     for (Int_t iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) {
       auto part = (AliAODMCParticle *)fMC->GetTrack(iPart);
       if (!part) continue;
+      if (!part->IsPhysicalPrimary()) continue;
 
       // Reject the decay products of some specific particles
       if (fExcludedMothers.size() > 0) {
@@ -457,6 +458,7 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
 
       auto part = (AliAODMCParticle *)fMC->GetTrack(iPart);
       if (!part) continue;
+      if (!part->IsPhysicalPrimary()) continue;
 
       // Reject the decay products of some specific particles
       if (fExcludedMothers.size() > 0) {
