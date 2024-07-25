@@ -402,6 +402,17 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
       auto part = (AliAODMCParticle *)fMC->GetTrack(iPart);
       if (!part) continue;
 
+      // Reject the decay products of some specific particles
+      if (fExcludedMothers.size() > 0) {
+        AliAODMCParticle *mom = (AliAODMCParticle *)fMC->GetTrack(part->GetMother());
+        if (!mom) continue;
+
+        int momAbsPdg = std::abs(mom->GetPdgCode());
+        if (std::find(fExcludedMothers.begin(), fExcludedMothers.end(), momAbsPdg) != fExcludedMothers.end()) {
+          continue;
+        }
+      }
+
       if (part->GetPdgCode() == 3122) {
         if (!(fLambdaCuts->GetMinPt() < part->Pt() && part->Pt() < fLambdaCuts->GetMaxPt())) continue;
 
@@ -446,6 +457,17 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
 
       auto part = (AliAODMCParticle *)fMC->GetTrack(iPart);
       if (!part) continue;
+
+      // Reject the decay products of some specific particles
+      if (fExcludedMothers.size() > 0) {
+        AliAODMCParticle *mom = (AliAODMCParticle *)fMC->GetTrack(part->GetMother());
+        if (!mom) continue;
+
+        int momAbsPdg = std::abs(mom->GetPdgCode());
+        if (std::find(fExcludedMothers.begin(), fExcludedMothers.end(), momAbsPdg) != fExcludedMothers.end()) {
+          continue;
+        }
+      }
 
       if (part->GetPdgCode() == 211) {
         AliFemtoDreamBasePart pion;
