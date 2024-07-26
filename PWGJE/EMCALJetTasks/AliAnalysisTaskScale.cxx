@@ -360,6 +360,54 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
   fHistScaleEmcalvsPhi->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistScaleEmcalvsPhi);
 
+  fHistPtvsPhi = new TH2F("fHistPtvsPhi", "fHistPtvsPhi", 1000, 0, 1000, 101, 0, 2.02*TMath::Pi());
+  fHistPtvsPhi->GetXaxis()->SetTitle("p_{T,track} GeV/c");
+  fHistPtvsPhi->GetYaxis()->SetTitle("#phi");
+  fHistPtvsPhi->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistPtvsPhi);
+
+  fHistEtaPhiScaleEMCAL = new TH2F("fHistEtaPhiScaleEMCAL", "fHistEtaPhiScaleEMCAL", 100, -1.0, 1.0, 101, 0, 2.02*TMath::Pi());
+  fHistEtaPhiScaleEMCAL->GetXaxis()->SetTitle("#eta");
+  fHistEtaPhiScaleEMCAL->GetYaxis()->SetTitle("#phi");
+  fHistEtaPhiScaleEMCAL->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistEtaPhiScaleEMCAL);
+
+  fHistEtaPhiScale2EMCAL = new TH2F("fHistEtaPhiScale2EMCAL", "fHistEtaPhiScale2EMCAL", 100, -1.0, 1.0, 101, 0, 2.02*TMath::Pi());
+  fHistEtaPhiScale2EMCAL->GetXaxis()->SetTitle("#eta");
+  fHistEtaPhiScale2EMCAL->GetYaxis()->SetTitle("#phi");
+  fHistEtaPhiScale2EMCAL->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistEtaPhiScale2EMCAL);
+
+  fHistEtaPhiScale3EMCAL = new TH2F("fHistEtaPhiScale3EMCAL", "fHistEtaPhiScale3EMCAL", 100, -1.0, 1.0, 101, 0, 2.02*TMath::Pi());
+  fHistEtaPhiScale3EMCAL->GetXaxis()->SetTitle("#eta");
+  fHistEtaPhiScale3EMCAL->GetYaxis()->SetTitle("#phi");
+  fHistEtaPhiScale3EMCAL->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistEtaPhiScale3EMCAL);
+
+  fHistEtaPhiScaleShift1Emcal = new TH2F("fHistEtaPhiScaleShift1Emcal", "fHistEtaPhiScaleShift1Emcal", 100, -1.0, 1.0, 101, 0, 2.02*TMath::Pi());
+  fHistEtaPhiScaleShift1Emcal->GetXaxis()->SetTitle("#eta");
+  fHistEtaPhiScaleShift1Emcal->GetYaxis()->SetTitle("#phi");
+  fHistEtaPhiScaleShift1Emcal->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistEtaPhiScaleShift1Emcal);
+
+  fHistEtaPhiScaleShift2Emcal = new TH2F("fHistEtaPhiScaleShift2Emcal", "fHistEtaPhiScaleShift2Emcal", 100, -1.0, 1.0, 101, 0, 2.02*TMath::Pi());
+  fHistEtaPhiScaleShift2Emcal->GetXaxis()->SetTitle("#eta");
+  fHistEtaPhiScaleShift2Emcal->GetYaxis()->SetTitle("#phi");
+  fHistEtaPhiScaleShift2Emcal->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistEtaPhiScaleShift2Emcal);
+
+  fHistEtaPhiScaleShiftMeanEmcal = new TH2F("fHistEtaPhiScaleShiftMeanEmcal", "fHistEtaPhiScaleShiftMeanEmcal", 100, -1.0, 1.0, 101, 0, 2.02*TMath::Pi());
+  fHistEtaPhiScaleShiftMeanEmcal->GetXaxis()->SetTitle("#eta");
+  fHistEtaPhiScaleShiftMeanEmcal->GetYaxis()->SetTitle("#phi");
+  fHistEtaPhiScaleShiftMeanEmcal->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistEtaPhiScaleShiftMeanEmcal);
+
+  fHistEtaPhiScaleEmcalvsPhi = new TH2F("fHistEtaPhiScaleEmcalvsPhi", "fHistEtaPhiScaleEmcalvsPhi", 100, -1.0, 1.0, 101, 0, 2.02*TMath::Pi());
+  fHistEtaPhiScaleEmcalvsPhi->GetXaxis()->SetTitle("#eta");
+  fHistEtaPhiScaleEmcalvsPhi->GetYaxis()->SetTitle("#phi");
+  fHistEtaPhiScaleEmcalvsPhi->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistEtaPhiScaleEmcalvsPhi);
+
   PostData(1, fOutput);
 }
 
@@ -409,29 +457,93 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
       if(track->Eta() < EmcalMinEta || track->Eta() > EmcalMaxEta) continue;
       fHistTrackPtvsCent->Fill(fCent,track->Pt());
       fHistTrackEtaPhi->Fill(track->Eta(),track->Phi());
+      fHistPtvsPhi->Fill(track->Pt(),track->Phi());
       ptTPC += track->Pt();
 
       // Shift track acceptance by pi/4 and take mean
-      Double_t tempShiftMean = 0;
       for(int a = 0; a < 8; a++){
-        if((track->Phi() < (EmcalMaxPhi+(a*TMath::PiOver4())) && track->Phi() > (EmcalMinPhi+(a*TMath::PiOver4())))) ptEMCALshift[a] += track->Pt();
+        double maxPhi = (EmcalMaxPhi+(a*TMath::PiOver4()));
+        double minPhi = (EmcalMinPhi+(a*TMath::PiOver4()));
+
+        if(maxPhi > 2*TMath::Pi()) maxPhi -= 2*TMath::Pi();
+        if(maxPhi < 0) maxPhi += 2*TMath::Pi();
+        if(minPhi > 2*TMath::Pi()) minPhi -= 2*TMath::Pi();
+        if(minPhi < 0) minPhi += 2*TMath::Pi();
+
+        if(maxPhi < minPhi){
+          if((track->Phi() < maxPhi || track->Phi() > minPhi)){
+            ptEMCALshift[a] += track->Pt();
+            fHistEtaPhiScaleShiftMeanEmcal->Fill(track->Eta(),track->Phi());
+          }
+        }else{
+          if(track->Phi() < maxPhi && track->Phi() > minPhi){
+            ptEMCALshift[a] += track->Pt();
+            fHistEtaPhiScaleShiftMeanEmcal->Fill(track->Eta(),track->Phi());
+          }
+        }
       }
 
       for(int a = 0; a < 8; a++){
-        if((track->Phi() < ((a+1)*TMath::PiOver4())) && track->Phi() > ((a)*TMath::PiOver4())) ptEMCALsections[a] += track->Pt();
+        double maxPhi = (a+1)*TMath::PiOver4();
+        double minPhi = a*TMath::PiOver4();
+
+        if(maxPhi > 2*TMath::Pi()) maxPhi -= 2*TMath::Pi();
+        if(maxPhi < 0) maxPhi += 2*TMath::Pi();
+        if(minPhi > 2*TMath::Pi()) minPhi -= 2*TMath::Pi();
+        if(minPhi < 0) minPhi += 2*TMath::Pi();
+
+        if(maxPhi < minPhi){
+          if((track->Phi() < maxPhi || track->Phi() > minPhi)){
+            ptEMCALsections[a] += track->Pt();
+            fHistEtaPhiScaleEmcalvsPhi->Fill(track->Eta(),track->Phi());
+          }
+        }else{
+          if(track->Phi() < maxPhi && track->Phi() > minPhi){
+            ptEMCALsections[a] += track->Pt();
+            fHistEtaPhiScaleEmcalvsPhi->Fill(track->Eta(),track->Phi());
+          }
+        }
       }
 
       // Shift track acceptance by EMCal width
-      if ((track->Phi() < (EmcalMaxPhi+(2*EmcalWidth))) && (track->Phi() > (EmcalMinPhi+(2*EmcalWidth)))) ptEMCALshift1 += track->Pt(); // shift by width of emcal
-      if ((track->Phi() < (EmcalMaxPhi+(4*EmcalWidth))) && (track->Phi() > (EmcalMinPhi+(4*EmcalWidth)))) ptEMCALshift2 += track->Pt(); // shift by 2x width of emcal
+      double EmcalMaxPhiS1 = EmcalMaxPhi + (2*EmcalWidth);
+      double EmcalMinPhiS1 = EmcalMinPhi + (2*EmcalWidth);
+      double EmcalMaxPhiS2 = EmcalMaxPhi + (4*EmcalWidth);
+      double EmcalMinPhiS2 = EmcalMinPhi + (4*EmcalWidth);
 
+      EmcalMaxPhiS2 -= 2*TMath::Pi(); // Correct for periodicity
 
-      if ((track->Phi() > (EmcalMaxPhi+(2.0*EmcalWidth))) || (track->Phi() < (EmcalMinPhi-(2.0*EmcalWidth)))) continue;
-      ptEMCAL3 += track->Pt();
-      if ((track->Phi() > (EmcalMaxPhi+EmcalWidth)) || (track->Phi() < (EmcalMinPhi-EmcalWidth))) continue;
-      ptEMCAL2 += track->Pt();
-      if ((track->Phi() > EmcalMaxPhi) || (track->Phi() < EmcalMinPhi)) continue;
-      ptEMCAL += track->Pt();
+      if(track->Phi() < EmcalMaxPhiS1 && track->Phi() > EmcalMinPhiS1){ 
+        ptEMCALshift1 += track->Pt();
+        fHistEtaPhiScaleShift1Emcal->Fill(track->Eta(),track->Phi());
+      }
+
+      if((track->Phi() < EmcalMaxPhiS2 || track->Phi() > EmcalMinPhiS2)){
+        ptEMCALshift2 += track->Pt();
+        fHistEtaPhiScaleShift2Emcal->Fill(track->Eta(),track->Phi());
+      }
+
+      double TwoEmcalMaxPhi = EmcalMaxPhi + EmcalWidth;
+      double TwoEmcalMinPhi = EmcalMinPhi - EmcalWidth;
+      double ThreeEmcalMaxPhi = EmcalMaxPhi + (2*EmcalWidth);
+      double ThreeEmcalMinPhi = EmcalMinPhi - (2*EmcalWidth);
+
+      ThreeEmcalMinPhi += 2*TMath::Pi(); // Correct for periodicity
+
+      if((track->Phi() < ThreeEmcalMaxPhi || track->Phi() > ThreeEmcalMinPhi)){
+        ptEMCAL3 += track->Pt();
+        fHistEtaPhiScale3EMCAL->Fill(track->Eta(),track->Phi());
+      }
+
+      if ((track->Phi() < TwoEmcalMaxPhi) && (track->Phi() > TwoEmcalMinPhi)){
+        ptEMCAL2 += track->Pt();
+        fHistEtaPhiScale2EMCAL->Fill(track->Eta(),track->Phi());
+      }
+
+      if ((track->Phi() < EmcalMaxPhi) && (track->Phi() > EmcalMinPhi)){
+        ptEMCAL += track->Pt();
+        fHistEtaPhiScaleEMCAL->Fill(track->Eta(),track->Phi());
+      }
     }
   }
 
@@ -498,9 +610,10 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
   // Calculations for EMCal phi sections
   Double_t scalecalcemcalsections[8] = {-1,-1,-1,-1,-1,-1,-1,-1};
   for(int a = 0; a < 8; a++){
-    if (ptEMCALsections[a] > 0 && Et > 0 && ptEMCAL > 0)
+    if (ptEMCALsections[a] > 0 && Et > 0 && ptEMCAL > 0){
       scalecalcemcalsections[a] = ((Et+ptEMCAL)/ptEMCALsections[a])*(TMath::PiOver4()/(EmcalMaxPhi-EmcalMinPhi));
       fHistScaleEmcalvsPhi->Fill(a*TMath::PiOver4(),scalecalcemcalsections[a]);
+    }
   }
 
   
