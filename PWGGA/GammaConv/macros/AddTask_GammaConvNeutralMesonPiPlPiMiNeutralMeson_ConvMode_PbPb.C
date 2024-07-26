@@ -41,7 +41,6 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_PbPb(
     TString   periodNameV0Reader            = "",                       // period Name for V0Reader
     Int_t     runLightOutput                = 0,                        // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
     Int_t     prefilterRunFlag              = 1500,                     // flag to change the prefiltering of ESD tracks. See SetHybridTrackCutsAODFiltering() in AliPrimaryPionCuts
-    Bool_t    usePtDepSelectionWindowCut    = kFALSE,                   // use pt dependent meson selection window cut
     Int_t     enableMatBudWeightsPi0        = 0,                        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
     TString   additionalTrainConfig         = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ){
@@ -296,8 +295,6 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_PbPb(
     }
 
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
-    if( usePtDepSelectionWindowCut )
-      analysisNeutralPionCuts[i]->SetUsePtDepSelectionWindow(selectHeavyNeutralMeson);    // implemented only for omega and eta prime
     if(runLightOutput>0) analysisNeutralPionCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNDMCut(i)).Data()) ) {
       cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
