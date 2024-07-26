@@ -116,6 +116,10 @@ public:
 
   bool GetKaonRejection() const { return fKaonRejection; };
 
+  double GetMinPt() const { return fpTmin; };
+
+  double GetMaxPt() const { return fpTmax; };
+
   // Setters for PDG Codes of the daughters+v0
   void
   SetPDGCodev0(int pdgCode)
