@@ -57,6 +57,15 @@ public:
   {
     fUseEvtNoLambda = usenolambdaevt;
   }
+  void SetMiinimalBooking(bool flag)
+  {
+    fConfig->SetMinimalBookingME(flag);
+    fEventCuts->SetMinimalBooking(flag);
+    fPosPionCuts->SetMinimalBooking(flag);
+    fNegPionCuts->SetMinimalBooking(flag);
+    fLambdaCuts->SetMinimalBooking(flag);
+    fAntiLambdaCuts->SetMinimalBooking(flag);
+  }
   void SetRequiredPDG(int pdg, int identifiedAsPDG)
   {
     fRequiredPDG[pdg] = identifiedAsPDG;
