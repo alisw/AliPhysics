@@ -85,7 +85,6 @@ void AddTask_OmegaToPiZeroGamma_pp(
                                 Double_t  bremSmear                     = 1.,
                                 Double_t  smearPar                      = 0.,                     // conv photon smearing params
                                 Double_t  smearParConst                 = 0.,                     // conv photon smearing params
-                                Bool_t    usePtDepSelectionWindowCut    = kFALSE,                 // use pt dependent meson selection window cut
                                 Int_t     PhotonSelectionMode           = 0,                      // 0 none, 1 normal (Cal-Cal, PCM-PCM), 2 strict (normal + Cal-PCM)
                                 Bool_t    useDalitzCut                  = kFALSE,                 // flag to cut on Dalitz distribution or not
                                 TString   additionalTrainConfig         = "0"                     // additional counter for trainconfig, this has to be always the last parameter
@@ -1507,7 +1506,6 @@ void AddTask_OmegaToPiZeroGamma_pp(
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
     analysisNeutralPionCuts[i]->SetLightOutput(runLightOutput);
     analysisNeutralPionCuts[i]->SetRunningMode(2);
-    if(usePtDepSelectionWindowCut) analysisNeutralPionCuts[i]->SetUsePtDepSelectionWindow(usePtDepSelectionWindowCut);
     if(doSmear) analysisNeutralPionCuts[i]->SetDefaultSmearing(bremSmear,smearPar,smearParConst);
     analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNeutralPionCut(i)).Data());
     neutralPionCutList->Add(analysisNeutralPionCuts[i]);

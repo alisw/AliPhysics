@@ -1788,14 +1788,16 @@ Bool_t AliConversionMesonCuts::SetCut(cutIds cutID, const Int_t value) {
         UpdateCutString();
         return kTRUE;
       } else return kFALSE;
-    } else if(fMesonKind == 3){
+    } else if(fMesonKind == 4){     // pT dependent mass cut for eta in eta prime analysis
       if( SetSelectionWindowCutPtDepEtaPrime(value)) {
+        fUsePtDepSelectionWindow = kTRUE;
         fCuts[kSelectionCut] = value;
         UpdateCutString();
         return kTRUE;
       } else return kFALSE;
-    } else if(fUsePtDepSelectionWindow){
+    } else if(fMesonKind == 2){     // pT dependent mass cut for pi0 in omega analysis
       if( SetSelectionWindowCutPtDep(value)) {
+        fUsePtDepSelectionWindow = kTRUE;
         fCuts[kSelectionCut] = value;
         UpdateCutString();
         return kTRUE;
@@ -1822,7 +1824,7 @@ Bool_t AliConversionMesonCuts::SetCut(cutIds cutID, const Int_t value) {
       } else return kFALSE;
     }
   case kPtCut:
-    if( fMesonKind == 3){
+    if( fMesonKind == 4){
       if( SetMinPtCutExtended(value) ){
         fCuts[kPtCut] = value;
         UpdateCutString();
@@ -2061,21 +2063,24 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
     fDoJetAnalysis = kTRUE;
     fDoOutOfJet = 5;
     break;
-  case 15: // f eta meson
+  case 15: // f pi0 for heavy meson analysis (omega, pT dependent mas cut)
     fMesonKind = 2;
+    break;
+  case 16: // g eta meson
+    fMesonKind = 3;
     fDefaultMassWindowLow = 0.4;
     fDefaultMassWindowHigh = 0.6;
     break;
-  case 16: // g eta meson for heavy meson analysis (eta prime)
-    fMesonKind = 3;
-    break;
-  case 17: // h omega meson
+  case 17: // h eta meson for heavy meson analysis (eta prime, pT dependent mas cut)
     fMesonKind = 4;
+    break;
+  case 18: // i omega meson
+    fMesonKind = 5;
     fDefaultMassWindowLow = 0.7;
     fDefaultMassWindowHigh = 0.9;
     break;
-  case 18: // i eta prime
-    fMesonKind = 5;
+  case 19: // j eta prime
+    fMesonKind = 6;
     fDefaultMassWindowLow = 0.92;
     fDefaultMassWindowHigh = 1.0;
     break;
@@ -2929,6 +2934,27 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCutPtDepEtaPrime(Int_t selectio
       fSelectionNSigmaHigh = fSelectionNSigmaLow;
       fMassParamFunction   = 12;
       break;
+    case 15: // f EMC-EMC - 1.5 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 1.5;
+      fSelectionNSigmaHigh = 1.5;
+      fMassParamFunction   = 10;
+      break;
+    case 16: // g PCM-EMC - 1.5 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 1.5;
+      fSelectionNSigmaHigh = 1.5;
+      fMassParamFunction   = 11;
+      break;
+    case 17: // h PCM-PCM - 1.5 sigma
+      fAcceptMesonMass     = kFALSE;
+      fUsePtDepSelectionWindow = kTRUE;
+      fSelectionNSigmaLow  = 1.5;
+      fSelectionNSigmaHigh = 1.5;
+      fMassParamFunction   = 12;
+      break; 
     default:
       cout<<"Warning: pT dependent mass cut for eta prime not defined "<<selectionCut<<endl;
       return kFALSE;
@@ -4858,7 +4884,6 @@ TLorentzVector AliConversionMesonCuts::SmearElectron(TLorentzVector particle)
 //________________________________________________________________________
 // function to determine whether meson was selected by mass range
 Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *meson, Int_t nominalRange = 0){
-
   if (fAcceptMesonMass){
       if (nominalRange == 0){
         if (meson->M() > fSelectionLow && meson->M() < fSelectionHigh)
