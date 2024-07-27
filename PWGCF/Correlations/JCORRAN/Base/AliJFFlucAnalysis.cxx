@@ -292,12 +292,12 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 		<< "END" ;
 
 	fh_vn
-		<< TH1D("hvn","hvn", 1024, -0.05, 0.05)
+		<< TH1D("hvn","hvn", 1024, -0.5, 0.5)
 		<< fBin_h << fBin_k
 		<< fHistCentBin
 		<< "END";   // histogram of vn_h^k values for [ih][ik][iCent]
 	fh_vna
-		<< TH1D("hvna","hvna", 1024, -0.05, 0.05)
+		<< TH1D("hvna","hvna", 1024, -0.5, 0.5)
 		<< fBin_h << fBin_k
 		<< fHistCentBin
 		<< "END";   // histogram of vn_h^k values for [ih][ik][iCent]
