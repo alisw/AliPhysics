@@ -988,8 +988,7 @@ AliAnalysisTaskSigmaPlus::~AliAnalysisTaskSigmaPlus()
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
-{ 
-
+{
     //Check analysis settings. Not all combinations make sense
     if(!fProcessProtons||!fProcessV0s) fProcessReco = kFALSE;
     if(!fProcessReco) {fSavePartCand = kFALSE; fFillPairTreeSE = kFALSE; fFillPairTreeME = kFALSE; fSaveMixedBackground = kFALSE;}
@@ -4450,7 +4449,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
 
 //_____________________________________________________________________________
 void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
-{ 
+{
 
 //  auto starttot = std::chrono::high_resolution_clock::now();
 
@@ -4951,6 +4950,9 @@ void AliAnalysisTaskSigmaPlus::FillProtonArray(){
       continue;
     }
 
+    bool isgoodprotfromsigma = 0;
+    float sigmapt = 0;
+
     //Check MC Truth
     if(isMonteCarlo){
       AliAODMCParticle* mcPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(aodTrack->GetLabel())));
@@ -4965,7 +4967,7 @@ void AliAnalysisTaskSigmaPlus::FillProtonArray(){
             if(ProtonMotherPart){
               if(ProtonMotherPart->GetPdgCode()==3222 || ProtonMotherPart->GetPdgCode()==-3222){ 
                 isProtonfromSigma = kTRUE;
-                if(ProtonMotherPart->IsPhysicalPrimary()&&abs(ProtonMotherPart->Y())<0.8) FillHistogram("RecoProtfromSigmainsigmay08",ProtonMotherPart->Pt());
+                if(ProtonMotherPart->IsPhysicalPrimary()&&TMath::Abs(ProtonMotherPart->Y())<0.8){isgoodprotfromsigma = 1; sigmapt = ProtonMotherPart->Pt();}
                 if(ProtonMotherPart->IsPhysicalPrimary()) isPrimarySigma = kTRUE;
               }//Is really Sigma
               if(ProtonMotherPart->GetPdgCode()==3122) isProtonfromLambda = kTRUE;
@@ -5018,6 +5020,8 @@ void AliAnalysisTaskSigmaPlus::FillProtonArray(){
     Float_t  DCAxy = -999., DCAz = -999.;
     aodTrack->GetImpactParameters(DCAxy,DCAz);
     DCAxy = TMath::Abs(DCAxy); DCAz = TMath::Abs(DCAz);
+
+    if(isgoodprotfromsigma&&TMath::Abs(nSigmaTPCProt)<5) FillHistogram("RecoProtfromSigmainsigmay08",sigmapt);
 
     //QA Histograms
     FillHistogram("fHistTrackEtaPhi",eta,phi);
@@ -5552,11 +5556,12 @@ void AliAnalysisTaskSigmaPlus::ProcessMCParticles() const{
     Double_t Rapidity = mcPart->Y();
     Double_t mcPartPt = mcPart->Pt();
 
-    if(abs(Rapidity)<0.8&&abs(MCPartPDGCode)==3222&&mcPart->IsPhysicalPrimary()) FillHistogram("TotalMCSigmainy08",mcPartPt);
+    if(TMath::Abs(Rapidity)<0.8&&TMath::Abs(MCPartPDGCode)==3222&&mcPart->IsPhysicalPrimary()) FillHistogram("TotalMCSigmainy08",mcPartPt);
 
-    if(MCPartPDGCode==22&&mcPart->IsPhysicalPrimary()&&abs(mcPart->Eta())<0.9){
+    if(MCPartPDGCode==22&&mcPart->IsPhysicalPrimary()&&TMath::Abs(mcPart->Eta())<0.9){
         FillHistogram("TotalMCphotonsineta09",mcPartPt);
         TVector3 Convvtx;
+      	Convvtx.SetXYZ(0,0,0);
       	if(mcPart->GetNDaughters()==2){
       	  Convvtx.SetXYZ(0,0,0);
           AliAODMCParticle* Elec1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(mcPart->GetDaughterFirst())));
@@ -5572,11 +5577,12 @@ void AliAnalysisTaskSigmaPlus::ProcessMCParticles() const{
         if(mcPart->GetNDaughters()!=2||Convvtx.Perp()>180) FillHistogram("NonConvphotonsinR180andeta09",mcPartPt);
     }
 
-    if(MCPartPDGCode==111&&abs(mcPart->Eta())<0.9){
+    if(MCPartPDGCode==111&&TMath::Abs(mcPart->Eta())<0.9){
 
       int nConvfrompi0=0;
       bool ispi0fromsigma=0;
       float sigmapt=0;
+      float piondecayrad=999;
 
       AliAODMCParticle* Pi0Mother = NULL;
       if(mcPart->GetMother()!=-1) Pi0Mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(mcPart->GetMother())));
@@ -5592,6 +5598,8 @@ void AliAnalysisTaskSigmaPlus::ProcessMCParticles() const{
   	  AliAODMCParticle* Photon2 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(mcPart->GetDaughterLast())));
   	  if(Photon1&&Photon2){
   	  if(Photon1->GetPdgCode()==22&&Photon2->GetPdgCode()==22){
+
+      piondecayrad=TMath::Sqrt(((Photon1->Xv()+Photon2->Xv())/2)*((Photon1->Xv()+Photon2->Xv())/2)+((Photon1->Yv()+Photon2->Yv())/2)*((Photon1->Yv()+Photon2->Yv())/2));
 
   	  if(Photon1->GetNDaughters()==2){
   	    AliAODMCParticle* Elec1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(Photon1->GetDaughterFirst())));
@@ -5618,7 +5626,7 @@ void AliAnalysisTaskSigmaPlus::ProcessMCParticles() const{
   	  }
   	}}}
 
-    if(mcPart->IsPhysicalPrimary()) FillHistogram("NconvperpioninR80vsPionptfromprimpion",mcPartPt,nConvfrompi0);
+    if(piondecayrad<1) FillHistogram("NconvperpioninR80vsPionptfromprimpion",mcPartPt,nConvfrompi0);
     if(ispi0fromsigma) FillHistogram("NconvperpioninR80vsPionptfromsigmadecay",mcPartPt,nConvfrompi0);
     if(ispi0fromsigma) FillHistogram("NconvperpioninR80vssigmapt",sigmapt,nConvfrompi0);
 
@@ -6048,8 +6056,8 @@ void AliAnalysisTaskSigmaPlus::FillV0PhotonArray() {
           V0Part = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(NPart->GetMother()));    
           if(V0Part){if(V0Part->GetPdgCode()==22){ 
             isReallyPhoton = kTRUE;
-            if(V0Part->IsPhysicalPrimary()&&abs(V0Part->Eta())<0.9&&aodV0->GetOnFlyStatus()) FillHistogram("Ontheflyphotonsineta09OTF",V0Part->Pt());
-            if(V0Part->IsPhysicalPrimary()&&abs(V0Part->Eta())<0.9) FillHistogram("Ontheflyphotonsineta09",V0Part->Pt());
+            if(V0Part->IsPhysicalPrimary()&&TMath::Abs(V0Part->Eta())<0.9&&aodV0->GetOnFlyStatus()) FillHistogram("Ontheflyphotonsineta09OTF",V0Part->Pt());
+            if(V0Part->IsPhysicalPrimary()&&TMath::Abs(V0Part->Eta())<0.9) FillHistogram("Ontheflyphotonsineta09",V0Part->Pt());
             AliAODMCParticle* V0Mother = NULL;
             if(V0Part->GetMother()!=-1) V0Mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(V0Part->GetMother())));
             if(V0Mother){
