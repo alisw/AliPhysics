@@ -167,6 +167,7 @@ AliAnalysisTaskCascadesInJets::AliAnalysisTaskCascadesInJets():
   fh2EventCentMult(0),
   fh1NCascadesInJetStats(0),
   fh1NRndConeCent(0),
+  fh1AreaExcluded(0),
   fh1MCStats(0)     
 {	
   for(Int_t i = 0; i < fgkiNCategCascade; i++) {
@@ -212,6 +213,7 @@ AliAnalysisTaskCascadesInJets::AliAnalysisTaskCascadesInJets():
     fh1NJetPerEvent[i] = 0;   
     fh1NCascadeJetPerEvent[i] = 0;
     fh2EtaPhiRndCone[i] = 0;
+
     //In jets 
     fhnCascadeInJetXiMinus[i] = 0;
     fhnCascadeInJetXiPlus[i] = 0;
@@ -380,6 +382,7 @@ AliAnalysisTaskCascadesInJets::AliAnalysisTaskCascadesInJets(const char* name):
   fh2EventCentMult(0),
   fh1NCascadesInJetStats(0),
   fh1NRndConeCent(0),
+  fh1AreaExcluded(0),
   fh1MCStats(0)    
 {
   for(Int_t i = 0; i < fgkiNCategCascade; i++) {
@@ -425,6 +428,7 @@ AliAnalysisTaskCascadesInJets::AliAnalysisTaskCascadesInJets(const char* name):
     fh1NJetPerEvent[i] = 0;   
     fh1NCascadeJetPerEvent[i] = 0;
     fh2EtaPhiRndCone[i] = 0;
+
     //In jets 
     fhnCascadeInJetXiMinus[i] = 0;
     fhnCascadeInJetXiPlus[i] = 0;
@@ -649,6 +653,9 @@ void AliAnalysisTaskCascadesInJets::UserCreateOutputObjects()
   fh1NRndConeCent = new TH1D("fh1NRndConeCent", "Number of rnd. cones in centrality bins;centrality;counts", fgkiNBinsCent, 0, fgkiNBinsCent);
   for(Int_t i = 0; i < fgkiNBinsCent; i++)
     fh1NRndConeCent->GetXaxis()->SetBinLabel(i + 1, GetCentBinLabel(i).Data());
+  fh1AreaExcluded = new TH1D("fh1AreaExcluded", "Area of excluded cones in centrality bins;centrality;area", fgkiNBinsCent, 0, fgkiNBinsCent);
+  for(Int_t i = 0; i < fgkiNBinsCent; i++)
+  fh1AreaExcluded->GetXaxis()->SetBinLabel(i + 1, GetCentBinLabel(i).Data());
   
   fOutputListStd->Add(fh1EventCounterCut);
   fOutputListStd->Add(fh1EventCent);
@@ -657,6 +664,7 @@ void AliAnalysisTaskCascadesInJets::UserCreateOutputObjects()
   fOutputListStd->Add(fh2EventCentMult);
   fOutputListStd->Add(fh1CascadeCandPerEvent);
   fOutputListStd->Add(fh1NRndConeCent);
+  fOutputListStdJets->Add(fh1AreaExcluded);
 
   fh1NCascadesInJetStats = new TH1D("fh1NCascadesInJetStats", "Cascades in jets statistics", iNCategInJetStat, 0, iNCategInJetStat);   
   for(Int_t i = 0; i < iNCategInJetStat; i++)
@@ -834,6 +842,7 @@ void AliAnalysisTaskCascadesInJets::UserCreateOutputObjects()
     fOutputListStdJets->Add(fhnCascadeInJetOmegaMinus[i]);
     fOutputListStdJets->Add(fhnCascadeInJetOmegaPlus[i]);
     fOutputListStdJets->Add(fh2EtaPhiRndCone[i]);
+
 
     //Cascades in cones 
     fhnCascadeInPerpXiMinus[i] = new THnSparseD(Form("fhnCascadeInPerpXiMinus_%d", i), Form("XiMinus: Mass vs Pt in perp. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{Cascade} (GeV/#it{c});#it{#eta}_{Cascade};#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsXiInJC, xminXiInJC, xmaxXiInJC);
@@ -1321,6 +1330,9 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
   fh1VtxZ[iCentIndex]->Fill(dPrimVtxPos[2]);
   fh2VtxXY[iCentIndex]->Fill(dPrimVtxPos[0], dPrimVtxPos[1]);
   
+  Double_t dCutEtaJetMax = fdCutEtaCascadeMax - fdDistanceCascadeJetMax; // max jet |pseudorapidity|, to make sure that V0s can appear in the entire jet area
+  Double_t dRadiusExcludeCone = 2 * fdDistanceCascadeJetMax; // radius of cones around jets excluded for V0 outside jets
+
   Double_t dAreaPercJetMin =  fdCutAreaPercJetMin*TMath::Pi()*fdRadius*fdRadius;
 //Loop over  Cascade candidates
 //------------------------------------------------------------------------------------------
@@ -1863,6 +1875,10 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
     fh1EtaJet[iCentIndex]->Fill(jet->Eta()); // eta spectrum of selected jets
     fh2EtaPtJet[iCentIndex]->Fill(jet->Eta(), jet->Pt()); // eta-pT spectrum of selected jets
     fh1PhiJet[iCentIndex]->Fill(jet->Phi()); // phi spectrum of selected jets
+    Double_t dAreaExcluded = TMath::Pi() * dRadiusExcludeCone * dRadiusExcludeCone; // area of the cone
+    dAreaExcluded -= AreaCircSegment(dRadiusExcludeCone, fdCutEtaCascadeMax - jet->Eta()); // positive eta overhang
+    dAreaExcluded -= AreaCircSegment(dRadiusExcludeCone, fdCutEtaCascadeMax + jet->Eta()); // negative eta overhang
+    fh1AreaExcluded->Fill(iCentIndex, dAreaExcluded);
     fh1NCascadesInJetStats->Fill(0);
     if(fbMCAnalysis) 
       fh1MCStats->Fill(1); //Reconstructed jets
@@ -1943,14 +1959,14 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
   fh1NCascadeJetPerEvent[iCentIndex]->Fill(iCascadeJets);  
  
   if(iJetCount) {
-    jetRnd = GetRandomCone( fJets, fdCutEtaCascadeMax - fdDistanceCascadeJetMax, 2 * fdDistanceCascadeJetMax); //max jet pseudorap (fdCutEtaCascadeMax - fdDistanceCascadeJetMax)
+    jetRnd = GetRandomCone( fJets, dCutEtaJetMax, 2 * fdDistanceCascadeJetMax); //max jet pseudorap (fdCutEtaCascadeMax - fdDistanceCascadeJetMax)
     if(jetRnd) {
       fh1NRndConeCent->Fill(iCentIndex);
       fh2EtaPhiRndCone[iCentIndex]->Fill(jetRnd->Eta(), jetRnd->Phi());
     }
-    /*if(fJetsBgCont) // add later!!!
+    /*if(fJetsBgCont) // 
     {
-      jetMed = GetMedianCluster(fJetsBgCont, fdCutEtaCascadeMax - fdDistanceCascadeJetMax);
+      jetMed = GetMedianCluster(fJetsBgCont, dCutEtaJetMax);
       if(jetMed)
       {
         fh1NMedConeCent->Fill(iCentIndex);
@@ -2156,6 +2172,24 @@ AliAODJet* AliAnalysisTaskCascadesInJets::GetRandomCone(const TClonesArray* arra
     part = 0;
   }
   return part;
+}
+
+Double_t AliAnalysisTaskCascadesInJets::AreaCircSegment(Double_t dRadius, Double_t dDistance) const
+{
+// calculate area of a circular segment defined by the circle radius and the (oriented) distance between the secant line and the circle centre
+  Double_t dEpsilon = 1e-2;
+  Double_t dR = dRadius;
+  Double_t dD = dDistance;
+  if(TMath::Abs(dR) < dEpsilon)
+  {
+    AliError(Form("Too small radius: %g < %g!", dR, dEpsilon));
+    return 0.;
+  }
+  if(dD >= dR)
+    return 0.;
+  if(dD <= -dR)
+    return TMath::Pi() * dR * dR;
+  return dR * dR * TMath::ACos(dD / dR) - dD * TMath::Sqrt(dR * dR - dD * dD);
 }
 
 Bool_t AliAnalysisTaskCascadesInJets::IsSelectedForAnalysis() //Event selection
@@ -2632,7 +2666,7 @@ Bool_t AliAnalysisTaskCascadesInJets::AssociateRecCascadeWithMC( AliAODcascade* 
       fh1CascadeXiPlusPtMCRecFalse[iCent]->Fill(dPtCascadeGen);
     }
   }
-// OmegaMinus
+  // OmegaMinus
   if(bIsOmegaMinus) { // selected candidates with any mass
     if(bCascadeMCIsOmegaMinus && bCascadeMCIsPrimaryDist) {// well reconstructed candidates
       fh2CascadeOmegaMinusPtMassMCRec[iCent]->Fill(dPtCascadeGen, dMOmega);

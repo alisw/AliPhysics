@@ -175,6 +175,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
   fh2EventCentMult(0),
   fh1NV0sInJetStats(0),
   fh1NRndConeCent(0),
+  fh1AreaExcluded(0),
   fh1MCStats(0)     
 {	
   for(Int_t i = 0; i < fgkiNCategV0; i++) {
@@ -210,6 +211,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
     fh1NJetPerEvent[i] = 0;   
     fh1NV0JetPerEvent[i] = 0;
     fh2EtaPhiRndCone[i] = 0;
+
     //In jets 
     fhnV0InJetK0s[i] = 0;
     fhnV0InJetLambda[i] = 0;
@@ -368,6 +370,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
   fh2EventCentMult(0),
   fh1NV0sInJetStats(0),
   fh1NRndConeCent(0),
+  fh1AreaExcluded(0),
   fh1MCStats(0)    
 {
   for(Int_t i = 0; i < fgkiNCategV0; i++) {
@@ -403,6 +406,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
     fh1NJetPerEvent[i] = 0;  
     fh1NV0JetPerEvent[i] = 0;
     fh2EtaPhiRndCone[i] = 0;
+
     //In jets 
     fhnV0InJetK0s[i] = 0;
     fhnV0InJetLambda[i] = 0;
@@ -610,6 +614,9 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
   fh1NRndConeCent = new TH1D("fh1NRndConeCent", "Number of rnd. cones in centrality bins;centrality;counts", fgkiNBinsCent, 0, fgkiNBinsCent);
   for(Int_t i = 0; i < fgkiNBinsCent; i++)
     fh1NRndConeCent->GetXaxis()->SetBinLabel(i + 1, GetCentBinLabel(i).Data());
+  fh1AreaExcluded = new TH1D("fh1AreaExcluded", "Area of excluded cones in centrality bins;centrality;area", fgkiNBinsCent, 0, fgkiNBinsCent);
+  for(Int_t i = 0; i < fgkiNBinsCent; i++)
+  fh1AreaExcluded->GetXaxis()->SetBinLabel(i + 1, GetCentBinLabel(i).Data());
   
   fOutputListStd->Add(fh1EventCounterCut);
   fOutputListStd->Add(fh1EventCent);
@@ -620,6 +627,7 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
   fOutputListStd->Add(fh2EventCentMult);
   fOutputListStd->Add(fh1V0CandPerEvent);
   fOutputListStd->Add(fh1NRndConeCent);
+  fOutputListStdJets->Add(fh1AreaExcluded); 
 
   fh1NV0sInJetStats = new TH1D("fh1NV0sInJetStats", "V0s in jets statistics", iNCategInJetStat, 0, iNCategInJetStat);   
   for(Int_t i = 0; i < iNCategInJetStat; i++)
@@ -782,6 +790,7 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
     fOutputListStdJets->Add(fhnV0InJetLambda[i]);
     fOutputListStdJets->Add(fhnV0InJetALambda[i]);
     fOutputListStdJets->Add(fh2EtaPhiRndCone[i]);
+
 
     //V0s in cones 
     fhnV0InPerpK0s[i] = new THnSparseD(Form("fhnV0InPerpK0s_%d", i), Form("K0s: Mass vs Pt in perp. cones, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsKInJC, xminKInJC, xmaxKInJC);
@@ -1219,6 +1228,9 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   fh1VtxZ[iCentIndex]->Fill(dPrimVtxPos[2]);
   fh2VtxXY[iCentIndex]->Fill(dPrimVtxPos[0], dPrimVtxPos[1]);
   
+  Double_t dCutEtaJetMax = fdCutEtaV0Max - fdDistanceV0JetMax; // max jet |pseudorapidity|, to make sure that V0s can appear in the entire jet area
+  Double_t dRadiusExcludeCone = 2 * fdDistanceV0JetMax; // radius of cones around jets excluded for V0 outside jets
+
   Double_t dAreaPercJetMin =  fdCutAreaPercJetMin*TMath::Pi()*fdRadius*fdRadius;
 
   //===== Start of loop over V0 candidates =====
@@ -1783,6 +1795,11 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     fh1EtaJet[iCentIndex]->Fill(jet->Eta()); // eta spectrum of selected jets
     fh2EtaPtJet[iCentIndex]->Fill(jet->Eta(), jet->Pt()); // eta-pT spectrum of selected jets
     fh1PhiJet[iCentIndex]->Fill(jet->Phi()); // phi spectrum of selected jets
+    Double_t dAreaExcluded = TMath::Pi() * dRadiusExcludeCone * dRadiusExcludeCone; // area of the cone
+    dAreaExcluded -= AreaCircSegment(dRadiusExcludeCone, fdCutEtaV0Max - jet->Eta()); // positive eta overhang
+    dAreaExcluded -= AreaCircSegment(dRadiusExcludeCone, fdCutEtaV0Max + jet->Eta()); // negative eta overhang
+    fh1AreaExcluded->Fill(iCentIndex, dAreaExcluded);
+    
     fh1NV0sInJetStats->Fill(0);
     if(fbMCAnalysis) 
       fh1MCStats->Fill(1); //Reconstructed jets
@@ -1879,14 +1896,14 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   fh1NV0JetPerEvent[iCentIndex]->Fill(iV0Jets);  
 
   if(iJetCount) {
-    jetRnd = GetRandomCone( fJets, fdCutEtaV0Max - fdDistanceV0JetMax, 2 * fdDistanceV0JetMax); //max jet pseudorap (fdCutEtaV0Max - fdDistanceV0JetMax)
+    jetRnd = GetRandomCone( fJets, dCutEtaJetMax, 2 * fdDistanceV0JetMax); //max jet pseudorap (fdCutEtaV0Max - fdDistanceV0JetMax)
     if(jetRnd) {
       fh1NRndConeCent->Fill(iCentIndex);
       fh2EtaPhiRndCone[iCentIndex]->Fill(jetRnd->Eta(), jetRnd->Phi());
     }
-    /*if(fJetsBgCont) // add later!!!
+    /*if(fJetsBgCont) // 
     {
-      jetMed = GetMedianCluster(fJetsBgCont, fdCutEtaV0Max - fdDistanceV0JetMax);
+      jetMed = GetMedianCluster(fJetsBgCont, dCutEtaJetMax);
       if(jetMed)
       {
         fh1NMedConeCent->Fill(iCentIndex);
@@ -2074,6 +2091,24 @@ AliAODJet* AliAnalysisTaskStrangenessInJets::GetRandomCone(const TClonesArray* a
     part = 0;
   }
   return part;
+}
+
+Double_t AliAnalysisTaskStrangenessInJets::AreaCircSegment(Double_t dRadius, Double_t dDistance) const
+{
+// calculate area of a circular segment defined by the circle radius and the (oriented) distance between the secant line and the circle centre
+  Double_t dEpsilon = 1e-2;
+  Double_t dR = dRadius;
+  Double_t dD = dDistance;
+  if(TMath::Abs(dR) < dEpsilon)
+  {
+    AliError(Form("Too small radius: %g < %g!", dR, dEpsilon));
+    return 0.;
+  }
+  if(dD >= dR)
+    return 0.;
+  if(dD <= -dR)
+    return TMath::Pi() * dR * dR;
+  return dR * dR * TMath::ACos(dD / dR) - dD * TMath::Sqrt(dR * dR - dD * dD);
 }
 
 Bool_t AliAnalysisTaskStrangenessInJets::IsSelectedForAnalysis() //Event selection

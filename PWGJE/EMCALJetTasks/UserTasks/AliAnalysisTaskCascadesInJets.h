@@ -166,6 +166,7 @@ public:
   Bool_t IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const; // decides whether a particle is inside a jet cone
   Bool_t OverlapWithJets(const TClonesArray* array, const AliVParticle* cone, Double_t dDistance) const; // decides whether a cone overlaps with other jets
   AliAODJet* GetRandomCone(const TClonesArray* array, Double_t dEtaConeMax, Double_t dDistance) const; // generate a random cone which does not overlap with selected jets
+  Double_t AreaCircSegment(Double_t dRadius, Double_t dDistance) const; // area of circular segment
   Bool_t IsSelectedForAnalysis(); // Function for the event selection
   Int_t GetCentralityBinIndex(Double_t centrality);
   Int_t GetCentralityBinEdge(Int_t index);
@@ -300,6 +301,8 @@ private:
   TH1D* fh1NJetPerEvent[fgkiNBinsCent]; //! number of jets per event
   TH1D* fh1NCascadeJetPerEvent[fgkiNBinsCent]; //! number of Cascade jets per event
   TH1D* fh1NCascadesInJetStats; //! Cascades in jets statistics
+  TH1D* fh1AreaExcluded; //! area of excluded cones for outside-cones V0s
+
 
   TH1D* fh1NRndConeCent; //! number of generated random cones in centrality bins
   TH2D* fh2EtaPhiRndCone[fgkiNBinsCent]; //! random cone eta-pT
