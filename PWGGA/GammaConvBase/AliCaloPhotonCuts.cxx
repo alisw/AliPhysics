@@ -354,6 +354,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistElectronPositronClusterMatchVsSM(NULL),
   fHistElectronPositronClusterMatchVsEta(NULL),
   fHistElectronPositronClusterMatchDoubleCount(NULL),
+  fHistElectronClusterMatchM02(NULL),
   fHistInvMassDiCluster(NULL),
   fHistInvMassConvFlagging(NULL),
   fHistDiClusterAngle(NULL),
@@ -629,6 +630,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistElectronPositronClusterMatchVsSM(NULL),
   fHistElectronPositronClusterMatchVsEta(NULL),
   fHistElectronPositronClusterMatchDoubleCount(NULL),
+  fHistElectronClusterMatchM02(NULL),
   fHistInvMassDiCluster(NULL),
   fHistInvMassConvFlagging(NULL),
   fHistDiClusterAngle(NULL),
@@ -2096,6 +2098,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
                                                 nBinsClusterE, arrClusEBinning);
       fHistElectronPositronClusterMatchDoubleCount->GetXaxis()->SetTitle("P_{track, EMC} (GeV/c)");
       fHistograms->Add(fHistElectronPositronClusterMatchDoubleCount);
+
+      fHistElectronClusterMatchM02 = new TH2F(Form("ElectronClusterMatchM02 %s",GetCutNumber().Data()), "Electron clusters track mom. vs. M02 of cluster",
+                                                nBinsClusterE, arrClusEBinning, 40, 0, 2);
+      fHistElectronClusterMatchM02->GetXaxis()->SetTitle("P_{track, EMC} (GeV/c)");
+      fHistElectronClusterMatchM02->GetYaxis()->SetTitle("M_{02}");
+      fHistograms->Add(fHistElectronClusterMatchM02);
     }
 
 
@@ -2167,6 +2175,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistElectronPositronClusterMatchVsSM->Sumw2();
         fHistElectronPositronClusterMatchVsEta->Sumw2();
         fHistElectronPositronClusterMatchDoubleCount->Sumw2();
+        fHistElectronClusterMatchM02->Sumw2();
       }
     }
 
@@ -4759,6 +4768,7 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
           if(matchCounter > 1) {
             fHistElectronPositronClusterMatchDoubleCount->Fill(inTrack->GetTrackPOnEMCal(), weight);
           }
+          fHistElectronClusterMatchM02->Fill(inTrack->GetTrackPOnEMCal(), cluster->GetM02());
         }
         fHistElectronPositronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
         fHistElectronPositronClusterMatchSub->Fill(cluster->E(), cluster->E() - inTrack->GetTrackPOnEMCal(), weight);

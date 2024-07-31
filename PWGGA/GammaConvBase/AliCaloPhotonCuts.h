@@ -782,6 +782,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistElectronPositronClusterMatchVsSM;            // track momentum for matched electron and positron tracks for each SM seperatly
     TH2F*     fHistElectronPositronClusterMatchVsEta;           // track momentum for matched electron and positron tracks vs. eta of cluster
     TH1F*     fHistElectronPositronClusterMatchDoubleCount;     // track momentum for matched electron and positron tracks if matched to multiple clusters
+    TH2F*     fHistElectronClusterMatchM02;                     // track momentum for matched electron and positron tracks vs M02 of matched cluster
 
     // histogram for conv candidate rejection
     TH2F*     fHistInvMassDiCluster;                    // histogram for monitoring di-cluster mass
