@@ -439,7 +439,7 @@ private:
   AliAnalysisTaskCascadesInJets(const AliAnalysisTaskCascadesInJets&); // not implemented
   AliAnalysisTaskCascadesInJets& operator=(const AliAnalysisTaskCascadesInJets&); // not implemented
 
-  ClassDef(AliAnalysisTaskCascadesInJets, 2) // task for analysis of Cascades (Xi+-, Omega+-) in charged jets
+  ClassDef(AliAnalysisTaskCascadesInJets, 3) // task for analysis of Cascades (Xi+-, Omega+-) in charged jets
 };
 
 #endif
