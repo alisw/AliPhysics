@@ -78,6 +78,7 @@ public:
     void SetMaxTrackPtCut(Float_t c) {fMaxPtTrack = c;} //set max value of track pT
     void SetGeneratorLevelName(const char* name) { fGeneratorLevelName = name; }
     void SetDetectorLevelName(const char* name) { fDetectorLevelName  = name; }
+    void SetJetPtMin(Float_t t) { fJetPtMin = t; }
     
 protected:
     Bool_t RetrieveEventObjects();
@@ -154,6 +155,7 @@ protected:
     Int_t fMissJetTrack; ///<flag for looking at missed tracks in matched jets
     Int_t fFakeJetTrack; ///<flag for looking at missed tracks in matched jets
     Float_t fMaxPtTrack; ///< max track pt cutoff
+    Float_t fJetPtMin; ///<flag for min jet pT allowed
 
     Double_t fJet_pt_det; ///< jet pt det 
     Double_t fJet_pt_tru; ///< jet pt tru
@@ -323,7 +325,7 @@ private:
     AliAnalysisTaskJetsEEC &
     operator=(const AliAnalysisTaskJetsEEC &); // not implemented
     
-    ClassDef(AliAnalysisTaskJetsEEC, 74) //change this to 75 if you add something new
+    ClassDef(AliAnalysisTaskJetsEEC, 76) //change this to 77 if you add something new
 };
 #endif
 
