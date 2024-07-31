@@ -152,6 +152,7 @@ protected:
   AliConversionMesonCuts*             fMesonCuts;                             // MesonCutObject
   AliEMCALGeometry*                   fGeomEMCAL;                             // pointer to EMCAL geometry
   AliDalitzElectronSelector*          fElecSelector;					                // basic electron Selection
+  TClonesArray*                       fAODMCTrackArray;                       // MC information
 
   TList**                             fCutFolder;                             // Array of lists for containers belonging to cut
   TList**                             fESDList;                               // Array of lists with histograms with reconstructed properties
@@ -221,6 +222,8 @@ protected:
   TH1F**                  fHistoJetJetNTrials;                                //! array of histos with ntrials for jetjet
 
   TH2F**                  fHistoV0ElectronDCA;                                //! array of histos with DCA to prim vertex for electron tracks from V0 electrons
+  TH1F**                  fHistoV0ElectronPt;                                 //! array of histos with V0 electron momentum
+  TH1F**                  fHistoTrueV0ElectronPt;                             //! array of histos with true V0 electron momentum
 
   // additional variables
   Double_t                fEventPlaneAngle;                                   // EventPlaneAngle
@@ -268,7 +271,7 @@ private:
   AliAnalysisTaskConvCaloCalibration(const AliAnalysisTaskConvCaloCalibration&); // Prevent copy-construction
   AliAnalysisTaskConvCaloCalibration &operator=(const AliAnalysisTaskConvCaloCalibration&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskConvCaloCalibration, 10);
+  ClassDef(AliAnalysisTaskConvCaloCalibration, 11);
 };
 
 #endif // AliAnalysisTaskConvCaloCalibration_H

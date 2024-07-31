@@ -77,6 +77,7 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fMesonCuts(NULL),
   fGeomEMCAL(NULL),
   fElecSelector(NULL),
+  fAODMCTrackArray(nullptr),
   fCutFolder(NULL),
   fESDList(NULL),
   fBackList(NULL),
@@ -138,6 +139,8 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fHistoNV0Tracks(NULL),
   fHistoJetJetNTrials(NULL),
   fHistoV0ElectronDCA(NULL),
+  fHistoV0ElectronPt(NULL),
+  fHistoTrueV0ElectronPt(NULL),
   fMesonInvMassWindow(NULL),
   fMCEventPos(NULL),
   fMCEventNeg(NULL),
@@ -196,6 +199,7 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fMesonCuts(NULL),
   fGeomEMCAL(NULL),
   fElecSelector(NULL),
+  fAODMCTrackArray(nullptr),
   fCutFolder(NULL),
   fESDList(NULL),
   fBackList(NULL),
@@ -257,6 +261,8 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fHistoNV0Tracks(NULL),
   fHistoJetJetNTrials(NULL),
   fHistoV0ElectronDCA(NULL),
+  fHistoV0ElectronPt(NULL),
+  fHistoTrueV0ElectronPt(NULL),
   fMesonInvMassWindow(NULL),
   fMCEventPos(NULL),
   fMCEventNeg(NULL),
@@ -542,6 +548,8 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
     // for electron calibration
     if(fUseEletronMatchingCalibration == 2){
       fHistoV0ElectronDCA = new TH2F*[fnCuts];
+      fHistoV0ElectronPt = new TH1F*[fnCuts];
+      fHistoTrueV0ElectronPt = new TH1F*[fnCuts];
     }
 
     fMesonInvMassWindow               = new Double_t[2];
@@ -978,8 +986,15 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
       fHistoV0ElectronDCA[iCut]              = new TH2F("ESD_ElectronTrackDCA_Pt", "ESD_ElectronTrackDCA_Pt;p_{track} (GeV/c);DCA (V0)",
                                                         nBinsPt, arrPtBinning, 200, -10, 10);
       fESDList[iCut]->Add(fHistoV0ElectronDCA[iCut]);
+
+      fHistoV0ElectronPt[iCut]              = new TH1F("V0_electron_P", "V0_electron_P;P;counts", nBinsPt, arrPtBinning);
+      fESDList[iCut]->Add(fHistoV0ElectronPt[iCut]);
+      fHistoTrueV0ElectronPt[iCut]          = new TH1F("V0_True_electron_P", "V0_True_electron_P;P;counts", nBinsPt, arrPtBinning);
+      fESDList[iCut]->Add(fHistoTrueV0ElectronPt[iCut]);
       if (fIsMC > 1){
         fHistoV0ElectronDCA[iCut]->Sumw2();
+        fHistoV0ElectronPt[iCut]->Sumw2();
+        fHistoTrueV0ElectronPt[iCut]->Sumw2();
       }
     }
   }
@@ -1522,6 +1537,13 @@ void AliAnalysisTaskConvCaloCalibration::ProcessPhotonCandidates(){
 //________________________________________________________________________
 void AliAnalysisTaskConvCaloCalibration::GetV0Electrons(){
 
+  if(fIsMC){
+    if(!fAODMCTrackArray) fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (fAODMCTrackArray == NULL){
+      AliError("No MC particle list available in AOD");
+      return;
+    }
+  }
   for(Int_t i = 0; i < fReaderGammas->GetEntriesFast(); i++){
     AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fReaderGammas->At(i);
     if(!PhotonCandidate) continue;
@@ -1557,6 +1579,16 @@ void AliAnalysisTaskConvCaloCalibration::GetV0Electrons(){
 
       // Fill DCA histograms
       fHistoV0ElectronDCA[fiCut]->Fill(trackP, PhotonCandidate->GetDCAzToPrimVtx());
+      fHistoV0ElectronPt[fiCut]->Fill(trackP);
+      if(fIsMC){
+        int tmpLabel = (int) ((AliAODTrack*)inTrack)->GetLabel();
+          if(tmpLabel > 0){
+            AliAODMCParticle* trackPart    = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(tmpLabel));
+            if(std::abs(trackPart->GetPdgCode()) == 11){
+              fHistoTrueV0ElectronPt[fiCut]->Fill(trackP);
+            }
+          }
+      }
     }
 
   }
