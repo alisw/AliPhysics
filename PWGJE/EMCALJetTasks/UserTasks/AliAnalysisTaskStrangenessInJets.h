@@ -393,8 +393,13 @@ private:
   TH2D* fh2V0LambdaMCResolMPt[fgkiNBinsCent]; //!
   TH2D* fh2V0LambdaMCPtGenPtRec[fgkiNBinsCent]; //!
 
+  //Feed-down
+  THnSparse* fhnV0LambdaInclMCFromXi[fgkiNBinsCent]; //!
+  THnSparse* fhnV0LambdaInJetsMCFromXi[fgkiNBinsCent]; //!
+  THnSparse* fhnV0LambdaInclMCFromXi0[fgkiNBinsCent]; //!
+  THnSparse* fhnV0LambdaInJetsMCFromXi0[fgkiNBinsCent]; //!
   TH1D* fh1V0XiPtMCGen[fgkiNBinsCent]; //!
-  TH1D* fh1V0AXiPtMCGen[fgkiNBinsCent]; //!
+  TH1D* fh1V0Xi0PtMCGen[fgkiNBinsCent]; //!
 
   // ALambda inclusive
   TH1D* fh1V0ALambdaPtMCGen[fgkiNBinsCent]; //!
@@ -414,12 +419,18 @@ private:
   TH2D* fh2V0ALambdaMCResolMPt[fgkiNBinsCent]; //!
   TH2D* fh2V0ALambdaMCPtGenPtRec[fgkiNBinsCent]; //!
 
-  //TH1D* fh1V0AXiPtMCGen[fgkiNBinsCent]; //!
+  //Feed-down  
+  THnSparse* fhnV0ALambdaInclMCFromAXi[fgkiNBinsCent]; //!
+  THnSparse* fhnV0ALambdaInJetsMCFromAXi[fgkiNBinsCent]; //!
+  THnSparse* fhnV0ALambdaInclMCFromAXi0[fgkiNBinsCent]; //!
+  THnSparse* fhnV0ALambdaInJetsMCFromAXi0[fgkiNBinsCent]; //!
+  TH1D* fh1V0AXiPtMCGen[fgkiNBinsCent]; //!
+  TH1D* fh1V0AXi0PtMCGen[fgkiNBinsCent]; //!
 
   AliAnalysisTaskStrangenessInJets(const AliAnalysisTaskStrangenessInJets&); // not implemented
   AliAnalysisTaskStrangenessInJets& operator=(const AliAnalysisTaskStrangenessInJets&); // not implemented
 
-  ClassDef(AliAnalysisTaskStrangenessInJets, 2) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskStrangenessInJets, 3) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

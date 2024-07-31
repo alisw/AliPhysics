@@ -260,9 +260,12 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
     fh4V0LambdaInJetEtaPtMassMCRec[i] = 0;
     fh2V0LambdaMCResolMPt[i] = 0;
     fh2V0LambdaMCPtGenPtRec[i] = 0;
-
+    fhnV0LambdaInclMCFromXi[i] = 0;
+    fhnV0LambdaInclMCFromXi0[i] = 0;
+    fhnV0LambdaInJetsMCFromXi[i] = 0;
+    fhnV0LambdaInJetsMCFromXi0[i] = 0;
     fh1V0XiPtMCGen[i] = 0;
-    fh1V0AXiPtMCGen[i] = 0;
+    fh1V0Xi0PtMCGen[i] = 0;
 
     fh1V0ALambdaPtMCGen[i] = 0;
     fh2V0ALambdaPtMassMCRec[i] = 0;
@@ -275,7 +278,12 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
     fh4V0ALambdaInJetEtaPtMassMCRec[i] = 0;
     fh2V0ALambdaMCResolMPt[i] = 0;
     fh2V0ALambdaMCPtGenPtRec[i] = 0;
-
+    fhnV0ALambdaInclMCFromAXi[i] = 0;
+    fhnV0ALambdaInclMCFromAXi0[i] = 0;
+    fhnV0ALambdaInJetsMCFromAXi[i] = 0;
+    fhnV0ALambdaInJetsMCFromAXi0[i] = 0;
+    fh1V0AXiPtMCGen[i] = 0;
+    fh1V0AXi0PtMCGen[i] = 0;
     // eta daughters
     fhnV0K0sInclDaughterEtaPtPtMCRec[i] = 0;
     fhnV0K0sInJetsDaughterEtaPtPtMCRec[i] = 0;
@@ -455,10 +463,13 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
     fh4V0LambdaInJetEtaPtMassMCRec[i] = 0;
     fh2V0LambdaMCResolMPt[i] = 0;
     fh2V0LambdaMCPtGenPtRec[i] = 0;
-
+    fhnV0LambdaInclMCFromXi[i] = 0;
+    fhnV0LambdaInclMCFromXi0[i] = 0;
+    fhnV0LambdaInJetsMCFromXi[i] = 0;
+    fhnV0LambdaInJetsMCFromXi0[i] = 0;
     fh1V0XiPtMCGen[i] = 0;
-    fh1V0AXiPtMCGen[i] = 0;
-    
+    fh1V0Xi0PtMCGen[i] = 0;
+
     fh1V0ALambdaPtMCGen[i] = 0;
     fh2V0ALambdaPtMassMCRec[i] = 0;
     fh1V0ALambdaPtMCRecFalse[i] = 0;
@@ -470,7 +481,12 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
     fh4V0ALambdaInJetEtaPtMassMCRec[i] = 0;
     fh2V0ALambdaMCResolMPt[i] = 0;
     fh2V0ALambdaMCPtGenPtRec[i] = 0;
-
+    fhnV0ALambdaInclMCFromAXi[i] = 0;
+    fhnV0ALambdaInclMCFromAXi0[i] = 0;
+    fhnV0ALambdaInJetsMCFromAXi[i] = 0;
+    fhnV0ALambdaInJetsMCFromAXi0[i] = 0;
+    fh1V0AXiPtMCGen[i] = 0;
+    fh1V0AXi0PtMCGen[i] = 0;
     // eta daughters
     fhnV0K0sInclDaughterEtaPtPtMCRec[i] = 0;
     fhnV0K0sInJetsDaughterEtaPtPtMCRec[i] = 0;
@@ -930,15 +946,40 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
       Int_t iNBinsPtXi = 80;
       Double_t dPtXiMin = 0;
       Double_t dPtXiMax = 8;
-      //const Int_t iNDimFD = 3;
-      //Int_t binsFD[iNDimFD] = {iNBinsPtV0, iNBinsPtXi, iNJetPtBins};
-      //Double_t xminFD[iNDimFD] = {dPtV0Min, dPtXiMin, dJetPtMin};
-      //Double_t xmaxFD[iNDimFD] = {dPtV0Max, dPtXiMax, dJetPtMax};
+      const Int_t iNDimFD = 3;
+      Int_t binsFD[iNDimFD] = {iNBinsPtV0, iNBinsPtXi, iNJetPtBins};
+      Double_t xminFD[iNDimFD] = {dPtV0Min, dPtXiMin, dJetPtMin};
+      Double_t xmaxFD[iNDimFD] = {dPtV0Max, dPtXiMax, dJetPtMax};
+      
+      fhnV0LambdaInclMCFromXi[i] = new THnSparseD(Form("fhnV0LambdaInclMCFromXi_%d", i), Form("MC Lambda associated, inclusive, from Xi: pt-pt, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#Xi,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fOutputListMC->Add(fhnV0LambdaInclMCFromXi[i]);
+      fhnV0LambdaInclMCFromXi0[i] = new THnSparseD(Form("fhnV0LambdaInclMCFromXi0_%d", i), Form("MC Lambda associated, inclusive, from Xi0: pt-pt, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#Xi0,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fOutputListMC->Add(fhnV0LambdaInclMCFromXi0[i]);
+
+      fhnV0ALambdaInclMCFromAXi[i] = new THnSparseD(Form("fhnV0ALambdaInclMCFromAXi_%d", i), Form("MC ALambda associated, inclusive, from AXi: pt-pt, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#AXi,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fOutputListMC->Add(fhnV0ALambdaInclMCFromAXi[i]);
+      fhnV0ALambdaInclMCFromAXi0[i] = new THnSparseD(Form("fhnV0ALambdaInclMCFromAXi0_%d", i), Form("MC ALambda associated, inclusive, from AXi0: pt-pt, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#AXi0,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fOutputListMC->Add(fhnV0ALambdaInclMCFromAXi0[i]);
+      
+      fhnV0LambdaInJetsMCFromXi[i] = new THnSparseD(Form("fhnV0LambdaInJetsMCFromXi_%d", i), Form("MC Lambda associated, in JC, from Xi: pt-pt-ptJet, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#Xi,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fOutputListMC->Add(fhnV0LambdaInJetsMCFromXi[i]);
+      fhnV0LambdaInJetsMCFromXi0[i] = new THnSparseD(Form("fhnV0LambdaInJetsMCFromXi0_%d", i), Form("MC Lambda associated, in JC, from Xi0: pt-pt-ptJet, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#Xi0,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fOutputListMC->Add(fhnV0LambdaInJetsMCFromXi0[i]);
+
+      fhnV0ALambdaInJetsMCFromAXi[i] = new THnSparseD(Form("fhnV0ALambdaInJetsMCFromAXi_%d", i), Form("MC ALambda associated, in JC, from AXi: pt-pt-ptJet, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#AXi,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fOutputListMC->Add(fhnV0ALambdaInJetsMCFromAXi[i]);
+      fhnV0ALambdaInJetsMCFromAXi0[i] = new THnSparseD(Form("fhnV0ALambdaInJetsMCFromAXi0_%d", i), Form("MC ALambda associated, in JC, from AXi0: pt-pt-ptJet, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#AXi0,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fOutputListMC->Add(fhnV0ALambdaInJetsMCFromAXi0[i]);
+
       fh1V0XiPtMCGen[i] = new TH1D(Form("fh1V0XiPtMCGen_%d", i), Form("MC Xi^{-} generated: Pt spectrum, cent %s;#it{p}_{T}^{#Xi^{-},gen.} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNBinsPtXi, dPtXiMin, dPtXiMax);
       fh1V0AXiPtMCGen[i] = new TH1D(Form("fh1V0AXiPtMCGen_%d", i), Form("MC AXi^{-} generated: Pt spectrum, cent %s;#it{p}_{T}^{A#Xi^{-},gen.} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNBinsPtXi, dPtXiMin, dPtXiMax);
-      
+      fh1V0Xi0PtMCGen[i] = new TH1D(Form("fh1V0Xi0PtMCGen_%d", i), Form("MC Xi^{0} generated: Pt spectrum, cent %s;#it{p}_{T}^{#Xi^{0},gen.} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNBinsPtXi, dPtXiMin, dPtXiMax);
+      fh1V0AXi0PtMCGen[i] = new TH1D(Form("fh1V0AXi0PtMCGen_%d", i), Form("MC AXi^{0} generated: Pt spectrum, cent %s;#it{p}_{T}^{A#Xi^{0},gen.} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNBinsPtXi, dPtXiMin, dPtXiMax);
+ 
       fOutputListMC->Add(fh1V0XiPtMCGen[i]);
-      fOutputListMC->Add(fh1V0AXiPtMCGen[i]);      
+      fOutputListMC->Add(fh1V0AXiPtMCGen[i]);     
+      fOutputListMC->Add(fh1V0Xi0PtMCGen[i]);
+      fOutputListMC->Add(fh1V0AXi0PtMCGen[i]);   
     }
     
   }
@@ -1591,6 +1632,11 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     if(!bIsCandidateK0s && !bIsCandidateLambda && !bIsCandidateALambda)
       continue;
 
+    if(fbMCAnalysis) {
+      AliEmcalJet *ZeroJet = 0;
+      AssociateRecV0withMC(v0, ZeroJet, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCentIndex);
+    }
+    
     Int_t uid = 0; //?
     //===== Start of filling V0 spectra =====
     // iCutIndex = 16
@@ -1671,10 +1717,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
         InputBgParticles.push_back(fastjet::PseudoJet(vecV0Momentum[0], vecV0Momentum[1], vecV0Momentum[2], dEnergy));
       
         fNCand++;
-        if(fbMCAnalysis) {
-          AliEmcalJet *ZeroJet = 0;
-          AssociateRecV0withMC(v0, ZeroJet, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCentIndex);
-        }
+
         iNSelV0++;  
       }  
     }
@@ -2493,8 +2536,10 @@ Bool_t AliAnalysisTaskStrangenessInJets::AssociateRecV0withMC( AliAODv0* vpart, 
   // Select only particles from a specific generator
   if(!IsFromGoodGenerator(iIndexMotherPos))
     return kFALSE;
+
+  //For the feed-down correction:
   // Get the MC mother particle of the MC mother particle
-  /*Int_t iIndexMotherOfMother = particleMCMother->GetMother();
+  Int_t iIndexMotherOfMother = particleMCMother->GetMother();
   AliAODMCParticle* particleMCMotherOfMother = 0;
   if(iIndexMotherOfMother >= 0)
     particleMCMotherOfMother = (AliAODMCParticle*)MCPartArray->At(iIndexMotherOfMother);
@@ -2502,7 +2547,12 @@ Bool_t AliAnalysisTaskStrangenessInJets::AssociateRecV0withMC( AliAODv0* vpart, 
   Int_t iPdgCodeMotherOfMother = 0;
   if(particleMCMotherOfMother)
     iPdgCodeMotherOfMother = particleMCMotherOfMother->GetPdgCode();
-  */
+  // Check if the MC mother particle of the MC mother particle is a Xi (3322 - Xi0, 3312 - Xi-)
+  Bool_t bV0MCComesFromXi = ((particleMCMotherOfMother) && (iPdgCodeMotherOfMother == 3312)); // Is MC mother particle daughter of a Xi?
+  Bool_t bV0MCComesFromAXi = ((particleMCMotherOfMother) && (iPdgCodeMotherOfMother == -3312)); // Is MC mother particle daughter of a anti-Xi?
+  Bool_t bV0MCComesFromXi0 = ((particleMCMotherOfMother) && (iPdgCodeMotherOfMother == 3322)); // Is MC mother particle daughter of a Xi?
+  Bool_t bV0MCComesFromAXi0 = ((particleMCMotherOfMother) && (iPdgCodeMotherOfMother == -3322)); // Is MC mother particle daughter of a anti-Xi?
+
   // Get the distance between production point of the MC mother particle and the primary vertex
   Double_t dx = dPrimVtxMCX - particleMCMother->Xv();
   Double_t dy = dPrimVtxMCY - particleMCMother->Yv();
@@ -2518,17 +2568,19 @@ Bool_t AliAnalysisTaskStrangenessInJets::AssociateRecV0withMC( AliAODv0* vpart, 
   // K0s
   if(bIsK) { // selected candidates with any mass
     if(bV0MCIsK0s && bV0MCIsPrimaryDist) {// well reconstructed candidates
-      fh2V0K0sPtMassMCRec[iCent]->Fill(dPtV0Gen, dMK0s);
-      Double_t valueEtaK[3] = {dMK0s, dPtV0Gen, dEtaV0Gen};
-      fh3V0K0sEtaPtMassMCRec[iCent]->Fill(valueEtaK);
-      Double_t valueEtaDKNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaV0Gen, dPtV0Gen, 0};
-      fhnV0K0sInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKNeg);
-      Double_t valueEtaDKPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaV0Gen, dPtV0Gen, 0};
-      fhnV0K0sInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKPos);
-      fh2V0K0sMCResolMPt[iCent]->Fill(dMK0s - dMassPDGK0s, dptv0);
-      fh2V0K0sMCPtGenPtRec[iCent]->Fill(dPtV0Gen, dptv0);
+      if(xjet == 0) {
+        fh2V0K0sPtMassMCRec[iCent]->Fill(dPtV0Gen, dMK0s);
+        Double_t valueEtaK[3] = {dMK0s, dPtV0Gen, dEtaV0Gen};
+        fh3V0K0sEtaPtMassMCRec[iCent]->Fill(valueEtaK);
+        Double_t valueEtaDKNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaV0Gen, dPtV0Gen, 0};
+        fhnV0K0sInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKNeg);
+        Double_t valueEtaDKPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaV0Gen, dPtV0Gen, 0};
+        fhnV0K0sInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKPos);
+        fh2V0K0sMCResolMPt[iCent]->Fill(dMK0s - dMassPDGK0s, dptv0);
+        fh2V0K0sMCPtGenPtRec[iCent]->Fill(dPtV0Gen, dptv0);
+      }
       //here add an array with the well reconstructed particles? 
-      if(xjet) { // true V0 associated to a candidate in jet
+      else { // true V0 associated to a candidate in jet
         Double_t valueKInJCMC[4] = {dMK0s, dPtV0Gen, dEtaV0Gen, xjet->Pt()};
         fh3V0K0sInJetPtMassMCRec[iCent]->Fill(valueKInJCMC);
         Double_t valueEtaKIn[5] = {dMK0s, dPtV0Gen, dEtaV0Gen, xjet->Pt(), dEtaV0Gen - xjet->Eta()};
@@ -2547,16 +2599,18 @@ Bool_t AliAnalysisTaskStrangenessInJets::AssociateRecV0withMC( AliAODv0* vpart, 
   // Lambda
   if(bIsL) { // selected candidates with any mass
     if(bV0MCIsLambda && bV0MCIsPrimaryDist) { // well reconstructed candidates
-      fh2V0LambdaPtMassMCRec[iCent]->Fill(dPtV0Gen, dMLambda);
-      Double_t valueEtaL[3] = {dMLambda, dPtV0Gen, dEtaV0Gen};
-      fh3V0LambdaEtaPtMassMCRec[iCent]->Fill(valueEtaL);
-      Double_t valueEtaDLNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaV0Gen, dPtV0Gen, 0};
-      fhnV0LambdaInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDLNeg);
-      Double_t valueEtaDLPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaV0Gen, dPtV0Gen, 0};
-      fhnV0LambdaInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDLPos);
-      fh2V0LambdaMCResolMPt[iCent]->Fill(dMLambda - dMassPDGLambda, dptv0);
-      fh2V0LambdaMCPtGenPtRec[iCent]->Fill(dPtV0Gen, dptv0);
-      if(xjet) { // true V0 associated to a reconstructed candidate in jet
+      if(xjet == 0) {
+        fh2V0LambdaPtMassMCRec[iCent]->Fill(dPtV0Gen, dMLambda);
+        Double_t valueEtaL[3] = {dMLambda, dPtV0Gen, dEtaV0Gen};
+        fh3V0LambdaEtaPtMassMCRec[iCent]->Fill(valueEtaL);
+        Double_t valueEtaDLNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaV0Gen, dPtV0Gen, 0};
+        fhnV0LambdaInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDLNeg);
+        Double_t valueEtaDLPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaV0Gen, dPtV0Gen, 0};
+        fhnV0LambdaInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDLPos);
+        fh2V0LambdaMCResolMPt[iCent]->Fill(dMLambda - dMassPDGLambda, dptv0);
+        fh2V0LambdaMCPtGenPtRec[iCent]->Fill(dPtV0Gen, dptv0);
+      }
+      else { // true V0 associated to a reconstructed candidate in jet
         Double_t valueLInJCMC[4] = {dMLambda, dPtV0Gen, dEtaV0Gen, xjet->Pt()};
         fh3V0LambdaInJetPtMassMCRec[iCent]->Fill(valueLInJCMC);
         Double_t valueEtaLIn[5] = {dMLambda, dPtV0Gen, dEtaV0Gen, xjet->Pt(), dEtaV0Gen - xjet->Eta()};
@@ -2567,20 +2621,43 @@ Bool_t AliAnalysisTaskStrangenessInJets::AssociateRecV0withMC( AliAODv0* vpart, 
         fhnV0LambdaInJetsDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDLJCPos);
       }
     }
+    // Fill the feed-down histograms
+    if(bV0MCIsLambda && bV0MCComesFromXi) {
+      if(xjet == 0) {  
+        Double_t valueFDLIncl[3] = {dPtV0Gen, particleMCMotherOfMother->Pt(), 0.};
+        fhnV0LambdaInclMCFromXi[iCent]->Fill(valueFDLIncl);
+      }
+      else {
+        Double_t valueFDLInJets[3] = {dPtV0Gen, particleMCMotherOfMother->Pt(), xjet->Pt()};
+        fhnV0LambdaInJetsMCFromXi[iCent]->Fill(valueFDLInJets);
+      }
+    }
+    if(bV0MCIsLambda && bV0MCComesFromXi0) {
+      if(xjet == 0) {  
+        Double_t valueFDLIncl[3] = {dPtV0Gen, particleMCMotherOfMother->Pt(), 0.};
+        fhnV0LambdaInclMCFromXi0[iCent]->Fill(valueFDLIncl);
+      }
+      else {
+        Double_t valueFDLInJets[3] = {dPtV0Gen, particleMCMotherOfMother->Pt(), xjet->Pt()};
+        fhnV0LambdaInJetsMCFromXi0[iCent]->Fill(valueFDLInJets);
+      }
+    }
   }
   // anti-Lambda
   if(bIsAL) {// selected candidates with any mass
     if(bV0MCIsALambda && bV0MCIsPrimaryDist) { // well reconstructed candidates
-      fh2V0ALambdaPtMassMCRec[iCent]->Fill(dPtV0Gen, dMALambda);
-      Double_t valueEtaAL[3] = {dMALambda, dPtV0Gen, dEtaV0Gen};
-      fh3V0ALambdaEtaPtMassMCRec[iCent]->Fill(valueEtaAL);
-      Double_t valueEtaDALNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaV0Gen, dPtV0Gen, 0};
-      fhnV0ALambdaInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDALNeg);
-      Double_t valueEtaDALPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaV0Gen, dPtV0Gen, 0};
-      fhnV0ALambdaInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDALPos);
-      fh2V0ALambdaMCResolMPt[iCent]->Fill(dMALambda - dMassPDGLambda, dptv0);
-      fh2V0ALambdaMCPtGenPtRec[iCent]->Fill(dPtV0Gen, dptv0);
-      if(xjet) { // true V0 associated to a reconstructed candidate in jet
+      if(xjet == 0) {    
+        fh2V0ALambdaPtMassMCRec[iCent]->Fill(dPtV0Gen, dMALambda);
+        Double_t valueEtaAL[3] = {dMALambda, dPtV0Gen, dEtaV0Gen};
+        fh3V0ALambdaEtaPtMassMCRec[iCent]->Fill(valueEtaAL);
+        Double_t valueEtaDALNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaV0Gen, dPtV0Gen, 0};
+        fhnV0ALambdaInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDALNeg);
+        Double_t valueEtaDALPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaV0Gen, dPtV0Gen, 0};
+        fhnV0ALambdaInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDALPos);
+        fh2V0ALambdaMCResolMPt[iCent]->Fill(dMALambda - dMassPDGLambda, dptv0);
+        fh2V0ALambdaMCPtGenPtRec[iCent]->Fill(dPtV0Gen, dptv0);
+      }
+      else { // true V0 associated to a reconstructed candidate in jet
         Double_t valueALInJCMC[4] = {dMALambda, dPtV0Gen, dEtaV0Gen, xjet->Pt()};
         fh3V0ALambdaInJetPtMassMCRec[iCent]->Fill(valueALInJCMC);
         Double_t valueEtaALIn[5] = {dMALambda, dPtV0Gen, dEtaV0Gen, xjet->Pt(), dEtaV0Gen - xjet->Eta()};
@@ -2589,6 +2666,27 @@ Bool_t AliAnalysisTaskStrangenessInJets::AssociateRecV0withMC( AliAODv0* vpart, 
         fhnV0ALambdaInJetsDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDALJCNeg);
         Double_t valueEtaDALJCPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaV0Gen, dPtV0Gen, xjet->Pt()};
         fhnV0ALambdaInJetsDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDALJCPos);
+      }
+    }
+    // Fill the feed-down histograms
+    if(bV0MCIsALambda && bV0MCComesFromAXi) {
+      if(xjet == 0) {  
+        Double_t valueFDALIncl[3] = {dPtV0Gen, particleMCMotherOfMother->Pt(), 0.};
+        fhnV0ALambdaInclMCFromAXi[iCent]->Fill(valueFDALIncl);
+      }
+      else {
+        Double_t valueFDLInJets[3] = {dPtV0Gen, particleMCMotherOfMother->Pt(), xjet->Pt()};
+        fhnV0ALambdaInJetsMCFromAXi[iCent]->Fill(valueFDLInJets);
+      }
+    }
+    if(bV0MCIsALambda && bV0MCComesFromAXi0) {
+      if(xjet == 0) {  
+        Double_t valueFDALIncl[3] = {dPtV0Gen, particleMCMotherOfMother->Pt(), 0.};
+        fhnV0ALambdaInclMCFromAXi0[iCent]->Fill(valueFDALIncl);
+      }
+      else {
+        Double_t valueFDALInJets[3] = {dPtV0Gen, particleMCMotherOfMother->Pt(), xjet->Pt()};
+        fhnV0ALambdaInJetsMCFromAXi0[iCent]->Fill(valueFDALInJets);
       }
     }
   }
@@ -2640,12 +2738,19 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
       //continue;
     // Get identity of MC particle
     Int_t iPdgCodeParticleMC = particleMC->GetPdgCode();
-
-    if((iPdgCodeParticleMC == 3312) && (TMath::Abs(particleMC->Y()) < 0.5) && IsFromGoodGenerator(iPartMC)) {
-      fh1V0XiPtMCGen[iCent]->Fill(particleMC->Pt());
-    }
-    else if((iPdgCodeParticleMC == -3312) && (TMath::Abs(particleMC->Y()) < 0.5) && IsFromGoodGenerator(iPartMC)) {
-      fh1V0AXiPtMCGen[iCent]->Fill(particleMC->Pt());
+    if((TMath::Abs(particleMC->Y()) < 0.5) && IsFromGoodGenerator(iPartMC)) {
+      if((iPdgCodeParticleMC == 3312)) {
+        fh1V0XiPtMCGen[iCent]->Fill(particleMC->Pt());
+      }
+      else if((iPdgCodeParticleMC == -3312)) {
+        fh1V0AXiPtMCGen[iCent]->Fill(particleMC->Pt());
+      }
+      else if((iPdgCodeParticleMC == 3322) ) {
+        fh1V0Xi0PtMCGen[iCent]->Fill(particleMC->Pt());
+      }
+      else if((iPdgCodeParticleMC == -3322)) {
+        fh1V0AXi0PtMCGen[iCent]->Fill(particleMC->Pt());
+      }
     }
     //  skip non V0 particles 
     if((iPdgCodeParticleMC != iPdgCodeK0s) && (TMath::Abs(iPdgCodeParticleMC) != iPdgCodeLambda)) {// && (TMath::Abs(iPdgCodeParticleMC) != iPdgCodeXi))
@@ -2834,7 +2939,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
 	  		    
   }
 
-return kTRUE;
+  return kTRUE;
 
 }
 Double_t AliAnalysisTaskStrangenessInJets::MassPeakSigma(Double_t pt, Int_t particle)

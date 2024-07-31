@@ -1684,6 +1684,11 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
     if(!bIsCandidateXiMinus && !bIsCandidateXiPlus && !bIsCandidateOmegaMinus && !bIsCandidateOmegaPlus)
       continue;
 
+    if(fbMCAnalysis) {
+      AliEmcalJet *ZeroJet = 0;
+      AssociateRecCascadeWithMC(Cascade, ZeroJet, bIsCandidateXiMinus, bIsCandidateXiPlus, bIsCandidateOmegaMinus, bIsCandidateOmegaPlus, iCentIndex);
+    }
+
     Int_t uid = 0; //
     //===== Start of filling V0 spectra =====
     // iCutIndex = 19
@@ -1744,7 +1749,6 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
       iNCascadeCandOmegaPlus++;
     }  
 
-    //Problem je nekde tady!!!!
     if((bIsInPeakXi || bIsInPeakOmega) && uid > 0)  {  // to get rid of the situations when isinpeakcandidate is different from the iscandidate
         new ((*fCascadeCandidateArray)[fNCand]) AliAODcascade(*Cascade); //  
         ivecCascadeCandIndex.push_back(uid);
@@ -1753,10 +1757,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
         InputBgParticles.push_back(fastjet::PseudoJet(vecCascadeMomentum[0], vecCascadeMomentum[1], vecCascadeMomentum[2], dEnergy));
       
         fNCand++;
-        //if(fbMCAnalysis) {
-        //  AliEmcalJet *ZeroJet = 0;
-        //  AssociateRecV0withMC(v0, ZeroJet, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCentIndex);
-        //}
+
     }
     
 
@@ -1964,15 +1965,6 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
       fh1NRndConeCent->Fill(iCentIndex);
       fh2EtaPhiRndCone[iCentIndex]->Fill(jetRnd->Eta(), jetRnd->Phi());
     }
-    /*if(fJetsBgCont) // 
-    {
-      jetMed = GetMedianCluster(fJetsBgCont, dCutEtaJetMax);
-      if(jetMed)
-      {
-        fh1NMedConeCent->Fill(iCentIndex);
-        fh2EtaPhiMedCone[iCentIndex]->Fill(jetMed->Eta(), jetMed->Phi());
-      }
-    }*/
   }
   //Find cascades in the perp and random jet cones 
   if(fCascadeCandidateArray->GetEntriesFast() > 0) {
@@ -2611,17 +2603,19 @@ Bool_t AliAnalysisTaskCascadesInJets::AssociateRecCascadeWithMC( AliAODcascade* 
   // XiMinus
   if(bIsXiMinus) { // selected candidates with any mass
     if(bCascadeMCIsXiMinus && bCascadeMCIsPrimaryDist) {// well reconstructed candidates
-      fh2CascadeXiMinusPtMassMCRec[iCent]->Fill(dPtCascadeGen, dMXi);
-      Double_t valueEtaK[3] = {dMXi, dPtCascadeGen, dEtaCascadeGen};
-      fh3CascadeXiMinusEtaPtMassMCRec[iCent]->Fill(valueEtaK);
-      Double_t valueEtaDKNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
-      fhnCascadeXiMinusInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKNeg);
-      Double_t valueEtaDKPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
-      fhnCascadeXiMinusInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKPos);
-      fh2CascadeXiMinusMCResolMPt[iCent]->Fill(dMXi - dMassPDGXi, dptcasc);
-      fh2CascadeXiMinusMCPtGenPtRec[iCent]->Fill(dPtCascadeGen, dptcasc);
+      if(xjet == 0) {
+        fh2CascadeXiMinusPtMassMCRec[iCent]->Fill(dPtCascadeGen, dMXi);
+        Double_t valueEtaK[3] = {dMXi, dPtCascadeGen, dEtaCascadeGen};
+        fh3CascadeXiMinusEtaPtMassMCRec[iCent]->Fill(valueEtaK);
+        Double_t valueEtaDKNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
+        fhnCascadeXiMinusInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKNeg);
+        Double_t valueEtaDKPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
+        fhnCascadeXiMinusInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKPos);
+        fh2CascadeXiMinusMCResolMPt[iCent]->Fill(dMXi - dMassPDGXi, dptcasc);
+        fh2CascadeXiMinusMCPtGenPtRec[iCent]->Fill(dPtCascadeGen, dptcasc);
+      }
       //here add an array with the well reconstructed particles? 
-      if(xjet) { // true Cascade associated to a candidate in jet
+      else { // true Cascade associated to a candidate in jet
         Double_t valueKInJCMC[4] = {dMXi, dPtCascadeGen, dEtaCascadeGen, xjet->Pt()};
         fh3CascadeXiMinusInJetPtMassMCRec[iCent]->Fill(valueKInJCMC);
         Double_t valueEtaKIn[5] = {dMXi, dPtCascadeGen, dEtaCascadeGen, xjet->Pt(), dEtaCascadeGen - xjet->Eta()};
@@ -2640,17 +2634,19 @@ Bool_t AliAnalysisTaskCascadesInJets::AssociateRecCascadeWithMC( AliAODcascade* 
   // XiPlus
   if(bIsXiPlus) { // selected candidates with any mass
     if(bCascadeMCIsXiPlus && bCascadeMCIsPrimaryDist) {// well reconstructed candidates
-      fh2CascadeXiPlusPtMassMCRec[iCent]->Fill(dPtCascadeGen, dMXi);
-      Double_t valueEtaK[3] = {dMXi, dPtCascadeGen, dEtaCascadeGen};
-      fh3CascadeXiPlusEtaPtMassMCRec[iCent]->Fill(valueEtaK);
-      Double_t valueEtaDKNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
-      fhnCascadeXiPlusInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKNeg);
-      Double_t valueEtaDKPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
-      fhnCascadeXiPlusInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKPos);
-      fh2CascadeXiPlusMCResolMPt[iCent]->Fill(dMXi - dMassPDGXi, dptcasc);
-      fh2CascadeXiPlusMCPtGenPtRec[iCent]->Fill(dPtCascadeGen, dptcasc);
+      if(xjet == 0) {
+        fh2CascadeXiPlusPtMassMCRec[iCent]->Fill(dPtCascadeGen, dMXi);
+        Double_t valueEtaK[3] = {dMXi, dPtCascadeGen, dEtaCascadeGen};
+        fh3CascadeXiPlusEtaPtMassMCRec[iCent]->Fill(valueEtaK);
+        Double_t valueEtaDKNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
+        fhnCascadeXiPlusInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKNeg);
+        Double_t valueEtaDKPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
+        fhnCascadeXiPlusInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKPos);
+        fh2CascadeXiPlusMCResolMPt[iCent]->Fill(dMXi - dMassPDGXi, dptcasc);
+        fh2CascadeXiPlusMCPtGenPtRec[iCent]->Fill(dPtCascadeGen, dptcasc);
+      }
       //here add an array with the well reconstructed particles? 
-      if(xjet) { // true Cascade associated to a candidate in jet
+      else { // true Cascade associated to a candidate in jet
         Double_t valueKInJCMC[4] = {dMXi, dPtCascadeGen, dEtaCascadeGen, xjet->Pt()};
         fh3CascadeXiPlusInJetPtMassMCRec[iCent]->Fill(valueKInJCMC);
         Double_t valueEtaKIn[5] = {dMXi, dPtCascadeGen, dEtaCascadeGen, xjet->Pt(), dEtaCascadeGen - xjet->Eta()};
@@ -2669,17 +2665,19 @@ Bool_t AliAnalysisTaskCascadesInJets::AssociateRecCascadeWithMC( AliAODcascade* 
   // OmegaMinus
   if(bIsOmegaMinus) { // selected candidates with any mass
     if(bCascadeMCIsOmegaMinus && bCascadeMCIsPrimaryDist) {// well reconstructed candidates
-      fh2CascadeOmegaMinusPtMassMCRec[iCent]->Fill(dPtCascadeGen, dMOmega);
-      Double_t valueEtaK[3] = {dMOmega, dPtCascadeGen, dEtaCascadeGen};
-      fh3CascadeOmegaMinusEtaPtMassMCRec[iCent]->Fill(valueEtaK);
-      Double_t valueEtaDKNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
-      fhnCascadeOmegaMinusInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKNeg);
-      Double_t valueEtaDKPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
-      fhnCascadeOmegaMinusInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKPos);
-      fh2CascadeOmegaMinusMCResolMPt[iCent]->Fill(dMOmega - dMassPDGOmega, dptcasc);
-      fh2CascadeOmegaMinusMCPtGenPtRec[iCent]->Fill(dPtCascadeGen, dptcasc);
+      if(xjet == 0) {
+        fh2CascadeOmegaMinusPtMassMCRec[iCent]->Fill(dPtCascadeGen, dMOmega);
+        Double_t valueEtaK[3] = {dMOmega, dPtCascadeGen, dEtaCascadeGen};
+        fh3CascadeOmegaMinusEtaPtMassMCRec[iCent]->Fill(valueEtaK);
+        Double_t valueEtaDKNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
+        fhnCascadeOmegaMinusInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKNeg);
+        Double_t valueEtaDKPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
+        fhnCascadeOmegaMinusInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKPos);
+        fh2CascadeOmegaMinusMCResolMPt[iCent]->Fill(dMOmega - dMassPDGOmega, dptcasc);
+        fh2CascadeOmegaMinusMCPtGenPtRec[iCent]->Fill(dPtCascadeGen, dptcasc);
+      }
       //here add an array with the well reconstructed particles? 
-      if(xjet) { // true Cascade associated to a candidate in jet
+      else { // true Cascade associated to a candidate in jet
         Double_t valueKInJCMC[4] = {dMOmega, dPtCascadeGen, dEtaCascadeGen, xjet->Pt()};
         fh3CascadeOmegaMinusInJetPtMassMCRec[iCent]->Fill(valueKInJCMC);
         Double_t valueEtaKIn[5] = {dMOmega, dPtCascadeGen, dEtaCascadeGen, xjet->Pt(), dEtaCascadeGen - xjet->Eta()};
@@ -2698,17 +2696,19 @@ Bool_t AliAnalysisTaskCascadesInJets::AssociateRecCascadeWithMC( AliAODcascade* 
   // OmegaPlus
   if(bIsOmegaPlus) { // selected candidates with any mass
     if(bCascadeMCIsOmegaPlus && bCascadeMCIsPrimaryDist) {// well reconstructed candidates
-      fh2CascadeOmegaPlusPtMassMCRec[iCent]->Fill(dPtCascadeGen, dMOmega);
-      Double_t valueEtaK[3] = {dMOmega, dPtCascadeGen, dEtaCascadeGen};
-      fh3CascadeOmegaPlusEtaPtMassMCRec[iCent]->Fill(valueEtaK);
-      Double_t valueEtaDKNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
-      fhnCascadeOmegaPlusInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKNeg);
-      Double_t valueEtaDKPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
-      fhnCascadeOmegaPlusInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKPos);
-      fh2CascadeOmegaPlusMCResolMPt[iCent]->Fill(dMOmega - dMassPDGOmega, dptcasc);
-      fh2CascadeOmegaPlusMCPtGenPtRec[iCent]->Fill(dPtCascadeGen, dptcasc);
+      if(xjet == 0) {
+        fh2CascadeOmegaPlusPtMassMCRec[iCent]->Fill(dPtCascadeGen, dMOmega);
+        Double_t valueEtaK[3] = {dMOmega, dPtCascadeGen, dEtaCascadeGen};
+        fh3CascadeOmegaPlusEtaPtMassMCRec[iCent]->Fill(valueEtaK);
+        Double_t valueEtaDKNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
+        fhnCascadeOmegaPlusInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKNeg);
+        Double_t valueEtaDKPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
+        fhnCascadeOmegaPlusInclDaughterEtaPtPtMCRec[iCent]->Fill(valueEtaDKPos);
+        fh2CascadeOmegaPlusMCResolMPt[iCent]->Fill(dMOmega - dMassPDGOmega, dptcasc);
+        fh2CascadeOmegaPlusMCPtGenPtRec[iCent]->Fill(dPtCascadeGen, dptcasc);
+      }
       //here add an array with the well reconstructed particles? 
-      if(xjet) { // true Cascade associated to a candidate in jet
+      else { // true Cascade associated to a candidate in jet
         Double_t valueKInJCMC[4] = {dMOmega, dPtCascadeGen, dEtaCascadeGen, xjet->Pt()};
         fh3CascadeOmegaPlusInJetPtMassMCRec[iCent]->Fill(valueKInJCMC);
         Double_t valueEtaKIn[5] = {dMOmega, dPtCascadeGen, dEtaCascadeGen, xjet->Pt(), dEtaCascadeGen - xjet->Eta()};
