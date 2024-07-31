@@ -2646,7 +2646,8 @@ void AddTask_GammaConvV1_pp(
   } else if (trainConfig == 3012){ // new smearing with pol2
     cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","0152103500n00000"); // smearing based on pol2 (no Brems)
 
-
+  } else if (trainConfig == 9999) { // R 5-180 and remove r bin 55-72
+    cuts.AddCutPCM("00010003", "00000000i0000000iih0404000", "0000000000000000"); // eta < 0.8  // Test alpha meson pT dependent
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

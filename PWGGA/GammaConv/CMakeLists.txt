@@ -40,6 +40,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PWGGAUtils
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
+                    ${AliPhysics_SOURCE_DIR}/RUN3
                    )
 
 # Sources in alphabetical order

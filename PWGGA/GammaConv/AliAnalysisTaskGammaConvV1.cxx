@@ -238,6 +238,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   mapMultipleCountTrueEtas(),
   mapMultipleCountTrueConvGammas(),
   fHistoNEvents(NULL),
+  fHistoNEvents2(NULL),
+  fHistoNVertex(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
   fHistoNEventsWeighted(NULL),
@@ -598,6 +600,8 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   mapMultipleCountTrueEtas(),
   mapMultipleCountTrueConvGammas(),
   fHistoNEvents(NULL),
+  fHistoNEvents2(NULL),
+  fHistoNVertex(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
   fHistoNEventsWeighted(NULL),
@@ -1138,6 +1142,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
   // event histos:
   fHistoNEvents             = new TH1F*[fnCuts];
+  fHistoNEvents2            = new TH1I*[fnCuts];
+  fHistoNVertex             = new TH1I*[fnCuts];
   if (fIsMC > 1){
     fHistoNEventsWOWeight   = new TH1F*[fnCuts];
   }
@@ -1298,6 +1304,21 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
     fHistoNEvents[iCut]->GetXaxis()->SetBinLabel(14,iEventCut->GetLabelNamePileupCutTPC().Data());
     fESDList[iCut]->Add(fHistoNEvents[iCut]);
+
+    fHistoNEvents2[iCut] = new TH1I("Nevents", "Nevents", 2, -0.5, 1.5);
+    fHistoNEvents2[iCut]->GetXaxis()->SetBinLabel(1,"In");
+    fHistoNEvents2[iCut]->GetXaxis()->SetBinLabel(2,"Out");
+    fESDList[iCut]->Add(fHistoNEvents2[iCut]);
+    fHistoNVertex[iCut] = new TH1I("NVertexer", "NVertexer", 8, -0.5, 7.5);
+    fHistoNVertex[iCut]->GetXaxis()->SetBinLabel(1,"In");
+    fHistoNVertex[iCut]->GetXaxis()->SetBinLabel(2,"3D");
+    fHistoNVertex[iCut]->GetXaxis()->SetBinLabel(3,"Z");
+    fHistoNVertex[iCut]->GetXaxis()->SetBinLabel(4,"Tracks");
+    fHistoNVertex[iCut]->GetXaxis()->SetBinLabel(5,"WithConstraint");
+    fHistoNVertex[iCut]->GetXaxis()->SetBinLabel(6,"OnlyFitter");
+    fHistoNVertex[iCut]->GetXaxis()->SetBinLabel(7,"MV");
+    fHistoNVertex[iCut]->GetXaxis()->SetBinLabel(8,"Uknown");
+    fESDList[iCut]->Add(fHistoNVertex[iCut]);
     if (fIsMC > 1){
       fHistoNEventsWOWeight[iCut]    = new TH1F("NEventsWOWeight", "NEventsWOWeight", 14, -0.5, 13.5);
       fHistoNEventsWOWeight[iCut]->GetXaxis()->SetBinLabel(1,"Accepted");
@@ -2481,6 +2502,30 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
   // Called for each event
   //
   fInputEvent = InputEvent();
+  for(Int_t iCut = 0; iCut<fnCuts; iCut++){
+    fHistoNEvents2[fiCut]->Fill(0);
+  }
+
+  const AliVVertex *pvtx = fInputEvent->GetPrimaryVertex();
+  fHistoNVertex[fiCut]->Fill(0);
+  TString title(pvtx->GetTitle());
+  if (pvtx->IsFromVertexer3D()) {
+    fHistoNVertex[fiCut]->Fill(1);
+  } else if (pvtx->IsFromVertexerZ()) {
+    fHistoNVertex[fiCut]->Fill(2);
+  } else if (title.Contains("VertexerTracks")) {
+    if (pvtx->GetNContributors() >= 2) {
+      fHistoNVertex[fiCut]->Fill(3);
+      if (title.Contains("WithConstraint"))
+        fHistoNVertex[fiCut]->Fill(4);
+      if (title.Contains("OnlyFitter"))
+        fHistoNVertex[fiCut]->Fill(5);
+      if (title.Contains("MV"))
+        fHistoNVertex[fiCut]->Fill(6);
+    }
+  } else {
+    fHistoNVertex[fiCut]->Fill(7);
+  }
 
   // Set MC events
   if(fIsMC>0) {
@@ -2772,6 +2817,9 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
     fV0Reader->RelabelAODs(kFALSE);
   }
 
+  for(Int_t iCut = 0; iCut<fnCuts; iCut++){
+    fHistoNEvents2[fiCut]->Fill(1);
+  }
   PostData(1, fOutputContainer);
 }
 

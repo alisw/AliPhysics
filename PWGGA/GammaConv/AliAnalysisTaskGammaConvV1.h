@@ -295,6 +295,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     map<Int_t,Int_t>                  mapMultipleCountTrueEtas;                   //! map containing eta labels that are counted at least twice
     map<Int_t,Int_t>                  mapMultipleCountTrueConvGammas;             //! map containing photon labels that are counted at least twice
     TH1F**                            fHistoNEvents;                                   //!
+    TH1I**                            fHistoNEvents2;                                  //!
+    TH1I**                            fHistoNVertex;                                   //!
     TH1F**                            fHistoNEventsWOWeight;                           //! array of histos with event information without event weights
     TH1F**                            fHistoNGoodESDTracks;                            //!
     TH1F**                            fHistoNEventsWeighted;                           //!
