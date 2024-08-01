@@ -61,12 +61,13 @@ fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.02), fDerivSubtrOrder(0),
-fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(0), fUnfolding(1), fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(0), fJet_pt_det(0), fJet_pt_tru(0), fTrack_pt_det(0), fTrack_pt_tru(0), fTrack_eta_det(0), fTrack_eta_tru(0), fTrack_phi_det(0), fTrack_phi_tru(0), fJet_pt_dat(0), fTrack_pt_dat(0),fTrack_eta_dat(0),fTrack_phi_dat(0),  fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0), R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0),pt_tru1(0), pt_tru2(0), eec_Mm(0), eec_mm(0), e3c_MMm(0), e3c_Mmm(0), e3c_mmm(0), eec_Mf(0), eec_ff(0), e3c_MMf(0), e3c_Mff(0), e3c_fff(0), eec_matched_det(0), eec_matched_tru(0), e3c_matched_det(0), e3c_matched_tru(0), wt_res_eec(0), wt_res_e3c(0), R_res_eec(0), R_res_e3c(0), wtnojet_match_eec(0), wtnojet_match_e3c(0), wtnojet_res_eec(0), wtnojet_res_e3c(0), R_match_eec_tru(0), wt_match_eec_tru(0), R_match_e3c_tru(0), wt_match_e3c_tru(0), wt_res_eec_tru(0), wt_res_e3c_tru(0), R_res_eec_tru(0), R_res_e3c_tru(0), wtnojet_match_eec_tru(0), wtnojet_match_e3c_tru(0), wtnojet_res_eec_tru(0), wtnojet_res_e3c_tru(0), constituentId(0),R_res_eec_tru_debug(0),track_pt_res_debug(0),track_eta_debug(0), track_rap_debug(0), track_phi_debug(0), track_R_debug(0), track_R_debug_rap(0), track_eta_res_debug(0), track_rap_res_debug(0), track_phi_res_debug(0), track_R_res_debug(0), track_R_rap_res_debug(0), R_match_eec_tru_rap(0), track_pt_response_debug(0), track_pt_wt_res_debug(0), track_pt_wt_response_debug(0), jetpt_res_w_R(0), jetpt_res_w_wt(0), OptUn_eec(0),
+fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(0), fUnfolding(1), fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(0), fJetPtMin(0), fJet_pt_det(0), fJet_pt_tru(0), fTrack_pt_det(0), fTrack_pt_tru(0), fTrack_eta_det(0), fTrack_eta_tru(0), fTrack_phi_det(0), fTrack_phi_tru(0), fJet_pt_dat(0), fTrack_pt_dat(0),fTrack_eta_dat(0),fTrack_phi_dat(0),  fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0), R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0),pt_tru1(0), pt_tru2(0), eec_Mm(0), eec_mm(0), e3c_MMm(0), e3c_Mmm(0), e3c_mmm(0), eec_Mf(0), eec_ff(0), e3c_MMf(0), e3c_Mff(0), e3c_fff(0), eec_matched_det(0), eec_matched_tru(0), e3c_matched_det(0), e3c_matched_tru(0), wt_res_eec(0), wt_res_e3c(0), R_res_eec(0), R_res_e3c(0), wtnojet_match_eec(0), wtnojet_match_e3c(0), wtnojet_res_eec(0), wtnojet_res_e3c(0), R_match_eec_tru(0), wt_match_eec_tru(0), R_match_e3c_tru(0), wt_match_e3c_tru(0), wt_res_eec_tru(0), wt_res_e3c_tru(0), R_res_eec_tru(0), R_res_e3c_tru(0), wtnojet_match_eec_tru(0), wtnojet_match_e3c_tru(0), wtnojet_res_eec_tru(0), wtnojet_res_e3c_tru(0), constituentId(0),R_res_eec_tru_debug(0),track_pt_res_debug(0),track_eta_debug(0), track_rap_debug(0), track_phi_debug(0), track_R_debug(0), track_R_debug_rap(0), track_eta_res_debug(0), track_rap_res_debug(0), track_phi_res_debug(0), track_R_res_debug(0), track_R_rap_res_debug(0), R_match_eec_tru_rap(0), track_pt_response_debug(0), track_pt_wt_res_debug(0), track_pt_wt_response_debug(0), jetpt_res_w_R(0), jetpt_res_w_wt(0), OptUn_eec(0),
     OptUn_e3c(0), fTreeMatchTracks(0), fTreeData(0)
 {
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
+  DefineOutput(3, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -77,12 +78,13 @@ fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.02), fDerivSubtrOrder(0),
-fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(0), fUnfolding(1), fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(0), fJet_pt_det(0), fJet_pt_tru(0), fTrack_pt_det(0), fTrack_pt_tru(0), fTrack_eta_det(0), fTrack_eta_tru(0), fTrack_phi_det(0), fTrack_phi_tru(0), fJet_pt_dat(0), fTrack_pt_dat(0),fTrack_eta_dat(0),fTrack_phi_dat(0),  fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0), R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0),pt_tru1(0), pt_tru2(0), eec_Mm(0), eec_mm(0), e3c_MMm(0), e3c_Mmm(0), e3c_mmm(0), eec_Mf(0), eec_ff(0), e3c_MMf(0), e3c_Mff(0), e3c_fff(0), eec_matched_det(0), eec_matched_tru(0), e3c_matched_det(0), e3c_matched_tru(0), wt_res_eec(0), wt_res_e3c(0), R_res_eec(0), R_res_e3c(0), wtnojet_match_eec(0), wtnojet_match_e3c(0), wtnojet_res_eec(0), wtnojet_res_e3c(0), R_match_eec_tru(0), wt_match_eec_tru(0), R_match_e3c_tru(0), wt_match_e3c_tru(0), wt_res_eec_tru(0), wt_res_e3c_tru(0), R_res_eec_tru(0), R_res_e3c_tru(0), wtnojet_match_eec_tru(0), wtnojet_match_e3c_tru(0), wtnojet_res_eec_tru(0), wtnojet_res_e3c_tru(0), constituentId(0),R_res_eec_tru_debug(0),track_pt_res_debug(0),track_eta_debug(0),track_rap_debug(0), track_phi_debug(0), track_R_debug(0), track_R_debug_rap(0), track_eta_res_debug(0), track_rap_res_debug(0), track_phi_res_debug(0), track_R_res_debug(0), track_R_rap_res_debug(0), R_match_eec_tru_rap(0), track_pt_response_debug(0), track_pt_wt_res_debug(0), track_pt_wt_response_debug(0), jetpt_res_w_R(0), jetpt_res_w_wt(0), OptUn_eec(0),
+fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), fpairfastsim(0), fUnfolding(1), fMatchJetTrack(1),fMissJetTrack(1),fFakeJetTrack(1), fMaxPtTrack(0),fJetPtMin(0), fJet_pt_det(0), fJet_pt_tru(0), fTrack_pt_det(0), fTrack_pt_tru(0), fTrack_eta_det(0), fTrack_eta_tru(0), fTrack_phi_det(0), fTrack_phi_tru(0), fJet_pt_dat(0), fTrack_pt_dat(0),fTrack_eta_dat(0),fTrack_phi_dat(0),  fGeneratorLevelName(), fDetectorLevelName(), fGeneratorLevel(0), fDetectorLevel(0), fJet_truCont(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), E3C_hist(0), E3C_pt_hist(0),  EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0), qpt_tru(0), qpt_det(0), track_pt_tru(0), track_pt_det(0), track_pt_matched(0), R_match_eec(0), wt_match_eec(0), R_match_e3c(0), wt_match_e3c(0), qpt_tru1(0), qpt_tru2(0),pt_tru1(0), pt_tru2(0), eec_Mm(0), eec_mm(0), e3c_MMm(0), e3c_Mmm(0), e3c_mmm(0), eec_Mf(0), eec_ff(0), e3c_MMf(0), e3c_Mff(0), e3c_fff(0), eec_matched_det(0), eec_matched_tru(0), e3c_matched_det(0), e3c_matched_tru(0), wt_res_eec(0), wt_res_e3c(0), R_res_eec(0), R_res_e3c(0), wtnojet_match_eec(0), wtnojet_match_e3c(0), wtnojet_res_eec(0), wtnojet_res_e3c(0), R_match_eec_tru(0), wt_match_eec_tru(0), R_match_e3c_tru(0), wt_match_e3c_tru(0), wt_res_eec_tru(0), wt_res_e3c_tru(0), R_res_eec_tru(0), R_res_e3c_tru(0), wtnojet_match_eec_tru(0), wtnojet_match_e3c_tru(0), wtnojet_res_eec_tru(0), wtnojet_res_e3c_tru(0), constituentId(0),R_res_eec_tru_debug(0),track_pt_res_debug(0),track_eta_debug(0),track_rap_debug(0), track_phi_debug(0), track_R_debug(0), track_R_debug_rap(0), track_eta_res_debug(0), track_rap_res_debug(0), track_phi_res_debug(0), track_R_res_debug(0), track_R_rap_res_debug(0), R_match_eec_tru_rap(0), track_pt_response_debug(0), track_pt_wt_res_debug(0), track_pt_wt_response_debug(0), jetpt_res_w_R(0), jetpt_res_w_wt(0), OptUn_eec(0),
     OptUn_e3c(0), fTreeMatchTracks(0), fTreeData(0)
 {
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
+  DefineOutput(3, TTree::Class());
 }
 
 
@@ -532,14 +534,9 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
          fTreeMatchTracks->Branch("fTrack_pt_fake", &fTrack_pt_fake, "fTrack_pt_fake/D");
          fTreeMatchTracks->Branch("fTrack_eta_fake", &fTrack_eta_fake, "fTrack_eta_fake/D");
          fTreeMatchTracks->Branch("fTrack_phi_fake", &fTrack_phi_fake, "fTrack_phi_fake/D");
-        
-        fTreeData = new TTree("DataTree", "DataTree");
-        fTreeData->Branch("fJet_pt_dat", &fJet_pt_dat, "fJet_pt_dat/D");
-        fTreeData->Branch("fTrack_pt_dat", &fTrack_pt_dat, "fTrack_pt_dat/D");
-        fTreeData->Branch("fTrack_eta_dat", &fTrack_eta_dat, "fTrack_eta_dat/D");
-        fTreeData->Branch("fTrack_phi_dat", &fTrack_phi_dat, "fTrack_phi_dat/D");
+    
      }
-
+    
     PostData(1, fOutput);
     if (fUnfolding==1) 
     { 
@@ -668,7 +665,7 @@ Bool_t AliAnalysisTaskJetsEEC::FillHistograms()
         while ((jet1 = jetCont->GetNextAcceptJet()))
         {
             if (!jet1) continue;
-            if (jet1->Pt() < 15) {continue;} //Cuts on jet_pt
+            if (jet1->Pt() < fJetPtMin) {continue;} //Cuts on jet_pt
             if (fJetShapeType == kData)
             {
                 ComputeEEC(jet1, jetCont);//Computing the eec on the jet object
@@ -1959,11 +1956,23 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
         {
             for(int j=0; j<int(fConstituents.size()); j++)  //looping over constituents of the fConstituents object
             {
-                fJet_pt_dat = jet_pt;
-                fTrack_eta_dat = fConstituents[j].eta();
-                fTrack_phi_dat = fConstituents[j].phi();
-                fTrack_pt_dat = fConstituents[j].pt();
-                fTreeData->Fill();
+                fJet_pt_det = jet_pt;
+                fTrack_eta_det = fConstituents[j].eta();
+                fTrack_phi_det = fConstituents[j].phi();
+                fTrack_pt_det = fConstituents[j].pt();
+                fJet_pt_tru = 0;
+                fTrack_eta_tru = 0;
+                fTrack_phi_tru = 0;
+                fTrack_pt_tru = 0;
+                fTrack_pt_miss = 0;
+                fTrack_eta_miss = 0;
+                fTrack_phi_miss = 0;
+                fTrack_pt_miss = 0;
+                fTrack_pt_fake = 0;
+                fTrack_eta_fake = 0;
+                fTrack_phi_fake = 0;
+                fTrack_pt_fake = 0;
+                fTreeMatchTracks->Fill();
             }
         }
         
