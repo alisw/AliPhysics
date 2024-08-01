@@ -151,6 +151,7 @@ ClassImp(AliAnalysisTaskConvCaloTree)
                                                                fVBuffer_Track_dedx(),
                                                                fVBuffer_Track_TOFSignal(),
                                                                fVBuffer_Track_DCA(),
+                                                               fVBuffer_Track_FracNClus(),
                                                                fVBuffer_Track_PDG(),
                                                                fVBuffer_Track_Calo_eta(),
                                                                fVBuffer_Track_Calo_phi(),
@@ -282,6 +283,7 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree(const char* name) : Ali
                                                                              fVBuffer_Track_dedx(),
                                                                              fVBuffer_Track_TOFSignal(),
                                                                              fVBuffer_Track_DCA(),
+                                                                             fVBuffer_Track_FracNClus(),
                                                                              fVBuffer_Track_PDG(),
                                                                              fVBuffer_Track_Calo_eta(),
                                                                              fVBuffer_Track_Calo_phi(),
@@ -458,6 +460,7 @@ void AliAnalysisTaskConvCaloTree::UserCreateOutputObjects()
       fPhotonTree->Branch("Track_dEdx", &fVBuffer_Track_dedx);
       fPhotonTree->Branch("Track_TOFSignal", &fVBuffer_Track_TOFSignal);
       fPhotonTree->Branch("Track_DCA", &fVBuffer_Track_DCA);
+      fPhotonTree->Branch("Track_FracNClus_Chi2", &fVBuffer_Track_FracNClus);
       if (fIsMC) {
         fPhotonTree->Branch("Track_PDG", &fVBuffer_Track_PDG);
       }
@@ -1152,11 +1155,22 @@ void AliAnalysisTaskConvCaloTree::ProcessTracksAOD()
 
       fVBuffer_Track_DCA.push_back(static_cast<unsigned short>(b[0] * 100));
 
+      // fraction of findable clusters
+      const double maxNClus = aodt->GetTPCNclsF();
+      double fracClsFound = maxNClus > 0 ? ((double)aodt->GetTPCncls())/maxNClus : 0;
+
+      double chi2Track = aodt->GetTPCchi2perCluster();
+      unsigned short chi2TrackShort = static_cast<unsigned short>(10 + (chi2Track * 10)); // times 10 to have it in granularity of 0.1
+      if(chi2Track > 64) chi2TrackShort = 64000; // maximum size of unsigned short
+      else chi2TrackShort*=100; // 
+
+      fVBuffer_Track_FracNClus.push_back(static_cast<unsigned short>(fracClsFound * 100) + chi2TrackShort);
+      
       if (fIsMC) {
         fVBuffer_Track_PDG.push_back(static_cast<short>(aodt->PdgCode()));
       }
     }
-    // This is not the proper extrapolation! Although for a rough matching of tracks and clusyers it was found to save a lot of CPU time
+    // This is not the proper extrapolation! Although for a rough matching of tracks and clusters it was found to save a lot of CPU time
     Float_t trackEta = aodt->GetTrackEtaOnEMCal();
     Float_t trackPhi = aodt->GetTrackPhiOnEMCal();
     if (trackEta == -999 || trackPhi == -999) {
@@ -1472,6 +1486,7 @@ void AliAnalysisTaskConvCaloTree::ResetBufferVectors()
   fVBuffer_Track_dedx.clear();
   fVBuffer_Track_TOFSignal.clear();
   fVBuffer_Track_DCA.clear();
+  fVBuffer_Track_FracNClus.clear();
   fVBuffer_Track_PDG.clear();
   fVBuffer_Track_Calo_eta.clear();
   fVBuffer_Track_Calo_phi.clear();
