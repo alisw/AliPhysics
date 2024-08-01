@@ -202,6 +202,8 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fNEtaBins(32),
     fCentEstimator("V0M"),
     fCutChargedNumTPCclsMin(70),
+    fCutCrossedTPCMin(50),
+    bTPCRows(kFALSE),
     fImpactParameterMC(-1.0),
     fReadMC(kFALSE),
     fMCEvent(0),
@@ -395,6 +397,8 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fNEtaBins(32),
     fCentEstimator("V0M"),
     fCutChargedNumTPCclsMin(70),
+    fCutCrossedTPCMin(50),
+    bTPCRows(kFALSE),
     fImpactParameterMC(-1.0),
     fReadMC(kFALSE),
     fMCEvent(0),
@@ -3157,6 +3161,7 @@ Bool_t AliAnalysisTaskESEFlow::IsTrackSelected(const AliAODTrack* track) const
 {
   if(!track->TestFilterBit(fFilterBit)) { return kFALSE; }
   if(track->GetTPCNcls() < fCutChargedNumTPCclsMin && fFilterBit != 2) { return kFALSE; }
+  if( bTPCRows && track->GetTPCNCrossedRows() < fCutCrossedTPCMin) { return kFALSE; }
   //if(fPtMin > 0 && track->Pt() < fPtMin) { return kFALSE; }
   //if(fPtMax > 0 && track->Pt() > fPtMax) { return kFALSE; }
   if(fAbsEtaMax > 0 && TMath::Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
