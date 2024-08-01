@@ -49,6 +49,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetEtaGap(Double_t val) { dEtaGap = val; }
         void                    SetHasEtaGap( Bool_t fEtaGap) { bHasGap = fEtaGap; }
         void                    SetChargedNumTPCclsMin(UShort_t tpcCls) { fCutChargedNumTPCclsMin = tpcCls; }
+        void                    ActandSetMinCrossedTPCRows(Bool_t bActivateRows, UShort_t crossedRows) { bTPCRows = bActivateRows; fCutCrossedTPCMin = crossedRows; }
 
         void                    SetMakeqSelectionRun(Bool_t actqRun) { fMakeqSelectionRun = actqRun; }
         void                    SetMakeRBRweights(Bool_t actRBRrun) { fMakeRBRweightsRun = actRBRrun; }
@@ -423,6 +424,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Int_t                   fNEtaBins;
         TString                 fCentEstimator;
         UShort_t                fCutChargedNumTPCclsMin;
+        UShort_t                fCutCrossedTPCMin;
+        Bool_t                  bTPCRows;
         Bool_t                  IsEventSelected();
         Bool_t                  IsEventRejectedAddPileUp() const;
         Bool_t                  IsTrackSelected(const AliAODTrack* track) const;

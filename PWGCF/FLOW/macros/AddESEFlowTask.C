@@ -1,6 +1,33 @@
 class AliAnalysisDataContainer;
 class AliAnalysisTaskESEFlow;
 
+
+void ConnectFiletoTask(const TString sFile, const char* inpOb, const char* objName, const Int_t cN){
+  TObjArray* taskContainers = mgr->GetContainers();
+  if(!taskContainers) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
+
+  AliAnalysisDataContainer* weights = (AliAnalysisDataContainer*) taskContainers->FindObject(Form("%s",inpObj));
+  if(!weights)
+  {
+    if(sFile.Contains("alien://")) { gGrid->Connect("alien://"); }
+
+    TFile* _file = TFile::Open(sFile.Data(),"READ");
+    if(!_file) { printf("E-AddTaskESEFlow: Input file with weights not found!\n"); return NULL; }
+
+    TList* _list = static_cast<TList*>(_file->Get(Form("%s",objName)));
+    if(!_list) { printf("E-AddTaskESEFlow: Input list with weights not found!\n"); _file->ls(); return NULL; }
+
+    AliAnalysisDataContainer* cInputWeights = mgr->CreateContainer(Form("%s",inpObj),TList::Class(), AliAnalysisManager::kInputContainer);
+    cInputWeights->SetData(_list);
+    mgr->ConnectInput(task,cN,cInputWeights);
+  }
+  else
+  {
+    // connect existing container
+    mgr->ConnectInput(task,cN,weights);
+  }
+}
+
 AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys, TString sWeightsFile = "", TString sVWeights = "",TString V0Calib = "", TString qSplines="", TString EfficiencyFile="", const char* suffix = "")
 {
     // get the manager via the static access member. since it's static, you don't need
