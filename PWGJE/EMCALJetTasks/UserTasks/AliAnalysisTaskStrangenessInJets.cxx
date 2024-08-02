@@ -2008,10 +2008,9 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
           fhnV0InPerpLambda[iCentIndex]->Fill(valueLInPC);
           }
           if(iind == iALambdaId) {
-          Double_t valueALInPC[4] = {dV0MassL, dPtv, dEtav, jetPerp->Pt()};
+          Double_t valueALInPC[4] = {dV0MassAL, dPtv, dEtav, jetPerp->Pt()};
           fhnV0InPerpALambda[iCentIndex]->Fill(valueALInPC);
           }
-          //add smth for kl and kal corr??
           break;
         }
       }
