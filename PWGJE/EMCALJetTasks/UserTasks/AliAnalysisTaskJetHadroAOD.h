@@ -44,6 +44,7 @@ class AliAnalysisTaskRho;
 #include "TTreeStream.h"
 #include "AliEventCuts.h"
 #include "TRandom3.h"
+#include "AliFJWrapper.h"
 
 class AliAnalysisTaskJetHadroAOD : public AliAnalysisTaskEmcalJet {
 public:
@@ -92,6 +93,8 @@ public:
   void   SetFilljetsFJBGTree(const Bool_t ifjetsFJBGTree = kTRUE)     {fFilljetsFJBGTree    = ifjetsFJBGTree;}
   void   SetFillJetsFJBGConst(const Bool_t ifJetsFJBGConst = kTRUE)     {fFillJetsFJBGConst     = ifJetsFJBGConst;}
   void   SetDoIncTracks(const Bool_t ifdoIncTracks = kTRUE)               {fDoIncTracks        = ifdoIncTracks;}
+  void   SetDoPerpCone(const Bool_t ifdoPerpCone = kTRUE)               {fDoPerpCone        = ifdoPerpCone;}
+  void   SetDoRandCone(const Bool_t ifdoRandCone = kTRUE)               {fDoRandCone        = ifdoRandCone;}
   void   SetDoFastJet(const Bool_t ifFastJet = kTRUE)               {fDoFastJet         = ifFastJet;}
   void   SetDoEMCJet(const Bool_t ifEMCJet = kTRUE)               {fDoEMCJet         = ifEMCJet;}
   void   SetFillFastJet(const Bool_t ifFastJet = kTRUE)               {fFillFastJet         = ifFastJet;}
@@ -101,9 +104,13 @@ public:
   void   SetFillJetsEMCBG(const Bool_t ifJetsEMCBG = kTRUE)     {fFillJetsEMCBG     = ifJetsEMCBG;}
   void   SetFillJetsEMCBGConst(const Bool_t ifJetsEMCBGConst = kTRUE)     {fFillJetsEMCBGConst     = ifJetsEMCBGConst;}
   void   SetJetMinPtSub(const Double_t jetminptsub = -1000.0)         {fjetMinPtSub         = jetminptsub;}
+  void   SetJetMaxPtSub(const Double_t jetmaxptsub = -1000.0)         {fjetMaxPtSub         = jetmaxptsub;}
   void   SetJetMinArea(const Double_t jetminarea = -1000.0)         {fjetMinArea         = jetminarea;}
   void   SetMinCent(const Double_t mincent = 0.0)         {fcent_min         = mincent;}
   void   SetMaxCent(const Double_t maxcent = 100.0)         {fcent_max         = maxcent;}
+  void   SetDoRapCut(const Bool_t ifRapCut = kFALSE)         {fDoRapCut         = ifRapCut;}
+  void   SetEtaCut(const Double_t etacut = 100.0)         {fEtaCut         = etacut;}
+  void   SetYCut(const Double_t ycut = 100.0)         {fYCut         = ycut;}
 
   void   SetFillTreeMC(const Bool_t ifTreeMC = kFALSE)                {fFillTreeMC= ifTreeMC;}
   void   SetFillIncTracks(const Bool_t ifIncTracks = kTRUE)           {fFillIncTracks       = ifIncTracks;}
@@ -175,6 +182,7 @@ private:
   void FindJetsFJ();                          // Find and Fill Jets with FJ framework
   void FillIncTracksReal();                   // Fill all inclusive track information
   void FillTreeMC();
+  void FillMCJets();
   void GetExpecteds(AliAODTrack* track);
   void FillEventTree();
 
@@ -187,6 +195,7 @@ private:
 
   AliPIDResponse   * fPIDResponse;            //!<! PID response object
   AliAODEvent      * fAOD;                    //!<! AOD object
+  AliMCEvent       * fMCEvent;                //!<! corresponding MC event
   TList            * fListHist;               //!<! list for histograms
   UInt_t            fAOD_FilterBits;
   AliPIDCombined   * fPIDCombined;            //!<! combined PID object
@@ -205,7 +214,7 @@ private:
   TTree            * fTreejetEvents;          //!<! tree for event level observables
   TTree            * fTreejetsEMC;            //!<! tree for EMCal signal jets
   TTree            * fTreejetsEMCBG;            //!<! tree for EMCal background jets
-  TRandom3         fRandom;
+  TRandom3         * fRandom;                 //!<! random number generator
 
 
   TString            fPeriodName;
@@ -230,6 +239,8 @@ private:
   Bool_t            fFillFastJet;         // switch whether to fill FJ tree
   Bool_t            fFillEMCJet;         // switch whether to fill EMC tree
   Bool_t            fDoIncTracks;         // switch whether to use inclusive tracks
+  Bool_t            fDoPerpCone;         // switch whether to use perpendicular cone tracks
+  Bool_t            fDoRandCone;         // switch whether to use random cone tracks
   Bool_t            fDoFastJet;         // switch whether to use FJ jets
   Bool_t            fDoEMCJet;         // switch whether to use EMC jets
   Bool_t            fFillJetsEMCConst;        // switch whether to fill jetsEMC constituent tree
@@ -237,9 +248,13 @@ private:
   Bool_t            fFillJetsEMCBG;        // switch whether to fill jetsEMCBG tree
   Bool_t            fFillJetsEMCBGConst;        // switch whether to fill jetsEMCBG constituent tree
   Double_t          fjetMinPtSub;            // minimium jet pt after subtraction to keep jet
-  Double_t          fjetMinArea;            // minimium jet pt after subtraction to keep jet
+  Double_t          fjetMaxPtSub;            // maximum jet pt after subtraction to keep jet
+  Double_t          fjetMinArea;            // minimium jet area to keep jet
   Float_t           fcent_min;            // minimium centrality cut
   Float_t           fcent_max;            // maximium centrality cut
+  Bool_t            fDoRapCut;            //employ rap cut or not
+  Float_t           fEtaCut;              //cut on absolute eta
+  Float_t           fYCut;              //cut on absolute y
 
   Bool_t            fFillTreeMC;
 
@@ -328,6 +343,8 @@ private:
   Float_t            fjetRhoVal;
   Float_t            frhoFJ;
   Bool_t             fisGoodIncEvent;
+  Bool_t             fFilledUECone_Gen;
+  Bool_t             fFilledUECone_Rec;
   Bool_t             fhasAcceptedFJjet;
   Bool_t             fhasAcceptedEMCjet;
   Bool_t             fhasRealFJjet;
@@ -346,6 +363,9 @@ private:
   Double_t fTrackProbKaTOF;
   Double_t fTrackProbPrTOF;
   Bool_t   fTrackProbDeTOF;
+
+  int fall_reco_jets_w_multiple_matches;
+  int fall_reco_jets_w_matches;
 
   //histograms
   TH1F             * fHistCentrality;            //!<! control histogram for centrality
@@ -429,7 +449,63 @@ private:
   TH3F             * fHistJet_kin;     //!<! histogram for jet ptsub, eta, phi after area cut
   TH2F             * fHistJet_moms;     //!<! histogram for jet pt v jet ptsub after area cut*/
 
-  ClassDef(AliAnalysisTaskJetHadroAOD, 2);
+  TH2F             * fHist_pi_DCAxy;       //!<! histogram for Data DCAxy distributions pion v pT
+  TH2F             * fHist_pr_DCAxy;       //!<! histogram for Data DCAxy distributions pion v pT
+
+  TH2F             * fHistJet_pi_DCAxy;       //!<! histogram for Data DCAxy distributions pion v pT
+  TH2F             * fHistJet_pr_DCAxy;       //!<! histogram for jet Data DCAxy distributions pion v pT
+
+  TH2F             * fHistMCTruth_TrackEff_Den_pi;     //!<! histogram for MC Truth Level Tracking Efficiency Denominator pion v pT, eta
+  TH2F             * fHistMCTruth_TrackEff_Den_ka;     //!<! histogram for MC Truth Level Tracking Efficiency Denominator kaon v pT, eta
+  TH2F             * fHistMCTruth_TrackEff_Den_pr;     //!<! histogram for MC Truth Level Tracking Efficiency Denominator proton v pT, eta
+  TH2F             * fHistMCReco_TrackEff_Num_pi;     //!<! histogram for MC Reconstructed Level Tracking Efficiency Numerator pion v pT, eta
+  TH2F             * fHistMCReco_TrackEff_Num_ka;     //!<! histogram for MC Reconstructed Level Tracking Efficiency Numerator kaon v pT, eta
+  TH2F             * fHistMCReco_TrackEff_Num_pr;     //!<! histogram for MC Reconstructed Level Tracking Efficiency Numerator proton v pT, eta
+  TH2F             * fHistMCReco_MatchEff_Num_pi;     //!<! histogram for MC Reconstructed Level TOF Matching Efficiency Numerator pion v pT, eta
+  TH2F             * fHistMCReco_MatchEff_Num_ka;     //!<! histogram for MC Reconstructed Level TOF Matching Efficiency Numerator kaon v pT, eta
+  TH2F             * fHistMCReco_MatchEff_Num_pr;     //!<! histogram for MC Reconstructed Level TOF Matching Efficiency Numerator proton v pT, eta
+
+  TH2F             * fHistMCReco_pi_prim_DCAxy;       //!<! histogram for MC Reconstructed Level Primary DCAxy distributions pion v pT
+  TH2F             * fHistMCReco_pi_scdweak_DCAxy;    //!<! histogram for MC Reconstructed Level Secondary from Weak Decays DCAxy distributions pion v pT
+  TH2F             * fHistMCReco_pr_prim_DCAxy;       //!<! histogram for MC Reconstructed Level Primary DCAxy distributions proton v pT
+  TH2F             * fHistMCReco_pr_scdweak_DCAxy;    //!<! histogram for MC Reconstructed Level Secondary from Weak Decays DCAxy distributions proton v pT
+  TH2F             * fHistMCReco_pr_scdmat_DCAxy;    //!<! histogram for MC Reconstructed Level Secondary from Material DCAxy distributions proton v pT
+
+
+  TH2F             * fHist_Jet_MCTruth_TrackEff_Den_pi;     //!<! jet histogram for MC Truth Level Tracking Efficiency Denominator pion v pT, eta
+  TH2F             * fHist_Jet_MCTruth_TrackEff_Den_ka;     //!<! jet histogram for MC Truth Level Tracking Efficiency Denominator kaon v pT, eta
+  TH2F             * fHist_Jet_MCTruth_TrackEff_Den_pr;     //!<! jet histogram for MC Truth Level Tracking Efficiency Denominator proton v pT, eta
+  TH2F             * fHist_Jet_MCReco_TrackEff_Num_pi;     //!<! jet histogram for MC Reconstructed Level Tracking Efficiency Numerator pion v pT, eta
+  TH2F             * fHist_Jet_MCReco_TrackEff_Num_ka;     //!<! jet histogram for MC Reconstructed Level Tracking Efficiency Numerator kaon v pT, eta
+  TH2F             * fHist_Jet_MCReco_TrackEff_Num_pr;     //!<! jet histogram for MC Reconstructed Level Tracking Efficiency Numerator proton v pT, eta
+  TH2F             * fHist_Jet_MCReco_MatchEff_Num_pi;     //!<! jet histogram for MC Reconstructed Level TOF Matching Efficiency Numerator pion v pT, eta
+  TH2F             * fHist_Jet_MCReco_MatchEff_Num_ka;     //!<! jet histogram for MC Reconstructed Level TOF Matching Efficiency Numerator kaon v pT, eta
+  TH2F             * fHist_Jet_MCReco_MatchEff_Num_pr;     //!<! jet histogram for MC Reconstructed Level TOF Matching Efficiency Numerator proton v pT, eta
+
+  TH3F             * fHist_JetMatch_MCTruth_TrackEff_Den_pi;     //!<! jet match histogram for MC Truth Level Tracking Efficiency Denominator pion v pT
+  TH3F             * fHist_JetMatch_MCTruth_TrackEff_Den_ka;     //!<! jet match histogram for MC Truth Level Tracking Efficiency Denominator kaon v pT
+  TH3F             * fHist_JetMatch_MCTruth_TrackEff_Den_pr;     //!<! jet match histogram for MC Truth Level Tracking Efficiency Denominator proton v pT
+  TH3F             * fHist_JetMatch_MCReco_TrackEff_Num_pi;     //!<! jet match histogram for MC Reconstructed Level Tracking Efficiency Numerator pion v pT
+  TH3F             * fHist_JetMatch_MCReco_TrackEff_Num_ka;     //!<! jet match histogram for MC Reconstructed Level Tracking Efficiency Numerator kaon v pT
+  TH3F             * fHist_JetMatch_MCReco_TrackEff_Num_pr;     //!<! jet match histogram for MC Reconstructed Level Tracking Efficiency Numerator proton v pT
+  TH3F             * fHist_JetMatch_MCReco_MatchEff_Num_pi;     //!<! jet match histogram for MC Reconstructed Level TOF Matching Efficiency Numerator pion v pT
+  TH3F             * fHist_JetMatch_MCReco_MatchEff_Num_ka;     //!<! jet match histogram for MC Reconstructed Level TOF Matching Efficiency Numerator kaon v pT
+  TH3F             * fHist_JetMatch_MCReco_MatchEff_Num_pr;     //!<! jet match histogram for MC Reconstructed Level TOF Matching Efficiency Numerator proton v pT
+
+  TH2F             * fHistMCT_Jet_ptsub_v_area;     //!<! MC Truth histogram for before any cuts, jet pt after bg subtraction vs jet area
+  TH2F             * fHistMCR_Jet_ptsub_v_area;     //!<! MC Reco histogram for before any cuts, jet pt after bg subtraction vs jet area
+
+  TH2F             * fHistMC_Jet_shared_pt_frac;     //!<! fHistMC_Jet_shared_pt_frac
+  TH2F             * fHistMC_Jet_deltaR;     //!<! fHistMC_Jet_deltaR
+
+  AliFJWrapper* fFastJetWrapper;            //!<! signal data FJwrapper
+  AliFJWrapper* fFastJetWrapperBG;            //!<! background data FJwrapper
+  AliFJWrapper* fFastJetWrapper_Rec;            //!<! signal MC reco FJwrapper
+  AliFJWrapper* fFastJetWrapperBG_Rec;            //!<! background MC reco FJwrapper
+  AliFJWrapper* fFastJetWrapper_Gen;            //!<! signal MC gen FJwrapper
+  AliFJWrapper* fFastJetWrapperBG_Gen;            //!<! background MC gen FJwrapper
+
+  ClassDef(AliAnalysisTaskJetHadroAOD, 3);
 
 };
 

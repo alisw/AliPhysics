@@ -1,6 +1,7 @@
 // R__ADD_INCLUDE_PATH($PWD)
 #include "AliAnalysisTaskJetHadroAOD.h"
 #include "AliAnalysisManager.h"
+#include "AliMCEventHandler.h"
 #include "AliLog.h"
 #include "TSystem.h"
 #include "TROOT.h"
@@ -41,6 +42,10 @@ AliAnalysisTask *AddTaskJetHadroAOD(Bool_t getFromAlien=kTRUE, TString configFil
   // Switch off all AliInfo (too much output!!!)
   AliLog::SetGlobalLogLevel(AliLog::kError);
   mgr->SetDebugLevel(0);
+
+  AliMCEventHandler* handler = new AliMCEventHandler;
+  handler->SetReadTR(kFALSE);
+  mgr->SetMCtruthEventHandler(handler);
   //
   //==================================================
   //      Add task to the ANALYSIS manager
@@ -95,7 +100,7 @@ AliAnalysisTask *AddTaskJetHadroAOD(Bool_t getFromAlien=kTRUE, TString configFil
   #endif
 
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
-  task->SetIsMCtrue(hasMC);
+  //task->SetIsMCtrue(hasMC);
 //  task->SetUseCouts(kTRUE);
   printf(" ========================= MC info %d ========================= \n",hasMC);
   mgr->AddTask(task);
