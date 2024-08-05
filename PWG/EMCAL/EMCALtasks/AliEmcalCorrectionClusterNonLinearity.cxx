@@ -37,7 +37,8 @@ const std::map <std::string, AliEMCALRecoUtils::NonlinearityFunctions> AliEmcalC
     { "kPi0MCNS", AliEMCALRecoUtils::kPi0MCNS },
     { "kTestBeamShaper", AliEMCALRecoUtils::kTestBeamShaper },
     { "kTestBeamFinalMC", AliEMCALRecoUtils::kTestBeamFinalMC },
-    { "kTestBeamShaperWoScale", AliEMCALRecoUtils::kTestBeamShaperWoScale }
+    { "kTestBeamShaperWoScale", AliEMCALRecoUtils::kTestBeamShaperWoScale },
+    { "kNoCorrection", AliEMCALRecoUtils::kNoCorrection }
 };
 
 /**
@@ -141,6 +142,10 @@ Bool_t AliEmcalCorrectionClusterNonLinearity::Run()
           Double_t energy = fRecoUtils->CorrectClusterEnergyLinearity(clus);
           if ( fSetForceClusterE ) clus->SetE(energy);
           clus->SetNonLinCorrEnergy(energy);
+        } else {
+          // In case of no correction forward cluster energy to cluster non-lin corrected energy
+          // (for components that make use of the non-lin corr. energy like the hadronic correction)
+          clus->SetNonLinCorrEnergy(clus->E());
         }
       }
 
