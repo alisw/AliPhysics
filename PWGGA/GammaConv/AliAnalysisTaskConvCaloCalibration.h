@@ -224,6 +224,7 @@ protected:
   TH2F**                  fHistoV0ElectronDCA;                                //! array of histos with DCA to prim vertex for electron tracks from V0 electrons
   TH1F**                  fHistoV0ElectronPt;                                 //! array of histos with V0 electron momentum
   TH1F**                  fHistoTrueV0ElectronPt;                             //! array of histos with true V0 electron momentum
+  TH1F**                  fHistoV0Candidate;                                  //! array of histos with V0 momentum
 
   // additional variables
   Double_t                fEventPlaneAngle;                                   // EventPlaneAngle
@@ -271,7 +272,7 @@ private:
   AliAnalysisTaskConvCaloCalibration(const AliAnalysisTaskConvCaloCalibration&); // Prevent copy-construction
   AliAnalysisTaskConvCaloCalibration &operator=(const AliAnalysisTaskConvCaloCalibration&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskConvCaloCalibration, 11);
+  ClassDef(AliAnalysisTaskConvCaloCalibration, 12);
 };
 
 #endif // AliAnalysisTaskConvCaloCalibration_H
