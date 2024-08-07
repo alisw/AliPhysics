@@ -3,12 +3,13 @@
 
 // $Id$
 
-class TH2;
-class TF1;
-class AliParticleContainer;
-class AliClusterContainer;
-
 #include "AliAnalysisTaskEmcal.h"
+#include "TH2.h"
+#include "TF1.h"
+#include "AliEmcalJet.h"
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+#include "AliEmcalContainerIndexMap.h"
+#endif
 
 class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
  public:
@@ -19,11 +20,27 @@ class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
   void                   UserCreateOutputObjects();
 
   void                   SetScaleFunction(TF1* sf)  { fScaleFunction = sf   ; }
+
+  static AliAnalysisTaskScale* AddTaskScale(
+    const TString nTracks        = "Tracks",
+    const TString nClusters      = "CaloClustersCorr",
+    const Double_t trackptcut    = 0.150,
+    const Double_t clusptcut     = 0.150,
+    const TString taskname       = "Scale",
+    const char *sfuncPath        = 0,
+    const char *sfuncName        = 0
+  );
   
  protected:
   void                   ExecOnce();
   Double_t               GetScaleFactor(Double_t cent);
   Bool_t                 FillHistograms();
+
+#if !(defined(__CINT__) || defined(__MAKECINT__))
+  // Handle mapping between index and containers
+  AliEmcalContainerIndexMap <AliClusterContainer, AliVCluster> fClusterContainerIndexMap;    //!<! Mapping between index and cluster containers
+  AliEmcalContainerIndexMap <AliParticleContainer, AliVParticle> fParticleContainerIndexMap; //!<! Mapping between index and particle containers
+#endif
 
  private:
   TF1                   *fScaleFunction;                 // scale factor as a function of centrality
@@ -68,6 +85,7 @@ class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
   TH2                   *fHistScaleShift2EmcalvsCent;    //!output histogram
   TH2                   *fHistScaleShiftMeanEmcalvsCent; //!output histogram
   TH2                   *fHistScaleEmcalvsPhi;           //!output histogram
+  TH2                   *fHistPtEmcalvsPhi;              //!output histogram
   TH2                   *fHistPtvsPhi;                   //!output histogram
   TH2                   *fHistEtaPhiScaleEMCAL;          //!output histogram
   TH2                   *fHistEtaPhiScale2EMCAL;         //!output histogram
@@ -76,9 +94,6 @@ class AliAnalysisTaskScale : public AliAnalysisTaskEmcal {
   TH2                   *fHistEtaPhiScaleShift2Emcal;    //!output histogram
   TH2                   *fHistEtaPhiScaleShiftMeanEmcal; //!output histogram
   TH2                   *fHistEtaPhiScaleEmcalvsPhi;     //!output histogram
-
-  AliParticleContainer  *fTracksCont;                    //!Tracks
-  AliClusterContainer   *fCaloClustersCont;              //!Clusters 
 
   AliAnalysisTaskScale(const AliAnalysisTaskScale&); // not implemented
   AliAnalysisTaskScale& operator=(const AliAnalysisTaskScale&); // not implemented

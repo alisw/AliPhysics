@@ -3,6 +3,7 @@
 // Scale task.
 //
 // Author: R.Reed, M.Connors
+// Updates: A.Schmier(2024)
 
 #include "AliAnalysisTaskScale.h"
 
@@ -11,9 +12,19 @@
 #include <TH2F.h>
 #include <TLorentzVector.h>
 #include <TMath.h>
+#include <TObjArray.h>
+#include <TObjString.h>
+#include <TString.h>
+#include <TSystem.h>
+#include <TFile.h>
+
+#include <AliAnalysisManager.h>
+#include <AliVEventHandler.h>
+#include <AliMultiInputEventHandler.h>
 
 #include "AliEMCALGeometry.h"
 #include "AliLog.h"
+#include "AliVEvent.h"
 #include "AliVCluster.h"
 #include "AliVParticle.h"
 #include "AliVTrack.h"
@@ -23,50 +34,57 @@
 ClassImp(AliAnalysisTaskScale)
 
 //________________________________________________________________________
-AliAnalysisTaskScale::AliAnalysisTaskScale() : 
-  AliAnalysisTaskEmcal("AliAnalysisTaskScale", kTRUE), 
+AliAnalysisTaskScale::AliAnalysisTaskScale() :
+  AliAnalysisTaskEmcal("AliAnalysisTaskScale", kTRUE),
   fScaleFunction(0),
   fEmcalArea(1),
   fTpcArea(1),
-  fHistPtTPCvsCent(0), 
-  fHistPtEMCALvsCent(0), 
-  fHistEtvsCent(0),  
-  fHistScalevsCent(0),  
-  fHistDeltaScalevsCent(0), 
-  fHistScaleEmcalvsCent(0),      
+  fHistPtTPCvsCent(0),
+  fHistPtEMCALvsCent(0),
+  fHistEtvsCent(0),
+  fHistScalevsCent(0),
+  fHistDeltaScalevsCent(0),
+  fHistScaleEmcalvsCent(0),
   fHistScale2EmcalvsCent(0),
   fHistDeltaScale2EmcalvsCent(0),
   fHistScale3EmcalvsCent(0),
-  fHistDeltaScale3EmcalvsCent(0),     
-  fHistChScalevsCent(0),          
+  fHistDeltaScale3EmcalvsCent(0),
+  fHistChScalevsCent(0),
   fHistChScale2EmcalvsCent(0),
-  fHistChScale3EmcalvsCent(0),      
-  fHistPtTPCvsNtrack(0), 
-  fHistPtEMCALvsNtrack(0), 
-  fHistEtvsNtrack(0),  
-  fHistScalevsNtrack(0),  
+  fHistChScale3EmcalvsCent(0),
+  fHistPtTPCvsNtrack(0),
+  fHistPtEMCALvsNtrack(0),
+  fHistEtvsNtrack(0),
+  fHistScalevsNtrack(0),
   fHistDeltaScalevsNtrack(0),
-  fHistScaleEmcalvsNtrack(0),      
+  fHistScaleEmcalvsNtrack(0),
   fHistScale2EmcalvsNtrack(0),
-  fHistScale3EmcalvsNtrack(0),     
-  fHistChScalevsNtrack(0),          
+  fHistScale3EmcalvsNtrack(0),
+  fHistChScalevsNtrack(0),
   fHistChScale2EmcalvsNtrack(0),
-  fHistChScale3EmcalvsNtrack(0),   
-  fHistTrackPtvsCent(0), 
+  fHistChScale3EmcalvsNtrack(0),
+  fHistTrackPtvsCent(0),
   fHistClusterPtvsCent(0),
-  fHistTrackEtaPhi(0), 
+  fHistTrackEtaPhi(0),
   fHistClusterEtaPhi(0),
   fHistScalevsScale2Emcal(0),
-  fHistScalevsScale3Emcal(0),      
-  fHistScalevsScaleEmcal(0),       
+  fHistScalevsScale3Emcal(0),
+  fHistScalevsScaleEmcal(0),
   fHistScaleEmcalvsScale2Emcal(0),
   fHistScaleEmcalvsScale3Emcal(0),
   fHistScaleShift1EmcalvsCent(0),
   fHistScaleShift2EmcalvsCent(0),
   fHistScaleShiftMeanEmcalvsCent(0),
   fHistScaleEmcalvsPhi(0),
-  fTracksCont(0),
-  fCaloClustersCont(0)
+  fHistPtEmcalvsPhi(0),
+  fHistPtvsPhi(0),
+  fHistEtaPhiScaleEMCAL(0),
+  fHistEtaPhiScale2EMCAL(0),
+  fHistEtaPhiScale3EMCAL(0),
+  fHistEtaPhiScaleShift1Emcal(0),
+  fHistEtaPhiScaleShift2Emcal(0),
+  fHistEtaPhiScaleShiftMeanEmcal(0),
+  fHistEtaPhiScaleEmcalvsPhi(0)
 {
   // Default constructor.
 
@@ -75,49 +93,56 @@ AliAnalysisTaskScale::AliAnalysisTaskScale() :
 
 //________________________________________________________________________
 AliAnalysisTaskScale::AliAnalysisTaskScale(const char *name) :
-  AliAnalysisTaskEmcal(name, kTRUE), 
+  AliAnalysisTaskEmcal(name, kTRUE),
   fScaleFunction(0),
   fEmcalArea(1),
   fTpcArea(1),
-  fHistPtTPCvsCent(0), 
-  fHistPtEMCALvsCent(0), 
-  fHistEtvsCent(0),  
-  fHistScalevsCent(0),  
-  fHistDeltaScalevsCent(0), 
-  fHistScaleEmcalvsCent(0),      
+  fHistPtTPCvsCent(0),
+  fHistPtEMCALvsCent(0),
+  fHistEtvsCent(0),
+  fHistScalevsCent(0),
+  fHistDeltaScalevsCent(0),
+  fHistScaleEmcalvsCent(0),
   fHistScale2EmcalvsCent(0),
   fHistDeltaScale2EmcalvsCent(0),
   fHistScale3EmcalvsCent(0),
-  fHistDeltaScale3EmcalvsCent(0),  
-  fHistChScalevsCent(0),          
+  fHistDeltaScale3EmcalvsCent(0),
+  fHistChScalevsCent(0),
   fHistChScale2EmcalvsCent(0),
-  fHistChScale3EmcalvsCent(0),      
-  fHistPtTPCvsNtrack(0), 
-  fHistPtEMCALvsNtrack(0), 
-  fHistEtvsNtrack(0),  
-  fHistScalevsNtrack(0),  
+  fHistChScale3EmcalvsCent(0),
+  fHistPtTPCvsNtrack(0),
+  fHistPtEMCALvsNtrack(0),
+  fHistEtvsNtrack(0),
+  fHistScalevsNtrack(0),
   fHistDeltaScalevsNtrack(0),
-  fHistScaleEmcalvsNtrack(0),      
+  fHistScaleEmcalvsNtrack(0),
   fHistScale2EmcalvsNtrack(0),
-  fHistScale3EmcalvsNtrack(0),          
-  fHistChScalevsNtrack(0),          
+  fHistScale3EmcalvsNtrack(0),
+  fHistChScalevsNtrack(0),
   fHistChScale2EmcalvsNtrack(0),
-  fHistChScale3EmcalvsNtrack(0),      
-  fHistTrackPtvsCent(0), 
+  fHistChScale3EmcalvsNtrack(0),
+  fHistTrackPtvsCent(0),
   fHistClusterPtvsCent(0),
-  fHistTrackEtaPhi(0), 
+  fHistTrackEtaPhi(0),
   fHistClusterEtaPhi(0),
   fHistScalevsScale2Emcal(0),
-  fHistScalevsScale3Emcal(0),            
-  fHistScalevsScaleEmcal(0),       
+  fHistScalevsScale3Emcal(0),
+  fHistScalevsScaleEmcal(0),
   fHistScaleEmcalvsScale2Emcal(0),
   fHistScaleEmcalvsScale3Emcal(0),
   fHistScaleShift1EmcalvsCent(0),
   fHistScaleShift2EmcalvsCent(0),
   fHistScaleShiftMeanEmcalvsCent(0),
   fHistScaleEmcalvsPhi(0),
-  fTracksCont(0),
-  fCaloClustersCont(0)
+  fHistPtEmcalvsPhi(0),
+  fHistPtvsPhi(0),
+  fHistEtaPhiScaleEMCAL(0),
+  fHistEtaPhiScale2EMCAL(0),
+  fHistEtaPhiScale3EMCAL(0),
+  fHistEtaPhiScaleShift1Emcal(0),
+  fHistEtaPhiScaleShift2Emcal(0),
+  fHistEtaPhiScaleShiftMeanEmcal(0),
+  fHistEtaPhiScaleEmcalvsPhi(0)
 {
   // Constructor.
 
@@ -130,12 +155,6 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
   // Create my user objects.
 
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
-
-  //Get track and particle container
-  fTracksCont       = GetParticleContainer(0);
-  fCaloClustersCont = GetClusterContainer(0);
-  if(fTracksCont)       fTracksCont->SetClassName("AliVTrack");
-  if(fCaloClustersCont) fCaloClustersCont->SetClassName("AliVCluster");
 
   //Create histos
   fHistPtTPCvsCent = new TH2F("fHistPtTPCvsCent", "fHistPtTPCvsCent", 101, -1, 100, 750, 0, 1500);
@@ -360,7 +379,13 @@ void AliAnalysisTaskScale::UserCreateOutputObjects()
   fHistScaleEmcalvsPhi->GetZaxis()->SetTitle("counts");
   fOutput->Add(fHistScaleEmcalvsPhi);
 
-  fHistPtvsPhi = new TH2F("fHistPtvsPhi", "fHistPtvsPhi", 1000, 0, 1000, 101, 0, 2.02*TMath::Pi());
+  fHistPtEmcalvsPhi = new TH2F("fHistPtEmcalvsPhi", "fHistPtEmcalvsPhi", 8, 0, 2*TMath::Pi(), 10000, 0, 1000);
+  fHistPtEmcalvsPhi->GetXaxis()->SetTitle("#phi");
+  fHistPtEmcalvsPhi->GetYaxis()->SetTitle("#Sigma p_{T,track} GeV/c");
+  fHistPtEmcalvsPhi->GetZaxis()->SetTitle("counts");
+  fOutput->Add(fHistPtEmcalvsPhi);
+
+  fHistPtvsPhi = new TH2F("fHistPtvsPhi", "fHistPtvsPhi", 2000, 0, 200, 101, 0, 2.02*TMath::Pi());
   fHistPtvsPhi->GetXaxis()->SetTitle("p_{T,track} GeV/c");
   fHistPtvsPhi->GetYaxis()->SetTitle("#phi");
   fHistPtvsPhi->GetZaxis()->SetTitle("counts");
@@ -426,6 +451,10 @@ Double_t AliAnalysisTaskScale::GetScaleFactor(Double_t cent)
 Bool_t AliAnalysisTaskScale::FillHistograms() 
 {
   // Execute on each event.
+  if (fParticleCollArray.GetEntriesFast() == 0 && fClusterCollArray.GetEntriesFast() == 0){
+    AliError("No tracks or clusters, returning.");
+    return 0;
+  }
 
   const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
   const Double_t EmcalMaxEta = fGeom->GetArm1EtaMax();
@@ -449,11 +478,15 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
   Double_t ptEMCALshiftMean = 0;
   Double_t ptEMCALsections[8] = {0,0,0,0,0,0,0,0};
 
-  const Int_t Ntracks = fTracksCont->GetNAcceptedParticles();
-  if (fTracksCont) {
-    fTracksCont->ResetCurrentID();
+  TIter nextPartColl(&fParticleCollArray);
+  AliParticleContainer* tracks = 0;
+  Int_t Ntracks;
+  while ((tracks = static_cast<AliParticleContainer*>(nextPartColl()))) {
+    tracks->ResetCurrentID();  
     AliVTrack *track = NULL;
-    while((track = static_cast<AliVTrack*>(fTracksCont->GetNextAcceptParticle()))) {
+    Ntracks = tracks->GetNAcceptedParticles();
+    while((track = static_cast<AliVTrack*>(tracks->GetNextAcceptParticle()))) {
+      if(!track) continue;
       if(track->Eta() < EmcalMinEta || track->Eta() > EmcalMaxEta) continue;
       fHistTrackPtvsCent->Fill(fCent,track->Pt());
       fHistTrackEtaPhi->Fill(track->Eta(),track->Phi());
@@ -487,21 +520,9 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
         double maxPhi = (a+1)*TMath::PiOver4();
         double minPhi = a*TMath::PiOver4();
 
-        if(maxPhi > 2*TMath::Pi()) maxPhi -= 2*TMath::Pi();
-        if(maxPhi < 0) maxPhi += 2*TMath::Pi();
-        if(minPhi > 2*TMath::Pi()) minPhi -= 2*TMath::Pi();
-        if(minPhi < 0) minPhi += 2*TMath::Pi();
-
-        if(maxPhi < minPhi){
-          if((track->Phi() < maxPhi || track->Phi() > minPhi)){
-            ptEMCALsections[a] += track->Pt();
-            fHistEtaPhiScaleEmcalvsPhi->Fill(track->Eta(),track->Phi());
-          }
-        }else{
           if(track->Phi() < maxPhi && track->Phi() > minPhi){
             ptEMCALsections[a] += track->Pt();
             fHistEtaPhiScaleEmcalvsPhi->Fill(track->Eta(),track->Phi());
-          }
         }
       }
 
@@ -556,13 +577,16 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
   if (ptTPC == 0) 
     return kFALSE;
 
-  Double_t Et = 0;  
-  if (fCaloClustersCont) {
-    fCaloClustersCont->ResetCurrentID();
-    AliVCluster *c = NULL;
-    while((c = fCaloClustersCont->GetNextAcceptCluster())) {
+  Double_t Et = 0;
+  TIter nextClusColl(&fClusterCollArray);
+  AliClusterContainer* clusters = 0;
+  while ((clusters = static_cast<AliClusterContainer*>(nextClusColl()))) {
+    clusters->ResetCurrentID();  
+    AliVCluster *cluster = NULL;
+    while((cluster = static_cast<AliVCluster*>(clusters->GetNextAcceptCluster()))) {
+      if(!cluster) continue;
       TLorentzVector nPart;
-      c->GetMomentum(nPart, fVertex);
+      cluster->GetMomentum(nPart, fVertex);
 
       fHistClusterPtvsCent->Fill(fCent, nPart.Pt());
       fHistClusterEtaPhi->Fill(nPart.Eta(), nPart.Phi());
@@ -613,6 +637,7 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
     if (ptEMCALsections[a] > 0 && Et > 0 && ptEMCAL > 0){
       scalecalcemcalsections[a] = ((Et+ptEMCAL)/ptEMCALsections[a])*(TMath::PiOver4()/(EmcalMaxPhi-EmcalMinPhi));
       fHistScaleEmcalvsPhi->Fill(a*TMath::PiOver4(),scalecalcemcalsections[a]);
+      fHistPtEmcalvsPhi->Fill(a*TMath::PiOver4(),ptEMCALsections[a]);
     }
   }
 
@@ -658,6 +683,19 @@ Bool_t AliAnalysisTaskScale::FillHistograms()
 //________________________________________________________________________
 void AliAnalysisTaskScale::ExecOnce() 
 {
+  Float_t TpcMaxPhi = 0;
+  Float_t TpcMinPhi = 0;
+  if(auto partcont = GetParticleContainer(0)) {
+    TpcMaxPhi = partcont->GetParticlePhiMax();
+    TpcMinPhi = partcont->GetParticlePhiMin();
+  } else {
+    ::Error("AliAnalysisTaskScale", "No particle container found for scaling task!");
+  }
+  if(auto clustcont = GetClusterContainer(0)){
+  } else {
+    ::Error("AliAnalysisTaskScale", "No cluster container found for scaling task!");
+  }
+
   AliAnalysisTaskEmcal::ExecOnce();
 
   const Double_t EmcalMinEta = fGeom->GetArm1EtaMin();
@@ -672,22 +710,169 @@ void AliAnalysisTaskScale::ExecOnce()
   }
 
   fEmcalArea  = (EmcalMaxPhi - EmcalMinPhi) * (EmcalMinEta - EmcalMaxEta);
-
-  AliParticleContainer *partCont = GetParticleContainer(0);
-  if (!partCont) {
-    AliError(Form("%s: No particle container found! Assuming tpc area = 1...",GetName()));
-    fTpcArea = 1;
-    return;
-  }
-
-  Float_t TpcMaxPhi = partCont->GetParticlePhiMax();
-  Float_t TpcMinPhi = partCont->GetParticlePhiMin();
   
   if (TpcMaxPhi > TMath::Pi()*2) TpcMaxPhi = TMath::Pi()*2;
   if (TpcMinPhi < 0) TpcMinPhi = 0;
 
   fTpcArea = (TpcMaxPhi - TpcMinPhi) * (EmcalMinEta - EmcalMaxEta);
 
-  if (fTracksCont && fTracksCont->GetArray() == 0) fTracksCont = 0;
-  if (fCaloClustersCont && fCaloClustersCont->GetArray() == 0) fCaloClustersCont = 0;
+  //if (fTracksCont && fTracksCont->GetArray() == 0) fTracksCont = 0;
+  //if (fCaloClustersCont && fCaloClustersCont->GetArray() == 0) fCaloClustersCont = 0;
+
+  // Setup container utils. Must be called after AliAnalysisTaskEmcal::ExecOnce() so that the
+  // containers' arrays are setup.
+  fClusterContainerIndexMap.CopyMappingFrom(AliClusterContainer::GetEmcalContainerIndexMap(), fClusterCollArray);
+  fParticleContainerIndexMap.CopyMappingFrom(AliParticleContainer::GetEmcalContainerIndexMap(), fParticleCollArray);
+}
+
+//________________________________________________________________________
+AliAnalysisTaskScale* AliAnalysisTaskScale::AddTaskScale(
+  const TString nTracks,
+  const TString nClusters,
+  const Double_t trackptcut,
+  const Double_t clusptcut,
+  const TString taskname,
+  const char *sfuncPath,
+  const char *sfuncName
+)
+{  
+  // Get the pointer to the existing analysis manager via the static access method.
+  //==============================================================================
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr)
+  {
+    ::Error("AddTaskScale", "No analysis manager to connect to.");
+    return 0;
+  }  
+  
+  // Check the analysis type using the event handlers connected to the analysis manager.
+  //==============================================================================
+  AliVEventHandler* handler = mgr->GetInputEventHandler();
+  if (!handler)
+  {
+    ::Error("AddTaskScale", "This task requires an input event handler");
+    return 0;
+  }
+
+  enum EDataType_t {
+    kUnknown,
+    kESD,
+    kAOD,
+    kMCgen
+  };
+
+  TString trackName(nTracks);
+  TString clusName(nClusters);
+
+  EDataType_t dataType = kUnknown;
+  if (handler->InheritsFrom("AliESDInputHandler")) {
+    dataType = kESD;
+  }
+  else if (handler->InheritsFrom("AliAODInputHandler")) {
+    dataType = kAOD;
+  } else if (handler->InheritsFrom("AliMCGenHandler")) {
+    dataType = kMCgen;
+  }
+  
+  //-------------------------------------------------------
+  // Init the task and do settings
+  //-------------------------------------------------------
+
+  if (trackName == "usedefault") {
+    if (dataType == kESD) {
+      trackName = "Tracks";
+    }
+    else if (dataType == kAOD) {
+      trackName = "tracks";
+    }
+    else if (dataType == kMCgen) {
+      trackName = "mcparticles";
+    }
+  }
+
+  if (clusName == "usedefault") {
+    if (dataType == kESD) {
+      clusName = "CaloClusters";
+    }
+    else if (dataType == kAOD) {
+      clusName = "caloClusters";
+    }
+    else {
+      clusName = "";
+    }
+  }
+
+  AliParticleContainer* partCont = 0;
+  if (trackName.Contains("mcparticles")) {  // must be contains in order to allow for non-standard particle containers
+    AliMCParticleContainer* mcpartCont = new AliMCParticleContainer(trackName);
+    partCont = mcpartCont;
+  }
+  else if (trackName == "tracks" || trackName == "Tracks") {
+    AliTrackContainer* trackCont = new AliTrackContainer(trackName);
+    partCont = trackCont;
+  }
+  else if (!trackName.IsNull()) {
+    partCont = new AliParticleContainer(trackName);
+  }
+  if (partCont) partCont->SetParticlePtCut(trackptcut);
+
+  AliClusterContainer* clusCont = 0;
+  if (!clusName.IsNull()) {
+    clusCont = new AliClusterContainer(clusName);
+    clusCont->SetClusECut(0.);
+    clusCont->SetClusPtCut(0.);
+    clusCont->SetClusHadCorrEnergyCut(clusptcut);
+    clusCont->SetDefaultClusterEnergy(AliVCluster::kHadCorr);
+  }
+
+  TString fullTaskName(Form("%s_%s_%s_%d_%d", taskname.Data(), trackName.Data(), clusName.Data(), TMath::FloorNint(trackptcut*1000), TMath::FloorNint(clusptcut*1000)));
+
+  AliAnalysisTaskScale *mgrTask = static_cast<AliAnalysisTaskScale*>(mgr->GetTask(fullTaskName.Data()));
+  if(mgrTask) return mgrTask;
+
+  AliAnalysisTaskScale *scaletask = new AliAnalysisTaskScale(fullTaskName);
+  if(partCont) scaletask->AdoptParticleContainer(partCont);
+  if(clusCont) scaletask->AdoptClusterContainer(clusCont);
+
+  if (sfuncPath != 0 && sfuncName != 0) {
+    TFile *file = TFile::Open(sfuncPath);
+    if (file && !file->IsZombie()) {
+      TF1* sfunc = dynamic_cast<TF1*>(file->Get(sfuncName));
+
+      if (sfunc) {
+        scaletask->SetScaleFunction(sfunc);
+        ::Info("AddTaskScale", Form("Scale function %s loaded from file %s.", sfuncName, sfuncPath));
+      }
+      else {
+        ::Error("AddTaskScale", Form("Scale function %s not found in file %s.", sfuncName, sfuncPath));
+      }
+      
+      file->Close();
+      delete file;
+      file = 0;
+    }
+    else {
+      ::Warning("AddTaskScale", "Could not open scale function file");
+    }
+  }
+
+  //-------------------------------------------------------
+  // Final settings, pass to manager and set the containers
+  //-------------------------------------------------------
+
+  mgr->AddTask(scaletask);
+
+  // Create containers for input/output
+  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
+  mgr->ConnectInput(scaletask, 0, cinput);
+
+  TString contname(fullTaskName);
+  contname += "_Histos";
+  AliAnalysisDataContainer *coscale = mgr->CreateContainer(contname,
+                                                           TList::Class(),
+                                                           AliAnalysisManager::kOutputContainer,
+                                                           Form("%s", AliAnalysisManager::GetCommonFileName()));
+  mgr->ConnectOutput(scaletask,1,coscale);
+
+  return scaletask;
 }
