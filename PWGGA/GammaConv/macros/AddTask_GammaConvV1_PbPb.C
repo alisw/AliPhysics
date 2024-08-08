@@ -4366,18 +4366,10 @@ void AddTask_GammaConvV1_PbPb(
         fitNameEtaPT = Form("Eta_Data_5TeV_%s", eventCutShort.Data());
       }
       analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(
-          HeaderList->FindObject("Injector (pi0)") 
-            ? intPtWeightsCalculationMethod /*pi0reweight*/
-            : 0,
-          HeaderList->FindObject("Injector (eta)") 
-            ? intPtWeightsCalculationMethod /*etareweight*/
-            : 0,
-          HeaderList->FindObject("Injector (K0s)") 
-            ? intPtWeightsCalculationMethod /*k0sreweight*/
-            : 0,
-          fileNamePtWeights,
-          histoNameMCPi0PT, histoNameMCEtaPT, histoNameMCK0sPT,
-          fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);
+        intPtWeightsCalculationMethod, intPtWeightsCalculationMethod, intPtWeightsCalculationMethod, 
+        fileNamePtWeights, 
+        histoNameMCPi0PT, histoNameMCEtaPT, histoNameMCK0sPT, 
+        fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);
       analysisEventCuts[i]->SetUseGetWeightForMesonNew(theUseGetMesonWeightNew);    
     }
 
