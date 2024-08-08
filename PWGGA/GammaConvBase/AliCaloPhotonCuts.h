@@ -23,6 +23,7 @@
 #include "AliAnalysisManager.h"
 #include "AliCaloTrackMatcher.h"
 #include "AliPhotonIsolation.h"
+#include "AliGammaConvEventMixing.h"
 #include <vector>
 
 class AliESDEvent;
@@ -492,6 +493,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     AliEMCALGeometry* GetGeomEMCAL(){return fGeomEMCAL;}
     AliPHOSGeometry*  GetGeomPHOS() {return fGeomPHOS;}
 
+
   protected:
     TList      *fHistograms;
     TList      *fHistExtQA;
@@ -783,6 +785,11 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistElectronPositronClusterMatchVsEta;           // track momentum for matched electron and positron tracks vs. eta of cluster
     TH1F*     fHistElectronPositronClusterMatchDoubleCount;     // track momentum for matched electron and positron tracks if matched to multiple clusters
     TH2F*     fHistElectronClusterMatchM02;                     // track momentum for matched electron and positron tracks vs M02 of matched cluster
+    TH1F*     fHistElectronPositronOnEMCCellMixing;             // Electron/Positron P for all tracks in EMCal acceptance and that hit a good cell
+    TH1F*     fHistElectronPositronOnEMCCellMatchedMixing;      // Electron/Positron P for all tracks in EMCal acceptance and that hit a good cell and matched to a cluster
+    TH2F*     fHistElectronPositronClusterMatchEoverPMixing;    // Electron/Positron P for all tracks in EMCal acceptance and that hit a good cell and matched to a cluster vs E/p
+    std::vector<ElectronMixing> vecElectronMixing;              //! vector holding information on electron tracks for electron mixing 
+
 
     // histogram for conv candidate rejection
     TH2F*     fHistInvMassDiCluster;                    // histogram for monitoring di-cluster mass
@@ -794,7 +801,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,142)
+    ClassDef(AliCaloPhotonCuts,143)
 };
 
 #endif

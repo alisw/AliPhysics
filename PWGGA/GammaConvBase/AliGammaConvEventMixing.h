@@ -164,4 +164,17 @@ class EventMixPoolMesonJets
 
 };
 
+struct ElectronMixing{
+  ElectronMixing(double eta, double phi, double p, double pt, short ch) : etaCalo(eta), phiCalo(phi), momOnCalo(p), pT(pt), charge(ch)
+  {
+  
+  }
+  ElectronMixing() : etaCalo(0.), phiCalo(0.), momOnCalo(0.), pT(0.), charge(0)
+  {
+
+  }
+  double etaCalo, phiCalo, momOnCalo, pT;
+  short charge;
+};
+
 #endif
