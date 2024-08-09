@@ -770,20 +770,19 @@ void AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5::UserExec(Option_t *)  {
 	  {
 	    if(TMath::Abs(trkCharge) > 0)
 	      {
-		if(trkCharge < 0)
-		  {
-		    ptBinNo = fHistMCEffHadronMinus->FindBin(trkPt);
-		    BinCont = fHistMCEffHadronMinus->GetBinContent(ptBinNo);
-		    //cout<<"Eff: "<<BinCont<<endl;
-		  }
-		if(trkCharge > 0)
-		  {
-		    ptBinNo = fHistMCEffHadronPlus->FindBin(trkPt);
-		    BinCont = fHistMCEffHadronPlus->GetBinContent(ptBinNo);
-		  }
-		
 		if(trkEta < fEtaLeftCut)
 		  {
+		    if(trkCharge < 0)
+		      {
+			ptBinNo = fHistMCEffHadronMinus->FindBin(trkPt);
+			BinCont = fHistMCEffHadronMinus->GetBinContent(ptBinNo);
+			//cout<<"Eff: "<<BinCont<<endl;
+		      }
+		    if(trkCharge > 0)
+		      {
+			ptBinNo = fHistMCEffHadronPlus->FindBin(trkPt);
+			BinCont = fHistMCEffHadronPlus->GetBinContent(ptBinNo);
+		      }		
 		    if(BinCont != 0)
 		      {
 			fPt_profile->Fill(trkPt,1.0/BinCont);
@@ -794,6 +793,17 @@ void AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5::UserExec(Option_t *)  {
 	    
 		if(trkEta > fEtaMin)
 		  {
+		    if(trkCharge < 0)
+		      {
+			ptBinNo = fHistMCEffHadronMinus->FindBin(trkPt);
+			BinCont = fHistMCEffHadronMinus->GetBinContent(ptBinNo);
+			//cout<<"Eff: "<<BinCont<<endl;
+		      }
+		    if(trkCharge > 0)
+		      {
+			ptBinNo = fHistMCEffHadronPlus->FindBin(trkPt);
+			BinCont = fHistMCEffHadronPlus->GetBinContent(ptBinNo);
+		      }
 		    if(BinCont != 0)
 		      {
 			pT_sum_etaGreaterEtamin += trkPt/BinCont;

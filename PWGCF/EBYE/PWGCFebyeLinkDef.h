@@ -130,13 +130,10 @@
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD+;
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2+;
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_trackinfo+;
-#pragma link C++ class AliAnalysisTaskCorrPP+;
 #pragma link C++ class AliAnalysisTaskCorrPbPb+;
 #pragma link C++ class AliAnalysisTaskCorrPbPb_withoutTree+;
 #pragma link C++ class AliAnalysisTaskCorrPbPb_treemerge+;
-#pragma link C++ class AliAnalysisTaskCorrPPHM+;
 #pragma link C++ class AliAnalysisTaskCorrPbPbMC+;
-#pragma link C++ class AliAnalysisTaskCorrPPMC+;
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicityROOT6_new+;
 
 #pragma link C++ class AliAnalysisTaskDiffPtFluc_PIDhadrons+;
@@ -154,6 +151,8 @@
 #pragma link C++ class AliAnalysisTaskMeanptFluctMC_effcheck+;
 #pragma link C++ class AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect+;
 #pragma link C++ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5+;
+#pragma link C++ class AliAnalysisTaskNetProtonCumulants_pp+;
+#pragma link C++ class AliAnalysisTaskEffCalc_MC+;
 
 #pragma link C++ class AliAnalysisTaskNFactorialMoments+;
 #pragma link C++ class AliAnalysisTaskNFactorialMomentsPID+;
