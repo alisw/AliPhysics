@@ -152,6 +152,7 @@
 #pragma link C++ class AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect+;
 #pragma link C++ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5+;
 #pragma link C++ class AliAnalysisTaskNetProtonCumulants_pp+;
+#pragma link C++ class AliAnalysisTaskEffCalc_MC+;
 
 #pragma link C++ class AliAnalysisTaskNFactorialMoments+;
 #pragma link C++ class AliAnalysisTaskNFactorialMomentsPID+;
