@@ -25,6 +25,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/ML
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools/yaml-cpp/include
                     ${AliPhysics_SOURCE_DIR}/PWGHF/hfe
@@ -57,6 +58,7 @@ set(SRCS
     AliDxHFECorrelationMC.cxx
     AliAnalysisTaskDxHFEParticleSelection.cxx
     AliAnalysisTaskDxHFECorrelation.cxx
+    AliAnalysisTaskHadronElectronAnalysis.cxx
     AliHFAssociatedTrackCuts.cxx
     AliHFCorrelator.cxx
     AliHFOfflineCorrelator.cxx
