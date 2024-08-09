@@ -46,7 +46,7 @@ using std::endl;
 
 ClassImp(AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2)
 
-AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2(): AliAnalysisTaskSE(), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fPtsum_hadrons_less0(0), fPtsum_hadrons_greaterEtaMin(0), fNsum_hadrons_less0(0), fNsum_hadrons_greaterEtaMin(0), fNsum_pions_less0(0), fNsum_kaons_less0(0), fNsum_protons_less0(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0), fMCchoice(0), fNpart_1(0), fNpart_2(0), fEtaLeftCut(0), fEtaRightCut(0)
+AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2(): AliAnalysisTaskSE(), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fPtsum_hadrons_less0(0), fPtsum_hadrons_greaterEtaMin(0), fNsum_hadrons_less0(0), fNsum_hadrons_greaterEtaMin(0), fNsum_pions_less0(0), fNsum_kaons_less0(0), fNsum_protons_less0(0), fNsum_K0s_less0(0), fNsum_lambdas_less0(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0), fMCchoice(0), fNpart_1(0), fNpart_2(0), fEtaLeftCut(0), fEtaRightCut(0)
 {
   for(int i=0; i<20; i++)
     {
@@ -54,10 +54,12 @@ AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::AliAnalysisTaskDiffPtFluc_MCnoESD_gen_
       fPt_no_pion[i] = 0;
       fPt_no_kaon[i] = 0;
       fPt_no_proton[i] = 0;
+      fPt_no_K0s[i] = 0;
+      fPt_no_lambda[i] = 0;
     }
 }
 
-AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2(const char *name): AliAnalysisTaskSE(name), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fPtsum_hadrons_less0(0), fPtsum_hadrons_greaterEtaMin(0), fNsum_hadrons_less0(0), fNsum_hadrons_greaterEtaMin(0), fNsum_pions_less0(0), fNsum_kaons_less0(0), fNsum_protons_less0(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0), fMCchoice(0), fNpart_1(0), fNpart_2(0), fEtaLeftCut(0), fEtaRightCut(0)
+AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2(const char *name): AliAnalysisTaskSE(name), fTreeEvent(0), fListHist(0), fPIDResponse(0), fESDtrackCuts(0), fEventCuts(0), fTreeVariableCentrality(0), fPtsum_hadrons_less0(0), fPtsum_hadrons_greaterEtaMin(0), fNsum_hadrons_less0(0), fNsum_hadrons_greaterEtaMin(0), fNsum_pions_less0(0), fNsum_kaons_less0(0), fNsum_protons_less0(0), fNsum_K0s_less0(0), fNsum_lambdas_less0(0), hist2D_pt_gen_centrality(0), hist2D_pt_rec_centrality(0), hist_centrality_beforecut(0), fNch_eta0pt5(0), fMCchoice(0), fNpart_1(0), fNpart_2(0), fEtaLeftCut(0), fEtaRightCut(0)
 {
   for(int i=0; i<20; i++)
     {
@@ -65,6 +67,8 @@ AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::AliAnalysisTaskDiffPtFluc_MCnoESD_gen_
       fPt_no_pion[i] = 0;
       fPt_no_kaon[i] = 0;
       fPt_no_proton[i] = 0;
+      fPt_no_K0s[i] = 0;
+      fPt_no_lambda[i] = 0;
     }
   DefineOutput(1, TTree::Class());
   DefineOutput(2, TList::Class());
@@ -105,11 +109,14 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::UserCreateOutputObjects()
   fTreeEvent->Branch("fNsum_pions_less0",&fNsum_pions_less0,"fNsum_pions_less0/F");
   fTreeEvent->Branch("fNsum_kaons_less0",&fNsum_kaons_less0,"fNsum_kaons_less0/F");
   fTreeEvent->Branch("fNsum_protons_less0",&fNsum_protons_less0,"fNsum_protons_less0/F");
+  fTreeEvent->Branch("fNsum_K0s_less0",&fNsum_K0s_less0,"fNsum_K0s_less0/F");
+  fTreeEvent->Branch("fNsum_lambdas_less0",&fNsum_lambdas_less0,"fNsum_lambdas_less0/F");
   fTreeEvent->Branch("fPt_no_hadron",&fPt_no_hadron,"fPt_no_hadron[20]/F");
   fTreeEvent->Branch("fPt_no_pion",&fPt_no_pion,"fPt_no_pion[20]/F");
   fTreeEvent->Branch("fPt_no_kaon",&fPt_no_kaon,"fPt_no_kaon[20]/F");
   fTreeEvent->Branch("fPt_no_proton",&fPt_no_proton,"fPt_no_proton[20]/F");
-
+  fTreeEvent->Branch("fPt_no_K0s",&fPt_no_K0s,"fPt_no_K0s[20]/F");
+  fTreeEvent->Branch("fPt_no_lambda",&fPt_no_lambda,"fPt_no_lambda[20]/F");
 
   PostData(1, fTreeEvent);
   
@@ -272,9 +279,13 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::UserExec(Option_t *)
   TH1D *fPt_profile_pion = new TH1D("fPt_profile_pion","fPt_profile_pion", 20, binsarray);
   TH1D *fPt_profile_kaon = new TH1D("fPt_profile_kaon","fPt_profile_kaon", 20, binsarray);
   TH1D *fPt_profile_proton = new TH1D("fPt_profile_proton","fPt_profile_proton", 20, binsarray);
+  TH1D *fPt_profile_K0s = new TH1D("fPt_profile_K0s","fPt_profile_K0s", 20, binsarray);
+  TH1D *fPt_profile_lambda = new TH1D("fPt_profile_lambda","fPt_profile_lambda", 20, binsarray);
   Double_t N_sumPion_etaLess0 = 0.0;
   Double_t N_sumKaon_etaLess0 = 0.0;
-  Double_t N_sumProton_etaLess0 = 0.0; 
+  Double_t N_sumProton_etaLess0 = 0.0;
+  Double_t N_sumK0s_etaLess0 = 0.0;
+  Double_t N_sumLambda_etaLess0 = 0.0;  
 
   for (Int_t iTrack = 0; iTrack < lMCevent->GetNumberOfTracks(); iTrack++)
     {
@@ -292,7 +303,7 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::UserExec(Option_t *)
       trkPdgcode=trackMCgen->PdgCode();
 
       if(TMath::Abs(trkEta)>0.8)continue;
-      if(TMath::Abs(trkCharge)!=1)continue;
+      //if(TMath::Abs(trkCharge)!=1)continue;
       if(trkPt<0.2)continue;
       if(trkPt>10.0)continue;
 
@@ -321,7 +332,6 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::UserExec(Option_t *)
 		  fPt_profile_proton->Fill(trkPt);
 		  N_sumProton_etaLess0 += 1.0;
 		}
-
 	    }
 	    
 	  if(trkEta > fEtaRightCut)
@@ -331,6 +341,20 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::UserExec(Option_t *)
 	    }
 	}
 
+      if(trkEta < fEtaLeftCut)
+	{
+	  if(TMath::Abs(trkPdgcode)==310)
+	    {
+	      fPt_profile_K0s->Fill(trkPt);
+	      N_sumK0s_etaLess0 += 1.0;
+	    }
+	  if(TMath::Abs(trkPdgcode)==3122)
+	    {
+	      fPt_profile_lambda->Fill(trkPt);
+	      N_sumLambda_etaLess0 += 1.0;
+	    }
+	}
+      
    }//end track loop
 
   //$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -355,13 +379,17 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::UserExec(Option_t *)
   hist_centrality_beforecut->Fill(fCentImpBin);   
  
   fTreeVariableCentrality=fCentImpBin;
+  
   fPtsum_hadrons_less0=pT_sum_etaLess0;
   fPtsum_hadrons_greaterEtaMin=pT_sum_etaGreaterEtamin;
   fNsum_hadrons_less0=N_sum_etaLess0;
   fNsum_hadrons_greaterEtaMin=N_sum_etaGreaterEtamin;
+  
   fNsum_pions_less0=N_sumPion_etaLess0;
   fNsum_kaons_less0=N_sumKaon_etaLess0;
   fNsum_protons_less0=N_sumProton_etaLess0;
+  fNsum_K0s_less0=N_sumK0s_etaLess0;
+  fNsum_lambdas_less0=N_sumLambda_etaLess0;
   
   for(int i=0; i<20; i++)
     {
@@ -369,6 +397,8 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::UserExec(Option_t *)
       fPt_no_pion[i]=fPt_profile_pion->GetBinContent(i+1);
       fPt_no_kaon[i]=fPt_profile_kaon->GetBinContent(i+1);
       fPt_no_proton[i]=fPt_profile_proton->GetBinContent(i+1);
+      fPt_no_K0s[i]=fPt_profile_K0s->GetBinContent(i+1);
+      fPt_no_lambda[i]=fPt_profile_lambda->GetBinContent(i+1);
     }
   fTreeEvent->Fill();
     
@@ -377,6 +407,8 @@ void AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2::UserExec(Option_t *)
   fPt_profile_pion->Delete();
   fPt_profile_kaon->Delete();
   fPt_profile_proton->Delete();
+  fPt_profile_K0s->Delete();
+  fPt_profile_lambda->Delete();
   
   PostData(1,fTreeEvent);
 

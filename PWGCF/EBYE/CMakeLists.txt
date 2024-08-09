@@ -141,17 +141,15 @@ set(SRCS
   HMPTF/AliAnalysisTaskResonanceVsMultiplicity_MCnoESD.cxx
   HMPTF/AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2.cxx
   HMPTF/AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_trackinfo.cxx
-  HMPTF/AliAnalysisTaskCorrPP.cxx
   HMPTF/AliAnalysisTaskCorrPbPb.cxx
   HMPTF/AliAnalysisTaskCorrPbPb_withoutTree.cxx
   HMPTF/AliAnalysisTaskCorrPbPb_treemerge.cxx
-  HMPTF/AliAnalysisTaskCorrPPHM.cxx
-  HMPTF/AliAnalysisTaskCorrPbPbMC.cxx
-  HMPTF/AliAnalysisTaskCorrPPMC.cxx
+  HMPTF/AliAnalysisTaskCorrPbPbMC.cx
   HMPTF/AliAnalysisTaskResonanceVsMultiplicityROOT6_new.cxx
   HMPTF/AliAnalysisTaskNetPiKProtFluc_MCnoESD_gen.cxx
   HMPTF/AliAnalysisTaskMeanptFluctMC.cxx
   HMPTF/AliAnalysisTaskMeanptFluctMC_effcheck.cxx
+  HMPTF/AliAnalysisTaskNetProtonCumulants_pp.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons_v2.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5.cxx
