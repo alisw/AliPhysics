@@ -88,10 +88,10 @@ class AliAnalysisTaskDiffPtFluc_MCnoESD_gen_v2 : public AliAnalysisTaskSE {
   Float_t fNsum_pions_less0;
   Float_t fNsum_kaons_less0;
   Float_t fNsum_protons_less0;
-  Float_t fPt_no_hadron[14];
-  Float_t fPt_no_pion[14];
-  Float_t fPt_no_kaon[14];
-  Float_t fPt_no_proton[14];
+  Float_t fPt_no_hadron[20];
+  Float_t fPt_no_pion[20];
+  Float_t fPt_no_kaon[20];
+  Float_t fPt_no_proton[20];
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   
   
