@@ -2048,6 +2048,9 @@ AliEmcalJet* AliAnalysisTaskIDFragmentationFunction::GetPerpendicularCone(AliEmc
   
   AliEmcalJet* perpJet = new AliEmcalJet(processedJet->Pt(), processedJet->Eta(), processedJet->Phi() + perpAngle, processedJet->M());
   
+  if (OverlapsWithAnyRecJet(perpJet, TMath::Abs(GetFFRadius())))
+    return 0x0;
+  
   if (GetUseRealJetArea())
     perpJet->SetArea(processedJet->Area());
   
@@ -2055,7 +2058,7 @@ AliEmcalJet* AliAnalysisTaskIDFragmentationFunction::GetPerpendicularCone(AliEmc
 }
 
 Bool_t AliAnalysisTaskIDFragmentationFunction::OverlapsWithAnyRecJet(const AliVParticle* part, Double_t dDistance) const {
-  
+  // part can also represent a jet cone
   if(!part) return kFALSE;
   
   AliJetContainer* jetContainer = GetJetContainer(GetNameJetContainer());
@@ -2071,11 +2074,11 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::OverlapsWithAnyRecJet(const AliVP
       AliWarningStream() << "AliAnalysisTaskIDFragmentationFunction::OverlapsWithAnyRecJet jet pointer invalid!" << std::endl;
       continue;
     }
-    if (jet->Pt() > fRCMinJetPtForAvoiding && IsParticleInCone(jet, part, dDistance) == kTRUE) 
-      return kTRUE;                           // Random Cone and Jet Cone are overlapping
+    if (jet->Pt() > fRCMinJetPtForAvoiding && IsParticleInCone(jet, part, dDistance)) 
+      return kTRUE;                           // cone and reconstructed Jet Cone are overlapping
     
-  }//end loop testing RC-JC overlap
-  return kFALSE;//RC and JC are not overlapping -> good!
+  }
+  return kFALSE; //cone does not overlap with any reconstructed jet
 }
 
 Bool_t AliAnalysisTaskIDFragmentationFunction::IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const {

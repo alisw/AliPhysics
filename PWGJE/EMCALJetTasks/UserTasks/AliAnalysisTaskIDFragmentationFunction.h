@@ -89,10 +89,10 @@ public:
   virtual Bool_t GetDoGroomedJets() const { return fDoGroomedJets; }
   virtual void SetDoGroomedJets(Bool_t flag) { fDoGroomedJets = flag; } 
   
-  virtual Double_t GetBetaSoftDrop() const { return fBetaSoftDrop; }
+  virtual Double_t GetBetaSoftDrop() const { return fBetaSoftDrop; }   // Does not influence the analysis, since this is hardcoded in AliFJWrapper
   virtual void SetBetaSoftDrop(Double_t value) { fBetaSoftDrop = value; }
   
-  virtual Double_t GetZSoftDrop() const { return fZSoftDrop; }
+  virtual Double_t GetZSoftDrop() const { return fZSoftDrop; }    // Does not influence the analysis, since this is hardcoded in AliFJWrapper
   virtual void SetZSoftDrop(Double_t value) { fZSoftDrop = value; }  
   
   virtual Bool_t GetUseFastSimulations() const { return fUseFastSimulations; }
