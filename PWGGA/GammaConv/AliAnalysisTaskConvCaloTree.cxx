@@ -153,6 +153,7 @@ ClassImp(AliAnalysisTaskConvCaloTree)
                                                                fVBuffer_Track_DCA(),
                                                                fVBuffer_Track_FracNClus(),
                                                                fVBuffer_Track_PDG(),
+                                                               fVBuffer_Track_StackID(),
                                                                fVBuffer_Track_Calo_eta(),
                                                                fVBuffer_Track_Calo_phi(),
                                                                fVBuffer_Jet_Pt(),
@@ -285,6 +286,7 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree(const char* name) : Ali
                                                                              fVBuffer_Track_DCA(),
                                                                              fVBuffer_Track_FracNClus(),
                                                                              fVBuffer_Track_PDG(),
+                                                                             fVBuffer_Track_StackID(),
                                                                              fVBuffer_Track_Calo_eta(),
                                                                              fVBuffer_Track_Calo_phi(),
                                                                              fVBuffer_Jet_Pt(),
@@ -463,6 +465,7 @@ void AliAnalysisTaskConvCaloTree::UserCreateOutputObjects()
       fPhotonTree->Branch("Track_FracNClus_Chi2", &fVBuffer_Track_FracNClus);
       if (fIsMC) {
         fPhotonTree->Branch("Track_PDG", &fVBuffer_Track_PDG);
+        fPhotonTree->Branch("Track_StackID", &fVBuffer_Track_StackID);
       }
     }
     fPhotonTree->Branch("Track_TracketaCalo", &fVBuffer_Track_Calo_eta);
@@ -1119,6 +1122,9 @@ void AliAnalysisTaskConvCaloTree::ProcessTracksAOD()
     return;
   }
 
+  if (!fAODMCTrackArray)
+        fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+
   for (Int_t itr = 0; itr < fInputEvent->GetNumberOfTracks(); itr++) {
 
     AliVTrack* inTrack = dynamic_cast<AliVTrack*>(aodev->GetTrack(itr));
@@ -1167,7 +1173,9 @@ void AliAnalysisTaskConvCaloTree::ProcessTracksAOD()
       fVBuffer_Track_FracNClus.push_back(static_cast<unsigned short>(fracClsFound * 100) + chi2TrackShort);
       
       if (fIsMC) {
-        fVBuffer_Track_PDG.push_back(static_cast<short>(aodt->PdgCode()));
+        fVBuffer_Track_StackID.push_back(static_cast<unsigned short>(std::abs(aodt->GetLabel())));
+        AliAODMCParticle* MCTrack = (AliAODMCParticle*)fAODMCTrackArray->At(std::abs(aodt->GetLabel()));
+        fVBuffer_Track_PDG.push_back(static_cast<short>(MCTrack->GetPdgCode()));
       }
     }
     // This is not the proper extrapolation! Although for a rough matching of tracks and clusters it was found to save a lot of CPU time
@@ -1216,6 +1224,27 @@ bool AliAnalysisTaskConvCaloTree::IsMCParticleRelevant(AliAODMCParticle* particl
   if (particle->GetDaughterFirst() <= 0) { // has no daughter -> stable particle
     return true;
   }
+  // check if particle decayed after a certain time and could still be a valid track
+  auto labelDaughter = particle->GetDaughterFirst();
+  AliAODMCParticle* daughter = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(labelDaughter));
+  float rVtxDaughter = sqrt(daughter->Xv()*daughter->Xv() + daughter->Yv()*daughter->Yv());
+
+  auto labelGrandDaughter = daughter->GetDaughterFirst();
+  AliAODMCParticle* granddaughter = nullptr;
+  float rVtxGrandDaughter = 0;
+  if(labelGrandDaughter > 1){
+    granddaughter = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(labelGrandDaughter));
+    rVtxGrandDaughter = sqrt(granddaughter->Xv()*granddaughter->Xv() + granddaughter->Yv()*granddaughter->Yv());
+  }
+
+  if(rVtxDaughter > 0.05){ 
+    return true;
+  }
+  float rVtxPart = sqrt(particle->Xv()*particle->Xv() + particle->Yv()*particle->Yv());
+  if(rVtxPart > 0.03 && rVtxDaughter > 0.05){ // 3cm
+    return true;
+  }
+
   return false;
 }
 
@@ -1488,6 +1517,7 @@ void AliAnalysisTaskConvCaloTree::ResetBufferVectors()
   fVBuffer_Track_DCA.clear();
   fVBuffer_Track_FracNClus.clear();
   fVBuffer_Track_PDG.clear();
+  fVBuffer_Track_StackID.clear();
   fVBuffer_Track_Calo_eta.clear();
   fVBuffer_Track_Calo_phi.clear();
 
