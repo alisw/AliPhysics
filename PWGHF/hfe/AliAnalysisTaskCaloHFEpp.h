@@ -71,6 +71,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetConeR(Double_t coneR) {MaxConeR = coneR;};
 		void                    SetptAsso(Double_t ptassoMin) {ptAssoMin = ptassoMin;};
 		void                    SetEtaAsso(Double_t EtaassoMin) {EtaAssoMin = EtaassoMin;};
+		void                    SetNsigAsso(Double_t NsigassoMin) {NsigAssoMin = NsigassoMin;};
 		void                    SetMimClE(Double_t MimClE) {CutMimClE = MimClE;};
 		void                    SetptCut(TString pte) {pTe = pte;};
 		void                    SetMassMin(Double_t MassMin) {massMin = MassMin;};
@@ -113,6 +114,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t MaxConeR;
 		Double_t ptAssoMin;
 		Double_t EtaAssoMin;
+		Double_t NsigAssoMin;
 		Double_t CutMimClE;
 		TString pTe;
 		Double_t massMin;

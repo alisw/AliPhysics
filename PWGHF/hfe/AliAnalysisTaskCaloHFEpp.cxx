@@ -88,6 +88,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	MaxConeR(0),
 	ptAssoMin(0),
 	EtaAssoMin(1.0),
+	NsigAssoMin(-3.0),
         CutMimClE(0.3),
 	pTe("name"),
 	massMin(0),
@@ -321,6 +322,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	MaxConeR(0),
 	ptAssoMin(0),
 	EtaAssoMin(1.0),
+	NsigAssoMin(-3.0),
         CutMimClE(0.3),
 	pTe("name"),
 	massMin(0),
@@ -959,6 +961,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	Double_t CutEopHad = -3.5;
 	Double_t CutptAsso = ptAssoMin;
 	Double_t CutEtaAsso = EtaAssoMin;
+	Double_t CutNsigAsso = NsigAssoMin;
 	TString  TriggerPt = pTe;
 	Int_t CutMinNtr = MinNtr;
 	Int_t CutMaxNtr = MaxNtr;
@@ -1857,6 +1860,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 	//##################### Set cone radius  ##################### //
 	Double_t CutptAsso = ptAssoMin;
 	Double_t CutEtaAsso = EtaAssoMin;
+	Double_t CutNsigAsso = NsigAssoMin;
 	Double_t CutmassMin = massMin;
 	//################################################################# //
 
@@ -1930,7 +1934,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		//if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;  //applied the cut (vAN in 07/27 - 08/10)
 		//if(aAssotrack->Eta()<0.7 || aAssotrack->Eta()>0.7) continue;  // for systematic check
 		if(TMath::Abs(aAssotrack->Eta())>CutEtaAsso) continue;  // for systematic check
-		if(nsigma < -3 || nsigma > 3) continue;
+		if(nsigma < CutNsigAsso || nsigma > 3) continue;
 		if(AssoTPCchi2perNDF >= 4) continue;
 		if(!(aAssotrack->GetStatus()&AliAODTrack::kITSrefit) || !(aAssotrack->GetStatus()&AliAODTrack::kTPCrefit)) continue;
 
