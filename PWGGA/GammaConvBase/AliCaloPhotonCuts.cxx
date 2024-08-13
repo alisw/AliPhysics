@@ -4854,7 +4854,6 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
       if (phiCluster < 0) phiCluster += 2*TMath::Pi();
       float dEta = std::abs(etr.etaCalo - etaCluster); 
       float dPhi = std::abs(etr.phiCalo - phiCluster);
-
       
 
       bool match_dEta = (std::abs(dEta) < fMaxDistTrackToClusterEta) ? kTRUE : kFALSE;
@@ -4898,7 +4897,7 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
       if(trackPhiEMC < 0) trackPhiEMC += TMath::Pi()*2;
       double trackEtaEMC = inTrack->GetTrackEtaOnEMCal();
       if( GetCaloCellIdFromEtaPhi(trackEtaEMC, trackPhiEMC) >= 0 ) {
-        vecElectronMixing.push_back(ElectronMixing(trackPhiEMC, trackPhiEMC, inTrack->GetTrackPOnEMCal(), inTrack->Pt(), inTrack->Charge()));
+        vecElectronMixing.push_back(ElectronMixing(trackEtaEMC, trackPhiEMC, inTrack->GetTrackPOnEMCal(), inTrack->Pt(), inTrack->Charge()));
       }
     }
   }
