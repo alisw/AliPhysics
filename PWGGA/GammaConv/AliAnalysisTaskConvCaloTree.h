@@ -208,6 +208,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE
   std::vector<unsigned short> fVBuffer_Track_DCA;       //!<! vector buffer: track DCA (*100)
   std::vector<unsigned short> fVBuffer_Track_FracNClus; ///!<! vector buffer: Fraction of numbers of findable clusters * 100 + Chi2*1000
   std::vector<short> fVBuffer_Track_PDG;                //!<! vector buffer: track PDG code
+  std::vector<unsigned short> fVBuffer_Track_StackID;   //!<! vector buffer: track associated MC stack ID
   std::vector<Short_t> fVBuffer_Track_Calo_eta;         //!<! vector buffer: track eta on Calo surface (*10000)
   std::vector<UShort_t> fVBuffer_Track_Calo_phi;        //!<! vector buffer: track eta on Calo surface (*10000)
 
@@ -230,7 +231,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE
   std::vector<short> fVBuffer_MCGenPz;                //!<! vector buffer: pz *100
   std::vector<unsigned short> fVBuffer_MCGenMotherID; //!<! vector buffer: MC mother ID
 
-  ClassDef(AliAnalysisTaskConvCaloTree, 12);
+  ClassDef(AliAnalysisTaskConvCaloTree, 13);
 };
 
 #endif
