@@ -216,7 +216,7 @@ void AliAnalysisTaskPHOSEmbedding::UserCreateOutputObjects()
   const Int_t Nfile = 500;
   const Int_t Nev = 30e+3;
   fHistoFileID  = new TH1F(Form("hEventFileID_%s" ,fParticle.Data()),Form("file index in MC str array %s;file ID;Number of events",fParticle.Data()),Nfile+1,-0.5,Nfile+0.5);
-  fHistoEventID = new TH1F(Form("hEventEventID_%s",fParticle.Data()),Form("event index in MC AOD %s;event ID;Number of events"    ,fParticle.Data()),Nev+1  ,-0.5,Nev+0.5);
+  fHistoEventID = new TH1F(Form("hEventEventID_%s",fParticle.Data()),Form("event index in MC AOD %s;event ID;Number of events" ,fParticle.Data()),Nev+1  ,-0.5,Nev+0.5);
   fOutputContainer->Add(fHistoFileID);
   fOutputContainer->Add(fHistoEventID);
 
@@ -752,7 +752,7 @@ void AliAnalysisTaskPHOSEmbedding::Init()
   }
   else{
     const Int_t recoPass=1;
-    fSignalCalibData = (AliPHOSCalibData*)recalib->At(recoPass-1) ;
+    fSignalCalibData = (AliPHOSCalibData*)recalib->At(recoPass-1);
   }
 
 }
