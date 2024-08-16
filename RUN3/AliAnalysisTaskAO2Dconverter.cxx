@@ -127,7 +127,8 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2hfdstar",
   "O2hepmcxsection",
   "O2hepmcpdfinfo",
-  "O2hepmcheavyion"
+  "O2hepmcheavyion",
+  "O2trackextrarun2"
 };
 
 const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
@@ -163,7 +164,8 @@ const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
   "HF D* candidates",
   "O2 HepMc Cross Sections",
   "O2 HepMc Pdf Info",
-  "O2 HepMc Heavy Ion"
+  "O2 HepMc Heavy Ion",
+  "Barrel trackes Extra Run 2"
 };
 
 const TClass *AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = {AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class()};
@@ -863,6 +865,14 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tTracksExtra->Branch("fTrackTime", &tracks.fTrackTime, "fTrackTime/F");
     tTracksExtra->Branch("fTrackTimeRes", &tracks.fTrackTimeRes, "fTrackTimeRes/F");
     tTracksExtra->SetBasketSize("*", fBasketSizeTracks);
+  }
+
+  TTree* tTracksExtraRun2 = CreateTree(kTracksExtraRun2);
+  if (fTreeStatus[kTracksExtraRun2]) {
+    //Extra Run 2
+    tTracksExtraRun2->Branch("fTPCNClsPID", &tracks.fTPCNClsPID, "fTPCNClsPID/b");
+    tTracksExtraRun2->Branch("fITSSignal", &tracks.fITSSignal, "fITSSignal/F");
+    tTracksExtraRun2->SetBasketSize("*", fBasketSizeTracks);
   }
 
   // Associate branches for Calo
@@ -1814,6 +1824,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
       tracks.fTPCNClsShared = (track->GetTPCSharedMap()).CountBits();
 
+      tracks.fTPCNClsPID = track->GetTPCsignalN();
+
       tracks.fTRDPattern = 0;
       for (int i = 0; i < 6; i++)
         if (track->GetTRDslice(i) > 0)
@@ -1827,6 +1839,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       tracks.fTRDChi2 = AliMathBase::TruncateFloatFraction(track->GetTRDchi2(), mTrackCovOffDiag);
       tracks.fTOFChi2 = AliMathBase::TruncateFloatFraction(hasTOF ? sqrt(track->GetTOFsignalDx() * track->GetTOFsignalDx() + track->GetTOFsignalDz() * track->GetTOFsignalDz()) : -1.f, mTrackCovOffDiag);
 
+      tracks.fITSSignal = AliMathBase::TruncateFloatFraction(track->GetITSsignal(), mTrackSignal);
       tracks.fTPCSignal = AliMathBase::TruncateFloatFraction(track->GetTPCsignal(), mTrackSignal);
       tracks.fTRDSignal = AliMathBase::TruncateFloatFraction(track->GetTRDsignal(), mTrackSignal);
       // tracks.fTOFSignal = AliMathBase::TruncateFloatFraction(hasTOF ? track->GetTOFsignal() : 0.f, mTrackSignal);
@@ -1968,6 +1981,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       FillTree(kTracks);
       FillTree(kTracksCov);
       FillTree(kTracksExtra);
+      FillTree(kTracksExtraRun2);
       if (fTreeStatus[kTracks])
         ntrk_filled++;
 
@@ -2031,17 +2045,19 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         tracks.fRho1PtSnp = 0;
         tracks.fRho1PtTgl = 0;
         tracks.fTPCinnerP = NAN;
-        tracks.fFlags = 0;
+        tracks.fFlags = mlt->FreeClustersTracklet(itr, 0) && mlt->FreeClustersTracklet(itr, 1);
         tracks.fITSClusterMap = 0;
         tracks.fTPCNClsFindable = 0;
         tracks.fTPCNClsFindableMinusFound = 0;
         tracks.fTPCNClsFindableMinusCrossedRows = 0;
         tracks.fTPCNClsShared = 0;
+        tracks.fTPCNClsPID = 0;
         tracks.fTRDPattern = 0;
         tracks.fITSChi2NCl = NAN;
         tracks.fTPCChi2NCl = NAN;
         tracks.fTRDChi2 = NAN;
         tracks.fTOFChi2 = NAN;
+        tracks.fITSSignal = NAN;
         tracks.fTPCSignal = NAN;
         tracks.fTRDSignal = NAN;
         // tracks.fTOFSignal = NAN;
@@ -2070,12 +2086,14 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         FillTree(kTracks);
         FillTree(kTracksCov);
         FillTree(kTracksExtra);
+        FillTree(kTracksExtraRun2);
         if (fTreeStatus[kTracks]) ntracklet_filled++;
       }
     } // end loop on tracklets
     eventextra.fNentries[kTracks] = ntrk_filled + ntracklet_filled;
     eventextra.fNentries[kTracksCov] = eventextra.fNentries[kTracks];
     eventextra.fNentries[kTracksExtra] = eventextra.fNentries[kTracks];
+    eventextra.fNentries[kTracksExtraRun2] = eventextra.fNentries[kTracks];
   }
 
   //---------------------------------------------------------------------------
