@@ -127,6 +127,8 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(): AliAna
   fHistoClusHighPtTrackdPhiSM(NULL),
   fHistoEVsM02(NULL),
   fHistoEVsM02NCell4(NULL),
+  fHistoClusterLeadingFractionVsEClus(NULL),
+  fHistoClusterSigmaVsEClus(NULL),
   fHistoMotherInvMassRejected(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
@@ -250,6 +252,8 @@ AliAnalysisTaskConvCaloCalibration::AliAnalysisTaskConvCaloCalibration(const cha
   fHistoClusHighPtTrackdPhiSM(NULL),
   fHistoEVsM02(NULL),
   fHistoEVsM02NCell4(NULL),
+  fHistoClusterLeadingFractionVsEClus(NULL),
+  fHistoClusterSigmaVsEClus(NULL),
   fHistoMotherInvMassRejected(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
@@ -510,6 +514,8 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
         fHistoClusTrackdPhiSM          = new TH1F**[fnCuts];
         fHistoEVsM02                   = new TH2F*[fnCuts];
         fHistoEVsM02NCell4             = new TH2F*[fnCuts];
+        fHistoClusterLeadingFractionVsEClus   = new TH2F*[fnCuts];
+        fHistoClusterSigmaVsEClus             = new TH2F*[fnCuts];
         for(Int_t icuts = 0; icuts < fnCuts; icuts++){
           fHistoClusGammaERxSM[icuts]           = new TH1F*[fnModules];
           fHistoClusGammaERxNCellCritSM[icuts]  = new TH1F*[fnModules];
@@ -897,6 +903,16 @@ void AliAnalysisTaskConvCaloCalibration::UserCreateOutputObjects(){
       fHistoEVsM02NCell4[iCut]->SetXTitle("E_{cluster}(GeV)");
       fHistoEVsM02NCell4[iCut]->SetYTitle("M_{02}");
       fESDList[iCut]->Add(fHistoEVsM02NCell4[iCut]);
+
+      fHistoClusterLeadingFractionVsEClus[iCut] = new TH2F("ESD_ClusterE_LeadingCellEFrac", "ESD_ClusterE_LeadingCellEFrac", 101, 0, 1.01, nBinsClusterPt, arrClusPtBinning);
+      fHistoClusterLeadingFractionVsEClus[iCut]->SetYTitle("E_{cluster}(GeV)");
+      fHistoClusterLeadingFractionVsEClus[iCut]->SetXTitle("energy fraction of leading cell");
+      fESDList[iCut]->Add(fHistoClusterLeadingFractionVsEClus[iCut]);
+
+      fHistoClusterSigmaVsEClus[iCut] = new TH2F("fHistoClusterSigmaVsEClus", "fHistoClusterSigmaVsEClus", 400, 0, 4, nBinsClusterPt, arrClusPtBinning);
+      fHistoClusterSigmaVsEClus[iCut]->SetYTitle("E_{cluster}(GeV)");
+      fHistoClusterSigmaVsEClus[iCut]->SetXTitle("#sigma cluster");
+      fESDList[iCut]->Add(fHistoClusterSigmaVsEClus[iCut]);
 
     }
 
@@ -1420,6 +1436,51 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
         }
       }
 
+      // Calculate fraction of leading cell to cluster
+      // cluster energy is calculated as sum of the cells
+      if(fDoMesonQA){
+        double Eclus = 0.;
+        double EMaxCell = 0.;
+        int icol = 0, irow = 0;
+        AliVCaloCells* cells    = nullptr;
+        std::vector<std::array<double, 3>> vecPosEnergy;
+        if(clus->IsEMCAL()){ //EMCAL
+          cells = fInputEvent->GetEMCALCells();
+        }else if(clus->IsPHOS()){ //PHOS
+          cells = fInputEvent->GetPHOSCells();
+        }
+        if(cells){
+          for(Int_t i = 0; i < clus->GetNCells(); i++){
+            double ECellTmp = cells->GetCellAmplitude(clus->GetCellAbsId(i));
+            Eclus+=ECellTmp;
+            if(ECellTmp > EMaxCell) {
+              EMaxCell = ECellTmp;
+            }
+            auto SMnum = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetModuleNumberAndCellPosition(clus->GetCellAbsId(i), icol, irow);
+            vecPosEnergy.push_back({ECellTmp, icol, irow});
+          }
+          if(Eclus > 0.) {
+            fHistoClusterLeadingFractionVsEClus[fiCut]->Fill(EMaxCell/Eclus, PhotonCandidate->E(), fWeightJetJetMC);
+          }
+          // calculate the mean of the spread
+          if(Eclus > 0.) {
+            double meanCol = 0., meanRow = 0.;
+            for(const auto & cellObj : vecPosEnergy){
+              meanCol += (cellObj[0]/Eclus) * cellObj[1];
+              meanRow += (cellObj[0]/Eclus) * cellObj[2];
+            }
+            // and also sigma of the energy spread
+            double sigmaCluster = 0.;
+            for(const auto & cellObj : vecPosEnergy){
+              double dCol = (cellObj[0]*(cellObj[1] - meanCol));
+              double dRow = (cellObj[0]*(cellObj[2] - meanRow));
+              sigmaCluster += dCol*dCol + dRow*dRow;
+            }
+            sigmaCluster/=Eclus;
+            fHistoClusterSigmaVsEClus[fiCut]->Fill(sqrt(sigmaCluster), PhotonCandidate->E(), fWeightJetJetMC);
+          }
+        }
+      }
     }else{
       delete PhotonCandidate;
     }
