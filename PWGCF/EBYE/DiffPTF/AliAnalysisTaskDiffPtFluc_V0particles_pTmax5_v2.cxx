@@ -35,7 +35,7 @@
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
 #include "AliEventCuts.h"
-#include "AliAnalysisTaskDiffPtFluc_V0particles_pTmax5.h"
+#include "AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2.h"
 
 //For MC event
 #include "AliMCEvent.h"
@@ -75,11 +75,11 @@ using namespace std;
 using std::cout;
 using std::endl;
 
-class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5;
-ClassImp(AliAnalysisTaskDiffPtFluc_V0particles_pTmax5)
+class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2;
+ClassImp(AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2)
 
 //_____________________________________________________________________________________________________________________________________
-AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::AliAnalysisTaskDiffPtFluc_V0particles_pTmax5():
+AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2():
 AliAnalysisTaskSE(),
   fAODeventCuts(),
   fESDevent(0),
@@ -237,7 +237,7 @@ AliAnalysisTaskSE(),
     }
 }
 //_____________________________________________________________________________________________________________________________________
-AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::AliAnalysisTaskDiffPtFluc_V0particles_pTmax5(const char *name):
+AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2(const char *name):
   AliAnalysisTaskSE(name),
   fAODeventCuts(),
   fESDevent(0),
@@ -401,7 +401,7 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::AliAnalysisTaskDiffPtFluc_V0partic
   DefineOutput(3, TTree::Class());
 }
 //_____________________________________________________________________________________________________________________________________
-AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::~AliAnalysisTaskDiffPtFluc_V0particles_pTmax5()  {
+AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::~AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2()  {
 
   if (fOutputList){
     delete fOutputList;
@@ -428,7 +428,7 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::~AliAnalysisTaskDiffPtFluc_V0parti
     }
 }
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserCreateOutputObjects()  {
+void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserCreateOutputObjects()  {
     
   //Create Output List
   fOutputList = new TList();
@@ -612,7 +612,7 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserCreateOutputObjects()  {
   PostData(3, fTreeEvent);
 }
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserExec(Option_t *)  {
+void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserExec(Option_t *)  {
   
   //Get Input Event
   if ( !GetEvent ()) return;
@@ -967,7 +967,7 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::UserExec(Option_t *)  {
   PostData(3, fTreeEvent);
 }    
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::GetEvent ()  //event cuts copied from my code written earlier 
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::GetEvent ()  //event cuts copied from my code written earlier 
 
 {
  
@@ -1184,7 +1184,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::GetEvent ()  //event cuts c
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedTrackQualityCuts (AliAODTrack *track)  {
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::PassedTrackQualityCuts (AliAODTrack *track)  {
     
   //Initialization
   Bool_t passedTrkSelection=(kFALSE);
@@ -1239,7 +1239,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedTrackQualityCuts (Ali
   return passedTrkSelection;
 }
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::KaonSelector(AliVTrack *track, Double_t nSigmaCut)  {
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::KaonSelector(AliVTrack *track, Double_t nSigmaCut)  {
  
   Double_t p[3];
   track->PxPyPz(p);
@@ -1323,7 +1323,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::KaonSelector(AliVTrack *tra
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PionSelector(AliVTrack *track, Double_t nSigmaCut)  {
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::PionSelector(AliVTrack *track, Double_t nSigmaCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -1411,7 +1411,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PionSelector(AliVTrack *tra
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::ProtonSelector(AliVTrack *track, Double_t nSigmaCut)  {
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::ProtonSelector(AliVTrack *track, Double_t nSigmaCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -1499,7 +1499,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::ProtonSelector(AliVTrack *t
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::ElectronRejectionCut(AliVTrack *track, Int_t fCut)
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::ElectronRejectionCut(AliVTrack *track, Int_t fCut)
 {
   //TPC nsigma
   Double_t fTPCnSigma_Pion = 0.0;
@@ -1539,7 +1539,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::ElectronRejectionCut(AliVTr
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type, Double_t PIDcut)  {
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type, Double_t PIDcut)  {
     
   //Initialization
   Bool_t passedPIDSelection=(kFALSE);
@@ -1553,7 +1553,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedPIDSelection (AliAODT
   return passedPIDSelection;
 }
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedSingleParticlePileUpCuts(AliAODTrack *track)
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::PassedSingleParticlePileUpCuts(AliAODTrack *track)
 {
   /*
     Bool_t passedTrackPileupCut = (kTRUE);
@@ -1576,7 +1576,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedSingleParticlePileUpC
   return passedTrackPileupCut;
 }
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::GetMCEffCorrectionHist()
+void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::GetMCEffCorrectionHist()
 {
   if(fListTRKCorr)
     {
@@ -1606,7 +1606,7 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::GetMCEffCorrectionHist()
 
 }
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::FilltrackQAplots_beforeCut(Double_t fDcaXY, Double_t fDcaZ, Double_t fEta, Double_t fITSchi2perNcls, Double_t fTPCchi2perNcls, Double_t fTPCcrossedrows)
+void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::FilltrackQAplots_beforeCut(Double_t fDcaXY, Double_t fDcaZ, Double_t fEta, Double_t fITSchi2perNcls, Double_t fTPCchi2perNcls, Double_t fTPCcrossedrows)
 {
   hist_beforeCut_DCAxy->Fill(fDcaXY);
   hist_beforeCut_DCAz->Fill(fDcaZ);
@@ -1617,7 +1617,7 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::FilltrackQAplots_beforeCut(Do
 }
 
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::FilltrackQAplots_afterCut(Double_t fDcaXY, Double_t fDcaZ, Double_t fEta, Double_t fITSchi2perNcls, Double_t fTPCchi2perNcls, Double_t fTPCcrossedrows)
+void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::FilltrackQAplots_afterCut(Double_t fDcaXY, Double_t fDcaZ, Double_t fEta, Double_t fITSchi2perNcls, Double_t fTPCchi2perNcls, Double_t fTPCcrossedrows)
 {
   hist_afterCut_DCAxy->Fill(fDcaXY);
   hist_afterCut_DCAz->Fill(fDcaZ);
@@ -1627,7 +1627,7 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::FilltrackQAplots_afterCut(Dou
   hist_afterCut_TPCncrossedrows->Fill(fTPCcrossedrows);
 }
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::FillPIDQAplots_beforeCut(AliVTrack *track)
+void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::FillPIDQAplots_beforeCut(AliVTrack *track)
 {
   Double_t p[3];
   track->PxPyPz(p);
@@ -1682,7 +1682,7 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::FillPIDQAplots_beforeCut(AliV
 }
 
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::FillPIDQAplots_afterCut(AliVTrack *track, Bool_t Pion_flag, Bool_t Kaon_flag, Bool_t Proton_flag)
+void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::FillPIDQAplots_afterCut(AliVTrack *track, Bool_t Pion_flag, Bool_t Kaon_flag, Bool_t Proton_flag)
 {
   Double_t p[3];
   track->PxPyPz(p);
@@ -1749,7 +1749,7 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::FillPIDQAplots_afterCut(AliVT
 	
 }
 //______________________________________________________________________________________________________________________________________ **From Ante**
-void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::GlobalTracksAOD(AliAODEvent *aAOD)
+void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::GlobalTracksAOD(AliAODEvent *aAOD)
 {
   // Filter out unique global tracks in AOD and store them in fGlobalTracksAOD.
 
@@ -1796,7 +1796,7 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::GlobalTracksAOD(AliAODEvent *
 
 }
 //______________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedDaughterTrackDCAtoVertexSelectionCutsV0(AliAODv0 *v0)
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::PassedDaughterTrackDCAtoVertexSelectionCutsV0(AliAODv0 *v0)
 {
   //Initialization
   Bool_t passedDauTrackDCAtoVertexSelection=(kFALSE);
@@ -1818,7 +1818,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedDaughterTrackDCAtoVer
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedV0SelectionTopologicalCutsForLambda (AliAODv0 *v0)  {
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::PassedV0SelectionTopologicalCutsForLambda (AliAODv0 *v0)  {
 
   //Initialization
   Bool_t passedV0Selection=(kFALSE);
@@ -1877,7 +1877,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedV0SelectionTopologica
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedV0SelectionTopologicalCutsForK0s (AliAODv0 *v0)  {
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::PassedV0SelectionTopologicalCutsForK0s (AliAODv0 *v0)  {
 
   //Initialization
   Bool_t passedV0Selection=(kFALSE);
@@ -1940,7 +1940,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::PassedV0SelectionTopologica
 }
 
 //_____________________________________________________________________________________________________________________________________
-Int_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::CheckFlagITSHitOrTOFhit(AliAODTrack *track, Double_t lMagField) {
+Int_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::CheckFlagITSHitOrTOFhit(AliAODTrack *track, Double_t lMagField) {
 
   ULong64_t fV0TrackStatus = track->GetStatus();
   Int_t flag = ((fV0TrackStatus & AliAODTrack::kITSrefit) || (track->GetTOFBunchCrossing(lMagField) > -95.)) ? 1 : 0;
@@ -1948,57 +1948,23 @@ Int_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::CheckFlagITSHitOrTOFhit(AliA
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsLambdaCandidate (AliAODv0 *V0, AliAODTrack *pos, AliAODTrack *neg, Double_t PIDcut, Double_t centrality, Double_t LambdaMassCut)  {
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::IsLambdaCandidate (AliAODv0 *V0, AliAODTrack *pos, AliAODTrack *neg, Double_t PIDcut, Double_t centrality, Double_t LambdaMassCut)  {
     
   //PID Daughters
   bool goodProtPlus = kFALSE;
   bool goodPiMinus = kFALSE;
 
-  if (!HasTrackPIDTPC(pos) || !HasTrackPIDTPC(neg)) return kFALSE;
-
-  if (PassedPIDSelection(pos,AliPID::kProton, PIDcut))
+  Int_t postrackPIDbasedId = IdentifyTrackBayesian(pos);
+  Int_t negtrackPIDbasedId = IdentifyTrackBayesian(neg);
+  if (postrackPIDbasedId == 3)
     goodProtPlus = kTRUE;
-  if (PassedPIDSelection(neg,AliPID::kPion, PIDcut))
+  else
+    goodProtPlus = kFALSE;
+  if (negtrackPIDbasedId == 1)
     goodPiMinus = kTRUE;
-
-
-  float probMis;
-  //Positive daughter identification TOF
-  AliPIDResponse::EDetPidStatus statusPosTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, pos);
-  double PTpos = pos->Pt();
-  if(PTpos > 0.5) //ProtonPlus
-    {
-      if(AliPIDResponse::kDetPidOk == statusPosTOF)
-	{
-	  probMis = fPIDResponse->GetTOFMismatchProbability(pos);
-	  if(probMis < 0.01) //avoid TOF-TPC mismatch
-	    {
-	      if(fabs(fPIDResponse->NumberOfSigmasTOF(pos,AliPID::kProton)) < PIDcut)
-		goodProtPlus = kTRUE;
-	      else
-		goodProtPlus = kFALSE;
-	    }
-	}
-    }
-  //Negative daughter identification TOF
-  AliPIDResponse::EDetPidStatus statusNegTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, neg);
-  double PTneg = neg->Pt();
-  if(PTneg > 0.5) //PiMinus
-    {
-      if(AliPIDResponse::kDetPidOk == statusNegTOF)
-	{
-	  probMis = fPIDResponse->GetTOFMismatchProbability(neg);
-	  if(probMis < 0.01) //avoid TOF-TPC mismatch
-	    {
-	      if(fabs(fPIDResponse->NumberOfSigmasTOF(neg,AliPID::kPion)) < PIDcut)
-		goodPiMinus = kTRUE;
-	      else
-		goodPiMinus = kFALSE;
-	    }
-	}
-    }
+  else
+    goodPiMinus = kFALSE;
   
-
   if(!goodProtPlus || !goodPiMinus)
     return kFALSE;
     
@@ -2025,57 +1991,23 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsLambdaCandidate (AliAODv0
 
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsAntiLambdaCandidate (AliAODv0 *V0, AliAODTrack *pos, AliAODTrack *neg, Double_t PIDcut, Double_t centrality, Double_t LambdaMassCut)  {
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::IsAntiLambdaCandidate (AliAODv0 *V0, AliAODTrack *pos, AliAODTrack *neg, Double_t PIDcut, Double_t centrality, Double_t LambdaMassCut)  {
     
   //PID Daughters
   bool goodPiPlus = kFALSE;
   bool goodProtMinus = kFALSE;
-    
-  if (!HasTrackPIDTPC(pos) || !HasTrackPIDTPC(neg)) return kFALSE;
-    
-  if (PassedPIDSelection(pos,AliPID::kPion, PIDcut))
+
+  Int_t postrackPIDbasedId = IdentifyTrackBayesian(pos);
+  Int_t negtrackPIDbasedId = IdentifyTrackBayesian(neg);
+  if (postrackPIDbasedId == 1)
     goodPiPlus = kTRUE;
-  if (PassedPIDSelection(neg,AliPID::kProton, PIDcut))
+  else
+    goodPiPlus = kFALSE;
+  if (negtrackPIDbasedId == 3)
     goodProtMinus = kTRUE;
-
+  else
+    goodProtMinus = kFALSE;
   
-  float probMis;
-  //Positive daughter identification TOF
-  AliPIDResponse::EDetPidStatus statusPosTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, pos);
-  double PTpos = pos->Pt();
-  if(PTpos > 0.5) //PiPlus
-    {
-      if(AliPIDResponse::kDetPidOk == statusPosTOF)
-	{
-	  probMis = fPIDResponse->GetTOFMismatchProbability(pos);
-	  if(probMis < 0.01) //avoid TOF-TPC mismatch
-	    {
-	      if(fabs(fPIDResponse->NumberOfSigmasTOF(pos,AliPID::kPion)) < PIDcut)
-		goodPiPlus = kTRUE;
-	      else
-		goodPiPlus = kFALSE;
-	    }
-	}
-    }
-  //Negative daughter identification TOF
-  AliPIDResponse::EDetPidStatus statusNegTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, neg);
-  double PTneg = neg->Pt();
-  if(PTneg > 0.5) //ProtonMinus
-    {
-      if(AliPIDResponse::kDetPidOk == statusNegTOF)
-	{
-	  probMis = fPIDResponse->GetTOFMismatchProbability(neg);
-	  if(probMis < 0.01) //avoid TOF-TPC mismatch
-	    {
-	      if(fabs(fPIDResponse->NumberOfSigmasTOF(neg,AliPID::kProton)) < PIDcut)
-		goodProtMinus = kTRUE;
-	      else
-		goodProtMinus = kFALSE;
-	    }
-	}
-    }
-  
-
   if(!goodPiPlus || !goodProtMinus)
     return kFALSE;
 
@@ -2102,57 +2034,23 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsAntiLambdaCandidate (AliA
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsK0sCandidate (AliAODv0 *V0, AliAODTrack *pos, AliAODTrack *neg, Double_t PIDcut,Double_t centrality,Double_t K0sMassCut)  {
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::IsK0sCandidate (AliAODv0 *V0, AliAODTrack *pos, AliAODTrack *neg, Double_t PIDcut,Double_t centrality,Double_t K0sMassCut)  {
     
   //PID Daughter
   bool goodPiPlus = kFALSE;
   bool goodPiMinus = kFALSE;
 
-  if (!HasTrackPIDTPC(pos) || !HasTrackPIDTPC(neg)) return kFALSE;
-    
-  if (PassedPIDSelection(pos,AliPID::kPion, PIDcut))
+  Int_t postrackPIDbasedId = IdentifyTrackBayesian(pos);
+  Int_t negtrackPIDbasedId = IdentifyTrackBayesian(neg);
+  if (postrackPIDbasedId == 1)
     goodPiPlus = kTRUE;
-  if (PassedPIDSelection(neg,AliPID::kPion, PIDcut))
+  else
+    goodPiPlus = kFALSE;
+  if (negtrackPIDbasedId == 1)
     goodPiMinus = kTRUE;
-
-  
-  float probMis;
-  //Positive daughter identification TOF
-  AliPIDResponse::EDetPidStatus statusPosTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, pos);
-  double PTpos = pos->Pt();
-  if(PTpos > 0.5) //PiPlus
-    {
-      if(AliPIDResponse::kDetPidOk == statusPosTOF)
-	{
-	  probMis = fPIDResponse->GetTOFMismatchProbability(pos);
-	  if(probMis < 0.01) //avoid TOF-TPC mismatch
-	    {
-	      if(fabs(fPIDResponse->NumberOfSigmasTOF(pos,AliPID::kPion)) < PIDcut)
-		goodPiPlus = kTRUE;
-	      else
-		goodPiPlus = kFALSE;
-	    }
-	}
-    }
-  //Negative daughter identification TOF
-  AliPIDResponse::EDetPidStatus statusNegTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, neg);
-  double PTneg = neg->Pt();
-  if(PTneg > 0.5) //PiMinus
-    {
-      if(AliPIDResponse::kDetPidOk == statusNegTOF)
-	{
-	  probMis = fPIDResponse->GetTOFMismatchProbability(neg);
-	  if(probMis < 0.01) //avoid TOF-TPC mismatch
-	    {
-	      if(fabs(fPIDResponse->NumberOfSigmasTOF(neg,AliPID::kPion)) < PIDcut)
-		goodPiMinus = kTRUE;
-	      else
-		goodPiMinus = kFALSE;
-	    }
-	}
-    }
- 
-
+  else
+    goodPiMinus = kFALSE;
+    
   if(!goodPiPlus || !goodPiMinus)
     return kFALSE;
 
@@ -2180,21 +2078,21 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IsK0sCandidate (AliAODv0 *V
   return kTRUE;
 }
 
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::HasTrackPIDTPC(AliVTrack *track)
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::HasTrackPIDTPC(AliVTrack *track)
 {
   if(!track || !fPIDResponse) return kFALSE;
   AliPIDResponse::EDetPidStatus pidStatusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track);
   return (pidStatusTPC == AliPIDResponse::kDetPidOk);
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::HasTrackPIDTOF(AliVTrack *track) 
+Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::HasTrackPIDTOF(AliVTrack *track) 
 {
   if(!track || !fPIDResponse) return kFALSE;
   AliPIDResponse::EDetPidStatus pidStatusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track);
   return ((pidStatusTOF == AliPIDResponse::kDetPidOk) && (track->GetStatus()& AliVTrack::kTOFout) && (track->GetStatus()& AliVTrack::kTIME));
 }
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IdentifyTrackBayesian(AliVTrack *track) // identify Pi, Ka, Pr based on BayesianPID
+Int_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::IdentifyTrackBayesian(AliVTrack *track) // identify Pi, Ka, Pr based on BayesianPID
 {
   // checking detector statuses
   Bool_t bIsTPCok = HasTrackPIDTPC(track);
@@ -2223,7 +2121,7 @@ Int_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::IdentifyTrackBayesian(AliVTr
 }
 
 //_____________________________________________________________________________________________________________________________________
-void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5::Terminate(Option_t *)  {
+void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::Terminate(Option_t *)  {
     
   fOutputList = dynamic_cast<TList*> (GetOutputData(1));
   if (!fOutputList) return;

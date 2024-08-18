@@ -12,8 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#ifndef AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_H
-#define AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_H
+#ifndef AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5_v2_H
+#define AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5_v2_H
 
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
@@ -31,7 +31,6 @@ class AliMCEvent;
 class AliStack;
 class AliVTrack;
 class AliAODTrack;
-class AliAODv0;
 
 class TH1D;
 class TH2D;
@@ -42,11 +41,11 @@ class AliPIDCombined;
 class AliMultSelection;
 
 
-class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5 : public AliAnalysisTaskSE {
+class AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5_v2 : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskDiffPtFluc_V0particles_pTmax5();
-  AliAnalysisTaskDiffPtFluc_V0particles_pTmax5(const char *name);
-  virtual ~AliAnalysisTaskDiffPtFluc_V0particles_pTmax5();
+  AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5_v2();
+  AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5_v2(const char *name);
+  virtual ~AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5_v2();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -57,29 +56,21 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5 : public AliAnalysisTaskSE {
   Bool_t ProtonSelector (AliVTrack *track, Double_t nSigmaCut); 
   Bool_t PionSelector (AliVTrack *track, Double_t nSigmaCut); 
   Bool_t ElectronRejectionCut(AliVTrack *track, Int_t fCut);
-  Bool_t PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type, Double_t PIDcut);
-  Bool_t PassedSingleParticlePileUpCuts(AliAODTrack *track);
   void GetMCEffCorrectionHist();
   void FilltrackQAplots_beforeCut(Double_t fDcaXY, Double_t fDcaZ, Double_t fEta, Double_t fITSchi2perNcls, Double_t fTPCchi2perNcls, Double_t fTPCcrossedrows);
   void FilltrackQAplots_afterCut(Double_t fDcaXY, Double_t fDcaZ, Double_t fEta, Double_t fITSchi2perNcls, Double_t fTPCchi2perNcls, Double_t fTPCcrossedrows);
   void FillPIDQAplots_beforeCut(AliVTrack *track);
   void FillPIDQAplots_afterCut(AliVTrack *track, Bool_t Pionflag, Bool_t Kaon_flag, Bool_t Proton_flag);
   void GlobalTracksAOD(AliAODEvent *aAOD);
-  Bool_t PassedDaughterTrackDCAtoVertexSelectionCutsV0 (AliAODv0 *v0);
-  Bool_t PassedV0SelectionTopologicalCutsForLambda (AliAODv0 *v0);
-  Bool_t PassedV0SelectionTopologicalCutsForK0s (AliAODv0 *v0);
-  Int_t CheckFlagITSHitOrTOFhit(AliAODTrack *track, Double_t lMagField);
-  Bool_t IsLambdaCandidate (AliAODv0 *V0, AliAODTrack *pos, AliAODTrack *neg, Double_t PIDcut, Double_t centrality, Double_t LambdaMassCut);
-  Bool_t IsAntiLambdaCandidate (AliAODv0 *V0, AliAODTrack *pos, AliAODTrack *neg, Double_t PIDcut, Double_t centrality, Double_t LambdaMassCut);
-  Bool_t IsK0sCandidate (AliAODv0 *V0, AliAODTrack *pos, AliAODTrack *neg, Double_t PIDcut, Double_t centrality,Double_t K0sMassCut);
   Bool_t HasTrackPIDTPC(AliVTrack *track);
   Bool_t HasTrackPIDTOF(AliVTrack *track);
   Int_t IdentifyTrackBayesian(AliVTrack *track);
 
   void SetListForTrkCorr (TList *fList)
   {
-    this->fListTRKCorr = (TList*) fList->Clone();
+ 	this->fListTRKCorr = (TList*) fList->Clone();
   }
+
   void SetVzRangeMax(Double_t VzMax)
   {
     this->fVertexZMax = VzMax;
@@ -152,99 +143,7 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5 : public AliAnalysisTaskSE {
   {
     this->fBayesianPID_flag = flagg;
   }
-  void SetMinV0TracksTpcClustersNo (Int_t nClusters)
-  {
-    this->fMinV0TracksTpcClustersNo = nClusters; //Default: 80
-  }
-  void SetMinV0TracksTpcCrossedRowsNo (Int_t nCrossedRows)
-  {
-    this->fMinV0TracksTpcCrossedRowsNo = nCrossedRows; //Default: 80
-  }
-  void SetMaxV0TracksTpcSharedClustersNo (Int_t nSharedClusters)
-  {
-    this->fMaxV0TracksTpcSharedClustersNo = nSharedClusters; //Default: 5
-  }
-  void SetMaxV0TracksChi2TPCperClstr (Double_t chi2)
-  {
-    this->fMaxV0TracksChi2TPCperClstr = chi2; //Default: 2.5
-  }
-  void SetMaxV0TracksChi2ITSperClstr (Double_t chi2)
-  {
-    this->fMaxV0TracksChi2ITSperClstr = chi2; //Default: 36
-  }
-  void SetRatio_TPCcrossedrowsByFindableclusters (Double_t ratio)
-  {
-    this->fRatioTPCcrossedrowsByFindableclusters = ratio;  //Default: 0.8
-  }
-  void SetDcaV0DaughterTracksToPV (Double_t DcaDauTracksToPV)
-  {
-    this->fDcaV0DaughterTracksToPV = DcaDauTracksToPV; //Default: 0.1
-  }
-  void SetLambdaPropLifetime (Double_t propLifetime)
-  {
-    this->fLambdaPropLifetime = propLifetime; //Default: 40 cm
-  }
-  void SetLambdaTransDecayRadius_Min(Double_t min)
-  {
-    this->fMinLambdaTransDecayRadius = min;  //Default: 5cm
-  }
-  void SetLambdaTransDecayRadius_Max(Double_t max)
-  {
-    this->fMaxLambdaTransDecayRadius = max;  //Default: 100cm
-  }
-  void SetLambdaDCAv0daughters (Double_t DcaV0daughters)
-  {
-    this->fLambdaDcaV0daughters = DcaV0daughters;  //Default: 0.2
-  }
-  void SetLambdaDcaV0toPV (Double_t DcaV0toPV)
-  {
-    this->fLambdaDcaV0toPV = DcaV0toPV; //Default: 0.5
-  }
-  void SetLambdaCosPA (Double_t cosPAval)
-  {
-    this->fLambdaCosPAval = cosPAval; //Default: 0.997
-  }
-  void SetK0sPropLifetime (Double_t propLifetime)
-  {
-    this->fK0sPropLifetime = propLifetime; //Default: 10 cm
-  }
-  void SetK0sTransDecayRadius_Min(Double_t min)
-  {
-    this->fMinK0sTransDecayRadius = min;  //Default: 5cm
-  }
-  void SetK0sTransDecayRadius_Max(Double_t max)
-  {
-    this->fMaxK0sTransDecayRadius = max;  //Default: 100cm
-  }
-  void SetK0sDCAv0daughters (Double_t DcaV0daughters)
-  {
-    this->fK0sDcaV0daughters = DcaV0daughters;  //Default: 0.4
-  }
-  void SetK0sCosPA (Double_t cosPAval)
-  {
-    this->fK0sCosPAval = cosPAval; //Default: 0.999
-  }
-  void SetK0sArmentousCut (Double_t cutval)
-  {
-    this->fArmentousCutVal = cutval; //Default: 0.2
-  }
-  void SetLambdaDaughtersPIDcut (Double_t PIDcut)
-  {
-    this->fLambdaDaughtersPIDcut = PIDcut;
-  }
-  void SetK0sDaughtersPIDcut (Double_t PIDcut)
-  {
-    this->fK0sDaughtersPIDcut = PIDcut;
-  }
-  void SetLambdaFinalMassCut (Double_t cutval)
-  {
-    this->fLambdaMassCut = cutval; //Default val = 0.003
-  }
-  void SetK0sFinalMassCut (Double_t cutval)
-  {
-    this->fK0sMassCut = cutval; //Default val = 0.015
-  }
-  void SetBayesPIDPionVal (Double_t bayesPidPi)
+   void SetBayesPIDPionVal (Double_t bayesPidPi)
   {
     this->fPIDbayesPion = bayesPidPi;
   }
@@ -256,6 +155,8 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5 : public AliAnalysisTaskSE {
   {
     this->fPIDbayesProton = bayesPidPr;
   }
+  
+
   
  private:
   
@@ -277,8 +178,6 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5 : public AliAnalysisTaskSE {
   TH1D *hNumberOfKaonEtaLess0;
   TH1D *hNumberOfPionEtaLess0;
   TH1D *hNumberOfProtonEtaLess0;
-  TH1D *hNumberOfLambdaEtaLess0;
-  TH1D *hNumberOfK0sEtaLess0;
 
   //ftreeEvent object variables
   TTree *fTreeEvent;
@@ -290,14 +189,10 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5 : public AliAnalysisTaskSE {
   Float_t fNsum_pions_less0;
   Float_t fNsum_kaons_less0;
   Float_t fNsum_protons_less0;
-  Float_t fNsum_lambdas_less0;
-  Float_t fNsum_K0s_less0;
-  Float_t fPt_no_hadron[20];
-  Float_t fPt_no_pion[20];
-  Float_t fPt_no_kaon[20];
-  Float_t fPt_no_proton[20];
-  Float_t fPt_no_lambda[20];
-  Float_t fPt_no_K0s[20];
+  Float_t fPt_no_hadron[18];
+  Float_t fPt_no_pion[18];
+  Float_t fPt_no_kaon[18];
+  Float_t fPt_no_proton[18];
   
   //Efficiency list of histograms
   TList *fListTRKCorr; 
@@ -369,10 +264,6 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5 : public AliAnalysisTaskSE {
   TH2D *f2Dhist_afterCut_TOFtime_kaon;
   TH2D *f2Dhist_afterCut_TPCdEdx_proton;
   TH2D *f2Dhist_afterCut_TOFtime_proton;
-  TH3D *f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent;
-  TH3D *f3DhistMassK0s_vs_Pt_beforeMasscut_Cent;
-  TH3D *f3DhistMassLambdaAll_vs_Pt_afterMasscut_Cent;
-  TH3D *f3DhistMassK0s_vs_Pt_afterMasscut_Cent;
   
  
   Double_t fVertexZMax;
@@ -393,40 +284,16 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5 : public AliAnalysisTaskSE {
   Int_t fFillTrackQAhists_flag;
   Int_t fFillPIDhists_flag;
   Int_t fBayesianPID_flag;
-  Int_t fMinV0TracksTpcClustersNo;
-  Int_t fMinV0TracksTpcCrossedRowsNo;
-  Int_t fMaxV0TracksTpcSharedClustersNo;
-  Double_t fMaxV0TracksChi2TPCperClstr;
-  Double_t fMaxV0TracksChi2ITSperClstr;
-  Double_t fRatioTPCcrossedrowsByFindableclusters;
-  Double_t fDcaV0DaughterTracksToPV;
-  Double_t fLambdaPropLifetime;
-  Double_t fMinLambdaTransDecayRadius;
-  Double_t fMaxLambdaTransDecayRadius;
-  Double_t fLambdaDcaV0daughters;
-  Double_t fLambdaDcaV0toPV;
-  Double_t fLambdaCosPAval;
-  Double_t fK0sPropLifetime;
-  Double_t fMinK0sTransDecayRadius;
-  Double_t fMaxK0sTransDecayRadius;
-  Double_t fK0sDcaV0daughters;
-  Double_t fK0sCosPAval;
-  Double_t fArmentousCutVal;
-  Double_t fLambdaDaughtersPIDcut;
-  Double_t fK0sDaughtersPIDcut;
-  Double_t fLambdaMassCut;
-  Double_t fK0sMassCut;
   Double_t fPIDbayesPion;
   Double_t fPIDbayesKaon;
   Double_t fPIDbayesProton;
   
   TExMap *fGlobalTracksAOD; //! global tracks in AOD for FB128 **Ante**
 
-
   
-  AliAnalysisTaskDiffPtFluc_V0particles_pTmax5(const AliAnalysisTaskDiffPtFluc_V0particles_pTmax5&);
-  AliAnalysisTaskDiffPtFluc_V0particles_pTmax5& operator=(const AliAnalysisTaskDiffPtFluc_V0particles_pTmax5&);  
-  ClassDef(AliAnalysisTaskDiffPtFluc_V0particles_pTmax5, 1);
+  AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5_v2(const AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5_v2&);
+  AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5_v2& operator=(const AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5_v2&);  
+  ClassDef(AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5_v2, 1);
 };
 
 #endif
