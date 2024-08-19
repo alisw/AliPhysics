@@ -165,7 +165,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
   "O2 HepMc Cross Sections",
   "O2 HepMc Pdf Info",
   "O2 HepMc Heavy Ion",
-  "Barrel trackes Extra Run 2"
+  "Barrel tracks Extra Run2"
 };
 
 const TClass *AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = {AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class()};
