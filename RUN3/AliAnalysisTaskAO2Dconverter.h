@@ -137,7 +137,8 @@ public:
     Run2Tracklet = 255
   }; // corresponds to O2/Framework/Core/include/Framework/DataTypes.h
   enum TrackFlagsRun2Enum {
-    ITSrefit = 0x1, // for SPD tracklets, 0x1 = tracklet from cluster not used in tracking
+    ITSrefit = 0x1,
+    FreeClsSPDTracklet = 0x1, // for SPD tracklets, tracklet from cluster not used in tracking
     TPCrefit = 0x2,
     GoldenChi2 = 0x4
     // NOTE Highest 4 bits reservd for PID hypothesis
