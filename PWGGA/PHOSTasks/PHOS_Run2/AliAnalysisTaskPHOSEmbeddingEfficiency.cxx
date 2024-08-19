@@ -566,7 +566,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
 
   for(Int_t i1=0;i1<multClust-1;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
-    if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
     if(IsFrom(ph1->GetPrimary(),TruePt,11)) continue;//reject cluster from dalitz decay
@@ -574,7 +573,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
 
     for(Int_t i2=i1+1;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
-      if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
       if(!CheckMinimumEnergy(ph2)) continue;
 
       if(IsFrom(ph2->GetPrimary(),TruePt,11)) continue;//reject cluster from dalitz decay
@@ -649,6 +647,13 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
       value[1] = pt12;
       value[2] = asym;
 
+      FillHistogramTH2(fOutputContainer,"hMgg_noPID",m12,pt12,weight);
+      if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMgg_CPV" ,m12,pt12,weight);
+      if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMgg_Disp",m12,pt12,weight);
+      if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMgg_PID" ,m12,pt12,weight);
+
+      if (!fPHOSClusterCuts->AcceptPhoton(ph1) || !fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
+
       if(m12 > 0.96) continue;//reduce entry in THnSparse
 
       if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,weight * 1/trgeff12);
@@ -693,7 +698,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMixMgg()
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
-    if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
@@ -701,7 +705,6 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMixMgg()
 
       for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
         AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
-        if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
         if(!CheckMinimumEnergy(ph2)) continue;
 
         if(!fIsMC && fIsPHOSTriggerAnalysis && (!ph1->IsTrig() && !ph2->IsTrig())) continue;//it is meaningless to reconstruct invariant mass with FALSE-FALSE combination in PHOS triggered data.
@@ -763,6 +766,14 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMixMgg()
         value[0] = m12;
         value[1] = pt12;
         value[2] = asym;
+
+        FillHistogramTH2(fOutputContainer,"hMixMgg_noPID",m12,pt12,weight);
+        if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMixMgg_CPV" ,m12,pt12,weight);
+        if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMixMgg_Disp",m12,pt12,weight);
+        if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMixMgg_PID" ,m12,pt12,weight);
+
+        if (!fPHOSClusterCuts->AcceptPhoton(ph1) || !fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
+
         if(m12 > 0.96) continue;//reduce entry in THnSparse
 
         if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMixMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12);

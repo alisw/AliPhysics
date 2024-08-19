@@ -665,6 +665,19 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
 
   }//end of PID loop
 
+  for (Int_t ip = 0; ip < 4; ip++){
+
+    TH2F *h2_PID    = new TH2F(Form("hMgg_%s"   ,PIDtype[ip].Data()),Form("M_{#gamma#gamma} Real %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)",PIDtype[ip].Data()),180,0,0.72,NpTgg-1,pTgg);
+    TH2F *h2mix_PID = new TH2F(Form("hMixMgg_%s",PIDtype[ip].Data()),Form("M_{#gamma#gamma} Mixed %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)",PIDtype[ip].Data()),180,0,0.72,NpTgg-1,pTgg);
+
+    h2_PID->Sumw2();
+    fOutputContainer->Add(h2_PID);
+
+    h2mix_PID->Sumw2();
+    fOutputContainer->Add(h2mix_PID);
+
+  }
+
   //for TOF cut efficiency
   TH2F *h2_p_TOF = new TH2F("hMgg_Probe_TOF"              ,"Probe #gamma TOF;M_{#gamma#gamma} (GeV/c^{2});E_{#gamma} (GeV)"            ,60,0,0.24,NpTgg-1,pTgg);
   h2_p_TOF->Sumw2();                                                                                                                    
@@ -1979,12 +1992,10 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
 
   for(Int_t i1=0;i1<multClust-1;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
-    if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
     for(Int_t i2=i1+1;i2<multClust;i2++){
       AliCaloPhoton *ph2 = (AliCaloPhoton*)fPHOSClusterArray->At(i2);
-      if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
       if(!CheckMinimumEnergy(ph2)) continue;
 
       if(fIsPHOSTriggerAnalysis){
@@ -2044,43 +2055,45 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
         if(commonID > -1) weight = w1;
         else weight = w1*w2;
 
-        if(IsFrom(primary1,TruePi0Pt,111) && IsFrom(primary2,TruePi0Pt,111) && commonID > -1){
-          AliAODMCParticle *p1 = (AliAODMCParticle*)fMCArrayAOD->At(primary1);
-          AliAODMCParticle *p2 = (AliAODMCParticle*)fMCArrayAOD->At(primary2);
-          Int_t pdg1 = p1->PdgCode(); 
-          Int_t pdg2 = p2->PdgCode(); 
+        if (fPHOSClusterCuts->AcceptPhoton(ph1) && fPHOSClusterCuts->AcceptPhoton(ph2)){
+          if(IsFrom(primary1,TruePi0Pt,111) && IsFrom(primary2,TruePi0Pt,111) && commonID > -1){
+            AliAODMCParticle *p1 = (AliAODMCParticle*)fMCArrayAOD->At(primary1);
+            AliAODMCParticle *p2 = (AliAODMCParticle*)fMCArrayAOD->At(primary2);
+            Int_t pdg1 = p1->PdgCode(); 
+            Int_t pdg2 = p2->PdgCode(); 
 
-          AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
-          Int_t pdg = p->PdgCode(); 
-          if(pdg1 == 22 && pdg2 == 22 && pdg == 111){
-            FillHistogramTH2(fOutputContainer,"hMggFromPi0",m12,pt12,weight);
-            if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromPi0_asym08",m12,pt12,weight);
+            AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
+            Int_t pdg = p->PdgCode(); 
+            if(pdg1 == 22 && pdg2 == 22 && pdg == 111){
+              FillHistogramTH2(fOutputContainer,"hMggFromPi0",m12,pt12,weight);
+              if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromPi0_asym08",m12,pt12,weight);
+            }
           }
-        }
-        if(IsFrom(primary1,TrueK0SPt,310) && IsFrom(primary2,TrueK0SPt,310) && commonID > -1){
-          //for feed down correction from K0S->pi0 + pi0
-          AliAODMCParticle *p1 = (AliAODMCParticle*)fMCArrayAOD->At(primary1);
-          AliAODMCParticle *p2 = (AliAODMCParticle*)fMCArrayAOD->At(primary2);
-          Int_t pdg1 = p1->PdgCode(); 
-          Int_t pdg2 = p2->PdgCode(); 
-          AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
-          Int_t pdg = p->PdgCode(); 
-          if(pdg1 == 22 && pdg2 == 22 && pdg == 111){
-            FillHistogramTH2(fOutputContainer,"hMggFromK0S",m12,pt12,weight);
-            if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromK0S_asym08",m12,pt12,weight);
+          if(IsFrom(primary1,TrueK0SPt,310) && IsFrom(primary2,TrueK0SPt,310) && commonID > -1){
+            //for feed down correction from K0S->pi0 + pi0
+            AliAODMCParticle *p1 = (AliAODMCParticle*)fMCArrayAOD->At(primary1);
+            AliAODMCParticle *p2 = (AliAODMCParticle*)fMCArrayAOD->At(primary2);
+            Int_t pdg1 = p1->PdgCode(); 
+            Int_t pdg2 = p2->PdgCode(); 
+            AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
+            Int_t pdg = p->PdgCode(); 
+            if(pdg1 == 22 && pdg2 == 22 && pdg == 111){
+              FillHistogramTH2(fOutputContainer,"hMggFromK0S",m12,pt12,weight);
+              if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromK0S_asym08",m12,pt12,weight);
+            }
           }
-        }
-        if(IsFrom(primary1,TrueL0Pt,3122) && IsFrom(primary2,TrueL0Pt,3122) && commonID > -1){
-          //for feed down correction from L0->pi0 + neutron
-          AliAODMCParticle *p1 = (AliAODMCParticle*)fMCArrayAOD->At(primary1);
-          AliAODMCParticle *p2 = (AliAODMCParticle*)fMCArrayAOD->At(primary2);
-          Int_t pdg1 = p1->PdgCode(); 
-          Int_t pdg2 = p2->PdgCode(); 
-          AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
-          Int_t pdg = p->PdgCode(); 
-          if(pdg1 == 22 && pdg2 == 22 && pdg == 111){
-            FillHistogramTH2(fOutputContainer,"hMggFromLambda0",m12,pt12,weight);
-            if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromLambda0_asym08",m12,pt12,weight);
+          if(IsFrom(primary1,TrueL0Pt,3122) && IsFrom(primary2,TrueL0Pt,3122) && commonID > -1){
+            //for feed down correction from L0->pi0 + neutron
+            AliAODMCParticle *p1 = (AliAODMCParticle*)fMCArrayAOD->At(primary1);
+            AliAODMCParticle *p2 = (AliAODMCParticle*)fMCArrayAOD->At(primary2);
+            Int_t pdg1 = p1->PdgCode(); 
+            Int_t pdg2 = p2->PdgCode(); 
+            AliAODMCParticle *p = (AliAODMCParticle*)fMCArrayAOD->At(commonID);
+            Int_t pdg = p->PdgCode(); 
+            if(pdg1 == 22 && pdg2 == 22 && pdg == 111){
+              FillHistogramTH2(fOutputContainer,"hMggFromLambda0",m12,pt12,weight);
+              if(asym < 0.8) FillHistogramTH2(fOutputContainer,"hMggFromLambda0_asym08",m12,pt12,weight);
+            }
           }
         }
 
@@ -2105,6 +2118,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       value[0] = m12;
       value[1] = pt12;
       value[2] = asym;
+
+      FillHistogramTH2(fOutputContainer,"hMgg_noPID",m12,pt12,weight);
+      if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMgg_CPV" ,m12,pt12,weight);
+      if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMgg_Disp",m12,pt12,weight);
+      if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMgg_PID" ,m12,pt12,weight);
+
+      if (!fPHOSClusterCuts->AcceptPhoton(ph1) || !fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
 
       if(fIsOAStudy){
         Double_t oa = TMath::Abs(ph1->Angle(ph2->Vect())) * 1e+3;//rad->mrad
@@ -2153,7 +2173,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
-    if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
     if(!CheckMinimumEnergy(ph1)) continue;
 
     for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
@@ -2161,7 +2180,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
 
       for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
         AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
-        if(!fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
         if(!CheckMinimumEnergy(ph2)) continue;
 
         if(fIsPHOSTriggerAnalysis){
@@ -2236,6 +2254,13 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         value[0] = m12;
         value[1] = pt12;
         value[2] = asym;
+
+        FillHistogramTH2(fOutputContainer,"hMixMgg_noPID",m12,pt12,weight);
+        if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMixMgg_CPV" ,m12,pt12,weight);
+        if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMixMgg_Disp",m12,pt12,weight);
+        if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMixMgg_PID" ,m12,pt12,weight);
+
+        if (!fPHOSClusterCuts->AcceptPhoton(ph1) || !fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
 
         if(fIsOAStudy){
           Double_t oa = TMath::Abs(ph1->Angle(ph2->Vect())) * 1e+3;//rad->mrad
