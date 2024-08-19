@@ -12,8 +12,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#ifndef AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_H
-#define AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_H
+#ifndef AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2_H
+#define AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2_H
 
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
@@ -42,11 +42,11 @@ class AliPIDCombined;
 class AliMultSelection;
 
 
-class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5 : public AliAnalysisTaskSE {
+class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 : public AliAnalysisTaskSE {
  public:
-  AliAnalysisTaskDiffPtFluc_V0particles_pTmax5();
-  AliAnalysisTaskDiffPtFluc_V0particles_pTmax5(const char *name);
-  virtual ~AliAnalysisTaskDiffPtFluc_V0particles_pTmax5();
+  AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2();
+  AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2(const char *name);
+  virtual ~AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -424,9 +424,9 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5 : public AliAnalysisTaskSE {
 
 
   
-  AliAnalysisTaskDiffPtFluc_V0particles_pTmax5(const AliAnalysisTaskDiffPtFluc_V0particles_pTmax5&);
-  AliAnalysisTaskDiffPtFluc_V0particles_pTmax5& operator=(const AliAnalysisTaskDiffPtFluc_V0particles_pTmax5&);  
-  ClassDef(AliAnalysisTaskDiffPtFluc_V0particles_pTmax5, 1);
+  AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2(const AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2&);
+  AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2& operator=(const AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2&);  
+  ClassDef(AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2, 1);
 };
 
 #endif
