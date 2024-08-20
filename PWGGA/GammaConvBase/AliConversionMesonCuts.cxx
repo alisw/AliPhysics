@@ -189,6 +189,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fDoHighPtHadronAnalysis(kFALSE),
   fEnableOmegaAPlikeCut(kFALSE),
   fDoGammaMinEnergyCut(kFALSE),
+  fDoGammaCaloMinEnergyCut(kFALSE),
   fNDaughterEnergyCut(0),
   fSingleDaughterMinE(0.),
   fInLeadTrackDir(0),
@@ -321,6 +322,7 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fDoHighPtHadronAnalysis(ref.fDoHighPtHadronAnalysis),
   fEnableOmegaAPlikeCut(ref.fEnableOmegaAPlikeCut),
   fDoGammaMinEnergyCut(kFALSE),
+  fDoGammaCaloMinEnergyCut(kFALSE),
   fNDaughterEnergyCut(0),
   fSingleDaughterMinE(0.),
   fInLeadTrackDir(ref.fInLeadTrackDir),
@@ -2323,6 +2325,35 @@ Bool_t AliConversionMesonCuts::SetMinPtCutExtended(Int_t PtCut){
   case 7: // PCM-EMC
     fMinPt = 1.0;
     fDoMinPtCut = kTRUE;
+    break;
+  // Instead of applying pt cut, apply a min energy cut on one of the daughters - for eta prime
+  // (needs to be treated in analysis task)
+  case 8: // INT7
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 2.5;
+    break;
+  case 9: // EG2
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 4.5;
+    break;
+  case 10: // EG1, a
+    fDoGammaMinEnergyCut = kTRUE;
+    fNDaughterEnergyCut  = 1;
+    fSingleDaughterMinE  = 9.5;
+    break;
+  case 11: // b, INT7, PCM-EMC - cut only on the contributing calo daughter
+    fDoGammaCaloMinEnergyCut = kTRUE;
+    fSingleDaughterMinE = 2.5;
+    break;
+  case 12: // c. EG2, PCM-EMC
+    fDoGammaCaloMinEnergyCut = kTRUE;
+    fSingleDaughterMinE = 4.5;
+    break;
+  case 13: // d, EG1, PCM-EMC
+    fDoGammaCaloMinEnergyCut = kTRUE;
+    fSingleDaughterMinE = 9.5;
     break;
   default:
     cout<<"Warning: pT cut not defined for eta prime analysis"<<PtCut<<endl;

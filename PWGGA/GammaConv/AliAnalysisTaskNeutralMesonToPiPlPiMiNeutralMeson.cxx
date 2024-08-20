@@ -5087,6 +5087,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
           }
         }
 
+        if( ((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->DoGammaCaloMinEnergyCut() ){
+          Float_t minDaughterEnergy = ((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->GetSingleDaughterMinE();
+          if( gamma1->E() < minDaughterEnergy ) continue;                    // check only calo daughter for the threshold
+        }
+
         bool NDMisSelected = false; // Delete all NDMcands that are not selected by any mass cut. Change to true when selected by any cut
         if((((AliConversionMesonCuts*)fNeutralDecayMesonCutArray->At(fiCut))->MesonIsSelected(NDMcand,kTRUE,((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift()))){
           if (!matched){
