@@ -53,6 +53,11 @@ public:
   {
     fNegPionCuts = trkCuts;
   }
+  void SetPionPtRange(double ptMin, double ptMax)
+  {
+    fPosPionCuts->SetPtRange(ptMin, ptMax);
+    fNegPionCuts->SetPtRange(ptMin, ptMax);
+  }
   void SetMixingEvt(bool usenolambdaevt)
   {
     fUseEvtNoLambda = usenolambdaevt;
