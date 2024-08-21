@@ -133,8 +133,8 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       fTracksEtaGapTPC(0),
       fMultSelection(0x0),
       hNch(0),
-      hNchvsV0MAmp(0),
-      hV0MvsV0MAmp(0),
+      pNchvsV0MAmp(0),
+      /*hV0MvsV0MAmp(0),*/
       pV0MAmpChannel(0),
       hV0MAmplitude(0),
       hV0Percentile(0),
@@ -155,17 +155,17 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       hSPDFull(0),
       hSPDEtaAdj(0),
       hSPDEtaGapW(0),
-      hSPDEtaGapWW(0),
+      /*hSPDEtaGapWW(0),*/
       hEtFull(0),
       hEtEtaGap(0),
       hPtvsSPDFull(0),
       hPtvsSPDEtaAdj(0),
       hPtvsSPDEtaGapW(0),
-      hPtvsSPDEtaGapWW(0),
+      /*hPtvsSPDEtaGapWW(0),*/
       hPtvsEtFull(0),
       hPtvsEtEtaGap(0),
-      hPtvsTPCEtaGapWidepT(0),
-      hPtvsEtEtaGapWidepT(0),
+      /*hPtvsTPCEtaGapWidepT(0),*/
+      /*hPtvsEtEtaGapWidepT(0),*/
       pZVtxvsSPDClus(0),
       pSPDClusvsEta(0),
       fSPDVtxCut(3.0),
@@ -185,11 +185,12 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       pZDCvsSPDEtaGapW(0),
       pZDCvsEtFull(0),
       pZDCvsEtEtaGap(0),
-      hPtvsEtFullWidepT(0),
-      hPtvsSPDFullWidepT(0),
-      hPtvsTPCFullWidepT(0),
-      hPtvsSPDEtaGapWidepT(0),
-      hPtvsSPDEtaGapWWidepT(0),
+      /*hPtvsEtFullWidepT(0),*/
+      /*hPtvsSPDFullWidepT(0),*/
+      /*hPtvsTPCFullWidepT(0),*/
+      /*hPtvsSPDEtaGapWidepT(0),*/
+      /*hPtvsSPDEtaGapWWidepT(0),*/
+      hZNvsV0MPer(0),
       pZNvsV0MAmp(0),
       pZNvsTPCFull(0),
       pZNvsTPCEtaGap(0),
@@ -199,6 +200,7 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       pZNvsSPDEtaGapW(0),
       pZNvsEtFull(0),
       pZNvsEtEtaGap(0),
+      hZPvsV0MPer(0),
       pZPvsV0MAmp(0),
       pZPvsTPCFull(0),
       pZPvsTPCEtaGap(0),
@@ -207,7 +209,17 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       pZPvsSPDEtaAdj(0),
       pZPvsSPDEtaGapW(0),
       pZPvsEtFull(0),
-      pZPvsEtEtaGap(0) {
+      pZPvsEtEtaGap(0),
+      /*fhZNCpmc(0),*/
+      /*fhZNApmc(0),*/
+      /*fhZPCpmc(0),*/
+      /*fhZPApmc(0),*/
+      hTracksOneSide(0),
+      hPtvsTracksOneSide(0),
+      hEtOneSide(0),
+      hPtvsEtOneSide(0),
+      hZNvsV0MAmp(0),
+      hZPvsV0MAmp(0) {
   for (int i = 0; i < v0m_Nbins; ++i) {
     hDCAxyData[i] = 0;
   }
@@ -250,8 +262,8 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       fTracksEtaGapTPC(0),
       fMultSelection(0x0),
       hNch(0),
-      hNchvsV0MAmp(0),
-      hV0MvsV0MAmp(0),
+      pNchvsV0MAmp(0),
+      /*hV0MvsV0MAmp(0),*/
       pV0MAmpChannel(0),
       hV0MAmplitude(0),
       hV0Percentile(0),
@@ -272,17 +284,17 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       hSPDFull(0),
       hSPDEtaAdj(0),
       hSPDEtaGapW(0),
-      hSPDEtaGapWW(0),
+      /*hSPDEtaGapWW(0),*/
       hEtFull(0),
       hEtEtaGap(0),
       hPtvsSPDFull(0),
       hPtvsSPDEtaAdj(0),
       hPtvsSPDEtaGapW(0),
-      hPtvsSPDEtaGapWW(0),
+      /*hPtvsSPDEtaGapWW(0),*/
       hPtvsEtFull(0),
       hPtvsEtEtaGap(0),
-      hPtvsTPCEtaGapWidepT(0),
-      hPtvsEtEtaGapWidepT(0),
+      /*hPtvsTPCEtaGapWidepT(0),*/
+      /*hPtvsEtEtaGapWidepT(0),*/
       pZVtxvsSPDClus(0),
       pSPDClusvsEta(0),
       fSPDVtxCut(3.0),
@@ -302,11 +314,12 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       pZDCvsSPDEtaGapW(0),
       pZDCvsEtFull(0),
       pZDCvsEtEtaGap(0),
-      hPtvsEtFullWidepT(0),
-      hPtvsSPDFullWidepT(0),
-      hPtvsTPCFullWidepT(0),
-      hPtvsSPDEtaGapWidepT(0),
-      hPtvsSPDEtaGapWWidepT(0),
+      /*hPtvsEtFullWidepT(0),*/
+      /*hPtvsSPDFullWidepT(0),*/
+      /*hPtvsTPCFullWidepT(0),*/
+      /*hPtvsSPDEtaGapWidepT(0),*/
+      /*hPtvsSPDEtaGapWWidepT(0),*/
+      hZNvsV0MPer(0),
       pZNvsV0MAmp(0),
       pZNvsTPCFull(0),
       pZNvsTPCEtaGap(0),
@@ -316,6 +329,7 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       pZNvsSPDEtaGapW(0),
       pZNvsEtFull(0),
       pZNvsEtEtaGap(0),
+      hZPvsV0MPer(0),
       pZPvsV0MAmp(0),
       pZPvsTPCFull(0),
       pZPvsTPCEtaGap(0),
@@ -324,7 +338,17 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       pZPvsSPDEtaAdj(0),
       pZPvsSPDEtaGapW(0),
       pZPvsEtFull(0),
-      pZPvsEtEtaGap(0) {
+      pZPvsEtEtaGap(0),
+      /*fhZNCpmc(0),*/
+      /*fhZNApmc(0),*/
+      /*fhZPCpmc(0),*/
+      /*fhZPApmc(0),*/
+      hTracksOneSide(0),
+      hPtvsTracksOneSide(0),
+      hEtOneSide(0),
+      hPtvsEtOneSide(0),
+      hZNvsV0MAmp(0),
+      hZPvsV0MAmp(0) {
   for (int i = 0; i < v0m_Nbins; ++i) {
     hDCAxyData[i] = 0;
   }
@@ -411,9 +435,9 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
 
-  const int nPtbins = 11;
-  double Ptbins[nPtbins + 1] = {0.15, 0.2, 0.4, 0.6, 0.8,  1.0,
-                                1.5,  2.0, 3.0, 5.0, 10.0, 50.0};
+  /*const int nPtbins = 11;*/
+  /*double Ptbins[nPtbins + 1] = {0.15, 0.2, 0.4, 0.6, 0.8,  1.0,*/
+  /*                              1.5,  2.0, 3.0, 5.0, 10.0, 50.0};*/
 
   constexpr int pt_Nbins{210};
   double pt_bins[pt_Nbins + 1] = {0};
@@ -433,6 +457,13 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   double nchEtaGapTPC_bins[nchEtaGapTPC_Nbins + 1] = {0};
   for (int i = 0; i <= nchEtaGapTPC_Nbins; ++i) {
     nchEtaGapTPC_bins[i] = 0.5 + (2.0 * i);
+  }
+
+  // Nch (0.5<eta<0.8)
+  constexpr int NchOneSide_Nbins{250};
+  double NchOneSide_bins[NchOneSide_Nbins + 1] = {0};
+  for (int i = 0; i <= NchOneSide_Nbins; ++i) {
+    NchOneSide_bins[i] = 0.5 + (2.0 * i);
   }
 
   // SPD Tracklets (|eta|<0.8)
@@ -469,6 +500,13 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
     EtEtaGap_bins[i] = 0.0 + (2.0 * i);
   }
 
+  // Et (0.5<eta<0.8)
+  constexpr int EtOneSide_Nbins{200};
+  double EtOneSide_bins[EtOneSide_Nbins + 1] = {0};
+  for (int i = 0; i <= EtOneSide_Nbins; ++i) {
+    EtOneSide_bins[i] = 0.0 + (2.0 * i);
+  }
+
   constexpr double v0mAmp_width{25.0};
   constexpr int v0mAmp_Nbins{1720};
   double v0mAmp_bins[v0mAmp_Nbins + 1] = {0};
@@ -492,12 +530,13 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   hNch = new TH1F("hTPCFull", ";#it{N}_{ch} (|#eta|#leq0.8); Counts;",
                   nch_Nbins, nch_bins);
 
-  hNchvsV0MAmp =
-      new TH2F("hNchvsV0MAmp", ";#it{N}_{ch} (|#eta|#leq0.8); V0M amplitude",
-               nch_Nbins, nch_bins, v0mAmp_Nbins, v0mAmp_bins);
+  pNchvsV0MAmp = new TProfile(
+      "pNchvsV0MAmp", ";V0M amplitude; #LT#it{N}_{ch}#GT (|#eta|#leq0.8);",
+      v0mAmp_Nbins, v0mAmp_bins);
 
-  hV0MvsV0MAmp = new TH2F("hV0MvsV0MAmp", ";V0M amplitude; V0M percentile",
-                          v0mAmp_Nbins, v0mAmp_bins, v0m_Nbins080, v0m_bins080);
+  /*hV0MvsV0MAmp = new TH2F("hV0MvsV0MAmp", ";V0M amplitude; V0M percentile",*/
+  /*                        v0mAmp_Nbins, v0mAmp_bins, v0m_Nbins080,
+   * v0m_bins080);*/
 
   pV0MAmpChannel =
       new TProfile("pV0MAmpChannel", ";V0 Channel; Amplitude;", 64, -0.5, 63.5);
@@ -505,7 +544,7 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   hV0MAmplitude =
       new TH1F("hV0MAmp", ";V0M amplitude;Counts", v0mAmp_Nbins, v0mAmp_bins);
 
-  hPtvsNch = new TH2D("hPtvsTPCFull",
+  hPtvsNch = new TH2F("hPtvsTPCFull",
                       "; #it{N}_{ch} (|#eta|#leq0.8); #it{p}_{T} "
                       "(|#eta|#leq0.8, GeV/#it{c});",
                       nch_Nbins, nch_bins, pt_Nbins, pt_bins);
@@ -520,7 +559,7 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
       "; V0M Amplitude; #LT#it{p}_{T}#GT (|#eta|#leq0.8, GeV/#it{c})",
       v0mAmp_Nbins, v0mAmp_bins);
 
-  hPtvsV0MAmp = new TH2D(
+  hPtvsV0MAmp = new TH2F(
       "hPtvsV0MAmp", ";V0M amplitude; #it{p}_{T} (|#eta|#leq0.8, GeV/#it{c})",
       v0mAmp_Nbins, v0mAmp_bins, pt_Nbins, pt_bins);
 
@@ -549,12 +588,12 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
                nchEtaGapTPC_Nbins, nchEtaGapTPC_bins);
 
   hPtvsTrackletsEtaGap =
-      new TH2D("hPtvsSPDEtaGap",
+      new TH2F("hPtvsSPDEtaGap",
                "; #it{N}_{tracklet} (0.5#leq|#eta|#leq0.8); #it{p}_{T} "
                "(|#eta|#leq0.4, GeV/#it{c})",
                SPDEtaGap_Nbins, SPDEtaGap_bins, pt_Nbins, pt_bins);
 
-  hPtvsTracksEtaGapTPC = new TH2D(
+  hPtvsTracksEtaGapTPC = new TH2F(
       "hPtvsTPCEtaGap",
       "; #it{N}_{ch} (0.5#leq#eta#leq0.8); #it{p}_{T} (|#eta|<0.3, GeV/#it{c})",
       nchEtaGapTPC_Nbins, nchEtaGapTPC_bins, pt_Nbins, pt_bins);
@@ -582,9 +621,10 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
       new TH1F("hSPDEtaGapW", "; #it{N}_{ch} (0.7#leq|#eta|#leq1); Entries",
                SPDEtaGap_Nbins, SPDEtaGap_bins);
 
-  hSPDEtaGapWW =
-      new TH1F("hSPDEtaGapWW", "; #it{N}_{ch} (1#leq|#eta|#leq1.3); Entries",
-               SPDEtaGap_Nbins, SPDEtaGap_bins);
+  /*hSPDEtaGapWW =*/
+  /*    new TH1F("hSPDEtaGapWW", "; #it{N}_{ch} (1#leq|#eta|#leq1.3);
+   * Entries",*/
+  /*             SPDEtaGap_Nbins, SPDEtaGap_bins);*/
 
   hEtFull = new TH1F("hEtFull", ";#it{E}_{T} (|#eta|#leq0.8); Entries",
                      Et_Nbins, Et_bins);
@@ -593,75 +633,95 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
       new TH1F("hEtEtaGap", ";#it{E}_{T} (0.5#leq|#eta|#leq0.8);Entries",
                EtEtaGap_Nbins, EtEtaGap_bins);
 
-  hPtvsSPDFull = new TH2D("hPtvsSPDFull",
+  hTracksOneSide =
+      new TH1F("hTracksOneSide", ";#it{N}_{ch} (0.5#leq#eta#leq0.8); Entries;",
+               NchOneSide_Nbins, NchOneSide_bins);
+
+  hEtOneSide =
+      new TH1F("hEtOneSide", ";#it{E}_{T} (0.5#leq#eta#leq0.8); Entries;",
+               EtOneSide_Nbins, EtOneSide_bins);
+
+  hPtvsSPDFull = new TH2F("hPtvsSPDFull",
                           "; #it{N}_{ch} (|#eta|#leq0.8); #it{p}_{T} "
                           "(|#eta|#leq0.8, GeV/#it{c})",
                           SPD0p8_Nbins, SPD0p8_bins, pt_Nbins, pt_bins);
 
-  hPtvsSPDEtaAdj = new TH2D("hPtvsSPDEtaAdj",
+  hPtvsSPDEtaAdj = new TH2F("hPtvsSPDEtaAdj",
                             "; #it{N}_{ch} (0.3<|#eta|#leq0.6); #it{p}_{T} "
                             "(|#eta|#leq0.3, GeV/#it{c})",
                             SPD0p4_Nbins, SPD0p4_bins, pt_Nbins, pt_bins);
 
   hPtvsSPDEtaGapW =
-      new TH2D("hPtvsSPDEtaGapW",
+      new TH2F("hPtvsSPDEtaGapW",
                "; #it{N}_{ch} (0.7#leq|#eta|#leq1); #it{p}_{T} "
                "(|#eta|#leq0.3, GeV/#it{c})",
                SPDEtaGap_Nbins, SPDEtaGap_bins, pt_Nbins, pt_bins);
 
-  hPtvsSPDEtaGapWW =
-      new TH2D("hPtvsSPDEtaGapWW",
-               "; #it{N}_{ch} (1#leq|#eta|#leq1.3); #it{p}_{T} "
-               "(|#eta|#leq0.3, GeV/#it{c})",
-               SPDEtaGap_Nbins, SPDEtaGap_bins, pt_Nbins, pt_bins);
+  /*hPtvsSPDEtaGapWW =*/
+  /*    new TH2D("hPtvsSPDEtaGapWW",*/
+  /*             "; #it{N}_{ch} (1#leq|#eta|#leq1.3); #it{p}_{T} "*/
+  /*             "(|#eta|#leq0.3, GeV/#it{c})",*/
+  /*             SPDEtaGap_Nbins, SPDEtaGap_bins, pt_Nbins, pt_bins);*/
 
-  hPtvsEtFull = new TH2D(
+  hPtvsEtFull = new TH2F(
       "hPtvsEtFull",
       ";#it{E}_{T} (|#eta|#leq0.8); #it{p}_{T} (|#eta|#leq0.8, GeV/#it{c})",
       Et_Nbins, Et_bins, pt_Nbins, pt_bins);
 
-  hPtvsEtEtaGap = new TH2D("hPtvsEtEtaGap",
+  hPtvsEtEtaGap = new TH2F("hPtvsEtEtaGap",
                            ";#it{E}_{T} (0.5#leq|#eta|#leq0.8); #it{p}_{T} "
                            "(|#eta|#leq0.3, GeV/#it{c})",
                            EtEtaGap_Nbins, EtEtaGap_bins, pt_Nbins, pt_bins);
 
-  hPtvsTPCEtaGapWidepT = new TH2F(
-      "hPtvsTPCEtaGapWidepT",
-      "; #it{N}_{ch} (0.5#leq#eta#leq0.8); #it{p}_{T} (|#eta|<0.3, GeV/#it{c})",
-      nchEtaGapTPC_Nbins, nchEtaGapTPC_bins, nPtbins, Ptbins);
+  hPtvsTracksOneSide =
+      new TH2F("hPtvsTracksOneSide",
+               ";#it{N}_{ch} (0.5#leq#eta#leq0.8); #it{p}_{T} "
+               "(-0.8#leq#eta<0.5), GeV/#it{c})",
+               NchOneSide_Nbins, NchOneSide_bins, pt_Nbins, pt_bins);
 
-  hPtvsEtEtaGapWidepT =
-      new TH2F("hPtvsEtEtaGapWidepT",
-               "; #it{E}_{T} (0.5#leq|#eta|#leq0.8); #it{p}_{T} "
-               "(|#eta|#leq0.3, GeV/#it{c});",
-               EtEtaGap_Nbins, EtEtaGap_bins, nPtbins, Ptbins);
+  hPtvsEtOneSide = new TH2F("hPtvsEtOneSide",
+                            ";#it{E}_{T} (0.5#leq#eta#leq0.8); #it{p}_{T} "
+                            "(-0.8#leq#eta<0.5), GeV/#it{c})",
+                            EtOneSide_Nbins, EtOneSide_bins, pt_Nbins, pt_bins);
 
-  hPtvsEtFullWidepT = new TH2F("hPtvsEtFullWidepT",
-                               ";#it{E}_{T} (|#eta|#leq0.8);#it{p}_{T} "
-                               "(|#eta|#leq0.8, GeV/#it{c});",
-                               Et_Nbins, Et_bins, nPtbins, Ptbins);
+  /*hPtvsTPCEtaGapWidepT = new TH2F(*/
+  /*    "hPtvsTPCEtaGapWidepT",*/
+  /*    "; #it{N}_{ch} (0.5#leq#eta#leq0.8); #it{p}_{T} (|#eta|<0.3,
+   * GeV/#it{c})",*/
+  /*    nchEtaGapTPC_Nbins, nchEtaGapTPC_bins, nPtbins, Ptbins);*/
+  /**/
+  /*hPtvsEtEtaGapWidepT =*/
+  /*    new TH2F("hPtvsEtEtaGapWidepT",*/
+  /*             "; #it{E}_{T} (0.5#leq|#eta|#leq0.8); #it{p}_{T} "*/
+  /*             "(|#eta|#leq0.3, GeV/#it{c});",*/
+  /*             EtEtaGap_Nbins, EtEtaGap_bins, nPtbins, Ptbins);*/
+  /**/
+  /*hPtvsEtFullWidepT = new TH2F("hPtvsEtFullWidepT",*/
+  /*                             ";#it{E}_{T} (|#eta|#leq0.8);#it{p}_{T} "*/
+  /*                             "(|#eta|#leq0.8, GeV/#it{c});",*/
+  /*                             Et_Nbins, Et_bins, nPtbins, Ptbins);*/
 
-  hPtvsSPDFullWidepT = new TH2F("hPtvsSPDFullWidepT",
-                                ";#it{N}_{ch} (|#eta|#leq0.8);#it{p}_{T} "
-                                "(|#eta|#leq0.8, GeV/#it{c});",
-                                SPD0p8_Nbins, SPD0p8_bins, nPtbins, Ptbins);
-
-  hPtvsTPCFullWidepT = new TH2F("hPtvsTPCFullWidepT",
-                                ";#it{N}_{ch} (|#eta|#leq0.8);#it{p}_{T} "
-                                "(|#eta|#leq0.8, GeV/#it{c});",
-                                nch_Nbins, nch_bins, nPtbins, Ptbins);
-
-  hPtvsSPDEtaGapWidepT =
-      new TH2F("hPtvsSPDEtaGapWidepT",
-               ";#it{N}_{ch} (0.5#leq|#eta|#leq0.8);#it{p}_{T} "
-               "(|#eta|#leq0.3, GeV/#it{c});",
-               SPDEtaGap_Nbins, SPDEtaGap_bins, nPtbins, Ptbins);
-
-  hPtvsSPDEtaGapWWidepT =
-      new TH2F("hPtvsSPDEtaGapWWidepT",
-               ";#it{N}_{ch} (0.7|#eta|#leq1);#it{p}_{T} "
-               "(|#eta|#leq0.3, GeV/#it{c});",
-               SPDEtaGap_Nbins, SPDEtaGap_bins, nPtbins, Ptbins);
+  /*hPtvsSPDFullWidepT = new TH2F("hPtvsSPDFullWidepT",*/
+  /*                              ";#it{N}_{ch} (|#eta|#leq0.8);#it{p}_{T} "*/
+  /*                              "(|#eta|#leq0.8, GeV/#it{c});",*/
+  /*                              SPD0p8_Nbins, SPD0p8_bins, nPtbins, Ptbins);*/
+  /**/
+  /*hPtvsTPCFullWidepT = new TH2F("hPtvsTPCFullWidepT",*/
+  /*                              ";#it{N}_{ch} (|#eta|#leq0.8);#it{p}_{T} "*/
+  /*                              "(|#eta|#leq0.8, GeV/#it{c});",*/
+  /*                              nch_Nbins, nch_bins, nPtbins, Ptbins);*/
+  /**/
+  /*hPtvsSPDEtaGapWidepT =*/
+  /*    new TH2F("hPtvsSPDEtaGapWidepT",*/
+  /*             ";#it{N}_{ch} (0.5#leq|#eta|#leq0.8);#it{p}_{T} "*/
+  /*             "(|#eta|#leq0.3, GeV/#it{c});",*/
+  /*             SPDEtaGap_Nbins, SPDEtaGap_bins, nPtbins, Ptbins);*/
+  /**/
+  /*hPtvsSPDEtaGapWWidepT =*/
+  /*    new TH2F("hPtvsSPDEtaGapWWidepT",*/
+  /*             ";#it{N}_{ch} (0.7|#eta|#leq1);#it{p}_{T} "*/
+  /*             "(|#eta|#leq0.3, GeV/#it{c});",*/
+  /*             SPDEtaGap_Nbins, SPDEtaGap_bins, nPtbins, Ptbins);*/
 
   pZVtxvsSPDClus =
       new TProfile("pZVtxvsSPDClus", ";Z_{SPD} Vertex (cm); <SPD clusters>;",
@@ -688,6 +748,15 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
       new TProfile("pZDCvsEtFull", ";E_{T};<ZDC>;", Et_Nbins, Et_bins);
   pZDCvsEtEtaGap = new TProfile("pZDCvsEtEtaGap", ";E_{T};<ZDC>;",
                                 EtEtaGap_Nbins, EtEtaGap_bins);
+
+  hZNvsV0MPer = new TH2F("hZNvsV0MPer", ";V0M Per; #it{E}_{ZN} [TeV]/2.511;",
+                         40, 0.0, 80.0, 100, 0.0, 100.0);
+  hZPvsV0MPer = new TH2F("hZPvsV0MPer", ";V0M Per; #it{E}_{ZP} [TeV]/2.511;",
+                         40, 0.0, 80.0, 30, 0.0, 30.0);
+  hZNvsV0MAmp = new TH2F("hZNvsV0MAmp", ";V0M Amp; #it{E}_{ZN} [TeV]/2.511;",
+                         v0mAmp_Nbins, v0mAmp_bins, 100, 0.0, 100.0);
+  hZPvsV0MAmp = new TH2F("hZPvsV0MAmp", ";V0M Amp; #it{E}_{ZP} [TeV]/2.511;",
+                         v0mAmp_Nbins, v0mAmp_bins, 30, 0.0, 30.0);
   pZNvsV0MAmp =
       new TProfile("pZNvsV0MAmp", ";V0M Amp;<ZN>;", v0mAmp_Nbins, v0mAmp_bins);
   pZNvsTPCFull =
@@ -723,12 +792,21 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   pZPvsEtEtaGap = new TProfile("pZPvsEtEtaGap", ";E_{T};<ZP>;", EtEtaGap_Nbins,
                                EtEtaGap_bins);
 
+  /*fhZNCpmc = new TH1F("fhZNCpmc", "ZNC PMC", 125, 0., 250.);*/
+  /*fhZNCpmc->SetXTitle("ZNC energy (TeV)");*/
+  /*fhZNApmc = new TH1F("fhZNApmc", "ZNA PMC", 125, 0., 250.);*/
+  /*fhZNApmc->SetXTitle("ZNA energy (TeV)");*/
+  /*fhZPCpmc = new TH1F("fhZPCpmc", "ZPC PMC", 50, 0., 100.);*/
+  /*fhZPCpmc->SetXTitle("ZPC energy (TeV)");*/
+  /*fhZPApmc = new TH1F("fhZPApmc", "ZPA PMC", 50, 0., 100.);*/
+  /*fhZPApmc->SetXTitle("ZPA energy (TeV)");*/
+
   fOutputList->Add(hBestVtxZ);
   fOutputList->Add(pZVtxvsSPDClus);
   fOutputList->Add(pSPDClusvsEta);
+  fOutputList->Add(pNchvsV0MAmp);
   fOutputList->Add(hV0Percentile);
-  fOutputList->Add(hNchvsV0MAmp);
-  fOutputList->Add(hV0MvsV0MAmp);
+  /*fOutputList->Add(hV0MvsV0MAmp);*/
 
   fOutputList->Add(hV0MAmplitude);
   fOutputList->Add(hPtvsV0MAmp);
@@ -746,6 +824,9 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   fOutputList->Add(hPtvsTracksEtaGapTPC);
   fOutputList->Add(pPtvsTracksEtaGapTPC);
 
+  fOutputList->Add(hTracksOneSide);
+  fOutputList->Add(hPtvsTracksOneSide);
+
   fOutputList->Add(hPhiEtaGapSPD);
   fOutputList->Add(hPhiEtaGapTPC);
   fOutputList->Add(pV0MAmpChannel);
@@ -760,8 +841,8 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   fOutputList->Add(hSPDEtaGapW);
   fOutputList->Add(hPtvsSPDEtaGapW);
 
-  fOutputList->Add(hSPDEtaGapWW);
-  fOutputList->Add(hPtvsSPDEtaGapWW);
+  /*fOutputList->Add(hSPDEtaGapWW);*/
+  /*fOutputList->Add(hPtvsSPDEtaGapWW);*/
 
   fOutputList->Add(hEtFull);
   fOutputList->Add(hPtvsEtFull);
@@ -769,13 +850,16 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   fOutputList->Add(hEtEtaGap);
   fOutputList->Add(hPtvsEtEtaGap);
 
-  fOutputList->Add(hPtvsTPCEtaGapWidepT);
-  fOutputList->Add(hPtvsEtEtaGapWidepT);
-  fOutputList->Add(hPtvsEtFullWidepT);
-  fOutputList->Add(hPtvsSPDFullWidepT);
-  fOutputList->Add(hPtvsTPCFullWidepT);
-  fOutputList->Add(hPtvsSPDEtaGapWidepT);
-  fOutputList->Add(hPtvsSPDEtaGapWWidepT);
+  fOutputList->Add(hEtOneSide);
+  fOutputList->Add(hPtvsEtOneSide);
+
+  /*fOutputList->Add(hPtvsTPCEtaGapWidepT);*/
+  /*fOutputList->Add(hPtvsEtEtaGapWidepT);*/
+  /*fOutputList->Add(hPtvsEtFullWidepT);*/
+  /*fOutputList->Add(hPtvsSPDFullWidepT);*/
+  /*fOutputList->Add(hPtvsTPCFullWidepT);*/
+  /*fOutputList->Add(hPtvsSPDEtaGapWidepT);*/
+  /*fOutputList->Add(hPtvsSPDEtaGapWWidepT);*/
 
   fOutputList->Add(pZDCvsV0MAmp);
   fOutputList->Add(pZDCvsTPCFull);
@@ -787,6 +871,8 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   fOutputList->Add(pZDCvsEtFull);
   fOutputList->Add(pZDCvsEtEtaGap);
 
+  fOutputList->Add(hZNvsV0MAmp);
+  fOutputList->Add(hZNvsV0MPer);
   fOutputList->Add(pZNvsV0MAmp);
   fOutputList->Add(pZNvsTPCFull);
   fOutputList->Add(pZNvsTPCEtaGap);
@@ -797,6 +883,8 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   fOutputList->Add(pZNvsEtFull);
   fOutputList->Add(pZNvsEtEtaGap);
 
+  fOutputList->Add(hZPvsV0MAmp);
+  fOutputList->Add(hZPvsV0MPer);
   fOutputList->Add(pZPvsV0MAmp);
   fOutputList->Add(pZPvsTPCFull);
   fOutputList->Add(pZPvsTPCEtaGap);
@@ -806,6 +894,11 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   fOutputList->Add(pZPvsSPDEtaGapW);
   fOutputList->Add(pZPvsEtFull);
   fOutputList->Add(pZPvsEtEtaGap);
+
+  /*fOutputList->Add(fhZNCpmc);*/
+  /*fOutputList->Add(fhZNApmc);*/
+  /*fOutputList->Add(fhZPCpmc);*/
+  /*fOutputList->Add(fhZPApmc);*/
 
   for (int i = 0; i < v0m_Nbins; ++i) {
     hDCAxyData[i] = new TH2F(Form("hDCAxyData_%s", uc_v0m_bins_name[i]),
@@ -926,11 +1019,25 @@ void AliAnalysisTaskDataSpeedOfSound::GetZDC() {
   fZP = -999.0;
   double zp = esdZDC->GetZDCP1Energy() + esdZDC->GetZDCP2Energy();
   double zn = esdZDC->GetZDCN1Energy() + esdZDC->GetZDCN2Energy();
+  // Average the energy detected in each calorimeter
+  zp /= 2.0;
+  zn /= 2.0;
+  // Convert from GeV to TeV
   zp *= 0.001;
   zn *= 0.001;
   fZN = zn;
   fZP = zp;
   fZDC = zp + zn;
+
+  /*const double* towZNC = esdZDC->GetZN1TowerEnergy();*/
+  /*const double* towZPC = esdZDC->GetZP1TowerEnergy();*/
+  /*const double* towZNA = esdZDC->GetZN2TowerEnergy();*/
+  /*const double* towZPA = esdZDC->GetZP2TowerEnergy();*/
+
+  /*fhZNCpmc->Fill(towZNC[0] / 1000.);*/
+  /*fhZNApmc->Fill(towZNA[0] / 1000.);*/
+  /*fhZPCpmc->Fill(towZPC[0] / 1000.);*/
+  /*fhZPApmc->Fill(towZPA[0] / 1000.);*/
 }
 
 //______________________________________________________________________________
@@ -1012,6 +1119,8 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
   fTracksEtaGapTPC = 0;
   const double masspi{0.13957};
   const int n_tracks{fESD->GetNumberOfTracks()};
+  double etRightSide{0.0};
+  int nchRightSide{0};
 
   for (int i = 0; i < n_tracks; ++i) {
     AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
@@ -1029,6 +1138,12 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
     }
     if (TMath::Abs(track->Eta()) > fEtaCut) {
       continue;
+    }
+
+    if (track->Eta() >= 0.5 && track->Eta() <= 0.8) {
+      nchRightSide++;
+      etRightSide += TMath::Sqrt(TMath::Power(track->Pt(), 2.0) +
+                                 TMath::Power(masspi, 2.0));
     }
 
     if (TMath::Abs(track->Eta()) >= fEtaCutTPCGapMin &&
@@ -1074,9 +1189,9 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
     hPtvsSPDFull->Fill(fSPDFull, pt);
     hPtvsEtFull->Fill(etfull, pt);
 
-    hPtvsEtFullWidepT->Fill(etfull, pt);
-    hPtvsSPDFullWidepT->Fill(fSPDFull, pt);
-    hPtvsTPCFullWidepT->Fill(rec_nch, pt);
+    /*hPtvsEtFullWidepT->Fill(etfull, pt);*/
+    /*hPtvsSPDFullWidepT->Fill(fSPDFull, pt);*/
+    /*hPtvsTPCFullWidepT->Fill(rec_nch, pt);*/
 
     //! SPD Eta Adjacent
     if (TMath::Abs(track->Eta()) <= fEtaCutForpTwTPCGap) {
@@ -1088,25 +1203,30 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
       hPtvsTrackletsEtaGap->Fill(fTrackletsEtaGap, pt);
       pPtvsTrackletsEtaGap->Fill(fTrackletsEtaGap, pt);
       hPtvsSPDEtaGapW->Fill(fSPDEtaGapW, pt);
-      hPtvsSPDEtaGapWW->Fill(fSPDEtaGapWW, pt);
-      hPtvsSPDEtaGapWidepT->Fill(fTrackletsEtaGap, pt);
-      hPtvsSPDEtaGapWWidepT->Fill(fSPDEtaGapW, pt);
+      /*hPtvsSPDEtaGapWW->Fill(fSPDEtaGapWW, pt);*/
+      /*hPtvsSPDEtaGapWidepT->Fill(fTrackletsEtaGap, pt);*/
+      /*hPtvsSPDEtaGapWWidepT->Fill(fSPDEtaGapW, pt);*/
     }
 
     //! Nch 0.5<=|eta|<=0.8 and Spectra |eta|<=0.3
     if (TMath::Abs(track->Eta()) <= fEtaCutForpTwTPCGap) {
       hPtvsTracksEtaGapTPC->Fill(fTracksEtaGapTPC, pt);
       pPtvsTracksEtaGapTPC->Fill(fTracksEtaGapTPC, pt);
-      hPtvsTPCEtaGapWidepT->Fill(fTracksEtaGapTPC, pt);
+      /*hPtvsTPCEtaGapWidepT->Fill(fTracksEtaGapTPC, pt);*/
       hPtvsEtEtaGap->Fill(etetagap, pt);
-      hPtvsEtEtaGapWidepT->Fill(etetagap, pt);
+      /*hPtvsEtEtaGapWidepT->Fill(etetagap, pt);*/
+    }
+
+    if (track->Eta() >= -0.8 && track->Eta() <= -0.5) {
+      hPtvsTracksOneSide->Fill(nchRightSide, pt);
+      hPtvsEtOneSide->Fill(etRightSide, pt);
     }
   }
 
   hV0Percentile->Fill(fv0mpercentile);
   hV0MAmplitude->Fill(fv0mamplitude);
-  hNchvsV0MAmp->Fill(rec_nch, fv0mamplitude);
-  hV0MvsV0MAmp->Fill(fv0mamplitude, fv0mpercentile);
+  pNchvsV0MAmp->Fill(fv0mamplitude, rec_nch);
+  /*hV0MvsV0MAmp->Fill(fv0mamplitude, fv0mpercentile);*/
   hNch->Fill(rec_nch);
 
   hTrackletsEtaGap->Fill(fTrackletsEtaGap);
@@ -1115,10 +1235,13 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
   hSPDFull->Fill(fSPDFull);
   hSPDEtaAdj->Fill(fSPDEtaAdj);
   hSPDEtaGapW->Fill(fSPDEtaGapW);
-  hSPDEtaGapWW->Fill(fSPDEtaGapWW);
+  /*hSPDEtaGapWW->Fill(fSPDEtaGapWW);*/
 
   hEtFull->Fill(etfull);
   hEtEtaGap->Fill(etetagap);
+
+  hEtOneSide->Fill(etRightSide);
+  hTracksOneSide->Fill(nchRightSide);
 
   pZDCvsV0MAmp->Fill(fv0mamplitude, fZDC);
   pZDCvsTPCFull->Fill(rec_nch, fZDC);
@@ -1130,6 +1253,8 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
   pZDCvsEtFull->Fill(etfull, fZDC);
   pZDCvsEtEtaGap->Fill(etetagap, fZDC);
 
+  hZNvsV0MPer->Fill(fv0mpercentile, fZN / 2.511);
+  hZNvsV0MAmp->Fill(fv0mamplitude, fZN / 2.511);
   pZNvsV0MAmp->Fill(fv0mamplitude, fZN);
   pZNvsTPCFull->Fill(rec_nch, fZN);
   pZNvsTPCEtaGap->Fill(fTracksEtaGapTPC, fZN);
@@ -1140,6 +1265,8 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
   pZNvsEtFull->Fill(etfull, fZN);
   pZNvsEtEtaGap->Fill(etetagap, fZN);
 
+  hZPvsV0MPer->Fill(fv0mpercentile, fZP / 2.511);
+  hZPvsV0MAmp->Fill(fv0mamplitude, fZP / 2.511);
   pZPvsV0MAmp->Fill(fv0mamplitude, fZP);
   pZPvsTPCFull->Fill(rec_nch, fZP);
   pZPvsTPCEtaGap->Fill(fTracksEtaGapTPC, fZP);
