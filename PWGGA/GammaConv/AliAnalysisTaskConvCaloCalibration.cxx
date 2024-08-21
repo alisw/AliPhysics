@@ -1457,7 +1457,7 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
               EMaxCell = ECellTmp;
             }
             auto SMnum = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetModuleNumberAndCellPosition(clus->GetCellAbsId(i), icol, irow);
-            vecPosEnergy.push_back({ECellTmp, icol, irow});
+            vecPosEnergy.push_back({ECellTmp, (float)icol, (float)irow});
           }
           if(Eclus > 0.) {
             fHistoClusterLeadingFractionVsEClus[fiCut]->Fill(EMaxCell/Eclus, PhotonCandidate->E(), fWeightJetJetMC);
