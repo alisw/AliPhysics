@@ -4103,7 +4103,7 @@ void AddTask_GammaConvV1_PbPb(
                               
                                                           
                        ///----  Machine Learning PCM OPEN CUTS   ---//       
-  } else if (trainConfig == 3000){ 
+  } else if (trainConfig == 3000){ // OPEN cuts NO BG 
     cuts.AddCutPCM("10130e03", "00200008100000001100400000", "0452103500000000"); // 0-10%
     cuts.AddCutPCM("11310e03", "00200008100000001100400000", "0452103500000000"); // 10-30%
     cuts.AddCutPCM("13530e03", "00200008100000001100400000", "0452103500000000"); // 30-50%
@@ -4111,11 +4111,23 @@ void AddTask_GammaConvV1_PbPb(
 //  cuts.AddCutPCM("15910e03", "0d200009ab770c00amd0400000", "0152101500000000"); // 990
 //  cuts.AddCutPCM("15910e03", "00200008d00000001100000000", "0452103500000000"); // 3000
     
-  } else if (trainConfig == 3001){
+  } else if (trainConfig == 3001){ // XGB on Grid
     cuts.AddCutPCM("10130e03", "00200008100000001100400000", "0452103500000000"); // 0-10%
     cuts.AddCutPCM("11310e03", "00200008100000001100400000", "0452103500000000"); // 10-30%
     cuts.AddCutPCM("13530e03", "00200008100000001100400000", "0452103500000000"); // 30-50%
     cuts.AddCutPCM("15910e03", "00200008100000001100400000", "0452103500000000"); // 50-90%
+   
+    } else if (trainConfig == 3002){ // Open cuts with BG
+    cuts.AddCutPCM("10130e03", "00200008100000001100400000", "0152103500000000"); // 0-10%
+    cuts.AddCutPCM("11310e03", "00200008100000001100400000", "0152103500000000"); // 10-30%
+    cuts.AddCutPCM("13530e03", "00200008100000001100400000", "0152103500000000"); // 30-50%
+    cuts.AddCutPCM("15910e03", "00200008100000001100400000", "0152103500000000"); // 50-90%
+   
+    } else if (trainConfig == 3003){ // Open cuts with BG + Added Sig
+    cuts.AddCutPCM("10130023", "00200008100000001100400000", "0152103500000000"); // 0-10%
+    cuts.AddCutPCM("11310023", "00200008100000001100400000", "0152103500000000"); // 10-30%
+    cuts.AddCutPCM("13530023", "00200008100000001100400000", "0152103500000000"); // 30-50%
+    cuts.AddCutPCM("15910023", "00200008100000001100400000", "0152103500000000"); // 50-90%
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
