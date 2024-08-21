@@ -235,9 +235,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Double_t GetSidebandMixingRightLow() const {return fSidebandMixingRightLow;}
     Double_t GetSidebandMixingRightHigh() const {return fSidebandMixingRightHigh;}
     Int_t    GetBackgroundMode() const {return fBackgroundMode;}
-    Bool_t   DoGammaMinEnergyCut() const {return fDoGammaMinEnergyCut;}
-    Bool_t   DoGammaCaloMinEnergyCut() const {return fDoGammaCaloMinEnergyCut;}
-    Int_t    GetNDaughterEnergyCut() const {return fNDaughterEnergyCut;}
+    Int_t    DoGammaMinEnergyCut() const {return fDoGammaMinEnergyCut;}
     Int_t    GetSingleDaughterMinE() const {return fSingleDaughterMinE;}
     Bool_t   UseGammaSelection() const{return fUseGammaSelection;}
     Int_t    GetAlphaInTaskMode() const {return fAlphaInTaskMode;}
@@ -374,17 +372,16 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t      fDoHighPtHadronAnalysis;        ///< switch to run a pi0 analysis with a high pt hadron in the event
     Bool_t      fEnableOmegaAPlikeCut;          ///< falg to enable the overloaded to close to V0 cut as cut inside an AP like plot
 
-    Bool_t      fDoGammaMinEnergyCut;           ///< if enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson need to fulfill fMinSingleDaughterE
-    Bool_t      fDoGammaCaloMinEnergyCut;       ///< if enabled, the calo daughter contributing to neutral meson need to fulfill fMinSingleDaughterE (only for PCM-EMC)
-    Int_t       fNDaughterEnergyCut;            ///< if above is enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson needs to fulfill fMinSingleDaughterE
-    Float_t     fSingleDaughterMinE;            ///< if above is enabled, at least fNDaughterEnergyCut daughter contributing to neutral meson needs to fulfill fMinSingleDaughterE
+    Int_t       fDoGammaMinEnergyCut;           ///< if enabled, at least one daughter contributing to neutral meson need to fulfill fMinSingleDaughterE:
+                                                /// 0: disabled, 1: min energy cut on any daughter, 2: min energy cut only on calo daughter (PCM-EMC)
+    Float_t     fSingleDaughterMinE;            ///< if above is enabled, at least one daughter contributing to neutral meson needs to fulfill fMinSingleDaughterE
     Int_t       fInLeadTrackDir;                ///< switch to Analyse mesons (not) in direction of highest pT track
     Double_t    fLeadTrackMinPt;                ///< min pT for leading track
 
   private:
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionMesonCuts,57)
+    ClassDef(AliConversionMesonCuts,55)
     /// \endcond
 };
 

@@ -5209,47 +5209,35 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
         }
 
         if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaMinEnergyCut() ){
-          Int_t minDaughters        = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetNDaughterEnergyCut();
           Float_t minDaughterEnergy = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSingleDaughterMinE();
-          if(minDaughters==1){ // at least one over threshold
-             if( (gamma0->E() < minDaughterEnergy)  && (gamma1->E() < minDaughterEnergy)) {
-                 if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
-                   if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-                     fHistoGoodMesonClusters[fiCut]->Fill(5); //"Cluster E not passed"
-                   }
-                 }
-                 continue;
-             } else if ( (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2)&&(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6) ){
-                 if ( (gamma0->E() < minDaughterEnergy) ){
-                     if (!(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef()))){
-                         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
-                           if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-                             fHistoGoodMesonClusters[fiCut]->Fill(5); //"Cluster E not passed"
-                           }
-                         }
-                         continue;
-                     }
-                 } else if ( (gamma1->E() < minDaughterEnergy) ){
-                     if (!(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma0->GetCaloClusterRef()))){
-                         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
-                           if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-                             fHistoGoodMesonClusters[fiCut]->Fill(5); //"Cluster E not passed"
-                           }
-                         }
-                         continue;
-                     }
-                 }
-             }
-          } else if (minDaughters==2){ // both over threshold
-             if( (gamma0->E() < minDaughterEnergy)  || (gamma1->E() < minDaughterEnergy)) {
-                 if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
-                   if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-                     fHistoGoodMesonClusters[fiCut]->Fill(5); //"Cluster E not passed"
-                   }
-                 }
-                 continue;
-             }
-          }
+            if( (gamma0->E() < minDaughterEnergy)  && (gamma1->E() < minDaughterEnergy)) { // at least one over threshold
+                if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
+                  if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+                    fHistoGoodMesonClusters[fiCut]->Fill(5); //"Cluster E not passed"
+                  }
+                }
+                continue;
+            } else if ( (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2)&&(((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6) ){
+                if ( (gamma0->E() < minDaughterEnergy) ){
+                    if (!(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma1->GetCaloClusterRef()))){
+                        if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
+                          if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+                            fHistoGoodMesonClusters[fiCut]->Fill(5); //"Cluster E not passed"
+                          }
+                        }
+                        continue;
+                    }
+                } else if ( (gamma1->E() < minDaughterEnergy) ){
+                    if (!(fCaloTriggerMimicHelper[fiCut]->IsClusterIDTriggered(gamma0->GetCaloClusterRef()))){
+                        if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
+                          if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+                            fHistoGoodMesonClusters[fiCut]->Fill(5); //"Cluster E not passed"
+                          }
+                        }
+                        continue;
+                    }
+                }
+            }
         }
         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
           if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
