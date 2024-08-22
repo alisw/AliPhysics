@@ -1,4 +1,4 @@
-AliAnalysisTaskDiffPtFluc_V0particles_pTmax5 *AddTaskDiffPtFluc_V0particles_pTmax5(Int_t lCentralityMin=0,
+AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 *AddTaskDiffPtFluc_V0particles_pTmax5_v2(Int_t lCentralityMin=0,
   Int_t lCentralityMax=90,
   Double_t lVzMax=10,
   Int_t lpileupcut = 1,
@@ -69,8 +69,8 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5 *AddTaskDiffPtFluc_V0particles_pTma
   TString TaskMeanpt;
   TaskMeanpt.Form("gTaskMeanpt%d_%d_%s", gCentMin, gCentMax, " ");
   //gROOT->LoadMacro("AliAnalysisTaskResonanceVsMultiplicity.cxx++g");                                                           
-  //gInterpreter->ProcessLine(".x AliAnalysisTaskDiffPtFluc_V0particles_pTmax5.cxx++g");
-  AliAnalysisTaskDiffPtFluc_V0particles_pTmax5 *task_v0pT = new AliAnalysisTaskDiffPtFluc_V0particles_pTmax5(TaskMeanpt);
+  //gInterpreter->ProcessLine(".x AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2.cxx++g");
+  AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 *task_v0pT = new AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2(TaskMeanpt);
   task_v0pT->SelectCollisionCandidates(AliVEvent::kINT7); //trigger for analysis                                                               
 
 

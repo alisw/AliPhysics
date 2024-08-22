@@ -1391,7 +1391,7 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
   // ------------------------------------------------
   //
   if (MultSelection) {
-    fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+    fCentrality = MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
   } else if (Centrality) {
     fCentrality = Centrality->GetCentralityPercentile("V0M");
   } else {
@@ -2771,7 +2771,7 @@ void AliAnalysisTaskJetHadroAOD::FillIncTracksReal()
     Float_t comb_sig_pi = TMath::Sqrt(fNSigmasPiTPC * fNSigmasPiTPC + fNSigmasPiTOF * fNSigmasPiTOF);
     Float_t comb_sig_pr = TMath::Sqrt(fNSigmasPrTPC * fNSigmasPrTPC + fNSigmasPrTOF * fNSigmasPrTOF);
 
-    if (ifDefaultCuts == 1 && TMath::Abs(fEta) < fEtaCut){
+    if (ifDefaultCuts == 1 && TMath::Abs(fEta) < fEtaCut && TMath::Abs(fY) < fYCut){
       if (fFill_TPC) fHistIncTracks_dEdx->Fill(fTPCmom_choice,fTPCSignal,TMath::Abs(fEta_choice));
       if (fFillpTPC_pT) fHistIncTracks_moms->Fill(fPt,fPtot);
       if (fFillp_pT) fHistIncTracks_moms_p->Fill(fPt,fPVertex);
@@ -2808,7 +2808,7 @@ void AliAnalysisTaskJetHadroAOD::FillIncTracksReal()
     fTime = kTRUE;
     }
 
-    if (ifDefaultCuts == 1 && TMath::Abs(fEta) < fEtaCut && fTOFout && fTime && fFill_TOF_expecs){
+    if (ifDefaultCuts == 1 && TMath::Abs(fEta) < fEtaCut && TMath::Abs(fY) < fYCut && fTOFout && fTime && fFill_TOF_expecs){
       Double_t inttime[5]; //6 is needed to account for earlier species - 0 = electron, 1 = muon, 2 = pion, 3 = kaon, 4 = proton, ESD only 5 = deuteron
       track->GetIntegratedTimes(inttime, 5); // Returns the array with integrated times for each particle hypothesis
 
@@ -2871,7 +2871,7 @@ void AliAnalysisTaskJetHadroAOD::FillIncTracksReal()
       }
     }
 
-    if (ifDefaultCuts == 1 && TMath::Abs(fEta) < fEtaCut && fTOFout && fTime && fFill_TOF){
+    if (ifDefaultCuts == 1 && TMath::Abs(fEta) < fEtaCut && TMath::Abs(fY) < fYCut && fTOFout && fTime && fFill_TOF){
       fHistIncTracks_beta->Fill(fBetamom_choice,beta);
       fHistIncTracks_t0->Fill(fBetamom_choice,t0);
       fHistIncTracks_TOFpi_nsigma->Fill(fTPCmom_choice,fNSigmasPiTOF,TMath::Abs(fEta_choice));
@@ -3067,7 +3067,7 @@ void AliAnalysisTaskJetHadroAOD::FillTreeMC()
     if (TOFTrkLabel[0] == -1) {// Track was not matched to any TOF hit.
       fMCTOFMatch = -1;
     }
-    else if (imc == TOFTrkLabel[0]) {// Track was correctly matched to a TOF hit.
+    else if (lab == TOFTrkLabel[0]) {// Track was correctly matched to a TOF hit.
       fMCTOFMatch = 0;
     }
     else {// Track was matched to a TOF hit but comes from mismatch!
@@ -3427,7 +3427,7 @@ void AliAnalysisTaskJetHadroAOD::FillMCJets()
       if (TOFTrkLabel[0] == -1) {// Track was not matched to any TOF hit.
         fMCTOFMatch = -1;
       }
-      else if (imc == TOFTrkLabel[0]) {// Track was correctly matched to a TOF hit.
+      else if (lab == TOFTrkLabel[0]) {// Track was correctly matched to a TOF hit.
         fMCTOFMatch = 0;
       }
       else {// Track was matched to a TOF hit but comes from mismatch!
@@ -3583,7 +3583,7 @@ void AliAnalysisTaskJetHadroAOD::FillMCJets()
       if (TOFTrkLabel[0] == -1) {// Track was not matched to any TOF hit.
         fMCTOFMatch = -1;
       }
-      else if (imc == TOFTrkLabel[0]) {// Track was correctly matched to a TOF hit.
+      else if (lab == TOFTrkLabel[0]) {// Track was correctly matched to a TOF hit.
         fMCTOFMatch = 0;
       }
       else {// Track was matched to a TOF hit but comes from mismatch!

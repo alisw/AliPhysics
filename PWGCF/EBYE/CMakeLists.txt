@@ -154,6 +154,7 @@ set(SRCS
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons_v2.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFluc_PiKaProtHad_pTmax5_v2.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons_ParticleLossEffect.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_detect.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_gen.cxx
@@ -163,6 +164,7 @@ set(SRCS
   DiffPTF/AliAnalysisTaskDiffPtFluc_MCnoESD_correct_v2.cxx
   DiffPTF/AliAnalysisTaskHptcorrId_tree.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_V0particles_pTmax5.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2.cxx
   IntermittencyAnalysis/AliAnalysisTaskNFactorialMoments.cxx
   IntermittencyAnalysis/AliAnalysisTaskNFactorialMomentsPID.cxx
   )

@@ -5091,20 +5091,18 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
             }
           }
         }
-        if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaMinEnergyCut() ){
-          Int_t minDaughters        = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetNDaughterEnergyCut();
+        if( ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaMinEnergyCut() == 1 ){ // calo over threshold
           Float_t minDaughterEnergy = ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetSingleDaughterMinE();
-          if(minDaughters==1){ // calo over threshold
-             if( (gamma1->E() < minDaughterEnergy) ) {
-                 if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
-                   if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
-                     fHistoGoodMesonClusters[fiCut]->Fill(5); //"Cluster E not passed"
-                   }
-                 }
-                 continue;
-             }
+          if( (gamma1->E() < minDaughterEnergy) ) {
+              if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
+                if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
+                  fHistoGoodMesonClusters[fiCut]->Fill(5); //"Cluster E not passed"
+                }
+              }
+              continue;
           }
         }
+        
         if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetClusterType() == 2){
           if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsSpecialTrigger()==6 ){
             fHistoGoodMesonClusters[fiCut]->Fill(4); //"Cluster E passed"

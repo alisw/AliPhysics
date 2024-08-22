@@ -69,7 +69,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
   AliFemtoDreamTrackCuts *TrackPosPionCuts = NULL;
   AliFemtoDreamTrackCuts *TrackCutsAntiPion = NULL;
 
-  const float PionPtMin = 0.14; // um = GeV
+  const float PionPtMin = 0.22; // um = GeV
   const float PionPtMax = 2; // um = GeV
 
   TrackPosPionCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false); // (bool isMC, bool DCAPlots, bool CombSigma, bool ContribSplitting), sets options for plot
@@ -246,8 +246,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
   }
 
   // Variation cuts
-  const float PionPtlow = 0.09;
-  const float PionPtup = 0.19;
+  const float PionPtlow = 0.20;
+  const float PionPtup = 0.24;
   const float PionEtaLow = 0.75;
   const float PionEtaUp = 0.85;
   const float PionNClsLow = 70;

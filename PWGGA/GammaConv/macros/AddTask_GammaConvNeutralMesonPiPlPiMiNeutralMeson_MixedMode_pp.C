@@ -679,27 +679,28 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   } else if(trainConfig == 224)  { 
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h000603600000000","j453503000000000"); // EG1
 
-    // possible new default pp 13 TeV, 2 sigmas mass cut
+    // possible new default pp 13 TeV, 2 sigmas mass cut, pT cut on one eta daugher
   } else if(trainConfig == 225)  { 
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h000643600000000","j453503000000000"); // INT7
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h0006b3600000000","j453503000000000"); // INT7
   } else if(trainConfig == 226)  { 
-    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h000653600000000","j453503000000000"); // EG2
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h0006c3600000000","j453503000000000"); // EG2
   } else if(trainConfig == 227)  { 
-    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h000663600000000","j453503000000000"); // EG1
-    // possible new defualt pp 13 TeV, 3 sigmas mass cut
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h0006d3600000000","j453503000000000"); // EG1
+    // possible new defualt pp 13 TeV, 3 sigmas mass cut, pT cut on one eta daugher
   } else if(trainConfig == 228)  { 
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h000643700000000","j453503000000000"); // INT7
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h0006b3700000000","j453503000000000"); // INT7
   } else if(trainConfig == 229)  { 
-    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h000653700000000","j453503000000000"); // EG2
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h0006c3700000000","j453503000000000"); // EG2
   } else if(trainConfig == 230)  { 
-    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h000663700000000","j453503000000000"); // EG1
-    // possible new defualt pp 13 TeV, 4 sigmas mass cut
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h0006d3700000000","j453503000000000"); // EG1
+    // possible new defualt pp 13 TeV, 4 sigmas mass cut, pT cut on one eta daugher
   } else if(trainConfig == 231)  { 
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h000643800000000","j453503000000000"); // INT7
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h0006b3800000000","j453503000000000"); // INT7
   } else if(trainConfig == 232)  { 
-    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h000653800000000","j453503000000000"); // EG2
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h0006c3800000000","j453503000000000"); // EG2
   } else if(trainConfig == 233)  { 
-    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h000663800000000","j453503000000000"); // EG1
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h0006d3800000000","j453503000000000"); // EG1
+
     // possible new defualt pp 13 TeV, 1 sigmas mass cut, no min pT cut
   } else if(trainConfig == 234)  { 
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","32c51079m","h000603500000000","j453503000000000"); // INT7
