@@ -2045,7 +2045,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         tracks.fRho1PtSnp = 0;
         tracks.fRho1PtTgl = 0;
         tracks.fTPCinnerP = NAN;
-        tracks.fFlags = mlt->FreeClustersTracklet(itr, 0) && mlt->FreeClustersTracklet(itr, 1);
+        tracks.fFlags = (mlt->FreeClustersTracklet(itr, 0) && mlt->FreeClustersTracklet(itr, 1)) ? FreeClsSPDTracklet : 0;
         tracks.fITSClusterMap = 0;
         tracks.fTPCNClsFindable = 0;
         tracks.fTPCNClsFindableMinusFound = 0;
