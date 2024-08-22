@@ -98,7 +98,7 @@ public:
     kHepMcCrossSections,
     kHepMcPdfInfo,
     kHepMcHeavyIon,
-    kTracksExtraRun2,
+    kRun2TrackExtras,
     kTrees
   };
   enum TaskModes { // Flag for the task operation mode

@@ -128,7 +128,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2hepmcxsection",
   "O2hepmcpdfinfo",
   "O2hepmcheavyion",
-  "O2trackextrarun2"
+  "O2run2trackextra"
 };
 
 const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
@@ -867,12 +867,12 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tTracksExtra->SetBasketSize("*", fBasketSizeTracks);
   }
 
-  TTree* tTracksExtraRun2 = CreateTree(kTracksExtraRun2);
-  if (fTreeStatus[kTracksExtraRun2]) {
+  TTree* tRun2TrackExtras = CreateTree(kRun2TrackExtras);
+  if (fTreeStatus[kRun2TrackExtras]) {
     //Extra Run 2
-    tTracksExtraRun2->Branch("fTPCNClsPID", &tracks.fTPCNClsPID, "fTPCNClsPID/b");
-    tTracksExtraRun2->Branch("fITSSignal", &tracks.fITSSignal, "fITSSignal/F");
-    tTracksExtraRun2->SetBasketSize("*", fBasketSizeTracks);
+    tRun2TrackExtras->Branch("fTPCNClsPID", &tracks.fTPCNClsPID, "fTPCNClsPID/b");
+    tRun2TrackExtras->Branch("fITSSignal", &tracks.fITSSignal, "fITSSignal/F");
+    tRun2TrackExtras->SetBasketSize("*", fBasketSizeTracks);
   }
 
   // Associate branches for Calo
@@ -1981,7 +1981,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       FillTree(kTracks);
       FillTree(kTracksCov);
       FillTree(kTracksExtra);
-      FillTree(kTracksExtraRun2);
+      FillTree(kRun2TrackExtras);
       if (fTreeStatus[kTracks])
         ntrk_filled++;
 
@@ -2086,14 +2086,14 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         FillTree(kTracks);
         FillTree(kTracksCov);
         FillTree(kTracksExtra);
-        FillTree(kTracksExtraRun2);
+        FillTree(kRun2TrackExtras);
         if (fTreeStatus[kTracks]) ntracklet_filled++;
       }
     } // end loop on tracklets
     eventextra.fNentries[kTracks] = ntrk_filled + ntracklet_filled;
     eventextra.fNentries[kTracksCov] = eventextra.fNentries[kTracks];
     eventextra.fNentries[kTracksExtra] = eventextra.fNentries[kTracks];
-    eventextra.fNentries[kTracksExtraRun2] = eventextra.fNentries[kTracks];
+    eventextra.fNentries[kRun2TrackExtras] = eventextra.fNentries[kTracks];
   }
 
   //---------------------------------------------------------------------------
