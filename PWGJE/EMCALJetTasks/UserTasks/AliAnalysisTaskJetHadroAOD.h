@@ -123,6 +123,8 @@ public:
   void   SetFill_TPC_expecs(const Bool_t if_TPC_expecs = kTRUE)           {fFill_TPC_expecs       = if_TPC_expecs;}
   void   SetUseCouts(const Bool_t ifUseCouts = kFALSE)                {fUseCouts            = ifUseCouts;}
   void   SetPercentageOfEvents(const Int_t nPercentageOfEvents = 0)   {fPercentageOfEvents = nPercentageOfEvents;}
+  void   SetDoEmbedding(const Bool_t ifDoEmbedding = kFALSE)   {fDoEmbedding   =  ifDoEmbedding;}
+  void   SetMultTrueFlag(const Bool_t ifMultTrueFlag = kFALSE)   {fMultTrueFlag   =  ifMultTrueFlag;}
 
   // Setters for the eta, momentum, dEdx, etc
   void   SetDeDxBins(const Int_t ndEdxBins, Float_t dEdxBins[]) {
@@ -166,8 +168,20 @@ public:
   void   SetBetamom_choice(const Float_t Betamom = 0.)         {fSetBetamom            = Betamom;}
   void   SetEta_choice(const Float_t eta = 0.)         {fSetEta            = eta;}
 
+//From jet extractor task
+  void   SetJetMatchingRadius(Double_t val)                  { fJetMatchingRadius = val; }
+  void   SetTruthLabelRange(Int_t min, Int_t max)            { fTruthMinLabel = min; fTruthMaxLabel = max; }
+  void   SetSaveMCInformation(Bool_t val) {fSaveMCInformation = val; fInitialized = kFALSE;}
+  void   SetJetMatchingSharedPtFraction(Double_t val)        { fJetMatchingSharedPtFraction = val; }
+
   //function to add jet task
   void   AddJet(AliJetContainer* jet = 0)                         {fJetContainer        = jet; }
+
+  Double_t  GetDistance(Double_t eta1, Double_t eta2, Double_t phi1, Double_t phi2)
+  {
+    Double_t deltaPhi = TMath::Min(TMath::Abs(phi1-phi2),TMath::TwoPi() - TMath::Abs(phi1-phi2));
+    return TMath::Sqrt((eta1-eta2)*(eta1-eta2) + deltaPhi*deltaPhi);
+  }
 
 private:
 
@@ -183,8 +197,13 @@ private:
   void FillIncTracksReal();                   // Fill all inclusive track information
   void FillTreeMC();
   void FillMCJets();
+  void FillEmbJets();
   void GetExpecteds(AliAODTrack* track);
   void FillEventTree();
+  void GetTrueJetPtFraction(AliEmcalJet* jet, Double_t& truePtFraction, Double_t& truePtFraction_mcparticles);
+  bool PerformGeometricalJetMatching(AliJetContainer& contBase, AliJetContainer& contTag, double maxDist);
+  void DoJetMatching();
+  void GetMatchedJetObservables(AliEmcalJet* jet,  Double_t& detJetPt, Double_t& partJetPt, Double_t& detJetPhi, Double_t& detJetEta, Double_t& partJetPhi, Double_t& partJetEta, Double_t& detJetDistance, Double_t& partJetDistance);
 
   //
   Bool_t CountEmptyEvents();  // Just count if there is empty events
@@ -337,12 +356,19 @@ private:
 
   AliJetContainer*   fJetContainer;   //!<! signal jet container
   AliJetContainer*   fbgJetContainer;   //!<! background jet container
+  AliJetContainer*   fEmbJetContainer;   //!<! signal embedded jet container
+  AliJetContainer*   fRecoJetContainer;   //!<! signal reco jet container
+  AliJetContainer*   fGenJetContainer;   //!<! signal gen jet container
   Double_t           fJetPt;
   Double_t           fJetEta;
   Double_t           fJetPhi;
   Float_t            fjetRhoVal;
+  Float_t            fjetRecoRhoVal;
+  Float_t            fjetEmbRhoVal;
+  Float_t            fjetGenRhoVal;
   Float_t            frhoFJ;
   Bool_t             fisGoodIncEvent;
+  Bool_t             fFilledUECone_Emb;
   Bool_t             fFilledUECone_Gen;
   Bool_t             fFilledUECone_Rec;
   Bool_t             fhasAcceptedFJjet;
@@ -351,6 +377,21 @@ private:
   Bool_t             fhasRealEMCjet;
   Int_t              fNumRealFJJets;
   Int_t              fNumRealEMCJets;
+
+  Bool_t              fMultTrueFlag;
+
+//From jet extractor task
+  Bool_t              fDoPartLevelMatching;
+  Bool_t              fDoDetLevelMatching;
+  Bool_t              fIsEmbeddedEvent;
+  TString             fMCParticleArrayName;     ///< Array name of MC particles in event (mcparticles)
+  TClonesArray*       fMCParticleArray;         //!<! Array of MC particles in event (usually mcparticles)
+  Double_t            fJetMatchingRadius;       ///< Matching radius for geometrically matching jets
+  Int_t               fTruthMinLabel;           ///< min track label to consider it as true particle
+  Int_t               fTruthMaxLabel;           ///< max track label to consider it as true particle
+  Bool_t              fSaveMCInformation;       ///< save MC information
+  Double_t            fJetMatchingSharedPtFraction; ///< Shared pT fraction required in matching
+  Bool_t              fDoEmbedding;             //Flag to enable all embedding code
 
   // Cut variables
   Double_t fTrackProbElTPC;
@@ -498,6 +539,51 @@ private:
   TH2F             * fHistMC_Jet_shared_pt_frac;     //!<! fHistMC_Jet_shared_pt_frac
   TH2F             * fHistMC_Jet_deltaR;     //!<! fHistMC_Jet_deltaR
 
+  TH3F             * fHist_TrueJetPtFraction; //!<! fHist_TrueJetPtFraction
+  TH3F             * fHist_MatchJetPts; //!<! fHist_MatchJetPts
+  TH3F             * fHist_MatchJetEtas; //!<! fHist_MatchJetEtas
+  TH3F             * fHist_MatchJetDeltaRs; //!<! fHist_MatchJetDeltaRs
+
+  TH3F             * fHist_JERS_PbPbunid_tru; //!<! fHist_JERS_PbPbunid_tru
+  TH3F             * fHist_JERS_PbPbunid_det; //!<! fHist_JERS_PbPbunid_det
+  TH3F             * fHist_JERS_PbPbunid_truhyb; //!<! fHist_JERS_PbPbunid_truhyb
+  TH3F             * fHist_JERS_PbPbunid_dethyb; //!<! fHist_JERS_PbPbunid_dethyb
+
+  TH3F             * fHist_JERS_truPythia; //!<! fHist_JERS_truPythia
+  TH3F             * fHist_JERS_truPythia_pi; //!<! fHist_JERS_truPythia_pi
+  TH3F             * fHist_JERS_truPythia_ka; //!<! fHist_JERS_truPythia_ka
+  TH3F             * fHist_JERS_truPythia_pr; //!<! fHist_JERS_truPythia_pr
+
+  TH3F             * fHist_JERS_detPythia; //!<! fHist_JERS_detPythia
+  TH3F             * fHist_JERS_detPythia_pi; //!<! fHist_JERS_detPythia_pi
+  TH3F             * fHist_JERS_detPythia_ka; //!<! fHist_JERS_detPythia_ka
+  TH3F             * fHist_JERS_detPythia_pr; //!<! fHist_JERS_detPythia_pr
+
+  TH3F             * fHist_JERS_truhybPythia; //!<! fHist_JERS_truhybPythia
+  TH3F             * fHist_JERS_truhybPythia_pi; //!<! fHist_JERS_truhybPythia_pi
+  TH3F             * fHist_JERS_truhybPythia_ka; //!<! fHist_JERS_truhybPythia_ka
+  TH3F             * fHist_JERS_truhybPythia_pr; //!<! fHist_JERS_truhybPythia_pr
+
+  TH3F             * fHist_JERS_dethybPythia; //!<! fHist_JERS_dethybPythia
+  TH3F             * fHist_JERS_dethybPythia_pi; //!<! fHist_JERS_dethybPythia_pi
+  TH3F             * fHist_JERS_dethybPythia_ka; //!<! fHist_JERS_dethybPythia_ka
+  TH3F             * fHist_JERS_dethybPythia_pr; //!<! fHist_JERS_dethybPythia_pr
+
+  TH1F             * fHist_PC_spectra_Pythia; //!<! fHist_PC_spectra_Pythia
+  TH1F             * fHist_PC_spectra_Pythia_pi; //!<! fHist_PC_spectra_Pythia_pi
+  TH1F             * fHist_PC_spectra_Pythia_ka; //!<! fHist_PC_spectra_Pythia_ka
+  TH1F             * fHist_PC_spectra_Pythia_pr; //!<! fHist_PC_spectra_Pythia_pr
+
+  TH2F             * fHist_det_spectra_Pythia; //!<! fHist_det_spectra_Pythia
+  TH2F             * fHist_det_spectra_Pythia_pi; //!<! fHist_det_spectra_Pythia_pi
+  TH2F             * fHist_det_spectra_Pythia_ka; //!<! fHist_det_spectra_Pythia_ka
+  TH2F             * fHist_det_spectra_Pythia_pr; //!<! fHist_det_spectra_Pythia_pr
+
+  TH2F             * fHist_part_spectra_Pythia; //!<! fHist_part_spectra_Pythia
+  TH2F             * fHist_part_spectra_Pythia_pi; //!<! fHist_part_spectra_Pythia_pi
+  TH2F             * fHist_part_spectra_Pythia_ka; //!<! fHist_part_spectra_Pythia_ka
+  TH2F             * fHist_part_spectra_Pythia_pr; //!<! fHist_part_spectra_Pythia_pr
+
   AliFJWrapper* fFastJetWrapper;            //!<! signal data FJwrapper
   AliFJWrapper* fFastJetWrapperBG;            //!<! background data FJwrapper
   AliFJWrapper* fFastJetWrapper_Rec;            //!<! signal MC reco FJwrapper
@@ -505,7 +591,7 @@ private:
   AliFJWrapper* fFastJetWrapper_Gen;            //!<! signal MC gen FJwrapper
   AliFJWrapper* fFastJetWrapperBG_Gen;            //!<! background MC gen FJwrapper
 
-  ClassDef(AliAnalysisTaskJetHadroAOD, 3);
+  ClassDef(AliAnalysisTaskJetHadroAOD, 4);
 
 };
 
