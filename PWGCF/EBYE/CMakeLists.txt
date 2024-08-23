@@ -144,6 +144,7 @@ set(SRCS
   HMPTF/AliAnalysisTaskCorrPbPb.cxx
   HMPTF/AliAnalysisTaskCorrPbPb_withoutTree.cxx
   HMPTF/AliAnalysisTaskCorrPbPb_treemerge.cxx
+  HMPTF/AliAnalysisTaskCorrPbPb_treemerge_v2.cxx
   HMPTF/AliAnalysisTaskCorrPbPbMC.cxx
   HMPTF/AliAnalysisTaskResonanceVsMultiplicityROOT6_new.cxx
   HMPTF/AliAnalysisTaskNetPiKProtFluc_MCnoESD_gen.cxx
