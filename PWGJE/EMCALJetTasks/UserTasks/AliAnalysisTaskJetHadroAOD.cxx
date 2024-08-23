@@ -81,6 +81,7 @@
 #include "AliEmcalJet.h"
 #include "AliEmcalJetTask.h"
 #include "AliRhoParameter.h"
+#include "AliEmcalContainerUtils.h"
 #include <fstream>
 #include <iostream>
 #include <iomanip>
@@ -220,12 +221,19 @@ fPhi(0),
 fSign(0),
 fJetContainer(0),
 fbgJetContainer(0),
+fRecoJetContainer(0),
+fEmbJetContainer(0),
+fGenJetContainer(0),
 fJetPt(0),
 fJetEta(0),
 fJetPhi(0),
 fjetRhoVal(0),
+fjetRecoRhoVal(0),
+fjetEmbRhoVal(0),
+fjetGenRhoVal(0),
 frhoFJ(0),
 fisGoodIncEvent(0),
+fFilledUECone_Emb(0),
 fFilledUECone_Gen(0),
 fFilledUECone_Rec(0),
 fhasAcceptedFJjet(0),
@@ -234,6 +242,16 @@ fhasRealFJjet(0),
 fhasRealEMCjet(0),
 fNumRealFJJets(0),
 fNumRealEMCJets(0),
+fIsEmbeddedEvent(kFALSE),
+fDoPartLevelMatching(kFALSE),
+fDoDetLevelMatching(kFALSE),
+fMCParticleArrayName("mcparticles"),
+fMCParticleArray(0),
+fJetMatchingRadius(0.3),
+fTruthMinLabel(0),
+fTruthMaxLabel(100000),
+fSaveMCInformation(0),
+fJetMatchingSharedPtFraction(0.5),
 fTrackProbElTPC(0),
 fTrackProbPiTPC(0),
 fTrackProbKaTPC(0),
@@ -358,7 +376,45 @@ fFastJetWrapperBG(0x0),
 fFastJetWrapper_Rec(0x0),
 fFastJetWrapperBG_Rec(0x0),
 fFastJetWrapper_Gen(0x0),
-fFastJetWrapperBG_Gen(0x0)
+fFastJetWrapperBG_Gen(0x0),
+fHist_TrueJetPtFraction(0),
+fHist_MatchJetPts(0),
+fHist_MatchJetEtas(0),
+fHist_MatchJetDeltaRs(0),
+fHist_JERS_PbPbunid_tru(0),
+fHist_JERS_PbPbunid_det(0),
+fHist_JERS_PbPbunid_truhyb(0),
+fHist_JERS_PbPbunid_dethyb(0),
+fHist_JERS_truPythia(0),
+fHist_JERS_truPythia_pi(0),
+fHist_JERS_truPythia_ka(0),
+fHist_JERS_truPythia_pr(0),
+fHist_JERS_detPythia(0),
+fHist_JERS_detPythia_pi(0),
+fHist_JERS_detPythia_ka(0),
+fHist_JERS_detPythia_pr(0),
+fHist_JERS_truhybPythia(0),
+fHist_JERS_truhybPythia_pi(0),
+fHist_JERS_truhybPythia_ka(0),
+fHist_JERS_truhybPythia_pr(0),
+fHist_JERS_dethybPythia(0),
+fHist_JERS_dethybPythia_pi(0),
+fHist_JERS_dethybPythia_ka(0),
+fHist_JERS_dethybPythia_pr(0),
+fHist_PC_spectra_Pythia(0),
+fHist_PC_spectra_Pythia_pi(0),
+fHist_PC_spectra_Pythia_ka(0),
+fHist_PC_spectra_Pythia_pr(0),
+fHist_det_spectra_Pythia(0),
+fHist_det_spectra_Pythia_pi(0),
+fHist_det_spectra_Pythia_ka(0),
+fHist_det_spectra_Pythia_pr(0),
+fHist_part_spectra_Pythia(0),
+fHist_part_spectra_Pythia_pi(0),
+fHist_part_spectra_Pythia_ka(0),
+fHist_part_spectra_Pythia_pr(0),
+fDoEmbedding(kFALSE),
+fMultTrueFlag(kFALSE)
 {
   // default Constructor
 }
@@ -485,12 +541,19 @@ fPhi(0),
 fSign(0),
 fJetContainer(0),
 fbgJetContainer(0),
+fRecoJetContainer(0),
+fEmbJetContainer(0),
+fGenJetContainer(0),
 fJetPt(0),
 fJetEta(0),
 fJetPhi(0),
 fjetRhoVal(0),
+fjetRecoRhoVal(0),
+fjetEmbRhoVal(0),
+fjetGenRhoVal(0),
 frhoFJ(0),
 fisGoodIncEvent(0),
+fFilledUECone_Emb(0),
 fFilledUECone_Gen(0),
 fFilledUECone_Rec(0),
 fhasAcceptedFJjet(0),
@@ -499,6 +562,16 @@ fhasRealFJjet(0),
 fhasRealEMCjet(0),
 fNumRealFJJets(0),
 fNumRealEMCJets(0),
+fIsEmbeddedEvent(kFALSE),
+fDoPartLevelMatching(kFALSE),
+fDoDetLevelMatching(kFALSE),
+fMCParticleArrayName("mcparticles"),
+fMCParticleArray(0),
+fJetMatchingRadius(0.3),
+fTruthMinLabel(0),
+fTruthMaxLabel(100000),
+fSaveMCInformation(0),
+fJetMatchingSharedPtFraction(0.5),
 fTrackProbElTPC(0),
 fTrackProbPiTPC(0),
 fTrackProbKaTPC(0),
@@ -623,7 +696,45 @@ fFastJetWrapperBG(0x0),
 fFastJetWrapper_Rec(0x0),
 fFastJetWrapperBG_Rec(0x0),
 fFastJetWrapper_Gen(0x0),
-fFastJetWrapperBG_Gen(0x0)
+fFastJetWrapperBG_Gen(0x0),
+fHist_TrueJetPtFraction(0),
+fHist_MatchJetPts(0),
+fHist_MatchJetEtas(0),
+fHist_MatchJetDeltaRs(0),
+fHist_JERS_PbPbunid_tru(0),
+fHist_JERS_PbPbunid_det(0),
+fHist_JERS_PbPbunid_truhyb(0),
+fHist_JERS_PbPbunid_dethyb(0),
+fHist_JERS_truPythia(0),
+fHist_JERS_truPythia_pi(0),
+fHist_JERS_truPythia_ka(0),
+fHist_JERS_truPythia_pr(0),
+fHist_JERS_detPythia(0),
+fHist_JERS_detPythia_pi(0),
+fHist_JERS_detPythia_ka(0),
+fHist_JERS_detPythia_pr(0),
+fHist_JERS_truhybPythia(0),
+fHist_JERS_truhybPythia_pi(0),
+fHist_JERS_truhybPythia_ka(0),
+fHist_JERS_truhybPythia_pr(0),
+fHist_JERS_dethybPythia(0),
+fHist_JERS_dethybPythia_pi(0),
+fHist_JERS_dethybPythia_ka(0),
+fHist_JERS_dethybPythia_pr(0),
+fHist_PC_spectra_Pythia(0),
+fHist_PC_spectra_Pythia_pi(0),
+fHist_PC_spectra_Pythia_ka(0),
+fHist_PC_spectra_Pythia_pr(0),
+fHist_det_spectra_Pythia(0),
+fHist_det_spectra_Pythia_pi(0),
+fHist_det_spectra_Pythia_ka(0),
+fHist_det_spectra_Pythia_pr(0),
+fHist_part_spectra_Pythia(0),
+fHist_part_spectra_Pythia_pi(0),
+fHist_part_spectra_Pythia_ka(0),
+fHist_part_spectra_Pythia_pr(0),
+fDoEmbedding(kFALSE),
+fMultTrueFlag(kFALSE)
 {
   //
   //         standard constructur which should be used
@@ -770,6 +881,52 @@ AliAnalysisTaskJetHadroAOD::~AliAnalysisTaskJetHadroAOD()
   if (fHistMCR_Jet_ptsub_v_area)          delete fHistMCR_Jet_ptsub_v_area;
   if (fHistMC_Jet_shared_pt_frac)          delete fHistMC_Jet_shared_pt_frac;
   if (fHistMC_Jet_deltaR)          delete fHistMC_Jet_deltaR;
+
+  if (fHist_TrueJetPtFraction)          delete fHist_TrueJetPtFraction;
+  if (fHist_MatchJetPts)          delete fHist_MatchJetPts;
+  if (fHist_MatchJetEtas)          delete fHist_MatchJetEtas;
+  if (fHist_MatchJetDeltaRs)          delete fHist_MatchJetDeltaRs;
+
+  if (fHist_JERS_PbPbunid_tru)          delete fHist_JERS_PbPbunid_tru;
+  if (fHist_JERS_PbPbunid_det)          delete fHist_JERS_PbPbunid_det;
+  if (fHist_JERS_PbPbunid_truhyb)          delete fHist_JERS_PbPbunid_truhyb;
+  if (fHist_JERS_PbPbunid_dethyb)          delete fHist_JERS_PbPbunid_dethyb;
+
+  if (fHist_JERS_truPythia)          delete fHist_JERS_truPythia;
+  if (fHist_JERS_truPythia_pi)          delete fHist_JERS_truPythia_pi;
+  if (fHist_JERS_truPythia_ka)          delete fHist_JERS_truPythia_ka;
+  if (fHist_JERS_truPythia_pr)          delete fHist_JERS_truPythia_pr;
+
+  if (fHist_JERS_detPythia)          delete fHist_JERS_detPythia;
+  if (fHist_JERS_detPythia_pi)          delete fHist_JERS_detPythia_pi;
+  if (fHist_JERS_detPythia_ka)          delete fHist_JERS_detPythia_ka;
+  if (fHist_JERS_detPythia_pr)          delete fHist_JERS_detPythia_pr;
+
+  if (fHist_JERS_truhybPythia)          delete fHist_JERS_truhybPythia;
+  if (fHist_JERS_truhybPythia_pi)          delete fHist_JERS_truhybPythia_pi;
+  if (fHist_JERS_truhybPythia_ka)          delete fHist_JERS_truhybPythia_ka;
+  if (fHist_JERS_truhybPythia_pr)          delete fHist_JERS_truhybPythia_pr;
+
+  if (fHist_JERS_dethybPythia)          delete fHist_JERS_dethybPythia;
+  if (fHist_JERS_dethybPythia_pi)          delete fHist_JERS_dethybPythia_pi;
+  if (fHist_JERS_dethybPythia_ka)          delete fHist_JERS_dethybPythia_ka;
+  if (fHist_JERS_dethybPythia_pr)          delete fHist_JERS_dethybPythia_pr;
+
+  if (fHist_PC_spectra_Pythia)          delete fHist_PC_spectra_Pythia;
+  if (fHist_PC_spectra_Pythia_pi)          delete fHist_PC_spectra_Pythia_pi;
+  if (fHist_PC_spectra_Pythia_ka)          delete fHist_PC_spectra_Pythia_ka;
+  if (fHist_PC_spectra_Pythia_pr)          delete fHist_PC_spectra_Pythia_pr;
+
+  if (fHist_det_spectra_Pythia)          delete fHist_det_spectra_Pythia;
+  if (fHist_det_spectra_Pythia_pi)          delete fHist_det_spectra_Pythia_pi;
+  if (fHist_det_spectra_Pythia_ka)          delete fHist_det_spectra_Pythia_ka;
+  if (fHist_det_spectra_Pythia_pr)          delete fHist_det_spectra_Pythia_pr;
+
+  if (fHist_part_spectra_Pythia)          delete fHist_part_spectra_Pythia;
+  if (fHist_part_spectra_Pythia_pi)          delete fHist_part_spectra_Pythia_pi;
+  if (fHist_part_spectra_Pythia_ka)          delete fHist_part_spectra_Pythia_ka;
+  if (fHist_part_spectra_Pythia_pr)          delete fHist_part_spectra_Pythia_pr;
+
   if (fPIDCombined) delete fPIDCombined;
   if (fTreeSRedirector)       delete fTreeSRedirector;
 
@@ -830,6 +987,26 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
   fFastJetWrapperBG_Gen->Clear();
 
   fRandom = new TRandom3(0);
+
+  for(Int_t iCont=0; iCont<fParticleCollArray.GetEntriesFast(); iCont++){
+    if (GetParticleContainer(iCont)->GetIsEmbedding()){
+      fIsEmbeddedEvent = kTRUE;
+    }
+  }
+
+  if (fDoEmbedding)
+  {
+    if(!fIsEmbeddedEvent){
+      fMCParticleArray = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fMCParticleArrayName.Data()));
+    }
+    else
+    {
+      // In case of embedding, the MC particle array needs to be fetched differently
+      AliVEvent* event = AliEmcalContainerUtils::GetEvent(InputEvent(), kTRUE);
+      fMCParticleArray = dynamic_cast<TClonesArray*>(event->FindListObject(fMCParticleArrayName.Data()));
+    }
+  }
+
 
   // ------------  setup PIDCombined  ---------------
   fPIDCombined = new AliPIDCombined("pidCombined","");
@@ -915,7 +1092,7 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
   fHistCentrality        = new TH1F("hCentrality",           "control histogram for centrality"           , 10,  0., 100.);
   fHistVertex            = new TH1F("hVertex",               "control histogram for vertex Z position"    , 200, -20., 20.);
 
-  if (!fMCtrue){
+  if (!fMCtrue || fDoEmbedding){
 
     if (fFill_TPC) {
       fHistIncTracks_dEdx    = new TH3F("fHistIncTracks_dEdx",   "dEdx histogram for inclusive tracks"        , n_tpc_mom_bins,tpc_mom_bins,n_dedx_bins,dedx_bins, n_eta_bins,eta_bins);
@@ -1050,15 +1227,16 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
     fHistJet_pr_DCAxy  = new TH2F("fHistJet_pr_DCAxy", "Data DCAxy distribution proton", n_tpc_mom_bins,tpc_mom_bins, n_dcaxy_bins,dcaxy_bins);
   }
 
-  if (fMCtrue){
-    Float_t jet_pT_bins[49] = {};
-    for (int i=0; i < (48+1); i++){
-      if (i< 15) jet_pT_bins[i] = -300.0 + i*20.0;
-      else if (i< 39) jet_pT_bins[i] = 0.0 + (i-15)*5.0;
-      else jet_pT_bins[i] = 120.0 + (i-39)*20.0; 
-      //size 20 GeV bins from -300 to 0, size 5 GeV bins from 0 to 120, size 20 GeV bins from 120 to 300
-    }
-    Int_t n_jet_pT_bins = sizeof(jet_pT_bins)/sizeof(Float_t) - 1;
+  Float_t jet_pT_bins[49] = {};
+  for (int i=0; i < (48+1); i++){
+    if (i< 15) jet_pT_bins[i] = -300.0 + i*20.0;
+    else if (i< 39) jet_pT_bins[i] = 0.0 + (i-15)*5.0;
+    else jet_pT_bins[i] = 120.0 + (i-39)*20.0; 
+    //size 20 GeV bins from -300 to 0, size 5 GeV bins from 0 to 120, size 20 GeV bins from 120 to 300
+  }
+  Int_t n_jet_pT_bins = sizeof(jet_pT_bins)/sizeof(Float_t) - 1;
+
+  if (fMCtrue && !fDoEmbedding){
 
     fHistMCTruth_TrackEff_Den_pi  = new TH2F("fHistMCTruth_TrackEff_Den_pi", "MC Truth Level Tracking Efficiency Denominator pion", n_tpc_mom_bins,tpc_mom_bins, n_eta_bins,eta_bins); //ensure the bins also work for TOF
     fHistMCTruth_TrackEff_Den_ka  = new TH2F("fHistMCTruth_TrackEff_Den_ka", "MC Truth Level Tracking Efficiency Denominator kaon", n_tpc_mom_bins,tpc_mom_bins, n_eta_bins,eta_bins); //ensure the bins also work for TOF
@@ -1105,7 +1283,105 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
     fHist_JetMatch_MCReco_MatchEff_Num_pr  = new TH3F("fHist_JetMatch_MCReco_MatchEff_Num_pr", "MC Reconstructed Level Matching Efficiency Numerator proton for matched jets only",n_tpc_mom_bins,tpc_mom_bins,n_jet_pT_bins,jet_pT_bins,n_jet_pT_bins,jet_pT_bins);
   }
 
-  if (!fMCtrue){
+  Float_t true_frac_bins[101] = {};
+  for (int i=0; i < (100+1); i++){
+    true_frac_bins[i] = 0.0 + i*0.01;
+    //size 20 GeV bins from -300 to 0, size 5 GeV bins from 0 to 120, size 20 GeV bins from 120 to 300
+  }
+
+  Int_t n_true_frac_bins = sizeof(true_frac_bins)/sizeof(Float_t) - 1;
+
+  Float_t jet_pT_bins2[25] = {};
+  for (int i=0; i < (24+1); i++){
+    jet_pT_bins2[i] = 0.0 + 5.0*i;
+    //size 20 GeV bins from -300 to 0, size 5 GeV bins from 0 to 120, size 20 GeV bins from 120 to 300
+  }
+  Int_t n_jet_pT_bins2 = sizeof(jet_pT_bins2)/sizeof(Float_t) - 1;
+
+
+  Float_t deltaR_bins[31] = {};
+  for (int i=0; i < (30+1); i++){
+    deltaR_bins[i] = 0.0 + i*0.01;
+    //size 20 GeV bins from -300 to 0, size 5 GeV bins from 0 to 120, size 20 GeV bins from 120 to 300
+  }
+
+  Int_t n_deltaR_bins = sizeof(deltaR_bins)/sizeof(Float_t) - 1;
+
+
+  Float_t JERS_bins[401] = {};
+  for (int i=0; i < (400+1); i++){
+    JERS_bins[i] = -10.0 + i*0.05;
+    //size 20 GeV bins from -300 to 0, size 5 GeV bins from 0 to 120, size 20 GeV bins from 120 to 300
+  }
+
+  Int_t n_JERS_bins = sizeof(JERS_bins)/sizeof(Float_t) - 1;
+
+  if (fDoEmbedding){
+
+    fHistMCT_Jet_ptsub_v_area  = new TH2F("fHistMCT_Jet_ptsub_v_area", "Before cuts, Jet pt after subtraction vs jet area"  , 100, 0., 1., 300, 0., 300.);
+    fHistMCR_Jet_ptsub_v_area  = new TH2F("fHistMCR_Jet_ptsub_v_area", "Before cuts, Jet pt after subtraction vs jet area"  , 100, 0., 1., 300, 0., 300.);
+
+    fHist_TrueJetPtFraction = new TH3F("fHist_TrueJetPtFraction", "Jet pt fraction from truth particles", n_jet_pT_bins,jet_pT_bins,n_true_frac_bins,true_frac_bins,n_true_frac_bins,true_frac_bins);
+
+    fHist_MatchJetPts = new TH3F("fHist_MatchJetPts", "Jet pts of matched jets", n_jet_pT_bins,jet_pT_bins,n_jet_pT_bins2,jet_pT_bins2,n_jet_pT_bins2,jet_pT_bins2);
+    fHist_MatchJetEtas = new TH3F("fHist_MatchJetEtas", "Jet etas of matched jets", n_eta_bins,eta_bins,n_eta_bins,eta_bins,n_eta_bins,eta_bins);
+    fHist_MatchJetDeltaRs = new TH3F("fHist_MatchJetDeltaRs", "Jet distances of matched jets", n_jet_pT_bins,jet_pT_bins,n_deltaR_bins,deltaR_bins,n_deltaR_bins,deltaR_bins);
+
+
+    fHist_JERS_PbPbunid_tru = new TH3F("fHist_JERS_PbPbunid_tru", "part JERS for unid as fxn of part pT", n_JERS_bins, JERS_bins, n_jet_pT_bins2,jet_pT_bins2,n_tpc_mom_bins,tpc_mom_bins);
+
+    fHist_JERS_PbPbunid_det = new TH3F("fHist_JERS_PbPbunid_det", "det JERS for unid as fxn of det pT", n_JERS_bins, JERS_bins, n_jet_pT_bins2,jet_pT_bins2,n_tpc_mom_bins,tpc_mom_bins);
+
+    fHist_JERS_PbPbunid_truhyb = new TH3F("fHist_JERS_PbPbunid_truhyb", "part JERS for unid as fxn of hyb pT", n_JERS_bins, JERS_bins, n_jet_pT_bins,jet_pT_bins,n_tpc_mom_bins,tpc_mom_bins);
+
+    fHist_JERS_PbPbunid_dethyb = new TH3F("fHist_JERS_PbPbunid_dethyb", "det JERS for unid as fxn of hyb pT", n_JERS_bins, JERS_bins, n_jet_pT_bins,jet_pT_bins,n_tpc_mom_bins,tpc_mom_bins);
+
+
+    fHist_JERS_truPythia = new TH3F("fHist_JERS_truPythia", "part JERS for Pythia unid as fxn of part pT", n_JERS_bins, JERS_bins, n_jet_pT_bins2,jet_pT_bins2,n_tpc_mom_bins,tpc_mom_bins);
+
+    fHist_JERS_truPythia_pi = new TH3F("fHist_JERS_truPythia_pi", "part JERS for Pythia pi as fxn of part pT", n_JERS_bins, JERS_bins, n_jet_pT_bins2,jet_pT_bins2,n_tpc_mom_bins,tpc_mom_bins);
+    fHist_JERS_truPythia_ka = new TH3F("fHist_JERS_truPythia_ka", "part JERS for Pythia ka as fxn of part pT", n_JERS_bins, JERS_bins, n_jet_pT_bins2,jet_pT_bins2,n_tpc_mom_bins,tpc_mom_bins);
+    fHist_JERS_truPythia_pr = new TH3F("fHist_JERS_truPythia_pr", "part JERS for Pythia pr as fxn of part pT", n_JERS_bins, JERS_bins, n_jet_pT_bins2,jet_pT_bins2,n_tpc_mom_bins,tpc_mom_bins);
+
+
+    fHist_JERS_detPythia = new TH3F("fHist_JERS_detPythia", "det JERS for Pythia unid as fxn of det pT", n_JERS_bins, JERS_bins, n_jet_pT_bins2,jet_pT_bins2,n_tpc_mom_bins,tpc_mom_bins);
+
+    fHist_JERS_detPythia_pi = new TH3F("fHist_JERS_detPythia_pi", "det JERS for Pythia pi as fxn of det pT", n_JERS_bins, JERS_bins, n_jet_pT_bins2,jet_pT_bins2,n_tpc_mom_bins,tpc_mom_bins);
+    fHist_JERS_detPythia_ka = new TH3F("fHist_JERS_detPythia_ka", "det JERS for Pythia ka as fxn of det pT", n_JERS_bins, JERS_bins, n_jet_pT_bins2,jet_pT_bins2,n_tpc_mom_bins,tpc_mom_bins);
+    fHist_JERS_detPythia_pr = new TH3F("fHist_JERS_detPythia_pr", "det JERS for Pythia pr as fxn of det pT", n_JERS_bins, JERS_bins, n_jet_pT_bins2,jet_pT_bins2,n_tpc_mom_bins,tpc_mom_bins);
+
+
+    fHist_JERS_truhybPythia = new TH3F("fHist_JERS_truhybPythia", "part JERS for Pythia unid as fxn of hyb pT", n_JERS_bins, JERS_bins, n_jet_pT_bins,jet_pT_bins,n_tpc_mom_bins,tpc_mom_bins);
+
+    fHist_JERS_truhybPythia_pi = new TH3F("fHist_JERS_truhybPythia_pi", "part JERS for Pythia pi as fxn of hyb pT", n_JERS_bins, JERS_bins, n_jet_pT_bins,jet_pT_bins,n_tpc_mom_bins,tpc_mom_bins);
+    fHist_JERS_truhybPythia_ka = new TH3F("fHist_JERS_truhybPythia_ka", "part JERS for Pythia ka as fxn of hyb pT", n_JERS_bins, JERS_bins, n_jet_pT_bins,jet_pT_bins,n_tpc_mom_bins,tpc_mom_bins);
+    fHist_JERS_truhybPythia_pr = new TH3F("fHist_JERS_truhybPythia_pr", "part JERS for Pythia pr as fxn of hyb pT", n_JERS_bins, JERS_bins, n_jet_pT_bins,jet_pT_bins,n_tpc_mom_bins,tpc_mom_bins);
+
+
+    fHist_JERS_dethybPythia = new TH3F("fHist_JERS_dethybPythia", "det JERS for Pythia unid as fxn of hyb pT", n_JERS_bins, JERS_bins, n_jet_pT_bins,jet_pT_bins,n_tpc_mom_bins,tpc_mom_bins);
+
+    fHist_JERS_dethybPythia_pi = new TH3F("fHist_JERS_dethybPythia_pi", "det JERS for Pythia pi as fxn of hyb pT", n_JERS_bins, JERS_bins, n_jet_pT_bins,jet_pT_bins,n_tpc_mom_bins,tpc_mom_bins);
+    fHist_JERS_dethybPythia_ka = new TH3F("fHist_JERS_dethybPythia_ka", "det JERS for Pythia ka as fxn of hyb pT", n_JERS_bins, JERS_bins, n_jet_pT_bins,jet_pT_bins,n_tpc_mom_bins,tpc_mom_bins);
+    fHist_JERS_dethybPythia_pr = new TH3F("fHist_JERS_dethybPythia_pr", "det JERS for Pythia pr as fxn of hyb pT", n_JERS_bins, JERS_bins, n_jet_pT_bins,jet_pT_bins,n_tpc_mom_bins,tpc_mom_bins);
+
+    fHist_PC_spectra_Pythia = new TH1F("fHist_PC_spectra_Pythia", "Pythia parts in PC unid spectra", n_tpc_mom_bins,tpc_mom_bins);
+    fHist_PC_spectra_Pythia_pi = new TH1F("fHist_PC_spectra_Pythia_pi", "Pythia parts in PC pi spectra", n_tpc_mom_bins,tpc_mom_bins);
+    fHist_PC_spectra_Pythia_ka = new TH1F("fHist_PC_spectra_Pythia_ka", "Pythia parts in PC ka spectra", n_tpc_mom_bins,tpc_mom_bins);
+    fHist_PC_spectra_Pythia_pr = new TH1F("fHist_PC_spectra_Pythia_pr", "Pythia parts in PC pr spectra", n_tpc_mom_bins,tpc_mom_bins);
+
+    fHist_det_spectra_Pythia = new TH2F("fHist_det_spectra_Pythia", "Pythia parts in det unid spectra", n_tpc_mom_bins,tpc_mom_bins,n_jet_pT_bins2,jet_pT_bins2);
+    fHist_det_spectra_Pythia_pi = new TH2F("fHist_det_spectra_Pythia_pi", "Pythia parts in det pi spectra", n_tpc_mom_bins,tpc_mom_bins,n_jet_pT_bins2,jet_pT_bins2);
+    fHist_det_spectra_Pythia_ka = new TH2F("fHist_det_spectra_Pythia_ka", "Pythia parts in det ka spectra", n_tpc_mom_bins,tpc_mom_bins,n_jet_pT_bins2,jet_pT_bins2);
+    fHist_det_spectra_Pythia_pr = new TH2F("fHist_det_spectra_Pythia_pr", "Pythia parts in det pr spectra", n_tpc_mom_bins,tpc_mom_bins,n_jet_pT_bins2,jet_pT_bins2);
+
+    fHist_part_spectra_Pythia = new TH2F("fHist_part_spectra_Pythia", "Pythia parts in part unid spectra", n_tpc_mom_bins,tpc_mom_bins,n_jet_pT_bins2,jet_pT_bins2);
+    fHist_part_spectra_Pythia_pi = new TH2F("fHist_part_spectra_Pythia_pi", "Pythia parts in part pi spectra", n_tpc_mom_bins,tpc_mom_bins,n_jet_pT_bins2,jet_pT_bins2);
+    fHist_part_spectra_Pythia_ka = new TH2F("fHist_part_spectra_Pythia_ka", "Pythia parts in part ka spectra", n_tpc_mom_bins,tpc_mom_bins,n_jet_pT_bins2,jet_pT_bins2);
+    fHist_part_spectra_Pythia_pr = new TH2F("fHist_part_spectra_Pythia_pr", "Pythia parts in part pr spectra", n_tpc_mom_bins,tpc_mom_bins,n_jet_pT_bins2,jet_pT_bins2);
+
+  }
+
+  if (!fMCtrue || fDoEmbedding){
 
     if (fFill_TPC) {
       fListHist->Add(fHistIncTracks_dEdx);
@@ -1210,7 +1486,7 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
     }
   }
 
-  if (fMCtrue){
+  if (fMCtrue && !fDoEmbedding){
     fListHist->Add(fHistMCTruth_TrackEff_Den_pi);
     fListHist->Add(fHistMCTruth_TrackEff_Den_ka);
     fListHist->Add(fHistMCTruth_TrackEff_Den_pr);
@@ -1247,11 +1523,63 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
     fListHist->Add(fHist_JetMatch_MCReco_MatchEff_Num_ka);
     fListHist->Add(fHist_JetMatch_MCReco_MatchEff_Num_pr);
 
+    fListHist->Add(fHistMC_Jet_shared_pt_frac);
+    fListHist->Add(fHistMC_Jet_deltaR);
+
+    fListHist->Add(fHistMCT_Jet_ptsub_v_area);
+    fListHist->Add(fHistMCR_Jet_ptsub_v_area);
+  }
+
+  if (fDoEmbedding){
+    
     fListHist->Add(fHistMCT_Jet_ptsub_v_area);
     fListHist->Add(fHistMCR_Jet_ptsub_v_area);
 
-    fListHist->Add(fHistMC_Jet_shared_pt_frac);
-    fListHist->Add(fHistMC_Jet_deltaR);
+    fListHist->Add(fHist_TrueJetPtFraction);
+
+    fListHist->Add(fHist_MatchJetPts);
+    fListHist->Add(fHist_MatchJetEtas);
+    fListHist->Add(fHist_MatchJetDeltaRs);
+
+    fListHist->Add(fHist_JERS_PbPbunid_tru);
+    fListHist->Add(fHist_JERS_PbPbunid_det);
+    fListHist->Add(fHist_JERS_PbPbunid_truhyb);
+    fListHist->Add(fHist_JERS_PbPbunid_dethyb);
+
+    fListHist->Add(fHist_JERS_truPythia);
+    fListHist->Add(fHist_JERS_truPythia_pi);
+    fListHist->Add(fHist_JERS_truPythia_ka);
+    fListHist->Add(fHist_JERS_truPythia_pr);
+
+    fListHist->Add(fHist_JERS_detPythia);
+    fListHist->Add(fHist_JERS_detPythia_pi);
+    fListHist->Add(fHist_JERS_detPythia_ka);
+    fListHist->Add(fHist_JERS_detPythia_pr);
+
+    fListHist->Add(fHist_JERS_truhybPythia);
+    fListHist->Add(fHist_JERS_truhybPythia_pi);
+    fListHist->Add(fHist_JERS_truhybPythia_ka);
+    fListHist->Add(fHist_JERS_truhybPythia_pr);
+
+    fListHist->Add(fHist_JERS_dethybPythia);
+    fListHist->Add(fHist_JERS_dethybPythia_pi);
+    fListHist->Add(fHist_JERS_dethybPythia_ka);
+    fListHist->Add(fHist_JERS_dethybPythia_pr);
+
+    fListHist->Add(fHist_PC_spectra_Pythia);
+    fListHist->Add(fHist_PC_spectra_Pythia_pi);
+    fListHist->Add(fHist_PC_spectra_Pythia_ka);
+    fListHist->Add(fHist_PC_spectra_Pythia_pr);
+
+    fListHist->Add(fHist_det_spectra_Pythia);
+    fListHist->Add(fHist_det_spectra_Pythia_pi);
+    fListHist->Add(fHist_det_spectra_Pythia_ka);
+    fListHist->Add(fHist_det_spectra_Pythia_pr);
+
+    fListHist->Add(fHist_part_spectra_Pythia);
+    fListHist->Add(fHist_part_spectra_Pythia_pi);
+    fListHist->Add(fHist_part_spectra_Pythia_ka);
+    fListHist->Add(fHist_part_spectra_Pythia_pr);
 
   }
 
@@ -1391,7 +1719,8 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
   // ------------------------------------------------
   //
   if (MultSelection) {
-    fCentrality = MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+    if (fMultTrueFlag) fCentrality = MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+    else fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
   } else if (Centrality) {
     fCentrality = Centrality->GetCentralityPercentile("V0M");
   } else {
@@ -1419,8 +1748,9 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
   //
   if (!fMCtrue && fAOD && fCentrality>=fcent_min && fCentrality<fcent_max){
     fisGoodIncEvent = 0;
-    fFilledUECone_Gen = 0,
-    fFilledUECone_Rec = 0,
+    fFilledUECone_Emb = 0;
+    fFilledUECone_Gen = 0;
+    fFilledUECone_Rec = 0;
     fhasAcceptedFJjet = 0;
     fhasRealFJjet = 0;
     fhasAcceptedEMCjet = 0;
@@ -1449,14 +1779,18 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
 
   if (fMCtrue && fAOD  && fCentrality>=fcent_min && fCentrality<fcent_max){
     fisGoodIncEvent = 0;
-    fFilledUECone_Gen = 0,
-    fFilledUECone_Rec = 0,
+    fFilledUECone_Emb = 0;
+    fFilledUECone_Gen = 0;
+    fFilledUECone_Rec = 0;
     fhasAcceptedFJjet = 0;
     fhasRealFJjet = 0;
     fhasAcceptedEMCjet = 0;
     fhasRealEMCjet = 0;
     frhoFJ = 0.0;
     fjetRhoVal = 0.0;
+    fjetGenRhoVal = 0.0;
+    fjetRecoRhoVal = 0.0;
+    fjetEmbRhoVal = 0.0;
     fNumRealFJJets = 0;
     fNumRealEMCJets = 0;
     fall_reco_jets_w_multiple_matches = 0;
@@ -1467,6 +1801,10 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
     }
     if (fDoFastJet){
       FillMCJets();
+    }
+
+    if (fDoEmbedding){
+      FillEmbJets();
     }
     FillEventTree();
     if (fUseCouts)  std::cout << " Info::siweyhmi: (full MC analysis) End of Filling part = " << fEventCountInFile << std::endl;
@@ -2935,6 +3273,7 @@ void AliAnalysisTaskJetHadroAOD::FillIncTracksReal()
 //________________________________________________________________________
 void AliAnalysisTaskJetHadroAOD::FillTreeMC()
 {
+  //Some parts from AliAnalysisTaskTOFSpectra
   //Track eff = Num1/Den
   //TOF Match Eff = Num2/Num1
 
@@ -3846,14 +4185,890 @@ void AliAnalysisTaskJetHadroAOD::FillMCJets()
 
 }
 //________________________________________________________________________
+
+//________________________________________________________________________
+void AliAnalysisTaskJetHadroAOD::FillEmbJets()
+{
+  //Parts from jet extractor task
+  //
+  if (fUseCouts) std::cout << " Info::siweyhmi: ===== In the FillEmbJets ===== " << std::endl;
+  AliTOFPIDResponse fTOFPIDResponse = fPIDResponse->GetTOFResponse();
+
+  //
+  Float_t pT_sub_min = fjetMinPtSub;
+  if (fUseCouts) cout << "Minimum jet pt after subtraction is " << fjetMinPtSub << endl;
+  if (fUseCouts) cout << "Maximum jet pt after subtraction is " << fjetMaxPtSub << endl;
+
+  Int_t trackOrigin = -10;
+
+  Float_t leadJetPhi_Emb = 999;
+  Float_t leadJetEta_Emb = 999;
+  Float_t leadJetPtSub_Emb = -999;
+
+  Float_t leadJetPhi_Rec = 999;
+  Float_t leadJetEta_Rec = 999;
+  Float_t leadJetPtSub_Rec = -999;
+
+  Float_t leadJetPhi_Gen = 999;
+  Float_t leadJetEta_Gen = 999;
+  Float_t leadJetPtSub_Gen = -999;
+
+
+  //Gen Signal JETS
+  // Get the jet container
+  fGenJetContainer = this->GetJetContainer("GenJets"); //2 = Pythia particle truth jets
+  if (this->GetJetContainer("GenJets")) fDoPartLevelMatching = kTRUE;
+  TString fGenRhoName = fGenJetContainer->GetRhoName();
+  if (fUseCouts) cout << "Gen Rho Name is " << fGenRhoName << endl;
+
+  if (fGenJetContainer->GetRhoParameter()) fjetGenRhoVal = fGenJetContainer->GetRhoVal();
+  if (fUseCouts) cout << "In the FillEmbJets Gen Rho value is " << fjetGenRhoVal << endl;
+
+  //RECO Signal JETS
+  // Get the jet container
+  fRecoJetContainer = this->GetJetContainer("RecoJets"); //1 = Pythia det level jets
+  if (this->GetJetContainer("RecoJets")) fDoDetLevelMatching = kTRUE; 
+  TString fRecoRhoName = fRecoJetContainer->GetRhoName();
+  if (fUseCouts) cout << "Reco Rho Name is " << fRecoRhoName << endl;
+
+  if (fRecoJetContainer->GetRhoParameter()) fjetRecoRhoVal = fRecoJetContainer->GetRhoVal();
+  if (fUseCouts) cout << "In the FillEmbJets Reco Rho value is " << fjetRecoRhoVal << endl;
+
+
+  //EMB Signal JETS
+  // Get the jet container
+  fEmbJetContainer = this->GetJetContainer("EmbJets"); //0 = embedded = Data + Pythia det level jets
+  TString fEmbRhoName = fEmbJetContainer->GetRhoName();
+  if (fUseCouts) cout << "Emb Rho Name is " << fEmbRhoName << endl;
+  AliParticleContainer* embParticles = fEmbJetContainer->GetParticleContainer();
+  if (embParticles) cout << "embParticles name is " << embParticles->GetName() << endl;
+
+
+  if (fEmbJetContainer->GetRhoParameter()) fjetEmbRhoVal = fEmbJetContainer->GetRhoVal();
+  if (fUseCouts) cout << "In the FillEmbJets Emb Rho value is " << fjetEmbRhoVal << endl;
+
+  if(fDoDetLevelMatching) DoJetMatching(); //this matches by R
+
+  fEmbJetContainer->ResetCurrentID();
+
+  for(auto jet_emb : fEmbJetContainer->accepted())
+  {
+
+    fhasAcceptedEMCjet = 1;
+    //if (jet_emb->Pt() < fTrackPt || jet_emb->Pt() > 1000.0 || TMath::Abs(jet_emb->Eta()) >= jetAbsEtaCut) continue; //this is not needed when using jetcontainer->accepted
+    Float_t jet_embpt = jet_emb->Pt();
+    Float_t jet_embphi = jet_emb->Phi();
+    Float_t jet_embeta = jet_emb->Eta();
+    Float_t jet_embArea = jet_emb->AreaPt();
+    Float_t jet_embptsub = jet_emb->PtSub(fjetEmbRhoVal, kFALSE);
+
+    Double_t matchedJetDistance_Det = -0.1;
+    Double_t matchedJetPt_Det = -0.1;
+    Double_t matchedJetEta_Det = -1.1;
+    Double_t matchedJetPhi_Det = -0.1;
+    Double_t matchedJetDistance_Part = -0.1;
+    Double_t matchedJetPt_Part = -0.1;
+    Double_t matchedJetEta_Part = -1.1;
+    Double_t matchedJetPhi_Part = -0.1;
+    Double_t truePtFraction = 0;
+    Double_t truePtFraction_PartLevel = 0;
+
+    // Get true estimators: for pt
+    GetTrueJetPtFraction(jet_emb, truePtFraction, truePtFraction_PartLevel);
+    
+    fHist_TrueJetPtFraction->Fill(jet_embptsub, truePtFraction, truePtFraction_PartLevel);
+
+    //HERE is where the pT matching condition comes in
+    GetMatchedJetObservables(jet_emb, matchedJetPt_Det, matchedJetPt_Part, matchedJetPhi_Det, matchedJetEta_Det, matchedJetPhi_Part, matchedJetEta_Part, matchedJetDistance_Det, matchedJetDistance_Part);
+
+    fHist_MatchJetPts->Fill(jet_embptsub, matchedJetPt_Det, matchedJetPt_Part);
+    fHist_MatchJetEtas->Fill(jet_embeta, matchedJetEta_Det, matchedJetEta_Part);
+    fHist_MatchJetDeltaRs->Fill(jet_embptsub, matchedJetDistance_Det, matchedJetDistance_Part);
+
+
+    if (matchedJetPt_Det==-0.1 || matchedJetPt_Part==-0.1) {
+      cout << "THIS JET WASNT MATCHED" << endl; //CHANGE
+      continue;
+    }
+
+
+    if (jet_embptsub > pT_sub_min && jet_embptsub < fjetMaxPtSub && jet_embArea > fjetMinArea)
+    {
+      fhasRealEMCjet = 1;
+      fNumRealEMCJets +=1;
+    }
+
+    fHistJet_ptsub_v_area->Fill(jet_embArea, jet_embptsub);
+
+    if (jet_embArea <= fjetMinArea) continue;
+
+    fHistJet_kin->Fill(jet_embptsub, jet_embeta, jet_embphi);
+    fHistJet_moms->Fill(jet_embptsub, jet_embpt);
+
+
+    if (jet_embptsub > leadJetPtSub_Emb){
+      leadJetPtSub_Emb = jet_embptsub;
+      leadJetEta_Emb = jet_embeta;
+      leadJetPhi_Emb = jet_embphi;
+    }
+
+    for(Int_t i = 0; i < jet_emb->GetNumberOfParticleConstituents(); i++)
+    {
+      Bool_t isPbPbPart = kFALSE;
+      const AliVParticle* particle = jet_emb->Track(i);
+      AliAODTrack* trackReal = (AliAODTrack*)(particle);
+      if (trackReal==NULL) {
+        if (fUseCouts) std::cout << "Didn't have a emb track" << std::endl;
+        continue;
+      }
+
+      Int_t lab = TMath::Abs(trackReal->GetLabel());
+      Int_t imc=trackReal->GetLabel();
+      
+      if (imc==-1) isPbPbPart = kTRUE; //A Pb-pb particle
+
+      if(!trackReal || !trackReal->TestFilterBit(fAOD_FilterBits)) {
+        continue;
+      }
+
+      //Track cuts start
+      fDEdxEl=-100;  fDEdxPi=-100;  fDEdxKa=-100;  fDEdxPr=-100;  fDEdxDe=-100;
+      fSigmaEl=-100; fSigmaPi=-100; fSigmaKa=-100; fSigmaPr=-100; fSigmaDe=-100;
+      //
+      //if (!fAODtrackCuts->AcceptTrack(trackReal))  continue;    // default cuts - redundant since these track cuts are passed to jet finder
+      //
+      // Get the track variables
+
+      //
+      //if (trackReal-> GetInnerParam()){ AODs don't have this info
+        fPtotMC       = trackReal->P(); //trackReal->GetInnerParam()->GetP();
+        fTPCSignalMC  = trackReal->GetTPCsignal();
+      //}
+      fEtaMC        = trackReal->Eta();
+      Float_t fYMC          = trackReal->Y();
+      fPtMC         = trackReal->Pt();
+      fSignMC       = trackReal->GetSign();
+      Float_t pMC   = trackReal->P();
+      Float_t fPhiMC= trackReal->Phi();
+
+      if (fPtMC<0.15 || fPtMC>100.0) continue; //So we can match the jets that we throw out w/ max track pT>100
+
+      if (TMath::Abs(fEtaMC) > fEtaCut) continue;
+
+      fHist_JERS_PbPbunid_tru->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, matchedJetPt_Part, fPtMC);
+      fHist_JERS_PbPbunid_det->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, matchedJetPt_Det, fPtMC);
+
+      fHist_JERS_PbPbunid_truhyb->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, jet_embptsub, fPtMC);
+      fHist_JERS_PbPbunid_dethyb->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, jet_embptsub, fPtMC);
+
+
+      if (isPbPbPart == kFALSE){
+
+        if (fMCParticleArray == NULL) continue;
+        const AliAODMCParticle *mc=static_cast<AliAODMCParticle*>(fMCParticleArray->At(lab));
+        Int_t pdg = mc->GetPdgCode();
+
+        if(!mc->IsPhysicalPrimary()) {
+          if (fUseCouts) std::cout << "particle wasnt primary" << std::endl;
+          continue;
+        }
+
+        Int_t TOFTrkLabel[3] = { -1 };
+
+        Int_t fMCTOFMatch = -2;
+        trackReal->GetTOFLabel(TOFTrkLabel);
+        if (TOFTrkLabel[0] == -1) {// Track was not matched to any TOF hit.
+          fMCTOFMatch = -1;
+        }
+        else if (lab == TOFTrkLabel[0]) {// Track was correctly matched to a TOF hit.
+          fMCTOFMatch = 0;
+        }
+        else {// Track was matched to a TOF hit but comes from mismatch!
+          fMCTOFMatch = 1;
+        }
+        
+        // check the origin of the track
+        trackOrigin = -10;
+
+        //
+        //
+        // match the track with mc track
+        Int_t iPart = -1; //-10;
+        if (TMath::Abs(pdg) == kPDGel) { iPart = 0; } // select el
+        if (TMath::Abs(pdg) == kPDGpi) { iPart = 1; } // select pi
+        if (TMath::Abs(pdg) == kPDGka) { iPart = 2; } // select ka
+        if (TMath::Abs(pdg) == kPDGpr) { iPart = 3; } // select pr
+        if (TMath::Abs(pdg) == kPDGde) { iPart = 4; } // select de
+        if (TMath::Abs(pdg) == kPDGmu) { iPart = 5; } // select mu
+
+        Float_t fRapidityMC = TMath::ASinH(fPt / TMath::Sqrt(AliPID::ParticleMass(iPart + 1) * AliPID::ParticleMass(iPart + 1) + fPt * fPt) * TMath::SinH(fEta));
+
+        if (TMath::Abs(fRapidityMC) > fYCut && fDoRapCut) {
+          if (fUseCouts) std::cout << "didn't pass rap cut" << std::endl;
+          continue;
+        }
+
+        fHist_JERS_truPythia->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, matchedJetPt_Part, fPtMC);
+        fHist_JERS_detPythia->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, matchedJetPt_Det, fPtMC);
+
+        fHist_JERS_truhybPythia->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, jet_embptsub, fPtMC);
+        fHist_JERS_dethybPythia->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, jet_embptsub, fPtMC);
+
+
+        if (iPart==1) fHist_JERS_truPythia_pi->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, matchedJetPt_Part, fPtMC);
+        if (iPart==1) fHist_JERS_detPythia_pi->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, matchedJetPt_Det, fPtMC);
+
+        if (iPart==1) fHist_JERS_truhybPythia_pi->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, jet_embptsub, fPtMC);
+        if (iPart==1) fHist_JERS_dethybPythia_pi->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, jet_embptsub, fPtMC);
+
+        if (iPart==2) fHist_JERS_truPythia_ka->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, matchedJetPt_Part, fPtMC);
+        if (iPart==2) fHist_JERS_detPythia_ka->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, matchedJetPt_Det, fPtMC);
+
+        if (iPart==2) fHist_JERS_truhybPythia_ka->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, jet_embptsub, fPtMC);
+        if (iPart==2) fHist_JERS_dethybPythia_ka->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, jet_embptsub, fPtMC);
+
+        if (iPart==3) fHist_JERS_truPythia_pr->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, matchedJetPt_Part, fPtMC);
+        if (iPart==3) fHist_JERS_detPythia_pr->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, matchedJetPt_Det, fPtMC);
+
+        if (iPart==3) fHist_JERS_truhybPythia_pr->Fill( (jet_embptsub - matchedJetPt_Part)/matchedJetPt_Part, jet_embptsub, fPtMC);
+        if (iPart==3) fHist_JERS_dethybPythia_pr->Fill( (jet_embptsub - matchedJetPt_Det)/matchedJetPt_Det, jet_embptsub, fPtMC);
+      }
+
+
+      if (jet_embptsub <= fjetMinPtSub || jet_embptsub >= fjetMaxPtSub) continue; 
+
+      if (isPbPbPart == kTRUE){
+
+        GetExpecteds(trackReal);
+        SetCutBitsAndSomeTrackVariables(trackReal);
+        Float_t length    = trackReal->GetIntegratedLength();
+        Float_t tofSignal = trackReal->GetTOFsignal();
+        Float_t t0 = fTOFPIDResponse.GetStartTime(fPVertex);
+        Float_t beta = -.05;
+        //int nTOFClusters = trackReal->GetNTOFclusters(); //All matchable clusters AOD doesn't have this
+        if((length > 0) && (tofSignal > 0)) beta = length / (2.99792458e-2*(tofSignal - t0));
+
+        Float_t fTPCmom_choice = fPtot;
+        if (fSetTPCmom == 1) fTPCmom_choice = fPVertex;
+        if (fSetTPCmom == 2) fTPCmom_choice = fPt;
+
+        Float_t fTOFmom_choice = fPt;
+        if (fSetTOFmom == 1) fTPCmom_choice = fPVertex;
+        if (fSetTOFmom == 2) fTPCmom_choice = fPtot;
+
+        Float_t fBetamom_choice = fPVertex;
+        if (fSetBetamom == 1) fTPCmom_choice = fPt;
+        if (fSetBetamom == 2) fTPCmom_choice = fPtot;
+
+        Float_t fEta_choice = fEta;
+        if (fSetEta == 1) fEta_choice = fY;
+
+        Float_t DCAxy = -999.;
+        Float_t DCAz = -999.;
+        trackReal->GetImpactParameters(DCAxy, DCAz);
+        Float_t comb_sig_pi = TMath::Sqrt(fNSigmasPiTPC * fNSigmasPiTPC + fNSigmasPiTOF * fNSigmasPiTOF);
+        Float_t comb_sig_pr = TMath::Sqrt(fNSigmasPrTPC * fNSigmasPrTPC + fNSigmasPrTOF * fNSigmasPrTOF);
+
+        if (TMath::Abs(fEta) < fEtaCut){
+          if (fFill_TPC) fHistJetTracks_dEdx->Fill(fTPCmom_choice,fTPCSignal,TMath::Abs(fEta_choice));
+          if (fFillpTPC_pT) fHistJetTracks_moms->Fill(fPt,fPtot);
+          if (fFillp_pT) fHistJetTracks_moms_p->Fill(fPt,fPVertex);
+          if (fFillpTPC_p) fHistJetTracks_moms_pTPC_p->Fill(fPtot,fPVertex);
+          fHistJetTracks_kin->Fill(fPt,TMath::Abs(fEta),fPhi);
+          if (comb_sig_pi < 2.0) fHistJet_pi_DCAxy->Fill(fPt, DCAxy);
+          if (comb_sig_pr < 2.0) fHistJet_pr_DCAxy->Fill(fPt, DCAxy);
+        }
+
+        //TPC-TOF Matching conditions: Use standard TPC tracks, then require kTIME and kTOFout
+        Bool_t fTOFout = kFALSE;
+        if ((trackReal->GetStatus() & AliAODTrack::kTOFout) != 0) { //Track has the kTOFout flag
+        fTOFout = kTRUE;
+        }
+
+        //
+        //kTIME flag
+        Bool_t fTime = kFALSE;
+        if ((trackReal->GetStatus() & AliAODTrack::kTIME) != 0) { //Track has the kTIME flag
+        fTime = kTRUE;
+        }
+
+        Double_t inttime[5]; //6 is needed to account for earlier species - 0 = electron, 1 = muon, 2 = pion, 3 = kaon, 4 = proton, ESD only: 5 = deuteron
+        trackReal->GetIntegratedTimes(inttime, 5); // Returns the array with integrated times for each particle hypothesis
+        Float_t fTOFMismatchTime = -20000000.;
+        fTOFMismatchTime = AliTOFPIDResponse::GetMismatchRandomValue(trackReal->Eta());
+        if (fTOFMismatchTime <= 0){
+          fTOFMismatchTime = -20000000.;
+        }
+
+        for (Int_t i = 0; i < 3; i++) {
+          const Float_t beta_expec = length / (2.99792458e-2 * (inttime[i+2] - t0));
+          if (i==0){
+            fHistjet_BetaExpec_pi->Fill(fTPCmom_choice, beta_expec);
+            fHist_jet_pi_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+            if (TMath::Abs(fNSigmasPiTOF) < 2.0){
+              fHistjet_TOFSigmaExpec_pi->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasElTOF) < 2.0){
+              fHist_jet_elExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasMuTOF) < 2.0){
+              fHist_jet_muExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasKaTOF) < 2.0){
+              fHist_jet_kaExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasPrTOF) < 2.0){
+              fHist_jet_prExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+            }
+          }
+          if (i==1){
+            fHistjet_BetaExpec_ka->Fill(fTPCmom_choice, beta_expec);
+            fHist_jet_ka_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
+            if (TMath::Abs(fNSigmasKaTOF) < 2.0){
+              fHistjet_TOFSigmaExpec_ka->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::ParticleMass(i+2)),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasPiTOF) < 2.0){
+              fHist_jet_piExpec_kahyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasPrTOF) < 2.0){
+              fHist_jet_prExpec_kahyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
+            }
+          }
+          if (i==2){
+            fHistjet_BetaExpec_pr->Fill(fTPCmom_choice, beta_expec);
+            fHist_jet_pr_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+            if (TMath::Abs(fNSigmasPrTOF) < 2.0){
+              fHistjet_TOFSigmaExpec_pr->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::ParticleMass(i+2)),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasPiTOF) < 2.0){
+              fHist_jet_piExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasKaTOF) < 2.0){
+              fHist_jet_kaExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+            }
+            if (TMath::Abs(fNSigmasDeTOF) < 2.0){
+              fHist_jet_deExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+            }
+          }
+        }
+
+        if (TMath::Abs(fEta) < fEtaCut  && fTOFout && fTime && fFill_TOF){
+          fHistJetTracks_beta->Fill(fBetamom_choice,beta);
+          fHistJetTracks_TOFpi_nsigma->Fill(fTOFmom_choice,fNSigmasPiTOF,TMath::Abs(fEta_choice));
+          fHistJetTracks_TOFka_nsigma->Fill(fTOFmom_choice,fNSigmasKaTOF,TMath::Abs(fEta_choice));
+          fHistJetTracks_TOFpr_nsigma->Fill(fTOFmom_choice,fNSigmasPrTOF,TMath::Abs(fEta_choice));
+          /*if (nTOFClusters < 2) { //ESD only
+            fHistJetTracks_TOFpi_nsigma_1cls->Fill(fTOFmom_choice,fNSigmasPiTOF,TMath::Abs(fEta_choice));
+            fHistJetTracks_TOFka_nsigma_1cls->Fill(fTOFmom_choice,fNSigmasKaTOF,TMath::Abs(fEta_choice));
+            fHistJetTracks_TOFpr_nsigma_1cls->Fill(fTOFmom_choice,fNSigmasPrTOF,TMath::Abs(fEta_choice));
+          }*/
+        }
+      } //end isPbPbCondition
+    } // ======= end of track loop for MC jet emb filling =======
+
+  }//end emb jet loop
+
+  if ( (fDoPerpCone || fDoRandCone) && (leadJetPtSub_Emb > fjetMinPtSub) ) {
+
+    Bool_t isPbPbPart = kFALSE;
+
+    //now we find the eta,phi perp (and R.C.) to it
+    //From the AliAnalysisTaskRhoPerpCone Task
+    Double_t dPhi1 = 999.;
+    Double_t dPhi2 = 999.;
+    Double_t dEta = 999.;
+    Double_t Axis1 = 999, Axis2 = 999;
+
+    if (fDoRandCone){
+      double OffsetRandom = (1 + fRandom->Rndm()) * TMath::Pi()/3; // creating random Phi in the range of PI/3 and 2PI/3
+      Axis1 = leadJetPhi_Emb + OffsetRandom;  // adding the random Phi to the Phi of leading jet, to get the Phi of random cone
+      Axis2 = leadJetPhi_Emb - OffsetRandom; // mirroring it, so you get Phi of the 2nd random cone
+      if(Axis1 > TMath::TwoPi()) Axis1 -= TMath::TwoPi(); // checking if it's larger than 2PI (leading jet phi is distributed in range of 0 and 2PI
+      if(Axis2 < 0) Axis2 += TMath::TwoPi(); // checking if 2nd cone is smaller than 0
+    }
+
+    if (fDoPerpCone){
+      Axis1 = ((leadJetPhi_Emb + (TMath::Pi() / 2.)) > TMath::TwoPi()) ? leadJetPhi_Emb - ((3. / 2.) * TMath::Pi()) : leadJetPhi_Emb + (TMath::Pi() / 2.);
+      Axis2 = ((leadJetPhi_Emb - (TMath::Pi() / 2.)) < 0) ? leadJetPhi_Emb + ((3. / 2.) * TMath::Pi()) : leadJetPhi_Emb - (TMath::Pi() / 2.);
+    }
+
+    Int_t trackOrigin = -10; 
+
+    AliParticleContainer * partCont = 0;
+    TIter nextPartCont(&fParticleCollArray);
+    while ((partCont = static_cast<AliParticleContainer*>(nextPartCont()))) {
+      AliParticleIterableMomentumContainer itcont = partCont->accepted_momentum();
+      for (AliParticleIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
+        AliVTrack * particle = static_cast<AliVTrack*>(it->second); //partIter.second);
+      
+        AliAODTrack* trackReal = (AliAODTrack*)(particle);
+        
+        if (trackReal==NULL) {
+          if (fUseCouts) std::cout << "Didn't have a reco track" << std::endl;
+          continue;
+        }
+
+        if(!trackReal || !trackReal->TestFilterBit(fAOD_FilterBits)) {
+          continue;
+        }
+
+        Bool_t ifDefaultCuts = trackReal->TestFilterBit(fAOD_FilterBits);
+
+        //
+        SetCutBitsAndSomeTrackVariables(trackReal);
+        fEtaMC        = trackReal->Eta();
+        if (TMath::Abs(fEta) > fEtaCut) {
+          continue;
+        }
+                      
+        Float_t mod_track_phi = trackReal->Phi() + TMath::Pi();
+        //Check if the track is within the R=0.4 cone in eta, phi
+        dPhi1 = TMath::Abs(mod_track_phi - Axis1);
+        dPhi1 = (dPhi1 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi1 : dPhi1;
+        dPhi2 = TMath::Abs(mod_track_phi - Axis2);
+        dPhi2 = (dPhi2 > TMath::Pi()) ? 2 * TMath::Pi() - dPhi2 : dPhi2;
+        dEta = leadJetEta_Emb - trackReal->Eta();
+
+        if ((TMath::Sqrt(dPhi1 * dPhi1 + dEta * dEta) > 0.4) && (TMath::Sqrt(dPhi2 * dPhi2 + dEta * dEta) > 0.4)) continue; //scale the yields by 1/(2Ncones*piR^2) offline
+        
+        //
+        // --------------------------------------------------------------
+        //   Fill the trees
+        // --------------------------------------------------------------
+        //
+
+        fDEdxEl=-100;  fDEdxPi=-100;  fDEdxKa=-100;  fDEdxPr=-100;  fDEdxDe=-100;
+        fSigmaEl=-100; fSigmaPi=-100; fSigmaKa=-100; fSigmaPr=-100; fSigmaDe=-100;
+        // Get the track variables
+        GetExpecteds(trackReal);
+
+        Float_t length = trackReal->GetIntegratedLength();
+        Float_t tofSignal = trackReal->GetTOFsignal();
+        Float_t t0 = fTOFPIDResponse.GetStartTime(fPVertex);
+        Float_t beta = -.05;
+        //int nTOFClusters = trackReal->GetNTOFclusters(); //All matchable clusters ESD only
+        if((length > 0) && (tofSignal > 0)) beta = length / (2.99792458e-2*(tofSignal - t0));
+
+        if (fPt>100.0) continue; //So we can match the jets that we throw out w/ max track pT>100
+
+        Float_t fTPCmom_choice = fPtot;
+        if (fSetTPCmom == 1) fTPCmom_choice = fPVertex;
+        if (fSetTPCmom == 2) fTPCmom_choice = fPt;
+
+        Float_t fTOFmom_choice = fPt;
+        if (fSetTOFmom == 1) fTPCmom_choice = fPVertex;
+        if (fSetTOFmom == 2) fTPCmom_choice = fPtot;
+
+        Float_t fBetamom_choice = fPVertex;
+        if (fSetBetamom == 1) fTPCmom_choice = fPt;
+        if (fSetBetamom == 2) fTPCmom_choice = fPtot;
+
+        Float_t fEta_choice = fEta;
+        if (fSetEta == 1) fEta_choice = fY;
+
+        Float_t DCAxy = -999.;
+        Float_t DCAz = -999.;
+        trackReal->GetImpactParameters(DCAxy, DCAz);
+        Float_t comb_sig_pi = TMath::Sqrt(fNSigmasPiTPC * fNSigmasPiTPC + fNSigmasPiTOF * fNSigmasPiTOF);
+        Float_t comb_sig_pr = TMath::Sqrt(fNSigmasPrTPC * fNSigmasPrTPC + fNSigmasPrTOF * fNSigmasPrTOF);
+
+        if (ifDefaultCuts == 1 && TMath::Abs(fEta) < fEtaCut){
+          if (fFill_TPC) fHistIncTracks_dEdx->Fill(fTPCmom_choice,fTPCSignal,TMath::Abs(fEta_choice));
+          if (fFillpTPC_pT) fHistIncTracks_moms->Fill(fPt,fPtot);
+          if (fFillp_pT) fHistIncTracks_moms_p->Fill(fPt,fPVertex);
+          if (fFillpTPC_p) fHistIncTracks_moms_pTPC_p->Fill(fPtot,fPVertex);
+          fHistIncTracks_kin->Fill(fPt,TMath::Abs(fEta),fPhi);
+          if (comb_sig_pi < 2.0) fHist_pi_DCAxy->Fill(fPt, DCAxy);
+          if (comb_sig_pr < 2.0) fHist_pr_DCAxy->Fill(fPt, DCAxy);
+
+          if (fFill_TPC_expecs){
+            fHistIncTracks_mpi->Fill(fTPCmom_choice,fDEdxPi,TMath::Abs(fEta_choice));
+            fHistIncTracks_spi->Fill(fTPCmom_choice,fSigmaPi,TMath::Abs(fEta_choice));
+
+            fHistIncTracks_mel->Fill(fTPCmom_choice,fDEdxEl,TMath::Abs(fEta_choice));
+            fHistIncTracks_sel->Fill(fTPCmom_choice,fSigmaEl,TMath::Abs(fEta_choice));
+
+            fHistIncTracks_mka->Fill(fTPCmom_choice,fDEdxKa,TMath::Abs(fEta_choice));
+            fHistIncTracks_ska->Fill(fTPCmom_choice,fSigmaKa,TMath::Abs(fEta_choice));
+
+            fHistIncTracks_mpr->Fill(fTPCmom_choice,fDEdxPr,TMath::Abs(fEta_choice));
+            fHistIncTracks_spr->Fill(fTPCmom_choice,fSigmaPr,TMath::Abs(fEta_choice));
+          }
+        }
+        //
+        //TPC-TOF Matching conditions: Use standard TPC tracks, then require kTIME and kTOFout
+        Bool_t fTOFout = kFALSE;
+        if ((trackReal->GetStatus() & AliAODTrack::kTOFout) != 0) { //Track has the kTOFout flag
+        fTOFout = kTRUE;
+        }
+
+        //kTIME flag
+        Bool_t fTime = kFALSE;
+        if ((trackReal->GetStatus() & AliAODTrack::kTIME) != 0) { //Track has the kTIME flag
+        fTime = kTRUE;
+        }
+
+        if (ifDefaultCuts == 1 && TMath::Abs(fEta) < fEtaCut && fTOFout && fTime && fFill_TOF_expecs){
+          Double_t inttime[5]; //6 is needed to account for earlier species - 0 = electron, 1 = muon, 2 = pion, 3 = kaon, 4 = proton, ESD only 5 = deuteron
+          trackReal->GetIntegratedTimes(inttime, 5); // Returns the array with integrated times for each particle hypothesis
+
+          Float_t fTOFMismatchTime = -20000000.;
+          fTOFMismatchTime = AliTOFPIDResponse::GetMismatchRandomValue(trackReal->Eta());
+          if (fTOFMismatchTime <= 0){
+            fTOFMismatchTime = -20000000.;
+          }
+
+          for (Int_t i = 0; i < 3; i++) {
+            const Double_t beta_expec = length / (2.99792458e-2 * (inttime[i+2] - t0));
+            if (i==0){
+              fHistBetaExpec_pi->Fill(fTPCmom_choice, beta_expec);
+              fHist_pi_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion), TMath::Abs(fEta_choice));
+              if (TMath::Abs(fNSigmasPiTOF) < 2.0){
+                fHistTOFSigmaExpec_pi->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion), TMath::Abs(fEta_choice));
+              }
+              if (TMath::Abs(fNSigmasElTOF) < 2.0){
+                fHist_elExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+              }
+              if (TMath::Abs(fNSigmasMuTOF) < 2.0){
+                fHist_muExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+              }
+              if (TMath::Abs(fNSigmasKaTOF) < 2.0){
+                fHist_kaExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+              }
+              if (TMath::Abs(fNSigmasPrTOF) < 2.0){
+                fHist_prExpec_pihyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kPion),TMath::Abs(fEta_choice));
+              }
+            }
+            if (i==1){
+              fHistBetaExpec_ka->Fill(fTPCmom_choice, beta_expec);
+              fHist_ka_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
+              if (TMath::Abs(fNSigmasKaTOF) < 2.0){
+                fHistTOFSigmaExpec_ka->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::ParticleMass(i+2)),TMath::Abs(fEta_choice));
+              }
+              if (TMath::Abs(fNSigmasPiTOF) < 2.0){
+                fHist_piExpec_kahyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
+              }
+              if (TMath::Abs(fNSigmasPrTOF) < 2.0){
+                fHist_prExpec_kahyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kKaon),TMath::Abs(fEta_choice));
+              }
+            }
+            if (i==2){
+              fHistBetaExpec_pr->Fill(fTPCmom_choice, beta_expec);
+              fHist_pr_mismatch->Fill(fTPCmom_choice, (fTOFMismatchTime - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+              if (TMath::Abs(fNSigmasPrTOF) < 2.0){
+                fHistTOFSigmaExpec_pr->Fill(fTPCmom_choice, fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::ParticleMass(i+2)),TMath::Abs(fEta_choice));
+              }
+              if (TMath::Abs(fNSigmasPiTOF) < 2.0){
+                fHist_piExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+              }
+              if (TMath::Abs(fNSigmasKaTOF) < 2.0){
+                fHist_kaExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+              }
+              if (TMath::Abs(fNSigmasDeTOF) < 2.0){
+                fHist_deExpec_prhyp->Fill(fTPCmom_choice, (tofSignal - fPIDResponse->GetTOFResponse().GetStartTime(fPVertex) - inttime[i+2])/fTOFPIDResponse.GetExpectedSigma(fPVertex, inttime[i+2], AliPID::kProton),TMath::Abs(fEta_choice));
+              }
+            }
+          }
+        }
+
+        if (ifDefaultCuts == 1 && TMath::Abs(fEta) < fEtaCut && fTOFout && fTime && fFill_TOF){
+          fHistIncTracks_beta->Fill(fBetamom_choice,beta);
+          fHistIncTracks_t0->Fill(fBetamom_choice,t0);
+          fHistIncTracks_TOFpi_nsigma->Fill(fTPCmom_choice,fNSigmasPiTOF,TMath::Abs(fEta_choice));
+          fHistIncTracks_TOFka_nsigma->Fill(fTPCmom_choice,fNSigmasKaTOF,TMath::Abs(fEta_choice));
+          fHistIncTracks_TOFpr_nsigma->Fill(fTPCmom_choice,fNSigmasPrTOF,TMath::Abs(fEta_choice));
+          /*if (nTOFClusters < 2) { //ESD only
+            fHistIncTracks_TOFpi_nsigma_1cls->Fill(fTPCmom_choice,fNSigmasPiTOF,TMath::Abs(fEta_choice));
+            fHistIncTracks_TOFka_nsigma_1cls->Fill(fTPCmom_choice,fNSigmasKaTOF,TMath::Abs(fEta_choice));
+            fHistIncTracks_TOFpr_nsigma_1cls->Fill(fTPCmom_choice,fNSigmasPrTOF,TMath::Abs(fEta_choice));
+          }*/
+        }
+
+        //
+        // Get generated track info
+        Int_t lab = TMath::Abs(trackReal->GetLabel());
+        Int_t imc=trackReal->GetLabel();
+        if (imc==-1) isPbPbPart = kTRUE;
+
+
+        if (isPbPbPart==kFALSE){
+
+          if (fMCParticleArray == NULL) continue;
+  
+          const AliAODMCParticle *mc=static_cast<AliAODMCParticle*>(fMCParticleArray->At(lab));
+          Int_t pdg = mc->GetPdgCode();
+
+          if(mc->IsPhysicalPrimary()) {
+            trackOrigin = 0;
+          }
+          if(mc->IsSecondaryFromWeakDecay()) {
+            trackOrigin = 1;
+          }
+          if(mc->IsSecondaryFromMaterial()) {
+            trackOrigin = 2;
+          }
+
+          Float_t DCAxy = -999.;
+          Float_t DCAz = -999.;
+
+          trackReal->GetImpactParameters(DCAxy, DCAz);
+
+          if (fUseCouts) cout << "DCAxy for trackOrigin= " << trackOrigin << " is " << DCAxy << endl;
+
+          Int_t TOFTrkLabel[3] = { -1 }; //This can contain three particles wich occupy the same cluster
+
+          Int_t fMCTOFMatch = -2;
+          trackReal->GetTOFLabel(TOFTrkLabel);
+
+          if (TOFTrkLabel[0] == -1) {// Track was not matched to any TOF hit.
+            fMCTOFMatch = -1;
+          }
+          else if (lab == TOFTrkLabel[0]) {// Track was correctly matched to a TOF hit.
+            fMCTOFMatch = 0;
+          }
+          else {// Track was matched to a TOF hit but comes from mismatch!
+            fMCTOFMatch = 1;
+          }
+          
+          // match the track with mc track
+          Int_t iPart = -1;
+          if (TMath::Abs(pdg) == kPDGel) { iPart = 0; } // select el
+          if (TMath::Abs(pdg) == kPDGpi) { iPart = 1; } // select pi
+          if (TMath::Abs(pdg) == kPDGka) { iPart = 2; } // select ka
+          if (TMath::Abs(pdg) == kPDGpr) { iPart = 3; } // select pr
+          if (TMath::Abs(pdg) == kPDGde) { iPart = 4; } // select de
+          if (TMath::Abs(pdg) == kPDGmu) { iPart = 5; } // select mu
+
+          //
+          GetExpecteds(trackReal);
+          SetCutBitsAndSomeTrackVariables(trackReal);
+          //
+          //if (trackReal-> GetInnerParam()){ AODs don't have this info
+            fPtotMC       = trackReal->P(); //trackReal->GetInnerParam()->GetP();
+            fTPCSignalMC  = trackReal->GetTPCsignal();
+          //}
+          fEtaMC        = trackReal->Eta();
+          Float_t fYMC          = trackReal->Y();
+          fPtMC         = trackReal->Pt();
+          fSignMC       = trackReal->GetSign();
+          Float_t pMC   = trackReal->P();
+          Float_t fPhiMC= trackReal->Phi();
+
+          Float_t fRapidityMC = TMath::ASinH(fPt / TMath::Sqrt(AliPID::ParticleMass(iPart + 1) * AliPID::ParticleMass(iPart + 1) + fPt * fPt) * TMath::SinH(fEta));
+
+          if (TMath::Abs(fRapidityMC) > fYCut && fDoRapCut) {
+            if (fUseCouts) std::cout << "particle didn't pass rapidity cut with MC PID" << std::endl;
+            continue;
+          }
+
+          if (fPtMC<0.15 || fPtMC>100.0) continue; //So we can match the jets that we throw out w/ max track pT>100
+
+          if (TMath::Abs(fEtaMC) > fEtaCut) continue;
+
+          if(!mc->IsPhysicalPrimary()) {
+            if (fUseCouts) std::cout << "particle wasnt primary" << std::endl; //most aren't primaries
+            continue;
+          }
+
+          fHist_PC_spectra_Pythia->Fill(fPt);
+
+          if (iPart==1) fHist_PC_spectra_Pythia_pi->Fill(fPt);
+          if (iPart==2) fHist_PC_spectra_Pythia_ka->Fill(fPt);
+          if (iPart==3) fHist_PC_spectra_Pythia_pr->Fill(fPt);
+
+        }//end is PbPbCondition
+      } // end inc tracks loop for cone
+    }
+    fFilledUECone_Emb = kTRUE;
+  } //end cone loop
+
+
+  for(auto jet_reco : fRecoJetContainer->accepted())
+  {
+    //if (jet_reco->Pt() < fTrackPt || jet_reco->Pt() > 1000.0 || TMath::Abs(jet_reco->Eta()) >= jetAbsEtaCut) continue; //this is not needed when using jetcontainer->accepted
+    Float_t jet_recopt = jet_reco->Pt();
+    Float_t jet_recophi = jet_reco->Phi();
+    Float_t jet_recoeta = jet_reco->Eta();
+    Float_t jet_recoArea = jet_reco->AreaPt();
+
+    Float_t jet_recoptsub = jet_reco->PtSub(fjetRecoRhoVal, kFALSE);
+
+    fHistMCR_Jet_ptsub_v_area->Fill(jet_recoArea, jet_recoptsub);
+
+    if (jet_recoArea <= fjetMinArea) continue;
+
+    for(Int_t i = 0; i < jet_reco->GetNumberOfParticleConstituents(); i++)
+    {
+      const AliVParticle* particle = jet_reco->Track(i);
+      AliAODTrack* trackReal = (AliAODTrack*)(particle);
+      if (trackReal==NULL) {
+        if (fUseCouts) std::cout << "Didn't have a reco track" << std::endl;
+        continue;
+      }
+
+      // Get generated track info
+      Int_t lab = TMath::Abs(trackReal->GetLabel());
+      Int_t imc=trackReal->GetLabel();
+
+      if (fMCParticleArray == NULL) continue;
+      const AliAODMCParticle *mc=static_cast<AliAODMCParticle*>(fMCParticleArray->At(lab));
+      Int_t pdg = mc->GetPdgCode();
+
+      //EMCal jet definition does not have this. Will in principle affect the jets selected
+      if(!mc->IsPhysicalPrimary()) {
+        if (fUseCouts) std::cout << "particle wasnt primary" << std::endl;
+        continue;
+      }
+
+      Int_t TOFTrkLabel[3] = { -1 };
+
+      Int_t fMCTOFMatch = -2;
+      trackReal->GetTOFLabel(TOFTrkLabel);
+      if (TOFTrkLabel[0] == -1) {// Track was not matched to any TOF hit.
+        fMCTOFMatch = -1;
+      }
+      else if (lab == TOFTrkLabel[0]) {// Track was correctly matched to a TOF hit.
+        fMCTOFMatch = 0;
+      }
+      else {// Track was matched to a TOF hit but comes from mismatch!
+        fMCTOFMatch = 1;
+      }
+       
+      // check the origin of the track
+      trackOrigin = -10;
+
+      if(!trackReal || !trackReal->TestFilterBit(fAOD_FilterBits)) {
+        continue;
+      }
+      //
+      //
+      // match the track with mc track
+      Int_t iPart = -1; //-10;
+      if (TMath::Abs(pdg) == kPDGel) { iPart = 0; } // select el
+      if (TMath::Abs(pdg) == kPDGpi) { iPart = 1; } // select pi
+      if (TMath::Abs(pdg) == kPDGka) { iPart = 2; } // select ka
+      if (TMath::Abs(pdg) == kPDGpr) { iPart = 3; } // select pr
+      if (TMath::Abs(pdg) == kPDGde) { iPart = 4; } // select de
+      if (TMath::Abs(pdg) == kPDGmu) { iPart = 5; } // select mu
+      //
+      GetExpecteds(trackReal);
+      SetCutBitsAndSomeTrackVariables(trackReal);
+      //
+      //if (trackReal-> GetInnerParam()){ AODs don't have this info
+        fPtotMC       = trackReal->P(); //trackReal->GetInnerParam()->GetP();
+        fTPCSignalMC  = trackReal->GetTPCsignal();
+      //}
+      fEtaMC        = trackReal->Eta();
+      Float_t fYMC          = trackReal->Y();
+      fPtMC         = trackReal->Pt();
+      fSignMC       = trackReal->GetSign();
+      Float_t pMC   = trackReal->P();
+      Float_t fPhiMC= trackReal->Phi();
+
+      Float_t fRapidityMC = TMath::ASinH(fPt / TMath::Sqrt(AliPID::ParticleMass(iPart + 1) * AliPID::ParticleMass(iPart + 1) + fPt * fPt) * TMath::SinH(fEta));
+
+      if (TMath::Abs(fRapidityMC) > fYCut && fDoRapCut) {
+        if (fUseCouts) std::cout << "didn't pass rap cut" << std::endl;
+        continue;
+      }
+      //
+      //
+      //
+
+      if (fPtMC<0.15 || fPtMC>100.0) continue; //So we can match the jets that we throw out w/ max track pT>100
+
+      if (TMath::Abs(fEtaMC) > fEtaCut) continue;
+
+      fHist_det_spectra_Pythia->Fill(fPtMC, jet_recopt);
+      if (iPart==1) fHist_det_spectra_Pythia_pi->Fill(fPtMC, jet_recopt);
+      if (iPart==2) fHist_det_spectra_Pythia_ka->Fill(fPtMC, jet_recopt);
+      if (iPart==3) fHist_det_spectra_Pythia_pr->Fill(fPtMC, jet_recopt);
+
+    } // ======= end of track loop for MC jet reco filling =======
+
+  }//end reco jet loop
+
+  //Gen jets
+  for(auto jet : fGenJetContainer->accepted())
+  {
+    //if (jet->Pt() < fTrackPt || jet->Pt() > 1000.0 || TMath::Abs(jet->Eta()) >= jetAbsEtaCut) continue; //this is not needed when using jetcontainer->accepted
+    Float_t jetpt = jet->Pt();
+
+    Float_t jetphi = jet->Phi();
+    Float_t jeteta = jet->Eta();
+    Float_t jetArea = jet->AreaPt();
+
+    Float_t jetptsub = jet->PtSub(fjetGenRhoVal, kFALSE);
+
+    fHistMCT_Jet_ptsub_v_area->Fill(jetArea, jetptsub);
+
+    if (jetArea <= fjetMinArea) continue;
+
+    for(Int_t i = 0; i < jet->GetNumberOfParticleConstituents(); i++)
+    {
+      const PWG::JETFW::AliEmcalParticleJetConstituent* prepart1 = jet->ParticleConstituentAt(i); 
+      const AliVParticle* prepart2 = prepart1->GetParticle();
+      AliAODMCParticle* particle = (AliAODMCParticle*)(prepart2);
+      if (particle==NULL) {
+        if (fUseCouts) std::cout << "Didn't have a gen track" << std::endl;
+        continue;
+      }
+
+      int iMCPartLabel = TMath::Abs(particle->GetLabel());
+      /*bool particleIsPileup = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMCPartLabel,MCEvent());
+      if (particleIsPileup) {
+        if (fUseCouts) std::cout << "This jet MC particle was from OOB pileup" << std::endl;
+        continue;
+      }*/ //jet MC doesn't have pileup
+
+      if (TMath::Abs(particle->Y()) > fYCut && fDoRapCut) {
+        if (fUseCouts) std::cout << "particle didnt pass y cut" << std::endl;
+        continue;
+      }
+
+      Int_t TfPdgcode = particle->GetPdgCode();
+      int fPdgIndex = -1;
+      if ((TMath::Abs(TfPdgcode) == 211))
+        fPdgIndex = 0; //Particle is a Pion
+      else if ((TMath::Abs(TfPdgcode) == 321))
+        fPdgIndex = 1; //Particle is a Kaon
+      else if ((TMath::Abs(TfPdgcode) == 2212))
+        fPdgIndex = 2; //Particle is a Proton
+
+      Bool_t fSignMC = kFALSE;
+      if (TfPdgcode > 0)
+        fSignMC = kFALSE; //Particle is positive
+      else
+        fSignMC = kTRUE; //Particle is negative
+
+      Float_t fPMC_Truth = particle->P();
+      Float_t fPtMC_Truth = particle->Pt();
+      Float_t fEtaMC_Truth = particle->Eta();
+      Float_t fPhiMC_Truth = particle->Phi();
+
+
+      fHist_part_spectra_Pythia->Fill(fPMC_Truth, jetpt);
+      if (fPdgIndex==0) fHist_part_spectra_Pythia_pi->Fill(fPMC_Truth, jetpt);
+      if (fPdgIndex==1) fHist_part_spectra_Pythia_ka->Fill(fPMC_Truth, jetpt);
+      if (fPdgIndex==2) fHist_part_spectra_Pythia_pr->Fill(fPMC_Truth, jetpt);
+
+    }
+  }//end gen jets loop
+
+}
+//________________________________________________________________________
 void AliAnalysisTaskJetHadroAOD::FillEventTree()
 {
   if (fUseCouts) std::cout << " Info::siweyhmi: ===== In the FillEventTree ===== " << std::endl;
   (*fTreeSRedirector)<<"jeteventInfo"<<
   "rhoFJ="      << frhoFJ << //event rho
   "rhoEMC="  << fjetRhoVal <<
+  "rhoEMCReco="  << fjetRecoRhoVal <<
+  "rhoEMCGen="  << fjetGenRhoVal <<
+  "rhoEMCEmb=" << fjetEmbRhoVal <<
   "cent="      << fCentrality  <<  //  centrality
   "isGoodIncEvent="   << fisGoodIncEvent <<
+  "filledUECone_Emb="   << fFilledUECone_Emb <<
   "filledUECone_Gen="   << fFilledUECone_Gen <<
   "filledUECone_Rec="   << fFilledUECone_Rec <<
   "hasAcceptedFJjet="   << fhasAcceptedFJjet <<
@@ -3956,7 +5171,7 @@ void AliAnalysisTaskJetHadroAOD::SetCutBitsAndSomeTrackVariables(AliAODTrack* tr
     //      Bayesian PID part
     // --------------------------------------------------------------
     //
-    if (ptotForBetaGamma>ptotForBetaGammaThr) {
+    /*if (ptotForBetaGamma>ptotForBetaGammaThr) {
       fPIDCombined->SetDefaultTPCPriors();
       Double_t probTPC[AliPID::kSPECIES]={0.};
       Double_t probTOF[AliPID::kSPECIES]={0.};
@@ -3973,7 +5188,7 @@ void AliAnalysisTaskJetHadroAOD::SetCutBitsAndSomeTrackVariables(AliAODTrack* tr
       fTrackProbPiTOF = probTOF[AliPID::kPion];
       fTrackProbKaTOF = probTOF[AliPID::kKaon];
       fTrackProbPrTOF = probTOF[AliPID::kProton];
-    }
+    }*/
   //}
   //
 
@@ -4010,6 +5225,249 @@ Bool_t AliAnalysisTaskJetHadroAOD::CountEmptyEvents()
   }
   return emptyEvent;
 
+}
+//________________________________________________________________________
+void AliAnalysisTaskJetHadroAOD::DoJetMatching(){
+  //From jet extractor task
+
+   // Perform the matching before the main jet loop (Only if we use the tagger for matching)                                              
+  AliJetContainer * jetsHybrid = this->GetJetContainer("EmbJets");
+  AliJetContainer * jetsDetLevel = this->GetJetContainer("RecoJets");
+  AliJetContainer * jetsPartLevel = this->GetJetContainer("GenJets");
+
+  
+  // Now, begin the actual matching.
+  // Hybrid <-> det first
+  AliDebugStream(2) << "Matching hybrid to detector level jets.\n";
+  // First, we reset the tagging
+    for(auto j : jetsHybrid->all()){
+    j->ResetMatching();
+  }
+  for(auto j : jetsDetLevel->all()){
+    j->ResetMatching();
+  }
+  // Next, we perform the matching
+  PerformGeometricalJetMatching(*jetsHybrid, *jetsDetLevel, fJetMatchingRadius);
+  // Now, begin the next matching stage
+  // det <-> particle
+  AliDebugStream(2) << "Matching detector level to particle level jets.\n";
+  // First, we reset the tagging. We need to reset the det matching again to ensure
+  // that it doesn't accidentally keep some latent matches to the hybrid jets.
+  for(auto j : jetsDetLevel->all()){
+    j->ResetMatching();
+  }
+  // if we do not need to do particle level matching return
+  if(!fDoPartLevelMatching) return;
+  
+  for(auto j : jetsPartLevel->all()){
+    j->ResetMatching();
+  }
+  // Next, we perform the matching
+  PerformGeometricalJetMatching(*jetsHybrid, *jetsDetLevel, fJetMatchingRadius);
+  // Now, begin the next matching stage 
+  // det <-> particle
+  AliDebugStream(2) << "Matching detector level to particle level jets.\n";
+  // First, we reset the tagging. We need to reset the det matching again to ensure
+  // that it doesn't accidentally keep some latent matches to the hybrid jets.
+  for(auto j : jetsDetLevel->all()){
+    j->ResetMatching();
+  }
+  for(auto j : jetsPartLevel->all()){
+    j->ResetMatching();
+  }
+  // Next, we perform the matching
+  PerformGeometricalJetMatching(*jetsDetLevel, *jetsPartLevel, fJetMatchingRadius);
+}
+//________________________________________________________________________
+bool AliAnalysisTaskJetHadroAOD::PerformGeometricalJetMatching(AliJetContainer& contBase,
+                                    AliJetContainer& contTag, double maxDist) 
+{
+
+  //from jet extractor task
+  // Note that this function is also utilized in /PWGJE/EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHPerformance.cxx. For more details, see this file.
+  // Setup
+  const Int_t kNacceptedBase = contBase.GetNAcceptedJets(), kNacceptedTag = contTag.GetNAcceptedJets();
+  if (!(kNacceptedBase && kNacceptedTag)) {
+    return false;
+  }
+
+  // Build up vectors of jet pointers to use when assigning the closest jets.
+  // The storages are needed later for applying the tagging, in order to avoid multiple occurrence of jet selection
+  std::vector<AliEmcalJet*> jetsBase(kNacceptedBase), jetsTag(kNacceptedTag);
+
+  int countBase(0), countTag(0);
+  for (auto jb : contBase.accepted()) {
+    jetsBase[countBase] = jb;
+    countBase++;
+  }
+  for (auto jt : contTag.accepted()) {
+    jetsTag[countTag] = jt;
+    countTag++;
+  }
+
+  TArrayI faMatchIndexTag(kNacceptedBase), faMatchIndexBase(kNacceptedTag);
+  faMatchIndexBase.Reset(-1);
+  faMatchIndexTag.Reset(-1);
+
+  // find the closest distance to the base jet
+  countBase = 0;
+  for (auto jet1 : contBase.accepted()) {
+    double distance = maxDist;
+
+    // Loop over all accepted jets and brute force search for the closest jet.
+    // NOTE: current_index() returns the jet index in the underlying array, not
+    //       the index within the accepted jets that are returned.
+    int contTagAcceptedIndex = 0;
+    for (auto jet2 : contTag.accepted()) {
+      double dR = jet1->DeltaR(jet2);
+      if (dR < distance && dR < maxDist) {
+        faMatchIndexTag[countBase] = contTagAcceptedIndex;
+        distance = dR;
+      }
+      contTagAcceptedIndex++;
+    }
+
+
+    countBase++;
+  }
+
+  // other way around
+  countTag = 0;
+  for (auto jet1 : contTag.accepted()) {
+    double distance = maxDist;
+
+    // Loop over all accepted jets and brute force search for the closest jet.
+    // NOTE: current_index() returns the jet index in the underlying array, not
+    //       the index within the accepted jets that are returned.
+    int contBaseAcceptedIndex = 0;
+    for (auto jet2 : contBase.accepted()) {
+      double dR = jet1->DeltaR(jet2);
+      if (dR < distance && dR < maxDist) {
+        faMatchIndexBase[countTag] = contBaseAcceptedIndex;
+        distance = dR;
+      }
+      contBaseAcceptedIndex++;
+    }
+    countTag++;
+  }
+
+  // check for "true" correlations
+  // these are pairs where the base jet is the closest to the tag jet and vice versa
+  // As the lists are linear a loop over the outer base jet is sufficient.
+  AliDebugStream(1) << "Starting true jet loop: nbase(" << kNacceptedBase << "), ntag(" << kNacceptedTag << ")\n";
+  for (int ibase = 0; ibase < kNacceptedBase; ibase++) {
+    AliDebugStream(2) << "base jet " << ibase << ": match index in tag jet container " << faMatchIndexTag[ibase]
+             << "\n";
+    if (faMatchIndexTag[ibase] > -1) {
+      AliDebugStream(2) << "tag jet " << faMatchIndexTag[ibase] << ": matched base jet " << faMatchIndexBase[faMatchIndexTag[ibase]] << "\n";
+    }
+    // We have a true correlation where each jet points to the other.
+    if (faMatchIndexTag[ibase] > -1 && faMatchIndexBase[faMatchIndexTag[ibase]] == ibase) {
+      AliDebugStream(2) << "found a true match \n";
+      AliEmcalJet *jetBase = jetsBase[ibase], *jetTag = jetsTag[faMatchIndexTag[ibase]];
+      // We have a valid pair of matched jets, so set the closest jet properties.
+      if (jetBase && jetTag) {
+        Double_t dR = jetBase->DeltaR(jetTag);
+        jetBase->SetClosestJet(jetTag, dR);
+        jetTag->SetClosestJet(jetBase, dR);
+      }
+    }
+  }
+  return true;
+}
+//________________________________________________________________________
+void AliAnalysisTaskJetHadroAOD::GetTrueJetPtFraction(AliEmcalJet* jet, Double_t& truePtFraction, Double_t& truePtFraction_mcparticles)
+{
+  //from jet extractor task
+  // #################################################################################
+  // ##### FRACTION OF TRUE PT IN JET: Defined as "not from toy"
+
+  Double_t pt_truth = 0.;
+  Double_t pt_truth_mcparticles = 0.;
+  Double_t pt_all   = 0.;
+  truePtFraction = 0;
+  truePtFraction_mcparticles = 0;
+
+  // ### Loop over all tracks constituents
+  for(Int_t iConst = 0; iConst < jet->GetNumberOfParticleConstituents(); iConst++)
+  {
+    const AliVParticle* particle = jet->GetParticleConstituents()[iConst].GetParticle();
+    if(!particle) continue;
+    if(particle->Pt() < 1e-6) continue;
+
+    // Particles marked w/ labels within label range OR explicitly set as embedded tracks are considered to be from truth
+    if (  (fIsEmbeddedEvent && jet->GetParticleConstituents()[iConst].IsFromEmbeddedEvent()) ||
+          (!fIsEmbeddedEvent && ((particle->GetLabel() >= fTruthMinLabel) && (particle->GetLabel() < fTruthMaxLabel)))  ){
+            pt_truth += particle->Pt();
+    }
+    pt_all += particle->Pt();
+  }
+
+  // ### Loop over all primary (charged) MC particles and check if they have a corresponding track
+  //     Correspondence is checked geometrically, sum of matched particles pT is truth
+  Double_t jetRadius = 0.4;
+  if(fMCParticleArray)
+    for(Int_t iPart=0; iPart<fMCParticleArray->GetEntriesFast();iPart++)
+    {
+      AliAODMCParticle* part = (AliAODMCParticle*)fMCParticleArray->At(iPart);
+      if(!part) continue;
+      if(!part->IsPhysicalPrimary()) continue;
+      if(!part->Charge()) continue;
+      if(part->Pt() < 1e-6) continue;
+
+      Double_t deltaR = GetDistance(part->Eta(), jet->Eta(), part->Phi(), jet->Phi());
+      if(deltaR <= jetRadius){
+        pt_truth_mcparticles += part->Pt();
+      }
+    }
+
+  if(pt_all)
+  {
+    truePtFraction = (pt_truth/pt_all);
+    truePtFraction_mcparticles = (pt_truth_mcparticles/pt_all);
+  }
+}
+//________________________________________________________________________
+void AliAnalysisTaskJetHadroAOD::GetMatchedJetObservables(AliEmcalJet* jet, Double_t& detJetPt, Double_t& partJetPt, Double_t& detJetPhi, Double_t& detJetEta, Double_t& partJetPhi, Double_t& partJetEta, Double_t& detJetDistance, Double_t& partJetDistance)
+{
+  //from jet extractor task
+  // Get the Matched Observables                                                                                                                   
+  AliJetContainer * hybridJetCont = this->GetJetContainer("EmbJets");
+  AliJetContainer * detJetCont    = this->GetJetContainer("RecoJets");
+  AliJetContainer * partJetCont   = this->GetJetContainer("GenJets");
+  
+  // hybrid to detector level matching 
+  AliEmcalJet * jet2 = jet->ClosestJet();
+  if (!jet2) { return;}// if there is no match return.
+  Double_t ptJet2 = jet2->Pt() - detJetCont->GetRhoVal() * jet2->Area();
+  // This will retrieve the fraction of jet2's momentum in jet1.
+  Double_t fraction = hybridJetCont->GetFractionSharedPt(jet); //jet is emb jet
+  if (fraction < fJetMatchingSharedPtFraction) { return; }
+
+  // if we are not doing the particle level match, fill all observables here and return
+  if(!fDoPartLevelMatching){
+    detJetPt          = ptJet2;
+    detJetDistance    = jet->DeltaR(jet2);
+    return; 
+  }
+  
+  // detector to particle matching
+  AliEmcalJet * jet3 = jet2->ClosestJet();
+  if(!jet3){return;}
+  Double_t ptJet3 = jet3->Pt() - partJetCont->GetRhoVal() * jet3->Area(); 
+  // make no fraction cut on the detector to particle
+
+  // if we are doing particle level matching, require that there is both a particle and detector level match
+  detJetPt  = ptJet2;
+  partJetPt = ptJet3;
+  detJetPhi = jet2->Phi();
+  partJetPhi = jet3->Phi();
+  detJetEta = jet2->Eta();
+  partJetEta = jet3->Eta();
+  detJetDistance  = jet->DeltaR(jet2);
+  partJetDistance = jet2->DeltaR(jet3);
+
+  return;
 }
 //________________________________________________________________________
 void AliAnalysisTaskJetHadroAOD::Terminate(Option_t *)
