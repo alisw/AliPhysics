@@ -390,6 +390,8 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
     }
   }
 
+  fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+
   std::vector<AliFemtoDreamBasePart> PionPlusMCGen;
   std::vector<AliFemtoDreamBasePart> PionMinusMCGen;
   std::vector<AliFemtoDreamBasePart> LambdasMCGen;
@@ -398,8 +400,14 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
   // Find Lambdas and keep track of their daughters
   std::vector<int> dauList = {};
   if (fMC) {
-    for (Int_t iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) {
-      auto part = (AliAODMCParticle *)fMC->GetTrack(iPart);
+    for (Int_t iPart = 0; iPart < fInputEvent->GetNumberOfTracks(); ++iPart) {
+      
+      AliVTrack *track = static_cast<AliVTrack*>(fInputEvent->GetTrack(iPart));
+      if (!track)
+        continue;
+      fTrack->SetTrack(track, fInputEvent);
+      
+      AliAODMCParticle *part = (AliAODMCParticle *)fMC->GetTrack(fTrack->GetID());
       if (!part) continue;
       if (!part->IsPhysicalPrimary()) continue;
 
@@ -452,11 +460,17 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
     }
 
     // Find pions
-    for (Int_t iPart = 0; iPart < fMC->GetNumberOfTracks(); iPart++) {
+    for (Int_t iPart = 0; iPart < fInputEvent->GetNumberOfTracks(); ++iPart) {
+      
+      AliVTrack *track = static_cast<AliVTrack*>(fInputEvent->GetTrack(iPart));
+      if (!track)
+        continue;
+      fTrack->SetTrack(track, fInputEvent);
+      
       // Remove the daughters of Lambdas
       if (std::find(dauList.begin(), dauList.end(), iPart) != dauList.end()) continue;
 
-      auto part = (AliAODMCParticle *)fMC->GetTrack(iPart);
+      AliAODMCParticle *part = (AliAODMCParticle *)fMC->GetTrack(fTrack->GetID());
       if (!part) continue;
       if (!part->IsPhysicalPrimary()) continue;
 
@@ -489,8 +503,6 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
       }
     }
   }
-
-  fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
 
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack)
   {
