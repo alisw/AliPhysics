@@ -83,7 +83,8 @@ class AliJetContainer : public AliParticleContainer {
     kDCALonlyfid      = AliEmcalJet::kDCALonlyfid,  ///< DCal fiducial acceptance (each eta, phi edge narrowed by jet R)
     kPHOS             = AliEmcalJet::kPHOS,         ///< PHOS acceptance
     kPHOSfid          = AliEmcalJet::kPHOSfid,      ///< PHOS fiducial acceptance (each eta, phi edge narrowed by jet R)
-    kUser             = AliEmcalJet::kUser          ///< Full acceptance, i.e. no acceptance cut applied -- left to user
+    kUser             = AliEmcalJet::kUser,         ///< Full acceptance, i.e. no acceptance cut applied -- left to user
+    kEMCALfidReduced  = AliEmcalJet::kEMCALfidReduced ///< EMCal fiducial acceptance (each eta, phi edge narrowed by jet R and additional gap)
   };
 
   AliJetContainer();
