@@ -294,20 +294,22 @@ void AliPHOSEmbedggHBT::UserExec(Option_t *) {
   }
   FillHistogram("hTotSelEvents", 4.5);
 
+  fCenBin = 0; // To fill histograms
+  int mixCentBin = 0;
   if (fCentrality < 5.)
-    fCenBin = 0;
+    mixCentBin = 0;
   else if (fCentrality < 10.)
-    fCenBin = 1;
+    mixCentBin = 1;
   else if (fCentrality < 20.)
-    fCenBin = 2;
+    mixCentBin = 2;
   else if (fCentrality < 30.)
-    fCenBin = 3;
+    mixCentBin = 3;
   else if (fCentrality < 40.)
-    fCenBin = 4;
+    mixCentBin = 4;
   else if (fCentrality < 50.)
-    fCenBin = 5;
+    mixCentBin = 5;
   else if (fCentrality < 80.)
-    fCenBin = 6;
+    mixCentBin = 6;
 
   // reaction plane
   AliEventplane *eventPlane = fEvent->GetEventplane();
@@ -333,9 +335,9 @@ void AliPHOSEmbedggHBT::UserExec(Option_t *) {
   if (irp >= kPRBins)
     irp = kPRBins - 1;
 
-  if (!fPHOSEvents[zvtx][fCenBin][irp])
-    fPHOSEvents[zvtx][fCenBin][irp] = new TList();
-  TList *prevPHOS = fPHOSEvents[zvtx][fCenBin][irp];
+  if (!fPHOSEvents[zvtx][mixCentBin][irp])
+    fPHOSEvents[zvtx][mixCentBin][irp] = new TList();
+  TList *prevPHOS = fPHOSEvents[zvtx][mixCentBin][irp];
 
   if (fSignalEvent)
     fSignalEvent->Clear();
@@ -475,7 +477,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t *) {
               notFound = false;
               break;
             }
-            prim1 = ((AliAODMCParticle *)fStack->At(prim1))->GetMother();            
+            prim1 = ((AliAODMCParticle *)fStack->At(prim1))->GetMother();
           }
         }
       }
@@ -573,7 +575,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t *) {
               notFound = false;
               break;
             }
-            prim1 = ((AliAODMCParticle *)fStack->At(prim1))->GetMother();            
+            prim1 = ((AliAODMCParticle *)fStack->At(prim1))->GetMother();
           }
         }
       }
@@ -854,7 +856,8 @@ void AliPHOSEmbedggHBT::UserExec(Option_t *) {
 
   // Now we either add current events to stack or remove
   // If no photons in current event - no need to add it to mixed
-  const Int_t kMixEvents[kCentBins] = {20, 20, 20, 30, 30, 40, 40};
+  const Int_t kMixEvents[kMixCentBins] = {20, 20, 20, 30, 30,
+                                          40, 40, 40, 40, 40};
   if (fPHOSEvent->GetEntriesFast() > 0) {
     fPHOSEvent->Expand(fPHOSEvent->GetEntriesFast());
     prevPHOS->AddFirst(fPHOSEvent);
