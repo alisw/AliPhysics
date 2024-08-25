@@ -104,6 +104,12 @@ double   ktrngbeta[numOfkTbins + 1] = {0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.
   Reader->SetFilterBit(7);
   Reader->SetDCAglobalTrack(1);  
   Reader->SetUseAliEventCuts(kTRUE);
+
+  Reader->SetUseMultiplicity(AliFemtoEventReaderAOD::kCentrality);
+  Reader->SetEPVZERO(kTRUE);
+  Reader->SetCentralityFlattening(kTRUE);
+  Reader->SetPrimaryVertexCorrectionTPCPoints(kTRUE);
+
   if(trackpileup == 1){
     Reader->SetTrackPileUpRemoval(kTRUE);} 
   if(ispileup == 1){
