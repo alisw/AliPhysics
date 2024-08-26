@@ -636,7 +636,7 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *) {
           double qo =
               0.5 * (sum.Px() * gammaCMq.Px() + sum.Py() * gammaCMq.Py()) / kT;
           double qs =
-              0.5 * (ph1->Px() * ph2->Py() - ph2->Px() * ph1->Py()) / kT;
+              (ph1->Px() * ph2->Py() - ph2->Px() * ph1->Py()) / kT; // CORRECT!
           double ql = gammaCMq.Pz();
           if (gRandom->Uniform() <
               0.5) { // remove ordering during reconstruction
@@ -696,8 +696,7 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *) {
             double qo = 0.5 *
                         (sum.Px() * gammaCMq.Px() + sum.Py() * gammaCMq.Py()) /
                         kT;
-            double qs =
-                0.5 * (ph1->Px() * ph2->Py() - ph2->Px() * ph1->Py()) / kT;
+            double qs = (ph1->Px() * ph2->Py() - ph2->Px() * ph1->Py()) / kT;
             double ql = gammaCMq.Pz();
 
             if (PairCut(ph1, ph2, 0)) {
