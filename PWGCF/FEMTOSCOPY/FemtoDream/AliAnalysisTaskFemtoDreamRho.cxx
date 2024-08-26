@@ -31,6 +31,8 @@ ClassImp(AliAnalysisTaskFemtoDreamRho)
       fIsMCcheckedCombs(false),
       fpairRapiditiySelection(false),
       fOutput(nullptr),
+      fHistListRhoCandidatesMCAncestors(nullptr),
+      fHistListRhoMCTrue(nullptr),
       fEvent(nullptr),
       fTrack(nullptr),
       fTrackneg(nullptr),
@@ -64,6 +66,7 @@ ClassImp(AliAnalysisTaskFemtoDreamRho)
       fHist2D_massVSpt_RhoCandidateCommonFullInvM(nullptr),
       fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances(nullptr),
       fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances(nullptr),
+      fHist2D_massVSpt_RhoCandidateCommonFullInvM_kStarMisidResonances(nullptr),
       fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances(nullptr),
       fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances(nullptr),
       fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances(nullptr),
@@ -102,6 +105,8 @@ AliAnalysisTaskFemtoDreamRho::AliAnalysisTaskFemtoDreamRho(const char *name,
       fIsMCcheckedCombs(isMCcheckedCombs),
       fpairRapiditiySelection(pairRapiditiySelection),
       fOutput(nullptr),
+      fHistListRhoCandidatesMCAncestors(nullptr),
+      fHistListRhoMCTrue(nullptr),
       fEvent(nullptr),
       fTrack(nullptr),
       fTrackneg(nullptr),
@@ -135,6 +140,7 @@ AliAnalysisTaskFemtoDreamRho::AliAnalysisTaskFemtoDreamRho(const char *name,
       fHist2D_massVSpt_RhoCandidateCommonFullInvM(nullptr),
       fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances(nullptr),
       fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances(nullptr),
+      fHist2D_massVSpt_RhoCandidateCommonFullInvM_kStarMisidResonances(nullptr),
       fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances(nullptr),
       fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances(nullptr),
       fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances(nullptr),
@@ -171,8 +177,6 @@ void AliAnalysisTaskFemtoDreamRho::UserCreateOutputObjects()
 
   fTrack = new AliFemtoDreamTrack();
   fTrack->SetUseMCInfo(fIsMC);
-  // fTrackneg = new AliFemtoDreamTrack();
-  // fTrackneg->SetUseMCInfo(fIsMC);
 
   fRhoParticle = new AliFemtoDreamv0();
   fRhoParticle->SetPDGCode(fRhoCuts->GetPDGv0());
@@ -297,8 +301,7 @@ void AliAnalysisTaskFemtoDreamRho::UserCreateOutputObjects()
   fOutput->Add(fPartColl->GetQAList());
   if (fDoAncestors && fIsMC)
   {
-    // out << "Will not be accessed" << std::endl;
-
+    // DO THIS: move this decl. outside
     // Create histograms for the Ancestor investigation of the RhoCandidates
     auto *fHistListRhoCandidatesMCAncestors = new TList();
     fHistListRhoCandidatesMCAncestors->SetName("RhoCandidatesMCAncestor");
@@ -335,6 +338,12 @@ void AliAnalysisTaskFemtoDreamRho::UserCreateOutputObjects()
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances = new TH2F(massPtHistName_CommonFullInvM_kShortResonances, massPtHistTitle_CommonFullInvM_kShortResonances, 500, 0.0, 5.0, 500, 0.0, 5.0);
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
+
+    TString massPtHistName_CommonFullInvM_kStarMisidResonances = TString::Format("histInvariantMassPt_Common_FullMinv_kStarMisidResonances%s", NameIngaAnc.Data());
+    TString massPtHistTitle_CommonFullInvM_kStarMisidResonances = TString::Format("%s Invariant Mass vs. pT Common KStarMisid Resonances", NameIngaAnc.Data());
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_kStarMisidResonances = new TH2F(massPtHistName_CommonFullInvM_kStarMisidResonances, massPtHistTitle_CommonFullInvM_kStarMisidResonances, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_kStarMisidResonances->GetXaxis()->SetTitle("pT (GeV/c)");
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_kStarMisidResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
 
     TString massPtHistName_CommonFullInvM_rhoResonances = TString::Format("histInvariantMassPt_Common_FullMinv_rhoResonances%s", NameIngaAnc.Data());
     TString massPtHistTitle_CommonFullInvM_rhoResonances = TString::Format("%s Invariant Mass vs. pT Common Rho Resonances", NameIngaAnc.Data());
@@ -382,6 +391,7 @@ void AliAnalysisTaskFemtoDreamRho::UserCreateOutputObjects()
     fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateCommonFullInvM);
     fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances);
     fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
+    fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateCommonFullInvM_kStarMisidResonances);
     fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances);
     fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances);
     fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances);
@@ -390,6 +400,7 @@ void AliAnalysisTaskFemtoDreamRho::UserCreateOutputObjects()
     fHistListRhoCandidatesMCAncestors->Add(fHist2D_massVSpt_RhoCandidateUncommonFullInvM);
     fHistListRhoCandidatesMCAncestors->Add(fHist2D_PDGvsMInv_CommonAncestorResonances);
 
+    // DO THIS: just add this per default move also decl. given above
     fOutput->Add(fHistListRhoCandidatesMCAncestors); // Add the list to your output list
   }
   if (fIsMC)
@@ -398,7 +409,8 @@ void AliAnalysisTaskFemtoDreamRho::UserCreateOutputObjects()
     auto *fHistListRhoMCTrue = new TList();
     fHistListRhoMCTrue->SetName("RhoMCTrue");
     fHistListRhoMCTrue->SetOwner();
-    // String
+
+    //  String
     TString NameIng = "RhoMCTrue";
 
     // Create TH1F for pT spectrum
@@ -420,11 +432,6 @@ void AliAnalysisTaskFemtoDreamRho::UserCreateOutputObjects()
     fHist2D_massVSpt_RhoTrue = new TH2F(massPtHistName, massPtHistTitle, 500, 0.0, 5.0, 500, 0.0, 5.0);
     fHist2D_massVSpt_RhoTrue->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_massVSpt_RhoTrue->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
-
-    // Create histogram to track the armenteros values of MC true rhos
-    fArmenterosRhoTrue = new TH2F("fArmenterosRhoTrue", "fArmenterosRhoTrue", 200, -1, 1, 400, 0, 0.8);
-    fArmenterosRhoTrue->GetXaxis()->SetTitle("#alpha");
-    fArmenterosRhoTrue->GetYaxis()->SetTitle("#it{q}_{T} (GeV/#it{c})");
 
     // Create histogram to track the armenteros values of MC true rhos reconstructed
     fArmenterosRhoTrue_Reconstr = new TH2F("fArmenterosRhoTrue_Reconstr", "fArmenterosRhoTrue_Reconstr", 200, -1, 1, 400, 0, 0.8);
@@ -481,8 +488,7 @@ void AliAnalysisTaskFemtoDreamRho::UserCreateOutputObjects()
     fArmenterosRhoTrue_Reconstr_alphaDaughBoth->GetXaxis()->SetTitle("#alpha_pos");
     fArmenterosRhoTrue_Reconstr_alphaDaughBoth->GetYaxis()->SetTitle("#alpha_neg");
 
-    fHistListRhoMCTrue->Add(fArmenterosRhoTrue); // Add the histogram to your output list
-    fHistListRhoMCTrue->Add(fArmenterosRhoTrue_Reconstr);
+    fHistListRhoMCTrue->Add(fArmenterosRhoTrue_Reconstr); // Add the histogram to your output list
     fHistListRhoMCTrue->Add(fArmenterosNoCommonMother_Pos);
     fHistListRhoMCTrue->Add(fArmenterosNoCommonMother_Neg);
     fHistListRhoMCTrue->Add(fArmenterosNoCommonMother_qtDaughBoth);
@@ -493,9 +499,18 @@ void AliAnalysisTaskFemtoDreamRho::UserCreateOutputObjects()
     fHistListRhoMCTrue->Add(fArmenterosNoRhoTrue_Reconstr_alphaDaughBoth);
     fHistListRhoMCTrue->Add(fArmenterosRhoTrue_Reconstr_qtDaughBoth);
     fHistListRhoMCTrue->Add(fArmenterosRhoTrue_Reconstr_alphaDaughBoth);
-    fHistListRhoMCTrue->Add(fHist1D_pt_RhoTrue); // TH1F for pT spectrum
-    fHistListRhoMCTrue->Add(fHist2D_massVSpt_RhoTrue);
-    fHistListRhoMCTrue->Add(fHist2D_pt1VSpt2_RhoTrue);
+    if (fDoMcTruth)
+    {
+      // Create histogram to track the armenteros values of MC true rhos
+      fArmenterosRhoTrue = new TH2F("fArmenterosRhoTrue", "fArmenterosRhoTrue", 200, -1, 1, 400, 0, 0.8);
+      fArmenterosRhoTrue->GetXaxis()->SetTitle("#alpha");
+      fArmenterosRhoTrue->GetYaxis()->SetTitle("#it{q}_{T} (GeV/#it{c})");
+
+      fHistListRhoMCTrue->Add(fArmenterosRhoTrue);
+      fHistListRhoMCTrue->Add(fHist1D_pt_RhoTrue); // TH1F for pT spectrum
+      fHistListRhoMCTrue->Add(fHist2D_massVSpt_RhoTrue);
+      fHistListRhoMCTrue->Add(fHist2D_pt1VSpt2_RhoTrue);
+    }
 
     // Histograms for Checking the pT vs mT for the different components
     fHist2D_pTvsmT_noPions = new TH2F("fHist2D_pTvsmT_noPions", "fHist2D_pTvsmT_noPions", 500, 0.0, 5.0, 500, 0.0, 5.0);
@@ -532,6 +547,7 @@ void AliAnalysisTaskFemtoDreamRho::UserCreateOutputObjects()
     fHistListRhoMCTrue->Add(fHist2D_pTvsmT_isRho);
     fHistListRhoMCTrue->Add(fHist2D_pTvsmT_isRho_MC);
 
+    // DO THIS: comment this and check if streamer is still misaligned
     fOutput->Add(fHistListRhoMCTrue); // Add the histogram to your output list
   }
 
@@ -833,6 +849,9 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
                 break;
               case 130: // K0long
                 FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances);
+                break;
+              case 313: // K*(892)0
+                FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_kStarMisidResonances);
                 break;
               case 113: // RhoMeson
                 FillAncestorHist2D_pTvsMinv(posPion, negPion, fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances);
@@ -1437,8 +1456,8 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
       {
         // Since we don't care about efficiency effects we take there the true proton sample in order to enchange the statistics by a factor of 5. The purity is high in either case due to the optimized selection criteria.
         fPairCleaner->StoreParticle(V0Particles_MC_verified); // V0Particles_MC_verified
-        fPairCleaner->StoreParticle(ProtonMcTruePart);        // ProtonMcTruePart Could check what happens with the reconstructed protons instead of MC True sample
-        fPairCleaner->StoreParticle(AntiProtonMcTruePart);    // AntiProtonMcTruePart
+        fPairCleaner->StoreParticle(Protons);                 // ProtonMcTruePart Could check what happens with the reconstructed protons instead of MC True sample
+        fPairCleaner->StoreParticle(AntiProtons);             // AntiProtonMcTruePart
       }
       else
       {
@@ -1826,12 +1845,17 @@ bool AliAnalysisTaskFemtoDreamRho::CommonResonance(const AliFemtoDreamBasePart &
   const float negDauPDG = mcPartNeg->GetPdgCode();
   if (211 != std::abs(posDauPDG) || 211 != std::abs(negDauPDG)) // must be pions
   {
-    return false;
+    IsResonance = false;
   }
-  // if (!mcPartPos->IsPhysicalPrimary() || !mcPartNeg->IsPhysicalPrimary()) // has to be primary
-  // {
-  //    return false;
-  // }
+  // Check if there was a misidentification
+  if (321 != std::abs(posDauPDG) || 321 != std::abs(negDauPDG)) // could have been a K*(892)0 -> K_ch + pi_ch with K_ch misid as pi_ch
+  {
+    IsResonance = true;
+  }
+  //  if (!mcPartPos->IsPhysicalPrimary() || !mcPartNeg->IsPhysicalPrimary()) // has to be primary
+  //  {
+  //     return false;
+  //  }
   if (mcPartPos->GetMother() != mcPartNeg->GetMother()) // make sure that we have the same mother resonance
   {
     return false;
