@@ -148,51 +148,19 @@ class AliAnalysisTaskCorrPbPb_withoutTree : public AliAnalysisTaskSE {
   TH1D *hNumberOfPionMinus;
   TH1D *hNumberOfProtonPlus;
   TH1D *hNumberOfProtonMinus;
+  TH1D *hPtSpectraRawPionPlus[9];
+  TH1D *hPtSpectraRawKaonPlus[9];
+  TH1D *hPtSpectraRawProtonPlus[9];
+  TH1D *hPtSpectraPionPlus[9];
+  TH1D *hPtSpectraKaonPlus[9];
+  TH1D *hPtSpectraProtonPlus[9];
+  TH1D *hPtSpectraRawPionMinus[9];
+  TH1D *hPtSpectraRawKaonMinus[9];
+  TH1D *hPtSpectraRawProtonMinus[9];
+  TH1D *hPtSpectraPionMinus[9];
+  TH1D *hPtSpectraKaonMinus[9];
+  TH1D *hPtSpectraProtonMinus[9];
 
-  /*
-  //ftreeEvent object variables
-  TTree *fTreeEvent;
-  Float_t fTreeVariableCentrality;
-  //reconstruced
-  Float_t fNoKaonPlus_ptmax2;
-  Float_t fNoKaonMinus_ptmax2;
-  Float_t fNoKaonPlus_ptmax3;
-  Float_t fNoKaonMinus_ptmax3;
-  Float_t fNoPionPlus_ptmax2;
-  Float_t fNoPionMinus_ptmax2;
-  Float_t fNoPionPlus_ptmax3;
-  Float_t fNoPionMinus_ptmax3;
-  Float_t fNoProtonPlus_ptmax2;
-  Float_t fNoProtonMinus_ptmax2;
-  Float_t fNoProtonPlus_ptmax3;
-  Float_t fNoProtonMinus_ptmax3;
-  //CORRECTED
-  Float_t fCorrectedNoKaonPlus_ptmax2;
-  Float_t fCorrectedNoKaonMinus_ptmax2;
-  Float_t fCorrectedNoKaonPlus_ptmax3;
-  Float_t fCorrectedNoKaonMinus_ptmax3;
-  Float_t fCorrectedNoPionPlus_ptmax2;
-  Float_t fCorrectedNoPionMinus_ptmax2;
-  Float_t fCorrectedNoPionPlus_ptmax3;
-  Float_t fCorrectedNoPionMinus_ptmax3;
-  Float_t fCorrectedNoProtonPlus_ptmax2;
-  Float_t fCorrectedNoProtonMinus_ptmax2;
-  Float_t fCorrectedNoProtonPlus_ptmax3;
-  Float_t fCorrectedNoProtonMinus_ptmax3;
-  //Eff.square factors
-  Float_t fEffSqrFactrPionMinus_ptmax2;
-  Float_t fEffSqrFactrPionPlus_ptmax2;
-  Float_t fEffSqrFactrProtonMinus_ptmax2;
-  Float_t fEffSqrFactrProtonPlus_ptmax2;
-  Float_t fEffSqrFactrKaonMinus_ptmax2;
-  Float_t fEffSqrFactrKaonPlus_ptmax2;
-  Float_t fEffSqrFactrPionMinus_ptmax3;
-  Float_t fEffSqrFactrPionPlus_ptmax3;
-  Float_t fEffSqrFactrProtonMinus_ptmax3;
-  Float_t fEffSqrFactrProtonPlus_ptmax3;
-  Float_t fEffSqrFactrKaonMinus_ptmax3;
-  Float_t fEffSqrFactrKaonPlus_ptmax3;
-  */
   TProfile *Profile_ptmax2_RecNetKaon;
   TProfile *Profile_ptmax2_RecNetPion;
   TProfile *Profile_ptmax2_RecNetProton;
