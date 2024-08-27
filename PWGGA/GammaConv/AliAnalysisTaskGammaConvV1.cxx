@@ -1756,7 +1756,7 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
     fTrueList                     = new TList*[fnCuts];
     // Selected Header List
     fHeaderNameList               = new TList*[fnCuts];
-    fHistoMCHeaders                    = new TH1I*[fnCuts];
+    fHistoMCHeaders    		  = new TH1I*[fnCuts];
     fHistoMCAllGammaPt                 = new TH1F*[fnCuts];
     fHistoMCAllGammaPtNotTriggered     = new TH1F*[fnCuts];
     fHistoMCAllGammaPtNoVertex         = new TH1F*[fnCuts];
@@ -2833,8 +2833,10 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
     // if no further cuts, add to fGammaCandidates and we are done. If header criterion is fullfilled, also fill histos and tree
     if (!(lUseElecShareCut || lUseTooCloseCut)){
       if (fApplyPhotonML) {
-          Double_t modelPred = -1.;
+          Double_t modelPred = 0.3;
+	  std::vector<double> scores{};
           isMLsel = fMLResponse->IsSelected(modelPred, iCandidate, fInputEvent, fiPhotonCut, fV0Reader);
+	  cout<< isMLsel <<" , " << modelPred << endl;
 	  if (isMLsel){
             fGammaCandidates->Add(iCandidate);
             if (lIsFromSelectedHeader){
@@ -2858,8 +2860,9 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 
   if (lUseElecShareCut) fiPhotonCut->RemovePhotonsWithSharedTracks(fMapPhotonHeaders);
   if (lUseTooCloseCut) fiPhotonCut->RemoveTooClosePhotons(fMapPhotonHeaders);
-
-
+  
+  cout << "Net GammaCandidates = " << fGammaCandidates->GetEntries() << endl;
+ 
   if (fDoTreeForPhotonML) // Getting all Photon candidates and noting down their properties 
   {
     AliPIDResponse* pidResonse = ((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetPIDResponse();
@@ -2935,7 +2938,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
   for (auto &iPhotonHeader : fMapPhotonHeaders){
     AliAODConversionPhoton *iCandidate = dynamic_cast<AliAODConversionPhoton*>( iPhotonHeader.first);
     if (fApplyPhotonML) {
-      Double_t modelPred = -1.;
+      Double_t modelPred = 0.3;
       isMLsel = fMLResponse->IsSelected(modelPred, iCandidate, fInputEvent, fiPhotonCut, fV0Reader);
       if (isMLsel){
         fGammaCandidates->Add(iPhotonHeader.first);
