@@ -379,8 +379,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
   }
   else if (suffix == "8")
   {
-    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+    TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
 
     TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
     TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
@@ -452,8 +452,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
   }
   else if (suffix == "12")
   {
-    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+    TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
 
     TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
     TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
@@ -565,8 +565,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
   }
   else if (suffix == "17")
   {
-    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+    TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
 
     TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
     TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
@@ -670,8 +670,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
   }
   else if (suffix == "22")
   {
-    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+    TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
 
     TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
     TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
@@ -850,8 +850,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
   }
   else if (suffix == "31")
   {
-    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+    TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
 
     TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
     TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
