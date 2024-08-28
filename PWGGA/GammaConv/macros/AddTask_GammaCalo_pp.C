@@ -4194,6 +4194,10 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 2536) {  //S490 A98  // 2% downwards of seed and aggregeation
     cuts.AddCutCalo("00010113","411790109fe32230000","0s631031000000d0"); // NCell >=2
     cuts.AddCutCalo("00010113","411790109fe30230000","0s631031000000d0"); // no NCell
+  // clusterizer study
+  } else if (trainConfig == 2537) {  // 
+    cuts.AddCutCalo("00010113","411790109fe029v0000","0s631031000000d0"); // NCell >=2
+    cuts.AddCutCalo("00010113","411790109fe009v0000","0s631031000000d0"); // no NCell
 
     // exotics threshold variation
   } else if (trainConfig == 2540) { //no NCell cut
