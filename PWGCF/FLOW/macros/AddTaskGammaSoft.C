@@ -9,6 +9,7 @@ Bool_t ConnectToGrid() {
 }
 AliAnalysisTaskGammaSoft* AddTaskGammaSoft(TString name, Bool_t IsMC, TString efficiencyPath, TString NUAPath, TString subfix)
 {
+  printf("***********************************\n Adding Gamma soft task to grid\n***********************************\n");
   TString l_ContName(subfix);
   l_ContName.Prepend("_");
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -62,6 +63,7 @@ AliAnalysisTaskGammaSoft* AddTaskGammaSoft(TString name, Bool_t IsMC, TString ef
   mgr->ConnectOutput(task,3,cOutputCov);
   AliAnalysisDataContainer *cOutputQA = mgr->CreateContainer(Form("QAContainer%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
   mgr->ConnectOutput(task,4,cOutputQA); //For QA
+  printf("***********************************\n Input and output connected \n***********************************\n");
   return task;
   return 0;
 }

@@ -195,6 +195,7 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft(const char *name, Bool_t IsMC
   fEventWeight(0),
   wp(0)
 {
+  printf("***********************************\n Initialising task \n***********************************\n");
   SetContSubfix(ContSubfix);
   fCentEst = new TString("V0M");
   if(!fIsMC) { //Efficiency and NUA only important for data
@@ -205,10 +206,12 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft(const char *name, Bool_t IsMC
   DefineOutput(2,AliGFWFlowContainer::Class());
   DefineOutput(3,TList::Class());
   DefineOutput(4,TList::Class());
+  printf("***********************************\n Task initialised \n***********************************\n");
 };
 AliAnalysisTaskGammaSoft::~AliAnalysisTaskGammaSoft() {
 };
 void AliAnalysisTaskGammaSoft::UserCreateOutputObjects(){
+    printf("***********************************\n Creating output objects \n***********************************\n");
     if(!fGFWSelection) SetSystFlag(0);
     fGFWSelection->PrintSetup();
     fSystFlag = fGFWSelection->GetSystFlagIndex();

@@ -16,7 +16,6 @@
 #include "AliGFWCuts.h"
 #include "AliGFWFlowContainer.h"
 #include "TF1.h"
-#include "AliESDtrackCuts.h"
 
 class AliAODEvent;
 class AliAODTrack;
@@ -131,19 +130,19 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   AliGFWWeights **fWeights;//! This should be stored in TList
   Int_t fRunNo; //!
   AliGFWCuts *fGFWSelection;
-  AliGFWFlowContainer *fFC;
+  AliGFWFlowContainer *fFC; //!
   AliGFW *fGFW; //! not stored
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
   TList *fEfficiencyList;
   vector<vector<TH2D*>> fEfficiency; //TH2Ds for efficiency calculation
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   Double_t fPseudoEfficiency; //Pseudo efficiency to reject tracks. Default value set to 2, only used when the value is <1
-  TH3D *fDCAxyVsPt_noChi2;
-  TH2D *fWithinDCAvsPt_withChi2;
-  TH3D *fDCAxyVsPt_withChi2;
-  TH2D *fWithinDCAvsPt_noChi2;
-  TH1D *fV0MMulti;
-  TH2I *fITSvsTPCMulti;
+  TH3D *fDCAxyVsPt_noChi2; //!
+  TH2D *fWithinDCAvsPt_withChi2; //!
+  TH3D *fDCAxyVsPt_withChi2; //!
+  TH2D *fWithinDCAvsPt_noChi2; //!
+  TH1D *fV0MMulti; //!
+  TH2I *fITSvsTPCMulti; //!
   Double_t fCorrPar[2]; //Yes need to store
   Bool_t fUseCorrCuts; //Yes need to store
   TF1 *fSPDCutPU; //Store these
@@ -163,7 +162,6 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   TH2D* fhQAEventsfMultTPCvsESD; //!
   unsigned int fEventWeight;
   vector<vector<double>>  wp;
-  AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   void DCAxyz(const AliAODTrack *track, const AliVEvent *evt, Double_t (&dcaxyz)[2]);
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
   Bool_t FillCovariance(AliProfileBS* target, const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &d_mpt, const Double_t &dw_mpt, const Double_t &l_rndm);
@@ -177,7 +175,7 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   Bool_t fEnableFB768dcaxy;
   Double_t *GetBinsFromAxis(TAxis *inax);
 
-  ClassDef(AliAnalysisTaskGammaSoft,1);
+  ClassDef(AliAnalysisTaskGammaSoft,3);
 };
 
 #endif
