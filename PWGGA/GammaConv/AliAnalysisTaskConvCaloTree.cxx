@@ -874,8 +874,10 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD()
 
       if (!fAODMCTrackArray)
         fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-      if (!fAODMCTrackArray)
+      if (!fAODMCTrackArray){
+        delete PhotonCandidate;
         return;
+      }
 
       PhotonCandidate->SetCaloPhotonMCFlagsAOD(fAODMCTrackArray, kTRUE);
 
@@ -973,6 +975,7 @@ void AliAnalysisTaskConvCaloTree::ProcessClustersAOD()
         fVTrueClusterEtaDaughterIndex.push_back(0);
       }
     }
+    delete PhotonCandidate;
   }
 }
 
