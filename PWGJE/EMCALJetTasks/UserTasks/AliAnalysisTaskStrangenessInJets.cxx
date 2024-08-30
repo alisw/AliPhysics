@@ -92,6 +92,10 @@ const Int_t AliAnalysisTaskStrangenessInJets::iLambdaId = 2000000;
 const Int_t AliAnalysisTaskStrangenessInJets::iALambdaId = 3000000;
 const Int_t AliAnalysisTaskStrangenessInJets::iK0LId = 4000000;
 const Int_t AliAnalysisTaskStrangenessInJets::iK0ALId = 5000000;
+const Int_t AliAnalysisTaskStrangenessInJets::iXiId = 6000000;
+const Int_t AliAnalysisTaskStrangenessInJets::iAXiId = 7000000;
+const Int_t AliAnalysisTaskStrangenessInJets::iXi0Id = 8000000;
+const Int_t AliAnalysisTaskStrangenessInJets::iAXi0Id = 9000000;
 
 // Default constructor
 AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
@@ -101,6 +105,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
   fOutputListMC(0),
   fV0CandidateArray(0),
   fGenMCV0(0),
+  fGenMCXis(0),
   fNCand(0),
   
   fFastJetWrapper("AliEmcalJetTask","AliEmcalJetTask"),
@@ -266,6 +271,8 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
     fhnV0LambdaInJetsMCFromXi0[i] = 0;
     fh1V0XiPtMCGen[i] = 0;
     fh1V0Xi0PtMCGen[i] = 0;
+    fh1V0XiInJetPtMCGen[i] = 0;
+    fh1V0Xi0InJetPtMCGen[i] = 0;
 
     fh1V0ALambdaPtMCGen[i] = 0;
     fh2V0ALambdaPtMassMCRec[i] = 0;
@@ -284,6 +291,8 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
     fhnV0ALambdaInJetsMCFromAXi0[i] = 0;
     fh1V0AXiPtMCGen[i] = 0;
     fh1V0AXi0PtMCGen[i] = 0;
+    fh1V0AXiInJetPtMCGen[i] = 0;
+    fh1V0AXi0InJetPtMCGen[i] = 0;
     // eta daughters
     fhnV0K0sInclDaughterEtaPtPtMCRec[i] = 0;
     fhnV0K0sInJetsDaughterEtaPtPtMCRec[i] = 0;
@@ -302,7 +311,8 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
   fOutputListStdJets(0),
   fOutputListMC(0),
   fV0CandidateArray(0),
-  fGenMCV0(0),                   //! contains MC generated V0s
+  fGenMCV0(0),
+  fGenMCXis(0),                  //! contains MC generated V0s
 
   fNCand(0),
   
@@ -469,6 +479,8 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
     fhnV0LambdaInJetsMCFromXi0[i] = 0;
     fh1V0XiPtMCGen[i] = 0;
     fh1V0Xi0PtMCGen[i] = 0;
+    fh1V0XiInJetPtMCGen[i] = 0;
+    fh1V0Xi0InJetPtMCGen[i] = 0;
 
     fh1V0ALambdaPtMCGen[i] = 0;
     fh2V0ALambdaPtMassMCRec[i] = 0;
@@ -487,6 +499,8 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
     fhnV0ALambdaInJetsMCFromAXi0[i] = 0;
     fh1V0AXiPtMCGen[i] = 0;
     fh1V0AXi0PtMCGen[i] = 0;
+    fh1V0AXiInJetPtMCGen[i] = 0;
+    fh1V0AXi0InJetPtMCGen[i] = 0;
     // eta daughters
     fhnV0K0sInclDaughterEtaPtPtMCRec[i] = 0;
     fhnV0K0sInJetsDaughterEtaPtPtMCRec[i] = 0;
@@ -520,6 +534,10 @@ AliAnalysisTaskStrangenessInJets::~AliAnalysisTaskStrangenessInJets()
     delete fGenMCV0;
     fGenMCV0 = 0;
   }
+  if (fGenMCXis) {
+    delete fGenMCXis;
+    fGenMCXis = 0;
+  }
   if (fJets) {
     delete fJets;
     fJets = 0;
@@ -549,6 +567,9 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
   //List of V0 candidates 
   fGenMCV0 = new TClonesArray("AliAODMCParticle", 10); 
   fGenMCV0->SetOwner();
+
+  fGenMCXis= new TClonesArray("AliAODMCParticle", 10); 
+  fGenMCXis->SetOwner();
 
   
   //List of all jets  
@@ -945,30 +966,30 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
 
       Int_t iNBinsPtXi = 80;
       Double_t dPtXiMin = 0;
-      Double_t dPtXiMax = 8;
+      Double_t dPtXiMax = 15;
       const Int_t iNDimFD = 3;
       Int_t binsFD[iNDimFD] = {iNBinsPtV0, iNBinsPtXi, iNJetPtBins};
       Double_t xminFD[iNDimFD] = {dPtV0Min, dPtXiMin, dJetPtMin};
       Double_t xmaxFD[iNDimFD] = {dPtV0Max, dPtXiMax, dJetPtMax};
       
-      fhnV0LambdaInclMCFromXi[i] = new THnSparseD(Form("fhnV0LambdaInclMCFromXi_%d", i), Form("MC Lambda associated, inclusive, from Xi: pt-pt, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#Xi,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fhnV0LambdaInclMCFromXi[i] = new THnSparseD(Form("fhnV0LambdaInclMCFromXi_%d", i), Form("MC Lambda associated, inclusive, from Xi: pt-pt, cent %s;#it{p}_{T}^{#Lambda,rec.} (GeV/#it{c});#it{p}_{T}^{#Xi,rec.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
       fOutputListMC->Add(fhnV0LambdaInclMCFromXi[i]);
-      fhnV0LambdaInclMCFromXi0[i] = new THnSparseD(Form("fhnV0LambdaInclMCFromXi0_%d", i), Form("MC Lambda associated, inclusive, from Xi0: pt-pt, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#Xi0,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fhnV0LambdaInclMCFromXi0[i] = new THnSparseD(Form("fhnV0LambdaInclMCFromXi0_%d", i), Form("MC Lambda associated, inclusive, from Xi0: pt-pt, cent %s;#it{p}_{T}^{#Lambda,rec.} (GeV/#it{c});#it{p}_{T}^{#Xi0,rec.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
       fOutputListMC->Add(fhnV0LambdaInclMCFromXi0[i]);
 
-      fhnV0ALambdaInclMCFromAXi[i] = new THnSparseD(Form("fhnV0ALambdaInclMCFromAXi_%d", i), Form("MC ALambda associated, inclusive, from AXi: pt-pt, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#AXi,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fhnV0ALambdaInclMCFromAXi[i] = new THnSparseD(Form("fhnV0ALambdaInclMCFromAXi_%d", i), Form("MC ALambda associated, inclusive, from AXi: pt-pt, cent %s;#it{p}_{T}^{#Lambda,rec.} (GeV/#it{c});#it{p}_{T}^{#AXi,rec.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
       fOutputListMC->Add(fhnV0ALambdaInclMCFromAXi[i]);
-      fhnV0ALambdaInclMCFromAXi0[i] = new THnSparseD(Form("fhnV0ALambdaInclMCFromAXi0_%d", i), Form("MC ALambda associated, inclusive, from AXi0: pt-pt, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#AXi0,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fhnV0ALambdaInclMCFromAXi0[i] = new THnSparseD(Form("fhnV0ALambdaInclMCFromAXi0_%d", i), Form("MC ALambda associated, inclusive, from AXi0: pt-pt, cent %s;#it{p}_{T}^{#Lambda,rec.} (GeV/#it{c});#it{p}_{T}^{#AXi0,rec.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
       fOutputListMC->Add(fhnV0ALambdaInclMCFromAXi0[i]);
       
-      fhnV0LambdaInJetsMCFromXi[i] = new THnSparseD(Form("fhnV0LambdaInJetsMCFromXi_%d", i), Form("MC Lambda associated, in JC, from Xi: pt-pt-ptJet, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#Xi,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fhnV0LambdaInJetsMCFromXi[i] = new THnSparseD(Form("fhnV0LambdaInJetsMCFromXi_%d", i), Form("MC Lambda associated, in JC, from Xi: pt-pt-ptJet, cent %s;#it{p}_{T}^{#Lambda,rec.} (GeV/#it{c});#it{p}_{T}^{#Xi,rec.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
       fOutputListMC->Add(fhnV0LambdaInJetsMCFromXi[i]);
-      fhnV0LambdaInJetsMCFromXi0[i] = new THnSparseD(Form("fhnV0LambdaInJetsMCFromXi0_%d", i), Form("MC Lambda associated, in JC, from Xi0: pt-pt-ptJet, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#Xi0,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fhnV0LambdaInJetsMCFromXi0[i] = new THnSparseD(Form("fhnV0LambdaInJetsMCFromXi0_%d", i), Form("MC Lambda associated, in JC, from Xi0: pt-pt-ptJet, cent %s;#it{p}_{T}^{#Lambda,rec.} (GeV/#it{c});#it{p}_{T}^{#Xi0,rec.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
       fOutputListMC->Add(fhnV0LambdaInJetsMCFromXi0[i]);
 
-      fhnV0ALambdaInJetsMCFromAXi[i] = new THnSparseD(Form("fhnV0ALambdaInJetsMCFromAXi_%d", i), Form("MC ALambda associated, in JC, from AXi: pt-pt-ptJet, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#AXi,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fhnV0ALambdaInJetsMCFromAXi[i] = new THnSparseD(Form("fhnV0ALambdaInJetsMCFromAXi_%d", i), Form("MC ALambda associated, in JC, from AXi: pt-pt-ptJet, cent %s;#it{p}_{T}^{#Lambda,rec.} (GeV/#it{c});#it{p}_{T}^{#AXi,rec.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
       fOutputListMC->Add(fhnV0ALambdaInJetsMCFromAXi[i]);
-      fhnV0ALambdaInJetsMCFromAXi0[i] = new THnSparseD(Form("fhnV0ALambdaInJetsMCFromAXi0_%d", i), Form("MC ALambda associated, in JC, from AXi0: pt-pt-ptJet, cent %s;#it{p}_{T}^{#Lambda,gen.} (GeV/#it{c});#it{p}_{T}^{#AXi0,gen.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
+      fhnV0ALambdaInJetsMCFromAXi0[i] = new THnSparseD(Form("fhnV0ALambdaInJetsMCFromAXi0_%d", i), Form("MC ALambda associated, in JC, from AXi0: pt-pt-ptJet, cent %s;#it{p}_{T}^{#Lambda,rec.} (GeV/#it{c});#it{p}_{T}^{#AXi0,rec.} (GeV/#it{c});#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimFD, binsFD, xminFD, xmaxFD);
       fOutputListMC->Add(fhnV0ALambdaInJetsMCFromAXi0[i]);
 
       fh1V0XiPtMCGen[i] = new TH1D(Form("fh1V0XiPtMCGen_%d", i), Form("MC Xi^{-} generated: Pt spectrum, cent %s;#it{p}_{T}^{#Xi^{-},gen.} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNBinsPtXi, dPtXiMin, dPtXiMax);
@@ -976,10 +997,19 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
       fh1V0Xi0PtMCGen[i] = new TH1D(Form("fh1V0Xi0PtMCGen_%d", i), Form("MC Xi^{0} generated: Pt spectrum, cent %s;#it{p}_{T}^{#Xi^{0},gen.} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNBinsPtXi, dPtXiMin, dPtXiMax);
       fh1V0AXi0PtMCGen[i] = new TH1D(Form("fh1V0AXi0PtMCGen_%d", i), Form("MC AXi^{0} generated: Pt spectrum, cent %s;#it{p}_{T}^{A#Xi^{0},gen.} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNBinsPtXi, dPtXiMin, dPtXiMax);
  
+      fh1V0XiInJetPtMCGen[i] = new TH1D(Form("fh1V0XiInJetPtMCGen_%d", i), Form("MC Xi^{-} generated in jet: Pt spectrum, cent %s;#it{p}_{T}^{#Xi^{-},gen.} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNBinsPtXi, dPtXiMin, dPtXiMax);
+      fh1V0AXiInJetPtMCGen[i] = new TH1D(Form("fh1V0AXiInJetPtMCGen_%d", i), Form("MC AXi^{-} generated in jet: Pt spectrum, cent %s;#it{p}_{T}^{A#Xi^{-},gen.} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNBinsPtXi, dPtXiMin, dPtXiMax);
+      fh1V0Xi0InJetPtMCGen[i] = new TH1D(Form("fh1V0Xi0InJetPtMCGen_%d", i), Form("MC Xi^{0} generated in jet: Pt spectrum, cent %s;#it{p}_{T}^{#Xi^{0},gen.} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNBinsPtXi, dPtXiMin, dPtXiMax);
+      fh1V0AXi0InJetPtMCGen[i] = new TH1D(Form("fh1V0AXi0InJetPtMCGen_%d", i), Form("MC AXi^{0} generated in jet: Pt spectrum, cent %s;#it{p}_{T}^{A#Xi^{0},gen.} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNBinsPtXi, dPtXiMin, dPtXiMax);
+
       fOutputListMC->Add(fh1V0XiPtMCGen[i]);
       fOutputListMC->Add(fh1V0AXiPtMCGen[i]);     
       fOutputListMC->Add(fh1V0Xi0PtMCGen[i]);
-      fOutputListMC->Add(fh1V0AXi0PtMCGen[i]);   
+      fOutputListMC->Add(fh1V0AXi0PtMCGen[i]); 
+      fOutputListMC->Add(fh1V0XiInJetPtMCGen[i]);
+      fOutputListMC->Add(fh1V0AXiInJetPtMCGen[i]);     
+      fOutputListMC->Add(fh1V0Xi0InJetPtMCGen[i]);
+      fOutputListMC->Add(fh1V0AXi0InJetPtMCGen[i]);   
     }
     
   }
@@ -1141,6 +1171,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   //clear the TClonesArray from the previous event
   fV0CandidateArray->Clear();
   fGenMCV0->Clear();
+  fGenMCXis->Clear();
   fJets->Clear();
   fFastJetWrapper.Clear();
   //fFastJetWrapperBG.Clear();
@@ -2387,7 +2418,7 @@ Double_t AliAnalysisTaskStrangenessInJets::AddDaughters(AliAODRecoDecay* cand, T
 
   return pt;
 }
-void AliAnalysisTaskStrangenessInJets::AddEventTracksMC(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPartMC)
+void AliAnalysisTaskStrangenessInJets::AddEventTracksMC(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPartMC, TClonesArray* GenXi)
 { 
   if (!tracks) {
 	printf("Track container was not found. Function AddEventTracks will not run! \n");
@@ -2395,7 +2426,10 @@ void AliAnalysisTaskStrangenessInJets::AddEventTracksMC(TClonesArray* coll, TClo
   }
 
   std::vector<Int_t>  vecDaughterLabels; //vector with labels of daughter particles
-
+  //std::vector<Int_t>  vecXiLabels;
+  //std::vector<Int_t>  vecAXiLabels;
+  //std::vector<Int_t>  vecXi0Labels;
+  //std::vector<Int_t>  vecAXi0Labels;
   TIter next(coll);
   AliAODMCParticle* v0part = 0;
   while ((v0part = static_cast<AliAODMCParticle*>(next()))) {
@@ -2406,11 +2440,28 @@ void AliAnalysisTaskStrangenessInJets::AddEventTracksMC(TClonesArray* coll, TClo
       vecDaughterLabels.push_back(iDLabel);
     } 
   }
-  
+
+  //in case Xi, Xi0 add additional index to the iN (for FD plot)
+  /*TIter nextXi(GenXi);
+  AliAODMCParticle* xipart = 0;
+  while ((xipart = static_cast<AliAODMCParticle*>(nextXi()))) {
+    AliDebug(2, Form("Found a MC generated Xi(Xi0) with pT = %.3f, eta = %.3f, phi = %.3f \n", xipart->Pt(), xipart->Eta(), xipart->Phi())); 
+    Int_t iPdgCodePartMC = xipart->GetPdgCode();
+    Int_t iLabel = xipart->GetLabel();
+    if(iPdgCodePartMC  == 3312)
+      vecXiLabels.push_back(iLabel);
+    else if(iPdgCodePartMC  == -3312)  
+      vecAXiLabels.push_back(iLabel);
+    else if(iPdgCodePartMC  == 3322)
+      vecXi0Labels.push_back(iLabel);
+    else if(iPdgCodePartMC  == -3322)  
+      vecAXi0Labels.push_back(iLabel);      
+  }*/
+
+ 
   AliAODTrack* track = 0;
   Int_t iN = coll->GetEntriesFast();
   //Int_t inlabels = int(vecDaughterLabels.size());
-   
   TIter nexttr(tracks);
   Int_t numbtrack = 0;
   Int_t nadded = 0;
@@ -2424,12 +2475,21 @@ void AliAnalysisTaskStrangenessInJets::AddEventTracksMC(TClonesArray* coll, TClo
 	    nexcl++;
 	    continue;	 
     }
+    /*Int_t iindex = 0;
+    if (std::find(vecXiLabels.begin(), vecXiLabels.end(), iTrackLabel) != vecXiLabels.end()) 
+	    iindex = iXiId; 
+    if (std::find(vecAXiLabels.begin(), vecAXiLabels.end(), iTrackLabel) != vecAXiLabels.end()) 
+	    iindex = iAXiId;
+    if (std::find(vecXi0Labels.begin(), vecXi0Labels.end(), iTrackLabel) != vecXi0Labels.end()) 
+	    iindex = iXi0Id; 
+    if (std::find(vecAXi0Labels.begin(), vecAXi0Labels.end(), iTrackLabel) != vecAXi0Labels.end()) 
+	    iindex = iAXi0Id; */
+
     //did not find track in the daughters, adding track to the fastjet
-    fFastJetWrapperMCGen.AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), iN);
+    fFastJetWrapperMCGen.AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), iN); //+ iindex);
     VectorBgPartMC.push_back(fastjet::PseudoJet(track->Px(), track->Py(), track->Pz(), track->E()));
     iN++;
     nadded++;
-
   } 
   //printf("There were %i V0s, %i daughters, %d tracks, %d were added to the fj, excluded : %i. \n", coll->GetEntriesFast(), inlabels, numbtrack, nadded, nexcl);
 }
@@ -2740,15 +2800,19 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
     if((TMath::Abs(particleMC->Y()) < 0.5) && IsFromGoodGenerator(iPartMC)) {
       if((iPdgCodeParticleMC == 3312)) {
         fh1V0XiPtMCGen[iCent]->Fill(particleMC->Pt());
+        new ((*fGenMCXis)[iNMCCand]) AliAODMCParticle(*particleMC); //  
       }
       else if((iPdgCodeParticleMC == -3312)) {
         fh1V0AXiPtMCGen[iCent]->Fill(particleMC->Pt());
+        new ((*fGenMCXis)[iNMCCand]) AliAODMCParticle(*particleMC); //  
       }
       else if((iPdgCodeParticleMC == 3322) ) {
         fh1V0Xi0PtMCGen[iCent]->Fill(particleMC->Pt());
+        new ((*fGenMCXis)[iNMCCand]) AliAODMCParticle(*particleMC); //  
       }
       else if((iPdgCodeParticleMC == -3322)) {
         fh1V0AXi0PtMCGen[iCent]->Fill(particleMC->Pt());
+        new ((*fGenMCXis)[iNMCCand]) AliAODMCParticle(*particleMC); //  
       }
     }
     //  skip non V0 particles 
@@ -2825,7 +2889,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
   
   
   if(fGenMCV0->GetEntriesFast() > 0) {
-    AddEventTracksMC(fGenMCV0, track, InputBgParticlesMC);
+    AddEventTracksMC(fGenMCV0, track, InputBgParticlesMC, fGenMCXis);
   }
   
   Double_t dAreaPercJetMin =  fdCutAreaPercJetMin*TMath::Pi()*fdRadius*fdRadius;
@@ -2902,41 +2966,66 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
 
 
     for(Int_t ic = 0; ic < iNConst; ic++){
-	  uid = constits[ic].user_index();
+	    uid = constits[ic].user_index();
       if(uid > iK0Id)
-      	  fh1MCStats->Fill(5); //Generated V0s in jets
+      	fh1MCStats->Fill(5); //Generated V0s in jets
       //Fill histograms for each particle: 	  
       if(uid > iK0Id && uid < iLambdaId) { //K0
-		 index = uid-iK0Id; //will give the id of the V0 particle 
-		 jetv0 = (AliAODMCParticle*)fGenMCV0->At(index); 
-         fh2V0K0sInJetPtMCGen[iCent]->Fill(jetv0->Pt(), jetSubMC.perp());
-         Double_t valueEtaKInGen[4] = {jetv0->Pt(), jetv0->Eta(), jetSubMC.perp(), jetv0->Eta() - jetSubMC.eta()};
-         fh3V0K0sInJetEtaPtMCGen[iCent]->Fill(valueEtaKInGen);
-		 ik++;
-	  }	
+		    index = uid-iK0Id; //will give the id of the V0 particle 
+		    jetv0 = (AliAODMCParticle*)fGenMCV0->At(index); 
+        fh2V0K0sInJetPtMCGen[iCent]->Fill(jetv0->Pt(), jetSubMC.perp());
+        Double_t valueEtaKInGen[4] = {jetv0->Pt(), jetv0->Eta(), jetSubMC.perp(), jetv0->Eta() - jetSubMC.eta()};
+        fh3V0K0sInJetEtaPtMCGen[iCent]->Fill(valueEtaKInGen);
+		   ik++;
+	    }	
 		  
       if(uid > iLambdaId && uid < iALambdaId) {  //Lambda	
-		  index = uid-iLambdaId; 
-		  jetv0 = (AliAODMCParticle*)fGenMCV0->At(index); 
-          fh2V0LambdaInJetPtMCGen[iCent]->Fill(jetv0->Pt(), jetSubMC.perp());
-          Double_t valueEtaLInGen[4] = {jetv0->Pt(), jetv0->Eta(), jetSubMC.perp(), jetv0->Eta() - jetSubMC.eta()};
-          fh3V0LambdaInJetEtaPtMCGen[iCent]->Fill(valueEtaLInGen);
-          il++;
-	  }
+		    index = uid-iLambdaId; 
+		    jetv0 = (AliAODMCParticle*)fGenMCV0->At(index); 
+        fh2V0LambdaInJetPtMCGen[iCent]->Fill(jetv0->Pt(), jetSubMC.perp());
+        Double_t valueEtaLInGen[4] = {jetv0->Pt(), jetv0->Eta(), jetSubMC.perp(), jetv0->Eta() - jetSubMC.eta()};
+        fh3V0LambdaInJetEtaPtMCGen[iCent]->Fill(valueEtaLInGen);
+        il++;
+	    }
 	
-	  if(uid > iALambdaId ) {//&& uid < iK0LId) { //ALambda
-		  index = uid-iALambdaId;  
-		  jetv0 = (AliAODMCParticle*)fGenMCV0->At(index); 
-          fh2V0ALambdaInJetPtMCGen[iCent]->Fill(jetv0->Pt(), jetSubMC.perp());
-          Double_t valueEtaALInGen[4] = {jetv0->Pt(), jetv0->Eta(), jetSubMC.perp(), jetv0->Eta() - jetSubMC.eta()};
-          fh3V0ALambdaInJetEtaPtMCGen[iCent]->Fill(valueEtaALInGen);
-          ial++;
-	   }   
-    }
+	    if(uid > iALambdaId && uid < iXiId) {//&& uid < iK0LId) { //ALambda
+		    index = uid-iALambdaId; 
+        cout << index << endl; 
+		    jetv0 = (AliAODMCParticle*)fGenMCV0->At(index); 
+        fh2V0ALambdaInJetPtMCGen[iCent]->Fill(jetv0->Pt(), jetSubMC.perp());
+        Double_t valueEtaALInGen[4] = {jetv0->Pt(), jetv0->Eta(), jetSubMC.perp(), jetv0->Eta() - jetSubMC.eta()};
+        fh3V0ALambdaInJetEtaPtMCGen[iCent]->Fill(valueEtaALInGen);
+        ial++;
+	    }  
+      /*
+      if(uid > iXiId && uid < iAXiId) { //for the Feeddown generated Xi plots
+        index = uid-iXiId; 
+		    jetv0 = (AliAODMCParticle*)fGenMCV0->At(index); 
+        printf("There is a Xi in the jet. %d , pT= %f\n", uid, jetv0->Pt());
+        fh1V0XiInJetPtMCGen[iCent]->Fill(jetv0->Pt());
+      }
+      if(uid > iAXiId && uid < iXi0Id) {
+        index = uid-iAXiId; 
+		    jetv0 = (AliAODMCParticle*)fGenMCV0->At(index); 
+        printf("There is a AXi in the jet. %d , pT= %f\n", uid, jetv0->Pt());
+        fh1V0AXiPtMCGen[iCent]->Fill(jetv0->Pt());
+      }
+      if(uid > iXi0Id && uid < iAXi0Id) {
+        index = uid-iXi0Id; 
+		    jetv0 = (AliAODMCParticle*)fGenMCV0->At(index); 
+        printf("There is a Xi0 in the jet. %d , pT= %f\n", uid, jetv0->Pt());
+        fh1V0Xi0PtMCGen[iCent]->Fill(jetv0->Pt());
+      }
+      if(uid > iAXi0Id) {
+        index = uid-iAXi0Id; 
+		    jetv0 = (AliAODMCParticle*)fGenMCV0->At(index); 
+        printf("There is a A0Xi in the jet. %d , pT= %f\n", uid, jetv0->Pt());
+        fh1V0AXi0PtMCGen[iCent]->Fill(jetv0->Pt());
+      }*/
     //Int_t isum = ik + il + ial;
-	//printf("Tehere were %i K0s, %i Ls and %i ALs, isum: %i \n", ik, il, ial, isum);
-	  		    
-  }
+	  //printf("Tehere were %i K0s, %i Ls and %i ALs, isum: %i \n", ik, il, ial, isum);
+    }	    
+  } 
 
   return kTRUE;
 

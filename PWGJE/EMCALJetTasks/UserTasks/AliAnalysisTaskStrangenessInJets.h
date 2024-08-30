@@ -163,6 +163,10 @@ public:
   static const Int_t iALambdaId;
   static const Int_t iK0LId;
   static const Int_t iK0ALId;
+  static const Int_t iXiId;
+  static const Int_t iAXiId;
+  static const Int_t iXi0Id;
+  static const Int_t iAXi0Id;
 
   void FillCandidates(Double_t mK, Double_t mL, Double_t mAL, Bool_t isK, Bool_t isL, Bool_t isAL, Int_t iCut, Int_t iCent); //Fills histograms according to the V0 type 
   Bool_t IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const; // decides whether a particle is inside a jet cone
@@ -184,14 +188,15 @@ protected:
   Bool_t FillHistograms();
   Bool_t Run();
   void AddEventTracks(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPart);  
-  void AddEventTracksMC(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPartMC);  
+  void AddEventTracksMC(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPartMC, TClonesArray* GenXi);  
   Bool_t GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const;
 
   TList* fOutputListStd; //! Output list for standard analysis results
   TList* fOutputListStdJets; //! Output list for jet analysis results
   TList* fOutputListMC;  //! Output list for MC analysis results
-  TClonesArray   *fV0CandidateArray;          //! contains selected V0 candidates
+  TClonesArray   *fV0CandidateArray;           //! contains selected V0 candidates
   TClonesArray   *fGenMCV0;                    //! contains MC generated V0s
+  TClonesArray   *fGenMCXis;                   //! contains MC generated Xis (Xi, AXi, Xi0, AXi0)
  
   Int_t           fNCand;                   //! number of selected V0 candidates already added to fCandidateArray
 
@@ -400,6 +405,8 @@ private:
   THnSparse* fhnV0LambdaInJetsMCFromXi0[fgkiNBinsCent]; //!
   TH1D* fh1V0XiPtMCGen[fgkiNBinsCent]; //!
   TH1D* fh1V0Xi0PtMCGen[fgkiNBinsCent]; //!
+  TH1D* fh1V0XiInJetPtMCGen[fgkiNBinsCent]; //!
+  TH1D* fh1V0Xi0InJetPtMCGen[fgkiNBinsCent]; //!
 
   // ALambda inclusive
   TH1D* fh1V0ALambdaPtMCGen[fgkiNBinsCent]; //!
@@ -426,6 +433,8 @@ private:
   THnSparse* fhnV0ALambdaInJetsMCFromAXi0[fgkiNBinsCent]; //!
   TH1D* fh1V0AXiPtMCGen[fgkiNBinsCent]; //!
   TH1D* fh1V0AXi0PtMCGen[fgkiNBinsCent]; //!
+  TH1D* fh1V0AXiInJetPtMCGen[fgkiNBinsCent]; //!
+  TH1D* fh1V0AXi0InJetPtMCGen[fgkiNBinsCent]; //!
 
   AliAnalysisTaskStrangenessInJets(const AliAnalysisTaskStrangenessInJets&); // not implemented
   AliAnalysisTaskStrangenessInJets& operator=(const AliAnalysisTaskStrangenessInJets&); // not implemented
