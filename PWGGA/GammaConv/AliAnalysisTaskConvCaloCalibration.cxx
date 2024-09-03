@@ -1295,8 +1295,16 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
   vector<Double_t>                        vectorPhotonWeight;
   std::vector<AliVCluster*>               vectorClusters;
 
-  if(nclus == 0)  return;
-
+  if(nclus == 0)  {
+    // even if no clusters are found, check if V0s are propagated to the emcal surface
+    if(fUseEletronMatchingCalibration == 1){
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchElectronTracksToClusters(fInputEvent, fMCEvent, vectorClusters, fIsMC, fSelectorElectronIndex, fWeightJetJetMC);
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchElectronTracksToClusters(fInputEvent, fMCEvent, vectorClusters, fIsMC, fSelectorPositronIndex, fWeightJetJetMC);
+    } else if(fUseEletronMatchingCalibration == 2){
+      ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchElectronTracksToClusters(fInputEvent, fMCEvent, vectorClusters, fIsMC, fV0Electrons, fWeightJetJetMC);
+    }
+    return;
+  }
   // plotting histograms on cell/tower level, only if extendedMatchAndQA > 1
   ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FillHistogramsExtendedQA(fInputEvent,fIsMC);
 
@@ -1322,6 +1330,7 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
     }
 
     if (!clus) continue;
+    
     Bool_t IsClusSelected = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus,fInputEvent,fMCEvent,fIsMC,fWeightJetJetMC,i);
     if(fDoMesonQA > 0){
       if(((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelectedBeforeTrackMatch()){
@@ -1382,6 +1391,7 @@ void AliAnalysisTaskConvCaloCalibration::ProcessClusters(){
       delete clus;
       continue;
     }
+
 
 
     // TLorentzvector with cluster
