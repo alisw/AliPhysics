@@ -1358,7 +1358,7 @@ void AliAnalysisTaskConvCaloTree::InitJets()
     fVBuffer_Jet_Phi.push_back((static_cast<short>(fConvJetReader->GetVectorJetPhi()[i] * 1000)));
     fVBuffer_Jet_NNeutr.push_back(static_cast<unsigned short>(fConvJetReader->GetVectorJetNclus()[i]));
     fVBuffer_Jet_NCh.push_back(static_cast<unsigned short>(fConvJetReader->GetVectorJetNtracks()[i]));
-    fVBuffer_Jet_NEF.push_back(static_cast<unsigned short>(fConvJetReader->GetVectorJetNEF()[i]));
+    fVBuffer_Jet_NEF.push_back(static_cast<unsigned short>(fConvJetReader->GetVectorJetNEF()[i]*1000));
   }
   if (fIsMC) {
     for (unsigned int i = 0; i < (fConvJetReader->GetTrueVectorJetPt()).size(); ++i) {
