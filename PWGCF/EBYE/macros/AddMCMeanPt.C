@@ -21,12 +21,13 @@ AliAnalysisMCMeanPt *AddMCMeanPt(
     if (!task)
         return 0x0;
 
+    mgr->AddTask(task);
+
     task->Setzvtxcut(zvtxcut1, zvtxcut2);
     task->SettrackBit(trackBit);
     task->SetMaxTPCCluster(MaxTPCclus);
     task->Setptrange(pt_min, pt_max);
 
-    mgr->AddTask(task);
 
     TString finDirname = suffixName.Data();
     TString fileName = mgr->GetCommonFileName();
