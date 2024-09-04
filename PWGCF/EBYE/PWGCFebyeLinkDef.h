@@ -162,6 +162,7 @@
 
 #pragma link C++ class AliAnalysisHMMeanPt+;
 #pragma link C++ class AliAnalysisMeanPt+;
+#pragma link C++ class AliAnalysisMeanPtFluc+;
 #pragma link C++ class AliAnalysisMCMeanPt+;
 
 
