@@ -16,6 +16,7 @@ class AliVEvent;
 class TString;
 class AliAODMCParticle;
 class TObjArray;
+class TChain;
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
