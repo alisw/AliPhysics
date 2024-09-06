@@ -145,7 +145,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TString fGenerator;
   AliMCEvent *fMCEvent; //! MC event
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
-  TRandom *fRndm; 
+  TRandom *fRndm;
   Int_t fNBootstrapProfiles; //Number of profiles for bootstrapping
   Bool_t fFillAdditionalQA;
   TAxis *fPtAxis;
@@ -171,7 +171,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Double_t fEtaMpt;
   Double_t fEtaLow;
   Double_t fEtaAcceptance;
-  Double_t fEtaV2Sep; 
+  Double_t fEtaV2Sep;
   Double_t fchPtMin;
   Double_t fchPtMax;
   Bool_t fUseChargedPtCut;
@@ -237,18 +237,18 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH1D** fTPCcls; //!
   TH1D* fEtaMptAcceptance; //!
   TH1D* fPtMptAcceptance; //!
-  TH1D* fAcceptedNch; //! 
+  TH1D* fAcceptedNch; //!
   TH2D* fhQAEventsfMult32vsCentr; //!
   TH2D* fhQAEventsMult128vsCentr; //!
   TH2D* fhQAEventsfMultTPCvsTOF; //!
   TH2D* fhQAEventsfMultTPCvsESD; //!
   Double_t fImpactParameterMC;
   int EventNo;
-  unsigned int fEventWeight; 
+  unsigned int fEventWeight;
   vector<vector<double>>  wpPt;
   vector<vector<double>>  wpPtSubP;
   vector<vector<double>>  wpPtSubN;
-  std::map<double,double> centralitymap;  
+  std::map<double,double> centralitymap;
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
   Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);

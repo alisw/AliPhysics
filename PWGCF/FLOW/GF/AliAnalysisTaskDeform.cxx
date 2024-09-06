@@ -524,8 +524,8 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
     fGFW->AddRegion("refN",-fEtaAcceptance,-fEtaV2Sep,1,1);
     fGFW->AddRegion("refP",fEtaV2Sep,fEtaAcceptance,1,1);
     fGFW->AddRegion("mid",-fEtaAcceptance,fEtaAcceptance,1,2);
-    fGFW->CreateRegions();
     CreateCorrConfigs();
+    fGFW->CreateRegions();
     printf("Flow container created\n");
     //Covariance
     printf("Creating covariance objects\n");
