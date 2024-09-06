@@ -171,6 +171,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   /*TH2F* hPtvsSPDEtaGapWidepT;*/
   /*TH2F* hPtvsSPDEtaGapWWidepT;*/
   TH2F* hZNvsV0MPer;
+  TH2F* hZNvsV0MPerNonAv;
   TProfile* pZNvsV0MAmp;
   TProfile* pZNvsTPCFull;
   TProfile* pZNvsTPCEtaGap;
@@ -181,6 +182,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TProfile* pZNvsEtFull;
   TProfile* pZNvsEtEtaGap;
   TH2F* hZPvsV0MPer;
+  TH2F* hZPvsV0MPerNonAv;
   TProfile* pZPvsV0MAmp;
   TProfile* pZPvsTPCFull;
   TProfile* pZPvsTPCEtaGap;
