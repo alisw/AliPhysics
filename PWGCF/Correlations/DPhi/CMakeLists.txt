@@ -50,6 +50,7 @@ set(SRCS
     AliAnalysisTaskDptDptQA.cxx
     AlianalysisTaskDptPID.cxx
     AliAnalysisTaskHadronPhiCorr.cxx
+    AliAnalysisTaskK0HadronRatio.cxx
     AliAnalysisTaskLeadingTrackUE.cxx
     AliAnalysisTaskLongRangeCorrelations.cxx
     AliAnalysisTaskLongFluctuations2PC.cxx
