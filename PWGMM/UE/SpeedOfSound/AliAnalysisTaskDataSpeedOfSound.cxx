@@ -191,6 +191,7 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       /*hPtvsSPDEtaGapWidepT(0),*/
       /*hPtvsSPDEtaGapWWidepT(0),*/
       hZNvsV0MPer(0),
+      hZNvsV0MPerNonAv(0),
       pZNvsV0MAmp(0),
       pZNvsTPCFull(0),
       pZNvsTPCEtaGap(0),
@@ -201,6 +202,7 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       pZNvsEtFull(0),
       pZNvsEtEtaGap(0),
       hZPvsV0MPer(0),
+      hZPvsV0MPerNonAv(0),
       pZPvsV0MAmp(0),
       pZPvsTPCFull(0),
       pZPvsTPCEtaGap(0),
@@ -320,6 +322,7 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       /*hPtvsSPDEtaGapWidepT(0),*/
       /*hPtvsSPDEtaGapWWidepT(0),*/
       hZNvsV0MPer(0),
+      hZNvsV0MPerNonAv(0),
       pZNvsV0MAmp(0),
       pZNvsTPCFull(0),
       pZNvsTPCEtaGap(0),
@@ -330,6 +333,7 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       pZNvsEtFull(0),
       pZNvsEtEtaGap(0),
       hZPvsV0MPer(0),
+      hZPvsV0MPerNonAv(0),
       pZPvsV0MAmp(0),
       pZPvsTPCFull(0),
       pZPvsTPCEtaGap(0),
@@ -748,11 +752,22 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
       new TProfile("pZDCvsEtFull", ";E_{T};<ZDC>;", Et_Nbins, Et_bins);
   pZDCvsEtEtaGap = new TProfile("pZDCvsEtEtaGap", ";E_{T};<ZDC>;",
                                 EtEtaGap_Nbins, EtEtaGap_bins);
+  const int nBinsV0M090{90};
+  double BinsV0M090[nBinsV0M090 + 1] = {0.0};
+  for (int i = 0; i <= nBinsV0M090; ++i) {
+    BinsV0M090[i] = 0.0 + (double)i;
+  }
 
+  hZNvsV0MPerNonAv =
+      new TH2F("hZNvsV0MPerNonAv", ";V0M Per; #it{E}_{ZN} [TeV]/2.511;",
+               nBinsV0M090, BinsV0M090, 200, 0.0, 200.0);
+  hZPvsV0MPerNonAv =
+      new TH2F("hZPvsV0MPerNonAv", ";V0M Per; #it{E}_{ZP} [TeV]/2.511;",
+               nBinsV0M090, BinsV0M090, 60, 0.0, 60.0);
   hZNvsV0MPer = new TH2F("hZNvsV0MPer", ";V0M Per; #it{E}_{ZN} [TeV]/2.511;",
-                         40, 0.0, 80.0, 100, 0.0, 100.0);
+                         nBinsV0M090, BinsV0M090, 100, 0.0, 100.0);
   hZPvsV0MPer = new TH2F("hZPvsV0MPer", ";V0M Per; #it{E}_{ZP} [TeV]/2.511;",
-                         40, 0.0, 80.0, 30, 0.0, 30.0);
+                         nBinsV0M090, BinsV0M090, 30, 0.0, 30.0);
   hZNvsV0MAmp = new TH2F("hZNvsV0MAmp", ";V0M Amp; #it{E}_{ZN} [TeV]/2.511;",
                          v0mAmp_Nbins, v0mAmp_bins, 100, 0.0, 100.0);
   hZPvsV0MAmp = new TH2F("hZPvsV0MAmp", ";V0M Amp; #it{E}_{ZP} [TeV]/2.511;",
@@ -873,6 +888,7 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
 
   fOutputList->Add(hZNvsV0MAmp);
   fOutputList->Add(hZNvsV0MPer);
+  fOutputList->Add(hZNvsV0MPerNonAv);
   fOutputList->Add(pZNvsV0MAmp);
   fOutputList->Add(pZNvsTPCFull);
   fOutputList->Add(pZNvsTPCEtaGap);
@@ -885,6 +901,7 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
 
   fOutputList->Add(hZPvsV0MAmp);
   fOutputList->Add(hZPvsV0MPer);
+  fOutputList->Add(hZPvsV0MPerNonAv);
   fOutputList->Add(pZPvsV0MAmp);
   fOutputList->Add(pZPvsTPCFull);
   fOutputList->Add(pZPvsTPCEtaGap);
@@ -1019,12 +1036,15 @@ void AliAnalysisTaskDataSpeedOfSound::GetZDC() {
   fZP = -999.0;
   double zp = esdZDC->GetZDCP1Energy() + esdZDC->GetZDCP2Energy();
   double zn = esdZDC->GetZDCN1Energy() + esdZDC->GetZDCN2Energy();
-  // Average the energy detected in each calorimeter
-  zp /= 2.0;
-  zn /= 2.0;
   // Convert from GeV to TeV
   zp *= 0.001;
   zn *= 0.001;
+  // Non-average ZN & ZP
+  hZNvsV0MPerNonAv->Fill(fv0mpercentile, zn / 2.511);
+  hZPvsV0MPerNonAv->Fill(fv0mpercentile, zp / 2.511);
+  // Average the energy detected in each calorimeter
+  zp /= 2.0;
+  zn /= 2.0;
   fZN = zn;
   fZP = zp;
   fZDC = zp + zn;
