@@ -29,6 +29,7 @@
 
 #include "AliAnalysisTaskEmcalLight.h"
 #include <TString.h>
+#include <vector>
 
 class THistManager;
 
@@ -47,6 +48,7 @@ public:
 
   void SetQOverPtShift(Double_t shift) { fQOverPtShift = shift; }
   void SetTriggerSelection(UInt_t triggerbits, const char * triggerstring) { fTriggerBits = triggerbits; fTriggerString = triggerstring; }
+  void DefineQoverPtShiftScan(int nbins, double minqpt, double maxqpt) { fQoverPtShiftScanBins = nbins; fQoverPtShiftScanMin = minqpt; fQoverPtShiftScanMax = maxqpt; }
 
   static AliAnalysisTaskEmcalQoverPtShift *AddTaskQOverPtShift(const char *trigger, double shift);
 
@@ -55,11 +57,17 @@ public:
   virtual Bool_t IsTriggerSelected();
   virtual Bool_t Run();
 
+  double getShiftedPt(double ptorig, double qptshift, double chargeval);
+
 private:
   THistManager *fHistos;          //!<! Histogram manager
   Double_t fQOverPtShift;         ///< Q/pt shift applied in the task
   UInt_t fTriggerBits;            ///< Trigger selection bits
   TString fTriggerString;         ///< Trigger selection string
+  Int_t fQoverPtShiftScanBins;    ///< Number of bins in Q/pt shift scan
+  Double_t fQoverPtShiftScanMin;  ///< Min. for the Q/pt shift scan
+  Double_t fQoverPtShiftScanMax;  ///< Max. for the Q/pt shift scan
+  std::vector<double> fQoverPtShiftScanBinCenters; ///< Cache bin centers for Q/pt scan
 
   ClassDef(AliAnalysisTaskEmcalQoverPtShift, 1);
 };
