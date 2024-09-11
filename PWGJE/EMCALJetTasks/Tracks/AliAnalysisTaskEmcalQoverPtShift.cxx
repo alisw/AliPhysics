@@ -49,8 +49,13 @@ AliAnalysisTaskEmcalQoverPtShift::AliAnalysisTaskEmcalQoverPtShift() :
   fHistos(nullptr),
   fQOverPtShift(0.),
   fTriggerBits(0),
-  fTriggerString()
+  fTriggerString(),
+  fQoverPtShiftScanBins(100),
+  fQoverPtShiftScanMin(-1e-3),
+  fQoverPtShiftScanMax(1e-3),
+  fQoverPtShiftScanBinCenters()
 {
+  SetNeedEmcalGeom(true);
 }
 
 AliAnalysisTaskEmcalQoverPtShift::AliAnalysisTaskEmcalQoverPtShift(const char *name):
@@ -58,8 +63,13 @@ AliAnalysisTaskEmcalQoverPtShift::AliAnalysisTaskEmcalQoverPtShift(const char *n
   fHistos(nullptr),
   fQOverPtShift(0.),
   fTriggerBits(0),
-  fTriggerString()
+  fTriggerString(),
+  fQoverPtShiftScanBins(100),
+  fQoverPtShiftScanMin(-1e-3),
+  fQoverPtShiftScanMax(1e-3),
+  fQoverPtShiftScanBinCenters()
 {
+  SetNeedEmcalGeom(true);
 }
 
 AliAnalysisTaskEmcalQoverPtShift::~AliAnalysisTaskEmcalQoverPtShift()
@@ -74,6 +84,15 @@ void AliAnalysisTaskEmcalQoverPtShift::UserCreateOutputObjects() {
   std::array<std::string, 2> chargetypes = {{"pos", "neg"}};
   for(auto charge : chargetypes) {
     fHistos->CreateTH2(Form("fHistShift%s", charge.data()), Form("Pt-shift for charge %s; p_{t}^{orig} (GeV/c); p_{t}^{shift}", charge.data()), 300, 0., 300, 300, 0., 300.);  
+    fHistos->CreateTH2(Form("fHistScanShift%s", charge.data()), Form("%s charged particle spectrum as function of q/pt shift; q/pt shift; pt", charge.data()), fQoverPtShiftScanBins, fQoverPtShiftScanMin, fQoverPtShiftScanMax, 300, 0., 300);
+    fHistos->CreateTH2(Form("fHistShift%sEMCAL", charge.data()), Form("Pt-shift for charge %s (EMCAL acceptance); p_{t}^{orig} (GeV/c); p_{t}^{shift}", charge.data()), 300, 0., 300, 300, 0., 300.);  
+    fHistos->CreateTH2(Form("fHistScanShift%sEMCAL", charge.data()), Form("%s charged particle spectrum as function of q/pt shift (EMCAL acceptance); q/pt shift; pt", charge.data()), fQoverPtShiftScanBins, fQoverPtShiftScanMin, fQoverPtShiftScanMax, 300, 0., 300);
+  }
+
+  fQoverPtShiftScanBinCenters.clear();
+  auto hist = static_cast<TH2 *>(fHistos->GetListOfHistograms()->FindObject("fHistScanShiftpos"));
+  for(int ib = 0; ib < hist->GetXaxis()->GetNbins(); ib++){
+    fQoverPtShiftScanBinCenters.push_back(hist->GetXaxis()->GetBinCenter(ib+1));
   }
   
   for(auto hist : *fHistos->GetListOfHistograms()) fOutput->Add(hist);
@@ -88,14 +107,35 @@ Bool_t AliAnalysisTaskEmcalQoverPtShift::Run() {
     return kFALSE;
   }
 
+  TH2 *histScanPos = static_cast<TH2 *>(fHistos->GetListOfHistograms()->FindObject("fHistScanShiftpos")),
+      *histScanNeg = static_cast<TH2 *>(fHistos->GetListOfHistograms()->FindObject("fHistScanShiftneg")),
+      *histScanPosEMCAL = static_cast<TH2 *>(fHistos->GetListOfHistograms()->FindObject("fHistScanShiftposEMCAL")),
+      *histScanNegEMCAL = static_cast<TH2 *>(fHistos->GetListOfHistograms()->FindObject("fHistScanShiftnegEMCAL"));
+
   for(auto trk : tracks->accepted()) {
     Double_t chargeval = trk->Charge() > 0 ? 1 : -1;
     std::string chargestring = chargeval > 0 ? "pos" : "neg";
+    bool emcalacceptance = std::abs(trk->Eta()) < 0.7 && trk->Phi() > fGeom->GetArm1PhiMin() && trk->Phi() < fGeom->GetEMCALPhiMax();
     Double_t ptorig = abs(trk->Pt());
-    Double_t ptshift = 1./(fQOverPtShift*chargeval  + 1./ptorig);
+    Double_t ptshift = getShiftedPt(ptorig, fQOverPtShift, chargeval);
     fHistos->FillTH2(Form("fHistShift%s", chargestring.data()), ptorig, ptshift);
+    if(emcalacceptance) {
+      fHistos->FillTH2(Form("fHistShift%sEMCAL", chargestring.data()), ptorig, ptshift);
+    }
+    auto scanhist = chargeval > 0 ? histScanPos : histScanNeg,
+         scanhistEMCAL = chargeval > 0 ? histScanPosEMCAL : histScanNegEMCAL;
+    for(auto currentshift : fQoverPtShiftScanBinCenters) {
+      scanhist->Fill(currentshift, getShiftedPt(ptorig, currentshift, chargeval));
+      if(emcalacceptance) {
+        scanhistEMCAL->Fill(currentshift, getShiftedPt(ptorig, currentshift, chargeval));
+      }
+    }
   }
   return kTRUE;
+}
+
+double AliAnalysisTaskEmcalQoverPtShift::getShiftedPt(double ptorig, double qptshift, double chargeval) {
+  return 1./(qptshift*chargeval + 1./ptorig);
 }
 
 Bool_t AliAnalysisTaskEmcalQoverPtShift::IsTriggerSelected() {
