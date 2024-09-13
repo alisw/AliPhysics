@@ -2836,7 +2836,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
           Double_t modelPred = 0.3;
 	  std::vector<double> scores{};
           isMLsel = fMLResponse->IsSelected(modelPred, iCandidate, fInputEvent, fiPhotonCut, fV0Reader);
-	  cout<< isMLsel <<" , " << modelPred << endl;
+	  //cout<< isMLsel <<" , " << modelPred << endl;
 	  if (isMLsel){
             fGammaCandidates->Add(iCandidate);
             if (lIsFromSelectedHeader){
@@ -2861,7 +2861,6 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
   if (lUseElecShareCut) fiPhotonCut->RemovePhotonsWithSharedTracks(fMapPhotonHeaders);
   if (lUseTooCloseCut) fiPhotonCut->RemoveTooClosePhotons(fMapPhotonHeaders);
   
-  cout << "Net GammaCandidates = " << fGammaCandidates->GetEntries() << endl;
  
   if (fDoTreeForPhotonML) // Getting all Photon candidates and noting down their properties 
   {
