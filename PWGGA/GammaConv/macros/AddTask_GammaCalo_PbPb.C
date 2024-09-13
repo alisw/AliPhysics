@@ -2426,6 +2426,36 @@ void AddTask_GammaCalo_PbPb(
   } else if (trainConfig == 5002){ // EMCAL+DCal clusters for MC testing
     cuts.AddCutCalo("30310e13","411790105ke30220000","01331031000000d0"); //  00-15%
 
+  // LHC18qr with 0-10 and 30-50 cent triggers
+  } else if (trainConfig == 5100){ // EMCAL clusters - 4 cent classes with 0-10 and 30-50 triggered -standard PbPb TM for secondaries
+    cuts.AddCutCalo("10130e13","411790105ke30220000","01331031000000d0"); //  0-10%
+    cuts.AddCutCalo("11310e13","411790105ke30220000","01331031000000d0"); // 10-30%
+    cuts.AddCutCalo("13530e13","411790105ke30220000","01331031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910e13","411790105ke30220000","01331031000000d0"); // 50-90%
+  } else if (trainConfig == 5101){ // EMCAL clusters - cent -standard PbPb TM for secondaries
+    cuts.AddCutCalo("10130e13","411790105ke30220000","01331031000000d0"); //  0-10%
+  } else if (trainConfig == 5102){ // EMCAL clusters - semi cent -standard PbPb TM for secondaries
+    cuts.AddCutCalo("11310e13","411790105ke30220000","01331031000000d0"); // 10-30%
+  } else if (trainConfig == 5103){ // EMCAL clusters - semi peripheral -standard PbPb TM for secondaries
+    cuts.AddCutCalo("13530e13","411790105ke30220000","01331031000000d0"); // 30-50%
+  } else if (trainConfig == 5104){ // EMCAL clusters - peripheral -standard PbPb TM for secondaries
+    cuts.AddCutCalo("15910e13","411790105ke30220000","01331031000000d0"); // 50-90%
+
+  // LHC15o
+  } else if (trainConfig == 5200){ // EMCAL clusters - 4 cent classes with 0-10 and 30-50 triggered -standard PbPb TM for secondaries
+    cuts.AddCutCalo("10110e13","411790105ke30220000","01331031000000d0"); //  0-10%
+    cuts.AddCutCalo("11310e13","411790105ke30220000","01331031000000d0"); // 10-30%
+    cuts.AddCutCalo("13510e13","411790105ke30220000","01331031000000d0"); // 30-50%
+    cuts.AddCutCalo("15910e13","411790105ke30220000","01331031000000d0"); // 50-90%
+  } else if (trainConfig == 5201){ // EMCAL clusters - cent -standard PbPb TM for secondaries
+    cuts.AddCutCalo("10110e13","411790105ke30220000","01331031000000d0"); //  0-10%
+  } else if (trainConfig == 5202){ // EMCAL clusters - semi cent -standard PbPb TM for secondaries
+    cuts.AddCutCalo("11310e13","411790105ke30220000","01331031000000d0"); // 10-30%
+  } else if (trainConfig == 5203){ // EMCAL clusters - semi peripheral -standard PbPb TM for secondaries
+    cuts.AddCutCalo("13510e13","411790105ke30220000","01331031000000d0"); // 30-50%
+  } else if (trainConfig == 5204){ // EMCAL clusters - peripheral -standard PbPb TM for secondaries
+    cuts.AddCutCalo("15910e13","411790105ke30220000","01331031000000d0"); // 50-90%
+
   // primary track mult for MC
   } else if (trainConfig == 6000){ // EMCAL+DCal clusters triggerd cents
     cuts.AddCutCalo("50130e13","411790105ke30220000","01331031000000d0"); //  00-10%
