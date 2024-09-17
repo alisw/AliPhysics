@@ -84,4 +84,7 @@
 #pragma link C++ class AliPrimaryPionCuts+;
 // #pragma link C++ class AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero+;
 
+//Flow
+#pragma link C++ class AliAnalysisTaskPi0v2Calo+;
+
 #endif
