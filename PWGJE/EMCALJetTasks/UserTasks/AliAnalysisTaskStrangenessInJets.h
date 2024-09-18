@@ -442,7 +442,7 @@ private:
   AliAnalysisTaskStrangenessInJets(const AliAnalysisTaskStrangenessInJets&); // not implemented
   AliAnalysisTaskStrangenessInJets& operator=(const AliAnalysisTaskStrangenessInJets&); // not implemented
 
-  ClassDef(AliAnalysisTaskStrangenessInJets, 3) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskStrangenessInJets, 4) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
