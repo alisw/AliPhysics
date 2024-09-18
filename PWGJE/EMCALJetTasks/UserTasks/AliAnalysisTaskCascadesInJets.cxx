@@ -65,7 +65,7 @@ const Int_t AliAnalysisTaskCascadesInJets::fgkiNBinsPtJet = sizeof(AliAnalysisTa
 const Int_t AliAnalysisTaskCascadesInJets::fgkiNBinsPtJetInit = int(((AliAnalysisTaskCascadesInJets::fgkdBinsPtJet)[AliAnalysisTaskCascadesInJets::fgkiNBinsPtJet] - (AliAnalysisTaskCascadesInJets::fgkdBinsPtJet)[0]) / 10.); // bin width 10 GeV/c
 
 // axis: pT of Cascade
-const Double_t AliAnalysisTaskCascadesInJets::fgkdBinsPtCascade[] = {0, 15};
+const Double_t AliAnalysisTaskCascadesInJets::fgkdBinsPtCascade[] = {0, 18};
 const Int_t AliAnalysisTaskCascadesInJets::fgkiNBinsPtCascade = sizeof(AliAnalysisTaskCascadesInJets::fgkdBinsPtCascade) / sizeof((AliAnalysisTaskCascadesInJets::fgkdBinsPtCascade)[0]) - 1;
 const Int_t AliAnalysisTaskCascadesInJets::fgkiNBinsPtCascadeInit = int(((AliAnalysisTaskCascadesInJets::fgkdBinsPtCascade)[AliAnalysisTaskCascadesInJets::fgkiNBinsPtCascade] - (AliAnalysisTaskCascadesInJets::fgkdBinsPtCascade)[0]) / 0.1); // bin width 0.1 GeV/c
 const Int_t AliAnalysisTaskCascadesInJets::fgkiNBinsPtCascadeInitInJet = int(((AliAnalysisTaskCascadesInJets::fgkdBinsPtCascade)[AliAnalysisTaskCascadesInJets::fgkiNBinsPtCascade] - (AliAnalysisTaskCascadesInJets::fgkdBinsPtCascade)[0]) / 0.5); // bin width 0.5 GeV/c
@@ -113,6 +113,7 @@ AliAnalysisTaskCascadesInJets::AliAnalysisTaskCascadesInJets():
   fbIsPbPb(0), 
   fbMCAnalysis(0),
   fsGeneratorName(""),   
+  fbSignalInBG(0), 
   fdCutVertexZ(0),
   fdCutVertexR2(0),
   fdCutCentLow(0),
@@ -328,7 +329,8 @@ AliAnalysisTaskCascadesInJets::AliAnalysisTaskCascadesInJets(const char* name):
       
   fbIsPbPb(0),  
   fbMCAnalysis(0),
-  fsGeneratorName(""),  
+  fsGeneratorName(""), 
+  fbSignalInBG(0), 
   fdCutVertexZ(0),
   fdCutVertexR2(0),
   fdCutCentLow(0),
@@ -1382,10 +1384,18 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
     Double_t dMassPeakWindowMeanXi = MassPeakMean(dPtCascade, 0);
     Double_t dMassPeakWindowMeanOmega = MassPeakMean(dPtCascade, 1);
     // Invariant mass peak selection
-    if(TMath::Abs(dMassCascadeXi - dMassPeakWindowMeanXi) < dMassPeakWindowXi)
-      bIsInPeakXi = kTRUE;
-    if(TMath::Abs(dMassCascadeOmega - dMassPeakWindowMeanOmega) < dMassPeakWindowOmega)
-      bIsInPeakOmega = kTRUE;
+    if(fbSignalInBG == 0) { //Inv mass in signal region
+      if(TMath::Abs(dMassCascadeXi - dMassPeakWindowMeanXi) < dMassPeakWindowXi)
+        bIsInPeakXi = kTRUE;
+      if(TMath::Abs(dMassCascadeOmega - dMassPeakWindowMeanOmega) < dMassPeakWindowOmega)
+        bIsInPeakOmega = kTRUE;
+    }  
+    else if(fbSignalInBG == 1){ //Inv mass in BG region
+      if( (dMassCascadeXi > dMassPeakWindowMeanXi + dMassPeakWindowXi) && (dMassCascadeXi < dMassPeakWindowMeanXi + 2 * dMassPeakWindowXi))
+        bIsInPeakXi = kTRUE;
+      if( (dMassCascadeOmega > dMassPeakWindowMeanOmega + dMassPeakWindowOmega) &&  (dMassCascadeOmega < dMassPeakWindowMeanOmega + 2 * dMassPeakWindowOmega))
+        bIsInPeakOmega = kTRUE;
+    }
 
     // Skip candidates outside the histogram range
     if((dMassCascadeXi < fgkdMassXiMin) || (dMassCascadeXi >= fgkdMassXiMax)) {

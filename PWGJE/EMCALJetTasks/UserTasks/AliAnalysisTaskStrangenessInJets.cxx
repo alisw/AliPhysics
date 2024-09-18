@@ -119,6 +119,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
   fbIsPbPb(0), 
   fbMCAnalysis(0),
   fsGeneratorName(""),   
+  fbSignalInBG(0), 
   fdCutVertexZ(0),
   fdCutVertexR2(0),
   fdCutCentLow(0),
@@ -327,6 +328,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
   fbIsPbPb(0),  
   fbMCAnalysis(0),
   fsGeneratorName(""),  
+  fbSignalInBG(0), 
   fdCutVertexZ(0),
   fdCutVertexR2(0),
   fdCutCentLow(0),
@@ -966,7 +968,7 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
 
       Int_t iNBinsPtXi = 80;
       Double_t dPtXiMin = 0;
-      Double_t dPtXiMax = 15;
+      Double_t dPtXiMax = 18;
       const Int_t iNDimFD = 3;
       Int_t binsFD[iNDimFD] = {iNBinsPtV0, iNBinsPtXi, iNJetPtBins};
       Double_t xminFD[iNDimFD] = {dPtV0Min, dPtXiMin, dJetPtMin};
@@ -1354,12 +1356,22 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     }
 
     // Invariant mass peak selection
-    if(TMath::Abs(dMassV0K0s - dMassPeakWindowMeanK0s ) < dMassPeakWindowK0s)
-      bIsInPeakK0s = kTRUE;
-    if(TMath::Abs(dMassV0Lambda - dMassPeakWindowMeanLambda) < dMassPeakWindowLambda)
-      bIsInPeakLambda = kTRUE;
-    if(TMath::Abs(dMassV0ALambda - dMassPeakWindowMeanLambda) < dMassPeakWindowLambda)
-      bIsInPeakALambda = kTRUE;
+    if(fbSignalInBG == 0) { //Inv mass in signal region
+      if(TMath::Abs(dMassV0K0s - dMassPeakWindowMeanK0s ) < dMassPeakWindowK0s)
+        bIsInPeakK0s = kTRUE;
+      if(TMath::Abs(dMassV0Lambda - dMassPeakWindowMeanLambda) < dMassPeakWindowLambda)
+        bIsInPeakLambda = kTRUE;
+      if(TMath::Abs(dMassV0ALambda - dMassPeakWindowMeanLambda) < dMassPeakWindowLambda)
+        bIsInPeakALambda = kTRUE;
+    }  
+    else if(fbSignalInBG == 1){ //Inv mass in BG region
+      if( (dMassV0K0s > dMassPeakWindowMeanK0s + dMassPeakWindowK0s) && (dMassV0K0s < dMassPeakWindowMeanK0s + 2 * dMassPeakWindowK0s) )
+        bIsInPeakK0s = kTRUE;
+      if( (dMassV0Lambda > dMassPeakWindowMeanLambda + dMassPeakWindowLambda) && (dMassV0Lambda < dMassPeakWindowMeanLambda + 2 * dMassPeakWindowLambda))
+        bIsInPeakLambda = kTRUE;
+      if( (dMassV0ALambda > dMassPeakWindowMeanLambda + dMassPeakWindowLambda) && (dMassV0ALambda < dMassPeakWindowMeanLambda + 2 * dMassPeakWindowLambda))
+        bIsInPeakALambda = kTRUE;
+    }
 
     // Skip candidates outside the histogram range
     if((dMassV0K0s < fgkdMassK0sMin) || (dMassV0K0s >= fgkdMassK0sMax))
@@ -3035,11 +3047,11 @@ Double_t AliAnalysisTaskStrangenessInJets::MassPeakSigma(Double_t pt, Int_t part
 // estimation of the sigma of the invariant-mass peak as a function of pT and particle type
   switch(particle) {
     case 0: // K0S
-      return 0.00398 + 0.000103 * pt + 0.000042 * pt * pt;//0.0044 + 0.0004 * (pt - 1.);
+      return 0.00362 + 0.000309 * pt + 0.000016 * pt * pt;// 0.00398 + 0.000103 * pt + 0.000042 * pt * pt;
       break;
     case 1: // Lambda
-      return 0.00156 - 0.000021 * pt + 0.000016 * pt * pt;; //0.0023 + 0.00034 * (pt - 1.);
-      break; 
+      return 0.00157 - 0.000026 * pt + 0.000017 * pt * pt; //0.00156 - 0.000021 * pt + 0.000016 * pt * pt;  //old
+      break;   
     default:
       return 0;
       break;
