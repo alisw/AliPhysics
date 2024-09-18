@@ -67,6 +67,7 @@ set(SRCS
   SpeedOfSound/AliAnalysisTaskDataSpeedOfSoundSim.cxx
   SpeedOfSound/AliAnalysisTaskDataSpeedOfSound276TeV.cxx
   SpeedOfSound/AliAnalysisTaskMCGenSpeedOfSound.cxx
+  SpeedOfSound/AliAnalysisTaskZNZP.cxx
   )
 
 # Headers from sources
