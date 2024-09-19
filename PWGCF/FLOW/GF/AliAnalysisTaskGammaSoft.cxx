@@ -54,6 +54,7 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft():
   fBypassTriggerAndEventCuts(kFALSE),
   fDisablePileup(kFALSE),
   fUseOldPileup(kFALSE),
+  fFillStdMethod(kTRUE),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
   fGenerator("AMPT"),
@@ -129,8 +130,8 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft():
   fRequireReloadOnRunChange(kFALSE),
   fEnableFB768dcaxy(kFALSE),
   wp(0),
-  abc(0),
-  abcDen(0)
+  abcd(0),
+  wabcd(0)
 {
 };
 AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft(const char *name, Bool_t IsMC, TString ContSubfix):
@@ -144,6 +145,7 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft(const char *name, Bool_t IsMC
   fBypassTriggerAndEventCuts(kFALSE),
   fDisablePileup(kFALSE),
   fUseOldPileup(kFALSE),
+  fFillStdMethod(kTRUE),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
   fGenerator("AMPT"),
@@ -219,8 +221,8 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft(const char *name, Bool_t IsMC
   fRequireReloadOnRunChange(kFALSE),
   fEnableFB768dcaxy(kFALSE),
   wp(0),
-  abc(0),
-  abcDen(0)
+  abcd(0),
+  wabcd(0)
 {
   SetContSubfix(ContSubfix);
   fCentEst = new TString("V0M");
@@ -348,9 +350,9 @@ void AliAnalysisTaskGammaSoft::CreateVnMptOutputObjects(){
     printf("Creating covariance objects\n");
     fCovList = new TList();
     fCovList->SetOwner(kTRUE);
-    const int ncovprofiles = 4;
+    const int ncovprofiles = 9;
     fCovariance = new AliProfileBS*[ncovprofiles];
-
+    //Default terms, standard method
     fCovariance[0] = new AliProfileBS("v24pt2","v24pt2",fNMultiBins,fMultiBins);
     fCovList->Add(fCovariance[0]);
     fCovariance[1] = new AliProfileBS("v24pt","v24pt",fNMultiBins,fMultiBins);
@@ -359,6 +361,17 @@ void AliAnalysisTaskGammaSoft::CreateVnMptOutputObjects(){
     fCovList->Add(fCovariance[2]);
     fCovariance[3] = new AliProfileBS("v22pt","v22pt",fNMultiBins,fMultiBins);
     fCovList->Add(fCovariance[3]);
+    //Extra terms for central moment method
+    fCovariance[4] = new AliProfileBS("v24pt_6w","v24pt_6w",fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[4]);
+    fCovariance[5] = new AliProfileBS("v24_6w","v24_6w",fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[5]);
+    fCovariance[6] = new AliProfileBS("v22pt_4w","v22pt_4w",fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[6]);
+    fCovariance[7] = new AliProfileBS("v22_4w","v22_4w",fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[7]);
+    fCovariance[8] = new AliProfileBS("v22_3w","v22_3w",fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[8]);
     if(fNBootstrapProfiles) for(Int_t i=0;i<ncovprofiles;i++) fCovariance[i]->InitializeSubsamples(fNBootstrapProfiles);
     printf("Covariance objects created\n");
     PostData(3,fCovList);
@@ -656,19 +669,20 @@ void AliAnalysisTaskGammaSoft::FillWPCounter(vector<vector<double>> &inarr, doub
   return;
 }
 template<typename T>
-void AliAnalysisTaskGammaSoft::FillABCCounter(vector<vector<vector<T>>> &inarr, T a, T b, T c)
+void AliAnalysisTaskGammaSoft::FillABCDCounter(vector<vector<vector<vector<T>>>> &inarr, T a, T b, T c, T d)
 {
-  for(int i = 0; i<3;++i)
-    for(int j = 0;j<3;++j)
-      for(int k=0;k<3;++k)
-        inarr[i][j][k] += pow(a,i)*pow(b,j)*pow(c,k);
+  for(int i = 0; i<3; ++i)
+    for(int j = 0; j < 3; ++j)
+      for(int k = 0; k < 3; ++k)
+        for(int l = 0; l < 3; ++l)
+          inarr[i][j][k][l] += pow(a,i)*pow(b,j)*pow(c,k)*pow(d,l);
   return;
 }
 void AliAnalysisTaskGammaSoft::ProcessTracks(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
   AliAODTrack *lTrack;
   wp.clear(); wp.resize(fPtMpar+1,vector<double>(fPtMpar+1));
-  abc.clear(); abc.resize(3, vector<vector<std::complex<double>>>(3,vector<std::complex<double>>(3)));
-  abcDen.clear(); abcDen.resize(3, vector<vector<std::complex<double>>>(3,vector<std::complex<double>>(3)));
+  abcd.clear(); abcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(3,vector<std::complex<double>>(3))));
+  wabcd.clear(); wabcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(3,vector<std::complex<double>>(3))));
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
   iCent--;
@@ -709,6 +723,12 @@ void AliAnalysisTaskGammaSoft::ProcessTracks(AliAODEvent *fAOD, const Double_t &
           fPtMptAcceptance->Fill(lPart->Pt());
         }
       }
+      if(fFillStdMethod){
+        FillABCDCounter(abcd,Q(1.,2*lPart->Phi()),Q(1.,-2*lPart->Phi()),std::complex<double>(pt,0.),std::complex<double>(1.,0.));
+        FillABCDCounter(wabcd,std::complex<double>(1.,0.),std::complex<double>(1.,0.),std::complex<double>(1.,0.),std::complex<double>(1.,0.));
+      }
+
+
     };
     nTotNoTracks = fUseRecoNchForMC?nTotNoTracksReco:nTotNoTracksMC;
     if(fUseRecoNchForMC) fNchTrueVsReco->Fill(nTotNoTracksMC,nTotNoTracksReco);
@@ -739,8 +759,10 @@ void AliAnalysisTaskGammaSoft::ProcessTracks(AliAODEvent *fAOD, const Double_t &
       if(fUseNUAOne) wacc = 1.;
       fGFW->Fill(leta,1,lTrack->Phi(),wacc*weff,3); //filling both gap (bit mask 1) and full (bit mask 2)
       if(fFillAdditionalQA) FillAdditionalTrackQAPlots(*lTrack,l_Cent,wacc,weff,vz,vtxp,kFALSE);
-      FillABCCounter(abc,Q(weff*wacc,2*lTrack->Phi()),Q(weff*wacc,-2*lTrack->Phi()),std::complex<double>(weff*lpt,0.));
-      FillABCCounter(abcDen,std::complex<double>(weff*wacc,0.),std::complex<double>(weff*wacc,0.),std::complex<double>(weff,0.));
+      if(fFillStdMethod){
+        FillABCDCounter(abcd,Q(weff*wacc,2*lTrack->Phi()),Q(weff*wacc,-2*lTrack->Phi()),std::complex<double>(weff*lpt,0.),std::complex<double>(weff,0.));
+        FillABCDCounter(wabcd,std::complex<double>(weff*wacc,0.),std::complex<double>(weff*wacc,0.),std::complex<double>(weff,0.),std::complex<double>(weff,0.));
+      }
     };
   };
   if(wp[1][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
@@ -765,10 +787,44 @@ void AliAnalysisTaskGammaSoft::ProcessTracks(AliAODEvent *fAOD, const Double_t &
     FillFCs(corrconfigs.at(l_ind),l_Multi,l_Random);
   };
   PostData(2,fFC);
-  fCovariance[0]->FillProfile(l_Multi,get6PCNoSelfCorr(abc)/get6PCNoSelfCorr(abcDen),1,l_Random);
-  fCovariance[1]->FillProfile(l_Multi,get5PCNoSelfCorr(abc)/get5PCNoSelfCorr(abcDen),1,l_Random);
-  fCovariance[2]->FillProfile(l_Multi,get4PCNoSelfCorr(abc)/get4PCNoSelfCorr(abcDen),1,l_Random);
-  fCovariance[3]->FillProfile(l_Multi,get3PCNoSelfCorr(abc)/get3PCNoSelfCorr(abcDen),1,l_Random);
+  if(!fFillStdMethod){
+    double wmpt2 = wp[1][0]*wp[1][0]-wp[2][0];
+    if(wmpt2!=0.){
+      double mpt2 = (wp[1][1]*wp[1][1]-wp[2][2])/wmpt2;
+      double mpt_2w = (wp[1][0]*wp[1][1]-wp[2][1])/wmpt2;
+      FillCovariance(fCovariance[0],corrconfigs.at(1),l_Multi,mpt2,wmpt2,l_Random);
+      FillCovariance(fCovariance[2],corrconfigs.at(0),l_Multi,mpt2,wmpt2,l_Random);
+      FillCovariance(fCovariance[4],corrconfigs.at(1),l_Multi,mpt_2w,wmpt2,l_Random);
+      FillCovariance(fCovariance[5],corrconfigs.at(1),l_Multi,1.,wmpt2,l_Random);
+      FillCovariance(fCovariance[6],corrconfigs.at(0),l_Multi,mpt_2w,wmpt2,l_Random);
+      FillCovariance(fCovariance[7],corrconfigs.at(0),l_Multi,1.,wmpt2,l_Random);
+    }
+    double mpt = wp[1][1]/wp[1][0];
+    FillCovariance(fCovariance[1],corrconfigs.at(1),l_Multi,mpt,wp[1][0],l_Random);
+    FillCovariance(fCovariance[3],corrconfigs.at(0),l_Multi,mpt,wp[1][0],l_Random);
+    FillCovariance(fCovariance[8],corrconfigs.at(0),l_Multi,1.,wp[1][0],l_Random);
+  }
+  else {
+    double wAABBCC = getStdAABBCC(wabcd);
+    if(wAABBCC!=0.) fCovariance[0]->FillProfile(l_Multi,getStdAABBCC(abcd)/wAABBCC,(fUseEventWeightOne)?1.:wAABBCC,l_Random);
+    double wAABBC = getStdAABBC(wabcd);
+    if(wAABBC!=0.) fCovariance[1]->FillProfile(l_Multi,getStdAABBC(abcd)/wAABBC,(fUseEventWeightOne)?1.:wAABBC,l_Random);
+    double wABCC = getStdABCC(wabcd);
+    if(wABCC!=0.) fCovariance[2]->FillProfile(l_Multi,getStdABCC(abcd)/wABCC,(fUseEventWeightOne)?1.:wABCC,l_Random);
+    double wABC = getStdABC(wabcd);
+    if(wABC!=0.) fCovariance[3]->FillProfile(l_Multi,getStdABC(abcd)/wABC,(fUseEventWeightOne)?1.:wABC,l_Random);
+    double wAABBCD = getStdAABBCD(wabcd);
+    if(wAABBCD!=0.) fCovariance[4]->FillProfile(l_Multi,getStdAABBCD(abcd)/wAABBCD,(fUseEventWeightOne)?1.:wAABBCD,l_Random);
+    double wAABBDD = getStdAABBDD(wabcd);
+    if(wAABBDD!=0.) fCovariance[5]->FillProfile(l_Multi,getStdAABBDD(abcd)/wAABBDD,(fUseEventWeightOne)?1.:wAABBDD,l_Random);
+    double wABCD = getStdABCD(wabcd);
+    if(wABCD!=0.) fCovariance[6]->FillProfile(l_Multi,getStdABCD(abcd)/wABCD,(fUseEventWeightOne)?1.:wABCD,l_Random);
+    double wABDD = getStdABDD(wabcd);
+    if(wABDD!=0.) fCovariance[7]->FillProfile(l_Multi,getStdABDD(abcd)/wABDD,(fUseEventWeightOne)?1.:wABDD,l_Random);
+    double wABD = getStdABD(wabcd);
+    if(wABD!=0.) fCovariance[8]->FillProfile(l_Multi,getStdABD(abcd)/wABD,(fUseEventWeightOne)?1.:wABD,l_Random);
+  }
+
   PostData(3,fCovList);
 }
 Bool_t AliAnalysisTaskGammaSoft::FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t debug) {
@@ -836,7 +892,6 @@ Bool_t AliAnalysisTaskGammaSoft::FillCovariance(AliProfileBS *target, const AliG
   };
   return kTRUE;
 };
-
 void AliAnalysisTaskGammaSoft::CreateCorrConfigs() {
 
   corrconfigs.push_back(GetConf("ChGap22","refP {2} refN {-2}", kFALSE));     //ChGap22 0
@@ -878,33 +933,33 @@ void AliAnalysisTaskGammaSoft::FillAdditionalTrackQAPlots(AliAODTrack &track, co
     fTPCcls[1]->Fill(track.GetTPCncls());
   }
 }
-double AliAnalysisTaskGammaSoft::get6PCNoSelfCorr(vector<vector<vector<std::complex<double>>>> &abcvec){
-  std::complex<double> a = abcvec[1][0][0];
-  std::complex<double> b = abcvec[0][1][0];
-  std::complex<double> c = abcvec[0][0][1];
-  std::complex<double> aa = abcvec[2][0][0];
-  std::complex<double> bb = abcvec[0][2][0];
-  std::complex<double> cc = abcvec[0][0][2];
-  std::complex<double> ab = abcvec[1][1][0];
-  std::complex<double> ac = abcvec[1][0][1];
-  std::complex<double> bc = abcvec[0][1][1];
-  std::complex<double> aab = abcvec[2][1][0];
-  std::complex<double> aac = abcvec[2][0][1];
-  std::complex<double> abb = abcvec[1][2][0];
-  std::complex<double> acc = abcvec[1][0][2];
-  std::complex<double> abc = abcvec[1][1][1];
-  std::complex<double> bbc = abcvec[0][2][1];
-  std::complex<double> bcc = abcvec[0][1][2];
-  std::complex<double> aabb = abcvec[2][2][0];
-  std::complex<double> aacc = abcvec[2][0][2];
-  std::complex<double> aabc = abcvec[2][1][1];
-  std::complex<double> abbc = abcvec[1][2][1];
-  std::complex<double> abcc = abcvec[1][1][2];
-  std::complex<double> bbcc = abcvec[0][2][2];
-  std::complex<double> aabbc = abcvec[2][2][1];
-  std::complex<double> aabcc = abcvec[2][1][2];
-  std::complex<double> abbcc = abcvec[0][0][0];
-  std::complex<double> aabbcc = abcvec[2][2][2];
+double AliAnalysisTaskGammaSoft::getStdAABBCC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+  std::complex<double> a = abcdvec[1][0][0][0];
+  std::complex<double> b = abcdvec[0][1][0][0];
+  std::complex<double> c = abcdvec[0][0][1][0];
+  std::complex<double> aa = abcdvec[2][0][0][0];
+  std::complex<double> bb = abcdvec[0][2][0][0];
+  std::complex<double> cc = abcdvec[0][0][2][0];
+  std::complex<double> ab = abcdvec[1][1][0][0];
+  std::complex<double> ac = abcdvec[1][0][1][0];
+  std::complex<double> bc = abcdvec[0][1][1][0];
+  std::complex<double> aab = abcdvec[2][1][0][0];
+  std::complex<double> aac = abcdvec[2][0][1][0];
+  std::complex<double> abb = abcdvec[1][2][0][0];
+  std::complex<double> acc = abcdvec[1][0][2][0];
+  std::complex<double> abc = abcdvec[1][1][1][0];
+  std::complex<double> bbc = abcdvec[0][2][1][0];
+  std::complex<double> bcc = abcdvec[0][1][2][0];
+  std::complex<double> aabb = abcdvec[2][2][0][0];
+  std::complex<double> aacc = abcdvec[2][0][2][0];
+  std::complex<double> aabc = abcdvec[2][1][1][0];
+  std::complex<double> abbc = abcdvec[1][2][1][0];
+  std::complex<double> abcc = abcdvec[1][1][2][0];
+  std::complex<double> bbcc = abcdvec[0][2][2][0];
+  std::complex<double> aabbc = abcdvec[2][2][1][0];
+  std::complex<double> aabcc = abcdvec[2][1][2][0];
+  std::complex<double> abbcc = abcdvec[0][0][0][0];
+  std::complex<double> aabbcc = abcdvec[2][2][2][0];
   return (a*a*b*b*c*c - aa*b*b*c*c - a*a*bb*c*c - a*a*b*b*cc - 4.*a*ab*b*c*c -
  4.*a*ac*b*b*c - 4.*a*a*b*bc*c + 4.*aab*b*c*c + 4.*aac*b*b*c +
  4.*a*abb*c*c + 4.*a*acc*b*b + 4.*a*a*bbc*c + 4.*a*a*b*bcc +
@@ -920,52 +975,194 @@ double AliAnalysisTaskGammaSoft::get6PCNoSelfCorr(vector<vector<vector<std::comp
  6.*bbcc*aa + 24.*aabc*bc + 24.*abbc*ac + 24.*abcc*ab + 8.*aab*bcc +
  8.*aac*bbc + 8.*abb*acc + 16.*abc*abc - 120.*aabbcc).real();
 }
-double AliAnalysisTaskGammaSoft::get5PCNoSelfCorr(vector<vector<vector<std::complex<double>>>> &abcvec){
-  std::complex<double> a = abcvec[1][0][0];
-  std::complex<double> b = abcvec[0][1][0];
-  std::complex<double> c = abcvec[0][0][1];
-  std::complex<double> aa = abcvec[2][0][0];
-  std::complex<double> ab = abcvec[1][1][0];
-  std::complex<double> ac = abcvec[1][0][1];
-  std::complex<double> bb = abcvec[0][2][0];
-  std::complex<double> bc = abcvec[0][1][1];
-  std::complex<double> aab = abcvec[2][1][0];
-  std::complex<double> aac =  abcvec[2][0][1];
-  std::complex<double> abb = abcvec[1][2][0];
-  std::complex<double> abc = abcvec[1][1][1];
-  std::complex<double> bbc = abcvec[0][2][1];
-  std::complex<double> aabb = abcvec[2][2][0];
-  std::complex<double> aabc = abcvec[2][1][1];
-  std::complex<double> abbc = abcvec[1][2][1];
-  std::complex<double> aabbc = abcvec[2][2][1];
+double AliAnalysisTaskGammaSoft::getStdAABBCD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+  std::complex<double> a = abcdvec[1][0][0][0];
+  std::complex<double> b = abcdvec[0][1][0][0];
+  std::complex<double> c = abcdvec[0][0][1][0];
+  std::complex<double> d = abcdvec[0][0][0][1];
+  std::complex<double> aa = abcdvec[2][0][0][0];
+  std::complex<double> bb = abcdvec[0][2][0][0];
+  std::complex<double> ab = abcdvec[1][1][0][0];
+  std::complex<double> ac = abcdvec[1][0][1][0];
+  std::complex<double> ad = abcdvec[1][0][0][1];
+  std::complex<double> bc = abcdvec[0][1][1][0];
+  std::complex<double> bd = abcdvec[0][1][0][1];
+  std::complex<double> cd = abcdvec[0][0][1][1];
+  std::complex<double> aab = abcdvec[2][1][0][0];
+  std::complex<double> aac = abcdvec[2][0][1][0];
+  std::complex<double> aad = abcdvec[2][0][0][1];
+  std::complex<double> abb = abcdvec[1][2][0][0];
+  std::complex<double> abc = abcdvec[1][1][1][0];
+  std::complex<double> abd = abcdvec[1][1][0][1];
+  std::complex<double> acd = abcdvec[1][0][1][1];
+  std::complex<double> bbc = abcdvec[0][2][1][0];
+  std::complex<double> bbd = abcdvec[0][2][0][1];
+  std::complex<double> bcd = abcdvec[0][1][1][1];
+  std::complex<double> aabb = abcdvec[2][2][0][0];
+  std::complex<double> aabc = abcdvec[2][1][1][0];
+  std::complex<double> aabd = abcdvec[2][1][0][1];
+  std::complex<double> aacd = abcdvec[2][0][1][1];
+  std::complex<double> abbc = abcdvec[1][2][1][0];
+  std::complex<double> abbd = abcdvec[1][2][0][1];
+  std::complex<double> abcd = abcdvec[0][1][1][1];
+  std::complex<double> bbcd = abcdvec[0][2][1][1];
+  std::complex<double> aabbc = abcdvec[2][2][1][0];
+  std::complex<double> aabbd = abcdvec[2][2][0][1];
+  std::complex<double> aabcd = abcdvec[2][1][1][1];
+  std::complex<double> abbcd = abcdvec[1][2][1][1];
+  std::complex<double> aabbcd = abcdvec[2][2][1][1];
+  return (-120.*aabbcd + 48.*a*abbcd + 24.*ab*abcd + 16.*abc*abd + 12.*abbd*ac +
+ 8.*abb*acd + 12.*abbc*ad + 48.*aabcd*b - 24.*a*abcd*b - 8.*abd*ac*b -
+ 8.*ab*acd*b - 8.*abc*ad*b - 6.*aacd*b*b + 4.*a*acd*b*b + 2.*ac*ad*b*b +
+ 6.*aacd*bb - 4.*a*acd*bb - 2.*ac*ad*bb + 4.*aad*bbc - 4.*a*ad*bbc -
+ 6.*a*a*bbcd + 6.*aa*bbcd + 4.*aac*bbd - 4.*a*ac*bbd + 12.*aabd*bc -
+ 8.*a*abd*bc - 4.*ab*ad*bc - 4.*aad*b*bc + 4.*a*ad*b*bc + 8.*aab*bcd -
+ 8.*a*ab*bcd + 4.*a*a*b*bcd - 4.*aa*b*bcd + 12.*aabc*bd - 8.*a*abc*bd -
+ 4.*ab*ac*bd - 4.*aac*b*bd + 4.*a*ac*b*bd + 2.*a*a*bc*bd - 2.*aa*bc*bd +
+ 24.*aabbd*c - 12.*a*abbd*c - 8.*ab*abd*c - 4.*abb*ad*c - 12.*aabd*b*c +
+ 8.*a*abd*b*c + 4.*ab*ad*b*c + 2.*aad*b*b*c - 2.*a*ad*b*b*c -
+ 2.*aad*bb*c + 2.*a*ad*bb*c + 2.*a*a*bbd*c - 2.*aa*bbd*c - 4.*aab*bd*c +
+ 4.*a*ab*bd*c - 2.*a*a*b*bd*c + 2.*aa*b*bd*c + 6.*aabb*cd - 2.*ab*ab*cd -
+ 4.*a*abb*cd - 4.*aab*b*cd + 4.*a*ab*b*cd - a*a*b*b*cd + aa*b*b*cd +
+ a*a*bb*cd - aa*bb*cd + 24.*aabbc*d - 12.*a*abbc*d - 8.*ab*abc*d -
+ 4.*abb*ac*d - 12.*aabc*b*d + 8.*a*abc*b*d + 4.*ab*ac*b*d + 2.*aac*b*b*d -
+ 2.*a*ac*b*b*d - 2.*aac*bb*d + 2.*a*ac*bb*d + 2.*a*a*bbc*d - 2.*aa*bbc*d -
+ 4.*aab*bc*d + 4.*a*ab*bc*d - 2.*a*a*b*bc*d + 2.*aa*b*bc*d - 6.*aabb*c*d +
+ 2.*ab*ab*c*d + 4.*a*abb*c*d + 4.*aab*b*c*d - 4.*a*ab*b*c*d +
+ a*a*b*b*c*d - aa*b*b*c*d - a*a*bb*c*d + aa*bb*c*d).real();
+}
+double AliAnalysisTaskGammaSoft::getStdAABBDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+  std::complex<double> a = abcdvec[1][0][0][0];
+  std::complex<double> b = abcdvec[0][1][0][0];
+  std::complex<double> d = abcdvec[0][0][1][1];
+  std::complex<double> aa = abcdvec[2][0][0][0];
+  std::complex<double> bb = abcdvec[0][2][0][0];
+  std::complex<double> dd = abcdvec[0][0][0][2];
+  std::complex<double> ab = abcdvec[1][1][0][0];
+  std::complex<double> ad = abcdvec[1][0][0][1];
+  std::complex<double> bd = abcdvec[0][1][0][1];
+  std::complex<double> aab = abcdvec[2][1][0][0];
+  std::complex<double> aad = abcdvec[2][0][0][1];
+  std::complex<double> abb = abcdvec[1][2][0][0];
+  std::complex<double> add = abcdvec[1][0][0][2];
+  std::complex<double> abd = abcdvec[1][1][0][1];
+  std::complex<double> bbd = abcdvec[0][2][0][1];
+  std::complex<double> bdd = abcdvec[0][1][0][2];
+  std::complex<double> aabb = abcdvec[2][2][0][0];
+  std::complex<double> aadd = abcdvec[2][0][0][2];
+  std::complex<double> aabd = abcdvec[2][1][0][1];
+  std::complex<double> abbd = abcdvec[1][2][0][1];
+  std::complex<double> abdd = abcdvec[1][1][0][2];
+  std::complex<double> bbdd = abcdvec[0][2][0][2];
+  std::complex<double> aabbd = abcdvec[2][2][0][1];
+  std::complex<double> aabdd = abcdvec[2][1][0][2];
+  std::complex<double> abbdd = abcdvec[0][0][0][2];
+  std::complex<double> aabbdd  = abcdvec[2][2][0][2];
+  return (-120.*aabbdd + 48.*a*abbdd + 16.*abd*abd + 24.*ab*abdd + 24.*abbd*ad +
+ 8.*abb*add + 48.*aabdd*b - 24.*a*abdd*b - 16.*abd*ad*b - 8.*ab*add*b -
+ 6.*aadd*b*b + 2.*ad*ad*b*b + 4.*a*add*b*b + 6.*aadd*bb - 2.*ad*ad*bb -
+ 4.*a*add*bb + 8.*aad*bbd - 8.*a*ad*bbd - 6.*a*a*bbdd + 6.*aa*bbdd +
+ 24.*aabd*bd - 16.*a*abd*bd - 8.*ab*ad*bd - 8.*aad*b*bd + 8.*a*ad*b*bd +
+ 2.*a*a*bd*bd - 2.*aa*bd*bd + 8.*aab*bdd - 8.*a*ab*bdd + 4.*a*a*b*bdd -
+ 4.*aa*b*bdd + 48.*aabbd*d - 24.*a*abbd*d - 16.*ab*abd*d - 8.*abb*ad*d -
+ 24.*aabd*b*d + 16.*a*abd*b*d + 8.*ab*ad*b*d + 4.*aad*b*b*d -
+ 4.*a*ad*b*b*d - 4.*aad*bb*d + 4.*a*ad*bb*d + 4.*a*a*bbd*d - 4.*aa*bbd*d -
+ 8.*aab*bd*d + 8.*a*ab*bd*d - 4.*a*a*b*bd*d + 4.*aa*b*bd*d - 6.*aabb*d*d +
+ 2.*ab*ab*d*d + 4.*a*abb*d*d + 4.*aab*b*d*d - 4.*a*ab*b*d*d +
+ a*a*b*b*d*d - aa*b*b*d*d - a*a*bb*d*d + aa*bb*d*d + 6.*aabb*dd -
+ 2.*ab*ab*dd - 4.*a*abb*dd - 4.*aab*b*dd + 4.*a*ab*b*dd - a*a*b*b*dd +
+ aa*b*b*dd + a*a*bb*dd - aa*bb*dd).real();
+}
+double AliAnalysisTaskGammaSoft::getStdAABBC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+  std::complex<double> a = abcdvec[1][0][0][0];
+  std::complex<double> b = abcdvec[0][1][0][0];
+  std::complex<double> c = abcdvec[0][0][1][0];
+  std::complex<double> aa = abcdvec[2][0][0][0];
+  std::complex<double> ab = abcdvec[1][1][0][0];
+  std::complex<double> ac = abcdvec[1][0][1][0];
+  std::complex<double> bb = abcdvec[0][2][0][0];
+  std::complex<double> bc = abcdvec[0][1][1][0];
+  std::complex<double> aab = abcdvec[2][1][0][0];
+  std::complex<double> aac =  abcdvec[2][0][1][0];
+  std::complex<double> abb = abcdvec[1][2][0][0];
+  std::complex<double> abc = abcdvec[1][1][1][0];
+  std::complex<double> bbc = abcdvec[0][2][1][0];
+  std::complex<double> aabb = abcdvec[2][2][0][0];
+  std::complex<double> aabc = abcdvec[2][1][1][0];
+  std::complex<double> abbc = abcdvec[1][2][1][0];
+  std::complex<double> aabbc = abcdvec[2][2][1][0];
   return (a*a*b*b*c - aa*b*b*c - a*a*bb*c - 4.*ab*a*b*c - 2.*a*ac*b*b - 2.*a*a*bc*b
   + 2.*ab*ab*c + 4.*ab*ac*b + 4.*ab*bc*a + 8.*abc*a*b + 4.*aab*b*c + 2.*aac*b*b + 4.*abb*a*c + 2.*bbc*a*a + aa*bb*c + 2.*aa*b*bc + 2.*bb*a*ac
   - 12.*aabc*b - 12.*abbc*a - 6.*aabb*c - 8.*abc*ab - 2.*bbc*aa - 2.*aac*bb - 4.*aab*bc - 4.*abb*ac
   + 24.*aabbc).real(); }
-double AliAnalysisTaskGammaSoft::get4PCNoSelfCorr(vector<vector<vector<std::complex<double>>>> &abcvec){
-  std::complex<double> a = abcvec[1][0][0];
-  std::complex<double> b = abcvec[0][1][0];
-  std::complex<double> c = abcvec[0][0][1];
-  std::complex<double> ab  = abcvec[1][1][0];
-  std::complex<double> ac = abcvec[1][0][1];
-  std::complex<double> bc = abcvec[0][1][1];
-  std::complex<double> cc = abcvec[0][0][2];
-  std::complex<double> abc = abcvec[1][1][1];
-  std::complex<double> acc = abcvec[1][0][2];
-  std::complex<double> bcc = abcvec[0][1][2];
-  std::complex<double> abcc = abcvec[1][1][2];
+double AliAnalysisTaskGammaSoft::getStdABCC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+  std::complex<double> a = abcdvec[1][0][0][0];
+  std::complex<double> b = abcdvec[0][1][0][0];
+  std::complex<double> c = abcdvec[0][0][1][0];
+  std::complex<double> ab  = abcdvec[1][1][0][0];
+  std::complex<double> ac = abcdvec[1][0][1][0];
+  std::complex<double> bc = abcdvec[0][1][1][0];
+  std::complex<double> cc = abcdvec[0][0][2][0];
+  std::complex<double> abc = abcdvec[1][1][1][0];
+  std::complex<double> acc = abcdvec[1][0][2][0];
+  std::complex<double> bcc = abcdvec[0][1][2][0];
+  std::complex<double> abcc = abcdvec[1][1][2][0];
   return (a*b*c*c - a*b*cc - 2.*a*bc*c - 2.*ac*b*c - ab*c*c
   + 2.*acc*b + 2.*a*bcc + 4.*abc*c + ab*cc + 2.*ac*bc
   - 6.*abcc).real(); }
-double AliAnalysisTaskGammaSoft::get3PCNoSelfCorr(vector<vector<vector<std::complex<double>>>> &abcvec){
-std::complex<double> a = abcvec[1][0][0];
-std::complex<double> b = abcvec[0][1][0];
-std::complex<double> c = abcvec[0][0][1];
-std::complex<double> ab = abcvec[1][1][0];
-std::complex<double> ac = abcvec[1][0][1];
-std::complex<double> bc = abcvec[0][1][1];
-std::complex<double> abc = abcvec[1][1][1];
+double AliAnalysisTaskGammaSoft::getStdABCD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+  std::complex<double> a = abcdvec[1][0][0][0];
+  std::complex<double> b = abcdvec[0][1][0][0];
+  std::complex<double> c = abcdvec[0][0][1][0];
+  std::complex<double> d = abcdvec[0][0][0][1];
+  std::complex<double> ab  = abcdvec[1][1][0][0];
+  std::complex<double> ac = abcdvec[1][0][1][0];
+  std::complex<double> ad = abcdvec[1][0][0][1];
+  std::complex<double> bc = abcdvec[0][1][1][0];
+  std::complex<double> bd = abcdvec[0][1][0][1];
+  std::complex<double> cd = abcdvec[0][0][1][1];
+  std::complex<double> abc = abcdvec[1][1][1][0];
+  std::complex<double> abd = abcdvec[1][1][0][1];
+  std::complex<double> acd = abcdvec[1][0][1][1];
+  std::complex<double> bcd = abcdvec[0][1][1][1];
+  std::complex<double> abcd = abcdvec[1][1][0][1];
+  return (-6.*abcd + 2.*acd*b + ad*bc + 2.*a*bcd + ac*bd + 2.*abd*c - ad*b*c -
+ a*bd*c + ab*cd - a*b*cd + 2.*abc*d - ac*b*d - a*bc*d - ab*c*d +
+ a*b*c*d).real();
+ }
+double AliAnalysisTaskGammaSoft::getStdABDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+  std::complex<double> a = abcdvec[1][0][0][0];
+  std::complex<double> b = abcdvec[0][1][0][0];
+  std::complex<double> d = abcdvec[0][0][0][1];
+  std::complex<double> ab  = abcdvec[1][1][0][0];
+  std::complex<double> ad = abcdvec[1][0][0][1];
+  std::complex<double> bd = abcdvec[0][1][0][1];
+  std::complex<double> dd = abcdvec[0][0][0][2];
+  std::complex<double> abd = abcdvec[1][1][0][1];
+  std::complex<double> add = abcdvec[1][0][0][2];
+  std::complex<double> bdd = abcdvec[0][1][0][2];
+  std::complex<double> abdd = abcdvec[1][1][0][2];
+  return (a*b*d*d - a*b*dd - 2.*a*bd*d - 2.*ad*b*d - ab*d*d
+  + 2.*add*b + 2.*a*bdd + 4.*abd*d + ab*dd + 2.*ad*bd
+  - 6.*abdd).real(); }
+double AliAnalysisTaskGammaSoft::getStdABC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+std::complex<double> a = abcdvec[1][0][0][0];
+std::complex<double> b = abcdvec[0][1][0][0];
+std::complex<double> c = abcdvec[0][0][1][0];
+std::complex<double> ab = abcdvec[1][1][0][0];
+std::complex<double> ac = abcdvec[1][0][1][0];
+std::complex<double> bc = abcdvec[0][1][1][0];
+std::complex<double> abc = abcdvec[1][1][1][0];
   return (a*b*c - ab*c - ac*b - a*bc + 2.*abc).real(); }
+double AliAnalysisTaskGammaSoft::getStdABD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
+std::complex<double> a = abcdvec[1][0][0][0];
+std::complex<double> b = abcdvec[0][1][0][0];
+std::complex<double> d = abcdvec[0][0][0][1];
+std::complex<double> ab = abcdvec[1][1][0][0];
+std::complex<double> ad = abcdvec[1][0][0][1];
+std::complex<double> bd = abcdvec[0][1][0][1];
+std::complex<double> abd = abcdvec[1][1][0][1];
+  return (a*b*d - ab*d - ad*b - a*bd + 2.*abd).real(); }
 template <typename... args>
 std::complex<double> AliAnalysisTaskGammaSoft::Q(double w, double nphi, args... wnphi){
   std::complex<double> q = w*TMath::Cos(nphi)+1i*TMath::Sin(nphi);

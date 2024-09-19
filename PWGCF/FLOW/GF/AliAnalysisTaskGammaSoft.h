@@ -75,6 +75,7 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
   void SetUseWeightsOne(Bool_t newvalNUA, Bool_t newvalNUE) { fUseNUAOne = newvalNUA; fUseNUEOne = newvalNUE; };
   void SetUseEventWeightsOne(Bool_t newval) { fUseEventWeightOne = newval; };
+  void SetUseStandardMethod(bool newval) { fFillStdMethod = newval; }
   void ExtendV0MAcceptance(Bool_t newval) { fExtendV0MAcceptance = newval; };
   void SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
   void SetDCAxyFunctionalForm(TString newval) { fDCAxyFunctionalForm = newval; } //Call after SystFlag
@@ -116,6 +117,7 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   Bool_t fBypassTriggerAndEventCuts;
   Bool_t fDisablePileup;
   Bool_t fUseOldPileup;
+  Bool_t fFillStdMethod;
   TString fDCAxyFunctionalForm;
   Bool_t fOnTheFly;
   TString fGenerator;
@@ -196,8 +198,8 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   Double_t fImpactParameterMC;
   unsigned int fEventWeight;
   vector<vector<double>>  wp;
-  vector<vector<vector<std::complex<double>>>> abc;
-  vector<vector<vector<std::complex<double>>>> abcDen;
+  vector<vector<vector<vector<std::complex<double>>>>> abcd;
+  vector<vector<vector<vector<std::complex<double>>>>> wabcd;
   std::map<double,double> centralitymap;
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
@@ -206,11 +208,16 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
   void FillAdditionalTrackQAPlots(AliAODTrack &track, const Double_t &cent, Double_t weff, Double_t wacc, const Double_t &vz, Double_t* vtxp, Bool_t beforeCuts);
   template<typename T>
-  void FillABCCounter(vector<vector<vector<T>>> &inarr, T a, T b, T c);
-  double get6PCNoSelfCorr(vector<vector<vector<std::complex<double>>>> &abc);
-  double get5PCNoSelfCorr(vector<vector<vector<std::complex<double>>>> &abc);
-  double get4PCNoSelfCorr(vector<vector<vector<std::complex<double>>>> &abc);
-  double get3PCNoSelfCorr(vector<vector<vector<std::complex<double>>>> &abc);
+  void FillABCDCounter(vector<vector<vector<vector<T>>>> &inarr, T a, T b, T c, T d);
+  double getStdAABBCC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  double getStdAABBCD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  double getStdAABBDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  double getStdAABBC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  double getStdABCC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  double getStdABCD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  double getStdABDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  double getStdABC(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
+  double getStdABD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec);
   template<typename... args>
   std::complex<double> Q(double w, double nphi, args... wnphi);
   std::complex<double> Q(double w, double nphi);
