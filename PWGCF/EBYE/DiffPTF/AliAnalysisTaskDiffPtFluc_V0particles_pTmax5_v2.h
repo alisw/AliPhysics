@@ -287,6 +287,10 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 : public AliAnalysisTaskSE
   Float_t fPtsum_hadrons_greaterEtaMin;
   Float_t fNsum_hadrons_less0;
   Float_t fNsum_hadrons_greaterEtaMin;
+  Float_t fPtsum_V0s_less0;
+  Float_t fPtsum_V0s_greaterEtaMin;
+  Float_t fNsum_V0s_less0;
+  Float_t fNsum_V0s_greaterEtaMin;
   Float_t fNsum_pions_less0;
   Float_t fNsum_kaons_less0;
   Float_t fNsum_protons_less0;

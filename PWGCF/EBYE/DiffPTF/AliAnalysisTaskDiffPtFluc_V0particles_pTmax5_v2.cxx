@@ -107,6 +107,10 @@ AliAnalysisTaskSE(),
   fPtsum_hadrons_greaterEtaMin(0),
   fNsum_hadrons_less0(0),
   fNsum_hadrons_greaterEtaMin(0),
+  fPtsum_V0s_less0(0),
+  fPtsum_V0s_greaterEtaMin(0),
+  fNsum_V0s_less0(0),
+  fNsum_V0s_greaterEtaMin(0),
   fNsum_pions_less0(0),
   fNsum_kaons_less0(0),
   fNsum_protons_less0(0),
@@ -265,6 +269,10 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::AliAnalysisTaskDiffPtFluc_V0par
   fPtsum_hadrons_greaterEtaMin(0),
   fNsum_hadrons_less0(0),
   fNsum_hadrons_greaterEtaMin(0),
+  fPtsum_V0s_less0(0),
+  fPtsum_V0s_greaterEtaMin(0),
+  fNsum_V0s_less0(0),
+  fNsum_V0s_greaterEtaMin(0),
   fNsum_pions_less0(0),
   fNsum_kaons_less0(0),
   fNsum_protons_less0(0),
@@ -595,6 +603,10 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserCreateOutputObjects() 
   fTreeEvent->Branch("fPtsum_hadrons_greaterEtaMin",&fPtsum_hadrons_greaterEtaMin,"fPtsum_hadrons_greaterEtaMin/F");
   fTreeEvent->Branch("fNsum_hadrons_less0",&fNsum_hadrons_less0,"fNsum_hadrons_less0/F");
   fTreeEvent->Branch("fNsum_hadrons_greaterEtaMin",&fNsum_hadrons_greaterEtaMin,"fNsum_hadrons_greaterEtaMin/F");
+  fTreeEvent->Branch("fPtsum_V0s_less0",&fPtsum_V0s_less0,"fPtsum_V0s_less0/F");
+  fTreeEvent->Branch("fPtsum_V0s_greaterEtaMin",&fPtsum_V0s_greaterEtaMin,"fPtsum_V0s_greaterEtaMin/F");
+  fTreeEvent->Branch("fNsum_V0s_less0",&fNsum_V0s_less0,"fNsum_V0s_less0/F");
+  fTreeEvent->Branch("fNsum_V0s_greaterEtaMin",&fNsum_V0s_greaterEtaMin,"fNsum_V0s_greaterEtaMin/F");
   fTreeEvent->Branch("fNsum_lambdas_less0",&fNsum_lambdas_less0,"fNsum_lambdas_less0/F");
   fTreeEvent->Branch("fNsum_K0s_less0",&fNsum_K0s_less0,"fNsum_K0s_less0/F");
   fTreeEvent->Branch("fPt_no_lambda",&fPt_no_lambda,"fPt_no_lambda[20]/F");
@@ -861,6 +873,10 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserExec(Option_t *)  {
   TH1D *fPt_profile_K0s = new TH1D("fPt_profile_K0s","fPt_profile_K0s", 20, binsarray);
   Double_t N_sumLambda_etaLess0 = 0.0;
   Double_t N_sumK0s_etaLess0 = 0.0;
+  Double_t pT_V0_sum_etaLess0 = 0.0;
+  Double_t N_V0_sum_etaLess0 = 0.0;
+  Double_t pT_V0_sum_etaGreaterEtamin = 0.0;
+  Double_t N_V0_sum_etaGreaterEtamin = 0.0;
     
   //++++++++++++++++++++++++++++++++++++++++++++
   //loop on reconstructed V0 tracks
@@ -928,7 +944,18 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserExec(Option_t *)  {
 		}
 	    }
 	}
-       
+
+
+      if(fV0_Eta < fEtaLeftCut)
+	{
+	  pT_V0_sum_etaLess0 += fV0_Pt;
+	  N_V0_sum_etaLess0 += 1.0;
+	}
+      if(fV0_Eta > fEtaMin) //fEtaMin is right boundary of EtaGap
+	{
+	  pT_V0_sum_etaGreaterEtamin += fV0_Pt;
+	  N_V0_sum_etaGreaterEtamin += 1.0;
+	}
 	
     }//end of v0 tracks loop
 
@@ -943,12 +970,22 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserExec(Option_t *)  {
   //Tree Variables++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   fTreeVariableCentrality=lV0M;
+
+  //Mean pt information holders of primary charged hadrons
   fPtsum_hadrons_less0=pT_sum_etaLess0;
   fPtsum_hadrons_greaterEtaMin=pT_sum_etaGreaterEtamin;
   fNsum_hadrons_less0=N_sum_etaLess0;
   fNsum_hadrons_greaterEtaMin=N_sum_etaGreaterEtamin;
+
+  //Total no. of K0s/Lambda for calculationg fractions
   fNsum_lambdas_less0=N_sumLambda_etaLess0;
   fNsum_K0s_less0=N_sumK0s_etaLess0;
+
+  //Mean pt information holders of V0 particles
+  fPtsum_V0s_less0=pT_V0_sum_etaLess0;
+  fPtsum_V0s_greaterEtaMin=pT_V0_sum_etaGreaterEtamin;
+  fNsum_V0s_less0=N_V0_sum_etaLess0;
+  fNsum_V0s_greaterEtaMin=N_V0_sum_etaGreaterEtamin;
     
   for(int i=0; i<20; i++)
     {
