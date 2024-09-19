@@ -611,10 +611,12 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserExec(Option_t *)  {
 	  {
 	    if (trkPt > 0.4) // cut for removing protons coming from beam pipe
 	      {
-		if (fEffProtonPlus[centrality_bin])
+		if (fHistMCEffProtonPlus/*fEffProtonPlus[centrality_bin]*/)
 		  {
-		    ptBinNo = fEffProtonPlus[centrality_bin]->FindBin(trkPt);
-		    BinCont = fEffProtonPlus[centrality_bin]->GetBinContent(ptBinNo);
+		    // ptBinNo = fEffProtonPlus[centrality_bin]->FindBin(trkPt);
+		    // BinCont = fEffProtonPlus[centrality_bin]->GetBinContent(ptBinNo);
+		    ptBinNo = fHistMCEffProtonPlus->FindBin(trkPt);
+		    BinCont = fHistMCEffProtonPlus->GetBinContent(ptBinNo);
 		    if(BinCont!=0) EffWgt = 1.0/BinCont;
 
 		    if(trkPt > 0.6 && trkPt < 1.5)
@@ -647,10 +649,12 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserExec(Option_t *)  {
 	  {
 	    if (trkPt > 0.4) // cut for removing protons coming from beam pipe
 	      {
-		if (fEffProtonMinus[centrality_bin])
+		if (fHistMCEffProtonMinus/*fEffProtonMinus[centrality_bin]*/)
 		  {
-		    ptBinNo = fEffProtonMinus[centrality_bin]->FindBin(trkPt);
-		    BinCont = fEffProtonMinus[centrality_bin]->GetBinContent(ptBinNo);
+		    // ptBinNo = fEffProtonMinus[centrality_bin]->FindBin(trkPt);
+		    // BinCont = fEffProtonMinus[centrality_bin]->GetBinContent(ptBinNo);
+		    ptBinNo = fHistMCEffProtonMinus->FindBin(trkPt);
+		    BinCont = fHistMCEffProtonMinus->GetBinContent(ptBinNo);
 		    if(BinCont!=0) EffWgt = 1.0/BinCont;
 
 		    if(trkPt > 0.6 && trkPt < 1.5)
