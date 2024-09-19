@@ -91,8 +91,8 @@ AliAnalysisTaskSE *AddTaskPionDeuteronAOD(bool isMC = false,         // 1
 
   std::vector<bool> closeRejection;
   std::vector<float> mTBins;
-  mTBins.push_back(1.14);
-  mTBins.push_back(1.26);
+  mTBins.push_back(1.19);
+  mTBins.push_back(1.30);
   mTBins.push_back(999.);
   std::vector<int> pairQA;
   // pairs:
