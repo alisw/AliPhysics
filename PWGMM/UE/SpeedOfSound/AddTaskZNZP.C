@@ -28,6 +28,7 @@ AliAnalysisTaskZNZP* AddTaskZNZP(const char* taskname = "ZNZP",
   taskKno->SetV0Mmax(70.0);
   taskKno->SetEtaCut(0.8);
   taskKno->SetPtCut(0.15);
+  taskKno->SaveAsymmetry(true);
   taskKno->SetTrigger(AliVEvent::kINT7);
   taskKno->SetSystematicsVtxZ(false, -2.5, 2.5);
   taskKno->SetSystematics(false, 0);
