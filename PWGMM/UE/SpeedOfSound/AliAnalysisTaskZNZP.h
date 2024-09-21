@@ -55,7 +55,9 @@ class AliAnalysisTaskZNZP : public AliAnalysisTaskSE {
     fMinVtxZPos = minz;
     fMaxVtxZPos = maxz;
   }
-  void ChangeCut(AliESDtrackCuts* fCuts);
+  void SaveAsymmetry(bool sv) { fSaveAsy = sv; };
+  bool MeanSigmaZN(double& mean, double& sigma, const std::string& ZN);
+  int CentBin();
 
  protected:
  private:
@@ -66,6 +68,7 @@ class AliAnalysisTaskZNZP : public AliAnalysisTaskSE {
   bool fUseMC;
   bool fIsSystematics;
   bool fVaryVtxZPos;
+  bool fSaveAsy;
   float fMinVtxZPos;
   float fMaxVtxZPos;
   int fSystematic;
@@ -83,7 +86,6 @@ class AliAnalysisTaskZNZP : public AliAnalysisTaskSE {
   float fv0mamplitude;
 
   TProfile* pV0MAmpChannel;
-  /*TH1F* hV0MAmplitude;*/
   TH1F* hV0Percentile;
   TH1F* hBestVtxZ;
   TH2F* hZNvsV0MPer;
@@ -91,19 +93,19 @@ class AliAnalysisTaskZNZP : public AliAnalysisTaskSE {
   TH2F* hZNAvsV0M;
   TH2F* hZNCvsV0M;
   TH2F* hAsyN;
-  /*TProfile* pZNvsV0MAmp;*/
   TH2F* hZPvsV0MPer;
   TH2F* hZPvsV0M;
   TH2F* hZPAvsV0M;
   TH2F* hZPCvsV0M;
-  TH2F* hAsyP;
-  /*TProfile* pZPvsV0MAmp;*/
-  /*TH2F* hZNvsV0MAmp;*/
-  /*TH2F* hZPvsV0MAmp;*/
+  /*TH2F* hAsyP;*/
   TH1F* hZNCpmc;
   TH1F* hZNApmc;
   TH1F* hZPCpmc;
   TH1F* hZPApmc;
+  TH2F* hZNCNorm;
+  TH2F* hZNANorm;
+  /*TH2F* hZNCNormSca;*/
+  /*TH2F* hZNANormSca;*/
 
   AliAnalysisTaskZNZP(const AliAnalysisTaskZNZP&);  // not implemented
   AliAnalysisTaskZNZP& operator=(

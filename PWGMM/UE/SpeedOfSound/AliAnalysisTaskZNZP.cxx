@@ -105,6 +105,7 @@ ClassImp(AliAnalysisTaskZNZP)  // classimp: necessary for root
       fUseMC(kFALSE),
       fIsSystematics(true),
       fVaryVtxZPos(false),
+      fSaveAsy(false),
       fMinVtxZPos(-5.0),
       fMaxVtxZPos(5.0),
       fSystematic(1),
@@ -121,7 +122,6 @@ ClassImp(AliAnalysisTaskZNZP)  // classimp: necessary for root
       fv0mpercentile(0),
       fv0mamplitude(0),
       pV0MAmpChannel(0),
-      /*hV0MAmplitude(0),*/
       hV0Percentile(0),
       hBestVtxZ(0),
       hZNvsV0MPer(0),
@@ -129,19 +129,17 @@ ClassImp(AliAnalysisTaskZNZP)  // classimp: necessary for root
       hZNAvsV0M(0),
       hZNCvsV0M(0),
       hAsyN(0),
-      /*pZNvsV0MAmp(0),*/
       hZPvsV0MPer(0),
       hZPvsV0M(0),
       hZPAvsV0M(0),
       hZPCvsV0M(0),
-      hAsyP(0),
-      /*pZPvsV0MAmp(0),*/
-      /*hZNvsV0MAmp(0),*/
-      /*hZPvsV0MAmp(0),*/
+      /*hAsyP(0),*/
       hZNCpmc(0),
       hZNApmc(0),
       hZPCpmc(0),
-      hZPApmc(0) {}
+      hZPApmc(0),
+      hZNCNorm(0),
+      hZNANorm(0) {}
 //_____________________________________________________________________________
 AliAnalysisTaskZNZP::AliAnalysisTaskZNZP(const char* name)
     : AliAnalysisTaskSE(name),
@@ -152,6 +150,7 @@ AliAnalysisTaskZNZP::AliAnalysisTaskZNZP(const char* name)
       fUseMC(kFALSE),
       fIsSystematics(true),
       fVaryVtxZPos(false),
+      fSaveAsy(false),
       fMinVtxZPos(-5.0),
       fMaxVtxZPos(5.0),
       fSystematic(1),
@@ -168,7 +167,6 @@ AliAnalysisTaskZNZP::AliAnalysisTaskZNZP(const char* name)
       fv0mpercentile(0),
       fv0mamplitude(0),
       pV0MAmpChannel(0),
-      /*hV0MAmplitude(0),*/
       hV0Percentile(0),
       hBestVtxZ(0),
       hZNvsV0MPer(0),
@@ -176,19 +174,17 @@ AliAnalysisTaskZNZP::AliAnalysisTaskZNZP(const char* name)
       hZNAvsV0M(0),
       hZNCvsV0M(0),
       hAsyN(0),
-      /*pZNvsV0MAmp(0),*/
       hZPvsV0MPer(0),
       hZPvsV0M(0),
       hZPAvsV0M(0),
       hZPCvsV0M(0),
-      hAsyP(0),
-      /*pZPvsV0MAmp(0),*/
-      /*hZNvsV0MAmp(0),*/
-      /*hZPvsV0MAmp(0),*/
+      /*hAsyP(0),*/
       hZNCpmc(0),
       hZNApmc(0),
       hZPCpmc(0),
-      hZPApmc(0) {
+      hZPApmc(0),
+      hZNCNorm(0),
+      hZNANorm(0) {
   DefineInput(0, TChain::Class());  // define the input of the analysis: in this
                                     // case you take a 'chain' of events
   // this chain is created by the analysis manager, so no need to worry about
@@ -228,9 +224,9 @@ void AliAnalysisTaskZNZP::UserCreateOutputObjects() {
     fCuts->SetMaxChi2PerClusterITS(36);
     fCuts->SetEtaRange(-0.8, 0.8);
 
-    if (fIsSystematics) {
-      ChangeCut(fCuts);
-    }
+    /*if (fIsSystematics) {*/
+    /*  ChangeCut(fCuts);*/
+    /*}*/
     fTrackFilter->AddCuts(fCuts);
   }
 
@@ -255,9 +251,9 @@ void AliAnalysisTaskZNZP::UserCreateOutputObjects() {
     fCuts3->SetMaxChi2PerClusterITS(36);      //
     fCuts3->SetEtaRange(-0.8, 0.8);
 
-    if (fIsSystematics) {
-      ChangeCut(fCuts3);
-    }
+    /*if (fIsSystematics) {*/
+    /*  ChangeCut(fCuts3);*/
+    /*}*/
     fTrackFilterwoDCA->AddCuts(fCuts3);
   }
 
@@ -279,7 +275,7 @@ void AliAnalysisTaskZNZP::UserCreateOutputObjects() {
   /*  v0mAmp_bins[i] = 0.0 + i * v0mAmp_width;*/
   /*}*/
 
-  const int nBinsV0M090{90};
+  const int nBinsV0M090{70};
   double BinsV0M090[nBinsV0M090 + 1] = {0.0};
   for (int i = 0; i <= nBinsV0M090; ++i) {
     BinsV0M090[i] = 0.0 + (double)i;
@@ -315,29 +311,30 @@ void AliAnalysisTaskZNZP::UserCreateOutputObjects() {
   hAsyN =
       new TH2F("hAsyN", "Neutron asymmetry;V0M Per; N_{C}-N_{A}/N_{C}+N_{A};",
                nBinsV0M090, BinsV0M090, 50, -1.0, 1.0);
-  hAsyP =
-      new TH2F("hAsyP", "Proton asymmetry;V0M Per; P_{C}-P_{A}/P_{C}+P_{A};",
-               nBinsV0M090, BinsV0M090, 50, -1.0, 1.0);
+  /*hAsyP =*/
+  /*    new TH2F("hAsyP", "Proton asymmetry;V0M Per;
+   * P_{C}-P_{A}/P_{C}+P_{A};",*/
+  /*             nBinsV0M090, BinsV0M090, 50, -1.0, 1.0);*/
   hZNvsV0MPer =
       new TH2F("hZNvsV0MPer", "(ZNA+ZNC)/2;V0M Per; #it{E}_{ZN} [TeV]/2.511;",
                nBinsV0M090, BinsV0M090, 100, 0.0, 100.0);
   hZPvsV0MPer =
       new TH2F("hZPvsV0MPer", "(ZPA+ZPC)/2;V0M Per; #it{E}_{ZP} [TeV]/2.511;",
                nBinsV0M090, BinsV0M090, 30, 0.0, 30.0);
-  /*hZNvsV0MAmp =*/
-  /*    new TH2F("hZNvsV0MAmp", "(ZNA+ZNC)/2;V0M Amp; #it{E}_{ZN}
-   * [TeV]/2.511;",*/
-  /*             v0mAmp_Nbins, v0mAmp_bins, 100, 0.0, 100.0);*/
-  /*hZPvsV0MAmp =*/
-  /*    new TH2F("hZPvsV0MAmp", "(ZPA+ZPC)/2;V0M Amp; #it{E}_{ZP}
-   * [TeV]/2.511;",*/
-  /*             v0mAmp_Nbins, v0mAmp_bins, 30, 0.0, 30.0);*/
-  /*pZNvsV0MAmp =*/
-  /*    new TProfile("pZNvsV0MAmp", ";V0M Amp;<ZN>;", v0mAmp_Nbins,
-   * v0mAmp_bins);*/
-  /*pZPvsV0MAmp =*/
-  /*    new TProfile("pZPvsV0MAmp", ";V0M Amp;<ZP>;", v0mAmp_Nbins,
-   * v0mAmp_bins);*/
+
+  hZNCNorm = new TH2F("hZNCNorm", ";V0M;<ZNC>/<ZNC>;", nBinsV0M090, BinsV0M090,
+                      40, 0., 2.);
+
+  hZNANorm = new TH2F("hZNANorm", ";V0M;<ZNA>/<ZNA>;", nBinsV0M090, BinsV0M090,
+                      40, 0., 2.);
+
+  /*hZNCNormSca = new TH2F("hZNCNormSca", ";V0M;<ZNC>/<ZNC> with #sigma
+   * scaled;",*/
+  /*                       nBinsV0M090, BinsV0M090, 40, 0., 2.);*/
+
+  /*hZNANormSca = new TH2F("hZNANormSca", ";V0M;<ZNA>/<ZNA> with #sigma scaled;",*/
+  /*                       nBinsV0M090, BinsV0M090, 40, 0., 2.);*/
+
   hZNCpmc = new TH1F("hZNCpmc", "ZNC PMC;ZNC energy;Entries", 520, 0., 130.);
   hZNApmc = new TH1F("hZNApmc", "ZNA PMC;ZNA energy;Entries", 520, 0., 130.);
   hZPCpmc = new TH1F("hZPCpmc", "ZPC PMC;ZPC energy;Entries", 120, 0., 30.);
@@ -345,27 +342,27 @@ void AliAnalysisTaskZNZP::UserCreateOutputObjects() {
 
   fOutputList->Add(hBestVtxZ);
   fOutputList->Add(hV0Percentile);
-  /*fOutputList->Add(hV0MAmplitude);*/
-  /*fOutputList->Add(pV0MAmpChannel);*/
-  /*fOutputList->Add(hZNvsV0MAmp);*/
   fOutputList->Add(hZNvsV0MPer);
   fOutputList->Add(hZNvsV0M);
   fOutputList->Add(hZNAvsV0M);
   fOutputList->Add(hZNCvsV0M);
-  fOutputList->Add(hAsyN);
   fOutputList->Add(hZNCpmc);
   fOutputList->Add(hZNApmc);
-  /*fOutputList->Add(pZNvsV0MAmp);*/
+  fOutputList->Add(hZNCNorm);
+  fOutputList->Add(hZNANorm);
+  if (fSaveAsy) {
+    fOutputList->Add(hAsyN);
+    /*fOutputList->Add(hZNCNormSca);*/
+    /*fOutputList->Add(hZNANormSca);*/
+  }
 
-  /*fOutputList->Add(hZPvsV0MAmp);*/
   fOutputList->Add(hZPvsV0MPer);
   fOutputList->Add(hZPvsV0M);
   fOutputList->Add(hZPAvsV0M);
   fOutputList->Add(hZPCvsV0M);
-  fOutputList->Add(hAsyP);
+  /*fOutputList->Add(hAsyP);*/
   fOutputList->Add(hZPCpmc);
   fOutputList->Add(hZPApmc);
-  /*fOutputList->Add(pZPvsV0MAmp);*/
 
   fEventCuts.AddQAplotsToList(fOutputList);
   PostData(1, fOutputList);  // postdata will notify the analysis manager of
@@ -466,6 +463,21 @@ void AliAnalysisTaskZNZP::GetZDC() {
   const double zpc{esdZDC->GetZDCP1Energy() / 1000.0};
   const double zpa{esdZDC->GetZDCP2Energy() / 1000.0};
 
+  double meanZNC{1.0};
+  double sigmaZNC{1.0};
+  double meanZNA{1.0};
+  double sigmaZNA{1.0};
+  bool gCent1{MeanSigmaZN(meanZNC, sigmaZNC, "ZNC")};
+  bool gCent2{MeanSigmaZN(meanZNA, sigmaZNA, "ZNA")};
+  if (!gCent1 && !gCent2) {
+    return;
+  }
+
+  hZNCNorm->Fill(fv0mpercentile, znc / (meanZNC * 2.511));
+  hZNANorm->Fill(fv0mpercentile, zna / (meanZNA * 2.511));
+  const double znc_sca{znc / (meanZNC * 2.511)};
+  const double zna_sca{zna / (meanZNA * 2.511)};
+
   // Non-average ZN & ZP
   hZNvsV0M->Fill(fv0mpercentile, (znc + zna) / 2.511);
   hZPvsV0M->Fill(fv0mpercentile, (zpc + zpa) / 2.511);
@@ -476,8 +488,8 @@ void AliAnalysisTaskZNZP::GetZDC() {
   hZPCvsV0M->Fill(fv0mpercentile, zpc / 2.511);
   hZPAvsV0M->Fill(fv0mpercentile, zpa / 2.511);
 
-  hAsyN->Fill(fv0mpercentile, (znc - zna) / (znc + zna));
-  hAsyP->Fill(fv0mpercentile, (zpc - zpa) / (zpc + zpa));
+  hAsyN->Fill(fv0mpercentile, (znc_sca - zna_sca) / (znc_sca + zna_sca));
+  /*hAsyP->Fill(fv0mpercentile, (zpc - zpa) / (zpc + zpa));*/
 
   const double* towZNC{esdZDC->GetZN1TowerEnergy()};
   const double* towZPC{esdZDC->GetZP1TowerEnergy()};
@@ -490,7 +502,8 @@ void AliAnalysisTaskZNZP::GetZDC() {
 
   /*const double* towZNCLG{esdZDC->GetZN1TowerEnergyLR()};*/
   /*const double* towZNALG{esdZDC->GetZN2TowerEnergyLR()};*/
-  /*cout << "ZNC LG= " << towZNCLG[0] << " | ZNA LG= " << towZNALG[0] << '\n';*/
+  /*cout << "ZNC LG= " << towZNCLG[0] << " | ZNA LG= " << towZNALG[0] <<
+   * '\n';*/
 
   // Average the energy detected in each calorimeter
   hZNvsV0MPer->Fill(fv0mpercentile, (znc + zna) / (2.0 * 2.511));
@@ -617,65 +630,92 @@ Bool_t AliAnalysisTaskZNZP::HasRecVertex() {
 
   return hasVtx;
 }
-
 //____________________________________________________________
+bool AliAnalysisTaskZNZP::MeanSigmaZN(double& mean, double& sigma,
+                                      const std::string& ZN) {
+  const std::vector<double> meanZNC{
+      {9.41689, 11.4554, 13.6935, 15.899,  17.9693, 19.8913, 21.8775, 23.6385,
+       25.2471, 26.8672, 28.3384, 29.8036, 31.0197, 32.3755, 33.5516, 34.5927,
+       35.6032, 36.6078, 37.5322, 38.3336, 39.1421, 39.8723, 40.5853, 41.1441,
+       41.7837, 42.2702, 42.8783, 43.321,  43.7049, 44.1573, 44.5504, 44.8895,
+       45.1275, 45.3678, 45.7246, 45.7786, 45.9834, 46.1794, 46.2849, 46.2833,
+       46.3337, 46.4907, 46.4214, 46.344,  46.3888, 46.2107, 46.1971, 46.0917,
+       45.893,  45.6904, 45.4781, 45.4185, 45.0878, 44.8286, 44.5048, 44.2761,
+       43.9231, 43.421,  43.1319, 42.6159, 42.1982, 41.7332, 41.1261, 40.8089,
+       40.1382, 39.5972, 39.127,  38.4715, 37.7199, 36.9609}};
 
-void AliAnalysisTaskZNZP::ChangeCut(AliESDtrackCuts* fCuts) {
-  cout << "Changing track cut (systematic variation): " << fSystematic << '\n';
-  switch (fSystematic) {
-    case 0:
-      fCuts->SetMaxDCAToVertexZ(1);
-      break;
-    case 1:
-      fCuts->SetMaxDCAToVertexZ(5);
-      break;
-    case 2:
-      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
-      break;
-    case 3:
-      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
-      break;
-    case 4:
-      fCuts->SetMaxFractionSharedTPCClusters(0.2);
-      break;
-    case 5:
-      fCuts->SetMaxFractionSharedTPCClusters(1);
-      break;
-    case 6:
-      fCuts->SetMaxChi2PerClusterTPC(3);
-      break;
-    case 7:
-      fCuts->SetMaxChi2PerClusterTPC(5);
-      break;
-    case 8:
-      fCuts->SetMaxChi2PerClusterITS(25);
-      break;
-    case 9:
-      fCuts->SetMaxChi2PerClusterITS(49);
-      break;
-    case 10:
-      fCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-                                      AliESDtrackCuts::kNone);
-      break;
-    case 11:
-      fCuts->SetCutGeoNcrNcl(2., 130., 1.5, 0.85, 0.7);
-      break;
-    case 12:
-      fCuts->SetCutGeoNcrNcl(4., 130., 1.5, 0.85, 0.7);
-      break;
-    case 13:
-      fCuts->SetCutGeoNcrNcl(3., 120., 1.5, 0.85, 0.7);
-      break;
-    case 14:
-      fCuts->SetCutGeoNcrNcl(3., 140., 1.5, 0.85, 0.7);
-      break;
-    case 15:
-      fCuts->SetMaxChi2TPCConstrainedGlobal(25);
-      break;
-    case 16:
-      fCuts->SetMaxChi2TPCConstrainedGlobal(49);
-      break;
-    default:
-      cout << "fSystematic not defined!" << '\n';
+  const std::vector<double> sigmaZNC{
+      {3.50677, 3.82505, 4.11002, 4.24869, 4.46803, 4.59024, 4.90368, 5.07824,
+       5.17144, 5.19741, 5.30018, 5.51713, 5.46297, 5.66198, 5.76174, 5.80704,
+       5.83463, 5.97203, 6.03367, 6.11339, 6.12927, 6.17397, 6.24563, 6.32831,
+       6.45077, 6.45699, 6.46789, 6.52385, 6.57878, 6.67186, 6.77811, 6.72446,
+       6.85183, 6.85365, 6.96893, 6.95236, 6.9604,  7.09092, 7.10086, 7.13674,
+       7.2995,  7.24527, 7.29297, 7.38196, 7.45292, 7.48775, 7.59025, 7.67292,
+       7.73854, 7.77752, 7.84931, 8.00492, 7.91375, 8.13183, 8.19829, 8.33288,
+       8.42185, 8.57176, 8.7218,  8.87617, 9.03015, 9.14355, 9.28268, 9.51969,
+       9.68484, 9.92729, 10.0658, 10.3063, 10.4252, 10.6264}};
+
+  const std::vector<double> meanZNA{
+      {7.64853, 9.31038, 11.1556, 13.0141, 14.6987, 16.4405, 17.8888, 19.4125,
+       20.8443, 22.1771, 23.4108, 24.5767, 25.6076, 26.716,  27.7061, 28.6364,
+       29.557,  30.2871, 31.0859, 31.7577, 32.4302, 33.0959, 33.7153, 34.2552,
+       34.8104, 35.1898, 35.7727, 36.1279, 36.4649, 36.8997, 37.2122, 37.3977,
+       37.6971, 37.9211, 38.1646, 38.2855, 38.5034, 38.6686, 38.7706, 38.8934,
+       38.9517, 38.975,  39.0276, 39.0661, 38.9757, 39.0779, 38.8923, 38.8756,
+       38.7662, 38.6167, 38.527,  38.2397, 38.1209, 37.9127, 37.763,  37.4913,
+       37.2047, 36.9349, 36.5257, 36.207,  35.8965, 35.5434, 35.0563, 34.6988,
+       34.1538, 33.8234, 33.3074, 32.82,   32.1863, 31.6347}};
+
+  const std::vector<double> sigmaZNA{
+      {3.10314, 3.13242, 3.48659, 3.77875, 3.7878,  3.915,   4.03227, 4.20045,
+       4.31136, 4.40799, 4.56356, 4.61643, 4.65824, 4.74357, 4.78761, 4.92246,
+       4.99679, 5.05502, 5.0036,  5.12261, 5.17488, 5.19715, 5.26379, 5.20759,
+       5.38565, 5.41547, 5.42096, 5.47782, 5.47648, 5.65329, 5.61113, 5.61817,
+       5.70361, 5.62584, 5.73757, 5.73626, 5.75184, 5.85641, 5.92166, 5.9685,
+       5.99215, 6.08534, 6.02079, 6.1867,  6.17472, 6.26609, 6.2535,  6.34106,
+       6.32414, 6.48443, 6.57763, 6.57414, 6.70035, 6.78231, 6.80588, 6.87396,
+       7.06222, 7.13683, 7.23114, 7.44464, 7.49467, 7.61375, 7.7578,  7.96836,
+       8.12227, 8.33368, 8.3856,  8.5707,  8.92543, 8.95762}};
+
+  bool goodCent{false};
+  if (fv0mpercentile >= 0. && fv0mpercentile < 70.) goodCent = true;
+
+  int bin{CentBin()};
+  if (!goodCent || bin < 0) return false;
+
+  if (ZN == "ZNC") {
+    mean = meanZNC.at(bin);
+    sigma = sigmaZNC.at(bin);
   }
+  if (ZN == "ZNA") {
+    mean = meanZNA.at(bin);
+    sigma = sigmaZNA.at(bin);
+  }
+
+  return goodCent;
+}
+//____________________________________________________________
+int AliAnalysisTaskZNZP::CentBin() {
+  const std::vector<double> low{
+      {0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12., 13.,
+       14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27.,
+       28., 29., 30., 31., 32., 33., 34., 35., 36., 37., 38., 39., 40., 41.,
+       42., 43., 44., 45., 46., 47., 48., 49., 50., 51., 52., 53., 54., 55.,
+       56., 57., 58., 59., 60., 61., 62., 63., 64., 65., 66., 67., 68., 69.}};
+  const std::vector<double> high{
+      {1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12., 13., 14.,
+       15., 16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27., 28.,
+       29., 30., 31., 32., 33., 34., 35., 36., 37., 38., 39., 40., 41., 42.,
+       43., 44., 45., 46., 47., 48., 49., 50., 51., 52., 53., 54., 55., 56.,
+       57., 58., 59., 60., 61., 62., 63., 64., 65., 66., 67., 68., 69., 70.}};
+
+  int bin{-999};
+  for (int i = 0; i < 70; ++i) {
+    if (fv0mpercentile >= low.at(i) && fv0mpercentile < high.at(i)) {
+      bin = i;
+      break;
+    }
+  }
+
+  return bin;
 }
