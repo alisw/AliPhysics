@@ -156,21 +156,25 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   double fZN;
   double fZP;
   double fZDC;
-  TProfile* pZDCvsV0MAmp;
-  TProfile* pZDCvsTPCFull;
-  TProfile* pZDCvsTPCEtaGap;
-  TProfile* pZDCvsSPDFull;
-  TProfile* pZDCvsSPDEtaGap;
-  TProfile* pZDCvsSPDEtaAdj;
-  TProfile* pZDCvsSPDEtaGapW;
-  TProfile* pZDCvsEtFull;
-  TProfile* pZDCvsEtEtaGap;
+  /*TProfile* pZDCvsV0MAmp;*/
+  /*TProfile* pZDCvsTPCFull;*/
+  /*TProfile* pZDCvsTPCEtaGap;*/
+  /*TProfile* pZDCvsSPDFull;*/
+  /*TProfile* pZDCvsSPDEtaGap;*/
+  /*TProfile* pZDCvsSPDEtaAdj;*/
+  /*TProfile* pZDCvsSPDEtaGapW;*/
+  /*TProfile* pZDCvsEtFull;*/
+  /*TProfile* pZDCvsEtEtaGap;*/
   /*TH2F* hPtvsEtFullWidepT;*/
   /*TH2F* hPtvsSPDFullWidepT;*/
   /*TH2F* hPtvsTPCFullWidepT;*/
   /*TH2F* hPtvsSPDEtaGapWidepT;*/
   /*TH2F* hPtvsSPDEtaGapWWidepT;*/
   TH2F* hZNvsV0MPer;
+  TH2F* hZNvsV0MPerNonAv;
+  TH2F* hZNAvsV0MPerNonAv;
+  TH2F* hZNCvsV0MPerNonAv;
+  TH2F* hAsyN;
   TProfile* pZNvsV0MAmp;
   TProfile* pZNvsTPCFull;
   TProfile* pZNvsTPCEtaGap;
@@ -181,6 +185,10 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TProfile* pZNvsEtFull;
   TProfile* pZNvsEtEtaGap;
   TH2F* hZPvsV0MPer;
+  TH2F* hZPvsV0MPerNonAv;
+  TH2F* hZPAvsV0MPerNonAv;
+  TH2F* hZPCvsV0MPerNonAv;
+  TH2F* hAsyP;
   TProfile* pZPvsV0MAmp;
   TProfile* pZPvsTPCFull;
   TProfile* pZPvsTPCEtaGap;

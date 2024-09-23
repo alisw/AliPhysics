@@ -953,6 +953,8 @@ UInt_t AliEmcalJetTask::FindJetAcceptanceType(Double_t eta, Double_t phi, Double
     // Check if EMCALfid
     if( IsJetInEmcal(eta, phi, r) )
       jetAcceptanceType |= AliEmcalJet::kEMCALfid;
+    if( IsJetInEmcal(eta, phi, r+0.1) )
+      jetAcceptanceType |= AliEmcalJet::kEMCALfidReduced;
   }
   
   // Check if DCAL (i.e. eta-phi rectangle spanning DCal, which includes most of PHOS)

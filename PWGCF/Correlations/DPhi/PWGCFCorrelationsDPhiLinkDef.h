@@ -131,4 +131,5 @@
 #pragma link C++ class AliAnalysisTaskSpherodistR2P2+;
 #pragma link C++ class AliAnalysisTaskThreePartCorr+;
 #pragma link C++ class AliAnalysisTaskLambdaHadronRatio+;
+#pragma link C++ class AliAnalysisTaskK0HadronRatio+;
 #endif

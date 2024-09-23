@@ -609,7 +609,7 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserExec(Option_t *)  {
 	
 	if (trkCharge > 0 && IsProton)   //proton
 	  {
-	    if (trkPt > 0.6) // cut for removing protons coming from beam pipe
+	    if (trkPt > 0.4) // cut for removing protons coming from beam pipe
 	      {
 		if (fEffProtonPlus[centrality_bin])
 		  {
@@ -645,7 +645,7 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserExec(Option_t *)  {
 
 	if (trkCharge < 0 && IsProton)   //anti-proton
 	  {
-	    if (trkPt > 0.6) // cut for removing protons coming from beam pipe
+	    if (trkPt > 0.4) // cut for removing protons coming from beam pipe
 	      {
 		if (fEffProtonMinus[centrality_bin])
 		  {

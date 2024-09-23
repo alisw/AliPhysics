@@ -399,58 +399,62 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
   std::vector<AliEmcalJet *> acceptedjets;
   for(auto detjet : detjets->accepted()){
     AliDebugStream(4) << "Next jet" << std::endl;
+    Double_t detjetpt = detjet->Pt();
+    if (fDoBkgSub && detjets->GetRhoParameter()){
+      detjetpt = detjetpt - detjets->GetRhoVal() * detjet->Area();
+    }
     auto partjet = detjet->ClosestJet();
     if(!partjet) {
       AliDebugStream(4) << "No tagged jet" << std::endl;
-      fHistos->FillTH2("hPurityDet", detjet->Pt(), 0);
+      fHistos->FillTH2("hPurityDet", detjetpt, 0);
       if(fFillResponseVsNEF) {
-        fHistos->FillTH3("hPurityPtNEFDet", detjet->Pt(), detjet->NEF(), 0);
+        fHistos->FillTH3("hPurityPtNEFDet", detjetpt, detjet->NEF(), 0);
       }
       if(isClosure) {
-        fHistos->FillTH2("hPurityDetClosure", detjet->Pt(), 0);
+        fHistos->FillTH2("hPurityDetClosure",detjetpt, 0);
         if(fFillResponseVsNEF) {
-          fHistos->FillTH3("hPurityPtNEFDetClosure", detjet->Pt(), detjet->NEF(), 0);
+          fHistos->FillTH3("hPurityPtNEFDetClosure", detjetpt, detjet->NEF(), 0);
         }
       } else {
-        fHistos->FillTH2("hPurityDetNoClosure", detjet->Pt(), 0);
+        fHistos->FillTH2("hPurityDetNoClosure", detjetpt, 0);
         if(fFillResponseVsNEF) {
-          fHistos->FillTH3("hPurityPtNEFDetNoClosure", detjet->Pt(), detjet->NEF(), 0);
+          fHistos->FillTH3("hPurityPtNEFDetNoClosure", detjetpt, detjet->NEF(), 0);
         }
       }
       continue;
     } else {
       if(!(partjet->GetJetAcceptanceType() & detjets->GetAcceptanceType())){
         // Acceptance not matching
-        fHistos->FillTH2("hPurityDet", detjet->Pt(), 1);
+        fHistos->FillTH2("hPurityDet", detjetpt, 1);
         if(fFillResponseVsNEF) {
-          fHistos->FillTH3("hPurityPtNEFDet", detjet->Pt(), detjet->NEF(), 1);
+          fHistos->FillTH3("hPurityPtNEFDet", detjetpt, detjet->NEF(), 1);
         }
         if(isClosure){
-          fHistos->FillTH2("hPurityDetClosure", detjet->Pt(), 1);
+          fHistos->FillTH2("hPurityDetClosure", detjetpt, 1);
           if(fFillResponseVsNEF) {
-            fHistos->FillTH3("hPurityPtNEFDetClosure", detjet->Pt(), detjet->NEF(), 1);
+            fHistos->FillTH3("hPurityPtNEFDetClosure", detjetpt, detjet->NEF(), 1);
           }
         } else {
-          fHistos->FillTH2("hPurityDetNoClosure", detjet->Pt(), 1);
+          fHistos->FillTH2("hPurityDetNoClosure", detjetpt, 1);
           if(fFillResponseVsNEF) {
-            fHistos->FillTH3("hPurityPtNEFDetNoClosure", detjet->Pt(), detjet->NEF(), 1);
+            fHistos->FillTH3("hPurityPtNEFDetNoClosure", detjetpt, detjet->NEF(), 1);
           }
         }
         if(fRequireSameAcceptance) continue;
       } else {
-        fHistos->FillTH2("hPurityDet", detjet->Pt(), 2);
+        fHistos->FillTH2("hPurityDet", detjetpt, 2);
         if(fFillResponseVsNEF) {
-          fHistos->FillTH3("hPurityPtNEFDet", detjet->Pt(), detjet->NEF(), 2);
+          fHistos->FillTH3("hPurityPtNEFDet", detjetpt, detjet->NEF(), 2);
         }
         if(isClosure) {
-          fHistos->FillTH2("hPurityDetClosure", detjet->Pt(), 2);
+          fHistos->FillTH2("hPurityDetClosure", detjetpt, 2);
           if(fFillResponseVsNEF) {
-            fHistos->FillTH3("hPurityPtNEFDetClosure", detjet->Pt(), detjet->NEF(), 2);
+            fHistos->FillTH3("hPurityPtNEFDetClosure", detjetpt, detjet->NEF(), 2);
           }
         } else {
-          fHistos->FillTH2("hPurityDetNoClosure", detjet->Pt(), 2);
+          fHistos->FillTH2("hPurityDetNoClosure", detjetpt, 2);
           if(fFillResponseVsNEF) {
-            fHistos->FillTH3("hPurityPtNEFDetNoClosure", detjet->Pt(), detjet->NEF(), 2);
+            fHistos->FillTH3("hPurityPtNEFDetNoClosure", detjetpt, detjet->NEF(), 2);
           }
         }
       }
@@ -474,14 +478,13 @@ Bool_t AliAnalysisTaskEmcalJetEnergyScale::Run(){
       fHistos->FillTH1("hAngularityErrorsDet", partjet->Pt());
     }
     acceptedjets.push_back(detjet);
-    Double_t detjetpt = detjet->Pt();
+
     Double_t partjetpt = partjet->Pt();
     if(TMath::Abs(fScaleShift) > DBL_EPSILON){
       detjetpt += fScaleShift * detjetpt;
     }
 
     if (fDoBkgSub && detjets->GetRhoParameter()){
-      detjetpt = detjetpt - detjets->GetRhoVal() * detjet->Area();
       partjetpt = partjetpt - partjets->GetRhoVal() * partjet->Area();
     }
 

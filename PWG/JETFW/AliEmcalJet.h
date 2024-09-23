@@ -74,7 +74,8 @@ class AliEmcalJet : public AliVParticle
     kDCALonlyfid      = 1<<7,     ///< DCal fiducial acceptance (each eta, phi edge narrowed by jet R)
     kPHOS             = 1<<8,     ///< PHOS acceptance
     kPHOSfid          = 1<<9,     ///< PHOS fiducial acceptance (each eta, phi edge narrowed by jet R)
-    kUser             = 1<<10     ///< Full acceptance, i.e. no acceptance cut applied -- left to user
+    kUser             = 1<<10,    ///< Full acceptance, i.e. no acceptance cut applied -- left to user
+    kEMCALfidReduced  = 1<<11     ///< EMCal fiducial acceptance (each eta, phi edge narrowed by jet R and additional gap) 
   };
   
   /**

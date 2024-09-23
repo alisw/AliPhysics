@@ -53,7 +53,8 @@ public:
   void SetMCAnalysis(Bool_t select = kTRUE) {fbMCAnalysis = select;}
   void SetGeneratorName(TString name) {fsGeneratorName = name;}
   Bool_t IsFromGoodGenerator(Int_t index); // True if the MC particle with the given index comes from the selected generator
-
+  
+  void SetSignalInBG(Bool_t val = 0) {fbSignalInBG = val;}
 
   // Event selection setters 
   void SetEventCuts(Double_t z = 10, Double_t r = 1, Double_t cL = 0, Double_t cH = 80, Double_t dZ = 0.1, Int_t iNC = 1) {fdCutVertexZ = z; fdCutVertexR2 = r * r; fdCutCentLow = cL; fdCutCentHigh = cH; fdCutDeltaZMax = dZ; fiNContribMin = iNC;} 
@@ -163,6 +164,10 @@ public:
   static const Int_t iALambdaId;
   static const Int_t iK0LId;
   static const Int_t iK0ALId;
+  static const Int_t iXiId;
+  static const Int_t iAXiId;
+  static const Int_t iXi0Id;
+  static const Int_t iAXi0Id;
 
   void FillCandidates(Double_t mK, Double_t mL, Double_t mAL, Bool_t isK, Bool_t isL, Bool_t isAL, Int_t iCut, Int_t iCent); //Fills histograms according to the V0 type 
   Bool_t IsParticleInCone(const AliVParticle* part1, const AliVParticle* part2, Double_t dRMax) const; // decides whether a particle is inside a jet cone
@@ -184,14 +189,15 @@ protected:
   Bool_t FillHistograms();
   Bool_t Run();
   void AddEventTracks(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPart);  
-  void AddEventTracksMC(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPartMC);  
+  void AddEventTracksMC(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPartMC, TClonesArray* GenXi);  
   Bool_t GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const;
 
   TList* fOutputListStd; //! Output list for standard analysis results
   TList* fOutputListStdJets; //! Output list for jet analysis results
   TList* fOutputListMC;  //! Output list for MC analysis results
-  TClonesArray   *fV0CandidateArray;          //! contains selected V0 candidates
+  TClonesArray   *fV0CandidateArray;           //! contains selected V0 candidates
   TClonesArray   *fGenMCV0;                    //! contains MC generated V0s
+  TClonesArray   *fGenMCXis;                   //! contains MC generated Xis (Xi, AXi, Xi0, AXi0)
  
   Int_t           fNCand;                   //! number of selected V0 candidates already added to fCandidateArray
 
@@ -217,6 +223,8 @@ private:
   Bool_t fbIsPbPb; // switch: Pb+Pb / p+p collisions
   Bool_t fbMCAnalysis; // switch: simulated / real data
   TString fsGeneratorName; // pattern for selecting only V0s from a specific MC generator
+ 
+  Bool_t fbSignalInBG; //switch: takes V0s from BG region insted of signal for the jet analysis
   // Event selection
   Double_t fdCutVertexZ; // [cm] maximum |z| of primary vertex
   Double_t fdCutVertexR2; // [cm^2] maximum r^2 of primary vertex
@@ -258,7 +266,7 @@ private:
   Bool_t fbCutArmPod; // (yes) Armenteros-Podolanski for K0S
   Bool_t fbCutCross; // (no) cross-contamination
 
-//jet analysis variables 
+  //jet analysis variables 
   Double_t fdGhostArea;              ///< ghost area  
   Double_t fdRadius;                 ///< jet radius
   Double_t fdMinJetArea;             ///< min area to keep jet in output
@@ -400,6 +408,8 @@ private:
   THnSparse* fhnV0LambdaInJetsMCFromXi0[fgkiNBinsCent]; //!
   TH1D* fh1V0XiPtMCGen[fgkiNBinsCent]; //!
   TH1D* fh1V0Xi0PtMCGen[fgkiNBinsCent]; //!
+  TH1D* fh1V0XiInJetPtMCGen[fgkiNBinsCent]; //!
+  TH1D* fh1V0Xi0InJetPtMCGen[fgkiNBinsCent]; //!
 
   // ALambda inclusive
   TH1D* fh1V0ALambdaPtMCGen[fgkiNBinsCent]; //!
@@ -426,11 +436,13 @@ private:
   THnSparse* fhnV0ALambdaInJetsMCFromAXi0[fgkiNBinsCent]; //!
   TH1D* fh1V0AXiPtMCGen[fgkiNBinsCent]; //!
   TH1D* fh1V0AXi0PtMCGen[fgkiNBinsCent]; //!
+  TH1D* fh1V0AXiInJetPtMCGen[fgkiNBinsCent]; //!
+  TH1D* fh1V0AXi0InJetPtMCGen[fgkiNBinsCent]; //!
 
   AliAnalysisTaskStrangenessInJets(const AliAnalysisTaskStrangenessInJets&); // not implemented
   AliAnalysisTaskStrangenessInJets& operator=(const AliAnalysisTaskStrangenessInJets&); // not implemented
 
-  ClassDef(AliAnalysisTaskStrangenessInJets, 3) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskStrangenessInJets, 4) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

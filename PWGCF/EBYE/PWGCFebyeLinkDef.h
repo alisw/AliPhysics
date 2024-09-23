@@ -133,6 +133,7 @@
 #pragma link C++ class AliAnalysisTaskCorrPbPb+;
 #pragma link C++ class AliAnalysisTaskCorrPbPb_withoutTree+;
 #pragma link C++ class AliAnalysisTaskCorrPbPb_treemerge+;
+#pragma link C++ class AliAnalysisTaskCorrPbPb_treemerge_v2+;
 #pragma link C++ class AliAnalysisTaskCorrPbPbMC+;
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicityROOT6_new+;
 
@@ -161,6 +162,7 @@
 
 #pragma link C++ class AliAnalysisHMMeanPt+;
 #pragma link C++ class AliAnalysisMeanPt+;
+#pragma link C++ class AliAnalysisMeanPtFluc+;
 #pragma link C++ class AliAnalysisMCMeanPt+;
 
 

@@ -184,18 +184,23 @@ void AliAnalysisMCMeanPt::UserCreateOutputObjects()
 	fEventCount = new TH1I("fEventCounter", "Events", 15, 0, 15);
 	fOutputList->Add(fEventCount);
 
-	const int dim = 6;
-	int bins[dim] = {142, 142, 142, 142, 142, 142};
-	double mins[dim] = {0., 0., 0., 0., 0., 0.};
-	double maxs[dim] = {142., 142., 142., 142., 142., 142.};
+	const int dim = 11;
+	int bins[dim] = {1200, 1200, 200, 200, 200, 200, 200, 200, 200, 200, 200};
+	double mins[dim] = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
+	double maxs[dim] = {1200., 1200., 200., 200., 200., 200., 200., 200., 200., 200., 200.};
 
 	fTHnfnch = new THnSparseD("fTHnfnch", "fTHnfnch", dim, bins, mins, maxs);
-	fTHnfnch->GetAxis(0)->SetTitle("N_{truth}^{pt, pri}");
-	fTHnfnch->GetAxis(1)->SetTitle("N_{truth}^{pt, sec}");
-	fTHnfnch->GetAxis(2)->SetTitle("N_{truth}^{pri}");
-	fTHnfnch->GetAxis(3)->SetTitle("N_{truth}^{sec}");
-	fTHnfnch->GetAxis(4)->SetTitle("N_{rec}^{pri}");
-	fTHnfnch->GetAxis(5)->SetTitle("N_{rec}^{sec}");
+	fTHnfnch->GetAxis(0)->SetTitle("N_{V0}");
+	fTHnfnch->GetAxis(1)->SetTitle("<N_{V0}>");
+	fTHnfnch->GetAxis(2)->SetTitle("N_{Ref}");
+	fTHnfnch->GetAxis(3)->SetTitle("N_{ch}^{pt6p0}");
+	fTHnfnch->GetAxis(4)->SetTitle("N_{ch}^{pt2p0}");
+	fTHnfnch->GetAxis(5)->SetTitle("N_{ch}^{nopt}");
+	fTHnfnch->GetAxis(6)->SetTitle("N_{ch}^{pt}");
+	fTHnfnch->GetAxis(7)->SetTitle("N_{rec}^{pt6p0}");
+	fTHnfnch->GetAxis(8)->SetTitle("N_{rec}^{pt2p0}");
+	fTHnfnch->GetAxis(9)->SetTitle("N_{rec}^{nopt}");
+	fTHnfnch->GetAxis(10)->SetTitle("N_{rec}^{pt}");
 	fOutputList->Add(fTHnfnch);
 
 	fEventCuts.AddQAplotsToList(fOutputList);
@@ -210,78 +215,78 @@ void AliAnalysisMCMeanPt::UserCreateOutputObjects()
 	fHistVzcut = new TH1D("fHistVzcut", "Primary vertex - z (After cut);V_{z} (cm)", 400, -20, 20);
 	fOutputList->Add(fHistVzcut);
 
-	hrec = new TH2D("hrec", "Physical tracks", 60, 0., 3., 40, -1., 1.);
+	hrec = new TH2D("hrec", "Physical tracks", 120, 0., 6., 40, -1., 1.);
 	hrec->StatOverflows(kTRUE);
 	fOutputList->Add(hrec);
 
-	hprim = new TH2D("hprim", "Physical tracks", 60, 0., 3., 40, -1., 1.);
+	hprim = new TH2D("hprim", "Physical tracks", 120, 0., 6., 40, -1., 1.);
 	hprim->StatOverflows(kTRUE);
 	fOutputList->Add(hprim);
 
-	hgen = new TH2D("hgen", "Physical tracks", 60, 0., 3., 40, -1., 1.);
+	hgen = new TH2D("hgen", "Physical tracks", 120, 0., 6., 40, -1., 1.);
 	hgen->StatOverflows(kTRUE);
 	fOutputList->Add(hgen);
 
-	hprimgen = new TH2D("hprimgen", "Physical tracks", 60, 0., 3., 40, -1., 1.);
+	hprimgen = new TH2D("hprimgen", "Physical tracks", 120, 0., 6., 40, -1., 1.);
 	hprimgen->StatOverflows(kTRUE);
 	fOutputList->Add(hprimgen);
 
 	//========gen=============
-	hScale_gen = new TH2D("hScale_gen", "ncal", 31, 1, 31, 140, 2, 142);
+	hScale_gen = new TH2D("hScale_gen", "ncal", 30, 1, 31, 200, 2, 202);
 	hScale_gen->StatOverflows(kTRUE);
 	fOutputList->Add(hScale_gen);
 
-	hTracks_gen = new TH2D("hTracks_gen", "ncal", 31, 1, 31, 140, 2, 142);
+	hTracks_gen = new TH2D("hTracks_gen", "ncal", 30, 1, 31, 200, 2, 202);
 	hTracks_gen->StatOverflows(kTRUE);
 	fOutputList->Add(hTracks_gen);
 
-	hTracksq_gen = new TH2D("hTracks_sq_gen", "", 31, 1, 31, 140, 2, 142);
+	hTracksq_gen = new TH2D("hTracks_sq_gen", "", 30, 1, 31, 200, 2, 202);
 	hTracksq_gen->StatOverflows(kTRUE);
 	fOutputList->Add(hTracksq_gen);
 
-	hTrackavgpt_gen = new TH2D("hTrack_evt_pt_gen", " ", 31, 1, 31, 140, 2, 142);
+	hTrackavgpt_gen = new TH2D("hTrack_evt_pt_gen", " ", 30, 1, 31, 200, 2, 202);
 	hTrackavgpt_gen->StatOverflows(kTRUE);
 	fOutputList->Add(hTrackavgpt_gen);
 
-	hTrackavgptsq_gen = new TH2D("hTrack_evt_pt_sq_gen", " ", 31, 1, 31, 140, 2, 142);
+	hTrackavgptsq_gen = new TH2D("hTrack_evt_pt_sq_gen", " ", 30, 1, 31, 200, 2, 202);
 	hTrackavgptsq_gen->StatOverflows(kTRUE);
 	fOutputList->Add(hTrackavgptsq_gen);
 
-	hTrackpair_gen = new TH2D("hTrack_npairs_gen", " ", 31, 1, 31, 140, 2, 142);
+	hTrackpair_gen = new TH2D("hTrack_npairs_gen", " ", 30, 1, 31, 200, 2, 202);
 	hTrackpair_gen->StatOverflows(kTRUE);
 	fOutputList->Add(hTrackpair_gen);
 
-	hTracksumptiptj_gen = new TH2D("hTrack_sumptiptj_gen", "term1", 31, 1, 31, 140, 2, 142);
+	hTracksumptiptj_gen = new TH2D("hTrack_sumptiptj_gen", "term1", 30, 1, 31, 200, 2, 202);
 	hTracksumptiptj_gen->StatOverflows(kTRUE);
 	fOutputList->Add(hTracksumptiptj_gen);
 
 	//=========rec==================
 
-	hScale_rec = new TH2D("hScale_rec", "ncal", 31, 1, 31, 140, 2, 142);
+	hScale_rec = new TH2D("hScale_rec", "ncal", 30, 1, 31, 200, 2, 202);
 	hScale_rec->StatOverflows(kTRUE);
 	fOutputList->Add(hScale_rec);
 
-	hTracks_rec = new TH2D("hTracks_rec", "ncal", 31, 1, 31, 140, 2, 142);
+	hTracks_rec = new TH2D("hTracks_rec", "ncal", 30, 1, 31, 200, 2, 202);
 	hTracks_rec->StatOverflows(kTRUE);
 	fOutputList->Add(hTracks_rec);
 
-	hTracksq_rec = new TH2D("hTracks_sq_rec", "", 31, 1, 31, 140, 2, 142);
+	hTracksq_rec = new TH2D("hTracks_sq_rec", "", 30, 1, 31, 200, 2, 202);
 	hTracksq_rec->StatOverflows(kTRUE);
 	fOutputList->Add(hTracksq_rec);
 
-	hTrackavgpt_rec = new TH2D("hTrack_evt_pt_rec", " ", 31, 1, 31, 140, 2, 142);
+	hTrackavgpt_rec = new TH2D("hTrack_evt_pt_rec", " ", 30, 1, 31, 200, 2, 202);
 	hTrackavgpt_rec->StatOverflows(kTRUE);
 	fOutputList->Add(hTrackavgpt_rec);
 
-	hTrackavgptsq_rec = new TH2D("hTrack_evt_pt_sq_rec", " ", 31, 1, 31, 140, 2, 142);
+	hTrackavgptsq_rec = new TH2D("hTrack_evt_pt_sq_rec", " ", 30, 1, 31, 200, 2, 202);
 	hTrackavgptsq_rec->StatOverflows(kTRUE);
 	fOutputList->Add(hTrackavgptsq_rec);
 
-	hTrackpair_rec = new TH2D("hTrack_npairs_rec", " ", 31, 1, 31, 140, 2, 142);
+	hTrackpair_rec = new TH2D("hTrack_npairs_rec", " ", 30, 1, 31, 200, 2, 202);
 	hTrackpair_rec->StatOverflows(kTRUE);
 	fOutputList->Add(hTrackpair_rec);
 
-	hTracksumptiptj_rec = new TH2D("hTrack_sumptiptj_rec", "term1", 31, 1, 31, 140, 2, 142);
+	hTracksumptiptj_rec = new TH2D("hTrack_sumptiptj_rec", "term1", 30, 1, 31, 200, 2, 202);
 	hTracksumptiptj_rec->StatOverflows(kTRUE);
 	fOutputList->Add(hTracksumptiptj_rec);
 
@@ -320,23 +325,19 @@ void AliAnalysisMCMeanPt::UserExec(Option_t *)
 	}
 
 	AliAODMCHeader *header = (AliAODMCHeader *)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-	if (!header)
-		return;
+	if (!header)	return;
 
-	if (!fEventCuts.AcceptEvent(InputEvent()))
-		return;
+	if (!fEventCuts.AcceptEvent(InputEvent())) return;
 	fEventCount->Fill("Event sel cut class", 1);
 
-	if (AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(header))
-		return; // if true then return
+	if (AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(header)) return; // if true then return
 	fEventCount->Fill("after pileup in same bunch generated event", 1);
 
 	// Physics selection
 	UInt_t fSelectMask = eventHandler->IsEventSelected();
 	Bool_t isINT7selected = fSelectMask & AliVEvent::kINT7;
 	// from https://twiki.cern.ch/twiki/bin/view/ALICE/AliDPGtoolsEventProp
-	if (!isINT7selected)
-		return;
+	if (!isINT7selected) return;
 	fEventCount->Fill("Physics Selection", 1);
 
 	int fCentrality = 0.;
@@ -354,18 +355,15 @@ void AliAnalysisMCMeanPt::UserExec(Option_t *)
 	fEventCount->Fill("centrality check", 1);
 
 	const AliAODVertex *vertex = (AliAODVertex *)fInputEvent->GetPrimaryVertex(); // fAOD->GetPrimaryVertex();
-	if (!vertex)
-		return;
+	if (!vertex) return;
 
 	fEventCount->Fill("PrimVtx check", 1);
 
-	if (vertex->GetNContributors() < 1)
-		return;
+	if (vertex->GetNContributors() < 1) return;
 	double vz = vertex->GetZ();
 	fHistVz->Fill(vertex->GetZ());
 
-	if (vz < fzvtxcutmin || vz > fzvtxcutmax)
-		return; // vertex cut
+	if (vz < fzvtxcutmin || vz > fzvtxcutmax) return; // vertex cut
 	fEventCount->Fill("Vz-cut check", 1);
 
 	fHistVzcut->Fill(vz);
@@ -384,84 +382,94 @@ void AliAnalysisMCMeanPt::UserExec(Option_t *)
 		return;
 	}
 
+	//***************VZERO-AMPLITUDE************************	
+	AliAODVZERO *aodV0 = fAOD->GetVZEROData();
+	int fV0A_mult = aodV0->GetMTotV0A();
+	int fV0C_mult = aodV0->GetMTotV0C();      
+	int fV0_total = fV0A_mult + fV0C_mult;
+	
+	fEventCount ->Fill("V0 multiplicity check",1);	
+
+
 	// cout << fzvtxcutmin << "\t" << fzvtxcutmax << "\t" << ftrackBit << endl;
 	//  oooo00000000ooooo000000000ooooooooooo
 	//   Reconstructed
 	//_____________________________________
 	int nTracks = fAOD->GetNumberOfTracks();
 	// printf("%8d\t\t",nTracks);
-
+	
+	int refmult05 = ((AliAODHeader *)fAOD->GetHeader())->GetRefMultiplicityComb05();
+	int refmult08 = ((AliAODHeader *)fAOD->GetHeader())->GetRefMultiplicityComb08();
+	
 	int trkrec = 0;
+	int trkrec_pt = 0;
 	double sum_trackpt_rec = 0.;
 	double sum_ptiptj_rec = 0.;
-	double fillnch[6] = {0};
+	double fillnch[11] = {0};
 
 	// fRunNumber = fAOD->GetRunNumber();// cout << fRunNumber  <<endl;
 
 	isample = gRandom->Integer(30) + 1;
-	int nsrec = 0, nsrec_sec = 0;
+	
+	int nsrec = 0, nsrec2 = 0;
 	int i;
 
 	for (i = 0; i < nTracks; i++)
 	{
 
 		AliAODTrack *track = static_cast<AliAODTrack *>(fAOD->GetTrack(i));
-		if (!track)
-			continue;
-		if (!AcceptTrack(track))
-			continue;
+		if (!track) continue;
+		if (!AcceptTrack(track)) continue;
 
 		AliAODMCParticle *trackrec = (AliAODMCParticle *)AODMCTrackArray->At(TMath::Abs(track->GetLabel()));
-		if (!trackrec)
-			continue;
+		if (!trackrec) continue;
 
 		double eTa = track->Eta();
 		double pT = track->Pt();
 
-		if (pT < ptmin || pT > ptmax)
-			continue; // not included in track selection
-
 		hrec->Fill(pT, eTa); // All rec.- including sec.
-		// if(trackrec->IsSecondaryFromWeakDecay()) hsec_wd ->Fill(pT, eTa);
-		// if(trackrec->IsSecondaryFromMaterial()) hsec_mat ->Fill(pT, eTa);
-		// if(trackrec->IsSecondaryFromWeakDecay() || track->IsSecondaryFromMaterial()) hsec ->Fill(pT, eTa);
 
-		nsrec_sec++;
+		if (!trackrec->IsPhysicalPrimary()) continue;
 
-		if (!trackrec->IsPhysicalPrimary())
-			continue;
+		trkrec_pt++;		// only eta cut
+		
+		if (pT >= 0.15 && pT <= 6.0) nsrec++;
+		if (pT >= 0.15 && pT <= 2.0) nsrec2++;
+
+		if (pT >= ptmin && pT <= ptmax)
+		{
 		hprim->Fill(pT, eTa);
 
 		sum_trackpt_rec = sum_trackpt_rec + pT;
 		sum_ptiptj_rec = sum_ptiptj_rec + (pT * pT);
 
 		trkrec++;
+		}
 	} // track1
 
-	fillnch[4] = trkrec;
-	fillnch[5] = nsrec_sec;
+	fillnch[7] = nsrec;
+	fillnch[8] = nsrec2;
+	fillnch[9] = trkrec_pt;
+	fillnch[10] = trkrec;
 
-	if (trkrec < 2)
-		return;
 
-	double trkrecsq = trkrec * trkrec;
+	if (trkrec > 2)
+	{
 	double meanptrec = sum_trackpt_rec / trkrec;
-	double meanptrecsq = meanptrec * meanptrec;
+	double meanptrecsq = sum_trackpt_rec;
 	double npairrec = trkrec * (trkrec - 1);
 
-	if (npairrec < 2.)
-		return;
 	//----filling histograms-----
-	hScale_rec->Fill(isample, trkrec);
-	hTracks_rec->Fill(isample, trkrec, trkrec);
-	hTracksq_rec->Fill(isample, trkrec, trkrecsq);
-	hTrackavgpt_rec->Fill(isample, trkrec, meanptrec);
-	hTrackavgptsq_rec->Fill(isample, trkrec, meanptrecsq);
-	hTrackpair_rec->Fill(isample, trkrec, npairrec);
+	hScale_rec->Fill(isample, nsrec2);
+	hTracks_rec->Fill(isample, nsrec2, trkrec);
+	hTracksq_rec->Fill(isample, nsrec2, nsrec);
+	hTrackavgpt_rec->Fill(isample, nsrec2, meanptrec);
+	hTrackavgptsq_rec->Fill(isample, nsrec2, meanptrecsq);
+	hTrackpair_rec->Fill(isample, nsrec2, npairrec);
 	//++++++++++++++++++++++++++++++
 	double term = sum_trackpt_rec * sum_trackpt_rec - sum_ptiptj_rec;
-	hTracksumptiptj_rec->Fill(isample, trkrec, (term / npairrec));
-
+	hTracksumptiptj_rec->Fill(isample, nsrec2, (term / npairrec));
+	}
 	//++++++++++++++++++++++++++++++
 	//++++++++++++++++++++++++++++++
 	//++++++++++++++++++++++++++++++
@@ -474,75 +482,74 @@ void AliAnalysisMCMeanPt::UserExec(Option_t *)
 	double sum_ptiptj_gen = 0.;
 
 	int nsgen_all = 0, nsgen_pt = 0;
-	int nch_all = 0, nch_pt = 0;
+	int nch_all = 0, nch_pt = 0, nch_pt2 = 0;
 	int iMC;
 
 	for (iMC = 0; iMC < mcTracks; iMC++)
 	{
 
 		AliAODMCParticle *mcparticle = (AliAODMCParticle *)AODMCTrackArray->At(iMC);
-		if (!mcparticle)
-			continue;
+		if (!mcparticle) continue;
 
-		if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMC, header, AODMCTrackArray))
-			continue;
+		if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iMC, header, AODMCTrackArray)) continue;
 
-		if (mcparticle->Eta() < -0.8 || mcparticle->Eta() > 0.8)
-			continue;
-		if (mcparticle->Charge() == 0)
-			continue;
+		if (!mcparticle->IsPhysicalPrimary()) continue;
+		if (mcparticle->Eta() < -0.8 || mcparticle->Eta() > 0.8) continue;
+		if (mcparticle->Charge() == 0) continue;
+
 		double mceTa = mcparticle->Eta();
 		double mcpT = mcparticle->Pt();
-		nch_all++; // no pt cut + no primary condition
 
-		if (mcpT >= ptmin && mcpT <= ptmax)
-			nch_pt++; // pt cut + no primary
+		nch_all++;
+
 		hgen->Fill(mcpT, mceTa);
 
-		if (!mcparticle->IsPhysicalPrimary())
-			continue;
-		nsgen_all++; // no pt cut + primary
+		if (mcpT >= 0.15 && mcpT <= 6.0) nch_pt++;
+		if (mcpT >= 0.15 && mcpT <= 2.0) nch_pt2++;
 
-		if (mcpT < ptmin || mcpT > ptmax)
-			continue;
-
+		if (mcpT >= ptmin && mcpT <= ptmax)
+		{
 		hprimgen->Fill(mcpT, mceTa);
 
 		sum_trackpt_gen = sum_trackpt_gen + mcpT;
 		sum_ptiptj_gen = sum_ptiptj_gen + (mcpT * mcpT);
 
 		trkgen++; // pt cut + primary condition
+		}
 
 	} // particle1
 
-	fillnch[0] = trkgen;
-	fillnch[1] = nch_pt;
-	fillnch[2] = nsgen_all;
-	fillnch[3] = nch_all;
+	fillnch[0] = fV0_total;
+	fillnch[2] = refmult08;
+	fillnch[3] = nch_pt;
+	fillnch[4] = nch_pt2;
+	fillnch[5] = nch_all;
+	fillnch[6] = trkgen;
+	fillnch[1] = fV0_total/2.;
 	fTHnfnch->Fill(fillnch);
 
-	if (trkgen < 2)
-		return;
+	cout <<fV0_total <<"\t"<< refmult08<<"\t"<<nsrec <<"\t"<< trkrec <<endl;
 
-	double trkgensq = trkgen * trkgen;
+
+	if (trkgen > 2)
+	{
 	double meanptgen = sum_trackpt_gen / trkgen;
-	double meanptgensq = meanptgen * meanptgen;
+	double meanptgensq = sum_trackpt_gen;
 	double npairgen = trkgen * (trkgen - 1);
 
-	if (npairgen < 2.)
-		return;
 
 	//----filling histograms-----
-	hScale_gen->Fill(isample, trkgen);
-	hTracks_gen->Fill(isample, trkgen, trkgen);
-	hTracksq_gen->Fill(isample, trkgen, trkgensq);
-	hTrackavgpt_gen->Fill(isample, trkgen, meanptgen);
-	hTrackavgptsq_gen->Fill(isample, trkgen, meanptgensq);
-	hTrackpair_gen->Fill(isample, trkgen, npairgen);
+	hScale_gen->Fill(isample, nch_pt2);
+	hTracks_gen->Fill(isample, nch_pt2, trkgen);
+	hTracksq_gen->Fill(isample, nch_pt2, nch_pt);
+	hTrackavgpt_gen->Fill(isample, nch_pt2, meanptgen);
+	hTrackavgptsq_gen->Fill(isample, nch_pt2, meanptgensq);
+	hTrackpair_gen->Fill(isample, nch_pt2, npairgen);
 	//++++++++++++++++++++++++++++++
 	double term_gen = sum_trackpt_gen * sum_trackpt_gen - sum_ptiptj_gen;
-	hTracksumptiptj_gen->Fill(isample, trkgen, (term_gen / npairgen));
-
+	hTracksumptiptj_gen->Fill(isample, nch_pt2, (term_gen / npairgen));
+	}
+	
 	//--------------------------------------------------------
 	fEventCount->Fill("Events Analyzed", 1);
 	PostData(1, fOutputList);
@@ -551,20 +558,14 @@ void AliAnalysisMCMeanPt::UserExec(Option_t *)
 Bool_t AliAnalysisMCMeanPt::AcceptTrack(AliAODTrack *aodtrack) const
 {
 
-	if (!aodtrack)
-		return kFALSE;
+	if (!aodtrack)						return kFALSE;
 	double pt = aodtrack->Pt();
 
-	if (pt < ptmin)
-		return kFALSE;
-	if (aodtrack->Charge() == 0)
-		return kFALSE;
-	if (!aodtrack->TestFilterBit(ftrackBit))
-		return kFALSE;
-	if (aodtrack->Eta() < -0.8 || aodtrack->Eta() > 0.8)
-		return kFALSE;
-	if (aodtrack->GetTPCCrossedRows() < fCutTPCMaxCls)
-		return kFALSE;
+	if (pt < 0.15)						return kFALSE;
+	if (aodtrack->Charge() == 0)				return kFALSE;
+	if (!aodtrack->TestFilterBit(ftrackBit))		return kFALSE;
+	if (aodtrack->Eta() < -0.8 || aodtrack->Eta() > 0.8)	return kFALSE;
+	if (aodtrack->GetTPCCrossedRows() < fCutTPCMaxCls)	return kFALSE;
 
 	return kTRUE;
 }
@@ -576,3 +577,4 @@ void AliAnalysisMCMeanPt::Terminate(Option_t *)
 	// AliInfo(Form("Found  %d MC events",nevt));
 }
 //____________________________________________________________________________________________
+

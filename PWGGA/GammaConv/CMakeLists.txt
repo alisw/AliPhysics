@@ -110,6 +110,8 @@ set(SRCS
 #     AliConversionCutHandler.cxx
 #     AliAnalysisTaskNeutralMesonToPiPlPiMiPiZero.cxx
 #     AliAnalysisTaskdPhi.cxx
+    #Flow
+    AliAnalysisTaskPi0v2Calo.cxx
    )
 
 # MC task that needs fastjet

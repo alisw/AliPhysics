@@ -59,7 +59,7 @@ ClassImp(AliAnalysisTaskEtaPhigg)
       fEventCounter(0), fBadMap(nullptr) {
   // Constructor
   for (Int_t i = 0; i < kVtxBins; i++) {
-    for (Int_t j = 0; j < kCentBins; j++) {
+    for (Int_t j = 0; j < kMixCentBins; j++) {
       for (Int_t k = 0; k < kPRBins; k++) { // no RP bins
         fPHOSEvents[i][j][k] = nullptr;
       }
@@ -225,52 +225,82 @@ void AliAnalysisTaskEtaPhigg::UserCreateOutputObjects() {
 
   SetCutNames();
   // HBT part
-  for (Int_t cen = 0; cen < kCentBins; cen++) {
-    for (Int_t iCut = 0; iCut < kCuts; iCut++) {
-      fhReQinv[cen][iCut] =
-          new TH2F(Form("hReQinv_%s_cen%d", fcut[iCut], cen),
-                   "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
-      fOutputContainer->Add(fhReQinv[cen][iCut]);
-      fhMiQinv[cen][iCut] =
-          new TH2F(Form("hMiQinv_%s_cen%d", fcut[iCut], cen),
-                   "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
-      fOutputContainer->Add(fhMiQinv[cen][iCut]);
-      fhReq[cen][iCut] =
-          new TH2F(Form("hReq_%s_cen%d", fcut[iCut], cen), "Qinv distribution",
-                   100, 0., 0.25, 40, 0., 2.);
-      fOutputContainer->Add(fhReq[cen][iCut]);
-      fhMiq[cen][iCut] =
-          new TH2F(Form("hMiq_%s_cen%d", fcut[iCut], cen), "Qinv distribution",
-                   100, 0., 0.25, 40, 0., 2.);
-      fOutputContainer->Add(fhMiq[cen][iCut]);
+  if (kFillOSL) {
+    // 3D part
+    Int_t nQ = 120;
+    Double_t qMax = 0.3;
+    for (Int_t cen = 0; cen < kCentBins; cen++) {
+      for (Int_t ikT = 0; ikT < kKtbins; ikT++) {
+        fhReOSLDz0E0[cen][ikT] =
+            new TH3F(Form("hReOSL_Dz0E0_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ,
+                     -qMax, qMax);
+        fOutputContainer->Add(fhReOSLDz0E0[cen][ikT]);
+        fhMiOSLDz0E0[cen][ikT] =
+            new TH3F(Form("hMiOSL_Dz0E0_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ,
+                     -qMax, qMax);
+        fOutputContainer->Add(fhMiOSLDz0E0[cen][ikT]);
+        fhReOSLDz0E2[cen][ikT] =
+            new TH3F(Form("hReOSL_Dz0E2_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ,
+                     -qMax, qMax);
+        fOutputContainer->Add(fhReOSLDz0E2[cen][ikT]);
+        fhMiOSLDz0E2[cen][ikT] =
+            new TH3F(Form("hMiOSL_Dz0E2_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ,
+                     -qMax, qMax);
+        fOutputContainer->Add(fhMiOSLDz0E2[cen][ikT]);
+        fhReOSLDz2E0[cen][ikT] =
+            new TH3F(Form("hReOSL_Dz2E0_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ,
+                     -qMax, qMax);
+        fOutputContainer->Add(fhReOSLDz2E0[cen][ikT]);
+        fhMiOSLDz2E0[cen][ikT] =
+            new TH3F(Form("hMiOSL_Dz2E0_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ,
+                     -qMax, qMax);
+        fOutputContainer->Add(fhMiOSLDz2E0[cen][ikT]);
+        fhReOSLDz2E2[cen][ikT] =
+            new TH3F(Form("hReOSL_Dz2E2_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ,
+                     -qMax, qMax);
+        fOutputContainer->Add(fhReOSLDz2E2[cen][ikT]);
+        fhMiOSLDz2E2[cen][ikT] =
+            new TH3F(Form("hMiOSL_Dz2E2_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ,
+                     -qMax, qMax);
+        fOutputContainer->Add(fhMiOSLDz2E2[cen][ikT]);
+      }
     }
-  }
-
-  // 3D part
-  Int_t nQ = 120;
-  Double_t qMax = 0.3;
-  for (Int_t cen = 0; cen < kCentBins; cen++) {
-    for (Int_t ikT = 0; ikT < kKtbins; ikT++) {
-      fhReOSL[cen][ikT] = new TH3F(Form("hReOSL_DzCr_Kt%3.1f-%3.1f_cen%d",
-                                        fKtBins[ikT], fKtBins[ikT + 1], cen),
-                                   "real Out-Side-Long", nQ, -qMax, qMax, nQ,
-                                   -qMax, qMax, nQ, -qMax, qMax);
-      fOutputContainer->Add(fhReOSL[cen][ikT]);
-      fhMiOSL[cen][ikT] = new TH3F(Form("hMiOSL_DzCr_Kt%3.1f-%3.1f_cen%d",
-                                        fKtBins[ikT], fKtBins[ikT + 1], cen),
-                                   "real Out-Side-Long", nQ, -qMax, qMax, nQ,
-                                   -qMax, qMax, nQ, -qMax, qMax);
-      fOutputContainer->Add(fhMiOSL[cen][ikT]);
-      fhReOSLCTS[cen][ikT] = new TH3F(Form("hReOSL_DzCTS_Kt%3.1f-%3.1f_cen%d",
-                                           fKtBins[ikT], fKtBins[ikT + 1], cen),
-                                      "real Out-Side-Long", nQ, -qMax, qMax, nQ,
-                                      -qMax, qMax, nQ, -qMax, qMax);
-      fOutputContainer->Add(fhReOSLCTS[cen][ikT]);
-      fhMiOSLCTS[cen][ikT] = new TH3F(Form("hMiOSL_DzCTS_Kt%3.1f-%3.1f_cen%d",
-                                           fKtBins[ikT], fKtBins[ikT + 1], cen),
-                                      "real Out-Side-Long", nQ, -qMax, qMax, nQ,
-                                      -qMax, qMax, nQ, -qMax, qMax);
-      fOutputContainer->Add(fhMiOSLCTS[cen][ikT]);
+  } else {
+    for (Int_t cen = 0; cen < kCentBins; cen++) {
+      for (Int_t iCut = 0; iCut < kCuts; iCut++) {
+        fhReQinv[cen][iCut] =
+            new TH2F(Form("hReQinv_%s_cen%d", fcut[iCut], cen),
+                     "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+        fOutputContainer->Add(fhReQinv[cen][iCut]);
+        fhMiQinv[cen][iCut] =
+            new TH2F(Form("hMiQinv_%s_cen%d", fcut[iCut], cen),
+                     "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+        fOutputContainer->Add(fhMiQinv[cen][iCut]);
+        fhReq[cen][iCut] =
+            new TH2F(Form("hReq_%s_cen%d", fcut[iCut], cen),
+                     "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+        fOutputContainer->Add(fhReq[cen][iCut]);
+        fhMiq[cen][iCut] =
+            new TH2F(Form("hMiq_%s_cen%d", fcut[iCut], cen),
+                     "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+        fOutputContainer->Add(fhMiq[cen][iCut]);
+      }
     }
   }
 }
@@ -344,20 +374,22 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *) {
   FillHistogram("hSelEvents", 4.5, fRunNumber - 0.5);
   FillHistogram("hTotSelEvents", 4.5);
 
+  fCenBin = 0; // To fill histograms
+  int mixCentBin = 7;
   if (fCentrality < 5.)
-    fCenBin = 0;
+    mixCentBin = 0;
   else if (fCentrality < 10.)
-    fCenBin = 1;
+    mixCentBin = 1;
   else if (fCentrality < 20.)
-    fCenBin = 2;
+    mixCentBin = 2;
   else if (fCentrality < 30.)
-    fCenBin = 3;
+    mixCentBin = 3;
   else if (fCentrality < 40.)
-    fCenBin = 4;
+    mixCentBin = 4;
   else if (fCentrality < 50.)
-    fCenBin = 5;
+    mixCentBin = 5;
   else if (fCentrality < 80.)
-    fCenBin = 6;
+    mixCentBin = 6;
 
   FillHistogram("hSelEvents", 5.5, fRunNumber - 0.5);
   FillHistogram("hTotSelEvents", 5.5);
@@ -425,9 +457,9 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *) {
   if (irp >= kPRBins)
     irp = kPRBins - 1;
 
-  if (!fPHOSEvents[zvtx][fCenBin][irp])
-    fPHOSEvents[zvtx][fCenBin][irp] = new TList();
-  TList *prevPHOS = fPHOSEvents[zvtx][fCenBin][irp];
+  if (!fPHOSEvents[zvtx][mixCentBin][irp])
+    fPHOSEvents[zvtx][mixCentBin][irp] = new TList();
+  TList *prevPHOS = fPHOSEvents[zvtx][mixCentBin][irp];
 
   if (fPHOSEvent)
     fPHOSEvent->Clear();
@@ -595,33 +627,44 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *) {
       gammaCMq.Boost(-gammaBeta);
       double q = gammaCMq.Vect().Mag();
 
-      for (Int_t iCut = 0; iCut < kCuts; iCut++) {
-        if (!PairCut(ph1, ph2, iCut)) {
-          continue;
-        }
-        fhReQinv[fCenBin][iCut]->Fill(qinv, kT);
-        fhReq[fCenBin][iCut]->Fill(q, kT);
-      }
-      if (kT > fKtBins[0] && kT < fKtBins[kKtbins]) {
-        int iKt = 0;
-        while (kT > fKtBins[iKt + 1]) {
-          iKt++;
-        }
-        double qo =
-            0.5 * (sum.Px() * gammaCMq.Px() + sum.Py() * gammaCMq.Py()) / kT;
-        double qs = (ph1->Px() * ph2->Py() - ph2->Px() * ph1->Py()) / kT;
-        double ql = gammaCMq.Pz();
-        if (gRandom->Uniform() < 0.5) { // remove ordering during reconstruction
-          qo = -qo;
-          qs = -qs;
-          ql = -ql;
-        }
+      if (kFillOSL) {
+        if (kT > fKtBins[0] && kT < fKtBins[kKtbins]) {
+          int iKt = 0;
+          while (kT > fKtBins[iKt + 1]) {
+            iKt++;
+          }
+          double qo =
+              0.5 * (sum.Px() * gammaCMq.Px() + sum.Py() * gammaCMq.Py()) / kT;
+          double qs =
+              (ph1->Px() * ph2->Py() - ph2->Px() * ph1->Py()) / kT; // CORRECT!
+          double ql = gammaCMq.Pz();
+          if (gRandom->Uniform() <
+              0.5) { // remove ordering during reconstruction
+            qo = -qo;
+            qs = -qs;
+            ql = -ql;
+          }
 
-        if (PairCut(ph1, ph2, 170)) {
-          fhReOSLCTS[fCenBin][iKt]->Fill(qo, qs, ql);
+          if (PairCut(ph1, ph2, 0)) { // E0Dz0CTSDisp: cut=iE*16+Dz*4+iPID=0
+            fhReOSLDz0E0[fCenBin][iKt]->Fill(qo, qs, ql);
+          }
+          if (PairCut(ph1, ph2, 32)) { // E0Dz0CTSDisp: cut=iE*16+Dz*4+iPID=32
+            fhReOSLDz0E2[fCenBin][iKt]->Fill(qo, qs, ql);
+          }
+          if (PairCut(ph1, ph2, 8)) { // E0Dz0CTSDisp: cut=iE*16+Dz*4+iPID=8
+            fhReOSLDz2E0[fCenBin][iKt]->Fill(qo, qs, ql);
+          }
+          if (PairCut(ph1, ph2, 40)) { // E0Dz0CTSDisp: cut=iE*16+Dz*4+iPID=32+8
+            fhReOSLDz2E2[fCenBin][iKt]->Fill(qo, qs, ql);
+          }
         }
-        if (PairCut(ph1, ph2, 175)) {
-          fhReOSL[fCenBin][iKt]->Fill(qo, qs, ql);
+      } else { // Fill 1D projections
+        for (Int_t iCut = 0; iCut < kCuts; iCut++) {
+          if (!PairCut(ph1, ph2, iCut)) {
+            continue;
+          }
+          fhReQinv[fCenBin][iCut]->Fill(qinv, kT);
+          fhReq[fCenBin][iCut]->Fill(q, kT);
         }
       }
     }
@@ -644,29 +687,38 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *) {
         gammaCMq.Boost(-gammaBeta);
         double q = gammaCMq.Vect().Mag();
 
-        for (Int_t iCut = 0; iCut < kCuts; iCut++) {
-          if (!PairCut(ph1, ph2, iCut)) {
-            continue;
-          }
-          fhMiQinv[fCenBin][iCut]->Fill(qinv, kT);
-          fhMiq[fCenBin][iCut]->Fill(q, kT);
-        }
-        if (kT > fKtBins[0] && kT < fKtBins[kKtbins]) {
-          int iKt = 0;
-          while (kT > fKtBins[iKt + 1]) {
-            iKt++;
-          }
+        if (kFillOSL) {
+          if (kT > fKtBins[0] && kT < fKtBins[kKtbins]) {
+            int iKt = 0;
+            while (kT > fKtBins[iKt + 1]) {
+              iKt++;
+            }
+            double qo = 0.5 *
+                        (sum.Px() * gammaCMq.Px() + sum.Py() * gammaCMq.Py()) /
+                        kT;
+            double qs = (ph1->Px() * ph2->Py() - ph2->Px() * ph1->Py()) / kT;
+            double ql = gammaCMq.Pz();
 
-          double qo =
-              0.5 * (sum.Px() * gammaCMq.Px() + sum.Py() * gammaCMq.Py()) / kT;
-          double qs = (ph1->Px() * ph2->Py() - ph2->Px() * ph1->Py()) / kT;
-          double ql = gammaCMq.Pz();
-
-          if (PairCut(ph1, ph2, 170)) {
-            fhMiOSLCTS[fCenBin][iKt]->Fill(qo, qs, ql);
+            if (PairCut(ph1, ph2, 0)) {
+              fhMiOSLDz0E0[fCenBin][iKt]->Fill(qo, qs, ql);
+            }
+            if (PairCut(ph1, ph2, 32)) {
+              fhMiOSLDz0E2[fCenBin][iKt]->Fill(qo, qs, ql);
+            }
+            if (PairCut(ph1, ph2, 8)) {
+              fhMiOSLDz2E0[fCenBin][iKt]->Fill(qo, qs, ql);
+            }
+            if (PairCut(ph1, ph2, 40)) {
+              fhMiOSLDz2E2[fCenBin][iKt]->Fill(qo, qs, ql);
+            }
           }
-          if (PairCut(ph1, ph2, 175)) {
-            fhMiOSL[fCenBin][iKt]->Fill(qo, qs, ql);
+        } else {
+          for (Int_t iCut = 0; iCut < kCuts; iCut++) {
+            if (!PairCut(ph1, ph2, iCut)) {
+              continue;
+            }
+            fhMiQinv[fCenBin][iCut]->Fill(qinv, kT);
+            fhMiq[fCenBin][iCut]->Fill(q, kT);
           }
         }
       }
@@ -675,7 +727,8 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *) {
 
   // Now we either add current events to stack or remove
   // If no photons in current event - no need to add it to mixed
-  const Int_t kMixEvents[kCentBins] = {20, 20, 20, 30, 30, 40, 40};
+  const Int_t kMixEvents[kMixCentBins] = {20, 20, 20, 30, 30,
+                                          40, 40, 40, 40, 40};
   if (fPHOSEvent->GetEntriesFast() > 0) {
     fPHOSEvent->Expand(fPHOSEvent->GetEntriesFast());
     prevPHOS->AddFirst(fPHOSEvent);

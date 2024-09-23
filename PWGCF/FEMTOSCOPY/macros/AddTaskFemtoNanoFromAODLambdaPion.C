@@ -69,7 +69,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
   AliFemtoDreamTrackCuts *TrackPosPionCuts = NULL;
   AliFemtoDreamTrackCuts *TrackCutsAntiPion = NULL;
 
-  const float PionPtMin = 0.22; // um = GeV
+  const float PionPtMin = 0.17; // um = GeV
   const float PionPtMax = 2; // um = GeV
 
   TrackPosPionCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false); // (bool isMC, bool DCAPlots, bool CombSigma, bool ContribSplitting), sets options for plot
@@ -246,8 +246,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
   }
 
   // Variation cuts
-  const float PionPtlow = 0.20;
-  const float PionPtup = 0.24;
+  const float PionPtlow = 0.15;
+  const float PionPtup = 0.19;
   const float PionEtaLow = 0.75;
   const float PionEtaUp = 0.85;
   const float PionNClsLow = 70;
@@ -379,8 +379,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
   }
   else if (suffix == "8")
   {
-    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+    TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
 
     TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
     TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
@@ -452,8 +452,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
   }
   else if (suffix == "12")
   {
-    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+    TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
 
     TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
     TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
@@ -565,8 +565,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
   }
   else if (suffix == "17")
   {
-    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+    TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
 
     TrackPosPionCuts->SetEtaRange(-PionEtaUp, PionEtaUp);
     TrackCutsAntiPion->SetEtaRange(-PionEtaUp, PionEtaUp);
@@ -670,8 +670,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
   }
   else if (suffix == "22")
   {
-    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+    TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
 
     TrackPosPionCuts->SetEtaRange(-PionEtaLow, PionEtaLow);
     TrackCutsAntiPion->SetEtaRange(-PionEtaLow, PionEtaLow);
@@ -850,8 +850,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoFromAODLambdaPion(bool isMC = true,          
   }
   else if (suffix == "31")
   {
-    TrackPosPionCuts->SetPtRange(PionPtlow, PionPtMax);
-    TrackCutsAntiPion->SetPtRange(PionPtlow, PionPtMax);
+    TrackPosPionCuts->SetPtRange(PionPtup, PionPtMax);
+    TrackCutsAntiPion->SetPtRange(PionPtup, PionPtMax);
 
     TrackPosPionCuts->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);
     TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5, PionNSigmaUp);

@@ -81,6 +81,7 @@ set(SRCS
   MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
   MeanPtFluctuations/pp13TeV_MB/AliAnalysisMeanPt.cxx
+  MeanPtFluctuations/pp13TeV_MB/AliAnalysisMeanPtFluc.cxx
   MeanPtFluctuations/pp13TeV_MB/AliAnalysisHMMeanPt.cxx
   MeanPtFluctuations/pp13TeV_MB/AliAnalysisMCMeanPt.cxx
   MeanPtFluctuations_PbPb5020GeV2018/AliAnalysisMeanPtdata.cxx
@@ -144,6 +145,7 @@ set(SRCS
   HMPTF/AliAnalysisTaskCorrPbPb.cxx
   HMPTF/AliAnalysisTaskCorrPbPb_withoutTree.cxx
   HMPTF/AliAnalysisTaskCorrPbPb_treemerge.cxx
+  HMPTF/AliAnalysisTaskCorrPbPb_treemerge_v2.cxx
   HMPTF/AliAnalysisTaskCorrPbPbMC.cxx
   HMPTF/AliAnalysisTaskResonanceVsMultiplicityROOT6_new.cxx
   HMPTF/AliAnalysisTaskNetPiKProtFluc_MCnoESD_gen.cxx
