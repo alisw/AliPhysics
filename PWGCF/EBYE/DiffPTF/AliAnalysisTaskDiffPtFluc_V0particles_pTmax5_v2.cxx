@@ -210,6 +210,7 @@ AliAnalysisTaskSE(),
   fMinK0sTransDecayRadius(0),
   fMaxK0sTransDecayRadius(0),
   fK0sDcaV0daughters(0),
+  fK0sDcaV0toPV(0),
   fK0sCosPAval(0),
   fArmentousCutVal(0),
   fLambdaDaughtersPIDcut(0),
@@ -219,6 +220,7 @@ AliAnalysisTaskSE(),
   fPIDbayesPion(0),
   fPIDbayesKaon(0),
   fPIDbayesProton(0),
+  fPtMax(0),
   fGlobalTracksAOD(0)
 {
   for(int i=0; i<9; i++)
@@ -372,6 +374,7 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::AliAnalysisTaskDiffPtFluc_V0par
   fMinK0sTransDecayRadius(0),
   fMaxK0sTransDecayRadius(0),
   fK0sDcaV0daughters(0),
+  fK0sDcaV0toPV(0),
   fK0sCosPAval(0),
   fArmentousCutVal(0),
   fLambdaDaughtersPIDcut(0),
@@ -381,6 +384,7 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::AliAnalysisTaskDiffPtFluc_V0par
   fPIDbayesPion(0),
   fPIDbayesKaon(0),
   fPIDbayesProton(0),
+  fPtMax(0),
   fGlobalTracksAOD(0)
 {
   for(int i=0; i<9; i++)
@@ -583,14 +587,14 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserCreateOutputObjects() 
   fOutputList->Add(f2Dhist_afterCut_TOFtime_proton);
 
   //Mass histogram of Lambda
-  f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent = new TH3D("f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent", "X:Pt, Y:MassLambda and AntiLambda, Z:Centrality",100,0,10.0,80,1.095,1.135,10,0,100);
+  f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent = new TH3D("f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent", "X:Pt, Y:MassLambda and AntiLambda, Z:Centrality",100,0,10.0,160,1.095,1.135,10,0,100);
   fOutputList->Add(f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent);
-  f3DhistMassK0s_vs_Pt_beforeMasscut_Cent = new TH3D("f3DhistMassK0s_vs_Pt_beforeMasscut_Cent", " X:Pt, Y:MassK0s, Z:Centrality",100,0,10.0,100,0.4,0.6,10,0,100);
+  f3DhistMassK0s_vs_Pt_beforeMasscut_Cent = new TH3D("f3DhistMassK0s_vs_Pt_beforeMasscut_Cent", " X:Pt, Y:MassK0s, Z:Centrality",100,0,10.0,200,0.4,0.6,10,0,100);
   fOutputList->Add(f3DhistMassK0s_vs_Pt_beforeMasscut_Cent);
 
-  f3DhistMassLambdaAll_vs_Pt_afterMasscut_Cent = new TH3D("f3DhistMassLambdaAll_vs_Pt_afterMasscut_Cent", "X:Pt, Y:MassLambda and AntiLambda, Z:Centrality",100,0,10.0,80,1.095,1.135,10,0,100);
+  f3DhistMassLambdaAll_vs_Pt_afterMasscut_Cent = new TH3D("f3DhistMassLambdaAll_vs_Pt_afterMasscut_Cent", "X:Pt, Y:MassLambda and AntiLambda, Z:Centrality",100,0,10.0,160,1.095,1.135,10,0,100);
   fOutputList->Add(f3DhistMassLambdaAll_vs_Pt_afterMasscut_Cent);
-  f3DhistMassK0s_vs_Pt_afterMasscut_Cent = new TH3D("f3DhistMassK0s_vs_Pt_afterMasscut_Cent", " X:Pt, Y:MassK0s, Z:Centrality",100,0,10.0,100,0.4,0.6,10,0,100);
+  f3DhistMassK0s_vs_Pt_afterMasscut_Cent = new TH3D("f3DhistMassK0s_vs_Pt_afterMasscut_Cent", " X:Pt, Y:MassK0s, Z:Centrality",100,0,10.0,200,0.4,0.6,10,0,100);
   fOutputList->Add(f3DhistMassK0s_vs_Pt_afterMasscut_Cent);
   //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -770,10 +774,15 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserExec(Option_t *)  {
       if (trkITSchi2perNcls > fChi2ITS)
 	continue;
 
+      if (trkDCAxy > 0.1)
+	continue;
+      if (trkDCAz > 1)
+	continue;
+
       //Kinematic cuts on pT and Eta
       if (TMath::Abs(trkEta) > 0.8) continue;
       if (trkPt < 0.2) continue;
-      if (trkPt > 10.0) continue;	
+      if (trkPt > fPtMax) continue;	
 	
       //+++++++++++++++++++++++++++++++++++++++++++++++++
       //+++++++++++++++++++++++++++++++++++++++++++++++++
@@ -927,6 +936,14 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserExec(Option_t *)  {
       //Pt and Eta of V0 particles
       Double_t fV0_Pt = v0->Pt();
       Double_t fV0_Eta = v0->PseudoRapV0();
+
+      if(fV0_Pt < 0.2)
+	continue;
+      if(fV0_Pt > fPtMax)
+	continue;
+      if(TMath::Abs(fV0_Eta) > 0.8)
+	continue;
+      
 
       if(fV0_Eta < fEtaLeftCut)
 	{
@@ -1269,7 +1286,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::PassedTrackQualityCuts (
     return passedTrkSelection;
 
   Double_t pt = track->Pt(); //Pt cut
-  if(pt < 0.15)
+  if(pt < 0.2)
     return passedTrkSelection;
     
   passedTrkSelection = kTRUE;
@@ -1955,7 +1972,7 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::PassedV0SelectionTopolog
 
   //DCA of V0 to primary vertex
   Double_t lDcaV0ToPrimVertex = v0->DcaV0ToPrimVertex();
-  //if(lDcaV0ToPrimVertex >= 0.5) return passedV0Selection;
+  if(lDcaV0ToPrimVertex >= fK0sDcaV0toPV) return passedV0Selection; //cut from ANA-432
 
   //V0 cos-pointing angle
   Double_t lV0CosineOfPointingAngle = v0->CosPointingAngle(primaryVertex);
@@ -2010,6 +2027,10 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::IsLambdaCandidate (AliAO
   Double_t massK0s = V0->MassK0Short();
   if (massK0s >= 0.4876 && massK0s <= 0.5076)
     return kFALSE;
+
+  //Check rapidity
+  if(TMath::Abs(V0->RapLambda()) > 0.5)
+    return kFALSE;
   
   //Fill histogram before masscut
   f3DhistMassLambdaAll_vs_Pt_beforeMasscut_Cent->Fill(V0->Pt(),V0->MassLambda(),centrality);
@@ -2052,6 +2073,10 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::IsAntiLambdaCandidate (A
   //Mass of V0 if positive-track is misidentified as pion, K0s rejection
   Double_t massK0s = V0->MassK0Short();
   if (massK0s >= 0.4876 && massK0s <= 0.5076)
+    return kFALSE;
+
+  //Check rapidity
+  if(TMath::Abs(V0->RapLambda()) > 0.5)
     return kFALSE;
       
   //Fill histogram before masscut
@@ -2104,6 +2129,9 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::IsK0sCandidate (AliAODv0
   if(TMath::Abs(massAntiLambda - massLambda_PDG) <= 0.005)
     return kFALSE;
 
+  //Check rapidity
+  if(TMath::Abs(V0->RapK0Short()) > 0.5)
+    return kFALSE;
     
   f3DhistMassK0s_vs_Pt_beforeMasscut_Cent->Fill(V0->Pt(),V0->MassK0Short(),centrality);
 
