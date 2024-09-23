@@ -218,7 +218,11 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 : public AliAnalysisTaskSE
   }
   void SetK0sDCAv0daughters (Double_t DcaV0daughters)
   {
-    this->fK0sDcaV0daughters = DcaV0daughters;  //Default: 0.4
+    this->fK0sDcaV0daughters = DcaV0daughters;  //Default: 0.3
+  }
+  void SetK0sDcaV0toPV (Double_t K0sDcaV0toPV)
+  {
+    this->fK0sDcaV0toPV = K0sDcaV0toPV; //Default: 0.3
   }
   void SetK0sCosPA (Double_t cosPAval)
   {
@@ -255,6 +259,10 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 : public AliAnalysisTaskSE
   void SetBayesPIDProtonVal (Double_t bayesPidPr)
   {
     this->fPIDbayesProton = bayesPidPr;
+  }
+  void SetMaximumPt (Double_t ptmax)  //Default: 10.0
+  {
+    this->fPtMax = ptmax;
   }
   
  private:
@@ -414,6 +422,7 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 : public AliAnalysisTaskSE
   Double_t fMinK0sTransDecayRadius;
   Double_t fMaxK0sTransDecayRadius;
   Double_t fK0sDcaV0daughters;
+  Double_t fK0sDcaV0toPV;
   Double_t fK0sCosPAval;
   Double_t fArmentousCutVal;
   Double_t fLambdaDaughtersPIDcut;
@@ -423,6 +432,7 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 : public AliAnalysisTaskSE
   Double_t fPIDbayesPion;
   Double_t fPIDbayesKaon;
   Double_t fPIDbayesProton;
+  Double_t fPtMax;
   
   TExMap *fGlobalTracksAOD; //! global tracks in AOD for FB128 **Ante**
 

@@ -25,17 +25,18 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 *AddTaskDiffPtFluc_V0particles_p
   Double_t lMaxV0TracksChi2TPCperClstr=2.5,
   Double_t lMaxV0TracksChi2ITSperClstr=36,
   Double_t lRatioTPCcrossedrowsByFindableclusters=0.8,
-  Double_t lDcaV0DaughterTracksToPV=0.1,
+  Double_t lDcaV0DaughterTracksToPV=3,
   Double_t lLambdaPropLifetime=40,
   Double_t lMinLambdaTransDecayRadius=5,
   Double_t lMaxLambdaTransDecayRadius=100,
-  Double_t lLambdaDcaV0daughters=0.2,
+  Double_t lLambdaDcaV0daughters=0.2,   //sigma 1.0
   Double_t lLambdaDcaV0toPV=0.5,
   Double_t lLambdaCosPAval=0.997,
-  Double_t lK0sPropLifetime=10,
+  Double_t lK0sPropLifetime=30,
   Double_t lMinK0sTransDecayRadius=5,
   Double_t lMaxK0sTransDecayRadius=100,
-  Double_t lK0sDcaV0daughters=0.4,
+  Double_t lK0sDcaV0daughters=0.3,   //sigma 1.0
+  Double_t lK0sDcaV0toPV=0.3,
   Double_t lK0sCosPAval=0.999,
   Double_t lArmentousCutVal=0.2,
   Double_t lLambdaDaughtersPIDcut=3.0,
@@ -44,7 +45,8 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 *AddTaskDiffPtFluc_V0particles_p
   Double_t lK0sMassCut=0.015,
   Double_t lPIDbayesPion=0.95,
   Double_t lPIDbayesKaon=0.9,
-  Double_t lPIDbayesProton=0.9
+  Double_t lPIDbayesProton=0.9,
+  Double_t lPtMax=6.0
   )
 {
   // standard with task
@@ -139,6 +141,7 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 *AddTaskDiffPtFluc_V0particles_p
   task_v0pT->SetK0sTransDecayRadius_Min(lMinK0sTransDecayRadius);
   task_v0pT->SetK0sTransDecayRadius_Max(lMaxK0sTransDecayRadius);
   task_v0pT->SetK0sDCAv0daughters(lK0sDcaV0daughters);
+  task_v0pT->SetK0sDcaV0toPV(lK0sDcaV0toPV);
   task_v0pT->SetK0sCosPA(lK0sCosPAval);
   task_v0pT->SetK0sArmentousCut(lArmentousCutVal);
   task_v0pT->SetLambdaDaughtersPIDcut(lLambdaDaughtersPIDcut);
@@ -148,6 +151,7 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 *AddTaskDiffPtFluc_V0particles_p
   task_v0pT->SetBayesPIDPionVal(lPIDbayesPion);
   task_v0pT->SetBayesPIDKaonVal(lPIDbayesKaon);
   task_v0pT->SetBayesPIDProtonVal(lPIDbayesProton);
+  task_v0pT->SetMaximumPt(lPtMax);
   
   TString OutTreeName;
   OutTreeName = "fTreeEvent";
