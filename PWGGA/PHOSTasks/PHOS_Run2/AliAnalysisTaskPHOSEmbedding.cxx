@@ -387,13 +387,13 @@ void AliAnalysisTaskPHOSEmbedding::UserExec(Option_t *option)
 
       Int_t label = clus->GetLabel();
       Int_t label2 = -1 ;
-      if (clus->GetNLabels()>=2) label2 = clus->GetLabelAt(1) ;
+      if (clus->GetNLabels()>=2) label2 = clus->GetLabelAt(1);
 
       UShort_t * index    = clus->GetCellsAbsId() ;
       for(Int_t ic=0; ic < clus->GetNCells(); ic++ ){
         for (Int_t icell = 0; icell < cellsS->GetNumberOfCells(); icell++){
           Short_t cellNumber;
-          Double_t cellAmplitude=0., cellTime=0. ;
+          Double_t cellAmplitude=0., cellTime=0.;
           Int_t mclabel;
           Double_t efrac =0. ;
           cellsS->GetCell(icell, cellNumber, cellAmplitude, cellTime,mclabel,efrac) ;

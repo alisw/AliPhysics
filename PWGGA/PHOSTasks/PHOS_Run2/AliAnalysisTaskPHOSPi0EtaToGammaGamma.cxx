@@ -116,11 +116,13 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
   fRunNumber(0),
   fPHOSGeo(0x0),
   fPHOSClusterArray(NULL),
+  fPHOSEventList(0x0),
   fEstimator("V0M"),
   fMultSelection(0x0),
   fCentralityMain(0),
   fCentralityMin(0.),
   fCentralityMax(90.),
+  fNCenBin(5),
   fNMixed(10),
   fZvtx(-1),
   fEPBin(-1),
@@ -160,12 +162,14 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
 {
   // Constructor
 
-  for(Int_t i=0;i<10;i++){
-    for(Int_t j=0;j<12;j++){
-      fPHOSEvents[i][j] = 0x0;
+  for(Int_t i=0;i<kVtxBins;i++){
+    for(Int_t j=0;j<kCentBins;j++){
+      for(Int_t k=0;k<kPRBins;k++){
+        fPHOSEvents[i][j][k] = 0x0;
+      }
     }
   }
-
+  
   for(Int_t i=0;i<3;i++){
     fVertex[i] = 0;
   }
@@ -214,16 +218,18 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::AliAnalysisTaskPHOSPi0EtaToGammaGamma(con
 //________________________________________________________________________
 AliAnalysisTaskPHOSPi0EtaToGammaGamma::~AliAnalysisTaskPHOSPi0EtaToGammaGamma()
 {
-  for(Int_t i=0;i<10;i++){
-    for(Int_t j=0;j<12;j++){
 
-      if(fPHOSEvents[i][j]){
-        delete fPHOSEvents[i][j];
-        fPHOSEvents[i][j] = 0x0;
+  for(Int_t i=0;i<kVtxBins;i++){
+    for(Int_t j=0;j<kCentBins;j++){
+      for(Int_t k=0;k<kPRBins;k++){
+        if(fPHOSEvents[i][j][k]){
+        delete fPHOSEvents[i][j][k];
+          fPHOSEvents[i][j][k] = 0x0;
+        }
       }
-
     }
   }
+
 
   if(fPHOSTriggerHelper){
     delete fPHOSTriggerHelper;
@@ -248,6 +254,10 @@ AliAnalysisTaskPHOSPi0EtaToGammaGamma::~AliAnalysisTaskPHOSPi0EtaToGammaGamma()
     delete fPHOSTriggerHelperL1L;
     fPHOSTriggerHelperL1L = 0x0;
   }
+
+  if (fPHOSEventList)
+    delete fPHOSEventList;
+  fPHOSEventList = 0x0;
 
   for(Int_t i=0;i<11;i++){
     if(fAdditionalPi0PtWeight[i]){
@@ -652,6 +662,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   TH2F *h2mix_p_PID  = new TH2F(Form("hMixMgg_Probe_%s"       ,PIDtype[3].Data()),Form("Mix Probe #gamma %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)"        ,PIDtype[3].Data()),180,0,0.72,NpTgg-1,pTgg);
   h2mix_p_PID->Sumw2();
   fOutputContainer->Add(h2mix_p_PID);
+
   for(Int_t ip=1;ip<4;ip++){
 
     TH2F *h2_pp_PID    = new TH2F(Form("hMgg_PassingProbe_%s"   ,PIDtype[ip].Data()),Form("Passing Probe #gamma %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)"    ,PIDtype[ip].Data()),180,0,0.72,NpTgg-1,pTgg);
@@ -665,6 +676,21 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
 
   }//end of PID loop
 
+  TH2F *h2_p_PID_woW     = new TH2F(Form("hMgg_Probe_%s_woW"          ,PIDtype[3].Data()),Form("Probe #gamma %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)"            ,PIDtype[3].Data()),180,0,0.72,NpTgg-1,pTgg);
+  fOutputContainer->Add(h2_p_PID_woW);
+  TH2F *h2mix_p_PID_woW  = new TH2F(Form("hMixMgg_Probe_%s_woW"       ,PIDtype[3].Data()),Form("Mix Probe #gamma %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)"        ,PIDtype[3].Data()),180,0,0.72,NpTgg-1,pTgg);
+  fOutputContainer->Add(h2mix_p_PID_woW);
+
+  for(Int_t ip=1;ip<4;ip++){
+
+    TH2F *h2_pp_PID    = new TH2F(Form("hMgg_PassingProbe_%s_woW"   ,PIDtype[ip].Data()),Form("Passing Probe #gamma %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)"    ,PIDtype[ip].Data()),180,0,0.72,NpTgg-1,pTgg);
+    TH2F *h2mix_pp_PID = new TH2F(Form("hMixMgg_PassingProbe_%s_woW",PIDtype[ip].Data()),Form("Mix Passing Probe #gamma %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)",PIDtype[ip].Data()),180,0,0.72,NpTgg-1,pTgg);
+
+    fOutputContainer->Add(h2_pp_PID);
+    fOutputContainer->Add(h2mix_pp_PID);
+
+  }//end of PID loop
+
   for (Int_t ip = 0; ip < 4; ip++){
 
     TH2F *h2_PID    = new TH2F(Form("hMgg_%s"   ,PIDtype[ip].Data()),Form("M_{#gamma#gamma} Real %s;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)",PIDtype[ip].Data()),180,0,0.72,NpTgg-1,pTgg);
@@ -674,6 +700,16 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
     fOutputContainer->Add(h2_PID);
 
     h2mix_PID->Sumw2();
+    fOutputContainer->Add(h2mix_PID);
+
+  }
+
+    for (Int_t ip = 0; ip < 4; ip++){
+
+    TH2F *h2_PID    = new TH2F(Form("hMgg_%s_woW"   ,PIDtype[ip].Data()),Form("M_{#gamma#gamma} Real %s wo Weights;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)",PIDtype[ip].Data()),180,0,0.72,NpTgg-1,pTgg);
+    TH2F *h2mix_PID = new TH2F(Form("hMixMgg_%s_woW",PIDtype[ip].Data()),Form("M_{#gamma#gamma} Mixed %s wo Weights;M_{#gamma#gamma} (GeV/c^{2});p_{T}^{#gamma} (GeV/c)",PIDtype[ip].Data()),180,0,0.72,NpTgg-1,pTgg);
+
+    fOutputContainer->Add(h2_PID);
     fOutputContainer->Add(h2mix_PID);
 
   }
@@ -700,6 +736,11 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserCreateOutputObjects()
   for(Int_t ip=0;ip<4;ip++){
     TH1F *h1PhotonPt = new TH1F(Form("hPhotonPt_%s",PIDtype[ip].Data()),Form("#gamma p_{T} %s;p_{T}^{#gamma} (GeV/c)",PIDtype[ip].Data()),NpTgg-1,pTgg);
     h1PhotonPt->Sumw2();
+    fOutputContainer->Add(h1PhotonPt);
+  }//end of PID loop
+
+  for(Int_t ip=0;ip<4;ip++){
+    TH1F *h1PhotonPt = new TH1F(Form("hPhotonPt_%s_woW",PIDtype[ip].Data()),Form("#gamma p_{T} %s wo Weights;p_{T}^{#gamma} (GeV/c)",PIDtype[ip].Data()),NpTgg-1,pTgg);
     fOutputContainer->Add(h1PhotonPt);
   }//end of PID loop
 
@@ -1068,6 +1109,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
     fPHOSGeo = GetPHOSGeometry();
   }
 
+  
+
   UInt_t fSelectMask = fInputHandler->IsEventSelected();
   Bool_t isINT7selected = fSelectMask & (AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB);
 
@@ -1364,8 +1407,69 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
       fPHOSClusterArray->Compress();
     }
   }
-  if(!fPHOSEvents[fZvtx][fEPBin]) fPHOSEvents[fZvtx][fEPBin] = new TList();
-  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
+
+  // centrality bins for mixed events container
+  fCentBin = 0;
+  if (fCentralityMain < 5.)
+    fCentBin = 0;
+  else if (fCentralityMain < 10.)
+    fCentBin = 1;
+  else if (fCentralityMain < 20.)
+    fCentBin = 2;
+  else if (fCentralityMain < 30.)
+    fCentBin = 3;
+  else if (fCentralityMain < 40.)
+    fCentBin = 4;
+  else if (fCentralityMain < 50.)
+    fCentBin = 5;
+  else if (fCentralityMain < 80.)
+    fCentBin = 6;
+
+  // reaction plane
+  AliEventplane* eventPlane = fEvent->GetEventplane();
+  if (!eventPlane) { // Event has no event plane
+    AliInfo("Reaction plane has not been found!");
+    return;
+  }
+  // V0A
+  const Int_t harmonics = 2;
+  double qx = 0., qy = 0.;
+  double rpV0A =
+    eventPlane->CalculateVZEROEventPlane(fEvent, 8, harmonics, qx, qy);
+  // V0C
+  double rpV0C =
+    eventPlane->CalculateVZEROEventPlane(fEvent, 9, harmonics, qx, qy);
+
+  // Whole V0
+  fRP = eventPlane->CalculateVZEROEventPlane(fEvent, 10, harmonics, qx, qy);
+
+  while (rpV0A < 0)
+    rpV0A += TMath::TwoPi() / harmonics;
+  while (rpV0A > TMath::TwoPi() / harmonics)
+    rpV0A -= TMath::TwoPi() / harmonics;
+
+  while (rpV0C < 0)
+    rpV0C += TMath::TwoPi() / harmonics;
+  while (rpV0C > TMath::TwoPi() / harmonics)
+    rpV0C -= TMath::TwoPi() / harmonics;
+
+  while (fRP < 0)
+    fRP += TMath::TwoPi() / harmonics;
+  while (fRP > TMath::TwoPi() / harmonics)
+    fRP -= TMath::TwoPi() / harmonics;
+
+  Int_t irp = Int_t(kPRBins * (fRP) / TMath::Pi());
+  if (irp < 0)
+    irp = 0;
+  if (irp >= kPRBins)
+    irp = kPRBins - 1;
+
+  // if(!fPHOSEvents[fZvtx][fEPBin]) fPHOSEvents[fZvtx][fEPBin] = new TList();
+  // TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
+
+  if (!fPHOSEvents[fZvtx][fCentBin][irp])
+    fPHOSEvents[fZvtx][fCentBin][irp] = new TList();
+  fPHOSEventList = fPHOSEvents[fZvtx][fCentBin][irp];
 
   if(!fIsMC && fIsPHOSTriggerAnalysis){
     AliInfo(Form("PHOS trigger analysis is ON! RF method = %d",fTRFM));
@@ -1399,17 +1503,17 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::UserExec(Option_t *option)
   //If no photons in current event - no need to add it to mixed
   if(fPHOSClusterArray->GetEntriesFast() > 0){
     //don't call fPHOSClucster=0; this will affect original array provided from PHOSbjectCreator.
-    //prevPHOS->AddFirst(fPHOSClusterArray);
+    //fPHOSEventList->AddFirst(fPHOSClusterArray);
     //fPHOSClusterArray=0;
 
     TClonesArray *clone = new TClonesArray(*fPHOSClusterArray);
-    prevPHOS->AddFirst(clone);
+    fPHOSEventList->AddFirst(clone);
     //delete clone;
     clone = 0;
 
-    if(prevPHOS->GetSize() > fNMixed){//Remove redundant events
-      TClonesArray * tmp = static_cast<TClonesArray*>(prevPHOS->Last());
-      prevPHOS->RemoveLast();
+    if(fPHOSEventList->GetSize() > fNMixed){//Remove redundant events
+      TClonesArray * tmp = static_cast<TClonesArray*>(fPHOSEventList->Last());
+      fPHOSEventList->RemoveLast();
       delete tmp;
       tmp = NULL;
     }
@@ -1919,10 +2023,17 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillPhoton()
     }
 
     if(fIsMC || (!fIsMC && ph->IsTOFOK())){
+
                                              FillHistogramTH1(fOutputContainer,"hPhotonPt_noPID",pT,1/eff * weight * 1/trgeff);
       if(fPHOSClusterCuts->IsNeutral(ph))    FillHistogramTH1(fOutputContainer,"hPhotonPt_CPV"  ,pT,1/eff * weight * 1/trgeff);
       if(fPHOSClusterCuts->AcceptDisp(ph))   FillHistogramTH1(fOutputContainer,"hPhotonPt_Disp" ,pT,1/eff * weight * 1/trgeff);
       if(fPHOSClusterCuts->AcceptPhoton(ph)) FillHistogramTH1(fOutputContainer,"hPhotonPt_PID"  ,pT,1/eff * weight * 1/trgeff);
+
+                                             FillHistogramTH1(fOutputContainer,"hPhotonPt_noPID_woW",pT);
+      if(fPHOSClusterCuts->IsNeutral(ph))    FillHistogramTH1(fOutputContainer,"hPhotonPt_CPV_woW"  ,pT);
+      if(fPHOSClusterCuts->AcceptDisp(ph))   FillHistogramTH1(fOutputContainer,"hPhotonPt_Disp_woW" ,pT);
+      if(fPHOSClusterCuts->AcceptPhoton(ph)) FillHistogramTH1(fOutputContainer,"hPhotonPt_PID_woW"  ,pT);
+
     }
 
     if(!fPHOSClusterCuts->AcceptPhoton(ph)) continue;
@@ -2119,10 +2230,25 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
       value[1] = pt12;
       value[2] = asym;
 
-      FillHistogramTH2(fOutputContainer,"hMgg_noPID",m12,pt12,weight);
-      if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMgg_CPV" ,m12,pt12,weight);
-      if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMgg_Disp",m12,pt12,weight);
-      if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMgg_PID" ,m12,pt12,weight);
+      if(ph1->IsTOFOK() && ph2->IsTOFOK()){
+
+        FillHistogramTH2(fOutputContainer,"hMgg_noPID",m12,pt12,1/eff12 * weight * 1/trgeff12);
+        if(fPHOSClusterCuts->IsNeutral(ph1) && fPHOSClusterCuts->IsNeutral(ph2))
+          FillHistogramTH2(fOutputContainer,"hMgg_CPV" ,m12,pt12,1/eff12 * weight * 1/trgeff12);
+        if(fPHOSClusterCuts->AcceptDisp(ph1) && fPHOSClusterCuts->AcceptDisp(ph2))
+          FillHistogramTH2(fOutputContainer,"hMgg_Disp",m12,pt12,1/eff12 * weight * 1/trgeff12);
+        if(fPHOSClusterCuts->AcceptPhoton(ph1) && fPHOSClusterCuts->AcceptPhoton(ph2)) 
+          FillHistogramTH2(fOutputContainer,"hMgg_PID" ,m12,pt12,1/eff12 * weight * 1/trgeff12);
+
+        FillHistogramTH2(fOutputContainer,"hMgg_noPID_woW",m12,pt12);
+        if(fPHOSClusterCuts->IsNeutral(ph1) && fPHOSClusterCuts->IsNeutral(ph2))
+          FillHistogramTH2(fOutputContainer,"hMgg_CPV_woW" ,m12,pt12);
+        if(fPHOSClusterCuts->AcceptDisp(ph1) && fPHOSClusterCuts->AcceptDisp(ph2))
+          FillHistogramTH2(fOutputContainer,"hMgg_Disp_woW",m12,pt12);
+        if(fPHOSClusterCuts->AcceptPhoton(ph1) && fPHOSClusterCuts->AcceptPhoton(ph2))
+          FillHistogramTH2(fOutputContainer,"hMgg_PID_woW" ,m12,pt12);
+
+      }
 
       if (!fPHOSClusterCuts->AcceptPhoton(ph1) || !fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
 
@@ -2130,6 +2256,7 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
         Double_t oa = TMath::Abs(ph1->Angle(ph2->Vect())) * 1e+3;//rad->mrad
         FillHistogramTH3(fOutputContainer,"hMgg_OA",m12,pt12,oa,weight);
       }
+
       if(m12 > 0.96) continue;//reduce entry in THnSparse
 
       if(TMath::Abs(ph1->Module()-ph2->Module()) < 2) FillHistogramTH2(fOutputContainer,Form("hMgg_M%d%d",TMath::Min(ph1->Module(),ph2->Module()), TMath::Max(ph1->Module(),ph2->Module())),m12,pt12,weight * 1/trgeff12);
@@ -2151,7 +2278,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMgg()
 //________________________________________________________________________
 void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg() 
 {
-  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
 
   const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
 
@@ -2175,8 +2301,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!CheckMinimumEnergy(ph1)) continue;
 
-    for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
-      TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
+    for(Int_t ev=0;ev<fPHOSEventList->GetSize();ev++){
+      TClonesArray *mixPHOS = static_cast<TClonesArray*>(fPHOSEventList->At(ev));
 
       for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
         AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
@@ -2255,10 +2381,25 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixMgg()
         value[1] = pt12;
         value[2] = asym;
 
-        FillHistogramTH2(fOutputContainer,"hMixMgg_noPID",m12,pt12,weight);
-        if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMixMgg_CPV" ,m12,pt12,weight);
-        if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMixMgg_Disp",m12,pt12,weight);
-        if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMixMgg_PID" ,m12,pt12,weight);
+        if (ph1->IsTOFOK() && ph2->IsTOFOK()){
+
+          FillHistogramTH2(fOutputContainer,"hMixMgg_noPID",m12,pt12,1/eff12 * weight * 1/trgeff12);
+          if(fPHOSClusterCuts->IsNeutral(ph1) && fPHOSClusterCuts->IsNeutral(ph2))
+            FillHistogramTH2(fOutputContainer,"hMixMgg_CPV" ,m12,pt12,1/eff12 * weight * 1/trgeff12);
+          if(fPHOSClusterCuts->AcceptDisp(ph1) && fPHOSClusterCuts->AcceptDisp(ph2))
+            FillHistogramTH2(fOutputContainer,"hMixMgg_Disp",m12,pt12,1/eff12 * weight * 1/trgeff12);
+          if(fPHOSClusterCuts->AcceptPhoton(ph1) && fPHOSClusterCuts->AcceptPhoton(ph2)) 
+            FillHistogramTH2(fOutputContainer,"hMixMgg_PID" ,m12,pt12,1/eff12 * weight * 1/trgeff12);
+
+          FillHistogramTH2(fOutputContainer,"hMixMgg_noPID_woW",m12,pt12);
+          if(fPHOSClusterCuts->IsNeutral(ph1) && fPHOSClusterCuts->IsNeutral(ph2))
+            FillHistogramTH2(fOutputContainer,"hMixMgg_CPV_woW" ,m12,pt12);
+          if(fPHOSClusterCuts->AcceptDisp(ph1) && fPHOSClusterCuts->AcceptDisp(ph2))
+            FillHistogramTH2(fOutputContainer,"hMixMgg_Disp_woW",m12,pt12);
+          if(fPHOSClusterCuts->AcceptPhoton(ph1) && fPHOSClusterCuts->AcceptPhoton(ph2))
+            FillHistogramTH2(fOutputContainer,"hMixMgg_PID_woW" ,m12,pt12);
+            
+        }
 
         if (!fPHOSClusterCuts->AcceptPhoton(ph1) || !fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
 
@@ -2720,12 +2861,18 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
       if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_Disp",m12,pT,weight);
       if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_PID" ,m12,pT,weight);
 
+      
+      FillHistogramTH2(fOutputContainer,"hMgg_Probe_PID_woW",m12,pT);
+
+      if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_CPV_woW" ,m12,pT);
+      if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_Disp_woW",m12,pT);
+      if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMgg_PassingProbe_PID_woW" ,m12,pT);
+
     }//end of ph2
 
   }//end of ph1
 
   //next mixed event
-  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
@@ -2737,8 +2884,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
     //apply tight cut to photon1
     if(ph1->Energy() < 0.5 || ph1->GetNsigmaCPV() < 4 || ph1->GetNsigmaCoreDisp() > 2.5) continue;
 
-    for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
-      TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
+    for(Int_t ev=0;ev<fPHOSEventList->GetSize();ev++){
+      TClonesArray *mixPHOS = static_cast<TClonesArray*>(fPHOSEventList->At(ev));
 
       for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
         AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
@@ -2774,6 +2921,11 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimatePIDCutEfficiency()
         if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_CPV" ,m12,pT,weight);
         if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_Disp",m12,pT,weight);
         if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_PID" ,m12,pT,weight);
+
+        FillHistogramTH2(fOutputContainer,"hMixMgg_Probe_PID_woW",m12,pT);
+        if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_CPV_woW" ,m12,pT);
+        if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_Disp_woW",m12,pT);
+        if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMixMgg_PassingProbe_PID_woW" ,m12,pT);
 
       }//end of mix
 
@@ -2827,7 +2979,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTOFCutEfficiency()
   }//end of ph1
 
   //next mixed event
-  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
@@ -2837,8 +2988,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTOFCutEfficiency()
 
     if(!fIsMC && fIsPHOSTriggerAnalysis && !ph1->IsTrig()) continue;//take trigger bias into account.
 
-    for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
-      TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
+    for(Int_t ev=0;ev<fPHOSEventList->GetSize();ev++){
+      TClonesArray *mixPHOS = static_cast<TClonesArray*>(fPHOSEventList->At(ev));
 
       for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
         AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
@@ -3390,7 +3541,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
   }//end of ph1
 
   //next mixed event
-  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
@@ -3410,8 +3560,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::EstimateTriggerEfficiency()
     //phi_tag = global_tag.Phi();
     //if(phi_tag < 0) phi_tag += TMath::TwoPi();
 
-    for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
-      TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
+    for(Int_t ev=0;ev<fPHOSEventList->GetSize();ev++){
+      TClonesArray *mixPHOS = static_cast<TClonesArray*>(fPHOSEventList->At(ev));
 
       for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
         AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
@@ -4471,7 +4621,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DoNonLinearityStudy()
     }//end of ib
   }//end of ia
 
-  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
 
   for(Int_t ia=0;ia<7;ia++){
     for(Int_t ib=0;ib<7;ib++){
@@ -4481,8 +4630,8 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::DoNonLinearityStudy()
         if(!fPHOSClusterCuts->AcceptPhoton(ph1)) continue;
         if(!CheckMinimumEnergy(ph1)) continue;
 
-        for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
-          TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
+        for(Int_t ev=0;ev<fPHOSEventList->GetSize();ev++){
+          TClonesArray *mixPHOS = static_cast<TClonesArray*>(fPHOSEventList->At(ev));
 
           for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
             AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
@@ -4798,7 +4947,6 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillTrackMatching()
 //_______________________________________________________________________________
 void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixTrackMatching()
 {
-  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
   Float_t position[3] = {0,0,0};
   Int_t relId[4]={0,0,0,0};
   Double_t pT = 0;
@@ -4827,11 +4975,11 @@ void AliAnalysisTaskPHOSPi0EtaToGammaGamma::FillMixTrackMatching()
     AliPHOSTenderSupply *supply = (AliPHOSTenderSupply*)PHOSTenderTask->GetPHOSTenderSupply();
     //track matching by AliPHOSTenderSupply
 
-    Int_t Nev = prevPHOS->GetSize();
+    Int_t Nev = fPHOSEventList->GetSize();
     if(Nev > fNMixTrack) Nev = fNMixTrack;//set max N events.
 
     for(Int_t iev=0;iev<Nev;iev++){
-      TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(iev));
+      TClonesArray *mixPHOS = static_cast<TClonesArray*>(fPHOSEventList->At(iev));
 
       for(Int_t iph=0;iph<mixPHOS->GetEntriesFast();iph++){
         AliCaloPhoton *ph = (AliCaloPhoton*)mixPHOS->At(iph);
