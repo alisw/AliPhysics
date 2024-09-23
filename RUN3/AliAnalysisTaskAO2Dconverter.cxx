@@ -870,7 +870,6 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   TTree* tRun2TrackExtras = CreateTree(kRun2TrackExtras);
   if (fTreeStatus[kRun2TrackExtras]) {
     //Extra Run 2
-    tRun2TrackExtras->Branch("fTPCNClsPID", &tracks.fTPCNClsPID, "fTPCNClsPID/b");
     tRun2TrackExtras->Branch("fITSSignal", &tracks.fITSSignal, "fITSSignal/F");
     tRun2TrackExtras->SetBasketSize("*", fBasketSizeTracks);
   }
@@ -1824,8 +1823,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
       tracks.fTPCNClsShared = (track->GetTPCSharedMap()).CountBits();
 
-      tracks.fTPCNClsPID = track->GetTPCsignalN();
-
       tracks.fTRDPattern = 0;
       for (int i = 0; i < 6; i++)
         if (track->GetTRDslice(i) > 0)
@@ -2051,7 +2048,6 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         tracks.fTPCNClsFindableMinusFound = 0;
         tracks.fTPCNClsFindableMinusCrossedRows = 0;
         tracks.fTPCNClsShared = 0;
-        tracks.fTPCNClsPID = 0;
         tracks.fTRDPattern = 0;
         tracks.fITSChi2NCl = NAN;
         tracks.fTPCChi2NCl = NAN;
