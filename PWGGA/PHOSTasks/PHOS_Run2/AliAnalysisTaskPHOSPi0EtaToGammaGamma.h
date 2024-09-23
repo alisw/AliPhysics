@@ -435,6 +435,11 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     virtual void FillMixTrackMatching();
 
   protected:
+
+    static const Int_t kCentBins = 7; // centrality
+    static const Int_t kVtxBins = 10; // z-vertex
+    static const Int_t kPRBins = 6;   // Reaction plane
+
     Bool_t fIsMC;
     Bool_t fIsJJMC;//jet jet MC
     Int_t fPtHardBin;//your selected pT hard bin for jet jet MC
@@ -471,17 +476,23 @@ class AliAnalysisTaskPHOSPi0EtaToGammaGamma : public AliAnalysisTaskSE {
     Double_t fPtHardAndSinglePtFactor;
     Int_t fRunNumber;
     AliPHOSGeometry *fPHOSGeo;
-    TList *fPHOSEvents[10][12];
+    // TList *fPHOSEvents[10][12];
+    TList* fPHOSEvents[kVtxBins][kCentBins][kPRBins]; //! Previous events for mixing
+    TList* fPHOSEventList;
     TClonesArray *fPHOSClusterArray;
     TString fEstimator;//V0[M|A|C], ZN[A|C], CL[0|1], HybridTrack, SPDTracklet
     AliMultSelection *fMultSelection;
     Float_t fCentralityMain;
     Float_t fCentralityMin;
     Float_t fCentralityMax;
+    Int_t fNCenBin;
+    Int_t fCentBin;
     Int_t fNMixed;
     Double_t fVertex[3];
     Int_t fZvtx;
     Int_t fEPBin;
+    Int_t fRPBin;
+    Double_t fRP; // readction plane
     Bool_t fIsFlowTask;
     Int_t fHarmonics;
     TString fQNormalization;
