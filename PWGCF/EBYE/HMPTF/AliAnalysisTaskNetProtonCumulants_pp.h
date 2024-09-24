@@ -150,10 +150,18 @@ class AliAnalysisTaskNetProtonCumulants_pp : public AliAnalysisTaskSE {
   TH1D *hNumberOfPionMinus;
   TH1D *hNumberOfProtonPlus;
   TH1D *hNumberOfProtonMinus;
+  TH2D *f2Dhist_pt_vs_rapidity_proton;
 
   //ftreeEvent object variables
   TTree *fTreeEvent;
   Float_t fTreeVariableCentrality;
+  Float_t fMultV0AplusC;
+  Float_t fMultEta0p8_noProton;
+  Float_t fRefmult;
+  Float_t fRefmult5;
+  Float_t fRefmult8;
+  Float_t fRefmult10;
+  
   //reconstruced
   Float_t fNoKaonPlus_ptmax2;
   Float_t fNoKaonMinus_ptmax2;

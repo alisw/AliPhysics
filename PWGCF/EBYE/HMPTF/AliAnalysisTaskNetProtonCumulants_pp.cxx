@@ -40,6 +40,7 @@
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
 #include "AliStack.h"
+#include "AliAODHeader.h"
 #include "AliAODMCHeader.h"
 #include "AliAODMCParticle.h"
 
@@ -103,7 +104,14 @@ AliAnalysisTaskNetProtonCumulants_pp::AliAnalysisTaskNetProtonCumulants_pp():
   hNumberOfPionMinus(0),
   hNumberOfProtonPlus(0),
   hNumberOfProtonMinus(0),
+  f2Dhist_pt_vs_rapidity_proton(0),
   fTreeVariableCentrality(0),
+  fMultV0AplusC(0),
+  fMultEta0p8_noProton(0),
+  fRefmult(0),
+  fRefmult5(0),
+  fRefmult8(0),
+  fRefmult10(0),
   fNoKaonPlus_ptmax2(0),
   fNoKaonMinus_ptmax2(0),
   fNoKaonPlus_ptmax3(0),
@@ -215,7 +223,14 @@ AliAnalysisTaskNetProtonCumulants_pp::AliAnalysisTaskNetProtonCumulants_pp(const
   hNumberOfPionMinus(0),
   hNumberOfProtonPlus(0),
   hNumberOfProtonMinus(0),
+  f2Dhist_pt_vs_rapidity_proton(0),
   fTreeVariableCentrality(0),
+  fMultV0AplusC(0),
+  fMultEta0p8_noProton(0),
+  fRefmult(0),
+  fRefmult5(0),
+  fRefmult8(0),
+  fRefmult10(0),
   fNoKaonPlus_ptmax2(0),
   fNoKaonMinus_ptmax2(0),
   fNoKaonPlus_ptmax3(0),
@@ -371,10 +386,22 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserCreateOutputObjects()  {
     fOutputList -> Add(hNumberOfProtonPlus);
     fOutputList -> Add(hNumberOfProtonMinus);
 
+    //2D hist for protons: pt vs. Y
+    f2Dhist_pt_vs_rapidity_proton = new TH2D("f2Dhist_pt_vs_rapidity_proton", "f2Dhist_pt_vs_rapidity_proton", 400, -2, +2, 500, 0, 5);
+    fOutputList -> Add(f2Dhist_pt_vs_rapidity_proton);
+
     
     //TTree object to store variables
     fTreeEvent = new TTree(fTreeName,"Event Tree");
     fTreeEvent->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
+    //multipliciteis
+    fTreeEvent->Branch("fMultV0AplusC",&fMultV0AplusC,"fMultV0AplusC/F");
+    fTreeEvent->Branch("fMultEta0p8_noProton",&fMultEta0p8_noProton,"fMultEta0p8_noProton/F");
+    fTreeEvent->Branch("fRefmult",&fRefmult,"fRefmult/F");
+    fTreeEvent->Branch("fRefmult5",&fRefmult5,"fRefmult5/F");
+    fTreeEvent->Branch("fRefmult8",&fRefmult8,"fRefmult8/F");
+    fTreeEvent->Branch("fRefmult10",&fRefmult10,"fRefmult10/F");
+    
     //reconstructed
     //--------------------------
     fTreeEvent->Branch("fNoProtonPlus_ptmax2", &fNoProtonPlus_ptmax2, "fNoProtonPlus_ptmax2/F");
@@ -442,13 +469,7 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserExec(Option_t *)  {
 	  lV0M = MultSelection->GetMultiplicityPercentile("CL2");
 
 	//cout<<"V0M: "<<lV0M<<endl;
-      }
-
-    
-    //"fTreeEvent" Tree Variable
-    fTreeVariableCentrality = lV0M;
-
-    
+      }  
     
     //Initialize number 0f K+, K-, pi+, pi-, p and p-bar per event
 
@@ -515,7 +536,21 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserExec(Option_t *)  {
       centrality_bin = 8;
 
 
+    //***************VZERO-AMPLITUDE************************
+    AliAODVZERO *aodV0 =  fAODevent->GetVZEROData();
+    float fV0A_mult = aodV0->GetMTotV0A();
+    float fV0C_mult = aodV0->GetMTotV0C();
+    float fV0_total = fV0A_mult + fV0C_mult;
+    cout<<"VZero Multiplicity: "<<fV0_total<<endl;
 
+    int refmult = ((AliAODHeader *) fAODevent->GetHeader())->GetRefMultiplicity();
+    int refmult05 = ((AliAODHeader *) fAODevent->GetHeader())->GetRefMultiplicityComb05();
+    int refmult08 = ((AliAODHeader *) fAODevent->GetHeader())->GetRefMultiplicityComb08();
+    int refmult10 = ((AliAODHeader *) fAODevent->GetHeader())->GetRefMultiplicityComb10();
+    //cout<<"Refmult: "<<refmult<<"\tRefmult5: "<<refmult05<<"\tRefmult8: "<<refmult08<<"\tRefmult10: "<<refmult10<<endl;
+
+   
+    float mult = 0;
 
     //Loop on reconstructed tracks
     
@@ -540,6 +575,7 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserExec(Option_t *)  {
 	Double_t trkITSchi2perNcls = trkITSchi2/trkITSNcls;
 	Double_t trkTPCchi2perNcls = aodtrack->GetTPCchi2perCluster();
 	Double_t trkTPCcrossedrows = aodtrack->GetTPCCrossedRows();
+	Double_t trkRapidity = aodtrack->Y();
 
 
 	//Track selectionL FilterBit 96
@@ -551,9 +587,22 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserExec(Option_t *)  {
 	if (trkTPCchi2perNcls > fChi2TPC) continue;
 	if (trkITSchi2perNcls > fChi2ITS) continue;
 
+	//identifying particle type
+	Int_t trackPIDbasedId = IdentifyTrackBayesian(track);
+	
+	//Multplicity in |eta| < 0.8 and protons removed
+	if (TMath::Abs(trkEta) < 0.8)
+	  {
+	    if (!(trackPIDbasedId==3))
+	      mult+=1;
+	  }
+
+	//Fill proton antiproton 2D distribution pt vs. y
+	f2Dhist_pt_vs_rapidity_proton->Fill(trkRapidity, trkPt);
 
 	//Kinematic cuts on pT and Eta
 	if (TMath::Abs(trkEta) > fEtaMax) continue;
+	
 	if (trkPt < 0.2) continue;
 	if (trkPt > 3.0) continue;
 
@@ -567,7 +616,6 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserExec(Option_t *)  {
 	//Check if PID to be estimated by Bayesian Method
 	if(fBayesianPID_flag == 1)
 	  {
-	    Int_t trackPIDbasedId = IdentifyTrackBayesian(track);
 	    if (trackPIDbasedId == 1)
 	      {
 		IsPion = kTRUE;
@@ -611,10 +659,12 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserExec(Option_t *)  {
 	  {
 	    if (trkPt > 0.4) // cut for removing protons coming from beam pipe
 	      {
-		if (fEffProtonPlus[centrality_bin])
+		if (fHistMCEffProtonPlus/*fEffProtonPlus[centrality_bin]*/)
 		  {
-		    ptBinNo = fEffProtonPlus[centrality_bin]->FindBin(trkPt);
-		    BinCont = fEffProtonPlus[centrality_bin]->GetBinContent(ptBinNo);
+		    // ptBinNo = fEffProtonPlus[centrality_bin]->FindBin(trkPt);
+		    // BinCont = fEffProtonPlus[centrality_bin]->GetBinContent(ptBinNo);
+		    ptBinNo = fHistMCEffProtonPlus->FindBin(trkPt);
+		    BinCont = fHistMCEffProtonPlus->GetBinContent(ptBinNo);
 		    if(BinCont!=0) EffWgt = 1.0/BinCont;
 
 		    if(trkPt > 0.6 && trkPt < 1.5)
@@ -647,10 +697,12 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserExec(Option_t *)  {
 	  {
 	    if (trkPt > 0.4) // cut for removing protons coming from beam pipe
 	      {
-		if (fEffProtonMinus[centrality_bin])
+		if (fHistMCEffProtonMinus/*fEffProtonMinus[centrality_bin]*/)
 		  {
-		    ptBinNo = fEffProtonMinus[centrality_bin]->FindBin(trkPt);
-		    BinCont = fEffProtonMinus[centrality_bin]->GetBinContent(ptBinNo);
+		    // ptBinNo = fEffProtonMinus[centrality_bin]->FindBin(trkPt);
+		    // BinCont = fEffProtonMinus[centrality_bin]->GetBinContent(ptBinNo);
+		    ptBinNo = fHistMCEffProtonMinus->FindBin(trkPt);
+		    BinCont = fHistMCEffProtonMinus->GetBinContent(ptBinNo);
 		    if(BinCont!=0) EffWgt = 1.0/BinCont;
 
 		    if(trkPt > 0.6 && trkPt < 1.5)
@@ -686,6 +738,16 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserExec(Option_t *)  {
     //Proton
     hNumberOfProtonPlus->Fill(no_ProtonPlus_perevent_ptmax2);
     hNumberOfProtonMinus->Fill(no_ProtonMinus_perevent_ptmax2);
+
+    //"fTreeEvent" Tree Variables
+    fTreeVariableCentrality = lV0M;
+    fMultV0AplusC = fV0_total;
+    fMultEta0p8_noProton = mult;
+    fRefmult = refmult;
+    fRefmult5 = refmult05;
+    fRefmult8 = refmult08;
+    fRefmult10 = refmult10;
+    cout<<"TPC multiplicity: "<<mult<<endl;
 
     //++++++++++++++++++++++++++++++++++++++++++++
     //Reconstructed
