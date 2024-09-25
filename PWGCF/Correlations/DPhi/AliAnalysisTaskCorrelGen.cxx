@@ -853,7 +853,7 @@ void AliAnalysisTaskCorrelGen::CorrelationMixing(TObjArray *triggers, TObjArray 
 
             if (!assoc)
                 continue;
-            if (isnan(assoc->Eta()))
+            if (std::isnan(assoc->Eta()))
                 continue;
             if (TMath::Abs(assoc->Eta()) > 0.8)
                 continue;
