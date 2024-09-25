@@ -103,12 +103,7 @@ ClassImp(AliAnalysisTaskZNZP)  // classimp: necessary for root
       fMCStack(0),
       fMC(0),
       fUseMC(kFALSE),
-      fIsSystematics(true),
-      fVaryVtxZPos(false),
       fSaveAsy(false),
-      fMinVtxZPos(-5.0),
-      fMaxVtxZPos(5.0),
-      fSystematic(1),
       fTrigger(AliVEvent::kCentral),
       fMultSelection(0x0),
       fTrackFilter(0x0),
@@ -121,25 +116,41 @@ ClassImp(AliAnalysisTaskZNZP)  // classimp: necessary for root
       ftrackmult08(0),
       fv0mpercentile(0),
       fv0mamplitude(0),
+      fSPD(0),
+      fNchTPC(0),
+      fET(0.),
       pV0MAmpChannel(0),
       hV0Percentile(0),
       hBestVtxZ(0),
-      hZNvsV0MPer(0),
-      hZNvsV0M(0),
       hZNAvsV0M(0),
       hZNCvsV0M(0),
       hAsyN(0),
-      hZPvsV0MPer(0),
-      hZPvsV0M(0),
       hZPAvsV0M(0),
       hZPCvsV0M(0),
-      /*hAsyP(0),*/
       hZNCpmc(0),
       hZNApmc(0),
       hZPCpmc(0),
       hZPApmc(0),
       hZNCNorm(0),
-      hZNANorm(0) {}
+      hZNANorm(0),
+      pZNChannel(0),
+      pZPChannel(0),
+      pZNCvsV0Amp(0),
+      pZNAvsV0Amp(0),
+      pZPCvsV0Amp(0),
+      pZPAvsV0Amp(0),
+      pZNCvsNch(0),
+      pZNAvsNch(0),
+      pZPCvsNch(0),
+      pZPAvsNch(0),
+      pZNCvsEt(0),
+      pZNAvsEt(0),
+      pZPCvsEt(0),
+      pZPAvsEt(0),
+      pZNCvsSPD(0),
+      pZNAvsSPD(0),
+      pZPCvsSPD(0),
+      pZPAvsSPD(0) {}
 //_____________________________________________________________________________
 AliAnalysisTaskZNZP::AliAnalysisTaskZNZP(const char* name)
     : AliAnalysisTaskSE(name),
@@ -148,12 +159,7 @@ AliAnalysisTaskZNZP::AliAnalysisTaskZNZP(const char* name)
       fMCStack(0),
       fMC(0),
       fUseMC(kFALSE),
-      fIsSystematics(true),
-      fVaryVtxZPos(false),
       fSaveAsy(false),
-      fMinVtxZPos(-5.0),
-      fMaxVtxZPos(5.0),
-      fSystematic(1),
       fTrigger(AliVEvent::kCentral),
       fMultSelection(0x0),
       fTrackFilter(0x0),
@@ -166,25 +172,41 @@ AliAnalysisTaskZNZP::AliAnalysisTaskZNZP(const char* name)
       ftrackmult08(0),
       fv0mpercentile(0),
       fv0mamplitude(0),
+      fSPD(0),
+      fNchTPC(0),
+      fET(0.),
       pV0MAmpChannel(0),
       hV0Percentile(0),
       hBestVtxZ(0),
-      hZNvsV0MPer(0),
-      hZNvsV0M(0),
       hZNAvsV0M(0),
       hZNCvsV0M(0),
       hAsyN(0),
-      hZPvsV0MPer(0),
-      hZPvsV0M(0),
       hZPAvsV0M(0),
       hZPCvsV0M(0),
-      /*hAsyP(0),*/
       hZNCpmc(0),
       hZNApmc(0),
       hZPCpmc(0),
       hZPApmc(0),
       hZNCNorm(0),
-      hZNANorm(0) {
+      hZNANorm(0),
+      pZNChannel(0),
+      pZPChannel(0),
+      pZNCvsV0Amp(0),
+      pZNAvsV0Amp(0),
+      pZPCvsV0Amp(0),
+      pZPAvsV0Amp(0),
+      pZNCvsNch(0),
+      pZNAvsNch(0),
+      pZPCvsNch(0),
+      pZPAvsNch(0),
+      pZNCvsEt(0),
+      pZNAvsEt(0),
+      pZPCvsEt(0),
+      pZPAvsEt(0),
+      pZNCvsSPD(0),
+      pZNAvsSPD(0),
+      pZPCvsSPD(0),
+      pZPAvsSPD(0) {
   DefineInput(0, TChain::Class());  // define the input of the analysis: in this
                                     // case you take a 'chain' of events
   // this chain is created by the analysis manager, so no need to worry about
@@ -223,10 +245,6 @@ void AliAnalysisTaskZNZP::UserCreateOutputObjects() {
     fCuts->SetRequireSigmaToVertex(kFALSE);
     fCuts->SetMaxChi2PerClusterITS(36);
     fCuts->SetEtaRange(-0.8, 0.8);
-
-    /*if (fIsSystematics) {*/
-    /*  ChangeCut(fCuts);*/
-    /*}*/
     fTrackFilter->AddCuts(fCuts);
   }
 
@@ -250,17 +268,7 @@ void AliAnalysisTaskZNZP::UserCreateOutputObjects() {
     fCuts3->SetRequireSigmaToVertex(kFALSE);  //
     fCuts3->SetMaxChi2PerClusterITS(36);      //
     fCuts3->SetEtaRange(-0.8, 0.8);
-
-    /*if (fIsSystematics) {*/
-    /*  ChangeCut(fCuts3);*/
-    /*}*/
     fTrackFilterwoDCA->AddCuts(fCuts3);
-  }
-
-  if (fVaryVtxZPos) {
-    fEventCuts.SetManualMode();  //! Enable manual mode
-    fEventCuts.fMinVtz = fMinVtxZPos;
-    fEventCuts.fMaxVtz = fMaxVtxZPos;
   }
 
   // create output objects
@@ -268,36 +276,44 @@ void AliAnalysisTaskZNZP::UserCreateOutputObjects() {
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
 
-  /*constexpr double v0mAmp_width{25.0};*/
-  /*constexpr int v0mAmp_Nbins{1720};*/
-  /*double v0mAmp_bins[v0mAmp_Nbins + 1] = {0};*/
-  /*for (int i = 0; i <= v0mAmp_Nbins; ++i) {*/
-  /*  v0mAmp_bins[i] = 0.0 + i * v0mAmp_width;*/
-  /*}*/
+  constexpr double v0mAmp_width{25.0};
+  constexpr int v0mAmp_Nbins{1720};
+  double v0mAmp_bins[v0mAmp_Nbins + 1] = {0};
+  for (int i = 0; i <= v0mAmp_Nbins; ++i) {
+    v0mAmp_bins[i] = 0.0 + i * v0mAmp_width;
+  }
 
-  const int nBinsV0M090{70};
+  // SPD Tracklets (|eta|<0.8)
+  constexpr int SPD0p8_Nbins{1650};
+  double SPD0p8_bins[SPD0p8_Nbins + 1] = {0};
+  for (int i = 0; i <= SPD0p8_Nbins; ++i) {
+    SPD0p8_bins[i] = 0.5 + (2.0 * i);
+  }
+
+  // Nch (|eta|<0.8)
+  constexpr int nch_Nbins{1250};
+  double nch_bins[nch_Nbins + 1] = {0};
+  for (int i = 0; i <= nch_Nbins; ++i) {
+    nch_bins[i] = 0.5 + (2.0 * i);
+  }
+
+  constexpr int Et_Nbins{1000};
+  double Et_bins[Et_Nbins + 1] = {0};
+  for (int i = 0; i <= Et_Nbins; ++i) {
+    Et_bins[i] = 0.0 + (2.0 * i);
+  }
+
+  const int nBinsV0M090{80};
   double BinsV0M090[nBinsV0M090 + 1] = {0.0};
   for (int i = 0; i <= nBinsV0M090; ++i) {
     BinsV0M090[i] = 0.0 + (double)i;
   }
 
-  /*constexpr int v0m_Nbins080{6};*/
-  /*constexpr double v0m_bins080[v0m_Nbins080 + 1] = {0.0,  1.0,  5.0, 10.0,*/
-  /*                                                  20.0, 50.0, 80.0};*/
-
   hV0Percentile = new TH1F("hV0M", ";V0M (%);Entries", nBinsV0M090, BinsV0M090);
   pV0MAmpChannel =
       new TProfile("pV0Channel", ";Channel; Amplitude;", 64, -0.5, 63.5);
-  /*hV0MAmplitude =*/
-  /*    new TH1F("hV0MAmp", ";V0M amplitude;Counts", v0mAmp_Nbins,
-   * v0mAmp_bins);*/
   hBestVtxZ =
       new TH1F("hBestVtxZ", ";Vertex_{#it{z}} (cm); Counts;", 400, -11, 11);
-
-  hZNvsV0M = new TH2F("hZNvsV0M", "ZNA+ZNC;V0M Per; #it{E}_{ZN} [TeV]/2.511;",
-                      nBinsV0M090, BinsV0M090, 200, 0.0, 200.0);
-  hZPvsV0M = new TH2F("hZPvsV0M", "ZPA+ZPC;V0M Per; #it{E}_{ZP} [TeV]/2.511;",
-                      nBinsV0M090, BinsV0M090, 60, 0.0, 60.0);
 
   hZNAvsV0M = new TH2F("hZNAvsV0M", "ZNA;V0M Per; #it{E}_{ZN} [TeV]/2.511;",
                        nBinsV0M090, BinsV0M090, 100, 0.0, 100.0);
@@ -311,16 +327,6 @@ void AliAnalysisTaskZNZP::UserCreateOutputObjects() {
   hAsyN =
       new TH2F("hAsyN", "Neutron asymmetry;V0M Per; N_{C}-N_{A}/N_{C}+N_{A};",
                nBinsV0M090, BinsV0M090, 50, -1.0, 1.0);
-  /*hAsyP =*/
-  /*    new TH2F("hAsyP", "Proton asymmetry;V0M Per;
-   * P_{C}-P_{A}/P_{C}+P_{A};",*/
-  /*             nBinsV0M090, BinsV0M090, 50, -1.0, 1.0);*/
-  hZNvsV0MPer =
-      new TH2F("hZNvsV0MPer", "(ZNA+ZNC)/2;V0M Per; #it{E}_{ZN} [TeV]/2.511;",
-               nBinsV0M090, BinsV0M090, 100, 0.0, 100.0);
-  hZPvsV0MPer =
-      new TH2F("hZPvsV0MPer", "(ZPA+ZPC)/2;V0M Per; #it{E}_{ZP} [TeV]/2.511;",
-               nBinsV0M090, BinsV0M090, 30, 0.0, 30.0);
 
   hZNCNorm = new TH2F("hZNCNorm", ";V0M;<ZNC>/<ZNC>;", nBinsV0M090, BinsV0M090,
                       40, 0., 2.);
@@ -328,41 +334,80 @@ void AliAnalysisTaskZNZP::UserCreateOutputObjects() {
   hZNANorm = new TH2F("hZNANorm", ";V0M;<ZNA>/<ZNA>;", nBinsV0M090, BinsV0M090,
                       40, 0., 2.);
 
-  /*hZNCNormSca = new TH2F("hZNCNormSca", ";V0M;<ZNC>/<ZNC> with #sigma
-   * scaled;",*/
-  /*                       nBinsV0M090, BinsV0M090, 40, 0., 2.);*/
-
-  /*hZNANormSca = new TH2F("hZNANormSca", ";V0M;<ZNA>/<ZNA> with #sigma scaled;",*/
-  /*                       nBinsV0M090, BinsV0M090, 40, 0., 2.);*/
-
   hZNCpmc = new TH1F("hZNCpmc", "ZNC PMC;ZNC energy;Entries", 520, 0., 130.);
   hZNApmc = new TH1F("hZNApmc", "ZNA PMC;ZNA energy;Entries", 520, 0., 130.);
   hZPCpmc = new TH1F("hZPCpmc", "ZPC PMC;ZPC energy;Entries", 120, 0., 30.);
   hZPApmc = new TH1F("hZPApmc", "ZPA PMC;ZPA energy;Entries", 120, 0., 30.);
 
+  pZNChannel = new TProfile("pZNChannel", ";Channel; <ZN>;", 10, 0., 10.);
+  pZPChannel = new TProfile("pZPChannel", ";Channel; <ZP>;", 10, 0., 10.);
+
+  pZNCvsV0Amp = new TProfile("pZNCvsV0Amp", ";V0 Amp; ZNC;", v0mAmp_Nbins,
+                             v0mAmp_bins, 0., 251.);
+  pZNAvsV0Amp = new TProfile("pZNAvsV0Amp", ";V0 Amp; ZNA;", v0mAmp_Nbins,
+                             v0mAmp_bins, 0., 252.);
+  pZPCvsV0Amp = new TProfile("pZPCvsV0Amp", ";V0 Amp; ZPC;", v0mAmp_Nbins,
+                             v0mAmp_bins, 0., 76.);
+  pZPAvsV0Amp = new TProfile("pZPAvsV0Amp", ";V0 Amp; ZPA;", v0mAmp_Nbins,
+                             v0mAmp_bins, 0., 76.);
+  pZNCvsNch =
+      new TProfile("pZNCvsNch", ";Nch;ZNC;", nch_Nbins, nch_bins, 0., 251.);
+  pZNAvsNch =
+      new TProfile("pZNAvsNch", ";Nch;ZNA;", nch_Nbins, nch_bins, 0., 252.);
+  pZPCvsNch =
+      new TProfile("pZPCvsNch", ";Nch;ZPC;", nch_Nbins, nch_bins, 0., 76.);
+  pZPAvsNch =
+      new TProfile("pZPAvsNch", ";Nch;ZPA;", nch_Nbins, nch_bins, 0., 76.);
+
+  pZNCvsEt = new TProfile("pZNCvsEt", ";Et;ZNC;", Et_Nbins, Et_bins, 0., 251.);
+  pZNAvsEt = new TProfile("pZNAvsEt", ";Et;ZNA;", Et_Nbins, Et_bins, 0., 252.);
+  pZPCvsEt = new TProfile("pZPCvsEt", ";Et;ZPC;", Et_Nbins, Et_bins, 0., 76.);
+  pZPAvsEt = new TProfile("pZPAvsEt", ";Et;ZPA;", Et_Nbins, Et_bins, 0., 76.);
+
+  pZNCvsSPD = new TProfile("pZNCvsSPD", ";Nch;ZNC;", SPD0p8_Nbins, SPD0p8_bins,
+                           0., 251.);
+  pZNAvsSPD = new TProfile("pZNAvsSPD", ";Nch;ZNA;", SPD0p8_Nbins, SPD0p8_bins,
+                           0., 252.);
+  pZPCvsSPD = new TProfile("pZPCvsSPD", ";Nch;ZPC;", SPD0p8_Nbins, SPD0p8_bins,
+                           0., 76.);
+  pZPAvsSPD = new TProfile("pZPAvsSPD", ";Nch;ZPA;", SPD0p8_Nbins, SPD0p8_bins,
+                           0., 76.);
+
   fOutputList->Add(hBestVtxZ);
   fOutputList->Add(hV0Percentile);
-  fOutputList->Add(hZNvsV0MPer);
-  fOutputList->Add(hZNvsV0M);
+  fOutputList->Add(pZNChannel);
   fOutputList->Add(hZNAvsV0M);
   fOutputList->Add(hZNCvsV0M);
   fOutputList->Add(hZNCpmc);
   fOutputList->Add(hZNApmc);
   fOutputList->Add(hZNCNorm);
   fOutputList->Add(hZNANorm);
+  fOutputList->Add(pZNCvsV0Amp);
+  fOutputList->Add(pZNAvsV0Amp);
+  fOutputList->Add(pZNCvsNch);
+  fOutputList->Add(pZNAvsNch);
+  fOutputList->Add(pZNCvsEt);
+  fOutputList->Add(pZNAvsEt);
+  fOutputList->Add(pZNCvsSPD);
+  fOutputList->Add(pZNAvsSPD);
+
   if (fSaveAsy) {
     fOutputList->Add(hAsyN);
-    /*fOutputList->Add(hZNCNormSca);*/
-    /*fOutputList->Add(hZNANormSca);*/
   }
 
-  fOutputList->Add(hZPvsV0MPer);
-  fOutputList->Add(hZPvsV0M);
+  fOutputList->Add(pZPChannel);
   fOutputList->Add(hZPAvsV0M);
   fOutputList->Add(hZPCvsV0M);
-  /*fOutputList->Add(hAsyP);*/
   fOutputList->Add(hZPCpmc);
   fOutputList->Add(hZPApmc);
+  fOutputList->Add(pZPCvsV0Amp);
+  fOutputList->Add(pZPAvsV0Amp);
+  fOutputList->Add(pZPCvsNch);
+  fOutputList->Add(pZPAvsNch);
+  fOutputList->Add(pZPCvsEt);
+  fOutputList->Add(pZPAvsEt);
+  fOutputList->Add(pZPCvsSPD);
+  fOutputList->Add(pZPAvsSPD);
 
   fEventCuts.AddQAplotsToList(fOutputList);
   PostData(1, fOutputList);  // postdata will notify the analysis manager of
@@ -435,10 +480,14 @@ void AliAnalysisTaskZNZP::UserExec(Option_t*) {
   VertexPosition();
 
   //! Get calibrated V0 amplitude
-  /*GetCalibratedV0Amplitude();*/
+  GetCalibratedV0Amplitude();
+
+  SPDActivity();
+
+  //! Nch & Et with TPC
+  TPCActivity();
 
   //! Get ZDC Centrality
-  hV0Percentile->Fill(fv0mpercentile);
   GetZDC();
 
   PostData(1, fOutputList);
@@ -463,6 +512,47 @@ void AliAnalysisTaskZNZP::GetZDC() {
   const double zpc{esdZDC->GetZDCP1Energy() / 1000.0};
   const double zpa{esdZDC->GetZDCP2Energy() / 1000.0};
 
+  hZNCvsV0M->Fill(fv0mpercentile, znc / 2.511);
+  hZNAvsV0M->Fill(fv0mpercentile, zna / 2.511);
+  hZPCvsV0M->Fill(fv0mpercentile, zpc / 2.511);
+  hZPAvsV0M->Fill(fv0mpercentile, zpa / 2.511);
+
+  pZNCvsV0Amp->Fill(fv0mamplitude, znc);
+  pZNAvsV0Amp->Fill(fv0mamplitude, zna);
+  pZPCvsV0Amp->Fill(fv0mamplitude, zpc);
+  pZPAvsV0Amp->Fill(fv0mamplitude, zpa);
+
+  pZNCvsSPD->Fill(fSPD, znc);
+  pZNAvsSPD->Fill(fSPD, zna);
+  pZPCvsSPD->Fill(fSPD, zpc);
+  pZPAvsSPD->Fill(fSPD, zpa);
+
+  pZNCvsNch->Fill(fNchTPC, znc);
+  pZNAvsNch->Fill(fNchTPC, zna);
+  pZPCvsNch->Fill(fNchTPC, zpc);
+  pZPAvsNch->Fill(fNchTPC, zpa);
+
+  pZNCvsEt->Fill(fET, znc);
+  pZNAvsEt->Fill(fET, zna);
+  pZPCvsEt->Fill(fET, zpc);
+  pZPAvsEt->Fill(fET, zpa);
+
+  const double* towZNC{esdZDC->GetZN1TowerEnergy()};
+  const double* towZPC{esdZDC->GetZP1TowerEnergy()};
+  const double* towZNA{esdZDC->GetZN2TowerEnergy()};
+  const double* towZPA{esdZDC->GetZP2TowerEnergy()};
+  hZNApmc->Fill(towZNA[0] / 1000.0);
+  hZNCpmc->Fill(towZNC[0] / 1000.0);
+  hZPApmc->Fill(towZPA[0] / 1000.0);
+  hZPCpmc->Fill(towZPC[0] / 1000.0);
+
+  for (int i = 0; i < 5; ++i) {
+    pZNChannel->Fill(i + 0.5, towZNC[i] / 1000.0);
+    pZNChannel->Fill(i + 5.5, towZNA[i] / 1000.0);
+    pZPChannel->Fill(i + 0.5, towZPC[i] / 1000.0);
+    pZPChannel->Fill(i + 5.5, towZPA[i] / 1000.0);
+  }
+
   double meanZNC{1.0};
   double sigmaZNC{1.0};
   double meanZNA{1.0};
@@ -477,42 +567,33 @@ void AliAnalysisTaskZNZP::GetZDC() {
   hZNANorm->Fill(fv0mpercentile, zna / (meanZNA * 2.511));
   const double znc_sca{znc / (meanZNC * 2.511)};
   const double zna_sca{zna / (meanZNA * 2.511)};
-
-  // Non-average ZN & ZP
-  hZNvsV0M->Fill(fv0mpercentile, (znc + zna) / 2.511);
-  hZPvsV0M->Fill(fv0mpercentile, (zpc + zpa) / 2.511);
-
-  hZNCvsV0M->Fill(fv0mpercentile, znc / 2.511);
-  hZNAvsV0M->Fill(fv0mpercentile, zna / 2.511);
-
-  hZPCvsV0M->Fill(fv0mpercentile, zpc / 2.511);
-  hZPAvsV0M->Fill(fv0mpercentile, zpa / 2.511);
-
   hAsyN->Fill(fv0mpercentile, (znc_sca - zna_sca) / (znc_sca + zna_sca));
-  /*hAsyP->Fill(fv0mpercentile, (zpc - zpa) / (zpc + zpa));*/
+}
+//____________________________________________________________
+void AliAnalysisTaskZNZP::SPDActivity() {
+  fSPD = 0;
 
-  const double* towZNC{esdZDC->GetZN1TowerEnergy()};
-  const double* towZPC{esdZDC->GetZP1TowerEnergy()};
-  const double* towZNA{esdZDC->GetZN2TowerEnergy()};
-  const double* towZPA{esdZDC->GetZP2TowerEnergy()};
-  hZNApmc->Fill(towZNA[0] / 1000.0);
-  hZNCpmc->Fill(towZNC[0] / 1000.0);
-  hZPApmc->Fill(towZPA[0] / 1000.0);
-  hZPCpmc->Fill(towZPC[0] / 1000.0);
+  AliMultiplicity* SPDptr = fESD->GetMultiplicity();
+  if (!SPDptr) {
+    return;
+  }
+  const AliESDVertex* spdVtx = fESD->GetPrimaryVertexSPD();
+  if (!spdVtx) {
+    return;
+  }
+  if (spdVtx->GetNContributors() <= 2) {
+    return;
+  }
+  if (TMath::Abs(spdVtx->GetZ()) > 10.) {
+    return;
+  }
+  for (auto it = 0; it < SPDptr->GetNumberOfTracklets(); it++) {
+    if (TMath::Abs(SPDptr->GetEta(it)) > fEtaCut) {
+      continue;
+    }
 
-  /*const double* towZNCLG{esdZDC->GetZN1TowerEnergyLR()};*/
-  /*const double* towZNALG{esdZDC->GetZN2TowerEnergyLR()};*/
-  /*cout << "ZNC LG= " << towZNCLG[0] << " | ZNA LG= " << towZNALG[0] <<
-   * '\n';*/
-
-  // Average the energy detected in each calorimeter
-  hZNvsV0MPer->Fill(fv0mpercentile, (znc + zna) / (2.0 * 2.511));
-  /*hZNvsV0MAmp->Fill(fv0mamplitude, (znc + zna) / (2.0 * 2.511));*/
-  /*pZNvsV0MAmp->Fill(fv0mamplitude, (znc + zna) / 2.0);*/
-
-  hZPvsV0MPer->Fill(fv0mpercentile, (zpc + zpa) / (2.0 * 2.511));
-  /*hZPvsV0MAmp->Fill(fv0mamplitude, (zpc + zpa) / (2.0 * 2.511));*/
-  /*pZPvsV0MAmp->Fill(fv0mamplitude, (zpc + zpa) / 2.0);*/
+    fSPD++;
+  }
 }
 //____________________________________________________________
 void AliAnalysisTaskZNZP::GetCalibratedV0Amplitude() {
@@ -522,8 +603,39 @@ void AliAnalysisTaskZNZP::GetCalibratedV0Amplitude() {
     pV0MAmpChannel->Fill(i, fESD->GetVZEROEqMultiplicity(i));
   }
   fv0mamplitude = mV0M;
-
+  hV0Percentile->Fill(fv0mpercentile);
   /*hV0MAmplitude->Fill(fv0mamplitude);*/
+}
+//____________________________________________________________
+void AliAnalysisTaskZNZP::TPCActivity() {
+  const double masspi{0.13957};
+  const int n_tracks{fESD->GetNumberOfTracks()};
+
+  fNchTPC = 0;
+  fET = 0.;
+
+  for (int i = 0; i < n_tracks; ++i) {
+    AliESDtrack* track = static_cast<AliESDtrack*>(fESD->GetTrack(i));
+    if (!track) {
+      continue;
+    }
+    if (!fTrackFilter->IsSelected(track)) {
+      continue;
+    }
+    if (track->Pt() < 0.15 || track->Pt() > 50.) {
+      continue;
+    }
+    if (track->Charge() == 0) {
+      continue;
+    }
+    if (TMath::Abs(track->Eta()) > fEtaCut) {
+      continue;
+    }
+
+    double pt{track->Pt()};
+    fNchTPC++;
+    fET += TMath::Sqrt(TMath::Power(pt, 2.0) + TMath::Power(masspi, 2.0));
+  }
 }
 //____________________________________________________________
 void AliAnalysisTaskZNZP::DCAxyDistributions() const {
