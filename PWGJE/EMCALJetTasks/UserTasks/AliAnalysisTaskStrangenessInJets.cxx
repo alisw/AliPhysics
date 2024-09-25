@@ -1356,7 +1356,13 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     }
 
     // Invariant mass peak selection
-    if(fbSignalInBG == 0) { //Inv mass in signal region
+    if( (dMassV0K0s > dMassPeakWindowMeanK0s - dMassPeakWindowK0s) && (dMassV0K0s < dMassPeakWindowMeanK0s + 3 * dMassPeakWindowK0s) )    //Signal+BG (-3sigma,9sigma)
+      bIsInPeakK0s = kTRUE;
+    if( (dMassV0Lambda > dMassPeakWindowMeanLambda - dMassPeakWindowLambda) && (dMassV0Lambda < dMassPeakWindowMeanLambda + 3 * dMassPeakWindowLambda))
+      bIsInPeakLambda = kTRUE;
+    if( (dMassV0ALambda > dMassPeakWindowMeanLambda - dMassPeakWindowLambda) && (dMassV0ALambda < dMassPeakWindowMeanLambda + 3 * dMassPeakWindowLambda))
+      bIsInPeakALambda = kTRUE;
+    /*if(fbSignalInBG == 0) { //Inv mass in signal region
       if(TMath::Abs(dMassV0K0s - dMassPeakWindowMeanK0s ) < dMassPeakWindowK0s)
         bIsInPeakK0s = kTRUE;
       if(TMath::Abs(dMassV0Lambda - dMassPeakWindowMeanLambda) < dMassPeakWindowLambda)
@@ -1371,7 +1377,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
         bIsInPeakLambda = kTRUE;
       if( (dMassV0ALambda > dMassPeakWindowMeanLambda + dMassPeakWindowLambda) && (dMassV0ALambda < dMassPeakWindowMeanLambda + 2 * dMassPeakWindowLambda))
         bIsInPeakALambda = kTRUE;
-    }
+    }*/
 
     // Skip candidates outside the histogram range
     if((dMassV0K0s < fgkdMassK0sMin) || (dMassV0K0s >= fgkdMassK0sMax))
@@ -3047,10 +3053,10 @@ Double_t AliAnalysisTaskStrangenessInJets::MassPeakSigma(Double_t pt, Int_t part
 // estimation of the sigma of the invariant-mass peak as a function of pT and particle type
   switch(particle) {
     case 0: // K0S
-      return 0.00362 + 0.000309 * pt + 0.000016 * pt * pt;// 0.00398 + 0.000103 * pt + 0.000042 * pt * pt;
+      return 0.0037 + 0.000279 * pt + 0.000021 * pt * pt;//0.00362 + 0.000309 * pt + 0.000016 * pt * pt;// 0.00398 + 0.000103 * pt + 0.000042 * pt * pt;
       break;
     case 1: // Lambda
-      return 0.00157 - 0.000026 * pt + 0.000017 * pt * pt; //0.00156 - 0.000021 * pt + 0.000016 * pt * pt;  //old
+      return 0.0017 - 0.000118 * pt + 0.000029 * pt * pt;//0.00157 - 0.000026 * pt + 0.000017 * pt * pt; //0.00156 - 0.000021 * pt + 0.000016 * pt * pt;  //old
       break;   
     default:
       return 0;
