@@ -125,6 +125,8 @@ AliAnalysisTaskSE(),
   fHistMCEffProtonMinus(0),
   fHistMCEffHadronPlus(0),
   fHistMCEffHadronMinus(0),
+  fHistMCEffK0s(0),
+  fHistMCEffLambda(0),
   hist_beforeCut_DCAxy(0),
   hist_beforeCut_DCAz(0),
   hist_beforeCut_eta(0),
@@ -289,6 +291,8 @@ AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::AliAnalysisTaskDiffPtFluc_V0par
   fHistMCEffProtonMinus(0),
   fHistMCEffHadronPlus(0),
   fHistMCEffHadronMinus(0),
+  fHistMCEffK0s(0),
+  fHistMCEffLambda(0),
   hist_beforeCut_DCAxy(0),
   hist_beforeCut_DCAz(0),
   hist_beforeCut_eta(0),
@@ -886,7 +890,12 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserExec(Option_t *)  {
   Double_t N_V0_sum_etaLess0 = 0.0;
   Double_t pT_V0_sum_etaGreaterEtamin = 0.0;
   Double_t N_V0_sum_etaGreaterEtamin = 0.0;
-    
+
+  Int_t ptBinNoK0s = 0;
+  Double_t BinContK0s = 0;
+  Int_t ptBinNoLambda = 0;
+  Double_t BinContLambda = 0;
+  
   //++++++++++++++++++++++++++++++++++++++++++++
   //loop on reconstructed V0 tracks
     
@@ -928,6 +937,7 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserExec(Option_t *)  {
       Bool_t flag_TopoK0s = PassedV0SelectionTopologicalCutsForK0s(v0);
       if(!flag_TopoLambda && !flag_TopoK0s) continue;
 
+      //Final selection cuts for Lambda, AntiLambda, K0s
       Bool_t IsLambda = IsLambdaCandidate (v0, pTrack, nTrack, fLambdaDaughtersPIDcut, lV0M, fLambdaMassCut);
       Bool_t IsAntiLambda = IsAntiLambdaCandidate (v0, pTrack, nTrack, fLambdaDaughtersPIDcut, lV0M, fLambdaMassCut);
       Bool_t IsK0s = IsK0sCandidate (v0, pTrack, nTrack, fK0sDaughtersPIDcut, lV0M, fK0sMassCut);
@@ -937,41 +947,85 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::UserExec(Option_t *)  {
       Double_t fV0_Pt = v0->Pt();
       Double_t fV0_Eta = v0->PseudoRapV0();
 
-      if(fV0_Pt < 0.2)
-	continue;
-      if(fV0_Pt > fPtMax)
-	continue;
-      if(TMath::Abs(fV0_Eta) > 0.8)
-	continue;
+      //Kinematic cuts on pT and Eta of V0
+      if(TMath::Abs(fV0_Eta) > 0.8) continue;
+      if(fV0_Pt < 0.2) continue;
+      if(fV0_Pt > fPtMax) continue;
       
 
-      if(fV0_Eta < fEtaLeftCut)
+      //if Efficiency correction not required
+      if(fEffCorrectionFlag == 0)
 	{
-	  if(flag_TopoK0s && IsK0s)
+	  if(fV0_Eta < fEtaLeftCut)
 	    {
-	      fPt_profile_K0s->Fill(fV0_Pt);
-	      N_sumK0s_etaLess0 += 1.0;
-	    }
-	  if(flag_TopoLambda)
-	    {
-	      if(IsLambda || IsAntiLambda)
+	      if(flag_TopoK0s && IsK0s)
 		{
-		  fPt_profile_Lambda->Fill(fV0_Pt);
-		  N_sumLambda_etaLess0 += 1.0;
+		  fPt_profile_K0s->Fill(fV0_Pt);
+		  N_sumK0s_etaLess0 += 1.0;
+		}
+	      if(flag_TopoLambda)
+		{
+		  if(IsLambda || IsAntiLambda)
+		    {
+		      fPt_profile_Lambda->Fill(fV0_Pt);
+		      N_sumLambda_etaLess0 += 1.0;
+		    }
 		}
 	    }
+
+	  if(fV0_Eta < fEtaLeftCut)
+	    {
+	      pT_V0_sum_etaLess0 += fV0_Pt;
+	      N_V0_sum_etaLess0 += 1.0;
+	    }
+	  if(fV0_Eta > fEtaMin) //fEtaMin is right boundary of EtaGap
+	    {
+	      pT_V0_sum_etaGreaterEtamin += fV0_Pt;
+	      N_V0_sum_etaGreaterEtamin += 1.0;
+	    }
 	}
 
+      //if Efficiency correction required
+      if(fEffCorrectionFlag == 1)
+	{
+	  ptBinNoK0s = fHistMCEffK0s->FindBin(fV0_Pt);
+	  BinContK0s = fHistMCEffK0s->GetBinContent(ptBinNoK0s);
+	  ptBinNoLambda = fHistMCEffLambda->FindBin(fV0_Pt);
+	  BinContLambda = fHistMCEffLambda->GetBinContent(ptBinNoLambda);
 
-      if(fV0_Eta < fEtaLeftCut)
-	{
-	  pT_V0_sum_etaLess0 += fV0_Pt;
-	  N_V0_sum_etaLess0 += 1.0;
-	}
-      if(fV0_Eta > fEtaMin) //fEtaMin is right boundary of EtaGap
-	{
-	  pT_V0_sum_etaGreaterEtamin += fV0_Pt;
-	  N_V0_sum_etaGreaterEtamin += 1.0;
+	  if(fV0_Eta < fEtaLeftCut)
+	    {
+	      if(flag_TopoK0s && IsK0s)
+		{
+		  if (BinContK0s != 0)
+		    {
+		      fPt_profile_K0s->Fill(fV0_Pt, 1.0/BinContK0s);
+		      N_sumK0s_etaLess0 += 1.0/BinContK0s;
+		    }
+		}
+	      if(flag_TopoLambda)
+		{
+		  if(IsLambda || IsAntiLambda)
+		    {
+		      if (BinContLambda != 0)
+			{
+			  fPt_profile_Lambda->Fill(fV0_Pt, 1.0/BinContLambda);
+			  N_sumLambda_etaLess0 += 1.0/BinContLambda;
+			}
+		    }
+		}
+	    }
+
+	  if(fV0_Eta < fEtaLeftCut)
+	    {
+	      pT_V0_sum_etaLess0 += fV0_Pt;
+	      N_V0_sum_etaLess0 += 1.0;
+	    }
+	  if(fV0_Eta > fEtaMin) //fEtaMin is right boundary of EtaGap
+	    {
+	      pT_V0_sum_etaGreaterEtamin += fV0_Pt;
+	      N_V0_sum_etaGreaterEtamin += 1.0;
+	    }
 	}
 	
     }//end of v0 tracks loop
@@ -1646,6 +1700,9 @@ void AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::GetMCEffCorrectionHist()
       fHistMCEffHadronPlus = (TH1D*) fListTRKCorr->FindObject("histHadronPlusEff");
       fHistMCEffHadronMinus = (TH1D*) fListTRKCorr->FindObject("histHadronMinusEff");
 
+      fHistMCEffK0s = (TH1D*) fListTRKCorr->FindObject("histK0sEff");
+      fHistMCEffLambda = (TH1D*) fListTRKCorr->FindObject("histLambdaEff");
+
       for(int i=0; i<9; i++)
 	{
 	  fEffProtonPlus[i] = (TH1D*)fListTRKCorr->FindObject(Form("EffProtonPlus%d",i));
@@ -1882,28 +1939,33 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::PassedV0SelectionTopolog
   Double_t vx = primaryVertex->GetX();
   Double_t vy = primaryVertex->GetY();
   Double_t vz = primaryVertex->GetZ();
-
-  Double_t primVtx[3] = {-100.0, -100.0, -100.0};
-  primaryVertex->GetXYZ(primVtx);
-
+  
   //decay Vertex
-  // Double_t tDecayVertexV0[3];
-  // v0->GetXYZ(tDecayVertexV0);
   Double_t tDecayVertexV0x = v0->DecayVertexV0X();
   Double_t tDecayVertexV0y = v0->DecayVertexV0Y();
   Double_t tDecayVertexV0z = v0->DecayVertexV0Z();
 
-  //distance over total momentum
-  Double_t fV0_DistOverTotP = TMath::Sqrt(TMath::Power(tDecayVertexV0x-vx, 2)+TMath::Power(tDecayVertexV0y-vy, 2)+TMath::Power(tDecayVertexV0x-vz, 2));
-  Double_t p_V0[3]; //get V0 candidate's momentum
-  v0->GetPxPyPz(p_V0);
-  Double_t tot_pV0 = TMath::Sqrt(p_V0[0]*p_V0[0]+p_V0[1]*p_V0[1]+p_V0[2]*p_V0[2]); //total momentum
-  fV0_DistOverTotP /= (tot_pV0+1e-10); //avoid division by zero
-  // check candidate's proper lifetime (particle hypothesis' dependent). Remember: c*tau = L*m/p
-  // for K0s:        0.497*fV0_DistOverTotP < 4*2.68 cm (or 10 cm)
-  // for Lambda:     1.115682*fV0_DistOverTotP < 3*7.89 cm (or 24 cm)
-  if (1.115682*fV0_DistOverTotP >= fLambdaPropLifetime) return passedV0Selection;
+   
+  Double_t primVtx[3] = {-100.0, -100.0, -100.0}; //primary vertex
+  primaryVertex->GetXYZ(primVtx);
 
+  Double_t tDecayVertexV0[3]; //decay Vertex
+  v0->GetXYZ(tDecayVertexV0);
+
+  Double_t lV0DecayLength = TMath::Sqrt(TMath::Power(primVtx[0]-tDecayVertexV0[0], 2.0) + TMath::Power(primVtx[1]-tDecayVertexV0[1], 2.0) + TMath::Power(primVtx[2]-tDecayVertexV0[2], 2.0));
+
+  Double_t PtV0 = v0->Pt();
+  Double_t PzV0 = v0->Pz();
+  Double_t momentumV0 = TMath::Sqrt(TMath::Power(PtV0, 2) + TMath::Power(PzV0, 2));
+  
+  // check candidate's proper lifetime (particle hypothesis' dependent). Remember: c*tau = L*m/p
+  // for Lambda:     1.115682*fV0_DistOverTotP < 3*7.89 cm (or 24 cm)
+
+  //Proper lifetime
+  Double_t cTau = lV0DecayLength/momentumV0*1.115682;
+  if (cTau >= fLambdaPropLifetime) return passedV0Selection;
+  
+ 
   //transverse radius of the decay vertex
   Double_t lV0TransRadius = TMath::Sqrt(tDecayVertexV0x*tDecayVertexV0x+tDecayVertexV0y*tDecayVertexV0y);
   if(lV0TransRadius <= fMinLambdaTransDecayRadius || lV0TransRadius >= fMaxLambdaTransDecayRadius) return passedV0Selection;
@@ -1942,26 +2004,30 @@ Bool_t AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2::PassedV0SelectionTopolog
   Double_t vy = primaryVertex->GetY();
   Double_t vz = primaryVertex->GetZ();
 
-  Double_t primVtx[3] = {-100.0, -100.0, -100.0};
-  primaryVertex->GetXYZ(primVtx);
-
   //decay Vertex
-  // Double_t tDecayVertexV0[3];
-  // v0->GetXYZ(tDecayVertexV0);
   Double_t tDecayVertexV0x = v0->DecayVertexV0X();
   Double_t tDecayVertexV0y = v0->DecayVertexV0Y();
   Double_t tDecayVertexV0z = v0->DecayVertexV0Z();
 
-  //distance over total momentum
-  Double_t fV0_DistOverTotP = TMath::Sqrt(TMath::Power(tDecayVertexV0x-vx, 2)+TMath::Power(tDecayVertexV0y-vy, 2)+TMath::Power(tDecayVertexV0x-vz, 2));
-  Double_t p_V0[3]; //get V0 candidate's momentum
-  v0->GetPxPyPz(p_V0);
-  Double_t tot_pV0 = TMath::Sqrt(p_V0[0]*p_V0[0]+p_V0[1]*p_V0[1]+p_V0[2]*p_V0[2]); //total momentum
-  fV0_DistOverTotP /= (tot_pV0+1e-10); //avoid division by zero
+  Double_t primVtx[3] = {-100.0, -100.0, -100.0}; //primary vertex
+  primaryVertex->GetXYZ(primVtx);
+
+  Double_t tDecayVertexV0[3]; //decay Vertex
+  v0->GetXYZ(tDecayVertexV0);
+
+  Double_t lV0DecayLength = TMath::Sqrt(TMath::Power(primVtx[0]-tDecayVertexV0[0], 2.0) + TMath::Power(primVtx[1]-tDecayVertexV0[1], 2.0) + TMath::Power(primVtx[2]-tDecayVertexV0[2], 2.0));
+
+  Double_t PtV0 = v0->Pt();
+  Double_t PzV0 = v0->Pz();
+  Double_t momentumV0 = TMath::Sqrt(TMath::Power(PtV0, 2) + TMath::Power(PzV0, 2));
+  
   // check candidate's proper lifetime (particle hypothesis' dependent). Remember: c*tau = L*m/p
   // for K0s:        0.497*fV0_DistOverTotP < 4*2.68 cm (or 10 cm)
-  if (0.497611*fV0_DistOverTotP >= fK0sPropLifetime) return passedV0Selection;
-    
+
+  //Proper lifetime
+  Double_t cTau = lV0DecayLength/momentumV0*0.497611;
+  if (cTau >= fK0sPropLifetime) return passedV0Selection;
+   
   //transverse radius of the decay vertex
   Double_t lV0TransRadius = TMath::Sqrt(tDecayVertexV0x*tDecayVertexV0x+tDecayVertexV0y*tDecayVertexV0y);
   if(lV0TransRadius <= fMinK0sTransDecayRadius || lV0TransRadius >= fMaxK0sTransDecayRadius) return passedV0Selection;

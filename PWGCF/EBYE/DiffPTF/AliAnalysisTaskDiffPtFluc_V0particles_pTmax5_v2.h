@@ -321,6 +321,8 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 : public AliAnalysisTaskSE
   TH1D *fHistMCEffProtonMinus;
   TH1D *fHistMCEffHadronPlus;
   TH1D *fHistMCEffHadronMinus;
+  TH1D *fHistMCEffK0s;
+  TH1D *fHistMCEffLambda;
   TH1D *fEffPionPlus[9];
   TH1D *fEffKaonPlus[9];
   TH1D *fEffProtonPlus[9];
