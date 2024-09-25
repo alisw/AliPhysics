@@ -683,7 +683,7 @@ bool AliAnalysisTaskCMEPIDCVE::LoopTracks()
     }
 
     int pid = GetPIDofParticle(track);
-    if (isnan(pid)) continue;
+    if (std::isnan(pid)) continue;
     int bMatter = 0;
     if (pid < 0) bMatter = 1;
 
@@ -730,7 +730,7 @@ bool AliAnalysisTaskCMEPIDCVE::PairTrkTrk()
       if(id_1 == id_2) continue;
       double delta = cos(phi_1 - phi_2);
       double psi = GetTPCPlaneNoAutoCorr({id_1, id_2});
-      if (isnan(psi)) continue;
+      if (std::isnan(psi)) continue;
       double gamma = cos(phi_1 + phi_2 - 2 * psi);
 
       //pid   211  321 2212
@@ -1086,7 +1086,7 @@ bool AliAnalysisTaskCMEPIDCVE::PairV0Trk() {
 
       double delta = cos(phi_1 - phi_2);
       double psi = GetTPCPlaneNoAutoCorr({id_daughter_1, id_daughter_2, id_2});
-      if (isnan(psi)) continue;
+      if (std::isnan(psi)) continue;
       double gamma = cos(phi_1 + phi_2 - 2 * psi);
 
       if(abs(pid_2) == 2212) {
@@ -1183,7 +1183,7 @@ bool AliAnalysisTaskCMEPIDCVE::PairV0V0()
 
       double delta = cos(phi_1 - phi_2);
       double psi = GetTPCPlaneNoAutoCorr({id_daughter_1, id_daughter_2, id_daughter_3, id_daughter_4});
-      if (isnan(psi)) continue;
+      if (std::isnan(psi)) continue;
       double gamma = cos(phi_1 + phi_2 - 2 * psi);
 
       if (pid_2 * pid_1 < 0) {

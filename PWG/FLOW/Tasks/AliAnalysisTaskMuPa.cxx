@@ -2430,7 +2430,7 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
   fPtDependentDCAxyFormula = new TFormula("fPtDependentDCAxyFormula",fPtDependentDCAxyParameterization.Data());
   // as a sanity check, try immediately to evaluate smtg:
   cout<<"\n=> Quick sanity check for TFormula ....\n"<<endl;
-  if(isnan(fPtDependentDCAxyFormula->Eval(1.44))){cout<<__LINE__<<endl;exit(1);}
+  if(std::isnan(fPtDependentDCAxyFormula->Eval(1.44))){cout<<__LINE__<<endl;exit(1);}
   Green(" OK!"); sleep(1);
  }
 
