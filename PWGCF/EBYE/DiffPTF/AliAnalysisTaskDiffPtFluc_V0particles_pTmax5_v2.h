@@ -218,7 +218,11 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 : public AliAnalysisTaskSE
   }
   void SetK0sDCAv0daughters (Double_t DcaV0daughters)
   {
-    this->fK0sDcaV0daughters = DcaV0daughters;  //Default: 0.4
+    this->fK0sDcaV0daughters = DcaV0daughters;  //Default: 0.3
+  }
+  void SetK0sDcaV0toPV (Double_t K0sDcaV0toPV)
+  {
+    this->fK0sDcaV0toPV = K0sDcaV0toPV; //Default: 0.3
   }
   void SetK0sCosPA (Double_t cosPAval)
   {
@@ -256,6 +260,10 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 : public AliAnalysisTaskSE
   {
     this->fPIDbayesProton = bayesPidPr;
   }
+  void SetMaximumPt (Double_t ptmax)  //Default: 10.0
+  {
+    this->fPtMax = ptmax;
+  }
   
  private:
   
@@ -287,6 +295,10 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 : public AliAnalysisTaskSE
   Float_t fPtsum_hadrons_greaterEtaMin;
   Float_t fNsum_hadrons_less0;
   Float_t fNsum_hadrons_greaterEtaMin;
+  Float_t fPtsum_V0s_less0;
+  Float_t fPtsum_V0s_greaterEtaMin;
+  Float_t fNsum_V0s_less0;
+  Float_t fNsum_V0s_greaterEtaMin;
   Float_t fNsum_pions_less0;
   Float_t fNsum_kaons_less0;
   Float_t fNsum_protons_less0;
@@ -309,6 +321,8 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 : public AliAnalysisTaskSE
   TH1D *fHistMCEffProtonMinus;
   TH1D *fHistMCEffHadronPlus;
   TH1D *fHistMCEffHadronMinus;
+  TH1D *fHistMCEffK0s;
+  TH1D *fHistMCEffLambda;
   TH1D *fEffPionPlus[9];
   TH1D *fEffKaonPlus[9];
   TH1D *fEffProtonPlus[9];
@@ -410,6 +424,7 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 : public AliAnalysisTaskSE
   Double_t fMinK0sTransDecayRadius;
   Double_t fMaxK0sTransDecayRadius;
   Double_t fK0sDcaV0daughters;
+  Double_t fK0sDcaV0toPV;
   Double_t fK0sCosPAval;
   Double_t fArmentousCutVal;
   Double_t fLambdaDaughtersPIDcut;
@@ -419,6 +434,7 @@ class AliAnalysisTaskDiffPtFluc_V0particles_pTmax5_v2 : public AliAnalysisTaskSE
   Double_t fPIDbayesPion;
   Double_t fPIDbayesKaon;
   Double_t fPIDbayesProton;
+  Double_t fPtMax;
   
   TExMap *fGlobalTracksAOD; //! global tracks in AOD for FB128 **Ante**
 

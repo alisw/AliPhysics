@@ -219,7 +219,7 @@ void AliAnalysisTaskPHOSEmbeddedDiffObjectCreator::UserExec(Option_t *option)
     cluster->GetMomentum(p1core,fVertex);
 
     new((*fPHOSObjectArray)[inPHOS]) AliCaloPhoton(p1.Px(),p1.Py(),p1.Pz(),p1.E());
-    AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSObjectArray->At(inPHOS); 
+    AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSObjectArray->At(inPHOS);
     ph->SetCluster(cluster);
     ph->SetModule(module);
     ph->SetNCells(digMult); 

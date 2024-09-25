@@ -346,7 +346,7 @@ Bool_t AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction::FindAndSubtractNextC
 
   // try to go into the phi direction that the track points to.
   // if cell in that direction has no energy, try in other direction.
-  if(signbit(dPhi) == signbit(dPhi1)){
+  if(std::signbit(dPhi) == std::signbit(dPhi1)){
     if(ecell1 <= 0.){
       if(ecell2 > 0.){
         iCell = fCaloCells->GetCellPosition(absID2);

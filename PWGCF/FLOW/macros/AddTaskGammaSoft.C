@@ -55,7 +55,7 @@ AliAnalysisTaskGammaSoft* AddTaskGammaSoft(TString name, Bool_t IsMC, TString ef
       mgr->ConnectInput(task,2,cEff);
     } else mgr->ConnectInput(task,2,(AliAnalysisDataContainer*)AllContainers->FindObject("Efficiency"));
   };
-  AliAnalysisDataContainer *cOutputMPT = mgr->CreateContainer(Form("MPTDiff%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+  AliAnalysisDataContainer *cOutputMPT = mgr->CreateContainer(Form("PtCorr%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
   mgr->ConnectOutput(task,1,cOutputMPT);
   AliAnalysisDataContainer *cOutputFC  = mgr->CreateContainer(Form("FlowCont%s",l_ContName.Data()),AliGFWFlowContainer::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
   mgr->ConnectOutput(task,2,cOutputFC);

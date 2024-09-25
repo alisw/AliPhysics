@@ -135,7 +135,7 @@ Bool_t AliAnalysisTaskEmcalQoverPtShift::Run() {
          comptrack = tracktype == 1;
     Double_t chargeval = trk->Charge() > 0 ? 1 : -1;
     std::string chargestring = chargeval > 0 ? "pos" : "neg";
-    bool emcalacceptance = std::abs(trk->Eta()) < 0.7 && trk->Phi() > fGeom->GetArm1PhiMin() && trk->Phi() < fGeom->GetEMCALPhiMax();
+    bool emcalacceptance = std::abs(trk->Eta()) < 0.7 && trk->Phi() >= (fGeom->GetArm1PhiMin() * TMath::DegToRad()) && trk->Phi() <= (fGeom->GetEMCALPhiMax() * TMath::DegToRad());
     Double_t ptorig = abs(trk->Pt());
     Double_t ptshift = getShiftedPt(ptorig, fQOverPtShift, chargeval);
     fHistos->FillTH2(Form("fHistShift%s", chargestring.data()), ptorig, ptshift);

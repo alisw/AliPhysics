@@ -324,8 +324,71 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserExec(Option_t *option)
     FillHistogramTH2(fOutputContainer,Form("hCentrality%svsPHOSClusterMultiplicityMC",fEstimator.Data()),fCentralityMain,multPHOSClustAll);
   }
 
-  if(!fPHOSEvents[fZvtx][fEPBin]) fPHOSEvents[fZvtx][fEPBin] = new TList();
-  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
+  // if(!fPHOSEvents[fZvtx][fEPBin]) fPHOSEvents[fZvtx][fEPBin] = new TList();
+  // TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
+
+  // centrality bins for mixed events container
+  fCentBin = 0;
+  if (fCentralityMain < 5.)
+    fCentBin = 0;
+  else if (fCentralityMain < 10.)
+    fCentBin = 1;
+  else if (fCentralityMain < 20.)
+    fCentBin = 2;
+  else if (fCentralityMain < 30.)
+    fCentBin = 3;
+  else if (fCentralityMain < 40.)
+    fCentBin = 4;
+  else if (fCentralityMain < 50.)
+    fCentBin = 5;
+  else if (fCentralityMain < 80.)
+    fCentBin = 6;
+
+  // reaction plane
+  AliEventplane* eventPlane = fEvent->GetEventplane();
+  if (!eventPlane) { // Event has no event plane
+    AliInfo("Reaction plane has not been found!");
+    return;
+  }
+  // V0A
+  const Int_t harmonics = 2;
+  double qx = 0., qy = 0.;
+  double rpV0A =
+    eventPlane->CalculateVZEROEventPlane(fEvent, 8, harmonics, qx, qy);
+  // V0C
+  double rpV0C =
+    eventPlane->CalculateVZEROEventPlane(fEvent, 9, harmonics, qx, qy);
+
+  // Whole V0
+  fRP = eventPlane->CalculateVZEROEventPlane(fEvent, 10, harmonics, qx, qy);
+
+  while (rpV0A < 0)
+    rpV0A += TMath::TwoPi() / harmonics;
+  while (rpV0A > TMath::TwoPi() / harmonics)
+    rpV0A -= TMath::TwoPi() / harmonics;
+
+  while (rpV0C < 0)
+    rpV0C += TMath::TwoPi() / harmonics;
+  while (rpV0C > TMath::TwoPi() / harmonics)
+    rpV0C -= TMath::TwoPi() / harmonics;
+
+  while (fRP < 0)
+    fRP += TMath::TwoPi() / harmonics;
+  while (fRP > TMath::TwoPi() / harmonics)
+    fRP -= TMath::TwoPi() / harmonics;
+
+  Int_t irp = Int_t(kPRBins * (fRP) / TMath::Pi());
+  if (irp < 0)
+    irp = 0;
+  if (irp >= kPRBins)
+    irp = kPRBins - 1;
+
+  // if(!fPHOSEvents[fZvtx][fEPBin]) fPHOSEvents[fZvtx][fEPBin] = new TList();
+  // TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
+
+  if (!fPHOSEvents[fZvtx][fCentBin][irp])
+    fPHOSEvents[fZvtx][fCentBin][irp] = new TList();
+  fPHOSEventList = fPHOSEvents[fZvtx][fCentBin][irp];
 
   ProcessMC();
   SetWeightToClusters();
@@ -347,13 +410,13 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserExec(Option_t *option)
     //fPHOSClusterArray=0;
 
     TClonesArray *clone = new TClonesArray(*fPHOSClusterArray);
-    prevPHOS->AddFirst(clone);
+    fPHOSEventList->AddFirst(clone);
     //delete clone;
     clone = 0;
 
-    if(prevPHOS->GetSize() > fNMixed){//Remove redundant events
-      TClonesArray * tmp = static_cast<TClonesArray*>(prevPHOS->Last());
-      prevPHOS->RemoveLast();
+    if(fPHOSEventList->GetSize() > fNMixed){//Remove redundant events
+      TClonesArray * tmp = static_cast<TClonesArray*>(fPHOSEventList->Last());
+      fPHOSEventList->RemoveLast();
       delete tmp;
       tmp = NULL;
     }
@@ -534,6 +597,16 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillPhoton()
 
     if(ph->IsTOFOK()){
       FillSparse(fOutputContainer,"hSparsePhoton_TOF",value,1/eff * weight * 1/trgeff);
+
+                                             FillHistogramTH1(fOutputContainer,"hPhotonPt_noPID",pT,1/eff * weight * 1/trgeff);
+      if(fPHOSClusterCuts->IsNeutral(ph))    FillHistogramTH1(fOutputContainer,"hPhotonPt_CPV"  ,pT,1/eff * weight * 1/trgeff);
+      if(fPHOSClusterCuts->AcceptDisp(ph))   FillHistogramTH1(fOutputContainer,"hPhotonPt_Disp" ,pT,1/eff * weight * 1/trgeff);
+      if(fPHOSClusterCuts->AcceptPhoton(ph)) FillHistogramTH1(fOutputContainer,"hPhotonPt_PID"  ,pT,1/eff * weight * 1/trgeff);
+
+                                             FillHistogramTH1(fOutputContainer,"hPhotonPt_noPID_woW",pT);
+      if(fPHOSClusterCuts->IsNeutral(ph))    FillHistogramTH1(fOutputContainer,"hPhotonPt_CPV_woW"  ,pT);
+      if(fPHOSClusterCuts->AcceptDisp(ph))   FillHistogramTH1(fOutputContainer,"hPhotonPt_Disp_woW" ,pT);
+      if(fPHOSClusterCuts->AcceptPhoton(ph)) FillHistogramTH1(fOutputContainer,"hPhotonPt_PID_woW"  ,pT);
     }
 
   }//end of cluster loop
@@ -647,10 +720,25 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
       value[1] = pt12;
       value[2] = asym;
 
-      FillHistogramTH2(fOutputContainer,"hMgg_noPID",m12,pt12,weight);
-      if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMgg_CPV" ,m12,pt12,weight);
-      if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMgg_Disp",m12,pt12,weight);
-      if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMgg_PID" ,m12,pt12,weight);
+      if(ph1->IsTOFOK() && ph2->IsTOFOK()){
+
+        FillHistogramTH2(fOutputContainer,"hMgg_noPID",m12,pt12,1/eff12 * weight * 1/trgeff12);
+        if(fPHOSClusterCuts->IsNeutral(ph1) && fPHOSClusterCuts->IsNeutral(ph2))
+          FillHistogramTH2(fOutputContainer,"hMgg_CPV" ,m12,pt12,1/eff12 * weight * 1/trgeff12);
+        if(fPHOSClusterCuts->AcceptDisp(ph1) && fPHOSClusterCuts->AcceptDisp(ph2))
+          FillHistogramTH2(fOutputContainer,"hMgg_Disp",m12,pt12,1/eff12 * weight * 1/trgeff12);
+        if(fPHOSClusterCuts->AcceptPhoton(ph1) && fPHOSClusterCuts->AcceptPhoton(ph2)) 
+          FillHistogramTH2(fOutputContainer,"hMgg_PID" ,m12,pt12,1/eff12 * weight * 1/trgeff12);
+
+        FillHistogramTH2(fOutputContainer,"hMgg_noPID_woW",m12,pt12);
+        if(fPHOSClusterCuts->IsNeutral(ph1) && fPHOSClusterCuts->IsNeutral(ph2))
+          FillHistogramTH2(fOutputContainer,"hMgg_CPV_woW" ,m12,pt12);
+        if(fPHOSClusterCuts->AcceptDisp(ph1) && fPHOSClusterCuts->AcceptDisp(ph2))
+          FillHistogramTH2(fOutputContainer,"hMgg_Disp_woW",m12,pt12);
+        if(fPHOSClusterCuts->AcceptPhoton(ph1) && fPHOSClusterCuts->AcceptPhoton(ph2))
+          FillHistogramTH2(fOutputContainer,"hMgg_PID_woW" ,m12,pt12);
+
+      }
 
       if (!fPHOSClusterCuts->AcceptPhoton(ph1) || !fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
 
@@ -676,7 +764,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMgg()
 //________________________________________________________________________
 void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMixMgg() 
 {
-  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
+  // TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
 
   const Int_t multClust = fPHOSClusterArray->GetEntriesFast();
 
@@ -700,8 +788,8 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMixMgg()
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
     if(!CheckMinimumEnergy(ph1)) continue;
 
-    for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
-      TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
+    for(Int_t ev=0;ev<fPHOSEventList->GetSize();ev++){
+      TClonesArray *mixPHOS = static_cast<TClonesArray*>(fPHOSEventList->At(ev));
 
       for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
         AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
@@ -767,10 +855,25 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::FillMixMgg()
         value[1] = pt12;
         value[2] = asym;
 
-        FillHistogramTH2(fOutputContainer,"hMixMgg_noPID",m12,pt12,weight);
-        if(fPHOSClusterCuts->IsNeutral(ph2))    FillHistogramTH2(fOutputContainer,"hMixMgg_CPV" ,m12,pt12,weight);
-        if(fPHOSClusterCuts->AcceptDisp(ph2))   FillHistogramTH2(fOutputContainer,"hMixMgg_Disp",m12,pt12,weight);
-        if(fPHOSClusterCuts->AcceptPhoton(ph2)) FillHistogramTH2(fOutputContainer,"hMixMgg_PID" ,m12,pt12,weight);
+        if (ph1->IsTOFOK() && ph2->IsTOFOK()){
+
+          FillHistogramTH2(fOutputContainer,"hMixMgg_noPID",m12,pt12,1/eff12 * weight * 1/trgeff12);
+          if(fPHOSClusterCuts->IsNeutral(ph1) && fPHOSClusterCuts->IsNeutral(ph2))
+            FillHistogramTH2(fOutputContainer,"hMixMgg_CPV" ,m12,pt12,1/eff12 * weight * 1/trgeff12);
+          if(fPHOSClusterCuts->AcceptDisp(ph1) && fPHOSClusterCuts->AcceptDisp(ph2))
+            FillHistogramTH2(fOutputContainer,"hMixMgg_Disp",m12,pt12,1/eff12 * weight * 1/trgeff12);
+          if(fPHOSClusterCuts->AcceptPhoton(ph1) && fPHOSClusterCuts->AcceptPhoton(ph2)) 
+            FillHistogramTH2(fOutputContainer,"hMixMgg_PID" ,m12,pt12,1/eff12 * weight * 1/trgeff12);
+
+          FillHistogramTH2(fOutputContainer,"hMixMgg_noPID_woW",m12,pt12);
+          if(fPHOSClusterCuts->IsNeutral(ph1) && fPHOSClusterCuts->IsNeutral(ph2))
+            FillHistogramTH2(fOutputContainer,"hMixMgg_CPV_woW" ,m12,pt12);
+          if(fPHOSClusterCuts->AcceptDisp(ph1) && fPHOSClusterCuts->AcceptDisp(ph2))
+            FillHistogramTH2(fOutputContainer,"hMixMgg_Disp_woW",m12,pt12);
+          if(fPHOSClusterCuts->AcceptPhoton(ph1) && fPHOSClusterCuts->AcceptPhoton(ph2))
+            FillHistogramTH2(fOutputContainer,"hMixMgg_PID_woW" ,m12,pt12);
+            
+        }
 
         if (!fPHOSClusterCuts->AcceptPhoton(ph1) || !fPHOSClusterCuts->AcceptPhoton(ph2)) continue;
 
@@ -854,7 +957,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::EstimatePIDCutEfficiency()
   }//end of ph1
 
   //next mixed event
-  TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
+  // TList *prevPHOS = fPHOSEvents[fZvtx][fEPBin];
 
   for(Int_t i1=0;i1<multClust;i1++){
     AliCaloPhoton *ph1 = (AliCaloPhoton*)fPHOSClusterArray->At(i1);
@@ -863,8 +966,8 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::EstimatePIDCutEfficiency()
     //apply tight cut to photon1
     if(ph1->Energy() < 0.5 || ph1->GetNsigmaCPV() < 4 || ph1->GetNsigmaCoreDisp() > 2.5) continue;
 
-    for(Int_t ev=0;ev<prevPHOS->GetSize();ev++){
-      TClonesArray *mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
+    for(Int_t ev=0;ev<fPHOSEventList->GetSize();ev++){
+      TClonesArray *mixPHOS = static_cast<TClonesArray*>(fPHOSEventList->At(ev));
 
       for(Int_t i2=0;i2<mixPHOS->GetEntriesFast();i2++){
         AliCaloPhoton *ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
