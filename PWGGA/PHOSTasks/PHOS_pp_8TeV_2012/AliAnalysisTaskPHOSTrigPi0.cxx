@@ -4640,17 +4640,17 @@ void AliAnalysisTaskPHOSTrigPi0::SetMultiplicity()
   Double_t MeanUnitRap = fSPDMultiCorrUnit->GetBinContent(fSPDMultiCorrUnit->GetXaxis()->FindBin(fVertexVector.Z()));
   Double_t delta_N_UnitRap = tot_Tracklet_unitRap * fRefSPDMultiUnit/MeanUnitRap - tot_Tracklet_unitRap;
   Int_t signUnitRap = (delta_N_UnitRap > 0.) ? 1 : -1;
-  Int_t corrected_Tracklet_unitRap = TMath::Max(tot_Tracklet_unitRap + signUnitRap*fRandom->Poisson(TMath::Abs(delta_N_UnitRap)), 0);
+  Int_t corrected_Tracklet_unitRap = TMath::Max((Int_t)(tot_Tracklet_unitRap + signUnitRap*fRandom->Poisson(TMath::Abs(delta_N_UnitRap))), 0);
 
   Double_t MeanGapRap1 = fSPDMultiCorrGap1->GetBinContent(fSPDMultiCorrGap1->GetXaxis()->FindBin(fVertexVector.Z()));
   Double_t delta_N_GapRap1 = tot_Tracklet_GapRap1 * fRefSPDMultiGap1/MeanGapRap1 - tot_Tracklet_GapRap1;
   Int_t signGapRap1 = (delta_N_GapRap1 > 0.) ? 1 : -1;
-  Int_t corrected_Tracklet_GapRap1 = TMath::Max(tot_Tracklet_GapRap1 + signGapRap1*fRandom->Poisson(TMath::Abs(delta_N_GapRap1)), 0);
+  Int_t corrected_Tracklet_GapRap1 = TMath::Max((Int_t)(tot_Tracklet_GapRap1 + signGapRap1*fRandom->Poisson(TMath::Abs(delta_N_GapRap1))), 0);
 
   Double_t MeanGapRap2 = fSPDMultiCorrGap2->GetBinContent(fSPDMultiCorrGap2->GetXaxis()->FindBin(fVertexVector.Z()));
   Double_t delta_N_GapRap2 = tot_Tracklet_GapRap2 * fRefSPDMultiGap2/MeanGapRap2 - tot_Tracklet_GapRap2;
   Int_t signGapRap2 = (delta_N_GapRap2 > 0.) ? 1 : -1;
-  Int_t corrected_Tracklet_GapRap2 = TMath::Max(tot_Tracklet_GapRap2 + signGapRap2*fRandom->Poisson(TMath::Abs(delta_N_GapRap2)), 0);
+  Int_t corrected_Tracklet_GapRap2 = TMath::Max((Int_t)(tot_Tracklet_GapRap2 + signGapRap2*fRandom->Poisson(TMath::Abs(delta_N_GapRap2))), 0);
   
   fHistCorrectedSPDTrackletsUnitRap->Fill(fVertexVector.Z(),corrected_Tracklet_unitRap);
   fHistCorrectedSPDTrackletsGapRap1->Fill(fVertexVector.Z(),corrected_Tracklet_GapRap1);
