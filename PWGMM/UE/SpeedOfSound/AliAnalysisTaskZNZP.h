@@ -45,16 +45,8 @@ class AliAnalysisTaskZNZP : public AliAnalysisTaskSE {
   void SetPtCut(const double& ptmin) { fPtMin = ptmin; }
   void SetTrigger(UInt_t trigger = AliVEvent::kINT7) { fTrigger = trigger; }
   bool HasRecVertex();
-  void SetSystematics(bool issystematics = true, int systematic = 1) {
-    fIsSystematics = issystematics;
-    fSystematic = systematic;
-  }
-  void SetSystematicsVtxZ(bool varyZpos = false, const float& minz = -5.0,
-                          const float& maxz = 5.0) {
-    fVaryVtxZPos = varyZpos;
-    fMinVtxZPos = minz;
-    fMaxVtxZPos = maxz;
-  }
+  void SPDActivity();
+  void TPCActivity();
   void SaveAsymmetry(bool sv) { fSaveAsy = sv; };
   bool MeanSigmaZN(double& mean, double& sigma, const std::string& ZN);
   int CentBin();
@@ -66,12 +58,7 @@ class AliAnalysisTaskZNZP : public AliAnalysisTaskSE {
   AliStack* fMCStack;
   AliMCEvent* fMC;
   bool fUseMC;
-  bool fIsSystematics;
-  bool fVaryVtxZPos;
   bool fSaveAsy;
-  float fMinVtxZPos;
-  float fMaxVtxZPos;
-  int fSystematic;
   UInt_t fTrigger;
   AliMultSelection* fMultSelection;
   AliAnalysisFilter* fTrackFilter;
@@ -84,28 +71,42 @@ class AliAnalysisTaskZNZP : public AliAnalysisTaskSE {
   double ftrackmult08;
   double fv0mpercentile;
   float fv0mamplitude;
+  int fSPD;
+  int fNchTPC;
+  double fET;
 
   TProfile* pV0MAmpChannel;
   TH1F* hV0Percentile;
   TH1F* hBestVtxZ;
-  TH2F* hZNvsV0MPer;
-  TH2F* hZNvsV0M;
   TH2F* hZNAvsV0M;
   TH2F* hZNCvsV0M;
   TH2F* hAsyN;
-  TH2F* hZPvsV0MPer;
-  TH2F* hZPvsV0M;
   TH2F* hZPAvsV0M;
   TH2F* hZPCvsV0M;
-  /*TH2F* hAsyP;*/
   TH1F* hZNCpmc;
   TH1F* hZNApmc;
   TH1F* hZPCpmc;
   TH1F* hZPApmc;
   TH2F* hZNCNorm;
   TH2F* hZNANorm;
-  /*TH2F* hZNCNormSca;*/
-  /*TH2F* hZNANormSca;*/
+  TProfile* pZNChannel;
+  TProfile* pZPChannel;
+  TProfile* pZNCvsV0Amp;
+  TProfile* pZNAvsV0Amp;
+  TProfile* pZPCvsV0Amp;
+  TProfile* pZPAvsV0Amp;
+  TProfile* pZNCvsNch;
+  TProfile* pZNAvsNch;
+  TProfile* pZPCvsNch;
+  TProfile* pZPAvsNch;
+  TProfile* pZNCvsEt;
+  TProfile* pZNAvsEt;
+  TProfile* pZPCvsEt;
+  TProfile* pZPAvsEt;
+  TProfile* pZNCvsSPD;
+  TProfile* pZNAvsSPD;
+  TProfile* pZPCvsSPD;
+  TProfile* pZPAvsSPD;
 
   AliAnalysisTaskZNZP(const AliAnalysisTaskZNZP&);  // not implemented
   AliAnalysisTaskZNZP& operator=(

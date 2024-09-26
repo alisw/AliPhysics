@@ -24,14 +24,12 @@ AliAnalysisTaskZNZP* AddTaskZNZP(const char* taskname = "ZNZP",
     return 0x0;
   }
   taskKno->SetUseMC(false);
-  taskKno->SetV0Mmin(0.0);
-  taskKno->SetV0Mmax(70.0);
+  taskKno->SetV0Mmin(0.);
+  taskKno->SetV0Mmax(80.);
   taskKno->SetEtaCut(0.8);
   taskKno->SetPtCut(0.15);
   taskKno->SaveAsymmetry(true);
   taskKno->SetTrigger(AliVEvent::kINT7);
-  taskKno->SetSystematicsVtxZ(false, -2.5, 2.5);
-  taskKno->SetSystematics(false, 0);
   mgr->AddTask(taskKno);
 
   mgr->ConnectInput(taskKno, 0, mgr->GetCommonInputContainer());
