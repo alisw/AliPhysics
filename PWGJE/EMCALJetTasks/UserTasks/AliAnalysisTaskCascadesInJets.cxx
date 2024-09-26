@@ -1384,7 +1384,12 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
     Double_t dMassPeakWindowMeanXi = MassPeakMean(dPtCascade, 0);
     Double_t dMassPeakWindowMeanOmega = MassPeakMean(dPtCascade, 1);
     // Invariant mass peak selection
-    if(fbSignalInBG == 0) { //Inv mass in signal region
+    if( (dMassCascadeXi > dMassPeakWindowMeanXi - dMassPeakWindowXi) && (dMassCascadeXi < dMassPeakWindowMeanXi + 3 * dMassPeakWindowXi))
+      bIsInPeakXi = kTRUE;
+    if( (dMassCascadeOmega > dMassPeakWindowMeanOmega - dMassPeakWindowOmega) &&  (dMassCascadeOmega < dMassPeakWindowMeanOmega + 3 * dMassPeakWindowOmega))
+      bIsInPeakOmega = kTRUE;
+      //Signal+BG (-3sigma,9sigma)
+    /*if(fbSignalInBG == 0) { //Inv mass in signal region
       if(TMath::Abs(dMassCascadeXi - dMassPeakWindowMeanXi) < dMassPeakWindowXi)
         bIsInPeakXi = kTRUE;
       if(TMath::Abs(dMassCascadeOmega - dMassPeakWindowMeanOmega) < dMassPeakWindowOmega)
@@ -1395,7 +1400,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
         bIsInPeakXi = kTRUE;
       if( (dMassCascadeOmega > dMassPeakWindowMeanOmega + dMassPeakWindowOmega) &&  (dMassCascadeOmega < dMassPeakWindowMeanOmega + 2 * dMassPeakWindowOmega))
         bIsInPeakOmega = kTRUE;
-    }
+    }*/
 
     // Skip candidates outside the histogram range
     if((dMassCascadeXi < fgkdMassXiMin) || (dMassCascadeXi >= fgkdMassXiMax)) {
