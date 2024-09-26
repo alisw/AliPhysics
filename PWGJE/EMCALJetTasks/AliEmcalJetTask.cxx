@@ -91,6 +91,8 @@ AliEmcalJetTask::AliEmcalJetTask() :
   fTrackEfficiencyHistogram(nullptr),
   fApplyArtificialTrackingEfficiency(kFALSE),
   fApplyPtDependentTrackingEfficiency(kFALSE),
+  fClusterEfficiencyFunction(nullptr),
+  fApplyArtificialClusterEfficiency(kFALSE),
   fApplyQoverPtShift(kFALSE),
   fRandom(0),
   fLocked(0),
@@ -137,6 +139,8 @@ AliEmcalJetTask::AliEmcalJetTask(const char *name) :
   fTrackEfficiencyHistogram(nullptr),
   fApplyArtificialTrackingEfficiency(kFALSE),
   fApplyPtDependentTrackingEfficiency(kFALSE),
+  fClusterEfficiencyFunction(nullptr),
+  fApplyArtificialClusterEfficiency(kFALSE),
   fApplyQoverPtShift(kFALSE),
   fRandom(0),
   fLocked(0),
@@ -342,12 +346,19 @@ Int_t AliEmcalJetTask::FindJets()
     AliClusterIterableMomentumContainer itcont = clusters->accepted_momentum();
     for (AliClusterIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
       AliDebug(2,Form("Cluster %d accepted (label = %d, energy = %.3f)", it.current_index(), it->second->GetLabel(), it->first.E()));
-      if(fClusterEfficiency < 1.) {
+      // Apply artificial track inefficiency, if supplied (either constant or pT-dependent)
+      if (fApplyArtificialClusterEfficiency) {
+        double clusterEff = 1.;
+        if(fClusterEfficiencyFunction!=nullptr) {
+          clusterEff = fClusterEfficiencyFunction->Eval(it->first.Pt());
+        }
+        if(clusterEff < 1.) {
           Double_t rnd = fRandom.Rndm();
           if (fClusterEfficiency < rnd) {
             AliDebug(2,Form("Cluster %d rejected due to artificial tracking inefficiency", it.current_index()));
             continue;
           } 
+        }
       }
       Int_t uid = -it.current_index() - fgkConstIndexShift * iColl;
       fFastJetWrapper.AddInputVector(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E(), uid);
@@ -469,9 +480,16 @@ void AliEmcalJetTask::ExecOnce()
     fTrackEfficiencyFunction->SetParameter(0, fTrackEfficiency);
     fApplyArtificialTrackingEfficiency = kTRUE;
   }
+
+  // If a constant artificial cluster efficiency is supplied, create a TF1 that is constant in E
+  if (fClusterEfficiency < 1.) {
+    fClusterEfficiencyFunction = new TF1("trackEfficiencyFunction", "[0]", 0., 1000.);
+    fClusterEfficiencyFunction->SetParameter(0, fClusterEfficiency);
+    fApplyArtificialClusterEfficiency = kTRUE;
+  }
   
   // If artificial tracking efficiency is enabled (either constant or pT-depdendent), set up random number generator
-  if (fApplyArtificialTrackingEfficiency || fClusterEfficiency < 1.) {
+  if (fApplyArtificialTrackingEfficiency || fApplyArtificialClusterEfficiency) {
     fRandom.SetSeed(0);
   }
 
@@ -1095,6 +1113,42 @@ void AliEmcalJetTask::LoadTrackEfficiencyFunction(const std::string & path, cons
   
   fTrackEfficiencyFunction = static_cast<TF1*>(trackEff->Clone());
   fApplyArtificialTrackingEfficiency = kTRUE;
+  
+  file->Close();
+  delete file;
+}
+
+/**
+ * Load the artificial tracking efficiency TF1 from a file into the member fTrackEfficiencyFunction
+ * @param path Path to the file containing the TF1
+ * @param name Name of the TF1
+ */
+void AliEmcalJetTask::LoadClusterEfficiencyFunction(const std::string & path, const std::string & name)
+{
+  TString fname(path);
+  if (fname.BeginsWith("alien://")) {
+    TGrid::Connect("alien://");
+  }
+  
+  TFile* file = TFile::Open(path.data());
+  
+  if (!file || file->IsZombie()) {
+    AliErrorStream() << "Could not open artificial cluster efficiency function file\n";
+    return;
+  }
+  
+  TF1* clusterEff = dynamic_cast<TF1*>(file->Get(name.data()));
+  
+  if (clusterEff) {
+    AliInfoStream() << Form("Artificial cluster efficiency function %s loaded from file %s.", name.data(), path.data()) << "\n";
+  }
+  else {
+    AliErrorStream() << Form("Artificial cluster efficiency function %s not found in file %s.", name.data(), path.data()) << "\n";
+    return;
+  }
+  
+  fClusterEfficiencyFunction = static_cast<TF1*>(clusterEff->Clone());
+  fApplyArtificialClusterEfficiency = kTRUE;
   
   file->Close();
   delete file;
