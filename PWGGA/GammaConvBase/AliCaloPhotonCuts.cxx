@@ -6486,6 +6486,13 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fDoEnergyCorrectionForOverlap = 6;
       break;
 
+    case 35: // cut char "z", experimental super tight cuts. Do not use if you dont know what you are doing ;)
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      fMaxDistTrackToClusterEta = 0.0143;
+      fMinDistTrackToClusterPhi = -0.0143;
+      fMaxDistTrackToClusterPhi = 0.0143;
+      break;
+
     default:
       AliError(Form("Track Matching Cut not defined %d",trackMatching));
       return kFALSE;
