@@ -558,6 +558,9 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
   } else if (trainConfig == 198){ // open cuts
     cuts.AddCutCalo("00010113","4117901097e10200000","0r631031000000d0");  // 500 MeV cluster threshold
 
+  } else if (trainConfig == 199){ // super tight TM cut
+    cuts.AddCutCalo("00010113","411790109ze10200000","0r631031000000d0");  // 500 MeV cluster threshold
+
   } else if (trainConfig == 200){ // cluster efficiency applied
     cuts.AddCutCalo("00010113","4117901097e102200a0","0r631031000000d0");  // 500 MeV cluster threshold
     cuts.AddCutCalo("00010113","4117901097e102200b0","0r631031000000d0");  // 500 MeV cluster threshold
