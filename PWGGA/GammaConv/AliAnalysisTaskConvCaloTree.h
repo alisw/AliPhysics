@@ -56,6 +56,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE
   void SetSaveTracks(Int_t val) { fSaveTracks = val; }
   void SetUseClusterIsolation(Bool_t val) { fUseClusterIsolation = val; }
   void SetSaveJets(int val) { fSaveJets = val; }
+  void SetSaveV0Sectors(bool val) { fSaveV0Sectors = val; }
   void SetStoreTriggerCond(int val) { fStoreTriggerCondition = val; }
 
   void SetMinTrackPt(Double_t tmp) { fMinTrackPt = tmp; }
@@ -124,6 +125,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE
   bool fStoreTriggerCondition; ///< flag to decide if trigger condition (mostly emcal) should be stored
   Bool_t fUseClusterIsolation; ///< flag to decide if isolation should be checked
   int fSaveJets;               ///< flag to decide if jets should be saved, if set to 2, only events with jets are saved
+  bool fSaveV0Sectors;         ///< flag to decide if detailed V0-sector information should be stored in the tree (for flow analyses)
   bool fDoDownscale;           ///< flag to switch on downscaling
   double fDownscaleFac;        ///< downscaling factor (1= no downscaling, 0 = no events accepted)
   // track cuts
@@ -143,11 +145,12 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE
   TH2F* fHistoMCSecEtaPt;   //!<! Sec. eta pt vs. y
 
   // Buffers that will be added to the tree
-  Float_t fBuffer_EventWeight;    //!<! array buffer to store event weights
-  Float_t fBuffer_Event_Vertex_Z; //!<! array buffer store Vertex Z information
-  float fMCQ2;                    //!<! Q2 (pthard) of collision
-  float fV0Mult;                  //!<! V0 multiplicity percentile
-  unsigned int fTriggerBits;      //!<! Mostly relevant for MC from std::bitset(0=INT7, 1=EMC7, 2=DMC7, 3=EG2, 4=DG2, 5=EG1, 6=DG1, 7=EJ2, 8=DJ2, 9=EJ1, 10=DJ1, 11=INEL>0, 12=INEL>0 true)
+  Float_t fBuffer_EventWeight;                  //!<! array buffer to store event weights
+  Float_t fBuffer_Event_Vertex_Z;               //!<! array buffer store Vertex Z information
+  float fMCQ2;                                  //!<! Q2 (pthard) of collision
+  float fV0Mult;                                //!<! V0 multiplicity percentile
+  std::vector<unsigned short> fV0MultSectors;   //!<! V0C (0-31) and V0A (32-63)
+  unsigned int fTriggerBits;                    //!<! Mostly relevant for MC from std::bitset(0=INT7, 1=EMC7, 2=DMC7, 3=EG2, 4=DG2, 5=EG1, 6=DG1, 7=EJ2, 8=DJ2, 9=EJ1, 10=DJ1, 11=INEL>0, 12=INEL>0 true)
 
   std::vector<Float_t> fVBuffer_Cluster_E;                   //!<! vector buffer  Calo (PHOS or EDC) cluster energy
   std::vector<Float_t> fVBuffer_Cluster_Eta;                 //!<! vector buffer  Calo (PHOS or EDC) cluster eta
@@ -231,7 +234,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE
   std::vector<short> fVBuffer_MCGenPz;                //!<! vector buffer: pz *100
   std::vector<unsigned short> fVBuffer_MCGenMotherID; //!<! vector buffer: MC mother ID
 
-  ClassDef(AliAnalysisTaskConvCaloTree, 13);
+  ClassDef(AliAnalysisTaskConvCaloTree, 14);
 };
 
 #endif

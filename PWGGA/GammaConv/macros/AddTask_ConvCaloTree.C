@@ -21,7 +21,8 @@ void AddTask_ConvCaloTree(
   Bool_t enableElecDeDxPostCalibration = kFALSE,
   TString JetReaderName = "",
   double fracEventDownscaling = 1.,
-  Bool_t storeTriggerCondition = true)
+  Bool_t storeTriggerCondition = true,
+  bool storeV0SectorInformation = false)
 {
 
   // ================== GetAnalysisManager ===============================
@@ -187,6 +188,8 @@ void AddTask_ConvCaloTree(
     fConvCaloTree->SetDownscalingFac(fracEventDownscaling);
   if (storeTriggerCondition)
     fConvCaloTree->SetStoreTriggerCond(true);
+  if(storeV0SectorInformation)
+    fConvCaloTree->SetSaveV0Sectors(true);
   mgr->AddTask(fConvCaloTree);
 
   // create AliCaloTrackMatcher instance, if there is none present
