@@ -147,6 +147,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   UInt_t                 FindJetAcceptanceType(Double_t eta, Double_t phi, Double_t r);
   
   void                   LoadTrackEfficiencyFunction(const std::string & path, const std::string & name);
+  void                   LoadClusterEfficiencyFunction(const std::string & path, const std::string & name);
   void                   SetArtificialTrackingEfficiencyFromYAML();
   void                   AddArtificialTrackingEfficiencyConfig();
 
@@ -224,6 +225,8 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   std::vector<TH1D*>    fTrackEfficiencyHistogramVector;///< Histogram that describes the artificial tracking efficiency to be applied on top of the nominal tracking efficiency, as a function of track pT
   Bool_t                 fApplyArtificialTrackingEfficiency; ///< Flag to apply artificial tracking efficiency
   Bool_t                 fApplyPtDependentTrackingEfficiency; ///< Flag to apply pt-dependent tracking efficiency
+  TF1                   *fClusterEfficiencyFunction;///< Function that describes the artificial cluster efficiency to be applied on top of the nominal cluster efficiency, as a function of cluster E
+  Bool_t                 fApplyArtificialClusterEfficiency; ///< Flag to apply artificial cluster efficiency
   Bool_t                 fApplyQoverPtShift;      ///< Apply Q/pt shift
   TRandom3               fRandom;                 //!<! Random number generator for artificial tracking efficiency
   Bool_t                 fLocked;                 ///< true if lock is set
