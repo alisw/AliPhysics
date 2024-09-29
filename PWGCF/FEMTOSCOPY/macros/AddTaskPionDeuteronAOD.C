@@ -6,6 +6,7 @@ AliAnalysisTaskSE *AddTaskPionDeuteronAOD(bool isMC = false,         // 1
                                           bool fullBlastQA = true,   // 3
                                           bool MoreChecks = false,   // 4
                                           bool systmatics = false,   // 5
+                                          int mTBinningChoice = 0, //6
                                           const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -91,9 +92,32 @@ AliAnalysisTaskSE *AddTaskPionDeuteronAOD(bool isMC = false,         // 1
 
   std::vector<bool> closeRejection;
   std::vector<float> mTBins;
+  if(mTBinningChoice == 0){
+  mTBins.push_back(1.06);
   mTBins.push_back(1.19);
-  mTBins.push_back(1.30);
+  mTBins.push_back(1.3);
   mTBins.push_back(999.);
+  }else if(mTBinningChoice == 1){
+    mTBins.push_back(1.06);
+    mTBins.push_back(1.19);
+    mTBins.push_back(1.24);
+    mTBins.push_back(1.35);
+    mTBins.push_back(999.);
+  }else if(mTBinningChoice == 2){
+    mTBins.push_back(1.06);
+    mTBins.push_back(1.2);
+    mTBins.push_back(1.28);
+    mTBins.push_back(1.38);
+    mTBins.push_back(999.);
+  }else{
+    mTBins.push_back(1.06);
+    mTBins.push_back(1.18);
+    mTBins.push_back(1.24);
+    mTBins.push_back(1.30);
+    mTBins.push_back(1.4);
+    mTBins.push_back(999.);
+  }
+
   std::vector<int> pairQA;
   // pairs:
   // pipi             0
