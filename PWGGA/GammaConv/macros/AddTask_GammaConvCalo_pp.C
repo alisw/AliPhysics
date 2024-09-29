@@ -3834,7 +3834,6 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799709fe30230000","0r63103100000010"); // INT7B  NL97
     cuts.AddCutPCMCalo("00010113","0dm00089f9730000iih0404000","411799809fe30230000","0r63103100000010"); // INT7B  NL98
 
-
     // systematics for PCM-PHOS  13 TeV- LowB
 
   } else if (trainConfig == 3400) {   // std Cut
@@ -3958,6 +3957,7 @@ void AddTask_GammaConvCalo_pp(
   //                                                                 //
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799709fe30230000","0r63103100000010"); // INT7  NL97
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799809fe30230000","0r63103100000010"); // INT7  NL98
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe30230000","0r63103100000010"); // INT7  NL99
   } else if (trainConfig == 3502) {  //   (fPSigSmearing, fPSigSmearingCte)  //                                                                                            /
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100b00010"); // smearing
     // Variations of EDC Part
