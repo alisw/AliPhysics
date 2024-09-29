@@ -779,6 +779,8 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistElectronClusterMatchTruePIDRecP;             // MC true histogram for purity studies of selected electrons with rec mom on EMC surface
     TH2F*     fHistTrueElectronPositronClusterMatchEoverP;      // True Electron/Positron E/P vs PT of cluster in case of matching of Electron with cluster
     TH2F*     fHistElectronClusterNCellsVsE;                    // Electron/Positron cluster number of cells vs. cluster energy
+    TH2F*     fHistElectronClusterMatchEta;                     // distance between track and cluster in eta vs. track momentum
+    TH2F*     fHistElectronClusterMatchPhi;                     // distance between track and cluster in phi vs. track momentum
     TH2F*     fHistElectronPositronVsSM;                        // track momentum for electron and positron tracks for each SM seperatly
     TH2F*     fHistElectronPositronVsEta;                       // track momentum for electron and positron tracks vs. eta of cluster
     TH2F*     fHistElectronPositronClusterMatchVsSM;            // track momentum for matched electron and positron tracks for each SM seperatly
@@ -801,7 +803,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,143)
+    ClassDef(AliCaloPhotonCuts,144)
 };
 
 #endif

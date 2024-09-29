@@ -349,6 +349,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistElectronClusterMatchTruePIDRecP(NULL),
   fHistTrueElectronPositronClusterMatchEoverP(NULL),
   fHistElectronClusterNCellsVsE(NULL),
+  fHistElectronClusterMatchEta(NULL),
+  fHistElectronClusterMatchPhi(NULL),
   fHistElectronPositronVsSM(NULL),
   fHistElectronPositronVsEta(NULL),
   fHistElectronPositronClusterMatchVsSM(NULL),
@@ -629,6 +631,8 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistElectronClusterMatchTruePIDRecP(NULL),
   fHistTrueElectronPositronClusterMatchEoverP(NULL),
   fHistElectronClusterNCellsVsE(NULL),
+  fHistElectronClusterMatchEta(NULL),
+  fHistElectronClusterMatchPhi(NULL),
   fHistElectronPositronVsSM(NULL),
   fHistElectronPositronVsEta(NULL),
   fHistElectronPositronClusterMatchVsSM(NULL),
@@ -2082,6 +2086,19 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistElectronClusterNCellsVsE->GetYaxis()->SetTitle("N_{cells}");
       fHistElectronClusterNCellsVsE->GetXaxis()->SetTitle("E_{cl} (GeV)");
       fHistograms->Add(fHistElectronClusterNCellsVsE);
+
+      fHistElectronClusterMatchEta = new TH2F(Form("ElectronClusterMatchEta %s",GetCutNumber().Data()), "Electron clusters NCells vs. E",
+                                                100, -0.1, 0.1, nBinsClusterE, arrClusEBinning);
+      fHistElectronClusterMatchEta->GetXaxis()->SetTitle("#Delta #eta");
+      fHistElectronClusterMatchEta->GetYaxis()->SetTitle("P_{tr} (GeV)");
+      fHistograms->Add(fHistElectronClusterMatchEta);
+
+      fHistElectronClusterMatchPhi = new TH2F(Form("ElectronClusterMatchPhi %s",GetCutNumber().Data()), "Electron clusters NCells vs. E",
+                                                100, -0.1, 0.1, nBinsClusterE, arrClusEBinning);
+      fHistElectronClusterMatchPhi->GetXaxis()->SetTitle("#Delta #phi");
+      fHistElectronClusterMatchPhi->GetYaxis()->SetTitle("P_{tr} (GeV)");
+      fHistograms->Add(fHistElectronClusterMatchPhi);
+
 
       fHistElectronPositronVsSM = new TH2F(Form("ElectronPositronVsSM %s",GetCutNumber().Data()), "Electron clusters track mom. vs. SM ID",
                                                 nBinsClusterE, arrClusEBinning, 20, -0.5, 19.5);
@@ -4776,6 +4793,8 @@ void AliCaloPhotonCuts::MatchElectronTracksToClusters(AliVEvent* event, AliMCEve
       if(match_dEta && match_dPhi){
         matchCounter++;
         if(fExtendedMatchAndQA > 1){
+          fHistElectronClusterMatchEta->Fill( dEta, inTrack->GetTrackPOnEMCal(), weight);
+          fHistElectronClusterMatchPhi->Fill( dPhi, inTrack->GetTrackPOnEMCal(), weight);
           if(inTrack->Charge() < 0){
             fHistElectronClusterMatch->Fill(cluster->E(), inTrack->GetTrackPOnEMCal(), weight);
           } else {

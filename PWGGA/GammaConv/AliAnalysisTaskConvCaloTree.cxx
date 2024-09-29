@@ -79,6 +79,7 @@ ClassImp(AliAnalysisTaskConvCaloTree)
                                                                fStoreTriggerCondition(0),
                                                                fUseClusterIsolation(0),
                                                                fSaveJets(0),
+                                                               fSaveV0Sectors(false),
                                                                fDoDownscale(false),
                                                                fDownscaleFac(1.),
                                                                fMinTrackPt(0),
@@ -97,6 +98,7 @@ ClassImp(AliAnalysisTaskConvCaloTree)
                                                                fBuffer_Event_Vertex_Z(0),
                                                                fMCQ2(0.),
                                                                fV0Mult(0.),
+                                                               fV0MultSectors({}),
                                                                fTriggerBits(0),
                                                                fVBuffer_Cluster_E(),
                                                                fVBuffer_Cluster_Eta(),
@@ -212,6 +214,7 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree(const char* name) : Ali
                                                                              fStoreTriggerCondition(0),
                                                                              fUseClusterIsolation(0),
                                                                              fSaveJets(0),
+                                                                             fSaveV0Sectors(false),
                                                                              fDoDownscale(false),
                                                                              fDownscaleFac(1.),
                                                                              fMinTrackPt(0),
@@ -230,6 +233,7 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree(const char* name) : Ali
                                                                              fBuffer_Event_Vertex_Z(0),
                                                                              fMCQ2(0.),
                                                                              fV0Mult(0.),
+                                                                             fV0MultSectors({}),
                                                                              fTriggerBits(0),
                                                                              fVBuffer_Cluster_E(),
                                                                              fVBuffer_Cluster_Eta(),
@@ -385,6 +389,9 @@ void AliAnalysisTaskConvCaloTree::UserCreateOutputObjects()
   }
   fPhotonTree->Branch("Event_VertexZ", &fBuffer_Event_Vertex_Z, "Event_VertexZ/F");
   fPhotonTree->Branch("Event_V0MultPerc", &fV0Mult);
+  if(fSaveV0Sectors){
+    fPhotonTree->Branch("Event_V0MultSectors", &fV0MultSectors);
+  }
   if (fStoreTriggerCondition) {
     fPhotonTree->Branch("Event_TriggerBits", &fTriggerBits);
   }
@@ -582,6 +589,9 @@ void AliAnalysisTaskConvCaloTree::UserCreateOutputObjects()
 
   fV0Reader = (AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
 
+
+  // Exeption: This vector should have a fixed size for every event.
+  fV0MultSectors.resize(64);
   OpenFile(2);
   PostData(2, fPhotonTree);
 }
@@ -652,6 +662,14 @@ void AliAnalysisTaskConvCaloTree::UserExec(Option_t*)
   fBuffer_Event_Vertex_Z = primVtxMC->GetZ();
 
   fV0Mult = ((AliConvEventCuts*)fEventCuts)->GetCentrality(fInputEvent);
+  if(fSaveV0Sectors){
+    // Loop over V0 channels and calculate q-vectors for V0C (0-31) and V0A (32-63)
+    AliAODVZERO *aodV0 = static_cast<AliAODVZERO *>(fInputEvent->GetVZEROData());
+
+    for (int iCh = 0; iCh < 64; ++iCh) {
+      fV0MultSectors[iCh] = static_cast<unsigned short>( aodV0->GetMultiplicity(iCh) > 6500 ? 650000 : aodV0->GetMultiplicity(iCh)*10);
+    }
+  }
 
   if (fIsMC > 0 && fInputEvent->IsA() == AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())) {
     RelabelAODPhotonCandidates(kTRUE); // In case of AODMC relabeling MC
