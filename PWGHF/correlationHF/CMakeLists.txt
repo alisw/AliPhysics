@@ -108,7 +108,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGHFhfe PWGHFvertexingHF)
+set(LIBDEPS ANALYSISalice PWGHFhfe PWGHFvertexingHF PWGCFCorrelationsBase)
 if(KFParticle_FOUND)
   get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
   set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
