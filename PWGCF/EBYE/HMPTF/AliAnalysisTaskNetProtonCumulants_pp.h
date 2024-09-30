@@ -125,6 +125,10 @@ class AliAnalysisTaskNetProtonCumulants_pp : public AliAnalysisTaskSE {
   {
     this->fPIDbayesProton = bayesPidPr;
   }
+  void SetRapidityCutFlag (Int_t flag)
+  {
+    this->fRapidityCutFlag = flag;
+  }
 
   
  private:
@@ -157,6 +161,7 @@ class AliAnalysisTaskNetProtonCumulants_pp : public AliAnalysisTaskSE {
   Float_t fTreeVariableCentrality;
   Float_t fMultV0AplusC;
   Float_t fMultEta0p8_noProton;
+  Float_t fMultEtaGap;
   Float_t fRefmult;
   Float_t fRefmult5;
   Float_t fRefmult8;
@@ -254,7 +259,7 @@ class AliAnalysisTaskNetProtonCumulants_pp : public AliAnalysisTaskSE {
   Double_t fPIDbayesPion;
   Double_t fPIDbayesKaon;
   Double_t fPIDbayesProton;
-
+  Int_t fRapidityCutFlag;
   
   
   AliAnalysisTaskNetProtonCumulants_pp(const AliAnalysisTaskNetProtonCumulants_pp&);
