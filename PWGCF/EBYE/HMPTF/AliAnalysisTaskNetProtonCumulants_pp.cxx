@@ -108,6 +108,7 @@ AliAnalysisTaskNetProtonCumulants_pp::AliAnalysisTaskNetProtonCumulants_pp():
   fTreeVariableCentrality(0),
   fMultV0AplusC(0),
   fMultEta0p8_noProton(0),
+  fMultEtaGap(0),
   fRefmult(0),
   fRefmult5(0),
   fRefmult8(0),
@@ -186,6 +187,7 @@ AliAnalysisTaskNetProtonCumulants_pp::AliAnalysisTaskNetProtonCumulants_pp():
   fPIDbayesPion(0),
   fPIDbayesKaon(0),
   fPIDbayesProton(0),
+  fRapidityCutFlag(0),
   fTreeName(0)
 {
   for(int i=0; i<9; i++)
@@ -227,6 +229,7 @@ AliAnalysisTaskNetProtonCumulants_pp::AliAnalysisTaskNetProtonCumulants_pp(const
   fTreeVariableCentrality(0),
   fMultV0AplusC(0),
   fMultEta0p8_noProton(0),
+  fMultEtaGap(0),
   fRefmult(0),
   fRefmult5(0),
   fRefmult8(0),
@@ -305,6 +308,7 @@ AliAnalysisTaskNetProtonCumulants_pp::AliAnalysisTaskNetProtonCumulants_pp(const
   fPIDbayesPion(0),
   fPIDbayesKaon(0),
   fPIDbayesProton(0),
+  fRapidityCutFlag(0),
   fTreeName(0)
 {
   for(int i=0; i<9; i++)
@@ -397,6 +401,7 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserCreateOutputObjects()  {
     //multipliciteis
     fTreeEvent->Branch("fMultV0AplusC",&fMultV0AplusC,"fMultV0AplusC/F");
     fTreeEvent->Branch("fMultEta0p8_noProton",&fMultEta0p8_noProton,"fMultEta0p8_noProton/F");
+    fTreeEvent->Branch("fMultEtaGap",&fMultEtaGap,"fMultEtaGap/F");
     fTreeEvent->Branch("fRefmult",&fRefmult,"fRefmult/F");
     fTreeEvent->Branch("fRefmult5",&fRefmult5,"fRefmult5/F");
     fTreeEvent->Branch("fRefmult8",&fRefmult8,"fRefmult8/F");
@@ -447,7 +452,7 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserExec(Option_t *)  {
   
     //Get Input Event
     if ( !GetEvent ()) return;
-    cout<<"*********************** Found AOD event !!! ******************************"<<endl;
+    //cout<<"*********************** Found AOD event !!! ******************************"<<endl;
 
     
     //Get multiplicity percentile
@@ -541,7 +546,7 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserExec(Option_t *)  {
     float fV0A_mult = aodV0->GetMTotV0A();
     float fV0C_mult = aodV0->GetMTotV0C();
     float fV0_total = fV0A_mult + fV0C_mult;
-    cout<<"VZero Multiplicity: "<<fV0_total<<endl;
+    //cout<<"VZero Multiplicity: "<<fV0_total<<endl;
 
     int refmult = ((AliAODHeader *) fAODevent->GetHeader())->GetRefMultiplicity();
     int refmult05 = ((AliAODHeader *) fAODevent->GetHeader())->GetRefMultiplicityComb05();
@@ -551,6 +556,7 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserExec(Option_t *)  {
 
    
     float mult = 0;
+    float mult_etagap = 0;
 
     //Loop on reconstructed tracks
     
@@ -597,11 +603,20 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserExec(Option_t *)  {
 	      mult+=1;
 	  }
 
+	if (TMath::Abs(trkEta) > fEtaMax && TMath::Abs(trkEta) < 0.8)
+	  {
+	    mult_etagap += 1;
+	  }
+
 	//Fill proton antiproton 2D distribution pt vs. y
 	f2Dhist_pt_vs_rapidity_proton->Fill(trkRapidity, trkPt);
 
 	//Kinematic cuts on pT and Eta
 	if (TMath::Abs(trkEta) > fEtaMax) continue;
+
+	if(fRapidityCutFlag == 1)
+	  if (TMath::Abs(trkRapidity) > 0.5)
+	    continue;
 	
 	if (trkPt < 0.2) continue;
 	if (trkPt > 3.0) continue;
@@ -743,11 +758,12 @@ void AliAnalysisTaskNetProtonCumulants_pp::UserExec(Option_t *)  {
     fTreeVariableCentrality = lV0M;
     fMultV0AplusC = fV0_total;
     fMultEta0p8_noProton = mult;
+    fMultEtaGap = mult_etagap;
     fRefmult = refmult;
     fRefmult5 = refmult05;
     fRefmult8 = refmult08;
     fRefmult10 = refmult10;
-    cout<<"TPC multiplicity: "<<mult<<endl;
+    //cout<<"TPC multiplicity: "<<mult<<endl;
 
     //++++++++++++++++++++++++++++++++++++++++++++
     //Reconstructed
