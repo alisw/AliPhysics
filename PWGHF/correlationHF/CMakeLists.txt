@@ -30,6 +30,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGHF/hfe
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
                     ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/vHFML
+                    ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations/Base
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
   )
 if(KFParticle_FOUND)
   get_target_property(KFPARTICLE_INCLUDE_DIR KFParticle::KFParticle INTERFACE_INCLUDE_DIRECTORIES)
@@ -55,6 +57,7 @@ set(SRCS
     AliDxHFEToolsMC.cxx
     AliDxHFECorrelation.cxx
     AliDxHFECorrelationMC.cxx
+    AliAnalysisTaskHadronElectronAnalysis.cxx
     AliAnalysisTaskDxHFEParticleSelection.cxx
     AliAnalysisTaskDxHFECorrelation.cxx
     AliHFAssociatedTrackCuts.cxx
@@ -105,7 +108,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ANALYSISalice PWGHFhfe PWGHFvertexingHF)
+set(LIBDEPS ANALYSISalice PWGHFhfe PWGHFvertexingHF PWGCFCorrelationsBase)
 if(KFParticle_FOUND)
   get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
   set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})

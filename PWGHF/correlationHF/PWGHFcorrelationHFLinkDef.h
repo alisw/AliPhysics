@@ -12,6 +12,7 @@
 #pragma link C++ class AliDxHFEToolsMC+;
 #pragma link C++ class AliDxHFECorrelation+;
 #pragma link C++ class AliDxHFECorrelationMC+;
+#pragma link C++ class AliAnalysisTaskHadronElectronAnalysis+;
 #pragma link C++ class AliAnalysisTaskDxHFEParticleSelection+;
 #pragma link C++ class AliAnalysisTaskDxHFECorrelation+;
 #pragma link C++ class AliHFAssociatedTrackCuts+;
