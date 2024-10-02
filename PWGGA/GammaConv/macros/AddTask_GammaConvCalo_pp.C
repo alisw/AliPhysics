@@ -2497,18 +2497,18 @@ void AddTask_GammaConvCalo_pp(
   } else if ( trainConfig == 2022){ // Min Bias 13 TeV S300A100 Clusters
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799909fe309v0000","0r63103100000010"); // STD
   //________________________________________________________________________________ same as above, NL Var
-  } else if ( trainConfig == 2020){ // Min Bias 13 TeV S300A100 Clusters
+  } else if ( trainConfig == 2023){ // Min Bias 13 TeV S300A100 Clusters
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799709fe309v0000","0r63103100000010"); // STD
-  } else if ( trainConfig == 2021){ // Min Bias 13 TeV S300A100 Clusters
+  } else if ( trainConfig == 2024){ // Min Bias 13 TeV S300A100 Clusters
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411799709fe309v0000","0r63103100000010"); // STD
-  } else if ( trainConfig == 2022){ // Min Bias 13 TeV S300A100 Clusters
+  } else if ( trainConfig == 2025){ // Min Bias 13 TeV S300A100 Clusters
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411799709fe309v0000","0r63103100000010"); // STD
   //________________________________________________________________________________ same as above, NL Var
-  } else if ( trainConfig == 2020){ // Min Bias 13 TeV S300A100 Clusters
+  } else if ( trainConfig == 2026){ // Min Bias 13 TeV S300A100 Clusters
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","0r63103100000010"); // STD
-  } else if ( trainConfig == 2021){ // Min Bias 13 TeV S300A100 Clusters
+  } else if ( trainConfig == 2027){ // Min Bias 13 TeV S300A100 Clusters
     cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","0r63103100000010"); // STD
-  } else if ( trainConfig == 2022){ // Min Bias 13 TeV S300A100 Clusters
+  } else if ( trainConfig == 2028){ // Min Bias 13 TeV S300A100 Clusters
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","0r63103100000010"); // STD
 
   // lowB
