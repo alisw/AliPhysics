@@ -28,7 +28,7 @@ AliAnalysisTaskZNZP* AddTaskZNZP(const char* taskname = "ZNZP",
   taskKno->SetV0Mmax(80.);
   taskKno->SetEtaCut(0.8);
   taskKno->SetPtCut(0.15);
-  taskKno->SaveAsymmetry(true);
+  taskKno->IsTowerEnergy(true);
   taskKno->SetTrigger(AliVEvent::kINT7);
   mgr->AddTask(taskKno);
 
