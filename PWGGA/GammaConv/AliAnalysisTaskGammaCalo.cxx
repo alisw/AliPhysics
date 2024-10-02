@@ -384,6 +384,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fClusterTimeProbe(0),
   fClusterETag(0),
   fClusterEProbe(0),
+  fCellEProbe(0),
   fEventPlaneAngle(-100),
   fRandom(0),
   fnCuts(0),
@@ -749,6 +750,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fClusterTimeProbe(0),
   fClusterETag(0),
   fClusterEProbe(0),
+  fCellEProbe(0),
   fEventPlaneAngle(-100),
   fRandom(0),
   fnCuts(0),
@@ -1884,6 +1886,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         tClusterTimingEff[iCut]->Branch("ClusterTimeProbe",&fClusterTimeProbe,"fClusterTimeProbe/F");
         tClusterTimingEff[iCut]->Branch("ClusterETag",&fClusterETag,"fClusterETag/F");
         tClusterTimingEff[iCut]->Branch("ClusterEProbe",&fClusterEProbe,"fClusterEProbe/F");
+        tClusterTimingEff[iCut]->Branch("CellEProbe",&fCellEProbe,"fCellEProbe/F");
       }
 
       if (fProduceTreeEOverP ){
@@ -5393,6 +5396,16 @@ void AliAnalysisTaskGammaCalo::CalculatePi0Candidates(){
             fClusterTimeTag     = Cluster0->GetTOF();
             fClusterEProbe   = Cluster1->E();
             fClusterETag     = Cluster0->E();
+            // get cell energy of leading cell
+            AliVCaloCells* cells    = nullptr;
+            if(Cluster1->IsEMCAL()){ //EMCAL
+              cells = fInputEvent->GetEMCALCells();
+            }else if(Cluster1->IsPHOS()){ //PHOS
+              cells = fInputEvent->GetPHOSCells();
+            }
+            int cellLead = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->FindLargestCellInCluster(Cluster1,fInputEvent);
+            fCellEProbe = cells->GetCellAmplitude(cellLead);
+            // fill the tree
             tClusterTimingEff[fiCut]->Fill();
           }
 

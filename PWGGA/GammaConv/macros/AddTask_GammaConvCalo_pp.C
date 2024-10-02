@@ -2482,13 +2482,22 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411792109fe30230000","0r63103100000010"); // EG1  NL21
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411792209fe30230000","0r63103100000010"); // EG1  NL22
 
-    // std. EMCal 13TeV configs with NCell efficiency (PCMEMC tagging, Gaussian param on gamma cluster)
+    // std. EMCal 13TeV configs with no NCell cut
   } else if ( trainConfig == 2012){ //
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n230000","0r63103100000010"); // INT7, no smearing
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","0r63103100000010"); // INT7, no smearing
   } else if ( trainConfig == 2013){ //
-    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe3n230000","0r63103100000010"); // EG2, no smearing
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe309v0000","0r63103100000010"); // EG2, no smearing
   } else if ( trainConfig == 2014){ //
+    cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe309v0000","0r63103100000010"); // EG1, no smearing
+
+    // std. EMCal 13TeV configs with NCell efficiency (PCMEMC tagging, Gaussian param on gamma cluster)
+  } else if ( trainConfig == 2015){ //
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n230000","0r63103100000010"); // INT7, no smearing
+  } else if ( trainConfig == 2016){ //
+    cuts.AddCutPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe3n230000","0r63103100000010"); // EG2, no smearing
+  } else if ( trainConfig == 2017){ //
     cuts.AddCutPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe3n230000","0r63103100000010"); // EG1, no smearing
+
 
   } else if ( trainConfig == 2020){ // Min Bias 13 TeV S300A100 Clusters
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe309v0000","0r63103100000010"); // STD

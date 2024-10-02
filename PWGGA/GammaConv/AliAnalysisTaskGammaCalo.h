@@ -487,6 +487,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Float_t               fClusterTimeProbe;                                    //! cluster time of probe photon
     Float_t               fClusterETag;                                         //! cluster E of tagged photon
     Float_t               fClusterEProbe;                                       //! cluster E of probe photon
+    Float_t               fCellEProbe;                                          //! leading cell E of tagged photon
 
     // additional variables
     Double_t              fEventPlaneAngle;                                     // EventPlaneAngle
