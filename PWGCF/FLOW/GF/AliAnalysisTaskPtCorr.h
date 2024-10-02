@@ -14,6 +14,8 @@
 #include "TH2D.h"
 #include "AliPtPtContainer.h"
 #include "AliProfileBS.h"
+//#include "AliProfile2DBS.h"
+#include "TProfile2D.h"
 #include "TH3D.h"
 #include "AliGFWCuts.h"
 #include "TF1.h"
@@ -86,6 +88,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void SetUseIP(bool newval) { fUseIP = newval;}
   void SetUseCentCalibration(bool newval) { fUseCentCalibration = newval; }
   void SetRejectMBTriggeredEventsMarkedSpecialTrigger(bool newval) { fRejectMBtriggerEventsMarkedSpecial = newval; }
+  void SwitchV0MToETmult(bool newval) { fUseEToverV0M = newval; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -103,6 +106,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   Bool_t fUseIP;
   Bool_t fUseCentCalibration;
   Bool_t fRejectMBtriggerEventsMarkedSpecial;
+  Bool_t fUseEToverV0M;
   unsigned int fCMflag;
   TString fDCAxyFunctionalForm;
   Bool_t fOnTheFly;
@@ -172,6 +176,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH3F *fNchVsV0MVsCent;
   TH3D *fptDCAxyDCAz;
   TH3D *fPhiEtaVtxZ;
+  TProfile2D **f2DMoments; //!
   TH1D* fIP;
   Double_t fCorrPar[2]; //Yes need to store
   Bool_t fUseCorrCuts; //Yes need to store

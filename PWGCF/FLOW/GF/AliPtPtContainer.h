@@ -26,8 +26,8 @@ class AliPtPtContainer: public TNamed {
         void InitializeSubsamples(const Int_t &nsub);
         void CalculateCorrelations(const vector<vector<double>> &inarr);
         void CalculateCMTerms(const vector<vector<double>> &inarr);
-        void FillProfiles(const Double_t &lMult, const Double_t &rn);
-        void FillCMProfiles(const vector<vector<double>> &inarr, const double &lMult, const double &rn);
+        void FillProfiles(const Double_t &centmult, const Double_t &rn);
+        void FillCMProfiles(const vector<vector<double>> &inarr, const double &centmult, const double &rn);
         vector<Double_t> getEventCorrelation(Int_t mOrder);
         TList* GetCorrList() { return fCorrList; }
         TList* GetCMTermList() { return fCMTermList; }
@@ -37,6 +37,10 @@ class AliPtPtContainer: public TNamed {
         TH1* getCentralMomentHist(Int_t ind, Int_t m);
         TH1* getCumulantHist(Int_t ind, Int_t m);
         TH1* getCorrHist(Int_t ind, Int_t m);
+        double getNumerator(const int m) { return fCorr[m]; }
+        double getDenominator(const int m) { return fSumw[m]; }
+        double getNumeratorCM(const int m, const int t) { return fcmNum[m * (m - 1) / 2 + (m - t - 1)]; }
+        double getDenominatorCM(const int m) { return fcmDen[m-1]; }
         Int_t getMpar() { return mpar;}
         Long64_t Merge(TCollection *collist);
         TList* fCMTermList;
@@ -47,6 +51,8 @@ class AliPtPtContainer: public TNamed {
         unsigned int fEventWeight;
         vector<Double_t> fCorr;
         vector<Double_t> fSumw;
+        vector<Double_t> fcmNum;
+        vector<Double_t> fcmDen;
         Double_t OrderedAddition(vector<Double_t> vec);
         void CreateCentralMomentList();
         void CalculateCentralMomentHists(vector<TH1*> inh, int ind, int m, TH1* hMpt);

@@ -38,6 +38,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fUseIP(kFALSE),
   fUseCentCalibration(kFALSE),
   fRejectMBtriggerEventsMarkedSpecial(kFALSE),
+  fUseEToverV0M(kFALSE),
   fCMflag(0),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
@@ -98,6 +99,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fNchVsV0MVsCent(0),
   fptDCAxyDCAz(0),
   fPhiEtaVtxZ(0),
+  f2DMoments(0),
   fIP(0),
   fSPDCutPU(0),
   fV0CutPU(0),
@@ -127,6 +129,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fUseIP(kFALSE),
   fUseCentCalibration(kFALSE),
   fRejectMBtriggerEventsMarkedSpecial(kFALSE),
+  fUseEToverV0M(kFALSE),
   fCMflag(0),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
@@ -187,6 +190,7 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fNchVsV0MVsCent(0),
   fptDCAxyDCAz(0),
   fPhiEtaVtxZ(0),
+  f2DMoments(0),
   fIP(0),
   fSPDCutPU(0),
   fV0CutPU(0),
@@ -256,7 +260,15 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   fPtCont->SetEventWeight(fEventWeight);
   fptList->Add(fPtCont);
   if(fNBootstrapProfiles) fPtCont->InitializeSubsamples(fNBootstrapProfiles);
-  fPtContV0Mmult = new AliPtPtContainer("ptcont_V0Mmult_ch","ptcont_V0Mmult_ch",1000,0,45000,fPtMpar);
+  int naltmultbins = 1000;
+  double altmultbinlow = 0;
+  double altmultbinhigh = 45000;
+/*   if(fUseEToverV0M){
+    naltmultbins
+    altmultbinlow
+    altmultbinhigh
+  } */
+  fPtContV0Mmult = new AliPtPtContainer("ptcont_V0Mmult_ch","ptcont_V0Mmult_ch",naltmultbins,altmultbinlow,altmultbinhigh,fPtMpar);
   fPtContV0Mmult->SetEventWeight(fEventWeight);
   fptList->Add(fPtContV0Mmult);
   if(fNBootstrapProfiles) fPtContV0Mmult->InitializeSubsamples(fNBootstrapProfiles);
@@ -269,6 +281,17 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
     fptList->Add(fPtContCent);
     if(fNBootstrapProfiles) fPtContCent->InitializeSubsamples(fNBootstrapProfiles);
   }
+  f2DMoments = new TProfile2D*[4];
+  f2DMoments[0] = new TProfile2D("mpt_2d","mpt_2d",fNMultiBins,fMultiBins,nDefaultCentBins,defaultCentBins);
+  fptList->Add(f2DMoments[0]);
+  f2DMoments[1] = new TProfile2D("pt2_2d","pt2_2d",fNMultiBins,fMultiBins,nDefaultCentBins,defaultCentBins);
+  fptList->Add(f2DMoments[1]);
+  f2DMoments[2] = new TProfile2D("pt3_2d","pt3_2d",fNMultiBins,fMultiBins,nDefaultCentBins,defaultCentBins);
+  fptList->Add(f2DMoments[2]);
+  f2DMoments[3] = new TProfile2D("pt4_2d","pt4_2d",fNMultiBins,fMultiBins,nDefaultCentBins,defaultCentBins);
+  fptList->Add(f2DMoments[3]);
+  //if(fNBootstrapProfiles) for(int i = 0; i < 4; ++i) f2DMoments[i]->InitializeSubsamples(fNBootstrapProfiles);
+
   fMptVsMulti = new TH2D("fMptVsMulti",";N_{ch}; #LT[#it{p}_{T}]#GT",fNMultiBins,fMultiBins,fNMptBins,fMptBins);
   fptList->Add(fMptVsMulti);
   fNchVsV0MVsCent = new TH3F("fNchVsV0MVsCent","N_{ch}/V0M amplitude/Centrality; V0M amplitude; N_{ch}; Centrality (%)",1000,0,45000,2250,0,4500,90,0,90);
@@ -452,6 +475,10 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   if(fCMflag&1) fPtContCent->FillCMProfiles(wp,l_Cent,l_Random);
   fMptVsMulti->Fill(l_Nch,wp[1][1]/wp[1][0]);
   fV0MMulti->Fill(l_Cent);
+  f2DMoments[0]->Fill(l_Nch,l_Cent,fPtCont->getNumerator(1)/fPtCont->getDenominator(1),(fEventWeight==PtPtSpace::kUnity)?1.:fPtCont->getDenominator(1));
+  f2DMoments[1]->Fill(l_Nch,l_Cent,fPtCont->getNumerator(2)/fPtCont->getDenominator(2),(fEventWeight==PtPtSpace::kUnity)?1.:fPtCont->getDenominator(2));
+  f2DMoments[2]->Fill(l_Nch,l_Cent,fPtCont->getNumerator(3)/fPtCont->getDenominator(3),(fEventWeight==PtPtSpace::kUnity)?1.:fPtCont->getDenominator(3));
+  f2DMoments[3]->Fill(l_Nch,l_Cent,fPtCont->getNumerator(4)/fPtCont->getDenominator(4),(fEventWeight==PtPtSpace::kUnity)?1.:fPtCont->getDenominator(4));
   PostData(1,fptList);
   PostData(2,fQAList);
   return;
@@ -559,7 +586,7 @@ void AliAnalysisTaskPtCorr::ProcessGen(){
   // ### MC event selection
   Bool_t isEventMCSelected = IsMCEventSelected(fMCEvent);
   if (!isEventMCSelected) return;
-
+  Double_t l_Cent = getGeneratorCentrality();
   wp.clear(); wp.resize(fPtMpar+1,vector<double>(fPtMpar+1));
   Double_t ptMin = fPtBins[0];
   Double_t ptMax = fPtBins[fNPtBins];
