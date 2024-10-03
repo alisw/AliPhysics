@@ -103,7 +103,7 @@ ClassImp(AliAnalysisTaskZNZP)  // classimp: necessary for root
       fMCStack(0),
       fMC(0),
       fUseMC(kFALSE),
-      fSaveAsy(false),
+      fTowerEnergy(true),
       fTrigger(AliVEvent::kCentral),
       fMultSelection(0x0),
       fTrackFilter(0x0),
@@ -119,6 +119,8 @@ ClassImp(AliAnalysisTaskZNZP)  // classimp: necessary for root
       fSPD(0),
       fNchTPC(0),
       fET(0.),
+      fZNCvsV0M(0),
+      fZNAvsV0M(0),
       pV0MAmpChannel(0),
       hV0Percentile(0),
       hBestVtxZ(0),
@@ -127,10 +129,6 @@ ClassImp(AliAnalysisTaskZNZP)  // classimp: necessary for root
       hAsyN(0),
       hZPAvsV0M(0),
       hZPCvsV0M(0),
-      hZNCpmc(0),
-      hZNApmc(0),
-      hZPCpmc(0),
-      hZPApmc(0),
       hZNCNorm(0),
       hZNANorm(0),
       pZNChannel(0),
@@ -150,7 +148,9 @@ ClassImp(AliAnalysisTaskZNZP)  // classimp: necessary for root
       pZNCvsSPD(0),
       pZNAvsSPD(0),
       pZPCvsSPD(0),
-      pZPAvsSPD(0) {}
+      pZPAvsSPD(0),
+      hZNCTowvsNCEn(0),
+      hZPATowvsPAEn(0) {}
 //_____________________________________________________________________________
 AliAnalysisTaskZNZP::AliAnalysisTaskZNZP(const char* name)
     : AliAnalysisTaskSE(name),
@@ -159,7 +159,7 @@ AliAnalysisTaskZNZP::AliAnalysisTaskZNZP(const char* name)
       fMCStack(0),
       fMC(0),
       fUseMC(kFALSE),
-      fSaveAsy(false),
+      fTowerEnergy(true),
       fTrigger(AliVEvent::kCentral),
       fMultSelection(0x0),
       fTrackFilter(0x0),
@@ -175,6 +175,8 @@ AliAnalysisTaskZNZP::AliAnalysisTaskZNZP(const char* name)
       fSPD(0),
       fNchTPC(0),
       fET(0.),
+      fZNCvsV0M(0),
+      fZNAvsV0M(0),
       pV0MAmpChannel(0),
       hV0Percentile(0),
       hBestVtxZ(0),
@@ -183,10 +185,6 @@ AliAnalysisTaskZNZP::AliAnalysisTaskZNZP(const char* name)
       hAsyN(0),
       hZPAvsV0M(0),
       hZPCvsV0M(0),
-      hZNCpmc(0),
-      hZNApmc(0),
-      hZPCpmc(0),
-      hZPApmc(0),
       hZNCNorm(0),
       hZNANorm(0),
       pZNChannel(0),
@@ -206,7 +204,9 @@ AliAnalysisTaskZNZP::AliAnalysisTaskZNZP(const char* name)
       pZNCvsSPD(0),
       pZNAvsSPD(0),
       pZPCvsSPD(0),
-      pZPAvsSPD(0) {
+      pZPAvsSPD(0),
+      hZNCTowvsNCEn(0),
+      hZPATowvsPAEn(0) {
   DefineInput(0, TChain::Class());  // define the input of the analysis: in this
                                     // case you take a 'chain' of events
   // this chain is created by the analysis manager, so no need to worry about
@@ -271,6 +271,21 @@ void AliAnalysisTaskZNZP::UserCreateOutputObjects() {
     fTrackFilterwoDCA->AddCuts(fCuts3);
   }
 
+  //! <ZNC> and <ZNA> obtained from the run 296621
+  fZNCvsV0M = new TF1("fZNCvsV0M", "pol4", 0., 100.);
+  fZNCvsV0M->SetParameter(0, 8.09862);
+  fZNCvsV0M->SetParameter(1, 2.36909);
+  fZNCvsV0M->SetParameter(2, -0.0537093);
+  fZNCvsV0M->SetParameter(3, 0.000549338);
+  fZNCvsV0M->SetParameter(4, -2.60388e-06);
+
+  fZNAvsV0M = new TF1("fZNAvsV0M", "pol4", 0., 100.);
+  fZNAvsV0M->SetParameter(0, 7.10818);
+  fZNAvsV0M->SetParameter(1, 2.20761);
+  fZNAvsV0M->SetParameter(2, -0.0492212);
+  fZNAvsV0M->SetParameter(3, 0.000514146);
+  fZNAvsV0M->SetParameter(4, -2.56141e-06);
+
   // create output objects
   OpenFile(1);
   fOutputList = new TList();
@@ -315,15 +330,21 @@ void AliAnalysisTaskZNZP::UserCreateOutputObjects() {
   hBestVtxZ =
       new TH1F("hBestVtxZ", ";Vertex_{#it{z}} (cm); Counts;", 400, -11, 11);
 
-  hZNAvsV0M = new TH2F("hZNAvsV0M", "ZNA;V0M Per; #it{E}_{ZN} [TeV]/2.511;",
-                       nBinsV0M090, BinsV0M090, 100, 0.0, 100.0);
-  hZNCvsV0M = new TH2F("hZNCvsV0M", "ZNC;V0M Per; #it{E}_{ZN} [TeV]/2.511;",
-                       nBinsV0M090, BinsV0M090, 100, 0.0, 100.0);
+  std::string title{"Common PMT:TowerEnergy[0]"};
+  if (!fTowerEnergy) title = "All five PMTs: fZDCEnergy";
 
-  hZPAvsV0M = new TH2F("hZPAvsV0M", "ZPA;V0M Per; #it{E}_{ZP} [TeV]/2.511;",
-                       nBinsV0M090, BinsV0M090, 30, 0.0, 30.0);
-  hZPCvsV0M = new TH2F("hZPCvsV0M", "ZPC;V0M Per; #it{E}_{ZP} [TeV]/2.511;",
-                       nBinsV0M090, BinsV0M090, 30, 0.0, 30.0);
+  hZNAvsV0M = new TH2F(
+      "hZNAvsV0M", Form("%s;V0M Per;#it{E}_{ZNA} [TeV]/2.511;", title.c_str()),
+      nBinsV0M090, BinsV0M090, 100, 0.0, 100.0);
+  hZNCvsV0M = new TH2F(
+      "hZNCvsV0M", Form("%s;V0M Per;#it{E}_{ZNC} [TeV]/2.511;", title.c_str()),
+      nBinsV0M090, BinsV0M090, 100, 0.0, 100.0);
+  hZPAvsV0M = new TH2F(
+      "hZPAvsV0M", Form("%s;V0M Per;#it{E}_{ZPA} [TeV]/2.511;", title.c_str()),
+      nBinsV0M090, BinsV0M090, 30, 0.0, 30.0);
+  hZPCvsV0M = new TH2F(
+      "hZPCvsV0M", Form("%s;V0M Per;#it{E}_{ZPC} [TeV]/2.511;", title.c_str()),
+      nBinsV0M090, BinsV0M090, 30, 0.0, 30.0);
   hAsyN =
       new TH2F("hAsyN", "Neutron asymmetry;V0M Per; N_{C}-N_{A}/N_{C}+N_{A};",
                nBinsV0M090, BinsV0M090, 50, -1.0, 1.0);
@@ -333,53 +354,75 @@ void AliAnalysisTaskZNZP::UserCreateOutputObjects() {
 
   hZNANorm = new TH2F("hZNANorm", ";V0M;<ZNA>/<ZNA>;", nBinsV0M090, BinsV0M090,
                       40, 0., 2.);
+  hZNCTowvsNCEn =
+      new TH2F("hZNCTowvsNCEn",
+               ";fZDCN1Energy [TeV/2.511];fZN1TowerEnergy[0] [TeV/2.511];", 100,
+               0., 100., 100, 0., 100.);
+  hZPATowvsPAEn =
+      new TH2F("hZPATowvsPAEn",
+               ";fZDCN2Energy [TeV/2.511];fZN2TowerEnergy[0] [TeV/2.511];", 30,
+               0., 30., 30, 0., 30.);
+  pZNChannel =
+      new TProfile("pZNChannel", ";Channel; <ZN> [TeV/2.511];", 10, 0., 10.);
+  pZPChannel =
+      new TProfile("pZPChannel", ";Channel; <ZP> [TeV/2.511];", 10, 0., 10.);
 
-  hZNCpmc = new TH1F("hZNCpmc", "ZNC PMC;ZNC energy;Entries", 520, 0., 130.);
-  hZNApmc = new TH1F("hZNApmc", "ZNA PMC;ZNA energy;Entries", 520, 0., 130.);
-  hZPCpmc = new TH1F("hZPCpmc", "ZPC PMC;ZPC energy;Entries", 120, 0., 30.);
-  hZPApmc = new TH1F("hZPApmc", "ZPA PMC;ZPA energy;Entries", 120, 0., 30.);
+  pZNCvsV0Amp = new TProfile(
+      "pZNCvsV0Amp", Form("%s;V0 Amp;#it{E}_{ZNC} [TeV];", title.c_str()),
+      v0mAmp_Nbins, v0mAmp_bins, 0., 251.);
+  pZNAvsV0Amp = new TProfile(
+      "pZNAvsV0Amp", Form("%s;V0 Amp;#it{E}_{ZNA} [TeV];", title.c_str()),
+      v0mAmp_Nbins, v0mAmp_bins, 0., 252.);
+  pZPCvsV0Amp = new TProfile(
+      "pZPCvsV0Amp", Form("%s;V0M Per;#it{E}_{ZPC} [TeV];", title.c_str()),
+      v0mAmp_Nbins, v0mAmp_bins, 0., 76.);
+  pZPAvsV0Amp = new TProfile(
+      "pZPAvsV0Amp", Form("%s;V0M Per;#it{E}_{ZPA} [TeV];", title.c_str()),
+      v0mAmp_Nbins, v0mAmp_bins, 0., 76.);
+  pZNCvsNch = new TProfile("pZNCvsNch",
+                           Form("%s;Nch;#it{E}_{ZNC} [TeV];", title.c_str()),
+                           nch_Nbins, nch_bins, 0., 251.);
+  pZNAvsNch = new TProfile("pZNAvsNch",
+                           Form("%s;Nch;#it{E}_{ZNA} [TeV];", title.c_str()),
+                           nch_Nbins, nch_bins, 0., 252.);
+  pZPCvsNch = new TProfile("pZPCvsNch",
+                           Form("%s;Nch;#it{E}_{ZPC} [TeV];", title.c_str()),
+                           nch_Nbins, nch_bins, 0., 76.);
+  pZPAvsNch = new TProfile("pZPAvsNch",
+                           Form("%s;Nch;#it{E}_{ZPA} [TeV];", title.c_str()),
+                           nch_Nbins, nch_bins, 0., 76.);
+  pZNCvsEt =
+      new TProfile("pZNCvsEt", Form("%s;Et;#it{E}_{ZNC} [TeV];", title.c_str()),
+                   Et_Nbins, Et_bins, 0., 251.);
+  pZNAvsEt =
+      new TProfile("pZNAvsEt", Form("%s;Et;#it{E}_{ZNA} [TeV];", title.c_str()),
+                   Et_Nbins, Et_bins, 0., 252.);
+  pZPCvsEt =
+      new TProfile("pZPCvsEt", Form("%s;Et;#it{E}_{ZPC} [TeV];", title.c_str()),
+                   Et_Nbins, Et_bins, 0., 76.);
+  pZPAvsEt =
+      new TProfile("pZPAvsEt", Form("%s;Et;#it{E}_{ZPA} [TeV];", title.c_str()),
+                   Et_Nbins, Et_bins, 0., 76.);
 
-  pZNChannel = new TProfile("pZNChannel", ";Channel; <ZN>;", 10, 0., 10.);
-  pZPChannel = new TProfile("pZPChannel", ";Channel; <ZP>;", 10, 0., 10.);
-
-  pZNCvsV0Amp = new TProfile("pZNCvsV0Amp", ";V0 Amp; ZNC;", v0mAmp_Nbins,
-                             v0mAmp_bins, 0., 251.);
-  pZNAvsV0Amp = new TProfile("pZNAvsV0Amp", ";V0 Amp; ZNA;", v0mAmp_Nbins,
-                             v0mAmp_bins, 0., 252.);
-  pZPCvsV0Amp = new TProfile("pZPCvsV0Amp", ";V0 Amp; ZPC;", v0mAmp_Nbins,
-                             v0mAmp_bins, 0., 76.);
-  pZPAvsV0Amp = new TProfile("pZPAvsV0Amp", ";V0 Amp; ZPA;", v0mAmp_Nbins,
-                             v0mAmp_bins, 0., 76.);
-  pZNCvsNch =
-      new TProfile("pZNCvsNch", ";Nch;ZNC;", nch_Nbins, nch_bins, 0., 251.);
-  pZNAvsNch =
-      new TProfile("pZNAvsNch", ";Nch;ZNA;", nch_Nbins, nch_bins, 0., 252.);
-  pZPCvsNch =
-      new TProfile("pZPCvsNch", ";Nch;ZPC;", nch_Nbins, nch_bins, 0., 76.);
-  pZPAvsNch =
-      new TProfile("pZPAvsNch", ";Nch;ZPA;", nch_Nbins, nch_bins, 0., 76.);
-
-  pZNCvsEt = new TProfile("pZNCvsEt", ";Et;ZNC;", Et_Nbins, Et_bins, 0., 251.);
-  pZNAvsEt = new TProfile("pZNAvsEt", ";Et;ZNA;", Et_Nbins, Et_bins, 0., 252.);
-  pZPCvsEt = new TProfile("pZPCvsEt", ";Et;ZPC;", Et_Nbins, Et_bins, 0., 76.);
-  pZPAvsEt = new TProfile("pZPAvsEt", ";Et;ZPA;", Et_Nbins, Et_bins, 0., 76.);
-
-  pZNCvsSPD = new TProfile("pZNCvsSPD", ";Nch;ZNC;", SPD0p8_Nbins, SPD0p8_bins,
-                           0., 251.);
-  pZNAvsSPD = new TProfile("pZNAvsSPD", ";Nch;ZNA;", SPD0p8_Nbins, SPD0p8_bins,
-                           0., 252.);
-  pZPCvsSPD = new TProfile("pZPCvsSPD", ";Nch;ZPC;", SPD0p8_Nbins, SPD0p8_bins,
-                           0., 76.);
-  pZPAvsSPD = new TProfile("pZPAvsSPD", ";Nch;ZPA;", SPD0p8_Nbins, SPD0p8_bins,
-                           0., 76.);
+  pZNCvsSPD = new TProfile("pZNCvsSPD",
+                           Form("%s;Nch;#it{E}_{ZNC} [TeV];", title.c_str()),
+                           SPD0p8_Nbins, SPD0p8_bins, 0., 251.);
+  pZNAvsSPD = new TProfile("pZNAvsSPD",
+                           Form("%s;Nch;#it{E}_{ZNA} [TeV];", title.c_str()),
+                           SPD0p8_Nbins, SPD0p8_bins, 0., 252.);
+  pZPCvsSPD = new TProfile("pZPCvsSPD",
+                           Form("%s;Nch;#it{E}_{ZPC} [TeV];", title.c_str()),
+                           SPD0p8_Nbins, SPD0p8_bins, 0., 76.);
+  pZPAvsSPD = new TProfile("pZPAvsSPD",
+                           Form("%s;Nch;#it{E}_{ZPA} [TeV];", title.c_str()),
+                           SPD0p8_Nbins, SPD0p8_bins, 0., 76.);
 
   fOutputList->Add(hBestVtxZ);
   fOutputList->Add(hV0Percentile);
   fOutputList->Add(pZNChannel);
   fOutputList->Add(hZNAvsV0M);
   fOutputList->Add(hZNCvsV0M);
-  fOutputList->Add(hZNCpmc);
-  fOutputList->Add(hZNApmc);
+  fOutputList->Add(hZNCTowvsNCEn);
   fOutputList->Add(hZNCNorm);
   fOutputList->Add(hZNANorm);
   fOutputList->Add(pZNCvsV0Amp);
@@ -390,16 +433,11 @@ void AliAnalysisTaskZNZP::UserCreateOutputObjects() {
   fOutputList->Add(pZNAvsEt);
   fOutputList->Add(pZNCvsSPD);
   fOutputList->Add(pZNAvsSPD);
-
-  if (fSaveAsy) {
-    fOutputList->Add(hAsyN);
-  }
-
+  fOutputList->Add(hAsyN);
   fOutputList->Add(pZPChannel);
   fOutputList->Add(hZPAvsV0M);
   fOutputList->Add(hZPCvsV0M);
-  fOutputList->Add(hZPCpmc);
-  fOutputList->Add(hZPApmc);
+  fOutputList->Add(hZPATowvsPAEn);
   fOutputList->Add(pZPCvsV0Amp);
   fOutputList->Add(pZPAvsV0Amp);
   fOutputList->Add(pZPCvsNch);
@@ -507,15 +545,38 @@ void AliAnalysisTaskZNZP::GetZDC() {
     return;
   }
 
-  const double znc{esdZDC->GetZDCN1Energy() / 1000.0};
-  const double zna{esdZDC->GetZDCN2Energy() / 1000.0};
-  const double zpc{esdZDC->GetZDCP1Energy() / 1000.0};
-  const double zpa{esdZDC->GetZDCP2Energy() / 1000.0};
+  const double eA{2.511};
+  const double gev2tev{1. / 1000.};
+  const double zNC{esdZDC->GetZDCN1Energy()};
+  const double zNA{esdZDC->GetZDCN2Energy()};
+  const double zPC{esdZDC->GetZDCP1Energy()};
+  const double zPA{esdZDC->GetZDCP2Energy()};
 
-  hZNCvsV0M->Fill(fv0mpercentile, znc / 2.511);
-  hZNAvsV0M->Fill(fv0mpercentile, zna / 2.511);
-  hZPCvsV0M->Fill(fv0mpercentile, zpc / 2.511);
-  hZPAvsV0M->Fill(fv0mpercentile, zpa / 2.511);
+  const double* towZNC{esdZDC->GetZN1TowerEnergy()};
+  const double* towZPC{esdZDC->GetZP1TowerEnergy()};
+  const double* towZNA{esdZDC->GetZN2TowerEnergy()};
+  const double* towZPA{esdZDC->GetZP2TowerEnergy()};
+
+  double znc{999.};
+  double zna{999.};
+  double zpc{999.};
+  double zpa{999.};
+  if (fTowerEnergy) {
+    znc = towZNC[0] * gev2tev;
+    zna = towZNA[0] * gev2tev;
+    zpc = towZPC[0] * gev2tev;
+    zpa = towZPA[0] * gev2tev;
+  } else {
+    znc = zNC * gev2tev;
+    zna = zNA * gev2tev;
+    zpc = zPC * gev2tev;
+    zpa = zPA * gev2tev;
+  }
+
+  hZNCvsV0M->Fill(fv0mpercentile, znc / eA);
+  hZNAvsV0M->Fill(fv0mpercentile, zna / eA);
+  hZPCvsV0M->Fill(fv0mpercentile, zpc / eA);
+  hZPAvsV0M->Fill(fv0mpercentile, zpa / eA);
 
   pZNCvsV0Amp->Fill(fv0mamplitude, znc);
   pZNAvsV0Amp->Fill(fv0mamplitude, zna);
@@ -537,36 +598,30 @@ void AliAnalysisTaskZNZP::GetZDC() {
   pZPCvsEt->Fill(fET, zpc);
   pZPAvsEt->Fill(fET, zpa);
 
-  const double* towZNC{esdZDC->GetZN1TowerEnergy()};
-  const double* towZPC{esdZDC->GetZP1TowerEnergy()};
-  const double* towZNA{esdZDC->GetZN2TowerEnergy()};
-  const double* towZPA{esdZDC->GetZP2TowerEnergy()};
-  hZNApmc->Fill(towZNA[0] / 1000.0);
-  hZNCpmc->Fill(towZNC[0] / 1000.0);
-  hZPApmc->Fill(towZPA[0] / 1000.0);
-  hZPCpmc->Fill(towZPC[0] / 1000.0);
+  hZNCTowvsNCEn->Fill(esdZDC->GetZDCN1Energy() * (gev2tev / eA),
+                      towZNC[0] * (gev2tev / eA));
+  hZPATowvsPAEn->Fill(esdZDC->GetZDCP2Energy() * (gev2tev / eA),
+                      towZPA[0] * (gev2tev / eA));
 
   for (int i = 0; i < 5; ++i) {
-    pZNChannel->Fill(i + 0.5, towZNC[i] / 1000.0);
-    pZNChannel->Fill(i + 5.5, towZNA[i] / 1000.0);
-    pZPChannel->Fill(i + 0.5, towZPC[i] / 1000.0);
-    pZPChannel->Fill(i + 5.5, towZPA[i] / 1000.0);
+    pZNChannel->Fill(i + 0.5, towZNC[i] * gev2tev / eA);
+    pZNChannel->Fill(i + 5.5, towZNA[i] * gev2tev / eA);
+    pZPChannel->Fill(i + 0.5, towZPC[i] * gev2tev / eA);
+    pZPChannel->Fill(i + 5.5, towZPA[i] * gev2tev / eA);
   }
 
-  double meanZNC{1.0};
-  double sigmaZNC{1.0};
-  double meanZNA{1.0};
-  double sigmaZNA{1.0};
-  bool gCent1{MeanSigmaZN(meanZNC, sigmaZNC, "ZNC")};
-  bool gCent2{MeanSigmaZN(meanZNA, sigmaZNA, "ZNA")};
-  if (!gCent1 && !gCent2) {
+  //! Asymmetry
+  if (!(fv0mpercentile > 0. && fv0mpercentile < 80.)) {
     return;
   }
 
-  hZNCNorm->Fill(fv0mpercentile, znc / (meanZNC * 2.511));
-  hZNANorm->Fill(fv0mpercentile, zna / (meanZNA * 2.511));
-  const double znc_sca{znc / (meanZNC * 2.511)};
-  const double zna_sca{zna / (meanZNA * 2.511)};
+  //! meanZNC = <EZC/eA> = <EZC>/2.511
+  double meanZNC{fZNCvsV0M->Eval(fv0mpercentile)};
+  double meanZNA{fZNAvsV0M->Eval(fv0mpercentile)};
+  hZNCNorm->Fill(fv0mpercentile, (znc / eA) / meanZNC);
+  hZNANorm->Fill(fv0mpercentile, (zna / eA) / meanZNA);
+  const double znc_sca{(znc / eA) / meanZNC};
+  const double zna_sca{(zna / eA) / meanZNA};
   hAsyN->Fill(fv0mpercentile, (znc_sca - zna_sca) / (znc_sca + zna_sca));
 }
 //____________________________________________________________
@@ -743,91 +798,91 @@ Bool_t AliAnalysisTaskZNZP::HasRecVertex() {
   return hasVtx;
 }
 //____________________________________________________________
-bool AliAnalysisTaskZNZP::MeanSigmaZN(double& mean, double& sigma,
-                                      const std::string& ZN) {
-  const std::vector<double> meanZNC{
-      {9.41689, 11.4554, 13.6935, 15.899,  17.9693, 19.8913, 21.8775, 23.6385,
-       25.2471, 26.8672, 28.3384, 29.8036, 31.0197, 32.3755, 33.5516, 34.5927,
-       35.6032, 36.6078, 37.5322, 38.3336, 39.1421, 39.8723, 40.5853, 41.1441,
-       41.7837, 42.2702, 42.8783, 43.321,  43.7049, 44.1573, 44.5504, 44.8895,
-       45.1275, 45.3678, 45.7246, 45.7786, 45.9834, 46.1794, 46.2849, 46.2833,
-       46.3337, 46.4907, 46.4214, 46.344,  46.3888, 46.2107, 46.1971, 46.0917,
-       45.893,  45.6904, 45.4781, 45.4185, 45.0878, 44.8286, 44.5048, 44.2761,
-       43.9231, 43.421,  43.1319, 42.6159, 42.1982, 41.7332, 41.1261, 40.8089,
-       40.1382, 39.5972, 39.127,  38.4715, 37.7199, 36.9609}};
-
-  const std::vector<double> sigmaZNC{
-      {3.50677, 3.82505, 4.11002, 4.24869, 4.46803, 4.59024, 4.90368, 5.07824,
-       5.17144, 5.19741, 5.30018, 5.51713, 5.46297, 5.66198, 5.76174, 5.80704,
-       5.83463, 5.97203, 6.03367, 6.11339, 6.12927, 6.17397, 6.24563, 6.32831,
-       6.45077, 6.45699, 6.46789, 6.52385, 6.57878, 6.67186, 6.77811, 6.72446,
-       6.85183, 6.85365, 6.96893, 6.95236, 6.9604,  7.09092, 7.10086, 7.13674,
-       7.2995,  7.24527, 7.29297, 7.38196, 7.45292, 7.48775, 7.59025, 7.67292,
-       7.73854, 7.77752, 7.84931, 8.00492, 7.91375, 8.13183, 8.19829, 8.33288,
-       8.42185, 8.57176, 8.7218,  8.87617, 9.03015, 9.14355, 9.28268, 9.51969,
-       9.68484, 9.92729, 10.0658, 10.3063, 10.4252, 10.6264}};
-
-  const std::vector<double> meanZNA{
-      {7.64853, 9.31038, 11.1556, 13.0141, 14.6987, 16.4405, 17.8888, 19.4125,
-       20.8443, 22.1771, 23.4108, 24.5767, 25.6076, 26.716,  27.7061, 28.6364,
-       29.557,  30.2871, 31.0859, 31.7577, 32.4302, 33.0959, 33.7153, 34.2552,
-       34.8104, 35.1898, 35.7727, 36.1279, 36.4649, 36.8997, 37.2122, 37.3977,
-       37.6971, 37.9211, 38.1646, 38.2855, 38.5034, 38.6686, 38.7706, 38.8934,
-       38.9517, 38.975,  39.0276, 39.0661, 38.9757, 39.0779, 38.8923, 38.8756,
-       38.7662, 38.6167, 38.527,  38.2397, 38.1209, 37.9127, 37.763,  37.4913,
-       37.2047, 36.9349, 36.5257, 36.207,  35.8965, 35.5434, 35.0563, 34.6988,
-       34.1538, 33.8234, 33.3074, 32.82,   32.1863, 31.6347}};
-
-  const std::vector<double> sigmaZNA{
-      {3.10314, 3.13242, 3.48659, 3.77875, 3.7878,  3.915,   4.03227, 4.20045,
-       4.31136, 4.40799, 4.56356, 4.61643, 4.65824, 4.74357, 4.78761, 4.92246,
-       4.99679, 5.05502, 5.0036,  5.12261, 5.17488, 5.19715, 5.26379, 5.20759,
-       5.38565, 5.41547, 5.42096, 5.47782, 5.47648, 5.65329, 5.61113, 5.61817,
-       5.70361, 5.62584, 5.73757, 5.73626, 5.75184, 5.85641, 5.92166, 5.9685,
-       5.99215, 6.08534, 6.02079, 6.1867,  6.17472, 6.26609, 6.2535,  6.34106,
-       6.32414, 6.48443, 6.57763, 6.57414, 6.70035, 6.78231, 6.80588, 6.87396,
-       7.06222, 7.13683, 7.23114, 7.44464, 7.49467, 7.61375, 7.7578,  7.96836,
-       8.12227, 8.33368, 8.3856,  8.5707,  8.92543, 8.95762}};
-
-  bool goodCent{false};
-  if (fv0mpercentile >= 0. && fv0mpercentile < 70.) goodCent = true;
-
-  int bin{CentBin()};
-  if (!goodCent || bin < 0) return false;
-
-  if (ZN == "ZNC") {
-    mean = meanZNC.at(bin);
-    sigma = sigmaZNC.at(bin);
-  }
-  if (ZN == "ZNA") {
-    mean = meanZNA.at(bin);
-    sigma = sigmaZNA.at(bin);
-  }
-
-  return goodCent;
-}
+/*bool AliAnalysisTaskZNZP::MeanSigmaZN(double& mean, double& sigma,*/
+/*                                      const std::string& ZN) {*/
+/*  const std::vector<double> meanZNC{*/
+/*      {9.41689, 11.4554, 13.6935, 15.899,  17.9693, 19.8913, 21.8775, 23.6385,*/
+/*       25.2471, 26.8672, 28.3384, 29.8036, 31.0197, 32.3755, 33.5516, 34.5927,*/
+/*       35.6032, 36.6078, 37.5322, 38.3336, 39.1421, 39.8723, 40.5853, 41.1441,*/
+/*       41.7837, 42.2702, 42.8783, 43.321,  43.7049, 44.1573, 44.5504, 44.8895,*/
+/*       45.1275, 45.3678, 45.7246, 45.7786, 45.9834, 46.1794, 46.2849, 46.2833,*/
+/*       46.3337, 46.4907, 46.4214, 46.344,  46.3888, 46.2107, 46.1971, 46.0917,*/
+/*       45.893,  45.6904, 45.4781, 45.4185, 45.0878, 44.8286, 44.5048, 44.2761,*/
+/*       43.9231, 43.421,  43.1319, 42.6159, 42.1982, 41.7332, 41.1261, 40.8089,*/
+/*       40.1382, 39.5972, 39.127,  38.4715, 37.7199, 36.9609}};*/
+/**/
+/*  const std::vector<double> sigmaZNC{*/
+/*      {3.50677, 3.82505, 4.11002, 4.24869, 4.46803, 4.59024, 4.90368, 5.07824,*/
+/*       5.17144, 5.19741, 5.30018, 5.51713, 5.46297, 5.66198, 5.76174, 5.80704,*/
+/*       5.83463, 5.97203, 6.03367, 6.11339, 6.12927, 6.17397, 6.24563, 6.32831,*/
+/*       6.45077, 6.45699, 6.46789, 6.52385, 6.57878, 6.67186, 6.77811, 6.72446,*/
+/*       6.85183, 6.85365, 6.96893, 6.95236, 6.9604,  7.09092, 7.10086, 7.13674,*/
+/*       7.2995,  7.24527, 7.29297, 7.38196, 7.45292, 7.48775, 7.59025, 7.67292,*/
+/*       7.73854, 7.77752, 7.84931, 8.00492, 7.91375, 8.13183, 8.19829, 8.33288,*/
+/*       8.42185, 8.57176, 8.7218,  8.87617, 9.03015, 9.14355, 9.28268, 9.51969,*/
+/*       9.68484, 9.92729, 10.0658, 10.3063, 10.4252, 10.6264}};*/
+/**/
+/*  const std::vector<double> meanZNA{*/
+/*      {7.64853, 9.31038, 11.1556, 13.0141, 14.6987, 16.4405, 17.8888, 19.4125,*/
+/*       20.8443, 22.1771, 23.4108, 24.5767, 25.6076, 26.716,  27.7061, 28.6364,*/
+/*       29.557,  30.2871, 31.0859, 31.7577, 32.4302, 33.0959, 33.7153, 34.2552,*/
+/*       34.8104, 35.1898, 35.7727, 36.1279, 36.4649, 36.8997, 37.2122, 37.3977,*/
+/*       37.6971, 37.9211, 38.1646, 38.2855, 38.5034, 38.6686, 38.7706, 38.8934,*/
+/*       38.9517, 38.975,  39.0276, 39.0661, 38.9757, 39.0779, 38.8923, 38.8756,*/
+/*       38.7662, 38.6167, 38.527,  38.2397, 38.1209, 37.9127, 37.763,  37.4913,*/
+/*       37.2047, 36.9349, 36.5257, 36.207,  35.8965, 35.5434, 35.0563, 34.6988,*/
+/*       34.1538, 33.8234, 33.3074, 32.82,   32.1863, 31.6347}};*/
+/**/
+/*  const std::vector<double> sigmaZNA{*/
+/*      {3.10314, 3.13242, 3.48659, 3.77875, 3.7878,  3.915,   4.03227, 4.20045,*/
+/*       4.31136, 4.40799, 4.56356, 4.61643, 4.65824, 4.74357, 4.78761, 4.92246,*/
+/*       4.99679, 5.05502, 5.0036,  5.12261, 5.17488, 5.19715, 5.26379, 5.20759,*/
+/*       5.38565, 5.41547, 5.42096, 5.47782, 5.47648, 5.65329, 5.61113, 5.61817,*/
+/*       5.70361, 5.62584, 5.73757, 5.73626, 5.75184, 5.85641, 5.92166, 5.9685,*/
+/*       5.99215, 6.08534, 6.02079, 6.1867,  6.17472, 6.26609, 6.2535,  6.34106,*/
+/*       6.32414, 6.48443, 6.57763, 6.57414, 6.70035, 6.78231, 6.80588, 6.87396,*/
+/*       7.06222, 7.13683, 7.23114, 7.44464, 7.49467, 7.61375, 7.7578,  7.96836,*/
+/*       8.12227, 8.33368, 8.3856,  8.5707,  8.92543, 8.95762}};*/
+/**/
+/*  bool goodCent{false};*/
+/*  if (fv0mpercentile >= 0. && fv0mpercentile < 70.) goodCent = true;*/
+/**/
+/*  int bin{CentBin()};*/
+/*  if (!goodCent || bin < 0) return false;*/
+/**/
+/*  if (ZN == "ZNC") {*/
+/*    mean = meanZNC.at(bin);*/
+/*    sigma = sigmaZNC.at(bin);*/
+/*  }*/
+/*  if (ZN == "ZNA") {*/
+/*    mean = meanZNA.at(bin);*/
+/*    sigma = sigmaZNA.at(bin);*/
+/*  }*/
+/**/
+/*  return goodCent;*/
+/*}*/
 //____________________________________________________________
-int AliAnalysisTaskZNZP::CentBin() {
-  const std::vector<double> low{
-      {0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12., 13.,
-       14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27.,
-       28., 29., 30., 31., 32., 33., 34., 35., 36., 37., 38., 39., 40., 41.,
-       42., 43., 44., 45., 46., 47., 48., 49., 50., 51., 52., 53., 54., 55.,
-       56., 57., 58., 59., 60., 61., 62., 63., 64., 65., 66., 67., 68., 69.}};
-  const std::vector<double> high{
-      {1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12., 13., 14.,
-       15., 16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27., 28.,
-       29., 30., 31., 32., 33., 34., 35., 36., 37., 38., 39., 40., 41., 42.,
-       43., 44., 45., 46., 47., 48., 49., 50., 51., 52., 53., 54., 55., 56.,
-       57., 58., 59., 60., 61., 62., 63., 64., 65., 66., 67., 68., 69., 70.}};
-
-  int bin{-999};
-  for (int i = 0; i < 70; ++i) {
-    if (fv0mpercentile >= low.at(i) && fv0mpercentile < high.at(i)) {
-      bin = i;
-      break;
-    }
-  }
-
-  return bin;
-}
+/*int AliAnalysisTaskZNZP::CentBin() {*/
+/*  const std::vector<double> low{*/
+/*      {0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12., 13.,*/
+/*       14., 15., 16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27.,*/
+/*       28., 29., 30., 31., 32., 33., 34., 35., 36., 37., 38., 39., 40., 41.,*/
+/*       42., 43., 44., 45., 46., 47., 48., 49., 50., 51., 52., 53., 54., 55.,*/
+/*       56., 57., 58., 59., 60., 61., 62., 63., 64., 65., 66., 67., 68., 69.}};*/
+/*  const std::vector<double> high{*/
+/*      {1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,  10., 11., 12., 13., 14.,*/
+/*       15., 16., 17., 18., 19., 20., 21., 22., 23., 24., 25., 26., 27., 28.,*/
+/*       29., 30., 31., 32., 33., 34., 35., 36., 37., 38., 39., 40., 41., 42.,*/
+/*       43., 44., 45., 46., 47., 48., 49., 50., 51., 52., 53., 54., 55., 56.,*/
+/*       57., 58., 59., 60., 61., 62., 63., 64., 65., 66., 67., 68., 69., 70.}};*/
+/**/
+/*  int bin{-999};*/
+/*  for (int i = 0; i < 70; ++i) {*/
+/*    if (fv0mpercentile >= low.at(i) && fv0mpercentile < high.at(i)) {*/
+/*      bin = i;*/
+/*      break;*/
+/*    }*/
+/*  }*/
+/**/
+/*  return bin;*/
+/*}*/

@@ -47,9 +47,9 @@ class AliAnalysisTaskZNZP : public AliAnalysisTaskSE {
   bool HasRecVertex();
   void SPDActivity();
   void TPCActivity();
-  void SaveAsymmetry(bool sv) { fSaveAsy = sv; };
-  bool MeanSigmaZN(double& mean, double& sigma, const std::string& ZN);
-  int CentBin();
+  void IsTowerEnergy(bool sv) { fTowerEnergy = sv; };
+  /*bool MeanSigmaZN(double& mean, double& sigma, const std::string& ZN);*/
+  /*int CentBin();*/
 
  protected:
  private:
@@ -58,7 +58,7 @@ class AliAnalysisTaskZNZP : public AliAnalysisTaskSE {
   AliStack* fMCStack;
   AliMCEvent* fMC;
   bool fUseMC;
-  bool fSaveAsy;
+  bool fTowerEnergy;
   UInt_t fTrigger;
   AliMultSelection* fMultSelection;
   AliAnalysisFilter* fTrackFilter;
@@ -74,6 +74,8 @@ class AliAnalysisTaskZNZP : public AliAnalysisTaskSE {
   int fSPD;
   int fNchTPC;
   double fET;
+  TF1* fZNCvsV0M;
+  TF1* fZNAvsV0M;
 
   TProfile* pV0MAmpChannel;
   TH1F* hV0Percentile;
@@ -83,10 +85,6 @@ class AliAnalysisTaskZNZP : public AliAnalysisTaskSE {
   TH2F* hAsyN;
   TH2F* hZPAvsV0M;
   TH2F* hZPCvsV0M;
-  TH1F* hZNCpmc;
-  TH1F* hZNApmc;
-  TH1F* hZPCpmc;
-  TH1F* hZPApmc;
   TH2F* hZNCNorm;
   TH2F* hZNANorm;
   TProfile* pZNChannel;
@@ -107,6 +105,8 @@ class AliAnalysisTaskZNZP : public AliAnalysisTaskSE {
   TProfile* pZNAvsSPD;
   TProfile* pZPCvsSPD;
   TProfile* pZPAvsSPD;
+  TH2F* hZNCTowvsNCEn;
+  TH2F* hZPATowvsPAEn;
 
   AliAnalysisTaskZNZP(const AliAnalysisTaskZNZP&);  // not implemented
   AliAnalysisTaskZNZP& operator=(
