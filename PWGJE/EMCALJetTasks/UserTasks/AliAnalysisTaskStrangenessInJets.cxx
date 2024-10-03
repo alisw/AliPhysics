@@ -120,6 +120,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
   fbMCAnalysis(0),
   fsGeneratorName(""),   
   fbSignalInBG(0), 
+  fdNSigmas(11), 
   fdCutVertexZ(0),
   fdCutVertexR2(0),
   fdCutCentLow(0),
@@ -329,6 +330,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
   fbMCAnalysis(0),
   fsGeneratorName(""),  
   fbSignalInBG(0), 
+  fdNSigmas(11),
   fdCutVertexZ(0),
   fdCutVertexR2(0),
   fdCutCentLow(0),
@@ -1279,7 +1281,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   Int_t iNV0CandALambda = 0; // counter of Lambda candidates at the end
   Bool_t bPrintCuts = 0; // print out which cuts are applied
   // Other cuts
-  Double_t dNSigmaMassMax = 3.; // [sigma m] max difference between candidate mass and real particle mass (used only for mass peak method of signal extraction)
+  Double_t dNSigmaMassMax = fdNSigmas; // [sigma m] N of multiple of sigma for in jet bg estimation (used only for mass peak method of signal extraction)
   //Double_t dDistPrimaryMax = 0.01; // [cm] max distance of production point to the primary vertex (criterion for choice of MC particles considered as primary)
   // Mean lifetime
   Double_t dCTauK0s = 2.6844; // [cm] c*tau of K0S
@@ -1356,11 +1358,11 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     }
 
     // Invariant mass peak selection
-    if( (dMassV0K0s > dMassPeakWindowMeanK0s - dMassPeakWindowK0s) && (dMassV0K0s < dMassPeakWindowMeanK0s + 3 * dMassPeakWindowK0s) )    //Signal+BG (-3sigma,9sigma)
+    if( (dMassV0K0s > dMassPeakWindowMeanK0s - dMassPeakWindowK0s) && (dMassV0K0s < dMassPeakWindowMeanK0s +  dMassPeakWindowK0s) )    //Signal+BG (-11sigma,11sigma)
       bIsInPeakK0s = kTRUE;
-    if( (dMassV0Lambda > dMassPeakWindowMeanLambda - dMassPeakWindowLambda) && (dMassV0Lambda < dMassPeakWindowMeanLambda + 3 * dMassPeakWindowLambda))
+    if( (dMassV0Lambda > dMassPeakWindowMeanLambda - dMassPeakWindowLambda) && (dMassV0Lambda < dMassPeakWindowMeanLambda + dMassPeakWindowLambda))
       bIsInPeakLambda = kTRUE;
-    if( (dMassV0ALambda > dMassPeakWindowMeanLambda - dMassPeakWindowLambda) && (dMassV0ALambda < dMassPeakWindowMeanLambda + 3 * dMassPeakWindowLambda))
+    if( (dMassV0ALambda > dMassPeakWindowMeanLambda - dMassPeakWindowLambda) && (dMassV0ALambda < dMassPeakWindowMeanLambda + dMassPeakWindowLambda))
       bIsInPeakALambda = kTRUE;
     /*if(fbSignalInBG == 0) { //Inv mass in signal region
       if(TMath::Abs(dMassV0K0s - dMassPeakWindowMeanK0s ) < dMassPeakWindowK0s)

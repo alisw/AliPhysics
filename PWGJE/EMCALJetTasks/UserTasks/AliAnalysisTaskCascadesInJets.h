@@ -54,6 +54,7 @@ public:
   Bool_t IsFromGoodGenerator(Int_t index); // True if the MC particle with the given index comes from the selected generator
 
   void SetSignalInBG(Bool_t val = 0) {fbSignalInBG = val;}
+  void SetNSigmas(Double_t val = 9) {fdNSigmas = val;}
 
   // Event selection setters 
   void SetEventCuts(Double_t z = 10, Double_t r = 1, Double_t cL = 0, Double_t cH = 80, Double_t dZ = 0.1, Int_t iNC = 1) {fdCutVertexZ = z; fdCutVertexR2 = r * r; fdCutCentLow = cL; fdCutCentHigh = cH; fdCutDeltaZMax = dZ; fiNContribMin = iNC;} 
@@ -218,6 +219,8 @@ private:
   TString fsGeneratorName; // pattern for selecting only Cascades from a specific MC generator
   
   Bool_t fbSignalInBG; //switch: takes Cascades from BG region insted of signal for the jet analysis
+  Double_t fdNSigmas; //multiple of sigmas for the bg estimation
+
   // Event selection
   Double_t fdCutVertexZ; // [cm] maximum |z| of primary vertex
   Double_t fdCutVertexR2; // [cm^2] maximum r^2 of primary vertex
@@ -442,7 +445,7 @@ private:
   AliAnalysisTaskCascadesInJets(const AliAnalysisTaskCascadesInJets&); // not implemented
   AliAnalysisTaskCascadesInJets& operator=(const AliAnalysisTaskCascadesInJets&); // not implemented
 
-  ClassDef(AliAnalysisTaskCascadesInJets, 4) // task for analysis of Cascades (Xi+-, Omega+-) in charged jets
+  ClassDef(AliAnalysisTaskCascadesInJets, 5) // task for analysis of Cascades (Xi+-, Omega+-) in charged jets
 };
 
 #endif

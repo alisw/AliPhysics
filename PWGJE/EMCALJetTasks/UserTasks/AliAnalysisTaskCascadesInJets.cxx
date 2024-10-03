@@ -114,6 +114,7 @@ AliAnalysisTaskCascadesInJets::AliAnalysisTaskCascadesInJets():
   fbMCAnalysis(0),
   fsGeneratorName(""),   
   fbSignalInBG(0), 
+  fdNSigmas(9), 
   fdCutVertexZ(0),
   fdCutVertexR2(0),
   fdCutCentLow(0),
@@ -331,6 +332,7 @@ AliAnalysisTaskCascadesInJets::AliAnalysisTaskCascadesInJets(const char* name):
   fbMCAnalysis(0),
   fsGeneratorName(""), 
   fbSignalInBG(0), 
+  fdNSigmas(9), 
   fdCutVertexZ(0),
   fdCutVertexR2(0),
   fdCutCentLow(0),
@@ -1311,7 +1313,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
   
   Bool_t bPrintCuts = 0; // print out which cuts are applied
   // Other cuts
-  Double_t dNSigmaMassMax = 3.; // [sigma m] max difference between candidate mass and real particle mass (used only for mass peak method of signal extraction)
+  Double_t dNSigmaMassMax = fdNSigmas; // [sigma m] max difference between candidate mass and real particle mass (used only for mass peak method of signal extraction)
   // particle masses from PDG
   Double_t dMassPDGK0s = TDatabasePDG::Instance()->GetParticle(kK0Short)->Mass();
   Double_t dMassPDGLambda = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
@@ -1384,9 +1386,9 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
     Double_t dMassPeakWindowMeanXi = MassPeakMean(dPtCascade, 0);
     Double_t dMassPeakWindowMeanOmega = MassPeakMean(dPtCascade, 1);
     // Invariant mass peak selection
-    if( (dMassCascadeXi > dMassPeakWindowMeanXi - dMassPeakWindowXi) && (dMassCascadeXi < dMassPeakWindowMeanXi + 3 * dMassPeakWindowXi))
+    if( (dMassCascadeXi > dMassPeakWindowMeanXi - dMassPeakWindowXi) && (dMassCascadeXi < dMassPeakWindowMeanXi +  dMassPeakWindowXi))
       bIsInPeakXi = kTRUE;
-    if( (dMassCascadeOmega > dMassPeakWindowMeanOmega - dMassPeakWindowOmega) &&  (dMassCascadeOmega < dMassPeakWindowMeanOmega + 3 * dMassPeakWindowOmega))
+    if( (dMassCascadeOmega > dMassPeakWindowMeanOmega - dMassPeakWindowOmega) &&  (dMassCascadeOmega < dMassPeakWindowMeanOmega + dMassPeakWindowOmega))
       bIsInPeakOmega = kTRUE;
       //Signal+BG (-3sigma,9sigma)
     /*if(fbSignalInBG == 0) { //Inv mass in signal region
