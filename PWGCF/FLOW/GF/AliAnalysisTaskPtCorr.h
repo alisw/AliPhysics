@@ -151,12 +151,12 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TList *fQAList; //
   TH1D* fEventCount; //!
   TH1D* fV0MMulti; //!
-  TH2D *fMultiVsV0MCorr; //!
   TH2D *fNchTrueVsReco; //!
   TH2D *fESDvsFB128;
   TList *fptList;
   AliPtPtContainer  *fPtCont;
-  AliPtPtContainer * fPtContV0Mmult;
+  AliPtPtContainer  *fPtContV0Mmult;
+  AliPtPtContainer  *fPtContET;
   AliPtPtContainer  *fPtContCent;
   UInt_t fTriggerType;
   TList *fSpectraList; //!
@@ -172,12 +172,17 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   TH1* fCentcal; //TH1 for OTF centrality calibration
   Double_t fPseudoEfficiency; //Pseudo efficiency to reject tracks. Default value set to 2, only used when the value is <1
-  TH2D *fMptVsMulti;
-  TH3F *fNchVsV0MVsCent;
-  TH3D *fptDCAxyDCAz;
-  TH3D *fPhiEtaVtxZ;
-  TProfile2D **f2DMoments; //!
-  TH1D* fIP;
+  TH1D* hMulti; //!
+  TH2D* hCentVsNch; //!
+  TH2D* hETvsNch; //!
+  TH2D* hV0MvsNch; //!
+  TProfile* pMeanNchVsNch; //!
+  TProfile* pMeanNchVsCent; //!
+  TProfile* pMeanNchvsET; //!
+  TProfile* pMeanNchvsV0M; //!
+  TH3D *fptDCAxyDCAz; //!
+  TH3D *fPhiEtaVtxZ; //!
+  TH1D* fIP; //!
   Double_t fCorrPar[2]; //Yes need to store
   Bool_t fUseCorrCuts; //Yes need to store
   TF1 *fSPDCutPU; //Store these
