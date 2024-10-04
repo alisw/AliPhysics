@@ -6,7 +6,9 @@ AliAnalysisTaskSE *AddTaskPionDeuteronAOD(bool isMC = false,         // 1
                                           bool fullBlastQA = true,   // 3
                                           bool MoreChecks = false,   // 4
                                           bool systmatics = false,   // 5
-                                          int mTBinningChoice = 0, //6
+                                          bool DoFunWithPhaseSpace = false,//6
+                                          float pTOnepTTwokStarCutOff = 3., //7
+                                          int mTBinningChoice = 0, //8
                                           const char *cutVariation = "0") {
   TString suffix = TString::Format("%s", cutVariation);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -44,31 +46,6 @@ AliAnalysisTaskSE *AddTaskPionDeuteronAOD(bool isMC = false,         // 1
   TrackCutsAntiDeuteronMass->SetCutCharge(-1);
   TrackCutsAntiDeuteronMass->SetPID(AliPID::kDeuteron, 999.0);
 
-  // a few more checks for deuterons
-  if (MoreChecks) {
-    // Oton's selections for deuterons
-    if (suffix == "1") {
-      TrackCutsDeuteronDCA->SetPtRange(0.5, 1.4);
-      TrackCutsAntiDeuteronDCA->SetPtRange(0.5, 1.4);
-    }
-    if (suffix == "2") {
-      TrackCutsDeuteronDCA->SetPtRange(0.8, 1.4);
-      TrackCutsAntiDeuteronDCA->SetPtRange(0.8, 1.4);
-      TrackCutsDeuteronDCA->SetPIDkd(false, false, 3, 3);
-      TrackCutsAntiDeuteronDCA->SetPIDkd(false, false, 3, 3);
-    }
-    if (suffix == "3") {
-      TrackCutsDeuteronDCA->SetPtRange(0.5, 2.4);
-      TrackCutsAntiDeuteronDCA->SetPtRange(0.5, 2.4);
-      TrackCutsDeuteronDCA->SetPIDkd(false, false, 3, 3);
-      TrackCutsAntiDeuteronDCA->SetPIDkd(false, false, 3, 3);
-    }
-  } else {
-    TrackCutsDeuteronDCA->SetPtRange(0.8, 2.4);
-    TrackCutsAntiDeuteronDCA->SetPtRange(0.8, 2.4);
-    TrackCutsDeuteronDCA->SetPIDkd(false, false, 3, 3);
-    TrackCutsAntiDeuteronDCA->SetPIDkd(false, false, 3, 3);
-  }
 
   //---------- posPions--------------------
   AliFemtoDreamTrackCuts *posPions =
@@ -84,6 +61,36 @@ AliAnalysisTaskSE *AddTaskPionDeuteronAOD(bool isMC = false,         // 1
   NegPions->SetFilterBit(128);
   NegPions->SetPtRange(0.14, 4.0);
 
+  // a few more checks for deuterons
+  if (MoreChecks) {
+    // Oton's selections for deuterons
+    if (suffix == "1") {
+      TrackCutsDeuteronDCA->SetPtRange(0.5, 1.4);
+      TrackCutsAntiDeuteronDCA->SetPtRange(0.5, 1.4);
+    } else if (suffix == "2") {
+      TrackCutsDeuteronDCA->SetPtRange(0.8, 1.4);
+      TrackCutsAntiDeuteronDCA->SetPtRange(0.8, 1.4);
+      TrackCutsDeuteronDCA->SetPIDkd(false, false, 3, 3);
+      TrackCutsAntiDeuteronDCA->SetPIDkd(false, false, 3, 3);
+    } else if (suffix == "3") {
+      TrackCutsDeuteronDCA->SetPtRange(0.5, 2.4);
+      TrackCutsAntiDeuteronDCA->SetPtRange(0.5, 2.4);
+      TrackCutsDeuteronDCA->SetPIDkd(false, false, 3, 3);
+      TrackCutsAntiDeuteronDCA->SetPIDkd(false, false, 3, 3);
+    } else if (suffix == "4"){
+      posPions->SetPtRange(0.16, 4.0);
+      NegPions->SetPtRange(0.16, 4.0);
+    }
+  } else {
+    TrackCutsDeuteronDCA->SetPtRange(0.8, 2.4);
+    TrackCutsAntiDeuteronDCA->SetPtRange(0.8, 2.4);
+    TrackCutsDeuteronDCA->SetPIDkd(false, false, 3, 3);
+    TrackCutsAntiDeuteronDCA->SetPIDkd(false, false, 3, 3);
+  }
+
+
+
+
   std::vector<int> PDGParticles;
   PDGParticles.push_back(211);        // pi+
   PDGParticles.push_back(211);        // pi-
@@ -98,23 +105,25 @@ AliAnalysisTaskSE *AddTaskPionDeuteronAOD(bool isMC = false,         // 1
   mTBins.push_back(1.3);
   mTBins.push_back(999.);
   }else if(mTBinningChoice == 1){
-    mTBins.push_back(1.06);
-    mTBins.push_back(1.19);
-    mTBins.push_back(1.24);
-    mTBins.push_back(1.35);
+    mTBins.push_back(1.03);
+    mTBins.push_back(1.18);
+    mTBins.push_back(1.28);
+    mTBins.push_back(1.4);
+    mTBins.push_back(1.55);
     mTBins.push_back(999.);
   }else if(mTBinningChoice == 2){
-    mTBins.push_back(1.06);
-    mTBins.push_back(1.2);
-    mTBins.push_back(1.28);
-    mTBins.push_back(1.38);
-    mTBins.push_back(999.);
-  }else{
-    mTBins.push_back(1.06);
-    mTBins.push_back(1.18);
+    mTBins.push_back(1.03);
+    mTBins.push_back(1.16);
     mTBins.push_back(1.24);
-    mTBins.push_back(1.30);
-    mTBins.push_back(1.4);
+    mTBins.push_back(1.38);
+    mTBins.push_back(1.52);
+    mTBins.push_back(999.);
+  }
+  else{
+    mTBins.push_back(1.03);
+    mTBins.push_back(1.20);
+    mTBins.push_back(1.38);
+    mTBins.push_back(1.50);
     mTBins.push_back(999.);
   }
 
@@ -243,6 +252,12 @@ AliAnalysisTaskSE *AddTaskPionDeuteronAOD(bool isMC = false,         // 1
   config->SetDomTMultBinning(true);
   config->SetmTBinning(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+  
+  if(DoFunWithPhaseSpace){
+    config->SetpTOnepTTwokStarPlotsmT(true, pTOnepTTwokStarCutOff);
+  } else {
+    config->SetpTOnepTTwokStarPlotsmT(false, pTOnepTTwokStarCutOff);
+  }
 
   if (isMC) {
     config->SetMomentumResolution(true);
