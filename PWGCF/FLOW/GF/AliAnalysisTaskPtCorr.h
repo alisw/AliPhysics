@@ -172,9 +172,11 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   TH1* fCentcal; //TH1 for OTF centrality calibration
   Double_t fPseudoEfficiency; //Pseudo efficiency to reject tracks. Default value set to 2, only used when the value is <1
+  TH1D* hMulti; //!
   TH2D* hCentVsNch; //!
   TH2D* hETvsNch; //!
   TH2D* hV0MvsNch; //!
+  TProfile* pMeanNchVsNch; //!
   TProfile* pMeanNchVsCent; //!
   TProfile* pMeanNchvsET; //!
   TProfile* pMeanNchvsV0M; //!
