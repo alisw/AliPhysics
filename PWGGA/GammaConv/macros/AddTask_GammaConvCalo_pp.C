@@ -4172,26 +4172,26 @@ void AddTask_GammaConvCalo_pp(
   } else if (trainConfig == 4053){  // SPD high mult
       cuts.AddCutPCMCalo("00077113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); //
   } else if (trainConfig == 4054){  // MB
-      cuts.AddCutPCMCalo("00015113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); //
+      cuts.AddCutPCMCalo("00015113","0dm00009f9730000dge0404000","411790109fe309v0000","0r63103100000010"); //
   } else if (trainConfig == 4055){  // EG2
-      cuts.AddCutPCMCalo("0008i113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); //
+      cuts.AddCutPCMCalo("0008i113","0dm00009f9730000dge0404000","411790109fe309v0000","0r63103100000010"); //
   } else if (trainConfig == 4056){  // EG1
-      cuts.AddCutPCMCalo("0008h113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); //
+      cuts.AddCutPCMCalo("0008h113","0dm00009f9730000dge0404000","411790109fe309v0000","0r63103100000010"); //
   } else if (trainConfig == 4057){  // V0M high mult
-      cuts.AddCutPCMCalo("00078113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); //
+      cuts.AddCutPCMCalo("00078113","0dm00009f9730000dge0404000","411790109fe309v0000","0r63103100000010"); //
   } else if (trainConfig == 4058){  // SPD high mult
-      cuts.AddCutPCMCalo("00077113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); //
+      cuts.AddCutPCMCalo("00077113","0dm00009f9730000dge0404000","411790109fe309v0000","0r63103100000010"); //
 
   } else if (trainConfig == 4064){  // MB
-      cuts.AddCutPCMCalo("00015113","0dm00009f9730000dge0404000","411799909fe30230000","0r63103100000010"); //
+      cuts.AddCutPCMCalo("00015113","0dm00009f9730000dge0404000","411799909fe309v0000","0r63103100000010"); //
   } else if (trainConfig == 4065){  // EG2
-      cuts.AddCutPCMCalo("0008i113","0dm00009f9730000dge0404000","411799909fe30230000","0r63103100000010"); //
+      cuts.AddCutPCMCalo("0008i113","0dm00009f9730000dge0404000","411799909fe309v0000","0r63103100000010"); //
   } else if (trainConfig == 4066){  // EG1
-      cuts.AddCutPCMCalo("0008h113","0dm00009f9730000dge0404000","411799909fe30230000","0r63103100000010"); //
+      cuts.AddCutPCMCalo("0008h113","0dm00009f9730000dge0404000","411799909fe309v0000","0r63103100000010"); //
   } else if (trainConfig == 4067){  // V0M high mult
-      cuts.AddCutPCMCalo("00078113","0dm00009f9730000dge0404000","411799909fe30230000","0r63103100000010"); //
+      cuts.AddCutPCMCalo("00078113","0dm00009f9730000dge0404000","411799909fe309v0000","0r63103100000010"); //
   } else if (trainConfig == 4068){  // SPD high mult
-      cuts.AddCutPCMCalo("00077113","0dm00009f9730000dge0404000","411799909fe30230000","0r63103100000010"); //
+      cuts.AddCutPCMCalo("00077113","0dm00009f9730000dge0404000","411799909fe309v0000","0r63103100000010"); //
 
 
   } else if (trainConfig == 4090){  // MB
