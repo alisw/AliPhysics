@@ -311,78 +311,78 @@ void AliAnalysisTaskFemtoDreamRho::UserCreateOutputObjects()
 
     TString massPtHistName_Common = TString::Format("histInvariantMassPt_Common%s", NameIngaAnc.Data());
     TString massPtHistTitle_Common = TString::Format("%s Invariant Mass vs. pT Common", NameIngaAnc.Data());
-    fHist2D_massVSpt_RhoCandidateCommon = new TH2F(massPtHistName_Common, massPtHistTitle_Common, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommon = new TH2F(massPtHistName_Common, massPtHistTitle_Common, 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_massVSpt_RhoCandidateCommon->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_massVSpt_RhoCandidateCommon->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
 
     TString massPtHistName_Uncommon = TString::Format("histInvariantMassPt_Uncommon%s", NameIngaAnc.Data());
     TString massPtHistTitle_Uncommon = TString::Format("%s Invariant Mass vs. pT Uncommon", NameIngaAnc.Data());
-    fHist2D_massVSpt_RhoCandidateUncommon = new TH2F(massPtHistName_Uncommon, massPtHistTitle_Uncommon, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateUncommon = new TH2F(massPtHistName_Uncommon, massPtHistTitle_Uncommon, 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_massVSpt_RhoCandidateUncommon->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_massVSpt_RhoCandidateUncommon->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
 
     TString massPtHistName_CommonFullInvM = TString::Format("histInvariantMassPt_Common_FullMinv%s", NameIngaAnc.Data());
     TString massPtHistTitle_CommonFullInvM = TString::Format("%s Invariant Mass vs. pT Common", NameIngaAnc.Data());
-    fHist2D_massVSpt_RhoCandidateCommonFullInvM = new TH2F(massPtHistName_CommonFullInvM, massPtHistTitle_CommonFullInvM, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM = new TH2F(massPtHistName_CommonFullInvM, massPtHistTitle_CommonFullInvM, 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_massVSpt_RhoCandidateCommonFullInvM->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_massVSpt_RhoCandidateCommonFullInvM->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
 
     TString massPtHistName_CommonFullInvM_NoResonances = TString::Format("histInvariantMassPt_Common_FullMinv_noResonances%s", NameIngaAnc.Data());
     TString massPtHistTitle_CommonFullInvM_NoResonances = TString::Format("%s Invariant Mass vs. pT Common No Resonances", NameIngaAnc.Data());
-    fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances = new TH2F(massPtHistName_CommonFullInvM_NoResonances, massPtHistTitle_CommonFullInvM_NoResonances, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances = new TH2F(massPtHistName_CommonFullInvM_NoResonances, massPtHistTitle_CommonFullInvM_NoResonances, 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_NoResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
 
     TString massPtHistName_CommonFullInvM_kShortResonances = TString::Format("histInvariantMassPt_Common_FullMinv_kShortResonances%s", NameIngaAnc.Data());
     TString massPtHistTitle_CommonFullInvM_kShortResonances = TString::Format("%s Invariant Mass vs. pT Common KShort Resonances", NameIngaAnc.Data());
-    fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances = new TH2F(massPtHistName_CommonFullInvM_kShortResonances, massPtHistTitle_CommonFullInvM_kShortResonances, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances = new TH2F(massPtHistName_CommonFullInvM_kShortResonances, massPtHistTitle_CommonFullInvM_kShortResonances, 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_kShortResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
 
     TString massPtHistName_CommonFullInvM_kStarMisidResonances = TString::Format("histInvariantMassPt_Common_FullMinv_kStarMisidResonances%s", NameIngaAnc.Data());
     TString massPtHistTitle_CommonFullInvM_kStarMisidResonances = TString::Format("%s Invariant Mass vs. pT Common KStarMisid Resonances", NameIngaAnc.Data());
-    fHist2D_massVSpt_RhoCandidateCommonFullInvM_kStarMisidResonances = new TH2F(massPtHistName_CommonFullInvM_kStarMisidResonances, massPtHistTitle_CommonFullInvM_kStarMisidResonances, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_kStarMisidResonances = new TH2F(massPtHistName_CommonFullInvM_kStarMisidResonances, massPtHistTitle_CommonFullInvM_kStarMisidResonances, 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_kStarMisidResonances->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_kStarMisidResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
 
     TString massPtHistName_CommonFullInvM_rhoResonances = TString::Format("histInvariantMassPt_Common_FullMinv_rhoResonances%s", NameIngaAnc.Data());
     TString massPtHistTitle_CommonFullInvM_rhoResonances = TString::Format("%s Invariant Mass vs. pT Common Rho Resonances", NameIngaAnc.Data());
-    fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances = new TH2F(massPtHistName_CommonFullInvM_rhoResonances, massPtHistTitle_CommonFullInvM_rhoResonances, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances = new TH2F(massPtHistName_CommonFullInvM_rhoResonances, massPtHistTitle_CommonFullInvM_rhoResonances, 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_rhoResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
 
     TString massPtHistName_CommonFullInvM_omegaResonances = TString::Format("histInvariantMassPt_Common_FullMinv_omegaResonances%s", NameIngaAnc.Data());
     TString massPtHistTitle_CommonFullInvM_omegaResonances = TString::Format("%s Invariant Mass vs. pT Common omega Resonances", NameIngaAnc.Data());
-    fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances = new TH2F(massPtHistName_CommonFullInvM_omegaResonances, massPtHistTitle_CommonFullInvM_omegaResonances, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances = new TH2F(massPtHistName_CommonFullInvM_omegaResonances, massPtHistTitle_CommonFullInvM_omegaResonances, 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_omegaResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
 
     TString massPtHistName_CommonFullInvM_fzeroResonances = TString::Format("histInvariantMassPt_Common_FullMinv_fzeroResonances%s", NameIngaAnc.Data());
     TString massPtHistTitle_CommonFullInvM_fzeroResonances = TString::Format("%s Invariant Mass vs. pT Common f0 Resonances", NameIngaAnc.Data());
-    fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances = new TH2F(massPtHistName_CommonFullInvM_fzeroResonances, massPtHistTitle_CommonFullInvM_fzeroResonances, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances = new TH2F(massPtHistName_CommonFullInvM_fzeroResonances, massPtHistTitle_CommonFullInvM_fzeroResonances, 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_fzeroResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
 
     TString massPtHistName_CommonFullInvM_ftwoResonances = TString::Format("histInvariantMassPt_Common_FullMinv_ftwoResonances%s", NameIngaAnc.Data());
     TString massPtHistTitle_CommonFullInvM_ftwoResonances = TString::Format("%s Invariant Mass vs. pT Common f2 Resonances", NameIngaAnc.Data());
-    fHist2D_massVSpt_RhoCandidateCommonFullInvM_ftwoResonances = new TH2F(massPtHistName_CommonFullInvM_ftwoResonances, massPtHistTitle_CommonFullInvM_ftwoResonances, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_ftwoResonances = new TH2F(massPtHistName_CommonFullInvM_ftwoResonances, massPtHistTitle_CommonFullInvM_ftwoResonances, 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_ftwoResonances->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_ftwoResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
 
     TString massPtHistName_CommonFullInvM_otherResonances = TString::Format("histInvariantMassPt_Common_FullMinv_otherResonances%s", NameIngaAnc.Data());
     TString massPtHistTitle_CommonFullInvM_otherResonances = TString::Format("%s Invariant Mass vs. pT Common other Resonances", NameIngaAnc.Data());
-    fHist2D_massVSpt_RhoCandidateCommonFullInvM_otherResonances = new TH2F(massPtHistName_CommonFullInvM_otherResonances, massPtHistTitle_CommonFullInvM_otherResonances, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateCommonFullInvM_otherResonances = new TH2F(massPtHistName_CommonFullInvM_otherResonances, massPtHistTitle_CommonFullInvM_otherResonances, 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_otherResonances->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_massVSpt_RhoCandidateCommonFullInvM_otherResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
 
     TString massPtHistName_UncommonFullInvM = TString::Format("histInvariantMassPt_Uncommon_FullMinv%s", NameIngaAnc.Data());
     TString massPtHistTitle_UncommonFullInvM = TString::Format("%s Invariant Mass vs. pT Uncommon", NameIngaAnc.Data());
-    fHist2D_massVSpt_RhoCandidateUncommonFullInvM = new TH2F(massPtHistName_UncommonFullInvM, massPtHistTitle_UncommonFullInvM, 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_massVSpt_RhoCandidateUncommonFullInvM = new TH2F(massPtHistName_UncommonFullInvM, massPtHistTitle_UncommonFullInvM, 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_massVSpt_RhoCandidateUncommonFullInvM->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_massVSpt_RhoCandidateUncommonFullInvM->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
 
     // Ancestor PDG resonance tracking
-    fHist2D_PDGvsMInv_CommonAncestorResonances = new TH2F("fHist2D_PDGvsMInv_CommonAncestorResonances", "fHist2D_PDGvsMInv_CommonAncestorResonances", 5001, -2500, 2500, 500, 0.0, 5.0);
+    fHist2D_PDGvsMInv_CommonAncestorResonances = new TH2F("fHist2D_PDGvsMInv_CommonAncestorResonances", "fHist2D_PDGvsMInv_CommonAncestorResonances", 5001, -2500, 2500, 5000, 0.0, 5.0);
     fHist2D_PDGvsMInv_CommonAncestorResonances->GetXaxis()->SetTitle("PDG");
     fHist2D_PDGvsMInv_CommonAncestorResonances->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
 
@@ -513,28 +513,28 @@ void AliAnalysisTaskFemtoDreamRho::UserCreateOutputObjects()
     }
 
     // Histograms for Checking the pT vs mT for the different components
-    fHist2D_pTvsmT_noPions = new TH2F("fHist2D_pTvsmT_noPions", "fHist2D_pTvsmT_noPions", 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_pTvsmT_noPions = new TH2F("fHist2D_pTvsmT_noPions", "fHist2D_pTvsmT_noPions", 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_pTvsmT_noPions->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_pTvsmT_noPions->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
-    fHist2D_pTvsmT_noPrims = new TH2F("fHist2D_pTvsmT_noPrims", "fHist2D_pTvsmT_noPrims", 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_pTvsmT_noPrims = new TH2F("fHist2D_pTvsmT_noPrims", "fHist2D_pTvsmT_noPrims", 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_pTvsmT_noPrims->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_pTvsmT_noPrims->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
-    fHist2D_pTvsmT_noCommonMother = new TH2F("fHist2D_pTvsmT_noCommonMother", "fHist2D_pTvsmT_noCommonMother", 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_pTvsmT_noCommonMother = new TH2F("fHist2D_pTvsmT_noCommonMother", "fHist2D_pTvsmT_noCommonMother", 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_pTvsmT_noCommonMother->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_pTvsmT_noCommonMother->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
-    fHist2D_pTvsmT_noRho = new TH2F("fHist2D_pTvsmT_noRho", "fHist2D_pTvsmT_noRho", 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_pTvsmT_noRho = new TH2F("fHist2D_pTvsmT_noRho", "fHist2D_pTvsmT_noRho", 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_pTvsmT_noRho->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_pTvsmT_noRho->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
-    fHist2D_pTvsmT_noRho_MC = new TH2F("fHist2D_pTvsmT_noRho_MC", "fHist2D_pTvsmT_noRho_MC", 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_pTvsmT_noRho_MC = new TH2F("fHist2D_pTvsmT_noRho_MC", "fHist2D_pTvsmT_noRho_MC", 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_pTvsmT_noRho_MC->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_pTvsmT_noRho_MC->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
-    fHist2D_PDGvsmT_noRho_MC = new TH2F("fHist2D_PDGvsmT_noRho_MC", "fHist2D_PDGvsmT_noRho_MC", 5001, -2500, 2500, 500, 0.0, 5.0);
+    fHist2D_PDGvsmT_noRho_MC = new TH2F("fHist2D_PDGvsmT_noRho_MC", "fHist2D_PDGvsmT_noRho_MC", 5001, -2500, 2500, 5000, 0.0, 5.0);
     fHist2D_PDGvsmT_noRho_MC->GetXaxis()->SetTitle("PDG");
     fHist2D_PDGvsmT_noRho_MC->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
-    fHist2D_pTvsmT_isRho = new TH2F("fHist2D_pTvsmT_isRho", "fHist2D_pTvsmT_isRho", 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_pTvsmT_isRho = new TH2F("fHist2D_pTvsmT_isRho", "fHist2D_pTvsmT_isRho", 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_pTvsmT_isRho->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_pTvsmT_isRho->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
-    fHist2D_pTvsmT_isRho_MC = new TH2F("fHist2D_pTvsmT_isRho_MC", "fHist2D_pTvsmT_isRho_MC", 500, 0.0, 5.0, 500, 0.0, 5.0);
+    fHist2D_pTvsmT_isRho_MC = new TH2F("fHist2D_pTvsmT_isRho_MC", "fHist2D_pTvsmT_isRho_MC", 500, 0.0, 5.0, 5000, 0.0, 5.0);
     fHist2D_pTvsmT_isRho_MC->GetXaxis()->SetTitle("pT (GeV/c)");
     fHist2D_pTvsmT_isRho_MC->GetYaxis()->SetTitle("Invariant Mass (GeV/c^2)");
 
@@ -1455,6 +1455,7 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *)
       if (fIsMCcheckedCombs)
       {
         // Since we don't care about efficiency effects we take there the true proton sample in order to enchange the statistics by a factor of 5. The purity is high in either case due to the optimized selection criteria.
+        // Now changed to take reconstructed protons for a cross-check
         fPairCleaner->StoreParticle(V0Particles_MC_verified); // V0Particles_MC_verified
         fPairCleaner->StoreParticle(Protons);                 // ProtonMcTruePart Could check what happens with the reconstructed protons instead of MC True sample
         fPairCleaner->StoreParticle(AntiProtons);             // AntiProtonMcTruePart
@@ -1848,6 +1849,7 @@ bool AliAnalysisTaskFemtoDreamRho::CommonResonance(const AliFemtoDreamBasePart &
     IsResonance = false;
   }
   // Check if there was a misidentification
+  // The alternative is pi misid as p and misid as e, however this contributions are already quite small (see previous rho0 analysis)
   if (321 != std::abs(posDauPDG) || 321 != std::abs(negDauPDG)) // could have been a K*(892)0 -> K_ch + pi_ch with K_ch misid as pi_ch
   {
     IsResonance = true;

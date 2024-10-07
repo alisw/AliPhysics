@@ -298,6 +298,14 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   {
     TrackCutsRho->SetCutWindow(0.650, 0.700);
   }
+  else if (suffix == "5")
+  {
+    TrackCutsRho->SetCutWindow(0.600, 0.650);
+  }
+  else if (suffix == "6")
+  {
+    TrackCutsRho->SetCutWindow(0.650, 0.850);
+  }
   else if (suffix == "999")
   {
     TrackCutsRho->SetCutWindow(0., 5.0);
