@@ -11100,7 +11100,9 @@ Bool_t AliCaloPhotonCuts::CheckForReconstructedConversionPairs( vector<AliAODCon
           }
           
           auto convRejAngles = GetAngleForConvReject(gamma1, gamma2);
-          fHistDiClusterAngle->Fill(convRejAngles.first);
+          if(!fDoLightOutput){
+            fHistDiClusterAngle->Fill(convRejAngles.first);
+          }
           if(convRejAngles.first < fConvRejMinAngle && convRejAngles.second < fConvRejMaxOpenAngle){
             CheckVectorForIndexAndAdd(vecReject, firstGammaIndex,kTRUE);
             CheckVectorForIndexAndAdd(vecReject, secondGammaIndex,kTRUE);
