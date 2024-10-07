@@ -103,6 +103,7 @@ ClassImp(AliAnalysisTaskZNZP)  // classimp: necessary for root
       fMCStack(0),
       fMC(0),
       fUseMC(kFALSE),
+      fPeriod("lhc18r"),
       fTowerEnergy(true),
       fTrigger(AliVEvent::kCentral),
       fMultSelection(0x0),
@@ -159,6 +160,7 @@ AliAnalysisTaskZNZP::AliAnalysisTaskZNZP(const char* name)
       fMCStack(0),
       fMC(0),
       fUseMC(kFALSE),
+      fPeriod("lhc18r"),
       fTowerEnergy(true),
       fTrigger(AliVEvent::kCentral),
       fMultSelection(0x0),
@@ -273,18 +275,33 @@ void AliAnalysisTaskZNZP::UserCreateOutputObjects() {
 
   //! <ZNC> and <ZNA> obtained from the run 296621
   fZNCvsV0M = new TF1("fZNCvsV0M", "pol4", 0., 100.);
-  fZNCvsV0M->SetParameter(0, 8.09862);
-  fZNCvsV0M->SetParameter(1, 2.36909);
-  fZNCvsV0M->SetParameter(2, -0.0537093);
-  fZNCvsV0M->SetParameter(3, 0.000549338);
-  fZNCvsV0M->SetParameter(4, -2.60388e-06);
 
   fZNAvsV0M = new TF1("fZNAvsV0M", "pol4", 0., 100.);
-  fZNAvsV0M->SetParameter(0, 7.10818);
-  fZNAvsV0M->SetParameter(1, 2.20761);
-  fZNAvsV0M->SetParameter(2, -0.0492212);
-  fZNAvsV0M->SetParameter(3, 0.000514146);
-  fZNAvsV0M->SetParameter(4, -2.56141e-06);
+  if (fPeriod == "lhc18q") {
+    fZNCvsV0M->SetParameter(0, 8.09862);
+    fZNCvsV0M->SetParameter(1, 2.36909);
+    fZNCvsV0M->SetParameter(2, -0.0537093);
+    fZNCvsV0M->SetParameter(3, 0.000549338);
+    fZNCvsV0M->SetParameter(4, -2.60388e-06);
+
+    fZNAvsV0M->SetParameter(0, 7.10818);
+    fZNAvsV0M->SetParameter(1, 2.20761);
+    fZNAvsV0M->SetParameter(2, -0.0492212);
+    fZNAvsV0M->SetParameter(3, 0.000514146);
+    fZNAvsV0M->SetParameter(4, -2.56141e-06);
+  } else {
+    fZNCvsV0M->SetParameter(0, 7.8386);
+    fZNCvsV0M->SetParameter(1, 2.33189);
+    fZNCvsV0M->SetParameter(2, -0.0538579);
+    fZNCvsV0M->SetParameter(3, 0.000576929);
+    fZNCvsV0M->SetParameter(4, -2.87017e-06);
+
+    fZNAvsV0M->SetParameter(0, 7.0387);
+    fZNAvsV0M->SetParameter(1, 2.2109);
+    fZNAvsV0M->SetParameter(2, -0.0497042);
+    fZNAvsV0M->SetParameter(3, 0.000526503);
+    fZNAvsV0M->SetParameter(4, -2.64046e-06);
+  }
 
   // create output objects
   OpenFile(1);
@@ -347,7 +364,7 @@ void AliAnalysisTaskZNZP::UserCreateOutputObjects() {
       nBinsV0M090, BinsV0M090, 30, 0.0, 30.0);
   hAsyN =
       new TH2F("hAsyN", "Neutron asymmetry;V0M Per; N_{C}-N_{A}/N_{C}+N_{A};",
-               nBinsV0M090, BinsV0M090, 50, -1.0, 1.0);
+               nBinsV0M090, BinsV0M090, 100, -1.0, 1.0);
 
   hZNCNorm = new TH2F("hZNCNorm", ";V0M;<ZNC>/<ZNC>;", nBinsV0M090, BinsV0M090,
                       40, 0., 2.);
