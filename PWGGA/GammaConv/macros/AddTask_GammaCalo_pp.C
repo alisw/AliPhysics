@@ -5067,6 +5067,7 @@ void AddTask_GammaCalo_pp(
       AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi(),trackMatcherRunningMode);
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
       fTrackMatcher->SetCorrectionTaskSetting(corrTaskSetting);
+      if (enableLightOutput > 1) fTrackMatcher->SetLightOutput(kTRUE);
       mgr->AddTask(fTrackMatcher);
       mgr->ConnectInput(fTrackMatcher,0,cinput);
     }
@@ -5159,7 +5160,8 @@ void AddTask_GammaCalo_pp(
       analysisEventCuts[i]->SetUseAdditionalOutlierRejection(kTRUE);
     analysisEventCuts[i]->SetV0ReaderName(V0ReaderName);
     analysisEventCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
-    if (enableLightOutput > 0) analysisEventCuts[i]->SetLightOutput(kTRUE);
+    if (enableLightOutput == 1) analysisEventCuts[i]->SetLightOutput(kTRUE);
+    else if (enableLightOutput > 1) analysisEventCuts[i]->SetLightOutput(2);
     if(trainConfig == 447) analysisEventCuts[i]->SetUseSphericityTrue(kTRUE);
     if (periodNameV0Reader.CompareTo("") != 0) analysisEventCuts[i]->SetPeriodEnum(periodNameV0Reader);
     analysisEventCuts[i]->InitializeCutsFromCutString((cuts.GetEventCut(i)).Data());
@@ -5172,14 +5174,16 @@ void AddTask_GammaCalo_pp(
     analysisClusterCuts[i]->SetCorrectionTaskSetting(corrTaskSetting);
     analysisClusterCuts[i]->SetCaloTrackMatcherName(TrackMatcherName);
     if (!EventCutPos.CompareTo("62")){analysisClusterCuts[i]->SetCaloTriggerMimicHelperName(TriggerHelperName);}
-    if (enableLightOutput > 0) analysisClusterCuts[i]->SetLightOutput(kTRUE);
+    if (enableLightOutput == 1) analysisClusterCuts[i]->SetLightOutput(kTRUE);
+    else if (enableLightOutput > 1) analysisClusterCuts[i]->SetLightOutput(2);
     analysisClusterCuts[i]->InitializeCutsFromCutString((cuts.GetClusterCut(i)).Data());
     ClusterCutList->Add(analysisClusterCuts[i]);
     analysisClusterCuts[i]->SetExtendedMatchAndQA(enableExtMatchAndQA);
 
 
     analysisMesonCuts[i] = new AliConversionMesonCuts();
-    if (enableLightOutput > 0) analysisMesonCuts[i]->SetLightOutput(kTRUE);
+    if (enableLightOutput == 1) analysisMesonCuts[i]->SetLightOutput(kTRUE);
+    else if (enableLightOutput > 1) analysisMesonCuts[i]->SetLightOutput(2);
     analysisMesonCuts[i]->InitializeCutsFromCutString((cuts.GetMesonCut(i)).Data());
     analysisMesonCuts[i]->SetIsMergedClusterCut(2);
     analysisMesonCuts[i]->SetCaloMesonCutsObject(analysisClusterCuts[i]);
