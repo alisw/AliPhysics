@@ -2926,7 +2926,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       fDeDx_ITS_EPos_PhotonML = pidResonse->NumberOfSigmasITS(EPosTrack,AliPID::kElectron);
       fTOF_EPos_PhotonML = pidResonse->NumberOfSigmasTOF(EPosTrack,AliPID::kElectron);
       if (fIsMC)  {fDeDx_TPC_EPos_PhotonML = pidResonse->NumberOfSigmasTPC(EPosTrack,AliPID::kElectron);
-      } else  {fDeDx_TPC_EPos_PhotonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(EPosTrack->Charge(),pidResonse->NumberOfSigmasTPC(ENegTrack,AliPID::kElectron), EPosTrack->P(), EPosTrack->Eta(), EPosTrack->GetTPCNcls(),PhotonCandidate->GetConversionRadius() ); }
+      } else  {fDeDx_TPC_EPos_PhotonML =  fiPhotonCut->GetCorrectedElectronTPCResponse(EPosTrack->Charge(),pidResonse->NumberOfSigmasTPC(EPosTrack,AliPID::kElectron), EPosTrack->P(), EPosTrack->Eta(), EPosTrack->GetTPCNcls(),PhotonCandidate->GetConversionRadius() ); }
 
       fDeDx_PiP_ITS_PhotonML =  pidResonse->NumberOfSigmasITS(EPosTrack,AliPID::kPion);
       fDeDx_PiP_TPC_PhotonML =  pidResonse->NumberOfSigmasTPC(EPosTrack,AliPID::kPion);
