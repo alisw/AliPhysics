@@ -1264,6 +1264,13 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("98911013","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 80-90% with NL 1
     cuts.AddCutPCMCalo("99a11013","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 90-100% with NL 1
 
+    } else if (trainConfig == 1046){ // timing Cut variation  std -30+30ns
+  //                                                                  |
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466530ea01cc00000","0h63103100000010"); //1:     -90  +90 ns
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466530ra01cc00000","0h63103100000010"); //5:     -30    +30   ns
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466530sa01cc00000","0h63103100000010"); //7:     -30    +30   ns
+  
+
 
 
 
