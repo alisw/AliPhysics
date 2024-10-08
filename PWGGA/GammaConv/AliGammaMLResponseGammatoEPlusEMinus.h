@@ -36,7 +36,7 @@ protected:
     virtual void SetMapOfVariables(AliAODConversionPhoton *cand, AliVEvent* fInputEvent, AliConversionPhotonCuts* fiPhotonCut, AliV0ReaderV1* fV0Reader) ;
 
     /// \cond CLASSIMP
-    ClassDef(AliGammaMLResponseGammatoEPlusEMinus, 1); ///
+    ClassDef(AliGammaMLResponseGammatoEPlusEMinus, 2); ///
     /// \endcond
 };
 #endif
