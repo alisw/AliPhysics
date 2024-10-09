@@ -97,11 +97,11 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr():
   fCentcal(0),
   fPseudoEfficiency(2.),
   hMulti(0),
-  hCentVsNch(0),
+  hCentvsNch(0),
   hETvsNch(0),
   hV0MvsNch(0),
-  pMeanNchVsNch(0),
-  pMeanNchVsCent(0),
+  pMeanNchvsNch(0),
+  pMeanNchvsCent(0),
   pMeanNchvsET(0),
   pMeanNchvsV0M(0),
   fptDCAxyDCAz(0),
@@ -194,11 +194,11 @@ AliAnalysisTaskPtCorr::AliAnalysisTaskPtCorr(const char *name, Bool_t IsMC, TStr
   fCentcal(0),
   fPseudoEfficiency(2.),
   hMulti(0),
-  hCentVsNch(0),
+  hCentvsNch(0),
   hETvsNch(0),
   hV0MvsNch(0),
-  pMeanNchVsNch(0),
-  pMeanNchVsCent(0),
+  pMeanNchvsNch(0),
+  pMeanNchvsCent(0),
   pMeanNchvsET(0),
   pMeanNchvsV0M(0),
   fptDCAxyDCAz(0),
@@ -279,7 +279,7 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   fPtContV0Mmult->SetEventWeight(fEventWeight);
   fptList->Add(fPtContV0Mmult);
   if(fNBootstrapProfiles) fPtContV0Mmult->InitializeSubsamples(fNBootstrapProfiles);
-  constexpr int nbinsET = 1000;
+  constexpr int nbinsET = 1250;
   double* etbins = new double[nbinsET + 1];
   for (int i = 0; i <= nbinsET; ++i) etbins[i] = 0.0 + (2.0 * i);
   fPtContET = new AliPtPtContainer("ptcont_ET_ch","ptcont_ET_ch",nbinsET,etbins,fPtMpar);
@@ -297,19 +297,19 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   }
   hMulti = new TH1D("hMulti","Multidistribution;N_{ch}; Counts",fNMultiBins,fMultiBins);
   fptList->Add(hMulti);
-  pMeanNchVsNch = new TProfile("pMeanNchvsNch","#LT N_{ch}#GT vs N_{ch}; N_{ch}; #LT N_{ch}#GT",fNMultiBins,fMultiBins);
-  fptList->Add(pMeanNchVsNch);
-  hCentVsNch = new TH2D("hCentvsNch","N_{ch} vs Centrality; N_{ch}; Centrality (%)",fNMultiBins,fMultiBins,nDefaultCentBins,defaultCentBins);
-  fptList->Add(hCentVsNch);
-  pMeanNchVsCent = new TProfile("pMeanNchvsCent","#LT N_{ch}#GT vs Centrality; Centrality (%); #LT N_{ch}#GT",nDefaultCentBins,defaultCentBins);
-  fptList->Add(pMeanNchVsCent);
+  pMeanNchvsNch = new TProfile("pMeanNchvsNch","#LT N_{ch}#GT vs N_{ch}; N_{ch}; #LT N_{ch}#GT",fNMultiBins,fMultiBins);
+  fptList->Add(pMeanNchvsNch);
+  hCentvsNch = new TH2D("hCentvsNch","N_{ch} vs Centrality; N_{ch}; Centrality (%)",fNMultiBins,fMultiBins,nDefaultCentBins,defaultCentBins);
+  fptList->Add(hCentvsNch);
+  pMeanNchvsCent = new TProfile("pMeanNchvsCent","#LT N_{ch}#GT vs Centrality; Centrality (%); #LT N_{ch}#GT",nDefaultCentBins,defaultCentBins);
+  fptList->Add(pMeanNchvsCent);
   fV0MMulti = new TH1D("V0M_Multi","V0M_Multi",fNV0MBinsDefault,fV0MBinsDefault);
   fptList->Add(fV0MMulti);
   hETvsNch = new TH2D("hETvsNch","ET vs Nch; N_{ch}; #Sigma E_{T}",fNMultiBins,fMultiBins,nbinsET,etbins);
   fptList->Add(hETvsNch);
   hV0MvsNch = new TH2D("hV0MvsNch","V0M vs Nch; N_{ch}; V0M amplitude",fNMultiBins,fMultiBins,nbinsV0M,binV0Mlow,binV0Mhigh);
   fptList->Add(hV0MvsNch);
-  pMeanNchvsET = new TProfile("pmeanNchvsET","#LT N_{ch}#GT vs #Sigma ET; #LT N_{ch}#GT",nbinsET,etbins);
+  pMeanNchvsET = new TProfile("pmeanNchvsET","#LT N_{ch}#GT vs #Sigma E_{T}; #Sigma E_{T}; #LT N_{ch}#GT",nbinsET,etbins);
   fptList->Add(pMeanNchvsET);
   pMeanNchvsV0M = new TProfile("pMeanNchvsV0M","#LT N_{ch}#GT vs V0M amplitude; V0M amplitude; #LT N_{ch}#GT",nbinsV0M,binV0Mlow,binV0Mhigh);
   fptList->Add(pMeanNchvsV0M);
@@ -496,9 +496,9 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t*) {
   if(fCMflag&1) fPtContCent->FillCMProfiles(wp,l_Cent,l_Random);
   fV0MMulti->Fill(l_Cent);
   hMulti->Fill(l_Nch);
-  hCentVsNch->Fill(l_Nch,l_Cent);
-  pMeanNchVsNch->Fill(l_Nch,l_Nch);
-  pMeanNchVsCent->Fill(l_Cent,l_Nch);
+  hCentvsNch->Fill(l_Nch,l_Cent);
+  pMeanNchvsNch->Fill(l_Nch,l_Nch);
+  pMeanNchvsCent->Fill(l_Cent,l_Nch);
   hETvsNch->Fill(l_Nch,etfull);
   hV0MvsNch->Fill(l_Nch,multV0M);
   pMeanNchvsET->Fill(etfull,l_Nch);
@@ -596,9 +596,9 @@ void AliAnalysisTaskPtCorr::ProcessOnTheFly() {
   if(fCMflag&1) fPtContET->FillCMProfiles(wp,etfull,l_Random);
   hMulti->Fill(l_Multi);
   fV0MMulti->Fill(l_Cent);
-  hCentVsNch->Fill(l_Multi,l_Cent);
-  pMeanNchVsNch->Fill(l_Multi,l_Multi);
-  pMeanNchVsCent->Fill(l_Cent,l_Multi);
+  hCentvsNch->Fill(l_Multi,l_Cent);
+  pMeanNchvsNch->Fill(l_Multi,l_Multi);
+  pMeanNchvsCent->Fill(l_Cent,l_Multi);
   hETvsNch->Fill(l_Multi,etfull);
   hV0MvsNch->Fill(l_Multi,multV0M);
   pMeanNchvsET->Fill(etfull,l_Multi);
@@ -679,7 +679,7 @@ void AliAnalysisTaskPtCorr::ProcessGen(){
   hMulti->Fill(l_Nch);
   hETvsNch->Fill(l_Nch,etfull);
   hV0MvsNch->Fill(l_Nch,multV0M);
-  pMeanNchVsNch->Fill(l_Nch,l_Nch);
+  pMeanNchvsNch->Fill(l_Nch,l_Nch);
   pMeanNchvsET->Fill(etfull,l_Nch);
   pMeanNchvsV0M->Fill(multV0M,l_Nch);
   PostData(1,fptList);
