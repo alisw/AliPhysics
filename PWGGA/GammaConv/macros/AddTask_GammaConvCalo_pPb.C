@@ -1247,8 +1247,8 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("e5610113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 50-60% with NL 1
     cuts.AddCutPCMCalo("e6710113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 60-70% with NL 1
     cuts.AddCutPCMCalo("e7810113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 70-80% with NL 1
-    cuts.AddCutPCMCalo("e8911013","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 80-90% with NL 1
-    cuts.AddCutPCMCalo("e9a11013","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 90-100% with NL 1
+    cuts.AddCutPCMCalo("e8910113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 80-90% with NL 1
+    cuts.AddCutPCMCalo("e9a10113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 90-100% with NL 1
 
   } else if (trainConfig == 1044) { // centralities changed
     cuts.AddCutPCMCalo("90110113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 0-10%
@@ -1261,8 +1261,8 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("95610113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 50-60% with NL 1
     cuts.AddCutPCMCalo("96710113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 60-70% with NL 1
     cuts.AddCutPCMCalo("97810113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 70-80% with NL 1
-    cuts.AddCutPCMCalo("98911013","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 80-90% with NL 1
-    cuts.AddCutPCMCalo("99a11013","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 90-100% with NL 1
+    cuts.AddCutPCMCalo("98910113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 80-90% with NL 1
+    cuts.AddCutPCMCalo("99a10113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 90-100% with NL 1
 
     } else if (trainConfig == 1046){ // timing Cut variation  std -30+30ns
   //                                                                  |
