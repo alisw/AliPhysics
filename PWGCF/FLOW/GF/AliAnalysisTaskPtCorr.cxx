@@ -279,7 +279,7 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects(){
   fPtContV0Mmult->SetEventWeight(fEventWeight);
   fptList->Add(fPtContV0Mmult);
   if(fNBootstrapProfiles) fPtContV0Mmult->InitializeSubsamples(fNBootstrapProfiles);
-  constexpr int nbinsET = 1000;
+  constexpr int nbinsET = 1250;
   double* etbins = new double[nbinsET + 1];
   for (int i = 0; i <= nbinsET; ++i) etbins[i] = 0.0 + (2.0 * i);
   fPtContET = new AliPtPtContainer("ptcont_ET_ch","ptcont_ET_ch",nbinsET,etbins,fPtMpar);
