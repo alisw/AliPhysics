@@ -24,6 +24,7 @@ AliAnalysisTaskZNZP* AddTaskZNZP(const char* taskname = "ZNZP",
     return 0x0;
   }
   taskKno->SetUseMC(false);
+  taskKno->SetPeriod("lhc18r");
   taskKno->SetV0Mmin(0.);
   taskKno->SetV0Mmax(80.);
   taskKno->SetEtaCut(0.8);

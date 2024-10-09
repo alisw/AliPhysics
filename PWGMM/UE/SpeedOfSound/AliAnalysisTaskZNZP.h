@@ -24,6 +24,7 @@ class TProfile;
 #include "AliStack.h"
 #include "AliVEvent.h"
 #include "TParticle.h"
+#include <string>
 
 class AliAnalysisTaskZNZP : public AliAnalysisTaskSE {
  public:
@@ -38,6 +39,7 @@ class AliAnalysisTaskZNZP : public AliAnalysisTaskSE {
   void GetCalibratedV0Amplitude();
   void VertexPosition();
   void GetZDC();
+  void SetPeriod(std::string period) { fPeriod = period; }
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetUseMC(bool mc = false) { fUseMC = mc; }      // use to analyse MC data
@@ -58,6 +60,7 @@ class AliAnalysisTaskZNZP : public AliAnalysisTaskSE {
   AliStack* fMCStack;
   AliMCEvent* fMC;
   bool fUseMC;
+  std::string fPeriod;
   bool fTowerEnergy;
   UInt_t fTrigger;
   AliMultSelection* fMultSelection;

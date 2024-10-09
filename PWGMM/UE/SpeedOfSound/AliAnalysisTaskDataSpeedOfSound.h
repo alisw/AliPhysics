@@ -38,7 +38,6 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void MultiplicityDistributions();
   void GetCalibratedV0Amplitude();
   void VertexPosition();
-  void GetZDC();
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
   void SetHMCut(double HMcut) { fHMCut = HMcut; }      // Set V0M max value
@@ -113,7 +112,6 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   AliMultSelection* fMultSelection;
   TH1F* hNch;
   TProfile* pNchvsV0MAmp;
-  /*TH2F* hV0MvsV0MAmp;*/
   TProfile* pV0MAmpChannel;
   TH1F* hV0MAmplitude;
   TH1F* hV0Percentile;
@@ -135,17 +133,13 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH1F* hSPDFull;
   TH1F* hSPDEtaAdj;
   TH1F* hSPDEtaGapW;
-  /*TH1F* hSPDEtaGapWW;*/
   TH1F* hEtFull;
   TH1F* hEtEtaGap;
   TH2F* hPtvsSPDFull;
   TH2F* hPtvsSPDEtaAdj;
   TH2F* hPtvsSPDEtaGapW;
-  /*TH2D* hPtvsSPDEtaGapWW;*/
   TH2F* hPtvsEtFull;
   TH2F* hPtvsEtEtaGap;
-  /*TH2F* hPtvsTPCEtaGapWidepT;*/
-  /*TH2F* hPtvsEtEtaGapWidepT;*/
   TProfile* pZVtxvsSPDClus;
   TProfile* pSPDClusvsEta;
   double fSPDVtxCut;
@@ -153,61 +147,6 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   int fSPDEtaAdj;
   int fSPDEtaGapW;
   int fSPDEtaGapWW;
-  double fZN;
-  double fZP;
-  double fZDC;
-  /*TProfile* pZDCvsV0MAmp;*/
-  /*TProfile* pZDCvsTPCFull;*/
-  /*TProfile* pZDCvsTPCEtaGap;*/
-  /*TProfile* pZDCvsSPDFull;*/
-  /*TProfile* pZDCvsSPDEtaGap;*/
-  /*TProfile* pZDCvsSPDEtaAdj;*/
-  /*TProfile* pZDCvsSPDEtaGapW;*/
-  /*TProfile* pZDCvsEtFull;*/
-  /*TProfile* pZDCvsEtEtaGap;*/
-  /*TH2F* hPtvsEtFullWidepT;*/
-  /*TH2F* hPtvsSPDFullWidepT;*/
-  /*TH2F* hPtvsTPCFullWidepT;*/
-  /*TH2F* hPtvsSPDEtaGapWidepT;*/
-  /*TH2F* hPtvsSPDEtaGapWWidepT;*/
-  TH2F* hZNvsV0MPer;
-  TH2F* hZNvsV0MPerNonAv;
-  TH2F* hZNAvsV0MPerNonAv;
-  TH2F* hZNCvsV0MPerNonAv;
-  TH2F* hAsyN;
-  TProfile* pZNvsV0MAmp;
-  TProfile* pZNvsTPCFull;
-  TProfile* pZNvsTPCEtaGap;
-  TProfile* pZNvsSPDFull;
-  TProfile* pZNvsSPDEtaGap;
-  TProfile* pZNvsSPDEtaAdj;
-  TProfile* pZNvsSPDEtaGapW;
-  TProfile* pZNvsEtFull;
-  TProfile* pZNvsEtEtaGap;
-  TH2F* hZPvsV0MPer;
-  TH2F* hZPvsV0MPerNonAv;
-  TH2F* hZPAvsV0MPerNonAv;
-  TH2F* hZPCvsV0MPerNonAv;
-  TH2F* hAsyP;
-  TProfile* pZPvsV0MAmp;
-  TProfile* pZPvsTPCFull;
-  TProfile* pZPvsTPCEtaGap;
-  TProfile* pZPvsSPDFull;
-  TProfile* pZPvsSPDEtaGap;
-  TProfile* pZPvsSPDEtaAdj;
-  TProfile* pZPvsSPDEtaGapW;
-  TProfile* pZPvsEtFull;
-  TProfile* pZPvsEtEtaGap;
-  /*TH1F* fhZNCpmc;*/
-  /*TH1F* fhZNApmc;*/
-  /*TH1F* fhZPCpmc;*/
-  /*TH1F* fhZPApmc;*/
-  TH1F* hTracksOneSide;
-  TH2F* hPtvsTracksOneSide;
-  TH1F* hEtOneSide;
-  TH2F* hPtvsEtOneSide;
-  TH2F* hZNvsV0MAmp;
-  TH2F* hZPvsV0MAmp;
 
   AliAnalysisTaskDataSpeedOfSound(
       const AliAnalysisTaskDataSpeedOfSound&);  // not implemented
