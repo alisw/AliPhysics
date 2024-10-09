@@ -197,6 +197,7 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     TH2F*                 fHistPtV0MultEtaGGFromRest;         //! histo for eta from rest pt vs V0 multiplicity
     TH2F*                 fHistPtV0MultGamma;                 //! histo for Photon pt vs V0 multiplicity
     TH2F*                 fHistPtV0MultDirGamma;              //! histo for direct Photon(not from decay ) pt vs V0 multiplicity
+    TH2F*                 fHistPtV0MultChargedPi;             //! histo for Pi0 pt vs V0 multiplicity
 
     // jet studies
     TH2F*                 fHistPi0PtJetPt;        //! histo for Pi0 pt vs jet Pt
@@ -246,7 +247,7 @@ class AliAnalysisTaskGammaPureMC : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaPureMC(const AliAnalysisTaskGammaPureMC&); // Prevent copy-construction
     AliAnalysisTaskGammaPureMC &operator=(const AliAnalysisTaskGammaPureMC&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaPureMC, 11);
+    ClassDef(AliAnalysisTaskGammaPureMC, 12);
 };
 
 #endif

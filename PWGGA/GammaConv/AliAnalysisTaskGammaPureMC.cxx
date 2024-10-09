@@ -153,6 +153,7 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(): AliAnalysisTaskSE(),
   fHistPtV0MultEtaGGFromRest(nullptr),
   fHistPtV0MultGamma(nullptr),
   fHistPtV0MultDirGamma(nullptr),
+  fHistPtV0MultChargedPi(nullptr),
   fHistPi0PtJetPt(nullptr),
   fHistEtaPtJetPt(nullptr),
   fHistPi0ZJetPt(nullptr),
@@ -289,6 +290,7 @@ AliAnalysisTaskGammaPureMC::AliAnalysisTaskGammaPureMC(const char *name):
   fHistPtV0MultEtaGGFromRest(nullptr),
   fHistPtV0MultGamma(nullptr),
   fHistPtV0MultDirGamma(nullptr),
+  fHistPtV0MultChargedPi(nullptr),
   fHistPi0PtJetPt(nullptr),
   fHistEtaPtJetPt(nullptr),
   fHistPi0ZJetPt(nullptr),
@@ -708,6 +710,10 @@ void AliAnalysisTaskGammaPureMC::UserCreateOutputObjects(){
     fHistPtV0MultDirGamma      = new TH2F("Pt_V0Mult_GammaDir","Pt_V0Mult_GammaDir", fMaxpT*10, 0., fMaxpT, 500, -0.5, 500 - 0.5);
     fHistPtV0MultDirGamma->Sumw2();
     fOutputContainer->Add(fHistPtV0MultDirGamma);
+
+    fHistPtV0MultChargedPi   = new TH2F("Pt_V0Mult_ChargedPi","Pt_V0Mult_ChargedPi", fMaxpT*10, 0., fMaxpT, 500, -0.5, 500 - 0.5);
+    fHistPtV0MultChargedPi->Sumw2();
+    fOutputContainer->Add(fHistPtV0MultChargedPi);
 
   }
 
@@ -1167,6 +1173,15 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
         )
           fHistPtYPiPlFromK->Fill(particle->Pt(), particle->Y());
       }
+      if(fDoMultStudies){
+        if(std::abs(particle->Y()) <= 0.8){
+          if(!IsSecondary(motherParticle)){
+            if((fDoMultStudies == 2 && fIsEvtINELgtZERO == true) || fDoMultStudies == 1){ // select only INEL>0 events for multiplicity
+              fHistPtV0MultChargedPi->Fill(particle->Pt(), fNTracksInV0Acc);
+            }
+          }
+        }
+      }
       break;
     case kPdgPiMinus:
       fHistPtYPiMi->Fill(particle->Pt(), particle->Y());
@@ -1176,6 +1191,15 @@ void AliAnalysisTaskGammaPureMC::ProcessMCParticles()
             TMath::Abs(motherParticle->PdgCode()) == kPdgKPlus
         )
           fHistPtYPiMiFromK->Fill(particle->Pt(), particle->Y());
+      }
+      if(fDoMultStudies){
+        if(std::abs(particle->Y()) <= 0.8){
+          if(!IsSecondary(motherParticle)){
+            if((fDoMultStudies == 2 && fIsEvtINELgtZERO == true) || fDoMultStudies == 1){ // select only INEL>0 events for multiplicity
+              fHistPtV0MultChargedPi->Fill(particle->Pt(), fNTracksInV0Acc);
+            }
+          }
+        }
       }
       break;
     case kPdgRho0:
