@@ -1165,11 +1165,11 @@ std::complex<double> abd = abcdvec[1][1][0][1];
   return (a*b*d - ab*d - ad*b - a*bd + 2.*abd).real(); }
 template <typename... args>
 std::complex<double> AliAnalysisTaskGammaSoft::Q(double w, double nphi, args... wnphi){
-  std::complex<double> q = w*TMath::Cos(nphi)+1i*TMath::Sin(nphi);
+  std::complex<double> q = w*(TMath::Cos(nphi)+1i*TMath::Sin(nphi));
   return q*Q(wnphi...);
 }
 std::complex<double> AliAnalysisTaskGammaSoft::Q(double w, double nphi){
-  std::complex<double> q = w*TMath::Cos(nphi)+1i*TMath::Sin(nphi);
+  std::complex<double> q = w*(TMath::Cos(nphi)+1i*TMath::Sin(nphi));
   return q;
 }
 template <typename... args>
