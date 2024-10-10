@@ -1342,7 +1342,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
 //------------------------------------------------------------------------------------------
 
   //===== Start of loop over Cascade candidates =====
-  if(fDebug > 0) printf(": Start of Cascade loop\n");
+  if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Start of Cascade loop");
   for(Int_t iXi = 0; iXi < iNCascades; iXi++)
   {
     Cascade = fAODIn->GetCascade(iXi);   // get next candidate from the list in AOD 
@@ -1862,12 +1862,17 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
     std::vector<fastjet::PseudoJet> constituents(jetSub.constituents());  //(fFastJetWrapper.GetJetConstituents(ij));
     Int_t iNConstit = constituents.size();
     Double_t dMaxTrPt = 0;
+    Int_t iindlead = 0;
     for(Int_t ic = 0; ic < iNConstit; ic++) {
 		  Double_t dtrpt = constituents[ic].perp();
-      if(dtrpt > dMaxTrPt) dMaxTrPt = dtrpt;      
+      Int_t iind = constituents[ic].user_index();
+      if(dtrpt > dMaxTrPt) {
+        dMaxTrPt = dtrpt; 
+        iindlead = iind;
+      } 
     }  
-    if(dMaxTrPt < fdCutPtTrackJetMin)             // selection of jets with high leading track pt
-      continue;                                           
+    if(dMaxTrPt < fdCutPtTrackJetMin && iindlead < iXiMinusId)             // selection of jets with high leading track pt
+      continue;                                            
     fh1NCascadesInJetStats->Fill(10);
 
     fh2PtJetPtTrackLeading[iCentIndex]->Fill(jetSub.perp(), dMaxTrPt); // pt_jet vs pt of leading jet track   
@@ -2449,8 +2454,7 @@ void AliAnalysisTaskCascadesInJets::AddEventTracksMC(TClonesArray* coll, TClones
   AliAODMCParticle* cascadepart = 0;
   while ((cascadepart = static_cast<AliAODMCParticle*>(next()))) {
     AliDebug(2, Form("Found a MC generated Cascade with pT = %.3f, eta = %.3f, phi = %.3f \n", cascadepart->Pt(), cascadepart->Eta(), cascadepart->Phi())); 
-    Int_t n = cascadepart->GetNDaughters();  //why 3 daughters occur? 
-    cout << "Daughters: " << n << endl;
+    Int_t n = cascadepart->GetNDaughters();  //why 11 daughters occur? 
     for (Int_t i = 0; i < n; i++) {
       Int_t iDLabel = cascadepart->GetDaughterLabel(i);
       vecDaughterLabels.push_back(iDLabel);
@@ -2925,13 +2929,18 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
     std::vector<fastjet::PseudoJet> constits(jetSubMC.constituents());
     Int_t iNConst = constits.size();
     Double_t dMaxTrPt = 0;
+    Int_t iindlead = 0;
     for(Int_t ic = 0; ic < iNConst; ic++) {
 		  Double_t dtrpt = constits[ic].perp();
-      if(dtrpt > dMaxTrPt) dMaxTrPt = dtrpt;  
+      Int_t iind = constits[ic].user_index();
+      if(dtrpt > dMaxTrPt) {
+        dMaxTrPt = dtrpt; 
+        iindlead = iind;
+      } 
     }  
-    cout << endl;
-    if(dMaxTrPt < fdCutPtTrackJetMin)             // selection of jets with high leading track pt
-      continue;                                           
+    if(dMaxTrPt < fdCutPtTrackJetMin && iindlead < iXiMinusId)             // selection of jets with high leading track pt
+      continue;  
+                                         
     //printf(" JetPt: %f, sub jetPt: %f \n", vJetsMC[ij].perp(), jetSubMC.perp());
   
     fh1MCStats->Fill(4); //Generated jets

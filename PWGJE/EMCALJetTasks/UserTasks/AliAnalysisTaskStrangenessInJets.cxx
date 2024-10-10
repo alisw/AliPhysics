@@ -1858,12 +1858,17 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     std::vector<fastjet::PseudoJet> constituents(jetSub.constituents());  //(fFastJetWrapper.GetJetConstituents(ij));
     Int_t iNConstit = constituents.size();
     Double_t dMaxTrPt = 0;
+    Int_t iindlead = 0;
     for(Int_t ic = 0; ic < iNConstit; ic++) {
 		  Double_t dtrpt = constituents[ic].perp();
-      if(dtrpt > dMaxTrPt) dMaxTrPt = dtrpt;  
+      Int_t iind = constituents[ic].user_index();
+      if(dtrpt > dMaxTrPt) {
+        dMaxTrPt = dtrpt; 
+        iindlead = iind;
+      } 
     }  
-    if(dMaxTrPt < fdCutPtTrackJetMin)             // selection of jets with high leading track pt
-      continue;                                           
+    if(dMaxTrPt < fdCutPtTrackJetMin && iindlead < iK0Id)             // selection of jets with high leading track pt (except when leading track is V0)
+      continue;                                            
     fh1NV0sInJetStats->Fill(11);
 
     fh2PtJetPtTrackLeading[iCentIndex]->Fill(jetSub.perp(), dMaxTrPt); // pt_jet vs pt of leading jet track
@@ -2963,15 +2968,19 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
     std::vector<fastjet::PseudoJet> constits(jetSubMC.constituents());
     Int_t iNConst = constits.size();
     Double_t dMaxTrPt = 0;
+    Int_t iindlead = 0;
     for(Int_t ic = 0; ic < iNConst; ic++) {
 		  Double_t dtrpt = constits[ic].perp();
-      if(dtrpt > dMaxTrPt) dMaxTrPt = dtrpt;  
+      Int_t iind = constits[ic].user_index();
+      if(dtrpt > dMaxTrPt) {
+        dMaxTrPt = dtrpt; 
+        iindlead = iind;
+      }
     }  
-    cout << endl;
-    if(dMaxTrPt < fdCutPtTrackJetMin)             // selection of jets with high leading track pt
+    if(dMaxTrPt < fdCutPtTrackJetMin && iindlead < iK0Id)            // selection of jets with high leading track pt
       continue;                                           
-
-
+ 
+ 
     //printf(" JetPt: %f, sub jetPt: %f \n", vJetsMC[ij].perp(), jetSubMC.perp());
   
     fh1MCStats->Fill(4); //Generated jets
@@ -3010,7 +3019,6 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
 	
 	    if(uid > iALambdaId && uid < iXiId) {//&& uid < iK0LId) { //ALambda
 		    index = uid-iALambdaId; 
-        cout << index << endl; 
 		    jetv0 = (AliAODMCParticle*)fGenMCV0->At(index); 
         fh2V0ALambdaInJetPtMCGen[iCent]->Fill(jetv0->Pt(), jetSubMC.perp());
         Double_t valueEtaALInGen[4] = {jetv0->Pt(), jetv0->Eta(), jetSubMC.perp(), jetv0->Eta() - jetSubMC.eta()};
