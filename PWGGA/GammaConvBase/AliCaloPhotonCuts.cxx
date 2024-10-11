@@ -10359,8 +10359,10 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC20f14a") == 0 ) return kPP13T18P1Pyt8;
   // PbPb 5 TeV 2015 Gamma-Jet MC
   else if ( namePeriod.CompareTo("LHC18b11c") == 0 ) return  kLHC18b11c;
-  // pp 13 TeV eta prime biased JJ MC
+  // pp 13 TeV eta prime biased JJ MC - test production (20 pT-hard bins)
   else if ( namePeriod.CompareTo("LHC23a4b") == 0 ) return kLHC23a4b;
+  // pp 13 TeV eta prime biased JJ MC (7 pT-hard bins)
+  else if ( namePeriod.CompareTo("LHC24j3") == 0 )  return kLHC24j3;
   
   // data starts here
   else if ( namePeriod.CompareTo("LHC10b") == 0 ||

@@ -578,7 +578,7 @@ Bool_t AliV0ReaderV1::Notify(){
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC18b8 || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC18b10 ||
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC19a4 ||
         fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC18l6b1 || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC18l6c1 ||
-        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC23a4b
+        fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC23a4b || fEventCuts->GetPeriodEnum() == AliConvEventCuts::kLHC24j3
      ){
         TObjArray *arr = fCurrentFileName.Tokenize("/");
         fPtHardBin = -1;

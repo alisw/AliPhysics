@@ -535,6 +535,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH1F**                          fHistoNEventsWOWeight;                                //!<! histo for event counting without weight
     TProfile**                      fProfileJetJetXSection;                               //!<! histo for cross section for jet-jet Monte-Carlo
     TH1F**                          fHistoJetJetNTrials;                                  //!<! histo for number of trials for jet-jet Monte-Carlo
+    TH2F**                          fHistoPtHardJJWeight;                                 //!<! array of histos with ntrials for jet-jet Monte-Carlo
     TH1I**                          fHistoNGoodESDTracks;                                 //!<! histo number of reconstructed primary tracks
     TProfile**                      fProfileEtaShift;                                     //!<! profile for eta shift bookkeeping
     TH2F**                          fHistoSPDClusterTrackletBackground;                   //!<! array of histos with SPD tracklets vs SPD clusters for background rejection
@@ -693,7 +694,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 37);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 38);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H

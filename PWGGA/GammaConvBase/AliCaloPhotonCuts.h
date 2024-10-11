@@ -236,8 +236,10 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       kLHC21d2a, // GJ EMC+DCAL
       kLHC21d2b, // JJLow EMC+DCAL
       kLHC21d2c, // JJHigh EMC+DCAL
-      // pp 13TeV eta prime biased JJ MC
+      // pp 13TeV eta prime biased JJ MC - test production, 20 pT-hard bins
       kLHC23a4b,
+      // pp 13TeV eta prime biased JJ MC - 7 pT-hard bins
+      kLHC24j3,
       // Data starts here
       k10pp7TeV,
       k10pp900GeV,
