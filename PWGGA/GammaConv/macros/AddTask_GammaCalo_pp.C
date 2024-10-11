@@ -2365,7 +2365,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","388550109fe309v0000","0s631031000000d0"); // INT7 INT7 DCal only
   } else if (trainConfig == 1909){  // pp 13 TeV variations: Rapidity
     cuts.AddCutCalo("00010113","411790109fe309v0000","0s632031000000d0"); // INT7 rapidity 0.7
-    cuts.AddCutCalo("00010113","411790109fe309v0000","0s633031000000d0"); // INT7 rapidity 0.6
+    cuts.AddCutCalo("00010113","411790109fe309v0000","0s634031000000d0"); // INT7 rapidity 0.5
+    cuts.AddCutCalo("00010113","411790109fe309v0000","0s637031000000d0"); // INT7 rapidity 0.3
+    cuts.AddCutCalo("00010113","411790109fe309v0000","0s63g031000000d0"); // INT7 rapidity 0.13
 
     //--------  INT7 Calo cut variations
   } else if (trainConfig == 1915){  // pp 13 TeV variations: track matching
