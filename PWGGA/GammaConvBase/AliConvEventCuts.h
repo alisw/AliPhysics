@@ -373,6 +373,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
 
         // pp 13TeV eta prime biased JJ MC
         kLHC23a4b,
+        kLHC24j3,
 
         kUnknownPeriod//!< kUnknownPeriod
       };

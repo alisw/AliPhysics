@@ -366,6 +366,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoNEventsWOWeight(nullptr),
   fProfileJetJetXSection(nullptr),
   fHistoJetJetNTrials(nullptr),
+  fHistoPtHardJJWeight(nullptr),
   fHistoNGoodESDTracks(nullptr),
   fProfileEtaShift(nullptr),
   fHistoSPDClusterTrackletBackground(nullptr),
@@ -802,6 +803,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoNEventsWOWeight(nullptr),
   fProfileJetJetXSection(nullptr),
   fHistoJetJetNTrials(nullptr),
+  fHistoPtHardJJWeight(nullptr),
   fHistoNGoodESDTracks(nullptr),
   fProfileEtaShift(nullptr),
   fHistoSPDClusterTrackletBackground(nullptr),
@@ -1385,6 +1387,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
   if(fIsMC == 2) {
     fProfileJetJetXSection       = new TProfile*[fnCuts];
     fHistoJetJetNTrials          = new TH1F*[fnCuts];
+    fHistoPtHardJJWeight     = new TH2F*[fnCuts];
   }
   if (fNDMRecoMode > 0){
     fHistoClusterGammaPt        = new TH1F*[fnCuts];
@@ -1607,6 +1610,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       fHistoJetJetNTrials[iCut]     = new TH1F("NTrials", "#sum{NTrials}", 1, 0, 1);
       fHistoJetJetNTrials[iCut]->GetXaxis()->SetBinLabel(1,"#sum{NTrials}");
       fESDList[iCut]->Add(fHistoJetJetNTrials[iCut]);
+      fHistoPtHardJJWeight[iCut]     = new TH2F("fHistoPtHardJJWeight", "fHistoPtHardJJWeight", 400, 0, 200, 60, 0, 30);
+      fESDList[iCut]->Add(fHistoPtHardJJWeight[iCut]);
     }
 
     if(fIsHeavyIon>0)
@@ -3592,6 +3597,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserExec(Option_t *){
       Float_t pthard = -1;
       if(((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetUseJetFinderForOutliers()) maxjetpt = fOutlierJetReader->GetMaxJetPt();
       Bool_t isMCJet        = ((AliConvEventCuts*)fEventCutArray->At(iCut))->IsJetJetMCEventAccepted( fMCEvent, fWeightJetJetMC ,pthard, fInputEvent, maxjetpt);
+      if(isMCJet && (fIsMC==2))           fHistoPtHardJJWeight[iCut]->Fill(pthard,fWeightJetJetMC);
       if (fIsMC == 3){
         Double_t weightMult   = ((AliConvEventCuts*)fEventCutArray->At(iCut))->GetWeightForMultiplicity(fV0Reader->GetNumberOfPrimaryTracks());
         fWeightJetJetMC       = fWeightJetJetMC*weightMult;
