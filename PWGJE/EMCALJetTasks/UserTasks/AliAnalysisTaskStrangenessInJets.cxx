@@ -3011,7 +3011,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
         Int_t ii = iind - iLambdaId;
         dtrpt = dvecDaughterPtMC[ii];
       }      
-      else if(iind >= iALambdaId && iind < iXiId) {
+      else if(iind >= iALambdaId && iind < iK0LId) {
         Int_t ii = iind - iALambdaId;
         dtrpt = dvecDaughterPtMC[ii];
       }  
@@ -3060,7 +3060,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
         il++;
 	    }
 	
-	    if(uid >= iALambdaId && uid < iXiId) {//&& uid < iK0LId) { //ALambda
+	    if(uid >= iALambdaId && uid < iK0LId) { //ALambda
 		    index = uid-iALambdaId; 
 		    jetv0 = (AliAODMCParticle*)fGenMCV0->At(index); 
         fh2V0ALambdaInJetPtMCGen[iCent]->Fill(jetv0->Pt(), jetSubMC.perp());
