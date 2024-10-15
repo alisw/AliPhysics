@@ -93,6 +93,10 @@ ClassImp(AliFemtoDreamCorrHists)
       fSameEventmTMultDistNonCommon(nullptr),
       fSameEventpTOnepTTwokStar(nullptr),
       fMixedEventpTOnepTTwokStar(nullptr),
+      fSameEventpTPionNucleonkStar(nullptr),
+      fMixedEventpTPionNucleonkStar(nullptr),
+      fSameEventkStarPiNvskStar(nullptr),
+      fMixedEventkStarPiNvskStar(nullptr),
       fDoMultBinning(false),
       fDoCentBinning(false),
       fDokTandMultBinning(false),
@@ -110,6 +114,7 @@ ClassImp(AliFemtoDreamCorrHists)
       fAncestors(false),
       fRemoveAncestorsResonances(false),
       fpTOnepTTwokStarPlotsmT(false),
+      fpTPionNucleonkStarPlotsmT(false),
       fpTOnepTTwokStarCutOff(3.),
       fPDGCode(),
       fmTBins(),
@@ -200,6 +205,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fSameEventmTMultDistNonCommon(hists.fSameEventmTMultDistNonCommon),
       fSameEventpTOnepTTwokStar(hists.fSameEventpTOnepTTwokStar),
       fMixedEventpTOnepTTwokStar(hists.fMixedEventpTOnepTTwokStar),
+      fSameEventpTPionNucleonkStar(hists.fSameEventpTPionNucleonkStar),
+      fMixedEventpTPionNucleonkStar(hists.fMixedEventpTPionNucleonkStar),
+      fSameEventkStarPiNvskStar(hists.fSameEventkStarPiNvskStar),
+      fMixedEventkStarPiNvskStar(hists.fMixedEventkStarPiNvskStar),
       fDoMultBinning(hists.fDoMultBinning),
       fDoCentBinning(hists.fDoCentBinning),
       fDokTandMultBinning(hists.fDokTandMultBinning),
@@ -217,6 +226,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fAncestors(hists.fAncestors),
       fRemoveAncestorsResonances(hists.fRemoveAncestorsResonances),
       fpTOnepTTwokStarPlotsmT(hists.fpTOnepTTwokStarPlotsmT),
+      fpTPionNucleonkStarPlotsmT(hists.fpTPionNucleonkStarPlotsmT),
       fpTOnepTTwokStarCutOff(hists.fpTOnepTTwokStarCutOff),
       fPDGCode(hists.fPDGCode),
       fmTBins(hists.fmTBins),
@@ -307,6 +317,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fSameEventmTMultDistNonCommon(nullptr),
       fSameEventpTOnepTTwokStar(nullptr),
       fMixedEventpTOnepTTwokStar(nullptr),
+      fSameEventpTPionNucleonkStar(nullptr),
+      fMixedEventpTPionNucleonkStar(nullptr),
+      fSameEventkStarPiNvskStar(nullptr),
+      fMixedEventkStarPiNvskStar(nullptr),
       fDoMultBinning(false),
       fDoCentBinning(false),
       fDokTandMultBinning(false),
@@ -324,6 +338,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fAncestors(false),
       fRemoveAncestorsResonances(false),
       fpTOnepTTwokStarPlotsmT(false),
+      fpTPionNucleonkStarPlotsmT(false),
       fpTOnepTTwokStarCutOff(3.),
       fPDGCode(),
       fmTBins(),
@@ -353,6 +368,7 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   fRemoveAncestorsResonances = conf->GetRemoveAncestorResonances();
   fpTOnepTTwokStarPlotsmT = conf->GetDopTOnepTTwokStarPlotsmT();
   fpTOnepTTwokStarCutOff = conf->GetDopTOnepTTwokStarCutOff();
+  fpTPionNucleonkStarPlotsmT = conf->GetDopTPionNucleonkStarPlotsmT();
 
   if (fDokTCentralityBins && !fDokTBinning)
   {
@@ -718,6 +734,21 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
   {
     fSameEventpTOnepTTwokStar = nullptr;
     fMixedEventpTOnepTTwokStar = nullptr;
+  }
+
+  if (fpTPionNucleonkStarPlotsmT)
+  {
+    fSameEventpTPionNucleonkStar = new TH2F **[nHists];
+    fMixedEventpTPionNucleonkStar = new TH2F **[nHists];
+    fSameEventkStarPiNvskStar = new TH2F **[nHists];
+    fMixedEventkStarPiNvskStar = new TH2F **[nHists];
+  }
+  else
+  {
+    fSameEventpTPionNucleonkStar = nullptr;
+    fMixedEventpTPionNucleonkStar = nullptr;
+    fSameEventkStarPiNvskStar = nullptr;
+    fMixedEventkStarPiNvskStar = nullptr;
   }
 
   int Counter = 0;
@@ -1196,6 +1227,77 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
         }
       }
 
+      if (fillHists && fpTPionNucleonkStarPlotsmT)
+      {
+
+        fSameEventpTPionNucleonkStar[Counter] = new TH2F *[nmTBins];
+        fMixedEventpTPionNucleonkStar[Counter] = new TH2F *[nmTBins];
+        fSameEventkStarPiNvskStar[Counter] = new TH2F *[nmTBins];
+        fMixedEventkStarPiNvskStar[Counter] = new TH2F *[nmTBins];
+
+
+        // Int_t bins[2] = {200,200};
+        // Double_t xmin[2] =  {0.,0.};
+        // Double_t xmax[2] = {5.0,5.0};
+
+        for (unsigned int imT = 0; imT < nmTBins; ++imT)
+        {
+          TString SameEventName =
+              TString::Format("SEmT_%d_pT_PionNucleon%d_%d_vs_kStar", imT, iPar1, iPar2);
+          // fSameEventpTOnepTTwokStar[Counter][imT] = new THnSparseF(SameEventName.Data(),
+          //                                              SameEventName.Data(),
+          //                                               2,  bins, xmin, xmax);
+          fSameEventpTPionNucleonkStar[Counter][imT] = new TH2F(SameEventName.Data(),
+                                                             SameEventName.Data(),
+                                                             200, 0., 5., 200, 0., 5.);
+          fSameEventpTPionNucleonkStar[Counter][imT]->Sumw2();
+          fSameEventpTPionNucleonkStar[Counter][imT]->GetXaxis()->SetTitle("k* (GeV/c)");
+          fSameEventpTPionNucleonkStar[Counter][imT]->GetYaxis()->SetTitle("p_{T} Pion Nucleon (GeV/c)");
+          fPairs[Counter]->Add(fSameEventpTPionNucleonkStar[Counter][imT]);
+
+          TString MixedEventName =
+              TString::Format("MEmT_%d_pT_PionNucleon%d_%d_vs_kStar", imT, iPar1, iPar2);
+          // fMixedEventpTOnepTTwokStar[Counter][imT] = new THnSparseF(MixedEventName.Data(),
+          //                                                MixedEventName.Data(),
+          //                                                2,  bins, xmin, xmax);
+          fMixedEventpTPionNucleonkStar[Counter][imT] = new TH2F(MixedEventName.Data(),
+                                                              MixedEventName.Data(),
+                                                              200, 0., 5., 200, 0., 5.);
+
+          fMixedEventpTPionNucleonkStar[Counter][imT]->Sumw2();
+          fMixedEventpTPionNucleonkStar[Counter][imT]->GetXaxis()->SetTitle("k* (GeV/c)");
+          fMixedEventpTPionNucleonkStar[Counter][imT]->GetYaxis()->SetTitle("p_{T} Pion Nucleon (GeV/c)");
+          fPairs[Counter]->Add(fMixedEventpTPionNucleonkStar[Counter][imT]);
+
+          //for k* of pi-N pairs inside the pi-d systems
+          TString SameEventNameKstar =
+              TString::Format("SEmT_%d_kStar_PionNucleon%d_%d_vs_kStar", imT, iPar1, iPar2);
+          // fSameEventpTOnepTTwokStar[Counter][imT] = new THnSparseF(SameEventName.Data(),
+          //                                              SameEventName.Data(),
+          //                                               2,  bins, xmin, xmax);
+          fSameEventkStarPiNvskStar[Counter][imT] = new TH2F(SameEventNameKstar.Data(),
+                                                             SameEventNameKstar.Data(),
+                                                             200, 0., 3., 200, 0., 3.);
+          fSameEventkStarPiNvskStar[Counter][imT]->Sumw2();
+          fSameEventkStarPiNvskStar[Counter][imT]->GetXaxis()->SetTitle("k* (GeV/c)");
+          fSameEventkStarPiNvskStar[Counter][imT]->GetYaxis()->SetTitle("k* Pion Nucleon (GeV/c)");
+          fPairs[Counter]->Add(fSameEventkStarPiNvskStar[Counter][imT]);
+
+          TString MixedEventNameKstar =
+              TString::Format("MEmT_%d_kStar_PionNucleon%d_%d_vs_kStar", imT, iPar1, iPar2);
+          // fMixedEventpTOnepTTwokStar[Counter][imT] = new THnSparseF(MixedEventName.Data(),
+          //                                                MixedEventName.Data(),
+          //                                                2,  bins, xmin, xmax);
+          fMixedEventkStarPiNvskStar[Counter][imT] = new TH2F(MixedEventNameKstar.Data(),
+                                                              MixedEventNameKstar.Data(),
+                                                              200, 0., 3., 200, 0., 3.);
+
+          fMixedEventkStarPiNvskStar[Counter][imT]->Sumw2();
+          fMixedEventkStarPiNvskStar[Counter][imT]->GetXaxis()->SetTitle("k* (GeV/c)");
+          fMixedEventkStarPiNvskStar[Counter][imT]->GetYaxis()->SetTitle("k* Pion Nucleon (GeV/c)");
+          fPairs[Counter]->Add(fMixedEventkStarPiNvskStar[Counter][imT]);
+        }
+      }
       if (!fMinimalBooking)
       {
         fPairQA[Counter] = new TList();
@@ -1724,6 +1826,7 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fRemoveAncestorsResonances = hists.fRemoveAncestorsResonances;
     this->fpTOnepTTwokStarPlotsmT = hists.fpTOnepTTwokStarPlotsmT;
     this->fpTOnepTTwokStarCutOff = hists.fpTOnepTTwokStarCutOff;
+     this->fpTPionNucleonkStarPlotsmT = hists.fpTPionNucleonkStarPlotsmT;
   }
   return *this;
 }
@@ -2147,6 +2250,65 @@ void AliFemtoDreamCorrHists::FillMixedEventpTOnepTTwokStar(int iHist, float mT, 
       {
         fMixedEventpTOnepTTwokStar[iHist][pos]->Fill(pTOne, pTTwo);
       }
+    }
+  }
+}
+
+void AliFemtoDreamCorrHists::FillSameEventpTPionNucleonkStar(int iHist, float mT, float pTPiNucleon, float RelKpiN, float RelK)
+{
+  if (fpTPionNucleonkStarPlotsmT)
+  {
+    unsigned int pos = 0;
+    for (auto it : fmTBins)
+    {
+      if (it > TMath::Abs(mT))
+      {
+        break;
+      }
+      else
+      {
+        pos++;
+      }
+    }
+    if (pos >= fmTBins.size())
+    {
+      TString WarnMe = TString::Format("mT Bin for %.2f not found", mT);
+      AliWarning(WarnMe.Data());
+    }
+    else
+    {
+      fSameEventpTPionNucleonkStar[iHist][pos]->Fill(RelK, pTPiNucleon);
+      fSameEventkStarPiNvskStar[iHist][pos]->Fill(RelK, RelKpiN);
+    }
+  }
+}
+
+void AliFemtoDreamCorrHists::FillMixedEventpTPionNucleonkStar(int iHist, float mT, float pTPiNucleon, float RelKpiN, float RelK)
+{
+  if (fpTPionNucleonkStarPlotsmT)
+  {
+    unsigned int pos = 0;
+    for (auto it : fmTBins)
+    {
+      if (it > TMath::Abs(mT))
+      {
+        break;
+      }
+      else
+      {
+        pos++;
+      }
+    }
+    if (pos >= fmTBins.size())
+    {
+      TString WarnMe = TString::Format("mT Bin for %.2f not found", mT);
+      AliWarning(WarnMe.Data());
+    }
+    else
+    {
+      fMixedEventpTPionNucleonkStar[iHist][pos]->Fill(RelK, pTPiNucleon);
+      fMixedEventkStarPiNvskStar[iHist][pos]->Fill(RelK, RelKpiN);
+
     }
   }
 }

@@ -114,6 +114,10 @@ public:
     fpTOnepTTwokStarPlotsmT = doIt;
     fpTOnepTTwokStarCut = kStarCutOff;
   }
+  void SetpTPionNucleonkStarPlotsmT(bool doIt)
+  {
+    fpTPionNucleonkStarPlotsmT = doIt;
+  }
   void SetDomTMultBinning(bool doIt)
   {
     fmTMultBinning = doIt;
@@ -230,6 +234,10 @@ public:
   bool GetDopTOnepTTwokStarPlotsmT()
   {
     return fpTOnepTTwokStarPlotsmT;
+  };
+  bool GetDopTPionNucleonkStarPlotsmT()
+  {
+    return fpTPionNucleonkStarPlotsmT;
   };
   float GetDopTOnepTTwokStarCutOff()
   {
@@ -408,6 +416,7 @@ private:
   bool fAncestors;                                 //
   bool fRemoveAncestorsResonances;                 //
   bool fpTOnepTTwokStarPlotsmT;                    //
+  bool fpTPionNucleonkStarPlotsmT;                  //
   float fpTOnepTTwokStarCut;                       //
   float fDeltaEtaMax;                              //
   float fDeltaPhiMax;                              //
@@ -416,7 +425,7 @@ private:
   bool fCoutVariables;
   float fSummedPtLimit1;
   float fSummedPtLimit2;
-  ClassDef(AliFemtoDreamCollConfig, 22);
+  ClassDef(AliFemtoDreamCollConfig, 23);
 };
 
 #endif /* ALIFEMTODREAMCOLLCONFIG_H_ */

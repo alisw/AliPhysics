@@ -7,6 +7,7 @@ AliAnalysisTaskSE *AddTaskPionDeuteronAOD(bool isMC = false,         // 1
                                           bool MoreChecks = false,   // 4
                                           bool systmatics = false,   // 5
                                           bool DoFunWithPhaseSpace = false,//6
+                                          bool DopTPionNucleonHisto = false,
                                           float pTOnepTTwokStarCutOff = 3., //7
                                           int mTBinningChoice = 0, //8
                                           const char *cutVariation = "0") {
@@ -258,7 +259,9 @@ AliAnalysisTaskSE *AddTaskPionDeuteronAOD(bool isMC = false,         // 1
   } else {
     config->SetpTOnepTTwokStarPlotsmT(false, pTOnepTTwokStarCutOff);
   }
-
+  if(DopTPionNucleonHisto){
+    config->SetpTPionNucleonkStarPlotsmT(true);
+  }
   if (isMC) {
     config->SetMomentumResolution(true);
   }

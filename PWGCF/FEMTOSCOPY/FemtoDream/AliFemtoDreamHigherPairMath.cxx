@@ -308,6 +308,15 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
       fHists->FillSameEventpTOnepTTwokStar(iHC, RelativePairmT(PartOne, PartTwo), Part1Momentum.Pt(), Part2Momentum.Pt(),
                                            RelativeK);
     }
+    if (fillHists && fHists->GetDopTPionNucleonkStarPlotsmT())
+    {
+      TVector3 pPionNucleon = Part1Momentum+0.5*Part2Momentum;
+      TLorentzVector PartNucleon; // nuclon 4 momenmtum 
+      PartNucleon.SetXYZM(0.5*Part2Momentum.X(), 0.5*Part2Momentum.Y(), 0.5*Part2Momentum.Z(),
+                  TDatabasePDG::Instance()->GetParticle(2212)->Mass());
+      float RelativeKpiN = RelativePairMomentum(PartOne, PartNucleon);
+      fHists->FillSameEventpTPionNucleonkStar(iHC, RelativePairmT(PartOne, PartTwo), pPionNucleon.Pt(), RelativeKpiN, RelativeK);
+    }
     if (fillHists && fHists->GetDoPtQA())
     {
       fHists->FillPtQADist(iHC, RelativeK, Part1Momentum.Pt(),
@@ -427,6 +436,7 @@ float AliFemtoDreamHigherPairMath::FillMixedEvent(
 
   PartTwo.SetXYZM(Part2Momentum.X(), Part2Momentum.Y(), Part2Momentum.Z(),
                   TDatabasePDG::Instance()->GetParticle(PDGPart2)->Mass());
+
   // Do the randomization here
   if (mode == AliFemtoDreamCollConfig::kStravinsky)
   {
@@ -488,10 +498,20 @@ float AliFemtoDreamHigherPairMath::FillMixedEvent(
                                      RelativeK);
   }
   if (fillHists && fHists->GetDopTOnepTTwokStarPlotsmT())
-  {
+  { 
     fHists->FillMixedEventpTOnepTTwokStar(iHC, RelativePairmT(PartOne, PartTwo), Part1Momentum.Pt(), Part2Momentum.Pt(),
                                           RelativeK);
   }
+  if (fillHists && fHists->GetDopTPionNucleonkStarPlotsmT())
+    {
+      TVector3 pPionNucleon = Part1Momentum+0.5*Part2Momentum;
+      TLorentzVector PartNucleon; // nuclon 4 momenmtum 
+      PartNucleon.SetXYZM(0.5*Part2Momentum.X(), 0.5*Part2Momentum.Y(), 0.5*Part2Momentum.Z(),
+                  TDatabasePDG::Instance()->GetParticle(2212)->Mass());
+      float RelativeKpiN = RelativePairMomentum(PartOne, PartNucleon);
+      fHists->FillMixedEventpTPionNucleonkStar(iHC, RelativePairmT(PartOne, PartTwo), pPionNucleon.Pt(),RelativeKpiN, RelativeK);
+
+    }
   if (fillHists && fHists->GetDoPtQA())
   {
     fHists->FillPtMEOneQADist(iHC, Part1Momentum.Pt(), Mult + 1);
