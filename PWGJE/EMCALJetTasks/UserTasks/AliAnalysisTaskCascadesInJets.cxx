@@ -1180,7 +1180,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
   // Main loop, called for each event
   
   //open AOD 
-  if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Start");
+  if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Start");
 
   //clear the TClonesArray from the previous event
   fCascadeCandidateArray->Clear();
@@ -1205,7 +1205,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
       return kFALSE;
     }
   }
-  if(fDebug > 1) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Loading AOD OK");
+  if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Loading AOD OK");
   
   // PID Response Task object
   AliPIDResponse* fPIDResponse = 0;
@@ -1224,10 +1224,10 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
 	  
   //===== Event selection =====
   if(!IsSelectedForAnalysis()) {
-    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Event rejected");
+    if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Event rejected");
     return kFALSE;
   }
-  if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Event accepted: cent. %g", fdCentrality));
+  if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Event accepted: cent. %g", fdCentrality));
   if(!fbIsPbPb)
     fdCentrality = 0.; // select the first bin for p+p data
   Int_t iCentIndex = GetCentralityBinIndex(fdCentrality); // get index of centrality bin
@@ -1241,8 +1241,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
   //Get tracks from AOD	
   UInt_t iNTracks = fAODIn->GetNumberOfTracks(); // get number of tracks in event
 
-  //if(fDebug > 2)
-  printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("There are %d tracks in this event", iNTracks));
+  if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("There are %d tracks in this event", iNTracks));
   TClonesArray* fTracks = fAODIn->GetTracks();
   if(!fTracks) 
 	AliError("Could not get tracks from AOD.");
@@ -1255,9 +1254,9 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
 
   //Get Cascade information from AOD 
   Int_t iNCascades = fAODIn->GetNumberOfCascades(); // get the number of Cascade candidates
-  printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("There are %d Cascade candidates in the event", iNCascades));
+  if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("There are %d Cascade candidates in the event", iNCascades));
   if(!iNCascades) {
-    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "No Cascades found in event");
+    if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "No Cascades found in event");
   } else {
     fh1EventCounterCut->Fill(9); // events with Cascades
     fh1EventCounterCutCent[iCentIndex]->Fill(9);
@@ -1327,6 +1326,8 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
   Int_t iOmegaPlusId = 400000;
 
   std::vector<Int_t> ivecCascadeCandIndex;
+
+  std::vector<Double_t> dvecDaughterPt; // the highest daughter pt for the leading track pt cut
   // Loading primary vertex info
   AliAODVertex* primVtx = fAODIn->GetPrimaryVertex(); // get the primary vertex
   Double_t dPrimVtxPos[3]; // primary vertex position {x,y,z}
@@ -1342,7 +1343,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
 //------------------------------------------------------------------------------------------
 
   //===== Start of loop over Cascade candidates =====
-  if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Start of Cascade loop");
+  if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Start of Cascade loop");
   for(Int_t iXi = 0; iXi < iNCascades; iXi++)
   {
     Cascade = fAODIn->GetCascade(iXi);   // get next candidate from the list in AOD 
@@ -1773,6 +1774,9 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
         fFastJetWrapper.AddInputVector(vecCascadeMomentum[0], vecCascadeMomentum[1], vecCascadeMomentum[2], dEnergy, uid);
         InputBgParticles.push_back(fastjet::PseudoJet(vecCascadeMomentum[0], vecCascadeMomentum[1], vecCascadeMomentum[2], dEnergy));
       
+        if(dPtDaughterPos > dPtDaughterNeg) dvecDaughterPt.push_back(dPtDaughterPos);
+        else dvecDaughterPt.push_back(dPtDaughterNeg);
+
         fNCand++;
 
     }
@@ -1781,7 +1785,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
     //===== End of filling Cascade spectra ===== 
   }
   //===== End of Cascade loop =====
-    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "End of Cascade loop");
+    if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "End of Cascade loop");
   
   fh1CascadeCandPerEvent->Fill(iNCascadeCandTot);
   fh1CascadeCandPerEventCentXiMinus[iCentIndex]->Fill(iNCascadeCandXiMinus);
@@ -1864,15 +1868,34 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
     Double_t dMaxTrPt = 0;
     Int_t iindlead = 0;
     for(Int_t ic = 0; ic < iNConstit; ic++) {
-		  Double_t dtrpt = constituents[ic].perp();
+		  Double_t dtrpt = 0;
       Int_t iind = constituents[ic].user_index();
+      if(iind < iXiMinusId)
+        dtrpt = constituents[ic].perp();
+      else if(iind >= iXiMinusId && iind < iXiPlusId) {
+        Int_t ii = iind - iXiMinusId;
+        dtrpt = dvecDaughterPt[ii];
+      }
+      else if(iind >= iXiPlusId && iind < iOmegaMinusId) {
+        Int_t ii = iind - iXiPlusId;
+        dtrpt = dvecDaughterPt[ii];
+      }      
+      else if(iind >= iOmegaMinusId && iind < iOmegaPlusId) {
+        Int_t ii = iind - iOmegaMinusId;
+        dtrpt = dvecDaughterPt[ii];
+      }   
+      else if(iind >= iOmegaPlusId) {
+        Int_t ii = iind - iOmegaPlusId;
+        dtrpt = dvecDaughterPt[ii];
+      } 
+      
       if(dtrpt > dMaxTrPt) {
         dMaxTrPt = dtrpt; 
         iindlead = iind;
       } 
     }  
-    if(dMaxTrPt < fdCutPtTrackJetMin && iindlead < iXiMinusId)             // selection of jets with high leading track pt
-      continue;                                            
+    if(dMaxTrPt < fdCutPtTrackJetMin)             // selection of jets with high leading track pt (except when leading track is V0)
+      continue;                                               
     fh1NCascadesInJetStats->Fill(10);
 
     fh2PtJetPtTrackLeading[iCentIndex]->Fill(jetSub.perp(), dMaxTrPt); // pt_jet vs pt of leading jet track   
@@ -1920,7 +1943,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
     for(Int_t ic = 0; ic < iNConstit; ic++){
 		  uid = constituents[ic].user_index();
 		  
-      if(uid > iXiMinusId && uid < iXiPlusId) { //XiMinus
+      if(uid >= iXiMinusId && uid < iXiPlusId) { //XiMinus
 			  index = uid-iXiMinusId; //will give the id of the Cascade particle 
 		    jetcascade = (AliAODcascade*)fCascadeCandidateArray->At(index); 
 		    Double_t valueXMInJet[4] = {jetcascade->MassXi(), TMath::Sqrt(jetcascade->Pt2Xi()), jetcascade->Eta(), jet->Pt()};
@@ -1931,7 +1954,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
 	      }  
 		   ixm++;
 		  }			  
-		  if(uid > iXiPlusId && uid < iOmegaMinusId) {  //XiPlus
+		  if(uid >= iXiPlusId && uid < iOmegaMinusId) {  //XiPlus
 		    index = uid-iXiPlusId; 
 		    jetcascade = (AliAODcascade*)fCascadeCandidateArray->At(index); 
 		    Double_t valueXPInJet[4] = {jetcascade->MassXi(), TMath::Sqrt(jetcascade->Pt2Xi()), jetcascade->Eta(), jet->Pt()};
@@ -1943,7 +1966,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
 	    
         ixp++;
 		  }
-		  if(uid > iOmegaMinusId && uid < iOmegaPlusId) { //OmegaMinus
+		  if(uid >= iOmegaMinusId && uid < iOmegaPlusId) { //OmegaMinus
 		    index = uid-iOmegaMinusId;  
 		    jetcascade = (AliAODcascade*)fCascadeCandidateArray->At(index); 
 		  	Double_t valueOMInJet[4] = {jetcascade->MassOmega(), TMath::Sqrt(jetcascade->Pt2Xi()), jetcascade->Eta(), jet->Pt()};
@@ -1954,7 +1977,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
 	      }
         iom++;
 		  }  
- 		  if(uid > iOmegaPlusId) { //OmegaPlus
+ 		  if(uid >= iOmegaPlusId) { //OmegaPlus
 		    index = uid-iOmegaPlusId;  
 		    jetcascade = (AliAODcascade*)fCascadeCandidateArray->At(index); 
 		  	Double_t valueOPInJet[4] = {jetcascade->MassOmega(), TMath::Sqrt(jetcascade->Pt2Xi()), jetcascade->Eta(), jet->Pt()};
@@ -2092,7 +2115,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
   PostData(2, fOutputListStdJets);
   PostData(3, fOutputListMC);
     
-  if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "End");
+  if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "End");
 
   return kFALSE; // Must be false to avoid calling PostData from AliAnalysisTaskEmcal. Otherwise, slot 1 is not stored.
 }
@@ -2143,7 +2166,7 @@ Bool_t AliAnalysisTaskCascadesInJets::OverlapWithJets(const TClonesArray* array,
   }
   Int_t iNJets = array->GetEntriesFast();
   if(iNJets <= 0) {
-    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Warning: No jets");
+    if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Warning: No jets");
     return kFALSE;
   }
   AliVParticle* jet = 0;
@@ -2175,14 +2198,14 @@ AliAODJet* AliAnalysisTaskCascadesInJets::GetRandomCone(const TClonesArray* arra
     part = new AliAODJet(vecCone);
     if(!OverlapWithJets(array, part, dDistance)) {
       bStatus = kTRUE;
-      if(fDebug > 1) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Random cone successfully generated");
+      if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Random cone successfully generated");
       break;
     }
     else
       delete part;
   }
   if(!bStatus) {
-    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Failed to find a random cone");
+    if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Failed to find a random cone");
     part = 0;
   }
   return part;
@@ -2210,26 +2233,26 @@ Bool_t AliAnalysisTaskCascadesInJets::IsSelectedForAnalysis() //Event selection
 {
   if(!fbIsPbPb) {
     if(fAODIn->IsPileupFromSPD()) {
-      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "SPD pile-up");
+      if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "SPD pile-up");
       return kFALSE;
     }
     fh1EventCounterCut->Fill(2); // not pile-up from SPD
   }
   AliAODVertex* vertex = fAODIn->GetPrimaryVertex();
   if(!vertex) {
-    if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "No vertex");
+    if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "No vertex");
     return kFALSE;
   }
   if(fiNContribMin > 0) {
     if(vertex->GetNContributors() < fiNContribMin) {
-      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Not enough contributors, %d", vertex->GetNContributors()));
+      if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Not enough contributors, %d", vertex->GetNContributors()));
       return kFALSE;
     }
     fh1EventCounterCut->Fill(3); // enough contributors
   }
   if(fbUseIonutCut) {
     if(!fEventCutsStrictAntipileup.AcceptEvent(fAODIn)) {
-      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Ionut's cut");
+      if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Ionut's cut");
       return kFALSE;
     }
     fh1EventCounterCut->Fill(4); // Ionut's cut
@@ -2237,7 +2260,7 @@ Bool_t AliAnalysisTaskCascadesInJets::IsSelectedForAnalysis() //Event selection
   Double_t zVertex = vertex->GetZ();
   if(fdCutVertexZ > 0.) {
     if(TMath::Abs(zVertex) > fdCutVertexZ) {
-      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on z, %g", zVertex));
+      if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on z, %g", zVertex));
       return kFALSE;
     }
     fh1EventCounterCut->Fill(5); // PV z coordinate within range
@@ -2245,12 +2268,12 @@ Bool_t AliAnalysisTaskCascadesInJets::IsSelectedForAnalysis() //Event selection
   if(fdCutDeltaZMax > 0.) { // cut on |delta z| between SPD vertex and nominal primary vertex
     AliAODVertex* vertexSPD = fAODIn->GetPrimaryVertexSPD();
     if(!vertexSPD) {
-      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "No SPD vertex");
+      if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "No SPD vertex");
       return kFALSE;
     }
     Double_t zVertexSPD = vertexSPD->GetZ();
     if(TMath::Abs(zVertex - zVertexSPD) > fdCutDeltaZMax) {
-      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on Delta z = %g - %g = %g", zVertex, zVertexSPD, zVertex - zVertexSPD));
+      if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on Delta z = %g - %g = %g", zVertex, zVertexSPD, zVertex - zVertexSPD));
       return kFALSE;
     }
     fh1EventCounterCut->Fill(6); // delta z within range
@@ -2260,7 +2283,7 @@ Bool_t AliAnalysisTaskCascadesInJets::IsSelectedForAnalysis() //Event selection
     Double_t yVertex = vertex->GetY();
     Double_t radiusSq = yVertex * yVertex + xVertex * xVertex;
     if(radiusSq > fdCutVertexR2) {
-      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on r, %g", radiusSq));
+      if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Cut on r, %g", radiusSq));
       return kFALSE;
     }
     fh1EventCounterCut->Fill(7); // radius within range
@@ -2278,15 +2301,15 @@ Bool_t AliAnalysisTaskCascadesInJets::IsSelectedForAnalysis() //Event selection
     else
       fdCentrality = ((AliVAODHeader*)fAODIn->GetHeader())->GetCentralityP()->GetCentralityPercentile("V0M");
     if(fdCentrality < 0) {
-      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Negative centrality");
+      if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Negative centrality");
       return kFALSE;
     }
     if((fdCutCentHigh < 0) || (fdCutCentLow < 0) || (fdCutCentHigh > 100) || (fdCutCentLow > 100) || (fdCutCentLow > fdCutCentHigh)) {
-      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Wrong centrality limits");
+      if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "Wrong centrality limits");
       return kFALSE;
     }
     if((fdCentrality < fdCutCentLow) || (fdCentrality > fdCutCentHigh)) {
-      if(fDebug > 0) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Centrality cut, %g", fdCentrality));
+      if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("Centrality cut, %g", fdCentrality));
       return kFALSE;
     }
   }
@@ -2752,6 +2775,8 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
 {
   	
   std::vector<fastjet::PseudoJet> InputBgParticlesMC; 
+
+  std::vector<Double_t> dvecDaughterPtMC;
   //InputBgParticles.clear(); //clear before using again fot the bg estim for the generated mc particles 
   
   TClonesArray* MCPartArray = 0; // array particles in the MC event
@@ -2805,7 +2830,7 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
     // Is MC Cascade particle OmegaMinus?
     Bool_t bCascadeMCIsOmegaMinus = (iPdgCodeParticleMC == -iPdgCodeOmega);
     // Is MC Cascade particle OmegaPlus?
-    Bool_t bCascadeMCIsOmegaPlus = (iPdgCodeParticleMC == -iPdgCodeOmega);
+    Bool_t bCascadeMCIsOmegaPlus = (iPdgCodeParticleMC == +iPdgCodeOmega);
 
     Double_t dPtCascadeGen = particleMC->Pt();
     Double_t dRapCascadeGen = particleMC->Y();
@@ -2869,6 +2894,14 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
     fFastJetWrapperMCGen.AddInputVector(particleMC->Px(), particleMC->Py(), particleMC->Pz(), particleMC->E(), ind);
     InputBgParticlesMC.push_back(fastjet::PseudoJet(particleMC->Px(), particleMC->Py(), particleMC->Pz(), particleMC->E()));
     
+    //save highest daughter pt for the leading track pt cut
+    Int_t idaughterPos= particleMC->GetDaughterFirst();
+    Int_t idaughterNeg= particleMC->GetDaughterLast();
+    AliAODMCParticle* DaughterPos = (AliAODMCParticle*)MCPartArray->At(idaughterPos);
+    AliAODMCParticle* DaughterNeg = (AliAODMCParticle*)MCPartArray->At(idaughterNeg);
+    if(DaughterPos->Pt() > DaughterNeg->Pt()) dvecDaughterPtMC.push_back(DaughterPos->Pt());
+    else dvecDaughterPtMC.push_back(DaughterNeg->Pt());
+
     iNMCCand++;
   }
 
@@ -2931,15 +2964,33 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
     Double_t dMaxTrPt = 0;
     Int_t iindlead = 0;
     for(Int_t ic = 0; ic < iNConst; ic++) {
-		  Double_t dtrpt = constits[ic].perp();
+		  Double_t dtrpt = 0;
       Int_t iind = constits[ic].user_index();
+      if(iind < iXiMinusId)
+        dtrpt = constits[ic].perp();
+      if(iind >= iXiMinusId && iind < iXiPlusId) {
+        Int_t ii = iind - iXiMinusId;
+        dtrpt = dvecDaughterPtMC[ii];
+      }
+      else if(iind >= iXiPlusId && iind <iOmegaMinusId) {
+        Int_t ii = iind - iXiPlusId;
+        dtrpt = dvecDaughterPtMC[ii];
+      }      
+      else if(iind >= iOmegaMinusId && iind < iOmegaPlusId) {
+        Int_t ii = iind - iOmegaMinusId;
+        dtrpt = dvecDaughterPtMC[ii];
+      }  
+      else if(iind >= iOmegaPlusId) {
+        Int_t ii = iind - iOmegaPlusId;
+        dtrpt = dvecDaughterPtMC[ii];
+      }  
       if(dtrpt > dMaxTrPt) {
         dMaxTrPt = dtrpt; 
         iindlead = iind;
-      } 
+      }
     }  
-    if(dMaxTrPt < fdCutPtTrackJetMin && iindlead < iXiMinusId)             // selection of jets with high leading track pt
-      continue;  
+    if(dMaxTrPt < fdCutPtTrackJetMin)            // selection of jets with high leading track pt
+      continue; 
                                          
     //printf(" JetPt: %f, sub jetPt: %f \n", vJetsMC[ij].perp(), jetSubMC.perp());
   
@@ -2954,10 +3005,10 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
 
     for(Int_t ic = 0; ic < iNConst; ic++){
 	  uid = constits[ic].user_index();
-      if(uid > iXiMinusId)
+      if(uid >= iXiMinusId)
       	  fh1MCStats->Fill(5); //Generated Cascades in jets
       //Fill histograms for each particle: 	  
-      if(uid > iXiMinusId && uid < iXiPlusId) { //XiMinus
+      if(uid >= iXiMinusId && uid < iXiPlusId) { //XiMinus
 		    index = uid-iXiMinusId; //will give the id of the Cascade particle 
 		    jetv0 = (AliAODMCParticle*)fGenMCCascade->At(index); 
         fh2CascadeXiMinusInJetPtMCGen[iCent]->Fill(jetv0->Pt(), jetSubMC.perp());
@@ -2965,7 +3016,7 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
         fh3CascadeXiMinusInJetEtaPtMCGen[iCent]->Fill(valueEtaKInGen);
 		    ik++;
 	    }	
-      if(uid > iXiPlusId && uid < iOmegaPlusId) { //XiPlus
+      if(uid >= iXiPlusId && uid < iOmegaMinusId) { //XiPlus
 		    index = uid-iXiPlusId; //will give the id of the Cascade particle 
 		    jetv0 = (AliAODMCParticle*)fGenMCCascade->At(index); 
         fh2CascadeXiPlusInJetPtMCGen[iCent]->Fill(jetv0->Pt(), jetSubMC.perp());
@@ -2973,7 +3024,7 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
         fh3CascadeXiPlusInJetEtaPtMCGen[iCent]->Fill(valueEtaKInGen);
 		    ik++;
 	    }			  
-      if(uid > iOmegaMinusId && uid < iOmegaPlusId) { //OmegaMinus
+      if(uid >= iOmegaMinusId && uid < iOmegaPlusId) { //OmegaMinus
 		    index = uid-iOmegaMinusId; //will give the id of the Cascade particle 
 		    jetv0 = (AliAODMCParticle*)fGenMCCascade->At(index); 
         fh2CascadeOmegaMinusInJetPtMCGen[iCent]->Fill(jetv0->Pt(), jetSubMC.perp());
@@ -2981,7 +3032,7 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
         fh3CascadeOmegaMinusInJetEtaPtMCGen[iCent]->Fill(valueEtaKInGen);
 		    ik++;
 	    }	
-	    if(uid > iOmegaPlusId) { //OmegaPlus
+	    if(uid >= iOmegaPlusId) { //OmegaPlus
 		    index = uid-iOmegaPlusId; //will give the id of the Cascade particle 
 		    jetv0 = (AliAODMCParticle*)fGenMCCascade->At(index); 
         fh2CascadeOmegaPlusInJetPtMCGen[iCent]->Fill(jetv0->Pt(), jetSubMC.perp());
