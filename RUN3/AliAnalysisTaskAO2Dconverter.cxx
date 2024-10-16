@@ -122,7 +122,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2bc",
   "O2run2bcinfo",
   "O2origin",
-  "O2hmpid_001", // now stores the position of the exrapolated track and HPID cluster, cluster size, track
+  "O2hmpid_001", // now stores the position of the extrapolated track and HMPID cluster, cluster size, track
   "O2hf2prong",
   "O2hf3prong",
   "O2hfcascade",
