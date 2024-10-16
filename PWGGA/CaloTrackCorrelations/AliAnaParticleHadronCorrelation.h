@@ -54,7 +54,7 @@ public:
   
   Bool_t       GetDecayPhotonMomentum   (Int_t indexPhoton1, Int_t indexPhoton2, Int_t idetector);
   
-  void         MakeChargedCorrelation   (AliCaloTrackParticleCorrelation * particle) ;
+  void         MakeChargedCorrelation   (AliCaloTrackParticleCorrelation * particle, Int_t histoIndex, Bool_t lostDecayPair) ;
   
   void         MakeNeutralCorrelation   (AliCaloTrackParticleCorrelation * particle) ;
   
@@ -68,7 +68,7 @@ public:
                                                          Float_t phiAssoc, Float_t phiTrig,     Float_t deltaPhi,
                                                          Float_t etaAssoc, Float_t etaTrig,     Int_t   sm,
                                                          Int_t   decayTag, Float_t hmpidSignal, Int_t   outTOF,
-                                                         Int_t   cenbin,   Int_t   mcTag);
+                                                         Int_t   cenbin,   Int_t histoIndex,    Bool_t lostDecayPair);
   
   void         FillChargedEventMixPool();
   
@@ -662,9 +662,12 @@ private:
   TH2F *       fhMCPtTrigPout[fgkNmcTypes];              //!<! MC pure particles charged trigger primary pt vs pOut
   TH2F *       fhMCPtAssocDeltaPhi[fgkNmcTypes];         //!<! MC pure particles charged associated primary pt vs delta phi (associated-trigger)
 
-  /// Difference of charged particle phi and trigger particle  phi as function eta difference, for different zT bins and different MC particle origin
+  /// Difference of charged particle phi and trigger particle  phi as function eta difference, for different zT bins and different MC particle origin, generated level
   TH3F **      fhMCDeltaPhiDeltaEtaZTBin;                //![(GetHistogramRanges()->GetHistoRatioArr().GetSize())*GetNZvertBin()*fgkNmcTypes]
 
+  /// Difference of charged particle phi and trigger particle  phi as function eta difference, for different zT bins and different MC particle origin, reconstructed level
+  TH3F **      fhDeltaPhiDeltaEtaZTBinMCPart;            //![(GetHistogramRanges()->GetHistoRatioArr().GetSize())*GetNZvertBin()*fgkNmcTypes]
+                                                         //!
   // Mixing
   TH1F *       fhNEventsTrigger;                         //!<! Number of analyzed triggered events.
   TH2F *       fhNtracksMB;                              //!<! Total number of tracks in MB events.
@@ -747,7 +750,7 @@ private:
   AliAnaParticleHadronCorrelation & operator = (const AliAnaParticleHadronCorrelation & ph) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleHadronCorrelation,43) ;
+  ClassDef(AliAnaParticleHadronCorrelation,44) ;
   /// \endcond
   
 } ;
