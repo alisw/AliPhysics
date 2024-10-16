@@ -2382,7 +2382,7 @@ TList *  AliAnaParticleHadronCorrelation::GetCreateOutputObjects()
         (Form("hDeltaPhiCharged_MC%s",nameMC[i].Data()),
          Form("#Delta #varphi for charged tracks, trigger origin is %s",nameMC[i].Data()),
          nptbins,ptmin,ptmax,ndeltaphibins ,deltaphimin,deltaphimax);
-        fhDeltaPhiChargedMC[i]->SetYTitle("#it{x}_{#it{E}}");
+        fhDeltaPhiChargedMC[i]->SetYTitle("#Delta #varphi (rad)");
         fhDeltaPhiChargedMC[i]->SetXTitle("#it{p}_{T trigger} (GeV/#it{c})");
         outputContainer->Add(fhDeltaPhiChargedMC[i]) ;
       }
