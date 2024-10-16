@@ -115,7 +115,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2cascade_001",
   "O2tof",
   "O2mcparticle_001",
-  "O2mccollision",
+  "O2mccollision_001",
   "O2mctracklabel",
   "O2mccalolabel_001", // changed the mask column to std::vector for the amplitude fraction  
   "O2mccollisionlabel",
@@ -1184,6 +1184,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
       tMCvtx->Branch("fT", &mccollision.fT, "fT/F");
       tMCvtx->Branch("fWeight", &mccollision.fWeight, "fWeight/F");
       tMCvtx->Branch("fImpactParameter", &mccollision.fImpactParameter, "fImpactParameter/F");
+      tMCvtx->Branch("fEventPlaneAngle", &hepMcHeavyIon.fEventPlaneAngle, "fEventPlaneAngle/F"); // get from hepMC
       tMCvtx->SetBasketSize("*", fBasketSizeEvents);
     }
 
