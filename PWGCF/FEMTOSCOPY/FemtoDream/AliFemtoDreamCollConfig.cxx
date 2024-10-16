@@ -49,6 +49,7 @@ ClassImp(AliFemtoDreamCollConfig)
       fAncestors(false),
       fRemoveAncestorsResonances(false),
       fpTOnepTTwokStarPlotsmT(false),
+      fpTPionNucleonkStarPlotsmT(false),
       fpTOnepTTwokStarCut(3.),
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
@@ -104,6 +105,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fAncestors(config.fAncestors),
       fRemoveAncestorsResonances(config.fRemoveAncestorsResonances),
       fpTOnepTTwokStarPlotsmT(config.fpTOnepTTwokStarPlotsmT),
+      fpTPionNucleonkStarPlotsmT(config.fpTPionNucleonkStarPlotsmT),
       fpTOnepTTwokStarCut(config.fpTOnepTTwokStarCut),
       fDeltaEtaMax(config.fDeltaEtaMax),
       fDeltaPhiMax(config.fDeltaPhiMax),
@@ -159,6 +161,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fAncestors(false),
       fRemoveAncestorsResonances(false),
       fpTOnepTTwokStarPlotsmT(false),
+      fpTPionNucleonkStarPlotsmT(false),
       fpTOnepTTwokStarCut(3.),
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
@@ -215,6 +218,7 @@ AliFemtoDreamCollConfig &AliFemtoDreamCollConfig::operator=(
     this->fAncestors = config.fAncestors;
     this->fRemoveAncestorsResonances = config.fRemoveAncestorsResonances;
     this->fpTOnepTTwokStarPlotsmT = config.fpTOnepTTwokStarPlotsmT;
+    this->fpTPionNucleonkStarPlotsmT = config.fpTPionNucleonkStarPlotsmT;
     this->fpTOnepTTwokStarCut = config.fpTOnepTTwokStarCut;
     this->fDeltaEtaMax = config.fDeltaEtaMax;
     this->fDeltaPhiMax = config.fDeltaPhiMax;

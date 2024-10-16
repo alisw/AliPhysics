@@ -101,6 +101,10 @@ public:
   {
     return fpTOnepTTwokStarPlotsmT;
   }
+  bool GetDopTPionNucleonkStarPlotsmT()
+  {
+    return fpTPionNucleonkStarPlotsmT;
+  }
   void FillSameEventDist(int i, float RelK)
   {
     fSameEventDist[i]->Fill(RelK);
@@ -369,6 +373,9 @@ public:
   void FillSameEventpTOnepTTwokStar(int iHist, float mT, float pTOne, float pTTwo, float RelK);
   void FillMixedEventpTOnepTTwokStar(int iHist, float mT, float pTOne, float pTTwo, float RelK);
 
+  void FillSameEventpTPionNucleonkStar(int iHist, float mT, float pTPiNucleon, float RelKpiN, float RelK);
+  void FillMixedEventpTPionNucleonkStar(int iHist, float mT, float pTPiNucleon, float RelKpiN, float RelK);
+
   void FillPartnersSE(int hist, int nPart1, int nPart2)
   {
     if (!fMinimalBooking)
@@ -604,6 +611,12 @@ private:
   TH2F ***fSameEventpTOnepTTwokStar; // to-do: change back to THnSparseF for more dimensions
   TH2F ***fMixedEventpTOnepTTwokStar;
 
+  TH2F ***fSameEventpTPionNucleonkStar; // for pi-N pairs inside the pion-deuteron pairs
+  TH2F ***fMixedEventpTPionNucleonkStar;
+
+  TH2F ***fSameEventkStarPiNvskStar; // for k* of pi-N pairs inside the pion-deuteron pairs
+  TH2F ***fMixedEventkStarPiNvskStar;
+
   bool fDoMinvKtandRelativeKBinning;
   bool fDoMultBinning;
   bool fDoCentBinning;
@@ -622,12 +635,13 @@ private:
   bool fAncestors;
   bool fRemoveAncestorsResonances;
   bool fpTOnepTTwokStarPlotsmT;
+  bool fpTPionNucleonkStarPlotsmT;
   double fpTOnepTTwokStarCutOff;
   std::vector<int> fPDGCode;
   std::vector<float> fmTBins;
   std::vector<unsigned int> fWhichPairs;
   std::vector<int> fCentBins;
-  ClassDef(AliFemtoDreamCorrHists, 14);
+  ClassDef(AliFemtoDreamCorrHists, 15);
 };
 
 #endif /* ALIFEMTODREAMCORRHISTS_H_ */
