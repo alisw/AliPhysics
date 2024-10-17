@@ -4178,6 +4178,114 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("13530053", "00200008100000001100400000", "0152103500000000"); // 30-50%
     cuts.AddCutPCM("15910053", "00200008100000001100400000", "0152103500000000"); // 50-90%
 
+    // systematics for LHC18qr_pass3 wrt 993 (which is 936 in 2018 cent classes and event cuts)
+    // 50xy = data, 51xy = mc mb, 52xy = mc added signal 1, 53xy = mc added signal 2
+
+    // standard data
+  } else if (trainConfig == 5000){//________________________
+      cuts.AddCutPCM("10130e03", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0d200009ab770c00amd0404000", "0152101500000000"); // 30-50%
+
+    // eta 0.8 -> 0.85
+  } else if (trainConfig == 5001){//_______________________
+      cuts.AddCutPCM("10130e03", "0c200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0c200009ab770c00amd0404000", "0152101500000000"); // 30-50%
+
+      // TPC cluster (60% ('9') ->  70 % ('6'))
+  } else if (trainConfig == 5002){//_____-________________
+      cuts.AddCutPCM("10130e03", "0d200006ab770c00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0d200006ab770c00amd0404000", "0152101500000000"); // 30-50%
+
+      // TPC cluster (60% ('9') ->  35 % ('8') )
+  } else if (trainConfig == 5003){//_____-________________
+      cuts.AddCutPCM("10130e03", "0d200008ab770c00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0d200008ab770c00amd0404000", "0152101500000000"); // 30-50%
+
+    // min pT (electron 0.05 GeV, photon 0.02GeV ('0')-> electron pT > 0.075 (4) )
+  } else if (trainConfig == 5004){//____-_________________
+      cuts.AddCutPCM("10130e03", "0d200049ab770c00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0d200049ab770c00amd0404000", "0152101500000000"); // 30-50%
+
+      // min pT (electron 0.05 GeV, photon 0.02GeV ('0')-> electron pT > 0.1 (1) )
+  } else if (trainConfig == 5005){//____-_________________
+      cuts.AddCutPCM("10130e03", "0d200019ab770c00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0d200019ab770c00amd0404000", "0152101500000000"); // 30-50%
+      
+    // TPC e (-3,3) ('a') -> (-4, 4) ('5')
+  } else if (trainConfig == 5006){//______-______________
+      cuts.AddCutPCM("10130e03", "0d2000095b770c00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0d2000095b770c00amd0404000", "0152101500000000"); // 30-50%
+      
+    // TPC e (-3,3) ('a') -> (-3, 5) ('2')
+  } else if (trainConfig == 5007){//______-______________
+      cuts.AddCutPCM("10130e03", "0d2000092b770c00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0d2000092b770c00amd0404000", "0152101500000000"); // 30-50%
+
+    // TPC pi (3,2) ('b') -> (2, 1) ('8') (fPIDnSigmaAbovePionLine, fPIDnSigmaAbovePionLineHighPt)
+  } else if (trainConfig == 5008){//_______-______________
+      cuts.AddCutPCM("10130e03", "0d200009a8770c00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0d200009a8770c00amd0404000", "0152101500000000"); // 30-50%
+
+    // TPC piMomdedxSigmaCut 0.4GeV ('7') -> 0.3GeV ('5')  
+  } else if (trainConfig == 5009){//________-_____________
+      cuts.AddCutPCM("10130e03", "0d200009ab570c00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0d200009ab570c00amd0404000", "0152101500000000"); // 30-50%
+
+    // TPC piMaxMomdedxSigmaCut 8GeV ('7') -> 5GeV ('1')  
+  } else if (trainConfig == 5010){//_________-____________
+      cuts.AddCutPCM("10130e03", "0d200009ab710c00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0d200009ab710c00amd0404000", "0152101500000000"); // 30-50%
+      
+    // TOF e (-4,4) for 0.4GeV < p < 2.5GeV ('c') -> (-4,4) for 0.4GeV < p < 2.0GeV ('d')  
+  } else if (trainConfig == 5011){//___________-__________
+      cuts.AddCutPCM("10130e03", "0d200009ab770d00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0d200009ab770d00amd0404000", "0152101500000000"); // 30-50%
+
+    // qT-alpha 2dim fancy ('a') -> ('d') 
+  } else if (trainConfig == 5012){//______________-_______
+      cuts.AddCutPCM("10130e03", "0d200009ab770c00dmd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0d200009ab770c00dmd0404000", "0152101500000000"); // 30-50%
+
+    // qT-alpha 2dim fancy ('a') -> ('g') 
+  } else if (trainConfig == 5013){  //____________-_______
+      cuts.AddCutPCM("10130e03", "0d200009ab770c00gmd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0d200009ab770c00gmd0404000", "0152101500000000"); // 30-50%
+
+    // Chi2-Psipair 'md' -> '2c'
+  } else if (trainConfig == 5014){  //_____________--_____
+      cuts.AddCutPCM("10130e03", "0d200009ab770c00a2c0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0d200009ab770c00a2c0404000", "0152101500000000"); // 30-50%
+
+    // Chi2-Psipair 'md' -> 'ld'
+  } else if (trainConfig == 5015){  //_____________--_____
+      cuts.AddCutPCM("10130e03", "0d200009ab770c00ald0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0d200009ab770c00ald0404000", "0152101500000000"); // 30-50%
+      
+    // cos PA 0.8 ('4') -> 0.98 ('8')
+  } else if (trainConfig == 5016){  //____________________-___
+      cuts.AddCutPCM("10130e03", "0d200009ab770c00amd0804000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0d200009ab770c00amd0804000", "0152101500000000"); // 30-50%
+
+    // RejectToCloseV0s / double counting cut -> off
+  } else if (trainConfig == 5017){ //___________________-
+      cuts.AddCutPCM("10130e03", "0d200009ab770c00amd0400000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530e03", "0d200009ab770c00amd0400000", "0152101500000000"); // 30-50%
+
+    // standard mc mb
+  } else if (trainConfig == 5100){//________________________
+      cuts.AddCutPCM("10130053", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530053", "0d200009ab770c00amd0404000", "0152101500000000"); // 30-50%
+
+    // standard mc added signal 1
+  } else if (trainConfig == 5200){//________________________
+      cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // 30-50%
+
+    // standard mc added signal 2
+  } else if (trainConfig == 5200){//________________________
+      cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // 30-50%
+
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
