@@ -3863,6 +3863,14 @@ Bool_t AliConversionPhotonCuts::SetTOFElectronPIDCut(Int_t TOFelectronPID){
     fTofPIDMinMom = 0.4;
     fTofPIDMaxMom = 2.5;
     break;
+  case 13: // d -4,4 for track momenta above 0.4GeV/c and below 2.0GeV/c
+    fUseTOFpid = kTRUE;
+    fTofPIDnSigmaBelowElectronLine=-4;
+    fTofPIDnSigmaAboveElectronLine=4;
+    fUseTOFpidMomRange = kTRUE;
+    fTofPIDMinMom = 0.4;
+    fTofPIDMaxMom = 2.;
+    break;
   default:
     AliError(Form("TOFElectronCut not defined %d",TOFelectronPID));
     return kFALSE;
