@@ -58,6 +58,7 @@
 #include "AliTRDTriggerAnalysis.h"
 #include "AliDalitzAODESDMC.h"
 #include "AliDalitzEventMC.h"
+#include "AliAnalysisTaskAO2Dconverter.h"
 
 class iostream;
 using std::cout;
@@ -248,6 +249,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const char *name,const char *ti
   fHistoCutIndex(NULL),
   fHistoTOFtimeVSMomentum(NULL),
   fHistoEventPlanePhi(NULL),
+  fHistoConversionPt(NULL),
   fPreSelCut(kFALSE),
   fProcessAODCheck(kFALSE),
   fMaterialBudgetWeightsInitialized(kFALSE),
@@ -436,6 +438,7 @@ AliConversionPhotonCuts::AliConversionPhotonCuts(const AliConversionPhotonCuts &
   fHistoCutIndex(NULL),
   fHistoTOFtimeVSMomentum(NULL),
   fHistoEventPlanePhi(NULL),
+  fHistoConversionPt(NULL),
   fPreSelCut(ref.fPreSelCut),
   fProcessAODCheck(ref.fProcessAODCheck),
   fMaterialBudgetWeightsInitialized(ref.fMaterialBudgetWeightsInitialized),
@@ -778,6 +781,9 @@ void AliConversionPhotonCuts::InitCutHistograms(TString name, Bool_t preCut){
       fHistograms->Add(fHistoEventPlanePhi);
     }
   }
+
+  fHistoConversionPt=new TH1F(Form("ConversionPt %s", GetCutNumber().Data()), "ConversionPt", 200, 0., 20.);
+  fHistograms->Add(fHistoConversionPt);
 
   TH1::AddDirectory(kTRUE);
 }
@@ -1445,6 +1451,8 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelected(AliConversionPhotonBase *photon
 
   FillPhotonCutIndex(kPhotonIn);
 
+  AliAODConversionPhoton *iCandidate = dynamic_cast<AliAODConversionPhoton*>(photon);
+  fHistoConversionPt->Fill(iCandidate->GetPhotonPt());
   if(event->IsA()==AliESDEvent::Class()) {
     if(!SelectV0Finder( ( ((AliESDEvent*)event)->GetV0(photon->GetV0Index()))->GetOnFlyStatus() ) ){
       FillPhotonCutIndex(kOnFly);
@@ -2202,7 +2210,22 @@ AliVTrack *AliConversionPhotonCuts::GetTrack(AliVEvent * event, Int_t label){
   } else {
     if(label == -999999) return NULL; // if AOD relabelling goes wrong, immediately return NULL
     AliVTrack * track = 0x0;
-    if(AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()) && ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->AreAODsRelabeled()){
+    bool isRelabeled = false;
+    TObjArray* obj = (TObjArray*)AliAnalysisManager::GetAnalysisManager()->GetTasks();
+    for(Int_t i=0; i<obj->GetEntriesFast(); i++){
+      if( (obj->At(i))->IsA() == AliV0ReaderV1::Class()){
+       AliV0ReaderV1* tempReader = (AliV0ReaderV1*) obj->At(i);
+       if(tempReader->AreAODsRelabeled()){
+        isRelabeled = true;
+       }
+      } else if( (obj->At(i))->IsA() == AliAnalysisTaskAO2Dconverter::Class()){
+       AliAnalysisTaskAO2Dconverter* tempClass = (AliAnalysisTaskAO2Dconverter*) obj->At(i);
+       if(tempClass->AreAODsRelabeled()){
+        isRelabeled = true;
+       }
+      }
+    }
+    if(isRelabeled || (AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()) && ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->AreAODsRelabeled())){
       if(event->GetTrack(label)) track = dynamic_cast<AliVTrack*>(event->GetTrack(label));
       return track;
     }
@@ -3510,6 +3533,10 @@ Bool_t AliConversionPhotonCuts::SetTPCdEdxCutElectronLine(Int_t ededxSigmaCut){ 
   case 17: //h -1,3
     fPIDnSigmaBelowElectronLine=-1;
     fPIDnSigmaAboveElectronLine=3;
+    break;
+  case 18: //i -100,100
+    fPIDnSigmaBelowElectronLine=-100;
+    fPIDnSigmaAboveElectronLine=100;
     break;
   default:
     AliError("TPCdEdxCutElectronLine not defined");

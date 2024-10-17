@@ -67,6 +67,7 @@
 #include "AliAODHandler.h"
 #include "AliAODMCParticle.h"
 #include "AliPIDResponse.h"
+#include "AliAnalysisTaskAO2Dconverter.h"
 #include "TChain.h"
 #include "TFile.h"
 #include "TString.h"
@@ -1358,9 +1359,17 @@ Bool_t AliV0ReaderV1::RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonC
          printf("V0Reader '%s' is running before this V0Reader '%s': do _NOT_ relabel AODs by current reader!\n",tempReader->GetName(),this->GetName());
          break;
        }else prevV0ReaderRunningButNotRelabeling = kTRUE;
+     } else if( (obj->At(i))->IsA() == AliAnalysisTaskAO2Dconverter::Class()){
+       AliAnalysisTaskAO2Dconverter* tempClass = (AliAnalysisTaskAO2Dconverter*) obj->At(i);
+       if( tempClass->AreAODsRelabeled() && tempClass->IsReaderPerformingRelabeling() == 1){
+         fPreviousV0ReaderPerformsAODRelabeling = 2;
+         prevV0ReaderRunningButNotRelabeling = kFALSE;
+         printf("AliAnalysisTaskAO2Dconverter '%s' is running before this V0Reader '%s': do _NOT_ relabel AODs by current reader!\n",tempClass->GetName(),this->GetName());
+         break;
+       }else prevV0ReaderRunningButNotRelabeling = kTRUE;
      }
     }
-    if(prevV0ReaderRunningButNotRelabeling) AliFatal(Form("There are V0Readers before '%s', but none of them is relabeling!",this->GetName()));
+    if(prevV0ReaderRunningButNotRelabeling) AliFatal(Form("There are V0Readers or AliAnalysisTaskAO2Dconverter before '%s', but none of them is relabeling!",this->GetName()));
 
     if(fPreviousV0ReaderPerformsAODRelabeling == 2) return kTRUE;
     else{

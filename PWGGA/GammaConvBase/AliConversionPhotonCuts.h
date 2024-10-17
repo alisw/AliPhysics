@@ -433,6 +433,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     TH1F*             fHistoCutIndex;                       ///< bookkeeping for cuts
     TH2F*             fHistoTOFtimeVSMomentum;              ///< TOF timing (ns) versus e+- momentum
     TH1F*             fHistoEventPlanePhi;                  ///< EventPlaneAngle Minus Photon Angle
+    TH1F*             fHistoConversionPt;                   ///< Transverse momentum of conversion photons prior to all cuts
     Bool_t            fPreSelCut;                           ///< Flag for preselection cut used in V0Reader
     Bool_t            fProcessAODCheck;                     ///< Flag for processing check for AOD to be contained in AliAODs.root and AliAODGammaConversion.root
     Bool_t            fMaterialBudgetWeightsInitialized;    ///< weights for conversions photons due due deviating material budget in MC compared to data
@@ -469,7 +470,7 @@ class AliConversionPhotonCuts : public AliAnalysisCuts {
     void RemovePhotonWithHigherChi2(TItRemove &theI1, TItRemove &theI2) const;
 
     /// \cond CLASSIMP
-    ClassDef(AliConversionPhotonCuts,40)
+    ClassDef(AliConversionPhotonCuts,41)
     /// \endcond
 };
 
