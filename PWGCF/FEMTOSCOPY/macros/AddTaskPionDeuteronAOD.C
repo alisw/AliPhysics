@@ -145,18 +145,19 @@ AliAnalysisTaskSE *AddTaskPionDeuteronAOD(bool isMC = false,         // 1
     closeRejection.push_back(false);
     pairQA.push_back(0);
   }
-  closeRejection[0] = true; // pipi
   closeRejection[2] = true; // pid
-  closeRejection[4] = true; // barpi barpi
-  closeRejection[6] = true; // barpi bard
-  closeRejection[7] = true; // dd
-  closeRejection[9] = true; // bard bar
-  pairQA[0] = 11;           // pipi
+  closeRejection[3] = true; // pi bard
+  closeRejection[5] = true; // barpi barpi
+  closeRejection[6] = true; // barpi d
+ // closeRejection[7] = true; // dd
+ // closeRejection[9] = true; // bard bar
+
   pairQA[2] = 11;           // pid
-  pairQA[4] = 11;           // barpi barpi
+  pairQA[3] = 11;           // pi bard
+  pairQA[5] = 11;           // barpi barpi
   pairQA[6] = 11;           // barpi bard
-  pairQA[7] = 11;           // dd
-  pairQA[9] = 11;           // bard bard
+ // pairQA[7] = 11;           // dd
+ // pairQA[9] = 11;           // bard bard
   // We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
