@@ -4178,6 +4178,70 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("13530053", "00200008100000001100400000", "0152103500000000"); // 30-50%
     cuts.AddCutPCM("15910053", "00200008100000001100400000", "0152103500000000"); // 50-90%
 
+// *****************************************************************************************
+    // systematics for LHC18qr_pass3 993 (which is 936 in 2018 cent classes and event cuts)
+    // 50xy = data, 51xy = mc mb, 52xy = mc added signal 1, 53xy = mc added signal 2
+    // x = 0: 0-10%, x=3: 30-50%. y: specific cut variations 
+    //                  standard: 0d200009ab770c00amd0404000
+    
+    // data 0-10%
+  } else if (trainConfig == 5000){//________________________
+      cuts.AddCutPCM("10130e03", "0d200009ab770c00amd0404000", "0152101500000000"); // standard
+      cuts.AddCutPCM("10130e03", "0c200009ab770c00amd0404000", "0152101500000000"); // eta 0.8 -> 0.85
+      cuts.AddCutPCM("10130e03", "0d200006ab770c00amd0404000", "0152101500000000"); // TPC cluster 70 % ('6')
+      cuts.AddCutPCM("10130e03", "0d200008ab770c00amd0404000", "0152101500000000"); // TPC cluster 35 % ('8') 
+    
+  } else if (trainConfig == 5001){//____-_________________
+      cuts.AddCutPCM("10130e03", "0d200049ab770c00amd0404000", "0152101500000000"); // min pT electron > 0.075 ('4') 
+      cuts.AddCutPCM("10130e03", "0d200019ab770c00amd0404000", "0152101500000000"); // min pT electron > 0.1 ('1')
+      cuts.AddCutPCM("10130e03", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
+      cuts.AddCutPCM("10130e03", "0d2000092b770c00amd0404000", "0152101500000000"); // TPC e (-3, 5) ('2')
+      
+  } else if (trainConfig == 5002){//_______-______________
+      cuts.AddCutPCM("10130e03", "0d200009a8770c00amd0404000", "0152101500000000"); // TPC pi (2, 1) ('8') (fPIDnSigmaAbovePionLine, fPIDnSigmaAbovePionLineHighPt)
+      cuts.AddCutPCM("10130e03", "0d200009ab570c00amd0404000", "0152101500000000"); // TPC piMomdedxSigmaCut 0.3GeV ('5')  
+      cuts.AddCutPCM("10130e03", "0d200009ab710c00amd0404000", "0152101500000000"); // TPC piMaxMomdedxSigmaCut 5GeV ('1')  
+      cuts.AddCutPCM("10130e03", "0d200009ab770d00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p < 2.0GeV ('d')  
+      
+  } else if (trainConfig == 5003){//______________-_______
+      cuts.AddCutPCM("10130e03", "0d200009ab770c00dmd0404000", "0152101500000000"); // qT-alpha 2dim fancy ('d') 
+      cuts.AddCutPCM("10130e03", "0d200009ab770c00gmd0404000", "0152101500000000"); // qT-alpha 2dim fancy ('g') 
+      cuts.AddCutPCM("10130e03", "0d200009ab770c00a2c0404000", "0152101500000000"); // Chi2-Psipair '2c'
+      cuts.AddCutPCM("10130e03", "0d200009ab770c00ald0404000", "0152101500000000"); // Chi2-Psipair 'ld'
+
+  } else if (trainConfig == 5004){ //_______________________
+      cuts.AddCutPCM("10130e03", "0d200009ab770c00amd0804000", "0152101500000000"); // cos PA 0.98 ('8')
+      cuts.AddCutPCM("10130e03", "0d200009ab770c00amd0400000", "0152101500000000"); // RejectToCloseV0s / double counting cut -> off
+      
+    // data 30-50%
+  } else if (trainConfig == 5030){//________________________
+      cuts.AddCutPCM("13530e03", "0d200009ab770c00amd0404000", "0152101500000000"); // standard data
+      cuts.AddCutPCM("13530e03", "0c200009ab770c00amd0404000", "0152101500000000"); // eta 0.8 -> 0.85
+      cuts.AddCutPCM("13530e03", "0d200006ab770c00amd0404000", "0152101500000000"); // TPC cluster 70 % ('6')
+      cuts.AddCutPCM("13530e03", "0d200008ab770c00amd0404000", "0152101500000000"); // TPC cluster 35 % ('8') 
+    
+  } else if (trainConfig == 5031){//____-_________________
+      cuts.AddCutPCM("13530e03", "0d200049ab770c00amd0404000", "0152101500000000"); // min pT electron > 0.075 ('4') 
+      cuts.AddCutPCM("13530e03", "0d200019ab770c00amd0404000", "0152101500000000"); // min pT electron > 0.1 ('1')
+      cuts.AddCutPCM("13530e03", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
+      cuts.AddCutPCM("13530e03", "0d2000092b770c00amd0404000", "0152101500000000"); // TPC e (-3, 5) ('2')
+      
+  } else if (trainConfig == 5032){//_______-______________
+      cuts.AddCutPCM("13530e03", "0d200009a8770c00amd0404000", "0152101500000000"); // TPC pi (2, 1) ('8') (fPIDnSigmaAbovePionLine, fPIDnSigmaAbovePionLineHighPt)
+      cuts.AddCutPCM("13530e03", "0d200009ab570c00amd0404000", "0152101500000000"); // TPC piMomdedxSigmaCut 0.3GeV ('5')  
+      cuts.AddCutPCM("13530e03", "0d200009ab710c00amd0404000", "0152101500000000"); // TPC piMaxMomdedxSigmaCut 5GeV ('1')  
+      cuts.AddCutPCM("13530e03", "0d200009ab770d00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p < 2.0GeV ('d')  
+      
+  } else if (trainConfig == 5033){//______________-_______
+      cuts.AddCutPCM("13530e03", "0d200009ab770c00dmd0404000", "0152101500000000"); // qT-alpha 2dim fancy ('d') 
+      cuts.AddCutPCM("13530e03", "0d200009ab770c00gmd0404000", "0152101500000000"); // qT-alpha 2dim fancy  ('g') 
+      cuts.AddCutPCM("13530e03", "0d200009ab770c00a2c0404000", "0152101500000000"); // Chi2-Psipair '2c'
+      cuts.AddCutPCM("13530e03", "0d200009ab770c00ald0404000", "0152101500000000"); // Chi2-Psipair 'ld'
+
+  } else if (trainConfig == 5034){  //____________________-___
+      cuts.AddCutPCM("13530e03", "0d200009ab770c00amd0804000", "0152101500000000"); // cos PA 0.98 ('8')
+      cuts.AddCutPCM("13530e03", "0d200009ab770c00amd0400000", "0152101500000000"); // RejectToCloseV0s / double counting cut -> off
+
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
