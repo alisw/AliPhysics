@@ -32,7 +32,8 @@ AliAnalysisTaskDataSpeedOfSound* AddTaskDataSpeedOfSound(
   taskKno->SetTrigger(AliVEvent::kINT7);
   taskKno->SetSystematicsVtxZ(false, -2.5, 2.5);
   taskKno->SetSystematics(false, 0);
-  taskKno->SetSPDVtxZ(3.0);
+  taskKno->SetSPDVtxZ(10.);
+  taskKno->IsTowerEnergy(true);
   mgr->AddTask(taskKno);
 
   mgr->ConnectInput(taskKno, 0, mgr->GetCommonInputContainer());

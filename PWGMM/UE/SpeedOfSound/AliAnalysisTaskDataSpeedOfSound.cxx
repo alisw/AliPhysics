@@ -106,6 +106,7 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       fUseMC(kFALSE),
       fIsSystematics(true),
       fVaryVtxZPos(false),
+      fTowerEnergy(true),
       fMinVtxZPos(-5.0),
       fMaxVtxZPos(5.0),
       fSystematic(1),
@@ -131,6 +132,11 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       fv0mamplitude(0),
       fTrackletsEtaGap(0),
       fTracksEtaGapTPC(0),
+      fZNC(0.0),
+      fZNA(0.0),
+      fZPC(0.0),
+      fZPA(0.0),
+      fZDC(0.0),
       fMultSelection(0x0),
       hNch(0),
       pNchvsV0MAmp(0),
@@ -161,6 +167,16 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       hPtvsSPDEtaGapW(0),
       hPtvsEtFull(0),
       hPtvsEtEtaGap(0),
+      hZNC(0),
+      hZNA(0),
+      hZPC(0),
+      hZPA(0),
+      hZDC(0),
+      hZNCvspT(0),
+      hZNAvspT(0),
+      hZPCvspT(0),
+      hZPAvspT(0),
+      hZDCvspT(0),
       pZVtxvsSPDClus(0),
       pSPDClusvsEta(0),
       fSPDVtxCut(3.0),
@@ -183,6 +199,7 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       fUseMC(kFALSE),
       fIsSystematics(true),
       fVaryVtxZPos(false),
+      fTowerEnergy(true),
       fMinVtxZPos(-5.0),
       fMaxVtxZPos(5.0),
       fSystematic(1),
@@ -208,6 +225,11 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       fv0mamplitude(0),
       fTrackletsEtaGap(0),
       fTracksEtaGapTPC(0),
+      fZNC(0.0),
+      fZNA(0.0),
+      fZPC(0.0),
+      fZPA(0.0),
+      fZDC(0.0),
       fMultSelection(0x0),
       hNch(0),
       pNchvsV0MAmp(0),
@@ -238,6 +260,16 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       hPtvsSPDEtaGapW(0),
       hPtvsEtFull(0),
       hPtvsEtEtaGap(0),
+      hZNC(0),
+      hZNA(0),
+      hZPC(0),
+      hZPA(0),
+      hZDC(0),
+      hZNCvspT(0),
+      hZNAvspT(0),
+      hZPCvspT(0),
+      hZPAvspT(0),
+      hZDCvspT(0),
       pZVtxvsSPDClus(0),
       pSPDClusvsEta(0),
       fSPDVtxCut(3.0),
@@ -410,6 +442,25 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
     v0mAmp_bins[i] = 0.0 + i * v0mAmp_width;
   }
 
+  constexpr int ZN_Nbins{2000};
+  double ZN_bins[ZN_Nbins + 1] = {0};
+  for (int i = 0; i <= ZN_Nbins; ++i) {
+    ZN_bins[i] = 0.0 + (0.15 * i);
+  }
+
+  constexpr int ZP_Nbins{1000};
+  double ZP_bins[ZP_Nbins + 1] = {0};
+  for (int i = 0; i <= ZP_Nbins; ++i) {
+    ZP_bins[i] = 0.0 + (0.15 * i);
+  }
+
+  //! Consider moving to 1600 bin
+  constexpr int ZDC_Nbins{3500};
+  double ZDC_bins[ZDC_Nbins + 1] = {0};
+  for (int i = 0; i <= ZDC_Nbins; ++i) {
+    ZDC_bins[i] = 0.0 + (0.15 * i);
+  }
+
   constexpr int dcaxy_Nbins{100};
   double dcaxy_bins[dcaxy_Nbins + 1] = {0};
   for (int i = 0; i <= dcaxy_Nbins; ++i) {
@@ -543,6 +594,23 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
       ";#it{E}_{T} (|#eta|#leq0.8); #it{p}_{T} (|#eta|#leq0.8, GeV/#it{c})",
       Et_Nbins, Et_bins, pt_Nbins, pt_bins);
 
+  hZNC = new TH1F("hZNC", ";ZNC (TeV); Entries;", ZN_Nbins, ZN_bins);
+  hZNA = new TH1F("hZNA", ";ZNA (TeV); Entries;", ZN_Nbins, ZN_bins);
+  hZPC = new TH1F("hZPC", ";ZPC (TeV); Entries;", ZP_Nbins, ZP_bins);
+  hZPA = new TH1F("hZPA", ";ZPA (TeV); Entries;", ZP_Nbins, ZP_bins);
+  hZDC = new TH1F("hZDC", ";ZDC (TeV); Entries;", ZDC_Nbins, ZDC_bins);
+
+  hZNCvspT = new TH2F("hZNCvspT", ";ZNC (TeV); Entries;", ZN_Nbins, ZN_bins,
+                      pt_Nbins, pt_bins);
+  hZNAvspT = new TH2F("hZNAvspT", ";ZNA (TeV); Entries;", ZN_Nbins, ZN_bins,
+                      pt_Nbins, pt_bins);
+  hZPCvspT = new TH2F("hZPCvspT", ";ZPC (TeV); Entries;", ZP_Nbins, ZP_bins,
+                      pt_Nbins, pt_bins);
+  hZPAvspT = new TH2F("hZPAvspT", ";ZPA (TeV); Entries;", ZP_Nbins, ZP_bins,
+                      pt_Nbins, pt_bins);
+  hZDCvspT = new TH2F("hZDCvspT", ";ZDC (TeV); Entries;", ZDC_Nbins, ZDC_bins,
+                      pt_Nbins, pt_bins);
+
   hPtvsEtEtaGap = new TH2F("hPtvsEtEtaGap",
                            ";#it{E}_{T} (0.5#leq|#eta|#leq0.8); #it{p}_{T} "
                            "(|#eta|#leq0.3, GeV/#it{c})",
@@ -596,6 +664,17 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
 
   fOutputList->Add(hEtEtaGap);
   fOutputList->Add(hPtvsEtEtaGap);
+
+  fOutputList->Add(hZNC);
+  fOutputList->Add(hZNCvspT);
+  fOutputList->Add(hZNA);
+  fOutputList->Add(hZNAvspT);
+  fOutputList->Add(hZPC);
+  fOutputList->Add(hZPCvspT);
+  fOutputList->Add(hZPA);
+  fOutputList->Add(hZPAvspT);
+  fOutputList->Add(hZDC);
+  fOutputList->Add(hZDCvspT);
 
   for (int i = 0; i < v0m_Nbins; ++i) {
     hDCAxyData[i] = new TH2F(Form("hDCAxyData_%s", uc_v0m_bins_name[i]),
@@ -681,7 +760,10 @@ void AliAnalysisTaskDataSpeedOfSound::UserExec(Option_t*) {
   GetSPDMultiplicity();
 
   //! DCAxy templates MC and Data
-  DCAxyDistributions();
+  // DCAxyDistributions();
+
+  //! ZDC
+  GetZDC();
 
   //! Data Multiplicity distributions
   MultiplicityDistributions();
@@ -709,6 +791,61 @@ void AliAnalysisTaskDataSpeedOfSound::GetCalibratedV0Amplitude() {
     pV0MAmpChannel->Fill(i, fESD->GetVZEROEqMultiplicity(i));
   }
   fv0mamplitude = mV0M;
+}
+//______________________________________________________________________________
+void AliAnalysisTaskDataSpeedOfSound::GetZDC() {
+  AliESDZDC* esdZDC = fESD->GetESDZDC();
+  if (!esdZDC) {
+    return;
+  }
+
+  fZNC = -999.;
+  fZNA = -999.;
+  fZPA = -999.;
+  fZPC = -999.;
+  fZDC = -999.;
+
+  const double eA{2.511};
+  const double gev2tev{1. / 1000.};
+  const double zNC{esdZDC->GetZDCN1Energy()};
+  const double zNA{esdZDC->GetZDCN2Energy()};
+  const double zPC{esdZDC->GetZDCP1Energy()};
+  const double zPA{esdZDC->GetZDCP2Energy()};
+
+  const double* towZNC{esdZDC->GetZN1TowerEnergy()};
+  const double* towZPC{esdZDC->GetZP1TowerEnergy()};
+  const double* towZNA{esdZDC->GetZN2TowerEnergy()};
+  const double* towZPA{esdZDC->GetZP2TowerEnergy()};
+
+  double znc{999.};
+  double zna{999.};
+  double zpc{999.};
+  double zpa{999.};
+  if (fTowerEnergy) {
+    znc = towZNC[0] * gev2tev;
+    zna = towZNA[0] * gev2tev;
+    zpc = towZPC[0] * gev2tev;
+    zpa = towZPA[0] * gev2tev;
+  } else {
+    znc = zNC * gev2tev;
+    zna = zNA * gev2tev;
+    zpc = zPC * gev2tev;
+    zpa = zPA * gev2tev;
+  }
+
+  //! Efficiency corrected
+  //! https://alice-notes.web.cern.ch/system/files/notes/analysis/1062/2021-06-03-ALICE_AN_ZDC_efficiency.pdf
+  fZNA = (zna / 0.92);
+  fZPA = (zpa / 0.52);
+  fZNC = (znc / 0.9);
+  fZPC = (zpc / 0.5);
+  fZDC = (fZNC + fZNA + fZPC + fZPA);
+
+  hZNC->Fill(fZNC);
+  hZNA->Fill(fZNA);
+  hZPC->Fill(fZPC);
+  hZPA->Fill(fZPA);
+  hZDC->Fill(fZDC);
 }
 //______________________________________________________________________________
 void AliAnalysisTaskDataSpeedOfSound::GetSPDMultiplicity() {
@@ -838,6 +975,12 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
 
     hPtvsSPDFull->Fill(fSPDFull, pt);
     hPtvsEtFull->Fill(etfull, pt);
+
+    hZNCvspT->Fill(fZNC, pt);
+    hZNAvspT->Fill(fZNA, pt);
+    hZPCvspT->Fill(fZPC, pt);
+    hZPAvspT->Fill(fZPA, pt);
+    hZDCvspT->Fill(fZDC, pt);
 
     //! SPD Eta Adjacent
     if (TMath::Abs(track->Eta()) <= fEtaCutForpTwTPCGap) {
