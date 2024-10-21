@@ -177,6 +177,8 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       hZPCvspT(0),
       hZPAvspT(0),
       hZDCvspT(0),
+      pZDCvsNch(0),
+      pV0MvsZDC(0),
       pZVtxvsSPDClus(0),
       pSPDClusvsEta(0),
       fSPDVtxCut(3.0),
@@ -270,6 +272,8 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       hZPCvspT(0),
       hZPAvspT(0),
       hZDCvspT(0),
+      pZDCvsNch(0),
+      pV0MvsZDC(0),
       pZVtxvsSPDClus(0),
       pSPDClusvsEta(0),
       fSPDVtxCut(3.0),
@@ -611,15 +615,18 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   hZDCvspT = new TH2F("hZDCvspT", ";ZDC (TeV); Entries;", ZDC_Nbins, ZDC_bins,
                       pt_Nbins, pt_bins);
 
+  pV0MvsZDC = new TProfile("pV0MvsZDC", ";V0M centrality;<ZDC> [TeV];",
+                           v0m_Nbins0100, v0m_bins0100);
+  pZDCvsNch = new TProfile("pZDCvsNch", ";Nch (|#eta|<0.8);<ZDC> [TeV];",
+                           nch_Nbins, nch_bins);
+
   hPtvsEtEtaGap = new TH2F("hPtvsEtEtaGap",
                            ";#it{E}_{T} (0.5#leq|#eta|#leq0.8); #it{p}_{T} "
                            "(|#eta|#leq0.3, GeV/#it{c})",
                            EtEtaGap_Nbins, EtEtaGap_bins, pt_Nbins, pt_bins);
-
   pZVtxvsSPDClus =
       new TProfile("pZVtxvsSPDClus", ";Z_{SPD} Vertex (cm); <SPD clusters>;",
                    40, -10.0, 10.0);
-
   pSPDClusvsEta =
       new TProfile("pSPDClusvsEta", ";#eta; <SPD clusters>;", 30, -1.5, 1.5);
 
@@ -675,6 +682,8 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   fOutputList->Add(hZPAvspT);
   fOutputList->Add(hZDC);
   fOutputList->Add(hZDCvspT);
+  fOutputList->Add(pZDCvsNch);
+  fOutputList->Add(pV0MvsZDC);
 
   for (int i = 0; i < v0m_Nbins; ++i) {
     hDCAxyData[i] = new TH2F(Form("hDCAxyData_%s", uc_v0m_bins_name[i]),
@@ -1006,6 +1015,8 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
   hV0MAmplitude->Fill(fv0mamplitude);
   pNchvsV0MAmp->Fill(fv0mamplitude, rec_nch);
   hNch->Fill(rec_nch);
+  pZDCvsNch->Fill(rec_nch, fZDC);
+  pV0MvsZDC->Fill(fv0mpercentile, fZDC);
 
   hTrackletsEtaGap->Fill(fTrackletsEtaGap);
   hTracksEtaGapTPC->Fill(fTracksEtaGapTPC);

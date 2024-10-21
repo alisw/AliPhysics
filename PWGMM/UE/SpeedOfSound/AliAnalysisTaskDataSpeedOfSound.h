@@ -158,6 +158,8 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2F* hZPCvspT;
   TH2F* hZPAvspT;
   TH2F* hZDCvspT;
+  TProfile* pZDCvsNch;
+  TProfile* pV0MvsZDC;
   TProfile* pZVtxvsSPDClus;
   TProfile* pSPDClusvsEta;
   double fSPDVtxCut;
