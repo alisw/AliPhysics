@@ -37,6 +37,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void GetSPDMultiplicity();
   void MultiplicityDistributions();
   void GetCalibratedV0Amplitude();
+  void GetZDC();
   void VertexPosition();
   void SetV0Mmin(double V0Mmin) { fV0Mmin = V0Mmin; }  // Set V0M min value
   void SetV0Mmax(double V0Mmax) { fV0Mmax = V0Mmax; }  // Set V0M max value
@@ -74,6 +75,11 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   }
   void ChangeCut(AliESDtrackCuts* fCuts);
   void SetSPDVtxZ(double cut) { fSPDVtxCut = cut; }
+  void IsTowerEnergy(bool sv) { fTowerEnergy = sv; };
+  void IsUsingZEM(bool iszem, double zem) {
+    fUseZEMcut = iszem;
+    fZEMcut = zem;
+  };
 
  protected:
  private:
@@ -84,6 +90,9 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   bool fUseMC;
   bool fIsSystematics;
   bool fVaryVtxZPos;
+  bool fTowerEnergy;
+  bool fUseZEMcut;
+  double fZEMcut;
   float fMinVtxZPos;
   float fMaxVtxZPos;
   int fSystematic;
@@ -109,6 +118,12 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   float fv0mamplitude;
   int fTrackletsEtaGap;
   int fTracksEtaGapTPC;
+  double fZNC;
+  double fZNA;
+  double fZPC;
+  double fZPA;
+  double fZDC;
+  double fZEM;
   AliMultSelection* fMultSelection;
   TH1F* hNch;
   TProfile* pNchvsV0MAmp;
@@ -140,6 +155,21 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2F* hPtvsSPDEtaGapW;
   TH2F* hPtvsEtFull;
   TH2F* hPtvsEtEtaGap;
+  TH1F* hZNC;
+  TH1F* hZNA;
+  TH1F* hZPC;
+  TH1F* hZPA;
+  TH1F* hZDC;
+  TH2F* hZNCvspT;
+  TH2F* hZNAvspT;
+  TH2F* hZPCvspT;
+  TH2F* hZPAvspT;
+  TH2F* hZDCvspT;
+  TH2F* hZDCvsZEM;
+  TH2F* hV0MvsZDC;
+  TProfile* pZDCvspT;
+  TProfile* pZDCvsZEM;
+  TProfile* pZDCvsNch;
   TProfile* pZVtxvsSPDClus;
   TProfile* pSPDClusvsEta;
   double fSPDVtxCut;
