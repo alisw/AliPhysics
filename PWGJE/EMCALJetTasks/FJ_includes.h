@@ -29,6 +29,7 @@
 #include <fastjet/contrib/Njettiness.hh>
 #include <fastjet/contrib/NjettinessPlugin.hh>
 #include <fastjet/contrib/SoftDrop.hh>
+#include <fastjet/contrib/RecursiveSoftDrop.hh>
 #endif
 #endif
 

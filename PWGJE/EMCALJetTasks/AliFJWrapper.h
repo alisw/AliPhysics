@@ -143,7 +143,9 @@ class AliFJWrapper
   void SetEventSub(Bool_t b) {fEventSub = b;}
   void SetMaxDelR(Double_t r)  {fMaxDelR = r;}
   void SetAlpha(Double_t a)  {fAlpha = a;}
-
+  void SetRecursiveDepth(Int_t n) {fRecursiveDepth = n;}
+  void SetZCut(Double_t zCut) {fZcut = zCut;}
+  void SetBeta(Double_t beta) {fBeta = beta;}
 
  protected:
   TString                                fName;               //!
@@ -192,6 +194,7 @@ class AliFJWrapper
   // condition to stop the grooming (rejection of soft splitting) z > fZcut theta^fBeta
   Double_t                               fZcut;               // fZcut = 0.1                
   Double_t                               fBeta;               // fBeta = 0
+  Int_t                                  fRecursiveDepth;
   Bool_t                                 fEventSub;
   Double_t                               fMaxDelR;
   Double_t                               fAlpha;
@@ -201,7 +204,7 @@ class AliFJWrapper
   fastjet::contrib::GenericSubtractor     *fGenSubtractor;    //!
   fastjet::contrib::ConstituentSubtractor *fConstituentSubtractor;    //!
   fastjet::contrib::ConstituentSubtractor *fEventConstituentSubtractor;    //!
-  fastjet::contrib::SoftDrop              *fSoftDrop;        //!
+  fastjet::contrib::RecursiveSoftDrop              *fSoftDrop;        //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoJetMass;        //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoGRNum;          //!
   std::vector<fastjet::contrib::GenericSubtractorInfo> fGenSubtractorInfoGRDen;          //!
@@ -298,6 +301,7 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fUseArea4Vector    (kFALSE)
   , fZcut(0.1)
   , fBeta(0)
+  , fRecursiveDepth(1)
   , fEventSub          (kFALSE)
   , fMaxDelR           (-1)
   , fAlpha             (0)
@@ -1280,6 +1284,7 @@ Int_t AliFJWrapper::DoSoftDrop() {
   //fSoftDrop->set_input_jet_is_subtracted(false); //??
   
   for (unsigned i = 0; i < fInclusiveJets.size(); i++) {
+    fInclusiveJets[i].set_user_index(i);
     fj::PseudoJet groomed_jet(0.,0.,0.,0.);
     if(fInclusiveJets[i].perp()>0.){
       groomed_jet = (*fSoftDrop)(fInclusiveJets[i]);
@@ -1300,7 +1305,7 @@ Int_t AliFJWrapper::CreateSoftDrop() {
   #ifdef FASTJET_VERSION
   if (fSoftDrop) { delete fSoftDrop; } // protect against memory leaks
   
-  fSoftDrop   = new fj::contrib::SoftDrop(fBeta,fZcut);
+  fSoftDrop   = new fj::contrib::RecursiveSoftDrop(fBeta,fZcut,fRecursiveDepth);
   fSoftDrop->set_verbose_structure(kTRUE);
   
   #endif
