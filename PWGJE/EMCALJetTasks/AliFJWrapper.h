@@ -401,6 +401,7 @@ void AliFJWrapper::CopySettingsFrom(const AliFJWrapper& wrapper)
   fUseArea4Vector   = wrapper.fUseArea4Vector;
   fZcut             = wrapper.fZcut;
   fBeta             = wrapper.fBeta;
+  fRecursiveDepth   = wrapper.fRecursiveDepth;
   fLegacyMode       = wrapper.fLegacyMode;
   fUseExternalBkg   = wrapper.fUseExternalBkg;
   fRho              = wrapper.fRho;
