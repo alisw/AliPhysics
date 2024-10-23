@@ -4359,7 +4359,13 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411797709fe30220000","0s631031000000d0"); // rot background with gaps
     cuts.AddCutCalo("00010113","411797709fe30220000","01631031000000d0"); // mixed event
 
+  //min Energy variation for clusterizer study
+  } else if (trainConfig == 2599){  
+    cuts.AddCutCalo("00010113","411799909fei09v0000","0s631031000000d0"); // min E = 200 MeV
+    cuts.AddCutCalo("00010113","411799909feg09v0000","0s631031000000d0"); // min E = 300 MeV
+    cuts.AddCutCalo("00010113","411799909fe109v0000","0s631031000000d0"); // min E = 500 MeV
 
+    
     //*************************************************************************************************
     // 13 TeV PHOS - Systematics
     //*************************************************************************************************
