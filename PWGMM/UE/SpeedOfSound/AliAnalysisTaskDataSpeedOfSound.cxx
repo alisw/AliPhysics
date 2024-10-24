@@ -108,6 +108,7 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       fVaryVtxZPos(false),
       fTowerEnergy(true),
       fUseZEMcut(true),
+      fIsZEMhit(false),
       fZEMcut(800.0),
       fMinVtxZPos(-5.0),
       fMaxVtxZPos(5.0),
@@ -182,6 +183,11 @@ ClassImp(AliAnalysisTaskDataSpeedOfSound)  // classimp: necessary for root
       hZDCvspT(0),
       hZDCvsZEM(0),
       hV0MvsZDC(0),
+      hV0MvsZNC(0),
+      hV0MvsZNA(0),
+      hV0MvsZPC(0),
+      hV0MvsZPA(0),
+      hZEMhits(0),
       pZDCvspT(0),
       pZDCvsZEM(0),
       pZDCvsNch(0),
@@ -209,6 +215,7 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       fVaryVtxZPos(false),
       fTowerEnergy(true),
       fUseZEMcut(true),
+      fIsZEMhit(false),
       fZEMcut(800.0),
       fMinVtxZPos(-5.0),
       fMaxVtxZPos(5.0),
@@ -283,6 +290,11 @@ AliAnalysisTaskDataSpeedOfSound::AliAnalysisTaskDataSpeedOfSound(
       hZDCvspT(0),
       hZDCvsZEM(0),
       hV0MvsZDC(0),
+      hV0MvsZNC(0),
+      hV0MvsZNA(0),
+      hV0MvsZPC(0),
+      hV0MvsZPA(0),
+      hZEMhits(0),
       pZDCvspT(0),
       pZDCvsZEM(0),
       pZDCvsNch(0),
@@ -615,6 +627,8 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   hZPC = new TH1F("hZPC", ";ZPC (TeV); Entries;", ZP_Nbins, ZP_bins);
   hZPA = new TH1F("hZPA", ";ZPA (TeV); Entries;", ZP_Nbins, ZP_bins);
   hZDC = new TH1F("hZDC", ";ZDC (TeV); Entries;", ZDC_Nbins, ZDC_bins);
+  hZEMhits = new TH1F("hZEMhits", "Bin 1 = YES, Bin 2 = NO;ZME hits?; Entries;",
+                      2, 0., 2.);
 
   hZNCvspT = new TH2F("hZNCvspT", ";ZNC [TeV]; p_{T} [GeV/c];", ZN_Nbins,
                       ZN_bins, pt_Nbins, pt_bins);
@@ -630,8 +644,18 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
                        105, 0., 525.);
   hV0MvsZDC = new TH2F("hV0MvsZDC", "With ZEM cut;V0M centrality;ZDC [TeV];",
                        v0m_Nbins0100, v0m_bins0100, 105, 0., 525.);
+
+  hV0MvsZNC = new TH2F("hV0MvsZNC", "With ZEM cut;V0M centrality;ZNC [TeV];",
+                       v0m_Nbins0100, v0m_bins0100, 105, 0., 525.);
+  hV0MvsZNA = new TH2F("hV0MvsZNA", "With ZEM cut;V0M centrality;ZNA [TeV];",
+                       v0m_Nbins0100, v0m_bins0100, 105, 0., 525.);
+  hV0MvsZPC = new TH2F("hV0MvsZPC", "With ZEM cut;V0M centrality;ZPC [TeV];",
+                       v0m_Nbins0100, v0m_bins0100, 105, 0., 525.);
+  hV0MvsZPA = new TH2F("hV0MvsZPA", "With ZEM cut;V0M centrality;ZPA [TeV];",
+                       v0m_Nbins0100, v0m_bins0100, 105, 0., 525.);
+
   pZDCvspT =
-      new TProfile("pZDCvspT", ";ZDC [TeV]; <pT> [GeV/c];", 105, 0., 525.);
+      new TProfile("pZDCvspT", ";ZDC [TeV]; <pT> [GeV/c];", 105, 0., 200.);
   pZDCvsNch =
       new TProfile("pZDCvsNch", "With ZEM cut;Nch (|#eta|<0.8);<ZDC> [TeV];",
                    nch_Nbins, nch_bins);
@@ -702,10 +726,15 @@ void AliAnalysisTaskDataSpeedOfSound::UserCreateOutputObjects() {
   fOutputList->Add(hZDCvspT);
   fOutputList->Add(pZDCvspT);
 
+  fOutputList->Add(hV0MvsZNC);
+  fOutputList->Add(hV0MvsZNA);
+  fOutputList->Add(hV0MvsZPC);
+  fOutputList->Add(hV0MvsZPA);
   fOutputList->Add(hV0MvsZDC);
   fOutputList->Add(hZDCvsZEM);
   fOutputList->Add(pZDCvsZEM);
   fOutputList->Add(pZDCvsNch);
+  fOutputList->Add(hZEMhits);
 
   for (int i = 0; i < v0m_Nbins; ++i) {
     hDCAxyData[i] = new TH2F(Form("hDCAxyData_%s", uc_v0m_bins_name[i]),
@@ -836,6 +865,7 @@ void AliAnalysisTaskDataSpeedOfSound::GetZDC() {
   fZPC = -999.;
   fZDC = -999.;
   fZEM = -999.;
+  fIsZEMhit = false;
 
   const double eA{2.511};
   const double gev2tev{1. / 1000.};
@@ -849,6 +879,13 @@ void AliAnalysisTaskDataSpeedOfSound::GetZDC() {
   const double* towZNA{esdZDC->GetZN2TowerEnergy()};
   const double* towZPA{esdZDC->GetZP2TowerEnergy()};
   double zem{esdZDC->GetZEM1Energy() + esdZDC->GetZEM2Energy()};
+
+  if (esdZDC->IsZEM1hit() && esdZDC->IsZEM2hit()) {
+    hZEMhits->Fill(0.5);
+    fIsZEMhit = true;
+  } else {
+    hZEMhits->Fill(1.5);
+  }
 
   double znc{999.};
   double zna{999.};
@@ -868,14 +905,14 @@ void AliAnalysisTaskDataSpeedOfSound::GetZDC() {
 
   //! Efficiency corrected
   //! https://alice-notes.web.cern.ch/system/files/notes/analysis/1062/2021-06-03-ALICE_AN_ZDC_efficiency.pdf
-  fZNA = (zna / 0.92);
-  fZPA = (zpa / 0.52);
-  fZNC = (znc / 0.9);
-  fZPC = (zpc / 0.5);
+  fZNA = zna;
+  fZPA = zpa;
+  fZNC = znc;
+  fZPC = zpc;
   fZDC = (fZNC + fZNA + fZPC + fZPA);
   fZEM = zem;
 
-  if (fUseZEMcut) {
+  if (fUseZEMcut && fIsZEMhit) {
     //! Use ZEM cut to select low ZDC events
     if (fZEM > fZEMcut) {
       hZNC->Fill(fZNC);
@@ -885,12 +922,12 @@ void AliAnalysisTaskDataSpeedOfSound::GetZDC() {
       hZDC->Fill(fZDC);
       hZDCvsZEM->Fill(fZEM, fZDC);
     } else {
-      hZNC->Fill(250.);
-      hZNA->Fill(250.);
-      hZPC->Fill(120.);
-      hZPA->Fill(120.);
-      hZDC->Fill(450.);
-      hZDCvsZEM->Fill(fZEM, 450.);
+      hZNC->Fill(299.);
+      hZNA->Fill(299.);
+      hZPC->Fill(149.);
+      hZPA->Fill(149.);
+      hZDC->Fill(524.);
+      hZDCvsZEM->Fill(fZEM, 524.);
     }
   }
 
@@ -1025,7 +1062,7 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
     hPtvsSPDFull->Fill(fSPDFull, pt);
     hPtvsEtFull->Fill(etfull, pt);
 
-    if (fUseZEMcut) {
+    if (fUseZEMcut && fIsZEMhit) {
       //! Use ZEM cut to select low ZDC events
       if (fZEM > fZEMcut) {
         hZNCvspT->Fill(fZNC, pt);
@@ -1035,11 +1072,11 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
         hZDCvspT->Fill(fZDC, pt);
         pZDCvspT->Fill(fZDC, pt);
       } else {
-        hZNCvspT->Fill(250., pt);
-        hZNAvspT->Fill(250., pt);
-        hZPCvspT->Fill(120., pt);
-        hZPAvspT->Fill(120., pt);
-        hZDCvspT->Fill(450., pt);
+        hZNCvspT->Fill(299., pt);
+        hZNAvspT->Fill(299., pt);
+        hZPCvspT->Fill(149., pt);
+        hZPAvspT->Fill(149., pt);
+        hZDCvspT->Fill(524., pt);
       }
     }
 
@@ -1068,11 +1105,15 @@ void AliAnalysisTaskDataSpeedOfSound::MultiplicityDistributions() {
   pNchvsV0MAmp->Fill(fv0mamplitude, rec_nch);
   hNch->Fill(rec_nch);
 
-  if (fUseZEMcut) {
+  if (fUseZEMcut && fIsZEMhit) {
     //! Use ZEM cut to select low ZDC events
     if (fZEM > fZEMcut) {
       pZDCvsNch->Fill(rec_nch, fZDC);
       hV0MvsZDC->Fill(fv0mpercentile, fZDC);
+      hV0MvsZNC->Fill(fv0mpercentile, fZNC);
+      hV0MvsZNA->Fill(fv0mpercentile, fZNA);
+      hV0MvsZPC->Fill(fv0mpercentile, fZPC);
+      hV0MvsZPA->Fill(fv0mpercentile, fZPA);
     }
   }
 
