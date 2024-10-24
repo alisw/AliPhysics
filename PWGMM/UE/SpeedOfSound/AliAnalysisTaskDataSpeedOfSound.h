@@ -92,6 +92,7 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   bool fVaryVtxZPos;
   bool fTowerEnergy;
   bool fUseZEMcut;
+  bool fIsZNhit;
   bool fIsZEMhit;
   double fZEMcut;
   float fMinVtxZPos;
@@ -172,12 +173,32 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2F* hV0MvsZNA;
   TH2F* hV0MvsZPC;
   TH2F* hV0MvsZPA;
-  TH1F* hZEMhits;
+  TH2F* hZNhits;
+  TH2F* hZEMhits;
+  TH1F* hZNZEMhits;
   TProfile* pZDCvspT;
   TProfile* pZDCvsZEM;
   TProfile* pZDCvsNch;
   TProfile* pZVtxvsSPDClus;
   TProfile* pSPDClusvsEta;
+
+  TProfile* pZNCvsV0Amp;
+  TProfile* pZNAvsV0Amp;
+  TProfile* pZPCvsV0Amp;
+  TProfile* pZPAvsV0Amp;
+  TProfile* pZNCvsNch;
+  TProfile* pZNAvsNch;
+  TProfile* pZPCvsNch;
+  TProfile* pZPAvsNch;
+  TProfile* pZNCvsEt;
+  TProfile* pZNAvsEt;
+  TProfile* pZPCvsEt;
+  TProfile* pZPAvsEt;
+  TProfile* pZNCvsSPD;
+  TProfile* pZNAvsSPD;
+  TProfile* pZPCvsSPD;
+  TProfile* pZPAvsSPD;
+
   double fSPDVtxCut;
   int fSPDFull;
   int fSPDEtaAdj;
