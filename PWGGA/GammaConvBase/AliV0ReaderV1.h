@@ -27,6 +27,7 @@ class TClonesArray;
 class TH1F;
 class TH2F;
 class AliAODConversionPhoton;
+class AliAnalysisTaskAO2Dconverter;
 
 #if (__GNUC__ >= 3) && !defined(__INTEL_COMPILER)
 // gcc warns in level Weffc++ about non-virtual destructor
@@ -293,7 +294,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
 
-    ClassDef(AliV0ReaderV1, 25)
+    ClassDef(AliV0ReaderV1, 26)
 
 };
 

@@ -35,6 +35,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/ClusterSelection
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb
+                    ${AliPhysics_SOURCE_DIR}/RUN3
                    )
 
 # the KF particle library support if required

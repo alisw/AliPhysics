@@ -1,7 +1,8 @@
 AliAnalysisTask *AddTask_ConversionAODProduction( Int_t dataset                 = 0,
                                                   Bool_t isMC                   = kFALSE,
                                                   TString periodNameV0Reader    = "",
-                                                  Bool_t addv0sInESDFilter      = kTRUE
+                                                  Bool_t addv0sInESDFilter      = kTRUE,
+                                                  Bool_t onlyOnTheFly           = kFalse
                                                 ){
 
     // Before doing anything, we load the needed library
@@ -44,30 +45,30 @@ AliAnalysisTask *AddTask_ConversionAODProduction( Int_t dataset                 
     TString analysiscutEvent;
     TString analysiscutB;
 
-    if(dataset == 1){
+    if(dataset == 1){ //PbPb
       analysiscutEvent = "10000003";
       if(lowBfield){
           analysiscut  = "06000088d00000001100000000";
           analysiscutB = "16000088d00000001100000000";
-      }else{
+      } else {
           analysiscut  = "06000008d00000001100000000";
           analysiscutB = "16000008d00000001100000000";
       }
-    } else if (dataset == 2){
+    } else if (dataset == 2){ // pPb
       analysiscutEvent = "80000003";
       if(lowBfield){
           analysiscut  = "06000088d00000001100000000";
           analysiscutB = "16000088d00000001100000000";
-      }else{
+      } else {
           analysiscut  = "06000008d00000001100000000";
           analysiscutB = "16000008d00000001100000000";
       }
-    } else{
+    } else{ // pp
       analysiscutEvent = "00000003";
       if(lowBfield){
           analysiscut  = "06000088d00100001100000000";
           analysiscutB = "16000088d00100001100000000";
-      }else{
+      } else {
           analysiscut  = "06000008d00100001100000000";
           analysiscutB = "16000008d00100001100000000";
       }
@@ -81,15 +82,17 @@ AliAnalysisTask *AddTask_ConversionAODProduction( Int_t dataset                 
     fV0Reader->SetUseOwnXYZCalculation(kTRUE);
     fV0Reader->SetUseAODConversionPhoton(kTRUE);
     if (addv0sInESDFilter){fV0Reader->SetAddv0sInESDFilter(kTRUE);}
-//     fV0Reader->CheckAODConsistency();
+    // fV0Reader->CheckAODConsistency();
 
-    AliV0ReaderV1 *fV0ReaderB=new AliV0ReaderV1("ConvGammaAODProductionB");
-    if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderB->SetPeriodName(periodNameV0Reader);
-    fV0ReaderB->SetCreateAODs(kTRUE);
-    fV0ReaderB->SetUseOwnXYZCalculation(kTRUE);
-    fV0ReaderB->SetUseAODConversionPhoton(kTRUE);
-    if (addv0sInESDFilter){fV0ReaderB->SetAddv0sInESDFilter(kTRUE);}
-//     fV0ReaderB->CheckAODConsistency();
+    if(!onlyOnTheFly){
+      AliV0ReaderV1 *fV0ReaderB=new AliV0ReaderV1("ConvGammaAODProductionB");
+      if (periodNameV0Reader.CompareTo("") != 0) fV0ReaderB->SetPeriodName(periodNameV0Reader);
+      fV0ReaderB->SetCreateAODs(kTRUE);
+      fV0ReaderB->SetUseOwnXYZCalculation(kTRUE);
+      fV0ReaderB->SetUseAODConversionPhoton(kTRUE);
+      if (addv0sInESDFilter){fV0ReaderB->SetAddv0sInESDFilter(kTRUE);}
+      // fV0ReaderB->CheckAODConsistency();
+    }
 
     AliConvEventCuts *fEventCutsA=NULL;
     AliConvEventCuts *fEventCutsB=NULL;
@@ -100,17 +103,18 @@ AliAnalysisTask *AddTask_ConversionAODProduction( Int_t dataset                 
       if(fEventCutsA->InitializeCutsFromCutString(analysiscutEvent.Data())){
           fV0Reader->SetEventCuts(fEventCutsA);
       }
-      fEventCutsB = new AliConvEventCuts(analysiscutEvent.Data(), analysiscutEvent.Data());
-      fEventCutsB->SetPreSelectionCutFlag(kTRUE);
-      fEventCutsB->SetV0ReaderName("ConvGammaAODProductionB");
-      if(fEventCutsB->InitializeCutsFromCutString(analysiscutEvent.Data())){
-          fV0ReaderB->SetEventCuts(fEventCutsB);
+      if(!onlyOnTheFly){
+        fEventCutsB = new AliConvEventCuts(analysiscutEvent.Data(), analysiscutEvent.Data());
+        fEventCutsB->SetPreSelectionCutFlag(kTRUE);
+        fEventCutsB->SetV0ReaderName("ConvGammaAODProductionB");
+        if(fEventCutsB->InitializeCutsFromCutString(analysiscutEvent.Data())){
+            fV0ReaderB->SetEventCuts(fEventCutsB);
+        }
       }
     }
 
     // Set AnalysisCut Number
     AliConversionPhotonCuts *fCuts = new AliConversionPhotonCuts(analysiscut.Data(), analysiscut.Data());
-    AliConversionPhotonCuts *fCutsB = new AliConversionPhotonCuts(analysiscutB.Data(), analysiscutB.Data());
     if(fCuts->InitializeCutsFromCutString(analysiscut.Data())){
       fCuts->SetIsHeavyIon(dataset);
       fV0Reader->SetConversionCuts(fCuts);
@@ -119,12 +123,14 @@ AliAnalysisTask *AddTask_ConversionAODProduction( Int_t dataset                 
     fV0Reader->Init();
     mgr->AddTask(fV0Reader);
 
-    if(fCutsB->InitializeCutsFromCutString(analysiscutB.Data())){
-      fCutsB->SetIsHeavyIon(dataset);
-      fV0ReaderB->SetConversionCuts(fCutsB);
-    }
-    fV0ReaderB->Init();
-    mgr->AddTask(fV0ReaderB);
+     if(!onlyOnTheFly){
+      AliConversionPhotonCuts *fCutsB = new AliConversionPhotonCuts(analysiscutB.Data(), analysiscutB.Data());
+      if(fCutsB->InitializeCutsFromCutString(analysiscutB.Data())){
+        fCutsB->SetIsHeavyIon(dataset);
+        fV0ReaderB->SetConversionCuts(fCutsB);
+      }
+      fV0ReaderB->Init();
+      mgr->AddTask(fV0ReaderB);
 
     AliLog::SetGlobalLogLevel(AliLog::kInfo);
 
@@ -135,15 +141,19 @@ AliAnalysisTask *AddTask_ConversionAODProduction( Int_t dataset                 
     //below the trunk version
     AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
     AliAnalysisDataContainer *coutputPCMv0sA = mgr->CreateContainer("PCM offlineV0Finder container", TBits::Class(), AliAnalysisManager::kExchangeContainer);
-    AliAnalysisDataContainer *coutputPCMv0sB = mgr->CreateContainer("PCM onflyV0Finder container", TBits::Class(), AliAnalysisManager::kExchangeContainer);
 
     // connect output
     mgr->ConnectOutput(fV0Reader,1,coutputPCMv0sA);
-    mgr->ConnectOutput(fV0ReaderB,1,coutputPCMv0sB);
 
     // connect input V0Reader
     mgr->ConnectInput(fV0Reader,0,cinput);
-    mgr->ConnectInput(fV0ReaderB,0,cinput);
+
+    // Do the same but for the offline V0s
+    if(!onlyOnTheFly){
+      AliAnalysisDataContainer *coutputPCMv0sB = mgr->CreateContainer("PCM onflyV0Finder container", TBits::Class(), AliAnalysisManager::kExchangeContainer);
+      mgr->ConnectOutput(fV0ReaderB,1,coutputPCMv0sB);
+      mgr->ConnectInput(fV0ReaderB,0,cinput);
+    }
 
     return fV0Reader;
 }
