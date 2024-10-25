@@ -18,7 +18,10 @@ AliEmcalJetUtilitySoftDrop::AliEmcalJetUtilitySoftDrop() :
   fGroomedJets(0x0),
   fGroomedJetParticles(0x0),
   fRhoParam(0),
-  fRhomParam(0)
+  fRhomParam(0),
+  fZCut(0.1),
+  fBeta(0),
+  fRecursiveDepth(1)
 {
   // Dummy constructor.
 
@@ -37,7 +40,10 @@ AliEmcalJetUtilitySoftDrop::AliEmcalJetUtilitySoftDrop(const char* name) :
   fGroomedJets(0x0),
   fGroomedJetParticles(0x0),
   fRhoParam(0),
-  fRhomParam(0)
+  fRhomParam(0),
+  fZCut(0.1),
+  fBeta(0),
+  fRecursiveDepth(1)
 {
   // Default constructor.
 }
@@ -55,7 +61,10 @@ AliEmcalJetUtilitySoftDrop::AliEmcalJetUtilitySoftDrop(const AliEmcalJetUtilityS
   fGroomedJets(other.fGroomedJets),
   fGroomedJetParticles(other.fGroomedJetParticles),
   fRhoParam(other.fRhoParam),
-  fRhomParam(other.fRhomParam)
+  fRhomParam(other.fRhomParam),
+  fZCut(other.fZCut),
+  fBeta(other.fBeta),
+  fRecursiveDepth(other.fRecursiveDepth)
 {
   // Copy constructor.
 }
@@ -78,6 +87,9 @@ AliEmcalJetUtilitySoftDrop& AliEmcalJetUtilitySoftDrop::operator=(const AliEmcal
   fGroomedJetParticles = other.fGroomedJetParticles;
   fRhoParam = other.fRhoParam;
   fRhomParam = other.fRhomParam;
+  fZCut = other.fZCut;
+  fBeta = other.fBeta;
+  fRecursiveDepth = other.fRecursiveDepth;
   return *this;
 }
 
@@ -158,6 +170,9 @@ void AliEmcalJetUtilitySoftDrop::Prepare(AliFJWrapper& fjw)
   if (fGroomedJets) fGroomedJets->Delete();
 
   fjw.SetUseExternalBkg(fUseExternalBkg, fRho, fRhom);
+  fjw.SetZCut(fZCut);
+  fjw.SetBeta(fBeta);
+  fjw.SetRecursiveDepth(fRecursiveDepth);
   fjw.DoSoftDrop();
   
 }
@@ -183,16 +198,25 @@ void AliEmcalJetUtilitySoftDrop::ProcessJet(AliEmcalJet* jet, Int_t ij, AliFJWra
     jet->SetAreaEta(area.eta());
     jet->SetAreaPhi(area.phi());
     jet->SetAreaEmc(area.perp());
+    fastjet::PseudoJet groomedJetFastjet = jets_groomed[ij];
 
-    jet->GetShapeProperties()->SetSoftDropZg(jets_groomed[ij].structure_of<fastjet::contrib::SoftDrop>().symmetry());
-    jet->GetShapeProperties()->SetSoftDropdR(jets_groomed[ij].structure_of<fastjet::contrib::SoftDrop>().delta_R());
+    jet->GetShapeProperties()->SetSoftDropZg(groomedJetFastjet.structure_of<fastjet::contrib::SoftDrop>().symmetry());
+    jet->GetShapeProperties()->SetSoftDropdR(groomedJetFastjet.structure_of<fastjet::contrib::SoftDrop>().delta_R());
 
     //getting ungroomed pt
-    int k = jets_groomed[ij].user_index();
-    if ( (k>0) && (k<ninc) ) jet->GetShapeProperties()->SetSoftDropPtfrac( jets_groomed[ij].perp() / jets_inclusive[k].perp() );
+    int k = groomedJetFastjet.user_index();
+    if ( (k>0) && (k<ninc) ) jet->GetShapeProperties()->SetSoftDropPtfrac( groomedJetFastjet.perp() / jets_inclusive[k].perp() );
 
-    jet->GetShapeProperties()->SetSoftDropDropCount(jets_groomed[ij].structure_of<fastjet::contrib::SoftDrop>().dropped_count());
+    jet->GetShapeProperties()->SetSoftDropDropCount(groomedJetFastjet.structure_of<fastjet::contrib::SoftDrop>().dropped_count());
 
+    AliEmcalJet *groomedJet = new ((*fGroomedJets)[k])
+    		          AliEmcalJet(groomedJetFastjet.perp(), groomedJetFastjet.eta(), groomedJetFastjet.phi(), groomedJetFastjet.m());
+    groomedJet->SetLabel(k);
+    groomedJet->SetJetAcceptanceType(jet->GetJetAcceptanceType());
+
+    // Fill constituent info
+    std::vector<fastjet::PseudoJet> constituents = groomedJetFastjet.constituents();
+    fJetTask->FillJetConstituents(groomedJet, constituents, constituents);
   }
 
   #endif

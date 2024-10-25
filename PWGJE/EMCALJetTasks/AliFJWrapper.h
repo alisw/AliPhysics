@@ -143,9 +143,9 @@ class AliFJWrapper
   void SetEventSub(Bool_t b) {fEventSub = b;}
   void SetMaxDelR(Double_t r)  {fMaxDelR = r;}
   void SetAlpha(Double_t a)  {fAlpha = a;}
-  void SetRecursiveDepth(Int_t n) {fRecursiveDepth = n;}
   void SetZCut(Double_t zCut) {fZcut = zCut;}
   void SetBeta(Double_t beta) {fBeta = beta;}
+  void SetRecursiveDepth(Int_t n) {fRecursiveDepth = n;}
 
  protected:
   TString                                fName;               //!
@@ -299,9 +299,9 @@ AliFJWrapper::AliFJWrapper(const char *name, const char *title)
   , fPluginAlgor       (0)
   , fMedUsedForBgSub   (0)
   , fUseArea4Vector    (kFALSE)
-  , fZcut(0.1)
-  , fBeta(0)
-  , fRecursiveDepth(1)
+  , fZcut              (0.1)
+  , fBeta              (0)
+  , fRecursiveDepth    (1)
   , fEventSub          (kFALSE)
   , fMaxDelR           (-1)
   , fAlpha             (0)
