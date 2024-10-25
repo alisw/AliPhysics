@@ -561,7 +561,18 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
   } else if (trainConfig == 199){ // super tight TM cut
     cuts.AddCutCalo("00010113","411790109ze10200000","0r631031000000d0");  // 500 MeV cluster threshold
 
-  } else if (trainConfig == 200){ // cluster efficiency applied
+
+  } else if (trainConfig == 200){ // open cuts
+    cuts.AddCutCalo("00010113","4117999097eg0200000","0r631031000000d0");  // 300 MeV cluster threshold
+  } else if (trainConfig == 201){ // super tight TM cut
+    cuts.AddCutCalo("00010113","411790109zeg0200000","0r631031000000d0");  // 300 MeV cluster threshold
+  } else if (trainConfig == 202){ // open cuts
+    cuts.AddCutCalo("00010113","4117999097eg0200c00","0r631031000000d0");  // 300 MeV cluster threshold, conv. rejection
+  } else if (trainConfig == 203){ // super tight TM cut
+    cuts.AddCutCalo("00010113","411790109zeg0200c00","0r631031000000d0");  // 300 MeV cluster threshold, conv. rejection
+
+
+  } else if (trainConfig == 300){ // cluster efficiency applied
     cuts.AddCutCalo("00010113","4117901097e102200a0","0r631031000000d0");  // 500 MeV cluster threshold
     cuts.AddCutCalo("00010113","4117901097e102200b0","0r631031000000d0");  // 500 MeV cluster threshold
     cuts.AddCutCalo("00010113","4117901097e102200c0","0r631031000000d0");  // 500 MeV cluster threshold
@@ -648,6 +659,10 @@ void AddTask_ConvCaloCalibration_CaloMode_pp(
     TString caloCutPos = cuts.GetClusterCut(i);
     caloCutPos.Resize(1);
     TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+    if(corrTaskSetting.CompareTo("")){
+      TrackMatcherName = TrackMatcherName+"_"+corrTaskSetting.Data();
+      cout << "Using separate track matcher for correction framework setting: " << TrackMatcherName.Data() << endl;
+    }
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
       AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
       fTrackMatcher->SetV0ReaderName(V0ReaderName);

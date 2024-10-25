@@ -538,7 +538,7 @@ void AliAnaParticleHadronCorrelation::FillChargedAngularCorrelationHistograms(Fl
   {
     fhDeltaPhiDeltaEtaZTBin[binZT]->Fill(ptTrig, deltaPhi, deltaEta, GetEventWeight());
 
-    if ( IsDataMC() )
+    if ( IsDataMC() && mcIndex >= fMCGenTypeMin && mcIndex <= fMCGenTypeMax )
     {
       Int_t binZTMC = binZT*fgkNmcTypes + mcIndex;
 

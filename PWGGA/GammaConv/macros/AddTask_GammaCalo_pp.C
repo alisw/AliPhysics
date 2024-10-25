@@ -4359,7 +4359,13 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411797709fe30220000","0s631031000000d0"); // rot background with gaps
     cuts.AddCutCalo("00010113","411797709fe30220000","01631031000000d0"); // mixed event
 
+  //min Energy variation for clusterizer study
+  } else if (trainConfig == 2599){  
+    cuts.AddCutCalo("00010113","411799909fei09v0000","0s631031000000d0"); // min E = 200 MeV
+    cuts.AddCutCalo("00010113","411799909feg09v0000","0s631031000000d0"); // min E = 300 MeV
+    cuts.AddCutCalo("00010113","411799909fe109v0000","0s631031000000d0"); // min E = 500 MeV
 
+    
     //*************************************************************************************************
     // 13 TeV PHOS - Systematics
     //*************************************************************************************************
@@ -4799,6 +4805,25 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411790109fe3n240c00","0s631031000000d0"); // M02 < 0.4, no E/p
     cuts.AddCutCalo("00010113","411790109fe3n290c00","0s631031000000d0"); // M02 < 0.35, no E/p
     cuts.AddCutCalo("00010113","411790109fe3n250c00","0s631031000000d0"); // M02 < 0.3, no E/p
+
+  // Cut studies with lower cluster energy and conversion rejection
+  } else if (trainConfig == 3300){  
+    cuts.AddCutCalo("00010113","411799909feg09v0000","0s631031000000d0"); // min E = 300 MeV, NCell = 0
+  } else if (trainConfig == 3301){  
+    cuts.AddCutCalo("00010113","411799909fegn9v0000","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi
+  } else if (trainConfig == 3302){  
+    cuts.AddCutCalo("00010113","411799909feg09v0b00","0s631031000000d0"); // min E = 300 MeV, NCell = 0, conv. rej 0.02
+    cuts.AddCutCalo("00010113","411799909feg09v0c00","0s631031000000d0"); // min E = 300 MeV, NCell = 0, conv. rej 0.05
+    cuts.AddCutCalo("00010113","411799909feg09v0d00","0s631031000000d0"); // min E = 300 MeV, NCell = 0, conv. rej 0.1
+  } else if (trainConfig == 3303){  
+    cuts.AddCutCalo("00010113","411799909feg09v0b00","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi, conv. rej 0.02
+    cuts.AddCutCalo("00010113","411799909feg09v0c00","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi, conv. rej 0.05
+    cuts.AddCutCalo("00010113","411799909feg09v0d00","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi, conv. rej 0.1
+  } else if (trainConfig == 3304){  
+    cuts.AddCutCalo("00010113","411799909fegn9v0000","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi n
+    cuts.AddCutCalo("00010113","411799909fegr9v0000","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi r
+    cuts.AddCutCalo("00010113","411799909fegm9v0000","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi m
+    cuts.AddCutCalo("00010113","411799909fegl9v0000","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi l
 
   //////////////////////    Mult slices  PHOS pp 13 TeV   //////////////////////////////////
 // INT7 trigger	V0M high mult	EG2	EG1	SPD high mult

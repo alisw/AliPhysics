@@ -47,6 +47,7 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   void FillWPCounter(vector<vector<double>> &inarr, double w, double p);
   void SetFillCM(unsigned int flag) { fCMflag = flag; }
   void SetPtBins(Int_t nBins, Double_t *ptbins);
+  void SetETBins(Int_t nBins, Double_t *etbins);
   void SetEtaBins(Int_t nBins, Double_t *etabins);
   void SetMultiBins(Int_t nBins, Double_t *multibins);
   void SetMultiBins(Int_t nBins, Double_t low, Double_t high);
@@ -122,12 +123,15 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TAxis *fPtAxis;
   TAxis *fDCAAxis;
   TAxis *fEtaAxis;
+  TAxis *fETAxis;
   TAxis *fMultiAxis;      //Multiplicity axis (either for V0M or Nch)
   TAxis *fCentPtAxis;      //Centrality axis for mpt fluctuations
   TAxis *fMptAxis;      //Mpt axis
   TAxis *fV0MMultiAxis;   //Defaults V0M bins
   Double_t *fPtBins; //!
   Int_t fNPtBins; //!
+  Double_t *fETBins; //!
+  Int_t fNETBins; //!
   Double_t *fDCABins; //!
   Int_t fNDCABins; //!
   Double_t *fEtaBins; //!
@@ -176,6 +180,8 @@ class AliAnalysisTaskPtCorr : public AliAnalysisTaskSE {
   TH2D* hCentvsNch; //!
   TH2D* hETvsNch; //!
   TH2D* hV0MvsNch; //!
+  TH2D* hCentvsV0M; //!
+  TH2D* hCentvsET; //!
   TProfile* pMeanNchvsNch; //!
   TProfile* pMeanNchvsCent; //!
   TProfile* pMeanNchvsET; //!

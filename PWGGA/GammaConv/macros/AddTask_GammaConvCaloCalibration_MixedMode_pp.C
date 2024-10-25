@@ -403,6 +403,11 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fei0220000","0163103100000010"); // no NCell cut
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790009fei2220000","0163103100000010"); // NCell >= 2 cut
 
+  // Cluster efficiency with lower cluster Emin
+  } else if (trainConfig == 125){ // NL 99, nominal Bfield setting, without NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909feg0220000","0r63103100000010"); // INT7, Emin = 300 MeV
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909feg0200000","0r63103100000010"); // INT7, Emin = 300 MeV, open M02
+
   } else {
     Error(Form("AddTask_GammaConvCaloCalibration_MixedMode_pp%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -452,6 +457,10 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
     TString caloCutPos = cuts.GetClusterCut(i);
     caloCutPos.Resize(1);
     TString TrackMatcherName = Form("CaloTrackMatcher_%s",caloCutPos.Data());
+    if(corrTaskSetting.CompareTo("")){
+      TrackMatcherName = TrackMatcherName+"_"+corrTaskSetting.Data();
+      cout << "Using separate track matcher for correction framework setting: " << TrackMatcherName.Data() << endl;
+    }
     if( !(AliCaloTrackMatcher*)mgr->GetTask(TrackMatcherName.Data()) ){
       AliCaloTrackMatcher* fTrackMatcher = new AliCaloTrackMatcher(TrackMatcherName.Data(),caloCutPos.Atoi());
       fTrackMatcher->SetV0ReaderName(V0ReaderName);
