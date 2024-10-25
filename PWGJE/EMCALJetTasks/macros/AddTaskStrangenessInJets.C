@@ -29,6 +29,7 @@ AliAnalysisTaskStrangenessInJets* AddTaskStrangenessInJets(
   AliAnalysisDataContainer* coutput1 = mgr->CreateContainer(Form("%s_%s", containerName.Data(), "Histograms"), TList::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());
   AliAnalysisDataContainer* coutput2 = mgr->CreateContainer(Form("%s_%s", containerName.Data(), "JetHistograms"), TList::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());
   AliAnalysisDataContainer* coutput3 = mgr->CreateContainer(Form("%s_%s", containerName.Data(), "MCHistograms"), TList::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());
+  AliAnalysisDataContainer* coutput4 = mgr->CreateContainer(Form("%s_%s", containerName.Data(), "QAHistograms"), TList::Class(), AliAnalysisManager::kOutputContainer, outputFile.Data());
 
 
   // Connect input/output
@@ -36,6 +37,7 @@ AliAnalysisTaskStrangenessInJets* AddTaskStrangenessInJets(
   mgr->ConnectOutput(mytask, 1, coutput1);
   mgr->ConnectOutput(mytask, 2, coutput2);
   mgr->ConnectOutput(mytask, 3, coutput3);
+  mgr->ConnectOutput(mytask, 4, coutput4);
 
 
   return mytask;

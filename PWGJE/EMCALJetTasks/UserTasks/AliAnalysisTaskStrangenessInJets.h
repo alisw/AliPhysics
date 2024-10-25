@@ -179,7 +179,7 @@ public:
   Int_t GetCentralityBinIndex(Double_t centrality);
   Int_t GetCentralityBinEdge(Int_t index);
   TString GetCentBinLabel(Int_t index);
-  static Double_t AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters);
+  Double_t AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters);
   Bool_t AssociateRecV0withMC( AliAODv0* v, AliEmcalJet *xjet, Bool_t bIsK, Bool_t bIsL, Bool_t bIsAL, Int_t iCent);
   Bool_t GeneratedMCParticles( TClonesArray* track, Int_t iCent );
   Double_t MassPeakSigma(Double_t pt, Int_t particle);
@@ -196,6 +196,8 @@ protected:
   TList* fOutputListStd; //! Output list for standard analysis results
   TList* fOutputListStdJets; //! Output list for jet analysis results
   TList* fOutputListMC;  //! Output list for MC analysis results
+  TList* fOutputListQA; //! Output list for quality assurance
+
   TClonesArray   *fV0CandidateArray;           //! contains selected V0 candidates
   TClonesArray   *fGenMCV0;                    //! contains MC generated V0s
   TClonesArray   *fGenMCXis;                   //! contains MC generated Xis (Xi, AXi, Xi0, AXi0)
@@ -441,10 +443,29 @@ private:
   TH1D* fh1V0AXiInJetPtMCGen[fgkiNBinsCent]; //!
   TH1D* fh1V0AXi0InJetPtMCGen[fgkiNBinsCent]; //!
 
+ // QA histograms
+  static const Int_t fgkiNQAIndeces = 2; // 0 - before cuts, 1 - after cuts
+  TH2D* fh2QAV0PtPtK0sPeak[fgkiNQAIndeces]; //! daughters pt vs pt, in mass peak
+  TH2D* fh2ArmPodK0s[fgkiNQAIndeces]; //! Armenteros-Podolanski
+  TH2D* fh2QAV0PtPtLambdaPeak[fgkiNQAIndeces]; //!
+  TH2D* fh2ArmPodLambda[fgkiNQAIndeces]; //!
+  TH2D* fh2QAV0PtPtALambdaPeak[fgkiNQAIndeces]; //!
+  TH2D* fh2ArmPodALambda[fgkiNQAIndeces]; //!
+  TH2D* fh2ArmPod[fgkiNQAIndeces]; //! Armenteros-Podolanski
+ 
+  TH1D* fh1JetArea[fgkiNBinsCent]; //! Jet area 
+  TH1D* fh1JetRho[fgkiNBinsCent]; //! Jet rho values calculated from fastjet::JetMedianBackgroundEstimator
+  TH1D* fh1JetRhoArea[fgkiNBinsCent]; //! Jet rho * area values calculated from fastjet::JetMedianBackgroundEstimator  
+  TH2D* fh2JetPtPt[fgkiNBinsCent]; //! Jet rho values vs jet pt calculated from fastjet::JetMedianBackgroundEstimator
+
+  TH1D* fh1DaughtersPt[fgkiNBinsCent]; //! pt of the daughter TO BE excluded from the fjw tracks  
+  TH1D* fh1ExcludedDaughtersPt[fgkiNBinsCent]; //! pt of the excluded from fjw tracks(V0s Daughters) 
+  TH1D* fh1IncludedDaughtersPt[fgkiNBinsCent]; //! pt of the included to the fjw tracks  
+
   AliAnalysisTaskStrangenessInJets(const AliAnalysisTaskStrangenessInJets&); // not implemented
   AliAnalysisTaskStrangenessInJets& operator=(const AliAnalysisTaskStrangenessInJets&); // not implemented
 
-  ClassDef(AliAnalysisTaskStrangenessInJets, 5) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskStrangenessInJets, 6) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

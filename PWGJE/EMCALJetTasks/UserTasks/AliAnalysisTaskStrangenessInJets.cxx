@@ -103,6 +103,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
   fOutputListStd(0),
   fOutputListStdJets(0),
   fOutputListMC(0),
+  fOutputListQA(0),
   fV0CandidateArray(0),
   fGenMCV0(0),
   fGenMCXis(0),
@@ -302,7 +303,25 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
     fhnV0LambdaInJetsDaughterEtaPtPtMCRec[i] = 0;
     fhnV0ALambdaInclDaughterEtaPtPtMCRec[i] = 0;
     fhnV0ALambdaInJetsDaughterEtaPtPtMCRec[i] = 0; 
-  }  
+    
+    fh1JetArea[i] = 0;
+    fh1JetRho[i] = 0;
+    fh1JetRhoArea[i] = 0;
+    fh2JetPtPt[i] = 0;
+    fh1DaughtersPt[i] = 0;
+    fh1ExcludedDaughtersPt[i] = 0;
+    fh1IncludedDaughtersPt[i] = 0;
+  } 
+  for(Int_t i = 0; i < fgkiNQAIndeces; i++)
+  {
+    fh2QAV0PtPtK0sPeak[i] = 0;
+    fh2ArmPodK0s[i] = 0;
+    fh2QAV0PtPtLambdaPeak[i] = 0;
+    fh2ArmPodLambda[i] = 0;
+    fh2QAV0PtPtALambdaPeak[i] = 0;
+    fh2ArmPodALambda[i] = 0;
+    fh2ArmPod[i] = 0;    
+  } 
 }
 
 
@@ -312,6 +331,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
   fOutputListStd(0),
   fOutputListStdJets(0),
   fOutputListMC(0),
+  fOutputListQA(0),
   fV0CandidateArray(0),
   fGenMCV0(0),
   fGenMCXis(0),                  //! contains MC generated V0s
@@ -512,7 +532,25 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
     fhnV0LambdaInJetsDaughterEtaPtPtMCRec[i] = 0;
     fhnV0ALambdaInclDaughterEtaPtPtMCRec[i] = 0;
     fhnV0ALambdaInJetsDaughterEtaPtPtMCRec[i] = 0; 
-  }  
+
+    fh1JetArea[i] = 0;
+    fh1JetRho[i] = 0;
+    fh1JetRhoArea[i] = 0;
+    fh2JetPtPt[i] = 0;
+    fh1DaughtersPt[i] = 0;
+    fh1ExcludedDaughtersPt[i] = 0;
+    fh1IncludedDaughtersPt[i] = 0;
+  } 
+  for(Int_t i = 0; i < fgkiNQAIndeces; i++)
+  {
+    fh2QAV0PtPtK0sPeak[i] = 0;
+    fh2ArmPodK0s[i] = 0;
+    fh2QAV0PtPtLambdaPeak[i] = 0;
+    fh2ArmPodLambda[i] = 0;
+    fh2QAV0PtPtALambdaPeak[i] = 0;
+    fh2ArmPodALambda[i] = 0;
+    fh2ArmPod[i] = 0;    
+  } 
 	
   // Define input and output slots here
   // Input slot #0 works with a TChain
@@ -522,6 +560,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
   DefineOutput(1, TList::Class()); //Histograms
   DefineOutput(2, TList::Class()); //Jet histograms
   DefineOutput(3, TList::Class()); //MC histograms
+  DefineOutput(4, TList::Class()); //QA histograms
 }
 
 //Destructor
@@ -564,6 +603,8 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
   fOutputListStdJets->SetOwner();
   fOutputListMC = new TList();
   fOutputListMC->SetOwner();
+  fOutputListQA = new TList();
+  fOutputListQA->SetOwner();
   //List of V0 candidates 
   fV0CandidateArray = new TClonesArray("AliAODv0", 10); 
   fV0CandidateArray->SetOwner();
@@ -801,9 +842,9 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
     fOutputListStd->Add(fhnV0InvMassCutALambda[i]);
     // event histograms
     fh1VtxZ[i] = new TH1D(Form("fh1VtxZ_%d", i), Form("#it{z} coordinate of the primary vertex, cent: %s;#it{z} (cm)", GetCentBinLabel(i).Data()), 300, -15, 15);
-    fOutputListStd->Add(fh1VtxZ[i]);
+    fOutputListQA->Add(fh1VtxZ[i]);
     fh2VtxXY[i] = new TH2D(Form("fh2VtxXY_%d", i), Form("#it{xy} coordinate of the primary vertex, cent: %s;#it{x} (cm);#it{y} (cm)", GetCentBinLabel(i).Data()), 200, -0.2, 0.2, 500, -0.5, 0.5);
-    fOutputListStd->Add(fh2VtxXY[i]);
+    fOutputListQA->Add(fh2VtxXY[i]);
     
     //jet histograms
     fh1PtJet[i] = new TH1D(Form("fh1PtJet_%d", i), Form("Jet pt spectrum, cent: %s;#it{p}_{T} jet (GeV/#it{c})", GetCentBinLabel(i).Data()), 2 * iNJetPtBins, dJetPtMin, dJetPtMax);
@@ -869,6 +910,25 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
     fOutputListStdJets->Add(fhnV0InMedALambda[i]);
     fOutputListStdJets->Add(fhnV0OutJetALambda[i]);
     fOutputListStdJets->Add(fhnV0NoJetALambda[i]);
+
+    fh1JetArea[i] = new TH1D(Form("fh1JetArea_%d", i), Form("Jet area, cent: %s;#it{A}_{jet};counts", GetCentBinLabel(i).Data()), 100, 0., 1.);
+    fh1JetRho[i] = new TH1D(Form("fh1JetRho_%d", i), Form("Median jet energy density, cent: %s;#rho;counts", GetCentBinLabel(i).Data()), 100, 0., 1000.);
+    fh1JetRhoArea[i] = new TH1D(Form("fh1JetRhoArea_%d", i), Form("Median jet energy density * jet area, cent: %s;#rho*Area;counts", GetCentBinLabel(i).Data()), 200, 0., 200.);    
+    fh2JetPtPt[i] = new TH2D(Form("fh2JetPtPt_%d", i), Form("Raw jet pT vs subtracted jet pT, cent: %s;#it{p}_{T}^{raw};#it{p}_{T}^{subtr}", GetCentBinLabel(i).Data()), 10 * iNJetPtBins, dJetPtMin, dJetPtMax, 10 * iNJetPtBins, dJetPtMin, dJetPtMax);
+    
+    fOutputListQA->Add( fh1JetArea[i]);
+    fOutputListQA->Add( fh1JetRho[i]);
+    fOutputListQA->Add( fh1JetRhoArea[i]);
+    fOutputListQA->Add(fh2JetPtPt[i]);
+
+    fh1DaughtersPt[i] = new TH1D(Form("fh1DaughtersPt_%d", i), Form("Daughters (to be excl) Pt, cent: %s;#it{p}_{T} (GeV/#it{c});counts", GetCentBinLabel(i).Data()), 200, 0., 10.);
+    fh1ExcludedDaughtersPt[i] = new TH1D(Form("fh1ExcludedDaughtersPt_%d", i), Form("Excluded Daughters Pt, cent: %s;#it{p}_{T} (GeV/#it{c});counts", GetCentBinLabel(i).Data()), 200, 0., 10.);
+    fh1IncludedDaughtersPt[i] = new TH1D(Form("fh1IncludedDaughtersPt_%d", i), Form("Included Daughters Pt: %s;#it{p}_{T} (GeV/#it{c});counts", GetCentBinLabel(i).Data()), 200, 0., 10.);
+    
+    fOutputListQA->Add( fh1DaughtersPt[i]);
+    fOutputListQA->Add( fh1ExcludedDaughtersPt[i]);
+    fOutputListQA->Add( fh1IncludedDaughtersPt[i]);
+    
 
     if(fbMCAnalysis) {
       // inclusive pt
@@ -1025,7 +1085,25 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
     fOutputListStd->Add(fh1V0InvMassLambdaAll[i]);
     fOutputListStd->Add(fh1V0InvMassALambdaAll[i]);
   }
+  // QA Histograms
+  for(Int_t i = 0; i < fgkiNQAIndeces; i++)
+  {
+    fh2QAV0PtPtK0sPeak[i] = new TH2D(Form("fh2QAV0PtPtK0sPeak_%d", i), "QA: K0s: Daughter Pt vs Pt;neg pt;pos pt", 200, 0, 10, 200, 0, 10);
+    fh2QAV0PtPtLambdaPeak[i] = new TH2D(Form("fh2QAV0PtPtLambdaPeak_%d", i), "QA: Lambda: Daughter Pt vs Pt;neg pt;pos pt", 200, 0, 10, 200, 0, 10);
+    fh2QAV0PtPtALambdaPeak[i] = new TH2D(Form("fh2QAV0PtPtALambdaPeak_%d", i), "QA: anti-Lambda: Daughter Pt vs Pt;neg pt;pos pt",  200, 0, 10, 200, 0, 10);
+    fh2ArmPod[i] = new TH2D(Form("fh2ArmPod_%d", i), "Armenteros-Podolanski;#alpha;#it{p}_{T}^{Arm}", 100, -1., 1., 50, 0., 0.25);
+    fh2ArmPodK0s[i] = new TH2D(Form("fh2ArmPodK0s_%d", i), "K0s: Armenteros-Podolanski;#alpha;#it{p}_{T}^{Arm}", 100, -1., 1., 50, 0., 0.25);
+    fh2ArmPodLambda[i] = new TH2D(Form("fh2ArmPodLambda_%d", i), "Lambda: Armenteros-Podolanski;#alpha;#it{p}_{T}^{Arm}", 100, -1., 1., 50, 0., 0.25);
+    fh2ArmPodALambda[i] = new TH2D(Form("fh2ArmPodALambda_%d", i), "ALambda: Armenteros-Podolanski;#alpha;#it{p}_{T}^{Arm}", 100, -1., 1., 50, 0., 0.25);
 
+    fOutputListQA->Add(fh2QAV0PtPtK0sPeak[i]);
+    fOutputListQA->Add(fh2QAV0PtPtLambdaPeak[i]);
+    fOutputListQA->Add(fh2QAV0PtPtALambdaPeak[i]);
+    fOutputListQA->Add(fh2ArmPod[i]);
+    fOutputListQA->Add(fh2ArmPodK0s[i]);
+    fOutputListQA->Add(fh2ArmPodLambda[i]);
+    fOutputListQA->Add(fh2ArmPodALambda[i]);
+  }
 
 
   for(Int_t i = 0; i < fOutputListStd->GetEntries(); ++i) {
@@ -1340,6 +1418,9 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     Double_t dPtV0 = TMath::Sqrt(v0->Pt2V0()); // transverse momentum of V0
     vecV0Momentum = TVector3(v0->Px(), v0->Py(), v0->Pz()); // set the vector of V0 momentum
     
+    if(v0->GetNDaughters() != 2) 
+      continue;
+
     //1
     //V0 min pt 
     if(dPtV0 < fdCutV0PtMin)
@@ -1392,6 +1473,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     if(!bIsCandidateK0s && !bIsCandidateLambda && !bIsCandidateALambda)
       continue;
 
+
     // Retrieving all relevant properties of the V0 candidate
     Bool_t bOnFlyStatus = v0->GetOnFlyStatus(); // online (on fly) reconstructed vs offline reconstructed
     const AliAODTrack* trackPos = (AliAODTrack*)v0->GetDaughter(0); // positive daughter track
@@ -1440,8 +1522,24 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     Char_t cTypeVtxProdNeg = prodVtxDaughterNeg->GetType(); // type of the production vertex
     
     Double_t dEnergy = 0;
-   //===== Start of reconstruction cutting =====
 
+    //fill qa histograms  before cuts 
+    if(bIsCandidateK0s && bIsInPeakK0s) {
+      fh2QAV0PtPtK0sPeak[0]->Fill(trackNeg->Pt(), trackPos->Pt());
+      fh2ArmPodK0s[0]->Fill(dAlpha, dPtArm);
+    }
+
+    if(bIsCandidateLambda && bIsInPeakLambda){
+      fh2QAV0PtPtLambdaPeak[0]->Fill(trackNeg->Pt(), trackPos->Pt());
+      fh2ArmPodLambda[0]->Fill(dAlpha, dPtArm);
+    }    
+    if(bIsCandidateALambda && bIsInPeakALambda){
+      fh2QAV0PtPtALambdaPeak[0]->Fill(trackNeg->Pt(), trackPos->Pt());
+      fh2ArmPodALambda[0]->Fill(dAlpha, dPtArm);
+    }
+    fh2ArmPod[0]->Fill(dAlpha, dPtArm);
+
+    //===== Start of reconstruction cutting =====
     // 2
     // All V0 candidates in mass range
     FillCandidates(dMassV0K0s, dMassV0Lambda, dMassV0ALambda, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCutIndex, iCentIndex);
@@ -1682,13 +1780,27 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     //===== End of reconstruction cutting =====
 
     if(!bIsCandidateK0s && !bIsCandidateLambda && !bIsCandidateALambda)
-      continue;
+      continue;   
+    //Fill QA histograms  after cuts 
+    if(bIsCandidateK0s && bIsInPeakK0s) {
+      fh2QAV0PtPtK0sPeak[1]->Fill(trackNeg->Pt(), trackPos->Pt());
+      fh2ArmPodK0s[1]->Fill(dAlpha, dPtArm);
+    }
+    if(bIsCandidateLambda && bIsInPeakLambda){
+      fh2QAV0PtPtLambdaPeak[1]->Fill(trackNeg->Pt(), trackPos->Pt());
+      fh2ArmPodLambda[1]->Fill(dAlpha, dPtArm);
+    }    
+    if(bIsCandidateALambda && bIsInPeakALambda){
+      fh2QAV0PtPtALambdaPeak[1]->Fill(trackNeg->Pt(), trackPos->Pt());
+      fh2ArmPodALambda[1]->Fill(dAlpha, dPtArm);
+    }
+    fh2ArmPod[1]->Fill(dAlpha, dPtArm);
 
     if(fbMCAnalysis) {
       AliEmcalJet *ZeroJet = 0;
       AssociateRecV0withMC(v0, ZeroJet, bIsCandidateK0s, bIsCandidateLambda, bIsCandidateALambda, iCentIndex);
     }
-    
+
     Int_t uid = 0; //?
     //===== Start of filling V0 spectra =====
     // iCutIndex = 16
@@ -1803,7 +1915,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   TLorentzVector vecPerpMinus; // 4-momentum of perpendicular cone minus
 
   //Background estimation 
-
+  Double_t drho;
   fastjet::JetMedianBackgroundEstimator bge;
   fastjet::Subtractor subtr(&bge);
   bge.set_selector(selectorBG); 
@@ -1813,7 +1925,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   std::vector<fastjet::PseudoJet> jetsBG = sorted_by_pt(selectorBG(cluster_seq_BG.inclusive_jets())); //find the kT jets
   if (jetsBG.size() > 0) {
     bge.set_jets(jetsBG);  // give the kT jets to the background estimator
-    bge.rho();
+    drho = bge.rho();
   }
 
   //if (fFastJetWrapper.GetInputVectors().size() == 0) 
@@ -1836,6 +1948,8 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   Int_t iV0Jets = 0;
   fastjet::PseudoJet jetSub;
 
+  fh1JetRho[iCentIndex]->Fill(drho);
+
   for (UInt_t ijet = 0; ijet < vJetsIncl.size(); ++ijet) {
     Int_t ij = indexes[ijet];
     AliDebug(3,Form("Jet pt = %f, area = %f", vJetsIncl[ij].perp(), fFastJetWrapper.GetJetArea(ij)));
@@ -1845,7 +1959,13 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
         (vJetsIncl[ij].phi() < fdJetPhiMin) || (vJetsIncl[ij].phi() > fdJetPhiMax))
       continue;
 
+    fh1JetArea[iCentIndex]->Fill(fFastJetWrapper.GetJetArea(ij));
+    fh1JetRhoArea[iCentIndex]->Fill(fFastJetWrapper.GetJetArea(ij) * drho);
+
     jetSub = subtr(vJetsIncl[ij]); //background subtraction
+    
+    fh2JetPtPt[iCentIndex]->Fill(vJetsIncl[ij].perp(), jetSub.perp());
+    
     if(jetSub == 0) 
       continue;
     fh1NV0sInJetStats->Fill(8);  //N of jets before cuts (after bg sub)
@@ -2116,6 +2236,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   PostData(1, fOutputListStd);
   PostData(2, fOutputListStdJets);
   PostData(3, fOutputListMC);
+  PostData(4, fOutputListQA);
     
   if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "End");
 
@@ -2397,7 +2518,7 @@ void AliAnalysisTaskStrangenessInJets::AddEventTracks(TClonesArray* coll, TClone
 
   AliVTrack* track = 0;
   Int_t n = coll->GetEntriesFast();
-   
+  //cout << "Daug: " << allDaughters.GetEntries() << " V0s: " << n << endl;
   TIter nexttr(tracks);
   Int_t numbtrack = 0;
   Int_t nadded = 0;
@@ -2413,11 +2534,13 @@ void AliAnalysisTaskStrangenessInJets::AddEventTracks(TClonesArray* coll, TClone
         fFastJetWrapper.AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), n);
         VectorBgPart.push_back(fastjet::PseudoJet(track->Px(), track->Py(), track->Pz(), track->E()));
         //InputBgParticles.push_back(fastjet::PseudoJet(track->Px(), track->Py(), track->Pz(), track->E()));
-      	n++;
+      	fh1IncludedDaughtersPt[0]->Fill(track->Pt());
+        n++;
       	nadded++;
       	AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is included", numbtrack, track->Pt(), track->Eta(), track->Phi()));
     }
     else {
+      fh1ExcludedDaughtersPt[0]->Fill(track->Pt());
 		  nexcluded++;
 		  AliDebug(2, Form("Track %d (pT = %.3f, eta = %.3f, phi = %.3f) is excluded", numbtrack, track->Pt(), track->Eta(), track->Phi()));
     }
@@ -2452,6 +2575,8 @@ Double_t AliAnalysisTaskStrangenessInJets::AddDaughters(AliAODRecoDecay* cand, T
         continue;
       }
       //printf("cand2 false, will not have daughters, add to array, Daughter pT = %.3f\n", track->Pt());
+      if (track->Pt() > fdJetTrackPtMin && TMath::Abs(track->Eta()) < fdJetTrackEtaMax)
+        fh1DaughtersPt[0]->Fill(track->Pt());
       daughters.AddLast(track);
       pt += track->Pt();
       ntot++;
@@ -2477,7 +2602,7 @@ void AliAnalysisTaskStrangenessInJets::AddEventTracksMC(TClonesArray* coll, TClo
   AliAODMCParticle* v0part = 0;
   while ((v0part = static_cast<AliAODMCParticle*>(next()))) {
     AliDebug(2, Form("Found a MC generated V0 with pT = %.3f, eta = %.3f, phi = %.3f \n", v0part->Pt(), v0part->Eta(), v0part->Phi())); 
-    Int_t n = v0part->GetNDaughters();  //why 3 daughters occur? 
+    Int_t n = v0part->GetNDaughters();  
     for (Int_t i = 0; i < n; i++) {
       Int_t iDLabel = v0part->GetDaughterLabel(i);
       vecDaughterLabels.push_back(iDLabel);
@@ -2509,7 +2634,7 @@ void AliAnalysisTaskStrangenessInJets::AddEventTracksMC(TClonesArray* coll, TClo
   Int_t numbtrack = 0;
   Int_t nadded = 0;
   Int_t nexcl = 0;
-  while ((track = static_cast<AliAODTrack*>(nexttr()))) { //here add condition for the track pt fdJetTrackPtMin!!!
+  while ((track = static_cast<AliAODTrack*>(nexttr()))) { 
 	  numbtrack++;    
 	  if (track->Pt() < fdJetTrackPtMin || TMath::Abs(track->Eta()) > fdJetTrackEtaMax) //condition for the minimum track pt  and tracj eta
       continue;   
@@ -2896,11 +3021,13 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
     // Select only primary-like MC V0 particles
     if(!bV0MCIsPrimaryDist)
       continue;
-
+   
     // Select only particles from a specific generator
     if(!IsFromGoodGenerator(iPartMC))
       continue;
- 
+    
+    if(particleMC->GetNDaughters() != 2)
+      continue;
 
     Int_t ind = 0;
     fh1MCStats->Fill(3); //Generated V0s
@@ -2929,12 +3056,14 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
     InputBgParticlesMC.push_back(fastjet::PseudoJet(particleMC->Px(), particleMC->Py(), particleMC->Pz(), particleMC->E()));
     
     //save highest daughter pt for the leading track pt cut
-    Int_t idaughterPos= particleMC->GetDaughterFirst();
-    Int_t idaughterNeg= particleMC->GetDaughterLast();
+    Int_t idaughterPos = particleMC->GetDaughterFirst();
+    Int_t idaughterNeg = particleMC->GetDaughterLast();
     AliAODMCParticle* DaughterPos = (AliAODMCParticle*)MCPartArray->At(idaughterPos);
     AliAODMCParticle* DaughterNeg = (AliAODMCParticle*)MCPartArray->At(idaughterNeg);
-    if(DaughterPos->Pt() > DaughterNeg->Pt()) dvecDaughterPtMC.push_back(DaughterPos->Pt());
-    else dvecDaughterPtMC.push_back(DaughterNeg->Pt());
+    Double_t dDPosPt = DaughterPos->Pt();
+    Double_t dDNegPt = DaughterNeg->Pt();
+    if(dDPosPt > dDNegPt) dvecDaughterPtMC.push_back(dDPosPt);
+    else dvecDaughterPtMC.push_back(dDNegPt);
 
 
     iNMCCand++;
@@ -3034,8 +3163,6 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
     Int_t ial = 0; 
     Int_t index = 0;
     AliAODMCParticle* jetv0 = 0;
-    
-
 
     for(Int_t ic = 0; ic < iNConst; ic++){
 	    uid = constits[ic].user_index();
