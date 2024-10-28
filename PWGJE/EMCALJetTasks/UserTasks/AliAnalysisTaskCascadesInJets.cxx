@@ -1373,6 +1373,8 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
     Double_t dPtCascade = TMath::Sqrt(Cascade->Pt2Xi()); // transverse momentum of Cascade
     vecCascadeMomentum = TVector3(Cascade->MomXiX(), Cascade->MomXiY(), Cascade->MomXiZ()); // set the vector of Cascade momentum
     
+    if(Cascade->GetNDaughters() != 2) 
+      continue;
     //1
     //Cascade min pt 
     if(dPtCascade < fdCutCascadePtMin)
@@ -1485,6 +1487,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
 
     Double_t dEnergy = 0;
      
+
     //===== Start of reconstruction cutting =====
     // 2
     // All Cascade candidates in mass range
@@ -2860,7 +2863,9 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
     // Select only particles from a specific generator
     if(!IsFromGoodGenerator(iPartMC))
       continue;
- 
+    
+    if(particleMC->GetNDaughters() != 2)
+      continue; 
 
     Int_t ind = 0;
     fh1MCStats->Fill(3); //Generated Cascades
@@ -2899,8 +2904,10 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
     Int_t idaughterNeg= particleMC->GetDaughterLast();
     AliAODMCParticle* DaughterPos = (AliAODMCParticle*)MCPartArray->At(idaughterPos);
     AliAODMCParticle* DaughterNeg = (AliAODMCParticle*)MCPartArray->At(idaughterNeg);
-    if(DaughterPos->Pt() > DaughterNeg->Pt()) dvecDaughterPtMC.push_back(DaughterPos->Pt());
-    else dvecDaughterPtMC.push_back(DaughterNeg->Pt());
+    Double_t dDPosPt = DaughterPos->Pt();
+    Double_t dDNegPt = DaughterNeg->Pt();
+    if(dDPosPt > dDNegPt) dvecDaughterPtMC.push_back(dDPosPt);
+    else dvecDaughterPtMC.push_back(dDNegPt);
 
     iNMCCand++;
   }
