@@ -76,9 +76,10 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   void ChangeCut(AliESDtrackCuts* fCuts);
   void SetSPDVtxZ(double cut) { fSPDVtxCut = cut; }
   void IsTowerEnergy(bool sv) { fTowerEnergy = sv; };
-  void IsUsingZEM(bool iszem, double zem) {
-    fUseZEMcut = iszem;
-    fZEMcut = zem;
+  void IsUsingZEM(bool zemand, double zemcut, double v0mcut) {
+    fUseZEMAND = zemand;
+    fZEMcut = zemcut;
+    fV0Mcut = v0mcut;
   };
 
  protected:
@@ -91,10 +92,12 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   bool fIsSystematics;
   bool fVaryVtxZPos;
   bool fTowerEnergy;
-  bool fUseZEMcut;
+  bool fUseZEMAND;
+  /*bool fUseZEMcut;*/
   bool fIsZNhit;
   bool fIsZEMhit;
   double fZEMcut;
+  double fV0Mcut;
   float fMinVtxZPos;
   float fMaxVtxZPos;
   int fSystematic;
@@ -167,7 +170,9 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2F* hZPCvspT;
   TH2F* hZPAvspT;
   TH2F* hZDCvspT;
+  TH2F* hZNCvsZEM;
   TH2F* hZDCvsZEM;
+  TH2F* hV0MvsZEM;
   TH2F* hV0MvsZDC;
   TH2F* hV0MvsZNC;
   TH2F* hV0MvsZNA;
@@ -176,12 +181,16 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TH2F* hZNhits;
   TH2F* hZEMhits;
   TH1F* hZNZEMhits;
-  TProfile* pZDCvspT;
+  /*TH3F* hZNCvsNvsMepT;*/
+  /*TH3F* hZNAvsNvsMepT;*/
+  /*TH3F* hZPCvsNvsMepT;*/
+  /*TH3F* hZPAvsNvsMepT;*/
+  /*TH3F* hZDCvsNvsMepT;*/
+  TProfile* pZNCvspT;
   TProfile* pZDCvsZEM;
   TProfile* pZDCvsNch;
   TProfile* pZVtxvsSPDClus;
   TProfile* pSPDClusvsEta;
-
   TProfile* pZNCvsV0Amp;
   TProfile* pZNAvsV0Amp;
   TProfile* pZPCvsV0Amp;
@@ -198,7 +207,6 @@ class AliAnalysisTaskDataSpeedOfSound : public AliAnalysisTaskSE {
   TProfile* pZNAvsSPD;
   TProfile* pZPCvsSPD;
   TProfile* pZPAvsSPD;
-
   double fSPDVtxCut;
   int fSPDFull;
   int fSPDEtaAdj;

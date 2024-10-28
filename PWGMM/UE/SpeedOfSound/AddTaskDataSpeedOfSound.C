@@ -34,7 +34,7 @@ AliAnalysisTaskDataSpeedOfSound* AddTaskDataSpeedOfSound(
   taskKno->SetSystematics(false, 0);
   taskKno->SetSPDVtxZ(10.);
   taskKno->IsTowerEnergy(true);
-  taskKno->IsUsingZEM(true, 800.);
+  taskKno->IsUsingZEM(true, 0., 50.);
   mgr->AddTask(taskKno);
 
   mgr->ConnectInput(taskKno, 0, mgr->GetCommonInputContainer());
