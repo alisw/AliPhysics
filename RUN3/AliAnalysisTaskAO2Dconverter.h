@@ -98,6 +98,7 @@ public:
     kHepMcCrossSections,
     kHepMcPdfInfo,
     kHepMcHeavyIon,
+    kRun2TrackExtras,
     kTrees
   };
   enum TaskModes { // Flag for the task operation mode
@@ -137,6 +138,7 @@ public:
   }; // corresponds to O2/Framework/Core/include/Framework/DataTypes.h
   enum TrackFlagsRun2Enum {
     ITSrefit = 0x1,
+    FreeClsSPDTracklet = 0x1, // for SPD tracklets, tracklet from cluster not used in tracking
     TPCrefit = 0x2,
     GoldenChi2 = 0x4
     // NOTE Highest 4 bits reservd for PID hypothesis
@@ -346,6 +348,7 @@ private:
     Float_t fTOFChi2 = -999.f;    /// chi2 TOF match (?)
 
     // PID
+    Float_t fITSSignal = -999.f; /// dE/dX ITS
     Float_t fTPCSignal = -999.f; /// dE/dX TPC
     Float_t fTRDSignal = -999.f; /// dE/dX TRD
     // Float_t fTOFSignal = -999.f; /// TOFsignal
