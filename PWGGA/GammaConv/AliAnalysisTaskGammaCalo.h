@@ -64,6 +64,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     void ProcessTrueMesonCandidates( AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     void ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1);
     void ProcessAODSphericityParticles();
+    void ApplyPrefilterForClusters();
 
     // switches for additional analysis streams or outputs
     void SetLightOutput(Int_t flag){fDoLightOutput = flag;}
@@ -180,6 +181,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     Int_t*                fDDLRange_HistoClusGamma;                             //! Min and Max Value for Modules in PHOS for fHistoClusGamma E and Pt
     AliCaloTriggerMimicHelper**     fCaloTriggerMimicHelper;                    //!Array wich points to AliCaloTriggerMimicHelper for each Event Cut
     map<TString, Bool_t>  fSetEventCutsOutputlist;                              //! Store, if Output list for Event Cut has already been added
+    bool                  fDoApplyPrefilter;                                    //! Switch to apply prefilter or not
 
     //histograms for mesons reconstructed quantities
     TH2F**                fHistoMotherInvMassPt;                                //! array of histogram with signal + BG for same event photon pairs, inv Mass, pt
@@ -534,7 +536,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 97);
+    ClassDef(AliAnalysisTaskGammaCalo, 98);
 };
 
 #endif

@@ -246,6 +246,7 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Bool_t   MesonLeadTrackSelectionAODMC(AliVEvent* curEvent, AliAODMCParticle* curmeson);
     Bool_t   MesonLeadTrackSelection(AliVEvent* curEvent, AliAODConversionMother* curmeson);
     Bool_t   MesonLeadTrackSelectionBase(AliVEvent* curEvent, TVector3 curmeson);
+    bool     GetDoApplyPrefilter() const {return fDoApplyPrefilter;}
 
     // Jet specific function
     Bool_t  IsParticleInJet(std::vector<Double_t> vectorJetEta, std::vector<Double_t> vectorJetPhi, Double_t JetRadius, Double_t partEta, Double_t partPhi, Int_t &matchedJet, Double_t &RJetPi0Cand);
@@ -377,6 +378,8 @@ class AliConversionMesonCuts : public AliAnalysisCuts {
     Float_t     fSingleDaughterMinE;            ///< if above is enabled, at least one daughter contributing to neutral meson needs to fulfill fMinSingleDaughterE
     Int_t       fInLeadTrackDir;                ///< switch to Analyse mesons (not) in direction of highest pT track
     Double_t    fLeadTrackMinPt;                ///< min pT for leading track
+
+    bool        fDoApplyPrefilter;              ///< set to true in case the selection window with this option enabled is chosen. This cuts away all gamma pairs with a mass in the specified window
 
   private:
 
