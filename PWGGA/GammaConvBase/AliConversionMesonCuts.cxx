@@ -192,7 +192,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const char *name,const char *titl
   fNDaughterEnergyCut(0),
   fSingleDaughterMinE(0.),
   fInLeadTrackDir(0),
-  fLeadTrackMinPt(4.)
+  fLeadTrackMinPt(4.),
+  fDoApplyPrefilter(false)
 {
   for(Int_t jj=0;jj<kNCuts;jj++){fCuts[jj]=0;}
   fCutString=new TObjString((GetCutNumber()).Data());
@@ -324,7 +325,8 @@ AliConversionMesonCuts::AliConversionMesonCuts(const AliConversionMesonCuts &ref
   fNDaughterEnergyCut(0),
   fSingleDaughterMinE(0.),
   fInLeadTrackDir(ref.fInLeadTrackDir),
-  fLeadTrackMinPt(ref.fLeadTrackMinPt)
+  fLeadTrackMinPt(ref.fLeadTrackMinPt),
+  fDoApplyPrefilter(false)
 
 {
   // Copy Constructor
@@ -2492,7 +2494,16 @@ Bool_t AliConversionMesonCuts::SetSelectionWindowCut(Int_t selectionCut){
       fSelectionHigh      = 0.145;
       fAcceptMesonMass    = kTRUE;
       fUseGammaSelection  = kTRUE;
-
+      break;
+    case 30: // u EMC-EMC prefilter
+      fDoApplyPrefilter   = true;
+      fSelectionLow       = 0.;
+      fSelectionHigh      = 0.16;
+      break;
+    case 31: // v EMC-EMC prefilter
+      fDoApplyPrefilter   = true;
+      fSelectionLow       = 0.1;
+      fSelectionHigh      = 0.16;
       break;
     default:
       cout<<"Warning: SelectionCut not defined "<<selectionCut<<endl;

@@ -4824,6 +4824,11 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411799909fegr9v0000","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi r
     cuts.AddCutCalo("00010113","411799909fegm9v0000","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi m
     cuts.AddCutCalo("00010113","411799909fegl9v0000","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi l
+  
+  // eta prefilter
+  } else if (trainConfig == 3310){  
+    cuts.AddCutCalo("00010113","411799909feg09v0000","0s63103u000000d0"); // min E = 300 MeV, NCell = 0, prefilter 0-160 MeV
+    cuts.AddCutCalo("00010113","411799909feg09v0000","0s63103v000000d0"); // min E = 300 MeV, NCell = 0, prefilter 100-160 MeV
 
   //////////////////////    Mult slices  PHOS pp 13 TeV   //////////////////////////////////
 // INT7 trigger	V0M high mult	EG2	EG1	SPD high mult

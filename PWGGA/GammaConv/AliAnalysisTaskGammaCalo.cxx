@@ -3964,6 +3964,11 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   vectorClusterM02.clear();
   vectorIsFromDesiredHeader.clear();
 
+  // Prefilter studies
+  if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->GetDoApplyPrefilter()){
+    ApplyPrefilterForClusters();
+  }
+
   if(fProduceCellIDPlots){
     for(Long_t i = 0; i < nclus; i++){
       if( mapIsClusterAccepted[i] != 1 ) continue;
@@ -4248,6 +4253,40 @@ void AliAnalysisTaskGammaCalo::ProcessClusters()
   }
 
   return;
+}
+
+//________________________________________________________________________
+void AliAnalysisTaskGammaCalo::ApplyPrefilterForClusters(){
+  std::vector<int> vecIndexReject;
+  const int nClus = fClusterCandidates->GetEntries();
+  for(int ig0 = 0; ig0 < nClus; ++ig0){
+    AliAODConversionPhoton *gamma0=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(ig0));
+    if (gamma0==NULL) continue;
+    for(int ig1 = ig0 + 1; ig1 < nClus; ++ig1){
+      AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(ig1));
+      if (gamma1==NULL) continue;
+      AliAODConversionMother *pi0cand = new AliAODConversionMother(gamma0,gamma1);
+      if(((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 0)){
+        vecIndexReject.push_back(ig0);
+        vecIndexReject.push_back(ig1);
+        // cout << "meson mass in prefilter " << pi0cand->M() << " rejected" << endl;
+      }
+    }
+  }
+  // return if no clusters are rejected
+  if(vecIndexReject.size() == 0){
+    return;
+  }
+  // sort and make unique
+  sort(vecIndexReject.begin(), vecIndexReject.end());
+  vector<int>::iterator it = unique(vecIndexReject.begin(), vecIndexReject.end());  
+  vecIndexReject.resize(distance(vecIndexReject.begin(),it));
+  // remove clusters in list
+  for(int i = (int) vecIndexReject.size() - 1; i >= 0; --i){
+    // cout << "Rejecting cluster " << vecIndexReject[i] << endl;
+    fClusterCandidates->RemoveAt(vecIndexReject[i]);
+  }
+  // cout << "List size reduced from " << nClus << " to " << fClusterCandidates->GetEntries() << endl;
 }
 
 //________________________________________________________________________
