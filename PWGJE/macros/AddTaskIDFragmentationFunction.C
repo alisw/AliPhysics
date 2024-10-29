@@ -126,7 +126,8 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
   AliJetContainer::EJetType_t* typeOfJet = 0x0,
   TString correctionTaskFileName = "",
   TString period = "lhc13c",
-  TString fastSimParamFile = "")
+  TString fastSimParamFile = "",
+  TString groomingParameters = "")
 {
    // Creates a fragmentation function task,
    // configures it and adds it to the analysis manager.
@@ -139,13 +140,12 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
 	// so far only default parameter used
   
      // Get the pointer to the existing analysis manager via the static access method.
-   //==============================================================================
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   if (!mgr) {
-    ::Error("AddTaskIDFragmentationFunction", "No analysis manager to connect to.");
-    return NULL;
-   }
-
+     //==============================================================================
+   	AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   	if (!mgr) {
+		::Error("AddTaskIDFragmentationFunction", "No analysis manager to connect to.");
+		return NULL;
+   	}
 	Int_t debug = -1; // debug level, -1: not set here
 	UInt_t kPhysSel = AliVEvent::kMB | AliVEvent::kINT8 | AliVEvent::kINT7;
 	AliEmcalTrackSelection::ETrackFilterType_t trackFilterType = AliEmcalTrackSelection::kHybridTracks2011woNoRefit;
@@ -163,7 +163,7 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
 	Int_t kMinMultiplicity = -1;
 	Int_t kMaxMultiplicity = -1;
 	
-  //Calculated parameters
+  	//Calculated parameters
 	Bool_t useJets = nJetContainer > 0;
 	
 	Bool_t useFastSimulation = fastSimParamFile != "";
@@ -172,33 +172,35 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
 	
 	AliTrackContainer::SetDefTrackCutsPeriod(period);  
 	
-  if (!jetAcceptanceRegion) {
-    jetAcceptanceRegion = new AliEmcalJet::JetAcceptanceType[nJetContainer];
-    for (Int_t i=0;i<nJetContainer;i++) {
-      jetAcceptanceRegion[i] = AliEmcalJet::kTPC;
-    }
-  }
-  
-  if (!typeOfJet) {
-    typeOfJet = new AliJetContainer::EJetType_t[nJetContainer];
-    for (Int_t i=0;i<nJetContainer;i++) {
-      typeOfJet[i] = AliJetContainer::kChargedJet;
-    }
-  }
-  
-  Bool_t bDoFullJets = kFALSE;
+	if (!jetAcceptanceRegion) {
+		jetAcceptanceRegion = new AliEmcalJet::JetAcceptanceType[nJetContainer];
+		for (Int_t i=0;i<nJetContainer;i++) {
+			jetAcceptanceRegion[i] = AliEmcalJet::kTPC;
+		}
+	}
+	
+	if (!typeOfJet) {
+		typeOfJet = new AliJetContainer::EJetType_t[nJetContainer];
+		for (Int_t i=0;i<nJetContainer;i++) {
+			typeOfJet[i] = AliJetContainer::kChargedJet;
+		}
+	}
+	
+	Bool_t bDoFullJets = kFALSE;
 	for (Int_t i=0;i<nJetContainer;i++) {
 		bDoFullJets = bDoFullJets || (typeOfJet[i] == AliJetContainer::kFullJet);
-  }
+	}
 
    //******************************************************************************
 	
 	Bool_t isMC = mgr->GetMCtruthEventHandler() != 0x0;
 
 	if (isMC) {
-    std::cout << "MCtruthEventHandler found" << std::endl;
-    AddTaskMCTrackSelector("mcparticles", "usedefault", kFALSE, kFALSE, 1, kFALSE);   
+    	std::cout << "MCtruthEventHandler found" << std::endl;
+    	AddTaskMCTrackSelector("mcparticles", "usedefault", kFALSE, kFALSE, 1, kFALSE);   
 	}	
+
+	AliEmcalJetUtilitySoftDrop* softDropUtility = 0x0;
   
 	//Create jet Finder
 	if (useJets) {
@@ -210,6 +212,26 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
 			correctionTask->SetUserConfigurationFilename(correctionTaskFileName.Data());
 			correctionTask->Initialize();
 		}
+
+		if (groomingParameters != "") {
+			TObjArray* groomingParametersArray = groomingParameters.Tokenize(";");
+			if (groomingParametersArray->GetEntriesFast() != 3) {
+				AliError("Wrong parameter count for grooming parameters");
+				return NULL;
+			}
+			Double_t zCut = ((TObjString*)(groomingParametersArray->At(0)))->GetString().Atof();
+			Double_t beta = ((TObjString*)(groomingParametersArray->At(1)))->GetString().Atof();
+			Int_t recursiveDepth = ((TObjString*)(groomingParametersArray->At(1)))->GetString().Atoi();
+
+			AliInfo("Use Grooming with zCut = %f, beta = %f and recursive depth of %d", zCut, beta, recursiveDepth);
+
+			softDropUtility = new AliEmcalJetUtilitySoftDrop("MTFPID");
+			softDropUtility->SetGroomedJetsName("GroomedJets");
+			softDropUtility->SetGroomedJetParticlesName("GroomedJetsParticles");
+			softDropUtility->SetRecursiveDepth(recursiveDepth);
+			softDropUtility->SetZCut(zCut);
+			softDropUtility->SetBeta(beta);
+		}
 		
 		for (Int_t i=0;i<nJetContainer;++i) {
 			Bool_t isChargedJet = (typeOfJet[i] == AliJetContainer::kChargedJet);
@@ -219,6 +241,8 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
 			jetFinderTask[i] = AddTaskEmcalJet(particleName, clustName, AliJetContainer::antikt_algorithm, absRadiusCut, typeOfJet[i], trackPtCut, clustCut, ghostArea, AliJetContainer::pt_scheme, "Jet", jetMinPt, kFALSE, kFALSE);
 			jetFinderTask[i]->SelectCollisionCandidates(kPhysSel);
 			jetFinderTask[i]->SetForceBeamType(iBeamType);
+			if (softDropUtility)
+				jetFinderTask[i]->AddUtility(softDropUtility);
 		}
 
 		AliEmcalJetTask* jetFinderTaskMC = 0x0;
@@ -258,8 +282,9 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
         Form("Fragmentation_Function_%s_%s_%s_%s_filterMaskTracks%d", branchRecJets.Data(), branchGenJets.Data(), typeJets.Data(),
              typeTracks.Data(), filterMaskTracks));
    
-   if (debug>=0) 
-		 task->SetDebugLevel(debug);
+   if (debug>=0) {
+		task->SetDebugLevel(debug);
+   }
 
    task->SetUseNewCentralityEstimation(kTRUE);
    task->SetEventSelectionMask(kPhysSel);
@@ -268,7 +293,7 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
    // Set default parameters 
    // Cut selection 
    task->SetFFRadius(radius); 
-	 task->SelectCollisionCandidates(kPhysSel);
+	   task->SelectCollisionCandidates(kPhysSel);
    
    task->SetOnlyLeadingJets(onlyConsiderLeadingJets); // default: kFALSE
    
@@ -283,11 +308,8 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
   
    task->SetUseFastSimulations(useFastSimulation);	
    if (useFastSimulation) {
-    SetEfficiencyFunctionsFastSimulation(task, fastSimParamFile);
+		SetEfficiencyFunctionsFastSimulation(task, fastSimParamFile);
    }
-// 	 task->SetDoGroomedJets(bDoJetGrooming);
-// 	 task->SetStudyTransversalJetStructure(bStudyTransversalJetStructure);
-// 	 task->SetMinMaxMultiplicity(kMinMultiplicity,kMaxMultiplicity);
 
    mgr->AddTask(task);
 	 
@@ -342,15 +364,22 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
 	 AliJetContainer** jetContainer = new AliJetContainer*[nJetContainer];
 	
 	if (useJets) {
-		TString jetContainerNames[nJetContainer];
 		for (Int_t i=0;i<nJetContainer;++i) {
 			Bool_t isChargedJet = (typeOfJet[i] == AliJetContainer::kChargedJet);
-			jetContainer[i] = task->AddJetContainer(typeOfJet[i], AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, absRadiusCut, jetAcceptanceRegion[i], trackCont, isChargedJet ? 0x0 : clusCont);
+			if (softDropUtility) {
+				jetContainer[i] = task->AddJetContainer(typeOfJet[i], AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, 
+				absRadiusCut, jetAcceptanceRegion[i], trackCont, isChargedJet ? 0x0 : clusCont, "GroomedJets");
+				softDropUtility->SetGroomedJetsName(jetContainer[i]->GetName());			
+			} else {
+				jetContainer[i] = task->AddJetContainer(typeOfJet[i], AliJetContainer::antikt_algorithm, AliJetContainer::pt_scheme, 
+				absRadiusCut, jetAcceptanceRegion[i], trackCont, isChargedJet ? 0x0 : clusCont);
+			}
 			jetContainer[i]->SetMinPt(jetMinPt);
-//       jetContainer[i]->SetEtaLimits(kEtaMin, kEtaMax); //Normally not needed, handled by the *fid region
+			jetContainer[i]->SetEtaLimits(kEtaMin, kEtaMax); //Normally not needed, handled by the *fid region
 			jetContainer[i]->SetPhiLimits(-10.0, 10.0);   //Full acceptance  
 			jetContainer[i]->PrintCuts();
 			jetContainerNames[i] = jetContainer[i]->GetName();
+
 		}
 		
 		task->SetNameJetContainer(jetContainerNames[0]);
