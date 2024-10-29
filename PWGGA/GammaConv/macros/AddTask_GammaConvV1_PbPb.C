@@ -4508,7 +4508,7 @@ void AddTask_GammaConvV1_PbPb(
         fitNameEtaPT = Form("Eta_Data_5TeV_%s", eventCutShort.Data());
       }
       analysisEventCuts[i]->SetUseReweightingWithHistogramFromFile(
-        intPtWeightsCalculationMethod, intPtWeightsCalculationMethod, intPtWeightsCalculationMethod, 
+        intPtWeightsCalculationMethod, intPtWeightsCalculationMethod, kFALSE, 
         fileNamePtWeights, 
         histoNameMCPi0PT, histoNameMCEtaPT, histoNameMCK0sPT, 
         fitNamePi0PT, fitNameEtaPT, fitNameK0sPT);
