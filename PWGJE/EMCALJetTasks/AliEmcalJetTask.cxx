@@ -354,7 +354,7 @@ Int_t AliEmcalJetTask::FindJets()
         }
         if(clusterEff < 1.) {
           Double_t rnd = fRandom.Rndm();
-          if (fClusterEfficiency < rnd) {
+          if (clusterEff < rnd) {
             AliDebug(2,Form("Cluster %d rejected due to artificial tracking inefficiency", it.current_index()));
             continue;
           } 
