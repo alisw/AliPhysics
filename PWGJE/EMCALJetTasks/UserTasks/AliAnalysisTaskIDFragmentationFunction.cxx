@@ -1599,7 +1599,6 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
         break;         
     }
   }
-  return kTRUE;
 
   AliDebugStream(2) << "Process Underlying event..." << std::endl;
   if (fUseJetUEPIDtask && jetContainer && !isPileUpForAllJetUEPIDTasks && !fUseFastSimulations) {
