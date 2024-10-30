@@ -216,14 +216,16 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
 		if (groomingParameters != "") {
 			TObjArray* groomingParametersArray = groomingParameters.Tokenize(";");
 			if (groomingParametersArray->GetEntriesFast() != 3) {
-				AliError("Wrong parameter count for grooming parameters");
+				::Error("AddTaskIDFragmentationFunction", "Wrong parameter count for grooming parameters");
 				return NULL;
 			}
-			Double_t zCut = ((TObjString*)(groomingParametersArray->At(0)))->GetString().Atof();
-			Double_t beta = ((TObjString*)(groomingParametersArray->At(1)))->GetString().Atof();
-			Int_t recursiveDepth = ((TObjString*)(groomingParametersArray->At(1)))->GetString().Atoi();
-
-			AliInfo("Use Grooming with zCut = %f, beta = %f and recursive depth of %d", zCut, beta, recursiveDepth);
+		                  
+			Double_t zCut = ((TObjString*)(groomingParametersArray->At(0)))->GetString().Atof(); // fZCut = 0.1  standard
+			Double_t beta = ((TObjString*)(groomingParametersArray->At(1)))->GetString().Atof(); // fBeta = 0 standard
+			// 0: No Soft Drop; 1: Apply once; -1: Apply until the condition stops the grooming
+			Int_t recursiveDepth = ((TObjString*)(groomingParametersArray->At(2)))->GetString().Atoi(); 
+			
+			Printf("Use Grooming with zCut = %f, beta = %f and recursive depth of %d", zCut, beta, recursiveDepth);
 
 			softDropUtility = new AliEmcalJetUtilitySoftDrop("MTFPID");
 			softDropUtility->SetGroomedJetsName("GroomedJets");
@@ -362,6 +364,7 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
 	}
 	 
 	 AliJetContainer** jetContainer = new AliJetContainer*[nJetContainer];
+	 TString* jetContainerNames = new TString[nJetContainer];
 	
 	if (useJets) {
 		for (Int_t i=0;i<nJetContainer;++i) {
