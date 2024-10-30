@@ -291,10 +291,6 @@ public:
   Bool_t fIsPP;                             // Is pp collision system? -> If yes, centrality will be set to -1
   
   Bool_t fFillDCA;                          //Shall the DCA histograms be filled?
-
-  // Changed jets analysis
-  Double_t fBetaSoftDrop;
-  Double_t fZSoftDrop;
   
   // Fast simulation parameters
   Bool_t fUseFastSimulations;
