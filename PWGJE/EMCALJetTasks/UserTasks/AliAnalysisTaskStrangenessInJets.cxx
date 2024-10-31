@@ -223,7 +223,11 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
     //In jets 
     fhnV0InJetK0s[i] = 0;
     fhnV0InJetLambda[i] = 0;
-    fhnV0InJetALambda[i] = 0;    
+    fhnV0InJetALambda[i] = 0;  
+    //Lead in jets  
+    fhnV0InJetLeadK0s[i] = 0;
+    fhnV0InJetLeadLambda[i] = 0;
+    fhnV0InJetLeadALambda[i] = 0;  
 
     //In cones 
     fhnV0InPerpK0s[i] = 0;
@@ -452,7 +456,11 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
     //In jets 
     fhnV0InJetK0s[i] = 0;
     fhnV0InJetLambda[i] = 0;
-    fhnV0InJetALambda[i] = 0;  
+    fhnV0InJetALambda[i] = 0;
+    //Lead in jets  
+    fhnV0InJetLeadK0s[i] = 0;
+    fhnV0InJetLeadLambda[i] = 0;
+    fhnV0InJetLeadALambda[i] = 0;    
     
     //In cones 
     fhnV0InPerpK0s[i] = 0;
@@ -860,7 +868,11 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
     fhnV0InJetK0s[i] = new THnSparseD(Form("fhnV0InJetK0s_%d", i), Form("K0s: Mass vs Pt in jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsKInJC, xminKInJC, xmaxKInJC);
     fhnV0InJetLambda[i] = new THnSparseD(Form("fhnV0InJetLambda_%d", i), Form("Lambda: Mass vs Pt in jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
     fhnV0InJetALambda[i] = new THnSparseD(Form("fhnV0InJetALambda_%d", i), Form("ALambda: Mass vs Pt in jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
-            
+    //Lead in jets  
+    fhnV0InJetLeadK0s[i] = new THnSparseD(Form("fhnV0InJetLeadK0s_%d", i), Form("Lead K0s: Mass vs Pt in jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsKInJC, xminKInJC, xmaxKInJC);
+    fhnV0InJetLeadLambda[i] = new THnSparseD(Form("fhnV0InJetLeadLambda_%d", i), Form("Lead Lambda: Mass vs Pt in jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC);
+    fhnV0InJetLeadALambda[i] = new THnSparseD(Form("fhnV0InJetLeadALambda_%d", i), Form("Lead ALambda: Mass vs Pt in jets, cent: %s;#it{m}_{inv} (GeV/#it{c}^{2});#it{p}_{T}^{V0} (GeV/#it{c});#it{#eta}_{V0};#it{p}_{T}^{jet} (GeV/#it{c})", GetCentBinLabel(i).Data()), iNDimInJC, binsLInJC, xminLInJC, xmaxLInJC); 
+
     fOutputListStdJets->Add(fh1PtJet[i]);
     fOutputListStdJets->Add(fh1EtaJet[i]);
     fOutputListStdJets->Add(fh2EtaPtJet[i]);
@@ -871,6 +883,9 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
     fOutputListStdJets->Add(fhnV0InJetK0s[i]);
     fOutputListStdJets->Add(fhnV0InJetLambda[i]);
     fOutputListStdJets->Add(fhnV0InJetALambda[i]);
+    fOutputListStdJets->Add(fhnV0InJetLeadK0s[i]);
+    fOutputListStdJets->Add(fhnV0InJetLeadLambda[i]);
+    fOutputListStdJets->Add(fhnV0InJetLeadALambda[i]);
     fOutputListStdJets->Add(fh2EtaPhiRndCone[i]);
 
 
@@ -1871,6 +1886,9 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
       if(bIsInPeakK0s && bIsInPeakALambda)
         uid = iK0ALId + fNCand;
     }	
+    //printf("K0: %d, Lambda: %d, ALambda: %d \nPeakK0: %d, PeakL: %d: PeakAL: %d \n      uid:  %i    \n\n", bIsCandidateK0s,  bIsCandidateLambda, bIsCandidateALambda, bIsInPeakK0s, bIsInPeakLambda, bIsInPeakALambda, uid);
+    //if(bIsInPeakK0s && bIsCandidateK0s)
+    //  cout << "uid: " << uid << endl; 
 
     if(bIsInPeakK0s || bIsInPeakLambda || bIsInPeakALambda){
       if (uid > 0) { // to get rid of the situations when isinpeakcandidate is different from the iscandidate
@@ -2042,7 +2060,25 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
       fh1MCStats->Fill(1); //Reconstructed jets
     iJetCount++;
    //printf("JetPt: %f, sub jetPt: %f \n", vJetsIncl[ij].perp(), jetSub.perp());
-  
+
+    //Fill histograms with leading V0s
+    AliAODv0* leadv0 = 0;
+    if(iindlead >= iK0Id && iindlead < iLambdaId) {
+      leadv0 =  (AliAODv0*)fV0CandidateArray->At(iindlead-iK0Id);
+		  Double_t leadKInJet[4] = {leadv0->MassK0Short(), TMath::Sqrt(leadv0->Pt2V0()), leadv0->Eta(), jet->Pt()};
+      fhnV0InJetLeadK0s[iCentIndex]->Fill(leadKInJet);
+    }
+    else if(iindlead >= iLambdaId && iindlead < iALambdaId) {
+      leadv0 =  (AliAODv0*)fV0CandidateArray->At(iindlead-iLambdaId);
+		  Double_t leadLInJet[4] = {leadv0->MassK0Short(), TMath::Sqrt(leadv0->Pt2V0()), leadv0->Eta(), jet->Pt()};
+      fhnV0InJetLeadLambda[iCentIndex]->Fill(leadLInJet);
+    }
+    else if(iindlead >= iALambdaId && iindlead < iK0LId) {
+      leadv0 =  (AliAODv0*)fV0CandidateArray->At(iindlead-iALambdaId);
+		  Double_t leadALInJet[4] = {leadv0->MassK0Short(), TMath::Sqrt(leadv0->Pt2V0()), leadv0->Eta(), jet->Pt()};
+      fhnV0InJetLeadALambda[iCentIndex]->Fill(leadALInJet);
+    } //add cross cont K/Lambda ?
+
     Int_t uid   = -1;
     Int_t ik = 0;
     Int_t il = 0;
@@ -2093,21 +2129,29 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
 		  if(uid >= iK0LId && uid < iK0ALId) { //K L correlation 	
 		    index = uid-iK0LId; 
         jetv0 = (AliAODv0*)fV0CandidateArray->At(index); 
-		    //Double_t valueKInJet[4] = {jetv0->MassK0Short(), TMath::Sqrt(jetv0->Pt2V0()), jetv0->Eta(), jet->Pt()};
-        //fhnV0InJetK0s[iCentIndex]->Fill(valueKInJet);  		  
-		    //Double_t valueLInJet[4] = {jetv0->MassLambda(), TMath::Sqrt(jetv0->Pt2V0()), jetv0->Eta(), jet->Pt()};
-        //fhnV0InJetLambda[iCentIndex]->Fill(valueLInJet);
+        //cout << "K0s and L in jet " << endl;
+		    Double_t valueKInJet[4] = {jetv0->MassK0Short(), TMath::Sqrt(jetv0->Pt2V0()), jetv0->Eta(), jet->Pt()};
+        fhnV0InJetK0s[iCentIndex]->Fill(valueKInJet);  		   
+		    Double_t valueLInJet[4] = {jetv0->MassLambda(), TMath::Sqrt(jetv0->Pt2V0()), jetv0->Eta(), jet->Pt()};
+        fhnV0InJetLambda[iCentIndex]->Fill(valueLInJet);
         fh1NV0sInJetStats->Fill(5);
+        if(fbMCAnalysis)
+          AssociateRecV0withMC(jetv0, jet, true, true, false, iCentIndex);
+
         ikl++;
 		  }
 		  if(uid >= iK0ALId) { //K AL correlation 	
 		    index = uid-iK0ALId;  
 		    jetv0 = (AliAODv0*)fV0CandidateArray->At(index); 
-        //Double_t valueKInJet[4] = {jetv0->MassK0Short(), TMath::Sqrt(jetv0->Pt2V0()), jetv0->Eta(), jet->Pt()};
-        //fhnV0InJetK0s[iCentIndex]->Fill(valueKInJet);
-        //Double_t valueLInJet[4] = {jetv0->MassAntiLambda(), TMath::Sqrt(jetv0->Pt2V0()), jetv0->Eta(), jet->Pt()};
-        //fhnV0InJetALambda[iCentIndex]->Fill(valueLInJet);
+        //cout << "K0s and AL in jet " << endl;
+        Double_t valueKInJet[4] = {jetv0->MassK0Short(), TMath::Sqrt(jetv0->Pt2V0()), jetv0->Eta(), jet->Pt()};
+        fhnV0InJetK0s[iCentIndex]->Fill(valueKInJet);
+        Double_t valueALInJet[4] = {jetv0->MassAntiLambda(), TMath::Sqrt(jetv0->Pt2V0()), jetv0->Eta(), jet->Pt()};
+        fhnV0InJetALambda[iCentIndex]->Fill(valueALInJet);
         fh1NV0sInJetStats->Fill(6);
+        if(fbMCAnalysis)
+          AssociateRecV0withMC(jetv0, jet, true, false, true, iCentIndex);
+
 		    ikal++;
 		  }		 
      }
