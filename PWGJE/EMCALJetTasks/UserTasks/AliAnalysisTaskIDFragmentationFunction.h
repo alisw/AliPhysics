@@ -310,7 +310,7 @@ private:
   AliAnalysisTaskIDFragmentationFunction(const  AliAnalysisTaskIDFragmentationFunction&);   //Not implemented in AliAnalysisTaskEmcalJet
   AliAnalysisTaskIDFragmentationFunction& operator=(const  AliAnalysisTaskIDFragmentationFunction);   //Not implemented AliAnalysisTaskEmcalJet
   
-  ClassDef(AliAnalysisTaskIDFragmentationFunction, 26);
+  ClassDef(AliAnalysisTaskIDFragmentationFunction, 27);
 };
 
 

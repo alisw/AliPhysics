@@ -57,6 +57,6 @@ class AliEmcalJetUtilitySoftDrop : public AliEmcalJetUtility
   AliRhoParameter       *fRhoParam;                           //!<! event rho
   AliRhoParameter       *fRhomParam;                          //!<! event rhom
 
-  ClassDef(AliEmcalJetUtilitySoftDrop, 1) // Emcal jet utility that implements the constituent subtractor form the fastjet contrib
+  ClassDef(AliEmcalJetUtilitySoftDrop, 2) // Emcal jet utility that implements the constituent subtractor form the fastjet contrib
 };
 #endif
