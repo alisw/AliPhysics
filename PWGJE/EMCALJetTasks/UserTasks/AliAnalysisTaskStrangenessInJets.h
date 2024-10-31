@@ -329,6 +329,7 @@ private:
   THnSparse* fhnV0InclusiveK0s[fgkiNBinsCent]; //! V0 inclusive, in a centrality bin, m_V0; pt_V0; eta_V0
   THnSparse* fhnV0InvMassCutK0s[fgkiNBinsCent]; //! V0 after invariant mass signal window cut, in a centrality bin, m_V0; pt_V0; eta_V0
   THnSparse* fhnV0InJetK0s[fgkiNBinsCent]; //! V0 in jet cones, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet
+  THnSparse* fhnV0InJetLeadK0s[fgkiNBinsCent]; //! leading V0 in jet cones, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet
   //TH2D* fh2ArmPodK0s[fgkiNQAIndeces]; //! Armenteros-Podolanski
   
   THnSparse* fhnV0InPerpK0s[fgkiNBinsCent]; //! V0 in perpendicular cones, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet
@@ -345,6 +346,7 @@ private:
   THnSparse* fhnV0InclusiveLambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0InvMassCutLambda[fgkiNBinsCent]; //! V0 after invariant mass signal window cut, in a centrality bin, m_V0; pt_V0; eta_V0
   THnSparse* fhnV0InJetLambda[fgkiNBinsCent]; //!
+  THnSparse* fhnV0InJetLeadLambda[fgkiNBinsCent]; //! leading V0 in jet cones, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet
   //TH2D* fh2ArmPodLambda[fgkiNQAIndeces]; //!
 
   THnSparse* fhnV0InPerpLambda[fgkiNBinsCent]; //!
@@ -361,6 +363,7 @@ private:
   THnSparse* fhnV0InclusiveALambda[fgkiNBinsCent]; //!
   THnSparse* fhnV0InvMassCutALambda[fgkiNBinsCent]; //! V0 after invariant mass signal window cut, in a centrality bin, m_V0; pt_V0; eta_V0
   THnSparse* fhnV0InJetALambda[fgkiNBinsCent]; //!
+  THnSparse* fhnV0InJetLeadALambda[fgkiNBinsCent]; //! leading V0 in jet cones, in a centrality bin, m_V0; pt_V0; eta_V0; pt_jet
   //TH2D* fh2ArmPodALambda[fgkiNQAIndeces]; //!
 
   THnSparse* fhnV0InPerpALambda[fgkiNBinsCent]; //!
