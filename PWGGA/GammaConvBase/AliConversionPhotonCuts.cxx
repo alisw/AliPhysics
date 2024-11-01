@@ -58,7 +58,6 @@
 #include "AliTRDTriggerAnalysis.h"
 #include "AliDalitzAODESDMC.h"
 #include "AliDalitzEventMC.h"
-#include "AliAnalysisTaskAO2Dconverter.h"
 
 class iostream;
 using std::cout;
@@ -2196,53 +2195,55 @@ Bool_t AliConversionPhotonCuts::AsymmetryCut(AliConversionPhotonBase * photon,Al
 }
 
 ///________________________________________________________________________
-AliVTrack *AliConversionPhotonCuts::GetTrack(AliVEvent * event, Int_t label){
-  //Returns pointer to the track with given ESD label
-  //(Important for AOD implementation, since Track array in AOD data is different
-  //from ESD array, but ESD tracklabels are stored in AOD Tracks)
+AliVTrack *AliConversionPhotonCuts::GetTrack(AliVEvent * event, Int_t label) {
+  // Returns pointer to the track with given ESD label
+  // (Important for AOD implementation, since Track array in AOD data is different
+  // from ESD array, but ESD track labels are stored in AOD Tracks)
 
-  AliESDEvent * esdEvent = dynamic_cast<AliESDEvent*>(event);
-  if(esdEvent) {
-    if(label > event->GetNumberOfTracks() ) return NULL;
-    AliESDtrack * track = esdEvent->GetTrack(label);
+  AliESDEvent *esdEvent = dynamic_cast<AliESDEvent*>(event);
+  if (esdEvent) {
+    if (label > event->GetNumberOfTracks()) return NULL;
+    AliESDtrack *track = esdEvent->GetTrack(label);
     return track;
-
   } else {
-    if(label == -999999) return NULL; // if AOD relabelling goes wrong, immediately return NULL
-    AliVTrack * track = 0x0;
+    if (label == -999999) return NULL; // if AOD relabeling goes wrong, immediately return NULL
+    AliVTrack *track = nullptr;
     bool isRelabeled = false;
+
+    // Get all tasks from the analysis manager
     TObjArray* obj = (TObjArray*)AliAnalysisManager::GetAnalysisManager()->GetTasks();
-    for(Int_t i=0; i<obj->GetEntriesFast(); i++){
-      if( (obj->At(i))->IsA() == AliV0ReaderV1::Class()){
-       AliV0ReaderV1* tempReader = (AliV0ReaderV1*) obj->At(i);
-       if(tempReader->AreAODsRelabeled()){
+    for (Int_t i = 0; i < obj->GetEntriesFast(); i++) {
+      AliAODRelabelInterface* tempTask = dynamic_cast<AliAODRelabelInterface*>(obj->At(i));
+      if (tempTask && tempTask->AreAODsRelabeled()) {
         isRelabeled = true;
-       }
-      } else if( (obj->At(i))->IsA() == AliAnalysisTaskAO2Dconverter::Class()){
-       AliAnalysisTaskAO2Dconverter* tempClass = (AliAnalysisTaskAO2Dconverter*) obj->At(i);
-       if(tempClass->AreAODsRelabeled()){
-        isRelabeled = true;
-       }
+        break; // Exit the loop if we find a relabeled task
       }
     }
-    if(isRelabeled || (AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()) && ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->AreAODsRelabeled())){
-      if(event->GetTrack(label)) track = dynamic_cast<AliVTrack*>(event->GetTrack(label));
+
+    if (isRelabeled || (AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()) && 
+      dynamic_cast<AliAODRelabelInterface*>(AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data()))->AreAODsRelabeled())) {
+      
+      if (event->GetTrack(label)) {
+        track = dynamic_cast<AliVTrack*>(event->GetTrack(label));
+      }
       return track;
-    }
-    else{
-      for(Int_t ii=0; ii<event->GetNumberOfTracks(); ii++) {
-        if(event->GetTrack(ii)) track = dynamic_cast<AliVTrack*>(event->GetTrack(ii));
-        if(track){
-          if(track->GetID() == label) {
+    } else {
+      for (Int_t ii = 0; ii < event->GetNumberOfTracks(); ii++) {
+        if (event->GetTrack(ii)) {
+          track = dynamic_cast<AliVTrack*>(event->GetTrack(ii));
+        }
+        if (track) {
+          if (track->GetID() == label) {
             return track;
           }
         }
       }
     }
   }
-  //AliDebug(5,(Form("track not found %d %d",label,event->GetNumberOfTracks()));
+  // AliDebug(5,(Form("track not found %d %d", label, event->GetNumberOfTracks()));
   return NULL;
 }
+
 
 ///________________________________________________________________________
 AliESDtrack *AliConversionPhotonCuts::GetESDTrack(AliESDEvent * event, Int_t label){
