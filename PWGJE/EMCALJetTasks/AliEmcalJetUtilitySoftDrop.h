@@ -34,6 +34,9 @@ class AliEmcalJetUtilitySoftDrop : public AliEmcalJetUtility
   void Prepare(AliFJWrapper& fjw);
   void ProcessJet(AliEmcalJet* jet, Int_t ij, AliFJWrapper& fjw);
   void Terminate(AliFJWrapper& fjw);
+  void SetZCut(Double_t zCut) {fZCut = zCut;}
+  void SetBeta(Double_t beta) {fBeta = beta;}
+  void SetRecursiveDepth(Int_t n) {fRecursiveDepth = n;}
 
  protected:
 
@@ -44,12 +47,16 @@ class AliEmcalJetUtilitySoftDrop : public AliEmcalJetUtility
   TString                fRhomName;                           ///< name of rhom
   Double_t               fRho;                                ///< pT background density
   Double_t               fRhom;                               ///< mT background density
+    // condition to stop the grooming (rejection of soft splitting) z > fZCut theta^fBeta
+  Double_t               fZCut;                              //< fZCut = 0.1                
+  Double_t               fBeta;                              //< fBeta = 0
+  Int_t                  fRecursiveDepth;                    //< 0: No Soft Drop; 1: Apply once; -1: Apply until the condition stops the grooming
 
   TClonesArray          *fGroomedJets;                        //!<! groomed jet collection
   TClonesArray          *fGroomedJetParticles;                       //!<! groomed particle collection
   AliRhoParameter       *fRhoParam;                           //!<! event rho
   AliRhoParameter       *fRhomParam;                          //!<! event rhom
 
-  ClassDef(AliEmcalJetUtilitySoftDrop, 1) // Emcal jet utility that implements the constituent subtractor form the fastjet contrib
+  ClassDef(AliEmcalJetUtilitySoftDrop, 2) // Emcal jet utility that implements the constituent subtractor form the fastjet contrib
 };
 #endif

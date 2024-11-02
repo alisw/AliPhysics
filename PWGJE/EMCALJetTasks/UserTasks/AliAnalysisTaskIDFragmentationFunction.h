@@ -86,15 +86,6 @@ public:
   virtual Bool_t GetFillDCA() const { return fFillDCA; }
   virtual void SetFillDCA(Bool_t flag) { fFillDCA = flag; }  
   
-  virtual Bool_t GetDoGroomedJets() const { return fDoGroomedJets; }
-  virtual void SetDoGroomedJets(Bool_t flag) { fDoGroomedJets = flag; } 
-  
-  virtual Double_t GetBetaSoftDrop() const { return fBetaSoftDrop; }   // Does not influence the analysis, since this is hardcoded in AliFJWrapper
-  virtual void SetBetaSoftDrop(Double_t value) { fBetaSoftDrop = value; }
-  
-  virtual Double_t GetZSoftDrop() const { return fZSoftDrop; }    // Does not influence the analysis, since this is hardcoded in AliFJWrapper
-  virtual void SetZSoftDrop(Double_t value) { fZSoftDrop = value; }  
-  
   virtual Bool_t GetUseFastSimulations() const { return fUseFastSimulations; }
   virtual void SetUseFastSimulations(Bool_t value) { fUseFastSimulations = value; } 
   
@@ -300,11 +291,6 @@ public:
   Bool_t fIsPP;                             // Is pp collision system? -> If yes, centrality will be set to -1
   
   Bool_t fFillDCA;                          //Shall the DCA histograms be filled?
-
-  // Changed jets analysis
-  Bool_t fDoGroomedJets;                    //! Use groomed jets
-  Double_t fBetaSoftDrop;
-  Double_t fZSoftDrop;
   
   // Fast simulation parameters
   Bool_t fUseFastSimulations;
@@ -324,7 +310,7 @@ private:
   AliAnalysisTaskIDFragmentationFunction(const  AliAnalysisTaskIDFragmentationFunction&);   //Not implemented in AliAnalysisTaskEmcalJet
   AliAnalysisTaskIDFragmentationFunction& operator=(const  AliAnalysisTaskIDFragmentationFunction);   //Not implemented AliAnalysisTaskEmcalJet
   
-  ClassDef(AliAnalysisTaskIDFragmentationFunction, 26);
+  ClassDef(AliAnalysisTaskIDFragmentationFunction, 27);
 };
 
 

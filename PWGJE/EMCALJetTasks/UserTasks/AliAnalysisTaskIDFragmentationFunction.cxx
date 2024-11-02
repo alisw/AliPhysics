@@ -48,6 +48,7 @@
 #include "AliGenHijingEventHeader.h"
 #include "AliInputEventHandler.h"
 #include "AliJetContainer.h"
+#include "AliEmcalJetTask.h"
 
 #include "AliAnalysisHelperJetTasks.h"
 #include "AliAnalysisManager.h"
@@ -146,9 +147,6 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fUseJetUEPIDtask(kFALSE)
    ,fIsPP(kFALSE)
    ,fFillDCA(kFALSE)
-   ,fDoGroomedJets(kFALSE)
-   ,fBetaSoftDrop(0.0)
-   ,fZSoftDrop(0.1)
    ,fUseFastSimulations(kFALSE)
    ,fastSimulationParameters("")
    ,fEffFunctions(0x0)
@@ -244,9 +242,6 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fUseJetUEPIDtask(kFALSE)
   ,fIsPP(kFALSE)
   ,fFillDCA(kFALSE)
-  ,fDoGroomedJets(kFALSE)
-  ,fBetaSoftDrop(0.0)
-  ,fZSoftDrop(0.1)
   ,fUseFastSimulations(kFALSE) 
   ,fastSimulationParameters("")
   ,fEffFunctions(0x0)
@@ -1544,57 +1539,17 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   }
 
   AliJetContainer* jetContainer = GetJetContainer(GetNameJetContainer());
-  
-  if (GetDoGroomedJets() && trackContainer) {
-    AliFJWrapper* wrapper = new AliFJWrapper("wrapper","wrapper");
-    SetUpFastJetWrapperWithOriginalValues(wrapper);    
-    AliTrackIterableMomentumContainer itcont = trackContainer->accepted_momentum();
-    for (AliTrackIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
-      TLorentzVector pvec(it->first.Px(), it->first.Py(), it->first.Pz(), it->first.E());
-      wrapper->AddInputVector(pvec.Px(), pvec.Py(), pvec.Pz(), pvec.E(), it.current_index());
-    }
-    wrapper->Run();
-    wrapper->DoSoftDrop();
-    std::vector<fastjet::PseudoJet> jets = wrapper->GetInclusiveJets();
-    std::vector<fastjet::PseudoJet> groomedJets = wrapper->GetGroomedJets();
-    for (UInt_t j=0;j<jets.size();++j) {
-      if (jets[j].perp() < 5.0 || TMath::Abs(jets[j].eta()) > 0.5)
-        continue;
-      else {
-        fh1nRecJetsCuts->Fill(jets[j].perp());
-      }
-    }
-    for (UInt_t j=0;j<groomedJets.size();++j) {
-      if (groomedJets[j].perp() < 5.0 || TMath::Abs(groomedJets[j].eta()) > 0.5)
-        continue;
-      else {
-        fh1nRecJetsCutsGroomed->Fill(groomedJets[j].perp());
-//         std::vector<fastjet::PseudoJet> constituents = groomedJets[j].constituents();
-//         cout << "Groomed Jet: " << jets[j].perp() << " " << constituents.size() << endl;
-/*        for (Int_t i=0;i<constituents.size();++i) {
-          Int_t uid = constituents[i].user_index();
-          if (uid == -1)    //Ghost particle
-            continue;
-          cout << uid << endl;
-        }  */      
-      }
-    }    
-  }
-  
-  
+
   if (jetContainer && !fUseFastSimulations) { 
     if (fOnlyLeadingJets)
       jetContainer->SortArray();
     for (auto jet : jetContainer->accepted()) {
-      if (!jet)
-        continue;
-      
       Float_t jetPt   = jet->Pt();
       
       if (jetContainer->GetRhoParameter())
         jetPt = jetPt - jetContainer->GetRhoVal() * jet->Area();
       
-//       fh1nRecJetsCuts->Fill(jetPt);
+      fh1nRecJetsCuts->Fill(jetPt);
       
       fh1TotJetEnergy->Fill(0.5,jetPt);
       
@@ -1609,7 +1564,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
         if (!isPileUpJetPIDtask[i])
           fJetPIDtask[i]->FillRecJets(centPercent, jetPt);
       }
-      
+
       for(Int_t j=0; j<jet->GetNumberOfTracks(); ++j) {
         AliVTrack *track  = dynamic_cast<AliVTrack*>(jet->Track(j));
         if (!track)
@@ -1644,7 +1599,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
         break;         
     }
   }
-  
+
   AliDebugStream(2) << "Process Underlying event..." << std::endl;
   if (fUseJetUEPIDtask && jetContainer && !isPileUpForAllJetUEPIDTasks && !fUseFastSimulations) {
     for (Int_t i=0;i<fNumJetUEPIDtasks;++i) {
@@ -2404,14 +2359,19 @@ void AliAnalysisTaskIDFragmentationFunction::FillDCA(AliVTrack* track, AliMCPart
 }
 
 void AliAnalysisTaskIDFragmentationFunction::SetUpFastJetWrapperWithOriginalValues(AliFJWrapper* wrapper) {
+  AliJetContainer* jetContainer = GetJetContainer(GetNameJetContainer());
+
   wrapper->SetAreaType(fastjet::active_area_explicit_ghosts);
   wrapper->SetGhostArea(0.005);
   wrapper->SetR(TMath::Abs(GetFFRadius()));
   //Currently not working, including AliEmcalJetTask fails
-  //wrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetContainer->GetJetAlgorithm()));
-  //wrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetContainer->GetRecombinationScheme()));
-  wrapper->SetAlgorithm(fastjet::antikt_algorithm);
-  wrapper->SetRecombScheme(fastjet::pt_scheme);
+  if (jetContainer) {
+    wrapper->SetAlgorithm(AliEmcalJetTask::ConvertToFJAlgo(jetContainer->GetJetAlgorithm()));
+    wrapper->SetRecombScheme(AliEmcalJetTask::ConvertToFJRecoScheme(jetContainer->GetRecombinationScheme())); 
+  } else {
+    wrapper->SetAlgorithm(fastjet::antikt_algorithm);
+    wrapper->SetRecombScheme(fastjet::pt_scheme);
+  }
   wrapper->SetMaxRap(1);    
 }
 
