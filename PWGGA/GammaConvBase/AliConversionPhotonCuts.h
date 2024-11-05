@@ -18,6 +18,7 @@
 #include "AliAnalysisManager.h"
 #include "AliDalitzAODESDMC.h"
 #include "AliDalitzEventMC.h"
+#include "AliAODRelabelInterface.h"
 
 
 class AliESDEvent;

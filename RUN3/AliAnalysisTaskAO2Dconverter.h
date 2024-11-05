@@ -6,7 +6,7 @@
 #define AliAnalysisTaskAO2Dconverter_H
 
 #include "AliAnalysisFilter.h"
-#include "AliAnalysisTaskSE.h"
+#include "AliAODRelabelInterface.h"
 #include "AliESDMuonTrack.h"
 #include "AliEventCuts.h"
 #include "AliTriggerAnalysis.h"
@@ -68,7 +68,7 @@ class TH2I;
 class AliGenEventHeader;
 class V0Reader;
 
-class AliAnalysisTaskAO2Dconverter : public AliAnalysisTaskSE
+class AliAnalysisTaskAO2Dconverter : public AliAODRelabelInterface
 {
 public:
   AliAnalysisTaskAO2Dconverter() = default;
@@ -232,8 +232,8 @@ public:
 
   Bool_t GetAODConversionGammas();
   void FindDeltaAODBranchName();
-  Bool_t AreAODsRelabeled() {return fRelabelAODs;}
-  Int_t IsReaderPerformingRelabeling() {return fPreviousV0ReaderPerformsAODRelabeling;}
+  bool AreAODsRelabeled() const override {return fRelabelAODs;}
+  int IsReaderPerformingRelabeling() const override {return fPreviousV0ReaderPerformsAODRelabeling;}
   void SetDeltaAODBranchName(TString string)            {fDeltaAODBranchName = string;
                                                           fRelabelAODs = kTRUE;
                                                           AliInfo(Form("Set DeltaAOD BranchName to: %s",fDeltaAODBranchName.Data()));
@@ -825,7 +825,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 33);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 34);
 };
 
 #endif

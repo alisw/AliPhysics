@@ -14,6 +14,7 @@
 # **************************************************************************
 
 add_subdirectory(CaloTrackCorrelations)
+add_subdirectory(Common)
 add_subdirectory(EMCALTasks)
 add_subdirectory(GammaConv)
 add_subdirectory(GammaConvBase)

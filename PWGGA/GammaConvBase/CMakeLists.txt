@@ -35,7 +35,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/TENDER/TenderSupplies
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/ClusterSelection
                     ${AliPhysics_SOURCE_DIR}/PWGGA/PHOSTasks/PHOS_PbPb
-                    ${AliPhysics_SOURCE_DIR}/RUN3
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/Common
                    )
 
 # the KF particle library support if required
@@ -96,7 +96,7 @@ set(ALIPHYSICS_DEPENDENCIES EMCALbase PWGCaloTrackCorrBase PWGCaloTrackCorrBase 
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ALIPHYSICS_DEPENDENCIES} ${ROOT_DEPENDENCIES})
+set(LIBDEPS ${ALIROOT_DEPENDENCIES} ${ALIPHYSICS_DEPENDENCIES} ${ROOT_DEPENDENCIES} PWGGACommon)
 if(USEKFLIBRARY)
     get_target_property(KFPARTICLE_LIBRARY KFParticle::KFParticle IMPORTED_LOCATION)
     set(LIBDEPS ${LIBDEPS} ${KFPARTICLE_LIBRARY})
@@ -112,7 +112,7 @@ add_library(${MODULE}-object OBJECT ${SRCS} G__${MODULE}.cxx)
 
 # Add a library to the project using the object
 add_library_tested(${MODULE} SHARED $<TARGET_OBJECTS:${MODULE}-object>)
-target_link_libraries(${MODULE} ${LIBDEPS})
+target_link_libraries(${MODULE} ${LIBDEPS} PWGGACommon)
 
 # Setting the correct headers for the object as gathered from the dependencies
 target_include_directories(${MODULE}-object PUBLIC $<TARGET_PROPERTY:${MODULE},INCLUDE_DIRECTORIES>)

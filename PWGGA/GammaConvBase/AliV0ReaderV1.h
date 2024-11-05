@@ -1,7 +1,7 @@
 #ifndef ALIV0READERV1_H
 #define ALIV0READERV1_H
 
-#include "AliAnalysisTaskSE.h"
+#include "AliAODRelabelInterface.h"
 #include "AliAODv0.h"
 #include "AliESDv0.h"
 #include "AliConversionPhotonCuts.h"
@@ -27,7 +27,6 @@ class TClonesArray;
 class TH1F;
 class TH2F;
 class AliAODConversionPhoton;
-class AliAnalysisTaskAO2Dconverter;
 
 #if (__GNUC__ >= 3) && !defined(__INTEL_COMPILER)
 // gcc warns in level Weffc++ about non-virtual destructor
@@ -41,7 +40,7 @@ class AliAnalysisTaskAO2Dconverter;
 #pragma GCC diagnostic ignored "-Weffc++"
 #endif
 
-class AliV0ReaderV1 : public AliAnalysisTaskSE {
+class AliV0ReaderV1 : public AliAODRelabelInterface {
 
   public:
 
@@ -122,8 +121,8 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
                                                                          return;}
 
     void               RelabelAODs(Bool_t relabel=kTRUE)                {fRelabelAODs=relabel; return;}
-    Bool_t             AreAODsRelabeled()                               {return fRelabelAODs;}
-    Int_t              IsReaderPerformingRelabeling()                   {return fPreviousV0ReaderPerformsAODRelabeling;}
+    bool               AreAODsRelabeled() const override                {return fRelabelAODs;}
+    int                IsReaderPerformingRelabeling() const override    {return fPreviousV0ReaderPerformsAODRelabeling;}
     Bool_t             RelabelAODPhotonCandidates(AliAODConversionPhoton *PhotonCandidate);
     Bool_t             GetErrorAODRelabeling()                          {return fErrorAODRelabeling;}
     void               SetPeriodName(TString name)                      {fPeriodName = name;
@@ -294,7 +293,7 @@ class AliV0ReaderV1 : public AliAnalysisTaskSE {
     AliV0ReaderV1 &operator=(const AliV0ReaderV1 &ref);
 
 
-    ClassDef(AliV0ReaderV1, 26)
+    ClassDef(AliV0ReaderV1, 27)
 
 };
 

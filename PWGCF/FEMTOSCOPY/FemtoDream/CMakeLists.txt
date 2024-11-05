@@ -20,6 +20,7 @@ add_definitions(-D_MODULE_="${MODULE}")
 # Module include folder
 include_directories(${AliPhysics_SOURCE_DIR}/PWGCF/FEMTOSCOPY/FemtoDream
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/Common
                     ${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD)
 
 # Additional includes - alphabetical order except ROOT
