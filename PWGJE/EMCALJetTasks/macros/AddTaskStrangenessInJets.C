@@ -1,4 +1,5 @@
 AliAnalysisTaskStrangenessInJets* AddTaskStrangenessInJets(
+  TString tracksName = "usedefault",
   TString label = ""
 )
 {
@@ -20,6 +21,8 @@ AliAnalysisTaskStrangenessInJets* AddTaskStrangenessInJets(
   }
   
   AliAnalysisTaskStrangenessInJets* mytask = new AliAnalysisTaskStrangenessInJets(taskName.Data());
+  
+  AliParticleContainer* trackCont = mytask->AddTrackContainer(tracksName);
   
   // Add task
   mgr->AddTask(mytask);

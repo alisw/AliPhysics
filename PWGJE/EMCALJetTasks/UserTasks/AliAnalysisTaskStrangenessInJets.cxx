@@ -174,6 +174,8 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
   fdDistanceV0JetMax(0.4),
   fdDistPrimaryMax(0.01),
   
+  fTracksCont(0),
+
   fh1EventCounterCut(0),
   fh1EventCent(0),
   fh1EventCent2(0),
@@ -407,6 +409,8 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
   fdDistanceV0JetMax(0.4),
   fdDistPrimaryMax(0.01),
   
+  fTracksCont(0),
+
   fh1EventCounterCut(0),
   fh1EventCent(0),
   fh1EventCent2(0),
@@ -601,6 +605,7 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
   
+  fTracksCont = dynamic_cast<AliTrackContainer*>(GetParticleContainer(0));
   // Initialise random-number generator
   fRandom = new TRandom3(0);
 
@@ -938,7 +943,7 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
 
     fh1DaughtersPt[i] = new TH1D(Form("fh1DaughtersPt_%d", i), Form("Daughters (to be excl) Pt, cent: %s;#it{p}_{T} (GeV/#it{c});counts", GetCentBinLabel(i).Data()), 200, 0., 10.);
     fh1ExcludedDaughtersPt[i] = new TH1D(Form("fh1ExcludedDaughtersPt_%d", i), Form("Excluded Daughters Pt, cent: %s;#it{p}_{T} (GeV/#it{c});counts", GetCentBinLabel(i).Data()), 200, 0., 10.);
-    fh1IncludedDaughtersPt[i] = new TH1D(Form("fh1IncludedDaughtersPt_%d", i), Form("Included Daughters Pt: %s;#it{p}_{T} (GeV/#it{c});counts", GetCentBinLabel(i).Data()), 200, 0., 10.);
+    fh1IncludedDaughtersPt[i] = new TH1D(Form("fh1IncludedDaughtersPt_%d", i), Form("Included tracks Pt: %s;#it{p}_{T} (GeV/#it{c});counts", GetCentBinLabel(i).Data()), 200, 0., 10.);
     
     fOutputListQA->Add( fh1DaughtersPt[i]);
     fOutputListQA->Add( fh1ExcludedDaughtersPt[i]);
@@ -1153,6 +1158,7 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
   PostData(1, fOutputListStd);
   PostData(2, fOutputListStdJets);
   PostData(3, fOutputListMC);
+  PostData(4, fOutputListQA);
 }
 
 void AliAnalysisTaskStrangenessInJets::ExecOnce()
@@ -1160,7 +1166,14 @@ void AliAnalysisTaskStrangenessInJets::ExecOnce()
   AliAnalysisTaskEmcal::ExecOnce();
   
   //Open AOD here? 
+  if(fTracksCont && fTracksCont->GetArray() == 0)
+    fTracksCont = 0;
 
+  if(fTracksCont) {
+    fTracksCont->SetFilterHybridTracks(kTRUE);
+    fTracksCont->SetParticlePtCut(fdJetTrackPtMin);
+    fTracksCont->SetParticleEtaLimits(-fdJetTrackEtaMax, fdJetTrackEtaMax);
+  }
   // setup fj wrapper
   fFastJetWrapper.SetAreaType(fastjet::active_area_explicit_ghosts);
   fFastJetWrapper.SetGhostArea(fdGhostArea);
@@ -1325,9 +1338,6 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   UInt_t iNTracks = fAODIn->GetNumberOfTracks(); // get number of tracks in event
 
   if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, Form("There are %d tracks in this event", iNTracks));
-  TClonesArray* fTracks = fAODIn->GetTracks();
-  if(!fTracks) 
-	AliError("Could not get tracks from AOD.");
   AliAODHeader* header = dynamic_cast<AliAODHeader*>(fAODIn->GetHeader());
   UInt_t iNTracksRef = 0;
   if(!header)
@@ -1913,7 +1923,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
   if(fDebug > 2) printf("%s %s::%s: %s\n", GetName(), ClassName(), __func__, "End of V0 loop");
   //printf("There are %i selected V0s in the event. \n", iNSelV0);   
   if(fV0CandidateArray->GetEntriesFast() > 0) {
-    AddEventTracks(fV0CandidateArray, fTracks, InputBgParticles);
+    AddEventTracks(fV0CandidateArray, InputBgParticles);
   }
   if(iNSelV0)
     fh1EventCounterCut->Fill(10);
@@ -2070,14 +2080,14 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     }
     else if(iindlead >= iLambdaId && iindlead < iALambdaId) {
       leadv0 =  (AliAODv0*)fV0CandidateArray->At(iindlead-iLambdaId);
-		  Double_t leadLInJet[4] = {leadv0->MassK0Short(), TMath::Sqrt(leadv0->Pt2V0()), leadv0->Eta(), jet->Pt()};
+		  Double_t leadLInJet[4] = {leadv0->MassLambda(), TMath::Sqrt(leadv0->Pt2V0()), leadv0->Eta(), jet->Pt()};
       fhnV0InJetLeadLambda[iCentIndex]->Fill(leadLInJet);
     }
     else if(iindlead >= iALambdaId && iindlead < iK0LId) {
       leadv0 =  (AliAODv0*)fV0CandidateArray->At(iindlead-iALambdaId);
-		  Double_t leadALInJet[4] = {leadv0->MassK0Short(), TMath::Sqrt(leadv0->Pt2V0()), leadv0->Eta(), jet->Pt()};
+		  Double_t leadALInJet[4] = {leadv0->MassAntiLambda(), TMath::Sqrt(leadv0->Pt2V0()), leadv0->Eta(), jet->Pt()};
       fhnV0InJetLeadALambda[iCentIndex]->Fill(leadALInJet);
-    } //add cross cont K/Lambda ?
+    } 
 
     Int_t uid   = -1;
     Int_t ik = 0;
@@ -2158,7 +2168,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
     Int_t isum = ik + il + ial + ikl + ikal;
     if(isum) {
 	    iV0Jets++;
-	    fh1NV0sInJetStats->Fill(1);
+	    fh1NV0sInJetStats->Fill(1, isum);
 	  }
 	  if(isum > 1)
 	    fh1NV0sInJetStats->Fill(7);	  		  
@@ -2182,15 +2192,6 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
       fh1NRndConeCent->Fill(iCentIndex);
       fh2EtaPhiRndCone[iCentIndex]->Fill(jetRnd->Eta(), jetRnd->Phi());
     }
-    /*if(fJetsBgCont) // 
-    {
-      jetMed = GetMedianCluster(fJetsBgCont, dCutEtaJetMax);
-      if(jetMed)
-      {
-        fh1NMedConeCent->Fill(iCentIndex);
-        fh2EtaPhiMedCone[iCentIndex]->Fill(jetMed->Eta(), jetMed->Phi());
-      }
-    }*/
   }
   //Find v0s in the perp and random jet cones 
   if(fV0CandidateArray->GetEntriesFast() > 0) {
@@ -2274,7 +2275,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
 
    // Spectra of generated particles
   if(fbMCAnalysis) {
-    GeneratedMCParticles(fTracks, iCentIndex);
+    GeneratedMCParticles(iCentIndex);
   }
 
   PostData(1, fOutputListStd);
@@ -2541,15 +2542,9 @@ Bool_t AliAnalysisTaskStrangenessInJets::IsFromGoodGenerator(Int_t index)
   return kTRUE;
 }
 
-void AliAnalysisTaskStrangenessInJets::AddEventTracks(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPart)
+void AliAnalysisTaskStrangenessInJets::AddEventTracks(TClonesArray* coll, std::vector<fastjet::PseudoJet>& VectorBgPart)
 { 
   // Add event tracks to a collection that already contains the V0 candidates, excluding the daughters of the V0 candidates
-
-  if (!tracks) {
-	printf("Track container was not found. Function AddEventTracks will not run! \n");
-	return;
-  }
-  
   TObjArray allDaughters(10);
   allDaughters.SetOwner(kFALSE);
 
@@ -2563,16 +2558,12 @@ void AliAnalysisTaskStrangenessInJets::AddEventTracks(TClonesArray* coll, TClone
   AliVTrack* track = 0;
   Int_t n = coll->GetEntriesFast();
   //cout << "Daug: " << allDaughters.GetEntries() << " V0s: " << n << endl;
-  TIter nexttr(tracks);
   Int_t numbtrack = 0;
   Int_t nadded = 0;
   Int_t nexcluded = 0;
-  while ((track = static_cast<AliVTrack*>(nexttr()))) { 
-	  numbtrack++;   
-	  if (track->Pt() < fdJetTrackPtMin || TMath::Abs(track->Eta()) > fdJetTrackEtaMax) { //condition for the minimum track pt  and tracj eta
-	    nexcluded++;
-      continue;   
-    }
+  for(auto trackIterator : fTracksCont->accepted_momentum() ) { 
+    numbtrack++; 
+	  track = trackIterator.second; 
     if (allDaughters.Remove(track) == 0) {
        //adding track to the fastjet
         fFastJetWrapper.AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), n);
@@ -2619,8 +2610,7 @@ Double_t AliAnalysisTaskStrangenessInJets::AddDaughters(AliAODRecoDecay* cand, T
         continue;
       }
       //printf("cand2 false, will not have daughters, add to array, Daughter pT = %.3f\n", track->Pt());
-      if (track->Pt() > fdJetTrackPtMin && TMath::Abs(track->Eta()) < fdJetTrackEtaMax)
-        fh1DaughtersPt[0]->Fill(track->Pt());
+      fh1DaughtersPt[0]->Fill(track->Pt());
       daughters.AddLast(track);
       pt += track->Pt();
       ntot++;
@@ -2630,18 +2620,9 @@ Double_t AliAnalysisTaskStrangenessInJets::AddDaughters(AliAODRecoDecay* cand, T
 
   return pt;
 }
-void AliAnalysisTaskStrangenessInJets::AddEventTracksMC(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPartMC, TClonesArray* GenXi)
+void AliAnalysisTaskStrangenessInJets::AddEventTracksMC(TClonesArray* coll, std::vector<fastjet::PseudoJet>& VectorBgPartMC, TClonesArray* GenXi)
 { 
-  if (!tracks) {
-	printf("Track container was not found. Function AddEventTracks will not run! \n");
-	return;
-  }
-
   std::vector<Int_t>  vecDaughterLabels; //vector with labels of daughter particles
-  //std::vector<Int_t>  vecXiLabels;
-  //std::vector<Int_t>  vecAXiLabels;
-  //std::vector<Int_t>  vecXi0Labels;
-  //std::vector<Int_t>  vecAXi0Labels;
   TIter next(coll);
   AliAODMCParticle* v0part = 0;
   while ((v0part = static_cast<AliAODMCParticle*>(next()))) {
@@ -2652,51 +2633,20 @@ void AliAnalysisTaskStrangenessInJets::AddEventTracksMC(TClonesArray* coll, TClo
       vecDaughterLabels.push_back(iDLabel);
     } 
   }
-
-  //in case Xi, Xi0 add additional index to the iN (for FD plot)
-  /*TIter nextXi(GenXi);
-  AliAODMCParticle* xipart = 0;
-  while ((xipart = static_cast<AliAODMCParticle*>(nextXi()))) {
-    AliDebug(2, Form("Found a MC generated Xi(Xi0) with pT = %.3f, eta = %.3f, phi = %.3f \n", xipart->Pt(), xipart->Eta(), xipart->Phi())); 
-    Int_t iPdgCodePartMC = xipart->GetPdgCode();
-    Int_t iLabel = xipart->GetLabel();
-    if(iPdgCodePartMC  == 3312)
-      vecXiLabels.push_back(iLabel);
-    else if(iPdgCodePartMC  == -3312)  
-      vecAXiLabels.push_back(iLabel);
-    else if(iPdgCodePartMC  == 3322)
-      vecXi0Labels.push_back(iLabel);
-    else if(iPdgCodePartMC  == -3322)  
-      vecAXi0Labels.push_back(iLabel);      
-  }*/
-
  
-  AliAODTrack* track = 0;
+  AliVTrack* track = 0;
   Int_t iN = coll->GetEntriesFast();
-  //Int_t inlabels = int(vecDaughterLabels.size());
-  TIter nexttr(tracks);
   Int_t numbtrack = 0;
   Int_t nadded = 0;
   Int_t nexcl = 0;
-  while ((track = static_cast<AliAODTrack*>(nexttr()))) { 
-	  numbtrack++;    
-	  if (track->Pt() < fdJetTrackPtMin || TMath::Abs(track->Eta()) > fdJetTrackEtaMax) //condition for the minimum track pt  and tracj eta
-      continue;   
+  for(auto trackIterator : fTracksCont->accepted_momentum() ) { 
+    numbtrack++; 
+	  track = trackIterator.second;    
     Int_t iTrackLabel = track->GetLabel();
     if (std::find(vecDaughterLabels.begin(), vecDaughterLabels.end(), iTrackLabel) != vecDaughterLabels.end()) {
 	    nexcl++;
 	    continue;	 
     }
-    /*Int_t iindex = 0;
-    if (std::find(vecXiLabels.begin(), vecXiLabels.end(), iTrackLabel) != vecXiLabels.end()) 
-	    iindex = iXiId; 
-    if (std::find(vecAXiLabels.begin(), vecAXiLabels.end(), iTrackLabel) != vecAXiLabels.end()) 
-	    iindex = iAXiId;
-    if (std::find(vecXi0Labels.begin(), vecXi0Labels.end(), iTrackLabel) != vecXi0Labels.end()) 
-	    iindex = iXi0Id; 
-    if (std::find(vecAXi0Labels.begin(), vecAXi0Labels.end(), iTrackLabel) != vecAXi0Labels.end()) 
-	    iindex = iAXi0Id; */
-
     //did not find track in the daughters, adding track to the fastjet
     fFastJetWrapperMCGen.AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), iN); //+ iindex);
     VectorBgPartMC.push_back(fastjet::PseudoJet(track->Px(), track->Py(), track->Pz(), track->E()));
@@ -2965,7 +2915,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::AssociateRecV0withMC( AliAODv0* vpart, 
   return kTRUE;
 }
 
-Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* track, Int_t iCent)
+Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(Int_t iCent)
 {
   
   std::vector<fastjet::PseudoJet> InputBgParticlesMC; 
@@ -3113,10 +3063,8 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
     iNMCCand++;
   }
 
-  
-  
   if(fGenMCV0->GetEntriesFast() > 0) {
-    AddEventTracksMC(fGenMCV0, track, InputBgParticlesMC, fGenMCXis);
+    AddEventTracksMC(fGenMCV0, InputBgParticlesMC, fGenMCXis);
   }
   
   Double_t dAreaPercJetMin =  fdCutAreaPercJetMin*TMath::Pi()*fdRadius*fdRadius;
@@ -3239,31 +3187,6 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(TClonesArray* trac
         fh3V0ALambdaInJetEtaPtMCGen[iCent]->Fill(valueEtaALInGen);
         ial++;
 	    }  
-      /*
-      if(uid > iXiId && uid < iAXiId) { //for the Feeddown generated Xi plots
-        index = uid-iXiId; 
-		    jetv0 = (AliAODMCParticle*)fGenMCV0->At(index); 
-        printf("There is a Xi in the jet. %d , pT= %f\n", uid, jetv0->Pt());
-        fh1V0XiInJetPtMCGen[iCent]->Fill(jetv0->Pt());
-      }
-      if(uid > iAXiId && uid < iXi0Id) {
-        index = uid-iAXiId; 
-		    jetv0 = (AliAODMCParticle*)fGenMCV0->At(index); 
-        printf("There is a AXi in the jet. %d , pT= %f\n", uid, jetv0->Pt());
-        fh1V0AXiPtMCGen[iCent]->Fill(jetv0->Pt());
-      }
-      if(uid > iXi0Id && uid < iAXi0Id) {
-        index = uid-iXi0Id; 
-		    jetv0 = (AliAODMCParticle*)fGenMCV0->At(index); 
-        printf("There is a Xi0 in the jet. %d , pT= %f\n", uid, jetv0->Pt());
-        fh1V0Xi0PtMCGen[iCent]->Fill(jetv0->Pt());
-      }
-      if(uid > iAXi0Id) {
-        index = uid-iAXi0Id; 
-		    jetv0 = (AliAODMCParticle*)fGenMCV0->At(index); 
-        printf("There is a A0Xi in the jet. %d , pT= %f\n", uid, jetv0->Pt());
-        fh1V0AXi0PtMCGen[iCent]->Fill(jetv0->Pt());
-      }*/
     //Int_t isum = ik + il + ial;
 	  //printf("Tehere were %i K0s, %i Ls and %i ALs, isum: %i \n", ik, il, ial, isum);
     }	    
