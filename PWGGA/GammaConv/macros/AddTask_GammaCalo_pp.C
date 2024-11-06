@@ -4824,6 +4824,9 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411799909fegr9v0000","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi r
     cuts.AddCutCalo("00010113","411799909fegm9v0000","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi m
     cuts.AddCutCalo("00010113","411799909fegl9v0000","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi l
+  } else if (trainConfig == 3305){  // NCell effi based on S100A100 with EMCal tagging
+    cuts.AddCutCalo("00010113","411799909fegn9w0000","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi w
+    cuts.AddCutCalo("00010113","411799909fegr9x0000","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi x
   
   // eta prefilter
   } else if (trainConfig == 3310){  

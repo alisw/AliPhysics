@@ -7172,6 +7172,23 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus");
     fFuncNCellCutEfficiencyEMCal->SetParameters(0.109982, 1.452, 0.378929);
     break;
+
+  // S300A100 settings with cell scale
+  // Pol2, applied to all clusters
+  case 32: // w
+    fUseNCells=5;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(-5.33193e-02, 1.53855e-01, 2.59356e-04); // nominal field
+    break;
+  // Gaussian, applied to all clusters
+  case 33: // x
+    fUseNCells=5;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(1.12525e-01, 1.34649e+00, 8.02834e-01); // nominal field
+    break;
+
   default:
     AliError(Form("Min N cells Cut not defined %d",minNCells));
     return kFALSE;
