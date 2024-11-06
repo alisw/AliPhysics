@@ -24,7 +24,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
-		    ${AliPhysics_SOURCE_DIR}/OADB/macros
+		                ${AliPhysics_SOURCE_DIR}/OADB/macros
                     ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY
                     ${AliPhysics_SOURCE_DIR}/PWGCF/Correlations # what deps here?
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
@@ -32,20 +32,21 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Base
                     ${AliPhysics_SOURCE_DIR}/PWG/FLOW/Tasks
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
-		    ${AliPhysics_SOURCE_DIR}/PWG/PP
-		    ${AliPhysics_SOURCE_DIR}/PWG/PP/PilotTrain
+                    ${AliPhysics_SOURCE_DIR}/PWG/PP
+                    ${AliPhysics_SOURCE_DIR}/PWG/PP/PilotTrain
                     ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/BtoJPSI
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/core
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/JPSI
                     ${AliPhysics_SOURCE_DIR}/PWGDQ/dielectron/LMEE
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/Common
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase/
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConv/
-		    ${AliPhysics_SOURCE_DIR}/PWGHF/
-  		    ${AliPhysics_SOURCE_DIR}/PWGHF/base
+		                ${AliPhysics_SOURCE_DIR}/PWGHF/
+  		              ${AliPhysics_SOURCE_DIR}/PWGHF/base
                     ${AliPhysics_SOURCE_DIR}/PWGHF/hfe/
-		    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/
-		    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/macros
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/
+                    ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/macros
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/PWG/EMCAL/EMCALbase
                    )

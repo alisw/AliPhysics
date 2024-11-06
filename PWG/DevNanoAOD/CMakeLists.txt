@@ -24,8 +24,9 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWG/DevNanoAOD)
 include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/Tools
                     ${AliPhysics_SOURCE_DIR}/OADB
-		    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY  
-		    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
+                    ${AliPhysics_SOURCE_DIR}/OADB/COMMON/MULTIPLICITY  
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/Common
+                    ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
 )
 
 # Sources - alphabetical order
