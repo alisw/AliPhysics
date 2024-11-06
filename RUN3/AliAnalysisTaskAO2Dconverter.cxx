@@ -100,7 +100,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "DbgEventExtra",
   "O2track",
   "O2trackcov",
-  "O2trackextra_001", // 001 only changed expression column
+  "O2trackextra_002", // 002 add tpc findable minus pid clusters
   "O2fwdtrack",
   "O2fwdtrackcov",
   "O2calo",
