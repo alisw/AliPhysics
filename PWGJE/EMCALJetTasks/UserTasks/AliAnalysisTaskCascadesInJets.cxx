@@ -162,6 +162,8 @@ AliAnalysisTaskCascadesInJets::AliAnalysisTaskCascadesInJets():
   fdDistanceCascadeJetMax(0.4),
   fdDistPrimaryMax(0.01),
   
+  fTracksCont(0),
+
   fh1EventCounterCut(0),
   fh1EventCent(0),
   fh1EventCent2(0),
@@ -379,6 +381,8 @@ AliAnalysisTaskCascadesInJets::AliAnalysisTaskCascadesInJets(const char* name):
   fdDistanceCascadeJetMax(0.4),
   fdDistPrimaryMax(0.01),
   
+  fTracksCont(0),
+
   fh1EventCounterCut(0),
   fh1EventCent(0),
   fh1EventCent2(0),
@@ -560,6 +564,7 @@ void AliAnalysisTaskCascadesInJets::UserCreateOutputObjects()
 
   AliAnalysisTaskEmcal::UserCreateOutputObjects();
   
+  fTracksCont = dynamic_cast<AliTrackContainer*>(GetParticleContainer(0));
   // Initialise random-number generator
   fRandom = new TRandom3(0);
 
@@ -1081,7 +1086,14 @@ void AliAnalysisTaskCascadesInJets::ExecOnce()
   AliAnalysisTaskEmcal::ExecOnce();
   
   //Open AOD here? 
+  if(fTracksCont && fTracksCont->GetArray() == 0)
+    fTracksCont = 0;
 
+  if(fTracksCont) {
+    fTracksCont->SetFilterHybridTracks(kTRUE);
+    fTracksCont->SetParticlePtCut(fdJetTrackPtMin);
+    fTracksCont->SetParticleEtaLimits(-fdJetTrackEtaMax, fdJetTrackEtaMax);
+  }
   // setup fj wrapper
   fFastJetWrapper.SetAreaType(fastjet::active_area_explicit_ghosts);
   fFastJetWrapper.SetGhostArea(fdGhostArea);
@@ -1797,7 +1809,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
   fh1CascadeCandPerEventCentOmegaPlus[iCentIndex]->Fill(iNCascadeCandOmegaPlus);
   
   if(fCascadeCandidateArray->GetEntriesFast() > 0) {
-    AddEventTracks(fCascadeCandidateArray, fTracks, InputBgParticles);
+    AddEventTracks(fCascadeCandidateArray, InputBgParticles);
   }
 
   //Prepare for the jet comp for the UE subtraction 
@@ -1995,7 +2007,7 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
     Int_t isum = ixm + ixp + iom + iop;
     if(isum > 0 ) {
 	    iCascadeJets++;
-	    fh1NCascadesInJetStats->Fill(1);
+	    fh1NCascadesInJetStats->Fill(1, isum);
 	  }
 	  if(isum > 1)
 	    fh1NCascadesInJetStats->Fill(7);	  		  
@@ -2381,15 +2393,9 @@ Bool_t AliAnalysisTaskCascadesInJets::IsFromGoodGenerator(Int_t index)
   return kTRUE;
 }
 
-void AliAnalysisTaskCascadesInJets::AddEventTracks(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPart)
+void AliAnalysisTaskCascadesInJets::AddEventTracks(TClonesArray* coll, std::vector<fastjet::PseudoJet>& VectorBgPart)
 { 
   // Add event tracks to a collection that already contains the Cascade candidates, excluding the daughters of the Cascade candidates
-
-  if (!tracks) {
-	printf("Track container was not found. Function AddEventTracks will not run! \n");
-	return;
-  }
-  
   TObjArray allDaughters(10);
   allDaughters.SetOwner(kFALSE);
 
@@ -2402,17 +2408,12 @@ void AliAnalysisTaskCascadesInJets::AddEventTracks(TClonesArray* coll, TClonesAr
 
   AliVTrack* track = 0;
   Int_t n = coll->GetEntriesFast();
-   
-  TIter nexttr(tracks);
   Int_t numbtrack = 0;
   Int_t nadded = 0;
   Int_t nexcluded = 0;
-  while ((track = static_cast<AliVTrack*>(nexttr()))) { 
-	  numbtrack++;   
-	  if (track->Pt() < fdJetTrackPtMin || TMath::Abs(track->Eta()) > fdJetTrackEtaMax) { //condition for the minimum track pt  and tracj eta
-      nexcluded++;
-      continue; 
-    }  
+  for(auto trackIterator : fTracksCont->accepted_momentum() ) { 
+    numbtrack++; 
+	  track = trackIterator.second; 
     if (allDaughters.Remove(track) == 0) {
       //adding track to the fastjet
       fFastJetWrapper.AddInputVector(track->Px(), track->Py(), track->Pz(), track->E(), n);
@@ -2467,13 +2468,8 @@ Double_t AliAnalysisTaskCascadesInJets::AddDaughters(AliAODRecoDecay* cand, TObj
   return pt;
 }  
 
-void AliAnalysisTaskCascadesInJets::AddEventTracksMC(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPartMC)
+void AliAnalysisTaskCascadesInJets::AddEventTracksMC(TClonesArray* coll, std::vector<fastjet::PseudoJet>& VectorBgPartMC)
 { 
-  if (!tracks) {
-	printf("Track container was not found. Function AddEventTracks will not run! \n");
-	return;
-  }
-
   std::vector<Int_t>  vecDaughterLabels; //vector with labels of daughter particles
 
   TIter next(coll);
@@ -2487,19 +2483,15 @@ void AliAnalysisTaskCascadesInJets::AddEventTracksMC(TClonesArray* coll, TClones
     } 
   }
   
-  AliAODTrack* track = 0;
+  AliVTrack* track = 0;
   Int_t iN = coll->GetEntriesFast();
-  //Int_t inlabels = int(vecDaughterLabels.size());
-   
-  TIter nexttr(tracks);
+
   Int_t numbtrack = 0;
   Int_t nadded = 0;
   Int_t nexcl = 0;
-  while ((track = static_cast<AliAODTrack*>(nexttr()))) { //here add condition for the track pt fdJetTrackPtMin!!!
-	numbtrack++;    
-	if (track->Pt() < fdJetTrackPtMin || TMath::Abs(track->Eta()) > fdJetTrackEtaMax) //condition for the minimum track pt  and tracj eta
-      continue; 
-
+  for(auto trackIterator : fTracksCont->accepted_momentum() ) { 
+    numbtrack++; 
+	  track = trackIterator.second;    
     Int_t iTrackLabel = track->GetLabel();
     if (std::find(vecDaughterLabels.begin(), vecDaughterLabels.end(), iTrackLabel) != vecDaughterLabels.end()) {
 	    nexcl++;
@@ -2510,7 +2502,6 @@ void AliAnalysisTaskCascadesInJets::AddEventTracksMC(TClonesArray* coll, TClones
     VectorBgPartMC.push_back(fastjet::PseudoJet(track->Px(), track->Py(), track->Pz(), track->E()));
     iN++;
     nadded++;
-
   } 
   //printf("There were %i Cascades, %i daughters, %d tracks, %d were added to the fj, excluded : %i. \n", coll->GetEntriesFast(), inlabels, numbtrack, nadded, nexcl);
 }
@@ -2914,7 +2905,7 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
 
 
   if(fGenMCCascade->GetEntriesFast() > 0) {
-    AddEventTracksMC(fGenMCCascade, track, InputBgParticlesMC);
+    AddEventTracksMC(fGenMCCascade, InputBgParticlesMC);
   }
 
   Double_t dAreaPercJetMin =  fdCutAreaPercJetMin*TMath::Pi()*fdRadius*fdRadius;

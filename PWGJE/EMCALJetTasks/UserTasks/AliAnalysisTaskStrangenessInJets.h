@@ -181,7 +181,7 @@ public:
   TString GetCentBinLabel(Int_t index);
   Double_t AddDaughters(AliAODRecoDecay* cand, TObjArray& daughters);
   Bool_t AssociateRecV0withMC( AliAODv0* v, AliEmcalJet *xjet, Bool_t bIsK, Bool_t bIsL, Bool_t bIsAL, Int_t iCent);
-  Bool_t GeneratedMCParticles( TClonesArray* track, Int_t iCent );
+  Bool_t GeneratedMCParticles( Int_t iCent );
   Double_t MassPeakSigma(Double_t pt, Int_t particle);
   Double_t MassPeakMean(Double_t pt, Int_t particle);
   
@@ -189,8 +189,8 @@ protected:
   void ExecOnce();
   Bool_t FillHistograms();
   Bool_t Run();
-  void AddEventTracks(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPart);  
-  void AddEventTracksMC(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPartMC, TClonesArray* GenXi);  
+  void AddEventTracks(TClonesArray* coll, std::vector<fastjet::PseudoJet>& VectorBgPart);  
+  void AddEventTracksMC(TClonesArray* coll, std::vector<fastjet::PseudoJet>& VectorBgPartMC, TClonesArray* GenXi);  
   Bool_t GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const;
 
   TList* fOutputListStd; //! Output list for standard analysis results
@@ -292,6 +292,8 @@ private:
   //MC var
   Double_t fdDistPrimaryMax;          ///< [cm] max distance of production point to the primary vertex (criterion for choice of MC particles considered as primary) 
 
+  AliTrackContainer* fTracksCont; //! Tracks
+  
   // Event histograms
   TH1D* fh1EventCounterCut; //! number of events for different selection steps
   TH1D* fh1EventCounterCutCent[fgkiNBinsCent]; //! number of events for different selection steps and different centralities
@@ -468,7 +470,7 @@ private:
   AliAnalysisTaskStrangenessInJets(const AliAnalysisTaskStrangenessInJets&); // not implemented
   AliAnalysisTaskStrangenessInJets& operator=(const AliAnalysisTaskStrangenessInJets&); // not implemented
 
-  ClassDef(AliAnalysisTaskStrangenessInJets, 6) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskStrangenessInJets, 7) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

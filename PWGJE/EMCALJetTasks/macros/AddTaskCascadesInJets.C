@@ -1,4 +1,5 @@
 AliAnalysisTaskCascadesInJets* AddTaskCascadesInJets(
+  TString tracksName = "usedefault",
   TString label = ""
 )
 {
@@ -20,6 +21,8 @@ AliAnalysisTaskCascadesInJets* AddTaskCascadesInJets(
   }
   
   AliAnalysisTaskCascadesInJets* mytask = new AliAnalysisTaskCascadesInJets(taskName.Data());
+  
+  AliParticleContainer* trackCont = mytask->AddTrackContainer(tracksName);
   
   // Add task
   mgr->AddTask(mytask);

@@ -183,8 +183,8 @@ protected:
   void ExecOnce();
   Bool_t FillHistograms();
   Bool_t Run();
-  void AddEventTracks(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPart);  
-  void AddEventTracksMC(TClonesArray* coll, TClonesArray* tracks, std::vector<fastjet::PseudoJet>& VectorBgPartMC);  
+  void AddEventTracks(TClonesArray* coll, std::vector<fastjet::PseudoJet>& VectorBgPart);  
+  void AddEventTracksMC(TClonesArray* coll, std::vector<fastjet::PseudoJet>& VectorBgPartMC);  
   Bool_t GetSortedArray(Int_t indexes[], std::vector<fastjet::PseudoJet> array) const;
 
   TList* fOutputListStd; //! Output list for standard analysis results
@@ -286,6 +286,8 @@ private:
   
   //MC var
   Double_t fdDistPrimaryMax;          ///< [cm] max distance of production point to the primary vertex (criterion for choice of MC particles considered as primary) 
+  
+  AliTrackContainer* fTracksCont; //! Tracks
 
   // Event histograms
   TH1D* fh1EventCounterCut; //! number of events for different selection steps
@@ -445,7 +447,7 @@ private:
   AliAnalysisTaskCascadesInJets(const AliAnalysisTaskCascadesInJets&); // not implemented
   AliAnalysisTaskCascadesInJets& operator=(const AliAnalysisTaskCascadesInJets&); // not implemented
 
-  ClassDef(AliAnalysisTaskCascadesInJets, 5) // task for analysis of Cascades (Xi+-, Omega+-) in charged jets
+  ClassDef(AliAnalysisTaskCascadesInJets, 6) // task for analysis of Cascades (Xi+-, Omega+-) in charged jets
 };
 
 #endif
