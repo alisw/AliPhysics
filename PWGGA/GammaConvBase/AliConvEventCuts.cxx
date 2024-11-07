@@ -4169,8 +4169,8 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         } else  if ( fPeriodEnum == kLHC24j3 ){
           Double_t ptHardBinRanges[8]  = {  5, 12, 21, 36, 57,
                                             85, 115, 1000000};
-          Double_t weightsBins[7]      = { 1.0,  1.0, 1.0, 1.0, 1.0,
-                                            1.0,  1.0};
+          Double_t weightsBins[7]      = { 0.300834, 0.0218766, 0.00599793, 0.0019443, 0.000567738,
+                                            0.000145982,  7.77887e-05};
 
           Int_t bin = 0;
           if( ptHard > ptHardBinRanges[0]){
@@ -4919,8 +4919,8 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         } else  if ( fPeriodEnum == kLHC24j3 ){
           Double_t ptHardBinRanges[8]  = {  5, 12, 21, 36, 57,
                                             85, 115, 1000000};
-          Double_t weightsBins[7]      = { 1.0,  1.0, 1.0, 1.0, 1.0,
-                                            1.0,  1.0};
+          Double_t weightsBins[7]      = { 0.300834, 0.0218766, 0.00599793, 0.0019443, 0.000567738,
+                                            0.000145982,  7.77887e-05};
 
           Int_t bin = 0;
           if( ptHard > ptHardBinRanges[0]){
