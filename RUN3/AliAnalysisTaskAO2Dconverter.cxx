@@ -117,7 +117,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2mcparticle_001",
   "O2mccollision_001",
   "O2mctracklabel",
-  "O2mccalolabel_001", // changed the mask column to std::vector for the amplitude fraction  
+  "O2mccalolabel_001", // changed the mask column to std::vector for the amplitude fraction
   "O2mccollisionlabel",
   "O2bc",
   "O2run2bcinfo",
@@ -925,7 +925,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     //Extra
     tTracksExtra->Branch("fTPCInnerParam", &tracks.fTPCinnerP, "fTPCInnerParam/F");
     tTracksExtra->Branch("fFlags", &tracks.fFlags, "fFlags/i");
-    tTracksExtra->Branch("fITSClusterMap", &tracks.fITSClusterMap, "fITSClusterMap/b");
+    tTracksExtra->Branch("fITSClusterSizes", &tracks.fITSClusterSizes, "fITSClusterSizes/i");
     tTracksExtra->Branch("fTPCNClsFindable", &tracks.fTPCNClsFindable, "fTPCNClsFindable/b");
     tTracksExtra->Branch("fTPCNClsFindableMinusFound",&tracks.fTPCNClsFindableMinusFound, "fTPCNClsFindableMinusFound/B");
     tTracksExtra->Branch("fTPCNClsFindableMinusCrossedRows", &tracks.fTPCNClsFindableMinusCrossedRows, "fTPCNClsFindableMinusCrossedRows/B");
@@ -1360,7 +1360,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     ((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->CreatePIDResponse(fTaskMode==kMC);
     PIDResponse = (AliPIDResponse *)((AliInputEventHandler *)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetPIDResponse();
   }
-  
+
   PIDResponse->SetTOFResponse(fVEvent, AliPIDResponse::kBest_T0);
   AliTOFPIDResponse &TOFResponse = PIDResponse->GetTOFResponse();
 
@@ -1576,7 +1576,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     // AliMultSelection *multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
     // if (!multSelection)
     //   AliFatal("MultSelection not found in input event");
-    
+
     // if( multSelection->GetThisEventINELgtZERO() )
     //   SETBIT (run2bcinfo.fEventCuts, kINELgtZERO);
 
@@ -1919,7 +1919,13 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if (track->GetPIDForTracking() >= 0 && track->GetPIDForTracking() <= 15)
         tracks.fFlags |= track->GetPIDForTracking() << 28;
 
-      tracks.fITSClusterMap = track->GetITSClusterMap();
+      tracks.fITSClusterSizes = 0;
+      for (int layer = 0; layer < 7; layer++) {
+        if (track->GetITSClusterMap() & (1 << layer)) {
+          tracks.fITSClusterSizes |= (0xf << (layer * 4));
+        }
+      }
+
       tracks.fTPCNClsFindable = track->GetTPCNclsF();
 
       if ((int)tracks.fTPCNClsFindable - track->GetTPCNcls() >= -128)
@@ -2159,7 +2165,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         tracks.fRho1PtTgl = 0;
         tracks.fTPCinnerP = NAN;
         tracks.fFlags = (mlt->FreeClustersTracklet(itr, 0) && mlt->FreeClustersTracklet(itr, 1)) ? FreeClsSPDTracklet : 0;
-        tracks.fITSClusterMap = 0;
+        tracks.fITSClusterSizes = 0;
         tracks.fTPCNClsFindable = 0;
         tracks.fTPCNClsFindableMinusFound = 0;
         tracks.fTPCNClsFindableMinusCrossedRows = 0;
@@ -2554,7 +2560,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   // In the conversion between RUN2 data to RUN3 the ZDC energies and amplitudes
   // have the same content whereas in RUN3 they provide two different estimates
   // of the same physical quantity.
-  // For the energy array we choose to preserve the RUN2 reconstruction feature to 
+  // For the energy array we choose to preserve the RUN2 reconstruction feature to
   // record the energy regardless of the actual presence of the signal
   // Therefore when analyzing RUN2 you will have energy measurements even in absence of
   // a TDC hit, while in RUN3 the energy information would not be stored because
