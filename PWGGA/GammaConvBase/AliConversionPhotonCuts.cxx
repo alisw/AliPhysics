@@ -1451,7 +1451,9 @@ Bool_t AliConversionPhotonCuts::PhotonIsSelected(AliConversionPhotonBase *photon
   FillPhotonCutIndex(kPhotonIn);
 
   AliAODConversionPhoton *iCandidate = dynamic_cast<AliAODConversionPhoton*>(photon);
-  fHistoConversionPt->Fill(iCandidate->GetPhotonPt());
+  if(fHistoConversionPt){
+    fHistoConversionPt->Fill(iCandidate->GetPhotonPt());
+  }
   if(event->IsA()==AliESDEvent::Class()) {
     if(!SelectV0Finder( ( ((AliESDEvent*)event)->GetV0(photon->GetV0Index()))->GetOnFlyStatus() ) ){
       FillPhotonCutIndex(kOnFly);
