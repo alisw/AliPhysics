@@ -536,10 +536,11 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
 
             double deltaPhi = fReadMC ? GetPhiInRange(dMeson->Phi() - phiRandom) : GetPhiInRange(dMeson->Phi() - PsinFullV0);
             double deltaPhiStar = GetPhiInRange(phiStarBeam - PsinFullV0);
+            double deltaPhiStarProduction = GetPhiInRange(phiStarBeam - dMeson->Phi());
 
             if (fSparseOption == 0) {
 
-                std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarEvPlane, cosThetaStarRandom, deltaPhi, centrality, scores[0], scores[1], scores[2], cosThetaQvector, cosPhiStar};
+                std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarEvPlane, cosThetaStarRandom, deltaPhiStarProduction, centrality, scores[0], scores[1], scores[2], cosThetaQvector, cosPhiStar};
                 if (fApplyTrackCutVariations) {
                     for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
                         var4nSparse.push_back((double)trackCutFlags[iTrkCut]);
@@ -1045,18 +1046,19 @@ void AliAnalysisTaskSEDstarPolarization::FillMCGenAccHistos(TClonesArray *arrayM
                         double thetaStarBeam = TMath::ACos(beamVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                         double phiStarBeam = TMath::ATan2(threeVecPiCM.Y(), threeVecPiCM.X());
 
-                        double deltaPhi = GetPhiInRange(mcPart->Phi() - phiRandom);
+                        // double deltaPhi = GetPhiInRange(mcPart->Phi() - phiRandom);
+                        double deltaPhiStarProduction = GetPhiInRange(phiStarBeam - mcPart->Phi());
 
                         if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
                         {
-                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarRandomXY, cosThetaStarRandom, deltaPhi, centrality, cosThetaQvector, cosPhiStar};
+                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarRandomXY, cosThetaStarRandom, deltaPhiStarProduction, centrality, cosThetaQvector, cosPhiStar};
                             double var4nSparseAccThetaPhiStar[3] = {pt, thetaStarBeam, phiStarBeam};
                             fnSparseMC[0]->Fill(var4nSparseAcc);
                             fnSparseMCThetaPhiStar[0]->Fill(var4nSparseAccThetaPhiStar);
                         }
                         else if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
                         {
-                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarRandomXY, cosThetaStarRandom, deltaPhi, centrality, cosThetaQvector, cosPhiStar};
+                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarRandomXY, cosThetaStarRandom, deltaPhiStarProduction, centrality, cosThetaQvector, cosPhiStar};
                             double var4nSparseAccThetaPhiStar[3] = {pt, thetaStarBeam, phiStarBeam};
                             fnSparseMC[1]->Fill(var4nSparseAcc);
                             fnSparseMCThetaPhiStar[1]->Fill(var4nSparseAccThetaPhiStar);
