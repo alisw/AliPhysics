@@ -143,7 +143,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fCenCutHighPU2018(NULL),
   fSPDCutPU2018(NULL),
   fV0CutPU2018(NULL),
-  fMultCutPU2018(NULL)
+  fMultCutPU2018(NULL),
+  HMpp(0)
   // end dowang
 {
   // default constructor
@@ -286,7 +287,8 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fCenCutHighPU2018(aReader.fCenCutHighPU2018),
   fSPDCutPU2018(aReader.fSPDCutPU2018),
   fV0CutPU2018(aReader.fV0CutPU2018),
-  fMultCutPU2018(aReader.fMultCutPU2018)
+  fMultCutPU2018(aReader.fMultCutPU2018),
+  HMpp(aReader.HMpp)
     // end dowang
 {
   // copy constructor
@@ -677,10 +679,16 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       return nullptr;
     }
   }
-  
-  const Float_t percent = cent->GetCentralityPercentile("V0M");
+ 
 
-  // Flatten centrality distribution
+ 
+  const Float_t percent = cent->GetCentralityPercentile("V0M");
+if(HMpp && percent >0.017){
+	delete tEvent;
+      return nullptr;
+
+} 
+// Flatten centrality distribution
   if (percent < 9 && fFlatCent) {
     bool reject_event = RejectEventCentFlat(fEvent->GetMagneticField(), percent);
     if (reject_event) {
@@ -3209,4 +3217,8 @@ double fVertex[3] = {0.};
  return true;
 	}
 
+}
+void AliFemtoEventReaderAOD::SetppHM(Int_t aHMpp){
+
+ HMpp = aHMpp;
 }

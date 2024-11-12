@@ -24,7 +24,6 @@ AliFemtoEvent* AliFemtoEventReaderAODMultSelection::CopyAODtoFemtoEvent()
 
   femto_event->SetCentralityV0(mult_selection->GetMultiplicityPercentile("V0M"));
   femto_event->SetCentralityCL1(mult_selection->GetMultiplicityPercentile("CL1"));
-
   switch (fEstEventMult) {
   case kCentrality:
     femto_event->SetNormalizedMult(lrint(10 * mult_selection->GetMultiplicityPercentile("V0M")));

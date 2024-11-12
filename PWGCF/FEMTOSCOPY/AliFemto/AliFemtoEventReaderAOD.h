@@ -149,6 +149,7 @@ public:
     void Set15oPass2EventReject(Int_t EventReject);
     bool Reject15oPass2Event(AliAODEvent *fAOD,Int_t yearLabel);
     void SetPbPb15Pass2MC(Int_t PbPb15Pass2MC);
+  void SetppHM(Int_t aHMpp);
   //---
   void SetRejection15opass2(Int_t rejeEv15o);
   void Set1DCorrectionsPions(TH1D *h1);
@@ -319,7 +320,7 @@ private:
   Bool_t fIsAlphaAnalysis;
   //
   Int_t frejeEv15o;
-
+  Int_t HMpp;
 
 #ifdef __ROOT__
   /// \cond CLASSIMP
