@@ -331,7 +331,6 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
     float tPt = 0.;
     float tEta = 0.;
     float tTotalP = 0.;
-
     if(fUse2pT == 1){
         TLorentzVector thisTrackMom;
         tEnergy = ::sqrt(track->P().Mag2() * 4. + fMass * fMass);
@@ -584,7 +583,6 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 		imost = 0;
 	}
 }
- 
 	if (imost != fMostProbable) return false;
 	if(fUseTOFMassCut){
 		//Mass square!
@@ -698,7 +696,6 @@ bool AliFemtoTrackCutPdtHe3::IsTritonNSigma(float mom, float massTOFPDG, float s
     return false;
 }
 bool AliFemtoTrackCutPdtHe3::IsHe3NSigma(float mom, float massTOFPDG, float sigmaMass, float nsigmaTPCHe3, float nsigmaTOFHe3){
-//	cout<<"IsHe3NSigma "<<nsigmaTPCHe3<<" "<<nsigmaTOFHe3<<endl;
     //double massPDGD=2.8089;
     if (fNsigmaTPCTOF) {
         if (mom > SwitchMom_He3){
@@ -710,7 +707,7 @@ bool AliFemtoTrackCutPdtHe3::IsHe3NSigma(float mom, float massTOFPDG, float sigm
                 return true;
         }
     }
-    else{
+    else{ //cout<<"IsHe3NSigma "<<nsigmaTPCHe3<<endl;
         if (TMath::Abs(nsigmaTPCHe3) < fNsigmaHe3)
             return true;
     }

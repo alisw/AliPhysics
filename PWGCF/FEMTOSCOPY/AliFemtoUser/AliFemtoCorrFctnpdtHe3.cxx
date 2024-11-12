@@ -564,13 +564,16 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair){
      //
 	if(isHe3Pair){
     // change momentum of p2!
-    AliFemtoPair* fPair = new AliFemtoPair;
+   // AliFemtoPair* fPair = new AliFemtoPair;
         fPair = ChangeP2Mom(aPair);
     }
     else{
         fPair = aPair;
     }
-    
+//return;
+//   cout<<"p11 "<<fPair->Track1()->Track()->Pt()<<endl;
+//	cout<<"p12 "<<fPair->Track2()->Track()->Pt()<<endl;
+ 
     // add true pair
  double tKStar = fabs(fPair->KStar());
 if(EscapePairCut==0){ 
@@ -734,7 +737,6 @@ void AliFemtoCorrFctnpdtHe3::AddMixedPair(AliFemtoPair* aPair)
     else{
         fPair = aPair;
     }
-
     // add true pair
 double tKStar = fabs(fPair->KStar());
 
@@ -849,6 +851,7 @@ AliFemtoPair * AliFemtoCorrFctnpdtHe3::ChangeP2Mom(AliFemtoPair* aPair)
     // modify momentum!
     AliFemtoParticle *tPart2 = new AliFemtoParticle(*aPair->Track2());
     AliFemtoLorentzVector tFourMom2 = AliFemtoLorentzVector(tPart2->FourMomentum());
+//cout<<"tFourMom2.px() "<<tFourMom2.px()<<endl;
     tFourMom2.SetPx(2.*tFourMom2.px());
     tFourMom2.SetPy(2.*tFourMom2.py());
     tFourMom2.SetPz(2.*tFourMom2.pz());
@@ -859,7 +862,6 @@ AliFemtoPair * AliFemtoCorrFctnpdtHe3::ChangeP2Mom(AliFemtoPair* aPair)
     tPart2->ResetFourMomentum(tFourMom2);
 
     fPair->SetTrack2(tPart2);
-
     return fPair;
 }
 int AliFemtoCorrFctnpdtHe3::ReVelocityGate(AliFemtoPair* aPair){
