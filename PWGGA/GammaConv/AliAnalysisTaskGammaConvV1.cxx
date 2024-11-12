@@ -2931,7 +2931,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
 	  if (isMLsel){
             fGammaCandidates->Add(iCandidate);
             fHistoXGBoutput[fiCut]->Fill( modelPred );
-	    if (iCandidate->Pt() >= 1.0 && iCandidate->Pt() <= 1.2) cout << iCandidate->Pt() << " " <<  modelPred << endl;
+	    //if (iCandidate->Pt() >= 1.0 && iCandidate->Pt() <= 1.2) cout << iCandidate->Pt() << " " <<  modelPred << endl;
             if (lIsFromSelectedHeader){
               fillHistosAndTree(iCandidate);
             }
@@ -3044,7 +3044,7 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       if (isMLsel){
         fGammaCandidates->Add(iPhotonHeader.first);
         fHistoXGBoutput[fiCut]->Fill( modelPred );
-	if (iCandidate->Pt() >= 1.0 && iCandidate->Pt() <= 1.2) cout << iCandidate->Pt() << " " <<  modelPred << endl;
+	//if (iCandidate->Pt() >= 1.0 && iCandidate->Pt() <= 1.2) cout << iCandidate->Pt() << " " <<  modelPred << endl;
           if (iPhotonHeader.second){
             fillHistosAndTree(iPhotonHeader.first);
           }
