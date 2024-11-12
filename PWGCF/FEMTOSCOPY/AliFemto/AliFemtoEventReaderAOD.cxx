@@ -579,6 +579,21 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
     		}
 	}		
     }
+	
+	// dowang pp
+	if(HMpp && fEventCuts){
+
+		AliMultSelection* fMultSeldowang = (AliMultSelection*)fEvent->FindListObject("MultSelection");
+		float centV0Mdowang = fMultSeldowang->GetMultiplicityPercentile("V0M");
+		fEventCuts->OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0,true);
+		if(!fEventCuts->AcceptEvent(fEvent) || centV0Mdowang > HMcut){
+      			delete tEvent;
+      			return nullptr;
+		}
+
+	}
+
+
   //**************************************
   //AliEventCuts
   
@@ -685,13 +700,8 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
   }
  
 
- 
   const Float_t percent = cent->GetCentralityPercentile("V0M");
-if(HMpp && percent >HMcut){
-	delete tEvent;
-      return nullptr;
 
-} 
 // Flatten centrality distribution
   if (percent < 9 && fFlatCent) {
     bool reject_event = RejectEventCentFlat(fEvent->GetMagneticField(), percent);
