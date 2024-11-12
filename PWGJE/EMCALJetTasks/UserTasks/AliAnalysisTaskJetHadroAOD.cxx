@@ -1831,10 +1831,16 @@ void AliAnalysisTaskJetHadroAOD::FindJetsEMC()
   if (fUseCouts) cout << "Maximum jet pt after subtraction is " << fjetMaxPtSub << endl;
   // Get the jet container
   fJetContainer = this->GetJetContainer("detJets");
-  TString fRhoName = fJetContainer->GetRhoName();
-  if (fUseCouts) cout << "Rho Name is " << fRhoName << endl;
+  if (fUseCouts) cout << "fYear is " << fYear << endl;
+  if (fYear!=2017){
+    TString fRhoName = fJetContainer->GetRhoName();
+    if (fUseCouts) cout << "Rho Name is " << fRhoName << endl;
 
-  if (fJetContainer->GetRhoParameter()) fjetRhoVal = fJetContainer->GetRhoVal();
+    if (fJetContainer->GetRhoParameter()) fjetRhoVal = fJetContainer->GetRhoVal();
+  }
+  else {
+    fjetRhoVal=0.0;
+  }
   if (fUseCouts) cout << "In FindJetsEMC Rho value is " << fjetRhoVal << endl;
 
   //
