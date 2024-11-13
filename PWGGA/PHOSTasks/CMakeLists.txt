@@ -129,6 +129,7 @@ set(SRCS
     UserTasks/AliCaloClusterContent.cxx
     PHOS_Resonances/AliAnalysisPHOSResonances.cxx
     PHOS_Nbar/AliAnalysisSigmaBarCharged.cxx
+    PHOS_Nbar/AliAnalysisSigmaBarChargedGen.cxx
     PHOS_gamma/AliAnalysisTaskGammaPHOSPP.cxx
     PHOS_gamma/AliAnalysisTaskPHOSPbPbQARun2.cxx
     PHOS_gamma/AliAnalysisTaskGammaPHOSPbPbRun2.cxx
@@ -233,6 +234,7 @@ install(FILES PHOS_Resonances/AddTaskPHOSResonances.C DESTINATION PWGGA/PHOSTask
 install(FILES AutoTrendQA/MakeTrendingPHOSQA.C DESTINATION PWGGA/PHOSTasks/AutoTrendQA)
 install(FILES AutoTrendQA/DrawTrendingPHOSQA.C DESTINATION PWGGA/PHOSTasks/AutoTrendQA)
 install(FILES PHOS_Nbar/AddTaskPHOSSigmaBar.C DESTINATION PWGGA/PHOSTasks/PHOS_Nbar)
+install(FILES PHOS_Nbar/AddTaskSigmaBarChargedGen.C DESTINATION PWGGA/PHOSTasks/PHOS_Nbar)
 install(FILES PHOS_gamma/AddTaskGammaPHOSPP.C DESTINATION PWGGA/PHOSTasks/PHOS_gamma)
 install(FILES PHOS_gamma/AddTaskPHOSPbPbQARun2.C DESTINATION PWGGA/PHOSTasks/PHOS_gamma)
 install(FILES PHOS_gamma/AddTaskGammaPHOSPbPbRun2.C DESTINATION PWGGA/PHOSTasks/PHOS_gamma)
