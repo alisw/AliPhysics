@@ -629,8 +629,8 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtRandomCone()
     auto partcont = this->GetTrackContainer(0);
 
     Double_t jetradius = jetcont->GetJetRadius();
-    Double_t minEta = -0.5;
-    Double_t maxEta = 0.5;
+    Double_t minEta = -0.7 + jetradius;
+    Double_t maxEta = 0.7 - jetradius;
     Double_t tmpRandConeEta = -999;
     Double_t tmpRandConePhi = -999;
     Double_t tmpConePt = -0.;
@@ -642,6 +642,9 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtRandomCone()
 
     Double_t SLJeta = 999;
     Double_t SLJphi = 999;
+
+    Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
+    Double_t EmcalMaxPhi = fGeom->GetEMCALPhiMax() * TMath::DegToRad();
 
     if (jetcont)
     {
@@ -688,15 +691,26 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtRandomCone()
     Double_t dSLJ = 0;
     Int_t repeats = 0;
 
-    do
-    {
-        tmpRandConeEta = minEta + gRandom->Rndm() * (maxEta - minEta);
-        tmpRandConePhi = gRandom->Rndm() * TMath::TwoPi();
-        dLJ = TMath::Sqrt((LJeta - tmpRandConeEta) * (LJeta - tmpRandConeEta) + (LJphi - tmpRandConePhi) * (LJphi - tmpRandConePhi));
-        dSLJ = TMath::Sqrt((SLJeta - tmpRandConeEta) * (SLJeta - tmpRandConeEta) + (SLJphi - tmpRandConePhi) * (SLJphi - tmpRandConePhi));
-        repeats++;
+    if(jetcont->GetJetType() != AliJetContainer::kChargedJet){
+      do
+      {
+          tmpRandConeEta = minEta + gRandom->Rndm() * (maxEta - minEta);
+          tmpRandConePhi = gRandom->Rndm() * (EmcalMaxPhi - EmcalMinPhi) + EmcalMinPhi;
+          dLJ = TMath::Sqrt((LJeta - tmpRandConeEta) * (LJeta - tmpRandConeEta) + (LJphi - tmpRandConePhi) * (LJphi - tmpRandConePhi));
+          repeats++;
 
-    } while (dLJ < 0.45 || dSLJ < 0.45);
+      } while (dLJ < (2*jetradius + 0.05));
+    }else{
+      do
+      {
+          tmpRandConeEta = minEta + gRandom->Rndm() * (maxEta - minEta);
+          tmpRandConePhi = gRandom->Rndm() * TMath::TwoPi();
+          dLJ = TMath::Sqrt((LJeta - tmpRandConeEta) * (LJeta - tmpRandConeEta) + (LJphi - tmpRandConePhi) * (LJphi - tmpRandConePhi));
+          dSLJ = TMath::Sqrt((SLJeta - tmpRandConeEta) * (SLJeta - tmpRandConeEta) + (SLJphi - tmpRandConePhi) * (SLJphi - tmpRandConePhi));
+          repeats++;
+
+      } while (dLJ < (2*jetradius + 0.05) || dSLJ < (2*jetradius + 0.05));
+    }
 
     AliAODTrack *tmpTrack = 0x0;
 
@@ -740,6 +754,11 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtEmbedding()
     auto partcont = this->GetTrackContainer(0);
     auto jetcont = this->GetJetContainer(fNameJetContainer);
 
+    Double_t EmcalMinPhi = fGeom->GetArm1PhiMin() * TMath::DegToRad();
+    Double_t EmcalMaxPhi = fGeom->GetEMCALPhiMax() * TMath::DegToRad();
+    Double_t jetradius = jetcont->GetJetRadius();
+
+
     AliEmcalJet* leadingJet = jetcont->GetLeadingJet();
 
     if(!leadingJet)
@@ -750,7 +769,19 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtEmbedding()
 
     Double_t gen_pt = fTrackGenerator->Uniform(0, 100); //this will be pT of the track that you embedd
     TLorentzVector lVec;
-    lVec.SetPtEtaPhiM(gen_pt, signalEta, signalPhi + TMath::Pi() / 2, 0);               //here ignalEta,signalPhi  are some directions that you choose
+    if(jetcont->GetJetType() != AliJetContainer::kChargedJet){
+      Double_t diffHigh = TMath::Abs(EmcalMaxPhi - (signalPhi + jetradius));
+      Double_t diffLow = TMath::Abs((signalPhi - jetradius) - EmcalMinPhi);
+      Double_t randomPhi = 0;
+      if (diffHigh > diffLow){
+        randomPhi = TMath::Abs(EmcalMaxPhi - gRandom->Rndm()*diffHigh);
+      }else{
+        randomPhi = TMath::Abs(gRandom->Rndm()*diffLow + EmcalMinPhi);
+      }
+      lVec.SetPtEtaPhiM(gen_pt, signalEta, randomPhi, 0);               //here signalEta, signalPhi are some directions that you choose
+    }else{
+      lVec.SetPtEtaPhiM(gen_pt, signalEta, signalPhi + TMath::Pi() / 2, 0);               //here signalEta, signalPhi are some directions that you choose
+    }
     fFastJetWrapper->AddInputVector(lVec.Px(), lVec.Py(), lVec.Pz(), lVec.E(), -99999); //fill embedded track to the array of proto-jets
 
     //-----Filling   fFastJetWrapper with tracks from track container
