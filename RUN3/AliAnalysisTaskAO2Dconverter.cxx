@@ -2609,19 +2609,19 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if (tZNA > -12.5 && tZNA < 12.5 && zdcTime[0] > 998){
         zdcTime[0] = tZNA;
       }
-      if (tZNC > -12.5 && tZNC < 12.5 && zdcTime[0] > 998){
+      if (tZNC > -12.5 && tZNC < 12.5 && zdcTime[1] > 998){
         zdcTime[1] = tZNC;
       }
-      if (tZPA > -12.5 && tZPA < 12.5 && zdcTime[1] > 998){
+      if (tZPA > -12.5 && tZPA < 12.5 && zdcTime[2] > 998){
         zdcTime[2] = tZPA;
       }
-      if (tZPC > -12.5 && tZPC < 12.5 && zdcTime[2] > 998){
+      if (tZPC > -12.5 && tZPC < 12.5 && zdcTime[3] > 998){
         zdcTime[3] = tZPC;
       }
-      if (tZEM1 > -12.5 && tZEM1 < 12.5 && zdcTime[3] > 998){
+      if (tZEM1 > -12.5 && tZEM1 < 12.5 && zdcTime[4] > 998){
         zdcTime[4] = tZEM1;
       }
-      if (tZEM2 > -12.5 && tZEM2 < 12.5 && zdcTime[4] > 998){
+      if (tZEM2 > -12.5 && tZEM2 < 12.5 && zdcTime[5] > 998){
         zdcTime[5] = tZEM2;
       }
     }
