@@ -153,6 +153,7 @@
 
 //Nbar
 #pragma link C++ class AliAnalysisSigmaBarCharged+ ;
+#pragma link C++ class AliAnalysisSigmaBarChargedGen+ ;
 
 //Gamma
 #pragma link C++ class AliAnalysisTaskGammaPHOSPP+ ;
