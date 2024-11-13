@@ -288,7 +288,7 @@ private:
   int fBasketSizeEvents = 1000000;   // Maximum basket size of the trees for events
   int fBasketSizeTracks = 10000000;   // Maximum basket size of the trees for tracks
 
-  TaskModes fTaskMode = kStandard; // Running mode of the task. Useful to set for e.g. MC mode  
+  TaskModes fTaskMode = kStandard; // Running mode of the task. Useful to set for e.g. MC mode
 
   // Data structures
 
@@ -402,6 +402,7 @@ private:
     UChar_t fITSClusterMap = 0u;   /// ITS map of clusters, one bit per a layer
     UChar_t fTPCNClsFindable = 0u; /// number of clusters that could be assigned in the TPC
     Char_t fTPCNClsFindableMinusFound = 0;       /// difference between foundable and found clusters
+    Char_t fTPCNClsFindableMinusPID = 0;         /// difference between foundable and PID clusters
     Char_t fTPCNClsFindableMinusCrossedRows = 0; ///  difference between foundable clsuters and crossed rows
     UChar_t fTPCNClsShared = 0u;   /// Number of shared clusters
     UChar_t fTRDPattern = 0u;   /// Bit 0-5 if tracklet from TRD layer used for this track
@@ -476,7 +477,7 @@ private:
   struct {
     /// Calo cluster label to find the corresponding MC particle
     std::vector<int> fIndexMcParticles = {-999};      ///< Calo label
-    std::vector<float> fAmplitudeFraction = {1.f};    ///< Amplitude fraction of deposited energy of the mc particle and the total cell 
+    std::vector<float> fAmplitudeFraction = {1.f};    ///< Amplitude fraction of deposited energy of the mc particle and the total cell
   } mccalolabel; ///<! Calo labels
 
   struct {
@@ -727,7 +728,7 @@ private:
     Int_t fIndexCollisions = -1; /// The index of the collision vertex in the TF, to which the track is attached
     Int_t fIndexTracksPos = -1; // Positive track ID
     Int_t fIndexTracksNeg = -1; // Negative track ID
-    uint8_t fV0Type = 0; //custom bitmap for selection (standard or photon) 
+    uint8_t fV0Type = 0; //custom bitmap for selection (standard or photon)
   } v0s;               //! structure to keep v0sinformation
 
   struct {
