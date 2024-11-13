@@ -100,7 +100,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "DbgEventExtra",
   "O2track",
   "O2trackcov",
-  "O2trackextra_001", // 001 only changed expression column
+  "O2trackextra_002", // 002 add tpc findable minus pid clusters
   "O2fwdtrack",
   "O2fwdtrackcov",
   "O2calo",
@@ -928,6 +928,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tTracksExtra->Branch("fITSClusterSizes", &tracks.fITSClusterSizes, "fITSClusterSizes/i");
     tTracksExtra->Branch("fTPCNClsFindable", &tracks.fTPCNClsFindable, "fTPCNClsFindable/b");
     tTracksExtra->Branch("fTPCNClsFindableMinusFound",&tracks.fTPCNClsFindableMinusFound, "fTPCNClsFindableMinusFound/B");
+    tTracksExtra->Branch("fTPCNClsFindableMinusPID",&tracks.fTPCNClsFindableMinusPID, "fTPCNClsFindableMinusPID/B");
     tTracksExtra->Branch("fTPCNClsFindableMinusCrossedRows", &tracks.fTPCNClsFindableMinusCrossedRows, "fTPCNClsFindableMinusCrossedRows/B");
     tTracksExtra->Branch("fTPCNClsShared", &tracks.fTPCNClsShared, "fTPCNClsShared/b");
     tTracksExtra->Branch("fTRDPattern", &tracks.fTRDPattern, "fTRDPattern/b");
@@ -1940,6 +1941,11 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       else
         tracks.fTPCNClsFindableMinusFound = -128;
 
+      if ((int)tracks.fTPCNClsFindable - track->GetTPCsignalN() >= -128)
+        tracks.fTPCNClsFindableMinusPID = tracks.fTPCNClsFindable - track->GetTPCsignalN();
+      else
+        tracks.fTPCNClsFindableMinusPID = -128;
+
       if ((int)tracks.fTPCNClsFindable - track->GetTPCCrossedRows() >= -128)
         tracks.fTPCNClsFindableMinusCrossedRows = tracks.fTPCNClsFindable - track->GetTPCCrossedRows();
       else
@@ -2175,6 +2181,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         tracks.fITSClusterSizes = 0;
         tracks.fTPCNClsFindable = 0;
         tracks.fTPCNClsFindableMinusFound = 0;
+        tracks.fTPCNClsFindableMinusPID = 0;
         tracks.fTPCNClsFindableMinusCrossedRows = 0;
         tracks.fTPCNClsShared = 0;
         tracks.fTRDPattern = 0;

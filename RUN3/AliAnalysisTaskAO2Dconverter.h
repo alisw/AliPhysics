@@ -402,6 +402,7 @@ private:
     UInt_t fITSClusterSizes = 0u;  /// ITS clusters sizes, four bits per a layer, starting from the innermost
     UChar_t fTPCNClsFindable = 0u; /// number of clusters that could be assigned in the TPC
     Char_t fTPCNClsFindableMinusFound = 0;       /// difference between foundable and found clusters
+    Char_t fTPCNClsFindableMinusPID = 0;         /// difference between foundable and PID clusters
     Char_t fTPCNClsFindableMinusCrossedRows = 0; ///  difference between foundable clsuters and crossed rows
     UChar_t fTPCNClsShared = 0u;   /// Number of shared clusters
     UChar_t fTRDPattern = 0u;   /// Bit 0-5 if tracklet from TRD layer used for this track
