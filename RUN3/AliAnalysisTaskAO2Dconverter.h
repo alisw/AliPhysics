@@ -399,7 +399,7 @@ private:
     UInt_t fFlags = 0u;       /// Reconstruction status flags
 
     // Clusters and tracklets
-    UChar_t fITSClusterMap = 0u;   /// ITS map of clusters, one bit per a layer
+    UInt_t fITSClusterSizes = 0u;  /// ITS clusters sizes, four bits per a layer, starting from the innermost
     UChar_t fTPCNClsFindable = 0u; /// number of clusters that could be assigned in the TPC
     Char_t fTPCNClsFindableMinusFound = 0;       /// difference between foundable and found clusters
     Char_t fTPCNClsFindableMinusPID = 0;         /// difference between foundable and PID clusters
@@ -476,8 +476,10 @@ private:
 
   struct {
     /// Calo cluster label to find the corresponding MC particle
-    std::vector<int> fIndexMcParticles = {-999};      ///< Calo label
-    std::vector<float> fAmplitudeFraction = {1.f};    ///< Amplitude fraction of deposited energy of the mc particle and the total cell
+    Int_t fIndexMcParticles_size = 0;         /// Calo label size
+    Int_t fIndexMcParticles[1] = {-999};      ///< Calo label
+    Int_t fAmplitudeFraction_size = 0;        /// Amplitude fraction size
+    Float_t fAmplitudeFraction[1] = {1.f};    ///< Amplitude fraction of deposited energy of the mc particle and the total cell
   } mccalolabel; ///<! Calo labels
 
   struct {
@@ -668,13 +670,18 @@ private:
   } fwdtracks; //! structure to keep forward tracks parameters and covariances
 
   struct {
-    Int_t   fIndexBCs = 0u;                 /// Index to BC table
-    std::vector<float> fEnergy = {};           ///< Energy of non-zero channels. The channel IDs are given in ChannelE (at the same index)
-    std::vector<uint8_t> fChannelE = {};       ///< Channel IDs which have reconstructed energy. There are at maximum 26 channels
-    std::vector<float> fAmplitude = {};        ///< Amplitudes of non-zero channels. The channel IDs are given in ChannelT (at the same index)
-    std::vector<float> fTime = {};             ///< Times of non-zero channels. The channel IDs are given in ChannelT (at the same index)
-    std::vector<uint8_t> fChannelT = {};       ///< Channel IDs which had non-zero amplitudes. There are at maximum 26 channels
-  } zdc;                                 //! structure to keep ZDC information
+    Int_t fIndexBCs = 0u;             /// Index to BC table
+    Int_t fEnergy_size = 0;           /// Size of fEnergy
+    Float_t fEnergy[26] = {0.f};      ///< Energy of non-zero channels. The channel IDs are given in ChannelE (at the same index)
+    Int_t fChannelE_size = 0;         /// Size of fChannelE
+    uint8_t fChannelE[26] = {0u};     ///< Channel IDs which have reconstructed energy. There are at maximum 26 channels
+    Int_t fAmplitude_size = 0;        /// Size of fAmplitude
+    Float_t fAmplitude[26] = {0.f};   ///< Amplitudes of non-zero channels. The channel IDs are given in ChannelT (at the same index)
+    Int_t fTime_size = 0;             /// Size of fTime
+    Float_t fTime[26] = {0.f};        ///< Times of non-zero channels. The channel IDs are given in ChannelT (at the same index)
+    Int_t fChannelT_size = 0;         /// Size of fChannelT
+    uint8_t fChannelT[26] = {0u};     ///< Channel IDs which had non-zero amplitudes. There are at maximum 26 channels
+  } zdc;                              //! structure to keep ZDC information
 
   struct {
     /// V0A  (32 cells in Run2, 48 cells in Run3)
