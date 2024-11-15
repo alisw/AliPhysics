@@ -414,10 +414,10 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fKind_Gamma0(0),
   fKind_Gamma1(0),
   fApplyPhotonML(0),
-  fHistoXGBoutput_PtBDT_Signal(NULL),
-  fHistoXGBoutput_PtBDT_Background(NULL),
-  fHistoXGBoutput(NULL),
-  fHistoBDTvsKind(NULL),
+  fHistoXGBoutput_PtBDT_Signal_MC(NULL),
+  fHistoXGBoutput_PtBDT_Background_MC(NULL),
+  fHistoXGBoutput_MC(NULL),
+  fHistoPtBDTvsKind_MC(NULL),
   fMapPhotonHeaders()
 {
 
@@ -778,10 +778,10 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fKind_Gamma0(0),
   fKind_Gamma1(0),
   fApplyPhotonML(0),
-  fHistoXGBoutput_PtBDT_Signal(NULL),
-  fHistoXGBoutput_PtBDT_Background(NULL),
-  fHistoXGBoutput(NULL),
-  fHistoBDTvsKind(NULL),
+  fHistoXGBoutput_PtBDT_Signal_MC(NULL),
+  fHistoXGBoutput_PtBDT_Background_MC(NULL),
+  fHistoXGBoutput_MC(NULL),
+  fHistoPtBDTvsKind_MC(NULL),
   fMapPhotonHeaders()
 {
   // Define output slots here
@@ -1179,10 +1179,10 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   }
 
   if(fApplyPhotonML){
-    fHistoXGBoutput_PtBDT_Signal = new TH2F*[fnCuts];
-    fHistoXGBoutput_PtBDT_Background = new TH2F*[fnCuts];
-    fHistoXGBoutput = new TH1F*[fnCuts];
-    fHistoBDTvsKind = new TH2F*[fnCuts];
+    fHistoXGBoutput_PtBDT_Signal_MC = new TH2F*[fnCuts];
+    fHistoXGBoutput_PtBDT_Background_MC = new TH2F*[fnCuts];
+    fHistoXGBoutput_MC = new TH1F*[fnCuts];
+    fHistoPtBDTvsKind_MC = new TH3F*[fnCuts];
   }
 
   if(fEnableBDT){
@@ -1445,17 +1445,17 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
 
     if(fApplyPhotonML){
    
-      fHistoXGBoutput_PtBDT_Signal[iCut] = new TH2F("Signal Pt vs BDT", "Signal Pt vs BDT", 1000, -1, 24, 200, -1, 1);
-      fESDList[iCut]->Add(fHistoXGBoutput_PtBDT_Signal[iCut]);
+      fHistoXGBoutput_PtBDT_Signal_MC[iCut] = new TH2F("SignalPt_BDT_MC", "Signal Pt vs BDT", 2400, -1, 24, 200, -1, 1);
+      fESDList[iCut]->Add(fHistoXGBoutput_PtBDT_Signal_MC[iCut]);
 
-      fHistoXGBoutput_PtBDT_Background[iCut] = new TH2F("Background Pt vs BDT", "Background Pt vs BDT", 1000, -1, 24, 200, -1, 1);
-      fESDList[iCut]->Add(fHistoXGBoutput_PtBDT_Background[iCut]);
+      fHistoXGBoutput_PtBDT_Background_MC[iCut] = new TH2F("BackgroundPt_BDT_MC", "Background Pt vs BDT", 2400, -1, 24, 200, -1, 1);
+      fESDList[iCut]->Add(fHistoXGBoutput_PtBDT_Background_MC[iCut]);
 
-      fHistoXGBoutput[iCut] = new TH1F("XGB_ConvGamma_BDT", "XGB__ConvGamma_BDT", 200, -1, 1);
-      fESDList[iCut]->Add(fHistoXGBoutput[iCut]);
+      fHistoXGBoutput_MC[iCut] = new TH1F("XGB_ConvGamma_BDT_MC", "XGB_ConvGamma vs BDT", 100, 0, 1);
+      fESDList[iCut]->Add(fHistoXGBoutput_MC[iCut]);
 
-      fHistoBDTvsKind[iCut] = new TH2F("BDT vs Photon Kind", "BDT vs Photon kind", 200, -1, 1, 50, -1, 24);
-      fESDList[iCut]->Add(fHistoBDTvsKind[iCut]);
+      fHistoPtBDTvsKind_MC[iCut] = new TH3F("PT_BDT_PhotonKind_MC", "PT BDT Photonkind", 2000, 0, 20, 100, 0, 1, 20, 0, 20);
+      fESDList[iCut]->Add(fHistoPtBDTvsKind_MC[iCut]);
 
     }
 
@@ -2914,24 +2914,24 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
     if (!(lUseElecShareCut || lUseTooCloseCut)){
       if (fApplyPhotonML) {
           Double_t modelPred = 0.3;
-	  std::vector<double> scores{};
+	        std::vector<double> scores{};
           isMLsel = fMLResponse->IsSelected(modelPred, iCandidate, fInputEvent, fiPhotonCut, fV0Reader);
-	  //cout<< isMLsel <<" , " << modelPred << endl;
+	        //cout<< isMLsel <<" , " << modelPred << endl;
       
           if(fIsMC){
             if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class())		fKind = IsTruePhotonESD(iCandidate);
             else if (fMCEvent && fInputEvent->IsA()==AliAODEvent::Class())	fKind = IsTruePhotonAOD(iCandidate);
      	    
-	    if(fKind==0) fHistoXGBoutput_PtBDT_Signal[fiCut]->Fill( iCandidate->Pt(), modelPred);
-     	    else fHistoXGBoutput_PtBDT_Background[fiCut]->Fill( iCandidate->Pt(), modelPred);
+	          if(fKind==0) fHistoXGBoutput_PtBDT_Signal_MC[fiCut]->Fill( iCandidate->Pt(), modelPred);
+     	      else fHistoXGBoutput_PtBDT_Background_MC[fiCut]->Fill( iCandidate->Pt(), modelPred);
 
-	    fHistoBDTvsKind[fiCut]->Fill(modelPred, fKind);
-   	  }
+	          fHistoPtBDTvsKind_MC[fiCut]->Fill(iCandidate->Pt(), modelPred, fKind);
+   	      }
 
-	  if (isMLsel){
+	        if (isMLsel){
             fGammaCandidates->Add(iCandidate);
-            fHistoXGBoutput[fiCut]->Fill( modelPred );
-	    //if (iCandidate->Pt() >= 1.0 && iCandidate->Pt() <= 1.2) cout << iCandidate->Pt() << " " <<  modelPred << endl;
+            fHistoXGBoutput_MC[fiCut]->Fill( modelPred );
+	          //if (iCandidate->Pt() >= 1.0 && iCandidate->Pt() <= 1.2) cout << iCandidate->Pt() << " " <<  modelPred << endl;
             if (lIsFromSelectedHeader){
               fillHistosAndTree(iCandidate);
             }
@@ -3034,21 +3034,22 @@ void AliAnalysisTaskGammaConvV1::ProcessPhotonCandidates()
       isMLsel = fMLResponse->IsSelected(modelPred, iCandidate, fInputEvent, fiPhotonCut, fV0Reader);
 
       if(fIsMC){
-	    if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class())            fKind = IsTruePhotonESD(iCandidate);
-            else if (fMCEvent && fInputEvent->IsA()==AliAODEvent::Class())      fKind = IsTruePhotonAOD(iCandidate);
-            if(fKind==0) fHistoXGBoutput_PtBDT_Signal[fiCut]->Fill( iCandidate->Pt(), modelPred);
-            else fHistoXGBoutput_PtBDT_Background[fiCut]->Fill( iCandidate->Pt(), modelPred);
-            fHistoBDTvsKind[fiCut]->Fill(modelPred, fKind);
-          }
+	      if(fMCEvent && fInputEvent->IsA()==AliESDEvent::Class())            fKind = IsTruePhotonESD(iCandidate);
+        else if (fMCEvent && fInputEvent->IsA()==AliAODEvent::Class())      fKind = IsTruePhotonAOD(iCandidate);
+        
+        if(fKind==0) fHistoXGBoutput_PtBDT_Signal_MC[fiCut]->Fill( iCandidate->Pt(), modelPred);
+        else fHistoXGBoutput_PtBDT_Background_MC[fiCut]->Fill( iCandidate->Pt(), modelPred);
+	        fHistoPtBDTvsKind_MC[fiCut]->Fill(iCandidate->Pt(), modelPred, fKind);
+      }
 
       if (isMLsel){
         fGammaCandidates->Add(iPhotonHeader.first);
-        fHistoXGBoutput[fiCut]->Fill( modelPred );
-	//if (iCandidate->Pt() >= 1.0 && iCandidate->Pt() <= 1.2) cout << iCandidate->Pt() << " " <<  modelPred << endl;
-          if (iPhotonHeader.second){
-            fillHistosAndTree(iPhotonHeader.first);
-          }
+        fHistoXGBoutput_MC[fiCut]->Fill( modelPred );
+	      //if (iCandidate->Pt() >= 1.0 && iCandidate->Pt() <= 1.2) cout << iCandidate->Pt() << " " <<  modelPred << endl;
+        if (iPhotonHeader.second){
+          fillHistosAndTree(iPhotonHeader.first);
         }
+      }
     }
     else {
       fGammaCandidates->Add(iPhotonHeader.first);

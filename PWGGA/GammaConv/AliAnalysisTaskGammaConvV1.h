@@ -503,10 +503,10 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     Float_t                           fEta_EPos_Gamma1_MesonML;  
     Float_t                           fPAsymmetry_EPos_Gamma1_MesonML;  
 
-    TH2F**                            fHistoXGBoutput_PtBDT_Signal;                            
-    TH2F**                            fHistoXGBoutput_PtBDT_Background;
-    TH1F**                            fHistoXGBoutput;                          
-    TH2F**                            fHistoBDTvsKind;
+    TH2F**                            fHistoXGBoutput_PtBDT_Signal_MC;                            
+    TH2F**                            fHistoXGBoutput_PtBDT_Background_MC;
+    TH1F**                            fHistoXGBoutput_MC;                          
+    TH3F**                            fHistoPtBDTvsKind_MC;
 
     TList**                           fMLFolder;                                 
     
@@ -520,7 +520,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 70);
+    ClassDef(AliAnalysisTaskGammaConvV1, 71);
 };
 
 #endif
