@@ -52,6 +52,11 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   std::vector<Double_t> GetVectorJetNtracks() { return fVectorJetNCh; }
   std::vector<Double_t> GetVectorJetNclus() { return fVectorJetNClus; }
 
+  // Jet constituents
+  std::vector<AliVCluster*> GetJetClusters(int jet) { return fVecJetClusters[jet]; }
+  std::vector<AliVParticle*> GetJetTracks(int jet) { return fVecJetTracks[jet]; }
+  std::vector<AliVParticle*> GetTrueJetParticles(int jet) { return fVecTrueJetParticles[jet]; }
+
   Double_t GetTrueNJets() { return fTrueNJets; }
   std::vector<Double_t> GetTrueVectorJetPt() { return fTrueVectorJetPt; }
   std::vector<Double_t> GetTrueVectorJetPx() { return fTrueVectorJetPx; }
@@ -121,6 +126,12 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   std::vector<double> fTrueVectorJetPartonPx; // vector containing the pt of the leading parton ("seed of the jet")
   std::vector<double> fTrueVectorJetPartonPy; // vector containing the pt of the leading parton ("seed of the jet")
   std::vector<double> fTrueVectorJetPartonPz; // vector containing the pt of the leading parton ("seed of the jet")
+
+  // Jet constituents
+  std::vector<std::vector<AliVCluster*>> fVecJetClusters;
+  std::vector<std::vector<AliVParticle*>> fVecJetTracks;
+
+  std::vector<std::vector<AliVParticle*>> fVecTrueJetParticles;
 
   UInt_t fAccType;
   UInt_t fAccTypeMC;
