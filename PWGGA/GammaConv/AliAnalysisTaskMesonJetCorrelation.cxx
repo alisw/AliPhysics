@@ -210,6 +210,9 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoNJetsVsTrackMult({}),
                                                                              fHistoNJetsVsMult({}),
                                                                              fHistoMaxJetPtVsMult({}),
+                                                                             fHistoGenParticleInJet({}),
+                                                                             fHistoJetTrackPtRadialProfile({}),
+                                                                             fHistoJetClusterPtRadialProfile({}),
                                                                              // true meson histograms
                                                                              fRespMatrixHandlerTrueMesonInvMassVsPt({}),
                                                                              fRespMatrixHandlerTrueMesonInvMassVsZ({}),
@@ -484,6 +487,9 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoNJetsVsTrackMult({}),
                                                                                            fHistoNJetsVsMult({}),
                                                                                            fHistoMaxJetPtVsMult({}),
+                                                                                           fHistoGenParticleInJet({}),
+                                                                                           fHistoJetTrackPtRadialProfile({}),
+                                                                                           fHistoJetClusterPtRadialProfile({}),
                                                                                            // true meon histograms
                                                                                            fRespMatrixHandlerTrueMesonInvMassVsPt({}),
                                                                                            fRespMatrixHandlerTrueMesonInvMassVsZ({}),
@@ -768,6 +774,9 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fHistoMaxJetPtVsMult.resize(fnCuts);
     fHistoNJetsVsTrackMult.resize(fnCuts);
     fHistoNJetsVsMult.resize(fnCuts);
+    fHistoGenParticleInJet.resize(fnCuts);
+    fHistoJetTrackPtRadialProfile.resize(fnCuts);
+    fHistoJetClusterPtRadialProfile.resize(fnCuts);
   }
   if (fIsMC) {
     fHistoTruevsRecJetPt.resize(fnCuts);
@@ -1338,9 +1347,19 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fTrueJetList[iCut]->Add(fHistoTrueUnMatchedPtJet[iCut]);
 
       fHistoTrueJetEta[iCut] = new TH1F("TrueJetEta", "TrueJetEta", 100, -1, 1);
-      fJetList[iCut]->Add(fHistoTrueJetEta[iCut]);
+      fTrueJetList[iCut]->Add(fHistoTrueJetEta[iCut]);
       fHistoTrueJetPhi[iCut] = new TH1F("TrueJetPhi", "TrueJetPhi", 70, 0, 7);
-      fJetList[iCut]->Add(fHistoTrueJetPhi[iCut]);
+      fTrueJetList[iCut]->Add(fHistoTrueJetPhi[iCut]);
+
+      if(fDoJetQA){
+        
+        fHistoGenParticleInJet[iCut] = new TH3F("Particle_Pt_JetPt", "Particle_Pt_JetPt", 12, vecEquidistFromMinus05.data(), fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        std::vector<TString> vecPartNames = {"#gamma", "#pi^{#pm}", "K^{#pm}", "K^{0}_{s}", "K^{0}_{l}", "p", "n", "#Lambda", "e^{#pm}", "#Sigma", "#nu", "other"};
+        for(size_t i = 0; i < vecPartNames.size(); ++i){
+          fHistoGenParticleInJet[iCut]->GetXaxis()->SetBinLabel(i+1, vecPartNames[i]);
+        }
+        fTrueJetList[iCut]->Add(fHistoGenParticleInJet[iCut]);
+      }
     }
 
     if (!fDoLightOutput) {
@@ -1366,6 +1385,15 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
 
       fHistoMaxJetPtVsMult[iCut] = new TH2F("MaxJetPt_TrackMult", "MaxJetPt_TrackMult", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), fVecBinsMult.size() - 1, fVecBinsMult.data());
       fJetList[iCut]->Add(fHistoMaxJetPtVsMult[iCut]);
+
+
+      std::vector<double> vecRadiusXax = {0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4};
+      fHistoJetTrackPtRadialProfile[iCut] = new TH3F("RadialProfile_JetPt_FracMom_Tracks", "RadialProfile_JetPt_FracMom_Tracks", vecRadiusXax.size()-1, vecRadiusXax.data(), fVecBinsFragment.size()-1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+      fJetList[iCut]->Add(fHistoJetTrackPtRadialProfile[iCut]);
+
+      fHistoJetClusterPtRadialProfile[iCut] = new TH3F("RadialProfile_JetPt_FracMom_Cluster", "RadialProfile_JetPt_FracMom_Cluster", vecRadiusXax.size()-1, vecRadiusXax.data(), fVecBinsFragment.size()-1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+      fJetList[iCut]->Add(fHistoJetClusterPtRadialProfile[iCut]);
+      
     }
 
     if (fIsMC) {
@@ -2069,11 +2097,46 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
         fHistoNEFVsPtJet[fiCut]->Fill(fVectorJetPt.at(i), fVectorJetNEF.at(i), fWeightJetJetMC);
         fHistoNchVsPtJet[fiCut]->Fill(fVectorJetPt.at(i), fVectorJetNch.at(i), fWeightJetJetMC);
         fHistoNclusVsPtJet[fiCut]->Fill(fVectorJetPt.at(i), fVectorJetNclus.at(i), fWeightJetJetMC);
-        fHistoNPartVsPtJet[fiCut]->Fill(fVectorJetPt.at(i), fVectorJetNch.at(i), fWeightJetJetMC);
+        fHistoNPartVsPtJet[fiCut]->Fill(fVectorJetPt.at(i), fVectorJetNch.at(i) + fVectorJetNclus.at(i), fWeightJetJetMC);
       }
 
       if(fVectorJetPt.at(i) > 5 ) {
         nJetsAbove5++;
+      }
+
+      // Jet QA
+      if(fDoJetQA){
+        // Radial profile filled per particle
+        float jetEta = fVectorJetEta.at(i);
+        float jetPhi = fVectorJetPhi.at(i);
+
+        auto vecTracks = fConvJetReader->GetJetTracks(i);
+        for(size_t ipart = 0; ipart < vecTracks.size(); ++ipart){
+          
+          AliVParticle* tmpPart = static_cast<AliVParticle*>(vecTracks[ipart]);
+          float dEta = jetEta - tmpPart->Eta();
+          float dPhi = jetPhi - tmpPart->Phi();
+          float dist = sqrt(dEta*dEta + dPhi*dPhi);
+          float fracMom = tmpPart->Pt()/fVectorJetPt.at(i); // easy method to calculate this but should be good enough
+          fHistoJetTrackPtRadialProfile[fiCut]->Fill(dist, fracMom, fVectorJetPt.at(i), fWeightJetJetMC);
+        }
+
+        auto vecClus = fConvJetReader->GetJetClusters(i);
+        for(size_t ipart = 0; ipart < vecClus.size(); ++ipart){
+          AliAODCaloCluster* clus = static_cast<AliAODCaloCluster*>(vecClus[ipart]);
+          float clusPos[3] = {0, 0, 0};
+          clus->GetPosition(clusPos);
+          TVector3 clusVec(clusPos[0], clusPos[1], clusPos[2]);
+          float dEta = jetEta - clusVec.Eta();
+          float dPhi = jetPhi - clusVec.Phi();
+          float dist = sqrt(dEta*dEta + dPhi*dPhi);
+          float PTotClus = sqrt(clusPos[0]*clusPos[0]+clusPos[1]*clusPos[1]+clusPos[2]*clusPos[2]) ; 
+          float px = clus->E()*clusPos[0]/PTotClus;
+          float py = clus->E()*clusPos[1]/PTotClus;
+          float ptclus =  sqrt(px*px + py*py);
+          float fracMom = ptclus/fVectorJetPt.at(i); // easy method to calculate this but should be good enough
+          fHistoJetClusterPtRadialProfile[fiCut]->Fill(dist, fracMom, fVectorJetPt.at(i), fWeightJetJetMC);
+        }
       }
 
       if (fIsMC > 0 && fConvJetReader->GetNJets() > 0 && fConvJetReader->GetTrueNJets() > 0) {
@@ -2124,6 +2187,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
     }
   }
 
+
   // Process True Jets
   if (fIsMC) {
     for (int i = 0; i < fConvJetReader->GetTrueNJets(); i++) {
@@ -2157,6 +2221,20 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
           fHistoTruevsRecJetPtForTrueJets[fiCut]->Fill(0.5, fTrueVectorJetPt.at(i), fWeightJetJetMC);
         }
       }
+      if(fDoJetQA){
+        auto vecTruePart = fConvJetReader->GetTrueJetParticles(i);
+        for(size_t ipart = 0; ipart < vecTruePart.size(); ++ipart){
+          AliAODMCParticle* tmpPart = static_cast<AliAODMCParticle*>(vecTruePart[ipart]);
+          if(!tmpPart) continue;
+          int pdgCode = std::abs(tmpPart->GetPdgCode());
+          fHistoGenParticleInJet[fiCut]->Fill(GetParticleIndex(pdgCode), tmpPart->Pt(), fTrueVectorJetPt.at(i), fWeightJetJetMC);
+          // if (tmpmap.count(pdgCode)){
+          //   tmpmap[pdgCode]++;
+          // } else {
+          //   tmpmap[pdgCode] = 1;
+          // }
+        }
+      }      
     }
   }
 }
@@ -2402,6 +2480,18 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
       UpdateEventMixData();
     }
   }
+
+
+  // // print out most likely particles
+  // std::map<int, int> mapinverted;
+  // for(const auto &[key, val] : tmpmap){
+  //   mapinverted[val] = key;
+  // }
+
+  // for(const auto &[key, val] : mapinverted){
+  //   cout << "part " << val << " --> " << key << endl;
+  // }
+
 
   if (fIsMC > 0 && fInputEvent->IsA() == AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())) {
     RelabelAODPhotonCandidates(false); // Back to ESDMC Label
@@ -4351,4 +4441,32 @@ void AliAnalysisTaskMesonJetCorrelation::RelabelAODPhotonCandidates(bool mode)
     delete[] fESDArrayPos;
     delete[] fESDArrayNeg;
   }
+}
+
+//________________________________________________________________________
+int AliAnalysisTaskMesonJetCorrelation::GetParticleIndex(int pdgcode){
+  if(pdgcode == 22){ // gamma
+    return 0;
+  } else if(pdgcode == 211){ // pi+-
+    return 1;
+  } else if(pdgcode == 321){ // Kaon
+    return 2;
+  } else if(pdgcode == 130){ // K0s
+    return 3;
+  } else if(pdgcode == 310){ // K0l
+    return 4;
+  } else if(pdgcode == 2212){ // proton
+    return 5;
+  } else if(pdgcode == 2112){ // neutron
+    return 6;
+  } else if(pdgcode == 3122){  // Lambda
+    return 7;
+  } else if(pdgcode == 11){ // electron
+    return 8;
+  } else if(pdgcode == 3112 || pdgcode == 3222 || pdgcode == 3322 ){ // Sigma baryons
+    return 9;
+  } else if(pdgcode == 12 || pdgcode == 14 || pdgcode == 16 ){ // Neutrinos
+    return 10;
+  }
+  return 11;
 }

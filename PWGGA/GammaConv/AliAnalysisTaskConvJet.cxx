@@ -67,6 +67,9 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    fTrueVectorJetPartonPx(0),
                                                    fTrueVectorJetPartonPy(0),
                                                    fTrueVectorJetPartonPz(0),
+                                                   fVecJetClusters({}),
+                                                   fVecJetTracks({}),
+                                                   fVecTrueJetParticles({}),
                                                    fAccType(0),
                                                    fAccTypeMC(0)
 {
@@ -97,6 +100,9 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    fTrueVectorJetPartonPx(0),
                                                                    fTrueVectorJetPartonPy(0),
                                                                    fTrueVectorJetPartonPz(0),
+                                                                   fVecJetClusters({}),
+                                                                   fVecJetTracks({}),
+                                                                   fVecTrueJetParticles({}),
                                                                    fAccType(0),
                                                                    fAccTypeMC(0)
 {
@@ -157,6 +163,8 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       fVectorJetNEF.clear();
       fVectorJetNClus.clear();
       fVectorJetNCh.clear();
+      fVecJetClusters.clear();
+      fVecJetTracks.clear();
 
       for (auto const& jet : jetCont->accepted()) {
         if (!jet)
@@ -174,6 +182,18 @@ void AliAnalysisTaskConvJet::DoJetLoop()
         fVectorJetNEF.push_back(jet->NEF());
         fVectorJetNClus.push_back(jet->Nn());
         fVectorJetNCh.push_back(jet->Nch());
+
+        std::vector<AliVCluster*> vecTmpClus;
+        for(size_t cl = 0; cl < jet->GetNumberOfClusters(); ++cl){
+          vecTmpClus.push_back(jet->Cluster(cl));
+        }
+        fVecJetClusters.push_back(vecTmpClus);
+
+        std::vector<AliVParticle*> vecTmpTracks;
+        for(size_t tr = 0; tr < jet->GetNumberOfTracks(); ++tr){
+          vecTmpTracks.push_back(jet->Track(tr));
+        }
+        fVecJetTracks.push_back(vecTmpTracks);
       }
       fNJets = count;
     } else {
@@ -188,6 +208,7 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       fTrueVectorJetPhi.clear();
       fTrueVectorJetR.clear();
       fTrueVectorJetNPart.clear();
+      fVecTrueJetParticles.clear();
       for (auto const& jet : jetCont->accepted()) {
         if (!jet)
           continue;
@@ -200,6 +221,12 @@ void AliAnalysisTaskConvJet::DoJetLoop()
         fTrueVectorJetPhi.push_back(jet->Phi());
         fTrueVectorJetR.push_back(jet->Area());
         fTrueVectorJetNPart.push_back(jet->N());
+
+        std::vector<AliVParticle*> vecTmpPart;
+        for(size_t tr = 0; tr < jet->GetNumberOfTracks(); ++tr){
+          vecTmpPart.push_back(jet->Track(tr));
+        }
+        fVecTrueJetParticles.push_back(vecTmpPart);
       }
       fTrueNJets = count;
     }
