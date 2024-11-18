@@ -4810,7 +4810,7 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 3300){  
     cuts.AddCutCalo("00010113","411799909feg09v0000","0s631031000000d0"); // min E = 300 MeV, NCell = 0
   } else if (trainConfig == 3301){  
-    cuts.AddCutCalo("00010113","411799909fegn9v0000","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi
+    cuts.AddCutCalo("00010113","411799909feg29v0000","0s631031000000d0"); // min E = 300 MeV, NCell >= 2
   } else if (trainConfig == 3302){  
     cuts.AddCutCalo("00010113","411799909feg09v0b00","0s631031000000d0"); // min E = 300 MeV, NCell = 0, conv. rej 0.02
     cuts.AddCutCalo("00010113","411799909feg09v0c00","0s631031000000d0"); // min E = 300 MeV, NCell = 0, conv. rej 0.05
@@ -4827,6 +4827,19 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 3305){  // NCell effi based on S100A100 with EMCal tagging
     cuts.AddCutCalo("00010113","411799909fegw9v0000","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi w
     cuts.AddCutCalo("00010113","411799909fegx9v0000","0s631031000000d0"); // min E = 300 MeV, NCell >= 2 with effi x
+    
+  } else if (trainConfig == 3306){  
+    cuts.AddCutCalo("00010113","411799909fe109v0000","0s631031000000d0"); // min E = 500 MeV, NCell = 0
+  } else if (trainConfig == 3307){  
+    cuts.AddCutCalo("00010113","411799909fe129v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2
+  } else if (trainConfig == 3308){  
+    cuts.AddCutCalo("00010113","411799909fegn9v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2 with effi n
+    cuts.AddCutCalo("00010113","411799909fegr9v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2 with effi r
+    cuts.AddCutCalo("00010113","411799909fegm9v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2 with effi m
+    cuts.AddCutCalo("00010113","411799909fegl9v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2 with effi l
+  } else if (trainConfig == 3309){  // NCell effi based on S100A100 with EMCal tagging
+    cuts.AddCutCalo("00010113","411799909fe1w9v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2 with effi w
+    cuts.AddCutCalo("00010113","411799909fe1x9v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2 with effi x
   
   // eta prefilter
   } else if (trainConfig == 3310){  
