@@ -160,6 +160,7 @@ AliAnalysisTaskCascadesInJets::AliAnalysisTaskCascadesInJets():
   fdCutPtTrackJetMin(0),
   fdCutAreaPercJetMin(0.6),
   fdDistanceCascadeJetMax(0.4),
+  bdLeadingV0(0),
   fdDistPrimaryMax(0.01),
   
   fTracksCont(0),
@@ -379,6 +380,7 @@ AliAnalysisTaskCascadesInJets::AliAnalysisTaskCascadesInJets(const char* name):
   fdCutPtTrackJetMin(0),
   fdCutAreaPercJetMin(0.6),
   fdDistanceCascadeJetMax(0.4),
+  bdLeadingV0(0),
   fdDistPrimaryMax(0.01),
   
   fTracksCont(0),
@@ -1909,8 +1911,14 @@ Bool_t AliAnalysisTaskCascadesInJets::FillHistograms()
         iindlead = iind;
       } 
     }  
-    if(dMaxTrPt < fdCutPtTrackJetMin)             // selection of jets with high leading track pt (except when leading track is V0)
-      continue;                                               
+    if(bdLeadingV0) {
+      if(iindlead < iXiMinusId && dMaxTrPt < fdCutPtTrackJetMin)  // selection of jets with high leading track pt (except when leading track is V0)
+        continue;
+    }    
+    else {  
+      if(dMaxTrPt < fdCutPtTrackJetMin)             // selection of jets with high leading track pt
+        continue;
+    }                                                 
     fh1NCascadesInJetStats->Fill(10);
 
     fh2PtJetPtTrackLeading[iCentIndex]->Fill(jetSub.perp(), dMaxTrPt); // pt_jet vs pt of leading jet track   
@@ -2987,8 +2995,14 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
         iindlead = iind;
       }
     }  
-    if(dMaxTrPt < fdCutPtTrackJetMin)            // selection of jets with high leading track pt
-      continue; 
+    if(bdLeadingV0) {
+      if(iindlead < iXiMinusId && dMaxTrPt < fdCutPtTrackJetMin)  // selection of jets with high leading track pt (except when leading track is V0)
+        continue;
+    }    
+    else {  
+      if(dMaxTrPt < fdCutPtTrackJetMin)             // selection of jets with high leading track pt
+        continue;
+    }    
                                          
     //printf(" JetPt: %f, sub jetPt: %f \n", vJetsMC[ij].perp(), jetSubMC.perp());
   

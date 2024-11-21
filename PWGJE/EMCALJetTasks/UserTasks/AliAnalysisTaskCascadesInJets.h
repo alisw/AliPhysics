@@ -103,7 +103,7 @@ public:
   void SetPtJetMin(Double_t ptMin = 0) {fdCutPtJetMin = ptMin;}
   void SetPtTrackJetMin(Double_t ptMin = 0) {fdCutPtTrackJetMin = ptMin;}
   void SetAreaPercJetMin(Double_t area = 0) {fdCutAreaPercJetMin = area;}
-
+  void SetLeadingV0(Bool_t b = 0) {bdLeadingV0 = b;}
   //getters
   Bool_t GetIsPbPb() const         { return fbIsPbPb; }
   Bool_t GetMCAnalysis() const     { return fbMCAnalysis; }
@@ -283,7 +283,7 @@ private:
   Double_t fdCutPtTrackJetMin; // [GeV/c] minimum pt of leading jet-track
   Double_t fdCutAreaPercJetMin; // [pi*R^2] minimum jet area with respect to the expected value
   Double_t fdDistanceCascadeJetMax; // (R) D - maximum distance between Cascade and jet axis used for finding Cascades in the perp, rnd and median jet cone
-  
+  Bool_t bdLeadingV0; ///< 0 - leading track pt cut on all jets, 1 - if leading is V0 do not apply cut  
   //MC var
   Double_t fdDistPrimaryMax;          ///< [cm] max distance of production point to the primary vertex (criterion for choice of MC particles considered as primary) 
   
@@ -447,7 +447,7 @@ private:
   AliAnalysisTaskCascadesInJets(const AliAnalysisTaskCascadesInJets&); // not implemented
   AliAnalysisTaskCascadesInJets& operator=(const AliAnalysisTaskCascadesInJets&); // not implemented
 
-  ClassDef(AliAnalysisTaskCascadesInJets, 6) // task for analysis of Cascades (Xi+-, Omega+-) in charged jets
+  ClassDef(AliAnalysisTaskCascadesInJets, 7) // task for analysis of Cascades (Xi+-, Omega+-) in charged jets
 };
 
 #endif

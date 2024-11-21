@@ -101,6 +101,7 @@ public:
   void SetPtJetMin(Double_t ptMin = 0) {fdCutPtJetMin = ptMin;}
   void SetPtTrackJetMin(Double_t ptMin = 0) {fdCutPtTrackJetMin = ptMin;}
   void SetAreaPercJetMin(Double_t area = 0) {fdCutAreaPercJetMin = area;}
+  void SetLeadingV0(Bool_t b = 0) {bdLeadingV0 = b;}
   
   //getters
   Bool_t GetIsPbPb() const         { return fbIsPbPb; }
@@ -289,6 +290,7 @@ private:
   Double_t fdCutAreaPercJetMin; // [pi*R^2] minimum jet area with respect to the expected value
   Double_t fdDistanceV0JetMax; // (R) D - maximum distance between V0 and jet axis used for finding V0s in the perp, rnd and median jet cone
   
+  Bool_t bdLeadingV0; ///< 0 - leading track pt cut on all jets, 1 - if leading is V0 do not apply cut  
   //MC var
   Double_t fdDistPrimaryMax;          ///< [cm] max distance of production point to the primary vertex (criterion for choice of MC particles considered as primary) 
 
@@ -470,7 +472,7 @@ private:
   AliAnalysisTaskStrangenessInJets(const AliAnalysisTaskStrangenessInJets&); // not implemented
   AliAnalysisTaskStrangenessInJets& operator=(const AliAnalysisTaskStrangenessInJets&); // not implemented
 
-  ClassDef(AliAnalysisTaskStrangenessInJets, 7) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskStrangenessInJets, 8) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif
