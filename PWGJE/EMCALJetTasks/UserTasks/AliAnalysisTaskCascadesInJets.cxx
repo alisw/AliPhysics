@@ -2995,8 +2995,14 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
         iindlead = iind;
       }
     }  
-    if(dMaxTrPt < fdCutPtTrackJetMin)            // selection of jets with high leading track pt
-      continue; 
+    if(bdLeadingV0) {
+      if(iindlead < iXiMinusId && dMaxTrPt < fdCutPtTrackJetMin)  // selection of jets with high leading track pt (except when leading track is V0)
+        continue;
+    }    
+    else {  
+      if(dMaxTrPt < fdCutPtTrackJetMin)             // selection of jets with high leading track pt
+        continue;
+    }    
                                          
     //printf(" JetPt: %f, sub jetPt: %f \n", vJetsMC[ij].perp(), jetSubMC.perp());
   

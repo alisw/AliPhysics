@@ -3149,8 +3149,15 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(Int_t iCent)
         iindlead = iind;
       }
     }  
-    if(dMaxTrPt < fdCutPtTrackJetMin)            // selection of jets with high leading track pt
-      continue;                                           
+    if(bdLeadingV0) {
+      if(iindlead < iK0Id && dMaxTrPt < fdCutPtTrackJetMin)  // selection of jets with high leading track pt (except when leading track is V0)
+        continue;
+    }    
+    else {  
+      if(dMaxTrPt < fdCutPtTrackJetMin)             // selection of jets with high leading track pt
+        continue;
+    }    
+                                         
  
  
     //printf(" JetPt: %f, sub jetPt: %f \n", vJetsMC[ij].perp(), jetSubMC.perp());
