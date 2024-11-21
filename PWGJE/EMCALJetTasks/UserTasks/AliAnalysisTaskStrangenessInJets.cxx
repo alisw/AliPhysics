@@ -172,6 +172,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets():
   fdCutPtTrackJetMin(0),
   fdCutAreaPercJetMin(0.6),
   fdDistanceV0JetMax(0.4),
+  bdLeadingV0(0),
   fdDistPrimaryMax(0.01),
   
   fTracksCont(0),
@@ -407,6 +408,7 @@ AliAnalysisTaskStrangenessInJets::AliAnalysisTaskStrangenessInJets(const char* n
   fdCutPtTrackJetMin(0),
   fdCutAreaPercJetMin(0.6),
   fdDistanceV0JetMax(0.4),
+  bdLeadingV0(0),
   fdDistPrimaryMax(0.01),
   
   fTracksCont(0),
@@ -2033,8 +2035,14 @@ Bool_t AliAnalysisTaskStrangenessInJets::FillHistograms()
         iindlead = iind;
       } 
     }  
-    if(dMaxTrPt < fdCutPtTrackJetMin)             // selection of jets with high leading track pt (except when leading track is V0)
-      continue;                                            
+    if(bdLeadingV0) {
+      if(iindlead < iK0Id && dMaxTrPt < fdCutPtTrackJetMin)  // selection of jets with high leading track pt (except when leading track is V0)
+        continue;
+    }    
+    else {  
+      if(dMaxTrPt < fdCutPtTrackJetMin)             // selection of jets with high leading track pt
+        continue;
+    }                                                
     fh1NV0sInJetStats->Fill(11);
 
     fh2PtJetPtTrackLeading[iCentIndex]->Fill(jetSub.perp(), dMaxTrPt); // pt_jet vs pt of leading jet track
