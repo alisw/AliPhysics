@@ -105,7 +105,7 @@ void AliAnalysisTaskEmcalTriggerNormalization::UserCreateOutputObjects(){
     luminosityHist->GetXaxis()->SetBinLabel(ib+1, triggers[ib].data());
 
     // Create cluster counter histogram for trigger
-    fHistos->CreateTH1(Form("hClusterCounter%s", triggers[ib].data()), Form("Trigger cluster counter for trigger class %s", triggers[ib].data()), kTrgClusterN, -0.5, kTrgClusterN - 0.5);
+    fHistos->CreateTH1(Form("hClusterCounter%s", triggers[ib].data()), Form("Trigger cluster counter for trigger class %s", triggers[ib].data()), kTrgClusterN, -0.5, (Double_t)kTrgClusterN - 0.5);
     auto triggercluserhist = static_cast<TH1 *>(fHistos->GetListOfHistograms()->FindObject(Form("hClusterCounter%s", triggers[ib].data())));
     for(auto clusterindex = 0; clusterindex < TriggerCluster_t::kTrgClusterN; clusterindex++) {
       triggercluserhist->GetXaxis()->SetBinLabel(clusterindex+1, GetTriggerClusterLabels(clusterindex).data());
