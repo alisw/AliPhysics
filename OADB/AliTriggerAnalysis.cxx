@@ -1139,7 +1139,9 @@ Bool_t AliTriggerAnalysis::TRDTrigger(const AliVEvent* event, Trigger trigger){
       if (!trdTrack) continue;
       Int_t globalStack = 5*trdTrack->GetSector() + trdTrack->GetStack();
       // stack-wise counting of tracks above pt threshold for jet trigger
-      if (TMath::Abs(trdTrack->GetPt()) >= fTRDptHJT) ++nTracks[globalStack];
+      if (globalStack < 90) {
+	if (TMath::Abs(trdTrack->GetPt()) >= fTRDptHJT) ++nTracks[globalStack];
+      }
     }
     // check if HJT condition is fulfilled in any stack
     for (Int_t iStack = 0; iStack < 90; iStack++) if (nTracks[iStack] >= fTRDnHJT) return kTRUE;
