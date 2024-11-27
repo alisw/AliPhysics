@@ -100,7 +100,7 @@ public:
   void SetEMCALAmplitudeThreshold(Double_t threshold) { fEMCALAmplitudeThreshold = threshold; }
   void SetEMCALFractionL1MonitoringEvents(Double_t fraction) { fFractionL1MonitorEventsEMCAL = fraction; }
   void SetEMCALTriggerReducedPayload(Bool_t reduced) { fEMCALReducedTriggerPayload = reduced; }
-  void SetDoTrackPropagationEMCAL(bool flag = true) { fDoTrackPropagationEMCAL = kTRUE; }
+  void SetDoTrackPropagationEMCAL(bool flag = true) { fDoTrackPropagationEMCAL = flag; }
 
   void SetUsePHOSTriggerMap(Bool_t toUse=kTRUE) { fUsePHOSBadMap = toUse; }
   void SetReadTR(Bool_t readTR = true) {fReadTR = readTR;};
