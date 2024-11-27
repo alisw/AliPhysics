@@ -100,6 +100,8 @@ public:
   void SetEMCALAmplitudeThreshold(Double_t threshold) { fEMCALAmplitudeThreshold = threshold; }
   void SetEMCALFractionL1MonitoringEvents(Double_t fraction) { fFractionL1MonitorEventsEMCAL = fraction; }
   void SetEMCALTriggerReducedPayload(Bool_t reduced) { fEMCALReducedTriggerPayload = reduced; }
+  void SetDoTrackPropagationEMCAL(bool flag = true) { fDoTrackPropagationEMCAL = kTRUE; }
+
   void SetUsePHOSTriggerMap(Bool_t toUse=kTRUE) { fUsePHOSBadMap = toUse; }
   void SetReadTR(Bool_t readTR = true) {fReadTR = readTR;};
 
@@ -818,6 +820,9 @@ private:
   Double_t fFractionL1MonitorEventsEMCAL = 0.001; ///< Fraction of monitoring events (full payload) for EMCAL L1 trigger
   Bool_t fEMCALReducedTriggerPayload = kFALSE; ///< Use reduced trigger payload for EMCAL L1 trigger
   Bool_t fUsePHOSBadMap = kTRUE ; ///< read and apply PHOS trigger bad map
+
+  /// skip EMCal propagation in case of no emcal
+  Bool_t fDoTrackPropagationEMCAL = kTRUE;
 
   /// Byte counter
   ULong_t fBytes = 0; ///! Number of bytes stored in all trees
