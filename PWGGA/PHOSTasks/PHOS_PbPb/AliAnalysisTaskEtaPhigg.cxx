@@ -227,58 +227,145 @@ void AliAnalysisTaskEtaPhigg::UserCreateOutputObjects() {
   // HBT part
   if (kFillOSL) {
     // 3D part
-    Int_t nQ = 120;
-    Double_t qMax = 0.3;
+    Int_t nQl = 60;
+    Double_t qlMax = 0.3;
+    Int_t nQs = 200;
+    Double_t qsMax = 1.;
+    Int_t nQo = 300;
+    Double_t qoMax = 1.5;
     for (Int_t cen = 0; cen < kCentBins; cen++) {
       for (Int_t ikT = 0; ikT < kKtbins; ikT++) {
         fhReOSLDz0E0[cen][ikT] =
             new TH3F(Form("hReOSL_Dz0E0_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
                           fKtBins[ikT + 1], cen),
-                     "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ,
-                     -qMax, qMax);
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax, nQl,
+                     0., qlMax);
         fOutputContainer->Add(fhReOSLDz0E0[cen][ikT]);
         fhMiOSLDz0E0[cen][ikT] =
             new TH3F(Form("hMiOSL_Dz0E0_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
                           fKtBins[ikT + 1], cen),
-                     "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ,
-                     -qMax, qMax);
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax, nQl,
+                     0., qlMax);
         fOutputContainer->Add(fhMiOSLDz0E0[cen][ikT]);
         fhReOSLDz0E2[cen][ikT] =
             new TH3F(Form("hReOSL_Dz0E2_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
                           fKtBins[ikT + 1], cen),
-                     "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ,
-                     -qMax, qMax);
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax, nQl,
+                     0., qlMax);
         fOutputContainer->Add(fhReOSLDz0E2[cen][ikT]);
         fhMiOSLDz0E2[cen][ikT] =
             new TH3F(Form("hMiOSL_Dz0E2_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
                           fKtBins[ikT + 1], cen),
-                     "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ,
-                     -qMax, qMax);
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax, nQl,
+                     0., qlMax);
         fOutputContainer->Add(fhMiOSLDz0E2[cen][ikT]);
         fhReOSLDz2E0[cen][ikT] =
             new TH3F(Form("hReOSL_Dz2E0_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
                           fKtBins[ikT + 1], cen),
-                     "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ,
-                     -qMax, qMax);
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax, nQl,
+                     0., qlMax);
         fOutputContainer->Add(fhReOSLDz2E0[cen][ikT]);
         fhMiOSLDz2E0[cen][ikT] =
             new TH3F(Form("hMiOSL_Dz2E0_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
                           fKtBins[ikT + 1], cen),
-                     "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ,
-                     -qMax, qMax);
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax, nQl,
+                     0., qlMax);
         fOutputContainer->Add(fhMiOSLDz2E0[cen][ikT]);
         fhReOSLDz2E2[cen][ikT] =
             new TH3F(Form("hReOSL_Dz2E2_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
                           fKtBins[ikT + 1], cen),
-                     "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ,
-                     -qMax, qMax);
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax, nQl,
+                     0., qlMax);
         fOutputContainer->Add(fhReOSLDz2E2[cen][ikT]);
         fhMiOSLDz2E2[cen][ikT] =
             new TH3F(Form("hMiOSL_Dz2E2_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
                           fKtBins[ikT + 1], cen),
-                     "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ,
-                     -qMax, qMax);
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax, nQl,
+                     0., qlMax);
         fOutputContainer->Add(fhMiOSLDz2E2[cen][ikT]);
+
+        fhReQinvQoDz0E0[cen][ikT] =
+            new TH2F(Form("hReQinvQo_Dz0E0_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax);
+        fOutputContainer->Add(fhReQinvQoDz0E0[cen][ikT]);
+        fhMiQinvQoDz0E0[cen][ikT] =
+            new TH2F(Form("hMiQinvQo_Dz0E0_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax);
+        fOutputContainer->Add(fhMiQinvQoDz0E0[cen][ikT]);
+        fhReQinvQoDz0E2[cen][ikT] =
+            new TH2F(Form("hReQinvQo_Dz0E2_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax);
+        fOutputContainer->Add(fhReQinvQoDz0E2[cen][ikT]);
+        fhMiQinvQoDz0E2[cen][ikT] =
+            new TH2F(Form("hMiQinvQo_Dz0E2_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax);
+        fOutputContainer->Add(fhMiQinvQoDz0E2[cen][ikT]);
+        fhReQinvQoDz2E0[cen][ikT] =
+            new TH2F(Form("hReQinvQo_Dz2E0_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax);
+        fOutputContainer->Add(fhReQinvQoDz2E0[cen][ikT]);
+        fhMiQinvQoDz2E0[cen][ikT] =
+            new TH2F(Form("hMiQinvQo_Dz2E0_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax);
+        fOutputContainer->Add(fhMiQinvQoDz2E0[cen][ikT]);
+        fhReQinvQoDz2E2[cen][ikT] =
+            new TH2F(Form("hReQinvQo_Dz2E2_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax);
+        fOutputContainer->Add(fhReQinvQoDz2E2[cen][ikT]);
+        fhMiQinvQoDz2E2[cen][ikT] =
+            new TH2F(Form("hMiQinvQo_Dz2E2_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax);
+        fOutputContainer->Add(fhMiQinvQoDz2E2[cen][ikT]);
+
+        fhReqQoDz0E0[cen][ikT] =
+            new TH2F(Form("hReqQo_Dz0E0_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax);
+        fOutputContainer->Add(fhReqQoDz0E0[cen][ikT]);
+        fhMiqQoDz0E0[cen][ikT] =
+            new TH2F(Form("hMiqQo_Dz0E0_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax);
+        fOutputContainer->Add(fhMiqQoDz0E0[cen][ikT]);
+        fhReqQoDz0E2[cen][ikT] =
+            new TH2F(Form("hReqQo_Dz0E2_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax);
+        fOutputContainer->Add(fhReqQoDz0E2[cen][ikT]);
+        fhMiqQoDz0E2[cen][ikT] =
+            new TH2F(Form("hMiqQo_Dz0E2_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax);
+        fOutputContainer->Add(fhMiqQoDz0E2[cen][ikT]);
+        fhReqQoDz2E0[cen][ikT] =
+            new TH2F(Form("hReqQo_Dz2E0_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax);
+        fOutputContainer->Add(fhReqQoDz2E0[cen][ikT]);
+        fhMiqQoDz2E0[cen][ikT] =
+            new TH2F(Form("hMiqQo_Dz2E0_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax);
+        fOutputContainer->Add(fhMiqQoDz2E0[cen][ikT]);
+        fhReqQoDz2E2[cen][ikT] =
+            new TH2F(Form("hReqQo_Dz2E2_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax);
+        fOutputContainer->Add(fhReqQoDz2E2[cen][ikT]);
+        fhMiqQoDz2E2[cen][ikT] =
+            new TH2F(Form("hMiqQo_Dz2E2_Kt%4.2f-%4.2f_cen%d", fKtBins[ikT],
+                          fKtBins[ikT + 1], cen),
+                     "real Out-Side-Long", nQo, 0., qoMax, nQs, 0., qsMax);
+        fOutputContainer->Add(fhMiqQoDz2E2[cen][ikT]);
+
       }
     }
   } else {
@@ -638,24 +725,36 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *) {
           double qs =
               (ph1->Px() * ph2->Py() - ph2->Px() * ph1->Py()) / kT; // CORRECT!
           double ql = gammaCMq.Pz();
-          if (gRandom->Uniform() <
-              0.5) { // remove ordering during reconstruction
-            qo = -qo;
-            qs = -qs;
-            ql = -ql;
-          }
+          qo = fabs(qo);
+          qs = fabs(qs);
+          ql = fabs(ql);
+
+          // if (gRandom->Uniform() <
+          //     0.5) { // remove ordering during reconstruction
+          //   qo = -qo;
+          //   qs = -qs;
+          //   ql = -ql;
+          // }
 
           if (PairCut(ph1, ph2, 0)) { // E0Dz0CTSDisp: cut=iE*16+Dz*4+iPID=0
             fhReOSLDz0E0[fCenBin][iKt]->Fill(qo, qs, ql);
+            fhReQinvQoDz0E0[fCenBin][iKt]->Fill(qo, qinv);
+            fhReqQoDz0E0[fCenBin][iKt]->Fill(qo, q);
           }
           if (PairCut(ph1, ph2, 32)) { // E0Dz0CTSDisp: cut=iE*16+Dz*4+iPID=32
             fhReOSLDz0E2[fCenBin][iKt]->Fill(qo, qs, ql);
+            fhReQinvQoDz0E2[fCenBin][iKt]->Fill(qo, qinv);
+            fhReqQoDz0E2[fCenBin][iKt]->Fill(qo, q);
           }
           if (PairCut(ph1, ph2, 8)) { // E0Dz0CTSDisp: cut=iE*16+Dz*4+iPID=8
             fhReOSLDz2E0[fCenBin][iKt]->Fill(qo, qs, ql);
+            fhReQinvQoDz2E0[fCenBin][iKt]->Fill(qo, qinv);
+            fhReqQoDz2E0[fCenBin][iKt]->Fill(qo, q);
           }
           if (PairCut(ph1, ph2, 40)) { // E0Dz0CTSDisp: cut=iE*16+Dz*4+iPID=32+8
             fhReOSLDz2E2[fCenBin][iKt]->Fill(qo, qs, ql);
+            fhReQinvQoDz2E2[fCenBin][iKt]->Fill(qo, qinv);
+            fhReqQoDz2E2[fCenBin][iKt]->Fill(qo, q);
           }
         }
       } else { // Fill 1D projections
@@ -698,18 +797,29 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *) {
                         kT;
             double qs = (ph1->Px() * ph2->Py() - ph2->Px() * ph1->Py()) / kT;
             double ql = gammaCMq.Pz();
+            qo = fabs(qo);
+            qs = fabs(qs);
+            ql = fabs(ql);
 
             if (PairCut(ph1, ph2, 0)) {
               fhMiOSLDz0E0[fCenBin][iKt]->Fill(qo, qs, ql);
+              fhMiQinvQoDz0E0[fCenBin][iKt]->Fill(qo, qinv);
+              fhMiqQoDz0E0[fCenBin][iKt]->Fill(qo, q);
             }
             if (PairCut(ph1, ph2, 32)) {
               fhMiOSLDz0E2[fCenBin][iKt]->Fill(qo, qs, ql);
+              fhMiQinvQoDz0E2[fCenBin][iKt]->Fill(qo, qinv);
+              fhMiqQoDz0E2[fCenBin][iKt]->Fill(qo, q);
             }
             if (PairCut(ph1, ph2, 8)) {
               fhMiOSLDz2E0[fCenBin][iKt]->Fill(qo, qs, ql);
+              fhMiQinvQoDz2E0[fCenBin][iKt]->Fill(qo, qinv);
+              fhMiqQoDz2E0[fCenBin][iKt]->Fill(qo, q);
             }
             if (PairCut(ph1, ph2, 40)) {
               fhMiOSLDz2E2[fCenBin][iKt]->Fill(qo, qs, ql);
+              fhMiQinvQoDz2E2[fCenBin][iKt]->Fill(qo, qinv);
+              fhMiqQoDz2E2[fCenBin][iKt]->Fill(qo, q);
             }
           }
         } else {
