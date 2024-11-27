@@ -265,14 +265,15 @@ Int_t AliEmcalCorrectionCellEnergy::InitRecalib()
     for (Int_t i=0; i<sms; ++i)
     {
       TH2F *h = fRecoUtils->GetEMCALChannelRecalibrationFactors(i);
-      if (h)
-        delete h;
-      h = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
-      if (!h)
+      TH2F *h1 = (TH2F*)recalib->FindObject(Form("EMCALRecalFactors_SM%d",i));
+      if (!h1)
       {
         AliError(Form("Could not load EMCALRecalFactors_SM%d",i));
         continue;
       }
+      if (h)
+        delete h;
+      h = h1;
       h->SetDirectory(0);
       fRecoUtils->SetEMCALChannelRecalibrationFactors(i,h);
     }
