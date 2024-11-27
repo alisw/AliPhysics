@@ -2007,8 +2007,13 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       tracks.fTrackTime = AliMathBase::TruncateFloatFraction(tracks.fTrackTime, mTrackSignal);
       tracks.fTrackTimeRes = AliMathBase::TruncateFloatFraction(tracks.fTrackTimeRes, mTrackSignal);
 
-      tracks.fTrackEtaEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackEtaOnEMCal(), mTrackPosEMCAL);
-      tracks.fTrackPhiEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackPhiOnEMCal(), mTrackPosEMCAL);
+      if(!fDisableEMCAL){ 
+        tracks.fTrackEtaEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackEtaOnEMCal(), mTrackPosEMCAL);
+        tracks.fTrackPhiEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackPhiOnEMCal(), mTrackPosEMCAL);
+      }else{
+        tracks.fTrackEtaEMCAL = 0.0f;
+        tracks.fTrackPhiEMCAL = 0.0f;
+      }
 
       if (fTaskMode == kMC)
       {
@@ -2254,6 +2259,11 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     calo.fTime = AliMathBase::TruncateFloatFraction(time * kSecToNanoSec, mCaloAmp);
     calo.fCaloType = cells->GetType(); // common for all cells
     calo.fCellType = cells->GetHighGain(ice) ? 1. : 0.;
+
+    if(calo.fCaloType==1 && fDisableEMCAL){
+      continue;; // skip if EMCAL type and EMCAL disabled
+    }
+
     FillTree(kCalo);
     if (fTreeStatus[kCalo])
       ncalocells_filled++;
