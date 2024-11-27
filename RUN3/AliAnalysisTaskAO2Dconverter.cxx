@@ -1646,19 +1646,21 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         toWrite[TMath::Abs(alabel)] = 1;
       }
 
-      // For each calo cluster keep the corresponding MC particle
-      AliVCaloCells *emcalCells = fVEvent->GetEMCALCells();
-      Short_t nEmcalCells = emcalCells->GetNumberOfCells();
-      for (Short_t ice = 0; ice < nEmcalCells; ++ice)
-      {
-        Short_t cellNumber;
-        Double_t amplitude;
-        Double_t time;
-        Int_t mclabel;
-        Double_t efrac;
+      // For each calo cell keep the corresponding MC particle
+      if (!fDisableEMCAL){
+        Short_t nEmcalCells = emcalCells->GetNumberOfCells();
+        AliVCaloCells *emcalCells = fVEvent->GetEMCALCells();
+        for (Short_t ice = 0; ice < nEmcalCells; ++ice)
+        {
+          Short_t cellNumber;
+          Double_t amplitude;
+          Double_t time;
+          Int_t mclabel;
+          Double_t efrac;
 
-        emcalCells->GetCell(ice, cellNumber, amplitude, time, mclabel, efrac);
-        toWrite[TMath::Abs(mclabel)] = 1;
+          emcalCells->GetCell(ice, cellNumber, amplitude, time, mclabel, efrac);
+          toWrite[TMath::Abs(mclabel)] = 1;
+        }
       }
       AliVCaloCells *phosCells = fVEvent->GetPHOSCells();
       Short_t nPhosCells = phosCells->GetNumberOfCells();
