@@ -105,15 +105,31 @@ protected:
   TH2F *fhReqCut[kCentBins][kCuts];    //!
   TH2F *fhMiqCut[kCentBins][kCuts];    //!
 
-  TH3F *fhReOSLDz0E0[kCentBins][kKtbins]; //! Dz0
-  TH3F *fhMiOSLDz0E0[kCentBins][kKtbins]; //! Dz0
-  TH3F *fhReOSLDz0E2[kCentBins][kKtbins]; //! Dz0 & CTS & Disp
-  TH3F *fhMiOSLDz0E2[kCentBins][kKtbins]; //! Dz0 & CTS & Disp
+  TH3F *fhReOSLDz0E0[kCentBins][kKtbins];    //! Dz0
+  TH3F *fhMiOSLDz0E0[kCentBins][kKtbins];    //! Dz0
+  TH3F *fhReOSLDz0E2[kCentBins][kKtbins];    //! Dz0 & CTS & Disp
+  TH3F *fhMiOSLDz0E2[kCentBins][kKtbins];    //! Dz0 & CTS & Disp
+  TH2F *fhReQinvQoDz0E0[kCentBins][kKtbins]; //! Dz0 & CTS & Disp
+  TH2F *fhMiQinvQoDz0E0[kCentBins][kKtbins]; //! Dz0 & CTS & Disp
+  TH2F *fhReQinvQoDz0E2[kCentBins][kKtbins]; //! Dz0 & CTS & Disp
+  TH2F *fhMiQinvQoDz0E2[kCentBins][kKtbins]; //! Dz0 & CTS & Disp
+  TH2F *fhReqQoDz0E0[kCentBins][kKtbins]; //! Dz0 & CTS & Disp
+  TH2F *fhMiqQoDz0E0[kCentBins][kKtbins]; //! Dz0 & CTS & Disp
+  TH2F *fhReqQoDz0E2[kCentBins][kKtbins]; //! Dz0 & CTS & Disp
+  TH2F *fhMiqQoDz0E2[kCentBins][kKtbins]; //! Dz0 & CTS & Disp
 
-  TH3F *fhReOSLDz2E0[kCentBins][kKtbins]; //! Dz2
-  TH3F *fhMiOSLDz2E0[kCentBins][kKtbins]; //! Dz2
-  TH3F *fhReOSLDz2E2[kCentBins][kKtbins]; //! Dz2 & CTS & Disp
-  TH3F *fhMiOSLDz2E2[kCentBins][kKtbins]; //! Dz2 & CTS & Disp
+  TH3F *fhReOSLDz2E0[kCentBins][kKtbins];    //! Dz2
+  TH3F *fhMiOSLDz2E0[kCentBins][kKtbins];    //! Dz2
+  TH3F *fhReOSLDz2E2[kCentBins][kKtbins];    //! Dz2 & CTS & Disp
+  TH3F *fhMiOSLDz2E2[kCentBins][kKtbins];    //! Dz2 & CTS & Disp
+  TH2F *fhReQinvQoDz2E0[kCentBins][kKtbins]; //! Dz2
+  TH2F *fhMiQinvQoDz2E0[kCentBins][kKtbins]; //! Dz2
+  TH2F *fhReQinvQoDz2E2[kCentBins][kKtbins]; //! Dz2 & CTS & Disp
+  TH2F *fhMiQinvQoDz2E2[kCentBins][kKtbins]; //! Dz2 & CTS & Disp
+  TH2F *fhReqQoDz2E0[kCentBins][kKtbins]; //! Dz2
+  TH2F *fhMiqQoDz2E0[kCentBins][kKtbins]; //! Dz2
+  TH2F *fhReqQoDz2E2[kCentBins][kKtbins]; //! Dz2 & CTS & Disp
+  TH2F *fhMiqQoDz2E2[kCentBins][kKtbins]; //! Dz2 & CTS & Disp
 
   ClassDef(AliAnalysisTaskEtaPhigg, 3); // PHOS analysis task
 };
