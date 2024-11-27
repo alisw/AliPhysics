@@ -2007,8 +2007,13 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       tracks.fTrackTime = AliMathBase::TruncateFloatFraction(tracks.fTrackTime, mTrackSignal);
       tracks.fTrackTimeRes = AliMathBase::TruncateFloatFraction(tracks.fTrackTimeRes, mTrackSignal);
 
-      tracks.fTrackEtaEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackEtaOnEMCal(), mTrackPosEMCAL);
-      tracks.fTrackPhiEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackPhiOnEMCal(), mTrackPosEMCAL);
+      if(fDoTrackPropagationEMCAL){ 
+        tracks.fTrackEtaEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackEtaOnEMCal(), mTrackPosEMCAL);
+        tracks.fTrackPhiEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackPhiOnEMCal(), mTrackPosEMCAL);
+      }else{
+        tracks.fTrackEtaEMCAL = 0.0f;
+        tracks.fTrackPhiEMCAL = 0.0f;
+      }
 
       if (fTaskMode == kMC)
       {
