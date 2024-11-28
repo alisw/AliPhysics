@@ -1648,8 +1648,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
       // For each calo cell keep the corresponding MC particle
       if (!fDisableEMCAL){
-        Short_t nEmcalCells = emcalCells->GetNumberOfCells();
         AliVCaloCells *emcalCells = fVEvent->GetEMCALCells();
+        Short_t nEmcalCells = emcalCells->GetNumberOfCells();
         for (Short_t ice = 0; ice < nEmcalCells; ++ice)
         {
           Short_t cellNumber;
