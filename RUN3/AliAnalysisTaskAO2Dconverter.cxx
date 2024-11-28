@@ -1646,19 +1646,21 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         toWrite[TMath::Abs(alabel)] = 1;
       }
 
-      // For each calo cluster keep the corresponding MC particle
-      AliVCaloCells *emcalCells = fVEvent->GetEMCALCells();
-      Short_t nEmcalCells = emcalCells->GetNumberOfCells();
-      for (Short_t ice = 0; ice < nEmcalCells; ++ice)
-      {
-        Short_t cellNumber;
-        Double_t amplitude;
-        Double_t time;
-        Int_t mclabel;
-        Double_t efrac;
+      // For each calo cell keep the corresponding MC particle
+      if (!fDisableEMCAL){
+        AliVCaloCells *emcalCells = fVEvent->GetEMCALCells();
+        Short_t nEmcalCells = emcalCells->GetNumberOfCells();
+        for (Short_t ice = 0; ice < nEmcalCells; ++ice)
+        {
+          Short_t cellNumber;
+          Double_t amplitude;
+          Double_t time;
+          Int_t mclabel;
+          Double_t efrac;
 
-        emcalCells->GetCell(ice, cellNumber, amplitude, time, mclabel, efrac);
-        toWrite[TMath::Abs(mclabel)] = 1;
+          emcalCells->GetCell(ice, cellNumber, amplitude, time, mclabel, efrac);
+          toWrite[TMath::Abs(mclabel)] = 1;
+        }
       }
       AliVCaloCells *phosCells = fVEvent->GetPHOSCells();
       Short_t nPhosCells = phosCells->GetNumberOfCells();
@@ -2007,8 +2009,13 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       tracks.fTrackTime = AliMathBase::TruncateFloatFraction(tracks.fTrackTime, mTrackSignal);
       tracks.fTrackTimeRes = AliMathBase::TruncateFloatFraction(tracks.fTrackTimeRes, mTrackSignal);
 
-      tracks.fTrackEtaEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackEtaOnEMCal(), mTrackPosEMCAL);
-      tracks.fTrackPhiEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackPhiOnEMCal(), mTrackPosEMCAL);
+      if(!fDisableEMCAL){ 
+        tracks.fTrackEtaEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackEtaOnEMCal(), mTrackPosEMCAL);
+        tracks.fTrackPhiEMCAL = AliMathBase::TruncateFloatFraction(track->GetTrackPhiOnEMCal(), mTrackPosEMCAL);
+      }else{
+        tracks.fTrackEtaEMCAL = 0.0f;
+        tracks.fTrackPhiEMCAL = 0.0f;
+      }
 
       if (fTaskMode == kMC)
       {
@@ -2231,172 +2238,177 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   //---------------------------------------------------------------------------
   // Calorimeter data
 
-  const double kSecToNanoSec = 1e9;
-  AliVCaloCells *cells = fVEvent->GetEMCALCells();
-  Short_t nCells = cells->GetNumberOfCells();
   Int_t ncalocells_filled = 0; // total number of calo cells filled per event
-  for (Short_t ice = 0; ice < nCells; ++ice)
-  {
-    Short_t cellNumber;
-    Double_t amplitude;
-    Double_t time;
-    Int_t mclabel;
-    Double_t efrac;
-
-    calo.fIndexBCs = fBCCount;
-
-    cells->GetCell(ice, cellNumber, amplitude, time, mclabel, efrac);
-    calo.fCellNumber = cellNumber;
-    // Mimic run3 compression: Store only cells with energy larger than the threshold
-    if (amplitude < fEMCALAmplitudeThreshold)
-      continue;
-    calo.fAmplitude = AliMathBase::TruncateFloatFraction(amplitude, mCaloAmp);
-    calo.fTime = AliMathBase::TruncateFloatFraction(time * kSecToNanoSec, mCaloAmp);
-    calo.fCaloType = cells->GetType(); // common for all cells
-    calo.fCellType = cells->GetHighGain(ice) ? 1. : 0.;
-    FillTree(kCalo);
-    if (fTreeStatus[kCalo])
-      ncalocells_filled++;
-    if (fTaskMode == kMC)
-    {
-      // Find the modified label
-      mccalolabel.fIndexMcParticles_size = 0;
-      mccalolabel.fAmplitudeFraction_size = 0;
-      Int_t klabel = kineIndex[TMath::Abs(mclabel)];
-      mccalolabel.fIndexMcParticles[mccalolabel.fIndexMcParticles_size++] = TMath::Abs(klabel) + fOffsetLabel;
-      mccalolabel.fAmplitudeFraction[mccalolabel.fAmplitudeFraction_size++] = 1.f;
-
-      FillTree(kMcCaloLabel);
-    }
-  } // end loop on calo cells
-  eventextra.fNentries[kCalo] = ncalocells_filled;
-
-  bool fillEMCtriggers = true;
-  bool fillEMCheaderMedian = true;
   Int_t ncalotriggers_filled = 0;
-  TString triggerclasses = fInputEvent->GetFiredTriggerClasses();
-  if(!(triggerclasses.Contains("CENT") || triggerclasses.Contains("ALL") || triggerclasses.Contains("-FAST-") || triggerclasses.Contains("CALO"))) {
-    // Don't write EMCAL trigger table for clusters where EMCAL was neither trigger nor readout detector
-    fillEMCtriggers = false;
-  }
-  if(fGRP) {
-    // In case global run parameters are available write EMCAL trigger
-    // entries only in case EMCAL was a readout nor a trigger detector
-    // in order to reduce the data volume used for header words
-    TString detectorstring = AliDAQ::ListOfTriggeredDetectors(fGRP->GetDetectorMask());
-    if(!detectorstring.Contains("EMCAL")) {
-      fillEMCtriggers = false;
-    } else {
-      // Don't fill median header words for small system (STU not in median mode)
-      TString beamtype = fGRP->GetBeamType();
-      if((beamtype == "p-p" || beamtype == "p-A" || beamtype == "A-p")) {
-        fillEMCheaderMedian = false;
-      }
-    }
-  }
-  if(fillEMCtriggers) {
-    // Trigger data for EMCAL:
-    // - For full payload (monitoring) events store all non-0 L1 ADCs
-    // - For regular events store non-0 L1 ADCs of the 3 leading Gamma patches
-    auto geo = AliEMCALGeometry::GetInstance();
-    if(!geo) {
-      // singleton not yet initialized - initialize it for the first time
-      // based on the current run number expecting data from different years
-      // will not be mixed in the same job
-      geo = AliEMCALGeometry::GetInstanceFromRunNumber(fVEvent->GetRunNumber()); // Needed for EMCAL trigger mapping
-    }
-    AliVCaloTrigger *calotriggers = fVEvent->GetCaloTrigger("EMCAL");
-    Bool_t fullPayload = fEMCALReducedTriggerPayload ? gRandom->Uniform() < fFractionL1MonitorEventsEMCAL : true;
-    calotrigger.fIndexBCs = fBCCount;
-    calotrigger.fFastOrAbsID = 10001;
-    calotrigger.fLnAmplitude = fullPayload ? 1 : 0;
-    calotrigger.fTriggerBits = 0;
-    calotrigger.fCaloType = 1;
-    FillTree(kCaloTrigger);
-    int nheader = 1;
-    if(fillEMCheaderMedian) {
-      // Median for EMCAL
-      calotrigger.fFastOrAbsID = 10002;
-      calotrigger.fLnAmplitude = calotriggers->GetMedian(0);
-      FillTree(kCaloTrigger);
-      // Median for DCAL
-      calotrigger.fFastOrAbsID = 10003;
-      calotrigger.fLnAmplitude = calotriggers->GetMedian(1);
-      FillTree(kCaloTrigger);
-      nheader += 2;
-    }
+  const double kSecToNanoSec = 1e9;
+  if (!fDisableEMCAL){
+    AliVCaloCells *cells = fVEvent->GetEMCALCells();
+  
+    Short_t nCells = cells->GetNumberOfCells();
+    for (Short_t ice = 0; ice < nCells; ++ice)
+    {
+      Short_t cellNumber;
+      Double_t amplitude;
+      Double_t time;
+      Int_t mclabel;
+      Double_t efrac;
 
-    calotriggers->Reset();
-    ncalotriggers_filled = nheader; // total number of EMCAL triggers filled per event, offset 1 or 3 for the global event properties for EMCAL
-    int col, row, fastorID, l1timesums;
-    if(fullPayload) {
-      // Full payload - store all ADCs
-      while (calotriggers->Next())
+      calo.fIndexBCs = fBCCount;
+
+      cells->GetCell(ice, cellNumber, amplitude, time, mclabel, efrac);
+      calo.fCellNumber = cellNumber;
+      // Mimic run3 compression: Store only cells with energy larger than the threshold
+      if (amplitude < fEMCALAmplitudeThreshold)
+        continue;
+      calo.fAmplitude = AliMathBase::TruncateFloatFraction(amplitude, mCaloAmp);
+      calo.fTime = AliMathBase::TruncateFloatFraction(time * kSecToNanoSec, mCaloAmp);
+      calo.fCaloType = cells->GetType(); // common for all cells
+      calo.fCellType = cells->GetHighGain(ice) ? 1. : 0.;
+
+
+      FillTree(kCalo);
+      if (fTreeStatus[kCalo])
+        ncalocells_filled++;
+      if (fTaskMode == kMC)
       {
-        calotriggers->GetPosition(col, row);
-        calotriggers->GetL1TimeSum(l1timesums);
-        if(l1timesums <=0)
-          continue;
-        geo->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(col, row, fastorID);
-        calotrigger.fFastOrAbsID = fastorID;
-        calotrigger.fLnAmplitude = l1timesums;
-        FillTree(kCaloTrigger);
-        if (fTreeStatus[kCaloTrigger])
-          ncalotriggers_filled++;
+        // Find the modified label
+        mccalolabel.fIndexMcParticles_size = 0;
+        mccalolabel.fAmplitudeFraction_size = 0;
+        Int_t klabel = kineIndex[TMath::Abs(mclabel)];
+        mccalolabel.fIndexMcParticles[mccalolabel.fIndexMcParticles_size++] = TMath::Abs(klabel) + fOffsetLabel;
+        mccalolabel.fAmplitudeFraction[mccalolabel.fAmplitudeFraction_size++] = 1.f;
+
+        FillTree(kMcCaloLabel);
       }
-    } else {
-      TClonesArray *emcalpatches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
-      if(emcalpatches) {
-        AliEMCALTriggerDataGrid<int> l1adcs;
-        l1adcs.Allocate(48, 104);
-        // Pre-sort the ADCs in the data grid in order to find the ADCs belonging to the 3 leading patches later
+    } // end loop on calo cells
+    eventextra.fNentries[kCalo] = ncalocells_filled;
+
+    bool fillEMCtriggers = true;
+    bool fillEMCheaderMedian = true;
+    TString triggerclasses = fInputEvent->GetFiredTriggerClasses();
+    if(!(triggerclasses.Contains("CENT") || triggerclasses.Contains("ALL") || triggerclasses.Contains("-FAST-") || triggerclasses.Contains("CALO"))) {
+      // Don't write EMCAL trigger table for clusters where EMCAL was neither trigger nor readout detector
+      fillEMCtriggers = false;
+    }
+    if(fGRP) {
+      // In case global run parameters are available write EMCAL trigger
+      // entries only in case EMCAL was a readout nor a trigger detector
+      // in order to reduce the data volume used for header words
+      TString detectorstring = AliDAQ::ListOfTriggeredDetectors(fGRP->GetDetectorMask());
+      if(!detectorstring.Contains("EMCAL")) {
+        fillEMCtriggers = false;
+      } else {
+        // Don't fill median header words for small system (STU not in median mode)
+        TString beamtype = fGRP->GetBeamType();
+        if((beamtype == "p-p" || beamtype == "p-A" || beamtype == "A-p")) {
+          fillEMCheaderMedian = false;
+        }
+      }
+    }
+    if(fillEMCtriggers) {
+      // Trigger data for EMCAL:
+      // - For full payload (monitoring) events store all non-0 L1 ADCs
+      // - For regular events store non-0 L1 ADCs of the 3 leading Gamma patches
+      auto geo = AliEMCALGeometry::GetInstance();
+      if(!geo) {
+        // singleton not yet initialized - initialize it for the first time
+        // based on the current run number expecting data from different years
+        // will not be mixed in the same job
+        geo = AliEMCALGeometry::GetInstanceFromRunNumber(fVEvent->GetRunNumber()); // Needed for EMCAL trigger mapping
+      }
+      AliVCaloTrigger *calotriggers = fVEvent->GetCaloTrigger("EMCAL");
+      Bool_t fullPayload = fEMCALReducedTriggerPayload ? gRandom->Uniform() < fFractionL1MonitorEventsEMCAL : true;
+      calotrigger.fIndexBCs = fBCCount;
+      calotrigger.fFastOrAbsID = 10001;
+      calotrigger.fLnAmplitude = fullPayload ? 1 : 0;
+      calotrigger.fTriggerBits = 0;
+      calotrigger.fCaloType = 1;
+      FillTree(kCaloTrigger);
+      int nheader = 1;
+      if(fillEMCheaderMedian) {
+        // Median for EMCAL
+        calotrigger.fFastOrAbsID = 10002;
+        calotrigger.fLnAmplitude = calotriggers->GetMedian(0);
+        FillTree(kCaloTrigger);
+        // Median for DCAL
+        calotrigger.fFastOrAbsID = 10003;
+        calotrigger.fLnAmplitude = calotriggers->GetMedian(1);
+        FillTree(kCaloTrigger);
+        nheader += 2;
+      }
+
+      calotriggers->Reset();
+      ncalotriggers_filled = nheader; // total number of EMCAL triggers filled per event, offset 1 or 3 for the global event properties for EMCAL
+      int col, row, fastorID, l1timesums;
+      if(fullPayload) {
+        // Full payload - store all ADCs
         while (calotriggers->Next())
         {
           calotriggers->GetPosition(col, row);
           calotriggers->GetL1TimeSum(l1timesums);
           if(l1timesums <=0)
             continue;
-          l1adcs(col, row) = l1timesums;
+          geo->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(col, row, fastorID);
+          calotrigger.fFastOrAbsID = fastorID;
+          calotrigger.fLnAmplitude = l1timesums;
+          FillTree(kCaloTrigger);
+          if (fTreeStatus[kCaloTrigger])
+            ncalotriggers_filled++;
         }
-        std::vector<AliEMCALTriggerPatchInfo *> allpatches;
-        for(int ipatch = 0; ipatch < emcalpatches->GetEntries(); ipatch++) {
-          AliEMCALTriggerPatchInfo *nextpatch = static_cast<AliEMCALTriggerPatchInfo *>(emcalpatches->At(ipatch));
-          if(nextpatch->IsGammaLowRecalc()) allpatches.emplace_back(nextpatch);
-        }
-        // sort patches in descending order according to the patch ADC
-        std::sort(allpatches.begin(), allpatches.end(), [](const AliEMCALTriggerPatchInfo *lhs, const AliEMCALTriggerPatchInfo *rhs) { return lhs->GetADCAmp() > rhs->GetADCAmp(); } );
-        std::vector<int> fastOrIDsInTree;  // in order to avoid double counting
-        int npatches = 0;
-        for(auto patch : allpatches) {
-          for(int icol = patch->GetColStart(); icol < patch->GetColStart() + patch->GetPatchSize(); icol++) {
-            for(int irow = patch->GetRowStart(); irow < patch->GetRowStart() + patch->GetPatchSize(); irow++) {
-              int adc = l1adcs(icol, irow);
-              if(adc > 0) {
-                geo->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, fastorID);
-                if(std::find(fastOrIDsInTree.begin(), fastOrIDsInTree.end(), fastorID) == fastOrIDsInTree.end()) {
-                  // FastOr not present in other (selected) trigger patch - add to tree
-                  calotrigger.fFastOrAbsID = fastorID;
-                  calotrigger.fLnAmplitude = adc;
-                  FillTree(kCaloTrigger);
-                  if (fTreeStatus[kCaloTrigger])
-                    ncalotriggers_filled++;
-                  fastOrIDsInTree.emplace_back(fastorID);
+      } else {
+        TClonesArray *emcalpatches = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject("EmcalTriggers"));
+        if(emcalpatches) {
+         AliEMCALTriggerDataGrid<int> l1adcs;
+          l1adcs.Allocate(48, 104);
+          // Pre-sort the ADCs in the data grid in order to find the ADCs belonging to the 3 leading patches later
+          while (calotriggers->Next())
+          {
+            calotriggers->GetPosition(col, row);
+            calotriggers->GetL1TimeSum(l1timesums);
+            if(l1timesums <=0)
+              continue;
+            l1adcs(col, row) = l1timesums;
+          }
+          std::vector<AliEMCALTriggerPatchInfo *> allpatches;
+          for(int ipatch = 0; ipatch < emcalpatches->GetEntries(); ipatch++) {
+            AliEMCALTriggerPatchInfo *nextpatch = static_cast<AliEMCALTriggerPatchInfo *>(emcalpatches->At(ipatch));
+            if(nextpatch->IsGammaLowRecalc()) allpatches.emplace_back(nextpatch);
+          }
+          // sort patches in descending order according to the patch ADC
+          std::sort(allpatches.begin(), allpatches.end(), [](const AliEMCALTriggerPatchInfo *lhs, const AliEMCALTriggerPatchInfo *rhs) { return lhs->GetADCAmp() > rhs->GetADCAmp(); } );
+          std::vector<int> fastOrIDsInTree;  // in order to avoid double counting
+          int npatches = 0;
+          for(auto patch : allpatches) {
+            for(int icol = patch->GetColStart(); icol < patch->GetColStart() + patch->GetPatchSize(); icol++) {
+              for(int irow = patch->GetRowStart(); irow < patch->GetRowStart() + patch->GetPatchSize(); irow++) {
+                int adc = l1adcs(icol, irow);
+                if(adc > 0) {
+                  geo->GetTriggerMapping()->GetAbsFastORIndexFromPositionInEMCAL(icol, irow, fastorID);
+                  if(std::find(fastOrIDsInTree.begin(), fastOrIDsInTree.end(), fastorID) == fastOrIDsInTree.end()) {
+                    // FastOr not present in other (selected) trigger patch - add to tree
+                    calotrigger.fFastOrAbsID = fastorID;
+                    calotrigger.fLnAmplitude = adc;
+                    FillTree(kCaloTrigger);
+                    if (fTreeStatus[kCaloTrigger])
+                      ncalotriggers_filled++;
+                    fastOrIDsInTree.emplace_back(fastorID);
+                  }
                 }
               }
             }
+            npatches++;
+            if(npatches == 3) {
+              // select at maximum the 3 leading trigger patches
+              break;
+            }
           }
-          npatches++;
-          if(npatches == 3) {
-            // select at maximum the 3 leading trigger patches
-            break;
-          }
+        } else {
+          AliErrorStream() << "Needs EMCAL patches (from EMCAL trigger maker) for the selection of the FastORs belonging to the 3 leading gamma patches" << std::endl;
         }
-      } else {
-        AliErrorStream() << "Needs EMCAL patches (from EMCAL trigger maker) for the selection of the FastORs belonging to the 3 leading gamma patches" << std::endl;
       }
     }
-  }
-  eventextra.fNentries[kCaloTrigger] = ncalotriggers_filled;
+    eventextra.fNentries[kCaloTrigger] = ncalotriggers_filled;
+  } // end EMCal section
 
   //------PHOS trigger -----------
   const double mPHOSCalib = 0.005; // Mean PHOS calibration 5 MeV/ADC
@@ -2466,7 +2478,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
 
   AliVCaloCells * phoscells = fVEvent->GetPHOSCells();
-  Int_t nphoscells_filled = 0;
+  Int_t nphoscells_filled = ncalocells_filled;
   Int_t nPHCells = phoscells->GetNumberOfCells();
   for (Short_t icp = 0; icp < nPHCells; ++icp)
   {

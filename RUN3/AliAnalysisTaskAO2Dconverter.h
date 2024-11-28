@@ -103,6 +103,8 @@ public:
   void SetUsePHOSTriggerMap(Bool_t toUse=kTRUE) { fUsePHOSBadMap = toUse; }
   void SetReadTR(Bool_t readTR = true) {fReadTR = readTR;};
 
+  void SetDisableEMCAL(bool flag = true) { fDisableEMCAL = flag; }
+
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
   enum TreeIndex { // Index of the output trees
     kEvents = 0,
@@ -818,6 +820,9 @@ private:
   Double_t fFractionL1MonitorEventsEMCAL = 0.001; ///< Fraction of monitoring events (full payload) for EMCAL L1 trigger
   Bool_t fEMCALReducedTriggerPayload = kFALSE; ///< Use reduced trigger payload for EMCAL L1 trigger
   Bool_t fUsePHOSBadMap = kTRUE ; ///< read and apply PHOS trigger bad map
+
+  /// skip EMCal altogether (track propag, emcal cells)
+  Bool_t fDisableEMCAL = kFALSE;
 
   /// Byte counter
   ULong_t fBytes = 0; ///! Number of bytes stored in all trees
