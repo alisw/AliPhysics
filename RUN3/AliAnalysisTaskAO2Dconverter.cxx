@@ -473,7 +473,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
   if (fSkipTPCPileup)
     fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(true);
 
-  fConversionCuts.SetIsHeavyIon(1);
+  fConversionCuts.SetIsHeavyIon(fCollSystem);
   fConversionCuts.SetFillCutHistograms("",true);
   fConversionCuts.InitializeCutsFromCutString(fConversionCut);
 
@@ -4049,41 +4049,74 @@ void AliAnalysisTaskAO2Dconverter::FindDeltaAODBranchName(){
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskAO2Dconverter::RelabelAODPhotonCandidates(AliAODConversionPhoton* PhotonCandidate) {
-    if (fPreviousV0ReaderPerformsAODRelabeling == 2) return kTRUE;
-    else if (fPreviousV0ReaderPerformsAODRelabeling == 0) {
-        printf("Running AODs! Determine if AliAnalysisTaskAO2Dconverter '%s' should perform relabeling\n", this->GetName());
-        TObjArray* obj = static_cast<TObjArray*>(AliAnalysisManager::GetAnalysisManager()->GetTasks());
-        Int_t iPosition = obj->IndexOf(this);
-        Bool_t prevV0ReaderRunningButNotRelabeling = kFALSE;
+  if (fPreviousV0ReaderPerformsAODRelabeling == 2) return kTRUE;
+  else if (fPreviousV0ReaderPerformsAODRelabeling == 0) {
+    printf("Running AODs! Determine if AliAnalysisTaskAO2Dconverter '%s' should perform relabeling\n", this->GetName());
+    TObjArray* obj = static_cast<TObjArray*>(AliAnalysisManager::GetAnalysisManager()->GetTasks());
+    Int_t iPosition = obj->IndexOf(this);
+    Bool_t prevV0ReaderRunningButNotRelabeling = kFALSE;
 
-        for (Int_t i = iPosition - 1; i >= 0; i--) {
-            AliAODRelabelInterface* relabelTask = dynamic_cast<AliAODRelabelInterface*>(obj->At(i));
-            if (!relabelTask) continue;  // Skip non-relabeling tasks
+    for (Int_t i = iPosition - 1; i >= 0; i--) {
+      AliAODRelabelInterface* relabelTask = dynamic_cast<AliAODRelabelInterface*>(obj->At(i));
+      if (!relabelTask) continue;  // Skip non-relabeling tasks
 
-            if (relabelTask->AreAODsRelabeled() && relabelTask->IsReaderPerformingRelabeling() == 1) {
-                fPreviousV0ReaderPerformsAODRelabeling = 2;
-                prevV0ReaderRunningButNotRelabeling = kFALSE;
-                printf("Task '%s' is running before this AliAnalysisTaskAO2Dconverter '%s': do _NOT_ relabel AODs by current AliAnalysisTaskAO2Dconverter!\n",
-                       relabelTask->GetName(), this->GetName());
-                break;
-            } else {
-                prevV0ReaderRunningButNotRelabeling = kTRUE;
-            }
-        }
-
-        if (prevV0ReaderRunningButNotRelabeling) {
-            AliFatal(Form("There are tasks before '%s', but none of them is relabeling!", this->GetName()));
-        }
-
-        if (fPreviousV0ReaderPerformsAODRelabeling == 2) return kTRUE;
-        else {
-            printf("This AliAnalysisTaskAO2Dconverter '%s' is first to be processed: do relabel AODs by current reader!\n", this->GetName());
-            fPreviousV0ReaderPerformsAODRelabeling = 1;
-        }
+      if (relabelTask->AreAODsRelabeled() && relabelTask->IsReaderPerformingRelabeling() == 1) {
+        fPreviousV0ReaderPerformsAODRelabeling = 2;
+        prevV0ReaderRunningButNotRelabeling = kFALSE;
+        printf("Task '%s' is running before this AliAnalysisTaskAO2Dconverter '%s': do _NOT_ relabel AODs by current AliAnalysisTaskAO2Dconverter!\n",
+                relabelTask->GetName(), this->GetName());
+        break;
+      } else {
+        prevV0ReaderRunningButNotRelabeling = kTRUE;
+      }
     }
 
-    // Continue with the rest of the function as before...
-    return kFALSE;
+    if (prevV0ReaderRunningButNotRelabeling) {
+      AliFatal(Form("There are tasks before '%s', but none of them is relabeling!", this->GetName()));
+    }
+
+    if (fPreviousV0ReaderPerformsAODRelabeling == 2) return kTRUE;
+    else {
+      printf("This AliAnalysisTaskAO2Dconverter '%s' is first to be processed: do relabel AODs by current reader!\n", this->GetName());
+      fPreviousV0ReaderPerformsAODRelabeling = 1;
+    }
+  }
+
+  if (fPreviousV0ReaderPerformsAODRelabeling != 1){
+    AliFatal(Form("In %s: fPreviousV0ReaderPerformsAODRelabeling = '%i' - unexpected value!", this->GetName(), fPreviousV0ReaderPerformsAODRelabeling));
+  }
+
+  // Relabeling logic
+  Bool_t AODLabelPos = kFALSE;
+  Bool_t AODLabelNeg = kFALSE;
+
+  for (Int_t i = 0; i < fInputEvent->GetNumberOfTracks(); i++) {
+    AliAODTrack* tempDaughter = static_cast<AliAODTrack*>(fInputEvent->GetTrack(i));
+    if (!AODLabelPos && tempDaughter->GetID() == PhotonCandidate->GetTrackLabelPositive()) {
+      PhotonCandidate->SetMCLabelPositive(TMath::Abs(tempDaughter->GetLabel()));
+      PhotonCandidate->SetLabelPositive(i);
+      AODLabelPos = kTRUE;
+    }
+    if (!AODLabelNeg && tempDaughter->GetID() == PhotonCandidate->GetTrackLabelNegative()) {
+      PhotonCandidate->SetMCLabelNegative(TMath::Abs(tempDaughter->GetLabel()));
+      PhotonCandidate->SetLabelNegative(i);
+      AODLabelNeg = kTRUE;
+    }
+    if (AODLabelNeg && AODLabelPos){
+      return kTRUE;
+    }
+  }
+
+  // If one of the daughters could not be found
+  if (!AODLabelNeg) {
+    PhotonCandidate->SetMCLabelNegative(-999999);
+    PhotonCandidate->SetLabelNegative(-999999);
+  }
+  if (!AODLabelPos) {
+    PhotonCandidate->SetMCLabelPositive(-999999);
+    PhotonCandidate->SetLabelPositive(-999999);
+  }
+  return kFALSE;
 }
 
 ////////////////////////////////////////////////////////////
