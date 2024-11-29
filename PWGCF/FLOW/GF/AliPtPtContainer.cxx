@@ -13,12 +13,20 @@ using namespace PtPtSpace;
 AliPtPtContainer::AliPtPtContainer():
     fCMTermList(0),
     fCorrList(0),
+    fSubList(0),
+    fSubCMList(0),
     fCentralMomentList(0),
     fCumulantList(0),
+    fSubCentralMomentList(0),
+    fSubCumulantList(0),
     mpar(0),
     fEventWeight(kEventWeight::kUnity),
     fCorr(),
     fSumw(),
+    fCorr1(),
+    fSumw1(),
+    fCorr2(),
+    fSumw2(),
     fcmNum(),
     fcmDen()
 {};
@@ -26,17 +34,31 @@ AliPtPtContainer::~AliPtPtContainer()
 {
     delete fCMTermList;
     delete fCorrList;
+    delete fSubList;
+    delete fSubCMList;
+    delete fCumulantList;
+    delete fCentralMomentList;
+    delete fSubCentralMomentList;
+    delete fSubCumulantList;
 };
 AliPtPtContainer::AliPtPtContainer(const char* name, const char* title, int nbinsx, double* xbins, int m):
     TNamed(name,title),
     fCMTermList(0),
     fCorrList(0),
+    fSubList(0),
+    fSubCMList(0),
     fCentralMomentList(0),
     fCumulantList(0),
+    fSubCentralMomentList(0),
+    fSubCumulantList(0),
     mpar(m),
     fEventWeight(kEventWeight::kUnity),
     fCorr(),
     fSumw(),
+    fCorr1(),
+    fSumw1(),
+    fCorr2(),
+    fSumw2(),
     fcmNum(),
     fcmDen()
 {
@@ -46,12 +68,20 @@ AliPtPtContainer::AliPtPtContainer(const char* name, const char* title, int nbin
     TNamed(name,title),
     fCMTermList(0),
     fCorrList(0),
+    fSubList(0),
+    fSubCMList(0),
     fCentralMomentList(0),
     fCumulantList(0),
+    fSubCentralMomentList(0),
+    fSubCumulantList(0),
     mpar(m),
     fEventWeight(kEventWeight::kUnity),
     fCorr(),
     fSumw(),
+    fCorr1(),
+    fSumw1(),
+    fCorr2(),
+    fSumw2(),
     fcmNum(),
     fcmDen()
 {
@@ -91,8 +121,92 @@ void AliPtPtContainer::InitializeSubsamples(const int &nsub) {
             ((AliProfileBS*)fCMTermList->At(i))->InitializeSubsamples(nsub);
     for(int i=0; i<fCorrList->GetEntries();++i)
         ((AliProfileBS*)fCorrList->At(i))->InitializeSubsamples(nsub);
+    if(fSubList){
+        for(int i=0; i<fSubList->GetEntries();++i)
+            ((AliProfileBS*)fSubList->At(i))->InitializeSubsamples(nsub);
+        for(int i=0; i<fSubCMList->GetEntries();++i)
+            ((AliProfileBS*)fSubCMList->At(i))->InitializeSubsamples(nsub);
+    }
     return;
 };
+void AliPtPtContainer::InitializeSubevent(int nbinsx, double* xbins){
+    if(fSubList) delete fSubList;
+    fSubList = new TList();
+    fSubList->SetOwner(kTRUE);
+    for(int sub = 0; sub<2; ++sub){
+        for(int m=0;m<mpar;++m) {
+            fSubList->Add(new AliProfileBS(Form("corr_sub%i_%ipar",sub+1,m+1),this->GetTitle(),nbinsx,xbins));
+        }
+    }
+    for(int m=2;m<=mpar;++m) {
+        for(int k=0; k < m-1; ++k){
+            fSubList->Add(new AliProfileBS(Form("corr_%isub1_%isub2_%ipar",m-k-1,k+1,m),this->GetTitle(),nbinsx,xbins));
+        }
+    }
+    if(fSubCMList) delete fSubCMList;
+    fSubCMList = new TList();
+    fSubCMList->SetOwner(kTRUE);
+    for(int sub = 0;sub <2; ++sub){
+        for(int m=0;m<4;++m) {
+            for(int i=0;i<=m;++i){
+                fSubCMList->Add(new AliProfileBS(Form("cm%i_sub%i_Mpt%i",m+1,sub+1,i),this->GetTitle(),nbinsx,xbins));
+            }
+        }
+    }
+    for(int m = 2;m<=4;++m) {
+        for(int first = 1; first < m; ++first) {
+            for(int second = first; second < m; ++second) {
+                if(first > second) continue;
+                int fourth = m-second;
+                for(int third = 1; third < m; ++third) {
+                    if(third > fourth) continue;
+                    fSubCMList->Add(new AliProfileBS(Form("cm%i_%i%isub1_%i%isub2",m,first,second,third,fourth),this->GetTitle(),nbinsx,xbins));
+                }
+            }
+        }
+    }
+
+    printf("Subevents initialised for container %s with m = %i\n",this->GetName(),mpar);
+}
+void AliPtPtContainer::InitializeSubevent(int nbinsx, double xlow, double xhigh){
+    if(fSubList) delete fSubList;
+    fSubList = new TList();
+    fSubList->SetOwner(kTRUE);
+    for(int sub = 0; sub<2; ++sub){
+        for(int m=0;m<mpar;++m) {
+            fSubList->Add(new AliProfileBS(Form("corr_sub%i_%ipar",sub+1,m+1),this->GetTitle(),nbinsx,xlow,xhigh));
+        }
+    }
+    for(int m=2;m<=mpar;++m) {
+        for(int k=0; k < m-1; ++k){
+            fSubList->Add(new AliProfileBS(Form("corr_%isub1_%isub2_%ipar",m-k-1,k+1,m),this->GetTitle(),nbinsx,xlow,xhigh));
+        }
+    }
+    if(fSubCMList) delete fSubCMList;
+    fSubCMList = new TList();
+    fSubCMList->SetOwner(kTRUE);
+    for(int sub = 0;sub <2; ++sub){
+        for(int m=0;m<4;++m) {
+            for(int i=0;i<=m;++i){
+                fSubCMList->Add(new AliProfileBS(Form("cm%i_sub%i_Mpt%i",m+1,sub+1,i),this->GetTitle(),nbinsx,xlow,xhigh));
+            }
+        }
+    }
+    for(int m = 2;m<=4;++m) {
+        for(int first = 1; first < m; ++first) {
+            for(int second = first; second < m; ++second) {
+                if(first > second) continue;
+                int fourth = m-second;
+                for(int third = 1; third < m; ++third) {
+                    if(third > fourth) continue;
+                    fSubCMList->Add(new AliProfileBS(Form("cm%i_%i%isub1_%i%isub2",m,first,second,third,fourth),this->GetTitle(),nbinsx,xlow,xhigh));
+                }
+            }
+        }
+    }
+
+    printf("Subevents initialised for container %s with m = %i\n",this->GetName(),mpar);
+}
 vector<double> AliPtPtContainer::getEventCorrelation(int mOrder) {
   vector<double> outvec = {fCorr[mOrder],fSumw[mOrder]};
   return outvec;
@@ -121,10 +235,67 @@ void AliPtPtContainer::CalculateCorrelations(const vector<vector<double>> &inarr
   }
   return;
 }
+void AliPtPtContainer::CalculateSubeventCorrelations(const vector<vector<double>> &insub1,const vector<vector<double>> &insub2 ) {
+  fCorr1.clear(); fCorr1.resize(mpar+1,0); fCorr1[0] = 1.0;
+  fSumw1.clear(); fSumw1.resize(mpar+1,0); fSumw1[0] = 1.0;
+  fCorr2.clear(); fCorr2.resize(mpar+1,0); fCorr2[0] = 1.0;
+  fSumw2.clear(); fSumw2.resize(mpar+1,0); fSumw2[0] = 1.0;
+  double sumNum1 = 0;
+  double sumDenum1 = 0;
+  vector<double> valNum1;
+  vector<double> valDenum1;
+  double sumNum2 = 0;
+  double sumDenum2 = 0;
+  vector<double> valNum2;
+  vector<double> valDenum2;
+  for(int m(1); m<=mpar; ++m)
+  {
+    for(int k(1);k<=m;++k)
+    {
+      //correlations in subevent 1
+      valNum1.push_back(fSign[k-1]*fCorr1[m-k]*(fFactorial[m-1]/fFactorial[m-k])*insub1[k][k]);
+      valDenum1.push_back(fSign[k-1]*fSumw1[m-k]*(fFactorial[m-1]/fFactorial[m-k])*insub1[k][0]);
+      //correlations in subevent 2
+      valNum2.push_back(fSign[k-1]*fCorr2[m-k]*(fFactorial[m-1]/fFactorial[m-k])*insub2[k][k]);
+      valDenum2.push_back(fSign[k-1]*fSumw2[m-k]*(fFactorial[m-1]/fFactorial[m-k])*insub2[k][0]);
+    }
+    sumNum1 = OrderedAddition(valNum1);
+    sumDenum1 = OrderedAddition(valDenum1);
+    sumNum2 = OrderedAddition(valNum2);
+    sumDenum2 = OrderedAddition(valDenum2);
+    valNum1.clear();
+    valDenum1.clear();
+    valNum2.clear();
+    valDenum2.clear();
+    fCorr1[m] = sumNum1;
+    fSumw1[m] = sumDenum1;
+    fCorr2[m] = sumNum2;
+    fSumw2[m] = sumDenum2;
+  }
+  return;
+}
+
 void AliPtPtContainer::FillProfiles(const double &centmult, const double &rn) {
     for(int m=1;m<=mpar;++m)
     {
         if(fSumw[m]!=0) ((AliProfileBS*)fCorrList->At(m-1))->FillProfile(centmult,fCorr[m]/fSumw[m],(fEventWeight==PtPtSpace::kUnity)?1.0:fSumw[m],rn);
+    }
+    return;
+}
+void AliPtPtContainer::FillSubeventProfiles(const double &centmult, const double &rn) {
+    //Fill the correlations within subevents, requires that the CalculateSubeventCorrelations have been called with the correct input vectors right before
+    for(int m=1;m<=mpar;++m)
+    {
+        if(fSumw1[m]!=0) ((AliProfileBS*)fSubList->At(m-1))->FillProfile(centmult,fCorr1[m]/fSumw1[m],(fEventWeight==PtPtSpace::kUnity)?1.0:fSumw1[m],rn);
+        //subevent 2 profiles offset by mpar positions
+        if(fSumw2[m]!=0) ((AliProfileBS*)fSubList->At(mpar+m-1))->FillProfile(centmult,fCorr2[m]/fSumw2[m],(fEventWeight==PtPtSpace::kUnity)?1.0:fSumw2[m],rn);
+    }
+
+    //Fill the cross-subevent correlations
+    for(int m=2;m<=mpar;++m) {
+        for(int k=0; k < m-1; ++k){
+            if(fSumw1[m-k-1]!=0 && fSumw2[k+1]!=0) ((AliProfileBS*)fSubList->FindObject(Form("corr_%isub1_%isub2_%ipar",m-k-1,k+1,m)))->FillProfile(centmult,fCorr1[m-k-1]/fSumw1[m-k-1]*fCorr2[k+1]/fSumw2[k+1],(fEventWeight==PtPtSpace::kUnity)?1.0:fSumw1[m-k-1]*fSumw2[k+1],rn);
+        }
     }
     return;
 }
@@ -133,42 +304,149 @@ void AliPtPtContainer::FillCMProfiles(const vector<vector<double>> &inarr, const
   fcmDen.clear();
   if (inarr[0][0] == 0)
     return;
-  double tau1 = inarr[2][0] / pow(inarr[1][0], 2);
-  double tau2 = inarr[3][0] / pow(inarr[1][0], 3);
-  double tau3 = inarr[4][0] / pow(inarr[1][0], 4);
+  // 0th order correlation
+  fcmDen.push_back(1.);
+  fcmNum.push_back(1.);
+
   fcmDen.push_back(inarr[1][0]);
-  fcmDen.push_back(1 - tau1);
-  fcmDen.push_back(1 - 3 * tau1 + 2 * tau2);
-  fcmDen.push_back(1 - 6 * tau1 + 3 * tau1 * tau1 + 8 * tau2 - 6 * tau3);
-  // double weight4 = 1 - 10*tau1 + 15*tau1*tau1 + 20*tau2 - 20*tau1*tau2 - 30*tau3 + 24*tau4;
-  if (mpar < 1 || fcmDen[0] == 0)
+  fcmDen.push_back(inarr[1][0] * inarr[1][0] - inarr[2][0]);
+  fcmDen.push_back(inarr[1][0] * inarr[1][0] * inarr[1][0] - 3 * inarr[2][0] * inarr[1][0] + 2 * inarr[3][0]);
+  fcmDen.push_back(inarr[1][0] * inarr[1][0] * inarr[1][0] * inarr[1][0] - 6 * inarr[2][0] * inarr[1][0] * inarr[1][0] + 8 * inarr[1][0] * inarr[3][0] + 3 * inarr[2][0] * inarr[2][0] - 6 * inarr[4][0]);
+  if (mpar < 1 || fcmDen[1] == 0)
     return;
-  fcmNum.push_back(inarr[1][1] / fcmDen[0]);
-  dynamic_cast<AliProfileBS*>(fCMTermList->At(0))->FillProfile(centmult, fcmNum[0], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[0], rn);
-  if (mpar < 2 || inarr[2][0] == 0 || fcmDen[1] == 0)
+  fcmNum.push_back(inarr[1][1] / fcmDen[1]);
+  dynamic_cast<AliProfileBS*>(fCMTermList->At(0))->FillProfile(centmult, fcmNum[1], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[1], rn);
+  if (mpar < 2 || inarr[2][0] == 0 || fcmDen[2] == 0)
     return;
-  fcmNum.push_back(1 / fcmDen[1] * (inarr[1][1] / inarr[1][0] * inarr[1][1] / inarr[1][0] - tau1 * inarr[2][2] / inarr[2][0]));
-  dynamic_cast<AliProfileBS*>(fCMTermList->At(1))->FillProfile(centmult, fcmNum[1], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[1], rn);
-  fcmNum.push_back(1 / fcmDen[1] * (-2 * inarr[1][1] / inarr[1][0] + 2 * tau1 * inarr[2][1] / inarr[2][0]));
-  dynamic_cast<AliProfileBS*>(fCMTermList->At(2))->FillProfile(centmult, fcmNum[2], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[1], rn);
-  if (mpar < 3 || inarr[3][0] == 0 || fcmDen[2] == 0)
+  fcmNum.push_back(1 / fcmDen[2] * (inarr[1][1] * inarr[1][1] - inarr[2][2]));
+  dynamic_cast<AliProfileBS*>(fCMTermList->At(1))->FillProfile(centmult, fcmNum[2], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[2], rn);
+  fcmNum.push_back(1 / fcmDen[2] * (inarr[1][0] * inarr[1][1] - inarr[2][1]));
+  dynamic_cast<AliProfileBS*>(fCMTermList->At(2))->FillProfile(centmult, fcmNum[3], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[2], rn);
+  if (mpar < 3 || inarr[3][0] == 0 || fcmDen[3] == 0)
     return;
-  fcmNum.push_back(1 / fcmDen[2] * (inarr[1][1] / inarr[1][0] * inarr[1][1] / inarr[1][0] * inarr[1][1] / inarr[1][0] - 3 * tau1 * inarr[2][2] / inarr[2][0] * inarr[1][1] / inarr[1][0] + 2 * tau2 * inarr[3][3] / inarr[3][0]));
-  dynamic_cast<AliProfileBS*>(fCMTermList->At(3))->FillProfile(centmult, fcmNum[3], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[2], rn);
-  fcmNum.push_back(1 / fcmDen[2] * (-3 * inarr[1][1] / inarr[1][0] * inarr[1][1] / inarr[1][0] + 3 * tau1 * inarr[2][2] / inarr[2][0] + 6 * tau1 * inarr[2][1] / inarr[2][0] * inarr[1][1] / inarr[1][0] - 6 * tau2 * inarr[3][2] / inarr[3][0]));
-  dynamic_cast<AliProfileBS*>(fCMTermList->At(4))->FillProfile(centmult, fcmNum[4], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[2], rn);
-  fcmNum.push_back(1 / fcmDen[2] * (3 * inarr[1][1] / inarr[1][0] - 6 * tau1 * inarr[2][1] / inarr[2][0] - 3 * tau1 * inarr[1][1] / inarr[1][0] + 6 * tau2 * inarr[3][1] / inarr[3][0]));
-  dynamic_cast<AliProfileBS*>(fCMTermList->At(5))->FillProfile(centmult, fcmNum[5], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[2], rn);
-  if (mpar < 4 || inarr[4][0] == 0 || fcmDen[3] == 0)
+  fcmNum.push_back(1 / fcmDen[3] * (inarr[1][1] * inarr[1][1] * inarr[1][1] - 3 * inarr[2][2] * inarr[1][1] + 2 * inarr[3][3]));
+  dynamic_cast<AliProfileBS*>(fCMTermList->At(3))->FillProfile(centmult, fcmNum[4], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[3], rn);
+  fcmNum.push_back(1 / fcmDen[3] * (inarr[1][1] * inarr[1][1] * inarr[1][0] - 2 * inarr[2][1] * inarr[1][1] + 2 * inarr[3][2] - inarr[2][2] * inarr[1][0]));
+  dynamic_cast<AliProfileBS*>(fCMTermList->At(4))->FillProfile(centmult, fcmNum[5], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[3], rn);
+  fcmNum.push_back(1 / fcmDen[3] * (inarr[1][1] * inarr[1][0] * inarr[1][0] - 2 * inarr[2][1] * inarr[1][0] + 2 * inarr[3][1] - inarr[1][1] * inarr[2][0]));
+  dynamic_cast<AliProfileBS*>(fCMTermList->At(5))->FillProfile(centmult, fcmNum[6], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[3], rn);
+  if (mpar < 4 || inarr[4][0] == 0 || fcmDen[4] == 0)
     return;
-  fcmNum.push_back(1 / fcmDen[3] * (inarr[1][1] / inarr[1][0] * inarr[1][1] / inarr[1][0] * inarr[1][1] / inarr[1][0] * inarr[1][1] / inarr[1][0] - 6 * tau1 * inarr[2][2] / inarr[2][0] * inarr[1][1] / inarr[1][0] * inarr[1][1] / inarr[1][0] + 3 * tau1 * tau1 * inarr[2][2] / inarr[2][0] * inarr[2][2] / inarr[2][0] + 8 * tau2 * inarr[3][3] / inarr[3][0] * inarr[1][1] / inarr[1][0] - 6 * tau3 * inarr[4][4] / inarr[4][0]));
-  dynamic_cast<AliProfileBS*>(fCMTermList->At(6))->FillProfile(centmult, fcmNum[6], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[3], rn);
-  fcmNum.push_back(1 / fcmDen[3] * (-4 * inarr[1][1] / inarr[1][0] * inarr[1][1] / inarr[1][0] * inarr[1][1] / inarr[1][0] + 12 * tau1 * inarr[2][2] / inarr[2][0] * inarr[1][1] / inarr[1][0] + 12 * tau1 * inarr[2][1] / inarr[2][0] * inarr[1][1] / inarr[1][0] * inarr[1][1] / inarr[1][0] - 12 * tau1 * tau1 * inarr[2][2] / inarr[2][0] * inarr[2][1] / inarr[2][0] - 8 * tau2 * inarr[3][3] / inarr[3][0] - 24 * tau2 * inarr[3][2] / inarr[3][0] * inarr[1][1] / inarr[1][0] + 24 * tau3 * inarr[4][3] / inarr[4][0]));
-  dynamic_cast<AliProfileBS*>(fCMTermList->At(7))->FillProfile(centmult, fcmNum[7], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[3], rn);
-  fcmNum.push_back(1 / fcmDen[3] * (6 * inarr[1][1] / inarr[1][0] * inarr[1][1] / inarr[1][0] - 6 * tau1 * inarr[2][2] / inarr[2][0] - 24 * tau1 * inarr[2][1] / inarr[2][0] * inarr[1][1] / inarr[1][0] - 6 * tau1 * inarr[1][1] / inarr[1][0] * inarr[1][1] / inarr[1][0] + 6 * tau1 * tau1 * inarr[2][2] / inarr[2][0] + 12 * tau1 * tau1 * inarr[2][1] / inarr[2][0] * inarr[2][1] / inarr[2][0] + 24 * tau2 * inarr[3][2] / inarr[3][0] + 24 * tau2 * inarr[3][1] / inarr[3][0] * inarr[1][1] / inarr[1][0] - 36 * tau3 * inarr[4][2] / inarr[4][0]));
-  dynamic_cast<AliProfileBS*>(fCMTermList->At(8))->FillProfile(centmult, fcmNum[8], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[3], rn);
-  fcmNum.push_back(1 / fcmDen[3] * (-4 * inarr[1][1] / inarr[1][0] + 12 * tau1 * inarr[2][1] / inarr[2][0] + 12 * tau1 * inarr[1][1] / inarr[1][0] - 12 * tau1 * tau1 * inarr[2][1] / inarr[2][0] - 24 * tau2 * inarr[3][1] / inarr[3][0] - 8 * tau2 * inarr[1][1] / inarr[1][0] + 24 * tau3 * inarr[4][1] / inarr[4][0]));
-  dynamic_cast<AliProfileBS*>(fCMTermList->At(9))->FillProfile(centmult, fcmNum[9], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[3], rn);
+  fcmNum.push_back(1 / fcmDen[4] * (inarr[1][1] * inarr[1][1] * inarr[1][1] * inarr[1][1] - 6 * inarr[2][2] * inarr[1][1] * inarr[1][1] + 3 * inarr[2][2] * inarr[2][2] + 8 * inarr[3][3] * inarr[1][1] - 6 * inarr[4][4]));
+  dynamic_cast<AliProfileBS*>(fCMTermList->At(6))->FillProfile(centmult, fcmNum[7], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[4], rn);
+  fcmNum.push_back(1 / fcmDen[4] * (inarr[1][1] * inarr[1][1] * inarr[1][1] * inarr[1][0] - 3 * inarr[2][2] * inarr[1][1] * inarr[1][0] - 3 * inarr[1][1] * inarr[1][1] * inarr[2][1] + 3 * inarr[2][2] * inarr[2][1] + 6 * inarr[1][1] * inarr[3][2] - 6 * inarr[4][3]));
+  dynamic_cast<AliProfileBS*>(fCMTermList->At(7))->FillProfile(centmult, fcmNum[8], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[4], rn);
+  fcmNum.push_back(1 / fcmDen[4] * (inarr[1][1] * inarr[1][1] * inarr[1][0] * inarr[1][0] - inarr[2][2] * inarr[1][0] * inarr[1][0] - inarr[2][0] * inarr[1][1] * inarr[1][1] + inarr[2][0] * inarr[2][2] - 4 * inarr[2][1] * inarr[1][1] * inarr[1][0] + 4 * inarr[3][2] * inarr[1][0] + 4 * inarr[3][1] * inarr[1][1] + 2 * inarr[2][1] * inarr[2][1] - 6 * inarr[4][2]));
+  dynamic_cast<AliProfileBS*>(fCMTermList->At(8))->FillProfile(centmult, fcmNum[9], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[4], rn);
+  fcmNum.push_back(1 / fcmDen[4] * (inarr[1][1] * inarr[1][0] * inarr[1][0] * inarr[1][0] - 3 * inarr[2][1] * inarr[1][0] * inarr[1][0] - 3 * inarr[1][1] * inarr[2][0] * inarr[1][0] + 3 * inarr[2][1] * inarr[2][0] + 2 * inarr[1][1] * inarr[3][0] + 6 * inarr[3][1] * inarr[1][0] - 6 * inarr[4][1]));
+  dynamic_cast<AliProfileBS*>(fCMTermList->At(9))->FillProfile(centmult, fcmNum[10], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen[4], rn);
+  return;
+}
+void AliPtPtContainer::FillCMSubeventProfiles(const vector<vector<double>> &sub1, const vector<vector<double>> &sub2, const double &centmult, const double &rn) {
+  vector<Double_t> fcmNum1;
+  vector<Double_t> fcmDen1;
+  vector<Double_t> fcmNum2;
+  vector<Double_t> fcmDen2;
+  if (mpar < 1)
+    return;
+  // 0th order correlation
+  fcmDen1.push_back(1.);
+  fcmNum1.push_back(1.);
+  fcmDen2.push_back(1.);
+  fcmNum2.push_back(1.);
+
+  fcmDen1.push_back(sub1[1][0]);
+  fcmDen1.push_back(sub1[1][0] * sub1[1][0] - sub1[2][0]);
+  fcmDen1.push_back(sub1[1][0] * sub1[1][0] * sub1[1][0] - 3 * sub1[2][0] * sub1[1][0] + 2 * sub1[3][0]);
+  fcmDen1.push_back(sub1[1][0] * sub1[1][0] * sub1[1][0] * sub1[1][0] - 6 * sub1[2][0] * sub1[1][0] * sub1[1][0] + 8 * sub1[1][0] * sub1[3][0] + 3 * sub1[2][0] * sub1[2][0] - 6 * sub1[4][0]);
+
+  fcmDen2.push_back(sub2[1][0]);
+  fcmDen2.push_back(sub2[1][0] * sub2[1][0] - sub2[2][0]);
+  fcmDen2.push_back(sub2[1][0] * sub2[1][0] * sub2[1][0] - 3 * sub2[2][0] * sub2[1][0] + 2 * sub2[3][0]);
+  fcmDen2.push_back(sub2[1][0] * sub2[1][0] * sub2[1][0] * sub2[1][0] - 6 * sub2[2][0] * sub2[1][0] * sub2[1][0] + 8 * sub2[1][0] * sub2[3][0] + 3 * sub2[2][0] * sub2[2][0] - 6 * sub2[4][0]);
+
+
+  if(fcmDen1[1]!=0) {
+    fcmNum1.push_back(sub1[1][1] / fcmDen1[1]);
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(0))->FillProfile(centmult, fcmNum1[1], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen1[1], rn);
+  }
+  if(fcmDen2[1]!=0){
+    fcmNum2.push_back(sub2[1][1] / fcmDen2[1]);
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(10+0))->FillProfile(centmult, fcmNum2[1], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen2[1], rn);
+  }
+
+  if (mpar < 2)
+    return;
+  if(sub1[2][0] != 0 && fcmDen1[2] != 0){
+    fcmNum1.push_back(1 / fcmDen1[2] * (sub1[1][1] * sub1[1][1] - sub1[2][2]));
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(1))->FillProfile(centmult, fcmNum1[2], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen1[2], rn);
+    fcmNum1.push_back(1 / fcmDen1[2] * (sub1[1][0] * sub1[1][1] - sub1[2][1]));
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(2))->FillProfile(centmult, fcmNum1[3], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen1[2], rn);
+  }
+  if(sub2[2][0] != 0 && fcmDen2[2] != 0){
+        fcmNum2.push_back(1 / fcmDen2[2] * (sub2[1][1] * sub2[1][1] - sub2[2][2]));
+        dynamic_cast<AliProfileBS*>(fSubCMList->At(10+1))->FillProfile(centmult, fcmNum2[2], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen2[2], rn);
+        fcmNum2.push_back(1 / fcmDen2[2] * (sub2[1][0] * sub2[1][1] - sub2[2][1]));
+        dynamic_cast<AliProfileBS*>(fSubCMList->At(10+2))->FillProfile(centmult, fcmNum2[3], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen2[2], rn);
+  }
+
+  if (mpar < 3)
+    return;
+  if(sub1[3][0] != 0 && fcmDen1[3] != 0){
+    fcmNum1.push_back(1 / fcmDen1[3] * (sub1[1][1] * sub1[1][1] * sub1[1][1] - 3 * sub1[2][2] * sub1[1][1] + 2 * sub1[3][3]));
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(3))->FillProfile(centmult, fcmNum1[4], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen1[3], rn);
+    fcmNum1.push_back(1 / fcmDen1[3] * (sub1[1][1] * sub1[1][1] * sub1[1][0] - 2 * sub1[2][1] * sub1[1][1] + 2 * sub1[3][2] - sub1[2][2] * sub1[1][0]));
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(4))->FillProfile(centmult, fcmNum1[5], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen1[3], rn);
+    fcmNum1.push_back(1 / fcmDen1[3] * (sub1[1][1] * sub1[1][0] * sub1[1][0] - 2 * sub1[2][1] * sub1[1][0] + 2 * sub1[3][1] - sub1[1][1] * sub1[2][0]));
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(5))->FillProfile(centmult, fcmNum1[6], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen1[3], rn);
+  }
+  if(sub2[3][0] != 0 && fcmDen2[3] != 0){
+    fcmNum2.push_back(1 / fcmDen2[3] * (sub2[1][1] * sub2[1][1] * sub2[1][1] - 3 * sub2[2][2] * sub2[1][1] + 2 * sub2[3][3]));
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(10+3))->FillProfile(centmult, fcmNum2[4], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen2[3], rn);
+    fcmNum2.push_back(1 / fcmDen2[3] * (sub2[1][1] * sub2[1][1] * sub2[1][0] - 2 * sub2[2][1] * sub2[1][1] + 2 * sub2[3][2] - sub2[2][2] * sub2[1][0]));
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(10+4))->FillProfile(centmult, fcmNum2[5], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen2[3], rn);
+    fcmNum2.push_back(1 / fcmDen2[3] * (sub2[1][1] * sub2[1][0] * sub2[1][0] - 2 * sub2[2][1] * sub2[1][0] + 2 * sub2[3][1] - sub2[1][1] * sub2[2][0]));
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(10+5))->FillProfile(centmult, fcmNum2[6], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen2[3], rn);
+  }
+
+  if (mpar < 4)
+    return;
+  if(sub1[4][0] != 0 && fcmDen1[4] != 0){
+    fcmNum1.push_back(1 / fcmDen1[4] * (sub1[1][1] * sub1[1][1] * sub1[1][1] * sub1[1][1] - 6 * sub1[2][2] * sub1[1][1] * sub1[1][1] + 3 * sub1[2][2] * sub1[2][2] + 8 * sub1[3][3] * sub1[1][1] - 6 * sub1[4][4]));
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(6))->FillProfile(centmult, fcmNum1[7], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen1[4], rn);
+    fcmNum1.push_back(1 / fcmDen1[4] * (sub1[1][1] * sub1[1][1] * sub1[1][1] * sub1[1][0] - 3 * sub1[2][2] * sub1[1][1] * sub1[1][0] - 3 * sub1[1][1] * sub1[1][1] * sub1[2][1] + 3 * sub1[2][2] * sub1[2][1] + 6 * sub1[1][1] * sub1[3][2] - 6 * sub1[4][3]));
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(7))->FillProfile(centmult, fcmNum1[8], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen1[4], rn);
+    fcmNum1.push_back(1 / fcmDen1[4] * (sub1[1][1] * sub1[1][1] * sub1[1][0] * sub1[1][0] - sub1[2][2] * sub1[1][0] * sub1[1][0] - sub1[2][0] * sub1[1][1] * sub1[1][1] + sub1[2][0] * sub1[2][2] - 4 * sub1[2][1] * sub1[1][1] * sub1[1][0] + 4 * sub1[3][2] * sub1[1][0] + 4 * sub1[3][1] * sub1[1][1] + 2 * sub1[2][1] * sub1[2][1] - 6 * sub1[4][2]));
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(8))->FillProfile(centmult, fcmNum1[9], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen1[4], rn);
+    fcmNum1.push_back(1 / fcmDen1[4] * (sub1[1][1] * sub1[1][0] * sub1[1][0] * sub1[1][0] - 3 * sub1[2][1] * sub1[1][0] * sub1[1][0] - 3 * sub1[1][1] * sub1[2][0] * sub1[1][0] + 3 * sub1[2][1] * sub1[2][0] + 2 * sub1[1][1] * sub1[3][0] + 6 * sub1[3][1] * sub1[1][0] - 6 * sub1[4][1]));
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(9))->FillProfile(centmult, fcmNum1[10], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen1[4], rn);
+  }
+  if(sub2[4][0] != 0 && fcmDen2[4] != 0){
+    fcmNum2.push_back(1 / fcmDen2[4] * (sub2[1][1] * sub2[1][1] * sub2[1][1] * sub2[1][1] - 6 * sub2[2][2] * sub2[1][1] * sub2[1][1] + 3 * sub2[2][2] * sub2[2][2] + 8 * sub2[3][3] * sub2[1][1] - 6 * sub2[4][4]));
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(10+6))->FillProfile(centmult, fcmNum2[7], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen2[4], rn);
+    fcmNum2.push_back(1 / fcmDen2[4] * (sub2[1][1] * sub2[1][1] * sub2[1][1] * sub2[1][0] - 3 * sub2[2][2] * sub2[1][1] * sub2[1][0] - 3 * sub2[1][1] * sub2[1][1] * sub2[2][1] + 3 * sub2[2][2] * sub2[2][1] + 6 * sub2[1][1] * sub2[3][2] - 6 * sub2[4][3]));
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(10+7))->FillProfile(centmult, fcmNum2[8], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen2[4], rn);
+    fcmNum2.push_back(1 / fcmDen2[4] * (sub2[1][1] * sub2[1][1] * sub2[1][0] * sub2[1][0] - sub2[2][2] * sub2[1][0] * sub2[1][0] - sub2[2][0] * sub2[1][1] * sub2[1][1] + sub2[2][0] * sub2[2][2] - 4 * sub2[2][1] * sub2[1][1] * sub2[1][0] + 4 * sub2[3][2] * sub2[1][0] + 4 * sub2[3][1] * sub2[1][1] + 2 * sub2[2][1] * sub2[2][1] - 6 * sub2[4][2]));
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(10+8))->FillProfile(centmult, fcmNum2[9], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen2[4], rn);
+    fcmNum2.push_back(1 / fcmDen2[4] * (sub2[1][1] * sub2[1][0] * sub2[1][0] * sub2[1][0] - 3 * sub2[2][1] * sub2[1][0] * sub2[1][0] - 3 * sub2[1][1] * sub2[2][0] * sub2[1][0] + 3 * sub2[2][1] * sub2[2][0] + 2 * sub2[1][1] * sub2[3][0] + 6 * sub2[3][1] * sub2[1][0] - 6 * sub2[4][1]));
+    dynamic_cast<AliProfileBS*>(fSubCMList->At(10+9))->FillProfile(centmult, fcmNum2[10], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen2[4], rn);
+  }
+
+  //Fill cross terms
+    for(int m = 2;m<=4;++m) {
+        for(int first = 1; first < m; ++first) {
+            for(int second = first; second < m; ++second) {
+                if(first > second) continue;
+                int fourth = m-second;
+                for(int third = 1; third < m; ++third) {
+                    if(third > fourth) continue;
+                    if(sub1[m][0]!=0 && sub2[m][0]!=0 && fcmDen1[m]*fcmDen2[m]!=0) ((AliProfileBS*)fSubCMList->FindObject(Form("cm%i_%i%isub1_%i%isub2",m,first,second,third,fourth)))->FillProfile(centmult,fcmNum1[second*(second-1)/2+second-first+1]*fcmNum2[fourth*(fourth-1)/2+fourth-third+1], (fEventWeight == kEventWeight::kUnity) ? 1.0 : fcmDen1[m]*fcmDen2[m], rn);
+                    //printf("m = %i, first = %i, second = %i, index = %i\n",m, first,second,second*(second-1)/2+second-first+1);
+                    //printf("third = %i, fourth = %i, index = %i\n",third,fourth,fourth*(fourth-1)/2+fourth-third+1);
+                }
+            }
+        }
+    }
   return;
 }
 double AliPtPtContainer::OrderedAddition(vector<double> vec) {
@@ -184,15 +462,21 @@ double AliPtPtContainer::OrderedAddition(vector<double> vec) {
 void AliPtPtContainer::RebinMulti(Int_t nbins) {
     if(fCMTermList) for(Int_t i=0;i<fCMTermList->GetEntries();i++) ((AliProfileBS*)fCMTermList->At(i))->RebinMulti(nbins);
     if(fCorrList) for(Int_t i=0;i<fCorrList->GetEntries();i++) ((AliProfileBS*)fCorrList->At(i))->RebinMulti(nbins);
+    if(fSubList) for(Int_t i=0;i<fSubList->GetEntries();i++) ((AliProfileBS*)fSubList->At(i))->RebinMulti(nbins);
+    if(fSubCMList) for(Int_t i=0;i<fSubCMList->GetEntries();i++) ((AliProfileBS*)fSubCMList->At(i))->RebinMulti(nbins);
     return;
 }
 void AliPtPtContainer::RebinMulti(Int_t nbins, Double_t *binedges) {
     if(fCMTermList) for(Int_t i=0;i<fCMTermList->GetEntries();i++) ((AliProfileBS*)fCMTermList->At(i))->RebinMulti(nbins,binedges);
     if(fCorrList) for(Int_t i=0;i<fCorrList->GetEntries();i++) ((AliProfileBS*)fCorrList->At(i))->RebinMulti(nbins,binedges);
+    if(fSubList) for(Int_t i=0;i<fSubList->GetEntries();i++) ((AliProfileBS*)fSubList->At(i))->RebinMulti(nbins,binedges);
+    if(fSubCMList) for(Int_t i=0;i<fSubCMList->GetEntries();i++) ((AliProfileBS*)fSubCMList->At(i))->RebinMulti(nbins,binedges);
     return;
 }
-TH1* AliPtPtContainer::getCorrHist(int ind, int m) {
-    return ((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar",m)))->getHist(ind);
+TH1* AliPtPtContainer::getCorrHist(int ind, int m, int sub) {
+    if(!sub) return ((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar",m)))->getHist(ind);
+    if(sub && fSubList->GetEntries() == 0) { printf("The subevent profiles have not been filled! Returning nullptr\n"); return nullptr; }
+    return  ((AliProfileBS*)fSubList->FindObject(Form("corr_sub%i_%ipar",sub,m)))->getHist(ind);
 }
 TH1* AliPtPtContainer::getCentralMomentHist(int ind, int m) {
   if(!fCentralMomentList) CreateCentralMomentList();
@@ -218,10 +502,14 @@ void AliPtPtContainer::CreateCentralMomentList() {
     return;
 }
 void AliPtPtContainer::CalculateCentralMomentHists(vector<TH1*> inh, int ind, int m, TH1* hMpt) {
+    auto binomial = [&](const int n, const int m) { return factorial(n)/(factorial(m)*factorial(n-m)); };
     TH1* reth = (TH1*)inh[0]->Clone(Form("cm%i_%i",m,ind));
     for(auto i(1);i<m;++i){
         TH1* mptPow = raiseHistToPower(hMpt,i);
+        int coeff = binomial(m,i);
+        coeff *= pow(-1,i);
         inh[i]->Multiply(mptPow);
+        inh[i]->Scale(coeff);
         reth->Add(inh[i]);
     }
     TH1* mptLast = raiseHistToPower(hMpt,m);
@@ -277,8 +565,12 @@ Long64_t AliPtPtContainer::Merge(TCollection *collist) {
   while ((l_PTC = ((AliPtPtContainer*) all_PTC()))) {
       TList *t_CMTerm = l_PTC->fCMTermList;
       TList* t_Corr = l_PTC->fCorrList;
+      TList* t_Sub = l_PTC->fSubList;
+      TList* t_SubCMTerm = l_PTC->fSubCMList;
       TList* t_Cum = l_PTC->fCumulantList;
       TList* t_CM = l_PTC->fCentralMomentList;
+      TList* t_SubCum = l_PTC->fSubCumulantList;
+      TList* t_SubCM = l_PTC->fSubCentralMomentList;
       if(t_CMTerm) {
         if(!fCMTermList) fCMTermList = (TList*)t_CMTerm->Clone();
         else MergeBSLists(fCMTermList,t_CMTerm);
@@ -288,6 +580,14 @@ Long64_t AliPtPtContainer::Merge(TCollection *collist) {
           if(!fCorrList) fCorrList = (TList*)t_Corr->Clone();
           else MergeBSLists(fCorrList,t_Corr);
       };
+    if(t_Sub) {
+          if(!fSubList) fSubList = (TList*)t_Sub->Clone();
+          else MergeBSLists(fSubList,t_Sub);
+      };
+    if(t_SubCMTerm) {
+          if(!fSubCMList) fSubCMList = (TList*)t_SubCMTerm->Clone();
+          else MergeBSLists(fSubCMList,t_SubCMTerm);
+      };
       if(t_Cum) {
           if(!fCumulantList) fCumulantList = (TList*)t_Cum->Clone();
           else MergeBSLists(fCumulantList,t_Cum);
@@ -295,6 +595,14 @@ Long64_t AliPtPtContainer::Merge(TCollection *collist) {
       if(t_CM) {
           if(!fCentralMomentList) fCentralMomentList = (TList*)t_CM->Clone();
           else MergeBSLists(fCentralMomentList,t_CM);
+      }
+      if(t_SubCum) {
+          if(!fSubCumulantList) fSubCumulantList = (TList*)t_SubCum->Clone();
+          else MergeBSLists(fSubCumulantList,t_SubCum);
+      };
+      if(t_SubCM) {
+          if(!fSubCentralMomentList) fSubCentralMomentList = (TList*)t_SubCM->Clone();
+          else MergeBSLists(fSubCentralMomentList,t_SubCM);
       }
   }
   return nmerged;

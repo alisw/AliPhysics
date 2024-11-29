@@ -55,6 +55,7 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft():
   fDisablePileup(kFALSE),
   fUseOldPileup(kFALSE),
   fFillStdMethod(kTRUE),
+  fFillPtSubevent(kFALSE),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
   fGenerator("AMPT"),
@@ -146,6 +147,7 @@ AliAnalysisTaskGammaSoft::AliAnalysisTaskGammaSoft(const char *name, Bool_t IsMC
   fDisablePileup(kFALSE),
   fUseOldPileup(kFALSE),
   fFillStdMethod(kTRUE),
+  fFillPtSubevent(kFALSE),
   fDCAxyFunctionalForm(0),
   fOnTheFly(false),
   fGenerator("AMPT"),
@@ -303,6 +305,7 @@ void AliAnalysisTaskGammaSoft::CreateVnMptOutputObjects(){
     fptList->SetOwner(kTRUE);
     fPtCont = new AliPtPtContainer("ptcont","ptcont",fNMultiBins,fMultiBins,fPtMpar);
     fPtCont->SetEventWeight(fEventWeight);
+    if(fFillPtSubevent) fPtCont->InitializeSubevent(fNMultiBins,fMultiBins);
     fptList->Add(fPtCont);
     if(fNBootstrapProfiles) fPtCont->InitializeSubsamples(fNBootstrapProfiles);
     printf("pt-correlation objects created\n");
@@ -681,6 +684,11 @@ void AliAnalysisTaskGammaSoft::FillABCDCounter(vector<vector<vector<vector<T>>>>
 void AliAnalysisTaskGammaSoft::ProcessTracks(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
   AliAODTrack *lTrack;
   wp.clear(); wp.resize(fPtMpar+1,vector<double>(fPtMpar+1));
+  if(fFillPtSubevent){
+    wpPos.clear(); wpPos.resize(fPtMpar+1,vector<double>(fPtMpar+1));
+    wpNeg.clear(); wpNeg.resize(fPtMpar+1,vector<double>(fPtMpar+1));
+  }
+
   abcd.clear(); abcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(3,vector<std::complex<double>>(3))));
   wabcd.clear(); wabcd.resize(3, vector<vector<vector<std::complex<double>>>>(3,vector<vector<std::complex<double>>>(3,vector<std::complex<double>>(3))));
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
@@ -714,6 +722,10 @@ void AliAnalysisTaskGammaSoft::ProcessTracks(AliAODEvent *fAOD, const Double_t &
       if(TMath::Abs(leta)<fEtaAcceptance) nTotNoTracksMC++; //Nch calculated in EtaNch region
       if(TMath::Abs(leta)<fEtaMpt)
         FillWPCounter(wp,1,pt);
+      if(fFillPtSubevent){
+        if(leta<-fEtaV2Sep) FillWPCounter(wpNeg,1,pt);
+        if(leta>fEtaV2Sep) FillWPCounter(wpPos,1,pt);
+      }
       fGFW->Fill(leta,1,lPart->Phi(),1,3); //filling both gap (bit mask 1) and full (bit maks 2). Since this is MC, weight is 1.
       if(fFillAdditionalQA) {
         fPhiEtaVz[1]->Fill(lPart->Phi(),lPart->Eta(),vz);
@@ -727,8 +739,6 @@ void AliAnalysisTaskGammaSoft::ProcessTracks(AliAODEvent *fAOD, const Double_t &
         FillABCDCounter(abcd,Q(1.,2*lPart->Phi()),Q(1.,-2*lPart->Phi()),std::complex<double>(pt,0.),std::complex<double>(1.,0.));
         FillABCDCounter(wabcd,std::complex<double>(1.,0.),std::complex<double>(1.,0.),std::complex<double>(1.,0.),std::complex<double>(1.,0.));
       }
-
-
     };
     nTotNoTracks = fUseRecoNchForMC?nTotNoTracksReco:nTotNoTracksMC;
     if(fUseRecoNchForMC) fNchTrueVsReco->Fill(nTotNoTracksMC,nTotNoTracksReco);
@@ -755,6 +765,10 @@ void AliAnalysisTaskGammaSoft::ProcessTracks(AliAODEvent *fAOD, const Double_t &
       weff = 1./weff;
       if(fUseNUEOne) weff = 1.;
       if(TMath::Abs(lTrack->Eta())<fEtaMpt) FillWPCounter(wp,weff,lpt);
+      if(fFillPtSubevent){
+        if(lTrack->Eta()<-fEtaV2Sep) FillWPCounter(wpNeg,weff,lpt);
+        if(lTrack->Eta()>fEtaV2Sep) FillWPCounter(wpPos,weff,lpt);
+      }
       Double_t wacc = fWeights[0]->GetNUA(lTrack->Phi(),leta,vz);
       if(fUseNUAOne) wacc = 1.;
       fGFW->Fill(leta,1,lTrack->Phi(),wacc*weff,3); //filling both gap (bit mask 1) and full (bit mask 2)
@@ -779,6 +793,14 @@ void AliAnalysisTaskGammaSoft::ProcessTracks(AliAODEvent *fAOD, const Double_t &
   fPtCont->CalculateCorrelations(wp);
   fPtCont->FillProfiles(l_Multi,l_Random);
   fPtCont->FillCMProfiles(wp,l_Multi,l_Random);
+
+  if(fFillPtSubevent){
+    fPtCont->CalculateSubeventCorrelations(wpPos,wpNeg);
+    fPtCont->FillSubeventProfiles(l_Multi,l_Random);
+    fPtCont->FillCMSubeventProfiles(wpPos,wpNeg,l_Multi,l_Random);
+  }
+
+
   fV0MMulti->Fill(l_Cent);
   fMultiDist->Fill(l_Multi);
   PostData(1,fptList);

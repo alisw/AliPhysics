@@ -21,13 +21,55 @@ class AliPtPtContainer: public TNamed {
         ~AliPtPtContainer();
         AliPtPtContainer(const char* name, const char* title, Int_t nbinsx, Double_t* xbins, Int_t m);
         AliPtPtContainer(const char* name, const char* title, Int_t nbinsx, Double_t xlow, Double_t xhigh, Int_t m);
+        AliPtPtContainer(const AliPtPtContainer& other){
+            if(this != &other){
+                fCMTermList = other.fCMTermList;
+                fCorrList = other.fCorrList;
+                fCentralMomentList = other.fCentralMomentList;
+                fCumulantList = other.fCumulantList;
+                mpar = other.mpar;
+                fEventWeight = other.fEventWeight;
+                fCorr = other.fCorr;
+                fSumw = other.fSumw;
+                fcmNum = other.fcmNum;
+                fcmDen = other.fcmDen;
+                fCorr1 = other.fCorr1;
+                fSumw1 = other.fSumw1;
+                fCorr2 = other.fCorr2;
+                fSumw2 = other.fSumw2;
+            }
+        }
+        AliPtPtContainer& operator=(const AliPtPtContainer& other){
+            if(this != &other){
+                fCMTermList = other.fCMTermList;
+                fCorrList = other.fCorrList;
+                fCentralMomentList = other.fCentralMomentList;
+                fCumulantList = other.fCumulantList;
+                mpar = other.mpar;
+                fEventWeight = other.fEventWeight;
+                fCorr = other.fCorr;
+                fSumw = other.fSumw;
+                fCorr1 = other.fCorr1;
+                fSumw1 = other.fSumw1;
+                fCorr2 = other.fCorr2;
+                fSumw2 = other.fSumw2;
+                fcmNum = other.fcmNum;
+                fcmDen = other.fcmDen;
+            }
+            return *this;
+        }
         void Initialize(Int_t nbinsx, Double_t* xbins);
         void Initialize(Int_t nbinsx, Double_t xlow, Double_t xhigh);
+        void InitializeSubevent(int nbinsx, double* xbins);
+        void InitializeSubevent(int nbinsx, double xlow, double xhigh);
         void InitializeSubsamples(const Int_t &nsub);
         void CalculateCorrelations(const vector<vector<double>> &inarr);
+        void CalculateSubeventCorrelations(const vector<vector<double>> &insub1, const vector<vector<double>> &insub2);
         void CalculateCMTerms(const vector<vector<double>> &inarr);
         void FillProfiles(const Double_t &centmult, const Double_t &rn);
+        void FillSubeventProfiles(const Double_t &centmult, const Double_t &rn);
         void FillCMProfiles(const vector<vector<double>> &inarr, const double &centmult, const double &rn);
+        void FillCMSubeventProfiles(const vector<vector<double>> &sub1, const vector<vector<double>> &sub2, const double &centmult, const double &rn);
         vector<Double_t> getEventCorrelation(Int_t mOrder);
         TList* GetCorrList() { return fCorrList; }
         TList* GetCMTermList() { return fCMTermList; }
@@ -36,7 +78,7 @@ class AliPtPtContainer: public TNamed {
         void RebinMulti(Int_t nbins, Double_t *binedges);
         TH1* getCentralMomentHist(Int_t ind, Int_t m);
         TH1* getCumulantHist(Int_t ind, Int_t m);
-        TH1* getCorrHist(Int_t ind, Int_t m);
+        TH1* getCorrHist(Int_t ind, Int_t m, Int_t sub = 0);
         double getNumerator(const int m) { return fCorr[m]; }
         double getDenominator(const int m) { return fSumw[m]; }
         double getNumeratorCM(const int m, const int t) { return fcmNum[m * (m - 1) / 2 + (m - t - 1)]; }
@@ -45,14 +87,22 @@ class AliPtPtContainer: public TNamed {
         Long64_t Merge(TCollection *collist);
         TList* fCMTermList;
         TList* fCorrList;
+        TList* fSubList;
+        TList* fSubCMList;
         TList* fCumulantList;
         TList* fCentralMomentList;
-        const int mpar;
+        TList* fSubCumulantList;
+        TList* fSubCentralMomentList;
+        int mpar;
         unsigned int fEventWeight;
-        vector<Double_t> fCorr;
-        vector<Double_t> fSumw;
-        vector<Double_t> fcmNum;
-        vector<Double_t> fcmDen;
+        vector<Double_t> fCorr; //!
+        vector<Double_t> fSumw; //!
+        vector<Double_t> fCorr1; //!
+        vector<Double_t> fSumw1; //!
+        vector<Double_t> fCorr2; //!
+        vector<Double_t> fSumw2; //!
+        vector<Double_t> fcmNum; //!
+        vector<Double_t> fcmDen; //!
         Double_t OrderedAddition(vector<Double_t> vec);
         void CreateCentralMomentList();
         void CalculateCentralMomentHists(vector<TH1*> inh, int ind, int m, TH1* hMpt);
