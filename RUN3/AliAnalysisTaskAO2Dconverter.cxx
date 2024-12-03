@@ -2994,7 +2994,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
             fDedxVsP->Fill(track1->P(),track1->GetTPCsignal());
           }
           if((fInputEvent->GetTrack(photon->GetTrackLabelPositive())) && (photon->GetTrackLabelPositive() != -999999) ) {
-            AliESDtrack *track2 = fESD->GetTrack(photon->GetLabel2());
+            AliESDtrack *track2 = fESD->GetTrack(photon->GetTrackLabelPositive());
             fNSigmaElectron->Fill(PIDResponse->NumberOfSigmasTPC(track2,AliPID::kElectron));
             fDedxVsP->Fill(track2->P(),track2->GetTPCsignal());
           }
