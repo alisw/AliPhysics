@@ -47,7 +47,7 @@ double fV1[3];
 //_______________________________________________________
 
 AliAnalysisTaskParticlePurityEfficiency_pik::AliAnalysisTaskParticlePurityEfficiency_pik(const Char_t *partName) :
-  AliAnalysisTaskSE(partName), centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0), fAODpidUtil(0)
+  AliAnalysisTaskSE(partName), centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
 {
 
   for(Int_t i = 0; i < CENTRBINS*PARTTYPES; i++) {
@@ -617,7 +617,7 @@ if(!MultSelection) {
 
   //pileup for LHC20e3a -> Injective Pileup over events 
   AliAODMCHeader *mcHeader = 0;
-  mcHeader = (AliAODMCHeader*)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  mcHeader = (AliAODMCHeader*)fAODs->GetList()->FindObject(AliAODMCHeader::StdBranchName());
   if(!mcHeader) {
     printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
     return;
