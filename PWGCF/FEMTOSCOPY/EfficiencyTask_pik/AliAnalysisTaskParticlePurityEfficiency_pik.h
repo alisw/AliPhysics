@@ -123,6 +123,7 @@ class AliAnalysisTaskParticlePurityEfficiency_pik :public AliAnalysisTaskSE{
   
   AliPIDResponse *fpidResponse;
   AliAODpidUtil  *fAODpidUtil;
+  AliEventCuts   *fEventCuts;
   ClassDef(AliAnalysisTaskParticlePurityEfficiency_pik, 0);
 
 };
