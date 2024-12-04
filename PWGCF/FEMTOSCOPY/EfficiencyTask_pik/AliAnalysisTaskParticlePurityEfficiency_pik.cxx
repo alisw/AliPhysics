@@ -14,6 +14,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliCentrality.h"
+#include "AliEventCuts.h"
 
 #include "AliESDEvent.h"
 #include "AliESDtrackCuts.h"
@@ -47,7 +48,7 @@ double fV1[3];
 //_______________________________________________________
 
 AliAnalysisTaskParticlePurityEfficiency_pik::AliAnalysisTaskParticlePurityEfficiency_pik(const Char_t *partName) :
-  AliAnalysisTaskSE(partName), centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0), fAODpidUtil(0)
+  AliAnalysisTaskSE(partName), centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0), fAODpidUtil(0), fIfAliEventCuts(kFALSE), fEventCuts(0)
 {
 
   for(Int_t i = 0; i < CENTRBINS*PARTTYPES; i++) {
@@ -511,17 +512,20 @@ void AliAnalysisTaskParticlePurityEfficiency_pik::UserExec(Option_t *)
    AliAODEvent *fAODs = aodH->GetEvent();
   fAODpidUtil = aodH->GetAODpidUtil();
   
-
+  fEventCuts = new AliEventCuts();
+    
   /***Get Event****/
   //AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(InputEvent());
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!aodEvent) return;
 
   //******* Ali Event Cuts - applied on AOD event - standard cuts for Run2 as prepared by DPG group ************
-  if (!fEventCuts->AcceptEvent(aodEvent)) {
-    return;
+  if(fIfAliEventCuts){
+    if (!fEventCuts->AcceptEvent(aodEvent)) {
+      return;
+    }
   }
-  
+      
   AliAODHeader *fAODheader = (AliAODHeader*)aodEvent->GetHeader();
   //Double_t mult = fAODheader->GetRefMultiplicity();
 
@@ -617,7 +621,7 @@ if(!MultSelection) {
 
   //pileup for LHC20e3a -> Injective Pileup over events 
   AliAODMCHeader *mcHeader = 0;
-  mcHeader = (AliAODMCHeader*)fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  mcHeader = (AliAODMCHeader*)fAODs->GetList()->FindObject(AliAODMCHeader::StdBranchName());
   if(!mcHeader) {
     printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
     return;
@@ -1316,5 +1320,4 @@ if(!MultSelection) {
 
 //void AliAnalysisTaskParticleEff::Terminate(Option_t *) 
 //{}
-
 
