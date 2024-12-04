@@ -248,7 +248,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::UserExec(Option_t *option)
   FillHistogramTH2(fOutputContainer,Form("hCentrality%svsNContributor",fEstimator.Data()),fCentralityMain,Ncontributor);
 
   UInt_t fSelectMask = fInputHandler->IsEventSelected();
-  Bool_t isINT7selected = fSelectMask & AliVEvent::kINT7;
+  Bool_t isINT7selected = fSelectMask & (AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral | AliVEvent::kMB);
 
   if(!fIsPHOSTriggerAnalysis && !isINT7selected){
     AliInfo("INT7 Event is rejected by IsEventSelected()");
@@ -503,7 +503,7 @@ void AliAnalysisTaskPHOSEmbeddingEfficiency::SetWeightToClusters()
   else if(fParticleName.Contains("Eta"))   f1weight = GetAdditionalEtaPtWeightFunction(fCentralityMain);
   else if(fParticleName.Contains("Gamma")) f1weight = GetAdditionalGammaPtWeightFunction(fCentralityMain);
 
-  AliAODMCParticle *p_origin = (AliAODMCParticle*)fMCArrayAOD->At(0);//0 is always generated particle by AliGenBox.
+  AliAODMCParticle *p_origin = (AliAODMCParticle*)fMCArrayAOD->At(0); //0 is always generated particle by AliGenBox.
   Double_t pT_origin = p_origin->Pt();
   Double_t weight = f1weight->Eval(pT_origin) * pT_origin;
 
