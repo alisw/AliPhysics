@@ -2915,13 +2915,17 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
   if(fGenMCCascade->GetEntriesFast() > 0) {
     AddEventTracksMC(fGenMCCascade, InputBgParticlesMC);
   }
+  else {
+    if(fDebug > 3) printf("There are no generated Cascades in this event. \n");
+    return kFALSE;
+  }
 
   Double_t dAreaPercJetMin =  fdCutAreaPercJetMin*TMath::Pi()*fdRadius*fdRadius;
 
   //Background estimation 
-
+  Double_t drhoMC;
   fastjet::JetMedianBackgroundEstimator bgeMC;
-  fastjet::Subtractor subtr(&bgeMC);
+  fastjet::Subtractor subtrMC(&bgeMC);
   bgeMC.set_selector(selectorBG); 
   fastjet::JetDefinition jetDefBG(fastjet::kt_algorithm, fdBgRadius, fastjet::pt_scheme); //define the kT jet finding which will do the average background estimation
   fastjet::AreaDefinition areaDefBG(fastjet::active_area_explicit_ghosts);
@@ -2929,7 +2933,7 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
   std::vector<fastjet::PseudoJet> jetsBGMC = sorted_by_pt(selectorBG(cluster_seq_BG.inclusive_jets())); //find the kT jets
   if (jetsBGMC.size() > 0) {
     bgeMC.set_jets(jetsBGMC);  // give the kT jets to the background estimator
-    bgeMC.rho();
+    drhoMC =  bgeMC.rho();
   }
   
   // run fjw
@@ -2955,7 +2959,7 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
         (vJetsMC[ij].phi() < fdJetPhiMin) || (vJetsMC[ij].phi() > fdJetPhiMax))
       continue;
 
-    jetSubMC = subtr(vJetsMC[ij]);
+    jetSubMC = subtrMC(vJetsMC[ij]);
 
     if(jetSubMC == 0) 
       continue; 
