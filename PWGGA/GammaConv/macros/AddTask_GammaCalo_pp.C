@@ -4833,10 +4833,10 @@ void AddTask_GammaCalo_pp(
   } else if (trainConfig == 3307){  
     cuts.AddCutCalo("00010113","411799909fe129v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2
   } else if (trainConfig == 3308){  
-    cuts.AddCutCalo("00010113","411799909fegn9v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2 with effi n
-    cuts.AddCutCalo("00010113","411799909fegr9v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2 with effi r
-    cuts.AddCutCalo("00010113","411799909fegm9v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2 with effi m
-    cuts.AddCutCalo("00010113","411799909fegl9v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2 with effi l
+    cuts.AddCutCalo("00010113","411799909fe1n9v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2 with effi n
+    cuts.AddCutCalo("00010113","411799909fe1r9v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2 with effi r
+    cuts.AddCutCalo("00010113","411799909fe1m9v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2 with effi m
+    cuts.AddCutCalo("00010113","411799909fe1l9v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2 with effi l
   } else if (trainConfig == 3309){  // NCell effi based on S100A100 with EMCal tagging
     cuts.AddCutCalo("00010113","411799909fe1w9v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2 with effi w
     cuts.AddCutCalo("00010113","411799909fe1x9v0000","0s631031000000d0"); // min E = 500 MeV, NCell >= 2 with effi x

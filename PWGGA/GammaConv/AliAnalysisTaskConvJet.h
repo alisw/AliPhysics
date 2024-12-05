@@ -56,6 +56,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   std::vector<AliVCluster*> GetJetClusters(int jet) { return fVecJetClusters[jet]; }
   std::vector<AliVParticle*> GetJetTracks(int jet) { return fVecJetTracks[jet]; }
   std::vector<AliVParticle*> GetTrueJetParticles(int jet) { return fVecTrueJetParticles[jet]; }
+  double GetTrueJetLeadPartPt(int jet) const { return fVecTrueJetMaxPartPt[jet]; }
+  int GetTrueJetLeadPartPDG(int jet) const { return fVecTrueJetMaxPartPDG[jet]; }
 
   Double_t GetTrueNJets() { return fTrueNJets; }
   std::vector<Double_t> GetTrueVectorJetPt() { return fTrueVectorJetPt; }
@@ -72,6 +74,8 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   std::vector<double> GetTrueVectorJetPartonPx() { return fTrueVectorJetPartonPx; }
   std::vector<double> GetTrueVectorJetPartonPy() { return fTrueVectorJetPartonPy; }
   std::vector<double> GetTrueVectorJetPartonPz() { return fTrueVectorJetPartonPz; }
+
+  // double GetTrueJetLeadingParticlePt(int index) {return fTrueVectorJetLeadingPartPt; }
   
   UInt_t GetAcceptanceType() { return fAccType; }
   UInt_t GetAcceptanceTypeMC() { return fAccTypeMC; }
@@ -98,6 +102,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   Bool_t Run();
 
   void DoJetLoop();
+  std::tuple<double, int> GetLeadingPartPt(AliEmcalJet * jet, const bool isTrueJet = false);
 
   Double_t fNJets;                     // Number of reconstructed jets
   std::vector<Double_t> fVectorJetPt;  // Vector for the pt of the reconstructed jets
@@ -133,6 +138,10 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
 
   std::vector<std::vector<AliVParticle*>> fVecTrueJetParticles;
 
+  std::vector<double> fVecTrueJetMaxPartPt;
+  std::vector<double> fVecTrueJetMaxPartPDG;
+  
+
   UInt_t fAccType;
   UInt_t fAccTypeMC;
   
@@ -144,7 +153,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   AliAnalysisTaskConvJet& operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 17);
+  ClassDef(AliAnalysisTaskConvJet, 18);
   /// \endcond
 };
 #endif
