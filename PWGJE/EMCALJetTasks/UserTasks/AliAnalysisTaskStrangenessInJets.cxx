@@ -2661,7 +2661,7 @@ void AliAnalysisTaskStrangenessInJets::AddEventTracksMC(TClonesArray* coll, std:
     iN++;
     nadded++;
   } 
-  //printf("There were %i V0s, %i daughters, %d tracks, %d were added to the fj, excluded : %i. \n", coll->GetEntriesFast(), inlabels, numbtrack, nadded, nexcl);
+  //printf("There were %i V0s, %d tracks, %d were added to the fj, excluded : %i. \n", coll->GetEntriesFast(), numbtrack, nadded, nexcl);
 }
 
 
@@ -3074,13 +3074,17 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(Int_t iCent)
   if(fGenMCV0->GetEntriesFast() > 0) {
     AddEventTracksMC(fGenMCV0, InputBgParticlesMC, fGenMCXis);
   }
-  
+  else {
+    if(fDebug > 3) printf("There are no generated V0s in this event. \n");
+    return kFALSE;
+  }
+
   Double_t dAreaPercJetMin =  fdCutAreaPercJetMin*TMath::Pi()*fdRadius*fdRadius;
 
   //Background estimation 
-
+  Double_t drhoMC;
   fastjet::JetMedianBackgroundEstimator bgeMC;
-  fastjet::Subtractor subtr(&bgeMC);
+  fastjet::Subtractor subtrMC(&bgeMC);
   bgeMC.set_selector(selectorBG); 
   fastjet::JetDefinition jetDefBG(fastjet::kt_algorithm, fdBgRadius, fastjet::pt_scheme); //define the kT jet finding which will do the average background estimation
   fastjet::AreaDefinition areaDefBG(fastjet::active_area_explicit_ghosts);
@@ -3088,7 +3092,10 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(Int_t iCent)
   std::vector<fastjet::PseudoJet> jetsBGMC = sorted_by_pt(selectorBG(cluster_seq_BG.inclusive_jets())); //find the kT jets
   if (jetsBGMC.size() > 0) {
     bgeMC.set_jets(jetsBGMC);  // give the kT jets to the background estimator
-    bgeMC.rho();
+    drhoMC = bgeMC.rho();
+  }
+  else {
+    printf("Warning: No background jets found!!!\n");
   }
   
   // run fjw
@@ -3096,7 +3103,6 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(Int_t iCent)
 
   std::vector<fastjet::PseudoJet> vJetsMC = fFastJetWrapperMCGen.GetInclusiveJets(); 
   
- 
   // sort jets according to jet pt
   GetSortedArray(indxs, vJetsMC); 
   AliDebug(1,Form("%i jets found", (Int_t)vJetsMC.size()));
@@ -3114,7 +3120,7 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(Int_t iCent)
         (vJetsMC[ij].phi() < fdJetPhiMin) || (vJetsMC[ij].phi() > fdJetPhiMax))
       continue;
 
-    jetSubMC = subtr(vJetsMC[ij]);
+    jetSubMC = subtrMC(vJetsMC[ij]);
 
     if(jetSubMC == 0) 
       continue;   
