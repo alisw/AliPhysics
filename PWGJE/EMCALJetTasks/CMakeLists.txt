@@ -299,6 +299,7 @@ if(FASTJET_FOUND)
 	    UserTasks/AliAnalysisTaskJetQnVectors.cxx
 	    UserTasks/AliAnalysisTaskLundPlane.cxx
             UserTasks/AliAnalysisTaskJetsEEC.cxx
+            UserTasks/AliAnalysisTaskJetsEECpbpb.cxx
 	    UserTasks/AliAnalysisTaskJetDynamicalGrooming.cxx
 	    UserTasks/AliAnalysisTaskJetHardestKt.cxx
 	    UserTasks/AliAnalysisTaskHardestBranch.cxx

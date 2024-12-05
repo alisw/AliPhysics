@@ -290,6 +290,7 @@
 #pragma link C++ class AliAnalysisTaskJetPull+;
 #pragma link C++ class AliAnalysisTaskLundPlane+;
 #pragma link C++ class AliAnalysisTaskJetsEEC+;
+#pragma link C++ class AliAnalysisTaskJetsEECpbpb+;
 #pragma link C++ class AliAnalysisTaskJetCharge+;
 #pragma link C++ class AliAnalysisTaskJetChargeFlavourTemplates+;
 #pragma link C++ class AliAnalysisTaskJetChargeFlavourPb+;
