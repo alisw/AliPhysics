@@ -111,7 +111,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2ft0",
   "O2fdd_001",
   "O2v0_002", // 002 added the V0Type (standard or photon)
-  "O2v0otf", // on the fly V0s for photon conversions
+  "O2run2v0otf", // on the fly V0s for photon conversions
   "O2cascade_001",
   "O2tof",
   "O2mcparticle_001",
