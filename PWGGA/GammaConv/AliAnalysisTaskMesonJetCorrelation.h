@@ -400,9 +400,10 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoTruevsRecJetPtForTrueJets; //! vector of histos response matrix for true jets
   std::vector<TH2F*> fHistoTrueJetPtVsPartonPt;       //! vector of histos true jet pt vs. parton pt
 
-  std::vector<TH3F*> fHistoTruevsRecJetPtVsLeadingPart;   //! vector of histos with true vs rec. jet pt for different leading particles
-  std::vector<TH2F*> fHistoTrueMatchedJetPtVsLeadingPart; //! vector of histos with matched true jets for different leading particles
-  std::vector<TH2F*> fHistoTrueJetPtVsLeadingPart;        //! vector of histos with true jets in acceptance for different leading particles
+  std::vector<TH3F*> fHistoTruevsRecJetPtVsLeadingPart;       //! vector of histos with true vs rec. jet pt for different leading particles
+  std::vector<TH3F*> fHistoTrueJetPtVsMomFracVsLeadingPart;   //! vector of histos with true jet pt vs. particle enery fraction for different leading particles
+  std::vector<TH2F*> fHistoTrueMatchedJetPtVsLeadingPart;     //! vector of histos with matched true jets for different leading particles
+  std::vector<TH2F*> fHistoTrueJetPtVsLeadingPart;            //! vector of histos with true jets in acceptance for different leading particles
   
   std::vector<TH1F*> fHistoMatchedPtJet;              //! vector of histos with pt of jets for jets that got matched with a true jet
   std::vector<TH1F*> fHistoUnMatchedPtJet;            //! vector of histos with pt of jets for jets that did not get matched with a true jet
