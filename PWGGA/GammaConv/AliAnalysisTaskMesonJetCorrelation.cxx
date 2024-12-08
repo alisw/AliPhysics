@@ -194,6 +194,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoTruevsRecJetPtForTrueJets({}),
                                                                              fHistoTrueJetPtVsPartonPt({}),
                                                                              fHistoTruevsRecJetPtVsLeadingPart({}),
+                                                                             fHistoTrueJetPtVsMomFracVsLeadingPart({}),
                                                                              fHistoTrueMatchedJetPtVsLeadingPart({}),
                                                                              fHistoTrueJetPtVsLeadingPart({}),
                                                                              fHistoMatchedPtJet({}),
@@ -474,6 +475,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoTruevsRecJetPtForTrueJets({}),
                                                                                            fHistoTrueJetPtVsPartonPt({}),
                                                                                            fHistoTruevsRecJetPtVsLeadingPart({}),
+                                                                                           fHistoTrueJetPtVsMomFracVsLeadingPart({}),
                                                                                            fHistoTrueMatchedJetPtVsLeadingPart({}),
                                                                                            fHistoTrueJetPtVsLeadingPart({}),
                                                                                            fHistoMatchedPtJet({}),
@@ -795,6 +797,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fHistoTrueJetPtVsPartonPt.resize(fnCuts);
     if(fDoJetQA){
       fHistoTruevsRecJetPtVsLeadingPart.resize(fnCuts);
+      fHistoTrueJetPtVsMomFracVsLeadingPart.resize(fnCuts);
       fHistoTrueMatchedJetPtVsLeadingPart.resize(fnCuts);
       fHistoTrueJetPtVsLeadingPart.resize(fnCuts);
     }
@@ -1345,6 +1348,9 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       if(fDoJetQA){
         fHistoTruevsRecJetPtVsLeadingPart[iCut] = new TH3F("True_JetPt_vs_Rec_JetPt_VsPartPDG", "True_JetPt_vs_Rec_JetPt_VsPartPDG", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 12, vecEquidistFromMinus05.data());
         fTrueJetList[iCut]->Add(fHistoTruevsRecJetPtVsLeadingPart[iCut]);
+
+        fHistoTrueJetPtVsMomFracVsLeadingPart[iCut] = new TH3F("True_JetPt_vs_PartMomFrac_VsPartPDG", "True_JetPt_vs_PartMomFrac_VsPartPDG", 12, vecEquidistFromMinus05.data(), fVecBinsFragment.size()-1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fTrueJetList[iCut]->Add(fHistoTrueJetPtVsMomFracVsLeadingPart[iCut]);
 
         fHistoTrueMatchedJetPtVsLeadingPart[iCut] = new TH2F("TrueMatched_JetPt_VsPartPDG", "TrueMatched_JetPt_VsPartPDG", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 12, vecEquidistFromMinus05.data());
         fTrueJetList[iCut]->Add(fHistoTrueMatchedJetPtVsLeadingPart[iCut]);
@@ -2258,6 +2264,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
           fHistoTruevsRecJetPtForTrueJets[fiCut]->Fill(0.5, fTrueVectorJetPt.at(i), fWeightJetJetMC);
         }
       }
+      std::array<float, 12> arrPartEnergy = {0};
       if(fDoJetQA){
         auto vecTruePart = fConvJetReader->GetTrueJetParticles(i);
         for(size_t ipart = 0; ipart < vecTruePart.size(); ++ipart){
@@ -2270,11 +2277,12 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
             continue;
           }
           fHistoGenParticleInJet[fiCut]->Fill(GetParticleIndex(pdgCode), tmpPart->Pt(), fTrueVectorJetPt.at(i), fWeightJetJetMC);
-          // if (tmpmap.count(pdgCode)){
-          //   tmpmap[pdgCode]++;
-          // } else {
-          //   tmpmap[pdgCode] = 1;
-          // }
+          arrPartEnergy[GetParticleIndex(pdgCode)] += tmpPart->Pt();
+
+        }
+        for(int ipart = 0; ipart < arrPartEnergy.size(); ++ipart){
+          if(arrPartEnergy[ipart] == 0) continue;
+          fHistoTrueJetPtVsMomFracVsLeadingPart[fiCut]->Fill(ipart, arrPartEnergy[ipart]/fTrueVectorJetPt.at(i), fTrueVectorJetPt.at(i), fWeightJetJetMC);
         }
       }      
     }
