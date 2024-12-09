@@ -111,7 +111,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2ft0",
   "O2fdd_001",
   "O2v0_002", // 002 added the V0Type (standard or photon)
-  "O2run2v0otf", // on the fly V0s for photon conversions
+  "O2run2otfv0", // on the fly V0s for photon conversions
   "O2cascade_001",
   "O2tof",
   "O2mcparticle_001",
@@ -272,7 +272,7 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
     ft0(),
     fdd(),
     v0s(),
-    v0otfs(),
+    otfv0s(),
     cascs(),
     hf2Prong(),
     hf3Prong(),
@@ -1120,28 +1120,28 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tV0s->SetBasketSize("*", fBasketSizeTracks);
   }
 
-  // Associuate branches for v0otfs
-  TTree *tV0OTFs = CreateTree(kV0Otfs);
-  if (fTreeStatus[kV0Otfs])
+  // Associuate branches for otfv0s
+  TTree *tOTFV0s = CreateTree(kOTFV0s);
+  if (fTreeStatus[kOTFV0s])
   {
-    tV0OTFs->Branch("fIndexCollisions", &v0otfs.fIndexCollisions, "fIndexCollisions/I");
-    tV0OTFs->Branch("fIndexTracks_Pos", &v0otfs.fIndexTracksPos, "fIndexTracks_Pos/I");
-    tV0OTFs->Branch("fIndexTracks_Neg", &v0otfs.fIndexTracksNeg, "fIndexTracks_Neg/I");
-    tV0OTFs->Branch("fPx", &v0otfs.fPx, "fPx/F");
-    tV0OTFs->Branch("fPy", &v0otfs.fPy, "fPy/F");
-    tV0OTFs->Branch("fPz", &v0otfs.fPz, "fPz/F");
-    tV0OTFs->Branch("fE", &v0otfs.fEnergy, "fE/F");
-    tV0OTFs->Branch("fQt", &v0otfs.fQt, "fQt/F");
-    tV0OTFs->Branch("fAlpha", &v0otfs.fAlpha, "fAlpha/F");
-    tV0OTFs->Branch("fCx", &v0otfs.fCx, "fCx/F");
-    tV0OTFs->Branch("fCy", &v0otfs.fCy, "fCy/F");
-    tV0OTFs->Branch("fCz", &v0otfs.fCz, "fCz/F");
-    tV0OTFs->Branch("fChi2NDF", &v0otfs.fChi2NDF, "fChi2NDF/F");
-    tV0OTFs->Branch("fPsiPair", &v0otfs.fPsiPair, "fPsiPair/F");
-    tV0OTFs->Branch("fDCAr", &v0otfs.fDCAr, "fDCAr/F");
-    tV0OTFs->Branch("fDCAz", &v0otfs.fDCAz, "fDCAz/F");
-    tV0OTFs->Branch("fMass", &v0otfs.fMass, "fMass/F");
-    tV0OTFs->SetBasketSize("*", fBasketSizeTracks);
+    tOTFV0s->Branch("fIndexCollisions", &otfv0s.fIndexCollisions, "fIndexCollisions/I");
+    tOTFV0s->Branch("fIndexTracks_Pos", &otfv0s.fIndexTracksPos, "fIndexTracks_Pos/I");
+    tOTFV0s->Branch("fIndexTracks_Neg", &otfv0s.fIndexTracksNeg, "fIndexTracks_Neg/I");
+    tOTFV0s->Branch("fPx", &otfv0s.fPx, "fPx/F");
+    tOTFV0s->Branch("fPy", &otfv0s.fPy, "fPy/F");
+    tOTFV0s->Branch("fPz", &otfv0s.fPz, "fPz/F");
+    tOTFV0s->Branch("fE", &otfv0s.fEnergy, "fE/F");
+    tOTFV0s->Branch("fQt", &otfv0s.fQt, "fQt/F");
+    tOTFV0s->Branch("fAlpha", &otfv0s.fAlpha, "fAlpha/F");
+    tOTFV0s->Branch("fX", &otfv0s.fX, "fX/F");
+    tOTFV0s->Branch("fY", &otfv0s.fY, "fY/F");
+    tOTFV0s->Branch("fZ", &otfv0s.fZ, "fZ/F");
+    tOTFV0s->Branch("fChi2NDF", &otfv0s.fChi2NDF, "fChi2NDF/F");
+    tOTFV0s->Branch("fPsiPair", &otfv0s.fPsiPair, "fPsiPair/F");
+    tOTFV0s->Branch("fDCAr", &otfv0s.fDCAr, "fDCAr/F");
+    tOTFV0s->Branch("fDCAz", &otfv0s.fDCAz, "fDCAz/F");
+    tOTFV0s->Branch("fMass", &otfv0s.fMass, "fMass/F");
+    tOTFV0s->SetBasketSize("*", fBasketSizeTracks);
   }
 
   // Associuate branches for cascades
@@ -2961,36 +2961,36 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     eventextra.fNentries[kV0s] = nv0_filled;
 
     //---------------------------------------------------------------------------
-    // v0otfs (photo conversions)
-    v0otfs.fIndexCollisions = fCollisionCount;
+    // otfv0s (photo conversions)
+    otfv0s.fIndexCollisions = fCollisionCount;
     for (Int_t iPhoton = 0; iPhoton < fConversionGammas->GetEntriesFast(); ++iPhoton) {
       AliAODConversionPhoton* photon = (AliAODConversionPhoton*)fConversionGammas->At(iPhoton);
       if (photon) {
         photon->CalculateDistanceOfClossetApproachToPrimVtx(fVEvent->GetPrimaryVertex());
         if(photon->GetLabel1() == -999999 || photon->GetLabel2() == -999999){
-          v0otfs.fIndexTracksPos = photon->GetLabel1();
-          v0otfs.fIndexTracksNeg = photon->GetLabel2();
+          otfv0s.fIndexTracksPos = photon->GetLabel1();
+          otfv0s.fIndexTracksNeg = photon->GetLabel2();
         } else{
-          v0otfs.fIndexTracksPos = photon->GetLabel1() + fOffsetTrack;
-          v0otfs.fIndexTracksNeg = photon->GetLabel2() + fOffsetTrack;
+          otfv0s.fIndexTracksPos = photon->GetLabel1() + fOffsetTrack;
+          otfv0s.fIndexTracksNeg = photon->GetLabel2() + fOffsetTrack;
         }
-        v0otfs.fPx = AliMathBase::TruncateFloatFraction(photon->GetPx(), mV0otfMomentum);
-        v0otfs.fPy = AliMathBase::TruncateFloatFraction(photon->GetPy(), mV0otfMomentum);
-        v0otfs.fPz = AliMathBase::TruncateFloatFraction(photon->GetPz(), mV0otfMomentum);
-        v0otfs.fEnergy = AliMathBase::TruncateFloatFraction(photon->E(), mV0otfMomentum);
-        v0otfs.fQt = AliMathBase::TruncateFloatFraction(photon->GetArmenterosQt(), mV0otfMomentum);
-        v0otfs.fAlpha = photon->GetArmenterosAlpha();
-        v0otfs.fCx = AliMathBase::TruncateFloatFraction(photon->GetConversionX(), mV0otfLength);
-        v0otfs.fCy = AliMathBase::TruncateFloatFraction(photon->GetConversionY(), mV0otfLength);
-        v0otfs.fCz = AliMathBase::TruncateFloatFraction(photon->GetConversionZ(), mV0otfLength);
-        v0otfs.fChi2NDF = photon->GetChi2perNDF();
-        v0otfs.fPsiPair = photon->GetPsiPair();
-        v0otfs.fDCAr = AliMathBase::TruncateFloatFraction(photon->GetDCArToPrimVtx(), mV0otfLength);
-        v0otfs.fDCAz = AliMathBase::TruncateFloatFraction(photon->GetDCAzToPrimVtx(), mV0otfLength);
+        otfv0s.fPx = AliMathBase::TruncateFloatFraction(photon->GetPx(), mV0otfMomentum);
+        otfv0s.fPy = AliMathBase::TruncateFloatFraction(photon->GetPy(), mV0otfMomentum);
+        otfv0s.fPz = AliMathBase::TruncateFloatFraction(photon->GetPz(), mV0otfMomentum);
+        otfv0s.fEnergy = AliMathBase::TruncateFloatFraction(photon->E(), mV0otfMomentum);
+        otfv0s.fQt = AliMathBase::TruncateFloatFraction(photon->GetArmenterosQt(), mV0otfMomentum);
+        otfv0s.fAlpha = photon->GetArmenterosAlpha();
+        otfv0s.fX = AliMathBase::TruncateFloatFraction(photon->GetConversionX(), mV0otfLength);
+        otfv0s.fY = AliMathBase::TruncateFloatFraction(photon->GetConversionY(), mV0otfLength);
+        otfv0s.fZ = AliMathBase::TruncateFloatFraction(photon->GetConversionZ(), mV0otfLength);
+        otfv0s.fChi2NDF = photon->GetChi2perNDF();
+        otfv0s.fPsiPair = photon->GetPsiPair();
+        otfv0s.fDCAr = AliMathBase::TruncateFloatFraction(photon->GetDCArToPrimVtx(), mV0otfLength);
+        otfv0s.fDCAz = AliMathBase::TruncateFloatFraction(photon->GetDCAzToPrimVtx(), mV0otfLength);
         if(fConversionGammaClassDef <= 4 && !(fESD)){
-          v0otfs.fMass = AliMathBase::TruncateFloatFraction(photon->GetMass()*1000.f, mV0otfMass); // constrained mass from KFParticle in MeV/c^2!
+          otfv0s.fMass = AliMathBase::TruncateFloatFraction(photon->GetMass()*1000.f, mV0otfMass); // constrained mass from KFParticle in MeV/c^2!
         } else{
-          v0otfs.fMass = AliMathBase::TruncateFloatFraction(photon->GetInvMassPair()*1000.f, mV0otfMass); // unconstrained mass in MeV/c^2!
+          otfv0s.fMass = AliMathBase::TruncateFloatFraction(photon->GetInvMassPair()*1000.f, mV0otfMass); // unconstrained mass in MeV/c^2!
         }
         if (fESD) {
           if((fESD->GetTrack(photon->GetTrackLabelNegative())) && (photon->GetTrackLabelNegative() != -999999)) {
@@ -3015,13 +3015,13 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
             fDedxVsP->Fill(aodVTrack2->P(),aodVTrack2->GetTPCsignal());
           }
         }
-        FillTree(kV0Otfs);
-        if (fTreeStatus[kV0Otfs]){
+        FillTree(kOTFV0s);
+        if (fTreeStatus[kOTFV0s]){
           nv0OTF_filled++;
         }
       }
     } // End loop on V0s
-    eventextra.fNentries[kV0Otfs] = nv0OTF_filled;
+    eventextra.fNentries[kOTFV0s] = nv0OTF_filled;
 
     //---------------------------------------------------------------------------
     // Cascades
