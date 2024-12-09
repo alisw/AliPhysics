@@ -952,6 +952,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   if (fTreeStatus[kRun2TrackExtras]) {
     //Extra Run 2
     tRun2TrackExtras->Branch("fITSSignal", &tracks.fITSSignal, "fITSSignal/F");
+    tRun2TrackExtras->Branch("fITSSharedMap", &tracks.fITSSharedMap, "fITSSharedMap/b");
     tRun2TrackExtras->SetBasketSize("*", fBasketSizeTracks);
   }
 
@@ -1971,6 +1972,10 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       tracks.fITSSignal = AliMathBase::TruncateFloatFraction(track->GetITSsignal(), mTrackSignal);
       tracks.fTPCSignal = AliMathBase::TruncateFloatFraction(track->GetTPCsignal(), mTrackSignal);
       tracks.fTRDSignal = AliMathBase::TruncateFloatFraction(track->GetTRDsignal(), mTrackSignal);
+
+      // save shared cluster map
+      tracks.fITSSharedMap = track->GetITSSharedMap();
+
       // tracks.fTOFSignal = AliMathBase::TruncateFloatFraction(hasTOF ? track->GetTOFsignal() : 0.f, mTrackSignal);
       tracks.fLength = AliMathBase::TruncateFloatFraction(track->GetIntegratedLength(), mTrackSignal);
 
