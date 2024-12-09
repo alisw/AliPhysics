@@ -287,6 +287,12 @@ class AliFemtoDreamTrackCuts {
       fMCHists->FillMCGen(pT);
   }
   ;
+  void FillMCGenKinem(double pt, double eta, double phi) {
+    if (fMCHists) fMCHists->FillMCGenKinem(pt, eta, phi);
+  }
+  void FillMCRecoKinem(double pt, double eta, double phi) {
+    if (fMCHists) fMCHists->FillMCRecoKinem(pt, eta, phi);
+  }
   //  void FillSharedClusterQA(AliFemtoDreamTrack *Track);
   //Histogram things
   void Init(TString name = TString("MinimalBooking"));
