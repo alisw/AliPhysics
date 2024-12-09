@@ -529,6 +529,7 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
             continue;
           }
         }
+fPosPionCuts->FillMCRecoKinem(mcPart->Pt(), mcPart->Eta(), mcPart->Phi());
       } 
 
       PionPlus.push_back(*fTrack);
@@ -551,6 +552,7 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
             continue;
           }
         }
+fNegPionCuts->FillMCRecoKinem(mcPart->Pt(), mcPart->Eta(), mcPart->Phi());
       }
 
       PionMinus.push_back(*fTrack);
@@ -567,10 +569,12 @@ void AliAnalysisTaskNanoFromAODLambdaPion::UserExec(Option_t *)
         if (mcPart->GetPdgCode() == fPosPionCuts->GetPDGCode())
         {
           fPosPionCuts->FillGenerated(mcPart->Pt());
+fPosPionCuts->FillMCGenKinem(mcPart->Pt(), mcPart->Eta(), mcPart->Phi());
         }
         else if (mcPart->GetPdgCode() == fNegPionCuts->GetPDGCode())
         {
           fNegPionCuts->FillGenerated(mcPart->Pt());
+fNegPionCuts->FillMCGenKinem(mcPart->Pt(), mcPart->Eta(), mcPart->Phi());
         }
         else if (mcPart->GetPdgCode() == fLambdaCuts->GetPDGv0())
         {

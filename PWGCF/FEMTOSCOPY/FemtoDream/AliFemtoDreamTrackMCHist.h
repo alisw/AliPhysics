@@ -35,6 +35,18 @@ class AliFemtoDreamTrackMCHist {
     fMCGenPt->Fill(pT);
   }
   ;
+  void FillMCGenKinem(float pT, float eta, float phi) {
+    ((TH1F *) fMCList->FindObject("hGenPt"))->Fill(pT);
+    ((TH1F *) fMCList->FindObject("hGenEta"))->Fill(eta);
+    ((TH1F *) fMCList->FindObject("hGenPhi"))->Fill(phi);
+  }
+  ;
+  void FillMCRecoKinem(float pT, float eta, float phi) {
+    ((TH1F *) fMCList->FindObject("hRecoPt"))->Fill(pT);
+    ((TH1F *) fMCList->FindObject("hRecoEta"))->Fill(eta);
+    ((TH1F *) fMCList->FindObject("hRecoPhi"))->Fill(phi);
+  }
+  ;
   void FillMCCont(float pT) {
     fMCContPt->Fill(pT);
   }
