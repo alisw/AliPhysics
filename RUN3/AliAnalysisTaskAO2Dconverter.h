@@ -122,7 +122,7 @@ public:
     kFT0,
     kFDD,
     kV0s,
-    kV0Otfs,
+    kOTFV0s,
     kCascades,
     kTOF,
     kMcParticle,
@@ -751,15 +751,15 @@ private:
     Float_t fEnergy         = 0.f;  // energy
     Float_t fQt             = 0.f;  // Qt for Armenteros
     Float_t fAlpha          = 0.f;  // alpha for Armenteros
-    Float_t fCx             = 0.f;  // conversion point in x
-    Float_t fCy             = 0.f;  // conversion point in y
-    Float_t fCz             = 0.f;  // conversion point in z
+    Float_t fX              = 0.f;  // conversion point in x
+    Float_t fY              = 0.f;  // conversion point in y
+    Float_t fZ              = 0.f;  // conversion point in z
     Float_t fChi2NDF        = 0.f;  // Chi2 over NDF
     Float_t fPsiPair        = 0.f;  // psi pair
     Float_t fDCAr           = 0.f;  // DCA to prim vertex in r
     Float_t fDCAz           = 0.f;  // DCA to prim vertex in z
     Float_t fMass           = 0.f;  // mass of conversion photon
-  } v0otfs;               //! structure to keep v0sinformation
+  } otfv0s;               //! structure to keep v0sinformation
 
   struct {
     /// Cascades
