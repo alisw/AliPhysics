@@ -130,7 +130,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2hepmcxsection",
   "O2hepmcpdfinfo",
   "O2hepmcheavyion",
-  "O2run2trackextra"
+  "O2run2trackextra_001"
 };
 
 const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
