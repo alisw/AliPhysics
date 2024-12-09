@@ -401,14 +401,14 @@ private:
     UInt_t fFlags = 0u;       /// Reconstruction status flags
 
     // Clusters and tracklets
-    UInt_t fITSClusterSizes = 0u;  /// ITS clusters sizes, four bits per a layer, starting from the innermost
-    UChar_t fTPCNClsFindable = 0u; /// number of clusters that could be assigned in the TPC
-    Char_t fTPCNClsFindableMinusFound = 0;       /// difference between foundable and found clusters
-    Char_t fTPCNClsFindableMinusPID = 0;         /// difference between foundable and PID clusters
-    Char_t fTPCNClsFindableMinusCrossedRows = 0; ///  difference between foundable clusters and crossed rows
-    UChar_t fTPCNClsShared = 0u;   /// Number of shared clusters
-    UChar_t fITSSharedClusterMap = 0u;   /// shared ITS cluster map
-    UChar_t fTRDPattern = 0u;   /// Bit 0-5 if tracklet from TRD layer used for this track
+    UInt_t fITSClusterSizes = 0u;                /// ITS clusters sizes, four bits per a layer, starting from the innermost
+    UChar_t fTPCNClsFindable = 0u;               /// number of clusters that could be assigned in the TPC
+    Char_t fTPCNClsFindableMinusFound = 0;       /// difference between findable and found clusters
+    Char_t fTPCNClsFindableMinusPID = 0;         /// difference between findable and PID clusters
+    Char_t fTPCNClsFindableMinusCrossedRows = 0; ///  difference between findable clusters and crossed rows
+    UChar_t fTPCNClsShared = 0u;                 /// Number of shared TPC clusters
+    UChar_t fITSSharedClusterMap = 0u;           /// shared ITS cluster map
+    UChar_t fTRDPattern = 0u;                    /// Bit 0-5 if tracklet from TRD layer used for this track
 
     // Chi2
     Float_t fITSChi2NCl = -999.f; /// chi2/Ncl ITS
