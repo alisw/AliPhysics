@@ -2935,6 +2935,10 @@ Bool_t AliAnalysisTaskCascadesInJets::GeneratedMCParticles(TClonesArray* track, 
     bgeMC.set_jets(jetsBGMC);  // give the kT jets to the background estimator
     drhoMC =  bgeMC.rho();
   }
+  else {
+    printf("Warning: No background jets found!!! Returning GeneratedMCParticles\n");
+    return kFALSE;    
+  }
   
   // run fjw
   fFastJetWrapperMCGen.Run(); 
