@@ -3095,7 +3095,8 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(Int_t iCent)
     drhoMC = bgeMC.rho();
   }
   else {
-    printf("Warning: No background jets found!!!\n");
+    printf("Warning: No background jets found!!! Returning GeneratedMCParticles\n");
+    return kFALSE;    
   }
   
   // run fjw
