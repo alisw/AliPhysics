@@ -10,12 +10,14 @@
 //#include "/home/przemcio/alice/sw/ubuntu1404_x86-64/AliPhysics/0-1/include/AliAnalysisUtils.h"
 #include "AliAnalysisUtils.h"
 #include "AliMultSelection.h"
+#include "AliEventCuts.h"
+
 
 class AliAnalysisUtils;
 
 class AliAnalysisTaskParticlePurityEfficiency_pik :public AliAnalysisTaskSE{
  public:
- AliAnalysisTaskParticlePurityEfficiency_pik() : AliAnalysisTaskSE(), centrality(0), fHistoList(0), fHistEv(0), fpidResponse(0), fAODpidUtil(0)
+ AliAnalysisTaskParticlePurityEfficiency_pik() : AliAnalysisTaskSE(), centrality(0), fHistoList(0), fHistEv(0), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
     {
       for(Int_t i = 0; i < CENTRBINS*PARTTYPES; i++) {
 	for(Int_t chg = 0; chg < 2; chg++) {
@@ -82,6 +84,9 @@ class AliAnalysisTaskParticlePurityEfficiency_pik :public AliAnalysisTaskSE{
   TH2D *fHist2DPTrueReconstructed[4];
   TH2D *fHist2DThetaTrueReconstructed[4];
   TH2D *fHist2DPhiTrueReconstructed[4];
+
+  Bool_t fIfAliEventCuts;
+
   
   /*TH1F *fPrimVsDCA[MULTBINS*PARTTYPES][2];
   TH1F *fSecWeakVsDCA[MULTBINS*PARTTYPES][2];
@@ -123,6 +128,7 @@ class AliAnalysisTaskParticlePurityEfficiency_pik :public AliAnalysisTaskSE{
   
   AliPIDResponse *fpidResponse;
   AliAODpidUtil  *fAODpidUtil;
+  AliEventCuts   *fEventCuts;
   ClassDef(AliAnalysisTaskParticlePurityEfficiency_pik, 0);
 
 };

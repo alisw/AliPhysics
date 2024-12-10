@@ -645,7 +645,7 @@ void AliAnalysisTaskPtCorr::ProcessGen(){
   // ### MC event selection
   Bool_t isEventMCSelected = IsMCEventSelected(fMCEvent);
   if (!isEventMCSelected) return;
-  Double_t l_Cent = getGeneratorCentrality();
+  //Double_t l_Cent = getGeneratorCentrality();
   wp.clear(); wp.resize(fPtMpar+1,vector<double>(fPtMpar+1));
   Double_t ptMin = fPtBins[0];
   Double_t ptMax = fPtBins[fNPtBins];

@@ -918,6 +918,39 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c51079l","h0006a3100000000","j453503000000000"); 
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c51079f","h0006a3100000000","j453503000000000"); 
 
+    // split for quick cut studies - to be removed 
+    // pion pair mass cut - INT7
+  } else if(trainConfig == 3339) { 
+  cuts.AddCutHeavyMesonCalo("00010113","411790109fe309v0000","32c510795","h000613100000000","j453503000000000"); // 5: cut at 0.50 GeV
+  // pion pair mass cut
+  } else if(trainConfig == 4339) { 
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe309v0000","32c510796","h000613100000000","j453503000000000"); // 6: cut at 0.65 GeV
+  // pion pair mass cut
+  } else if(trainConfig == 5339) { 
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe309v0000","32c51079k","h000613100000000","j453503000000000"); // k: cut at 0.48 GeV, using 4vector
+  // pion pair mass cut
+  } else if(trainConfig == 6339) { 
+    cuts.AddCutHeavyMesonCalo("00010113","411790109fe309v0000","32c51079f","h000613100000000","j453503000000000"); // f: cut at 0.65 GeV, using 4vector
+    // EG2
+  } else if(trainConfig == 3340){
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c510795","h000693100000000","j453503000000000"); 
+  } else if(trainConfig == 4340){
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c510796","h000693100000000","j453503000000000"); 
+  } else if(trainConfig == 5340){
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c51079k","h000693100000000","j453503000000000"); 
+  } else if(trainConfig == 6340){
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe309v0000","32c51079f","h000693100000000","j453503000000000"); 
+    // EG1
+  } else if(trainConfig == 3341)  { 
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510795","h0006a3100000000","j453503000000000"); 
+  } else if(trainConfig == 4341)  { 
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c510796","h0006a3100000000","j453503000000000"); 
+  } else if(trainConfig == 5341)  { 
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c51079k","h0006a3100000000","j453503000000000"); 
+  } else if(trainConfig == 6341)  { 
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe309v0000","32c51079f","h0006a3100000000","j453503000000000"); 
+
+
     // ---- AliConversionMesonCuts
     // eta mass selection window variations
   } else if(trainConfig == 342) { 

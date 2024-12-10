@@ -103,6 +103,7 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   void SetEnableFB768DCAxy(bool newval) { fEnableFB768dcaxy = newval;}
   void SetUseOldPileup(bool newval) { fUseOldPileup = newval; }
   void SetCentralPileup(double newval) {fCentralPU = newval;}
+  void SetFillPtSubEvent(bool newval) { fFillPtSubevent = newval; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -118,6 +119,7 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   Bool_t fDisablePileup;
   Bool_t fUseOldPileup;
   Bool_t fFillStdMethod;
+  Bool_t fFillPtSubevent;
   TString fDCAxyFunctionalForm;
   Bool_t fOnTheFly;
   TString fGenerator;
@@ -198,6 +200,8 @@ class AliAnalysisTaskGammaSoft : public AliAnalysisTaskSE {
   Double_t fImpactParameterMC;
   unsigned int fEventWeight;
   vector<vector<double>>  wp;
+  vector<vector<double>> wpPos;
+  vector<vector<double>> wpNeg;
   vector<vector<vector<vector<std::complex<double>>>>> abcd;
   vector<vector<vector<vector<std::complex<double>>>>> wabcd;
   std::map<double,double> centralitymap;

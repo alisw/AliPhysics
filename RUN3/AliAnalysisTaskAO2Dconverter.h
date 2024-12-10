@@ -103,6 +103,8 @@ public:
   void SetUsePHOSTriggerMap(Bool_t toUse=kTRUE) { fUsePHOSBadMap = toUse; }
   void SetReadTR(Bool_t readTR = true) {fReadTR = readTR;};
 
+  void SetDisableEMCAL(bool flag = true) { fDisableEMCAL = flag; }
+
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
   enum TreeIndex { // Index of the output trees
     kEvents = 0,
@@ -120,7 +122,7 @@ public:
     kFT0,
     kFDD,
     kV0s,
-    kV0Otfs,
+    kOTFV0s,
     kCascades,
     kTOF,
     kMcParticle,
@@ -400,13 +402,14 @@ private:
     UInt_t fFlags = 0u;       /// Reconstruction status flags
 
     // Clusters and tracklets
-    UInt_t fITSClusterSizes = 0u;  /// ITS clusters sizes, four bits per a layer, starting from the innermost
-    UChar_t fTPCNClsFindable = 0u; /// number of clusters that could be assigned in the TPC
-    Char_t fTPCNClsFindableMinusFound = 0;       /// difference between foundable and found clusters
-    Char_t fTPCNClsFindableMinusPID = 0;         /// difference between foundable and PID clusters
-    Char_t fTPCNClsFindableMinusCrossedRows = 0; ///  difference between foundable clsuters and crossed rows
-    UChar_t fTPCNClsShared = 0u;   /// Number of shared clusters
-    UChar_t fTRDPattern = 0u;   /// Bit 0-5 if tracklet from TRD layer used for this track
+    UInt_t fITSClusterSizes = 0u;                /// ITS clusters sizes, four bits per a layer, starting from the innermost
+    UChar_t fTPCNClsFindable = 0u;               /// number of clusters that could be assigned in the TPC
+    Char_t fTPCNClsFindableMinusFound = 0;       /// difference between findable and found clusters
+    Char_t fTPCNClsFindableMinusPID = 0;         /// difference between findable and PID clusters
+    Char_t fTPCNClsFindableMinusCrossedRows = 0; ///  difference between findable clusters and crossed rows
+    UChar_t fTPCNClsShared = 0u;                 /// Number of shared TPC clusters
+    UChar_t fITSSharedClusterMap = 0u;           /// shared ITS cluster map
+    UChar_t fTRDPattern = 0u;                    /// Bit 0-5 if tracklet from TRD layer used for this track
 
     // Chi2
     Float_t fITSChi2NCl = -999.f; /// chi2/Ncl ITS
@@ -750,15 +753,15 @@ private:
     Float_t fEnergy         = 0.f;  // energy
     Float_t fQt             = 0.f;  // Qt for Armenteros
     Float_t fAlpha          = 0.f;  // alpha for Armenteros
-    Float_t fCx             = 0.f;  // conversion point in x
-    Float_t fCy             = 0.f;  // conversion point in y
-    Float_t fCz             = 0.f;  // conversion point in z
+    Float_t fX              = 0.f;  // conversion point in x
+    Float_t fY              = 0.f;  // conversion point in y
+    Float_t fZ              = 0.f;  // conversion point in z
     Float_t fChi2NDF        = 0.f;  // Chi2 over NDF
     Float_t fPsiPair        = 0.f;  // psi pair
     Float_t fDCAr           = 0.f;  // DCA to prim vertex in r
     Float_t fDCAz           = 0.f;  // DCA to prim vertex in z
     Float_t fMass           = 0.f;  // mass of conversion photon
-  } v0otfs;               //! structure to keep v0sinformation
+  } otfv0s;               //! structure to keep v0sinformation
 
   struct {
     /// Cascades
@@ -836,6 +839,9 @@ private:
   Double_t fFractionL1MonitorEventsEMCAL = 0.001; ///< Fraction of monitoring events (full payload) for EMCAL L1 trigger
   Bool_t fEMCALReducedTriggerPayload = kFALSE; ///< Use reduced trigger payload for EMCAL L1 trigger
   Bool_t fUsePHOSBadMap = kTRUE ; ///< read and apply PHOS trigger bad map
+
+  /// skip EMCal altogether (track propag, emcal cells)
+  Bool_t fDisableEMCAL = kFALSE;
 
   /// Byte counter
   ULong_t fBytes = 0; ///! Number of bytes stored in all trees

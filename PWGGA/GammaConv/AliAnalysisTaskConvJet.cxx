@@ -208,6 +208,11 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       fTrueVectorJetPhi.clear();
       fTrueVectorJetR.clear();
       fTrueVectorJetNPart.clear();
+      fVecTrueJetMaxPartPt.clear();
+      fVecTrueJetMaxPartPDG.clear();
+      for(auto & vec: fVecTrueJetParticles){
+        vec.clear();
+      }
       fVecTrueJetParticles.clear();
       for (auto const& jet : jetCont->accepted()) {
         if (!jet)
@@ -227,6 +232,9 @@ void AliAnalysisTaskConvJet::DoJetLoop()
           vecTmpPart.push_back(jet->Track(tr));
         }
         fVecTrueJetParticles.push_back(vecTmpPart);
+        auto [ptLead, pdgcodeLead] = GetLeadingPartPt(jet, true);
+        fVecTrueJetMaxPartPt.push_back(ptLead);
+        fVecTrueJetMaxPartPDG.push_back(pdgcodeLead);
       }
       fTrueNJets = count;
     }
@@ -307,6 +315,33 @@ bool AliAnalysisTaskConvJet::IsJetAccepted(const AliEmcalJet* jet)
     return false;
   }
   return true;
+}
+
+/**
+ * This function is used to get the leading particle pt and MC
+ */
+std::tuple<double, int> AliAnalysisTaskConvJet::GetLeadingPartPt(AliEmcalJet * jet, const bool isTrueJet){
+  double maxTrackPt = 0;
+  double maxClusterPt = 0;
+
+  auto particle = jet->GetLeadingParticleConstituent();
+  if (particle) {
+    maxTrackPt = particle->Pt();
+  }
+  auto cluster = jet->GetLeadingClusterConstituent();
+  if (cluster) {
+    // Uses the energy definition that was used when the constituent was created
+    // to calculate the Pt(). Usually, this would be the hadronic corrected energy
+    maxClusterPt = cluster->Pt();
+  }
+  int pdgcode = 0;
+  if(isTrueJet){
+    auto mcpart =particle->GetParticle();
+    pdgcode = mcpart->PdgCode();
+  }
+  
+  double maxPt = (maxTrackPt > maxClusterPt) ? maxTrackPt : maxClusterPt;
+  return std::make_tuple(maxPt, pdgcode);  
 }
 
 /**

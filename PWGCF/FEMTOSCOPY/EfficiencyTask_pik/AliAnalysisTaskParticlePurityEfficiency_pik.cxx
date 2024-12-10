@@ -14,6 +14,7 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliCentrality.h"
+#include "AliEventCuts.h"
 
 #include "AliESDEvent.h"
 #include "AliESDtrackCuts.h"
@@ -47,7 +48,7 @@ double fV1[3];
 //_______________________________________________________
 
 AliAnalysisTaskParticlePurityEfficiency_pik::AliAnalysisTaskParticlePurityEfficiency_pik(const Char_t *partName) :
-  AliAnalysisTaskSE(partName), centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0), fAODpidUtil(0)
+  AliAnalysisTaskSE(partName), centrality(0), fHistoList(0),  fHistEv(0), fpidResponse(0), fAODpidUtil(0), fIfAliEventCuts(kFALSE), fEventCuts(0)
 {
 
   for(Int_t i = 0; i < CENTRBINS*PARTTYPES; i++) {
@@ -511,11 +512,20 @@ void AliAnalysisTaskParticlePurityEfficiency_pik::UserExec(Option_t *)
    AliAODEvent *fAODs = aodH->GetEvent();
   fAODpidUtil = aodH->GetAODpidUtil();
   
-
+  fEventCuts = new AliEventCuts();
+    
   /***Get Event****/
   //AliESDEvent *esdEvent = dynamic_cast<AliESDEvent *>(InputEvent());
   AliAODEvent* aodEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!aodEvent) return;
+
+  //******* Ali Event Cuts - applied on AOD event - standard cuts for Run2 as prepared by DPG group ************
+  if(fIfAliEventCuts){
+    if (!fEventCuts->AcceptEvent(aodEvent)) {
+      return;
+    }
+  }
+      
   AliAODHeader *fAODheader = (AliAODHeader*)aodEvent->GetHeader();
   //Double_t mult = fAODheader->GetRefMultiplicity();
 
@@ -584,7 +594,7 @@ if(!MultSelection) {
     
   Bool_t fpA2013 = kFALSE;
   Bool_t fMVPlp = kFALSE;
-  Bool_t fUseOutOfBunchPileUp = kTRUE;
+  Bool_t fUseOutOfBunchPileUp = kFALSE;
   Bool_t fisPileUp = kTRUE;                                                                                                                   
   Int_t fMinPlpContribMV = 0;                                                                                                                 
   Int_t fMinPlpContribSPD = 5;                                                                                                                
@@ -607,7 +617,18 @@ if(!MultSelection) {
   if(fisPileUp)
     if(anaUtil->IsPileUpEvent(aodEvent)) return;
 
-  delete anaUtil;   
+  delete anaUtil;
+
+  //pileup for LHC20e3a -> Injective Pileup over events 
+  AliAODMCHeader *mcHeader = 0;
+  mcHeader = (AliAODMCHeader*)fAODs->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+  if(!mcHeader) {
+    printf("AliAnalysisTaskSEHFTreeCreator::UserExec: MC header branch not found!\n");
+    return;
+  }
+  Bool_t isPileupInGeneratedEvent = kFALSE;
+  isPileupInGeneratedEvent = AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader,"Hijing");
+  if(isPileupInGeneratedEvent) return;	
 
   fHistQA[9]->Fill(3);
   if(fcent == 0) fHistEvCuts[0]->Fill(3);
@@ -728,7 +749,10 @@ if(!MultSelection) {
       }
     }
 
-    
+   Bool_t isParticleFromOutOfBunchPileupCollision = kFALSE;
+   isParticleFromOutOfBunchPileupCollision = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iTracks,mcHeader,arrayMC);
+   if(isParticleFromOutOfBunchPileupCollision) continue;
+	  
     //charge
     //  if(track->Charge() < 0 ) continue;
     Int_t charge = 0;
@@ -840,8 +864,8 @@ if(!MultSelection) {
     double nSigmaTPCK = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kKaon);
     double nSigmaTPCP = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kProton);
     double nSigmaTPCe = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kElectron);
-    if(IsElectron(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
-      continue;
+    //if(IsElectron(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
+    //continue;
     /*  fHistQA[10]->Fill(7);*/
     
     fHistQA[1]->Fill(track->GetTPCClusterInfo(2,1)); 
@@ -922,9 +946,12 @@ if(!MultSelection) {
     //isProtonNsigma = (!IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi)  && !IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK) && IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP));
 
 
-    isPionNsigma = (IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi) && !IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK) && !IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP));
+    /*isPionNsigma = (IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi) && !IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK) && !IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP));
     isKaonNsigma = (!IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi)  && IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK) && !IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP));
-    isProtonNsigma = (!IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi)  && !IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK) && IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP));
+    isProtonNsigma = (!IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi)  && !IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK) && IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP));*/
+    isPionNsigma = IsPionNSigma(track->P(),nSigmaTPCPi, nSigmaTOFPi);
+    isKaonNsigma = IsKaonNSigma(track->P(),nSigmaTPCK, nSigmaTOFK);
+    isProtonNsigma = IsProtonNSigma(track->P(),nSigmaTPCP, nSigmaTOFP);  
 
     if (isPionNsigma){
       //      if (track->Pt() > 1.5) continue;
@@ -1293,5 +1320,4 @@ if(!MultSelection) {
 
 //void AliAnalysisTaskParticleEff::Terminate(Option_t *) 
 //{}
-
 
