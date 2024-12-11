@@ -44,7 +44,8 @@ class AliAnalysisTaskSVtaskMCFilter : public AliAnalysisTaskEmcal
 	   Bool_t fFilterTracks    = kTRUE,
      const char* clscontname = "caloClusters",
      const char* outcls      = "myclusters",
-     Bool_t fFilterClusters  = kFALSE
+     Bool_t fFilterClusters  = kFALSE,
+     Bool_t fFilterHIJING    = kFALSE
    );
 
    void     UserCreateOutputObjects();
@@ -55,6 +56,7 @@ class AliAnalysisTaskSVtaskMCFilter : public AliAnalysisTaskEmcal
    void     SetFilteredTracksName(const Char_t* name){   fFilteredTracksName   = name;  }
    void     SetFilteredClustersName(const Char_t* name){ fFilteredClustersName = name;  }
    void     SetFilterType(Int_t param){                  fFilterType           = param; }
+   void     SetFilterGenName(Int_t param){               fFilterGenName        = param; }
    TString  GetGenerator(Int_t label, AliAODMCHeader* header);
 
  protected:
@@ -68,6 +70,7 @@ class AliAnalysisTaskSVtaskMCFilter : public AliAnalysisTaskEmcal
    TString	       fInputTracksName;       //  name of input particle or track container
    TString         fInputClustersName;     //  name of input cluster container
    Int_t           fFilterType;            //  filtering for tracks=1 or mcParticles=0  //AID
+   Int_t           fFilterGenName;         //  filtering for EPOS=0 (default) or HIJING=1  
 
    AliAODEvent    *fAodEvent;              //!
    AliAODMCHeader *fMCHeader;              //!
