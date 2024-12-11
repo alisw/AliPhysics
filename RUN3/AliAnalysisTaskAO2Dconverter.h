@@ -799,6 +799,7 @@ private:
 
   struct {
     // pmd information
+    Int_t fIndexCollisions = -1;      // stores information for collision association
     Float_t fX = 0.0f;            /// Cluster X position
     Float_t fY = 0.0f;            /// Cluster Y position
     Float_t fZ = 0.0f;            /// Cluster Z position

@@ -995,6 +995,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   TTree* tPmdInfo = CreateTree(kPMD);
   if (fTreeStatus[kPMD]) {
     // PMD information
+    tPmdInfo->Branch("fIndexCollisions", &tracks.fIndexCollisions, "fIndexCollisions/I");
     tPmdInfo->Branch("fX", &pmdInfo.fX, "fX/F");
     tPmdInfo->Branch("fY", &pmdInfo.fY, "fY/F");
     tPmdInfo->Branch("fZ", &pmdInfo.fZ, "fZ/F");
@@ -3227,6 +3228,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   // PMD information loop (to be adjusted as necessary)
   if(fESD){ // path from ESD only (check for AOD if needed)
 	  Int_t PMDTrackks = fESD->GetNumberOfPmdTracks();
+    pmdInfo.fIndexCollisions = fCollisionCount;
     for(Int_t trk = 0; trk < PMDTrackks; trk++){
       AliESDPmdTrack *pmdtr = fESD->GetPmdTrack(trk);
       pmdInfo.fX          = AliMathBase::TruncateFloatFraction(pmdtr->GetClusterX(), mPMDPositionPrecision);
