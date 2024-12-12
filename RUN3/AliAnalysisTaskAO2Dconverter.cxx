@@ -3243,7 +3243,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       pmdInfo.fDet        = pmdtr->GetDetector();
       pmdInfo.fNcell      = pmdtr->GetClusterCells();
 
-      pmdInfo.fTrackNo    = pmdtr->GetClusterTrackNo();
+      pmdInfo.fTrackNo    = pmdtr->GetClusterTrackNo() + fOffsetLabel;
       pmdInfo.fTrackPid   = pmdtr->GetClusterTrackPid();
       pmdInfo.fSmn        = pmdtr->GetSmn();
 
