@@ -14,11 +14,11 @@
 **************************************************************************/
 //
 //
-// Task for filtering out EPOS part of the simulated detector level events
+// Task for filtering out EPOS (or HIJING) part of the simulated detector level events
 //
 //-----------------------------------------------------------------------
 // Authors: Filip Krizek
-
+// 
 //-----------------------------------------------------------------------
 
 #include <TDatabasePDG.h>
@@ -63,6 +63,7 @@ fFilteredClustersName("myclusters"),
 fInputTracksName("tracks"),
 fInputClustersName("caloClusters"),
 fFilterType(1),
+fFilterGenName(0),
 fAodEvent(0x0),
 fMCHeader(0x0),
 fMCPartArray(0x0)
@@ -81,6 +82,7 @@ fFilteredClustersName("myclusters"),
 fInputTracksName("tracks"),
 fInputClustersName("caloClusters"),
 fFilterType(1),
+fFilterGenName(0),
 fAodEvent(0x0),
 fMCHeader(0x0),
 fMCPartArray(0x0)
@@ -94,7 +96,7 @@ AliAnalysisTaskSVtaskMCFilter::~AliAnalysisTaskSVtaskMCFilter()
 }
 //
 //_______________________________________________________________________________
-AliAnalysisTaskSVtaskMCFilter*  AliAnalysisTaskSVtaskMCFilter::AddTaskSVtaskMCFilter(const char* trkcontname, const char* outtrk,  Bool_t fFilterTracks, const char* clscontname, const char* outcls, Bool_t fFilterClusters){
+AliAnalysisTaskSVtaskMCFilter*  AliAnalysisTaskSVtaskMCFilter::AddTaskSVtaskMCFilter(const char* trkcontname, const char* outtrk,  Bool_t fFilterTracks, const char* clscontname, const char* outcls, Bool_t fFilterClusters, Bool_t fFilterHIJING){
 
    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
    if (!mgr) {
@@ -140,11 +142,16 @@ AliAnalysisTaskSVtaskMCFilter*  AliAnalysisTaskSVtaskMCFilter::AddTaskSVtaskMCFi
      else filterparam = 1;
    }else filterparam = 0;
 
+   Int_t filtergenname;
+   if(fFilterHIJING) filtergenname = 1;
+   else filtergenname = 0;
+
    task->SetInputTracksName(trkcontname);
    task->SetInputClustersName(clscontname);
    task->SetFilteredTracksName(outtrk);
    task->SetFilteredClustersName(outcls);
    task->SetFilterType(filterparam);
+   task->SetFilterGenName(filtergenname);
    // ------ input data ------
    AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
    mgr->ConnectInput(task, 0, cinput);
@@ -269,9 +276,16 @@ Bool_t AliAnalysisTaskSVtaskMCFilter::Run()
               lab = mother;   // change label to the mother
               nameGen = GetGenerator(mother,fMCHeader); //change the name of generator to mother
            }
-           if(!(nameGen.IsWhitespace() || nameGen.Contains("EPOS"))){
-             new ((*fFilteredTracksArray)[n]) AliAODTrack(*track);
-             n++;
+           if(fFilterGenName == 1){
+           		if(!(nameGen.IsWhitespace() || nameGen.Contains("HIJING"))){
+                  new ((*fFilteredTracksArray)[n]) AliAODTrack(*track);
+                  n++;
+               }
+           }else{
+               if(!(nameGen.IsWhitespace() || nameGen.Contains("EPOS"))){
+                  new ((*fFilteredTracksArray)[n]) AliAODTrack(*track);
+                  n++;
+               }
            }
         }
      }
@@ -307,9 +321,16 @@ Bool_t AliAnalysisTaskSVtaskMCFilter::Run()
                 labClus = motherClus;   // change label to the mother
                 nameGenClus = AliVertexingHFUtils::GetGenerator(motherClus,fMCHeader); //change the name of generator to mother
              }
-             if(!(nameGenClus.IsWhitespace() || nameGenClus.Contains("EPOS"))){
-               new ((*fFilteredClustersArray)[m]) AliAODCaloCluster(*cluster);
-               m++;
+	     	 if(fFilterGenName == 1){
+             	if(!(nameGenClus.IsWhitespace() || nameGenClus.Contains("HIJING"))){
+		            new ((*fFilteredClustersArray)[m]) AliAODCaloCluster(*cluster);
+		            m++;
+             	}
+	     	 }else{
+             	if(!(nameGenClus.IsWhitespace() || nameGenClus.Contains("EPOS"))){
+                    new ((*fFilteredClustersArray)[m]) AliAODCaloCluster(*cluster);
+                    m++;
+             	}
              }
           }
        }
@@ -344,11 +365,17 @@ Bool_t AliAnalysisTaskSVtaskMCFilter::Run()
                lab = mother;   // change label to the mother
                nameGen = GetGenerator(mother,fMCHeader); //change the name of generator to mother
             }
-
-            if(!(nameGen.IsWhitespace() || nameGen.Contains("EPOS"))){
-               new ((*fFilteredTracksArray)[n]) AliAODMCParticle(*initialmcParticle);
-               n++;
-            }
+			if(fFilterGenName == 1){
+		    	if(!(nameGen.IsWhitespace() || nameGen.Contains("HIJING"))){
+	               new ((*fFilteredTracksArray)[n]) AliAODMCParticle(*initialmcParticle);
+	               n++;
+		        }
+			}else{
+				if(!(nameGen.IsWhitespace() || nameGen.Contains("EPOS"))){
+					new ((*fFilteredTracksArray)[n]) AliAODMCParticle(*initialmcParticle);
+					n++;
+				}
+			}
          }
          index++;
       }
