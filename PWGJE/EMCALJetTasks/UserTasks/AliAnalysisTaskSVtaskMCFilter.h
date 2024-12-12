@@ -82,7 +82,7 @@ class AliAnalysisTaskSVtaskMCFilter : public AliAnalysisTaskEmcal
     AliAnalysisTaskSVtaskMCFilter(const AliAnalysisTaskSVtaskMCFilter &source);
     AliAnalysisTaskSVtaskMCFilter& operator=(const AliAnalysisTaskSVtaskMCFilter& source);
 
-    ClassDef(AliAnalysisTaskSVtaskMCFilter, 4);
+    ClassDef(AliAnalysisTaskSVtaskMCFilter, 5);
 };
 
 #endif
