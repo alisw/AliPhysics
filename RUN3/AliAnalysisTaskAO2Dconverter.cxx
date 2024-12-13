@@ -63,6 +63,7 @@
 #include "AliESDVZERO.h"
 #include "AliESDv0.h"
 #include "AliESDcascade.h"
+#include "AliESDPmdTrack.h"
 
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
@@ -130,7 +131,8 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2hepmcxsection",
   "O2hepmcpdfinfo",
   "O2hepmcheavyion",
-  "O2run2trackextra_001"
+  "O2run2trackextra_001",
+  "O2pmd"
 };
 
 const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
@@ -168,7 +170,8 @@ const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
   "O2 HepMc Cross Sections",
   "O2 HepMc Pdf Info",
   "O2 HepMc Heavy Ion",
-  "Barrel tracks Extra Run2"
+  "Barrel tracks Extra Run2",
+  "PMD info"
 };
 
 const TClass *AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = {AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class()};
@@ -230,6 +233,10 @@ namespace
   UInt_t mV0otfMass = 0xFFFFFFFF;
   UInt_t mV0otfMomentum = 0xFFFFFFFF;
 
+  UInt_t mPMDPositionPrecision = 0xFFFFFFFF;
+  UInt_t mPMDEnergyPrecision = 0xFFFFFFFF;
+  UInt_t mPMDProbabilityPrecision = 0xFFFFFFFF;
+
   // No compression for ZDC for the moment
 
 } // namespace
@@ -278,6 +285,7 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
     hf3Prong(),
     hfCascades(),
     hfDStar(),
+    pmdInfo(),
     fMetaData()
 
 {
@@ -287,6 +295,10 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
   {
     fTreeStatus[i] = kTRUE;
   }
+
+  // disable experimental features 
+  fTreeStatus[kPMD] = kFALSE;
+
 } // AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
 
 
@@ -424,6 +436,10 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     mV0otfLength = 0xFFFFF000;  // 11 bits
     mV0otfMass = 0xFFFFF000;    // 11 bits but saved in MeV!
     mV0otfMomentum = 0xFFFFFC00; // 13 bits
+    
+    mPMDPositionPrecision = 0xFFFFF000;  // 11 bits
+    mPMDEnergyPrecision = 0xFFFFF000;  // 11 bits
+    mPMDProbabilityPrecision = 0xFFFFF000;  // 11 bits
   }
 
   // create output objects
@@ -978,6 +994,26 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tCaloTrigger->Branch("fTriggerBits", &calotrigger.fTriggerBits, "fTriggerBits/I");
     tCaloTrigger->Branch("fCaloType", &calotrigger.fCaloType, "fCaloType/B");
     tCaloTrigger->SetBasketSize("*", fBasketSizeEvents);
+  }
+
+  TTree* tPmdInfo = CreateTree(kPMD);
+  if (fTreeStatus[kPMD]) {
+    // PMD information
+    tPmdInfo->Branch("fIndexCollisions", &tracks.fIndexCollisions, "fIndexCollisions/I");
+    tPmdInfo->Branch("fX", &pmdInfo.fX, "fX/F");
+    tPmdInfo->Branch("fY", &pmdInfo.fY, "fY/F");
+    tPmdInfo->Branch("fZ", &pmdInfo.fZ, "fZ/F");
+    tPmdInfo->Branch("fCluADC", &pmdInfo.fCluADC, "fCluADC/F");
+    tPmdInfo->Branch("fCluPID", &pmdInfo.fCluPID, "fCluPID/F");
+    tPmdInfo->Branch("fDet", &pmdInfo.fDet, "fDet/b");
+    tPmdInfo->Branch("fNcell", &pmdInfo.fNcell, "fNcell/b");
+    tPmdInfo->Branch("fSmn", &pmdInfo.fSmn, "fSmn/I");
+    tPmdInfo->Branch("fTrackNo", &pmdInfo.fTrackNo, "fTrackNo/I");
+    tPmdInfo->Branch("fTrackPid", &pmdInfo.fTrackPid, "fTrackPid/I");
+    tPmdInfo->Branch("fSigX", &pmdInfo.fSigX, "fSigX/F");
+    tPmdInfo->Branch("fSigY", &pmdInfo.fSigY, "fSigY/F");
+    tPmdInfo->Branch("fClMatching", &pmdInfo.fClMatching, "fClMatching/I");
+    tPmdInfo->SetBasketSize("*", fBasketSizeTracks);
   }
 
   // Associate FwdTrack branches for MUON tracks
@@ -3190,6 +3226,35 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       delete[] v0Lookup;
     } // End if V0s
     eventextra.fNentries[kCascades] = ncascades_filled;
+  }
+
+  //---------------------------------------------------------------------------
+  // PMD information loop (to be adjusted as necessary)
+  if(fESD){ // path from ESD only (check for AOD if needed)
+	  Int_t PMDTrackks = fESD->GetNumberOfPmdTracks();
+    pmdInfo.fIndexCollisions = fCollisionCount;
+    for(Int_t trk = 0; trk < PMDTrackks; trk++){
+      AliESDPmdTrack *pmdtr = fESD->GetPmdTrack(trk);
+      pmdInfo.fX          = AliMathBase::TruncateFloatFraction(pmdtr->GetClusterX(), mPMDPositionPrecision);
+      pmdInfo.fY          = AliMathBase::TruncateFloatFraction(pmdtr->GetClusterY(), mPMDPositionPrecision);
+      pmdInfo.fZ          = AliMathBase::TruncateFloatFraction(pmdtr->GetClusterZ(), mPMDPositionPrecision);
+      pmdInfo.fCluADC     = AliMathBase::TruncateFloatFraction(pmdtr->GetClusterADC(), mPMDEnergyPrecision);
+      pmdInfo.fCluPID     = AliMathBase::TruncateFloatFraction(pmdtr->GetClusterPID(), mPMDProbabilityPrecision);
+
+      pmdInfo.fSigX       = AliMathBase::TruncateFloatFraction(pmdtr->GetClusterSigmaX(), mPMDPositionPrecision);
+      pmdInfo.fSigY       = AliMathBase::TruncateFloatFraction(pmdtr->GetClusterSigmaY(), mPMDPositionPrecision);
+
+      pmdInfo.fDet        = pmdtr->GetDetector();
+      pmdInfo.fNcell      = pmdtr->GetClusterCells();
+
+      pmdInfo.fTrackNo    = pmdtr->GetClusterTrackNo() + fOffsetLabel;
+      pmdInfo.fTrackPid   = pmdtr->GetClusterTrackPid();
+      pmdInfo.fSmn        = pmdtr->GetSmn();
+
+      pmdInfo.fClMatching = pmdtr->GetClusterMatching();
+
+      FillTree(kPMD);
+    }
   }
 
   //---------------------------------------------------------------------------

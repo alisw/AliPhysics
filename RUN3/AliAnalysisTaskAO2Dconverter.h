@@ -142,6 +142,7 @@ public:
     kHepMcPdfInfo,
     kHepMcHeavyIon,
     kRun2TrackExtras,
+    kPMD,
     kTrees
   };
   enum TaskModes { // Flag for the task operation mode
@@ -795,6 +796,24 @@ private:
     Int_t fIndexHf2Prongs = -1; /// D0 index
     Int_t fIndexTracks_0 = -1;  /// Track index of soft pion
   } hfDStar;                  //! structure for HF Dstar
+
+  struct {
+    // pmd information
+    Int_t fIndexCollisions = -1;      // stores information for collision association
+    Float_t fX = 0.0f;            /// Cluster X position
+    Float_t fY = 0.0f;            /// Cluster Y position
+    Float_t fZ = 0.0f;            /// Cluster Z position
+    Float_t fCluADC = 0.0f;       /// Cluster Energy in ADC
+    Float_t fCluPID = 0.0f;       ///[0.,1.,8] Cluster probability, 1: Photon, 0: Hadron
+    uint8_t fDet = 0;             /// Detector, 0:PRE, 1:CPV
+    uint8_t fNcell = 0;           /// Cluster cells
+    Int_t fSmn = 0;               /// Serial module number
+    Int_t fTrackNo = -1;          /// Track number assigned to the clus from simulation
+    Int_t fTrackPid = 0;          /// Track pid assigned to the clus from simulation
+    Float_t fSigX = 0.0f; /// Cluster x-width
+    Float_t fSigY = 0.0f; /// Cluster y-width
+    Int_t fClMatching = 0; ///Cluster of PRE matching with CPV
+  } pmdInfo;                    //! structure to hold PMD information
 
   /// Offsets to convert the IDs within one collision to global IDs
   Int_t fOffsetMuTrackID = 0; ///! Offset of MUON track  (used in the clusters)
