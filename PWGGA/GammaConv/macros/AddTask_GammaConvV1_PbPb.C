@@ -4224,6 +4224,12 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("10130e03", "0da00009ab770c00amd0404000", "0152101500000000"); // R cut 'a'
       cuts.AddCutPCM("10130e03", "0db00009ab770c00amd0404000", "0152101500000000"); // R cut 'b'
       cuts.AddCutPCM("10130e03", "0dc00009ab770c00amd0404000", "0152101500000000"); // R cut 'c'
+
+  } else if (trainConfig == 5007){ //_______________________
+      cuts.AddCutPCM("10130e03", "0d200009ab770c00amd0404000", "0152101500000000"); // standard
+      cuts.AddCutPCM("10130e03", "0dm00009ab770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm'
+      cuts.AddCutPCM("10130e03", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
+      cuts.AddCutPCM("10130e03", "0d2000098b770c00amd0404000", "0152101500000000"); // TPC e (-2.5, 3) ('8')  
       
     // data 30-50%
   } else if (trainConfig == 5030){//________________________
@@ -4266,6 +4272,12 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("13530e03", "0db00009ab770c00amd0404000", "0152101500000000"); // R cut 'b'
       cuts.AddCutPCM("13530e03", "0dc00009ab770c00amd0404000", "0152101500000000"); // R cut 'c'
 
+  } else if (trainConfig == 5037){ //_______________________
+      cuts.AddCutPCM("13530e03", "0d200009ab770c00amd0404000", "0152101500000000"); // standard
+      cuts.AddCutPCM("13530e03", "0dm00009ab770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm'
+      cuts.AddCutPCM("13530e03", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
+      cuts.AddCutPCM("13530e03", "0d2000098b770c00amd0404000", "0152101500000000"); // TPC e (-2.5, 3) ('8')  
+
     // MC MB 0-10%
   } else if (trainConfig == 5100){//________________________
       cuts.AddCutPCM("10130053", "0d200009ab770c00amd0404000", "0152101500000000"); // standard
@@ -4306,6 +4318,12 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("10130053", "0da00009ab770c00amd0404000", "0152101500000000"); // R cut 'a'
       cuts.AddCutPCM("10130053", "0db00009ab770c00amd0404000", "0152101500000000"); // R cut 'b'
       cuts.AddCutPCM("10130053", "0dc00009ab770c00amd0404000", "0152101500000000"); // R cut 'c'
+
+  } else if (trainConfig == 5107){ //_______________________
+      cuts.AddCutPCM("10130053", "0d200009ab770c00amd0404000", "0152101500000000"); // standard
+      cuts.AddCutPCM("10130053", "0dm00009ab770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm'
+      cuts.AddCutPCM("10130053", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
+      cuts.AddCutPCM("10130053", "0d2000098b770c00amd0404000", "0152101500000000"); // TPC e (-2.5, 3) ('8')  
       
     // MC MB 30-50%
   } else if (trainConfig == 5130){//________________________
@@ -4348,6 +4366,12 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("13530053", "0db00009ab770c00amd0404000", "0152101500000000"); // R cut 'b'
       cuts.AddCutPCM("13530053", "0dc00009ab770c00amd0404000", "0152101500000000"); // R cut 'c'
 
+  } else if (trainConfig == 5137){ //_______________________
+      cuts.AddCutPCM("13530053", "0d200009ab770c00amd0404000", "0152101500000000"); // standard
+      cuts.AddCutPCM("13530053", "0dm00009ab770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm'
+      cuts.AddCutPCM("13530053", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
+      cuts.AddCutPCM("13530053", "0d2000098b770c00amd0404000", "0152101500000000"); // TPC e (-2.5, 3) ('8')  
+
     // MC AS 1 0-10%
   } else if (trainConfig == 5200){//________________________
       cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // standard
@@ -4388,6 +4412,12 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("10130023", "0da00009ab770c00amd0404000", "0152101500000000"); // R cut 'a'
       cuts.AddCutPCM("10130023", "0db00009ab770c00amd0404000", "0152101500000000"); // R cut 'b'
       cuts.AddCutPCM("10130023", "0dc00009ab770c00amd0404000", "0152101500000000"); // R cut 'c'
+
+  } else if (trainConfig == 5207){ //_______________________
+      cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // standard
+      cuts.AddCutPCM("10130023", "0dm00009ab770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm'
+      cuts.AddCutPCM("10130023", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
+      cuts.AddCutPCM("10130023", "0d2000098b770c00amd0404000", "0152101500000000"); // TPC e (-2.5, 3) ('8')
       
     // MC AS 1 30-50%
   } else if (trainConfig == 5230){//________________________
@@ -4430,6 +4460,12 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("13530023", "0db00009ab770c00amd0404000", "0152101500000000"); // R cut 'b'
       cuts.AddCutPCM("13530023", "0dc00009ab770c00amd0404000", "0152101500000000"); // R cut 'c'
 
+  } else if (trainConfig == 5237){ //_______________________
+      cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // standard
+      cuts.AddCutPCM("13530023", "0dm00009ab770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm'
+      cuts.AddCutPCM("13530023", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
+      cuts.AddCutPCM("13530023", "0d2000098b770c00amd0404000", "0152101500000000"); // TPC e (-2.5, 3) ('8')
+
     // MC AS 2 0-10%
   } else if (trainConfig == 5300){//________________________
       cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // standard
@@ -4471,6 +4507,12 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("10130023", "0db00009ab770c00amd0404000", "0152101500000000"); // R cut 'b'
       cuts.AddCutPCM("10130023", "0dc00009ab770c00amd0404000", "0152101500000000"); // R cut 'c'
 
+  } else if (trainConfig == 5307){ //_______________________
+      cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // standard
+      cuts.AddCutPCM("10130023", "0dm00009ab770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm'
+      cuts.AddCutPCM("10130023", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
+      cuts.AddCutPCM("10130023", "0d2000098b770c00amd0404000", "0152101500000000"); // TPC e (-2.5, 3) ('8')
+
     // MC AS 2 30-50%
   } else if (trainConfig == 5330){//________________________
       cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // standard data
@@ -4511,6 +4553,12 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("13530023", "0da00009ab770c00amd0404000", "0152101500000000"); // R cut 'a'
       cuts.AddCutPCM("13530023", "0db00009ab770c00amd0404000", "0152101500000000"); // R cut 'b'
       cuts.AddCutPCM("13530023", "0dc00009ab770c00amd0404000", "0152101500000000"); // R cut 'c'
+
+  } else if (trainConfig == 5337){ //_______________________
+      cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // standard
+      cuts.AddCutPCM("13530023", "0dm00009ab770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm'
+      cuts.AddCutPCM("13530023", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
+      cuts.AddCutPCM("13530023", "0d2000098b770c00amd0404000", "0152101500000000"); // TPC e (-2.5, 3) ('8')
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
