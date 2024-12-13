@@ -295,6 +295,10 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
   {
     fTreeStatus[i] = kTRUE;
   }
+
+  // disable experimental features 
+  fTreeStatus[kPMD] = kFALSE;
+
 } // AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
 
 
