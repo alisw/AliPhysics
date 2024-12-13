@@ -1662,6 +1662,13 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if(fTreeStatus[kCentRefMult5]) collision.fCentRefMult05 = multSelection->GetMultiplicityPercentile("RefMult05");
       if(fTreeStatus[kCentRefMult8]) collision.fCentRefMult08 = multSelection->GetMultiplicityPercentile("RefMult08");
     }
+
+    FillTree(kCentV0M);
+    FillTree(kCentV0A);
+    FillTree(kCentCL0);
+    FillTree(kCentCL1);
+    FillTree(kCentRefMult5);
+    FillTree(kCentRefMult8);
   }
 
   //---------------------------------------------------------------------------
