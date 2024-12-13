@@ -331,6 +331,7 @@ private:
     int fRunNumber = -1;         /// Run number
     ULong64_t fGlobalBC = 0u;    /// Unique bunch crossing id. Contains period, orbit and bunch crossing numbers
     ULong64_t fTriggerMask = 0u; /// Trigger class mask
+    ULong64_t fInputMask = 0u;   /// Input mask (unused, stored compressed to avoid converter)
   } bc; //! structure to keep trigger-related info
 
   struct {
