@@ -120,7 +120,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2mctracklabel",
   "O2mccalolabel_001", // changed the mask column to std::vector for the amplitude fraction
   "O2mccollisionlabel",
-  "O2bc",
+  "O2bc_001",
   "O2run2bcinfo",
   "O2origin",
   "O2hmpid_001", // now stores the position of the extrapolated track and HMPID cluster, cluster size, track
@@ -880,6 +880,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tBC->Branch("fRunNumber", &bc.fRunNumber, "fRunNumber/I");
     tBC->Branch("fGlobalBC", &bc.fGlobalBC, "fGlobalBC/l");
     tBC->Branch("fTriggerMask", &bc.fTriggerMask, "fTriggerMask/l");
+    tBC->Branch("fInputMask", &bc.fInputMask, "fInputMask/l");
     tBC->SetBasketSize("*", fBasketSizeEvents);
   }
 
