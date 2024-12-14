@@ -30,6 +30,9 @@
 #pragma link C++ class AliPhotonIsolation+;
 #pragma link C++ class MatrixHandler4D+;
 #pragma link C++ class MatrixHandlerNDim+;
+#pragma link C++ class EventMixPoolMesonJets+;
+#pragma link C++ class EventWithJetAxis+;
+#pragma link C++ class ElectronMixing+;
 
 
 // User tasks
