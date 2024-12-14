@@ -31,7 +31,8 @@
 #include <vector>
 #include "AliAODConversionPhoton.h"
 
-struct EventWithJetAxis {
+class EventWithJetAxis {
+  public:
   EventWithJetAxis(std::vector<AliAODConversionPhoton*> vecPhotons, bool isCalo, TVector3 jet) : caloPhotons(), convPhotons(), jetAxis()
   {
     if (isCalo) {
@@ -57,17 +58,8 @@ struct EventWithJetAxis {
   }
   EventWithJetAxis(const EventWithJetAxis&) = delete;
   EventWithJetAxis() = default;
-  ~EventWithJetAxis()
-  {
-    caloPhotons.clear();
-    convPhotons.clear();
-    // for(unsigned int i = 0; i < caloPhotons.size(); ++i){
-    //   if(caloPhotons[i] != nullptr) delete caloPhotons[i];
-    // }
-    // for(unsigned int i = 0; i < convPhotons.size(); ++i){
-    //   if(convPhotons[i] != nullptr) delete convPhotons[i];
-    // }
-  }
+  virtual ~EventWithJetAxis() = default;
+
   std::unique_ptr<AliAODConversionPhoton> getPhoton(int index, bool isCaloPhoton)
   {
     if (isCaloPhoton)
@@ -105,9 +97,12 @@ struct EventWithJetAxis {
       return caloPhotons.size();
     return convPhotons.size();
   }
-  std::vector<std::unique_ptr<AliAODConversionPhoton>> caloPhotons;
-  std::vector<std::unique_ptr<AliAODConversionPhoton>> convPhotons;
+  std::vector<std::unique_ptr<AliAODConversionPhoton>> caloPhotons;  //!
+  std::vector<std::unique_ptr<AliAODConversionPhoton>> convPhotons;  //!
   TVector3 jetAxis;
+
+  private:
+  ClassDef(EventWithJetAxis, 1);
 };
 
 class EventMixPoolMesonJets
@@ -117,7 +112,7 @@ class EventMixPoolMesonJets
   EventMixPoolMesonJets(std::vector<float> vec);
   EventMixPoolMesonJets(const EventMixPoolMesonJets&) = delete;
   EventMixPoolMesonJets(EventMixPoolMesonJets&&) = default;
-  ~EventMixPoolMesonJets();
+  virtual ~EventMixPoolMesonJets() = default;
 
   ///\brief Set new jet momentum classes for mixing pool
   ///\param vec vector with jet momenta
@@ -159,12 +154,15 @@ class EventMixPoolMesonJets
 
  private:
   std::vector<float> vecJetPClasses = {-1, 20, 40, 60, 100, 100000};
-  std::vector<std::vector<std::shared_ptr<EventWithJetAxis>>> mixingPool = {};
-  unsigned int poolDepth = 20;
+  std::vector<std::vector<std::shared_ptr<EventWithJetAxis>>> mixingPool = {}; //! 
+  unsigned int poolDepth = 20;  //!
+
+  ClassDef(EventMixPoolMesonJets, 1);
 
 };
 
-struct ElectronMixing{
+class ElectronMixing{
+  public:
   ElectronMixing(double eta, double phi, double p, double pt, short ch) : etaCalo(eta), phiCalo(phi), momOnCalo(p), pT(pt), charge(ch)
   {
   
@@ -173,8 +171,12 @@ struct ElectronMixing{
   {
 
   }
+  virtual ~ElectronMixing() = default;;
   double etaCalo, phiCalo, momOnCalo, pT;
   short charge;
+
+  private:
+  ClassDef(ElectronMixing, 1);
 };
 
 #endif

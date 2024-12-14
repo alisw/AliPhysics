@@ -73,6 +73,7 @@ void AddTask_MesonJetCorr_Calo(
   TString fileNamePtWeights = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FPTW:");
   TString fileNameMultWeights = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FMUW:");
   TString fileNameCustomTriggerMimicOADB = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FTRM:");
+  TString fileNameJetWeighting = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FNJW:");
 
   TString corrTaskSetting = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "", addTaskName);
   if (corrTaskSetting.CompareTo(""))
@@ -550,6 +551,7 @@ void AddTask_MesonJetCorr_Calo(
   task->SetForcePi0Unstable(setPi0Unstable);
   task->SetUseMixedBackAdd(enableAddBackground);
   task->SetDoRadiusDependence(enableRadiusDep);
+  if(!fileNameJetWeighting.EqualTo(""))task->SetParticleWeighting(fileNameJetWeighting);
 
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_Calo_%i_%i%s%s", meson, trainConfig, corrTaskSetting.EqualTo("") == true ? "" : Form("_%s", corrTaskSetting.Data()), nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );

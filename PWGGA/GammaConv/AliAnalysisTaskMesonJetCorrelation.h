@@ -172,6 +172,13 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
     fMesonCutArray = CutArray;
   }
 
+  void SetParticleWeighting(const char * name, float minFracMom = 0.05){
+    fNameJetWeightingFile = name;
+    fMinFracMomForWeight = minFracMom;
+    fDoWeightGenParticles = true;
+  }
+  void InitializePartAbundanceWeighting();
+
  protected:
   //-------------------------------
   // GLobal settings
@@ -404,6 +411,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH3F*> fHistoTrueJetPtVsMomFracVsLeadingPart;   //! vector of histos with true jet pt vs. particle enery fraction for different leading particles
   std::vector<TH2F*> fHistoTrueMatchedJetPtVsLeadingPart;     //! vector of histos with matched true jets for different leading particles
   std::vector<TH2F*> fHistoTrueJetPtVsLeadingPart;            //! vector of histos with true jets in acceptance for different leading particles
+  std::vector<TH2F*> fHistoTruevsRecJetPtWeighted;            //! vector of histos response matrix for jets weighted
   
   std::vector<TH1F*> fHistoMatchedPtJet;              //! vector of histos with pt of jets for jets that got matched with a true jet
   std::vector<TH1F*> fHistoUnMatchedPtJet;            //! vector of histos with pt of jets for jets that did not get matched with a true jet
@@ -521,6 +529,15 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH3F*> fHistoMCJetPtVsMesonPtVsRadius;      //! vector of histos True jet pT vs. true meson pt vs jet-meson radius for particles originating from hard parton from Jet
   std::vector<TH3F*> fHistoMCJetPtVsMesonPtVsRadiusInAcc; //! vector of histos True jet pT vs. true meson pt vs jet-meson radius for particles originating from hard parton from Jet
 
+
+  //-------------------------------
+  // Jet weighting
+  //-------------------------------
+  bool fDoWeightGenParticles;
+  double fMinFracMomForWeight;
+  TString fNameJetWeightingFile;
+  std::vector<TH1F*> fHistWeightingPartAbundance;     //! vector of histos that contain a pT dependent weighting for different particle species (defined in GetParticleIndex). Has to be loaded from alien
+
   //-------------------------------
   // DCA tree for PCM pile-up estimation
   //-------------------------------
@@ -534,14 +551,13 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   bool fDCATree_isTrueMeson;       //! flag if meson is true meson or not
   float fDCATree_EvtWeight;        //! event weight for the tree in case of MC
 
-  std::map<int, int> tmpmap;
 
  private:
   static constexpr bool fLocalDebugFlag = false;
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 23);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 24);
 };
 
 #endif
