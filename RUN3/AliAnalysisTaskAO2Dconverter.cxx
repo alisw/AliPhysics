@@ -328,10 +328,24 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
 
   // disable experimental features 
   fTreeStatus[kPMD] = kFALSE;
+  fTreeStatus[kTPCpidEl] = kFALSE;
+  fTreeStatus[kTPCpidMu] = kFALSE;
+  fTreeStatus[kTPCpidPi] = kFALSE;
+  fTreeStatus[kTPCpidKa] = kFALSE;
+  fTreeStatus[kTPCpidPr] = kFALSE;
+  fTreeStatus[kTPCpidDe] = kFALSE;
+  fTreeStatus[kTPCpidTr] = kFALSE;
+  fTreeStatus[kTPCpidHe] = kFALSE;
+  fTreeStatus[kTPCpidAl] = kFALSE;
+
+  fTreeStatus[kCentV0M] = kFALSE;
+  fTreeStatus[kCentV0A] = kFALSE;
+  fTreeStatus[kCentCL0] = kFALSE;
+  fTreeStatus[kCentCL1] = kFALSE;
+  fTreeStatus[kCentRefMult5] = kFALSE;
+  fTreeStatus[kCentRefMult8] = kFALSE;
 
 } // AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
-
-
 
 AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
 {
@@ -920,13 +934,13 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   TTree *tCentRefMult5 = CreateTree(kCentRefMult5);
   if (fTreeStatus[kCentRefMult5])
   {
-    tCentRefMult5->Branch("fCentRun2ReftMult5", &collision.fCentRefMult05, "fCentRun2ReftMult5/F");
+    tCentRefMult5->Branch("fCentRun2RefMult5", &collision.fCentRefMult05, "fCentRun2RefMult5/F");
     tCentRefMult5->SetBasketSize("*", fBasketSizeEvents);
   }
   TTree *tCentRefMult8 = CreateTree(kCentRefMult8);
   if (fTreeStatus[kCentRefMult8])
   {
-    tCentRefMult8->Branch("fCentRun2ReftMult8", &collision.fCentRefMult08, "fCentRun2ReftMult8/F");
+    tCentRefMult8->Branch("fCentRun2RefMult8", &collision.fCentRefMult08, "fCentRun2RefMult8/F");
     tCentRefMult8->SetBasketSize("*", fBasketSizeEvents);
   }
 
