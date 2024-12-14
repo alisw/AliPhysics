@@ -1666,10 +1666,13 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     if (fVEvent) {
       multSelection = (AliMultSelection *)fVEvent->FindListObject("MultSelection");
     }
-    TString lV0M = "V0M";
-    if(kFALSE) lV0M = "V0MNew"; // bypass for new version if asked
     if (multSelection){
-      if(fTreeStatus[kCentV0M]) collision.fCentV0M = multSelection->GetMultiplicityPercentile(lV0M.Data());
+      if(fTreeStatus[kCentV0M]) {
+        collision.fCentV0M = multSelection->GetMultiplicityPercentile("V0MNew");
+        if(collision.fCentV0M>101.0f){
+          collision.fCentV0M = multSelection->GetMultiplicityPercentile("V0M");
+        }
+      }
       if(fTreeStatus[kCentV0A]) collision.fCentV0A = multSelection->GetMultiplicityPercentile("V0A");
       if(fTreeStatus[kCentCL0]) collision.fCentCL0 = multSelection->GetMultiplicityPercentile("CL0");
       if(fTreeStatus[kCentCL1]) collision.fCentCL1 = multSelection->GetMultiplicityPercentile("CL1");
