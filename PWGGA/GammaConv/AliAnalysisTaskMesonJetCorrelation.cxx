@@ -2219,7 +2219,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
           }
           // weight the response matrix according to abundancies of particles in data
           // only particles with momentum fraction of more than fMinFracMomForWeight are considered
-          if(fDoWeightGenParticles){
+          if(fDoWeightGenParticles > 0){
             double weightAbundance = 0.;
             int nPart = 0;
             auto vecTruePart = fConvJetReader->GetTrueJetParticles(i);
@@ -2235,11 +2235,14 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
                 continue;
               }
               int index = GetParticleIndex(std::abs(tmpPart->PdgCode()));
-              weightAbundance += fHistWeightingPartAbundance[index]->GetBinContent(fHistWeightingPartAbundance[index]->FindBin(tmpPart->Pt()));
-              nPart++;
+              double weightPart = fHistWeightingPartAbundance[index]->GetBinContent(fHistWeightingPartAbundance[index]->FindBin(tmpPart->Pt()));
+              if(fDoWeightGenParticles == 1 || (fDoWeightGenParticles == 2 && weightPart != 1)) {
+                weightAbundance += weightPart;
+                nPart++;
+              }
             }
             if(nPart>0) weightAbundance/=nPart;
-            if(weightAbundance == 0) weightAbundance = 1; // safety precaution.
+            if(weightAbundance == 0.) weightAbundance = 1; // safety precaution.
             fHistoTruevsRecJetPtWeighted[fiCut]->Fill(fVectorJetPt.at(i), fTrueVectorJetPt.at(match), weightAbundance*fWeightJetJetMC);
           }
         } else {
