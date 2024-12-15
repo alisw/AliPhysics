@@ -118,6 +118,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2mcparticle_001",
   "O2mccollision_001",
   "O2mctracklabel",
+  "O2mcfwdtracklabel",
   "O2mccalolabel_001", // changed the mask column to std::vector for the amplitude fraction
   "O2mccollisionlabel",
   "O2bc_001",
@@ -172,6 +173,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
   "Kinematics",
   "MC collisions",
   "MC track labels",
+  "MC fwd track labels",
   "MC calo labels",
   "MC collision labels",
   "BC info",
@@ -291,6 +293,7 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
     hmpids(),
     mccollision(),
     mctracklabel(),
+    mcfwdtracklabel(),
     mccalolabel(),
     mccollisionlabel(),
     mcparticle(),
@@ -424,6 +427,7 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     DisableTree(kMcParticle);
     DisableTree(kMcCollision);
     DisableTree(kMcTrackLabel);
+    DisableTree(kMcFwdTrackLabel);
     DisableTree(kMcCaloLabel);
     DisableTree(kMcCollisionLabel);
     DisableTree(kHepMcCrossSections);
@@ -1357,6 +1361,14 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
       tLabels->Branch("fIndexMcParticles", &mctracklabel.fIndexMcParticles, "fIndexMcParticles/I");
       tLabels->Branch("fMcMask", &mctracklabel.fMcMask, "fMcMask/s");
       tLabels->SetBasketSize("*", fBasketSizeTracks);
+    }
+
+    TTree *tFwdLabels = CreateTree(kMcFwdTrackLabel);
+    if (fTreeStatus[kMcFwdTrackLabel])
+    {
+      tFwdLabels->Branch("fIndexMcParticles", &mcfwdtracklabel.fIndexMcParticles, "fIndexMcParticles/I");
+      tFwdLabels->Branch("fMcMask", &mcfwdtracklabel.fMcMask, "fMcMask/s");
+      tFwdLabels->SetBasketSize("*", fBasketSizeTracks);
     }
 
     // MC labels of each reconstructed calo cluster
@@ -2789,6 +2801,19 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
       FillTree(kFwdTrack);
       FillTree(kFwdTrackCov);
+
+      // add track label in case of MC
+      if(fTaskMode == kMC){ 
+        mcfwdtracklabel.fIndexMcParticles = -1;
+        Int_t alabel = mutrk->GetLabel();
+          // Find the modified label
+        Int_t klabel = kineIndex[TMath::Abs(alabel)];
+        
+        mcfwdtracklabel.fIndexMcParticles = TMath::Abs(klabel) + fOffsetLabel;
+        mcfwdtracklabel.fMcMask = 0;
+        FillTree(kMcFwdTrackLabel);
+      }
+
       if (fTreeStatus[kFwdTrack])
       nmu_filled++;
     } // End loop on muon tracks
@@ -3451,7 +3476,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       pmdInfo.fDet        = pmdtr->GetDetector();
       pmdInfo.fNcell      = pmdtr->GetClusterCells();
 
-      pmdInfo.fTrackNo    = pmdtr->GetClusterTrackNo() + fOffsetLabel;
+      // use kine index map 
+      pmdInfo.fTrackNo    = kineIndex[TMath::Abs(pmdtr->GetClusterTrackNo())] + fOffsetLabel;
       pmdInfo.fTrackPid   = pmdtr->GetClusterTrackPid();
       pmdInfo.fSmn        = pmdtr->GetSmn();
 

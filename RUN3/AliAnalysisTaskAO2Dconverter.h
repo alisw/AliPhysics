@@ -130,6 +130,7 @@ public:
     kMcParticle,
     kMcCollision,
     kMcTrackLabel,
+    kMcFwdTrackLabel,
     kMcCaloLabel,
     kMcCollisionLabel,
     kBC,
@@ -513,6 +514,12 @@ private:
                            ///< Bit 7-9: # of TPC mismatches in the ranges 0, 1, 2-3, 4-7, 8-15, 16-31, 32-63, >64
                            ///< Bit 10: TRD, bit 11: TOF, bit 15: negative label sign
   } mctracklabel; ///<! Track labels
+
+    struct {
+    /// Fwd Track label to find the corresponding MC particle
+    Int_t fIndexMcParticles = 0;       ///< Track label
+    UShort_t fMcMask = 0;
+  } mcfwdtracklabel; ///<! Track labels
 
   struct {
     /// Calo cluster label to find the corresponding MC particle
