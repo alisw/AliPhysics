@@ -587,7 +587,7 @@ TString AliCutHandlerPCM::GetSigmaCut(Int_t i){ // Get deuteron cut
   }
 }
 
-TString AliCutHandlerPCM::GetSpecialFileNameFromString (TString fileNameExternalInputs = "", TString configString = ""){
+TString AliCutHandlerPCM::GetSpecialFileNameFromString (TString fileNameExternalInputs, TString configString, int nCharDescr){
   TObjArray *rfileNameExternalInputs = fileNameExternalInputs.Tokenize(";");
   if(rfileNameExternalInputs->GetEntries()<1){
     cout << "WARNING: Empty string in GetSpecialFileNameFromString during parsing of fileNameExternalInputs '" << fileNameExternalInputs.Data() << "'" << endl;
@@ -598,7 +598,7 @@ TString AliCutHandlerPCM::GetSpecialFileNameFromString (TString fileNameExternal
     TString tempStr = temp->GetString();
     if(tempStr.BeginsWith(configString.Data())){
       cout << "INFO: Found special file " << tempStr.Data() <<"!" << endl;
-      tempStr.Replace(0,5,"");
+      tempStr.Replace(0,nCharDescr,"");
       return tempStr;
     }
   }

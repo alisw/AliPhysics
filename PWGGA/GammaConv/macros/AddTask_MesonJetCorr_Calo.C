@@ -73,7 +73,21 @@ void AddTask_MesonJetCorr_Calo(
   TString fileNamePtWeights = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FPTW:");
   TString fileNameMultWeights = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FMUW:");
   TString fileNameCustomTriggerMimicOADB = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FTRM:");
+  int modeJetWeighting = 0;
   TString fileNameJetWeighting = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FNJW:");
+  if(fileNameExternalInputs.Contains("FNJW") && !fileNameExternalInputs.Contains("FNJW:")) {
+    int index = fileNameExternalInputs.Index("FNJW");
+    TString numberStr = fileNameExternalInputs(index+4, 1);
+    cout << "numberStr " << numberStr << endl;
+    modeJetWeighting = numberStr.Atoi();
+    fileNameJetWeighting = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, Form("FNJW%i:", modeJetWeighting), 6);
+    if(modeJetWeighting < 0 || modeJetWeighting > 100){
+      cout << "modeJetWeighting = " << modeJetWeighting << " that is very suspicous...";
+    } else {
+      cout << "modeJetWeighting set to " << modeJetWeighting << "   fileNameJetWeighting = " << fileNameJetWeighting << endl;
+    }
+  }
+
 
   TString corrTaskSetting = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "", addTaskName);
   if (corrTaskSetting.CompareTo(""))
@@ -289,6 +303,19 @@ void AddTask_MesonJetCorr_Calo(
     cuts.AddCutCalo("00075103", "411790009fe30230000", "2s634034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
   } else if (trainConfig == 62) { // eta < 1.35
     cuts.AddCutCalo("00075103", "411790009fe30230000", "2s630034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+
+  
+  // The standard train config in order to test jet weighting procedure
+  } else if (trainConfig == 70) {
+    cuts.AddCutCalo("00010103", "411790009fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 71) {
+    cuts.AddCutCalo("00010103", "411790009fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 72) {
+    cuts.AddCutCalo("00010103", "411790009fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 73) {
+    cuts.AddCutCalo("00010103", "411790009fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 74) {
+    cuts.AddCutCalo("00010103", "411790009fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
 
   //---------------------------------------
   // Cut variations for standard cut (2)
@@ -551,7 +578,7 @@ void AddTask_MesonJetCorr_Calo(
   task->SetForcePi0Unstable(setPi0Unstable);
   task->SetUseMixedBackAdd(enableAddBackground);
   task->SetDoRadiusDependence(enableRadiusDep);
-  if(!fileNameJetWeighting.EqualTo(""))task->SetParticleWeighting(fileNameJetWeighting);
+  if(!fileNameJetWeighting.EqualTo(""))task->SetParticleWeighting(fileNameJetWeighting, modeJetWeighting);
 
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_Calo_%i_%i%s%s", meson, trainConfig, corrTaskSetting.EqualTo("") == true ? "" : Form("_%s", corrTaskSetting.Data()), nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );

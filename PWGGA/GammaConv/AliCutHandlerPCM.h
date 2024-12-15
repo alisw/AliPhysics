@@ -29,7 +29,7 @@ class AliCutHandlerPCM{
     void AddCutHeavyMesonSigma(TString eventCut, TString clusterCut, TString mesonCut, TString sigmaCut);
 
     TString GetSpecialSettingFromAddConfig (TString additionalTrainConfig, TString configString, TString fileNameMatBudWeights, TString addTaskName);
-    TString GetSpecialFileNameFromString (TString fileNameExternalInputs, TString configString);
+    TString GetSpecialFileNameFromString (TString fileNameExternalInputs = "", TString configString = "", int nCharDescr = 5);
 
     Bool_t AreValid(){return fValidCuts;}
     Int_t GetNCuts();
