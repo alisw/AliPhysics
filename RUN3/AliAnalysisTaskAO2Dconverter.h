@@ -105,6 +105,8 @@ public:
 
   void SetDisableEMCAL(bool flag = true) { fDisableEMCAL = flag; }
 
+  int8_t packInInt8(float nSigma);
+
   static AliAnalysisTaskAO2Dconverter* AddTask(TString suffix = "");
   enum TreeIndex { // Index of the output trees
     kEvents = 0,
@@ -143,6 +145,21 @@ public:
     kHepMcHeavyIon,
     kRun2TrackExtras,
     kPMD,
+    kTPCpidEl,
+    kTPCpidMu,
+    kTPCpidPi,
+    kTPCpidKa, 
+    kTPCpidPr,
+    kTPCpidDe,
+    kTPCpidTr, 
+    kTPCpidHe, 
+    kTPCpidAl,
+    kCentV0M,
+    kCentV0A,
+    kCentCL0,
+    kCentCL1,
+    kCentRefMult5,
+    kCentRefMult8,
     kTrees
   };
   enum TaskModes { // Flag for the task operation mode
@@ -318,6 +335,13 @@ private:
     // The prototype below can be switched on request
     Float_t fCollisionTime = -999.f;    /// Event time (t0) obtained with different methods (best, T0, T0-TOF, ...)
     Float_t fCollisionTimeRes = -999.f; /// Resolution on the event time (t0) obtained with different methods (best, T0, T0-TOF, ...)
+
+    Float_t fCentV0M = 200.f;
+    Float_t fCentV0A = 200.f;
+    Float_t fCentCL0 = 200.f;
+    Float_t fCentCL1 = 200.f;
+    Float_t fCentRefMult05 = 200.f;
+    Float_t fCentRefMult08 = 200.f;
   } collision; //! structure to keep the primary vertex (avoid name conflicts)
 
   struct {
@@ -433,6 +457,17 @@ private:
     // Time information about the track
     Float_t fTrackTime = -999.f;    /// Track time
     Float_t fTrackTimeRes = -999.f; /// Track time reso
+
+    // packed information of TPC dEdx (tiny version) for cross-checks
+    int8_t fTPCNSigmaStoreEl;
+    int8_t fTPCNSigmaStoreMu;
+    int8_t fTPCNSigmaStorePi;
+    int8_t fTPCNSigmaStoreKa;
+    int8_t fTPCNSigmaStorePr;
+    int8_t fTPCNSigmaStoreDe;
+    int8_t fTPCNSigmaStoreTr;
+    int8_t fTPCNSigmaStoreHe;
+    int8_t fTPCNSigmaStoreAl;
   } tracks;                      //! structure to keep track information
 
   struct {
@@ -859,7 +894,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 35);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 36);
 };
 
 #endif

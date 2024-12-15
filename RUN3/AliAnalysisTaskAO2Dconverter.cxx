@@ -132,7 +132,22 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2hepmcpdfinfo",
   "O2hepmcheavyion",
   "O2run2trackextra_001",
-  "O2pmd"
+  "O2pmd",
+  "O2tpcpidel",
+  "O2tpcpidmu",
+  "O2tpcpidpi",
+  "O2tpcpidka",
+  "O2tpcpidpr", 
+  "O2tpcpidde", 
+  "O2tpcpidtr", 
+  "O2tpcpidhe", 
+  "O2tpcpidal",
+  "O2centrun2v0m",
+  "O2centrun2v0a",
+  "O2centrun2cl0",
+  "O2centrun2cl1",
+  "O2centrun2refmult5",
+  "O2centrun2refmult8"
 };
 
 const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
@@ -171,7 +186,22 @@ const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
   "O2 HepMc Pdf Info",
   "O2 HepMc Heavy Ion",
   "Barrel tracks Extra Run2",
-  "PMD info"
+  "PMD info",
+  "packed TPC PID for electrons",
+  "packed TPC PID for muons",
+  "packed TPC PID for pions",
+  "packed TPC PID for kaons",
+  "packed TPC PID for protons",
+  "packed TPC PID for deuterons",
+  "packed TPC PID for tritons",
+  "packed TPC PID for helium",
+  "packed TPC PID for alpha",
+  "V0M Centrality",
+  "V0A Centrality",
+  "CL0 Centrality",
+  "CL1 Centrality",
+  "RefMult 0.5 Centrality",
+  "RefMult 0.8 Centrality"
 };
 
 const TClass *AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = {AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class()};
@@ -298,10 +328,24 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
 
   // disable experimental features 
   fTreeStatus[kPMD] = kFALSE;
+  fTreeStatus[kTPCpidEl] = kFALSE;
+  fTreeStatus[kTPCpidMu] = kFALSE;
+  fTreeStatus[kTPCpidPi] = kFALSE;
+  fTreeStatus[kTPCpidKa] = kFALSE;
+  fTreeStatus[kTPCpidPr] = kFALSE;
+  fTreeStatus[kTPCpidDe] = kFALSE;
+  fTreeStatus[kTPCpidTr] = kFALSE;
+  fTreeStatus[kTPCpidHe] = kFALSE;
+  fTreeStatus[kTPCpidAl] = kFALSE;
+
+  fTreeStatus[kCentV0M] = kFALSE;
+  fTreeStatus[kCentV0A] = kFALSE;
+  fTreeStatus[kCentCL0] = kFALSE;
+  fTreeStatus[kCentCL1] = kFALSE;
+  fTreeStatus[kCentRefMult5] = kFALSE;
+  fTreeStatus[kCentRefMult8] = kFALSE;
 
 } // AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
-
-
 
 AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
 {
@@ -862,6 +906,44 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tEvents->SetBasketSize("*", fBasketSizeEvents);
   }
 
+  // optionally, add centrality
+  TTree *tCentV0M = CreateTree(kCentV0M);
+  if (fTreeStatus[kCentV0M])
+  {
+    tCentV0M->Branch("fCentRun2V0M", &collision.fCentV0M, "fCentRun2V0M/F");
+    tCentV0M->SetBasketSize("*", fBasketSizeEvents);
+  }
+  TTree *tCentV0A = CreateTree(kCentV0A);
+  if (fTreeStatus[kCentV0A])
+  {
+    tCentV0A->Branch("fCentRun2V0A", &collision.fCentV0A, "fCentRun2V0A/F");
+    tCentV0A->SetBasketSize("*", fBasketSizeEvents);
+  }
+  TTree *tCentCL0 = CreateTree(kCentCL0);
+  if (fTreeStatus[kCentCL0])
+  {
+    tCentCL0->Branch("fCentRun2CL0", &collision.fCentCL0, "fCentRun2CL0/F");
+    tCentCL0->SetBasketSize("*", fBasketSizeEvents);
+  }
+  TTree *tCentCL1 = CreateTree(kCentCL1);
+  if (fTreeStatus[kCentCL1])
+  {
+    tCentCL1->Branch("fCentRun2CL1", &collision.fCentCL1, "fCentRun2CL1/F");
+    tCentCL1->SetBasketSize("*", fBasketSizeEvents);
+  }
+  TTree *tCentRefMult5 = CreateTree(kCentRefMult5);
+  if (fTreeStatus[kCentRefMult5])
+  {
+    tCentRefMult5->Branch("fCentRun2RefMult5", &collision.fCentRefMult05, "fCentRun2RefMult5/F");
+    tCentRefMult5->SetBasketSize("*", fBasketSizeEvents);
+  }
+  TTree *tCentRefMult8 = CreateTree(kCentRefMult8);
+  if (fTreeStatus[kCentRefMult8])
+  {
+    tCentRefMult8->Branch("fCentRun2RefMult8", &collision.fCentRefMult08, "fCentRun2RefMult8/F");
+    tCentRefMult8->SetBasketSize("*", fBasketSizeEvents);
+  }
+
   // Extra information for debugging for event table
   TTree *tEventsExtra = CreateTree(kEventsExtra);
   if (fTreeStatus[kEventsExtra])
@@ -1395,6 +1477,61 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     }
   }
 
+  TTree *tTPCPIDEl = CreateTree(kTPCpidEl);
+  if (fTreeStatus[kTPCpidEl])
+  {
+    tTPCPIDEl->Branch("fTPCNSigmaStoreEl", &tracks.fTPCNSigmaStoreEl, "fTPCNSigmaStoreEl/B");
+    tTPCPIDEl->SetBasketSize("*", fBasketSizeEvents);
+  }
+  TTree *tTPCPIDMu = CreateTree(kTPCpidMu);
+  if (fTreeStatus[kTPCpidMu])
+  {
+    tTPCPIDMu->Branch("fTPCNSigmaStoreMu", &tracks.fTPCNSigmaStoreMu, "fTPCNSigmaStoreMu/B");
+    tTPCPIDMu->SetBasketSize("*", fBasketSizeEvents);
+  }
+  TTree *tTPCPIDPi = CreateTree(kTPCpidPi);
+  if (fTreeStatus[kTPCpidPi])
+  {
+    tTPCPIDPi->Branch("fTPCNSigmaStorePi", &tracks.fTPCNSigmaStorePi, "fTPCNSigmaStorePi/B");
+    tTPCPIDPi->SetBasketSize("*", fBasketSizeEvents);
+  }
+  TTree *tTPCPIDKa = CreateTree(kTPCpidKa);
+  if (fTreeStatus[kTPCpidKa])
+  {
+    tTPCPIDKa->Branch("fTPCNSigmaStoreKa", &tracks.fTPCNSigmaStoreKa, "fTPCNSigmaStoreKa/B");
+    tTPCPIDKa->SetBasketSize("*", fBasketSizeEvents);
+  }
+  TTree *tTPCPIDPr = CreateTree(kTPCpidPr);
+  if (fTreeStatus[kTPCpidPr])
+  {
+    tTPCPIDPr->Branch("fTPCNSigmaStorePr", &tracks.fTPCNSigmaStorePr, "fTPCNSigmaStorePr/B");
+    tTPCPIDPr->SetBasketSize("*", fBasketSizeEvents);
+  }
+  TTree *tTPCPIDDe = CreateTree(kTPCpidDe);
+  if (fTreeStatus[kTPCpidDe])
+  {
+    tTPCPIDDe->Branch("fTPCNSigmaStoreDe", &tracks.fTPCNSigmaStoreDe, "fTPCNSigmaStoreDe/B");
+    tTPCPIDDe->SetBasketSize("*", fBasketSizeEvents);
+  }
+  TTree *tTPCPIDTr = CreateTree(kTPCpidTr);
+  if (fTreeStatus[kTPCpidTr])
+  {
+    tTPCPIDTr->Branch("fTPCNSigmaStoreTr", &tracks.fTPCNSigmaStoreTr, "fTPCNSigmaStoreTr/B");
+    tTPCPIDTr->SetBasketSize("*", fBasketSizeEvents);
+  }
+  TTree *tTPCPIDHe = CreateTree(kTPCpidHe);
+  if (fTreeStatus[kTPCpidHe])
+  {
+    tTPCPIDHe->Branch("fTPCNSigmaStoreHe", &tracks.fTPCNSigmaStoreHe, "fTPCNSigmaStoreHe/B");
+    tTPCPIDHe->SetBasketSize("*", fBasketSizeEvents);
+  }
+  TTree *tTPCPIDAl = CreateTree(kTPCpidAl);
+  if (fTreeStatus[kTPCpidAl])
+  {
+    tTPCPIDAl->Branch("fTPCNSigmaStoreAl", &tracks.fTPCNSigmaStoreAl, "fTPCNSigmaStoreAl/B");
+    tTPCPIDAl->SetBasketSize("*", fBasketSizeEvents);
+  }
+
   Prune(); //Removing all unwanted branches (if any)
 } // void AliAnalysisTaskAO2Dconverter::InitTF(Int_t tfId)
 
@@ -1518,6 +1655,38 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     collision.fCollisionTimeRes = AliMathBase::TruncateFloatFraction(TMath::Sqrt(9. / 10.) * TMath::Mean(10, eventTimeRes), mCollisionPositionCov); // PH bad approximation
 
     FillTree(kEvents);
+
+    // aggregate centrality if requested
+    AliMultSelection *multSelection = nullptr;
+    collision.fCentV0M = 200.0f;
+    collision.fCentV0A = 200.0f;
+    collision.fCentCL0 = 200.0f;
+    collision.fCentCL1 = 200.0f;
+    collision.fCentRefMult05 = 200.0f;
+    collision.fCentRefMult08 = 200.0f;
+    if (fVEvent) {
+      multSelection = (AliMultSelection *)fVEvent->FindListObject("MultSelection");
+    }
+    if (multSelection){
+      if(fTreeStatus[kCentV0M]) {
+        collision.fCentV0M = multSelection->GetMultiplicityPercentile("V0MNew");
+        if(collision.fCentV0M>101.0f){
+          collision.fCentV0M = multSelection->GetMultiplicityPercentile("V0M");
+        }
+      }
+      if(fTreeStatus[kCentV0A]) collision.fCentV0A = multSelection->GetMultiplicityPercentile("V0A");
+      if(fTreeStatus[kCentCL0]) collision.fCentCL0 = multSelection->GetMultiplicityPercentile("CL0");
+      if(fTreeStatus[kCentCL1]) collision.fCentCL1 = multSelection->GetMultiplicityPercentile("CL1");
+      if(fTreeStatus[kCentRefMult5]) collision.fCentRefMult05 = multSelection->GetMultiplicityPercentile("RefMult05");
+      if(fTreeStatus[kCentRefMult8]) collision.fCentRefMult08 = multSelection->GetMultiplicityPercentile("RefMult08");
+    }
+
+    FillTree(kCentV0M);
+    FillTree(kCentV0A);
+    FillTree(kCentCL0);
+    FillTree(kCentCL1);
+    FillTree(kCentRefMult5);
+    FillTree(kCentRefMult8);
   }
 
   //---------------------------------------------------------------------------
@@ -2059,6 +2228,17 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         tracks.fTrackPhiEMCAL = 0.0f;
       }
 
+      // TPC n-sigma for testing
+      tracks.fTPCNSigmaStoreEl = packInInt8(PIDResponse->NumberOfSigmasTPC(track,AliPID::kElectron));
+      tracks.fTPCNSigmaStoreMu = packInInt8(PIDResponse->NumberOfSigmasTPC(track,AliPID::kMuon));
+      tracks.fTPCNSigmaStorePi = packInInt8(PIDResponse->NumberOfSigmasTPC(track,AliPID::kPion));
+      tracks.fTPCNSigmaStoreKa = packInInt8(PIDResponse->NumberOfSigmasTPC(track,AliPID::kKaon));
+      tracks.fTPCNSigmaStorePr = packInInt8(PIDResponse->NumberOfSigmasTPC(track,AliPID::kProton));
+      tracks.fTPCNSigmaStoreDe = packInInt8(PIDResponse->NumberOfSigmasTPC(track,AliPID::kDeuteron));
+      tracks.fTPCNSigmaStoreTr = packInInt8(PIDResponse->NumberOfSigmasTPC(track,AliPID::kTriton));
+      tracks.fTPCNSigmaStoreHe = packInInt8(PIDResponse->NumberOfSigmasTPC(track,AliPID::kHe3));
+      tracks.fTPCNSigmaStoreAl = packInInt8(PIDResponse->NumberOfSigmasTPC(track,AliPID::kAlpha));
+
       if (fTaskMode == kMC)
       {
         // Separate tables (trees) for the MC labels
@@ -2163,6 +2343,18 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       FillTree(kTracksCov);
       FillTree(kTracksExtra);
       FillTree(kRun2TrackExtras);
+
+      // compressed TPC nsigma if requested
+      FillTree(kTPCpidEl);
+      FillTree(kTPCpidMu);
+      FillTree(kTPCpidPi);
+      FillTree(kTPCpidKa);
+      FillTree(kTPCpidPr);
+      FillTree(kTPCpidDe);
+      FillTree(kTPCpidTr);
+      FillTree(kTPCpidHe);
+      FillTree(kTPCpidAl);
+
       if (fTreeStatus[kTracks])
         ntrk_filled++;
 
@@ -2246,6 +2438,17 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         tracks.fTOFExpMom = NAN;
         tracks.fTrackTime = NAN;
         tracks.fTrackTimeRes = NAN;
+
+        // TPC n-sigma for testing
+        tracks.fTPCNSigmaStoreEl = packInInt8(-10.0f);
+        tracks.fTPCNSigmaStoreMu = packInInt8(-10.0f);
+        tracks.fTPCNSigmaStorePi = packInInt8(-10.0f);
+        tracks.fTPCNSigmaStoreKa = packInInt8(-10.0f);
+        tracks.fTPCNSigmaStorePr = packInInt8(-10.0f);
+        tracks.fTPCNSigmaStoreDe = packInInt8(-10.0f);
+        tracks.fTPCNSigmaStoreTr = packInInt8(-10.0f);
+        tracks.fTPCNSigmaStoreHe = packInInt8(-10.0f);
+        tracks.fTPCNSigmaStoreAl = packInInt8(-10.0f);
 
         if (fTaskMode == kMC)
         {
@@ -4200,6 +4403,27 @@ Bool_t AliAnalysisTaskAO2Dconverter::RelabelAODPhotonCandidates(AliAODConversion
     PhotonCandidate->SetLabelPositive(-999999);
   }
   return kFALSE;
+}
+
+//________________________________________________________________________
+int8_t AliAnalysisTaskAO2Dconverter::packInInt8(float nSigma)
+{
+  // packs TPC n-sigma in int8_t
+  static constexpr int nbins = (1 << 8 * sizeof(int8_t)) - 2;
+  static constexpr int8_t overflowBin = nbins >> 1;
+  static constexpr int8_t underflowBin = -(nbins >> 1);
+  static constexpr float binned_max = 6.35;
+  static constexpr float binned_min = -6.35;
+  static constexpr float bin_width = (binned_max - binned_min) / nbins;
+
+  // calculate
+  if(nSigma<=binned_min) return underflowBin;
+  if(nSigma>=binned_max) return overflowBin;
+  if(nSigma>=0){
+    return static_cast<int8_t>((nSigma/bin_width)+0.5f);
+  }
+  // automatic: this is the case in which nSigma < 0
+  return static_cast<int8_t>((nSigma/bin_width)-0.5f);
 }
 
 ////////////////////////////////////////////////////////////
