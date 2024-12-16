@@ -4230,7 +4230,12 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("10130e03", "0dm00009ab770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm'
       cuts.AddCutPCM("10130e03", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
       cuts.AddCutPCM("10130e03", "0d2000098b770c00amd0404000", "0152101500000000"); // TPC e (-2.5, 3) ('8')  
-      
+
+  } else if (trainConfig == 5008){ //_______________________
+      cuts.AddCutPCM("10130e03", "0dm00009a8770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm', && TPC pi (2, 1)
+      cuts.AddCutPCM("10130e03", "0d200009ab770d00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p < 2.0GeV ('d')  
+      cuts.AddCutPCM("10130e03", "0d200009ab770b00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p ('b')  
+
     // data 30-50%
   } else if (trainConfig == 5030){//________________________
       cuts.AddCutPCM("13530e03", "0d200009ab770c00amd0404000", "0152101500000000"); // standard data
@@ -4278,6 +4283,11 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("13530e03", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
       cuts.AddCutPCM("13530e03", "0d2000098b770c00amd0404000", "0152101500000000"); // TPC e (-2.5, 3) ('8')  
 
+  } else if (trainConfig == 5038){ //_______________________
+      cuts.AddCutPCM("13530e03", "0dm00009a8770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm', && TPC pi (2, 1)
+      cuts.AddCutPCM("13530e03", "0d200009ab770d00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p < 2.0GeV ('d')  
+      cuts.AddCutPCM("13530e03", "0d200009ab770b00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p ('b')  
+
     // MC MB 0-10%
   } else if (trainConfig == 5100){//________________________
       cuts.AddCutPCM("10130053", "0d200009ab770c00amd0404000", "0152101500000000"); // standard
@@ -4324,7 +4334,12 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("10130053", "0dm00009ab770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm'
       cuts.AddCutPCM("10130053", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
       cuts.AddCutPCM("10130053", "0d2000098b770c00amd0404000", "0152101500000000"); // TPC e (-2.5, 3) ('8')  
-      
+
+  } else if (trainConfig == 5108){ //_______________________
+      cuts.AddCutPCM("10130053", "0dm00009a8770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm', && TPC pi (2, 1)
+      cuts.AddCutPCM("10130053", "0d200009ab770d00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p < 2.0GeV ('d')  
+      cuts.AddCutPCM("10130053", "0d200009ab770b00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p ('b')  
+
     // MC MB 30-50%
   } else if (trainConfig == 5130){//________________________
       cuts.AddCutPCM("13530053", "0d200009ab770c00amd0404000", "0152101500000000"); // standard data
@@ -4372,6 +4387,11 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("13530053", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
       cuts.AddCutPCM("13530053", "0d2000098b770c00amd0404000", "0152101500000000"); // TPC e (-2.5, 3) ('8')  
 
+  } else if (trainConfig == 5138){ //_______________________
+      cuts.AddCutPCM("13530053", "0dm00009a8770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm', && TPC pi (2, 1)
+      cuts.AddCutPCM("13530053", "0d200009ab770d00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p < 2.0GeV ('d')  
+      cuts.AddCutPCM("13530053", "0d200009ab770b00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p ('b')  
+
     // MC AS 1 0-10%
   } else if (trainConfig == 5200){//________________________
       cuts.AddCutPCM("10130023", "0d200009ab770c00amd0404000", "0152101500000000"); // standard
@@ -4418,7 +4438,12 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("10130023", "0dm00009ab770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm'
       cuts.AddCutPCM("10130023", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
       cuts.AddCutPCM("10130023", "0d2000098b770c00amd0404000", "0152101500000000"); // TPC e (-2.5, 3) ('8')
-      
+
+  } else if (trainConfig == 5208){ //_______________________
+      cuts.AddCutPCM("10130023", "0dm00009a8770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm', && TPC pi (2, 1)
+      cuts.AddCutPCM("10130023", "0d200009ab770d00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p < 2.0GeV ('d')  
+      cuts.AddCutPCM("10130023", "0d200009ab770b00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p ('b')  
+
     // MC AS 1 30-50%
   } else if (trainConfig == 5230){//________________________
       cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // standard data
@@ -4465,6 +4490,11 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("13530023", "0dm00009ab770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm'
       cuts.AddCutPCM("13530023", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
       cuts.AddCutPCM("13530023", "0d2000098b770c00amd0404000", "0152101500000000"); // TPC e (-2.5, 3) ('8')
+
+  } else if (trainConfig == 5238){ //_______________________
+      cuts.AddCutPCM("13530023", "0dm00009a8770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm', && TPC pi (2, 1)
+      cuts.AddCutPCM("13530023", "0d200009ab770d00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p < 2.0GeV ('d')  
+      cuts.AddCutPCM("13530023", "0d200009ab770b00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p ('b')  
 
     // MC AS 2 0-10%
   } else if (trainConfig == 5300){//________________________
@@ -4513,6 +4543,11 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("10130023", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
       cuts.AddCutPCM("10130023", "0d2000098b770c00amd0404000", "0152101500000000"); // TPC e (-2.5, 3) ('8')
 
+  } else if (trainConfig == 5308){ //_______________________
+      cuts.AddCutPCM("10130023", "0dm00009a8770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm', && TPC pi (2, 1)
+      cuts.AddCutPCM("10130023", "0d200009ab770d00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p < 2.0GeV ('d')  
+      cuts.AddCutPCM("10130023", "0d200009ab770b00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p ('b')  
+
     // MC AS 2 30-50%
   } else if (trainConfig == 5330){//________________________
       cuts.AddCutPCM("13530023", "0d200009ab770c00amd0404000", "0152101500000000"); // standard data
@@ -4559,6 +4594,11 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("13530023", "0dm00009ab770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm'
       cuts.AddCutPCM("13530023", "0d2000095b770c00amd0404000", "0152101500000000"); // TPC e (-4, 4) ('5')
       cuts.AddCutPCM("13530023", "0d2000098b770c00amd0404000", "0152101500000000"); // TPC e (-2.5, 3) ('8')
+
+  } else if (trainConfig == 5338){ //_______________________
+      cuts.AddCutPCM("13530023", "0dm00009a8770c00amd0404000", "0152101500000000"); // exclude spec. R region 'm', && TPC pi (2, 1)
+      cuts.AddCutPCM("13530023", "0d200009ab770d00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p < 2.0GeV ('d')  
+      cuts.AddCutPCM("13530023", "0d200009ab770b00amd0404000", "0152101500000000"); // TOF e (-4,4) (-4,4) for 0.4GeV < p ('b')  
 
   } else {
     Error(Form("GammaConvV1_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
