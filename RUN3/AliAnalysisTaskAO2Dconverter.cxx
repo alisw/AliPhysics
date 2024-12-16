@@ -2258,6 +2258,9 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         // Find the modified label
         Int_t klabel = kineIndex[TMath::Abs(alabel)];
         mctracklabel.fIndexMcParticles = TMath::Abs(klabel) + fOffsetLabel;
+        if(klabel<0){
+          mctracklabel.fIndexMcParticles = -1; // does not have corresponding particle saved, do not de-ref
+        }
         mctracklabel.fMcMask = 0;
         // Use the ITS shared clusters to set the corresponding bits 0-6
         UChar_t itsMask = track->GetITSSharedMap() & 0x1F; // Normally only bits 0-5 are set in Run1/2
@@ -2469,6 +2472,9 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
           // Find the modified label
           Int_t klabel = kineIndex[TMath::Abs(alabel)];
           mctracklabel.fIndexMcParticles = TMath::Abs(klabel) + fOffsetLabel;
+          if(klabel<0){
+            mctracklabel.fIndexMcParticles = -1; // does not have corresponding particle saved, do not de-ref
+          }
           mctracklabel.fMcMask = 0;
           // Mask fake tracklets
           if (alabel < 0 || klabel < 0)
@@ -2533,6 +2539,9 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         mccalolabel.fAmplitudeFraction_size = 0;
         Int_t klabel = kineIndex[TMath::Abs(mclabel)];
         mccalolabel.fIndexMcParticles[mccalolabel.fIndexMcParticles_size++] = TMath::Abs(klabel) + fOffsetLabel;
+        if(klabel<0){
+          mccalolabel.fIndexMcParticles[mccalolabel.fIndexMcParticles_size++] = -1; // does not have corresponding particle saved, do not de-ref
+        }
         mccalolabel.fAmplitudeFraction[mccalolabel.fAmplitudeFraction_size++] = 1.f;
 
         FillTree(kMcCaloLabel);
@@ -2767,6 +2776,9 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if(mclabel>=0){  //label -1 == no primary
         Int_t klabel = kineIndex[mclabel];
         mccalolabel.fIndexMcParticles[mccalolabel.fIndexMcParticles_size++] = TMath::Abs(klabel) + fOffsetLabel;
+        if(klabel<0){
+          mccalolabel.fIndexMcParticles[mccalolabel.fIndexMcParticles_size++] = -1; // does not have corresponding particle saved
+        }
         mccalolabel.fAmplitudeFraction[mccalolabel.fAmplitudeFraction_size++] = 1.f;
 
         FillTree(kMcCaloLabel);
@@ -2810,6 +2822,9 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         Int_t klabel = kineIndex[TMath::Abs(alabel)];
         
         mcfwdtracklabel.fIndexMcParticles = TMath::Abs(klabel) + fOffsetLabel;
+        if(klabel<0){
+          mcfwdtracklabel.fIndexMcParticles = -1; // does not have corresponding particle saved, do not de-ref
+        }
         mcfwdtracklabel.fMcMask = 0;
         FillTree(kMcFwdTrackLabel);
       }
@@ -3477,7 +3492,12 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       pmdInfo.fNcell      = pmdtr->GetClusterCells();
 
       // use kine index map 
-      pmdInfo.fTrackNo    = kineIndex[TMath::Abs(pmdtr->GetClusterTrackNo())] + fOffsetLabel;
+      if(fTaskMode==kMC){
+        pmdInfo.fTrackNo    = kineIndex[TMath::Abs(pmdtr->GetClusterTrackNo())] + fOffsetLabel;
+        if(kineIndex[TMath::Abs(pmdtr->GetClusterTrackNo())]<0){
+          pmdInfo.fTrackNo = -1; // does not have corresponding particle saved, do not de-ref
+        }
+      }
       pmdInfo.fTrackPid   = pmdtr->GetClusterTrackPid();
       pmdInfo.fSmn        = pmdtr->GetSmn();
 
