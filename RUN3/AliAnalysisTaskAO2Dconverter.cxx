@@ -328,26 +328,6 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
   {
     fTreeStatus[i] = kTRUE;
   }
-
-  // disable experimental features 
-  fTreeStatus[kPMD] = kFALSE;
-  fTreeStatus[kTPCpidEl] = kFALSE;
-  fTreeStatus[kTPCpidMu] = kFALSE;
-  fTreeStatus[kTPCpidPi] = kFALSE;
-  fTreeStatus[kTPCpidKa] = kFALSE;
-  fTreeStatus[kTPCpidPr] = kFALSE;
-  fTreeStatus[kTPCpidDe] = kFALSE;
-  fTreeStatus[kTPCpidTr] = kFALSE;
-  fTreeStatus[kTPCpidHe] = kFALSE;
-  fTreeStatus[kTPCpidAl] = kFALSE;
-
-  fTreeStatus[kCentV0M] = kFALSE;
-  fTreeStatus[kCentV0A] = kFALSE;
-  fTreeStatus[kCentCL0] = kFALSE;
-  fTreeStatus[kCentCL1] = kFALSE;
-  fTreeStatus[kCentRefMult5] = kFALSE;
-  fTreeStatus[kCentRefMult8] = kFALSE;
-
 } // AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
 
 AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
@@ -3479,6 +3459,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     pmdInfo.fIndexCollisions = fCollisionCount;
     for(Int_t trk = 0; trk < PMDTrackks; trk++){
       AliESDPmdTrack *pmdtr = fESD->GetPmdTrack(trk);
+      if(!pmdtr) continue; 
+
       pmdInfo.fX          = AliMathBase::TruncateFloatFraction(pmdtr->GetClusterX(), mPMDPositionPrecision);
       pmdInfo.fY          = AliMathBase::TruncateFloatFraction(pmdtr->GetClusterY(), mPMDPositionPrecision);
       pmdInfo.fZ          = AliMathBase::TruncateFloatFraction(pmdtr->GetClusterZ(), mPMDPositionPrecision);
