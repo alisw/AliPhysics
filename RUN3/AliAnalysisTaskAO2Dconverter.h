@@ -202,7 +202,8 @@ public:
     ITSrefit = 0x1,
     FreeClsSPDTracklet = 0x1, // for SPD tracklets, tracklet from cluster not used in tracking
     TPCrefit = 0x2,
-    GoldenChi2 = 0x4
+    GoldenChi2 = 0x4,
+    TPCout = 0x8
     // NOTE Highest 4 bits reservd for PID hypothesis
   }; // corresponds to O2/Framework/Core/include/Framework/DataTypes.h
   enum MCParticleFlags : uint8_t {
@@ -371,6 +372,8 @@ private:
     UShort_t fSPDFiredFastOrL1 = 0u;   /// number of fired FO chips in SPD L1 (online)
     UShort_t fV0TriggerChargeA = 0u;   /// V0A trigger charge
     UShort_t fV0TriggerChargeC = 0u;   /// V0C trigger charge
+    UInt_t fNTPCClusters = 0u;         /// total number of tpc clusters
+    UInt_t fNSDDSSDClusters = 0u;      /// total number of SDD+SSD clusters
   } run2bcinfo; //! structure to keep run 2 only related info
 
   struct {

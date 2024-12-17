@@ -122,7 +122,7 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2mccalolabel_001", // changed the mask column to std::vector for the amplitude fraction
   "O2mccollisionlabel",
   "O2bc_001",
-  "O2run2bcinfo",
+  "O2run2bcinfo_001",
   "O2origin",
   "O2hmpid_001", // now stores the position of the extrapolated track and HMPID cluster, cluster size, track
   "O2hf2prong",
@@ -964,6 +964,8 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tRun2BCInfo->Branch("fSPDFiredFastOrL1", &run2bcinfo.fSPDFiredFastOrL1, "fSPDFiredFastOrL1/s");
     tRun2BCInfo->Branch("fV0TriggerChargeA", &run2bcinfo.fV0TriggerChargeA, "fV0TriggerChargeA/s");
     tRun2BCInfo->Branch("fV0TriggerChargeC", &run2bcinfo.fV0TriggerChargeC, "fV0TriggerChargeC/s");
+    tRun2BCInfo->Branch("fNTPCClusters", &run2bcinfo.fNTPCClusters, "fNTPCClusters/i");
+    tRun2BCInfo->Branch("fNSDDSSDClusters", &run2bcinfo.fNSDDSSDClusters, "fNSDDSSDClusters/i");
     tRun2BCInfo->SetBasketSize("*", fBasketSizeEvents);
   }
 
@@ -1707,6 +1709,12 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   AliVVZERO* vzero = fInputEvent->GetVZEROData();
   run2bcinfo.fV0TriggerChargeA = vzero->GetTriggerChargeA();
   run2bcinfo.fV0TriggerChargeC = vzero->GetTriggerChargeC();
+  run2bcinfo.fNTPCClusters = fVEvent->GetNumberOfTPCClusters();
+
+  run2bcinfo.fNSDDSSDClusters=0;
+  for(Size_t iLay=2; iLay<6; ++iLay){
+    run2bcinfo.fNSDDSSDClusters+=fVEvent->GetNumberOfITSClusters(iLay);
+  }
 
   run2bcinfo.fEventCuts = 0;
 
@@ -2111,6 +2119,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         tracks.fFlags |= TrackFlagsRun2Enum::ITSrefit;
       if (track->GetStatus() & AliVTrack::kTPCrefit)
         tracks.fFlags |= TrackFlagsRun2Enum::TPCrefit;
+      if (track->GetStatus() & AliVTrack::kTPCout)
+        tracks.fFlags |= TrackFlagsRun2Enum::TPCout;
 
       // add status bit if golden chi2 cut was passed
       if (fESD) {
