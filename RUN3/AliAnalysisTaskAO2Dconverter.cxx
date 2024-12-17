@@ -64,6 +64,8 @@
 #include "AliESDv0.h"
 #include "AliESDcascade.h"
 #include "AliESDPmdTrack.h"
+#include "AliESDFMD.h"
+#include "AliAODForwardMult.h"
 
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
@@ -148,7 +150,8 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2centrun2cl0",
   "O2centrun2cl1",
   "O2centrun2refmult5",
-  "O2centrun2refmult8"
+  "O2centrun2refmult8",
+  "O2fmd"
 };
 
 const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
@@ -203,7 +206,8 @@ const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
   "CL0 Centrality",
   "CL1 Centrality",
   "RefMult 0.5 Centrality",
-  "RefMult 0.8 Centrality"
+  "RefMult 0.8 Centrality",
+  "FMD info"
 };
 
 const TClass *AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = {AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class()};
@@ -269,6 +273,8 @@ namespace
   UInt_t mPMDEnergyPrecision = 0xFFFFFFFF;
   UInt_t mPMDProbabilityPrecision = 0xFFFFFFFF;
 
+  UInt_t mFMD = 0xFFFFFFFF;
+
   // No compression for ZDC for the moment
 
 } // namespace
@@ -319,6 +325,7 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
     hfCascades(),
     hfDStar(),
     pmdInfo(),
+    fmdInfo(),
     fMetaData()
 
 {
@@ -1290,6 +1297,21 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tHMPID->Branch("fHMPIDMom", &hmpids.fHMPIDMom, "fHMPIDMom/F");
     tHMPID->Branch("fHMPIDPhotsCharge", &hmpids.fHMPIDPhotsCharge, "fHMPIDPhotsCharge[10]/F");
     tHMPID->SetBasketSize("*", fBasketSizeTracks);
+  }
+
+  TTree* tfmd = CreateTree(kFMD);
+  if (tfmd) {
+    tfmd->Branch("fIndexBCs",     &fmdInfo.fIndexBCs,    "fIndexBCs/I");
+    tfmd->Branch("fMultiplicity", &fmdInfo.fMultiplicity, Form("fMultiplicity[%d]/F", kFMDNbins));
+    tfmd->Branch("fIPz",          &fmdInfo.fIPz,         "fIPz/F");
+    tfmd->Branch("fCentrality",   &fmdInfo.fCentrality,  "fCentrality/F");
+    tfmd->Branch("fNClusters",    &fmdInfo.fNClusters,   "fNClusters/s");
+    tfmd->Branch("fFlags",        &fmdInfo.fFlags,       "fFlags/i");
+    tfmd->Branch("fConditions",   &fmdInfo.fConditions,  "fConditions/b");
+    tfmd->Branch("fEtaAcceptance",&fmdInfo.fEtaAcceptance, Form("fEtaAcceptance[%d]/O", kFMDNeta));
+    tfmd->Branch("fPhiAcceptance",&fmdInfo.fPhiAcceptance, Form("fPhiAcceptance[%d]/F", kFMDNphi));
+    tfmd->Branch("fSystem",       &fmdInfo.fSystem,      "fSystem/b");
+    tfmd->Branch("fSNN",          &fmdInfo.fSNN,         "fSNN/F");
   }
 
   if (fTaskMode == kMC)
@@ -3496,6 +3518,52 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       pmdInfo.fClMatching = pmdtr->GetClusterMatching();
 
       FillTree(kPMD);
+    }
+  }
+
+  //---------------------------------------------------------------------------
+  // FMD information loop (to be adjusted as necessary)
+  // truncation simplification
+  auto fmdTrunc = [this](Float_t x) { return AliMathBase::TruncateFloatFraction(x,mFMD); };
+
+  // actual processing part
+  if(fTreeStatus[kFMD]){
+    TObject* obj = fVEvent->FindListObject("ForwardMC");
+    if (!obj) {
+      obj = fVEvent->FindListObject("Forward");
+    }
+    AliAODForwardMult* fwdm = static_cast<AliAODForwardMult*>(obj);
+    if (fwdm){
+      TH2D& hist = fwdm->GetHistogram();
+      if (hist.GetNbinsX() != kFMDNeta or
+          hist.GetNbinsY() != kFMDNphi) {
+        AliFatal("FMD: inconsistent number of FMD eta or phi bins");
+      }
+      
+      auto etaBin = fwdm->GetEtaCoverageBin();
+      auto phiBin = fwdm->GetPhiAcceptanceBin();
+
+      bool isMC = false; 
+      if (fTaskMode == kMC) isMC = true;
+
+      fmdInfo.fIndexBCs = fBCCount;
+      for (Int_t ieta = 0; ieta < kFMDNeta; ++ieta){
+        for (Int_t iphi = 0; iphi < kFMDNphi; ++iphi){
+          fmdInfo.fMultiplicity[ieta * kFMDNphi + iphi] = fmdTrunc(hist.GetBinContent(ieta + 1, iphi + 1));
+        }
+
+        fmdInfo.fEtaAcceptance[ieta] = hist.GetBinContent(ieta + 1, etaBin) > 0;
+        fmdInfo.fPhiAcceptance[ieta] = fmdTrunc(hist.GetBinContent(ieta + 1, phiBin));
+      }
+      fmdInfo.fNClusters = fwdm->GetNClusters();
+      fmdInfo.fIPz = fwdm->GetIpZ();
+      fmdInfo.fCentrality = fmdTrunc(fwdm->GetCentrality());
+      fmdInfo.fFlags = fwdm->GetTriggerBits();
+      fmdInfo.fConditions = (fwdm->TestBits(0xFFFFFFFF) >> 14 | (isMC ? (1 << 6) : 0));
+      fmdInfo.fSystem = hist.GetBinContent(kFMDNeta + 1, 0);
+      fmdInfo.fSNN = fmdTrunc(hist.GetBinContent(0, 0));
+      FillTree(kFMD);
+    
     }
   }
 

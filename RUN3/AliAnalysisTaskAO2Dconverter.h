@@ -161,6 +161,7 @@ public:
     kCentCL1,
     kCentRefMult5,
     kCentRefMult8,
+    kFMD,
     kTrees
   };
   enum TaskModes { // Flag for the task operation mode
@@ -860,6 +861,23 @@ private:
     Float_t fSigY = 0.0f; /// Cluster y-width
     Int_t fClMatching = 0; ///Cluster of PRE matching with CPV
   } pmdInfo;                    //! structure to hold PMD information
+
+  constexpr static unsigned short kFMDNeta  = 200;
+  constexpr static unsigned short kFMDNphi  = 20;
+  constexpr static unsigned short kFMDNbins = kFMDNeta * kFMDNphi;
+  struct {
+    Int_t   fIndexBCs;                /// Bunch-crossing index
+    Float_t fMultiplicity[kFMDNbins]; /// Multiplicity estimate per (eta,phi)
+    Float_t fIPz;                     /// Z-coordinate of IP used
+    Float_t fCentrality;              /// Centrality used
+    UShort_t fNClusters;              /// # SPD clusters
+    UInt_t   fFlags;                  /// Event flags
+    UChar_t  fConditions;             /// Processing conditions
+    Bool_t   fEtaAcceptance[kFMDNeta];/// In eta acceptance
+    Float_t  fPhiAcceptance[kFMDNphi];/// phi acceptance
+    UChar_t  fSystem;                 /// Collision system
+    Float_t  fSNN;                    /// Centre-of-mass energy
+  } fmdInfo;
 
   /// Offsets to convert the IDs within one collision to global IDs
   Int_t fOffsetMuTrackID = 0; ///! Offset of MUON track  (used in the clusters)
