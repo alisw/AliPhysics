@@ -1050,7 +1050,7 @@ void AliAnalysisTaskStrangenessInJets::UserCreateOutputObjects()
       fOutputListMC->Add(fhnV0LambdaInJetsDaughterEtaPtPtMCRec[i]);
       fOutputListMC->Add(fhnV0ALambdaInclDaughterEtaPtPtMCRec[i]);
 
-      Int_t iNBinsPtXi = 80;
+      Int_t iNBinsPtXi = 180;
       Double_t dPtXiMin = 0;
       Double_t dPtXiMax = 18;
       const Int_t iNDimFD = 3;
@@ -2969,7 +2969,36 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(Int_t iCent)
       //continue;
     // Get identity of MC particle
     Int_t iPdgCodeParticleMC = particleMC->GetPdgCode();
-    if((TMath::Abs(particleMC->Y()) < 0.5) && IsFromGoodGenerator(iPartMC)) {
+    Double_t dPtV0Gen = particleMC->Pt();
+    Double_t dRapV0Gen = particleMC->Y();
+    Double_t dEtaV0Gen = particleMC->Eta();
+
+    // V0 pseudorapidity cut
+    if(fdCutEtaV0Max > 0.) {
+      if((TMath::Abs(dEtaV0Gen) > fdCutEtaV0Max)) 
+        continue;
+    }
+    // V0 rapidity cut
+    if(fdCutRapV0Max > 0.) {
+      if((TMath::Abs(dRapV0Gen) > fdCutRapV0Max)) 
+        continue;
+    }  
+
+    // Get the distance between the production point of the MC V0 particle and the primary vertex
+    Double_t dx = dPrimVtxMCX - particleMC->Xv();
+    Double_t dy = dPrimVtxMCY - particleMC->Yv();
+    Double_t dz = dPrimVtxMCZ - particleMC->Zv();
+    Double_t dDistPrimary = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
+    Bool_t bV0MCIsPrimaryDist = (dDistPrimary < fdDistPrimaryMax); // Is close enough to be considered primary-like?
+    // Select only primary-like MC V0 particles
+    if(!bV0MCIsPrimaryDist)
+      continue;
+
+    // Select only particles from a specific generator
+    if(!IsFromGoodGenerator(iPartMC))
+      continue;
+
+    if((dRapV0Gen < 0.6)) {
       if((iPdgCodeParticleMC == 3312)) {
         fh1V0XiPtMCGen[iCent]->Fill(particleMC->Pt());
         new ((*fGenMCXis)[iNMCCand]) AliAODMCParticle(*particleMC); //  
@@ -2999,35 +3028,6 @@ Bool_t AliAnalysisTaskStrangenessInJets::GeneratedMCParticles(Int_t iCent)
     // Is MC V0 particle anti-Lambda?
     Bool_t bV0MCIsALambda = (iPdgCodeParticleMC == -iPdgCodeLambda);
 
-    Double_t dPtV0Gen = particleMC->Pt();
-    Double_t dRapV0Gen = particleMC->Y();
-    Double_t dEtaV0Gen = particleMC->Eta();
-
-    // V0 pseudorapidity cut
-    if(fdCutEtaV0Max > 0.) {
-      if((TMath::Abs(dEtaV0Gen) > fdCutEtaV0Max)) 
-        continue;
-    }
-    // V0 rapidity cut
-    if(fdCutRapV0Max > 0.) {
-      if((TMath::Abs(dRapV0Gen) > fdCutRapV0Max)) 
-        continue;
-    }   
-
-    // Get the distance between the production point of the MC V0 particle and the primary vertex
-    Double_t dx = dPrimVtxMCX - particleMC->Xv();
-    Double_t dy = dPrimVtxMCY - particleMC->Yv();
-    Double_t dz = dPrimVtxMCZ - particleMC->Zv();
-    Double_t dDistPrimary = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
-    Bool_t bV0MCIsPrimaryDist = (dDistPrimary < fdDistPrimaryMax); // Is close enough to be considered primary-like?
-    // Select only primary-like MC V0 particles
-    if(!bV0MCIsPrimaryDist)
-      continue;
-   
-    // Select only particles from a specific generator
-    if(!IsFromGoodGenerator(iPartMC))
-      continue;
-    
     if(particleMC->GetNDaughters() != 2)
       continue;
 
