@@ -202,9 +202,9 @@ public:
    */
   virtual void SetDoTiming(Bool_t enable=true);
    /**
-   * Get pointer to the AliAODForwardMult object 
+   * Get reference to the AliAODForwardMult object 
    * 
-   * @return Pointer to AliAODForwardMult object 
+   * @return reference to AliAODForwardMult object 
    */
   const AliAODForwardMult& GetAODFMD() const        {return fAODFMD;}
 protected: 
