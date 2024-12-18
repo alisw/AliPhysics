@@ -1303,17 +1303,17 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
 
   TTree* tfmd = CreateTree(kFMD);
   if (tfmd) {
-    tfmd->Branch("fIndexBCs",     &fmdInfo.fIndexBCs,    "fIndexBCs/I");
-    tfmd->Branch("fMultiplicity", &fmdInfo.fMultiplicity, Form("fMultiplicity[%d]/F", kFMDNbins));
-    tfmd->Branch("fIPz",          &fmdInfo.fIPz,         "fIPz/F");
-    tfmd->Branch("fCentrality",   &fmdInfo.fCentrality,  "fCentrality/F");
-    tfmd->Branch("fNClusters",    &fmdInfo.fNClusters,   "fNClusters/s");
-    tfmd->Branch("fFlags",        &fmdInfo.fFlags,       "fFlags/i");
-    tfmd->Branch("fConditions",   &fmdInfo.fConditions,  "fConditions/b");
-    tfmd->Branch("fEtaAcceptance",&fmdInfo.fEtaAcceptance, Form("fEtaAcceptance[%d]/O", kFMDNeta));
-    tfmd->Branch("fPhiAcceptance",&fmdInfo.fPhiAcceptance, Form("fPhiAcceptance[%d]/F", kFMDNeta));
-    tfmd->Branch("fSystem",       &fmdInfo.fSystem,      "fSystem/b");
-    tfmd->Branch("fSNN",          &fmdInfo.fSNN,         "fSNN/F");
+    tfmd->Branch("fIndexCollisions",&fmdInfo.fIndexCollisions, "fIndexCollisions/I");
+    tfmd->Branch("fMultiplicity",   &fmdInfo.fMultiplicity,     Form("fMultiplicity[%d]/F", kFMDNbins));
+    tfmd->Branch("fIPz",            &fmdInfo.fIPz,             "fIPz/F");
+    tfmd->Branch("fCentrality",     &fmdInfo.fCentrality,      "fCentrality/F");
+    tfmd->Branch("fNClusters",      &fmdInfo.fNClusters,       "fNClusters/s");
+    tfmd->Branch("fFlags",          &fmdInfo.fFlags,           "fFlags/i");
+    tfmd->Branch("fConditions",     &fmdInfo.fConditions,      "fConditions/b");
+    tfmd->Branch("fEtaAcceptance",  &fmdInfo.fEtaAcceptance,    Form("fEtaAcceptance[%d]/O", kFMDNeta));
+    tfmd->Branch("fPhiAcceptance",  &fmdInfo.fPhiAcceptance,    Form("fPhiAcceptance[%d]/F", kFMDNeta));
+    tfmd->Branch("fSystem",         &fmdInfo.fSystem,          "fSystem/b");
+    tfmd->Branch("fSNN",            &fmdInfo.fSNN,             "fSNN/F");
   }
 
   if (fTaskMode == kMC)
@@ -3547,7 +3547,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       bool isMC = false; 
       if (fTaskMode == kMC) isMC = true;
 
-      fmdInfo.fIndexBCs = fBCCount;
+      fmdInfo.fIndexCollisions = fCollisionCount;
       for (Int_t ieta = 0; ieta < kFMDNeta; ++ieta){
         for (Int_t iphi = 0; iphi < kFMDNphi; ++iphi){
           fmdInfo.fMultiplicity[ieta * kFMDNphi + iphi] = fmdTrunc(hist.GetBinContent(ieta + 1, iphi + 1));
