@@ -22,6 +22,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/RUN3
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWGGA/Common
                     ${AliPhysics_SOURCE_DIR}/PWGGA/GammaConvBase
+                    ${AliPhysics_SOURCE_DIR}/PWGLF/FORWARD/analysis2/
 )
 
 # Additional include folders in alphabetical order except ROOT
