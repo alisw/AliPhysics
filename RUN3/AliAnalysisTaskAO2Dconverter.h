@@ -12,6 +12,7 @@
 #include "AliTriggerAnalysis.h"
 #include "AliAODInputHandler.h"
 #include "AliAODConversionPhoton.h"
+#include "AliAODForwardMult.h"
 #include "AliConversionPhotonCuts.h"
 #include <TString.h>
 #include <TMap.h>
@@ -874,7 +875,7 @@ private:
     UInt_t   fFlags;                  /// Event flags
     UChar_t  fConditions;             /// Processing conditions
     Bool_t   fEtaAcceptance[kFMDNeta];/// In eta acceptance
-    Float_t  fPhiAcceptance[kFMDNphi];/// phi acceptance
+    Float_t  fPhiAcceptance[kFMDNeta];/// phi acceptance
     UChar_t  fSystem;                 /// Collision system
     Float_t  fSNN;                    /// Centre-of-mass energy
   } fmdInfo;

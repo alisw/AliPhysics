@@ -201,6 +201,12 @@ public:
    * @param enable 
    */
   virtual void SetDoTiming(Bool_t enable=true);
+   /**
+   * Get pointer to the AliAODForwardMult object 
+   * 
+   * @return Pointer to AliAODForwardMult object 
+   */
+  const AliAODForwardMult& GetAODFMD() const        {return fAODFMD;}
 protected: 
   /** 
    * Copy constructor 

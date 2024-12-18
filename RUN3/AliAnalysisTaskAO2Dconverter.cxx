@@ -66,6 +66,7 @@
 #include "AliESDPmdTrack.h"
 #include "AliESDFMD.h"
 #include "AliAODForwardMult.h"
+#include "AliForwardMultiplicityTask.h"
 
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
@@ -652,6 +653,7 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
   }
   // Centrality QA
   Float_t centrality = -999;
+
   if (fESD) {
     // Get multiplicity selection
     AliMultSelection *multSelection = (AliMultSelection *)fESD->FindListObject("MultSelection");
@@ -1309,7 +1311,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tfmd->Branch("fFlags",        &fmdInfo.fFlags,       "fFlags/i");
     tfmd->Branch("fConditions",   &fmdInfo.fConditions,  "fConditions/b");
     tfmd->Branch("fEtaAcceptance",&fmdInfo.fEtaAcceptance, Form("fEtaAcceptance[%d]/O", kFMDNeta));
-    tfmd->Branch("fPhiAcceptance",&fmdInfo.fPhiAcceptance, Form("fPhiAcceptance[%d]/F", kFMDNphi));
+    tfmd->Branch("fPhiAcceptance",&fmdInfo.fPhiAcceptance, Form("fPhiAcceptance[%d]/F", kFMDNeta));
     tfmd->Branch("fSystem",       &fmdInfo.fSystem,      "fSystem/b");
     tfmd->Branch("fSNN",          &fmdInfo.fSNN,         "fSNN/F");
   }
@@ -3528,20 +3530,19 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
   // actual processing part
   if(fTreeStatus[kFMD]){
-    TObject* obj = fVEvent->FindListObject("ForwardMC");
-    if (!obj) {
-      obj = fVEvent->FindListObject("Forward");
-    }
-    AliAODForwardMult* fwdm = static_cast<AliAODForwardMult*>(obj);
-    if (fwdm){
-      TH2D& hist = fwdm->GetHistogram();
+    // retrieve AliAODForwardMult from multiplicity task
+    AliForwardMultiplicityTask* fwdMultTask = (AliForwardMultiplicityTask*)AliAnalysisManager::GetAnalysisManager()->GetTask("Forward");
+    if(fwdMultTask){ 
+      // found proper task, now retrieving 
+      const AliAODForwardMult &fAODFMD = fwdMultTask->GetAODFMD(); 
+      const TH2D& hist = fAODFMD.GetHistogram();
       if (hist.GetNbinsX() != kFMDNeta or
           hist.GetNbinsY() != kFMDNphi) {
         AliFatal("FMD: inconsistent number of FMD eta or phi bins");
       }
       
-      auto etaBin = fwdm->GetEtaCoverageBin();
-      auto phiBin = fwdm->GetPhiAcceptanceBin();
+      auto etaBin = fAODFMD.GetEtaCoverageBin();
+      auto phiBin = fAODFMD.GetPhiAcceptanceBin();
 
       bool isMC = false; 
       if (fTaskMode == kMC) isMC = true;
@@ -3555,15 +3556,17 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         fmdInfo.fEtaAcceptance[ieta] = hist.GetBinContent(ieta + 1, etaBin) > 0;
         fmdInfo.fPhiAcceptance[ieta] = fmdTrunc(hist.GetBinContent(ieta + 1, phiBin));
       }
-      fmdInfo.fNClusters = fwdm->GetNClusters();
-      fmdInfo.fIPz = fwdm->GetIpZ();
-      fmdInfo.fCentrality = fmdTrunc(fwdm->GetCentrality());
-      fmdInfo.fFlags = fwdm->GetTriggerBits();
-      fmdInfo.fConditions = (fwdm->TestBits(0xFFFFFFFF) >> 14 | (isMC ? (1 << 6) : 0));
+      fmdInfo.fNClusters = fAODFMD.GetNClusters();
+      fmdInfo.fIPz = fAODFMD.GetIpZ();
+      fmdInfo.fCentrality = fmdTrunc(fAODFMD.GetCentrality());
+      fmdInfo.fFlags = fAODFMD.GetTriggerBits();
+      fmdInfo.fConditions = (fAODFMD.TestBits(0xFFFFFFFF) >> 14 | (isMC ? (1 << 6) : 0));
       fmdInfo.fSystem = hist.GetBinContent(kFMDNeta + 1, 0);
       fmdInfo.fSNN = fmdTrunc(hist.GetBinContent(0, 0));
       FillTree(kFMD);
-    
+    }else{
+      AliWarning("Could not locate AliForwardMultiplicityTask in the Analysis Manager. Disabling FMD. Further printouts suppressed."); 
+      fTreeStatus[kFMD] = kFALSE;
     }
   }
 
