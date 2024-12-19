@@ -1077,7 +1077,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
   TTree* tPmdInfo = CreateTree(kPMD);
   if (fTreeStatus[kPMD]) {
     // PMD information
-    tPmdInfo->Branch("fIndexCollisions", &tracks.fIndexCollisions, "fIndexCollisions/I");
+    tPmdInfo->Branch("fIndexBCs", &pmdInfo.fIndexBCs, "fIndexBCs/I");
     tPmdInfo->Branch("fX", &pmdInfo.fX, "fX/F");
     tPmdInfo->Branch("fY", &pmdInfo.fY, "fY/F");
     tPmdInfo->Branch("fZ", &pmdInfo.fZ, "fZ/F");
@@ -1303,7 +1303,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
 
   TTree* tfmd = CreateTree(kFMD);
   if (tfmd) {
-    tfmd->Branch("fIndexCollisions",&fmdInfo.fIndexCollisions, "fIndexCollisions/I");
+    tfmd->Branch("fIndexBCs",       &fmdInfo.fIndexBCs,        "fIndexBCs/I");
     tfmd->Branch("fMultiplicity",   &fmdInfo.fMultiplicity,     Form("fMultiplicity[%d]/F", kFMDNbins));
     tfmd->Branch("fIPz",            &fmdInfo.fIPz,             "fIPz/F");
     tfmd->Branch("fCentrality",     &fmdInfo.fCentrality,      "fCentrality/F");
@@ -3490,7 +3490,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
   // PMD information loop (to be adjusted as necessary)
   if(fESD){ // path from ESD only (check for AOD if needed)
 	  Int_t PMDTrackks = fESD->GetNumberOfPmdTracks();
-    pmdInfo.fIndexCollisions = fCollisionCount;
+    pmdInfo.fIndexBCs = fBCCount;
     for(Int_t trk = 0; trk < PMDTrackks; trk++){
       AliESDPmdTrack *pmdtr = fESD->GetPmdTrack(trk);
       if(!pmdtr) continue; 
@@ -3547,7 +3547,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       bool isMC = false; 
       if (fTaskMode == kMC) isMC = true;
 
-      fmdInfo.fIndexCollisions = fCollisionCount;
+      fmdInfo.fIndexBCs = fBCCount;
       for (Int_t ieta = 0; ieta < kFMDNeta; ++ieta){
         for (Int_t iphi = 0; iphi < kFMDNphi; ++iphi){
           fmdInfo.fMultiplicity[ieta * kFMDNphi + iphi] = fmdTrunc(hist.GetBinContent(ieta + 1, iphi + 1));

@@ -847,7 +847,7 @@ private:
 
   struct {
     // pmd information
-    Int_t fIndexCollisions = -1;  /// stores information for collision association
+    Int_t fIndexBCs = 0u;         /// Index to BC table
     Float_t fX = 0.0f;            /// Cluster X position
     Float_t fY = 0.0f;            /// Cluster Y position
     Float_t fZ = 0.0f;            /// Cluster Z position
@@ -867,7 +867,7 @@ private:
   constexpr static unsigned short kFMDNphi  = 20;
   constexpr static unsigned short kFMDNbins = kFMDNeta * kFMDNphi;
   struct {
-    Int_t   fIndexCollisions = -1;    /// Collision index
+    Int_t fIndexBCs = 0u;             /// Index to BC table
     Float_t fMultiplicity[kFMDNbins]; /// Multiplicity estimate per (eta,phi)
     Float_t fIPz;                     /// Z-coordinate of IP used
     Float_t fCentrality;              /// Centrality used
