@@ -133,6 +133,8 @@ fDoPerpCone(kTRUE),
 fDoRandCone(kTRUE),
 fDoFastJet(kTRUE),
 fDoEMCJet(kTRUE),
+fDoEventTree(kFALSE),
+fDoEventHistos(kTRUE),
 fFillFastJet(kTRUE),
 fFillJetsFJConst(kTRUE),
 fFillEMCJet(kTRUE),
@@ -145,7 +147,8 @@ fFill_TOF(kTRUE),
 fFill_TOF_expecs(kTRUE),
 fFill_TPC_expecs(kTRUE),
 fFillJetsEMCConst(kTRUE),
-fFillJetsEMCBGConst(kTRUE),
+fFillJetsEMCBG(kFALSE),
+fFillJetsEMCBGConst(kFALSE),
 fcent_min(0.0),
 fcent_max(100.0),
 fDoRapCut(kFALSE),
@@ -265,6 +268,19 @@ fTrackProbDeTOF(0),
 fHistCentrality(0),
 fHistImpParam(0),
 fHistVertex(0),
+fHist_Is_Good_Inc_Event(0),
+fHist_Has_Acc_Real_FJ_Jet(0),
+fHist_Has_Acc_Real_EMC_Jet(0),
+fHist_Num_Real_FJ_Jets(0),
+fHist_Num_Real_EMC_Jets(0),
+fHist_RhoFJ(0),
+fHist_RhoEMC(0),
+fHist_RhoEMCReco(0),
+fHist_RhoEMCGen(0),
+fHist_RhoEMCEmb(0),
+fHist_Filled_UEC_Emb(0),
+fHist_Filled_UEC_Gen(0),
+fHist_Filled_UEC_Rec(0),
 fHistIncTracks_dEdx(0),
 fHistIncTracks_moms(0),
 fHistIncTracks_moms_p(0),
@@ -453,11 +469,14 @@ fDoPerpCone(kTRUE),
 fDoRandCone(kTRUE),
 fDoFastJet(kTRUE),
 fDoEMCJet(kTRUE),
+fDoEventTree(kFALSE),
+fDoEventHistos(kTRUE),
 fFillFastJet(kTRUE),
 fFillJetsFJConst(kTRUE),
 fFillEMCJet(kTRUE),
 fFillJetsEMCConst(kTRUE),
-fFillJetsEMCBGConst(kTRUE),
+fFillJetsEMCBG(kFALSE),
+fFillJetsEMCBGConst(kFALSE),
 fFillIncTracks(kTRUE),
 fFill_TPC(kTRUE),
 fFillpTPC_pT(kTRUE),
@@ -585,6 +604,19 @@ fTrackProbDeTOF(0),
 fHistCentrality(0),
 fHistImpParam(0),
 fHistVertex(0),
+fHist_Is_Good_Inc_Event(0),
+fHist_Has_Acc_Real_FJ_Jet(0),
+fHist_Has_Acc_Real_EMC_Jet(0),
+fHist_Num_Real_FJ_Jets(0),
+fHist_Num_Real_EMC_Jets(0),
+fHist_RhoFJ(0),
+fHist_RhoEMC(0),
+fHist_RhoEMCReco(0),
+fHist_RhoEMCGen(0),
+fHist_RhoEMCEmb(0),
+fHist_Filled_UEC_Emb(0),
+fHist_Filled_UEC_Gen(0),
+fHist_Filled_UEC_Rec(0),
 fHistIncTracks_dEdx(0),
 fHistIncTracks_moms(0),
 fHistIncTracks_moms_p(0),
@@ -750,17 +782,21 @@ fMultTrueFlag(kFALSE)
   //
   // Define outputs
   DefineOutput(1, TList::Class());
-  DefineOutput(2, TTree::Class());
-  DefineOutput(3, TTree::Class());
-  DefineOutput(4, TTree::Class());
-  DefineOutput(5, TTree::Class());
-  DefineOutput(6, TTree::Class());
-  DefineOutput(7, TTree::Class());
-  DefineOutput(8, TTree::Class());
-  DefineOutput(9, TTree::Class());
-  DefineOutput(10, TTree::Class());
-  DefineOutput(11, TTree::Class());
-  DefineOutput(12, TTree::Class());
+
+  if (fDoEventTree){
+    DefineOutput(2, TTree::Class());
+    DefineOutput(3, TTree::Class());
+    DefineOutput(4, TTree::Class());
+    DefineOutput(5, TTree::Class());
+    DefineOutput(6, TTree::Class());
+    DefineOutput(7, TTree::Class());
+    DefineOutput(8, TTree::Class());
+    DefineOutput(9, TTree::Class());
+    DefineOutput(10, TTree::Class());
+    DefineOutput(11, TTree::Class());
+    DefineOutput(12, TTree::Class());
+  }
+
   // ==========================================
 
 }
@@ -775,6 +811,20 @@ AliAnalysisTaskJetHadroAOD::~AliAnalysisTaskJetHadroAOD()
   if (fHistCentrality)      delete fHistCentrality;
   if (fHistImpParam)        delete fHistImpParam;
   if (fHistVertex)          delete fHistVertex;
+  if (fHist_Is_Good_Inc_Event)          delete fHist_Is_Good_Inc_Event;
+  if (fHist_Has_Acc_Real_FJ_Jet)          delete fHist_Has_Acc_Real_FJ_Jet;
+  if (fHist_Has_Acc_Real_EMC_Jet)          delete fHist_Has_Acc_Real_EMC_Jet;
+  if (fHist_Num_Real_FJ_Jets)          delete fHist_Num_Real_FJ_Jets;
+  if (fHist_Num_Real_EMC_Jets)          delete fHist_Num_Real_EMC_Jets;
+  if (fHist_RhoFJ)          delete fHist_RhoFJ;
+  if (fHist_RhoEMC)          delete fHist_RhoEMC;
+  if (fHist_RhoEMCReco)          delete fHist_RhoEMCReco;
+  if (fHist_RhoEMCGen)          delete fHist_RhoEMCGen;
+  if (fHist_RhoEMCEmb)          delete fHist_RhoEMCEmb;
+  if (fHist_Filled_UEC_Emb)          delete fHist_Filled_UEC_Emb;
+  if (fHist_Filled_UEC_Gen)          delete fHist_Filled_UEC_Gen;
+  if (fHist_Filled_UEC_Rec)          delete fHist_Filled_UEC_Rec;
+
   if (fHistIncTracks_dEdx)          delete fHistIncTracks_dEdx;
   if (fHistIncTracks_moms)          delete fHistIncTracks_moms;
   if (fHistIncTracks_moms_p)          delete fHistIncTracks_moms_p;
@@ -1089,8 +1139,23 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
   //   Event histograms
   // ************************************************************************
   //
-  fHistCentrality        = new TH1F("hCentrality",           "control histogram for centrality"           , 10,  0., 100.);
+  fHistCentrality        = new TH1F("hCentrality",           "control histogram for centrality"           , 11,  -10., 100.);
   fHistVertex            = new TH1F("hVertex",               "control histogram for vertex Z position"    , 200, -20., 20.);
+
+  fHist_Is_Good_Inc_Event            = new TH1F("hIs_Good_Inc_Event", "Good inclusive event or not"    , 2, 0., 2.);
+  fHist_Has_Acc_Real_FJ_Jet            = new TH1F("hHas_Acc_Real_FJ_Jet", "Good jet event: 0 no accepted jets, 1 accepted jet but not real, 2 has real jet" , 3, 0., 3.);
+  fHist_Has_Acc_Real_EMC_Jet            = new TH1F("hHas_Acc_Real_EMC_Jet", "Good jet event: 0 no accepted jets, 1 accepted jet but not real, 2 has real jet" , 3, 0., 3.);
+  fHist_Num_Real_FJ_Jets            = new TH1F("hNum_Real_FJ_Jets", "Number of Real FJ Jets", 10, 0., 10.);
+  fHist_Num_Real_EMC_Jets            = new TH1F("hNum_Real_EMC_Jets", "Number of Real FJ Jets", 10, 0., 10.);
+  fHist_RhoFJ            = new TH1F("hRhoFJ", "FJ Rho Value"    , 600, 0., 600.);
+  fHist_RhoEMC            = new TH1F("hRhoEMC", "EMC Rho Value"    , 600, 0., 600.);
+  fHist_RhoEMCReco            = new TH1F("hRhoEMCReco", "EMC Reco Rho Value", 600, 0., 600.);
+  fHist_RhoEMCGen            = new TH1F("hRhoEMCGen", "EMC Gen Rho Value", 600, 0., 600.);
+  fHist_RhoEMCEmb            = new TH1F("hRhoEMCEmb", "EMC Emb Rho Value", 600, 0., 600.);
+
+  fHist_Filled_UEC_Emb            = new TH1F("hFilled_UEC_Emb", "Filled Emb UE Cone or not", 2, 0., 2.);
+  fHist_Filled_UEC_Gen            = new TH1F("hFilled_UEC_Gen", "Filled Gen UE Cone or not", 2, 0., 2.);
+  fHist_Filled_UEC_Rec            = new TH1F("hFilled_UEC_Rec", "Filled Rec UE Cone or not", 2, 0., 2.);
 
   if (!fMCtrue || fDoEmbedding){
 
@@ -1381,6 +1446,26 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
 
   }
 
+  if (fDoEventHistos){
+    fListHist->Add(fHistCentrality);
+    fListHist->Add(fHist_Is_Good_Inc_Event);
+    fListHist->Add(fHist_Has_Acc_Real_FJ_Jet);
+    fListHist->Add(fHist_Has_Acc_Real_EMC_Jet);
+    fListHist->Add(fHist_Num_Real_FJ_Jets);
+    fListHist->Add(fHist_Num_Real_EMC_Jets);
+    fListHist->Add(fHist_RhoFJ);
+    fListHist->Add(fHist_RhoEMC);
+    fListHist->Add(fHist_Filled_UEC_Rec);
+    if (fMCtrue || fDoEmbedding){
+      fListHist->Add(fHist_RhoEMCReco);
+      fListHist->Add(fHist_RhoEMCGen);
+      fListHist->Add(fHist_RhoEMCEmb);
+      fListHist->Add(fHist_Filled_UEC_Emb);
+      fListHist->Add(fHist_Filled_UEC_Gen);
+    }
+  }
+
+
   if (!fMCtrue || fDoEmbedding){
 
     if (fFill_TPC) {
@@ -1605,17 +1690,20 @@ void AliAnalysisTaskJetHadroAOD::UserCreateOutputObjects()
   // ************************************************************************
   //
   PostData(1, fListHist);
-  PostData(2, fTreejetsEMCconst);
-  PostData(3, fTreejetsEMCBGconst);
-  PostData(4, fTreejetsFJ);
-  PostData(5, fTreejetsFJBG);
-  PostData(6, fTreejetsFJconst);
-  PostData(7, fTreejetsFJBGconst);
-  PostData(8, fTreejetEvents);
-  PostData(9, fTreejetsEMC);
-  PostData(10, fTreejetsEMCBG);
-  PostData(11, fTreeMC);
-  PostData(12, fTreeCuts);
+
+  if (fDoEventTree){
+    PostData(2, fTreejetsEMCconst);
+    PostData(3, fTreejetsEMCBGconst);
+    PostData(4, fTreejetsFJ);
+    PostData(5, fTreejetsFJBG);
+    PostData(6, fTreejetsFJconst);
+    PostData(7, fTreejetsFJBGconst);
+    PostData(8, fTreejetEvents);
+    PostData(9, fTreejetsEMC);
+    PostData(10, fTreejetsEMCBG);
+    PostData(11, fTreeMC);
+    PostData(12, fTreeCuts);
+  } 
 
   std::cout << " Info::siweyhmi: ===== Out of UserCreateOutputObjects ===== " << std::endl;
 
@@ -1653,9 +1741,7 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
   //
   fCentrality = -5;
   fCentImpBin =-10.;
-  AliCentrality    *Centrality = 0x0;
-  AliMultSelection *MultSelection = 0x0;
-  AliMultSelectionTask *MultSelectionTask = 0x0;
+
   fAOD = dynamic_cast<AliAODEvent*>( InputEvent() );
   if (fAOD)
   {
@@ -1671,8 +1757,25 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
       }
     //
     //
-    Centrality = fAOD->GetCentrality();
-    MultSelection = (AliMultSelection*) fAOD-> FindListObject("MultSelection");
+
+    if (fYear!=2017){
+      AliCentrality    *Centrality = 0x0;
+      AliMultSelection *MultSelection = 0x0;
+      AliMultSelectionTask *MultSelectionTask = 0x0;
+      Centrality = fAOD->GetCentrality();
+      MultSelection = (AliMultSelection*) fAOD-> FindListObject("MultSelection");
+
+      if (MultSelection) {
+        if (fMultTrueFlag) fCentrality = MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
+        else fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+      } else if (Centrality) {
+        fCentrality = Centrality->GetCentralityPercentile("V0M");
+      } else {
+        std::cout << " Info::siweyhmi: Error: There is no cent info " << std::endl;
+      }
+
+    }
+
   }
 
   //
@@ -1718,14 +1821,8 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
   // ---------- Centrality definition ---------------
   // ------------------------------------------------
   //
-  if (MultSelection) {
-    if (fMultTrueFlag) fCentrality = MultSelection->GetMultiplicityPercentile("V0M",kTRUE);
-    else fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
-  } else if (Centrality) {
-    fCentrality = Centrality->GetCentralityPercentile("V0M");
-  } else {
-    std::cout << " Info::siweyhmi: Error: There is no cent info " << std::endl;
-  }
+
+
   //
   if (fUseCouts) {
     std::cout << " Info::siweyhmi: =============================================================================================== " << std::endl;
@@ -1769,7 +1866,12 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
     if (fDoFastJet){
       FindJetsFJ();
     }
-    FillEventTree();
+    if (fDoEventTree){
+      FillEventTree();
+    }
+    if (fDoEventHistos){
+      FillEventHistos();
+    }
     if (fUseCouts)  std::cout << " Info::siweyhmi: (Real Data Analysis) End of Filling part = " << fEventCountInFile << std::endl;
     return kTRUE;
   }
@@ -1806,7 +1908,12 @@ Bool_t AliAnalysisTaskJetHadroAOD::Run()
     if (fDoEmbedding){
       FillEmbJets();
     }
-    FillEventTree();
+    if (fDoEventTree){
+      FillEventTree();
+    }
+    if (fDoEventHistos){
+      FillEventHistos();
+    }
     if (fUseCouts)  std::cout << " Info::siweyhmi: (full MC analysis) End of Filling part = " << fEventCountInFile << std::endl;
 
     if (fUseCouts) cout << "num_reco_jets_w_multiple_matches over all events is " <<  fall_reco_jets_w_multiple_matches << endl;
@@ -4293,7 +4400,7 @@ void AliAnalysisTaskJetHadroAOD::FillEmbJets()
 
 
     if (matchedJetPt_Det==-0.1 || matchedJetPt_Part==-0.1) {
-      cout << "THIS JET WASNT MATCHED" << endl; //CHANGE
+      if (fUseCouts) cout << "THIS JET WASNT MATCHED" << endl;
       continue;
     }
 
@@ -5086,6 +5193,52 @@ void AliAnalysisTaskJetHadroAOD::FillEventTree()
   "fall_reco_jets_w_multiple_matches="   << fall_reco_jets_w_multiple_matches <<
   "fall_reco_jets_w_matches="   << fall_reco_jets_w_matches <<
   "\n";
+}
+//________________________________________________________________________
+void AliAnalysisTaskJetHadroAOD::FillEventHistos()
+{
+  if (fUseCouts) std::cout << " Info::siweyhmi: ===== In the FillEventHistos ===== " << std::endl;
+
+  //Good event info (inclusive and jets)
+  fHist_Is_Good_Inc_Event->Fill(fisGoodIncEvent+0.5);
+  if (fhasAcceptedFJjet){
+    if (fhasRealFJjet){
+      fHist_Has_Acc_Real_FJ_Jet->Fill(2.5);
+    }
+    else{
+      fHist_Has_Acc_Real_FJ_Jet->Fill(1.5);
+    }
+  }
+  else {
+    fHist_Has_Acc_Real_FJ_Jet->Fill(0.5);
+  }
+  if (fhasAcceptedEMCjet){
+    if (fhasRealEMCjet){
+      fHist_Has_Acc_Real_EMC_Jet->Fill(2.5);
+    }
+    else{
+      fHist_Has_Acc_Real_EMC_Jet->Fill(1.5);
+    }
+  }
+  else {
+    fHist_Has_Acc_Real_EMC_Jet->Fill(0.5);
+  }
+
+  //Number of Jets Info
+  fHist_Num_Real_FJ_Jets->Fill(fNumRealFJJets+0.5);
+  fHist_Num_Real_EMC_Jets->Fill(fNumRealEMCJets+0.5);
+
+  //Rho Info
+  fHist_RhoFJ->Fill(frhoFJ);
+  fHist_RhoEMC->Fill(fjetRhoVal);
+  fHist_RhoEMCReco->Fill(fjetRecoRhoVal);
+  fHist_RhoEMCGen->Fill(fjetGenRhoVal);
+  fHist_RhoEMCEmb->Fill(fjetEmbRhoVal);
+
+  //UE Cone Info
+  fHist_Filled_UEC_Emb->Fill(fFilledUECone_Emb+0.5);
+  fHist_Filled_UEC_Gen->Fill(fFilledUECone_Gen+0.5);
+  fHist_Filled_UEC_Rec->Fill(fFilledUECone_Rec+0.5);
 }
 //________________________________________________________________________
 void AliAnalysisTaskJetHadroAOD::GetExpecteds(AliAODTrack* track)

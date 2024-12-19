@@ -97,6 +97,8 @@ public:
   void   SetDoRandCone(const Bool_t ifdoRandCone = kTRUE)               {fDoRandCone        = ifdoRandCone;}
   void   SetDoFastJet(const Bool_t ifFastJet = kTRUE)               {fDoFastJet         = ifFastJet;}
   void   SetDoEMCJet(const Bool_t ifEMCJet = kTRUE)               {fDoEMCJet         = ifEMCJet;}
+  void   SetDoEventTree(const Bool_t ifEventTree = kTRUE)               {fDoEventTree         = ifEventTree;}
+  void   SetDoEventHistos(const Bool_t ifEventHisto = kTRUE)               {fDoEventHistos         = ifEventHisto;}
   void   SetFillFastJet(const Bool_t ifFastJet = kTRUE)               {fFillFastJet         = ifFastJet;}
   void   SetFillEMCJet(const Bool_t ifEMCJet = kTRUE)               {fFillEMCJet         = ifEMCJet;}
   void   SetFillJetsEMCConst(const Bool_t ifJetsEMCConst = kTRUE)     {fFillJetsEMCConst     = ifJetsEMCConst;}
@@ -200,6 +202,7 @@ private:
   void FillEmbJets();
   void GetExpecteds(AliAODTrack* track);
   void FillEventTree();
+  void FillEventHistos();
   void GetTrueJetPtFraction(AliEmcalJet* jet, Double_t& truePtFraction, Double_t& truePtFraction_mcparticles);
   bool PerformGeometricalJetMatching(AliJetContainer& contBase, AliJetContainer& contTag, double maxDist);
   void DoJetMatching();
@@ -262,6 +265,8 @@ private:
   Bool_t            fDoRandCone;         // switch whether to use random cone tracks
   Bool_t            fDoFastJet;         // switch whether to use FJ jets
   Bool_t            fDoEMCJet;         // switch whether to use EMC jets
+  Bool_t            fDoEventTree;         // switch whether to use tree for event variables
+  Bool_t            fDoEventHistos;         // switch whether to use histos for event variables
   Bool_t            fFillJetsEMCConst;        // switch whether to fill jetsEMC constituent tree
   Bool_t            fFillJetsFJConst;        // switch whether to fill jetsFJ constituent tree
   Bool_t            fFillJetsEMCBG;        // switch whether to fill jetsEMCBG tree
@@ -412,6 +417,20 @@ private:
   TH1F             * fHistCentrality;            //!<! control histogram for centrality
   TH1F             * fHistImpParam;              //!<! control histogram for impact parameter
   TH1F             * fHistVertex;                //!<! control histogram for vertexZ
+  TH1F             * fHist_Is_Good_Inc_Event;    //!<! histogram for good inclusive events
+  TH1F             * fHist_Has_Acc_Real_FJ_Jet;    //!<! histogram for good FJ jet events
+  TH1F             * fHist_Has_Acc_Real_EMC_Jet;    //!<! histogram for good jet events
+  TH1F             * fHist_Num_Real_FJ_Jets;    //!<! histogram for number of real FJ jets
+  TH1F             * fHist_Num_Real_EMC_Jets;    //!<! histogram for number of real EMC jets
+  TH1F             * fHist_RhoFJ;    //!<! histogram for FJ rho values
+  TH1F             * fHist_RhoEMC;    //!<! histogram for EMC rho values
+  TH1F             * fHist_RhoEMCReco;    //!<! histogram for EMC reco rho values
+  TH1F             * fHist_RhoEMCGen;    //!<! histogram for EMC gen rho values
+  TH1F             * fHist_RhoEMCEmb;    //!<! histogram for EMC Emb rho values
+  TH1F             * fHist_Filled_UEC_Emb;    //!<! histogram for filled Emb UE cones or not
+  TH1F             * fHist_Filled_UEC_Gen;    //!<! histogram for filled Gen UE cones or not
+  TH1F             * fHist_Filled_UEC_Rec;    //!<! histogram for filled Rec UE cones or not
+
   TH3F             * fHistIncTracks_dEdx;        //!<! histogram for inclusive tracks dEdx all eta v some momentum form
   TH2F             * fHistIncTracks_moms;        //!<! histogram for inclusive tracks ptpc to pT
   TH2F             * fHistIncTracks_moms_p;        //!<! histogram for inclusive tracks p to pT
@@ -591,7 +610,7 @@ private:
   AliFJWrapper* fFastJetWrapper_Gen;            //!<! signal MC gen FJwrapper
   AliFJWrapper* fFastJetWrapperBG_Gen;            //!<! background MC gen FJwrapper
 
-  ClassDef(AliAnalysisTaskJetHadroAOD, 4);
+  ClassDef(AliAnalysisTaskJetHadroAOD, 5);
 
 };
 
