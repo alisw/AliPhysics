@@ -54,6 +54,7 @@ void AddTask_MesonJetCorr_Calo(
   bool enableAddBackground = false,
   bool enableRadiusDep = false,
   int runOnlyZPt = 0,           // if 0, bot pt and z histograms will be filled, if 1, pt histograms will be filled, if 2, only z histograms will be filled
+  bool doTrackingStudies = false,
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig
 
@@ -578,6 +579,7 @@ void AddTask_MesonJetCorr_Calo(
   task->SetForcePi0Unstable(setPi0Unstable);
   task->SetUseMixedBackAdd(enableAddBackground);
   task->SetDoRadiusDependence(enableRadiusDep);
+  task->SetDoTrackingEff(doTrackingStudies);
   if(!fileNameJetWeighting.EqualTo(""))task->SetParticleWeighting(fileNameJetWeighting, modeJetWeighting);
 
   //connect containers

@@ -64,6 +64,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
 
   // base functions for selecting photon and meson candidates
   void ProcessClusters();
+  void ProcessTracks();
   void ProcessPhotonCandidates();
   void CalculateMesonCandidates();
   void CalculateBackground();
@@ -179,6 +180,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
     fDoWeightGenParticles = modeJetWeighting;
   }
   void InitializePartAbundanceWeighting();
+  void SetDoTrackingEff(bool tmp) {fDoTrackingStudies = tmp;}
 
  protected:
   //-------------------------------
@@ -538,6 +540,14 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   double fMinFracMomForWeight;
   TString fNameJetWeightingFile;
   std::vector<TH1F*> fHistWeightingPartAbundance;     //! vector of histos that contain a pT dependent weighting for different particle species (defined in GetParticleIndex). Has to be loaded from alien
+  
+
+  //-------------------------------
+  // Tracking efficiency
+  //-------------------------------
+  bool fDoTrackingStudies;                             // flag to set if tracking studies should be performed
+  std::vector<TH2F*> hGenTracksAcceptedVsJetPt;        //! vector of histos generated particle pT vs true jet pT
+  std::vector<TH2F*> hTracksAcceptedVsJetPt;           //! vector of histos reconstructed particle pT (true pT) vs true jet pT
 
   //-------------------------------
   // DCA tree for PCM pile-up estimation
