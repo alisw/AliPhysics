@@ -1,4 +1,4 @@
-// Konstantin Mikhaylov: 17-DEC-2024
+// Konstantin Mikhaylov: 20-DEC-2024
 // 004j: PWGCF/FEMTOSCOPY/macros/Train/KM/pPb502/004j/ConfigFemtoAnalysis.C
 // second wagon with AliFemtoKpm45TrackCut
 // --- Jetty events ---> 0<S_T<.3
@@ -122,7 +122,8 @@ AliFemtoManager* ConfigFemtoAnalysis() {
   Manager->SetEventReader(Reader);
 
   AliFemtoVertexMultAnalysis    *anetaphitpc[20];
-  AliFemtoBasicEventCut         *mecetaphitpc[20];
+  ///////////////////////////////////////////////////////////////////////////////////////////////
+  //  AliFemtoBasicEventCut       *mecetaphitpc[20];//COMMENT this line in case of sphericity!!!!
   AliFemtoSphericityEventCut         *mecetaphitpc[20];//sphericity->()
   //AliFemtoSpherocityEventCut         *mecetaphitpc[20];
   AliFemtoCutMonitorEventMult   *cutPassEvMetaphitpc[20];
