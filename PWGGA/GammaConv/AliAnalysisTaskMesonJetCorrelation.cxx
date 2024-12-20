@@ -298,6 +298,9 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fMinFracMomForWeight(1.),
                                                                              fNameJetWeightingFile(""),
                                                                              fHistWeightingPartAbundance({}),
+                                                                             fDoTrackingStudies(false),
+                                                                             hGenTracksAcceptedVsJetPt({}),
+                                                                             hTracksAcceptedVsJetPt({}),
                                                                              fDCATree({}),
                                                                              fDCATree_InvMass(0),
                                                                              fDCATree_Pt(0),
@@ -584,6 +587,9 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fMinFracMomForWeight(1.),
                                                                                            fNameJetWeightingFile(""),
                                                                                            fHistWeightingPartAbundance({}),
+                                                                                           fDoTrackingStudies(false),
+                                                                                           hGenTracksAcceptedVsJetPt({}),
+                                                                                           hTracksAcceptedVsJetPt({}),
                                                                                            fDCATree({}),
                                                                                            fDCATree_InvMass(0),
                                                                                            fDCATree_Pt(0),
@@ -932,6 +938,11 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
         fHistoTrueMesonInTrueJet_JetPtVsTrueZ.resize(fnCuts);
       }
     }
+  }
+
+  if(fDoTrackingStudies){
+    hTracksAcceptedVsJetPt.resize(fnCuts);
+    hGenTracksAcceptedVsJetPt.resize(fnCuts);
   }
 
   if (fIsConv && fFillDCATree) {
@@ -1797,6 +1808,18 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       }
     } // end MC related
 
+    if(fDoTrackingStudies){
+      hTracksAcceptedVsJetPt[iCut] = new TH2F("AccTracks_JetPt", "AccTracks_JetPt", fVecBinsPhotonPt.size()-1, fVecBinsPhotonPt.data(), fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
+      hTracksAcceptedVsJetPt[iCut]->SetXTitle("p_{T, part} (GeV/c)");
+      hTracksAcceptedVsJetPt[iCut]->SetYTitle("p_{T, jet} (GeV/c)");
+      fTrueList[iCut]->Add(hTracksAcceptedVsJetPt[iCut]);
+
+      hGenTracksAcceptedVsJetPt[iCut] = new TH2F("GenTracks_JetPt", "GenTracks_JetPt", fVecBinsPhotonPt.size()-1, fVecBinsPhotonPt.data(), fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
+      hGenTracksAcceptedVsJetPt[iCut]->SetXTitle("p_{T, part} (GeV/c)");
+      hGenTracksAcceptedVsJetPt[iCut]->SetYTitle("p_{T, jet} (GeV/c)");
+      fTrueList[iCut]->Add(hGenTracksAcceptedVsJetPt[iCut]);
+    }
+
     if (fUseCentralEventSelection) {
       fAliEventCuts.AddQAplotsToList(fESDList[iCut]);
     }
@@ -2334,6 +2357,35 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
   }
 }
 
+
+void AliAnalysisTaskMesonJetCorrelation::ProcessTracks(){
+  if(!fIsMC) return;
+  if (!fAODMCTrackArray)
+    fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+  if (fAODMCTrackArray == NULL)
+    return;
+
+
+  for (Int_t itr=0;itr<fInputEvent->GetNumberOfTracks();itr++){
+    AliVTrack *inTrack = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(itr));
+    if(!inTrack) continue;
+    AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(inTrack);
+    if(!aodt->IsHybridGlobalConstrainedGlobal()) continue;
+    int label = std::abs(aodt->GetLabel());
+    
+    AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(label));
+    if(!particle) continue;
+    
+    int matchedJet = -1;
+    double RJetPi0Cand = 0.4;
+    double jetpT = 1.;
+    if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fTrueVectorJetEta, fTrueVectorJetPhi, fConvJetReader->Get_Jet_Radius(), particle->Eta(), particle->Phi(), matchedJet, RJetPi0Cand)) {
+      jetpT = fTrueVectorJetPt[matchedJet];
+    }
+    hTracksAcceptedVsJetPt[fiCut]->Fill(particle->Pt(), jetpT, fWeightJetJetMC);
+  }
+}
+
 //_____________________________________________________________________________
 bool AliAnalysisTaskMesonJetCorrelation::IsInEMCalAcc(double r, double eta, double phi)
 {
@@ -2500,11 +2552,11 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
       }
       if (fIsMC > 0) {
         if (eventNotAccepted == 3) { // Event rejected due to wrong trigger, MC particles still have to be processed
-          ProcessAODMCParticles(1);
           ProcessJets(1);
+          ProcessAODMCParticles(1);
         } else if (eventNotAccepted != 1) { // exclude centrality/multiplicity selection from MC particles processing
-          ProcessAODMCParticles(2);
           ProcessJets(2);
+          ProcessAODMCParticles(2);
         }
       }
       continue;
@@ -2519,8 +2571,8 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
 
       if (fIsMC > 0) {
         if (eventQuality != 4) { // 4 = event outside of +-10cm, we dont want to count these events
-          ProcessAODMCParticles(2);
           ProcessJets(2);
+          ProcessAODMCParticles(2);
         }
       }
       continue;
@@ -2537,14 +2589,16 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
     }
     fHistoVertexZ[iCut]->Fill(fInputEvent->GetPrimaryVertex()->GetZ(), fWeightJetJetMC);
 
-    if (fIsMC > 0) {
-      ProcessAODMCParticles(0);
-    }
-
     if (fLocalDebugFlag) {
       printf("ProcessJets\n");
     }
     ProcessJets(0);
+    if (fIsMC > 0) {
+      ProcessAODMCParticles(0);
+    }
+    if(fDoTrackingStudies) {
+      ProcessTracks();
+    }
     if (fIsConvCalo || fIsCalo) {
       if (fLocalDebugFlag) {
         printf("ProcessClusters\n");
@@ -3687,6 +3741,14 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticles(int isCurrentEven
     double RRecJetPi0Cand = 0;
     if (!((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhi, fConvJetReader->Get_Jet_Radius(), particle->Eta(), particle->Phi(), matchedRecJet, RRecJetPi0Cand)) {
       matchedRecJet = -1;
+    }
+
+    if(fDoTrackingStudies){
+      if(particle->IsPrimary() && particle->Charge() != 0){
+        double jetPt = 1;
+        if(matchedJet >= 0) jetPt = fTrueVectorJetPt[matchedJet];
+        hGenTracksAcceptedVsJetPt[fiCut]->Fill(particle->Pt(), jetPt, fWeightJetJetMC);
+      }
     }
 
     if (matchedJet < 0 && matchedRecJet < 0) {
