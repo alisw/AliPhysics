@@ -2375,7 +2375,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTracks(){
     
     AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(label));
     if(!particle) continue;
-    
+    if(std::abs(particle->Eta()) > 0.8) continue;
     int matchedJet = -1;
     double RJetPi0Cand = 0.4;
     double jetpT = 1.;
@@ -3744,7 +3744,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticles(int isCurrentEven
     }
 
     if(fDoTrackingStudies){
-      if(particle->IsPrimary() && particle->Charge() != 0){
+      if(particle->IsPrimary() && particle->Charge() != 0 && std::abs(particle->Eta()) < 0.8){
         double jetPt = 1;
         if(matchedJet >= 0) jetPt = fTrueVectorJetPt[matchedJet];
         hGenTracksAcceptedVsJetPt[fiCut]->Fill(particle->Pt(), jetPt, fWeightJetJetMC);
