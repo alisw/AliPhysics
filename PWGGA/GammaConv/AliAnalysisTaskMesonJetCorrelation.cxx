@@ -301,6 +301,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fDoTrackingStudies(false),
                                                                              hGenTracksAcceptedVsJetPt({}),
                                                                              hTracksAcceptedVsJetPt({}),
+                                                                             hTracksResolution({}),
                                                                              fDCATree({}),
                                                                              fDCATree_InvMass(0),
                                                                              fDCATree_Pt(0),
@@ -590,6 +591,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fDoTrackingStudies(false),
                                                                                            hGenTracksAcceptedVsJetPt({}),
                                                                                            hTracksAcceptedVsJetPt({}),
+                                                                                           hTracksResolution({}),
                                                                                            fDCATree({}),
                                                                                            fDCATree_InvMass(0),
                                                                                            fDCATree_Pt(0),
@@ -943,6 +945,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
   if(fDoTrackingStudies){
     hTracksAcceptedVsJetPt.resize(fnCuts);
     hGenTracksAcceptedVsJetPt.resize(fnCuts);
+    hTracksResolution.resize(fnCuts);
   }
 
   if (fIsConv && fFillDCATree) {
@@ -1818,6 +1821,16 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       hGenTracksAcceptedVsJetPt[iCut]->SetXTitle("p_{T, part} (GeV/c)");
       hGenTracksAcceptedVsJetPt[iCut]->SetYTitle("p_{T, jet} (GeV/c)");
       fTrueList[iCut]->Add(hGenTracksAcceptedVsJetPt[iCut]);
+
+      std::vector<double> vecResol;
+      for (double i = -0.2; i < 0.2; i+=0.01) {
+        vecResol.push_back(i);
+      }
+      hTracksResolution[iCut] = new TH3F("Tracks_GenVsRecPt", "Tracks_GenVsRecPt", vecResol.size()-1, vecResol.data(), fVecBinsPhotonPt.size()-1, fVecBinsPhotonPt.data(), fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
+      hTracksResolution[iCut]->SetYTitle("p_{T, rec} (GeV/c)");
+      hTracksResolution[iCut]->SetXTitle("(p_{T, rec} - p_{T, gen})/p_{T, rec}");
+      hTracksResolution[iCut]->SetZTitle("p_{T, jet} (GeV/c)");
+      fTrueList[iCut]->Add(hTracksResolution[iCut]);
     }
 
     if (fUseCentralEventSelection) {
@@ -2375,6 +2388,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTracks(){
     
     AliAODMCParticle* particle = static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(label));
     if(!particle) continue;
+    if(!particle->IsPhysicalPrimary()) continue;
     if(std::abs(particle->Eta()) > 0.8) continue;
     int matchedJet = -1;
     double RJetPi0Cand = 0.4;
@@ -2383,6 +2397,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTracks(){
       jetpT = fTrueVectorJetPt[matchedJet];
     }
     hTracksAcceptedVsJetPt[fiCut]->Fill(particle->Pt(), jetpT, fWeightJetJetMC);
+    hTracksResolution[fiCut]->Fill((aodt->Pt() - particle->Pt()) / aodt->Pt(), aodt->Pt(), jetpT, fWeightJetJetMC);
   }
 }
 
@@ -3743,8 +3758,8 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticles(int isCurrentEven
       matchedRecJet = -1;
     }
 
-    if(fDoTrackingStudies){
-      if(particle->IsPrimary() && particle->Charge() != 0 && std::abs(particle->Eta()) < 0.8){
+    if(fDoTrackingStudies && isCurrentEventSelected == 0){
+      if(particle->IsPhysicalPrimary() && particle->Charge() != 0 && std::abs(particle->Eta()) < 0.8){
         double jetPt = 1;
         if(matchedJet >= 0) jetPt = fTrueVectorJetPt[matchedJet];
         hGenTracksAcceptedVsJetPt[fiCut]->Fill(particle->Pt(), jetPt, fWeightJetJetMC);
@@ -4144,7 +4159,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTrueClusterCandidatesAOD(AliAODC
 
   // Fill resolution plot
   if (matchedJet >= 0 && fDoMesonQA > 0) {
-    fHistoClusterPtResolutionInJet[fiCut]->Fill(TruePhotonCandidate->Pt(), (TruePhotonCandidate->Pt() - Photon->Pt()) / TruePhotonCandidate->Pt(), fVectorJetPt[matchedJet]);
+    fHistoClusterPtResolutionInJet[fiCut]->Fill(TruePhotonCandidate->Pt(), (TruePhotonCandidate->Pt() - Photon->Pt()) / TruePhotonCandidate->Pt(), fVectorJetPt[matchedJet], tempPhotonWeight);
   }
 
   // True Photon

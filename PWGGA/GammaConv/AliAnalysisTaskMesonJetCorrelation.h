@@ -548,6 +548,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   bool fDoTrackingStudies;                             // flag to set if tracking studies should be performed
   std::vector<TH2F*> hGenTracksAcceptedVsJetPt;        //! vector of histos generated particle pT vs true jet pT
   std::vector<TH2F*> hTracksAcceptedVsJetPt;           //! vector of histos reconstructed particle pT (true pT) vs true jet pT
+  std::vector<TH3F*> hTracksResolution;                //! vector of histos gen vs. reconstructed track pT
 
   //-------------------------------
   // DCA tree for PCM pile-up estimation
