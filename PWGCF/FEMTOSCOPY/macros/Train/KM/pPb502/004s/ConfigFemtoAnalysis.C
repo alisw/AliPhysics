@@ -1,4 +1,4 @@
-// Konstantin Mikhaylov: 22-DEC-2024
+// Konstantin Mikhaylov: 24-DEC-2024
 // 004s: PWGCF/FEMTOSCOPY/macros/Train/KM/pPb502/004s/ConfigFemtoAnalysis.C
 // second wagon with AliFemtoKpm45TrackCut
 // --- Spherical events ---> 0.7<S_T<1.0
