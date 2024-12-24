@@ -1,4 +1,4 @@
-// Konstantin Mikhaylov: 22-DEC-2024
+// Konstantin Mikhaylov: 24-DEC-2024
 // 012: PWGCF/FEMTOSCOPY/macros/Train/KM/pPb502/011/ConfigFemtoAnalysis.C
 //          ____  ::: KM 012->KK 13_DEC_2024
 // Test for K+K+ to select spherical evens 0.7<S<1
