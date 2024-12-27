@@ -1,4 +1,4 @@
-// Konstantin Mikhaylov: 24-DEC-2024
+// Konstantin Mikhaylov: 22-DEC-2024
 // 012: PWGCF/FEMTOSCOPY/macros/Train/KM/pPb502/011/ConfigFemtoAnalysis.C
 //          ____  ::: KM 012->KK 13_DEC_2024
 // Test for K+K+ to select spherical evens 0.7<S<1
@@ -191,7 +191,7 @@ AliFemtoManager* ConfigFemtoAnalysis() {
 	  
 	  //sphericity->() ===>
 	  mecetaphitpc[aniter] = new AliFemtoSphericityEventCut();
-          mecetaphitpc[aniter]->SetEventMult(0.01,100000);
+          mecetaphitpc[aniter]->SetEventMult(0/*0.01*/,100000);//int, int
           mecetaphitpc[aniter]->SetVertZPos(-10.0,10.0);
           mecetaphitpc[aniter]->SetStMin(0.7);//spherical 
           mecetaphitpc[aniter]->SetStMax(1.0);//events 0.7<S<1
