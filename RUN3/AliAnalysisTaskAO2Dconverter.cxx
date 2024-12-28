@@ -137,21 +137,21 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2hepmcheavyion",
   "O2run2trackextra_001",
   "O2pmd",
-  "O2tpcpidel",
-  "O2tpcpidmu",
-  "O2tpcpidpi",
-  "O2tpcpidka",
-  "O2tpcpidpr", 
-  "O2tpcpidde", 
-  "O2tpcpidtr", 
-  "O2tpcpidhe", 
-  "O2tpcpidal",
+  "O2pidtpcel",
+  "O2pidtpcmu",
+  "O2pidtpcpi",
+  "O2pidtpcka",
+  "O2pidtpcpr", 
+  "O2pidtpcde", 
+  "O2pidtpctr", 
+  "O2pidtpche", 
+  "O2pidtpcal",
   "O2centrun2v0m",
   "O2centrun2v0a",
   "O2centrun2cl0",
   "O2centrun2cl1",
-  "O2centrun2refmult5",
-  "O2centrun2refmult8",
+  "O2centrun2remu5",
+  "O2centrun2remu8",
   "O2fmd"
 };
 
@@ -1254,7 +1254,7 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
     tOTFV0s->Branch("fPsiPair", &otfv0s.fPsiPair, "fPsiPair/F");
     tOTFV0s->Branch("fDCAr", &otfv0s.fDCAr, "fDCAr/F");
     tOTFV0s->Branch("fDCAz", &otfv0s.fDCAz, "fDCAz/F");
-    tOTFV0s->Branch("fMass", &otfv0s.fMass, "fMass/F");
+    tOTFV0s->Branch("fMassInMeV", &otfv0s.fMass, "fMassInMeV/F");
     tOTFV0s->SetBasketSize("*", fBasketSizeTracks);
   }
 
