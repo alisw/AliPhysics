@@ -98,7 +98,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
 
   // Jet functions
   void ProcessJets(int isCurrentEventSelected = 0);
-  void InitJets();
+  bool InitJets();
   bool IsJetInAcc(unsigned int accType, double r, double eta, double phi);
   bool IsInEMCalAcc(double r, double eta, double phi);
   bool IsInDCalAcc(double r, double eta, double phi);
@@ -313,6 +313,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   vector<double> fTrueVectorJetPartonPx; //! Vector of parton pt matched to true jet
   vector<double> fTrueVectorJetPartonPy; //! Vector of parton pt matched to true jet
   vector<double> fTrueVectorJetPartonPz; //! Vector of parton pt matched to true jet
+  vector<double> fTrueVectorJetWeight;   //! Vector of true jet weights
+  double fTrueJetPtPrevEvt;              //! true pt of first jet in previous event. This is used to check that the jets have actually changed and nothing nasty has happened!
 
   vector<double> fVectorJetEtaPerp; //! vector of jet -eta (opposite eta to original jet)
   vector<double> fVectorJetPhiPerp; //! vector of jet phi + 90 degree (perpendicular to original jet)
@@ -434,6 +436,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoNJetsVsMult;               //! vector of histos with Number of jets vs. V0M multiplicity
   std::vector<TH2F*> fHistoMaxJetPtVsMult;            //! vector of histos with maxiumum pt jet vs number of tracks
   std::vector<TH3F*> fHistoGenParticleInJet;          //! vector of histos with particle id vs. particle pt vs. jet pT
+  std::vector<TH3F*> fHistoGenParticleInJetWeighted;  //! vector of histos with particle id vs. particle pt vs. jet pT with jet weights applied
   std::vector<TH3F*> fHistoJetTrackPtRadialProfile;   //! vector of 3d histos with Jet pt, fractional momentum and distance of particle to jet axis
   std::vector<TH3F*> fHistoJetClusterPtRadialProfile; //! vector of 3d histos with Jet pt, fractional momentum and distance of cluster to jet axis
 

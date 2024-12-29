@@ -131,6 +131,8 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fTrueVectorJetPartonPx({}),
                                                                              fTrueVectorJetPartonPy({}),
                                                                              fTrueVectorJetPartonPz({}),
+                                                                             fTrueVectorJetWeight({}),
+                                                                             fTrueJetPtPrevEvt(0.),
                                                                              fVectorJetEtaPerp({}),
                                                                              fVectorJetPhiPerp({}),
                                                                              MapRecJetsTrueJets(),
@@ -216,6 +218,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoNJetsVsMult({}),
                                                                              fHistoMaxJetPtVsMult({}),
                                                                              fHistoGenParticleInJet({}),
+                                                                             fHistoGenParticleInJetWeighted({}),
                                                                              fHistoJetTrackPtRadialProfile({}),
                                                                              fHistoJetClusterPtRadialProfile({}),
                                                                              // true meson histograms
@@ -421,6 +424,8 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fTrueVectorJetPartonPx({}),
                                                                                            fTrueVectorJetPartonPy({}),
                                                                                            fTrueVectorJetPartonPz({}),
+                                                                                           fTrueVectorJetWeight({}),
+                                                                                           fTrueJetPtPrevEvt(0.),
                                                                                            fVectorJetEtaPerp({}),
                                                                                            fVectorJetPhiPerp({}),
                                                                                            MapRecJetsTrueJets(),
@@ -506,6 +511,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoNJetsVsMult({}),
                                                                                            fHistoMaxJetPtVsMult({}),
                                                                                            fHistoGenParticleInJet({}),
+                                                                                           fHistoGenParticleInJetWeighted({}),
                                                                                            fHistoJetTrackPtRadialProfile({}),
                                                                                            fHistoJetClusterPtRadialProfile({}),
                                                                                            // true meon histograms
@@ -805,6 +811,9 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fHistoGenParticleInJet.resize(fnCuts);
     fHistoJetTrackPtRadialProfile.resize(fnCuts);
     fHistoJetClusterPtRadialProfile.resize(fnCuts);
+    if(fDoWeightGenParticles){
+      fHistoGenParticleInJetWeighted.resize(fnCuts);
+    }
   }
   if (fIsMC) {
     fHistoTruevsRecJetPt.resize(fnCuts);
@@ -1421,6 +1430,14 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
           fHistoGenParticleInJet[iCut]->GetXaxis()->SetBinLabel(i+1, vecPartNames[i]);
         }
         fTrueJetList[iCut]->Add(fHistoGenParticleInJet[iCut]);
+
+        if(fDoWeightGenParticles){
+          fHistoGenParticleInJetWeighted[iCut] = new TH3F("Particle_Pt_JetPt_Weighted", "Particle_Pt_JetPt_Weighted", 12, vecEquidistFromMinus05.data(), fVecBinsClusterPt.size()-1, fVecBinsClusterPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+          for(size_t i = 0; i < vecPartNames.size(); ++i){
+            fHistoGenParticleInJetWeighted[iCut]->GetXaxis()->SetBinLabel(i+1, vecPartNames[i]);
+          }
+          fTrueJetList[iCut]->Add(fHistoGenParticleInJetWeighted[iCut]);
+        }
       }
     }
 
@@ -2086,7 +2103,7 @@ void AliAnalysisTaskMesonJetCorrelation::CallSumw2ForLists(TList* l)
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskMesonJetCorrelation::InitJets()
+bool AliAnalysisTaskMesonJetCorrelation::InitJets()
 {
   fVectorJetPt = fConvJetReader->GetVectorJetPt();
   fVectorJetPx = fConvJetReader->GetVectorJetPx();
@@ -2112,11 +2129,10 @@ void AliAnalysisTaskMesonJetCorrelation::InitJets()
   }
 
   if (fIsMC > 0) {
-    if (fIsMC) {
-      if (!fAODMCTrackArray)
-        fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-      fConvJetReader->FindPartonsJet(fAODMCTrackArray);
-    }
+    if (!fAODMCTrackArray)
+      fAODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    fConvJetReader->FindPartonsJet(fAODMCTrackArray);
+
     fTrueVectorJetPx = fConvJetReader->GetTrueVectorJetPx();
     fTrueVectorJetPy = fConvJetReader->GetTrueVectorJetPy();
     fTrueVectorJetPz = fConvJetReader->GetTrueVectorJetPz();
@@ -2129,13 +2145,64 @@ void AliAnalysisTaskMesonJetCorrelation::InitJets()
     fTrueVectorJetPartonPx = fConvJetReader->GetTrueVectorJetPartonPx();
     fTrueVectorJetPartonPy = fConvJetReader->GetTrueVectorJetPartonPy();
     fTrueVectorJetPartonPz = fConvJetReader->GetTrueVectorJetPartonPz();
+
+    if(fTrueVectorJetPt.size() > 0 ){
+      if(fTrueJetPtPrevEvt == fTrueVectorJetPt[0]){
+        cout << "Something bad happened! The last events jet is the same as this event.... skipping this event  " << fTrueVectorJetPt[0] << endl;
+        return false;
+      } else {
+        fTrueJetPtPrevEvt = fTrueVectorJetPt[0];
+      }
+    } else {
+      fTrueJetPtPrevEvt = 0.;
+    }
+
+
+    // Calculate jet weights for true jets according to particle weighting
+    // weight the response matrix according to abundancies of particles in data
+    // only particles with momentum fraction of more than fMinFracMomForWeight are considered
+    if(fDoWeightGenParticles > 0){
+      // for (int i = 0; i < fConvJetReader->GetTrueNJets(); i++) {
+      //   cout << i << "  fTrueVectorJetPt.at(i): " << fTrueVectorJetPt.at(i) << " size " << fTrueVectorJetPt.size() << endl;
+      // }
+      fTrueVectorJetWeight.clear();
+      fTrueVectorJetWeight.resize(fConvJetReader->GetTrueNJets());
+      for (int i = 0; i < fConvJetReader->GetTrueNJets(); i++) {
+        double weightAbundance = 0.;
+        int nPart = 0;
+        auto vecTruePart = fConvJetReader->GetTrueJetParticles(i);
+        for(size_t ipart = 0; ipart < vecTruePart.size(); ++ipart){
+          AliVParticle* tmpPart = vecTruePart[ipart];
+          if(!tmpPart || tmpPart == nullptr) continue;
+          // cout << "fTrueVectorJetPt.at(i): " << fTrueVectorJetPt.at(i) << endl;
+          // cout << "tmpPart->Pt(): " << tmpPart->Pt() << endl;
+          if (tmpPart->Pt() / fTrueVectorJetPt.at(i) < fMinFracMomForWeight) continue;
+
+          int pdgCode = std::abs(tmpPart->PdgCode());
+          if(pdgCode > 1e4) {
+            AliError(Form("PDG code seems suspicious, skipping this particle (pdg = %i)", pdgCode)); // not really clear what is happening here...
+            continue;
+          }
+          int index = GetParticleIndex(std::abs(tmpPart->PdgCode()));
+          double weightPart = fHistWeightingPartAbundance[index]->GetBinContent(fHistWeightingPartAbundance[index]->FindBin(tmpPart->Pt()));
+          if(fDoWeightGenParticles == 1 || (fDoWeightGenParticles == 2 && weightPart != 1)) {
+            weightAbundance += weightPart;
+            nPart++;
+          }
+        }
+        if(nPart>0) weightAbundance/=nPart;
+        if(weightAbundance == 0.) weightAbundance = 1; // safety precaution.
+        fTrueVectorJetWeight[i] = weightAbundance;
+
+      }
+    }
   }
+  return true;
 }
 
 //________________________________________________________________________
 void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
 {
-  // cout << "in ProcessJets with " << isCurrentEventSelected << " fConvJetReader->GetTrueNJets() " << fConvJetReader->GetTrueNJets()<< endl;
   // special case where the trigger has not fired etc.
   // Still have to fill the histograms for true jets in order for the efficiency to be correct
   if (isCurrentEventSelected > 0) {
@@ -2164,6 +2231,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
       fHistoEventwJets[fiCut]->Fill(2., fWeightJetJetMC); // event has true jet and rec. jet
     }
   }
+  
 
   int nJetsAbove5 = 0; // counter for number of jets above 5 GeV. One could make this more differential
   if (fConvJetReader->GetNJets() > 0) {
@@ -2253,33 +2321,8 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
             fHistoTruevsRecJetPtVsLeadingPart[fiCut]->Fill(fVectorJetPt.at(i), fTrueVectorJetPt.at(match), GetParticleIndex(LeadingPartPDG), fWeightJetJetMC);
             fHistoTrueMatchedJetPtVsLeadingPart[fiCut]->Fill(fTrueVectorJetPt.at(match), GetParticleIndex(LeadingPartPDG), fWeightJetJetMC);
           }
-          // weight the response matrix according to abundancies of particles in data
-          // only particles with momentum fraction of more than fMinFracMomForWeight are considered
-          if(fDoWeightGenParticles > 0){
-            double weightAbundance = 0.;
-            int nPart = 0;
-            auto vecTruePart = fConvJetReader->GetTrueJetParticles(i);
-            for(size_t ipart = 0; ipart < vecTruePart.size(); ++ipart){
-              AliVParticle* tmpPart = vecTruePart[ipart];
-              if(!tmpPart) continue;
-
-              if(tmpPart->Pt()/fTrueVectorJetPt.at(match) < fMinFracMomForWeight) continue; // do not consider this particle if fractional momentum is too small
-
-              int pdgCode = std::abs(tmpPart->PdgCode());
-              if(pdgCode > 1e4) {
-                AliError(Form("PDG code seems suspicious, skipping this particle (pdg = %i)", pdgCode)); // not really clear what is happening here...
-                continue;
-              }
-              int index = GetParticleIndex(std::abs(tmpPart->PdgCode()));
-              double weightPart = fHistWeightingPartAbundance[index]->GetBinContent(fHistWeightingPartAbundance[index]->FindBin(tmpPart->Pt()));
-              if(fDoWeightGenParticles == 1 || (fDoWeightGenParticles == 2 && weightPart != 1)) {
-                weightAbundance += weightPart;
-                nPart++;
-              }
-            }
-            if(nPart>0) weightAbundance/=nPart;
-            if(weightAbundance == 0.) weightAbundance = 1; // safety precaution.
-            fHistoTruevsRecJetPtWeighted[fiCut]->Fill(fVectorJetPt.at(i), fTrueVectorJetPt.at(match), weightAbundance*fWeightJetJetMC);
+          if(fDoWeightGenParticles){
+            fHistoTruevsRecJetPtWeighted[fiCut]->Fill(fVectorJetPt.at(i), fTrueVectorJetPt.at(match), fTrueVectorJetWeight.at(match)*fWeightJetJetMC);
           }
         } else {
           fHistoUnMatchedPtJet[fiCut]->Fill(fVectorJetPt.at(i), fWeightJetJetMC);
@@ -2359,6 +2402,9 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
             continue;
           }
           fHistoGenParticleInJet[fiCut]->Fill(GetParticleIndex(pdgCode), tmpPart->Pt(), fTrueVectorJetPt.at(i), fWeightJetJetMC);
+          if(fDoWeightGenParticles){
+            fHistoGenParticleInJetWeighted[fiCut]->Fill(GetParticleIndex(pdgCode), tmpPart->Pt(), fTrueVectorJetPt.at(i), fTrueVectorJetWeight.at(i)*fWeightJetJetMC);
+          }
           arrPartEnergy[GetParticleIndex(pdgCode)] += tmpPart->Pt();
 
         }
@@ -2500,6 +2546,12 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
   else
     fEventPlaneAngle = 0.0;
 
+      // Jets need to be initialized before the ProcessMCParticles because they are needed in ProcessAODMCParticles
+    if (fLocalDebugFlag) {
+      printf("InitJets\n");
+    }
+    if(!InitJets()) return;
+
   for (int iCut = 0; iCut < fnCuts; iCut++) {
     fiCut = iCut;
     bool isRunningEMCALrelAna = false;
@@ -2547,12 +2599,6 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
         continue;
       }
     }
-
-    // Jets need to be initialized before the ProcessMCParticles because they are needed in ProcessAODMCParticles
-    if (fLocalDebugFlag) {
-      printf("InitJets\n");
-    }
-    InitJets();
 
     // reset double counting vector
     fMesonDoubleCount.clear();
