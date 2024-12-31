@@ -2503,6 +2503,18 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         FillTree(kTracksCov);
         FillTree(kTracksExtra);
         FillTree(kRun2TrackExtras);
+
+        // compressed TPC nsigma if requested
+        FillTree(kTPCpidEl);
+        FillTree(kTPCpidMu);
+        FillTree(kTPCpidPi);
+        FillTree(kTPCpidKa);
+        FillTree(kTPCpidPr);
+        FillTree(kTPCpidDe);
+        FillTree(kTPCpidTr);
+        FillTree(kTPCpidHe);
+        FillTree(kTPCpidAl);
+
         if (fTreeStatus[kTracks]) ntracklet_filled++;
       }
     } // end loop on tracklets
