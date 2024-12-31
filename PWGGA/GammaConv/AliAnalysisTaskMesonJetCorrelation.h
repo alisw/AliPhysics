@@ -437,6 +437,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoMaxJetPtVsMult;            //! vector of histos with maxiumum pt jet vs number of tracks
   std::vector<TH3F*> fHistoGenParticleInJet;          //! vector of histos with particle id vs. particle pt vs. jet pT
   std::vector<TH3F*> fHistoGenParticleInJetWeighted;  //! vector of histos with particle id vs. particle pt vs. jet pT with jet weights applied
+  std::vector<TH3F*> fHistoGenParticleInJetMomFrac;   //! vector of histos with particle id vs. particle z vs. jet pT
+  std::vector<TH3F*> fHistoGenLeadParticleInJetMomFrac; //! vector of histos with  leading particle id vs. particle z vs. jet pT
   std::vector<TH3F*> fHistoJetTrackPtRadialProfile;   //! vector of 3d histos with Jet pt, fractional momentum and distance of particle to jet axis
   std::vector<TH3F*> fHistoJetClusterPtRadialProfile; //! vector of 3d histos with Jet pt, fractional momentum and distance of cluster to jet axis
 
