@@ -174,9 +174,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
     fMesonCutArray = CutArray;
   }
 
-  void SetParticleWeighting(const char * name, int modeJetWeighting, float minFracMom = 0.05){
+  void SetParticleWeighting(const char * name, int modeJetWeighting){
     fNameJetWeightingFile = name;
-    fMinFracMomForWeight = minFracMom;
     fDoWeightGenParticles = modeJetWeighting;
   }
   void InitializePartAbundanceWeighting();
@@ -542,7 +541,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   // Jet weighting
   //-------------------------------
   int fDoWeightGenParticles;                          // mode 1: All particles get weighted, mode 2: Only particles with weight!=1 contribute to weighting
-  double fMinFracMomForWeight;
+  double fMinFracMomForWeight;                        // Minimum fractional momentum a particle has to have in order to be considered for the weighting procedure
+  double fWeightFacAmplification;                     // amplification factor for the weight (fMinFracMomForWeight). As we weight the whole jet it could be that simply using the mean of all particle weights is not enough.
   TString fNameJetWeightingFile;
   std::vector<TH1F*> fHistWeightingPartAbundance;     //! vector of histos that contain a pT dependent weighting for different particle species (defined in GetParticleIndex). Has to be loaded from alien
   
@@ -574,7 +574,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 25);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 26);
 };
 
 #endif
