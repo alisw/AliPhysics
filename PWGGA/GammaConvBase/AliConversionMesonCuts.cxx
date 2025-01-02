@@ -2338,6 +2338,38 @@ Bool_t AliConversionMesonCuts::SetMinPtCutExtended(Int_t PtCut){
     fDoGammaMinEnergyCut = 2;
     fSingleDaughterMinE = 9.5;
     break;
+  case 14: // e, EG2 variation
+    fDoGammaMinEnergyCut = 1;
+    fSingleDaughterMinE = 5.0;
+    break;
+  case 15: // f, EG2 varation
+    fDoGammaMinEnergyCut = 1;
+    fSingleDaughterMinE = 5.5;
+    break;
+  case 16: // g, EG1 variation
+    fDoGammaMinEnergyCut = 1;
+    fSingleDaughterMinE  = 10.0;
+    break;
+  case 17: // h, EG1 variation
+    fDoGammaMinEnergyCut = 1;
+    fSingleDaughterMinE  = 10.5;
+    break;
+  case 18: // i, EG2 variation, PCM-EMC
+    fDoGammaMinEnergyCut = 2;
+    fSingleDaughterMinE = 5.0;
+    break;
+  case 19: // j, EG2 varation, PCM-EMC
+    fDoGammaMinEnergyCut = 2;
+    fSingleDaughterMinE = 5.5;
+    break;
+  case 20: // k, EG1 variation, PCM-EMC
+    fDoGammaMinEnergyCut = 2;
+    fSingleDaughterMinE  = 10.0;
+    break;
+  case 21: // l, EG1 variation, PCM-EMC
+    fDoGammaMinEnergyCut = 2;
+    fSingleDaughterMinE  = 10.5;
+    break;
   default:
     cout<<"Warning: pT cut not defined for eta prime analysis"<<PtCut<<endl;
     return kFALSE;

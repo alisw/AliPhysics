@@ -376,6 +376,10 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                          fHistoDoubleCountTrueHNMInvMassPt;                    //!<! array of histos with double counted etas, invMass, pT
     TH2F**                          fHistoDoubleCountTrueConvGammaRPt;                    //!<! array of histos with double counted photons, R, pT
 
+    TH2F**                          fHistoTrueHNMInAccVsNDMPt;                            //!<!              
+    TH2F**                          fHistoTrueHNMPiPlPiMiNDMEtavsPt;                      //!<!        
+    TH2F**                          fHistoTrueHNMPiPlPiMiNDMRapidityvsPt;                 //!<!
+
     TH2F**                          fHistoTrueMotherGammaGammaInvMassPt;                  //!<! histos with reconstructed validated pi0, inv mass, pT
     TH2F**                          fHistoTrueMotherGammaGammaFromHNMInvMassPt;           //!<! histos with reconstructed validated pi0, inv mass, pT
     TH1F**                          fHistoTrueConvGammaPt;                                //!<! histos with reconstructed validated conv gamma, pT
@@ -410,6 +414,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH1F**                            fHistoMCNegPionsFromNeutralMesonEta;                //!<! array of histos of all produced negative pions from omega or eta via pi+pi-pi0 in the specified y range/
     TH1F**                            fHistoMCNegPionsFromNeutralMesonPhi;                //!<! array of histos of all produced negative pions from omega or eta via pi+pi-pi0 in the specified y range/
     TH2F**                            fHistoMCHNMPiPlPiMiNDMEtavsPt;                      //!<! array of histos of produced HNM eta vs Pt
+    TH2F**                            fHistoMCHNMPiPlPiMiNDMRapidityvsPt;                 //!<! array of histos of produced HNM rapidity (y) vs Pt
      // MC truth properties for heavy meson (and decay products)
     TH1F**                            fHistoMCHeavyAllPt;                                 //!<! array of histos with pt of all heavy mesons
     TH1F**                            fHistoMCHeavyAllEta;                                //!<! array of histos with eta of all heavy mesons
@@ -444,6 +449,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                            fHistMCReconstructibleNDMPtHeavyPt;                 //!<! array of histos of pt correlation ndm - reconstructible heavy meson
     TH2F**                            fHistMCReconstructiblePiPlusPtHeavyPt;              //!<! array of histos of pt correlation piplus - reconstructible heavy meson
     TH2F**                            fHistMCReconstructiblePiMinusPtHeavyPt;             //!<! array of histos of pt correlation piminus - reconstructible heavy meson
+
     TH1F**                            fHistoTrueMesonFlags;                                 //!<! histo for event counting
     TH2F**                            fHistoTruePionPionInvMassPt;                          //!<! histos with reconstructed validated two pion, invariant mass, pT
     TH2F**                            fHistoTruePionPionFromSameMotherInvMassPt;            //!<! histos with reconstructed validated two pion from same mother, invariant mass, pT
@@ -694,7 +700,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 38);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 39);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H
