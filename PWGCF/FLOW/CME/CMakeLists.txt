@@ -30,6 +30,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 set(SRCS
   AliAnalysisTaskCMEv2A.cxx
   AliAnalysisTaskCMEPIDCVE.cxx
+  AliAnalysisTaskPIDCME.cxx
   )
 
 # Headers from sources
