@@ -86,6 +86,43 @@ AliGenerator* CreatePythia8Gen( TString lTune,
         (AliPythia8::Instance())->ReadString("PartonVertex:emissionWidth = 0.1"); //
         //===========================================================================
     }
+
+
+if ( lTune.EqualTo("pp-ropes") ){//added from PWGLF/STRANGENESS/Cascades/Run2/macros/AddCustomMCGenPythia8.C
+    // This is a ropes setting acquired from Peter Christiansen on the Lund thing
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("MultiPartonInteractions:pT0Ref = 2.15");
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("BeamRemnants:remnantMode = 1");
+    (AliPythia8::Instance())->ReadString("BeamRemnants:saturation = 5");
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("ColourReconnection:mode = 1");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:allowDoubleJunRem = off");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:m0 = 0.3");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:allowJunctions = on");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:junctionCorrection = 1.2");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationMode = 2");
+    (AliPythia8::Instance())->ReadString("ColourReconnection:timeDilationPar = 0.18");
+    //===========================================================================
+    (AliPythia8::Instance())->ReadString("Ropewalk:RopeHadronization = on");
+    (AliPythia8::Instance())->ReadString("Ropewalk:doShoving = on");
+    (AliPythia8::Instance())->ReadString("Ropewalk:tInit = 1.5"); // Propagation time
+    (AliPythia8::Instance())->ReadString("Ropewalk:deltat = 0.05");
+    (AliPythia8::Instance())->ReadString("Ropewalk:tShove 0.1");
+    (AliPythia8::Instance())->ReadString("Ropewalk:gAmplitude = 0.0"); // Set shoving strength to 0 explicitly
+    (AliPythia8::Instance())->ReadString("Ropewalk:doFlavour = on");
+    (AliPythia8::Instance())->ReadString("Ropewalk:r0 = 0.5");
+    (AliPythia8::Instance())->ReadString("Ropewalk:m0 = 0.2");
+    (AliPythia8::Instance())->ReadString("Ropewalk:beta = 0.1");
+    //===========================================================================
+    // Enabling setting of vertex information.
+    (AliPythia8::Instance())->ReadString("PartonVertex:setVertex = on");
+    (AliPythia8::Instance())->ReadString("PartonVertex:protonRadius = 0.7");
+    (AliPythia8::Instance())->ReadString("PartonVertex:emissionWidth = 0.1");
+    //===========================================================================
+  }
+
+
     if ( lTune.EqualTo("pp-default") ){
         (AliPythia8::Instance())->ReadString("SoftQCD:nonDiffractive = on");
         (AliPythia8::Instance())->ReadString("SoftQCD:singleDiffractive = on");
