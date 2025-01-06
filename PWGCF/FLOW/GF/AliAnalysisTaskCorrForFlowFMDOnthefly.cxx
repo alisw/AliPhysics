@@ -2194,25 +2194,36 @@ AliMCEvent *AliAnalysisTaskCorrForFlowFMDOnthefly::getMCEvent() {
 
   // From here, copy from AliPhysics/PWGGA/GammaConv/AliAnalysisTaskGammaPureMC.cxx
   AliGenPythiaEventHeader *pyH  = dynamic_cast<AliGenPythiaEventHeader*>(header);
+  AliGenHijingEventHeader *hiH  = 0;//also for AMPT as there is no separate GenAMPTHeader
 
+
+
+  if(!pyH){
+    hiH = dynamic_cast<AliGenHijingEventHeader*>(header);
+  }
+	
   // fetch the trials on a event by event basis, not from pyxsec.root otherwise
   // we will get a problem when running on proof since Notify may be called
   // more than once per file
   // consider storing this information in the AOD output via AliAODHandler
   Float_t ntrials = 0;
-  if (!pyH) {
+  if (!pyH || !hiH) {
     AliGenCocktailEventHeader *ccEH = dynamic_cast<AliGenCocktailEventHeader *>(header);
     if (ccEH) {
       TList *genHeaders = ccEH->GetHeaders();
       for (int imch=0; imch<genHeaders->GetEntries(); imch++) {
         if(!pyH)pyH = dynamic_cast<AliGenPythiaEventHeader*>(genHeaders->At(imch));
+	if(!hiH)hiH = dynamic_cast<AliGenHijingEventHeader*>(genHeaders->At(imch));
       }
     }
   }
-  if(!pyH) { AliFatal("PYTHIA MC event not generated!"); return 0; }
+  if(!pyH && !hiH) { AliFatal("PYTHIA or AMPT MC events not generated!"); return 0; }
+
 
   // take the trials from the p+p event
-  ntrials = pyH->Trials();
+ if(pyH) ntrials = pyH->Trials();
+ if(hiH) ntrials = hiH->Trials();
+
   if(ntrials)fhEventCounter->Fill("OntheflyEvts",ntrials);
 
   return ev;

@@ -40,6 +40,7 @@
 #include "AliAODInputHandler.h"
 #include "AliGenEventHeader.h"
 #include "AliGenPythiaEventHeader.h"
+#include "AliGenHijingEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliGenPythiaPlus.h"
 #include "AliEventPoolManager.h"
