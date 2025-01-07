@@ -663,26 +663,30 @@ void AliAnalysisTaskAO2Dconverter::UserExec(Option_t *)
     centrality = multSelection->GetMultiplicityPercentile(fCentralityMethod);
 
     // get V0 Reader
-    TString cutnumberEvent = "00000003";
-    if(fCollSystem==1)
-      cutnumberEvent = "10000003";
-    else if(fCollSystem==2)
-      cutnumberEvent = "80000003";
-    else if(fCollSystem==29)//UPC
-      cutnumberEvent = "100c0003";
-    TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),fConversionCut.Data());
-    AliV0ReaderV1* fV0Reader = (AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(V0ReaderName.Data());
-    if(!fV0Reader){
-      AliFatal("Error: No V0 Reader");
+    if (fTreeStatus[kOTFV0s]) {
+      TString cutnumberEvent = "00000003";
+      if(fCollSystem==1)
+        cutnumberEvent = "10000003";
+      else if(fCollSystem==2)
+        cutnumberEvent = "80000003";
+      else if(fCollSystem==29)//UPC
+        cutnumberEvent = "100c0003";
+      TString V0ReaderName = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),fConversionCut.Data());
+      AliV0ReaderV1* fV0Reader = (AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(V0ReaderName.Data());
+      if(!fV0Reader){
+        AliFatal("Error: No V0 Reader");
+      }
+      // get the conversion gammas from V0Reader
+      fConversionGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
     }
-    // get the conversion gammas from V0Reader
-    fConversionGammas = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
   }
   else if (fAOD) {
     AliCentrality*  centralityObj = fAOD->GetCentrality();
     if (centralityObj) centrality = centralityObj->GetCentralityPercentile(fCentralityMethod);
-    if(!(AliAnalysisTaskAO2Dconverter::GetAODConversionGammas())){
-      AliFatal("Could not receive AODConversionGammas!");
+    if (fTreeStatus[kOTFV0s]) {
+      if(!(AliAnalysisTaskAO2Dconverter::GetAODConversionGammas())){
+        AliFatal("Could not receive AODConversionGammas!");
+      }
     }
   }
 
@@ -3268,66 +3272,68 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
     //---------------------------------------------------------------------------
     // otfv0s (photo conversions)
-    otfv0s.fIndexCollisions = fCollisionCount;
-    for (Int_t iPhoton = 0; iPhoton < fConversionGammas->GetEntriesFast(); ++iPhoton) {
-      AliAODConversionPhoton* photon = (AliAODConversionPhoton*)fConversionGammas->At(iPhoton);
-      if (photon) {
-        photon->CalculateDistanceOfClossetApproachToPrimVtx(fVEvent->GetPrimaryVertex());
-        if(photon->GetLabel1() == -999999 || photon->GetLabel2() == -999999){
-          otfv0s.fIndexTracksPos = photon->GetLabel1();
-          otfv0s.fIndexTracksNeg = photon->GetLabel2();
-        } else{
-          otfv0s.fIndexTracksPos = photon->GetLabel1() + fOffsetTrack;
-          otfv0s.fIndexTracksNeg = photon->GetLabel2() + fOffsetTrack;
-        }
-        otfv0s.fPx = AliMathBase::TruncateFloatFraction(photon->GetPx(), mV0otfMomentum);
-        otfv0s.fPy = AliMathBase::TruncateFloatFraction(photon->GetPy(), mV0otfMomentum);
-        otfv0s.fPz = AliMathBase::TruncateFloatFraction(photon->GetPz(), mV0otfMomentum);
-        otfv0s.fEnergy = AliMathBase::TruncateFloatFraction(photon->E(), mV0otfMomentum);
-        otfv0s.fQt = AliMathBase::TruncateFloatFraction(photon->GetArmenterosQt(), mV0otfMomentum);
-        otfv0s.fAlpha = photon->GetArmenterosAlpha();
-        otfv0s.fX = AliMathBase::TruncateFloatFraction(photon->GetConversionX(), mV0otfLength);
-        otfv0s.fY = AliMathBase::TruncateFloatFraction(photon->GetConversionY(), mV0otfLength);
-        otfv0s.fZ = AliMathBase::TruncateFloatFraction(photon->GetConversionZ(), mV0otfLength);
-        otfv0s.fChi2NDF = photon->GetChi2perNDF();
-        otfv0s.fPsiPair = photon->GetPsiPair();
-        otfv0s.fDCAr = AliMathBase::TruncateFloatFraction(photon->GetDCArToPrimVtx(), mV0otfLength);
-        otfv0s.fDCAz = AliMathBase::TruncateFloatFraction(photon->GetDCAzToPrimVtx(), mV0otfLength);
-        if(fConversionGammaClassDef <= 4 && !(fESD)){
-          otfv0s.fMass = AliMathBase::TruncateFloatFraction(photon->GetMass()*1000.f, mV0otfMass); // constrained mass from KFParticle in MeV/c^2!
-        } else{
-          otfv0s.fMass = AliMathBase::TruncateFloatFraction(photon->GetInvMassPair()*1000.f, mV0otfMass); // unconstrained mass in MeV/c^2!
-        }
-        if (fESD) {
-          if((fESD->GetTrack(photon->GetTrackLabelNegative())) && (photon->GetTrackLabelNegative() != -999999)) {
-            AliESDtrack *track1 = fESD->GetTrack(photon->GetTrackLabelNegative());
-            fNSigmaElectron->Fill(PIDResponse->NumberOfSigmasTPC(track1,AliPID::kElectron));
-            fDedxVsP->Fill(track1->P(),track1->GetTPCsignal());
+    if (fTreeStatus[kOTFV0s]) {
+      otfv0s.fIndexCollisions = fCollisionCount;
+      for (Int_t iPhoton = 0; iPhoton < fConversionGammas->GetEntriesFast(); ++iPhoton) {
+        AliAODConversionPhoton* photon = (AliAODConversionPhoton*)fConversionGammas->At(iPhoton);
+        if (photon) {
+          photon->CalculateDistanceOfClossetApproachToPrimVtx(fVEvent->GetPrimaryVertex());
+          if(photon->GetLabel1() == -999999 || photon->GetLabel2() == -999999){
+            otfv0s.fIndexTracksPos = photon->GetLabel1();
+            otfv0s.fIndexTracksNeg = photon->GetLabel2();
+          } else{
+            otfv0s.fIndexTracksPos = photon->GetLabel1() + fOffsetTrack;
+            otfv0s.fIndexTracksNeg = photon->GetLabel2() + fOffsetTrack;
           }
-          if((fInputEvent->GetTrack(photon->GetTrackLabelPositive())) && (photon->GetTrackLabelPositive() != -999999) ) {
-            AliESDtrack *track2 = fESD->GetTrack(photon->GetTrackLabelPositive());
-            fNSigmaElectron->Fill(PIDResponse->NumberOfSigmasTPC(track2,AliPID::kElectron));
-            fDedxVsP->Fill(track2->P(),track2->GetTPCsignal());
+          otfv0s.fPx = AliMathBase::TruncateFloatFraction(photon->GetPx(), mV0otfMomentum);
+          otfv0s.fPy = AliMathBase::TruncateFloatFraction(photon->GetPy(), mV0otfMomentum);
+          otfv0s.fPz = AliMathBase::TruncateFloatFraction(photon->GetPz(), mV0otfMomentum);
+          otfv0s.fEnergy = AliMathBase::TruncateFloatFraction(photon->E(), mV0otfMomentum);
+          otfv0s.fQt = AliMathBase::TruncateFloatFraction(photon->GetArmenterosQt(), mV0otfMomentum);
+          otfv0s.fAlpha = photon->GetArmenterosAlpha();
+          otfv0s.fX = AliMathBase::TruncateFloatFraction(photon->GetConversionX(), mV0otfLength);
+          otfv0s.fY = AliMathBase::TruncateFloatFraction(photon->GetConversionY(), mV0otfLength);
+          otfv0s.fZ = AliMathBase::TruncateFloatFraction(photon->GetConversionZ(), mV0otfLength);
+          otfv0s.fChi2NDF = photon->GetChi2perNDF();
+          otfv0s.fPsiPair = photon->GetPsiPair();
+          otfv0s.fDCAr = AliMathBase::TruncateFloatFraction(photon->GetDCArToPrimVtx(), mV0otfLength);
+          otfv0s.fDCAz = AliMathBase::TruncateFloatFraction(photon->GetDCAzToPrimVtx(), mV0otfLength);
+          if(fConversionGammaClassDef <= 4 && !(fESD)){
+            otfv0s.fMass = AliMathBase::TruncateFloatFraction(photon->GetMass()*1000.f, mV0otfMass); // constrained mass from KFParticle in MeV/c^2!
+          } else{
+            otfv0s.fMass = AliMathBase::TruncateFloatFraction(photon->GetInvMassPair()*1000.f, mV0otfMass); // unconstrained mass in MeV/c^2!
           }
-        } else {
-          if( (fInputEvent->GetTrack(photon->GetTrackLabelNegative())) && (photon->GetTrackLabelNegative() != -999999)) {
-            AliVTrack *aodVTrack1 = dynamic_cast<AliVTrack*> (fInputEvent->GetTrack(photon->GetTrackLabelNegative()));
-            fNSigmaElectron->Fill(PIDResponse->NumberOfSigmasTPC(aodVTrack1,AliPID::kElectron));
-            fDedxVsP->Fill(aodVTrack1->P(),aodVTrack1->GetTPCsignal());
+          if (fESD) {
+            if((fESD->GetTrack(photon->GetTrackLabelNegative())) && (photon->GetTrackLabelNegative() != -999999)) {
+              AliESDtrack *track1 = fESD->GetTrack(photon->GetTrackLabelNegative());
+              fNSigmaElectron->Fill(PIDResponse->NumberOfSigmasTPC(track1,AliPID::kElectron));
+              fDedxVsP->Fill(track1->P(),track1->GetTPCsignal());
+            }
+            if((fInputEvent->GetTrack(photon->GetTrackLabelPositive())) && (photon->GetTrackLabelPositive() != -999999) ) {
+              AliESDtrack *track2 = fESD->GetTrack(photon->GetTrackLabelPositive());
+              fNSigmaElectron->Fill(PIDResponse->NumberOfSigmasTPC(track2,AliPID::kElectron));
+              fDedxVsP->Fill(track2->P(),track2->GetTPCsignal());
+            }
+          } else {
+            if( (fInputEvent->GetTrack(photon->GetTrackLabelNegative())) && (photon->GetTrackLabelNegative() != -999999)) {
+              AliVTrack *aodVTrack1 = dynamic_cast<AliVTrack*> (fInputEvent->GetTrack(photon->GetTrackLabelNegative()));
+              fNSigmaElectron->Fill(PIDResponse->NumberOfSigmasTPC(aodVTrack1,AliPID::kElectron));
+              fDedxVsP->Fill(aodVTrack1->P(),aodVTrack1->GetTPCsignal());
+            }
+            if((fInputEvent->GetTrack(photon->GetTrackLabelPositive())) && (photon->GetTrackLabelPositive() != -999999) ) {
+              AliVTrack *aodVTrack2 = dynamic_cast<AliVTrack*> (fInputEvent->GetTrack(photon->GetTrackLabelPositive()));
+              fNSigmaElectron->Fill(PIDResponse->NumberOfSigmasTPC(aodVTrack2,AliPID::kElectron));
+              fDedxVsP->Fill(aodVTrack2->P(),aodVTrack2->GetTPCsignal());
+            }
           }
-           if((fInputEvent->GetTrack(photon->GetTrackLabelPositive())) && (photon->GetTrackLabelPositive() != -999999) ) {
-            AliVTrack *aodVTrack2 = dynamic_cast<AliVTrack*> (fInputEvent->GetTrack(photon->GetTrackLabelPositive()));
-            fNSigmaElectron->Fill(PIDResponse->NumberOfSigmasTPC(aodVTrack2,AliPID::kElectron));
-            fDedxVsP->Fill(aodVTrack2->P(),aodVTrack2->GetTPCsignal());
+          FillTree(kOTFV0s);
+          if (fTreeStatus[kOTFV0s]){
+            nv0OTF_filled++;
           }
         }
-        FillTree(kOTFV0s);
-        if (fTreeStatus[kOTFV0s]){
-          nv0OTF_filled++;
-        }
-      }
-    } // End loop on V0s
-    eventextra.fNentries[kOTFV0s] = nv0OTF_filled;
+      } // End loop on V0s
+      eventextra.fNentries[kOTFV0s] = nv0OTF_filled;
+    }
 
     //---------------------------------------------------------------------------
     // Cascades
