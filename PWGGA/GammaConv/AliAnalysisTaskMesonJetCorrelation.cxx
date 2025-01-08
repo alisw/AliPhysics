@@ -1465,13 +1465,13 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fHistoNEFVsPtJet[iCut] = new TH2F("JetPt_NEF", "JetPt_NEF", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 20, 0, 1);
       fJetList[iCut]->Add(fHistoNEFVsPtJet[iCut]);
 
-      fHistoNchVsPtJet[iCut] = new TH2F("JetPt_Ncharged", "JetPt_Ncharged", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 25, vecEquidistFromMinus05.data());
+      fHistoNchVsPtJet[iCut] = new TH2F("JetPt_Ncharged", "JetPt_Ncharged", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 100, vecEquidistFromMinus05.data());
       fJetList[iCut]->Add(fHistoNchVsPtJet[iCut]);
 
-      fHistoNclusVsPtJet[iCut] = new TH2F("JetPt_Nneutral", "JetPt_Nneutral", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 25, vecEquidistFromMinus05.data());
+      fHistoNclusVsPtJet[iCut] = new TH2F("JetPt_Nneutral", "JetPt_Nneutral", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 100, vecEquidistFromMinus05.data());
       fJetList[iCut]->Add(fHistoNclusVsPtJet[iCut]);
 
-      fHistoNPartVsPtJet[iCut] = new TH2F("JetPt_Nparticles", "JetPt_Nparticles", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 25, vecEquidistFromMinus05.data());
+      fHistoNPartVsPtJet[iCut] = new TH2F("JetPt_Nparticles", "JetPt_Nparticles", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 100, vecEquidistFromMinus05.data());
       fJetList[iCut]->Add(fHistoNPartVsPtJet[iCut]);
 
     }
@@ -2191,6 +2191,7 @@ bool AliAnalysisTaskMesonJetCorrelation::InitJets()
         double weightAbundance = 0.;
         int nPart = 0;
         auto vecTruePart = fConvJetReader->GetTrueJetParticles(i);
+        double sumFracMom = 0.;
         for(size_t ipart = 0; ipart < vecTruePart.size(); ++ipart){
           AliVParticle* tmpPart = vecTruePart[ipart];
           if(!tmpPart || tmpPart == nullptr) continue;
@@ -2206,16 +2207,30 @@ bool AliAnalysisTaskMesonJetCorrelation::InitJets()
           }
           int index = GetParticleIndex(std::abs(tmpPart->PdgCode()));
           double weightPart = fHistWeightingPartAbundance[index]->GetBinContent(fHistWeightingPartAbundance[index]->FindBin(tmpPart->Pt()));
+          // mode 1&2: Sum up all the weights for each particle. Afterwards, divide weight by the number of particles to normalize the weight. mode 2 only considers particles with a weight != 1
           if(fDoWeightGenParticles == 1 || (fDoWeightGenParticles == 2 && weightPart != 1)) {
             weightAbundance += weightPart;
             nPart++;
-          // here we weight the particles with their fractional momentum. Hence we do not need to increase nPart
-          } else if(fDoWeightGenParticles == 3){
+          // Mode 3&4: Here we weight the particles with their fractional momentum. Hence we do not need to increase nPart. 
+          // sumFracMom is needed to normalize the weight in the end to the sum of all fractional momenta used
+          } else if(fDoWeightGenParticles == 3 || (fDoWeightGenParticles == 4 && weightPart != 1)){
             weightAbundance += weightPart*fracMom;
+            sumFracMom+=fracMom;
+          // Mode 5: Calculate the weight as the product of all the individual particle weights
+          } else if(fDoWeightGenParticles == 5 && weightPart != 1){
+            if(weightAbundance == 0) weightAbundance = weightPart;
+            else weightAbundance*=weightPart;
+            // Mode 6: Same as mode 5, but consider fractional momentum. 
+          } else if(fDoWeightGenParticles == 6 && weightPart != 1){
+            if(weightAbundance == 0) weightAbundance = weightPart*fracMom;
+            else weightAbundance*=weightPart*fracMom;
           }
         }
         if(nPart>0) weightAbundance/=nPart;
         if(weightAbundance == 0.) weightAbundance = 1; // safety precaution.
+        if(sumFracMom > 0.){ // this is needed for case 3 and 4
+          weightAbundance/=sumFracMom;
+        }
         // Multiply weight factor with an amplification factor
         fTrueVectorJetWeight[i] = weightAbundance+(weightAbundance-1)*fWeightFacAmplification;
 
