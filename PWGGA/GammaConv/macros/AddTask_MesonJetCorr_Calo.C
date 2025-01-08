@@ -307,16 +307,9 @@ void AddTask_MesonJetCorr_Calo(
 
   
   // The standard train config in order to test jet weighting procedure
-  } else if (trainConfig == 70) {
+  } else if (trainConfig >= 70 && trainConfig <= 79) {
     cuts.AddCutCalo("00010103", "411790009fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
-  } else if (trainConfig == 71) {
-    cuts.AddCutCalo("00010103", "411790009fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
-  } else if (trainConfig == 72) {
-    cuts.AddCutCalo("00010103", "411790009fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
-  } else if (trainConfig == 73) {
-    cuts.AddCutCalo("00010103", "411790009fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
-  } else if (trainConfig == 74) {
-    cuts.AddCutCalo("00010103", "411790009fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+  // Next should be 80!!
 
   //---------------------------------------
   // Cut variations for standard cut (2)
