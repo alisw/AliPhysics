@@ -2689,22 +2689,25 @@ void AddTask_GammaConvCalo_pp(
 
 
   // NCell efficiency pp 13TeV
+  } else if (trainConfig == 2129){ // EMCAL+DCAL clusters standard cuts, INT7, NL 01, std TM,NonLin for without new cell scale min E = 500 MeV
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe109v0000","0r63103100000010"); // No NCell cut (NCell >= 1)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe129v0000","0r63103100000010"); // NCell cut >= 2
   } else if (trainConfig == 2130){ // EMCAL+DCAL clusters standard cuts, INT7, NL 01, std TM,NonLin for without new cell scale
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe30230000","0r63103100000010"); // No NCell cut (NCell >= 1)
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe32220000","0r63103100000010"); // NCell cut >= 2
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe309v0000","0r63103100000010"); // No NCell cut (NCell >= 1)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe329v0000","0r63103100000010"); // NCell cut >= 2
   } else if (trainConfig == 2131){ // EMCAL+DCAL clusters standard cuts, INT7, NL 01, favorite NCell efficiency (gaussian on gamma clus)
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","0r63103100000010"); // PCMEMC tagging
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3r220000","0r63103100000010"); // EMC tagging
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n9v0000","0r63103100000010"); // PCMEMC tagging
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3r9v0000","0r63103100000010"); // EMC tagging
   } else if (trainConfig == 2132){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, new NCell calculation PCMEMC tagging
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3k220000","0r63103100000010"); // NCell effi on MC,  NCE: PCMEDC pi0 tagging for all clus, pol2 param
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3l220000","0r63103100000010"); // NCell effi on MC,  NCE: PCMEDC pi0 tagging for gamma clus, pol2 param
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3m220000","0r63103100000010"); // NCell effi on MC,  NCE: PCMEDC pi0 tagging for all clus, Gaussian param
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n220000","0r63103100000010"); // NCell effi on MC,  NCE: PCMEDC pi0 tagging for gamma clus, Gaussian param
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3k9v0000","0r63103100000010"); // NCell effi on MC,  NCE: PCMEDC pi0 tagging for all clus, pol2 param
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3l9v0000","0r63103100000010"); // NCell effi on MC,  NCE: PCMEDC pi0 tagging for gamma clus, pol2 param
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3m9v0000","0r63103100000010"); // NCell effi on MC,  NCE: PCMEDC pi0 tagging for all clus, Gaussian param
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3n9v0000","0r63103100000010"); // NCell effi on MC,  NCE: PCMEDC pi0 tagging for gamma clus, Gaussian param
   } else if (trainConfig == 2133){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, new NCell calculation EMC tagging
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3o220000","0r63103100000010"); // NCell effi on MC,  NCE: EDC pi0 tagging for all clus, pol2 param
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3p220000","0r63103100000010"); // NCell effi on MC,  NCE: EDC pi0 tagging for gamma clus, pol2 param
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3q220000","0r63103100000010"); // NCell effi on MC,  NCE: EDC pi0 tagging for all clus, Gaussian param
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3r220000","0r63103100000010"); // NCell effi on MC,  NCE: EDC pi0 tagging for gamma clus, Gaussian param
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3o9v0000","0r63103100000010"); // NCell effi on MC,  NCE: EDC pi0 tagging for all clus, pol2 param
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3p9v0000","0r63103100000010"); // NCell effi on MC,  NCE: EDC pi0 tagging for gamma clus, pol2 param
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3q9v0000","0r63103100000010"); // NCell effi on MC,  NCE: EDC pi0 tagging for all clus, Gaussian param
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3r9v0000","0r63103100000010"); // NCell effi on MC,  NCE: EDC pi0 tagging for gamma clus, Gaussian param
   } else if (trainConfig == 2134){ // 1 cell clusters only  (switch off exotics + M02 cut)
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799609f03h000000","0163103100000010"); // TBNL
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799509f03h000000","0163103100000010"); // TBNL + FT for 2 cell cluster
@@ -2713,22 +2716,29 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109f03i000000","0163103100000010"); // NL 01
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411793709f03i000000","0163103100000010"); // TBNL
   } else if (trainConfig == 2136){ // 2 cell clusters only  (with exotics + M02 cut)
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3i220000","0163103100000010"); // NL 01
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411793709fe3i220000","0163103100000010"); // TBNL
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3i9v0000","0163103100000010"); // NL 01
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411793709fe3i9v0000","0163103100000010"); // TBNL
   } else if (trainConfig == 2137){ // >=2 cell clusters  (switch off exotics + M02 cut)
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109f032000000","0163103100000010"); // NL 01
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411793709f032000000","0163103100000010"); // TBNL
   } else if (trainConfig == 2138){ // >=2 cell clusters (with exotics + M02 cut)
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100000010"); // NL 01
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411793709fe32220000","0163103100000010"); // TBNL
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe329v0000","0163103100000010"); // NL 01
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411793709fe329v0000","0163103100000010"); // TBNL
 
-    // different clusterization settings
-  } else if (trainConfig == 2139){ // std. cuts, Seed 500, agg 85
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100000010"); // NL 01
-  } else if (trainConfig == 2140){ // std. cuts, Seed 500, agg 90
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100000010"); // NL 01
-  } else if (trainConfig == 2141){ // std. cuts, Seed 475, Agg 95
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe32220000","0163103100000010"); // NL 01
+  } else if (trainConfig == 2139){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, new NCell calculation S100A100and S300A100 tagging
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe1w9v0000","0r63103100000010"); // NCell effi on MC,  NCE: EMC pi0 tagging for all clus, pol2 param, S100A100
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe1x9v0000","0r63103100000010"); // NCell effi on MC,  NCE: EMC pi0 tagging for all clus, Gaussian param, S100A100
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe1y9v0000","0r63103100000010"); // NCell effi on MC,  NCE: PCM-EMC pi0 tagging for all clus, pol2 param, S100A100
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fe1z9v0000","0r63103100000010"); // NCell effi on MC,  NCE: PCM-EMC pi0 tagging for all clus, pol2 param, S300A100
+  } else if (trainConfig == 2140){ // EMCAL+DCAL clusters standard cuts, INT7, NL , std TM, new NCell calculation S100A100and S300A100 tagging
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fegw9v0000","0r63103100000010"); // NCell effi on MC,  NCE: EMC pi0 tagging for all clus, pol2 param, S100A100
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fegx9v0000","0r63103100000010"); // NCell effi on MC,  NCE: EMC pi0 tagging for all clus, Gaussian param, S100A100
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fegy9v0000","0r63103100000010"); // NCell effi on MC,  NCE: PCM-EMC pi0 tagging for all clus, pol2 param, S100A100
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909fegz9v0000","0r63103100000010"); // NCell effi on MC,  NCE: PCM-EMC pi0 tagging for all clus, pol2 param, S300A100
+
+  } else if (trainConfig == 2141){ // EMCAL+DCAL clusters standard cuts, INT7, NL 01, std TM,NonLin for without new cell scale min E = 300 MeV
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109feg09v0000","0r63103100000010"); // No NCell cut (NCell >= 1)
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109feg29v0000","0r63103100000010"); // NCell cut >= 2
 
   } else if (trainConfig == 2142){ // Effi on isolated clusters only
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411790109fe3k220000","0163103100000010"); // TB correction
