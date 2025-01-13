@@ -127,6 +127,7 @@
 #pragma link C++ class AliAnalysisTask_pdLd+;
 #pragma link C++ class AliAnalysisTask_pd+;
 #pragma link C++ class AliAnalysisTask_pd_CreateTrees_PairsOnly+;
+#pragma link C++ class AliAnalysisTask_pd_PurityTOF+;
 #pragma link C++ class AliAnalysisTask_Ld_CreateTrees_PairsOnly+;
 #pragma link C++ class AliAnalysisTask_pp_CreateTrees_PairsOnly+;
 #pragma link C++ class AliAODTrackTiny+;
