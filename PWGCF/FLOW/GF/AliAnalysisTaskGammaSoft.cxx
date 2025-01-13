@@ -980,7 +980,7 @@ double AliAnalysisTaskGammaSoft::getStdAABBCC(vector<vector<vector<vector<std::c
   std::complex<double> bbcc = abcdvec[0][2][2][0];
   std::complex<double> aabbc = abcdvec[2][2][1][0];
   std::complex<double> aabcc = abcdvec[2][1][2][0];
-  std::complex<double> abbcc = abcdvec[0][0][0][0];
+  std::complex<double> abbcc = abcdvec[1][2][2][0];
   std::complex<double> aabbcc = abcdvec[2][2][2][0];
   return (a*a*b*b*c*c - aa*b*b*c*c - a*a*bb*c*c - a*a*b*b*cc - 4.*a*ab*b*c*c -
  4.*a*ac*b*b*c - 4.*a*a*b*bc*c + 4.*aab*b*c*c + 4.*aac*b*b*c +
