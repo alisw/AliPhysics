@@ -5189,7 +5189,12 @@ Bool_t AliCaloPhotonCuts::InitializeCutsFromCutString(const TString analysisCutS
   TString analysisCutSelectionLowerCase = Form("%s",analysisCutSelection.Data());
   analysisCutSelectionLowerCase.ToLower();
   const char *cutSelection = analysisCutSelectionLowerCase.Data();
-  #define ASSIGNARRAY(i)  fCuts[i] = ((int)cutSelection[i]>=(int)'a') ? cutSelection[i]-'a'+10 : cutSelection[i]-'0'
+  #define ASSIGNARRAY(i) \
+    fCuts[i] = \
+        ((int)cutSelection[i] >= (int)'a' && (int)cutSelection[i] <= (int)'z') ? cutSelection[i] - 'a' + 10 : \
+        ((int)cutSelection[i] >= (int)'A' && (int)cutSelection[i] <= (int)'Z') ? cutSelection[i] - 'A' + 36 : \
+        cutSelection[i] - '0'
+        
   for(Int_t ii=0;ii<kNCuts;ii++){
     ASSIGNARRAY(ii);
   }
@@ -7199,6 +7204,25 @@ Bool_t AliCaloPhotonCuts::SetMinNCellsCut(Int_t minNCells)
     fMinNCells=2;
     fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
     fFuncNCellCutEfficiencyEMCal->SetParameters(-0.0677, 0.2190, -0.0545); // nominal field, pol2, PCMEMC tagged pi0 ,S300A100
+    break;
+  case 36: // A, same as x but applied on photon clusters
+    fUseNCells=7;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(-5.23612e-02, 1.51722e-01, 1.25267e-03); // nominal field, pol2, EMC tagged pi0
+    break;
+  // Gaussian, applied to all clusters
+  case 37: // B, same as x bbut onyl applied to photon clusters
+    fUseNCells=5;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "gaus");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(1.12525e-01, 1.34649e+00, 8.02834e-01); // nominal field, gaussian, EMC tagged pi0
+    break;
+  case 38: // Pol2, applied to all clusters, same shape as case 32, but slightly lower
+    fUseNCells=7;
+    fMinNCells=2;
+    fFuncNCellCutEfficiencyEMCal = new TF1("fFuncNCellCutEfficiencyEMCal", "[0]*x*x+[1]*x+[2]");
+    fFuncNCellCutEfficiencyEMCal->SetParameters(-5.23612e-02, 1.51722e-01, -0.026878580); // nominal field, pol2, EMC tagged pi0
     break;
 
   default:
