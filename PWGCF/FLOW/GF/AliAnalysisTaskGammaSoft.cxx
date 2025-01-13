@@ -1026,7 +1026,7 @@ double AliAnalysisTaskGammaSoft::getStdAABBCD(vector<vector<vector<vector<std::c
   std::complex<double> aacd = abcdvec[2][0][1][1];
   std::complex<double> abbc = abcdvec[1][2][1][0];
   std::complex<double> abbd = abcdvec[1][2][0][1];
-  std::complex<double> abcd = abcdvec[0][1][1][1];
+  std::complex<double> abcd = abcdvec[1][1][1][1];
   std::complex<double> bbcd = abcdvec[0][2][1][1];
   std::complex<double> aabbc = abcdvec[2][2][1][0];
   std::complex<double> aabbd = abcdvec[2][2][0][1];
@@ -1056,7 +1056,7 @@ double AliAnalysisTaskGammaSoft::getStdAABBCD(vector<vector<vector<vector<std::c
 double AliAnalysisTaskGammaSoft::getStdAABBDD(vector<vector<vector<vector<std::complex<double>>>>> &abcdvec){
   std::complex<double> a = abcdvec[1][0][0][0];
   std::complex<double> b = abcdvec[0][1][0][0];
-  std::complex<double> d = abcdvec[0][0][1][1];
+  std::complex<double> d = abcdvec[0][0][0][1];
   std::complex<double> aa = abcdvec[2][0][0][0];
   std::complex<double> bb = abcdvec[0][2][0][0];
   std::complex<double> dd = abcdvec[0][0][0][2];
@@ -1078,7 +1078,7 @@ double AliAnalysisTaskGammaSoft::getStdAABBDD(vector<vector<vector<vector<std::c
   std::complex<double> bbdd = abcdvec[0][2][0][2];
   std::complex<double> aabbd = abcdvec[2][2][0][1];
   std::complex<double> aabdd = abcdvec[2][1][0][2];
-  std::complex<double> abbdd = abcdvec[0][0][0][2];
+  std::complex<double> abbdd = abcdvec[1][2][0][2];
   std::complex<double> aabbdd  = abcdvec[2][2][0][2];
   return (-120.*aabbdd + 48.*a*abbdd + 16.*abd*abd + 24.*ab*abdd + 24.*abbd*ad +
  8.*abb*add + 48.*aabdd*b - 24.*a*abdd*b - 16.*abd*ad*b - 8.*ab*add*b -
@@ -1147,7 +1147,7 @@ double AliAnalysisTaskGammaSoft::getStdABCD(vector<vector<vector<vector<std::com
   std::complex<double> abd = abcdvec[1][1][0][1];
   std::complex<double> acd = abcdvec[1][0][1][1];
   std::complex<double> bcd = abcdvec[0][1][1][1];
-  std::complex<double> abcd = abcdvec[1][1][0][1];
+  std::complex<double> abcd = abcdvec[1][1][1][1];
   return (-6.*abcd + 2.*acd*b + ad*bc + 2.*a*bcd + ac*bd + 2.*abd*c - ad*b*c -
  a*bd*c + ab*cd - a*b*cd + 2.*abc*d - ac*b*d - a*bc*d - ab*c*d +
  a*b*c*d).real();
