@@ -190,6 +190,11 @@ protected:
   TH2F**                  fHistoMotherBackInvMassECalib;                      //! array of histos with mixed event background with alpha < 0.1 for NonLin
 
   TH2F**                  fHistoEVsNCellsInPiMass;                            //! array of histos with cluster energy vs. cluster NCells for pi0 tagged photon clusters
+  TH2F**                  fHistoEVsNCellsInPiMassSideband;                    //! array of histos with cluster energy vs. cluster NCells for pi0 sideband tagged photon clusters
+  TH3F**                  fHistoEVsNCellsInPiMassVsSource;                    //! array of histos with cluster energy vs. cluster NCells for pi0 tagged photon clusters for different cluster sources
+  TH3F**                  fHistoMotherInvMassEClusVsSource;                   //! array of histos with inv. mass vs. cluster energy vs source (photon, conv. elevtron, electron and hadron)
+  TH2F**                  fHistoMotherInvMassClusE;                           //! array of histos with inv. mass vs. cluster energy 
+  TH2F**                  fHistoMotherBackInvMassClusE;                       //! array of histos with inv. mass vs. cluster energy background
 
   TProfile**              fProfileEtaShift;                                   //! array of profiles with eta shift
   TProfile**              fProfileJetJetXSection;                             //! array of profiles with xsection for jetjet

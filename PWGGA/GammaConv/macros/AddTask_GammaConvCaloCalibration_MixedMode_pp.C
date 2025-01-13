@@ -405,8 +405,12 @@ void AddTask_GammaConvCaloCalibration_MixedMode_pp(
 
   // Cluster efficiency with lower cluster Emin
   } else if (trainConfig == 125){ // NL 99, nominal Bfield setting, without NCell cut
-    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909feg0220000","0r63103100000010"); // INT7, Emin = 300 MeV
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909feg09v0000","0r63103100000010"); // INT7, Emin = 300 MeV
     cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909feg0200000","0r63103100000010"); // INT7, Emin = 300 MeV, open M02
+  // same as 125 but with exotics > 6
+  } else if (trainConfig == 126){ // NL 99, nominal Bfield setting, without NCell cut
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909flg09v0000","0r63103100000010"); // INT7, Emin = 300 MeV, exotic_E > 6
+    cuts.AddCutPCMCalo("00010113","0dm00009f9730000dge0404000","411799909flg0200000","0r63103100000010"); // INT7, Emin = 300 MeV, open M02, exotic_E > 6
 
   } else {
     Error(Form("AddTask_GammaConvCaloCalibration_MixedMode_pp%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
