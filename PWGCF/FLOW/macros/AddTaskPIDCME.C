@@ -14,6 +14,7 @@ AliAnalysisTaskPIDCME* AddTaskPIDCME(
   bool bCalculateDiffResult     = true,
   bool bCalculateDeltaPhiSumPhi = false,
   bool bOpenPIDSingletrk        = false,
+  bool bOpenSsandOsSelfCheck    = true,
   bool bCalculatePionKaon       = true,
   bool bCalculatePionProton     = true,
   bool bCalculateKaonProton     = true,
@@ -23,7 +24,8 @@ AliAnalysisTaskPIDCME* AddTaskPIDCME(
   bool bCalculateHadronHadron   = true,
   bool bDoNUA                   = true,
   bool bDoNUE                   = true,
-  TString uniqueID              = "")
+  TString uniqueID              = "",
+  const char* suffix            = "")
 {
   // Creates a pid task and adds it to the analysis manager
   // Get the pointer to the existing analysis manager via the static
@@ -56,7 +58,9 @@ AliAnalysisTaskPIDCME* AddTaskPIDCME(
   bool bUsePionRejection       = false;
   bool bUseOneSideTPCPlane     = false;
   // --- instantiate analysis task
-  AliAnalysisTaskPIDCME* task = new AliAnalysisTaskPIDCME("TaskPIDCME");
+  TString combinedName;
+  combinedName.Form("TaskPIDCME%s", suffix);
+  AliAnalysisTaskPIDCME* task = new AliAnalysisTaskPIDCME(combinedName);
   task->SetTrigger(trigger);
   task->SetPeriod(period);
   task->SetFilterBit(filterBit);
@@ -78,6 +82,7 @@ AliAnalysisTaskPIDCME* AddTaskPIDCME(
   task->IfCalculateDiffResult(bCalculateDiffResult);
   task->IfCalculateDeltaPhiSumPhi(bCalculateDeltaPhiSumPhi);
   task->IfOpenPIDSingletrk(bOpenPIDSingletrk);
+  task->IfOpenSsandOsSelfCheck(bOpenSsandOsSelfCheck);
 
   task->IfCalculatePionKaon(bCalculatePionKaon);
   task->IfCalculatePionProton(bCalculatePionProton);
@@ -223,12 +228,12 @@ AliAnalysisTaskPIDCME* AddTaskPIDCME(
   AliAnalysisDataContainer* cinput = mgr->GetCommonInputContainer();
   TString outputFileName = mgr->GetCommonFileName();
   std::cout << "outputfileName::::==========:::" << outputFileName << std::endl;
-  AliAnalysisDataContainer* coutput_QA = mgr->CreateContainer(Form("ListQA_%s", uniqueID.Data()), TList::Class(),
+  AliAnalysisDataContainer* coutput_QA = mgr->CreateContainer(Form("ListQA_%s_%s", uniqueID.Data(),suffix), TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,
-                                                           Form("%s:%s", outputFileName.Data(), uniqueID.Data()));
-  AliAnalysisDataContainer* coutput_result = mgr->CreateContainer(Form("ListResults_%s", uniqueID.Data()), TList::Class(),
+                                                           Form("%s:%s%s", outputFileName.Data(), uniqueID.Data(), suffix));
+  AliAnalysisDataContainer* coutput_result = mgr->CreateContainer(Form("ListResults_%s_%s", uniqueID.Data(),suffix), TList::Class(),
                                                            AliAnalysisManager::kOutputContainer,
-                                                           Form("%s:%s", outputFileName.Data(), uniqueID.Data()));
+                                                           Form("%s:%s%s", outputFileName.Data(), uniqueID.Data(), suffix));
   mgr->ConnectInput(task, 0, cinput);
   mgr->ConnectOutput(task, 1, coutput_QA);
   mgr->ConnectOutput(task, 2, coutput_result);
@@ -239,5 +244,3 @@ AliAnalysisTaskPIDCME* AddTaskPIDCME(
   std::cout << "================  Return task =================" << std::endl;
   return task;
 }
-
-
