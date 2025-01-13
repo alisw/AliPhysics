@@ -103,6 +103,7 @@ AliAnalysisTaskPIDCME::AliAnalysisTaskPIDCME() :
   isUseOneSideTPCPlane(false),
   isTightPileUp(false),
   isOpenPIDSingletrk(true),
+  isOpenSsandOsSelfCheck(false),
   fTrigger("kINT7"),
   fPeriod("LHC18q"),
   fVzCut(10.0),
@@ -325,11 +326,13 @@ AliAnalysisTaskPIDCME::AliAnalysisTaskPIDCME() :
   for (int i = 0; i < 2; i++) fProfileV0CQxVtx[i]= nullptr;
   for (int i = 0; i < 2; i++) fProfileV0CQyVtx[i]= nullptr;
   for (int i = 0; i < 2; i++) fHist2CalibPsi2V0CCent[i] = nullptr;
+  for (int i = 0; i < 2; i++) fHist3CalibQxQyCentV0C[i] = nullptr;
   for (int i = 0; i < 2; i++) fProfileV0AQxCent[i]= nullptr;
   for (int i = 0; i < 2; i++) fProfileV0AQyCent[i]= nullptr;
   for (int i = 0; i < 2; i++) fProfileV0AQxVtx[i]= nullptr;
   for (int i = 0; i < 2; i++) fProfileV0AQyVtx[i]= nullptr;
   for (int i = 0; i < 2; i++) fHist2CalibPsi2V0ACent[i] = nullptr;
+  for (int i = 0; i < 2; i++) fHist3CalibQxQyCentV0A[i] = nullptr;
   for (int i = 0; i < 2; i++) fProfileZNCTowerMeanEnegry[i] = nullptr;
   for (int i = 0; i < 2; i++) fProfileZNCQxCent[i] = nullptr;
   for (int i = 0; i < 2; i++) fProfileZNCQyCent[i] = nullptr;
@@ -353,13 +356,27 @@ AliAnalysisTaskPIDCME::AliAnalysisTaskPIDCME() :
   for (int i = 0; i < 2; i++) fProfileDeltaKaonKaon[i] = nullptr;
   for (int i = 0; i < 2; i++) fProfileDeltaProtonProton[i] = nullptr;
   for (int i = 0; i < 2; i++) fProfileDeltaHadronHadron[i] = nullptr;
-  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaPionKaon[i][j] = nullptr;
-  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaPionProton[i][j] = nullptr;
-  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaKaonProton[i][j] = nullptr;
-  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaPionPion[i][j] = nullptr;
-  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaKaonKaon[i][j] = nullptr;
-  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaProtonProton[i][j] = nullptr;
-  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaHadronHadron[i][j] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaPionKaonSplit[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaPionProtonSplit[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaKaonProtonSplit[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaPionPionSplit[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaKaonKaonSplit[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaProtonProtonSplit[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaHadronHadronSplit[i] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaPionKaonSplit[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaPionProtonSplit[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaKaonProtonSplit[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaPionPionSplit[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaKaonKaonSplit[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaProtonProtonSplit[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaHadronHadronSplit[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfileGammaPionKaon[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfileGammaPionProton[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfileGammaKaonProton[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfileGammaPionPion[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfileGammaKaonKaon[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfileGammaProtonProton[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfileGammaHadronHadron[i][j] = nullptr;
   for (int i = 0; i < 2; i++) fProfile2DiffDeltaPionKaonDPt[i] = nullptr;
   for (int i = 0; i < 2; i++) fProfile2DiffDeltaPionProtonDPt[i] = nullptr; 
   for (int i = 0; i < 2; i++) fProfile2DiffDeltaKaonProtonDPt[i] = nullptr; 
@@ -459,6 +476,7 @@ AliAnalysisTaskPIDCME::AliAnalysisTaskPIDCME(const char *name) :
   isUseOneSideTPCPlane(false),
   isTightPileUp(false),
   isOpenPIDSingletrk(true),
+  isOpenSsandOsSelfCheck(false),
   fTrigger("kINT7"),
   fPeriod("LHC18q"),
   fVzCut(10.0),
@@ -681,11 +699,13 @@ AliAnalysisTaskPIDCME::AliAnalysisTaskPIDCME(const char *name) :
   for (int i = 0; i < 2; i++) fProfileV0CQxVtx[i]= nullptr;
   for (int i = 0; i < 2; i++) fProfileV0CQyVtx[i]= nullptr;
   for (int i = 0; i < 2; i++) fHist2CalibPsi2V0CCent[i] = nullptr;
+  for (int i = 0; i < 2; i++) fHist3CalibQxQyCentV0C[i] = nullptr;
   for (int i = 0; i < 2; i++) fProfileV0AQxCent[i]= nullptr;
   for (int i = 0; i < 2; i++) fProfileV0AQyCent[i]= nullptr;
   for (int i = 0; i < 2; i++) fProfileV0AQxVtx[i]= nullptr;
   for (int i = 0; i < 2; i++) fProfileV0AQyVtx[i]= nullptr;
   for (int i = 0; i < 2; i++) fHist2CalibPsi2V0ACent[i] = nullptr;
+  for (int i = 0; i < 2; i++) fHist3CalibQxQyCentV0A[i] = nullptr;
   for (int i = 0; i < 2; i++) fProfileZNCTowerMeanEnegry[i] = nullptr;
   for (int i = 0; i < 2; i++) fProfileZNCQxCent[i] = nullptr;
   for (int i = 0; i < 2; i++) fProfileZNCQyCent[i] = nullptr;
@@ -709,13 +729,27 @@ AliAnalysisTaskPIDCME::AliAnalysisTaskPIDCME(const char *name) :
   for (int i = 0; i < 2; i++) fProfileDeltaKaonKaon[i] = nullptr;
   for (int i = 0; i < 2; i++) fProfileDeltaProtonProton[i] = nullptr;
   for (int i = 0; i < 2; i++) fProfileDeltaHadronHadron[i] = nullptr;
-  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaPionKaon[i][j] = nullptr;
-  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaPionProton[i][j] = nullptr;
-  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaKaonProton[i][j] = nullptr;
-  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaPionPion[i][j] = nullptr;
-  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaKaonKaon[i][j] = nullptr;
-  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaProtonProton[i][j] = nullptr;
-  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaHadronHadron[i][j] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaPionKaonSplit[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaPionProtonSplit[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaKaonProtonSplit[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaPionPionSplit[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaKaonKaonSplit[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaProtonProtonSplit[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaHadronHadronSplit[i] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaPionKaonSplit[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaPionProtonSplit[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaKaonProtonSplit[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaPionPionSplit[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaKaonKaonSplit[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaProtonProtonSplit[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 4; j++) fProfileGammaHadronHadronSplit[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfileGammaPionKaon[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfileGammaPionProton[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfileGammaKaonProton[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfileGammaPionPion[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfileGammaKaonKaon[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfileGammaProtonProton[i][j] = nullptr;
+  for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfileGammaHadronHadron[i][j] = nullptr;
   for (int i = 0; i < 2; i++) fProfile2DiffDeltaPionKaonDPt[i] = nullptr;
   for (int i = 0; i < 2; i++) fProfile2DiffDeltaPionProtonDPt[i] = nullptr; 
   for (int i = 0; i < 2; i++) fProfile2DiffDeltaKaonProtonDPt[i] = nullptr; 
@@ -1109,36 +1143,40 @@ void AliAnalysisTaskPIDCME::UserCreateOutputObjects()
       fProfileV0CQyCent[i] = new TProfile(Form("fProfileV0CQyCent%s",charCalibStep.data()), "", 80, 0, 80.);
       fProfileV0CQxVtx[i]  = new TProfile(Form("fProfileV0CQxVz%s",charCalibStep.data()), "", 20, -10, 10);
       fProfileV0CQyVtx[i]  = new TProfile(Form("fProfileV0CQyVz%s",charCalibStep.data()), "", 20, -10, 10);
-      fHist2CalibPsi2V0CCent[i] = new TH2D(Form("fHist2CalibPsi2V0CCent%s",charCalibStep.data()), "", 16, 0, 80, 50, 0, TMath::Pi());
+      fHist2CalibPsi2V0CCent[i] = new TH2D(Form("fHist2CalibPsi2V0CCent%s",charCalibStep.data()), "", 80, 0, 80, 100, 0, TMath::Pi());
+      fHist3CalibQxQyCentV0C[i] = new TH3D(Form("fHist3CalibQxQyCentV0C%s",charCalibStep.data()), "fHist3CalibQxQyCentV0C;Q_{x};Q_{y};centrality", 100, -10, 100, 10, -10, 10, 80, 0, 80);
       fQAList->Add(fProfileV0CQxCent[i]);
       fQAList->Add(fProfileV0CQyCent[i]);
       fQAList->Add(fProfileV0CQxVtx[i]);
       fQAList->Add(fProfileV0CQyVtx[i]);
       fQAList->Add(fHist2CalibPsi2V0CCent[i]);
+      fQAList->Add(fHist3CalibQxQyCentV0C[i]);
 
       fProfileV0AQxCent[i] = new TProfile(Form("fProfileV0AQxCent%s",charCalibStep.data()), "", 80, 0, 80.);
       fProfileV0AQyCent[i] = new TProfile(Form("fProfileV0AQyCent%s",charCalibStep.data()), "", 80, 0, 80.);
       fProfileV0AQxVtx[i]  = new TProfile(Form("fProfileV0AQxVz%s",charCalibStep.data()), "", 20, -10, 10);
       fProfileV0AQyVtx[i]  = new TProfile(Form("fProfileV0AQyVz%s",charCalibStep.data()), "", 20, -10, 10);
-      fHist2CalibPsi2V0ACent[i] = new TH2D(Form("fHist2CalibPsi2V0ACent%s",charCalibStep.data()), "", 16, 0, 80, 50, 0, TMath::Pi());
+      fHist2CalibPsi2V0ACent[i] = new TH2D(Form("fHist2CalibPsi2V0ACent%s",charCalibStep.data()), "", 80, 0, 80, 100, 0, TMath::Pi());
+      fHist3CalibQxQyCentV0A[i] = new TH3D(Form("fHist3CalibQxQyCentV0A%s",charCalibStep.data()), "fHist3CalibQxQyCentV0A;Q_{x};Q_{y};centrality", 100, -10, 10, 100, -10, 10, 80, 0, 80);
       fQAList->Add(fProfileV0AQxCent[i]);
       fQAList->Add(fProfileV0AQyCent[i]);
       fQAList->Add(fProfileV0AQxVtx[i]);
       fQAList->Add(fProfileV0AQyVtx[i]);
       fQAList->Add(fHist2CalibPsi2V0ACent[i]);
+      fQAList->Add(fHist3CalibQxQyCentV0A[i]);
     }
 
     if (isQAZDC) {
       fProfileZNCQxCent[i] = new TProfile(Form("fProfileZNCQxCent%s",charCalibStep.data()), "", 80, 0, 80.);
       fProfileZNCQyCent[i] = new TProfile(Form("fProfileZNCQyCent%s",charCalibStep.data()), "", 80, 0, 80.);
-      fHist2CalibPsi1ZNCCent[i] = new TH2D(Form("fHist2CalibPsi1ZNCCent%s",charCalibStep.data()), "", 16, 0, 80, 50, 0, TMath::Pi());
+      fHist2CalibPsi1ZNCCent[i] = new TH2D(Form("fHist2CalibPsi1ZNCCent%s",charCalibStep.data()), "", 80, 0, 80, 50, 0, TMath::Pi());
       fQAList->Add(fProfileZNCQxCent[i]);
       fQAList->Add(fProfileZNCQyCent[i]);
       fQAList->Add(fHist2CalibPsi1ZNCCent[i]);
 
       fProfileZNAQxCent[i] = new TProfile(Form("fProfileZNAQxCent%s",charCalibStep.data()), "", 80, 0, 80.);
       fProfileZNAQyCent[i] = new TProfile(Form("fProfileZNAQyCent%s",charCalibStep.data()), "", 80, 0, 80.);
-      fHist2CalibPsi1ZNACent[i] = new TH2D(Form("fHist2CalibPsi1ZNACent%s",charCalibStep.data()), "", 16, 0, 80, 50, 0, TMath::Pi());
+      fHist2CalibPsi1ZNACent[i] = new TH2D(Form("fHist2CalibPsi1ZNACent%s",charCalibStep.data()), "", 80, 0, 80, 50, 0, TMath::Pi());
       fQAList->Add(fProfileZNAQxCent[i]);
       fQAList->Add(fProfileZNAQyCent[i]);
       fQAList->Add(fHist2CalibPsi1ZNACent[i]);
@@ -1294,13 +1332,13 @@ void AliAnalysisTaskPIDCME::UserCreateOutputObjects()
   fResultsList -> SetOwner(kTRUE);
 
   // Plane
-  fHist2Psi2TPCPosCent = new TH2D("fHist2Psi2TPCPosCent","fHist2Psi2TPCPosCent;centrality;#Psi(TPCPos)",8,0,80.,100,0.,TMath::Pi());
-  fHist2Psi2TPCNegCent = new TH2D("fHist2Psi2TPCNegCent","fHist2Psi2TPCNegCent;centrality;#Psi(TPCNeg)",8,0,80.,100,0.,TMath::Pi());
-  fHist2Psi2V0CCent    = new TH2D("fHist2Psi2V0CCent","fHist2Psi2V0CCent;centrality;#Psi(V0C)",8,0.,80.,100,0.,TMath::Pi());
-  fHist2Psi2V0ACent    = new TH2D("fHist2Psi2V0ACent","fHist2Psi2V0ACent;centrality;#Psi(V0A)",8,0.,80.,100,0.,TMath::Pi());
-  fHist2Psi1ZNCCent    = new TH2D("fHist2Psi1ZNCCent","fHist2Psi1ZNCCent;centrality;#Psi(ZNC)",8,0.,80.,100,0.,TMath::TwoPi());
-  fHist2Psi1ZNACent    = new TH2D("fHist2Psi1ZNACent","fHist2Psi1ZNACent;centrality;#Psi(ZNA)",8,0.,80.,100,0.,TMath::TwoPi());
-  fHist2Psi2TPCCent    = new TH2D("fHist2Psi2TPCCent","fHist2Psi2TPCCent;centrality;#Psi(TPC)",8,0.,80.,100,0.,TMath::Pi());
+  fHist2Psi2TPCPosCent = new TH2D("fHist2Psi2TPCPosCent","fHist2Psi2TPCPosCent;centrality;#Psi(TPCPos)",80,0,80.,100,0.,TMath::Pi());
+  fHist2Psi2TPCNegCent = new TH2D("fHist2Psi2TPCNegCent","fHist2Psi2TPCNegCent;centrality;#Psi(TPCNeg)",80,0,80.,100,0.,TMath::Pi());
+  fHist2Psi2V0CCent    = new TH2D("fHist2Psi2V0CCent","fHist2Psi2V0CCent;centrality;#Psi(V0C)",80,0.,80.,100,0.,TMath::Pi());
+  fHist2Psi2V0ACent    = new TH2D("fHist2Psi2V0ACent","fHist2Psi2V0ACent;centrality;#Psi(V0A)",80,0.,80.,100,0.,TMath::Pi());
+  fHist2Psi1ZNCCent    = new TH2D("fHist2Psi1ZNCCent","fHist2Psi1ZNCCent;centrality;#Psi(ZNC)",80,0.,80.,100,0.,TMath::TwoPi());
+  fHist2Psi1ZNACent    = new TH2D("fHist2Psi1ZNACent","fHist2Psi1ZNACent;centrality;#Psi(ZNA)",80,0.,80.,100,0.,TMath::TwoPi());
+  fHist2Psi2TPCCent    = new TH2D("fHist2Psi2TPCCent","fHist2Psi2TPCCent;centrality;#Psi(TPC)",80,0.,80.,100,0.,TMath::Pi());
   
   fResultsList->Add(fHist2Psi2TPCPosCent);
   fResultsList->Add(fHist2Psi2TPCNegCent);
@@ -1311,16 +1349,16 @@ void AliAnalysisTaskPIDCME::UserCreateOutputObjects()
   fResultsList->Add(fHist2Psi2TPCCent);
 
   // Res
-  fProfileTPCPsi2Correlation       = new TProfile("fProfileTPCPsi2Correlation","fProfileTPCPsi2Correlation;centrality;Res",8,0.,80.);
-  fProfileV0MPsi2Correlation       = new TProfile("fProfileV0MPsi2Correlation","fProfileV0MPsi2Correlation;centrality;Res",8,0.,80.);
-  fProfileZDCPsi1Correlation       = new TProfile("fProfileZDCPsi1Correlation","fProfileZDCPsi1Correlation;centrality;Res",8,0.,80.);
-  fProfileZDCPsi2Correlation       = new TProfile("fProfileZDCPsi2Correlation","fProfileZDCPsi2Correlation;centrality;Res",8,0.,80.);
-  fProfileV0CTPCPosPsi2Correlation = new TProfile("fProfileV0CTPCPosPsi2Correlation","fProfileV0CTPCPosPsi2Correlation;centrality;Res",8,0.,80.);
-  fProfileV0ATPCPosPsi2Correlation = new TProfile("fProfileV0ATPCPosPsi2Correlation","fProfileV0ATPCPosPsi2Correlation;centrality;Res",8,0.,80.);
-  fProfileV0CTPCNegPsi2Correlation = new TProfile("fProfileV0CTPCNegPsi2Correlation","fProfileV0CTPCNegPsi2Correlation;centrality;Res",8,0.,80.);
-  fProfileV0ATPCNegPsi2Correlation = new TProfile("fProfileV0ATPCNegPsi2Correlation","fProfileV0ATPCNegPsi2Correlation;centrality;Res",8,0.,80.);
-  fProfileV0CTPCPsi2Correlation    = new TProfile("fProfileV0CTPCPsi2Correlation","fProfileV0CTPCPsi2Correlation;centrality;Res",8,0.,80.);
-  fProfileV0ATPCPsi2Correlation    = new TProfile("fProfileV0ATPCPsi2Correlation","fProfileV0ATPCPsi2Correlation;centrality;Res",8,0.,80.);
+  fProfileTPCPsi2Correlation       = new TProfile("fProfileTPCPsi2Correlation","fProfileTPCPsi2Correlation;centrality;Res",80,0.,80.);
+  fProfileV0MPsi2Correlation       = new TProfile("fProfileV0MPsi2Correlation","fProfileV0MPsi2Correlation;centrality;Res",80,0.,80.);
+  fProfileZDCPsi1Correlation       = new TProfile("fProfileZDCPsi1Correlation","fProfileZDCPsi1Correlation;centrality;Res",80,0.,80.);
+  fProfileZDCPsi2Correlation       = new TProfile("fProfileZDCPsi2Correlation","fProfileZDCPsi2Correlation;centrality;Res",80,0.,80.);
+  fProfileV0CTPCPosPsi2Correlation = new TProfile("fProfileV0CTPCPosPsi2Correlation","fProfileV0CTPCPosPsi2Correlation;centrality;Res",80,0.,80.);
+  fProfileV0ATPCPosPsi2Correlation = new TProfile("fProfileV0ATPCPosPsi2Correlation","fProfileV0ATPCPosPsi2Correlation;centrality;Res",80,0.,80.);
+  fProfileV0CTPCNegPsi2Correlation = new TProfile("fProfileV0CTPCNegPsi2Correlation","fProfileV0CTPCNegPsi2Correlation;centrality;Res",80,0.,80.);
+  fProfileV0ATPCNegPsi2Correlation = new TProfile("fProfileV0ATPCNegPsi2Correlation","fProfileV0ATPCNegPsi2Correlation;centrality;Res",80,0.,80.);
+  fProfileV0CTPCPsi2Correlation    = new TProfile("fProfileV0CTPCPsi2Correlation","fProfileV0CTPCPsi2Correlation;centrality;Res",80,0.,80.);
+  fProfileV0ATPCPsi2Correlation    = new TProfile("fProfileV0ATPCPsi2Correlation","fProfileV0ATPCPsi2Correlation;centrality;Res",80,0.,80.);
   fResultsList->Add(fProfileTPCPsi2Correlation);
   fResultsList->Add(fProfileV0MPsi2Correlation);
   fResultsList->Add(fProfileZDCPsi1Correlation);
@@ -1350,10 +1388,10 @@ void AliAnalysisTaskPIDCME::UserCreateOutputObjects()
       for (int jCharge = 0; jCharge < 2; jCharge++) {
         if (jCharge == 0) charCharge = "_Pos";
         if (jCharge == 1) charCharge = "_Neg";
-          fProfile2RawFlowPtCentHadron[iPlane][jCharge] = new TProfile2D(Form("fProfile2RawFlowPtCentHadron%s%s",charPlane.data(),charCharge.data()),";centrality;pT;v2Obs",8,0.,80.,25,0.,5.);
-          fProfile2RawFlowPtCentProton[iPlane][jCharge] = new TProfile2D(Form("fProfile2RawFlowPtCentProton%s%s",charPlane.data(),charCharge.data()),";centrality;pT;v2Obs",8,0.,80.,25,0.,5.);
-          fProfile2RawFlowPtCentPion[iPlane][jCharge] = new TProfile2D(Form("fProfile2RawFlowPtCentProton%s%s",charPlane.data(),charCharge.data()),";centrality;pT;v2Obs",8,0.,80.,25,0.,5.);
-          fProfile2RawFlowPtCentKaon[iPlane][jCharge] = new TProfile2D(Form("fProfile2RawFlowPtCentKaon%s%s",charPlane.data(),charCharge.data()),";centrality;pT;v2Obs",8,0.,80.,25,0.,5.);
+          fProfile2RawFlowPtCentHadron[iPlane][jCharge] = new TProfile2D(Form("fProfile2RawFlowPtCentHadron%s%s",charPlane.data(),charCharge.data()),";centrality;pT;v2Obs",16,0.,80.,100,0.,10.);
+          fProfile2RawFlowPtCentProton[iPlane][jCharge] = new TProfile2D(Form("fProfile2RawFlowPtCentProton%s%s",charPlane.data(),charCharge.data()),";centrality;pT;v2Obs",16,0.,80.,100,0.,10.);
+          fProfile2RawFlowPtCentPion[iPlane][jCharge] = new TProfile2D(Form("fProfile2RawFlowPtCentPion%s%s",charPlane.data(),charCharge.data()),";centrality;pT;v2Obs",16,0.,80.,100,0.,10.);
+          fProfile2RawFlowPtCentKaon[iPlane][jCharge] = new TProfile2D(Form("fProfile2RawFlowPtCentKaon%s%s",charPlane.data(),charCharge.data()),";centrality;pT;v2Obs",16,0.,80.,100,0.,10.);
           fResultsList->Add(fProfile2RawFlowPtCentHadron[iPlane][jCharge]);
           fResultsList->Add(fProfile2RawFlowPtCentProton[iPlane][jCharge]);
           fResultsList->Add(fProfile2RawFlowPtCentPion[iPlane][jCharge]);
@@ -1361,10 +1399,10 @@ void AliAnalysisTaskPIDCME::UserCreateOutputObjects()
       }
     }
   }
-  fProfile2RawFlowHadronQ2 = new TProfile2D("fProfile2RawFlowHadronQ2",";centrality;q^{2}_{V0C};v2_{Hadron}", 8,0.,80, fNQ2Bins,0.,(double)fNQ2Bins);
-  fProfile2RawFlowProtonQ2 = new TProfile2D("fProfile2RawFlowProtonQ2",";centrality;q^{2}_{V0C};v2_{Proton}", 8,0.,80, fNQ2Bins,0.,(double)fNQ2Bins);
-  fProfile2RawFlowPionQ2 = new TProfile2D("fProfile2RawFlowPionQ2",";centrality;q^{2}_{V0C};v2_{Pion}", 8,0.,80, fNQ2Bins,0.,(double)fNQ2Bins);
-  fProfile2RawFlowKaonQ2 = new TProfile2D("fProfile2RawFlowKaonQ2",";centrality;q^{2}_{V0C};v2_{Kaon}", 8,0.,80, fNQ2Bins,0.,(double)fNQ2Bins);
+  fProfile2RawFlowHadronQ2 = new TProfile2D("fProfile2RawFlowHadronQ2",";centrality;q^{2}_{V0C};v2_{Hadron}", 16,0.,80, fNQ2Bins,0.,(double)fNQ2Bins);
+  fProfile2RawFlowProtonQ2 = new TProfile2D("fProfile2RawFlowProtonQ2",";centrality;q^{2}_{V0C};v2_{Proton}", 16,0.,80, fNQ2Bins,0.,(double)fNQ2Bins);
+  fProfile2RawFlowPionQ2 = new TProfile2D("fProfile2RawFlowPionQ2",";centrality;q^{2}_{V0C};v2_{Pion}", 16,0.,80, fNQ2Bins,0.,(double)fNQ2Bins);
+  fProfile2RawFlowKaonQ2 = new TProfile2D("fProfile2RawFlowKaonQ2",";centrality;q^{2}_{V0C};v2_{Kaon}", 16,0.,80, fNQ2Bins,0.,(double)fNQ2Bins);
   fResultsList->Add(fProfile2RawFlowHadronQ2);
   fResultsList->Add(fProfile2RawFlowProtonQ2);
   fResultsList->Add(fProfile2RawFlowPionQ2);
@@ -1375,32 +1413,69 @@ void AliAnalysisTaskPIDCME::UserCreateOutputObjects()
     if(i == 0) Chargetype = "SS";
     if(i == 1) Chargetype = "OS";
     if (isCalculatePionKaon) {
-      fProfileDeltaPionKaon[i] = new TProfile(Form("fProfileDeltaPionKaon_%s",Chargetype.data()),";centrality;#delta",8,0.,80.);
+      fProfileDeltaPionKaon[i] = new TProfile(Form("fProfileDeltaPionKaon_%s",Chargetype.data()),";centrality;#delta",16,0.,80.);
       fResultsList->Add(fProfileDeltaPionKaon[i]);
     }
     if (isCalculatePionProton) {
-      fProfileDeltaPionProton[i] = new TProfile(Form("fProfileDeltaPionProton_%s",Chargetype.data()),";centrality;#delta",8,0.,80.);
+      fProfileDeltaPionProton[i] = new TProfile(Form("fProfileDeltaPionProton_%s",Chargetype.data()),";centrality;#delta",16,0.,80.);
       fResultsList->Add(fProfileDeltaPionProton[i]);
     }
     if (isCalculateKaonProton) {
-      fProfileDeltaKaonProton[i] = new TProfile(Form("fProfileDeltaKaonProton_%s",Chargetype.data()),";centrality;#delta",8,0.,80.);
+      fProfileDeltaKaonProton[i] = new TProfile(Form("fProfileDeltaKaonProton_%s",Chargetype.data()),";centrality;#delta",16,0.,80.);
       fResultsList->Add(fProfileDeltaKaonProton[i]);
     }
     if (isCalculatePionPion) {
-      fProfileDeltaPionPion[i] = new TProfile(Form("fProfileDeltaPionPion_%s",Chargetype.data()),";centrality;#delta",8,0.,80.);
+      fProfileDeltaPionPion[i] = new TProfile(Form("fProfileDeltaPionPion_%s",Chargetype.data()),";centrality;#delta",16,0.,80.);
       fResultsList->Add(fProfileDeltaPionPion[i]);
     }
     if (isCalculateKaonKaon) {
-      fProfileDeltaKaonKaon[i] = new TProfile(Form("fProfileDeltaKaonKaon_%s",Chargetype.data()),";centrality;#delta",8,0.,80.);
+      fProfileDeltaKaonKaon[i] = new TProfile(Form("fProfileDeltaKaonKaon_%s",Chargetype.data()),";centrality;#delta",16,0.,80.);
       fResultsList->Add(fProfileDeltaKaonKaon[i]);
     }
     if (isCalculateProtonProton) {
-      fProfileDeltaProtonProton[i] = new TProfile(Form("fProfileDeltaProtonProton_%s",Chargetype.data()),";centrality;#delta",8,0.,80.);
+      fProfileDeltaProtonProton[i] = new TProfile(Form("fProfileDeltaProtonProton_%s",Chargetype.data()),";centrality;#delta",16,0.,80.);
       fResultsList->Add(fProfileDeltaProtonProton[i]);
     }
     if (isCalculateHadronHadron) {
-      fProfileDeltaHadronHadron[i] = new TProfile(Form("fProfileDeltaHadronHadron_%s",Chargetype.data()),";centrality;#delta",8,0.,80.);
+      fProfileDeltaHadronHadron[i] = new TProfile(Form("fProfileDeltaHadronHadron_%s",Chargetype.data()),";centrality;#delta",16,0.,80.);
       fResultsList->Add(fProfileDeltaHadronHadron[i]);
+    }
+  }
+
+  if(isOpenSsandOsSelfCheck) {
+      for (int i = 0; i < 4; i++) {
+      if(i == 0) Chargetype = "PP";
+      if(i == 1) Chargetype = "NN";
+      if(i == 2) Chargetype = "PN";
+      if(i == 3) Chargetype = "NP";
+      if (isCalculatePionKaon) {
+        fProfileDeltaPionKaonSplit[i] = new TProfile(Form("fProfileDeltaPionKaonSplit_%s",Chargetype.data()),";centrality;#delta",16,0.,80.);
+        fResultsList->Add(fProfileDeltaPionKaonSplit[i]);
+      }
+      if (isCalculatePionProton) {
+        fProfileDeltaPionProtonSplit[i] = new TProfile(Form("fProfileDeltaPionProtonSplit_%s",Chargetype.data()),";centrality;#delta",16,0.,80.);
+        fResultsList->Add(fProfileDeltaPionProtonSplit[i]);
+      }
+      if (isCalculateKaonProton) {
+        fProfileDeltaKaonProtonSplit[i] = new TProfile(Form("fProfileDeltaKaonProtonSplit_%s",Chargetype.data()),";centrality;#delta",16,0.,80.);
+        fResultsList->Add(fProfileDeltaKaonProtonSplit[i]);
+      }
+      if (isCalculatePionPion) {
+        fProfileDeltaPionPionSplit[i] = new TProfile(Form("fProfileDeltaPionPionSplit_%s",Chargetype.data()),";centrality;#delta",16,0.,80.);
+        fResultsList->Add(fProfileDeltaPionPionSplit[i]);
+      }
+      if (isCalculateKaonKaon) {
+        fProfileDeltaKaonKaonSplit[i] = new TProfile(Form("fProfileDeltaKaonKaonSplit_%s",Chargetype.data()),";centrality;#delta",16,0.,80.);
+        fResultsList->Add(fProfileDeltaKaonKaonSplit[i]);
+      }
+      if (isCalculateProtonProton) {
+        fProfileDeltaProtonProtonSplit[i] = new TProfile(Form("fProfileDeltaProtonProtonSplit_%s",Chargetype.data()),";centrality;#delta",16,0.,80.);
+        fResultsList->Add(fProfileDeltaProtonProtonSplit[i]);
+      }
+      if (isCalculateHadronHadron) {
+        fProfileDeltaHadronHadronSplit[i] = new TProfile(Form("fProfileDeltaHadronHadronSplit_%s",Chargetype.data()),";centrality;#delta",16,0.,80.);
+        fResultsList->Add(fProfileDeltaHadronHadronSplit[i]);
+      }
     }
   }
 
@@ -1416,32 +1491,68 @@ void AliAnalysisTaskPIDCME::UserCreateOutputObjects()
       if(iType == 0) Chargetype = "SS";
       if(iType == 1) Chargetype = "OS";
       if (isCalculatePionKaon) {
-        fProfileGammaPionKaon[iPlane][iType] = new TProfile(Form("fProfileGammaPionKaon%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",8,0.,80.);
+        fProfileGammaPionKaon[iPlane][iType] = new TProfile(Form("fProfileGammaPionKaon%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",16,0.,80.);
         fResultsList->Add(fProfileGammaPionKaon[iPlane][iType]);
       }
       if (isCalculatePionProton) {
-        fProfileGammaPionProton[iPlane][iType] = new TProfile(Form("fProfileGammaPionProton%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",8,0.,80.);
+        fProfileGammaPionProton[iPlane][iType] = new TProfile(Form("fProfileGammaPionProton%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",16,0.,80.);
         fResultsList->Add(fProfileGammaPionProton[iPlane][iType]);
       }
       if (isCalculateKaonProton) {
-        fProfileGammaKaonProton[iPlane][iType] = new TProfile(Form("fProfileGammaKaonProton%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",8,0.,80.);
+        fProfileGammaKaonProton[iPlane][iType] = new TProfile(Form("fProfileGammaKaonProton%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",16,0.,80.);
         fResultsList->Add(fProfileGammaKaonProton[iPlane][iType]);
       }
       if (isCalculatePionPion) {
-        fProfileGammaPionPion[iPlane][iType] = new TProfile(Form("fProfileGammaPionPion%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",8,0.,80.);
+        fProfileGammaPionPion[iPlane][iType] = new TProfile(Form("fProfileGammaPionPion%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",16,0.,80.);
         fResultsList->Add(fProfileGammaPionPion[iPlane][iType]);
       }
       if (isCalculateKaonKaon) {
-        fProfileGammaKaonKaon[iPlane][iType] = new TProfile(Form("fProfileGammaKaonKaon%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",8,0.,80.);
+        fProfileGammaKaonKaon[iPlane][iType] = new TProfile(Form("fProfileGammaKaonKaon%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",16,0.,80.);
         fResultsList->Add(fProfileGammaKaonKaon[iPlane][iType]);
       }
       if (isCalculateProtonProton) {
-        fProfileGammaProtonProton[iPlane][iType] = new TProfile(Form("fProfileGammaProtonProton%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",8,0.,80.);
+        fProfileGammaProtonProton[iPlane][iType] = new TProfile(Form("fProfileGammaProtonProton%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",16,0.,80.);
         fResultsList->Add(fProfileGammaProtonProton[iPlane][iType]);
       }
       if (isCalculateHadronHadron) {
-        fProfileGammaHadronHadron[iPlane][iType] = new TProfile(Form("fProfileGammaHadronHadron%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",8,0.,80.);
+        fProfileGammaHadronHadron[iPlane][iType] = new TProfile(Form("fProfileGammaHadronHadron%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",16,0.,80.);
         fResultsList->Add(fProfileGammaHadronHadron[iPlane][iType]);
+      }
+    }
+    if(isOpenSsandOsSelfCheck) {
+        for (int iType = 0; iType < 4; iType++) {
+        if(iType == 0) Chargetype = "PP";
+        if(iType == 1) Chargetype = "NN";
+        if(iType == 2) Chargetype = "PN";
+        if(iType == 3) Chargetype = "NP";
+        if (isCalculatePionKaon) {
+          fProfileGammaPionKaonSplit[iPlane][iType] = new TProfile(Form("fProfileGammaPionKaonSplit%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",16,0.,80.);
+          fResultsList->Add(fProfileGammaPionKaonSplit[iPlane][iType]);
+        }
+        if (isCalculatePionProton) {
+          fProfileGammaPionProtonSplit[iPlane][iType] = new TProfile(Form("fProfileGammaPionProtonSplit%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",16,0.,80.);
+          fResultsList->Add(fProfileGammaPionProtonSplit[iPlane][iType]);
+        }
+        if (isCalculateKaonProton) {
+          fProfileGammaKaonProtonSplit[iPlane][iType] = new TProfile(Form("fProfileGammaKaonProtonSplit%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",16,0.,80.);
+          fResultsList->Add(fProfileGammaKaonProtonSplit[iPlane][iType]);
+        }
+        if (isCalculatePionPion) {
+          fProfileGammaPionPionSplit[iPlane][iType] = new TProfile(Form("fProfileGammaPionPionSplit%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",16,0.,80.);
+          fResultsList->Add(fProfileGammaPionPionSplit[iPlane][iType]);
+        }
+        if (isCalculateKaonKaon) {
+          fProfileGammaKaonKaonSplit[iPlane][iType] = new TProfile(Form("fProfileGammaKaonKaonSplit%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",16,0.,80.);
+          fResultsList->Add(fProfileGammaKaonKaonSplit[iPlane][iType]);
+        }
+        if (isCalculateProtonProton) {
+          fProfileGammaProtonProtonSplit[iPlane][iType] = new TProfile(Form("fProfileGammaProtonProtonSplit%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",16,0.,80.);
+          fResultsList->Add(fProfileGammaProtonProtonSplit[iPlane][iType]);
+        }
+        if (isCalculateHadronHadron) {
+          fProfileGammaHadronHadronSplit[iPlane][iType] = new TProfile(Form("fProfileGammaHadronHadronSplit%s_%s",charPlane.data(),Chargetype.data()),";centrality;#gamma",16,0.,80.);
+          fResultsList->Add(fProfileGammaHadronHadronSplit[iPlane][iType]);
+        }
       }
     }
   }
@@ -1452,70 +1563,70 @@ void AliAnalysisTaskPIDCME::UserCreateOutputObjects()
       if(iType == 0) Chargetype = "SS";
       if(iType == 1) Chargetype = "OS";
       if (isCalculatePionKaon) {
-        fProfile2DiffDeltaPionKaonDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaPionKaonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
-        fProfile2DiffDeltaPionKaonSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaPionKaonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#delta",8,0.,80.,16,0,16);
-        fProfile2DiffDeltaPionKaonDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaPionKaonDEta_%s",Chargetype.data()),";centrality;#Delta Eta;#delta",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffDeltaPionKaonQ2[iType] = new TProfile2D(Form("fProfile2DiffDeltaPionKaonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",8,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
+        fProfile2DiffDeltaPionKaonDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaPionKaonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#delta",16,0.,80.,16,-8,8);
+        fProfile2DiffDeltaPionKaonSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaPionKaonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#delta",16,0.,80.,16,0,16);
+        fProfile2DiffDeltaPionKaonDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaPionKaonDEta_%s",Chargetype.data()),";centrality;#Delta Eta;#delta",16,0.,80.,16,-1.6,1.6);
+        fProfile2DiffDeltaPionKaonQ2[iType] = new TProfile2D(Form("fProfile2DiffDeltaPionKaonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",16,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
         fResultsList->Add(fProfile2DiffDeltaPionKaonDPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaPionKaonSPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaPionKaonDEta[iType]);
         fResultsList->Add(fProfile2DiffDeltaPionKaonQ2[iType]);
       }
       if (isCalculatePionProton) {
-        fProfile2DiffDeltaPionProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaPionProtonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
-        fProfile2DiffDeltaPionProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaPionProtonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#delta",8,0.,80.,16,0,16);
-        fProfile2DiffDeltaPionProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaPionProtonDEta_%s",Chargetype.data()),";centrality;#Delta Eta;#delta",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffDeltaPionProtonQ2[iType]   = new TProfile2D(Form("fProfile2DiffDeltaPionProtonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",8,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
+        fProfile2DiffDeltaPionProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaPionProtonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#delta",16,0.,80.,16,-8,8);
+        fProfile2DiffDeltaPionProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaPionProtonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#delta",16,0.,80.,16,0,16);
+        fProfile2DiffDeltaPionProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaPionProtonDEta_%s",Chargetype.data()),";centrality;#Delta Eta;#delta",16,0.,80.,16,-1.6,1.6);
+        fProfile2DiffDeltaPionProtonQ2[iType]   = new TProfile2D(Form("fProfile2DiffDeltaPionProtonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",16,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
         fResultsList->Add(fProfile2DiffDeltaPionProtonDPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaPionProtonSPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaPionProtonDEta[iType]);
         fResultsList->Add(fProfile2DiffDeltaPionProtonQ2[iType]);
       }
       if (isCalculateKaonProton) {
-        fProfile2DiffDeltaKaonProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaKaonProtonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
-        fProfile2DiffDeltaKaonProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaKaonProtonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#delta",8,0.,80.,16,0,16);
-        fProfile2DiffDeltaKaonProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaKaonProtonDEta_%s",Chargetype.data()),";centrality;#Delta Eta;#delta",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffDeltaKaonProtonQ2[iType]   = new TProfile2D(Form("fProfile2DiffDeltaKaonProtonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",8,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
+        fProfile2DiffDeltaKaonProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaKaonProtonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#delta",16,0.,80.,16,-8,8);
+        fProfile2DiffDeltaKaonProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaKaonProtonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#delta",16,0.,80.,16,0,16);
+        fProfile2DiffDeltaKaonProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaKaonProtonDEta_%s",Chargetype.data()),";centrality;#Delta Eta;#delta",16,0.,80.,16,-1.6,1.6);
+        fProfile2DiffDeltaKaonProtonQ2[iType]   = new TProfile2D(Form("fProfile2DiffDeltaKaonProtonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",16,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
         fResultsList->Add(fProfile2DiffDeltaKaonProtonDPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaKaonProtonSPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaKaonProtonDEta[iType]);
         fResultsList->Add(fProfile2DiffDeltaKaonProtonQ2[iType]);
       }
       if (isCalculatePionPion) {
-        fProfile2DiffDeltaPionPionDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaPionPionDPt_%s",Chargetype.data()),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
-        fProfile2DiffDeltaPionPionSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaPionPionSPt_%s",Chargetype.data()),";centrality;#Sum pT;#delta",8,0.,80.,16,0,16);
-        fProfile2DiffDeltaPionPionDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaPionPionDEta_%s",Chargetype.data()),";centrality;#Delta Eta;#delta",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffDeltaPionPionQ2[iType] = new TProfile2D(Form("fProfile2DiffDeltaPionPionQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",8,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
+        fProfile2DiffDeltaPionPionDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaPionPionDPt_%s",Chargetype.data()),";centrality;#Delta pT;#delta",16,0.,80.,16,-8,8);
+        fProfile2DiffDeltaPionPionSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaPionPionSPt_%s",Chargetype.data()),";centrality;#Sum pT;#delta",16,0.,80.,16,0,16);
+        fProfile2DiffDeltaPionPionDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaPionPionDEta_%s",Chargetype.data()),";centrality;#Delta Eta;#delta",16,0.,80.,16,-1.6,1.6);
+        fProfile2DiffDeltaPionPionQ2[iType] = new TProfile2D(Form("fProfile2DiffDeltaPionPionQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",16,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
         fResultsList->Add(fProfile2DiffDeltaPionPionDPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaPionPionSPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaPionPionDEta[iType]);
         fResultsList->Add(fProfile2DiffDeltaPionPionQ2[iType]);
       }
       if (isCalculateKaonKaon) {
-        fProfile2DiffDeltaKaonKaonDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaKaonKaonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
-        fProfile2DiffDeltaKaonKaonSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaKaonKaonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#delta",8,0.,80.,16,0,16);
-        fProfile2DiffDeltaKaonKaonDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaKaonKaonDEta_%s",Chargetype.data()),";centrality;#Delta Eta;#delta",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffDeltaKaonKaonQ2[iType]   = new TProfile2D(Form("fProfile2DiffDeltaKaonKaonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",8,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
+        fProfile2DiffDeltaKaonKaonDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaKaonKaonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#delta",16,0.,80.,16,-8,8);
+        fProfile2DiffDeltaKaonKaonSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaKaonKaonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#delta",16,0.,80.,16,0,16);
+        fProfile2DiffDeltaKaonKaonDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaKaonKaonDEta_%s",Chargetype.data()),";centrality;#Delta Eta;#delta",16,0.,80.,16,-1.6,1.6);
+        fProfile2DiffDeltaKaonKaonQ2[iType]   = new TProfile2D(Form("fProfile2DiffDeltaKaonKaonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",16,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
         fResultsList->Add(fProfile2DiffDeltaKaonKaonDPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaKaonKaonSPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaKaonKaonDEta[iType]);
         fResultsList->Add(fProfile2DiffDeltaKaonKaonQ2[iType]);
       }
       if (isCalculateProtonProton) {
-        fProfile2DiffDeltaProtonProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaProtonProtonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
-        fProfile2DiffDeltaProtonProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaProtonProtonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#delta",8,0.,80.,16,0,16);
-        fProfile2DiffDeltaProtonProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaProtonProtonDEta_%s",Chargetype.data()),";centrality;#Delta Eta;#delta",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffDeltaProtonProtonQ2[iType]   = new TProfile2D(Form("fProfile2DiffDeltaProtonProtonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",8,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
+        fProfile2DiffDeltaProtonProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaProtonProtonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#delta",16,0.,80.,16,-8,8);
+        fProfile2DiffDeltaProtonProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaProtonProtonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#delta",16,0.,80.,16,0,16);
+        fProfile2DiffDeltaProtonProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaProtonProtonDEta_%s",Chargetype.data()),";centrality;#Delta Eta;#delta",16,0.,80.,16,-1.6,1.6);
+        fProfile2DiffDeltaProtonProtonQ2[iType]   = new TProfile2D(Form("fProfile2DiffDeltaProtonProtonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",16,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
         fResultsList->Add(fProfile2DiffDeltaProtonProtonDPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaProtonProtonSPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaProtonProtonDEta[iType]);
         fResultsList->Add(fProfile2DiffDeltaProtonProtonQ2[iType]);
       }
       if (isCalculateHadronHadron) {
-        fProfile2DiffDeltaHadronHadronDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaHadronHadronDPt_%s",Chargetype.data()),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
-        fProfile2DiffDeltaHadronHadronSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaHadronHadronSPt_%s",Chargetype.data()),";centrality;#Sum pT;#delta",8,0.,80.,16,0,16);
-        fProfile2DiffDeltaHadronHadronDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaHadronHadronDEta_%s",Chargetype.data()),";centrality;#Delta Eta;#delta",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffDeltaHadronHadronQ2[iType]   = new TProfile2D(Form("fProfile2DiffDeltaHadronHadronQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",8,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
+        fProfile2DiffDeltaHadronHadronDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaHadronHadronDPt_%s",Chargetype.data()),";centrality;#Delta pT;#delta",16,0.,80.,16,-8,8);
+        fProfile2DiffDeltaHadronHadronSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaHadronHadronSPt_%s",Chargetype.data()),";centrality;#Sum pT;#delta",16,0.,80.,16,0,16);
+        fProfile2DiffDeltaHadronHadronDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaHadronHadronDEta_%s",Chargetype.data()),";centrality;#Delta Eta;#delta",16,0.,80.,16,-1.6,1.6);
+        fProfile2DiffDeltaHadronHadronQ2[iType]   = new TProfile2D(Form("fProfile2DiffDeltaHadronHadronQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",16,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
         fResultsList->Add(fProfile2DiffDeltaHadronHadronDPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaHadronHadronSPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaHadronHadronDEta[iType]);
@@ -1524,70 +1635,70 @@ void AliAnalysisTaskPIDCME::UserCreateOutputObjects()
 
       // γ
       if (isCalculatePionKaon) {
-        fProfile2DiffGammaPionKaonDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaPionKaonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#gamma",8,0.,80.,16,-8,8);
-        fProfile2DiffGammaPionKaonSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaPionKaonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#gamma",8,0.,80.,16,0,16);
-        fProfile2DiffGammaPionKaonDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaPionKaonDEta_%s",Chargetype.data()),";centrality;#Delta #Eta;#gamma",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffGammaPionKaonQ2[iType] = new TProfile2D(Form("fProfile2DiffGammaPionKaonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",8,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
+        fProfile2DiffGammaPionKaonDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaPionKaonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#gamma",16,0.,80.,16,-8,8);
+        fProfile2DiffGammaPionKaonSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaPionKaonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#gamma",16,0.,80.,16,0,16);
+        fProfile2DiffGammaPionKaonDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaPionKaonDEta_%s",Chargetype.data()),";centrality;#Delta #Eta;#gamma",16,0.,80.,16,-1.6,1.6);
+        fProfile2DiffGammaPionKaonQ2[iType] = new TProfile2D(Form("fProfile2DiffGammaPionKaonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",16,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
         fResultsList->Add(fProfile2DiffGammaPionKaonDPt[iType]);
         fResultsList->Add(fProfile2DiffGammaPionKaonSPt[iType]);
         fResultsList->Add(fProfile2DiffGammaPionKaonDEta[iType]);
         fResultsList->Add(fProfile2DiffGammaPionKaonQ2[iType]);
       }
       if (isCalculatePionProton) {
-        fProfile2DiffGammaPionProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaPionProtonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#gamma",8,0.,80.,16,-8,8);
-        fProfile2DiffGammaPionProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaPionProtonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#gamma",8,0.,80.,16,0,16);
-        fProfile2DiffGammaPionProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaPionProtonDEta_%s",Chargetype.data()),";centrality;#Delta #Eta;#gamma",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffGammaPionProtonQ2[iType] = new TProfile2D(Form("fProfile2DiffGammaPionProtonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",8,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
+        fProfile2DiffGammaPionProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaPionProtonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#gamma",16,0.,80.,16,-8,8);
+        fProfile2DiffGammaPionProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaPionProtonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#gamma",16,0.,80.,16,0,16);
+        fProfile2DiffGammaPionProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaPionProtonDEta_%s",Chargetype.data()),";centrality;#Delta #Eta;#gamma",16,0.,80.,16,-1.6,1.6);
+        fProfile2DiffGammaPionProtonQ2[iType] = new TProfile2D(Form("fProfile2DiffGammaPionProtonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",16,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
         fResultsList->Add(fProfile2DiffGammaPionProtonDPt[iType]);
         fResultsList->Add(fProfile2DiffGammaPionProtonSPt[iType]);
         fResultsList->Add(fProfile2DiffGammaPionProtonDEta[iType]);
         fResultsList->Add(fProfile2DiffGammaPionProtonQ2[iType]);
       }
       if (isCalculateKaonProton) {
-        fProfile2DiffGammaKaonProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaKaonProtonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#gamma",8,0.,80.,16,-8,8);
-        fProfile2DiffGammaKaonProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaKaonProtonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#gamma",8,0.,80.,16,0,16);
-        fProfile2DiffGammaKaonProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaKaonProtonDEta_%s",Chargetype.data()),";centrality;#Delta #Eta;#gamma",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffGammaKaonProtonQ2[iType] = new TProfile2D(Form("fProfile2DiffGammaKaonProtonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",8,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
+        fProfile2DiffGammaKaonProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaKaonProtonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#gamma",16,0.,80.,16,-8,8);
+        fProfile2DiffGammaKaonProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaKaonProtonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#gamma",16,0.,80.,16,0,16);
+        fProfile2DiffGammaKaonProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaKaonProtonDEta_%s",Chargetype.data()),";centrality;#Delta #Eta;#gamma",16,0.,80.,16,-1.6,1.6);
+        fProfile2DiffGammaKaonProtonQ2[iType] = new TProfile2D(Form("fProfile2DiffGammaKaonProtonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",16,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
         fResultsList->Add(fProfile2DiffGammaKaonProtonDPt[iType]);
         fResultsList->Add(fProfile2DiffGammaKaonProtonSPt[iType]);
         fResultsList->Add(fProfile2DiffGammaKaonProtonDEta[iType]);
         fResultsList->Add(fProfile2DiffGammaKaonProtonQ2[iType]);
       }
       if (isCalculatePionPion) {
-        fProfile2DiffGammaPionPionDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaPionPionDPt_%s",Chargetype.data()),";centrality;#Delta pT;#gamma",8,0.,80.,16,-8,8);
-        fProfile2DiffGammaPionPionSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaPionPionSPt_%s",Chargetype.data()),";centrality;#Sum pT;#gamma",8,0.,80.,16,0,16);
-        fProfile2DiffGammaPionPionDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaPionPionDEta_%s",Chargetype.data()),";centrality;#Delta #Eta;#gamma",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffGammaPionPionQ2[iType] = new TProfile2D(Form("fProfile2DiffGammaPionPionQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",8,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
+        fProfile2DiffGammaPionPionDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaPionPionDPt_%s",Chargetype.data()),";centrality;#Delta pT;#gamma",16,0.,80.,16,-8,8);
+        fProfile2DiffGammaPionPionSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaPionPionSPt_%s",Chargetype.data()),";centrality;#Sum pT;#gamma",16,0.,80.,16,0,16);
+        fProfile2DiffGammaPionPionDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaPionPionDEta_%s",Chargetype.data()),";centrality;#Delta #Eta;#gamma",16,0.,80.,16,-1.6,1.6);
+        fProfile2DiffGammaPionPionQ2[iType] = new TProfile2D(Form("fProfile2DiffGammaPionPionQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",16,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
         fResultsList->Add(fProfile2DiffGammaPionPionDPt[iType]);
         fResultsList->Add(fProfile2DiffGammaPionPionSPt[iType]);
         fResultsList->Add(fProfile2DiffGammaPionPionDEta[iType]);
         fResultsList->Add(fProfile2DiffGammaPionPionQ2[iType]);
       }
       if (isCalculateKaonKaon) {
-        fProfile2DiffGammaKaonKaonDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaKaonKaonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#gamma",8,0.,80.,16,-8,8);
-        fProfile2DiffGammaKaonKaonSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaKaonKaonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#gamma",8,0.,80.,16,0,16);
-        fProfile2DiffGammaKaonKaonDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaKaonKaonDEta_%s",Chargetype.data()),";centrality;#Delta #Eta;#gamma",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffGammaKaonKaonQ2[iType] = new TProfile2D(Form("fProfile2DiffGammaKaonKaonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",8,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
+        fProfile2DiffGammaKaonKaonDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaKaonKaonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#gamma",16,0.,80.,16,-8,8);
+        fProfile2DiffGammaKaonKaonSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaKaonKaonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#gamma",16,0.,80.,16,0,16);
+        fProfile2DiffGammaKaonKaonDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaKaonKaonDEta_%s",Chargetype.data()),";centrality;#Delta #Eta;#gamma",16,0.,80.,16,-1.6,1.6);
+        fProfile2DiffGammaKaonKaonQ2[iType] = new TProfile2D(Form("fProfile2DiffGammaKaonKaonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",16,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
         fResultsList->Add(fProfile2DiffGammaKaonKaonDPt[iType]);
         fResultsList->Add(fProfile2DiffGammaKaonKaonSPt[iType]);
         fResultsList->Add(fProfile2DiffGammaKaonKaonDEta[iType]);
         fResultsList->Add(fProfile2DiffGammaKaonKaonQ2[iType]);
       }
       if (isCalculateProtonProton) {
-        fProfile2DiffGammaProtonProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaProtonProtonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#gamma",8,0.,80.,16,-8,8);
-        fProfile2DiffGammaProtonProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaProtonProtonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#gamma",8,0.,80.,16,0,16);
-        fProfile2DiffGammaProtonProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaProtonProtonDEta_%s",Chargetype.data()),";centrality;#Delta #Eta;#gamma",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffGammaProtonProtonQ2[iType] = new TProfile2D(Form("fProfile2DiffGammaProtonProtonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",8,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
+        fProfile2DiffGammaProtonProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaProtonProtonDPt_%s",Chargetype.data()),";centrality;#Delta pT;#gamma",16,0.,80.,16,-8,8);
+        fProfile2DiffGammaProtonProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaProtonProtonSPt_%s",Chargetype.data()),";centrality;#Sum pT;#gamma",16,0.,80.,16,0,16);
+        fProfile2DiffGammaProtonProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaProtonProtonDEta_%s",Chargetype.data()),";centrality;#Delta #Eta;#gamma",16,0.,80.,16,-1.6,1.6);
+        fProfile2DiffGammaProtonProtonQ2[iType] = new TProfile2D(Form("fProfile2DiffGammaProtonProtonQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",16,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
         fResultsList->Add(fProfile2DiffGammaProtonProtonDPt[iType]);
         fResultsList->Add(fProfile2DiffGammaProtonProtonSPt[iType]);
         fResultsList->Add(fProfile2DiffGammaProtonProtonDEta[iType]);
         fResultsList->Add(fProfile2DiffGammaProtonProtonQ2[iType]);
       }
       if (isCalculateHadronHadron) {
-        fProfile2DiffGammaHadronHadronDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaHadronHadronDPt_%s",Chargetype.data()),";centrality;#Delta pT;#gamma",8,0.,80.,16,-8,8);
-        fProfile2DiffGammaHadronHadronSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaHadronHadronSPt_%s",Chargetype.data()),";centrality;#Sum pT;#gamma",8,0.,80.,16,0,16);
-        fProfile2DiffGammaHadronHadronDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaHadronHadronDEta_%s",Chargetype.data()),";centrality;#Delta #Eta;#gamma",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffGammaHadronHadronQ2[iType]   = new TProfile2D(Form("fProfile2DiffGammaHadronHadronQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",8,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
+        fProfile2DiffGammaHadronHadronDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaHadronHadronDPt_%s",Chargetype.data()),";centrality;#Delta pT;#gamma",16,0.,80.,16,-8,8);
+        fProfile2DiffGammaHadronHadronSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaHadronHadronSPt_%s",Chargetype.data()),";centrality;#Sum pT;#gamma",16,0.,80.,16,0,16);
+        fProfile2DiffGammaHadronHadronDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaHadronHadronDEta_%s",Chargetype.data()),";centrality;#Delta #Eta;#gamma",16,0.,80.,16,-1.6,1.6);
+        fProfile2DiffGammaHadronHadronQ2[iType]   = new TProfile2D(Form("fProfile2DiffGammaHadronHadronQ2_%s",Chargetype.data()),";centrality;Q2Bin;#delta",16,0.,80.,fNQ2Bins,0,(double)fNQ2Bins);
         fResultsList->Add(fProfile2DiffGammaHadronHadronDPt[iType]);
         fResultsList->Add(fProfile2DiffGammaHadronHadronSPt[iType]);
         fResultsList->Add(fProfile2DiffGammaHadronHadronDEta[iType]);
@@ -2027,24 +2138,28 @@ bool AliAnalysisTaskPIDCME::GetVZEROPlane()
     fProfileV0CQxVtx[0] ->Fill(fVertex[2], qxGE[1]);
     fProfileV0CQyVtx[0] ->Fill(fVertex[2], qyGE[1]);
     fHist2CalibPsi2V0CCent[0]->Fill(fCentSPD1, psi2GE[1]);
+    fHist3CalibQxQyCentV0C[0]->Fill(qxGE[1], qyGE[1], fCentSPD1);
 
     fProfileV0CQxCent[1]->Fill(fCentSPD1, qxRC[1]);
     fProfileV0CQyCent[1]->Fill(fCentSPD1, qyRC[1]);
     fProfileV0CQxVtx[1]->Fill(fVertex[2], qxRC[1]);
     fProfileV0CQyVtx[1]->Fill(fVertex[2], qyRC[1]);
-    fHist2CalibPsi2V0CCent[1]->Fill(fCentSPD1, psi2GE[1]);
+    fHist2CalibPsi2V0CCent[1]->Fill(fCentSPD1, psi2RC[1]);
+    fHist3CalibQxQyCentV0C[0]->Fill(qxRC[1], qyRC[1], fCentSPD1);
     //V0A
     fProfileV0AQxCent[0]->Fill(fCentSPD1, qxGE[2]);
     fProfileV0AQyCent[0]->Fill(fCentSPD1, qyGE[2]);
     fProfileV0AQxVtx[0]->Fill(fVertex[2], qxGE[2]);
     fProfileV0AQyVtx[0]->Fill(fVertex[2], qyGE[2]);
     fHist2CalibPsi2V0ACent[0]->Fill(fCentSPD1, psi2GE[2]);
+    fHist3CalibQxQyCentV0A[0]->Fill(qxGE[2], qyGE[2], fCentSPD1);
 
     fProfileV0AQxCent[1]->Fill(fCentSPD1, qxRC[2]);
     fProfileV0AQyCent[1]->Fill(fCentSPD1, qyRC[2]);
     fProfileV0AQxVtx[1]->Fill(fVertex[2], qxRC[2]);
     fProfileV0AQyVtx[1]->Fill(fVertex[2], qyRC[2]);
     fHist2CalibPsi2V0ACent[1]->Fill(fCentSPD1, psi2RC[2]);
+    fHist3CalibQxQyCentV0A[1]->Fill(qxRC[2], qyRC[2], fCentSPD1);
   }
   fPsi2V0C = psi2RC[1];
   fPsi2V0A = psi2RC[2];
@@ -2754,14 +2869,18 @@ bool AliAnalysisTaskPIDCME::PairTrkTrk()
       gamma[3] = TMath::Cos(phi_a + phi_b - 2 * fPsi1ZNC);
       gamma[4] = TMath::Cos(phi_a + phi_b - 2 * fPsi1ZNA);
 
-      int nBits = 2;
+      int nBits = 6;
       if (isCalculatePionKaon) {
         TBits bitsPionKaonPair(nBits);
         bitsPionKaonPair.SetBitNumber(0, (code_a ==  211 && code_b ==  321) || (code_a == -211 && code_b == -321));
         bitsPionKaonPair.SetBitNumber(1, (code_a ==  211 && code_b == -321) || (code_a == -211 && code_b ==  321));
+        bitsPionKaonPair.SetBitNumber(2, (code_a ==  211 && code_b ==  321));
+        bitsPionKaonPair.SetBitNumber(3, (code_a ==  -211 && code_b ==  -321));
+        bitsPionKaonPair.SetBitNumber(4, (code_a ==  211 && code_b ==  -321));
+        bitsPionKaonPair.SetBitNumber(5, (code_a ==  -211 && code_b ==  321));
         for (int iBits = 0; iBits < nBits; iBits++) {
          double weight_all = pid_weight_a * pid_weight_b;
-          if (bitsPionKaonPair.TestBitNumber(iBits)) {
+          if ((iBits < 2) && bitsPionKaonPair.TestBitNumber(iBits)) {
            fProfileDeltaPionKaon[iBits] -> Fill(fCent, delta, weight_all);
            fProfileGammaPionKaon[0][iBits] -> Fill(fCent, gamma[0], weight_all);
            if(isUseVZEROPlane) {
@@ -2789,6 +2908,18 @@ bool AliAnalysisTaskPIDCME::PairTrkTrk()
              fHist2DEtaSPhiPionKaon[fCentBin][iBits] -> Fill(eta_a - eta_b, sphi_ranged);
            }
          }
+         else if (isOpenSsandOsSelfCheck && (iBits >= 2) && bitsPionKaonPair.TestBitNumber(iBits)) {
+            fProfileDeltaPionKaonSplit[iBits-2] -> Fill(fCent, delta, weight_all);
+            fProfileGammaPionKaonSplit[0][iBits-2] -> Fill(fCent, gamma[0], weight_all);
+            if(isUseVZEROPlane) {
+              fProfileGammaPionKaonSplit[1][iBits-2] -> Fill(fCentSPD1, gamma[1], weight_all);
+              fProfileGammaPionKaonSplit[2][iBits-2] -> Fill(fCentSPD1, gamma[2], weight_all);
+            }
+            if (isUseZDCPlane) {
+              fProfileGammaPionKaonSplit[3][iBits-2] -> Fill(fCent, gamma[3], weight_all);
+              fProfileGammaPionKaonSplit[4][iBits-2] -> Fill(fCent, gamma[4], weight_all);
+            }
+          }
         }
       }
 
@@ -2796,9 +2927,13 @@ bool AliAnalysisTaskPIDCME::PairTrkTrk()
         TBits bitsPionProtonPair(nBits);
         bitsPionProtonPair.SetBitNumber(0, (code_a ==  211 && code_b ==  2212) || (code_a == -211 && code_b == -2212));
         bitsPionProtonPair.SetBitNumber(1, (code_a ==  211 && code_b == -2212) || (code_a == -211 && code_b ==  2212));
+        bitsPionProtonPair.SetBitNumber(2, (code_a ==  211 && code_b ==  2212));
+        bitsPionProtonPair.SetBitNumber(3, (code_a ==  -211 && code_b == -2212));
+        bitsPionProtonPair.SetBitNumber(4, (code_a ==  211 && code_b ==  -2212));
+        bitsPionProtonPair.SetBitNumber(5, (code_a ==  -211 && code_b == 2212));
         for (int iBits = 0; iBits < nBits; iBits++) {
          double weight_all = pid_weight_a * pid_weight_b;
-          if (bitsPionProtonPair.TestBitNumber(iBits)) {
+          if ((iBits < 2) && bitsPionProtonPair.TestBitNumber(iBits)) {
            fProfileDeltaPionProton[iBits] -> Fill(fCent, delta, weight_all);
            fProfileGammaPionProton[0][iBits] -> Fill(fCent, gamma[0], weight_all);
            if(isUseVZEROPlane) {
@@ -2826,6 +2961,18 @@ bool AliAnalysisTaskPIDCME::PairTrkTrk()
              fHist2DEtaSPhiPionProton[fCentBin][iBits] -> Fill(eta_a - eta_b, sphi_ranged);
            }
          }
+         else if (isOpenSsandOsSelfCheck && (iBits >= 2) && bitsPionProtonPair.TestBitNumber(iBits)){
+            fProfileDeltaPionProtonSplit[iBits-2] -> Fill(fCent, delta, weight_all);
+            fProfileGammaPionProtonSplit[0][iBits-2] -> Fill(fCent, gamma[0], weight_all);
+            if(isUseVZEROPlane) {
+              fProfileGammaPionProtonSplit[1][iBits-2] -> Fill(fCentSPD1, gamma[1], weight_all);
+              fProfileGammaPionProtonSplit[2][iBits-2] -> Fill(fCentSPD1, gamma[2], weight_all);
+            }
+            if (isUseZDCPlane) {
+              fProfileGammaPionProtonSplit[3][iBits-2] -> Fill(fCent, gamma[3], weight_all);
+              fProfileGammaPionProtonSplit[4][iBits-2] -> Fill(fCent, gamma[4], weight_all);
+            }
+          }
         }
       }
 
@@ -2833,9 +2980,13 @@ bool AliAnalysisTaskPIDCME::PairTrkTrk()
         TBits bitsKaonProtonPair(nBits);
         bitsKaonProtonPair.SetBitNumber(0, (code_a ==  321 && code_b ==  2212) || (code_a == -321 && code_b == -2212));
         bitsKaonProtonPair.SetBitNumber(1, (code_a ==  321 && code_b == -2212) || (code_a == -321 && code_b ==  2212));
+        bitsKaonProtonPair.SetBitNumber(2, (code_a ==  321 && code_b ==  2212));
+        bitsKaonProtonPair.SetBitNumber(3, (code_a ==  -321 && code_b == -2212));
+        bitsKaonProtonPair.SetBitNumber(4, (code_a ==  321 && code_b ==  -2212));
+        bitsKaonProtonPair.SetBitNumber(5, (code_a ==  -321 && code_b == 2212));
         for (int iBits = 0; iBits < nBits; iBits++) {
          double weight_all = pid_weight_a * pid_weight_b;
-          if (bitsKaonProtonPair.TestBitNumber(iBits)) {
+          if ((iBits < 2) && bitsKaonProtonPair.TestBitNumber(iBits)) {
            fProfileDeltaKaonProton[iBits] -> Fill(fCent, delta, weight_all);
            fProfileGammaKaonProton[0][iBits] -> Fill(fCent, gamma[0], weight_all);
            if(isUseVZEROPlane) {
@@ -2863,6 +3014,18 @@ bool AliAnalysisTaskPIDCME::PairTrkTrk()
              fHist2DEtaSPhiKaonProton[fCentBin][iBits] -> Fill(eta_a - eta_b, sphi_ranged);
            }
          }
+         else if(isOpenSsandOsSelfCheck && (iBits >= 2) && bitsKaonProtonPair.TestBitNumber(iBits)){
+            fProfileDeltaKaonProtonSplit[iBits-2] -> Fill(fCent, delta, weight_all);
+            fProfileGammaKaonProtonSplit[0][iBits-2] -> Fill(fCent, gamma[0], weight_all);
+            if(isUseVZEROPlane) {
+              fProfileGammaKaonProtonSplit[1][iBits-2] -> Fill(fCentSPD1, gamma[1], weight_all);
+              fProfileGammaKaonProtonSplit[2][iBits-2] -> Fill(fCentSPD1, gamma[2], weight_all);
+            }
+            if (isUseZDCPlane) {
+              fProfileGammaKaonProtonSplit[3][iBits-2] -> Fill(fCent, gamma[3], weight_all);
+              fProfileGammaKaonProtonSplit[4][iBits-2] -> Fill(fCent, gamma[4], weight_all);
+            }
+          }
         }
       }
 
@@ -2870,9 +3033,13 @@ bool AliAnalysisTaskPIDCME::PairTrkTrk()
         TBits bitsPionPionPair(nBits);
         bitsPionPionPair.SetBitNumber(0, (code_a ==  211 && code_b ==  211) || (code_a == -211 && code_b == -211));
         bitsPionPionPair.SetBitNumber(1, (code_a ==  211 && code_b == -211) || (code_a == -211 && code_b ==  211));
+        bitsPionPionPair.SetBitNumber(2, (code_a ==  211 && code_b ==  211));
+        bitsPionPionPair.SetBitNumber(3, (code_a ==  -211 && code_b == -211));
+        bitsPionPionPair.SetBitNumber(4, (code_a ==  211 && code_b == -211));
+        bitsPionPionPair.SetBitNumber(5, (code_a ==  -211 && code_b == 211));
         for (int iBits = 0; iBits < nBits; iBits++) {
          double weight_all = pid_weight_a * pid_weight_b;
-          if (bitsPionPionPair.TestBitNumber(iBits)) {
+          if ((iBits < 2 ) && bitsPionPionPair.TestBitNumber(iBits)) {
            fProfileDeltaPionPion[iBits] -> Fill(fCent, delta, weight_all);
            fProfileGammaPionPion[0][iBits] -> Fill(fCent, gamma[0], weight_all);
            if(isUseVZEROPlane) {
@@ -2900,6 +3067,18 @@ bool AliAnalysisTaskPIDCME::PairTrkTrk()
              fHist2DEtaSPhiPionPion[fCentBin][iBits] -> Fill(eta_a - eta_b, sphi_ranged);
            }
          }
+          else if(isOpenSsandOsSelfCheck && (iBits >= 2) && bitsPionPionPair.TestBitNumber(iBits)) {
+            fProfileDeltaPionPionSplit[iBits-2] -> Fill(fCent, delta, weight_all);
+            fProfileGammaPionPionSplit[0][iBits-2] -> Fill(fCent, gamma[0], weight_all);
+            if(isUseVZEROPlane) {
+              fProfileGammaPionPionSplit[1][iBits-2] -> Fill(fCentSPD1, gamma[1], weight_all);
+              fProfileGammaPionPionSplit[2][iBits-2] -> Fill(fCentSPD1, gamma[2], weight_all);
+            }
+            if (isUseZDCPlane) {
+              fProfileGammaPionPionSplit[3][iBits-2] -> Fill(fCent, gamma[3], weight_all);
+              fProfileGammaPionPionSplit[4][iBits-2] -> Fill(fCent, gamma[4], weight_all);
+            }
+          }
         }
       }
 
@@ -2907,9 +3086,13 @@ bool AliAnalysisTaskPIDCME::PairTrkTrk()
         TBits bitsKaonKaonPair(nBits);
         bitsKaonKaonPair.SetBitNumber(0, (code_a ==  321 && code_b ==  321) || (code_a == -321 && code_b == -321));
         bitsKaonKaonPair.SetBitNumber(1, (code_a ==  321 && code_b == -321) || (code_a == -321 && code_b ==  321));
+        bitsKaonKaonPair.SetBitNumber(2, (code_a ==  321 && code_b ==  321));
+        bitsKaonKaonPair.SetBitNumber(3, (code_a ==  -321 && code_b == -321));
+        bitsKaonKaonPair.SetBitNumber(4, (code_a ==  321 && code_b ==  -321));
+        bitsKaonKaonPair.SetBitNumber(5, (code_a ==  -321 && code_b == 321));
         for (int iBits = 0; iBits < nBits; iBits++) {
          double weight_all = pid_weight_a * pid_weight_b;
-          if (bitsKaonKaonPair.TestBitNumber(iBits)) {
+          if ((iBits < 2) && bitsKaonKaonPair.TestBitNumber(iBits)) {
            fProfileDeltaKaonKaon[iBits] -> Fill(fCent, delta, weight_all);
            fProfileGammaKaonKaon[0][iBits] -> Fill(fCent, gamma[0], weight_all);
            if(isUseVZEROPlane) {
@@ -2937,6 +3120,18 @@ bool AliAnalysisTaskPIDCME::PairTrkTrk()
              fHist2DEtaSPhiKaonKaon[fCentBin][iBits] -> Fill(eta_a - eta_b, sphi_ranged);
            }
          }
+         else if(isOpenSsandOsSelfCheck && (iBits >= 2) && bitsKaonKaonPair.TestBitNumber(iBits)){
+            fProfileDeltaKaonKaonSplit[iBits-2] -> Fill(fCent, delta, weight_all);
+            fProfileGammaKaonKaonSplit[0][iBits-2] -> Fill(fCent, gamma[0], weight_all);
+            if(isUseVZEROPlane) {
+              fProfileGammaKaonKaonSplit[1][iBits-2] -> Fill(fCentSPD1, gamma[1], weight_all);
+              fProfileGammaKaonKaonSplit[2][iBits-2] -> Fill(fCentSPD1, gamma[2], weight_all);
+            }
+            if (isUseZDCPlane) {
+              fProfileGammaKaonKaonSplit[3][iBits-2] -> Fill(fCent, gamma[3], weight_all);
+              fProfileGammaKaonKaonSplit[4][iBits-2] -> Fill(fCent, gamma[4], weight_all);
+            }
+          }
         }
       }
 
@@ -2944,9 +3139,13 @@ bool AliAnalysisTaskPIDCME::PairTrkTrk()
         TBits bitsProtonProtonPair(nBits);
         bitsProtonProtonPair.SetBitNumber(0, (code_a ==  2212 && code_b ==  2212) || (code_a == -2212 && code_b == -2212));
         bitsProtonProtonPair.SetBitNumber(1, (code_a ==  2212 && code_b == -2212) || (code_a == -2212 && code_b ==  2212));
+        bitsProtonProtonPair.SetBitNumber(2, (code_a ==  2212 && code_b ==  2212));
+        bitsProtonProtonPair.SetBitNumber(3, (code_a ==  -2212 && code_b == -2212));
+        bitsProtonProtonPair.SetBitNumber(4, (code_a ==  2212 && code_b ==  -2212));
+        bitsProtonProtonPair.SetBitNumber(5, (code_a ==  -2212 && code_b == 2212));
         for (int iBits = 0; iBits < nBits; iBits++) {
          double weight_all = pid_weight_a * pid_weight_b;
-          if (bitsProtonProtonPair.TestBitNumber(iBits)) {
+          if ((iBits < 2) && bitsProtonProtonPair.TestBitNumber(iBits)) {
            fProfileDeltaProtonProton[iBits] -> Fill(fCent, delta, weight_all);
            fProfileGammaProtonProton[0][iBits] -> Fill(fCent, gamma[0], weight_all);
            if(isUseVZEROPlane) {
@@ -2974,18 +3173,32 @@ bool AliAnalysisTaskPIDCME::PairTrkTrk()
              fHist2DEtaSPhiProtonProton[fCentBin][iBits] -> Fill(eta_a - eta_b, sphi_ranged);
            }
          }
+         else if(isOpenSsandOsSelfCheck && (iBits >= 2) && bitsProtonProtonPair.TestBitNumber(iBits)){
+           fProfileDeltaProtonProtonSplit[iBits-2] -> Fill(fCent, delta, weight_all);
+           fProfileGammaProtonProtonSplit[0][iBits-2] -> Fill(fCent, gamma[0], weight_all);
+           if(isUseVZEROPlane) {
+             fProfileGammaProtonProtonSplit[1][iBits-2] -> Fill(fCentSPD1, gamma[1], weight_all);
+             fProfileGammaProtonProtonSplit[2][iBits-2] -> Fill(fCentSPD1, gamma[2], weight_all);
+           }
+           if (isUseZDCPlane) {
+             fProfileGammaProtonProtonSplit[3][iBits-2] -> Fill(fCent, gamma[3], weight_all);
+             fProfileGammaProtonProtonSplit[4][iBits-2] -> Fill(fCent, gamma[4], weight_all);
+           }
+         }
         }
       }
 
       if (isCalculateHadronHadron) {
         TBits bitsHadronHadronPair(nBits);
-        bitsHadronHadronPair.SetBitNumber(0, code_a > 0 && code_b > 0);
-        bitsHadronHadronPair.SetBitNumber(1, code_a > 0 && code_b < 0);
-        bitsHadronHadronPair.SetBitNumber(2, code_a < 0 && code_b > 0);
-        bitsHadronHadronPair.SetBitNumber(3, code_a < 0 && code_b < 0);
+        bitsHadronHadronPair.SetBitNumber(0, (code_a > 0 && code_b > 0) || (code_a < 0 && code_b < 0));
+        bitsHadronHadronPair.SetBitNumber(1, (code_a > 0 && code_b < 0) || (code_a < 0 && code_b > 0));
+        bitsHadronHadronPair.SetBitNumber(2, (code_a > 0 && code_b > 0));
+        bitsHadronHadronPair.SetBitNumber(3, (code_a < 0 && code_b < 0));
+        bitsHadronHadronPair.SetBitNumber(4, (code_a > 0 && code_b < 0));
+        bitsHadronHadronPair.SetBitNumber(5, (code_a < 0 && code_b > 0));
         for (int iBits = 0; iBits < nBits; iBits++) {
-          if (bitsHadronHadronPair.TestBitNumber(iBits)) {
-            double weight_all = weight_a * weight_b;
+          double weight_all = weight_a * weight_b;
+          if ((iBits < 2) && bitsHadronHadronPair.TestBitNumber(iBits)) {
             fProfileDeltaHadronHadron[iBits] -> Fill(fCent, delta, weight_all);
             fProfileGammaHadronHadron[0][iBits] -> Fill(fCent, gamma[0], weight_all);
             if(isUseVZEROPlane) {
@@ -3011,6 +3224,18 @@ bool AliAnalysisTaskPIDCME::PairTrkTrk()
               double sphi_ranged = RangeDPhi(phi_a + phi_b - 2 * psi2TPC_forThisPair);
               fHist2DEtaDPhiHadronHadron[fCentBin][iBits] -> Fill(eta_a - eta_b, dphi_ranged);
               fHist2DEtaSPhiHadronHadron[fCentBin][iBits] -> Fill(eta_a - eta_b, sphi_ranged);
+            }
+          }
+          else if(isOpenSsandOsSelfCheck && (iBits >= 2) && bitsHadronHadronPair.TestBitNumber(iBits)){
+            fProfileDeltaHadronHadronSplit[iBits-2] -> Fill(fCent, delta, weight_all);
+            fProfileGammaHadronHadronSplit[0][iBits-2] -> Fill(fCent, gamma[0], weight_all);
+            if(isUseVZEROPlane) {
+              fProfileGammaHadronHadronSplit[1][iBits-2] -> Fill(fCentSPD1, gamma[1], weight_all);
+              fProfileGammaHadronHadronSplit[2][iBits-2] -> Fill(fCentSPD1, gamma[2], weight_all);
+            }
+            if (isUseZDCPlane) {
+              fProfileGammaHadronHadronSplit[3][iBits-2] -> Fill(fCent, gamma[3], weight_all);
+              fProfileGammaHadronHadronSplit[4][iBits-2] -> Fill(fCent, gamma[4], weight_all);
             }
           }
         }

@@ -61,6 +61,7 @@ class AliAnalysisTaskPIDCME : public AliAnalysisTaskSE
   
   void IfUseOneSideTPCPlane(bool bUseOneSideTPCPlane) { this->isUseOneSideTPCPlane = bUseOneSideTPCPlane; }
   void IfOpenPIDSingletrk(bool bOpenPIDSingletrk) { this->isOpenPIDSingletrk = bOpenPIDSingletrk; }
+  void IfOpenSsandOsSelfCheck(bool bOpenSsandOsSelfCheck) {this->isOpenSsandOsSelfCheck = bOpenSsandOsSelfCheck; }
 
   // read in
   void SetListForNUE(TList* flist) { this->fListNUE = (TList*)flist->Clone(); }
@@ -186,6 +187,7 @@ class AliAnalysisTaskPIDCME : public AliAnalysisTaskSE
 
   bool isTightPileUp;
   bool isOpenPIDSingletrk;
+  bool isOpenSsandOsSelfCheck;
 
   //////////////////////
   // Cuts and options //
@@ -397,11 +399,13 @@ class AliAnalysisTaskPIDCME : public AliAnalysisTaskSE
   TProfile* fProfileV0CQxVtx[2];
   TProfile* fProfileV0CQyVtx[2];
   TH2D* fHist2CalibPsi2V0CCent[2];
+  TH3D* fHist3CalibQxQyCentV0C[2];
   TProfile* fProfileV0AQxCent[2];
   TProfile* fProfileV0AQyCent[2];
   TProfile* fProfileV0AQxVtx[2];
   TProfile* fProfileV0AQyVtx[2];
   TH2D* fHist2CalibPsi2V0ACent[2];
+  TH3D* fHist3CalibQxQyCentV0A[2];
   // ZNC
   TProfile* fProfileZNCTowerMeanEnegry[2]; // ![0]Raw [1]GE
   TProfile* fProfileZNCQxCent[2];          // ![0]GE  [1]RC
@@ -531,6 +535,23 @@ class AliAnalysisTaskPIDCME : public AliAnalysisTaskSE
   TProfile* fProfileGammaKaonKaon[5][2];
   TProfile* fProfileGammaProtonProton[5][2];
   TProfile* fProfileGammaHadronHadron[5][2];
+
+  // for SS and OS cross check
+  TProfile* fProfileDeltaPionKaonSplit[4]; //![0]:pi+ k+  [1]:π- K- [2]pi+ K- [3]pi- K+
+  TProfile* fProfileDeltaPionProtonSplit[4];
+  TProfile* fProfileDeltaKaonProtonSplit[4];
+  TProfile* fProfileDeltaPionPionSplit[4];
+  TProfile* fProfileDeltaKaonKaonSplit[4];
+  TProfile* fProfileDeltaProtonProtonSplit[4];
+  TProfile* fProfileDeltaHadronHadronSplit[4];
+  // γ [5]:plane type [2]:pair type
+  TProfile* fProfileGammaPionKaonSplit[5][4];
+  TProfile* fProfileGammaPionProtonSplit[5][4];
+  TProfile* fProfileGammaKaonProtonSplit[5][4];
+  TProfile* fProfileGammaPionPionSplit[5][4];
+  TProfile* fProfileGammaKaonKaonSplit[5][4];
+  TProfile* fProfileGammaProtonProtonSplit[5][4];
+  TProfile* fProfileGammaHadronHadronSplit[5][4];
 
   // Diff δ(ΔpT)
   TProfile2D* fProfile2DiffDeltaPionKaonDPt[2]; 
